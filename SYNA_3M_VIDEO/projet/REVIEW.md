@@ -1,4 +1,20 @@
-# REVIEW — « 3M Plâtrerie Peinture × Syna », version 2 (53,6 s, 1920 x 1080, 30 i/s)
+# REVIEW — « 3M Plâtrerie Peinture × Syna », version 3 (58 s, 1920 x 1080, 30 i/s)
+
+## Version 3 (retour : « encore plus vif et plus rapide ; Syna doit faire plusieurs modifications, même compliquées »)
+- Voix accélérée de 12 % ; nouvelle réplique sur les modifications (OpenAI, voix « cedar », env. 0,003 $ ;
+  dépense totale du film env. 0,03 $, sous le plafond de 0,05 $ accepté).
+- Petits chocs de caméra sur chaque impact (fenêtres, logos, créations qui atterrissent).
+- Quatre modifications dans l'onglet, de la plus simple à la plus complexe, chacune avec sélection bleue de
+  l'élément, zoom rapide et compteur de version (1 → 5) :
+  1. couleur : « Passe le bouton de devis en ocre » ;
+  2. texte : « Change le titre : « Vos murs, notre métier. » » ;
+  3. structure : « Ajoute une section avant / après avec mes photos de chantier » (photos jointes par le client ;
+     la section avant/après existe dans le studio pour les artisans) ;
+  4. marque entière : « Mets l'ocre en couleur d'accent, partout » → Syna liste les 3 créations concernées (site,
+     publication, publicité) et attend « Tout mettre à jour » avant de les modifier (propagation contrôlée réelle
+     du studio) ; « Versions v1 … v5 restaurables ».
+
+## Version 2
 
 ## Retour du propriétaire sur la version 1 (63,5 s)
 « Manque de peps, de rapidité, de fluidité, d'animation ; le beige n'est pas beau, mettre du blanc ; représenter

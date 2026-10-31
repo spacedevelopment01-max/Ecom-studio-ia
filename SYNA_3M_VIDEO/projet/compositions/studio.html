@@ -242,10 +242,12 @@
       tl.fromTo("#lt-dash", { opacity: 0 }, { opacity: 1, duration: 0.15 }, TB + 0.6);
       tl.fromTo(".lt-d", { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: "back.out(2)", stagger: 0.06 }, TB + 0.6);
       tl.fromTo("#st-title span", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, stagger: 0.07, ease: "power2.out" }, TB + 0.2);
-      tl.to("#st-title span", { opacity: 0, filter: "blur(8px)", duration: 0.14, stagger: 0.03 }, 18.65);
+      tl.to("#st-title span", { opacity: 0, filter: "blur(8px)", duration: 0.14, stagger: 0.03 }, L("e.endroit") + 1.65);
       // Plongée dans l'écran
-      tl.to("#st-syna, #st-synash", { opacity: 0, duration: 0.2 }, 18.7);
-      tl.to("#st-cam", Object.assign(F(SCREEN.x, LY + 14, SCREEN.z, 6.0, 0, 0), { duration: 0.65, ease: "power3.in" }), 18.75);
+      tl.to("#st-syna, #st-synash", { opacity: 0, duration: 0.2 }, L("e.endroit") + 1.7);
+      tl.to("#st-cam", Object.assign(F(SCREEN.x, LY + 14, SCREEN.z, 6.0, 0, 0), { duration: 0.65, ease: "power3.in" }), L("e.endroit") + 1.75);
+      // Petits chocs de caméra : ordinateur posé, chaque création qui atterrit, retour dans l'écran
+      [0.72, L("d.logo") + 0.38, L("d.identite") + 0.38, L("d.visuels") + 0.38, L("d.pub") + 0.28, L("d.site") + 0.38, L("e.endroit") + 0.55].forEach((t0) => tl.fromTo("#st-world", { scale: 1 }, { scale: 1.035, duration: 0.08, ease: "power2.out", yoyo: true, repeat: 1, immediateRender: false }, t0));
       window.__timelines["studio"] = tl;
     })();
   </script>

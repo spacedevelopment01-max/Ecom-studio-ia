@@ -25,7 +25,7 @@
     .ch-neq { font: 700 80px "InterV"; color: #E5383B; }
   </style>
   <div id="root" data-composition-id="chantier" data-width="1920" data-height="1080">
-    <div id="ch-cam"><div id="ch-tilt"><div id="ch-iso" data-layout-ignore><div id="ch-ground"></div></div></div></div>
+    <div id="ch-bump" style="position:absolute;inset:0"><div id="ch-cam"><div id="ch-tilt"><div id="ch-iso" data-layout-ignore><div id="ch-ground"></div></div></div></div></div>
     <div id="ch-ui">
       <div id="ch-scrim"></div>
       <div id="ch-title1" class="ch-title"><span>Un</span> <span>savoir-faire</span> <span class="w-mute">invisible.</span></div>
@@ -157,13 +157,15 @@
       tl.fromTo("#ch-logos .ch-neq", { opacity: 0, scale: 2.2 }, { opacity: 1, scale: 1, duration: 0.2, ease: "power3.out", stagger: 0.07 }, C["b.rien"] + 0.25);
       tl.fromTo("#ch-title2 span", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.12, stagger: 0.06, ease: "power2.out" }, C["b.rien"] + 0.1);
       tl.fromTo("#ch-logos", { x: 0 }, { x: 10, duration: 0.04, ease: "none", yoyo: true, repeat: 7 }, C["b.rien"] + 0.62);
-      const T0 = C["b.rien"] + 0.92;
+      const T0 = C["b.rien"] + 0.85;
       tl.to("#ch-logos .ch-logo, #ch-logos .ch-neq", { y: 900, rotation: (i) => [-24, 10, -8, 16, -12, 9, 22][i], duration: 0.42, ease: "power3.in", stagger: 0.03 }, T0);
       tl.to("#ch-title2", { opacity: 0, filter: "blur(8px)", duration: 0.15 }, T0);
       tl.to("#ch-scrim", { opacity: 0, duration: 0.2 }, T0);
       tl.fromTo("#ch-iso", { rotationZ: 45 }, { rotationZ: 135, duration: 0.55, ease: "power3.in", immediateRender: false }, T0);
       tl.to("#ch-cam", { scale: 0.05, x: 0, y: 0, duration: 0.55, ease: "power3.in" }, T0);
       tl.fromTo("#ch-point", { scale: 0 }, { scale: 0.3, duration: 0.25, ease: "back.out(2.5)" }, T0 + 0.2);
+      // Petits chocs de caméra sur chaque impact
+      [C["b.logo"], C["b.visuels"], C["b.site"], C["b.pub"], C["b.heures"], C["b.rien"] + 0.1, C["b.rien"] + 0.2].forEach((t0) => tl.fromTo("#ch-bump", { scale: 1 }, { scale: 1.04, duration: 0.08, ease: "power2.out", yoyo: true, repeat: 1, immediateRender: false }, t0));
       window.__timelines["chantier"] = tl;
     })();
   </script>

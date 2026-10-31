@@ -7,23 +7,40 @@
     .m3-probe { position: absolute; left: -9999px; top: 0; opacity: 0; }
     .m3-o8 { font-family: Outfit; font-weight: 800; } .m3-o7 { font-family: Outfit; font-weight: 700; }
     .m3-l4 { font-family: Lato; font-weight: 400; } .m3-l6 { font-family: Lato; font-weight: 600; } .m3-l7 { font-family: Lato; font-weight: 700; }
-    #dm-win { position: absolute; left: 70px; top: 52px; width: 1780px; height: 976px; border-radius: 22px; overflow: hidden; box-shadow: 0 50px 110px -50px rgba(10,16,36,.4), 0 0 0 2px #E3E8F2; transform-origin: 50% 50%; }
+    #dm-win { position: absolute; left: 70px; top: 52px; width: 1780px; height: 976px; border-radius: 22px; overflow: hidden; box-shadow: 0 50px 110px -50px rgba(10,16,36,.4), 0 0 0 2px #E3E8F2; }
     .dm-chat { position: absolute; left: 0; top: 0; bottom: 0; width: 560px; background: #fff; border-right: 2px solid #DCE2EE; display: flex; flex-direction: column; }
-    .dm-head { display: flex; align-items: center; gap: 16px; padding: 22px 28px; border-bottom: 2px solid #EEF1F7; }
+    .dm-head { display: flex; align-items: center; gap: 16px; padding: 20px 26px; border-bottom: 2px solid #EEF1F7; flex: none; }
     .dm-head b { display: block; font: 600 34px/1 "Bricolage"; letter-spacing: -0.02em; color: #0A1024; }
     .dm-head small { display: block; margin-top: 4px; font: 500 21px "InterV"; color: #5E6886; }
-    .dm-thread { flex: 1; position: relative; padding: 24px 26px; display: flex; flex-direction: column; gap: 18px; }
-    .dm-bub { max-width: 470px; padding: 18px 22px; border-radius: 22px; font: 500 29px/1.3 "InterV"; }
+    #dm-tv { flex: 1; position: relative; overflow: hidden; }
+    #dm-ti { position: absolute; left: 0; right: 0; top: 0; padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; }
+    .dm-bub { max-width: 470px; padding: 15px 20px; border-radius: 22px; font: 500 26px/1.28 "InterV"; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; flex: none; }
     .dm-syna { align-self: flex-start; background: #EEF2FB; color: #0A1024; border-bottom-left-radius: 8px; }
     .dm-me { align-self: flex-end; background: #2F5BEA; color: #fff; border-bottom-right-radius: 8px; }
-    .dm-dots { align-self: flex-start; background: #EEF2FB; border-radius: 22px; padding: 20px 24px; display: flex; gap: 10px; }
-    .dm-dots i { width: 12px; height: 12px; border-radius: 50%; background: #7E89A8; display: block; }
-    .dm-chip { align-self: flex-start; display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 14px; background: #E3E9FD; color: #2F5BEA; font: 600 23px "InterV"; }
-    .dm-input { margin: 0 22px 22px; height: 86px; border-radius: 20px; background: #F4F6FB; box-shadow: inset 0 0 0 2px #E1E6F0; display: flex; align-items: center; padding: 0 14px 0 22px; gap: 14px; }
-    #dm-typed { flex: 1; font: 500 25px/1.25 "InterV"; color: #0A1024; white-space: nowrap; overflow: hidden; }
-    #dm-ph { position: absolute; font: 500 25px "InterV"; color: #69728C; }
+    .dm-ok { flex: none; align-self: flex-start; display: flex; align-items: center; gap: 10px; padding: 11px 18px; border-radius: 16px; background: #E9F6EF; color: #146C43; font: 600 24px "InterV"; }
+    .dm-att { flex: none; align-self: flex-end; display: flex; gap: 10px; }
+    .dm-att div { width: 110px; height: 80px; border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 0 0 2px #DCE2EE; }
+    .dm-att span { position: absolute; left: 6px; bottom: 6px; font: 600 15px InterV; background: rgba(10,16,36,.75); color: #fff; padding: 2px 7px; border-radius: 6px; }
+    .dm-cta { margin-top: 12px; display: inline-block; background: #2F5BEA; color: #fff; font: 600 24px InterV; padding: 12px 20px; border-radius: 14px; }
+    .dm-vers { flex: none; align-self: flex-start; display: flex; align-items: center; gap: 8px; font: 600 22px InterV; color: #5E6886; }
+    .dm-vers i { font-style: normal; padding: 6px 12px; border-radius: 10px; background: #E3E9FD; color: #2F5BEA; }
+    .dm-input { margin: 0 20px 20px; height: 84px; border-radius: 20px; background: #F4F6FB; box-shadow: inset 0 0 0 2px #E1E6F0; display: flex; align-items: center; padding: 0 14px 0 22px; gap: 14px; flex: none; }
+    #dm-typed { flex: 1; font: 500 24px/1.25 "InterV"; color: #0A1024; white-space: nowrap; overflow: hidden; }
+    #dm-ph { position: absolute; font: 500 24px "InterV"; color: #69728C; }
     .dm-send { width: 58px; height: 58px; border-radius: 16px; background: #2F5BEA; display: grid; place-items: center; flex: none; }
-    #dm-site { position: absolute; left: 600px; top: 60px; width: 720px; height: 460px; transform-origin: 0 0; border-radius: 18px; box-shadow: 0 30px 70px -40px rgba(10,16,36,.35), 0 0 0 2px #E3E8F2; }
+    #dm-pv { position: absolute; left: 560px; top: 0; right: 0; bottom: 0; background: #F5F7FC; }
+    .dm-lbl { position: absolute; font: 600 22px InterV; color: #5E6886; }
+    #dm-ver { position: absolute; right: 36px; top: 20px; height: 44px; padding: 0 16px; border-radius: 12px; background: #fff; box-shadow: 0 0 0 2px #DCE2EE; display: flex; align-items: center; gap: 8px; font: 600 22px InterV; color: #0A1024; overflow: hidden; }
+    #dm-vnum { position: relative; width: 34px; height: 30px; overflow: hidden; }
+    #dm-vroll { position: absolute; left: 0; top: 0; display: flex; flex-direction: column; color: #2F5BEA; }
+    #dm-vroll b { height: 30px; line-height: 30px; font-weight: 700; }
+    #dm-sitewrap { position: absolute; left: 44px; top: 80px; width: 720px; height: 460px; transform: scale(1.14); transform-origin: 0 0; border-radius: 18px; box-shadow: 0 30px 70px -40px rgba(10,16,36,.35), 0 0 0 2px #E3E8F2; }
+    #dm-ba { position: absolute; left: 24px; right: 24px; bottom: 14px; height: 82px; display: flex; gap: 12px; align-items: stretch; }
+    #dm-ba > div { flex: 1; border-radius: 12px; overflow: hidden; position: relative; }
+    #dm-ba span { position: absolute; left: 8px; top: 8px; font: 700 13px Lato; background: #1F2A2E; color: #fff; padding: 3px 8px; border-radius: 6px; }
+    #dm-post { position: absolute; left: 44px; top: 640px; width: 300px; height: 300px; transform: scale(.58); transform-origin: 0 0; }
+    #dm-ad { position: absolute; left: 236px; top: 640px; width: 210px; height: 372px; transform: scale(.47); transform-origin: 0 0; }
+    .dm-sel { position: absolute; left: 0; top: 0; border: 4px solid #2F5BEA; border-radius: 14px; box-shadow: 0 0 0 6px rgba(47,91,234,.18); pointer-events: none; }
     #dm-cursor { position: absolute; left: 0; top: 0; width: 66px; height: 66px; }
   </style>
   <div id="root" data-composition-id="demande" data-width="1920" data-height="1080">
@@ -38,49 +55,140 @@
     (function () {
       const CU = window.CUES, S0 = CU["scene.demande"];
       const L = (k) => CU[k] - S0;
+      const ok = (id, txt) => '<div id="' + id + '" class="dm-ok"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#146C43" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>' + txt + "</div>";
+      const raw = '<div style="width:100%;height:100%;background:#C9CED6;background-image:repeating-linear-gradient(90deg,transparent 0 30px,#E3E6EB 30px 35px)"></div>';
+      const done = '<div style="width:100%;height:100%;background:#F3EEE6"><div style="position:absolute;left:0;right:0;bottom:0;height:18%;background:#E3A53C"></div></div>';
       const main =
         '<div class="dm-chat"><div class="dm-head"><span id="dm-horb">' + UI.orb(58) + '</span><div><b>Syna</b><small>Discussion</small></div></div>' +
-        '<div class="dm-thread">' +
-        '<div id="dm-b0" class="dm-bub dm-syna">Votre site est en ligne. Que voulez-vous changer ?</div>' +
-        '<div id="dm-b1" class="dm-bub dm-me">Passe le bouton de devis en ocre.</div>' +
-        '<div style="position:relative;align-self:stretch;display:flex;flex-direction:column"><div id="dm-dots" class="dm-dots" style="position:absolute;left:0;top:0"><i></i><i></i><i></i></div>' +
-        '<div id="dm-b2" class="dm-bub dm-syna">C\'est fait : le bouton est passé en ocre, sur tout le site.</div></div>' +
-        '<div id="dm-chip" class="dm-chip"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#2F5BEA" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Version 2 · restaurable</div></div>' +
+        '<div id="dm-tv"><div id="dm-ti">' +
+        '<div id="dm-m0" class="dm-bub dm-syna">Votre site est en ligne. Que voulez-vous changer ?</div>' +
+        '<div id="dm-u1" class="dm-bub dm-me">Passe le bouton de devis en ocre.</div>' + ok("dm-s1", "Bouton passé en ocre") +
+        '<div id="dm-u2" class="dm-bub dm-me">Change le titre : « Vos murs, notre métier. »</div>' + ok("dm-s2", "Titre modifié") +
+        '<div id="dm-u3" class="dm-bub dm-me">Ajoute une section avant / après avec mes photos de chantier.</div>' +
+        '<div id="dm-u3b" class="dm-att"><div>' + raw + '<span>avant.jpg</span></div><div>' + done + '<span>après.jpg</span></div></div>' + ok("dm-s3", "Section avant / après ajoutée") +
+        '<div id="dm-u4" class="dm-bub dm-me">Mets l\'ocre en couleur d\'accent, partout.</div>' +
+        '<div id="dm-s4" class="dm-bub dm-syna">3 créations utilisent l\'ancien accent : le site, une publication et une publicité.<span id="dm-all" class="dm-cta">Tout mettre à jour</span></div>' +
+        ok("dm-s5", "3 créations mises à jour") +
+        '<div id="dm-s6" class="dm-vers">Versions <i>v1</i><i>v2</i><i>v3</i><i>v4</i><i>v5</i> restaurables</div>' +
+        "</div></div>" +
         '<div class="dm-input"><div style="position:relative;flex:1;display:flex;align-items:center"><span id="dm-ph">Écrivez votre demande…</span><div id="dm-typed">Passe le bouton de devis en ocre.</div></div>' +
         '<div id="dm-send" class="dm-send"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="M12 5l7 7-7 7"/></svg></div></div></div>' +
-        '<div id="dm-site">' + M3.site("dm") + "</div>";
+        '<div id="dm-pv"><div class="dm-lbl" style="left:44px;top:30px">Aperçu du site</div>' +
+        '<div id="dm-ver">Version <span id="dm-vnum"><span id="dm-vroll"><b>1</b><b>2</b><b>3</b><b>4</b><b>5</b></span></span></div>' +
+        '<div id="dm-sitewrap">' + M3.site("dm") + '<div id="dm-ba"><div>' + raw + '<span>Avant</span></div><div>' + done + '<span>Après</span></div></div></div>' +
+        '<div class="dm-lbl" style="left:44px;top:606px">Publication · Publicité</div>' +
+        '<div id="dm-post"><div id="dm-postf" style="width:100%;height:100%">' + M3.post("dmp") + '</div></div><div id="dm-ad"><div id="dm-adf" style="width:100%;height:100%">' + M3.ad("dma") + "</div></div>" +
+        '<div id="dm-sel1" class="dm-sel"></div><div id="dm-sel2" class="dm-sel"></div><div id="dm-sel3" class="dm-sel"></div></div>';
       document.getElementById("dm-win").innerHTML = UI.browser({ p: "dw", s: 2, side: 150, active: "Site", main });
-      const tl = gsap.timeline({ paused: true });
-      // Arrivée (suite de la plongée dans l'écran)
-      tl.fromTo("#dm-win", { scale: 1.9, x: 520, y: 140 }, { scale: 1, x: 0, y: 0, duration: 0.6, ease: "expo.out" }, 0);
-      tl.fromTo("#dm-site", { scale: 1.2 }, { scale: 1.2, duration: 0.01 }, 0);
-      ["#dm-b1", "#dm-dots", "#dm-b2", "#dm-chip"].forEach((s) => tl.fromTo(s, { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0));
-      tl.fromTo("#dm-b0", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.3, ease: "power3.out" }, 0.3);
-      // La demande se tape, le curseur l'envoie
-      tl.fromTo("#dm-typed", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 1.15, ease: "none" }, 0.55);
-      tl.to("#dm-ph", { opacity: 0, duration: 0.05 }, 0.55);
-      const SEND = L("f.demander") + 0.25;
-      tl.fromTo("#dm-cursor", { x: 1990, y: 1120 }, { x: 852, y: 952, duration: 0.55, ease: "expo.out" }, SEND - 0.6);
-      tl.to("#dm-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in", yoyo: true, repeat: 1, transformOrigin: "10px 6px" }, SEND);
-      tl.to("#dm-send", { scale: 0.88, duration: 0.07, yoyo: true, repeat: 1 }, SEND);
-      tl.to("#dm-cursor", { x: 1990, y: 1150, duration: 0.4, ease: "power3.in" }, SEND + 0.35);
-      tl.to("#dm-typed", { opacity: 0, y: -20, duration: 0.12, ease: "power2.in" }, SEND + 0.08);
-      tl.to("#dm-ph", { opacity: 1, duration: 0.2 }, SEND + 0.25);
-      tl.fromTo("#dm-b1", { opacity: 0, y: 150, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "expo.out" }, SEND + 0.1);
-      tl.fromTo("#dm-dots", { opacity: 0 }, { opacity: 1, duration: 0.15 }, SEND + 0.45);
-      tl.fromTo("#dm-dots i", { y: 0 }, { y: -9, duration: 0.18, ease: "sine.inOut", yoyo: true, repeat: 3, stagger: 0.08 }, SEND + 0.5);
-      tl.fromTo("#dm-horb", { scale: 1 }, { scale: 1.15, duration: 0.2, ease: "power2.out", yoyo: true, repeat: 1 }, SEND + 0.8);
-      // Syna s'en charge : réponse, le bouton passe en ocre, version enregistrée
-      const OK = L("f.syna") - 0.05;
-      tl.to("#dm-dots", { opacity: 0, duration: 0.1 }, OK - 0.1);
-      tl.fromTo("#dm-b2", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.3, ease: "power3.out" }, OK);
-      tl.fromTo("#dm-chip", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" }, OK + 0.45);
-      tl.fromTo("#dm-ripple", { scale: 0, opacity: 1 }, { scale: 1, opacity: 1, duration: 0.6, ease: "power2.out", immediateRender: false }, OK + 0.05);
-      tl.to("#dm-btn", { color: "#1F2A2E", duration: 0.25 }, OK + 0.2);
-      tl.fromTo("#dm-btnw", { scale: 1 }, { scale: 1.16, duration: 0.25, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "50% 50%" }, OK + 0.15);
-      // Sortie : la fenêtre se referme vers le centre
-      tl.to("#dm-win", { scale: 0.12, duration: 0.45, ease: "power3.in" }, 5.55);
-      window.__timelines["demande"] = tl;
+      // Titre : ancien et nouveau texte superposés
+      const h1 = document.getElementById("dm-h1");
+      h1.style.position = "relative";
+      h1.innerHTML = '<span id="dm-h1a" style="display:block">Des murs nets, des finitions soignées.</span><span id="dm-h1b" style="position:absolute;left:0;top:0;display:block">Vos murs, notre métier.</span>';
+
+      (function () {
+        // Mise en page fixe (px du film) : fenêtre 70,52 ; barres du navigateur 120 ; barre latérale 300 ; discussion 560.
+        const MX = 370, MY = 172, PVX = 930;
+        const S = 1.14, SX = PVX + 44, SY = MY + 80; // site posé à 1,14
+        const site = (x, y, w, h) => ({ x: SX + x * S, y: SY + y * S, w: w * S, h: h * S });
+        const B = {
+          btn: site(24, 298, 222, 52), h1: site(24, 148, 340, 82), svc: site(24, 388, 672, 54), site: { x: SX, y: SY, w: 720 * S, h: 460 * S },
+          post: { x: PVX + 44, y: MY + 640, w: 174, h: 174 }, ad: { x: PVX + 236, y: MY + 640, w: 99, h: 175 },
+          send: { x: 838, y: 937, w: 58, h: 58 },
+        };
+        const pv = { x: PVX, y: MY };
+        const inPv = (b, pad) => ({ x: b.x - pv.x - pad, y: b.y - pv.y - pad, width: b.w + 2 * pad, height: b.h + 2 * pad });
+        // Fil de discussion : hauteurs fixées (voir le style des bulles), écart 14, marge haute 20, fenêtre visible 647 px.
+        const H = { "dm-m0": 97, "dm-u1": 63, "dm-s1": 51, "dm-u2": 97, "dm-s2": 51, "dm-u3": 97, "dm-u3b": 80, "dm-s3": 51, "dm-u4": 97, "dm-s4": 190, "dm-s5": 51, "dm-s6": 40 };
+        const order = Object.keys(H), top = {};
+        let yy = 20;
+        order.forEach((id) => { top[id] = yy; document.getElementById(id).style.height = H[id] + "px"; yy += H[id] + 14; });
+        const VIEW = 647;
+        const scrollTo = (id) => Math.min(0, VIEW - 18 - (top[id] + H[id]));
+        B.all = { x: MX + 22 + 20, y: 277 + top["dm-s4"] + 15 + 100 + 12, w: 250, h: 48 };
+        const win0 = { x: 70, y: 52 };
+        const tl = gsap.timeline({ paused: true });
+        // Fenêtre qui arrive (suite de la plongée dans l'écran)
+        tl.fromTo("#dm-win", { scale: 1.9, x: 520, y: 140, transformOrigin: "0 0" }, { scale: 1, x: 0, y: 0, duration: 0.5, ease: "expo.out" }, 0);
+        // États initiaux
+        tl.fromTo("#dm-u1, #dm-s1, #dm-u2, #dm-s2, #dm-u3, #dm-u3b, #dm-s3, #dm-u4, #dm-s4, #dm-s5, #dm-s6", { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
+        tl.fromTo("#dm-h1b, #dm-ba", { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
+        tl.fromTo(".dm-sel", { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
+        tl.fromTo("#dm-m0", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.25, ease: "power3.out" }, 0.2);
+        const pop = (id, t) => tl.fromTo("#" + id, { opacity: 0, y: 40, scale: 0.92 }, { opacity: 1, y: 0, scale: 1, duration: 0.3, ease: "back.out(1.8)", immediateRender: false }, t);
+        const scroll = (id, t) => { const y = scrollTo(id); if (y < 0) tl.to("#dm-ti", { y, duration: 0.3, ease: "power3.out" }, t); };
+        const sel = (n, b, t, pad) => {
+          tl.fromTo("#dm-sel" + n, Object.assign(inPv(b, pad || 10), { opacity: 0, scale: 1.08 }), Object.assign(inPv(b, pad || 10), { opacity: 1, scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }), t);
+          tl.to("#dm-sel" + n, { opacity: 0, duration: 0.2 }, t + 0.75);
+        };
+        const ver = (n, t) => tl.to("#dm-vroll", { y: -30 * (n - 1), duration: 0.3, ease: "back.out(2)" }, t);
+        const punch = (b, t, hold) => {
+          const z = 1.18, cx = b.x + b.w / 2, cy = b.y + b.h / 2;
+          const fx = 960 + (cx - 960) * 0.55, fy = 540 + (cy - 540) * 0.55;
+          const lx = cx - win0.x, ly = cy - win0.y;
+          tl.to("#dm-win", { scale: z, x: fx - win0.x - z * lx, y: fy - win0.y - z * ly, duration: 0.32, ease: "power3.out" }, t);
+          tl.to("#dm-win", { scale: 1, x: 0, y: 0, duration: 0.3, ease: "power3.inOut" }, t + hold);
+        };
+        // 1. Une couleur : la demande se tape, le curseur l'envoie, le bouton passe en ocre
+        tl.fromTo("#dm-typed", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.32, ease: "none" }, 0.28);
+        tl.to("#dm-ph", { opacity: 0, duration: 0.04 }, 0.28);
+        const cs = { x: B.send.x + B.send.w / 2 - 10, y: B.send.y + B.send.h / 2 - 6 };
+        tl.fromTo("#dm-cursor", { x: 1990, y: 1120 }, { x: cs.x, y: cs.y, duration: 0.32, ease: "expo.out" }, 0.3);
+        tl.to("#dm-cursor", { scale: 0.82, duration: 0.06, yoyo: true, repeat: 1, transformOrigin: "10px 6px" }, 0.64);
+        tl.to("#dm-send", { scale: 0.88, duration: 0.06, yoyo: true, repeat: 1 }, 0.64);
+        tl.to("#dm-typed", { opacity: 0, duration: 0.08 }, 0.7);
+        tl.to("#dm-ph", { opacity: 1, duration: 0.15 }, 0.8);
+        pop("dm-u1", 0.72);
+        const T1 = L("f.couleur") + 0.08;
+        sel(1, B.btn, T1 - 0.1, 8);
+        tl.fromTo("#dm-ripple", { scale: 0, opacity: 1 }, { scale: 1, opacity: 1, duration: 0.45, ease: "power2.out", immediateRender: false }, T1);
+        tl.to("#dm-btn", { color: "#1F2A2E", duration: 0.2 }, T1 + 0.12);
+        pop("dm-s1", T1 + 0.05); scroll("dm-s1", T1 + 0.05); ver(2, T1 + 0.1);
+        punch(B.btn, T1 - 0.05, 0.7);
+        // 2. Un titre
+        const T2 = L("f.titre") + 0.15;
+        pop("dm-u2", T2 - 0.3); scroll("dm-u2", T2 - 0.3);
+        sel(1, B.h1, T2 - 0.05, 10);
+        tl.to("#dm-h1a", { opacity: 0, filter: "blur(6px)", duration: 0.14 }, T2 + 0.05);
+        tl.fromTo("#dm-h1b", { opacity: 0, filter: "blur(6px)", y: 10 }, { opacity: 1, filter: "blur(0px)", y: 0, duration: 0.22, ease: "power3.out", immediateRender: false }, T2 + 0.15);
+        pop("dm-s2", T2 + 0.15); scroll("dm-s2", T2 + 0.15); ver(3, T2 + 0.2);
+        punch(B.h1, T2 - 0.05, 0.75);
+        // 3. Une nouvelle section avec les photos du client
+        const T3 = L("f.photos") + 0.05;
+        pop("dm-u3", L("f.section") - 0.15); pop("dm-u3b", L("f.section") + 0.05); scroll("dm-u3b", L("f.section") - 0.1);
+        sel(1, B.svc, T3 - 0.1, 10);
+        tl.to("#dm-svc", { y: 120, opacity: 0, duration: 0.25, ease: "power3.in" }, T3);
+        tl.fromTo("#dm-ba", { opacity: 0, y: 110 }, { opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.6)", immediateRender: false }, T3 + 0.15);
+        pop("dm-s3", T3 + 0.2); scroll("dm-s3", T3 + 0.2); ver(4, T3 + 0.25);
+        punch(B.svc, T3 - 0.1, 0.75);
+        // 4. L'accent de toute la marque, partout : Syna liste les créations, le client confirme
+        pop("dm-u4", L("f.accent") - 0.2); scroll("dm-u4", L("f.accent") - 0.2);
+        pop("dm-s4", L("f.marque") - 0.1); scroll("dm-s4", L("f.marque") - 0.1);
+        sel(1, B.site, L("f.marque"), 6); sel(2, B.post, L("f.marque") + 0.08, 6); sel(3, B.ad, L("f.marque") + 0.16, 6);
+        const ca = { x: B.all.x + B.all.w / 2 - 10, y: B.all.y + B.all.h / 2 - 6 + scrollTo("dm-s4") };
+        const TC = L("f.fois") + 0.35;
+        tl.fromTo("#dm-cursor", { x: 1990, y: 1100 }, { x: ca.x, y: ca.y, duration: 0.35, ease: "expo.out", immediateRender: false }, TC - 0.4);
+        tl.to("#dm-cursor", { scale: 0.82, duration: 0.06, yoyo: true, repeat: 1, transformOrigin: "10px 6px" }, TC);
+        tl.to("#dm-all", { scale: 0.92, duration: 0.06, yoyo: true, repeat: 1 }, TC);
+        tl.to("#dm-cursor", { x: 2000, y: 1150, duration: 0.35, ease: "power3.in" }, TC + 0.3);
+        const T4 = TC + 0.15;
+        ["#dm-postf", "#dm-adf"].forEach((s, i) => {
+          tl.fromTo(s, { scaleX: 1 }, { scaleX: 0.001, duration: 0.14, ease: "power2.in", transformOrigin: "50% 50%", immediateRender: false }, T4 + i * 0.08);
+          tl.to(s, { scaleX: 1, duration: 0.2, ease: "back.out(2)" }, T4 + 0.14 + i * 0.08);
+        });
+        tl.to("#dmp-bar", { backgroundColor: "#E3A53C", opacity: 1, duration: 0.01 }, T4 + 0.14);
+        tl.to("#dma-cta", { backgroundColor: "#E3A53C", color: "#1F2A2E", duration: 0.01 }, T4 + 0.22);
+        tl.to("#dm-eye", { color: "#B7791F", duration: 0.25 }, T4 + 0.05);
+        tl.to("#dm-svc svg, #dm-ba span", { stroke: "#E3A53C", backgroundColor: "#E3A53C", color: "#1F2A2E", duration: 0.25 }, T4 + 0.05);
+        pop("dm-s5", T4 + 0.3); scroll("dm-s5", T4 + 0.3); ver(5, T4 + 0.35);
+        tl.fromTo("#dm-horb", { scale: 1 }, { scale: 1.18, duration: 0.2, ease: "power2.out", yoyo: true, repeat: 1 }, L("f.syna") - 0.1);
+        // Chaque version reste restaurable
+        pop("dm-s6", L("f.chaque") - 0.1); scroll("dm-s6", L("f.chaque") - 0.1);
+        tl.fromTo("#dm-s6 i", { scale: 0.6 }, { scale: 1, duration: 0.25, ease: "back.out(2.5)", stagger: 0.06, immediateRender: false }, L("f.chaque"));
+        // Sortie : la fenêtre se referme vers le centre
+        const TE = CU["scene.fin"] - S0;
+        tl.to("#dm-win", { scale: 0.12, x: (960 - win0.x) * 0.88, y: (540 - win0.y) * 0.88, duration: 0.42, ease: "power3.in" }, TE - 0.45);
+        window.__timelines["demande"] = tl;
+      })();
     })();
   </script>
 </template>

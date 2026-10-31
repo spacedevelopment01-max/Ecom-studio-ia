@@ -36,20 +36,22 @@
       '<div style="position:absolute;right:16%;bottom:22%;width:7%;height:46%;background:' + C.brand + ';border-radius:4px 4px 0 0"></div>' +
       '<div style="position:absolute;right:11%;bottom:56%;width:17%;height:9%;background:' + C.brand + ';border-radius:8px"></div></div>';
   }
-  function post() {
+  function post(p) {
+    const pid = (s) => (p ? ' id="' + p + '-' + s + '"' : "");
     return '<div style="position:relative;width:100%;height:100%;border-radius:20px;overflow:hidden;background:' + C.brand + ';padding:18px;display:flex;flex-direction:column;gap:12px">' +
       '<div style="display:flex;align-items:center;gap:10px">' + badge(40) + '<div style="font:700 15px Lato;color:' + C.chaux + ';letter-spacing:.06em">3M Plâtrerie Peinture</div></div>' +
       '<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;border-radius:12px;overflow:hidden">' +
       '<div style="position:relative;background:#C9C5BD;background-image:repeating-linear-gradient(90deg,transparent 0 38px,#E2DED6 38px 44px)"><span style="position:absolute;left:8px;bottom:8px;font:700 13px Lato;background:' + C.ink + ';color:#fff;padding:3px 8px;border-radius:6px">Avant</span></div>' +
       '<div style="position:relative;background:' + C.chaux + '"><div style="position:absolute;left:0;right:0;bottom:0;height:16%;background:' + C.ocre + '"></div><span style="position:absolute;right:8px;bottom:22%;font:700 13px Lato;background:' + C.ink + ';color:#fff;padding:3px 8px;border-radius:6px">Après</span></div></div>' +
-      '<div style="font:800 25px/1.05 Outfit;color:' + C.chaux + '">Plâtrerie &amp; peinture intérieure</div></div>';
+      '<div' + pid("title") + ' style="font:800 25px/1.05 Outfit;color:' + C.chaux + '">Plâtrerie &amp; peinture intérieure</div><i' + pid("bar") + ' style="display:block;height:6px;width:70px;border-radius:3px;background:' + C.chaux + ';opacity:.6"></i></div>';
   }
-  function ad() {
+  function ad(p) {
+    const pid = (s) => (p ? ' id="' + p + '-' + s + '"' : "");
     return '<div style="position:relative;width:100%;height:100%;border-radius:20px;overflow:hidden;background:' + C.chaux + ';padding:16px;display:flex;flex-direction:column;gap:10px">' +
       '<div style="display:flex;align-items:center;gap:8px">' + badge(34) + '<span style="font:700 11px Lato;color:' + C.text + ';letter-spacing:.1em">SPONSORISÉ</span></div>' +
       '<div style="height:120px">' + roomArt(12) + "</div>" +
       '<div style="font:800 26px/1.02 Outfit;color:' + C.ink + '">Votre projet de peinture ?</div>' +
-      '<div style="margin-top:auto;background:' + C.brand + ';color:' + C.chaux + ';font:700 15px Outfit;text-align:center;padding:11px 0;border-radius:10px">Demander un devis</div></div>';
+      '<div' + pid("cta") + ' style="margin-top:auto;background:' + C.brand + ';color:' + C.chaux + ';font:700 15px Outfit;text-align:center;padding:11px 0;border-radius:10px">Demander un devis</div></div>';
   }
   function svc(name, icon) {
     return '<div style="flex:1;background:' + C.chaux + ';border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px">' +
