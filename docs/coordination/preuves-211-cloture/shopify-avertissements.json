@@ -1,11 +1,12 @@
 {
   "source": "existing_exact_native_zips_no_regeneration",
+  "applicationCommit": "7ff874709a6625f33dbb92938454fede6e1b7d1e",
   "realProviderCalls": 0,
   "newJobs": 0,
   "cases": [
     {
       "project": "Lignes de papier — TEST",
-      "zipSha256": "ad10737848b066cb1476c9614a4d35241c0b9f0e8999e87aa59c634f9b70e7f0",
+      "zipSha256": "ffcc7e6c60ae8ac04c8c5fb46693ae0e393f802118343053497fd47df88db41b",
       "errors": 0,
       "warnings": [
         {
@@ -222,7 +223,7 @@
     },
     {
       "project": "Atelier des vitraux — TEST",
-      "zipSha256": "c1507ee37bcd8bb6e4a6e4713834ae76dec062bf8efba2154dd6fbfa23b733ae",
+      "zipSha256": "e07025debef9c5d056ee946101f1b1b23b3cac11dbdaf581d2438f3277524bb9",
       "errors": 0,
       "warnings": [
         {

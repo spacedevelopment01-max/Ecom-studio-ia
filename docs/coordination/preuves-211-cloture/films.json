@@ -2,20 +2,23 @@
   "notAccelerated": true,
   "realProviderCalls": 0,
   "realCostEur": 0,
+  "applicationCommit": "7ff874709a6625f33dbb92938454fede6e1b7d1e",
   "clips": [
     {
       "file": "logo-accord-kit.mp4",
-      "sourceSha256": "805b0a66cd40942f5d12c97a21478df57575e96cd6d4bb8b58a8a36e713eedb8",
-      "startSeconds": 12,
-      "durationSeconds": 12,
-      "crop": "360x960 at 0,0, removes unused desktop area only"
+      "sourceSha256": "ed0e7407c15f9d05ee7c4c3bf66592760406ccdd2ffc32661373ebab915af323",
+      "startSeconds": 0,
+      "durationSeconds": 24.6,
+      "crop": null,
+      "fullRecording": true
     },
     {
       "file": "parcours-site.mp4",
-      "sourceSha256": "b0ed5bf08cf0593408155c25a987c50ccf214992f126febe076b975ad1fc410b",
-      "startSeconds": 12.64,
-      "durationSeconds": 14,
-      "crop": null
+      "sourceSha256": "0f2448d0dca9ffea60dd1fbdad9e9ed24cf2b5236df6d949776599ab289d175d",
+      "startSeconds": 0,
+      "durationSeconds": 27.44,
+      "crop": null,
+      "fullRecording": true
     }
   ]
 }

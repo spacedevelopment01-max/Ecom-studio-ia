@@ -20,7 +20,7 @@
       "photoSha256": "87b93d6b23339eabffb01923d724a016a23d9f9ad16fb34d59b643b69403efc5",
       "photoPreserved": true,
       "catalogue": {
-        "draft": "lxdu807w08fi1ayt",
+        "draft": "i7rp6zvhurgt8mm1",
         "status": "draft",
         "activeProductsUnchanged": true
       },
@@ -45,8 +45,8 @@
         "draftNotPublished": true
       },
       "export": {
-        "bytes": 1674552,
-        "sha256": "ad10737848b066cb1476c9614a4d35241c0b9f0e8999e87aa59c634f9b70e7f0",
+        "bytes": 1674558,
+        "sha256": "ffcc7e6c60ae8ac04c8c5fb46693ae0e393f802118343053497fd47df88db41b",
         "installedInCms": false
       },
       "auth": 401,
@@ -92,8 +92,8 @@
         "appointmentNotBooked": true
       },
       "export": {
-        "bytes": 1673464,
-        "sha256": "c1507ee37bcd8bb6e4a6e4713834ae76dec062bf8efba2154dd6fbfa23b733ae",
+        "bytes": 1673463,
+        "sha256": "e07025debef9c5d056ee946101f1b1b23b3cac11dbdaf581d2438f3277524bb9",
         "installedInCms": false
       },
       "auth": 401,

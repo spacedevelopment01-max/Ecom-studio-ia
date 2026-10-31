@@ -1,7 +1,7 @@
 {
   "capturedAt": "2026-10-30T23:17:51.192Z",
   "source": "GitHub REST live metadata and workflow-run reads",
-  "candidate": "512e41a54ba6deb00b5c0c571dc40f03644e62dc",
+  "candidate": "7ff874709a6625f33dbb92938454fede6e1b7d1e",
   "rows": [
     {
       "pr": 274,
@@ -1323,5 +1323,12 @@
     }
   ],
   "mainVerified": "70204a7ff83eb2382835a27a37a8465c0851a70a",
-  "allOpenAndUnmergedAtCapture": true
+  "allOpenAndUnmergedAtCapture": true,
+  "subsequentCiFailure": {
+    "pr": 275,
+    "head": "8eb15a6a1b6b9e70c6a4e933dcb62b4c5edb2938",
+    "run": 41162584267,
+    "conclusion": "failure",
+    "localCorrectionCompiled": "7ff874709a6625f33dbb92938454fede6e1b7d1e"
+  }
 }

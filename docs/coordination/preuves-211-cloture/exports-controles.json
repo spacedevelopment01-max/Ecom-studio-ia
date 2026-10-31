@@ -1,13 +1,12 @@
 {
-  "capturedAt": "2026-10-30T23:24:58.146264+00:00",
+  "capturedAt": "2026-10-31T04:27:53.679570+00:00",
+  "applicationCommit": "7ff874709a6625f33dbb92938454fede6e1b7d1e",
   "readOnly": true,
-  "additionalJobs": 0,
   "additionalProviderCalls": 0,
-  "applicationCommit": "512e41a54ba6deb00b5c0c571dc40f03644e62dc",
   "checks": [
     {
       "project": "Lignes de papier \u2014 TEST",
-      "assetId": "05qzf6tm3yq3f6vk",
+      "assetId": "rpecig1h48b7crfg",
       "stats": {
         "files": 491,
         "zipKb": 1635,
@@ -33,7 +32,7 @@
     },
     {
       "project": "Atelier des vitraux \u2014 TEST",
-      "assetId": "gqg8m8v7mqfbxjds",
+      "assetId": "7wd4u5swry1xii45",
       "stats": {
         "files": 491,
         "zipKb": 1634,
