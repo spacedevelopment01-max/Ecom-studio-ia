@@ -8,7 +8,8 @@
  *
  * Chaque démo est préparée dans un dossier de travail puis échangée d'un coup avec l'ancienne : le studio sert la démo
  * précédente jusqu'au dernier moment, jamais une démo à moitié écrite. Un thème qui échoue (ex. visuels du kit privé
- * absents) garde son ancienne démo et n'empêche pas les autres.
+ * absents) garde son ancienne démo, que le studio n'annonce plus comme prête si elle date d'une autre version (#280),
+ * et n'empêche pas les autres.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -42,9 +43,12 @@ try {
       if (fs.existsSync(target)) fs.renameSync(target, old);
       fs.renameSync(fresh, target);
       fs.rmSync(old, { recursive: true, force: true });
+      fs.rmSync(path.join(dir, `.echec-${id}.json`), { force: true });
       console.log(`[démos] ${id} prête (${Math.round((Date.now() - started) / 1000)} s)`);
     } catch (e) {
       failed++;
+      // Noté pour le studio (#280) : la galerie dit « échec » au lieu d'une préparation sans fin, et ne relance pas en boucle.
+      fs.writeFileSync(path.join(dir, `.echec-${id}.json`), JSON.stringify({ version, date: new Date().toISOString(), message: (e as Error).message.slice(0, 300) }, null, 2) + "\n");
       console.error(`[démos] ${id} : échec, démo précédente conservée — ${(e as Error).message}`);
     }
   }

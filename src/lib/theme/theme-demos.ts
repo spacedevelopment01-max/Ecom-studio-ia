@@ -7,7 +7,9 @@
  * paiement désactivé). Elles sont rangées hors du dépôt (`<DATA_DIR>/theme-demos`, ou THEME_DEMOS_DIR) parce que leurs
  * visuels viennent en partie du kit privé de Thomas. Préparation : une fois par serveur, puis à chaque nouvelle version du
  * code, dans un processus séparé qui travaille sur SA PROPRE base temporaire (scripts/prepare-theme-demos.ts) : aucune base
- * de projet n'est lue ni modifiée, aucun appel IA, aucune dépense. Pendant la préparation, l'ancienne démo reste servie.
+ * de projet n'est lue ni modifiée, aucun appel IA, aucune dépense. Une démo d'une version précédente du code n'est jamais
+ * annoncée comme prête (#280 : l'ancien Atelier Rive s'ouvrait depuis la vignette de la nouvelle maquette) ; un échec de
+ * préparation est noté et n'est retenté qu'au bout d'une heure, à la version suivante ou quand le kit change.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -27,7 +29,9 @@ export type ThemeDemoPage = { file: string; label: string };
  * public/demo/<id>/, diagnostic du 22 octobre). Une telle démo n'est jamais servie comme prête : elle s'afficherait sans
  * aucune image.
  */
-export type ThemeDemoStatus = { id: string; ready: boolean; preparing: boolean; stale: boolean; title?: string; services?: boolean; version?: string; date?: string; pages: ThemeDemoPage[]; missing?: string[] };
+export type ThemeDemoFailure = { version?: string; date: string; message: string };
+/** `ready` : complète ET préparée avec le code servi. `stale` : préparée avec une version précédente (non servie comme prête). */
+export type ThemeDemoStatus = { id: string; ready: boolean; preparing: boolean; stale: boolean; title?: string; services?: boolean; version?: string; date?: string; pages: ThemeDemoPage[]; missing?: string[]; failed?: ThemeDemoFailure };
 
 /** Dossier du kit privé d'une démo (FRAISE, ONDE, ORBE, MAISON & HORIZON) ; les autres thèmes ont leurs médias suivis dans le
  * dépôt (Atelier Rive depuis le dossier du 23 octobre : public/theme-assets/rive/). MAISON & HORIZON (issue #172) : les 90
@@ -37,18 +41,44 @@ export const kitDir = (id: string, root = process.cwd()) => path.join(root, "pub
 
 const LOCK = () => path.join(themeDemosDir(), ".preparation.json");
 const LOCK_TTL = 45 * 60_000;
+const RETRY_AFTER_FAILURE = 60 * 60_000;
+/** Dernier échec de préparation d'une démo (hors de son dossier : jamais servi, conservé quand la démo est échangée). */
+export const demoFailureFile = (id: string) => path.join(themeDemosDir(), `.echec-${id}.json`);
 
-/** Version du code servi (commit git lu sans lancer git ; à défaut THEME_DEMOS_VERSION, ou rien : jamais « périmée »). */
+function demoFailure(id: string, version: string | null): ThemeDemoFailure | undefined {
+  try {
+    const f = JSON.parse(fs.readFileSync(demoFailureFile(id), "utf8")) as ThemeDemoFailure;
+    return typeof f.date === "string" && typeof f.message === "string" && (!version || !f.version || f.version === version) ? f : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Dossier git du dépôt : `.git` est un dossier, ou un fichier « gitdir: … » dans un worktree. */
+function gitDirs(root: string): { git: string; common: string } {
+  const dot = path.join(root, ".git");
+  const git = fs.statSync(dot).isDirectory() ? dot : path.resolve(root, fs.readFileSync(dot, "utf8").trim().replace(/^gitdir:\s*/, ""));
+  let common = git;
+  try { common = path.resolve(git, fs.readFileSync(path.join(git, "commondir"), "utf8").trim()); } catch { /* dépôt simple */ }
+  return { git, common };
+}
+
+/**
+ * Version du code servi (commit git lu sans lancer git, dépôt simple ou worktree ; à défaut THEME_DEMOS_VERSION, ou rien :
+ * jamais « périmée »).
+ */
 export function codeVersion(root = process.cwd()): string | null {
   if (process.env.THEME_DEMOS_VERSION) return process.env.THEME_DEMOS_VERSION;
   try {
-    const git = path.join(root, ".git");
+    const { git, common } = gitDirs(root);
     const head = fs.readFileSync(path.join(git, "HEAD"), "utf8").trim();
     if (!head.startsWith("ref: ")) return head;
     const ref = head.slice(5);
-    const loose = path.join(git, ref);
-    if (fs.existsSync(loose)) return fs.readFileSync(loose, "utf8").trim();
-    const packed = fs.readFileSync(path.join(git, "packed-refs"), "utf8").split("\n").find((l) => l.endsWith(` ${ref}`));
+    for (const base of [git, common]) {
+      const loose = path.join(base, ref);
+      if (fs.existsSync(loose)) return fs.readFileSync(loose, "utf8").trim();
+    }
+    const packed = fs.readFileSync(path.join(common, "packed-refs"), "utf8").split("\n").find((l) => l.endsWith(` ${ref}`));
     return packed?.split(" ")[0] ?? null;
   } catch {
     return null;
@@ -78,7 +108,9 @@ export function themeDemoStatus(id: string, version = codeVersion()): ThemeDemoS
   try { meta = JSON.parse(fs.readFileSync(path.join(dir, "demo.json"), "utf8")); } catch { /* préparée à la main */ }
   const pages = (plan.pages ?? [{ file: "accueil.html", label: "Accueil" }]).filter((p) => /^[a-z0-9-]+\.html$/.test(p.file) && fs.existsSync(path.join(dir, p.file)));
   const missing = (plan.missing ?? []).filter((m) => typeof m === "string");
-  return { ...base, ready: missing.length === 0, stale: !!version && !!meta.version && meta.version !== version, title: plan.title, services: plan.services, version: meta.version, date: meta.date, pages, ...(missing.length ? { missing } : {}) };
+  const stale = !!version && !!meta.version && meta.version !== version;
+  const failed = demoFailure(id, version);
+  return { ...base, ready: missing.length === 0 && !stale, stale, title: plan.title, services: plan.services, version: meta.version, date: meta.date, pages, ...(missing.length ? { missing } : {}), ...(failed ? { failed } : {}) };
 }
 
 export function themeDemoStatuses(): ThemeDemoStatus[] {
@@ -120,9 +152,15 @@ function kitChanged(s: ThemeDemoStatus): boolean {
  * Lance la préparation des démos absentes ou périmées dans un processus détaché (un seul à la fois). Rend vrai si une
  * préparation tourne (déjà lancée ou lancée ici). Jamais pendant les tests.
  */
+/** Démos à (re)préparer : absentes ou périmées ; un échec récent n'est pas relancé à chaque ouverture de la galerie. */
+export function demosToPrepare(statuses: ThemeDemoStatus[]): string[] {
+  const retry = (s: ThemeDemoStatus) => !s.failed || Date.now() - Date.parse(s.failed.date) > RETRY_AFTER_FAILURE || kitChanged(s);
+  return statuses.filter((s) => (s.stale || (!s.ready && (!s.missing || kitChanged(s)))) && retry(s)).map((s) => s.id);
+}
+
 export function prepareThemeDemos(statuses = themeDemoStatuses()): boolean {
   if (preparing()) return true;
-  const todo = statuses.filter((s) => s.stale || (!s.ready && (!s.missing || kitChanged(s)))).map((s) => s.id);
+  const todo = demosToPrepare(statuses);
   if (!todo.length || process.env.VITEST || process.env.THEME_DEMOS_AUTO === "0") return false;
   try {
     fs.mkdirSync(themeDemosDir(), { recursive: true });

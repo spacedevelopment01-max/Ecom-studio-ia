@@ -9,7 +9,7 @@ import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createUser } from "@/lib/auth";
 import { enqueue, pendingJob } from "@/lib/jobs";
-import { DEMO_THEMES, prepareThemeDemos, themeDemoFile, themeDemoStatus, themeDemoStatuses } from "@/lib/theme/theme-demos";
+import { DEMO_THEMES, codeVersion, demoFailureFile, demosToPrepare, prepareThemeDemos, themeDemoFile, themeDemoStatus, themeDemoStatuses } from "@/lib/theme/theme-demos";
 import { ACTIVE_THEMES } from "@/lib/theme/theme-fit";
 import { seedHoldout } from "./lot1-holdout-fixtures";
 
@@ -39,11 +39,12 @@ describe("démos intégrales des thèmes", () => {
     expect(themeDemoFile("arven", "accueil.html")).toBeNull();
   });
 
-  it("état : prête avec ses pages existantes, périmée quand le code a changé, absente sinon", () => {
+  it("état : prête avec ses pages existantes, périmée (jamais prête) quand le code a changé, absente sinon", () => {
     const s = themeDemoStatus("sillon");
-    expect(s).toMatchObject({ id: "sillon", ready: true, stale: true, title: "SILLON", version: "v1" });
+    // #280 : une démo d'une version précédente n'est jamais annoncée « prête » (l'ancien thème s'ouvrait depuis la galerie).
+    expect(s).toMatchObject({ id: "sillon", ready: false, stale: true, title: "SILLON", version: "v1" });
+    expect(themeDemoStatus("sillon", "v1")).toMatchObject({ ready: true, stale: false });
     expect(s.pages).toEqual([{ file: "accueil.html", label: "Accueil" }, { file: "produit.html", label: "Machine" }]);
-    expect(themeDemoStatus("sillon", "v1").stale).toBe(false);
     expect(themeDemoStatus("fraise")).toMatchObject({ ready: false, pages: [] });
     expect(themeDemoStatuses().map((x) => x.id)).toEqual([...DEMO_THEMES]);
   });
@@ -58,6 +59,43 @@ describe("démos intégrales des thèmes", () => {
     expect(s).toMatchObject({ ready: false, stale: false, missing: ["onde-01.webp", "onde-02.webp"] });
     // Démo périmée ou kit copié depuis : reprise ; sinon rien (le kit n'a pas bougé depuis la préparation).
     expect(themeDemoStatus("sillon").missing).toBeUndefined();
+  });
+
+  it("#280 : échec de mise à jour noté, montré, et pas relancé à chaque ouverture ; une autre version relance", () => {
+    expect(demosToPrepare([themeDemoStatus("sillon")])).toEqual(["sillon"]);
+    fs.writeFileSync(demoFailureFile("sillon"), JSON.stringify({ version: "v2", date: new Date().toISOString(), message: "export incomplet (accueil absent)" }));
+    const s = themeDemoStatus("sillon");
+    expect(s).toMatchObject({ ready: false, stale: true, failed: { version: "v2", message: "export incomplet (accueil absent)" } });
+    expect(demosToPrepare([s])).toEqual([]);
+    expect(themeDemoStatus("sillon", "v3").failed).toBeUndefined();
+    expect(demosToPrepare([themeDemoStatus("sillon", "v3")])).toEqual(["sillon"]);
+    fs.writeFileSync(demoFailureFile("sillon"), JSON.stringify({ version: "v2", date: new Date(Date.now() - 2 * 3600_000).toISOString(), message: "échec ancien" }));
+    expect(demosToPrepare([themeDemoStatus("sillon")])).toEqual(["sillon"]);
+    expect(themeDemoFile("sillon", "../.echec-sillon.json")).toBeNull();
+    fs.rmSync(demoFailureFile("sillon"));
+  });
+
+  it("#280 : version du code lue aussi dans un worktree git (sinon une démo ancienne ne serait jamais vue périmée)", () => {
+    const saved = process.env.THEME_DEMOS_VERSION;
+    delete process.env.THEME_DEMOS_VERSION;
+    try {
+      const repo = fs.mkdtempSync(path.join(os.tmpdir(), "ecs-git-")), common = path.join(repo, "main.git"), wt = path.join(repo, "wt"), gitdir = path.join(common, "worktrees", "wt");
+      fs.mkdirSync(path.join(common, "refs", "heads"), { recursive: true });
+      fs.mkdirSync(gitdir, { recursive: true });
+      fs.mkdirSync(wt);
+      fs.writeFileSync(path.join(wt, ".git"), `gitdir: ${gitdir}\n`);
+      fs.writeFileSync(path.join(gitdir, "HEAD"), "ref: refs/heads/main\n");
+      fs.writeFileSync(path.join(gitdir, "commondir"), "../..\n");
+      fs.writeFileSync(path.join(common, "packed-refs"), "# pack-refs\n1111111111111111111111111111111111111111 refs/heads/main\n");
+      expect(codeVersion(wt)).toBe("1111111111111111111111111111111111111111");
+      fs.writeFileSync(path.join(common, "refs", "heads", "main"), "2222222222222222222222222222222222222222\n");
+      expect(codeVersion(wt)).toBe("2222222222222222222222222222222222222222");
+      fs.writeFileSync(path.join(gitdir, "HEAD"), "3333333333333333333333333333333333333333\n");
+      expect(codeVersion(wt)).toBe("3333333333333333333333333333333333333333");
+      fs.rmSync(repo, { recursive: true, force: true });
+    } finally {
+      if (saved === undefined) delete process.env.THEME_DEMOS_VERSION; else process.env.THEME_DEMOS_VERSION = saved;
+    }
   });
 
   it("fichiers : seulement dans le dossier de la démo, types connus", () => {

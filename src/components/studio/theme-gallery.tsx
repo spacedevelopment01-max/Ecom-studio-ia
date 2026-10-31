@@ -70,9 +70,10 @@ export function ThemeGrid({ directions, current, onPick, busy, projectId, sandbo
               </ul>
               {onDemo && reference && (
                 <button type="button" className="mt-4 inline-flex items-center gap-1.5 self-start rounded-full border border-line px-3 py-1.5 text-sm font-medium transition hover:border-ink disabled:cursor-wait disabled:opacity-60" disabled={!demo?.ready} onClick={() => onDemo(d)} data-open-demo={d.id}>
-                  <Eye className="size-4" aria-hidden /> {demo?.ready ? t("Voir la démo complète", "View the full demo") : demo?.preparing || !demos ? t("Démo complète en préparation…", "Full demo being prepared…") : t("Démo complète indisponible", "Full demo unavailable")}
+                  <Eye className="size-4" aria-hidden /> {demo?.ready ? t("Voir la démo complète", "View the full demo") : demo?.stale && demo.preparing ? t("Démo complète en cours d'actualisation…", "Full demo being updated…") : demo?.preparing || !demos ? t("Démo complète en préparation…", "Full demo being prepared…") : t("Démo complète indisponible", "Full demo unavailable")}
                 </button>
               )}
+              {onDemo && reference && !demo?.ready && !demo?.preparing && demo?.failed && !demo.missing && <p className="mt-2 text-xs text-muted" data-demo-failed={d.id}>{demo.stale ? t("Sa mise à jour a échoué : l'ancienne version n'est pas montrée. Nouvel essai automatique dans l'heure.", "Its update failed: the previous version is not shown. Automatic retry within the hour.") : t("Sa préparation a échoué. Nouvel essai automatique dans l'heure.", "Its preparation failed. Automatic retry within the hour.")}</p>}
               {onDemo && reference && !demo?.ready && !demo?.preparing && demo?.missing && <p className="mt-2 text-xs text-muted" data-demo-missing={d.id}>{t("Ses visuels ne sont pas installés sur ce serveur.", "Its images are not installed on this server.")}</p>}
               {onPick && unfit && <p className="mt-4 text-sm text-muted">{unfit}</p>}
               {onPick && !unfit && locked && d.plan && <p className="mt-4 inline-flex items-center gap-1.5 text-sm text-muted"><Lock className="size-4" aria-hidden /> {t(`Avec le forfait ${PLANS[d.plan].name.fr}`, `With the ${PLANS[d.plan].name.en} plan`)}</p>}

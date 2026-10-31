@@ -1,0 +1,44 @@
+{
+ "ordinateur_ancienne": {
+  "bouton": "Démo complète indisponible",
+  "actif": false,
+  "note": null
+ },
+ "ordinateur_actualisation": {
+  "bouton": "Démo complète en cours d'actualisation…",
+  "actif": false,
+  "note": null
+ },
+ "ordinateur_echec": {
+  "bouton": "Démo complète indisponible",
+  "actif": false,
+  "note": "Sa mise à jour a échoué : l'ancienne version n'est pas montrée. Nouvel essai automatique dans l'heure."
+ },
+ "ordinateur_a-jour": {
+  "bouton": "Voir la démo complète",
+  "actif": true,
+  "note": null,
+  "demoTitre": "Enfin\nchez vous."
+ },
+ "telephone_ancienne": {
+  "bouton": "Démo complète indisponible",
+  "actif": false,
+  "note": null
+ },
+ "telephone_actualisation": {
+  "bouton": "Démo complète en cours d'actualisation…",
+  "actif": false,
+  "note": null
+ },
+ "telephone_echec": {
+  "bouton": "Démo complète indisponible",
+  "actif": false,
+  "note": "Sa mise à jour a échoué : l'ancienne version n'est pas montrée. Nouvel essai automatique dans l'heure."
+ },
+ "telephone_a-jour": {
+  "bouton": "Voir la démo complète",
+  "actif": true,
+  "note": null,
+  "demoTitre": "Enfin\nchez vous."
+ }
+}
