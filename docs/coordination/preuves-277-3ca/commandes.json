@@ -1,0 +1,90 @@
+{
+  "candidate": "3ca5ccb08a9b995d5a86d9024f2ca7e27d86b8e1",
+  "realProviderCalls": 0,
+  "checks": [
+    {
+      "name": "build-3ca",
+      "head": "3ca5ccb08a9b995d5a86d9024f2ca7e27d86b8e1",
+      "command": [
+        "node",
+        "node_modules/next/dist/bin/next",
+        "build"
+      ],
+      "state": "passed",
+      "startedAt": "2026-10-31T09:29:44.259980+00:00",
+      "finishedAt": "2026-10-31T09:31:02.318955+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "131ca3099537cd5eab8c7a28958c1de5ab7aaa1c64c5f492d5af30ca44dddad6"
+    },
+    {
+      "name": "cible-3ca",
+      "head": "3ca5ccb08a9b995d5a86d9024f2ca7e27d86b8e1",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/integration276.test.ts",
+        "tests/hebergement-sites.test.ts",
+        "tests/hebergement-fiabilite.test.ts",
+        "tests/domaines-existants.test.ts"
+      ],
+      "state": "passed",
+      "startedAt": "2026-10-31T09:29:45.761788+00:00",
+      "finishedAt": "2026-10-31T09:30:24.444680+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "ad10adc1c27cbbf7227e7f158e7a8c5b5f0af9a66ea791e4d8e325243ca6bf69"
+    },
+    {
+      "name": "sondes-3ca",
+      "head": "3ca5ccb08a9b995d5a86d9024f2ca7e27d86b8e1",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/integration277-cross.test.ts"
+      ],
+      "state": "passed",
+      "startedAt": "2026-10-31T09:31:44.211456+00:00",
+      "finishedAt": "2026-10-31T09:31:51.287441+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "fa617cb686f5c53b9e8d43bba400eec2503dc4f49f43c1f2d6959385ce8b8fd4"
+    },
+    {
+      "name": "types-3ca",
+      "head": "3ca5ccb08a9b995d5a86d9024f2ca7e27d86b8e1",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "state": "passed",
+      "startedAt": "2026-10-31T09:31:45.702843+00:00",
+      "finishedAt": "2026-10-31T09:32:14.783518+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "metiers-3ca",
+      "head": "3ca5ccb08a9b995d5a86d9024f2ca7e27d86b8e1",
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/verify277-business-build.ts",
+        "/tmp/ecom-277-preuves/metiers-3ca",
+        "--bind-localhost",
+        "--expected-commit=3ca5ccb08a9b995d5a86d9024f2ca7e27d86b8e1"
+      ],
+      "state": "passed",
+      "startedAt": "2026-10-31T09:31:42.725582+00:00",
+      "finishedAt": "2026-10-31T09:31:57.471609+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "cef61afdcb209f8532752550c9149993abddad0d99235ccc975613bffe41b9da"
+    }
+  ]
+}

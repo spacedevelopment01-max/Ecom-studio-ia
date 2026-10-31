@@ -1,0 +1,35 @@
+{
+  "passed": true,
+  "candidate": "3ca5ccb08a9b995d5a86d9024f2ca7e27d86b8e1",
+  "cases": [
+    {
+      "bind": "127.0.0.1",
+      "warningPresent": true,
+      "warning": [
+        "[sites] Lancement « -H 127.0.0.1 » non pris en charge avec SITES_DOMAIN : chaque site publié répondrait 404. Lancez sans -H, ou avec -H localhost ou -H 0.0.0.0."
+      ],
+      "version": {
+        "commit": "3ca5ccb08a9b995d5a86d9024f2ca7e27d86b8e1",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "realProviderCalls": 0
+    },
+    {
+      "bind": "localhost",
+      "warningPresent": false,
+      "warning": [],
+      "version": {
+        "commit": "3ca5ccb08a9b995d5a86d9024f2ca7e27d86b8e1",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "realProviderCalls": 0
+    }
+  ],
+  "appOrBundleModified": false
+}

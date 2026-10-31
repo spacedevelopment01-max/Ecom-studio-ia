@@ -1,0 +1,442 @@
+{
+  "source": "existing_exact_native_zips_no_regeneration",
+  "applicationCommit": "f0019338a4b975f2daabc8ee912a339c2107b2b7",
+  "realProviderCalls": 0,
+  "newJobs": 0,
+  "cases": [
+    {
+      "project": "Lignes de papier — TEST",
+      "zipSha256": "9f6128ca3d68eb8645739505720d7229ed74ee17338a3e0a9646f24c578c1c79",
+      "errors": 0,
+      "warnings": [
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/an-account.liquid",
+          "line": 87,
+          "message": "This schema declares 45 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/an-booking.liquid",
+          "line": 197,
+          "message": "This schema declares 64 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/an-salon.liquid",
+          "line": 94,
+          "message": "This schema declares 45 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/ap-footer.liquid",
+          "line": 185,
+          "message": "This schema declares 48 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/ap-form.liquid",
+          "line": 200,
+          "message": "This schema declares 58 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/ap-hero.liquid",
+          "line": 66,
+          "message": "This schema declares 46 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/cv-banner.liquid",
+          "line": 60,
+          "message": "This schema declares 41 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/demo-account.liquid",
+          "line": 187,
+          "message": "This schema declares 52 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/demo-order.liquid",
+          "line": 174,
+          "message": "This schema declares 58 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/fg-checkout.liquid",
+          "line": 112,
+          "message": "This schema declares 68 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/fg-header.liquid",
+          "line": 213,
+          "message": "This schema declares 65 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/main-cart.liquid",
+          "line": 192,
+          "message": "This schema declares 43 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/on-banner.liquid",
+          "line": 79,
+          "message": "This schema declares 63 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/on-checkout.liquid",
+          "line": 118,
+          "message": "This schema declares 68 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/on-help.liquid",
+          "line": 97,
+          "message": "This schema declares 49 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/on-product.liquid",
+          "line": 111,
+          "message": "This schema declares 44 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/pa-booking.liquid",
+          "line": 185,
+          "message": "This schema declares 85 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/pa-cabinet.liquid",
+          "line": 91,
+          "message": "This schema declares 46 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/ph-contact.liquid",
+          "line": 75,
+          "message": "This schema declares 44 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/ph-header.liquid",
+          "line": 141,
+          "message": "This schema declares 48 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/ph-hero.liquid",
+          "line": 95,
+          "message": "This schema declares 67 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/ph-quote.liquid",
+          "line": 137,
+          "message": "This schema declares 64 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/sv-checkout.liquid",
+          "line": 122,
+          "message": "This schema declares 71 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/sv-header.liquid",
+          "line": 152,
+          "message": "This schema declares 57 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/ts-booking.liquid",
+          "line": 179,
+          "message": "This schema declares 62 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "UnusedAssign",
+          "file": "sections/sv-steps.liquid",
+          "line": 6,
+          "message": "The variable 's' is assigned but not used"
+        },
+        {
+          "check": "RemoteAsset",
+          "file": "sections/fg-product.liquid",
+          "line": 123,
+          "message": "Use one of the asset_url filters to serve assets for better performance."
+        },
+        {
+          "check": "UnusedAssign",
+          "file": "sections/ph-footer.liquid",
+          "line": 11,
+          "message": "The variable 'hs' is assigned but not used"
+        },
+        {
+          "check": "UnclosedHTMLElement",
+          "file": "sections/ap-form.liquid",
+          "line": 72,
+          "message": "Closing tag does not have a matching opening tag for condition `quote and g == '3'` in LiquidBranch 'LiquidBranch'"
+        },
+        {
+          "check": "UnclosedHTMLElement",
+          "file": "sections/ap-form.liquid",
+          "line": 73,
+          "message": "Opening tag does not have a matching closing tag for condition `quote and g == '3'` in LiquidBranch 'LiquidBranch'"
+        },
+        {
+          "check": "UnusedAssign",
+          "file": "sections/fs-collections.liquid",
+          "line": 14,
+          "message": "The variable 'cards' is assigned but not used"
+        },
+        {
+          "check": "UnusedAssign",
+          "file": "sections/fs-video.liquid",
+          "line": 16,
+          "message": "The variable 'cards' is assigned but not used"
+        },
+        {
+          "check": "UnusedAssign",
+          "file": "sections/fs-lookbook.liquid",
+          "line": 14,
+          "message": "The variable 'cards' is assigned but not used"
+        },
+        {
+          "check": "UnusedAssign",
+          "file": "sections/fs-products.liquid",
+          "line": 17,
+          "message": "The variable 'cards' is assigned but not used"
+        },
+        {
+          "check": "LiquidComplexity",
+          "file": "sections/main-product.liquid",
+          "line": 256,
+          "message": "Liquid complexity is 121, which exceeds the maximum of 120. The decision at line 256 pushed it over the limit. Consider simplifying conditional logic, or moving self-contained decision logic into snippets with the render tag."
+        }
+      ]
+    },
+    {
+      "project": "Atelier des vitraux — TEST",
+      "zipSha256": "79db65823e1328e3bc67ab709395e411cfc864a201edc574c8476392a342799f",
+      "errors": 0,
+      "warnings": [
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/an-account.liquid",
+          "line": 87,
+          "message": "This schema declares 45 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/an-booking.liquid",
+          "line": 197,
+          "message": "This schema declares 64 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/an-salon.liquid",
+          "line": 94,
+          "message": "This schema declares 45 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/ap-footer.liquid",
+          "line": 185,
+          "message": "This schema declares 48 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/ap-form.liquid",
+          "line": 200,
+          "message": "This schema declares 58 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/ap-hero.liquid",
+          "line": 66,
+          "message": "This schema declares 46 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/cv-banner.liquid",
+          "line": 60,
+          "message": "This schema declares 41 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/demo-account.liquid",
+          "line": 187,
+          "message": "This schema declares 52 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/demo-order.liquid",
+          "line": 174,
+          "message": "This schema declares 58 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/fg-checkout.liquid",
+          "line": 112,
+          "message": "This schema declares 68 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/fg-header.liquid",
+          "line": 213,
+          "message": "This schema declares 65 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/main-cart.liquid",
+          "line": 192,
+          "message": "This schema declares 43 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/on-banner.liquid",
+          "line": 79,
+          "message": "This schema declares 63 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/on-checkout.liquid",
+          "line": 118,
+          "message": "This schema declares 68 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/on-help.liquid",
+          "line": 97,
+          "message": "This schema declares 49 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/on-product.liquid",
+          "line": 111,
+          "message": "This schema declares 44 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/pa-booking.liquid",
+          "line": 185,
+          "message": "This schema declares 85 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/pa-cabinet.liquid",
+          "line": 91,
+          "message": "This schema declares 46 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/ph-contact.liquid",
+          "line": 75,
+          "message": "This schema declares 44 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/ph-header.liquid",
+          "line": 141,
+          "message": "This schema declares 48 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/ph-hero.liquid",
+          "line": 95,
+          "message": "This schema declares 67 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/ph-quote.liquid",
+          "line": 137,
+          "message": "This schema declares 64 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/sv-checkout.liquid",
+          "line": 122,
+          "message": "This schema declares 71 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/sv-header.liquid",
+          "line": 152,
+          "message": "This schema declares 57 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "ExcessiveSettingsCount",
+          "file": "sections/ts-booking.liquid",
+          "line": 179,
+          "message": "This schema declares 62 settings, which exceeds the maximum of 40. Consider splitting this section or block into smaller pieces, or grouping related options with a header."
+        },
+        {
+          "check": "UnusedAssign",
+          "file": "sections/sv-steps.liquid",
+          "line": 6,
+          "message": "The variable 's' is assigned but not used"
+        },
+        {
+          "check": "RemoteAsset",
+          "file": "sections/fg-product.liquid",
+          "line": 123,
+          "message": "Use one of the asset_url filters to serve assets for better performance."
+        },
+        {
+          "check": "UnusedAssign",
+          "file": "sections/ph-footer.liquid",
+          "line": 11,
+          "message": "The variable 'hs' is assigned but not used"
+        },
+        {
+          "check": "UnclosedHTMLElement",
+          "file": "sections/ap-form.liquid",
+          "line": 72,
+          "message": "Closing tag does not have a matching opening tag for condition `quote and g == '3'` in LiquidBranch 'LiquidBranch'"
+        },
+        {
+          "check": "UnclosedHTMLElement",
+          "file": "sections/ap-form.liquid",
+          "line": 73,
+          "message": "Opening tag does not have a matching closing tag for condition `quote and g == '3'` in LiquidBranch 'LiquidBranch'"
+        },
+        {
+          "check": "UnusedAssign",
+          "file": "sections/fs-collections.liquid",
+          "line": 14,
+          "message": "The variable 'cards' is assigned but not used"
+        },
+        {
+          "check": "UnusedAssign",
+          "file": "sections/fs-video.liquid",
+          "line": 16,
+          "message": "The variable 'cards' is assigned but not used"
+        },
+        {
+          "check": "UnusedAssign",
+          "file": "sections/fs-lookbook.liquid",
+          "line": 14,
+          "message": "The variable 'cards' is assigned but not used"
+        },
+        {
+          "check": "UnusedAssign",
+          "file": "sections/fs-products.liquid",
+          "line": 17,
+          "message": "The variable 'cards' is assigned but not used"
+        },
+        {
+          "check": "LiquidComplexity",
+          "file": "sections/main-product.liquid",
+          "line": 256,
+          "message": "Liquid complexity is 121, which exceeds the maximum of 120. The decision at line 256 pushed it over the limit. Consider simplifying conditional logic, or moving self-contained decision logic into snippets with the render tag."
+        }
+      ]
+    }
+  ]
+}

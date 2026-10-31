@@ -1,0 +1,4 @@
+277TRACE {"incoming":"/connexion","host":"127.0.0.1:35269"}
+277TRACE {"incoming":"/","host":"atelier-fictif-277-2.sites.recette.test"}
+277TRACE {"incoming":"/api/site-host","host":"localhost:35269","internal":"atelier-fictif-277-2.sites.recette.test"}
+277TRACE {"header":"x-ecs-site-host","value":null,"sitesDomain":"sites.recette.test"}

@@ -1,0 +1,34 @@
+{
+  "candidate": "f0019338a4b975f2daabc8ee912a339c2107b2b7",
+  "bind": "localhost",
+  "results": [
+    {
+      "path": "/",
+      "status": 200,
+      "body": "<!doctype html>\n<html class=\"no-js\" lang=\"fr\">\n  <"
+    },
+    {
+      "path": "/pages/acheter",
+      "status": 200,
+      "body": "<!doctype html>\n<html class=\"no-js\" lang=\"fr\">\n  <"
+    },
+    {
+      "path": "/studio",
+      "status": 404,
+      "body": "<!doctype html>\n<html class=\"no-js\" lang=\"fr\">\n  <"
+    }
+  ],
+  "headerTrace": [
+    "277TRACE {\"incoming\":\"/connexion\",\"host\":\"localhost:40643\"}",
+    "277TRACE {\"incoming\":\"/\",\"host\":\"agence-fictive-277-2.sites.recette.test\"}",
+    "277TRACE {\"header\":\"x-ecs-site-host\",\"value\":\"agence-fictive-277-2.sites.recette.test\",\"sitesDomain\":\"sites.recette.test\"}",
+    "277TRACE {\"header\":\"host\",\"value\":\"agence-fictive-277-2.sites.recette.test\",\"sitesDomain\":\"sites.recette.test\"}",
+    "277TRACE {\"incoming\":\"/pages/acheter\",\"host\":\"agence-fictive-277-2.sites.recette.test\"}",
+    "277TRACE {\"header\":\"x-ecs-site-host\",\"value\":\"agence-fictive-277-2.sites.recette.test\",\"sitesDomain\":\"sites.recette.test\"}",
+    "277TRACE {\"header\":\"host\",\"value\":\"agence-fictive-277-2.sites.recette.test\",\"sitesDomain\":\"sites.recette.test\"}",
+    "277TRACE {\"incoming\":\"/studio\",\"host\":\"agence-fictive-277-2.sites.recette.test\"}",
+    "277TRACE {\"header\":\"x-ecs-site-host\",\"value\":\"agence-fictive-277-2.sites.recette.test\",\"sitesDomain\":\"sites.recette.test\"}",
+    "277TRACE {\"header\":\"host\",\"value\":\"agence-fictive-277-2.sites.recette.test\",\"sitesDomain\":\"sites.recette.test\"}"
+  ],
+  "realProviderCalls": 0
+}

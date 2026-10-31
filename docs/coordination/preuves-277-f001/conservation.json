@@ -1,0 +1,79 @@
+{
+  "schema": "integration277-readonly-git-1",
+  "capturedAt": "2026-10-31T08:49:13.195869+00:00",
+  "refs": {
+    "main": "70204a7ff83eb2382835a27a37a8465c0851a70a",
+    "claude": "a69fcf7e0938f31c08b0a55320588d4c6060c45f",
+    "codex": "42ef034c00c7f6d92fc0ef14ce2818c520506931",
+    "candidate": "f0019338a4b975f2daabc8ee912a339c2107b2b7"
+  },
+  "commonAncestor": "70204a7ff83eb2382835a27a37a8465c0851a70a",
+  "refsUnchanged": true,
+  "candidate": {
+    "sha": "f0019338a4b975f2daabc8ee912a339c2107b2b7",
+    "containsClaudeByAncestry": true,
+    "containsCodexByAncestry": true,
+    "sourceRetention": {
+      "claude": {
+        "identicalCount": 361,
+        "modified": [
+          "src/app/api/projects/[id]/route.ts",
+          "src/app/preview/[id]/v/[vid]/[[...path]]/route.ts",
+          "src/components/studio/shell.tsx",
+          "src/components/studio/tab-boutique.tsx",
+          "src/lib/contenus/carte.ts",
+          "src/lib/contenus/index.ts",
+          "src/lib/contenus/realisations.ts",
+          "src/lib/sites/domains.ts",
+          "src/lib/sites/maintenance.ts",
+          "src/lib/sites/notify.ts",
+          "src/lib/sites/store.ts",
+          "worker/index.ts"
+        ],
+        "missing": []
+      },
+      "codex": {
+        "identicalCount": 2086,
+        "modified": [
+          "src/app/api/projects/[id]/route.ts",
+          "src/app/preview/[id]/v/[vid]/[[...path]]/route.ts",
+          "src/components/studio/shell.tsx",
+          "src/components/studio/tab-boutique.tsx",
+          "src/lib/orchestrator/conversation/export-tool-execution.ts",
+          "src/lib/orchestrator/conversation/studio-observation.ts",
+          "src/lib/orchestrator/conversation/studio-operations.ts",
+          "src/lib/orchestrator/conversation/theme-tool-execution.ts",
+          "src/lib/privacy.ts",
+          "src/lib/theme/composition/assemble.ts",
+          "src/lib/theme/composition/server.ts",
+          "worker/index.ts"
+        ],
+        "missing": []
+      }
+    },
+    "themeBaseIdenticalToMain": true
+  },
+  "commonFiles": [
+    {
+      "file": "src/app/api/projects/[id]/route.ts",
+      "sameAsTemporaryThreeWayMerge": true
+    },
+    {
+      "file": "src/app/preview/[id]/v/[vid]/[[...path]]/route.ts",
+      "sameAsTemporaryThreeWayMerge": true
+    },
+    {
+      "file": "src/components/studio/shell.tsx",
+      "sameAsTemporaryThreeWayMerge": true
+    },
+    {
+      "file": "src/components/studio/tab-boutique.tsx",
+      "sameAsTemporaryThreeWayMerge": true
+    },
+    {
+      "file": "worker/index.ts",
+      "sameAsTemporaryThreeWayMerge": true
+    }
+  ],
+  "applicationDiffSince731": "documentation_and_proofs_only"
+}
