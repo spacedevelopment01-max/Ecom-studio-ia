@@ -1,0 +1,91 @@
+{
+  "base": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+  "applicationCommit": "9a2e50f7ac5e958d32ab542acaf686097cdc9dee",
+  "files": {
+    "src/lib/orchestrator/conversation/contract.ts": {
+      "sha256": "48aee86b48f62d7e9e9f47262faa4557c1191c27f29473fd36aab737be456722",
+      "gitBlobSha": "b9172cfc99cc11a741ff4e8c821e995ea672cd91"
+    },
+    "src/lib/orchestrator/conversation/index.ts": {
+      "sha256": "7b6703ab52d18cac2526d99f62510afb1bbb57d55194b36fb125a121c7e47574",
+      "gitBlobSha": "30c1c6118253802eb42d92424d0d2940e77c22b0"
+    },
+    "src/lib/orchestrator/conversation/store.ts": {
+      "sha256": "9022d355d60756c41cd1db1215a9012269bc4ef189f70a9b9b6a6b25caa59da6",
+      "gitBlobSha": "ef354b2bed8a30e31114b313a19c1bdd35ca2dce"
+    },
+    "src/lib/orchestrator/conversation/existing-project.ts": {
+      "sha256": "51be1d601921c3855c6f449d3d75fce89237d1a15eeaf79f6e9d4edc1172193f",
+      "gitBlobSha": "5148e7948d924c32c616070dcc9b121245f6fde2"
+    },
+    "src/components/studio/conversation-panel.tsx": {
+      "sha256": "90c2feced468a8053a23d5924395be559e37a2afc103b7074e5b4d7d88eb9c34",
+      "gitBlobSha": "d8c128b98a07d84112397f79933c8fe8b7cbc677"
+    },
+    "tests/conversation209-http.test.ts": {
+      "sha256": "6eb9c349704f130a2e18529aa2b5bb1d986b5bde9ffcac62c89f22af77d35b38",
+      "gitBlobSha": "daef50156b01b0be9535cf179640a810ea0e503f"
+    },
+    "tests/conversation284-fixtures.ts": {
+      "sha256": "8b9e6bac5634ddb3f85643a3ba1a5d328bf1ce6e89ae49f224848fabd1295518",
+      "gitBlobSha": "93e62a93544d296672bcf101da6aae9f75f0914a"
+    },
+    "tests/conversation284-recovery.test.ts": {
+      "sha256": "c9f1e8cce04fc63680f39c79a9c5be4ac500410da3b08578d3103f9e38e2c430",
+      "gitBlobSha": "4cf24b78d8cbc078801194cb7174c3cd144a12f9"
+    },
+    "scripts/verify-syna284-recovery.ts": {
+      "sha256": "ac788b0daeac35f86c1a3799698a9acc84d36c7b4c84c234de7f96c74fab80df",
+      "gitBlobSha": "701d46daa48724c4fd5ce01fb03e450b6fd75e5a"
+    }
+  },
+  "typecheck": {
+    "command": "tsc --noEmit --incremental false",
+    "exitCode": 0
+  },
+  "targetedTests": {
+    "files": 5,
+    "passed": 104,
+    "failed": 0,
+    "a1Cases": 18
+  },
+  "http": {
+    "checks": 10,
+    "tablesUnchanged": 84,
+    "storedFilesUnchanged": 4
+  },
+  "ui": {
+    "captures": 4,
+    "widths": [
+      1440,
+      390
+    ],
+    "pageErrors": []
+  },
+  "realProviderCalls": 0,
+  "aiCostEur": 0,
+  "fullSuiteRun": false,
+  "productionBuildRun": false,
+  "captures": {
+    "services-mobile.png": {
+      "bytes": 101976,
+      "sha256": "cfb84e373438297f2a8c335bdf255cd13a4d6a9e1ef67a2b1f1b59e87952fa9a",
+      "gitBlobSha": "972fee4b4ccd8ccce070c8ea95bd98a5372ae609"
+    },
+    "products-desktop.png": {
+      "bytes": 250790,
+      "sha256": "10ef03167583ebafbac4ab233cc6e9b3df4109424a19bafd3615feca070ef460",
+      "gitBlobSha": "3ecd691bbed8e58261814356dee3e2e0d4b4e9c8"
+    },
+    "products-mobile.png": {
+      "bytes": 72889,
+      "sha256": "c314cb6afb94e4f82324e19a5e116c01d1241eff58bb2292a0a2c9c0d5febf86",
+      "gitBlobSha": "5623e3adee872e4cf5d5b7992187603740c076b8"
+    },
+    "services-desktop.png": {
+      "bytes": 270277,
+      "sha256": "304dc2fc2ed3b114575a187a16bf2ec12179c7cbda0aff35969dce3f8752a204",
+      "gitBlobSha": "1fcaf7f37086558696bdeb598561810fcf12ac8a"
+    }
+  }
+}
