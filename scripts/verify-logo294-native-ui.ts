@@ -121,8 +121,14 @@ try {
     await page.screenshot({ path: path.join(out, 'mobile-devis.png') });
     proof.captures.push('mobile-devis.png');
     await page.setViewportSize({ width: 1440, height: 1000 });
+    let loseResponse=true;const confirmationBodies:unknown[]=[];
+    await page.route(`**/api/projects/${pid}/brand/logo-v2`,async route=>{if(route.request().method()==='POST'&&route.request().postDataJSON()?.action==='generate'){confirmationBodies.push(route.request().postDataJSON());if(loseResponse){loseResponse=false;await route.fetch();await route.abort('failed');return;}}await route.continue();});
     await modal.getByRole('button', { name: 'Confirmer la dépense des logos', exact: true }).dblclick();
-    await modal.waitFor({ state: 'detached' });
+    await modal.getByRole('button',{name:'Réessayer la même confirmation',exact:true}).waitFor();
+    assert.equal(one<{n:number}>('SELECT COUNT(*) n FROM jobs WHERE project_id=?',pid)!.n,1);
+    await page.screenshot({path:path.join(out,'desktop-reponse-perdue.png')});proof.captures.push('desktop-reponse-perdue.png');
+    await modal.getByRole('button',{name:'Réessayer la même confirmation',exact:true}).click();
+    await modal.waitFor({ state: 'detached' });assert.equal(confirmationBodies.length,2);assert.deepEqual(confirmationBodies[0],confirmationBodies[1]);proof.checks.push('lost_response_after_enqueue_exact_same_request_retry');
     const jobs = all<{
         id: string;
     }>("SELECT id FROM jobs WHERE project_id=? AND type='brand.logo.v2'", pid);
@@ -149,7 +155,7 @@ try {
     proof.simulatedBilledMicro = 150;
     const directions = page.locator('[data-direction-series]');
     await directions.getByText(/3\/3 directions complètes/).waitFor();
-    assert.equal(await directions.locator('[data-direction]').count(), 3);
+    assert.equal(await directions.locator('[data-direction]').count(), 3);await directions.locator('img').evaluateAll(async images=>{await Promise.all(images.map(image=>(image as HTMLImageElement).decode()));});
     await directions.scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(out, 'desktop-resultat.png') });
     proof.captures.push('desktop-resultat.png');
