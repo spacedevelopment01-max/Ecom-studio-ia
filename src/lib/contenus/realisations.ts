@@ -22,7 +22,8 @@ import { themeLang, type SectionInstance, type StorePage, type TemplateJson, typ
 
 let ready = false;
 function ensureTables() {
-  if (ready) return;
+  // Le drapeau seul ne suffit pas : une création faite dans une transaction annulée (aperçu SYNA, #276) disparaît.
+  if (ready && one("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'realisations'")) return;
   run(`CREATE TABLE IF NOT EXISTS realisations (
     id TEXT PRIMARY KEY, project_id TEXT NOT NULL, handle TEXT NOT NULL, title TEXT NOT NULL, summary TEXT NOT NULL DEFAULT '',
     need TEXT NOT NULL DEFAULT '', work TEXT NOT NULL DEFAULT '', category TEXT NOT NULL DEFAULT '', location TEXT NOT NULL DEFAULT '',
@@ -122,7 +123,7 @@ export function reorderRealisations(projectId: string, ids: string[]) {
 
 /** Le projet a-t-il une réalisation publiée (sinon rien n'est injecté) ? */
 export function hasRealisations(projectId: string) {
-  ensureTables();
+  if (!one("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'realisations'")) return false;
   return !!one("SELECT 1 FROM realisations WHERE project_id = ? AND status = 'published'", projectId);
 }
 /** Réalisations modifiées depuis une date (pour « modifications non publiées »). */

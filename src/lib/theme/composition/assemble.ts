@@ -20,6 +20,8 @@ export type CompositionDependencies={
  source:(id:string)=>CompositionSource|undefined;
  /** Native plan/library gate. Called for every effective operation, including structural changes. */
  authorize:(ops:ThemeOp[])=>void;
+ /** Sections filled at render time by a business tab (menu, projects): kept as is, never rebound (#276). */
+ managed?:(template:string,section:string)=>boolean;
  /** Resolve AGAIN from the owned live library; a model cannot mint an asset/filename. */
  media:(assetId:string)=>{filename:string}|null;
 };
@@ -38,7 +40,7 @@ export function assembleComposition(base:ThemeSpec,input:unknown,deps:Compositio
   const oldRefs=keep.map(s=>s.section);
   if(oldRefs.some(id=>!original.sections[id]||!original.order.includes(id)))fail('section existante absente');
   if(plan.mode==='adapt'&&original.order.some(id=>!oldRefs.includes(id)))fail('adaptation : toutes les sections existantes sont conservées');
-  const required=original.order.filter(id=>base.locks.includes(`${page.template}:${id}`)||!componentAllowed(original.sections[id].type));
+  const required=original.order.filter(id=>base.locks.includes(`${page.template}:${id}`)||!componentAllowed(original.sections[id].type)||!!deps.managed?.(page.template,id));
   if(required.some(id=>!oldRefs.includes(id)))fail('section fonctionnelle ou verrouillée à conserver');
   if(required.join('|')!==oldRefs.filter(id=>required.includes(id)).join('|'))fail('ordre des sections fonctionnelles à conserver');
   for(const id of required.filter(id=>base.locks.includes(`${page.template}:${id}`)))if(page.sections.findIndex(s=>s.kind==='existing'&&s.section===id)!==original.order.indexOf(id))fail('position verrouillée à conserver');
@@ -49,6 +51,7 @@ export function assembleComposition(base:ThemeSpec,input:unknown,deps:Compositio
     sid=section.section;const instance=containerOf(spec,page.template)!.sections[sid];
     if(instance.disabled&&(section.bindings.length||section.layout.length))fail('section masquée : pas de création visible annoncée');
     if(FUNCTIONAL.test(instance.type)&&(section.bindings.length||section.layout.length))fail('retouche métier via son outil dédié');
+    if(deps.managed?.(page.template,sid)&&(section.bindings.length||section.layout.length))fail('contenu métier géré dans son onglet (carte, réalisations)');
     for(const id of Object.keys(instance.blocks??{}))blockIds[id]=id;
    }else{
     if(!componentAllowed(section.type))fail('composant hors bibliothèque de composition sûre');

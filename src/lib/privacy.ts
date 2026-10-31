@@ -77,7 +77,8 @@ export function requestAccountErasure(userId:string){
 export const ERASURE_DECISIONS=["financial_retention","support_retention","backup_expiry","external_provider_requests","unindexed_legacy_caches","responsible_operator"] as const;
 export function planAccountErasure(userId:string){
   if(!one("SELECT 1 FROM users WHERE id=?",userId))throw new HttpError(404,"Compte introuvable / Account not found");
-  return{automaticEnabled:false,decisionsRequired:ERASURE_DECISIONS,projects:one<{n:number}>("SELECT COUNT(*) n FROM projects WHERE user_id=?",userId)!.n,media:one<{n:number}>("SELECT COUNT(*) n FROM assets WHERE user_id=? AND project_id IN (SELECT id FROM projects WHERE user_id=?)",userId,userId)!.n};
+  const sites=all<{name:string}>("SELECT name FROM sqlite_master WHERE type='table' AND name='site_live'").length?one<{n:number}>("SELECT COUNT(*) n FROM site_live WHERE project_id IN (SELECT id FROM projects WHERE user_id=?)",userId)!.n:0;
+  return{automaticEnabled:false,decisionsRequired:ERASURE_DECISIONS,hostedSites:sites,hostedSiteFilesIncluded:true,projects:one<{n:number}>("SELECT COUNT(*) n FROM projects WHERE user_id=?",userId)!.n,media:one<{n:number}>("SELECT COUNT(*) n FROM assets WHERE user_id=? AND project_id IN (SELECT id FROM projects WHERE user_id=?)",userId,userId)!.n};
 }
 
 export type FixtureErasurePolicy={financial:"retain";support:"retain";backups:"manual_pending";externalProviders:"manual_pending";legacyCaches:"manual_pending"};
@@ -90,6 +91,7 @@ export function eraseIsolatedAccountFixture(userId:string,policy:FixtureErasureP
   const assets=all<Asset>("SELECT a.* FROM assets a JOIN projects p ON p.id=a.project_id WHERE a.user_id=? AND p.user_id=?",userId,userId);
   const files=assets.flatMap(a=>[a.storage_key,a.thumb_key].filter((k):k is string=>!!k).map(k=>{if(!k.startsWith(`${userId}/${a.project_id}/`))throw new Error("Crossed storage reference refused");return storagePath(k);}));
   const cache=all<{cache_key:string}>("SELECT cache_key FROM asset_cache_entries WHERE user_id=? AND project_id IN (SELECT id FROM projects WHERE user_id=?)",userId,userId).map(c=>{if(!/^[0-9a-f]{40}\.[a-z0-9]+$/.test(c.cache_key))throw new Error("Invalid cache reference");return path.join(root,"cache","theme-assets",c.cache_key);});
+  const siteProjects=all<{id:string}>("SELECT id FROM projects WHERE user_id=?",userId).map(p=>p.id);
   tx(()=>{
     run("UPDATE jobs SET status='cancelled',locked_by=NULL,locked_until=NULL,payload='{}',result=NULL,checkpoint='{}',error=NULL,message='',finished_at=?,updated_at=? WHERE user_id=?",now(),now(),userId);
     for(const table of ["sessions","password_resets","admin_claims","oauth_states","connections"]){run(`DELETE FROM ${quote(table)} WHERE user_id=?`,userId);}
@@ -104,5 +106,8 @@ export function eraseIsolatedAccountFixture(userId:string,policy:FixtureErasureP
     run("UPDATE users SET email=?,name='Compte effacé — recette isolée',password_hash=?,role='client' WHERE id=?",`erased-${id()}@example.invalid`,sha256(randomToken(32)),userId);
   });
   for(const file of [...files,...cache]){try{fs.unlinkSync(file);}catch(e){if((e as NodeJS.ErrnoException).code!=="ENOENT")throw e;}}
-  return{status:"isolated_fixture_erased",originalsAndThumbnailsRemoved:files.length,indexedCachesRemoved:cache.length,automaticProductionErasure:false,retainedByFixturePolicy:["financial_records","support","pseudonymized_identity"],pending:["backups","external_providers","unindexed_legacy_caches"]};
+  // Sites publiés (#232) : leurs fichiers figés ne sont plus servis (lignes effacées ci-dessus) et sont supprimés ici.
+  const sitesDir=path.join(root,"sites");let sitesRemoved=0;
+  for(const pid of siteProjects){const dir=path.resolve(sitesDir,pid);if(!/^[A-Za-z0-9_-]{1,64}$/.test(pid)||path.dirname(dir)!==sitesDir)throw new Error("Crossed site reference refused");if(fs.existsSync(dir)){fs.rmSync(dir,{recursive:true,force:true});sitesRemoved++;}}
+  return{status:"isolated_fixture_erased",originalsAndThumbnailsRemoved:files.length,indexedCachesRemoved:cache.length,hostedSiteDirectoriesRemoved:sitesRemoved,automaticProductionErasure:false,retainedByFixturePolicy:["financial_records","support","pseudonymized_identity"],pending:["backups","external_providers","unindexed_legacy_caches"]};
 }

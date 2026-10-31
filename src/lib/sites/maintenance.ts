@@ -23,7 +23,8 @@ const TMP_MAX_AGE_MS = 3600_000;
 let ready = false;
 export function ensureMaintenanceTables() {
   ensureSiteTables();
-  if (ready) return;
+  // Le drapeau seul ne suffit pas : une création faite dans une transaction annulée (aperçu SYNA, #276) disparaît.
+  if (ready && one("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'site_traffic'")) return;
   run("CREATE TABLE IF NOT EXISTS site_traffic (project_id TEXT NOT NULL, day TEXT NOT NULL, requests INTEGER NOT NULL, bytes INTEGER NOT NULL, PRIMARY KEY (project_id, day))");
   const cols = new Set(all<{ name: string }>("PRAGMA table_info(site_publications)").map((c) => c.name));
   if (!cols.has("purged_at")) run("ALTER TABLE site_publications ADD COLUMN purged_at INTEGER");

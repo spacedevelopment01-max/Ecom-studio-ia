@@ -11,6 +11,8 @@ import {pctOfBudget} from '../../budget-pct';
 import {stableHash} from '../../brain/hash';
 import type {ConversationRow} from './contract';
 import {studioFailureDefinitions} from './studio-failure-knowledge';
+import {rdvSection} from '../../rendez-vous';
+import {siteFreshness} from '../../sites/publish';
 export const studioKnowledgeEnabled=()=>['STUDIO_CONVERSATION_LOT_A','STUDIO_CONVERSATION_AI','STUDIO_CONVERSATION_KNOWLEDGE'].every(key=>process.env[key]==='1');
 export function captureStudioObservation(c:ConversationRow){
  return tx(()=>observe(c));
@@ -35,9 +37,14 @@ function observe(c:ConversationRow){
   preparation:prep?{revision:prep.revision,pending:prep.pending?{step:prep.pending.step,jobId:prep.pending.jobId}:null,stages:Object.entries(prep.stages).map(([step,s])=>({step,status:s?.status,candidateId:s?.candidateId??null}))}:null,
   theme:theme?{versionId:theme.version.id,number:theme.version.number,direction:theme.spec.direction,nativeGate:json<{gate?:{verdict?:string}}>(theme.version.qc,{}).gate?.verdict??null,creativeQualityVerifiedByThisObservation:false}:null,
   counts:{catalogueRowsIncludingArchived:count('studio_products'),posts:count('posts'),articles:count('blog_articles'),campaigns:count('campaigns'),projectServices:p.services.services.length,assets:one<{n:number}>("SELECT COUNT(*) n FROM assets WHERE project_id=? AND user_id=? AND deleted_at IS NULL",p.id,user.id)!.n},
+  // #276 : contenus des onglets métier et état du site hébergé. Lecture seule ; SYNA n'a aucun outil pour les modifier.
+  business:{byStatus:Object.fromEntries((['biens','carte_items','realisations'] as const).map(t=>[t,tables.has(t)?Object.fromEntries(all<{status:string;n:number}>(`SELECT status,COUNT(*) n FROM ${t} WHERE project_id=? GROUP BY status`,p.id).map(r=>[r.status,r.n])):null])),
+   bookingSettings:theme?!!rdvSection(theme.spec):false,
+   hostedSite:tables.has('site_live')&&one('SELECT 1 FROM site_live WHERE project_id=?',p.id)?{live:true,upToDateWithStudio:siteFreshness(p.id).upToDate,publishedOnlyByClientChoice:true}:{live:false},
+   synaTools:'none_native_tabs_only' as const},
   providerConfiguration:aiReady(),providerTested:false as const,observationsAreClientConfirmedFacts:false as const,jobs,
   jobCoverage:{limit:8,total:one<{n:number}>('SELECT COUNT(*) n FROM jobs WHERE project_id=? AND user_id=?',p.id,user.id)!.n,ordering:'newest_created_first'},failureDefinitions:studioFailureDefinitions(jobs.map(j=>j.failureCode)),
-  readingScope:'Native metadata and counts only; the eight newest jobs. No file contents, full texts, source pages, media vision, provider authentication or delivery verification. Catalogue count explicitly includes archived rows. Unmapped failure codes have no inferred cause.',
+  readingScope:'Native metadata and counts only; the eight newest jobs. No file contents, full texts, source pages, media vision, provider authentication or delivery verification. Catalogue count explicitly includes archived rows. Unmapped failure codes have no inferred cause. Business contents (properties, menu, projects) and the hosted site are counts and states only: they are edited in their native tabs, never by SYNA.',
  };
 }
 export type StudioObservation=ReturnType<typeof captureStudioObservation>;

@@ -10,7 +10,8 @@ import { sitesDomain } from "./host-match";
 
 let ready = false;
 export function ensureSiteTables() {
-  if (ready) return;
+  // Le drapeau seul ne suffit pas : une création faite dans une transaction annulée (aperçu SYNA, #276) disparaît.
+  if (ready && one("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'site_requests'")) return;
   run(`CREATE TABLE IF NOT EXISTS site_publications (
     id TEXT PRIMARY KEY, project_id TEXT NOT NULL, user_id TEXT NOT NULL, number INTEGER NOT NULL,
     theme_version_id TEXT NOT NULL, spec_hash TEXT NOT NULL, theme_fingerprint TEXT NOT NULL, code_commit TEXT NOT NULL,

@@ -11,7 +11,7 @@ import {enqueue,getJob,publicJob,UserFacingError,type JobContext} from '../../jo
 import {withAiDisabled} from '../../ai/access';
 import {stableHash} from '../../brain/hash';
 import {withStudioProducts} from '../../products/catalog';
-import {withBiens} from '../../biens';
+import {withContenus} from '../../contenus';
 import {exportAndRecord} from '../../cms-v2/record';
 import {stateOf} from '../../preparation/store';
 import {L} from '../../i18n-server';
@@ -27,7 +27,7 @@ function owned(u:User,cid:string){if(!conversationExportsEnabled())throw new Htt
 function save(pid:string,m:Meta){remember(pid,{kind:'artifact',key:key(m.id),value:JSON.stringify(m),source:'local',origin:'system',status:'inferred'});}
 function read(pid:string,qid:string){return json<Meta|null>(one<{value:string}>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key=?",pid,key(qid))?.value,null);}
 function ownedMeta(u:User,cid:string,qid:string){const{c,pid}=owned(u,cid),m=read(pid,qid);if(!m||m.conversationId!==cid)throw new HttpError(404,L('Export introuvable.','Export not found.'));return{c,pid,m};}
-export function currentSiteSource(pid:string,versionId:string){const cur=currentTheme(pid);if(!cur||cur.version.id!==versionId)throw new HttpError(409,L('Le Site a changé ; actualisez les versions avant de préparer l’export.','The Site has changed. Refresh its versions before preparing an export.'));if(cur.spec.meta?.demo?.isDemo)throw new HttpError(409,L('La démonstration est protégée ; utilisez le Site de votre projet.','The demo is protected. Use your project Site.'));const spec=withStudioProducts(withBiens(cur.spec,pid),pid);return{version:cur.version,spec,sourceDigest:stableHash('native-export-source-v1',spec)};}
+export function currentSiteSource(pid:string,versionId:string){const cur=currentTheme(pid);if(!cur||cur.version.id!==versionId)throw new HttpError(409,L('Le Site a changé ; actualisez les versions avant de préparer l’export.','The Site has changed. Refresh its versions before preparing an export.'));if(cur.spec.meta?.demo?.isDemo)throw new HttpError(409,L('La démonstration est protégée ; utilisez le Site de votre projet.','The demo is protected. Use your project Site.'));const spec=withStudioProducts(withContenus(cur.spec,pid),pid);return{version:cur.version,spec,sourceDigest:stableHash('native-export-source-v1',spec)};}
 function validFile(a:Asset|undefined,pid:string,m:Pick<Meta,'versionId'|'platform'|'sourceDigest'>,jobId?:string){
  if(!a||a.project_id!==pid||a.user_id!==one<{user_id:string}>('SELECT user_id FROM projects WHERE id=?',pid)?.user_id||a.deleted_at||a.kind!=='archive'||a.role!=='theme-export'||a.origin!=='export'||a.mime!=='application/zip'||a.status==='rejected')return null;
  const meta=json<{platform?:string;versionId?:string;proof?:Proof;scope?:string;message?:string;gate?:{verdict?:string;checkId?:string;checked?:unknown};unmeasured?:unknown}>(a.meta,{}),p=meta.proof;

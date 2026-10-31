@@ -1,6 +1,7 @@
 /** D2 : adaptateur des opérations/versions natives, sans second moteur de thème ni appel IA local. */
 import {z} from 'zod';
 import {L} from '../../i18n-server';
+import {managedSections} from '../../contenus';
 import {HttpError,type User} from '../../auth';
 import {all,id,json,now,one,tx,readSnapshot} from '../../db';
 import {currentTheme,loadProject,remember,saveThemeVersion,themeVersion,type ThemeVersion} from '../../projects';
@@ -40,8 +41,11 @@ function validateExisting(spec:ThemeSpec){const problems=validateSpec(spec);if(p
 function previewEdit(user:User,cid:string,pid:string,plan:ThemeToolPlan){
   requirePlan(user,pid);const cur=current(pid,plan.versionId),p=loadProject(pid),c=ownedConversation(user,cid);
   assertThemeOperations(pid,cur.spec,plan.ops,true);
-  const sources=cognitiveContext(c).sources;
+  const sources=cognitiveContext(c).sources,managed=managedSections(cur.spec,pid);
   for(const op of plan.ops){
+    // #276 : carte et réalisations viennent de leur onglet et remplacent ce texte au rendu ; une retouche ici serait invisible.
+    const tab=managed.get(`${op.template}:${op.section}`);
+    if(tab)throw new HttpError(409,L(`Ce contenu vient de l’onglet ${tab==='carte'?'Carte':'Réalisations'} et remplace ce texte sur le site. Modifiez-le dans cet onglet ; aucune retouche n’est appliquée ici.`,`This content comes from the ${tab==='carte'?'Menu':'Projects'} tab and replaces this text on the site. Edit it in that tab; no change is applied here.`),'agent_theme_business_content');
     const section=containerOf(cur.spec,op.template)?.sections[op.section],schema=section?sectionSchema(cur.spec,section.type):null;
     const defs=op.block?schema?.blocks.find(b=>b.type===section?.blocks?.[op.block!]?.type)?.settings:schema?.settings;
     const def=defs?.find(d=>d.id===op.key);

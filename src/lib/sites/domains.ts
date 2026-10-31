@@ -33,7 +33,8 @@ export const proofName = (hostname: string) => `_ecs-verif.${hostname}`;
 let ready = false;
 function ensureDomainColumns() {
   ensureSiteTables();
-  if (ready) return;
+  // Colonnes ajoutées dans une transaction annulée (aperçu SYNA, #276) : revérifiées, pas seulement mémorisées.
+  if (ready && one("SELECT 1 FROM pragma_table_info('site_addresses') WHERE name = 'last_ok_at'")) return;
   const cols = new Set(all<{ name: string }>("PRAGMA table_info(site_addresses)").map((c) => c.name));
   for (const [c, t] of [["routing_ok", "INTEGER"], ["verified_by", "TEXT"], ["fail_count", "INTEGER NOT NULL DEFAULT 0"], ["disabled_at", "INTEGER"], ["last_ok_at", "INTEGER"]] as const) if (!cols.has(c)) run(`ALTER TABLE site_addresses ADD COLUMN ${c} ${t}`);
   ready = true;
