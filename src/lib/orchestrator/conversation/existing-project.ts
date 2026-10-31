@@ -8,6 +8,8 @@ import { stableHash } from '../../brain/hash';
 import { L } from '../../i18n-server';
 import { ownedConversation, turnsOf, isExistingProjectRead } from './store';
 import type { Command, ConversationRow, ConversationView } from './contract';
+import {activeContextEnabled,observedActiveContext,resolveActiveContext} from './active-context';
+import {contextPresentation} from './context-session';
 
 const reason=()=>L('Projet existant repris en lecture seule. Le site, les médias, les droits et l’ancienne discussion sont conservés. Vous pouvez enregistrer des messages ; aucune réponse IA ni modification métier n’est activée dans A1.', 'Existing project resumed read-only. The site, media, entitlements and previous discussion are preserved. You may save messages; A1 enables no AI reply or business change.');
 
@@ -57,6 +59,7 @@ export function existingProjectView(user:User,cid:string,before?:number):Convers
       message:reason(),readOnlyReason:reason(),question:null,correctionFields:[],creation:null,action:null,
       recovery:{schema:'existing-project-recovery-1',state:'read-only',context:data,contextVersion:version,observedAt:now(),actionsEnabled:false,aiEnabled:false,providerCalls:0},
       tools:[{id:'brief.update',state:'unavailable',executionEnabled:false}],
+      ...(activeContextEnabled()?{activeContext:{enabled:true as const,current:observedActiveContext(c,JSON.parse(c.state_json).activeContext),presentation:contextPresentation(c)}}:{}),
       summary:{description:p.product.summary,business:p.business,businessSource:'existing',target:'',goals:'',offerName:p.product.name,brandName:p.brand?.name??'',constraints:'',services:p.services.services.map(s=>({name:s.name,description:s.description,source:'projects.business_json'})),contactModes:p.services.contactModes??[],facts:[],unknown:data.missing,referenceUrls:[],photoIds:[],approved:false,preparationStatus:'absent'},
       ...turnsOf(c,before),
     };
@@ -76,10 +79,16 @@ export function submitExistingProjectMessage(user:User,cid:string,cmd:Command,ha
     }
     if(cmd.revision!==c.revision||cmd.projectRevision!==null)throw new HttpError(409,L('La conversation a changé. Rechargez avant de répondre.','The conversation changed. Reload before replying.'),'conversation_conflict');
     if(cmd.action!=='message'&&cmd.action!=='summary')throw new HttpError(409,reason(),'conversation_existing_read_only');
-    if(cmd.action==='message'&&(cmd.context||cmd.photoIds?.length||cmd.referenceUrls?.length))throw new HttpError(409,L('Les pièces jointes et sélections ne sont pas raccordées à la reprise A1. Votre demande n’a pas été appliquée.','Attachments and selections are not connected to A1 recovery. Your request has not been applied.'),'conversation_existing_read_only');
+    if(cmd.action==='message'&&(cmd.photoIds?.length||cmd.referenceUrls?.length))throw new HttpError(409,L('Les pièces jointes ne sont pas raccordées à la reprise A1. Votre demande n’a pas été appliquée.','Attachments are not connected to A1 recovery. Your request has not been applied.'),'conversation_existing_read_only');
+    const metadata=JSON.parse(c.state_json) as import('./contract').ConversationState;
+    if(cmd.action==='message'&&cmd.context){
+      if(!activeContextEnabled())throw new HttpError(404,'conversation_context_disabled');
+      const resolved=resolveActiveContext(c,cmd.context);metadata.activeContextTab=cmd.context.tab;
+      if(cmd.context.target||!metadata.activeContext?.target){metadata.activeContext=resolved.selection;metadata.activeContextReference=stableHash('conversation-active-context-1',resolved);metadata.activeContextIdentity=resolved.canonical.identity;}
+    }
     if(c.revision>=1000)throw new HttpError(409,'conversation_limit');
     const next=c.revision+1;
-    run('UPDATE agent_conversations SET revision=?,updated_at=? WHERE id=? AND revision=?',next,now(),cid,c.revision);
+    run('UPDATE agent_conversations SET revision=?,state_json=?,updated_at=? WHERE id=? AND revision=?',next,JSON.stringify(metadata),now(),cid,c.revision);
     const response=existingProjectView(user,cid);
     response.history=[];response.historyBefore=null;
     response.message=cmd.action==='message'?L('Message exact enregistré dans le fil SYNA. Aucun contenu du projet modifié, aucun appel IA.','Exact message saved in the SYNA thread. No project content changed; no AI request.'):reason();

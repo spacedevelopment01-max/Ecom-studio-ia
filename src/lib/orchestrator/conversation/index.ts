@@ -16,6 +16,7 @@ import { CommandSchema, EDIT_FIELDS, type ActionCard, type Command, type Convers
 import { assertBriefWritable, nativeAnalysisQuote, quoteCard, saveBrief, writeFact, type NativeQuote } from "./tools";
 import { currentBrief, metaOf, ownedConversation, turnsOf, isExistingProjectRead } from "./store";
 import { existingProjectView, submitExistingProjectMessage } from './existing-project';
+import {contextPresentation} from './context-session';
 import { creationFields } from "./creation";
 import { intelligenceEnabled, intelligenceView } from "./intelligence";
 import { applyCognitiveCommand } from "./intelligence-commands";
@@ -55,7 +56,7 @@ export function conversationView(user: User, cid: string, before?: number,includ
     message: !b.input.description ? L("Décrivez votre projet en quelques mots. Vous pouvez joindre un lien ; aucune création n’est lancée.", "Describe your project in a few words. You may add a link; no creation is started.") : L("Compréhension locale à relire. Vos réponses sont conservées ; aucune étape n’est validée automatiquement.", "Local understanding to review. Your answers are kept; no step is automatically approved."),
     question: key ? questionFor(key, b, m) : null, correctionFields: readOnlyReason?[]:[...EDIT_FIELDS],readOnlyReason,
     creation: c.project_id ? null : creationFields(b,m),
-    ...(activeContextEnabled()?{activeContext:{enabled:true as const,current:observedActiveContext(c,m.activeContext)}}:{}),
+    ...(activeContextEnabled()?{activeContext:{enabled:true as const,current:observedActiveContext(c,m.activeContext),presentation:contextPresentation(c)}}:{}),
     ...(c.project_id&&conversationToolsEnabled()?{execution:{enabled:true as const}}:{}),
     ...(c.project_id&&conversationContentEnabled()?{contentExecution:{enabled:true as const}}:{}),
     ...(c.project_id&&conversationThemeToolsEnabled()?{themeExecution:{enabled:true as const}}:{}),
@@ -180,7 +181,9 @@ export async function submitConversation(user: User, cid: string, raw: unknown, 
     let changed = false, message = "", action: ActionCard | null = null;
     if(cmd.action==='message'&&cmd.context){
       if(!activeContextEnabled())throw new HttpError(404,L('Le repère contextuel est indisponible.','Context selection is unavailable.'),'conversation_context_disabled');
-      m.activeContext=resolveActiveContext(c,cmd.context).selection;
+      const resolved=resolveActiveContext(c,cmd.context);
+      m.activeContextTab=cmd.context.tab;
+      if(cmd.context.target||!m.activeContext?.target){m.activeContext=resolved.selection;m.activeContextReference=stableHash('conversation-active-context-1',resolved);m.activeContextIdentity=resolved.canonical.identity;}
     }
     if (cmd.action === 'message' && intelligenceEnabled()) {
       // Conservation exacte, sans classification locale ni appel facturant implicite.
