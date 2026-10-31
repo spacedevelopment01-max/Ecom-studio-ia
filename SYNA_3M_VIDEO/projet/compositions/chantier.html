@@ -17,7 +17,7 @@
     #ch-ui { position: absolute; inset: 0; pointer-events: none; }
     #ch-scrim { position: absolute; inset: 0; background: #FFFFFF; opacity: 0; }
     #ch-point { position: absolute; left: 960px; top: 540px; width: 200px; height: 200px; margin: -100px 0 0 -100px; border-radius: 50%; background: #2F5BEA; }
-    .ch-title { position: absolute; left: 120px; bottom: 116px; font: 600 86px/1 "Bricolage"; letter-spacing: -0.035em; color: #0A1024; }
+    .ch-title { position: absolute; left: 120px; top: 80px; font: 600 86px/1 "Bricolage"; letter-spacing: -0.035em; color: #0A1024; }
     .ch-title span { display: inline-block; }
     .ch-title .w-mute { color: #B4BCCB; }
     .ch-logos { position: absolute; left: 0; right: 0; top: 300px; display: flex; justify-content: center; align-items: center; gap: 26px; }
@@ -44,9 +44,18 @@
   </div>
   <script src="assets/iso.js"></script>
   <script src="assets/cues.js"></script>
+  <script src="assets/fmt.js"></script>
   <script>
     (function () {
-      const C = window.CUES;
+      const C = window.CUES, FM = window.FMTV;
+      // Format : centre de caméra, titres et cartes de logos
+      ["ch-cam", "ch-point"].forEach((id) => { const e = document.getElementById(id); e.style.left = FM.W / 2 + "px"; e.style.top = FM.H / 2 + "px"; });
+      if (FM.V) {
+        document.querySelectorAll(".ch-title").forEach((e) => Object.assign(e.style, { left: "60px", right: "60px", top: "250px", textAlign: "center", fontSize: "78px", lineHeight: "1.05" }));
+        Object.assign(document.getElementById("ch-logos").style, { top: "440px", left: "140px", right: "140px", flexWrap: "wrap", gap: "40px 60px" });
+        document.querySelectorAll(".ch-logo").forEach((e) => Object.assign(e.style, { width: "340px", height: "340px" }));
+        document.querySelectorAll(".ch-neq").forEach((e) => (e.style.display = "none"));
+      }
       const iso = document.getElementById("ch-iso");
       const O = 1500, P = (v) => v + O;
       let seed = 7331;
@@ -119,7 +128,7 @@
 
       // ---------------- Timeline ----------------
       const tl = gsap.timeline({ paused: true });
-      const F = ISO.focus;
+      const F = (wx, wy, wz, s, ox, oy) => ISO.focus(wx, wy, wz, s * FM.KS, (ox || 0) * FM.KX, oy || 0);
       tl.fromTo("#ch-tilt", { rotationX: 60 }, { rotationX: 60, duration: 0.01 }, 0);
       tl.fromTo("#ch-iso", { rotationZ: 45 }, { rotationZ: 45, duration: 0.01 }, 0);
       tl.fromTo("#ch-cam", F(-150, -210, 190, 2.4), Object.assign(F(-60, -210, 180, 2.2), { duration: 1.0, ease: "none" }), 0);

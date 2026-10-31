@@ -44,9 +44,18 @@
   <script src="assets/iso.js"></script>
   <script src="assets/brand3m.js"></script>
   <script src="assets/cues.js"></script>
+  <script src="assets/fmt.js"></script>
   <script>
     (function () {
-      const CU = window.CUES, S0 = CU["scene.fin"];
+      const CU = window.CUES, S0 = CU["scene.fin"], FM = window.FMTV;
+      ["fn-cam", "fn-iris"].forEach((id) => { const e = document.getElementById(id); e.style.left = FM.W / 2 + "px"; e.style.top = FM.H / 2 + "px"; });
+      // Carte de fin : logo et nom côte à côte (paysage) ou empilés (story)
+      const LG = FM.V ? { x: 440, y: 600, s: 200 } : { x: 464, y: 400, s: 200 };
+      Object.assign(document.getElementById("fn-logo").style, { left: LG.x + "px", top: LG.y + "px" });
+      if (FM.V) {
+        Object.assign(document.getElementById("fn-word").style, { left: "0px", right: "0px", top: "860px", textAlign: "center", fontSize: "104px" });
+        Object.assign(document.getElementById("fn-svc").style, { top: "1010px", left: "60px", right: "60px", fontSize: "34px", lineHeight: "1.5" });
+      }
       const L = (k) => CU[k] - S0;
       const iso = document.getElementById("fn-iso");
       const O = 1500, P = (v) => v + O;
@@ -88,7 +97,7 @@
       ISO.panelX(bigpin, { x: -80, y: 0, z: 330, w: 160, h: 220, html: '<svg viewBox="0 0 80 110" style="width:100%;height:100%"><path d="M40 106C40 106 8 64 8 40a32 32 0 1 1 64 0c0 24-32 66-32 66z" fill="#1E6B5E"/><circle cx="40" cy="40" r="22" fill="#F3EEE6"/><text x="40" y="47" text-anchor="middle" font-family="Outfit" font-weight="800" font-size="20" fill="#1E6B5E">3M</text></svg>' });
 
       const tl = gsap.timeline({ paused: true });
-      const F = ISO.focus;
+      const F = (wx, wy, wz, s, ox, oy) => ISO.focus(wx, wy, wz, s * FM.KS, (ox || 0) * FM.KX, oy || 0);
       tl.fromTo("#fn-tilt", { rotationX: 60 }, { rotationX: 60, duration: 0.01 }, 0);
       tl.fromTo("#fn-iso", { rotationZ: 45 }, { rotationZ: 45, duration: 0.01 }, 0);
       tl.fromTo("#fn-cam", F(-256, 50, 200, 1.1), Object.assign(F(-60, 40, 120, 0.56, 0, 30), { duration: 1.2, ease: "expo.out" }), 0);
@@ -99,11 +108,12 @@
       tl.fromTo(".fn-link", { opacity: 0 }, { opacity: 0.7, duration: 0.05, stagger: 0.03 }, 0.3);
       tl.fromTo(".fn-link", { strokeDasharray: 1000, strokeDashoffset: 1000 }, { strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut", stagger: 0.03 }, 0.3);
       tl.fromTo(".fn-flow", { strokeDashoffset: 0, opacity: 0 }, { strokeDashoffset: -480, opacity: 1, duration: 1.4, ease: "none", stagger: 0.03 }, 0.8);
-      tl.fromTo("#fn-notif", { x: 1000, y: 200, opacity: 0, scale: 0.8 }, { x: 1000, y: 200, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)" }, 1.05);
+      const NT = FM.V ? { x: 290, y: 560 } : { x: 1000, y: 200 };
+      tl.fromTo("#fn-notif", { x: NT.x, y: NT.y, opacity: 0, scale: 0.8 }, { x: NT.x, y: NT.y, opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)" }, 1.05);
       // Syna traverse, tout devient blanc, Syna devient le point bleu du logo
-      const dot = { x: 464 + (46 / 64) * 200, y: 400 + (44 / 64) * 200 };
+      const dot = { x: LG.x + (46 / 64) * LG.s, y: LG.y + (44 / 64) * LG.s };
       const LAND = L("g.ecom") + 0.25;
-      tl.fromTo("#fn-orb", { x: 2100, y: 300 }, { x: 960, y: 520, duration: 0.45, ease: "power2.in", immediateRender: true }, LAND - 0.9);
+      tl.fromTo("#fn-orb", { x: FM.W + 180, y: FM.H * 0.3 }, { x: FM.W / 2, y: FM.H / 2 - 20, duration: 0.45, ease: "power2.in", immediateRender: true }, LAND - 0.9);
       tl.fromTo("#fn-iris", { scale: 0 }, { scale: 16, duration: 0.4, ease: "power2.in" }, LAND - 0.55);
       tl.to("#fn-orb", { x: dot.x, y: dot.y, duration: 0.45, ease: "back.out(1.4)" }, LAND - 0.45);
       tl.fromTo("#fn-end", { opacity: 0 }, { opacity: 1, duration: 0.01 }, LAND - 0.15);

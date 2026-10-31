@@ -7,7 +7,7 @@
     .m3-probe { position: absolute; left: -9999px; top: 0; opacity: 0; }
     .m3-o8 { font-family: Outfit; font-weight: 800; } .m3-o7 { font-family: Outfit; font-weight: 700; }
     .m3-l4 { font-family: Lato; font-weight: 400; } .m3-l6 { font-family: Lato; font-weight: 600; } .m3-l7 { font-family: Lato; font-weight: 700; }
-    #dm-win { position: absolute; left: 70px; top: 52px; width: 1780px; height: 976px; border-radius: 22px; overflow: hidden; box-shadow: 0 50px 110px -50px rgba(10,16,36,.4), 0 0 0 2px #E3E8F2; }
+    #dm-win { position: absolute; left: 70px; top: 40px; width: 1780px; height: 880px; border-radius: 22px; overflow: hidden; box-shadow: 0 50px 110px -50px rgba(10,16,36,.4), 0 0 0 2px #E3E8F2; }
     .dm-chat { position: absolute; left: 0; top: 0; bottom: 0; width: 560px; background: #fff; border-right: 2px solid #DCE2EE; display: flex; flex-direction: column; }
     .dm-head { display: flex; align-items: center; gap: 16px; padding: 20px 26px; border-bottom: 2px solid #EEF1F7; flex: none; }
     .dm-head b { display: block; font: 600 34px/1 "Bricolage"; letter-spacing: -0.02em; color: #0A1024; }
@@ -34,12 +34,12 @@
     #dm-vnum { position: relative; width: 34px; height: 30px; overflow: hidden; }
     #dm-vroll { position: absolute; left: 0; top: 0; display: flex; flex-direction: column; color: #2F5BEA; }
     #dm-vroll b { height: 30px; line-height: 30px; font-weight: 700; }
-    #dm-sitewrap { position: absolute; left: 44px; top: 80px; width: 720px; height: 460px; transform: scale(1.14); transform-origin: 0 0; border-radius: 18px; box-shadow: 0 30px 70px -40px rgba(10,16,36,.35), 0 0 0 2px #E3E8F2; }
+    #dm-sitewrap { position: absolute; left: 44px; top: 70px; width: 720px; height: 460px; transform: scale(1); transform-origin: 0 0; border-radius: 18px; box-shadow: 0 30px 70px -40px rgba(10,16,36,.35), 0 0 0 2px #E3E8F2; }
     #dm-ba { position: absolute; left: 24px; right: 24px; bottom: 14px; height: 82px; display: flex; gap: 12px; align-items: stretch; }
     #dm-ba > div { flex: 1; border-radius: 12px; overflow: hidden; position: relative; }
     #dm-ba span { position: absolute; left: 8px; top: 8px; font: 700 13px Lato; background: #1F2A2E; color: #fff; padding: 3px 8px; border-radius: 6px; }
-    #dm-post { position: absolute; left: 44px; top: 640px; width: 300px; height: 300px; transform: scale(.58); transform-origin: 0 0; }
-    #dm-ad { position: absolute; left: 236px; top: 640px; width: 210px; height: 372px; transform: scale(.47); transform-origin: 0 0; }
+    #dm-post { position: absolute; left: 44px; top: 590px; width: 300px; height: 300px; transform: scale(.54); transform-origin: 0 0; }
+    #dm-ad { position: absolute; left: 224px; top: 590px; width: 210px; height: 372px; transform: scale(.44); transform-origin: 0 0; }
     .dm-sel { position: absolute; left: 0; top: 0; border: 4px solid #2F5BEA; border-radius: 14px; box-shadow: 0 0 0 6px rgba(47,91,234,.18); pointer-events: none; }
     #dm-cursor { position: absolute; left: 0; top: 0; width: 66px; height: 66px; }
   </style>
@@ -51,9 +51,12 @@
   <script src="assets/brand3m.js"></script>
   <script src="assets/studio-ui.js"></script>
   <script src="assets/cues.js"></script>
+  <script src="assets/fmt.js"></script>
   <script>
     (function () {
-      const CU = window.CUES, S0 = CU["scene.demande"];
+      const CU = window.CUES, S0 = CU["scene.demande"], FM = window.FMTV;
+      const WY = FM.V ? 330 : 40, BASEX = FM.V ? -110 : 0;
+      document.getElementById("dm-win").style.top = WY + "px";
       const L = (k) => CU[k] - S0;
       const ok = (id, txt) => '<div id="' + id + '" class="dm-ok"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#146C43" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>' + txt + "</div>";
       const raw = '<div style="width:100%;height:100%;background:#C9CED6;background-image:repeating-linear-gradient(90deg,transparent 0 30px,#E3E6EB 30px 35px)"></div>';
@@ -76,7 +79,7 @@
         '<div id="dm-pv"><div class="dm-lbl" style="left:44px;top:30px">Aperçu du site</div>' +
         '<div id="dm-ver">Version <span id="dm-vnum"><span id="dm-vroll"><b>1</b><b>2</b><b>3</b><b>4</b><b>5</b></span></span></div>' +
         '<div id="dm-sitewrap">' + M3.site("dm") + '<div id="dm-ba"><div>' + raw + '<span>Avant</span></div><div>' + done + '<span>Après</span></div></div></div>' +
-        '<div class="dm-lbl" style="left:44px;top:606px">Publication · Publicité</div>' +
+        '<div class="dm-lbl" style="left:44px;top:556px">Publication · Publicité</div>' +
         '<div id="dm-post"><div id="dm-postf" style="width:100%;height:100%">' + M3.post("dmp") + '</div></div><div id="dm-ad"><div id="dm-adf" style="width:100%;height:100%">' + M3.ad("dma") + "</div></div>" +
         '<div id="dm-sel1" class="dm-sel"></div><div id="dm-sel2" class="dm-sel"></div><div id="dm-sel3" class="dm-sel"></div></div>';
       document.getElementById("dm-win").innerHTML = UI.browser({ p: "dw", s: 2, side: 150, active: "Site", main });
@@ -87,13 +90,13 @@
 
       (function () {
         // Mise en page fixe (px du film) : fenêtre 70,52 ; barres du navigateur 120 ; barre latérale 300 ; discussion 560.
-        const MX = 370, MY = 172, PVX = 930;
-        const S = 1.14, SX = PVX + 44, SY = MY + 80; // site posé à 1,14
+        const MX = 370, MY = WY + 120, PVX = 930;
+        const S = 1, SX = PVX + 44, SY = MY + 70; // site posé à l'échelle 1
         const site = (x, y, w, h) => ({ x: SX + x * S, y: SY + y * S, w: w * S, h: h * S });
         const B = {
           btn: site(24, 298, 222, 52), h1: site(24, 148, 340, 82), svc: site(24, 388, 672, 54), site: { x: SX, y: SY, w: 720 * S, h: 460 * S },
-          post: { x: PVX + 44, y: MY + 640, w: 174, h: 174 }, ad: { x: PVX + 236, y: MY + 640, w: 99, h: 175 },
-          send: { x: 838, y: 937, w: 58, h: 58 },
+          post: { x: PVX + 44, y: MY + 590, w: 162, h: 162 }, ad: { x: PVX + 224, y: MY + 590, w: 92, h: 164 },
+          send: { x: 838, y: MY + 669, w: 58, h: 58 },
         };
         const pv = { x: PVX, y: MY };
         const inPv = (b, pad) => ({ x: b.x - pv.x - pad, y: b.y - pv.y - pad, width: b.w + 2 * pad, height: b.h + 2 * pad });
@@ -102,13 +105,13 @@
         const order = Object.keys(H), top = {};
         let yy = 20;
         order.forEach((id) => { top[id] = yy; document.getElementById(id).style.height = H[id] + "px"; yy += H[id] + 14; });
-        const VIEW = 647;
+        const VIEW = 551;
         const scrollTo = (id) => Math.min(0, VIEW - 18 - (top[id] + H[id]));
-        B.all = { x: MX + 22 + 20, y: 277 + top["dm-s4"] + 15 + 100 + 12, w: 250, h: 48 };
-        const win0 = { x: 70, y: 52 };
+        B.all = { x: MX + 22 + 20, y: MY + 105 + top["dm-s4"] + 15 + 100 + 12, w: 250, h: 48 };
+        const win0 = { x: 70, y: WY };
         const tl = gsap.timeline({ paused: true });
         // Fenêtre qui arrive (suite de la plongée dans l'écran)
-        tl.fromTo("#dm-win", { scale: 1.9, x: 520, y: 140, transformOrigin: "0 0" }, { scale: 1, x: 0, y: 0, duration: 0.5, ease: "expo.out" }, 0);
+        tl.fromTo("#dm-win", { scale: FM.V ? 1.6 : 1.9, x: FM.V ? BASEX - 300 : 520, y: 140, transformOrigin: "0 0" }, { scale: 1, x: BASEX, y: 0, duration: 0.5, ease: "expo.out" }, 0);
         // États initiaux
         tl.fromTo("#dm-u1, #dm-s1, #dm-u2, #dm-s2, #dm-u3, #dm-u3b, #dm-s3, #dm-u4, #dm-s4, #dm-s5, #dm-s6", { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
         tl.fromTo("#dm-h1b, #dm-ba", { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
@@ -122,8 +125,13 @@
         };
         const ver = (n, t) => tl.to("#dm-vroll", { y: -30 * (n - 1), duration: 0.3, ease: "back.out(2)" }, t);
         const punch = (b, t, hold) => {
-          const z = 1.18, cx = b.x + b.w / 2, cy = b.y + b.h / 2;
-          const fx = 960 + (cx - 960) * 0.55, fy = 540 + (cy - 540) * 0.55;
+          const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
+          if (FM.V) {
+            tl.to("#dm-win", { x: FM.W / 2 - cx, duration: 0.32, ease: "power3.inOut" }, t);
+            tl.to("#dm-win", { x: BASEX, duration: 0.3, ease: "power3.inOut" }, t + hold);
+            return;
+          }
+          const z = 1.18, fx = 960 + (cx - 960) * 0.55, fy = 540 + (cy - 540) * 0.55;
           const lx = cx - win0.x, ly = cy - win0.y;
           tl.to("#dm-win", { scale: z, x: fx - win0.x - z * lx, y: fy - win0.y - z * ly, duration: 0.32, ease: "power3.out" }, t);
           tl.to("#dm-win", { scale: 1, x: 0, y: 0, duration: 0.3, ease: "power3.inOut" }, t + hold);
@@ -131,10 +139,11 @@
         // 1. Une couleur : la demande se tape, le curseur l'envoie, le bouton passe en ocre
         tl.fromTo("#dm-typed", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.32, ease: "none" }, 0.28);
         tl.to("#dm-ph", { opacity: 0, duration: 0.04 }, 0.28);
-        const cs = { x: B.send.x + B.send.w / 2 - 10, y: B.send.y + B.send.h / 2 - 6 };
+        const cs = { x: B.send.x + B.send.w / 2 - 10 + BASEX, y: B.send.y + B.send.h / 2 - 6 };
         tl.fromTo("#dm-cursor", { x: 1990, y: 1120 }, { x: cs.x, y: cs.y, duration: 0.32, ease: "expo.out" }, 0.3);
         tl.to("#dm-cursor", { scale: 0.82, duration: 0.06, yoyo: true, repeat: 1, transformOrigin: "10px 6px" }, 0.64);
         tl.to("#dm-send", { scale: 0.88, duration: 0.06, yoyo: true, repeat: 1 }, 0.64);
+        tl.to("#dm-cursor", { x: 1990 + BASEX, y: 1150, duration: 0.35, ease: "power3.in" }, 0.85);
         tl.to("#dm-typed", { opacity: 0, duration: 0.08 }, 0.7);
         tl.to("#dm-ph", { opacity: 1, duration: 0.15 }, 0.8);
         pop("dm-u1", 0.72);
@@ -164,7 +173,7 @@
         pop("dm-u4", L("f.accent") - 0.2); scroll("dm-u4", L("f.accent") - 0.2);
         pop("dm-s4", L("f.marque") - 0.1); scroll("dm-s4", L("f.marque") - 0.1);
         sel(1, B.site, L("f.marque"), 6); sel(2, B.post, L("f.marque") + 0.08, 6); sel(3, B.ad, L("f.marque") + 0.16, 6);
-        const ca = { x: B.all.x + B.all.w / 2 - 10, y: B.all.y + B.all.h / 2 - 6 + scrollTo("dm-s4") };
+        const ca = { x: B.all.x + B.all.w / 2 - 10 + BASEX, y: B.all.y + B.all.h / 2 - 6 + scrollTo("dm-s4") };
         const TC = L("f.fois") + 0.35;
         tl.fromTo("#dm-cursor", { x: 1990, y: 1100 }, { x: ca.x, y: ca.y, duration: 0.35, ease: "expo.out", immediateRender: false }, TC - 0.4);
         tl.to("#dm-cursor", { scale: 0.82, duration: 0.06, yoyo: true, repeat: 1, transformOrigin: "10px 6px" }, TC);
@@ -179,6 +188,7 @@
         tl.to("#dma-cta", { backgroundColor: "#E3A53C", color: "#1F2A2E", duration: 0.01 }, T4 + 0.22);
         tl.to("#dm-eye", { color: "#B7791F", duration: 0.25 }, T4 + 0.05);
         tl.to("#dm-svc svg, #dm-ba span", { stroke: "#E3A53C", backgroundColor: "#E3A53C", color: "#1F2A2E", duration: 0.25 }, T4 + 0.05);
+        if (FM.V) punch({ x: 1110, y: MY + 300, w: 200, h: 100 }, T4 - 0.15, 1.15);
         pop("dm-s5", T4 + 0.3); scroll("dm-s5", T4 + 0.3); ver(5, T4 + 0.35);
         tl.fromTo("#dm-horb", { scale: 1 }, { scale: 1.18, duration: 0.2, ease: "power2.out", yoyo: true, repeat: 1 }, L("f.syna") - 0.1);
         // Chaque version reste restaurable
@@ -186,7 +196,7 @@
         tl.fromTo("#dm-s6 i", { scale: 0.6 }, { scale: 1, duration: 0.25, ease: "back.out(2.5)", stagger: 0.06, immediateRender: false }, L("f.chaque"));
         // Sortie : la fenêtre se referme vers le centre
         const TE = CU["scene.fin"] - S0;
-        tl.to("#dm-win", { scale: 0.12, x: (960 - win0.x) * 0.88, y: (540 - win0.y) * 0.88, duration: 0.42, ease: "power3.in" }, TE - 0.45);
+        tl.to("#dm-win", { scale: 0.12, x: (FM.W / 2 - win0.x) * 0.88, y: (FM.H / 2 - win0.y) * 0.88, duration: 0.42, ease: "power3.in" }, TE - 0.45);
         window.__timelines["demande"] = tl;
       })();
     })();

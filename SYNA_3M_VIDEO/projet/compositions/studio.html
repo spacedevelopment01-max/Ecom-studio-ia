@@ -28,7 +28,7 @@
     #st-name { position: absolute; left: 0; top: 0; width: 300px; text-align: right; }
     #st-name b { display: block; font: 600 76px/1 "Bricolage"; letter-spacing: -0.03em; color: #0A1024; }
     #st-name small { display: block; margin-top: 8px; font: 500 32px "InterV"; color: #5E6886; }
-    .st-title { position: absolute; left: 120px; bottom: 112px; font: 600 84px/1 "Bricolage"; letter-spacing: -0.035em; color: #0A1024; }
+    .st-title { position: absolute; left: 120px; top: 80px; font: 600 84px/1 "Bricolage"; letter-spacing: -0.035em; color: #0A1024; }
     .st-title span { display: inline-block; }
     .st-title .acc { color: #2F5BEA; }
     .lt-row { display: flex; align-items: center; gap: 8px; font: 600 12px InterV; color: #2B3452; padding: 5px 2px; }
@@ -57,9 +57,15 @@
   <script src="assets/brand3m.js"></script>
   <script src="assets/studio-ui.js"></script>
   <script src="assets/cues.js"></script>
+  <script src="assets/fmt.js"></script>
   <script>
     (function () {
-      const CU = window.CUES, S0 = CU["scene.studio"];
+      const CU = window.CUES, S0 = CU["scene.studio"], FM = window.FMTV;
+      ["st-cam", "st-iris1", "st-iris2"].forEach((id) => { const e = document.getElementById(id); e.style.left = FM.W / 2 + "px"; e.style.top = FM.H / 2 + "px"; });
+      if (FM.V) {
+        Object.assign(document.getElementById("st-brand").style, { top: "250px", fontSize: "96px" });
+        Object.assign(document.getElementById("st-title").style, { left: "60px", right: "60px", top: "250px", textAlign: "center", fontSize: "78px", lineHeight: "1.05" });
+      }
       const L = (k) => CU[k] - S0; // temps local
       const iso = document.getElementById("st-iso");
       const O = 1500, P = (v) => v + O;
@@ -140,7 +146,7 @@
 
       // ---------------- Timeline ----------------
       const tl = gsap.timeline({ paused: true });
-      const F = ISO.focus, pr = ISO.project;
+      const F = (wx, wy, wz, s, ox, oy) => ISO.focus(wx, wy, wz, s * FM.KS, (ox || 0) * FM.KX, oy || 0), pr = ISO.project;
       tl.fromTo("#st-tilt", { rotationX: 60 }, { rotationX: 60, duration: 0.01 }, 0);
       tl.fromTo("#st-iso", { rotationZ: 45 }, { rotationZ: 45, duration: 0.01 }, 0);
       // Double ouverture en cercle : bleu puis blanc
@@ -174,7 +180,8 @@
       tl.fromTo("#st-ring", { scale: 0.3, opacity: 0.9 }, { scale: 2.2, opacity: 0, duration: 0.6, ease: "power2.out" }, L("c.syna") + 0.45);
       tl.fromTo("#st-synash", { x: -560, y: 40, opacity: 0 }, { x: -560, y: 40, opacity: 1, duration: 0.4 }, L("c.syna") + 0.2);
       tl.to("#st-cam", Object.assign(F(-300, -60, 220, 0.86, 0, 40), { duration: 0.7, ease: "expo.inOut" }), L("c.syna") - 0.2);
-      const nm = { x: 960 + 0.86 * (s1.x - pr(-300, -60, 220).x) - 380, y: 540 + 40 + 0.86 * (s1.y - pr(-300, -60, 220).y) - 70 };
+      const ks = 0.86 * FM.KS, nm = { x: FM.W / 2 + ks * (s1.x - pr(-300, -60, 220).x) - 380, y: FM.H / 2 + 40 + ks * (s1.y - pr(-300, -60, 220).y) - 70 };
+      if (FM.V) { nm.x += 380 - 150; nm.y -= 150; document.getElementById("st-name").style.textAlign = "center"; }
       tl.fromTo("#st-name", { x: nm.x, y: nm.y, opacity: 0, filter: "blur(8px)" }, { x: nm.x, y: nm.y, opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power2.out" }, L("c.syna") + 0.55);
       tl.to("#st-name", { opacity: 0, filter: "blur(8px)", duration: 0.16 }, L("d.start") - 0.15);
       tl.fromTo("#st-orb, #st-halo", { y: 0 }, { y: -9, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 25, immediateRender: false }, L("c.syna") + 0.7);

@@ -7,9 +7,16 @@ de futurs clients connaissent jongle entre plusieurs outils sans résultat cohé
 agent Syna, qui crée au même endroit son logo, son identité, ses visuels de publication et de publicité et son site,
 tous dans la même ligne de marque, puis modifie le site sur simple demande.
 
-- Film final : `syna-3m-platrerie-peinture.mp4` (H.264 + AAC, son normalisé à -15 LUFS).
+- Films finaux, avec sous-titres dynamiques (mot prononcé en bleu) :
+  - paysage 1920 x 1080 : `syna-3m-platrerie-peinture.mp4` ;
+  - story 1080 x 1920 : `syna-3m-platrerie-peinture-story.mp4` (cadrage refait pour la verticale).
+  Son normalisé à -15 LUFS.
 - Projet modifiable : `projet/` (HyperFrames : HTML + GSAP, rendu image par image).
-  Rendu : `cd SYNA_3M_VIDEO/projet && npx hyperframes render -q delivery -o film.mp4`.
+  Rendu paysage : `cd SYNA_3M_VIDEO/projet && npx hyperframes render -q delivery -o film.mp4`.
+  Rendu story : `SYNA_3M_VIDEO/projet/build-story.sh /tmp/syna-story && cd /tmp/syna-story && npx hyperframes render -q delivery -o story.mp4`
+  (copie les scènes au format 1080 x 1920 ; même contenu, cadrage adapté par `assets/fmt.js`).
+- Sous-titres : `assets/captions.js` (groupes de 2 à 4 mots, heure de chaque mot tirée de la transcription,
+  orthographe du script : Syna, Plâtrerie, E-COM STUDIO IA).
 - Plan du film : `projet/SPEC.md` ; relecture et limites connues : `projet/REVIEW.md`.
 
 ## Ce qui a coûté et ce qui est gratuit
