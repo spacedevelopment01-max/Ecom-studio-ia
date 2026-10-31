@@ -16,6 +16,7 @@ Rapport complet : `reports/skills-integration.md`.
 | github.com/anthropics/skills | dbd4588 | Apache 2.0 (`LICENSE.txt` de chaque compétence) | frontend-design, canvas-design, theme-factory, webapp-testing, skill-creator, mcp-builder ; `brand-guidelines` : version **adaptée** au studio (`NOTICE.md`) |
 | github.com/nextlevelbuilder/ui-ux-pro-max-skill | 7246805 — CLI officiel `ui-ux-pro-max-cli` 2.15.0 (`uipro init --ai claude`) | MIT | ui-ux-pro-max (seul dossier demandé gardé) |
 | github.com/vercel-labs/agent-skills | 063bee9 | MIT (README du dépôt) | react-best-practices, web-design-guidelines |
+| github.com/heygen-com/hyperframes | a04b45a (31/10/2026, `npx skills add heygen-com/hyperframes -a claude-code --copy`) | Apache 2.0 (`LICENSE` du dépôt recopié dans chaque compétence) | hyperframes, hyperframes-cli, hyperframes-registry, media-use (sans `scripts/` ni `audio/scripts/` : HeyGen, ElevenLabs, Gemini/Lyria et statistiques PostHog), figma, remotion-to-hyperframes, slideshow ; `hyperframes/scripts/locate.mjs` retiré (Gemini) |
 
 Projet : `verifier-theme` (propre au studio).
 

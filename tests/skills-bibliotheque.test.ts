@@ -38,6 +38,22 @@ describe("bibliothèque de compétences", async () => {
     expect(fs.readdirSync(dir).some((d) => fs.existsSync(path.join(dir, d, "install.sh")))).toBe(false);
   });
 
+  it("HyperFrames : sept compétences avec leur licence, sans les scripts de fournisseurs payants ni de statistiques", () => {
+    const dir = path.join(process.cwd(), ".claude", "skills");
+    for (const s of ["hyperframes", "hyperframes-cli", "hyperframes-registry", "media-use", "figma", "remotion-to-hyperframes", "slideshow"]) {
+      expect(fs.existsSync(path.join(dir, s, "SKILL.md")), s).toBe(true);
+      expect(fs.readFileSync(path.join(dir, s, "LICENSE"), "utf8"), s).toMatch(/Apache License/);
+    }
+    // HeyGen, ElevenLabs, Gemini/Lyria (payants) et envoi de statistiques PostHog : non recopiés.
+    for (const p of ["media-use/scripts", "media-use/audio/scripts", "hyperframes/scripts/locate.mjs"]) expect(fs.existsSync(path.join(dir, p)), p).toBe(false);
+    const walk = (d: string): string[] => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]));
+    for (const s of ["hyperframes", "media-use", "figma", "remotion-to-hyperframes"]) {
+      for (const f of walk(path.join(dir, s)).filter((f) => /\.(mjs|js|py|sh)$/.test(f))) {
+        expect(fs.readFileSync(f, "utf8"), f).not.toMatch(/posthog|GEMINI_API_KEY|HEYGEN_API_KEY|ELEVENLABS_API_KEY/i);
+      }
+    }
+  });
+
   it("chaque section utilisée par le studio existe encore dans les compétences installées", () => {
     for (const intent of ["product_ad", "service_ad", "ad_visual", "video_ad", "ugc_script", "seo_page", "seo_article", "seo_meta", "local_seo", "site_copy", "site_design", "social_post", "brand_strategy"] as const) {
       for (const id of skills.skillsFor(intent)) expect(skills.skillDigest(id)!.missing, `${intent}/${id}`).toEqual([]);
