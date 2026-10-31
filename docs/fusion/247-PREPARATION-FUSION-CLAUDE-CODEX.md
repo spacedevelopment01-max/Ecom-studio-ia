@@ -2,6 +2,37 @@
 
 Document de préparation seulement. **Aucune fusion, aucun rebase ni cherry-pick, aucune branche modifiée, aucun déploiement.** Seule la branche documentaire `claude/247-preparation-fusion` (issue de `main`) a été créée.
 
+## Actualisation du 31 octobre 2026 : nouveau sommet Codex #275
+
+Revue incrémentale (section 5), en lecture seule, signalée par Codex dans #248.
+
+| Élément | Résultat |
+|---|---|
+| Sommet Codex provisoire | **#275 `codex/211-d19-recu-vocal-exact`, `8eb15a6a`** (CI en cours au moment de la revue). Il contient l'ancien sommet #246 `a9fbc211` (163 commits depuis `main`). `main` est toujours `70204a7f`. |
+| Fichiers communs avec Claude `a69fcf7e` | **Les 5 mêmes**, aucun nouveau |
+| Conflits textuels (`merge-tree`) | **0** |
+| Nouvelles tables, middleware, `package.json` | Aucun changement depuis #246 |
+| Nouvelles routes | Uniquement sous `/api/studio-agent/conversations/[cid]/…` (brand, brand-review, campaign-visuals, content, logo-selection, social-drafts, social-production, video-clips, video-voices) : aucune collision |
+| Arbre fusionné simulé `5d09b687` (local, jamais poussé) | Typage OK ; mêmes 47 fichiers de tests : **549 réussis / 15 ignorés / 0 échec** |
+| **C1** | **Toujours présent** : `export-tool-execution.ts:30` utilise `withBiens`. Correction inchangée. |
+| P1 à P5 | Inchangés. Le nouvel outil de contenu SYNA (blog et textes) ne modifie pas le thème : P1 ne s'étend pas. |
+
+**Nouvelles PR Codex #249 → #275** : elles sont contenues dans le sommet, sauf les commits suivants.
+
+| PR | Commit absent | Nature |
+|---|---|---|
+| #250 | `8117a3f8` | Code vidéo, **repris par contenu** : lignes caractéristiques retrouvées dans `8eb15a6a` |
+| #250 | `f3026999` | Documentation |
+| #252 | `0b23a265` | Test identique dans X |
+| #253 | `603c3204`, `ee4d3740` | Documentation ; tests identiques dans X |
+| #254 | `d62aa36c` | Étape CI **reprise par contenu** (vérifiée) |
+| #255 | `9e5e171c` | Déjà présent (son diff inversé s'applique) |
+| #265 | `a5db29cb`, `accda0ed` | Documentation ; test identique dans X |
+
+**À ne pas rejouer.** Les têtes rouges #263, #266, #267 et #269 sont dépassées par des descendants verts contenus dans X.
+
+**Verdict inchangé** : préparé, **dépend de Codex** (CI #275 en cours ; #211 partielle selon Codex). C1 reste à corriger à l'intégration. **Pas prêt à fusionner.**
+
 ## 0. État et sources analysées (30 octobre 2026)
 
 | Élément | SHA | État |
