@@ -62,3 +62,13 @@ Elle supporte aussi bien le débutant (lecture calme, explications) que le profe
 
 Les maquettes détaillées de `04-MAQUETTES-ET-PROTOTYPE.md` sont toutes dans cette direction. Si le propriétaire en
 préfère une autre, les maquettes détaillées seront refaites avant tout développement.
+
+## Décision du propriétaire (commentaire du 31 octobre sur #282)
+
+« J'aime bien Plein cadre aussi, donc on doit pouvoir choisir et modifier à notre bon vouloir si on veut Encre ou
+Plein cadre. » **Encre et Plein cadre sont donc retenus tous les deux**, comme deux présentations d'un même SYNA
+(même moteur, même conversation, mêmes données, mêmes devis) ; Cockpit n'est pas retenu. Encre reste le mode par
+défaut proposé. Les 13 écrans et le prototype existent maintenant dans les deux modes. L'inconvénient noté plus haut
+pour Plein cadre (conversation éphémère) est levé : en Plein cadre, la conversation est une feuille repliable mais
+c'est **le même fil persistant** qu'en Encre. Détails, paramètres et contrat commun :
+[`06-DEUX-MODES.md`](06-DEUX-MODES.md).

@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYNA — point d'accès (remplace le bouton noir)</title>
+<link rel="stylesheet" href="encre.css">
+<style>
+body { overflow: auto; background: var(--paper); }
+.board { max-width: 1380px; margin: 0 auto; padding: 32px max(16px, 3vw) 64px; display: grid; gap: 36px; }
+.board h1 { margin: 0; font: 400 clamp(28px, 4vw, 40px)/1.1 var(--f-voice); letter-spacing: -.02em; }
+.board > header p { margin: 8px 0 0; color: var(--ink-2); max-width: 78ch; }
+.board > * { min-width: 0; }
+.dir h2 { margin: 0 0 4px; font: 500 22px var(--f-voice); }
+.dir > p { margin: 0 0 14px; color: var(--muted); font-size: 13.5px; max-width: 90ch; }
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.tile { border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; display: grid; grid-template-rows: auto 1fr; min-width: 0; }
+.tile > span { font: 500 10.5px var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--rule); background: var(--sheet); }
+.tile .zone { min-height: 150px; display: grid; place-items: center; padding: 18px; position: relative; }
+.tile .note { font-size: 12px; color: var(--muted); padding: 0 12px 12px; }
+@media (max-width: 1100px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .tiles { grid-template-columns: minmax(0, 1fr); } }
+
+/* ——— Encre : onglet signature intégré au bord de l'espace de travail ——— */
+.e-zone { background: var(--wash); }
+.e-tab { display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 14px 0 12px; border-radius: 10px; border: 1px solid var(--rule-2); background: var(--sheet); color: var(--ink); font: italic 500 19px var(--f-voice); }
+.e-tab i { width: 8px; height: 8px; background: var(--blue); }
+.e-tab kbd { font: 500 11px var(--f-mono); font-style: normal; color: var(--muted); border: 1px solid var(--rule); border-radius: 4px; padding: 2px 5px; }
+.e-tab.hover { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft); }
+.e-tab.focus { outline: 2px solid var(--blue); outline-offset: 3px; }
+.e-rail { position: absolute; left: 0; top: 0; bottom: 0; width: 44px; background: var(--sheet); border-right: 1px solid var(--rule); display: grid; justify-items: center; padding-top: 14px; }
+.e-rail b { writing-mode: vertical-rl; transform: rotate(180deg); font: italic 500 18px var(--f-voice); display: flex; gap: 10px; align-items: center; }
+.e-rail b::after { content: ""; width: 8px; height: 8px; background: var(--blue); }
+.e-rail.work b::after { animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .25; } }
+.e-open { width: 100%; max-width: 260px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; box-shadow: var(--shadow); }
+.e-open .h { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--rule); font: italic 500 18px var(--f-voice); }
+.e-open .h::before { content: ""; width: 7px; height: 7px; background: var(--blue); margin-right: 8px; display: inline-block; vertical-align: 3px; }
+.e-open .h small { font: 400 11px var(--f-mono); font-style: normal; color: var(--muted); }
+.e-open p { margin: 0; padding: 10px 12px 12px; font: 14.5px/1.45 var(--f-voice); border-left: 2px solid var(--blue); margin: 10px 12px 12px; padding: 0 0 0 10px; }
+.notice { display: inline-flex; align-items: center; gap: 8px; font: 500 12px var(--f-ui); color: var(--blue); background: var(--blue-soft); border: 1px solid var(--blue-line); border-radius: 999px; padding: 5px 10px; }
+.notice.bad { color: var(--bad); background: var(--bad-soft); border-color: color-mix(in srgb, var(--bad) 35%, transparent); }
+
+/* ——— Plein cadre : barre de commande ——— */
+.p-zone { background: #F2F3F5; font-family: "Onest", Arial, sans-serif; }
+.p-bar { display: flex; align-items: center; gap: 10px; width: 100%; max-width: 300px; height: 46px; padding: 0 6px 0 14px; border-radius: 16px; background: #101114; color: #fff; font: 14px "Onest", Arial, sans-serif; box-shadow: 0 16px 40px -20px rgba(16,17,20,.7); }
+.p-bar .dot { width: 9px; height: 9px; border-radius: 50%; background: #5B78FF; flex: none; }
+.p-bar span { flex: 1; color: rgba(255,255,255,.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.p-bar kbd { font: 500 11px "Geist Mono", monospace; color: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.2); border-radius: 4px; padding: 2px 5px; }
+.p-bar b { width: 34px; height: 34px; border-radius: 50%; background: #2443D6; display: grid; place-items: center; font-weight: 600; }
+.p-bar.focus { outline: 2px solid #2443D6; outline-offset: 3px; }
+.p-bar.work .dot { animation: pulse 1.4s ease-in-out infinite; }
+.p-bar.work span { color: #fff; }
+.p-chip { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 999px; background: #fff; color: #101114; font: 600 14px "Bricolage Grotesque", Arial, sans-serif; box-shadow: 0 10px 30px -16px rgba(16,17,20,.6); }
+.p-chip i { width: 9px; height: 9px; border-radius: 50%; background: #2443D6; }
+.p-sheet { width: 100%; max-width: 260px; background: #fff; border-radius: 18px; box-shadow: 0 24px 60px -28px rgba(16,17,20,.6); padding: 12px 14px; display: grid; gap: 6px; font: 14px/1.45 "Onest", Arial, sans-serif; color: #101114; }
+.p-sheet b { color: #2443D6; font: 700 14px "Bricolage Grotesque", Arial, sans-serif; display: flex; align-items: center; gap: 8px; }
+.p-sheet b::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #2443D6; }
+
+/* ——— Cockpit ——— */
+.c-zone { background: #090D16; color: #E6EAF2; font-family: "Instrument Sans", Arial, sans-serif; }
+.c-key { display: inline-flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px; border-radius: 8px; border: 1px solid #2A3448; background: #0F1522; font: 600 13px "JetBrains Mono", monospace; letter-spacing: .08em; color: #E6EAF2; }
+.c-key::after { content: "_"; color: #4D7CFF; animation: pulse 1.1s steps(1) infinite; }
+.c-key small { color: #8A93A6; font-weight: 500; letter-spacing: 0; }
+.c-key.focus { outline: 2px solid #4D7CFF; outline-offset: 3px; }
+.c-key.work { border-color: #E7B04B; }
+.c-state { font: 500 11px "JetBrains Mono", monospace; color: #E7B04B; }
+
+/* ——— Téléphones ——— */
+.phone { width: 200px; height: 300px; border-radius: 24px; border: 6px solid #121620; background: #fff; overflow: hidden; position: relative; }
+.phone img { width: 100%; height: 62%; object-fit: cover; }
+.phone .cta { position: absolute; left: 10px; right: 10px; top: 54%; height: 28px; background: #1d1a17; color: #fff; display: grid; place-items: center; font: 600 10px "Geist", Arial; letter-spacing: .08em; text-transform: uppercase; border-radius: 3px; }
+.phone .tb { position: absolute; left: 0; right: 0; bottom: 0; height: 42px; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--rule); background: #fff; font: 10px "Geist", Arial; color: #6b7289; }
+.phone .tb span { display: grid; place-items: center; }
+.phone .tb .on { color: var(--blue); font-weight: 600; }
+.phone .tb .on::before { content: ""; width: 6px; height: 6px; background: var(--blue); display: block; margin: 0 auto -6px; }
+.phone .pb { position: absolute; left: 8px; right: 8px; bottom: 8px; height: 36px; border-radius: 12px; background: #101114; color: rgba(255,255,255,.6); font: 11px "Onest", Arial; display: flex; align-items: center; gap: 6px; padding: 0 6px 0 10px; }
+.phone .pb i { width: 7px; height: 7px; border-radius: 50%; background: #5B78FF; }
+.phone .pb span { flex: 1; }
+.phone .pb b { width: 26px; height: 26px; border-radius: 50%; background: #2443D6; }
+.phone .reserve { position: absolute; left: 0; right: 0; bottom: 0; height: 52px; background: repeating-linear-gradient(45deg, rgba(36,67,214,.06) 0 6px, transparent 6px 12px); }
+
+.cmp-acc { margin-top: 4px; }
+.cmp-acc table { font-size: 13px; min-width: 760px; }
+.cmp-acc td, .cmp-acc th { vertical-align: top; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+</head>
+<body>
+<main class="board">
+  <header>
+    <div class="syna-mark"><span class="name">Syna</span><span class="mem">point d'accès · remplace la pastille noire flottante</span></div>
+    <h1>Un accès à SYNA qui fait partie du Studio, pas un bouton posé dessus</h1>
+    <p>Aujourd'hui : une grosse pastille noire « SYNA » fixée en bas à droite (<code>ConversationDock</code>), qui recouvre du contenu au téléphone. Ci-dessous, en gros plan, l'accès proposé dans chaque direction et tous ses états. Aucune pastille ne flotte au-dessus d'un panier, d'un bouton d'achat ou de la barre du bas.</p>
+  </header>
+
+  <section class="dir" aria-labelledby="d1">
+    <h2 id="d1">Encre · variante A « onglet signature intégré »</h2>
+    <p>SYNA a sa place fixe : la colonne de gauche. Repliée, elle devient un bord étroit où « Syna » est écrit à la verticale, dans sa typographie, avec son carré bleu. Raccourci Ctrl J (⌘ J sur Mac). Aucun élément ne flotte.</p>
+    <div class="tiles">
+      <div class="tile"><span>Fermé (repliée)</span><div class="zone e-zone"><div class="e-rail"><b>Syna</b></div><span class="mini" style="margin-left:40px">Espace de travail plein écran</span></div><p class="note">Bord de 44 px, toujours au même endroit ; un clic ou Ctrl J ouvre.</p></div>
+      <div class="tile"><span>Survol · focus clavier</span><div class="zone e-zone" style="gap:12px"><span class="e-tab hover"><i></i>Syna <kbd>Ctrl J</kbd></span><span class="e-tab focus"><i></i>Syna <kbd>Ctrl J</kbd></span></div><p class="note">Survol : filet bleu. Focus clavier : anneau bleu net, visible sur clair et sombre.</p></div>
+      <div class="tile"><span>Ouvert</span><div class="zone e-zone"><div class="e-open"><div class="h">Syna <small>mémoire · à jour</small></div><p>Je propose deux étapes, sans création IA.</p></div></div><p class="note">Colonne de 440 px, redimensionnable ; le focus passe au champ de saisie.</p></div>
+      <div class="tile"><span>Action en cours (repliée)</span><div class="zone e-zone"><div class="e-rail work"><b>Syna</b></div><span class="notice" style="margin-left:40px">3 images · en cours 2/3</span></div><p class="note">Le carré bleu respire ; une ligne d'état discrète. Mouvement coupé si « réduire les animations ».</p></div>
+      <div class="tile"><span>Notification utile</span><div class="zone e-zone"><span class="notice">● Devis prêt : 3 images, ≈ 6 %</span></div><p class="note">Seulement quand une décision vous attend (devis, résultat à vérifier). Pas de compteur rouge.</p></div>
+      <div class="tile"><span>Erreur</span><div class="zone e-zone"><span class="notice bad">▼ Image 2 : fournisseur sans réponse</span></div><p class="note">Dite en mots, avec l'élément concerné ; jamais relancée seule.</p></div>
+      <div class="tile"><span>Téléphone</span><div class="zone e-zone"><div class="phone"><img src="img/sillon-hero.jpg" alt=""><span class="cta">Ajouter au panier</span><div class="tb"><span class="on">Syna</span><span>Aperçu</span><span>Espaces</span><span>Suivi</span></div></div></div><p class="note">SYNA est un onglet de la barre du bas : rien ne couvre le bouton d'achat.</p></div>
+      <div class="tile"><span>Lecteur d'écran</span><div class="zone e-zone" style="place-items:start;font:12.5px/1.5 var(--f-mono);color:var(--ink-2)">bouton « Ouvrir Syna, raccourci Contrôle J »<br>état : « replié »<br>annonce : « Devis prêt »<br>(région polie, sans voler le focus)</div><p class="note">Bouton nommé, état annoncé, notifications en <code>aria-live="polite"</code>.</p></div>
+    </div>
+  </section>
+
+  <section class="dir" aria-labelledby="d2">
+    <h2 id="d2">Plein cadre · variante B « barre de commande »</h2>
+    <p>SYNA vit dans une barre de commande en bas, dans une zone réservée : la page s'arrête au-dessus, elle ne passe jamais dessous. Pendant une retouche à la main, elle se réduit en une pastille blanche « • Syna ». Les réponses s'ouvrent dans une feuille qui garde tout le fil.</p>
+    <div class="tiles">
+      <div class="tile"><span>Fermé</span><div class="zone p-zone"><div class="p-bar"><i class="dot"></i><span>Demandez à Syna…</span><kbd>Ctrl J</kbd><b>→</b></div></div><p class="note">La barre est l'accès ; pas d'icône de bulle de discussion.</p></div>
+      <div class="tile"><span>Réduite (travail à la main)</span><div class="zone p-zone"><span class="p-chip"><i></i>Syna</span></div><p class="note">Pendant un glisser-déposer ou une saisie, la barre se réduit pour libérer la vue.</p></div>
+      <div class="tile"><span>Focus clavier</span><div class="zone p-zone"><div class="p-bar focus"><i class="dot"></i><span>Demandez à Syna…</span><b>→</b></div></div><p class="note">Anneau cobalt ; Échap referme la feuille et rend le focus à l'élément d'origine.</p></div>
+      <div class="tile"><span>Ouvert (feuille)</span><div class="zone p-zone"><div class="p-sheet"><b>Syna</b>Voici la photo du lac à la place de l'image actuelle.</div></div><p class="note">Feuille à droite (ordinateur) ou en bas (téléphone) ; fil complet, défilable.</p></div>
+      <div class="tile"><span>Action en cours</span><div class="zone p-zone"><div class="p-bar work"><i class="dot"></i><span>3 images · 2/3 en cours</span><b>→</b></div></div><p class="note">Le point respire ; le texte dit ce qui se passe.</p></div>
+      <div class="tile"><span>Notification utile</span><div class="zone p-zone"><span class="p-chip"><i></i>Devis prêt · ≈ 6 %</span></div><p class="note">La pastille porte la décision attendue ; elle disparaît une fois lue.</p></div>
+      <div class="tile"><span>Téléphone</span><div class="zone p-zone"><div class="phone"><img src="img/sillon-hero.jpg" alt=""><span class="cta">Ajouter au panier</span><div class="reserve"></div><div class="pb"><i></i><span>Demandez à Syna…</span><b></b></div></div></div><p class="note">Zone réservée en bas (hachures) : l'aperçu du site s'arrête au-dessus.</p></div>
+      <div class="tile"><span>Clavier du téléphone ouvert</span><div class="zone p-zone"><div class="p-sheet" style="max-width:200px"><b>Syna</b><span class="mini">La feuille passe au-dessus du clavier ; l'élément sélectionné reste en vignette.</span></div></div><p class="note">Aucun champ caché par le clavier ; la feuille se cale sur la zone visible.</p></div>
+    </div>
+  </section>
+
+  <section class="dir" aria-labelledby="d3">
+    <h2 id="d3">Cockpit · variante C « console »</h2>
+    <p>Pour comparaison. La console SYNA est toujours visible à droite ; son en-tête sert d'accès et d'état.</p>
+    <div class="tiles">
+      <div class="tile"><span>Fermé</span><div class="zone c-zone"><span class="c-key">SYNA <small>Ctrl J</small></span></div><p class="note">Touche dans la barre d'outils.</p></div>
+      <div class="tile"><span>Focus</span><div class="zone c-zone"><span class="c-key focus">SYNA</span></div><p class="note">Anneau bleu signal.</p></div>
+      <div class="tile"><span>Action en cours</span><div class="zone c-zone" style="gap:8px"><span class="c-key work">SYNA</span><span class="c-state">● EXÉCUTION 1/2</span></div><p class="note">État permanent en mono.</p></div>
+      <div class="tile"><span>Téléphone</span><div class="zone c-zone"><span class="c-key">SYNA · onglet central</span></div><p class="note">Onglet du milieu de la barre basse.</p></div>
+    </div>
+  </section>
+
+  <section class="dir cmp-acc" aria-labelledby="d4">
+    <h2 id="d4">Comparaison des accès</h2>
+    <div class="panel" style="overflow-x:auto"><table class="t">
+      <thead><tr><th>Critère</th><th>A · onglet intégré (Encre)</th><th>B · barre de commande (Plein cadre)</th><th>C · console (Cockpit)</th><th>Avant · pastille noire</th></tr></thead>
+      <tbody>
+        <tr><td>Découvrabilité</td><td>Forte : place fixe, nom écrit</td><td>Très forte : champ « Demandez à Syna » toujours visible</td><td>Forte pour un expert</td><td>Moyenne : ressemble à un bouton d'assistance</td></tr>
+        <tr><td>Place occupée</td><td>440 px ouvert, 44 px replié</td><td>Bande de 64 px en bas ; feuille à la demande</td><td>380 px en permanence</td><td>Petite, mais par-dessus le contenu</td></tr>
+        <tr><td>Gêne panier / bouton d'achat / barre du bas</td><td>Aucune (onglet de la barre)</td><td>Aucune (zone réservée, jamais par-dessus)</td><td>Aucune</td><td><b>Oui</b> : recouvre du contenu au téléphone</td></tr>
+        <tr><td>Fil de conversation</td><td>Toujours lisible</td><td>Dans la feuille, complet</td><td>Toujours lisible</td><td>Panneau séparé</td></tr>
+        <tr><td>Accessibilité</td><td>Bouton nommé, Ctrl J, focus rendu</td><td>Champ nommé, Échap, focus rendu</td><td>Idem</td><td>Bouton sans raccourci</td></tr>
+        <tr><td>Recommandation</td><td colspan="2"><b>A en mode Encre, B en mode Plein cadre</b> : les deux accès appartiennent à leur mode et ouvrent la même conversation.</td><td>Non retenu</td><td>À retirer</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+</main>
+</body>
+</html>

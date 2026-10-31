@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SYNA — site, aperçu et sélection d'un élément (Encre)</title>
 <link rel="stylesheet" href="encre.css">
+<link rel="stylesheet" href="plein.css">
+<script src="mode.js"></script>
 <style>
 .site3 { display: grid; grid-template-columns: 240px minmax(0, 1fr) 340px; min-height: 0; }
 .struct { border-right: 1px solid var(--rule); background: var(--sheet); overflow: auto; padding: 14px 10px; display: grid; align-content: start; gap: 2px; }
@@ -23,7 +25,9 @@
 .dish span { color: #6d655d; font-size: 13px; }
 .dish .p { font-family: var(--f-mono); color: #1d1a17; }
 .managed-tag { position: absolute; right: 14px; bottom: 14px; background: var(--na-soft); color: var(--na); border: 1px dotted var(--na); border-radius: 6px; padding: 4px 8px; font: 500 11px var(--f-ui); }
-@media (max-width: 760px) { .site3 { grid-template-columns: minmax(0, 1fr); } .struct, .inspect { display: none; } }
+.main-narrow { grid-template-columns: 380px minmax(0, 1fr); }
+[data-mode="plein"] .main-narrow { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 760px) { .main-narrow { grid-template-columns: minmax(0, 1fr); } .site3 { grid-template-columns: minmax(0, 1fr); } .struct, .inspect { display: none; } }
 </style>
 </head>
 <body>
@@ -33,7 +37,7 @@
     <nav class="spaces" aria-label="Espaces de travail"><a href="#" aria-current="page">Site</a><a href="#">Carte</a><a href="#">Rendez-vous</a><a href="#">Marque</a><a href="#">Images</a><a href="#">Diffusion</a><a href="#">Projet</a></nav>
     <div class="meter"><div class="budget"><span>Budget IA du mois · <b>81 %</b> restant</span><div class="gauge"><i style="width:81%"></i></div></div><div class="avatar">TS</div></div>
   </header>
-  <div class="main" style="grid-template-columns: 380px minmax(0,1fr)">
+  <div class="main main-narrow">
     <section class="convo" aria-label="Conversation avec SYNA">
       <div class="convo-head"><div class="syna-mark"><span class="name">Syna</span><span class="mem">mémoire du projet · à jour</span></div></div>
       <div class="thread">

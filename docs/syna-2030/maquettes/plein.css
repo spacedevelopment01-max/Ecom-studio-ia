@@ -1,0 +1,119 @@
+/*
+ * SYNA 2030 — mode « Plein cadre » (maquettes, #282). Ne fait PAS partie du Studio.
+ *
+ * Principe démontré : le MÊME balisage que le mode Encre (conversation, espace de travail, cartes, états) reçoit une
+ * seconde présentation, activée par <html data-mode="plein">. Aucune page n'est dupliquée : un seul jeu de
+ * composants, deux présentations. Le résultat (site, image, vidéo) occupe l'écran ; SYNA devient une barre de commande
+ * et une feuille contextuelle qui garde tout le fil de la conversation.
+ */
+[data-mode="plein"] {
+  --paper: #F2F3F5; --sheet: #FFFFFF; --wash: #ECEEF2; --ink: #101114; --ink-2: #464A55; --muted: #747985;
+  --rule: #E3E5EA; --rule-2: #D3D6DD; --blue: #2443D6; --blue-deep: #1A33A8; --blue-soft: #E8ECFC; --blue-line: rgba(36, 67, 214, .3);
+  --f-voice: "Onest", "Helvetica Neue", Arial, sans-serif; --f-ui: "Onest", "Helvetica Neue", Arial, sans-serif;
+  --f-display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --r: 16px; --shadow: 0 1px 0 rgba(16,17,20,.04), 0 24px 60px -30px rgba(16,17,20,.45);
+}
+@media (prefers-color-scheme: dark) { :root[data-mode="plein"]:not([data-theme="light"]) {
+  --paper: #0E0F12; --sheet: #17191E; --wash: #121418; --ink: #EEF0F4; --ink-2: #C3C7D0; --muted: #8D929D; --rule: #262932; --rule-2: #313541;
+  --blue: #7C93FF; --blue-deep: #A3B3FF; --blue-soft: #1A2148; --blue-line: rgba(124,147,255,.35); } }
+:root[data-mode="plein"][data-theme="dark"] {
+  --paper: #0E0F12; --sheet: #17191E; --wash: #121418; --ink: #EEF0F4; --ink-2: #C3C7D0; --muted: #8D929D; --rule: #262932; --rule-2: #313541;
+  --blue: #7C93FF; --blue-deep: #A3B3FF; --blue-soft: #1A2148; --blue-line: rgba(124,147,255,.35); }
+
+/* Le cadre : l'espace de travail prend tout l'écran, la barre du haut devient des pastilles posées dessus. */
+[data-mode="plein"] .app { grid-template-rows: minmax(0, 1fr); position: relative; }
+[data-mode="plein"] .top { position: absolute; z-index: 20; left: 0; right: 0; top: 0; height: 64px; background: none; border: 0; padding: 0 20px; grid-template-columns: auto minmax(0, 1fr) auto; }
+[data-mode="plein"] .brand { background: var(--sheet); border-radius: 999px; padding: 9px 16px; box-shadow: var(--shadow); }
+[data-mode="plein"] .brand .studio { display: none; }
+[data-mode="plein"] .brand .project { font: 700 15px/1 var(--f-display); letter-spacing: -.01em; }
+[data-mode="plein"] .brand .project em { font: 400 13px var(--f-ui); }
+[data-mode="plein"] .spaces { justify-content: center; background: var(--sheet); border-radius: 999px; padding: 5px; box-shadow: var(--shadow); justify-self: center; }
+[data-mode="plein"] .spaces a { border-radius: 999px; padding: 7px 12px; font-size: 13px; }
+[data-mode="plein"] .spaces a[aria-current="page"] { background: var(--ink); color: var(--paper); box-shadow: none; }
+[data-mode="plein"] .meter { background: var(--sheet); border-radius: 999px; padding: 6px 6px 6px 14px; box-shadow: var(--shadow); }
+[data-mode="plein"] .budget { min-width: 120px; }
+[data-mode="plein"] .main { grid-template-columns: minmax(0, 1fr); }
+[data-mode="plein"] .work { background: var(--paper); }
+[data-mode="plein"] .work-bar { padding: 72px 24px 10px; background: none; border: 0; }
+[data-mode="plein"] .crumb { font: 700 16px var(--f-display); }
+[data-mode="plein"] .stage { padding: 4px 24px 120px; }
+[data-mode="plein"] .main > .convo + * { margin-right: 452px; }
+[data-mode="plein"] .frame { border-radius: 18px; }
+[data-mode="plein"] .panel, [data-mode="plein"] .opt, [data-mode="plein"] .cal { border-radius: 18px; }
+
+/* SYNA : feuille contextuelle à droite (fil complet, défilable) + barre de commande en bas. */
+[data-mode="plein"] .convo { position: fixed; z-index: 30; right: 20px; top: 76px; bottom: 104px; width: 420px; border: 0; border-radius: 22px; box-shadow: 0 30px 80px -30px rgba(16,17,20,.55); grid-template-rows: auto minmax(0, 1fr); overflow: hidden; }
+[data-mode="plein"] .convo-head { border-bottom: 0; padding: 16px 18px 6px; }
+[data-mode="plein"] .syna-mark .name { font: 700 16px/1 var(--f-display); font-style: normal; color: var(--blue); }
+[data-mode="plein"] .syna-mark .name::before { border-radius: 50%; width: 10px; height: 10px; vertical-align: 0; }
+[data-mode="plein"] .thread { padding: 8px 18px 18px; gap: 14px; }
+[data-mode="plein"] .msg-syna { font: 400 15px/1.55 var(--f-ui); padding-left: 0; }
+[data-mode="plein"] .msg-syna::before { display: none; }
+[data-mode="plein"] .msg-syna .who { color: var(--blue); }
+[data-mode="plein"] .msg-syna.working .who::after { content: " · en cours"; }
+[data-mode="plein"] .msg-user { border-radius: 16px; background: var(--wash); }
+[data-mode="plein"] .card { border-radius: 16px; }
+[data-mode="plein"] .card-f { border-radius: 0 0 16px 16px; }
+[data-mode="plein"] .btn { border-radius: 999px; }
+[data-mode="plein"] .state { border-radius: 999px; padding: 5px 9px 5px 8px; }
+[data-mode="plein"] .composer { position: fixed; z-index: 40; left: 50%; bottom: 22px; transform: translateX(-50%); width: min(780px, calc(100% - 40px)); background: var(--ink); border: 0; border-radius: 22px; padding: 8px 10px 8px 14px; box-shadow: 0 24px 60px -24px rgba(16,17,20,.7); display: flex; align-items: center; gap: 10px; }
+[data-mode="plein"] .composer .field { flex: 1; min-width: 0; }
+[data-mode="plein"] .composer .ctx { flex: none; max-width: 40%; }
+[data-mode="plein"] .composer .ctx { margin: 0; flex-wrap: nowrap; overflow: hidden; }
+[data-mode="plein"] .composer .ctx .chip:not(.sel) { display: none; }
+[data-mode="plein"] .composer .chip.sel { background: rgba(255,255,255,.12); border-color: transparent; color: #fff; }
+[data-mode="plein"] .composer .field { border: 0; background: none; padding: 0; box-shadow: none; }
+[data-mode="plein"] .composer .field textarea { color: #fff; min-height: 24px; padding: 6px 0; font-size: 15px; }
+[data-mode="plein"] .composer .field textarea::placeholder { color: rgba(255,255,255,.55); }
+[data-mode="plein"] .composer .icon-btn { color: rgba(255,255,255,.7); }
+[data-mode="plein"] .composer .send { border-radius: 50%; width: 40px; height: 40px; }
+[data-mode="plein"] .composer .hint { display: none; }
+[data-mode="plein"] .dialog { border-radius: 22px; }
+[data-mode="plein"] .dialog-h h2, [data-mode="plein"] .big-pct, [data-mode="plein"] h1, [data-mode="plein"] .site-row h3, [data-mode="plein"] .site-hero .copy h2 { font-family: var(--f-display); letter-spacing: -.02em; }
+
+/* Téléphone : le résultat reste visible, la feuille SYNA se replie au-dessus de la barre de commande. */
+@media (max-width: 760px) {
+  [data-mode="plein"] .app { grid-template-rows: minmax(0, 1fr); }
+  [data-mode="plein"] .top { height: 56px; padding: 0 10px; grid-template-columns: minmax(0, 1fr) auto; }
+  [data-mode="plein"] .work { display: grid; }
+  [data-mode="plein"] .convo { display: grid; left: 0; right: 0; top: auto; bottom: 0; width: auto; max-height: 52vh; border-radius: 22px 22px 0 0; padding-bottom: 76px; }
+  [data-mode="plein"] .convo::before { content: ""; position: absolute; left: 50%; top: 8px; width: 40px; height: 4px; margin-left: -20px; border-radius: 4px; background: var(--rule-2); }
+  [data-mode="plein"] .main > .convo + * { margin-right: 0; }
+  [data-mode="plein"] .work-bar { padding: 64px 12px 8px; }
+  [data-mode="plein"] .stage { padding: 0 12px 52vh; }
+  [data-mode="plein"] .composer { bottom: 10px; width: calc(100% - 20px); }
+  [data-mode="plein"] .composer .ctx { display: none; }
+  [data-mode="plein"] .tabbar { display: none; }
+  [data-mode="plein"] .m-peek { display: none; }
+}
+
+/* ——— Sélecteur de mode (injecté par mode.js dans la barre du haut) ——— */
+.mode-switch { display: inline-flex; border: 1px solid var(--rule-2); border-radius: 999px; padding: 2px; background: var(--sheet); }
+.mode-switch button { border: 0; background: none; height: 26px; padding: 0 10px; border-radius: 999px; font: 500 12px var(--f-ui); color: var(--muted); white-space: nowrap; }
+.mode-switch button[aria-pressed="true"] { background: var(--blue); color: #fff; }
+@media (max-width: 760px) { .mode-switch button { padding: 0 8px; } }
+
+/* Ajustements par écran (mêmes composants, présentation Plein cadre) */
+[data-mode="plein"] .app > .home { padding-top: 64px; }
+[data-mode="plein"] .site3 { grid-template-columns: minmax(0, 1fr) 300px; }
+[data-mode="plein"] .site3 .struct { display: none; }
+[data-mode="plein"] .site3 .inspect { margin-top: 64px; border-radius: 18px 18px 0 0; border: 0; box-shadow: var(--shadow); }
+@media (max-width: 760px) { [data-mode="plein"] .site3 { grid-template-columns: minmax(0, 1fr); } }
+
+/* Navigation au téléphone (écran 11) : pas de barre d'onglets, une barre de commande et un menu en pastille. */
+[data-mode="plein"] .ph .top { position: static; height: 46px; background: var(--sheet); padding: 0 12px; }
+[data-mode="plein"] .ph .brand { box-shadow: none; padding: 0; }
+[data-mode="plein"] .ph .tabbar { display: none; }
+[data-mode="plein"] .ph { grid-template-rows: 46px minmax(0, 1fr); }
+.ph-cmd { display: none; }
+[data-mode="plein"] .ph-cmd { display: flex; position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 5; align-items: center; gap: 8px; background: var(--ink); color: #fff; border-radius: 18px; padding: 8px 8px 8px 14px; font-size: 14px; }
+[data-mode="plein"] .ph-cmd span { flex: 1; color: rgba(255,255,255,.6); }
+[data-mode="plein"] .ph-cmd b { width: 34px; height: 34px; border-radius: 50%; background: var(--blue); display: grid; place-items: center; }
+[data-mode="plein"] .ph .sheet { bottom: 64px; border-radius: 18px; left: 8px; right: 8px; }
+[data-mode="plein"] .ph .fab { display: none; }
+@media (min-width: 761px) and (max-width: 1180px) {
+  [data-mode="plein"] .convo { width: 360px; }
+  [data-mode="plein"] .main > .convo + * { margin-right: 388px; }
+  [data-mode="plein"] .main { grid-template-columns: minmax(0, 1fr); }
+  [data-mode="plein"] .spaces a { padding: 7px 8px; }
+}

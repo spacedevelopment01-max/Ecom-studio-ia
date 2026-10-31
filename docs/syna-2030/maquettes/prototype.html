@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Prototype SYNA 2030</title>
 <link rel="stylesheet" href="encre.css">
+<link rel="stylesheet" href="plein.css">
+<script src="mode.js"></script>
 <style>
 /* Prototype de parcours : données fictives de démonstration, aucun appel, aucun serveur. */
 .proto { display: grid; grid-template-rows: 56px auto minmax(0, 1fr); height: 100vh; min-height: 640px; }
@@ -18,7 +20,14 @@
 .stepper button[aria-current="step"] { color: var(--ink); border-bottom-color: var(--blue); }
 .stepper button.done { color: var(--ink-2); }
 .pmain { display: grid; grid-template-columns: 440px minmax(0, 1fr); min-height: 0; }
-.pmain .convo { grid-template-rows: auto minmax(0, 1fr) auto auto; }
+.pmain .convo { grid-template-rows: auto minmax(0, 1fr) auto auto auto; }
+.pmain .composer .hint { display: none; }
+[data-mode="plein"] .pmain { grid-template-columns: minmax(0, 1fr); }
+[data-mode="plein"] .pmain .convo { top: 128px; grid-template-rows: auto minmax(0, 1fr) auto auto; }
+[data-mode="plein"] .pmain > .convo + .work { margin-right: 452px; }
+[data-mode="plein"] .pmain .work-bar { padding-top: 14px; }
+[data-mode="plein"] .ptop { background: var(--paper); }
+@media (max-width: 760px) { [data-mode="plein"] .pmain > .convo + .work { margin-right: 0; } [data-mode="plein"] .pmain .thread { overflow: auto; } [data-mode="plein"] .pmain .convo { top: auto; } }
 .nav-steps { display: flex; justify-content: space-between; gap: 8px; padding: 10px 16px; border-top: 1px solid var(--rule); background: var(--paper); }
 .why { font-size: 12.5px; color: var(--muted); padding: 0 16px 10px; }
 .preview { position: relative; }
@@ -39,7 +48,7 @@
   .pmain .convo { border-right: 0; border-bottom: 1px solid var(--rule); }
   .pmain .work { display: grid; min-height: 460px; }
   .pmain .thread { max-height: none; overflow: visible; }
-  .pmain .convo { grid-template-rows: auto auto auto auto; }
+  .pmain .convo { grid-template-rows: auto auto auto auto auto; }
   .pmain { display: block; }
   .pmain .work { grid-template-rows: auto auto; min-height: 0; }
   .proto { height: auto; min-height: 100vh; }
@@ -50,6 +59,8 @@
 <div class="proto">
   <div class="ptop">
     <div class="syna-mark"><span class="name">Syna</span><span class="mem">prototype de parcours · données fictives</span></div>
+    <span data-mode-host style="display:inline-flex;gap:8px;align-items:center"></span>
+    <button class="btn small" id="ask-mode" type="button">Dire à Syna « passe en plein cadre »</button>
     <div class="tabs" role="group" aria-label="Parcours"><button id="p-prod" aria-pressed="true">Boutique · SILLON</button><button id="p-serv" aria-pressed="false">Services · Table Saison</button></div>
   </div>
   <nav class="stepper" id="stepper" aria-label="Étapes du parcours"></nav>
@@ -58,6 +69,7 @@
       <div class="convo-head"><div class="syna-mark"><span class="name">Syna</span><span class="mem" id="mem">mémoire du projet · à jour</span></div><span class="state" id="phase"></span></div>
       <div class="thread" id="thread" aria-live="polite"></div>
       <p class="why" id="why"></p>
+      <div class="composer"><div class="ctx" id="ctx"></div><div class="field"><span></span><label class="sr" for="draft">Message à Syna</label><textarea id="draft" rows="1" placeholder="Demandez à Syna…">Et ajoute aussi un coffret cadeau</textarea><button class="send" type="button" aria-label="Envoyer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button></div></div>
       <div class="nav-steps"><button class="btn" id="prev">← Précédent</button><button class="btn primary" id="next">Suivant →</button></div>
     </section>
     <section class="work" aria-label="Espace de travail">
@@ -139,12 +151,14 @@ const flows = {
       why: "L'écran Carte reste la référence ; Syna l'ouvre au bon endroit sans le remplacer." },
   ] },
 };
-let flow = "prod", i = 0;
+let flow = "prod", i = 0; const extra = [];
 const $ = (id) => document.getElementById(id);
 function render() {
   const f = flows[flow], s = f.steps[i];
   $("stepper").innerHTML = f.steps.map((x, j) => `<button data-j="${j}" class="${j < i ? "done" : ""}" ${j === i ? 'aria-current="step"' : ""}><b>${String(j + 1).padStart(2, "0")}</b>${x.k}</button>`).join("");
-  $("thread").innerHTML = s.thread();
+  $("thread").innerHTML = s.thread() + extra.join("");
+  const sel = i >= 2 ? (flow === "prod" ? "photo · finition Cuivre" : "bouton · bannière d'accueil") : "";
+  $("ctx").innerHTML = sel ? `<span class="chip sel">Sélection : ${sel}</span>` : "";
   $("stage").innerHTML = s.stage();
   $("why").textContent = s.why;
   $("phase").outerHTML = `<span id="phase">${s.phase}</span>`;
@@ -160,7 +174,14 @@ $("next").addEventListener("click", () => { i = i === flows[flow].steps.length -
 $("prev").addEventListener("click", () => { if (i > 0) { i--; render(); } });
 for (const [id, key] of [["p-prod", "prod"], ["p-serv", "serv"]]) $(id).addEventListener("click", () => { flow = key; i = 0; $("p-prod").setAttribute("aria-pressed", key === "prod"); $("p-serv").setAttribute("aria-pressed", key === "serv"); render(); });
 document.addEventListener("keydown", (e) => { if (e.target.closest("input,textarea,select")) return; if (e.key === "ArrowRight") $("next").click(); if (e.key === "ArrowLeft") $("prev").click(); });
-const h = location.hash.slice(1); if (h === "services") $("p-serv").click(); else render();
+$("ask-mode").addEventListener("click", () => {
+  const to = document.documentElement.dataset.mode === "plein" ? "encre" : "plein";
+  extra.push(userMsg(to === "plein" ? "Passe en plein cadre." : "Remets Encre."));
+  extra.push(syna([`C'est fait : mode ${to === "plein" ? "Plein cadre" : "Encre"}. Réglage d'affichage, exécuté sur place, sans IA et sans coût. Votre sélection, votre brouillon et l'étape en cours sont conservés.`]));
+  window.synaSetMode(to); render();
+});
+document.addEventListener("syna-mode", (e) => { $("ask-mode").textContent = e.detail === "plein" ? "Dire à Syna « remets Encre »" : "Dire à Syna « passe en plein cadre »"; });
+const h = location.hash.slice(1); if (/services/.test(h)) $("p-serv").click(); else render();
 </script>
 </body>
 </html>

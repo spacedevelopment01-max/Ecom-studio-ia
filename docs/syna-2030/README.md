@@ -16,6 +16,9 @@ Version étudiée : `main` à `1c406f50` (31 octobre 2026).
 | 4 | Prototype de parcours (produits et services) | `maquettes/prototype.html` |
 | 5 | Plan de migration par lots, parité, tests, retour arrière, répartition Claude / Codex / propriétaire | [`05-PLAN-MIGRATION.md`](05-PLAN-MIGRATION.md) |
 | 6 | Captures ordinateur et téléphone | `captures/` (maquettes et prototype), `captures/avant/` (Studio actuel) |
+| 7 | **Nouvelles consignes du 31 octobre** : accès à SYNA à la place de la pastille noire, deux modes Encre + Plein cadre, personnalisation, contrat commun, tests de bascule | [`06-DEUX-MODES.md`](06-DEUX-MODES.md), `maquettes/acces-syna.html`, `maquettes/personnaliser.html`, sélecteur « Encre / Plein cadre » sur chaque écran (`maquettes/plein.css`, `mode.js`) |
+| 8 | Captures des deux modes côte à côte (ordinateur, tablette, téléphone) et bascule | `captures/deux-modes/` (14 planches + 8 captures de bascule + 2 gros plans d’accès) |
+| 9 | Scripts de captures et de test de bascule (navigateur automatisé) | `outils/` (`shoot2.cjs`, `full.cjs`, `bascule.cjs`) |
 
 Pour ouvrir les maquettes : télécharger le dossier `maquettes/` et ouvrir `maquettes/index.html` dans un navigateur
 (fonctionne hors ligne : polices et images sont dans le dossier).
@@ -32,10 +35,17 @@ Pour ouvrir les maquettes : télécharger le dossier `maquettes/` et ouvrir `maq
 - Les 13 maquettes, les 3 directions et les 2 parcours du prototype affichés par un navigateur automatisé à 1440 et
   390 px : aucune page plus large que l'écran, aucune image manquante, polices chargées, aucune erreur JavaScript.
 
+- Deux modes (31 octobre) : les 13 écrans, le prototype, l'accès à SYNA et le panneau « Personnaliser » affichés dans
+  chaque mode à 1440, 1024 et 390 px (84 affichages) : aucune page plus large que l'écran, aucune image manquante,
+  aucune erreur JavaScript. Test de bascule (`outils/bascule.cjs`) sur les trois tailles : après passage Encre → Plein
+  cadre → Encre, le fil, l'étape, la sélection et le brouillon tapé sont identiques.
+
 **Ce qui n'a pas été vérifié**
 - Aucun message envoyé à SYNA, aucun fournisseur réel ou simulé appelé.
 - Lecteur d'écran et contrastes mesurés : non faits (structure accessible prévue dans les maquettes).
-- Mode sombre des maquettes : écrit, non capturé.
+- Mode sombre des maquettes : écrit (réglable dans `personnaliser.html`), non capturé.
+- Les deux modes n'existent que dans les maquettes : aucun code du Studio n'a été modifié, la pastille noire est
+  toujours là dans le Studio.
 - Les points marqués « à vérifier » dans l'inventaire (surtout les plafonds de dépense côté serveur).
 - Aucune comparaison pixel à pixel n'est revendiquée.
 
@@ -49,7 +59,8 @@ Pour ouvrir les maquettes : télécharger le dossier `maquettes/` et ouvrir `maq
 
 ## Décisions attendues du propriétaire
 
-1. La direction artistique (recommandée : **Encre**).
+1. L'apparence des deux modes **Encre** (par défaut) et **Plein cadre** (toujours disponible), et l'accès à SYNA qui
+   remplace la pastille noire (`maquettes/acces-syna.html`).
 2. Les maquettes et le prototype (validation ou changements).
 3. Le tableau de suppression (`02-INVENTAIRE.md`) et le plan par lots (`05-PLAN-MIGRATION.md`).
 4. L'autorisation du lot 0 seul (fondations, aucun changement visible des parcours).
