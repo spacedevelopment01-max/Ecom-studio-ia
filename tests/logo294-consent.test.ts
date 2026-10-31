@@ -1,0 +1,101 @@
+/** Real native routes/SQLite/queue/LogoV2; injected drawings, no network or actual provider expense. */
+import { beforeEach, afterEach, it, expect, vi } from 'vitest';
+let sessionUser: any = null;
+vi.mock('@/lib/auth', async (original) => ({ ...await original<object>(), requireUser: async () => sessionUser }));
+vi.mock('@/lib/ai/config', async (original) => ({ ...await original<object>(), activeProviderKey: () => 'SYNTHETIC-NOT-A-KEY' }));
+import * as route from '@/app/api/projects/[id]/brand/logo-v2/route';
+import * as legacy from '@/app/api/projects/[id]/brand/logo/route';
+import { account, project } from './conversation209-fixtures';
+import { validatedBrand, directionIdentity } from './preparation-mission-fixtures';
+import { id, one, all, run } from '@/lib/db';
+import { setJsonSetting } from '@/lib/settings';
+import { REQUIRED_LOGO_PROVIDER, REQUIRED_LOGO_MODEL } from '@/lib/ai/logo-policy';
+import { quoteNativeLogo, confirmNativeLogo, runNativeLogo } from '@/lib/logo-v2/native-consent';
+import { claimNext, JobContext, completeJob, failJob, getJob, enqueue } from '@/lib/jobs';
+import { currentSeries, directionSeries } from '@/lib/logo-v2/direction-series';
+import { loadProject, saveProduct } from '@/lib/projects';
+import { draftsFor, mockAi } from './logo-v2-mock';
+import { artFixture } from './logo-v2-fixtures';
+import { ART_CRITERIA } from '@/lib/logo-v2/types';
+import { projectAccountKey } from '@/lib/project-billing';
+const input = { operation: 'generate', style: 'auto', renew: false, feedback: '' };
+beforeEach(() => {vi.stubEnv('OPENAI_API_KEY','sk-test-logo294-not-a-real-credential');vi.stubEnv('ANTHROPIC_API_KEY','sk-ant-test-logo294-not-a-real-credential'); vi.stubGlobal('fetch', vi.fn(() => { throw Error('External network forbidden'); })); setJsonSetting('billing.markup', 1); setJsonSetting('ai.prices', { [`${REQUIRED_LOGO_PROVIDER}:${REQUIRED_LOGO_MODEL}`]: { unit: 'image', perImage: 0.1, inputPerM: 0.1 } }); setJsonSetting('ai.prices.checkedAt', Date.now()); setJsonSetting('ai.media.models', { [`${REQUIRED_LOGO_PROVIDER}:${REQUIRED_LOGO_MODEL}`]: { enabled: true, confirmedAt: Date.now() } }); });
+afterEach(() => { run("UPDATE jobs SET status='cancelled' WHERE type LIKE 'brand.logo%' AND status IN ('queued','running')"); vi.unstubAllGlobals();vi.unstubAllEnvs(); });
+async function fixture() { const u = await account(), pid = project(u); validatedBrand(pid); sessionUser = u; return { u, pid }; }
+const request = (pid: string, body: unknown) => new Request(`http://localhost/api/projects/${pid}/brand/logo-v2`, { method: 'POST', headers: { origin: 'http://localhost', 'content-type': 'application/json' }, body: JSON.stringify(body) });
+const context = (pid: string) => ({ params: Promise.resolve({ id: pid }) });
+const consent = (q: {
+    id: string;
+    maximumPct: number;
+}) => ({ quoteId: q.id, maximumPct: q.maximumPct, confirmation: true as const, requestId: id() });
+const jobs = (pid: string) => all('SELECT * FROM jobs WHERE project_id=?', pid);
+function fake(options: {
+    beforeDraw?: () => void;
+    fail?: boolean;
+    bad?: string;
+} = {}) { const draw = vi.fn(async (t: any) => { options.beforeDraw?.(); if (options.fail)
+    throw Error('Provider failure, no automatic retry'); return artFixture(Number(t.id.slice(1))); }), review = vi.fn(async (_b: Buffer, t: any, _brief: any, expected: any) => ({ criteria: Object.fromEntries(ART_CRITERIA.map(k => [k, 9])), textRead: expected.name, nameExact: true, extraText: false, nameBox: null, clumsyCliche: false, resemblesKnownBrand: false, amateur: t.id === options.bad, artifacts: false, person: false, genericConcept: false, issues: t.id === options.bad ? ['Synthetic quality failure'] : [], needsSimplifiedMark: true, fix: { target: 'none', instruction: '' } })); const ai = { ...mockAi({ calls: [] }), territories: vi.fn(async (b: any) => draftsFor(b).slice(0, 3).map((t, i) => ({ ...t, identity: directionIdentity(i), descriptor: null, style: (['typographic', 'monogram', 'gradient'] as const)[i], colors: [directionIdentity(i).palette.primary], imageBrief: 'Une marque nette, des formes travaillées et une composition claire pour le métier.' }))), artworkRoute: () => ({ provider: REQUIRED_LOGO_PROVIDER, model: REQUIRED_LOGO_MODEL }), drawArtwork: draw, reviewArtwork: review }; return { ai: ai as any, draw, review }; }
+async function execute(jid: string, f = fake()) { const job = claimNext(['brand.logo.v2', 'brand.logo.v2.redraw'])!; expect(job.id).toBe(jid); try {
+    const result = await runNativeLogo(new JobContext(job), f.ai);
+    completeJob(job.id, result);
+    return { result, f };
+}
+catch (e) {
+    failJob(job, e, { permanent: true });
+    throw e;
+} }
+it('native legacy regeneration without quote: no queued purchase', async () => { const f = await fixture(); const response = await legacy.POST(request(f.pid, { regenerate: true }), context(f.pid)); expect(response.status).toBe(409); expect(jobs(f.pid)).toHaveLength(0); });
+it('V2 without consent or with confirmation:false: no queued purchase', async () => { const f = await fixture(); for (const body of [{ action: 'generate' }, { action: 'generate', confirmation: false, quoteId: id(), maximumPct: 1, requestId: id() }]) {
+    expect((await route.POST(request(f.pid, body), context(f.pid))).status).toBe(400);
+} expect(jobs(f.pid)).toHaveLength(0); });
+it('real quote → explicit HTTP consent → idempotent job → native three-logo receipt, no active logo replacement', async () => { const f = await fixture(), brand = structuredClone(loadProject(f.pid).brand); const quoted = await route.POST(request(f.pid, { action: 'quote', ...input }), context(f.pid)); expect(quoted.status).toBe(200); const q = (await quoted.json()).quote; expect(q.maximumPct).toBeGreaterThan(0); expect(jobs(f.pid)).toHaveLength(0); const command = { action: 'generate', ...input, ...consent(q) }; const [a, b] = await Promise.all([route.POST(request(f.pid, command), context(f.pid)), route.POST(request(f.pid, command), context(f.pid))]); expect(a.status).toBe(200); expect(b.status).toBe(200); const first = await a.json(), second = await b.json(); expect(second.jobId).toBe(first.jobId); expect(jobs(f.pid)).toHaveLength(1); const done = await execute(first.jobId); expect(done.f.draw).toHaveBeenCalledTimes(3); expect(done.result.delivery.delivered).toBe(3); expect(currentSeries(f.pid)?.status).toBe('complete'); expect(loadProject(f.pid).brand).toEqual(brand); expect(confirmNativeLogo(f.u, f.pid, { quoteId: command.quoteId, maximumPct: command.maximumPct, confirmation: true, requestId: command.requestId }, input).jobId).toBe(first.jobId); }, 60000);
+it.each(['amount', 'input', 'expired', 'identity', 'budget', 'price', 'foreign', 'revoked'] as const)('%s changed: reject BEFORE enqueue', async (mode) => {
+    const f = await fixture(), q = quoteNativeLogo(f.u, f.pid, input), c = consent(q);
+    let user = f.u, operation = input;
+    if (mode === 'amount')
+        c.maximumPct += 1;
+    if (mode === 'input')
+        operation = { ...input, style: 'minimal' };
+    if (mode === 'expired')
+        run("UPDATE memory SET value=json_set(value,'$.expiresAt',0) WHERE project_id=? AND key=?", f.pid, 'logo.native.consent.' + q.id);
+    if (mode === 'identity') {
+        const p = loadProject(f.pid);
+        saveProduct(f.pid, { ...p.product, summary: 'Changed manually' });
+    }
+    if (mode === 'budget')
+        run('UPDATE wallets SET monthly_used=monthly_used+1 WHERE user_id=?', projectAccountKey(f.pid));
+    if (mode === 'price')
+        setJsonSetting('billing.markup', 1.1);
+    if (mode === 'foreign')
+        user = { ...await account(), role: 'admin' };
+    if (mode === 'revoked')
+        run("UPDATE subscriptions SET status='canceled' WHERE project_id=?", f.pid);
+    expect(() => confirmNativeLogo(user, f.pid, c, operation)).toThrow();
+    expect(jobs(f.pid)).toHaveLength(0);
+});
+it('worker refuses unsigned queued job before any provider request', async () => { const f = await fixture(), job = enqueue({ userId: f.u.id, projectId: f.pid, type: 'brand.logo.v2', payload: { projectId: f.pid }, maxAttempts: 1 }), provider = fake(); await expect(runNativeLogo(new JobContext(job), provider.ai)).rejects.toThrow('Autorisation économique'); expect(provider.draw).not.toHaveBeenCalled(); });
+it('revocation between confirmation and worker blocks before territories, rights intact', async () => { const f = await fixture(), q = quoteNativeLogo(f.u, f.pid, input), j = confirmNativeLogo(f.u, f.pid, consent(q), input), provider = fake(); run("UPDATE subscriptions SET status='canceled' WHERE project_id=?", f.pid); await expect(execute(j.jobId, provider)).rejects.toThrow(); expect(provider.ai.territories).not.toHaveBeenCalled(); expect(directionSeries(f.pid)).toHaveLength(0); });
+it('scope changed AFTER territories: no drawing, prior identity remains', async () => { const f = await fixture(), q = quoteNativeLogo(f.u, f.pid, input), j = confirmNativeLogo(f.u, f.pid, consent(q), input), provider = fake(); const territories = provider.ai.territories; provider.ai.territories = async (...args: any[]) => { const result = await territories(...args); const p = loadProject(f.pid); saveProduct(f.pid, { ...p.product, summary: 'Manual race before drawing' }); return result; }; await expect(execute(j.jobId, provider)).rejects.toThrow(); expect(provider.draw).not.toHaveBeenCalled(); });
+it('provider error: one failed job, same receipt cannot buy again, acquired brand untouched', async () => { const f = await fixture(), brand = structuredClone(loadProject(f.pid).brand), q = quoteNativeLogo(f.u, f.pid, input), c = consent(q), j = confirmNativeLogo(f.u, f.pid, c, input), provider = fake({ fail: true }); await expect(execute(j.jobId, provider)).rejects.toThrow(); expect(getJob(j.jobId)?.max_attempts).toBe(1); expect(confirmNativeLogo(f.u, f.pid, c, input).jobId).toBe(j.jobId); expect(jobs(f.pid)).toHaveLength(1); expect(loadProject(f.pid).brand).toEqual(brand); });
+it('partial series: acquired logos retained, repair requires fresh consent and draws only missing direction', async () => { const f = await fixture(), q = quoteNativeLogo(f.u, f.pid, input), c = consent(q), j = confirmNativeLogo(f.u, f.pid, c, input); await expect(execute(j.jobId, fake({ bad: 't3' }))).rejects.toThrow('Série partielle'); const old = currentSeries(f.pid)!, pins = structuredClone(old.directions); expect(pins).toHaveLength(2); const repair = { ...input, feedback: 'Corriger uniquement la direction refusée' }; const rq = quoteNativeLogo(f.u, f.pid, repair), rj = confirmNativeLogo(f.u, f.pid, consent(rq), repair), provider = fake(); await execute(rj.jobId, provider); expect(provider.draw).toHaveBeenCalledTimes(1); expect(currentSeries(f.pid)?.directions.filter(d => pins.some(p => p.id === d.id))).toEqual(pins); expect(directionSeries(f.pid)).toHaveLength(1); }, 60000);
+it('renewal uses separate explicit quote, previous series/validated identity remain intact', async () => { const f = await fixture(), q = quoteNativeLogo(f.u, f.pid, input); await execute(confirmNativeLogo(f.u, f.pid, consent(q), input).jobId); const before = structuredClone(currentSeries(f.pid)), brand = structuredClone(loadProject(f.pid).brand), renew = { ...input, renew: true }; const rq = quoteNativeLogo(f.u, f.pid, renew); await expect(execute(confirmNativeLogo(f.u, f.pid, consent(rq), renew).jobId)).rejects.toThrow('Série partielle'); expect(directionSeries(f.pid)).toHaveLength(2); expect(directionSeries(f.pid)[0]).toEqual(before); expect(loadProject(f.pid).brand).toEqual(brand); }, 60000);
+it('acquired selection remains free with exhausted IA wallet', async () => { const f = await fixture(), q = quoteNativeLogo(f.u, f.pid, input); await execute(confirmNativeLogo(f.u, f.pid, consent(q), input).jobId); const assetId = currentSeries(f.pid)!.directions[0].logoId; run('UPDATE wallets SET monthly_used=monthly_allowance,topup_balance=0 WHERE user_id=?', projectAccountKey(f.pid)); const before = all('SELECT * FROM wallets WHERE user_id=?', projectAccountKey(f.pid)); expect((await route.POST(request(f.pid, { action: 'select', assetId }), context(f.pid))).status).toBe(200); expect((await route.POST(request(f.pid, { action: 'choose', assetId }), context(f.pid))).status).toBe(200); expect(all('SELECT * FROM wallets WHERE user_id=?', projectAccountKey(f.pid))).toEqual(before); }, 60000);
+it('full budget cap enforced by native reservation even for simulated provider; no extra allowance for first series', async () => { const { reserve, settle, balance, SUBSCRIPTION_AI_SHARE, PACK_AI_SHARE } = await import('@/lib/billing'); const f = await fixture(), q = quoteNativeLogo(f.u, f.pid, input), j = confirmNativeLogo(f.u, f.pid, consent(q), input), provider = fake(), draw = provider.ai.drawArtwork, before = balance(f.u.id, f.pid).available; let calls = 0; provider.ai.drawArtwork = async (...args: any[]) => { const reservation = reserve(f.u.id, 100, { task: 'logo', provider: 'synthetic', model: 'fixture', projectId: f.pid, jobId: j.jobId, usageKey: `294:${++calls}` }); settle(reservation, 50, null, 'Synthetic only'); return draw(...args); }; await execute(j.jobId, provider); expect(calls).toBe(3); expect(balance(f.u.id, f.pid).available).toBe(before - 150); expect(SUBSCRIPTION_AI_SHARE).toBe(0.4); expect(PACK_AI_SHARE).toBe(0.5); const wallet = all('SELECT * FROM wallets WHERE user_id=?', projectAccountKey(f.pid)); expect(confirmNativeLogo(f.u, f.pid, { ...consent(q), requestId: JSON.parse(one<{
+        value: string;
+    }>("SELECT value FROM memory WHERE project_id=? AND key=?", f.pid, 'logo.native.consent.' + q.id)!.value).requestId }, input).jobId).toBe(j.jobId); expect(all('SELECT * FROM wallets WHERE user_id=?', projectAccountKey(f.pid))).toEqual(wallet); }, 60000);
+it('no monthly or topup balance: quote fails before enqueue, no fabricated amount', async () => { const f = await fixture(); run('UPDATE wallets SET monthly_used=monthly_allowance,topup_balance=0 WHERE user_id=?', projectAccountKey(f.pid)); expect(() => quoteNativeLogo(f.u, f.pid, input)).toThrow(); expect(jobs(f.pid)).toHaveLength(0); });
+it('manual retry/reset of job attempts cannot reuse a previously executed economic authorization', async () => { const f = await fixture(), q = quoteNativeLogo(f.u, f.pid, input), j = confirmNativeLogo(f.u, f.pid, consent(q), input); await execute(j.jobId); run("UPDATE jobs SET status='queued',attempts=0,checkpoint='{}',locked_by=NULL,locked_until=NULL WHERE id=?", j.jobId); const provider = fake(); await expect(execute(j.jobId, provider)).rejects.toThrow('déjà commencé'); expect(provider.draw).not.toHaveBeenCalled(); expect(provider.ai.territories).not.toHaveBeenCalled(); });
+it('expired worker authorization refuses before any simulated request', async () => { const f = await fixture(), q = quoteNativeLogo(f.u, f.pid, input), j = confirmNativeLogo(f.u, f.pid, consent(q), input), provider = fake(); run("UPDATE memory SET value=json_set(value,'$.expiresAt',0) WHERE project_id=? AND key=?", f.pid, 'logo.native.consent.' + q.id); await expect(execute(j.jobId, provider)).rejects.toThrow('périmé'); expect(provider.draw).not.toHaveBeenCalled(); expect(provider.ai.territories).not.toHaveBeenCalled(); });
+it('unavailable image tariff: quote explicitly closed, no invented fallback', async () => { const f = await fixture(); setJsonSetting('ai.prices', {}); expect(() => quoteNativeLogo(f.u, f.pid, input)).toThrow(); expect(jobs(f.pid)).toHaveLength(0); });
+it('raw historical engine entry without economic receipt is closed before any provider',async()=>{const f=await fixture(),job=enqueue({userId:f.u.id,projectId:f.pid,type:'brand.logo.v2',payload:{projectId:f.pid},maxAttempts:1});const {runLogoEngineV2}=await import('@/lib/logo-v2/engine');await expect(runLogoEngineV2(new JobContext(job),f.pid)).rejects.toThrow('Autorisation économique');expect(directionSeries(f.pid)).toHaveLength(0);});
+it('first included guided logo creation preserves its real quote/pending-job authority',async()=>{
+ const {fixture,initializeSynthetic,simulatedDependencies}=await import('./preparation-fixtures');const f=await fixture();initializeSynthetic(f.pid,f.input);
+ const {approve,queuePreparation,runPreparation,confirmIdentity}=await import('@/lib/preparation/engine');const {stateOf}=await import('@/lib/preparation/store');
+ approve(f.pid,stateOf(f.pid)!.revision,'brief');
+ for(const step of ['research','brand'] as const){const prepared=queuePreparation(f.pid,stateOf(f.pid)!.revision,step,'generate',{paid:false,capMicro:0});run("UPDATE jobs SET status='running',attempts=1 WHERE id=?",prepared.job!.id);completeJob(prepared.job!.id,await runPreparation(new JobContext(getJob(prepared.job!.id)!),simulatedDependencies));if(step==='research')approve(f.pid,stateOf(f.pid)!.revision,'research',{choiceId:'transparence'});}
+ const brand=stateOf(f.pid)!.stages.brand!.data.proposal;confirmIdentity(f.pid,stateOf(f.pid)!.revision,{name:brand.name,tagline:brand.tagline,palette:brand.palette,fonts:brand.fonts});
+ const {createQuote,quoteOf}=await import('@/lib/preparation/quote');const {assertGuidedLogoAuthorization}=await import('@/lib/logo-v2/native-consent');const q=createQuote(f.pid,'brand','logo'),accepted=quoteOf(f.pid,q.id);const queued=queuePreparation(f.pid,stateOf(f.pid)!.revision,'brand','logo',{paid:accepted.paid,capMicro:accepted.capMicro});await expect(assertGuidedLogoAuthorization(new JobContext(queued.job!),f.pid)).resolves.toBeUndefined();expect(queued.job!.type).toBe('project.prepare');
+});
+it('legacy full-logo redraw has its own consent and worker receipt; original bytes and chosen identity remain intact',async()=>{const f=await fixture(),q=quoteNativeLogo(f.u,f.pid,input);await execute(confirmNativeLogo(f.u,f.pid,consent(q),input).jobId);const {getAsset,assetData,saveAsset}=await import('@/lib/library');const original=getAsset(currentSeries(f.pid)!.directions[0].logoId)!,meta=JSON.parse(original.meta);meta.run='synthetic-unmanaged-legacy';const source=await saveAsset({projectId:f.pid,userId:f.u.id,kind:'image',role:'logo-v2',name:'Legacy acquired logo',mime:'image/png',data:assetData(original),origin:'generated',status:'review',meta});const bytes=assetData(source),brand=structuredClone(loadProject(f.pid).brand),redraw={...input,operation:'redraw',assetId:source.id,feedback:'Conserver le nom exact'};const rq=quoteNativeLogo(f.u,f.pid,redraw),j=confirmNativeLogo(f.u,f.pid,consent(rq),redraw),provider=fake();const done=await execute(j.jobId,provider);expect(done.result.delivery.delivered).toBe(1);expect(provider.draw).toHaveBeenCalledTimes(1);expect(assetData(getAsset(source.id)!)).toEqual(bytes);expect(loadProject(f.pid).brand).toEqual(brand);},60000);
+it('provider result uncertain blocks a new quote, including after cancel/reset',async()=>{const {reserve,settleUncertain}=await import('@/lib/billing');const f=await fixture(),job=enqueue({userId:f.u.id,projectId:f.pid,type:'brand.logo.v2',payload:{projectId:f.pid},maxAttempts:1}),reservation=reserve(f.u.id,100,{task:'logo',provider:'synthetic',model:'fixture',projectId:f.pid,jobId:job.id,usageKey:id()});settleUncertain(reservation,'Synthetic uncertainty');run("UPDATE jobs SET status='failed' WHERE id=?",job.id);expect(()=>quoteNativeLogo(f.u,f.pid,input)).toThrow('incertain');expect(jobs(f.pid)).toHaveLength(1);});
+it('admin follows the same budget cap and receives no artificial first-creation allowance',async()=>{const f=await fixture();run("UPDATE users SET role='admin' WHERE id=?",f.u.id);run('UPDATE wallets SET monthly_used=monthly_allowance,topup_balance=0 WHERE user_id=?',projectAccountKey(f.pid));expect(()=>quoteNativeLogo({...f.u,role:'admin'},f.pid,input)).toThrow();expect(jobs(f.pid)).toHaveLength(0);});
