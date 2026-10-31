@@ -1,0 +1,172 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"../assets/vendor/three/three.module.js","three/addons/":"../assets/vendor/three/addons/"}}</script>
+<style>body{margin:0;background:#222}canvas{display:block}</style></head>
+<body>
+<canvas id="cv" width="1200" height="900"></canvas>
+<script type="module">
+/* « Photos » de chantier fictives de 3M Plâtrerie Peinture, rendues en 3D pour le site, les publications et la publicité.
+   Aucune personne. Chaque pièce est une scène simple, éclairée comme une photo d'intérieur en fin de journée. */
+import * as THREE from "three";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+const W = 1200, H = 900;
+const cv = document.getElementById("cv");
+const r = new THREE.WebGLRenderer({ canvas: cv, antialias: true, preserveDrawingBuffer: true });
+r.setPixelRatio(1); r.setSize(W, H, false);
+r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
+r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.05; r.outputColorSpace = THREE.SRGBColorSpace;
+
+let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+function canvasTex(w, h, draw, rep) {
+  const c = document.createElement("canvas"); c.width = w; c.height = h; const g = c.getContext("2d"); draw(g, w, h);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  if (rep) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rep[0], rep[1]); }
+  return t;
+}
+function noise(g, w, h, a, n) { for (let i = 0; i < n; i++) { g.fillStyle = `rgba(${rnd() < .5 ? "0,0,0" : "255,255,255"},${a * rnd()})`; g.fillRect(rnd() * w, rnd() * h, 1 + rnd() * 3, 1 + rnd() * 3); } }
+const woodTex = () => canvasTex(1024, 1024, (g, w, h) => {
+  g.fillStyle = "#B88A5E"; g.fillRect(0, 0, w, h);
+  const pw = 128;
+  for (let x = 0; x < w; x += pw) {
+    const base = 150 + rnd() * 40;
+    for (let y = 0; y < h; y += 512) {
+      const off = (x / pw) % 2 ? 256 : 0;
+      g.fillStyle = `hsl(${30 + rnd() * 6},${22 + rnd() * 8}%,${58 + rnd() * 8}%)`; g.fillRect(x, y + off - 512, pw, 512); g.fillRect(x, y + off, pw, 512);
+    }
+    for (let k = 0; k < 40; k++) { g.strokeStyle = `rgba(80,45,20,${.05 + rnd() * .08})`; g.lineWidth = 1 + rnd() * 2; g.beginPath(); const xx = x + rnd() * pw; g.moveTo(xx, 0); g.bezierCurveTo(xx + 8, h * .3, xx - 8, h * .6, xx + 4, h); g.stroke(); }
+    g.fillStyle = "rgba(60,35,15,.55)"; g.fillRect(x, 0, 2, h);
+    void base;
+  }
+  noise(g, w, h, .05, 6000);
+}, [3, 3]);
+const plasterTex = (col, joints) => canvasTex(1024, 512, (g, w, h) => {
+  g.fillStyle = col; g.fillRect(0, 0, w, h);
+  noise(g, w, h, .035, 9000);
+  if (joints) {
+    for (let x = 170; x < w; x += 300) { const gr = g.createLinearGradient(x - 40, 0, x + 40, 0); gr.addColorStop(0, "rgba(255,255,255,0)"); gr.addColorStop(.5, "rgba(250,248,242,.85)"); gr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = gr; g.fillRect(x - 40, 0, 80, h); }
+    for (let x = 170; x < w; x += 300) for (let y = 30; y < h; y += 60) { g.fillStyle = "rgba(244,241,234,.95)"; g.beginPath(); g.arc(x + (rnd() - .5) * 6, y, 3, 0, 7); g.fill(); }
+  }
+});
+const std = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: .85, metalness: 0, ...o });
+
+function baseRoom(scene, { wall, wallMap, accent, floor = true }) {
+  const fl = new THREE.Mesh(new THREE.PlaneGeometry(9, 9), std("#ffffff", { map: woodTex(), roughness: .6 }));
+  fl.rotation.x = -Math.PI / 2; fl.receiveShadow = true; scene.add(fl);
+  const back = new THREE.Mesh(new THREE.PlaneGeometry(9, 3.2), std(accent || wall, { map: accent ? null : wallMap }));
+  back.position.set(0, 1.6, -2.2); back.receiveShadow = true; scene.add(back);
+  const left = new THREE.Mesh(new THREE.PlaneGeometry(6, 3.2), std(wall, { map: wallMap }));
+  left.rotation.y = Math.PI / 2; left.position.set(-3, 1.6, .8); left.receiveShadow = true; scene.add(left);
+  const right = left.clone(); right.rotation.y = -Math.PI / 2; right.position.set(3.4, 1.6, .8); scene.add(right);
+  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(9, 9), std("#F4F1EA", { emissive: "#d8cfc2", emissiveIntensity: .55 })); ceil.rotation.x = Math.PI / 2; ceil.position.y = 3.2; scene.add(ceil);
+  // plinthe
+  const pl = new THREE.Mesh(new THREE.BoxGeometry(9, .1, .03), std("#F6F3EC")); pl.position.set(0, .05, -2.18); scene.add(pl);
+  // fenêtre (mur gauche) : ouverture lumineuse + châssis
+  const sky = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.9), new THREE.MeshBasicMaterial({ color: "#FFE2B8" }));
+  sky.rotation.y = Math.PI / 2; sky.position.set(-2.99, 1.55, .2); scene.add(sky);
+  const fr = std("#FBFAF7");
+  [[0, .97, 1.6, .07], [0, -.97, 1.6, .07], [0, 0, 1.6, .05]].forEach(([y, yy, w, t]) => { const b = new THREE.Mesh(new THREE.BoxGeometry(.08, t, w), fr); b.position.set(-2.96, 1.55 + yy, .2); void y; scene.add(b); });
+  [[-.78], [.78], [0]].forEach(([z]) => { const b = new THREE.Mesh(new THREE.BoxGeometry(.08, 1.95, .06), fr); b.position.set(-2.96, 1.55, .2 + z); scene.add(b); });
+  // lumière : soleil rasant par la fenêtre + ciel doux
+  scene.add(new THREE.HemisphereLight("#fff4e6", "#b49a80", .9));
+  const sun = new THREE.DirectionalLight("#ffc98a", 3.2); sun.position.set(-7, 4.2, 1.2); sun.target.position.set(0, .6, -.6);
+  sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.camera.left = -5; sun.shadow.camera.right = 5; sun.shadow.camera.top = 5; sun.shadow.camera.bottom = -5; sun.shadow.bias = -.0004; sun.shadow.radius = 4;
+  scene.add(sun, sun.target);
+  // le mur gauche ne doit pas bloquer le soleil : il ne projette pas d'ombre
+  const fill = new THREE.PointLight("#ffe7cc", 6, 9, 2); fill.position.set(1.5, 2.6, 2.5); scene.add(fill);
+}
+function add(scene, geo, mat, x, y, z, ry = 0) { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.y = ry; m.castShadow = m.receiveShadow = true; scene.add(m); return m; }
+function rb(w, h, d, r = .05) { return new RoundedBoxGeometry(w, h, d, 4, r); }
+
+function sofa(s, x, z, col) {
+  const m = std(col, { roughness: .95 });
+  add(s, rb(2.3, .42, .95, .12), m, x, .36, z); add(s, rb(2.3, .62, .25, .1), m, x, .72, z - .38);
+  add(s, rb(.25, .5, .95, .1), m, x - 1.1, .55, z); add(s, rb(.25, .5, .95, .1), m, x + 1.1, .55, z);
+  add(s, rb(.55, .42, .16, .08), std("#E3A53C", { roughness: .95 }), x - .55, .72, z - .2, .15);
+  add(s, rb(.5, .4, .16, .08), std("#F3EEE6", { roughness: .95 }), x + .45, .7, z - .2, -.1);
+}
+function plant(s, x, z) {
+  add(s, new THREE.CylinderGeometry(.2, .16, .42, 24), std("#E9E3D8"), x, .21, z);
+  const leaf = std("#4E7A52", { roughness: .7 });
+  for (let i = 0; i < 14; i++) { const a = i * 2.4, rr = .12 + rnd() * .2; add(s, new THREE.SphereGeometry(.13 + rnd() * .08, 12, 10), leaf, x + Math.cos(a) * rr, .6 + rnd() * .55, z + Math.sin(a) * rr); }
+}
+function lamp(s, x, z) {
+  add(s, new THREE.CylinderGeometry(.02, .02, 1.5, 10), std("#2A2A2A", { metalness: .6, roughness: .4 }), x, .75, z);
+  add(s, new THREE.CylinderGeometry(.18, .24, .05, 24), std("#2A2A2A"), x, .02, z);
+  const sh = add(s, new THREE.CylinderGeometry(.16, .26, .3, 24, 1, true), std("#F3EEE6", { side: THREE.DoubleSide, emissive: "#ffd9a0", emissiveIntensity: .35 }), x, 1.55, z);
+  sh.castShadow = false; const pl = new THREE.PointLight("#ffcf8f", 2.5, 3, 2); pl.position.set(x, 1.45, z); s.add(pl);
+}
+function frameArt(s, x, y, z, w, h, colA, colB) {
+  add(s, new THREE.BoxGeometry(w + .08, h + .08, .04), std("#1F2A2E"), x, y, z);
+  const art = canvasTex(256, 256 * h / w, (g, cw, ch) => { g.fillStyle = "#F3EEE6"; g.fillRect(0, 0, cw, ch); g.fillStyle = colA; g.beginPath(); g.arc(cw * .38, ch * .55, cw * .26, 0, 7); g.fill(); g.fillStyle = colB; g.fillRect(cw * .5, ch * .2, cw * .3, ch * .6); });
+  add(s, new THREE.PlaneGeometry(w, h), std("#fff", { map: art }), x, y, z + .022);
+}
+function rug(s, x, z, w, d, col) { const m = add(s, new THREE.BoxGeometry(w, .015, d), std(col, { roughness: 1 }), x, .008, z); m.castShadow = false; }
+function ladder(s, x, z, ry) {
+  const g = new THREE.Group(); const al = std("#C9CDD2", { metalness: .7, roughness: .35 });
+  [-.26, .26].forEach((dx) => { const leg = new THREE.Mesh(new THREE.BoxGeometry(.06, 2.3, .05), al); leg.position.set(dx, 1.15, 0); leg.castShadow = true; g.add(leg); });
+  for (let i = 0; i < 6; i++) { const st = new THREE.Mesh(new THREE.BoxGeometry(.52, .035, .08), al); st.position.set(0, .3 + i * .36, 0); st.castShadow = true; g.add(st); }
+  g.rotation.x = -.2; g.position.set(x, 0, z); g.rotation.y = ry; s.add(g);
+}
+function bucket(s, x, z, col, lidCol) {
+  add(s, new THREE.CylinderGeometry(.2, .17, .36, 28), std(col, { roughness: .5 }), x, .18, z);
+  add(s, new THREE.CylinderGeometry(.205, .205, .03, 28), std(lidCol || col, { roughness: .5 }), x, .37, z);
+}
+function roller(s, x, z, col) {
+  add(s, new THREE.CylinderGeometry(.06, .06, .3, 20), std(col, { roughness: 1 }), x, .07, z).rotation.z = Math.PI / 2;
+  const h = add(s, new THREE.CylinderGeometry(.015, .015, .6, 8), std("#333"), x + .05, .1, z + .32); h.rotation.x = Math.PI / 2.3;
+}
+function tarp(s) { const m = add(s, new THREE.PlaneGeometry(4.5, 2.4, 30, 16), std("#ECEBE6", { roughness: 1, side: THREE.DoubleSide }), 0, .035, -1); m.rotation.x = -Math.PI / 2; const p = m.geometry.attributes.position; for (let i = 0; i < p.count; i++) p.setZ(i, (2 + Math.sin(p.getX(i) * 3) + Math.cos(p.getY(i) * 4)) * .008); p.needsUpdate = true; m.geometry.computeVertexNormals(); }
+
+const shots = {
+  /** Avant : plaques de plâtre posées, bandes et enduit des joints, bâche, escabeau, seau. */
+  avant() {
+    const s = new THREE.Scene(); s.background = new THREE.Color("#d9cfc0");
+    baseRoom(s, { wall: "#CFC9BE", wallMap: plasterTex("#CFC9BE", true) });
+    tarp(s); ladder(s, 1.4, -1.2, -.5); bucket(s, -.6, -1.4, "#F3F1EC", "#E3A53C"); bucket(s, -.15, -1.55, "#F3F1EC", "#F3F1EC");
+    const knife = add(s, new THREE.BoxGeometry(.3, .01, .12), std("#B9C2CC", { metalness: .8, roughness: .3 }), -.35, .39, -1.4); void knife;
+    return s;
+  },
+  /** Après : même pièce, murs enduits et peints, mur d'accent vert, meublée. */
+  apres() {
+    const s = new THREE.Scene(); s.background = new THREE.Color("#e8e0d2");
+    baseRoom(s, { wall: "#F1ECE3", wallMap: plasterTex("#F1ECE3", false), accent: "#2F6E62" });
+    rug(s, .2, -.4, 3.2, 2, "#D8CDBB"); sofa(s, .2, -1.45, "#E9E2D6"); plant(s, -2.1, -1.6); lamp(s, 1.9, -1.7);
+    frameArt(s, .2, 1.95, -2.17, 1.1, .75, "#E3A53C", "#F3EEE6");
+    add(s, new THREE.CylinderGeometry(.35, .35, .32, 32), std("#1F2A2E", { roughness: .4 }), .2, .16, .25);
+    return s;
+  },
+  /** Plafond et corniche : pièce lumineuse peinte, escabeau replié contre le mur. */
+  peinture() {
+    const s = new THREE.Scene(); s.background = new THREE.Color("#e8e0d2");
+    baseRoom(s, { wall: "#F3EEE6", wallMap: plasterTex("#F3EEE6", false), accent: "#E9D9B8" });
+    // mur à moitié peint : bande ocre fraîche + rouleau sur perche
+    const band = add(s, new THREE.PlaneGeometry(4.2, 1.1), std("#D9A441"), -.6, .55, -2.19); band.castShadow = false;
+    const tray = add(s, new THREE.BoxGeometry(.45, .05, .35), std("#3A3F44", { roughness: .4 }), 1.2, .03, -1.3); void tray;
+    add(s, new THREE.BoxGeometry(.38, .02, .28), std("#D9A441", { roughness: .3 }), 1.2, .065, -1.3);
+    roller(s, .7, -1.25, "#D9A441"); bucket(s, 1.75, -1.45, "#F3F1EC", "#1E6B5E"); tarp(s); plant(s, -2.2, -1.5);
+    return s;
+  },
+  /** Cloison en cours : rails et montants métalliques, plaques posées à moitié. */
+  cloison() {
+    const s = new THREE.Scene(); s.background = new THREE.Color("#d9cfc0");
+    baseRoom(s, { wall: "#E8E3DA", wallMap: plasterTex("#E8E3DA", true) });
+    const metal = std("#B8BEC6", { metalness: .75, roughness: .35 });
+    add(s, new THREE.BoxGeometry(4.6, .05, .1), metal, .2, .03, -.9); add(s, new THREE.BoxGeometry(4.6, .05, .1), metal, .2, 3.15, -.9);
+    for (let i = 0; i < 8; i++) add(s, new THREE.BoxGeometry(.05, 3.1, .1), metal, -2 + i * .6, 1.6, -.9);
+    const board = std("#DCD8D0", { roughness: .95 });
+    add(s, new THREE.BoxGeometry(1.2, 2.6, .013), board, -1.4, 1.32, -.84); add(s, new THREE.BoxGeometry(1.2, 2.6, .013), board, -.2, 1.32, -.84);
+    ladder(s, 1.6, .2, -.9); bucket(s, .9, .3, "#F3F1EC", "#E3A53C"); tarp(s);
+    return s;
+  },
+};
+window.__photos = {};
+const cam = new THREE.PerspectiveCamera(52, W / H, .05, 50);
+for (const [k, f] of Object.entries(shots)) {
+  seed = 11; const s = f();
+  if (k === "cloison") { cam.position.set(.6, 1.45, 3.6); cam.lookAt(-.2, 1.2, -1.2); }
+  else { cam.position.set(.4, 1.35, 3.9); cam.lookAt(0, 1.05, -1); }
+  r.render(s, cam); window.__photos[k] = cv.toDataURL("image/jpeg", .9);
+}
+window.__done = true;
+</script>
+</body></html>
