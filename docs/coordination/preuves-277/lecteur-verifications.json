@@ -1,0 +1,9 @@
+{
+  "pythonSyntax": "passed",
+  "invalidShortShaRejected": true,
+  "invalidInputCreatesNoReport": true,
+  "matrixPathsValidatedAgainstBothSources": true,
+  "realProviderCalls": 0,
+  "applicationChanged": false,
+  "candidateTested": null
+}

@@ -1,0 +1,286 @@
+{
+  "schema": "integration277-matrix-1",
+  "stage": "preparation_not_integrated_verdict",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "environment": {
+    "STOCK_OFFLINE": "1",
+    "NODE_OPTIONS": "--import={candidateRoot}/scripts/lot9/network-guard.mjs"
+  },
+  "placeholders": [
+    "candidateRoot",
+    "proofDir"
+  ],
+  "commands": [
+    {
+      "id": "P0-acces",
+      "priority": "P0",
+      "kind": "tests_existants",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/mission171-boundaries.test.ts",
+        "tests/mission171-routes-lifecycle.test.ts",
+        "tests/mission171-scope-inputs.test.ts",
+        "tests/mission171-public-download.test.ts",
+        "tests/mission171-registration-privacy.test.ts",
+        "tests/contenus-api.test.ts"
+      ],
+      "criterion": "A/B/anonyme/admin ; projet, médias, route contenus, mutations CSRF et confirmations ; aucun accès croisé.",
+      "status": "a_executer_sur_candidat",
+      "existingTestsDoNotProveCrossIntegration": true
+    },
+    {
+      "id": "P0-couts",
+      "priority": "P0",
+      "kind": "tests_existants",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/budget-ia.test.ts",
+        "tests/budget-ia-visuels.test.ts",
+        "tests/prix-pourcentage-budget.test.ts",
+        "tests/conversation211-logo-schema-budget.test.ts",
+        "tests/droits-themes-190.test.ts"
+      ],
+      "criterion": "Budget commun, accord avant appel, reprise/idempotence, droits par forfait sans tarif inventé.",
+      "status": "a_executer_sur_candidat",
+      "existingTestsDoNotProveCrossIntegration": true
+    },
+    {
+      "id": "P0-donnees",
+      "priority": "P0",
+      "kind": "tests_existants",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/migration-v2.test.ts",
+        "tests/db-migration-race.test.ts",
+        "tests/lot1-sauvegarde-restauration.test.ts",
+        "tests/mission171-registration-privacy.test.ts"
+      ],
+      "criterion": "Base fictive ancienne puis seconde migration ; sauvegarde/restauration ; compléter avec tables et fichiers site_* / agent_* acquis.",
+      "status": "a_executer_sur_candidat",
+      "existingTestsDoNotProveCrossIntegration": true
+    },
+    {
+      "id": "P1-metiers",
+      "priority": "P1",
+      "kind": "tests_existants",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/contenus-api.test.ts",
+        "tests/biens-hebergement.test.ts",
+        "tests/carte-restaurant.test.ts",
+        "tests/prestations-editeur.test.ts",
+        "tests/realisations-artisans.test.ts"
+      ],
+      "criterion": "Moteurs métiers existants, ifVersion/428/409 et projections ; ne prouve pas encore leur raccord SYNA.",
+      "status": "a_executer_sur_candidat",
+      "existingTestsDoNotProveCrossIntegration": true
+    },
+    {
+      "id": "P1-rdv",
+      "priority": "P1",
+      "kind": "tests_existants",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/atelier-nuance-booking.test.ts",
+        "tests/parenthese-booking.test.ts",
+        "tests/table-saison-booking.test.ts",
+        "tests/rendez-vous.test.ts"
+      ],
+      "criterion": "Créneaux/capacité, réservations et modifications préservés ; aucun e-mail/agenda externe.",
+      "status": "a_executer_sur_candidat",
+      "existingTestsDoNotProveCrossIntegration": true
+    },
+    {
+      "id": "P1-hebergement",
+      "priority": "P1",
+      "kind": "tests_existants",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/hebergement-sites.test.ts",
+        "tests/hebergement-fiabilite.test.ts",
+        "tests/domaines-existants.test.ts",
+        "tests/site-notifications.test.ts"
+      ],
+      "criterion": "Hôtes isolés, publication locale en fixture, V1/V2/restauration, DNS/SMTP locaux seulement ; pas de connexion publique.",
+      "status": "a_executer_sur_candidat",
+      "existingTestsDoNotProveCrossIntegration": true
+    },
+    {
+      "id": "P1-source-theme",
+      "priority": "P1",
+      "kind": "tests_existants",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/conversation211-exports.test.ts",
+        "tests/conversation211-renders.test.ts",
+        "tests/conversation211-theme-tools.test.ts",
+        "tests/theme211-render-scope.test.ts",
+        "tests/theme211-render-evidence.test.ts",
+        "tests/demos-fraise-onde-composition.test.ts"
+      ],
+      "criterion": "Compléter C1/P1/P5 par scénarios croisés ci-dessous ; protections des compositions et du navigateur partagé.",
+      "status": "a_executer_sur_candidat",
+      "existingTestsDoNotProveCrossIntegration": true
+    },
+    {
+      "id": "P1-identite-textes",
+      "priority": "P1",
+      "kind": "tests_existants",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/conversation211-intelligence.test.ts",
+        "tests/conversation211-context-presentation.test.ts",
+        "tests/conversation211-logo-selection.test.ts",
+        "tests/conversation211-brand-review.test.ts",
+        "tests/conversation211-content.test.ts",
+        "tests/conversation211-blog.test.ts"
+      ],
+      "criterion": "Consignes exactes, contexte, versions, deux accords logo distincts, kit local et textes entiers.",
+      "status": "a_executer_sur_candidat",
+      "existingTestsDoNotProveCrossIntegration": true
+    },
+    {
+      "id": "P1-medias-communication",
+      "priority": "P1",
+      "kind": "tests_existants",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/conversation211-video-clip.test.ts",
+        "tests/conversation211-video-voice.test.ts",
+        "tests/conversation211-social-execution.test.ts",
+        "tests/conversation211-social-production.test.ts",
+        "tests/conversation211-campaign-execution.test.ts"
+      ],
+      "criterion": "Reçus exacts, panne simulée, pas de rachat implicite, brouillons seulement ; ni diffusion ni génération réelle.",
+      "status": "a_executer_sur_candidat",
+      "existingTestsDoNotProveCrossIntegration": true
+    },
+    {
+      "id": "E2E-produit-services",
+      "priority": "P1",
+      "kind": "studio_compile_simulation_http",
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "{proofDir}/E2E-produit-services",
+        "--closure-ui"
+      ],
+      "criterion": "Recette existante produit/service, desktop/mobile, retouche/undo/reprise/export. Compléter les outils métier et leur état réellement raccordé ; ancienne absence honnête ne vaut pas raccord.",
+      "status": "a_executer_sur_candidat"
+    },
+    {
+      "id": "E2E-identite-logo",
+      "priority": "P1",
+      "kind": "studio_compile_simulation_http",
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "{proofDir}/E2E-identite-logo",
+        "--logo-selection-ui"
+      ],
+      "criterion": "Trois comptes/métiers ensemble, deux accords, neuf téléchargements par kit, reprise et aucun lancement initial.",
+      "status": "a_executer_sur_candidat"
+    }
+  ],
+  "crossChecks": [
+    {
+      "id": "C1-source-commune",
+      "priority": "P1",
+      "scenario": "Projet restaurant avec plat publié puis réalisation propriétaire ; comparer preview avec currentSiteSource, capture et ZIP SYNA ; modifier métier entre devis et exécution.",
+      "success": "Mêmes contenus/versions dans les trois rendus ; digest change ; ancien accord rejeté 409 avant job/export.",
+      "status": "preuve_croisee_a_ajouter_si_absente_du_candidat"
+    },
+    {
+      "id": "P1-retouche-injectee",
+      "priority": "P1",
+      "scenario": "Réalisation publiée injectée dans portfolio ou carte ts-menu ; demander retouche de son texte via SYNA ; recharger et capturer.",
+      "success": "Raccord natif avec ifVersion et reçu exact ou refus clair avant mutation ; jamais une retouche annoncée comme visible mais recouverte au rendu.",
+      "status": "preuve_croisee_a_ajouter_si_absente_du_candidat"
+    },
+    {
+      "id": "P5-prestations",
+      "priority": "P1",
+      "scenario": "Salon synthétique avec prestation, durée, intervenant, adresse, horaires et une réservation ; recomposer une page puis annuler, réouvrir et réserver un autre créneau.",
+      "success": "readPrestations inchangé hors correction explicitement consentie ; réservation existante conservée ; capacité toujours protégée.",
+      "status": "preuve_croisee_a_ajouter_si_absente_du_candidat"
+    },
+    {
+      "id": "E2E-multi-produit",
+      "priority": "P1",
+      "scenario": "Boutique de pièces de reliure avec plusieurs produits/variantes : demande libre, cases seules, rédaction, visuel acquis, aperçu, panier, modification humaine concurrente, panne simulée, annulation, reprise, ZIP.",
+      "success": "Consignes et pixels conservés, devis/accord exacts, pas de double appel ni mélange de panier ; 409 pour contexte obsolète ; mêmes versions après reprise. 1440/390/360 px.",
+      "status": "recette_existante_plus_concurrence_sur_candidat"
+    },
+    {
+      "id": "E2E-services",
+      "priority": "P1",
+      "scenario": "Entreprise de réparation de vélos avec prestations/devis/RDV : dialogue, faits/zone, contenus métiers, contacts/horaires, demande de devis locale, créneau synthétique, modification humaine, réouverture/annulation.",
+      "success": "Actions réellement natives ou indisponibilité explicite ; destinataire test local seulement ; aucune réponse fait sans reçu ; consentement, versions, requêtes CSRF et créneaux protégés. 1440/390/360 px.",
+      "status": "adaptation_necessaire_selon_raccords_livres"
+    },
+    {
+      "id": "E2E-immobilier",
+      "priority": "P1",
+      "scenario": "Agence fictive avec bien achat et bien location distincts, photos techniques différentes et réalisation ; draft/publication locale de contenu, filtres/détail/carte si connectée, export, reprise et compte étranger.",
+      "success": "Aucun autre compte/aucune photo partagée ; aperçu/capture/ZIP mêmes données, changement métier rend devis périmé ; absence de carte ou service externe dite explicitement.",
+      "status": "preuve_croisee_a_ajouter_si_absente_du_candidat"
+    },
+    {
+      "id": "R4-fichiers-heberges",
+      "priority": "P0_avant_activation",
+      "scenario": "Deux comptes avec publications locales ; effacer seulement la fixture A selon politique autorisée, contrôler SQL et DATA_DIR/sites puis tenter ancien hôte ; B intact.",
+      "success": "A ne reste pas servi, aucun fichier A oublié selon politique, B strictement conservé ; effacement de production reste désactivé.",
+      "status": "non_reproduit_pas_de_production"
+    }
+  ],
+  "finalChecks": [
+    [
+      "node",
+      "node_modules/typescript/bin/tsc",
+      "--noEmit"
+    ],
+    [
+      "node",
+      "node_modules/next/dist/bin/next",
+      "build"
+    ],
+    [
+      "bash",
+      "scripts/verify-theme.sh"
+    ],
+    [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run"
+    ]
+  ],
+  "limitations": [
+    "Commandes préparées, pas déclarées exécutées sur une candidate absente.",
+    "Ne pas réexécuter types/build complets pour chaque groupe.",
+    "CI Docker finale et tous contrôles requis conservés.",
+    "Aucun SMTP/DNS/CMS/fournisseur réel ni données clients."
+  ]
+}

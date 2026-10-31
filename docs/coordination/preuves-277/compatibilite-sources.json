@@ -1,0 +1,650 @@
+{
+  "schema": "integration277-readonly-git-1",
+  "capturedAt": "2026-10-31T06:48:46.487227+00:00",
+  "refs": {
+    "main": "70204a7ff83eb2382835a27a37a8465c0851a70a",
+    "claude": "a69fcf7e0938f31c08b0a55320588d4c6060c45f",
+    "codex": "42ef034c00c7f6d92fc0ef14ce2818c520506931"
+  },
+  "commonAncestor": "70204a7ff83eb2382835a27a37a8465c0851a70a",
+  "mainIsAncestor": {
+    "claude": true,
+    "codex": true
+  },
+  "changedFileCounts": {
+    "claude": 373,
+    "codex": 2098
+  },
+  "commonFiles": [
+    {
+      "file": "src/app/api/projects/[id]/route.ts",
+      "status": "no_text_conflict",
+      "resultSha256": "0cef5e92e21b645a031cd8001a44125b98d6d1eabc8975dfa684fa1fb49eec2e"
+    },
+    {
+      "file": "src/app/preview/[id]/v/[vid]/[[...path]]/route.ts",
+      "status": "no_text_conflict",
+      "resultSha256": "17d87faf2fb3b5b4495805a3d172630f20c7a27bbdef8f15dcfa798d8ff423c1"
+    },
+    {
+      "file": "src/components/studio/shell.tsx",
+      "status": "no_text_conflict",
+      "resultSha256": "7c0495e640df37b1bc3caa93d57219cfbea07e42a920f1ebc359c047a71ad355"
+    },
+    {
+      "file": "src/components/studio/tab-boutique.tsx",
+      "status": "no_text_conflict",
+      "resultSha256": "81c9a6828cb5336e849bfa8a8a334bd9545da50cabf5100e5108ac1b975ab418"
+    },
+    {
+      "file": "worker/index.ts",
+      "status": "no_text_conflict",
+      "resultSha256": "fc4c30d378b893098f84c8cae6cd3beff5f501ade33293bf44ddcb32af25c0ff"
+    }
+  ],
+  "textualConflictCount": 0,
+  "tablesInChangedModules": {
+    "claude": {
+      "carte_categories": [
+        {
+          "file": "src/lib/contenus/carte.ts",
+          "line": 21
+        }
+      ],
+      "carte_items": [
+        {
+          "file": "src/lib/contenus/carte.ts",
+          "line": 24
+        }
+      ],
+      "realisations": [
+        {
+          "file": "src/lib/contenus/realisations.ts",
+          "line": 26
+        }
+      ],
+      "site_traffic": [
+        {
+          "file": "src/lib/sites/maintenance.ts",
+          "line": 27
+        }
+      ],
+      "site_notify_recipients": [
+        {
+          "file": "src/lib/sites/notify.ts",
+          "line": 43
+        }
+      ],
+      "site_request_outbox": [
+        {
+          "file": "src/lib/sites/notify.ts",
+          "line": 47
+        }
+      ],
+      "site_publications": [
+        {
+          "file": "src/lib/sites/store.ts",
+          "line": 14
+        }
+      ],
+      "site_live": [
+        {
+          "file": "src/lib/sites/store.ts",
+          "line": 20
+        }
+      ],
+      "site_live_history": [
+        {
+          "file": "src/lib/sites/store.ts",
+          "line": 22
+        }
+      ],
+      "site_addresses": [
+        {
+          "file": "src/lib/sites/store.ts",
+          "line": 24
+        }
+      ],
+      "site_requests": [
+        {
+          "file": "src/lib/sites/store.ts",
+          "line": 28
+        }
+      ]
+    },
+    "codex": {
+      "users": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 21
+        }
+      ],
+      "sessions": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 30
+        }
+      ],
+      "pending_registrations": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 36
+        }
+      ],
+      "projects": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 46
+        }
+      ],
+      "project_link_versions": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 66
+        }
+      ],
+      "privacy_requests": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 70
+        }
+      ],
+      "asset_cache_entries": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 76
+        }
+      ],
+      "memory": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 84
+        }
+      ],
+      "jobs": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 98
+        }
+      ],
+      "folders": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 127
+        }
+      ],
+      "assets": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 137
+        }
+      ],
+      "asset_usages": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 164
+        }
+      ],
+      "theme_versions": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 173
+        }
+      ],
+      "chat_messages": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 186
+        }
+      ],
+      "agent_conversations": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 202
+        }
+      ],
+      "agent_conversation_turns": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 212
+        }
+      ],
+      "agent_conversation_quotes": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 224
+        }
+      ],
+      "agent_request_bounds": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 235
+        }
+      ],
+      "agent_request_jobs": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 249
+        }
+      ],
+      "user_prompts": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 256
+        }
+      ],
+      "prompt_favorites": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 268
+        }
+      ],
+      "connections": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 276
+        }
+      ],
+      "project_connections": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 294
+        }
+      ],
+      "oauth_states": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 299
+        }
+      ],
+      "content_plans": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 309
+        }
+      ],
+      "posts": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 319
+        }
+      ],
+      "campaigns": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 353
+        }
+      ],
+      "subscriptions": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 370
+        }
+      ],
+      "wallets": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 380
+        }
+      ],
+      "ledger": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 392
+        }
+      ],
+      "ai_reservations": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 404
+        }
+      ],
+      "quota_usage": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 424
+        }
+      ],
+      "pack_balances": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 433
+        }
+      ],
+      "pack_purchases": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 439
+        }
+      ],
+      "quota_events": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 446
+        }
+      ],
+      "payments": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 454
+        }
+      ],
+      "usage_events": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 464
+        }
+      ],
+      "ai_calls": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 487
+        }
+      ],
+      "quality_checks": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 528
+        }
+      ],
+      "settings": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 559
+        }
+      ],
+      "error_log": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 565
+        }
+      ],
+      "notifications": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 574
+        }
+      ],
+      "worker_heartbeat": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 584
+        }
+      ],
+      "expenses": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 591
+        }
+      ],
+      "recurring_charges": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 616
+        }
+      ],
+      "blog_articles": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 635
+        }
+      ],
+      "checkout_sessions": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 660
+        }
+      ],
+      "call_slots": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 678
+        }
+      ],
+      "call_bookings": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 685
+        }
+      ],
+      "stripe_events": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 708
+        }
+      ],
+      "stripe_event_claims": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 715
+        }
+      ],
+      "checkout_intents": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 722
+        }
+      ],
+      "billing_mutations": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 733
+        }
+      ],
+      "support_tickets": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 746
+        }
+      ],
+      "support_messages": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 760
+        }
+      ],
+      "stripe_cancellations": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 771
+        }
+      ],
+      "rate_events": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 781
+        }
+      ],
+      "password_resets": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 787
+        }
+      ],
+      "admin_claims": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 797
+        }
+      ],
+      "task_plans": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 807
+        }
+      ],
+      "workflows": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 823
+        }
+      ],
+      "brand_versions": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 846
+        }
+      ],
+      "image_candidates": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 857
+        }
+      ],
+      "ad_documents": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 873
+        }
+      ],
+      "video_documents": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 888
+        }
+      ],
+      "video_shots": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 904
+        }
+      ],
+      "content_documents": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 922
+        }
+      ],
+      "post_attempts": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 943
+        }
+      ],
+      "social_automations": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 958
+        }
+      ],
+      "post_metrics": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 973
+        }
+      ],
+      "social_settings": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 983
+        }
+      ],
+      "social_memory": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 998
+        }
+      ],
+      "social_autopilot_log": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 1008
+        }
+      ],
+      "social_edit_undo": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 1020
+        }
+      ],
+      "biens": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 1032
+        }
+      ],
+      "content_runs": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 1048
+        }
+      ],
+      "content_target_locks": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 1059
+        }
+      ],
+      "prompt_ideas": [
+        {
+          "file": "src/lib/db.ts",
+          "line": 1070
+        }
+      ],
+      "studio_products": [
+        {
+          "file": "src/lib/products/catalog.ts",
+          "line": 76
+        }
+      ],
+      "studio_variants": [
+        {
+          "file": "src/lib/products/catalog.ts",
+          "line": 81
+        }
+      ],
+      "product_links": [
+        {
+          "file": "src/lib/products/catalog.ts",
+          "line": 89
+        }
+      ]
+    }
+  },
+  "tableNameOverlap": [],
+  "newTablesRelativeToMain": {
+    "claude": [
+      "carte_categories",
+      "carte_items",
+      "realisations",
+      "site_addresses",
+      "site_live",
+      "site_live_history",
+      "site_notify_recipients",
+      "site_publications",
+      "site_request_outbox",
+      "site_requests",
+      "site_traffic"
+    ],
+    "codex": [
+      "agent_conversation_quotes",
+      "agent_conversation_turns",
+      "agent_conversations",
+      "agent_request_bounds",
+      "agent_request_jobs"
+    ]
+  },
+  "facts": {
+    "codexCurrentSiteSourceUsesWithBiens": true,
+    "claudeContentAdapterExists": true,
+    "dependenciesChanged": {
+      "claude": [],
+      "codex": []
+    },
+    "commonNewApiRoutes": [],
+    "themeBaseChanges": {
+      "claude": [],
+      "codex": []
+    }
+  },
+  "candidate": null,
+  "realProviderCalls": 0,
+  "branchMerges": 0,
+  "limitations": [
+    "Les tables sont relevées statiquement, pas migrées.",
+    "merge-file ne prouve ni types ni compatibilité fonctionnelle.",
+    "Les faits sur les sources restent distincts d'un défaut reproduit dans une candidate.",
+    "Aucune CI verte séparée ne valide la combinaison."
+  ],
+  "refsUnchanged": true
+}

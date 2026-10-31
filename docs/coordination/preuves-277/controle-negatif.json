@@ -1,0 +1,10 @@
+{
+  "kind": "source_codex_seule_non_candidate_integree",
+  "sha": "42ef034c00c7f6d92fc0ef14ce2818c520506931",
+  "containsClaudeByAncestry": false,
+  "containsCodexByAncestry": true,
+  "missingClaudeFiles": 348,
+  "refsUnchanged": true,
+  "realProviderCalls": 0,
+  "passed": true
+}
