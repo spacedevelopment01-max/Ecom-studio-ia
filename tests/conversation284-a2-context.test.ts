@@ -17,7 +17,7 @@ import {currentTheme,saveThemeVersion} from '@/lib/projects';
 import {stateOf} from '@/lib/preparation/store';
 import {id,now,one,run,all} from '@/lib/db';
 import {sha256} from '@/lib/secrets';
-import {quoteThemeChange,confirmThemeChange,runThemeChange} from '@/lib/orchestrator/conversation/theme-tool-execution';
+import {quoteThemeChange,quoteThemeUndo,confirmThemeChange,runThemeChange} from '@/lib/orchestrator/conversation/theme-tool-execution';
 import {claimNext,JobContext,completeJob} from '@/lib/jobs';
 import type {ActiveContext} from '@/lib/orchestrator/conversation/active-context-contract';
 import type {ThemeToolPlan} from '@/lib/orchestrator/conversation/theme-tool-contract';
@@ -154,4 +154,28 @@ it('N+1 affiché puis N+2 manuel : la revalidation ne consent jamais silencieuse
  const f=await fixture(),selected=f.select(f.field()),spec=structuredClone(f.cur.spec);spec.templates.index.sections[f.text.section].settings.heading='Version N+1 affichée';saveThemeVersion(f.pid,spec,'N+1 fictif','user');const offered=f.selected().recovery!.current!;
  spec.templates.index.sections[f.text.section].settings.heading='Version N+2 non consentie';saveThemeVersion(f.pid,spec,'N+2 fictif','user');const before=businessFingerprints(),revision=f.selected().revision;
  expect(()=>submitContext(f.u,f.c.id,{action:'revalidate',revision,requestId:id(),expectedReference:selected.reference,currentReference:offered.reference,confirmation:true})).toThrow('cible');expect(f.selected().revision).toBe(revision);expect(businessFingerprints()).toEqual(before);expect(f.selected().state).toBe('conflict');
+});
+
+
+it('annulation native du reçu livré : sélection N conservée après notre propre version N+1',async()=>{
+ const f=await fixture();f.select({tab:'boutique',target:{kind:'theme-page',versionId:f.cur.version.id,path:'/'}});
+ const prepared=await prepare(f,'Titre exact pour annulation du reçu'),q=prepared.quote();confirmThemeChange(f.u,f.c.id,{action:'confirm',quoteId:q.id,confirmation:true,requestId:id()});const j=claimNext(['agent.theme.change'])!,result=await runThemeChange(new JobContext(j));completeJob(j.id,result);
+ expect(f.selected().state).toBe('conflict');const undo=quoteThemeUndo(f.u,f.c.id,{action:'quote-undo',receiptId:q.id,currentVersionId:result.versionId});
+ confirmThemeChange(f.u,f.c.id,{action:'confirm',quoteId:undo.id,confirmation:true,requestId:id()});const uj=claimNext(['agent.theme.change'])!,restored=await runThemeChange(new JobContext(uj));completeJob(uj.id,restored);
+ expect(currentTheme(f.pid)!.spec).toEqual(f.cur.spec);expect(restored.versionId).not.toBe(f.cur.version.id);expect(one<{n:number}>('SELECT COUNT(*) n FROM theme_versions WHERE project_id=?',f.pid)!.n).toBe(3);expect(one<{n:number}>('SELECT COUNT(*) n FROM ai_calls')!.n).toBe(0);
+});
+
+it.each(['avant-devis','après-devis','dans-worker'] as const)('annulation liée au reçu : modification manuelle %s conservée',async stage=>{
+ const f=await fixture();f.select(f.field());const prepared=await prepare(f,'Titre pour protéger l’annulation'),q=prepared.quote();confirmThemeChange(f.u,f.c.id,{action:'confirm',quoteId:q.id,confirmation:true,requestId:id()});const j=claimNext(['agent.theme.change'])!,result=await runThemeChange(new JobContext(j));completeJob(j.id,result);
+ const manual=()=>{const spec=structuredClone(currentTheme(f.pid)!.spec);spec.templates.index.sections[f.text.section].settings.heading='Titre humain après résultat acquis';return saveThemeVersion(f.pid,spec,'Édition manuelle après retouche','user');};
+ if(stage==='avant-devis'){manual();const before=businessFingerprints();expect(()=>quoteThemeUndo(f.u,f.c.id,{action:'quote-undo',receiptId:q.id,currentVersionId:currentTheme(f.pid)!.version.id})).toThrow('modification');expect(businessFingerprints()).toEqual(before);return;}
+ const undo=quoteThemeUndo(f.u,f.c.id,{action:'quote-undo',receiptId:q.id,currentVersionId:result.versionId});
+ if(stage==='après-devis'){manual();const before=businessFingerprints();expect(()=>confirmThemeChange(f.u,f.c.id,{action:'confirm',quoteId:undo.id,confirmation:true,requestId:id()})).toThrow('thème a changé');expect(businessFingerprints()).toEqual(before);return;}
+ confirmThemeChange(f.u,f.c.id,{action:'confirm',quoteId:undo.id,confirmation:true,requestId:id()});const uj=claimNext(['agent.theme.change'])!;manual();const before=businessFingerprints();await expect(runThemeChange(new JobContext(uj))).rejects.toMatchObject({code:'agent_theme_conflict'});expect(businessFingerprints()).toEqual(before);
+});
+
+it.each(['accord','worker'] as const)('annulation liée au reçu : média modifié sans nouvelle version thème, refus au %s',async stage=>{
+ const f=await fixture();f.select(f.field());const prepared=await prepare(f,'Titre avant changement média'),q=prepared.quote();confirmThemeChange(f.u,f.c.id,{action:'confirm',quoteId:q.id,confirmation:true,requestId:id()});const j=claimNext(['agent.theme.change'])!,result=await runThemeChange(new JobContext(j));completeJob(j.id,result);
+ const undo=quoteThemeUndo(f.u,f.c.id,{action:'quote-undo',receiptId:q.id,currentVersionId:result.versionId});let worker:ReturnType<typeof claimNext>=null;if(stage==='worker'){confirmThemeChange(f.u,f.c.id,{action:'confirm',quoteId:undo.id,confirmation:true,requestId:id()});worker=claimNext(['agent.theme.change']);}
+ run('UPDATE assets SET version=version+1 WHERE project_id=?',f.pid);const before=businessFingerprints();if(stage==='accord')expect(()=>confirmThemeChange(f.u,f.c.id,{action:'confirm',quoteId:undo.id,confirmation:true,requestId:id()})).toThrow('médias');else await expect(runThemeChange(new JobContext(worker!))).rejects.toMatchObject({code:'agent_theme_conflict'});expect(businessFingerprints()).toEqual(before);
 });

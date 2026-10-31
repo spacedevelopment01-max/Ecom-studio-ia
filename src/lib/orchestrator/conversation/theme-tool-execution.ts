@@ -30,7 +30,7 @@ import {checkedContextPin,type ContextPin} from './context-session';
 import {resolveActiveContext} from './active-context';
 
 type Diff={template:string;section:string;block?:string;key:string;before:unknown;after:unknown;media?:{beforeAssetId:string|null;afterAssetId:string|null}};
-type Meta={schema:1;id:string;conversationId:string;kind:'edit'|'compose'|'undo';sourceReceiptId?:string;revision:number;projectRevision:number;beforeVersionId:string;targetVersionId?:string;plan?:ThemeToolPlan;compositionPlan?:CompositionPlan;startingWithoutTheme?:boolean;previewFingerprint:string;changes:Diff[];summary:string;expiresAt:number;createdAt:number;jobId?:string;resultVersionId?:string;resultFingerprint?:string;contextPin?:ContextPin};
+type Meta={schema:1;id:string;conversationId:string;kind:'edit'|'compose'|'undo';sourceReceiptId?:string;revision:number;projectRevision:number;beforeVersionId:string;targetVersionId?:string;plan?:ThemeToolPlan;compositionPlan?:CompositionPlan;startingWithoutTheme?:boolean;previewFingerprint:string;changes:Diff[];summary:string;expiresAt:number;createdAt:number;jobId?:string;resultVersionId?:string;resultFingerprint?:string;contextPin?:ContextPin;undoSourceFingerprint?:string};
 const fingerprint=(spec:ThemeSpec)=>stableHash('agent-theme-native-version-v1',spec);
 const enabled=()=>{if(!conversationThemeToolsEnabled())throw new HttpError(404,'Retouches Site de SYNA indisponibles.','conversation_theme_tools_disabled');};
 function owned(user:User,cid:string){enabled();const c=ownedConversation(user,cid);if(!c.project_id)throw new HttpError(409,'Créez le projet et choisissez son thème avant cette retouche.');return{c,pid:c.project_id};}
@@ -95,10 +95,14 @@ function previewCompose(user:User,pid:string,plan:CompositionPlan){
 function previewUndo(user:User,pid:string,m:Meta){
   requirePlan(user,pid);const cur=current(pid,m.beforeVersionId),target=m.targetVersionId?themeVersion(pid,m.targetVersionId):null;
   if(!target)throw new HttpError(404,'Version précédente introuvable.');
+  // L'annulation vise le résultat du reçu, pas le repère de navigation antérieur à notre propre édition.
+  // Relire les deux versions et leurs médias à chaque devis, accord et passage du worker.
+  const undoSourceFingerprint=stableHash('agent-theme-undo-source-1',{from:cur.version.id,fromFingerprint:fingerprint(cur.spec),to:target.version.id,toFingerprint:fingerprint(target.spec),media:[...new Set([...Object.values(cur.spec.files),...Object.values(target.spec.files)])].sort().map(assetId=>{const a=getAsset(assetId);return a?{id:a.id,projectId:a.project_id,version:a.version,status:a.status,deletedAt:a.deleted_at}:null;})});
+  if(m.undoSourceFingerprint&&m.undoSourceFingerprint!==undoSourceFingerprint)throw new HttpError(409,'Les versions ou médias de cette annulation ont changé. Préparez un nouveau devis.','agent_theme_conflict');
   const qc=json<{gate?:{verdict?:string}}>(target.version.qc,{});if(['REJECTED','RETRY'].includes(qc.gate?.verdict??''))throw new HttpError(409,'Cette version précédente n’est pas utilisable ; vos versions restent conservées.');
   const spec=applyWordingDeep(target.spec,loadWordingRules(pid));validateExisting(spec);
   for(const assetId of Object.values(spec.files)){const a=getAsset(assetId);if(!a||a.project_id!==pid||a.deleted_at||a.status==='rejected')throw new HttpError(409,'Un média de la version précédente n’est plus disponible. Le thème actuel est conservé.');}
-  return{cur,spec,changes:m.changes.map(d=>{const before=setting(cur.spec,d),after=setting(spec,d);return{...d,before,after,...(d.media?{media:{beforeAssetId:typeof before==='string'?cur.spec.files[before]??null:null,afterAssetId:typeof after==='string'?spec.files[after]??null:null}}:{})};})};
+  return{cur,spec,undoSourceFingerprint,changes:m.changes.map(d=>{const before=setting(cur.spec,d),after=setting(spec,d);return{...d,before,after,...(d.media?{media:{beforeAssetId:typeof before==='string'?cur.spec.files[before]??null:null,afterAssetId:typeof after==='string'?spec.files[after]??null:null}}:{})};})};
 }
 function publicQuote(m:Meta){return{id:m.id,kind:m.kind,costPct:0,confirmationRequired:true,expiresAt:m.expiresAt,summary:m.summary,changes:m.changes,beforeVersionId:m.startingWithoutTheme?null:m.beforeVersionId,startingWithoutTheme:!!m.startingWithoutTheme,expectedResult:'Une version native du thème, sans publication ni nouvel appel IA.',actionsExecuted:false};}
 export function quoteThemeChange(user:User,cid:string,cmd:Extract<ThemeToolCommand,{action:'quote'}>){return tx(()=>{
@@ -110,13 +114,13 @@ export function quoteThemeChange(user:User,cid:string,cmd:Extract<ThemeToolComma
   const m:Meta={schema:1,id:id(),conversationId:cid,kind:compositionPlan?'compose':'edit',sourceReceiptId:cmd.proposalReceiptId,revision:c.revision,projectRevision:cmd.projectRevision,beforeVersionId:preview.cur.version.id,plan,compositionPlan,contextPin,...('startingWithoutTheme'in preview&&preview.startingWithoutTheme?{startingWithoutTheme:true}:{}),previewFingerprint:fingerprint(preview.spec),changes:preview.changes,summary:(compositionPlan??plan!).summary,createdAt:at,expiresAt:at+15*60000};save(pid,m);return publicQuote(m);
 });}
 export function quoteThemeUndo(user:User,cid:string,cmd:Extract<ThemeToolCommand,{action:'quote-undo'}>){return tx(()=>{
-  const{c,pid,m:original}=ownedMeta(user,cid,cmd.receiptId);const contextPin=checkedContextPin(c);
+  const{c,pid,m:original}=ownedMeta(user,cid,cmd.receiptId);
   if(original.startingWithoutTheme)throw new HttpError(409,L('Cette première composition ne remplace aucune version. Les versions suivantes restent restaurables.','This first composition replaces no previous version. Later versions remain restorable.'));
   if(!original.resultVersionId||!original.resultFingerprint)throw new HttpError(409,'Aucune version appliquée à annuler.');
   const saved=themeVersion(pid,original.resultVersionId);if(!saved||fingerprint(saved.spec)!==original.resultFingerprint)throw new HttpError(409,'La preuve de cette version manque.');
   const cur=current(pid,cmd.currentVersionId);if(cur.version.id!==original.resultVersionId)throw new HttpError(409,'Une modification est passée depuis : annulation refusée pour préserver vos derniers changements.','agent_theme_conflict');
-  const at=now(),m:Meta={schema:1,id:id(),conversationId:cid,kind:'undo',contextPin,revision:c.revision,projectRevision:stateOf(pid)?.revision??0,beforeVersionId:cur.version.id,targetVersionId:original.beforeVersionId,changes:original.changes.map(d=>({...d,before:d.after,after:d.before})),previewFingerprint:'',summary:'Annuler cette retouche en créant une nouvelle version ; historique conservé.',createdAt:at,expiresAt:at+15*60000};
-  const preview=previewUndo(user,pid,m);m.previewFingerprint=fingerprint(preview.spec);m.changes=preview.changes;save(pid,m);return publicQuote(m);
+  const at=now(),m:Meta={schema:1,id:id(),conversationId:cid,kind:'undo',revision:c.revision,projectRevision:stateOf(pid)?.revision??0,beforeVersionId:cur.version.id,targetVersionId:original.beforeVersionId,changes:original.changes.map(d=>({...d,before:d.after,after:d.before})),previewFingerprint:'',summary:'Annuler cette retouche en créant une nouvelle version ; historique conservé.',createdAt:at,expiresAt:at+15*60000};
+  const preview=previewUndo(user,pid,m);m.undoSourceFingerprint=preview.undoSourceFingerprint;m.previewFingerprint=fingerprint(preview.spec);m.changes=preview.changes;save(pid,m);return publicQuote(m);
 });}
 function recheck(user:User,cid:string,pid:string,m:Meta){
   const c=ownedConversation(user,cid);if(m.contextPin)checkedContextPin(c,m.contextPin);if(m.expiresAt<now()||c.revision!==m.revision||stateOf(pid)?.revision!==m.projectRevision)throw new HttpError(409,'Ce devis de retouche est périmé ou son contexte a changé.','agent_theme_quote_stale');
