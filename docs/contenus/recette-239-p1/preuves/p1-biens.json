@@ -1,0 +1,150 @@
+{
+ "biens": [
+  "V-0001 published maison-familiale-avec-jardin-v-0001",
+  "V-0002 published appartement-haussmannien-v-0002",
+  "L-0001 published studio-lumineux-proche-gare-l-0001",
+  "V-0003 sold loft-sous-les-toits-v-0003",
+  "L-0002 draft villa-avec-piscine-brouillon-l-0002",
+  "V-0004 withdrawn terrain-a-batir-retire-v-0004"
+ ],
+ "v1": {
+  "numero": 2,
+  "pages": 19,
+  "aJour": true
+ },
+ "visiteur": {
+  "ordinateur": {
+   "/": {
+    "statut": 200,
+    "maison": true,
+    "studio": true,
+    "vendu": false,
+    "brouillon": false,
+    "retire": false,
+    "prix485": true
+   },
+   "/pages/acheter": {
+    "statut": 200,
+    "maison": true,
+    "studio": false,
+    "vendu": true,
+    "brouillon": false,
+    "retire": false,
+    "prix485": true
+   },
+   "/pages/louer": {
+    "statut": 200,
+    "maison": false,
+    "studio": true,
+    "vendu": false,
+    "brouillon": false,
+    "retire": false,
+    "prix485": false
+   },
+   "/pages/bien/maison-familiale-avec-jardin-v-0001": {
+    "statut": 200,
+    "maison": true,
+    "studio": false,
+    "vendu": false,
+    "brouillon": false,
+    "retire": false,
+    "prix485": true
+   },
+   "/pages/bien/loft-sous-les-toits-v-0003": {
+    "statut": 200,
+    "maison": true,
+    "studio": false,
+    "vendu": false,
+    "brouillon": false,
+    "retire": false,
+    "prix485": true
+   },
+   "liens": {
+    "total": 18,
+    "casses": []
+   },
+   "brouillonDirect": 404,
+   "retireDirect": 404,
+   "erreurs": [
+    "404 /pages/bien/villa-avec-piscine-brouillon-l-0002",
+    "404 /pages/bien/terrain-a-batir-retire-v-0004"
+   ]
+  },
+  "telephone": {
+   "/": {
+    "statut": 200,
+    "maison": true,
+    "studio": true,
+    "vendu": false,
+    "brouillon": false,
+    "retire": false,
+    "prix485": true
+   },
+   "/pages/acheter": {
+    "statut": 200,
+    "maison": true,
+    "studio": false,
+    "vendu": true,
+    "brouillon": false,
+    "retire": false,
+    "prix485": true
+   },
+   "/pages/louer": {
+    "statut": 200,
+    "maison": false,
+    "studio": true,
+    "vendu": false,
+    "brouillon": false,
+    "retire": false,
+    "prix485": false
+   },
+   "/pages/bien/maison-familiale-avec-jardin-v-0001": {
+    "statut": 200,
+    "maison": true,
+    "studio": false,
+    "vendu": false,
+    "brouillon": false,
+    "retire": false,
+    "prix485": true
+   },
+   "/pages/bien/loft-sous-les-toits-v-0003": {
+    "statut": 200,
+    "maison": true,
+    "studio": false,
+    "vendu": false,
+    "brouillon": false,
+    "retire": false,
+    "prix485": true
+   },
+   "liens": {
+    "total": 18,
+    "casses": []
+   },
+   "brouillonDirect": 404,
+   "retireDirect": 404,
+   "erreurs": [
+    "404 /pages/bien/villa-avec-piscine-brouillon-l-0002",
+    "404 /pages/bien/terrain-a-batir-retire-v-0004"
+   ]
+  }
+ },
+ "bandeauBiens": "Votre site en ligne (publication 2) n'affiche pas encore ces changements (1 bien(s) modifié(s)) : ils sont visibles dans l'aperçu. Publiez une nouvelle version depuis l'onglet Site, « Publier votre site ». Aller à l'onglet Site",
+ "publicAvantRepublication": true,
+ "etatModale": "Modifications non publiées : le site en ligne n'affiche pas encore vos derniers changements (1 bien(s) modifié(s)). Ils sont visibles dans l'aperçu ; « Publier la version actuelle » les met en ligne.",
+ "v2": {
+  "numero": 3,
+  "aJour": true
+ },
+ "publicApresV2": true,
+ "restauration": {
+  "statut": 200,
+  "enLigne": 2,
+  "aJour": false
+ },
+ "publicApresRestauration": true,
+ "compteEtranger": {
+  "biens": 404,
+  "publication": 404
+ },
+ "erreursStudio": []
+}

@@ -1,0 +1,200 @@
+{
+ "smtp": "SMTP local activé",
+ "ongletVisibleDansLeMenu": 1,
+ "aplatSaisies": [
+  {
+   "titre": "Séjour repris du sol au plafond",
+   "etat": "published",
+   "adresse": "realisation-sejour-repris-du-sol-au-plafond",
+   "photos": 2,
+   "avant": true
+  },
+  {
+   "titre": "Cloison de bureau",
+   "etat": "published",
+   "adresse": "realisation-cloison-de-bureau",
+   "photos": 3,
+   "avant": false
+  },
+  {
+   "titre": "Couloir rafraîchi",
+   "etat": "draft",
+   "adresse": "realisation-couloir-rafraichi",
+   "photos": 1,
+   "avant": true
+  }
+ ],
+ "versionId": true,
+ "apercuGalerie": {
+  "cartes": 2,
+  "filtres": [
+   "Tout",
+   "Peinture",
+   "Plâtrerie"
+  ]
+ },
+ "apercuFiltrePlatrerie": [
+  "Cloison de bureau\n\nPlâtrerie\n\nUne cloison en plaques de plâtre pour créer un bureau.\n\nDécouvrir ce projet"
+ ],
+ "apercuFiche": {
+  "titre": true,
+  "demande": true,
+  "travail": true,
+  "lieu": true,
+  "date": true,
+  "avantApres": true
+ },
+ "apercuBrouillon": true,
+ "v1": {
+  "ok": true,
+  "numero": 1,
+  "host": "platrerie-fictive-durand.sites.recette.test"
+ },
+ "site_ordinateur": {
+  "galerie": 200,
+  "sejour": true,
+  "cloison": true,
+  "brouillonAbsent": true,
+  "accueil": true,
+  "menu": true,
+  "fiche": 200
+ },
+ "site_telephone": {
+  "galerie": 200,
+  "sejour": true,
+  "cloison": true,
+  "brouillonAbsent": true,
+  "accueil": true,
+  "menu": true,
+  "fiche": 200
+ },
+ "brouillonSurLeSite": 404,
+ "liens": {
+  "verifies": 12,
+  "casses": []
+ },
+ "boutonDevisDeLaFiche": "/pages/devis",
+ "devisEnvoi": 303,
+ "emailDevis": {
+  "a": [
+   "proprio@recette.invalid"
+  ],
+  "sujet": "=?UTF-8?Q?Nouvelle_demande_de_devis_de_Camille_Fic?= =?UTF-8?Q?tive_=E2=80=94_Pl=C3=A2trerie_Fictive_Du?= =?UTF-8?Q?rand?="
+ },
+ "siteAvantRepublication": "V1",
+ "nonPublie": "Modifications non publiées : le site en ligne n'affiche pas encore vos derniers changements (1 réalisation(s) modifiée(s)). Ils sont visibles dans l'aperçu ; « Publier la version actuelle » les met en ligne.",
+ "v2": 2,
+ "siteApresV2": "V2",
+ "restauration": 200,
+ "siteApresRestauration": "V1",
+ "electricien": {
+  "saisies": [
+   {
+    "titre": "Tableau électrique remis à neuf",
+    "creation": 200,
+    "publication": 200,
+    "adresse": "realisation-tableau-electrique-remis-a-neuf"
+   },
+   {
+    "titre": "Cuisine et jardin éclairés",
+    "creation": 200,
+    "publication": 200,
+    "adresse": "realisation-cuisine-et-jardin-eclaires"
+   }
+  ],
+  "publication": {
+   "ok": true,
+   "numero": 1,
+   "host": "volt-fictif-electricite.sites.recette.test"
+  }
+ },
+ "electricien_ordinateur": {
+  "accueil": {
+   "statut": 200,
+   "projet": true
+  },
+  "galerie": {
+   "statut": 200,
+   "projet": true
+  },
+  "fiche": {
+   "statut": 200,
+   "projet": true
+  }
+ },
+ "electricien_telephone": {
+  "accueil": {
+   "statut": 200,
+   "projet": true
+  },
+  "galerie": {
+   "statut": 200,
+   "projet": true
+  },
+  "fiche": {
+   "statut": 200,
+   "projet": true
+  }
+ },
+ "amenagement": {
+  "saisies": [
+   {
+    "titre": "Salon ouvert sur la cuisine",
+    "creation": 200,
+    "publication": 200,
+    "adresse": "realisation-salon-ouvert-sur-la-cuisine"
+   },
+   {
+    "titre": "Chambre apaisée",
+    "creation": 200,
+    "publication": 200,
+    "adresse": "realisation-chambre-apaisee"
+   },
+   {
+    "titre": "Cuisine compacte",
+    "creation": 200,
+    "publication": 200,
+    "adresse": "realisation-cuisine-compacte"
+   }
+  ],
+  "publication": {
+   "ok": true,
+   "numero": 1,
+   "host": "atelier-fictif-lune.sites.recette.test"
+  }
+ },
+ "amenagement_ordinateur": {
+  "accueil": {
+   "statut": 200,
+   "projet": true
+  },
+  "galerie": {
+   "statut": 200,
+   "projet": true
+  },
+  "fiche": {
+   "statut": 200,
+   "projet": true
+  }
+ },
+ "amenagement_telephone": {
+  "accueil": {
+   "statut": 200,
+   "projet": true
+  },
+  "galerie": {
+   "statut": 200,
+   "projet": true
+  },
+  "fiche": {
+   "statut": 200,
+   "projet": true
+  }
+ },
+ "compteEtranger": {
+  "lecture": 404,
+  "ajout": 404,
+  "onglet": "https://studio.recette.test:3943/studio/oe6rq2jhft0kb3rh/realisations"
+ },
+ "erreursStudio": []
+}

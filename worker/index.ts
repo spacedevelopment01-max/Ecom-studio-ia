@@ -30,6 +30,10 @@ import { runWithLang, userLang } from "../src/lib/i18n-server";
 import { isLang } from "../src/lib/i18n";
 import { json, one } from "../src/lib/db";
 import { migrateLegacySecrets } from "../src/lib/secrets-migration";
+import { processOutbox } from "../src/lib/sites/notify";
+import { cleanupInterrupted } from "../src/lib/sites/maintenance";
+import { recheckDomains } from "../src/lib/sites/domains";
+import { sitesDomain } from "../src/lib/sites/host-match";
 
 /** Langue des contenus d'une tâche : celle choisie pour l'action, sinon celle du projet. */
 function jobLangs(job: { user_id: string | null; project_id: string | null; payload: string }) {
@@ -120,6 +124,12 @@ async function tick() {
     await runDueAutomations().catch((e: unknown) => logError("worker:social-automations", e));
     // « Ma communication automatique » : remplissage glissant, visuels progressifs, validation (client ou pilote).
     await runDueAutopilots((p) => realSocialDeps(null, p, aiActiveFor(p.userId, p.id))).catch((e: unknown) => logError("worker:social-autopilot", e));
+    // Sites publiés (#232) : e-mails des demandes de devis ou de contact encore à envoyer (reprises espacées).
+    await processOutbox().catch((e) => logError("worker:site-notify", e));
+    // Publications interrompues (arrêt pendant l'écriture) : dossiers temporaires de plus d'une heure supprimés.
+    try { cleanupInterrupted(); } catch (e) { logError("worker:sites-cleanup", e); }
+    // Domaines reliés par les clients : preuve DNS revérifiée chaque jour (domaine expiré ou DNS changé → « perdu »).
+    if (sitesDomain()) await recheckDomains().catch((e) => logError("worker:sites-domains", e));
     // Anciens abonnements Stripe dont l'arrêt a échoué (changement de forfait) : nouvel essai.
     await retryStripeCancellations().catch((e) => logError("worker:stripe-cancel", e));
     // L'identifiant du worker change à chaque démarrage : les battements des anciens démarrages sont purgés.

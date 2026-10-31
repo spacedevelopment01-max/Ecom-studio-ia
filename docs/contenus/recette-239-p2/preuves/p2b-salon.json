@@ -1,0 +1,67 @@
+{
+ "salonApres": {
+  "services": [
+   "offer-one 45min 38€"
+  ],
+  "staff": [
+   "ines Inès"
+  ],
+  "hours": {
+   "mon": "09:00-12:00, 14:00-18:00",
+   "tue": "09:00-12:00, 14:00-19:00",
+   "wed": "09:00-12:00, 14:00-19:00",
+   "thu": "09:00-12:00, 14:00-19:00",
+   "fri": "09:00-12:00, 14:00-19:00",
+   "sat": "09:00-12:00, 14:00-19:00",
+   "sun": ""
+  }
+ },
+ "salonLive": 200,
+ "salonPublication": {
+  "ok": true,
+  "numero": 1,
+  "host": "salon-fil-d-or-2.sites.recette.test"
+ },
+ "salonReservation": {
+  "status": 201,
+  "body": {
+   "appointment": {
+    "number": "AN-2026-7WT53",
+    "status": "confirmed",
+    "service": "offer-one",
+    "serviceName": "Diagnostic du piano",
+    "length": "",
+    "staff": "ines",
+    "date": "2026-11-02",
+    "time": "09:00",
+    "duration": 45,
+    "price": 38,
+    "priceFrom": false,
+    "note": ""
+   },
+   "clientToken": "[MASQUÉ]",
+   "duplicate": false,
+   "email": "failed"
+  },
+  "jour": "2026-11-02",
+  "heure": "09:00"
+ },
+ "salonSuppressionRefusee": {
+  "status": 409,
+  "message": "Impossible de supprimer « Diagnostic du piano » (1 rendez-vous à venir) : ses rendez-vous ne pourraient plus être déplacés. Gardez-la jusqu'à ses derniers rendez-vous."
+ },
+ "salonPrixChange": {
+  "status": 200,
+  "version": 6,
+  "avertissements": [
+   "« Diagnostic du piano » : 1 rendez-vous à venir gardent leur durée enregistrée (45 min)."
+  ]
+ },
+ "salonRendezVousIntact": [
+  "AN-2026-7WT53 Diagnostic du piano 09:00-09:45"
+ ],
+ "erreursStudio": [
+  "409 PUT https://studio.recette.test:3943/api/projects/mywreb3z8acczwn2/prestations",
+  "console: Failed to load resource: the server responded with a status of 409 (Conflict)"
+ ]
+}

@@ -1,0 +1,18 @@
+{
+ "s2-ordinateur-accueil": {
+  "taille": "1440x900",
+  "pixelsDifferents": "0.03 %"
+ },
+ "s2-ordinateur-pages-prendre-rendez-vous": {
+  "taille": "1440x900",
+  "pixelsDifferents": "0.00 %"
+ },
+ "s2-telephone-accueil": {
+  "taille": "780x1688",
+  "pixelsDifferents": "0.00 %"
+ },
+ "s2-telephone-pages-prendre-rendez-vous": {
+  "taille": "780x1688",
+  "pixelsDifferents": "0.00 %"
+ }
+}

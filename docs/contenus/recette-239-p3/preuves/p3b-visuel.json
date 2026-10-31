@@ -1,0 +1,48 @@
+{
+ "menuSansRealisation": [
+  "VOLT FICTIF ÉLECTRICITÉ",
+  "Accueil",
+  "Prestations",
+  "À propos",
+  "FAQ",
+  "Demande de devis",
+  "Demander un devis",
+  "Accueil\n",
+  "Prestations",
+  "Tableau électrique",
+  "Éclairage",
+  "À propos\n",
+  "FAQ\n",
+  "Demande de devis\n",
+  "Prestations",
+  "Demande de devis",
+  "FAQ",
+  "Mentions légales",
+  "Conditions générales",
+  "Confidentialité"
+ ],
+ "electricien": {
+  "publication": 200,
+  "numero": 3
+ },
+ "electricien_ordinateur_boutons": [
+  "Demande de devis → /pages/contact",
+  "Demander un devis → /pages/demande-de-devis"
+ ],
+ "electricien_telephone_boutons": [
+  "Demande de devis → /pages/contact",
+  "Demander un devis → /pages/demande-de-devis"
+ ],
+ "amenagement": {
+  "publication": 200,
+  "numero": 3
+ },
+ "amenagement_ordinateur_boutons": [
+  "Demande de devis → /pages/contact",
+  "Demander un devis → /pages/contact"
+ ],
+ "amenagement_telephone_boutons": [
+  "Demande de devis → /pages/contact",
+  "Demander un devis → /pages/contact"
+ ]
+}

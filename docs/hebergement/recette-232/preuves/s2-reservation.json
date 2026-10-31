@@ -1,0 +1,45 @@
+{
+ "refus": [
+  "La réservation en ligne de votre site est en mode démonstration : activez le service réel dans l'onglet Rendez-vous avant de publier (un site public ne simule jamais une réservation)."
+ ],
+ "enLigne": "En ligne · publication 1 cabinet-souffle.sites.recette.test · 29 oct., 18:11 · 16 pages",
+ "adresse": "cabinet-souffle.sites.recette.test",
+ "liens": [
+  "/pages/prendre-rendez-vous",
+  "/pages/mon-rendez-vous",
+  "/pages/retrouver-mon-rendez-vous",
+  "/pages/ateliers",
+  "/pages/contact",
+  "/pages/conditions-de-reservation",
+  "/pages/cookies",
+  "/",
+  "/pages/prestations",
+  "/pages/a-propos",
+  "/pages/faq",
+  "/pages/mentions-legales",
+  "/policies/terms-of-service",
+  "/policies/privacy-policy",
+  "/pages/confidentialite"
+ ],
+ "pageReservation": "/pages/prendre-rendez-vous",
+ "structure": [
+  "input type=radio name=pa-service value=offer-one data-pa-service= ",
+  "input type=radio name=pa-mode value=cabinet data-pa-mode= ",
+  "input type=radio name=pa-mode value=visio data-pa-mode= ",
+  "button type=button data-pa-next= Continuer",
+  "button type=button data-pa-prev= Retour",
+  "button type=button data-pa-next= Continuer",
+  "input name=firstName ",
+  "input name=lastName ",
+  "input name=email type=email ",
+  "input name=phone type=tel ",
+  "input type=checkbox name=terms ",
+  "input type=checkbox name=newsletter ",
+  "button type=button data-pa-prev= Retour",
+  "button type=button data-pa-mnext= Continuer",
+  "button type=button data-pa-submit= Confirmer mon rendez-vous",
+  "button type=button data-pa-ics= Ajouter à mon agenda"
+ ],
+ "appelsApi": [],
+ "erreursVisiteur": []
+}

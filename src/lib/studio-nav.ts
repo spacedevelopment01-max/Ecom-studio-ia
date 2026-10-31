@@ -3,7 +3,7 @@
  * chacun avec UNE phrase qui dit à quoi il sert, et les outils avancés (prompts, fichiers, connexions) rangés à part,
  * repliés tant qu'on ne s'en sert pas. Toutes les fonctions restent accessibles : rien n'est supprimé, seulement rangé.
  */
-export type SpaceId = "pilote" | "produit" | "marque" | "strategie" | "boutique" | "catalogue" | "biens" | "rendez-vous" | "images" | "videos" | "publications" | "calendrier" | "publicites" | "blog" | "prompts" | "fichiers" | "connexions";
+export type SpaceId = "pilote" | "produit" | "marque" | "strategie" | "boutique" | "catalogue" | "biens" | "carte" | "realisations" | "rendez-vous" | "images" | "videos" | "publications" | "calendrier" | "publicites" | "blog" | "prompts" | "fichiers" | "connexions";
 export type SpaceGroup = "projet" | "creer" | "diffuser" | "avance";
 type Business = "products" | "services" | undefined;
 type T2 = [fr: string, en: string];
@@ -23,6 +23,8 @@ export const SPACES: { id: SpaceId; group: SpaceGroup; purpose: T2; purposeServi
   { id: "boutique", group: "creer", purpose: ["Votre boutique en ligne : aperçu, retouches et mise en ligne.", "Your online store: preview, edits and going live."], purposeServices: ["Votre site : aperçu, retouches et mise en ligne.", "Your website: preview, edits and going live."] },
   { id: "catalogue", group: "creer", purpose: ["Vos produits : photos, prix, variantes, références et stock, saisis une fois ; la boutique, les exports et vos boutiques connectées s'en servent.", "Your products: photos, prices, variants, SKUs and stock, entered once; the store, the exports and your connected stores use them."] },
   { id: "biens", group: "creer", purpose: ["Vos biens à vendre et à louer : une fiche par bien, ses photos, sa publication. Le site les affiche tout seul.", "Your properties for sale and rent: one listing each, its photos, its publication. The website shows them by itself."] },
+  { id: "carte", group: "creer", purpose: ["Votre carte : catégories et plats, prix, allergènes déclarés, disponibilité. Le site l'affiche tout seul.", "Your menu: categories and dishes, prices, declared allergens, availability. The website shows it by itself."] },
+  { id: "realisations", group: "creer", purpose: ["Vos chantiers : photos, demande, travail réalisé, avant / après. L'accueil, la page Réalisations et la fiche de chaque projet les affichent toutes seules.", "Your jobs: photos, request, work done, before / after. The home page, the Projects page and each project page show them by themselves."] },
   { id: "rendez-vous", group: "creer", purpose: ["Vos prestations, horaires, intervenants et réservations : tout le planning du site au même endroit.", "Your services, hours, staff and bookings: the whole website schedule in one place."] },
   { id: "images", group: "creer", purpose: ["Votre banque d'images, sans texte : vos photos, photos libres et images créées.", "Your image bank, no text: your photos, royalty-free photos and created images."] },
   { id: "videos", group: "creer", purpose: ["Votre banque de vidéos, sans texte : vos plans, plans libres et plans créés.", "Your video bank, no text: your clips, royalty-free clips and created clips."] },
@@ -39,6 +41,23 @@ export const space = (id: string) => SPACES.find((s) => s.id === id);
 
 /** Entrée du menu qui contient cet espace (le Calendrier est un sous-menu de Publications). */
 export const navSpace = (id: string): string => space(id)?.within ?? id;
+
+/** Thèmes dont le site prend des réservations (salon, cabinet, restaurant). */
+const BOOKING_DIRECTIONS = ["atelier-nuance", "parenthese", "table-saison"];
+/**
+ * L'espace apparaît-il dans le menu de ce projet (#239) ? Chaque métier retrouve ses contenus et ne voit pas ceux des
+ * autres : « Biens » (agence immobilière), « Carte » (restaurant), « Réalisations » (artisans), « Rendez-vous » quand le
+ * site réserve ; « Catalogue » (produits) n'est pas proposé à un site de services. Un espace masqué reste accessible
+ * par son adresse : rien n'est supprimé.
+ */
+export function spaceVisible(id: string, p: { business?: Business; direction?: string | null; contactModes?: readonly string[] }): boolean {
+  if (id === "biens") return p.direction === "maison-horizon";
+  if (id === "carte") return p.direction === "table-saison";
+  if (id === "realisations") return p.direction === "rive" || p.direction === "aplat" || p.direction === "phase";
+  if (id === "catalogue") return p.business !== "services";
+  if (id === "rendez-vous") return p.business !== "services" || BOOKING_DIRECTIONS.includes(p.direction ?? "") || !!p.contactModes?.includes("booking");
+  return true;
+}
 
 /** À quoi sert cet espace (une phrase), dans la langue de l'interface. */
 export function spacePurpose(id: string, lang: "fr" | "en", business?: Business): string | null {

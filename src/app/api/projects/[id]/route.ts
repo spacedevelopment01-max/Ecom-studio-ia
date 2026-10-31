@@ -1,4 +1,5 @@
 import {stateOf} from '@/lib/preparation/store';
+import { syncBookingAddress } from "@/lib/contenus/prestations";
 import { z } from "zod";
 import { all, json, now, one, run } from "@/lib/db";
 import { body, handle, ok } from "@/lib/http";
@@ -126,6 +127,8 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
       contactMode: sv.contactMode,
       contactModes: contactModesOf(sv),
     });
+    // Adresse unique : la réservation intégrée du site reprend l'adresse du profil (nouvelle version du site).
+    if (sv.address.trim() !== p.services.address.trim()) syncBookingAddress(p.id, sv.address);
   }
   if (b.activity) {
     const prod = { ...p.product };
