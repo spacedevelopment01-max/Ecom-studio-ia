@@ -1,0 +1,325 @@
+{
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "checks": [
+    {
+      "name": "CLOTURE-clarification-red",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/conversation211-closure-clarification.test.ts"
+      ],
+      "head": "4b9bae98e47e3b3f4840cf57a3ab38745dbd2d41",
+      "state": "failed",
+      "startedAt": "2026-10-30T22:58:33.036056+00:00",
+      "finishedAt": "2026-10-30T22:58:37.624747+00:00",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "logSha256": "1c4d3e39342310472252b63392bb849c98089563665108538000011b0b323ec5"
+    },
+    {
+      "name": "CLOTURE-clarification-targeted",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/conversation211-closure-clarification.test.ts",
+        "tests/conversation211-intelligence.test.ts",
+        "tests/conversation211-content.test.ts",
+        "tests/conversation211-presentation.test.ts",
+        "tests/conversation211-context-presentation.test.ts"
+      ],
+      "head": "4b9bae98e47e3b3f4840cf57a3ab38745dbd2d41",
+      "state": "passed",
+      "startedAt": "2026-10-30T22:59:51.796903+00:00",
+      "finishedAt": "2026-10-30T23:00:00.861244+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "9d0e8718e4ed4628187d6882faf89ad3739e3daf51316e9d33eff00d09522f55"
+    },
+    {
+      "name": "CLOTURE-targeted-logo",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/conversation211-logo-selection.test.ts",
+        "tests/conversation211-closure-clarification.test.ts",
+        "tests/conversation211-logos.test.ts",
+        "tests/logo-direction-selection.test.ts",
+        "tests/logo-complete-direction.test.ts"
+      ],
+      "head": "4b9bae98e47e3b3f4840cf57a3ab38745dbd2d41",
+      "state": "passed",
+      "startedAt": "2026-10-30T23:09:52.069496+00:00",
+      "finishedAt": "2026-10-30T23:10:26.319512+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "5c50cebe3a1c7b935837f294250fe7176fb31c2b23221c8ca9601cc2cae626f9"
+    },
+    {
+      "name": "CLOTURE-final-targeted",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/conversation211-logo-selection.test.ts",
+        "tests/conversation211-closure-clarification.test.ts",
+        "tests/conversation211-studio-knowledge.test.ts",
+        "tests/logo-v2-accepted-directions.test.ts",
+        "tests/ci211-verdict-complet.test.ts"
+      ],
+      "head": "4b9bae98e47e3b3f4840cf57a3ab38745dbd2d41",
+      "state": "passed",
+      "startedAt": "2026-10-30T23:10:49.558158+00:00",
+      "finishedAt": "2026-10-30T23:11:24.147920+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "98c3f4c10d2e342e750cd75d72926fadf77e3504581c866a911e084dda5ff883"
+    },
+    {
+      "name": "CLOTURE-before-site-red",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/composition211-original.test.ts"
+      ],
+      "head": "df052e7d957666bb19633ee3a29e1eb89d212cd9",
+      "state": "failed",
+      "startedAt": "2026-10-30T23:14:33.609159+00:00",
+      "finishedAt": "2026-10-30T23:14:40.742808+00:00",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "logSha256": "09744f2e9c42ea62dce647f57aad80296620a6e7a63d5c1f091cde686e6bea6f"
+    },
+    {
+      "name": "CLOTURE-before-site-green",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/composition211-original.test.ts",
+        "tests/composition211-acquired-copy.test.ts",
+        "tests/composition211-server.test.ts"
+      ],
+      "head": "df052e7d957666bb19633ee3a29e1eb89d212cd9",
+      "state": "failed",
+      "startedAt": "2026-10-30T23:15:31.700301+00:00",
+      "finishedAt": "2026-10-30T23:15:39.034900+00:00",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "logSha256": "ecab26be995e3db9e111c28340bd995f7ace0cc38f818e5445da34fbd5112f92"
+    },
+    {
+      "name": "CLOTURE-before-site-final",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/composition211-original.test.ts",
+        "tests/composition211-acquired-copy.test.ts",
+        "tests/composition211-server.test.ts"
+      ],
+      "head": "df052e7d957666bb19633ee3a29e1eb89d212cd9",
+      "state": "failed",
+      "startedAt": "2026-10-30T23:16:16.944705+00:00",
+      "finishedAt": "2026-10-30T23:16:24.300503+00:00",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "logSha256": "17c196048fe5b6a824cf4197ebcfeedf1c65e2c870bde8c5a0cdc1a2dfe102ca"
+    },
+    {
+      "name": "CLOTURE-before-site-complete",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/composition211-original.test.ts",
+        "tests/composition211-acquired-copy.test.ts",
+        "tests/composition211-server.test.ts"
+      ],
+      "head": "df052e7d957666bb19633ee3a29e1eb89d212cd9",
+      "state": "passed",
+      "startedAt": "2026-10-30T23:17:01.155638+00:00",
+      "finishedAt": "2026-10-30T23:17:08.464565+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "8a59e128fc6e2705e700ceb55652fc779f6555ffcded9a36bf0f25823bb6bdc9"
+    },
+    {
+      "name": "CLOTURE-registry-targeted",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/conversation211-closure-clarification.test.ts",
+        "tests/conversation211-tools.test.ts",
+        "tests/conversation211-studio-knowledge.test.ts"
+      ],
+      "head": "df052e7d957666bb19633ee3a29e1eb89d212cd9",
+      "state": "passed",
+      "startedAt": "2026-10-30T23:19:21.828771+00:00",
+      "finishedAt": "2026-10-30T23:19:28.173586+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "ff3a128ca7c63d4fa45c62323221764492c3bf11e1dfafc1ba21a90a51a5379b"
+    },
+    {
+      "name": "CLOTURE-build",
+      "command": [
+        "node",
+        "node_modules/next/dist/bin/next",
+        "build"
+      ],
+      "head": "df052e7d957666bb19633ee3a29e1eb89d212cd9",
+      "state": "passed",
+      "startedAt": "2026-10-30T23:12:04.228627+00:00",
+      "finishedAt": "2026-10-30T23:13:09.783222+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "3408f730a7267c96d4ec14d6165284be4b323d5abadc641089cf7101ee391825"
+    },
+    {
+      "name": "CLOTURE-build-final",
+      "command": [
+        "node",
+        "node_modules/next/dist/bin/next",
+        "build"
+      ],
+      "head": "512e41a54ba6deb00b5c0c571dc40f03644e62dc",
+      "state": "passed",
+      "startedAt": "2026-10-30T23:19:53.982608+00:00",
+      "finishedAt": "2026-10-30T23:20:57.892807+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "636f110318d451e8007ace843d0ff7101c55415accf2d212441475e068c8fa9e"
+    },
+    {
+      "name": "CLOTURE-common-browser",
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/CLOTURE-common-browser-proof",
+        "--closure-ui"
+      ],
+      "head": "df052e7d957666bb19633ee3a29e1eb89d212cd9",
+      "state": "failed",
+      "startedAt": "2026-10-30T23:13:16.399270+00:00",
+      "finishedAt": "2026-10-30T23:13:35.000844+00:00",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "logSha256": "6abff4f56b6fb03b8efff67d6b42a89af6eee00e5e6d669fffda0cbc982f4308"
+    },
+    {
+      "name": "CLOTURE-common-final",
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/CLOTURE-common-final-proof",
+        "--closure-ui"
+      ],
+      "head": "512e41a54ba6deb00b5c0c571dc40f03644e62dc",
+      "state": "failed",
+      "startedAt": "2026-10-30T23:22:10.420839+00:00",
+      "finishedAt": "2026-10-30T23:22:47.945712+00:00",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "logSha256": "813db9b2177da497598693572ac6ce65db07b012df11d375160cf77cf263164e"
+    },
+    {
+      "name": "CLOTURE-common-verified",
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/CLOTURE-common-verified-proof",
+        "--closure-ui"
+      ],
+      "head": "512e41a54ba6deb00b5c0c571dc40f03644e62dc",
+      "state": "passed",
+      "startedAt": "2026-10-30T23:23:22.289820+00:00",
+      "finishedAt": "2026-10-30T23:24:22.818209+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "75dcf6c2799101692c092af37747e1b0ff005ed4dba20add6828fc90a5aabfa6"
+    },
+    {
+      "name": "CLOTURE-logo-browser",
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/CLOTURE-logo-browser-proof",
+        "--logo-selection-ui"
+      ],
+      "head": "512e41a54ba6deb00b5c0c571dc40f03644e62dc",
+      "state": "failed",
+      "startedAt": "2026-10-30T23:22:10.420725+00:00",
+      "finishedAt": "2026-10-30T23:22:43.210559+00:00",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "logSha256": "f6e1386628a662b1e2b817cbc65815b72db89dc0ab667da0c0d53983a80eca03"
+    },
+    {
+      "name": "CLOTURE-logo-verified",
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/CLOTURE-logo-verified-proof",
+        "--logo-selection-ui"
+      ],
+      "head": "512e41a54ba6deb00b5c0c571dc40f03644e62dc",
+      "state": "failed",
+      "startedAt": "2026-10-30T23:23:22.292301+00:00",
+      "finishedAt": "2026-10-30T23:24:50.870386+00:00",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "logSha256": "dc272faaa94f031474242532269e4e71cd8959f4864db91509af811948da4aec"
+    },
+    {
+      "name": "CLOTURE-logo-holdout",
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/CLOTURE-logo-holdout-proof",
+        "--logo-selection-ui",
+        "--only-logo-scene=inedit"
+      ],
+      "head": "512e41a54ba6deb00b5c0c571dc40f03644e62dc",
+      "state": "passed",
+      "startedAt": "2026-10-30T23:26:02.583765+00:00",
+      "finishedAt": "2026-10-30T23:26:43.194107+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "6d078b9d1f00f35b6a59c15635dad00825e88c9640fbd83485aba8c4fb807409"
+    },
+    {
+      "name": "CLOTURE-types-candidate",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "head": "512e41a54ba6deb00b5c0c571dc40f03644e62dc",
+      "state": "passed",
+      "startedAt": "2026-10-30T23:28:13.266936+00:00",
+      "finishedAt": "2026-10-30T23:28:17.453999+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "overlappingTestCountsNotAdditive": true
+}

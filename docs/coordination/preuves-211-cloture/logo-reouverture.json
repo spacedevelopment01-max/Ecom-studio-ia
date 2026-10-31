@@ -1,0 +1,67 @@
+{
+  "passed": true,
+  "source": "existing_synthetic_native_logo_kit_no_worker",
+  "version": {
+    "commit": "512e41a54ba6deb00b5c0c571dc40f03644e62dc",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "before": {
+    "counts": {
+      "ai_calls": 11,
+      "usage_events": 11,
+      "jobs": 7,
+      "theme_versions": 0,
+      "assets": 36
+    },
+    "acquiredSha256": "965722e90e8802a7bf7795d9a816f40ef9ddc7a4bf9247155f1171a007d38fb1"
+  },
+  "after": {
+    "counts": {
+      "ai_calls": 11,
+      "usage_events": 11,
+      "jobs": 7,
+      "theme_versions": 0,
+      "assets": 36
+    },
+    "acquiredSha256": "965722e90e8802a7bf7795d9a816f40ef9ddc7a4bf9247155f1171a007d38fb1"
+  },
+  "newProviderCalls": 0,
+  "newJobs": 0,
+  "results": [
+    {
+      "width": 1440,
+      "metrics": {
+        "width": 1440,
+        "scrollWidth": 1440
+      },
+      "links": 9
+    },
+    {
+      "width": 1024,
+      "metrics": {
+        "width": 1024,
+        "scrollWidth": 1024
+      },
+      "links": 9
+    },
+    {
+      "width": 390,
+      "metrics": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "links": 9
+    },
+    {
+      "width": 360,
+      "metrics": {
+        "width": 360,
+        "scrollWidth": 360
+      },
+      "links": 9
+    }
+  ]
+}

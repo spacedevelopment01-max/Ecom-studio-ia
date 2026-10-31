@@ -1,0 +1,116 @@
+{
+  "passed": true,
+  "candidateApplication": "compiled version checked separately",
+  "provider": "native SDK to loopback simulation",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "creativeQualityQualified": false,
+  "cases": [
+    {
+      "case": "multi",
+      "business": "products",
+      "passed": true,
+      "baseline": "prepared synthetic project with approved supplied-style fixture and technical illustration; not generated during this recipe",
+      "naturalDescription": "Je reprends mon projet : Presse de reliure manuelle. Presse manuelle pour maintenir des cahiers pendant la reliure. Dimensions et matériaux à confirmer. Mon catalogue comporte plusieurs produits distincts. Je veux d’abord vérifier les textes et le Site, en conservant les faits déjà validés.",
+      "taskQuestionAnswered": true,
+      "canonicalPreparationUnchangedAfterClarification": true,
+      "choiceOnlyRequest": "Rédige la FAQ de mon accueil avec les seuls faits de mon projet",
+      "exactRequestInNativeDocument": true,
+      "wholeDocumentInTheme": true,
+      "photoSha256": "87b93d6b23339eabffb01923d724a016a23d9f9ad16fb34d59b643b69403efc5",
+      "photoPreserved": true,
+      "catalogue": {
+        "draft": "lxdu807w08fi1ayt",
+        "status": "draft",
+        "activeProductsUnchanged": true
+      },
+      "versions": [
+        1,
+        2,
+        3
+      ],
+      "undoExact": true,
+      "reopenedWithoutCall": true,
+      "widths": [
+        1440,
+        1024,
+        390,
+        360
+      ],
+      "functional": {
+        "productPage": true,
+        "variantChanged": true,
+        "cartCount": 2,
+        "totalCents": 25800,
+        "draftNotPublished": true
+      },
+      "export": {
+        "bytes": 1674552,
+        "sha256": "ad10737848b066cb1476c9614a4d35241c0b9f0e8999e87aa59c634f9b70e7f0",
+        "installedInCms": false
+      },
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forgedCap": 400
+    },
+    {
+      "case": "service",
+      "business": "services",
+      "passed": true,
+      "baseline": "prepared synthetic project with approved supplied-style fixture and technical illustration; not generated during this recipe",
+      "naturalDescription": "Je reprends mon projet : Entretien de vitraux confiés. Examen et entretien de vitraux sur devis. Rendez-vous souhaités ; horaires et disponibilités non configurés. Je souhaite des devis et des rendez-vous ; ne réserve rien sans mon accord. Je veux d’abord vérifier les textes et le Site, en conservant les faits déjà validés.",
+      "taskQuestionAnswered": true,
+      "canonicalPreparationUnchangedAfterClarification": true,
+      "choiceOnlyRequest": "Rédige la FAQ de mon accueil avec les seuls faits de mon projet",
+      "exactRequestInNativeDocument": true,
+      "wholeDocumentInTheme": true,
+      "photoSha256": "98d8db837b3888cd4b0807e552d41e99e991966c7fe237065ecff12ac27d752b",
+      "photoPreserved": true,
+      "catalogue": {
+        "available": false,
+        "appointmentsInSyna": false,
+        "quoteRequestPreviewOnly": true,
+        "appointmentNotBooked": true
+      },
+      "versions": [
+        1,
+        2,
+        3
+      ],
+      "undoExact": true,
+      "reopenedWithoutCall": true,
+      "widths": [
+        1440,
+        1024,
+        390,
+        360
+      ],
+      "functional": {
+        "contactFormPreview": true,
+        "quoteNotSent": true,
+        "appointmentNotBooked": true
+      },
+      "export": {
+        "bytes": 1673464,
+        "sha256": "c1507ee37bcd8bb6e4a6e4713834ae76dec062bf8efba2154dd6fbfa23b733ae",
+        "installedInCms": false
+      },
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forgedCap": 400
+    }
+  ],
+  "counts": {
+    "providerHttpCalls": 14,
+    "videoClipCalls": 0,
+    "videoVoiceCalls": 0,
+    "textHttpCalls": 14,
+    "imageHttpCalls": 0,
+    "tokenCounts": 14,
+    "calls": 16,
+    "usage": 14,
+    "simulatedMicro": 102856
+  }
+}

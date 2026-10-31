@@ -1,0 +1,61 @@
+{
+  "capturedAt": "2026-10-30T23:24:58.146264+00:00",
+  "readOnly": true,
+  "additionalJobs": 0,
+  "additionalProviderCalls": 0,
+  "applicationCommit": "512e41a54ba6deb00b5c0c571dc40f03644e62dc",
+  "checks": [
+    {
+      "project": "Lignes de papier \u2014 TEST",
+      "assetId": "05qzf6tm3yq3f6vk",
+      "stats": {
+        "files": 491,
+        "zipKb": 1635,
+        "cssKb": 2179,
+        "jsKb": 534,
+        "mediaKb": 68,
+        "themeCheckErrors": 0,
+        "themeCheckWarnings": 35
+      },
+      "issues": [],
+      "scope": "static",
+      "unmeasured": [
+        "installation",
+        "page_fidelity",
+        "section_fidelity",
+        "typography",
+        "colors",
+        "responsive",
+        "navigation",
+        "buttons",
+        "ecommerce"
+      ]
+    },
+    {
+      "project": "Atelier des vitraux \u2014 TEST",
+      "assetId": "gqg8m8v7mqfbxjds",
+      "stats": {
+        "files": 491,
+        "zipKb": 1634,
+        "cssKb": 2179,
+        "jsKb": 534,
+        "mediaKb": 68,
+        "themeCheckErrors": 0,
+        "themeCheckWarnings": 35
+      },
+      "issues": [],
+      "scope": "static",
+      "unmeasured": [
+        "installation",
+        "page_fidelity",
+        "section_fidelity",
+        "typography",
+        "colors",
+        "responsive",
+        "navigation",
+        "buttons",
+        "forms"
+      ]
+    }
+  ]
+}

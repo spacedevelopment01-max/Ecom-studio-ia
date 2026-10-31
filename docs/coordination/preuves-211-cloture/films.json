@@ -1,0 +1,21 @@
+{
+  "notAccelerated": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "clips": [
+    {
+      "file": "logo-accord-kit.mp4",
+      "sourceSha256": "805b0a66cd40942f5d12c97a21478df57575e96cd6d4bb8b58a8a36e713eedb8",
+      "startSeconds": 12,
+      "durationSeconds": 12,
+      "crop": "360x960 at 0,0, removes unused desktop area only"
+    },
+    {
+      "file": "parcours-site.mp4",
+      "sourceSha256": "b0ed5bf08cf0593408155c25a987c50ccf214992f126febe076b975ad1fc410b",
+      "startSeconds": 12.64,
+      "durationSeconds": 14,
+      "crop": null
+    }
+  ]
+}
