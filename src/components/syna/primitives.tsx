@@ -41,7 +41,7 @@ export type SynaScopeProps = {
 export function SynaScope({ prefs, overrides, lang, className, style, children }: SynaScopeProps) {
   const p = prefs ?? resolveSynaPrefs(undefined, overrides);
   return (
-    <div className={cx("syna-ui", className)} {...synaScopeAttributes(p)} lang={lang} style={{ ...style, ["--sy-convo-w" as string]: `${p.convoWidth}px` }}>
+    <div className={cx("syna-ui", className)} {...synaScopeAttributes(p)} lang={lang} style={{ ["--sy-convo-w" as string]: `${p.convoWidth}px`, ...style }}>
       {children}
     </div>
   );

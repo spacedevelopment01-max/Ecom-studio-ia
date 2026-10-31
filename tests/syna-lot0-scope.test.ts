@@ -51,9 +51,10 @@ describe("polices", () => {
 });
 
 describe("aucun écran actuel n'est touché", () => {
-  // Lot 1 : la coquille SYNA (syna-shell) et la mise en page du projet, qui la choisit, s'y ajoutent ; rien d'autre.
-  const allowed = [/^src\/components\/syna\//, /^src\/lib\/syna-ui\//, /^src\/app\/syna-fondations\//, /^src\/components\/studio\/syna-shell\.(tsx|css)$/, /^src\/app\/studio\/\[projectId\]\/layout\.tsx$/];
-  it("seules la vitrine, les fondations et la coquille SYNA (lot 1) importent les primitives SYNA", () => {
+  // Lot 1 : la coquille SYNA et la mise en page du projet, qui la choisit. Lot 1 bis : ses modules (réglages, commande,
+  // personnalisation) et la route des réglages d'affichage. Rien d'autre.
+  const allowed = [/^src\/components\/syna\//, /^src\/lib\/syna-ui\//, /^src\/app\/syna-fondations\//, /^src\/components\/studio\/syna-(shell|prefs|command|customize)\.(tsx|css)$/, /^src\/app\/studio\/\[projectId\]\/layout\.tsx$/, /^src\/app\/api\/studio\/ui-prefs\/route\.ts$/];
+  it("seules la vitrine, les fondations, la coquille SYNA et ses réglages importent les primitives SYNA", () => {
     const users = walk("src").filter((f) => !allowed.some((a) => a.test(f.split(path.sep).join("/")))).filter((f) => /components\/syna["/]|lib\/syna-ui|syna\.css/.test(read(f)));
     expect(users).toEqual([]);
   });

@@ -163,3 +163,150 @@
 @media (min-width: 1280px) {
   body:has(.syna-ui .ss-panel.is-docked:not([hidden])) [data-tuto-nudge] { right: calc(440px + 20px); }
 }
+
+/* ═════════════ Lot 1 bis — deux modes, barre de commande, personnalisation ═════════════ */
+
+/* Boutons d'icône cerclés (en-tête) */
+.syna-ui .ss-outline { border: 1px solid var(--sy-rule-strong); background: var(--sy-sheet); color: var(--sy-ink2); width: 40px; height: 40px; }
+.syna-ui .ss-outline:hover { border-color: var(--sy-ink2); color: var(--sy-ink); }
+
+/* Sélecteur de mode (en-tête) */
+.syna-ui .ss-modeswitch { display: inline-flex; padding: 3px; gap: 2px; border-radius: var(--sy-r-pill); background: var(--sy-wash); box-shadow: inset 0 0 0 1px var(--sy-rule); }
+.syna-ui .ss-modeswitch button { min-height: 32px; padding: 0 12px; border: 0; border-radius: var(--sy-r-pill); background: transparent; color: var(--sy-ink2); font: 500 13px/1 var(--sy-f-ui); cursor: pointer; white-space: nowrap; }
+.syna-ui .ss-modeswitch button:hover { color: var(--sy-ink); }
+.syna-ui .ss-modeswitch button[aria-pressed="true"] { background: var(--sy-sheet); color: var(--sy-accent); font-weight: 600; box-shadow: 0 1px 2px rgb(14 21 38 / .12), inset 0 0 0 1px var(--sy-rule); }
+.syna-ui .ss-modeswitch button:first-child[aria-pressed="true"] { font-family: var(--sy-f-voice); font-style: italic; font-size: 15px; }
+
+/* Bord à glisser de la conversation (largeur) */
+.syna-ui .ss-panel { position: relative; }
+.syna-ui .ss-resize { position: absolute; z-index: 2; top: 0; bottom: 0; left: -5px; width: 10px; cursor: col-resize; touch-action: none; }
+.syna-ui .ss-resize::after { content: ""; position: absolute; top: 50%; left: 4px; width: 2px; height: 36px; margin-top: -18px; border-radius: 2px; background: var(--sy-rule-strong); opacity: 0; transition: opacity var(--sy-dur) var(--sy-ease); }
+.syna-ui .ss-resize:hover::after, .syna-ui .ss-resize:focus-visible::after { opacity: 1; background: var(--sy-accent); }
+
+/* Barre de commande (commune) */
+.syna-ui .ss-cmd { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; min-width: 0; }
+.syna-ui .ss-cmd-form { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 4px 4px 4px 16px; border-radius: var(--sy-r-pill); background: var(--sy-sheet); box-shadow: inset 0 0 0 1px var(--sy-rule-strong); }
+.syna-ui .ss-cmd-form:focus-within { box-shadow: inset 0 0 0 2px var(--sy-accent); }
+.syna-ui .ss-cmd-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; background: var(--sy-accent); box-shadow: 0 0 0 4px var(--sy-accent-soft); }
+.syna-ui .ss-cmd[data-working] .ss-cmd-dot { animation: sy-pulse 1.6s var(--sy-ease) infinite; }
+.syna-ui .ss-cmd-input { flex: 1 1 auto; min-width: 0; width: 100%; height: 40px; border: 0; background: transparent; color: var(--sy-ink); font: 400 max(16px, var(--sy-text))/1.2 var(--sy-f-ui); }
+.syna-ui .ss-cmd-input::placeholder { color: var(--sy-muted); opacity: 1; }
+.syna-ui .ss-cmd-input:focus-visible { outline: none; }
+.syna-ui .ss-cmd-go { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--sy-accent); color: var(--sy-accent-ink); cursor: pointer; }
+.syna-ui .ss-cmd-go:hover { background: var(--sy-accent-strong); }
+.syna-ui .ss-cmd-feedback { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-height: 0; padding: 0 12px; font-size: 13px; color: var(--sy-ink2); }
+.syna-ui .ss-cmd-feedback:empty { display: none; }
+.syna-ui .ss-cmd-undo { display: inline-flex; align-items: center; gap: 5px; min-height: 30px; padding: 0 10px; border: 1px solid var(--sy-control); border-radius: var(--sy-r-pill); background: var(--sy-sheet); color: var(--sy-ink); font: 500 13px/1 var(--sy-f-ui); cursor: pointer; }
+.syna-ui .ss-cmd-undo:hover { border-color: var(--sy-accent); color: var(--sy-accent); }
+@media (pointer: coarse) { .syna-ui .ss-cmd-undo { min-height: 40px; } }
+/* Encre : en tête de la colonne SYNA */
+.syna-ui .ss-panel-cmd { padding: 12px 14px 10px; border-bottom: 1px solid var(--sy-rule); }
+.syna-ui .ss-panel-cmd .ss-cmd-form { min-height: 42px; }
+.syna-ui .ss-panel-cmd .ss-cmd-input { height: 34px; font-size: max(16px, 14px); }
+.syna-ui .ss-panel-cmd .ss-cmd-go { width: 34px; height: 34px; }
+.syna-ui .ss-panel.is-docked, .syna-ui .ss-panel.is-overlay { grid-template-rows: auto auto minmax(0, 1fr); }
+
+/* ——— Plein cadre ——— */
+.syna-ui.ss-cmd-scope { position: relative; z-index: 46; }
+.syna-ui .ss-cmd-zone { position: fixed; z-index: 46; left: var(--ss-side, 0px); right: var(--ss-right, 0px); bottom: 0; display: flex; justify-content: center; padding: 0 24px max(20px, env(safe-area-inset-bottom, 0px)); pointer-events: none; }
+.syna-ui .ss-cmd-zone > * { pointer-events: auto; }
+.syna-ui .ss-cmd-zone .ss-cmd { width: min(760px, 100%); }
+.syna-ui .ss-cmd-zone .ss-cmd-form { min-height: 56px; box-shadow: var(--sy-shadow-lg), inset 0 0 0 1px var(--sy-rule); }
+.syna-ui .ss-cmd-zone .ss-cmd-form:focus-within { box-shadow: var(--sy-shadow-lg), inset 0 0 0 2px var(--sy-accent); }
+.syna-ui .ss-cmd-zone .ss-cmd-feedback { order: -1; justify-self: center; padding: 8px 14px; border-radius: var(--sy-r-pill); background: var(--sy-sheet); box-shadow: var(--sy-shadow); }
+.syna-ui .ss-zone-btn { position: relative; display: grid; place-items: center; flex: none; width: 48px; height: 48px; border: 0; border-radius: 50%; background: transparent; color: var(--sy-ink2); cursor: pointer; }
+.syna-ui .ss-zone-btn[aria-expanded="true"] { background: var(--sy-accent-soft); color: var(--sy-accent); }
+.syna-ui .ss-zone-dot { position: absolute; top: 9px; right: 9px; }
+.syna-ui .ss-zone-btn .ss-count { top: 2px; right: 0; }
+@media (max-width: 1023px) {
+  /* Téléphone, tablette : zone réservée en bas (au-dessus du clavier virtuel), espaces et suivi de part et d'autre. */
+  .syna-ui .ss-cmd-zone { left: 0; right: 0; bottom: var(--ss-kb, 0px); align-items: flex-end; gap: 4px; padding: 8px max(8px, env(safe-area-inset-right, 0px)) max(8px, env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--sy-paper) 94%, transparent); border-top: 1px solid var(--sy-rule); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); pointer-events: auto; }
+  .syna-ui .ss-cmd-zone .ss-cmd { flex: 1 1 auto; width: auto; }
+  .syna-ui .ss-cmd-zone .ss-cmd-form { min-height: 48px; box-shadow: inset 0 0 0 1px var(--sy-rule-strong); }
+  .syna-ui .ss-cmd-zone .ss-cmd-feedback { order: -1; justify-self: stretch; border-radius: var(--sy-r); }
+}
+
+/* Plein cadre : menu compact, en-tête flottant */
+.syna-ui[data-syna-mode="plein"] .ss-side { background: var(--sy-paper); border-right: 0; box-shadow: inset -1px 0 0 var(--sy-rule); }
+.syna-ui[data-syna-mode="plein"] .ss-link[aria-current="page"] { background: var(--sy-ink); color: var(--sy-paper); }
+.syna-ui[data-syna-mode="plein"] .ss-link[aria-current="page"] .ss-link-i { color: var(--sy-paper); }
+.syna-ui[data-syna-mode="plein"] .ss-link[aria-current="page"]::before { display: none; }
+.syna-ui[data-syna-mode="plein"] .ss-link { border-radius: 14px; }
+.syna-ui[data-syna-mode="plein"].ss-head-scope .ss-head { background: color-mix(in srgb, var(--sy-paper) 80%, transparent); border-bottom-color: transparent; }
+.syna-ui[data-syna-mode="plein"] .ss-h1 { font: 700 24px/1.12 var(--sy-f-display); letter-spacing: -.02em; }
+.syna-ui[data-syna-mode="plein"] .ss-crumb { font: 600 12px/1.2 var(--sy-f-ui); letter-spacing: 0; text-transform: none; }
+.syna-ui[data-syna-mode="plein"] .ss-tools { padding: 4px 6px; border-radius: var(--sy-r-pill); background: var(--sy-sheet); box-shadow: var(--sy-shadow); }
+@media (max-width: 1023px) {
+  .syna-ui[data-syna-mode="plein"] .ss-tools { padding: 0; background: none; box-shadow: none; }
+  .syna-ui[data-syna-mode="plein"] .ss-h1 { font-size: 20px; }
+}
+
+/* Plein cadre : SYNA en feuille flottante (à côté de l'espace dès 1280 px, qui garde sa place ; par-dessus avant) */
+.syna-ui[data-syna-mode="plein"] .ss-panel.is-docked { position: fixed; z-index: 47; top: 16px; right: 16px; bottom: 16px; height: auto; border: 0; border-radius: var(--sy-r-lg); box-shadow: var(--sy-shadow-lg), inset 0 0 0 1px var(--sy-rule); overflow: hidden; }
+.syna-ui[data-syna-mode="plein"].ss-syna-scope.is-docked .ss-syna-col { width: 0; }
+.syna-ui[data-syna-mode="plein"] .ss-panel.is-overlay { top: 16px; right: 16px; bottom: 16px; border: 0; border-radius: var(--sy-r-lg); box-shadow: var(--sy-shadow-lg), inset 0 0 0 1px var(--sy-rule); overflow: hidden; }
+.syna-ui[data-syna-mode="plein"] .ss-panel-h { border-bottom: 0; }
+.syna-ui[data-syna-mode="plein"] .ss-panel-mark .sy-wordmark { color: var(--sy-accent); }
+@media (max-width: 1023px) {
+  /* Feuille du bas, au-dessus de la zone de commande et du clavier virtuel. */
+  .syna-ui[data-syna-mode="plein"] .ss-panel.is-overlay { top: auto; left: 8px; right: 8px; bottom: calc(var(--ss-kb, 0px) + 72px + env(safe-area-inset-bottom, 0px)); width: auto; max-height: min(72dvh, calc(100dvh - var(--ss-kb, 0px) - 96px)); border-radius: var(--sy-r-lg) var(--sy-r-lg) var(--sy-r) var(--sy-r); }
+}
+
+/* ——— Personnaliser l'interface ——— */
+.syna-ui.ss-custom-scope { position: relative; z-index: 96; }
+.syna-ui .ss-custom {
+  position: fixed; z-index: 96; top: 16px; right: 16px; bottom: 16px; width: min(420px, calc(100vw - 32px)); display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
+  border-radius: var(--sy-r-lg); background: var(--sy-paper); color: var(--sy-ink); box-shadow: var(--sy-shadow-lg), inset 0 0 0 1px var(--sy-rule); overflow: hidden;
+  animation: ss-slide var(--sy-dur-slow) var(--sy-ease);
+}
+.syna-ui .ss-custom-h { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 16px 12px 20px; border-bottom: 1px solid var(--sy-rule); }
+.syna-ui .ss-custom-h > div { display: grid; gap: 4px; }
+.syna-ui .ss-custom-t { font-size: 22px; }
+.syna-ui .ss-custom-b { display: grid; align-content: start; gap: 18px; padding: 16px 20px 20px; overflow-y: auto; overscroll-behavior: contain; }
+.syna-ui .ss-custom-f { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; padding: 12px 16px 14px 20px; border-top: 1px solid var(--sy-rule); }
+.syna-ui .ss-status { margin: 0; flex: 1 1 200px; }
+.syna-ui .ss-status[data-status="error"] { color: var(--sy-bad); }
+.syna-ui .ss-status[data-status="offline"] { color: var(--sy-warn); }
+.syna-ui .ss-field { display: grid; gap: 8px; min-width: 0; }
+.syna-ui .ss-field > .sy-small { margin: 0; }
+.syna-ui .ss-field-l { display: flex; align-items: baseline; gap: 8px; font: 500 11px/1.2 var(--sy-f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--sy-muted); }
+.syna-ui .ss-own { font: italic 400 12px/1 var(--sy-f-voice); letter-spacing: 0; text-transform: none; color: var(--sy-accent); }
+.syna-ui .ss-seg { display: flex; flex-wrap: wrap; gap: 2px; padding: 3px; border-radius: calc(var(--sy-r-sm) + 3px); background: var(--sy-wash); box-shadow: inset 0 0 0 1px var(--sy-rule); }
+.syna-ui[data-syna-mode="plein"] .ss-seg { border-radius: var(--sy-r-pill); }
+.syna-ui .ss-seg button { display: inline-flex; flex: 1 1 auto; align-items: center; justify-content: center; gap: 6px; min-height: 36px; padding: 0 12px; border: 0; border-radius: var(--sy-r-sm); background: transparent; color: var(--sy-ink2); font: 500 13.5px/1.1 var(--sy-f-ui); cursor: pointer; }
+.syna-ui[data-syna-mode="plein"] .ss-seg button { border-radius: var(--sy-r-pill); }
+.syna-ui .ss-seg button:hover { color: var(--sy-ink); }
+.syna-ui .ss-seg button[aria-pressed="true"] { background: var(--sy-sheet); color: var(--sy-ink); font-weight: 600; box-shadow: 0 1px 2px rgb(14 21 38 / .12), inset 0 0 0 1px var(--sy-rule); }
+@media (pointer: coarse) { .syna-ui .ss-seg button { min-height: 44px; } }
+.syna-ui .ss-modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.syna-ui .ss-mode { display: grid; gap: 6px; align-content: start; padding: 10px 10px 12px; border: 1px solid var(--sy-rule); border-radius: var(--sy-r); background: var(--sy-sheet); color: var(--sy-ink); text-align: left; cursor: pointer; font: inherit; transition: border-color var(--sy-dur) var(--sy-ease), box-shadow var(--sy-dur) var(--sy-ease); }
+.syna-ui .ss-mode:hover { border-color: var(--sy-ink2); }
+.syna-ui .ss-mode[aria-pressed="true"] { border-color: var(--sy-accent); box-shadow: 0 0 0 3px var(--sy-accent-soft); }
+.syna-ui .ss-mode-art { position: relative; display: block; height: 64px; border-radius: 6px; background: var(--sy-wash); overflow: hidden; }
+.syna-ui .ss-mode-art i, .syna-ui .ss-mode-art b { position: absolute; display: block; }
+.syna-ui .ss-mode[data-mode="encre"] .ss-mode-art i { left: 0; top: 0; bottom: 0; width: 22%; background: var(--sy-sheet); box-shadow: 1px 0 0 var(--sy-rule); }
+.syna-ui .ss-mode[data-mode="encre"] .ss-mode-art b { right: 0; top: 0; bottom: 0; width: 34%; background: var(--sy-sheet); box-shadow: -1px 0 0 var(--sy-rule), inset 2px 0 0 var(--sy-accent); }
+.syna-ui .ss-mode[data-mode="plein"] .ss-mode-art i { left: 8px; right: 8px; top: 8px; bottom: 18px; border-radius: 4px; background: color-mix(in srgb, var(--sy-accent) 22%, var(--sy-sheet)); }
+.syna-ui .ss-mode[data-mode="plein"] .ss-mode-art b { left: 24%; right: 24%; bottom: 5px; height: 8px; border-radius: 8px; background: var(--sy-sheet); box-shadow: 0 0 0 1px var(--sy-rule-strong); }
+.syna-ui .ss-mode-n { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-weight: 600; }
+.syna-ui .ss-mode[data-mode="encre"] .ss-mode-n { font: italic 500 17px/1.1 var(--sy-f-voice); }
+.syna-ui .ss-mode[data-mode="plein"] .ss-mode-n { font: 700 15px/1.1 var(--sy-f-display); }
+.syna-ui .ss-mode-n svg { color: var(--sy-accent); }
+.syna-ui .ss-mode-h { font-size: 12.5px; line-height: 1.35; color: var(--sy-muted); }
+.syna-ui .ss-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.syna-ui .ss-swatch { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px 0 8px; border: 1px solid var(--sy-rule); border-radius: var(--sy-r-pill); background: var(--sy-sheet); color: var(--sy-ink); font: 500 13.5px/1 var(--sy-f-ui); cursor: pointer; }
+.syna-ui .ss-swatch[aria-checked="true"] { border-color: var(--sy-accent); box-shadow: 0 0 0 3px var(--sy-accent-soft); font-weight: 600; }
+.syna-ui .ss-swatch-dot { width: 22px; height: 22px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgb(255 255 255 / .4); }
+.syna-ui .ss-range { display: flex; align-items: center; gap: 12px; }
+.syna-ui .ss-range input { flex: 1; accent-color: var(--sy-accent); min-height: 32px; }
+.syna-ui .ss-link-btn { padding: 0; border: 0; background: none; color: var(--sy-accent); font: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+@media (max-width: 760px) {
+  .syna-ui .ss-custom { top: auto; left: 0; right: 0; bottom: 0; width: 100vw; max-height: 88dvh; border-radius: var(--sy-r-lg) var(--sy-r-lg) 0 0; animation-name: ss-rise; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .syna-ui .ss-custom { animation: none; }
+}
+/* Plein cadre : pas de commande en tête de feuille (elle est en bas de l'écran) — la conversation prend toute la hauteur. */
+.syna-ui[data-syna-mode="plein"] .ss-panel.is-docked, .syna-ui[data-syna-mode="plein"] .ss-panel.is-overlay { grid-template-rows: auto minmax(0, 1fr); }
+.syna-ui .ss-title-mode { margin-left: 4px; }
+.syna-ui .ss-title-row { flex-wrap: wrap; row-gap: 6px; }
