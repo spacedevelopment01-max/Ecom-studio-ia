@@ -1,0 +1,666 @@
+{
+  "date": "2026-10-31T19:24:31.436Z",
+  "navigateurs": {
+    "chromium": true,
+    "webkit": false,
+    "firefox": false
+  },
+  "external": [],
+  "checks": {
+    "32 captures : chaque mode s'affiche réellement (attribut et mise en page du Studio)": {
+      "ok": true
+    },
+    "aucun débordement horizontal (1440, 1024, 390, 360)": {
+      "ok": true,
+      "detail": []
+    },
+    "Plein cadre : en bas de page, aucun bouton de l'espace n'est caché sous la barre de commande": {
+      "ok": true,
+      "detail": []
+    },
+    "aucune erreur JavaScript": {
+      "ok": true,
+      "detail": []
+    },
+    "contraste mesuré de la coquille ≥ AA dans chaque mode, clair et sombre": {
+      "ok": true,
+      "detail": []
+    },
+    "téléphone en paysage (844 × 390) : Plein cadre sans débordement, rien caché sous la barre": {
+      "ok": true,
+      "detail": {
+        "mode": "plein",
+        "overflow": 0,
+        "lastAboveBar": true
+      }
+    },
+    "Personnaliser (encre, ordinateur-1440) : s'ouvre avec le focus dedans, Échap le ferme": {
+      "ok": true,
+      "detail": {
+        "inside": true,
+        "closed": true
+      }
+    },
+    "Personnaliser (plein, ordinateur-1440) : s'ouvre avec le focus dedans, Échap le ferme": {
+      "ok": true,
+      "detail": {
+        "inside": true,
+        "closed": true
+      }
+    },
+    "Personnaliser (plein, telephone-390) : s'ouvre avec le focus dedans, Échap le ferme": {
+      "ok": true,
+      "detail": {
+        "inside": true,
+        "closed": true
+      }
+    },
+    "Personnaliser (encre, telephone-390) : s'ouvre avec le focus dedans, Échap le ferme": {
+      "ok": true,
+      "detail": {
+        "inside": true,
+        "closed": true
+      }
+    },
+    "1 · brouillon identique après la bascule (Ctrl Maj M), focus rendu au champ de commande": {
+      "ok": true,
+      "detail": {
+        "mode": "plein",
+        "value": "Retouche le titre de l'accueil",
+        "focusIsCommand": true
+      }
+    },
+    "2 · conversation SYNA et écran de l'espace jamais recréés par la bascule (état, sélection, brouillon conservés)": {
+      "ok": true,
+      "detail": {
+        "panel": true,
+        "main": true
+      }
+    },
+    "2 · sélection d'un élément de l'aperçu (A2)": {
+      "ok": null,
+      "detail": "non réalisable sur main : la sélection A2 de Codex (#287) n'est pas fusionnée. Garantie structurelle : le contexte de sélection et la conversation ne sont pas recréés (vérifié ci-dessus)."
+    },
+    "3 · tâche en cours : même tâche, même progression, toujours affichée ; aucune tâche créée": {
+      "ok": true,
+      "detail": {
+        "jobsBefore": [
+          {
+            "id": "gg74a3bvenvzi5d0",
+            "status": "running",
+            "progress": 0.4
+          }
+        ],
+        "jobsAfter": [
+          {
+            "id": "gg74a3bvenvzi5d0",
+            "status": "running",
+            "progress": 0.4
+          }
+        ],
+        "shown": 1
+      }
+    },
+    "4 · devis ouvert": {
+      "ok": null,
+      "detail": "non réalisable sur main sans appel IA : un projet existant n'ouvre pas encore sa conversation (reprise A1 non fusionnée), donc aucun devis à l'écran. Garantie structurelle : le panneau de conversation (qui porte les devis) n'est jamais recréé (test 2)."
+    },
+    "5 · bascule sur Boutique, Catalogue, Marque, Images, Vidéos, Publications, Pilote : même page, même titre, sans rechargement": {
+      "ok": true,
+      "detail": []
+    },
+    "les 23 adresses d'espaces répondent en Encre": {
+      "ok": true,
+      "detail": []
+    },
+    "les 23 adresses d'espaces répondent en Plein cadre": {
+      "ok": true,
+      "detail": []
+    },
+    "6 · « Passe en Plein cadre » : appliqué sur place, confirmation « sans IA ni coût », seule écriture = réglage d'affichage": {
+      "ok": true,
+      "detail": {
+        "m6": "plein",
+        "fb": "Mode Plein cadre · sur place, sans IA ni coût\nAnnuler",
+        "reqs": [
+          "PUT /api/studio/ui-prefs",
+          "PUT /api/studio/ui-prefs",
+          "PUT /api/studio/ui-prefs"
+        ]
+      }
+    },
+    "6 · « Annuler » rétablit Encre": {
+      "ok": true
+    },
+    "6 · « Agrandis l'aperçu » : la conversation passe de 440 à 360 px, l'aperçu s'élargit": {
+      "ok": true,
+      "detail": {
+        "w0": 440,
+        "w1": 360
+      }
+    },
+    "6 · demande ambiguë : une question avec les deux choix, rien n'est changé": {
+      "ok": true,
+      "detail": "Quel mode voulez-vous ?\nEncre\nPlein cadre"
+    },
+    "6 · une vraie demande n'est pas traitée localement : confiée à la conversation, rien d'envoyé à l'IA": {
+      "ok": true,
+      "detail": {
+        "other": "Ce n'est pas une commande d'affichage : écrivez-la à SYNA dans la conversation.",
+        "aiPosts": []
+      }
+    },
+    "7 · exception du projet enregistrée sur le serveur ; l'autre projet suit le compte (Encre)": {
+      "ok": true,
+      "detail": {
+        "stored": "{\"mode\":\"plein\"}",
+        "otherMode": "encre",
+        "thisMode": "plein"
+      }
+    },
+    "7 · « Réglages par défaut » vide le compte sans toucher à l'exception ; « Suivre de nouveau le compte » la retire": {
+      "ok": true,
+      "detail": {
+        "afterReset": "plein",
+        "followed": "encre"
+      }
+    },
+    "8 · deux appareils : le choix de l'ordinateur est retrouvé au chargement du téléphone (autre projet, même compte)": {
+      "ok": true,
+      "detail": "plein"
+    },
+    "8 · le choix du téléphone arrive sur l'ordinateur au retour sur la page, sans recharger": {
+      "ok": true,
+      "detail": {
+        "mode": "encre",
+        "accent": "prusse"
+      }
+    },
+    "8 · droits : un autre compte ne lit ni n'écrit ces réglages (404) et n'ouvre pas le projet": {
+      "ok": true,
+      "detail": {
+        "get": 404,
+        "put": 404,
+        "page": 404
+      }
+    },
+    "10 · Ctrl J ouvre SYNA (focus dedans), Échap la ferme et rend le focus là où il était": {
+      "ok": true,
+      "detail": {
+        "opened": true,
+        "back": {
+          "hidden": true,
+          "focus": "images"
+        }
+      }
+    },
+    "10 · le changement de mode est annoncé aux lecteurs d'écran (aria-live)": {
+      "ok": true,
+      "detail": "Mode Plein cadre"
+    },
+    "10 · largeur de la conversation réglable au clavier (séparateur, flèches) et enregistrée": {
+      "ok": true,
+      "detail": "480"
+    },
+    "11 · animations réduites : rien ne pulse ni ne glisse": {
+      "ok": true,
+      "detail": {
+        "anim": [
+          "1e-05s",
+          "1e-05s"
+        ],
+        "panelAnim": "none"
+      }
+    },
+    "12 · 10 bascules de mode et 3 changements de bleu : projets, versions du thème, tâches, abonnements et appels IA strictement identiques": {
+      "ok": true,
+      "detail": []
+    },
+    "12 · export ZIP octet pour octet": {
+      "ok": null,
+      "detail": "non comparé en ZIP : les projets de démonstration n'ont pas de boutique composée. Garantie de code : l'export et le rendu du site ne lisent jamais ces réglages (test unitaire) et la base du projet est identique (ci-dessus)."
+    },
+    "9 · téléphone Plein cadre : la feuille SYNA s'arrête au-dessus de la zone de commande": {
+      "ok": true,
+      "detail": {
+        "sheet": 708,
+        "zone": 715
+      }
+    },
+    "9 · téléphone Plein cadre : la feuille Espaces ouvre l'espace choisi": {
+      "ok": true
+    },
+    "9 · cibles de la zone de commande d'au moins 40 px": {
+      "ok": true,
+      "detail": 0
+    },
+    "9 · clavier virtuel": {
+      "ok": null,
+      "detail": "non simulable dans Chromium sans écran : la barre et la feuille suivent `visualViewport` (code), à vérifier sur un vrai téléphone."
+    },
+    "retour « Interface actuelle » puis « Nouvelle interface » (le mode choisi est retrouvé)": {
+      "ok": true
+    },
+    "drapeaux SYNA fermés (ordinateur-1440) : « rien n'a été envoyé » pour une demande, la commande d'affichage marche, aucun accès SYNA simulé": {
+      "ok": true,
+      "detail": {
+        "said": "Ce n'est pas une commande d'affichage, et SYNA n'est pas ouverte sur cette installation : rien n'a été envoyé.",
+        "m": "encre",
+        "anySyna": 0
+      }
+    },
+    "drapeaux SYNA fermés (telephone-390) : « rien n'a été envoyé » pour une demande, la commande d'affichage marche, aucun accès SYNA simulé": {
+      "ok": true,
+      "detail": {
+        "said": "Ce n'est pas une commande d'affichage, et SYNA n'est pas ouverte sur cette installation : rien n'a été envoyé.",
+        "m": "encre",
+        "anySyna": 0
+      }
+    },
+    "aucune requête hors du serveur local (aucun fournisseur appelé)": {
+      "ok": true,
+      "detail": []
+    },
+    "aucune requête d'écriture vers la conversation ou une génération (0 appel IA)": {
+      "ok": true,
+      "detail": []
+    }
+  },
+  "shots": [
+    {
+      "file": "encre--ordinateur-1440--sillon-boutique--clair.png",
+      "mode": "encre",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 30,
+        "min": 5.162191099980024,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "encre--ordinateur-1440--table-saison-carte--clair.png",
+      "mode": "encre",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 30,
+        "min": 5.162191099980024,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "encre--ordinateur-1440--sillon-boutique--sombre.png",
+      "mode": "encre",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 30,
+        "min": 6.364634924734166,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "encre--ordinateur-1440--table-saison-carte--sombre.png",
+      "mode": "encre",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 30,
+        "min": 6.364634924734166,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "plein--ordinateur-1440--sillon-boutique--clair.png",
+      "mode": "plein",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 9,
+        "min": 4.987375647595422,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "plein--ordinateur-1440--table-saison-carte--clair.png",
+      "mode": "plein",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 9,
+        "min": 4.987375647595422,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "plein--ordinateur-1440--sillon-boutique--sombre.png",
+      "mode": "plein",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 9,
+        "min": 6.25884077571868,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "plein--ordinateur-1440--table-saison-carte--sombre.png",
+      "mode": "plein",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 9,
+        "min": 6.25884077571868,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "encre--tablette-1024--sillon-boutique--clair.png",
+      "mode": "encre",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 28,
+        "min": 5.162191099980024,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "encre--tablette-1024--table-saison-carte--clair.png",
+      "mode": "encre",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 28,
+        "min": 5.162191099980024,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "encre--tablette-1024--sillon-boutique--sombre.png",
+      "mode": "encre",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 28,
+        "min": 6.364634924734166,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "encre--tablette-1024--table-saison-carte--sombre.png",
+      "mode": "encre",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 28,
+        "min": 6.364634924734166,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "plein--tablette-1024--sillon-boutique--clair.png",
+      "mode": "plein",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 7,
+        "min": 4.987375647595422,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "plein--tablette-1024--table-saison-carte--clair.png",
+      "mode": "plein",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 7,
+        "min": 4.987375647595422,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "plein--tablette-1024--sillon-boutique--sombre.png",
+      "mode": "plein",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 7,
+        "min": 6.25884077571868,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "plein--tablette-1024--table-saison-carte--sombre.png",
+      "mode": "plein",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 7,
+        "min": 6.25884077571868,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "encre--telephone-390--sillon-boutique--clair.png",
+      "mode": "encre",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 8,
+        "min": 8.20084111469317,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "encre--telephone-390--table-saison-carte--clair.png",
+      "mode": "encre",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 6,
+        "min": 8.20084111469317,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "encre--telephone-390--sillon-boutique--sombre.png",
+      "mode": "encre",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 8,
+        "min": 5.516072971493706,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "encre--telephone-390--table-saison-carte--sombre.png",
+      "mode": "encre",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 6,
+        "min": 5.516072971493706,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "plein--telephone-390--sillon-boutique--clair.png",
+      "mode": "plein",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 5,
+        "min": 7.371308974230533,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "plein--telephone-390--table-saison-carte--clair.png",
+      "mode": "plein",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 3,
+        "min": 8.033642473080283,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "plein--telephone-390--sillon-boutique--sombre.png",
+      "mode": "plein",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 5,
+        "min": 6.73862759716571,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "plein--telephone-390--table-saison-carte--sombre.png",
+      "mode": "plein",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 3,
+        "min": 11.378669586072906,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "encre--telephone-360--sillon-boutique--clair.png",
+      "mode": "encre",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 8,
+        "min": 8.20084111469317,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "encre--telephone-360--table-saison-carte--clair.png",
+      "mode": "encre",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 6,
+        "min": 8.20084111469317,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "encre--telephone-360--sillon-boutique--sombre.png",
+      "mode": "encre",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 8,
+        "min": 5.516072971493706,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "encre--telephone-360--table-saison-carte--sombre.png",
+      "mode": "encre",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 6,
+        "min": 5.516072971493706,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "plein--telephone-360--sillon-boutique--clair.png",
+      "mode": "plein",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 5,
+        "min": 7.371308974230533,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "plein--telephone-360--table-saison-carte--clair.png",
+      "mode": "plein",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 3,
+        "min": 8.033642473080283,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "plein--telephone-360--sillon-boutique--sombre.png",
+      "mode": "plein",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 5,
+        "min": 6.73862759716571,
+        "fails": []
+      },
+      "errors": []
+    },
+    {
+      "file": "plein--telephone-360--table-saison-carte--sombre.png",
+      "mode": "plein",
+      "overflow": 0,
+      "lastAboveBar": true,
+      "contrast": {
+        "measured": 3,
+        "min": 11.378669586072906,
+        "fails": []
+      },
+      "errors": []
+    }
+  ],
+  "contrastMin": 4.987375647595422,
+  "changedDuringRun": [
+    "subscriptions"
+  ],
+  "jobsAtEnd": [
+    {
+      "id": "gg74a3bvenvzi5d0",
+      "status": "running",
+      "progress": 0.4
+    }
+  ]
+}
