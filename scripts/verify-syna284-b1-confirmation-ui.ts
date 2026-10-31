@@ -1,0 +1,88 @@
+/** B1 : vrai serveur Next, stockage synthétique isolé et réseau fournisseur interdit. */
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import {spawn} from 'node:child_process';
+import {createHash,randomUUID} from 'node:crypto';
+if(process.env.DATABASE_FILE||process.env.STORAGE_DIR||process.env.DATA_DIR)throw Error('Refus du stockage préexistant');
+const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ecs-b1-'));
+process.env.DATA_DIR=dir;process.env.STOCK_OFFLINE='1';process.env.APP_SECRET='b1-isolated-'+randomUUID();
+for(const key of ['ANTHROPIC_API_KEY','OPENAI_API_KEY','DASHSCOPE_API_KEY','FAL_KEY','GOOGLE_API_KEY','PIXABAY_API_KEY'])process.env[key]='';
+const out=path.resolve(process.argv[2]??'work/preuves-syna284-b1');fs.mkdirSync(out,{recursive:true});
+const {businessFingerprints,historicalProject}=await import('../tests/conversation284-fixtures');
+const {localSiteFixture}=await import('../tests/conversation284-b1-fixtures');
+const {compileTheme}=await import('../src/lib/theme/compile');
+const {exportShopify}=await import('../src/lib/cms-v2/adapters/shopify');
+const {getAsset,assetData}=await import('../src/lib/library');
+const {unzipSync}=await import('fflate');
+const {themeVersion}=await import('../src/lib/projects');
+const {chromium}=await import('playwright');
+const {runWithLang}=await import('../src/lib/i18n-server');
+const {id,run,one,now}=await import('../src/lib/db');
+const {sha256}=await import('../src/lib/secrets');
+const {currentTheme,saveThemeVersion}=await import('../src/lib/projects');
+const {themeToolContext}=await import('../src/lib/orchestrator/conversation/theme-tool-context');
+const flags=Object.fromEntries(['LOT_A','AI','UI','CONTEXT','LOCAL_SITE'].map(k=>['STUDIO_CONVERSATION_'+k,'1']));Object.assign(process.env,flags);
+const fixtures=[];for(const business of ['products','services'] as const){const f=await runWithLang({ui:'fr',content:'fr'},()=>localSiteFixture(business)),token=id();run('INSERT INTO sessions(id,user_id,expires_at,created_at) VALUES(?,?,?,?)',sha256(token),f.u.id,now()+3600000,now());fixtures.push({...f,business,token});}
+if(process.env.SYNA_UI_CLOSED==='1'){process.env.STUDIO_CONVERSATION_LOCAL_SITE='0';flags.STUDIO_CONVERSATION_LOCAL_SITE='0';}
+const histories=[];for(const business of ['products','services'] as const){const f=await runWithLang({ui:'fr',content:'fr'},()=>historicalProject(business)),token=id();const {openProjectConversation}=await import('../src/lib/orchestrator/conversation');openProjectConversation(f.u,f.pid);run('INSERT INTO sessions(id,user_id,expires_at,created_at) VALUES(?,?,?,?)',sha256(token),f.u.id,now()+3600000,now());histories.push({...f,token,business});}
+const port=4900+Math.floor(Math.random()*150),origin=`http://localhost:${port}`;
+const server=spawn(process.execPath,[path.resolve('node_modules/next/dist/bin/next'),process.env.SYNA_UI_PRODUCTION==='1'?'start':'dev','-p',String(port),'-H','127.0.0.1'],{env:{...process.env,APP_URL:origin,NEXT_TELEMETRY_DISABLED:'1',NODE_OPTIONS:`--import=${path.resolve('scripts/lot9/network-guard.mjs')}`},stdio:['ignore','pipe','pipe'],detached:true});
+let log='';server.stdout.on('data',d=>{log+=d});server.stderr.on('data',d=>{log+=d});server.on('error',e=>{log+=String(e)});const stop=()=>{try{process.kill(-server.pid!,'SIGTERM')}catch{}};process.on('exit',stop);
+const proof={schema:'syna-free-confirmation-ui-1',cases:[] as unknown[],screenshots:[] as string[],errors:[] as string[]};
+let browser:Awaited<ReturnType<typeof chromium.launch>>|undefined;
+const invariant=()=>{const f=businessFingerprints();delete f.database.projects;delete f.database.theme_versions;return f;};
+try{
+ const start=Date.now();for(;;){if(Date.now()-start>240000)throw Error('Next non prêt : '+log.slice(-1200));try{if((await fetch(origin+'/connexion',{signal:AbortSignal.timeout(3000)})).ok)break;}catch{}await new Promise(r=>setTimeout(r,1000));}
+ browser=await chromium.launch({executablePath:process.env.CHROMIUM??(fs.existsSync('/usr/bin/chromium')?'/usr/bin/chromium':chromium.executablePath()),args:['--no-sandbox','--disable-background-networking']});
+ for(const f of fixtures){
+  const context=await browser.newContext({viewport:{width:1440,height:1000},locale:'fr-FR',reducedMotion:'reduce'});await context.addCookies([{name:'ecs_session',value:f.token,url:origin}]);await context.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort());const page=await context.newPage(),errors:string[]=[],forbidden:string[]=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(r.method()==='POST'&&/\/(intelligence|theme-tools|tools)(?:$|\?)/.test(r.url()))forbidden.push(r.url());});
+  page.setDefaultTimeout(45000);
+  const panel=page.getByRole('dialog',{name:'SYNA — conversation du projet',exact:true}),free=panel.getByRole('region',{name:'Retouche gratuite',exact:true});
+  const frame=()=>page.frameLocator('iframe[title^="Aperçu"]');
+  const capture=async(name:string)=>{await page.evaluate(async()=>{await document.fonts.ready;await new Promise<void>(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>r())));});const filename=`${f.business}-${name}.png`;await page.screenshot({path:path.join(out,filename)});proof.screenshots.push(filename);};
+  const dismiss=async()=>{const splash=page.locator('#ecs-splash');if(await splash.isVisible())await splash.getByRole('button',{name:'Passer',exact:true}).click();await splash.waitFor({state:'hidden'});const nudge=page.locator('[data-tuto-nudge]');if(await nudge.isVisible())await nudge.locator('button').last().click();};
+  const select=async()=>{
+   if(await panel.isVisible())await panel.getByRole('button',{name:'Replier SYNA',exact:true}).click();
+   const tab=page.getByRole('tab',{name:'Aperçu',exact:true});if(await tab.count())await tab.click();
+   const heading=frame().locator(`[data-es-section="index:${f.section}"]`).getByRole('heading').first();await heading.waitFor();await heading.scrollIntoViewIfNeeded();
+   await heading.evaluate(el=>new Promise<void>(resolve=>{if(el.ownerDocument.readyState==='complete')resolve();else el.ownerDocument.defaultView!.addEventListener('load',()=>resolve(),{once:true});}));
+   const tools=page.locator('[data-site-tools]');if(!(await tools.getAttribute('open')))await tools.locator(':scope > summary').click();await page.getByRole('button',{name:'Désigner',exact:true}).click();const close=page.getByRole('button',{name:'Fermer les outils',exact:true});if(await close.isVisible())await close.click();
+   await heading.click();await panel.waitFor();await panel.locator('[data-agent-active-context]').getByText(/Section désignée/).waitFor();
+  };
+  const message=async(text:string)=>{await panel.getByRole('textbox',{name:'Décrivez votre projet ou posez votre question à SYNA'}).fill(text);await panel.getByRole('button',{name:'Enregistrer',exact:true}).click();await free.getByRole('button',{name:'Confirmer la modification gratuite',exact:true}).waitFor();};
+  const applied=async()=>{await free.getByText(/Résultat enregistré · version/).waitFor();};
+  const visibleTitle=async(title:string)=>{await frame().locator(`[data-es-section="index:${f.section}"]`).getByRole('heading').first().filter({hasText:title}).waitFor();};
+  await page.goto(`${origin}/studio/${f.pid}/boutique`,{waitUntil:'networkidle',timeout:180000});await dismiss();await select();console.log(f.business+': sélection native');
+  if(process.env.SYNA_UI_CLOSED==='1'){const before=currentTheme(f.pid)!.version.id;await panel.getByRole('textbox',{name:'Décrivez votre projet ou posez votre question à SYNA'}).fill('Remplace le titre par “Titre gratuit fermé”');await panel.getByRole('button',{name:'Enregistrer',exact:true}).click();await free.getByText('Les retouches gratuites ne sont pas activées ici. Aucun appel IA lancé.',{exact:true}).waitFor();assert.equal(await free.getByRole('button',{name:'Confirmer la modification gratuite',exact:true}).count(),0);assert.equal(await panel.getByRole('button',{name:'Voir le devis de la réponse de SYNA',exact:true}).count(),0);assert.equal(currentTheme(f.pid)!.version.id,before);assert.deepEqual(forbidden,[]);proof.cases.push({business:f.business,flagClosed:true,noDeadConfirmation:true,noPaidFallback:true,manualPreviewIntact:true});await context.close();continue;}
+  // Warm native preview and Shopify's lazy caches before invariants.
+  const loader=(assetId:string)=>{const a=getAsset(assetId);return a?{data:assetData(a),mime:a.mime,updated:a.created_at}:null;};
+  const old=structuredClone(currentTheme(f.pid)!.spec),zipBefore=unzipSync((await exportShopify(old,loader)).zip),before=invariant(),versionBefore=currentTheme(f.pid)!.version.number;
+  const title=`Un titre gratuit pour ${f.business==='products'?'notre collection':'nos prestations'}`;
+  // Cancellation is authoritative and keeps the selection; refresh cannot resurrect the proposal.
+  await message(`Remplace le titre de cette section par “${title}”`);await free.getByRole('button',{name:'Annuler la modification gratuite',exact:true}).click();await free.waitFor({state:'detached'});assert.equal(currentTheme(f.pid)!.version.number,versionBefore);
+  await message(`Remplace le titre de cette section par “${title}”`);assert.equal(currentTheme(f.pid)!.version.number,versionBefore);await free.getByText('Gratuit — 0 €',{exact:true}).waitFor();assert.equal(await panel.getByRole('button',{name:'Voir le devis de la réponse de SYNA',exact:true}).count(),0);
+  await free.scrollIntoViewIfNeeded();await capture('desktop-confirmation');await page.setViewportSize({width:390,height:844});await free.getByRole('button',{name:'Confirmer la modification gratuite',exact:true}).scrollIntoViewIfNeeded();await free.evaluate(el=>el.scrollIntoView({block:'start'}));await capture('mobile-confirmation');await page.setViewportSize({width:1440,height:1000});
+  await free.getByRole('button',{name:'Confirmer la modification gratuite',exact:true}).dblclick();await applied();console.log(f.business+': titre confirmé');assert.equal(currentTheme(f.pid)!.version.number,versionBefore+1);assert.equal(currentTheme(f.pid)!.spec.templates.index.sections[f.section].settings.heading,title);
+  await free.scrollIntoViewIfNeeded();await capture('desktop-recu');await panel.getByRole('button',{name:'Replier SYNA',exact:true}).click();await visibleTitle(title);await capture('desktop-resultat');await page.setViewportSize({width:390,height:844});await visibleTitle(title);await capture('mobile-resultat');await page.reload({waitUntil:'networkidle'});await dismiss();await visibleTitle(title);assert.equal(currentTheme(f.pid)!.spec.templates.index.sections[f.section].settings.heading,title);await page.setViewportSize({width:1440,height:1000});
+  // A real native selection and command for ordering, then response lost AFTER native commit.
+  await select();await message(`Place cette section après ${f.anchor}`);const cid=f.c.id,confirmBodies:unknown[]=[];let lost=true;
+  await page.route(`**/api/studio-agent/conversations/${cid}`,async route=>{const request=route.request();if(request.method()==='POST'&&request.postDataJSON()?.action==='confirm-local'){confirmBodies.push(request.postDataJSON());if(lost){lost=false;await route.fetch();await route.abort('failed');return;}}await route.continue();});
+  await free.getByRole('button',{name:'Confirmer la modification gratuite',exact:true}).click();await free.getByRole('button',{name:'Réessayer la confirmation gratuite',exact:true}).waitFor();await free.getByRole('button',{name:'Réessayer la confirmation gratuite',exact:true}).click();await applied();console.log(f.business+': déplacement et retry réseau');assert.equal(confirmBodies.length,2);assert.deepEqual(confirmBodies[0],confirmBodies[1]);assert.equal(currentTheme(f.pid)!.version.number,versionBefore+2);
+  const moved=currentTheme(f.pid)!,order=moved.spec.templates.index.order;assert.equal(order.indexOf(f.section),order.indexOf(f.anchor)+1);const zipAfter=unzipSync((await exportShopify(moved.spec,loader)).zip);const changed=[...new Set([...Object.keys(zipBefore),...Object.keys(zipAfter)])].filter(k=>!Buffer.from(zipBefore[k]??[]).equals(Buffer.from(zipAfter[k]??[])));assert.deepEqual(changed,['templates/index.json']);assert.deepEqual(invariant(),before);
+  // Manual race N→N+1: old agreement cannot overwrite it. Explicit A2 then new proposal.
+  await select();await message('Remplace le titre de cette section par “Nouvelle proposition après conflit”');const manual=structuredClone(currentTheme(f.pid)!.spec);manual.templates.index.sections[f.section].settings.heading='Titre humain à préserver';saveThemeVersion(f.pid,manual,'Modification manuelle fictive','user');await free.getByRole('button',{name:'Confirmer la modification gratuite',exact:true}).click();await free.getByRole('button',{name:'Revalider la cible actuelle',exact:true}).waitFor();assert.equal(currentTheme(f.pid)!.spec.templates.index.sections[f.section].settings.heading,'Titre humain à préserver');await free.getByRole('button',{name:'Revalider la cible actuelle',exact:true}).click();await free.waitFor({state:'detached'});
+  // Revalidation updates the selected native reference; no automatic resubmission.
+  await message('Remplace le titre de cette section par “Nouvelle proposition après conflit”');await free.getByRole('button',{name:'Confirmer la modification gratuite',exact:true}).click();await applied();
+  // Existing manual history UI, no new undo engine.
+  await panel.getByRole('button',{name:'Replier SYNA',exact:true}).click();await page.getByRole('button',{name:'Versions',exact:true}).click();const versions=page.getByRole('dialog').filter({hasText:/Versions du site|Versions de la boutique/});await versions.waitFor();const restore=versions.getByRole('button',{name:'Restaurer',exact:true}).last();await restore.click();
+  const end=Date.now()+30000;while(Date.now()<end&&JSON.stringify(currentTheme(f.pid)!.spec)!==JSON.stringify(old))await page.waitForTimeout(100);assert.deepEqual(currentTheme(f.pid)!.spec,old);assert.deepEqual(themeVersion(f.pid,f.cur.version.id)!.spec,old);
+  assert.deepEqual(forbidden,[]);assert.deepEqual(errors,[]);assert.deepEqual(invariant(),before);
+  // Real authorization loss between proposal and click. Synthetic subscription only.
+  await select();await message('Remplace le titre par “Ne doit pas être enregistré”');const protectedVersion=currentTheme(f.pid)!.version.id;run("UPDATE subscriptions SET status='canceled' WHERE project_id=?",f.pid);await free.getByRole('button',{name:'Confirmer la modification gratuite',exact:true}).click();await free.getByRole('alert').waitFor();assert.equal(currentTheme(f.pid)!.version.id,protectedVersion);assert.equal(await free.getByText(/Résultat enregistré/).count(),0);assert.equal(await free.getByRole('button',{name:'Confirmer la modification gratuite',exact:true}).count(),0);assert.deepEqual(forbidden,[]);
+  proof.cases.push({business:f.business,permissionsRevokedNoWrite:true,realSelection:true,typedCommand:true,freeDiff:true,doubleClickOneVersion:true,refreshPersistent:true,lostResponseSameCommand:true,manualRaceExplicitRevalidation:true,newProposalRequired:true,manualNativeRestore:true,zipChanged:changed,paidRequests:0,jsErrors:errors});await context.close();console.log('Parcours UI validé : '+f.business);
+ }
+ for(const f of histories){const context=await browser.newContext({viewport:{width:390,height:844},locale:'fr-FR',reducedMotion:'reduce'});await context.addCookies([{name:'ecs_session',value:f.token,url:origin}]);const page=await context.newPage();await page.goto(`${origin}/studio/${f.pid}/boutique`,{waitUntil:'networkidle',timeout:180000});const splash=page.locator('#ecs-splash');if(await splash.isVisible())await splash.getByRole('button',{name:'Passer',exact:true}).click();await splash.waitFor({state:'hidden'});const nudge=page.locator('[data-tuto-nudge]');if(await nudge.isVisible())await nudge.locator('button').last().click();await page.getByRole('button',{name:'SYNA',exact:true}).click();const panel=page.getByRole('dialog',{name:'SYNA — conversation du projet',exact:true});await panel.getByText('Contexte existant · lecture seule',{exact:true}).waitFor();assert.equal(await panel.getByRole('region',{name:'Retouche gratuite',exact:true}).count(),0);assert.equal(await panel.getByRole('button',{name:'Voir le devis de la réponse de SYNA',exact:true}).count(),0);proof.cases.push({business:f.business,A1ReadOnly:true,noFreeControl:true});await context.close();}
+ for(const table of ['ai_calls','jobs','usage_events'])assert.equal(one<{n:number}>(`SELECT COUNT(*) n FROM ${table}`)!.n,0);
+}catch(e){proof.errors.push(String(e));if(browser){for(const c of browser.contexts())for(const p of c.pages())try{await p.screenshot({path:path.join(out,'echec-reel.png')});fs.writeFileSync(path.join(out,'echec-dom.txt'),await p.locator('body').innerText());}catch{}}throw e;}finally{await browser?.close();stop();fs.writeFileSync(path.join(out,'RESUME-UI.json'),JSON.stringify(proof,null,2)+'\n');fs.writeFileSync(path.join(out,'serveur-local.log'),log);fs.rmSync(dir,{recursive:true,force:true});}

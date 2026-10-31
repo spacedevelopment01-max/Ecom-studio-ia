@@ -77,6 +77,7 @@ export type ActionCard = {
   href?: string;
 };
 export type ConversationView = {
+  localSiteExecution?: {enabled:true};
   localSite?: import('./local-site').LocalSitePresentation;
   schema: "studio-conversation-1";
   recovery?: import('./existing-project').ExistingProjectRecovery;

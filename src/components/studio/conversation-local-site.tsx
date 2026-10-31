@@ -1,0 +1,22 @@
+"use client";
+import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
+import {hasNativeLocalReceipt} from '@/lib/local-site-confirmation-client';
+import type {useLocalSiteConfirmation} from './use-local-site-confirmation';
+import {Button} from '../ui';
+/** Optional presenter. Encre/Plein cadre may reuse the headless hook with their own markup. */
+export function ConversationLocalSite({view,confirmation,busy,selectionMatches,onResume}:{view:ConversationView;confirmation:ReturnType<typeof useLocalSiteConfirmation>;busy:boolean;selectionMatches:boolean;onResume:()=>void}){
+ const s=view.localSite,{controller,state}=confirmation,fresh=view.activeContext?.presentation,context=fresh&&fresh.revision>=(state.context?.revision??0)?fresh:state.context;
+ if(view.recovery||(!s&&!state.error&&!context?.needsRevalidation))return null;
+ const scope=s?.scope,valid=hasNativeLocalReceipt(view),enabled=view.localSiteExecution?.enabled&&!view.readOnlyReason&&!state.blocked;
+ const display=(value:unknown)=>Array.isArray(value)?value.map(id=>`${scope?.labels[String(id)]??id} (${id})`).join(' → '):String(value??'');
+ return <section aria-label="Retouche gratuite" className="space-y-3 rounded-xl border border-line p-4 text-sm">
+  <p className="font-semibold">Gratuit — 0 €</p>{s&&<p>{s.message}</p>}
+  {scope&&<p>Cible : {scope.label} · {scope.pagePaths.join(', ')} · {scope.template}/{scope.section}{scope.block?`/${scope.block}`:''}{scope.key?` · ${scope.key}`:''}</p>}
+  {s?.diff&&<dl className="space-y-2 break-words"><dt className="font-semibold">Avant</dt><dd className="whitespace-pre-wrap">{display(s.diff.before)}</dd><dt className="font-semibold">Après confirmation</dt><dd className="whitespace-pre-wrap">{display(s.diff.after)}</dd></dl>}
+  {s?.state==='proposed'&&enabled&&<div className="flex flex-wrap gap-2"><Button disabled={busy||state.busy||!selectionMatches||!!context?.needsRevalidation} onClick={()=>void controller?.confirm()}>Confirmer la modification gratuite</Button><Button variant="ghost" disabled={busy||state.busy||state.uncertain} onClick={()=>void controller?.cancel()}>Annuler la modification gratuite</Button><Button variant="ghost" disabled={busy||state.busy} onClick={onResume}>Reprendre cette cible</Button></div>}
+  {valid&&<div role="status"><p>Résultat enregistré · version {s!.version!.number}</p><a className="underline" href={s!.previewHref} target="_blank" rel="noreferrer">Voir le résultat natif</a>{s!.restore&&<p><a className="underline" href={`/studio/${view.projectId}/boutique`} target="_blank" rel="noreferrer">Ouvrir les versions — restauration manuelle</a></p>}</div>}
+  {state.error&&<div><p role="alert">{state.error}</p><Button variant="ghost" disabled={busy||state.busy} onClick={()=>void controller?.refresh()}>Actualiser sans exécuter</Button></div>}
+  {state.uncertain&&<div><Button disabled={busy||state.busy} onClick={()=>void controller?.refresh()}>Vérifier l’enregistrement</Button><Button disabled={busy||state.busy} onClick={()=>void controller?.confirm()}>Réessayer la confirmation gratuite</Button></div>}
+  {enabled&&context?.needsRevalidation&&<div><p>La cible ou sa version a changé. Une nouvelle proposition sera nécessaire.</p>{context.recovery?.current&&<><p>Version désignée : {context.reference} · version proposée : {context.recovery.current.reference}</p><Button disabled={busy||state.busy} onClick={()=>void controller?.revalidate()}>Revalider la cible actuelle</Button></>}{!context.recovery?.current&&<p>Resélectionnez la cible dans l’aperçu natif.</p>}</div>}
+ </section>;
+}

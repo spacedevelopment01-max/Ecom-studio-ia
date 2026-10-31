@@ -1,5 +1,5 @@
 import {withAiDisabled} from '../../ai/access';
-import {localSiteCandidate,proposeLocalSite,confirmLocalSite} from './local-site';
+import {localSiteEnabled,localSiteCandidate,proposeLocalSite,confirmLocalSite} from './local-site';
 import {conversationBlogEnabled,conversationBrandReviewEnabled} from './tool-flags';
 /** Une conversation dans l'orchestrateur : interpréter/proposer ≠ autoriser/exécuter un outil. */
 import { HttpError, type User } from "../../auth";
@@ -59,6 +59,7 @@ export function conversationView(user: User, cid: string, before?: number,includ
     question: key ? questionFor(key, b, m) : null, correctionFields: readOnlyReason?[]:[...EDIT_FIELDS],readOnlyReason,
     creation: c.project_id ? null : creationFields(b,m),
     ...(m.localSite?{localSite:m.localSite}:{}),
+    ...(c.project_id&&localSiteEnabled()?{localSiteExecution:{enabled:true as const}}:{}),
     ...(activeContextEnabled()?{activeContext:{enabled:true as const,current:observedActiveContext(c,m.activeContext),presentation:contextPresentation(c)}}:{}),
     ...(c.project_id&&conversationToolsEnabled()?{execution:{enabled:true as const}}:{}),
     ...(c.project_id&&conversationContentEnabled()?{contentExecution:{enabled:true as const}}:{}),

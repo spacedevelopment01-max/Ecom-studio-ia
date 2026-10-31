@@ -17,7 +17,8 @@ import {themeTargetPaths} from './theme-tool-context';
 import type {ConversationRow,ConversationState} from './contract';
 
 export type LocalSiteProposal={id:string;kind:'title'|'move';request:NativeLocalRequest;address:NativeLocalAddress;pin:ContextPin;versionId:string;fingerprint:string;resultFingerprint:string;ops:ThemeOp[];diff:{before:unknown;after:unknown};expiresAt:number};
-export type LocalSitePresentation={schema:'syna-local-site-1';state:'ambiguous'|'proposed'|'applied'|'error';message:string;financialConsent:false;costEur:0;providerCalls:0;confirmationRequired:boolean;proposalId?:string;diff?:{before:unknown;after:unknown};version?:{id:string;number:number;parentId:string;fingerprint:string};previewHref?:string;restore?:{endpoint:string;versionId:string;manual:true};actionsExecuted:boolean};
+export type LocalSiteScope={projectId:string;versionId:string;template:string;section:string;block?:string;key?:string;label:string;pagePaths:string[];labels:Record<string,string>};
+export type LocalSitePresentation={command?:'title'|'move';scope?:LocalSiteScope;schema:'syna-local-site-1';state:'ambiguous'|'proposed'|'applied'|'error';message:string;financialConsent:false;costEur:0;providerCalls:0;confirmationRequired:boolean;proposalId?:string;diff?:{before:unknown;after:unknown};version?:{id:string;number:number;parentId:string;fingerprint:string};previewHref?:string;restore?:{endpoint:string;versionId:string;manual:true};actionsExecuted:boolean};
 const present=(state:LocalSitePresentation['state'],message:string,extra:Partial<LocalSitePresentation>={}):LocalSitePresentation=>({schema:'syna-local-site-1',state,message,financialConsent:false,costEur:0,providerCalls:0,confirmationRequired:false,actionsExecuted:false,...extra});
 export const localSiteCandidate=(text:string)=>nativeLocalRequest(text).candidate;
 export const localSiteEnabled=()=>activeContextEnabled()&&process.env.STUDIO_CONVERSATION_LOCAL_SITE==='1';
@@ -55,7 +56,8 @@ function preview(user:User,c:ConversationRow,p:LocalSiteProposal){
 const plain=(text:string)=>text.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/^(?:le|la|les)\s+|^l['’]\s*/,'');
 export function proposeLocalSite(user:User,c:ConversationRow,m:ConversationState,text:string):LocalSitePresentation{
  delete m.localSiteProposal;
- if(!localSiteEnabled())return present('error','Les retouches gratuites ne sont pas activées ici. Aucun appel IA lancé.');
+ const command=nativeLocalRequest(text).request?.kind;
+ if(!localSiteEnabled())return present('error','Les retouches gratuites ne sont pas activées ici. Aucun appel IA lancé.',{command});
  try{
   const parsed=nativeLocalRequest(text);if(!parsed.request)return present('ambiguous','Précisez gratuitement : « Remplace le titre de cette section par “Texte exact” » ou « Place cette section avant ID ou libellé unique ».');
   const pin=checkedContextPin(c);if(!pin?.selection.target)fail('Désignez d’abord une section ou un champ natif du site.');
@@ -80,8 +82,14 @@ export function proposeLocalSite(user:User,c:ConversationRow,m:ConversationState
   const result=preview(user,c,p);p.ops=result.ops;p.resultFingerprint=fp(result.spec);
   const section=containerOf(cur.spec,address.template)!.sections[address.section],changed=containerOf(result.spec,address.template)!.sections[address.section];
   p.diff=request.kind==='title'?{before:(address.block?section.blocks![address.block].settings:section.settings)[address.key!],after:(address.block?changed.blocks![address.block].settings:changed.settings)[address.key!]}:{before:containerOf(cur.spec,address.template)!.order,after:containerOf(result.spec,address.template)!.order};
-  m.localSiteProposal=p;return present('proposed','Modification comprise. Vérifiez cet aperçu puis confirmez gratuitement.',{proposalId:p.id,diff:p.diff,confirmationRequired:true});
+  m.localSiteProposal=p;return present('proposed','Modification comprise. Vérifiez cet aperçu puis confirmez gratuitement.',{command:p.kind,scope:proposalScope(c,p),proposalId:p.id,diff:p.diff,confirmationRequired:true});
  }catch(e){if(e instanceof ContextConflict)throw e;if(e instanceof HttpError)return present(e.status===422?'ambiguous':'error',e.message);throw e;}
+}
+/** Présentation native uniquement : aucune nouvelle opération ni autorisation. */
+function proposalScope(c:ConversationRow,p:LocalSiteProposal):LocalSiteScope{
+ const spec=themeVersion(c.project_id!,p.versionId)!.spec,container=containerOf(spec,p.address.template)!;
+ const labels=Object.fromEntries(container.order.map(sid=>{const section=container.sections[sid];return[sid,String(section.settings.heading||section.settings.title||sectionSchema(spec,section.type)?.name||sid)];}));
+ return{projectId:c.project_id!,versionId:p.versionId,...p.address,label:labels[p.address.section],pagePaths:themeTargetPaths(spec,p.address.template),labels};
 }
 export function confirmLocalSite(user:User,c:ConversationRow,m:ConversationState,proposalId:string):LocalSitePresentation{
  const p=m.localSiteProposal;if(!p||p.id!==proposalId||p.expiresAt<now())throw new HttpError(409,'Cette proposition gratuite est périmée. Reformulez la demande.','conversation_local_stale');
@@ -91,5 +99,5 @@ export function confirmLocalSite(user:User,c:ConversationRow,m:ConversationState
  delete m.localSiteProposal;
  // La cible reste conservée, explicitement périmée jusqu'à la revalidation A2.
  const path=themeTargetPaths(saved.spec,p.address.template)[0];
- return present('applied','Version native enregistrée et relue. Aucun crédit consommé.',{proposalId:p.id,diff:p.diff,version:{id:v.id,number:v.number,parentId:p.versionId,fingerprint:fp(saved.spec)},previewHref:`/preview/${c.project_id}/v/${v.id}${path==='/'?'':path}`,restore:{endpoint:`/api/projects/${c.project_id}/theme/restore`,versionId:p.versionId,manual:true},actionsExecuted:true});
+ return present('applied','Version native enregistrée et relue. Aucun crédit consommé.',{command:p.kind,scope:proposalScope(c,p),proposalId:p.id,diff:p.diff,version:{id:v.id,number:v.number,parentId:p.versionId,fingerprint:fp(saved.spec)},previewHref:`/preview/${c.project_id}/v/${v.id}${path==='/'?'':path}`,restore:{endpoint:`/api/projects/${c.project_id}/theme/restore`,versionId:p.versionId,manual:true},actionsExecuted:true});
 }
