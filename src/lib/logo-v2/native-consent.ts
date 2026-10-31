@@ -76,7 +76,7 @@ function eligible(u: User, pid: string, input: Input) {
     const p = loadProject(pid);
     if (!p.brand || p.brand.logo.status === 'provided')
         fail('Marque absente ou logo fourni conservé.');
-    if (one("SELECT id FROM ai_reservations WHERE project_id=? AND status IN ('held','uncertain') AND job_id IN (SELECT id FROM jobs WHERE project_id=? AND type LIKE 'brand.logo%')", pid, pid))
+    if (one("SELECT id FROM ai_reservations WHERE project_id=? AND status IN ('held','uncertain') AND job_id IN (SELECT id FROM jobs WHERE project_id=? AND (type LIKE 'brand.%' OR (type='project.prepare' AND json_extract(payload,'$.action')='logo')))", pid, pid))
         fail('Résultat fournisseur incertain : vérifier la consommation avant un nouvel achat.');
     const rights = seriesRights(pid), s = currentSeries(pid);
     if (input.operation === 'generate') {
@@ -107,6 +107,7 @@ function recheck(u: User, m: Saved, running = false) {
     nativeOwned(u, m.projectId);
     requirePlan(u, m.projectId);
     assertAiAllowed(u.id, m.projectId);
+    if(one("SELECT id FROM ai_reservations WHERE project_id=? AND status='uncertain' AND job_id IN (SELECT id FROM jobs WHERE project_id=? AND (type LIKE 'brand.%' OR (type='project.prepare' AND json_extract(payload,'$.action')='logo')))",m.projectId,m.projectId))fail('Résultat fournisseur incertain : aucun appel supplémentaire avant rapprochement.');
     if (now() > m.expiresAt || scope(m.projectId) !== m.scope || seriesRights(m.projectId).plan !== m.plan || pctBaseFor(u.id, m.projectId) !== m.budgetBase || stableHash('native-logo-price-1', { q: price(m.input), r: routes() }) !== m.fingerprint)
         fail('Devis périmé : identité, budget, route, tarif ou droits modifiés.');
     const s = currentSeries(m.projectId);

@@ -23,7 +23,7 @@ describe("Logo V2 — point d'accès", async () => {
   const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
   const req = (pid: string, body: object) => new Request(`http://localhost:3000/api/projects/${pid}/brand/logo-v2`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
   const ctx = (pid: string) => ({ params: Promise.resolve({ id: pid }) }) as any;
-  const asset = async(pid:string,userId:string,role:string,meta:object)=>{
+  const asset = async(pid:string,userId:string,role:string,meta:Record<string,unknown>)=>{
     const {saveAsset}=await import('@/lib/library');const {artFixture}=await import('./logo-v2-fixtures');
     return(await saveAsset({projectId:pid,userId,role,meta,origin:'generated',status:'review',name:'synthetic-logo.png',mime:'image/png',data:await artFixture(0,128)})).id;
   };
