@@ -29,3 +29,5 @@ export const conversationOriginalEnabled=()=>conversationCompositionEnabled()&&p
 
 export const conversationBrandEnabled=()=>conversationToolsEnabled()&&process.env.STUDIO_CONVERSATION_BRAND==='1';
 export const conversationBrandReviewEnabled=()=>conversationBrandEnabled()&&process.env.STUDIO_CONVERSATION_BRAND_REVIEW==='1';
+
+export const conversationLogoReviewEnabled=()=>conversationLogosEnabled()&&process.env.STUDIO_CONVERSATION_LOGO_REVIEW==='1';

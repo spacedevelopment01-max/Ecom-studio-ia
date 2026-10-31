@@ -5,6 +5,7 @@
  * capturé et la relecture visuelle est simplement sautée.
  */
 import fs from "node:fs";
+import {accessScope,withAccessScope}from "../access-scope";
 import sharp from "sharp";
 import { compileTheme, importedBinary, themeAssetBinary } from "./compile";
 import { libraryLoader } from "./loader";
@@ -59,8 +60,12 @@ async function sheets(shot: Buffer, width: number, colHeight: number, perSheet: 
 /** Contexte de navigateur qui sert la boutique rendue depuis la spécification (pages, médias, polices). */
 export async function themeContext(browser: import("playwright").Browser, spec: ThemeSpec, viewport: { width: number; height: number }, mobile = false) {
   const files = compileTheme(spec);
+  // Un navigateur partagé émet ses événements hors de la requête qui a créé la capture.
+  // Figer les droits autorisés ici : jamais ceux d’un autre compte hérité de son transport.
+  const scope={...accessScope()},resourceErrors:unknown[]=[];
   const context = await browser.newContext({ viewport, deviceScaleFactor: 1, isMobile: mobile, hasTouch: mobile, reducedMotion: "reduce" });
   await context.route("**/*", async (route) => {
+   try{await withAccessScope(scope,async()=>{
     const url = new URL(route.request().url());
     if (url.origin !== ORIGIN || !url.pathname.startsWith(BASE)) return route.abort();
     const segs = url.pathname.slice(BASE.length).split("/").filter(Boolean).map(decodeURIComponent);
@@ -78,8 +83,13 @@ export async function themeContext(browser: import("playwright").Browser, spec: 
     if (segs.join("/") === "cart.js") return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ item_count: 0, items: [], total_price: 0, currency: "EUR" }) });
     const r = await renderPage({ spec, base: BASE, files, cart: [] }, "/" + segs.join("/"), url.searchParams);
     return route.fulfill({ status: r.status, contentType: "text/html; charset=utf-8", body: r.html });
+   });}catch(error){
+    // Résoudre la requête navigateur, puis remonter l’erreur au propriétaire de la capture.
+    // Un rejet dans ce callback serait non géré et laisserait les pages/API en attente.
+    if(!resourceErrors.length)resourceErrors.push(error);await route.abort().catch(()=>{});
+   }
   });
-  return { context, url: (pathname: string) => `${ORIGIN}${BASE}${pathname}` };
+  return { context, assertResources:()=>{if(resourceErrors.length)throw resourceErrors[0];}, url: (pathname: string) => `${ORIGIN}${BASE}${pathname}` };
 }
 
 /** Captures d'une page de la boutique ; `opts` limite le nombre de planches (fiche produit relue en complément de l'accueil). */
@@ -95,9 +105,10 @@ export async function snapshotTheme(spec: ThemeSpec, pathname = "/", opts: { des
   const browser = await chromium.launch({ executablePath, args: ["--no-sandbox", "--disable-dev-shm-usage"] });
   try {
     const shoot = async (width: number, height: number, mobile: boolean) => {
-      const { context, url } = await themeContext(browser, spec, { width, height }, mobile);
+      const { context, url, assertResources } = await themeContext(browser, spec, { width, height }, mobile);
       const page = await context.newPage();
       await page.goto(url(pathname), { waitUntil: "load", timeout: 60_000 });
+      assertResources();
       // Défilement complet : images paresseuses chargées, éléments révélés au défilement affichés.
       await page.evaluate(async () => {
         for (let y = 0; y < document.documentElement.scrollHeight; y += Math.round(innerHeight * 0.8)) {
@@ -108,7 +119,9 @@ export async function snapshotTheme(spec: ThemeSpec, pathname = "/", opts: { des
       });
       // Animations réduites : tous les contenus « révélés au défilement » sont visibles sur la capture.
       await page.waitForTimeout(500);
+      assertResources();
       const buf = await page.screenshot({ fullPage: true, type: "jpeg", quality: 85 });
+      assertResources();
       await context.close();
       return buf;
     };
@@ -128,11 +141,11 @@ export async function captureThemeEvidence(spec:ThemeSpec,paths:string[],opts:{w
   const widths=opts.widths??[1440,390];if(!widths.length||widths.length>2||widths.some(w=>w!==1440&&w!==390))throw new Error('theme_capture_widths_invalid');
   const {chromium}=await import('playwright');const browser=await chromium.launch({executablePath,args:['--no-sandbox','--disable-dev-shm-usage','--disable-background-networking']});const shots:ThemeRenderEvidence[]=[];
   try{for(const pathname of paths)for(const width of widths){
-    const {context,url}=await themeContext(browser,spec,{width,height:width===390?844:960},width===390);
-    try{const page=await context.newPage(),pageErrors:string[]=[];page.on('pageerror',e=>pageErrors.push(e.message));const response=await page.goto(url(pathname),{waitUntil:'load',timeout:45000});if(!response||response.status()>=400)throw new Error('theme_capture_page_unavailable');
+    const {context,url,assertResources}=await themeContext(browser,spec,{width,height:width===390?844:960},width===390);
+    try{const page=await context.newPage(),pageErrors:string[]=[];page.on('pageerror',e=>pageErrors.push(e.message));const response=await page.goto(url(pathname),{waitUntil:'load',timeout:45000});if(!response||response.status()>=400)throw new Error('theme_capture_page_unavailable');assertResources();
       await page.evaluate(async()=>{await document.fonts.ready;for(let y=0;y<document.documentElement.scrollHeight;y+=Math.round(innerHeight*.8)){if(y>20000)throw Error('theme_capture_page_too_long');scrollTo({top:y,behavior:'instant'});await new Promise(r=>setTimeout(r,60));}scrollTo({top:0,behavior:'instant'});await Promise.all(Array.from(document.images).map(i=>i.decode().catch(()=>{})));});
-      await page.waitForTimeout(250);const metrics=await page.evaluate(()=>{const imgs=Array.from(document.images),pageHeight=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);return{pageHeight,scrollWidth:Math.max(document.body.scrollWidth,document.documentElement.scrollWidth),imageCount:imgs.length,brokenImageIndexes:imgs.flatMap((i,index)=>i.currentSrc&&(!i.complete||i.naturalWidth===0)?[index]:[]),potentialCrops:imgs.flatMap((i,index)=>{const b=i.getBoundingClientRect(),objectFit=getComputedStyle(i).objectFit;return objectFit==='cover'&&b.width>0&&b.height>0&&i.naturalWidth>0&&Math.abs(i.naturalWidth/i.naturalHeight-b.width/b.height)>.05?[{index,naturalWidth:i.naturalWidth,naturalHeight:i.naturalHeight,width:b.width,height:b.height,objectFit}]:[];})};});
-      if(metrics.pageHeight>20000)throw new Error('theme_capture_page_too_long');const jpeg=await page.screenshot({fullPage:true,type:'jpeg',quality:88,animations:'disabled'});if(!jpeg.length)throw new Error('theme_capture_empty');
+      assertResources();await page.waitForTimeout(250);const metrics=await page.evaluate(()=>{const imgs=Array.from(document.images),pageHeight=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);return{pageHeight,scrollWidth:Math.max(document.body.scrollWidth,document.documentElement.scrollWidth),imageCount:imgs.length,brokenImageIndexes:imgs.flatMap((i,index)=>i.currentSrc&&(!i.complete||i.naturalWidth===0)?[index]:[]),potentialCrops:imgs.flatMap((i,index)=>{const b=i.getBoundingClientRect(),objectFit=getComputedStyle(i).objectFit;return objectFit==='cover'&&b.width>0&&b.height>0&&i.naturalWidth>0&&Math.abs(i.naturalWidth/i.naturalHeight-b.width/b.height)>.05?[{index,naturalWidth:i.naturalWidth,naturalHeight:i.naturalHeight,width:b.width,height:b.height,objectFit}]:[];})};});
+      if(metrics.pageHeight>20000)throw new Error('theme_capture_page_too_long');const jpeg=await page.screenshot({fullPage:true,type:'jpeg',quality:88,animations:'disabled'});if(!jpeg.length)throw new Error('theme_capture_empty');assertResources();
       shots.push({path:pathname,width,height:width===390?844:960,...metrics,horizontalOverflow:metrics.scrollWidth>width+1,pageErrors,jpeg});
     }finally{await context.close();}
   }}finally{await browser.close();}return shots;

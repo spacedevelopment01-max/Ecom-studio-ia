@@ -17,7 +17,9 @@ export function conversationQuestionState(view:ConversationView,history=view.his
   const reopened=(last?.request as {action?:string}|undefined)?.action==='back-ai';
   const fact=view.summary.facts.find(f=>f.key===`conversation.ai.${q.id}`);
   const canonical=q.field==='target'?view.summary.target:q.field==='offerName'?view.summary.offerName:q.field==='brandName'?view.summary.brandName:q.field==='goals'?view.summary.goals:q.field==='business'?view.summary.business:null;
-  return {show:reopened||!fact&&!canonical,answer:canonical||fact?.value||'',unknown:fact?.status==='unknown'&&!canonical,question:q};
+  const saved=last?.request as {action?:string;unknown?:boolean}|undefined;
+  const contextual=q.field==='custom'&&saved?.action==='answer-ai'?conversationClientText(last!.request):'';
+  return {show:reopened||!fact&&!canonical&&!contextual,answer:canonical||contextual||fact?.value||'',unknown:(contextual?saved?.unknown===true:fact?.status==='unknown')&&!canonical,question:q};
 }
 /** Métadonnées seulement : le serveur vérifie déjà la capacité de lecture de l'aperçu. */
 export function previewSelectionScope(pathname:string,projectId:string):{versionId:string;page:string}|null{

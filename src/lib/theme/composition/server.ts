@@ -1,3 +1,4 @@
+import {themePages}from '../../seo-v2/pages';
 /** Frontière serveur E1 : contexte du propriétaire et contrôles natifs à chaque prévisualisation. */
 import {L} from '../../i18n-server';
 import {UserFacingError} from '../../jobs';
@@ -40,7 +41,7 @@ function resolve(user:User,projectId:string){
   }
  }
  if(current.spec.meta?.original){const p=loadProject(projectId);add({kind:'copy',text:p.brand?.name??current.spec.store.shopName,scope:'home',provenance:{kind:p.brand?.nameStatus==='provided'?'client':'acquired',ref:'project.brand.name'}});if(p.product.name.trim())add({kind:'copy',text:p.product.name,scope:'home',provenance:{kind:p.product.nameStatus==='provided'?'client':'acquired',ref:'project.product.name'}});if(p.product.summaryStatus==='provided'&&p.product.summary.trim())add({kind:'copy',text:p.product.summary,scope:'home',provenance:{kind:'client',ref:'project.product.summary'}});add({kind:'link',url:'/pages/contact',scope:'site',provenance:{kind:'client',ref:'native.contact'}});}
- for(const entry of nativeCompositionCopy(loadProject(projectId),current.spec.language??'fr',Object.keys(current.spec.templates).map(t=>compositionScope(current.spec,t)).filter((s):s is string=>!!s))){const{id,source,content}=entry;sources.set(id,source);if(source.kind==='copy')descriptors.push({id,kind:source.kind,scope:source.scope,ref:source.provenance.ref,characters:source.text.length,...(source.text.length<=1200?{text:source.text}:{fullContentNotReadHere:true}),content});}
+ for(const entry of nativeCompositionCopy(loadProject(projectId),current.spec.language??'fr',Object.keys(current.spec.templates).map(t=>compositionScope(current.spec,t)).filter((s):s is string=>!!s),themePages(current.spec))){const{id,source,content}=entry;sources.set(id,source);if(source.kind==='copy')descriptors.push({id,kind:source.kind,scope:source.scope,ref:source.provenance.ref,characters:source.text.length,...(source.text.length<=1200?{text:source.text}:{fullContentNotReadHere:true}),content});}
  const media=all<{id:string}>("SELECT id FROM assets WHERE project_id=? AND kind='image' AND COALESCE(role,'')!='theme-render-capture' AND deleted_at IS NULL AND status!='rejected' ORDER BY created_at,id LIMIT 40",projectId);
  for(const row of media){const a=getAsset(row.id);if(a)add({kind:'media',assetId:a.id,filename:themeFileName(a,a.role??'media'),scope:'site',provenance:{kind:a.origin==='upload'?'client':'acquired',ref:`asset.${a.id}`}},{width:a.width,height:a.height});}
  const liveMedia=(assetId:string)=>{const a=getAsset(assetId);return a&&a.project_id===projectId&&a.user_id===user.id&&a.kind==='image'&&!a.deleted_at&&a.status!=='rejected'?{filename:themeFileName(a,a.role??'media')}:null;};

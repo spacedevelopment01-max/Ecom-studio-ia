@@ -1,3 +1,4 @@
+import {conversationClientText} from '../../conversation-presentation';
 import { all, json, one } from '../../db';
 import {videoVoiceKnowledge}from './video-voice-execution';
 import {videoClipKnowledge}from './video-clip-execution';
@@ -77,17 +78,17 @@ export function cognitiveContext(c: ConversationRow) {
     // Corrections exactes données pour les outils, dans la mémoire native du même projet/conversation.
     ...(c.project_id?all<{value:string}>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND (key LIKE 'agent.tool.%' OR key LIKE 'agent.research.tool.%') ORDER BY created_at,rowid",c.project_id).map(r=>json<{id?:string;conversationId?:string;correction?:string}>(r.value,{})).filter(m=>m.conversationId===c.id&&m.id&&m.correction?.trim()).map(m=>({id:`tool.${m.id}.correction`,text:m.correction!})):[]),
     ...(strategyChoicesEnabled()?(meta.strategyChoices?.decisions??[]).filter(d=>d.reasonSource==='client').map(d=>({id:`decision.${d.id}`,text:d.reason})):[]),
-    ...turns.map(t => { const r = json<Record<string, unknown>>(t.request_json, {}); return { id: `turn.${t.revision}`, text: String(r.text ?? r.value ?? r.clientAnswer ?? '') }; }).filter(x => x.text),
+    ...turns.map(t => { const r = json<Record<string, unknown>>(t.request_json, {}); return { id: `turn.${t.revision}`, text: conversationClientText(r) }; }).filter(x => x.text),
   ];
   // Une même parole n'est pas recopiée comme note ET comme historique ; seuls les IDs utiles sont exposés.
   const uniqueSources = sources.filter((s, i) => sources.findIndex(x => x.text === s.text) === i);
   const lastTurn=turns.at(-1),lastRequest=lastTurn?json<Record<string,unknown>>(lastTurn.request_json,{}):null;
-  const lastRequestText=lastRequest?String(lastRequest.text??lastRequest.clientAnswer??''):'';
+  const lastRequestText=conversationClientText(lastRequest);
   const lastClientRequest=lastTurn?{revision:lastTurn.revision,action:lastRequest!.action,sourceId:uniqueSources.find(s=>s.text===lastRequestText)?.id??null,text:lastRequestText}:null;
   const knowledge = studioKnowledge();
   if(studioKnowledgeEnabled()){
     let writable=!!c.project_id||pendingSubscriptions(c.user_id).length>0,readOnlyReason:string|null=writable?null:L('Rattachez le brouillon à votre projet pour le poursuivre.','Link the draft to your project to continue.');try{assertBriefWritable(c,one<User>('SELECT * FROM users WHERE id=?',c.user_id)!,revision);}catch(e){if(!(e instanceof HttpError))throw e;writable=false;readOnlyReason=e.message;}
-    knowledge.push({id:'studio.brief-editability',text:JSON.stringify({writable,readOnlyReason,scope:'native_preparation_fiche_only_not_all_site_and_media_operations'})});
+    knowledge.push({id:'studio.brief-editability',text:JSON.stringify({writable,readOnlyReason,scope:'native_preparation_fiche_only_not_all_site_and_media_operations',taskClarifications:{field:'custom',storedInConversation:true,canonicalBriefUnchanged:!writable}})});
     const catalogue=studioOperationCatalogue(c.project_id,writable),snapshot=meta.studioObservation;
     knowledge.push({id:'studio.observed-state',text:JSON.stringify(snapshot?{version:observationVersion(snapshot),observation:snapshot}:{state:'not_captured_before_message',notCurrentState:true})});
     knowledge.push({id:'studio.operations',text:JSON.stringify({version:catalogue.version,scope:catalogue.scope,notExhaustive:true,columns:['id','tab','label','implementation','connectionEnabled','availability','nativeAvailability'],rows:catalogue.rows.map(r=>[r.id,r.tab,r.label,r.implementation,r.connectionEnabled,r.availability,r.nativeAvailability])})});

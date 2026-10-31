@@ -1,4 +1,4 @@
-import {conversationBrandReviewEnabled} from './tool-flags';
+import {conversationBlogEnabled,conversationBrandReviewEnabled} from './tool-flags';
 /** Une conversation dans l'orchestrateur : interpréter/proposer ≠ autoriser/exécuter un outil. */
 import { HttpError, type User } from "../../auth";
 import { id, json, now, one, run, tx, readSnapshot } from "../../db";
@@ -65,7 +65,7 @@ export function conversationView(user: User, cid: string, before?: number,includ
     ...(c.project_id&&conversationSocialEnabled()?{socialExecution:{enabled:true as const}}:{}),
     ...(c.project_id&&conversationVideosEnabled()?{videoExecution:{enabled:true as const,...(conversationVideoGenerationEnabled()?{generation:true as const}:{}),...(conversationVideoVoiceEnabled()?{voice:true as const}:{}),...(conversationVideoClipEnabled()?{clip:true as const}:{})}}:{}),
     ...(c.project_id&&conversationLogosEnabled()?{logoExecution:{enabled:true as const}}:{}),
-    tools: [{id:"brief.update",state:readOnlyReason?"unavailable":"available",executionEnabled:!readOnlyReason},{id:"understand-offer",state:!readOnlyReason&&c.project_id&&m.business&&b.input.description?"quote_only":"unavailable",executionEnabled:false},...(["research","brand","logo","theme","products","images","videos","seo","blog","ads","social","calendar","appointments","export","render","publish","delete","purchase"] as const).map(id=>({id,state:(id==="brand"&&conversationBrandEnabled()||id==="seo"&&conversationContentEnabled()||id==="theme"&&conversationThemeToolsEnabled()||id==="export"&&conversationExportsEnabled()||id==="render"&&conversationRenderEnabled()||id==="research"&&conversationResearchEnabled()||id==="products"&&conversationCatalogueEnabled()||id==="images"&&conversationImagesEnabled()||id==="logo"&&conversationLogosEnabled()||id==="videos"&&conversationVideosEnabled()||(id==="social"||id==="calendar")&&conversationSocialEnabled())?"quote_only" as const:"not_connected" as const,executionEnabled:false}))],
+    tools: [{id:"brief.update",state:readOnlyReason?"unavailable":"available",executionEnabled:!readOnlyReason},{id:"understand-offer",state:!readOnlyReason&&c.project_id&&m.business&&b.input.description?"quote_only":"unavailable",executionEnabled:false},...(["research","brand","logo","theme","products","images","videos","seo","blog","ads","social","calendar","appointments","export","render","publish","delete","purchase"] as const).map(id=>({id,state:(id==="blog"&&conversationBlogEnabled()||id==="ads"&&conversationSocialEnabled()||id==="brand"&&conversationBrandEnabled()||id==="seo"&&conversationContentEnabled()||id==="theme"&&conversationThemeToolsEnabled()||id==="export"&&conversationExportsEnabled()||id==="render"&&conversationRenderEnabled()||id==="research"&&conversationResearchEnabled()||id==="products"&&conversationCatalogueEnabled()||id==="images"&&conversationImagesEnabled()||id==="logo"&&conversationLogosEnabled()||id==="videos"&&conversationVideosEnabled()||(id==="social"||id==="calendar")&&conversationSocialEnabled())?"quote_only" as const:"not_connected" as const,executionEnabled:false}))],
     summary: { description: b.input.description, business: m.business, businessSource: m.businessSource, target: b.input.target, goals: b.profile.facts.find(f => f.key === "conversation.goals" && f.status === "confirmed")?.value ?? "", offerName: b.input.offerName, brandName: b.input.brandName,
       constraints: b.input.constraints, services: b.services.services.map(s=>({name:s.name,description:s.description,source:s.source??"analysis"})), contactModes: b.services.contactModes??[],
       facts: b.profile.facts.filter(f => f.source === "user").map(({ key, label, value, status, source }) => ({ key, label, value, status, source })),
@@ -287,7 +287,11 @@ export async function submitConversation(user: User, cid: string, raw: unknown, 
       }
     }
     if (['answer-ai', 'accept-ai-changes', 'back-ai'].includes(cmd.action)) {
-      const result = applyCognitiveCommand(c, b, m, cmd);
+      let canonicalWritable=true;
+      if(cmd.action==='answer-ai'&&m.intelligence?.lastReply?.question?.field==='custom'){
+        try{assertBriefWritable(c,user,revision);}catch(e){if(e instanceof HttpError&&e.code==='conversation_existing_progress')canonicalWritable=false;else throw e;}
+      }
+      const result = applyCognitiveCommand(c, b, m, cmd, canonicalWritable);
       changed = result.changed; message = result.message;
     }
     if (cmd.action === 'explain' && intelligenceEnabled() && m.intelligence?.lastReply?.question) message = m.intelligence.lastReply.question.why;
