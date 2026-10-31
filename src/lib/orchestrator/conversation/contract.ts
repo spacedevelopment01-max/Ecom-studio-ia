@@ -44,6 +44,9 @@ export type ConversationState = {
   editing?: QuestionKey;
   intelligence?: import('./intelligence-contract').CognitiveState;
   activeContext?: ActiveContext;
+  activeContextReference?: string;
+  activeContextIdentity?: string;
+  activeContextTab?: ActiveContext['tab'];
   strategyChoices?:import("./strategy-choices").StrategyChoicesState;
   studioObservation?:import('./studio-observation').StudioObservation;
   /** A1 : rattachement historique en lecture, jamais une nouvelle Préparation. */
@@ -91,7 +94,7 @@ export type ConversationView = {
   socialExecution?:{enabled:true};
   contentExecution?:{enabled:true};
   videoExecution?: {enabled:true;generation?:true;voice?:true;clip?:true};
-  activeContext?: {enabled:true;current:ReturnType<typeof import('./active-context').observedActiveContext>};
+  activeContext?: {enabled:true;current:ReturnType<typeof import('./active-context').observedActiveContext>;presentation?:ReturnType<typeof import('./context-session').contextPresentation>};
   strategyChoices?:ReturnType<typeof import("./strategy-choices").strategyChoicesView>;
   studioHelp?:{observation:import('./studio-observation').StudioObservation;capabilities:ReturnType<typeof import('./studio-operations').studioOperationCatalogue>};
   progress: "describe" | "clarify" | "collect" | "review";

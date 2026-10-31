@@ -26,9 +26,11 @@ import {compositionBase,previewNativeComposition} from '../../theme/composition/
 import {compositionSnapshot} from '../../theme/composition/presentation';
 import {ThemeToolPlanSchema,type ThemeToolPlan,type ThemeToolCommand} from './theme-tool-contract';
 import {themeTargetPaths} from './theme-tool-context';
+import {checkedContextPin,type ContextPin} from './context-session';
+import {resolveActiveContext} from './active-context';
 
 type Diff={template:string;section:string;block?:string;key:string;before:unknown;after:unknown;media?:{beforeAssetId:string|null;afterAssetId:string|null}};
-type Meta={schema:1;id:string;conversationId:string;kind:'edit'|'compose'|'undo';sourceReceiptId?:string;revision:number;projectRevision:number;beforeVersionId:string;targetVersionId?:string;plan?:ThemeToolPlan;compositionPlan?:CompositionPlan;startingWithoutTheme?:boolean;previewFingerprint:string;changes:Diff[];summary:string;expiresAt:number;createdAt:number;jobId?:string;resultVersionId?:string;resultFingerprint?:string};
+type Meta={schema:1;id:string;conversationId:string;kind:'edit'|'compose'|'undo';sourceReceiptId?:string;revision:number;projectRevision:number;beforeVersionId:string;targetVersionId?:string;plan?:ThemeToolPlan;compositionPlan?:CompositionPlan;startingWithoutTheme?:boolean;previewFingerprint:string;changes:Diff[];summary:string;expiresAt:number;createdAt:number;jobId?:string;resultVersionId?:string;resultFingerprint?:string;contextPin?:ContextPin};
 const fingerprint=(spec:ThemeSpec)=>stableHash('agent-theme-native-version-v1',spec);
 const enabled=()=>{if(!conversationThemeToolsEnabled())throw new HttpError(404,'Retouches Site de SYNA indisponibles.','conversation_theme_tools_disabled');};
 function owned(user:User,cid:string){enabled();const c=ownedConversation(user,cid);if(!c.project_id)throw new HttpError(409,'Créez le projet et choisissez son thème avant cette retouche.');return{c,pid:c.project_id};}
@@ -40,6 +42,17 @@ function setting(spec:ThemeSpec,op:{template:string;section:string;block?:string
 function validateExisting(spec:ThemeSpec){const problems=validateSpec(spec);if(problems.length)throw new HttpError(409,problems.join(' ; '),'agent_theme_invalid');}
 function previewEdit(user:User,cid:string,pid:string,plan:ThemeToolPlan){
   requirePlan(user,pid);const cur=current(pid,plan.versionId),p=loadProject(pid),c=ownedConversation(user,cid);
+  const target=checkedContextPin(c)?.selection.target;
+  if(target){
+    const resolved=resolveActiveContext(c,metaOf(c).activeContext);
+    const matches=plan.ops.every(op=>{
+      if(target.kind==='theme-field')return plan.versionId===target.versionId&&op.template===target.template&&op.section===target.section&&(op.block??null)===(target.block??null)&&op.key===target.key;
+      if(target.kind==='theme-section')return plan.versionId===target.versionId&&op.template===target.template&&op.section===target.section&&(!target.block||op.block===target.block);
+      if(target.kind==='theme-page')return plan.versionId===target.versionId&&'template'in resolved&&op.template===resolved.template;
+      return false;
+    });
+    if(!matches)throw new HttpError(409,L('La proposition ne vise pas le champ ou l’objet désigné. Resélectionnez sa cible avant un nouveau devis.','The proposal does not target the selected field or object. Select its target before a new quote.'),'conversation_target_mismatch');
+  }
   assertThemeOperations(pid,cur.spec,plan.ops,true);
   const sources=cognitiveContext(c).sources,managed=managedSections(cur.spec,pid);
   for(const op of plan.ops){
@@ -90,21 +103,23 @@ function previewUndo(user:User,pid:string,m:Meta){
 function publicQuote(m:Meta){return{id:m.id,kind:m.kind,costPct:0,confirmationRequired:true,expiresAt:m.expiresAt,summary:m.summary,changes:m.changes,beforeVersionId:m.startingWithoutTheme?null:m.beforeVersionId,startingWithoutTheme:!!m.startingWithoutTheme,expectedResult:'Une version native du thème, sans publication ni nouvel appel IA.',actionsExecuted:false};}
 export function quoteThemeChange(user:User,cid:string,cmd:Extract<ThemeToolCommand,{action:'quote'}>){return tx(()=>{
   const{c,pid}=owned(user,cid),a=metaOf(c).intelligence;
+  const contextPin=checkedContextPin(c);
   if(c.revision!==cmd.revision||stateOf(pid)?.revision!==cmd.projectRevision||a?.lastReceiptId!==cmd.proposalReceiptId||a.sourceRevision!==c.revision||a.sourceProjectRevision!==cmd.projectRevision||!a.lastReply||!(a.lastReply.proposedTools.includes('theme.edit')&&a.lastReply.themePlan||a.lastReply.proposedTools.includes('theme.compose')&&a.lastReply.compositionPlan))throw new HttpError(409,'La proposition ou le contexte a changé. Relisez la conversation.','agent_theme_proposal_stale');
+  const selected=contextPin?.selection.target;if(a.lastReply.compositionPlan&&selected)throw new HttpError(409,'La composition globale ne vise pas cette cible précise. Resélectionnez explicitement le contexte avant un nouveau devis.','conversation_target_mismatch');
   const compositionPlan=a.lastReply.compositionPlan?CompositionPlanSchema.parse(a.lastReply.compositionPlan):undefined,plan=!compositionPlan?ThemeToolPlanSchema.parse(a.lastReply.themePlan):undefined,preview=compositionPlan?previewCompose(user,pid,compositionPlan):previewEdit(user,cid,pid,plan!),at=now();
-  const m:Meta={schema:1,id:id(),conversationId:cid,kind:compositionPlan?'compose':'edit',sourceReceiptId:cmd.proposalReceiptId,revision:c.revision,projectRevision:cmd.projectRevision,beforeVersionId:preview.cur.version.id,plan,compositionPlan,...('startingWithoutTheme'in preview&&preview.startingWithoutTheme?{startingWithoutTheme:true}:{}),previewFingerprint:fingerprint(preview.spec),changes:preview.changes,summary:(compositionPlan??plan!).summary,createdAt:at,expiresAt:at+15*60000};save(pid,m);return publicQuote(m);
+  const m:Meta={schema:1,id:id(),conversationId:cid,kind:compositionPlan?'compose':'edit',sourceReceiptId:cmd.proposalReceiptId,revision:c.revision,projectRevision:cmd.projectRevision,beforeVersionId:preview.cur.version.id,plan,compositionPlan,contextPin,...('startingWithoutTheme'in preview&&preview.startingWithoutTheme?{startingWithoutTheme:true}:{}),previewFingerprint:fingerprint(preview.spec),changes:preview.changes,summary:(compositionPlan??plan!).summary,createdAt:at,expiresAt:at+15*60000};save(pid,m);return publicQuote(m);
 });}
 export function quoteThemeUndo(user:User,cid:string,cmd:Extract<ThemeToolCommand,{action:'quote-undo'}>){return tx(()=>{
-  const{c,pid,m:original}=ownedMeta(user,cid,cmd.receiptId);
+  const{c,pid,m:original}=ownedMeta(user,cid,cmd.receiptId);const contextPin=checkedContextPin(c);
   if(original.startingWithoutTheme)throw new HttpError(409,L('Cette première composition ne remplace aucune version. Les versions suivantes restent restaurables.','This first composition replaces no previous version. Later versions remain restorable.'));
   if(!original.resultVersionId||!original.resultFingerprint)throw new HttpError(409,'Aucune version appliquée à annuler.');
   const saved=themeVersion(pid,original.resultVersionId);if(!saved||fingerprint(saved.spec)!==original.resultFingerprint)throw new HttpError(409,'La preuve de cette version manque.');
   const cur=current(pid,cmd.currentVersionId);if(cur.version.id!==original.resultVersionId)throw new HttpError(409,'Une modification est passée depuis : annulation refusée pour préserver vos derniers changements.','agent_theme_conflict');
-  const at=now(),m:Meta={schema:1,id:id(),conversationId:cid,kind:'undo',revision:c.revision,projectRevision:stateOf(pid)?.revision??0,beforeVersionId:cur.version.id,targetVersionId:original.beforeVersionId,changes:original.changes.map(d=>({...d,before:d.after,after:d.before})),previewFingerprint:'',summary:'Annuler cette retouche en créant une nouvelle version ; historique conservé.',createdAt:at,expiresAt:at+15*60000};
+  const at=now(),m:Meta={schema:1,id:id(),conversationId:cid,kind:'undo',contextPin,revision:c.revision,projectRevision:stateOf(pid)?.revision??0,beforeVersionId:cur.version.id,targetVersionId:original.beforeVersionId,changes:original.changes.map(d=>({...d,before:d.after,after:d.before})),previewFingerprint:'',summary:'Annuler cette retouche en créant une nouvelle version ; historique conservé.',createdAt:at,expiresAt:at+15*60000};
   const preview=previewUndo(user,pid,m);m.previewFingerprint=fingerprint(preview.spec);m.changes=preview.changes;save(pid,m);return publicQuote(m);
 });}
 function recheck(user:User,cid:string,pid:string,m:Meta){
-  const c=ownedConversation(user,cid);if(m.expiresAt<now()||c.revision!==m.revision||stateOf(pid)?.revision!==m.projectRevision)throw new HttpError(409,'Ce devis de retouche est périmé ou son contexte a changé.','agent_theme_quote_stale');
+  const c=ownedConversation(user,cid);if(m.contextPin)checkedContextPin(c,m.contextPin);if(m.expiresAt<now()||c.revision!==m.revision||stateOf(pid)?.revision!==m.projectRevision)throw new HttpError(409,'Ce devis de retouche est périmé ou son contexte a changé.','agent_theme_quote_stale');
   const preview=m.kind==='edit'?previewEdit(user,cid,pid,ThemeToolPlanSchema.parse(m.plan)):m.kind==='compose'?previewCompose(user,pid,CompositionPlanSchema.parse(m.compositionPlan)):previewUndo(user,pid,m);
   if(preview.cur.version.id!==m.beforeVersionId||fingerprint(preview.spec)!==m.previewFingerprint)throw new HttpError(409,'Le contenu, les médias ou les consignes ont changé. Préparez un nouveau devis local.','agent_theme_conflict');return preview;
 }
@@ -124,7 +139,7 @@ export async function runThemeChange(ctx:JobContext){return withAiDisabled('Opé
     const v=saveThemeVersion(pid,preview.spec,m.kind==='edit'?`SYNA — ${m.summary}`:m.summary,'user',undefined,m.startingWithoutTheme?null:m.beforeVersionId);
     const actual=themeVersion(pid,v.id)!;m.resultVersionId=v.id;m.resultFingerprint=fingerprint(actual.spec);save(pid,m);
     return{versionId:v.id,number:v.number,fingerprint:m.resultFingerprint,reused:false};
-  });ctx.progress(1,'Version du thème enregistrée ; aucune publication.');return result;
+  });if(!result.reused)ctx.progress(1,'Version du thème enregistrée ; aucune publication.');return result;
 });}
 export function themeChangeReceipt(user:User,cid:string,qid:string){return readSnapshot(()=>{const{pid,m}=ownedMeta(user,cid,qid),job=m.jobId?getJob(m.jobId):null;if(job&&(job.user_id!==user.id||job.project_id!==pid))throw new HttpError(404,'Tâche introuvable.');
   const version=m.resultVersionId?themeVersion(pid,m.resultVersionId):null,recorded=!!version&&fingerprint(version.spec)===m.resultFingerprint;
