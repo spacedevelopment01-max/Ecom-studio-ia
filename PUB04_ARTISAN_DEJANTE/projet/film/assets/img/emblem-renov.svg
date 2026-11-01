@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Emblème « Renov & Moi » (marque fictive créée pour le film) : un toit dont le faîtage est un coup de rouleau ocre,
+       une maison simple en bleu ardoise, une porte en arche couleur plâtre. -->
+  <path d="M30 98 L100 38 L170 98" fill="none" stroke="#E0A43B" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="52" y="92" width="96" height="78" rx="10" fill="#2E4A62"/>
+  <path d="M88 170 v-34 a12 12 0 0 1 24 0 v34 z" fill="#F4EFE6"/>
+  <rect x="122" y="104" width="16" height="16" rx="3" fill="#F4EFE6"/>
+  <circle cx="160" cy="58" r="13" fill="#C65A3A"/>
+  <rect x="155" y="70" width="10" height="26" rx="4" fill="#C65A3A"/>
+</svg>

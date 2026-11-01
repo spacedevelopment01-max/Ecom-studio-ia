@@ -1,0 +1,94 @@
+date;service;modele;libelle;identifiant_requete;statut;cout_estime_usd
+2026-11-01T15:34:05;fal.ai;fal-ai/nano-banana-2/edit;pub04 référence artisan (1K);01a197be-d594-7b60-8c7c-1dd6cbdacd07;ok;0.120
+2026-11-01T15:37:05;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K2 (1K);01a197c1-a4b7-7910-82f2-f3cc839b8c58;ok;0.120
+2026-11-01T15:37:05;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K3 (1K);01a197c1-a4b1-7df2-97e5-bbe2a851f3dc;ok;0.120
+2026-11-01T15:37:05;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K12 (1K);01a197c1-a4b9-7973-8fe9-7851a73930f4;ok;0.120
+2026-11-01T15:37:10;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K1 (1K);01a197c1-a56e-76b3-a058-ef31bacbed87;ok;0.120
+2026-11-01T15:37:13;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K4 (1K);01a197c1-a55c-7702-92e0-f196ebf5a34d;ok;0.120
+2026-11-01T15:37:13;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K7 (1K);01a197c1-a42a-7763-b32a-e099111a6651;ok;0.120
+2026-11-01T15:37:31;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K14 (1K);01a197c1-f8ab-7370-bdb0-3ace6b4b75a4;ok;0.120
+2026-11-01T15:37:31;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K29 (1K);01a197c1-f91f-7d31-a1cd-e957e2f72828;ok;0.120
+2026-11-01T15:37:31;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K15 (1K);01a197c1-f930-7562-968c-1626fa428414;ok;0.120
+2026-11-01T15:37:31;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K13 (1K);01a197c1-f932-71a3-bb4e-a5e20b24bfd2;ok;0.120
+2026-11-01T15:37:39;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K17 (1K);01a197c1-fa4d-72e1-9357-3ab438c830f5;ok;0.120
+2026-11-01T15:38:55;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K14b (1K);01a197c3-406e-7fa3-9538-f455f4fcdae1;ok;0.120
+2026-11-01T15:38:55;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K13b (1K);01a197c3-403f-7642-b1af-235e258707b3;ok;0.120
+2026-11-01T15:38:55;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K3 (1K);01a197c3-4085-7433-b7bd-e59ec0152ff5;ok;0.120
+2026-11-01T15:38:55;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K9 (1K);01a197c3-40e4-7563-9e66-3ebdc5ec159b;ok;0.120
+2026-11-01T15:38:55;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K8 (1K);01a197c3-40b6-7ed2-9d62-0f7971721d71;ok;0.120
+2026-11-01T15:44:50;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K5 (1K);01a197c3-407d-7e11-9a09-6f906742659c;ok;0.120
+2026-11-01T15:45:04;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K21 (1K);01a197c8-f136-7af2-b7b9-b204bb614f71;ok;0.120
+2026-11-01T15:45:08;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K16 (1K);01a197c8-f24e-7532-bb89-2e590880d7fd;ok;0.120
+2026-11-01T15:45:08;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K20 (1K);01a197c8-f2cb-7bf3-a30e-f09d6cb3d75e;ok;0.120
+2026-11-01T15:45:08;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K10 (1K);01a197c8-f394-7783-b150-5a9e4a434f0c;ok;0.120
+2026-11-01T15:45:12;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K27 (1K);01a197c8-f3a0-7c11-a611-49bda83f1258;ok;0.120
+2026-11-01T15:45:12;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K10b (1K);01a197c8-f488-77a3-9889-b004cb706919;ok;0.120
+2026-11-01T15:45:30;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K30 (1K);01a197c9-47c0-7e50-b4e9-392ec8318f40;ok;0.120
+2026-11-01T15:45:38;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K24 (1K);01a197c9-47e1-7072-afb6-2f514de65282;ok;0.120
+2026-11-01T15:46:46;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K3c (1K);01a197ca-83d9-7b91-8034-04bbea478253;ok;0.120
+2026-11-01T15:46:47;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K6 (1K);01a197ca-8472-75e1-b556-978c6efa7689;ok;0.120
+2026-11-01T15:46:51;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K19 (1K);01a197ca-846a-7470-8684-f7ae7d6905b1;ok;0.120
+2026-11-01T15:46:51;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K18 (1K);01a197ca-8454-7bd0-b38c-056c9fdee086;ok;0.120
+2026-11-01T15:46:51;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K14c (1K);01a197ca-8401-7ef3-8b2d-79a935f57dff;ok;0.120
+2026-11-01T15:46:51;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K11 (1K);01a197ca-8471-7b21-a561-66aae65f1392;ok;0.120
+2026-11-01T15:47:09;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K28 (1K);01a197ca-cb14-7ad3-b513-daef38d8dd4b;ok;0.120
+2026-11-01T15:47:09;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K23 (1K);01a197ca-cae3-7e22-a41a-ef865aa224c7;ok;0.120
+2026-11-01T15:47:17;fal.ai;fal-ai/nano-banana-2/edit;pub04 image clé K25 (1K);01a197ca-cac8-73c0-a165-af99f21d663c;ok;0.120
+2026-11-01T15:50:02;fal.ai;fal-ai/nano-banana-2/edit;pub04 prolongement des bords K3c (1K);01a197cd-6d7b-7e51-9175-764652297dff;ok;0.120
+2026-11-01T15:50:05;fal.ai;fal-ai/nano-banana-2/edit;pub04 prolongement des bords K13b (1K);01a197cd-6d66-7113-98bd-313e5fe72166;ok;0.120
+2026-11-01T15:50:06;fal.ai;fal-ai/nano-banana-2/edit;pub04 prolongement des bords K14c (1K);01a197cd-6d52-7343-b687-f3bfa52948ae;ok;0.120
+2026-11-01T15:50:06;fal.ai;fal-ai/nano-banana-2/edit;pub04 prolongement des bords K2 (1K);01a197cd-6d89-7e90-a01e-72e235d88f03;ok;0.120
+2026-11-01T15:52:32;fal.ai;fal-ai/ffmpeg-api/loudnorm;pub04 hébergement audio A1b;01a197cf-e823-7f32-80e2-8b3fe9393b83;ok;0.002
+2026-11-01T15:52:32;fal.ai;fal-ai/ffmpeg-api/loudnorm;pub04 hébergement audio A1d;01a197cf-e81e-7101-8b42-dd74f744b5c2;ok;0.002
+2026-11-01T15:52:32;fal.ai;fal-ai/ffmpeg-api/loudnorm;pub04 hébergement audio A2c;01a197cf-e864-7733-b909-18207153acd9;ok;0.002
+2026-11-01T15:52:32;fal.ai;fal-ai/ffmpeg-api/loudnorm;pub04 hébergement audio A1a;01a197cf-e804-7051-82af-ebcdeb712208;ok;0.002
+2026-11-01T15:52:32;fal.ai;fal-ai/ffmpeg-api/loudnorm;pub04 hébergement audio A2a;01a197cf-e814-79e2-a3f1-53a9ad652b12;ok;0.002
+2026-11-01T15:52:37;fal.ai;fal-ai/ffmpeg-api/loudnorm;pub04 hébergement audio A3b;01a197cf-fd06-79a3-8486-904384ff7e0e;ok;0.002
+2026-11-01T15:52:37;fal.ai;fal-ai/ffmpeg-api/loudnorm;pub04 hébergement audio A4a;01a197cf-fd7c-7a32-b59f-d06493e554eb;ok;0.002
+2026-11-01T15:52:37;fal.ai;fal-ai/ffmpeg-api/loudnorm;pub04 hébergement audio A3a;01a197cf-fd25-7080-95a9-c45e222fa84e;ok;0.002
+2026-11-01T15:52:37;fal.ai;fal-ai/ffmpeg-api/loudnorm;pub04 hébergement audio A2d;01a197cf-fcf8-7990-801e-6b22c9ea9678;ok;0.002
+2026-11-01T15:52:38;fal.ai;fal-ai/ffmpeg-api/loudnorm;pub04 hébergement audio A4c;01a197cf-fe51-7c20-8135-73447dcbe64d;ok;0.002
+2026-11-01T15:52:43;fal.ai;fal-ai/ffmpeg-api/loudnorm;pub04 hébergement audio A5b;01a197d0-130a-7080-a48e-35c1c09e00ee;ok;0.002
+2026-11-01T15:52:43;fal.ai;fal-ai/ffmpeg-api/loudnorm;pub04 hébergement audio A5a;01a197d0-1332-7fc3-af7b-692c2946291d;ok;0.002
+2026-11-01T15:52:43;fal.ai;fal-ai/ffmpeg-api/loudnorm;pub04 hébergement audio A6c;01a197d0-1327-7ec3-9ce9-a9afa9f661ff;ok;0.002
+2026-11-01T15:52:43;fal.ai;fal-ai/ffmpeg-api/loudnorm;pub04 hébergement audio A7c;01a197d0-147d-7312-893d-0ef596c3dd67;ok;0.002
+2026-11-01T15:52:43;fal.ai;fal-ai/ffmpeg-api/loudnorm;pub04 hébergement audio A7a;01a197d0-1337-7ff2-8e6f-b869fb36aae3;ok;0.002
+2026-11-01T15:52:48;fal.ai;fal-ai/ffmpeg-api/loudnorm;pub04 hébergement audio A7d;01a197d0-2832-76c2-a0b6-a64a25f69adf;ok;0.002
+2026-11-01T15:52:48;fal.ai;fal-ai/ffmpeg-api/loudnorm;pub04 hébergement audio A8c;01a197d0-2826-74e1-8299-f81d978dcc07;ok;0.002
+2026-11-01T15:52:48;fal.ai;fal-ai/ffmpeg-api/loudnorm;pub04 hébergement audio A9b;01a197d0-2834-7be0-99a3-cd6aa86483d4;ok;0.002
+2026-11-01T15:52:48;fal.ai;fal-ai/ffmpeg-api/loudnorm;pub04 hébergement audio A8a;01a197d0-2905-7301-a11b-9a1699f6b12d;ok;0.002
+2026-11-01T15:52:49;fal.ai;fal-ai/ffmpeg-api/loudnorm;pub04 hébergement audio A9a;01a197d0-29cc-7e52-a21a-24a263248388;ok;0.002
+2026-11-01T15:53:37;fal.ai;fal-ai/kling-video/v3/standard/image-to-video;pub04 plan d'action T6b (Kling std 3 s);01a197d0-369c-7be2-a76a-0dd798175b59;ok;0.378
+2026-11-01T15:53:39;fal.ai;fal-ai/kling-video/v3/standard/image-to-video;pub04 plan d'action T6d (Kling std 3 s);01a197d0-3e3b-7f71-97a4-aa804d0652c9;ok;0.378
+2026-11-01T15:55:38;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A1a;01a197d0-3e89-7583-98c7-30527cb34669;ok;0.245
+2026-11-01T15:55:39;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A1d;01a197d0-4e4e-7bb1-a0e5-0e056eb34c6f;ok;0.326
+2026-11-01T15:55:40;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A1b;01a197d0-4680-7232-bc70-cad1571d900a;ok;0.137
+2026-11-01T15:55:45;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A2a;01a197d0-55f7-7693-a606-6e7e49900c57;ok;0.245
+2026-11-01T15:55:46;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A2c;01a197d0-5e38-7a12-95d1-a273715a82c6;ok;0.440
+2026-11-01T15:56:01;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A2d;01a197d0-65d4-7532-bab6-08265837d2cd;ok;0.158
+2026-11-01T15:56:15;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A3a;01a197d0-6d87-7673-a5a1-8aaaa1979f2e;ok;0.273
+2026-11-01T15:58:32;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A3b;01a197d3-66c1-77a1-846a-35cbff656cbb;ok;0.224
+2026-11-01T15:58:37;fal.ai;fal-ai/kling-video/v3/standard/image-to-video;pub04 plan d'action T4b (Kling std 3 s);01a197d0-279a-71a3-9d94-80968accde97;ok;0.378
+2026-11-01T15:58:40;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A7a;01a197d3-94cf-7c71-a325-10bcc4162608;ok;0.224
+2026-11-01T15:58:44;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A4c;01a197d3-7562-7063-8e14-5eb1e98200ca;ok;0.278
+2026-11-01T15:58:48;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A5b;01a197d3-8584-7532-93d8-2100bb80bdd6;ok;0.165
+2026-11-01T15:58:50;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A4a;01a197d3-6dd3-7af1-bb8b-67cd5b4316b2;ok;0.408
+2026-11-01T15:58:55;fal.ai;fal-ai/kling-video/v3/standard/image-to-video;pub04 plan d'action T6a (Kling std 3 s);01a197d0-2f11-7523-af7a-996a2262545b;ok;0.378
+2026-11-01T15:59:07;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A6c;01a197d3-8ce8-7803-9614-3785b908a8ef;ok;0.291
+2026-11-01T15:59:16;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A5a;01a197d3-7d6f-77c3-850b-2ab2f2eff8d3;ok;0.560
+2026-11-01T15:59:17;fal.ai;fal-ai/kling-video/v3/standard/image-to-video;pub04 plan d'action T9c (Kling std 3 s);01a197d0-4623-7081-9a52-b669cccb1c63;ok;0.378
+2026-11-01T16:02:23;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A8c;01a197d6-3cf1-70a1-a509-9745ad584e3c;ok;0.137
+2026-11-01T16:02:36;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A7c;01a197d6-25ea-7590-aa41-3c2e41b5d392;ok;0.204
+2026-11-01T16:02:36;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A9a;01a197d6-44c0-7cf2-a47c-cb83f3bbb2b6;ok;0.413
+2026-11-01T16:02:40;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A9b;01a197d6-4d6e-7850-b472-64b27a4e9137;ok;0.393
+2026-11-01T16:02:44;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A8a;01a197d6-3531-7a92-8d08-9c0bcc1f0366;ok;0.244
+2026-11-01T16:02:44;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A7d;01a197d6-2d71-7ce1-8e81-3873e7ca4fa6;ok;0.128
+2026-11-01T16:08:57;fal.ai;fal-ai/kling-video/v3/standard/image-to-video;pub04 plan d'action T2b (Kling std 3 s);01a197da-ae13-73e2-9a31-faf3b8a10b7b;ok;0.378
+2026-11-01T16:09:16;fal.ai;fal-ai/kling-video/v3/standard/image-to-video;pub04 plan d'action T3c (Kling std 3 s);01a197da-b5bb-7e90-b27b-174110776ec3;ok;0.378
+2026-11-01T16:09:24;fal.ai;fal-ai/kling-video/v3/standard/image-to-video;pub04 plan d'action T1c (Kling std 3 s);01a197da-a79e-7f52-b007-b1b5594dbcb9;ok;0.378
+2026-11-01T16:09:53;fal.ai;fal-ai/kling-video/v3/standard/image-to-video;pub04 plan d'action T8b (Kling std 3 s);01a197da-c54b-7d83-9f80-a5e281e1b245;ok;0.378
+2026-11-01T16:10:08;fal.ai;fal-ai/kling-video/v3/standard/image-to-video;pub04 plan d'action T7b (Kling std 3 s);01a197da-be67-7be3-925e-5e237acdef87;ok;0.378
+2026-11-01T16:17:17;fal.ai;fal-ai/ffmpeg-api/loudnorm;pub04 hébergement audio A5a2;01a197e6-92cb-7213-b938-3a854843d6b8;ok;0.002
+2026-11-01T16:17:17;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A5a2 (pointage commentaires);-;refus 403;0.000
+2026-11-01T20:27:57;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A2c refait (visage net, rien devant);01a198c9-6c06-78c2-821c-50f7789b5b7e;ok;0.435
+2026-11-01T20:35:01;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;pub04 plan parlant A5a2 (pointage commentaires, récupéré après coupure réseau);01a198c7-5554-7d72-892d-ebd198a3003a;ok;0.308

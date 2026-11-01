@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080, height=1920">
+<title>L'artisan complètement déjanté — Publicité 04</title>
+<!-- Publicité 04 (1080 x 1920, 30 i/s). Plans animés par IA montés sur la voix (assets/plans.mp4). Cette composition ajoute :
+     conversations Syna (création originale, aucune interface du Studio), logo officiel E-COM STUDIO IA (repris du composant
+     Logo du Studio, sans modification), bleu nuit officiel #0A1024, mots-titres, éclaboussure, nuage, avant/après, signature.
+     Aucun faux bouton TikTok. Aucune animation de caméra sur les plans de pointage (le doigt doit rester sur les boutons).
+     Tout est une fonction pure du temps : render(t), calé sur assets/timing.js (repères calculés par montage.py). -->
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/timing.js"></script>
+<style>
+  @font-face { font-family: "Bricolage"; src: url("assets/fonts/bricolage.woff2") format("woff2"); font-weight: 200 800; }
+  @font-face { font-family: "Instrument"; src: url("assets/fonts/instrument-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; }
+  :root { --bleu-nuit: #0A1024; --ardoise: #2E4A62; --ocre: #E0A43B; --terra: #C65A3A; --platre: #F4EFE6; }
+  html, body { margin: 0; background: #000; }
+  #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: linear-gradient(90deg, #00061A 0 50%, #00030E 50% 100%); }
+  #cam { position: absolute; inset: 0; z-index: 0; transform-origin: 50% 45%; will-change: transform; }
+  #plans { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; object-fit: cover; }
+  .ov { position: absolute; inset: 0; z-index: 8; pointer-events: none; opacity: 0; }
+  .lay { position: absolute; z-index: 5; opacity: 0; will-change: transform, opacity; }
+  .row { position: absolute; z-index: 5; left: 0; right: 0; display: flex; justify-content: center; opacity: 0; will-change: transform, opacity; }
+  .row > span { display: inline-block; white-space: nowrap; }
+  .slam { font-family: "Archivo Black", sans-serif; color: #fff; -webkit-text-stroke: 10px #1B2633; paint-order: stroke fill;
+          text-shadow: 0 12px 0 var(--ocre), 0 24px 40px rgba(0,0,0,.5); letter-spacing: -.01em; }
+  .och { color: var(--ocre); text-shadow: 0 12px 0 #1B2633, 0 24px 40px rgba(0,0,0,.5); }
+  .tag { font-family: "Montserrat", sans-serif; font-weight: 900; color: #fff; -webkit-text-stroke: 6px #1B2633; paint-order: stroke fill;
+         text-shadow: 0 7px 0 #1B2633, 0 16px 30px rgba(0,0,0,.55); letter-spacing: .01em; }
+  /* Conversation Syna : création originale pour le film (carte de lumière sur bleu nuit), sans avatar ni robot */
+  .chat { position: absolute; z-index: 6; left: 64px; right: 64px; opacity: 0; transform-origin: 50% 0%; }
+  .chat .card { position: relative; border-radius: 40px; padding: 22px 26px 24px; background: linear-gradient(160deg, rgba(10,16,36,.93), rgba(10,16,36,.84));
+                box-shadow: 0 0 0 3px rgba(170,205,255,.55), 0 0 40px rgba(120,170,255,.35), 0 30px 60px -20px rgba(0,0,0,.7); overflow: hidden; }
+  .chat .head { display: flex; align-items: center; gap: 14px; font: 800 34px/1 "Montserrat", sans-serif; color: #DCE8FF; letter-spacing: .04em; }
+  .chat .head i { display: inline-flex; gap: 7px; }
+  .chat .head i b { width: 11px; height: 11px; border-radius: 50%; background: #9EC2FF; display: inline-block; }
+  .chat .head small { font: 600 28px "Montserrat", sans-serif; color: #8FA6D6; letter-spacing: .02em; }
+  .chat .zone { position: relative; margin-top: 16px; }
+  .bub { position: absolute; left: 0; right: 0; top: 0; opacity: 0; }
+  .bub.moi { display: flex; justify-content: flex-end; }
+  .bub.moi span.m { max-width: 860px; background: var(--platre); color: #1B2633; border-radius: 30px 30px 8px 30px; padding: 14px 22px; font: 700 33px/1.25 "Montserrat", sans-serif; box-shadow: 0 6px 0 rgba(0,0,0,.25); }
+  .bub.syna span.txt { display: inline-block; background: rgba(158,194,255,.14); color: #EAF1FF; border: 2px solid rgba(158,194,255,.45); border-radius: 30px 30px 30px 8px; padding: 14px 22px; font: 700 33px/1.22 "Montserrat", sans-serif; }
+  .caret { display: inline-block; width: 4px; height: 34px; background: #1B2633; margin-left: 3px; vertical-align: -6px; }
+  .btn { display: inline-flex; align-items: center; margin-top: 12px; background: var(--ocre); color: #1B2633; border-radius: 999px; padding: 12px 30px; font: 900 34px "Montserrat", sans-serif; box-shadow: 0 6px 0 #8B5E14, 0 0 30px rgba(224,164,59,.5); opacity: 0; }
+  /* Logo officiel E-COM STUDIO IA — variante sombre du composant Logo du Studio, proportions d'origine (32 / 8 / 17 px) x k */
+  .ecs { position: absolute; z-index: 7; left: 0; right: 0; display: flex; justify-content: center; opacity: 0; will-change: transform, opacity; }
+  .ecs .in { position: relative; display: inline-flex; align-items: center; gap: calc(8px * var(--k)); padding: 6px 10px; }
+  .ecs svg { width: calc(32px * var(--k)); height: calc(32px * var(--k)); flex-shrink: 0; }
+  .ecs .wm { font-family: "Bricolage", sans-serif; font-weight: 600; font-size: calc(17px * var(--k)); line-height: 1; letter-spacing: -0.025em; color: #EEF2FB; white-space: nowrap; }
+  .ecs .ia { font-family: "Instrument", serif; font-style: italic; font-weight: 400; letter-spacing: -0.01em; color: #3D6EF0; }
+  /* logo de la porte : posé sur un cartouche bleu nuit (fond clair du chantier derrière), logo inchangé */
+  #logoA .in { background: rgba(10,16,36,.94); border-radius: 34px; padding: 22px 38px; box-shadow: 0 0 0 2px rgba(160,195,255,.5), 0 0 70px rgba(61,110,240,.6), 0 24px 50px rgba(0,0,0,.45); }
+  .pill { position: absolute; z-index: 6; padding: 12px 26px; border-radius: 999px; font: 900 36px "Montserrat", sans-serif; letter-spacing: .08em; opacity: 0; }
+  .pill.avant { background: var(--platre); color: #1B2633; box-shadow: 0 6px 0 rgba(0,0,0,.3); }
+  .pill.apres { background: #14202C; color: #E9C77B; box-shadow: 0 0 0 3px #E9C77B, 0 0 30px rgba(233,199,123,.45); }
+  #edges { background: linear-gradient(90deg, #00061A 0, #00061A 52px, rgba(0,6,26,0) 112px, rgba(0,0,0,0) 990px, #000 1042px, #000 100%); }
+  #band { background: linear-gradient(180deg, var(--bleu-nuit) 0%, var(--bleu-nuit) 27%, rgba(10,16,36,0) 34%); }
+  .tl { position: absolute; z-index: 7; left: 0; right: 0; text-align: center; font: 800 42px/1 "Montserrat", sans-serif; color: #EEF2FB; letter-spacing: .03em; opacity: 0; }
+  #cta { position: absolute; z-index: 7; left: 0; right: 0; top: 520px; display: flex; justify-content: center; opacity: 0; }
+  #cta span { display: inline-flex; align-items: center; gap: 14px; padding: 18px 40px; border-radius: 999px; background: #EEF2FB; color: var(--bleu-nuit); font: 900 42px "Montserrat", sans-serif; box-shadow: 0 0 40px rgba(160,195,255,.55), 0 10px 0 rgba(0,0,0,.35); }
+  #cta svg { width: 40px; height: 40px; fill: none; stroke: var(--bleu-nuit); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+  #fxFlash { background: #fff; }
+  #fxDoor { background: radial-gradient(circle at 78% 42%, rgba(200,225,255,.9), rgba(90,150,255,.45) 26%, rgba(10,16,36,0) 60%); mix-blend-mode: screen; }
+  #glowA { position: absolute; z-index: 6; left: 40px; top: 990px; width: 1000px; height: 520px; border-radius: 50%; opacity: 0;
+           background: radial-gradient(closest-side, rgba(160,195,255,.75), rgba(61,110,240,.35) 45%, rgba(10,16,36,0) 100%); }
+  #splash { position: absolute; z-index: 6; left: 640px; top: 1170px; width: 260px; height: 260px; opacity: 0; }
+  #pouf { position: absolute; z-index: 6; left: 140px; top: 380px; width: 800px; height: 900px; opacity: 0; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="64.98" data-fps="30" data-width="1080" data-height="1920">
+  <div id="cam"><video id="plans" class="clip" data-start="0" data-duration="64.98" data-track-index="0" src="assets/plans.mp4" muted playsinline></video></div>
+  <audio id="mix" class="clip" data-start="0" data-duration="64.98" data-track-index="1" data-volume="1" src="assets/mix.wav"></audio>
+
+  <!-- Scène 1 -->
+  <div id="tToi" class="row" style="top:215px"><span class="slam" style="font-size:150px">TOI !</span></div>
+  <svg id="splash" viewBox="0 0 260 260">
+    <g id="spl">
+      <circle cx="130" cy="130" r="34" fill="#E0A43B"/><circle cx="62" cy="96" r="18" fill="#C65A3A"/><circle cx="196" cy="84" r="15" fill="#2E4A62"/>
+      <circle cx="206" cy="176" r="20" fill="#E0A43B"/><circle cx="74" cy="190" r="14" fill="#F4EFE6"/><circle cx="132" cy="44" r="11" fill="#C65A3A"/>
+      <circle cx="140" cy="222" r="10" fill="#2E4A62"/><circle cx="34" cy="146" r="8" fill="#E0A43B"/><circle cx="230" cy="122" r="7" fill="#F4EFE6"/>
+    </g>
+  </svg>
+  <!-- Scène 2 -->
+  <div id="tSite" class="row" style="top:1260px"><span class="slam" style="font-size:100px">LE SITE</span></div>
+  <div id="tPubs" class="row" style="top:1260px"><span class="slam" style="font-size:100px">LES PUBS</span></div>
+  <div id="tRes" class="row" style="top:1260px"><span class="slam" style="font-size:100px">LES <span class="och">RÉSEAUX</span></span></div>
+  <div id="tMin" class="row" style="top:215px"><span class="tag" style="font-size:66px">MINISTRE D'INTERNET ?!</span></div>
+  <svg id="pouf" viewBox="0 0 800 900">
+    <g fill="#F4EFE6"><circle cx="400" cy="450" r="170"/><circle cx="250" cy="380" r="120"/><circle cx="560" cy="360" r="130"/><circle cx="300" cy="580" r="130"/>
+      <circle cx="520" cy="590" r="140"/><circle cx="400" cy="250" r="110"/><circle cx="170" cy="520" r="80"/><circle cx="640" cy="500" r="90"/></g>
+    <g fill="#E0A43B"><circle cx="160" cy="250" r="14"/><circle cx="660" cy="230" r="12"/><circle cx="690" cy="700" r="16"/><circle cx="120" cy="720" r="12"/></g>
+  </svg>
+  <!-- Scène 4 : logo officiel dans la lumière de la porte, puis conversation Syna n° 1 -->
+  <div id="glowA"></div>
+  <div id="logoA" class="ecs" style="top:1180px;--k:4.2"><span class="in"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="#EEF2FB"/><path d="M18 20h22v6H25v4h13v6H25v4h15v6H18z" fill="#070B17"/><circle cx="46" cy="44" r="5" fill="#3D6EF0"/></svg><span class="wm">E-COM STUDIO <span class="ia">ia</span></span></span></div>
+  <div id="chat1" class="chat" style="top:206px">
+    <div class="card">
+      <div class="head"><span>Syna</span><i id="dots1"><b></b><b></b><b></b></i><small>conversation</small></div>
+      <div class="zone" style="height:290px">
+        <div id="u1" class="bub moi"><span class="m"><span id="u1t"></span><span class="caret" id="car1"></span></span></div>
+        <div id="s1" class="bub syna" style="top:auto;bottom:0"><span class="txt">Avec plaisir ! On commence par ton identité.</span></div>
+      </div>
+    </div>
+  </div>
+  <!-- Scène 5 -->
+  <div id="tMetier" class="row" style="top:205px"><span class="tag" style="font-size:58px">TU FAIS QUOI COMME MÉTIER ?</span></div>
+  <!-- Scène 6 -->
+  <div id="tIdent" class="row" style="top:215px"><span class="slam" style="font-size:86px">MON IDENTITÉ</span></div>
+  <div id="tCamion" class="row" style="top:215px"><span class="slam" style="font-size:86px">MON <span class="och">CAMION</span></span></div>
+  <div id="tSite2" class="row" style="top:1300px"><span class="slam" style="font-size:86px">MON SITE</span></div>
+  <div id="tPrest" class="row" style="top:1300px"><span class="slam" style="font-size:78px">MES PRESTATIONS</span></div>
+  <div id="tDevis" class="row" style="top:1300px"><span class="slam" style="font-size:86px">MES <span class="och">DEVIS</span></span></div>
+  <div id="tLutins" class="row" style="top:1150px"><span class="slam" style="font-size:96px">DES <span class="och">LUTINS</span> ?!</span></div>
+  <!-- Scène 7 -->
+  <div id="tStyle" class="row" style="top:205px"><span class="tag" style="font-size:60px">TOUT GARDE LE MÊME STYLE</span></div>
+  <!-- Scène 8 : conversation Syna n° 2, devis, validation ; avant / après -->
+  <div id="chat2" class="chat" style="top:1030px;right:150px;transform-origin:50% 100%">
+    <div class="card">
+      <div class="head"><span>Syna</span><i id="dots2"><b></b><b></b><b></b></i><small>conversation</small></div>
+      <div class="zone" style="height:330px">
+        <div id="u2" class="bub moi"><span class="m"><span id="u2t"></span><span class="caret" id="car2"></span></span></div>
+        <div id="s2" class="bub syna" style="top:auto;bottom:0"><span class="txt">C'est noté ! Voici le devis. Tu valides ?</span><br><span class="btn" id="btnVal">Valider</span></div>
+      </div>
+    </div>
+  </div>
+  <div id="avant" class="pill avant" style="left:64px;top:930px">AVANT</div>
+  <div id="apres" class="pill apres" style="left:64px;top:930px">APRÈS</div>
+  <!-- Scène 9 : signature -->
+  <div id="edges" class="ov" style="z-index:3"></div>
+  <div id="band" class="ov" style="z-index:4"></div>
+  <div id="logoB" class="ecs" style="top:212px;--k:3.4"><span class="in"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="#EEF2FB"/><path d="M18 20h22v6H25v4h13v6H25v4h15v6H18z" fill="#070B17"/><circle cx="46" cy="44" r="5" fill="#3D6EF0"/></svg><span class="wm">E-COM STUDIO <span class="ia">ia</span></span></span></div>
+  <div id="tl1" class="tl" style="top:350px;font-size:44px">VOTRE SAVOIR-FAIRE MÉRITE D'ÊTRE VU.</div>
+  <div id="tl2" class="tl" style="top:410px;font-size:38px;color:#C8D3EA">TOUT AU MÊME ENDROIT.</div>
+  <div id="tl3" class="tl" style="top:456px;font-size:38px;color:#BFD3FF">AVEC SYNA.</div>
+  <div id="cta"><span>Développez votre activité<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+
+  <div id="fxDoor" class="ov"></div>
+  <div id="fxFlash" class="ov"></div>
+</div>
+<script>
+(function () {
+  const FPS = 30, TT = window.T;
+  const $ = (id) => document.getElementById(id);
+  const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+  const lin = (t, a, b) => clamp((t - a) / (b - a));
+  const backOut = (p) => { const c = 2.0; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
+  const expoOut = (p) => (p >= 1 ? 1 : 1 - Math.pow(2, -10 * p));
+  const easeIO = (p) => (p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
+  const hash = (n) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+  const noise = (seed, t) => hash(seed * 1000 + Math.floor(t * FPS)) * 2 - 1;
+  const bump = (t, t0, d) => (t < t0 || t > t0 + d ? 0 : Math.sin(Math.PI * (t - t0) / d));
+  const decay = (t, t0, d) => (t < t0 || t > t0 + d ? 0 : Math.pow(1 - (t - t0) / d, 2));
+  const show = (el, o, tr) => { el.style.opacity = o; if (tr !== undefined) el.style.transform = tr; };
+  const S = (id) => TT.shots[id][0], E = (id) => TT.shots[id][1];
+  const PT = (id) => TT.shots[id][3];
+  const W = (k, p, n = 0) => { const L = TT.mots[k].filter((m) => m.mot.toLowerCase().startsWith(p.toLowerCase())); return (L[n] || L[0] || { t: 0 }).t; };
+  const D = TT.duree;
+  function slam(el, t, tIn, tOut, o = {}) {
+    if (t < tIn || t >= tOut) { el.style.opacity = 0; return; }
+    const d = o.d || .16, s0 = o.s0 || 2.2, p = clamp((t - tIn) / d), e = backOut(p);
+    const out = o.fadeOut ? 1 - lin(t, tOut - o.fadeOut, tOut) : 1;
+    const jx = (o.jit || 0) * noise(o.seed || 1, t), jy = (o.jit || 0) * noise((o.seed || 1) + 7, t);
+    show(el, clamp(p * 3) * out, `translate(${jx}px, ${jy}px) rotate(${(o.rot || 0) + (o.rot0 || 0) * (1 - e)}deg) scale(${s0 + (1 - s0) * e})`);
+  }
+  function typed(el, text, t, t0, t1) { el.textContent = text.slice(0, Math.round(text.length * lin(t, t0, t1))); }
+  const MSG1 = "Syna, je suis plâtrier-peintre. Aide-moi à créer ma présence en ligne et à mettre mes réalisations en valeur.";
+  const MSG2 = "Mets mes rénovations intérieures en premier et rends la présentation plus premium.";
+  const M = {
+    toi: W("1a", "TOI"), coeur: W("1d", "cœur"), site: W("2c", "site"), pubs: W("2c", "pubs"), res: W("2c", "réseaux"), oh: W("2c", "Oh"),
+    min: W("2d", "ministre"), pouf: S("POUF"), t4b: S("T4b"), t4e: E("T4b"), a4c: S("A4c"), a4e: E("A4c"),
+    metier: W("5a1", "tu"), a5b: E("A5b"),
+    ident: W("6v1", "identité"), camion: W("6v1", "camion"), site2: W("6v2", "site"), prest: W("6v2", "prestations"), devis: W("6v2", "devis"), t6b: E("T6b"),
+    lutins: W("6c", "lutins"), t6d: S("T6d"), style: W("7c", "tout"), a7d: S("A7d"), a7c: E("A7c"),
+    a8a: S("A8a"), t8b: S("T8b"), hop: W("8v", "Hop"), t8e: E("T8b"), t9c: S("T9c"), fin: S("FIN"),
+  };
+  const SHAKES = [[S("T2b"), .6, 8], [M.pouf, .3, 7], [S("T3c"), .5, 6], [M.t4b + .2, .4, 5], [S("T6d") + 1.15, .3, 9], [M.hop, .35, 7], [S("T9c") + .8, .35, 6]];
+  const PUNCH = [[M.toi, .45, .05], [M.min, .4, .05], [W("3b", "grève"), .35, .04], [M.lutins, .35, .05], [S("A7d"), .3, .04]];
+  function render(t) {
+    // Caméra : punchs et secousses, jamais pendant les plans de pointage (le doigt doit rester sur les boutons TikTok)
+    const cur = Object.keys(TT.shots).find((k) => t >= TT.shots[k][0] && t < TT.shots[k][1]);
+    const lock = cur && PT(cur);
+    let sc = 1, x = 0, y = 0, r = 0;
+    if (!lock) {
+      sc = 1.02; PUNCH.forEach(([t0, d, a]) => { sc += a * bump(t, t0, d); });
+      SHAKES.forEach(([t0, d, a], i) => { const k = decay(t, t0, d) * a; if (k) { x += k * noise(10 + i, t); y += k * noise(30 + i, t); r += k * .05 * noise(50 + i, t); } });
+      if (cur && cur.startsWith("A")) { const [a, b] = TT.shots[cur]; sc += .03 * lin(t, a, b); }     // lente poussée sur les plans parlants
+    }
+    if (t >= S("T9c")) { sc *= .88; y += 1056 * (1 - .88); }   // signature : visage dégagé sous le bandeau bleu nuit
+    $("cam").style.transform = `translate(${x}px, ${y}px) rotate(${r}deg) scale(${sc})`;
+
+    // Scène 1
+    slam($("tToi"), t, M.toi, S("A1b"), { s0: 3, rot: -5, rot0: -10, jit: 5, seed: 2, fadeOut: .1 });
+    { const t0 = M.coeur + .05, p = lin(t, t0, t0 + .35); const el = $("splash");
+      if (t >= t0 && t < t0 + .9) { el.style.opacity = 1 - lin(t, t0 + .55, t0 + .9); $("spl").style.transform = `translate(130px,130px) scale(${.2 + 1.0 * expoOut(p)}) translate(-130px,-130px)`; } else el.style.opacity = 0; }
+    // Scène 2
+    slam($("tSite"), t, M.site, M.pubs, { s0: 2, rot: -3, seed: 3 });
+    slam($("tPubs"), t, M.pubs, M.res, { s0: 2, rot: 3, seed: 4 });
+    slam($("tRes"), t, M.res, M.oh, { s0: 2.2, rot: -2, jit: 3, seed: 5, fadeOut: .1 });
+    slam($("tMin"), t, M.min, E("A2d"), { s0: 2.4, rot: -3, jit: 3, seed: 6, fadeOut: .08 });
+    $("fxFlash").style.opacity = .7 * decay(t, S("A2d"), .15) + .6 * decay(t, M.pouf, .12) + .5 * decay(t, M.a7d, .12) + .35 * decay(t, M.t9c, .1);
+    { const el = $("pouf"), p = lin(t, M.pouf, M.pouf + .35); if (t >= M.pouf && t < M.pouf + .55) show(el, (1 - lin(t, M.pouf + .25, M.pouf + .55)) * .95, `scale(${.5 + .7 * expoOut(p)})`); else el.style.opacity = 0; }
+    // Scène 4 : lumière de la porte et logo officiel, puis conversation Syna n° 1
+    $("fxDoor").style.opacity = t >= M.t4b ? .8 * bump(t, M.t4b + .1, 1.2) : 0;
+    { const el = $("logoA"), a = M.t4b + .3, b = M.t4e + .25;
+      if (t >= a && t < b) { const p = expoOut(lin(t, a, a + .4)), out = lin(t, b - .25, b); show(el, clamp(lin(t, a, a + .15)) * (1 - out), `translateY(${(1 - p) * -50 - out * 60}px) scale(${(1.7 - .7 * p) * (1 + .25 * out)})`); }
+      else el.style.opacity = 0;
+      const g = $("glowA"); g.style.opacity = t >= a && t < b ? .9 * bump(t, a, .8) + .3 * (1 - lin(t, b - .3, b)) : 0; g.style.transform = `scale(${.5 + expoOut(lin(t, a, a + .5))})`; }
+    { const c = $("chat1"), on = t >= M.a4c && t < M.a4e + .05;
+      if (on) { const p = backOut(clamp((t - M.a4c) / .25)); show(c, clamp(lin(t, M.a4c, M.a4c + .1)) * (1 - lin(t, M.a4e - .1, M.a4e + .05)), `scale(${.86 + .14 * p})`); } else c.style.opacity = 0;
+      show($("u1"), on ? clamp(lin(t, M.a4c + .08, M.a4c + .16)) : 0);
+      typed($("u1t"), MSG1, t, M.a4c + .1, M.a4c + 1.0); $("car1").style.opacity = t < M.a4c + 1.0 ? (Math.floor(t * 8) % 2 ? .3 : 1) : 0;
+      show($("s1"), on ? clamp(lin(t, M.a4c + 1.1, M.a4c + 1.2)) : 0, `translateY(${(1 - expoOut(lin(t, M.a4c + 1.1, M.a4c + 1.28))) * 40}px)`);
+      [0, 1, 2].forEach((i) => { $("dots1").children[i].style.opacity = .35 + .65 * (Math.sin(t * 9 - i * .9) > .3 ? 1 : 0); }); }
+    // Scène 5 (aucun élément à droite : la colonne des boutons TikTok reste dégagée)
+    slam($("tMetier"), t, M.metier, M.a5b, { s0: 1.8, rot: -2, seed: 7, fadeOut: .12 });
+    // Scène 6
+    slam($("tIdent"), t, M.ident, M.camion, { s0: 2, rot: -3, seed: 8 });
+    slam($("tCamion"), t, M.camion, S("T6b"), { s0: 2, rot: 2, seed: 9, fadeOut: .1 });
+    slam($("tSite2"), t, M.site2, M.prest, { s0: 2, rot: -2, seed: 10 });
+    slam($("tPrest"), t, M.prest, M.devis, { s0: 2, rot: 2, seed: 11 });
+    slam($("tDevis"), t, M.devis, M.t6b - .05, { s0: 2.2, rot: -2, seed: 12, fadeOut: .1 });
+    slam($("tLutins"), t, M.lutins, M.t6d + .05, { s0: 2.6, rot: -4, jit: 4, seed: 13, fadeOut: .12 });
+    // Scène 7
+    slam($("tStyle"), t, M.style, M.a7c, { s0: 1.8, rot: -2, seed: 14, fadeOut: .1 });
+    // Scène 8 : demande à Syna, devis, validation sur « Hop ! » ; avant / après
+    // les deux messages restent affichés ensemble : la demande s'écrit sur « changer ? », Syna répond sur « Je demande à Syna »
+    { const c = $("chat2"), c0 = M.a8a + .6, on = t >= c0 && t < M.hop + .45;
+      if (on) { const p = backOut(clamp((t - c0) / .25)); show(c, clamp(lin(t, c0, c0 + .1)) * (1 - lin(t, M.hop + .3, M.hop + .45)), `scale(${.86 + .14 * p})`); } else c.style.opacity = 0;
+      show($("u2"), on ? clamp(lin(t, c0 + .05, c0 + .12)) : 0);
+      typed($("u2t"), MSG2, t, c0 + .08, c0 + .85); $("car2").style.opacity = t < c0 + .85 ? (Math.floor(t * 8) % 2 ? .3 : 1) : 0;
+      const s0 = c0 + .95; show($("s2"), on ? clamp(lin(t, s0, s0 + .08)) : 0, `translateY(${(1 - expoOut(lin(t, s0, s0 + .18))) * 30}px)`);
+      const pb = clamp((t - (s0 + .1)) / .1); show($("btnVal"), on && t >= s0 + .1 ? clamp(pb * 3) : 0, `scale(${(.5 + .5 * backOut(pb)) * (1 - .15 * bump(t, M.hop - .02, .14))})`);
+      [0, 1, 2].forEach((i) => { $("dots2").children[i].style.opacity = .35 + .65 * (Math.sin(t * 9 - i * .9) > .3 ? 1 : 0); }); }
+    show($("avant"), t >= M.a8a + .6 && t < M.hop + .25 ? clamp(lin(t, M.a8a + .6, M.a8a + .68)) * (1 - lin(t, M.hop + .1, M.hop + .25)) : 0);
+    { const a = M.t8e - 1.0, p = clamp((t - a) / .2); show($("apres"), t >= a && t < E("A8c") ? clamp(p * 3) : 0, `scale(${.6 + .4 * backOut(p)})`); }
+    // Scène 9 : signature sur le bleu nuit, gag du panneau, coupure
+    $("band").style.opacity = clamp(lin(t, M.t9c, M.t9c + .2));
+    $("edges").style.opacity = t >= M.t9c ? 1 : 0;   // bords de l'image réduite fondus dans le fond
+    { const el = $("logoB"); if (t >= M.t9c) { const p = expoOut(lin(t, M.t9c, M.t9c + .4)); show(el, clamp(lin(t, M.t9c, M.t9c + .1)), `translateY(${(1 - p) * 60}px) scale(${1.3 - .3 * p})`); } else el.style.opacity = 0; }
+    [["tl1", M.t9c + .25], ["tl2", M.t9c + .4], ["tl3", M.t9c + .55]].forEach(([id, t0]) => { const p = expoOut(lin(t, t0, t0 + .25)); show($(id), t >= t0 ? clamp(lin(t, t0, t0 + .12)) : 0, `translateY(${(1 - p) * 24}px)`); });
+    { const t0 = M.t9c + .7, p = clamp((t - t0) / .25); show($("cta"), t >= t0 ? clamp(p * 3) : 0, `scale(${.6 + .4 * backOut(p)})`); }
+  }
+  const tl = gsap.timeline({ paused: true });
+  const clock = { t: 0 };
+  tl.to(clock, { t: D, duration: D, ease: "none", onUpdate: () => render(clock.t) }, 0);
+  render(0);
+  window.__timelines = window.__timelines || {};
+  window.__timelines["main"] = tl;
+})();
+</script>
+</body>
+</html>

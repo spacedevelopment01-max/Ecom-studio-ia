@@ -1,0 +1,1484 @@
+{
+ "segments": [
+  {
+   "id": "A1a",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A1a/sortie-1.mp4",
+   "src_in": 0.0,
+   "src_out": 2.101,
+   "debut": 0.0,
+   "fin": 2.101,
+   "voix": [
+    [
+     "1a",
+     0.0
+    ]
+   ],
+   "pointage": null
+  },
+  {
+   "id": "A1b",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A1b/sortie-1.mp4",
+   "src_in": 0.0,
+   "src_out": 1.161,
+   "debut": 2.101,
+   "fin": 3.262,
+   "voix": [
+    [
+     "1b",
+     0.0
+    ]
+   ],
+   "pointage": "plus"
+  },
+  {
+   "id": "T1c",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/act/T1c/sortie-1.mp4",
+   "src_in": 1.1,
+   "src_out": 1.9,
+   "debut": 3.262,
+   "fin": 4.062,
+   "voix": [],
+   "pointage": "geste"
+  },
+  {
+   "id": "A1d",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A1d/sortie-1.mp4",
+   "src_in": 0.0,
+   "src_out": 2.801,
+   "debut": 4.062,
+   "fin": 6.863,
+   "voix": [
+    [
+     "1d",
+     0.0
+    ]
+   ],
+   "pointage": "coeur"
+  },
+  {
+   "id": "A2a",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A2a/sortie-1.mp4",
+   "src_in": 0.0,
+   "src_out": 2.1,
+   "debut": 6.863,
+   "fin": 8.963,
+   "voix": [
+    [
+     "2a",
+     0.0
+    ]
+   ],
+   "pointage": null
+  },
+  {
+   "id": "T2b",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/act/T2b/sortie-1.mp4",
+   "src_in": 0.5,
+   "src_out": 1.3,
+   "debut": 8.963,
+   "fin": 9.763,
+   "voix": [],
+   "pointage": null
+  },
+  {
+   "id": "A2c",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A2c2/sortie-1.mp4",
+   "src_in": 0.0,
+   "src_out": 3.8,
+   "debut": 9.763,
+   "fin": 13.563,
+   "voix": [
+    [
+     "2c",
+     0.0
+    ]
+   ],
+   "pointage": null
+  },
+  {
+   "id": "A2d",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A2d/sortie-1.mp4",
+   "src_in": 0.0,
+   "src_out": 1.341,
+   "debut": 13.563,
+   "fin": 14.904,
+   "voix": [
+    [
+     "2d",
+     0.0
+    ]
+   ],
+   "pointage": null
+  },
+  {
+   "id": "POUF",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A2c/sortie-1.mp4",
+   "src_in": 3.6,
+   "src_out": 3.9,
+   "debut": 14.904,
+   "fin": 15.204,
+   "voix": [],
+   "pointage": null
+  },
+  {
+   "id": "A3a",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A3a/sortie-1.mp4",
+   "src_in": 0.0,
+   "src_out": 2.341,
+   "debut": 15.204,
+   "fin": 17.545,
+   "voix": [
+    [
+     "3a",
+     0.0
+    ]
+   ],
+   "pointage": null
+  },
+  {
+   "id": "A3b",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A3b/sortie-1.mp4",
+   "src_in": 0.0,
+   "src_out": 1.921,
+   "debut": 17.545,
+   "fin": 19.466,
+   "voix": [
+    [
+     "3b",
+     0.0
+    ]
+   ],
+   "pointage": null
+  },
+  {
+   "id": "T3c",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/act/T3c/sortie-1.mp4",
+   "src_in": 0.6,
+   "src_out": 1.04,
+   "debut": 19.466,
+   "fin": 19.906,
+   "voix": [],
+   "pointage": null
+  },
+  {
+   "id": "T3d",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/act/T3c/sortie-1.mp4",
+   "src_in": 1.88,
+   "src_out": 2.39,
+   "debut": 19.906,
+   "fin": 20.416,
+   "voix": [],
+   "pointage": null
+  },
+  {
+   "id": "A4a",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A4a/sortie-1.mp4",
+   "src_in": 0.0,
+   "src_out": 3.52,
+   "debut": 20.416,
+   "fin": 23.936,
+   "voix": [
+    [
+     "4a",
+     0.0
+    ]
+   ],
+   "pointage": null
+  },
+  {
+   "id": "T4b",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/act/T4b/sortie-1.mp4",
+   "src_in": 1.15,
+   "src_out": 2.25,
+   "debut": 23.936,
+   "fin": 25.036,
+   "voix": [],
+   "pointage": null
+  },
+  {
+   "id": "A4c",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A4c/sortie-1.mp4",
+   "src_in": 0.0,
+   "src_out": 2.39,
+   "debut": 25.036,
+   "fin": 27.426,
+   "voix": [
+    [
+     "4c",
+     0.0
+    ]
+   ],
+   "pointage": null
+  },
+  {
+   "id": "A5a1",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A5afix/sortie-1.mp4",
+   "src_in": 0.0,
+   "src_out": 2.21,
+   "debut": 27.426,
+   "fin": 29.636,
+   "voix": [
+    [
+     "5a1",
+     0.0
+    ]
+   ],
+   "pointage": "com"
+  },
+  {
+   "id": "A5a2",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A5a2fix/sortie-1.mp4",
+   "src_in": 0.0,
+   "src_out": 2.651,
+   "debut": 29.636,
+   "fin": 32.287,
+   "voix": [
+    [
+     "5a2",
+     0.0
+    ]
+   ],
+   "pointage": "com"
+  },
+  {
+   "id": "A5b",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A5b/sortie-1.mp4",
+   "src_in": 0.0,
+   "src_out": 1.401,
+   "debut": 32.287,
+   "fin": 33.688,
+   "voix": [
+    [
+     "5b",
+     0.0
+    ]
+   ],
+   "pointage": "com"
+  },
+  {
+   "id": "T6a",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/act/T6a/sortie-1.mp4",
+   "src_in": 0.6,
+   "src_out": 2.7,
+   "debut": 33.688,
+   "fin": 35.788,
+   "voix": [
+    [
+     "6v1",
+     0.04
+    ]
+   ],
+   "pointage": null
+  },
+  {
+   "id": "T6b",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/act/T6b/sortie-1.mp4",
+   "src_in": 0.1,
+   "src_out": 2.85,
+   "debut": 35.788,
+   "fin": 38.538,
+   "voix": [
+    [
+     "6v2",
+     0.05
+    ]
+   ],
+   "pointage": null
+  },
+  {
+   "id": "A6c",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A6c/sortie-1.mp4",
+   "src_in": 0.0,
+   "src_out": 2.501,
+   "debut": 38.538,
+   "fin": 41.039,
+   "voix": [
+    [
+     "6c",
+     0.0
+    ]
+   ],
+   "pointage": null
+  },
+  {
+   "id": "T6d",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/act/T6d/sortie-1.mp4",
+   "src_in": 1.45,
+   "src_out": 2.8,
+   "debut": 41.039,
+   "fin": 42.389,
+   "voix": [],
+   "pointage": null
+  },
+  {
+   "id": "A7a",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A7a/sortie-1.mp4",
+   "src_in": 0.0,
+   "src_out": 1.92,
+   "debut": 42.389,
+   "fin": 44.309,
+   "voix": [
+    [
+     "7a",
+     0.0
+    ]
+   ],
+   "pointage": null
+  },
+  {
+   "id": "T7b",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/act/T7b/sortie-1.mp4",
+   "src_in": 0.65,
+   "src_out": 2.95,
+   "debut": 44.309,
+   "fin": 46.609,
+   "voix": [
+    [
+     "7v",
+     0.02
+    ]
+   ],
+   "pointage": null
+  },
+  {
+   "id": "A7c",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A7c/sortie-1.mp4",
+   "src_in": 0.0,
+   "src_out": 1.74,
+   "debut": 46.609,
+   "fin": 48.349,
+   "voix": [
+    [
+     "7c",
+     0.0
+    ]
+   ],
+   "pointage": null
+  },
+  {
+   "id": "A7d",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A7d/sortie-1.mp4",
+   "src_in": 0.0,
+   "src_out": 1.08,
+   "debut": 48.349,
+   "fin": 49.429,
+   "voix": [
+    [
+     "7d",
+     0.0
+    ]
+   ],
+   "pointage": null
+  },
+  {
+   "id": "A8a",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A8a/sortie-1.mp4",
+   "src_in": 0.0,
+   "src_out": 2.09,
+   "debut": 49.429,
+   "fin": 51.519,
+   "voix": [
+    [
+     "8a",
+     0.0
+    ]
+   ],
+   "pointage": null
+  },
+  {
+   "id": "T8b",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/act/T8b/sortie-1.mp4",
+   "src_in": 0.35,
+   "src_out": 2.95,
+   "debut": 51.519,
+   "fin": 54.119,
+   "voix": [
+    [
+     "8v",
+     0.15
+    ]
+   ],
+   "pointage": null
+  },
+  {
+   "id": "A8c",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A8c/sortie-1.mp4",
+   "src_in": 0.0,
+   "src_out": 1.16,
+   "debut": 54.119,
+   "fin": 55.279,
+   "voix": [
+    [
+     "8c",
+     0.0
+    ]
+   ],
+   "pointage": null
+  },
+  {
+   "id": "A9a",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A9a/sortie-1.mp4",
+   "src_in": 0.0,
+   "src_out": 3.561,
+   "debut": 55.279,
+   "fin": 58.84,
+   "voix": [
+    [
+     "9a",
+     0.0
+    ]
+   ],
+   "pointage": null
+  },
+  {
+   "id": "A9b",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/av/A9b/sortie-1.mp4",
+   "src_in": 0.0,
+   "src_out": 3.3890000000000002,
+   "debut": 58.84,
+   "fin": 62.229,
+   "voix": [
+    [
+     "9b",
+     0.0
+    ]
+   ],
+   "pointage": null
+  },
+  {
+   "id": "T9c",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/act/T9c/sortie-1.mp4",
+   "src_in": 0.65,
+   "src_out": 2.95,
+   "debut": 62.229,
+   "fin": 64.529,
+   "voix": [],
+   "pointage": null
+  },
+  {
+   "id": "FIN",
+   "src": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/pub04/act/T9c/sortie-1.mp4",
+   "src_in": 2.95,
+   "src_out": 2.95,
+   "debut": 64.529,
+   "fin": 64.979,
+   "voix": [],
+   "pointage": null
+  }
+ ],
+ "duree": 64.979,
+ "voix": {
+  "1a": 0.0,
+  "1b": 2.101,
+  "1d": 4.062,
+  "2a": 6.863,
+  "2c": 9.763,
+  "2d": 13.563,
+  "3a": 15.204,
+  "3b": 17.545,
+  "4a": 20.416,
+  "4c": 25.036,
+  "5a1": 27.426,
+  "5a2": 29.636,
+  "5b": 32.287,
+  "6v1": 33.728,
+  "6v2": 35.837999999999994,
+  "6c": 38.538,
+  "7a": 42.389,
+  "7v": 44.329,
+  "7c": 46.609,
+  "7d": 48.349,
+  "8a": 49.429,
+  "8v": 51.669,
+  "8c": 54.119,
+  "9a": 55.279,
+  "9b": 58.84
+ },
+ "mots": {
+  "1a": [
+   {
+    "mot": "TOI",
+    "t": 0.06,
+    "f": 0.3
+   },
+   {
+    "mot": "!",
+    "t": 0.6,
+    "f": 0.601
+   },
+   {
+    "mot": "Oui,",
+    "t": 0.66,
+    "f": 0.88
+   },
+   {
+    "mot": "toi,",
+    "t": 1.06,
+    "f": 1.28
+   },
+   {
+    "mot": "l'artisan",
+    "t": 1.4,
+    "f": 1.96
+   },
+   {
+    "mot": "!",
+    "t": 1.96,
+    "f": 1.961
+   }
+  ],
+  "1b": [
+   {
+    "mot": "Le",
+    "t": 2.161,
+    "f": 2.221
+   },
+   {
+    "mot": "petit",
+    "t": 2.281,
+    "f": 2.441
+   },
+   {
+    "mot": "plus,",
+    "t": 2.541,
+    "f": 2.821
+   },
+   {
+    "mot": "là",
+    "t": 2.921,
+    "f": 3.101
+   },
+   {
+    "mot": "!",
+    "t": 3.121,
+    "f": 3.122
+   }
+  ],
+  "1d": [
+   {
+    "mot": "Et",
+    "t": 4.122,
+    "f": 4.182
+   },
+   {
+    "mot": "le",
+    "t": 4.222,
+    "f": 4.282
+   },
+   {
+    "mot": "cœur",
+    "t": 4.382,
+    "f": 4.602
+   },
+   {
+    "mot": "juste",
+    "t": 4.742,
+    "f": 5.042
+   },
+   {
+    "mot": "dessous",
+    "t": 5.082,
+    "f": 5.462
+   },
+   {
+    "mot": "!",
+    "t": 5.662,
+    "f": 5.663
+   },
+   {
+    "mot": "Clique,",
+    "t": 5.702,
+    "f": 6.002
+   },
+   {
+    "mot": "j'te",
+    "t": 6.262,
+    "f": 6.502
+   },
+   {
+    "mot": "vois",
+    "t": 6.542,
+    "f": 6.702
+   },
+   {
+    "mot": "!",
+    "t": 6.722,
+    "f": 6.723
+   }
+  ],
+  "2a": [
+   {
+    "mot": "Moi,",
+    "t": 6.923,
+    "f": 7.123
+   },
+   {
+    "mot": "les",
+    "t": 7.183,
+    "f": 7.303
+   },
+   {
+    "mot": "murs,",
+    "t": 7.363,
+    "f": 7.663
+   },
+   {
+    "mot": "je",
+    "t": 7.923,
+    "f": 7.983
+   },
+   {
+    "mot": "les",
+    "t": 8.023,
+    "f": 8.143
+   },
+   {
+    "mot": "fais",
+    "t": 8.223,
+    "f": 8.363
+   },
+   {
+    "mot": "nickel.",
+    "t": 8.423,
+    "f": 8.823
+   }
+  ],
+  "2c": [
+   {
+    "mot": "Mais",
+    "t": 9.823,
+    "f": 9.903
+   },
+   {
+    "mot": "le",
+    "t": 9.943,
+    "f": 10.063
+   },
+   {
+    "mot": "site,",
+    "t": 10.143,
+    "f": 10.383
+   },
+   {
+    "mot": "les",
+    "t": 10.543,
+    "f": 10.623
+   },
+   {
+    "mot": "pubs,",
+    "t": 10.743,
+    "f": 10.983
+   },
+   {
+    "mot": "les",
+    "t": 11.123,
+    "f": 11.223
+   },
+   {
+    "mot": "réseaux…",
+    "t": 11.283,
+    "f": 11.583
+   },
+   {
+    "mot": "Oh",
+    "t": 11.883,
+    "f": 12.023
+   },
+   {
+    "mot": "!",
+    "t": 12.023,
+    "f": 12.024
+   },
+   {
+    "mot": "J'suis",
+    "t": 12.403,
+    "f": 12.623
+   },
+   {
+    "mot": "plâtrier-peintre,",
+    "t": 12.643,
+    "f": 13.423
+   }
+  ],
+  "2d": [
+   {
+    "mot": "pas",
+    "t": 13.623,
+    "f": 13.743
+   },
+   {
+    "mot": "ministre",
+    "t": 13.803,
+    "f": 14.223
+   },
+   {
+    "mot": "d'Internet",
+    "t": 14.243,
+    "f": 14.743
+   },
+   {
+    "mot": "!",
+    "t": 14.763,
+    "f": 14.764
+   }
+  ],
+  "3a": [
+   {
+    "mot": "Et",
+    "t": 15.264,
+    "f": 15.324
+   },
+   {
+    "mot": "après,",
+    "t": 15.364,
+    "f": 15.604
+   },
+   {
+    "mot": "on",
+    "t": 15.664,
+    "f": 15.724
+   },
+   {
+    "mot": "me",
+    "t": 15.744,
+    "f": 15.804
+   },
+   {
+    "mot": "dit",
+    "t": 15.844,
+    "f": 15.984
+   },
+   {
+    "mot": ":",
+    "t": 16.284,
+    "f": 16.285
+   },
+   {
+    "mot": "faut",
+    "t": 16.324,
+    "f": 16.464
+   },
+   {
+    "mot": "trouver",
+    "t": 16.484,
+    "f": 16.804
+   },
+   {
+    "mot": "des",
+    "t": 16.844,
+    "f": 16.964
+   },
+   {
+    "mot": "clients",
+    "t": 17.004,
+    "f": 17.324
+   },
+   {
+    "mot": "!",
+    "t": 17.504,
+    "f": 17.505
+   }
+  ],
+  "3b": [
+   {
+    "mot": "Mon",
+    "t": 17.564,
+    "f": 17.664
+   },
+   {
+    "mot": "téléphone,",
+    "t": 17.704,
+    "f": 18.124
+   },
+   {
+    "mot": "lui,",
+    "t": 18.224,
+    "f": 18.385
+   },
+   {
+    "mot": "il",
+    "t": 18.644,
+    "f": 18.724
+   },
+   {
+    "mot": "fait",
+    "t": 18.785,
+    "f": 18.865
+   },
+   {
+    "mot": "la",
+    "t": 18.905,
+    "f": 18.984
+   },
+   {
+    "mot": "grève",
+    "t": 19.024,
+    "f": 19.305
+   },
+   {
+    "mot": "!",
+    "t": 19.324,
+    "f": 19.325
+   }
+  ],
+  "4a": [
+   {
+    "mot": "Et",
+    "t": 20.476,
+    "f": 20.536
+   },
+   {
+    "mot": "là,",
+    "t": 20.596,
+    "f": 20.716
+   },
+   {
+    "mot": "je",
+    "t": 21.096,
+    "f": 21.156
+   },
+   {
+    "mot": "découvre",
+    "t": 21.216,
+    "f": 21.616
+   },
+   {
+    "mot": "E-COM",
+    "t": 21.796,
+    "f": 22.156
+   },
+   {
+    "mot": "STUDIO",
+    "t": 22.256,
+    "f": 22.676
+   },
+   {
+    "mot": "IA,",
+    "t": 22.856,
+    "f": 23.036
+   },
+   {
+    "mot": "avec",
+    "t": 23.296,
+    "f": 23.476
+   },
+   {
+    "mot": "Syna.",
+    "t": 23.576,
+    "f": 23.796
+   }
+  ],
+  "4c": [
+   {
+    "mot": "Je",
+    "t": 25.096,
+    "f": 25.176
+   },
+   {
+    "mot": "lui",
+    "t": 25.216,
+    "f": 25.296
+   },
+   {
+    "mot": "explique",
+    "t": 25.336,
+    "f": 25.656
+   },
+   {
+    "mot": "mon",
+    "t": 25.676,
+    "f": 25.756
+   },
+   {
+    "mot": "métier…",
+    "t": 25.796,
+    "f": 26.096
+   },
+   {
+    "mot": "et",
+    "t": 26.476,
+    "f": 26.536
+   },
+   {
+    "mot": "regarde",
+    "t": 26.696,
+    "f": 27.096
+   },
+   {
+    "mot": "ça",
+    "t": 27.216,
+    "f": 27.296
+   },
+   {
+    "mot": "!",
+    "t": 27.316,
+    "f": 27.317
+   }
+  ],
+  "5a1": [
+   {
+    "mot": "D'ailleurs,",
+    "t": 27.486,
+    "f": 27.806
+   },
+   {
+    "mot": "toi,",
+    "t": 28.086,
+    "f": 28.246
+   },
+   {
+    "mot": "tu",
+    "t": 28.466,
+    "f": 28.526
+   },
+   {
+    "mot": "fais",
+    "t": 28.566,
+    "f": 28.686
+   },
+   {
+    "mot": "quoi",
+    "t": 28.706,
+    "f": 28.806
+   },
+   {
+    "mot": "comme",
+    "t": 28.866,
+    "f": 28.986
+   },
+   {
+    "mot": "métier",
+    "t": 29.026,
+    "f": 29.286
+   },
+   {
+    "mot": "?",
+    "t": 29.586,
+    "f": 29.587
+   }
+  ],
+  "5a2": [
+   {
+    "mot": "Écris-le",
+    "t": 29.666,
+    "f": 30.006
+   },
+   {
+    "mot": "en",
+    "t": 30.046,
+    "f": 30.126
+   },
+   {
+    "mot": "commentaire,",
+    "t": 30.166,
+    "f": 30.666
+   },
+   {
+    "mot": "là,",
+    "t": 30.986,
+    "f": 31.106
+   },
+   {
+    "mot": "sous",
+    "t": 31.446,
+    "f": 31.526
+   },
+   {
+    "mot": "le",
+    "t": 31.566,
+    "f": 31.666
+   },
+   {
+    "mot": "cœur",
+    "t": 31.706,
+    "f": 31.966
+   },
+   {
+    "mot": "!",
+    "t": 32.226,
+    "f": 32.227
+   }
+  ],
+  "5b": [
+   {
+    "mot": "Je",
+    "t": 32.327,
+    "f": 32.446
+   },
+   {
+    "mot": "veux",
+    "t": 32.667,
+    "f": 32.886
+   },
+   {
+    "mot": "savoir",
+    "t": 32.966,
+    "f": 33.526
+   },
+   {
+    "mot": "!",
+    "t": 33.547,
+    "f": 33.548
+   }
+  ],
+  "6v1": [
+   {
+    "mot": "Mon",
+    "t": 33.788,
+    "f": 33.948
+   },
+   {
+    "mot": "identité,",
+    "t": 34.008,
+    "f": 34.528
+   },
+   {
+    "mot": "mon",
+    "t": 35.068,
+    "f": 35.228
+   },
+   {
+    "mot": "camion,",
+    "t": 35.268,
+    "f": 35.628
+   }
+  ],
+  "6v2": [
+   {
+    "mot": "mon",
+    "t": 35.898,
+    "f": 36.078
+   },
+   {
+    "mot": "site,",
+    "t": 36.138,
+    "f": 36.378
+   },
+   {
+    "mot": "mes",
+    "t": 36.678,
+    "f": 36.798
+   },
+   {
+    "mot": "prestations,",
+    "t": 36.838,
+    "f": 37.498
+   },
+   {
+    "mot": "mes",
+    "t": 37.798,
+    "f": 37.918
+   },
+   {
+    "mot": "devis…",
+    "t": 37.978,
+    "f": 38.378
+   }
+  ],
+  "6c": [
+   {
+    "mot": "tout",
+    "t": 38.598,
+    "f": 38.718
+   },
+   {
+    "mot": "prend",
+    "t": 38.758,
+    "f": 38.998
+   },
+   {
+    "mot": "forme",
+    "t": 39.038,
+    "f": 39.278
+   },
+   {
+    "mot": "!",
+    "t": 39.578,
+    "f": 39.579
+   },
+   {
+    "mot": "Mais",
+    "t": 39.638,
+    "f": 39.798
+   },
+   {
+    "mot": "qui",
+    "t": 39.878,
+    "f": 39.958
+   },
+   {
+    "mot": "a",
+    "t": 40.018,
+    "f": 40.078
+   },
+   {
+    "mot": "engagé",
+    "t": 40.118,
+    "f": 40.438
+   },
+   {
+    "mot": "des",
+    "t": 40.478,
+    "f": 40.558
+   },
+   {
+    "mot": "lutins",
+    "t": 40.578,
+    "f": 40.898
+   },
+   {
+    "mot": "?!",
+    "t": 40.898,
+    "f": 40.899
+   }
+  ],
+  "7a": [
+   {
+    "mot": "Mes",
+    "t": 42.449,
+    "f": 42.569
+   },
+   {
+    "mot": "photos",
+    "t": 42.589,
+    "f": 42.909
+   },
+   {
+    "mot": "deviennent",
+    "t": 42.969,
+    "f": 43.269
+   },
+   {
+    "mot": "des",
+    "t": 43.289,
+    "f": 43.449
+   },
+   {
+    "mot": "publications,",
+    "t": 43.489,
+    "f": 44.169
+   }
+  ],
+  "7v": [
+   {
+    "mot": "des",
+    "t": 44.389,
+    "f": 44.569
+   },
+   {
+    "mot": "visuels,",
+    "t": 44.609,
+    "f": 45.149
+   },
+   {
+    "mot": "des",
+    "t": 45.429,
+    "f": 45.509
+   },
+   {
+    "mot": "publicités",
+    "t": 45.709,
+    "f": 46.368
+   },
+   {
+    "mot": "!",
+    "t": 46.569,
+    "f": 46.57
+   }
+  ],
+  "7c": [
+   {
+    "mot": "Et",
+    "t": 46.628,
+    "f": 46.689
+   },
+   {
+    "mot": "tout",
+    "t": 46.888,
+    "f": 47.069
+   },
+   {
+    "mot": "garde",
+    "t": 47.348,
+    "f": 47.588
+   },
+   {
+    "mot": "le",
+    "t": 47.628,
+    "f": 47.689
+   },
+   {
+    "mot": "même",
+    "t": 47.729,
+    "f": 47.848
+   },
+   {
+    "mot": "style.",
+    "t": 47.949,
+    "f": 48.208
+   }
+  ],
+  "7d": [
+   {
+    "mot": "Même",
+    "t": 48.409,
+    "f": 48.529
+   },
+   {
+    "mot": "moi,",
+    "t": 48.569,
+    "f": 48.689
+   },
+   {
+    "mot": "j'suis",
+    "t": 48.769,
+    "f": 48.929
+   },
+   {
+    "mot": "assorti",
+    "t": 48.949,
+    "f": 49.289
+   },
+   {
+    "mot": "!",
+    "t": 49.289,
+    "f": 49.29
+   }
+  ],
+  "8a": [
+   {
+    "mot": "Et",
+    "t": 49.489,
+    "f": 49.549
+   },
+   {
+    "mot": "si",
+    "t": 49.589,
+    "f": 49.669
+   },
+   {
+    "mot": "je",
+    "t": 49.709,
+    "f": 49.769
+   },
+   {
+    "mot": "veux",
+    "t": 49.789,
+    "f": 49.909
+   },
+   {
+    "mot": "changer",
+    "t": 49.929,
+    "f": 50.269
+   },
+   {
+    "mot": "?",
+    "t": 50.669,
+    "f": 50.67
+   },
+   {
+    "mot": "Je",
+    "t": 50.709,
+    "f": 50.769
+   },
+   {
+    "mot": "demande",
+    "t": 50.809,
+    "f": 51.029
+   },
+   {
+    "mot": "à",
+    "t": 51.069,
+    "f": 51.149
+   },
+   {
+    "mot": "Syna.",
+    "t": 51.169,
+    "f": 51.409
+   }
+  ],
+  "8v": [
+   {
+    "mot": "Hop",
+    "t": 51.729,
+    "f": 51.969
+   },
+   {
+    "mot": "!",
+    "t": 51.989,
+    "f": 51.99
+   },
+   {
+    "mot": "Mes",
+    "t": 52.369,
+    "f": 52.469
+   },
+   {
+    "mot": "rénovations",
+    "t": 52.509,
+    "f": 53.069
+   },
+   {
+    "mot": "passent",
+    "t": 53.249,
+    "f": 53.509
+   },
+   {
+    "mot": "en",
+    "t": 53.529,
+    "f": 53.588
+   },
+   {
+    "mot": "premier.",
+    "t": 53.628,
+    "f": 53.929
+   }
+  ],
+  "8c": [
+   {
+    "mot": "Ça,",
+    "t": 54.179,
+    "f": 54.299
+   },
+   {
+    "mot": "c'est",
+    "t": 54.519,
+    "f": 54.619
+   },
+   {
+    "mot": "du",
+    "t": 54.659,
+    "f": 54.739
+   },
+   {
+    "mot": "travail",
+    "t": 54.779,
+    "f": 55.139
+   },
+   {
+    "mot": "!",
+    "t": 55.139,
+    "f": 55.14
+   }
+  ],
+  "9a": [
+   {
+    "mot": "Bref",
+    "t": 55.339,
+    "f": 55.739
+   },
+   {
+    "mot": ":",
+    "t": 55.939,
+    "f": 55.94
+   },
+   {
+    "mot": "je",
+    "t": 55.999,
+    "f": 56.119
+   },
+   {
+    "mot": "suis",
+    "t": 56.159,
+    "f": 56.359
+   },
+   {
+    "mot": "artisan,",
+    "t": 56.439,
+    "f": 56.939
+   },
+   {
+    "mot": "pas",
+    "t": 57.159,
+    "f": 57.339
+   },
+   {
+    "mot": "agence",
+    "t": 57.439,
+    "f": 57.759
+   },
+   {
+    "mot": "de",
+    "t": 57.799,
+    "f": 57.899
+   },
+   {
+    "mot": "communication",
+    "t": 57.939,
+    "f": 58.619
+   },
+   {
+    "mot": "!",
+    "t": 58.799,
+    "f": 58.8
+   }
+  ],
+  "9b": [
+   {
+    "mot": "E-COM",
+    "t": 58.859,
+    "f": 59.199
+   },
+   {
+    "mot": "STUDIO",
+    "t": 59.279,
+    "f": 59.68
+   },
+   {
+    "mot": "IA.",
+    "t": 59.76,
+    "f": 59.939
+   },
+   {
+    "mot": "Tout",
+    "t": 60.14,
+    "f": 60.279
+   },
+   {
+    "mot": "au",
+    "t": 60.299,
+    "f": 60.339
+   },
+   {
+    "mot": "même",
+    "t": 60.379,
+    "f": 60.499
+   },
+   {
+    "mot": "endroit.",
+    "t": 60.539,
+    "f": 60.779
+   },
+   {
+    "mot": "Maintenant,",
+    "t": 61.039,
+    "f": 61.399
+   },
+   {
+    "mot": "à",
+    "t": 61.64,
+    "f": 61.68
+   },
+   {
+    "mot": "toi",
+    "t": 61.76,
+    "f": 61.879
+   },
+   {
+    "mot": "de",
+    "t": 61.919,
+    "f": 61.959
+   },
+   {
+    "mot": "jouer",
+    "t": 61.979,
+    "f": 62.14
+   },
+   {
+    "mot": "!",
+    "t": 62.14,
+    "f": 62.141
+   }
+  ]
+ }
+}
