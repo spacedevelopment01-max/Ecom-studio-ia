@@ -1,0 +1,87 @@
+date;service;modele;libelle;identifiant_requete;statut;cout_estime_usd
+2026-11-01T11:31:10;fal.ai;fal-ai/nano-banana-2/edit;image clé D (2K);01a196e0-4f6a-7de1-80db-9dadad8c7f58;ok;0.180
+2026-11-01T11:31:10;fal.ai;fal-ai/nano-banana-2/edit;image clé C_fin (2K);01a196e0-4f2e-7781-9678-cc1a7b552c70;ok;0.180
+2026-11-01T11:31:10;fal.ai;fal-ai/nano-banana-2/edit;image clé F_debut (2K);01a196e0-4f6a-7871-b574-3e9610126b41;ok;0.180
+2026-11-01T11:31:14;fal.ai;fal-ai/nano-banana-2/edit;image clé A_fin (2K);01a196e0-4f2b-7a93-97dc-e9de74ed7f86;ok;0.180
+2026-11-01T11:31:15;fal.ai;fal-ai/nano-banana-2/edit;image clé B (2K);01a196e0-4f3f-7050-90d9-270207d88f1d;ok;0.180
+2026-11-01T11:31:19;fal.ai;fal-ai/nano-banana-2/edit;image clé C_debut (2K);01a196e0-4f24-7723-be05-dea8aa9110c7;ok;0.180
+2026-11-01T11:31:41;fal.ai;fal-ai/nano-banana-2/edit;image clé H (2K);01a196e0-d69c-7330-934d-519170bf76b9;ok;0.180
+2026-11-01T11:31:44;fal.ai;fal-ai/nano-banana-2/edit;image clé I (2K);01a196e0-d4f2-72d2-9401-54823b286a1e;ok;0.180
+2026-11-01T11:31:44;fal.ai;fal-ai/nano-banana-2/edit;image clé G_debut (2K);01a196e0-d4d8-7590-a4fd-187110f979ef;ok;0.180
+2026-11-01T11:31:44;fal.ai;fal-ai/nano-banana-2/edit;image clé F_fin (2K);01a196e0-d4ec-78e1-9bf4-63512805f921;ok;0.180
+2026-11-01T11:31:44;fal.ai;fal-ai/nano-banana-2/edit;image clé J_debut (2K);01a196e0-d63f-7f83-a8e2-2d013f73a943;ok;0.180
+2026-11-01T11:31:48;fal.ai;fal-ai/nano-banana-2/edit;image clé G_fin (2K);01a196e0-d4be-7c93-8781-cf4d0d0a72fc;ok;0.180
+2026-11-01T11:32:10;fal.ai;fal-ai/nano-banana-2/edit;image clé J_fin (2K);01a196e1-4861-7000-9ef7-c940bc55147e;ok;0.180
+2026-11-01T11:32:10;fal.ai;fal-ai/nano-banana-2/edit;image clé N (2K);01a196e1-4a06-7c40-a6d3-c0760cd6b7cb;ok;0.180
+2026-11-01T11:32:14;fal.ai;fal-ai/nano-banana-2/edit;image clé L (2K);01a196e1-4897-70c0-8fc7-77513e825b85;ok;0.180
+2026-11-01T11:32:14;fal.ai;fal-ai/nano-banana-2/edit;image clé O_fin (2K);01a196e1-48b7-7ab2-9f05-820b191e46cf;ok;0.180
+2026-11-01T11:32:14;fal.ai;fal-ai/nano-banana-2/edit;image clé K (2K);01a196e1-4893-7952-b26b-07385084d06f;ok;0.180
+2026-11-01T11:32:14;fal.ai;fal-ai/nano-banana-2/edit;image clé M (2K);01a196e1-4a31-7f02-a50f-c84d02a7c9a4;ok;0.180
+2026-11-01T11:32:36;fal.ai;fal-ai/nano-banana-2/edit;image clé R (2K);01a196e1-aeea-7993-9ecc-281673962390;ok;0.180
+2026-11-01T11:32:40;fal.ai;fal-ai/nano-banana-2/edit;image clé Q_fin (2K);01a196e1-aeb6-7891-9f90-458fe33130d9;ok;0.180
+2026-11-01T11:32:40;fal.ai;fal-ai/nano-banana-2/edit;image clé S (2K);01a196e1-af20-7550-8183-45a295107042;ok;0.180
+2026-11-01T11:33:01;fal.ai;fal-ai/nano-banana-2/edit;image clé P (2K);01a196e1-aef8-7e42-86a9-51a91690cc90;ok;0.180
+2026-11-01T11:34:27;fal.ai;fal-ai/nano-banana-2/edit;correction M_fix (2K);01a196e3-516e-7172-84f9-89c96379d57e;ok;0.180
+2026-11-01T11:34:27;fal.ai;fal-ai/nano-banana-2/edit;correction K_fix (2K);01a196e3-5160-7243-bd54-4a2d7f05c0ad;ok;0.180
+2026-11-01T11:34:28;fal.ai;fal-ai/nano-banana-2/edit;correction L_fix (2K);01a196e3-51b4-7af1-8f6a-a8817024aecb;ok;0.180
+2026-11-01T11:34:40;fal.ai;fal-ai/nano-banana-2/edit;correction N_fix (2K);01a196e3-519b-7ec1-9224-9fa0fe6360d8;ok;0.180
+2026-11-01T11:41:31;fal.ai;fal-ai/kling-video/v3/pro/image-to-video;Kling v3 Pro plan A (4 s, début+fin);01a196e4-bcee-7d40-9c86-a2b24f0424e4;ok;0.670
+2026-11-01T11:44:30;fal.ai;fal-ai/kling-video/v3/pro/image-to-video;Kling v3 Pro plan B (3 s);01a196ea-8709-7012-b0ec-d92e0191d1dd;ok;0.504
+2026-11-01T11:44:59;fal.ai;fal-ai/kling-video/v3/pro/image-to-video;Kling v3 Pro plan K (3 s);01a196ea-c53b-7a70-ab9b-7475bc4dc2eb;ok;0.504
+2026-11-01T11:45:03;fal.ai;fal-ai/kling-video/v3/pro/image-to-video;Kling v3 Pro plan H (3 s);01a196ea-ad18-78a3-9816-43ec9afccf54;ok;0.504
+2026-11-01T11:45:08;fal.ai;fal-ai/kling-video/v3/pro/image-to-video;Kling v3 Pro plan D (4 s);01a196ea-946b-75c0-b675-151b4829bb83;ok;0.672
+2026-11-01T11:45:12;fal.ai;fal-ai/kling-video/v3/pro/image-to-video;Kling v3 Pro plan L (4 s);01a196ea-ccaf-79d2-b479-97d741a8ef26;ok;0.672
+2026-11-01T11:45:37;fal.ai;fal-ai/kling-video/v3/pro/image-to-video;Kling v3 Pro plan I (4 s);01a196ea-b468-7652-9e45-8212bf2edc28;ok;0.672
+2026-11-01T11:46:21;fal.ai;fal-ai/kling-video/v3/pro/image-to-video;Kling v3 Pro plan J (3 s);01a196ea-bccf-7fe1-b5f8-dada9a513f8c;ok;0.504
+2026-11-01T11:46:42;fal.ai;fal-ai/kling-video/v3/pro/image-to-video;Kling v3 Pro plan C (3 s);01a196ea-8d01-7962-bcdd-044b986bb27e;ok;0.504
+2026-11-01T11:47:11;fal.ai;fal-ai/kling-video/v3/pro/image-to-video;Kling v3 Pro plan G (3 s);01a196ea-a4a5-71a3-9f42-bf2067c418fa;ok;0.504
+2026-11-01T11:47:23;fal.ai;fal-ai/kling-video/v3/pro/image-to-video;Kling v3 Pro plan F (4 s);01a196ea-9cb7-7960-8d06-67d5f7912fa1;ok;0.672
+2026-11-01T11:47:47;fal.ai;fal-ai/kling-video/v3/pro/image-to-video;Kling v3 Pro plan M (4 s);01a196ea-d4d6-7e03-b9e4-47cb8f873192;ok;0.672
+2026-11-01T11:47:56;fal.ai;fal-ai/kling-video/v3/pro/image-to-video;Kling v3 Pro plan N (3 s);01a196ea-dc97-76d3-aa16-a577ff466639;ok;0.504
+2026-11-01T11:48:25;fal.ai;fal-ai/kling-video/v3/pro/image-to-video;Kling v3 Pro plan R (3 s);01a196ea-fccd-7040-b851-f16f4b7fd4f4;ok;0.504
+2026-11-01T11:48:29;fal.ai;fal-ai/kling-video/v3/pro/image-to-video;Kling v3 Pro plan P (5 s);01a196ea-ed0b-7b23-8eea-e182196a4155;ok;0.840
+2026-11-01T11:48:33;fal.ai;fal-ai/kling-video/v3/pro/image-to-video;Kling v3 Pro plan O (4 s);01a196ea-e53b-7e00-9743-395e8f8f0281;ok;0.672
+2026-11-01T11:49:05;fal.ai;fal-ai/kling-video/v3/pro/image-to-video;Kling v3 Pro plan Q (4 s);01a196ea-f546-75a3-90ef-be0834df7156;ok;0.672
+2026-11-01T11:49:22;fal.ai;fal-ai/kling-video/v3/pro/image-to-video;Kling v3 Pro plan S (4 s);01a196eb-0511-7ae2-b7ef-9663fb67cfdb;ok;0.672
+2026-11-01T11:54:43;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio H;-;refus 403;0.000
+2026-11-01T11:54:43;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio D;-;refus 403;0.000
+2026-11-01T11:54:43;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio F;-;refus 403;0.000
+2026-11-01T11:54:43;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio A;-;refus 403;0.000
+2026-11-01T11:54:43;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio B;-;refus 403;0.000
+2026-11-01T11:54:43;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio J;-;refus 403;0.000
+2026-11-01T11:54:43;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio K;-;refus 403;0.000
+2026-11-01T11:54:43;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio I;-;refus 403;0.000
+2026-11-01T11:54:43;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio L;-;refus 403;0.000
+2026-11-01T11:54:44;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio M;-;refus 403;0.000
+2026-11-01T11:54:44;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio R;-;refus 403;0.000
+2026-11-01T11:54:44;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio N;-;refus 403;0.000
+2026-11-01T11:54:44;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio S;-;refus 403;0.000
+2026-11-01T11:54:44;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio P;-;refus 403;0.000
+2026-11-01T12:02:04;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio A;01a196fc-e8ef-7313-a969-b326ac1aa828;ok;0.002
+2026-11-01T12:02:04;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio D;01a196fc-e8f5-7d41-8518-36e9ac070f8c;ok;0.002
+2026-11-01T12:02:04;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio F;01a196fc-e91e-73b1-b5cd-649928b6d967;ok;0.002
+2026-11-01T12:02:04;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio H;01a196fc-e904-7452-9a4f-45c58d16b382;ok;0.002
+2026-11-01T12:02:04;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio B;01a196fc-e90c-7103-8250-61b596e26f42;ok;0.002
+2026-11-01T12:02:09;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio I;01a196fc-fdd0-74f1-ae32-6039b5f7c6ac;ok;0.002
+2026-11-01T12:02:09;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio L;01a196fc-fdd0-7f51-9c35-66e7623eef1a;ok;0.002
+2026-11-01T12:02:09;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio J;01a196fc-fdbd-7590-b666-9bae46520e64;ok;0.002
+2026-11-01T12:02:09;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio K;01a196fc-fd9d-72d1-9747-481d15b2b4ff;ok;0.002
+2026-11-01T12:02:10;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio M;01a196fc-ff00-7683-8b2f-424be31760ef;ok;0.002
+2026-11-01T12:02:15;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio N;01a196fd-13e9-7ea2-8691-b23bd5ec9d93;ok;0.002
+2026-11-01T12:02:15;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio P;01a196fd-13ec-7723-b30c-9675b989380b;ok;0.002
+2026-11-01T12:02:15;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio S;01a196fd-13f7-7da0-b2f3-8f0699790f29;ok;0.002
+2026-11-01T12:02:15;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio R;01a196fd-1407-7541-9d91-ff1ffdc4db5e;ok;0.002
+2026-11-01T12:03:31;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan A;01a196fd-2ada-7d60-8435-6d3580ef3410;ok;0.204
+2026-11-01T12:03:37;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan J;01a196fd-425f-7380-8d6b-6382410aa253;ok;0.154
+2026-11-01T12:03:44;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan B;01a196fd-2ea4-7513-b339-caa6bf7f3c36;ok;0.154
+2026-11-01T12:03:46;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan F;01a196fd-3673-7333-a3ba-c20ce9864c43;ok;0.103
+2026-11-01T12:03:47;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan H;01a196fd-3ae2-7e02-a2aa-1bf4466bb31e;ok;0.093
+2026-11-01T12:04:01;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan I;01a196fd-3e53-7e33-ab8d-fc50ae79112d;ok;0.183
+2026-11-01T12:04:17;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan M;01a196fd-4df6-7ec2-8635-8b56c0bdb704;ok;0.204
+2026-11-01T12:04:20;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan L;01a196fd-4a0e-7852-af6c-5d00a383ed5b;ok;0.131
+2026-11-01T12:04:31;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan K;01a196fd-462c-7370-a52d-9bdcf9e7621d;ok;0.112
+2026-11-01T12:04:43;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan D;01a196fd-328f-7812-a7f7-3b991191b312;ok;0.204
+2026-11-01T12:04:55;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan N;01a196fd-51e6-7a62-b635-8cb8a6e1c12c;ok;0.154
+2026-11-01T12:04:58;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan S;01a196fd-5df2-7dc2-ae53-2566b5ad3f4e;ok;0.185
+2026-11-01T12:05:00;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan R;01a196fd-59b9-73e3-9987-dbab86f00706;echec 504;0.135
+2026-11-01T12:05:41;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan P;01a196fd-55de-7f31-a87c-3e1b5a270f9e;ok;0.255

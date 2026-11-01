@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080, height=1920">
+<title>Le dropshipper déjanté — suite (46,5 s)</title>
+<!-- Suite des 14 s validées (temps local 0 = 14,0 s du film). Plans animés par IA montés sur la voix (assets/plans-suite.mp4).
+     Cette composition ajoute : la conversation Syna (création originale, aucune interface du Studio), le logo officiel
+     E-COM STUDIO IA (repris du composant Logo du Studio, sans modification), le bleu nuit officiel #0A1024, la typographie
+     réactive, les publications et la signature. Tout est une fonction pure du temps : render(t). -->
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/env-suite.js"></script>
+<style>
+  /* Polices du logo officiel uniquement (Bricolage, Instrument italique) */
+  @font-face { font-family: "Bricolage"; src: url("assets/fonts/bricolage.woff2") format("woff2"); font-weight: 200 800; }
+  @font-face { font-family: "Instrument"; src: url("assets/fonts/instrument-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; }
+  :root { --bleu-nuit: #0A1024; }
+  html, body { margin: 0; background: #000; }
+  #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: #000; }
+  #cam { position: absolute; inset: 0; z-index: 0; transform-origin: 50% 45%; will-change: transform; }
+  #plans { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; object-fit: cover; }
+  .ov { position: absolute; inset: 0; z-index: 8; pointer-events: none; opacity: 0; }
+  .lay { position: absolute; z-index: 5; opacity: 0; will-change: transform, opacity; }
+  .row { position: absolute; z-index: 5; left: 0; right: 0; display: flex; justify-content: center; opacity: 0; will-change: transform, opacity; }
+  .row > span { display: inline-block; white-space: nowrap; }
+
+  /* Typographie du film (continuité avec les 14 s validées) */
+  .slam { font-family: "Archivo Black", sans-serif; color: #fff; -webkit-text-stroke: 10px #1E0E26; paint-order: stroke fill;
+          text-shadow: 0 12px 0 #FFC83A, 0 24px 40px rgba(0,0,0,.5); letter-spacing: -.01em; }
+  .yel { color: #FFC83A; text-shadow: 0 12px 0 #1E0E26, 0 24px 40px rgba(0,0,0,.5); }
+  .tag { font-family: "Montserrat", sans-serif; font-weight: 900; color: #fff; -webkit-text-stroke: 6px #1E0E26; paint-order: stroke fill;
+         text-shadow: 0 7px 0 #1E0E26, 0 16px 30px rgba(0,0,0,.55); letter-spacing: .01em; }
+
+  /* Conversation Syna — création originale pour le film : cartes de papier lumineux sur bleu nuit, aucun avatar */
+  .chat { position: absolute; z-index: 6; left: 64px; right: 64px; opacity: 0; transform-origin: 50% 0%; }
+  .chat .card { position: relative; border-radius: 40px; padding: 22px 26px 24px; background: linear-gradient(160deg, rgba(10,16,36,.92), rgba(10,16,36,.82));
+                box-shadow: 0 0 0 3px rgba(170,205,255,.55), 0 0 40px rgba(120,170,255,.35), 0 30px 60px -20px rgba(0,0,0,.7); overflow: hidden; }
+  .chat .head { display: flex; align-items: center; gap: 14px; font: 800 34px/1 "Montserrat", sans-serif; color: #DCE8FF; letter-spacing: .04em; }
+  .chat .head i { display: inline-flex; gap: 7px; }
+  .chat .head i b { width: 11px; height: 11px; border-radius: 50%; background: #9EC2FF; display: inline-block; }
+  .chat .head small { font: 600 22px "Montserrat", sans-serif; color: #8FA6D6; letter-spacing: .02em; }
+  .chat .zone { position: relative; height: 0; margin-top: 16px; }
+  .bub { position: absolute; left: 0; right: 0; top: 0; opacity: 0; }
+  .bub.moi { display: flex; justify-content: flex-end; }
+  .bub.moi span { max-width: 820px; background: #FFF5E1; color: #2A1638; border-radius: 30px 30px 8px 30px; padding: 16px 22px; font: 700 38px/1.22 "Montserrat", sans-serif; box-shadow: 0 6px 0 rgba(0,0,0,.25); }
+  .bub.syna span.txt { display: inline-block; background: rgba(158,194,255,.14); color: #EAF1FF; border: 2px solid rgba(158,194,255,.45); border-radius: 30px 30px 30px 8px; padding: 14px 22px; font: 700 38px/1.22 "Montserrat", sans-serif; }
+  .chips { display: flex; gap: 16px; margin-top: 14px; align-items: center; }
+  .chip { width: 116px; height: 116px; border-radius: 26px; display: grid; place-items: center; box-shadow: 0 0 0 3px rgba(255,255,255,.18); opacity: 0; }
+  .chip.pal { width: 250px; display: flex; gap: 0; overflow: hidden; }
+  .chip.pal i { flex: 1; height: 100%; display: block; }
+  .chip.aa { background: #FFF5E1; color: #2A1638; font: 900 64px "Nunito", sans-serif; }
+  .chip.emb { background: #2A1638; }
+  .chip.emb img { width: 92px; height: 92px; }
+  .caret { display: inline-block; width: 4px; height: 38px; background: #2A1638; margin-left: 3px; vertical-align: -6px; }
+  .btn { display: inline-flex; align-items: center; gap: 12px; margin-top: 14px; background: #D9F26B; color: #1D2410; border-radius: 999px; padding: 14px 30px; font: 900 36px "Montserrat", sans-serif; box-shadow: 0 6px 0 #6E8A1C, 0 0 30px rgba(217,242,107,.5); opacity: 0; }
+
+  /* Logo officiel E-COM STUDIO IA — variante sombre du composant Logo du Studio, proportions d'origine (32 / 8 / 17 px) × k */
+  .ecs { position: absolute; z-index: 7; left: 0; right: 0; display: flex; justify-content: center; opacity: 0; will-change: transform, opacity; }
+  .ecs .in { position: relative; overflow: hidden; padding: 6px 10px; display: inline-flex; align-items: center; gap: calc(8px * var(--k)); }
+  .ecs svg { width: calc(32px * var(--k)); height: calc(32px * var(--k)); flex-shrink: 0; }
+  .ecs .wm { font-family: "Bricolage", sans-serif; font-weight: 600; font-size: calc(17px * var(--k)); line-height: 1; letter-spacing: -0.025em; color: #EEF2FB; white-space: nowrap; }
+  .ecs .ia { font-family: "Instrument", serif; font-style: italic; font-weight: 400; letter-spacing: -0.01em; color: #3D6EF0; }
+  .ecs .sheen { position: absolute; top: -20%; bottom: -20%; width: 34%; left: -40%; background: linear-gradient(100deg, rgba(255,255,255,0), rgba(255,255,255,.55), rgba(255,255,255,0)); mix-blend-mode: overlay; }
+
+  /* Publications (créées pour le film, marque fictive « luciole ») */
+  .post { position: absolute; z-index: 5; width: 270px; background: #FFF5E1; border-radius: 26px; padding: 14px 14px 16px; box-shadow: 0 18px 40px rgba(0,0,0,.45); opacity: 0; }
+  .post img.v { width: 242px; height: 242px; object-fit: cover; border-radius: 16px; display: block; }
+  .post .cap { display: flex; align-items: center; gap: 8px; margin-top: 10px; font: 900 30px "Nunito", sans-serif; color: #2A1638; }
+  .post .cap img { width: 38px; height: 38px; }
+
+  .pill { position: absolute; z-index: 6; padding: 12px 26px; border-radius: 999px; font: 900 36px "Montserrat", sans-serif; letter-spacing: .08em; opacity: 0; }
+  .pill.avant { background: #FFF5E1; color: #2A1638; box-shadow: 0 6px 0 rgba(0,0,0,.3); }
+  .pill.apres { background: #1A0F22; color: #E9C77B; box-shadow: 0 0 0 3px #E9C77B, 0 0 30px rgba(233,199,123,.45); }
+  #bloc { position: absolute; z-index: 6; left: 90px; top: 300px; width: 900px; padding: 26px 40px; border-radius: 34px; background: #1A0F22; box-shadow: 0 0 0 3px #E9C77B, 0 30px 60px rgba(0,0,0,.6);
+          font: 700 50px/1.25 "Playfair Display", serif; color: #F4E6C3; opacity: 0; }
+  #bloc b { color: #E9C77B; }
+
+  #fxFlash { background: #fff; }
+  #fxSnap { background: radial-gradient(circle at 62% 38%, rgba(220,235,255,.95), rgba(120,170,255,.55) 14%, rgba(120,170,255,0) 34%); mix-blend-mode: screen; }
+  #fxWave { background: linear-gradient(100deg, rgba(10,16,36,0) 0%, rgba(10,16,36,.85) 30%, rgba(160,195,255,.75) 46%, rgba(10,16,36,.85) 60%, rgba(10,16,36,0) 90%); mix-blend-mode: screen; }
+  #fxStamp { background: radial-gradient(circle at 80% 70%, rgba(240,255,190,.95), rgba(217,242,107,.5) 12%, rgba(217,242,107,0) 28%); mix-blend-mode: screen; }
+  #wipe { background: var(--bleu-nuit); }
+  #band { background: linear-gradient(180deg, var(--bleu-nuit) 0%, var(--bleu-nuit) 26%, rgba(10,16,36,0) 33.5%); }
+  .tl { position: absolute; z-index: 7; left: 0; right: 0; text-align: center; font: 800 46px/1 "Montserrat", sans-serif; color: #EEF2FB; letter-spacing: .03em; opacity: 0; }
+  #cta { position: absolute; z-index: 7; left: 0; right: 0; top: 508px; display: flex; justify-content: center; opacity: 0; }
+  #cta span { display: inline-flex; align-items: center; gap: 14px; padding: 18px 40px; border-radius: 999px; background: #EEF2FB; color: var(--bleu-nuit); font: 900 42px "Montserrat", sans-serif; box-shadow: 0 0 40px rgba(160,195,255,.55), 0 10px 0 rgba(0,0,0,.35); }
+  #cta svg { width: 40px; height: 40px; fill: none; stroke: var(--bleu-nuit); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="46.52" data-fps="24" data-width="1080" data-height="1920">
+  <div id="cam"><video id="plans" class="clip" data-start="0" data-duration="46.52" data-track-index="0" src="assets/plans-suite.mp4" muted playsinline></video></div>
+  <audio id="mix" class="clip" data-start="0" data-duration="46.52" data-track-index="1" data-volume="1" src="assets/mix-suite.wav"></audio>
+
+  <!-- Scène 2 -->
+  <div id="tNasa" class="row" style="top:215px"><span class="slam" style="font-size:120px">LA <span class="yel">NASA</span> ?!</span></div>
+  <div id="glowA" class="lay" style="left:40px;top:150px;width:1000px;height:520px;border-radius:50%;background:radial-gradient(closest-side, rgba(160,195,255,.75), rgba(61,110,240,.35) 45%, rgba(10,16,36,0) 100%)"></div>
+  <div id="logoA" class="ecs" style="top:340px;--k:4.4"><span class="in"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="#EEF2FB"/><path d="M18 20h22v6H25v4h13v6H25v4h15v6H18z" fill="#070B17"/><circle cx="46" cy="44" r="5" fill="#3D6EF0"/></svg><span class="wm">E-COM STUDIO <span class="ia">ia</span></span><span class="sheen" id="sheenA"></span></span></div>
+
+  <!-- Scène 3 : conversation Syna n° 1 -->
+  <div id="chat1" class="chat" style="top:212px">
+    <div class="card">
+      <div class="head"><span>Syna</span><i id="dots1"><b></b><b></b><b></b></i><small>conversation</small></div>
+      <div class="zone" style="height:268px">
+        <div id="u1" class="bub moi"><span><span id="u1t"></span><span class="caret" id="car1"></span></span></div>
+        <div id="s1" class="bub syna"><span class="txt">Voici ta marque :</span>
+          <div class="chips"><div class="chip pal" id="cp1"><i style="background:#2A1638"></i><i style="background:#D9F26B"></i><i style="background:#F2A65A"></i><i style="background:#FFF5E1"></i><i style="background:#232129"></i></div>
+            <div class="chip aa" id="cp2">Aa</div><div class="chip emb" id="cp3"><img src="assets/img/emblem-luciole.svg"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <img id="embFly" class="lay" src="assets/img/emblem-luciole.svg" style="left:0;top:0;width:150px;height:150px">
+
+  <!-- Scène 4 -->
+  <div id="tSite" class="row" style="top:215px"><span class="slam" style="font-size:96px">MON SITE</span></div>
+  <div id="tProd" class="row" style="top:215px"><span class="slam" style="font-size:88px">MES PRODUITS</span></div>
+  <div id="tPan" class="row" style="top:215px"><span class="slam" style="font-size:96px">MON <span class="yel">PANIER</span></span></div>
+
+  <!-- Scène 5 -->
+  <div id="post1" class="post" style="left:56px;top:250px"><img class="v" src="assets/img/post-vert.jpg"><div class="cap"><img src="assets/img/emblem-luciole.svg">luciole</div></div>
+  <div id="post2" class="post" style="right:56px;top:300px"><img class="v" src="assets/img/post-prune.jpg"><div class="cap"><img src="assets/img/emblem-luciole.svg">luciole</div></div>
+  <div id="tTout" class="row" style="top:520px"><span class="tag" style="font-size:58px">TOUT AU MÊME ENDROIT !</span></div>
+
+  <!-- Scène 6 : conversation Syna n° 2 -->
+  <div id="chat2" class="chat" style="top:208px">
+    <div class="card">
+      <div class="head"><span>Syna</span><i id="dots2"><b></b><b></b><b></b></i><small>conversation</small></div>
+      <div class="zone" style="height:196px">
+        <div id="u2" class="bub moi"><span style="font-size:33px"><span id="u2t"></span><span class="caret" id="car2"></span></span></div>
+        <div id="s2" class="bub syna"><span class="txt" style="font-size:34px">C'est noté ! Voici le devis. Tu valides ?</span><br><span class="btn" id="btnVal">Valider</span></div>
+      </div>
+    </div>
+  </div>
+  <div id="avant" class="pill avant" style="left:64px;top:1388px">AVANT</div>
+  <div id="apres" class="pill apres" style="left:64px;top:1388px">APRÈS</div>
+  <div id="bloc"><b>✦</b> Lumière douce<br><b>✦</b> Recharge rapide<br><b>✦</b> Format nomade</div>
+
+  <!-- Scène 7 -->
+  <div id="t15" class="row" style="top:215px"><span class="slam" style="font-size:104px">15 OUTILS…</span></div>
+  <div id="t1" class="row" style="top:215px"><span class="slam" style="font-size:110px"><span class="yel">1</span> STUDIO ?!</span></div>
+
+  <!-- Scène 8 : signature -->
+  <div id="band" class="ov" style="z-index:4"></div>
+  <div id="logoB" class="ecs" style="top:212px;--k:3.4"><span class="in"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="#EEF2FB"/><path d="M18 20h22v6H25v4h13v6H25v4h15v6H18z" fill="#070B17"/><circle cx="46" cy="44" r="5" fill="#3D6EF0"/></svg><span class="wm">E-COM STUDIO <span class="ia">ia</span></span><span class="sheen" id="sheenB"></span></span></div>
+  <div id="tl1" class="tl" style="top:356px;font-size:42px">TOUT VOTRE E-COMMERCE.</div>
+  <div id="tl2" class="tl" style="top:404px;font-size:42px">AU MÊME ENDROIT.</div>
+  <div id="tl3" class="tl" style="top:452px;font-size:42px;color:#BFD3FF">AVEC SYNA.</div>
+  <div id="cta"><span>Créez votre marque<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+
+  <div id="fxSnap" class="ov"></div>
+  <div id="fxWave" class="ov"></div>
+  <div id="fxStamp" class="ov"></div>
+  <div id="wipe" class="ov"></div>
+  <div id="fxFlash" class="ov"></div>
+</div>
+<script>
+(function () {
+  const FPS = 24, ENV = window.VOICE_ENV || [];
+  const $ = (id) => document.getElementById(id);
+  const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+  const lin = (t, a, b) => clamp((t - a) / (b - a));
+  const backOut = (p) => { const c = 2.0; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
+  const expoOut = (p) => (p >= 1 ? 1 : 1 - Math.pow(2, -10 * p));
+  const easeIO = (p) => (p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
+  const hash = (n) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+  const noise = (seed, t) => hash(seed * 1000 + Math.floor(t * FPS)) * 2 - 1;
+  const env = (t) => ENV[clamp(Math.floor(t * FPS), 0, ENV.length - 1)] || 0;
+  const bump = (t, t0, d) => (t < t0 || t > t0 + d ? 0 : Math.sin(Math.PI * (t - t0) / d));
+  const decay = (t, t0, d) => (t < t0 || t > t0 + d ? 0 : Math.pow(1 - (t - t0) / d, 2));
+  const show = (el, o, tr) => { el.style.opacity = o; if (tr !== undefined) el.style.transform = tr; };
+
+  // Entrée « coup de poing » (même grammaire que les 14 s validées)
+  function slam(el, t, tIn, tOut, o = {}) {
+    if (t < tIn || t >= tOut) { el.style.opacity = 0; return; }
+    const d = o.d || .16, s0 = o.s0 || 2.2, p = clamp((t - tIn) / d), e = backOut(p);
+    const out = o.fadeOut ? 1 - lin(t, tOut - o.fadeOut, tOut) : 1;
+    const sc = (s0 + (1 - s0) * e) * (1 + (o.react || 0) * env(t));
+    const jx = (o.jit || 0) * noise(o.seed || 1, t), jy = (o.jit || 0) * noise((o.seed || 1) + 7, t);
+    show(el, clamp(p * 3) * out, `translate(${jx}px, ${jy}px) rotate(${(o.rot || 0) + (o.rot0 || 0) * (1 - e)}deg) scale(${sc})`);
+  }
+  // Texte tapé (fonction pure du temps)
+  function typed(el, text, t, t0, t1) { const n = Math.round(text.length * lin(t, t0, t1)); el.textContent = text.slice(0, n); }
+  const MSG1 = "Syna, aide-moi à créer une marque autour de cette lampe.";
+  const MSG2 = "Syna, rends ma boutique plus premium et mets les bénéfices du produit en avant.";
+
+  const SHAKES = [[1.36, .3, 8], [6.35, .5, 7], [13.6, .25, 9], [14.85, .7, 12], [33.72, .35, 11], [40.66, .25, 9], [44.8, .45, 6]];
+  const PUNCH = [[20.35, .5, .04], [38.72, .4, .05], [42.23, .4, .035], [13.62, .3, .035]];
+
+  function render(t) {
+    // Caméra : continuité de cadrage avec la fin des 14 s (×1,045) puis ×1,03 ; plongée dans l'affiche (scène 5)
+    let sc = 1.03 + .015 * (1 - lin(t, 0, .6)), x = 0, y = 0, r = 0, oy = 45;
+    PUNCH.forEach(([t0, d, a]) => { sc += a * bump(t, t0, d); });
+    SHAKES.forEach(([t0, d, a], i) => { const k = decay(t, t0, d) * a; if (k) { x += k * noise(10 + i, t); y += k * noise(30 + i, t); r += k * .05 * noise(50 + i, t); } });
+    if (t >= 22.42 && t < 22.80) { sc *= 1 + 1.4 * Math.pow(lin(t, 22.42, 22.80), 2); oy = 30; }
+    const cam = $("cam"); cam.style.transformOrigin = `50% ${oy}%`; cam.style.transform = `translate(${x}px, ${y}px) rotate(${r}deg) scale(${sc})`;
+
+    // Scène 2 — « la NASA ?! », claquement de doigts, vague bleu nuit, logo officiel
+    slam($("tNasa"), t, 1.95, 3.05, { s0: 2.6, rot: -4, rot0: -8, react: .1, jit: 4, seed: 2, fadeOut: .12 });
+    $("fxSnap").style.opacity = .9 * decay(t, 6.03, .28);
+    $("fxWave").style.opacity = t >= 6.45 && t < 7.4 ? .85 * bump(t, 6.45, .95) : 0;
+    $("fxWave").style.transform = `translateX(${(-1 + 2 * lin(t, 6.45, 7.4)) * 900}px)`;
+    { const el = $("logoA");
+      if (t >= 6.8 && t < 8.35) {
+        const p = expoOut(lin(t, 6.8, 7.15)), out = lin(t, 8.0, 8.35);
+        show(el, clamp(lin(t, 6.8, 6.95)) * (1 - out), `translateY(${(1 - p) * -60 - out * 120}px) scale(${(1.9 - .9 * p) * (1 + .5 * out)})`);
+        $("sheenA").style.left = `${-40 + 180 * lin(t, 7.15, 7.75)}%`; $("sheenA").style.opacity = 0;
+      } else el.style.opacity = 0;
+      const g = $("glowA"); g.style.opacity = t >= 6.8 && t < 8.35 ? .95 * bump(t, 6.8, .7) + .35 * (t > 7.15 ? 1 - lin(t, 7.9, 8.35) : 0) : 0; g.style.transform = `scale(${.5 + 1.1 * expoOut(lin(t, 6.8, 7.3))})`; }
+
+    // Scène 3 — conversation Syna n° 1, puis l'emblème vole dans ses mains
+    { const c = $("chat1"), on = t >= 7.72 && t < 11.62;
+      if (on) { const p = backOut(clamp((t - 7.72) / .3)); show(c, clamp(lin(t, 7.72, 7.85)) * (1 - lin(t, 11.38, 11.62)), `scale(${.86 + .14 * p})`); } else c.style.opacity = 0;
+      show($("u1"), on ? clamp(lin(t, 7.95, 8.05)) * (1 - lin(t, 9.55, 9.75)) : 0, `translateY(${-90 * easeIO(lin(t, 9.55, 9.75))}px)`);
+      typed($("u1t"), MSG1, t, 7.98, 9.45); $("car1").style.opacity = t < 9.45 && Math.floor(t * 4) % 2 === 0 ? 1 : (t < 9.45 ? .3 : 0);
+      show($("s1"), on ? clamp(lin(t, 9.7, 9.85)) : 0, `translateY(${(1 - expoOut(lin(t, 9.7, 9.95))) * 50}px)`);
+      [["cp1", 10.05], ["cp2", 10.35], ["cp3", 10.65]].forEach(([id, t0]) => { const p = clamp((t - t0) / .22); show($(id), on && t >= t0 ? clamp(p * 3) : 0, `scale(${.4 + .6 * backOut(p)})`); });
+      [0, 1, 2].forEach((i) => { $("dots1").children[i].style.opacity = .35 + .65 * (Math.sin(t * 9 - i * .9) > .3 ? 1 : 0); });
+      // l'emblème (puce n° 3) grossit et file vers ses mains
+      const f = $("embFly");
+      if (t >= 11.1 && t < 11.68) { const p = easeIO(lin(t, 11.1, 11.62)); const x0 = 700, y0 = 500, x1 = 470, y1 = 860;
+        show(f, 1, `translate(${x0 + (x1 - x0) * p - 75}px, ${y0 + (y1 - y0) * p - 75 - 160 * Math.sin(Math.PI * p)}px) scale(${.75 + 1.1 * p}) rotate(${360 * p}deg)`); }
+      // coup de tampon sur la boîte (scène 3, fin)
+      else if (t >= 13.3 && t < 13.58) { const p = easeIO(lin(t, 13.3, 13.56)); const x0 = 720, y0 = 600, x1 = 860, y1 = 1330;
+        show(f, 1, `translate(${x0 + (x1 - x0) * p - 75}px, ${y0 + (y1 - y0) * p - 75}px) scale(${1 - .35 * p})`); }
+      else f.style.opacity = 0; }
+    $("fxStamp").style.opacity = .9 * decay(t, 13.56, .35);
+
+    // Scène 4 — chaque élément de la boutique sur son mot
+    slam($("tSite"), t, 15.2, 15.93, { s0: 2.2, rot: -3, react: .08, seed: 3 });
+    slam($("tProd"), t, 16.06, 16.89, { s0: 2.2, rot: 2, react: .08, seed: 4 });
+    slam($("tPan"), t, 17.04, 17.95, { s0: 2.4, rot: -2, react: .1, seed: 5, fadeOut: .12 });
+
+    // Scène 5 — plongée dans l'affiche, deux publications, « tout au même endroit »
+    $("fxFlash").style.opacity = .85 * bump(t, 22.68, .3) + .55 * decay(t, 32.7, .12);
+    [["post1", 23.35, -6], ["post2", 23.75, 5]].forEach(([id, t0, rot]) => { const p = clamp((t - t0) / .3);
+      show($(id), t >= t0 && t < 24.6 ? clamp(p * 3) * (1 - lin(t, 24.4, 24.6)) : 0, `rotate(${rot}deg) scale(${.5 + .5 * backOut(p)}) translateY(${-20 * Math.sin((t - t0) * 3)}px)`); });
+    slam($("tTout"), t, 24.85, 26.2, { s0: 1.8, rot: -2, react: .06, seed: 6, fadeOut: .15 });
+
+    // Scène 6 — conversation Syna n° 2, devis et validation, AVANT / APRÈS, bloc des bénéfices
+    { const c = $("chat2"), on = t >= 30.45 && t < 32.06;
+      if (on) { const p = backOut(clamp((t - 30.45) / .3)); show(c, clamp(lin(t, 30.45, 30.58)) * (1 - lin(t, 31.94, 32.06)), `scale(${.86 + .14 * p})`); } else c.style.opacity = 0;
+      show($("u2"), on ? clamp(lin(t, 30.6, 30.7)) * (1 - lin(t, 31.5, 31.62)) : 0, `translateY(${-80 * easeIO(lin(t, 31.5, 31.62))}px)`);
+      typed($("u2t"), MSG2, t, 30.62, 31.42); $("car2").style.opacity = t < 31.42 && Math.floor(t * 8) % 2 === 0 ? 1 : (t < 31.42 ? .3 : 0);
+      show($("s2"), on ? clamp(lin(t, 31.6, 31.68)) : 0, `translateY(${(1 - expoOut(lin(t, 31.6, 31.75))) * 40}px)`);
+      const pb = clamp((t - 31.7) / .12); show($("btnVal"), on && t >= 31.7 ? clamp(pb * 3) : 0, `scale(${(.5 + .5 * backOut(pb)) * (1 - .14 * bump(t, 31.86, .12))})`);
+      [0, 1, 2].forEach((i) => { $("dots2").children[i].style.opacity = .35 + .65 * (Math.sin(t * 9 - i * .9) > .3 ? 1 : 0); }); }
+    show($("avant"), t >= 32.04 && t < 32.8 ? clamp(lin(t, 32.04, 32.12)) * (1 - lin(t, 32.65, 32.8)) : 0);
+    { const p = clamp((t - 34.3) / .2); show($("apres"), t >= 34.3 && t < 35.28 ? clamp(p * 3) : 0, `scale(${.6 + .4 * backOut(p)})`); }
+    { const el = $("bloc"); if (t >= 33.08 && t < 33.52) { const p = lin(t, 33.08, 33.50); show(el, 1, `translateX(${1250 - 2600 * p}px) rotate(${-3 + 6 * p}deg)`); } else el.style.opacity = 0; }
+
+    // Scène 7 — « 15 outils… » puis « 1 Studio ?! »
+    slam($("t15"), t, 36.3, 38.68, { s0: 2.0, rot: -3, react: .06, jit: 2, seed: 7 });
+    slam($("t1"), t, 38.68, 39.5, { s0: 2.8, rot: -4, rot0: 10, react: .12, jit: 5, seed: 8, fadeOut: .15 });
+
+    // Scène 8 — volet bleu nuit, logo officiel, signature et bouton
+    { const w = $("wipe"); if (t >= 42.92 && t < 43.32) { const p = lin(t, 42.92, 43.32); w.style.opacity = bump(t, 42.92, .4) * 1; w.style.transform = `translateY(${(-1 + 2 * p) * 100}%)`; } else w.style.opacity = 0; }
+    $("band").style.opacity = clamp(lin(t, 43.05, 43.35));
+    { const el = $("logoB"); if (t >= 43.22) { const p = expoOut(lin(t, 43.22, 43.6)); show(el, clamp(lin(t, 43.22, 43.32)), `translateY(${(1 - p) * 70}px) scale(${1.35 - .35 * p})`); $("sheenB").style.left = `${-40 + 180 * lin(t, 43.6, 44.2)}%`; $("sheenB").style.opacity = 0; } else el.style.opacity = 0; }
+    [["tl1", 43.95], ["tl2", 44.3], ["tl3", 44.65]].forEach(([id, t0]) => { const p = expoOut(lin(t, t0, t0 + .25)); show($(id), t >= t0 ? clamp(lin(t, t0, t0 + .12)) : 0, `translateY(${(1 - p) * 26}px)`); });
+    { const p = clamp((t - 45.0) / .25); show($("cta"), t >= 45.0 ? clamp(p * 3) : 0, `scale(${(.6 + .4 * backOut(p)) * (1 + .03 * Math.sin((t - 45) * 6) * (t > 45.3 ? 1 : 0))})`); }
+  }
+
+  const tl = gsap.timeline({ paused: true });
+  const clock = { t: 0 };
+  tl.to(clock, { t: 46.52, duration: 46.52, ease: "none", onUpdate: () => render(clock.t) }, 0);
+  render(0);
+  window.__timelines = window.__timelines || {};
+  window.__timelines["main"] = tl;
+})();
+</script>
+</body>
+</html>

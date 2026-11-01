@@ -1,0 +1,493 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "duplicate_media_discovery_risk",
+        "severity": "warning",
+        "message": "Detected 4 matching img entries with the same source/start/duration.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/suite/film/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Avoid duplicated media nodes that can be discovered twice during compilation."
+      }
+    ],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 5,
+    "findings": [
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 7.753,
+        "selector": "#sheenA",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 1187.52,
+          "top": 309.45,
+          "right": 1432.13,
+          "bottom": 523.34,
+          "width": 244.61,
+          "height": 213.89
+        },
+        "containerSelector": "#logoA > span:nth-of-type(1)",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 180.27,
+          "top": 340,
+          "right": 899.73,
+          "bottom": 492.8,
+          "width": 719.47,
+          "height": 152.8
+        },
+        "overflow": {
+          "right": 532.4,
+          "top": 30.55,
+          "bottom": 30.54
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1187.52,
+          "y": 309.45,
+          "width": 244.61,
+          "height": 213.89
+        },
+        "firstSeen": 7.753,
+        "lastSeen": 7.753,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          7.753
+        ]
+      },
+      {
+        "code": "escaped_container",
+        "severity": "info",
+        "time": 7.753,
+        "selector": "#sheenA",
+        "message": "Positioned element renders far outside its offset parent — its coordinates were likely computed in a different frame (canvas/viewport pixels).",
+        "rect": {
+          "left": 1187.52,
+          "top": 309.45,
+          "right": 1432.13,
+          "bottom": 523.34,
+          "width": 244.61,
+          "height": 213.89
+        },
+        "containerSelector": "#logoA > span:nth-of-type(1)",
+        "text": "",
+        "fixHint": "Compute left/top in the offset parent's frame (subtract its rect), or mark intentional placement with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 180.27,
+          "top": 340,
+          "right": 899.73,
+          "bottom": 492.8,
+          "width": 719.47,
+          "height": 152.8
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1187.52,
+          "y": 309.45,
+          "width": 244.61,
+          "height": 213.89
+        },
+        "firstSeen": 7.753,
+        "lastSeen": 7.753,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          7.753
+        ]
+      },
+      {
+        "code": "panel_out_of_canvas",
+        "severity": "info",
+        "time": 7.753,
+        "selector": "#glowA",
+        "message": "Painted panel extends outside the composition canvas.",
+        "rect": {
+          "left": -260,
+          "top": -6,
+          "right": 1340,
+          "bottom": 826,
+          "width": 1600,
+          "height": 832
+        },
+        "containerSelector": "#root",
+        "text": "",
+        "fixHint": "Move the panel inward, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1080,
+          "bottom": 1920,
+          "width": 1080,
+          "height": 1920
+        },
+        "overflow": {
+          "left": 260,
+          "right": 260
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": -260,
+          "y": -6,
+          "width": 1600,
+          "height": 832
+        },
+        "firstSeen": 7.753,
+        "lastSeen": 7.753,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          7.753
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 38.767,
+        "selector": "#t1 > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 294.46,
+          "top": 196.5,
+          "right": 840.36,
+          "bottom": 344.62,
+          "width": 545.9,
+          "height": 148.12
+        },
+        "containerSelector": "#plans",
+        "text": "STUDIO ?!",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 0.19,
+        "lifetime": {
+          "start": 0,
+          "end": 46.52
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 294.46,
+          "y": 196.5,
+          "width": 545.9,
+          "height": 148.12
+        },
+        "firstSeen": 38.767,
+        "lastSeen": 38.767,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          38.767
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 43.936,
+        "selector": "#sheenB",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 568.53,
+          "top": 187.84,
+          "right": 762.64,
+          "bottom": 356.95,
+          "width": 194.11,
+          "height": 169.11
+        },
+        "containerSelector": "#logoB > span:nth-of-type(1)",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 254.52,
+          "top": 212,
+          "right": 825.47,
+          "bottom": 332.8,
+          "width": 570.95,
+          "height": 120.8
+        },
+        "overflow": {
+          "top": 24.16,
+          "bottom": 24.15
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 568.53,
+          "y": 187.84,
+          "width": 194.11,
+          "height": 169.11
+        },
+        "firstSeen": 43.936,
+        "lastSeen": 43.936,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          43.936
+        ]
+      }
+    ],
+    "duration": 46.52,
+    "samples": [
+      2.584,
+      7.753,
+      12.922,
+      18.091,
+      23.26,
+      28.429,
+      33.598,
+      38.767,
+      43.936
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 5,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      2.584,
+      12.922,
+      23.26,
+      33.598,
+      43.936
+    ],
+    "checked": 4,
+    "passed": 4
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 7,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"Syna, aide-moi à créer une marque autour de cette la\" (11 words) is on screen 1.67 s (±0.01 s), under its 2.85 s floor: hold it about 0.5 s + 0.3 s a word (3.80 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Syna, aide-moi à créer une marque autour de cette la",
+        "selector": "#u1 > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 798.31,
+          "y": 327,
+          "width": 96.69000000000005,
+          "height": 47
+        },
+        "time": 8.005,
+        "words": 11,
+        "seconds": 1.668,
+        "floorSeconds": 2.85
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 2 text elements stay under it for 0.5 s or more, the smallest \"conversation\" at 22 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "conversation",
+        "selector": "#chat2 > div:nth-of-type(1) > div:nth-of-type(1) > small:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 260.13,
+          "y": 233.36,
+          "width": 151.02,
+          "height": 26.84
+        },
+        "time": 30.556,
+        "times": [
+          7.857,
+          30.556
+        ],
+        "fontPx": 21.88,
+        "floorPx": 28,
+        "seconds": 1.497,
+        "elements": [
+          {
+            "selector": "#chat2 > div:nth-of-type(1) > div:nth-of-type(1) > small:nth-of-type(1)",
+            "text": "conversation",
+            "fontPx": 21.88,
+            "time": 30.556,
+            "seconds": 1.497
+          },
+          {
+            "selector": "#chat1 > div:nth-of-type(1) > div:nth-of-type(1) > small:nth-of-type(1)",
+            "text": "conversation",
+            "fontPx": 22,
+            "time": 7.857,
+            "seconds": 3.742
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"Syna, rends ma boutique plus premium et mets les bénéfice...\" (14 words) is on screen 0.91 s (±0.01 s), under its 3.53 s floor: hold it about 0.5 s + 0.3 s a word (4.70 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Syna, rends ma boutique plus premium et mets les bénéfices du produit en avant.",
+        "selector": "#u2 > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 791.49,
+          "y": 324.45,
+          "width": 107.98000000000002,
+          "height": 47.589999999999975
+        },
+        "time": 30.673,
+        "words": 14,
+        "seconds": 0.912,
+        "floorSeconds": 3.525
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"C'est noté ! Voici le devis. Tu valides ? Valider\" (8 words) is on screen 0.37 s (±0.01 s), under its 2.17 s floor: hold it about 0.5 s + 0.3 s a word (2.90 s here) before it leaves or changes; see references/motion.md.",
+        "text": "C'est noté ! Voici le devis. Tu valides ? Valider",
+        "selector": "#s2",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 114,
+          "y": 296.84,
+          "width": 662.7,
+          "height": 42
+        },
+        "time": 31.67,
+        "words": 8,
+        "seconds": 0.375,
+        "floorSeconds": 2.175
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"✦ Lumière douce ✦ Recharge rapide ✦ Format nomade\" (6 words) is on screen 0.29 s (±0.01 s), under its 1.72 s floor: hold it about 0.5 s + 0.3 s a word (2.30 s here) before it leaves or changes; see references/motion.md.",
+        "text": "✦ Lumière douce ✦ Recharge rapide ✦ Format nomade",
+        "selector": "#bloc",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 745.61,
+          "y": 324.43,
+          "width": 334.39,
+          "height": 202.64000000000004
+        },
+        "time": 32.879,
+        "words": 6,
+        "seconds": 0.288,
+        "floorSeconds": 1.725
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"AVEC SYNA.\" (2 words) is on screen 1.77 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "AVEC SYNA.",
+        "selector": "#tl3",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 399,
+          "y": 448.63,
+          "width": 281.98,
+          "height": 52
+        },
+        "time": 44.751,
+        "words": 2,
+        "seconds": 1.773,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"Créez votre marque\" (3 words) is on screen 1.48 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "Créez votre marque",
+        "selector": "#cta > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 275.47,
+          "y": 524.7,
+          "width": 472.36,
+          "height": 54.60000000000002
+        },
+        "time": 45.046,
+        "words": 3,
+        "seconds": 1.477,
+        "floorSeconds": 2
+      }
+    ],
+    "enabled": true,
+    "step": 0.125,
+    "samples": 373
+  },
+  "audio": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  },
+  "saved": {
+    "id": "90eaef3b-04ee-4267-92bb-64283e3344dd",
+    "revision": "b797f4c4-1e97-4c39-9913-ea278bfe5ba5",
+    "report": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/suite/film/.hyperframes/artifacts/checks/90eaef3b-04ee-4267-92bb-64283e3344dd.json",
+    "attribution": "recorded-revision"
+  },
+  "_meta": {
+    "version": "0.8.226",
+    "latestVersion": "0.8.226",
+    "updateAvailable": false
+  }
+}

@@ -1,0 +1,801 @@
+{
+ "segments": [
+  {
+   "id": "A1",
+   "plan": "A",
+   "src_in": 0.0,
+   "src_out": 2.0,
+   "vitesse": 1.8,
+   "debut": 0.0,
+   "fin": 1.1111
+  },
+  {
+   "id": "A2",
+   "plan": "A",
+   "src_in": 2.0,
+   "src_out": 3.9,
+   "vitesse": 1.0,
+   "debut": 1.1111,
+   "fin": 3.0111
+  },
+  {
+   "id": "B",
+   "plan": "B",
+   "src_in": 0.0,
+   "src_out": 3.04,
+   "vitesse": 1.0,
+   "debut": 3.0111,
+   "fin": 6.0511
+  },
+  {
+   "id": "C",
+   "plan": "C",
+   "src_in": 0.55,
+   "src_out": 3.04,
+   "vitesse": 1.6,
+   "debut": 6.0511,
+   "fin": 7.6074
+  },
+  {
+   "id": "D",
+   "plan": "D",
+   "src_in": 0.0,
+   "src_out": 4.04,
+   "vitesse": 1.0,
+   "debut": 7.6074,
+   "fin": 11.6474
+  },
+  {
+   "id": "F",
+   "plan": "F",
+   "src_in": 1.0,
+   "src_out": 3.9,
+   "vitesse": 1.0,
+   "debut": 11.6474,
+   "fin": 14.5474
+  },
+  {
+   "id": "G",
+   "plan": "G",
+   "src_in": 0.6,
+   "src_out": 3.04,
+   "vitesse": 1.8,
+   "debut": 14.5474,
+   "fin": 15.9029
+  },
+  {
+   "id": "H",
+   "plan": "H",
+   "src_in": 0.0,
+   "src_out": 1.85,
+   "vitesse": 1.0,
+   "debut": 15.9029,
+   "fin": 17.7529
+  },
+  {
+   "id": "I",
+   "plan": "I",
+   "src_in": 0.35,
+   "src_out": 3.45,
+   "vitesse": 1.0,
+   "debut": 17.7529,
+   "fin": 20.8529
+  },
+  {
+   "id": "J1",
+   "plan": "J",
+   "src_in": 0.0,
+   "src_out": 1.45,
+   "vitesse": 1.0,
+   "debut": 20.8529,
+   "fin": 22.3029
+  },
+  {
+   "id": "J2",
+   "plan": "J",
+   "src_in": 1.95,
+   "src_out": 2.75,
+   "vitesse": 1.6,
+   "debut": 22.3029,
+   "fin": 22.8029
+  },
+  {
+   "id": "K",
+   "plan": "K",
+   "src_in": 0.3,
+   "src_out": 2.1,
+   "vitesse": 1.0,
+   "debut": 22.8029,
+   "fin": 24.6029
+  },
+  {
+   "id": "L",
+   "plan": "L",
+   "src_in": 0.0,
+   "src_out": 2.85,
+   "vitesse": 1.0,
+   "debut": 24.6029,
+   "fin": 27.4529
+  },
+  {
+   "id": "M",
+   "plan": "M",
+   "src_in": 2.25,
+   "src_out": 3.8,
+   "vitesse": 1.0,
+   "debut": 27.4529,
+   "fin": 29.0029
+  },
+  {
+   "id": "N",
+   "plan": "N",
+   "src_in": 0.0,
+   "src_out": 3.04,
+   "vitesse": 1.0,
+   "debut": 29.0029,
+   "fin": 32.0429
+  },
+  {
+   "id": "O1",
+   "plan": "O",
+   "src_in": 0.0,
+   "src_out": 0.55,
+   "vitesse": 1.0,
+   "debut": 32.0429,
+   "fin": 32.5929
+  },
+  {
+   "id": "O2",
+   "plan": "O",
+   "src_in": 0.95,
+   "src_out": 4.04,
+   "vitesse": 1.15,
+   "debut": 32.5929,
+   "fin": 35.2799
+  },
+  {
+   "id": "P1",
+   "plan": "P",
+   "src_in": 0.6,
+   "src_out": 3.4,
+   "vitesse": 1.25,
+   "debut": 35.2799,
+   "fin": 37.5199
+  },
+  {
+   "id": "P2",
+   "plan": "P",
+   "src_in": 3.4,
+   "src_out": 5.04,
+   "vitesse": 1.0,
+   "debut": 37.5199,
+   "fin": 39.1599
+  },
+  {
+   "id": "Q",
+   "plan": "Q",
+   "src_in": 0.55,
+   "src_out": 3.7,
+   "vitesse": 1.3,
+   "debut": 39.1599,
+   "fin": 41.583
+  },
+  {
+   "id": "R",
+   "plan": "R",
+   "src_in": 0.85,
+   "src_out": 2.35,
+   "vitesse": 1.0,
+   "debut": 41.583,
+   "fin": 43.083
+  },
+  {
+   "id": "S",
+   "plan": "S",
+   "src_in": 1.05,
+   "src_out": 4.04,
+   "vitesse": 1.0,
+   "debut": 43.083,
+   "fin": 46.073
+  }
+ ],
+ "voix": [
+  {
+   "replique": "s2",
+   "decalage": 0.4311,
+   "debut": 0.571,
+   "fin": 5.832,
+   "mots": [
+    {
+     "mot": "Bon",
+     "debut": 0.571,
+     "fin": 0.731
+    },
+    {
+     "mot": "!",
+     "debut": 0.751,
+     "fin": 0.752
+    },
+    {
+     "mot": "J'allais",
+     "debut": 1.111,
+     "fin": 1.351
+    },
+    {
+     "mot": "pas",
+     "debut": 1.371,
+     "fin": 1.471
+    },
+    {
+     "mot": "construire",
+     "debut": 1.511,
+     "fin": 1.851
+    },
+    {
+     "mot": "la",
+     "debut": 1.891,
+     "fin": 1.951
+    },
+    {
+     "mot": "NASA",
+     "debut": 1.991,
+     "fin": 2.311
+    },
+    {
+     "mot": "pour",
+     "debut": 2.351,
+     "fin": 2.471
+    },
+    {
+     "mot": "vendre",
+     "debut": 2.491,
+     "fin": 2.691
+    },
+    {
+     "mot": "une",
+     "debut": 2.731,
+     "fin": 2.811
+    },
+    {
+     "mot": "lampe",
+     "debut": 2.851,
+     "fin": 3.071
+    },
+    {
+     "mot": "!",
+     "debut": 3.071,
+     "fin": 3.072
+    },
+    {
+     "mot": "Et",
+     "debut": 3.391,
+     "fin": 3.471
+    },
+    {
+     "mot": "là…",
+     "debut": 3.551,
+     "fin": 3.711
+    },
+    {
+     "mot": "j'ai",
+     "debut": 3.971,
+     "fin": 4.151
+    },
+    {
+     "mot": "découvert",
+     "debut": 4.191,
+     "fin": 4.671
+    },
+    {
+     "mot": "un",
+     "debut": 4.711,
+     "fin": 4.791
+    },
+    {
+     "mot": "truc.",
+     "debut": 4.831,
+     "fin": 5.071
+    },
+    {
+     "mot": "Regarde",
+     "debut": 5.471,
+     "fin": 5.831
+    },
+    {
+     "mot": "!",
+     "debut": 5.831,
+     "fin": 5.832
+    }
+   ]
+  },
+  {
+   "replique": "s3",
+   "decalage": 8.8274,
+   "debut": 8.947,
+   "fin": 12.368,
+   "mots": [
+    {
+     "mot": "J'ai",
+     "debut": 8.947,
+     "fin": 9.067
+    },
+    {
+     "mot": "expliqué",
+     "debut": 9.107,
+     "fin": 9.547
+    },
+    {
+     "mot": "mon",
+     "debut": 9.587,
+     "fin": 9.707
+    },
+    {
+     "mot": "idée",
+     "debut": 9.767,
+     "fin": 9.967
+    },
+    {
+     "mot": "à",
+     "debut": 10.007,
+     "fin": 10.087
+    },
+    {
+     "mot": "Syna…",
+     "debut": 10.107,
+     "fin": 10.387
+    },
+    {
+     "mot": "et",
+     "debut": 10.807,
+     "fin": 10.867
+    },
+    {
+     "mot": "elle",
+     "debut": 10.907,
+     "fin": 11.007
+    },
+    {
+     "mot": "m'aide",
+     "debut": 11.067,
+     "fin": 11.247
+    },
+    {
+     "mot": "à",
+     "debut": 11.287,
+     "fin": 11.347
+    },
+    {
+     "mot": "créer",
+     "debut": 11.387,
+     "fin": 11.567
+    },
+    {
+     "mot": "toute",
+     "debut": 11.687,
+     "fin": 11.867
+    },
+    {
+     "mot": "ma",
+     "debut": 11.887,
+     "fin": 11.967
+    },
+    {
+     "mot": "marque",
+     "debut": 12.027,
+     "fin": 12.307
+    },
+    {
+     "mot": "!",
+     "debut": 12.367,
+     "fin": 12.368
+    }
+   ]
+  },
+  {
+   "replique": "s4",
+   "decalage": 14.8118,
+   "debut": 14.992,
+   "fin": 20.713,
+   "mots": [
+    {
+     "mot": "Mon",
+     "debut": 14.992,
+     "fin": 15.112
+    },
+    {
+     "mot": "site,",
+     "debut": 15.252,
+     "fin": 15.592
+    },
+    {
+     "mot": "mes",
+     "debut": 15.932,
+     "fin": 16.072
+    },
+    {
+     "mot": "produits,",
+     "debut": 16.112,
+     "fin": 16.572
+    },
+    {
+     "mot": "mon",
+     "debut": 16.892,
+     "fin": 17.052
+    },
+    {
+     "mot": "panier…",
+     "debut": 17.092,
+     "fin": 17.412
+    },
+    {
+     "mot": "tout",
+     "debut": 17.912,
+     "fin": 18.052
+    },
+    {
+     "mot": "se",
+     "debut": 18.172,
+     "fin": 18.292
+    },
+    {
+     "mot": "construit",
+     "debut": 18.332,
+     "fin": 18.752
+    },
+    {
+     "mot": "!",
+     "debut": 18.772,
+     "fin": 18.773
+    },
+    {
+     "mot": "Moi,",
+     "debut": 19.212,
+     "fin": 19.292
+    },
+    {
+     "mot": "j'avais",
+     "debut": 19.352,
+     "fin": 19.572
+    },
+    {
+     "mot": "même",
+     "debut": 19.612,
+     "fin": 19.772
+    },
+    {
+     "mot": "pas",
+     "debut": 19.812,
+     "fin": 19.952
+    },
+    {
+     "mot": "fini",
+     "debut": 20.012,
+     "fin": 20.172
+    },
+    {
+     "mot": "mon",
+     "debut": 20.212,
+     "fin": 20.332
+    },
+    {
+     "mot": "café",
+     "debut": 20.372,
+     "fin": 20.692
+    },
+    {
+     "mot": "!",
+     "debut": 20.712,
+     "fin": 20.713
+    }
+   ]
+  },
+  {
+   "replique": "s5",
+   "decalage": 20.9929,
+   "debut": 21.153,
+   "fin": 26.874,
+   "mots": [
+    {
+     "mot": "Mes",
+     "debut": 21.153,
+     "fin": 21.293
+    },
+    {
+     "mot": "photos,",
+     "debut": 21.313,
+     "fin": 21.753
+    },
+    {
+     "mot": "mes",
+     "debut": 21.833,
+     "fin": 21.953
+    },
+    {
+     "mot": "publications,",
+     "debut": 21.973,
+     "fin": 22.633
+    },
+    {
+     "mot": "mes",
+     "debut": 22.773,
+     "fin": 22.933
+    },
+    {
+     "mot": "pubs,",
+     "debut": 22.973,
+     "fin": 23.233
+    },
+    {
+     "mot": "mon",
+     "debut": 23.593,
+     "fin": 23.693
+    },
+    {
+     "mot": "référencement…",
+     "debut": 23.733,
+     "fin": 24.413
+    },
+    {
+     "mot": "Tout",
+     "debut": 24.873,
+     "fin": 25.012
+    },
+    {
+     "mot": "au",
+     "debut": 25.213,
+     "fin": 25.273
+    },
+    {
+     "mot": "même",
+     "debut": 25.393,
+     "fin": 25.533
+    },
+    {
+     "mot": "endroit",
+     "debut": 25.573,
+     "fin": 25.873
+    },
+    {
+     "mot": "!",
+     "debut": 26.173,
+     "fin": 26.174
+    },
+    {
+     "mot": "C'est",
+     "debut": 26.233,
+     "fin": 26.333
+    },
+    {
+     "mot": "pas",
+     "debut": 26.373,
+     "fin": 26.473
+    },
+    {
+     "mot": "beau,",
+     "debut": 26.513,
+     "fin": 26.633
+    },
+    {
+     "mot": "ça",
+     "debut": 26.753,
+     "fin": 26.853
+    },
+    {
+     "mot": "?!",
+     "debut": 26.873,
+     "fin": 26.874
+    }
+   ]
+  },
+  {
+   "replique": "s6",
+   "decalage": 27.4529,
+   "debut": 27.553,
+   "fin": 31.974,
+   "mots": [
+    {
+     "mot": "Attends…",
+     "debut": 27.553,
+     "fin": 28.133
+    },
+    {
+     "mot": "et",
+     "debut": 28.493,
+     "fin": 28.553
+    },
+    {
+     "mot": "si",
+     "debut": 28.693,
+     "fin": 28.793
+    },
+    {
+     "mot": "je",
+     "debut": 28.873,
+     "fin": 28.973
+    },
+    {
+     "mot": "veux",
+     "debut": 28.993,
+     "fin": 29.133
+    },
+    {
+     "mot": "changer",
+     "debut": 29.173,
+     "fin": 29.473
+    },
+    {
+     "mot": "quelque",
+     "debut": 29.513,
+     "fin": 29.813
+    },
+    {
+     "mot": "chose",
+     "debut": 29.853,
+     "fin": 30.153
+    },
+    {
+     "mot": "?",
+     "debut": 30.473,
+     "fin": 30.474
+    },
+    {
+     "mot": "Bah,",
+     "debut": 30.513,
+     "fin": 30.733
+    },
+    {
+     "mot": "je",
+     "debut": 31.093,
+     "fin": 31.173
+    },
+    {
+     "mot": "le",
+     "debut": 31.213,
+     "fin": 31.273
+    },
+    {
+     "mot": "demande",
+     "debut": 31.333,
+     "fin": 31.553
+    },
+    {
+     "mot": "à",
+     "debut": 31.593,
+     "fin": 31.653
+    },
+    {
+     "mot": "Syna",
+     "debut": 31.693,
+     "fin": 31.953
+    },
+    {
+     "mot": "!",
+     "debut": 31.973,
+     "fin": 31.974
+    }
+   ]
+  },
+  {
+   "replique": "s7",
+   "decalage": 35.1599,
+   "debut": 35.32,
+   "fin": 39.081,
+   "mots": [
+    {
+     "mot": "Donc…",
+     "debut": 35.32,
+     "fin": 35.56
+    },
+    {
+     "mot": "j'avais",
+     "debut": 35.96,
+     "fin": 36.28
+    },
+    {
+     "mot": "quinze",
+     "debut": 36.34,
+     "fin": 36.56
+    },
+    {
+     "mot": "outils…",
+     "debut": 36.6,
+     "fin": 36.9
+    },
+    {
+     "mot": "alors",
+     "debut": 37.18,
+     "fin": 37.38
+    },
+    {
+     "mot": "qu'il",
+     "debut": 37.4,
+     "fin": 37.52
+    },
+    {
+     "mot": "me",
+     "debut": 37.56,
+     "fin": 37.68
+    },
+    {
+     "mot": "fallait",
+     "debut": 37.72,
+     "fin": 37.92
+    },
+    {
+     "mot": "juste",
+     "debut": 38.0,
+     "fin": 38.28
+    },
+    {
+     "mot": "un",
+     "debut": 38.54,
+     "fin": 38.6
+    },
+    {
+     "mot": "Studio",
+     "debut": 38.72,
+     "fin": 39.02
+    },
+    {
+     "mot": "?!",
+     "debut": 39.08,
+     "fin": 39.081
+    }
+   ]
+  },
+  {
+   "replique": "s8",
+   "decalage": 42.353,
+   "debut": 42.433,
+   "fin": 45.394,
+   "mots": [
+    {
+     "mot": "E-COM",
+     "debut": 42.433,
+     "fin": 42.793
+    },
+    {
+     "mot": "STUDIO",
+     "debut": 42.893,
+     "fin": 43.353
+    },
+    {
+     "mot": "IA.",
+     "debut": 43.513,
+     "fin": 43.693
+    },
+    {
+     "mot": "Allez,",
+     "debut": 43.973,
+     "fin": 44.153
+    },
+    {
+     "mot": "viens",
+     "debut": 44.533,
+     "fin": 44.733
+    },
+    {
+     "mot": "créer",
+     "debut": 44.773,
+     "fin": 44.953
+    },
+    {
+     "mot": "ta",
+     "debut": 45.013,
+     "fin": 45.073
+    },
+    {
+     "mot": "marque",
+     "debut": 45.133,
+     "fin": 45.373
+    },
+    {
+     "mot": "!",
+     "debut": 45.393,
+     "fin": 45.394
+    }
+   ]
+  }
+ ],
+ "duree": 46.523
+}
