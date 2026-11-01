@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080, height=1920">
+<title>Le dropshipper déjanté — test cinématographique n° 1</title>
+<!-- Test cinématographique n° 1 (1080 × 1920 natif, 14 s, 24 i/s). Plans animés par IA (Kling v3, synchro labiale
+     sync-lipsync v2), montés sur la voix (assets/plans.mp4). Cette composition ajoute la typographie réactive, les
+     éclairs de transition et les secousses de caméra ; tout est une fonction pure du temps (render(t)). -->
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/env.js"></script>
+<style>
+  html, body { margin: 0; background: #000; }
+  #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: #000; }
+  #cam { position: absolute; inset: 0; z-index: 0; transform-origin: 50% 45%; will-change: transform; }
+  #plans { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; object-fit: cover; }
+  .ov { position: absolute; inset: 0; z-index: 8; pointer-events: none; }
+  #fxGold { background: radial-gradient(circle at 30% 30%, rgba(255,246,214,1), rgba(255,205,92,.92) 38%, rgba(255,160,40,.55) 70%, rgba(255,140,30,.25)); opacity: 0; mix-blend-mode: screen; }
+  #fxWhite { background: #fff; opacity: 0; }
+  #fxOrange { background: radial-gradient(circle at 50% 8%, rgba(255,236,190,.95), rgba(255,140,40,.75) 40%, rgba(255,90,20,.2) 80%); opacity: 0; mix-blend-mode: screen; }
+  .tx { position: absolute; z-index: 5; left: 0; right: 0; display: flex; justify-content: center; opacity: 0; will-change: transform, opacity; }
+  .tx > span { display: inline-block; white-space: nowrap; }
+  .slam { font-family: "Archivo Black", sans-serif; color: #FFFFFF; -webkit-text-stroke: 11px #1E0E26; paint-order: stroke fill;
+          text-shadow: 0 13px 0 #FFC83A, 0 26px 44px rgba(0,0,0,.5); letter-spacing: -.01em; }
+  .yel { color: #FFC83A; text-shadow: 0 13px 0 #1E0E26, 0 26px 44px rgba(0,0,0,.5); }
+  .gold { font-family: "Archivo Black", sans-serif; color: #FFD45E; -webkit-text-stroke: 8px #3A1A05; paint-order: stroke fill;
+          text-shadow: 0 0 34px rgba(255,200,80,.85), 0 11px 0 #7A3E0A, 0 24px 40px rgba(0,0,0,.45); }
+  .gothic { font-family: "League Gothic", sans-serif; letter-spacing: .01em; }
+  .wh1 { font-family: "Montserrat", sans-serif; font-style: italic; font-weight: 600; font-size: 64px; color: rgba(255,255,255,.94);
+         text-shadow: 0 3px 14px rgba(0,0,0,.85), 0 0 2px rgba(0,0,0,.9); letter-spacing: .03em; }
+  .wh2 { font-family: "Montserrat", sans-serif; font-style: italic; font-weight: 900; font-size: 104px; color: #FFC83A;
+         -webkit-text-stroke: 7px #1E0E26; paint-order: stroke fill; text-shadow: 0 8px 26px rgba(0,0,0,.6); letter-spacing: -.01em; }
+  .w { display: inline-block; opacity: 0; }
+  .chaos { font-family: "Archivo Black", sans-serif; color: #FFFFFF; -webkit-text-stroke: 9px #14070A; paint-order: stroke fill;
+           text-shadow: 0 11px 0 #FF4B36, 0 22px 36px rgba(0,0,0,.55); }
+  .tag { font-family: "Montserrat", sans-serif; font-weight: 900; font-size: 74px; color: #FFFFFF; -webkit-text-stroke: 6px #1E0E26; paint-order: stroke fill;
+         text-shadow: 0 7px 0 #1E0E26, 0 16px 30px rgba(0,0,0,.55); }
+  .fire { font-family: "Archivo Black", sans-serif; color: #FFB02E; -webkit-text-stroke: 11px #2A0A04; paint-order: stroke fill;
+          text-shadow: 0 0 40px rgba(255,120,30,.85), 0 12px 0 #E2401C, 0 26px 44px rgba(0,0,0,.5); }
+  .ltr { display: inline-block; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="14" data-fps="24" data-width="1080" data-height="1920">
+  <div id="cam"><video id="plans" class="clip" data-start="0" data-duration="14" data-track-index="0" src="assets/plans.mp4" muted playsinline></video></div>
+  <audio id="mix" class="clip" data-start="0" data-duration="14" data-track-index="1" data-volume="1" src="assets/mix.wav"></audio>
+
+  <!-- Plan 1 -->
+  <div id="tToi" class="tx" style="top:185px"><span class="slam" style="font-size:270px">TOI !</span></div>
+  <div id="tOuiToi" class="tx" style="top:210px"><span class="slam" style="font-size:150px">OUI, <span class="yel">TOI !</span></span></div>
+  <div id="tWh1" class="tx" style="top:212px"><span class="wh1"><span class="w" id="w0">tu</span> <span class="w" id="w1">veux</span> <span class="w" id="w2">faire</span> <span class="w" id="w3">du</span></span></div>
+  <div id="tWh2" class="tx" style="top:286px"><span class="wh2">dropshipping ?</span></div>
+  <!-- Plan 2 -->
+  <div id="tLe" class="tx" style="top:1170px"><span class="gold" style="font-size:112px">LE</span></div>
+  <div id="tProduit" class="tx" style="top:1290px"><span class="gold" style="font-size:138px">PRODUIT !</span></div>
+  <!-- Plan 3 -->
+  <div id="tMilli" class="tx" style="top:215px"><span class="gold gothic" style="font-size:176px" id="milli"></span></div>
+  <!-- Plan 4 -->
+  <div id="tSite" class="tx" data-layout-allow-occlusion style="top:870px; justify-content:flex-start; padding-left:70px"><span class="chaos" data-layout-allow-occlusion style="font-size:112px">SITE</span></div>
+  <div id="tLogo" class="tx" style="top:870px; justify-content:flex-end; padding-right:150px"><span class="chaos" style="font-size:108px">LOGO</span></div>
+  <div id="tPhotos" class="tx" style="top:1070px; justify-content:flex-start; padding-left:50px"><span class="chaos" style="font-size:104px">PHOTOS</span></div>
+  <div id="tPubs" class="tx" style="top:1070px; justify-content:flex-end; padding-right:150px"><span class="chaos" style="font-size:108px">PUBS</span></div>
+  <div id="tRef" class="tx" style="top:200px"><span class="chaos" style="font-size:86px">RÉFÉRENCEMENT…</span></div>
+  <!-- Plan 5 -->
+  <div id="tBout" class="tx" style="top:205px"><span class="tag">UNE BOUTIQUE</span></div>
+  <div id="tOu" class="tx" data-layout-allow-overlap style="top:282px"><span class="tag" style="font-size:62px">OU UNE</span></div>
+  <div id="tFusee" class="tx" data-layout-allow-overlap style="top:368px"><span class="fire" style="font-size:164px">FUSÉE ?!</span></div>
+
+  <div id="fxGold" class="ov"></div>
+  <div id="fxOrange" class="ov"></div>
+  <div id="fxWhite" class="ov"></div>
+</div>
+<script>
+(function () {
+  const FPS = 24, ENV = window.VOICE_ENV || [];
+  const $ = (id) => document.getElementById(id);
+  // « MILLIARDAIRE ! » lettre par lettre (pour l'arrivée en cascade et la chute)
+  const word = "MILLIARDAIRE !", milli = $("milli");
+  const letters = [...word].map((ch) => { const s = document.createElement("span"); s.className = "ltr"; s.textContent = ch === " " ? " " : ch; milli.appendChild(s); return s; });
+
+  const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+  const lin = (t, a, b) => clamp((t - a) / (b - a));
+  const backOut = (p) => { const c = 2.2; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
+  const expoOut = (p) => (p >= 1 ? 1 : 1 - Math.pow(2, -10 * p));
+  const quadIn = (p) => p * p;
+  const hash = (n) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+  const noise = (seed, t) => { const f = Math.floor(t * FPS); return hash(seed * 1000 + f) * 2 - 1; };
+  const env = (t) => ENV[clamp(Math.floor(t * FPS), 0, ENV.length - 1)] || 0;
+  const bump = (t, t0, dur) => (t < t0 || t > t0 + dur ? 0 : Math.sin(Math.PI * (t - t0) / dur));
+  const decay = (t, t0, dur) => (t < t0 || t > t0 + dur ? 0 : Math.pow(1 - (t - t0) / dur, 2));
+
+  // Entrée « coup de poing » : apparition 0→1 en `d` s avec dépassement ; sortie en fondu court
+  function slam(el, t, tIn, tOut, o = {}) {
+    const d = o.d || 0.16, s0 = o.s0 || 2.4, rot = o.rot || 0, react = o.react || 0;
+    if (t < tIn || t >= tOut) { el.style.opacity = 0; return; }
+    const p = clamp((t - tIn) / d), e = backOut(p);
+    const out = o.fadeOut ? 1 - lin(t, tOut - o.fadeOut, tOut) : 1;
+    const sc = (s0 + (1 - s0) * e) * (1 + react * env(t));
+    const jx = (o.jit || 0) * noise(o.seed || 1, t), jy = (o.jit || 0) * noise((o.seed || 1) + 7, t);
+    el.style.opacity = clamp(p * 3) * out;
+    el.style.transform = `translate(${jx}px, ${(o.dy || 0) * (1 - e) + jy}px) rotate(${rot + (o.rot0 || 0) * (1 - e)}deg) scale(${sc})`;
+  }
+  // Chute avec gravité (mots qui tombent)
+  function fall(el, t, t0, seed, base) {
+    if (t < t0) return false;
+    const u = t - t0, g = 3800, vx = (hash(seed) - 0.5) * 500, vr = (hash(seed + 3) - 0.5) * 120;
+    el.style.transform = `translate(${vx * u}px, ${-260 * u + 0.5 * g * u * u}px) rotate(${(base || 0) + vr * u}deg) scale(1)`;
+    return true;
+  }
+
+  const SHAKES = [[0.20, 0.55, 14], [1.30, 0.25, 6], [4.47, 0.45, 10], [5.417, 0.30, 7], [7.15, 0.35, 12], [7.542, 0.50, 16],
+    [8.34, 0.15, 6], [8.76, 0.15, 6], [9.16, 0.15, 6], [9.64, 0.15, 6], [10.04, 0.2, 8], [10.40, 0.45, 16], [10.833, 0.25, 8],
+    [12.08, 0.30, 8], [12.40, 1.60, 22]];
+  const PUNCH = [[0.20, 0.60, 0.07], [4.90, 0.50, 0.05], [12.40, 0.25, 0.04]];
+
+  function render(t) {
+    // Caméra : léger surcadrage permanent (bords cachés pendant les secousses), punchs, poussée lente du plan 3
+    let sc = 1.045, x = 0, y = 0, r = 0;
+    PUNCH.forEach(([t0, d, a]) => { sc += a * bump(t, t0, d); });
+    if (t >= 5.417 && t < 7.542) sc += 0.045 * lin(t, 5.417, 7.1);
+    SHAKES.forEach(([t0, d, a], i) => { const k = decay(t, t0, d) * a; if (k) { x += k * noise(10 + i, t); y += k * noise(30 + i, t); r += k * 0.05 * noise(50 + i, t); } });
+    $("cam").style.transform = `translate(${x}px, ${y}px) rotate(${r}deg) scale(${sc})`;
+
+    // Plan 1 — « TOI ! Oui, toi ! » puis chuchotement
+    slam($("tToi"), t, 0.20, 0.80, { s0: 3.0, rot: -5, rot0: -10, react: 0.10, jit: 6, seed: 2 });
+    slam($("tOuiToi"), t, 0.80, 1.80, { s0: 2.2, rot: 3, react: 0.08, jit: 3, seed: 3, fadeOut: 0.12 });
+    if (t >= 1.30 && t < 1.80) { const k = 1 + 0.12 * bump(t, 1.30, 0.22); $("tOuiToi").style.transform += ` scale(${k})`; }
+    const wt = [1.86, 1.96, 2.12, 2.26];
+    const whOn = t >= 1.82 && t < 3.125;
+    $("tWh1").style.opacity = whOn ? 1 : 0;
+    wt.forEach((w0, i) => { const p = lin(t, w0, w0 + 0.12); const el = $("w" + i); el.style.opacity = whOn ? p : 0; el.style.transform = `translateY(${(1 - expoOut(p)) * 18}px)`; });
+    slam($("tWh2"), t, 2.38, 3.125, { d: 0.22, s0: 0.6, rot: -2, react: 0.06, seed: 4 });
+
+    // Plan 2 — « LE PRODUIT ! » doré
+    slam($("tLe"), t, 4.44, 5.38, { s0: 2.0, rot: -3, react: 0.05, seed: 5, fadeOut: 0.10 });
+    slam($("tProduit"), t, 4.90, 5.38, { s0: 2.6, rot: -3, react: 0.10, jit: 4, seed: 6, fadeOut: 0.10 });
+
+    // Plan 3 — « MILLIARDAIRE ! » en cascade, puis chute quand le trône disparaît
+    const mOn = t >= 6.50 && t < 7.62; $("tMilli").style.opacity = mOn ? 1 : 0;
+    letters.forEach((s, i) => {
+      const t0 = 6.54 + i * 0.034, p = clamp((t - t0) / 0.18), e = backOut(p);
+      s.style.opacity = mOn ? clamp(p * 3) : 0;
+      if (!fall(s, t, 7.15 + hash(i) * 0.08, 90 + i, (hash(i + 5) - 0.5) * 10)) {
+        const wob = Math.sin((t - t0) * 9 + i) * 3 * clamp(p);
+        s.style.transform = `translateY(${(1 - e) * -120 + wob}px) rotate(${(hash(i + 5) - 0.5) * 10}deg) scale(${0.6 + 0.4 * e + 0.06 * env(t)})`;
+      }
+    });
+
+    // Plan 4 — la liste qui s'empile, puis tout s'effondre avec la pile de documents
+    // les quatre premiers mots tombent avec la pile (il s'écroule à ~10,25 s) ; « référencement… » tient jusqu'au bout du mot
+    [["tSite", 8.34, -9, 10.25], ["tLogo", 8.76, 8, 10.28], ["tPhotos", 9.16, 6, 10.31], ["tPubs", 9.64, -7, 10.34], ["tRef", 10.04, -3, 10.62]].forEach(([id, t0, rot, tf], i) => {
+      const el = $(id);
+      if (t < t0 || t >= 10.833) { el.style.opacity = 0; return; }
+      if (t >= tf) {
+        el.style.opacity = 1;
+        if (id === "tRef") { fall(el, t, tf, 200 + i, rot); return; }
+        // éjectés sur le côté par l'effondrement de la pile (gauche pour SITE/PHOTOS, droite pour LOGO/PUBS)
+        const u = t - tf, side = (id === "tSite" || id === "tPhotos") ? -1 : 1;
+        el.style.transform = `translate(${side * 2600 * u}px, ${-500 * u + 0.5 * 3000 * u * u}px) rotate(${rot + side * 260 * u}deg)`;
+        return;
+      }
+      slam(el, t, t0, 10.833, { s0: 2.0, rot, rot0: rot * 2, react: 0.08, jit: 5, seed: 20 + i });
+    });
+
+    // Plan 5 — « une boutique… ou une FUSÉE ?! », la fusée emporte le mot
+    slam($("tBout"), t, 11.38, 12.40, { s0: 1.8, rot: -3, seed: 30, fadeOut: 0.12 });
+    slam($("tOu"), t, 11.82, 12.40, { s0: 1.8, rot: 2, seed: 31, fadeOut: 0.12 });
+    if (t >= 12.40 && t < 14) {
+      const u = t - 12.40, el = $("tFusee");
+      el.style.opacity = 1;
+      el.style.transform = `translate(${8 * noise(40, t)}px, ${-quadIn(u / 0.7) * 1500}px) rotate(${-3 + 4 * noise(41, t)}deg) scale(${1 + 0.4 * u})`;
+      if (u > 0.75) el.style.opacity = 0;
+    } else slam($("tFusee"), t, 12.08, 12.40, { s0: 3.0, rot: -3, rot0: 8, react: 0.12, jit: 7, seed: 32 });
+
+    // Éclairs : lampe qui jaillit, passage à la salle du trône, coupe vers le chaos, décollage
+    const gold = Math.max(0.55 * bump(t, 4.43, 0.32), t < 5.417 ? Math.pow(lin(t, 5.20, 5.417), 1.6) : 1 - expoOut(lin(t, 5.417, 5.70)) );
+    $("fxGold").style.opacity = t >= 5.70 ? 0.4 * bump(t, 7.10, 0.25) : gold;
+    $("fxWhite").style.opacity = 0.45 * decay(t, 7.542, 0.10) + 0.25 * decay(t, 10.833, 0.08);
+    $("fxOrange").style.opacity = 0.65 * decay(t, 12.40, 0.55);
+  }
+
+  const tl = gsap.timeline({ paused: true });
+  const clock = { t: 0 };
+  tl.to(clock, { t: 14, duration: 14, ease: "none", onUpdate: () => render(clock.t) }, 0);
+  render(0);
+  window.__timelines = window.__timelines || {};
+  window.__timelines["main"] = tl;
+})();
+</script>
+</body>
+</html>

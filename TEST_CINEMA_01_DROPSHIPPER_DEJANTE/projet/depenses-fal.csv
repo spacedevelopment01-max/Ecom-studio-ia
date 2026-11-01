@@ -1,0 +1,28 @@
+date;service;modele;libelle;identifiant_requete;statut;cout_estime_usd
+2026-11-01T09:42:12;fal.ai;fal-ai/nano-banana-2;référence maîtresse (2 images 1K);01a1967c-b926-77f0-bce7-a846a9a75604;ok;0.240
+2026-11-01T09:43:07;fal.ai;fal-ai/nano-banana-2/edit;image de départ plan 1;01a1967d-9444-71b0-b291-21049f155bb5;ok;0.120
+2026-11-01T09:43:08;fal.ai;fal-ai/nano-banana-2/edit;planche d'expressions;01a1967d-943c-77b3-89a2-a0eb56833bed;ok;0.120
+2026-11-01T09:43:44;fal.ai;fal-ai/nano-banana-2/edit;plan 1 : retrait des fausses écritures;01a1967e-2298-7740-91aa-e81f5a75b45d;ok;0.120
+2026-11-01T09:45:03;fal.ai;fal-ai/nano-banana-2/edit;image clé p2a;01a1967f-4a6e-70a2-8261-9a96f25984c6;ok;0.120
+2026-11-01T09:45:03;fal.ai;fal-ai/nano-banana-2/edit;image clé p2b;01a1967f-4a6a-7902-8e1b-9aae11046709;ok;0.120
+2026-11-01T09:45:03;fal.ai;fal-ai/nano-banana-2/edit;image clé p3;01a1967f-4a71-7eb0-90f9-cf23fceae8cb;ok;0.120
+2026-11-01T09:45:04;fal.ai;fal-ai/nano-banana-2/edit;image clé p5a;01a1967f-4b06-7ec2-a282-48d72a02d55c;ok;0.120
+2026-11-01T09:45:04;fal.ai;fal-ai/nano-banana-2/edit;image clé p5b;01a1967f-4ae9-72b2-816d-09314dc55c93;ok;0.120
+2026-11-01T09:45:12;fal.ai;fal-ai/nano-banana-2/edit;image clé p4;01a1967f-4b17-76c0-92b5-c1f48b3ca657;ok;0.120
+2026-11-01T09:46:28;fal.ai;fal-ai/nano-banana-2/edit;plan 3 : sceptre = lampe LED;01a19680-9449-7841-9c27-2104bb97011a;ok;0.120
+2026-11-01T09:47:06;fal.ai;fal-ai/kling-video/v3/standard/image-to-video;Kling v3 std i2v plan 1 (4 s);01a19680-9421-71a0-af97-ad665cb010bc;ok;0.560
+2026-11-01T09:47:47;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan 1 (4 s);01a19681-f995-7fb2-b23b-ec40febd2371;echec 422;0.000
+2026-11-01T09:48:32;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio plan 1 (loudnorm);01a19682-aa84-7031-b52d-2f1236f1925c;ok;0.002
+2026-11-01T09:50:15;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan 1 (4 s);01a19682-d9ee-7203-949a-591e5634b2c4;ok;0.210
+2026-11-01T09:51:51;fal.ai;fal-ai/kling-video/v3/standard/image-to-video;Kling v3 std i2v plan 3 (3 s);01a19685-1004-7290-9554-390ab37b0b8a;ok;0.420
+2026-11-01T09:52:16;fal.ai;fal-ai/kling-video/v3/standard/image-to-video;Kling v3 std i2v plan 2 (3 s, début+fin);01a19685-1028-7b72-b4a8-7716f40c6a11;ok;0.420
+2026-11-01T09:52:16;fal.ai;fal-ai/kling-video/v3/standard/image-to-video;Kling v3 std i2v plan 4 (4 s);01a19685-1049-7881-94cd-cb12897f7a94;ok;0.560
+2026-11-01T09:52:32;fal.ai;fal-ai/kling-video/v3/standard/image-to-video;Kling v3 std i2v plan 5 (4 s, début+fin);01a19685-101e-7c23-aa05-ceb46d058794;ok;0.560
+2026-11-01T09:53:51;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio p4 (loudnorm);01a19687-88dc-7aa1-87c1-625b780a313f;ok;0.002
+2026-11-01T09:53:52;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio p3 (loudnorm);01a19687-88c3-7d73-a53b-bf7cb7961ff6;ok;0.002
+2026-11-01T09:53:52;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio p2 (loudnorm);01a19687-88be-79a2-97e8-ec22dee20191;ok;0.002
+2026-11-01T09:53:52;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio p5 (loudnorm);01a19687-8892-7ec3-9a5d-bb2003288494;ok;0.002
+2026-11-01T09:55:08;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan 4 (4,03 s);01a19687-c38e-7c52-99a0-033fa0f66036;ok;0.210
+2026-11-01T09:55:32;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan 5 (1,8 s);01a19687-c281-7b63-8d0e-9bf33dfa9a9e;ok;0.090
+2026-11-01T09:55:45;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan 2 (2,56 s);01a19687-c286-7d82-88e3-84d126c138c2;ok;0.130
+2026-11-01T09:55:45;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan 3 (2,65 s);01a19687-c397-7c30-83a9-78d82bb73665;ok;0.140
