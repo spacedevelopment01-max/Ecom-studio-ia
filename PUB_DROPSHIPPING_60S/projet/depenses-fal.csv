@@ -85,3 +85,31 @@ date;service;modele;libelle;identifiant_requete;statut;cout_estime_usd
 2026-11-01T12:04:58;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan S;01a196fd-5df2-7dc2-ae53-2566b5ad3f4e;ok;0.185
 2026-11-01T12:05:00;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan R;01a196fd-59b9-73e3-9987-dbab86f00706;echec 504;0.135
 2026-11-01T12:05:41;fal.ai;fal-ai/sync-lipsync/v2;sync-lipsync v2 plan P;01a196fd-55de-7f31-a87c-3e1b5a270f9e;ok;0.255
+2026-11-01T13:41:02;fal.ai;fal-ai/ffmpeg-api/loudnorm;hébergement audio essai avatar s2;01a19757-826d-7471-8454-e2f6bf4e2f38;ok;0.002
+2026-11-01T13:45:02;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;essai Kling AI Avatar v2 Pro réplique s2;01a19757-96e7-7382-9014-5d4cae632504;ok;0.641
+2026-11-01T13:58:47;fal.ai;fal-ai/nano-banana-2/edit;v2 image clé T9 (2K);01a19767-75db-7cb1-805b-ae20987349cc;ok;0.180
+2026-11-01T13:58:47;fal.ai;fal-ai/nano-banana-2/edit;v2 image clé T5b (2K);01a19767-7619-7460-9214-185ea5f848f5;ok;0.180
+2026-11-01T13:58:55;fal.ai;fal-ai/nano-banana-2/edit;v2 image clé FIN (2K);01a19767-7580-7122-96b9-d169e4b12ad2;ok;0.180
+2026-11-01T13:59:53;fal.ai;fal-ai/ffmpeg-api/loudnorm;v2 hébergement audio T5b;01a19768-c919-7c20-ba97-ac44366078cc;ok;0.002
+2026-11-01T13:59:53;fal.ai;fal-ai/ffmpeg-api/loudnorm;v2 hébergement audio T4a;01a19768-c8f7-7182-9124-aeee75f7116a;ok;0.002
+2026-11-01T13:59:54;fal.ai;fal-ai/ffmpeg-api/loudnorm;v2 hébergement audio T5a;01a19768-c936-7940-9b3f-d1b42f613df6;ok;0.002
+2026-11-01T13:59:54;fal.ai;fal-ai/ffmpeg-api/loudnorm;v2 hébergement audio T3;01a19768-c929-7bb1-aeb5-a6f19127b71c;ok;0.002
+2026-11-01T13:59:54;fal.ai;fal-ai/ffmpeg-api/loudnorm;v2 hébergement audio T4b;01a19768-c911-7aa2-a83b-33bb9b9485ba;ok;0.002
+2026-11-01T13:59:59;fal.ai;fal-ai/ffmpeg-api/loudnorm;v2 hébergement audio T6a;01a19768-dd93-7e31-926e-3b1225da88d3;ok;0.002
+2026-11-01T13:59:59;fal.ai;fal-ai/ffmpeg-api/loudnorm;v2 hébergement audio T7;01a19768-dda5-7b70-82c0-55656a8ff92e;ok;0.002
+2026-11-01T13:59:59;fal.ai;fal-ai/ffmpeg-api/loudnorm;v2 hébergement audio R;01a19768-ddd2-70e1-90af-bc976f0ea663;ok;0.002
+2026-11-01T13:59:59;fal.ai;fal-ai/ffmpeg-api/loudnorm;v2 hébergement audio T6b;01a19768-dd89-76c2-a214-40fdf203e95a;ok;0.002
+2026-11-01T13:59:59;fal.ai;fal-ai/ffmpeg-api/loudnorm;v2 hébergement audio T7b;01a19768-dec1-7860-89a7-58b8927542ce;ok;0.002
+2026-11-01T14:00:04;fal.ai;fal-ai/ffmpeg-api/loudnorm;v2 hébergement audio T9;01a19768-f27c-7150-964f-105fde663810;ok;0.002
+2026-11-01T14:02:43;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;v2 Kling AI Avatar v2 Pro T5a;01a19769-4b5e-7900-a35c-fdbd61582fde;ok;0.197
+2026-11-01T14:02:45;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;v2 Kling AI Avatar v2 Pro T5b;01a19769-5324-7163-8436-ee25ac33ec71;ok;0.271
+2026-11-01T14:02:46;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;v2 Kling AI Avatar v2 Pro T4b;01a19769-440c-7523-9b13-bd99651e51c8;ok;0.216
+2026-11-01T14:03:04;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;v2 Kling AI Avatar v2 Pro T6a;01a19769-5b7f-75a1-a1f2-60d53c220874;ok;0.339
+2026-11-01T14:03:21;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;v2 Kling AI Avatar v2 Pro T4a;01a19769-3ba6-7bc1-84e9-a3d5bd8f5fbe;ok;0.260
+2026-11-01T14:03:31;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;v2 Kling AI Avatar v2 Pro T3;01a19769-35f3-7f40-b00e-9567637a04be;ok;0.413
+2026-11-01T14:06:01;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;v2 Kling AI Avatar v2 Pro T6b;01a1976c-2f01-7fe3-9f37-2799d86e46a5;ok;0.209
+2026-11-01T14:06:05;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;v2 Kling AI Avatar v2 Pro T7b;01a1976c-3ec5-7180-8ad9-860c672cfd78;ok;0.230
+2026-11-01T14:06:07;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;v2 Kling AI Avatar v2 Pro R;01a1976c-4684-7870-8184-ed94bff6f586;ok;0.170
+2026-11-01T14:06:11;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;v2 Kling AI Avatar v2 Pro T7;01a1976c-3856-7f41-a5e3-3cc8c8fcaca8;ok;0.470
+2026-11-01T14:07:15;fal.ai;fal-ai/kling-video/ai-avatar/v2/pro;v2 Kling AI Avatar v2 Pro T9;01a1976c-4e59-74f1-878a-7bf635177df2;ok;0.490
+2026-11-01T14:14:52;fal.ai;fal-ai/kling-video/v3/pro/image-to-video;v2 gag final socle (Kling Pro 4 s, début+fin);01a19770-9295-72a1-a5be-fadbbc6e7d67;ok;0.672

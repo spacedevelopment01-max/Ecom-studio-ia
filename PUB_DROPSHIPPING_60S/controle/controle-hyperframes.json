@@ -11,7 +11,7 @@
       {
         "code": "duplicate_media_discovery_risk",
         "severity": "warning",
-        "message": "Detected 4 matching img entries with the same source/start/duration.",
+        "message": "Detected 3 matching img entries with the same source/start/duration.",
         "selector": "[data-composition-id]",
         "dataAttributes": {},
         "sourceFile": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/suite/film/index.html",
@@ -38,98 +38,12 @@
     "ok": true,
     "errorCount": 0,
     "warningCount": 0,
-    "infoCount": 5,
+    "infoCount": 2,
     "findings": [
-      {
-        "code": "container_overflow",
-        "severity": "info",
-        "time": 7.753,
-        "selector": "#sheenA",
-        "message": "Element extends outside a clipping layout container.",
-        "rect": {
-          "left": 1187.52,
-          "top": 309.45,
-          "right": 1432.13,
-          "bottom": 523.34,
-          "width": 244.61,
-          "height": 213.89
-        },
-        "containerSelector": "#logoA > span:nth-of-type(1)",
-        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
-        "containerRect": {
-          "left": 180.27,
-          "top": 340,
-          "right": 899.73,
-          "bottom": 492.8,
-          "width": 719.47,
-          "height": 152.8
-        },
-        "overflow": {
-          "right": 532.4,
-          "top": 30.55,
-          "bottom": 30.54
-        },
-        "dataAttributes": {},
-        "sourceFile": "index.html",
-        "bbox": {
-          "x": 1187.52,
-          "y": 309.45,
-          "width": 244.61,
-          "height": 213.89
-        },
-        "firstSeen": 7.753,
-        "lastSeen": 7.753,
-        "occurrences": 1,
-        "heldMs": 0,
-        "times": [
-          7.753
-        ]
-      },
-      {
-        "code": "escaped_container",
-        "severity": "info",
-        "time": 7.753,
-        "selector": "#sheenA",
-        "message": "Positioned element renders far outside its offset parent — its coordinates were likely computed in a different frame (canvas/viewport pixels).",
-        "rect": {
-          "left": 1187.52,
-          "top": 309.45,
-          "right": 1432.13,
-          "bottom": 523.34,
-          "width": 244.61,
-          "height": 213.89
-        },
-        "containerSelector": "#logoA > span:nth-of-type(1)",
-        "text": "",
-        "fixHint": "Compute left/top in the offset parent's frame (subtract its rect), or mark intentional placement with data-layout-allow-overflow.",
-        "containerRect": {
-          "left": 180.27,
-          "top": 340,
-          "right": 899.73,
-          "bottom": 492.8,
-          "width": 719.47,
-          "height": 152.8
-        },
-        "dataAttributes": {},
-        "sourceFile": "index.html",
-        "bbox": {
-          "x": 1187.52,
-          "y": 309.45,
-          "width": 244.61,
-          "height": 213.89
-        },
-        "firstSeen": 7.753,
-        "lastSeen": 7.753,
-        "occurrences": 1,
-        "heldMs": 0,
-        "times": [
-          7.753
-        ]
-      },
       {
         "code": "panel_out_of_canvas",
         "severity": "info",
-        "time": 7.753,
+        "time": 9.965,
         "selector": "#glowA",
         "message": "Painted panel extends outside the composition canvas.",
         "rect": {
@@ -163,113 +77,64 @@
           "width": 1600,
           "height": 832
         },
-        "firstSeen": 7.753,
-        "lastSeen": 7.753,
+        "firstSeen": 9.965,
+        "lastSeen": 9.965,
         "occurrences": 1,
         "heldMs": 0,
         "times": [
-          7.753
+          9.965
         ]
       },
       {
-        "code": "text_occluded",
+        "code": "content_overlap",
         "severity": "info",
-        "time": 38.767,
-        "selector": "#t1 > span:nth-of-type(1)",
-        "message": "Text is hidden beneath an opaque element.",
+        "time": 12.025,
+        "selector": "#chat1 > div:nth-of-type(1) > div:nth-of-type(1) > small:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
         "rect": {
-          "left": 294.46,
-          "top": 196.5,
-          "right": 840.36,
-          "bottom": 344.62,
-          "width": 545.9,
-          "height": 148.12
+          "left": 258.55,
+          "top": 237.5,
+          "right": 410.42,
+          "bottom": 264.5,
+          "width": 151.87,
+          "height": 27
         },
-        "containerSelector": "#plans",
-        "text": "STUDIO ?!",
-        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
-        "coveredFraction": 0.19,
-        "lifetime": {
-          "start": 0,
-          "end": 46.52
-        },
+        "containerSelector": "#u1t",
+        "text": "conversation",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply.",
         "dataAttributes": {},
         "sourceFile": "index.html",
         "bbox": {
-          "x": 294.46,
-          "y": 196.5,
-          "width": 545.9,
-          "height": 148.12
+          "x": 258.55,
+          "y": 237.5,
+          "width": 151.87,
+          "height": 27
         },
-        "firstSeen": 38.767,
-        "lastSeen": 38.767,
+        "firstSeen": 12.025,
+        "lastSeen": 12.025,
         "occurrences": 1,
         "heldMs": 0,
         "times": [
-          38.767
-        ]
-      },
-      {
-        "code": "container_overflow",
-        "severity": "info",
-        "time": 43.936,
-        "selector": "#sheenB",
-        "message": "Element extends outside a clipping layout container.",
-        "rect": {
-          "left": 568.53,
-          "top": 187.84,
-          "right": 762.64,
-          "bottom": 356.95,
-          "width": 194.11,
-          "height": 169.11
-        },
-        "containerSelector": "#logoB > span:nth-of-type(1)",
-        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
-        "containerRect": {
-          "left": 254.52,
-          "top": 212,
-          "right": 825.47,
-          "bottom": 332.8,
-          "width": 570.95,
-          "height": 120.8
-        },
-        "overflow": {
-          "top": 24.16,
-          "bottom": 24.15
-        },
-        "dataAttributes": {},
-        "sourceFile": "index.html",
-        "bbox": {
-          "x": 568.53,
-          "y": 187.84,
-          "width": 194.11,
-          "height": 169.11
-        },
-        "firstSeen": 43.936,
-        "lastSeen": 43.936,
-        "occurrences": 1,
-        "heldMs": 0,
-        "times": [
-          43.936
+          12.025
         ]
       }
     ],
-    "duration": 46.52,
+    "duration": 59.79,
     "samples": [
-      2.584,
-      7.753,
-      12.922,
-      18.091,
-      23.26,
-      28.429,
-      33.598,
-      38.767,
-      43.936
+      3.322,
+      9.965,
+      16.608,
+      23.252,
+      29.895,
+      36.538,
+      43.182,
+      49.825,
+      56.468
     ],
     "transitionSamples": [],
     "transitionSamplesDropped": 0,
     "tolerance": 2,
-    "totalIssueCount": 5,
+    "totalIssueCount": 2,
     "truncated": false
   },
   "motion": {
@@ -289,178 +154,159 @@
     "findings": [],
     "enabled": true,
     "samples": [
-      2.584,
-      12.922,
-      23.26,
-      33.598,
-      43.936
+      3.322,
+      16.608,
+      29.895,
+      43.182,
+      56.468
     ],
-    "checked": 4,
-    "passed": 4
+    "checked": 9,
+    "passed": 9
   },
   "craft": {
     "ok": true,
     "errorCount": 0,
-    "warningCount": 7,
+    "warningCount": 6,
     "infoCount": 0,
     "findings": [
       {
         "code": "line_unread",
         "severity": "warning",
-        "message": "\"Syna, aide-moi à créer une marque autour de cette la\" (11 words) is on screen 1.67 s (±0.01 s), under its 2.85 s floor: hold it about 0.5 s + 0.3 s a word (3.80 s here) before it leaves or changes; see references/motion.md.",
-        "text": "Syna, aide-moi à créer une marque autour de cette la",
-        "selector": "#u1 > span:nth-of-type(1)",
+        "message": "\"E-COM STUDIO ia\" (4 words) is on screen 1.08 s (±0.01 s), under its 1.27 s floor: hold it about 0.5 s + 0.3 s a word (1.70 s here) before it leaves or changes; see references/motion.md.",
+        "text": "E-COM STUDIO ia",
+        "selector": "#logoA > span:nth-of-type(1) > span:nth-of-type(1)",
         "dataAttributes": {},
         "sourceFile": "index.html",
         "bbox": {
-          "x": 798.31,
-          "y": 327,
-          "width": 96.69000000000005,
-          "height": 47
+          "x": 356.15,
+          "y": 360.25,
+          "width": 553.92,
+          "height": 102.63999999999999
         },
-        "time": 8.005,
-        "words": 11,
-        "seconds": 1.668,
-        "floorSeconds": 2.85
+        "time": 9.167,
+        "words": 4,
+        "seconds": 1.084,
+        "floorSeconds": 1.275
       },
       {
         "code": "text_below_floor",
         "severity": "warning",
         "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 2 text elements stay under it for 0.5 s or more, the smallest \"conversation\" at 22 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
         "text": "conversation",
-        "selector": "#chat2 > div:nth-of-type(1) > div:nth-of-type(1) > small:nth-of-type(1)",
+        "selector": "#chat1 > div:nth-of-type(1) > div:nth-of-type(1) > small:nth-of-type(1)",
         "dataAttributes": {},
         "sourceFile": "index.html",
         "bbox": {
-          "x": 260.13,
-          "y": 233.36,
-          "width": 151.02,
-          "height": 26.84
+          "x": 260.84,
+          "y": 237.29,
+          "width": 150.64,
+          "height": 26.78
         },
-        "time": 30.556,
+        "time": 10.485,
         "times": [
-          7.857,
-          30.556
+          10.485,
+          35.949
         ],
-        "fontPx": 21.88,
+        "fontPx": 21.82,
         "floorPx": 28,
-        "seconds": 1.497,
+        "seconds": 3.495,
         "elements": [
-          {
-            "selector": "#chat2 > div:nth-of-type(1) > div:nth-of-type(1) > small:nth-of-type(1)",
-            "text": "conversation",
-            "fontPx": 21.88,
-            "time": 30.556,
-            "seconds": 1.497
-          },
           {
             "selector": "#chat1 > div:nth-of-type(1) > div:nth-of-type(1) > small:nth-of-type(1)",
             "text": "conversation",
+            "fontPx": 21.82,
+            "time": 10.485,
+            "seconds": 3.495
+          },
+          {
+            "selector": "#chat2 > div:nth-of-type(1) > div:nth-of-type(1) > small:nth-of-type(1)",
+            "text": "conversation",
             "fontPx": 22,
-            "time": 7.857,
-            "seconds": 3.742
+            "time": 35.949,
+            "seconds": 2.871
           }
         ]
       },
       {
         "code": "line_unread",
         "severity": "warning",
-        "message": "\"Syna, rends ma boutique plus premium et mets les bénéfice...\" (14 words) is on screen 0.91 s (±0.01 s), under its 3.53 s floor: hold it about 0.5 s + 0.3 s a word (4.70 s here) before it leaves or changes; see references/motion.md.",
-        "text": "Syna, rends ma boutique plus premium et mets les bénéfices du produit en avant.",
+        "message": "\"Syna, aide-moi à créer une marque autour de cette l\" (11 words) is on screen 1.42 s (±0.01 s), under its 2.85 s floor: hold it about 0.5 s + 0.3 s a word (3.80 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Syna, aide-moi à créer une marque autour de cette l",
+        "selector": "#u1 > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 875.13,
+          "y": 328.52,
+          "width": 24.57000000000005,
+          "height": 47.629999999999995
+        },
+        "time": 10.587,
+        "words": 11,
+        "seconds": 1.42,
+        "floorSeconds": 2.85
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"Syna, rends ma boutique plus premium et mets les bénéfice...\" (14 words) is on screen 1.79 s (±0.01 s), under its 3.53 s floor: hold it about 0.5 s + 0.3 s a word (4.70 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Syna, rends ma boutique plus premium et mets les bénéfices du produit en avan",
         "selector": "#u2 > span:nth-of-type(1)",
         "dataAttributes": {},
         "sourceFile": "index.html",
         "bbox": {
-          "x": 791.49,
-          "y": 324.45,
-          "width": 107.98000000000002,
-          "height": 47.589999999999975
+          "x": 778.12,
+          "y": 323.25,
+          "width": 117.63999999999999,
+          "height": 47.10000000000002
         },
-        "time": 30.673,
+        "time": 35.965,
         "words": 14,
-        "seconds": 0.912,
+        "seconds": 1.786,
         "floorSeconds": 3.525
       },
       {
         "code": "line_unread",
         "severity": "warning",
-        "message": "\"C'est noté ! Voici le devis. Tu valides ? Valider\" (8 words) is on screen 0.37 s (±0.01 s), under its 2.17 s floor: hold it about 0.5 s + 0.3 s a word (2.90 s here) before it leaves or changes; see references/motion.md.",
+        "message": "\"C'est noté ! Voici le devis. Tu valides ? Valider\" (8 words) is on screen 0.96 s (±0.01 s), under its 2.17 s floor: hold it about 0.5 s + 0.3 s a word (2.90 s here) before it leaves or changes; see references/motion.md.",
         "text": "C'est noté ! Voici le devis. Tu valides ? Valider",
         "selector": "#s2",
         "dataAttributes": {},
         "sourceFile": "index.html",
         "bbox": {
           "x": 114,
-          "y": 296.84,
+          "y": 295.11,
           "width": 662.7,
           "height": 42
         },
-        "time": 31.67,
+        "time": 37.837,
         "words": 8,
-        "seconds": 0.375,
+        "seconds": 0.96,
         "floorSeconds": 2.175
       },
       {
         "code": "line_unread",
         "severity": "warning",
-        "message": "\"✦ Lumière douce ✦ Recharge rapide ✦ Format nomade\" (6 words) is on screen 0.29 s (±0.01 s), under its 1.72 s floor: hold it about 0.5 s + 0.3 s a word (2.30 s here) before it leaves or changes; see references/motion.md.",
+        "message": "\"✦ Lumière douce ✦ Recharge rapide ✦ Format nomade\" (6 words) is on screen 0.30 s (±0.01 s), under its 1.72 s floor: hold it about 0.5 s + 0.3 s a word (2.30 s here) before it leaves or changes; see references/motion.md.",
         "text": "✦ Lumière douce ✦ Recharge rapide ✦ Format nomade",
         "selector": "#bloc",
         "dataAttributes": {},
         "sourceFile": "index.html",
         "bbox": {
-          "x": 745.61,
-          "y": 324.43,
-          "width": 334.39,
-          "height": 202.64000000000004
+          "x": 521.1,
+          "y": 323.94,
+          "width": 433.85,
+          "height": 199.07
         },
-        "time": 32.879,
+        "time": 39.46,
         "words": 6,
-        "seconds": 0.288,
+        "seconds": 0.296,
         "floorSeconds": 1.725
-      },
-      {
-        "code": "line_unread",
-        "severity": "warning",
-        "message": "The film's last line \"AVEC SYNA.\" (2 words) is on screen 1.77 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
-        "text": "AVEC SYNA.",
-        "selector": "#tl3",
-        "dataAttributes": {},
-        "sourceFile": "index.html",
-        "bbox": {
-          "x": 399,
-          "y": 448.63,
-          "width": 281.98,
-          "height": 52
-        },
-        "time": 44.751,
-        "words": 2,
-        "seconds": 1.773,
-        "floorSeconds": 2
-      },
-      {
-        "code": "line_unread",
-        "severity": "warning",
-        "message": "The film's last line \"Créez votre marque\" (3 words) is on screen 1.48 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
-        "text": "Créez votre marque",
-        "selector": "#cta > span:nth-of-type(1)",
-        "dataAttributes": {},
-        "sourceFile": "index.html",
-        "bbox": {
-          "x": 275.47,
-          "y": 524.7,
-          "width": 472.36,
-          "height": 54.60000000000002
-        },
-        "time": 45.046,
-        "words": 3,
-        "seconds": 1.477,
-        "floorSeconds": 2
       }
     ],
     "enabled": true,
     "step": 0.125,
-    "samples": 373
+    "samples": 479
   },
   "audio": {
     "ok": true,
@@ -480,9 +326,9 @@
     "findingFiles": []
   },
   "saved": {
-    "id": "90eaef3b-04ee-4267-92bb-64283e3344dd",
-    "revision": "b797f4c4-1e97-4c39-9913-ea278bfe5ba5",
-    "report": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/suite/film/.hyperframes/artifacts/checks/90eaef3b-04ee-4267-92bb-64283e3344dd.json",
+    "id": "476c4aaf-1304-4b1b-ac94-48be5fa02d71",
+    "revision": "315b7d29-9551-4af8-8822-4b2141e3cbf6",
+    "report": "/tmp/claude-0/-home-user-Ecom-studio-ia/16c86533-ea65-58e6-af37-47542443b9b2/scratchpad/suite/film/.hyperframes/artifacts/checks/476c4aaf-1304-4b1b-ac94-48be5fa02d71.json",
     "attribution": "recorded-revision"
   },
   "_meta": {

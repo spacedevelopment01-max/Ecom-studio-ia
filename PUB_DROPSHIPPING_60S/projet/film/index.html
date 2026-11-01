@@ -10,6 +10,7 @@
      réactive, les publications et la signature. Tout est une fonction pure du temps : render(t). -->
 <script src="assets/vendor/gsap.min.js"></script>
 <script src="assets/env-suite.js"></script>
+<script src="assets/timing.js"></script>
 <style>
   /* Polices du logo officiel uniquement (Bricolage, Instrument italique) */
   @font-face { font-family: "Bricolage"; src: url("assets/fonts/bricolage.woff2") format("woff2"); font-weight: 200 800; }
@@ -80,6 +81,11 @@
   #fxWave { background: linear-gradient(100deg, rgba(10,16,36,0) 0%, rgba(10,16,36,.85) 30%, rgba(160,195,255,.75) 46%, rgba(10,16,36,.85) 60%, rgba(10,16,36,0) 90%); mix-blend-mode: screen; }
   #fxStamp { background: radial-gradient(circle at 80% 70%, rgba(240,255,190,.95), rgba(217,242,107,.5) 12%, rgba(217,242,107,0) 28%); mix-blend-mode: screen; }
   #wipe { background: var(--bleu-nuit); }
+  #fade { background: var(--bleu-nuit); }
+  #dust { position: absolute; z-index: 6; left: 330px; top: 1290px; width: 620px; height: 300px; border-radius: 50%; opacity: 0;
+          background: radial-gradient(closest-side, rgba(200,215,245,.9), rgba(150,170,215,.55) 45%, rgba(120,140,200,0) 100%); filter: blur(2px); }
+  #glint { position: absolute; z-index: 8; left: 0; right: 0; top: 508px; height: 86px; display: flex; justify-content: center; pointer-events: none; opacity: 0; }
+  #glint i { width: 420px; height: 86px; border-radius: 999px; background: linear-gradient(100deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.8) 50%, rgba(255,255,255,0) 70%); background-size: 300% 100%; }
   #band { background: linear-gradient(180deg, var(--bleu-nuit) 0%, var(--bleu-nuit) 26%, rgba(10,16,36,0) 33.5%); }
   .tl { position: absolute; z-index: 7; left: 0; right: 0; text-align: center; font: 800 46px/1 "Montserrat", sans-serif; color: #EEF2FB; letter-spacing: .03em; opacity: 0; }
   #cta { position: absolute; z-index: 7; left: 0; right: 0; top: 508px; display: flex; justify-content: center; opacity: 0; }
@@ -88,9 +94,9 @@
 </style>
 </head>
 <body>
-<div id="root" data-composition-id="main" data-start="0" data-duration="46.52" data-fps="24" data-width="1080" data-height="1920">
-  <div id="cam"><video id="plans" class="clip" data-start="0" data-duration="46.52" data-track-index="0" src="assets/plans-suite.mp4" muted playsinline></video></div>
-  <audio id="mix" class="clip" data-start="0" data-duration="46.52" data-track-index="1" data-volume="1" src="assets/mix-suite.wav"></audio>
+<div id="root" data-composition-id="main" data-start="0" data-duration="59.79" data-fps="24" data-width="1080" data-height="1920">
+  <div id="cam"><video id="plans" class="clip" data-start="0" data-duration="59.79" data-track-index="0" src="assets/plans-suite.mp4" muted playsinline></video></div>
+  <audio id="mix" class="clip" data-start="0" data-duration="59.79" data-track-index="1" data-volume="1" src="assets/mix-suite.wav"></audio>
 
   <!-- Scène 2 -->
   <div id="tNasa" class="row" style="top:215px"><span class="slam" style="font-size:120px">LA <span class="yel">NASA</span> ?!</span></div>
@@ -110,7 +116,6 @@
       </div>
     </div>
   </div>
-  <img id="embFly" class="lay" src="assets/img/emblem-luciole.svg" style="left:0;top:0;width:150px;height:150px">
 
   <!-- Scène 4 -->
   <div id="tSite" class="row" style="top:215px"><span class="slam" style="font-size:96px">MON SITE</span></div>
@@ -152,11 +157,14 @@
   <div id="fxWave" class="ov"></div>
   <div id="fxStamp" class="ov"></div>
   <div id="wipe" class="ov"></div>
+  <div id="dust"></div>
+  <div id="glint"><i></i></div>
   <div id="fxFlash" class="ov"></div>
+  <div id="fade" class="ov"></div>
 </div>
 <script>
 (function () {
-  const FPS = 24, ENV = window.VOICE_ENV || [];
+  const FPS = 24, ENV = window.VOICE_ENV || [], TT = window.T;
   const $ = (id) => document.getElementById(id);
   const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
   const lin = (t, a, b) => clamp((t - a) / (b - a));
@@ -169,8 +177,12 @@
   const bump = (t, t0, d) => (t < t0 || t > t0 + d ? 0 : Math.sin(Math.PI * (t - t0) / d));
   const decay = (t, t0, d) => (t < t0 || t > t0 + d ? 0 : Math.pow(1 - (t - t0) / d, 2));
   const show = (el, o, tr) => { el.style.opacity = o; if (tr !== undefined) el.style.transform = tr; };
+  // Repères du montage (calculés par v2/montage_v2.py) : début / fin de plan, temps source -> temps du film, mots
+  const S = (id) => TT.shots[id][0], E = (id) => TT.shots[id][1];
+  const SRC = (id, ts) => TT.shots[id][0] + (ts - TT.shots[id][2]);
+  const WD = (k, p) => { const w = TT.mots[k].find((m) => m.mot.toLowerCase().startsWith(p.toLowerCase())); return w ? w.t : S("A"); };
+  const D = TT.duree;
 
-  // Entrée « coup de poing » (même grammaire que les 14 s validées)
   function slam(el, t, tIn, tOut, o = {}) {
     if (t < tIn || t >= tOut) { el.style.opacity = 0; return; }
     const d = o.d || .16, s0 = o.s0 || 2.2, p = clamp((t - tIn) / d), e = backOut(p);
@@ -179,91 +191,98 @@
     const jx = (o.jit || 0) * noise(o.seed || 1, t), jy = (o.jit || 0) * noise((o.seed || 1) + 7, t);
     show(el, clamp(p * 3) * out, `translate(${jx}px, ${jy}px) rotate(${(o.rot || 0) + (o.rot0 || 0) * (1 - e)}deg) scale(${sc})`);
   }
-  // Texte tapé (fonction pure du temps)
-  function typed(el, text, t, t0, t1) { const n = Math.round(text.length * lin(t, t0, t1)); el.textContent = text.slice(0, n); }
+  function typed(el, text, t, t0, t1) { el.textContent = text.slice(0, Math.round(text.length * lin(t, t0, t1))); }
   const MSG1 = "Syna, aide-moi à créer une marque autour de cette lampe.";
   const MSG2 = "Syna, rends ma boutique plus premium et mets les bénéfices du produit en avant.";
-
-  const SHAKES = [[1.36, .3, 8], [6.35, .5, 7], [13.6, .25, 9], [14.85, .7, 12], [33.72, .35, 11], [40.66, .25, 9], [44.8, .45, 6]];
-  const PUNCH = [[20.35, .5, .04], [38.72, .4, .05], [42.23, .4, .035], [13.62, .3, .035]];
+  const M = {   // repères dérivés
+    nasa: WD("s2", "NASA"), et: WD("s2", "Et"),
+    c0: S("C"), c1: E("C"),
+    t3: S("T3"), t3e: E("T3"),
+    stamp: SRC("F", 2.95),
+    site: WD("s4x", "site"), prod: WD("s4x", "produits"), pan: WD("s4a", "panier"), t4ae: E("T4a"),
+    k0: S("K"), l1: E("L"), tout: WD("s5b", "Tout"), t5be: E("T5b"),
+    t6b: S("T6b"), n0: S("N"), n1: E("N"),
+    o0: S("O"), bloc: SRC("O", 1.50), bouton: SRC("O", 2.05), apres: SRC("O", 3.0), o1: E("O"),
+    quinze: WD("s7", "quinze"), studio: WD("s7", "Studio"), t7e: E("T7"),
+    pouf: SRC("Q", 1.75), kick: SRC("Q", 2.97),
+    t9: S("T9"), ecom: WD("s9", "e-commerce"), meme: WD("s9", "même"), avec: WD("s9", "avec"), allez: WD("s9", "Allez"),
+    g2: S("GAG2"), g3: S("GAG3"), fin: S("FIN"),
+  };
+  const SHAKES = [[M.c0 + .45, .35, 7], [M.stamp, .25, 8], [S("G"), .9, 6], [M.bouton, .3, 10], [M.kick, .25, 9], [M.g2, .3, 12], [M.g3, .3, 10]];
+  const PUNCH = [[M.nasa, .45, .04], [M.studio, .4, .05], [M.stamp, .3, .03]];
 
   function render(t) {
-    // Caméra : continuité de cadrage avec la fin des 14 s (×1,045) puis ×1,03 ; plongée dans l'affiche (scène 5)
     let sc = 1.03 + .015 * (1 - lin(t, 0, .6)), x = 0, y = 0, r = 0, oy = 45;
     PUNCH.forEach(([t0, d, a]) => { sc += a * bump(t, t0, d); });
     SHAKES.forEach(([t0, d, a], i) => { const k = decay(t, t0, d) * a; if (k) { x += k * noise(10 + i, t); y += k * noise(30 + i, t); r += k * .05 * noise(50 + i, t); } });
-    if (t >= 22.42 && t < 22.80) { sc *= 1 + 1.4 * Math.pow(lin(t, 22.42, 22.80), 2); oy = 30; }
+    const jl = S("J"), je = E("J");                                          // plongée dans l'affiche
+    if (t >= je - .38 && t < je) { sc *= 1 + 1.4 * Math.pow(lin(t, je - .38, je), 2); oy = 30; }
+    if (t >= M.fin) sc *= 1 + .045 * easeIO(lin(t, M.fin, D));               // image de fin : lente avancée
     const cam = $("cam"); cam.style.transformOrigin = `50% ${oy}%`; cam.style.transform = `translate(${x}px, ${y}px) rotate(${r}deg) scale(${sc})`;
 
-    // Scène 2 — « la NASA ?! », claquement de doigts, vague bleu nuit, logo officiel
-    slam($("tNasa"), t, 1.95, 3.05, { s0: 2.6, rot: -4, rot0: -8, react: .1, jit: 4, seed: 2, fadeOut: .12 });
-    $("fxSnap").style.opacity = .9 * decay(t, 6.03, .28);
-    $("fxWave").style.opacity = t >= 6.45 && t < 7.4 ? .85 * bump(t, 6.45, .95) : 0;
-    $("fxWave").style.transform = `translateX(${(-1 + 2 * lin(t, 6.45, 7.4)) * 900}px)`;
-    { const el = $("logoA");
-      if (t >= 6.8 && t < 8.35) {
-        const p = expoOut(lin(t, 6.8, 7.15)), out = lin(t, 8.0, 8.35);
-        show(el, clamp(lin(t, 6.8, 6.95)) * (1 - out), `translateY(${(1 - p) * -60 - out * 120}px) scale(${(1.9 - .9 * p) * (1 + .5 * out)})`);
-        $("sheenA").style.left = `${-40 + 180 * lin(t, 7.15, 7.75)}%`; $("sheenA").style.opacity = 0;
-      } else el.style.opacity = 0;
-      const g = $("glowA"); g.style.opacity = t >= 6.8 && t < 8.35 ? .95 * bump(t, 6.8, .7) + .35 * (t > 7.15 ? 1 - lin(t, 7.9, 8.35) : 0) : 0; g.style.transform = `scale(${.5 + 1.1 * expoOut(lin(t, 6.8, 7.3))})`; }
+    // Scène 2
+    slam($("tNasa"), t, M.nasa, M.et - .05, { s0: 2.6, rot: -4, rot0: -8, react: .1, jit: 4, seed: 2, fadeOut: .12 });
+    $("fxSnap").style.opacity = .9 * decay(t, M.c0, .3);
+    $("fxWave").style.opacity = t >= M.c0 + .25 && t < M.c0 + 1.15 ? .8 * bump(t, M.c0 + .25, .9) : 0;
+    $("fxWave").style.transform = `translateX(${(-1 + 2 * lin(t, M.c0 + .25, M.c0 + 1.15)) * 900}px)`;
+    { const el = $("logoA"), a = M.c0 + .45, b = M.c1;
+      if (t >= a && t < b) { const p = expoOut(lin(t, a, a + .35)), out = lin(t, b - .25, b);
+        show(el, clamp(lin(t, a, a + .12)) * (1 - out), `translateY(${(1 - p) * -60 - out * 80}px) scale(${(1.9 - .9 * p) * (1 + .3 * out)})`); }
+      else el.style.opacity = 0; $("sheenA").style.opacity = 0;
+      const g = $("glowA"); g.style.opacity = t >= a && t < b ? .95 * bump(t, a, .7) + .35 * (t > a + .35 ? 1 - lin(t, b - .3, b) : 0) : 0; g.style.transform = `scale(${.5 + 1.1 * expoOut(lin(t, a, a + .5))})`; }
 
-    // Scène 3 — conversation Syna n° 1, puis l'emblème vole dans ses mains
-    { const c = $("chat1"), on = t >= 7.72 && t < 11.62;
-      if (on) { const p = backOut(clamp((t - 7.72) / .3)); show(c, clamp(lin(t, 7.72, 7.85)) * (1 - lin(t, 11.38, 11.62)), `scale(${.86 + .14 * p})`); } else c.style.opacity = 0;
-      show($("u1"), on ? clamp(lin(t, 7.95, 8.05)) * (1 - lin(t, 9.55, 9.75)) : 0, `translateY(${-90 * easeIO(lin(t, 9.55, 9.75))}px)`);
-      typed($("u1t"), MSG1, t, 7.98, 9.45); $("car1").style.opacity = t < 9.45 && Math.floor(t * 4) % 2 === 0 ? 1 : (t < 9.45 ? .3 : 0);
-      show($("s1"), on ? clamp(lin(t, 9.7, 9.85)) : 0, `translateY(${(1 - expoOut(lin(t, 9.7, 9.95))) * 50}px)`);
-      [["cp1", 10.05], ["cp2", 10.35], ["cp3", 10.65]].forEach(([id, t0]) => { const p = clamp((t - t0) / .22); show($(id), on && t >= t0 ? clamp(p * 3) : 0, `scale(${.4 + .6 * backOut(p)})`); });
-      [0, 1, 2].forEach((i) => { $("dots1").children[i].style.opacity = .35 + .65 * (Math.sin(t * 9 - i * .9) > .3 ? 1 : 0); });
-      // l'emblème (puce n° 3) grossit et file vers ses mains
-      const f = $("embFly");
-      if (t >= 11.1 && t < 11.68) { const p = easeIO(lin(t, 11.1, 11.62)); const x0 = 700, y0 = 500, x1 = 470, y1 = 860;
-        show(f, 1, `translate(${x0 + (x1 - x0) * p - 75}px, ${y0 + (y1 - y0) * p - 75 - 160 * Math.sin(Math.PI * p)}px) scale(${.75 + 1.1 * p}) rotate(${360 * p}deg)`); }
-      // coup de tampon sur la boîte (scène 3, fin)
-      else if (t >= 13.3 && t < 13.58) { const p = easeIO(lin(t, 13.3, 13.56)); const x0 = 720, y0 = 600, x1 = 860, y1 = 1330;
-        show(f, 1, `translate(${x0 + (x1 - x0) * p - 75}px, ${y0 + (y1 - y0) * p - 75}px) scale(${1 - .35 * p})`); }
-      else f.style.opacity = 0; }
-    $("fxStamp").style.opacity = .9 * decay(t, 13.56, .35);
+    // Scène 3 — conversation Syna n° 1 pendant qu'il en parle
+    { const c = $("chat1"), on = t >= M.t3 && t < M.t3e;
+      if (on) { const p = backOut(clamp((t - M.t3) / .3)); show(c, clamp(lin(t, M.t3, M.t3 + .12)) * (1 - lin(t, M.t3e - .15, M.t3e)), `scale(${.86 + .14 * p})`); } else c.style.opacity = 0;
+      show($("u1"), on ? clamp(lin(t, M.t3 + .15, M.t3 + .25)) * (1 - lin(t, M.t3 + 1.55, M.t3 + 1.7)) : 0, `translateY(${-90 * easeIO(lin(t, M.t3 + 1.55, M.t3 + 1.7))}px)`);
+      typed($("u1t"), MSG1, t, M.t3 + .18, M.t3 + 1.45); $("car1").style.opacity = t < M.t3 + 1.45 ? (Math.floor(t * 6) % 2 ? .3 : 1) : 0;
+      show($("s1"), on ? clamp(lin(t, M.t3 + 1.7, M.t3 + 1.82)) : 0, `translateY(${(1 - expoOut(lin(t, M.t3 + 1.7, M.t3 + 1.95))) * 50}px)`);
+      [["cp1", M.t3 + 1.95], ["cp2", M.t3 + 2.25], ["cp3", M.t3 + 2.55]].forEach(([id, t0]) => { const p = clamp((t - t0) / .22); show($(id), on && t >= t0 ? clamp(p * 3) : 0, `scale(${.4 + .6 * backOut(p)})`); });
+      [0, 1, 2].forEach((i) => { $("dots1").children[i].style.opacity = .35 + .65 * (Math.sin(t * 9 - i * .9) > .3 ? 1 : 0); }); }
+    $("fxStamp").style.opacity = .9 * decay(t, M.stamp, .35);
 
     // Scène 4 — chaque élément de la boutique sur son mot
-    slam($("tSite"), t, 15.2, 15.93, { s0: 2.2, rot: -3, react: .08, seed: 3 });
-    slam($("tProd"), t, 16.06, 16.89, { s0: 2.2, rot: 2, react: .08, seed: 4 });
-    slam($("tPan"), t, 17.04, 17.95, { s0: 2.4, rot: -2, react: .1, seed: 5, fadeOut: .12 });
+    slam($("tSite"), t, M.site, M.prod, { s0: 2.2, rot: -3, react: .08, seed: 3 });
+    slam($("tProd"), t, M.prod, S("H"), { s0: 2.2, rot: 2, react: .08, seed: 4, fadeOut: .1 });
+    slam($("tPan"), t, M.pan, M.t4ae - .05, { s0: 2.4, rot: -2, react: .1, seed: 5, fadeOut: .12 });
 
-    // Scène 5 — plongée dans l'affiche, deux publications, « tout au même endroit »
-    $("fxFlash").style.opacity = .85 * bump(t, 22.68, .3) + .55 * decay(t, 32.7, .12);
-    [["post1", 23.35, -6], ["post2", 23.75, 5]].forEach(([id, t0, rot]) => { const p = clamp((t - t0) / .3);
-      show($(id), t >= t0 && t < 24.6 ? clamp(p * 3) * (1 - lin(t, 24.4, 24.6)) : 0, `rotate(${rot}deg) scale(${.5 + .5 * backOut(p)}) translateY(${-20 * Math.sin((t - t0) * 3)}px)`); });
-    slam($("tTout"), t, 24.85, 26.2, { s0: 1.8, rot: -2, react: .06, seed: 6, fadeOut: .15 });
+    // Scène 5 — plongée dans l'affiche, publications, « tout au même endroit »
+    $("fxFlash").style.opacity = .85 * bump(t, je - .12, .3) + .5 * decay(t, M.g2, .1) + .35 * decay(t, M.g3, .08);
+    [["post1", M.k0 + .1, -6], ["post2", M.k0 + .4, 5]].forEach(([id, t0, rot]) => { const p = clamp((t - t0) / .3);
+      show($(id), t >= t0 && t < M.l1 ? clamp(p * 3) * (1 - lin(t, M.l1 - .15, M.l1)) : 0, `rotate(${rot}deg) scale(${.5 + .5 * backOut(p)}) translateY(${-20 * Math.sin((t - t0) * 3)}px)`); });
+    slam($("tTout"), t, M.tout, M.t5be - .05, { s0: 1.8, rot: -2, react: .06, seed: 6, fadeOut: .15 });
 
-    // Scène 6 — conversation Syna n° 2, devis et validation, AVANT / APRÈS, bloc des bénéfices
-    { const c = $("chat2"), on = t >= 30.45 && t < 32.06;
-      if (on) { const p = backOut(clamp((t - 30.45) / .3)); show(c, clamp(lin(t, 30.45, 30.58)) * (1 - lin(t, 31.94, 32.06)), `scale(${.86 + .14 * p})`); } else c.style.opacity = 0;
-      show($("u2"), on ? clamp(lin(t, 30.6, 30.7)) * (1 - lin(t, 31.5, 31.62)) : 0, `translateY(${-80 * easeIO(lin(t, 31.5, 31.62))}px)`);
-      typed($("u2t"), MSG2, t, 30.62, 31.42); $("car2").style.opacity = t < 31.42 && Math.floor(t * 8) % 2 === 0 ? 1 : (t < 31.42 ? .3 : 0);
-      show($("s2"), on ? clamp(lin(t, 31.6, 31.68)) : 0, `translateY(${(1 - expoOut(lin(t, 31.6, 31.75))) * 40}px)`);
-      const pb = clamp((t - 31.7) / .12); show($("btnVal"), on && t >= 31.7 ? clamp(pb * 3) : 0, `scale(${(.5 + .5 * backOut(pb)) * (1 - .14 * bump(t, 31.86, .12))})`);
+    // Scène 6 — conversation Syna n° 2 : message, devis, validation ; puis AVANT / APRÈS
+    { const c = $("chat2"), on = t >= M.t6b && t < M.n1;
+      if (on) { const p = backOut(clamp((t - M.t6b) / .3)); show(c, clamp(lin(t, M.t6b, M.t6b + .12)) * (1 - lin(t, M.n1 - .12, M.n1)), `scale(${.86 + .14 * p})`); } else c.style.opacity = 0;
+      show($("u2"), on ? clamp(lin(t, M.t6b + .12, M.t6b + .22)) * (1 - lin(t, M.n0 + .02, M.n0 + .14)) : 0, `translateY(${-80 * easeIO(lin(t, M.n0 + .02, M.n0 + .14))}px)`);
+      typed($("u2t"), MSG2, t, M.t6b + .15, M.n0 - .05); $("car2").style.opacity = t < M.n0 - .05 ? (Math.floor(t * 8) % 2 ? .3 : 1) : 0;
+      show($("s2"), on ? clamp(lin(t, M.n0 + .14, M.n0 + .24)) : 0, `translateY(${(1 - expoOut(lin(t, M.n0 + .14, M.n0 + .3))) * 40}px)`);
+      const pb = clamp((t - (M.n0 + .32)) / .12); show($("btnVal"), on && t >= M.n0 + .32 ? clamp(pb * 3) : 0, `scale(${(.5 + .5 * backOut(pb)) * (1 - .14 * bump(t, M.n0 + .7, .14))})`);
       [0, 1, 2].forEach((i) => { $("dots2").children[i].style.opacity = .35 + .65 * (Math.sin(t * 9 - i * .9) > .3 ? 1 : 0); }); }
-    show($("avant"), t >= 32.04 && t < 32.8 ? clamp(lin(t, 32.04, 32.12)) * (1 - lin(t, 32.65, 32.8)) : 0);
-    { const p = clamp((t - 34.3) / .2); show($("apres"), t >= 34.3 && t < 35.28 ? clamp(p * 3) : 0, `scale(${.6 + .4 * backOut(p)})`); }
-    { const el = $("bloc"); if (t >= 33.08 && t < 33.52) { const p = lin(t, 33.08, 33.50); show(el, 1, `translateX(${1250 - 2600 * p}px) rotate(${-3 + 6 * p}deg)`); } else el.style.opacity = 0; }
+    show($("avant"), t >= M.o0 && t < M.o0 + .5 ? clamp(lin(t, M.o0, M.o0 + .08)) * (1 - lin(t, M.o0 + .38, M.o0 + .5)) : 0);
+    { const p = clamp((t - M.apres) / .2); show($("apres"), t >= M.apres && t < M.o1 ? clamp(p * 3) : 0, `scale(${.6 + .4 * backOut(p)})`); }
+    { const el = $("bloc"); if (t >= M.bloc && t < M.bloc + .48) { const p = lin(t, M.bloc, M.bloc + .46); show(el, 1, `translateX(${1250 - 2600 * p}px) rotate(${-3 + 6 * p}deg)`); } else el.style.opacity = 0; }
 
-    // Scène 7 — « 15 outils… » puis « 1 Studio ?! »
-    slam($("t15"), t, 36.3, 38.68, { s0: 2.0, rot: -3, react: .06, jit: 2, seed: 7 });
-    slam($("t1"), t, 38.68, 39.5, { s0: 2.8, rot: -4, rot0: 10, react: .12, jit: 5, seed: 8, fadeOut: .15 });
+    // Scène 7
+    slam($("t15"), t, M.quinze, M.studio, { s0: 2.0, rot: -3, react: .06, jit: 2, seed: 7 });
+    slam($("t1"), t, M.studio, M.t7e - .03, { s0: 2.8, rot: -4, rot0: 10, react: .12, jit: 5, seed: 8, fadeOut: .12 });
 
-    // Scène 8 — volet bleu nuit, logo officiel, signature et bouton
-    { const w = $("wipe"); if (t >= 42.92 && t < 43.32) { const p = lin(t, 42.92, 43.32); w.style.opacity = bump(t, 42.92, .4) * 1; w.style.transform = `translateY(${(-1 + 2 * p) * 100}%)`; } else w.style.opacity = 0; }
-    $("band").style.opacity = clamp(lin(t, 43.05, 43.35));
-    { const el = $("logoB"); if (t >= 43.22) { const p = expoOut(lin(t, 43.22, 43.6)); show(el, clamp(lin(t, 43.22, 43.32)), `translateY(${(1 - p) * 70}px) scale(${1.35 - .35 * p})`); $("sheenB").style.left = `${-40 + 180 * lin(t, 43.6, 44.2)}%`; $("sheenB").style.opacity = 0; } else el.style.opacity = 0; }
-    [["tl1", 43.95], ["tl2", 44.3], ["tl3", 44.65]].forEach(([id, t0]) => { const p = expoOut(lin(t, t0, t0 + .25)); show($(id), t >= t0 ? clamp(lin(t, t0, t0 + .12)) : 0, `translateY(${(1 - p) * 26}px)`); });
-    { const p = clamp((t - 45.0) / .25); show($("cta"), t >= 45.0 ? clamp(p * 3) : 0, `scale(${(.6 + .4 * backOut(p)) * (1 + .03 * Math.sin((t - 45) * 6) * (t > 45.3 ? 1 : 0))})`); }
+    // Scène 8 — volet bleu nuit, logo officiel, signature ; chute du socle ; image de fin tenue
+    { const w = $("wipe"); if (t >= M.t9 - .2 && t < M.t9 + .2) { const p = lin(t, M.t9 - .2, M.t9 + .2); w.style.opacity = bump(t, M.t9 - .2, .4); w.style.transform = `translateY(${(-1 + 2 * p) * 100}%)`; } else w.style.opacity = 0; }
+    $("band").style.opacity = clamp(lin(t, M.t9 - .05, M.t9 + .25));
+    { const el = $("logoB"); if (t >= M.t9 + .05) { const p = expoOut(lin(t, M.t9 + .05, M.t9 + .45)); show(el, clamp(lin(t, M.t9 + .05, M.t9 + .15)), `translateY(${(1 - p) * 70}px) scale(${(1.35 - .35 * p) * (1 + .035 * bump(t, M.fin + .2, .5))})`); } else el.style.opacity = 0; $("sheenB").style.opacity = 0; }
+    [["tl1", M.ecom], ["tl2", M.meme], ["tl3", M.avec]].forEach(([id, t0]) => { const p = expoOut(lin(t, t0, t0 + .25)); show($(id), t >= t0 ? clamp(lin(t, t0, t0 + .12)) : 0, `translateY(${(1 - p) * 26}px)`); });
+    { const p = clamp((t - M.allez) / .25); show($("cta"), t >= M.allez ? clamp(p * 3) : 0, `scale(${(.6 + .4 * backOut(p)) * (1 + .05 * bump(t, M.fin + .35, .4))})`); }
+    { const g = $("glint"); g.style.opacity = t >= M.fin + .5 && t < M.fin + 1.3 ? 1 : 0; g.firstChild.style.backgroundPosition = `${100 - 100 * lin(t, M.fin + .5, M.fin + 1.3)}% 0`; }
+    { const el = $("dust"); const a = Math.max(decay(t, M.g2, .55), decay(t, M.g3, .45) * .8); const k = t >= M.g3 ? lin(t, M.g3, M.g3 + .45) : lin(t, M.g2, M.g2 + .55);
+      show(el, a, `scale(${.5 + .9 * expoOut(k)}, ${.5 + .5 * expoOut(k)})`); }
+    $("fade").style.opacity = lin(t, D - .35, D - .04);
   }
 
   const tl = gsap.timeline({ paused: true });
   const clock = { t: 0 };
-  tl.to(clock, { t: 46.52, duration: 46.52, ease: "none", onUpdate: () => render(clock.t) }, 0);
+  tl.to(clock, { t: D, duration: D, ease: "none", onUpdate: () => render(clock.t) }, 0);
   render(0);
   window.__timelines = window.__timelines || {};
   window.__timelines["main"] = tl;
