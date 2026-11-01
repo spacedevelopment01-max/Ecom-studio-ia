@@ -1,0 +1,39 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"../assets/vendor/three/three.module.js","three/addons/":"../assets/vendor/three/addons/"}}</script>
+<style>body{margin:0;background:#222}canvas{display:block}</style></head>
+<body><canvas id="cv" width="900" height="1200"></canvas>
+<script type="module">
+/* Photos produit fictives de la lampe (rendues en 3D, aucune personne) :
+   « generique » = photo de catalogue fournisseur (fond blanc, identique partout) ;
+   « hero » = photo de marque KELVO (fond nuit, lumière ambre) ; « detail » = gros plan de l'anneau ; « roche » = mise en scène. */
+import * as THREE from "three";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { makeLamp, KELVO } from "../assets/lamp.js";
+const cv = document.getElementById("cv");
+const r = new THREE.WebGLRenderer({ canvas: cv, antialias: true, preserveDrawingBuffer: true });
+r.setPixelRatio(1); r.shadowMap.enabled = true; r.toneMapping = THREE.NeutralToneMapping; r.outputColorSpace = THREE.SRGBColorSpace;
+const env = new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(), 0.04).texture;
+function base(bg, envI) { const s = new THREE.Scene(); s.background = new THREE.Color(bg); s.environment = env; s.environmentIntensity = envI; return s; }
+const shots = {
+  generique: () => { const s = base("#F4F5F7", 0.9); const f = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.MeshStandardMaterial({ color: "#F4F5F7", roughness: 1 })); f.rotation.x = -Math.PI / 2; f.position.y = -0.62; f.receiveShadow = true; s.add(f);
+    s.add(new THREE.HemisphereLight("#ffffff", "#dddddd", 1.2)); const k = new THREE.DirectionalLight("#ffffff", 1.6); k.position.set(2, 4, 3); k.castShadow = true; k.shadow.radius = 8; s.add(k);
+    const l = makeLamp(); l.userData.setLit(0.35); l.rotation.y = -0.35; s.add(l); return [s, [0, 0.05, 3.3], [0, 0, 0], 30]; },
+  hero: () => { const s = base(KELVO.nuit, 0.25); s.fog = new THREE.Fog(KELVO.nuit, 4, 12);
+    const f = new THREE.Mesh(new THREE.CircleGeometry(3, 64), new THREE.MeshStandardMaterial({ color: "#14171E", roughness: 0.35, metalness: 0.5 })); f.rotation.x = -Math.PI / 2; f.position.y = -0.62; f.receiveShadow = true; s.add(f);
+    const key = new THREE.SpotLight("#FFE8C8", 30, 10, 0.5, 0.6, 1.5); key.position.set(-1.8, 3, 2.5); key.castShadow = true; s.add(key);
+    const rim = new THREE.PointLight(KELVO.ambre, 14, 6, 1.6); rim.position.set(1.6, 0.8, -1.2); s.add(rim);
+    const l = makeLamp(); l.userData.setLit(1.4); l.rotation.y = -0.4; s.add(l); return [s, [0.15, 0.1, 3.2], [0, 0, 0], 32]; },
+  detail: () => { const s = base("#0A0B0F", 0.3); const l = makeLamp(); l.userData.setLit(1.6); l.rotation.y = -0.15; s.add(l);
+    const k = new THREE.DirectionalLight("#FFE8C8", 1.5); k.position.set(-2, 2, 3); s.add(k); return [s, [0.35, 0.05, 1.9], [0, 0, 0.1], 30]; },
+  roche: () => { const s = base("#121520", 0.3); s.fog = new THREE.Fog("#121520", 4, 14);
+    const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.8, 1), new THREE.MeshStandardMaterial({ color: "#2B2A2F", roughness: 0.95, flatShading: true })); rock.scale.set(1.4, 0.55, 1.1); rock.position.y = -0.95; rock.receiveShadow = true; s.add(rock);
+    const key = new THREE.SpotLight("#BFD2FF", 26, 10, 0.5, 0.7, 1.5); key.position.set(2, 3, 2); key.castShadow = true; s.add(key);
+    const warm = new THREE.PointLight(KELVO.ambre, 10, 5, 1.5); warm.position.set(-1, 0.3, 1); s.add(warm);
+    const l = makeLamp(); l.userData.setLit(1.3); l.rotation.set(0.05, 0.5, -0.12); l.position.y = -0.05; s.add(l); return [s, [0.3, 0.2, 3.6], [0, -0.2, 0], 32]; },
+};
+window.__photos = {};
+const cam = new THREE.PerspectiveCamera(30, 900 / 1200, 0.05, 50);
+for (const [k, f] of Object.entries(shots)) { const [s, p, t, fov] = f(); cam.fov = fov; cam.position.set(...p); cam.lookAt(...t); cam.updateProjectionMatrix(); r.setSize(900, 1200, false); r.render(s, cam); window.__photos[k] = cv.toDataURL("image/jpeg", 0.92); }
+window.__done = true;
+</script></body></html>

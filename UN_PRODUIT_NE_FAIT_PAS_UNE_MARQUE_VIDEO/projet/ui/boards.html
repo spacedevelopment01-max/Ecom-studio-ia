@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<!-- Planches d'interface photographiées en textures pour les écrans 3D de la publicité.
+     Studio : libellés, couleurs, icônes et polices repris de la version actuelle d'E-COM STUDIO IA (origin/main).
+     3M Plâtrerie Peinture : entreprise fictive créée pour la publicité (logo, site, visuels). -->
+<style>
+@font-face{font-family:Inter;src:url(../assets/fonts/inter.woff2) format("woff2");font-weight:100 900}
+@font-face{font-family:Brico;src:url(../assets/fonts/bricolage.woff2) format("woff2");font-weight:200 800}
+@font-face{font-family:Instr;src:url(../assets/fonts/instrument-italic.woff2) format("woff2");font-style:italic}
+@font-face{font-family:Outfit;src:url(../assets/fonts/outfit-latin-700-normal.woff2) format("woff2");font-weight:700}
+@font-face{font-family:Outfit;src:url(../assets/fonts/outfit-latin-800-normal.woff2) format("woff2");font-weight:800}
+@font-face{font-family:Lato;src:url(../assets/fonts/lato-latin-400-normal.woff2) format("woff2");font-weight:400}
+@font-face{font-family:Lato;src:url(../assets/fonts/lato-latin-700-normal.woff2) format("woff2");font-weight:700}
+@font-face{font-family:Lato;src:url(../assets/fonts/lato-latin-900-normal.woff2) format("woff2");font-weight:900}
+:root{--paper:#F5F7FC;--paper2:#EAEEF7;--card:#fff;--ink:#0A1024;--ink2:#2B3452;--muted:#5E6886;--line:#DCE2EE;--signal:#2F5BEA;--soft:#E3E9FD;
+  --g:#1E6B5E;--ocre:#E3A53C;--chaux:#F3EEE6;--sable:#D8CDBB;--anth:#1F2A2E;--txt:#4A5458}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:transparent;}
+body{font-family:Inter;color:var(--ink);-webkit-font-smoothing:antialiased}
+[data-board]{position:relative;overflow:hidden;margin:20px}
+.ic{display:inline-block;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* ---------- navigateur ---------- */
+.win{background:var(--paper);display:flex;flex-direction:column;border-radius:18px}
+.chrome{height:44px;background:#DFE4EC;display:flex;align-items:flex-end;padding:0 14px;gap:8px}
+.dots{display:flex;gap:8px;align-self:center;margin-right:10px}.dots i{width:12px;height:12px;border-radius:50%;display:block}
+.tab{height:36px;background:#fff;border-radius:10px 10px 0 0;display:flex;align-items:center;gap:9px;padding:0 14px;font:500 13px Inter;color:var(--ink2);width:400px;white-space:nowrap}
+.bar{height:42px;background:#fff;display:flex;align-items:center;gap:14px;padding:0 16px;border-bottom:1px solid var(--line);color:#7A839C}
+.addr{flex:1;height:28px;border-radius:14px;background:#F1F3F8;display:flex;align-items:center;padding:0 12px;gap:8px}
+/* ---------- studio ---------- */
+.studio{flex:1;display:flex;min-height:0;position:relative}
+.side{width:248px;background:#fff;border-right:1px solid var(--line);padding:18px 14px;display:flex;flex-direction:column}
+.logo{display:flex;align-items:center;gap:10px;font:800 19px Brico;letter-spacing:-.02em;white-space:nowrap}
+.side .logo{font-size:16px;gap:8px}.side .logo .ia{font-size:18px}
+.logo .ia{font:italic 400 21px Instr;color:var(--signal);margin-left:-5px;letter-spacing:0}
+.proj{margin:16px 0 14px;border:1px solid var(--line);border-radius:16px;padding:10px 12px;display:flex;align-items:center;gap:10px}
+.proj .sq{width:36px;height:36px;border-radius:10px;background:var(--paper2);display:grid;place-items:center}
+.grp{font:600 10.5px Inter;letter-spacing:.16em;color:var(--muted);margin:12px 10px 6px}
+.it{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:12px;font:500 14.5px Inter;color:var(--ink2)}
+.it.on{background:var(--ink);color:#fff}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.top{height:62px;display:flex;align-items:center;padding:0 22px;gap:10px;border-bottom:1px solid var(--line);background:var(--paper)}
+.ttl{font:700 20px Brico;letter-spacing:-.02em}.sub{font:400 12.5px Inter;color:var(--muted)}
+.pill{height:36px;border:1px solid var(--line);border-radius:18px;background:#fff;display:flex;align-items:center;gap:8px;padding:0 13px;font:500 13px Inter;color:var(--ink2)}
+.pill.blue{background:var(--signal);color:#fff;border-color:var(--signal)}
+.fr{display:flex;border:1px solid var(--line);border-radius:18px;background:#fff;padding:3px;gap:2px;font:700 12px Inter}
+.fr b{background:var(--ink);color:#fff;border-radius:14px;padding:6px 9px}.fr span{padding:6px 9px;color:var(--muted)}
+.tabs3{display:flex;justify-content:center;gap:10px;padding:12px 22px}
+.tabs3 div{flex:1;max-width:240px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;font:500 14px Inter;color:var(--ink2)}
+.tabs3 .on{background:var(--ink);color:#fff}
+.tool{display:flex;align-items:center;gap:8px;padding:0 22px 10px;flex-wrap:wrap}
+.chip{height:34px;border:1px solid var(--line);border-radius:12px;background:#fff;display:flex;align-items:center;gap:7px;padding:0 11px;font:500 12.5px Inter;color:var(--ink2)}
+.ver{height:28px;border-radius:9px;background:var(--paper2);display:flex;align-items:center;padding:0 10px;font:600 12px Inter;color:var(--ink2)}
+.prev{flex:1;margin:0 22px 18px;border-radius:16px;background:#E9EDF5;overflow:hidden;position:relative;border:1px solid var(--line)}
+/* ---------- SYNA ---------- */
+.syna{position:absolute;top:14px;right:14px;bottom:14px;width:390px;background:var(--paper);border:1px solid var(--line);border-radius:24px;box-shadow:0 24px 60px rgba(10,16,36,.18);display:flex;flex-direction:column;overflow:hidden}
+.synh{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line);font:600 14px Inter}
+.eyeb{display:flex;align-items:center;gap:8px;font:600 11.5px Inter;letter-spacing:.16em;text-transform:uppercase;color:var(--signal)}
+.note{display:flex;gap:8px;align-items:flex-start;font:400 12px/1.35 Inter;color:var(--muted)}
+.you{align-self:flex-end;background:var(--ink);color:#fff;border-radius:18px;padding:13px 16px;font:400 14.5px/1.45 Inter;max-width:88%}
+.you small{display:block;font:600 11.5px Inter;color:#AEB6CC;margin-bottom:5px}
+.sy{background:#fff;border:1px solid var(--line);border-radius:18px;padding:13px 16px;font:400 14.5px/1.45 Inter;color:var(--ink)}
+.sy small{display:flex;align-items:center;gap:6px;font:600 11.5px Inter;color:var(--muted);margin-bottom:6px}
+.comp{border:1px solid var(--line);border-radius:20px;background:#fff;padding:14px 16px 12px;box-shadow:0 10px 30px rgba(10,16,36,.06)}
+.comp .txt{min-height:66px;font:400 15px/1.5 Inter;color:var(--ink)}
+.comp .ph{color:#98A0B8}
+.comp .row{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.send{height:40px;border-radius:20px;padding:0 18px;display:flex;align-items:center;gap:8px;font:600 14px Inter;color:#fff;background:#8A90A0}
+.send.on{background:var(--ink)}
+.caret{display:inline-block;width:2px;height:19px;background:var(--signal);vertical-align:-3px;margin-left:1px}
+.ctx{background:var(--paper2);border:1px solid var(--line);border-radius:16px;padding:12px 14px;font:400 13px/1.45 Inter;color:var(--ink2)}
+/* ---------- site 3M ---------- */
+.site{width:1200px;background:#fff;font-family:Lato;color:var(--anth)}
+.s-head{height:86px;display:flex;align-items:center;gap:14px;padding:0 48px;border-bottom:1px solid #EEE8DE;background:#fff}
+.s-head nav{margin-left:auto;display:flex;gap:30px;font:700 15px Lato;color:var(--txt)}
+.btn{background:var(--g);color:var(--chaux);font:700 16px Outfit;border-radius:12px;padding:14px 22px;display:inline-flex;align-items:center;gap:10px}
+.btn.o{background:transparent;color:var(--g);box-shadow:inset 0 0 0 2px var(--g)}
+.eyeb3{font:900 13px Lato;letter-spacing:.2em;color:var(--g)}
+.h1{font:800 64px/1.02 Outfit;letter-spacing:-.02em;color:var(--anth)}
+.h2{font:800 42px/1.08 Outfit;letter-spacing:-.015em;color:var(--anth)}
+.p{font:400 19px/1.55 Lato;color:var(--txt)}
+.ph3{border-radius:26px;background-size:cover;background-position:center}
+.num{font:800 15px Outfit;color:var(--ocre);letter-spacing:.08em}
+.card3{background:var(--chaux);border-radius:22px;padding:26px;display:flex;flex-direction:column;gap:12px}
+.field{border:1.5px solid #D9D2C5;border-radius:12px;background:#fff;height:52px;display:flex;align-items:center;padding:0 16px;font:400 16px Lato;color:#8A8F90}
+/* ---------- divers ---------- */
+.app{border-radius:22px;background:#fff;overflow:hidden;display:flex;flex-direction:column;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+.app .hd{height:46px;display:flex;align-items:center;gap:10px;padding:0 16px;font:700 16px Inter;color:#fff}
+
+@font-face{font-family:SpaceG;src:url(../assets/fonts/space-grotesk-latin-500-normal.woff2) format("woff2");font-weight:500}
+@font-face{font-family:SpaceG;src:url(../assets/fonts/space-grotesk-latin-700-normal.woff2) format("woff2");font-weight:700}
+@font-face{font-family:Manrope;src:url(../assets/fonts/manrope-latin-400-normal.woff2) format("woff2");font-weight:400}
+@font-face{font-family:Manrope;src:url(../assets/fonts/manrope-latin-600-normal.woff2) format("woff2");font-weight:600}
+@font-face{font-family:Manrope;src:url(../assets/fonts/manrope-latin-800-normal.woff2) format("woff2");font-weight:700 800}
+</style>
+<script src="icons.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script src="boards-03.js"></script>
+</body></html>

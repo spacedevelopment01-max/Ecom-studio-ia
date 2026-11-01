@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080, height=1920">
+<title>Un produit ne fait pas une marque — E-COM STUDIO ia</title>
+<!-- Publicité 03 (1080 × 1920 natif, 52.5 s). Monde 3D : Three.js (assets/film.js) piloté par l'horloge GSAP de la
+     composition. Interfaces du studio : reproduction des écrans réels (ui/boards-03.js). KELVO : marque fictive créée
+     pour la publicité. Aucun chiffre de vente, aucun avis, aucun résultat promis. -->
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/caps.js"></script>
+<script type="importmap">{"imports":{"three":"./assets/vendor/three/three.module.js","three/addons/":"./assets/vendor/three/addons/"}}</script>
+<style>
+  @font-face { font-family: Inter; src: url("assets/fonts/inter.woff2") format("woff2"); font-weight: 100 900; }
+  @font-face { font-family: Brico; src: url("assets/fonts/bricolage.woff2") format("woff2"); font-weight: 200 800; }
+  @font-face { font-family: Instr; src: url("assets/fonts/instrument-italic.woff2") format("woff2"); font-style: italic; }
+  @font-face { font-family: SpaceG; src: url("assets/fonts/space-grotesk-latin-700-normal.woff2") format("woff2"); font-weight: 700; }
+  html, body { margin: 0; background: #000; }
+  #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: #060912; }
+  #cv { position: absolute; inset: 0; width: 1080px; height: 1920px; }
+  .ov { position: absolute; inset: 0; pointer-events: none; }
+  #vign { background: radial-gradient(120% 80% at 50% 45%, rgba(0,0,0,0) 55%, rgba(3,5,12,.45) 100%); }
+  #flash { background: #fff; opacity: 0; }
+  #bflash { background: radial-gradient(circle at 50% 55%, rgba(124,196,255,.95), rgba(47,91,234,.6) 45%, rgba(47,91,234,0) 78%); opacity: 0; mix-blend-mode: screen; }
+  #aflash { background: radial-gradient(circle at 50% 50%, rgba(255,200,120,.9), rgba(255,140,40,.35) 45%, rgba(255,140,40,0) 75%); opacity: 0; mix-blend-mode: screen; }
+  .cap-g { position: absolute; left: 0; right: 0; bottom: 400px; display: flex; justify-content: center; opacity: 0; }
+  .cap-g.cap-top { bottom: auto; top: 230px; }
+  .cap-pill { display: inline-flex; align-items: baseline; gap: 0 24px; padding: 12px 30px 16px; border-radius: 26px; background: rgba(255,255,255,.96);
+    box-shadow: 0 22px 48px -18px rgba(10,16,36,.55), 0 0 0 2px rgba(220,226,238,.9); font: 800 62px/1.1 Inter, sans-serif; letter-spacing: -.02em; white-space: nowrap; }
+  .cap-w { display: inline-block; color: #A7B1C6; transform-origin: 50% 80%; }
+  #endtxt { position: absolute; inset: 0; pointer-events: none; }
+  #endshade { background: linear-gradient(180deg, rgba(4,6,14,.55) 0%, rgba(4,6,14,.2) 9%, rgba(4,6,14,.2) 24%, rgba(4,6,14,.78) 30%, rgba(4,6,14,.78) 42%, rgba(4,6,14,.15) 58%, rgba(4,6,14,.55) 82%, rgba(4,6,14,.75) 100%); opacity: 0; }
+  #wm { position: absolute; left: 0; right: 0; top: 560px; display: flex; justify-content: center; align-items: baseline; gap: 4px; font: 800 80px Brico; letter-spacing: -.03em; color: #EEF2FB; opacity: 0; }
+  #wm .ia { font: italic 400 92px Instr; color: #7CA4FF; letter-spacing: 0; margin-left: 10px; }
+  #tag1 { position: absolute; left: 60px; right: 60px; top: 680px; text-align: center; font: 800 46px/1.15 Inter; color: #FFFFFF; letter-spacing: .02em; opacity: 0; }
+  #tag2 { position: absolute; left: 60px; right: 60px; top: 742px; text-align: center; font: 700 40px/1.15 Inter; color: #9DB8FF; letter-spacing: .06em; opacity: 0; }
+  #cta { position: absolute; left: 0; right: 0; top: 1395px; display: flex; justify-content: center; opacity: 0; }
+  #cta span { display: inline-flex; align-items: center; gap: 14px; padding: 24px 46px; border-radius: 48px; background: #2F5BEA; color: #fff; font: 700 46px Inter; letter-spacing: -.01em; box-shadow: 0 20px 60px rgba(61,110,240,.55); }
+  #cta svg { width: 40px; height: 40px; fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="52.5" data-width="1080" data-height="1920">
+  <canvas id="cv" width="1080" height="1920"></canvas>
+  <div id="vign" class="ov"></div>
+  <div id="bflash" class="ov"></div>
+  <div id="aflash" class="ov"></div>
+  <div id="flash" class="ov"></div>
+  <div id="endshade" class="ov"></div>
+  <div id="endtxt">
+    <div id="wm"><span>E-COM STUDIO</span><span class="ia">ia</span></div>
+    <div id="tag1">VOTRE MARQUE COMMENCE ICI.</div>
+    <div id="tag2">AVEC SYNA.</div>
+    <div id="cta"><span>Créez votre marque<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+  </div>
+  <div id="caps" class="ov">
+      <div id="cap-0" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">Tu</span> <span class="cap-w">as</span> <span class="cap-w">trouvé</span></div></div>
+      <div id="cap-1" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">un</span> <span class="cap-w">produit</span></div></div>
+      <div id="cap-2" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">à</span> <span class="cap-w">vendre.</span></div></div>
+      <div id="cap-3" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">Parfait.</span></div></div>
+      <div id="cap-4" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">Mais</span> <span class="cap-w">regarde :</span></div></div>
+      <div id="cap-5" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">des</span> <span class="cap-w">centaines</span></div></div>
+      <div id="cap-6" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">de</span> <span class="cap-w">boutiques</span> <span class="cap-w">proposent</span></div></div>
+      <div id="cap-7" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">déjà</span> <span class="cap-w">exactement</span></div></div>
+      <div id="cap-8" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">le</span> <span class="cap-w">même !</span></div></div>
+      <div id="cap-9" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">Même</span> <span class="cap-w">produit,</span></div></div>
+      <div id="cap-10" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">mêmes</span> <span class="cap-w">photos,</span></div></div>
+      <div id="cap-11" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">mêmes</span> <span class="cap-w">publicités.</span></div></div>
+      <div id="cap-12" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">Et</span> <span class="cap-w">tu</span> <span class="cap-w">espères</span></div></div>
+      <div id="cap-13" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">qu&#x27;un</span> <span class="cap-w">client</span></div></div>
+      <div id="cap-14" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">te</span> <span class="cap-w">choisira,</span></div></div>
+      <div id="cap-15" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">toi ?</span></div></div>
+      <div id="cap-16" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">Il</span> <span class="cap-w">faut</span> <span class="cap-w">sortir</span></div></div>
+      <div id="cap-17" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">du</span> <span class="cap-w">lot !</span></div></div>
+      <div id="cap-18" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">Avec</span> <span class="cap-w">E-COM STUDIO IA,</span></div></div>
+      <div id="cap-19" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">arrête</span> <span class="cap-w">de</span> <span class="cap-w">jongler</span></div></div>
+      <div id="cap-20" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">entre</span> <span class="cap-w">dix</span> <span class="cap-w">outils.</span></div></div>
+      <div id="cap-21" class="cap-g"><div class="cap-pill"><span class="cap-w">Ouvre</span> <span class="cap-w">Syna,</span></div></div>
+      <div id="cap-22" class="cap-g"><div class="cap-pill"><span class="cap-w">explique</span> <span class="cap-w">ton</span> <span class="cap-w">projet…</span></div></div>
+      <div id="cap-23" class="cap-g"><div class="cap-pill"><span class="cap-w">et</span> <span class="cap-w">regarde !</span></div></div>
+      <div id="cap-24" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">Un</span> <span class="cap-w">logo,</span></div></div>
+      <div id="cap-25" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">une</span> <span class="cap-w">identité,</span></div></div>
+      <div id="cap-26" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">un</span> <span class="cap-w">univers</span> <span class="cap-w">visuel,</span></div></div>
+      <div id="cap-27" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">puis</span> <span class="cap-w">une</span> <span class="cap-w">vraie</span></div></div>
+      <div id="cap-28" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">boutique :</span></div></div>
+      <div id="cap-29" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">accueil,</span></div></div>
+      <div id="cap-30" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">fiches</span> <span class="cap-w">produits,</span></div></div>
+      <div id="cap-31" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">arguments,</span></div></div>
+      <div id="cap-32" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">panier,</span></div></div>
+      <div id="cap-33" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">version</span> <span class="cap-w">mobile…</span></div></div>
+      <div id="cap-34" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">Tout</span> <span class="cap-w">prend</span> <span class="cap-w">forme</span></div></div>
+      <div id="cap-35" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">dans</span></div></div>
+      <div id="cap-36" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">le</span> <span class="cap-w">même</span> <span class="cap-w">Studio !</span></div></div>
+      <div id="cap-37" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">Et</span> <span class="cap-w">ce</span> <span class="cap-w">n&#x27;est</span></div></div>
+      <div id="cap-38" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">pas</span> <span class="cap-w">fini !</span></div></div>
+      <div id="cap-39" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">Visuels</span> <span class="cap-w">produits,</span></div></div>
+      <div id="cap-40" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">publications,</span></div></div>
+      <div id="cap-41" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">publicités,</span></div></div>
+      <div id="cap-42" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">contenus</span> <span class="cap-w">SEO…</span></div></div>
+      <div id="cap-43" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">Tout</span> <span class="cap-w">suit</span></div></div>
+      <div id="cap-44" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">la</span> <span class="cap-w">même</span> <span class="cap-w">identité.</span></div></div>
+      <div id="cap-45" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">Plus</span> <span class="cap-w">besoin</span></div></div>
+      <div id="cap-46" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">de</span> <span class="cap-w">tout</span> <span class="cap-w">recommencer</span></div></div>
+      <div id="cap-47" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">sur</span> <span class="cap-w">une</span> <span class="cap-w">autre</span></div></div>
+      <div id="cap-48" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">plateforme !</span></div></div>
+      <div id="cap-49" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">Tu</span> <span class="cap-w">veux</span> <span class="cap-w">changer</span></div></div>
+      <div id="cap-50" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">quelque</span> <span class="cap-w">chose ?</span></div></div>
+      <div id="cap-51" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">Tu</span> <span class="cap-w">le</span> <span class="cap-w">demandes</span></div></div>
+      <div id="cap-52" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">à</span> <span class="cap-w">Syna !</span></div></div>
+      <div id="cap-53" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">Ton</span> <span class="cap-w">site</span></div></div>
+      <div id="cap-54" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">et</span> <span class="cap-w">tes</span> <span class="cap-w">contenus</span></div></div>
+      <div id="cap-55" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">évoluent,</span></div></div>
+      <div id="cap-56" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">et</span> <span class="cap-w">tu</span> <span class="cap-w">gardes</span></div></div>
+      <div id="cap-57" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">la</span> <span class="cap-w">main</span></div></div>
+      <div id="cap-58" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">sur</span> <span class="cap-w">ta</span> <span class="cap-w">marque !</span></div></div>
+      <div id="cap-59" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">Un</span> <span class="cap-w">produit</span></div></div>
+      <div id="cap-60" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">ne</span> <span class="cap-w">suffit</span> <span class="cap-w">pas.</span></div></div>
+      <div id="cap-61" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">Construis</span> <span class="cap-w">une</span> <span class="cap-w">marque</span></div></div>
+      <div id="cap-62" class="cap-g cap-top"><div class="cap-pill"><span class="cap-w">qu&#x27;on</span> <span class="cap-w">reconnaît.</span></div></div>
+      <div id="cap-63" class="cap-g"><div class="cap-pill"><span class="cap-w">E-COM STUDIO IA :</span></div></div>
+      <div id="cap-64" class="cap-g"><div class="cap-pill"><span class="cap-w">tout</span> <span class="cap-w">ton</span> <span class="cap-w">e-commerce,</span></div></div>
+      <div id="cap-65" class="cap-g"><div class="cap-pill"><span class="cap-w">au</span> <span class="cap-w">même</span> <span class="cap-w">endroit !</span></div></div>
+  </div>
+  <audio id="mix" src="assets/audio/mix.wav" data-start="0" data-duration="52.5" data-track-index="1" data-volume="1"></audio>
+</div>
+<script>
+  window.__w = { clock: { t: 0 }, render: null };
+  window.__hf = window.__hf || {}; window.__hf.buildReady = window.__hf.buildReady || {};
+  window.__hf.buildReady["monde"] = new Promise((r) => (window.__w.ready = r));
+  const tl = gsap.timeline({ paused: true });
+  tl.to(window.__w.clock, { t: 52.5, duration: 52.5, ease: "none", onUpdate: () => window.__w.render && window.__w.render(window.__w.clock.t) }, 0);
+  const fl = (sel, at, peak, up, down) => { tl.fromTo(sel, { opacity: 0 }, { opacity: peak, duration: up, ease: "power2.in", immediateRender: false }, at); tl.to(sel, { opacity: 0, duration: down, ease: "power2.out" }, at + up); };
+  fl("#aflash", 0.02, 0.85, 0.06, 0.4);
+  fl("#flash", 9.32, 0.5, 0.08, 0.25);
+  fl("#aflash", 11.0, 0.55, 0.08, 0.5);
+  fl("#bflash", 12.38, 0.7, 0.08, 0.55);
+  fl("#flash", 17.32, 0.95, 0.12, 0.3);
+  fl("#aflash", 20.35, 0.5, 0.08, 0.35);
+  fl("#flash", 27.35, 0.5, 0.06, 0.22);
+  fl("#aflash", 32.05, 0.45, 0.08, 0.4);
+  fl("#flash", 37.95, 0.6, 0.1, 0.25);
+  fl("#flash", 42.72, 0.95, 0.12, 0.3);
+  fl("#aflash", 44.2, 0.55, 0.08, 0.45);
+  fl("#bflash", 46.95, 0.6, 0.08, 0.5);
+  tl.fromTo("#endshade", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power2.out", immediateRender: false }, 46.4);
+  tl.fromTo("#wm", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", immediateRender: false }, 47.6);
+  tl.fromTo("#tag1", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out", immediateRender: false }, 48.15);
+  tl.fromTo("#tag2", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out", immediateRender: false }, 48.6);
+  tl.fromTo("#cta", { opacity: 0, y: 24, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(2)", immediateRender: false }, 49.3);
+  tl.to("#cta span", { scale: 1.05, duration: 0.45, yoyo: true, repeat: 5, ease: "sine.inOut" }, 49.9);
+  window.CAPS.forEach((g, i) => {
+    const id = "#cap-" + i, words = document.querySelectorAll(id + " .cap-w");
+    tl.fromTo(id, { opacity: 0, y: 14, scale: 0.92 }, { opacity: 1, y: 0, scale: 1, duration: 0.1, ease: "back.out(2)", immediateRender: false }, g.s);
+    g.w.forEach((w, k) => {
+      tl.fromTo(words[k], { color: "#A7B1C6", scale: 1 }, { color: "#2F5BEA", scale: 1.04, duration: 0.06, ease: "power2.out", immediateRender: false }, w.s);
+      const next = k + 1 < g.w.length ? g.w[k + 1].s : Math.min(w.e + 0.15, g.h - 0.08);
+      tl.to(words[k], { color: "#0A1024", scale: 1, duration: 0.08, ease: "power2.out" }, Math.max(w.s + 0.06, next));
+    });
+    tl.to(id, { opacity: 0, duration: 0.07, ease: "power2.in" }, g.h - 0.07);
+    tl.set(id, { opacity: 0, visibility: "hidden" }, g.h);
+  });
+  window.__timelines = window.__timelines || {}; window.__timelines["main"] = tl;
+</script>
+<script type="module" src="assets/film.js"></script>
+</body>
+</html>

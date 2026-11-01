@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Inter;src:url(../assets/fonts/inter.woff2) format("woff2");font-weight:100 900}
+@font-face{font-family:Brico;src:url(../assets/fonts/bricolage.woff2) format("woff2");font-weight:200 800}
+@font-face{font-family:Instr;src:url(../assets/fonts/instrument-italic.woff2) format("woff2");font-style:italic}
+html,body{margin:0;background:#000}
+#m{position:relative;width:1080px;height:1920px;overflow:hidden;background:#060912 url(../assets/tex/miniature-fond.png) center/cover}
+#m::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,6,14,.96) 0%,rgba(4,6,14,.9) 16%,rgba(4,6,14,0) 30%,rgba(4,6,14,0) 60%,rgba(4,6,14,.92) 80%)}
+.top{position:absolute;z-index:2;left:0;right:0;top:170px;display:flex;justify-content:center;align-items:center;gap:20px;font:800 64px Brico;letter-spacing:-.03em;color:#EEF2FB}
+.top .ia{font:italic 400 72px Instr;color:#7CA4FF;margin-left:-8px;letter-spacing:0}
+.bot{position:absolute;z-index:2;left:60px;right:60px;top:1300px;text-align:center;color:#fff}
+.bot h1{margin:0;font:800 100px/1.0 Brico;letter-spacing:-.03em}
+.bot h1 span{color:#FFB23F}
+.bot p{margin:28px 0 0;font:600 42px/1.25 Inter;color:#D5DCF0}
+</style></head>
+<body><div id="m">
+  <div class="top"><svg viewBox="0 0 64 64" width="86" height="86"><rect width="64" height="64" rx="16" fill="#0A1024" stroke="#3D6EF0" stroke-width="1.5"/><path d="M18 20h22v6H25v4h13v6H25v4h15v6H18z" fill="#fff"/><circle cx="46" cy="44" r="5" fill="#2F5BEA"/></svg><span>E-COM STUDIO</span><span class="ia">ia</span></div>
+  <div class="bot"><h1>Un produit ne fait pas <span>une marque</span></h1><p>Construis la tienne avec Syna.</p></div>
+</div>
+<script>document.fonts.ready.then(() => setTimeout(() => (window.__ready = true), 300));</script>
+</body></html>
