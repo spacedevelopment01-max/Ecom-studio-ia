@@ -42,7 +42,7 @@ import { ContentConflict, contentKey, contentRun, contentUserOwned, contentVersi
 import { applyContentOps } from "./ops";
 import { planEdit } from "./local-edit";
 import { localOnlyDeps, realSeoDeps, writeKind, type CallKind, type RewriteOut, type SeoV2Deps } from "./deps";
-import { blogIdFor, blogAiAllowed, saveBlogDraftV2 } from "./blog";
+import { blogIdFor, blogAiAllowed, saveBlogDraftV2, blogEditFingerprint } from "./blog";
 import { LANGS, type ContentDoc, type ContentLang, type ContentRunResult, type ContentType, type EditorialReview, type Keyword, type PageRef, type SeoStrategy } from "./types";
 import type { GateDecision } from "../quality/gate";
 import { budgetPctText } from "../ai/budget-pct";
@@ -425,6 +425,7 @@ async function editContentV2InScope(ctx: JobContext | null, projectId: string, d
   const cur = latestContent(projectId, docKey);
   if (!cur) throw new Error("contenu introuvable");
   const doc = cur.doc;
+  const blogSource=doc.type==='blog_article'?blogEditFingerprint(projectId,docKey):undefined;
   if(o.forceAi){
    if(o.expectedVersion!==cur.version.version)throw new ContentConflict();
    if(!o.selected?.length||o.selected.length>30||new Set(o.selected).size!==o.selected.length||o.selected.some(id=>!doc.blocks.some(b=>b.id===id)))throw new HttpError(409,"Désignez les passages existants à retoucher.");
@@ -440,8 +441,11 @@ async function editContentV2InScope(ctx: JobContext | null, projectId: string, d
     const next = { ...applyContentOps(doc, plan.ops), meta2: { ...doc.meta2, source: "ai_local" as const } };
     if (JSON.stringify(next.blocks) === JSON.stringify(doc.blocks) && JSON.stringify(next.meta) === JSON.stringify(doc.meta)) return { applied: false, by: "none", summary: L("Aucun changement : le texte est déjà identique.", "No change: the content is already identical."), version: null, doc, issues: [], costMicro: 0 };
     const checks = documentContentChecks(p,next);
-    const v = saveContentVersion(projectId, docKey, next, { note: `retouche locale : ${plan.summary}`.slice(0, 200), verdict: checks.codes.length ? "PROVISIONAL" : null, expectedVersion: cur.version.version });
-    if (next.type === "blog_article") saveBlogDraftV2(p, docKey, next, { notes: checks.issues, ai: false, jobKey: "" });
+    const v = tx(()=>{
+      const v=saveContentVersion(projectId, docKey, next, { note: `retouche locale : ${plan.summary}`.slice(0, 200), verdict: checks.codes.length ? "PROVISIONAL" : null, expectedVersion: cur.version.version });
+      if (next.type === "blog_article") saveBlogDraftV2(p, docKey, next, { notes: checks.issues, ai: false, jobKey: "", preserveSlug:true, expectedEditFingerprint:blogSource });
+      return v;
+    });
     return { applied: true, by: "local", summary: plan.summary, version: v.version, doc: next, issues: checks.issues, costMicro: 0 };
   }
   if(!bound||!facts)throw new HttpError(409,"La fiche ou sa variante a changé ou manque. Texte conservé ; désignez sa version actuelle avant une retouche IA.");
@@ -490,8 +494,12 @@ async function editContentV2InScope(ctx: JobContext | null, projectId: string, d
   if (added.length||newIssues.length) return { applied: false, by: "ai", summary: `réécriture refusée (${added.join(", ")||"nouveau défaut local"}) : votre texte est conservé`, version: null, doc, issues: after.issues, costMicro: r.costMicro };
   const changed = next.blocks.filter((b, i) => blockText(b) !== blockText(doc.blocks[i])).length;
   if (!changed) return { applied: false, by: "ai", summary: L("La réécriture n'a rien changé : votre version est conservée.", "The rewrite changed nothing: your version is kept."), version: null, doc, issues: after.issues, costMicro: r.costMicro };
-  const v = tx(()=>{if(o.forceAi)ctx?.progress(0.9,L("Contrôle avant enregistrement des passages","Checking before saving passages"));deps.beforeFinalSave?.();contentSubjectProject(loadProject(projectId),doc.meta2.nativeBinding);return saveContentVersion(projectId, docKey, next, { note: `retouche IA : ${plan.instruction}`.slice(0, 200), verdict: "PROVISIONAL", expectedVersion: cur.version.version });});
+  const v = tx(()=>{if(o.forceAi)ctx?.progress(0.9,L("Contrôle avant enregistrement des passages","Checking before saving passages"));deps.beforeFinalSave?.();contentSubjectProject(loadProject(projectId),doc.meta2.nativeBinding);
+    const v=saveContentVersion(projectId, docKey, next, { note: `retouche IA : ${plan.instruction}`.slice(0, 200), verdict: "PROVISIONAL", expectedVersion: cur.version.version });
+    if (next.type === "blog_article") saveBlogDraftV2(p, docKey, next, { notes: after.issues, ai: false, jobKey: "", preserveSlug:true, expectedEditFingerprint:blogSource });
+    return v;
+  });
+  // Les observateurs ne voient jamais un document acquis avant son article natif correspondant.
   deps.onRetained?.({docKey,version:v});
-  if (next.type === "blog_article") saveBlogDraftV2(p, docKey, next, { notes: after.issues, ai: false, jobKey: "" });
   return { applied: true, by: "ai", summary: `${changed} bloc(s) réécrit(s)`, version: v.version, doc: next, issues: after.issues, costMicro: r.costMicro };
 }
