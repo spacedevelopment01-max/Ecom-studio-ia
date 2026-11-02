@@ -84,6 +84,7 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
   const [picker, setPicker] = useState<null | "replace" | "add">(null);
   const [ask, setAsk] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
+  const editSending=useRef(false),editOperation=useRef<{intent:string;id:string}|null>(null);
   const backgroundSending=useRef(false),backgroundOperation=useRef<{intent:string;id:string}|null>(null);
   const [photoChoice, setPhotoChoice] = useState<View["edit"] | null>(null);
   const [draft, setDraft] = useState<{ doc: AdDocument } | null>(null);
@@ -323,10 +324,15 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
     const q = instruction.trim();
     const target = layer?.kind === "image" && layer.assetId && layer.role !== "logo" ? layer : (doc.layers.find((l) => l.id === photoLayer()) as Extract<Layer, { kind: "image" }> | undefined);
     if (!q || !target?.assetId) return toast("bad", t("Aucune photo à retoucher dans cette création.", "No photo to edit in this creative."));
-    if (!(await cost.confirm("images"))) return;
+    if(editSending.current)return;
+    editSending.current=true;
     setBusy(t("Retouche de la photo par l'IA…", "AI is editing the photo…"));
     try {
-      const r = await api<{ jobId: string }>(`/api/projects/${projectId}/images/v2`, { body: { action: "edit", assetId: target.assetId, instruction: q } });
+      const request={assetId:target.assetId,instruction:q},intent=JSON.stringify({projectId,docKey,request});
+      if(editOperation.current?.intent!==intent)editOperation.current={intent,id:crypto.randomUUID()};
+      const operationId=editOperation.current.id,quote=await api<{jobId?:string;approvalToken:string;maximumMicro:number;estimatePct:number;maximumPct:number;maximumCalls:number}>(`/api/projects/${projectId}/images/v2`,{body:{action:'quote_edit',operationId,...request}});
+      if(!quote.jobId&&!(await cost.confirm('images',{quote})))return;
+      const r=quote.jobId?{jobId:quote.jobId}:await api<{jobId:string}>(`/api/projects/${projectId}/images/v2`,{body:{action:'edit',operationId,...request,confirmation:true,approvalToken:quote.approvalToken}});
       for (let i = 0; i < 300; i++) {
         await new Promise((res) => setTimeout(res, 2000));
         const jobs = await api<{ jobs: { id: string; status: string; result: any; error: string | null }[] }>(`/api/projects/${projectId}/jobs?type=image.edit`);
@@ -334,6 +340,7 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
         if (!j || j.status === "queued" || j.status === "running") continue;
         if (j.status !== "done" || !j.result?.assetId) throw new Error(j.error || t("La retouche n'a pas abouti.", "The edit did not complete."));
         apply({ op: "image", id: target.id, assetId: j.result.assetId });
+        editOperation.current=null;
         setAsk("");
         toast("ok", t("Photo retouchée par l'IA : enregistrez pour la garder (« Annuler » remet l'ancienne).", "Photo edited by AI: save to keep it (“Undo” brings back the previous one)."));
         return;
@@ -342,6 +349,7 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
     } catch (e) {
       toast("bad", (e as Error).message);
     } finally {
+      editSending.current=false;
       setBusy(null);
     }
   };

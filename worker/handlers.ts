@@ -136,8 +136,8 @@ export const handlers: Record<string, Handler> = {
 
   /** Retouche par l'IA d'une photo livrée (publicité, publication) : seule la demande du client change, original gardé. */
   "image.edit": async (ctx) => {
-    const { editProjectPhoto } = await import("../src/lib/image-v2/edit-photo");
-    const r=await editProjectPhoto(ctx, ctx.payload.projectId, ctx.payload.assetId, ctx.payload.instruction);
+    const { runNativePhotoEdit } = await import("../src/lib/image-v2/native-edit-approval");
+    const r=await runNativePhotoEdit(ctx);
     return {...r,delivery:await imageDelivery(ctx.payload.projectId,[r.assetId])};
   },
 
