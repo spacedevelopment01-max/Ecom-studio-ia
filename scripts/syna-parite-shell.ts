@@ -35,6 +35,10 @@ for (const f of sources) {
   const before = s;
   s = s.replace(/getByRole\('button',\{name:'SYNA',exact:true\}\)/g, () => { replaced.opener++; return `locator('[aria-controls="syna-panel"]:visible').first()`; });
   s = s.replace(/getByRole\('dialog',\{name:'SYNA — conversation du projet',exact:true\}\)/g, () => { replaced.panel++; return `locator('#syna-panel')`; });
+  // Même fenêtre désignée sans son nom (recette de la conversation) : seul dialogue SYNA visé par ces lectures de texte.
+  s = s.replace(/getByRole\('dialog'\)\.getByText\(/g, () => { replaced.panel++; return `locator('#syna-panel').getByText(`; });
+  // Identifiant du panneau : `#central-agent-panel` (dock) devient `#syna-panel` (coquille), modal aussi au téléphone.
+  s = s.replace(/central-agent-panel/g, () => { replaced.panel++; return "syna-panel"; });
   s = rename(s);
   if (f === "verify-agent211-build.ts") {
     const anchor = "const {account}=await import('../tests/conversation209-fixtures');";
