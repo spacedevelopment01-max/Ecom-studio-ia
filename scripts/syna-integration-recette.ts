@@ -81,6 +81,9 @@ let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
 // des données du client. Leur contenu est vérifié à part, après chaque série de bascules (retour exact au réglage choisi).
 const invariant = () => { const f = businessFingerprints(); delete f.database.projects; delete f.database.theme_versions; delete f.database.studio_ui_prefs; return f; };
 const step = (s: string) => console.log("· " + s);
+const WAIT_REFRESH = 17_000; // > 15 s : l'actualisation automatique du Studio (ProjectProvider au repos) a forcément eu lieu.
+const designationText = (t: string) => t.split("\n").find((l) => /désign|Aucun objet/.test(l))?.trim() ?? "(aucune désignation)";
+const designation17s: { case: string; step: string; after: string }[] = [];
 
 try {
   const start = Date.now();
@@ -345,14 +348,15 @@ try {
     await free.getByRole("button", { name: "Revalider la cible actuelle", exact: true }).waitFor();
     await switchTwice("le conflit", async () => free.getByRole("button", { name: "Revalider la cible actuelle", exact: true }).isVisible(), true);
     assert.equal(currentTheme(f.pid)!.spec.templates.index.sections[f.section].settings.heading, "Titre humain à préserver");
-    // Le Studio relit le projet toutes les 15 s (main) ; à cette relecture, la désignation périmée devient la page. Si la
-    // relecture tombe entre « Revalider » et le message suivant, la demande « cette section » devient ambiguë (SYNA
-    // redemande, sans rien écrire) : constaté aussi dans l'interface actuelle, signalé à Codex (#292). On attend donc la
-    // relecture avant de revalider, comme dans le parcours qui réussit dans l'interface actuelle.
-    const pollEnd = Date.now() + 17000;
-    while (Date.now() < pollEnd && !/Page désignée/.test(await panel.locator("[data-agent-active-context]").innerText().catch(() => ""))) await page.waitForTimeout(250);
     await free.getByRole("button", { name: "Revalider la cible actuelle", exact: true }).click();
     await free.waitFor({ state: "detached" });
+    // Correctif #300 : la section revalidée doit survivre à l'actualisation automatique du Studio (ProjectProvider, 15 s).
+    // Attente réelle de 17 s, sans rien toucher, puis la section doit toujours être désignée.
+    await page.waitForTimeout(WAIT_REFRESH);
+    const afterRevalidate = designationText(await panel.locator("[data-agent-active-context]").innerText());
+    designation17s.push({ case: label, step: "revalidation", after: afterRevalidate });
+    await capture("apres-revalidation-17s");
+    assert.match(afterRevalidate, /Section désignée/, `${label} : désignation perdue 17 s après « Revalider » (${afterRevalidate})`);
     await message("Remplace le titre de cette section par “Nouvelle proposition après conflit”");
     await free.getByRole("button", { name: "Confirmer la modification gratuite", exact: true }).click();
     await applied();
@@ -372,13 +376,17 @@ try {
     for (const oldVersion of oldVersions) assert.deepEqual(one("SELECT * FROM theme_versions WHERE id=?", oldVersion.id), oldVersion);
     assert.equal(currentTheme(f.pid)!.version.number, versionBefore + 5);
     await page.keyboard.press("Escape").catch(() => {});
-    // La restauration crée une version ; le Studio ne la voit qu'à sa relecture suivante (15 s), qui remplacerait la
-    // future désignation par la page (même mécanisme que le conflit, signalé à Codex, #292). Rechargement : état à jour.
-    await page.reload({ waitUntil: "networkidle" }); await dismiss();
-    assert.equal(await shellMode(), f.mode, "le mode est retrouvé après rechargement");
+    // Après la restauration, la personne attend que l'aperçu montre la version restaurée, puis désigne la section.
+    const restoredTitle = String(currentTheme(f.pid)!.spec.templates.index.sections[f.section].settings.heading ?? "");
+    await frame().locator(`[data-es-section="index:${f.section}"]`).getByRole("heading").first().filter({ hasText: restoredTitle.slice(0, 20) }).waitFor();
 
     // Droits retirés entre la proposition et le clic (abonnement fictif uniquement).
     await select();
+    // Après une restauration aussi : attente réelle de 17 s, la section doit rester désignée.
+    await page.waitForTimeout(WAIT_REFRESH);
+    const afterRestore = designationText(await panel.locator("[data-agent-active-context]").innerText());
+    designation17s.push({ case: label, step: "restauration", after: afterRestore });
+    assert.match(afterRestore, /Section désignée/, `${label} : désignation perdue 17 s après la restauration (${afterRestore})`);
     await message("Remplace le titre par “Ne doit pas être enregistré”");
     const protectedVersion = currentTheme(f.pid)!.version.id;
     run("UPDATE subscriptions SET status='canceled' WHERE project_id=?", f.pid);
@@ -431,7 +439,7 @@ try {
 } finally {
   await browser?.close();
   stop();
-  fs.writeFileSync(path.join(out, "RESUME-INTEGRATION.json"), JSON.stringify(proof, null, 2) + "\n");
+  fs.writeFileSync(path.join(out, "RESUME-INTEGRATION.json"), JSON.stringify({ ...proof, designation17s }, null, 2) + "\n");
   fs.writeFileSync(path.join(out, "serveur-local.log"), log);
   fs.rmSync(dir, { recursive: true, force: true });
 }
