@@ -233,10 +233,12 @@ describe("Project Brain 2B — mémoire et cohérence", async () => {
       expect(ok.status).toBe(200);
       expect(brandOf(pid).validated).not.toContain("logo");
       expect(one<any>("SELECT kind, origin FROM memory WHERE project_id = ? AND key = 'marque.logo.remplacement'", pid)).toEqual({ kind: "decision", origin: "user" });
-      // Nouvelles pistes ajoutées (« regenerate ») : jamais bloquées, jamais appliquées sur un logo validé (testé côté moteur).
+      // P0 #294 : nouvelles pistes sans devis refusées ; le logo validé et le choix acquis restent intacts.
       setBrand(pid, { ...brandOf(pid), validated: ["logo"] });
       run("DELETE FROM jobs WHERE project_id = ?", pid);
-      expect((await call({ regenerate: true })).status).not.toBe(409);
+      expect((await call({ regenerate: true })).status).toBe(409);
+      expect(brandOf(pid).validated).toContain("logo");
+      expect(all("SELECT id FROM jobs WHERE project_id=?",pid)).toHaveLength(0);
     });
 
     it("logo client téléversé : ne remplace pas un logo VALIDÉ lors d'une reconstruction de la marque", async () => {

@@ -218,21 +218,13 @@ export const handlers: Record<string, Handler> = {
   /** Logo V2 : territoires créatifs, construction hybride, barrière V2 (aucun mockup avant le choix). */
   "brand.logo.v2": async (ctx) => {
     if(ctx.payload.agentLogoQuote){const{runAgentLogoCreation}=await import("../src/lib/orchestrator/conversation/logo-tool-execution");return runAgentLogoCreation(ctx);}
-    const { runLogoEngineV2 } = await import("../src/lib/logo-v2/engine");
-    const r = await runLogoEngineV2(ctx, ctx.payload.projectId, { avoid: ctx.payload.avoid, style: ctx.payload.style, renew: ctx.payload.renew, correction: ctx.payload.correction });
-    const { currentSeries } = await import("../src/lib/logo-v2/direction-series");
-    const series = currentSeries(ctx.payload.projectId);
-    if (series && series.status !== "complete") throw new UserFacingError(`Série incomplète : ${series.directions.length}/3 directions complètes. Les résultats acceptés sont conservés ; reprise ciblée nécessaire.`);
-    const delivery=await imageDelivery(ctx.payload.projectId,series?series.directions.map(d=>d.logoId):r.shown.map(d=>d.assetId),{expected:series?3:Math.max(1,r.shown.length),reasons:r.notes});
-    delivery.message=L(`${delivery.delivered} logo(s) enregistré(s), à examiner avant votre choix.`,`${delivery.delivered} logo(s) saved, for review before your choice.`);
-    return { shown: series?.directions.length ?? r.shown.length, generated: r.shown.length, discarded: r.discarded.length, territories: r.territories.length, stoppedByCostCap: r.stoppedByCostCap,delivery };
+    const {runNativeLogo}=await import("../src/lib/logo-v2/native-consent");
+    return runNativeLogo(ctx);
   },
   /** Logo V2 : nouvelle version d'un logo complet, demandée par le client (une image, coût accepté). */
   "brand.logo.v2.redraw": async (ctx) => {
-    const { redrawArtwork } = await import("../src/lib/logo-v2/engine");
-    const r=await redrawArtwork(ctx, ctx.payload.projectId, ctx.payload.assetId, { feedback: ctx.payload.feedback });
-    if(!r.assetId)throw new UserFacingError(L("Le nouveau logo n’a pas été livré. La version précédente est conservée ; aucun nouvel essai payant automatique.","The new logo was not delivered. The previous version is kept; no automatic paid retry."));
-    return {...r,delivery:await imageDelivery(ctx.payload.projectId,[r.assetId])};
+    const {runNativeLogo}=await import("../src/lib/logo-v2/native-consent");
+    return runNativeLogo(ctx);
   },
   /** Logo V2 choisi : décision du client, déclinaisons, système de marque. */
   "brand.logo.v2.choose": async (ctx) => {
