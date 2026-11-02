@@ -1,0 +1,9 @@
+{
+ "prompt": "Photogramme vertical d'un long métrage d'animation. Même rendu hybride 2D/3D que les images fournies : volumes sculptés, peau, cheveux et tissus peints à la main avec grain de pinceau, fins traits d'encre, aucune surface plastique, aucun aspect jouet.\n\nRetouche cette image. Il baisse son bras tendu : le bout de son index vient toucher exactement le centre du point rouge, à droite de l'image. Le doigt pointe vers le bord droit de l'image et vers le bas. Ensuite, le point rouge disparaît complètement : il ne reste aucune trace rouge.\n\nSon visage est tourné vers l'objectif, avec un sourire complice et curieux, un sourcil levé, la bouche entrouverte comme s'il posait une question.\n\nNe change rien d'autre : même cadrage, même personnage, même visage, mêmes cheveux en bataille, même veste prune propre, même t-shirt crème, même décor, même lumière. Toute la bande verticale à droite de son doigt reste dégagée.\n\nAucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. Aucune autre personne. Aucun objet supplémentaire.",
+ "image_urls": [
+  "@fichier:cles/KA3b-cible-com.png"
+ ],
+ "num_images": 1,
+ "aspect_ratio": "9:16",
+ "output_format": "png"
+}

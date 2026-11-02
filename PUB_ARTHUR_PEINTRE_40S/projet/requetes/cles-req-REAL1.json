@@ -1,0 +1,9 @@
+{
+ "prompt": "Photographie de réalisation d'un artisan peintre au format vertical 9:16, dans le même rendu peint que l'image fournie.\n\nUn salon fraîchement rénové, vu depuis l'entrée : murs lisses peints d'un vert sauge doux, un mur d'accent bleu nuit derrière un canapé en lin beige, plafond blanc impeccable avec une moulure, parquet clair, une grande fenêtre à droite. Sur le canapé, deux coussins. Une lampe sur pied en laiton à gauche.\n\nLa scène contient exactement : 1 canapé, 2 coussins, 1 lampe sur pied, la fenêtre et les murs.\n\nLumière douce de fin de matinée, rendu soigné de photo de réalisation.\n\nAucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. Aucune personne. Aucun objet supplémentaire.",
+ "image_urls": [
+  "@fichier:cles/APRESb/sortie-1.png"
+ ],
+ "num_images": 1,
+ "aspect_ratio": "9:16",
+ "output_format": "png"
+}

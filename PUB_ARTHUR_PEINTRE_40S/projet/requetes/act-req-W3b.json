@@ -1,0 +1,15 @@
+{
+ "model": "wan2.6-i2v-flash",
+ "input": {
+  "prompt": "He does a joyful little dance: shoulders bouncing, keys jingling in his raised hand, two happy steps toward the wooden door on the left, big relieved smile. The camera follows him slightly. Same character, same face, same clothes and same painted 2D/3D animated feature film style as the image. Smooth, natural, expressive motion. No text, no extra people.",
+  "img_url": "https://v3b.fal.media/files/b/0ab0c84f/k8rOiXdu1DZyk9kF7p2eV_Y5nE10Zm.png",
+  "negative_prompt": "deformed face, distorted hands, extra fingers, extra limbs, text, letters, watermark, logo, blurry, realistic photo"
+ },
+ "parameters": {
+  "resolution": "720P",
+  "duration": 3,
+  "prompt_extend": false,
+  "audio": false,
+  "watermark": false
+ }
+}

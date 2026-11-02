@@ -1,0 +1,10 @@
+{
+ "prompt": "Photogramme vertical d'un long métrage d'animation. Même rendu hybride 2D/3D que les images fournies : volumes sculptés, peau, cheveux et tissus peints à la main avec grain de pinceau, fins traits d'encre, aucune surface plastique, aucun aspect jouet.\n\nGros plan vertical 9:16 sur la main droite de l'homme de la première image, en train de peindre. La caméra est tout près du mur, à hauteur d'épaule. Sa main droite tient le manche d'un rouleau à peindre blanc, dans le tiers inférieur droit de l'image ; on voit son poignet et le bas de sa manche de veste prune foncé, légèrement retroussée, exactement comme sur la première image. Le rouleau est appuyé contre le mur, au centre de l'image, et laisse une large bande de peinture blanche fraîche, lisse et légèrement brillante.\n\nLe mur occupe tout le fond de l'image : un mur blanc chaud parfaitement lisse, fraîchement peint, éclairé de biais par la lumière dorée d'une fenêtre hors champ à gauche, qui fait ressortir la texture veloutée de la peinture.\n\nLa scène contient exactement : 1 main, 1 manche de veste, 1 rouleau à peindre et le mur. On ne voit pas son visage.\n\nLumière chaude de fin d'après-midi, rayon de lumière rasante sur le mur, faible profondeur de champ.\n\nAucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. Aucune autre personne. Aucun objet supplémentaire.",
+ "image_urls": [
+  "@fichier:ref/arthur-officiel.png",
+  "@fichier:cles/KA5/sortie-1.png"
+ ],
+ "num_images": 1,
+ "aspect_ratio": "9:16",
+ "output_format": "png"
+}

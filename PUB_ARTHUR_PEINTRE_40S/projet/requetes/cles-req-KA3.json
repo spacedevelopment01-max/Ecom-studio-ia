@@ -1,0 +1,10 @@
+{
+ "prompt": "Photogramme vertical d'un long métrage d'animation. Même rendu hybride 2D/3D que les images fournies : volumes sculptés, peau, cheveux et tissus peints à la main avec grain de pinceau, fins traits d'encre, aucune surface plastique, aucun aspect jouet.\n\nReprends exactement la deuxième image : même cadrage, même pose, même position du bras, de la main et du bout de l'index, même rouleau, même décor, même lumière, même taille du personnage dans l'image. Modifie seulement trois choses : retire les lunettes de protection posées sur sa tête, pour que ses cheveux en bataille soient entièrement visibles comme sur la première image ; retire toutes les taches de peinture de sa veste prune, de son t-shirt et de son jean, qui deviennent propres comme sur la première image ; donne-lui exactement le visage de la première image. Ne déplace rien d'autre.\n\nLe personnage est exactement l'homme de la première image, sans rien redessiner : même visage, mêmes proportions, cheveux châtain foncé très en bataille, sourcils épais, nez long, barbe courte de quelques jours, veste prune foncé ouverte aux manches légèrement retroussées, t-shirt crème, jean bleu foncé, baskets blanches. Ses vêtements sont propres : aucune tache de peinture. Il ne porte ni lunettes, ni casque, ni casquette : ses cheveux sont entièrement visibles. Seul accessoire de métier porté : une ceinture à outils en toile beige à la taille.\n\nAucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. Aucune autre personne. Aucun objet supplémentaire.",
+ "image_urls": [
+  "@fichier:ref/arthur-officiel.png",
+  "@fichier:../pub04/cles/recadre/K3c-final.png"
+ ],
+ "num_images": 1,
+ "aspect_ratio": "9:16",
+ "output_format": "png"
+}

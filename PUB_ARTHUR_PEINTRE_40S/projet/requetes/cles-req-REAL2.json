@@ -1,0 +1,9 @@
+{
+ "prompt": "Photographie de réalisation d'un artisan peintre au format vertical 9:16, dans le même rendu peint que l'image fournie.\n\nUne cage d'escalier fraîchement repeinte, vue d'en bas : murs blanc chaud parfaitement lisses, une bande basse terracotta le long de la montée, rampe en bois clair, marches en bois, une petite fenêtre en haut qui laisse entrer la lumière.\n\nLa scène contient exactement : l'escalier, la rampe, la petite fenêtre et les murs.\n\nLumière naturelle chaleureuse, rendu soigné de photo de réalisation.\n\nAucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. Aucune personne. Aucun objet supplémentaire.",
+ "image_urls": [
+  "@fichier:cles/APRESb/sortie-1.png"
+ ],
+ "num_images": 1,
+ "aspect_ratio": "9:16",
+ "output_format": "png"
+}

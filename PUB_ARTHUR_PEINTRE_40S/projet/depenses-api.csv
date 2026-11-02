@@ -1,0 +1,46 @@
+date;service;modele;libelle;identifiant;statut;cout_usd
+2026-11-01T23:59:38+00:00;alibaba;wan2.6-i2v-flash;sonde de validation (image absente);97670d71;refus InvalidParameter;0.000
+2026-11-02T00:02:33;fal.ai;fal-ai/nano-banana/edit;arthur image clé KA1;01a19990-6aef-7161-9511-9990c85da770;ok;0.039
+2026-11-02T00:02:33;fal.ai;fal-ai/nano-banana/edit;arthur image clé KA2;01a19990-6b05-7fa3-8be4-8d5a3cbc63db;ok;0.039
+2026-11-02T00:02:34;fal.ai;fal-ai/nano-banana/edit;arthur image clé KA3;01a19990-6b08-72a1-9137-2a1cbd5f16ed;ok;0.039
+2026-11-02T00:02:38;fal.ai;fal-ai/nano-banana/edit;arthur image clé KA5;01a19990-6b2a-7cc0-aabc-5a081725d97a;ok;0.039
+2026-11-02T00:02:47;fal.ai;fal-ai/nano-banana/edit;arthur image clé KA6;01a19990-a093-7ca0-bd41-b0d74426359f;ok;0.039
+2026-11-02T00:02:47;fal.ai;fal-ai/nano-banana/edit;arthur image clé KA9;01a19990-a0aa-7f70-804b-004ac64f5fda;ok;0.039
+2026-11-02T00:02:47;fal.ai;fal-ai/nano-banana/edit;arthur image clé KA7;01a19990-a086-7c53-83b7-41489eabe366;ok;0.039
+2026-11-02T00:02:56;fal.ai;fal-ai/nano-banana/edit;arthur image clé KA10;01a19990-b065-7640-b37b-262000788525;ok;0.039
+2026-11-02T00:03:01;fal.ai;fal-ai/nano-banana/edit;arthur image clé AVANT;01a19990-d724-71e1-afc3-6d4c9429dc6e;ok;0.039
+2026-11-02T00:03:02;fal.ai;fal-ai/nano-banana/edit;arthur image clé APRES;01a19990-d71b-7770-8f7e-62f2bbec8de6;ok;0.039
+2026-11-02T00:03:05;fal.ai;fal-ai/nano-banana/edit;arthur image clé KA13;01a19990-d77a-72a2-9a10-14ea48511013;ok;0.039
+2026-11-02T00:04:23;fal.ai;fal-ai/nano-banana/edit;arthur image clé KA2b (reprise);01a19992-17c6-7723-9df4-0fecc578a9ec;ok;0.039
+2026-11-02T00:04:23;fal.ai;fal-ai/nano-banana/edit;arthur image clé KA3b (reprise);01a19992-17b3-7000-926c-08837894a3ef;ok;0.039
+2026-11-02T00:04:23;fal.ai;fal-ai/nano-banana/edit;arthur image clé KA1b (reprise);01a19992-176e-74a0-8a09-6b0cb99fb9ac;ok;0.039
+2026-11-02T00:04:23;fal.ai;fal-ai/nano-banana/edit;arthur image clé KA10b (reprise);01a19992-17e0-7b70-91f3-86cf54687ffb;ok;0.039
+2026-11-02T00:04:23;fal.ai;fal-ai/nano-banana/edit;arthur image clé APRESb (reprise);01a19992-17f8-7082-9106-e980fc2e6817;ok;0.039
+2026-11-02T00:05:28;fal.ai;fal-ai/nano-banana/edit;arthur image clé KA4 (pointage commentaire);01a19993-13bb-7fb3-8e4a-d21e3af4da67;ok;0.039
+2026-11-02T00:08:49;fal.ai;fal-ai/ffmpeg-api/loudnorm;arthur hébergement voix p1;01a19996-4667-7f63-852c-e90469a06c5f;ok;0.002
+2026-11-02T00:08:49;fal.ai;fal-ai/ffmpeg-api/loudnorm;arthur hébergement voix p2a;01a19996-465f-7053-90ca-092cd0860497;ok;0.002
+2026-11-02T00:08:49;fal.ai;fal-ai/ffmpeg-api/loudnorm;arthur hébergement voix p2b;01a19996-463b-7622-9b95-bf7ba7af83dd;ok;0.002
+2026-11-02T00:08:49;fal.ai;fal-ai/ffmpeg-api/loudnorm;arthur hébergement voix p4a;01a19996-464e-70b2-9de8-30a55a435937;ok;0.002
+2026-11-02T00:08:55;fal.ai;fal-ai/ffmpeg-api/loudnorm;arthur hébergement voix p6;01a19996-5cbd-7b20-b22c-067c1b4f31dc;ok;0.002
+2026-11-02T00:08:55;fal.ai;fal-ai/ffmpeg-api/loudnorm;arthur hébergement voix p8b;01a19996-5ca9-7a01-9054-a42b303b62e4;ok;0.002
+2026-11-02T00:08:55;fal.ai;fal-ai/ffmpeg-api/loudnorm;arthur hébergement voix p7a;01a19996-5c9a-73f0-be02-6f891a89ea87;ok;0.002
+2026-11-02T00:08:55;fal.ai;fal-ai/ffmpeg-api/loudnorm;arthur hébergement voix p5b;01a19996-5cd0-78a1-80d8-fe3f1918279e;ok;0.002
+2026-11-02T00:09:00;fal.ai;fal-ai/ffmpeg-api/loudnorm;arthur hébergement voix p9;01a19996-705e-7bf2-9319-1f32a02830be;ok;0.002
+2026-11-02T00:11:25;fal.ai;fal-ai/kling-video/ai-avatar/v2/standard;arthur plan parlant A2b (Avatar Standard);01a19996-d2ae-7e23-9fdf-ed6e8648765b;ok;0.072
+2026-11-02T00:11:28;alibaba;wan2.6-i2v-flash;arthur plan d'action W3a (Wan 2.6 Flash 3 s, sans son);a17b0c04-8371-4b87-89a0-c5ad46a4f73e;ok;0.075
+2026-11-02T00:11:29;fal.ai;fal-ai/kling-video/ai-avatar/v2/standard;arthur plan parlant A1 (Avatar Standard);01a19996-cbfe-78a0-ad1f-82ef1692601c;ok;0.182
+2026-11-02T00:11:34;fal.ai;fal-ai/kling-video/ai-avatar/v2/standard;arthur plan parlant A4 (Avatar Standard);01a19996-d685-73e2-91eb-368b7cd57dc3;ok;0.095
+2026-11-02T00:11:37;alibaba;wan2.6-i2v-flash;arthur plan d'action W9 (Wan 2.6 Flash 3 s, sans son);b3860ce4-812d-4457-a048-aa07606e61a9;ok;0.075
+2026-11-02T00:11:38;fal.ai;fal-ai/kling-video/ai-avatar/v2/standard;arthur plan parlant A2a (Avatar Standard);01a19996-cf0c-70b3-9c01-defc5aca75c0;ok;0.126
+2026-11-02T00:11:38;alibaba;wan2.6-i2v-flash;arthur plan d'action W3b (Wan 2.6 Flash 3 s, sans son);284fe06f-429b-410a-aa32-cea6b975e1f0;ok;0.075
+2026-11-02T00:11:42;fal.ai;fal-ai/kling-video/ai-avatar/v2/standard;arthur plan parlant A9 (Avatar Standard);01a19996-eae0-7032-ae9b-fd78c88f60f8;ok;0.151
+2026-11-02T00:11:42;fal.ai;fal-ai/kling-video/ai-avatar/v2/standard;arthur plan parlant A7 (Avatar Standard);01a19996-e2c0-7211-bac0-34ad953afbca;ok;0.057
+2026-11-02T00:11:42;fal.ai;fal-ai/kling-video/ai-avatar/v2/standard;arthur plan parlant A5 (Avatar Standard);01a19996-dac3-7c50-a18f-eb7801b9b0f1;ok;0.173
+2026-11-02T00:11:42;fal.ai;fal-ai/kling-video/ai-avatar/v2/standard;arthur plan parlant A8 (Avatar Standard);01a19996-e6ca-7333-bca4-bd53f58ee8d0;ok;0.090
+2026-11-02T00:11:46;fal.ai;fal-ai/kling-video/ai-avatar/v2/standard;arthur plan parlant A6 (Avatar Standard);01a19996-de84-7d23-bdd9-dc57d6f09ef2;ok;0.200
+2026-11-02T00:19:58;fal.ai;fal-ai/ffmpeg-api/loudnorm;arthur hébergement voix p5c;01a199a0-7b3e-7181-8aac-54155bba0354;ok;0.002
+2026-11-02T00:22:19;fal.ai;fal-ai/kling-video/ai-avatar/v2/standard;arthur plan parlant A5c (chute du gag, Avatar Standard);01a199a0-8fff-73c3-9060-1a61578d2b6c;ok;0.120
+2026-11-02T00:25:10;fal.ai;fal-ai/nano-banana/edit;arthur photo de réalisation REAL1;01a199a5-1ec4-7cb3-a647-8c587449a99a;ok;0.039
+2026-11-02T00:25:11;fal.ai;fal-ai/nano-banana/edit;arthur photo de réalisation REAL2;01a199a5-1ef3-7242-a5f4-db1145855139;ok;0.039
+2026-11-02T00:36:17;fal.ai;fal-ai/nano-banana/edit;arthur image clé KA5b (gros plan main et rouleau);01a199af-4948-7ec3-8b42-2404d5da79d9;ok;0.039
+2026-11-02T00:36:58;alibaba;wan2.6-i2v-flash;arthur plan d'action W5 (gros plan rouleau, Wan 2.6 Flash 3 s, sans son);2bad30b4-3f3f-48da-8f3e-ea8110c4220a;ok;0.075

@@ -1,0 +1,15 @@
+{
+ "model": "wan2.6-i2v-flash",
+ "input": {
+  "prompt": "He applies one last firm stroke of the paint roller at the top of the white wall, lowers the roller, takes a step back and admires his work proudly with a satisfied smile. The camera slowly pushes in. Same character, same face, same clothes and same painted 2D/3D animated feature film style as the image. Smooth, natural, expressive motion. No text, no extra people.",
+  "img_url": "https://v3b.fal.media/files/b/0ab0c84e/0Pj5iod4U6ftzJlGhSeZG_YTfw2TKg.png",
+  "negative_prompt": "deformed face, distorted hands, extra fingers, extra limbs, text, letters, watermark, logo, blurry, realistic photo"
+ },
+ "parameters": {
+  "resolution": "720P",
+  "duration": 3,
+  "prompt_extend": false,
+  "audio": false,
+  "watermark": false
+ }
+}

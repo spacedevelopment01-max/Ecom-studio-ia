@@ -1,0 +1,15 @@
+{
+ "model": "wan2.6-i2v-flash",
+ "input": {
+  "prompt": "He turns toward the open wooden door on the left and quickly hurries out of the frame through the door, with a happy little hop. The camera stays still and the room is left empty. Same character, same face, same clothes and same painted 2D/3D animated feature film style as the image. Smooth, natural, expressive motion. No text, no extra people.",
+  "img_url": "https://v3b.fal.media/files/b/0ab0c851/hts4XUze4lPBmIMEQxCh7_bSPnxvv8.png",
+  "negative_prompt": "deformed face, distorted hands, extra fingers, extra limbs, text, letters, watermark, logo, blurry, realistic photo"
+ },
+ "parameters": {
+  "resolution": "720P",
+  "duration": 3,
+  "prompt_extend": false,
+  "audio": false,
+  "watermark": false
+ }
+}

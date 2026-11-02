@@ -1,0 +1,9 @@
+{
+ "prompt": "Photographie de chantier au format vertical 9:16, dans le même rendu peint que l'image fournie.\n\nReprends exactement la pièce de l'image fournie, même cadrage, même fenêtre, même lumière, mais une fois les travaux terminés : murs lisses peints d'un blanc chaud impeccable, plafond net sans fissure, plus aucun papier peint ni trace d'humidité, plinthes blanches neuves, parquet clair propre et brillant. La pièce est vide et sans aucune personne : plus de bâche, plus d'échafaudage.\n\nLa scène contient exactement la pièce rénovée et vide.\n\nLumière chaude et lumineuse de fin d'après-midi, rendu soigné de photo de réalisation.\n\nAucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. Aucune autre personne. Aucun objet supplémentaire.",
+ "image_urls": [
+  "@fichier:cles/AVANT/sortie-1.png"
+ ],
+ "num_images": 1,
+ "aspect_ratio": "9:16",
+ "output_format": "png"
+}

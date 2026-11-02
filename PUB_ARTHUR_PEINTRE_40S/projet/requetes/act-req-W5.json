@@ -1,0 +1,15 @@
+{
+ "model": "wan2.6-i2v-flash",
+ "input": {
+  "prompt": "His hand pushes the paint roller in one slow, smooth, satisfying vertical stroke up the wall, leaving a flawless even layer of fresh white paint, then lifts the roller away from the wall. Warm golden light glides across the perfectly smooth wall. Same hand, same prune sleeve, same painted 2D/3D animated feature film style as the image. The camera stays still. No face, no text, no extra people.",
+  "img_url": "https://v3b.fal.media/files/b/0ab0c918/SAHSv9USr4m63dE7b-Qcd_vIPbUKHk.png",
+  "negative_prompt": "deformed hand, extra fingers, extra arm, face, text, letters, watermark, logo, blurry, realistic photo"
+ },
+ "parameters": {
+  "resolution": "720P",
+  "duration": 3,
+  "prompt_extend": false,
+  "audio": false,
+  "watermark": false
+ }
+}

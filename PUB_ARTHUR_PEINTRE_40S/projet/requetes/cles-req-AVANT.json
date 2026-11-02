@@ -1,0 +1,9 @@
+{
+ "prompt": "Photographie de chantier au format vertical 9:16, dans le même rendu peint que l'image fournie.\n\nReprends exactement la pièce de l'image fournie, même cadrage, même fenêtre, même lumière, mais AVANT les travaux et sans aucune personne : les murs sont abîmés, enduit fissuré, vieux papier peint jauni déchiré par plaques, traces d'humidité grises dans un angle, plinthe usée. Une bâche beige est posée au sol, l'échafaudage roulant est contre le mur de gauche.\n\nLa scène contient exactement la pièce abîmée, 1 bâche et 1 échafaudage.\n\nLumière naturelle un peu terne.\n\nAucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. Aucune autre personne. Aucun objet supplémentaire.",
+ "image_urls": [
+  "@fichier:../pub04/cles/K27/sortie-1.png"
+ ],
+ "num_images": 1,
+ "aspect_ratio": "9:16",
+ "output_format": "png"
+}

@@ -1,0 +1,9 @@
+{
+ "prompt": "Photogramme vertical d'un long métrage d'animation. Même rendu hybride 2D/3D que les images fournies : volumes sculptés, peau, cheveux et tissus peints à la main avec grain de pinceau, fins traits d'encre, aucune surface plastique, aucun aspect jouet.\n\nRetouche uniquement cette image. Retire les lunettes de protection posées sur sa tête : ses cheveux châtain foncé en bataille deviennent entièrement visibles, avec la même coiffure que le reste de ses cheveux. Retire toutes les taches de peinture de sa veste prune, de son t-shirt crème et de son jean : ses vêtements deviennent propres. Retire la ceinture à outils et le mètre jaune : on voit simplement sa taille et son jean. Ne change absolument rien d'autre : même cadrage, même pose, même bras tendu, même main, même index exactement au même endroit, même rouleau, même visage, même expression, même décor, même lumière.\n\nAucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. Aucune autre personne. Aucun objet supplémentaire.",
+ "image_urls": [
+  "@fichier:../pub04/cles/recadre/K2-final.png"
+ ],
+ "num_images": 1,
+ "aspect_ratio": "9:16",
+ "output_format": "png"
+}

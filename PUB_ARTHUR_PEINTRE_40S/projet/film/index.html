@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080, height=1920">
+<title>Je suis peintre, pas informaticien !</title>
+<!-- Publicité Arthur (40,000 s, 1080 x 1920, 30 i/s). Plans animés montés sur la voix (assets/plans.mp4, montage.py).
+     Cette composition ajoute : sous-titres français synchronisés, écran du téléphone (rappels), écrans fictifs créés pour le film
+     (site d'artisan, publication assortie, conversation Syna), main d'Arthur découpée de son image, logo officiel E-COM STUDIO IA
+     (composant Logo du Studio, sans modification) et bleu nuit officiel #0A1024. Aucune interface réelle du Studio, aucun faux bouton TikTok.
+     Aucune animation de caméra sur les plans de pointage. Tout est une fonction pure du temps : render(t), calé sur assets/timing.js. -->
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/timing.js"></script>
+<style>
+  @font-face { font-family: "Bricolage"; src: url("assets/fonts/bricolage.woff2") format("woff2"); font-weight: 200 800; }
+  @font-face { font-family: "Instrument"; src: url("assets/fonts/instrument-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; }
+  :root { --nuit: #0A1024; --creme: #F6F1E8; --encre: #1F2430; --terra: #C8643B; --sauge: #7F9A84; --or: #FFD27A; }
+  html, body { margin: 0; background: #000; }
+  #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: #000; }
+  #cam { position: absolute; inset: 0; transform-origin: 50% 40%; will-change: transform; }
+  #plans { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; object-fit: cover; }
+  .lay { position: absolute; opacity: 0; will-change: transform, opacity; }
+
+  /* Sous-titres : gauche de l'image (la colonne des boutons TikTok reste libre), au-dessus de la légende TikTok */
+  #sub { position: absolute; z-index: 20; left: 56px; width: 860px; top: 1392px; text-align: center; font: 800 54px/1.18 "Montserrat", sans-serif;
+         color: #fff; letter-spacing: .005em; -webkit-text-stroke: 9px rgba(12,14,22,.92); paint-order: stroke fill; text-shadow: 0 6px 18px rgba(0,0,0,.55); }
+  #sub span { display: inline; }
+  #sub span.on { color: var(--or); }
+
+  /* Téléphone : écran verrouillé et deux rappels */
+  #tel { left: 230px; top: 150px; width: 620px; height: 1190px; border-radius: 86px; background: #0d0f14; padding: 18px; box-sizing: border-box;
+         box-shadow: 0 0 0 3px #2b2f38, 0 50px 120px rgba(0,0,0,.55); transform-origin: 50% 60%; }
+  #tel .ecr { position: relative; width: 100%; height: 100%; border-radius: 70px; overflow: hidden;
+              background: radial-gradient(120% 80% at 30% 0%, #3a4766 0%, #1a2136 45%, #0c1020 100%); }
+  #tel .ilot { position: absolute; left: 50%; top: 22px; width: 150px; height: 40px; margin-left: -75px; border-radius: 22px; background: #000; }
+  #tel .heure { position: absolute; left: 0; right: 0; top: 150px; text-align: center; font: 300 150px/1 "Montserrat", sans-serif; color: #EEF2FB; letter-spacing: -.02em; }
+  #tel .jour { position: absolute; left: 0; right: 0; top: 118px; text-align: center; font: 600 34px "Montserrat", sans-serif; color: #C9D3EA; }
+  .notif { position: absolute; left: 34px; right: 34px; border-radius: 34px; padding: 22px 26px; background: rgba(240,243,250,.86);
+           box-shadow: 0 12px 40px rgba(0,0,0,.35); opacity: 0; display: flex; gap: 20px; align-items: flex-start; }
+  .notif i { flex: 0 0 64px; height: 64px; border-radius: 16px; background: var(--terra); display: flex; align-items: center; justify-content: center; }
+  .notif i svg { width: 38px; height: 38px; fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .notif b { display: block; font: 700 26px "Montserrat", sans-serif; color: #5A6172; letter-spacing: .04em; text-transform: uppercase; }
+  .notif p { margin: 6px 0 0; font: 700 38px/1.18 "Montserrat", sans-serif; color: #151821; }
+
+  /* Écran fictif : fenêtre bleu nuit (logo officiel) qui contient le site et la publication */
+  #fen { left: 40px; top: 120px; width: 1000px; height: 1240px; border-radius: 40px; background: var(--nuit); overflow: hidden;
+         box-shadow: 0 0 0 2px rgba(150,180,255,.35), 0 60px 140px rgba(0,0,0,.6); transform-origin: 50% 100%; }
+  #fen .barre { position: absolute; left: 0; right: 0; top: 0; height: 92px; display: flex; align-items: center; padding: 0 30px; gap: 16px; }
+  .ecs { display: inline-flex; align-items: center; gap: calc(8px * var(--k)); }
+  .ecs svg { width: calc(32px * var(--k)); height: calc(32px * var(--k)); flex-shrink: 0; }
+  .ecs .wm { font-family: "Bricolage", sans-serif; font-weight: 600; font-size: calc(17px * var(--k)); line-height: 1; letter-spacing: -0.025em; color: #EEF2FB; white-space: nowrap; }
+  .ecs .ia { font-family: "Instrument", serif; font-style: italic; font-weight: 400; letter-spacing: -0.01em; color: #3D6EF0; }
+  #site { position: absolute; left: 24px; top: 92px; width: 952px; height: 1124px; border-radius: 26px; background: var(--creme); overflow: hidden; }
+  #site .tete { height: 96px; display: flex; align-items: center; justify-content: space-between; padding: 0 34px; border-bottom: 2px solid #E6DFD2; }
+  #site .nom { font: 800 40px "Montserrat", sans-serif; color: var(--encre); letter-spacing: -.01em; }
+  #site .nom small { display: block; font: 600 22px "Montserrat", sans-serif; color: var(--terra); letter-spacing: .08em; text-transform: uppercase; margin-top: 2px; }
+  #site .rouleau { width: 54px; height: 54px; }
+  #heros { position: relative; margin: 26px 34px 0; height: 330px; border-radius: 22px; overflow: hidden; }
+  #heros img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 62%; }
+  #heros .voile { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(20,22,30,.62), rgba(20,22,30,0) 60%); }
+  #heros h1 { position: absolute; left: 30px; bottom: 82px; margin: 0; font: 800 46px/1.1 "Montserrat", sans-serif; color: #fff; }
+  #devis { position: absolute; left: 30px; bottom: 24px; padding: 12px 26px; border-radius: 999px; background: var(--terra); color: #fff; font: 800 28px "Montserrat", sans-serif; }
+  #site h2 { margin: 30px 34px 16px; font: 800 34px "Montserrat", sans-serif; color: var(--encre); }
+  #galerie { position: relative; margin: 0 34px; height: 520px; }
+  .tuile { position: absolute; top: 0; width: 280px; height: 420px; border-radius: 18px; overflow: hidden; box-shadow: 0 10px 26px rgba(30,30,40,.18); background: #ddd; }
+  .tuile img { width: 100%; height: 100%; object-fit: cover; }
+  .tuile .lg { position: absolute; left: 12px; bottom: 12px; padding: 6px 14px; border-radius: 999px; background: rgba(255,255,255,.9); font: 800 20px "Montserrat", sans-serif; color: var(--encre); }
+  #aa { display: flex; }
+  #aa .moitie { position: relative; width: 50%; height: 100%; overflow: hidden; }
+  #aa .moitie img { width: 280px; height: 100%; object-fit: cover; }
+  #aa .moitie + .moitie { border-left: 4px solid #fff; }
+  #aa .moitie .lg { left: 8px; font-size: 18px; padding: 5px 10px; }
+  #aa .moitie.ap .lg { background: var(--terra); color: #fff; }
+  #vide { border: 4px dashed #CDBFA8; background: transparent; box-shadow: none; display: flex; align-items: center; justify-content: center; font: 800 70px "Montserrat"; color: #CDBFA8; }
+  /* plateau des photos du chantier (dans le site, en bas) */
+  #plateau { position: absolute; left: 34px; right: 34px; bottom: 26px; height: 150px; border-radius: 20px; background: #EFE7DA; display: flex; align-items: center; gap: 18px; padding: 0 22px; }
+  #plateau b { font: 800 24px/1.2 "Montserrat", sans-serif; color: #6B5E4A; width: 210px; }
+  #plateau .vg { width: 104px; height: 118px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,.18); }
+  #plateau .vg img { width: 100%; height: 100%; object-fit: cover; }
+  #plateau .vg.sel { box-shadow: 0 0 0 5px var(--terra), 0 4px 12px rgba(0,0,0,.18); }
+  /* publication assortie (format téléphone), même palette et même typographie que le site */
+  #pub { left: 500px; top: 300px; width: 390px; height: 760px; border-radius: 34px; background: var(--creme); overflow: hidden; z-index: 6;
+         box-shadow: 0 0 0 10px #12151d, 0 40px 90px rgba(0,0,0,.55); transform-origin: 50% 50%; }
+  #pub .h { display: flex; align-items: center; gap: 12px; padding: 22px 22px 14px; }
+  #pub .av { width: 52px; height: 52px; border-radius: 50%; background: var(--terra); color: #fff; font: 800 28px/52px "Montserrat"; text-align: center; }
+  #pub .h b { font: 800 22px/1.15 "Montserrat", sans-serif; color: var(--encre); }
+  #pub .h b small { display: block; font: 600 17px "Montserrat"; color: var(--terra); }
+  #pub .img { position: relative; height: 400px; display: flex; }
+  #pub .img .moitie { position: relative; width: 50%; overflow: hidden; }
+  #pub .img img { width: 195px; height: 100%; object-fit: cover; }
+  #pub .img .moitie + .moitie { border-left: 4px solid #fff; }
+  #pub .img .lg { position: absolute; left: 10px; top: 10px; padding: 5px 12px; border-radius: 999px; background: rgba(255,255,255,.92); font: 800 18px "Montserrat"; color: var(--encre); }
+  #pub .img .ap .lg { background: var(--terra); color: #fff; }
+  #pub .leg { padding: 18px 22px 0; font: 600 24px/1.3 "Montserrat", sans-serif; color: var(--encre); }
+  #pub .prog { position: absolute; left: 22px; right: 22px; bottom: 22px; height: 64px; border-radius: 999px; background: var(--terra); color: #fff;
+               font: 800 24px/64px "Montserrat", sans-serif; text-align: center; }
+  /* main d'Arthur (découpée de son image officielle d'Arthur pointant) */
+  #main { z-index: 9; width: 591px; height: 378px; transform-origin: 588px 147px; }
+  #main img { width: 100%; height: 100%; }
+  .onde { position: absolute; z-index: 8; width: 90px; height: 90px; margin: -45px 0 0 -45px; border-radius: 50%; border: 5px solid rgba(255,255,255,.95); opacity: 0; }
+
+  /* Conversation Syna : interface conversationnelle seule (aucun avatar, aucun visage) */
+  #chat { left: 70px; top: 1030px; width: 840px; z-index: 7; border-radius: 34px; padding: 22px 26px 26px; box-sizing: border-box;
+          background: linear-gradient(160deg, rgba(10,16,36,.96), rgba(10,16,36,.9)); box-shadow: 0 0 0 3px rgba(170,205,255,.55), 0 0 40px rgba(120,170,255,.35), 0 30px 60px -20px rgba(0,0,0,.7); }
+  #chat .t { display: flex; align-items: center; gap: 14px; font: 800 32px/1 "Montserrat", sans-serif; color: #DCE8FF; }
+  #chat .t i { display: inline-flex; gap: 7px; } #chat .t i b { width: 11px; height: 11px; border-radius: 50%; background: #9EC2FF; display: inline-block; }
+  #chat .moi { margin-top: 16px; display: flex; justify-content: flex-end; }
+  #chat .moi span { max-width: 660px; background: var(--creme); color: var(--encre); border-radius: 28px 28px 8px 28px; padding: 14px 22px; font: 700 32px/1.25 "Montserrat", sans-serif; }
+  #chat .syna { margin-top: 14px; opacity: 0; }
+  #chat .syna span { display: inline-block; background: rgba(158,194,255,.14); color: #EAF1FF; border: 2px solid rgba(158,194,255,.45); border-radius: 28px 28px 28px 8px; padding: 14px 22px; font: 700 32px/1.22 "Montserrat", sans-serif; }
+
+  /* Fin : bleu nuit, logo officiel, signature */
+  #fin { position: absolute; inset: 0; z-index: 15; background: var(--nuit); opacity: 0; }
+  #fin .halo { position: absolute; left: 90px; top: 520px; width: 900px; height: 600px; border-radius: 50%;
+               background: radial-gradient(closest-side, rgba(61,110,240,.38), rgba(10,16,36,0)); }
+  #finLogo { position: absolute; left: 0; right: 0; top: 700px; display: flex; justify-content: center; }
+  .sig { position: absolute; left: 0; right: 0; text-align: center; font: 800 64px/1.1 "Montserrat", sans-serif; color: #EEF2FB; letter-spacing: -.005em; opacity: 0; }
+  .sig.b { color: #9EC2FF; }
+  #volet { position: absolute; z-index: 14; top: 0; bottom: 0; left: 0; width: 1080px; background: var(--nuit); transform-origin: 0 50%; opacity: 0; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="40" data-fps="30" data-width="1080" data-height="1920">
+  <div id="cam"><video id="plans" class="clip" data-start="0" data-duration="40" data-track-index="0" src="assets/plans.mp4" muted playsinline></video></div>
+  <audio id="mix" class="clip" data-start="0" data-duration="40" data-track-index="1" data-volume="1" src="assets/mix.wav"></audio>
+
+  <!-- Téléphone : les deux rappels -->
+  <div id="tel" class="lay" style="z-index:5"><div class="ecr"><div class="ilot"></div><div class="jour">Fin de chantier</div><div class="heure">18:47</div>
+    <div id="n1" class="notif" style="top:440px"><i><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></i><div><b>Rappel</b><p>Terminer le site</p></div></div>
+    <div id="n2" class="notif" style="top:640px"><i><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></i><div><b>Rappel</b><p>Préparer la publication de demain</p></div></div>
+  </div></div>
+
+  <!-- Écran fictif : site de l'artisan + publication assortie, puis conversation Syna -->
+  <div id="fen" class="lay" style="z-index:5" data-layout-ignore>
+    <div class="barre"><span class="ecs" style="--k:1.9"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="#EEF2FB"/><path d="M18 20h22v6H25v4h13v6H25v4h15v6H18z" fill="#070B17"/><circle cx="46" cy="44" r="5" fill="#3D6EF0"/></svg><span class="wm">E-COM STUDIO <span class="ia">ia</span></span></span></div>
+    <div id="site">
+      <div class="tete"><div class="nom">Arthur<small>Plâtrerie &amp; peinture</small></div>
+        <svg class="rouleau" viewBox="0 0 24 24" fill="none" stroke="#C8643B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="15" height="6" rx="2"/><path d="M18 6h2v5h-8v3"/><rect x="10.5" y="14" width="3" height="7" rx="1"/></svg></div>
+      <div id="heros"><img src="assets/img/apres.jpg" alt=""><div class="voile"></div><h1>Vos murs, refaits<br>avec soin.</h1><div id="devis">Demander un devis</div></div>
+      <h2 id="titreGal">Mes réalisations</h2>
+      <div id="galerie">
+        <div id="t1" class="tuile" style="left:0"><img src="assets/img/real1.jpg" alt=""><span class="lg">Salon</span></div>
+        <div id="t2" class="tuile" style="left:300px"><img src="assets/img/real2.jpg" alt=""><span class="lg">Escalier</span></div>
+        <div id="vide" class="tuile" style="left:600px">+</div>
+        <div id="aa" class="tuile" style="left:600px;opacity:0"><div class="moitie"><img src="assets/img/avant.jpg" alt=""><span class="lg">Avant</span></div><div class="moitie ap"><img src="assets/img/apres.jpg" alt=""><span class="lg">Après</span></div></div>
+      </div>
+      <div id="plateau"><b>Photos du chantier</b><div id="vgA" class="vg"><img src="assets/img/avant.jpg" alt=""></div><div id="vgB" class="vg"><img src="assets/img/apres.jpg" alt=""></div></div>
+    </div>
+  </div>
+  <div id="pub" class="lay" data-layout-ignore>
+    <div class="h"><div class="av">A</div><b>Arthur<small>Plâtrerie &amp; peinture</small></b></div>
+    <div class="img"><div class="moitie"><img src="assets/img/avant.jpg" alt=""><span class="lg">Avant</span></div><div class="moitie ap"><img src="assets/img/apres.jpg" alt=""><span class="lg">Après</span></div></div>
+    <div class="leg">Avant / après : une chambre remise à neuf, du plafond au parquet.</div>
+    <div id="prog" class="prog">Programmer · demain 9 h</div>
+  </div>
+  <div id="main" class="lay"><img src="assets/img/main.png" alt=""></div>
+  <div id="onde" class="onde"></div>
+  <div id="chat" class="lay">
+    <div class="t"><span>Syna</span><i id="pts"><b></b><b></b><b></b></i></div>
+    <div class="moi"><span id="cMoi"></span></div>
+    <div id="cSyna" class="syna"><span>C'est fait : les avant-après passent en premier.</span></div>
+  </div>
+
+  <div id="volet"></div>
+  <div id="fin"><div class="halo"></div>
+    <div id="finLogo"><span class="ecs" style="--k:4.2"><svg viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="#EEF2FB"/><path d="M18 20h22v6H25v4h13v6H25v4h15v6H18z" fill="#070B17"/><circle cx="46" cy="44" r="5" fill="#3D6EF0"/></svg><span class="wm">E-COM STUDIO <span class="ia">ia</span></span></span></div>
+    <div id="sg1" class="sig" style="top:930px">Tout votre e-commerce.</div>
+    <div id="sg2" class="sig b" style="top:1016px">Au même endroit.</div>
+  </div>
+  <div id="sub"></div>
+</div>
+<script>
+(function () {
+  const FPS = 30, TT = window.T, D = TT.duree;
+  const $ = (id) => document.getElementById(id);
+  const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+  const lin = (t, a, b) => clamp((t - a) / (b - a));
+  const expoOut = (p) => (p >= 1 ? 1 : 1 - Math.pow(2, -10 * p));
+  const backOut = (p) => { const c = 1.7; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
+  const easeIO = (p) => (p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
+  const show = (el, o, tr) => { el.style.opacity = o; if (tr !== undefined) el.style.transform = tr; };
+  const S = (id) => TT.shots[id][0], E = (id) => TT.shots[id][1], PT = (id) => TT.shots[id][3];
+  const MW = (k, i) => TT.mots[k][i];                       // i-ème mot horodaté d'un morceau de voix
+
+  // Sous-titres : texte exact du script (l'horodatage vient de la transcription mot à mot) ; découpage en groupes lisibles
+  const TXT = {
+    p1: [["Je","vais","te","montrer","comment","j'évite"], ["de","passer","mes","soirées","sur","ma","com'."]],
+    p2a: [["Moi,","c'est","Arthur !"], ["Abonne-toi","là,"]], p2b: [["mets","un","cœur","ici…"]], p2c: [["viens !"]],
+    p3: [["Ça","y","est !"], ["Chantier","terminé."], ["Je","rentre !"]],
+    p4a: [["Oh","non…",null]], p4b: [["Le","site,","les","photos…"], ["et","la","publication","de","demain."]],
+    p5a: [["Un","mur","nickel ?",null,"Facile."]], p5b: [["Une","publication","nickel ?",null], ["Je","prends","quel","rouleau,","moi ?"]],
+    p6: [["Et","toi,","tu","fais","quoi","comme","métier ?",null], ["Dis-moi","juste","là !"]],
+    p7a: [["Bon,","regarde."]], p7b: [["Avec","E-COM","STUDIO","IA,"], ["je","présente","mes","chantiers","sur","mon","site"], ["et","je","prépare","mes","publications"], ["au","même","endroit."]],
+    p8a: [["Syna,","mets","les","photos"], ["avant-après",null,"en","premier."]], p8b: [["Ah,","là,","c'est","mieux !"]],
+    p9: [["Allez…","cette","fois,"], ["je","rentre.","Promis !"]],
+  };
+  const CUES = [];
+  Object.keys(TXT).forEach((k) => { let i = 0; TXT[k].forEach((grp) => { const all = grp.map((w) => { const m = MW(k, i++); return { w, t: m.t, f: m.f }; }); all.forEach((x, n) => { if (x.w === null && n > 0) all[n - 1].f = x.f; }); const ws = all.filter((x) => x.w !== null); CUES.push({ ws, t: ws[0].t - .08 }); }); });
+  CUES.sort((a, b) => a.t - b.t);
+  CUES.forEach((c, j) => { const last = c.ws[c.ws.length - 1].f + .45; c.e = j + 1 < CUES.length ? Math.min(last, CUES[j + 1].t) : last; });
+  window.__cues = CUES.map((c) => ({ t: c.t, e: c.e, txt: c.ws.map((x) => x.w).join(" ") }));
+  let curCue = -1;
+  function subtitles(t) {
+    const j = CUES.findIndex((c) => t >= c.t && t < c.e), el = $("sub");
+    if (j !== curCue) { curCue = j; el.innerHTML = j < 0 ? "" : CUES[j].ws.map((x, i) => `<span data-i="${i}">${x.w}</span>`).join(" "); }
+    if (j < 0) { el.style.opacity = 0; return; }
+    const c = CUES[j], p = expoOut(lin(t, c.t, c.t + .12));
+    el.style.opacity = p; el.style.transform = `translateY(${(1 - p) * 14}px)`;
+    el.querySelectorAll("span").forEach((s) => { const x = c.ws[+s.dataset.i]; s.classList.toggle("on", t >= x.t - .03 && t < x.f + .06); });
+  }
+
+  // Main d'Arthur : le bout de l'index (588, 147 dans l'image) est posé sur (x, y)
+  function main(t, x, y, ang, op) { show($("main"), op, `translate(${x - 588}px, ${y - 147}px) rotate(${ang}deg) scale(1.05)`); }
+  function onde(t, t0, x, y) { const p = lin(t, t0, t0 + .35); const el = $("onde"); el.style.left = x + "px"; el.style.top = y + "px"; show(el, t >= t0 && p < 1 ? 1 - p : 0, `scale(${.4 + 1.1 * p})`); }
+
+  const tS = S("TEL"), tE = E("TEL"), eS = S("ECRAN"), sS = S("SYNA"), sE = E("SYNA"), fS = S("FIN"), w9 = S("W9");
+  const motT = (k, i) => MW(k, i).t;
+  function render(t) {
+    // Caméra : lente poussée sur les plans parlants, jamais sur les plans de pointage
+    const cur = Object.keys(TT.shots).find((k) => t >= TT.shots[k][0] && t < TT.shots[k][1]);
+    let sc = 1;
+    if (cur && !PT(cur) && /^(A1|A4|A5|A5c|A7|A8|A9|W3a)$/.test(cur)) { const [a, b] = TT.shots[cur]; sc = 1 + .035 * lin(t, a, b); }
+    $("cam").style.transform = `scale(${sc})`;
+
+    // Téléphone : il monte dans le cadre, rappel 1 sur « site », rappel 2 sur « publication »
+    if (t >= tS - .02 && t < tE) {
+      const p = expoOut(lin(t, tS, tS + .35)), out = lin(t, tE - .15, tE);
+      show($("tel"), clamp(p * 2) * (1 - out), `translateY(${(1 - p) * 260}px) scale(${(.92 + .08 * p) * (1 + .03 * lin(t, tS, tE))}) rotate(${-1.5 + 1.5 * p}deg)`);
+      [["n1", motT("p4b", 1) - .1], ["n2", motT("p4b", 6) - .12]].forEach(([id, t0]) => { const q = backOut(lin(t, t0, t0 + .28)); show($(id), t >= t0 ? clamp(lin(t, t0, t0 + .12)) : 0, `translateY(${(1 - q) * -40}px) scale(${.9 + .1 * q})`); });
+    } else $("tel").style.opacity = 0;
+
+    // Écran fictif : site, sa main dépose la photo avant/après, publication assortie, puis Syna
+    const fenOn = t >= eS - .02 && t < sE;
+    if (fenOn) {
+      const p = expoOut(lin(t, eS, eS + .45)), out = lin(t, sE - .12, sE);
+      show($("fen"), clamp(p * 2) * (1 - out), `perspective(1600px) translateY(${(1 - p) * 420}px) rotateX(${(1 - p) * 18}deg) scale(${.82 + .18 * p})`);
+      // la photo avant/après est touchée dans le plateau puis rejoint la galerie (« je présente mes chantiers sur mon site »)
+      const tTap = motT("p7b", 5) + .05, tVol = motT("p7b", 7), tArr = motT("p7b", 10) + .05;
+      $("vgB").classList.toggle("sel", t >= tTap); $("vgA").classList.toggle("sel", t >= tTap);
+      const vol = easeIO(lin(t, tVol, tArr));
+      // déplacement plateau -> case vide (dans le repère de la galerie)
+      show($("aa"), t >= tVol ? clamp(lin(t, tVol, tVol + .1)) : 0, `translate(${(1 - vol) * -316}px, ${(1 - vol) * 281}px) scale(${.42 + .58 * vol}) rotate(${(1 - vol) * -6}deg)`);
+      $("vide").style.opacity = 1 - lin(t, tArr - .1, tArr + .1);
+      // Syna : la galerie remonte les avant-après en premier (sur « en premier »)
+      const tR = motT("p8a", 6), r = easeIO(lin(t, tR, tR + .45));
+      $("aa").style.left = (600 - 600 * r) + "px"; $("t1").style.left = (0 + 300 * r) + "px"; $("t2").style.left = (300 + 300 * r) + "px";
+      $("titreGal").textContent = t >= tR + .2 ? "Avant / après" : "Mes réalisations";
+      $("heros").style.height = (330 - 150 * lin(t, sS, sS + .4)) + "px";
+      $("plateau").style.opacity = 1 - lin(t, sS, sS + .2);
+    } else $("fen").style.opacity = 0;
+
+    // publication assortie : sur « et je prépare mes publications », sort de la galerie vers l'avant
+    const tP = motT("p7b", 11) - .05;
+    if (t >= tP && t < sS + .25) {
+      const p = backOut(lin(t, tP, tP + .45)), out = lin(t, sS, sS + .25);
+      show($("pub"), clamp(lin(t, tP, tP + .12)) * (1 - out), `perspective(1400px) translateX(${(1 - p) * -180 + out * 300}px) translateY(${(1 - p) * 220}px) rotateY(${-10 * p}deg) scale(${.6 + .4 * p})`);
+      $("prog").style.background = t >= motT("p7b", 16) ? "#2E7D5B" : "";
+      $("prog").textContent = t >= motT("p7b", 16) ? "✓ Prête pour demain 9 h" : "Programmer · demain 9 h";
+    } else $("pub").style.opacity = 0;
+
+    // main d'Arthur : entre par le bas, touche la photo du plateau, puis le bouton de la publication
+    { const tTap = motT("p7b", 5) + .05, tTap2 = motT("p7b", 16) - .08;
+      const A = [700, 1395], P1 = [522, 1235], P2 = [690, 1005];
+      let x, y, op = 0, ang = -105;
+      if (t >= tTap - .55 && t < tTap + .6) { const p = expoOut(lin(t, tTap - .55, tTap)), q = easeIO(lin(t, tTap + .25, tTap + .6)); x = A[0] + (P1[0] - A[0]) * p + 120 * q; y = A[1] + (P1[1] - A[1]) * p + 420 * q; op = 1; }
+      else if (t >= tTap2 - .5 && t < tTap2 + .55) { const p = expoOut(lin(t, tTap2 - .5, tTap2)), q = easeIO(lin(t, tTap2 + .2, tTap2 + .55)); x = A[0] + 60 + (P2[0] - A[0] - 60) * p + 140 * q; y = A[1] + (P2[1] - A[1]) * p + 460 * q; op = 1; ang = -100; }
+      if (op) main(t, x, y, ang, 1); else $("main").style.opacity = 0;
+      if (t >= tTap && t < tTap + .4) onde(t, tTap, P1[0], P1[1]); else if (t >= tTap2 && t < tTap2 + .4) onde(t, tTap2, P2[0], P2[1]); else $("onde").style.opacity = 0; }
+
+    // conversation Syna : la demande s'écrit pendant qu'il parle, Syna répond
+    const a8e = E("A8");
+    if (t >= sS - .05 && t < a8e) {
+      const p = backOut(lin(t, sS, sS + .3)), out = lin(t, a8e - .15, a8e), up = easeIO(lin(t, sE - .1, sE + .15));
+      show($("chat"), clamp(lin(t, sS, sS + .1)) * (1 - out), `translateY(${(1 - p) * 120 - up * 930}px) scale(${(.9 + .1 * p) * (1 - .12 * up)})`);
+      $("chat").querySelector(".moi").style.display = t >= sE ? "none" : "flex";
+      const MSG = "Syna, mets les photos avant-après en premier.";
+      const t0 = motT("p8a", 0), t1 = MW("p8a", 7).f;
+      $("cMoi").textContent = MSG.slice(0, Math.max(1, Math.round(MSG.length * lin(t, t0, t1))));
+      const tr = t1 + .05; show($("cSyna"), t >= tr ? clamp(lin(t, tr, tr + .1)) : 0, `translateY(${(1 - expoOut(lin(t, tr, tr + .25))) * 24}px)`);
+      [0, 1, 2].forEach((i) => { $("pts").children[i].style.opacity = .35 + .65 * (Math.sin(t * 9 - i * .9) > .3 ? 1 : 0); });
+    } else $("chat").style.opacity = 0;
+
+    // fin : volet bleu nuit depuis la porte, logo officiel, signature
+    const tV = w9 + .45;
+    { const p = easeIO(lin(t, tV, tV + .3)); show($("volet"), t >= tV && t < fS + .2 ? 1 : 0, `scaleX(${p})`); }
+    const tF = tV + .3;   // le volet a couvert l'image : logo et signature
+    if (t >= tF) {
+      show($("fin"), 1);
+      const pl = expoOut(lin(t, tF, tF + .4)); show($("finLogo"), clamp(pl * 2), `translateY(${(1 - pl) * 40}px) scale(${1.15 - .15 * pl})`);
+      [["sg1", tF + .15], ["sg2", tF + .3]].forEach(([id, t0]) => { const q = expoOut(lin(t, t0, t0 + .3)); show($(id), t >= t0 ? clamp(q * 2) : 0, `translateY(${(1 - q) * 26}px)`); });
+    } else $("fin").style.opacity = 0;
+
+    subtitles(t);
+    $("sub").style.display = t >= tF ? "none" : "block";
+  }
+  const tl = gsap.timeline({ paused: true });
+  const clock = { t: 0 };
+  tl.to(clock, { t: D, duration: D, ease: "none", onUpdate: () => render(clock.t) }, 0);
+  render(0);
+  window.__timelines = window.__timelines || {};
+  window.__timelines["main"] = tl;
+})();
+</script>
+</body>
+</html>
