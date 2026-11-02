@@ -147,3 +147,8 @@ it('raccordement : carte unique, bouton « Désigner pour SYNA » dans les trois
  expect(CONTENT_CHANGED_EVENT).toBe('studio:content-changed');
  expect(read('src/components/studio/conversation-local-business-content.tsx')).not.toMatch(/devis|quote/i);
 });
+
+it('désignation lisible : la version technique (horodatage) s’affiche en date « modifié le … », jamais en nombre brut',()=>{
+ const panel=fs.readFileSync(path.resolve(import.meta.dirname,'..','src/components/studio/conversation-panel.tsx'),'utf8');
+ expect(panel).toContain("t(' · modifié le ',' · edited on ')+new Date(Number(currentFocus.target.version))");
+});
