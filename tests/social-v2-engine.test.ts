@@ -105,6 +105,8 @@ describe("Social V2 — parcours", async () => {
     const r2 = fr(() => createPlanV2(p2, { startDate: start(), days: 3, perDay: 2, timezone: "Europe/Paris", platforms: [{ platform: "instagram" }], formatMix: { image: 100 } }));
     const ids2 = postsOfPlan(r2.planId);
     const capped = mockSocialDeps({ aiActive: true, cost: 100_000 });
+    // Probable quote accepted for all six posts; the higher per-call cap still stops at two.
+    capped.deps.probable = () => 30_000;
     const paid = await produceBatch(p2, ids2, capped.deps, { allowPaid: true, maxCostEur: 0.25, approvedEstimateMicro: 200_000 });
     expect(paid.spentMicro).toBeLessThanOrEqual(250_000);
     expect(capped.log.paid).toBeLessThanOrEqual(2);
