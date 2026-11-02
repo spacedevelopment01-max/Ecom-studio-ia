@@ -743,11 +743,13 @@ export default function TabBoutique() {
       )}
       <div ref={frameBox} className="relative flex-1 overflow-hidden bg-paper-2 p-0 sm:p-4">
         {/* L'aperçu n'est créé qu'une fois la largeur mesurée : sinon l'iframe est recréée (double chargement). */}
-        {/* Une seule enveloppe, quel que soit l'agrandissement : franchir le seuil (ouvrir ou replier SYNA en Plein cadre,
-            changer de format) ne recrée jamais l'iframe — pas de rechargement, de page blanche ni de défilement perdu (#301). */}
+        {/* Une seule enveloppe, quel que soit l'agrandissement : franchir le seuil (ouvrir ou replier SYNA en Plein cadre)
+            ne recrée jamais l'iframe — pas de rechargement, de page blanche ni de défilement perdu (#301). Changer de format
+            (ordinateur / tablette / téléphone) la recrée volontairement : la page est rechargée à la bonne largeur, avec ses
+            outils (désignation) initialisés pour ce format. */}
         {src && (device !== "desktop" || boxW !== 0) && (
           <div data-preview-frame className={desktopScale < 1 ? "mx-auto overflow-hidden rounded-none bg-white shadow-soft sm:rounded-2xl" : "contents"} style={desktopScale < 1 ? { width: DESKTOP_W * desktopScale, height: "100%" } : undefined}>
-            <iframe ref={iframe} key={versionId ?? ""} src={src} sandbox={theme.sandbox ?? PREVIEW_SANDBOX} title={isServices ? t("Aperçu du site", "Website preview") : t("Aperçu de la boutique", "Store preview")}
+            <iframe ref={iframe} key={`${versionId ?? ""}:${device}`} src={src} sandbox={theme.sandbox ?? PREVIEW_SANDBOX} title={isServices ? t("Aperçu du site", "Website preview") : t("Aperçu de la boutique", "Store preview")}
               className={desktopScale < 1 ? "block border-0 bg-white" : "mx-auto block h-full min-h-[70dvh] w-full rounded-none border-0 bg-white shadow-soft transition-[max-width] duration-500 sm:rounded-2xl"}
               style={desktopScale < 1 ? { width: DESKTOP_W, height: `${100 / desktopScale}%`, transform: `scale(${desktopScale})`, transformOrigin: "0 0" } : { maxWidth: DEVICES[device].w }} />
           </div>

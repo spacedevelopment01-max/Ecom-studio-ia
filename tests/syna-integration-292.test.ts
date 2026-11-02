@@ -50,5 +50,8 @@ describe("recette #301 : l'aperçu du site n'est jamais recréé quand SYNA s'ou
     expect(tab.match(/<iframe ref=\{iframe\}/g)?.length).toBe(1);
     expect(tab).toMatch(/<div data-preview-frame className=\{desktopScale < 1 \? [^}]+ : "contents"\}/);
     expect(tab).not.toMatch(/desktopScale < 1 \? \(\s*<div/);
+    // Changer de format recharge volontairement la page à la bonne largeur (désignation initialisée pour ce format) :
+    // sans cela, une page chargée en largeur téléphone puis agrandie ne répondait plus à « Désigner » (CI #299, B1).
+    expect(tab).toContain('key={`${versionId ?? ""}:${device}`}');
   });
 });
