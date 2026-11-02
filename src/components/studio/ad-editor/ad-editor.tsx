@@ -342,7 +342,7 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
         apply({ op: "image", id: target.id, assetId: j.result.assetId });
         editOperation.current=null;
         setAsk("");
-        toast("ok", t("Photo retouchée par l'IA : enregistrez pour la garder (« Annuler » remet l'ancienne).", "Photo edited by AI: save to keep it (“Undo” brings back the previous one). la garder (« Annuler » remet l'ancienne).", "Photo edited by AI: save to keep it (“Undo” brings back the previous one)."));
+        toast("ok", t("Photo retouchée par l'IA : enregistrez pour la garder (« Annuler » remet l'ancienne).", "Photo edited by AI: save to keep it (“Undo” brings back the previous one)."));
         return;
       }
       throw new Error(t("La retouche prend trop de temps : réessayez plus tard.", "The edit is taking too long: try again later."));
