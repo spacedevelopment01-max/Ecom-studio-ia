@@ -124,7 +124,7 @@ export const handlers: Record<string, Handler> = {
   "image.v2": async (ctx) => {
     if(ctx.payload.agentImageQuote){const{runAgentImageCreation}=await import('../src/lib/orchestrator/conversation/image-tool-execution');return runAgentImageCreation(ctx);}
     const { runImageEngineV2 } = await import("../src/lib/image-v2/engine");
-    const r = await runImageEngineV2(ctx, ctx.payload.projectId, ctx.payload.request);
+    const r = ctx.payload.nativeImageQuote?await(await import('../src/lib/image-v2/native-approval')).runNativeImageGeneration(ctx):await runImageEngineV2(ctx, ctx.payload.projectId, ctx.payload.request);
     // Reprise payée (1re image refusée par le contrôle) : annoncée au client, en % du budget IA.
     const { retryNotice } = await import("../src/lib/ai/budget-pct");
     const p = loadProject(ctx.payload.projectId);

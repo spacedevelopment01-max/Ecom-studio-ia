@@ -84,6 +84,7 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
   const [picker, setPicker] = useState<null | "replace" | "add">(null);
   const [ask, setAsk] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
+  const backgroundSending=useRef(false),backgroundOperation=useRef<{intent:string;id:string}|null>(null);
   const [photoChoice, setPhotoChoice] = useState<View["edit"] | null>(null);
   const [draft, setDraft] = useState<{ doc: AdDocument } | null>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -282,10 +283,15 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
 
   /** Génération d'image payante, seulement après accord (forfait affiché), puis pose sur la photo de la création. */
   const generateBackground = async (topic: string) => {
-    if (!(await cost.confirm("images"))) return;
+    if(backgroundSending.current)return;
+    backgroundSending.current=true;
     setBusy(t("Image en préparation (IA)…", "Image being prepared (AI)…"));
     try {
-      const r = await api<{ jobId: string }>(`/api/projects/${projectId}/images/v2`, { body: { action: "generate", request: { kind: "ambiance", topic, aspect: doc.width > doc.height * 1.3 ? "16:9" : doc.height > doc.width * 1.3 ? "9:16" : doc.height > doc.width * 1.1 ? "4:5" : "1:1", count: 1, allowGenerate: true } } });
+      const request={kind:'ambiance',topic,aspect:doc.width>doc.height*1.3?'16:9':doc.height>doc.width*1.3?'9:16':doc.height>doc.width*1.1?'4:5':'1:1',count:1,allowGenerate:true},intent=JSON.stringify({projectId,docKey,request});
+      if(backgroundOperation.current?.intent!==intent)backgroundOperation.current={intent,id:crypto.randomUUID()};
+      const operationId=backgroundOperation.current.id,quote=await api<{jobId?:string;approvalToken:string;maximumMicro:number;estimatePct:number;maximumPct:number;maximumCalls:number}>(`/api/projects/${projectId}/images/v2`,{body:{action:'quote',operationId,request}});
+      if(!quote.jobId&&quote.maximumMicro>0&&!(await cost.confirm('images',{quote})))return;
+      const r = quote.jobId?{jobId:quote.jobId}:await api<{ jobId: string }>(`/api/projects/${projectId}/images/v2`, { body: { action:'generate',operationId,request,approvalToken:quote.approvalToken,confirmation:true } });
       for (let i = 0; i < 300; i++) {
         await new Promise((res) => setTimeout(res, 2000));
         const jobs = await api<{ jobs: { id: string; status: string; result: any; error: string | null }[] }>(`/api/projects/${projectId}/jobs?type=image.v2`);
@@ -297,11 +303,13 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
         if (target) apply({ op: "image", id: target, assetId: asset });
         else addImageLayer(asset);
         toast("ok", t("Nouvelle image posée : enregistrez pour la garder.", "New image placed: save to keep it."));
+        backgroundOperation.current=null;
         return;
       }
     } catch (e) {
       toast("bad", (e as Error).message);
     } finally {
+      backgroundSending.current=false;
       setBusy(null);
     }
   };
