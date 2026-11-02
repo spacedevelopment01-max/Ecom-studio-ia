@@ -18,7 +18,7 @@ import { longTermStrategy } from "@/lib/social-v2/strategy-long";
 import { verifiedFacts } from "@/lib/seo-v2/facts";
 import { mainCity } from "@/lib/seo-v2/keywords";
 import { PLATFORM_SPECS, PLATFORMS } from "@/lib/social-v2/platforms";
-import { estimateProduction,productionInputVersions, postsOfPlan, probableOf, produceBatch } from "@/lib/social-v2/production";
+import { assertProductionEstimate, estimateProduction,productionInputVersions, postsOfPlan, probableOf, produceBatch } from "@/lib/social-v2/production";
 import { budgetPctOf, capPctToMicro } from "@/lib/ai/budget-pct";
 import { realSocialDeps } from "@/lib/social-v2/deps";
 import { schedulePosts, setPlanPaused, unschedule } from "@/lib/social-v2/scheduler";
@@ -172,6 +172,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       if(!list.length)throw new HttpError(400,L('Choisissez au moins un brouillon de ce projet.','Choose at least one draft in this project.'));
       const expectedInputs=productionInputVersions(p.id,list);
       if (b.allowPaid && aiActiveFor(p.userId, p.id)) {
+        assertProductionEstimate(p, list, realSocialDeps(null, p, true), b);
         const job = enqueue({ userId: user.id, projectId: p.id, type: "social.v2.produce", label: L("Production des publications", "Producing posts"), payload: { projectId: p.id, ids: list,expectedInputs, allowPaid: true, maxCostEur: b.maxCostPct != null ? capPctToMicro(p.userId, b.maxCostPct, p.id) / 1e6 : b.maxCostEur, approvedEstimateMicro: b.approvedEstimateMicro ?? null, distinctImages: b.distinctImages ?? null, aiImages: b.aiImages ?? null, aiBackground: !!b.aiBackground, replace: !!b.replace } });
         return ok({ jobId: job.id });
       }
