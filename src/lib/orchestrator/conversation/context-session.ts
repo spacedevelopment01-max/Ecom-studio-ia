@@ -94,7 +94,6 @@ export function submitContext(u:User,cid:string,raw:unknown){
    if(!m.activeContext?.target||m.activeContextReference!==cmd.expectedReference)throw new HttpError(409,'conversation_context_revalidation_stale');
    const presentation=contextPresentation(c),candidate=presentation.recovery?.current?.selection;
    if(candidate&&presentation.recovery?.current?.reference!==cmd.currentReference)throw new ContextConflict(c);
-   if(!c&&presentation.recovery?.current?.reference!==cmd.currentReference)throw new ContextConflict(c);
    if(!candidate)throw new HttpError(409,L('Resélectionnez la cible native ; aucune substitution automatique.','Select the native target again; no automatic substitution.'),'conversation_target_reselect');
    m.activeContext=candidate;m.activeContextReference=reference(c,candidate);m.activeContextIdentity=resolveActiveContext(c,candidate).canonical.identity;
   }

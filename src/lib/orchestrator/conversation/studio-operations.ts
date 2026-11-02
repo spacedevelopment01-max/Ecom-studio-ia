@@ -30,8 +30,6 @@ export const STUDIO_OPERATIONS:readonly Definition[]=[
  op('videos.restore','videos','Restaurer une version vidéo conservée','Restore a retained video version','videos'),
  op('videos.plan','videos','Préparer une vidéo filmée par IA','Plan an AI-filmed video'),
  op('videos.retake','videos','Remplacer un seul clip avec devis, sans racheter les autres','Replace one quoted clip without repurchasing the others','retake'),
- op('videos.voice','videos','Colmed video'),
- op('videos.retake','videos','Remplacer un seul clip avec devis, sans racheter les autres','Replace one quoted clip without repurchasing the others','retake'),
  op('videos.voice','videos','Corriger les phrases vocales sans racheter les clips','Revise speech without repurchasing clips','voice'),
  op('videos.generate','videos','Générer des clips IA après scénario et devis','Generate AI clips after scenario and quote','video-generation'),
  op('videos.edit','videos','Retoucher durée, texte, transitions et musique locale','Edit duration, text, transitions and local music','videos'),

@@ -191,8 +191,6 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
     if (revision !== cmd.projectRevision) throw new HttpError(409, L("La fiche a changé dans un autre écran. Relisez la version actuelle.", "The brief changed in another screen. Read the current version."), "conversation_brief_conflict");
     let changed = false, message = "", action: ActionCard | null = null;
     if(cmd.action==='message'&&cmd.context){
-      if(!activeContextEnabltion: ActionCard | null = null;
-    if(cmd.action==='message'&&cmd.context){
       if(!activeContextEnabled())throw new HttpError(404,L('Le repère contextuel est indisponible.','Context selection is unavailable.'),'conversation_context_disabled');
       const resolved=resolveActiveContext(c,cmd.context);
       m.activeContextTab=cmd.context.tab;
