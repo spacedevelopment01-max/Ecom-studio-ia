@@ -6,8 +6,11 @@
 import { z } from "zod";
 import { body, handle, ok } from "@/lib/http";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
+import { HttpError } from "@/lib/auth";
+import { tx } from "@/lib/db";
+import { L } from "@/lib/i18n-server";
 import { currentTheme } from "@/lib/projects";
-import { archiveProduct, createProduct, linksOf, moveProduct, productDataSchema, seedFromTheme, setVariantStock, updateProduct, variantSchema, PRODUCT_STATUSES } from "@/lib/products/catalog";
+import { archiveProduct, createProduct, getProduct, linksOf, moveProduct, productDataSchema, seedFromTheme, setVariantStock, updateProduct, variantSchema, PRODUCT_STATUSES } from "@/lib/products/catalog";
 import { listStores } from "@/lib/products/sync";
 
 export const runtime = "nodejs";
@@ -55,9 +58,16 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
     archive: z.boolean().optional(),
     stock: z.object({ variant: z.string(), value: z.number().int().min(-100_000).max(10_000_000).nullable() }).optional(),
   }));
-  if (b.product) updateProduct(p.id, b.id, { ...b.product, version: b.version });
-  if (b.stock) setVariantStock(p.id, b.stock.variant, b.stock.value);
-  if (b.move) moveProduct(p.id, b.id, b.move);
-  if (b.archive) archiveProduct(p.id, b.id);
-  return ok(view(p.id));
+  // Une fiche peut aussi modifier le stock dans ses variantes : aucun contournement par le formulaire complet.
+  if ((b.product || b.stock) && b.version === undefined) throw new HttpError(428, L("La version de cette fiche est requise : rechargez le catalogue.", "This listing version is required: reload the catalog."), "product_version_required");
+  return tx(() => {
+    const current = getProduct(p.id, b.id);
+    if (b.version !== undefined && b.version !== current.version) throw new HttpError(409, L("Ce produit a été modifié entre-temps : rechargez la fiche.", "This product was changed in the meantime: reload it."), "stale_product");
+    if (b.stock && !current.variants.some(v => v.id === b.stock!.variant)) throw new HttpError(404, L("Variante introuvable dans cette fiche.", "Variant not found in this listing."));
+    if (b.product) updateProduct(p.id, b.id, { ...b.product, version: b.version });
+    if (b.stock) setVariantStock(p.id, b.stock.variant, b.stock.value);
+    if (b.move) moveProduct(p.id, b.id, b.move);
+    if (b.archive) archiveProduct(p.id, b.id);
+    return ok(view(p.id));
+  });
 });
