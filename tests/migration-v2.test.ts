@@ -61,11 +61,13 @@ describe("migration V1 → V2 : moteurs réellement appelés", async () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ctx = (params: Record<string, string>) => ({ params: Promise.resolve(params) }) as any;
 
-  it("création complète — marque : fournisseur absent, attente explicite ; aucun nouveau logo local ni remplacement", async () => {
+  it("création complète — marque via Préparation confirmée : fournisseur absent, attente explicite ; aucun nouveau logo local ni remplacement", async () => {
     const pid = await seedPaid("cosmetic");
     const before = all("SELECT id FROM assets WHERE project_id = ? AND role = 'logo-proposal'", pid).length;
-    const { buildBrand } = await import("@/lib/engine/brand");
-    await expect(fr(() => buildBrand(ctxFor(pid), pid, {}))).rejects.toThrow(/attente|indisponible/);
+    const { runPreparation } = await import("@/lib/preparation/engine");
+    const {prepareGuidedLogo,confirmedGuidedLogo}=await import("./logo295-guided-fixture");
+    await prepareGuidedLogo(pid);const logoCtx=await confirmedGuidedLogo(pid);
+    await expect(fr(() => runPreparation(logoCtx))).rejects.toThrow(/attente|indisponible/);
     expect(all("SELECT id FROM assets WHERE project_id=? AND role IN ('logo-v2-studio','logo-v2','logo')", pid)).toHaveLength(0);
     expect(all("SELECT id FROM assets WHERE project_id = ? AND role = 'logo-proposal'", pid).length).toBe(before);
     expect(all("SELECT id FROM ai_calls WHERE project_id=?", pid)).toHaveLength(0);
