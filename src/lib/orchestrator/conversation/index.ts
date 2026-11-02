@@ -1,3 +1,4 @@
+import {localBusinessContentEnabled,localBusinessContentCandidate,proposeLocalBusinessContent,confirmLocalBusinessContent} from './local-business-content';
 import {withAiDisabled} from '../../ai/access';
 import {localSiteEnabled,localSiteCandidate,proposeLocalSite,confirmLocalSite} from './local-site';
 import {conversationBlogEnabled,conversationBrandReviewEnabled} from './tool-flags';
@@ -58,6 +59,8 @@ export function conversationView(user: User, cid: string, before?: number,includ
     message: !b.input.description ? L("Décrivez votre projet en quelques mots. Vous pouvez joindre un lien ; aucune création n’est lancée.", "Describe your project in a few words. You may add a link; no creation is started.") : L("Compréhension locale à relire. Vos réponses sont conservées ; aucune étape n’est validée automatiquement.", "Local understanding to review. Your answers are kept; no step is automatically approved."),
     question: key ? questionFor(key, b, m) : null, correctionFields: readOnlyReason?[]:[...EDIT_FIELDS],readOnlyReason,
     creation: c.project_id ? null : creationFields(b,m),
+    ...(m.localBusinessContent?{localBusinessContent:m.localBusinessContent}:{}),
+    ...(c.project_id&&localBusinessContentEnabled()?{localBusinessContentExecution:{enabled:true as const}}:{}),
     ...(m.localSite?{localSite:m.localSite}:{}),
     ...(c.project_id&&localSiteEnabled()?{localSiteExecution:{enabled:true as const}}:{}),
     ...(activeContextEnabled()?{activeContext:{enabled:true as const,current:observedActiveContext(c,m.activeContext),presentation:contextPresentation(c)}}:{}),
@@ -170,7 +173,8 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
   if(initial.revision!==cmd.revision || currentBrief(initial).revision!==cmd.projectRevision)throw new HttpError(409,L("La conversation ou la fiche a changé. Rechargez avant de répondre.","The conversation or brief changed. Reload before answering."),initial.revision!==cmd.revision?"conversation_conflict":"conversation_brief_conflict");
   // Réutilisation de l'Intent Engine ; pas de classificateur ou d'appel IA de production dans le lot A.
   const localCommand=cmd.action==='message'&&localSiteCandidate(cmd.text);
-  const intent = cmd.action === "message" && !localCommand && !intelligenceEnabled() ? await understand({ text: cmd.text }, { aiActive: !!tests.classify, classify: tests.classify }) : null;
+  const businessCommand=cmd.action==='message'&&localBusinessContentCandidate(cmd.text);
+  const intent = cmd.action === "message" && !localCommand && !businessCommand && !intelligenceEnabled() ? await understand({ text: cmd.text }, { aiActive: !!tests.classify, classify: tests.classify }) : null;
   return tx(() => {
     const c = ownedConversation(user, cid);
     const prior = one<{ request_hash: string; response_json: string }>("SELECT request_hash,response_json FROM agent_conversation_turns WHERE conversation_id=? AND request_id=?", cid, cmd.requestId);
@@ -191,7 +195,11 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
       m.activeContextTab=cmd.context.tab;
       if(cmd.context.target||!m.activeContext?.target){m.activeContext=resolved.selection;m.activeContextReference=stableHash('conversation-active-context-1',resolved);m.activeContextIdentity=resolved.canonical.identity;}
     }
-    if(localCommand||cmd.action==='confirm-local'){
+    if(businessCommand||cmd.action==='confirm-business-content'){
+      const active={...c,state_json:JSON.stringify(m)};
+      m.localBusinessContent=cmd.action==='confirm-business-content'?confirmLocalBusinessContent(user,active,m,cmd.proposalId,cmd.requestId):proposeLocalBusinessContent(user,active,m,(cmd as Extract<Command,{action:'message'}>).text);
+      message=m.localBusinessContent.message;
+    } else if(localCommand||cmd.action==='confirm-local'){
       const active={...c,state_json:JSON.stringify(m)};
       m.localSite=cmd.action==='confirm-local'?confirmLocalSite(user,active,m,cmd.proposalId):proposeLocalSite(user,active,m,(cmd as Extract<Command,{action:'message'}>).text);
       message=m.localSite.message;
@@ -319,6 +327,7 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
     }
     // Relevé figé AVANT le devis/appel : les réservations du futur job ne périment pas leur propre contexte.
     if(cmd.action==='message'&&studioKnowledgeEnabled())m.studioObservation=captureStudioObservation(c);
+    if(!businessCommand&&cmd.action!=='confirm-business-content'){delete m.localBusinessContent;delete m.localBusinessContentProposal;}
     if(!localCommand&&cmd.action!=='confirm-local')delete m.localSite;
     const next = c.revision + 1;
     // Lire une explication ou rouvrir une carte ne périme pas une proposition aux données inchangées.
@@ -331,6 +340,7 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
     response.message = action?.message || message || L("Réponse conservée. Vous pouvez la compléter, revenir en arrière ou demander pourquoi.", "Answer kept. You can add detail, go back or ask why.");
     response.action = action;
     if(m.localSite)response.localSite=m.localSite;
+    if(m.localBusinessContent)response.localBusinessContent=m.localBusinessContent;
     // Pas de récursion des historiques dans les reçus ; GET sert l'historique paginé complet.
     response.history = []; response.historyBefore = null;
     run("INSERT INTO agent_conversation_turns (id,conversation_id,revision,request_id,request_hash,request_json,response_json,created_at) VALUES (?,?,?,?,?,?,?,?)", id(), c.id, next, cmd.requestId, hash, JSON.stringify(cmd), JSON.stringify(response), now());
@@ -341,6 +351,6 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
 /** Une commande locale candidate ne peut jamais devenir un appel fournisseur implicite. */
 export async function submitConversation(user:User,cid:string,raw:unknown,tests:TestDependencies={}):Promise<ConversationView>{
  const parsed=CommandSchema.safeParse(raw),cmd=parsed.success?parsed.data:null;
- const local=cmd?.action==='confirm-local'||cmd?.action==='message'&&localSiteCandidate(cmd.text);
+ const local=cmd?.action==='confirm-local'||cmd?.action==='confirm-business-content'||cmd?.action==='message'&&(localSiteCandidate(cmd.text)||localBusinessContentCandidate(cmd.text));
  return local?withAiDisabled('B1 : retouche gratuite déterministe, aucun devis IA',()=>submitConversationImpl(user,cid,raw,tests)):submitConversationImpl(user,cid,raw,tests);
 }

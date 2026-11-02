@@ -15,6 +15,7 @@ const base = z.object({
   projectRevision: z.number().int().min(0).nullable(),
 });
 export const CommandSchema = z.discriminatedUnion("action", [
+  base.extend({action:z.literal('confirm-business-content'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal("confirm-local"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal("open-strategy-comparison"),comparisonId:z.string().min(1).max(100)}).strict(),
   base.extend({action:z.literal("compare-strategy-options"),angleIds:z.array(z.enum(ANGLE_IDS)).min(2).max(5).optional(),sourceComparisonId:z.string().min(1).max(100).optional(),sourceVersion:z.string().regex(/^[a-f0-9]{64}$/).optional()}).strict(),
@@ -36,6 +37,8 @@ export const CommandSchema = z.discriminatedUnion("action", [
 export type Command = z.infer<typeof CommandSchema>;
 /** Un seul Brief natif pour le brouillon ; après rattachement, il est retiré et relu via stateOf(projectId). */
 export type ConversationState = {
+  localBusinessContentProposal?:import('./local-business-content').LocalBusinessContentProposal;
+  localBusinessContent?:import('./local-business-content').LocalBusinessContentPresentation;
   schemaVersion: 1;
   draft: Brief | null;
   business: BusinessType | null;
@@ -77,6 +80,8 @@ export type ActionCard = {
   href?: string;
 };
 export type ConversationView = {
+  localBusinessContentExecution?:{enabled:true};
+  localBusinessContent?:import('./local-business-content').LocalBusinessContentPresentation;
   localSiteExecution?: {enabled:true};
   localSite?: import('./local-site').LocalSitePresentation;
   schema: "studio-conversation-1";
