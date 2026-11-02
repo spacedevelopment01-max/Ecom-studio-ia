@@ -1,3 +1,4 @@
+import {localRequestsCandidate,proposeLocalRequests,confirmLocalRequest,localRequestsView} from './local-site-requests';
 import {withAiDisabled} from '../../ai/access';
 import {localSiteEnabled,localSiteCandidate,proposeLocalSite,confirmLocalSite} from './local-site';
 import {conversationBlogEnabled,conversationBrandReviewEnabled} from './tool-flags';
@@ -23,7 +24,7 @@ import { creationFields } from "./creation";
 import { intelligenceEnabled, intelligenceView } from "./intelligence";
 import { applyCognitiveCommand } from "./intelligence-commands";
 import {clearConversationAnswer} from './answer-state';
-import {activeContextEnabled,resolveActiveContext,observedActiveContext} from './active-context';
+import {activeContextEnabled,resolveActiveContext,observedActiveContext,siteRequestsEnabled} from './active-context';
 import {studioKnowledgeEnabled,captureStudioObservation} from './studio-observation';
 import {studioOperationCatalogue} from './studio-operations';
 import {conversationToolsEnabled,conversationThemeToolsEnabled,conversationExportsEnabled,conversationRenderEnabled,conversationResearchEnabled,conversationBrandEnabled,conversationCatalogueEnabled,conversationImagesEnabled,conversationLogosEnabled,conversationVideosEnabled,conversationVideoGenerationEnabled,conversationVideoVoiceEnabled,conversationVideoClipEnabled,conversationSocialEnabled,conversationContentEnabled} from './tool-flags';
@@ -58,6 +59,8 @@ export function conversationView(user: User, cid: string, before?: number,includ
     message: !b.input.description ? L("Décrivez votre projet en quelques mots. Vous pouvez joindre un lien ; aucune création n’est lancée.", "Describe your project in a few words. You may add a link; no creation is started.") : L("Compréhension locale à relire. Vos réponses sont conservées ; aucune étape n’est validée automatiquement.", "Local understanding to review. Your answers are kept; no step is automatically approved."),
     question: key ? questionFor(key, b, m) : null, correctionFields: readOnlyReason?[]:[...EDIT_FIELDS],readOnlyReason,
     creation: c.project_id ? null : creationFields(b,m),
+    ...(m.localRequests?{localRequests:localRequestsView(user,c,m.localRequests)}:{}),
+    ...(c.project_id&&siteRequestsEnabled()?{localRequestsExecution:{enabled:true as const}}:{}),
     ...(m.localSite?{localSite:m.localSite}:{}),
     ...(c.project_id&&localSiteEnabled()?{localSiteExecution:{enabled:true as const}}:{}),
     ...(activeContextEnabled()?{activeContext:{enabled:true as const,current:observedActiveContext(c,m.activeContext),presentation:contextPresentation(c)}}:{}),
@@ -159,6 +162,7 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
   // Propriété et reprise contrôlées AVANT même un classificateur simulé ; recontrôle atomique après l'await.
   const initial=ownedConversation(user, cid, true);
   if(isExistingProjectRead(initial))return submitExistingProjectMessage(user,cid,cmd,hash);
+  if(cmd.action==='confirm-site-request'&&!siteRequestsEnabled())throw new HttpError(404,'Demandes reçues avec SYNA indisponibles.');
   if(initial.project_id)requirePlan(user,initial.project_id);
   const received = one<{request_hash:string;response_json:string}>("SELECT request_hash,response_json FROM agent_conversation_turns WHERE conversation_id=? AND request_id=?", cid, cmd.requestId);
   if (received) {
@@ -169,8 +173,9 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
   else if(!pendingSubscriptions(user.id).length)throw new HttpError(402,L("Rattachez ce brouillon à votre projet avant de le poursuivre.","Link this draft to your project before continuing."),"subscription_required");
   if(initial.revision!==cmd.revision || currentBrief(initial).revision!==cmd.projectRevision)throw new HttpError(409,L("La conversation ou la fiche a changé. Rechargez avant de répondre.","The conversation or brief changed. Reload before answering."),initial.revision!==cmd.revision?"conversation_conflict":"conversation_brief_conflict");
   // Réutilisation de l'Intent Engine ; pas de classificateur ou d'appel IA de production dans le lot A.
+  const requestCommand=cmd.action==='message'&&localRequestsCandidate(cmd.text);
   const localCommand=cmd.action==='message'&&localSiteCandidate(cmd.text);
-  const intent = cmd.action === "message" && !localCommand && !intelligenceEnabled() ? await understand({ text: cmd.text }, { aiActive: !!tests.classify, classify: tests.classify }) : null;
+  const intent = cmd.action === "message" && !localCommand && !requestCommand && !intelligenceEnabled() ? await understand({ text: cmd.text }, { aiActive: !!tests.classify, classify: tests.classify }) : null;
   return tx(() => {
     const c = ownedConversation(user, cid);
     const prior = one<{ request_hash: string; response_json: string }>("SELECT request_hash,response_json FROM agent_conversation_turns WHERE conversation_id=? AND request_id=?", cid, cmd.requestId);
@@ -191,7 +196,11 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
       m.activeContextTab=cmd.context.tab;
       if(cmd.context.target||!m.activeContext?.target){m.activeContext=resolved.selection;m.activeContextReference=stableHash('conversation-active-context-1',resolved);m.activeContextIdentity=resolved.canonical.identity;}
     }
-    if(localCommand||cmd.action==='confirm-local'){
+    if(requestCommand||cmd.action==='confirm-site-request'){
+      const active={...c,state_json:JSON.stringify(m)};
+      m.localRequests=cmd.action==='confirm-site-request'?confirmLocalRequest(user,active,m,cmd.proposalId,cmd.requestId):proposeLocalRequests(user,active,m,(cmd as Extract<Command,{action:'message'}>).text);
+      message=m.localRequests.message;
+    } else if(localCommand||cmd.action==='confirm-local'){
       const active={...c,state_json:JSON.stringify(m)};
       m.localSite=cmd.action==='confirm-local'?confirmLocalSite(user,active,m,cmd.proposalId):proposeLocalSite(user,active,m,(cmd as Extract<Command,{action:'message'}>).text);
       message=m.localSite.message;
@@ -320,6 +329,7 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
     // Relevé figé AVANT le devis/appel : les réservations du futur job ne périment pas leur propre contexte.
     if(cmd.action==='message'&&studioKnowledgeEnabled())m.studioObservation=captureStudioObservation(c);
     if(!localCommand&&cmd.action!=='confirm-local')delete m.localSite;
+    if(!requestCommand&&cmd.action!=='confirm-site-request'){delete m.localRequests;delete m.localRequestProposal;}
     const next = c.revision + 1;
     // Lire une explication ou rouvrir une carte ne périme pas une proposition aux données inchangées.
     if(!changed&&['explain','summary','back-ai','back'].includes(cmd.action)&&m.intelligence?.sourceRevision===c.revision&&(m.intelligence.sourceProjectRevision??null)===revision)m.intelligence.sourceRevision=next;
@@ -341,6 +351,6 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
 /** Une commande locale candidate ne peut jamais devenir un appel fournisseur implicite. */
 export async function submitConversation(user:User,cid:string,raw:unknown,tests:TestDependencies={}):Promise<ConversationView>{
  const parsed=CommandSchema.safeParse(raw),cmd=parsed.success?parsed.data:null;
- const local=cmd?.action==='confirm-local'||cmd?.action==='message'&&localSiteCandidate(cmd.text);
+ const local=cmd?.action==='confirm-local'||cmd?.action==='confirm-site-request'||cmd?.action==='message'&&(localSiteCandidate(cmd.text)||localRequestsCandidate(cmd.text));
  return local?withAiDisabled('B1 : retouche gratuite déterministe, aucun devis IA',()=>submitConversationImpl(user,cid,raw,tests)):submitConversationImpl(user,cid,raw,tests);
 }

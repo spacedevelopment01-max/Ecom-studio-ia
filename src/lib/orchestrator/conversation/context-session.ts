@@ -10,7 +10,7 @@ import {stableHash} from '../../brain/hash';
 import {getProduct} from '../../products/catalog';
 import {L} from '../../i18n-server';
 import {ownedConversation,metaOf,isExistingProjectRead} from './store';
-import {activeContextEnabled,resolveActiveContext,observedActiveContext} from './active-context';
+import {activeContextEnabled,resolveActiveContext,observedActiveContext,nativeSiteRequest} from './active-context';
 import {ActiveContextSchema,ActiveTabSchema,type ActiveContext,contextFromNativePreview,NativePreviewAddressSchema} from './active-context-contract';
 import {themeToolContext} from './theme-tool-context';
 import type {ConversationRow} from './contract';
@@ -31,6 +31,7 @@ function currentCandidate(c:ConversationRow,selection:ActiveContext):ActiveConte
  try{
   let target=structuredClone(t);
   if('versionId'in target){const theme=currentTheme(c.project_id!);if(!theme)return null;target.versionId=theme.version.id;}
+  if(target.kind==='site-request')target.fingerprint=nativeSiteRequest(c,target.requestId).fingerprint;
   if(target.kind==='asset'){
    const a=one<{version:number}>("SELECT version FROM assets WHERE id=? AND project_id=? AND user_id=? AND deleted_at IS NULL AND status!='rejected'",target.assetId,c.project_id,c.user_id);if(!a)return null;target.version=a.version;
   }
@@ -80,7 +81,7 @@ export function submitContext(u:User,cid:string,raw:unknown){
   const prior=one<{request_hash:string;response_json:string}>("SELECT request_hash,response_json FROM agent_conversation_turns WHERE conversation_id=? AND request_id=?",cid,cmd.requestId);
   if(prior){if(prior.request_hash!==hash)throw new HttpError(409,'conversation_idempotency_conflict');const saved=JSON.parse(prior.response_json) as {receipt:SelectionReceipt};return{...contextView(u,cid),receipt:saved.receipt,replayed:true};}
   if(c.revision!==cmd.revision)throw new HttpError(409,'conversation_conflict');if(c.revision>=1000)throw new HttpError(409,'conversation_limit');
-  if(['clear','select','select-preview','revalidate'].includes(cmd.action)){delete m.localSiteProposal;delete m.localSite;}
+  if(['clear','select','select-preview','revalidate'].includes(cmd.action)){delete m.localSiteProposal;delete m.localSite;delete m.localRequestProposal;delete m.localRequests;}
   if(cmd.action==='clear'){delete m.activeContext;delete m.activeContextReference;delete m.activeContextIdentity;}
   if(cmd.action==='navigate')m.activeContextTab=cmd.tab;
   if(cmd.action==='select'||cmd.action==='select-preview'){
