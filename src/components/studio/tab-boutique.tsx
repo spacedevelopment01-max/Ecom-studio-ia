@@ -8,6 +8,7 @@ import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner
 import { useProject } from "./project-context";
 import { useAgentUi,useAgentFocus,useAgentPanel } from "./agent-ui-context";
 import {previewSelectionScope} from '@/lib/conversation-presentation';
+import {canAdoptRevalidatedPreviewScope} from '@/lib/preview-revalidated-scope';
 import { useCostConfirm } from "./cost-confirm";
 import dynamic from "next/dynamic";
 // Fenêtres ouvertes à la demande (import, bibliothèque de sections, galerie) : chargées à leur première ouverture.
@@ -146,7 +147,10 @@ export default function TabBoutique() {
   const custom = useCustomThemeStatus(id);
   const agentUi=useAgentUi();
   const contextUi=agentUi&&data?.conversationContext===true;
-  const {setFocus:setAgentFocus,clearSerial}=useAgentFocus();
+  const {focus:agentFocus,setFocus:setAgentFocus,clearSerial}=useAgentFocus();
+  // Le focus peut être revalidé avant que la relecture périodique recharge le thème.
+  // Lire son dernier état lors des changements de preview, sans republier sur chaque changement de focus.
+  const agentFocusRef=useRef(agentFocus);agentFocusRef.current=agentFocus;
   const {setOpen:setAgentOpen}=useAgentPanel();
   const [view, setView] = useState<"chat" | "preview" | "structure">(agentUi?'preview':'chat');
   const [device, setDevice] = useState<keyof typeof DEVICES>("desktop");
@@ -226,9 +230,12 @@ export default function TabBoutique() {
   const selectionCurrent=!!selection&&selectionScope?.versionId===versionId&&selectionScope?.page===page;
   useEffect(()=>{
     if(!contextUi||!versionId)return;
+    if(canAdoptRevalidatedPreviewScope({projectId:id,versionId,page,selection,scope:selectionScope,focus:agentFocusRef.current})){
+      setSelectionScope({versionId,page});return;
+    }
     setAgentFocus({projectId:id,tab:'boutique',label:selectionCurrent?[selection!.kind,selection!.text].filter(Boolean).join(' · '):page,target:selectionCurrent?{kind:'theme-section',versionId,template:selection!.template,section:selection!.section,...(selection!.block?{block:selection!.block}:{})}:{kind:'theme-page',versionId,path:page}});
     if(selection&&!selectionCurrent)setSelection(null);
-  },[contextUi,id,versionId,page,selection,selectionCurrent,setAgentFocus]);
+  },[contextUi,id,versionId,page,selection,selectionScope,selectionCurrent,setAgentFocus]);
   const src = versionId ? `/preview/${id}/v/${versionId}${page === "/" ? "" : page}` : null;
   useEffect(()=>{if(!contextUi||!clearSerial)return;setSelection(null);iframe.current?.contentWindow?.postMessage({source:'es-studio',type:'unpick'},'*');},[contextUi,clearSerial]);
 

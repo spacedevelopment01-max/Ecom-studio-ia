@@ -470,6 +470,8 @@ jobs:
         run: NODE_OPTIONS="--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npm run build
       - name: Produits, services, conflits, réseau et A1
         run: SYNA_UI_PRODUCTION=1 NODE_OPTIONS="--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-syna284-b1-confirmation-ui.ts work/preuves-confirmation-gratuite/ouverte
+      - name: Cible revalidée conservée après relecture périodique du projet (plus de 15 s)
+        run: SYNA_UI_PRODUCTION=1 NODE_OPTIONS="--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-syna284-b1-confirmation-ui.ts work/preuves-confirmation-gratuite/rafraichissement --wait-project-refresh
       - name: Drapeau fermé sans confirmation ni repli payant
         run: SYNA_UI_PRODUCTION=1 SYNA_UI_CLOSED=1 NODE_OPTIONS="--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-syna284-b1-confirmation-ui.ts work/preuves-confirmation-gratuite/fermee
       - name: Preuves synthétiques du parcours gratuit
