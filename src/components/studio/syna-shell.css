@@ -244,7 +244,8 @@
 /* Plein cadre : SYNA en feuille flottante (à côté de l'espace dès 1280 px, qui garde sa place ; par-dessus avant) */
 .syna-ui[data-syna-mode="plein"] .ss-panel.is-docked { position: fixed; z-index: 47; top: 16px; right: 16px; bottom: 16px; height: auto; border: 0; border-radius: var(--sy-r-lg); box-shadow: var(--sy-shadow-lg), inset 0 0 0 1px var(--sy-rule); overflow: hidden; }
 .syna-ui[data-syna-mode="plein"].ss-syna-scope.is-docked .ss-syna-col { width: 0; }
-.syna-ui[data-syna-mode="plein"] .ss-panel.is-overlay { top: 16px; right: 16px; bottom: 16px; border: 0; border-radius: var(--sy-r-lg); box-shadow: var(--sy-shadow-lg), inset 0 0 0 1px var(--sy-rule); overflow: hidden; }
+/* Tablette (1024 à 1279 px) : la feuille s'arrête au-dessus de la barre de commande, qui reste au premier plan (recette #292). */
+.syna-ui[data-syna-mode="plein"] .ss-panel.is-overlay { top: 16px; right: 16px; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); border: 0; border-radius: var(--sy-r-lg); box-shadow: var(--sy-shadow-lg), inset 0 0 0 1px var(--sy-rule); overflow: hidden; }
 .syna-ui[data-syna-mode="plein"] .ss-panel-h { border-bottom: 0; }
 .syna-ui[data-syna-mode="plein"] .ss-panel-mark .sy-wordmark { color: var(--sy-accent); }
 @media (max-width: 1023px) {
