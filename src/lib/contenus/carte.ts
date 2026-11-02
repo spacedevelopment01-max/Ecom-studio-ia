@@ -107,13 +107,14 @@ export function getItem(projectId: string, itemId: string): CarteItem {
   if (!r) throw new HttpError(404, L("Plat introuvable dans ce projet.", "Dish not found in this project."));
   return toItem(r);
 }
+// updated_at sert de version native : progression stricte même si l’horloge reste fixe ou recule.
 export function updateItem(projectId: string, itemId: string, raw: unknown): CarteItem {
   const cur = getItem(projectId, itemId);
   const d = itemSchema.parse({ ...cur, ...(raw as object) });
   assertCategory(projectId, d.categoryId);
   assertPhoto(projectId, d.photo);
   if (cur.status === "published" && d.price == null && !d.priceText.trim()) throw new HttpError(400, L("Ce plat est en ligne : indiquez un prix ou une mention (« selon arrivage »), ou retirez-le d'abord.", "This dish is live: enter a price or a note (“market price”), or withdraw it first."));
-  run("UPDATE carte_items SET category_id = ?, name = ?, description = ?, price = ?, price_text = ?, vegetarian = ?, allergens = ?, available = ?, featured = ?, photo = ?, updated_at = ? WHERE id = ? AND project_id = ?",
+  run("UPDATE carte_items SET category_id = ?, name = ?, description = ?, price = ?, price_text = ?, vegetarian = ?, allergens = ?, available = ?, featured = ?, photo = ?, updated_at = MAX(?, updated_at + 1) WHERE id = ? AND project_id = ?",
     d.categoryId, d.name, d.description, d.price, d.priceText, d.vegetarian ? 1 : 0, d.allergens, d.available ? 1 : 0, d.featured ? 1 : 0, d.photo, now(), itemId, projectId);
   return getItem(projectId, itemId);
 }
@@ -121,12 +122,12 @@ export function updateItem(projectId: string, itemId: string, raw: unknown): Car
 export function setItemStatus(projectId: string, itemId: string, status: ItemStatus): CarteItem {
   const cur = getItem(projectId, itemId);
   if (status === "published" && cur.price == null && !cur.priceText.trim()) throw new HttpError(400, L("Pour publier ce plat, indiquez son prix ou une mention (« selon arrivage »).", "To publish this dish, enter its price or a note (“market price”)."));
-  run("UPDATE carte_items SET status = ?, updated_at = ? WHERE id = ? AND project_id = ?", status, now(), itemId, projectId);
+  run("UPDATE carte_items SET status = ?, updated_at = MAX(?, updated_at + 1) WHERE id = ? AND project_id = ?", status, now(), itemId, projectId);
   return getItem(projectId, itemId);
 }
 export function reorderItems(projectId: string, ids: string[]) {
   ensureCarteTables();
-  tx(() => ids.forEach((iid, i) => run("UPDATE carte_items SET position = ?, updated_at = ? WHERE id = ? AND project_id = ?", i, now(), iid, projectId)));
+  tx(() => ids.forEach((iid, i) => run("UPDATE carte_items SET position = ?, updated_at = MAX(?, updated_at + 1) WHERE id = ? AND project_id = ?", i, now(), iid, projectId)));
 }
 
 /** Prix affiché : « 14 € », « 14,50 € » ; la mention l'emporte si elle est saisie. */
