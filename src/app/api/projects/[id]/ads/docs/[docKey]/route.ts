@@ -126,11 +126,9 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
     const instruction = (b.instruction ?? "").trim();
     if (!instruction) throw new HttpError(400, L("Demande manquante.", "Missing request."));
     assertAiAllowed(user.id, p.id);
-    const src = b.doc ?? latestDoc(p.id, docKey)!.doc;
-    const { aiAdEdit } = await import("@/lib/ad-doc/ai-edit");
-    const r = await aiAdEdit({ userId: user.id, projectId: p.id, purpose:organicDocument(p.id,docKey)?"organic":"ad" }, src, instruction);
-    if (!r.ops.length) throw new HttpError(422, L("L'IA n'a trouvé aucune modification à faire pour cette demande : précisez-la.", "The AI found nothing to change for this request: make it more precise."));
-    return ok({ ops: r.ops, summary: r.summary });
+    // Le pourcentage accepté dans le navigateur ne constitue pas un devis serveur lié au document et à la demande.
+    // Préserver les éditions locales ; aucun appel payant tant que ce parcours ne dispose pas de ce contrat.
+    throw new HttpError(409, L("Retouche IA indisponible : un devis lié à cette création et votre confirmation sont nécessaires. Vos calques sont conservés ; les modifications locales et manuelles restent gratuites.", "AI editing unavailable: a quote bound to this creative and your confirmation are required. Your layers are preserved; local and manual edits remain free."), "ad_doc_consent_unavailable");
   }
   if (b.action === "reflow" || b.action === "preview_reflow") {
     // Autre format : nouvelle création (lignée dupliquée) ; textes, couleurs, images et calques ajoutés conservés.
