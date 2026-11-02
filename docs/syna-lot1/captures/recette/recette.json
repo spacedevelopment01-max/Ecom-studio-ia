@@ -1,0 +1,540 @@
+{
+ "date": "2026-10-31T17:38:12.573Z",
+ "external": [],
+ "checks": {
+  "coquille SYNA affichée sur les 24 captures": {
+   "ok": true
+  },
+  "aucune pastille noire flottante": {
+   "ok": true
+  },
+  "onglet signature à l'ordinateur et à la tablette, onglet Syna au téléphone": {
+   "ok": true
+  },
+  "aucun débordement horizontal": {
+   "ok": true,
+   "detail": []
+  },
+  "aucune erreur JavaScript": {
+   "ok": true,
+   "detail": []
+  },
+  "contraste mesuré de la coquille ≥ seuil AA": {
+   "ok": true,
+   "detail": []
+  },
+  "les 23 adresses d'espaces répondent dans la coquille, avec leur titre": {
+   "ok": true,
+   "detail": []
+  },
+  "le menu ouvre l'espace choisi (lien profond)": {
+   "ok": true
+  },
+  "ordinateur : SYNA s'ouvre au clavier en colonne à côté de l'espace (non modale)": {
+   "ok": true,
+   "detail": {
+    "role": "complementary",
+    "modal": null,
+    "inPanel": true
+   }
+  },
+  "Échap replie SYNA et rend le focus à l'onglet signature": {
+   "ok": true,
+   "detail": {
+    "hidden": true,
+    "focus": "rail"
+   }
+  },
+  "conversation jamais recréée après fermeture et changement d'espace (état et brouillon conservés)": {
+   "ok": true,
+   "detail": {
+    "same": true,
+    "hasBox": false,
+    "kept": null
+   }
+  },
+  "la bulle « Première visite ? » ne recouvre pas la colonne SYNA ouverte": {
+   "ok": true,
+   "detail": true
+  },
+  "tablette : SYNA en panneau modal, le focus reste dedans, Échap le ferme": {
+   "ok": true,
+   "detail": {
+    "modal": "true",
+    "inside": true,
+    "hidden": true
+   }
+  },
+  "téléphone : SYNA s'ouvre au-dessus de la barre basse, qui reste visible": {
+   "ok": true,
+   "detail": {
+    "panelBottom": 780,
+    "barTop": 779
+   }
+  },
+  "téléphone : la feuille Espaces suit la règle des métiers (site de services : pas de Catalogue)": {
+   "ok": true,
+   "detail": [
+    "pilote",
+    "produit",
+    "strategie",
+    "marque",
+    "boutique",
+    "images",
+    "videos",
+    "publications",
+    "publicites",
+    "blog",
+    "prompts",
+    "fichiers",
+    "connexions"
+   ]
+  },
+  "espaces-restaurant": {
+   "ok": true,
+   "detail": [
+    "pilote",
+    "produit",
+    "strategie",
+    "marque",
+    "boutique",
+    "images",
+    "videos",
+    "publications",
+    "publicites",
+    "blog",
+    "prompts",
+    "fichiers",
+    "connexions"
+   ]
+  },
+  "téléphone : les espaces de la feuille sont au premier plan (rien ne les recouvre)": {
+   "ok": true
+  },
+  "téléphone : choisir un espace l'ouvre et referme la feuille": {
+   "ok": true
+  },
+  "téléphone : Suivi montre les tâches réelles (ici aucune) et annonce le suivi complet pour le lot 2": {
+   "ok": true
+  },
+  "téléphone : Échap ferme la feuille": {
+   "ok": true
+  },
+  "téléphone : boutons de la barre basse d'au moins 44 px": {
+   "ok": true,
+   "detail": 0
+  },
+  "animations réduites : le panneau apparaît sans animation": {
+   "ok": true,
+   "detail": "none"
+  },
+  "« Interface actuelle » rend l'interface d'origine (pastille comprise), « Nouvelle interface » la coquille, sans recharger le compte": {
+   "ok": true,
+   "detail": {
+    "shell": "classic",
+    "overflow": 0,
+    "blackPill": true,
+    "rail": false,
+    "tab": false,
+    "title": "Boutique"
+   }
+  },
+  "clavier : chaque arrêt dans le menu de la coquille montre un anneau de focus": {
+   "ok": true,
+   "detail": []
+  },
+  "drapeaux SYNA fermés (ordinateur-1440) : coquille sans aucun accès ni panneau SYNA": {
+   "ok": true,
+   "detail": {
+    "shell": "syna",
+    "overflow": 0,
+    "blackPill": false,
+    "rail": false,
+    "tab": false,
+    "title": "Boutique",
+    "panel": 0
+   }
+  },
+  "drapeaux SYNA fermés (telephone-390) : coquille sans aucun accès ni panneau SYNA": {
+   "ok": true,
+   "detail": {
+    "shell": "syna",
+    "overflow": 0,
+    "blackPill": false,
+    "rail": false,
+    "tab": false,
+    "title": "Boutique",
+    "panel": 0
+   }
+  },
+  "aucune requête hors du serveur local (aucun fournisseur appelé)": {
+   "ok": true,
+   "detail": []
+  }
+ },
+ "shots": [
+  {
+   "file": "apres--ordinateur-1440--sillon-boutique--clair.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Boutique",
+   "contrast": {
+    "measured": 26,
+    "min": 5.162191099980024,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--ordinateur-1440--sillon-images--clair.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Images",
+   "contrast": {
+    "measured": 26,
+    "min": 5.162191099980024,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--ordinateur-1440--table-saison-carte--clair.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Carte",
+   "contrast": {
+    "measured": 26,
+    "min": 5.162191099980024,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--ordinateur-1440--sillon-boutique--sombre.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Boutique",
+   "contrast": {
+    "measured": 26,
+    "min": 6.593748462565817,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--ordinateur-1440--sillon-images--sombre.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Images",
+   "contrast": {
+    "measured": 26,
+    "min": 6.593748462565817,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--ordinateur-1440--table-saison-carte--sombre.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Carte",
+   "contrast": {
+    "measured": 26,
+    "min": 6.593748462565817,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--tablette-1024--sillon-boutique--clair.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Boutique",
+   "contrast": {
+    "measured": 26,
+    "min": 5.162191099980024,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--tablette-1024--sillon-images--clair.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Images",
+   "contrast": {
+    "measured": 26,
+    "min": 5.162191099980024,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--tablette-1024--table-saison-carte--clair.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Carte",
+   "contrast": {
+    "measured": 26,
+    "min": 5.162191099980024,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--tablette-1024--sillon-boutique--sombre.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Boutique",
+   "contrast": {
+    "measured": 26,
+    "min": 6.593748462565817,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--tablette-1024--sillon-images--sombre.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Images",
+   "contrast": {
+    "measured": 26,
+    "min": 6.593748462565817,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--tablette-1024--table-saison-carte--sombre.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Carte",
+   "contrast": {
+    "measured": 26,
+    "min": 6.593748462565817,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--telephone-390--sillon-boutique--clair.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Boutique",
+   "contrast": {
+    "measured": 6,
+    "min": 8.20084111469317,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--telephone-390--sillon-images--clair.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Images",
+   "contrast": {
+    "measured": 6,
+    "min": 8.20084111469317,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--telephone-390--table-saison-carte--clair.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Carte",
+   "contrast": {
+    "measured": 6,
+    "min": 8.20084111469317,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--telephone-390--sillon-boutique--sombre.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Boutique",
+   "contrast": {
+    "measured": 6,
+    "min": 6.8465814085183965,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--telephone-390--sillon-images--sombre.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Images",
+   "contrast": {
+    "measured": 6,
+    "min": 6.8465814085183965,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--telephone-390--table-saison-carte--sombre.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Carte",
+   "contrast": {
+    "measured": 6,
+    "min": 6.8465814085183965,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--telephone-360--sillon-boutique--clair.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Boutique",
+   "contrast": {
+    "measured": 6,
+    "min": 8.20084111469317,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--telephone-360--sillon-images--clair.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Images",
+   "contrast": {
+    "measured": 6,
+    "min": 8.20084111469317,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--telephone-360--table-saison-carte--clair.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Carte",
+   "contrast": {
+    "measured": 6,
+    "min": 8.20084111469317,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--telephone-360--sillon-boutique--sombre.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Boutique",
+   "contrast": {
+    "measured": 6,
+    "min": 6.8465814085183965,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--telephone-360--sillon-images--sombre.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Images",
+   "contrast": {
+    "measured": 6,
+    "min": 6.8465814085183965,
+    "fails": []
+   },
+   "errors": []
+  },
+  {
+   "file": "apres--telephone-360--table-saison-carte--sombre.png",
+   "shell": "syna",
+   "overflow": 0,
+   "blackPill": false,
+   "rail": true,
+   "tab": true,
+   "title": "Carte",
+   "contrast": {
+    "measured": 6,
+    "min": 6.8465814085183965,
+    "fails": []
+   },
+   "errors": []
+  }
+ ],
+ "contrastMin": 5.162191099980024,
+ "panelText": "Syna\nune mémoire pour tout le Studio\n\nSYNA · VOTRE PROJET, UNE CONVERSATION\n\nSYNA\n\nJe suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût.\n\nVos choix restent les vôtres. Aucune publication automatique.\n\nActiver ce dialogue est facultatif. Vos acquis restent dans le parcours existant ; une migration indisponible sera signalée.\n\nOuvrir le dialogue de ce projet",
+ "composerAvailable": false
+}
