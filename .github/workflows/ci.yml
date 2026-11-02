@@ -12,7 +12,7 @@ concurrency:
 jobs:
   verifications:
     name: Typecheck, tests, Theme Check, build
-    needs: [tests, natif, image-docker]
+    needs: [tests, natif, image-docker, confirmation-gratuite]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -21,11 +21,13 @@ jobs:
         env:
           TESTS_RESULT: ${{ needs.tests.result }}
           NATIVE_RESULT: ${{ needs.natif.result }}
+          FREE_CONFIRMATION_RESULT: ${{ needs.confirmation-gratuite.result }}
           DOCKER_RESULT: ${{ needs.image-docker.result }}
         run: |
           test "$TESTS_RESULT" = success
           test "$NATIVE_RESULT" = success
           test "$DOCKER_RESULT" = success
+          test "$FREE_CONFIRMATION_RESULT" = success
 
   tests:
     name: Types et suite complète (réseau fournisseur interdit)
@@ -447,3 +449,36 @@ jobs:
       - name: Journaux du conteneur
         if: always()
         run: docker logs studio 2>&1 | tail -80 || true
+
+  confirmation-gratuite:
+    name: SYNA — confirmation gratuite dans le Studio compilé
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Navigateur isolé
+        run: npx playwright install --with-deps chromium
+      - name: Build de production sans fournisseur
+        run: NODE_OPTIONS="--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npm run build
+      - name: Produits, services, conflits, réseau et A1
+        run: SYNA_UI_PRODUCTION=1 NODE_OPTIONS="--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-syna284-b1-confirmation-ui.ts work/preuves-confirmation-gratuite/ouverte
+      - name: Drapeau fermé sans confirmation ni repli payant
+        run: SYNA_UI_PRODUCTION=1 SYNA_UI_CLOSED=1 NODE_OPTIONS="--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-syna284-b1-confirmation-ui.ts work/preuves-confirmation-gratuite/fermee
+      - name: Preuves synthétiques du parcours gratuit
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: syna-confirmation-gratuite
+          path: |
+            work/preuves-confirmation-gratuite/**/*.png
+            work/preuves-confirmation-gratuite/**/RESUME-UI.json
+          if-no-files-found: warn
+          retention-days: 14

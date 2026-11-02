@@ -15,6 +15,7 @@ const base = z.object({
   projectRevision: z.number().int().min(0).nullable(),
 });
 export const CommandSchema = z.discriminatedUnion("action", [
+  base.extend({action:z.literal("confirm-local"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal("open-strategy-comparison"),comparisonId:z.string().min(1).max(100)}).strict(),
   base.extend({action:z.literal("compare-strategy-options"),angleIds:z.array(z.enum(ANGLE_IDS)).min(2).max(5).optional(),sourceComparisonId:z.string().min(1).max(100).optional(),sourceVersion:z.string().regex(/^[a-f0-9]{64}$/).optional()}).strict(),
   base.extend({action:z.literal("decide-strategy-option"),comparisonId:z.string().min(1).max(100),version:z.string().regex(/^[a-f0-9]{64}$/),angleId:z.enum(ANGLE_IDS),decision:z.enum(["prefer","reject"]),reason:z.string().trim().min(1).max(1200)}).strict(),
@@ -43,9 +44,16 @@ export type ConversationState = {
   answeredOrder: QuestionKey[];
   editing?: QuestionKey;
   intelligence?: import('./intelligence-contract').CognitiveState;
+  localSiteProposal?: import('./local-site').LocalSiteProposal;
+  localSite?: import('./local-site').LocalSitePresentation;
   activeContext?: ActiveContext;
+  activeContextReference?: string;
+  activeContextIdentity?: string;
+  activeContextTab?: ActiveContext['tab'];
   strategyChoices?:import("./strategy-choices").StrategyChoicesState;
   studioObservation?:import('./studio-observation').StudioObservation;
+  /** A1 : rattachement historique en lecture, jamais une nouvelle Préparation. */
+  recovery?: { schema: 'existing-project-read-1'; mode: 'read-only' };
 };
 export type ConversationRow = { id: string; user_id: string; project_id: string | null; revision: number; state_json: string; created_at: number; updated_at: number };
 export type ChoiceCard = {
@@ -69,7 +77,10 @@ export type ActionCard = {
   href?: string;
 };
 export type ConversationView = {
+  localSiteExecution?: {enabled:true};
+  localSite?: import('./local-site').LocalSitePresentation;
   schema: "studio-conversation-1";
+  recovery?: import('./existing-project').ExistingProjectRecovery;
   id: string;
   projectId: string | null;
   revision: number;
@@ -88,7 +99,7 @@ export type ConversationView = {
   socialExecution?:{enabled:true};
   contentExecution?:{enabled:true};
   videoExecution?: {enabled:true;generation?:true;voice?:true;clip?:true};
-  activeContext?: {enabled:true;current:ReturnType<typeof import('./active-context').observedActiveContext>};
+  activeContext?: {enabled:true;current:ReturnType<typeof import('./active-context').observedActiveContext>;presentation?:ReturnType<typeof import('./context-session').contextPresentation>};
   strategyChoices?:ReturnType<typeof import("./strategy-choices").strategyChoicesView>;
   studioHelp?:{observation:import('./studio-observation').StudioObservation;capabilities:ReturnType<typeof import('./studio-operations').studioOperationCatalogue>};
   progress: "describe" | "clarify" | "collect" | "review";
@@ -98,7 +109,7 @@ export type ConversationView = {
   readOnlyReason: string | null;
   creation: ReturnType<typeof import("./creation").creationFields> | null;
   tools: { id: string; state: "available" | "quote_only" | "not_connected" | "unavailable"; executionEnabled: boolean }[];
-  summary: { description: string; business: BusinessType | null; businessSource: ConversationState["businessSource"]; target: string; goals: string; offerName: string; brandName: string; constraints: string; services: {name:string;description:string;source:string}[]; contactModes: string[]; facts: { key: string; label: string; value: string; status: string; source: string }[]; unknown: string[]; referenceUrls: string[]; photoIds: string[]; approved: boolean; preparationStatus:"draft"|"approved"|"stale" };
+  summary: { description: string; business: BusinessType | null; businessSource: ConversationState["businessSource"]; target: string; goals: string; offerName: string; brandName: string; constraints: string; services: {name:string;description:string;source:string}[]; contactModes: string[]; facts: { key: string; label: string; value: string; status: string; source: string }[]; unknown: string[]; referenceUrls: string[]; photoIds: string[]; approved: boolean; preparationStatus:"draft"|"approved"|"stale"|"absent" };
   action: ActionCard | null;
   history: { revision: number; request: unknown; message: string; at: number }[];
   historyBefore: number | null;

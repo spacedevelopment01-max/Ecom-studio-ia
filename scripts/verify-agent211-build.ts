@@ -69,6 +69,24 @@ let brandScene:import('./brand211-fixtures').BrandScene|null=null,brandInstructi
 let afterPublicationReview:(()=>void)|null=null;
 let socialPublicationFixture:{headline:string;caption:string;brand:string;referenceId:string;subline?:string;cta?:string;purpose?:"post"|"ad";aspect?:string}|null=null;
 let server:ChildProcess|undefined,worker:ChildProcess|undefined,logs='',origin='',fixture:Record<string,unknown>={},bad=false,failureStatus=0,providerCalls=0,tokenCounts=0;
+// Diagnostic du harnais seulement : jamais de headers, cookies, corps ou URL client.
+const processEvents:unknown[]=[],logoReadErrors:unknown[]=[];
+function recipeResources(){
+ const read=(file:string)=>{try{return fs.readFileSync(file,'utf8').trim();}catch{return null;}};
+ const processes=[['server',server],['worker',worker]].map(([role,child])=>{const p=child as ChildProcess|undefined;let alive=false;if(p?.pid)try{process.kill(p.pid,0);alive=true;}catch{}return{role,pid:p?.pid??null,alive,exitCode:p?.exitCode??null,signal:p?.signalCode??null,rssKb:p?.pid?Number(read(`/proc/${p.pid}/status`)?.match(/^VmRSS:\s+(\d+)/m)?.[1]??0):null};});
+ const disk=fs.statfsSync(temp);
+ return{at:new Date().toISOString(),port:origin?Number(new URL(origin).port):null,processes,parentRss:process.memoryUsage().rss,freeMemory:os.freemem(),freeDisk:Number(disk.bavail)*Number(disk.bsize),cgroupCurrent:read('/sys/fs/cgroup/memory.current'),cgroupLimit:read('/sys/fs/cgroup/memory.max'),cgroupEvents:read('/sys/fs/cgroup/memory.events')};
+}
+const nativeHttpRequest=http.request;
+http.request=((...args:Parameters<typeof http.request>)=>{
+ const request=Reflect.apply(nativeHttpRequest,http,args) as ReturnType<typeof http.request>;
+ if(request.method==='GET'&&/\/logos(?:\?|$)/.test(request.path)){
+  const started=Date.now();let httpStatus:number|null=null;
+  const record=(error:NodeJS.ErrnoException)=>{const event={code:error.code??null,reusedSocket:request.reusedSocket,httpStatus,elapsedMs:Date.now()-started,...recipeResources()};logoReadErrors.push(event);logs+='[recipe-logo-read-error] '+JSON.stringify(event)+'\n';console.error('[recipe-logo-read-error]',JSON.stringify(event));};
+  request.on('error',record);request.on('response',response=>{httpStatus=response.statusCode??null;response.on('error',record);});
+ }
+ return request;
+}) as typeof http.request;
 let videoClipCalls=0,videoVoiceCalls=0,videoFailureAt=0,voiceFailureAt=0;const videoRequests:unknown[]=[];
 let lastInputText='',imageHttpCalls=0,imageFailureAt=0;const imageRequests:unknown[]=[];let expectedImageReferences:string[]|null=null;let omitEditReviewOnce=false;let omitLogoReviewOnce=false,expectedLogoName='';const logoReviewRequests:unknown[]=[];
 const fake=http.createServer(async(req,res)=>{
@@ -128,16 +146,18 @@ const fake=http.createServer(async(req,res)=>{
 async function freePort(){const s=net.createServer();await new Promise<void>(r=>s.listen(0,'127.0.0.1',r));const port=(s.address()as net.AddressInfo).port;await new Promise<void>(r=>s.close(()=>r()));return port;}
 function child(args:string[],extra:Record<string,string>={}){
   const p=spawn(process.execPath,args,{env:{...process.env,NODE_ENV:'production',NEXT_TELEMETRY_DISABLED:'1',APP_URL:origin,...extra,NODE_OPTIONS:`${process.env.NODE_OPTIONS??''} --import=${path.resolve('scripts/lot9/network-guard.mjs')}`},stdio:['ignore','pipe','pipe'],detached:true});
+  const role=args.includes('worker/index.ts')?'worker':'server';processEvents.push({event:'spawn',role,pid:p.pid,at:new Date().toISOString()});
+  p.on('exit',(code,signal)=>{const event={event:'exit',role,pid:p.pid,code,signal,at:new Date().toISOString()};processEvents.push(event);logs+='[recipe-process] '+JSON.stringify(event)+'\n';});
   p.stdout!.on('data',d=>logs+=String(d));p.stderr!.on('data',d=>logs+=String(d));return p;
 }
-async function start(enabled=true,extra:Record<string,string>={}){const port=await freePort();origin=`http://127.0.0.1:${port}`;server=child(['node_modules/next/dist/bin/next','start','-H','127.0.0.1','-p',String(port)],{STUDIO_CONVERSATION_AI:enabled?'1':'0',...extra});const end=Date.now()+120000;while(Date.now()<end){if(server.exitCode!=null)throw Error('Compiled server stopped');try{if((await fetch(origin+'/connexion')).ok)return;}catch{}await new Promise(r=>setTimeout(r,250));}throw Error('Server timeout');}
-async function stop(p:ChildProcess|undefined){if(!p?.pid)return;try{process.kill(-p.pid,'SIGTERM');}catch{}await Promise.race([new Promise(r=>p.once('exit',r)),new Promise(r=>setTimeout(r,3000))]);}
+async function start(enabled=true,extra:Record<string,string>={}){const port=await freePort();origin=`http://127.0.0.1:${port}`;server=child(['node_modules/next/dist/bin/next','start','-H','127.0.0.1','-p',String(port)],{STUDIO_CONVERSATION_AI:enabled?'1':'0',...extra});const end=Date.now()+120000;while(Date.now()<end){if(server.exitCode!=null)throw Error('Compiled server stopped');try{const response=await fetch(origin+'/connexion');if(response.ok){processEvents.push({event:'ready',httpStatus:response.status,...recipeResources()});return;}}catch{}await new Promise(r=>setTimeout(r,250));}throw Error('Server timeout');}
+async function stop(p:ChildProcess|undefined){if(!p?.pid)return;processEvents.push({event:'cleanup-request',pid:p.pid,at:new Date().toISOString()});try{process.kill(-p.pid,'SIGTERM');}catch{}await Promise.race([new Promise(r=>p.once('exit',r)),new Promise(r=>setTimeout(r,3000))]);}
 process.on('exit',()=>{for(const p of [server,worker])if(p?.pid)try{process.kill(-p.pid,'SIGTERM');}catch{}});
 async function login(u:Session['u']):Promise<Session>{const r=await fetch(origin+'/api/auth/login',{method:'POST',headers:{'content-type':'application/json',origin},body:JSON.stringify({email:u.email,password:'Mot-de-passe-fictif'})});assert.equal(r.status,200);return{u,cookie:r.headers.getSetCookie().map(x=>x.split(';')[0]).join('; ')};}
 async function call(s:Session,url:string,body?:unknown,expected=200,foreignOrigin?:string){const r=await fetch(origin+url,{method:body==null?'GET':'POST',headers:{cookie:s.cookie,'content-type':'application/json',origin:foreignOrigin??origin},...(body==null?{}:{body:JSON.stringify(body)})});assert.equal(r.status,expected,`${url}: ${r.status===expected?'':await r.clone().text()}`);return r.json();}
 const counts=()=>({providerHttpCalls:providerCalls+imageHttpCalls+videoClipCalls+videoVoiceCalls,videoClipCalls,videoVoiceCalls,textHttpCalls:providerCalls,imageHttpCalls,tokenCounts,calls:one<{n:number}>('SELECT COUNT(*) n FROM ai_calls')!.n,usage:one<{n:number}>('SELECT COUNT(*) n FROM usage_events')!.n,simulatedMicro:one<{n:number}>('SELECT COALESCE(SUM(cost),0) n FROM usage_events')!.n});
 async function finished(s:Session,jid:string){const end=Date.now()+45000;while(Date.now()<end){const{job}=await call(s,`/api/jobs/${jid}`);if(['done','failed','cancelled','blocked'].includes(job.status))return job;await new Promise(r=>setTimeout(r,150));}throw Error('Worker timeout');}
-const proof:Record<string,unknown>={schema:'agent211-B-compiled-proof-1',data:'fictitious-isolated',provider:'local-http-simulation',realProviderCalls:0,realCostEur:0,worker:'native',qualification:'real_provider_not_tested',cases:[]};
+const proof:Record<string,unknown>={schema:'agent211-B-compiled-proof-1',data:'fictitious-isolated',provider:'local-http-simulation',realProviderCalls:0,realCostEur:0,worker:'native',qualification:'real_provider_not_tested',cases:[],processEvents,logoReadErrors,resourcesBefore:recipeResources()};
 try{
   await new Promise<void>(r=>fake.listen(0,'127.0.0.1',r));process.env.ANTHROPIC_BASE_URL=`http://127.0.0.1:${(fake.address()as net.AddressInfo).port}`;
   if(process.argv.includes('--images-ui')||(process.argv.includes('--social-production-ui')||process.argv.includes('--campaign-visual-ui'))){
@@ -335,7 +355,7 @@ try{
     const legacyFixture={origin,out,account,project,login,counts,seed:async(u:Awaited<ReturnType<typeof account>>,pid:string)=>{openProjectConversation(u,pid);const seeded=await seedCompositionSite(pid,COMPOSITION_SCENES[0]);return{...seeded,asset:one<{id:string;version:number;name:string}>('SELECT id,version,name FROM assets WHERE project_id=?',pid)!};},setFixture:()=>{},input:()=>'',inspect:(pid:string)=>currentTheme(pid)!};proof.legacyContextUi=await verifyLegacySelectionBrowser(legacyFixture);await stop(server);server=undefined;await start(true,{STUDIO_CONVERSATION_CONTEXT:'0'});proof.contextFlagClosed=await verifyLegacySelectionBrowser({...legacyFixture,origin},true);
   }
   proof.finishedAt=new Date().toISOString();proof.success=true;
-}finally{await stop(worker);await stop(server);await new Promise<void>(r=>fake.close(()=>r()));if(!proof.success){try{(await import('./agent211-failure-diagnostic')).saveAgentFailureDiagnostic(out,logs);}catch(error){console.error('Failure diagnostic unavailable:',String(error));}}fs.writeFileSync(path.join(out,'api-proof.json'),JSON.stringify(proof,null,2)+'\n');fs.writeFileSync(path.join(temp,'process.log'),logs);}
+}finally{proof.resourcesAtEnd=recipeResources();await stop(worker);await stop(server);proof.resourcesAfterCleanup=recipeResources();await new Promise<void>(r=>fake.close(()=>r()));if(!proof.success){try{(await import('./agent211-failure-diagnostic')).saveAgentFailureDiagnostic(out,logs);}catch(error){console.error('Failure diagnostic unavailable:',String(error));}}fs.writeFileSync(path.join(out,'api-proof.json'),JSON.stringify(proof,null,2)+'\n');fs.writeFileSync(path.join(temp,'process.log'),logs);}
 console.log(JSON.stringify({success:proof.success,file:path.join(out,'api-proof.json'),version:proof.version,totals:proof.simulatedTotals,temp}));
 
 // D11c : même recette finale, après les campagnes et la fermeture des processus précédents.
