@@ -26,3 +26,18 @@ describe("recette d'intégration #292", () => {
     expect(panel).toContain("ConversationLocalSite");
   });
 });
+
+describe("recette #301 : la coquille ne recouvre jamais les fenêtres natives du Studio", () => {
+  it("barre du téléphone et feuilles Espaces / Suivi sous les modales natives (z 90), au-dessus de la conversation SYNA (45)", () => {
+    const css = read("src/components/studio/syna-shell.css");
+    const z = (sel: string) => Number(css.match(new RegExp(sel.replace(/[.]/g, "\\.") + " \\{[^}]*?z-index: (\\d+)"))?.[1]);
+    const ui = read("src/components/ui.tsx");
+    const modal = Number(ui.match(/className="fixed inset-0 z-\[(\d+)\] flex items-end justify-center/)?.[1]);
+    expect(modal).toBe(90);
+    for (const sel of [".syna-ui .ss-tabbar", ".syna-ui .ss-sheet-layer"]) {
+      expect(z(sel)).toBeGreaterThan(45);
+      expect(z(sel)).toBeLessThan(60);
+    }
+    expect(z(".syna-ui .ss-tabbar")).toBeGreaterThan(z(".syna-ui .ss-sheet-layer"));
+  });
+});

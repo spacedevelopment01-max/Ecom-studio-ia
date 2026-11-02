@@ -113,8 +113,9 @@
 @keyframes ss-rise { from { transform: translateY(16px); opacity: 0; } }
 
 /* ——— Barre basse (téléphone, tablette) ——— */
+/* Sous les fenêtres natives du Studio (modales z 90, aperçu plein écran z 80, éditeur publicitaire, bulle des tutoriels z 60), comme la barre de l'interface actuelle ; au-dessus de la conversation SYNA (45) et des feuilles (46). Recette #301. */
 .syna-ui .ss-tabbar {
-  position: fixed; z-index: 95; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-around; gap: 4px;
+  position: fixed; z-index: 47; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-around; gap: 4px;
   padding: 6px max(8px, env(safe-area-inset-right, 0px)) max(6px, env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px));
   background: color-mix(in srgb, var(--sy-sheet) 94%, transparent); border-top: 1px solid var(--sy-rule);
   -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
@@ -131,7 +132,7 @@
 .syna-ui .ss-tabbar .sy-trigger[data-variant="tab"] { min-width: 0; }
 
 /* ——— Feuilles du bas : espaces, suivi ——— */
-.syna-ui .ss-sheet-layer { position: fixed; inset: 0; z-index: 92; }
+.syna-ui .ss-sheet-layer { position: fixed; inset: 0; z-index: 46; }
 /* Dans la feuille, le voile reste derrière : un toucher sur un espace ouvre l'espace, il ne referme pas la feuille. */
 .syna-ui .ss-sheet-layer > .ss-scrim { z-index: 0; }
 .syna-ui .ss-sheet {
