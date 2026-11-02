@@ -241,6 +241,9 @@ describe("Adresses qui reçoivent les demandes", () => {
     expect(sink.messages.map((m) => m.to[0])).toEqual([account]);
     await withAccessScope({ kind: "http" }, async () => { addRecipient(pid, "b@example.test"); addRecipient(pid, "c@example.test"); });
     expect(() => addRecipient(pid, "d@example.test")).toThrow(/3 adresses au plus/);
+    // Les vérifications partent sans attendre : les recevoir avant que le test suivant vide le serveur SMTP.
+    // Sinon elles peuvent contaminer le cas « aucune adresse », qui doit toujours exiger zéro envoi.
+    await waitFor(() => ["b@example.test", "c@example.test"].every((email) => sink.messages.some((m) => m.to.includes(email))));
   });
 
   it("sans SMTP, une autre adresse ne peut pas être ajoutée (aucun lien ne partirait) ; l'adresse du compte, si", async () => {

@@ -5,6 +5,8 @@
  * Conservation : 12 mois, purge à chaque nouvelle demande du projet.
  */
 import { all, id, now, run, tx } from "../db";
+import { HttpError } from "../auth";
+import { L } from "../i18n-server";
 import { clientIp, rateTake } from "../rate-limit";
 import { hmac } from "../secrets";
 import { dropOutbox, kickOutbox, notificationState, outboxFor, queueNotifications, requestKind, type NotificationState } from "./notify";
@@ -103,12 +105,14 @@ export function siteRequests(projectId: string): SiteRequest[] {
 /** Traitement minimal par le professionnel : « traitée » ou de nouveau « nouvelle ». */
 export function markRequestHandled(projectId: string, requestId: string, handled: boolean) {
   ensureSiteTables();
-  run("UPDATE site_requests SET handled_at = ?, read_at = COALESCE(read_at, ?) WHERE id = ? AND project_id = ?", handled ? now() : null, now(), requestId, projectId);
+  const changed = run("UPDATE site_requests SET handled_at = ?, read_at = COALESCE(read_at, ?) WHERE id = ? AND project_id = ?", handled ? now() : null, now(), requestId, projectId).changes;
+  if (changed !== 1) throw new HttpError(404, L("Demande introuvable.", "Request not found."));
 }
 
 export function markRequestRead(projectId: string, requestId: string) {
   ensureSiteTables();
-  run("UPDATE site_requests SET read_at = COALESCE(read_at, ?) WHERE id = ? AND project_id = ?", now(), requestId, projectId);
+  const changed = run("UPDATE site_requests SET read_at = COALESCE(read_at, ?) WHERE id = ? AND project_id = ?", now(), requestId, projectId).changes;
+  if (changed !== 1) throw new HttpError(404, L("Demande introuvable.", "Request not found."));
 }
 
 /** Effacement d'une demande à la demande du visiteur (droit à l'effacement) ou du professionnel. */
