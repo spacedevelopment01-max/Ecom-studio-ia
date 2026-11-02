@@ -14,6 +14,7 @@ import {getProduct} from '../../products/catalog';
 import {requirePlan} from '../../plan-gates';
 import {managedSections} from '../../contenus';
 import {createHash} from 'node:crypto';
+import {adapter} from '../../contenus/api';
 export const activeContextEnabled=conversationContextEnabled;
 const missing=()=>new HttpError(404,L('Cette cible est introuvable dans ce projet. Rien n’a été modifié.','This target was not found in this project. Nothing changed.'),'conversation_target_not_found');
 function resolveNativeContext(c:ConversationRow,raw:unknown){
@@ -21,6 +22,11 @@ function resolveNativeContext(c:ConversationRow,raw:unknown){
  if(selected.projectId&&selected.projectId!==c.project_id)throw missing();
  if(!target)return{selection:selected,kind:'tab' as const,label:selected.tab,contentRead:false};
  if(!c.project_id)throw missing();
+ if(target.kind==='content-item'){
+  if(process.env.STUDIO_CONVERSATION_BUSINESS_CONTENT!=='1'||selected.tab!==({biens:'biens',plats:'carte',realisations:'realisations'} as const)[target.type])throw missing();
+  const item=adapter(target.type).get(c.project_id,target.itemId);if(item.version!==target.version)throw new HttpError(409,L('Le contenu métier a changé. Désignez-le à nouveau.','Business content changed. Select it again.'),'conversation_target_stale');
+  return{selection:selected,kind:'content-item' as const,label:item.title,isCurrent:true,contentRead:true,item,visualQuality:'not_reviewed' as const};
+ }
  if(target.kind==='catalogue-product'||target.kind==='catalogue-variant'){
   if(selected.tab!=='catalogue'||!conversationCatalogueEnabled())throw missing();
   if(!one("SELECT 1 FROM sqlite_master WHERE type='table' AND name='studio_products'")||!one('SELECT 1 FROM studio_products WHERE id=? AND project_id=?',target.productId,c.project_id))throw missing();
@@ -77,7 +83,7 @@ function resolveNativeContext(c:ConversationRow,raw:unknown){
 export function resolveActiveContext(c:ConversationRow,raw:unknown){
  if(c.project_id){const user=one<User>('SELECT * FROM users WHERE id=?',c.user_id);if(!user)throw missing();ownedProject(user,c.project_id);requirePlan(user,c.project_id);}
  const r=resolveNativeContext(c,raw),target=r.selection.target;
- return{...r,canonical:{schema:'studio-native-target-2' as const,projectId:c.project_id,tab:r.selection.tab,kind:r.kind,identity:stableHash('native-object-identity-2',{kind:r.kind,...(target&&'template'in target?{template:target.template,section:'section'in target?target.section:null,block:'block'in target?target.block??null:null,key:'key'in target?target.key:null,sectionType:'sectionType'in r?r.sectionType:null,blockType:'blockType'in r?r.blockType:null,fieldType:'fieldType'in r?r.fieldType:null}:target?.kind==='asset'?{assetId:target.assetId}:target?{productId:'productId'in target?target.productId:null,variantId:'variantId'in target?target.variantId:null,path:'path'in target?target.path:null}: {})}),sourceFingerprint:stableHash('native-target-content-2',r),provenance:'server_native_read' as const,authorizationGranted:false as const}};
+ return{...r,canonical:{schema:'studio-native-target-2' as const,projectId:c.project_id,tab:r.selection.tab,kind:r.kind,identity:stableHash('native-object-identity-2',{kind:r.kind,...(target?.kind==='content-item'?{type:target.type,itemId:target.itemId}:target&&'template'in target?{template:target.template,section:'section'in target?target.section:null,block:'block'in target?target.block??null:null,key:'key'in target?target.key:null,sectionType:'sectionType'in r?r.sectionType:null,blockType:'blockType'in r?r.blockType:null,fieldType:'fieldType'in r?r.fieldType:null}:target?.kind==='asset'?{assetId:target.assetId}:target?{productId:'productId'in target?target.productId:null,variantId:'variantId'in target?target.variantId:null,path:'path'in target?target.path:null}: {})}),sourceFingerprint:stableHash('native-target-content-2',r),provenance:'server_native_read' as const,authorizationGranted:false as const}};
 }
 export function observedActiveContext(c:ConversationRow,selection?:ActiveContext){
  if(!selection)return null;
