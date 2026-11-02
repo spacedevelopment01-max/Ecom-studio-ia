@@ -300,7 +300,7 @@ describe("sécurité de l'IA", async () => {
     };
 
     it("limite par compte et par heure : définie en un seul endroit (20 par défaut), réglable", async () => {
-      const { LIMITS, promptRunLimit, rateHit } = await import("@/lib/rate-limit");
+      const { LIMITS, promptRunLimit, rateHit, rateCount } = await import("@/lib/rate-limit");
       const { setSetting } = await import("@/lib/settings");
       expect(LIMITS.promptRunPerUser).toEqual({ max: 20, windowMs: 3600_000 });
       expect(promptRunLimit().max).toBe(20);
@@ -309,15 +309,18 @@ describe("sécurité de l'IA", async () => {
       routeUser.user = u;
       routeUser.projectId = pid;
       for (let i = 0; i < LIMITS.promptRunPerUser.max - 1; i++) rateHit(`prompt-run:${u.id}`);
-      expect((await call(pid)).status).toBe(200);
+      expect((await call(pid)).status).toBe(409);
+      expect(rateCount(`prompt-run:${u.id}`, LIMITS.promptRunPerUser.windowMs)).toBe(LIMITS.promptRunPerUser.max - 1);
+      // Un refus de consentement n'est pas une exécution ; vérifier aussi la limite déjà remplie.
+      rateHit(`prompt-run:${u.id}`);
       const res = await call(pid);
       expect(res.status).toBe(429);
-      expect(sent).toHaveLength(1);
+      expect(sent).toHaveLength(0);
       // Réglage d'administration : la limite change sans toucher au code.
       setSetting("limits.promptRunPerHour", "50");
       try {
         expect(promptRunLimit().max).toBe(50);
-        expect((await call(pid)).status).toBe(200);
+        expect((await call(pid)).status).toBe(409);
       } finally {
         setSetting("limits.promptRunPerHour", null);
       }
@@ -341,10 +344,14 @@ describe("sécurité de l'IA", async () => {
       routeUser.projectId = pid;
       reply = "Artisan certifié, travail garanti 10 ans, 500 avis 5 étoiles.";
       const res = await call(pid);
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(409);
       const j = await res.json();
-      expect(j.answer).toBe(reply);
-      const labels = j.claims.map((c: { label: string }) => c.label);
+      expect(j.answer).toBeUndefined();
+      expect(sent).toHaveLength(0);
+      // L'analyse existante des affirmations reste exercée, sans exécuter le prompt sans devis.
+      const { lintClaims } = await import("@/lib/ai/tasks");
+      const { loadProject } = await import("@/lib/projects");
+      const labels = lintClaims(reply, loadProject(pid)).map((c) => c.label);
       expect(labels).toEqual(expect.arrayContaining(["certification", "garantie", "avis ou notes"]));
     });
   });

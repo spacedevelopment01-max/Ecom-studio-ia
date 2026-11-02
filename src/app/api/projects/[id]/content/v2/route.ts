@@ -1,9 +1,5 @@
 import { z } from "zod";
-import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
-import { enqueue } from "@/lib/jobs";
-import { one } from "@/lib/db";
-import { L } from "@/lib/i18n-server";
 import { aiActiveFor } from "@/lib/ai/access";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { pickLang, runContentEngineV2 } from "@/lib/seo-v2/engine";
@@ -48,10 +44,10 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
 
 /**
  * Rédaction d'un contenu. Sans IA (forfait Découverte, IA coupée) : rédaction locale immédiate, 0 €. Avec IA :
- * tâche de fond (rédaction contrôlée, relecture, barrière, plafond de coût).
+ * réemploi gratuit d'un résultat acquis identique ; sinon devis et confirmation dans SYNA.
  */
 export const POST = handle(async (req: Request, ctx: Ctx) => {
-  const { user, project: p } = await projectFromCtx(ctx);
+  const { project: p } = await projectFromCtx(ctx);
   const b = await body(
     req,
     z.object({
@@ -77,7 +73,6 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     const r = await runContentEngineV2(null, p.id, request);
     return ok({ docKey: r.docKey, verdict: r.verdict, by: r.by, skipped: r.skipped, notes: r.notes, issues: r.issues, delivery: r.delivery });
   }
-  if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'content.v2' AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Une rédaction est déjà en cours.", "Writing is already in progress."));
-  const job = enqueue({ userId: user.id, projectId: p.id, type: "content.v2", label: L("Rédaction SEO", "SEO writing"), payload: { projectId: p.id, request } });
-  return ok({ jobId: job.id });
+  const r = await runContentEngineV2(null, p.id, { ...request, requireAiConsent: true });
+  return ok({ docKey: r.docKey, verdict: r.verdict, by: r.by, skipped: r.skipped, notes: r.notes, issues: r.issues, delivery: r.delivery });
 });

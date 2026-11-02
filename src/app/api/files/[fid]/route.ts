@@ -1,3 +1,4 @@
+import {changeFileMetadata} from '@/lib/library-local-change';
 import fs from "node:fs";
 import { recordMediaRejection } from "@/lib/brain/rejections";
 import { z } from "zod";
@@ -59,11 +60,7 @@ export const GET = handle(async (req: Request, ctx: { params: Promise<{ fid: str
 export const PATCH = handle(async (req: Request, ctx: { params: Promise<{ fid: string }> }) => {
   const a = await assetOf(ctx);
   const b = await body(req, z.object({ name: z.string().trim().min(1).max(200).optional(), folderId: z.string().nullable().optional(), status: z.enum(["ready", "review", "approved", "rejected"]).optional(), starred: z.boolean().optional(), restore: z.boolean().optional() }));
-  if (b.name) run("UPDATE assets SET name = ? WHERE id = ?", b.name, a.id);
-  if (b.folderId !== undefined) {
-    if (b.folderId && !one("SELECT 1 FROM folders WHERE id = ? AND project_id = ?", b.folderId, a.project_id)) throw new HttpError(404, L("Dossier introuvable.", "Folder not found."));
-    run("UPDATE assets SET folder_id = ? WHERE id = ?", b.folderId, a.id);
-  }
+  if (b.name !== undefined || b.folderId !== undefined) changeFileMetadata({assetId:a.id,projectId:a.project_id,userId:a.user_id},{name:b.name,folderId:b.folderId});
   if (b.status) run("UPDATE assets SET status = ? WHERE id = ?", b.status, a.id);
   // Média créatif écarté par le client : refus mémorisé pour les prochains visuels et photos (Project Brain).
   if (b.status === "rejected" && a.status !== "rejected" && a.project_id) recordMediaRejection(a.project_id, a);

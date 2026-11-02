@@ -1,0 +1,137 @@
+{
+  "schema": 1,
+  "domain": "native-acquired-photo-edit",
+  "sourceCommit": "785d516ffab9fef457a8f8311ef9855ba397520d",
+  "sourceTree": "e214215861215d1b1a350c334c3db537fb890736",
+  "runtime": {
+    "commit": "785d516ffab9fef457a8f8311ef9855ba397520d",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "success": true,
+  "mode": "native-studio-desktop-1440",
+  "combinedSynaModesQualified": false,
+  "creativeQualityQualified": false,
+  "realProviderCalls": 0,
+  "realSpendMicro": 0,
+  "data": "synthetic-isolated",
+  "edit": {
+    "jobId": "7sk48doix0i95jvf",
+    "cancelJobs": 0,
+    "cancelCalls": 0,
+    "confirmationJobs": 1,
+    "sdkImageCalls": 1,
+    "wireInstructionExact": true,
+    "sourceBytesComparedAfterNativePreparation": true,
+    "lostResponseRetrySameJob": true,
+    "maximumCalls": 1,
+    "maximumMicro": 92700,
+    "simulatedMicro": 58239,
+    "resultSavedAndReloaded": true,
+    "sourcePreserved": true,
+    "source": {
+      "id": "1d0350bt1kvxbbwl",
+      "sha256": "9fc2ec1d23bd38ed881285e7d3fb28035366065f56530ba0647cd3bc084ba3d2",
+      "bytes": 252625
+    },
+    "result": {
+      "id": "qyt9ovx0wu36eapz",
+      "version": 2,
+      "source_asset_id": "1d0350bt1kvxbbwl",
+      "version_of": "1d0350bt1kvxbbwl",
+      "sha256": "f8a01df4396029fca37ddb17f946332483dec1584646f551b4788834c7077b9c"
+    }
+  },
+  "freeManualCropUI": {
+    "saved": true,
+    "crop": {
+      "x": 0.16666666666666669,
+      "y": 0.16666666666666669,
+      "w": 0.6666666666666666,
+      "h": 0.6666666666666666
+    },
+    "ui": true
+  },
+  "freeReformatUI": {
+    "docKey": "ad:a6a120b083094a529fc2",
+    "aspect": "4:5",
+    "ui": true
+  },
+  "complexAiPost": {
+    "route": "quote_edit",
+    "status": 409,
+    "code": "image_edit_complex_consent_unavailable",
+    "additionalJobs": 0,
+    "additionalCalls": 0
+  },
+  "wholeHarnessSimulatedTotals": {
+    "providerHttpCalls": 6,
+    "videoClipCalls": 0,
+    "videoVoiceCalls": 0,
+    "textHttpCalls": 4,
+    "imageHttpCalls": 2,
+    "tokenCounts": 4,
+    "calls": 6,
+    "usage": 6,
+    "simulatedMicro": 303786
+  },
+  "captureFiles": [
+    "native307/products-devis-avant-annulation.png",
+    "native307/products-devis-exact-confirmation.png",
+    "native307/products-photo-apres-avant-enregistrement.png",
+    "native307/products-photo-apres-enregistre.png",
+    "native307/products-photo-avant.png",
+    "native307/products-photo-devis-annulation.png",
+    "native307/products-photo-devis-confirmation.png",
+    "native307/products-photo-recadrage-gratuit.png",
+    "native307/products-photo-reformat-gratuit-apercu.png",
+    "native307/products-photo-reformat-gratuit-valide.png",
+    "native307/products-photo-reponse-perdue.png",
+    "native307/products-photo-resultat-recharge.png",
+    "native307/products-resultat-recharge.png"
+  ],
+  "errors": [],
+  "processCleanup": [
+    {
+      "role": "server",
+      "pid": 140288,
+      "alive": false,
+      "exitCode": 0,
+      "signal": null,
+      "rssKb": 0
+    },
+    {
+      "role": "worker",
+      "pid": null,
+      "alive": false,
+      "exitCode": null,
+      "signal": null,
+      "rssKb": null
+    }
+  ],
+  "limitations": [
+    "Local HTTP simulator returns technical patterns; semantic visual fidelity is not qualified.",
+    "Simple acquired photo native AdEditor qualified; Encre/Plein cadre shared SYNA remains unqualified here.",
+    "Complex aiPost intentionally refuses until multi-step exact consent exists.",
+    "Full CI is outside this browser qualification."
+  ],
+  "incidents": [
+    {
+      "run": 1,
+      "kind": "infrastructure",
+      "reason": "ENOSPC before native browser flow; no product defect inferred"
+    },
+    {
+      "run": 2,
+      "kind": "harness",
+      "reason": "Publicité image hash was missing; fixed temporary navigation only"
+    },
+    {
+      "run": 3,
+      "kind": "harness",
+      "reason": "Fake SDK usage always reported high 6208 output tokens although requested ad_visual medium; fixed fake usage to exact requested quality/size table, cap assertion retained"
+    }
+  ]
+}

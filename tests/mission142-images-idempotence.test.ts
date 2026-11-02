@@ -2,13 +2,15 @@
 import { expect, it, vi } from "vitest";
 const session=vi.hoisted(()=>({user:null as any}));
 vi.mock("@/lib/auth",async orig=>({...await orig<any>(),requireUser:async()=>session.user,currentUser:async()=>session.user}));
+vi.mock('@/lib/ai/config',async orig=>({...await orig<any>(),activeProviderKey:()=> 'FAUX FOURNISSEUR SANS APPEL'}));
+import {nativeImageConfirmedFixture} from './native-image-consent-fixture';
 import { createUser } from "@/lib/auth";
 import { seedImageFixture, seedCutout } from "./image-v2-fixtures";
 import { grantProjectPlan } from "@/lib/project-subscriptions";
 import { all } from "@/lib/db";
 import { POST } from "@/app/api/projects/[id]/images/v2/route";
 async function project(){const u=await createUser(`idempotence-${crypto.randomUUID()}@example.invalid`,"motdepasse-test","Fictif");session.user={...u,role:"client"};const pid=seedImageFixture(u.id,"hightech");grantProjectPlan(pid,"vendre");return{u,pid};}
-const post=(pid:string,data:any)=>POST(new Request("http://localhost/api/projects/"+pid+"/images/v2",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(data)}),{params:Promise.resolve({id:pid})});
+const post=(pid:string,data:any)=>nativeImageConfirmedFixture(body=>POST(new Request("http://localhost/api/projects/"+pid+"/images/v2",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}),{params:Promise.resolve({id:pid})}),data);
 it("double envoi de création : une seule tâche ; intention ou opération nouvelle distincte",async()=>{
   const {pid}=await project();
   const request={kind:"ambiance",count:1,allowGenerate:true,aspect:"4:5"};

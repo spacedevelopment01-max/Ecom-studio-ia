@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { withAiDisabled } from "@/lib/ai/access";
+import { localOnlyDeps } from "@/lib/seo-v2/deps";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
 import { L } from "@/lib/i18n-server";
@@ -59,8 +61,8 @@ export const PUT = handle(async (req: Request, ctx: DocCtx) => {
 });
 
 /**
- * « ops » : opérations d'édition (gratuites). « edit » : retouche en conversation (locale si possible, sinon IA
- * limitée aux blocs visés). « restore » : restaure une version (copie, rien n'est perdu).
+ * « ops » : opérations d'édition (gratuites). « edit » : retouche locale gratuite ; toute retouche IA exige le devis et la confirmation SYNA.
+ * « restore » : restaure une version (copie, rien n'est perdu).
  */
 export const POST = handle(async (req: Request, ctx: DocCtx) => {
   const { project: p } = await projectFromCtx(ctx as Ctx);
@@ -89,6 +91,11 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
     saveUserEdit(p.id, docKey, next, "modification du client");
     return ok(view(p, docKey));
   }
-  const r = await editContentV2(null, p.id, docKey, b.request, { selected: b.selected });
+  const r = await withAiDisabled("Native content edits require a confirmed SYNA quote for AI", () =>
+    editContentV2(null, p.id, docKey, b.request, { selected: b.selected }, localOnlyDeps()));
+  if (r.needsAi) r.summary = L(
+    "Cette retouche nécessite un devis et votre confirmation dans SYNA avant toute dépense IA. Vous pouvez aussi modifier le texte gratuitement dans l’éditeur.",
+    "This edit requires a quote and your confirmation in SYNA before any AI spending. You can also edit the text for free in the editor.",
+  );
   return ok({ ...view(p, docKey), edit: { applied: r.applied, by: r.by, summary: r.summary, needsAi: !!r.needsAi, issues: r.issues } });
 });

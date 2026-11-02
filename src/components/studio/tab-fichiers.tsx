@@ -96,7 +96,7 @@ export default function TabFichiers() {
           >
             <FolderPlus className="size-4" /> {folder ? t("Nouveau sous-dossier", "New subfolder") : t("Nouveau dossier", "New folder")}
           </button>
-          <button onClick={async () => { await api(`/api/projects/${id}/classify`, { method: "POST" }); toast("ok", t("Classement en cours : les fichiers non rangés seront déplacés et nommés, sans suppression.", "Sorting in progress: unfiled files will be moved and named, nothing is deleted.")); }} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-paper-2"><Wand2 className="size-4" /> {t("Ranger les fichiers non classés", "Sort unfiled files")}</button>
+          <button onClick={async () => { await api(`/api/projects/${id}/classify`, { method: "POST" }); toast("ok", t("Classement local en cours : déplacement par règles dans les dossiers, noms conservés, sans suppression.", "Local sorting in progress: files are moved to folders using rules, names are preserved, nothing is deleted.")); }} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-paper-2"><Wand2 className="size-4" /> {t("Ranger les fichiers non classés", "Sort unfiled files")}</button>
           <button onClick={() => (setTrash(true), setQ(""))} className={cx("flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm", trash ? "bg-ink text-paper" : "hover:bg-paper-2")}><Trash2 className="size-4" /> {t("Corbeille", "Trash")}</button>
         </div>
       </Card>

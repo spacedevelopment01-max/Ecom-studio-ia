@@ -42,6 +42,10 @@ export const POST = handle(async (req: Request, ctx: ImgCtx) => {
     if (!copy) throw new HttpError(400, L("Ce visuel ne peut pas changer de format.", "This visual cannot change format."));
     return ok({ assetId: copy.id, url: `/api/files/${copy.id}` });
   }
+  // Ancien accord numérique : aucun devis signé ne fige encore source, demande et reprises.
+  const reason=L("Recomposition IA temporairement indisponible : le devis lié à votre demande et à cette source reste à préparer. L’aperçu local gratuit reste disponible.","AI recomposition is temporarily unavailable: a quote bound to your request and this source must be prepared. The free local preview remains available.");
+  if(['quote'].includes(b.action))return ok({ai:false,estimateMicro:0,pct:0,reason,consentBlocked:true});
+  if(['redo'].includes(b.action))throw new HttpError(409,reason,'image_edit_complex_consent_unavailable');
   // Devis au coût probable (un essai), dit en % du budget IA ; le plafond de la tâche permet les reprises.
   const estimateMicro = aiPostProbableMicro();
   const readiness=await publicationReadiness(p,1);

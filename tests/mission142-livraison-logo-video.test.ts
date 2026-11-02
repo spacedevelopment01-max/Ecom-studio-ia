@@ -66,13 +66,13 @@ it("aucun logo ni série : ne pas afficher une création terminée",async()=>{
 it("ancienne tâche brand.logo : aucune nouvelle proposition ne devient un succès vide",async()=>{
  const{u,pid}=await fixture();expect((await execute("brand.logo",pid,u.id,{regenerate:true})).status).toBe("failed");
 });
-it("ancienne tâche brand.logo : proposition accessible, logo fourni préservé et choix encore requis",async()=>{
+it("ancienne tâche brand.logo sans consentement : achat refusé, proposition acquise et logo fourni conservés",async()=>{
  const{u,pid}=await fixture();const{loadProject,saveBrand}=await import("@/lib/projects");
  const data=await sharp({create:{width:32,height:32,channels:3,background:"#243f32"}}).png().toBuffer();
  const old=await saveAsset({projectId:pid,userId:u.id,data,name:"logo-fourni-test.png",mime:"image/png",role:"logo",origin:"upload",status:"approved"});
  const brand=loadProject(pid).brand!;saveBrand(pid,{...brand,validated:[...brand.validated??[],"logo"],logo:{...brand.logo,assetId:old.id,status:"provided",proposalId:old.id}});
  const proposal=await saveAsset({projectId:pid,userId:u.id,data,name:"nouvelle-proposition-test.png",mime:"image/png",role:"logo-v2",origin:"generated",status:"review",meta:{gate:{verdict:"FINAL"}}});output.logo=proposal.id;
- const j=await execute("brand.logo",pid,u.id,{regenerate:true});expect(j.status).toBe("done");expect(JSON.parse(j.result!).delivery.assetIds).toContain(proposal.id);expect(loadProject(pid).brand!.logo.assetId).toBe(old.id);expect(getAsset(proposal.id)!.status).toBe("review");
+ const j=await execute("brand.logo",pid,u.id,{regenerate:true});expect(j.status).toBe("failed");expect(j.error).toMatch(/autorisation économique/);expect(loadProject(pid).brand!.logo.assetId).toBe(old.id);expect(getAsset(proposal.id)!.status).toBe("review");
 });
 it("une vidéo réellement encodée reste livrée à vérifier, sans promotion du verdict",async()=>{
  const{u,pid}=await fixture(),dir=tmpDir("test142-video-livrable"),file=path.join(dir,"test.mp4");
@@ -82,9 +82,9 @@ it("une vidéo réellement encodée reste livrée à vérifier, sans promotion d
   const j=await execute("video.v2",pid,u.id,{request:{render:true}});expect(j.status).toBe("done");expect(JSON.parse(j.result!).delivery.state).toBe("review");expect(getAsset(a.id)!.status).toBe("review");
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
-it.each(["brand.logo.v2","brand.logo.v2.redraw"])("%s : un vrai logo enregistré reste accessible à choisir",async type=>{
+it.each(["brand.logo.v2","brand.logo.v2.redraw"])("%s : un fichier préexistant ne remplace pas le consentement économique",async type=>{
  const{u,pid}=await fixture();const a=await saveAsset({projectId:pid,userId:u.id,data:await sharp({create:{width:32,height:32,channels:3,background:"#243f32"}}).png().toBuffer(),name:"logo-test.png",mime:"image/png",role:"logo-v2",origin:"generated",status:"review",meta:{gate:{verdict:"FINAL"}}});output.logo=a.id;
- const j=await execute(type,pid,u.id,{assetId:a.id});expect(j.status).toBe("done");expect(JSON.parse(j.result!).delivery.assetIds).toContain(a.id);expect(getAsset(a.id)!.status).toBe("review");
+ const j=await execute(type,pid,u.id,{assetId:a.id});expect(j.status).toBe("failed");expect(j.error).toMatch(/Autorisation économique/);expect(getAsset(a.id)!.status).toBe("review");
 });
 it("document seul : succès seulement s'il est réellement enregistré, sans prétendre livrer un film",async()=>{
  const{u,pid}=await fixture();const{loadProject}=await import("@/lib/projects");const{buildSceneDoc,localScenePlan}=await import("@/lib/video-v2/three-scenes");const{saveVideoVersion}=await import("@/lib/video-v2/store");const p=loadProject(pid);
