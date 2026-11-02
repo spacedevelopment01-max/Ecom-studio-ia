@@ -167,15 +167,15 @@ describe("Logos : relais OpenAI et jamais zéro logo", async () => {
     expect(v.job).toMatchObject({ id: `stuck-${pid}`, stalled: true });
     // Relancer est refusé tant qu'elle est en cours, avec le moyen de s'en sortir…
     const busy = await route.POST(req({ action: "generate" }), ctx);
-    expect(busy.status).toBe(409);
-    expect(JSON.stringify(await busy.json())).toMatch(/Arrêter/);
+    expect(busy.status).toBe(400); // Unsigned requests never bypass economic consent, even while a job is stuck.
+    expect(one<{status:string}>("SELECT status FROM jobs WHERE id=?",`stuck-${pid}`)!.status).toBe("queued");
     // … « Arrêter » l'annule et libère l'onglet.
     expect((await route.POST(req({ action: "stop" }), ctx)).status).toBe(200);
     expect(one<{ status: string }>("SELECT status FROM jobs WHERE id = ?", `stuck-${pid}`)!.status).toBe("cancelled");
     // Nouvelle politique : le bouton est libéré, mais aucun dessin sans le modèle obligatoire et un plafond connu.
-    const pending = await route.POST(req({ action: "generate" }), ctx);
-    expect(pending.status).toBe(409);
-    expect(JSON.stringify(await pending.json())).toMatch(/en attente/);
+    const pending = await route.POST(req({ action: "quote", operation:"generate" }), ctx);
+    expect(pending.status).toBe(402); // The native plan/budget guard precedes any supplier request.
+    expect(JSON.stringify(await pending.json())).toMatch(/forfait|budget|IA/);
     run("UPDATE worker_heartbeat SET beat_at = ?", now());
   });
 });

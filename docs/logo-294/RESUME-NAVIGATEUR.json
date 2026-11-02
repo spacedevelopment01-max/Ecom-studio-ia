@@ -1,0 +1,41 @@
+{
+  "runtime": {
+    "commit": "6cf1c641ef752a86b0768c0bcdf9e9037b6c35b7",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "checks": [
+    "native_quote_cancel_zero_job_zero_spend",
+    "lost_response_after_enqueue_exact_same_request_retry",
+    "explicit_double_click_one_job_no_spend_before_worker",
+    "simulated_worker_native_receipt_three_saved_directions",
+    "validated_identity_unchanged",
+    "refresh_preserves_results"
+  ],
+  "http": [
+    {
+      "action": "quote",
+      "status": 200
+    },
+    {
+      "action": "quote",
+      "status": 200
+    },
+    {
+      "action": "generate",
+      "status": 200
+    }
+  ],
+  "captures": [
+    "desktop-devis.png",
+    "mobile-devis.png",
+    "desktop-reponse-perdue.png",
+    "desktop-resultat.png"
+  ],
+  "providerCallsReal": 0,
+  "costRealEur": 0,
+  "simulatedBilledMicro": 150,
+  "errors": []
+}

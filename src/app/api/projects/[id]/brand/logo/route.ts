@@ -1,4 +1,3 @@
-import { currentSeries, seriesRights } from "@/lib/logo-v2/direction-series";
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
@@ -68,6 +67,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   if (p.brand.logo.status === "provided") throw new HttpError(409, L("Votre logo est conservé tel quel. Supprimez-le des fichiers pour recevoir des propositions.", "Your logo is kept as is. Delete it from your files to receive proposals."));
   const b = await body(req, z.object({ proposalId: z.string().max(40).optional(), regenerate: z.boolean().optional(), replace: z.boolean().optional() }));
   const props = latestProposals(p.id);
+  if(b.proposalId&&!b.regenerate&&!props.some(x=>x.id===b.proposalId))throw new HttpError(404,"Piste introuvable.");
   // Logo validé : une autre piste ne le remplace que sur demande explicite (replace), et l'ancien choix devient historique.
   if (b.proposalId && !b.regenerate && isLocked(p.brand, "logo") && b.proposalId !== currentId(p)) {
     if (!b.replace) throw new HttpError(409, L("Votre logo est validé : confirmez que vous voulez le remplacer par cette piste.", "Your logo is validated: confirm that you want to replace it with this route."));
@@ -78,12 +78,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   // Nouvelles propositions : toujours Brand & Logo Engine V2 (l'ancien générateur de pistes ne crée plus rien) ;
   // les anciennes pistes restent consultables et peuvent encore être choisies.
   if (regenerate) {
-    const rights = seriesRights(p.id);
-    if (rights.used && !rights.partial && !rights.canRenew) throw new HttpError(403, "Le droit de nouvelle série de votre forfait est utilisé.");
-    if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type IN ('brand.logo.v2','brand.logo.v2.choose','brand.logo.v2.redraw','brand.logo') AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Une création de logo est déjà en cours : attendez qu'elle se termine.", "A logo task is already running: wait for it to finish."));
-    const previous = currentSeries(p.id);
-    const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.logo.v2", idempotencyKey: `direction-series:${p.id}:${previous?.id ?? "initial"}:${previous?.attempts ?? 0}:false`, maxAttempts: 1, label: L("Logo : directions créatives", "Logo: creative directions"), payload: { projectId: p.id, expectedSeriesId: previous?.id ?? null, renew: !!rights.used && !rights.partial } });
-    return ok({ jobId: job.id, proposals: list(p.id), current: currentId(p), engine: "v2" });
+    throw new HttpError(409, L("Un devis logo et une confirmation explicite sont requis. Utilisez le devis Logo V2 ; aucun achat lancé.","A logo quote and explicit confirmation are required. Use the Logo V2 quote; no purchase started."),"logo_consent_required");
   }
   if (regenerate && props.length >= MAX_ROUTES) throw new HttpError(409, L(`Vous avez déjà ${MAX_ROUTES} pistes : supprimez-en une pour en créer une nouvelle.`, `You already have ${MAX_ROUTES} routes: delete one to create a new one.`));
   if (!regenerate && !props.some((x) => x.id === b.proposalId)) throw new HttpError(404, L("Piste introuvable.", "Route not found."));

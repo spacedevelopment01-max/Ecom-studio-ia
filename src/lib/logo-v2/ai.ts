@@ -13,7 +13,8 @@ import { FONT_HANDLES } from "../theme/render";
  *    adaptés au style.
  * Le routage passe par le Router V2 (tâche + capacité), le contexte par le scope « logo » du Project Brain.
  */
-import type { JobContext } from "../jobs";
+import {UserFacingError,type JobContext} from "../jobs";
+import {one} from "../db";
 import { llmJson,type LlmCall } from "../ai/llm";
 import { imageUnavailableReason, logoQualityRelay, mediaRouteFor } from "../ai/media-providers";
 import { L, uiLang } from "../i18n-server";
@@ -125,13 +126,16 @@ Langue de « issues » et « fix.instruction » : ${"langue de l'interface"}.`;
 /** IA réelle (studio et benchmark). */
 export function realLogoV2Ai(ctx: JobContext | null, b: { userId: string; projectId: string;singleCall?:boolean;exactInstructions?:string;beforeArtworkRequest?:(input:{prompt:string;territoryId:string;relay:boolean})=>void;beforeRequest?:(call:LlmCall,schema:z.ZodType)=>void;expectedImageRoute?:{provider:string;model:string};expectedRoutes?:Partial<Record<'logo_symbol'|'quality_control',NonNullable<LlmCall['expectedRoute']>>> }): LogoV2Ai {
   const base = { userId: b.userId, projectId: b.projectId, jobId: ctx?.job.id ?? null };
+  const checkKnownResult=()=>{if(one("SELECT id FROM ai_reservations WHERE project_id=? AND status='uncertain' AND job_id IN (SELECT id FROM jobs WHERE project_id=? AND (type LIKE 'brand.%' OR (type='project.prepare' AND json_extract(payload,'$.action')='logo')))",b.projectId,b.projectId))throw new UserFacingError("Résultat fournisseur incertain : aucun appel logo supplémentaire avant rapprochement.");};
   const key = (k: string) => (ctx ? `${ctx.job.id}:logo-v2:${k}` : undefined);
   return {
     async territories(brief,n,avoid){
+      checkKnownResult();
       const schema=logoTerritoriesSchema(),call={...logoTerritoriesRequest(brief,n,avoid,{...base,usageKey:key("territories")}),...(b.expectedRoutes?.logo_symbol?{expectedRoute:b.expectedRoutes.logo_symbol}:{})};
       b.beforeRequest?.(call,schema);const r=await llmJson(call,schema,{strict:!!b.singleCall});return r.territories;
     },
     async drawSymbol(t, brief, feedback, concept) {
+      checkKnownResult();
       return llmJson(
         {
           task: "logo_symbol",
@@ -150,6 +154,7 @@ export function realLogoV2Ai(ctx: JobContext | null, b: { userId: string; projec
       );
     },
     async exploreSymbol(t, _brief, feedback) {
+      checkKnownResult();
       const { imageProviderAvailable, logoSymbolImage } = await import("../ai/media-providers");
       if (!imageProviderAvailable({ usage: "logo" }) || !t.symbolIdea) return null;
       return logoSymbolImage({ ...base, usageKey: key(`explore:${t.id}${feedback ? `:r${feedback.length}` : ""}`) }, { concept: `${t.symbolIdea}. ${t.distinctive}${feedback ? ` Corrige ces défauts de la version précédente : ${feedback}` : ""}` });
@@ -168,17 +173,20 @@ export function realLogoV2Ai(ctx: JobContext | null, b: { userId: string; projec
       return logoQualityRelay() ?? { unavailable: L("relais OpenAI indisponible (clé OpenAI absente ou désactivée, ou tarif inconnu)", "OpenAI relay unavailable (OpenAI key missing or disabled, or unknown price)") };
     },
     async drawArtworkRelay(t, brief, feedback) {
+      checkKnownResult();
       const { logoArtworkRelayImage } = await import("../ai/media-providers");
       const prompt=artworkPrompt(t,brief,feedback,b.exactInstructions);b.beforeArtworkRequest?.({prompt,territoryId:t.id,relay:true});
       return logoArtworkRelayImage({ ...base, usageKey: key(`relay:${t.id}${feedback ? `:r${feedback.length}` : ""}`) }, { prompt });
     },
     async drawArtwork(t, brief, feedback) {
+      checkKnownResult();
       const { logoArtworkImage } = await import("../ai/media-providers");
       const prompt=artworkPrompt(t,brief,feedback,b.exactInstructions);b.beforeArtworkRequest?.({prompt,territoryId:t.id,relay:false});
       const draw=()=>logoArtworkImage({ ...base, usageKey: key(`art:${t.id}${feedback ? `:r${feedback.length}` : ""}`) }, { prompt });
       return b.expectedImageRoute?(await import("../ai/media-providers")).withQuotedImageRoute(b.expectedImageRoute,draw):draw();
     },
     async reviewArtwork(board,t,brief,expected){
+      checkKnownResult();
       // Même palette et mêmes associations que la carte/planche. Relecture existante,
       // sans nouvel appel séparé et toujours sous les plafonds du contrôle qualité.
       const paletteBoard = t.identity ? await renderDirectionPreview(expected.name, { id: t.id, logoId: "", label: t.name, concept: t.concept, identity: t.identity, territory: t, version: 1 }, board) : null;
@@ -188,6 +196,7 @@ export function realLogoV2Ai(ctx: JobContext | null, b: { userId: string; projec
       b.beforeRequest?.(call,schema);return llmJson(call,schema,{strict:!!b.singleCall})as Promise<ArtworkReview>;
     },
     async review(board, t, brief, expected) {
+      checkKnownResult();
       return llmJson(
         {
           task: "quality_control",
