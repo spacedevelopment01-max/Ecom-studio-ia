@@ -182,7 +182,7 @@ describe("B1 — mot de passe", () => {
 });
 
 describe("I7 — découverte gratuite : images, vidéos et UGC réservées aux forfaits", () => {
-  it("402 clair sans forfait, accepté avec un forfait", async () => {
+  it("402 clair sans forfait, devis obligatoire sur l'ancien POST images même avec forfait", async () => {
     const images = (await import("@/app/api/projects/[id]/images/route")).POST;
     const videos = (await import("@/app/api/projects/[id]/videos/route")).POST;
     const ugc = (await import("@/app/api/projects/[id]/ugc/route")).POST;
@@ -198,10 +198,9 @@ describe("I7 — découverte gratuite : images, vidéos et UGC réservées aux f
     }
     withPlan(u.id);
     const ok = await images(post(`/api/projects/${pid}/images`, { mode: "single", kind: "banner" }), ctx({ id: pid }));
-    expect(ok.status).toBe(200);
-    // M6 : libellé lisible, jamais la clé interne.
-    const job = one<{ label: string }>("SELECT label FROM jobs WHERE id = ?", (await ok.json()).jobId)!;
-    expect(job.label).toBe("Bannière");
+    expect(ok.status).toBe(409);
+    expect((await ok.json()).code).toBe('image_consent_required');
+    expect(one('SELECT id FROM jobs WHERE project_id=?',pid)).toBeUndefined();
     // Migration V2 : l'ancien moteur vidéo ne produit plus rien (410) ; le moteur V2 accepte la demande avec un forfait.
     expect((await videos(post(`/api/projects/${pid}/videos`, { format: "9:16" }), ctx({ id: pid }))).status).toBe(410);
     withPlan(u.id,"dominer");
