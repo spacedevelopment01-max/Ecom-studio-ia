@@ -6,7 +6,7 @@ import { body, handle, ok } from "@/lib/http";
 import { fillPrompt } from "@/lib/prompts-library";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { promptVars } from "@/lib/prompt-vars";
-import { runForUser } from "@/lib/ai/access";
+import { assertAiAllowed, runForUser } from "@/lib/ai/access";
 import { llmConfigured, llmText } from "@/lib/ai/llm";
 import { projectContext } from "@/lib/ai/context";
 import { charter } from "@/lib/ai/prompts";
@@ -37,6 +37,9 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     if (!llmConfigured()) {
       throw new HttpError(402, L("Lancer un prompt utilise l'IA : c'est inclus dans les forfaits. En découverte gratuite, copiez-le et utilisez-le dans votre propre assistant IA.", "Running a prompt uses AI, which comes with the plans. In the free discovery, copy it and use it in your own AI assistant."));
     }
+    assertAiAllowed(user.id, p.id);
+    // Le clic natif ne fournit pas de devis serveur lié au prompt et au contexte, ni de reçu rejouable.
+    throw new HttpError(409, L("Exécution IA indisponible : un devis lié à ce prompt et votre confirmation sont nécessaires. Vous pouvez toujours compléter, copier et modifier vos prompts gratuitement.", "AI execution unavailable: a quote bound to this prompt and your confirmation are required. You can still complete, copy and edit your prompts for free."), "prompt_run_consent_unavailable");
     rateHit(rateKey);
     return llmText({
       task: "copywriting",
