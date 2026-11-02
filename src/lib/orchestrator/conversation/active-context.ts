@@ -6,7 +6,7 @@ import {containerOf,sectionSchema} from '../../theme/spec';
 import {themeTargetPaths} from './theme-tool-context';
 import {routeFor} from '../../theme/render';
 import {L} from '../../i18n-server';
-import {stableHash} from '../../brain/hash';
+import {stableHash,canonicalJSON} from '../../brain/hash';
 import {ActiveContextSchema,type ActiveContext} from './active-context-contract';
 import type {ConversationRow} from './contract';
 import {conversationCatalogueEnabled,conversationContextEnabled} from './tool-flags';
@@ -16,11 +16,28 @@ import {managedSections} from '../../contenus';
 import {createHash} from 'node:crypto';
 export const activeContextEnabled=conversationContextEnabled;
 const missing=()=>new HttpError(404,L('Cette cible est introuvable dans ce projet. Rien n’a été modifié.','This target was not found in this project. Nothing changed.'),'conversation_target_not_found');
+export const siteRequestsEnabled=()=>activeContextEnabled()&&process.env.STUDIO_CONVERSATION_SITE_REQUESTS==='1';
+export type NativeSiteRequestRecord={id:string;project_id:string;publication_id:string;hostname:string;page:string;fields:string;email:string|null;ip_hash:string;created_at:number;read_at:number|null;handled_at:number|null;kind:string|null;notified:string};
+/** Source complète pour le pin, jamais projetée comme texte ou fait dans le contexte cognitif. */
+export function nativeSiteRequest(c:Pick<ConversationRow,'project_id'|'user_id'>,requestId:string){
+ if(!c.project_id||!one("SELECT 1 FROM sqlite_master WHERE type='table' AND name='site_requests'"))throw missing();
+ const row=one<NativeSiteRequestRecord>('SELECT r.* FROM site_requests r JOIN projects p ON p.id=r.project_id WHERE r.id=? AND r.project_id=? AND p.user_id=? AND p.archived=0 AND p.hidden=0',requestId,c.project_id,c.user_id);
+ if(!row)throw missing();
+ const {notified,...business}=row;
+ return{row,fingerprint:createHash('sha256').update(canonicalJSON({schema:'native-site-request-1',...business})).digest('hex')};
+}
 function resolveNativeContext(c:ConversationRow,raw:unknown){
  const selected=ActiveContextSchema.parse(raw),target=selected.target;
  if(selected.projectId&&selected.projectId!==c.project_id)throw missing();
  if(!target)return{selection:selected,kind:'tab' as const,label:selected.tab,contentRead:false};
  if(!c.project_id)throw missing();
+ if(target.kind==='site-request'){
+  if(selected.tab!=='boutique'||!siteRequestsEnabled())throw missing();
+  const {row,fingerprint}=nativeSiteRequest(c,target.requestId);
+  if(target.fingerprint!==fingerprint)throw new HttpError(409,L('Cette demande a changé. Revalidez sa référence exacte.','This request changed. Revalidate its exact reference.'),'conversation_target_stale');
+  // Métadonnées seulement : aucun nom, e-mail, message, page ou champ entrant dans observedActiveContext/IA.
+  return{selection:selected,kind:'site-request' as const,label:L('Demande reçue désignée','Selected received request'),isCurrent:true,contentRead:false,request:{id:row.id,kind:row.kind==='devis'?'devis' as const:'contact' as const,createdAt:row.created_at,readAt:row.read_at,handledAt:row.handled_at,fingerprint},sourceNative:{table:'site_requests' as const,projectId:c.project_id,id:row.id},inboundContentExcluded:true as const};
+ }
  if(target.kind==='catalogue-product'||target.kind==='catalogue-variant'){
   if(selected.tab!=='catalogue'||!conversationCatalogueEnabled())throw missing();
   if(!one("SELECT 1 FROM sqlite_master WHERE type='table' AND name='studio_products'")||!one('SELECT 1 FROM studio_products WHERE id=? AND project_id=?',target.productId,c.project_id))throw missing();
@@ -77,7 +94,7 @@ function resolveNativeContext(c:ConversationRow,raw:unknown){
 export function resolveActiveContext(c:ConversationRow,raw:unknown){
  if(c.project_id){const user=one<User>('SELECT * FROM users WHERE id=?',c.user_id);if(!user)throw missing();ownedProject(user,c.project_id);requirePlan(user,c.project_id);}
  const r=resolveNativeContext(c,raw),target=r.selection.target;
- return{...r,canonical:{schema:'studio-native-target-2' as const,projectId:c.project_id,tab:r.selection.tab,kind:r.kind,identity:stableHash('native-object-identity-2',{kind:r.kind,...(target&&'template'in target?{template:target.template,section:'section'in target?target.section:null,block:'block'in target?target.block??null:null,key:'key'in target?target.key:null,sectionType:'sectionType'in r?r.sectionType:null,blockType:'blockType'in r?r.blockType:null,fieldType:'fieldType'in r?r.fieldType:null}:target?.kind==='asset'?{assetId:target.assetId}:target?{productId:'productId'in target?target.productId:null,variantId:'variantId'in target?target.variantId:null,path:'path'in target?target.path:null}: {})}),sourceFingerprint:stableHash('native-target-content-2',r),provenance:'server_native_read' as const,authorizationGranted:false as const}};
+ return{...r,canonical:{schema:'studio-native-target-2' as const,projectId:c.project_id,tab:r.selection.tab,kind:r.kind,identity:stableHash('native-object-identity-2',{kind:r.kind,...(target&&'template'in target?{template:target.template,section:'section'in target?target.section:null,block:'block'in target?target.block??null:null,key:'key'in target?target.key:null,sectionType:'sectionType'in r?r.sectionType:null,blockType:'blockType'in r?r.blockType:null,fieldType:'fieldType'in r?r.fieldType:null}:target?.kind==='site-request'?{requestId:target.requestId}:target?.kind==='asset'?{assetId:target.assetId}:target?{productId:'productId'in target?target.productId:null,variantId:'variantId'in target?target.variantId:null,path:'path'in target?target.path:null}: {})}),sourceFingerprint:stableHash('native-target-content-2',r),provenance:'server_native_read' as const,authorizationGranted:false as const}};
 }
 export function observedActiveContext(c:ConversationRow,selection?:ActiveContext){
  if(!selection)return null;

@@ -3,6 +3,7 @@ import {z} from 'zod';
 const id=z.string().min(1).max(120);
 export const ActiveTabSchema=z.enum(['pilote','produit','strategie','marque','boutique','catalogue','biens','carte','realisations','rendez-vous','images','videos','publications','calendrier','publicites','blog','prompts','fichiers','connexions']);
 export const ActiveTargetSchema=z.discriminatedUnion('kind',[
+ z.object({kind:z.literal('site-request'),requestId:id,fingerprint:z.string().regex(/^[a-f0-9]{64}$/)}).strict(),
  z.object({kind:z.literal('catalogue-product'),productId:id,version:z.number().int().positive()}).strict(),
  z.object({kind:z.literal('catalogue-variant'),productId:id,productVersion:z.number().int().positive(),variantId:id,version:z.number().int().positive()}).strict(),
  z.object({kind:z.literal('theme-page'),versionId:id,path:z.string().min(1).max(300)}).strict(),
