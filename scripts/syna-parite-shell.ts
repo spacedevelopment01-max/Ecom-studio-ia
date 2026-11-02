@@ -25,7 +25,8 @@ if (mode !== "encre" && mode !== "plein") throw Error("Mode attendu : encre ou p
 if (!out || !flags.length) throw Error("Usage : syna-parite-shell.ts <encre|plein> <dossier> <options…>");
 
 const dir = path.resolve("scripts");
-const prefix = "zz-parite-";
+// Préfixe unique : deux lanceurs en parallèle (Encre et Plein cadre) ne partagent jamais leurs copies.
+const prefix = `zz-parite-${mode}-${process.pid}-`;
 const sources = fs.readdirSync(dir).filter((f) => /^verify-agent211-.*\.ts$/.test(f));
 const rename = (s: string) => s.replace(/(["'`])\.\/verify-agent211-/g, `$1./${prefix}verify-agent211-`);
 const generated: string[] = [];
