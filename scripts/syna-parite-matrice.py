@@ -68,7 +68,7 @@ for k in ["SYNA_OK", "PARTIEL", "ECHEC", "ABSENT", "BLOQUE", "NON_TESTE"]:
     out.append(f"| {k if k != 'BLOQUE' else 'BLOQUE_CONNEXION_OU_CONSENTEMENT'} | {compte.get(k, 0)} |")
 out.append(f"| **Total** | **{total}** |")
 out.append("")
-out.append("Légende : ✓ recette réussie dans ce mode · ◐ partielle · ✗ échec · — non visée. « Encre » et « Plein » couvrent chacun l'ordinateur et le téléphone (les recettes de Codex enchaînent 1440 px puis 390 / 360 px).")
+out.append("Légende : ✓ recette réussie dans ce mode · ◐ partielle · ✗ échec · — non visée. « Encre » et « Plein » couvrent chacun l'ordinateur et le téléphone : les recettes de Codex enchaînent 1440 px (et souvent 1024 px) puis 390 / 360 px, sauf `blog-ui` et `closure-ui` (ordinateur seulement) et `retouches-ui` (téléphone 390 px pour la partie retouche).")
 out.append("")
 out.append("| Cap. | Opération | Libellé (matrice #302) | Recette(s) | Encre | Plein | Statut | Remarque |")
 out.append("|---|---|---|---|:-:|:-:|---|---|")
