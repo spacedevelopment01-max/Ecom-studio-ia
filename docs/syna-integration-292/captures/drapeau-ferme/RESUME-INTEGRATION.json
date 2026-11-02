@@ -2,7 +2,7 @@
   "schema": "syna-integration-recette-1",
   "closed": true,
   "runtime": {
-    "commit": "531ef3b5c904f1953bb922167eac048e875730cf",
+    "commit": "80f939219ebec4ae987a801065f3b8a284a96a13",
     "commitOrigin": "dev-start",
     "mode": "development",
     "tree": "clean",
@@ -57,5 +57,6 @@
     "historique-encre-products-telephone-390.png",
     "historique-plein-services-telephone-390.png"
   ],
-  "errors": []
+  "errors": [],
+  "designation17s": []
 }

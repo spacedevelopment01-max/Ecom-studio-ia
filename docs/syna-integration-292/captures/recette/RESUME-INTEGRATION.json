@@ -2,10 +2,10 @@
   "schema": "syna-integration-recette-1",
   "closed": false,
   "runtime": {
-    "commit": "531ef3b5c904f1953bb922167eac048e875730cf",
+    "commit": "80f939219ebec4ae987a801065f3b8a284a96a13",
     "commitOrigin": "dev-start",
     "mode": "development",
-    "tree": "modified",
+    "tree": "clean",
     "source": "dev-server"
   },
   "cases": [
@@ -192,16 +192,6 @@
         {
           "method": "POST",
           "endpoint": "native-restore",
-          "status": 200
-        },
-        {
-          "method": "GET",
-          "endpoint": "conversation",
-          "status": 200
-        },
-        {
-          "method": "GET",
-          "endpoint": "conversation",
           "status": 200
         },
         {
@@ -437,16 +427,6 @@
           "status": 200
         },
         {
-          "method": "GET",
-          "endpoint": "conversation",
-          "status": 200
-        },
-        {
-          "method": "GET",
-          "endpoint": "conversation",
-          "status": 200
-        },
-        {
           "method": "POST",
           "endpoint": "conversation",
           "status": 200
@@ -659,16 +639,6 @@
           "status": 200
         },
         {
-          "method": "GET",
-          "endpoint": "conversation",
-          "status": 200
-        },
-        {
-          "method": "GET",
-          "endpoint": "conversation",
-          "status": 200
-        },
-        {
           "method": "POST",
           "endpoint": "conversation",
           "status": 200
@@ -873,16 +843,6 @@
         {
           "method": "POST",
           "endpoint": "native-restore",
-          "status": 200
-        },
-        {
-          "method": "GET",
-          "endpoint": "conversation",
-          "status": 200
-        },
-        {
-          "method": "GET",
-          "endpoint": "conversation",
           "status": 200
         },
         {
@@ -1203,6 +1163,7 @@
     "encre-products-telephone-resultat.png",
     "encre-products-bascule-l-erreur-r-seau.png",
     "encre-products-bascule-le-conflit.png",
+    "encre-products-apres-revalidation-17s.png",
     "encre-services-bascule-le-diff-ouvert.png",
     "encre-services-ordinateur-confirmation.png",
     "encre-services-tablette-1024-confirmation.png",
@@ -1213,6 +1174,7 @@
     "encre-services-telephone-resultat.png",
     "encre-services-bascule-l-erreur-r-seau.png",
     "encre-services-bascule-le-conflit.png",
+    "encre-services-apres-revalidation-17s.png",
     "plein-products-bascule-le-diff-ouvert.png",
     "plein-products-ordinateur-confirmation.png",
     "plein-products-tablette-1024-confirmation.png",
@@ -1223,6 +1185,7 @@
     "plein-products-telephone-resultat.png",
     "plein-products-bascule-l-erreur-r-seau.png",
     "plein-products-bascule-le-conflit.png",
+    "plein-products-apres-revalidation-17s.png",
     "plein-services-bascule-le-diff-ouvert.png",
     "plein-services-ordinateur-confirmation.png",
     "plein-services-tablette-1024-confirmation.png",
@@ -1233,8 +1196,51 @@
     "plein-services-telephone-resultat.png",
     "plein-services-bascule-l-erreur-r-seau.png",
     "plein-services-bascule-le-conflit.png",
+    "plein-services-apres-revalidation-17s.png",
     "historique-encre-products-telephone-390.png",
     "historique-plein-services-telephone-390.png"
   ],
-  "errors": []
+  "errors": [],
+  "designation17s": [
+    {
+      "case": "encre-products",
+      "step": "revalidation",
+      "after": "Section désignée : Image et texte"
+    },
+    {
+      "case": "encre-products",
+      "step": "restauration",
+      "after": "Section désignée : Titre · Un aperçu natif, une conversation commune."
+    },
+    {
+      "case": "encre-services",
+      "step": "revalidation",
+      "after": "Section désignée : Titre · Un titre gratuit pour nos prestations votre histoire."
+    },
+    {
+      "case": "encre-services",
+      "step": "restauration",
+      "after": "Section désignée : Titre · Votre instrument, votre histoire."
+    },
+    {
+      "case": "plein-products",
+      "step": "revalidation",
+      "after": "Section désignée : Titre · Un titre gratuit pour notre collection"
+    },
+    {
+      "case": "plein-products",
+      "step": "restauration",
+      "after": "Section désignée : Titre · Un aperçu natif, une conversation commune."
+    },
+    {
+      "case": "plein-services",
+      "step": "revalidation",
+      "after": "Section désignée : Titre · Un titre gratuit pour nos prestations votre histoire."
+    },
+    {
+      "case": "plein-services",
+      "step": "restauration",
+      "after": "Section désignée : Titre · Votre instrument, votre histoire."
+    }
+  ]
 }

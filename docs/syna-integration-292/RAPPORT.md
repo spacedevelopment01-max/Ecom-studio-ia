@@ -10,19 +10,22 @@ aucune donnée client n'est utilisée, aucun fournisseur d'IA n'est appelé (**c
 | Base | `main` | `37fcfd25` | — |
 | Pile Codex, une seule fois par ascendance | A1 #286 → A2 #287 → B1 #289 → confirmation gratuite #291 → contrat CI #296 → GET Logos #297 | tête `aaff6ae7` | verte, [run 41249279133](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41249279133) |
 | Pile Claude, une seule fois par ascendance | lot 0 #288 → lot 1 #290 → lot 1 bis #293 | tête `101d6713` | verte, [run 41237201521](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41237201521) |
-| Hors recette | correctif logos #295 | — | rouge, volontairement exclu |
+| **Correctif Codex #300** (désignation conservée après l'actualisation) | `git cherry-pick -x c2fbeb9d` | `64adddd7` | verte sur #300, [run 41448390271](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41448390271) |
+| Hors recette | #295 et #298 (logos) | — | volontairement exclus |
 
-- **Fusions** : `faed1dcb` (Codex), puis `531ef3b5` (Claude), toutes deux `--no-ff` avec message de traçabilité.
-- **Conflits : aucun.** Les deux piles ne modifient **aucun fichier commun**.
+- **Fusions** : `faed1dcb` (Codex), puis `531ef3b5` (Claude), toutes deux `--no-ff` avec message de traçabilité, puis
+  le cherry-pick de #300 (`64adddd7`).
+- **Conflits : aucun.** Les deux piles ne modifient **aucun fichier commun** ; #300 s'applique tel quel.
   - La coquille Encre / Plein cadre rend **un seul** `ConversationPanel` : celui de Codex, avec sa confirmation gratuite (`useLocalSiteConfirmation`, `conversation-local-site.tsx`).
   - La sélection A2, les handlers `confirm-local`, la relecture d'aperçu, la lecture seule A1, les reçus et les droits sont donc **repris tels quels**.
   - Les préférences des deux modes (table `studio_ui_prefs`, route `/api/studio/ui-prefs`) et `shop.chat` sont intacts.
 - **Ajouts de cette branche** :
-  - deux scripts de recette, un test, ce dossier ;
+  - scripts de recette (`syna-integration-recette.ts`, `syna-integration-designation.ts`), lanceur de parité #301
+    (`syna-parite-shell.ts`), un test, ce dossier ;
   - **un correctif d'affichage** trouvé par la recette (§ 2) : en Plein cadre sur tablette, la barre de commande
     recouvrait le bas de la feuille SYNA. Il est dans `syna-shell.css` (code de Claude), à reporter dans #293 après
     validation.
-- Aucune ligne du moteur de Codex n'est modifiée.
+- Aucune ligne du moteur de Codex n'est modifiée par Claude.
 
 ## 2. Recette des deux modes avec le moteur SYNA réel (`scripts/syna-integration-recette.ts`)
 
@@ -30,15 +33,15 @@ Le parcours reprend celui de Codex (`verify-syna284-b1-confirmation-ui.ts`), **a
 coquille.
 
 Conditions :
-- vrai Next.js, moteur SYNA réel (A1/A2/B1/#291) ;
+- vrai Next.js, moteur SYNA réel (A1/A2/B1/#291/#300) ;
 - drapeaux ouverts **dans ce processus seulement** ;
 - stockage temporaire isolé, clés vides, réseau hors boucle locale refusé (serveur et navigateur) ;
 - projets fictifs.
 
 Combinaisons : 2 métiers (boutique, services) × 2 modes (Encre, Plein cadre).
 
-**Résultat sur le SHA intégré : 6 cas sur 6 réussis, 0 erreur JavaScript, 0 requête interdite. `ai_calls`, `jobs`,
-`usage_events` = 0.**
+**Résultat sur la tête avec #300 (`80f93921`) : 6 cas sur 6 réussis, 0 erreur JavaScript, 0 requête interdite.
+`ai_calls`, `jobs`, `usage_events` = 0.** La recette ne contient **aucun contournement** de l'actualisation automatique.
 
 | Étape du parcours | Encre | Plein cadre |
 |---|---|---|
@@ -50,8 +53,10 @@ Combinaisons : 2 métiers (boutique, services) × 2 modes (Encre, Plein cadre).
 | Confirmation en **double clic** : **une seule** version, titre visible dans l'aperçu, conservé après rechargement | ✓ | ✓ |
 | Déplacement d'une section : réponse réseau perdue **après** l'enregistrement, reprise avec **un corps identique**, une seule version, ordre vérifié dans l'aperçu | ✓ | ✓ |
 | ZIP Shopify : seul `templates/index.json` change ; empreintes métier identiques | ✓ | ✓ |
-| Conflit N→N+1 : l'ancien accord n'écrase rien, revalidation explicite, nouvelle proposition | ✓ | ✓ |
+| Conflit N→N+1 : l'ancien accord n'écrase rien, revalidation explicite | ✓ | ✓ |
+| **17 s réelles après « Revalider »** : la section est toujours désignée, puis nouvelle proposition gratuite confirmée | ✓ | ✓ |
 | Restauration manuelle native : retour exact à l'état initial, anciennes versions intactes, autres projets intacts | ✓ | ✓ |
+| **17 s réelles après la restauration** et une nouvelle désignation : la section est toujours désignée | ✓ | ✓ |
 | Droits retirés entre la proposition et le clic : refus, aucune version | ✓ | ✓ |
 | Captures 1440, **1024**, 390, 360 px, sans débordement horizontal | ✓ | ✓ |
 | Projet historique A1 : « Contexte existant · lecture seule », aucune retouche ni devis (téléphone) | ✓ | ✓ |
@@ -72,80 +77,56 @@ le conflit.
 Sur tablette (1024 à 1279 px) en Plein cadre, la feuille SYNA descendait jusqu'en bas de l'écran. La barre « Demandez
 à Syna… », placée au-dessus d'elle, recouvrait sa zone de saisie et le bouton « Enregistrer ».
 - **Correction** : la feuille s'arrête au-dessus de la barre (`syna-shell.css`, une règle).
-- **Couverture** : la recette vérifie désormais, à chaque taille en Plein cadre, que la barre ne recouvre jamais la
-  feuille ; un test unitaire (`tests/syna-integration-292.test.ts`) fixe la règle.
+- **Couverture** : la recette vérifie, à chaque taille en Plein cadre, que la barre ne recouvre jamais la feuille ; un
+  test unitaire (`tests/syna-integration-292.test.ts`) fixe la règle.
 - Le téléphone et l'ordinateur n'étaient pas touchés.
 
-### Autres vérifications
-- **Retouche gratuite fermée** (`SYNA_UI_CLOSED=1`, 4 cas + 2 historiques) : **réussi**.
-  - Le message « Les retouches gratuites ne sont pas activées ici. Aucun appel IA lancé. » s'affiche.
-  - Aucun bouton de confirmation mort, aucun repli payant, version inchangée.
-  - Historiques en lecture seule ; 0 appel IA.
-- **Interface actuelle** (coquille fermée) : `scripts/verify-syna284-b1-confirmation-ui.ts` de Codex, **identique à
-  #297**, rejoué sur le SHA intégré : **échec 2 fois sur 2**, et **aussi sur la pile Codex seule** (`aaff6ae7`, sans
-  aucun fichier de Claude). Cause : le défaut de désignation du § 3.
-  - Passages 1 et 2 sur le SHA intégré : arrêt à l'étape « droits retirés », juste après la restauration. La
-    désignation est devenue « Page désignée : / », et SYNA répond « Désignez une section ».
-  - Pile Codex seule : arrêt à la nouvelle proposition après conflit. « Page désignée : / », bouton « Confirmer »
-    désactivé.
+### Autres vérifications (tête `80f93921`)
+- **Retouche gratuite fermée** (`SYNA_UI_CLOSED=1`, 4 cas + 2 historiques) : **6 sur 6**. Message « Les retouches
+  gratuites ne sont pas activées ici. Aucun appel IA lancé. », aucun bouton mort, aucun repli payant, version inchangée.
+- **Interface actuelle** (coquille fermée) : `scripts/verify-syna284-b1-confirmation-ui.ts` de Codex, rejoué tel quel :
+  **4 cas sur 4** (boutique, services, 2 historiques A1). Avant #300, il échouait 3 fois sur 3 en local
+  (`captures/codex-interface-actuelle/avant-correctif-300/`).
 
-  Sur la CI de Codex, ce script passe : le Studio compilé enchaîne les étapes plus vite que la relecture de 15 s. En
-  local, sur un serveur de développement plus lent, la relecture tombe au milieu. Preuves :
-  `captures/codex-interface-actuelle/` (DOM et capture au moment de l'échec).
-
-## 3. Désignation après l'actualisation automatique (consigne #292, point 4) — **BLOCAGE D'ACCEPTATION**
+## 3. Désignation après l'actualisation automatique (consigne #292, point 4) — **levé par #300**
 
 Script `scripts/syna-integration-designation.ts`, **sans contournement**. On attend volontairement 17 s, plus que la
 relecture du projet (`ProjectProvider` : 15 s au repos), puis on envoie « Remplace le titre de cette section par … ».
 
-| Situation | Passage 1, Encre | Passage 1, Plein cadre | Passage 2, Encre | Passage 2, Plein cadre |
-|---|---|---|---|---|
-| Témoin : aucune nouvelle version | ✓ conservée | ✓ | ✓ | ✓ |
-| Restauration, puis désignation **une fois l'aperçu à jour** (passage 2) | ✗ (passage 1 : désignation faite sur l'aperçu pas encore rafraîchi) | ✓ | ✓ | ✓ |
-| **Modification manuelle → « Revalider la cible actuelle » → attente** | **✗ « Page désignée : / »** | **✗** | ✓ | **✗** |
+| Situation | Avant #300 (2 passages) | Avec #300 (`80f93921`) |
+|---|---|---|
+| Témoin : aucune nouvelle version | conservée 4/4 | conservée, Encre ✓ Plein cadre ✓ |
+| Restauration, puis désignation sur l'aperçu à jour | conservée 2/2 | conservée, Encre ✓ Plein cadre ✓ |
+| **Modification manuelle → « Revalider la cible actuelle » → attente** | **perdue 3 fois sur 4** (« Page désignée : / ») | **conservée, Encre ✓ Plein cadre ✓**, puis proposition gratuite |
 
-**Défaut avéré, intermittent (3 échecs sur 4), indépendant du mode.** Déroulement :
-1. « Revalider » désigne bien la section sur la nouvelle version N+1.
-2. Au rafraîchissement suivant, l'onglet Boutique (`tab-boutique.tsx`, effet `selectionCurrent`, code de `main`)
-   recharge ses données.
-3. Il ne reconnaît pas cette désignation : sa sélection locale porte encore sur la version N.
-4. Il la remplace par « Page désignée : / ».
-5. La demande « … de cette section » reçoit alors « Désignez une section ou un champ natif » : **aucune écriture fausse**,
-   mais la personne doit redésigner.
+**Cause d'origine** : à l'actualisation suivante, l'effet `selectionCurrent` de `tab-boutique.tsx` remplaçait par la
+page la désignation que la revalidation venait de poser sur la nouvelle version. **Correctif #300 (Codex)** : il adopte
+la portée de version courante d'une désignation déjà revalidée, seulement si projet, onglet, page, modèle, section, bloc
+et version correspondent. Aucun garde de version, de droits ou de devis n'est relâché.
 
-Le défaut a été **reproduit aussi dans l'interface actuelle et sur la pile Codex seule**, sans la coquille :
-- le script de Codex avec une pause de 16 s avant « Revalider » ;
-- puis le script de Codex **non modifié**, qui échoue 3 fois sur 3 en local (§ 2). Captures : `captures/designation/`, résultats bruts : `RESUME-DESIGNATION-passage*.json`.
+Preuves : `captures/designation/avant-correctif-300/` et `captures/designation/apres-correctif-300/`, avec leurs
+`RESUME-DESIGNATION*.json`.
 
-Pour la restauration, il ne reste qu'une fenêtre courte : environ une seconde après le clic, l'aperçu montre encore
-l'ancienne version, et une désignation faite à cet instant est perdue au rafraîchissement.
+Limite restante (connue, non bloquante) : environ une seconde après le clic « Restaurer », l'aperçu montre encore
+l'ancienne version. Une désignation faite à cet instant précis porte sur l'ancienne version, et elle est retirée au
+rafraîchissement, comme le veulent les gardes de version. La personne qui désigne après l'affichage de l'aperçu à jour
+n'est pas concernée.
 
-**Les gardes de version ne sont pas assouplis.** La recette principale (§ 2) attend la relecture avant « Revalider »
-et recharge la page après la restauration. Ces attentes sont écrites et commentées dans le script : elles servent à
-tester les bascules, **elles ne valent pas acceptation de ce point**.
-
-**Correctif proposé à Codex** (isolé, à décider dans #292 / #284, **non appliqué ici**) : dans `tab-boutique.tsx`, ne
-pas remplacer par la page une désignation `theme-section` de SYNA qui porte **déjà sur la version affichée** (cas de la
-revalidation) ; l'adopter comme sélection locale. Les désignations réellement périmées continuent d'être retirées. À
-couvrir par un test qui attend plus de 15 s après « Revalider ».
-
-## 4. Tests et contrôles sur le SHA intégré
+## 4. Tests et contrôles sur la tête intégrée
 
 | Contrôle | Résultat |
 |---|---|
 | `npx tsc --noEmit` | aucune erreur |
-| Tests ciblés : `syna-lot0-*`, `syna-lot1-shell`, `syna-lot1bis-*`, `conversation284-*`, `local-site-confirmation-client`, `ci211-verdict-complet`, `plan-studio`, `fenetres-studio`, `hooks-avant-retour` | **15 fichiers, 214 tests sur 214**. Un premier lancement, fait pendant qu'une recette navigateur tournait, avait signalé 2 fichiers en échec sans aucun test en échec ; relancé seul : tout réussit |
-| `tests/syna-integration-292.test.ts` (nouveau) et tests de la coquille | réussis (27 sur 27) |
+| Tests ciblés : `syna-lot0-*`, `syna-lot1-shell`, `syna-lot1bis-*`, `syna-integration-292`, `preview-revalidated-scope` (#300), `conversation284-*`, `local-site-confirmation-client`, `ci211-verdict-complet`, `plan-studio`, `fenetres-studio`, `hooks-avant-retour` | **17 fichiers, 232 tests sur 232** |
 | `next build` | **réussi**, 62 pages (`NODE_OPTIONS=--max-old-space-size=6144` : limite de mémoire de ce conteneur) |
-| CI complète (4 contrôles + verdict) | **sur la PR brouillon de recette** : le statut exact est donné dans la PR et dans #292, jamais présumé |
+| CI complète (4 contrôles + verdict) | **sur la PR #299** : le statut exact est donné dans la PR et dans #292, jamais présumé |
 
 ## 5. Bilan
 
 | | |
 |---|---|
-| **Fait et vérifié** | intégration sans conflit ; Encre et Plein cadre avec le moteur SYNA réel ; modifications gratuites (titre, déplacement), « Gratuit — 0 € », double clic, reprise réseau, conflit, restauration, droits ; une seule conversation, conservée pendant 12 séries de bascules ; A1 en lecture seule ; drapeau fermé ; 0 appel IA ; ZIP ; compilation |
-| **Corrigé** | Plein cadre sur tablette : la barre de commande recouvrait la feuille SYNA (§ 2) |
-| **Blocage d'acceptation** | la désignation d'une section est perdue après une modification manuelle et « Revalider », à l'actualisation automatique (3 fois sur 4, les deux modes, et aussi sans la coquille) ; le script de Codex, non modifié, échoue en local pour la même raison. Correctif proposé à Codex (§ 3), non appliqué |
+| **Fait et vérifié** | intégration sans conflit, #300 compris ; Encre et Plein cadre avec le moteur SYNA réel ; modifications gratuites (titre, déplacement), « Gratuit — 0 € », double clic, reprise réseau, conflit, restauration, droits ; **section conservée 17 s après revalidation et restauration** ; une seule conversation, conservée pendant 12 séries de bascules ; A1 en lecture seule ; drapeau fermé ; interface actuelle ; 0 appel IA ; ZIP ; compilation |
+| **Corrigé** | Plein cadre sur tablette : la barre de commande recouvrait la feuille SYNA (Claude). Désignation perdue à l'actualisation (Codex, #300) |
 | **Non fait** | clavier virtuel, Safari, Firefox, lecteur d'écran, appareils réels |
 
 ## 6. Limites (non vérifié)
@@ -158,4 +139,5 @@ couvrir par un test qui attend plus de 15 s après « Revalider ».
 
 ## 7. Retour arrière
 Fermer la PR de recette et supprimer la branche `integration/syna-claude-codex-recette`. Les PR sources (#286, #287,
-#289, #291, #296, #297, #288, #290, #293) ne sont pas modifiées.
+#289, #291, #296, #297, #300, #288, #290, #293) ne sont pas modifiées. Pour retirer seulement #300 : `git revert` du
+commit `64adddd7`.
