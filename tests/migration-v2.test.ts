@@ -120,8 +120,9 @@ describe("migration V1 → V2 : moteurs réellement appelés", async () => {
     const images = await import("@/app/api/projects/[id]/images/route");
     expect((await images.POST(req(`/api/projects/${pid}/images`, { mode: "single", kind: "ad" }), ctx({ id: pid }))).status).toBe(410);
     const amb = await images.POST(req(`/api/projects/${pid}/images`, { mode: "single", kind: "scene", useAi: true, format: "landscape" }), ctx({ id: pid }));
-    expect((await amb.json()).engine).toBe("image-v2");
-    expect(one<{ type: string }>("SELECT type FROM jobs WHERE project_id = ? ORDER BY created_at DESC, rowid DESC LIMIT 1", pid)!.type).toBe("image.v2");
+    expect(amb.status).toBe(409);
+    expect((await amb.json()).code).toBe('image_consent_required');
+    expect(one("SELECT id FROM jobs WHERE project_id=? AND type='image.v2'",pid)).toBeUndefined();
     // Publications : création manuelle = Social V2 ; ancienne route : approbation d'une V2 refusée, copie V2.
     const posts = await import("@/app/api/projects/[id]/posts/route");
     const created = await (await posts.POST(req(`/api/projects/${pid}/posts`, { network: "instagram", format: "image", caption: "Bonjour" }), ctx({ id: pid }))).json();
