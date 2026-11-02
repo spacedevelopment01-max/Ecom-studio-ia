@@ -37,6 +37,9 @@ import { activeProviderKey, bearer, falAuth, FX_SAFETY, isGatewayKey, requirePri
 import { assertUnderCostCap, recordCall, redact } from "./trace";
 import { L } from "../i18n-server";
 import { getJsonSetting, setSetting } from "../settings";
+import { fileExists, putFile, readFileUnderCostCap, recordCall, redact } from "./trace";
+import { L } from "../i18n-server";
+import { getJsonSetting, setSetting } from "../settings";
 import { fileExists, putFile, readFile } from "../storage";
 import { route, type InputType, type RouteDecision } from "../orchestrator/router";
 import { balance } from "../billing";
@@ -454,6 +457,10 @@ export function routeMedia(task: "image_generation" | "video_generation", inputT
   }
   // Usage réglé explicitement : son choix (principal, secours) est respecté — aucun autre modèle en silence.
   if (usage && usageExplicit(usage)) return null;
+  // Besoin précis (nom écrit dans l'image, références, son, personnes) : l'ancien routeur ne connaît que « imageider, model: choice.model, tier: "strong", reason: choice.reason, fallback: choice.role === "backup", escalation: false, qualityTarget: null };
+  }
+  // Usage réglé explicitement : son choix (principal, secours) est respecté — aucun autre modèle en silence.
+  if (usage && usageExplicit(usage)) return null;
   // Besoin précis (nom écrit dans l'image, références, son, personnes) : l'ancien routeur ne connaît que « image »
   // ou « vidéo » et pourrait choisir un modèle incapable (ex. un logo payé avec un nom illisible). Aucun repli.
   if (need && (need.text || (need.references ?? 0) > 0 || need.audio || need.people)) return null;
@@ -513,9 +520,9 @@ export function withQuotedVideoRoute<T>(route:{provider:string;model:string},fn:
 }
 
 /** Borne d'UNE photographie, mêmes formules que sa réservation native. Aucune grille de prix parallèle. */
-export function photoRequestMaxMicro(route:{provider:string;model:string},input:{prompt:string;references:number;aspect:string}):number{
+export function photoRequestMaxMicro(route:{provider:string;model:string},input:{prompt:string;references:number;aspect:string;quality?:"medium"|"high"}):number{
   const size=input.aspect==='1:1'?'1024x1024':input.aspect==='16:9'?'1536x1024':'1024x1536';
-  const micro=route.provider==='openai'?openaiImageMax(route.model,{prompt:input.prompt,images:input.references,size,quality:'high'}):route.provider==='google'?geminiImageMax(route.model,{prompt:input.prompt,images:input.references}):cost(route.provider,route.model,{images:1,input:Buffer.byteLength(input.prompt,'utf8')}).micro;
+  const micro=route.provider==='openai'?openaiImageMax(route.model,{prompt:input.prompt,images:input.references,size,quality:input.quality??'high'}):route.provider==='google'?geminiImageMax(route.model,{prompt:input.prompt,images:input.references}):cost(route.provider,route.model,{images:1,input:Buffer.byteLength(input.prompt,'utf8')}).micro;
   return mediaReservationMaxMicro(micro);
 }
 
@@ -782,6 +789,14 @@ const clampBytes = (t: string, max: number) => {
 /**
  * Coût MAXIMAL d'un logo complet, calculé exactement comme la réservation faite avant l'appel (même modèle choisi
  * pour « Logos », même borne de la demande, même majoration) : sert au devis et au plafond de la série. null : aucun
+ * modèle d'images utilisable (aucun logo complet possible).
+ */
+export function logoArtworkMaxMicro(opts: { text?: boolean } = { text: true }): number | null {
+  const r = mediaRouteFor("logo", opts.text === false ? {} : { text: true });
+  if (!r) return null;
+  const prompt = "x".repeat(LOGO_PROMPT_MAX_BYTES);
+  const model = r.model;
+  const mic« Logos », même borne de la demande, même majoration) : sert au devis et au plafond de la série. null : aucun
  * modèle d'images utilisable (aucun logo complet possible).
  */
 export function logoArtworkMaxMicro(opts: { text?: boolean } = { text: true }): number | null {
@@ -1121,6 +1136,8 @@ async function falImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[],
       recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "fal", model, unit: "image", quantity: 1, costMicro: max, estimated: true, idempotencyKey: ctx.usageKey });
       saveProviderReceipt(trace.reservation!, { downloadUrl: url });
       const img = await publicDownload(url);
+      if (!img.ok) throw new PermanentError(L("Image produite mais téléchargement impossible. Une reprise récupérera ce résultat sans nouvelle génération.", "Image produced but download failed. A retry will retrieve it without generating again."));
+      return Buffer.from(await img.url);
       if (!img.ok) throw new PermanentError(L("Image produite mais téléchargement impossible. Une reprise récupérera ce résultat sans nouvelle génération.", "Image produced but download failed. A retry will retrieve it without generating again."));
       return Buffer.from(await img.arrayBuffer());
     }

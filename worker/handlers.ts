@@ -33,6 +33,8 @@ import { localCopy } from "../src/lib/engine/local-copy";
 import { assetData, getAsset, saveAsset, listFolders, addUsage, type Asset } from "../src/lib/library";
 import { publishPost, alreadyPublished, connectionFor, markConnection, type PostRow } from "../src/lib/social/publish";
 import { sendToCanva, importFromCanva } from "../src/lib/integrations/canva";
+import { pushCatalog, pushPages, pushTheme, seoSummary, shopifyConnection, tyost, alreadyPublished, connectionFor, markConnection, type PostRow } from "../src/lib/social/publish";
+import { sendToCanva, importFromCanva } from "../src/lib/integrations/canva";
 import { pushCatalog, pushPages, pushTheme, seoSummary, shopifyConnection, type SeoPushResult } from "../src/lib/integrations/shopify";
 import { hasStudioProducts, withStudioProducts } from "../src/lib/products/catalog";
 import { syncProducts } from "../src/lib/products/sync";
@@ -136,8 +138,8 @@ export const handlers: Record<string, Handler> = {
 
   /** Retouche par l'IA d'une photo livrée (publicité, publication) : seule la demande du client change, original gardé. */
   "image.edit": async (ctx) => {
-    const { editProjectPhoto } = await import("../src/lib/image-v2/edit-photo");
-    const r=await editProjectPhoto(ctx, ctx.payload.projectId, ctx.payload.assetId, ctx.payload.instruction);
+    const { runNativePhotoEdit } = await import("../src/lib/image-v2/native-edit-approval");
+    const r=await runNativePhotoEdit(ctx);
     return {...r,delivery:await imageDelivery(ctx.payload.projectId,[r.assetId])};
   },
 
@@ -404,6 +406,8 @@ export const handlers: Record<string, Handler> = {
     const post = one<any>("SELECT * FROM posts WHERE id = ?", postId);
     if (!post) throw new PermanentError(L("Publication introuvable.", "Post not found."));
     if (["published", "publishing"].includes(post.status)) throw new UserFacingError(L("Une publication déjà envoyée ne peut pas être régénérée.", "A post that has already been sent cannot be regenerated."));
+    const p = loadProject(post.project_id);
+    if (es(post.status)) throw new UserFacingError(L("Une publication déjà envoyée ne peut pas être régénérée.", "A post that has already been sent cannot be regenerated."));
     const p = loadProject(post.project_id);
     if (part !== "media") {
       if (!llmConfigured()) throw new UserFacingError(L("La réécriture des légendes nécessite l'IA : elle est disponible avec l'abonnement et l'IA connectée.", "Rewriting captions requires AI: it is available with a subscription and a connected AI provider."));
