@@ -12,7 +12,7 @@ import {assertBlogWrite,blogPlanReason,BlogAccessError,getArticle} from '../../e
 import {L} from '../../i18n-server';
 export function blogTarget(topic:string):PageRef{return{key:'article:request:'+stableHash('blog-topic-211-v1',topic).slice(0,20),title:topic,url:null,kind:'article',status:'planned'};}
 export function requestedBlogId(pid:string,request:ContentRequestV2){return request.type==='blog_article'&&request.target?.page?blogIdFor(contentKey(pid,'blog_article',request.target.page.key,pickLang(request.lang))):null;}
-export function otherBlogSources(pid:string,request:ContentRequestV2){return all('SELECT id,title,slug,meta_title,meta_description,body_html,language,status,cover_asset_id,published_url FROM blog_articles WHERE project_id=? AND id<>? AND deleted_at IS NULL ORDER BY id',pid,requestedBlogId(pid,request)??'');}
+export function otherBlogSources(pid:string,request:ContentRequestV2,editingArticleId?:string){return all('SELECT id,title,slug,meta_title,meta_description,body_html,language,status,cover_asset_id,published_url FROM blog_articles WHERE project_id=? AND id<>? AND deleted_at IS NULL ORDER BY id',pid,editingArticleId??requestedBlogId(pid,request)??'');}
 /** Le quota est relu avant mise en file ; le moteur le réserve ensuite atomiquement.
  * Une relecture entre ses appels ne recompte jamais sa propre réservation comme une demande neuve.
  */
@@ -25,6 +25,17 @@ export function assertNewBlogAllowed(userId:string,pid:string,request:ContentReq
  if(pending)throw new HttpError(409,L('Ce sujet est déjà en cours. Retrouvez sa tâche et ses résultats, sans nouvel achat.','This topic is already in progress. Check its task and results without repurchasing.'));
 }
 type BlogPin={id:string;projectId:string;userId:string;documentHash:string;title:string;slug:string;metaTitle:string;metaDescription:string;language:string;bodyHash:string};
+export type BlogEditPin={id:string;fingerprint:string};
+/** Les retouches acquises gardent le forfait Blog mais ne réservent pas un nouvel article. */
+export function assertBlogEditAllowed(userId:string,pid:string){const reason=blogPlanReason(userId,pid);if(reason)throw new HttpError(402,reason,'plan_upgrade');}
+export function pinBlogEdit(pid:string,docKey:string,doc:ContentDoc,documentHash:string):BlogEditPin{
+ const pin=pinNativeBlog(pid,docKey,doc,documentHash);
+ if(!pin)throw new HttpError(409,'Article Blog natif absent, retiré ou modifié : relisez son éditeur avant une retouche.');
+ return{id:pin.id,fingerprint:stableHash('native-blog-edit-source-301',getArticle(pid,pin.id))};
+}
+export function checkBlogEdit(pid:string,docKey:string,doc:ContentDoc,documentHash:string,saved:BlogEditPin){
+ const current=pinBlogEdit(pid,docKey,doc,documentHash);if(current.id!==saved.id||current.fingerprint!==saved.fingerprint)throw new HttpError(409,'L’article Blog a changé. Votre version est conservée ; rechargez avant une nouvelle retouche.');
+}
 const body=(d:ContentDoc)=>toHtml({blocks:d.blocks.filter(b=>b.kind!=='h1')});
 const title=(d:ContentDoc)=>{const h=d.blocks.find(b=>b.kind==='h1');return h?stripInline(blockText(h)):d.page.title;};
 function matches(d:ContentDoc,a:ReturnType<typeof getArticle>){return!!a&&!a.deleted_at&&a.title===title(d)&&a.body_html===body(d)&&a.meta_title===d.meta.seoTitle&&a.meta_description===d.meta.metaDescription&&a.language===d.lang;}

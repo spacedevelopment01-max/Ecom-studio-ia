@@ -59,6 +59,7 @@ export const STUDIO_OPERATIONS:readonly Definition[]=[
  op('copy.generate','boutique','Rédiger un document natif pour une page précise','Write one native document for a specific page','content'),
  op('copy.edit','boutique','Retoucher les passages choisis d’un texte natif','Rewrite selected passages of native copy','content'),
  op('seo.update','blog','Rédiger les métadonnées d’une page','Write metadata for a page','content'),
+ op('blog.edit','blog','Retoucher les passages d’un article V2 acquis après devis','Rewrite selected passages of an acquired V2 article after quote','blog'),
  op('blog.generate','blog','Créer un brouillon d’article natif','Create a native article draft','blog'),
  op('blog.publish','blog','Publier un article','Publish an article','none',true),
  op('social.plan','publications','Préparer un calendrier de brouillons','Prepare a draft calendar','social'),
