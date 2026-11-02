@@ -41,3 +41,14 @@ describe("recette #301 : la coquille ne recouvre jamais les fenêtres natives du
     expect(z(".syna-ui .ss-tabbar")).toBeGreaterThan(z(".syna-ui .ss-sheet-layer"));
   });
 });
+
+describe("recette #301 : l'aperçu du site n'est jamais recréé quand SYNA s'ouvre ou se replie", () => {
+  it("une seule iframe d'aperçu, dans une enveloppe stable ; seul son style dépend de l'agrandissement", () => {
+    const tab = read("src/components/studio/tab-boutique.tsx");
+    // Avant : deux branches (réduit / pleine largeur) → franchir le seuil, par ex. replier SYNA en Plein cadre à 1440 px,
+    // recréait l'iframe (page blanche, rechargement, défilement perdu ; recette composition-ui 2 échecs sur 2).
+    expect(tab.match(/<iframe ref=\{iframe\}/g)?.length).toBe(1);
+    expect(tab).toMatch(/<div data-preview-frame className=\{desktopScale < 1 \? [^}]+ : "contents"\}/);
+    expect(tab).not.toMatch(/desktopScale < 1 \? \(\s*<div/);
+  });
+});
