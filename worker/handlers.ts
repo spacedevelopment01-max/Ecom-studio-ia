@@ -14,7 +14,7 @@ import { runPipeline } from "../src/lib/engine/pipeline";
 import { produceVideo } from "../src/lib/engine/videos";
 import { produceUgc, writeUgcScript } from "../src/lib/engine/ugc";
 import { writeBlogArticle } from "../src/lib/engine/blog";
-import { withQuotaScope } from "../src/lib/ai/access";
+import { withQuotaScope,withAiDisabled } from "../src/lib/ai/access";
 import { consumeQuota } from "../src/lib/quotas";
 import { buildShop, switchDirection, themeFileName } from "../src/lib/engine/shop";
 import { buildCustomTheme } from "../src/lib/engine/custom-theme";
@@ -124,11 +124,14 @@ export const handlers: Record<string, Handler> = {
   "image.v2": async (ctx) => {
     if(ctx.payload.agentImageQuote){const{runAgentImageCreation}=await import('../src/lib/orchestrator/conversation/image-tool-execution');return runAgentImageCreation(ctx);}
     const { runImageEngineV2 } = await import("../src/lib/image-v2/engine");
-    const r = ctx.payload.nativeImageQuote?await(await import('../src/lib/image-v2/native-approval')).runNativeImageGeneration(ctx):await runImageEngineV2(ctx, ctx.payload.projectId, ctx.payload.request);
+    const stockOnly=ctx.payload.request?.allowGenerate===false;
+    const execute=()=>ctx.payload.nativeImageQuote?import('../src/lib/image-v2/native-approval').then(m=>m.runNativeImageGeneration(ctx)):runImageEngineV2(ctx,ctx.payload.projectId,ctx.payload.request);
+    const r = stockOnly?await withAiDisabled('recherche gratuite de photos libres, sans devis IA accepté',execute):await execute();
     // Reprise payée (1re image refusée par le contrôle) : annoncée au client, en % du budget IA.
     const { retryNotice } = await import("../src/lib/ai/budget-pct");
     const p = loadProject(ctx.payload.projectId);
     const delivery=await imageDelivery(p.id,r.outcomes.map(o=>o.assetId),{expected:ctx.payload.request?.count??1,reasons:r.outcomes.map(o=>o.reason)});
+    if(stockOnly)delivery.message+=' '+L('Recherche gratuite : vérifications locales et de licence, sans contrôle visuel IA.','Free search: local and licence checks, without AI visual review.');
     const tries = Math.max(1, ...r.outcomes.filter((o) => o.assetId).map((o) => o.attempts ?? 1));
     const notice = retryNotice(p.userId, p.id, tries, r.costMicro);
     return { outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, origin: o.origin, score: o.score })), stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, delivery, ...(notice ? { notice } : {}) };
