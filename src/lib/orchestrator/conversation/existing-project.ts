@@ -1,4 +1,5 @@
-/** A1 : projection des acquis natifs, sans analyse, initialisation ni écriture métier/budget.
+/** A1 : projection des acquis natifs, sans analyse, initialisation ni écriture budgétaire.
+ * Les seules écritures métier optionnelles sont les retouches locales sous drapeau et accord explicite.
  * Aucun historique shop.chat n'est interprété comme un fait client.
  */
 import { HttpError, type User } from '../../auth';
@@ -10,8 +11,12 @@ import { ownedConversation, turnsOf, isExistingProjectRead } from './store';
 import type { Command, ConversationRow, ConversationView } from './contract';
 import {activeContextEnabled,observedActiveContext,resolveActiveContext} from './active-context';
 import {contextPresentation} from './context-session';
+import {metaOf} from './store';
+import {existingLocalCapabilities,existingLocalOperation,type ExistingLocalCapabilities} from './existing-local-policy';
+import {proposeLocalSite,confirmLocalSite} from './local-site';
+import {proposeLocalFiles,confirmLocalFiles} from './local-files';
 
-const reason=()=>L('Projet existant repris en lecture seule. Le site, les médias, les droits et l’ancienne discussion sont conservés. Vous pouvez enregistrer des messages ; aucune réponse IA ni modification métier n’est activée dans A1.', 'Existing project resumed read-only. The site, media, entitlements and previous discussion are preserved. You may save messages; A1 enables no AI reply or business change.');
+const reason=(local?:ExistingLocalCapabilities|null)=>local?L('La fiche et les outils IA restent en lecture seule. Seules les retouches locales indiquées sont proposées à 0 €, puis appliquées après votre confirmation explicite. Aucun contenu n’est régénéré.', 'The brief and AI tools remain read-only. Only the listed local edits can be proposed at €0 and applied after your explicit confirmation. No content is regenerated.'):L('Projet existant repris en lecture seule. Le site, les médias, les droits et l’ancienne discussion sont conservés. Vous pouvez enregistrer des messages ; aucune réponse IA ni modification métier n’est activée dans A1.', 'Existing project resumed read-only. The site, media, entitlements and previous discussion are preserved. You may save messages; A1 enables no AI reply or business change.');
 
 /** Noms contrôlés côté serveur ; ne crée pas les tables métier à la demande. */
 const nativeTables=['studio_products','studio_variants','content_documents','blog_articles','posts','campaigns','biens','carte_items','realisations','salon_appointments','restaurant_reservations','cabinet_appointments'] as const;
@@ -47,17 +52,21 @@ function snapshot(c:ConversationRow){
   };
   return{data,p,version:stableHash('existing-project-context-1',{data,project:p.row})};
 }
-export type ExistingProjectRecovery={schema:'existing-project-recovery-1';state:'read-only';context:ReturnType<typeof snapshot>['data'];contextVersion:string;observedAt:number;actionsEnabled:false;aiEnabled:false;providerCalls:0};
+/** La fiche et les adaptateurs généraux restent fermés ; localEdits décrit l'exception gratuite exacte. */
+export type ExistingProjectRecovery={schema:'existing-project-recovery-1';state:'read-only';context:ReturnType<typeof snapshot>['data'];contextVersion:string;observedAt:number;actionsEnabled:false;aiEnabled:false;providerCalls:0;localEdits?:ExistingLocalCapabilities};
 
 export function existingProjectView(user:User,cid:string,before?:number):ConversationView{
   return readSnapshot(()=>{
     const c=ownedConversation(user,cid,true);
     if(!isExistingProjectRead(c))throw new HttpError(409,'conversation_not_existing_read');
     const {data,p,version}=snapshot(c);
+    const local=existingLocalCapabilities(),metadata=metaOf(c);
     return{
       schema:'studio-conversation-1',id:c.id,projectId:c.project_id,revision:c.revision,projectRevision:null,mode:'local',progress:'review',
-      message:reason(),readOnlyReason:reason(),question:null,correctionFields:[],creation:null,action:null,
-      recovery:{schema:'existing-project-recovery-1',state:'read-only',context:data,contextVersion:version,observedAt:now(),actionsEnabled:false,aiEnabled:false,providerCalls:0},
+      message:reason(local),readOnlyReason:reason(local),question:null,correctionFields:[],creation:null,action:null,
+      recovery:{schema:'existing-project-recovery-1',state:'read-only',context:data,contextVersion:version,observedAt:now(),actionsEnabled:false,aiEnabled:false,providerCalls:0,...(local?{localEdits:local}:{})},
+      ...(local?.ops.includes('local-site')?{localSiteExecution:{enabled:true as const},...(metadata.localSite?{localSite:metadata.localSite}:{})}:{}),
+      ...(local?.ops.includes('files')?{localFilesExecution:{enabled:true as const},...(metadata.localFiles?{localFiles:metadata.localFiles}:{})}:{}),
       tools:[{id:'brief.update',state:'unavailable',executionEnabled:false}],
       ...(activeContextEnabled()?{activeContext:{enabled:true as const,current:observedActiveContext(c,JSON.parse(c.state_json).activeContext),presentation:contextPresentation(c)}}:{}),
       summary:{description:p.product.summary,business:p.business,businessSource:'existing',target:'',goals:'',offerName:p.product.name,brandName:p.brand?.name??'',constraints:'',services:p.services.services.map(s=>({name:s.name,description:s.description,source:'projects.business_json'})),contactModes:p.services.contactModes??[],facts:[],unknown:data.missing,referenceUrls:[],photoIds:[],approved:false,preparationStatus:'absent'},
@@ -66,11 +75,14 @@ export function existingProjectView(user:User,cid:string,before?:number):Convers
   });
 }
 
-/** Enregistrer le texte exact et les reçus du fil uniquement. Pas de classificateur même si AI=0. */
+/** Fil A1, avec exception locale explicitement autorisée ; jamais classificateur, fiche ou outil payant. */
 export function submitExistingProjectMessage(user:User,cid:string,cmd:Command,hash:string):ConversationView{
   return tx(()=>{
     const c=ownedConversation(user,cid,true);
     if(!isExistingProjectRead(c))throw new HttpError(409,'conversation_not_existing_read');
+    const local=existingLocalCapabilities(),operation=existingLocalOperation(cmd),localAllowed=!!operation&&!!local?.ops.includes(operation);
+    // Le retrait du drapeau/droit ne transforme pas un ancien reçu en nouveau pouvoir d'exécution.
+    if((cmd.action==='confirm-local'||cmd.action==='confirm-files')&&!localAllowed)throw new HttpError(409,reason(),'conversation_existing_read_only');
     const prior=one<{request_hash:string;response_json:string}>("SELECT request_hash,response_json FROM agent_conversation_turns WHERE conversation_id=? AND request_id=?",cid,cmd.requestId);
     if(prior){
       if(prior.request_hash!==hash)throw new HttpError(409,L('Cet identifiant correspond à une autre demande.','This identifier belongs to another request.'),'conversation_idempotency_conflict');
@@ -78,7 +90,8 @@ export function submitExistingProjectMessage(user:User,cid:string,cmd:Command,ha
       return JSON.parse(prior.response_json) as ConversationView;
     }
     if(cmd.revision!==c.revision||cmd.projectRevision!==null)throw new HttpError(409,L('La conversation a changé. Rechargez avant de répondre.','The conversation changed. Reload before replying.'),'conversation_conflict');
-    if(cmd.action!=='message'&&cmd.action!=='summary')throw new HttpError(409,reason(),'conversation_existing_read_only');
+    if(c.revision>=1000)throw new HttpError(409,'conversation_limit');
+    if(cmd.action!=='message'&&cmd.action!=='summary'&&!localAllowed)throw new HttpError(409,reason(),'conversation_existing_read_only');
     if(cmd.action==='message'&&(cmd.photoIds?.length||cmd.referenceUrls?.length))throw new HttpError(409,L('Les pièces jointes ne sont pas raccordées à la reprise A1. Votre demande n’a pas été appliquée.','Attachments are not connected to A1 recovery. Your request has not been applied.'),'conversation_existing_read_only');
     const metadata=JSON.parse(c.state_json) as import('./contract').ConversationState;
     if(cmd.action==='message'&&cmd.context){
@@ -86,12 +99,23 @@ export function submitExistingProjectMessage(user:User,cid:string,cmd:Command,ha
       const resolved=resolveActiveContext(c,cmd.context);metadata.activeContextTab=cmd.context.tab;
       if(cmd.context.target||!metadata.activeContext?.target){metadata.activeContext=resolved.selection;metadata.activeContextReference=stableHash('conversation-active-context-1',resolved);metadata.activeContextIdentity=resolved.canonical.identity;}
     }
-    if(c.revision>=1000)throw new HttpError(409,'conversation_limit');
+    let localMessage:string|undefined;
+    if(cmd.action==='message'){delete metadata.localSiteProposal;delete metadata.localSite;delete metadata.localFilesProposal;delete metadata.localFiles;}
+    if(localAllowed){
+      const active={...c,state_json:JSON.stringify(metadata)};
+      if(operation==='local-site'){
+        metadata.localSite=cmd.action==='confirm-local'?confirmLocalSite(user,active,metadata,cmd.proposalId):proposeLocalSite(user,active,metadata,(cmd as Extract<Command,{action:'message'}>).text);
+        localMessage=metadata.localSite.message;
+      }else{
+        metadata.localFiles=cmd.action==='confirm-files'?confirmLocalFiles(user,active,metadata,cmd.proposalId,cmd.requestId):proposeLocalFiles(user,active,metadata,(cmd as Extract<Command,{action:'message'}>).text);
+        localMessage=metadata.localFiles.message;
+      }
+    }
     const next=c.revision+1;
     run('UPDATE agent_conversations SET revision=?,state_json=?,updated_at=? WHERE id=? AND revision=?',next,JSON.stringify(metadata),now(),cid,c.revision);
     const response=existingProjectView(user,cid);
     response.history=[];response.historyBefore=null;
-    response.message=cmd.action==='message'?L('Message exact enregistré dans le fil SYNA. Aucun contenu du projet modifié, aucun appel IA.','Exact message saved in the SYNA thread. No project content changed; no AI request.'):reason();
+    response.message=localMessage??(cmd.action==='message'?L('Message exact enregistré dans le fil SYNA. Aucun contenu du projet modifié, aucun appel IA.','Exact message saved in the SYNA thread. No project content changed; no AI request.'):reason(local));
     run('INSERT INTO agent_conversation_turns (id,conversation_id,revision,request_id,request_hash,request_json,response_json,created_at) VALUES (?,?,?,?,?,?,?,?)',id(),cid,next,cmd.requestId,hash,JSON.stringify(cmd),JSON.stringify(response),now());
     return response;
   });

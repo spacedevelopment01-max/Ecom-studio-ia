@@ -350,6 +350,6 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
 /** Une commande locale candidate ne peut jamais devenir un appel fournisseur implicite. */
 export async function submitConversation(user:User,cid:string,raw:unknown,tests:TestDependencies={}):Promise<ConversationView>{
  const parsed=CommandSchema.safeParse(raw),cmd=parsed.success?parsed.data:null;
- const local=cmd?.action==='confirm-local'||cmd?.action==='message'&&localSiteCandidate(cmd.text);
+ const local=cmd?.action==='confirm-local'||cmd?.action==='confirm-files'||cmd?.action==='message'&&(localSiteCandidate(cmd.text)||localFilesCandidate(cmd.text));
  return local?withAiDisabled('B1 : retouche gratuite déterministe, aucun devis IA',()=>submitConversationImpl(user,cid,raw,tests)):submitConversationImpl(user,cid,raw,tests);
 }
