@@ -1,3 +1,4 @@
+import {createHash} from "node:crypto";
 import { jobStrategy, withStrategyScope, strategyStamp } from "../src/lib/strategy-consumption";
 import { HttpError } from "../src/lib/auth";
 import { assertRepairableConversation } from "../src/lib/theme/plan-access";
@@ -9,12 +10,12 @@ import { isAutoUsable } from "../src/lib/quality/usable";
 import { projectKind } from "@/lib/theme/project-kind";
 import { all, json, now, one, run } from "../src/lib/db";
 import { sectionGenerationAllowed } from "../src/lib/theme/custom-access";
-import { JobCancelled, JobContext, JobPaused, PermanentError, UserFacingError } from "../src/lib/jobs";
+import { getJob, JobCancelled, JobContext, JobPaused, PermanentError, UserFacingError } from "../src/lib/jobs";
 import { runPipeline } from "../src/lib/engine/pipeline";
 import { produceVideo } from "../src/lib/engine/videos";
 import { produceUgc, writeUgcScript } from "../src/lib/engine/ugc";
 import { writeBlogArticle } from "../src/lib/engine/blog";
-import { withQuotaScope } from "../src/lib/ai/access";
+import { withQuotaScope,withAiDisabled,aiDisabledReason } from "../src/lib/ai/access";
 import { consumeQuota } from "../src/lib/quotas";
 import { buildShop, switchDirection, themeFileName } from "../src/lib/engine/shop";
 import { buildCustomTheme } from "../src/lib/engine/custom-theme";
@@ -457,9 +458,17 @@ export const handlers: Record<string, Handler> = {
   "files.classify": async (ctx) => {
     const projectId = ctx.payload.projectId;
     const p = loadProject(projectId);
+    const job=getJob(ctx.job.id);
+    if(!job||job.type!=='files.classify'||job.user_id!==p.userId||job.project_id!==projectId||ctx.job.user_id!==job.user_id||ctx.job.project_id!==job.project_id)throw new HttpError(404,"Projet introuvable.");
+    const parent=job.parent_id?getJob(job.parent_id):null,key=parent?`pipeline-classify:${parent.id}`:'';
+    const hashed=`job:v2:${createHash('sha256').update(JSON.stringify([job.user_id,job.project_id,job.type,key])).digest('hex')}`;
+    // Seul l'enfant initial exact du pipeline conserve son moteur IA déjà autorisé. Un marqueur HTTP ne crée pas ce droit.
+    const initial=!!parent&&parent.type==='pipeline.run'&&parent.user_id===job.user_id&&parent.project_id===job.project_id&&[key,hashed].includes(job.idempotency_key??'');
+    const localOnly=!initial||ctx.payload.localOnly===true||ctx.payload.aiOff===true;
+    const execute=async()=>{
     const folders = listFolders(projectId).filter((f) => f.system_key);
     const loose = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND user_id=? AND folder_id IS NULL AND deleted_at IS NULL LIMIT 60", projectId,p.userId);
-    if (!loose.length) return { moved: 0 };
+    if (!loose.length) return { moved: 0,...(localOnly?{mode:"local_rules" as const}: {}) };
     const rules: [RegExp, string][] = [
       [/logo/, "brand.logos"],
       [/cutout|detour/, "product.cutouts"],
@@ -472,7 +481,7 @@ export const handlers: Record<string, Handler> = {
       [/video/, "videos.social"],
     ];
     let items: { id: string; folder: string; name?: string }[];
-    if (llmConfigured()) {
+    if (!localOnly && !aiDisabledReason() && llmConfigured()) {
       const r = await aiClassify({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:classify` }, loose.map((a) => ({ id: a.id, name: a.name, kind: a.kind, role: a.role, meta: a.meta })), folders.map((f) => ({ key: f.system_key!, name: f.name })));
       items = r.items;
     } else {
@@ -492,7 +501,9 @@ export const handlers: Record<string, Handler> = {
       run("UPDATE assets SET folder_id = ?, name = ? WHERE id = ?", f.id, it.name ? `${it.name.replace(/[^\p{L}\p{N}-]+/gu, "-").slice(0, 80)}${ext}` : a.name, a.id);
       moved++;
     }
-    return { moved };
+    return { moved,...(localOnly?{mode:"local_rules" as const}: {}) };
+    };
+    return localOnly?withAiDisabled("classement natif gratuit par règles locales, noms conservés",execute):execute();
   },
 
   "canva.send": async (ctx) => {
