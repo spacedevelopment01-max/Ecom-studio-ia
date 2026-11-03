@@ -105,7 +105,7 @@ describe("P2 — SYNA connaît les contenus métier sans prétendre les modifier
     vi.stubEnv("STUDIO_CONVERSATION_CONTEXT", "1");
     vi.stubEnv("STUDIO_CONVERSATION_BUSINESS_CONTENT", "0");
     const cat = studioOperationCatalogue(a.pid, true);
-    expect(cat.rows.find((r) => r.id === "projects.update")).toMatchObject({ implementation: "implemented", connectionEnabled: false, availability: "disabled_or_locked", confirmation: "separate_explicit_free_confirmation", supportedActions: ["rename"], unsupportedActions: ["create", "delete", "publish", "status", "bulk", "photos"], cost: "free" });
+    expect(cat.rows.find((r) => r.id === "projects.update")).toMatchObject({ implementation: "implemented", connectionEnabled: false, availability: "disabled_or_locked", confirmation: "separate_explicit_free_confirmation", supportedActions: ["rename", "exact-work"], unsupportedActions: ["create", "delete", "publish", "status", "bulk", "photos"], cost: "free" });
     expect(cat.rows.find((r) => r.id === "site.host.publish")).toMatchObject({ implementation: "absent_from_syna", connectionEnabled: false, availability: "not_connected_native_screen_only", confirmation: "not_connected" });
     expect(cat.rows.find((r) => r.id === "site.host.publish")?.sensitive).toBe(true);
     const r = createRealisation(a.pid, { title: "Tableau neuf", summary: "Tableau remplacé.", photos: [{ assetId: await a.photo(), alt: "" }] });
