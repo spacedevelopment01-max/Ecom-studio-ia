@@ -4,7 +4,7 @@ Parent requis :759a2e34 (correctif CI #356). Même fil SYNA, même localFirst, a
 
 ## Phrases prouvées
 
-- Mets le titre de cette section en rouge : proposition color. Le moteur expose explicitement une alternative : la couleur principale des textes de la section, pas le titre seul. Les accents, textes secondaires et boutons gardent leurs réglages natifs ; ils ne sont pas annoncés comme recolorés. Le message et le diff détaillent les couleurs effectives avant/après. Aucun autre schéma partagé/section ne doit changer ; sinon clarification gratuite.
+- Mets le titre de cette section en rouge : proposition color. Le moteur expose explicitement une alternative : la couleur principale des textes de la section, pas le titre seul. Certains boutons utilisent aussi cette couleur principale. Les valeurs d’accent, de texte secondaire et de texte sur accent sont conservées ; cela ne promet pas que tous les boutons restent visuellement identiques. Le message et le diff détaillent les couleurs effectives avant/après. Aucun autre schéma partagé/section ne doit changer ; sinon clarification gratuite.
 - Mets le fond de cette section en bleu : proposition color ; contraste corrigé par le moteur natif inclus dans les valeurs avant/après.
 - Change la couleur principale du site en #1e3a8a : clarification gratuite, aucune opération de section présentée comme globale.
 - Ajoute une section FAQ après cette section : proposition faq ; bibliothèque compatible native, ID/ordre/blocs natifs déterministes, contenu de départ à compléter affiché. Aucun contenu inventé.
