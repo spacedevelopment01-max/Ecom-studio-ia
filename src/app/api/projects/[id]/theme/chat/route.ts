@@ -39,7 +39,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     : b.message;
   const mid = id();
   run("INSERT INTO chat_messages (id, project_id, thread, role, content, attachments, selection, created_at) VALUES (?,?,?,?,?,?,?,?)", mid, p.id, "shop", "user", b.generate ? `✨ ${L("Générer", "Generate")} : ${b.message}` : b.message, JSON.stringify(b.attachments), b.selection ? JSON.stringify(b.selection) : null, now());
-  const job = enqueue({ userId: user.id, projectId: p.id, type: "shop.chat", label: b.generate ? L("Génération d'une section", "Generating a section") : L("Retouche de la boutique", "Store edit"), payload: { projectId: p.id, messageId: mid, message: instruction, selection: b.selection ?? null, attachments: b.attachments, page: b.page }, maxAttempts: 2 });
+  const job = enqueue({ userId: user.id, projectId: p.id, type: "shop.chat", label: b.generate ? L("Génération d'une section", "Generating a section") : L("Retouche de la boutique", "Store edit"), payload: { projectId: p.id, sectionGeneration:!!b.generate, messageId: mid, message: instruction, selection: b.selection ?? null, attachments: b.attachments, page: b.page }, maxAttempts: 2 });
   run("UPDATE chat_messages SET job_id = ? WHERE id = ?", job.id, mid);
   return ok({ messageId: mid, jobId: job.id });
 });

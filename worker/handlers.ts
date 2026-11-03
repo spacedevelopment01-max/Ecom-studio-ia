@@ -9,13 +9,13 @@ import { withAccessScope } from "../src/lib/access-scope";
 import { isAutoUsable } from "../src/lib/quality/usable";
 import { projectKind } from "@/lib/theme/project-kind";
 import { all, json, now, one, run } from "../src/lib/db";
-import { sectionGenerationAllowed } from "../src/lib/theme/custom-access";
+import { sectionGenerationAllowed,assertSectionGeneration } from "../src/lib/theme/custom-access";
 import { getJob, JobCancelled, JobContext, JobPaused, PermanentError, UserFacingError } from "../src/lib/jobs";
 import { runPipeline } from "../src/lib/engine/pipeline";
 import { produceVideo } from "../src/lib/engine/videos";
 import { produceUgc, writeUgcScript } from "../src/lib/engine/ugc";
 import { writeBlogArticle } from "../src/lib/engine/blog";
-import { withQuotaScope,withAiDisabled,aiDisabledReason } from "../src/lib/ai/access";
+import { withQuotaScope,withAiDisabled,aiDisabledReason,assertAiAllowed } from "../src/lib/ai/access";
 import { consumeQuota } from "../src/lib/quotas";
 import { buildShop, switchDirection, themeFileName } from "../src/lib/engine/shop";
 import { buildCustomTheme } from "../src/lib/engine/custom-theme";
@@ -152,8 +152,11 @@ export const handlers: Record<string, Handler> = {
   /** SEO & Copywriting V2 : stratégie, brief, rédaction (locale puis IA contrôlée), barrière SEO, document versionné. */
   "content.v2": async (ctx) => {
     const { runContentEngineV2 } = await import("../src/lib/seo-v2/engine");
-    const r = await runContentEngineV2(ctx, ctx.payload.projectId, ctx.payload.request);
-    return { docKey: r.docKey, verdict: r.verdict, codes: r.codes, by: r.by, costMicro: r.costMicro, skipped: r.skipped, stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, notes: r.notes.slice(0, 20), delivery: r.delivery };
+    const r = ctx.payload.request?.type==='blog_article'
+      ? await (await import('../src/lib/seo-v2/native-blog-consent')).runNativeBlog(ctx)
+      : await runContentEngineV2(ctx, ctx.payload.projectId, ctx.payload.request);
+    const articleId=ctx.payload.request?.type==='blog_article'&&r.docKey?(await import('../src/lib/seo-v2/blog')).blogIdFor(r.docKey):null;
+    return { ...(articleId?{articleId}:{}),docKey: r.docKey, verdict: r.verdict, codes: r.codes, by: r.by, costMicro: r.costMicro, skipped: r.skipped, stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, notes: r.notes.slice(0, 20), delivery: r.delivery };
   },
   /** Vidéo V2 : intention, stratégie, script, storyboard, plans, document éditable, rendu, barrière vidéo. */
   "video.v2": async (ctx) => {
@@ -268,6 +271,15 @@ export const handlers: Record<string, Handler> = {
   "shop.chat": async (ctx) => {
     const { projectId, messageId, message, selection, attachments, page } = ctx.payload;
     const p = loadProject(projectId);
+    // The explicit native Generate action is included in Dominer, not an unguarded paid chat retry.
+    // Existing queued jobs predate the marker: their persisted native user message carries the same intent.
+    const sectionGeneration=ctx.payload.sectionGeneration===true||!!one("SELECT 1 FROM chat_messages WHERE id=? AND project_id=? AND job_id=? AND role='user' AND (content LIKE '✨ Générer : %' OR content LIKE '✨ Generate : %')",messageId,projectId,ctx.job.id);
+    if(sectionGeneration){
+      const owner=one<{id:string;role:'client'|'admin'}>('SELECT id,role FROM users WHERE id=?',p.userId);
+      if(!owner)throw new UserFacingError('Compte du projet introuvable.');
+      assertSectionGeneration(owner,projectId);
+      assertAiAllowed(owner.id,projectId);
+    }
     const cur = currentTheme(projectId);
     if (!cur) throw new UserFacingError(L("Créez d'abord la boutique.", "Create the store first."));
     const history = all<{ role: string; content: string }>("SELECT role, content FROM chat_messages WHERE project_id = ? AND thread = 'shop' AND id != ? ORDER BY created_at DESC LIMIT 10", projectId, messageId).reverse();

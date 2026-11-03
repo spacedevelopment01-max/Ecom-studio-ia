@@ -21,6 +21,7 @@ import { ContentLangPicker, useContentLang } from "./content-lang";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { countWords, sanitizeBlogHtml } from "@/lib/blog-html";
 import { ContentPanel } from "./content-panel";
+import {startNativeBlog,type NativeBlogOperation} from "@/lib/native-blog-client";
 
 type Article = {
   id: string;
@@ -148,7 +149,6 @@ export default function TabBlog() {
 
   return (
     <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6">
-      {cost.dialog}
       {active.map((j) => <JobProgress key={j.id} job={j} />)}
       <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-start gap-3">
@@ -213,6 +213,7 @@ export default function TabBlog() {
       <WriteDialog open={writeOpen} onClose={() => setWriteOpen(false)} left={left} admin={access.admin} confirm={cost.confirm} onStarted={(j) => { setWriteOpen(false); startJob(j); }} />
       {current && <ArticleEditor key={current.id} article={current} data={data} busy={busy} confirm={cost.confirm} onClose={() => setOpenId(null)} onChanged={reload} onStarted={(j) => { setOpenId(null); startJob(j); }} />}
       <ContentPanel types={["blog_article"]} title={t("Blog V2 : stratégie, sujets et brouillons éditables", "Blog V2: strategy, topics and editable drafts")} />
+      {cost.dialog}
     </div>
   );
 }
@@ -273,6 +274,7 @@ function WriteDialog({ open, onClose, onStarted, confirm }: { open: boolean; onC
   const [free, setFree] = useState("");
   const [brief, setBrief] = useState("");
   const [sending, setSending] = useState(false);
+  const writeOperation=useRef<NativeBlogOperation["current"]>(null);
 
   const load = useCallback(async (refresh = false) => {
     setLoading(true);
@@ -296,12 +298,13 @@ function WriteDialog({ open, onClose, onStarted, confirm }: { open: boolean; onC
 
   const topic = free.trim() || chosen;
   const go = async () => {
-    if (!(await confirm("blog"))) return;
     setSending(true);
     try {
       // Sujet proposé choisi : sa requête et son intention de recherche partent avec la demande.
       const picked = !free.trim() ? topics?.find((x) => x.title === chosen) : undefined;
-      const r = await api<{ jobId: string }>(`/api/projects/${id}/blog`, { body: { topic: topic || undefined, brief: brief.trim() || undefined, keyword: picked?.keyword || undefined, intent: picked?.intent }, lang: cl.lang });
+      const url=`/api/projects/${id}/blog`,input={topic:topic||undefined,brief:brief.trim()||undefined,keyword:picked?.keyword||undefined,intent:picked?.intent};
+      const r=await startNativeBlog(url,input,writeOperation,confirm,body=>api(url,{body,lang:cl.lang}));
+      if(!r)return;
       toast("ok", t("L'article est en cours d'écriture : comptez une à deux minutes.", "The post is being written: allow one to two minutes."));
       setChosen("");
       setFree("");
@@ -456,11 +459,13 @@ function ArticleEditor({ article, data, busy, confirm, onClose, onChanged, onSta
     }
   };
 
+  const rewriteOperation=useRef<NativeBlogOperation["current"]>(null);
   const rewrite = async () => {
     if (dirty && !window.confirm(t("La réécriture remplacera vos modifications non enregistrées. Continuer ?", "Rewriting will replace your unsaved changes. Continue?"))) return;
-    if (!(await confirm("blog"))) return;
     try {
-      const r = await api<{ jobId: string }>(`/api/projects/${id}/blog/${a.id}/rewrite`, { body: { instruction: instruction.trim() || undefined } });
+      const url=`/api/projects/${id}/blog/${a.id}/rewrite`;
+      const r=await startNativeBlog(url,{instruction:instruction.trim()||undefined},rewriteOperation,confirm,body=>api(url,{body}));
+      if(!r)return;
       toast("ok", t("Réécriture en cours : comptez une à deux minutes.", "Rewriting: allow one to two minutes."));
       onStarted(r.jobId);
     } catch (e) {
