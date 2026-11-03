@@ -1,0 +1,616 @@
+{
+  "sourceCommit": "5287f2e3ea6e014189571b9a304e97bd3ba24bc1",
+  "sourceTree": "c493fe6bccc637462bb5233c8c68589e4f744466",
+  "runtime": {
+    "commit": "5287f2e3ea6e014189571b9a304e97bd3ba24bc1",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "cases": [
+    {
+      "scene": {
+        "mode": "encre",
+        "width": 1440
+      },
+      "pid": "hbkeyu6uir1fm88f",
+      "cid": "27o18nspxoalzu8o",
+      "docKey": "ad:ui-29f63ced-767f-45f2-8e16-c1b73f41c4ac",
+      "errors": [],
+      "blocked": [
+        "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap"
+      ],
+      "initial": {
+        "docs": 3,
+        "assets": 3
+      },
+      "dirtySelectionRefused": true,
+      "manualUndoSaved": true,
+      "baseVersion": 3,
+      "refresh17s": {
+        "elapsedMs": 17008,
+        "readsBefore": 1,
+        "readsAfter": 2
+      },
+      "firstProposal": {
+        "schema": "syna-ad-document-local-1",
+        "id": "o8usdzd9zj4e3ms4",
+        "state": "proposed",
+        "recorded": false,
+        "delivered": false,
+        "costEur": 0,
+        "providerCalls": 0,
+        "financialConsent": false,
+        "confirmationRequired": true,
+        "actionsExecuted": false,
+        "target": {
+          "docKey": "ad:ui-29f63ced-767f-45f2-8e16-c1b73f41c4ac",
+          "layerId": "title",
+          "baseVersion": 3
+        },
+        "diff": {
+          "before": 40,
+          "after": 48
+        },
+        "nativeEffects": [
+          {
+            "field": "w",
+            "before": 600,
+            "after": 720
+          },
+          {
+            "field": "h",
+            "before": 100,
+            "after": 120
+          },
+          {
+            "field": "font.size",
+            "before": 40,
+            "after": 48
+          }
+        ],
+        "version": null,
+        "job": null,
+        "exportHref": null,
+        "proposalId": "o8usdzd9zj4e3ms4",
+        "expiresAt": 1793699469786,
+        "previews": {
+          "before": "/api/studio-agent/conversations/27o18nspxoalzu8o/ad-documents?receipt=o8usdzd9zj4e3ms4&preview=before",
+          "after": "/api/studio-agent/conversations/27o18nspxoalzu8o/ad-documents?receipt=o8usdzd9zj4e3ms4&preview=after"
+        }
+      },
+      "cancelledAfterActualReload": true,
+      "savedAfterActualReload": true,
+      "confirmBodies": [
+        {
+          "action": "confirm",
+          "proposalId": "97h56bud805jnixu",
+          "confirmation": true,
+          "requestId": "f07344cc-b4bb-44f7-85ee-16d40ca84cb6"
+        }
+      ],
+      "outputVersion": {
+        "id": "vqbbpao38nkx95rw",
+        "docKey": "ad:ui-29f63ced-767f-45f2-8e16-c1b73f41c4ac",
+        "version": 4,
+        "source": "ai_local",
+        "note": "SYNA — titre agrandi gratuitement",
+        "renderedAssetId": "b0c5851x0c461tdr",
+        "createdAt": 1793698571450
+      },
+      "resultPngSha256": "c0f48aa9d004df170d34749dd4e8fa78e7f818e1c0092229aa960f666c7b9a7c",
+      "counters": {
+        "ai_calls": 0,
+        "jobs": 1,
+        "usage_events": 0,
+        "ai_reservations": 0
+      },
+      "sdkHttp": 0,
+      "budget": 0,
+      "status": "PASS"
+    },
+    {
+      "scene": {
+        "mode": "plein",
+        "width": 390
+      },
+      "pid": "vu8xu20rjdf1kuwx",
+      "cid": "2ojk2orp05vcqcsn",
+      "docKey": "ad:ui-c2bad9eb-12f2-482b-a59d-bed794b01cf5",
+      "errors": [],
+      "blocked": [
+        "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap"
+      ],
+      "initial": {
+        "docs": 2,
+        "assets": 2
+      },
+      "baseVersion": 2,
+      "refresh17s": {
+        "elapsedMs": 17007,
+        "readsBefore": 1,
+        "readsAfter": 2
+      },
+      "firstProposal": {
+        "schema": "syna-ad-document-local-1",
+        "id": "kqtws5ktgj94qnln",
+        "state": "proposed",
+        "recorded": false,
+        "delivered": false,
+        "costEur": 0,
+        "providerCalls": 0,
+        "financialConsent": false,
+        "confirmationRequired": true,
+        "actionsExecuted": false,
+        "target": {
+          "docKey": "ad:ui-c2bad9eb-12f2-482b-a59d-bed794b01cf5",
+          "layerId": "title",
+          "baseVersion": 2
+        },
+        "diff": {
+          "before": 40,
+          "after": 48
+        },
+        "nativeEffects": [
+          {
+            "field": "w",
+            "before": 600,
+            "after": 720
+          },
+          {
+            "field": "h",
+            "before": 100,
+            "after": 120
+          },
+          {
+            "field": "font.size",
+            "before": 40,
+            "after": 48
+          }
+        ],
+        "version": null,
+        "job": null,
+        "exportHref": null,
+        "proposalId": "kqtws5ktgj94qnln",
+        "expiresAt": 1793699495798,
+        "previews": {
+          "before": "/api/studio-agent/conversations/2ojk2orp05vcqcsn/ad-documents?receipt=kqtws5ktgj94qnln&preview=before",
+          "after": "/api/studio-agent/conversations/2ojk2orp05vcqcsn/ad-documents?receipt=kqtws5ktgj94qnln&preview=after"
+        }
+      },
+      "cancelledAfterActualReload": true,
+      "savedAfterActualReload": true,
+      "confirmBodies": [
+        {
+          "action": "confirm",
+          "proposalId": "298w1z634snlqbr4",
+          "confirmation": true,
+          "requestId": "ff654fbf-883b-4814-885c-154c23504d29"
+        }
+      ],
+      "outputVersion": {
+        "id": "sn9h7upan93s7uj2",
+        "docKey": "ad:ui-c2bad9eb-12f2-482b-a59d-bed794b01cf5",
+        "version": 3,
+        "source": "ai_local",
+        "note": "SYNA — titre agrandi gratuitement",
+        "renderedAssetId": "8n7hhru6wcj97w5h",
+        "createdAt": 1793698597418
+      },
+      "resultPngSha256": "c0f48aa9d004df170d34749dd4e8fa78e7f818e1c0092229aa960f666c7b9a7c",
+      "counters": {
+        "ai_calls": 0,
+        "jobs": 1,
+        "usage_events": 0,
+        "ai_reservations": 0
+      },
+      "sdkHttp": 0,
+      "budget": 0,
+      "status": "PASS"
+    },
+    {
+      "scene": {
+        "mode": "plein",
+        "width": 1440
+      },
+      "pid": "wx162nwxox0ef5r4",
+      "cid": "rqmhoshqzkiw8sgd",
+      "docKey": "ad:ui-1a780104-b124-4830-8db5-906921c9a604",
+      "errors": [],
+      "blocked": [
+        "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap"
+      ],
+      "initial": {
+        "docs": 2,
+        "assets": 2
+      },
+      "baseVersion": 2,
+      "refresh17s": {
+        "elapsedMs": 17005,
+        "readsBefore": 1,
+        "readsAfter": 2
+      },
+      "firstProposal": {
+        "schema": "syna-ad-document-local-1",
+        "id": "cfx0rix3veox8syn",
+        "state": "proposed",
+        "recorded": false,
+        "delivered": false,
+        "costEur": 0,
+        "providerCalls": 0,
+        "financialConsent": false,
+        "confirmationRequired": true,
+        "actionsExecuted": false,
+        "target": {
+          "docKey": "ad:ui-1a780104-b124-4830-8db5-906921c9a604",
+          "layerId": "title",
+          "baseVersion": 2
+        },
+        "diff": {
+          "before": 40,
+          "after": 48
+        },
+        "nativeEffects": [
+          {
+            "field": "w",
+            "before": 600,
+            "after": 720
+          },
+          {
+            "field": "h",
+            "before": 100,
+            "after": 120
+          },
+          {
+            "field": "font.size",
+            "before": 40,
+            "after": 48
+          }
+        ],
+        "version": null,
+        "job": null,
+        "exportHref": null,
+        "proposalId": "cfx0rix3veox8syn",
+        "expiresAt": 1793699521496,
+        "previews": {
+          "before": "/api/studio-agent/conversations/rqmhoshqzkiw8sgd/ad-documents?receipt=cfx0rix3veox8syn&preview=before",
+          "after": "/api/studio-agent/conversations/rqmhoshqzkiw8sgd/ad-documents?receipt=cfx0rix3veox8syn&preview=after"
+        }
+      },
+      "cancelledAfterActualReload": true,
+      "savedAfterActualReload": true,
+      "confirmBodies": [
+        {
+          "action": "confirm",
+          "proposalId": "ayh49tq29p9zaghz",
+          "confirmation": true,
+          "requestId": "53de83b4-6674-434a-9cb9-0d09af04506b"
+        }
+      ],
+      "outputVersion": {
+        "id": "n6tte83jj4qeujj6",
+        "docKey": "ad:ui-1a780104-b124-4830-8db5-906921c9a604",
+        "version": 3,
+        "source": "ai_local",
+        "note": "SYNA — titre agrandi gratuitement",
+        "renderedAssetId": "ie6knxsv7mpxafno",
+        "createdAt": 1793698623270
+      },
+      "resultPngSha256": "c0f48aa9d004df170d34749dd4e8fa78e7f818e1c0092229aa960f666c7b9a7c",
+      "counters": {
+        "ai_calls": 0,
+        "jobs": 1,
+        "usage_events": 0,
+        "ai_reservations": 0
+      },
+      "sdkHttp": 0,
+      "budget": 0,
+      "status": "PASS"
+    },
+    {
+      "scene": {
+        "mode": "encre",
+        "width": 390
+      },
+      "pid": "pvp9nlz9zzxddoh3",
+      "cid": "kerigi2mshrvioa6",
+      "docKey": "ad:ui-f06c9304-543e-4448-84bd-81e9fe404992",
+      "errors": [],
+      "blocked": [
+        "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap"
+      ],
+      "initial": {
+        "docs": 2,
+        "assets": 2
+      },
+      "baseVersion": 2,
+      "refresh17s": {
+        "elapsedMs": 17007,
+        "readsBefore": 1,
+        "readsAfter": 2
+      },
+      "firstProposal": {
+        "schema": "syna-ad-document-local-1",
+        "id": "dcxwz9behf0beqpf",
+        "state": "proposed",
+        "recorded": false,
+        "delivered": false,
+        "costEur": 0,
+        "providerCalls": 0,
+        "financialConsent": false,
+        "confirmationRequired": true,
+        "actionsExecuted": false,
+        "target": {
+          "docKey": "ad:ui-f06c9304-543e-4448-84bd-81e9fe404992",
+          "layerId": "title",
+          "baseVersion": 2
+        },
+        "diff": {
+          "before": 40,
+          "after": 48
+        },
+        "nativeEffects": [
+          {
+            "field": "w",
+            "before": 600,
+            "after": 720
+          },
+          {
+            "field": "h",
+            "before": 100,
+            "after": 120
+          },
+          {
+            "field": "font.size",
+            "before": 40,
+            "after": 48
+          }
+        ],
+        "version": null,
+        "job": null,
+        "exportHref": null,
+        "proposalId": "dcxwz9behf0beqpf",
+        "expiresAt": 1793699547497,
+        "previews": {
+          "before": "/api/studio-agent/conversations/kerigi2mshrvioa6/ad-documents?receipt=dcxwz9behf0beqpf&preview=before",
+          "after": "/api/studio-agent/conversations/kerigi2mshrvioa6/ad-documents?receipt=dcxwz9behf0beqpf&preview=after"
+        }
+      },
+      "cancelledAfterActualReload": true,
+      "savedAfterActualReload": true,
+      "confirmBodies": [
+        {
+          "action": "confirm",
+          "proposalId": "u8vr1g7qso2ykrvp",
+          "confirmation": true,
+          "requestId": "d41d5ec5-c415-4ef2-913d-15d327d814ef"
+        }
+      ],
+      "outputVersion": {
+        "id": "j7krvvwuceph87f6",
+        "docKey": "ad:ui-f06c9304-543e-4448-84bd-81e9fe404992",
+        "version": 3,
+        "source": "ai_local",
+        "note": "SYNA — titre agrandi gratuitement",
+        "renderedAssetId": "kly29j60vq86u888",
+        "createdAt": 1793698649079
+      },
+      "resultPngSha256": "c0f48aa9d004df170d34749dd4e8fa78e7f818e1c0092229aa960f666c7b9a7c",
+      "counters": {
+        "ai_calls": 0,
+        "jobs": 1,
+        "usage_events": 0,
+        "ai_reservations": 0
+      },
+      "sdkHttp": 0,
+      "budget": 0,
+      "status": "PASS"
+    }
+  ],
+  "sourceProof": "proof.json",
+  "screenshots": 24,
+  "nativePngExports": 4,
+  "traces": 4,
+  "artifacts": [
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/encre-1440-annulation-recharge.png",
+      "kind": "screenshot",
+      "sha256": "43e81eab1b5e0f76ed3d11aba0f6f3a3ba0f90c20060e8e1eb986492483e18dc",
+      "bytes": 271016
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/encre-1440-avant-apres.png",
+      "kind": "screenshot",
+      "sha256": "a5846254e669322878a848155178dde7161291bbea6255e72a9cadaaf8ef44fe",
+      "bytes": 39019
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/encre-1440-recu-recharge.png",
+      "kind": "screenshot",
+      "sha256": "24dd0ca5992d257660a6738b67f722d446ee2a9f21d4747ac4c96e9ad659c0f2",
+      "bytes": 266979
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/encre-1440-recu.png",
+      "kind": "screenshot",
+      "sha256": "9771c431c6f2625ccfc2df97d3691590ab1042740026505ad0470f0e24bd3c00",
+      "bytes": 37523
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/encre-1440-reponse-perdue.png",
+      "kind": "screenshot",
+      "sha256": "ddf339f33573387377f3655fd20ecf29f2aaa55f67d4839bb7f81c11e0b737a2",
+      "bytes": 254223
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/encre-1440-resultat.png",
+      "kind": "native_export",
+      "sha256": "c0f48aa9d004df170d34749dd4e8fa78e7f818e1c0092229aa960f666c7b9a7c",
+      "bytes": 16992
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/encre-1440-selection-native.png",
+      "kind": "screenshot",
+      "sha256": "3871efc9829ad371b700b2d8eea9b294eb65b12b8005d692a3cccd869ffdcc57",
+      "bytes": 103095
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/encre-1440-trace.zip",
+      "kind": "trace",
+      "sha256": "e869547b5f711db2619c4c34bb6d4578401417431717679b8ef5e92a6b02aa94",
+      "bytes": 8793350
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/encre-390-annulation-recharge.png",
+      "kind": "screenshot",
+      "sha256": "2046f03dcdfe1a2c9a47c5677593f5e8ef6c6f736e8843a029e988281ab26e0e",
+      "bytes": 80332
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/encre-390-avant-apres.png",
+      "kind": "screenshot",
+      "sha256": "40288f9d2ecf3bcace4ba2da3a659c13b2bd55b115f42e6edbc5949f2eac16df",
+      "bytes": 41973
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/encre-390-recu-recharge.png",
+      "kind": "screenshot",
+      "sha256": "b2ccbcf75859a17c6ba13f2e8184943a15795229c4e1ec9519746af0e7b091cc",
+      "bytes": 79151
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/encre-390-recu.png",
+      "kind": "screenshot",
+      "sha256": "9e040de009c51c32cb616a93553c7b52c0fa13f7c9dc2fae0b6defea25ce2352",
+      "bytes": 43514
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/encre-390-reponse-perdue.png",
+      "kind": "screenshot",
+      "sha256": "a0559d386d6c46a0e6eb0a8d452a469e77c93e31caef1bba082692bbf3716d57",
+      "bytes": 59538
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/encre-390-resultat.png",
+      "kind": "native_export",
+      "sha256": "c0f48aa9d004df170d34749dd4e8fa78e7f818e1c0092229aa960f666c7b9a7c",
+      "bytes": 16992
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/encre-390-selection-native.png",
+      "kind": "screenshot",
+      "sha256": "c304b13c82f3bd8145edf59011878224328609abae1ab43a902db92853d4ea46",
+      "bytes": 40232
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/encre-390-trace.zip",
+      "kind": "trace",
+      "sha256": "205aa6755cadb47ea14fc7d329b7e77e5451f34b4d574def677e8e543288b547",
+      "bytes": 5464163
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/plein-1440-annulation-recharge.png",
+      "kind": "screenshot",
+      "sha256": "d33b3effe111bc5e41021ca213d12bb3422daea91ba996efe5053ba6e27a568d",
+      "bytes": 247302
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/plein-1440-avant-apres.png",
+      "kind": "screenshot",
+      "sha256": "54d13b084cfdeb6e77ea10b767d284e430d725bd8dd3d24d47e9a51485cd3d39",
+      "bytes": 39411
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/plein-1440-recu-recharge.png",
+      "kind": "screenshot",
+      "sha256": "cdbd68b7ace2d3955b086446d39c81174203a7067bb3907eb193f4a829bd45d5",
+      "bytes": 245054
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/plein-1440-recu.png",
+      "kind": "screenshot",
+      "sha256": "c39eae9e9ee1aeca853bffd8bea49eb74c6fb4a0f42972456cef1dce917629cf",
+      "bytes": 37728
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/plein-1440-reponse-perdue.png",
+      "kind": "screenshot",
+      "sha256": "9c3bca03476f143e7431430e8e27c76c10f42027197bbedff731286c919596fc",
+      "bytes": 232088
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/plein-1440-resultat.png",
+      "kind": "native_export",
+      "sha256": "c0f48aa9d004df170d34749dd4e8fa78e7f818e1c0092229aa960f666c7b9a7c",
+      "bytes": 16992
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/plein-1440-selection-native.png",
+      "kind": "screenshot",
+      "sha256": "4b4d85115b2c6a7b76d05395e2e2b447548294acc79dde10df60ca2eba6b6192",
+      "bytes": 105472
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/plein-1440-trace.zip",
+      "kind": "trace",
+      "sha256": "cb4302c6498d140abca452ba0cd66c85bb51134fd001396baa81a4959b3f620d",
+      "bytes": 7247172
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/plein-390-annulation-recharge.png",
+      "kind": "screenshot",
+      "sha256": "f1abd7530a608122c62d1db8bcd4fa5704fabd97256f2bf03e31ac99274bcfb4",
+      "bytes": 90084
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/plein-390-avant-apres.png",
+      "kind": "screenshot",
+      "sha256": "8724b8c0b6acf5d36a0b64917df3a22738b6f5a14beab992cb25b02dc0aec60c",
+      "bytes": 42950
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/plein-390-recu-recharge.png",
+      "kind": "screenshot",
+      "sha256": "db4d02870694ae091e907747112e15d23409d6e200372f51f5c332f5be430e5c",
+      "bytes": 89199
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/plein-390-recu.png",
+      "kind": "screenshot",
+      "sha256": "1f44b828b8b95c8251fe1b8dd84f03778cb81579e76b32577cdd925819aa854f",
+      "bytes": 54873
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/plein-390-reponse-perdue.png",
+      "kind": "screenshot",
+      "sha256": "28dadcf60cfcc72a2741d34a6cdd80e92cf862f8821b7cdd90ad15da63167f76",
+      "bytes": 78718
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/plein-390-resultat.png",
+      "kind": "native_export",
+      "sha256": "c0f48aa9d004df170d34749dd4e8fa78e7f818e1c0092229aa960f666c7b9a7c",
+      "bytes": 16992
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/plein-390-selection-native.png",
+      "kind": "screenshot",
+      "sha256": "c304b13c82f3bd8145edf59011878224328609abae1ab43a902db92853d4ea46",
+      "bytes": 40232
+    },
+    {
+      "path": "/workspace/work/preuves-addoc347/ui/plein-390-trace.zip",
+      "kind": "trace",
+      "sha256": "4dd155c0162418e6ef7e1437967fcf4434ad5a4815de5ed399e553baab0db493",
+      "bytes": 5382951
+    }
+  ],
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "scope": "4 modes/devices, explicit native title/A2 selection, actual17s refresh, before/after preview, durable cancellation/reload, lost confirmation response, one free native job/version/render, PNG export and saved receipt/reload",
+  "priorAttempts": [
+    "ui-attempt1-undo-requires-save: harness assumed Undo cleared dirty; native requires explicit save, no product guard relaxed",
+    "ui-attempt2-context-pin: real product context rewrite invalidated pin; HTTP reproduction and targeted fix published in5287"
+  ]
+}
