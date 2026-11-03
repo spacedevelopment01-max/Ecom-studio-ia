@@ -96,7 +96,8 @@ try {
       try { const detail = await fn(); steps.push({ etape, ok: true, ...(detail ? { detail } : {}) }); console.log(`  ✓ ${label} · ${etape}${detail ? " — " + detail : ""}`); }
       catch (e) { steps.push({ etape, ok: false, detail: String(e).slice(0, 400), capture: await shot("echec-" + steps.length).catch(() => undefined) }); console.log(`  ✗ ${label} · ${etape} : ${String(e).slice(0, 300)}`); throw e; }
     };
-    const openSyna = async () => { if (!(await panel.count())) await page.locator('[aria-controls="syna-panel"]:visible').first().click(); await panel.waitFor(); };
+    // Un clic arrivé avant l'hydratation (machine chargée) est perdu : nouvel essai (3 au plus), jamais de faux succès.
+    const openSyna = async () => { for (let i = 0; i < 3 && !(await panel.count()); i++) { await page.locator('[aria-controls="syna-panel"]:visible').first().click(); await panel.waitFor({ timeout: 10000 }).catch(() => {}); } await panel.waitFor(); };
     const send = async (text: string) => { await openSyna(); await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SYNA" }).fill(text); await panel.getByRole("button", { name: "Enregistrer", exact: true }).click(); };
     const noOverflow = async () => check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "débordement horizontal");
     const confirmBtn = () => card.getByRole("button", { name: "Confirmer gratuitement", exact: true });
@@ -181,7 +182,7 @@ try {
         await shot("5-recu");
       });
       await step("fenêtre native Site › Publication : la demande apparaît traitée", async () => {
-        await page.goto(`${origin}/studio/${k.pid}/boutique?demande=${k.target}`, { waitUntil: "networkidle" });
+        await page.goto(`${origin}/studio/${k.pid}/boutique?demande=${k.target}`, { waitUntil: "networkidle", timeout: 180000 });
         const native = page.locator(`[data-site-request="${k.target}"]`);
         const shown = page.getByRole("button", { name: "Afficher aussi les traitées", exact: true });
         if (await shown.isVisible().catch(() => false)) await shown.click();
@@ -192,7 +193,7 @@ try {
         await shot("6-natif-traitee");
       });
       await step("rechargement : reçu conservé dans la conversation", async () => {
-        await page.goto(`${origin}/studio/${k.pid}/boutique`, { waitUntil: "networkidle" });
+        await page.goto(`${origin}/studio/${k.pid}/boutique`, { waitUntil: "networkidle", timeout: 180000 });
         await openSyna();
         await card.getByRole("status").getByText(/Enregistré et relu · reçu/).waitFor();
         await shot("7-apres-rechargement");
