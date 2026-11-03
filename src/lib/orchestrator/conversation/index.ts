@@ -190,7 +190,7 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
   // Réutilisation de l'Intent Engine ; pas de classificateur ou d'appel IA de production dans le lot A.
   const adCommand=cmd.action==='message'&&adDocumentCandidate(cmd.text);
   let adProposalId:string|undefined;
-  if(adCommand){const target=metaOf(initial).activeContext?.target;if(cmd.action==='message'&&cmd.context&&stableHash('ad-document-selected',cmd.context.target)!==stableHash('ad-document-selected',target))throw new HttpError(409,'La sélection affichée diffère du repère sauvegardé. Confirmez sa désignation avant de proposer la retouche.');if(target?.kind!=='ad-document-text')throw new HttpError(409,'Désignez le titre enregistré dans le contexte partagé avant cette demande.');const proposed=await proposeAdDocument(user,cid,{action:'propose',revision:cmd.revision,projectRevision:cmd.projectRevision!,docKey:target.docKey,layerId:target.layerId,expectedVersion:target.version,operation:'title-larger'});adProposalId=proposed.proposalId;}
+  if(adCommand){const selected=metaOf(initial).activeContext,target=selected?.target;if(cmd.action==='message'&&cmd.context&&(cmd.context.tab!==selected?.tab||cmd.context.projectId!==undefined&&cmd.context.projectId!==initial.project_id||stableHash('ad-document-selected',cmd.context.target)!==stableHash('ad-document-selected',target)))throw new HttpError(409,'La sélection affichée diffère du repère sauvegardé. Confirmez sa désignation avant de proposer la retouche.');if(target?.kind!=='ad-document-text')throw new HttpError(409,'Désignez le titre enregistré dans le contexte partagé avant cette demande.');const proposed=await proposeAdDocument(user,cid,{action:'propose',revision:cmd.revision,projectRevision:cmd.projectRevision!,docKey:target.docKey,layerId:target.layerId,expectedVersion:target.version,operation:'title-larger'});adProposalId=proposed.proposalId;}
   const fileCommand=cmd.action==='message'&&localFilesCandidate(cmd.text);
   const requestCommand=cmd.action==='message'&&localRequestsCandidate(cmd.text);
   const localCommand=cmd.action==='message'&&localSiteCandidate(cmd.text);
@@ -210,7 +210,7 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
     const { brief: b, revision, meta: m } = effective(c);
     if (revision !== cmd.projectRevision) throw new HttpError(409, L("La fiche a changé dans un autre écran. Relisez la version actuelle.", "The brief changed in another screen. Read the current version."), "conversation_brief_conflict");
     let changed = false, message = "", action: ActionCard | null = null;
-    if(cmd.action==='message'&&cmd.context){
+    if(cmd.action==='message'&&cmd.context&&!adCommand){
       if(!activeContextEnabled())throw new HttpError(404,L('Le repère contextuel est indisponible.','Context selection is unavailable.'),'conversation_context_disabled');
       const resolved=resolveActiveContext(c,cmd.context);
       m.activeContextTab=cmd.context.tab;
