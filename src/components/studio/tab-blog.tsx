@@ -149,7 +149,6 @@ export default function TabBlog() {
 
   return (
     <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6">
-      {cost.dialog}
       {active.map((j) => <JobProgress key={j.id} job={j} />)}
       <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-start gap-3">
@@ -214,6 +213,7 @@ export default function TabBlog() {
       <WriteDialog open={writeOpen} onClose={() => setWriteOpen(false)} left={left} admin={access.admin} confirm={cost.confirm} onStarted={(j) => { setWriteOpen(false); startJob(j); }} />
       {current && <ArticleEditor key={current.id} article={current} data={data} busy={busy} confirm={cost.confirm} onClose={() => setOpenId(null)} onChanged={reload} onStarted={(j) => { setOpenId(null); startJob(j); }} />}
       <ContentPanel types={["blog_article"]} title={t("Blog V2 : stratégie, sujets et brouillons éditables", "Blog V2: strategy, topics and editable drafts")} />
+      {cost.dialog}
     </div>
   );
 }
