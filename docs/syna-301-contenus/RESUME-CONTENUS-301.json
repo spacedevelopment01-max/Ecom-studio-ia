@@ -1,0 +1,174 @@
+{
+  "schema": "syna301-contenus-recette-1",
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "type": "plats",
+      "steps": [
+        {
+          "etape": "ouverture de l'espace natif dans le mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "« Désigner pour SYNA » : la fiche devient la cible",
+          "ok": true,
+          "detail": "Contenu désigné : Velouté de saison · version 1793660684564"
+        },
+        {
+          "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis, aucune écriture",
+          "ok": true,
+          "detail": "Avant : 16,00 € | Après confirmation : 18,50 €"
+        },
+        {
+          "etape": "réponse perdue après l'enregistrement : vérification sans deuxième écriture",
+          "ok": true,
+          "detail": "1 seule confirmation enregistrée"
+        },
+        {
+          "etape": "valeur exacte enregistrée, statut inchangé, espace à jour sans recharger",
+          "ok": true
+        },
+        {
+          "etape": "la désignation suit la nouvelle version : une 2e demande reste possible",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : valeur et reçu conservés",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "type": "biens",
+      "steps": [
+        {
+          "etape": "ouverture de l'espace natif dans le mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "« Désigner pour SYNA » : la fiche devient la cible",
+          "ok": true,
+          "detail": "Contenu désigné : Maison fictive · version 1793660684754"
+        },
+        {
+          "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis, aucune écriture",
+          "ok": true,
+          "detail": "Avant : Maison fictive | Après confirmation : Maison des Tilleuls | Avant : maison-fictive-v-0001 | Après confirmation : maison-des-tilleuls-v-0001"
+        },
+        {
+          "etape": "confirmation gratuite",
+          "ok": true
+        },
+        {
+          "etape": "valeur exacte enregistrée, statut inchangé, espace à jour sans recharger",
+          "ok": true
+        },
+        {
+          "etape": "la désignation suit la nouvelle version : une 2e demande reste possible",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : valeur et reçu conservés",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "type": "realisations",
+      "steps": [
+        {
+          "etape": "ouverture de l'espace natif dans le mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "« Désigner pour SYNA » : la fiche devient la cible",
+          "ok": true,
+          "detail": "Contenu désigné : Aménagement de van fictif · version 1793660684933"
+        },
+        {
+          "etape": "demande ambiguë : explication, aucun bouton, rien d'écrit",
+          "ok": true
+        },
+        {
+          "etape": "annulation avant l'accord : rien n'est écrit",
+          "ok": true
+        },
+        {
+          "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis, aucune écriture",
+          "ok": true,
+          "detail": "Avant : Aménagement de van fictif | Après confirmation : Van Sprinter aménagé"
+        },
+        {
+          "etape": "confirmation gratuite",
+          "ok": true
+        },
+        {
+          "etape": "valeur exacte enregistrée, statut inchangé, espace à jour sans recharger",
+          "ok": true
+        },
+        {
+          "etape": "la désignation suit la nouvelle version : une 2e demande reste possible",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : valeur et reçu conservés",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "type": "plats",
+      "steps": [
+        {
+          "etape": "ouverture de l'espace natif dans le mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "« Désigner pour SYNA » : la fiche devient la cible",
+          "ok": true,
+          "detail": "Contenu désigné : Velouté de saison · version 1793660685113"
+        },
+        {
+          "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis, aucune écriture",
+          "ok": true,
+          "detail": "Avant : 16,00 € | Après confirmation : 21,00 €"
+        },
+        {
+          "etape": "confirmation gratuite",
+          "ok": true
+        },
+        {
+          "etape": "valeur exacte enregistrée, statut inchangé, espace à jour sans recharger",
+          "ok": true
+        },
+        {
+          "etape": "la désignation suit la nouvelle version : une 2e demande reste possible",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : valeur et reçu conservés",
+          "ok": true
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "forbidden": [
+    "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap",
+    "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap",
+    "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap",
+    "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap"
+  ],
+  "coutIA": 0
+}
