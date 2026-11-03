@@ -8,7 +8,8 @@
  *   enregistré ») → « Agrandis le titre de la création sélectionnée » → carte gratuite : aperçus avant / après, effets,
  *   « Gratuit — 0 € », aucun devis, aucune écriture → [ordinateur : annulation persistante puis nouvelle proposition,
  *   attente réelle de 17 s] → « Confirmer gratuitement » → tâche native gratuite (worker réel) → reçu « Enregistré et relu ·
- *   version N » → export PNG → rechargement : reçu conservé → base : une seule nouvelle version, seul le titre agrandi.
+ *   version N » → export PNG → rechargement : reçu conservé → base : une seule nouvelle version, titre agrandi et seuls les
+ *   calques annoncés déplacés verticalement, aucun nouveau chevauchement. Créations BRUTES du moteur, non aménagées.
  * Bibliothèque de prompts : « Montre ma bibliothèque de prompts » → carte « Lecture seule — 0 € », titres seulement ;
  *   « Exécute le premier prompt » → aucune exécution (aucune tâche, aucun appel).
  *
@@ -36,9 +37,9 @@ const { mockAdDeps } = await import("../tests/ads-v2-mock");
 const { runAdEngineV2 } = await import("../src/lib/ads-v2/engine");
 const { runWithLang } = await import("../src/lib/i18n-server");
 const { saveAsset, getAsset, assetData } = await import("../src/lib/library");
-const { latestDoc, saveVersion } = await import("../src/lib/ad-doc/store");
+const { latestDoc } = await import("../src/lib/ad-doc/store");
+const { applyOps: applyAdOps } = await import("../src/lib/ad-doc/ops");
 const { localAdEdit } = await import("../src/lib/ad-doc/local-edit");
-type AdDocument = import("../src/lib/ad-doc/types").AdDocument;
 const { openProjectConversation } = await import("../src/lib/orchestrator/conversation");
 const { emptyInput } = await import("../src/lib/orchestrator/conversation/store");
 const { initialize } = await import("../src/lib/preparation/engine");
@@ -59,7 +60,7 @@ const SIZE = { ordinateur: { width: 1440, height: 1000 }, telephone: { width: 39
 const WAIT = 17_000;
 
 type Doc = { layers: { id: string; role: string; kind: string; visible: boolean; locked: boolean; x: number; y: number; w: number; h: number; font?: { size: number } }[]; width: number; height: number };
-const prepared: (typeof CASES[number] & { pid: string; cid: string; token: string; docKey: string; docIndex: number; version: number; titleId: string; titleSize: number })[] = [];
+const prepared: (typeof CASES[number] & { pid: string; cid: string; token: string; docKey: string; docIndex: number; version: number; titleId: string; titleSize: number; expected: string[] })[] = [];
 for (const k of CASES) {
   const u = await account();
   const pid = createProjectWithSubscription(u.id, null, () => { const p = seedImageFixture(u.id, "cosmetic"); return { projectId: p, result: p }; });
@@ -70,25 +71,19 @@ for (const k of CASES) {
   await runWithLang({ ui: "fr", content: "fr" }, () => runAdEngineV2(null, pid, { count: 2, platforms: ["meta_feed"] }, deps));
   const docs = all<{ doc_key: string }>("SELECT DISTINCT doc_key FROM ad_documents WHERE project_id=? ORDER BY doc_key", pid);
   // Création éligible : un seul calque titre, texte visible et déverrouillé (limite explicite du contrat #345).
-  // Limite vérifiée (sonde du 3 novembre) : sur les créations brutes du moteur V2, agrandir le titre ferait bouger l'accroche
-  // et le serveur refuse (422 « déplacerait un autre calque »). On reproduit donc le cas réel où le titre a de la place :
-  // le client l'a d'abord réduit dans l'éditeur natif (nouvelle version « user », titre × 0,8). Avant tout, on vérifie avec
-  // le moteur local que l'agrandissement ne touche QUE le titre ; sinon la création n'est pas retenue.
-  let chosen: { key: string; doc: Doc; version: number } | null = null, refused = 0;
+  // #301 v3 : création BRUTE du moteur V2, sans aucun aménagement (correctif #360 de Codex : les calques secondaires
+  // déplacés par le moteur natif sont annoncés et montrés avant l'accord). Le moteur local donne la liste attendue.
+  let chosen: { key: string; doc: Doc; version: number; expected: string[] } | null = null;
   for (const d of docs) {
     const l = latestDoc(pid, d.doc_key); if (!l) continue;
     const doc = l.doc as unknown as Doc; const titles = doc.layers.filter((x) => x.role === "title");
     if (!(titles.length === 1 && titles[0].kind === "text" && titles[0].visible && !titles[0].locked)) continue;
-    const only = (x: AdDocument) => { const e = localAdEdit(x, "agrandis le titre"); return e.local && e.ops.length > 0 && e.ops.every((op) => "id" in op && op.id === titles[0].id); };
-    if (!only(l.doc)) refused++;
-    const t0 = titles[0] as Doc["layers"][number] & { autoFit?: { minSize: number } | null };
-    const shrunk = { ...l.doc, meta: { ...l.doc.meta, source: "user" as const }, layers: l.doc.layers.map((x) => x.id !== t0.id ? x : { ...x, h: t0.h * 0.8, font: { ...t0.font!, size: Math.round(t0.font!.size * 0.8) }, ...(t0.autoFit ? { autoFit: { minSize: Math.round(t0.autoFit.minSize * 0.8) } } : {}) }) } as AdDocument;
-    if (!only(shrunk)) continue;
-    const v = saveVersion(pid, d.doc_key, shrunk, { note: "Titre réduit dans l'éditeur natif (recette)" });
-    chosen = { key: d.doc_key, doc: shrunk as unknown as Doc, version: v.version }; break;
+    const e = localAdEdit(l.doc, "agrandis le titre"); if (!e.local || !e.ops.length) continue;
+    const after = applyAdOps(l.doc, e.ops), expected = after.layers.filter((x) => { const o = l.doc.layers.find((y) => y.id === x.id)!; return JSON.stringify(o) !== JSON.stringify(x); }).map((x) => x.id);
+    chosen = { key: d.doc_key, doc, version: l.version.version, expected }; break;
   }
   if (!chosen) throw Error(`aucune création à titre unique pour ${k.mode}-${k.format}`);
-  console.log(`  · ${k.mode}-${k.format} : ${refused} création(s) brute(s) du moteur refusée(s) par la garde « autre calque » ; création retenue ${chosen.key} v${chosen.version} (titre réduit par le client)`);
+  console.log(`  · ${k.mode}-${k.format} : création brute ${chosen.key} v${chosen.version}, calques que le moteur natif modifie : ${chosen.expected.join(", ")}`);
   const title = chosen.doc.layers.find((x) => x.role === "title")!;
   // Projet préparé (état Préparation présent) : sinon la conversation le reprend en lecture seule A1, sans outils.
   { const p = loadProject(pid); initialize(pid, { ...emptyInput(), business: p.business, offerName: p.product.name, description: p.product.summary, services: p.services }); }
@@ -96,7 +91,7 @@ for (const k of CASES) {
   const token = id();
   run("INSERT INTO sessions(id,user_id,expires_at,created_at) VALUES(?,?,?,?)", sha256(token), u.id, now() + 3600000, now());
   writeSynaPrefs(u.id, "account", null, { mode: k.mode, panel: "collapsed" });
-  prepared.push({ ...k, pid, cid: c.id, token, docKey: chosen.key, docIndex: -1, version: chosen.version, titleId: title.id, titleSize: title.font?.size ?? 0 });
+  prepared.push({ ...k, pid, cid: c.id, token, docKey: chosen.key, docIndex: -1, version: chosen.version, titleId: title.id, titleSize: title.font?.size ?? 0, expected: chosen.expected });
 }
 
 const port = 5750 + Math.floor(Math.random() * 150), origin = `http://localhost:${port}`;
@@ -192,6 +187,9 @@ try {
         check(await imgLoaded("Création avant modification") && await imgLoaded("Aperçu exact après confirmation"), "aperçus non chargés");
         check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SYNA" }).count()), "bouton de devis pour un acte gratuit");
         check(JSON.stringify(versions()) === JSON.stringify(before), "écriture avant l'accord");
+        // Calques secondaires : annoncés avant l'accord, jamais « seul le titre » si d'autres bougent.
+        const secondary = k.expected.filter((id) => id !== k.titleId);
+        if (secondary.length) check(/ajustement supplémentaire/.test(txt) && /ajuste aussi les calques/.test(txt), "calques secondaires non annoncés avant accord");
         await noOverflow();
         await shot("3-proposition");
         return txt.split("\n").filter((l) => /Avant :|Après confirmation :/.test(l)).join(" | ").slice(0, 200);
@@ -237,14 +235,19 @@ try {
         await shot("6-recu");
         return `versions ${before.at(-1)} → ${after.at(-1)}, PNG ${(await r.body()).length} octets`;
       });
-      await step("base : seul le titre agrandi, autres calques identiques", async () => {
+      await step("base : titre agrandi, seuls les calques annoncés ont bougé (position verticale), aucun nouveau chevauchement", async () => {
         const rows = all<{ version: number; doc_json: string }>("SELECT version, doc_json FROM ad_documents WHERE project_id=? AND doc_key=? ORDER BY version DESC LIMIT 2", k.pid, k.docKey);
         const [n, o] = rows.map((r) => JSON.parse(r.doc_json) as Doc);
         const tn = n.layers.find((l) => l.id === k.titleId)!, to = o.layers.find((l) => l.id === k.titleId)!;
         check((tn.font?.size ?? 0) > (to.font?.size ?? 0), `taille ${to.font?.size} → ${tn.font?.size}`);
-        const others = (d: Doc) => JSON.stringify(d.layers.filter((l) => l.id !== k.titleId));
-        check(others(n) === others(o), "un autre calque a changé");
-        return `taille du titre ${to.font?.size} → ${tn.font?.size}`;
+        const moved = n.layers.filter((l) => JSON.stringify(l) !== JSON.stringify(o.layers.find((x) => x.id === l.id))).map((l) => l.id);
+        check(JSON.stringify(moved.sort()) === JSON.stringify([...k.expected].sort()), `calques modifiés ${moved} ≠ annoncés ${k.expected}`);
+        for (const id of moved.filter((m) => m !== k.titleId)) { const a = n.layers.find((l) => l.id === id) as Record<string, unknown>, b = o.layers.find((l) => l.id === id) as Record<string, unknown>; check(Object.keys(a).every((key) => key === "y" || key === "userEdited" || JSON.stringify(a[key]) === JSON.stringify(b[key])), `${id} : autre chose que la position verticale`); }
+        const boxes = (d: Doc) => d.layers.filter((l) => l.visible && (l.kind === "text" || l.kind === "button")), hit = (a: Doc["layers"][number], b: Doc["layers"][number]) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+        const pairs = (d: Doc) => { const r = new Set<string>(); const bx = boxes(d); bx.forEach((a, i) => bx.slice(i + 1).forEach((b) => { if (hit(a, b)) r.add(a.id + "|" + b.id); })); return r; };
+        const before = pairs(o), added = [...pairs(n)].filter((x) => !before.has(x));
+        check(!added.length, `nouveaux chevauchements : ${added}`);
+        return `taille du titre ${to.font?.size} → ${tn.font?.size} ; calques modifiés : ${moved.join(", ")} ; nouveaux chevauchements : 0`;
       });
       await step("rechargement : reçu et version conservés", async () => {
         await page.reload({ waitUntil: "networkidle" }); await openSyna();
