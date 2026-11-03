@@ -152,8 +152,11 @@ export const handlers: Record<string, Handler> = {
   /** SEO & Copywriting V2 : stratégie, brief, rédaction (locale puis IA contrôlée), barrière SEO, document versionné. */
   "content.v2": async (ctx) => {
     const { runContentEngineV2 } = await import("../src/lib/seo-v2/engine");
-    const r = await runContentEngineV2(ctx, ctx.payload.projectId, ctx.payload.request);
-    return { docKey: r.docKey, verdict: r.verdict, codes: r.codes, by: r.by, costMicro: r.costMicro, skipped: r.skipped, stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, notes: r.notes.slice(0, 20), delivery: r.delivery };
+    const r = ctx.payload.request?.type==='blog_article'
+      ? await (await import('../src/lib/seo-v2/native-blog-consent')).runNativeBlog(ctx)
+      : await runContentEngineV2(ctx, ctx.payload.projectId, ctx.payload.request);
+    const articleId=ctx.payload.request?.type==='blog_article'&&r.docKey?(await import('../src/lib/seo-v2/blog')).blogIdFor(r.docKey):null;
+    return { ...(articleId?{articleId}:{}),docKey: r.docKey, verdict: r.verdict, codes: r.codes, by: r.by, costMicro: r.costMicro, skipped: r.skipped, stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, notes: r.notes.slice(0, 20), delivery: r.delivery };
   },
   /** Vidéo V2 : intention, stratégie, script, storyboard, plans, document éditable, rendu, barrière vidéo. */
   "video.v2": async (ctx) => {
