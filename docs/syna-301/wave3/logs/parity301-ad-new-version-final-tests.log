@@ -1,0 +1,9 @@
+
+ RUN  v5.0.3 /workspace/work/parity301-next-domains
+
+
+ Test Files  3 passed (3)
+      Tests  34 passed (34)
+   Start at  12:33:34
+   Duration  24.35s (tests 74%, import 16%, transform 10%)
+

@@ -1,0 +1,188 @@
+{
+  "sourceCommit": "9636f000effa0eff94e1f4afd0a90557f4daf58d",
+  "sourceTree": "d19870f97ed30785d8916d9237c37fc6ec1335e0",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "sectionProvider": "native SDK/HTTP loopback",
+  "adProvider": "native engine with explicitly injected copy/image deps, not SDK/HTTP",
+  "creativeQualityQualified": false,
+  "cases": [
+    {
+      "domain": "ads",
+      "mode": "encre",
+      "width": 1440,
+      "status": "PASS",
+      "oldPayload409": true,
+      "cancelWithoutJob": true,
+      "confirmationMessage": "Une nouvelle proposition s\u2019ajoutera sans modifier cette cr\u00e9ation. Devis : estimation 2,712 % ; plafond 12,8582 % du budget IA, pour 1 concept(s) et 3 image(s). Les reprises restent plafonn\u00e9es. Continuer ?",
+      "serverQuote": {
+        "concepts": 1,
+        "images": 3,
+        "estimateMicro": 1166160,
+        "capMicro": 5529009,
+        "estimatePct": 2.7119999999999997,
+        "maximumPct": 12.858160465116278,
+        "ready": true,
+        "mode": "one-step",
+        "reason": null,
+        "ai": true
+      },
+      "approvedEstimateMicro": 1166160,
+      "oneJob": true,
+      "originalDocumentUnchanged": true,
+      "assets": [
+        {
+          "id": "3wclheev123eu4aj",
+          "sha256": "6a23d810c2da094fa4fccc09f082415c916eaf4f3d314e5cd14a633fedebabd5"
+        },
+        {
+          "id": "19sjwh0rp825q3jl",
+          "sha256": "6a23d810c2da094fa4fccc09f082415c916eaf4f3d314e5cd14a633fedebabd5"
+        },
+        {
+          "id": "yfeevqk25h4fczmn",
+          "sha256": "6a23d810c2da094fa4fccc09f082415c916eaf4f3d314e5cd14a633fedebabd5"
+        }
+      ],
+      "injectedImageCalls": 3,
+      "capsWithinServerQuote": true,
+      "sdkHttpCalls": 0,
+      "errors": []
+    },
+    {
+      "domain": "ads",
+      "mode": "encre",
+      "width": 390,
+      "status": "PASS",
+      "oldPayload409": true,
+      "cancelWithoutJob": true,
+      "confirmationMessage": "Une nouvelle proposition s\u2019ajoutera sans modifier cette cr\u00e9ation. Devis : estimation 2,712 % ; plafond 12,8582 % du budget IA, pour 1 concept(s) et 3 image(s). Les reprises restent plafonn\u00e9es. Continuer ?",
+      "serverQuote": {
+        "concepts": 1,
+        "images": 3,
+        "estimateMicro": 1166160,
+        "capMicro": 5529009,
+        "estimatePct": 2.7119999999999997,
+        "maximumPct": 12.858160465116278,
+        "ready": true,
+        "mode": "one-step",
+        "reason": null,
+        "ai": true
+      },
+      "approvedEstimateMicro": 1166160,
+      "oneJob": true,
+      "originalDocumentUnchanged": true,
+      "assets": [
+        {
+          "id": "jlqxu3a687dqyn8s",
+          "sha256": "6a23d810c2da094fa4fccc09f082415c916eaf4f3d314e5cd14a633fedebabd5"
+        },
+        {
+          "id": "8f3c93rsvai1yzln",
+          "sha256": "6a23d810c2da094fa4fccc09f082415c916eaf4f3d314e5cd14a633fedebabd5"
+        },
+        {
+          "id": "hq00s935d240j0h4",
+          "sha256": "6a23d810c2da094fa4fccc09f082415c916eaf4f3d314e5cd14a633fedebabd5"
+        }
+      ],
+      "injectedImageCalls": 3,
+      "capsWithinServerQuote": true,
+      "sdkHttpCalls": 0,
+      "errors": []
+    },
+    {
+      "domain": "ads",
+      "mode": "plein",
+      "width": 1440,
+      "status": "PASS",
+      "oldPayload409": true,
+      "cancelWithoutJob": true,
+      "confirmationMessage": "Une nouvelle proposition s\u2019ajoutera sans modifier cette cr\u00e9ation. Devis : estimation 2,712 % ; plafond 12,8582 % du budget IA, pour 1 concept(s) et 3 image(s). Les reprises restent plafonn\u00e9es. Continuer ?",
+      "serverQuote": {
+        "concepts": 1,
+        "images": 3,
+        "estimateMicro": 1166160,
+        "capMicro": 5529009,
+        "estimatePct": 2.7119999999999997,
+        "maximumPct": 12.858160465116278,
+        "ready": true,
+        "mode": "one-step",
+        "reason": null,
+        "ai": true
+      },
+      "approvedEstimateMicro": 1166160,
+      "oneJob": true,
+      "originalDocumentUnchanged": true,
+      "assets": [
+        {
+          "id": "yvxlh9tpx74rapwu",
+          "sha256": "6a23d810c2da094fa4fccc09f082415c916eaf4f3d314e5cd14a633fedebabd5"
+        },
+        {
+          "id": "kfp6b8rr10aa5gli",
+          "sha256": "6a23d810c2da094fa4fccc09f082415c916eaf4f3d314e5cd14a633fedebabd5"
+        },
+        {
+          "id": "ixnho32qqyxik3np",
+          "sha256": "6a23d810c2da094fa4fccc09f082415c916eaf4f3d314e5cd14a633fedebabd5"
+        }
+      ],
+      "injectedImageCalls": 3,
+      "capsWithinServerQuote": true,
+      "sdkHttpCalls": 0,
+      "errors": []
+    },
+    {
+      "domain": "ads",
+      "mode": "plein",
+      "width": 390,
+      "status": "PASS",
+      "oldPayload409": true,
+      "cancelWithoutJob": true,
+      "confirmationMessage": "Une nouvelle proposition s\u2019ajoutera sans modifier cette cr\u00e9ation. Devis : estimation 2,712 % ; plafond 12,8582 % du budget IA, pour 1 concept(s) et 3 image(s). Les reprises restent plafonn\u00e9es. Continuer ?",
+      "serverQuote": {
+        "concepts": 1,
+        "images": 3,
+        "estimateMicro": 1166160,
+        "capMicro": 5529009,
+        "estimatePct": 2.7119999999999997,
+        "maximumPct": 12.858160465116278,
+        "ready": true,
+        "mode": "one-step",
+        "reason": null,
+        "ai": true
+      },
+      "approvedEstimateMicro": 1166160,
+      "oneJob": true,
+      "originalDocumentUnchanged": true,
+      "assets": [
+        {
+          "id": "gyjrxsy6i7zxhiu7",
+          "sha256": "6a23d810c2da094fa4fccc09f082415c916eaf4f3d314e5cd14a633fedebabd5"
+        },
+        {
+          "id": "5gkhtcbtdjvkjtd2",
+          "sha256": "6a23d810c2da094fa4fccc09f082415c916eaf4f3d314e5cd14a633fedebabd5"
+        },
+        {
+          "id": "cg5ybh18hhjmyhlv",
+          "sha256": "6a23d810c2da094fa4fccc09f082415c916eaf4f3d314e5cd14a633fedebabd5"
+        }
+      ],
+      "injectedImageCalls": 3,
+      "capsWithinServerQuote": true,
+      "sdkHttpCalls": 0,
+      "errors": []
+    }
+  ],
+  "runtime": {
+    "commit": "9636f000effa0eff94e1f4afd0a90557f4daf58d",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "status": "PASS",
+  "sectionSdkHttpCalls": 0
+}

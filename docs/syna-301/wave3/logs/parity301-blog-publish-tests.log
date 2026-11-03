@@ -1,0 +1,9 @@
+
+ RUN  v5.0.3 /workspace/work/parity301-wave3-candidate
+
+
+ Test Files  6 passed (6)
+      Tests  72 passed (72)
+   Start at  12:12:56
+   Duration  18.86s (tests 54%, import 32%, transform 14%)
+

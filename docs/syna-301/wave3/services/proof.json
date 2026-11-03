@@ -1,0 +1,140 @@
+{
+  "sourceCommit": "9636f000effa0eff94e1f4afd0a90557f4daf58d",
+  "sourceTree": "d19870f97ed30785d8916d9237c37fc6ec1335e0",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "cases": [
+    {
+      "mode": "encre",
+      "width": 1440,
+      "status": "PASS",
+      "baselineGeometry": {
+        "width": 1440,
+        "scroll": 1440
+      },
+      "finalGeometry": {
+        "width": 1440,
+        "scroll": 1440,
+        "overflow": []
+      },
+      "cardWithinViewport": true,
+      "noAdditionalOverflow": true,
+      "paidQuoteAbsent": true,
+      "dirtyDraftAfter17Seconds": true,
+      "elapsedMsAtLeast": 17000,
+      "staleNativeWrite409": true,
+      "cancelNoWrite": true,
+      "explicitFreeConfirmation": true,
+      "oneConfirmation": 1,
+      "sourceVersion": 2,
+      "resultVersion": 3,
+      "lostResponseVerifiedWithoutResend": true,
+      "existingThemeUnchanged": true,
+      "spendUnchanged": true,
+      "jobs": 0,
+      "providerCalls": 0,
+      "errors": []
+    },
+    {
+      "mode": "encre",
+      "width": 390,
+      "status": "PASS",
+      "baselineGeometry": {
+        "width": 390,
+        "scroll": 404
+      },
+      "finalGeometry": {
+        "width": 390,
+        "scroll": 404,
+        "overflow": []
+      },
+      "cardWithinViewport": true,
+      "noAdditionalOverflow": true,
+      "paidQuoteAbsent": true,
+      "dirtyDraftAfter17Seconds": true,
+      "elapsedMsAtLeast": 17000,
+      "staleNativeWrite409": true,
+      "cancelNoWrite": true,
+      "explicitFreeConfirmation": true,
+      "oneConfirmation": 1,
+      "sourceVersion": 2,
+      "resultVersion": 3,
+      "lostResponseVerifiedWithoutResend": false,
+      "existingThemeUnchanged": true,
+      "spendUnchanged": true,
+      "jobs": 0,
+      "providerCalls": 0,
+      "errors": []
+    },
+    {
+      "mode": "plein",
+      "width": 1440,
+      "status": "PASS",
+      "baselineGeometry": {
+        "width": 1440,
+        "scroll": 1440
+      },
+      "finalGeometry": {
+        "width": 1440,
+        "scroll": 1440,
+        "overflow": []
+      },
+      "cardWithinViewport": true,
+      "noAdditionalOverflow": true,
+      "paidQuoteAbsent": true,
+      "dirtyDraftAfter17Seconds": true,
+      "elapsedMsAtLeast": 17000,
+      "staleNativeWrite409": true,
+      "cancelNoWrite": true,
+      "explicitFreeConfirmation": true,
+      "oneConfirmation": 1,
+      "sourceVersion": 2,
+      "resultVersion": 3,
+      "lostResponseVerifiedWithoutResend": false,
+      "existingThemeUnchanged": true,
+      "spendUnchanged": true,
+      "jobs": 0,
+      "providerCalls": 0,
+      "errors": []
+    },
+    {
+      "mode": "plein",
+      "width": 390,
+      "status": "PASS",
+      "baselineGeometry": {
+        "width": 390,
+        "scroll": 404
+      },
+      "finalGeometry": {
+        "width": 390,
+        "scroll": 404,
+        "overflow": []
+      },
+      "cardWithinViewport": true,
+      "noAdditionalOverflow": true,
+      "paidQuoteAbsent": true,
+      "dirtyDraftAfter17Seconds": true,
+      "elapsedMsAtLeast": 17000,
+      "staleNativeWrite409": true,
+      "cancelNoWrite": true,
+      "explicitFreeConfirmation": true,
+      "oneConfirmation": 1,
+      "sourceVersion": 2,
+      "resultVersion": 3,
+      "lostResponseVerifiedWithoutResend": false,
+      "existingThemeUnchanged": true,
+      "spendUnchanged": true,
+      "jobs": 0,
+      "providerCalls": 0,
+      "errors": []
+    }
+  ],
+  "runtime": {
+    "commit": "9636f000effa0eff94e1f4afd0a90557f4daf58d",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "status": "PASS"
+}

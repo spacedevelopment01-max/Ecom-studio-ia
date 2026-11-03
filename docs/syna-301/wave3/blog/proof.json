@@ -1,0 +1,284 @@
+{
+  "sourceCommit": "9636f000effa0eff94e1f4afd0a90557f4daf58d",
+  "sourceTree": "d19870f97ed30785d8916d9237c37fc6ec1335e0",
+  "cases": [
+    {
+      "mode": "encre",
+      "width": 1440,
+      "status": "PASS",
+      "quoteWithoutJob": true,
+      "cancelWithoutJob": true,
+      "missingConsent409": true,
+      "lostResponseRecovered": true,
+      "jobs": 2,
+      "articleId": "b245a9bf5081fc51a86763",
+      "quotaBefore": {
+        "included": 10,
+        "rollover": 0,
+        "pack": 0,
+        "used": 0,
+        "left": 10
+      },
+      "quotaAfter": {
+        "included": 10,
+        "rollover": 0,
+        "pack": 0,
+        "used": 1,
+        "left": 9
+      },
+      "providerHttpCalls": 4,
+      "usage": [
+        {
+          "billed": 2064,
+          "estimated": 0,
+          "provider": "anthropic"
+        },
+        {
+          "billed": 1032,
+          "estimated": 0,
+          "provider": "anthropic"
+        },
+        {
+          "billed": 2064,
+          "estimated": 0,
+          "provider": "anthropic"
+        },
+        {
+          "billed": 1032,
+          "estimated": 0,
+          "provider": "anthropic"
+        }
+      ],
+      "manualReloadNoCall": true,
+      "errors": []
+    },
+    {
+      "mode": "plein",
+      "width": 390,
+      "status": "PASS",
+      "quoteWithoutJob": true,
+      "cancelWithoutJob": true,
+      "missingConsent409": true,
+      "lostResponseRecovered": false,
+      "jobs": 2,
+      "articleId": "b2767ef0450f1dc2ac7fa0",
+      "quotaBefore": {
+        "included": 10,
+        "rollover": 0,
+        "pack": 0,
+        "used": 0,
+        "left": 10
+      },
+      "quotaAfter": {
+        "included": 10,
+        "rollover": 0,
+        "pack": 0,
+        "used": 1,
+        "left": 9
+      },
+      "providerHttpCalls": 4,
+      "usage": [
+        {
+          "billed": 2064,
+          "estimated": 0,
+          "provider": "anthropic"
+        },
+        {
+          "billed": 1032,
+          "estimated": 0,
+          "provider": "anthropic"
+        },
+        {
+          "billed": 2064,
+          "estimated": 0,
+          "provider": "anthropic"
+        },
+        {
+          "billed": 1032,
+          "estimated": 0,
+          "provider": "anthropic"
+        }
+      ],
+      "manualReloadNoCall": true,
+      "errors": []
+    },
+    {
+      "mode": "plein",
+      "width": 1440,
+      "status": "PASS",
+      "quoteWithoutJob": true,
+      "cancelWithoutJob": true,
+      "missingConsent409": true,
+      "lostResponseRecovered": false,
+      "jobs": 2,
+      "articleId": "b27531d9f4a308c5ec5f51",
+      "quotaBefore": {
+        "included": 10,
+        "rollover": 0,
+        "pack": 0,
+        "used": 0,
+        "left": 10
+      },
+      "quotaAfter": {
+        "included": 10,
+        "rollover": 0,
+        "pack": 0,
+        "used": 1,
+        "left": 9
+      },
+      "providerHttpCalls": 4,
+      "usage": [
+        {
+          "billed": 2064,
+          "estimated": 0,
+          "provider": "anthropic"
+        },
+        {
+          "billed": 1032,
+          "estimated": 0,
+          "provider": "anthropic"
+        },
+        {
+          "billed": 2064,
+          "estimated": 0,
+          "provider": "anthropic"
+        },
+        {
+          "billed": 1032,
+          "estimated": 0,
+          "provider": "anthropic"
+        }
+      ],
+      "manualReloadNoCall": true,
+      "errors": []
+    },
+    {
+      "mode": "encre",
+      "width": 390,
+      "status": "PASS",
+      "quoteWithoutJob": true,
+      "cancelWithoutJob": true,
+      "missingConsent409": true,
+      "lostResponseRecovered": false,
+      "jobs": 2,
+      "articleId": "b260b8f88a834def890283",
+      "quotaBefore": {
+        "included": 10,
+        "rollover": 0,
+        "pack": 0,
+        "used": 0,
+        "left": 10
+      },
+      "quotaAfter": {
+        "included": 10,
+        "rollover": 0,
+        "pack": 0,
+        "used": 1,
+        "left": 9
+      },
+      "providerHttpCalls": 4,
+      "usage": [
+        {
+          "billed": 2064,
+          "estimated": 0,
+          "provider": "anthropic"
+        },
+        {
+          "billed": 1032,
+          "estimated": 0,
+          "provider": "anthropic"
+        },
+        {
+          "billed": 2064,
+          "estimated": 0,
+          "provider": "anthropic"
+        },
+        {
+          "billed": 1032,
+          "estimated": 0,
+          "provider": "anthropic"
+        }
+      ],
+      "manualReloadNoCall": true,
+      "errors": []
+    }
+  ],
+  "realSupplierCalls": 0,
+  "realCostEur": 0,
+  "worker": "actual claimed dispatcher one-shot, not daemon scheduling",
+  "runtime": {
+    "commit": "9636f000effa0eff94e1f4afd0a90557f4daf58d",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "status": "PASS",
+  "providerHttpCalls": 16,
+  "wire": [
+    {
+      "phase": "write",
+      "promptSha256": "7aea8c66d6d4c17292a621fd8b175d8c6259d1ad36dfa5823e7cba7aa0b05a35"
+    },
+    {
+      "phase": "review",
+      "promptSha256": "1f4f2ff82fd6aca92c4a33eaf60068227558f76216061c840f49632937a2248a"
+    },
+    {
+      "phase": "write",
+      "promptSha256": "fb958b0ff509305a910b175fccdab5ef503c3007543004cb79bc2bb456b1439f"
+    },
+    {
+      "phase": "review",
+      "promptSha256": "b23a0a65bb3ed5f8bf63245e5e7ae66ccad825380964e4997af8c1c2204bcab3"
+    },
+    {
+      "phase": "write",
+      "promptSha256": "7aea8c66d6d4c17292a621fd8b175d8c6259d1ad36dfa5823e7cba7aa0b05a35"
+    },
+    {
+      "phase": "review",
+      "promptSha256": "901e2c74177da78dba469b5d1ac1361bb74ccb673031cda4ec22c9aabebb9e62"
+    },
+    {
+      "phase": "write",
+      "promptSha256": "fb958b0ff509305a910b175fccdab5ef503c3007543004cb79bc2bb456b1439f"
+    },
+    {
+      "phase": "review",
+      "promptSha256": "85dd3cc5bb8de1856eb0b1ea3a3d793cb28f5514811f3a21039d2702332e9c1a"
+    },
+    {
+      "phase": "write",
+      "promptSha256": "7aea8c66d6d4c17292a621fd8b175d8c6259d1ad36dfa5823e7cba7aa0b05a35"
+    },
+    {
+      "phase": "review",
+      "promptSha256": "3a72b2d019d1eca7de370e78f8f701bd614ee29fb2d0e55298ebf9acae1a759f"
+    },
+    {
+      "phase": "write",
+      "promptSha256": "fb958b0ff509305a910b175fccdab5ef503c3007543004cb79bc2bb456b1439f"
+    },
+    {
+      "phase": "review",
+      "promptSha256": "99a1d4b89be27a26e14e318075e416bf6ef1959c9dd6fc124721362d9fe9a245"
+    },
+    {
+      "phase": "write",
+      "promptSha256": "7aea8c66d6d4c17292a621fd8b175d8c6259d1ad36dfa5823e7cba7aa0b05a35"
+    },
+    {
+      "phase": "review",
+      "promptSha256": "f7703db9a73c87734bbf8bd37e731de18c030c72432c1e73cdf01867fef46bd0"
+    },
+    {
+      "phase": "write",
+      "promptSha256": "fb958b0ff509305a910b175fccdab5ef503c3007543004cb79bc2bb456b1439f"
+    },
+    {
+      "phase": "review",
+      "promptSha256": "dd881af854930abd007bce3c2f89f9f0726bc9e6742f8016555ae28906df3017"
+    }
+  ]
+}

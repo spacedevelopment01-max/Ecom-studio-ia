@@ -1,0 +1,30 @@
+{
+  "schema": "syna301-wave3-evidence-verification-1",
+  "baseArchiveCommit": "abbbe0fbe95abc11fa66e43fcabc3067a95cdb16",
+  "sourceCommit": "9636f000effa0eff94e1f4afd0a90557f4daf58d",
+  "sourceTree": "d19870f97ed30785d8916d9237c37fc6ec1335e0",
+  "canonicalRows": 84,
+  "changedRows": [
+    "services.update",
+    "blog.generate",
+    "blog.edit",
+    "native.sections",
+    "native.ad-regenerate"
+  ],
+  "synaStatusChangedRows": [
+    "services.update"
+  ],
+  "synaCounts": {
+    "PARTIEL": 54,
+    "NON_TESTE": 2,
+    "ABSENT": 28
+  },
+  "uiCases": 16,
+  "PNGs": 56,
+  "traces": 16,
+  "realSupplierCalls": 0,
+  "realCostEur": 0,
+  "screenshotPublication": "BLOCKED_AUTOREVIEW_PRECISE_USER_APPROVAL_PENDING",
+  "imagesExcludedFromThisTree": true,
+  "CI": "final run41641586420 in_progress; mandatory fourth free confirmation PASS"
+}

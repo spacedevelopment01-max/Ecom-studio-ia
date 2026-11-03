@@ -1,0 +1,674 @@
+[
+  {
+    "domain": "blog",
+    "file": "encre-1440-accord-enregistre.png",
+    "bytes": 160189,
+    "sha256": "edbd30b4d88cc95267a74e200a083ddb2f14ff1989da423921fdc552ebf353a5",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/encre-1440-accord-enregistre.png",
+    "archive": "docs/syna-301/wave3/blog/encre-1440-accord-enregistre.png"
+  },
+  {
+    "domain": "blog",
+    "file": "encre-1440-article-et-apercu.png",
+    "bytes": 221222,
+    "sha256": "ef9dc76af665c2e610fe19b4484391e55d27adf5b1302eeb7ef6ad804f593648",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/encre-1440-article-et-apercu.png",
+    "archive": "docs/syna-301/wave3/blog/encre-1440-article-et-apercu.png"
+  },
+  {
+    "domain": "blog",
+    "file": "encre-1440-plafond-avant-accord.png",
+    "bytes": 206708,
+    "sha256": "57d8c5ac7f39ee5cbc0270d0a9e0283c596a2e969243d1e9ba74a71a68d30352",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/encre-1440-plafond-avant-accord.png",
+    "archive": "docs/syna-301/wave3/blog/encre-1440-plafond-avant-accord.png"
+  },
+  {
+    "domain": "blog",
+    "file": "encre-1440-reecriture-native.png",
+    "bytes": 225454,
+    "sha256": "2e59728964715224cf530302632da5643464dbbb92de470e7eb612fa39a7c8c3",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/encre-1440-reecriture-native.png",
+    "archive": "docs/syna-301/wave3/blog/encre-1440-reecriture-native.png"
+  },
+  {
+    "domain": "blog",
+    "file": "encre-1440-retouche-gratuite-recharge.png",
+    "bytes": 204961,
+    "sha256": "dbbcbe7566779f27ac6d0fccd88879d7814ef353aa308455506ae1b8e23ad704",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/encre-1440-retouche-gratuite-recharge.png",
+    "archive": "docs/syna-301/wave3/blog/encre-1440-retouche-gratuite-recharge.png"
+  },
+  {
+    "domain": "blog",
+    "file": "encre-1440-trace.zip",
+    "bytes": 4089633,
+    "sha256": "7d30bee8bc1bed775705c32497fd253109e9e110909cd0359b140a66c16343f3",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/encre-1440-trace.zip",
+    "archive": null
+  },
+  {
+    "domain": "blog",
+    "file": "encre-390-accord-enregistre.png",
+    "bytes": 73151,
+    "sha256": "ff4ba9f9b6db7fb9f9769805bff12dab141b7204868e476829ffb46ea2ac15b6",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/encre-390-accord-enregistre.png",
+    "archive": "docs/syna-301/wave3/blog/encre-390-accord-enregistre.png"
+  },
+  {
+    "domain": "blog",
+    "file": "encre-390-article-et-apercu.png",
+    "bytes": 70473,
+    "sha256": "d5ec5a29b81e3277468c5e8e585eb92245b44db69e3a02f16268ec75398bcea2",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/encre-390-article-et-apercu.png",
+    "archive": "docs/syna-301/wave3/blog/encre-390-article-et-apercu.png"
+  },
+  {
+    "domain": "blog",
+    "file": "encre-390-plafond-avant-accord.png",
+    "bytes": 89385,
+    "sha256": "8f42b8cc965b04adaf56a42eff50d4f1b8e4b530e39222bf755fd5ffef32b294",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/encre-390-plafond-avant-accord.png",
+    "archive": "docs/syna-301/wave3/blog/encre-390-plafond-avant-accord.png"
+  },
+  {
+    "domain": "blog",
+    "file": "encre-390-reecriture-native.png",
+    "bytes": 71093,
+    "sha256": "0fef8a6ba3a8b920e5a318fbbc3cbfe2e379ef175baf8589cb35d9ed003e1490",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/encre-390-reecriture-native.png",
+    "archive": "docs/syna-301/wave3/blog/encre-390-reecriture-native.png"
+  },
+  {
+    "domain": "blog",
+    "file": "encre-390-retouche-gratuite-recharge.png",
+    "bytes": 67102,
+    "sha256": "a3f5bed55152a26fb68a4ad827bd6a4bce7d1e2dccb48836fad6caceaf617d5e",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/encre-390-retouche-gratuite-recharge.png",
+    "archive": "docs/syna-301/wave3/blog/encre-390-retouche-gratuite-recharge.png"
+  },
+  {
+    "domain": "blog",
+    "file": "encre-390-trace.zip",
+    "bytes": 3057805,
+    "sha256": "c63ff03f6255ec831af33bb8ce8fbfe3d87e61fa9dccb79a8bfebecc2b3c4021",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/encre-390-trace.zip",
+    "archive": null
+  },
+  {
+    "domain": "blog",
+    "file": "plein-1440-accord-enregistre.png",
+    "bytes": 128728,
+    "sha256": "56b94e552124f9981fad587124d7a88d731c76c6d9ace71509a293132a7f5677",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/plein-1440-accord-enregistre.png",
+    "archive": "docs/syna-301/wave3/blog/plein-1440-accord-enregistre.png"
+  },
+  {
+    "domain": "blog",
+    "file": "plein-1440-article-et-apercu.png",
+    "bytes": 182594,
+    "sha256": "0acce9793efd008021101345803c23f3a8947a585593e74074f56cb7ecfa9b7e",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/plein-1440-article-et-apercu.png",
+    "archive": "docs/syna-301/wave3/blog/plein-1440-article-et-apercu.png"
+  },
+  {
+    "domain": "blog",
+    "file": "plein-1440-plafond-avant-accord.png",
+    "bytes": 191835,
+    "sha256": "0c0dda62843b90b41c90117d02fe663eefa19f2b13bfe67281d3f06782c84901",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/plein-1440-plafond-avant-accord.png",
+    "archive": "docs/syna-301/wave3/blog/plein-1440-plafond-avant-accord.png"
+  },
+  {
+    "domain": "blog",
+    "file": "plein-1440-reecriture-native.png",
+    "bytes": 186227,
+    "sha256": "34ea5fc8f4cace788b7190a52ac7c9fe6dbdbada7112780b4e532fc41ad46678",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/plein-1440-reecriture-native.png",
+    "archive": "docs/syna-301/wave3/blog/plein-1440-reecriture-native.png"
+  },
+  {
+    "domain": "blog",
+    "file": "plein-1440-retouche-gratuite-recharge.png",
+    "bytes": 169875,
+    "sha256": "29edacd28e06eb8eb971ee81f89cf43fb58c3f0418b4a0ef9a0cd3ea93e15865",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/plein-1440-retouche-gratuite-recharge.png",
+    "archive": "docs/syna-301/wave3/blog/plein-1440-retouche-gratuite-recharge.png"
+  },
+  {
+    "domain": "blog",
+    "file": "plein-1440-trace.zip",
+    "bytes": 3111229,
+    "sha256": "e49dffd668b1cbaabac4f024158345226e070e311186313facc9b1efc5457a97",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/plein-1440-trace.zip",
+    "archive": null
+  },
+  {
+    "domain": "blog",
+    "file": "plein-390-accord-enregistre.png",
+    "bytes": 73898,
+    "sha256": "679c3de1ed91da368505b3fe9d29520c2acc7183d880022b4543d38f395407ab",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/plein-390-accord-enregistre.png",
+    "archive": "docs/syna-301/wave3/blog/plein-390-accord-enregistre.png"
+  },
+  {
+    "domain": "blog",
+    "file": "plein-390-article-et-apercu.png",
+    "bytes": 71666,
+    "sha256": "4de1dca689b0bb27059c45d5cae19d9beea14c8293ae9163f5d98e16e5c52b78",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/plein-390-article-et-apercu.png",
+    "archive": "docs/syna-301/wave3/blog/plein-390-article-et-apercu.png"
+  },
+  {
+    "domain": "blog",
+    "file": "plein-390-plafond-avant-accord.png",
+    "bytes": 90082,
+    "sha256": "8b0797bc35f7e3134325b2bca26bbb4fe0a681d713fd691d7a3fe236db26c185",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/plein-390-plafond-avant-accord.png",
+    "archive": "docs/syna-301/wave3/blog/plein-390-plafond-avant-accord.png"
+  },
+  {
+    "domain": "blog",
+    "file": "plein-390-reecriture-native.png",
+    "bytes": 72288,
+    "sha256": "0a37c4c9f7f5b6b03f971d73c88b2c18737190fa2720fae4900ace15fc818720",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/plein-390-reecriture-native.png",
+    "archive": "docs/syna-301/wave3/blog/plein-390-reecriture-native.png"
+  },
+  {
+    "domain": "blog",
+    "file": "plein-390-retouche-gratuite-recharge.png",
+    "bytes": 68645,
+    "sha256": "d8369835aa72558d006acef6f045cc8c685d4abf90893eb8c4454f3afc18107d",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/plein-390-retouche-gratuite-recharge.png",
+    "archive": "docs/syna-301/wave3/blog/plein-390-retouche-gratuite-recharge.png"
+  },
+  {
+    "domain": "blog",
+    "file": "plein-390-trace.zip",
+    "bytes": 3266941,
+    "sha256": "b4840c60a1499f76b7f5e63b08f9560cd1c8430d2f791866f557056e687ae889",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/plein-390-trace.zip",
+    "archive": null
+  },
+  {
+    "domain": "blog",
+    "file": "proof.json",
+    "bytes": 6861,
+    "sha256": "e69048316113b1ec1cd952d93f2f9ce2685f3a0f6c4ed942054715b53bf020f8",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/proof.json",
+    "archive": "docs/syna-301/wave3/blog/proof.json"
+  },
+  {
+    "domain": "blog",
+    "file": "server.log",
+    "bytes": 145,
+    "sha256": "3a00a87ab04585ef0e1be5900853fdc9d0b94678755df9c9c73ca3f60e949289",
+    "localPath": "/workspace/work/preuves-wave3-blog-ui/server.log",
+    "archive": null
+  },
+  {
+    "domain": "services",
+    "file": "encre-1440-avant-apres-sans-ecriture.png",
+    "bytes": 274975,
+    "sha256": "7b7ab9e126ca55793801329d77c3969788ec0d4b1b774d3eaa5cee821f989f63",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/encre-1440-avant-apres-sans-ecriture.png",
+    "archive": "docs/syna-301/wave3/services/encre-1440-avant-apres-sans-ecriture.png"
+  },
+  {
+    "domain": "services",
+    "file": "encre-1440-brouillon17s-conflit409.png",
+    "bytes": 168603,
+    "sha256": "2a0fd8ea965a4d059367ddd16fe4f63bdb1e9921014f1ee2af86a05018bd8ae8",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/encre-1440-brouillon17s-conflit409.png",
+    "archive": "docs/syna-301/wave3/services/encre-1440-brouillon17s-conflit409.png"
+  },
+  {
+    "domain": "services",
+    "file": "encre-1440-geometry.json",
+    "bytes": 140,
+    "sha256": "d935165c2fd9d5d425214811ed672187697bde3b4f57abc1fd7e2b6c49100da1",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/encre-1440-geometry.json",
+    "archive": null
+  },
+  {
+    "domain": "services",
+    "file": "encre-1440-profil-et-recu-recharges.png",
+    "bytes": 278413,
+    "sha256": "2e6433a08d8606ee68a6290808f385a2728e7b975761cb6eca871da3636d4672",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/encre-1440-profil-et-recu-recharges.png",
+    "archive": "docs/syna-301/wave3/services/encre-1440-profil-et-recu-recharges.png"
+  },
+  {
+    "domain": "services",
+    "file": "encre-1440-recu-natif.png",
+    "bytes": 266096,
+    "sha256": "90c1e36f5afe78163995aa06ef8b1755db0d5fa5d5422e524032b3499fe52383",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/encre-1440-recu-natif.png",
+    "archive": "docs/syna-301/wave3/services/encre-1440-recu-natif.png"
+  },
+  {
+    "domain": "services",
+    "file": "encre-1440-trace.zip",
+    "bytes": 7561713,
+    "sha256": "001861d7227e6645206c41f01004567368f35c0d85aac9e9873cdbd34b76e497",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/encre-1440-trace.zip",
+    "archive": null
+  },
+  {
+    "domain": "services",
+    "file": "encre-390-avant-apres-sans-ecriture.png",
+    "bytes": 74683,
+    "sha256": "0e2d86eb544869172e43dd6737548191eb1125252e142f979d3a84af6da074f3",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/encre-390-avant-apres-sans-ecriture.png",
+    "archive": "docs/syna-301/wave3/services/encre-390-avant-apres-sans-ecriture.png"
+  },
+  {
+    "domain": "services",
+    "file": "encre-390-brouillon17s-conflit409.png",
+    "bytes": 72711,
+    "sha256": "16529d2cd0b6e0af5f630e65b858f68b9ef2a6faa063448650cbbe2d85ce94ac",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/encre-390-brouillon17s-conflit409.png",
+    "archive": "docs/syna-301/wave3/services/encre-390-brouillon17s-conflit409.png"
+  },
+  {
+    "domain": "services",
+    "file": "encre-390-geometry.json",
+    "bytes": 136,
+    "sha256": "d49c7db7f7a70a1362ddbc9ef70e0387aef8849ed9006e67342ed45a82971676",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/encre-390-geometry.json",
+    "archive": null
+  },
+  {
+    "domain": "services",
+    "file": "encre-390-profil-et-recu-recharges.png",
+    "bytes": 74229,
+    "sha256": "d6744a88f530c679aad96667c4d2d2fa895cb905ee9c8506d0755cdfba2a270e",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/encre-390-profil-et-recu-recharges.png",
+    "archive": "docs/syna-301/wave3/services/encre-390-profil-et-recu-recharges.png"
+  },
+  {
+    "domain": "services",
+    "file": "encre-390-recu-natif.png",
+    "bytes": 67275,
+    "sha256": "ed1394b03f0a0a7343702629781ba551ea5c898062a75f2a4534c990f86423d2",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/encre-390-recu-natif.png",
+    "archive": "docs/syna-301/wave3/services/encre-390-recu-natif.png"
+  },
+  {
+    "domain": "services",
+    "file": "encre-390-trace.zip",
+    "bytes": 4667032,
+    "sha256": "5cf2b070346a56eaf05e7f94af540eb215a7f12aa95ff15e78f7dc9f83610d15",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/encre-390-trace.zip",
+    "archive": null
+  },
+  {
+    "domain": "services",
+    "file": "plein-1440-avant-apres-sans-ecriture.png",
+    "bytes": 254748,
+    "sha256": "1a6d0f38b2ebfe5cd3e8b074ecd5bfc79f346293d07d90979acc1d5f5dd94cac",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/plein-1440-avant-apres-sans-ecriture.png",
+    "archive": "docs/syna-301/wave3/services/plein-1440-avant-apres-sans-ecriture.png"
+  },
+  {
+    "domain": "services",
+    "file": "plein-1440-brouillon17s-conflit409.png",
+    "bytes": 141106,
+    "sha256": "9ee1305b78387b58a10340a25ff570908b1cc90ee39f35d3924e799342e7c2e4",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/plein-1440-brouillon17s-conflit409.png",
+    "archive": "docs/syna-301/wave3/services/plein-1440-brouillon17s-conflit409.png"
+  },
+  {
+    "domain": "services",
+    "file": "plein-1440-geometry.json",
+    "bytes": 140,
+    "sha256": "d935165c2fd9d5d425214811ed672187697bde3b4f57abc1fd7e2b6c49100da1",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/plein-1440-geometry.json",
+    "archive": null
+  },
+  {
+    "domain": "services",
+    "file": "plein-1440-profil-et-recu-recharges.png",
+    "bytes": 256610,
+    "sha256": "c2edec423fefadad42470ad32d875b397f531466de7b5ac40ce2b2ca35a8b696",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/plein-1440-profil-et-recu-recharges.png",
+    "archive": "docs/syna-301/wave3/services/plein-1440-profil-et-recu-recharges.png"
+  },
+  {
+    "domain": "services",
+    "file": "plein-1440-recu-natif.png",
+    "bytes": 245698,
+    "sha256": "7c0eb6fd2f8ebf586300ca191d998752a77f624ab72aebce555348a66b983777",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/plein-1440-recu-natif.png",
+    "archive": "docs/syna-301/wave3/services/plein-1440-recu-natif.png"
+  },
+  {
+    "domain": "services",
+    "file": "plein-1440-trace.zip",
+    "bytes": 6388635,
+    "sha256": "e437b5dafc7ceb638a58dfe81a2c09519444d1f92c3332dd87d8de616ce78abc",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/plein-1440-trace.zip",
+    "archive": null
+  },
+  {
+    "domain": "services",
+    "file": "plein-390-avant-apres-sans-ecriture.png",
+    "bytes": 81413,
+    "sha256": "f983e9dd7079f0872c45bd117f0b3fb34f6cabda5b3064ff4864d12cae47dbd7",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/plein-390-avant-apres-sans-ecriture.png",
+    "archive": "docs/syna-301/wave3/services/plein-390-avant-apres-sans-ecriture.png"
+  },
+  {
+    "domain": "services",
+    "file": "plein-390-brouillon17s-conflit409.png",
+    "bytes": 74177,
+    "sha256": "a96ed6dd89e7f1b57514d3d50c5395318b25b63251336d5317f4a886fb37c876",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/plein-390-brouillon17s-conflit409.png",
+    "archive": "docs/syna-301/wave3/services/plein-390-brouillon17s-conflit409.png"
+  },
+  {
+    "domain": "services",
+    "file": "plein-390-geometry.json",
+    "bytes": 136,
+    "sha256": "d49c7db7f7a70a1362ddbc9ef70e0387aef8849ed9006e67342ed45a82971676",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/plein-390-geometry.json",
+    "archive": null
+  },
+  {
+    "domain": "services",
+    "file": "plein-390-profil-et-recu-recharges.png",
+    "bytes": 82194,
+    "sha256": "e75499dd2f9b1afe1a6287f3775c488b1610064e9ed180af53ba1b8bc8405d47",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/plein-390-profil-et-recu-recharges.png",
+    "archive": "docs/syna-301/wave3/services/plein-390-profil-et-recu-recharges.png"
+  },
+  {
+    "domain": "services",
+    "file": "plein-390-recu-natif.png",
+    "bytes": 73336,
+    "sha256": "23116da6807b6aa6771ab4ae5b6af24313c0b86f017445252e7c8fa1018e5277",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/plein-390-recu-natif.png",
+    "archive": "docs/syna-301/wave3/services/plein-390-recu-natif.png"
+  },
+  {
+    "domain": "services",
+    "file": "plein-390-trace.zip",
+    "bytes": 4714264,
+    "sha256": "c1bbb73fa2b756e0b8ae7540275d85ffcc98fd6953c8be37acda875e1c90ca1b",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/plein-390-trace.zip",
+    "archive": null
+  },
+  {
+    "domain": "services",
+    "file": "proof.json",
+    "bytes": 3605,
+    "sha256": "664e670b1b6dc062dc9fbdbec2119184d9e74029907be025ea13cddc830ca4b3",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/proof.json",
+    "archive": "docs/syna-301/wave3/services/proof.json"
+  },
+  {
+    "domain": "services",
+    "file": "server.log",
+    "bytes": 145,
+    "sha256": "48ba79c926192f39c8c5310db3a7ac9a96be10c874fcd58e37eb1b1e21b900a9",
+    "localPath": "/workspace/work/preuves-wave3-services-ui-qualified/server.log",
+    "archive": null
+  },
+  {
+    "domain": "sections",
+    "file": "proof.json",
+    "bytes": 6760,
+    "sha256": "19911470c59146dc748c136af6bc55f816ac2d6fdc9790476f2b42d31131861d",
+    "localPath": "/workspace/work/preuves-wave3-sections-ui-preview/proof.json",
+    "archive": "docs/syna-301/wave3/sections/proof.json"
+  },
+  {
+    "domain": "sections",
+    "file": "sections-encre-1440-apercu-natif-section.png",
+    "bytes": 130010,
+    "sha256": "804296f042d9e5c7a0146a1610c737982223cc873d89aaeefb7f917f2481de54",
+    "localPath": "/workspace/work/preuves-wave3-sections-ui-preview/sections-encre-1440-apercu-natif-section.png",
+    "archive": "docs/syna-301/wave3/sections/sections-encre-1440-apercu-natif-section.png"
+  },
+  {
+    "domain": "sections",
+    "file": "sections-encre-1440-inclus-avant-generation.png",
+    "bytes": 249656,
+    "sha256": "bc9a6b48ca0eec7df6b7ce477a6e6d6ae185ca28d034c93775a70c13cae9d7aa",
+    "localPath": "/workspace/work/preuves-wave3-sections-ui-preview/sections-encre-1440-inclus-avant-generation.png",
+    "archive": "docs/syna-301/wave3/sections/sections-encre-1440-inclus-avant-generation.png"
+  },
+  {
+    "domain": "sections",
+    "file": "sections-encre-1440-section-native-enregistree.png",
+    "bytes": 279808,
+    "sha256": "d916f6c5ab7b68aa7538f791229d14cbb8a141574c0faf8187d7b80525a1574d",
+    "localPath": "/workspace/work/preuves-wave3-sections-ui-preview/sections-encre-1440-section-native-enregistree.png",
+    "archive": "docs/syna-301/wave3/sections/sections-encre-1440-section-native-enregistree.png"
+  },
+  {
+    "domain": "sections",
+    "file": "sections-encre-1440-trace.zip",
+    "bytes": 8186669,
+    "sha256": "88d42791c03955c5cbd4d2e4ea1a42d4768d8ca2543b254ce746461d1850cfd9",
+    "localPath": "/workspace/work/preuves-wave3-sections-ui-preview/sections-encre-1440-trace.zip",
+    "archive": null
+  },
+  {
+    "domain": "sections",
+    "file": "sections-encre-390-apercu-natif-section.png",
+    "bytes": 65379,
+    "sha256": "23a532e4efa87d4a337de24e21ba9ca44e57752874216e320bdcff09620914ec",
+    "localPath": "/workspace/work/preuves-wave3-sections-ui-preview/sections-encre-390-apercu-natif-section.png",
+    "archive": "docs/syna-301/wave3/sections/sections-encre-390-apercu-natif-section.png"
+  },
+  {
+    "domain": "sections",
+    "file": "sections-encre-390-inclus-avant-generation.png",
+    "bytes": 74884,
+    "sha256": "8e3d7d6d64615719f4f699c5542f454f816404f4e06e63ecbdf80804b5b5be17",
+    "localPath": "/workspace/work/preuves-wave3-sections-ui-preview/sections-encre-390-inclus-avant-generation.png",
+    "archive": "docs/syna-301/wave3/sections/sections-encre-390-inclus-avant-generation.png"
+  },
+  {
+    "domain": "sections",
+    "file": "sections-encre-390-section-native-enregistree.png",
+    "bytes": 64902,
+    "sha256": "943503b4c2897fccbce4f43345599d98626d6968a1e3612eda463a80ea59081c",
+    "localPath": "/workspace/work/preuves-wave3-sections-ui-preview/sections-encre-390-section-native-enregistree.png",
+    "archive": "docs/syna-301/wave3/sections/sections-encre-390-section-native-enregistree.png"
+  },
+  {
+    "domain": "sections",
+    "file": "sections-encre-390-trace.zip",
+    "bytes": 6006549,
+    "sha256": "d81cf8a74657c2fb98382fe5af8c9a5b2f71ffc35c5497ac26e1eb2ce1389512",
+    "localPath": "/workspace/work/preuves-wave3-sections-ui-preview/sections-encre-390-trace.zip",
+    "archive": null
+  },
+  {
+    "domain": "sections",
+    "file": "sections-plein-1440-apercu-natif-section.png",
+    "bytes": 130010,
+    "sha256": "804296f042d9e5c7a0146a1610c737982223cc873d89aaeefb7f917f2481de54",
+    "localPath": "/workspace/work/preuves-wave3-sections-ui-preview/sections-plein-1440-apercu-natif-section.png",
+    "archive": "docs/syna-301/wave3/sections/sections-plein-1440-apercu-natif-section.png"
+  },
+  {
+    "domain": "sections",
+    "file": "sections-plein-1440-inclus-avant-generation.png",
+    "bytes": 225535,
+    "sha256": "48f236e2d463dc7c3d41ac6898fa17da95691ff39a227ba01c70670665e6a61f",
+    "localPath": "/workspace/work/preuves-wave3-sections-ui-preview/sections-plein-1440-inclus-avant-generation.png",
+    "archive": "docs/syna-301/wave3/sections/sections-plein-1440-inclus-avant-generation.png"
+  },
+  {
+    "domain": "sections",
+    "file": "sections-plein-1440-section-native-enregistree.png",
+    "bytes": 220816,
+    "sha256": "899e520515c9b32cafae8f77186a5f0a889dded0aea2c0987f2b17554646cc5c",
+    "localPath": "/workspace/work/preuves-wave3-sections-ui-preview/sections-plein-1440-section-native-enregistree.png",
+    "archive": "docs/syna-301/wave3/sections/sections-plein-1440-section-native-enregistree.png"
+  },
+  {
+    "domain": "sections",
+    "file": "sections-plein-1440-trace.zip",
+    "bytes": 7380304,
+    "sha256": "c3a85d401c7d099951644b2ff2b747aaeb2a3a5f53e75cc10c639e475393aaa5",
+    "localPath": "/workspace/work/preuves-wave3-sections-ui-preview/sections-plein-1440-trace.zip",
+    "archive": null
+  },
+  {
+    "domain": "sections",
+    "file": "sections-plein-390-apercu-natif-section.png",
+    "bytes": 65379,
+    "sha256": "23a532e4efa87d4a337de24e21ba9ca44e57752874216e320bdcff09620914ec",
+    "localPath": "/workspace/work/preuves-wave3-sections-ui-preview/sections-plein-390-apercu-natif-section.png",
+    "archive": "docs/syna-301/wave3/sections/sections-plein-390-apercu-natif-section.png"
+  },
+  {
+    "domain": "sections",
+    "file": "sections-plein-390-inclus-avant-generation.png",
+    "bytes": 75742,
+    "sha256": "81d816cce8d2c335c3f37da23adc4582f43b5cf11ea02c16cb785c1d1809de17",
+    "localPath": "/workspace/work/preuves-wave3-sections-ui-preview/sections-plein-390-inclus-avant-generation.png",
+    "archive": "docs/syna-301/wave3/sections/sections-plein-390-inclus-avant-generation.png"
+  },
+  {
+    "domain": "sections",
+    "file": "sections-plein-390-section-native-enregistree.png",
+    "bytes": 69443,
+    "sha256": "f64752010d4a0ed03987540b2c98069bde174f27a87bbbea0500b8359dfed3fb",
+    "localPath": "/workspace/work/preuves-wave3-sections-ui-preview/sections-plein-390-section-native-enregistree.png",
+    "archive": "docs/syna-301/wave3/sections/sections-plein-390-section-native-enregistree.png"
+  },
+  {
+    "domain": "sections",
+    "file": "sections-plein-390-trace.zip",
+    "bytes": 6913773,
+    "sha256": "9065226fbd1628d41c5810fc4848b185e01ccd085672aad1bae893918c393e1e",
+    "localPath": "/workspace/work/preuves-wave3-sections-ui-preview/sections-plein-390-trace.zip",
+    "archive": null
+  },
+  {
+    "domain": "sections",
+    "file": "server.log",
+    "bytes": 145,
+    "sha256": "3ca5be2acf9fbfa41389d45271ef97455a237e15bb43da112fff19aa6e250dbf",
+    "localPath": "/workspace/work/preuves-wave3-sections-ui-preview/server.log",
+    "archive": null
+  },
+  {
+    "domain": "ads",
+    "file": "ads-encre-1440-creation-acquise-apres-annulation.png",
+    "bytes": 54401,
+    "sha256": "de4baa53d03e79c3952ed85598217a26f6df036a6c6741329c9ed22cc3092657",
+    "localPath": "/workspace/work/preuves-wave3-ads-ui/ads-encre-1440-creation-acquise-apres-annulation.png",
+    "archive": "docs/syna-301/wave3/ads/ads-encre-1440-creation-acquise-apres-annulation.png"
+  },
+  {
+    "domain": "ads",
+    "file": "ads-encre-1440-resultat-natif-bibliotheque.png",
+    "bytes": 183638,
+    "sha256": "41d367c7beb0efb72f1211d32ca48a6c6d71b50a38d172a7b8eae284add99022",
+    "localPath": "/workspace/work/preuves-wave3-ads-ui/ads-encre-1440-resultat-natif-bibliotheque.png",
+    "archive": "docs/syna-301/wave3/ads/ads-encre-1440-resultat-natif-bibliotheque.png"
+  },
+  {
+    "domain": "ads",
+    "file": "ads-encre-1440-trace.zip",
+    "bytes": 2645377,
+    "sha256": "593474c6a81fe5f261efe9a0098c7c94d96a3d83a7f92534431236e7928eb6b9",
+    "localPath": "/workspace/work/preuves-wave3-ads-ui/ads-encre-1440-trace.zip",
+    "archive": null
+  },
+  {
+    "domain": "ads",
+    "file": "ads-encre-390-creation-acquise-apres-annulation.png",
+    "bytes": 42374,
+    "sha256": "692244ee2ceda8f6842e470adee8a79a5f68e4b888be9e0860c2987d10dca49f",
+    "localPath": "/workspace/work/preuves-wave3-ads-ui/ads-encre-390-creation-acquise-apres-annulation.png",
+    "archive": "docs/syna-301/wave3/ads/ads-encre-390-creation-acquise-apres-annulation.png"
+  },
+  {
+    "domain": "ads",
+    "file": "ads-encre-390-resultat-natif-bibliotheque.png",
+    "bytes": 75889,
+    "sha256": "c497410f4a2e43b62be4b2dc4c449f8d02831cbfc08e15625b6f0fe3ed6746fa",
+    "localPath": "/workspace/work/preuves-wave3-ads-ui/ads-encre-390-resultat-natif-bibliotheque.png",
+    "archive": "docs/syna-301/wave3/ads/ads-encre-390-resultat-natif-bibliotheque.png"
+  },
+  {
+    "domain": "ads",
+    "file": "ads-encre-390-trace.zip",
+    "bytes": 1785454,
+    "sha256": "6f9a5fee3e270e1cb1f7474345c6e1bfc83a95590d2b6cfc850a06a62a5d3f23",
+    "localPath": "/workspace/work/preuves-wave3-ads-ui/ads-encre-390-trace.zip",
+    "archive": null
+  },
+  {
+    "domain": "ads",
+    "file": "ads-plein-1440-creation-acquise-apres-annulation.png",
+    "bytes": 54401,
+    "sha256": "de4baa53d03e79c3952ed85598217a26f6df036a6c6741329c9ed22cc3092657",
+    "localPath": "/workspace/work/preuves-wave3-ads-ui/ads-plein-1440-creation-acquise-apres-annulation.png",
+    "archive": "docs/syna-301/wave3/ads/ads-plein-1440-creation-acquise-apres-annulation.png"
+  },
+  {
+    "domain": "ads",
+    "file": "ads-plein-1440-resultat-natif-bibliotheque.png",
+    "bytes": 152807,
+    "sha256": "b551dacae900c95aadab5c7e48e6da7e01df550ed4e264ba6b13f8d2843ee565",
+    "localPath": "/workspace/work/preuves-wave3-ads-ui/ads-plein-1440-resultat-natif-bibliotheque.png",
+    "archive": "docs/syna-301/wave3/ads/ads-plein-1440-resultat-natif-bibliotheque.png"
+  },
+  {
+    "domain": "ads",
+    "file": "ads-plein-1440-trace.zip",
+    "bytes": 1981531,
+    "sha256": "a087ec76c7117b7e50a68652b0773422b273dd3d8f07380a3363b1b8d1bbc4b8",
+    "localPath": "/workspace/work/preuves-wave3-ads-ui/ads-plein-1440-trace.zip",
+    "archive": null
+  },
+  {
+    "domain": "ads",
+    "file": "ads-plein-390-creation-acquise-apres-annulation.png",
+    "bytes": 42374,
+    "sha256": "692244ee2ceda8f6842e470adee8a79a5f68e4b888be9e0860c2987d10dca49f",
+    "localPath": "/workspace/work/preuves-wave3-ads-ui/ads-plein-390-creation-acquise-apres-annulation.png",
+    "archive": "docs/syna-301/wave3/ads/ads-plein-390-creation-acquise-apres-annulation.png"
+  },
+  {
+    "domain": "ads",
+    "file": "ads-plein-390-resultat-natif-bibliotheque.png",
+    "bytes": 77107,
+    "sha256": "256794d3e81cfe000ae50cccdb0e3faadfbb9a6aad1c03570caaa67bfd76b862",
+    "localPath": "/workspace/work/preuves-wave3-ads-ui/ads-plein-390-resultat-natif-bibliotheque.png",
+    "archive": "docs/syna-301/wave3/ads/ads-plein-390-resultat-natif-bibliotheque.png"
+  },
+  {
+    "domain": "ads",
+    "file": "ads-plein-390-trace.zip",
+    "bytes": 1999794,
+    "sha256": "e4e4a643b3b38177cc86e2a802e82507f582b66a4412ab37734e25c099b6b327",
+    "localPath": "/workspace/work/preuves-wave3-ads-ui/ads-plein-390-trace.zip",
+    "archive": null
+  },
+  {
+    "domain": "ads",
+    "file": "proof.json",
+    "bytes": 6180,
+    "sha256": "e0576ee889a7b18ff2d0543bc4b2201d7bace59cb221a4360a7506d9ad89c987",
+    "localPath": "/workspace/work/preuves-wave3-ads-ui/proof.json",
+    "archive": "docs/syna-301/wave3/ads/proof.json"
+  },
+  {
+    "domain": "ads",
+    "file": "server.log",
+    "bytes": 145,
+    "sha256": "faef0400b54c6cbabdacc4f2ea030083213cd513c3ba8b47e5739748bcc33b07",
+    "localPath": "/workspace/work/preuves-wave3-ads-ui/server.log",
+    "archive": null
+  }
+]

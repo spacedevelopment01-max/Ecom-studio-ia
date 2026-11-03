@@ -1,0 +1,264 @@
+{
+  "sourceCommit": "9636f000effa0eff94e1f4afd0a90557f4daf58d",
+  "sourceTree": "d19870f97ed30785d8916d9237c37fc6ec1335e0",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "sectionProvider": "native SDK/HTTP loopback",
+  "adProvider": "native engine with explicitly injected copy/image deps, not SDK/HTTP",
+  "creativeQualityQualified": false,
+  "cases": [
+    {
+      "domain": "sections",
+      "mode": "encre",
+      "width": 1440,
+      "status": "PASS",
+      "explicitGenerateClick": true,
+      "noSeparatePaidQuote": "Included generation, native costUsage(theme).ask=false",
+      "serverEntitlement": "Dominer included",
+      "supplierCostRecorded": true,
+      "walletBefore": {
+        "available": 43000000,
+        "used": 0,
+        "capacity": 43000000,
+        "usedPct": 0,
+        "monthlyRemaining": 43000000,
+        "topupBalance": 0,
+        "reserved": 0,
+        "periodEnd": 1796303870603,
+        "alert": false,
+        "paused": false
+      },
+      "walletAfter": {
+        "available": 42997936,
+        "used": 2064,
+        "capacity": 43000000,
+        "usedPct": 4.8e-05,
+        "monthlyRemaining": 42997936,
+        "topupBalance": 0,
+        "reserved": 0,
+        "periodEnd": 1796303870603,
+        "alert": false,
+        "paused": false
+      },
+      "usage": [
+        {
+          "billed": 2064,
+          "estimated": 0,
+          "provider": "anthropic"
+        }
+      ],
+      "quotaBefore": {
+        "included": 10,
+        "rollover": 0,
+        "pack": 0,
+        "used": 0,
+        "left": 10
+      },
+      "quotaAfter": {
+        "included": 10,
+        "rollover": 0,
+        "pack": 0,
+        "used": 0,
+        "left": 10
+      },
+      "sdkHttpCalls": 1,
+      "quotaPreserved": true,
+      "previousVersion": "j2fdf8cch5qfonet",
+      "resultVersion": "m06xxmq2ia4ua9yx",
+      "previewContainsSection": true,
+      "errors": []
+    },
+    {
+      "domain": "sections",
+      "mode": "encre",
+      "width": 390,
+      "status": "PASS",
+      "explicitGenerateClick": true,
+      "noSeparatePaidQuote": "Included generation, native costUsage(theme).ask=false",
+      "serverEntitlement": "Dominer included",
+      "supplierCostRecorded": true,
+      "walletBefore": {
+        "available": 43000000,
+        "used": 0,
+        "capacity": 43000000,
+        "usedPct": 0,
+        "monthlyRemaining": 43000000,
+        "topupBalance": 0,
+        "reserved": 0,
+        "periodEnd": 1796303870806,
+        "alert": false,
+        "paused": false
+      },
+      "walletAfter": {
+        "available": 42997936,
+        "used": 2064,
+        "capacity": 43000000,
+        "usedPct": 4.8e-05,
+        "monthlyRemaining": 42997936,
+        "topupBalance": 0,
+        "reserved": 0,
+        "periodEnd": 1796303870806,
+        "alert": false,
+        "paused": false
+      },
+      "usage": [
+        {
+          "billed": 2064,
+          "estimated": 0,
+          "provider": "anthropic"
+        }
+      ],
+      "quotaBefore": {
+        "included": 10,
+        "rollover": 0,
+        "pack": 0,
+        "used": 0,
+        "left": 10
+      },
+      "quotaAfter": {
+        "included": 10,
+        "rollover": 0,
+        "pack": 0,
+        "used": 0,
+        "left": 10
+      },
+      "sdkHttpCalls": 1,
+      "quotaPreserved": true,
+      "previousVersion": "2kuls5kzq6g6b1ih",
+      "resultVersion": "0aetdq08gvu5iezs",
+      "previewContainsSection": true,
+      "errors": []
+    },
+    {
+      "domain": "sections",
+      "mode": "plein",
+      "width": 1440,
+      "status": "PASS",
+      "explicitGenerateClick": true,
+      "noSeparatePaidQuote": "Included generation, native costUsage(theme).ask=false",
+      "serverEntitlement": "Dominer included",
+      "supplierCostRecorded": true,
+      "walletBefore": {
+        "available": 43000000,
+        "used": 0,
+        "capacity": 43000000,
+        "usedPct": 0,
+        "monthlyRemaining": 43000000,
+        "topupBalance": 0,
+        "reserved": 0,
+        "periodEnd": 1796303870995,
+        "alert": false,
+        "paused": false
+      },
+      "walletAfter": {
+        "available": 42997936,
+        "used": 2064,
+        "capacity": 43000000,
+        "usedPct": 4.8e-05,
+        "monthlyRemaining": 42997936,
+        "topupBalance": 0,
+        "reserved": 0,
+        "periodEnd": 1796303870995,
+        "alert": false,
+        "paused": false
+      },
+      "usage": [
+        {
+          "billed": 2064,
+          "estimated": 0,
+          "provider": "anthropic"
+        }
+      ],
+      "quotaBefore": {
+        "included": 10,
+        "rollover": 0,
+        "pack": 0,
+        "used": 0,
+        "left": 10
+      },
+      "quotaAfter": {
+        "included": 10,
+        "rollover": 0,
+        "pack": 0,
+        "used": 0,
+        "left": 10
+      },
+      "sdkHttpCalls": 1,
+      "quotaPreserved": true,
+      "previousVersion": "t6oxx7xjomwjp2ch",
+      "resultVersion": "m5vr2pdijjsqcnwh",
+      "previewContainsSection": true,
+      "errors": []
+    },
+    {
+      "domain": "sections",
+      "mode": "plein",
+      "width": 390,
+      "status": "PASS",
+      "explicitGenerateClick": true,
+      "noSeparatePaidQuote": "Included generation, native costUsage(theme).ask=false",
+      "serverEntitlement": "Dominer included",
+      "supplierCostRecorded": true,
+      "walletBefore": {
+        "available": 43000000,
+        "used": 0,
+        "capacity": 43000000,
+        "usedPct": 0,
+        "monthlyRemaining": 43000000,
+        "topupBalance": 0,
+        "reserved": 0,
+        "periodEnd": 1796303871179,
+        "alert": false,
+        "paused": false
+      },
+      "walletAfter": {
+        "available": 42997936,
+        "used": 2064,
+        "capacity": 43000000,
+        "usedPct": 4.8e-05,
+        "monthlyRemaining": 42997936,
+        "topupBalance": 0,
+        "reserved": 0,
+        "periodEnd": 1796303871179,
+        "alert": false,
+        "paused": false
+      },
+      "usage": [
+        {
+          "billed": 2064,
+          "estimated": 0,
+          "provider": "anthropic"
+        }
+      ],
+      "quotaBefore": {
+        "included": 10,
+        "rollover": 0,
+        "pack": 0,
+        "used": 0,
+        "left": 10
+      },
+      "quotaAfter": {
+        "included": 10,
+        "rollover": 0,
+        "pack": 0,
+        "used": 0,
+        "left": 10
+      },
+      "sdkHttpCalls": 1,
+      "quotaPreserved": true,
+      "previousVersion": "k9pmxamcfbzaw4sv",
+      "resultVersion": "eyaihpj2vmzhe4w9",
+      "previewContainsSection": true,
+      "errors": []
+    }
+  ],
+  "runtime": {
+    "commit": "9636f000effa0eff94e1f4afd0a90557f4daf58d",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "status": "PASS",
+  "sectionSdkHttpCalls": 4
+}

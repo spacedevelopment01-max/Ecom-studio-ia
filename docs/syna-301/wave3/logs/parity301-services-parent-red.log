@@ -1,0 +1,59 @@
+
+ RUN  v5.0.3 /workspace/work/parity301-next-domains
+
+ ❯ tests/parity301-services-profile-cas.test.ts (3 tests | 3 failed) 374ms
+   × native GET exposes the real profile revision and unversioned writes are rejected before changes 134ms
+   × two views of the same profile cannot overwrite one another; stale multi-field writes are atomic 129ms
+   × renaming a native service preserves its key and aliases rather than manufacturing a new identity 109ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/parity301-services-profile-cas.test.ts > native GET exposes the real profile revision and unversioned writes are rejected before changes
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/parity301-services-profile-cas.test.ts:13:189
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/parity301-services-profile-cas.test.ts > two views of the same profile cannot overwrite one another; stale multi-field writes are atomic
+AssertionError: expected 200 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 200
+
+ ❯ tests/parity301-services-profile-cas.test.ts:14:505
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  tests/parity301-services-profile-cas.test.ts > renaming a native service preserves its key and aliases rather than manufacturing a new identity
+AssertionError: expected '9irggaxo7kf22e62' to be 'native-service-key' // Object.is equality
+
+Expected: "native-service-key"
+Received: "9irggaxo7kf22e62"
+
+ ❯ tests/parity301-services-profile-cas.test.ts:15:414
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  12:42:26
+   Duration  4.31s (transform 57%, import 34%, tests 9%)
+
+  Transform  transforming modules took 2.32s · 57% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

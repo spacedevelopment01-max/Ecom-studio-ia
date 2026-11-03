@@ -1,0 +1,86 @@
+
+ RUN  v5.0.3 /workspace/work/parity301-wave3-candidate
+
+ ❯ tests/parity301-blog-economic-authorization.test.ts (3 tests | 3 failed) 656ms
+   × native Blog refuses missing or false financial consent undefined before enqueue/quota/provider 138ms
+   × native Blog refuses missing or false financial consent false before enqueue/quota/provider 116ms
+   × a legacy native Blog job without economic proof cannot buy a provider call 399ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/parity301-blog-economic-authorization.test.ts > native Blog refuses missing or false financial consent undefined before enqueue/quota/provider
+ FAIL  tests/parity301-blog-economic-authorization.test.ts > native Blog refuses missing or false financial consent false before enqueue/quota/provider
+AssertionError: expected 200 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 200
+
+ ❯ tests/parity301-blog-economic-authorization.test.ts:21:284
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/parity301-blog-economic-authorization.test.ts > a legacy native Blog job without economic proof cannot buy a provider call
+AssertionError: promise resolved "{ …(10) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "by": "local",
++   "codes": [],
++   "costMicro": 0,
++   "delivery": {
++     "message": "Texte enregistré, à vérifier avant utilisation.",
++     "reasons": [
++       "contrôle insuffisant pour un résultat final : provisoire",
++       "à compléter : caractéristiques confirmées du produit (dimensions, matières, contenance…)",
++       "à compléter : conditions de livraison",
++       "à compléter : conditions de retour",
++       "à compléter : prix",
++       "à compléter : preuves (garanties, labels, certifications) — aucune ne sera affirmée",
++       "rédaction IA en échec (SYNTHETIC_TRANSPORT_ONLY) : texte local conservé",
++       "Les autres consignes libres (ton, style, pertinence et sens) demandent une relecture.",
++     ],
++     "state": "to_verify",
++   },
++   "docKey": "cnt:30b3d03ec60c39bc06d1",
++   "notes": [
++     "à compléter : caractéristiques confirmées du produit (dimensions, matières, contenance…)",
++     "à compléter : conditions de livraison",
++     "à compléter : conditions de retour",
++     "à compléter : prix",
++     "à compléter : preuves (garanties, labels, certifications) — aucune ne sera affirmée",
++     "rédaction IA en échec (SYNTHETIC_TRANSPORT_ONLY) : texte local conservé",
++   ],
++   "skipped": false,
++   "stats": {
++     "retries": 0,
++     "reviews": 0,
++     "rewrites": 0,
++     "writes": 0,
++   },
++   "stoppedByCostCap": false,
++   "verdict": "PROVISIONAL",
+  }
+
+ ❯ tests/parity301-blog-economic-authorization.test.ts:22:444
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  12:02:57
+   Duration  5.00s (transform 51%, import 35%, tests 14%)
+
+  Transform  transforming modules took 2.46s · 51% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+
