@@ -1,6 +1,7 @@
 {
   "runtimePidsInWorktree": [],
   "temporaryHarnessFilesRemoved": true,
-  "syntheticPromptsDirGone": false,
-  "syntheticContentDirGone": false
+  "syntheticPromptsDirGone": true,
+  "syntheticContentDirGone": true,
+  "cleanupMethod": "Post-run removal of the two exact synthetic temporary directories recorded by the harnesses; proof artifacts preserved."
 }
