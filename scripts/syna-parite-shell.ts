@@ -40,6 +40,8 @@ for (const f of sources) {
   s = s.replace(/getByRole\('dialog',\{name:'SYNA — conversation du projet',exact:true\}\)/g, () => { replaced.panel++; return `locator('#syna-panel:visible')`; });
   // Même fenêtre désignée sans son nom (recette de la conversation) : seul dialogue SYNA visé par ces lectures de texte.
   s = s.replace(/getByRole\('dialog'\)\.getByText\(/g, () => { replaced.panel++; return `locator('#syna-panel:visible').getByText(`; });
+  // Fenêtre SYNA passée en argument à un utilitaire (recette ui de #348 : historique sauvegardé) : même fenêtre.
+  s = s.replace(/getByRole\('dialog'\),/g, () => { replaced.panel++; return `locator('#syna-panel:visible'),`; });
   // Identifiant du panneau : `#central-agent-panel` (dock) devient `#syna-panel` (coquille), modal aussi au téléphone.
   s = s.replace(/central-agent-panel/g, () => { replaced.panel++; return "syna-panel"; });
   // Diagnostic facultatif (PARITE_DIAG=1) : avant l'assertion de débordement de Codex, inchangée, on journalise les

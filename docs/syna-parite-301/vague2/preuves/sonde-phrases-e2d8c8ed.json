@@ -1,0 +1,136 @@
+[
+ {
+  "op": "C05 titre (B1)",
+  "text": "Remplace le titre de cette section par « Titre sondé »",
+  "erreur": null,
+  "carteGratuite": {
+   "state": "proposed",
+   "message": "Modification comprise. Vérifiez cet aperçu puis confirmez gratuitement."
+  },
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C05 couleur du titre",
+  "text": "Mets le titre de cette section en rouge",
+  "erreur": null,
+  "carteGratuite": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C05 couleur principale",
+  "text": "Change la couleur principale du site en #1e3a8a",
+  "erreur": null,
+  "carteGratuite": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C07 masquer section",
+  "text": "Masque cette section",
+  "erreur": null,
+  "carteGratuite": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C07 supprimer section",
+  "text": "Supprime cette section",
+  "erreur": null,
+  "carteGratuite": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C07 ajouter section",
+  "text": "Ajoute une section FAQ après cette section",
+  "erreur": null,
+  "carteGratuite": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C07 ajouter page",
+  "text": "Ajoute une page « Nos garanties »",
+  "erreur": null,
+  "carteGratuite": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C05 bouton",
+  "text": "Remplace le texte du bouton de cette section par « Demander un devis »",
+  "erreur": null,
+  "carteGratuite": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C05 image",
+  "text": "Remplace l’image de cette section par la photo de l’atelier",
+  "erreur": null,
+  "carteGratuite": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C05 annuler",
+  "text": "Annule la dernière retouche du site",
+  "erreur": null,
+  "carteGratuite": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C06 thème",
+  "text": "Choisis le thème Rive pour mon site",
+  "erreur": null,
+  "carteGratuite": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C15 SEO",
+  "text": "Remplace le titre SEO de la page d’accueil par « Aménagement de vans à Lyon »",
+  "erreur": null,
+  "carteGratuite": {
+   "state": "ambiguous",
+   "message": "Précisez gratuitement : « Remplace le titre de cette section par “Texte exact” » ou « Place cette section avant ID ou libellé unique »."
+  },
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C22 horaires",
+  "text": "Change les horaires du mardi : 9 h – 18 h",
+  "erreur": null,
+  "carteGratuite": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C21 prestation",
+  "text": "Renomme cette prestation en « Aménagement complet »",
+  "erreur": null,
+  "carteGratuite": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C16 calendrier",
+  "text": "Déplace ma prochaine publication au 12 novembre",
+  "erreur": null,
+  "carteGratuite": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C12 stock",
+  "text": "Mets le stock de ce produit à 12",
+  "erreur": null,
+  "carteGratuite": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ }
+]

@@ -1,0 +1,1271 @@
+{
+  "schema": "syna-integration-recette-1",
+  "closed": false,
+  "runtime": {
+    "commit": "26da348eb595fcff45c53a9296cb2b301dc384e9",
+    "commitOrigin": "dev-start",
+    "mode": "development",
+    "tree": "clean",
+    "source": "dev-server"
+  },
+  "cases": [
+    {
+      "case": "encre-products",
+      "mode": "encre",
+      "business": "products",
+      "http": [
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "context",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 409
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "context",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "native-restore",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 402
+        }
+      ],
+      "permissionsRevokedNoWrite": true,
+      "ambiguityNoWrite": true,
+      "iframeOrderVerified": true,
+      "projectFieldsIntact": true,
+      "otherProjectsIntact": true,
+      "oldVersionsIntact": true,
+      "realSelection": true,
+      "typedCommand": true,
+      "freeDiff": true,
+      "doubleClickOneVersion": true,
+      "refreshPersistent": true,
+      "lostResponseSameCommand": true,
+      "manualRaceExplicitRevalidation": true,
+      "newProposalRequired": true,
+      "manualNativeRestore": true,
+      "zipChanged": [
+        "templates/index.json"
+      ],
+      "paidRequests": 0,
+      "jsErrors": []
+    },
+    {
+      "case": "encre-services",
+      "mode": "encre",
+      "business": "services",
+      "http": [
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "context",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 409
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "context",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "native-restore",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 402
+        }
+      ],
+      "permissionsRevokedNoWrite": true,
+      "ambiguityNoWrite": true,
+      "iframeOrderVerified": true,
+      "projectFieldsIntact": true,
+      "otherProjectsIntact": true,
+      "oldVersionsIntact": true,
+      "realSelection": true,
+      "typedCommand": true,
+      "freeDiff": true,
+      "doubleClickOneVersion": true,
+      "refreshPersistent": true,
+      "lostResponseSameCommand": true,
+      "manualRaceExplicitRevalidation": true,
+      "newProposalRequired": true,
+      "manualNativeRestore": true,
+      "zipChanged": [
+        "templates/index.json"
+      ],
+      "paidRequests": 0,
+      "jsErrors": []
+    },
+    {
+      "case": "plein-products",
+      "mode": "plein",
+      "business": "products",
+      "http": [
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "context",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 409
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "context",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "native-restore",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 402
+        }
+      ],
+      "permissionsRevokedNoWrite": true,
+      "ambiguityNoWrite": true,
+      "iframeOrderVerified": true,
+      "projectFieldsIntact": true,
+      "otherProjectsIntact": true,
+      "oldVersionsIntact": true,
+      "realSelection": true,
+      "typedCommand": true,
+      "freeDiff": true,
+      "doubleClickOneVersion": true,
+      "refreshPersistent": true,
+      "lostResponseSameCommand": true,
+      "manualRaceExplicitRevalidation": true,
+      "newProposalRequired": true,
+      "manualNativeRestore": true,
+      "zipChanged": [
+        "templates/index.json"
+      ],
+      "paidRequests": 0,
+      "jsErrors": []
+    },
+    {
+      "case": "plein-services",
+      "mode": "plein",
+      "business": "services",
+      "http": [
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "context",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 409
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "context",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "native-restore",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 402
+        }
+      ],
+      "permissionsRevokedNoWrite": true,
+      "ambiguityNoWrite": true,
+      "iframeOrderVerified": true,
+      "projectFieldsIntact": true,
+      "otherProjectsIntact": true,
+      "oldVersionsIntact": true,
+      "realSelection": true,
+      "typedCommand": true,
+      "freeDiff": true,
+      "doubleClickOneVersion": true,
+      "refreshPersistent": true,
+      "lostResponseSameCommand": true,
+      "manualRaceExplicitRevalidation": true,
+      "newProposalRequired": true,
+      "manualNativeRestore": true,
+      "zipChanged": [
+        "templates/index.json"
+      ],
+      "paidRequests": 0,
+      "jsErrors": []
+    },
+    {
+      "case": "historique-encre-products",
+      "A1ReadOnly": true,
+      "noFreeControl": true
+    },
+    {
+      "case": "historique-plein-services",
+      "A1ReadOnly": true,
+      "noFreeControl": true
+    }
+  ],
+  "switches": [
+    {
+      "case": "encre-products",
+      "when": "le diff ouvert",
+      "plein": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "encre": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "writes": [
+        "/api/studio/ui-prefs",
+        "/api/studio/ui-prefs"
+      ],
+      "prefsRestored": true
+    },
+    {
+      "case": "encre-products",
+      "when": "l'erreur réseau",
+      "plein": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "encre": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "writes": [
+        "/api/studio/ui-prefs",
+        "/api/studio/ui-prefs"
+      ],
+      "prefsRestored": true
+    },
+    {
+      "case": "encre-products",
+      "when": "le conflit",
+      "plein": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "encre": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "writes": [
+        "/api/studio/ui-prefs",
+        "/api/studio/ui-prefs"
+      ],
+      "prefsRestored": true
+    },
+    {
+      "case": "encre-services",
+      "when": "le diff ouvert",
+      "plein": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "encre": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "writes": [
+        "/api/studio/ui-prefs",
+        "/api/studio/ui-prefs"
+      ],
+      "prefsRestored": true
+    },
+    {
+      "case": "encre-services",
+      "when": "l'erreur réseau",
+      "plein": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "encre": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "writes": [
+        "/api/studio/ui-prefs",
+        "/api/studio/ui-prefs"
+      ],
+      "prefsRestored": true
+    },
+    {
+      "case": "encre-services",
+      "when": "le conflit",
+      "plein": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "encre": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "writes": [
+        "/api/studio/ui-prefs",
+        "/api/studio/ui-prefs"
+      ],
+      "prefsRestored": true
+    },
+    {
+      "case": "plein-products",
+      "when": "le diff ouvert",
+      "encre": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "plein": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "writes": [
+        "/api/studio/ui-prefs",
+        "/api/studio/ui-prefs"
+      ],
+      "prefsRestored": true
+    },
+    {
+      "case": "plein-products",
+      "when": "l'erreur réseau",
+      "encre": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "plein": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "writes": [
+        "/api/studio/ui-prefs",
+        "/api/studio/ui-prefs"
+      ],
+      "prefsRestored": true
+    },
+    {
+      "case": "plein-products",
+      "when": "le conflit",
+      "encre": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "plein": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "writes": [
+        "/api/studio/ui-prefs",
+        "/api/studio/ui-prefs"
+      ],
+      "prefsRestored": true
+    },
+    {
+      "case": "plein-services",
+      "when": "le diff ouvert",
+      "encre": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "plein": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "writes": [
+        "/api/studio/ui-prefs",
+        "/api/studio/ui-prefs"
+      ],
+      "prefsRestored": true
+    },
+    {
+      "case": "plein-services",
+      "when": "l'erreur réseau",
+      "encre": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "plein": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "writes": [
+        "/api/studio/ui-prefs",
+        "/api/studio/ui-prefs"
+      ],
+      "prefsRestored": true
+    },
+    {
+      "case": "plein-services",
+      "when": "le conflit",
+      "encre": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "plein": {
+        "sameConversation": true,
+        "draftKept": true,
+        "selectionKept": true,
+        "stateKept": true
+      },
+      "writes": [
+        "/api/studio/ui-prefs",
+        "/api/studio/ui-prefs"
+      ],
+      "prefsRestored": true
+    }
+  ],
+  "screenshots": [
+    "encre-products-bascule-le-diff-ouvert.png",
+    "encre-products-ordinateur-confirmation.png",
+    "encre-products-tablette-1024-confirmation.png",
+    "encre-products-telephone-390-confirmation.png",
+    "encre-products-telephone-360-confirmation.png",
+    "encre-products-ordinateur-recu.png",
+    "encre-products-ordinateur-resultat.png",
+    "encre-products-telephone-resultat.png",
+    "encre-products-bascule-l-erreur-r-seau.png",
+    "encre-products-bascule-le-conflit.png",
+    "encre-products-apres-revalidation-17s.png",
+    "encre-services-bascule-le-diff-ouvert.png",
+    "encre-services-ordinateur-confirmation.png",
+    "encre-services-tablette-1024-confirmation.png",
+    "encre-services-telephone-390-confirmation.png",
+    "encre-services-telephone-360-confirmation.png",
+    "encre-services-ordinateur-recu.png",
+    "encre-services-ordinateur-resultat.png",
+    "encre-services-telephone-resultat.png",
+    "encre-services-bascule-l-erreur-r-seau.png",
+    "encre-services-bascule-le-conflit.png",
+    "encre-services-apres-revalidation-17s.png",
+    "plein-products-bascule-le-diff-ouvert.png",
+    "plein-products-ordinateur-confirmation.png",
+    "plein-products-tablette-1024-confirmation.png",
+    "plein-products-telephone-390-confirmation.png",
+    "plein-products-telephone-360-confirmation.png",
+    "plein-products-ordinateur-recu.png",
+    "plein-products-ordinateur-resultat.png",
+    "plein-products-telephone-resultat.png",
+    "plein-products-bascule-l-erreur-r-seau.png",
+    "plein-products-bascule-le-conflit.png",
+    "plein-products-apres-revalidation-17s.png",
+    "plein-services-bascule-le-diff-ouvert.png",
+    "plein-services-ordinateur-confirmation.png",
+    "plein-services-tablette-1024-confirmation.png",
+    "plein-services-telephone-390-confirmation.png",
+    "plein-services-telephone-360-confirmation.png",
+    "plein-services-ordinateur-recu.png",
+    "plein-services-ordinateur-resultat.png",
+    "plein-services-telephone-resultat.png",
+    "plein-services-bascule-l-erreur-r-seau.png",
+    "plein-services-bascule-le-conflit.png",
+    "plein-services-apres-revalidation-17s.png",
+    "historique-encre-products-telephone-390.png",
+    "historique-plein-services-telephone-390.png"
+  ],
+  "errors": [],
+  "designation17s": [
+    {
+      "case": "encre-products",
+      "step": "revalidation",
+      "after": "Section désignée : Titre · Un titre gratuit pour notre collection"
+    },
+    {
+      "case": "encre-products",
+      "step": "restauration",
+      "after": "Section désignée : Titre · Un aperçu natif, une conversation commune."
+    },
+    {
+      "case": "encre-services",
+      "step": "revalidation",
+      "after": "Section désignée : Titre · Un titre gratuit pour nos prestations votre histoire."
+    },
+    {
+      "case": "encre-services",
+      "step": "restauration",
+      "after": "Section désignée : Titre · Votre instrument, votre histoire."
+    },
+    {
+      "case": "plein-products",
+      "step": "revalidation",
+      "after": "Section désignée : Titre · Un titre gratuit pour notre collection"
+    },
+    {
+      "case": "plein-products",
+      "step": "restauration",
+      "after": "Section désignée : Titre · Un aperçu natif, une conversation commune."
+    },
+    {
+      "case": "plein-services",
+      "step": "revalidation",
+      "after": "Section désignée : Titre · Un titre gratuit pour nos prestations votre histoire."
+    },
+    {
+      "case": "plein-services",
+      "step": "restauration",
+      "after": "Section désignée : Titre · Votre instrument, votre histoire."
+    }
+  ]
+}
