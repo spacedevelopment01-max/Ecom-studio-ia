@@ -132,7 +132,7 @@ export async function exportDoc(projectId: string, doc: AdDocument, format: "png
 export type DocWriteGuard={expectedVersion:number;source?:{docKey:string;expectedVersion:number};strategyStamp?:import("../strategy-consumption").StrategyStamp|null};
 export function assertDocVersion(projectId:string,docKey:string,expectedVersion:number){
  const actual=one<{v:number}>("SELECT COALESCE(MAX(version),0) v FROM ad_documents WHERE project_id=? AND doc_key=?",projectId,docKey)!.v;
- if(actual!==expectedVersion)throw new HttpError(409,"Une version plus récente existe. Votre brouillon est conservé : rechargez et comparez avant de réessayer.","ad_doc_version_conflict");
+ if(actual!==expectedVersion)throw new HttpError(409,"Une version plus récente existe. Comparez la version enregistrée avant de réessayer.","ad_doc_version_conflict");
 }
 export function guardedForkKey(projectId:string,userId:string,docKey:string,expectedVersion:number,operationId:string,action:string,format:unknown){return 'ad:'+crypto.createHash('sha256').update(JSON.stringify([projectId,userId,docKey,expectedVersion,operationId,action,format])).digest('hex').slice(0,24);}
 /** Same renderer and native library; the final version/asset commit is one synchronous SQLite transaction. */

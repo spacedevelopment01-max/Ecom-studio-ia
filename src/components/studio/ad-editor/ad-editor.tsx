@@ -22,6 +22,7 @@ import { localAdEdit } from "@/lib/ad-doc/local-edit";
 import { ANIM_DURATION_S } from "@/lib/ad-doc/animate";
 import { newLayerId } from "@/lib/ad-doc/geometry";
 import type { AdDocument, Layer } from "@/lib/ad-doc/types";
+import {readEditorDraft,writeEditorDraft,clearEditorDraft,editorDraftForHead,sameEditorDraft} from "@/lib/ad-doc/client-drafts";
 import type { RenderEnv } from "@/lib/ad-doc/render";
 import { browserEnv, docImages, ensureDocFonts, useFontCatalog } from "./resources";
 import { EditorCanvas, InlineText } from "./canvas";
@@ -51,15 +52,6 @@ function useIsMobile() {
   return m;
 }
 
-const draftKey = (docKey: string) => `ad-editor:${docKey}`;
-const readDraft = (docKey: string): { doc: AdDocument; base: number; at: number } | null => {
-  try {
-    const raw = localStorage.getItem(draftKey(docKey));
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-};
 
 export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId: string; docKey: string; onClose: () => void }) {
   const t = useT();
@@ -76,6 +68,9 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
   const [selected, setSelected] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
+  const currentDraft=useRef<{projectId:string;docKey:string;doc:AdDocument|null;base:number;dirty:boolean}>({projectId,docKey,doc:null,base:0,dirty:false});
+  const activeDraftContext=useRef({projectId,docKey});
+  activeDraftContext.current={projectId,docKey};
   const [saving, setSaving] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [stage, setStage] = useState({ w: 800, h: 600 });
@@ -123,11 +118,12 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
       setView(v);
       hist.current = new History(v.doc);
       setDoc(v.doc);
+      currentDraft.current={projectId,docKey:key,doc:v.doc,base:v.version.version,dirty:false};
       setDirty(false);
       setSelected(null);
-      const d = readDraft(key);
-      // Brouillon non enregistré plus récent que la version enregistrée : proposé, jamais imposé.
-      setDraft(d && d.base === v.version.version && JSON.stringify(d.doc) !== JSON.stringify(v.doc) ? { doc: d.doc } : null);
+      const d=editorDraftForHead(readEditorDraft(projectId,key),{doc:v.doc,base:v.version.version});
+      // Même version native uniquement : aucun remplacement automatique ni reprise d’un brouillon périmé.
+      setDraft(d?{doc:d.doc}:null);
     },
     [docKey, projectId],
   );
@@ -164,13 +160,10 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
     (next: AdDocument) => {
       setDoc(next);
       setDirty(true);
-      try {
-        localStorage.setItem(draftKey(docKey), JSON.stringify({ doc: next, base: view?.version.version ?? 0, at: Date.now() }));
-      } catch {
-        /* stockage indisponible : le travail reste en mémoire jusqu'à l'enregistrement */
-      }
+      currentDraft.current={projectId,docKey,doc:next,base:view?.version.version??0,dirty:true};
+      writeEditorDraft(projectId,docKey,{doc:next,base:view?.version.version??0});
     },
-    [docKey, view],
+    [projectId,docKey, view],
   );
   const apply = useCallback(
     (op: DocOp, merge?: string) => {
@@ -192,20 +185,34 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
     setSaving(true);
     try {
       const v = await api<View>(base, { body: { action: "save", expectedVersion:view?.version.version,doc, note: "modification manuelle" } });
+      const saved={doc,base:view?.version.version??0},live=currentDraft.current;
+      const sameContext=activeDraftContext.current.projectId===projectId&&activeDraftContext.current.docKey===docKey&&live.projectId===projectId&&live.docKey===docKey;
+      if(!sameContext||live.base!==saved.base){
+        toast("ok",t("La création précédente a été enregistrée. La création ouverte n'a pas été modifiée.","The previous creative was saved. The open creative was not changed."));
+        return v;
+      }
       setView(v);
-      setDirty(false);
-      try {
-        localStorage.removeItem(draftKey(docKey));
-      } catch {}
-      toast("ok", t(`Enregistré (version ${v.version.version}).`, `Saved (version ${v.version.version}).`));
+      const savedCurrent=!!live.doc&&sameEditorDraft({doc:live.doc,base:live.base},saved);
+      if(savedCurrent){currentDraft.current={projectId,docKey,doc,base:v.version.version,dirty:false};setDirty(false);}
+      else if(live.dirty&&live.doc){
+        // Notre propre sauvegarde est confirmée : même brouillon, nouvelle base native ; aucun mélange de calques.
+        currentDraft.current={...live,base:v.version.version};
+        writeEditorDraft(projectId,docKey,{doc:live.doc,base:v.version.version});
+      }
+      clearEditorDraft(projectId,docKey,saved);
+      toast("ok", savedCurrent?t(`Enregistré (version ${v.version.version}).`, `Saved (version ${v.version.version}).`):t(`Version ${v.version.version} enregistrée ; vos modifications plus récentes restent non enregistrées. Copiez-les avant d'actualiser.`, `Version ${v.version.version} saved; your newer changes are still unsaved. Copy them before refreshing.`));
       return v;
     } catch (e) {
-      toast("bad", (e as Error).message);
+      // Flush the current dirty state before reporting a failed save, including edits made while awaiting HTTP.
+      const live=currentDraft.current;
+      const warnUnsaved=live.dirty&&live.doc&&activeDraftContext.current.projectId===projectId&&activeDraftContext.current.docKey===docKey&&live.projectId===projectId&&live.docKey===docKey;
+      if(warnUnsaved)writeEditorDraft(projectId,docKey,{doc:live.doc!,base:live.base});
+      toast("bad", `${(e as Error).message}${warnUnsaved?` ${t("Copiez vos modifications non enregistrées avant d'actualiser ou de fermer cet éditeur.", "Copy your unsaved changes before refreshing or closing this editor.")}`:""}`);
       return null;
     } finally {
       setSaving(false);
     }
-  }, [base, doc, docKey, t, toast,view?.version.version]);
+  }, [base, doc, docKey,projectId, t, toast,view?.version.version]);
 
   // Raccourcis clavier (ordinateur) : annuler, rétablir, enregistrer, supprimer, dupliquer, déplacer au clavier.
   useEffect(() => {
@@ -444,6 +451,7 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
     }
   };
   const duplicateCreative = async () => {
+    try {
     const current=dirty?await save():view;if(!current)return;
     const intent=JSON.stringify({docKey,version:current.version.version});
     if(duplicateOperation.current?.intent!==intent)duplicateOperation.current={intent,id:crypto.randomUUID()};
@@ -452,9 +460,12 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
     setDocKey(v.docKey);
     await load(v.docKey);
     toast("ok", t("Copie créée : vous modifiez maintenant la copie.", "Copy created: you are now editing the copy."));
+    } catch (e) {
+      toast("bad", `${(e as Error).message} ${t("Vérifiez les créations enregistrées avant de réessayer : la copie peut avoir été créée si la réponse a été perdue.", "Check the saved creatives before retrying: the copy may have been created if the response was lost.")}`);
+    }
   };
   const close = () => {
-    if (dirty && !window.confirm(t("Des modifications ne sont pas enregistrées. Fermer quand même ? (Elles restent proposées à la prochaine ouverture.)", "Some changes are not saved. Close anyway? (They will be offered next time.)"))) return;
+    if (dirty && !window.confirm(t("Des modifications ne sont pas enregistrées. Copiez-les avant de fermer : la reprise locale n'est pas garantie. Fermer quand même ?", "Some changes are not saved. Copy them before closing: local recovery is not guaranteed. Close anyway?"))) return;
     onClose();
   };
 
@@ -587,8 +598,8 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
       {draft && (
         <div className="flex flex-wrap items-center gap-2 border-b border-line bg-warn-soft px-4 py-2 text-sm text-warn" role="status">
           {t("Des modifications non enregistrées ont été retrouvées sur cet appareil.", "Unsaved changes were found on this device.")}
-          <Button size="sm" variant="secondary" onClick={() => (hist.current?.reset(doc), applyMany([]), setDoc(draft.doc), hist.current?.reset(draft.doc), setDirty(true), setDraft(null))}>{t("Les reprendre", "Recover them")}</Button>
-          <Button size="sm" variant="ghost" onClick={() => { try { localStorage.removeItem(draftKey(docKey)); } catch {} setDraft(null); }}>{t("Ignorer", "Discard")}</Button>
+          <Button size="sm" variant="secondary" onClick={() => {hist.current?.reset(draft.doc);commit(draft.doc);setDraft(null);}}>{t("Les reprendre", "Recover them")}</Button>
+          <Button size="sm" variant="ghost" onClick={() => {clearEditorDraft(projectId,docKey,{doc:draft.doc,base:view?.version.version??0});setDraft(null);}}>{t("Ignorer", "Discard")}</Button>
         </div>
       )}
       {busy && <div className="flex items-center gap-2 border-b border-line bg-card px-4 py-2 text-sm"><Spinner /> {busy}</div>}
