@@ -1,0 +1,2280 @@
+{
+  "schema": "syna-301-progress-1",
+  "generatedAt": "2026-11-03T00:41:23.849812+00:00",
+  "sources": {
+    "matrix": "/workspace/work/parity301-canonical-final-delta/MATRICE-PARITE-301.csv",
+    "matrixSha256": "6f7c2ba288059291b4fa86f9ab7e0031b387a620f8033cf8172573fb16df3d67",
+    "ci": "/workspace/work/parity301-ci-final-heads.json",
+    "ciSha256": "792c07d13dbf7ddabd57d88120fc2993fa05fa8d78371ad3b9021ada27099c73"
+  },
+  "applicationSource": "5b6382affdaea3a2d1b01e62f7c4078c7f71d38d",
+  "convergenceHead": "f5e17f1bf5314b85b98a02e91a297f65e707f3fe",
+  "applicationIdentical5bToF5": true,
+  "candidate": {
+    "shell": "cdbaa1a91bc394135c228058b48e1d9e80dca041",
+    "additionalPrs": [
+      328,
+      330
+    ],
+    "qualified": false,
+    "executedSource": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+    "executedTree": "1d303664973b784b00c3edcddb17652cc5a532d3",
+    "qualifiedScopes": {
+      "files": 4,
+      "businessContent": 4,
+      "b1Runs": 3,
+      "b1Cases": 12,
+      "supplementalCases": 2
+    },
+    "proof": "/workspace/work/preuves-convergence6fd/FINAL-REPLAY-SUMMARY.json",
+    "globalParityQualified": false
+  },
+  "totals": {
+    "operations": 83,
+    "domains": 25,
+    "catalogue": 66,
+    "outsideCatalogue": 17
+  },
+  "counts": {
+    "execution_status": {
+      "BLOQUE_CONNEXION_OU_CONSENTEMENT": 8,
+      "BLOQUE_GARDE_FINANCIERE": 3,
+      "CORRIGE_CIBLE": 3,
+      "CORRIGE_GARDE_SCOPE": 1,
+      "CORRIGE_LOCAL_FALLBACK_BLOQUE": 1,
+      "CORRIGE_LOCAL_REGLES_SEULES": 1,
+      "CORRIGE_MEMO_LOCAL_PAYANT_GARDE": 1,
+      "CORRIGE_NATIF_NON_RACCORDE": 1,
+      "NON_RACCORDE": 8,
+      "NON_TESTE": 2,
+      "PASSE_NATIF_NON_RACCORDE": 9,
+      "PASSE_SCOPE": 45
+    },
+    "native_status": {
+      "BLOQUE_CONNEXION_OU_CONSENTEMENT": 11,
+      "NATIF_OK": 48,
+      "NON_TESTE": 10,
+      "PARTIEL": 14
+    },
+    "syna_status": {
+      "ABSENT": 30,
+      "NON_TESTE": 2,
+      "PARTIEL": 51
+    },
+    "priority": {
+      "P0": 14,
+      "P0 bug / P2 raccord": 1,
+      "P0 coût / P2 raccord": 2,
+      "P1": 10,
+      "P2": 49,
+      "P3": 7
+    }
+  },
+  "domains": [
+    {
+      "capability": "C01",
+      "operations": 2,
+      "executionStatus": {
+        "PASSE_SCOPE": 2
+      },
+      "nativeStatus": {
+        "NATIF_OK": 1,
+        "PARTIEL": 1
+      },
+      "synaStatus": {
+        "PARTIEL": 2
+      }
+    },
+    {
+      "capability": "C02",
+      "operations": 1,
+      "executionStatus": {
+        "PASSE_SCOPE": 1
+      },
+      "nativeStatus": {
+        "NATIF_OK": 1
+      },
+      "synaStatus": {
+        "PARTIEL": 1
+      }
+    },
+    {
+      "capability": "C03",
+      "operations": 1,
+      "executionStatus": {
+        "PASSE_SCOPE": 1
+      },
+      "nativeStatus": {
+        "NATIF_OK": 1
+      },
+      "synaStatus": {
+        "PARTIEL": 1
+      }
+    },
+    {
+      "capability": "C04",
+      "operations": 2,
+      "executionStatus": {
+        "PASSE_SCOPE": 2
+      },
+      "nativeStatus": {
+        "NATIF_OK": 2
+      },
+      "synaStatus": {
+        "PARTIEL": 2
+      }
+    },
+    {
+      "capability": "C05",
+      "operations": 2,
+      "executionStatus": {
+        "PASSE_SCOPE": 2
+      },
+      "nativeStatus": {
+        "NATIF_OK": 2
+      },
+      "synaStatus": {
+        "PARTIEL": 2
+      }
+    },
+    {
+      "capability": "C06",
+      "operations": 3,
+      "executionStatus": {
+        "NON_RACCORDE": 1,
+        "PASSE_SCOPE": 2
+      },
+      "nativeStatus": {
+        "NATIF_OK": 2,
+        "NON_TESTE": 1
+      },
+      "synaStatus": {
+        "ABSENT": 1,
+        "PARTIEL": 2
+      }
+    },
+    {
+      "capability": "C07",
+      "operations": 3,
+      "executionStatus": {
+        "PASSE_SCOPE": 3
+      },
+      "nativeStatus": {
+        "PARTIEL": 3
+      },
+      "synaStatus": {
+        "PARTIEL": 3
+      }
+    },
+    {
+      "capability": "C08",
+      "operations": 2,
+      "executionStatus": {
+        "PASSE_SCOPE": 2
+      },
+      "nativeStatus": {
+        "NATIF_OK": 2
+      },
+      "synaStatus": {
+        "PARTIEL": 2
+      }
+    },
+    {
+      "capability": "C09",
+      "operations": 7,
+      "executionStatus": {
+        "NON_RACCORDE": 3,
+        "NON_TESTE": 1,
+        "PASSE_SCOPE": 3
+      },
+      "nativeStatus": {
+        "NATIF_OK": 3,
+        "NON_TESTE": 4
+      },
+      "synaStatus": {
+        "ABSENT": 3,
+        "NON_TESTE": 1,
+        "PARTIEL": 3
+      }
+    },
+    {
+      "capability": "C10",
+      "operations": 3,
+      "executionStatus": {
+        "NON_TESTE": 1,
+        "PASSE_SCOPE": 2
+      },
+      "nativeStatus": {
+        "NATIF_OK": 2,
+        "NON_TESTE": 1
+      },
+      "synaStatus": {
+        "NON_TESTE": 1,
+        "PARTIEL": 2
+      }
+    },
+    {
+      "capability": "C11",
+      "operations": 2,
+      "executionStatus": {
+        "PASSE_SCOPE": 2
+      },
+      "nativeStatus": {
+        "PARTIEL": 2
+      },
+      "synaStatus": {
+        "PARTIEL": 2
+      }
+    },
+    {
+      "capability": "C12",
+      "operations": 6,
+      "executionStatus": {
+        "CORRIGE_CIBLE": 1,
+        "PASSE_NATIF_NON_RACCORDE": 1,
+        "PASSE_SCOPE": 4
+      },
+      "nativeStatus": {
+        "NATIF_OK": 6
+      },
+      "synaStatus": {
+        "ABSENT": 1,
+        "PARTIEL": 5
+      }
+    },
+    {
+      "capability": "C13",
+      "operations": 4,
+      "executionStatus": {
+        "CORRIGE_NATIF_NON_RACCORDE": 1,
+        "NON_RACCORDE": 1,
+        "PASSE_SCOPE": 2
+      },
+      "nativeStatus": {
+        "NATIF_OK": 1,
+        "NON_TESTE": 1,
+        "PARTIEL": 2
+      },
+      "synaStatus": {
+        "ABSENT": 2,
+        "PARTIEL": 2
+      }
+    },
+    {
+      "capability": "C14",
+      "operations": 7,
+      "executionStatus": {
+        "NON_RACCORDE": 1,
+        "PASSE_SCOPE": 6
+      },
+      "nativeStatus": {
+        "NATIF_OK": 6,
+        "NON_TESTE": 1
+      },
+      "synaStatus": {
+        "ABSENT": 1,
+        "PARTIEL": 6
+      }
+    },
+    {
+      "capability": "C15",
+      "operations": 7,
+      "executionStatus": {
+        "BLOQUE_CONNEXION_OU_CONSENTEMENT": 1,
+        "CORRIGE_CIBLE": 2,
+        "CORRIGE_LOCAL_FALLBACK_BLOQUE": 1,
+        "CORRIGE_MEMO_LOCAL_PAYANT_GARDE": 1,
+        "PASSE_SCOPE": 2
+      },
+      "nativeStatus": {
+        "BLOQUE_CONNEXION_OU_CONSENTEMENT": 1,
+        "NATIF_OK": 4,
+        "PARTIEL": 2
+      },
+      "synaStatus": {
+        "ABSENT": 1,
+        "PARTIEL": 6
+      }
+    },
+    {
+      "capability": "C16",
+      "operations": 4,
+      "executionStatus": {
+        "BLOQUE_CONNEXION_OU_CONSENTEMENT": 2,
+        "PASSE_SCOPE": 2
+      },
+      "nativeStatus": {
+        "BLOQUE_CONNEXION_OU_CONSENTEMENT": 2,
+        "NATIF_OK": 2
+      },
+      "synaStatus": {
+        "ABSENT": 2,
+        "PARTIEL": 2
+      }
+    },
+    {
+      "capability": "C17",
+      "operations": 1,
+      "executionStatus": {
+        "CORRIGE_GARDE_SCOPE": 1
+      },
+      "nativeStatus": {
+        "PARTIEL": 1
+      },
+      "synaStatus": {
+        "PARTIEL": 1
+      }
+    },
+    {
+      "capability": "C18",
+      "operations": 3,
+      "executionStatus": {
+        "BLOQUE_CONNEXION_OU_CONSENTEMENT": 1,
+        "PASSE_SCOPE": 2
+      },
+      "nativeStatus": {
+        "BLOQUE_CONNEXION_OU_CONSENTEMENT": 1,
+        "NATIF_OK": 2
+      },
+      "synaStatus": {
+        "ABSENT": 1,
+        "PARTIEL": 2
+      }
+    },
+    {
+      "capability": "C19",
+      "operations": 2,
+      "executionStatus": {
+        "BLOQUE_GARDE_FINANCIERE": 2
+      },
+      "nativeStatus": {
+        "BLOQUE_CONNEXION_OU_CONSENTEMENT": 2
+      },
+      "synaStatus": {
+        "ABSENT": 2
+      }
+    },
+    {
+      "capability": "C20",
+      "operations": 1,
+      "executionStatus": {
+        "PASSE_NATIF_NON_RACCORDE": 1
+      },
+      "nativeStatus": {
+        "NATIF_OK": 1
+      },
+      "synaStatus": {
+        "ABSENT": 1
+      }
+    },
+    {
+      "capability": "C21",
+      "operations": 4,
+      "executionStatus": {
+        "PASSE_NATIF_NON_RACCORDE": 1,
+        "PASSE_SCOPE": 3
+      },
+      "nativeStatus": {
+        "NATIF_OK": 4
+      },
+      "synaStatus": {
+        "ABSENT": 1,
+        "PARTIEL": 3
+      }
+    },
+    {
+      "capability": "C22",
+      "operations": 5,
+      "executionStatus": {
+        "PASSE_NATIF_NON_RACCORDE": 4,
+        "PASSE_SCOPE": 1
+      },
+      "nativeStatus": {
+        "NATIF_OK": 5
+      },
+      "synaStatus": {
+        "ABSENT": 4,
+        "PARTIEL": 1
+      }
+    },
+    {
+      "capability": "C23",
+      "operations": 4,
+      "executionStatus": {
+        "BLOQUE_CONNEXION_OU_CONSENTEMENT": 4
+      },
+      "nativeStatus": {
+        "BLOQUE_CONNEXION_OU_CONSENTEMENT": 4
+      },
+      "synaStatus": {
+        "ABSENT": 4
+      }
+    },
+    {
+      "capability": "C24",
+      "operations": 5,
+      "executionStatus": {
+        "BLOQUE_GARDE_FINANCIERE": 1,
+        "CORRIGE_LOCAL_REGLES_SEULES": 1,
+        "NON_RACCORDE": 2,
+        "PASSE_SCOPE": 1
+      },
+      "nativeStatus": {
+        "BLOQUE_CONNEXION_OU_CONSENTEMENT": 1,
+        "NATIF_OK": 1,
+        "NON_TESTE": 2,
+        "PARTIEL": 1
+      },
+      "synaStatus": {
+        "ABSENT": 4,
+        "PARTIEL": 1
+      }
+    },
+    {
+      "capability": "C25",
+      "operations": 2,
+      "executionStatus": {
+        "PASSE_NATIF_NON_RACCORDE": 2
+      },
+      "nativeStatus": {
+        "PARTIEL": 2
+      },
+      "synaStatus": {
+        "ABSENT": 2
+      }
+    }
+  ],
+  "ci": {
+    "observedFrom": "2026-11-03T00:32:06.109Z",
+    "observedUntil": "2026-11-03T00:37:46.961Z",
+    "fullGreenCount": 20,
+    "inProgressCount": 9,
+    "entries": [
+      {
+        "pr": 303,
+        "head": "b6e2a1f5cd446397c914be8feabf59f4a6f4763e",
+        "branch": "codex/parity301-seo-metadata",
+        "base": "codex/parity301-reference",
+        "baseSha": "b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+        "run": 41522013117,
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "mergeable": true,
+        "mergeableState": "clean",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125540153283,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125540153746,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125540153856,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125540153920,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125578074926,
+            "name": "Typecheck, tests, Theme Check, build",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 303,
+          "jobId": 125540153283,
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4719 passed | 31 skipped (4750)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 303,
+          "jobId": 125540153283,
+          "checkout": "9c6412b1cb39226ef7d66a48dc45897d8f142874",
+          "mergeDescription": "HEAD is now at 9c6412b Merge b6e2a1f5cd446397c914be8feabf59f4a6f4763e into b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4719 passed | 31 skipped (4750)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:45.811Z"
+      },
+      {
+        "pr": 304,
+        "head": "46ed3bb71a4536d671b1ff048d6716084d977e2f",
+        "branch": "codex/parity301-catalogue-stock",
+        "base": "codex/parity301-reference",
+        "baseSha": "b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+        "run": 41540699815,
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "mergeable": true,
+        "mergeableState": "clean",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125603797781,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125603798205,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125603798263,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125603798443,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125641778383,
+            "name": "Typecheck, tests, Theme Check, build",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 304,
+          "jobId": 125603798443,
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4717 passed | 31 skipped (4748)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 304,
+          "jobId": 125603798443,
+          "checkout": "8b7d21469f5f80c14010e92d15fc8d14805d334b",
+          "mergeDescription": "HEAD is now at 8b7d214 Merge 46ed3bb71a4536d671b1ff048d6716084d977e2f into b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4717 passed | 31 skipped (4748)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:45.768Z"
+      },
+      {
+        "pr": 305,
+        "head": "a3efbfbaf86b0639f2a118818b303b42355d9f79",
+        "branch": "codex/parity301-local-files",
+        "base": "codex/parity301-reference",
+        "baseSha": "b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+        "run": 41523032899,
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "mergeable": true,
+        "mergeableState": "clean",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125543595587,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125543595968,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125543596035,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125543596074,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125583609355,
+            "name": "Typecheck, tests, Theme Check, build",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 305,
+          "jobId": 125543596035,
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4728 passed | 31 skipped (4759)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 305,
+          "jobId": 125543596035,
+          "checkout": "cfbcabacc1f254d4398ce4c2743f9f8a73ac46fd",
+          "mergeDescription": "HEAD is now at cfbcaba Merge a3efbfbaf86b0639f2a118818b303b42355d9f79 into b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4728 passed | 31 skipped (4759)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:45.825Z"
+      },
+      {
+        "pr": 306,
+        "head": "1fd40838ef8f2772e6cdecea90e14a4a308b93c8",
+        "branch": "codex/parity301-c21-versions",
+        "base": "codex/parity301-reference",
+        "baseSha": "b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+        "run": 41523317732,
+        "mergeable": true,
+        "mergeableState": "clean",
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125544560843,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125544561104,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125544561114,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125544561291,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125582694139,
+            "name": "Typecheck, tests, Theme Check, build",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 306,
+          "jobId": 125544560843,
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4723 passed | 31 skipped (4754)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 306,
+          "jobId": 125544560843,
+          "checkout": "465fbd5e323053ecc7ff2f5d0a10254d5d32d884",
+          "mergeDescription": "HEAD is now at 465fbd5 Merge 1fd40838ef8f2772e6cdecea90e14a4a308b93c8 into b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4723 passed | 31 skipped (4754)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:32:06.109Z",
+        "collectionNote": "Transient read parse failure this poll; immediate PR head refetch succeeded, previous completed-success run retained."
+      },
+      {
+        "pr": 307,
+        "head": "29a21dc359b8da489455f676991405e05aa8ae4f",
+        "branch": "codex/parity301-media-consent",
+        "base": "codex/parity301-reference",
+        "baseSha": "b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+        "run": 41524962394,
+        "attempt": 2,
+        "status": "completed",
+        "conclusion": "success",
+        "mergeable": true,
+        "mergeableState": "clean",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125594561456,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125594563502,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125594564659,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125594642093,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125597958202,
+            "name": "Typecheck, tests, Theme Check, build",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 307,
+          "jobId": 125594563502,
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4731 passed | 31 skipped (4762)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 307,
+          "jobId": 125594563502,
+          "checkout": "ddfc9681e86e94fea78111ab89d1ead5baeb28df",
+          "mergeDescription": "HEAD is now at ddfc968 Merge 29a21dc359b8da489455f676991405e05aa8ae4f into b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4731 passed | 31 skipped (4762)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:46.207Z"
+      },
+      {
+        "pr": 308,
+        "head": "ec4663731014f80979b5817f4b3694c5b8788fd2",
+        "branch": "codex/parity301-request-receipts",
+        "base": "codex/parity301-reference",
+        "baseSha": "b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+        "run": 41525045083,
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "mergeable": true,
+        "mergeableState": "clean",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125550506536,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125550507034,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125550507077,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125550507136,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125582910605,
+            "name": "Typecheck, tests, Theme Check, build",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 308,
+          "jobId": 125550507077,
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4715 passed | 31 skipped (4746)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 308,
+          "jobId": 125550507077,
+          "checkout": "d5bb376c3d1ee888e4c5664b7a369254e0fe86cc",
+          "mergeDescription": "HEAD is now at d5bb376 Merge ec4663731014f80979b5817f4b3694c5b8788fd2 into b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4715 passed | 31 skipped (4746)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:45.620Z"
+      },
+      {
+        "pr": 309,
+        "head": "e23711db58510b4571c3a263b5b8ef638751e186",
+        "branch": "codex/parity301-blog-edit",
+        "base": "codex/parity301-reference",
+        "baseSha": "b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+        "run": 41525519786,
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "mergeable": true,
+        "mergeableState": "clean",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125552112386,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125552112786,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125552113076,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125552113169,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125579174932,
+            "name": "Typecheck, tests, Theme Check, build",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 309,
+          "jobId": 125552113169,
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4729 passed | 31 skipped (4760)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 309,
+          "jobId": 125552113169,
+          "checkout": "e9faf6050086a239a84ceed236468946f3dd89c6",
+          "mergeDescription": "HEAD is now at e9faf60 Merge e23711db58510b4571c3a263b5b8ef638751e186 into b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4729 passed | 31 skipped (4760)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:45.850Z"
+      },
+      {
+        "pr": 310,
+        "head": "f3c1dc151a3916ca3084c8e896cae6e58fad09d6",
+        "branch": "codex/parity301-business-content",
+        "base": "codex/parity301-c21-versions",
+        "baseSha": "1fd40838ef8f2772e6cdecea90e14a4a308b93c8",
+        "run": 41540751996,
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "mergeable": true,
+        "mergeableState": "clean",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125603975939,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125603976234,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125603976243,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125603976324,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125634506025,
+            "name": "Typecheck, tests, Theme Check, build",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 310,
+          "jobId": 125603976324,
+          "testSummary": [
+            "Test Files  528 passed | 1 skipped (529)",
+            "Tests  4752 passed | 31 skipped (4783)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 310,
+          "jobId": 125603976324,
+          "checkout": "905e84c59e22c740ab26d08f5bede6885ac3e4cb",
+          "mergeDescription": "HEAD is now at 905e84c Merge f3c1dc151a3916ca3084c8e896cae6e58fad09d6 into 1fd40838ef8f2772e6cdecea90e14a4a308b93c8",
+          "testSummary": [
+            "Test Files  528 passed | 1 skipped (529)",
+            "Tests  4752 passed | 31 skipped (4783)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:45.790Z"
+      },
+      {
+        "pr": 311,
+        "head": "1d88e97d2d0a3a287c55026f6667ac04f9230e11",
+        "branch": "codex/parity301-ui-history",
+        "base": "codex/parity301-reference",
+        "baseSha": "b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+        "run": 41528040359,
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "mergeable": true,
+        "mergeableState": "clean",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125560747645,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125560747995,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125560748068,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125560748303,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125596268725,
+            "name": "Typecheck, tests, Theme Check, build",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 311,
+          "jobId": 125560748303,
+          "testSummary": [
+            "Test Files  526 passed | 1 skipped (527)",
+            "Tests  4708 passed | 31 skipped (4739)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 311,
+          "jobId": 125560748303,
+          "checkout": "2368d2df32e389a6dbb664ab4314cd67528b1d4f",
+          "mergeDescription": "HEAD is now at 2368d2d Merge 1d88e97d2d0a3a287c55026f6667ac04f9230e11 into b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+          "testSummary": [
+            "Test Files  526 passed | 1 skipped (527)",
+            "Tests  4708 passed | 31 skipped (4739)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:45.982Z"
+      },
+      {
+        "pr": 312,
+        "head": "4b109255e37da300251cc7825b09cd48aa582a1c",
+        "branch": "codex/parity301-stock-search-free",
+        "base": "codex/parity301-media-consent",
+        "baseSha": "29a21dc359b8da489455f676991405e05aa8ae4f",
+        "run": 41530002000,
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "mergeable": true,
+        "mergeableState": "clean",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125567419337,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125567419617,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125567419730,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125567419731,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125595292507,
+            "name": "Typecheck, tests, Theme Check, build",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 312,
+          "jobId": 125567419731,
+          "testSummary": [
+            "Test Files  528 passed | 1 skipped (529)",
+            "Tests  4739 passed | 31 skipped (4770)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 312,
+          "jobId": 125567419731,
+          "checkout": "78b4ee3915c06aae9975f50f7534d37754ef960f",
+          "mergeDescription": "HEAD is now at 78b4ee3 Merge 4b109255e37da300251cc7825b09cd48aa582a1c into 29a21dc359b8da489455f676991405e05aa8ae4f",
+          "testSummary": [
+            "Test Files  528 passed | 1 skipped (529)",
+            "Tests  4739 passed | 31 skipped (4770)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:46.155Z"
+      },
+      {
+        "pr": 313,
+        "head": "c6b6fa811f5f1d8b615c0110d2cd9cd053e3255d",
+        "branch": "codex/parity301-existing-local",
+        "base": "codex/parity301-local-files",
+        "baseSha": "a3efbfbaf86b0639f2a118818b303b42355d9f79",
+        "run": 41530398425,
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "mergeable": true,
+        "mergeableState": "clean",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125568792481,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125568792752,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125568792792,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125568792933,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125608163975,
+            "name": "Typecheck, tests, Theme Check, build",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 313,
+          "jobId": 125568792752,
+          "testSummary": [
+            "Test Files  528 passed | 1 skipped (529)",
+            "Tests  4753 passed | 31 skipped (4784)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 313,
+          "jobId": 125568792752,
+          "checkout": "209c523625c3bf1ce2e6d3687957f5fe6418c452",
+          "mergeDescription": "HEAD is now at 209c523 Merge c6b6fa811f5f1d8b615c0110d2cd9cd053e3255d into a3efbfbaf86b0639f2a118818b303b42355d9f79",
+          "testSummary": [
+            "Test Files  528 passed | 1 skipped (529)",
+            "Tests  4753 passed | 31 skipped (4784)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:45.952Z"
+      },
+      {
+        "pr": 314,
+        "head": "dc3c3a7623e3a6defddc5e50d4bc224353d3bc7a",
+        "branch": "codex/parity301-image-topic-intent",
+        "base": "codex/parity301-media-consent",
+        "baseSha": "29a21dc359b8da489455f676991405e05aa8ae4f",
+        "run": 41531001157,
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "mergeable": true,
+        "mergeableState": "clean",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125570832835,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125570833124,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125570833366,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125570833418,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125606504175,
+            "name": "Typecheck, tests, Theme Check, build",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 314,
+          "jobId": 125570833366,
+          "testSummary": [
+            "Test Files  528 passed | 1 skipped (529)",
+            "Tests  4741 passed | 31 skipped (4772)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 314,
+          "jobId": 125570833366,
+          "checkout": "55cfef46788a7436e4081e7c88702bfaa6cb7c03",
+          "mergeDescription": "HEAD is now at 55cfef4 Merge dc3c3a7623e3a6defddc5e50d4bc224353d3bc7a into 29a21dc359b8da489455f676991405e05aa8ae4f",
+          "testSummary": [
+            "Test Files  528 passed | 1 skipped (529)",
+            "Tests  4741 passed | 31 skipped (4772)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:45.867Z"
+      },
+      {
+        "pr": 315,
+        "head": "eda4de594027e48eb45fe9e654eb443907494c2a",
+        "branch": "codex/parity301-logos-financial-compat",
+        "base": "codex/parity301-media-consent",
+        "baseSha": "29a21dc359b8da489455f676991405e05aa8ae4f",
+        "run": 41531234295,
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "mergeable": true,
+        "mergeableState": "clean",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125571670589,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125571670784,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125571670972,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125571671122,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125606256293,
+            "name": "Typecheck, tests, Theme Check, build",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 315,
+          "jobId": 125571670972,
+          "testSummary": [
+            "Test Files  529 passed | 1 skipped (530)",
+            "Tests  4762 passed | 31 skipped (4793)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 315,
+          "jobId": 125571670972,
+          "checkout": "9ef01756aac6555a97bb6895d39cae166f14c5a0",
+          "mergeDescription": "HEAD is now at 9ef0175 Merge eda4de594027e48eb45fe9e654eb443907494c2a into 29a21dc359b8da489455f676991405e05aa8ae4f",
+          "testSummary": [
+            "Test Files  529 passed | 1 skipped (530)",
+            "Tests  4762 passed | 31 skipped (4793)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:46.030Z"
+      },
+      {
+        "pr": 316,
+        "head": "645851e280a9b797858afc20c713429d7248ffb6",
+        "branch": "codex/parity301-image-legacy-consent",
+        "base": "codex/parity301-media-consent",
+        "baseSha": "29a21dc359b8da489455f676991405e05aa8ae4f",
+        "run": 41537296897,
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "mergeable": true,
+        "mergeableState": "clean",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125592273952,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125592274076,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125592274130,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125592274176,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125618276174,
+            "name": "Typecheck, tests, Theme Check, build",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 316,
+          "jobId": 125592274130,
+          "testSummary": [
+            "Test Files  528 passed | 1 skipped (529)",
+            "Tests  4753 passed | 31 skipped (4784)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 316,
+          "jobId": 125592274130,
+          "checkout": "c991375f7576d925bb67a72a28dc7a32e804597f",
+          "mergeDescription": "HEAD is now at c991375 Merge 645851e280a9b797858afc20c713429d7248ffb6 into 29a21dc359b8da489455f676991405e05aa8ae4f",
+          "testSummary": [
+            "Test Files  528 passed | 1 skipped (529)",
+            "Tests  4753 passed | 31 skipped (4784)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:46.083Z"
+      },
+      {
+        "pr": 317,
+        "head": "149fb20cea30cd57bb1f74005609ce2d01272cb8",
+        "branch": "codex/parity301-image-edit-consent",
+        "base": "codex/parity301-media-consent",
+        "baseSha": "29a21dc359b8da489455f676991405e05aa8ae4f",
+        "run": 41543852493,
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "mergeable": true,
+        "mergeableState": "clean",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125616656042,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125616656355,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125616656486,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125616656581,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125643729307,
+            "name": "Typecheck, tests, Theme Check, build",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 317,
+          "jobId": 125616656042,
+          "testSummary": [
+            "Test Files  528 passed | 1 skipped (529)",
+            "Tests  4753 passed | 31 skipped (4784)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 317,
+          "jobId": 125616656042,
+          "checkout": "416db3179700e8240294f1ae827a54d18c5e1e13",
+          "mergeDescription": "HEAD is now at 416db31 Merge 149fb20cea30cd57bb1f74005609ce2d01272cb8 into 29a21dc359b8da489455f676991405e05aa8ae4f",
+          "testSummary": [
+            "Test Files  528 passed | 1 skipped (529)",
+            "Tests  4753 passed | 31 skipped (4784)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:46.251Z"
+      },
+      {
+        "pr": 318,
+        "head": "b92311b6aedc2761a1db1e9eed50d9fdda3e853b",
+        "branch": "codex/parity301-creative-redo-consent",
+        "base": "codex/parity301-media-consent",
+        "baseSha": "29a21dc359b8da489455f676991405e05aa8ae4f",
+        "run": 41537497145,
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "mergeable": true,
+        "mergeableState": "clean",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125592964801,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125592965115,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125592965156,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125592965215,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125625899958,
+            "name": "Typecheck, tests, Theme Check, build",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 318,
+          "jobId": 125592965115,
+          "testSummary": [
+            "Test Files  528 passed | 1 skipped (529)",
+            "Tests  4740 passed | 31 skipped (4771)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 318,
+          "jobId": 125592965115,
+          "checkout": "c2c4a616f58ffe6f10d51420753828cd67aba96b",
+          "mergeDescription": "HEAD is now at c2c4a61 Merge b92311b6aedc2761a1db1e9eed50d9fdda3e853b into 29a21dc359b8da489455f676991405e05aa8ae4f",
+          "testSummary": [
+            "Test Files  528 passed | 1 skipped (529)",
+            "Tests  4740 passed | 31 skipped (4771)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:46.961Z"
+      },
+      {
+        "pr": 319,
+        "head": "81559e121ff6d61762ab864130c33879f1cbf800",
+        "branch": "codex/parity301-site-requests",
+        "base": "codex/parity301-request-receipts",
+        "baseSha": "ec4663731014f80979b5817f4b3694c5b8788fd2",
+        "run": 41539553465,
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "mergeable": true,
+        "mergeableState": "clean",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125600720981,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125600721448,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125600721534,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125600721585,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125633089294,
+            "name": "Typecheck, tests, Theme Check, build",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 319,
+          "jobId": 125600721534,
+          "testSummary": [
+            "Test Files  528 passed | 1 skipped (529)",
+            "Tests  4742 passed | 31 skipped (4773)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 319,
+          "jobId": 125600721534,
+          "checkout": "c32d6ee75f6d8b11717b5d03a307a1e41d5f411f",
+          "mergeDescription": "HEAD is now at c32d6ee Merge 81559e121ff6d61762ab864130c33879f1cbf800 into ec4663731014f80979b5817f4b3694c5b8788fd2",
+          "testSummary": [
+            "Test Files  528 passed | 1 skipped (529)",
+            "Tests  4742 passed | 31 skipped (4773)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:45.981Z"
+      },
+      {
+        "pr": 320,
+        "head": "cef9c42d291692a9d19066dc7c79b8175226aa05",
+        "branch": "codex/parity301-social-production-consent",
+        "base": "codex/parity301-reference",
+        "baseSha": "b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+        "run": 41549511710,
+        "attempt": 1,
+        "status": "in_progress",
+        "conclusion": null,
+        "mergeable": true,
+        "mergeableState": "unstable",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125633311302,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125633311526,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "in_progress",
+            "conclusion": null,
+            "currentStep": "Export natif depuis SYNA, téléchargement et reprise sans fournisseur réel"
+          },
+          {
+            "id": 125633311558,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125633311773,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 320,
+          "jobId": 125633311558,
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4715 passed | 31 skipped (4746)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 320,
+          "jobId": 125633311558,
+          "checkout": "b1ef53f0bdc07370ae372f7878e9a9bf20d9dea1",
+          "mergeDescription": "HEAD is now at b1ef53f Merge cef9c42d291692a9d19066dc7c79b8175226aa05 into b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4715 passed | 31 skipped (4746)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:45.651Z"
+      },
+      {
+        "pr": 321,
+        "head": "9e9a75e14cab9c05cce538d7bab62c283039f748",
+        "branch": "codex/parity301-content-edit-free-guard",
+        "base": "codex/parity301-reference",
+        "baseSha": "b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+        "run": 41539936149,
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "mergeable": true,
+        "mergeableState": "clean",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125601206213,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125601206592,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125601206816,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125601206844,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125635774643,
+            "name": "Typecheck, tests, Theme Check, build",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 321,
+          "jobId": 125601206816,
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4711 passed | 31 skipped (4742)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 321,
+          "jobId": 125601206816,
+          "checkout": "6fb6a08d8a784070781b3c43f31a9c208b0cf194",
+          "mergeDescription": "HEAD is now at 6fb6a08 Merge 9e9a75e14cab9c05cce538d7bab62c283039f748 into b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4711 passed | 31 skipped (4742)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:45.680Z"
+      },
+      {
+        "pr": 322,
+        "head": "7495a3a4389d6e6783172b5a81b28227cf383e85",
+        "branch": "codex/parity301-native-files-classify-free",
+        "base": "codex/parity301-reference",
+        "baseSha": "b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+        "run": 41539987356,
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "mergeable": true,
+        "mergeableState": "clean",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125601380031,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125601380533,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125601380578,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125601380599,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125639462657,
+            "name": "Typecheck, tests, Theme Check, build",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 322,
+          "jobId": 125601380599,
+          "testSummary": [
+            "Test Files  528 passed | 1 skipped (529)",
+            "Tests  4723 passed | 31 skipped (4754)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 322,
+          "jobId": 125601380599,
+          "checkout": "c982933df6a427d84d785d63db1b78d12453fcd9",
+          "mergeDescription": "HEAD is now at c982933 Merge 7495a3a4389d6e6783172b5a81b28227cf383e85 into b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+          "testSummary": [
+            "Test Files  528 passed | 1 skipped (529)",
+            "Tests  4723 passed | 31 skipped (4754)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:46.387Z"
+      },
+      {
+        "pr": 323,
+        "head": "0e23a37da9eab2bd02093ee6dc386cbfa1b0c68b",
+        "branch": "codex/parity301-addoc-consent",
+        "base": "codex/parity301-reference",
+        "baseSha": "b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+        "run": 41540037976,
+        "attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "mergeable": true,
+        "mergeableState": "clean",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125601552529,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125601552858,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125601552913,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125601553006,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125635626937,
+            "name": "Typecheck, tests, Theme Check, build",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 323,
+          "jobId": 125601552858,
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4717 passed | 31 skipped (4748)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 323,
+          "jobId": 125601552858,
+          "checkout": "9fb9d3c8d7cb99662c7022244e0983e16322f1f7",
+          "mergeDescription": "HEAD is now at 9fb9d3c Merge 0e23a37da9eab2bd02093ee6dc386cbfa1b0c68b into b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4717 passed | 31 skipped (4748)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:45.753Z"
+      },
+      {
+        "pr": 324,
+        "head": "f104ca2198101273727f838443cdb6aa38954b11",
+        "branch": "codex/parity301-prompt-consent",
+        "base": "codex/parity301-reference",
+        "baseSha": "b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+        "run": 41549560915,
+        "attempt": 1,
+        "status": "in_progress",
+        "conclusion": null,
+        "mergeable": true,
+        "mergeableState": "unstable",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125633487509,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125633487758,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "in_progress",
+            "conclusion": null,
+            "currentStep": "Export natif depuis SYNA, téléchargement et reprise sans fournisseur réel"
+          },
+          {
+            "id": 125633487935,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125633487989,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 324,
+          "jobId": 125633487935,
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4718 passed | 31 skipped (4749)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 324,
+          "jobId": 125633487935,
+          "checkout": "3c4b8986e079073e44dea2e22ff3ea601ef3a3af",
+          "mergeDescription": "HEAD is now at 3c4b898 Merge f104ca2198101273727f838443cdb6aa38954b11 into b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4718 passed | 31 skipped (4749)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:45.658Z"
+      },
+      {
+        "pr": 325,
+        "head": "742d45e2379897250e242626e0888d09f7491e66",
+        "branch": "codex/parity301-content-create-consent",
+        "base": "codex/parity301-reference",
+        "baseSha": "b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+        "run": 41552748927,
+        "attempt": 1,
+        "status": "in_progress",
+        "conclusion": null,
+        "mergeable": true,
+        "mergeableState": "unstable",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125644118092,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "in_progress",
+            "conclusion": null,
+            "currentStep": "Tests (réseau fournisseur interdit)"
+          },
+          {
+            "id": 125644118419,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125644118541,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "in_progress",
+            "conclusion": null,
+            "currentStep": "Shopify Theme Check (30 thèmes : FR, EN, multi-produit, niche, services FR et EN, ZIP client)"
+          },
+          {
+            "id": 125644118555,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": null,
+        "checkoutEvidence": {
+          "pr": 325,
+          "jobId": 125644118555,
+          "checkout": "0cc2217d2e75e467e253d98b30d6b2f4964657df",
+          "mergeDescription": "HEAD is now at 0cc2217 Merge 742d45e2379897250e242626e0888d09f7491e66 into b515d5c7cf726f0d6a68244ab896bed46f2f1d92",
+          "testSummary": null
+        },
+        "observedAt": "2026-11-03T00:37:45.659Z"
+      },
+      {
+        "pr": 326,
+        "head": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+        "branch": "codex/parity301-convergence",
+        "base": "codex/parity301-review-base",
+        "baseSha": "cdbaa1a91bc394135c228058b48e1d9e80dca041",
+        "run": 41553493638,
+        "attempt": 1,
+        "status": "in_progress",
+        "conclusion": null,
+        "mergeable": true,
+        "mergeableState": "unstable",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125647010281,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "in_progress",
+            "conclusion": null,
+            "currentStep": "Build de production sans fournisseur"
+          },
+          {
+            "id": 125647010516,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "in_progress",
+            "conclusion": null,
+            "currentStep": "Run actions/checkout@v4"
+          },
+          {
+            "id": 125647010626,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "in_progress",
+            "conclusion": null,
+            "currentStep": "Tests (réseau fournisseur interdit)"
+          },
+          {
+            "id": 125647010632,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "in_progress",
+            "conclusion": null,
+            "currentStep": "Construction de l'image"
+          }
+        ],
+        "testCounts": null,
+        "checkoutEvidence": null,
+        "treeVerification": {
+          "expected": "1d303664973b784b00c3edcddb17652cc5a532d3",
+          "sourceAndCandidateMerge": [
+            {
+              "sha": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+              "tree": "1d303664973b784b00c3edcddb17652cc5a532d3",
+              "expectedTreeMatches": true
+            },
+            {
+              "sha": "b12887794212d7efd901fb418ea5281ab38d713d",
+              "tree": "1d303664973b784b00c3edcddb17652cc5a532d3",
+              "expectedTreeMatches": true
+            }
+          ],
+          "ghaCheckoutNotYetObserved": true
+        },
+        "observedAt": "2026-11-03T00:37:45.948Z"
+      },
+      {
+        "pr": 327,
+        "head": "1db256bf434ce868c89a07dc9051c11263f0dc5e",
+        "branch": "codex/parity301-preview-image-harness",
+        "base": "codex/parity301-ui-history",
+        "baseSha": "1d88e97d2d0a3a287c55026f6667ac04f9230e11",
+        "run": 41546243674,
+        "attempt": 1,
+        "status": "in_progress",
+        "conclusion": null,
+        "mergeable": true,
+        "mergeableState": "unstable",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125622420839,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125622421131,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "in_progress",
+            "conclusion": null,
+            "currentStep": "Clips IA et voix SYNA depuis le Studio compilé (fournisseurs HTTP simulés)"
+          },
+          {
+            "id": 125622421221,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125622421417,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ],
+        "testCounts": {
+          "pr": 327,
+          "jobId": 125622420839,
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4718 passed | 31 skipped (4749)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 327,
+          "jobId": 125622420839,
+          "checkout": "1d2c94abfa803afc278924965fd808226f5d7183",
+          "mergeDescription": "HEAD is now at 1d2c94a Merge 1db256bf434ce868c89a07dc9051c11263f0dc5e into 1d88e97d2d0a3a287c55026f6667ac04f9230e11",
+          "testSummary": [
+            "Test Files  527 passed | 1 skipped (528)",
+            "Tests  4718 passed | 31 skipped (4749)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:46.722Z"
+      },
+      {
+        "pr": 328,
+        "head": "d71315348e2de18d6197576ae1e07fe39939e7d0",
+        "branch": "claude/syna-301-fichiers",
+        "base": "codex/parity301-local-files",
+        "baseSha": "a3efbfbaf86b0639f2a118818b303b42355d9f79",
+        "run": 41547424279,
+        "attempt": 1,
+        "status": "in_progress",
+        "conclusion": null,
+        "mergeable": true,
+        "mergeableState": "unstable",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125626311636,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125626311886,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125626311919,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125626312035,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "in_progress",
+            "conclusion": null,
+            "currentStep": "Visuel publicitaire natif depuis SYNA et refus sans rachat (HTTP simulé)"
+          }
+        ],
+        "testCounts": {
+          "pr": 328,
+          "jobId": 125626311886,
+          "testSummary": [
+            "Test Files  528 passed | 1 skipped (529)",
+            "Tests  4743 passed | 31 skipped (4774)"
+          ]
+        },
+        "checkoutEvidence": {
+          "pr": 328,
+          "jobId": 125626311886,
+          "checkout": "5b97a98c31c9874c827d18d3d8aa3c7e0bc0ec2c",
+          "mergeDescription": "HEAD is now at 5b97a98 Merge d71315348e2de18d6197576ae1e07fe39939e7d0 into a3efbfbaf86b0639f2a118818b303b42355d9f79",
+          "testSummary": [
+            "Test Files  528 passed | 1 skipped (529)",
+            "Tests  4743 passed | 31 skipped (4774)"
+          ]
+        },
+        "observedAt": "2026-11-03T00:37:45.655Z"
+      },
+      {
+        "pr": 329,
+        "head": "da3ee34bd05ba797cb7c1abbf96cc316e679f346",
+        "branch": "codex/parity301-b1-scaled-pointer",
+        "base": "codex/parity301-convergence",
+        "baseSha": "f5e17f1bf5314b85b98a02e91a297f65e707f3fe",
+        "run": 41551382909,
+        "attempt": 1,
+        "status": "in_progress",
+        "conclusion": null,
+        "mergeable": true,
+        "mergeableState": "unstable",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125639539432,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "in_progress",
+            "conclusion": null,
+            "currentStep": "Shopify Theme Check (30 thèmes : FR, EN, multi-produit, niche, services FR et EN, ZIP client)"
+          },
+          {
+            "id": 125639539768,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125639539888,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125639539901,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "in_progress",
+            "conclusion": null,
+            "currentStep": "Tests (réseau fournisseur interdit)"
+          }
+        ],
+        "testCounts": null,
+        "checkoutEvidence": {
+          "pr": 329,
+          "jobId": 125639539888,
+          "checkout": "9ae7f2ff3a11ab509ac3f093aba37ddf798d83dd",
+          "mergeDescription": "HEAD is now at 9ae7f2f Merge da3ee34bd05ba797cb7c1abbf96cc316e679f346 into f5e17f1bf5314b85b98a02e91a297f65e707f3fe",
+          "testSummary": null
+        },
+        "observedAt": "2026-11-03T00:37:45.910Z"
+      },
+      {
+        "pr": 330,
+        "head": "356b20ab3d2d4ff2bab0a55869a36c35b2c49f31",
+        "branch": "claude/syna-301-contenus",
+        "base": "codex/parity301-business-content",
+        "baseSha": "f3c1dc151a3916ca3084c8e896cae6e58fad09d6",
+        "run": 41552150267,
+        "attempt": 1,
+        "status": "in_progress",
+        "conclusion": null,
+        "mergeable": true,
+        "mergeableState": "unstable",
+        "jobFailures": [],
+        "jobs": [
+          {
+            "id": 125642122058,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125642122322,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125642122393,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "in_progress",
+            "conclusion": null,
+            "currentStep": "Shopify Theme Check (30 thèmes : FR, EN, multi-produit, niche, services FR et EN, ZIP client)"
+          },
+          {
+            "id": 125642122396,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "in_progress",
+            "conclusion": null,
+            "currentStep": "Tests (réseau fournisseur interdit)"
+          }
+        ],
+        "testCounts": null,
+        "checkoutEvidence": {
+          "pr": 330,
+          "jobId": 125642122322,
+          "checkout": "15f84e90ef43799685f2f0e549a02f97e2eb9d4b",
+          "mergeDescription": "HEAD is now at 15f84e9 Merge 356b20ab3d2d4ff2bab0a55869a36c35b2c49f31 into f3c1dc151a3916ca3084c8e896cae6e58fad09d6",
+          "testSummary": null
+        },
+        "observedAt": "2026-11-03T00:37:45.828Z"
+      },
+      {
+        "pr": 331,
+        "head": "7e4d93381639063b1aedfa9ea6002536a770c116",
+        "branch": "codex/parity301-knowledge-harness",
+        "base": "codex/parity301-convergence",
+        "baseSha": "f5e17f1bf5314b85b98a02e91a297f65e707f3fe",
+        "run": 41553043533,
+        "attempt": 1,
+        "status": "in_progress",
+        "conclusion": null,
+        "mergeable": true,
+        "mergeableState": "unstable",
+        "jobFailures": [
+          {
+            "id": 125645110187,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "steps": [
+              "Cible revalidée conservée après relecture périodique du projet (plus de 15 s)"
+            ]
+          }
+        ],
+        "jobs": [
+          {
+            "id": 125645109940,
+            "name": "Theme Check, build et recettes natives compilées",
+            "status": "in_progress",
+            "conclusion": null,
+            "currentStep": "Shopify Theme Check (30 thèmes : FR, EN, multi-produit, niche, services FR et EN, ZIP client)"
+          },
+          {
+            "id": 125645110187,
+            "name": "SYNA — confirmation gratuite dans le Studio compilé",
+            "status": "completed",
+            "conclusion": "failure"
+          },
+          {
+            "id": 125645110215,
+            "name": "Image Docker (construction et démarrage)",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "id": 125645110300,
+            "name": "Types et suite complète (réseau fournisseur interdit)",
+            "status": "in_progress",
+            "conclusion": null,
+            "currentStep": "Tests (réseau fournisseur interdit)"
+          }
+        ],
+        "testCounts": null,
+        "checkoutEvidence": null,
+        "observedAt": "2026-11-03T00:37:45.763Z",
+        "diagnosis": {
+          "file": "scripts/verify-syna284-b1-confirmation-ui.ts",
+          "line": 78,
+          "actual": "locator.evaluateAll: Frame was detached",
+          "case": "refresh services, after native move and lost-response retry; open products/services already passed",
+          "cause": "Read of old iframe during native version replacement; distinct from scale-click bug fixed329.",
+          "proposedFix": "Read-only reacquire locator on detached frame within existing30s, retain exact order assertion; no action retry."
+        }
+      }
+    ]
+  },
+  "limits": [
+    "45 PASSE_SCOPE ne sont pas45parités complètes.",
+    "Statuts canoniques de périmètre ; aucun nouveau SYNA_OK global déduit.",
+    "CI GitHub généralement sur merge synthétique : voir checkoutEvidence, ne pas attribuer les tests à un autre SHA.",
+    "Ne pas additionner les tests de PR ni les anciens parcours par SHA.",
+    "Source6fd qualifiee seulement pour les scopes executes ; pas CRUD global/A1 ni199autres chemins financiers."
+  ]
+}

@@ -56,6 +56,8 @@ export type VisualBrief = {
   /** Liaison immuable à l'offre et aux références ; aucune permission. */
   bindingDigest?: string;
   instructions?: string;
+  /** Sujet exact déjà borné par l'entrée métier ; distinct des scènes automatiques de repli. */
+  requestedTopic?: string;
   nativeEdit?:{sourceAssetId:string;styleAssetId?:string;productAssetId?:string};
   version: string;
   kind: VisualKind;

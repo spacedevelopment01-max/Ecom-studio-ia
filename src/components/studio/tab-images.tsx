@@ -413,8 +413,11 @@ function CreateImage({ services, q, onStarted,preparation }: { preparation?:Them
     sending.current=true;
     setBusy(true);
     try {
-      if (!(await cost.confirm("image"))) return;
-      const r = await api<{ jobId?: string }>(`/api/projects/${id}/images/v2`, { body: { action: "generate", operationId:operation.current??(operation.current=crypto.randomUUID()), request: { ...(preparation?{themePlacement:preparation.themePlacement}:{}),kind: f.kind, aspect: f.aspect, topic: f.topic.trim() || undefined, count: f.count, allowGenerate: true, noStock: true } } });
+      const operationId=operation.current??(operation.current=crypto.randomUUID()),request={...(preparation?{themePlacement:preparation.themePlacement}:{}),kind:f.kind,aspect:f.aspect,topic:f.topic.trim()||undefined,count:f.count,allowGenerate:true,noStock:true};
+      const quote=await api<{jobId?:string;approvalToken:string;maximumMicro:number;estimatePct:number;maximumPct:number;maximumCalls:number}>(`/api/projects/${id}/images/v2`,{body:{action:'quote',operationId,request}});
+      if(quote.jobId){onStarted(quote.jobId);return;}
+      if(quote.maximumMicro>0&&!(await cost.confirm('image',{quote})))return;
+      const r = await api<{ jobId?: string }>(`/api/projects/${id}/images/v2`, { body: { action:'generate',operationId,request,approvalToken:quote.approvalToken,confirmation:true } });
       onStarted(r.jobId);
     } catch (e) {
       toast("bad", (e as Error).message);

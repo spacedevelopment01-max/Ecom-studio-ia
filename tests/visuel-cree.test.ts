@@ -29,7 +29,7 @@ describe("Créer un visuel de prestation", async () => {
   const overview = await import("@/app/api/projects/[id]/route");
   const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
 
-  it("story 9:16 sans photo, titre vide : la demande part vers l'IA (publication entière), avec le forfait du projet", async () => {
+  it("forfait projet et Blog conservés ; l'ancien POST visuel exige désormais un parcours devisé", async () => {
     const u = await createUser(`vis${Date.now()}@test.fr`, "motdepasse-test", "P");
     sessionUser = { ...u, role: "client" };
     const pid = await seedThemeScenario(u.id, "artisan");
@@ -46,14 +46,8 @@ describe("Créer un visuel de prestation", async () => {
     // Corps envoyé par l'écran (titre, texte et bouton vides : tirés de l'offre).
     const body = { mode: "single", kind: "service", format: "story", serviceIndex: 0, usePhoto: false };
     const r = await fr(() => images.POST(new Request(`http://localhost:3000/api/projects/${pid}/images`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }), { params: Promise.resolve({ id: pid }) } as any));
-    expect(r.status).toBe(200);
-    const { jobId } = await r.json();
-    expect(jobId).toBeTruthy();
-    // Sa propre tâche (d'autres tests peuvent laisser des tâches en file dans la même base).
-    const job = getJob(jobId)!;
-    // Images finales 100 % IA : le visuel de prestation est une publication entière créée par l'IA (plus de rendu du
-    // studio). La tâche porte la demande telle que l'écran l'envoie.
-    expect(job.type).toBe("image.ai_post");
-    expect(JSON.parse(job.payload).request).toMatchObject({ kind: "service", format: "story", serviceIndex: 0 });
+    expect(r.status).toBe(409);
+    expect((await r.json()).code).toBe('image_consent_required');
+    const {all}=await import('@/lib/db');expect(all('SELECT id FROM jobs WHERE project_id=?',pid)).toHaveLength(0);
   }, 120_000);
 });

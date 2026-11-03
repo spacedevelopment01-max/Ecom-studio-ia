@@ -8,7 +8,9 @@ import { strategyContent } from "../strategy-consumption";
 import crypto from "node:crypto";
 import { one, now, run } from "../db";
 import { consumeQuota } from "../quotas";
-import { blogPlanReason, pickCover, uniqueSlug } from "../engine/blog";
+import { blogPlanReason, pickCover, uniqueSlug, getArticle } from "../engine/blog";
+import { stableHash } from "../brain/hash";
+import { HttpError } from "../auth";
 import type { Project } from "../projects";
 import { blockText, stripInline, toHtml } from "./doc";
 import { fold } from "./lang";
@@ -39,23 +41,29 @@ const articleHash = (title: string, body: string) => crypto.createHash("sha256")
 
 /** Identifiant stable de l'article du blog lié à un document V2. */
 export const blogIdFor = (docKey: string) => `b2${crypto.createHash("sha256").update(docKey).digest("hex").slice(0, 20)}`;
+/** Source complète d'une retouche, comparée sous le verrou d'écriture de la transaction document/article. */
+export const blogEditFingerprint = (projectId:string,docKey:string) => stableHash('native-blog-edit-source-301',getArticle(projectId,blogIdFor(docKey)));
 
 /** Les articles écrits par l'IA suivent le forfait (comme le blog existant) ; un brouillon local reste gratuit. */
 export const blogAiAllowed = (userId: string, projectId?: string | null) => blogPlanReason(userId, projectId) == null;
 
 /** Range (ou met à jour) le brouillon dans le blog existant ; un article publié reste publié (statut « prêt »). */
-export function saveBlogDraftV2(p: Project, docKey: string, doc: ContentDoc, o: { notes: string[]; ai: boolean; jobKey: string; quotaReserved?:boolean }) {
+export function saveBlogDraftV2(p: Project, docKey: string, doc: ContentDoc, o: { notes: string[]; ai: boolean; jobKey: string; quotaReserved?:boolean; preserveSlug?:boolean; expectedEditFingerprint?:string }) {
   const articleId = blogIdFor(docKey);
+  if(o.expectedEditFingerprint!==undefined&&blogEditFingerprint(p.id,docKey)!==o.expectedEditFingerprint)throw new HttpError(409,'L’article a changé pendant la retouche. Votre version native est conservée.');
   const prev = one<{ slug: string; status: string; cover_asset_id: string | null; title: string; body_html: string; v2_hash: string | null }>("SELECT slug, status, cover_asset_id, title, body_html, v2_hash FROM blog_articles WHERE id = ?", articleId);
   // Article modifié par le client dans l'onglet Blog depuis le dernier rangement : jamais écrasé (le document V2 garde
   // la nouvelle version ; l'article du client reste tel qu'il l'a écrit).
-  if (prev && prev.v2_hash && articleHash(prev.title, prev.body_html) !== prev.v2_hash) return articleId;
+  if (prev && prev.v2_hash && articleHash(prev.title, prev.body_html) !== prev.v2_hash) {
+    if(o.expectedEditFingerprint!==undefined)throw new HttpError(409,'L’article et son document ne sont plus synchrones. Rechargez avant de retoucher.');
+    return articleId;
+  }
   const h1 = doc.blocks.find((b) => b.kind === "h1");
   const title = h1 ? stripInline(blockText(h1)) : doc.page.title;
   const body = toHtml({ blocks: doc.blocks.filter((b) => b.kind !== "h1") });
   const firstP = doc.blocks.find((b) => b.kind === "p" && !/^\[(À|A) compléter|^\[To complete|^\[Por completar/.test(b.text));
   const excerpt = (firstP ? stripInline(blockText(firstP)) : doc.meta.metaDescription).slice(0, 300);
-  const slug = prev?.status === "published" ? prev.slug : uniqueSlug(p.id, doc.meta.slug || title, articleId);
+  const slug = prev && (prev.status === "published" || o.preserveSlug) ? prev.slug : uniqueSlug(p.id, doc.meta.slug || title, articleId);
   const t = now();
   run(
     `INSERT INTO blog_articles (id, project_id, user_id, title, slug, meta_title, meta_description, excerpt, body_html, tags, cover_asset_id, language, status, qc_notes, keyword, search_intent, created_at, updated_at)

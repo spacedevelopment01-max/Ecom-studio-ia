@@ -1,3 +1,4 @@
+import {quoteNativeLogo,confirmNativeLogo} from '@/lib/logo-v2/native-consent';
 import { directionSeries, seriesRights, currentSeries, directionOf } from "@/lib/logo-v2/direction-series";
 import { pendingDirection, selectCompleteDirection, assertSelectedDirection } from "@/lib/logo-v2/selection";
 import { z } from "zod";
@@ -91,13 +92,18 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  const b = await body(req, z.object({ action: z.enum(["generate", "select", "choose", "reject", "redraw", "quote", "stop"]), assetId: z.string().max(40).optional(), style: z.enum([...LOGO_STYLES, "auto"]).optional(), feedback: z.string().max(400).optional(), renew: z.boolean().optional() }));
+  const b = await body(req, z.object({ action: z.enum(["generate", "select", "choose", "reject", "redraw", "quote", "stop"]), assetId: z.string().max(40).optional(), style: z.enum([...LOGO_STYLES, "auto"]).optional(), feedback: z.string().max(400).optional(), renew: z.boolean().optional(), operation:z.enum(["generate","redraw"]).optional(),quoteId:z.string().optional(),maximumPct:z.number().optional(),confirmation:z.boolean().optional(),requestId:z.string().optional() }));
   if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));
   // « Arrêter » : la création de logo en cours (ou bloquée, studio arrêté) est annulée ; l'onglet est libéré. Les images
   // déjà reçues restent enregistrées ; aucune dépense ne continue (le worker s'arrête à son prochain point d'avancement).
   if (b.action === "stop") {
     for (const j of all<{ id: string }>(`SELECT id FROM jobs WHERE project_id = ? AND type IN ${LOGO_JOBS} AND status IN ('queued','running','paused','blocked')`, p.id)) cancelJob(j.id);
     return ok(view(p.id));
+  }
+  if(['quote','generate','redraw'].includes(b.action)){
+    const rights=seriesRights(p.id),input={operation:b.action==='quote'?(b.operation??(b.assetId?'redraw':'generate')):b.action,style:b.style??'auto',renew:b.renew??(!!rights.used&&!rights.partial),feedback:b.feedback??'',...(b.assetId?{assetId:b.assetId}:{})};
+    if(b.action==='quote')return ok({ai:aiActiveFor(user.id,p.id),quote:quoteNativeLogo(user,p.id,input)});
+    return ok({...confirmNativeLogo(user,p.id,{quoteId:b.quoteId,maximumPct:b.maximumPct,confirmation:b.confirmation,requestId:b.requestId},input),...view(p.id)});
   }
   if (one(`SELECT 1 FROM jobs WHERE project_id = ? AND type IN ${LOGO_JOBS} AND status IN ('queued','running','paused')`, p.id)) throw new HttpError(409, L("Une création de logo est déjà en cours : attendez qu'elle se termine, ou cliquez sur « Arrêter » sous la barre d'avancement.", "A logo task is already running: wait for it to finish, or click \"Stop\" under the progress bar."));
   if (b.action === "select") {
@@ -112,23 +118,6 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     recordLogoRouteRejection(p.id, { name: meta.territory?.name, composition: mt === "emblem" ? "emblem" : mt === "wordmark" ? "wordmark" : undefined, markKind: mt === "monogram" || mt === "lettermark" ? "monogram" : mt === "symbol_wordmark" || mt === "abstract_mark" ? "ai-symbol" : undefined });
     return ok(view(p.id));
   }
-  if (b.action === "quote") {
-    // Devis AVANT tout appel payant : montant maximal de la série (ou d'une nouvelle version), qui sert aussi de plafond.
-    const q = b.assetId ? logoRedrawQuote() : logoSeriesQuote();
-    const ai = aiActiveFor(p.userId, p.id);
-    const eur = (m: number | null | undefined) => (m == null ? null : Math.round((m / 1e6) * 100) / 100);
-    return ok({ ai, quote: q ? { ...q, maxEur: eur(q.maxMicro), probableEur: eur(q.probableMicro), relayEur: eur(q.relayMicro) } : null });
-  }
-  if (b.action === "redraw") {
-    // Nouvelle version d'un logo complet : une image payée, seulement à la demande du client (coût confirmé dans l'interface).
-    const meta = json<any>(one<{ meta: string }>("SELECT meta FROM assets WHERE id = ? AND project_id = ? AND role IN ('logo-v2','logo-v2-trial') AND deleted_at IS NULL", b.assetId ?? "", p.id)?.meta, null);
-    if (meta && directionSeries(p.id).some(s => s.requestKeys.includes(meta.run))) throw new HttpError(409, "Reprenez la série incomplète ou renouvelez une série complète, sans dessin isolé.");
-    if (!meta?.artwork) throw new HttpError(404, L("Logo complet introuvable.", "Full logo not found."));
-    if (!aiActiveFor(p.userId, p.id)) throw new HttpError(403, L("Une nouvelle version dessinée par l'IA demande un forfait avec IA.", "A new AI-drawn version needs a plan with AI."));
-    if (!logoRedrawQuote()) throw new HttpError(409, "Modèle logo requis indisponible ou plafond inconnu : nouvelle version en attente, aucun appel lancé.");
-    const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.logo.v2.redraw", maxAttempts: 1, label: L("Logo : nouvelle version", "Logo: new version"), payload: { projectId: p.id, assetId: b.assetId, feedback: b.feedback ?? "", ...(logoRedrawQuote() ? { costCapMicro: logoRedrawQuote()!.maxMicro } : {}) } });
-    return ok({ jobId: job.id, ...view(p.id) });
-  }
   if (b.action === "choose") {
     const selection = b.assetId && directionOf(p.id, b.assetId) ? assertSelectedDirection(p.id, b.assetId) : null;
     const row = b.assetId ? one<{ role: string; meta: string }>("SELECT role, meta FROM assets WHERE id = ? AND project_id = ? AND role IN ('logo-v2','logo-v2-studio','logo-v2-trial') AND deleted_at IS NULL", b.assetId, p.id) : null;
@@ -136,10 +125,5 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.logo.v2.choose", idempotencyKey: selection ? `direction-validation:${p.id}:${selection.logoId}:${selection.selectedAt}:${selection.brandHash}` : undefined, label: L("Logo choisi : déclinaisons et charte", "Chosen logo: variations and guidelines"), payload: { projectId: p.id, assetId: b.assetId, ...(selection ? { selectionBrandHash: selection.brandHash } : {}) } });
     return ok({ jobId: job.id, ...view(p.id) });
   }
-  const rights = seriesRights(p.id);
-  if ((!rights.partial || b.renew) && rights.used && !rights.canRenew) throw new HttpError(403, "Le droit de nouvelle série de votre forfait est utilisé. Vos directions sont conservées.");
-  if (rights.partial && !b.renew && (!b.feedback || b.feedback.trim().length < 8)) throw new HttpError(409, "Précisez la correction avant la reprise des directions manquantes.");
-  const previous = currentSeries(p.id);
-  const job = enqueue({ userId: user.id, projectId: p.id, type: "brand.logo.v2", idempotencyKey: `direction-series:${p.id}:${previous?.id ?? "initial"}:${previous?.attempts ?? 0}:${!!b.renew}`, maxAttempts: 1, label: L("Logo : directions créatives", "Logo: creative directions"), payload: { projectId: p.id, style: b.style ?? "auto", expectedSeriesId: previous?.id ?? null, renew: b.renew ?? (!!rights.used && !rights.partial), correction: b.feedback, costCapMicro: logoSeriesQuote().maxMicro } });
-  return ok({ jobId: job.id, ...view(p.id) });
+  throw new HttpError(400,'Action logo inconnue.');
 });

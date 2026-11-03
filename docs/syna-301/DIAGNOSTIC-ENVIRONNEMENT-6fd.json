@@ -1,0 +1,33 @@
+{
+  "source": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+  "node": "v24.19.0",
+  "appTestGuardChanges": false,
+  "fixtureManifest": "/workspace/work/parity301-final-ui-fixture-restoration.json",
+  "retainedFailures": {
+    "full": "/tmp/parity301-final-ui-full-tests.log",
+    "isolatedVoice": "/tmp/parity301-voice-failure-diagnostic.log"
+  },
+  "observedDefaultSandbox": {
+    "loopbackListen": "EPERM 127.0.0.1",
+    "nodeSpawnTrue": "spawnSync /bin/true EPERM",
+    "nodeSpawnFfmpeg": "spawnSync /usr/bin/ffmpeg EPERM",
+    "voiceCase": "beforeEach execFileSync ffmpeg EPERM; 1 diagnostic case executed, 26 filtered, not source skips",
+    "pythonFfmpegControl": "0.5s synthetic sine WAV generated successfully, 44178 bytes; no supplier"
+  },
+  "observedEscalatedSameNetworkGuard": {
+    "approval": "accepted by automatic review",
+    "nodeSpawnTrue": "success",
+    "loopbackListen": "success127.0.0.1",
+    "loopbackHttp": "200 success"
+  },
+  "openaiStreaming": {
+    "cause": "Required tracked reports directory absent from sparse worktree; imported module reads directory and direct-.*Z.png synchronously",
+    "restored": "exact source blobs, no modified files"
+  },
+  "auditI6": {
+    "observed": "historical same-suite case timed out60006ms; independent exact listen probe shows EPERM under default sandbox",
+    "sourceMechanism": "test awaits server.listen callback without listener for error before safeFetch; refused listen cannot resolve that promise",
+    "limit": "No full historical step trace, no new isolated audit suite replay; root will rerun complete suite with permitted runtime"
+  },
+  "node22Comparison": "Not rerun on Node22; version difference is not established cause. Independent same-Node24 allowed-vs-default probes isolate runtime sandbox boundary."
+}

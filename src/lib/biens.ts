@@ -142,6 +142,7 @@ export function createBien(userId: string, projectId: string, input: { transacti
 }
 
 /** Modification (brouillon ou en ligne) : les champs envoyés remplacent les anciens ; l'adresse de la fiche ne change pas. */
+// updated_at sert de version native : progression stricte même si l’horloge reste fixe ou recule.
 export function updateBien(projectId: string, bienId: string, patch: { transaction?: BienTransaction; data?: Record<string, unknown> }): Bien {
   const cur = getBien(projectId, bienId);
   const data = bienDataSchema.parse({ ...cur.data, ...(patch.data ?? {}) });
@@ -152,7 +153,7 @@ export function updateBien(projectId: string, bienId: string, patch: { transacti
     if (miss.length) throw new HttpError(400, L(`Ce bien est en ligne : il lui faut ${miss.join(", ")}. Retirez-le de l'affichage pour l'enregistrer incomplet.`, `This property is live: it needs ${miss.join(", ")}. Withdraw it to save it incomplete.`));
   }
   const stored = { ...data, handle: cur.publishedAt ? cur.handle : undefined };
-  run("UPDATE biens SET transaction_type = ?, data_json = ?, updated_at = ? WHERE id = ? AND project_id = ?", transaction, JSON.stringify(stored), now(), bienId, projectId);
+  run("UPDATE biens SET transaction_type = ?, data_json = ?, updated_at = MAX(?, updated_at + 1) WHERE id = ? AND project_id = ?", transaction, JSON.stringify(stored), now(), bienId, projectId);
   return getBien(projectId, bienId);
 }
 
@@ -168,13 +169,13 @@ export function setBienStatus(projectId: string, bienId: string, status: BienSta
   const t = now();
   const firstPublication = status === "published" && !cur.publishedAt;
   const data = { ...cur.data, handle: firstPublication || cur.publishedAt ? cur.handle : undefined };
-  run("UPDATE biens SET status = ?, data_json = ?, published_at = COALESCE(published_at, ?), updated_at = ? WHERE id = ? AND project_id = ?", status, JSON.stringify(data), firstPublication ? t : null, t, bienId, projectId);
+  run("UPDATE biens SET status = ?, data_json = ?, published_at = COALESCE(published_at, ?), updated_at = MAX(?, updated_at + 1) WHERE id = ? AND project_id = ?", status, JSON.stringify(data), firstPublication ? t : null, t, bienId, projectId);
   return getBien(projectId, bienId);
 }
 
 /** Nouvel ordre d'affichage (les biens non cités gardent leur place après les autres). */
 export function reorderBiens(projectId: string, ids: string[]) {
-  tx(() => ids.forEach((bid, i) => run("UPDATE biens SET position = ?, updated_at = ? WHERE id = ? AND project_id = ?", i, now(), bid, projectId)));
+  tx(() => ids.forEach((bid, i) => run("UPDATE biens SET position = ?, updated_at = MAX(?, updated_at + 1) WHERE id = ? AND project_id = ?", i, now(), bid, projectId)));
 }
 
 /** Biens visibles sur le site : publiés, puis vendus / loués (fiche conservée avec la mention). */

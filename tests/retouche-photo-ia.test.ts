@@ -51,14 +51,13 @@ describe("retouche de la photo livrée par l'IA", async () => {
     expect(p).toMatch(/N'ajouter aucun texte/);
   });
 
-  it("l'éditeur lance une retouche (tâche), refusée sans demande ou pour une photo d'un autre projet", async () => {
+  it("l'ancien appel sans devis est refusé, comme une demande vide ou une photo d'un autre projet", async () => {
     sessionUser = { ...u, role: "client" };
     const a = await photo();
     const ok = await post({ action: "edit", assetId: a.id, instruction: "lumière plus chaude" });
-    expect(ok.status).toBe(200);
-    const job = one<any>("SELECT * FROM jobs WHERE id = ?", (await ok.json()).jobId);
-    expect(job.type).toBe("image.edit");
-    expect(JSON.parse(job.payload)).toMatchObject({ projectId: pid, assetId: a.id, instruction: "lumière plus chaude" });
+    expect(ok.status).toBe(409);
+    expect(await ok.json()).toMatchObject({code:'image_consent_required'});
+    expect(one<any>("SELECT id FROM jobs WHERE project_id=? AND type='image.edit'",pid)).toBeUndefined();
     expect((await post({ action: "edit", assetId: a.id, instruction: "" })).status).toBe(400);
     expect((await post({ action: "edit", assetId: "inconnu", instruction: "plus chaud" })).status).toBe(404);
   });

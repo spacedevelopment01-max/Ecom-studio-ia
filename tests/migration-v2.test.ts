@@ -61,11 +61,13 @@ describe("migration V1 → V2 : moteurs réellement appelés", async () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ctx = (params: Record<string, string>) => ({ params: Promise.resolve(params) }) as any;
 
-  it("création complète — marque : fournisseur absent, attente explicite ; aucun nouveau logo local ni remplacement", async () => {
+  it("création complète — marque via Préparation confirmée : fournisseur absent, attente explicite ; aucun nouveau logo local ni remplacement", async () => {
     const pid = await seedPaid("cosmetic");
     const before = all("SELECT id FROM assets WHERE project_id = ? AND role = 'logo-proposal'", pid).length;
-    const { buildBrand } = await import("@/lib/engine/brand");
-    await expect(fr(() => buildBrand(ctxFor(pid), pid, {}))).rejects.toThrow(/attente|indisponible/);
+    const { runPreparation } = await import("@/lib/preparation/engine");
+    const {prepareGuidedLogo,confirmedGuidedLogo}=await import("./logo295-guided-fixture");
+    await prepareGuidedLogo(pid);const logoCtx=await confirmedGuidedLogo(pid);
+    await expect(fr(() => runPreparation(logoCtx))).rejects.toThrow(/attente|indisponible/);
     expect(all("SELECT id FROM assets WHERE project_id=? AND role IN ('logo-v2-studio','logo-v2','logo')", pid)).toHaveLength(0);
     expect(all("SELECT id FROM assets WHERE project_id = ? AND role = 'logo-proposal'", pid).length).toBe(before);
     expect(all("SELECT id FROM ai_calls WHERE project_id=?", pid)).toHaveLength(0);
@@ -120,8 +122,9 @@ describe("migration V1 → V2 : moteurs réellement appelés", async () => {
     const images = await import("@/app/api/projects/[id]/images/route");
     expect((await images.POST(req(`/api/projects/${pid}/images`, { mode: "single", kind: "ad" }), ctx({ id: pid }))).status).toBe(410);
     const amb = await images.POST(req(`/api/projects/${pid}/images`, { mode: "single", kind: "scene", useAi: true, format: "landscape" }), ctx({ id: pid }));
-    expect((await amb.json()).engine).toBe("image-v2");
-    expect(one<{ type: string }>("SELECT type FROM jobs WHERE project_id = ? ORDER BY created_at DESC, rowid DESC LIMIT 1", pid)!.type).toBe("image.v2");
+    expect(amb.status).toBe(409);
+    expect((await amb.json()).code).toBe('image_consent_required');
+    expect(one("SELECT id FROM jobs WHERE project_id=? AND type='image.v2'",pid)).toBeUndefined();
     // Publications : création manuelle = Social V2 ; ancienne route : approbation d'une V2 refusée, copie V2.
     const posts = await import("@/app/api/projects/[id]/posts/route");
     const created = await (await posts.POST(req(`/api/projects/${pid}/posts`, { network: "instagram", format: "image", caption: "Bonjour" }), ctx({ id: pid }))).json();

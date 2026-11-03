@@ -67,13 +67,15 @@ describe("Images : versions, tri, supprimées, nouveaux types", async () => {
     expect(new Set(ctas).size).toBeGreaterThan(1);
   }, 180_000);
 
-  it("double clic : la même demande envoyée deux fois ne crée qu'une seule tâche", async () => {
+  it("double clic sur l'ancienne API : deux refus explicites, aucune tâche supplémentaire", async () => {
     const { pid } = await setup();
-    const post = async () => (await (await fr(() => images.POST(new Request(`http://localhost:3000/api/projects/${pid}/images`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ mode: "single", kind: "promo", format: "portrait", headline: "-20 % le jeudi", background: "none" }) }), { params: Promise.resolve({ id: pid }) } as any))).json()).jobId as string;
+    const {all}=await import('@/lib/db');const before=all('SELECT id FROM jobs WHERE project_id=?',pid);
+    const post = () => fr(() => images.POST(new Request(`http://localhost:3000/api/projects/${pid}/images`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ mode: "single", kind: "promo", format: "portrait", headline: "-20 % le jeudi", background: "none" }) }), { params: Promise.resolve({ id: pid }) } as any));
     const a = await post();
     const b = await post();
-    expect(a).toBeTruthy();
-    expect(b).toBe(a);
+    expect(a.status).toBe(409);expect(b.status).toBe(409);
+    expect((await a.json()).code).toBe('image_consent_required');expect((await b.json()).code).toBe('image_consent_required');
+    expect(all('SELECT id FROM jobs WHERE project_id=?',pid)).toEqual(before);
   });
 
   it("changement de modèle : nouvelle version liée, la liste n'affiche que la dernière ; tri par statut ; supprimées et restauration", async () => {

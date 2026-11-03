@@ -106,6 +106,11 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const dedup = `images:${p.id}:${crypto.createHash("sha256").update(JSON.stringify(b)).digest("hex").slice(0, 24)}:${Math.floor(Date.now() / 4_000)}`;
   // Visuels avec texte d'une boutique : Publicités (éditeur visuel) ou Publications — créés là par l'IA.
   if (b.mode === "single" && p.business !== "services" && (kind === "social" || kind === "ad")) throw new HttpError(410, L("Les visuels avec texte se créent dans Publicités ou Publications (créés par l'IA).", "Visuals with text are created in Ads or Posts (created by AI)."));
+  // Aucun écran natif ne crée encore via cet ancien POST. Les moteurs de Préparation restent inchangés.
+  if (["set", "single"].includes(b.mode)) throw new HttpError(409, L(
+    "Ancien parcours : utilisez Images V2 ou Préparation, avec devis exact et confirmation avant toute création.",
+    "Legacy workflow: use Images V2 or Preparation, with an exact quote and confirmation before creating."
+  ), "image_consent_required");
   if (b.mode === "set") {
     const job = enqueue({ userId: user.id, projectId: p.id, idempotencyKey: dedup, type: "images.generate", label: L("Jeu d'images complet (IA)", "Full image set (AI)"), payload: { projectId: p.id } });
     return ok({ jobId: job.id, engine: "image-set-ai" });

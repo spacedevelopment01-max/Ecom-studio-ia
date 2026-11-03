@@ -1,0 +1,187 @@
+{
+  "schema": "syna301-fichiers-recette-1",
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "steps": [
+        {
+          "etape": "ouverture de Fichiers dans le mode du compte",
+          "ok": true,
+          "detail": "mode encre"
+        },
+        {
+          "etape": "désignation : un fichier coché devient la cible de SYNA",
+          "ok": true,
+          "detail": "Média désigné · version 1"
+        },
+        {
+          "etape": "demande ambiguë : explication, aucun bouton, rien d'écrit",
+          "ok": true
+        },
+        {
+          "etape": "annulation avant l'accord : rien n'est écrit",
+          "ok": true
+        },
+        {
+          "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis",
+          "ok": true
+        },
+        {
+          "etape": "réponse perdue après l'enregistrement : vérification sans deuxième écriture",
+          "ok": true,
+          "detail": "1 seule confirmation enregistrée"
+        },
+        {
+          "etape": "reçu relu, liste Fichiers à jour sans recharger",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : nom et reçu conservés",
+          "ok": true
+        },
+        {
+          "etape": "déplacement vers un dossier existant",
+          "ok": true
+        },
+        {
+          "etape": "fichier intact : octets, version, aucune copie",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "steps": [
+        {
+          "etape": "ouverture de Fichiers dans le mode du compte",
+          "ok": true,
+          "detail": "mode encre"
+        },
+        {
+          "etape": "désignation : un fichier coché devient la cible de SYNA",
+          "ok": true,
+          "detail": "Média désigné · version 1"
+        },
+        {
+          "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis",
+          "ok": true
+        },
+        {
+          "etape": "confirmation gratuite",
+          "ok": true
+        },
+        {
+          "etape": "reçu relu, liste Fichiers à jour sans recharger",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : nom et reçu conservés",
+          "ok": true
+        },
+        {
+          "etape": "fichier intact : octets, version, aucune copie",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "steps": [
+        {
+          "etape": "ouverture de Fichiers dans le mode du compte",
+          "ok": true,
+          "detail": "mode plein"
+        },
+        {
+          "etape": "désignation : un fichier coché devient la cible de SYNA",
+          "ok": true,
+          "detail": "Média désigné · version 1"
+        },
+        {
+          "etape": "demande ambiguë : explication, aucun bouton, rien d'écrit",
+          "ok": true
+        },
+        {
+          "etape": "annulation avant l'accord : rien n'est écrit",
+          "ok": true
+        },
+        {
+          "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis",
+          "ok": true
+        },
+        {
+          "etape": "réponse perdue après l'enregistrement : vérification sans deuxième écriture",
+          "ok": true,
+          "detail": "1 seule confirmation enregistrée"
+        },
+        {
+          "etape": "reçu relu, liste Fichiers à jour sans recharger",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : nom et reçu conservés",
+          "ok": true
+        },
+        {
+          "etape": "déplacement vers un dossier existant",
+          "ok": true
+        },
+        {
+          "etape": "fichier intact : octets, version, aucune copie",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "steps": [
+        {
+          "etape": "ouverture de Fichiers dans le mode du compte",
+          "ok": true,
+          "detail": "mode plein"
+        },
+        {
+          "etape": "désignation : un fichier coché devient la cible de SYNA",
+          "ok": true,
+          "detail": "Média désigné · version 1"
+        },
+        {
+          "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis",
+          "ok": true
+        },
+        {
+          "etape": "confirmation gratuite",
+          "ok": true
+        },
+        {
+          "etape": "reçu relu, liste Fichiers à jour sans recharger",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : nom et reçu conservés",
+          "ok": true
+        },
+        {
+          "etape": "fichier intact : octets, version, aucune copie",
+          "ok": true
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "forbidden": [
+    "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap",
+    "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap",
+    "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap",
+    "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap"
+  ],
+  "coutIA": 0
+}
