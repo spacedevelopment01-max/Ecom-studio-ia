@@ -243,7 +243,8 @@ export const handlers: Record<string, Handler> = {
     return { name: b.name };
   },
 
-  "copy.build": async (ctx) => {
+  "copy.build": async (ctx) => withAiDisabled("rédaction native locale gratuite, aucun devis IA accepté", async () => {
+    // Job autonome /copy ; le pipeline initial et les outils SYNA devisés restent distincts.
     const p = loadProject(ctx.payload.projectId);
     if (llmConfigured()) {
       const r = await aiShopCopyChecked({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:copy` }, p, (m) => ctx.progress(0.5, m), (k, fn) => ctx.step(k, fn));
@@ -252,7 +253,7 @@ export const handlers: Record<string, Handler> = {
     }
     remember(p.id, { kind: "artifact", key: "shop_copy", value: JSON.stringify(localCopy(p.product, p.brand!, p)), source: "local" });
     return { local: true };
-  },
+  }),
 
   "shop.build": async (ctx) => buildShop(ctx, ctx.payload.projectId, { useAi: ctx.payload.useAi, engine: ctx.payload.engine, language: ctx.payload.language }),
   "shop.direction": async (ctx) => switchDirection(ctx, ctx.payload.projectId, ctx.payload.direction),
