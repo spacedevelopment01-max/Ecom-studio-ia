@@ -48,7 +48,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   if (form.get("businessType")) run("UPDATE projects SET business_type = ? WHERE id = ?", business, p.id);
   // Coordonnées et prestations saisies maintenant (téléphone, adresse, horaires…) : enregistrées, sans effacer celles
   // déjà connues quand un champ est laissé vide (le client ne les saisit jamais deux fois).
-  if (business === "services") saveServices(p.id, mergeServiceProfile(serviceProfileFromInput(input), p.services));
+  if (business === "services") saveServices(p.id, mergeServiceProfile(serviceProfileFromInput(input), p.services),p.servicesVersion);
   if (input.platform && form.get("platform")) run("UPDATE projects SET platform = ? WHERE id = ?", input.platform, p.id);
   await saveStartFiles(p.id, user.id, files, logo, business);
   if (form.get("storeType")) run("UPDATE projects SET store_type = ? WHERE id = ?", input.storeType, p.id);

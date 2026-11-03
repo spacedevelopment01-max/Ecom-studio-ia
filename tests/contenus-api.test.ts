@@ -140,12 +140,12 @@ describe("Adresse unique entre le profil d'activité et la réservation", () => 
     login(a.uid);
     const sv = loadProject(a.pid).services;
     const before = currentTheme(a.pid)!.version.number;
-    const res = await call(project, "PATCH", { id: a.pid }, { services: { ...sv, address: "12 rue Nouvelle, 69003 Lyon", services: sv.services.map((s) => ({ name: s.name, description: s.description })) } });
+    const res = await call(project, "PATCH", { id: a.pid }, { servicesVersion: loadProject(a.pid).servicesVersion, services: { ...sv, address: "12 rue Nouvelle, 69003 Lyon", services: sv.services.map((s) => ({ name: s.name, description: s.description })) } });
     expect(res.status).toBe(200);
     expect(fr(() => readPrestations(a.pid))!.address).toBe("12 rue Nouvelle, 69003 Lyon");
     expect(currentTheme(a.pid)!.version.number).toBe(before + 1);
     // Même adresse renvoyée : aucune nouvelle version.
-    await call(project, "PATCH", { id: a.pid }, { services: { ...loadProject(a.pid).services, services: sv.services.map((s) => ({ name: s.name, description: s.description })) } });
+    await call(project, "PATCH", { id: a.pid }, { servicesVersion: loadProject(a.pid).servicesVersion, services: { ...loadProject(a.pid).services, services: sv.services.map((s) => ({ name: s.name, description: s.description })) } });
     expect(currentTheme(a.pid)!.version.number).toBe(before + 1);
   });
 });

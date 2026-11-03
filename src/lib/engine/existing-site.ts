@@ -275,7 +275,7 @@ export async function importExistingSiteNote(ctx: JobContext, projectId: string,
       email: c.email ?? "",
       hours: c.hours ?? "",
     });
-    saveServices(projectId, merged);
+    saveServices(projectId, merged,p.servicesVersion);
   }
   // Réseaux sociaux du site : repris dans les réglages s'ils ne sont pas déjà renseignés.
   const socials = Object.fromEntries(Object.entries(site.contact.socials ?? {}).filter(([k]) => ["instagram", "tiktok", "facebook", "youtube", "pinterest"].includes(k)));

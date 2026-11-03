@@ -3,6 +3,8 @@
  * dans la section de réglages lue par le moteur de réservation (source unique), avec une nouvelle version du site.
  * Propriétaire du projet seulement.
  */
+import { tx } from "@/lib/db";
+import { currentTheme } from "@/lib/projects";
 import { handle, ok } from "@/lib/http";
 import { HttpError } from "@/lib/auth";
 import { L } from "@/lib/i18n-server";
@@ -20,7 +22,12 @@ export const PUT = handle(async (req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
   const raw = await req.json().catch(() => { throw new HttpError(400, L("Requête invalide.", "Invalid request.")); });
   try {
-    return ok(savePrestations(p.id, raw));
+    return tx(() => {
+      const version = currentTheme(p.id)?.version.id;
+      if (!raw || typeof raw.ifVersion !== "string" || raw.ifVersion !== version) throw new HttpError(409, L("Les prestations ont changé ou leur version manque. Rechargez avant d’enregistrer.", "Services changed or their version is missing. Reload before saving."), "version_conflict");
+      const { ifVersion: _version, ...input } = raw;
+      return ok(savePrestations(p.id, input));
+    });
   } catch (e) {
     if (e && typeof e === "object" && "issues" in e) throw new HttpError(400, (e as { issues: { message: string; path: (string | number)[] }[] }).issues.map((i) => `${i.path.join(".")} : ${i.message}`).join(" ; "));
     throw e;

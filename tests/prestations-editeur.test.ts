@@ -159,7 +159,7 @@ describe("Droits", () => {
     const ok = await withAccessScope({ kind: "http" }, () => route.GET(req("GET"), ctx));
     expect(ok.status).toBe(200);
     expect((await ok.json()).kind).toBe("salon");
-    const bad = await withAccessScope({ kind: "http" }, () => route.PUT(req("PUT", { closures: "Noël" }), ctx));
+    const bad = await withAccessScope({ kind: "http" }, () => route.PUT(req("PUT", { ifVersion: currentTheme(salon)!.version.id, closures: "Noël" }), ctx));
     expect(bad.status).toBe(400);
   });
 });
