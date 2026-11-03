@@ -82,11 +82,13 @@ export const handlers: Record<string, Handler> = {
   "stock.search": async (ctx) => findStockPhotos(ctx, ctx.payload.projectId, ctx.payload.n ?? 2),
 
   /** Tri des photos du produit, détourage et contrôle (ajout d'une photo, « Refaire le détourage »). */
-  "cutout.run": async (ctx) => {
+  "cutout.run": async (ctx) => withAiDisabled("détourage interactif local gratuit, aucun devis IA accepté", async () => {
+    // Ce job dédié provient de l’écran Produit ; les pipelines inclus appellent ensureCutouts directement.
+    // Ne pas laisser un ancien payload, ou aiOff:false, réactiver le tri/contrôle visuel payant.
     const project = loadProject(ctx.payload.projectId);
     const list = ctx.payload.redo ? await redoCutout(ctx, project, ctx.payload.redo) : await ensureCutouts(ctx, project);
     return { valid: list.length, summary: cutoutSummary(project.id) };
-  },
+  }),
 
   /** Jeu d'images : Image Engine V2 (composants locaux, photos libres, génération contrôlée). */
   "images.generate": async (ctx) => {
