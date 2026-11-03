@@ -92,7 +92,7 @@ describe("Bibliothèque de modèles de publications", async () => {
     const img = await saveAsset({ projectId: p.id, userId: u.id, data: r.jpg, name: "pub.jpg", mime: "image/jpeg", role: "social", folderKey: "images.social", origin: "generated", meta: {} });
     savePosterDoc(p.id, r.docKey, r.doc, img.id);
     sessionUser = { ...u, role: "client" };
-    const call = (body: object) => fr(() => route.POST(new Request(`http://localhost:3000/api/projects/${p.id}/ads/docs/${r.docKey}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }), { params: Promise.resolve({ id: p.id, docKey: r.docKey }) } as any));
+    const call = (body: object) => fr(() => route.POST(new Request(`http://localhost:3000/api/projects/${p.id}/ads/docs/${r.docKey}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({...((body as any).action === "restyle"?{expectedVersion:latestDoc(p.id,r.docKey)?.version.version}:{}),...body}) }), { params: Promise.resolve({ id: p.id, docKey: r.docKey }) } as any));
     const fam = TEMPLATES[0].family;
     const g = await (await call({ action: "gallery", family: fam })).json();
     expect(g.items.length).toBeGreaterThan(0);

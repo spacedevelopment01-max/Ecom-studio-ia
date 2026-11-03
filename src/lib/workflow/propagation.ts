@@ -70,7 +70,7 @@ export function brandImpact(p: Project): { current: string; items: ImpactItem[] 
     const ch = stale(th.version.created_at);
     if (ch.length) items.push({ key: `theme:${th.version.id}`, kind: "theme", label: L(`Boutique / site (version ${th.version.number})`, `Store / website (version ${th.version.number})`), changes: ch, userEdited: th.version.author === "user", updatable: true, createdAt: th.version.created_at });
   }
-  for (const r of all<{ doc_key: string; created_at: number; source: string }>("SELECT d.doc_key, d.created_at, d.source FROM ad_documents d WHERE d.project_id = ? AND d.doc_key NOT LIKE 'post:%' AND d.version = (SELECT MAX(version) FROM ad_documents x WHERE x.doc_key = d.doc_key)", p.id)) {
+  for (const r of all<{ doc_key: string; created_at: number; source: string }>("SELECT d.doc_key, d.created_at, d.source FROM ad_documents d WHERE d.project_id = ? AND d.doc_key NOT LIKE 'post:%' AND d.version = (SELECT MAX(version) FROM ad_documents x WHERE x.project_id = d.project_id AND x.doc_key = d.doc_key)", p.id)) {
     // Affiches de publications (« post: ») : traitées avec leur publication ci-dessous (visuel refait à la marque).
     const ch = stale(r.created_at);
     if (!ch.length) continue;
