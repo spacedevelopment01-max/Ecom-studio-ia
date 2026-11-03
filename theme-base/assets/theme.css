@@ -29,7 +29,7 @@ a { color: inherit; }
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
-[class*="color-scheme-"] { background: var(--c-bg); color: var(--c-text); }
+[class*="color-scheme-"], [class*="color-es-"] { background: var(--c-bg); color: var(--c-text); }
 
 .es-container { width: 100%; max-width: var(--page-width); margin-inline: auto; padding-inline: var(--gutter); }
 .es-section { padding-top: calc(var(--pt, 96px) * var(--space-scale) * .62); padding-bottom: calc(var(--pb, 96px) * var(--space-scale) * .62); position: relative; }
