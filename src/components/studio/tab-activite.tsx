@@ -37,6 +37,7 @@ export default function TabActivite() {
     setOffer({ ...emptyServiceProfile(), ...data.services });
     setServicesVersion(data.servicesVersion??null);
   }, [data, dirty]);
+  useEffect(()=>{const refresh=()=>void reload();window.addEventListener("studio:service-profile-changed",refresh);return()=>window.removeEventListener("studio:service-profile-changed",refresh);},[reload]);
   if (!data) return null;
   const p = data.product;
   const change = <K extends keyof ServiceProfile>(k: K, v: ServiceProfile[K]) => (setOffer({ ...offer, [k]: v }), setDirty(true));

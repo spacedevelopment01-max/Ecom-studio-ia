@@ -1,3 +1,4 @@
+import {serviceProfileEnabled,serviceProfileCandidate,proposeServiceProfile,confirmServiceProfile} from "./local-service-profile";
 import {adDocumentCandidate,adDocumentToolsEnabled,proposeAdDocument,bindAdDocumentProposal,adDocumentPresentation} from './ad-document-tool-execution';
 import {localPromptsEnabled,localPromptsCandidate,listLocalPrompts,localPromptsView} from './local-prompts';
 import {localFilesEnabled,localFilesCandidate,proposeLocalFiles,confirmLocalFiles} from './local-files';
@@ -67,6 +68,8 @@ export function conversationView(user: User, cid: string, before?: number,includ
     ...(readOnlyReason===null&&c.project_id&&adDocumentToolsEnabled()?{localAdDocumentExecution:{enabled:true as const}}:{}),
     ...(m.localFiles?{localFiles:m.localFiles}:{}),
     ...(c.project_id&&localFilesEnabled()?{localFilesExecution:{enabled:true as const}}:{}),
+    ...(m.serviceProfile?{serviceProfile:m.serviceProfile}:{}),
+    ...(c.project_id&&readOnlyReason===null&&serviceProfileEnabled()?{serviceProfileExecution:{enabled:true as const}}:{}),
     ...(m.localBusinessContent?{localBusinessContent:m.localBusinessContent}:{}),
     ...(c.project_id&&localBusinessContentEnabled()?{localBusinessContentExecution:{enabled:true as const}}:{}),
     // Conserver l'historique lisible quand la fiche est verrouillée, sans appeler ni exposer le lecteur protégé.
@@ -194,8 +197,9 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
   const fileCommand=cmd.action==='message'&&localFilesCandidate(cmd.text);
   const requestCommand=cmd.action==='message'&&localRequestsCandidate(cmd.text);
   const localCommand=cmd.action==='message'&&localSiteCandidate(cmd.text);
+  const serviceCommand=cmd.action==='message'&&serviceProfileCandidate(cmd.text);
   const businessCommand=cmd.action==='message'&&localBusinessContentCandidate(cmd.text);
-  const intent = cmd.action === "message" && !adCommand && !localCommand && !fileCommand && !businessCommand && !requestCommand && !promptsCommand && !intelligenceEnabled() ? await understand({ text: cmd.text }, { aiActive: !!tests.classify, classify: tests.classify }) : null;
+  const intent = cmd.action === "message" && !adCommand && !localCommand && !fileCommand && !businessCommand && !serviceCommand && !requestCommand && !promptsCommand && !intelligenceEnabled() ? await understand({ text: cmd.text }, { aiActive: !!tests.classify, classify: tests.classify }) : null;
   return tx(() => {
     const c = ownedConversation(user, cid);
     const prior = one<{ request_hash: string; response_json: string }>("SELECT request_hash,response_json FROM agent_conversation_turns WHERE conversation_id=? AND request_id=?", cid, cmd.requestId);
@@ -223,6 +227,8 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
       const active={...c,state_json:JSON.stringify(m)};
       m.localFiles=cmd.action==='confirm-files'?confirmLocalFiles(user,active,m,cmd.proposalId,cmd.requestId):proposeLocalFiles(user,active,m,(cmd as Extract<Command,{action:'message'}>).text);
       message=m.localFiles.message;
+    }else if(serviceCommand||cmd.action==='confirm-service-profile'||cmd.action==='cancel-service-profile'){
+      if(cmd.action==='cancel-service-profile'){if(m.serviceProfileProposal?.id!==cmd.proposalId)throw new HttpError(409,'Proposition périmée.');delete m.serviceProfileProposal;delete m.serviceProfile;message='Proposition annulée, aucun changement.';}else{m.serviceProfile=cmd.action==='confirm-service-profile'?confirmServiceProfile(user,c,m,cmd.proposalId,cmd.requestId):proposeServiceProfile(user,c,m,(cmd as Extract<Command,{action:'message'}>).text);message=m.serviceProfile.message;}
     }else if(businessCommand||cmd.action==='confirm-business-content'){
       const active={...c,state_json:JSON.stringify(m)};
       m.localBusinessContent=cmd.action==='confirm-business-content'?confirmLocalBusinessContent(user,active,m,cmd.proposalId,cmd.requestId):proposeLocalBusinessContent(user,active,m,(cmd as Extract<Command,{action:'message'}>).text);
@@ -361,6 +367,7 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
     if(cmd.action==='message'&&studioKnowledgeEnabled())m.studioObservation=captureStudioObservation(c);
     if(!adCommand)delete m.localAdDocumentProposalId;
     if(!promptsCommand)delete m.localPrompts;
+    if(!serviceCommand&&cmd.action!=='confirm-service-profile'&&cmd.action!=='cancel-service-profile'){delete m.serviceProfile;delete m.serviceProfileProposal;}
     if(!businessCommand&&cmd.action!=='confirm-business-content'){delete m.localBusinessContent;delete m.localBusinessContentProposal;}
     if(!localCommand&&cmd.action!=='confirm-local')delete m.localSite;
     if(!fileCommand&&cmd.action!=='confirm-files'){delete m.localFiles;delete m.localFilesProposal;}
@@ -387,6 +394,6 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
 /** Une commande locale candidate ne peut jamais devenir un appel fournisseur implicite. */
 export async function submitConversation(user:User,cid:string,raw:unknown,tests:TestDependencies={}):Promise<ConversationView>{
  const parsed=CommandSchema.safeParse(raw),cmd=parsed.success?parsed.data:null;
- const local=cmd?.action==='message'&&adDocumentCandidate(cmd.text)||cmd?.action==='confirm-local'||cmd?.action==='confirm-site-request'||cmd?.action==='confirm-files'||cmd?.action==='confirm-business-content'||cmd?.action==='message'&&(localPromptsCandidate(cmd.text)||localRequestsCandidate(cmd.text)||localSiteCandidate(cmd.text)||localFilesCandidate(cmd.text)||localBusinessContentCandidate(cmd.text));
+ const local=cmd?.action==='message'&&adDocumentCandidate(cmd.text)||cmd?.action==='confirm-local'||cmd?.action==='confirm-site-request'||cmd?.action==='confirm-files'||cmd?.action==='confirm-business-content'||cmd?.action==='confirm-service-profile'||cmd?.action==='cancel-service-profile'||cmd?.action==='message'&&(localPromptsCandidate(cmd.text)||localRequestsCandidate(cmd.text)||localSiteCandidate(cmd.text)||localFilesCandidate(cmd.text)||localBusinessContentCandidate(cmd.text)||serviceProfileCandidate(cmd.text));
  return local?withAiDisabled('B1 : retouche gratuite déterministe, aucun devis IA',()=>submitConversationImpl(user,cid,raw,tests)):submitConversationImpl(user,cid,raw,tests);
 }

@@ -15,6 +15,8 @@ const base = z.object({
   projectRevision: z.number().int().min(0).nullable(),
 });
 export const CommandSchema = z.discriminatedUnion("action", [
+  base.extend({action:z.literal("confirm-service-profile"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-service-profile"),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal("confirm-files"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal('confirm-business-content'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal("confirm-site-request"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
@@ -41,6 +43,8 @@ export type Command = z.infer<typeof CommandSchema>;
 export type ConversationState = {
   localAdDocumentProposalId?:string;
   localPrompts?:import('./local-prompts').LocalPromptsState;
+  serviceProfileProposal?:import("./local-service-profile").ServiceProfileProposal;
+  serviceProfile?:import("./local-service-profile").ServiceProfilePresentation;
   localBusinessContentProposal?:import('./local-business-content').LocalBusinessContentProposal;
   localBusinessContent?:import('./local-business-content').LocalBusinessContentPresentation;
   schemaVersion: 1;
@@ -95,6 +99,8 @@ export type ConversationView = {
   localFilesExecution?: {enabled:true};
   localFiles?: import('./local-files').LocalFilesPresentation;
   localBusinessContentExecution?:{enabled:true};
+  serviceProfile?:import("./local-service-profile").ServiceProfilePresentation;
+  serviceProfileExecution?:{enabled:true};
   localBusinessContent?:import('./local-business-content').LocalBusinessContentPresentation;
   localRequestsExecution?:{enabled:true};
   localRequests?:import('./local-site-requests').LocalRequestsPresentation;
