@@ -44,8 +44,14 @@ Preuves : `RESUME-CONTENUS-301.json`, `captures/`.
   - un reçu sans nouvelle version relue, refusé ;
   - les refus 4xx et le drapeau fermé ;
   - le raccordement et la date lisible.
-- Les tests de Codex `conversation301-business-content.test.ts` restent verts. Le résultat de `npx tsc --noEmit` et de
-  `npx vitest run` est donné dans la PR.
+- Tests de Codex `conversation301-business-content.test.ts` (29) et `integration276.test.ts` (tête #310 `f3c1dc15`) verts ;
+  `npx tsc --noEmit` : aucune erreur.
+- `npx vitest run` complet (sur `ba290bf1`, avant la fusion de `f3c1dc15`) : 4 729 réussis, 18 échecs, **aucun dû à cette
+  branche**. 16 viennent de l'extraction partielle de ce conteneur, faute de place sur le disque (`docs/` et `reports/`
+  absents) ; rejoués dans une extraction complète, ils passent. S'y ajoutent `theme211-render-evidence` (Chromium
+  attendu à `/usr/bin/chromium`), un dépassement de délai `video-bounded-chain` (11 sur 11 rejoué seul) et
+  `integration276`, qui échouait aussi sur la base #310 `baeafcbc` : Codex l'a corrigé dans `f3c1dc15`, fusionné ici,
+  et il passe.
 
 ## Limites
 - Prestations, horaires et intervenants (`services.update`), photos, création, suppression et statut ne sont pas
