@@ -1,0 +1,50 @@
+[
+ {
+  "platforms": [
+   "meta_feed"
+  ],
+  "doc": "ad:517397fc26e844fab211",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_feed"
+  ],
+  "doc": "ad:67b6acf24757721e5a00",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_feed"
+  ],
+  "doc": "ad:a29a3b83076f91e26c07",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_feed"
+  ],
+  "doc": "ad:c63840b407b8f2a1d9a0",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_story"
+  ],
+  "doc": "ad:11a0a55328d925baeab5",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_story"
+  ],
+  "doc": "ad:c739721ac0dcf81a1d7d",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ }
+]

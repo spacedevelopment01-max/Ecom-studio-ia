@@ -22,7 +22,7 @@ const auth=vi.hoisted(()=>({user:null as unknown}));
 vi.mock('@/lib/auth',async original=>({...await original<Record<string,unknown>>(),requireUser:async()=>auth.user,currentUser:async()=>auth.user}));
 
 import {localSiteFixture} from './conversation284-b1-fixtures';
-import {account} from './conversation209-fixtures';
+import {account,project} from './conversation209-fixtures';
 import {seedImageFixture,seedCutout} from './image-v2-fixtures';
 import {mockAdDeps} from './ads-v2-mock';
 import {submitConversation,conversationView,openProjectConversation} from '@/lib/orchestrator/conversation';
@@ -34,12 +34,13 @@ import {runAdEngineV2} from '@/lib/ads-v2/engine';
 import {runWithLang} from '@/lib/i18n-server';
 import {saveAsset,getAsset,assetData} from '@/lib/library';
 import {latestDoc} from '@/lib/ad-doc/store';
-import {currentTheme,loadProject} from '@/lib/projects';
+import {currentTheme,loadProject,saveServices} from '@/lib/projects';
+import {emptyServiceProfile} from '@/lib/project-types';
 import {POST} from '@/app/api/studio-agent/conversations/[cid]/ad-documents/route';
 import {all,id,one} from '@/lib/db';
 import {localFirst} from '@/lib/engine/local-first';
 
-const FLAGS=['LOT_A','AI','CONTEXT','LOCAL_SITE','FILES','BUSINESS_CONTENT','SITE_REQUESTS','PROMPTS','AD_DOCUMENT_LOCAL','SPECIALISTS','TOOLS'];
+const FLAGS=['LOT_A','AI','CONTEXT','LOCAL_SITE','FILES','BUSINESS_CONTENT','SITE_REQUESTS','PROMPTS','AD_DOCUMENT_LOCAL','SPECIALISTS','TOOLS','SERVICE_PROFILE'];
 beforeEach(()=>{for(const k of FLAGS)vi.stubEnv('STUDIO_CONVERSATION_'+k,'1');vi.stubGlobal('fetch',vi.fn(()=>{throw Error('fournisseur interdit');}));});
 const aiCalls=()=>one<{n:number}>('SELECT COUNT(*) n FROM ai_calls')!.n;
 const record=(name:string,data:unknown)=>{if(process.env.PROBE_OUT)fs.writeFileSync(`${process.env.PROBE_OUT}-${name}.json`,JSON.stringify(data,null,1)+'\n');};
@@ -117,3 +118,17 @@ it('« Agrandis le titre » sur les créations du moteur V2 : proposition gratui
  expect(aiCalls()).toBe(0);
  record('publicite',out);
 },300000);
+
+it('horaires depuis leur écran naturel (Activité) : phrase d’origine et phrase exacte documentée, aucune écriture sans accord',async()=>{
+ const out:unknown[]=[];
+ for(const [label,text] of [['C22 horaires (phrase d’origine, écran Activité)',PHRASES.find(([op])=>op==='C22 horaires')![1]],['C22 horaires (phrase exacte du contrat #355, hors des 16)','Remplace les horaires du profil d’activité par « Mardi 10–18 »']]){
+  const u=await account(),pid=project(u,'services'),c=openProjectConversation(u,pid);saveServices(pid,{...emptyServiceProfile(),hours:'Lundi 09–17'});
+  const before=loadProject(pid).services.hours,v=conversationView(u,c.id);let erreur:string|null=null;
+  try{await submitConversation(u,c.id,{action:'message',revision:v.revision,projectRevision:v.projectRevision,requestId:id(),text,context:{tab:'produit',target:null}} as never);}catch(e){erreur=String((e as Error).message).slice(0,160);}
+  const after=conversationView(u,c.id);
+  expect(loadProject(pid).services.hours,`${label} : écriture sans accord`).toBe(before);
+  out.push({op:label,text,erreur,carte:after.serviceProfile?{state:after.serviceProfile.state,message:String(after.serviceProfile.message).slice(0,160)}:null,reponse:String(after.message??'').slice(0,160),intelligence:after.intelligence?.state??null});
+ }
+ expect(aiCalls()).toBe(0);
+ record('horaires',out);
+},120000);
