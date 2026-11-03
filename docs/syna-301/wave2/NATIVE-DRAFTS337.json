@@ -1,0 +1,601 @@
+{
+  "sourceCommit": "ab44c496875afda859c3730c947c12a141159189",
+  "sourceTree": "8397fb9f261035e6dc4d25fe0867fcef7c0c6661",
+  "runtime": {
+    "commit": "ab44c496875afda859c3730c947c12a141159189",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "qualifiedModes": 4,
+  "sourceLogs": {
+    "desktop": "../preuves-drafts337-native-attempt4/native-cas-proof.json (first case PASS; run later failed mobile test gesture)",
+    "remainingThree": "native-cas-proof.json (all three PASS, exit0)"
+  },
+  "sdkHttp": 0,
+  "realProviderCalls": 0,
+  "actualCounters": {
+    "ai_calls": 0,
+    "jobs": 0,
+    "usage_events": 0,
+    "ai_reservations": 0
+  },
+  "budgetEach": 0,
+  "scope": "Native AdEditor only, not SYNA layer conversational integration; same-base recovery proved, stale cache retention without offering/automatic reapply; no intelligent stale merge or legacy recovery claimed.",
+  "initialHarnessFailuresPreserved": [
+    "../preuves-drafts337-native-attempt1",
+    "../preuves-drafts337-native-attempt2",
+    "../preuves-drafts337-native-attempt3",
+    "../preuves-drafts337-native-attempt4"
+  ],
+  "harnessCorrections": [
+    "Await actual restore HTTP200 plus restoration toast rather than preexisting Enregistr\u00e9 state",
+    "Wait explicit committed/aborted request instead of stale toast from prior action",
+    "Use operation-specific toast locator",
+    "Open mobile Plus only if closed"
+  ],
+  "applicationChanges": 0,
+  "captureCount": 40,
+  "traceCount": 4,
+  "cases": [
+    {
+      "scene": {
+        "mode": "encre",
+        "width": 1440
+      },
+      "status": "PASS",
+      "sameBaseRecovery": {
+        "actualReload": true,
+        "recoveredExactText": "REPRISE MEME BASE A EXACTE",
+        "savedNativeVersion": 4
+      },
+      "stale": {
+        "http": 409,
+        "actualReload": true,
+        "notOffered": true,
+        "notAutoApplied": true,
+        "humanMovePreserved": true,
+        "noAssetOrVersion": true
+      },
+      "restore": true,
+      "duplicate": {
+        "operationId": "ef07adcb-ae47-4b2a-960f-f8e0355c0a30",
+        "pin": 6,
+        "schema": 1,
+        "acceptedFork": "ad:8ba7661c30266e6742d4dff4",
+        "firstResponseLost": true,
+        "retryStatus": 409,
+        "noSecondCopy": true,
+        "before": {
+          "docs": 7,
+          "assets": 9
+        },
+        "afterFirst": {
+          "docs": 8,
+          "assets": 10
+        },
+        "afterRetry": {
+          "docs": 8,
+          "assets": 10
+        },
+        "visibleLostResponseWarning": true
+      },
+      "reflow": {
+        "operationId": "4fb71627-2bad-461e-a5f1-3ad184a45476",
+        "pin": 6,
+        "schema": 1,
+        "acceptedFork": "ad:71d9a35fd7656e8ed13a7c84",
+        "firstResponseLost": true,
+        "retryStatus": 409,
+        "noSecondCopy": true,
+        "before": {
+          "docs": 6,
+          "assets": 8
+        },
+        "afterFirst": {
+          "docs": 7,
+          "assets": 9
+        },
+        "afterRetry": {
+          "docs": 7,
+          "assets": 9
+        },
+        "visibleLostResponseWarning": true
+      },
+      "pageErrors": [],
+      "budget": 0,
+      "counters": {
+        "ai_calls": 0,
+        "jobs": 0,
+        "usage_events": 0,
+        "ai_reservations": 0
+      }
+    },
+    {
+      "scene": {
+        "mode": "plein",
+        "width": 390
+      },
+      "status": "PASS",
+      "sameBaseRecovery": {
+        "actualReload": true,
+        "recoveredExactText": "REPRISE MEME BASE A EXACTE",
+        "savedNativeVersion": 4
+      },
+      "stale": {
+        "http": 409,
+        "actualReload": true,
+        "notOffered": true,
+        "notAutoApplied": true,
+        "humanMovePreserved": true,
+        "noAssetOrVersion": true
+      },
+      "restore": true,
+      "duplicate": {
+        "operationId": "2810f245-75ea-42eb-b935-3664507b5741",
+        "pin": 6,
+        "schema": 1,
+        "acceptedFork": "ad:1facc5b4cacde84cabd71069",
+        "firstResponseLost": true,
+        "retryStatus": 409,
+        "noSecondCopy": true,
+        "before": {
+          "docs": 7,
+          "assets": 9
+        },
+        "afterFirst": {
+          "docs": 8,
+          "assets": 10
+        },
+        "afterRetry": {
+          "docs": 8,
+          "assets": 10
+        },
+        "visibleLostResponseWarning": true
+      },
+      "reflow": {
+        "operationId": "94a2d285-e3c3-4a56-86c9-0773973ffbea",
+        "pin": 6,
+        "schema": 1,
+        "acceptedFork": "ad:4c280d914b59046371c315af",
+        "firstResponseLost": true,
+        "retryStatus": 409,
+        "noSecondCopy": true,
+        "before": {
+          "docs": 6,
+          "assets": 8
+        },
+        "afterFirst": {
+          "docs": 7,
+          "assets": 9
+        },
+        "afterRetry": {
+          "docs": 7,
+          "assets": 9
+        },
+        "visibleLostResponseWarning": true
+      },
+      "pageErrors": [],
+      "budget": 0,
+      "counters": {
+        "ai_calls": 0,
+        "jobs": 0,
+        "usage_events": 0,
+        "ai_reservations": 0
+      }
+    },
+    {
+      "scene": {
+        "mode": "plein",
+        "width": 1440
+      },
+      "status": "PASS",
+      "sameBaseRecovery": {
+        "actualReload": true,
+        "recoveredExactText": "REPRISE MEME BASE A EXACTE",
+        "savedNativeVersion": 4
+      },
+      "stale": {
+        "http": 409,
+        "actualReload": true,
+        "notOffered": true,
+        "notAutoApplied": true,
+        "humanMovePreserved": true,
+        "noAssetOrVersion": true
+      },
+      "restore": true,
+      "duplicate": {
+        "operationId": "30f86384-7a2c-4aa4-a2a0-e7ed0dabf4a1",
+        "pin": 6,
+        "schema": 1,
+        "acceptedFork": "ad:436876213d838a2f7e082710",
+        "firstResponseLost": true,
+        "retryStatus": 409,
+        "noSecondCopy": true,
+        "before": {
+          "docs": 7,
+          "assets": 9
+        },
+        "afterFirst": {
+          "docs": 8,
+          "assets": 10
+        },
+        "afterRetry": {
+          "docs": 8,
+          "assets": 10
+        },
+        "visibleLostResponseWarning": true
+      },
+      "reflow": {
+        "operationId": "14cf41d9-177b-472a-9276-0121585b7b30",
+        "pin": 6,
+        "schema": 1,
+        "acceptedFork": "ad:0d29dfc94b8b4151b09f1a1b",
+        "firstResponseLost": true,
+        "retryStatus": 409,
+        "noSecondCopy": true,
+        "before": {
+          "docs": 6,
+          "assets": 8
+        },
+        "afterFirst": {
+          "docs": 7,
+          "assets": 9
+        },
+        "afterRetry": {
+          "docs": 7,
+          "assets": 9
+        },
+        "visibleLostResponseWarning": true
+      },
+      "pageErrors": [],
+      "budget": 0,
+      "counters": {
+        "ai_calls": 0,
+        "jobs": 0,
+        "usage_events": 0,
+        "ai_reservations": 0
+      }
+    },
+    {
+      "scene": {
+        "mode": "encre",
+        "width": 390
+      },
+      "status": "PASS",
+      "sameBaseRecovery": {
+        "actualReload": true,
+        "recoveredExactText": "REPRISE MEME BASE A EXACTE",
+        "savedNativeVersion": 4
+      },
+      "stale": {
+        "http": 409,
+        "actualReload": true,
+        "notOffered": true,
+        "notAutoApplied": true,
+        "humanMovePreserved": true,
+        "noAssetOrVersion": true
+      },
+      "restore": true,
+      "duplicate": {
+        "operationId": "a15b0b41-a71e-4ed3-9d27-1ae551050860",
+        "pin": 6,
+        "schema": 1,
+        "acceptedFork": "ad:42ae74b2004b083c015a0a12",
+        "firstResponseLost": true,
+        "retryStatus": 409,
+        "noSecondCopy": true,
+        "before": {
+          "docs": 7,
+          "assets": 9
+        },
+        "afterFirst": {
+          "docs": 8,
+          "assets": 10
+        },
+        "afterRetry": {
+          "docs": 8,
+          "assets": 10
+        },
+        "visibleLostResponseWarning": true
+      },
+      "reflow": {
+        "operationId": "8590abaa-4032-40da-9796-d94196c3e18d",
+        "pin": 6,
+        "schema": 1,
+        "acceptedFork": "ad:150a081c8993e873e8c13ab7",
+        "firstResponseLost": true,
+        "retryStatus": 409,
+        "noSecondCopy": true,
+        "before": {
+          "docs": 6,
+          "assets": 8
+        },
+        "afterFirst": {
+          "docs": 7,
+          "assets": 9
+        },
+        "afterRetry": {
+          "docs": 7,
+          "assets": 9
+        },
+        "visibleLostResponseWarning": true
+      },
+      "pageErrors": [],
+      "budget": 0,
+      "counters": {
+        "ai_calls": 0,
+        "jobs": 0,
+        "usage_events": 0,
+        "ai_reservations": 0
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "encre-1440-avant.png",
+      "sha256": "59fe23fc2fdedd4ade10d5de4b895886853187b1057dafb798ef2b289fa283c3",
+      "bytes": 63150,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-1440-avant.png"
+    },
+    {
+      "path": "encre-1440-duplicate-reponse-perdue-retry.png",
+      "sha256": "ea7d5817ca9f42b9bff7ee5b5e47231b7fc775c29a98f9dd32fe720411ba5bc8",
+      "bytes": 100550,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-1440-duplicate-reponse-perdue-retry.png"
+    },
+    {
+      "path": "encre-1440-nouvel-export.png",
+      "sha256": "9e0ccdc4ee196b5ddf8dd1671317d5f41a814bfb8a68c7385a7d7fe5d8aa2931",
+      "bytes": 31912,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-1440-nouvel-export.png"
+    },
+    {
+      "path": "encre-1440-recharge.png",
+      "sha256": "d2c83e1049f18343891416af92a7fc86eefba33a0fa25c15c0f91df68a0264ff",
+      "bytes": 115961,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-1440-recharge.png"
+    },
+    {
+      "path": "encre-1440-reflow-reponse-perdue-retry.png",
+      "sha256": "49e78b5453bc87f4f5b0edb2e5ecda5c5da045c8935b98e494e9b5fa8e52f8e7",
+      "bytes": 134066,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-1440-reflow-reponse-perdue-retry.png"
+    },
+    {
+      "path": "encre-1440-reprise-meme-base.png",
+      "sha256": "bb96dc81763e62c39ef057955a704ba9441dd3a49d982b4ec415da2a2c1475df",
+      "bytes": 103191,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-1440-reprise-meme-base.png"
+    },
+    {
+      "path": "encre-1440-restauration.png",
+      "sha256": "53cf89dc8e518ea3fc75d418db45c137d0c23a696420848cfefaef94b0f3ca90",
+      "bytes": 61102,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-1440-restauration.png"
+    },
+    {
+      "path": "encre-1440-stale-stocke-non-propose.png",
+      "sha256": "da7cdc9d364d3c75a2c76f3b02ebdc4dd282b9f7cce635087ec0903db17936d7",
+      "bytes": 106815,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-1440-stale-stocke-non-propose.png"
+    },
+    {
+      "path": "encre-1440-stale409-copie-avant-reload.png",
+      "sha256": "9f00a3f02d36e7cd0de97ef7c491652506e90c6a8215714402f83951992a79e3",
+      "bytes": 118906,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-1440-stale409-copie-avant-reload.png"
+    },
+    {
+      "path": "encre-1440-texte-enregistre.png",
+      "sha256": "9d3dfaa01d84e9402ff289b007bd049ed5d572e21b88afc80d5cd8ccb8027c2a",
+      "bytes": 112947,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-1440-texte-enregistre.png"
+    },
+    {
+      "path": "encre-1440-trace.zip",
+      "sha256": "7434e22be1f2c7dd62fdef3ffab7080079e65081e16f8fb8a04bf7a33e325985",
+      "bytes": 10798272,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-1440-trace.zip"
+    },
+    {
+      "path": "encre-390-avant.png",
+      "sha256": "2bf6891143e0a4d93607a32689888aac4b6c3e56101ffdf69d482f9229913998",
+      "bytes": 21693,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-390-avant.png"
+    },
+    {
+      "path": "encre-390-duplicate-reponse-perdue-retry.png",
+      "sha256": "1c692466e64dea9310b752fe2f65e27d65c6b883da01f964187bf3900aa7bee1",
+      "bytes": 46579,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-390-duplicate-reponse-perdue-retry.png"
+    },
+    {
+      "path": "encre-390-nouvel-export.png",
+      "sha256": "9e0ccdc4ee196b5ddf8dd1671317d5f41a814bfb8a68c7385a7d7fe5d8aa2931",
+      "bytes": 31912,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-390-nouvel-export.png"
+    },
+    {
+      "path": "encre-390-recharge.png",
+      "sha256": "58ceed4a037dc05f6e561f1ceb3624569253f0669f8f37423965a9d3047e2b08",
+      "bytes": 41997,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-390-recharge.png"
+    },
+    {
+      "path": "encre-390-reflow-reponse-perdue-retry.png",
+      "sha256": "2cafd9fcd1830201fd9cf8dc08c8bf573665c5b4636e0a7ea6f056e0ca4489de",
+      "bytes": 59890,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-390-reflow-reponse-perdue-retry.png"
+    },
+    {
+      "path": "encre-390-reprise-meme-base.png",
+      "sha256": "62082bd49b4ebb2f747a55c40d09eddfb19273982d71c89f6543ee81593367b1",
+      "bytes": 43065,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-390-reprise-meme-base.png"
+    },
+    {
+      "path": "encre-390-restauration.png",
+      "sha256": "b714f62bc6e3bf81842b797c3da2952735d339063e26628095fd9600763ac7f5",
+      "bytes": 38153,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-390-restauration.png"
+    },
+    {
+      "path": "encre-390-stale-stocke-non-propose.png",
+      "sha256": "15800f65a7fc1c5bc2068a24764d977294c8a97a8d6c81c579b4c88e25501d96",
+      "bytes": 41445,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-390-stale-stocke-non-propose.png"
+    },
+    {
+      "path": "encre-390-stale409-copie-avant-reload.png",
+      "sha256": "31ca4028a68fbffab868a010a231b43cfeaff1a42b085cd3f1ae908eaa6d5b40",
+      "bytes": 51015,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-390-stale409-copie-avant-reload.png"
+    },
+    {
+      "path": "encre-390-texte-enregistre.png",
+      "sha256": "ea42b7a3f22b5ea81583041bd80004074f6b71e33426b8c92281f433c04d4953",
+      "bytes": 43729,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-390-texte-enregistre.png"
+    },
+    {
+      "path": "encre-390-trace.zip",
+      "sha256": "951e4a13e0d4eec4ef7da74bb642732b6eeafb8de5ad1d1ea783fe7b93575852",
+      "bytes": 9736165,
+      "localPath": "/workspace/work/preuves-drafts337-native/encre-390-trace.zip"
+    },
+    {
+      "path": "plein-1440-avant.png",
+      "sha256": "59fe23fc2fdedd4ade10d5de4b895886853187b1057dafb798ef2b289fa283c3",
+      "bytes": 63150,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-1440-avant.png"
+    },
+    {
+      "path": "plein-1440-duplicate-reponse-perdue-retry.png",
+      "sha256": "ea7d5817ca9f42b9bff7ee5b5e47231b7fc775c29a98f9dd32fe720411ba5bc8",
+      "bytes": 100550,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-1440-duplicate-reponse-perdue-retry.png"
+    },
+    {
+      "path": "plein-1440-nouvel-export.png",
+      "sha256": "9e0ccdc4ee196b5ddf8dd1671317d5f41a814bfb8a68c7385a7d7fe5d8aa2931",
+      "bytes": 31912,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-1440-nouvel-export.png"
+    },
+    {
+      "path": "plein-1440-recharge.png",
+      "sha256": "d2c83e1049f18343891416af92a7fc86eefba33a0fa25c15c0f91df68a0264ff",
+      "bytes": 115961,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-1440-recharge.png"
+    },
+    {
+      "path": "plein-1440-reflow-reponse-perdue-retry.png",
+      "sha256": "49e78b5453bc87f4f5b0edb2e5ecda5c5da045c8935b98e494e9b5fa8e52f8e7",
+      "bytes": 134066,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-1440-reflow-reponse-perdue-retry.png"
+    },
+    {
+      "path": "plein-1440-reprise-meme-base.png",
+      "sha256": "f4ca0c2da115c4773f5dc45e7c9b8ce7fa817a4672b9d9ebaa677dda4d6c785d",
+      "bytes": 103190,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-1440-reprise-meme-base.png"
+    },
+    {
+      "path": "plein-1440-restauration.png",
+      "sha256": "53cf89dc8e518ea3fc75d418db45c137d0c23a696420848cfefaef94b0f3ca90",
+      "bytes": 61102,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-1440-restauration.png"
+    },
+    {
+      "path": "plein-1440-stale-stocke-non-propose.png",
+      "sha256": "da7cdc9d364d3c75a2c76f3b02ebdc4dd282b9f7cce635087ec0903db17936d7",
+      "bytes": 106815,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-1440-stale-stocke-non-propose.png"
+    },
+    {
+      "path": "plein-1440-stale409-copie-avant-reload.png",
+      "sha256": "9f00a3f02d36e7cd0de97ef7c491652506e90c6a8215714402f83951992a79e3",
+      "bytes": 118906,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-1440-stale409-copie-avant-reload.png"
+    },
+    {
+      "path": "plein-1440-texte-enregistre.png",
+      "sha256": "4acdfb9f78112490b72d53500e97651dc2c10cd2bf4d45581f58412555ba99c4",
+      "bytes": 112849,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-1440-texte-enregistre.png"
+    },
+    {
+      "path": "plein-1440-trace.zip",
+      "sha256": "f92caeeb1c45d64174699230977708731f29d2cc2bd3466a15aa1c18a4157064",
+      "bytes": 10156713,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-1440-trace.zip"
+    },
+    {
+      "path": "plein-390-avant.png",
+      "sha256": "2bf6891143e0a4d93607a32689888aac4b6c3e56101ffdf69d482f9229913998",
+      "bytes": 21693,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-390-avant.png"
+    },
+    {
+      "path": "plein-390-duplicate-reponse-perdue-retry.png",
+      "sha256": "eceed3ffdc4844375ef56c34e04bf857b33553096791c0964ed64ad7eb80491f",
+      "bytes": 46467,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-390-duplicate-reponse-perdue-retry.png"
+    },
+    {
+      "path": "plein-390-nouvel-export.png",
+      "sha256": "9e0ccdc4ee196b5ddf8dd1671317d5f41a814bfb8a68c7385a7d7fe5d8aa2931",
+      "bytes": 31912,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-390-nouvel-export.png"
+    },
+    {
+      "path": "plein-390-recharge.png",
+      "sha256": "58ceed4a037dc05f6e561f1ceb3624569253f0669f8f37423965a9d3047e2b08",
+      "bytes": 41997,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-390-recharge.png"
+    },
+    {
+      "path": "plein-390-reflow-reponse-perdue-retry.png",
+      "sha256": "2cafd9fcd1830201fd9cf8dc08c8bf573665c5b4636e0a7ea6f056e0ca4489de",
+      "bytes": 59890,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-390-reflow-reponse-perdue-retry.png"
+    },
+    {
+      "path": "plein-390-reprise-meme-base.png",
+      "sha256": "62082bd49b4ebb2f747a55c40d09eddfb19273982d71c89f6543ee81593367b1",
+      "bytes": 43065,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-390-reprise-meme-base.png"
+    },
+    {
+      "path": "plein-390-restauration.png",
+      "sha256": "b714f62bc6e3bf81842b797c3da2952735d339063e26628095fd9600763ac7f5",
+      "bytes": 38153,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-390-restauration.png"
+    },
+    {
+      "path": "plein-390-stale-stocke-non-propose.png",
+      "sha256": "15800f65a7fc1c5bc2068a24764d977294c8a97a8d6c81c579b4c88e25501d96",
+      "bytes": 41445,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-390-stale-stocke-non-propose.png"
+    },
+    {
+      "path": "plein-390-stale409-copie-avant-reload.png",
+      "sha256": "631076bc1e437f47c031eda5569d24187994c91dfa41ae7b2a0941f87f3265d7",
+      "bytes": 53762,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-390-stale409-copie-avant-reload.png"
+    },
+    {
+      "path": "plein-390-texte-enregistre.png",
+      "sha256": "3361cf467140874ceff2d5d807a78ef2c77a589ca2abd7c0bcb645ed80f885de",
+      "bytes": 43805,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-390-texte-enregistre.png"
+    },
+    {
+      "path": "plein-390-trace.zip",
+      "sha256": "4b6cc0c5b31ebaf99cbf2f1ba4e057f37478c8775ec8ccf82f6ae5753435abea",
+      "bytes": 8815860,
+      "localPath": "/workspace/work/preuves-drafts337-native/plein-390-trace.zip"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "rows": 84,
+  "unique": 84,
+  "domains": 25,
+  "catalogue": 67,
+  "outsideCatalogue": 17,
+  "counts": {
+    "execution_status": {
+      "PASSE_SCOPE": 46,
+      "NON_TESTE": 2,
+      "NON_RACCORDE": 8,
+      "CORRIGE_NATIF_NON_RACCORDE": 1,
+      "PASSE_NATIF_NON_RACCORDE": 10,
+      "BLOQUE_CONNEXION_OU_CONSENTEMENT": 8,
+      "CORRIGE_MEMO_LOCAL_PAYANT_GARDE": 1,
+      "CORRIGE_LOCAL_FALLBACK_BLOQUE": 1,
+      "CORRIGE_CIBLE": 3,
+      "CORRIGE_GARDE_SCOPE": 1,
+      "BLOQUE_GARDE_FINANCIERE": 2,
+      "CORRIGE_LOCAL_REGLES_SEULES": 1
+    },
+    "native_status": {
+      "NATIF_OK": 49,
+      "NON_TESTE": 10,
+      "PARTIEL": 15,
+      "BLOQUE_CONNEXION_OU_CONSENTEMENT": 10
+    },
+    "syna_status": {
+      "PARTIEL": 52,
+      "NON_TESTE": 2,
+      "ABSENT": 30
+    }
+  },
+  "modifiedExistingOperations": [
+    "properties.update",
+    "menu.update",
+    "projects.update",
+    "native.ad-document-edit"
+  ],
+  "added": [
+    "prompts.list"
+  ],
+  "base": "parity301-canonical-final-delta83 incl6fdUI",
+  "noGlobalParity": true
+}
