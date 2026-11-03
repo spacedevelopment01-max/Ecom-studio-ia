@@ -1,0 +1,135 @@
+{
+  "schema": "syna-wave3-prompts344-artifacts-1",
+  "sourceCommit": "57af974221c0c7e9354e629b76cf9c44240542dc",
+  "sourceTree": "98ad4e7025c404f44eff61729ad6298faef3b8e4",
+  "originalDirectory": "/workspace/work/preuves-prompts344/ui",
+  "captureCount": 16,
+  "traceCount": 4,
+  "artifacts": [
+    {
+      "path": "encre-1440-actual-reload.png",
+      "bytes": 66953,
+      "sha256": "b9d15f6ca77467d39b0b4a707b22b326e7c4f40aa25cc97aaf2473ebb1ad956c",
+      "archivedHere": false
+    },
+    {
+      "path": "encre-1440-ambiguous.png",
+      "bytes": 10867,
+      "sha256": "28952c32f889638c2c2146806d338df29a532dd1fba4ec6a0db62cd39be0614f",
+      "archivedHere": false
+    },
+    {
+      "path": "encre-1440-favorite.png",
+      "bytes": 30924,
+      "sha256": "cd67f66705b7da08dfe4f46d9e62ace1beb066acf0b7c15220cd7550071fd2e4",
+      "archivedHere": false
+    },
+    {
+      "path": "encre-1440-list20.png",
+      "bytes": 66953,
+      "sha256": "b9d15f6ca77467d39b0b4a707b22b326e7c4f40aa25cc97aaf2473ebb1ad956c",
+      "archivedHere": false
+    },
+    {
+      "path": "encre-1440-trace.zip",
+      "bytes": 4877333,
+      "sha256": "52e5d55a32c0aff3a79923c72ec8afc54c5a853eb84a24ef79851f0b308860c3",
+      "archivedHere": false
+    },
+    {
+      "path": "encre-390-actual-reload.png",
+      "bytes": 152114,
+      "sha256": "0f7ebaab7a7bdcfb0d8c773db31b0b9ecf6d5964bcb9f4b99f81fadf132d2999",
+      "archivedHere": false
+    },
+    {
+      "path": "encre-390-ambiguous.png",
+      "bytes": 10397,
+      "sha256": "cdc3734fa1559579d8c9ed5e0704d671bc72d84506561f4d4c1c3d059b1d103d",
+      "archivedHere": false
+    },
+    {
+      "path": "encre-390-favorite.png",
+      "bytes": 30836,
+      "sha256": "55730a178e6497ce37b1ecbb3fd6ecefba0371e37727799fae3e6d3d0d220c92",
+      "archivedHere": true
+    },
+    {
+      "path": "encre-390-list20.png",
+      "bytes": 152114,
+      "sha256": "0f7ebaab7a7bdcfb0d8c773db31b0b9ecf6d5964bcb9f4b99f81fadf132d2999",
+      "archivedHere": false
+    },
+    {
+      "path": "encre-390-trace.zip",
+      "bytes": 3169713,
+      "sha256": "51f071dcaf9cb779f877167c20a9245c4178e3a8fb853b09210945386f28a387",
+      "archivedHere": false
+    },
+    {
+      "path": "plein-1440-actual-reload.png",
+      "bytes": 75601,
+      "sha256": "c318575f5a65beb8e272e1698d65370e1a2877e69ac93d425544f60f682a7bc9",
+      "archivedHere": false
+    },
+    {
+      "path": "plein-1440-ambiguous.png",
+      "bytes": 11082,
+      "sha256": "a642a8efdc3f0d6167c0170a4220641ba0b30709cc96f8e25ee430ff2ba03f05",
+      "archivedHere": false
+    },
+    {
+      "path": "plein-1440-favorite.png",
+      "bytes": 30642,
+      "sha256": "1fda3d1df7f46d2c3691874eaccf903584f2f957a71662545cfd612bb0246fdf",
+      "archivedHere": false
+    },
+    {
+      "path": "plein-1440-list20.png",
+      "bytes": 75601,
+      "sha256": "c318575f5a65beb8e272e1698d65370e1a2877e69ac93d425544f60f682a7bc9",
+      "archivedHere": false
+    },
+    {
+      "path": "plein-1440-trace.zip",
+      "bytes": 4607892,
+      "sha256": "a8e6b1ed326764888bf86fe66c3120ac96d26ba855dc727dfb63e6dbfc02d873",
+      "archivedHere": false
+    },
+    {
+      "path": "plein-390-actual-reload.png",
+      "bytes": 147709,
+      "sha256": "abb8344bf2a10f9733df17170e70ede55749d0730ce35a3caf18ae4d37d8e4ad",
+      "archivedHere": false
+    },
+    {
+      "path": "plein-390-ambiguous.png",
+      "bytes": 11511,
+      "sha256": "ab9cd482b8f24e4993e9378e69fdec34a6ae6b366a920564dffe87fda7c85f6b",
+      "archivedHere": true
+    },
+    {
+      "path": "plein-390-favorite.png",
+      "bytes": 31719,
+      "sha256": "12a9cda359f239926e784f122f7fb9843401c42c9b3d1816e24fa9c96e3b487f",
+      "archivedHere": false
+    },
+    {
+      "path": "plein-390-list20.png",
+      "bytes": 147698,
+      "sha256": "98e1c98bfb64bc3a89554a4fc06b6f1d35bc55465743b62949118e6899d1d028",
+      "archivedHere": false
+    },
+    {
+      "path": "plein-390-trace.zip",
+      "bytes": 3295244,
+      "sha256": "a04215b44e6bd0dd5dd4590b2329849d9f7da9defcd0a2f48890491ee0427c15",
+      "archivedHere": false
+    }
+  ],
+  "selectedCapturesReviewedByRoot": [
+    "encre-390-favorite.png",
+    "plein-390-ambiguous.png"
+  ],
+  "scope": "4UI scenes only;26 backend/SSR tests include flags/A1/plan, not extra negative browser scenes; no global parity or summed test total"
+}
