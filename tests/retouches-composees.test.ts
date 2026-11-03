@@ -49,7 +49,7 @@ describe("retouches composées, IA de secours et aperçu des formats", async () 
     const o = r.outcomes.find((x) => x.aspect === "1:1")!;
     return { p, docKey: json<any>(getAsset(o.assetId!)!.meta, {}).adV2.docKey as string };
   }
-  const post = (pid: string, docKey: string, b: unknown) => fr(() => route.POST(new Request(`http://localhost:3000/api/projects/${pid}/ads/docs/${encodeURIComponent(docKey)}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) }), { params: Promise.resolve({ id: pid, docKey }) } as any));
+  const post = (pid: string, docKey: string, b: unknown) => fr(() => route.POST(new Request(`http://localhost:3000/api/projects/${pid}/ads/docs/${encodeURIComponent(docKey)}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({...(["save","edit","restore","restyle","duplicate","reflow"].includes((b as any).action)?{expectedVersion:latestDoc(pid,docKey)?.version.version,operationId:crypto.randomUUID()}:{}),...(b as object)}) }), { params: Promise.resolve({ id: pid, docKey }) } as any));
 
   it("« augmente la taille du texte et du titre et centre-le sur l'image avec le bouton » : fait en local, gratuit", async () => {
     const { p, docKey } = await generated();
