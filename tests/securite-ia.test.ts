@@ -137,7 +137,7 @@ describe("sécurité de l'IA", async () => {
       // Avec une piste native acquise, le même compte sans forfait conserve le kit et la ligne locale gratuits.
       const { saveAsset } = await import("@/lib/library");
       const sharp = (await import("sharp")).default;
-      const route = { key:"typo", name:"Piste fictive acquise", why:"Typographie", source:"local", markKind:"letter", mark:null, heading:"Inter", headingWeight:600, body:"Inter", case:"upper", tracking:0, composition:"wordmark", notes:[], colors:{ink:"#111111",accent:"#aa3344",ground:"#ffffff",tint:"#eeeeee"} };
+      const route = { key:"typo" as const, name:"Piste fictive acquise", why:"Typographie", source:"local", markKind:"letter", mark:null, heading:"Inter", headingWeight:600, body:"Inter", case:"upper", tracking:0, composition:"wordmark", notes:[], colors:{ink:"#111111",accent:"#aa3344",ground:"#ffffff",tint:"#eeeeee"} };
       const a = await saveAsset({userId:u.id,projectId:pid,data:await sharp({create:{width:32,height:32,channels:3,background:"#aa3344"}}).png().toBuffer(),name:"piste-fictive.png",mime:"image/png",role:"logo-proposal",origin:"generated",meta:{route,key:route.key}});
       const brand = loadProject(pid).brand!;
       saveBrand(pid,{...brand,logo:{...brand.logo,proposal:route.key,proposalId:a.id}});
