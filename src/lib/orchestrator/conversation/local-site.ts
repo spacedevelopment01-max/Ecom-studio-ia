@@ -93,7 +93,7 @@ export function proposeLocalSite(user:User,c:ConversationRow,m:ConversationState
  const command=nativeLocalRequest(text).request?.kind;
  if(!localSiteEnabled())return present('error','Les retouches gratuites ne sont pas activées ici. Aucun appel IA lancé.',{command});
  try{
-  const parsed=nativeLocalRequest(text);if(!parsed.request)return present('ambiguous','Précisez une seule retouche déterministe : titre exact, couleur de cette section ou FAQ après cette section. Les titres SEO sont distincts.');
+  const parsed=nativeLocalRequest(text);if(!parsed.request)return present('ambiguous','Précisez gratuitement une seule retouche déterministe : titre exact, couleur de cette section ou FAQ après cette section. Les titres SEO sont distincts.');
   if(parsed.request.kind==='color'&&/\b(site|global|globale|principale|entire|whole)\b/iu.test(text))return present('ambiguous','La couleur globale de tout le site est distincte de celle d’une section. Précisez une section entière et son fond ou ses textes ; aucune couleur globale ne sera remplacée par une retouche de section.',{command:'color'});
   if(parsed.request.kind==='undo'){
    const cur=currentTheme(c.project_id!),saved=receipt(user,c);if(!cur||!saved||saved.s.version!.id!==cur.version.id||saved.s.version!.fingerprint!==fp(cur.spec)||!saved.s.version!.parentId)return present('ambiguous','Aucune dernière retouche avec reçu encore courante à annuler. Une modification manuelle plus récente ne sera pas effacée ; utilisez les versions natives.',{command:'undo'});

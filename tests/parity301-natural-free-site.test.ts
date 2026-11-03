@@ -41,3 +41,11 @@ it.each(['faq','undo'] as const)('%s lost reply after commit replays the same co
  const c=createLocalSiteConfirmation({conversationId:f.c.id,fetch:transport,view:()=>view,onView:v=>{view=v;},onState:()=>{},onApplied:async()=>{}});
  await c.confirm();expect(c.getState().uncertain).toBe(true);await c.confirm();expect(bodies).toHaveLength(2);expect(bodies[1]).toEqual(bodies[0]);expect(currentTheme(f.pid)!.version.number).toBe(before+1);expect(view.localSite!.state).toBe('applied');expect(c.getState().uncertain).toBe(false);
 });
+
+it('stylistic title ambiguity preserves the explicit free clarification and cannot open a paid or native action',async()=>{
+ const f=await localSiteFixture();f.select();const before=currentTheme(f.pid)!,spend=emptySpend();
+ const p=await submitConversation(f.u,f.c.id,f.message('Change le titre joliment'));
+ expect(p.localSite).toMatchObject({state:'ambiguous',confirmationRequired:false,actionsExecuted:false,costEur:0,providerCalls:0,financialConsent:false});
+ expect(p.localSite!.message).toMatch(/Précisez gratuitement/);expect(p.action?.state).not.toBe('quote');
+ expect(currentTheme(f.pid)!.version.id).toBe(before.version.id);expect(emptySpend()).toEqual(spend);
+});
