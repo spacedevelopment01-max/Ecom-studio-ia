@@ -16,7 +16,7 @@
   "erreur": null,
   "carteGratuite": {
    "state": "proposed",
-   "message": "Alternative native explicite : couleur principale des textes de cette section, ou son fond selon la demande. Le titre seul n’est pas ciblé ; les accents, textes"
+   "message": "Alternative native explicite : couleur principale des textes de cette section, ou son fond selon la demande. Certains boutons utilisent aussi cette couleur de t"
   },
   "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
   "intelligence": "requires_quote"
@@ -108,7 +108,7 @@
   "erreur": null,
   "carteGratuite": {
    "state": "ambiguous",
-   "message": "Précisez une seule retouche déterministe : titre exact, couleur de cette section ou FAQ après cette section. Les titres SEO sont distincts."
+   "message": "Précisez gratuitement une seule retouche déterministe : titre exact, couleur de cette section ou FAQ après cette section. Les titres SEO sont distincts."
   },
   "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
   "intelligence": "requires_quote"

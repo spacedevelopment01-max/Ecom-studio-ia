@@ -13,7 +13,8 @@ fusionnées en un « complet » :
                      vérifié en simulation : jamais « opération entièrement couverte ». Aucun statut COMPLET.
   - preuve, tete, perimetre.
 Entrées : CSV Codex, docs/syna-parite-301/vague2/{recettes-operations,resultats,absents}.json,
-docs/syna-301-integration/v3.json (recettes v3, SHA, phrases). Sortie : CSV + Markdown.
+docs/syna-301-integration/v3.json (recettes v3, SHA, phrases, statuts imposés avec justification — ex. preuve
+de Codex non rejouée par Claude, toujours signalée dans la note). Sortie : CSV + Markdown.
 Usage : python3 scripts/syna301-matrice-convergence.py <dossier de sortie>
 """
 import csv, json, sys
@@ -27,8 +28,9 @@ res = json.load(open(v2 + "resultats.json", encoding="utf-8"))
 absents = json.load(open(v2 + "absents.json", encoding="utf-8"))
 v3 = json.load(open("docs/syna-301-integration/v3.json", encoding="utf-8"))
 # Recettes v3 (tête d'intégration) : ajoutées / remplacent les résultats de vague 2 pour les mêmes opérations.
+tetes = {}
 for name, info in v3["recettes"].items():
-    rec[name] = info["operations"]
+    rec[name] = info["operations"]; tetes[name] = info["tete"]
     for mode in ("encre", "plein"):
         res.setdefault(mode, {})[name] = info[mode]
 for op, upd in v3.get("absents", {}).items():
@@ -52,7 +54,10 @@ for r in sorted(rows, key=lambda x: (x["capability"], x["operation"])):
     op = r["operation"]
     e, p = mode_state(op, "encre"), mode_state(op, "plein")
     syna_codex = codex_override.get(op, r["syna_status"])
-    if op in absents and absents[op]["statut"] in ("ABSENT", "BLOQUE_CONNEXION_OU_CONSENTEMENT"):
+    force = v3.get("force", {}).get(op)
+    if force:
+        statut, note = force["statut"], force["note"]
+    elif op in absents and absents[op]["statut"] in ("ABSENT", "BLOQUE_CONNEXION_OU_CONSENTEMENT"):
         statut = "BLOQUE" if absents[op]["statut"].startswith("BLOQUE") else "ABSENT"
         note = absents[op]["note"]
     elif r["native_status"].startswith("BLOQUE") or syna_codex.startswith("BLOQUE"):
@@ -63,11 +68,20 @@ for r in sorted(rows, key=lambda x: (x["capability"], x["operation"])):
         statut, note = "ECHEC", ""
     else:
         statut, note = "PARTIEL", (absents.get(op, {}).get("note") or "")
+    # Matrice unique : en cas de désaccord Claude / Codex, le statut le plus prudent est retenu et la divergence est
+    # écrite — sauf opération re-prouvée sur la tête finale (statut imposé, preuve plus récente que le CSV de Codex).
+    rank = {"ABSENT": 0, "BLOQUE": 0, "ECHEC": 0, "NON_TESTE": 1, "PARTIEL": 2}
+    codex_rank = rank.get("ABSENT" if syna_codex.startswith("BLOQUE") else syna_codex, 1)
+    if not force and rank.get(statut, 1) != codex_rank:
+        mine = statut
+        if codex_rank < rank.get(statut, 1):
+            statut = "ABSENT" if syna_codex.startswith(("ABSENT", "BLOQUE")) else syna_codex
+        note = (note + " ; " if note else "") + f"divergence Claude {mine} / Codex {syna_codex} : statut le plus prudent retenu"
     perim = (r.get("remaining") or "").replace("\n", " ")[:220]
     lignes.append(OrderedDict(
         capability=r["capability"], operation=op, label=r["label"], natif=r["native_status"], syna_codex=syna_codex,
         phrase=phrases.get(op, "non sondée"), simule_encre=e, simule_plein=p, fournisseur_reel="non testé",
-        statut=statut, recettes=", ".join(par_op.get(op, [])) or "—", tete=v3["tete"], perimetre=perim, note=note))
+        statut=statut, recettes=", ".join(f"{x}@{tetes.get(x, v3.get('tete_vague2', '?'))}" for x in par_op.get(op, [])) or "—", tete=v3["tete"], perimetre=perim, note=note))
 
 with open(f"{out}/MATRICE-CONVERGENCE-84.csv", "w", encoding="utf-8", newline="") as fh:
     w = csv.DictWriter(fh, fieldnames=list(lignes[0].keys())); w.writeheader(); w.writerows(lignes)
