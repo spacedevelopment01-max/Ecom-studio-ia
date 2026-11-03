@@ -50,7 +50,7 @@ export function localFirst(
   kind: StoreKind | null = null,
   native?: {request:NativeLocalRequest;address:NativeLocalAddress},
 ): LocalFirst | null {
-  if(native)return nativeLocalFirst(spec,native.request,native.address,kind);
+  if(native)return nativeLocalFirst(spec,native.request,native.address,kind,business);
   const commercial = !atts.length && purchaseCommand(spec, message, selection ?? null);
   if (commercial) {
     const dry = applyOps(spec, commercial.ops, { targeted: new Set(selection ? [`${selection.template}:${selection.section}`] : []), storeKind: kind });
@@ -124,18 +124,23 @@ export function localFirst(
 }
 
 /** B1 : grammaire bornée, sans fallback IA. Les IDs sont résolus par le serveur A2. */
-export type NativeLocalRequest = {kind:'title';value:string}|{kind:'move';relation:'before'|'after';anchor:string};
+export type NativeLocalRequest = {kind:'title';value:string}|{kind:'move';relation:'before'|'after';anchor:string}|{kind:'color'|'faq'|'undo';text:string};
 export function nativeLocalRequest(text:string):{candidate:boolean;request:NativeLocalRequest|null}{
- const m=text.trim(),title=/^(?:remplace|modifie|change)\s+le titre(?: de (?:cette section|ce bloc))?\s+par\s+[«“"]([^»”"\n]+)[»”"]\s*[.!]?$/iu.exec(m);
+ const m=text.trim();
+ if(/^(?:annule la derni[èe]re retouche (?:du site|native)|undo the last site edit)[.!]?$/iu.test(m))return{candidate:true,request:{kind:'undo',text:m}};
+ if(/^(?:ajoute|ajouter|insère|add) (?:une? )?(?:section )?(?:FAQ|questions fréquentes)(?: après cette section| after this section)[.!]?$/iu.test(m))return{candidate:true,request:{kind:'faq',text:m}};
+ const title=/^(?:remplace|modifie|change)\s+le titre(?: de (?:cette section|ce bloc))?\s+par\s+[«“"]([^»”"\n]+)[»”"]\s*[.!]?$/iu.exec(m);
  if(title)return{candidate:true,request:{kind:'title',value:title[1]}};
+ if(/^(?:mets|met|change|modifie|set|change)\b/iu.test(m)&&/\b(?:couleur|color|rouge|bleu|vert|noir|blanc|fond|red|blue|green|black|white)\b|#[0-9a-f]{6}\b/iu.test(m))return{candidate:true,request:isSimpleRequest(m)?{kind:'color',text:m}:null};
  const move=/^(?:place|déplace)\s+cette section\s+(au-dessus (?:de la|des|du|de)|avant|en dessous (?:de la|des|du|de)|après)\s+(.+?)\s*[.!]?$/iu.exec(m);
  if(move&&move[2].length<=160&&!/[;\n]|\b(?:puis|ensuite|et déplace|and move)\b/iu.test(move[2]))return{candidate:true,request:{kind:'move',relation:/au-dessus|avant/u.test(move[1])?'before':'after',anchor:move[2]}};
  return{candidate:/\b(?:remplac[\p{L}]*|modifi[\p{L}]*|chang[\p{L}]*)\b[^\n]*\btitre\b|\b(?:place[\p{L}]*|déplac[\p{L}]*)\b[^\n]*\bsection\b/iu.test(m),request:null};
 }
 export type NativeLocalAddress={template:string;section:string;block?:string;key?:string;anchorId?:string};
 /** Extension native bornée : mêmes opérations et validation que localFirst, sans heuristique DOM. */
-export function nativeLocalFirst(spec:ThemeSpec,request:NativeLocalRequest,address:NativeLocalAddress,kind:StoreKind|null):LocalFirst|null{
+export function nativeLocalFirst(spec:ThemeSpec,request:NativeLocalRequest,address:NativeLocalAddress,kind:StoreKind|null,business:BusinessType="products"):LocalFirst|null{
  const c=containerOf(spec,address.template);if(!c?.order.includes(address.section))return null;
+ if(request.kind==='color'||request.kind==='faq'||request.kind==='undo')return localFirst(spec,request.text,{template:address.template,section:address.section,kind:'Section'},[],business,()=>null,kind);
  const ops:ThemeOp[]=request.kind==='title'&&address.key?[{op:'set_setting',template:address.template,section:address.section,block:address.block,key:address.key,value:request.value}]:request.kind==='move'&&address.anchorId&&address.anchorId!==address.section&&c.order.includes(address.anchorId)?[{op:'move_section',template:address.template,section:address.section,position:request.relation==='before'?{before:address.anchorId}:{after:address.anchorId}}]:[];
  if(!ops.length)return null;
  const dry=applyOps(spec,ops,{storeKind:kind});if(dry.rejected.length||!dry.applied.length)return null;

@@ -12,7 +12,7 @@ export function existingLocalCapabilities():ExistingLocalCapabilities|null{
  return ops.length?{schema:'existing-local-free-1',ops,confirmationRequired:true,costEur:0,providerCalls:0,financialConsent:false}:null;
 }
 export function existingLocalOperation(cmd:Command):ExistingLocalOperation|null{
- if(cmd.action==='confirm-local')return'local-site';
+ if((cmd.action==='confirm-local'||cmd.action==='cancel-local'))return'local-site';
  if(cmd.action==='confirm-files')return'files';
  if(cmd.action!=='message')return null;
  return localFilesCandidate(cmd.text)?'files':localSiteCandidate(cmd.text)?'local-site':null;
