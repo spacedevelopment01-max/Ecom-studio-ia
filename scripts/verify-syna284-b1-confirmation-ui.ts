@@ -5,6 +5,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import {spawn,execFileSync} from 'node:child_process';
 import {createHash,randomUUID} from 'node:crypto';
+import {waitForPreviewSectionOrder} from './preview-section-order';
 if(process.env.DATABASE_FILE||process.env.STORAGE_DIR||process.env.DATA_DIR)throw Error('Refus du stockage préexistant');
 const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ecs-b1-'));
 process.env.DATA_DIR=dir;process.env.STOCK_OFFLINE='1';process.env.APP_SECRET='b1-isolated-'+randomUUID();
@@ -51,7 +52,15 @@ await splash.waitFor({state:'hidden'});const nudge=page.locator('[data-tuto-nudg
    const heading=frame().locator(`[data-es-section="index:${f.section}"]`).getByRole('heading').first();await heading.waitFor();await heading.scrollIntoViewIfNeeded();
    await heading.evaluate(el=>new Promise<void>(resolve=>{if(el.ownerDocument.readyState==='complete')resolve();else el.ownerDocument.defaultView!.addEventListener('load',()=>resolve(),{once:true});}));
    const tools=page.locator('[data-site-tools]');if(!(await tools.getAttribute('open')))await tools.locator(':scope > summary').click();await page.getByRole('button',{name:'Désigner',exact:true}).click();const close=page.getByRole('button',{name:'Fermer les outils',exact:true});if(await close.isVisible())await close.click();
-   await heading.click();await panel.waitFor();await panel.locator('[data-agent-active-context]').getByText(/Section désignée/).waitFor();
+   // Locator clicks omit the preview's CSS scale after mobile/desktop changes. Use one real pointer click,
+   // measured in the current DOM, and reject any overlay or wrong target before sending it.
+   const childPoint=await heading.evaluate(el=>{const r=el.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2,hit=el.ownerDocument.elementFromPoint(x,y);return{x,y,width:r.width,height:r.height,hitIsHeading:hit===el||!!hit&&el.contains(hit)};});
+   assert.ok(childPoint.width>0&&childPoint.height>0,'The exact native heading must have a visible rectangle');
+   assert.equal(childPoint.hitIsHeading,true,'The child hit-test must resolve to the exact requested heading');
+   const pointer=await page.locator('iframe[title^="Aperçu"]').evaluate((el,p)=>{const iframe=el as HTMLIFrameElement,r=iframe.getBoundingClientRect(),sx=r.width/iframe.offsetWidth,sy=r.height/iframe.offsetHeight,x=r.x+(iframe.clientLeft+p.x)*sx,y=r.y+(iframe.clientTop+p.y)*sy;return{x,y,sx,sy,parentHitIsIframe:el.ownerDocument.elementFromPoint(x,y)===iframe};},childPoint);
+   assert.ok(Number.isFinite(pointer.x)&&Number.isFinite(pointer.y)&&pointer.sx>0&&pointer.sy>0,'The native iframe scale and pointer must be valid');
+   assert.equal(pointer.parentHitIsIframe,true,'The parent hit-test must resolve to this exact preview iframe');
+   await page.mouse.click(pointer.x,pointer.y);await panel.waitFor();await panel.locator('[data-agent-active-context]').getByText(/Section désignée/).waitFor();
   };
   const message=async(text:string)=>{await panel.getByRole('textbox',{name:'Décrivez votre projet ou posez votre question à SYNA'}).fill(text);await panel.getByRole('button',{name:'Enregistrer',exact:true}).click();await free.getByRole('button',{name:'Confirmer la modification gratuite',exact:true}).waitFor();};
   const applied=async()=>{await free.getByText(/Résultat enregistré · version/).waitFor();};
@@ -75,7 +84,7 @@ await splash.waitFor({state:'hidden'});const nudge=page.locator('[data-tuto-nudg
   await select();await message(`Place cette section après ${f.anchor}`);const cid=f.c.id,confirmBodies:unknown[]=[];let lost=true;
   await page.route(`**/api/studio-agent/conversations/${cid}`,async route=>{const request=route.request();if(request.method()==='POST'&&request.postDataJSON()?.action==='confirm-local'){confirmBodies.push(request.postDataJSON());if(lost){lost=false;await route.fetch();await route.abort('failed');return;}}await route.continue();});
   await free.getByRole('button',{name:'Confirmer la modification gratuite',exact:true}).click();await free.getByRole('button',{name:'Réessayer la confirmation gratuite',exact:true}).waitFor();await free.getByRole('button',{name:'Réessayer la confirmation gratuite',exact:true}).click();await applied();console.log(f.business+': déplacement et retry réseau');assert.equal(confirmBodies.length,2);assert.deepEqual(confirmBodies[0],confirmBodies[1]);assert.equal(currentTheme(f.pid)!.version.number,versionBefore+2);
-  await panel.getByRole('button',{name:'Replier SYNA',exact:true}).click();const moveEnd=Date.now()+30000;for(;;){const ids=await frame().locator('main [data-es-section^="index:"]').evaluateAll(els=>els.map(el=>el.getAttribute('data-es-section')!.split(':')[1]));if(ids.indexOf(f.section)===ids.indexOf(f.anchor)+1&&ids.includes(f.section))break;if(Date.now()>moveEnd)throw Error('Ordre natif non visible dans iframe : '+JSON.stringify(ids));await page.waitForTimeout(100);}await page.getByRole('button',{name:'SYNA',exact:true}).click();
+  await panel.getByRole('button',{name:'Replier SYNA',exact:true}).click();await waitForPreviewSectionOrder(page,f.section,f.anchor);await page.getByRole('button',{name:'SYNA',exact:true}).click();
   const moved=currentTheme(f.pid)!,order=moved.spec.templates.index.order;assert.equal(order.indexOf(f.section),order.indexOf(f.anchor)+1);const zipAfter=unzipSync((await exportShopify(moved.spec,loader)).zip);const changed=[...new Set([...Object.keys(zipBefore),...Object.keys(zipAfter)])].filter(k=>!Buffer.from(zipBefore[k]??[]).equals(Buffer.from(zipAfter[k]??[])));assert.deepEqual(changed,['templates/index.json']);assert.deepEqual(invariant(),before);
   // Manual race N→N+1: old agreement cannot overwrite it. Explicit A2 then new proposal.
   await select();await message('Remplace le titre de cette section par “Nouvelle proposition après conflit”');const manual=structuredClone(currentTheme(f.pid)!.spec);manual.templates.index.sections[f.section].settings.heading='Titre humain à préserver';saveThemeVersion(f.pid,manual,'Modification manuelle fictive','user');await free.getByRole('button',{name:'Confirmer la modification gratuite',exact:true}).click();await free.getByRole('button',{name:'Revalider la cible actuelle',exact:true}).waitFor();assert.equal(currentTheme(f.pid)!.spec.templates.index.sections[f.section].settings.heading,'Titre humain à préserver');await free.getByRole('button',{name:'Revalider la cible actuelle',exact:true}).click();await free.waitFor({state:'detached'});
