@@ -1094,6 +1094,7 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ["projects", "catalog_json", "TEXT NOT NULL DEFAULT '[]'"],
   ["projects", "business_type", "TEXT NOT NULL DEFAULT 'products'"],
   ["projects", "business_json", "TEXT NOT NULL DEFAULT '{}'"],
+  ["projects", "business_version", "INTEGER NOT NULL DEFAULT 0"],
   ["subscriptions", "plan", "TEXT"], // creer | vendre | dominer (null : ancien abonnement → « Créer »)
   ["subscriptions", "billing", "TEXT"], // month | year
   ["payments", "label", "TEXT"],

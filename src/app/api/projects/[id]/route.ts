@@ -1,10 +1,10 @@
 import {stateOf} from '@/lib/preparation/store';
 import { syncBookingAddress } from "@/lib/contenus/prestations";
 import { z } from "zod";
-import { all, json, now, one, run } from "@/lib/db";
+import { all, json, now, one, run,tx } from "@/lib/db";
 import { body, handle, ok } from "@/lib/http";
 import { cancelJob, publicJob, type Job } from "@/lib/jobs";
-import { currentTheme, saveProduct, saveServices, saveSettings } from "@/lib/projects";
+import { currentTheme, saveProduct, saveServices, saveSettings,loadProject } from "@/lib/projects";
 import { pipelineState } from "@/lib/engine/pipeline";
 import { localizeQuestions } from "@/lib/engine/local";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
@@ -52,6 +52,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     // Attribut « sandbox » des aperçus en iframe (dépend de l'hébergement, voir preview-access.ts).
     previewSandbox: previewSandbox(),
     services: p.services,
+    servicesVersion:p.servicesVersion,
     brand: p.brand,
     strategy: p.strategy,
     settings: p.settings,
@@ -92,6 +93,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
           peopleAllowed: z.boolean().optional(),
         })
         .optional(),
+      servicesVersion:z.number().int().nonnegative().optional(),
       /** Offre de services (projets « entreprise de services »). */
       services: z
         .object({
@@ -112,18 +114,23 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
       existingSite: z.object({ newSiteRequested: z.boolean() }).optional(),
     }),
   );
+  return tx(()=>{
+    const profile=loadProject(p.id);
+    if(b.services&&(b.servicesVersion==null||b.servicesVersion!==profile.servicesVersion))throw new HttpError(409,L("Le profil d’activité a changé ou sa version manque. Votre brouillon est conservé ; rechargez avant de modifier.","The business profile changed or its version is missing. Your draft is kept; reload before editing."),"services_conflict");
   if (b.settings?.autopublish?.enabled) assertAutopublish(user, p.id);
   if (b.existingSite && p.settings.existingSite) saveSettings(p.id, { ...p.settings, existingSite: { ...p.settings.existingSite, newSiteRequested: b.existingSite.newSiteRequested } });
   if (b.name) run("UPDATE projects SET name = ?, updated_at = ? WHERE id = ?", b.name, now(), p.id);
   if (b.platform) run("UPDATE projects SET platform = ?, updated_at = ? WHERE id = ?", b.platform, now(), p.id);
   if (b.services) {
+    const keys=b.services.services.flatMap(s=>s.key?[s.key]:[]),known=new Set(profile.services.services.map(s=>s.key));
+    if(new Set(keys).size!==keys.length||keys.some(k=>!known.has(k)))throw new HttpError(400,'Clé de prestation inconnue ou dupliquée.');
     const sv = b.services;
     const email = sv.email.trim();
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new HttpError(400, L("Adresse e-mail invalide.", "Invalid email address."));
     const bookingUrl = sv.bookingUrl.trim();
     if (bookingUrl && !/^https?:\/\/\S+$/i.test(bookingUrl)) throw new HttpError(400, L("Lien de prise de rendez-vous invalide (il doit commencer par https://).", "Invalid booking link (it must start with https://)."));
     saveServices(p.id, {
-      services: sv.services.map((x) => ({ name: x.name.trim(), description: x.description.trim(), ...(x.price?.trim() ? { price: x.price.trim() } : {}), ...(x.duration?.trim() ? { duration: x.duration.trim() } : {}) })).filter((x) => x.name),
+      services: sv.services.map((x) => ({ ...(x.key?{key:x.key}:{}),name: x.name.trim(), description: x.description.trim(), ...(x.price?.trim() ? { price: x.price.trim() } : {}), ...(x.duration?.trim() ? { duration: x.duration.trim() } : {}) })).filter((x) => x.name),
       area: sv.area.trim(),
       address: sv.address.trim(),
       phone: sv.phone.trim(),
@@ -132,12 +139,12 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
       bookingUrl,
       contactMode: sv.contactMode,
       contactModes: contactModesOf(sv),
-    });
+    },b.servicesVersion);
     // Adresse unique : la réservation intégrée du site reprend l'adresse du profil (nouvelle version du site).
-    if (sv.address.trim() !== p.services.address.trim()) syncBookingAddress(p.id, sv.address);
+    if (sv.address.trim() !== profile.services.address.trim()) syncBookingAddress(p.id, sv.address);
   }
   if (b.activity) {
-    const prod = { ...p.product };
+    const prod = { ...profile.product };
     if (b.activity.name !== undefined) Object.assign(prod, { name: b.activity.name.trim(), nameStatus: "provided" });
     if (b.activity.category !== undefined) prod.category = b.activity.category.trim();
     if (b.activity.summary !== undefined) prod.summary = b.activity.summary.trim();
@@ -156,7 +163,8 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
     const curSettings = { ...p.settings, ...json<Record<string, unknown>>(latest?.settings_json, {}) };
     saveSettings(p.id, { ...curSettings, ...b.settings } as any);
   }
-  return ok();
+    return ok({servicesVersion:loadProject(p.id).servicesVersion});
+  });
 });
 
 /** Archivage (les fichiers restent conservés). */

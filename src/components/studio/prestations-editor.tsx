@@ -12,6 +12,7 @@ import { useT } from "../i18n";
 type Service = { id?: string; name: string; category?: string; short: string; duration: number | null; price: number | null; priceFrom: boolean; modes?: string; upcoming?: number };
 type Staff = { id?: string; name: string; title: string; skills: string[]; days: number[] };
 type Data = {
+  versionId: string;
   kind: "salon" | "cabinet" | "restaurant"; live: boolean; address: string; services: Service[]; staff: Staff[]; hours: Record<string, string>; closures: string;
   restaurant: { openDays: number[]; lunchSlots: string; dinnerSlots: string; capacity: number; minParty: number; maxParty: number; defaults: boolean } | null;
 };
@@ -36,7 +37,7 @@ export function PrestationsEditor({ projectId, onSaved }: { projectId: string; o
       const body = f!.kind === "restaurant"
         ? { address: f!.address, restaurant: { ...f!.restaurant!, capacity: Number(f!.restaurant!.capacity), minParty: Number(f!.restaurant!.minParty), maxParty: Number(f!.restaurant!.maxParty) }, closures: f!.closures }
         : { address: f!.address, services: f!.services.map(({ upcoming: _u, ...s }) => ({ ...s, duration: Number(s.duration), price: s.price })), ...(f!.kind === "salon" ? { staff: f!.staff } : {}), hours: f!.hours, closures: f!.closures };
-      const r = await api<{ number: number; warnings: string[] }>(`/api/projects/${projectId}/prestations`, { method: "PUT", body });
+      const r = await api<{ number: number; warnings: string[] }>(`/api/projects/${projectId}/prestations`, { method: "PUT", body: { ...body, ifVersion: f!.versionId } });
       toast("ok", t(`Enregistré : version ${r.number} du site. L'aperçu et la réservation l'utilisent tout de suite ; le site hébergé, après « Publier ».`, `Saved: site version ${r.number}. Preview and booking use it right away; the hosted site after “Publish”.`));
       for (const w of r.warnings) toast("info", w);
       await reload();

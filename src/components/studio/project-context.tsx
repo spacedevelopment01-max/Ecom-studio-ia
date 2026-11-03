@@ -18,6 +18,7 @@ export type Overview = {
   business: BusinessType;
   previewSandbox?: string;
   services: ServiceProfile;
+  servicesVersion?:number;
   brand: Brand | null;
   strategy: Strategy | null;
   settings: ProjectSettings;
