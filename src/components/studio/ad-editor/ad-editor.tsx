@@ -20,6 +20,7 @@ import {useAgentFocus,useAgentPanel,useAgentUi} from "../agent-ui-context";
 import { useProject } from "../project-context";
 import { History, type DocOp } from "@/lib/ad-doc/ops";
 import { localAdEdit } from "@/lib/ad-doc/local-edit";
+import {requestCreativeVersion,type CreativeVersionOperation} from "@/lib/ad-doc/new-version-client";
 import { ANIM_DURATION_S } from "@/lib/ad-doc/animate";
 import { newLayerId } from "@/lib/ad-doc/geometry";
 import type { AdDocument, Layer } from "@/lib/ad-doc/types";
@@ -84,6 +85,7 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
   const editSending=useRef(false),editOperation=useRef<{intent:string;id:string}|null>(null);
   const backgroundSending=useRef(false),backgroundOperation=useRef<{intent:string;id:string}|null>(null);
   const duplicateOperation=useRef<{intent:string;id:string}|null>(null);
+  const creativeOperation=useRef<CreativeVersionOperation["current"]>(null);
   const [photoChoice, setPhotoChoice] = useState<View["edit"] | null>(null);
   const [draft, setDraft] = useState<{ doc: AdDocument } | null>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -380,11 +382,12 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
       return;
     }
     if (r.paid?.kind === "creative") {
-      if (!window.confirm(t("Une nouvelle version demande une proposition de l'IA (rédaction et création). Elle s'ajoutera à vos créations, sans modifier celle-ci. Continuer ?", "A new version needs an AI proposal (copy and creative). It will be added to your creatives without changing this one. Continue?"))) return;
-      // Avec l'IA, les nouvelles photos utilisent le forfait : quota affiché et accord demandé avant toute dépense.
-      if (project?.ai.llm && !(await cost.confirm("images"))) return;
       try {
-        await api(`/api/projects/${projectId}/campaigns/v2`, { body: { action: "generate", count: 1 } });
+        const result=await requestCreativeVersion(body=>api(`/api/projects/${projectId}/campaigns/v2`,{body}),quote=>{
+          const pct=(n:number)=>new Intl.NumberFormat(undefined,{maximumSignificantDigits:6}).format(n);
+          return window.confirm(t(`Une nouvelle proposition s’ajoutera sans modifier cette création. Devis : estimation ${pct(quote.estimatePct!)} % ; plafond ${pct(quote.maximumPct!)} % du budget IA, pour ${quote.concepts} concept(s) et ${quote.images} image(s). Les reprises restent plafonnées. Continuer ?`,`A new proposal will be added without changing this creative. Quote: estimate ${pct(quote.estimatePct!)}%; cap ${pct(quote.maximumPct!)}% of the AI budget, for ${quote.concepts} concept(s) and ${quote.images} image(s). Retries stay capped. Continue?`));
+        },creativeOperation);
+        if(!result)return;
         toast("ok", t("Nouvelle proposition en préparation : elle apparaîtra dans vos créations.", "New proposal in progress: it will appear in your creatives."));
       } catch (e) {
         toast("bad", (e as Error).message);
