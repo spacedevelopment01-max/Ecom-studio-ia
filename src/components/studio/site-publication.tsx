@@ -4,8 +4,9 @@
  * pages légales, historique et restauration, demandes reçues, domaine personnalisé. Les refus du serveur sont montrés
  * tels quels (points bloquants listés), jamais masqués.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge, Button, Modal, formatDate, useApi, useToast } from "../ui";
+import { SITE_REQUESTS_CHANGED_EVENT } from "@/lib/local-site-requests-confirmation-client";
 import { useT } from "../i18n";
 import { fieldLabel } from "@/lib/sites/field-label";
 
@@ -36,6 +37,12 @@ export function SitePublication({ open, onClose, projectId, focusRequest }: { op
   const toast = useToast();
   const url = `/api/projects/${projectId}/site-publication`;
   const { data, reload } = useApi<Overview>(open ? url : null);
+  // #301 C22 : un statut confirmé depuis SYNA relit aussitôt la liste native (aucune double source d'état).
+  useEffect(() => {
+    const changed = (e: Event) => { if ((e as CustomEvent<{ projectId?: string }>).detail?.projectId === projectId) void reload(); };
+    window.addEventListener(SITE_REQUESTS_CHANGED_EVENT, changed);
+    return () => window.removeEventListener(SITE_REQUESTS_CHANGED_EVENT, changed);
+  }, [projectId, reload]);
   const [busy, setBusy] = useState<string | null>(null);
   const [reasons, setReasons] = useState<string[] | null>(null);
   const [slug, setSlug] = useState("");
