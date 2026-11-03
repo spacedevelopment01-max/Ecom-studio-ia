@@ -129,7 +129,7 @@ export async function exportDoc(projectId: string, doc: AdDocument, format: "png
 }
 
 /** Native row version, distinct from AdDocument.version (the document schema). expected0 is trusted creation only. */
-export type DocWriteGuard={expectedVersion:number;source?:{docKey:string;expectedVersion:number};strategyStamp?:import("../strategy-consumption").StrategyStamp|null};
+export type DocWriteGuard={expectedVersion:number;source?:{docKey:string;expectedVersion:number};strategyStamp?:import("../strategy-consumption").StrategyStamp|null;operation?:{jobId:string;proposalId:string;sourceDigest:string;resultDigest:string;baseVersion:number};validate?:()=>undefined;commit?:(version:DocVersion,sha256:string)=>undefined};
 export function assertDocVersion(projectId:string,docKey:string,expectedVersion:number){
  const actual=one<{v:number}>("SELECT COALESCE(MAX(version),0) v FROM ad_documents WHERE project_id=? AND doc_key=?",projectId,docKey)!.v;
  if(actual!==expectedVersion)throw new HttpError(409,"Une version plus récente existe. Comparez la version enregistrée avant de réessayer.","ad_doc_version_conflict");
@@ -137,13 +137,15 @@ export function assertDocVersion(projectId:string,docKey:string,expectedVersion:
 export function guardedForkKey(projectId:string,userId:string,docKey:string,expectedVersion:number,operationId:string,action:string,format:unknown){return 'ad:'+crypto.createHash('sha256').update(JSON.stringify([projectId,userId,docKey,expectedVersion,operationId,action,format])).digest('hex').slice(0,24);}
 /** Same renderer and native library; the final version/asset commit is one synchronous SQLite transaction. */
 export async function saveAndRender(projectId:string,userId:string,docKey:string,doc:AdDocument,note="",guard?:DocWriteGuard):Promise<DocVersion>{
- const check=()=>{if(guard){assertDocVersion(projectId,docKey,guard.expectedVersion);if(guard.source)assertDocVersion(projectId,guard.source.docKey,guard.source.expectedVersion);}};
+ const check=()=>{if(guard){const checked:unknown=guard.validate?.();if(checked&&typeof (checked as {then?:unknown}).then==='function')throw new Error("Document validation must be synchronous");assertDocVersion(projectId,docKey,guard.expectedVersion);if(guard.source)assertDocVersion(projectId,guard.source.docKey,guard.source.expectedVersion);}};
  check();
  const {data}=await exportDoc(projectId,doc,"jpeg"),post=docKey.startsWith("post:");
  const prevId=latestDoc(projectId,docKey)?.version.renderedAssetId??null,prev=prevId?one<{id:string;version_of:string|null}>("SELECT id,version_of FROM assets WHERE id=?",prevId):null;
  let saved:DocVersion|undefined;
- await saveAsset({projectId,userId,data,versionOf:prev?(prev.version_of??prev.id):null,name:`${post?"publication":"pub"}-modifiee-${doc.format.aspect.replace(":","x")}.jpg`,mime:"image/jpeg",role:post?"social":"ad",folderKey:post?"images.social":"images.ads",origin:"generated",status:"review",meta:{adDoc:{docKey,source:doc.meta.source},format:doc.format.aspect,...(post?{poster:{docKey,layout:doc.meta.recipe?.layout??null}}:{})}},asset=>{
+ await saveAsset({projectId,userId,data,versionOf:prev?(prev.version_of??prev.id):null,name:`${post?"publication":"pub"}-modifiee-${doc.format.aspect.replace(":","x")}.jpg`,mime:"image/jpeg",role:post?"social":"ad",folderKey:post?"images.social":"images.ads",origin:"generated",status:"review",meta:{adDoc:{docKey,source:doc.meta.source,...(guard?.operation?{operation:{...guard.operation,renderSha256:crypto.createHash("sha256").update(data).digest("hex"),version:guard.expectedVersion+1}}:{})},format:doc.format.aspect,...(post?{poster:{docKey,layout:doc.meta.recipe?.layout??null}}:{})}},asset=>{
   check();saved=saveVersion(projectId,docKey,doc,{note,renderedAssetId:asset.id,strategyStamp:guard?.strategyStamp});
+  const committed:unknown=guard?.commit?.(saved,crypto.createHash("sha256").update(data).digest("hex"));
+  if(committed&&typeof (committed as {then?:unknown}).then==='function')throw new Error("Document commit must be synchronous");
  });
  return saved!;
 }

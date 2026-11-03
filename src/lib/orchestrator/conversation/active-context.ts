@@ -1,3 +1,4 @@
+import {latestDoc} from '../../ad-doc/store';
 /** Résolution native et cloisonnée des repères envoyés par le navigateur. Aucun média n'est analysé. */
 import {HttpError,ownedProject,type User} from '../../auth';
 import {one} from '../../db';
@@ -32,6 +33,7 @@ function resolveNativeContext(c:ConversationRow,raw:unknown){
  if(selected.projectId&&selected.projectId!==c.project_id)throw missing();
  if(!target)return{selection:selected,kind:'tab' as const,label:selected.tab,contentRead:false};
  if(!c.project_id)throw missing();
+ if(target.kind==='ad-document-text'){if(process.env.STUDIO_CONVERSATION_AD_DOCUMENT_LOCAL!=='1')throw missing();const cur=latestDoc(c.project_id!,target.docKey),layer=cur?.doc.layers.find(l=>l.id===target.layerId);if(!cur||!layer||layer.kind!=='text')throw missing();if(cur.version.version!==target.version)throw new HttpError(409,'La création a changé. Désignez-la à nouveau.','conversation_target_stale');if(!['publicites','publications'].includes(selected.tab))throw missing();return{selection:selected,kind:'ad-document-text' as const,label:'Calque texte de création',isCurrent:true,contentRead:false,source:{table:'ad_documents' as const,docKey:target.docKey,layerId:target.layerId,version:cur.version.version,fingerprint:stableHash('native-ad-document-local-1',cur.doc)},visualQuality:'not_reviewed' as const};}
  if(target.kind==='content-item'){
   if(process.env.STUDIO_CONVERSATION_BUSINESS_CONTENT!=='1'||selected.tab!==({biens:'biens',plats:'carte',realisations:'realisations'} as const)[target.type])throw missing();
   const item=adapter(target.type).get(c.project_id,target.itemId);if(item.version!==target.version)throw new HttpError(409,L('Le contenu métier a changé. Désignez-le à nouveau.','Business content changed. Select it again.'),'conversation_target_stale');
@@ -100,7 +102,7 @@ function resolveNativeContext(c:ConversationRow,raw:unknown){
 export function resolveActiveContext(c:ConversationRow,raw:unknown){
  if(c.project_id){const user=one<User>('SELECT * FROM users WHERE id=?',c.user_id);if(!user)throw missing();ownedProject(user,c.project_id);requirePlan(user,c.project_id);}
  const r=resolveNativeContext(c,raw),target=r.selection.target;
- return{...r,canonical:{schema:'studio-native-target-2' as const,projectId:c.project_id,tab:r.selection.tab,kind:r.kind,identity:stableHash('native-object-identity-2',{kind:r.kind,...(target?.kind==='content-item'?{type:target.type,itemId:target.itemId}:target&&'template'in target?{template:target.template,section:'section'in target?target.section:null,block:'block'in target?target.block??null:null,key:'key'in target?target.key:null,sectionType:'sectionType'in r?r.sectionType:null,blockType:'blockType'in r?r.blockType:null,fieldType:'fieldType'in r?r.fieldType:null}:target?.kind==='site-request'?{requestId:target.requestId}:target?.kind==='asset'?{assetId:target.assetId}:target?{productId:'productId'in target?target.productId:null,variantId:'variantId'in target?target.variantId:null,path:'path'in target?target.path:null}: {})}),sourceFingerprint:stableHash('native-target-content-2',r),provenance:'server_native_read' as const,authorizationGranted:false as const}};
+ return{...r,canonical:{schema:'studio-native-target-2' as const,projectId:c.project_id,tab:r.selection.tab,kind:r.kind,identity:stableHash('native-object-identity-2',{kind:r.kind,...(target?.kind==='ad-document-text'?{docKey:target.docKey,layerId:target.layerId}:target?.kind==='content-item'?{type:target.type,itemId:target.itemId}:target&&'template'in target?{template:target.template,section:'section'in target?target.section:null,block:'block'in target?target.block??null:null,key:'key'in target?target.key:null,sectionType:'sectionType'in r?r.sectionType:null,blockType:'blockType'in r?r.blockType:null,fieldType:'fieldType'in r?r.fieldType:null}:target?.kind==='site-request'?{requestId:target.requestId}:target?.kind==='asset'?{assetId:target.assetId}:target?{productId:'productId'in target?target.productId:null,variantId:'variantId'in target?target.variantId:null,path:'path'in target?target.path:null}: {})}),sourceFingerprint:stableHash('native-target-content-2',r),provenance:'server_native_read' as const,authorizationGranted:false as const}};
 }
 export function observedActiveContext(c:ConversationRow,selection?:ActiveContext){
  if(!selection)return null;
