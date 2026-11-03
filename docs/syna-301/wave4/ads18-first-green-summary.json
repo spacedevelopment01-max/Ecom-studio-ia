@@ -1,0 +1,267 @@
+{
+  "scope": "18 fresh native V2 documents, synthetic dependencies; initial successful adapter probe before additional locked-layer rejection test",
+  "count": 18,
+  "http200": 18,
+  "delivered": 18,
+  "groups": {
+    "meta_feed": 6,
+    "meta_story": 3,
+    "meta_feed+meta_story": 9
+  },
+  "docs": [
+    {
+      "docKey": "ad:0436a804bed7c6a9d6aa",
+      "status": 200,
+      "nativeOps": [
+        "title",
+        "subline"
+      ],
+      "secondaryLayers": [
+        "subline"
+      ],
+      "receipt": "7jm76nocdysiga6i",
+      "resultVersion": 2
+    },
+    {
+      "docKey": "ad:1529cb3fa267211595ac",
+      "status": 200,
+      "nativeOps": [
+        "title",
+        "subline",
+        "cta"
+      ],
+      "secondaryLayers": [
+        "cta",
+        "subline"
+      ],
+      "receipt": "ho79hu09cp4gz1u3",
+      "resultVersion": 2
+    },
+    {
+      "docKey": "ad:26949330123dbc1aea7c",
+      "status": 200,
+      "nativeOps": [
+        "title",
+        "subline",
+        "cta"
+      ],
+      "secondaryLayers": [
+        "cta",
+        "subline"
+      ],
+      "receipt": "p1v5zn4xiq0d84fd",
+      "resultVersion": 2
+    },
+    {
+      "docKey": "ad:74160add61790eea3996",
+      "status": 200,
+      "nativeOps": [
+        "title",
+        "subline"
+      ],
+      "secondaryLayers": [
+        "subline"
+      ],
+      "receipt": "zjzyby7x6t3mhev0",
+      "resultVersion": 2
+    },
+    {
+      "docKey": "ad:87b940213100b05009e1",
+      "status": 200,
+      "nativeOps": [
+        "title",
+        "subline"
+      ],
+      "secondaryLayers": [
+        "subline"
+      ],
+      "receipt": "zzhp5z801xwouax5",
+      "resultVersion": 2
+    },
+    {
+      "docKey": "ad:fd4061fb69d03655a5c6",
+      "status": 200,
+      "nativeOps": [
+        "title",
+        "subline",
+        "cta"
+      ],
+      "secondaryLayers": [
+        "cta",
+        "subline"
+      ],
+      "receipt": "no3qqwx86z9qbyoe",
+      "resultVersion": 2
+    },
+    {
+      "docKey": "ad:4cee73648d182e74a3ec",
+      "status": 200,
+      "nativeOps": [
+        "title",
+        "subline"
+      ],
+      "secondaryLayers": [
+        "subline"
+      ],
+      "receipt": "sa36ii6rixm05ero",
+      "resultVersion": 2
+    },
+    {
+      "docKey": "ad:9122ae9c502e95f3d357",
+      "status": 200,
+      "nativeOps": [
+        "title",
+        "subline",
+        "cta"
+      ],
+      "secondaryLayers": [
+        "cta",
+        "subline"
+      ],
+      "receipt": "bld157budcvupi4i",
+      "resultVersion": 2
+    },
+    {
+      "docKey": "ad:cce455419f73263a3417",
+      "status": 200,
+      "nativeOps": [
+        "title",
+        "subline",
+        "cta"
+      ],
+      "secondaryLayers": [
+        "cta",
+        "subline"
+      ],
+      "receipt": "1wta97hdtbsyxp5y",
+      "resultVersion": 2
+    },
+    {
+      "docKey": "ad:0a53125c5d3ce2d2d9a7",
+      "status": 200,
+      "nativeOps": [
+        "title",
+        "subline",
+        "cta"
+      ],
+      "secondaryLayers": [
+        "cta",
+        "subline"
+      ],
+      "receipt": "eow5lb83nyr0itf1",
+      "resultVersion": 2
+    },
+    {
+      "docKey": "ad:3a3b57f1fb84eebab18a",
+      "status": 200,
+      "nativeOps": [
+        "title",
+        "subline",
+        "cta"
+      ],
+      "secondaryLayers": [
+        "cta",
+        "subline"
+      ],
+      "receipt": "fdpgnptoymp4fzgn",
+      "resultVersion": 2
+    },
+    {
+      "docKey": "ad:41abc6ce1d7ded105627",
+      "status": 200,
+      "nativeOps": [
+        "title",
+        "subline"
+      ],
+      "secondaryLayers": [
+        "subline"
+      ],
+      "receipt": "8y6br5a2ckkfyl0r",
+      "resultVersion": 2
+    },
+    {
+      "docKey": "ad:4e0ffadd4d5dec5ac41d",
+      "status": 200,
+      "nativeOps": [
+        "title",
+        "subline"
+      ],
+      "secondaryLayers": [
+        "subline"
+      ],
+      "receipt": "u8hon5e4xk3d0srx",
+      "resultVersion": 2
+    },
+    {
+      "docKey": "ad:5b08dfd14cb915b5b955",
+      "status": 200,
+      "nativeOps": [
+        "title",
+        "subline"
+      ],
+      "secondaryLayers": [
+        "subline"
+      ],
+      "receipt": "jgagt5s3scsbsjms",
+      "resultVersion": 2
+    },
+    {
+      "docKey": "ad:6d2a4e20f78ab50b10d5",
+      "status": 200,
+      "nativeOps": [
+        "title",
+        "subline"
+      ],
+      "secondaryLayers": [
+        "subline"
+      ],
+      "receipt": "5twlwqcvjb00vok7",
+      "resultVersion": 2
+    },
+    {
+      "docKey": "ad:90875cfe405c8ef27671",
+      "status": 200,
+      "nativeOps": [
+        "title",
+        "subline",
+        "cta"
+      ],
+      "secondaryLayers": [
+        "cta",
+        "subline"
+      ],
+      "receipt": "sowij69ndmvpb8q0",
+      "resultVersion": 2
+    },
+    {
+      "docKey": "ad:a949ab01ec0146dd005a",
+      "status": 200,
+      "nativeOps": [
+        "title",
+        "subline",
+        "cta"
+      ],
+      "secondaryLayers": [
+        "cta",
+        "subline"
+      ],
+      "receipt": "ztesf66uaghjgwod",
+      "resultVersion": 2
+    },
+    {
+      "docKey": "ad:f14e720f3f3cbb1c9afb",
+      "status": 200,
+      "nativeOps": [
+        "title",
+        "subline",
+        "cta"
+      ],
+      "secondaryLayers": [
+        "cta",
+        "subline"
+      ],
+      "receipt": "j2v1jahcqkj7mko1",
+      "resultVersion": 2
+    }
+  ]
+}

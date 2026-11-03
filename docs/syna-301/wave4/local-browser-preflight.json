@@ -1,0 +1,186 @@
+{
+  "recipeSha256": "ce932c09fd15408d373ccda534d018b615a15864611a01a47695cfb3d2192fdc",
+  "sourceCommit": "98721ace58090eddfaa46e78f14040c7873b024f",
+  "sourceTree": "5bf02b0fd0d13ff83f27bd6d4a8d20ee80e66fbd",
+  "selection": "native A2 synthetic fixture preselected; not a browser designation claim",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "cases": [
+    {
+      "label": "site-encre-1440",
+      "status": "PASS",
+      "colorFree": true,
+      "nativeComputedColor": {
+        "background": "rgb(29, 78, 216)",
+        "text": "rgb(255, 255, 255)",
+        "expected": "rgb(29, 78, 216)"
+      },
+      "primaryTextColor": "rgb(180, 35, 24)",
+      "primaryTextVersion": 3,
+      "accentsExplicitlyPreserved": true,
+      "faqAfterSelected": true,
+      "undoReceipt": "957e0575-ba8b-4478-9fa9-c2eed5445857",
+      "zeroAiBudget": true,
+      "cancelNoWrite": true,
+      "waitMsAtLeast": 17000,
+      "lostResponseSameConfirmation": true,
+      "versions": [
+        1,
+        2,
+        4,
+        5
+      ],
+      "nativeResultHttp": 200,
+      "reload": true,
+      "globalColorClarifies": true
+    },
+    {
+      "label": "ad-encre-1440",
+      "status": "PASS",
+      "nativeV2": true,
+      "secondaryEffectsDisclosed": true,
+      "twoNativePreviews": true,
+      "cancelNoWrite": true,
+      "waitMsAtLeast": 17000,
+      "explicitFreeAgreement": true,
+      "nativeReceipt": true,
+      "version": 2,
+      "png": true,
+      "reload": true
+    },
+    {
+      "label": "site-encre-390",
+      "status": "PASS",
+      "colorFree": true,
+      "nativeComputedColor": {
+        "background": "rgb(29, 78, 216)",
+        "text": "rgb(255, 255, 255)",
+        "expected": "rgb(29, 78, 216)"
+      },
+      "primaryTextColor": "rgb(180, 35, 24)",
+      "primaryTextVersion": 3,
+      "accentsExplicitlyPreserved": true,
+      "faqAfterSelected": true,
+      "undoReceipt": "c21fd036-c3f7-4be3-978a-349067f24be4",
+      "zeroAiBudget": true,
+      "cancelNoWrite": true,
+      "waitMsAtLeast": 17000,
+      "lostResponseSameConfirmation": true,
+      "versions": [
+        1,
+        2,
+        4,
+        5
+      ],
+      "nativeResultHttp": 200,
+      "reload": true,
+      "globalColorClarifies": true
+    },
+    {
+      "label": "ad-encre-390",
+      "status": "PASS",
+      "nativeV2": true,
+      "secondaryEffectsDisclosed": true,
+      "twoNativePreviews": true,
+      "cancelNoWrite": true,
+      "waitMsAtLeast": 17000,
+      "explicitFreeAgreement": true,
+      "nativeReceipt": true,
+      "version": 2,
+      "png": true,
+      "reload": true
+    },
+    {
+      "label": "site-plein-1440",
+      "status": "PASS",
+      "colorFree": true,
+      "nativeComputedColor": {
+        "background": "rgb(29, 78, 216)",
+        "text": "rgb(255, 255, 255)",
+        "expected": "rgb(29, 78, 216)"
+      },
+      "primaryTextColor": "rgb(180, 35, 24)",
+      "primaryTextVersion": 3,
+      "accentsExplicitlyPreserved": true,
+      "faqAfterSelected": true,
+      "undoReceipt": "3b6ce0f3-c07d-451e-a20e-c8168da2f61e",
+      "zeroAiBudget": true,
+      "cancelNoWrite": true,
+      "waitMsAtLeast": 17000,
+      "lostResponseSameConfirmation": true,
+      "versions": [
+        1,
+        2,
+        4,
+        5
+      ],
+      "nativeResultHttp": 200,
+      "reload": true,
+      "globalColorClarifies": true
+    },
+    {
+      "label": "ad-plein-1440",
+      "status": "PASS",
+      "nativeV2": true,
+      "secondaryEffectsDisclosed": true,
+      "twoNativePreviews": true,
+      "cancelNoWrite": true,
+      "waitMsAtLeast": 17000,
+      "explicitFreeAgreement": true,
+      "nativeReceipt": true,
+      "version": 2,
+      "png": true,
+      "reload": true
+    },
+    {
+      "label": "site-plein-390",
+      "status": "PASS",
+      "colorFree": true,
+      "nativeComputedColor": {
+        "background": "rgb(29, 78, 216)",
+        "text": "rgb(255, 255, 255)",
+        "expected": "rgb(29, 78, 216)"
+      },
+      "primaryTextColor": "rgb(180, 35, 24)",
+      "primaryTextVersion": 3,
+      "accentsExplicitlyPreserved": true,
+      "faqAfterSelected": true,
+      "undoReceipt": "ac19bf37-f71f-433f-9320-b94488d8096a",
+      "zeroAiBudget": true,
+      "cancelNoWrite": true,
+      "waitMsAtLeast": 17000,
+      "lostResponseSameConfirmation": true,
+      "versions": [
+        1,
+        2,
+        4,
+        5
+      ],
+      "nativeResultHttp": 200,
+      "reload": true,
+      "globalColorClarifies": true
+    },
+    {
+      "label": "ad-plein-390",
+      "status": "PASS",
+      "nativeV2": true,
+      "secondaryEffectsDisclosed": true,
+      "twoNativePreviews": true,
+      "cancelNoWrite": true,
+      "waitMsAtLeast": 17000,
+      "explicitFreeAgreement": true,
+      "nativeReceipt": true,
+      "version": 2,
+      "png": true,
+      "reload": true
+    }
+  ],
+  "runtime": {
+    "commit": "98721ace58090eddfaa46e78f14040c7873b024f",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "status": "PASS"
+}

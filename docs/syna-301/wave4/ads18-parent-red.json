@@ -1,0 +1,237 @@
+[
+  {
+    "platforms": [
+      "meta_feed"
+    ],
+    "docKey": "ad:27535208d0be4ad62858",
+    "status": 422,
+    "error": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif.",
+    "nativeOps": [
+      "title",
+      "subline",
+      "cta"
+    ]
+  },
+  {
+    "platforms": [
+      "meta_feed"
+    ],
+    "docKey": "ad:4454ba3b1be350e3b329",
+    "status": 422,
+    "error": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif.",
+    "nativeOps": [
+      "title",
+      "subline",
+      "cta"
+    ]
+  },
+  {
+    "platforms": [
+      "meta_feed"
+    ],
+    "docKey": "ad:7a4446ea5ccc2608d37f",
+    "status": 422,
+    "error": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif.",
+    "nativeOps": [
+      "title",
+      "subline"
+    ]
+  },
+  {
+    "platforms": [
+      "meta_feed"
+    ],
+    "docKey": "ad:88361d8421a1395cae1f",
+    "status": 422,
+    "error": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif.",
+    "nativeOps": [
+      "title",
+      "subline"
+    ]
+  },
+  {
+    "platforms": [
+      "meta_feed"
+    ],
+    "docKey": "ad:8998b2d9eb63ee2fb98a",
+    "status": 422,
+    "error": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif.",
+    "nativeOps": [
+      "title",
+      "subline",
+      "cta"
+    ]
+  },
+  {
+    "platforms": [
+      "meta_feed"
+    ],
+    "docKey": "ad:b255e6ec3982620d62fd",
+    "status": 422,
+    "error": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif.",
+    "nativeOps": [
+      "title",
+      "subline"
+    ]
+  },
+  {
+    "platforms": [
+      "meta_story"
+    ],
+    "docKey": "ad:97bd06f21ab1597a6655",
+    "status": 422,
+    "error": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif.",
+    "nativeOps": [
+      "title",
+      "subline",
+      "cta"
+    ]
+  },
+  {
+    "platforms": [
+      "meta_story"
+    ],
+    "docKey": "ad:b431a3c4daed7a4a8118",
+    "status": 422,
+    "error": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif.",
+    "nativeOps": [
+      "title",
+      "subline"
+    ]
+  },
+  {
+    "platforms": [
+      "meta_story"
+    ],
+    "docKey": "ad:e18ba1e2195ef22bf18a",
+    "status": 422,
+    "error": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif.",
+    "nativeOps": [
+      "title",
+      "subline",
+      "cta"
+    ]
+  },
+  {
+    "platforms": [
+      "meta_feed",
+      "meta_story"
+    ],
+    "docKey": "ad:1d3fdbddba4c7392b942",
+    "status": 422,
+    "error": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif.",
+    "nativeOps": [
+      "title",
+      "subline"
+    ]
+  },
+  {
+    "platforms": [
+      "meta_feed",
+      "meta_story"
+    ],
+    "docKey": "ad:2d41c546d33752ce6acd",
+    "status": 422,
+    "error": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif.",
+    "nativeOps": [
+      "title",
+      "subline",
+      "cta"
+    ]
+  },
+  {
+    "platforms": [
+      "meta_feed",
+      "meta_story"
+    ],
+    "docKey": "ad:2e1ea89ff234d5091090",
+    "status": 422,
+    "error": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif.",
+    "nativeOps": [
+      "title",
+      "subline",
+      "cta"
+    ]
+  },
+  {
+    "platforms": [
+      "meta_feed",
+      "meta_story"
+    ],
+    "docKey": "ad:65535c54571b46acbd82",
+    "status": 422,
+    "error": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif.",
+    "nativeOps": [
+      "title",
+      "subline",
+      "cta"
+    ]
+  },
+  {
+    "platforms": [
+      "meta_feed",
+      "meta_story"
+    ],
+    "docKey": "ad:6fdc4867ed2a2e5f0ae0",
+    "status": 422,
+    "error": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif.",
+    "nativeOps": [
+      "title",
+      "subline",
+      "cta"
+    ]
+  },
+  {
+    "platforms": [
+      "meta_feed",
+      "meta_story"
+    ],
+    "docKey": "ad:8e010056eb756704681a",
+    "status": 422,
+    "error": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif.",
+    "nativeOps": [
+      "title",
+      "subline",
+      "cta"
+    ]
+  },
+  {
+    "platforms": [
+      "meta_feed",
+      "meta_story"
+    ],
+    "docKey": "ad:91f80eb2fa14925162ba",
+    "status": 422,
+    "error": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif.",
+    "nativeOps": [
+      "title",
+      "subline"
+    ]
+  },
+  {
+    "platforms": [
+      "meta_feed",
+      "meta_story"
+    ],
+    "docKey": "ad:95dfa29825c1706c8d22",
+    "status": 422,
+    "error": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif.",
+    "nativeOps": [
+      "title",
+      "subline"
+    ]
+  },
+  {
+    "platforms": [
+      "meta_feed",
+      "meta_story"
+    ],
+    "docKey": "ad:dd3aa70f6e6fd4e9765c",
+    "status": 422,
+    "error": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif.",
+    "nativeOps": [
+      "title",
+      "subline"
+    ]
+  }
+]

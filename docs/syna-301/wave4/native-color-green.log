@@ -1,0 +1,1 @@
+{"status":"PASS","stylesheet":"native theme.css, also exported by compileTheme","computed":{"default":{"background":"rgb(255, 255, 255)","text":"rgb(17, 17, 17)"},"edited":{"background":"rgb(29, 78, 216)","text":"rgb(255, 255, 255)"},"other":{"background":"rgb(255, 0, 0)","text":"rgb(17, 17, 17)"}},"realProviderCalls":0}

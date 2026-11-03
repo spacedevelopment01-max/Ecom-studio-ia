@@ -1,0 +1,13 @@
+
+ RUN  v5.0.3 /workspace/work/parity301-next-domains
+
+
+ Test Files  2 passed (2)
+      Tests  11 passed (11)
+   Start at  14:06:36
+   Duration  7.97s (import 43%, transform 36%, tests 21%)
+
+  Transform  transforming modules took 2.73s · 36% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+
