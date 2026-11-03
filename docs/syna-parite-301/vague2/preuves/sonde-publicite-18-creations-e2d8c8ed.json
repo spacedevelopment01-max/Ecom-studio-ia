@@ -1,0 +1,155 @@
+[
+ {
+  "platforms": [
+   "meta_feed"
+  ],
+  "doc": "ad:42ac53cf079d1971042b",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_feed"
+  ],
+  "doc": "ad:83b64ac4d794714a1dd3",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_feed"
+  ],
+  "doc": "ad:8574b65da6c772c225d1",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_feed"
+  ],
+  "doc": "ad:a11f5e0db20224703d98",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_feed"
+  ],
+  "doc": "ad:c33e3cfc5a65f6f2e4ad",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_feed"
+  ],
+  "doc": "ad:e1f52efac68abc32b468",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_story"
+  ],
+  "doc": "ad:26d4b6cd4ec65f04bb8c",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_story"
+  ],
+  "doc": "ad:989512aa239bbf021f08",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_story"
+  ],
+  "doc": "ad:b2fee131ef29c0b23253",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:4789f362de5ad842a3fa",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:50df8f381ab101605fbb",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:5ce807b49d9c220c9a2d",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:6419ecdf1cd36d9f655d",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:6c7a74b91fad5de004fe",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:a58a44cfc0aa267b5f12",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:bc03804847fa6ec6f880",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:bdc86645df8990e67268",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:c0568e071ff1c60b63a8",
+  "status": 422,
+  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+ }
+]

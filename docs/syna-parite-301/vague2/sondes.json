@@ -1,0 +1,14 @@
+{
+  "theme.exact-edit": "titre exact : carte gratuite ✓ · couleur du titre, couleur principale, texte du bouton, image : devis seulement, aucune action — Boutique natif : couleur du titre et couleur de la section gratuites (section_colors)",
+  "theme.undo": "« Annule la dernière retouche du site » : devis seulement, aucune action — Boutique natif : retour gratuit à la version précédente",
+  "native.sections": "masquer / supprimer / ajouter une section : devis seulement, aucune action — Boutique natif : ajout gratuit (add_section) ; masquer / supprimer non compris par la phrase",
+  "native.pages": "ajouter une page : devis seulement, aucune action",
+  "theme.select": "« Choisis le thème Rive » : devis seulement, aucune action (l’outil thème passe par la recette, pas par la phrase) — Boutique natif : changement gratuit de direction (Rive)",
+  "seo.update": "titre SEO de l’accueil : mal aiguillé vers la grammaire du titre de section (« Précisez… »), devis seulement, aucune action",
+  "services.booking": "horaires du mardi : devis seulement, aucune action",
+  "appointments.settings": "horaires du mardi : devis seulement, aucune action",
+  "services.update": "renommer une prestation : devis seulement, aucune action",
+  "calendar.update": "déplacer la prochaine publication : devis seulement, aucune action",
+  "catalogue.stock": "« Mets le stock de ce produit à 12 » sans fiche désignée : devis seulement, aucune action",
+  "native.ad-document-edit": "« Agrandis le titre » : refus 422 sur 18/18 créations brutes du moteur ; carte gratuite quand le titre a de la place"
+}
