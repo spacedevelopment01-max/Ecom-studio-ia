@@ -1,0 +1,63 @@
+{
+  "operations": 84,
+  "domains": 25,
+  "catalogue": 68,
+  "complementary": 16,
+  "counts": {
+    "native_status": {
+      "NATIF_OK": 49,
+      "NON_TESTE": 10,
+      "PARTIEL": 15,
+      "BLOQUE_CONNEXION_OU_CONSENTEMENT": 10
+    },
+    "syna_status": {
+      "PARTIEL": 53,
+      "NON_TESTE": 2,
+      "ABSENT": 29
+    },
+    "execution_status": {
+      "PASSE_SCOPE": 47,
+      "NON_TESTE": 2,
+      "NON_RACCORDE": 8,
+      "CORRIGE_NATIF_NON_RACCORDE": 1,
+      "PASSE_NATIF_NON_RACCORDE": 9,
+      "BLOQUE_CONNEXION_OU_CONSENTEMENT": 8,
+      "CORRIGE_MEMO_LOCAL_PAYANT_GARDE": 1,
+      "CORRIGE_LOCAL_FALLBACK_BLOQUE": 1,
+      "CORRIGE_CIBLE": 3,
+      "CORRIGE_GARDE_SCOPE": 1,
+      "BLOQUE_GARDE_FINANCIERE": 2,
+      "CORRIGE_LOCAL_REGLES_SEULES": 1
+    }
+  },
+  "notFullParity": true,
+  "commonFinalSource": "e2d8c8ed91fbb0d20cad93e3db1470e1045f5654",
+  "targetedFinalTests": 204,
+  "targetedFinalSuites": 17,
+  "types": "PASS0",
+  "mandatoryFreeConfirmationUnchanged": true,
+  "commonFinalTree": "05d7662011c215adef50f948cd10c51a944e6892",
+  "ci": {
+    "run": 41613393869,
+    "status": "success",
+    "testsPassed": 5302,
+    "existingSkipped": 31,
+    "nativeStepsPassed": 69,
+    "mandatoryFreeConfirmation": "success"
+  },
+  "commonCases": 16,
+  "interactiveCases": 14,
+  "historicalReadOnlyCases": 2,
+  "screenshots": 75,
+  "nativePngExports": 4,
+  "traces": 12,
+  "individualFinalReplayOperations": [
+    "native.ad-document-edit",
+    "prompts.list",
+    "properties.update",
+    "menu.update",
+    "projects.update",
+    "context.selection-revalidated"
+  ],
+  "noAutomaticPerOperationPromotion": true
+}

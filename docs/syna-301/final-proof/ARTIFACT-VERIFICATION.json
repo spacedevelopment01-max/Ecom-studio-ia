@@ -1,0 +1,18 @@
+{
+  "sourceCommit": "e2d8c8ed91fbb0d20cad93e3db1470e1045f5654",
+  "sourceTree": "05d7662011c215adef50f948cd10c51a944e6892",
+  "status": "PASS",
+  "artifactsVerified": 91,
+  "counts": {
+    "screenshot": 75,
+    "native_export": 4,
+    "trace": 12
+  },
+  "cleanup": {
+    "runtimePidsInWorktree": [],
+    "temporaryHarnessFilesRemoved": true,
+    "syntheticPromptsDirGone": true,
+    "syntheticContentDirGone": true,
+    "cleanupMethod": "Post-run removal of the two exact synthetic temporary directories recorded by the harnesses; proof artifacts preserved."
+  }
+}

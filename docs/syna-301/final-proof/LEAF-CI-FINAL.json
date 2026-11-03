@@ -1,0 +1,173 @@
+[
+  {
+    "pr": 339,
+    "head": "00c5bdf66627980aa0a86559c3295aac0986e447",
+    "base": "fcc2a8818395ce9e97a4a1f3af0cbbc3e8aa1948",
+    "draft": true,
+    "merged": false,
+    "runs": [
+      {
+        "id": 41611129120,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 994,
+        "jobs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41611129120/jobs",
+        "logs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41611129120/logs",
+        "workflow_id": 373581696
+      }
+    ]
+  },
+  {
+    "pr": 340,
+    "head": "7857d94448b52f9d8aaa8225848285705a3ae813",
+    "base": "fcc2a8818395ce9e97a4a1f3af0cbbc3e8aa1948",
+    "draft": true,
+    "merged": false,
+    "runs": [
+      {
+        "id": 41568263390,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 983,
+        "jobs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41568263390/jobs",
+        "logs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41568263390/logs",
+        "workflow_id": 373581696
+      }
+    ]
+  },
+  {
+    "pr": 341,
+    "head": "e221851f924c4c85090942b2948d92d810b5c6bf",
+    "base": "fcc2a8818395ce9e97a4a1f3af0cbbc3e8aa1948",
+    "draft": true,
+    "merged": false,
+    "runs": [
+      {
+        "id": 41568616540,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 984,
+        "jobs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41568616540/jobs",
+        "logs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41568616540/logs",
+        "workflow_id": 373581696
+      }
+    ]
+  },
+  {
+    "pr": 342,
+    "head": "4268fdc184b04d3213352d3d638737b8a80c4a6d",
+    "base": "00c5bdf66627980aa0a86559c3295aac0986e447",
+    "draft": true,
+    "merged": false,
+    "runs": [
+      {
+        "id": 41611172976,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 995,
+        "jobs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41611172976/jobs",
+        "logs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41611172976/logs",
+        "workflow_id": 373581696
+      }
+    ]
+  },
+  {
+    "pr": 343,
+    "head": "45eea99c1ec4040c40d1d30f37970c997c8e9513",
+    "base": "fcc2a8818395ce9e97a4a1f3af0cbbc3e8aa1948",
+    "draft": true,
+    "merged": false,
+    "runs": [
+      {
+        "id": 41568872931,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 986,
+        "jobs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41568872931/jobs",
+        "logs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41568872931/logs",
+        "workflow_id": 373581696
+      }
+    ]
+  },
+  {
+    "pr": 344,
+    "head": "57af974221c0c7e9354e629b76cf9c44240542dc",
+    "base": "fcc2a8818395ce9e97a4a1f3af0cbbc3e8aa1948",
+    "draft": true,
+    "merged": false,
+    "runs": [
+      {
+        "id": 41568998729,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 987,
+        "jobs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41568998729/jobs",
+        "logs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41568998729/logs",
+        "workflow_id": 373581696
+      }
+    ]
+  },
+  {
+    "pr": 345,
+    "head": "4055d6aa35d6dff3444c1cbf388efbc8ace0972f",
+    "base": "fcc2a8818395ce9e97a4a1f3af0cbbc3e8aa1948",
+    "draft": true,
+    "merged": false,
+    "runs": [
+      {
+        "id": 41569558407,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 988,
+        "jobs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41569558407/jobs",
+        "logs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41569558407/logs",
+        "workflow_id": 373581696
+      }
+    ]
+  },
+  {
+    "pr": 346,
+    "head": "45529d3b2250ef22c55a5ecc6cf28b555748dd00",
+    "base": "fcc2a8818395ce9e97a4a1f3af0cbbc3e8aa1948",
+    "draft": true,
+    "merged": false,
+    "runs": [
+      {
+        "id": 41569761802,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 989,
+        "jobs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41569761802/jobs",
+        "logs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41569761802/logs",
+        "workflow_id": 373581696
+      }
+    ]
+  },
+  {
+    "pr": 347,
+    "head": "5287f2e3ea6e014189571b9a304e97bd3ba24bc1",
+    "base": "4055d6aa35d6dff3444c1cbf388efbc8ace0972f",
+    "draft": true,
+    "merged": false,
+    "runs": [
+      {
+        "id": 41611909903,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 996,
+        "jobs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41611909903/jobs",
+        "logs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41611909903/logs",
+        "workflow_id": 373581696
+      }
+    ]
+  }
+]
