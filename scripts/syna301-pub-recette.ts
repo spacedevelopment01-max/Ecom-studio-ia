@@ -213,8 +213,9 @@ try {
           const resume = panel.getByRole("button", { name: /^Reprendre le repère sauvegardé/ });
           if (await resume.isVisible({ timeout: 5000 }).catch(() => false)) await resume.click();
           const use = panel.getByRole("button", { name: "Utiliser ce titre enregistré", exact: true });
-          await use.waitFor({ timeout: 15000 });
-          await use.click(); await use.waitFor({ state: "detached" }).catch(() => {});
+          // Le bouton n'apparaît que si la désignation affichée diffère du repère sauvegardé (sinon elle est déjà valide).
+          if (await use.isVisible({ timeout: 8000 }).catch(() => false)) { await use.click(); await use.waitFor({ state: "detached" }).catch(() => {}); }
+          await panel.getByText(/Titre de création désigné/).first().waitFor({ timeout: 15000 });
           await shot("4b-repere-repris");
           await propose();
           await page.waitForTimeout(WAIT);
