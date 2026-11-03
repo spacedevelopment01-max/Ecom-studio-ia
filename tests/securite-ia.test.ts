@@ -129,9 +129,20 @@ describe("sécurité de l'IA", async () => {
       routeUser.projectId = pid;
       const { POST } = await import("@/app/api/projects/[id]/brand/social/route");
       const res = await fr(() => POST(new Request("http://studio.test/api/projects/x/brand/social", { method: "POST", body: JSON.stringify({ voice: true }), headers: { "content-type": "application/json" } }), { params: Promise.resolve({ id: pid }) }));
-      // Sans piste de logo choisie, le kit lui-même est refusé (409) ; la ligne éditoriale, elle, est refaite localement.
-      expect([200, 409]).toContain(res.status);
-      const { loadProject } = await import("@/lib/projects");
+      // Un refus ne doit plus modifier silencieusement la marque avant de répondre409.
+      expect(res.status).toBe(409);
+      const { loadProject, saveBrand } = await import("@/lib/projects");
+      expect(loadProject(pid).brand?.social).toBeUndefined();
+      expect(sent).toHaveLength(0);
+      // Avec une piste native acquise, le même compte sans forfait conserve le kit et la ligne locale gratuits.
+      const { saveAsset } = await import("@/lib/library");
+      const sharp = (await import("sharp")).default;
+      const route = { key:"typo" as const, name:"Piste fictive acquise", why:"Typographie", source:"local", markKind:"letter", mark:null, heading:"Inter", headingWeight:600, body:"Inter", case:"upper", tracking:0, composition:"wordmark", notes:[], colors:{ink:"#111111",accent:"#aa3344",ground:"#ffffff",tint:"#eeeeee"} };
+      const a = await saveAsset({userId:u.id,projectId:pid,data:await sharp({create:{width:32,height:32,channels:3,background:"#aa3344"}}).png().toBuffer(),name:"piste-fictive.png",mime:"image/png",role:"logo-proposal",origin:"generated",meta:{route,key:route.key}});
+      const brand = loadProject(pid).brand!;
+      saveBrand(pid,{...brand,logo:{...brand.logo,proposal:route.key,proposalId:a.id}});
+      const allowed = await fr(() => POST(new Request("http://studio.test/api/projects/x/brand/social", {method:"POST",body:JSON.stringify({voice:true}),headers:{"content-type":"application/json"}}), {params:Promise.resolve({id:pid})}));
+      expect(allowed.status).toBe(200);
       expect(loadProject(pid).brand?.social?.generatedBy).toBe("local");
       expect(sent).toHaveLength(0);
       expect(all("SELECT id FROM ai_calls WHERE user_id = ?", u.id)).toHaveLength(0);

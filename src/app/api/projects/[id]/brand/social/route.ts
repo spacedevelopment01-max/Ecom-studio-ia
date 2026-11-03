@@ -3,7 +3,7 @@ import { runForUser } from "@/lib/ai/access";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
 import { loadProject } from "@/lib/projects";
-import { ensureSocialVoice, latestSocialKit, saveSocialKit } from "@/lib/engine/social-kit";
+import { chosenRoute, ensureSocialVoice, latestSocialKit, saveSocialKit } from "@/lib/engine/social-kit";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { json } from "@/lib/db";
 import { L } from "@/lib/i18n-server";
@@ -37,6 +37,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
   if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));
   const b = await body(req, z.object({ voice: z.boolean().optional() }));
+  // Same native kit prerequisite, checked before any optional editorial AI or brand mutation.
+  if (!chosenRoute(p.id)) throw new HttpError(409, L("Choisissez d'abord une piste de logo : le kit en reprend les couleurs et les typographies.", "Choose a logo route first: the kit uses its colors and typefaces."));
   // Opérations exécutées « pour » le client : l'IA n'est utilisée que si son forfait et son budget le permettent
   // (sinon la ligne éditoriale du studio, sans aucun appel).
   const r = await runForUser(user.id, async () => {
