@@ -1,4 +1,5 @@
 "use client";
+import {localEditAllowed} from '@/lib/existing-local-edits';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {hasNativeLocalReceipt} from '@/lib/local-site-confirmation-client';
 import type {useLocalSiteConfirmation} from './use-local-site-confirmation';
@@ -6,8 +7,8 @@ import {Button} from '../ui';
 /** Optional presenter. Encre/Plein cadre may reuse the headless hook with their own markup. */
 export function ConversationLocalSite({view,confirmation,busy,selectionMatches,onResume}:{view:ConversationView;confirmation:ReturnType<typeof useLocalSiteConfirmation>;busy:boolean;selectionMatches:boolean;onResume:()=>void}){
  const s=view.localSite,{controller,state}=confirmation,fresh=view.activeContext?.presentation,context=fresh&&fresh.revision>=(state.context?.revision??0)?fresh:state.context;
- if(view.recovery||(!s&&!state.error&&!context?.needsRevalidation))return null;
- const scope=s?.scope,valid=hasNativeLocalReceipt(view),enabled=view.localSiteExecution?.enabled&&!view.readOnlyReason&&!state.blocked;
+ if(!localEditAllowed(view,'local-site')||(!s&&!state.error&&!context?.needsRevalidation))return null;
+ const scope=s?.scope,valid=hasNativeLocalReceipt(view),enabled=view.localSiteExecution?.enabled&&localEditAllowed(view,'local-site')&&!state.blocked;
  const display=(value:unknown)=>Array.isArray(value)?value.map(id=>`${scope?.labels[String(id)]??id} (${id})`).join(' → '):String(value??'');
  return <section aria-label="Retouche gratuite" className="space-y-3 rounded-xl border border-line p-4 text-sm">
   <p className="font-semibold">Gratuit — 0 €</p>{s&&<p>{s.message}</p>}
