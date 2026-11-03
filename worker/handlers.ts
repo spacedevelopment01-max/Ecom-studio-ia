@@ -106,7 +106,8 @@ export const handlers: Record<string, Handler> = {
     return { outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, origin: o.origin })), stoppedByCostCap: r.stoppedByCostCap,delivery };
   },
   /** Banque de vidéos : plans libres de droits (gratuit) ou plan filmé par l'IA (payant, prix accepté). */
-  "video.bank.stock": async (ctx) => (await import("../src/lib/media/bank-video")).findBankClips(ctx, ctx.payload.projectId, ctx.payload.request),
+  // This native royalty-free bank job never authorizes paid vision, even for old/forged payloads.
+  "video.bank.stock": async (ctx) => withAiDisabled("Native free stock-video search without paid consent", async () => (await import("../src/lib/media/bank-video")).findBankClips(ctx, ctx.payload.projectId, ctx.payload.request)),
   "video.bank.ai": async (ctx) => {
     const r=await(await import("../src/lib/media/bank-video")).createBankClip(ctx,ctx.payload.projectId,ctx.payload.request);
     return {...r,delivery:await videoDelivery(ctx.payload.projectId,r.assetId)};
