@@ -39,6 +39,7 @@ export const CommandSchema = z.discriminatedUnion("action", [
 export type Command = z.infer<typeof CommandSchema>;
 /** Un seul Brief natif pour le brouillon ; après rattachement, il est retiré et relu via stateOf(projectId). */
 export type ConversationState = {
+  localPrompts?:import('./local-prompts').LocalPromptsState;
   localBusinessContentProposal?:import('./local-business-content').LocalBusinessContentProposal;
   localBusinessContent?:import('./local-business-content').LocalBusinessContentPresentation;
   schemaVersion: 1;
@@ -86,6 +87,8 @@ export type ActionCard = {
   href?: string;
 };
 export type ConversationView = {
+  localPromptsRead?:{enabled:true};
+  localPrompts?:import('./local-prompts').LocalPromptsPresentation;
   localFilesExecution?: {enabled:true};
   localFiles?: import('./local-files').LocalFilesPresentation;
   localBusinessContentExecution?:{enabled:true};

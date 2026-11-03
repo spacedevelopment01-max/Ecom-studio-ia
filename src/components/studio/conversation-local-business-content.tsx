@@ -6,7 +6,7 @@ import {Button} from '../ui';
 import {useLang,useT} from '../i18n';
 /**
  * #301 C21 — carte « Modification gratuite du contenu » (contrat #310) : un bien, un plat ou une réalisation désigné,
- * un seul champ (nom ou prix), avant / après, effets natifs annoncés (adresse de la page), « Gratuit — 0 € »,
+ * un seul champ exact (nom, prix, description ou travail réalisé), avant / après, effets natifs annoncés (adresse de la page), « Gratuit — 0 € »,
  * confirmation explicite, reçu relu sur le serveur. Aucune publication, aucun changement de statut.
  */
 const TAB={biens:'biens',plats:'carte',realisations:'realisations'} as const;
@@ -21,7 +21,7 @@ export function ConversationLocalBusinessContent({view,confirmation,busy,selecti
   <p className="font-semibold">{t('Gratuit — 0 €','Free — €0')}</p>
   {s&&<p>{s.message}</p>}
   {noun&&<p className="break-words">{noun} : <strong>{s?.item?.title??(s?.field==='title'?String(s?.diff?.before??''):'')}</strong>{s?.nativeStatus?<span className="text-muted"> · {s.nativeStatus}</span>:null}</p>}
-  {s?.diff&&<dl className="space-y-2 break-words"><dt className="font-semibold">{s.field==='price'?t('Prix','Price'):t('Nom','Name')}</dt><dd className="grid gap-1"><span><span className="text-muted">{t('Avant : ','Before: ')}</span>{value(s.diff.before)}</span><span><span className="text-muted">{t('Après confirmation : ','After confirmation: ')}</span>{value(s.diff.after)}</span></dd>
+  {s?.diff&&<dl className="space-y-2 whitespace-pre-wrap break-words"><dt className="font-semibold">{s.field==='price'?t('Prix','Price'):s.field==='description'?t('Description','Description'):s.field==='work'?t('Travail réalisé','Work performed'):t('Nom','Name')}</dt><dd className="grid gap-1"><span><span className="text-muted">{t('Avant : ','Before: ')}</span>{value(s.diff.before)}</span><span><span className="text-muted">{t('Après confirmation : ','After confirmation: ')}</span>{value(s.diff.after)}</span></dd>
    {(s.nativeEffects??[]).map(e=><div key={e.field}><dt className="font-semibold">{effect(e.field)}</dt><dd className="grid gap-1"><span><span className="text-muted">{t('Avant : ','Before: ')}</span>{e.before}</span><span><span className="text-muted">{t('Après confirmation : ','After confirmation: ')}</span>{e.after}</span></dd></div>)}
   </dl>}
   {s?.state==='proposed'&&enabled&&<>

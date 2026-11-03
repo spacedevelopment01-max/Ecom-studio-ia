@@ -8,13 +8,13 @@ import {activeContextEnabled} from './active-context';
 import {checkedContextPin,type ContextPin} from './context-session';
 import type {ConversationRow,ConversationState} from './contract';
 type Type='biens'|'plats'|'realisations';
-type Change={type:Type;field:'title'|'price';value:string|number};
+type Change={type:Type;field:'title'|'price'|'description'|'work';value:string|number};
 export type LocalBusinessContentProposal={id:string;pin:ContextPin;type:Type;itemId:string;version:string;nativeStatus:string|null;fingerprint:string;expectedFingerprint:string;change:Change;diff:{before:string|number|null;after:string|number};nativeEffects?:{field:string;before:string;after:string}[];expiresAt:number};
-export type LocalBusinessContentPresentation={schema:'syna-local-business-content-1';state:'proposed'|'applied'|'ambiguous'|'error';message:string;financialConsent:false;costEur:0;providerCalls:0;confirmationRequired:boolean;actionsExecuted:boolean;proposalId?:string;nativeStatus?:string|null;field?:'title'|'price';diff?:LocalBusinessContentProposal['diff'];nativeEffects?:{field:string;before:string;after:string}[];target?:{type:Type;itemId:string;version:string};item?:{id:string;type:Type;version:string;title:string;fingerprint:string};receiptId?:string;publication:false};
+export type LocalBusinessContentPresentation={schema:'syna-local-business-content-1';state:'proposed'|'applied'|'ambiguous'|'error';message:string;financialConsent:false;costEur:0;providerCalls:0;confirmationRequired:boolean;actionsExecuted:boolean;proposalId?:string;nativeStatus?:string|null;field?:'title'|'price'|'description'|'work';diff?:LocalBusinessContentProposal['diff'];nativeEffects?:{field:string;before:string;after:string}[];target?:{type:Type;itemId:string;version:string};item?:{id:string;type:Type;version:string;title:string;fingerprint:string};receiptId?:string;publication:false};
 const present=(state:LocalBusinessContentPresentation['state'],message:string,extra:Partial<LocalBusinessContentPresentation>={}):LocalBusinessContentPresentation=>({schema:'syna-local-business-content-1',state,message,financialConsent:false,costEur:0,providerCalls:0,confirmationRequired:false,actionsExecuted:false,publication:false,...extra});
 const plain=(s:string)=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 export const localBusinessContentEnabled=()=>activeContextEnabled()&&process.env.STUDIO_CONVERSATION_BUSINESS_CONTENT==='1';
-export const localBusinessContentCandidate=(text:string)=>/^(?:renomme\s+(?:cette|ce|la|le)\s+(?:realisation|bien|plat)\b|(?:modifie|change)\s+le\s+prix\s+(?:de\s+ce|du)\s+plat\b)/.test(plain(text.trim()));
+export const localBusinessContentCandidate=(text:string)=>/^(?:renomme\s+(?:cette|ce|la|le)\s+(?:realisation|bien|plat)\b|(?:modifie|change)\s+le\s+prix\s+(?:de\s+ce|du)\s+plat\b|remplace\s+(?:la\s+description|le\s+travail\s+realise)\b)/.test(plain(text.trim()));
 const fp=(item:ContentItem)=>stableHash('syna-business-content-native-1',item);
 // publication:false signifie aucun appel de publication, pas une garantie d’absence d’effet sur un contenu déjà visible.
 const visibility=(status:string|null)=>['published','sold','rented'].includes(status??'')?' Ce contenu est déjà visible (état « '+status+' »). La modification native peut être reprise par les aperçus, exports ou affichages connectés qui lisent ces contenus. Vérifiez la version en ligne.':'';
@@ -22,15 +22,17 @@ function semantic(item:ContentItem){const data={...(item.data as Record<string,u
 const resultFp=(item:ContentItem)=>stableHash('syna-business-content-result-1',semantic(item));
 function fail(message:string):never{throw new HttpError(422,message,'conversation_business_content_ambiguous');}
 function parse(text:string):Change{
+ const exact=/^Remplace (la description de (?:ce bien|ce plat|cette réalisation)|le travail réalisé de cette réalisation) par (?:«([\s\S]*)»|“([\s\S]*)”|"([\s\S]*)")\s*[.!]?$/i.exec(text.trim());
+ if(exact){const noun=plain(exact[1]);if(noun==='la description de cette realisation')fail('Précisez le champ : Remplace le travail réalisé de cette réalisation par « texte exact ». Le résumé est distinct.');const type:Type=noun.endsWith('bien')?'biens':noun.endsWith('plat')?'plats':'realisations',value=exact[2]??exact[3]??exact[4],max=type==='biens'?6000:type==='plats'?400:2000;if(!value.trim()||value.length>max)fail(`Donnez un texte exact non vide de ${max} caractères maximum, sans troncature.`);return{type,field:type==='realisations'?'work':'description',value};}
  const rename=/^Renomme (cette réalisation|ce bien|ce plat|la réalisation|le bien|le plat) en\s+[«“"]([^\r\n]{1,120})[»”"]\s*[.!]?$/i.exec(text.trim());
  if(rename){const noun=plain(rename[1]),value=rename[2].trim();if(!value)fail('Donnez un nom exact non vide.');return{type:noun.endsWith('realisation')?'realisations':noun.endsWith('bien')?'biens':'plats',field:'title',value};}
  const price=/^(?:Modifie|Change) le prix (?:de ce|du) plat à (\d{1,6})(?:,(\d{1,2}))?\s*(?:€|EUR)\s*[.!]?$/i.exec(text.trim());
  if(price){const cents=BigInt(price[1])*100n+BigInt((price[2]??'').padEnd(2,'0'));if(cents>10000000n)fail('Prix hors des limites natives du plat.');return{type:'plats',field:'price',value:Number(cents)/100};}
- return fail('Précisez : Renomme cette réalisation / ce bien / ce plat en « nom exact », ou Modifie le prix de ce plat à 18,50 €. Aucun changement libre, statut ou publication.');
+ return fail('Précisez : Renomme cette réalisation / ce bien / ce plat en « nom exact », ou Modifie le prix de ce plat à 18,50 €. Ou Remplace la description de ce bien / ce plat par « texte exact », ou Remplace le travail réalisé de cette réalisation par « texte exact ». Aucun changement libre, statut ou publication.');
 }
 function selected(c:ConversationRow,pinned?:ContextPin){const pin=checkedContextPin(c,pinned),target=pin?.selection.target;if(!pin||target?.kind!=='content-item')fail('Désignez le contenu métier exact dans son espace natif.');return{pin,target,item:adapter(target.type).get(c.project_id!,target.itemId)};}
-function field(item:ContentItem,c:Change){return c.field==='title'?item.title:(item.data as {price:number|null}).price;}
-function patch(c:Change):Record<string,unknown>{return c.field==='price'?{price:c.value}:c.type==='plats'?{name:c.value}:{title:c.value};}
+function field(item:ContentItem,c:Change){if(c.field==='title')return item.title;const data=item.data as Record<string,unknown>;return (c.type==='biens'?(data.data as Record<string,unknown>):data)[c.field] as string|number|null;}
+function patch(c:Change):Record<string,unknown>{if(c.field==='description'||c.field==='work')return{[c.field]:c.value};return c.field==='price'?{price:c.value}:c.type==='plats'?{name:c.value}:{title:c.value};}
 class PreviewRollback{constructor(readonly after:ContentItem){}}
 function preview(pid:string,item:ContentItem,c:Change){try{return tx(()=>{const after=updateContent(pid,c.type,item.id,patch(c),item.version);throw new PreviewRollback(after);});}catch(e){if(e instanceof PreviewRollback)return e.after;throw e;}}
 export function proposeLocalBusinessContent(user:User,c:ConversationRow,m:ConversationState,text:string):LocalBusinessContentPresentation{

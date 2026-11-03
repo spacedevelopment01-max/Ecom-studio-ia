@@ -238,6 +238,7 @@ export function AdCreatives() {
     docKey: string;
     f: (typeof FORMAT_OPTIONS)[number];
     image: string;
+    version:number;operationId:string;
   } | null>(null);
   const reformat = async (
     docKey: string,
@@ -245,7 +246,7 @@ export function AdCreatives() {
   ) => {
     setDerive(docKey);
     try {
-      const r = await api<{ preview: { image: string } }>(
+      const r = await api<{version:number; preview: { image: string } }>(
         `/api/projects/${id}/ads/docs/${encodeURIComponent(docKey)}`,
         {
           body: {
@@ -255,7 +256,7 @@ export function AdCreatives() {
           },
         },
       );
-      setPreview({ docKey, f, image: r.preview.image });
+      setPreview({ docKey, f, image: r.preview.image,version:r.version,operationId:crypto.randomUUID() });
     } catch (e) {
       toast("bad", (e as Error).message);
     } finally {
@@ -270,7 +271,7 @@ export function AdCreatives() {
         `/api/projects/${id}/ads/docs/${encodeURIComponent(preview.docKey)}`,
         {
           body: {
-            action: "reflow",
+            action: "reflow",expectedVersion:preview.version,operationId:preview.operationId,
             platform: preview.f.platform,
             aspect: preview.f.aspect,
           },

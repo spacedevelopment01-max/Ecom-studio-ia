@@ -68,7 +68,7 @@ export type PosterInput = {
 
 /** Compositions et traitements des dernières affiches du projet (la plus récente d'abord). */
 export function recentPosterLooks(projectId: string, limit = 10): { layout: string; treatment: string | null; logo: string | null; scheme: string | null }[] {
-  const rows = all<{ doc_json: string }>("SELECT doc_json FROM ad_documents d WHERE project_id = ? AND doc_key LIKE 'post:%' AND version = (SELECT MAX(version) FROM ad_documents x WHERE x.doc_key = d.doc_key) ORDER BY created_at DESC LIMIT ?", projectId, limit);
+  const rows = all<{ doc_json: string }>("SELECT doc_json FROM ad_documents d WHERE project_id = ? AND doc_key LIKE 'post:%' AND version = (SELECT MAX(version) FROM ad_documents x WHERE x.project_id = d.project_id AND x.doc_key = d.doc_key) ORDER BY created_at DESC LIMIT ?", projectId, limit);
   return rows.map((r) => json<{ meta?: { recipe?: { layout?: string; variant?: { treatment?: string; logo?: string; scheme?: string } } } }>(r.doc_json, {})).map((d) => ({ layout: d.meta?.recipe?.layout ?? "", treatment: d.meta?.recipe?.variant?.treatment ?? null, logo: d.meta?.recipe?.variant?.logo ?? null, scheme: d.meta?.recipe?.variant?.scheme ?? null }));
 }
 

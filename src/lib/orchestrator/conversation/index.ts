@@ -1,3 +1,4 @@
+import {localPromptsEnabled,localPromptsCandidate,listLocalPrompts,localPromptsView} from './local-prompts';
 import {localFilesEnabled,localFilesCandidate,proposeLocalFiles,confirmLocalFiles} from './local-files';
 import {localBusinessContentEnabled,localBusinessContentCandidate,proposeLocalBusinessContent,confirmLocalBusinessContent} from './local-business-content';
 import {localRequestsCandidate,proposeLocalRequests,confirmLocalRequest,localRequestsView} from './local-site-requests';
@@ -65,6 +66,9 @@ export function conversationView(user: User, cid: string, before?: number,includ
     ...(c.project_id&&localFilesEnabled()?{localFilesExecution:{enabled:true as const}}:{}),
     ...(m.localBusinessContent?{localBusinessContent:m.localBusinessContent}:{}),
     ...(c.project_id&&localBusinessContentEnabled()?{localBusinessContentExecution:{enabled:true as const}}:{}),
+    // Conserver l'historique lisible quand la fiche est verrouillée, sans appeler ni exposer le lecteur protégé.
+    ...(m.localPrompts&&readOnlyReason===null&&localPromptsEnabled()?{localPrompts:localPromptsView(user,c,m.localPrompts)}:{}),
+    ...(c.project_id&&readOnlyReason===null&&localPromptsEnabled()?{localPromptsRead:{enabled:true as const}}:{}),
     ...(m.localRequests?{localRequests:localRequestsView(user,c,m.localRequests)}:{}),
     ...(c.project_id&&siteRequestsEnabled()?{localRequestsExecution:{enabled:true as const}}:{}),
     ...(m.localSite?{localSite:m.localSite}:{}),
@@ -168,8 +172,10 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
   // Propriété et reprise contrôlées AVANT même un classificateur simulé ; recontrôle atomique après l'await.
   const initial=ownedConversation(user, cid, true);
   if(isExistingProjectRead(initial))return submitExistingProjectMessage(user,cid,cmd,hash);
+  const promptsCommand=cmd.action==='message'&&localPromptsCandidate(cmd.text);
   if(cmd.action==='confirm-site-request'&&!siteRequestsEnabled())throw new HttpError(404,'Demandes reçues avec SYNA indisponibles.');
   if(initial.project_id)requirePlan(user,initial.project_id);
+  if(promptsCommand&&!localPromptsEnabled())throw new HttpError(404,'Lecture de la bibliothèque de prompts avec SYNA indisponible.');
   const received = one<{request_hash:string;response_json:string}>("SELECT request_hash,response_json FROM agent_conversation_turns WHERE conversation_id=? AND request_id=?", cid, cmd.requestId);
   if (received) {
     if (received.request_hash !== hash) throw new HttpError(409, L("Cet identifiant correspond à une autre demande.", "This identifier belongs to another request."), "conversation_idempotency_conflict");
@@ -183,7 +189,7 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
   const requestCommand=cmd.action==='message'&&localRequestsCandidate(cmd.text);
   const localCommand=cmd.action==='message'&&localSiteCandidate(cmd.text);
   const businessCommand=cmd.action==='message'&&localBusinessContentCandidate(cmd.text);
-  const intent = cmd.action === "message" && !localCommand && !fileCommand && !businessCommand && !requestCommand && !intelligenceEnabled() ? await understand({ text: cmd.text }, { aiActive: !!tests.classify, classify: tests.classify }) : null;
+  const intent = cmd.action === "message" && !localCommand && !fileCommand && !businessCommand && !requestCommand && !promptsCommand && !intelligenceEnabled() ? await understand({ text: cmd.text }, { aiActive: !!tests.classify, classify: tests.classify }) : null;
   return tx(() => {
     const c = ownedConversation(user, cid);
     const prior = one<{ request_hash: string; response_json: string }>("SELECT request_hash,response_json FROM agent_conversation_turns WHERE conversation_id=? AND request_id=?", cid, cmd.requestId);
@@ -204,7 +210,10 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
       m.activeContextTab=cmd.context.tab;
       if(cmd.context.target||!m.activeContext?.target){m.activeContext=resolved.selection;m.activeContextReference=stableHash('conversation-active-context-1',resolved);m.activeContextIdentity=resolved.canonical.identity;}
     }
-    if(fileCommand||cmd.action==='confirm-files'){
+    if(promptsCommand){
+      m.localPrompts=listLocalPrompts(user,c,(cmd as Extract<Command,{action:'message'}>).text);
+      message=m.localPrompts.message;
+    }else if(fileCommand||cmd.action==='confirm-files'){
       const active={...c,state_json:JSON.stringify(m)};
       m.localFiles=cmd.action==='confirm-files'?confirmLocalFiles(user,active,m,cmd.proposalId,cmd.requestId):proposeLocalFiles(user,active,m,(cmd as Extract<Command,{action:'message'}>).text);
       message=m.localFiles.message;
@@ -344,6 +353,7 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
     }
     // Relevé figé AVANT le devis/appel : les réservations du futur job ne périment pas leur propre contexte.
     if(cmd.action==='message'&&studioKnowledgeEnabled())m.studioObservation=captureStudioObservation(c);
+    if(!promptsCommand)delete m.localPrompts;
     if(!businessCommand&&cmd.action!=='confirm-business-content'){delete m.localBusinessContent;delete m.localBusinessContentProposal;}
     if(!localCommand&&cmd.action!=='confirm-local')delete m.localSite;
     if(!fileCommand&&cmd.action!=='confirm-files'){delete m.localFiles;delete m.localFilesProposal;}
@@ -370,6 +380,6 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
 /** Une commande locale candidate ne peut jamais devenir un appel fournisseur implicite. */
 export async function submitConversation(user:User,cid:string,raw:unknown,tests:TestDependencies={}):Promise<ConversationView>{
  const parsed=CommandSchema.safeParse(raw),cmd=parsed.success?parsed.data:null;
- const local=cmd?.action==='confirm-local'||cmd?.action==='confirm-site-request'||cmd?.action==='confirm-files'||cmd?.action==='confirm-business-content'||cmd?.action==='message'&&(localRequestsCandidate(cmd.text)||localSiteCandidate(cmd.text)||localFilesCandidate(cmd.text)||localBusinessContentCandidate(cmd.text));
+ const local=cmd?.action==='confirm-local'||cmd?.action==='confirm-site-request'||cmd?.action==='confirm-files'||cmd?.action==='confirm-business-content'||cmd?.action==='message'&&(localPromptsCandidate(cmd.text)||localRequestsCandidate(cmd.text)||localSiteCandidate(cmd.text)||localFilesCandidate(cmd.text)||localBusinessContentCandidate(cmd.text));
  return local?withAiDisabled('B1 : retouche gratuite déterministe, aucun devis IA',()=>submitConversationImpl(user,cid,raw,tests)):submitConversationImpl(user,cid,raw,tests);
 }
