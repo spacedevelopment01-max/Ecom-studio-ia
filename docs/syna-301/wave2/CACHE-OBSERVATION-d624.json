@@ -1,0 +1,39 @@
+{
+  "sourceCommit": "d6247c6e24c0ab2ebaa5439514d09a48edf2a359",
+  "runtime": {
+    "commit": "d6247c6e24c0ab2ebaa5439514d09a48edf2a359",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "observationalHarnessExit": 0,
+  "productDraftRecovery": "FAILED in one controlled two-tab scenario",
+  "cacheBeforeHumanExists": true,
+  "cacheBaseBeforeHuman": 3,
+  "cacheAfterHumanBefore409": [],
+  "cacheAfter409": [],
+  "memoryTextAfter409": "BROUILLON LOCAL EXACT NON SAUVEGARDÉ",
+  "realReloadPerformed": true,
+  "recoveryOffered": false,
+  "textAfterReload": "Texte exact é & !\navec  deux espaces",
+  "draftRecovered": false,
+  "cacheAfterReload": [],
+  "headAfterReload": 4,
+  "humanServerStatePreserved": true,
+  "serverPNGUnchangedAcrossReload": true,
+  "canvasHashes": {
+    "encre-1440-after-reload-canvas.png": "1b8738cfd38864ff690509fd21e4e9d50a946a7a13e485a217f482805ce47be5",
+    "encre-1440-draft-before-human-canvas.png": "6440fcc8f6d19154db9bbe415f0bdcab42fe9b11157006b04aeee621efd079da",
+    "encre-1440-draft-after409-canvas.png": "6440fcc8f6d19154db9bbe415f0bdcab42fe9b11157006b04aeee621efd079da"
+  },
+  "sdkHttp": 0,
+  "actualCounters": {
+    "ai_calls": 0,
+    "jobs": 0,
+    "usage_events": 0,
+    "ai_reservations": 0
+  },
+  "productionEdits": 0,
+  "scope": "One Encre desktop reproduction only; loss of native recovery shown, not a claim that every external copy/trace of that text is irrecoverable."
+}

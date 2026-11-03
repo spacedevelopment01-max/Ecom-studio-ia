@@ -1,0 +1,515 @@
+{
+  "schema": 1,
+  "sourceCommit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+  "sourceTree": "1d303664973b784b00c3edcddb17652cc5a532d3",
+  "recipe": "scripts/verify-agent211-knowledge-ui.ts via Claude syna-parite-shell.ts",
+  "recipeBlob": "e56e2ea21c0351751e3d78e6d0f71685926346f5",
+  "success": true,
+  "modes": [
+    {
+      "mode": "encre",
+      "runtime": {
+        "commit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "cases": [
+        {
+          "scene": "produit-multi",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "captures": [
+            "produit-multi-etat-natif.png",
+            "produit-multi-question-exacte.png",
+            "produit-multi-devis-separe.png",
+            "produit-multi-reponse-sourcee.png",
+            "produit-multi-mode-original-raccorde-ferme.png",
+            "produit-multi-operation-absente-honnete.png",
+            "produit-multi-meme-conversation-autre-onglet.png"
+          ],
+          "sourceStateDeliveredToSdk": true,
+          "providerUsabilityNotClaimed": true,
+          "noAutomaticBusinessAction": true,
+          "foreign": 404,
+          "sameConversationAcrossTabs": true,
+          "refreshWithoutProviderCall": true,
+          "simulatedCalls": 1,
+          "simulatedMicro": 7912,
+          "realProviderCalls": 0,
+          "realCostEur": 0,
+          "jsErrors": [],
+          "video": "knowledge-videos/produit-multi.webm"
+        },
+        {
+          "scene": "service",
+          "viewport": {
+            "width": 390,
+            "height": 900
+          },
+          "captures": [
+            "service-etat-natif.png",
+            "service-echec-historique-observe.png",
+            "service-question-exacte.png",
+            "service-devis-separe.png",
+            "service-reponse-sourcee.png",
+            "service-mode-original-raccorde-ferme.png",
+            "service-operation-absente-honnete.png",
+            "service-meme-conversation-autre-onglet.png"
+          ],
+          "sourceStateDeliveredToSdk": true,
+          "providerUsabilityNotClaimed": true,
+          "noAutomaticBusinessAction": true,
+          "foreign": 404,
+          "sameConversationAcrossTabs": true,
+          "refreshWithoutProviderCall": true,
+          "simulatedCalls": 1,
+          "simulatedMicro": 7912,
+          "realProviderCalls": 0,
+          "realCostEur": 0,
+          "jsErrors": [],
+          "video": "knowledge-videos/service.webm"
+        }
+      ],
+      "originalRecipePass": true,
+      "baseline": {
+        "providerHttpCalls": 3,
+        "videoClipCalls": 0,
+        "videoVoiceCalls": 0,
+        "textHttpCalls": 3,
+        "imageHttpCalls": 0,
+        "tokenCounts": 3,
+        "calls": 3,
+        "usage": 3,
+        "simulatedMicro": 23736
+      },
+      "entireHarness": {
+        "providerHttpCalls": 5,
+        "videoClipCalls": 0,
+        "videoVoiceCalls": 0,
+        "textHttpCalls": 5,
+        "imageHttpCalls": 0,
+        "tokenCounts": 5,
+        "calls": 5,
+        "usage": 5,
+        "simulatedMicro": 39560
+      },
+      "consentedKnowledgeReplyCalls": 2,
+      "consentedKnowledgeReplySimulatedMicro": 15824,
+      "nativeGuideAdditionalCalls": 0,
+      "reload": {
+        "runtime": {
+          "commit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+          "commitOrigin": "build",
+          "mode": "production",
+          "tree": "clean",
+          "source": "compiled-build"
+        },
+        "mode": "encre",
+        "cases": [
+          {
+            "scene": "produit-multi",
+            "projectId": "r2sxdxs674qfd2dx",
+            "conversationId": "sd5xdyz57kjazi19",
+            "realPageReload": true,
+            "sameSavedReplySha256": "5cf7d69082bbac5c246495a3e413fb217ee48501101c87f77e5012be8969170d",
+            "guideRefreshedAfterReload": true,
+            "original": {
+              "implementation": "implemented",
+              "availability": "disabled_or_locked",
+              "connectionEnabled": false
+            },
+            "video": {
+              "implementation": "absent_from_syna",
+              "availability": "not_connected_native_screen_only",
+              "connectionEnabled": false
+            },
+            "capture": "knowledge-produit-multi-reload-sans-appel.png",
+            "errors": []
+          },
+          {
+            "scene": "service",
+            "projectId": "xflfuwyjkbcbetl3",
+            "conversationId": "ipip4jh4e83aqk7v",
+            "realPageReload": true,
+            "sameSavedReplySha256": "5909955369fa0e13e1750adbdec5c1c53d97b49f19b8213cd506af727daf844f",
+            "guideRefreshedAfterReload": true,
+            "original": {
+              "implementation": "implemented",
+              "availability": "disabled_or_locked",
+              "connectionEnabled": false
+            },
+            "video": {
+              "implementation": "absent_from_syna",
+              "availability": "not_connected_native_screen_only",
+              "connectionEnabled": false
+            },
+            "capture": "knowledge-service-reload-sans-appel.png",
+            "errors": []
+          }
+        ],
+        "before": {
+          "ai_calls": 5,
+          "jobs": 6,
+          "usage_events": 5,
+          "ai_reservations": 5
+        },
+        "after": {
+          "ai_calls": 5,
+          "jobs": 6,
+          "usage_events": 5,
+          "ai_reservations": 5
+        },
+        "additionalProviderCalls": 0,
+        "additionalJobs": 0,
+        "noWorker": true,
+        "realProviderCalls": 0
+      },
+      "captures": 17
+    },
+    {
+      "mode": "plein",
+      "runtime": {
+        "commit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "cases": [
+        {
+          "scene": "produit-multi",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "captures": [
+            "produit-multi-etat-natif.png",
+            "produit-multi-question-exacte.png",
+            "produit-multi-devis-separe.png",
+            "produit-multi-reponse-sourcee.png",
+            "produit-multi-mode-original-raccorde-ferme.png",
+            "produit-multi-operation-absente-honnete.png",
+            "produit-multi-meme-conversation-autre-onglet.png"
+          ],
+          "sourceStateDeliveredToSdk": true,
+          "providerUsabilityNotClaimed": true,
+          "noAutomaticBusinessAction": true,
+          "foreign": 404,
+          "sameConversationAcrossTabs": true,
+          "refreshWithoutProviderCall": true,
+          "simulatedCalls": 1,
+          "simulatedMicro": 7912,
+          "realProviderCalls": 0,
+          "realCostEur": 0,
+          "jsErrors": [],
+          "video": "knowledge-videos/produit-multi.webm"
+        },
+        {
+          "scene": "service",
+          "viewport": {
+            "width": 390,
+            "height": 900
+          },
+          "captures": [
+            "service-etat-natif.png",
+            "service-echec-historique-observe.png",
+            "service-question-exacte.png",
+            "service-devis-separe.png",
+            "service-reponse-sourcee.png",
+            "service-mode-original-raccorde-ferme.png",
+            "service-operation-absente-honnete.png",
+            "service-meme-conversation-autre-onglet.png"
+          ],
+          "sourceStateDeliveredToSdk": true,
+          "providerUsabilityNotClaimed": true,
+          "noAutomaticBusinessAction": true,
+          "foreign": 404,
+          "sameConversationAcrossTabs": true,
+          "refreshWithoutProviderCall": true,
+          "simulatedCalls": 1,
+          "simulatedMicro": 7912,
+          "realProviderCalls": 0,
+          "realCostEur": 0,
+          "jsErrors": [],
+          "video": "knowledge-videos/service.webm"
+        }
+      ],
+      "originalRecipePass": true,
+      "baseline": {
+        "providerHttpCalls": 3,
+        "videoClipCalls": 0,
+        "videoVoiceCalls": 0,
+        "textHttpCalls": 3,
+        "imageHttpCalls": 0,
+        "tokenCounts": 3,
+        "calls": 3,
+        "usage": 3,
+        "simulatedMicro": 23736
+      },
+      "entireHarness": {
+        "providerHttpCalls": 5,
+        "videoClipCalls": 0,
+        "videoVoiceCalls": 0,
+        "textHttpCalls": 5,
+        "imageHttpCalls": 0,
+        "tokenCounts": 5,
+        "calls": 5,
+        "usage": 5,
+        "simulatedMicro": 39560
+      },
+      "consentedKnowledgeReplyCalls": 2,
+      "consentedKnowledgeReplySimulatedMicro": 15824,
+      "nativeGuideAdditionalCalls": 0,
+      "reload": {
+        "runtime": {
+          "commit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+          "commitOrigin": "build",
+          "mode": "production",
+          "tree": "clean",
+          "source": "compiled-build"
+        },
+        "mode": "plein",
+        "cases": [
+          {
+            "scene": "produit-multi",
+            "projectId": "dp0d98m1fn8ge20g",
+            "conversationId": "0mm0nko95kpao49w",
+            "realPageReload": true,
+            "sameSavedReplySha256": "5cf7d69082bbac5c246495a3e413fb217ee48501101c87f77e5012be8969170d",
+            "guideRefreshedAfterReload": true,
+            "original": {
+              "implementation": "implemented",
+              "availability": "disabled_or_locked",
+              "connectionEnabled": false
+            },
+            "video": {
+              "implementation": "absent_from_syna",
+              "availability": "not_connected_native_screen_only",
+              "connectionEnabled": false
+            },
+            "capture": "knowledge-produit-multi-reload-sans-appel.png",
+            "errors": []
+          },
+          {
+            "scene": "service",
+            "projectId": "xmb39ho9mlqbq1ib",
+            "conversationId": "zijqwrayu2e2jvji",
+            "realPageReload": true,
+            "sameSavedReplySha256": "5909955369fa0e13e1750adbdec5c1c53d97b49f19b8213cd506af727daf844f",
+            "guideRefreshedAfterReload": true,
+            "original": {
+              "implementation": "implemented",
+              "availability": "disabled_or_locked",
+              "connectionEnabled": false
+            },
+            "video": {
+              "implementation": "absent_from_syna",
+              "availability": "not_connected_native_screen_only",
+              "connectionEnabled": false
+            },
+            "capture": "knowledge-service-reload-sans-appel.png",
+            "errors": []
+          }
+        ],
+        "before": {
+          "ai_calls": 5,
+          "jobs": 6,
+          "usage_events": 5,
+          "ai_reservations": 5
+        },
+        "after": {
+          "ai_calls": 5,
+          "jobs": 6,
+          "usage_events": 5,
+          "ai_reservations": 5
+        },
+        "additionalProviderCalls": 0,
+        "additionalJobs": 0,
+        "noWorker": true,
+        "realProviderCalls": 0
+      },
+      "captures": 17
+    }
+  ],
+  "nativeUIScenes": 4,
+  "supplementalReloadChecks": 4,
+  "captureCount": 34,
+  "captures": [
+    {
+      "path": "encre/knowledge-captures/produit-multi-devis-separe.png",
+      "sha256": "c232be7295098ce7d35151743604b860addce98e783d7d75e8625230da0d7b9a"
+    },
+    {
+      "path": "encre/knowledge-captures/produit-multi-etat-natif.png",
+      "sha256": "585694c06fe56e12d18c46d9c25c0cc5a5af099a3aba5dee18f09e9568450f0a"
+    },
+    {
+      "path": "encre/knowledge-captures/produit-multi-meme-conversation-autre-onglet.png",
+      "sha256": "f93237b34c48f3b9f9c39203b84515433f1f29867609ac8310f785ad48265c79"
+    },
+    {
+      "path": "encre/knowledge-captures/produit-multi-mode-original-raccorde-ferme.png",
+      "sha256": "b799f00cdc53818f3d8896af63c2d210f337f1d4410752b1f144dc32010e7657"
+    },
+    {
+      "path": "encre/knowledge-captures/produit-multi-operation-absente-honnete.png",
+      "sha256": "5a02f18e580b3da5fb7ff72a130bcb686e8066120e5383e7af0595b6d623046f"
+    },
+    {
+      "path": "encre/knowledge-captures/produit-multi-question-exacte.png",
+      "sha256": "b4c434c38b750dd80bf262b1ade129e18db0a6291405928838e82f5248f005be"
+    },
+    {
+      "path": "encre/knowledge-captures/produit-multi-reponse-sourcee.png",
+      "sha256": "301afd74b20d11e038a8eb7e74a4c5f6d056c183d897057872de546210d2db69"
+    },
+    {
+      "path": "encre/knowledge-captures/service-devis-separe.png",
+      "sha256": "dbe7acc648ba11d3bf32e66bb35fa7999010c8f3cb4e115e3c763def723a3733"
+    },
+    {
+      "path": "encre/knowledge-captures/service-echec-historique-observe.png",
+      "sha256": "6de0506e9f00a90e39dc06776dab5af7806c17d7b56e59134a9986015da6f142"
+    },
+    {
+      "path": "encre/knowledge-captures/service-etat-natif.png",
+      "sha256": "02739aecfd3c26f864ba0b77b0777f0a9a8ea640053001b3caeda64ba3581442"
+    },
+    {
+      "path": "encre/knowledge-captures/service-meme-conversation-autre-onglet.png",
+      "sha256": "cfecd95de6240740e47b29ef6155a859fb2901e784f9b793920f68818653c996"
+    },
+    {
+      "path": "encre/knowledge-captures/service-mode-original-raccorde-ferme.png",
+      "sha256": "27803fb5db87b190aae943974b8417b34edd26405a166d2e0b618af89387850f"
+    },
+    {
+      "path": "encre/knowledge-captures/service-operation-absente-honnete.png",
+      "sha256": "de3ed4b273fee0bb4c669a54be793b4bc56abcccfa7167aebe743e74ebb98987"
+    },
+    {
+      "path": "encre/knowledge-captures/service-question-exacte.png",
+      "sha256": "5219d9248940f000a61aa463592b300270200a83033239b21f6fdc0faa3a4723"
+    },
+    {
+      "path": "encre/knowledge-captures/service-reponse-sourcee.png",
+      "sha256": "2dc6c65a978410df18608bce4da4e7b88b0c7b0e5f0d31b7afe3a3ffde28cc0f"
+    },
+    {
+      "path": "encre/knowledge-produit-multi-reload-sans-appel.png",
+      "sha256": "67822ba2b23ffa66596cd47af5a8e06fae8fe282a5401a521fb6796129e9835b"
+    },
+    {
+      "path": "encre/knowledge-service-reload-sans-appel.png",
+      "sha256": "f7a39dc655031757c5d0c1ea76cbf894d5210f3139ef1afc95505a754056fd63"
+    },
+    {
+      "path": "plein/knowledge-captures/produit-multi-devis-separe.png",
+      "sha256": "b016004383407f594a7dddc6a41da59f36138017c95504df1f539ad14300422d"
+    },
+    {
+      "path": "plein/knowledge-captures/produit-multi-etat-natif.png",
+      "sha256": "321c9c3fd7833e381af6977517aa449849b1cd9413b1c49c6e48c34b51db3181"
+    },
+    {
+      "path": "plein/knowledge-captures/produit-multi-meme-conversation-autre-onglet.png",
+      "sha256": "7ceff4bd2e5b2334af16845dd66cb173999740881a25740ab48eeecbef5a78c6"
+    },
+    {
+      "path": "plein/knowledge-captures/produit-multi-mode-original-raccorde-ferme.png",
+      "sha256": "8ec0cae39af20e7412b39382aac02cefd3c83996fa3d8db0db8af8afc59826f0"
+    },
+    {
+      "path": "plein/knowledge-captures/produit-multi-operation-absente-honnete.png",
+      "sha256": "3fd762cab318553d48ea883bb4289610ca144ead9fe0bc97d9086831de73ed5b"
+    },
+    {
+      "path": "plein/knowledge-captures/produit-multi-question-exacte.png",
+      "sha256": "71a6bf914aec5e777f627eb8fe0bcf87b1f708c72d18bd44e1a50146a4dac75c"
+    },
+    {
+      "path": "plein/knowledge-captures/produit-multi-reponse-sourcee.png",
+      "sha256": "5e608cb1b1005561baff75f9f61125b3bd0f06ab81342ff6c0223064087711e4"
+    },
+    {
+      "path": "plein/knowledge-captures/service-devis-separe.png",
+      "sha256": "a4ee988bdd544e00fdd20de75979cb7b6f47c4c2a2a8b4571ebc219604b7ba41"
+    },
+    {
+      "path": "plein/knowledge-captures/service-echec-historique-observe.png",
+      "sha256": "c0fab142db865ffd2b3cd67291d58452b83887b5ce213633607b220922226eda"
+    },
+    {
+      "path": "plein/knowledge-captures/service-etat-natif.png",
+      "sha256": "c02f577f279f0dfee1a950b1add4d34b612a28db1c2253c1343ee59c5c4d0b50"
+    },
+    {
+      "path": "plein/knowledge-captures/service-meme-conversation-autre-onglet.png",
+      "sha256": "3e0bdb285e02fe812ecc7fe97a72e5e5861e2eaba716668ca50cbbcd24010d54"
+    },
+    {
+      "path": "plein/knowledge-captures/service-mode-original-raccorde-ferme.png",
+      "sha256": "41b60e324f07e36d08d8339118d251f9914676807f321c1cffe76c1f37b6cc2f"
+    },
+    {
+      "path": "plein/knowledge-captures/service-operation-absente-honnete.png",
+      "sha256": "e5f3ae5c86c74facac3660d3703288375efe7e1ee786452497738f06cf15177b"
+    },
+    {
+      "path": "plein/knowledge-captures/service-question-exacte.png",
+      "sha256": "c864c908f9a84ad87a8e9fc9b6d5464caef0f7cdfa09dd8fdf75d0a0ca8bb614"
+    },
+    {
+      "path": "plein/knowledge-captures/service-reponse-sourcee.png",
+      "sha256": "c7469aa1c7310bfe52673b5289835c8c1572467463921378e4aad7fba500a83b"
+    },
+    {
+      "path": "plein/knowledge-produit-multi-reload-sans-appel.png",
+      "sha256": "deb9005b59e11aa9bde6d2d55815b40d90fec9f9c12a17cc98fae77e9600bcd5"
+    },
+    {
+      "path": "plein/knowledge-service-reload-sans-appel.png",
+      "sha256": "9b766c84ac39c9706cd52769fc606ca1d61fbff541414e50461acfdc1745c19e"
+    }
+  ],
+  "inspectedCaptures": [
+    "encre/knowledge-captures/produit-multi-mode-original-raccorde-ferme.png",
+    "plein/knowledge-captures/service-operation-absente-honnete.png",
+    "plein/knowledge-service-reload-sans-appel.png"
+  ],
+  "accounting": {
+    "baselineSimulatedCalls": 6,
+    "baselineSimulatedMicro": 47472,
+    "explicitQuoteAndConsentRepliesSimulatedCalls": 4,
+    "explicitQuoteAndConsentRepliesSimulatedMicro": 31648,
+    "nativeGuideObservationRefreshNavigationReloadAdditionalCalls": 0,
+    "totalSimulatedCalls": 10,
+    "totalSimulatedMicro": 79120,
+    "realProviderCalls": 0,
+    "realSpendMicro": 0
+  },
+  "strictCases": {
+    "theme.original": "implemented, native_checks_on_action, connectionEnabled false, disabled_or_locked",
+    "videos.plan": "absent_from_syna, connectionEnabled false, not_connected_native_screen_only"
+  },
+  "assertionsRemoved": 0,
+  "timeoutChanges": 0,
+  "flagsOpenedToMakeAbsentOrClosedPass": 0,
+  "applicationEdits": 0,
+  "comprehensionQualityQualified": false,
+  "allStudioParityQualified": false,
+  "scope": "Observed native guide and saved conversation in Encre/Plein; product1440/service390; consented simulated replies; refresh/navigation then supplementary actual page reload on the same synthetic projects without worker/provider. No untested operations execution inferred.",
+  "cleanup": {
+    "at": "2026-11-03T01:09:50.933424+00:00",
+    "remainingServicesOrChromium": [],
+    "browserClosed": true,
+    "syntheticTemporaryDirectoriesRemoved": [
+      "/tmp/ecs-agent-211-6bjtbH",
+      "/tmp/ecs-agent-211-sgqvyZ"
+    ]
+  }
+}

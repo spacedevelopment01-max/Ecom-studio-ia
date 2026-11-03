@@ -1,0 +1,282 @@
+{
+  "sourceCommit": "77a3614e6da9a633f77ccbdd4b79619f3aea92f9",
+  "sourceTree": "f9d83b7e4e0f0c9dc4c49743b005bc6ce32903e4",
+  "runExit": 0,
+  "success": true,
+  "cases": [
+    {
+      "scene": {
+        "mode": "encre",
+        "width": 1440,
+        "type": "biens",
+        "field": "description",
+        "publishedLocalFixture": false
+      },
+      "status": "PASS",
+      "budget": 0,
+      "exactMultilineText": "Une maison fictive avec une pièce claire.\nDeux  espaces conservés, sans promesse.",
+      "onlyRequestedFieldChanged": true,
+      "nativeEditorValueVerified": true,
+      "actualPageReload": true,
+      "receiptPersisted": true,
+      "actualCounters": {
+        "ai_calls": 0,
+        "jobs": 0,
+        "usage_events": 0,
+        "ai_reservations": 0
+      },
+      "sdkHttp": 0,
+      "errors": [],
+      "blockedExternalAttempts": [
+        "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap"
+      ],
+      "ambiguousDescriptionRealisationNoop": false,
+      "localPublishedWarning": null
+    },
+    {
+      "scene": {
+        "mode": "encre",
+        "width": 390,
+        "type": "plats",
+        "field": "description",
+        "publishedLocalFixture": true
+      },
+      "status": "PASS",
+      "budget": 0,
+      "exactMultilineText": "Velouté de légumes du marché.\nDeux  espaces, composition fournie sans promesse.",
+      "onlyRequestedFieldChanged": true,
+      "nativeEditorValueVerified": true,
+      "actualPageReload": true,
+      "receiptPersisted": true,
+      "actualCounters": {
+        "ai_calls": 0,
+        "jobs": 0,
+        "usage_events": 0,
+        "ai_reservations": 0
+      },
+      "sdkHttp": 0,
+      "errors": [],
+      "blockedExternalAttempts": [
+        "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap"
+      ],
+      "ambiguousDescriptionRealisationNoop": false,
+      "localPublishedWarning": "Gratuit — 0 €\n\nVérifiez ce changement exact puis confirmez gratuitement. Aucun appel de publication n’est lancé. Ce contenu est déjà visible (état « published »). La modification native peut être reprise par les aperçus, exports ou affichages connectés qui lisent ces contenus. Vérifiez la version en ligne.\n\nPlat : · published\n\nDescription\nAvant : Description initiale acquise.\nAprès confirmation : Velouté de légumes du marché.\nDeux  espaces, composition fournie sans promesse.\n\nSeul ce champ change, par le même enregistrement que l’écran natif. Aucun appel IA, aucune publication, aucun changement de statut.\n\nConfirmer gratuitement\nAnnuler"
+    },
+    {
+      "scene": {
+        "mode": "plein",
+        "width": 1440,
+        "type": "realisations",
+        "field": "work",
+        "publishedLocalFixture": false
+      },
+      "status": "PASS",
+      "budget": 0,
+      "exactMultilineText": "Pose de rangements selon le plan fourni.\nDeux  espaces et texte exact, sans garantie inventée.",
+      "onlyRequestedFieldChanged": true,
+      "nativeEditorValueVerified": true,
+      "actualPageReload": true,
+      "receiptPersisted": true,
+      "actualCounters": {
+        "ai_calls": 0,
+        "jobs": 0,
+        "usage_events": 0,
+        "ai_reservations": 0
+      },
+      "sdkHttp": 0,
+      "errors": [],
+      "blockedExternalAttempts": [
+        "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap"
+      ],
+      "ambiguousDescriptionRealisationNoop": true,
+      "localPublishedWarning": null
+    },
+    {
+      "scene": {
+        "mode": "plein",
+        "width": 390,
+        "type": "realisations",
+        "field": "work",
+        "publishedLocalFixture": false
+      },
+      "status": "PASS",
+      "budget": 0,
+      "exactMultilineText": "Réglage des portes et nettoyage des surfaces.\nDeux  espaces conservés et aucun délai annoncé.",
+      "onlyRequestedFieldChanged": true,
+      "nativeEditorValueVerified": true,
+      "actualPageReload": true,
+      "receiptPersisted": true,
+      "actualCounters": {
+        "ai_calls": 0,
+        "jobs": 0,
+        "usage_events": 0,
+        "ai_reservations": 0
+      },
+      "sdkHttp": 0,
+      "errors": [],
+      "blockedExternalAttempts": [
+        "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap"
+      ],
+      "ambiguousDescriptionRealisationNoop": false,
+      "localPublishedWarning": null
+    }
+  ],
+  "scope": "4 actual Studio SYNA exact-field journeys; not global parity, not combined with PR333. Published dish is local fictitious fixture only.",
+  "applicationChanges": 0,
+  "realProviderCalls": 0,
+  "realSpend": 0,
+  "visuallyInspected": [
+    "encre-390-plats-avant-apres-card-full.png",
+    "plein-1440-realisations-ambiguite-noop-card.png",
+    "plein-390-realisations-champ-editeur-natif.png"
+  ],
+  "artifacts": [
+    {
+      "file": "encre-1440-biens-avant-accord.png",
+      "bytes": 216951,
+      "sha256": "c4deb78d83396cdadaa7c7dba190715e128d2e6409dcae1ea723f5efa173c954"
+    },
+    {
+      "file": "encre-1440-biens-avant-apres-card-full.png",
+      "bytes": 31568,
+      "sha256": "49d71abb2ace5a7c4c62e8fc56e4250ca41f805a1ebd7c7e623bd99b475efdb3"
+    },
+    {
+      "file": "encre-1440-biens-champ-editeur-natif.png",
+      "bytes": 178727,
+      "sha256": "9ff2419111f5178422a8a3c9c9afb3804c98e96737e378bd3b3611e07325b862"
+    },
+    {
+      "file": "encre-1440-biens-designation.png",
+      "bytes": 197982,
+      "sha256": "3f1cfa3fa06a0de90311c7dabe89520e7cc4766cb1424299130986d5e5fdc9a2"
+    },
+    {
+      "file": "encre-1440-biens-recu-apres-reload.png",
+      "bytes": 27274,
+      "sha256": "0a18b06cbc6a98f70deae6beaee42e4e4c15465c35aa3702d7a924c4aaddb392"
+    },
+    {
+      "file": "encre-1440-biens-recu-card-full.png",
+      "bytes": 27291,
+      "sha256": "200378a92f22adaf38d3858a998faecdbdacb477df018d42bc8126663622af6e"
+    },
+    {
+      "file": "encre-1440-biens-trace.zip",
+      "bytes": 3509568,
+      "sha256": "47e2339b304e9d173fc6a6614301549b1228a9c06dedb500828ccc21a82aac12"
+    },
+    {
+      "file": "encre-390-plats-avant-accord.png",
+      "bytes": 81997,
+      "sha256": "a6af94214df161fdc2b4f4d36de73387f65ce1fd1b3834817ad77ea63b9bc88e"
+    },
+    {
+      "file": "encre-390-plats-avant-apres-card-full.png",
+      "bytes": 42286,
+      "sha256": "e7a8d871ea54de59490b4288599750e87d58f325719c19009ed8164e474d2062"
+    },
+    {
+      "file": "encre-390-plats-champ-editeur-natif.png",
+      "bytes": 75357,
+      "sha256": "4f28981ca24e8bb0daf6dbd2584f6e02d6b9ff9578821f9632997b74ddb40dd8"
+    },
+    {
+      "file": "encre-390-plats-designation.png",
+      "bytes": 63382,
+      "sha256": "5f09fad2c9da860d8fd78d0eeb097705f04ec04f09ef5f03308ac581bf07d85f"
+    },
+    {
+      "file": "encre-390-plats-recu-apres-reload.png",
+      "bytes": 38026,
+      "sha256": "1e881cb4f552d4c3006a7199cb4672e515eac9bc44b6b28e1ac741422b0ae4f2"
+    },
+    {
+      "file": "encre-390-plats-recu-card-full.png",
+      "bytes": 38027,
+      "sha256": "3389ca41ced381e853d5beb9afcca272e6d3bb36e0b0a7fc27442502607499d7"
+    },
+    {
+      "file": "encre-390-plats-trace.zip",
+      "bytes": 2798929,
+      "sha256": "a86115ebc587ad21e192af96ec21fc26bbee5a029110b5501c25f9a3ba06151f"
+    },
+    {
+      "file": "plein-1440-realisations-ambiguite-noop-card.png",
+      "bytes": 9491,
+      "sha256": "e3791bf09eadad111d947baa9cb2d60bc819fabcb33f8296264f0888bdcd0e42"
+    },
+    {
+      "file": "plein-1440-realisations-avant-accord.png",
+      "bytes": 198209,
+      "sha256": "cfd48f62a1255b071ba7b9a81b72ede64f2a3255c44a3f4bf06c47e8fdb4ef90"
+    },
+    {
+      "file": "plein-1440-realisations-avant-apres-card-full.png",
+      "bytes": 34260,
+      "sha256": "829f8abd79e293a74e346f294d95adf2c2adef96077b1bc845a6ce99680e5a9a"
+    },
+    {
+      "file": "plein-1440-realisations-champ-editeur-natif.png",
+      "bytes": 195194,
+      "sha256": "d04842a9061c77d1a9fb27b7af7017d2d2a9f499df8161acbe7cc0399140eeb0"
+    },
+    {
+      "file": "plein-1440-realisations-designation.png",
+      "bytes": 177277,
+      "sha256": "ea2730be4d21a2af3de5aa14bd55b33c9fc319d71b140a954ac5bc2aa968ec04"
+    },
+    {
+      "file": "plein-1440-realisations-recu-apres-reload.png",
+      "bytes": 30652,
+      "sha256": "0a5c76825932bfd7de7ca2789c537acdc1d51a8017ef771e069a96653a2d437a"
+    },
+    {
+      "file": "plein-1440-realisations-recu-card-full.png",
+      "bytes": 30651,
+      "sha256": "540abb3cf26a12c7b7d3800a23abf031c4715a5e102333023751fb13e6348925"
+    },
+    {
+      "file": "plein-1440-realisations-trace.zip",
+      "bytes": 3810770,
+      "sha256": "cc64d7ecf0ba9e7c2d9034d09f060754e5fe70d3bf3e379c9f6a2a31bb1543f6"
+    },
+    {
+      "file": "plein-390-realisations-avant-accord.png",
+      "bytes": 87930,
+      "sha256": "9e666946a75be67545db7f38c864727f5fbaa40350ff00fc2453ef9f169094f0"
+    },
+    {
+      "file": "plein-390-realisations-avant-apres-card-full.png",
+      "bytes": 34876,
+      "sha256": "3de4f38494dce7b066a032832e6d44cc0d85c4587053d5d931284cc3706abc50"
+    },
+    {
+      "file": "plein-390-realisations-champ-editeur-natif.png",
+      "bytes": 71088,
+      "sha256": "bf28c0da332a3160993b24f730b88827e42f516f3fd94bb3a36e725645dbb47c"
+    },
+    {
+      "file": "plein-390-realisations-designation.png",
+      "bytes": 87383,
+      "sha256": "34fc0c5df16d9a34254baf33a94ec563d61bd033c12177812be10881347cf6a0"
+    },
+    {
+      "file": "plein-390-realisations-recu-apres-reload.png",
+      "bytes": 30739,
+      "sha256": "3e3d82d7eeed0921d5a5c0d15520824adbfb3fdd129ee2bf2120d69dc86ed2de"
+    },
+    {
+      "file": "plein-390-realisations-recu-card-full.png",
+      "bytes": 30736,
+      "sha256": "04f610c1075353175e438d18c357d5fe116dbf21b8c76a1265bba4326a31f135"
+    },
+    {
+      "file": "plein-390-realisations-trace.zip",
+      "bytes": 2884053,
+      "sha256": "ceb4aa31f7ff7bbcc0764ecdb78baeda21e22b491e09be9a6926a83158cc9772"
+    }
+  ],
+  "captureCount": 25,
+  "traceCount": 4
+}
