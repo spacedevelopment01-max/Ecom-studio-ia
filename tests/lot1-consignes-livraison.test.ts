@@ -34,7 +34,7 @@ import { faithfulDraft, review } from "./seo-v2-mock";
 import { loadProject, saveProduct, saveBrand, saveServices, saveCatalog, currentTheme, saveThemeVersion, themeVersion, listThemeVersions } from "@/lib/projects";
 import { runWithLang } from "@/lib/i18n-server";
 import { runContentEngineV2, saveUserEdit, editContentV2 } from "@/lib/seo-v2/engine";
-import { contentKey, latestContent, listContentVersions, saveContentVersion, lockContentTarget, releaseContentTarget } from "@/lib/seo-v2/store";
+import { contentKey, contentVersionDoc, latestContent, listContentVersions, saveContentVersion, lockContentTarget, releaseContentTarget } from "@/lib/seo-v2/store";
 import { localOnlyDeps } from "@/lib/seo-v2/deps";
 import { referenceDoc, overlayV2Copy } from "@/lib/seo-v2/theme-copy";
 import { sitePages } from "@/lib/seo-v2/pages";
@@ -52,6 +52,10 @@ import { GET as exportRoute } from "@/app/api/projects/[id]/theme/export/route";
 import { PUT as editRoute } from "@/app/api/projects/[id]/content/v2/[docKey]/route";
 import { GET as themeRoute } from "@/app/api/projects/[id]/theme/route";
 
+import { account, project, sender } from './conversation209-fixtures';
+import { openProjectConversation, conversationView } from '@/lib/orchestrator/conversation';
+import { quoteContent, confirmContent, contentReceipt } from '@/lib/orchestrator/conversation/content-tool-execution';
+
 const promptOf = (p: any) => p.messages.flatMap((m: any) => typeof m.content === "string" ? [m.content] : m.content.filter((x: any) => x.type === "text").map((x: any) => x.text)).join("\n");
 const fr = <T>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
 beforeEach(() => {
@@ -68,39 +72,73 @@ describe("Lot 1 — consignes et livraison", async () => {
   const seed = (kind: Parameters<typeof seedImageFixture>[1] = "hightech") => { const pid = seedImageFixture(user.id, kind); grantProjectPlan(pid, "dominer"); return pid; };
   const writes = () => remote.calls.filter((p) => !/Tu relis UN contenu/.test(JSON.stringify(p.system)));
 
-  it("route → job → worker → véritable adaptateur : deux demandes et phrases finales distinctes, puis réutilisation sans appel", async () => {
-    const pid = seed();
-    await startSession(user.id);
+  it("route sans devis refusée ; SYNA devis → accord → worker → véritable adaptateur : deux demandes et phrases finales distinctes, puis réutilisation sans appel", async () => {
+    for (const key of ['STUDIO_CONVERSATION_LOT_A','STUDIO_CONVERSATION_AI','STUDIO_CONVERSATION_CONTEXT','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_CONTENT']) vi.stubEnv(key, '1');
+    const author = await account(), pid = project(author), conversation = openProjectConversation(author, pid), send = sender(author, conversation.id);
+    const source = loadProject(seed());
+    saveProduct(pid, source.product);saveBrand(pid, source.brand!);
+    await startSession(author.id);
     remote.respond = async (params) => {
       if (/Tu relis UN contenu/.test(JSON.stringify(params.system))) return review(8.8);
       const prompt = promptOf(params);
       const a = prompt.includes("Dernière phrase A.");
       return { seoTitle: "Informations du produit", metaDescription: "Présentation de l'offre confirmée.", unknowns: [], blocks: [{ kind: "h1", text: "Produit" }, { kind: "p", text: a ? "Première phrase. Dernière phrase A." : "Une phrase. Deux phrases. Dernière phrase B." }] };
     };
+    let lastRequest = '';
     const execute = async (request: string) => {
-      const response = await fr(() => writeRoute(new Request(`http://studio.test/api/projects/${pid}/content/v2`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type: "product_page", pageKey: "product:main", request, maxCostEur: 5 }) }), { params: Promise.resolve({ id: pid }) }));
-      const body = await response.json();
-      expect(response.status, JSON.stringify(body)).toBe(200);
-      const job = claimNext(["content.v2"])!;
-      expect(job.id).toBe(body.jobId);
+      if (lastRequest !== request) { await send({ action: 'message', text: request });lastRequest = request; }
+      const view = conversationView(author, conversation.id);
+      const proposal = await quoteContent(author, conversation.id, { revision: view.revision, projectRevision: view.projectRevision!, type: 'product_page', pageKey: 'product:main' });
+      if (proposal.kind === 'acquired') {
+        expect(proposal.newProviderCalls).toBe(0);
+        expect(proposal.receipt.delivered).toBe(true);
+        return { kind: 'acquired' as const, receipt: proposal.receipt };
+      }
+      expect(proposal.quote.instruction).toBe(request);
+      expect(proposal.quote.confirmationRequired).toBe(true);
+      expect(remote.calls).toHaveLength(request === requestA ? 0 : 2);
+      expect(all("SELECT id FROM jobs WHERE project_id=? AND status='queued'",pid)).toHaveLength(0);
+      const consent = confirmContent(author, conversation.id, proposal.quote.id);
+      expect(confirmContent(author, conversation.id, proposal.quote.id).job!.id).toBe(consent.job!.id);
+      const job = claimNext(['agent.content.write'])!;
+      expect(job.id).toBe(consent.job!.id);
       const result = await fr(() => handlers[job.type](new JobContext(job)));
       completeJob(job.id, result);
-      return result as Awaited<ReturnType<typeof runContentEngineV2>>;
+      const receipt = contentReceipt(author, conversation.id, proposal.quote.id);
+      expect(receipt.delivered).toBe(true);expect(receipt.output!.present).toBe(true);
+      return { kind: 'executed' as const, receipt };
     };
     const requestA = 'Rédige exactement deux phrases. Termine par « Dernière phrase A. »';
     const requestB = 'Rédige exactement trois phrases. Termine par « Dernière phrase B. »';
+    const refused = await fr(() => writeRoute(new Request(`http://studio.test/api/projects/${pid}/content/v2`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ type: 'product_page', pageKey: 'product:main', request: requestA, maxCostEur: 5 }) }), { params: Promise.resolve({ id: pid }) }));
+    expect(refused.status).toBe(409);expect((await refused.json()).code).toBe('QUOTE_REQUIRED');
+    expect(remote.calls).toHaveLength(0);expect(all('SELECT id FROM jobs WHERE project_id=?',pid)).toHaveLength(0);
     const a = await execute(requestA);
     expect(promptOf(writes()[0])).toContain(JSON.stringify(requestA));
-    expect(a.verdict).not.toBe("REJECTED");
+    expect(a.receipt.output!.verdict).not.toBe("REJECTED");
+    expect(JSON.stringify(contentVersionDoc(pid,a.receipt.output!.docKey,a.receipt.output!.version))).toContain('Première phrase. Dernière phrase A.');
     const b = await execute(requestB);
-    expect(b.skipped).toBe(false);
+    expect(b.kind).toBe("executed");
+    expect(JSON.stringify(contentVersionDoc(pid,b.receipt.output!.docKey,b.receipt.output!.version))).toContain('Une phrase. Deux phrases. Dernière phrase B.');
     expect(writes()).toHaveLength(2);
     expect(promptOf(writes()[1])).toContain(JSON.stringify(requestB));
     const count = remote.calls.length;
+    const jobsBefore = all('SELECT * FROM jobs WHERE project_id=?',pid);
+    const spendBefore = all('SELECT * FROM ai_calls WHERE project_id=?',pid);
+    const reservationsBefore = all('SELECT * FROM ai_reservations WHERE project_id=?',pid);
+    const versionsBefore = listContentVersions(pid,b.receipt.output!.docKey);
     const same = await execute(requestB);
-    expect(same.skipped).toBe(true);
+    expect(same.kind).toBe("acquired");
+    expect(same.receipt.output).toEqual(b.receipt.output);
+    expect(same.receipt.delivered).toBe(true);
     expect(remote.calls).toHaveLength(count);
-    expect(latestContent(pid, b.docKey!)!.doc.meta2.contract?.target).toBe("product:main");
+    expect(all('SELECT * FROM jobs WHERE project_id=?',pid)).toEqual(jobsBefore);
+    expect(all('SELECT * FROM ai_calls WHERE project_id=?',pid)).toEqual(spendBefore);
+    expect(all('SELECT * FROM ai_reservations WHERE project_id=?',pid)).toEqual(reservationsBefore);
+    expect(listContentVersions(pid,b.receipt.output!.docKey)).toEqual(versionsBefore);
+    expect(latestContent(pid, b.receipt.output!.docKey)!.doc.meta2.contract?.target).toBe("product:main");
+    expect(listContentVersions(pid, b.receipt.output!.docKey)).toHaveLength(4);
+    vi.unstubAllEnvs();
   });
 
   it("changement de marque, vocabulaire, faits ou langue : aucune réutilisation obsolète", async () => {
