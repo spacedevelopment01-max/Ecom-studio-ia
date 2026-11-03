@@ -1,0 +1,110 @@
+{
+  "native.pages": {
+    "statut": "ABSENT",
+    "note": "phrase réelle (sonde e2d8c8ed) : « Ajoute une page « Nos garanties » » → réflexion sur devis ; le moteur local natif ne crée pas de page non plus"
+  },
+  "native.sections": {
+    "statut": "ABSENT",
+    "note": "phrase réelle (sonde e2d8c8ed) : « Masque / Supprime / Ajoute une section … » → réflexion sur devis, alors que le moteur local natif (local-first) sait le faire gratuitement : passerelle demandée à Codex"
+  },
+  "native.custom-theme": {
+    "statut": "ABSENT",
+    "note": "thème sur mesure (theme.custom) : aucun adaptateur SYNA"
+  },
+  "native.ad-document-edit": {
+    "statut": "PARTIEL",
+    "note": "recette pub-301 4/4 (deux modes) : titre unique agrandi gratuitement, aperçus, 17 s, reçu, PNG, seul le titre modifié — MAIS refus 422 sur 18/18 créations brutes du moteur V2 (le parcours ne marche que si le client a d’abord réduit le titre) ; une seule opération (titre)"
+  },
+  "native.ad-regenerate": {
+    "statut": "ABSENT",
+    "note": "nouvelle version d'un document publicitaire : natif seulement"
+  },
+  "native.initial-batch": {
+    "statut": "ABSENT",
+    "note": "lot initial 10 + 10 et pilote automatique : natif seulement"
+  },
+  "services.update": {
+    "statut": "ABSENT",
+    "note": "phrase réelle (sonde e2d8c8ed) : « Renomme cette prestation en … » → réflexion sur devis, aucune action ; contrat demandé à Codex (prestations désignées, aperçu, accord, relecture)"
+  },
+  "services.booking": {
+    "statut": "ABSENT",
+    "note": "phrase réelle (sonde e2d8c8ed) : « Change les horaires du mardi : 9 h – 18 h » → réflexion sur devis, aucune action ; contrat demandé (réglages natifs de réservation)"
+  },
+  "appointments.settings": {
+    "statut": "ABSENT",
+    "note": "phrase réelle (sonde e2d8c8ed) : même constat que les horaires ; aucun outil SYNA"
+  },
+  "appointments.create": {
+    "statut": "BLOQUE_CONNEXION_OU_CONSENTEMENT",
+    "note": "rendez-vous réel : acte sensible, jamais exécuté dans cette recette"
+  },
+  "appointments.cancel": {
+    "statut": "BLOQUE_CONNEXION_OU_CONSENTEMENT",
+    "note": "annulation réelle : acte sensible, jamais exécuté"
+  },
+  "site.host.publish": {
+    "statut": "BLOQUE_CONNEXION_OU_CONSENTEMENT",
+    "note": "publication réelle : interdite sans accord du propriétaire"
+  },
+  "site.domain.connect": {
+    "statut": "BLOQUE_CONNEXION_OU_CONSENTEMENT",
+    "note": "domaine réel : interdit sans accord"
+  },
+  "theme.publish": {
+    "statut": "BLOQUE_CONNEXION_OU_CONSENTEMENT",
+    "note": "publication CMS réelle : interdite sans accord"
+  },
+  "connections.configure": {
+    "statut": "BLOQUE_CONNEXION_OU_CONSENTEMENT",
+    "note": "compte externe réel : aucune connexion dans cette recette"
+  },
+  "catalogue.sync": {
+    "statut": "BLOQUE_CONNEXION_OU_CONSENTEMENT",
+    "note": "boutique connectée réelle requise"
+  },
+  "blog.publish": {
+    "statut": "BLOQUE_CONNEXION_OU_CONSENTEMENT",
+    "note": "publication réelle : interdite sans accord"
+  },
+  "social.publish": {
+    "statut": "BLOQUE_CONNEXION_OU_CONSENTEMENT",
+    "note": "publication réseau réelle : interdite sans accord"
+  },
+  "ads.launch": {
+    "statut": "BLOQUE_CONNEXION_OU_CONSENTEMENT",
+    "note": "campagne réelle : interdite sans accord"
+  },
+  "calendar.update": {
+    "statut": "ABSENT",
+    "note": "phrase réelle (sonde e2d8c8ed) : « Déplace ma prochaine publication au 12 novembre » → réflexion sur devis ; brouillon non publié : un déplacement gratuit local serait possible (contrat demandé)"
+  },
+  "prompts.edit": {
+    "statut": "ABSENT",
+    "note": "consignes des moteurs : natif (administration) seulement"
+  },
+  "files.delete": {
+    "statut": "ABSENT",
+    "note": "suppression : volontairement hors SYNA (acte destructif), natif avec corbeille"
+  },
+  "native.workflow": {
+    "statut": "ABSENT",
+    "note": "ancien workflow : natif seulement"
+  },
+  "native.brand-propagation": {
+    "statut": "ABSENT",
+    "note": "propagation de marque (/brand/impact) : natif seulement"
+  },
+  "seo.update": {
+    "statut": "ABSENT",
+    "note": "phrase réelle (sonde e2d8c8ed) : « Remplace le titre SEO de la page d’accueil… » mal aiguillée vers la grammaire du titre de section ; aucun outil SEO atteint depuis SYNA"
+  },
+  "native.prompt-run": {
+    "statut": "ABSENT",
+    "note": "vérifié (recette pub-301, deux modes) : « Exécute le premier prompt de ma bibliothèque » ne crée aucune tâche ; exécution payante volontairement non raccordée"
+  },
+  "conversation.attachments": {
+    "statut": "ABSENT",
+    "note": "« Lien / photo » : lien conservé sans consultation, photo non raccordée (annoncé dans le panneau) ; contrat demandé à Codex"
+  }
+}
