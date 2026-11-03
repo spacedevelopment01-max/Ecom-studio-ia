@@ -86,7 +86,8 @@ try {
     const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SYNA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
     const noQuote = async (when: string) => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SYNA" }).count()), `bouton de devis affiché (${when})`);
     const version = () => currentTheme(k.pid)!.version.number;
-    const sectionBg = () => frame().locator(`[data-es-section="index:${k.section}"]`).first().evaluate((el) => { const s = getComputedStyle(el); return `${s.backgroundColor}|${s.backgroundImage}|${s.getPropertyValue("--color-bg") || ""}`; });
+    // Couleur réellement peinte : l'élément de la section qui porte la classe du schéma (l'enveloppe data-es-section n'a pas de fond).
+    const sectionBg = () => frame().locator(`[data-es-section="index:${k.section}"]`).first().evaluate((el) => { const t = (el.matches('[class*="color-"]') ? el : el.querySelector('[class*="color-"]')) as HTMLElement | null; if (!t) return "aucun élément coloré"; const s = getComputedStyle(t); return `${s.backgroundColor}|${s.color}|${t.className.match(/color-[\w-]+/)?.[0] ?? ""}`; });
     // Désignation : ordinateur = outil natif « Désigner » de l'aperçu ; téléphone = même désignation enregistrée
     // côté conversation (A2) puis « Reprendre le repère sauvegardé » dans le panneau, comme après un rechargement.
     const designate = async () => {
@@ -107,6 +108,15 @@ try {
       }
       await panel.locator("[data-agent-active-context]").getByText(/Section désignée/).waitFor();
     };
+    // Avant une phrase ciblée : reprendre le repère sauvegardé s'il est proposé, sinon désigner de nouveau.
+    const ensureDesignated = async () => {
+      await openSyna();
+      const ctxBox = panel.locator("[data-agent-active-context]");
+      if (await ctxBox.getByText(/Section désignée/).count()) return "déjà désignée";
+      const resume = panel.getByRole("button", { name: /^Reprendre le repère sauvegardé/ });
+      if (await resume.waitFor({ timeout: 5000 }).then(() => true, () => false)) { await resume.click(); if (await ctxBox.getByText(/Section désignée/).waitFor({ timeout: 10000 }).then(() => true, () => false)) return "repère repris"; }
+      await designate(); return "désignée de nouveau";
+    };
     const say = async (text: string) => { await openSyna(); await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SYNA" }).fill(text); await panel.getByRole("button", { name: "Enregistrer", exact: true }).click(); };
     const confirmBtn = () => free.getByRole("button", { name: "Confirmer la modification gratuite", exact: true });
     try {
@@ -120,9 +130,10 @@ try {
       const v0 = version(), bg0 = desktop ? await sectionBg() : "";
       await step("« Mets le fond de cette section en bleu » : Gratuit — 0 €, avant / après, aucun devis, rien d'écrit", async () => {
         await say("Mets le fond de cette section en bleu"); await confirmBtn().waitFor();
-        const txt = await free.innerText(); check(/Gratuit — 0 €/.test(txt) && /Avant/.test(txt) && /Après confirmation/.test(txt), "carte incomplète : " + txt.slice(0, 200));
+        await free.getByText(/ → |Après confirmation/).first().waitFor();
+        const txt = await free.innerText(); check(/Gratuit — 0 €/.test(txt) && ((/Fond/.test(txt) && / → /.test(txt)) || (/Avant/.test(txt) && /Après confirmation/.test(txt))), "carte incomplète : " + txt.slice(0, 300));
         await noQuote("proposition couleur"); check(version() === v0, "écriture avant l'accord"); await shot("2-proposition-couleur");
-        return txt.split("\n").filter((l) => /#|rgb|couleur|fond/i.test(l)).slice(0, 3).join(" | ").slice(0, 200);
+        return txt.split("\n").filter((l) => /→|#[0-9A-F]{6}/i.test(l)).slice(0, 4).join(" | ").slice(0, 200);
       });
       await step("Annuler : rien d'écrit, rien au rechargement", async () => {
         await free.getByRole("button", { name: "Annuler la modification gratuite", exact: true }).click();
@@ -131,8 +142,7 @@ try {
         await shot("3-annulation");
       });
       await step("nouvelle proposition, attente réelle de 17 s, confirmation unique, reçu", async () => {
-        const resume = panel.getByRole("button", { name: /^Reprendre le repère sauvegardé/ }); if (await resume.waitFor({ timeout: 6000 }).then(() => true, () => false)) await resume.click();
-        if (!(await panel.locator("[data-agent-active-context]").getByText(/Section désignée/).count())) await designate();
+        await ensureDesignated();
         await say("Mets le fond de cette section en bleu"); await confirmBtn().waitFor();
         await page.waitForTimeout(17000); check(await confirmBtn().isEnabled(), "confirmation désactivée après 17 s");
         let posts = 0; page.on("request", (r) => { if (r.method() === "POST" && r.postData()?.includes('"confirm-local"')) posts++; });
@@ -148,7 +158,7 @@ try {
         const changed = Object.keys(cur.templates.index.sections).filter((s) => JSON.stringify(cur.templates.index.sections[s]) !== JSON.stringify(prev.templates.index.sections[s]));
         check(JSON.stringify(changed) === JSON.stringify([k.section]), `sections modifiées : ${changed}`);
         check(JSON.stringify(cur.templates.index.order) === JSON.stringify(prev.templates.index.order), "ordre modifié");
-        if (desktop) { await closeSyna(); const end = Date.now() + 30000; let bg1 = await sectionBg(); while (bg1 === bg0 && Date.now() < end) { await page.waitForTimeout(500); bg1 = await sectionBg(); } check(bg1 !== bg0, "couleur inchangée dans l'aperçu"); await shot("5-apercu-couleur"); return `aperçu ${bg0.split("|")[0]} → ${bg1.split("|")[0]}`; }
+        if (desktop) { await closeSyna(); const end = Date.now() + 30000; let bg1 = await sectionBg(); while (bg1 === bg0 && Date.now() < end) { await page.waitForTimeout(500); bg1 = await sectionBg(); } check(bg1 !== bg0, "couleur inchangée dans l'aperçu"); await shot("5-apercu-couleur"); return `aperçu fond / texte ${bg0.split("|").slice(0, 2).join(" / ")} → ${bg1.split("|").slice(0, 2).join(" / ")} (${bg1.split("|")[2]})`; }
         return `réglages modifiés : ${Object.keys(cur.templates.index.sections[k.section].settings).filter((s) => JSON.stringify(cur.templates.index.sections[k.section].settings[s]) !== JSON.stringify(prev.templates.index.sections[k.section].settings[s])).join(", ")}`;
       });
       await step("rechargement : reçu conservé", async () => { await page.reload({ waitUntil: "networkidle" }); await openSyna(); await free.getByText(/Résultat enregistré · version/).waitFor(); });
@@ -159,9 +169,9 @@ try {
       });
       let beforeFaq: string[] = [];
       await step("« Ajoute une section FAQ après cette section »" + (desktop ? " — réponse réseau perdue, vérification sans double écriture" : ""), async () => {
-        if (!(await panel.locator("[data-agent-active-context]").getByText(/Section désignée/).count())) await designate();
+        await ensureDesignated();
         beforeFaq = [...spec(k.pid).templates.index.order]; const v = version();
-        await say("Ajoute une section FAQ après cette section"); await confirmBtn().waitFor(); await noQuote("FAQ"); check(version() === v, "écriture avant l'accord");
+        await say("Ajoute une section FAQ après cette section"); await confirmBtn().waitFor().catch(async () => { throw Error("aucune proposition FAQ : " + (await panel.innerText()).slice(-400)); }); await noQuote("FAQ"); check(version() === v, "écriture avant l'accord");
         await shot("7-proposition-faq");
         const bodies: unknown[] = []; let lose = desktop;
         await page.route(`**/api/studio-agent/conversations/${k.c.id}`, async (route) => { const r = route.request(); if (r.method() === "POST" && r.postDataJSON()?.action === "confirm-local") { bodies.push(r.postDataJSON()); if (lose) { lose = false; await route.fetch(); await route.abort("failed"); return; } } await route.continue(); });
@@ -179,11 +189,12 @@ try {
         const v = version(); await say("Annule la dernière retouche du site"); await confirmBtn().waitFor(); await noQuote("annulation"); check(version() === v, "écriture avant l'accord");
         await shot("9-proposition-annulation"); await confirmBtn().click(); await free.getByText(/Résultat enregistré · version/).waitFor();
         check(JSON.stringify(spec(k.pid).templates.index.order) === JSON.stringify(beforeFaq), "ordre non restauré");
-        if (desktop) { await closeSyna(); const ids = await frame().locator('main [data-es-section^="index:"]').evaluateAll((els) => els.map((e) => e.getAttribute("data-es-section"))); check(ids.length === beforeFaq.length, "FAQ encore visible dans l'aperçu"); }
+        // L'aperçu se recharge sur la nouvelle version : on attend (30 s au plus) qu'il n'affiche plus la FAQ, jamais de faux succès.
+        if (desktop) { await closeSyna(); const end = Date.now() + 30000; let ids: (string | null)[] = []; do { ids = await frame().locator('main [data-es-section^="index:"]').evaluateAll((els) => els.map((e) => e.getAttribute("data-es-section"))).catch(() => []); if (ids.length === beforeFaq.length) break; await page.waitForTimeout(500); } while (Date.now() < end); check(ids.length === beforeFaq.length, `FAQ encore visible dans l'aperçu après 30 s (${ids.length} sections)`); }
         await shot("10-apres-annulation"); return `version ${v} → ${version()}`;
       });
       if (desktop) await step("conflit : modification manuelle entre proposition et accord → refus, la modification manuelle reste", async () => {
-        if (!(await panel.locator("[data-agent-active-context]").getByText(/Section désignée/).count())) await designate();
+        await ensureDesignated();
         await say("Mets le fond de cette section en vert"); await confirmBtn().waitFor();
         const manual = structuredClone(currentTheme(k.pid)!.spec) as unknown as ReturnType<typeof spec>; manual.templates.index.sections[k.section].settings.heading = "Titre humain à préserver";
         saveThemeVersion(k.pid, manual as never, "Modification manuelle fictive", "user"); const v = version();

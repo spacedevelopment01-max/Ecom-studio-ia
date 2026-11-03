@@ -9,6 +9,18 @@ const colors=(v:unknown):Record<string,string>|null=>{if(typeof v!=='string'||!v
 /** #301 v3 : couleurs avant / après d'une section en mots et pastilles (plus d'accolades JSON montrées au client). */
 export function colorChanges(before:unknown,after:unknown){const b=colors(before),a=colors(after);if(!b||!a)return null;return Object.keys(a).filter(k=>a[k].toUpperCase()!==(b[k]??'').toUpperCase()).map(k=>({key:k,label:COLOR_LABELS[k]??'Autre couleur',before:b[k]??null,after:a[k]}));}
 const Swatch=({hex}:{hex:string|null})=>hex?<span aria-hidden className="mr-1 inline-block size-3 rounded-sm border border-line align-middle" style={{backgroundColor:hex}}/>:null;
+/** #301 v3 : une valeur qui contient du JSON de section (FAQ ajoutée, annulation) est résumée en mots ; le détail reste
+ * consultable, replié. Renvoie null pour un texte simple. */
+export function sectionSummary(value:unknown):{intro:string;items:string[];raw:string}|null{
+ if(typeof value!=='string')return null;const i=value.search(/[[{]/);if(i<0)return null;
+ let data:unknown;try{data=JSON.parse(value.slice(i));}catch{return null;}
+ const list=(Array.isArray(data)?data:[data]).filter((x):x is {id?:string;type?:string;blocks?:Record<string,{settings?:Record<string,unknown>}>}=>!!x&&typeof x==='object'&&typeof (x as {type?:unknown}).type==='string');
+ if(!list.length)return null;
+ const items=list.flatMap(sec=>{const blocks=Object.values(sec.blocks??{}),texts=blocks.map(b=>String(b.settings?.question??b.settings?.heading??b.settings?.title??'').replace(/<[^>]+>/g,'').trim()).filter(Boolean);
+  return [`Section « ${sec.type==='faq'?'Questions fréquentes':sec.type} »${sec.id?` (${sec.id})`:''} : ${blocks.length} élément${blocks.length>1?'s':''}`,...texts.slice(0,6).map(t=>`— ${t.slice(0,90)}`)];});
+ return {intro:value.slice(0,i).replace(/[\s:]+$/,''),items,raw:value.slice(i)};
+}
+const Summary=({value,fallback}:{value:unknown;fallback:string})=>{const s=sectionSummary(value);if(!s)return <>{fallback}</>;return <>{s.intro&&<span className="block">{s.intro}</span>}<ul className="list-none space-y-0.5">{s.items.map((t,i)=><li key={i}>{t}</li>)}</ul><details className="mt-1 text-xs text-muted"><summary className="cursor-pointer">Détail technique</summary><pre className="max-h-48 overflow-auto whitespace-pre-wrap">{s.raw}</pre></details></>;};
 /** Optional presenter. Encre/Plein cadre may reuse the headless hook with their own markup. */
 export function ConversationLocalSite({view,confirmation,busy,selectionMatches,onResume}:{view:ConversationView;confirmation:ReturnType<typeof useLocalSiteConfirmation>;busy:boolean;selectionMatches:boolean;onResume:()=>void}){
  const s=view.localSite,{controller,state}=confirmation,fresh=view.activeContext?.presentation,context=fresh&&fresh.revision>=(state.context?.revision??0)?fresh:state.context;
@@ -19,7 +31,7 @@ export function ConversationLocalSite({view,confirmation,busy,selectionMatches,o
   <p className="font-semibold">Gratuit — 0 €</p>{s&&<p>{s.message}</p>}
   {scope&&<p>Cible : {scope.label} · {scope.pagePaths.join(', ')} · {scope.template}/{scope.section}{scope.block?`/${scope.block}`:''}{scope.key?` · ${scope.key}`:''}</p>}
   {s?.diff&&colorChanges(s.diff.before,s.diff.after)&&<dl className="space-y-1 break-words">{colorChanges(s.diff.before,s.diff.after)!.map(c=><div key={c.key}><dt className="font-semibold">{c.label}</dt><dd><Swatch hex={c.before}/>{c.before??'(non défini)'} → <Swatch hex={c.after}/>{c.after}</dd></div>)}<dd className="text-xs text-muted">Les autres couleurs de la section restent identiques.</dd></dl>}
-  {s?.diff&&!colorChanges(s.diff.before,s.diff.after)&&<dl className="space-y-2 break-words"><dt className="font-semibold">Avant</dt><dd className="whitespace-pre-wrap">{display(s.diff.before)}</dd><dt className="font-semibold">Après confirmation</dt><dd className="whitespace-pre-wrap">{display(s.diff.after)}</dd></dl>}
+  {s?.diff&&!colorChanges(s.diff.before,s.diff.after)&&<dl className="space-y-2 break-words"><dt className="font-semibold">Avant</dt><dd className="whitespace-pre-wrap"><Summary value={s.diff.before} fallback={display(s.diff.before)}/></dd><dt className="font-semibold">Après confirmation</dt><dd className="whitespace-pre-wrap"><Summary value={s.diff.after} fallback={display(s.diff.after)}/></dd></dl>}
   {s?.state==='proposed'&&enabled&&<div className="flex flex-wrap gap-2"><Button disabled={busy||state.busy||needsSelection&&(!selectionMatches||!!context?.needsRevalidation)} onClick={()=>void controller?.confirm()}>Confirmer la modification gratuite</Button><Button variant="ghost" disabled={busy||state.busy||state.uncertain} onClick={()=>void controller?.cancel()}>Annuler la modification gratuite</Button><Button variant="ghost" disabled={busy||state.busy} onClick={onResume}>Reprendre cette cible</Button></div>}
   {valid&&<div role="status"><p>Résultat enregistré · version {s!.version!.number}</p><a className="underline" href={s!.previewHref} target="_blank" rel="noreferrer">Voir le résultat natif</a>{s!.restore&&<p><a className="underline" href={`/studio/${view.projectId}/boutique`} target="_blank" rel="noreferrer">Ouvrir les versions — restauration manuelle</a></p>}</div>}
   {state.error&&<div><p role="alert">{state.error}</p><Button variant="ghost" disabled={busy||state.busy} onClick={()=>void controller?.refresh()}>Actualiser sans exécuter</Button></div>}
