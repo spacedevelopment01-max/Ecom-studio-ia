@@ -36,5 +36,5 @@ it('effets : libellés en mots, valeurs arrondies, champ inconnu sans code brut'
  expect(adEffectValue(212.16,fr)).toBe('212');
  expect(adEffectValue(null,fr)).toBe('(non défini)');
  const card=fs.readFileSync(path.resolve(import.meta.dirname,'../src/components/studio/conversation-local-ad-document.tsx'),'utf8');
- expect(card).toContain('adEffectLabel(e.field,t)');expect(card).not.toContain('{e.field}</dt>');
+ expect(card).toContain('adEffectLabel(e.property??e.field,t)');expect(card).not.toMatch(/\{e\.field\}(\{|<\/dt>)/);
 });
