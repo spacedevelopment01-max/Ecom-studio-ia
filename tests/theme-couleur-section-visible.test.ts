@@ -18,7 +18,7 @@ it('la classe créée par section_colors est peinte (fond et texte du schéma)',
  const section=spec.templates.index.order[1];
  const r=applyOps(spec as never,[{op:'section_colors',template:'index',section,colors:{background:'#1D4ED8',text:'#FFFFFF'}}] as never,{targeted:new Set([`index:${section}`])} as never);
  expect(r.rejected).toEqual([]);
- const scheme=String((r.spec as typeof spec).templates.index.sections[section].settings.color_scheme);
+ const scheme=String((r.spec as unknown as typeof spec).templates.index.sections[section].settings.color_scheme);
  expect(scheme).toMatch(/^es-/);
  expect(painted(css('theme.css'),`color-${scheme}`)).toBe(true);
  // Les schémas d'origine restent peints.
