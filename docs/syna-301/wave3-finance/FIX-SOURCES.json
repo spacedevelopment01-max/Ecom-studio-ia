@@ -1,0 +1,52 @@
+{
+  "schema": "syna301-finance-wave3-fix-sources-1",
+  "notGlobalFinancialCertification": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "fixes": [
+    {
+      "pr": 339,
+      "head": "5516022a63a90aa9aa75aed3d17223453a2c3768",
+      "tree": "71470df1ab8272a8b9166c5564b669c083e20327",
+      "scope": "Précondition kit avant tentative IA",
+      "targetedTests": "45 tests / 3 suites"
+    },
+    {
+      "pr": 340,
+      "head": "7857d94448b52f9d8aaa8225848285705a3ae813",
+      "tree": "4c7ef69bd6ecffbc8e75f3d19c28351adf297e42",
+      "scope": "Suggestions Blog gratuites, cache ou local",
+      "targetedTests": "39 tests / 4 suites"
+    },
+    {
+      "pr": 341,
+      "head": "e221851f924c4c85090942b2948d92d810b5c6bf",
+      "tree": "4ce3f04b64d154187943dafa2728b6f897813d34",
+      "scope": "Stock vidéo sans analyse payante implicite",
+      "targetedTests": "23 tests / 4 suites"
+    },
+    {
+      "pr": 342,
+      "head": "0b32a32a7aa474c5d62e60a88af92e95e9c4f72c",
+      "tree": "7a5f9efd8a1851a4982fb53cff373d7477e5ddae",
+      "scope": "Kit/voix natifs locaux, reprise gratuite conservée",
+      "targetedTests": "51 tests / 3 suites puis 21 / 1 suite source finale"
+    },
+    {
+      "pr": 343,
+      "head": "45eea99c1ec4040c40d1d30f37970c997c8e9513",
+      "tree": "da7a3998eabb380ede1fda4d990604cea10c2be7",
+      "scope": "Détourage interactif sans tri/QC IA payant",
+      "targetedTests": "37 tests / 4 suites"
+    }
+  ],
+  "limits": [
+    "Suites de régression partagées : ne pas additionner ces nombres comme tests uniques.",
+    "Preuves de sources distinctes, pas qualification d’une pile intégrée.",
+    "Stock vidéo review/RETRY/checked=false conservé ; aucune qualité fournisseur réelle.",
+    "Détourage local indisponible simulé : original conservé sans cutout validé inventé.",
+    "Contrats de consentement serveur exact création/réécriture Blog non qualifiés malgré popup client et quotas.",
+    "Moteurs initiaux partagés inchangés ; preuves directes ne valent pas recette de tout pipeline.",
+    "CI complète de chaque tête à consulter séparément."
+  ]
+}

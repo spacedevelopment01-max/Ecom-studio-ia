@@ -1,0 +1,286 @@
+{
+  "schema": "finance-native-wave2-readonly-1",
+  "source": "fcc2a8818395ce9e97a4a1f3af0cbbc3e8aa1948",
+  "sourceTree": "b43ebbd98829c97308b065c79ef7e507bd7ce925",
+  "productTrackedDiff": "",
+  "operationRows": 10,
+  "distinctEndpoints": 9,
+  "executions": 22,
+  "sdkAttemptsSimulated": 9,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "testResults": {
+    "main": "20/20,8.05s",
+    "stockCandidate": "2/2,6.33s,ffmpeg requires local subprocess permission",
+    "typecheck": "PASS exit0"
+  },
+  "rows": [
+    {
+      "operation": "prompt-ideas",
+      "method": "GET",
+      "route": "/api/projects/[id]/prompt-ideas",
+      "source": "src/app/api/projects/[id]/prompt-ideas/route.ts",
+      "sourceSha256": "45a32043b0fea0d8a1844b1126fc8860e232dc1f586b58a9bed23fb6a3f1fc19",
+      "status": "LOCAL_PROUVE",
+      "fundedHttp": 200,
+      "fundedSdkMocked": 0,
+      "budget0Http": 200,
+      "budget0SdkMocked": 0,
+      "reservedMicroBeforeMockError": [],
+      "finding": "Lecture de suggestions locales, aucun achat observ\u00e9."
+    },
+    {
+      "operation": "blog-topics",
+      "method": "GET",
+      "route": "/api/projects/[id]/blog/topics",
+      "source": "src/app/api/projects/[id]/blog/topics/route.ts",
+      "sourceSha256": "41b0c8d044e3fbb105fc6b935c78fc044001015c7f88502e10acd9afc6901d91",
+      "status": "P0_LECTURE_DECLENCHE_SDK",
+      "fundedHttp": 200,
+      "fundedSdkMocked": 1,
+      "budget0Http": 200,
+      "budget0SdkMocked": 0,
+      "reservedMicroBeforeMockError": [
+        73627
+      ],
+      "finding": "Chargement natif \u00e0 ouverture de bo\u00eete avant confirm(blog), sans devis. Correctif GET local ind\u00e9pendant pr\u00eat."
+    },
+    {
+      "operation": "blog-create",
+      "method": "POST",
+      "route": "/api/projects/[id]/blog",
+      "source": "src/app/api/projects/[id]/blog/route.ts",
+      "sourceSha256": "d072b5db5d66ad55bf88fb62eaf35b7fd0876bab10fea384119b6ce11cabace1",
+      "status": "CONSENTEMENT_SERVEUR_EXACT_NON_QUALIFIE",
+      "fundedHttp": 200,
+      "fundedSdkMocked": 1,
+      "budget0Http": 200,
+      "budget0SdkMocked": 0,
+      "reservedMicroBeforeMockError": [
+        147253
+      ],
+      "finding": "Article inclus/quota et confirm(blog) client existent, mais callback peut autoriser sans popup et POST ne transporte aucun devis/accord exact. Ne pas bloquer premi\u00e8re g\u00e9n\u00e9ration incluse."
+    },
+    {
+      "operation": "blog-rewrite",
+      "method": "POST",
+      "route": "/api/projects/[id]/blog/[aid]/rewrite",
+      "source": "src/app/api/projects/[id]/blog/[aid]/rewrite/route.ts",
+      "sourceSha256": "e5b519b05ad8e2b0b7471ea546ffa4488370aa3fe10ca51a0368ec17e06da1c7",
+      "status": "CONSENTEMENT_SERVEUR_EXACT_NON_QUALIFIE",
+      "fundedHttp": 200,
+      "fundedSdkMocked": 1,
+      "budget0Http": 200,
+      "budget0SdkMocked": 0,
+      "reservedMicroBeforeMockError": [
+        147253
+      ],
+      "finding": "R\u00e9\u00e9criture incluse/quota et confirmation client existent ; pas preuve de consentement serveur exact. Texte acquis conserv\u00e9 dans moteur, nouvelle lign\u00e9e provisoire simul\u00e9e."
+    },
+    {
+      "operation": "brand-social",
+      "method": "POST",
+      "route": "/api/projects/[id]/brand/social",
+      "source": "src/app/api/projects/[id]/brand/social/route.ts",
+      "sourceSha256": "bb527392ba0bb8b55b28c82ddd01e3d8845b1cfa3d100799bd5453789299dbed",
+      "status": "P0_APPEL_AVANT_409_ET_MODE_LOCAL_A_RENFORCER",
+      "fundedHttp": 409,
+      "fundedSdkMocked": 1,
+      "budget0Http": 409,
+      "budget0SdkMocked": 0,
+      "reservedMicroBeforeMockError": [
+        147253
+      ],
+      "finding": "voice=true sur marque sans piste atteint SDK puis409.339 corrige pr\u00e9condition ; enfant339 prot\u00e8ge true/false/default via moteur local, sans supprimer fallback gratuit."
+    },
+    {
+      "operation": "copy",
+      "method": "POST",
+      "route": "/api/projects/[id]/copy",
+      "source": "src/app/api/projects/[id]/copy/route.ts",
+      "sourceSha256": "409187059b5dbdd3668077f503cd1bfa45d49d88463788d2f6a95badfd51a9df",
+      "status": "ECART_DEVIS_API_AUTONOME",
+      "fundedHttp": 200,
+      "fundedSdkMocked": 1,
+      "budget0Http": 200,
+      "budget0SdkMocked": 0,
+      "reservedMicroBeforeMockError": [
+        218107
+      ],
+      "finding": "Enqueue autonome sans devis atteint SDK dans copy.build. Aucun caller Studio actuel trouv\u00e9 ; moteur initial inclus distinct, ne pas bloquer globalement."
+    },
+    {
+      "operation": "cutout",
+      "method": "POST",
+      "route": "/api/projects/[id]/cutouts",
+      "source": "src/app/api/projects/[id]/cutouts/route.ts",
+      "sourceSha256": "b93ca04b7cab3e08e47770f1a3796538aebed92d8a57138fb5b90aba28a7e3d5",
+      "status": "ECART_CONSENTEMENT_TRIAGE_A_QUALIFIER",
+      "fundedHttp": 200,
+      "fundedSdkMocked": 1,
+      "budget0Http": 200,
+      "budget0SdkMocked": 0,
+      "reservedMicroBeforeMockError": [
+        7466
+      ],
+      "finding": "run atteint vision SDK pour triage sans champ devis. Budget0 est local mais ne produit pas de d\u00e9tourage valide sur notre photo synth\u00e9tique ; ne pas promettre qualit\u00e9/fallback complet."
+    },
+    {
+      "operation": "bank-ai",
+      "method": "POST",
+      "route": "/api/projects/[id]/videos/bank",
+      "source": "src/app/api/projects/[id]/videos/bank/route.ts",
+      "sourceSha256": "587312cefc6a22f9511340f49c6c62f7149b3ed210c09ebf8409e9fb16d35f35",
+      "status": "REFUS_MONTANT_ET_BUDGET_PROUVES",
+      "fundedHttp": 409,
+      "fundedSdkMocked": 0,
+      "budget0Http": 402,
+      "budget0SdkMocked": 0,
+      "reservedMicroBeforeMockError": [],
+      "finding": "Accord num\u00e9rique0 rejet\u00e9409, budget0 rejet\u00e9402 ; manque montant400 confirm\u00e9 en test enfant. Accord positif/pins tarif-route/mod\u00e8le NON_TESTES."
+    },
+    {
+      "operation": "bank-stock",
+      "method": "POST",
+      "route": "/api/projects/[id]/videos/bank",
+      "source": "src/app/api/projects/[id]/videos/bank/route.ts",
+      "sourceSha256": "587312cefc6a22f9511340f49c6c62f7149b3ed210c09ebf8409e9fb16d35f35",
+      "status": "P0_STOCK_GRATUIT_QC_PAYANTE",
+      "fundedHttp": 200,
+      "fundedSdkMocked": 0,
+      "budget0Http": 200,
+      "budget0SdkMocked": 0,
+      "reservedMicroBeforeMockError": [],
+      "finding": "Sans candidat : SDK0 non concluant. Avec candidat catalogue/licence simul\u00e9 et vrai ffmpeg :2SDK sans devis, puis0 au budget0. Correctif natif route+handler ind\u00e9pendant pr\u00eat."
+    },
+    {
+      "operation": "theme-chat",
+      "method": "POST",
+      "route": "/api/projects/[id]/theme/chat",
+      "source": "src/app/api/projects/[id]/theme/chat/route.ts",
+      "sourceSha256": "0b4691532ac537f0b2d3dfa5975f4abaa364a062f7509ab29274671fd9873c69",
+      "status": "ECART_DEVIS_RETUCHE_IA_NATIVE",
+      "fundedHttp": 200,
+      "fundedSdkMocked": 1,
+      "budget0Http": 200,
+      "budget0SdkMocked": 0,
+      "reservedMicroBeforeMockError": [
+        580693
+      ],
+      "finding": "Message cr\u00e9atif libre atteint SDK, sans devis/confirmation financi\u00e8re exacts trouv\u00e9s dans send(). Retouches d\u00e9terministes gratuites et moteur initial \u00e0 pr\u00e9server."
+    }
+  ],
+  "stockCandidateEvidence": {
+    "source": "fcc2a8818395ce9e97a4a1f3af0cbbc3e8aa1948",
+    "realProviderCalls": 0,
+    "realCostEur": 0,
+    "results": [
+      {
+        "operation": "videos.bank.stock-licensed-candidate",
+        "budget0": false,
+        "status": 200,
+        "body": {
+          "jobId": "xhx8c58vxl27m9cw"
+        },
+        "execution": {
+          "result": null,
+          "error": "Error: Pixabay n'a aucune vid\u00e9o pour \u00ab outillage \u00bb. Essayez d'autres mots (en anglais, c'est souvent plus riche : ex. \u00ab escape room \u00bb, \u00ab old key \u00bb)."
+        },
+        "sdkAttempts": 2,
+        "models": [
+          "claude-sonnet-5-5",
+          "claude-sonnet-5-5"
+        ],
+        "fetchAttempts": 0,
+        "calls": [
+          {
+            "status": "ok",
+            "cost": 0
+          },
+          {
+            "status": "error",
+            "cost": 0
+          },
+          {
+            "status": "error",
+            "cost": 0
+          }
+        ],
+        "reservations": [
+          {
+            "status": "released",
+            "amount": 73627,
+            "actual": null
+          },
+          {
+            "status": "released",
+            "amount": 73627,
+            "actual": null
+          }
+        ],
+        "assets": []
+      },
+      {
+        "operation": "videos.bank.stock-licensed-candidate",
+        "budget0": true,
+        "status": 200,
+        "body": {
+          "jobId": "fqpw24w177y49c6j"
+        },
+        "execution": {
+          "result": {
+            "assetIds": [
+              "1sssgf2qxlwasf5s"
+            ]
+          },
+          "error": null
+        },
+        "sdkAttempts": 0,
+        "models": [],
+        "fetchAttempts": 0,
+        "calls": [
+          {
+            "status": "ok",
+            "cost": 0
+          }
+        ],
+        "reservations": [],
+        "assets": [
+          {
+            "id": "1sssgf2qxlwasf5s",
+            "meta": "{\"provider\":\"pixabay\",\"recipe\":\"Vid\u00e9o libre de droits (Pixabay Content License (synthetic fixture)), SYNTHETIC LICENSED CANDIDATE \u2014 illustration du m\u00e9tier, pas une vid\u00e9o de vos r\u00e9alisations\",\"stock\":{\"source\":\"pixabay\",\"id\":\"synthetic-stock-301\",\"page\":\"https://example.invalid/license\",\"author\":\"SYNTHETIC LICENSED CANDIDATE\",\"license\":\"Pixabay Content License (synthetic fixture)\"},\"subject\":\"outillage\",\"part\":\"ambiance\",\"durationS\":6,\"gate\":{\"verdict\":\"RETRY\",\"fatal\":false,\"score\":null,\"checked\":false,\"deliverable\":\"stock_video\",\"reason\":\"contr\u00f4le en panne : Contr\u00f4le visuel indisponible : s\u00e9lection par m\u00e9tadonn\u00e9es uniquement\",\"policyVersion\":\"2026-10-p11h\",\"checkId\":\"k1oxjn0g08ws6lyj\"},\"qcWarning\":\"contr\u00f4le en panne : Contr\u00f4le visuel indisponible : s\u00e9lection par m\u00e9tadonn\u00e9es uniquement\"}",
+            "status": "review",
+            "version": 1
+          }
+        ]
+      }
+    ]
+  },
+  "limits": [
+    "Not certification of199 remaining inventory rows; only these10 operations and their exact synthetic branches.",
+    "SDKs intercepted before transport; no successful provider quality or billed generation proven.",
+    "Dispatcher executed with real ownership/strategy/budget logic and runForUser/trace scope; no standalone worker-process lifecycle/lease qualification.",
+    "Blog native client confirm/quota do NOT prove server-bound exact consent; creation/rewrite remain sensitive and unqualified.",
+    "Stock catalog/licence and green-frame video are fictional; persistence/QC-call behavior tested,not image quality/licence authenticity.",
+    "No production edits in audit worktree; no browser/build/client/main/deploy/push."
+  ],
+  "newFixes": {
+    "precondition339": "/workspace/work/parity301-social-kit-precondition-manifest.json",
+    "blogTopics": "/workspace/work/parity301-blog-topics-free-manifest.json",
+    "stockNative": "/workspace/work/parity301-video-stock-free-manifest.json",
+    "socialLocalChild339": "/workspace/work/parity301-native-social-kit-local-manifest.json"
+  },
+  "blogFutureDiagnosis": {
+    "existing": "src/lib/orchestrator/conversation/content-tool-execution.ts:quoteBlogContent -> quoteNativeContent -> confirmContent -> runContentTool",
+    "existingGuarantees": [
+      "Persisted Saved id/conversation/revisions/funding/input fingerprint/route-price terms/instruction/expiry15min/cap/maximumCalls/bound/job receipt.",
+      "quote confirmationRequired true, blogQuotaMaximum1 ; confirm rechecks rights/current inputs/funding/terms/budget then idempotent agent.blog.write with shared cap.",
+      "Acquired exact outputs and native Blog/document pins handled; no silent overwrite/publication."
+    ],
+    "notDropIn": [
+      "quoteBlogContent requires existing cognitive conversation, matching intelligence proposal receipt and validated Blog plan; native dialog currently only has topic/brief/keyword/intent.",
+      "Full native rewrite consumes article entitlement; cannot silently replace with generic block-edit path or change quota.",
+      "Future bounded native transport must persist exact human request and obtain server quote/confirmation before same existing engine ; preserve initial quota/articles,acquired versions and free manual edits. No implementation in this audit."
+    ]
+  }
+}
