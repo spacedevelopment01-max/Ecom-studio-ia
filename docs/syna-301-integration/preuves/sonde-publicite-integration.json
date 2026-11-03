@@ -3,48 +3,271 @@
   "platforms": [
    "meta_feed"
   ],
-  "doc": "ad:517397fc26e844fab211",
-  "status": 422,
-  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+  "doc": "ad:08d89696ac0c8322ebfc",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)"
+  ],
+  "annonces": 2,
+  "nouveauxChevauchements": []
  },
  {
   "platforms": [
    "meta_feed"
   ],
-  "doc": "ad:67b6acf24757721e5a00",
-  "status": 422,
-  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+  "doc": "ad:409c8f9122ad2f8a341e",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)",
+   "Bouton (y)"
+  ],
+  "annonces": 3,
+  "nouveauxChevauchements": []
  },
  {
   "platforms": [
    "meta_feed"
   ],
-  "doc": "ad:a29a3b83076f91e26c07",
-  "status": 422,
-  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+  "doc": "ad:5b9e8569bee90e0d03d8",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)"
+  ],
+  "annonces": 2,
+  "nouveauxChevauchements": []
  },
  {
   "platforms": [
    "meta_feed"
   ],
-  "doc": "ad:c63840b407b8f2a1d9a0",
-  "status": 422,
-  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+  "doc": "ad:950adc8b20e2b863f141",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)",
+   "Bouton (y)"
+  ],
+  "annonces": 3,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed"
+  ],
+  "doc": "ad:ab4c0bf766ef5fcbcd45",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)"
+  ],
+  "annonces": 2,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed"
+  ],
+  "doc": "ad:da3aecf00bfc7a81c75b",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)",
+   "Bouton (y)"
+  ],
+  "annonces": 3,
+  "nouveauxChevauchements": []
  },
  {
   "platforms": [
    "meta_story"
   ],
-  "doc": "ad:11a0a55328d925baeab5",
-  "status": 422,
-  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+  "doc": "ad:a0dbe9d2b4dd8a992236",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)",
+   "Bouton (y)"
+  ],
+  "annonces": 3,
+  "nouveauxChevauchements": []
  },
  {
   "platforms": [
    "meta_story"
   ],
-  "doc": "ad:c739721ac0dcf81a1d7d",
-  "status": 422,
-  "result": "Cette retouche déplacerait un autre calque. Utilisez l’éditeur natif."
+  "doc": "ad:ebf60d68f1fbe60fe8ef",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)",
+   "Bouton (y)"
+  ],
+  "annonces": 3,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_story"
+  ],
+  "doc": "ad:eccc490326ad5775cdc6",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)"
+  ],
+  "annonces": 2,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:1240780ec4c56b99ebff",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)"
+  ],
+  "annonces": 2,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:71733a5051e967fb2911",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)"
+  ],
+  "annonces": 2,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:845ced66048c1e7a75a0",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)",
+   "Bouton (y)"
+  ],
+  "annonces": 3,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:8dcdd6a121d0e74abb53",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)",
+   "Bouton (y)"
+  ],
+  "annonces": 3,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:9ebbf4be4002794d8655",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)"
+  ],
+  "annonces": 2,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:aaf63c43f02f5afb1d8e",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)",
+   "Bouton (y)"
+  ],
+  "annonces": 3,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:c4bc431b4ff2216e5a60",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)"
+  ],
+  "annonces": 2,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:d5f3e5570f0a16ab12e7",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)",
+   "Bouton (y)"
+  ],
+  "annonces": 3,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:ff575d6c46159c474e66",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)",
+   "Bouton (y)"
+  ],
+  "annonces": 3,
+  "nouveauxChevauchements": []
  }
 ]

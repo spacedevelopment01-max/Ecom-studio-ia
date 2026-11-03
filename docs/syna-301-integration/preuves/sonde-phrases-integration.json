@@ -16,7 +16,7 @@
   "erreur": null,
   "carteGratuite": {
    "state": "proposed",
-   "message": "Alternative native explicite : tous les textes de cette section (y compris le titre), ou son fond selon la demande. Le titre seul n’est pas ciblé ; aucune autre"
+   "message": "Alternative native explicite : couleur principale des textes de cette section, ou son fond selon la demande. Le titre seul n’est pas ciblé ; les accents, textes"
   },
   "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
   "intelligence": "requires_quote"

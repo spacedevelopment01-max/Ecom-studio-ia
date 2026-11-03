@@ -34,6 +34,8 @@ import {runAdEngineV2} from '@/lib/ads-v2/engine';
 import {runWithLang} from '@/lib/i18n-server';
 import {saveAsset,getAsset,assetData} from '@/lib/library';
 import {latestDoc} from '@/lib/ad-doc/store';
+import {localAdEdit} from '@/lib/ad-doc/local-edit';
+import {applyOps as applyAdOps} from '@/lib/ad-doc/ops';
 import {currentTheme,loadProject,saveServices} from '@/lib/projects';
 import {emptyServiceProfile} from '@/lib/project-types';
 import {POST} from '@/app/api/studio-agent/conversations/[cid]/ad-documents/route';
@@ -91,14 +93,15 @@ it('moteur local natif (onglet Boutique, section désignée) sur les mêmes phra
 },120000);
 
 it('« Agrandis le titre » sur les créations du moteur V2 : proposition gratuite ou refus explicite, jamais d’écriture',async()=>{
- const out:{platforms:string[];doc:string;status:number;result:string}[]=[];
- for(const platforms of [['meta_feed'],['meta_story']]){
+ const out:Record<string,unknown>[]=[];
+ // Même jeu que la sonde d'origine : 3 créations par lot, fil, story et les deux (18 créations brutes, aucune aménagée).
+ for(const platforms of [['meta_feed'],['meta_story'],['meta_feed','meta_story']]){
   const u=await account();auth.user=u;
   const pid=createProjectWithSubscription(u.id,null,()=>{const p=seedImageFixture(u.id,'cosmetic');return{projectId:p,result:p};});
   const cutId=await seedCutout(u.id,pid),logoPng=await sharp({create:{width:400,height:120,channels:3,background:'#fff'}}).png().toBuffer();
   const logo=await saveAsset({projectId:pid,userId:u.id,data:logoPng,name:'logo.png',mime:'image/png',role:'logo',origin:'generated'});
   const {deps}=mockAdDeps({userId:u.id,projectId:pid,cutout:{id:cutId,data:assetData(getAsset(cutId)!)},logo:{id:logo.id,data:logoPng}});
-  await runWithLang({ui:'fr',content:'fr'},()=>runAdEngineV2(null,pid,{count:2,platforms:platforms as never},deps));
+  await runWithLang({ui:'fr',content:'fr'},()=>runAdEngineV2(null,pid,{count:3,platforms:platforms as never},deps));
   {const p=loadProject(pid);initialize(pid,{...emptyInput(),business:p.business,offerName:p.product.name,description:p.product.summary,services:p.services});}
   const c=openProjectConversation(u as never,pid),v=()=>conversationView(u as never,c.id);
   for(const d of all<{doc_key:string}>('SELECT DISTINCT doc_key FROM ad_documents WHERE project_id=?',pid)){
@@ -107,11 +110,21 @@ it('« Agrandis le titre » sur les créations du moteur V2 : proposition gratui
    const versions=()=>one<{n:number}>('SELECT COUNT(*) n FROM ad_documents WHERE project_id=? AND doc_key=?',pid,d.doc_key)!.n,n0=versions();
    submitContext(u as never,c.id,{action:'select',revision:v().revision,requestId:id(),context:{projectId:pid,tab:'publicites',target:{kind:'ad-document-text',docKey:d.doc_key,layerId:titles[0].id,version:l.version.version}}});
    const r=await POST(new Request('http://localhost/x',{method:'POST',headers:{origin:'http://localhost','content-type':'application/json'},body:JSON.stringify({action:'propose',revision:v().revision,projectRevision:v().projectRevision,docKey:d.doc_key,layerId:titles[0].id,expectedVersion:l.version.version,operation:'title-larger'})}),{params:Promise.resolve({cid:c.id})});
-   const body=await r.json() as {state?:string;error?:string};
+   const body=await r.json() as {state?:string;error?:string;nativeEffects?:{field:string;layerId?:string;property?:string;secondary?:boolean}[]};
    expect([200,422]).toContain(r.status);
-   if(r.status===422)expect(body.error).toMatch(/autre calque/);
+   if(r.status===422)expect(body.error).toMatch(/calque|cadre|alternative/i);
    expect(versions(),'écriture avant l’accord').toBe(n0);
-   out.push({platforms,doc:d.doc_key,status:r.status,result:body.state??body.error??''});
+   // Résultat du moteur natif : calques réellement modifiés, annonce avant accord, chevauchements texte / bouton.
+   const edit=localAdEdit(l.doc,'agrandis le titre'),after=edit.local?applyAdOps(l.doc,edit.ops):l.doc;
+   const moved=after.layers.filter(x=>{const o=l.doc.layers.find(y=>y.id===x.id)!;return JSON.stringify(o)!==JSON.stringify(x);});
+   const announced=new Set((body.nativeEffects??[]).map(e=>e.layerId??titles[0].id));
+   const secondaryOnlyY=moved.filter(x=>x.id!==titles[0].id).every(x=>{const o=l.doc.layers.find(y=>y.id===x.id)! as Record<string,unknown>;return Object.keys(x).every(k=>k==='y'||k==='userEdited'||JSON.stringify((x as Record<string,unknown>)[k])===JSON.stringify(o[k]));});
+   const boxes=after.layers.filter(x=>x.visible&&(x.kind==='text'||x.kind==='button')),hit=(a:{x:number;y:number;w:number;h:number},b:{x:number;y:number;w:number;h:number})=>a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.h&&b.y<a.y+a.h;
+   const overlapsBefore=new Set<string>(),overlapsAfter:string[]=[];
+   for(const [i,a] of l.doc.layers.filter(x=>x.visible&&(x.kind==='text'||x.kind==='button')).entries())for(const b of l.doc.layers.filter(x=>x.visible&&(x.kind==='text'||x.kind==='button')).slice(i+1))if(hit(a,b))overlapsBefore.add(a.id+'|'+b.id);
+   for(const [i,a] of boxes.entries())for(const b of boxes.slice(i+1))if(hit(a,b)&&!overlapsBefore.has(a.id+'|'+b.id))overlapsAfter.push(`${a.name??a.id}/${b.name??b.id}`);
+   if(r.status===200){expect(moved.every(x=>announced.has(x.id)),'calque modifié non annoncé avant accord').toBe(true);expect(secondaryOnlyY,'un calque secondaire change autre chose que sa position verticale').toBe(true);}
+   out.push({platforms,doc:d.doc_key,status:r.status,result:body.state??body.error??'',calquesModifies:moved.map(x=>`${x.name??x.id}${x.id===titles[0].id?' (titre)':' (y)'}`),annonces:[...announced].length,nouveauxChevauchements:overlapsAfter});
   }
  }
  expect(out.length).toBeGreaterThan(0);
