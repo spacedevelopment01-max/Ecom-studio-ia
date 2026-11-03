@@ -4,6 +4,19 @@ import {adDocumentJobPending,hasAdDocumentReceipt} from '@/lib/local-ad-document
 import type {useLocalAdDocumentConfirmation} from './use-local-ad-document-confirmation';
 import {Button} from '../ui';
 import {useT} from '../i18n';
+/** #301 vague 2 : état du reçu en mots du client (FR / EN), jamais le code technique (« cancelled », « stale »…). */
+export function adReceiptStateLabel(state:string,t:(fr:string,en:string)=>string){
+ switch(state){
+  case 'cancelled':return t('proposition annulée, rien n’a été modifié','proposal cancelled, nothing was changed');
+  case 'stale':return t('création modifiée depuis la proposition : désignez de nouveau le titre','creative changed since the proposal: select the title again');
+  case 'saved':return t('enregistré, reçu en cours de relecture','saved, receipt being re-read');
+  case 'recorded_job_unfinished':return t('écriture enregistrée, vérification en cours','write recorded, verification in progress');
+  case 'queued':case 'running':return t('retouche en cours','edit in progress');
+  case 'failed':return t('retouche échouée, rien n’a été annoncé comme fait','edit failed, nothing was claimed as done');
+  case 'done':return t('tâche terminée, reçu en cours de relecture','job finished, receipt being re-read');
+  default:return t('état inconnu : actualisez sans relancer','unknown state: refresh without starting it again');
+ }
+}
 export function ConversationLocalAdDocument({view,confirmation,busy,selectionMatches}:{view:ConversationView;confirmation:ReturnType<typeof useLocalAdDocumentConfirmation>;busy:boolean;selectionMatches:boolean}){
  const t=useT(),s=view.localAdDocument,{controller,state}=confirmation;if(view.recovery||view.readOnlyReason||(!s&&!state.error&&!state.uncertain))return null;
  const enabled=!!view.localAdDocumentExecution?.enabled&&!state.blocked,valid=hasAdDocumentReceipt(view),waiting=adDocumentJobPending(view);
@@ -15,7 +28,7 @@ export function ConversationLocalAdDocument({view,confirmation,busy,selectionMat
   {s?.state==='proposed'&&enabled&&s.confirmationRequired&&<><p className="text-xs text-muted">{t('Proposition non enregistrée.','Proposal not saved.')} {new Date(s.expiresAt).toLocaleTimeString()}</p>{!selectionMatches&&<p>{t('Revalidez le titre désigné avant de confirmer.','Revalidate the selected title before confirming.')}</p>}<div className="flex flex-wrap gap-2"><Button disabled={busy||state.busy||state.uncertain||!selectionMatches} onClick={()=>void controller?.confirm()}>{t('Confirmer gratuitement','Confirm for free')}</Button><Button variant="ghost" disabled={busy||state.busy||state.uncertain} onClick={()=>void controller?.cancel()}>{t('Annuler','Cancel')}</Button></div></>}
   {waiting&&<p role="status">{s?.state==='recorded_job_unfinished'?t('Écriture native enregistrée ; vérification de la tâche en cours. Ne relancez pas la modification.','Native write recorded; verifying the job. Do not run the change again.'):t('Retouche locale en cours de vérification. Aucun résultat annoncé avant le reçu.','Local edit being verified. No result is claimed before the receipt.')}</p>}
   {valid&&<div role="status"><p>{t('Enregistré et relu · version ','Saved and re-read · version ')}{s!.version!.version}</p>{exportHref&&<a className="inline-flex min-h-11 items-center underline" href={exportHref}>{t('Exporter cette version PNG','Export this PNG version')}</a>}</div>}
-  {s&&!valid&&!waiting&&s.state!=='proposed'&&<p role="status">{t('État du reçu : ','Receipt state: ')}{s.state}{s.notice?' · '+s.notice:''}</p>}
+  {s&&!valid&&!waiting&&s.state!=='proposed'&&<p role="status">{t('État du reçu : ','Receipt state: ')}{adReceiptStateLabel(s.state,t)}{s.notice?' · '+s.notice:''}</p>}
   {s?.job?.error&&<p role="alert">{s.job.error}</p>}{s?.state==='stale'&&enabled&&<Button variant="ghost" disabled={busy||state.busy||state.uncertain} onClick={()=>void controller?.cancel()}>{t('Annuler cette proposition','Cancel this proposal')}</Button>}{state.error&&<p role="alert">{state.error}</p>}{state.uncertain&&<div className="flex flex-wrap gap-2"><Button disabled={busy} onClick={()=>void controller?.refresh()}>{t('Vérifier le reçu','Check the receipt')}</Button><Button disabled={busy} variant="secondary" onClick={()=>void controller?.retry()}>{t('Réessayer la même demande gratuite','Retry the same free request')}</Button></div>}
  </section>;
 }
