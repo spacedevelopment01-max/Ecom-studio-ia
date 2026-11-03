@@ -1,3 +1,4 @@
+import {HttpError} from "./auth";
 import {assertSafeThemeContent} from "./theme/content-security";
 import {assertProjectScope} from "./project-security";
 /** Accès aux projets : produit, marque, mémoire, versions du thème. */
@@ -28,6 +29,8 @@ export type Project = {
   /** Boutique de produits ou site d'entreprise de services. */
   business: BusinessType;
   services: ServiceProfile;
+  /** Native business_json revision; distinct from any theme or booking revision. */
+  servicesVersion: number;
 };
 
 export const DEFAULT_SETTINGS: ProjectSettings = {
@@ -57,6 +60,7 @@ export function loadProject(projectId: string): Project {
     catalog: json<CatalogItem[]>(row.catalog_json, []),
     sources: json(row.sources_json, []),
     business: ((row as any).business_type === "services" ? "services" : "products") as BusinessType,
+    servicesVersion: Number((row as any).business_version ?? 0),
     services: (() => {
       const s = { ...emptyServiceProfile(), ...json<Partial<ServiceProfile>>((row as any).business_json, {}) };
       return { ...s, services: s.services.map((item, i) => ({ ...item, key: item.key || `legacy-${i}` })) };
@@ -65,13 +69,19 @@ export function loadProject(projectId: string): Project {
 }
 
 /** Offre de services (entreprises de services). */
-export function saveServices(projectId: string, services: ServiceProfile) {
-  const previous = loadProject(projectId).services.services;
-  services = { ...services, services: services.services.map((s, i) => {
-    const old = previous.find((x) => s.key ? x.key === s.key : x.name === s.name);
-    return { ...s, key: old?.key || s.key || id(), contentAliases: [...new Set([...(old?.contentAliases ?? []), ...(s.contentAliases ?? []), ...(old ? [old.name] : []), s.name])] };
-  }) };
-  run("UPDATE projects SET business_json = ?, updated_at = ? WHERE id = ?", JSON.stringify(services), now(), projectId);
+export function saveServices(projectId: string, services: ServiceProfile, expectedVersion?:number) {
+  return tx(()=>{
+    const current=loadProject(projectId),version=current.servicesVersion;
+    if(expectedVersion!=null&&expectedVersion!==version)throw new HttpError(409,L("Le profil d’activité a changé. Votre brouillon est conservé ; rechargez avant de modifier.","The business profile changed. Your draft is kept; reload before editing."),"services_conflict");
+    const previous=current.services.services;
+    services={...services,services:services.services.map(s=>{
+      const old=previous.find(x=>s.key?x.key===s.key:x.name===s.name);
+      return{...old,...s,key:old?.key||s.key||id(),contentAliases:[...new Set([...(old?.contentAliases??[]),...(s.contentAliases??[]),...(old?[old.name]:[]),s.name])]};
+    })};
+    const result=run("UPDATE projects SET business_json=?,business_version=business_version+1,updated_at=? WHERE id=? AND business_version=?",JSON.stringify(services),now(),projectId,version);
+    if(result.changes!==1)throw new HttpError(409,'Le profil a changé. Rechargez avant de modifier.','services_conflict');
+    return version+1;
+  });
 }
 
 export function saveProduct(projectId: string, product: ProductProfile) {

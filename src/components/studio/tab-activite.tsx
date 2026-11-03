@@ -24,6 +24,7 @@ export default function TabActivite() {
   const [facts, setFacts] = useState<Fact[]>([]);
   const [offer, setOffer] = useState<ServiceProfile>(emptyServiceProfile());
   const [dirty, setDirty] = useState(false);
+  const [servicesVersion,setServicesVersion]=useState<number|null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   // Préparations lancées d'ici (reprise de l'analyse, mise à jour du site) : avancement et temps restant.
   const jobs = useActive(["pipeline.run", "shop.build", "content.v2"]);
@@ -34,6 +35,7 @@ export default function TabActivite() {
     setSummary(data.product.summary);
     setFacts(data.product.facts);
     setOffer({ ...emptyServiceProfile(), ...data.services });
+    setServicesVersion(data.servicesVersion??null);
   }, [data, dirty]);
   if (!data) return null;
   const p = data.product;
@@ -50,12 +52,15 @@ export default function TabActivite() {
   async function save() {
     setBusy("save");
     try {
-      await api(`/api/projects/${id}`, { method: "PATCH", body: { activity: { name, category, summary, facts: facts.filter((f) => f.label.trim()) }, services: { ...offer, services: cleanServices(offer.services) } } });
+      if(servicesVersion==null)throw new Error(t("Rechargez le profil avant de l’enregistrer.","Reload the profile before saving."));
+      await api(`/api/projects/${id}`, { method: "PATCH", body: { servicesVersion,activity: { name, category, summary, facts: facts.filter((f) => f.label.trim()) }, services: { ...offer, services: cleanServices(offer.services) } } });
       toast("ok", t("Activité enregistrée : elle sera utilisée par toutes les prochaines créations.", "Business details saved: they will be used for everything created from now on."));
       setDirty(false);
       await reload();
+      return true;
     } catch (e) {
       toast("bad", (e as Error).message);
+      return false;
     } finally {
       setBusy(null);
     }
@@ -63,7 +68,7 @@ export default function TabActivite() {
   async function rebuild() {
     setBusy("rebuild");
     try {
-      if (dirty) await save();
+      if (dirty && !(await save())) return;
       await api(`/api/projects/${id}/theme/build`, { body: {} });
       toast("ok", t("Le site se recompose avec ces informations : une nouvelle version sera créée (la précédente reste restaurable).", "The website is being rebuilt with these details: a new version will be created (the previous one can be restored)."));
       reload();
