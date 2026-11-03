@@ -4,7 +4,7 @@ import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
 import { L } from "@/lib/i18n-server";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
-import { organicDocument, AdDocumentSchema, docImages, duplicateDoc, exportDoc, foreignAssets, latestDoc, listVersions, restoreVersion, saveAndRender, versionDoc } from "@/lib/ad-doc/store";
+import { assertDocVersion,guardedForkKey,organicDocument, AdDocumentSchema, docImages, exportDoc, foreignAssets, latestDoc, listVersions, saveAndRender, versionDoc } from "@/lib/ad-doc/store";
 import { docMetrics } from "@/lib/ad-doc/server";
 import { reflow } from "@/lib/ad-doc/reflow";
 import { localAdEdit } from "@/lib/ad-doc/local-edit";
@@ -59,6 +59,7 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
   const b = await body(
     req,
     z.object({
+      expectedVersion:z.number().int().min(0).optional(),operationId:z.string().min(8).max(100).optional(),
       action: z.enum(["save", "restore", "duplicate", "reflow", "preview_reflow", "edit", "ai_edit", "animate", "gallery", "restyle"]),
       family: z.string().max(20).optional(),
       layout: z.string().max(60).optional(),
@@ -76,19 +77,25 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
     }),
   );
   if(!organicDocument(p.id,docKey)&&["ai_edit","animate","duplicate","reflow","restyle","gallery"].includes(b.action))assertAdvertising(p.id);
-  if (!latestDoc(p.id, docKey)) throw new HttpError(404, L("Création introuvable.", "Creative not found."));
+  const initial=latestDoc(p.id,docKey);
+  if(!initial)throw new HttpError(404,L("Création introuvable.","Creative not found."));
+  const mutates=["save","restore","restyle","duplicate","reflow","edit"].includes(b.action);
+  if(mutates){if(b.expectedVersion==null)throw new HttpError(428,"Rechargez la création et indiquez sa version enregistrée. Votre brouillon reste conservé.","ad_doc_version_required");assertDocVersion(p.id,docKey,b.expectedVersion);}
+  const writeGuard=()=>({expectedVersion:b.expectedVersion!});
+  const forkKey=()=>{if(!b.operationId)throw new HttpError(428,"Identifiant de tentative nécessaire pour créer cette copie.","ad_doc_operation_required");return guardedForkKey(p.id,user.id,docKey,b.expectedVersion!,b.operationId,b.action,{platform:b.platform??null,aspect:b.aspect??null});};
+  const forkGuard=()=>({expectedVersion:0,source:{docKey,expectedVersion:b.expectedVersion!}});
   if (b.action === "save") {
     if (!b.doc) throw new HttpError(400, L("Document manquant.", "Missing document."));
     const doc = { ...(b.doc as AdDocument), meta: { ...b.doc.meta, source: b.doc.meta.source === "engine" ? "user" : b.doc.meta.source } } as AdDocument;
     if (foreignAssets(p.id, doc).length) throw new HttpError(400, L("Une image ne vient pas de la bibliothèque de ce projet.", "An image does not come from this project's library."));
-    await saveAndRender(p.id, user.id, docKey, doc, b.note ?? "modification manuelle");
+    await saveAndRender(p.id, user.id, docKey, doc, b.note ?? "modification manuelle",writeGuard());
     return ok(await view(p, docKey));
   }
   if (b.action === "restore") {
     if (!b.version) throw new HttpError(400, L("Version manquante.", "Missing version."));
-    restoreVersion(p.id, docKey, b.version);
-    const cur = latestDoc(p.id, docKey)!;
-    await saveAndRender(p.id, user.id, docKey, cur.doc, `rendu de la restauration de la version ${b.version}`);
+    const historical=versionDoc(p.id,docKey,b.version);
+    if(!historical)throw new HttpError(404,"Version introuvable.");
+    await saveAndRender(p.id,user.id,docKey,{...historical,meta:{...historical.meta,source:"user"}},`restauration de la version ${b.version}`,{...writeGuard(),strategyStamp:historical.meta.marketingStrategy??null});
     return ok(await view(p, docKey));
   }
   if (b.action === "gallery") {
@@ -96,7 +103,7 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
     const { styleGallery, GALLERY_FAMILIES } = await import("@/lib/ads-v2/library/gallery");
     const family = (GALLERY_FAMILIES as readonly string[]).includes(b.family ?? "") ? (b.family as (typeof GALLERY_FAMILIES)[number]) : "studio";
     const cur = latestDoc(p.id, docKey)!;
-    return ok({ families: GALLERY_FAMILIES, family, items: await styleGallery(p.id, cur.doc, family) });
+    return ok({ version:cur.version.version,families: GALLERY_FAMILIES, family, items: await styleGallery(p.id, cur.doc, family) });
   }
   if (b.action === "restyle") {
     const { applyStyle } = await import("@/lib/ads-v2/library/gallery");
@@ -106,7 +113,7 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
     const cur = latestDoc(p.id, docKey)!;
     const next = await applyStyle(p.id, cur.doc, { layout: b.layout, variant: { ...(b.scheme ? { scheme: b.scheme } : {}), ...(b.treatment ? { treatment: b.treatment } : {}) } });
     if (!next) throw new HttpError(400, L("Cette création ne peut pas changer de modèle (elle n'a pas été composée par le studio).", "This creative cannot change template (it was not composed by the studio)."));
-    await saveAndRender(p.id, user.id, docKey, next, `modèle : ${next.meta.recipe?.layout ?? ""}`);
+    await saveAndRender(p.id, user.id, docKey, next, `modèle : ${next.meta.recipe?.layout ?? ""}`,writeGuard());
     return ok(await view(p, docKey));
   }
   if (b.action === "animate") {
@@ -117,8 +124,9 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
     return ok({ ...(await view(p, docKey)), animated: { assetId: a.id, url: `/api/files/${a.id}` } });
   }
   if (b.action === "duplicate") {
-    const d = duplicateDoc(p.id, docKey);
-    return ok(await view(p, d.docKey));
+    const key=forkKey(),doc={...initial.doc,meta:{...initial.doc.meta,source:"user" as const,createdFrom:docKey}};
+    await saveAndRender(p.id,user.id,key,doc,`copie de ${docKey}`,forkGuard());
+    return ok(await view(p,key));
   }
   if (b.action === "ai_edit") {
     // Retouche que le moteur local ne comprend pas : l'IA propose des modifications bornées de la création ouverte
@@ -138,8 +146,8 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
     const f = spec?.formats.find((x) => x.aspect === b.aspect) ?? (b.aspect === "16:9" ? { aspect: "16:9", width: 1920, height: 1080 } : b.aspect === "1.91:1" ? { aspect: "1.91:1", width: 1200, height: 628 } : b.aspect === "9:16" ? { aspect: "9:16", width: 1080, height: 1920 } : b.aspect === "4:5" ? { aspect: "4:5", width: 1080, height: 1350 } : b.aspect === "3:1" ? { aspect: "3:1", width: 2400, height: 800 } : b.aspect === "1:1" ? { aspect: "1:1", width: 1080, height: 1080 } : null);
     if (!f || !spec) throw new HttpError(400, L("Format inconnu.", "Unknown format."));
     const preview = b.action === "preview_reflow";
-    const d = preview ? { docKey } : duplicateDoc(p.id, docKey);
-    const src = latestDoc(p.id, d.docKey)!.doc;
+    const d={docKey:preview?docKey:forkKey()};
+    const src=initial.doc;
     // Création du moteur : RECOMPOSÉE pour le format (colonne, tailles, marges, produit) ; sinon adaptation géométrique.
     const { relayoutDoc } = await import("@/lib/ads-v2/compose");
     const { assetData, getAsset } = await import("@/lib/library");
@@ -153,9 +161,9 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
       // Aperçu rendu par le moteur de l'export (ce que le client verra s'il valide) ; rien n'est enregistré.
       const shown = { ...next, meta: { ...next.meta, source: "user" as const } };
       const { data } = await exportDoc(p.id, shown, "jpeg");
-      return ok({ preview: { aspect: f.aspect, platform, width: f.width, height: f.height, image: `data:image/jpeg;base64,${data.toString("base64")}` } });
+      return ok({ version:initial.version.version,preview: { aspect: f.aspect, platform, width: f.width, height: f.height, image: `data:image/jpeg;base64,${data.toString("base64")}` } });
     }
-    await saveAndRender(p.id, user.id, d.docKey, { ...next, meta: { ...next.meta, source: "user" } }, `adaptation au format ${f.aspect}`);
+    await saveAndRender(p.id, user.id, d.docKey, { ...next, meta: { ...next.meta, source: "user",createdFrom:docKey } }, `adaptation au format ${f.aspect}`,forkGuard());
     return ok(await view(p, d.docKey));
   }
   // Retouche en langage naturel : locale et gratuite si possible ; sinon, demande payante ANNONCÉE (rien n'est lancé).
@@ -163,6 +171,6 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
   const cur = latestDoc(p.id, docKey)!;
   const r = localAdEdit(cur.doc, b.instruction);
   if (!r.local) return ok({ ...(await view(p, docKey)), edit: { local: false, reason: r.reason, paid: r.paid } });
-  await saveAndRender(p.id, user.id, docKey, r.doc, `retouche locale : ${r.summary}`);
+  await saveAndRender(p.id, user.id, docKey, r.doc, `retouche locale : ${r.summary}`,writeGuard());
   return ok({ ...(await view(p, docKey)), edit: { local: true, summary: r.summary } });
 });

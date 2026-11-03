@@ -6,6 +6,7 @@ import { strategyContent, strategyStamp } from "../strategy-consumption";
  * (source « user ») ne sont jamais écrasés en silence par une régénération : le moteur vérifie `userOwned`.
  */
 import crypto from "node:crypto";
+import {HttpError} from "../auth";
 import { z } from "zod";
 import { all, id, json, now, one, run, tx } from "../db";
 import { assetData, getAsset, saveAsset } from "../library";
@@ -127,16 +128,24 @@ export async function exportDoc(projectId: string, doc: AdDocument, format: "png
   return { data, mime: format === "png" ? "image/png" : "image/jpeg", ext: format === "png" ? "png" : "jpg" };
 }
 
-/** Enregistre une version ET son rendu dans la bibliothèque (création modifiée par le client). */
-export async function saveAndRender(projectId: string, userId: string, docKey: string, doc: AdDocument, note = ""): Promise<DocVersion> {
-  const { data } = await exportDoc(projectId, doc, "jpeg");
-  // Affiche de publication (« post: ») : rangée avec les publications, et toujours modifiable / animable depuis sa fiche.
-  const post = docKey.startsWith("post:");
-  // Nouvelle VERSION de l'image de la création (pas un nouveau visuel) : la liste n'affiche que la dernière.
-  const prevId = latestDoc(projectId, docKey)?.version.renderedAssetId ?? null;
-  const prev = prevId ? one<{ id: string; version_of: string | null }>("SELECT id, version_of FROM assets WHERE id = ?", prevId) : null;
-  const a = await saveAsset({ projectId, userId, data, versionOf: prev ? (prev.version_of ?? prev.id) : null, name: `${post ? "publication" : "pub"}-modifiee-${doc.format.aspect.replace(":", "x")}.jpg`, mime: "image/jpeg", role: post ? "social" : "ad", folderKey: post ? "images.social" : "images.ads", origin: "generated", status: "review", meta: { adDoc: { docKey, source: doc.meta.source }, format: doc.format.aspect, ...(post ? { poster: { docKey, layout: doc.meta.recipe?.layout ?? null } } : {}) } });
-  return saveVersion(projectId, docKey, doc, { note, renderedAssetId: a.id });
+/** Native row version, distinct from AdDocument.version (the document schema). expected0 is trusted creation only. */
+export type DocWriteGuard={expectedVersion:number;source?:{docKey:string;expectedVersion:number};strategyStamp?:import("../strategy-consumption").StrategyStamp|null};
+export function assertDocVersion(projectId:string,docKey:string,expectedVersion:number){
+ const actual=one<{v:number}>("SELECT COALESCE(MAX(version),0) v FROM ad_documents WHERE project_id=? AND doc_key=?",projectId,docKey)!.v;
+ if(actual!==expectedVersion)throw new HttpError(409,"Une version plus récente existe. Votre brouillon est conservé : rechargez et comparez avant de réessayer.","ad_doc_version_conflict");
+}
+export function guardedForkKey(projectId:string,userId:string,docKey:string,expectedVersion:number,operationId:string,action:string,format:unknown){return 'ad:'+crypto.createHash('sha256').update(JSON.stringify([projectId,userId,docKey,expectedVersion,operationId,action,format])).digest('hex').slice(0,24);}
+/** Same renderer and native library; the final version/asset commit is one synchronous SQLite transaction. */
+export async function saveAndRender(projectId:string,userId:string,docKey:string,doc:AdDocument,note="",guard?:DocWriteGuard):Promise<DocVersion>{
+ const check=()=>{if(guard){assertDocVersion(projectId,docKey,guard.expectedVersion);if(guard.source)assertDocVersion(projectId,guard.source.docKey,guard.source.expectedVersion);}};
+ check();
+ const {data}=await exportDoc(projectId,doc,"jpeg"),post=docKey.startsWith("post:");
+ const prevId=latestDoc(projectId,docKey)?.version.renderedAssetId??null,prev=prevId?one<{id:string;version_of:string|null}>("SELECT id,version_of FROM assets WHERE id=?",prevId):null;
+ let saved:DocVersion|undefined;
+ await saveAsset({projectId,userId,data,versionOf:prev?(prev.version_of??prev.id):null,name:`${post?"publication":"pub"}-modifiee-${doc.format.aspect.replace(":","x")}.jpg`,mime:"image/jpeg",role:post?"social":"ad",folderKey:post?"images.social":"images.ads",origin:"generated",status:"review",meta:{adDoc:{docKey,source:doc.meta.source},format:doc.format.aspect,...(post?{poster:{docKey,layout:doc.meta.recipe?.layout??null}}:{})}},asset=>{
+  check();saved=saveVersion(projectId,docKey,doc,{note,renderedAssetId:asset.id,strategyStamp:guard?.strategyStamp});
+ });
+ return saved!;
 }
 
 /** Trusted first-version lineage, never the editable document sent by the browser.

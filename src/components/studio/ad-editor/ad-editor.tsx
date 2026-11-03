@@ -86,10 +86,11 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
   const [busy, setBusy] = useState<string | null>(null);
   const editSending=useRef(false),editOperation=useRef<{intent:string;id:string}|null>(null);
   const backgroundSending=useRef(false),backgroundOperation=useRef<{intent:string;id:string}|null>(null);
+  const duplicateOperation=useRef<{intent:string;id:string}|null>(null);
   const [photoChoice, setPhotoChoice] = useState<View["edit"] | null>(null);
   const [draft, setDraft] = useState<{ doc: AdDocument } | null>(null);
   const stageRef = useRef<HTMLDivElement>(null);
-  const [fmtPreview, setFmtPreview] = useState<{ f: { platform: string; aspect: string; label: string }; image: string } | null>(null);
+  const [fmtPreview, setFmtPreview] = useState<{ f: { platform: string; aspect: string; label: string }; image: string;version:number;operationId:string } | null>(null);
   // Aperçu animé (gratuit, dans le navigateur) : même calcul que la vidéo exportée, joué une fois (7 s).
   const [playT, setPlayT] = useState<number | null>(null);
   const playing = useRef<number | null>(null);
@@ -190,7 +191,7 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
     if (!doc) return null;
     setSaving(true);
     try {
-      const v = await api<View>(base, { body: { action: "save", doc, note: "modification manuelle" } });
+      const v = await api<View>(base, { body: { action: "save", expectedVersion:view?.version.version,doc, note: "modification manuelle" } });
       setView(v);
       setDirty(false);
       try {
@@ -204,7 +205,7 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
     } finally {
       setSaving(false);
     }
-  }, [base, doc, docKey, t, toast]);
+  }, [base, doc, docKey, t, toast,view?.version.version]);
 
   // Raccourcis clavier (ordinateur) : annuler, rétablir, enregistrer, supprimer, dupliquer, déplacer au clavier.
   useEffect(() => {
@@ -409,7 +410,7 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
   const restore = async (version: number) => {
     if (dirty && !window.confirm(t("Des modifications ne sont pas enregistrées : les abandonner pour restaurer cette version ?", "Some changes are not saved: discard them to restore this version?"))) return;
     try {
-      await api(base, { body: { action: "restore", version } });
+      await api(base, { body: { action: "restore", version,expectedVersion:view?.version.version } });
       await load();
       toast("ok", t(`Version ${version} restaurée (l'historique est conservé).`, `Version ${version} restored (history kept).`));
       setPanel(null);
@@ -421,17 +422,18 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
   const previewFormat = async (f: { platform: string; aspect: string; label: string }) => {
     if (dirty && !(await save())) return;
     try {
-      const r = await api<{ preview: { image: string } }>(base, { body: { action: "preview_reflow", platform: f.platform, aspect: f.aspect } });
-      setFmtPreview({ f, image: r.preview.image });
+      const r = await api<{version:number; preview: { image: string } }>(base, { body: { action: "preview_reflow", platform: f.platform, aspect: f.aspect } });
+      setFmtPreview({ f, image: r.preview.image,version:r.version,operationId:crypto.randomUUID() });
     } catch (e) {
       toast("bad", (e as Error).message);
     }
   };
   const reformat = async (f: { platform: string; aspect: string }) => {
-    setFmtPreview(null);
+    const proposed=fmtPreview;if(!proposed)return;
     if (dirty && !(await save())) return;
     try {
-      const v = await api<View>(base, { body: { action: "reflow", platform: f.platform, aspect: f.aspect } });
+      const v = await api<View>(base, { body: { action: "reflow", platform: f.platform, aspect: f.aspect,expectedVersion:proposed.version,operationId:proposed.operationId } });
+      setFmtPreview(null);
       setDocKey(v.docKey);
       await load(v.docKey);
       toast("ok", t(`Copie au format ${f.aspect} créée : vos modifications sont conservées.`, `${f.aspect} copy created: your changes are kept.`));
@@ -442,8 +444,11 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
     }
   };
   const duplicateCreative = async () => {
-    if (dirty && !(await save())) return;
-    const v = await api<View>(base, { body: { action: "duplicate" } });
+    const current=dirty?await save():view;if(!current)return;
+    const intent=JSON.stringify({docKey,version:current.version.version});
+    if(duplicateOperation.current?.intent!==intent)duplicateOperation.current={intent,id:crypto.randomUUID()};
+    const v=await api<View>(base,{body:{action:"duplicate",expectedVersion:current.version.version,operationId:duplicateOperation.current.id}});
+    duplicateOperation.current=null;
     setDocKey(v.docKey);
     await load(v.docKey);
     toast("ok", t("Copie créée : vous modifiez maintenant la copie.", "Copy created: you are now editing the copy."));

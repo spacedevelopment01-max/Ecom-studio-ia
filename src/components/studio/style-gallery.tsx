@@ -32,15 +32,16 @@ export function StyleGallery({ projectId, docKey, onApplied, compact }: { projec
   const [families, setFamilies] = useState<string[]>(Object.keys(FAMILY));
   const [items, setItems] = useState<Item[] | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [expectedVersion,setExpectedVersion]=useState<number|null>(null);
   const [chosen, setChosen] = useState<Item | null>(null);
   const url = `/api/projects/${projectId}/ads/docs/${encodeURIComponent(docKey)}`;
   const load = useCallback(
     async (f: string) => {
-      setItems(null);
+      setItems(null);setExpectedVersion(null);
       try {
-        const r = await api<{ families: string[]; items: Item[] }>(url, { body: { action: "gallery", family: f } });
+        const r = await api<{version:number; families: string[]; items: Item[] }>(url, { body: { action: "gallery", family: f } });
         setFamilies(r.families);
-        setItems(r.items);
+        setItems(r.items);setExpectedVersion(r.version);
       } catch (e) {
         toast("bad", (e as Error).message);
         setItems([]);
@@ -54,7 +55,7 @@ export function StyleGallery({ projectId, docKey, onApplied, compact }: { projec
   const apply = async (body: Record<string, string>, key: string) => {
     setBusy(key);
     try {
-      await api(url, { body: { action: "restyle", ...body } });
+      await api(url, { body: { action: "restyle",expectedVersion:expectedVersion??undefined,...body } });
       toast("ok", t("Modèle appliqué (nouvelle version : l'ancienne reste restaurable dans l'éditeur).", "Template applied (new version: the previous one can be restored in the editor)."));
       onApplied?.();
       await load(family);
