@@ -12,8 +12,8 @@
     "note": "thème sur mesure (theme.custom) : aucun adaptateur SYNA"
   },
   "native.ad-document-edit": {
-    "statut": "ABSENT",
-    "note": "documents publicitaires à calques : éditeur natif seulement"
+    "statut": "PARTIEL",
+    "note": "recette pub-301 4/4 (deux modes) : titre unique agrandi gratuitement, aperçus, 17 s, reçu, PNG, seul le titre modifié — MAIS refus 422 sur 18/18 créations brutes du moteur V2 (le parcours ne marche que si le client a d’abord réduit le titre) ; une seule opération (titre)"
   },
   "native.ad-regenerate": {
     "statut": "ABSENT",
@@ -94,5 +94,17 @@
   "native.brand-propagation": {
     "statut": "ABSENT",
     "note": "propagation de marque (/brand/impact) : natif seulement"
+  },
+  "seo.update": {
+    "statut": "ABSENT",
+    "note": "phrase réelle (sonde e2d8c8ed) : « Remplace le titre SEO de la page d’accueil… » mal aiguillée vers la grammaire du titre de section ; aucun outil SEO atteint depuis SYNA"
+  },
+  "native.prompt-run": {
+    "statut": "ABSENT",
+    "note": "vérifié (recette pub-301, deux modes) : « Exécute le premier prompt de ma bibliothèque » ne crée aucune tâche ; exécution payante volontairement non raccordée"
+  },
+  "conversation.attachments": {
+    "statut": "ABSENT",
+    "note": "« Lien / photo » : lien conservé sans consultation, photo non raccordée (annoncé dans le panneau) ; contrat demandé à Codex"
   }
 }
