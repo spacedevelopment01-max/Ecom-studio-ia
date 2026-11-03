@@ -54,6 +54,7 @@ type Handler = (ctx: JobContext) => Promise<unknown>;
 export const handlers: Record<string, Handler> = {
   "agent.reason": async ctx => (await import('../src/lib/orchestrator/conversation/intelligence')).runCognitiveJob(ctx),
   "agent.theme.capture": async ctx => (await import('../src/lib/orchestrator/conversation/render-tool-execution')).runRenderCapture(ctx),
+  "agent.ad-document.local": async ctx => (await import('../src/lib/orchestrator/conversation/ad-document-tool-execution')).runAdDocument(ctx),
   "agent.theme.export": async ctx => (await import('../src/lib/orchestrator/conversation/export-tool-execution')).runNativeExport(ctx),
   "agent.theme.change": async ctx => (await import('../src/lib/orchestrator/conversation/theme-tool-execution')).runThemeChange(ctx),
   "agent.catalogue.change": async ctx => (await import('../src/lib/orchestrator/conversation/catalogue-tool-execution')).runCatalogueChange(ctx),
