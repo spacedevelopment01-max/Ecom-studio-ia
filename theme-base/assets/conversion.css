@@ -8,8 +8,8 @@ body[data-conversion="pop"]{--cv-radius:8px;--cv-card-radius:14px;--cv-border:1.
 body[data-conversion="contrast"]{--cv-radius:14px;--cv-card-radius:18px;--cv-border:1px solid rgba(var(--c-text-rgb),.16);--cv-shadow:0 18px 40px -26px rgba(0,0,0,.5);--cv-button-bg:linear-gradient(180deg,color-mix(in srgb,var(--c-accent) 86%,#fff),var(--c-accent));--cv-button-radius:14px}
 /* Les variables qui dépendent des couleurs du schéma sont redéclarées dans chaque section à schéma : une variable
    calculée une fois sur :root garderait l'accent de la page entière (bouton anthracite invisible sur une section sombre). */
-[class*="color-scheme-"]{--cv-border:1px solid rgba(var(--c-text-rgb),.14);--cv-button-bg:var(--c-accent-fill,var(--c-accent))}
-body[data-conversion="contrast"] [class*="color-scheme-"]{--cv-border:1px solid rgba(var(--c-text-rgb),.16);--cv-button-bg:linear-gradient(180deg,color-mix(in srgb,var(--c-accent) 86%,#fff),var(--c-accent))}
+:is([class*="color-scheme-"],[class*="color-es-"]){--cv-border:1px solid rgba(var(--c-text-rgb),.14);--cv-button-bg:var(--c-accent-fill,var(--c-accent))}
+body[data-conversion="contrast"] :is([class*="color-scheme-"],[class*="color-es-"]){--cv-border:1px solid rgba(var(--c-text-rgb),.16);--cv-button-bg:linear-gradient(180deg,color-mix(in srgb,var(--c-accent) 86%,#fff),var(--c-accent))}
 :is(body[data-conversion="pop"],body[data-conversion="contrast"],body[data-conversion="nomade"],body[data-conversion="astral"],body[data-conversion="itineraire"],body[data-conversion="club"]) .es-section{padding-top:var(--pt,64px);padding-bottom:var(--pb,64px)}
 
 /* Titres en deux temps */
@@ -561,7 +561,7 @@ body[data-conversion="contrast"] .cv-quote--band .cv-quote__button{background:#1
    que FRAISE et ONDE (règles communes ci-dessus), autre caractère. Aucun contenu ne dépend d'une animation : les reflets
    et dérives sont décoratifs et disparaissent avec « réduire les animations ». */
 body[data-conversion="nomade"]{--cv-radius:6px;--cv-card-radius:6px;--cv-border:1px solid rgba(var(--c-text-rgb),.14);--cv-shadow:0 26px 50px -34px rgba(42,29,22,.55);--cv-title-case:none;--cv-accent-case:none;--cv-accent-font:var(--font-heading,Georgia,serif);--cv-button-radius:999px;--cv-button-bg:linear-gradient(135deg,color-mix(in srgb,var(--c-accent) 72%,#fff) 0%,var(--c-accent) 48%,color-mix(in srgb,var(--c-accent) 78%,#000) 100%);--nm-line:linear-gradient(90deg,transparent,color-mix(in srgb,var(--c-accent) 80%,transparent) 18%,var(--c-accent) 50%,color-mix(in srgb,var(--c-accent) 80%,transparent) 82%,transparent)}
-body[data-conversion="nomade"] [class*="color-scheme-"]{--cv-border:1px solid rgba(var(--c-text-rgb),.14);--cv-button-bg:linear-gradient(135deg,color-mix(in srgb,var(--c-accent) 72%,#fff) 0%,var(--c-accent) 48%,color-mix(in srgb,var(--c-accent) 78%,#000) 100%)}
+body[data-conversion="nomade"] :is([class*="color-scheme-"],[class*="color-es-"]){--cv-border:1px solid rgba(var(--c-text-rgb),.14);--cv-button-bg:linear-gradient(135deg,color-mix(in srgb,var(--c-accent) 72%,#fff) 0%,var(--c-accent) 48%,color-mix(in srgb,var(--c-accent) 78%,#000) 100%)}
 body[data-conversion="nomade"] .es-section{padding-top:var(--pt,88px);padding-bottom:var(--pb,88px)}
 /* Titres : serif fine, accent en italique cuivré, filet « sillon » sous les titres de section. */
 body[data-conversion="nomade"] :is(.cv-title,.es-h2,.es-section-head .es-heading,.es-product__title,.cv-head .cv-title){font-weight:400;letter-spacing:-.015em;line-height:1.08;text-transform:none}
@@ -961,7 +961,7 @@ body[data-conversion="astral"][data-ds] .es-404--photo h1{font-size:clamp(2rem,3
    de paysages en bandeaux, boutons pleins de l'accent (orange), coins presque droits, pied de page sombre (vert sapin).
    Les capitales viennent du texte saisi, jamais d'une transformation : le marchand garde la main sur la casse. */
 body[data-conversion="itineraire"]{--cv-radius:3px;--cv-card-radius:0px;--cv-border:1px solid rgba(var(--c-text-rgb),.16);--cv-shadow:none;--cv-title-case:none;--cv-accent-case:none;--cv-accent-font:var(--font-heading);--cv-button-radius:3px;--cv-button-shadow:none;--cv-button-border:0;--tv-line:rgba(var(--c-text-rgb),.14);--tv-gap:clamp(10px,1vw,14px)}
-body[data-conversion="itineraire"] [class*="color-scheme-"]{--cv-border:1px solid rgba(var(--c-text-rgb),.16);--cv-button-bg:var(--c-accent)}
+body[data-conversion="itineraire"] :is([class*="color-scheme-"],[class*="color-es-"]){--cv-border:1px solid rgba(var(--c-text-rgb),.16);--cv-button-bg:var(--c-accent)}
 body[data-conversion="itineraire"] .es-section{padding-top:var(--pt,64px);padding-bottom:var(--pb,64px)}
 body[data-conversion="itineraire"] .es-container{max-width:calc(var(--page-width,1360px) + 48px)}
 /* Titres : condensés, serrés, sans faux gras. */

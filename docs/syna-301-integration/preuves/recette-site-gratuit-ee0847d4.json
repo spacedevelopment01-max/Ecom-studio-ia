@@ -1,0 +1,212 @@
+{
+  "schema": "syna301-site-gratuit-recette-1",
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "business": "products",
+      "steps": [
+        {
+          "etape": "Site ouvert, mode du compte, section désignée",
+          "ok": true
+        },
+        {
+          "etape": "« Mets le fond de cette section en bleu » : Gratuit — 0 €, avant / après, aucun devis, rien d'écrit",
+          "ok": true,
+          "detail": "#F4F5F2 → #1D4ED8 | #182521 → #FFFFFF"
+        },
+        {
+          "etape": "Annuler : rien d'écrit, rien au rechargement",
+          "ok": true
+        },
+        {
+          "etape": "nouvelle proposition, attente réelle de 17 s, confirmation unique, reçu",
+          "ok": true,
+          "detail": "version 1 → 2"
+        },
+        {
+          "etape": "résultat réel : seule la section désignée a changé en base, couleur visible dans l'aperçu",
+          "ok": true,
+          "detail": "aperçu fond / texte rgb(244, 245, 242) / rgb(24, 37, 33) → rgb(29, 78, 216) / rgb(255, 255, 255) (color-es-image_with_text_2)"
+        },
+        {
+          "etape": "rechargement : reçu conservé",
+          "ok": true
+        },
+        {
+          "etape": "« Change la couleur principale du site en #1e3a8a » : clarification, ni confirmation ni devis, rien d'écrit",
+          "ok": true
+        },
+        {
+          "etape": "« Ajoute une section FAQ après cette section » — réponse réseau perdue, vérification sans double écriture",
+          "ok": true,
+          "detail": "faq_1 (faq) après image_with_text_2 ; 1 envoi(s) identique(s) : true"
+        },
+        {
+          "etape": "« Annule la dernière retouche du site » : proposition, confirmation, FAQ retirée",
+          "ok": true,
+          "detail": "version 3 → 4"
+        },
+        {
+          "etape": "conflit : modification manuelle entre proposition et accord → refus, la modification manuelle reste",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Site ouvert, mode du compte, section désignée",
+          "ok": true
+        },
+        {
+          "etape": "« Mets le fond de cette section en bleu » : Gratuit — 0 €, avant / après, aucun devis, rien d'écrit",
+          "ok": true,
+          "detail": "#F4F5F2 → #1D4ED8 | #182521 → #FFFFFF"
+        },
+        {
+          "etape": "Annuler : rien d'écrit, rien au rechargement",
+          "ok": true
+        },
+        {
+          "etape": "nouvelle proposition, attente réelle de 17 s, confirmation unique, reçu",
+          "ok": true,
+          "detail": "version 1 → 2"
+        },
+        {
+          "etape": "résultat réel : seule la section désignée a changé en base, couleur visible dans l'aperçu",
+          "ok": true,
+          "detail": "réglages modifiés : color_scheme"
+        },
+        {
+          "etape": "rechargement : reçu conservé",
+          "ok": true
+        },
+        {
+          "etape": "« Change la couleur principale du site en #1e3a8a » : clarification, ni confirmation ni devis, rien d'écrit",
+          "ok": true
+        },
+        {
+          "etape": "« Ajoute une section FAQ après cette section »",
+          "ok": true,
+          "detail": "faq_1 (faq) après hero_split_1"
+        },
+        {
+          "etape": "« Annule la dernière retouche du site » : proposition, confirmation, FAQ retirée",
+          "ok": true,
+          "detail": "version 3 → 4"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Site ouvert, mode du compte, section désignée",
+          "ok": true
+        },
+        {
+          "etape": "« Mets le fond de cette section en bleu » : Gratuit — 0 €, avant / après, aucun devis, rien d'écrit",
+          "ok": true,
+          "detail": "#F4F5F2 → #1D4ED8 | #182521 → #FFFFFF"
+        },
+        {
+          "etape": "Annuler : rien d'écrit, rien au rechargement",
+          "ok": true
+        },
+        {
+          "etape": "nouvelle proposition, attente réelle de 17 s, confirmation unique, reçu",
+          "ok": true,
+          "detail": "version 1 → 2"
+        },
+        {
+          "etape": "résultat réel : seule la section désignée a changé en base, couleur visible dans l'aperçu",
+          "ok": true,
+          "detail": "aperçu fond / texte rgb(244, 245, 242) / rgb(24, 37, 33) → rgb(29, 78, 216) / rgb(255, 255, 255) (color-es-hero_split_1)"
+        },
+        {
+          "etape": "rechargement : reçu conservé",
+          "ok": true
+        },
+        {
+          "etape": "« Change la couleur principale du site en #1e3a8a » : clarification, ni confirmation ni devis, rien d'écrit",
+          "ok": true
+        },
+        {
+          "etape": "« Ajoute une section FAQ après cette section » — réponse réseau perdue, vérification sans double écriture",
+          "ok": true,
+          "detail": "faq_1 (faq) après hero_split_1 ; 1 envoi(s) identique(s) : true"
+        },
+        {
+          "etape": "« Annule la dernière retouche du site » : proposition, confirmation, FAQ retirée",
+          "ok": true,
+          "detail": "version 3 → 4"
+        },
+        {
+          "etape": "conflit : modification manuelle entre proposition et accord → refus, la modification manuelle reste",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "business": "products",
+      "steps": [
+        {
+          "etape": "Site ouvert, mode du compte, section désignée",
+          "ok": true
+        },
+        {
+          "etape": "« Mets le fond de cette section en bleu » : Gratuit — 0 €, avant / après, aucun devis, rien d'écrit",
+          "ok": true,
+          "detail": "#F4F5F2 → #1D4ED8 | #182521 → #FFFFFF"
+        },
+        {
+          "etape": "Annuler : rien d'écrit, rien au rechargement",
+          "ok": true
+        },
+        {
+          "etape": "nouvelle proposition, attente réelle de 17 s, confirmation unique, reçu",
+          "ok": true,
+          "detail": "version 1 → 2"
+        },
+        {
+          "etape": "résultat réel : seule la section désignée a changé en base, couleur visible dans l'aperçu",
+          "ok": true,
+          "detail": "réglages modifiés : color_scheme"
+        },
+        {
+          "etape": "rechargement : reçu conservé",
+          "ok": true
+        },
+        {
+          "etape": "« Change la couleur principale du site en #1e3a8a » : clarification, ni confirmation ni devis, rien d'écrit",
+          "ok": true
+        },
+        {
+          "etape": "« Ajoute une section FAQ après cette section »",
+          "ok": true,
+          "detail": "faq_1 (faq) après image_with_text_2"
+        },
+        {
+          "etape": "« Annule la dernière retouche du site » : proposition, confirmation, FAQ retirée",
+          "ok": true,
+          "detail": "version 3 → 4"
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "forbidden": [],
+  "coutIA": 0
+}

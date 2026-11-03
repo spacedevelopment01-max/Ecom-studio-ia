@@ -1,0 +1,866 @@
+[
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "produit",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "boutique",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "catalogue",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "images",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "publications",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "publicites",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "fichiers",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "rendez-vous",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "produit",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "boutique",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "catalogue",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "images",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "publications",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "publicites",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "fichiers",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "rendez-vous",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "produit",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "boutique",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "catalogue",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "images",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "publications",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "publicites",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "fichiers",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "services",
+  "tab": "rendez-vous",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "produit",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "boutique",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "catalogue",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "images",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "publications",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "publicites",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "fichiers",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "rendez-vous",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "produit",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "boutique",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "catalogue",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "images",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "publications",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "publicites",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "fichiers",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "rendez-vous",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "produit",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "boutique",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "catalogue",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "images",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "publications",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "publicites",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "fichiers",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "encre",
+  "business": "products",
+  "tab": "rendez-vous",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "produit",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "boutique",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "catalogue",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "images",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "publications",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "publicites",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "fichiers",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "rendez-vous",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "produit",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "boutique",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "catalogue",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "images",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "publications",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "publicites",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "fichiers",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "rendez-vous",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "produit",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "boutique",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "catalogue",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "images",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "publications",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "publicites",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "fichiers",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "services",
+  "tab": "rendez-vous",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "produit",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "boutique",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "catalogue",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "images",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "publications",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "publicites",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "fichiers",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "rendez-vous",
+  "width": 390,
+  "W": 390,
+  "sw": 390,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "produit",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "boutique",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "catalogue",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "images",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "publications",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "publicites",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "fichiers",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "rendez-vous",
+  "width": 360,
+  "W": 360,
+  "sw": 360,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "produit",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "boutique",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "catalogue",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "images",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "publications",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "publicites",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "fichiers",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ },
+ {
+  "mode": "plein",
+  "business": "products",
+  "tab": "rendez-vous",
+  "width": 1440,
+  "W": 1440,
+  "sw": 1440,
+  "culprits": []
+ }
+]

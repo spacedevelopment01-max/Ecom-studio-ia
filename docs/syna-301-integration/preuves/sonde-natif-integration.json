@@ -1,0 +1,152 @@
+[
+ {
+  "op": "C05 titre (B1)",
+  "text": "Remplace le titre de cette section par « Titre sondé »",
+  "natifGratuit": false,
+  "ops": [],
+  "annulation": false,
+  "direction": null,
+  "reponse": null
+ },
+ {
+  "op": "C05 couleur du titre",
+  "text": "Mets le titre de cette section en rouge",
+  "natifGratuit": true,
+  "ops": [
+   "section_colors"
+  ],
+  "annulation": false,
+  "direction": null,
+  "reponse": "Section « Héros divisé » uniquement : texte #B42318. Le reste du site ne change pas."
+ },
+ {
+  "op": "C05 couleur principale",
+  "text": "Change la couleur principale du site en #1e3a8a",
+  "natifGratuit": true,
+  "ops": [
+   "section_colors"
+  ],
+  "annulation": false,
+  "direction": null,
+  "reponse": "Section « Héros divisé » uniquement : fond #1E3A8A. Le reste du site ne change pas."
+ },
+ {
+  "op": "C07 masquer section",
+  "text": "Masque cette section",
+  "natifGratuit": false,
+  "ops": [],
+  "annulation": false,
+  "direction": null,
+  "reponse": null
+ },
+ {
+  "op": "C07 supprimer section",
+  "text": "Supprime cette section",
+  "natifGratuit": false,
+  "ops": [],
+  "annulation": false,
+  "direction": null,
+  "reponse": null
+ },
+ {
+  "op": "C07 ajouter section",
+  "text": "Ajoute une section FAQ après cette section",
+  "natifGratuit": true,
+  "ops": [
+   "add_section"
+  ],
+  "annulation": false,
+  "direction": null,
+  "reponse": "Section ajoutée avec un contenu de départ à personnaliser."
+ },
+ {
+  "op": "C07 ajouter page",
+  "text": "Ajoute une page « Nos garanties »",
+  "natifGratuit": false,
+  "ops": [],
+  "annulation": false,
+  "direction": null,
+  "reponse": null
+ },
+ {
+  "op": "C05 bouton",
+  "text": "Remplace le texte du bouton de cette section par « Demander un devis »",
+  "natifGratuit": false,
+  "ops": [],
+  "annulation": false,
+  "direction": null,
+  "reponse": null
+ },
+ {
+  "op": "C05 image",
+  "text": "Remplace l’image de cette section par la photo de l’atelier",
+  "natifGratuit": false,
+  "ops": [],
+  "annulation": false,
+  "direction": null,
+  "reponse": null
+ },
+ {
+  "op": "C05 annuler",
+  "text": "Annule la dernière retouche du site",
+  "natifGratuit": true,
+  "ops": [],
+  "annulation": true,
+  "direction": null,
+  "reponse": "Je reviens à la version précédente."
+ },
+ {
+  "op": "C06 thème",
+  "text": "Choisis le thème Rive pour mon site",
+  "natifGratuit": true,
+  "ops": [],
+  "annulation": false,
+  "direction": "rive",
+  "reponse": "J'applique la direction Atelier Rive en conservant vos textes et images."
+ },
+ {
+  "op": "C15 SEO",
+  "text": "Remplace le titre SEO de la page d’accueil par « Aménagement de vans à Lyon »",
+  "natifGratuit": false,
+  "ops": [],
+  "annulation": false,
+  "direction": null,
+  "reponse": null
+ },
+ {
+  "op": "C22 horaires",
+  "text": "Change les horaires du mardi : 9 h – 18 h",
+  "natifGratuit": false,
+  "ops": [],
+  "annulation": false,
+  "direction": null,
+  "reponse": null
+ },
+ {
+  "op": "C21 prestation",
+  "text": "Renomme cette prestation en « Aménagement complet »",
+  "natifGratuit": false,
+  "ops": [],
+  "annulation": false,
+  "direction": null,
+  "reponse": null
+ },
+ {
+  "op": "C16 calendrier",
+  "text": "Déplace ma prochaine publication au 12 novembre",
+  "natifGratuit": false,
+  "ops": [],
+  "annulation": false,
+  "direction": null,
+  "reponse": null
+ },
+ {
+  "op": "C12 stock",
+  "text": "Mets le stock de ce produit à 12",
+  "natifGratuit": false,
+  "ops": [],
+  "annulation": false,
+  "direction": null,
+  "reponse": null
+ }
+]

@@ -1,3 +1,4 @@
+import {localEditAllowed} from './existing-local-edits';
 import type {ConversationView} from './orchestrator/conversation/contract';
 type Context=NonNullable<NonNullable<ConversationView['activeContext']>['presentation']>;
 type Pending={action:'confirm-local';proposalId:string;confirmation:true;revision:number;projectRevision:number|null;requestId:string};
@@ -16,7 +17,7 @@ export function createLocalSiteConfirmation(options:{conversationId:string;fetch
  const uuid=()=>options.uuid?.()??crypto.randomUUID();
  async function request(path:string,body?:unknown){const r=await options.fetch(path,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{cache:'no-store'});const data=await r.json();if(!r.ok){const e=Object.assign(new Error(data.error??`Erreur ${r.status}`),{status:r.status,context:data.context});throw e;}return data;}
  async function accept(v:ConversationView){if(!alive)return;options.onView(v);if(hasNativeLocalReceipt(v)&&v.localSite!.version!.id!==applied){await options.onApplied(v);applied=v.localSite!.version!.id;}}
- async function refresh(){const v=await request(route) as ConversationView;await accept(v);emit({blocked:!!v.recovery||!!v.readOnlyReason||!v.localSiteExecution?.enabled});return v;}
+ async function refresh(){const v=await request(route) as ConversationView;await accept(v);emit({blocked:!localEditAllowed(v,'local-site')||!v.localSiteExecution?.enabled});return v;}
  async function locked(action:()=>Promise<void>){if(busy||!alive)return;busy=true;emit({busy:true,error:''});try{await action();}catch(error){const e=error as Error&{status?:number;context?:Context};if(e.status){clear();emit({blocked:[401,402,403,404].includes(e.status),uncertain:false,context:e.context??null,error:e.message});if(e.status===409){try{const context=e.context??await request(route+'/context');emit({context});await refresh();}catch{}}}else emit({error:'Réponse non reçue. Vérifiez l’enregistrement ou réessayez la même confirmation gratuite.',uncertain:!!pending});}finally{busy=false;emit({busy:false});}}
  return{
   activate(){alive=true;},
@@ -24,7 +25,11 @@ export function createLocalSiteConfirmation(options:{conversationId:string;fetch
   dispose(){alive=false;},
   refresh:()=>locked(async()=>{const v=await refresh();if(hasNativeLocalReceipt(v)){clear();emit({uncertain:false,error:''});}}),
   confirm:()=>locked(async()=>{
-   const v=options.view(),s=v.localSite;if(v.recovery||!v.localSiteExecution?.enabled||v.readOnlyReason)throw Object.assign(new Error('Retouche gratuite indisponible.'),{status:403});
+   const v=options.view(),s=v.localSite;if(!localEditAllowed(v,'local-site')||!v.localSiteExecution?.enabled)throw Object.assign(new Error('Retouche gratuite indisponible.'),{status:403});
+   // Une confirmation restée en mémoire pour une AUTRE proposition (rechargement juste après un reçu) ne doit jamais être
+   // rejouée à la place de la proposition affichée : le serveur est déjà passé à une nouvelle proposition, l'ancienne est
+   // écrite ou dépassée. Une réponse perdue pour la proposition affichée reste rejouée à l'identique.
+   if(pending&&s?.state==='proposed'&&s.proposalId&&pending.proposalId!==s.proposalId)clear();
    if(!pending){if(s?.state!=='proposed'||!s.proposalId||!s.scope||!s.diff)throw Object.assign(new Error('Demandez une nouvelle proposition gratuite.'),{status:409});pending={action:'confirm-local',proposalId:s.proposalId,confirmation:true,revision:v.revision,projectRevision:v.projectRevision,requestId:uuid()};try{options.storage?.setItem(key,JSON.stringify(pending));}catch{}}
    const response=await request(route,pending) as ConversationView;
    // The server response is a native receipt, never an optimistic client result.
@@ -32,6 +37,7 @@ export function createLocalSiteConfirmation(options:{conversationId:string;fetch
    await accept(response);const next=await refresh();if(!hasNativeLocalReceipt(next))throw new Error('Version enregistrée à vérifier.');clear();emit({uncertain:false,context:null});
   }),
   cancel:()=>locked(async()=>{
+   const shown=options.view().localSite;if(pending&&shown?.state==='proposed'&&shown.proposalId&&pending.proposalId!==shown.proposalId)clear();
    if(pending)throw new Error('Vérifiez d’abord la confirmation dont la réponse est incertaine.');
    const proposal=options.view().localSite?.proposalId,v=await refresh();
    if(!proposal||v.localSite?.proposalId!==proposal)return;

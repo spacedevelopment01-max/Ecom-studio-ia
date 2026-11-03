@@ -1,0 +1,184 @@
+{
+  "schema": "syna301-pub-recette-1",
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "steps": [
+        {
+          "etape": "Publicités : créations listées, mode du compte appliqué",
+          "ok": true,
+          "detail": "4 création(s)"
+        },
+        {
+          "etape": "éditeur : titre sélectionné, « Désigner le titre pour SYNA »",
+          "ok": true
+        },
+        {
+          "etape": "proposition : aperçus avant / après, Gratuit — 0 €, aucun devis, aucune écriture",
+          "ok": true,
+          "detail": "Avant : 648 · Après confirmation : 778 | Avant : 175 · Après confirmation : 210 | Avant : 81 · Après confirmation : 97 | Avant : 45 · Après confirmation : 54 | Avant : 262 · Après confirmation : 288"
+        },
+        {
+          "etape": "annulation : aucune écriture, état conservé au rechargement",
+          "ok": true
+        },
+        {
+          "etape": "nouvelle proposition, attente réelle de 17 s, la confirmation reste possible",
+          "ok": true
+        },
+        {
+          "etape": "confirmation : tâche gratuite, reçu relu, export PNG",
+          "ok": true,
+          "detail": "versions 1 → 2, PNG 1574570 octets"
+        },
+        {
+          "etape": "base : titre agrandi, seuls les calques annoncés ont bougé (position verticale), aucun nouveau chevauchement",
+          "ok": true,
+          "detail": "taille du titre 81 → 97 ; calques modifiés : subline, title ; nouveaux chevauchements : 0"
+        },
+        {
+          "etape": "rechargement : reçu et version conservés",
+          "ok": true
+        },
+        {
+          "etape": "bibliothèque de prompts : lecture seule, aucune exécution",
+          "ok": true,
+          "detail": "20 affichés sur 420 ; exécution refusée (aucune tâche)"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "steps": [
+        {
+          "etape": "Publicités : créations listées, mode du compte appliqué",
+          "ok": true,
+          "detail": "4 création(s)"
+        },
+        {
+          "etape": "éditeur : titre sélectionné, « Désigner le titre pour SYNA »",
+          "ok": true
+        },
+        {
+          "etape": "proposition : aperçus avant / après, Gratuit — 0 €, aucun devis, aucune écriture",
+          "ok": true,
+          "detail": "Avant : 623 · Après confirmation : 614 | Avant : 381 · Après confirmation : 414 | Avant : 259 · Après confirmation : 311 | Avant : 83 · Après confirmation : 100 | Avant : 55 · Après confirmation : 66 "
+        },
+        {
+          "etape": "confirmation : tâche gratuite, reçu relu, export PNG",
+          "ok": true,
+          "detail": "versions 1 → 2, PNG 1033271 octets"
+        },
+        {
+          "etape": "base : titre agrandi, seuls les calques annoncés ont bougé (position verticale), aucun nouveau chevauchement",
+          "ok": true,
+          "detail": "taille du titre 83 → 100 ; calques modifiés : cta, subline, title ; nouveaux chevauchements : 0"
+        },
+        {
+          "etape": "rechargement : reçu et version conservés",
+          "ok": true
+        },
+        {
+          "etape": "bibliothèque de prompts : lecture seule, aucune exécution",
+          "ok": true,
+          "detail": "20 affichés sur 420 ; exécution refusée (aucune tâche)"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "steps": [
+        {
+          "etape": "Publicités : créations listées, mode du compte appliqué",
+          "ok": true,
+          "detail": "4 création(s)"
+        },
+        {
+          "etape": "éditeur : titre sélectionné, « Désigner le titre pour SYNA »",
+          "ok": true
+        },
+        {
+          "etape": "proposition : aperçus avant / après, Gratuit — 0 €, aucun devis, aucune écriture",
+          "ok": true,
+          "detail": "Avant : 76 · Après confirmation : 65 | Avant : 928 · Après confirmation : 950 | Avant : 221 · Après confirmation : 265 | Avant : 104 · Après confirmation : 125 | Avant : 57 · Après confirmation : 68 |"
+        },
+        {
+          "etape": "annulation : aucune écriture, état conservé au rechargement",
+          "ok": true
+        },
+        {
+          "etape": "nouvelle proposition, attente réelle de 17 s, la confirmation reste possible",
+          "ok": true
+        },
+        {
+          "etape": "confirmation : tâche gratuite, reçu relu, export PNG",
+          "ok": true,
+          "detail": "versions 1 → 2, PNG 2044986 octets"
+        },
+        {
+          "etape": "base : titre agrandi, seuls les calques annoncés ont bougé (position verticale), aucun nouveau chevauchement",
+          "ok": true,
+          "detail": "taille du titre 104 → 125 ; calques modifiés : cta, subline, title ; nouveaux chevauchements : 0"
+        },
+        {
+          "etape": "rechargement : reçu et version conservés",
+          "ok": true
+        },
+        {
+          "etape": "bibliothèque de prompts : lecture seule, aucune exécution",
+          "ok": true,
+          "detail": "20 affichés sur 420 ; exécution refusée (aucune tâche)"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "steps": [
+        {
+          "etape": "Publicités : créations listées, mode du compte appliqué",
+          "ok": true,
+          "detail": "4 création(s)"
+        },
+        {
+          "etape": "éditeur : titre sélectionné, « Désigner le titre pour SYNA »",
+          "ok": true
+        },
+        {
+          "etape": "proposition : aperçus avant / après, Gratuit — 0 €, aucun devis, aucune écriture",
+          "ok": true,
+          "detail": "Avant : 623 · Après confirmation : 614 | Avant : 381 · Après confirmation : 414 | Avant : 259 · Après confirmation : 311 | Avant : 83 · Après confirmation : 100 | Avant : 55 · Après confirmation : 66 "
+        },
+        {
+          "etape": "confirmation : tâche gratuite, reçu relu, export PNG",
+          "ok": true,
+          "detail": "versions 1 → 2, PNG 970599 octets"
+        },
+        {
+          "etape": "base : titre agrandi, seuls les calques annoncés ont bougé (position verticale), aucun nouveau chevauchement",
+          "ok": true,
+          "detail": "taille du titre 83 → 100 ; calques modifiés : cta, subline, title ; nouveaux chevauchements : 0"
+        },
+        {
+          "etape": "rechargement : reçu et version conservés",
+          "ok": true
+        },
+        {
+          "etape": "bibliothèque de prompts : lecture seule, aucune exécution",
+          "ok": true,
+          "detail": "20 affichés sur 420 ; exécution refusée (aucune tâche)"
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "forbidden": [],
+  "coutIA": 0
+}

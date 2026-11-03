@@ -1,0 +1,153 @@
+{
+  "schema": "syna-parite-301-recettes-1",
+  "note": "Opérations de la matrice #302 (docs/syna-301/MATRICE-PARITE-301.csv) visées par chaque recette navigateur de Codex, d'après ses drapeaux et ses assertions. Une recette réussie dans la coquille prouve le parcours SYNA de ces opérations dans ce mode, avec le fournisseur local simulé.",
+  "recettes": {
+    "ui": [
+      "conversation.persist",
+      "brief.update",
+      "conversation.resume-existing"
+    ],
+    "specialists": [
+      "conversation.persist"
+    ],
+    "specialists-tools-tools-ui": [
+      "offer.analyse"
+    ],
+    "specialists-tools-theme-ui": [
+      "theme.select",
+      "theme.exact-edit"
+    ],
+    "composition-ui-original-ui": [
+      "theme.compose",
+      "theme.original"
+    ],
+    "exports-ui": [
+      "theme.export"
+    ],
+    "render-ui": [
+      "theme.capture"
+    ],
+    "research-ui": [
+      "research.generate",
+      "research.approve"
+    ],
+    "catalogue-ui": [
+      "catalogue.read",
+      "catalogue.create",
+      "catalogue.update",
+      "catalogue.stock"
+    ],
+    "images-ui": [
+      "images.generate",
+      "images.upload"
+    ],
+    "retouches-ui": [
+      "images.correct"
+    ],
+    "logos-ui": [
+      "logo.generate"
+    ],
+    "logo-selection-ui": [
+      "logo.replace"
+    ],
+    "videos-ui": [
+      "videos.motion",
+      "videos.edit",
+      "videos.restore"
+    ],
+    "generated-videos-ui": [
+      "videos.plan",
+      "videos.generate"
+    ],
+    "voice-ui": [
+      "videos.voice"
+    ],
+    "clip-ui": [
+      "videos.retake"
+    ],
+    "social-ui": [
+      "social.plan",
+      "social.draft"
+    ],
+    "social-production-ui": [
+      "social.generate"
+    ],
+    "social-aspect-ui": [
+      "social.generate"
+    ],
+    "social-reuse-ui": [
+      "social.draft"
+    ],
+    "campaign-ui": [
+      "campaign.draft"
+    ],
+    "campaign-visual-ui": [
+      "ads.create"
+    ],
+    "background-communication-ui": [
+      "conversation.persist"
+    ],
+    "content-ui": [
+      "copy.generate",
+      "copy.edit"
+    ],
+    "brand-ui-brand-review-brand-correction": [
+      "brand.generate",
+      "brand.confirm",
+      "brand.correct"
+    ],
+    "blog-ui": [
+      "blog.generate"
+    ],
+    "closure-ui": [
+      "theme.exact-edit",
+      "theme.undo"
+    ],
+    "context-ui": [
+      "context.selection-revalidated"
+    ],
+    "context-manual-ui": [
+      "context.selection-revalidated"
+    ],
+    "choices-ui": [
+      "proposal.compare",
+      "proposal.choose",
+      "strategy.compare",
+      "strategy.preference"
+    ],
+    "targeted-copy-ui": [
+      "copy.edit"
+    ],
+    "acquired-copy-ui": [
+      "theme.compose"
+    ],
+    "recette-292": [
+      "theme.exact-edit",
+      "theme.undo",
+      "context.selection-revalidated",
+      "context.mode-switch",
+      "conversation.persist"
+    ],
+    "fichiers-301": [
+      "files.organize"
+    ],
+    "contenus-301": [
+      "properties.update",
+      "menu.update",
+      "projects.update"
+    ],
+    "pub-301": [
+      "native.ad-document-edit",
+      "prompts.list"
+    ],
+    "demandes-301": [
+      "site.requests"
+    ],
+    "anciens-projets-301": [
+      "conversation.resume-existing",
+      "files.organize"
+    ]
+  },
+  "note_knowledge": "knowledge-ui (hors CI de Codex) n'est rattachée à aucune opération : elle attend l'ancien libellé « Pas encore disponible » pour theme.original, désormais raccordé mais fermé (« Raccordement désactivé ou verrouillé ») ; recette périmée signalée à Codex.",
+  "note_vague2": "Vague 2 (convergence #348, e2d8c8ed) : pub-301 (scripts/syna301-pub-recette.ts, branche de requalification), demandes-301 (branche claude/syna-301-demandes), anciens-projets-301 (branche claude/syna-301-anciens-projets) ; chaque résultat est attribué au SHA de sa branche dans RAPPORT-VAGUE2.md."
+}

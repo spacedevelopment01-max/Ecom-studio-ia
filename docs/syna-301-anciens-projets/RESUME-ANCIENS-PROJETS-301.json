@@ -1,0 +1,116 @@
+{
+  "schema": "syna301-anciens-projets-recette-1",
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "steps": [
+        {
+          "etape": "ancien projet : avis de lecture seule visible, mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "demande hors exception : enregistrée seulement, aucun devis ni action",
+          "ok": true
+        },
+        {
+          "etape": "Fichiers : fichier coché, « Renomme ce fichier en … » → carte gratuite",
+          "ok": true
+        },
+        {
+          "etape": "confirmation : reçu relu, nom écrit, liste à jour, projet toujours en lecture seule",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "steps": [
+        {
+          "etape": "ancien projet : avis de lecture seule visible, mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "demande hors exception : enregistrée seulement, aucun devis ni action",
+          "ok": true
+        },
+        {
+          "etape": "Fichiers : fichier coché, « Renomme ce fichier en … » → carte gratuite",
+          "ok": true
+        },
+        {
+          "etape": "confirmation : reçu relu, nom écrit, liste à jour, projet toujours en lecture seule",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "steps": [
+        {
+          "etape": "ancien projet : avis de lecture seule visible, mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "demande hors exception : enregistrée seulement, aucun devis ni action",
+          "ok": true
+        },
+        {
+          "etape": "Fichiers : fichier coché, « Renomme ce fichier en … » → carte gratuite",
+          "ok": true
+        },
+        {
+          "etape": "confirmation : reçu relu, nom écrit, liste à jour, projet toujours en lecture seule",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "steps": [
+        {
+          "etape": "ancien projet : avis de lecture seule visible, mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "demande hors exception : enregistrée seulement, aucun devis ni action",
+          "ok": true
+        },
+        {
+          "etape": "Fichiers : fichier coché, « Renomme ce fichier en … » → carte gratuite",
+          "ok": true
+        },
+        {
+          "etape": "confirmation : reçu relu, nom écrit, liste à jour, projet toujours en lecture seule",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé",
+          "ok": true
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "forbidden": [],
+  "coutIA": 0
+}

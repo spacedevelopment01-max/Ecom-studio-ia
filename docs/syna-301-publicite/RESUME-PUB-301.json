@@ -1,0 +1,184 @@
+{
+  "schema": "syna301-pub-recette-1",
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "steps": [
+        {
+          "etape": "Publicités : créations listées, mode du compte appliqué",
+          "ok": true,
+          "detail": "4 création(s)"
+        },
+        {
+          "etape": "éditeur : titre sélectionné, « Désigner le titre pour SYNA »",
+          "ok": true
+        },
+        {
+          "etape": "proposition : aperçus avant / après, Gratuit — 0 €, aucun devis, aucune écriture",
+          "ok": true,
+          "detail": "Avant : 76 · Après confirmation : 65 | Avant : 928 · Après confirmation : 950 | Avant : 78 · Après confirmation : 93 | Avant : 68 · Après confirmation : 82 | Avant : 38 · Après confirmation : 46"
+        },
+        {
+          "etape": "annulation : aucune écriture, état conservé au rechargement",
+          "ok": true
+        },
+        {
+          "etape": "nouvelle proposition, attente réelle de 17 s, la confirmation reste possible",
+          "ok": true
+        },
+        {
+          "etape": "confirmation : tâche gratuite, reçu relu, export PNG",
+          "ok": true,
+          "detail": "versions 2 → 3, PNG 2269260 octets"
+        },
+        {
+          "etape": "base : seul le titre agrandi, autres calques identiques",
+          "ok": true,
+          "detail": "taille du titre 68 → 82"
+        },
+        {
+          "etape": "rechargement : reçu et version conservés",
+          "ok": true
+        },
+        {
+          "etape": "bibliothèque de prompts : lecture seule, aucune exécution",
+          "ok": true,
+          "detail": "20 affichés sur 420 ; exécution refusée (aucune tâche)"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "steps": [
+        {
+          "etape": "Publicités : créations listées, mode du compte appliqué",
+          "ok": true,
+          "detail": "4 création(s)"
+        },
+        {
+          "etape": "éditeur : titre sélectionné, « Désigner le titre pour SYNA »",
+          "ok": true
+        },
+        {
+          "etape": "proposition : aperçus avant / après, Gratuit — 0 €, aucun devis, aucune écriture",
+          "ok": true,
+          "detail": "Avant : 76 · Après confirmation : 65 | Avant : 928 · Après confirmation : 950 | Avant : 177 · Après confirmation : 212 | Avant : 83 · Après confirmation : 100 | Avant : 46 · Après confirmation : 55"
+        },
+        {
+          "etape": "confirmation : tâche gratuite, reçu relu, export PNG",
+          "ok": true,
+          "detail": "versions 2 → 3, PNG 2129223 octets"
+        },
+        {
+          "etape": "base : seul le titre agrandi, autres calques identiques",
+          "ok": true,
+          "detail": "taille du titre 83 → 100"
+        },
+        {
+          "etape": "rechargement : reçu et version conservés",
+          "ok": true
+        },
+        {
+          "etape": "bibliothèque de prompts : lecture seule, aucune exécution",
+          "ok": true,
+          "detail": "20 affichés sur 420 ; exécution refusée (aucune tâche)"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "steps": [
+        {
+          "etape": "Publicités : créations listées, mode du compte appliqué",
+          "ok": true,
+          "detail": "4 création(s)"
+        },
+        {
+          "etape": "éditeur : titre sélectionné, « Désigner le titre pour SYNA »",
+          "ok": true
+        },
+        {
+          "etape": "proposition : aperçus avant / après, Gratuit — 0 €, aucun devis, aucune écriture",
+          "ok": true,
+          "detail": "Avant : 76 · Après confirmation : 65 | Avant : 928 · Après confirmation : 950 | Avant : 177 · Après confirmation : 212 | Avant : 83 · Après confirmation : 100 | Avant : 46 · Après confirmation : 55"
+        },
+        {
+          "etape": "annulation : aucune écriture, état conservé au rechargement",
+          "ok": true
+        },
+        {
+          "etape": "nouvelle proposition, attente réelle de 17 s, la confirmation reste possible",
+          "ok": true
+        },
+        {
+          "etape": "confirmation : tâche gratuite, reçu relu, export PNG",
+          "ok": true,
+          "detail": "versions 2 → 3, PNG 2129223 octets"
+        },
+        {
+          "etape": "base : seul le titre agrandi, autres calques identiques",
+          "ok": true,
+          "detail": "taille du titre 83 → 100"
+        },
+        {
+          "etape": "rechargement : reçu et version conservés",
+          "ok": true
+        },
+        {
+          "etape": "bibliothèque de prompts : lecture seule, aucune exécution",
+          "ok": true,
+          "detail": "20 affichés sur 420 ; exécution refusée (aucune tâche)"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "steps": [
+        {
+          "etape": "Publicités : créations listées, mode du compte appliqué",
+          "ok": true,
+          "detail": "4 création(s)"
+        },
+        {
+          "etape": "éditeur : titre sélectionné, « Désigner le titre pour SYNA »",
+          "ok": true
+        },
+        {
+          "etape": "proposition : aperçus avant / après, Gratuit — 0 €, aucun devis, aucune écriture",
+          "ok": true,
+          "detail": "Avant : 76 · Après confirmation : 65 | Avant : 928 · Après confirmation : 950 | Avant : 177 · Après confirmation : 212 | Avant : 83 · Après confirmation : 100 | Avant : 46 · Après confirmation : 55"
+        },
+        {
+          "etape": "confirmation : tâche gratuite, reçu relu, export PNG",
+          "ok": true,
+          "detail": "versions 2 → 3, PNG 2215610 octets"
+        },
+        {
+          "etape": "base : seul le titre agrandi, autres calques identiques",
+          "ok": true,
+          "detail": "taille du titre 83 → 100"
+        },
+        {
+          "etape": "rechargement : reçu et version conservés",
+          "ok": true
+        },
+        {
+          "etape": "bibliothèque de prompts : lecture seule, aucune exécution",
+          "ok": true,
+          "detail": "20 affichés sur 420 ; exécution refusée (aucune tâche)"
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "forbidden": [],
+  "coutIA": 0
+}
