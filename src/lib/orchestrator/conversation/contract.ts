@@ -15,6 +15,7 @@ const base = z.object({
   projectRevision: z.number().int().min(0).nullable(),
 });
 export const CommandSchema = z.discriminatedUnion("action", [
+  base.extend({action:z.literal("cancel-local"),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal("confirm-service-profile"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal("cancel-service-profile"),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal("confirm-files"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
