@@ -456,8 +456,8 @@ function SocialKit({ tick }: { tick: number }) {
   const redo = async (voice: boolean) => {
     setBusy(true);
     try {
-      await api(`/api/projects/${id}/brand/social`, { body: { voice } });
-      toast("ok", t("Kit réseaux sociaux mis à jour.", "Social media kit updated."));
+      const result = await api<{ message?: string }>(`/api/projects/${id}/brand/social`, { body: { voice } });
+      toast("ok", result.message ?? t("Kit réseaux sociaux mis à jour.", "Social media kit updated."));
       reload();
     } catch (e) {
       toast("bad", (e as Error).message);

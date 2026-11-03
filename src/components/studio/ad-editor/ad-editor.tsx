@@ -16,6 +16,7 @@ import { useT } from "../../i18n";
 import { JobProgress, MediaPicker } from "../common";
 import { AiWait } from "../../wait-time";
 import { useCostConfirm } from "../cost-confirm";
+import {useAgentFocus,useAgentPanel,useAgentUi} from "../agent-ui-context";
 import { useProject } from "../project-context";
 import { History, type DocOp } from "@/lib/ad-doc/ops";
 import { localAdEdit } from "@/lib/ad-doc/local-edit";
@@ -29,7 +30,7 @@ import { EditorCanvas, InlineText } from "./canvas";
 import { IconBtn, LayersPanel, PropertiesPanel } from "./panels";
 
 type Version = { id: string; docKey: string; version: number; source: string; note: string; renderedAssetId: string | null; createdAt: number };
-type View = { docKey: string; doc: AdDocument; version: Version; versions: Version[]; metrics: { minFontPx: number; textContrast: number; textShare: number }; problems: { layerId: string; code: string; message: string }[]; edit?: { local: boolean; reason?: string; summary?: string; paid?: { kind: "image" | "creative"; reason: string; imageRequest?: { kind: string; topic: string } } | null } };
+type View = { localAdDocumentCapability?:boolean;docKey: string; doc: AdDocument; version: Version; versions: Version[]; metrics: { minFontPx: number; textContrast: number; textShare: number }; problems: { layerId: string; code: string; message: string }[]; edit?: { local: boolean; reason?: string; summary?: string; paid?: { kind: "image" | "creative"; reason: string; imageRequest?: { kind: string; topic: string } } | null } };
 
 const FORMATS: { platform: string; aspect: string; label: string }[] = [
   { platform: "meta_feed", aspect: "1:1", label: "1:1 · Meta" },
@@ -55,6 +56,7 @@ function useIsMobile() {
 
 export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId: string; docKey: string; onClose: () => void }) {
   const t = useT();
+  const {setFocus}=useAgentFocus(),{setOpen}=useAgentPanel(),synaEnabled=useAgentUi();
   const toast = useToast();
   const cost = useCostConfirm();
   const { data: project } = useProject();
@@ -492,8 +494,11 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
 
   const propsPanel = catalog && <PropertiesPanel doc={doc} layer={layer} apply={apply} catalog={catalog} onPickImage={() => setPicker("replace")} onUploadImage={upload} onDuplicate={duplicate} onDelete={remove} />;
   const layersPanel = <LayersPanel doc={doc} selectedId={selected} onSelect={(id) => (setSelected(id), setSheet(null))} apply={apply} />;
+  const titles=doc.layers.filter(l=>l.role==="title"),title=titles[0];
+  const canDesignateTitle=synaEnabled&&view.localAdDocumentCapability===true&&!dirty&&!saving&&titles.length===1&&title?.kind==="text"&&title.visible&&!title.locked&&selected===title.id;
   const askBox = (
     <form className="flex items-center gap-2" onSubmit={(e) => (e.preventDefault(), askEdit())}>
+      {canDesignateTitle&&<Button type="button" size="sm" variant="secondary" onClick={()=>{if(dirty||saving||!title)return;setFocus({projectId,tab:'publicites',label:t('Titre de création','Creative title'),target:{kind:'ad-document-text',docKey,layerId:title.id,version:view.version.version}});onClose();setOpen(true);}}>{t('Désigner le titre pour SYNA','Select title for SYNA')}</Button>}
       <input value={ask} onChange={(e) => setAsk(e.target.value)} placeholder={t("Demander une retouche : « Agrandis le titre », « Ajoute des pétales sur la table »…", "Ask for a change: “Make the title bigger”, “Add petals on the table”…")} className="h-10 min-w-0 flex-1 rounded-full border border-line bg-card px-4 text-sm outline-none focus:border-ink" aria-label={t("Demander une retouche", "Ask for a change")} data-testid="ask-input" />
       <Button type="submit" size="sm" icon={<Send className="size-4" />} disabled={!ask.trim()}>{t("Appliquer", "Apply")}</Button>
       {project?.ai.image && photoLayer() && (

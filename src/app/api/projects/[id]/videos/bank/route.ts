@@ -30,7 +30,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   requirePlan(user,p.id);
   const b = await body(req, Req);
   if (b.action === "stock") {
-    const job = enqueue({ userId: user.id, projectId: p.id, type: "video.bank.stock", label: L("Plans libres de droits", "Royalty-free clips"), payload: { projectId: p.id, request: { topic: b.topic, aspect: b.aspect, count: b.count, broad: b.broad, silhouettes: b.silhouettes } } });
+    const job = enqueue({ userId: user.id, projectId: p.id, type: "video.bank.stock", label: L("Plans libres de droits", "Royalty-free clips"), payload: { projectId: p.id, aiOff: true, costCapMicro: 0, request: { topic: b.topic, aspect: b.aspect, count: b.count, broad: b.broad, silhouettes: b.silhouettes } } });
     return ok({ jobId: job.id });
   }
   requireCreationPlan(user,p.id,'videos');

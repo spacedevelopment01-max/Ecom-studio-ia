@@ -1,3 +1,4 @@
+import {adDocumentCandidate,adDocumentToolsEnabled,proposeAdDocument,bindAdDocumentProposal,adDocumentPresentation} from './ad-document-tool-execution';
 import {localPromptsEnabled,localPromptsCandidate,listLocalPrompts,localPromptsView} from './local-prompts';
 import {localFilesEnabled,localFilesCandidate,proposeLocalFiles,confirmLocalFiles} from './local-files';
 import {localBusinessContentEnabled,localBusinessContentCandidate,proposeLocalBusinessContent,confirmLocalBusinessContent} from './local-business-content';
@@ -62,6 +63,8 @@ export function conversationView(user: User, cid: string, before?: number,includ
     message: !b.input.description ? L("Décrivez votre projet en quelques mots. Vous pouvez joindre un lien ; aucune création n’est lancée.", "Describe your project in a few words. You may add a link; no creation is started.") : L("Compréhension locale à relire. Vos réponses sont conservées ; aucune étape n’est validée automatiquement.", "Local understanding to review. Your answers are kept; no step is automatically approved."),
     question: key ? questionFor(key, b, m) : null, correctionFields: readOnlyReason?[]:[...EDIT_FIELDS],readOnlyReason,
     creation: c.project_id ? null : creationFields(b,m),
+    ...(readOnlyReason===null&&adDocumentToolsEnabled()&&m.localAdDocumentProposalId?{localAdDocument:adDocumentPresentation(user,c.id,m.localAdDocumentProposalId)}:{}),
+    ...(readOnlyReason===null&&c.project_id&&adDocumentToolsEnabled()?{localAdDocumentExecution:{enabled:true as const}}:{}),
     ...(m.localFiles?{localFiles:m.localFiles}:{}),
     ...(c.project_id&&localFilesEnabled()?{localFilesExecution:{enabled:true as const}}:{}),
     ...(m.localBusinessContent?{localBusinessContent:m.localBusinessContent}:{}),
@@ -185,11 +188,14 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
   else if(!pendingSubscriptions(user.id).length)throw new HttpError(402,L("Rattachez ce brouillon à votre projet avant de le poursuivre.","Link this draft to your project before continuing."),"subscription_required");
   if(initial.revision!==cmd.revision || currentBrief(initial).revision!==cmd.projectRevision)throw new HttpError(409,L("La conversation ou la fiche a changé. Rechargez avant de répondre.","The conversation or brief changed. Reload before answering."),initial.revision!==cmd.revision?"conversation_conflict":"conversation_brief_conflict");
   // Réutilisation de l'Intent Engine ; pas de classificateur ou d'appel IA de production dans le lot A.
+  const adCommand=cmd.action==='message'&&adDocumentCandidate(cmd.text);
+  let adProposalId:string|undefined;
+  if(adCommand){const selected=metaOf(initial).activeContext,target=selected?.target;if(cmd.action==='message'&&cmd.context&&(cmd.context.tab!==selected?.tab||cmd.context.projectId!==undefined&&cmd.context.projectId!==initial.project_id||stableHash('ad-document-selected',cmd.context.target)!==stableHash('ad-document-selected',target)))throw new HttpError(409,'La sélection affichée diffère du repère sauvegardé. Confirmez sa désignation avant de proposer la retouche.');if(target?.kind!=='ad-document-text')throw new HttpError(409,'Désignez le titre enregistré dans le contexte partagé avant cette demande.');const proposed=await proposeAdDocument(user,cid,{action:'propose',revision:cmd.revision,projectRevision:cmd.projectRevision!,docKey:target.docKey,layerId:target.layerId,expectedVersion:target.version,operation:'title-larger'});adProposalId=proposed.proposalId;}
   const fileCommand=cmd.action==='message'&&localFilesCandidate(cmd.text);
   const requestCommand=cmd.action==='message'&&localRequestsCandidate(cmd.text);
   const localCommand=cmd.action==='message'&&localSiteCandidate(cmd.text);
   const businessCommand=cmd.action==='message'&&localBusinessContentCandidate(cmd.text);
-  const intent = cmd.action === "message" && !localCommand && !fileCommand && !businessCommand && !requestCommand && !promptsCommand && !intelligenceEnabled() ? await understand({ text: cmd.text }, { aiActive: !!tests.classify, classify: tests.classify }) : null;
+  const intent = cmd.action === "message" && !adCommand && !localCommand && !fileCommand && !businessCommand && !requestCommand && !promptsCommand && !intelligenceEnabled() ? await understand({ text: cmd.text }, { aiActive: !!tests.classify, classify: tests.classify }) : null;
   return tx(() => {
     const c = ownedConversation(user, cid);
     const prior = one<{ request_hash: string; response_json: string }>("SELECT request_hash,response_json FROM agent_conversation_turns WHERE conversation_id=? AND request_id=?", cid, cmd.requestId);
@@ -204,13 +210,13 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
     const { brief: b, revision, meta: m } = effective(c);
     if (revision !== cmd.projectRevision) throw new HttpError(409, L("La fiche a changé dans un autre écran. Relisez la version actuelle.", "The brief changed in another screen. Read the current version."), "conversation_brief_conflict");
     let changed = false, message = "", action: ActionCard | null = null;
-    if(cmd.action==='message'&&cmd.context){
+    if(cmd.action==='message'&&cmd.context&&!adCommand){
       if(!activeContextEnabled())throw new HttpError(404,L('Le repère contextuel est indisponible.','Context selection is unavailable.'),'conversation_context_disabled');
       const resolved=resolveActiveContext(c,cmd.context);
       m.activeContextTab=cmd.context.tab;
       if(cmd.context.target||!m.activeContext?.target){m.activeContext=resolved.selection;m.activeContextReference=stableHash('conversation-active-context-1',resolved);m.activeContextIdentity=resolved.canonical.identity;}
     }
-    if(promptsCommand){
+    if(adCommand&&adProposalId){bindAdDocumentProposal(user,c.id,adProposalId,c.revision+1);m.localAdDocumentProposalId=adProposalId;message='Vérifiez les aperçus et les changements exacts puis confirmez gratuitement. Aucun appel IA.';}else if(promptsCommand){
       m.localPrompts=listLocalPrompts(user,c,(cmd as Extract<Command,{action:'message'}>).text);
       message=m.localPrompts.message;
     }else if(fileCommand||cmd.action==='confirm-files'){
@@ -353,6 +359,7 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
     }
     // Relevé figé AVANT le devis/appel : les réservations du futur job ne périment pas leur propre contexte.
     if(cmd.action==='message'&&studioKnowledgeEnabled())m.studioObservation=captureStudioObservation(c);
+    if(!adCommand)delete m.localAdDocumentProposalId;
     if(!promptsCommand)delete m.localPrompts;
     if(!businessCommand&&cmd.action!=='confirm-business-content'){delete m.localBusinessContent;delete m.localBusinessContentProposal;}
     if(!localCommand&&cmd.action!=='confirm-local')delete m.localSite;
@@ -380,6 +387,6 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
 /** Une commande locale candidate ne peut jamais devenir un appel fournisseur implicite. */
 export async function submitConversation(user:User,cid:string,raw:unknown,tests:TestDependencies={}):Promise<ConversationView>{
  const parsed=CommandSchema.safeParse(raw),cmd=parsed.success?parsed.data:null;
- const local=cmd?.action==='confirm-local'||cmd?.action==='confirm-site-request'||cmd?.action==='confirm-files'||cmd?.action==='confirm-business-content'||cmd?.action==='message'&&(localPromptsCandidate(cmd.text)||localRequestsCandidate(cmd.text)||localSiteCandidate(cmd.text)||localFilesCandidate(cmd.text)||localBusinessContentCandidate(cmd.text));
+ const local=cmd?.action==='message'&&adDocumentCandidate(cmd.text)||cmd?.action==='confirm-local'||cmd?.action==='confirm-site-request'||cmd?.action==='confirm-files'||cmd?.action==='confirm-business-content'||cmd?.action==='message'&&(localPromptsCandidate(cmd.text)||localRequestsCandidate(cmd.text)||localSiteCandidate(cmd.text)||localFilesCandidate(cmd.text)||localBusinessContentCandidate(cmd.text));
  return local?withAiDisabled('B1 : retouche gratuite déterministe, aucun devis IA',()=>submitConversationImpl(user,cid,raw,tests)):submitConversationImpl(user,cid,raw,tests);
 }

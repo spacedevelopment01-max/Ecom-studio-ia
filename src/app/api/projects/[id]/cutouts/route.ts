@@ -33,9 +33,9 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     if (!a || a.project_id !== p.id) throw new HttpError(404, L("Photo introuvable.", "Photo not found."));
     const sourceId = a.role === "cutout" ? a.source_asset_id : a.id;
     if (!sourceId || !one<Asset>("SELECT id FROM assets WHERE id = ? AND project_id = ? AND deleted_at IS NULL", sourceId, p.id)) throw new HttpError(404, L("Photo d'origine introuvable.", "Original photo not found."));
-    const job = enqueue({ userId: user.id, projectId: p.id, type: "cutout.run", label: L("Nouveau détourage du produit", "New product cutout"), payload: { projectId: p.id, redo: sourceId } });
+    const job = enqueue({ userId: user.id, projectId: p.id, type: "cutout.run", label: L("Nouveau détourage du produit", "New product cutout"), payload: { projectId: p.id, redo: sourceId, aiOff: true } });
     return ok({ jobId: job.id });
   }
-  const job = enqueue({ userId: user.id, projectId: p.id, type: "cutout.run", label: L("Tri et détourage des photos", "Sorting and cutting out photos"), payload: { projectId: p.id } });
+  const job = enqueue({ userId: user.id, projectId: p.id, type: "cutout.run", label: L("Tri et détourage des photos", "Sorting and cutting out photos"), payload: { projectId: p.id, aiOff: true } });
   return ok({ jobId: job.id });
 });
