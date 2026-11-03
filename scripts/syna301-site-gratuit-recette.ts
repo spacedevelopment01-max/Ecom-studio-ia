@@ -130,10 +130,10 @@ try {
       const v0 = version(), bg0 = desktop ? await sectionBg() : "";
       await step("« Mets le fond de cette section en bleu » : Gratuit — 0 €, avant / après, aucun devis, rien d'écrit", async () => {
         await say("Mets le fond de cette section en bleu"); await confirmBtn().waitFor();
-        await free.getByText(/ → |Après confirmation/).first().waitFor();
-        const txt = await free.innerText(); check(/Gratuit — 0 €/.test(txt) && ((/Fond/.test(txt) && / → /.test(txt)) || (/Avant/.test(txt) && /Après confirmation/.test(txt))), "carte incomplète : " + txt.slice(0, 300));
+        await free.getByText("Après confirmation", { exact: true }).first().waitFor();
+        const txt = await free.innerText(); check(/Gratuit — 0 €/.test(txt) && /Avant/.test(txt) && /Après confirmation/.test(txt) && /Fond : #[0-9A-F]{6}/i.test(txt) && !/[{}]/.test(txt), "carte incomplète ou JSON brut : " + txt.slice(0, 300));
         await noQuote("proposition couleur"); check(version() === v0, "écriture avant l'accord"); await shot("2-proposition-couleur");
-        return txt.split("\n").filter((l) => /→|#[0-9A-F]{6}/i.test(l)).slice(0, 4).join(" | ").slice(0, 200);
+        return txt.split("\n").filter((l) => /#[0-9A-F]{6}/i.test(l)).slice(0, 4).join(" | ").slice(0, 200);
       });
       await step("Annuler : rien d'écrit, rien au rechargement", async () => {
         await free.getByRole("button", { name: "Annuler la modification gratuite", exact: true }).click();
