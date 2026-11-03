@@ -100,7 +100,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   assertAdvertising(p.id);
   // Devis au coût probable (un essai), dit en % du budget IA ; le plafond de la tâche permet les reprises.
   if (b.action === "ai_quote") return ok({ ...(await publicationReadiness(p)), ai: aiActiveFor(p.userId, p.id) && (await publicationReadiness(p)).ready, estimateMicro: aiPostProbableMicro(), pct: budgetPctOf(p.userId, aiPostProbableMicro(), p.id) });
-  if(b.action==="campaign_quote") {const readiness=await publicationReadiness(p);return ok({...campaignEstimate(p,b),...readiness,ai:aiActiveFor(p.userId,p.id)&&readiness.ready});}
+  if(b.action==="campaign_quote") {const readiness=await publicationReadiness(p);const estimate=campaignEstimate(p,b);return ok({...estimate,estimatePct:budgetPctOf(p.userId,estimate.estimateMicro,p.id),maximumPct:budgetPctOf(p.userId,estimate.capMicro,p.id),...readiness,ai:aiActiveFor(p.userId,p.id)&&readiness.ready});}
   if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));
   if (b.action === "ai_create") {
     const readiness=await publicationReadiness(p);
