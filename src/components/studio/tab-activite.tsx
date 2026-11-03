@@ -151,7 +151,7 @@ export default function TabActivite() {
           <div className="sticky bottom-3 z-10 flex flex-wrap items-center gap-2 rounded-3xl border border-line bg-card/95 p-3 shadow-soft backdrop-blur">
             <Button onClick={save} loading={busy === "save"} disabled={!dirty || !!busy || offer.contactModes?.length === 0} icon={<Save className="size-4" />}>{t("Enregistrer", "Save")}</Button>
             <Button variant="secondary" onClick={rebuild} loading={busy === "rebuild"} disabled={!!busy || !data.brand || offer.contactModes?.length === 0} icon={<Store className="size-4" />}>{dirty ? t("Enregistrer et mettre à jour le site", "Save and update the website") : t("Mettre à jour le site", "Update the website")}</Button>
-            <p className="min-w-0 flex-1 text-xs text-muted">{dirty ? t("Modifications non enregistrées.", "Unsaved changes.") : !data.brand ? t("Le site pourra être mis à jour une fois la marque créée.", "The website can be updated once the brand exists.") : t("Tout est enregistré.", "Everything is saved.")}</p>
+            <p className="min-w-0 flex-1 basis-48 text-xs text-muted">{dirty ? t("Modifications non enregistrées.", "Unsaved changes.") : !data.brand ? t("Le site pourra être mis à jour une fois la marque créée.", "The website can be updated once the brand exists.") : t("Tout est enregistré.", "Everything is saved.")}</p>
           </div>
         </div>
 
