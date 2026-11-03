@@ -1,0 +1,24 @@
+{
+  "run": 41661352329,
+  "head": "be59ddefe44f8d74b4610f23d7d52be0ab5e08d5",
+  "freeConfirmationJob": 126006283283,
+  "freeConfirmation": "success",
+  "cases": 8,
+  "checkout": {
+    "sha": "e0c70a56d60b99c4acf9b74b71f651ef1f2f44d6",
+    "tree": "e2c2d1ca46702ec09204e6b7c91bea1d405de17a",
+    "parents": [
+      "759a2e34c21bc203e87e77461d3a701093ec1595",
+      "be59ddefe44f8d74b4610f23d7d52be0ab5e08d5"
+    ],
+    "verified": "API git commit tree identical to delivered head"
+  },
+  "artifact": {
+    "id": 13244645903,
+    "name": "syna-parity301-wave4-text",
+    "digest": "sha256:7b998254822aa92a8409dcc0171b77d2fb9e9911ef187c662dfc6cd526f51ac6",
+    "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41661352329/artifacts/13244645903",
+    "head_sha": "be59ddefe44f8d74b4610f23d7d52be0ab5e08d5"
+  },
+  "artifactReadLimit": "GitHub plugin returned ZIP reference; proxy forbids subsequent oaiusercontent download403. Do not retry or broaden network; exact CI checkout tree+8PASS logs verified, artifact link available."
+}

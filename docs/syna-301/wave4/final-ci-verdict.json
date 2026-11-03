@@ -1,0 +1,552 @@
+{
+  "collectedAt": "2026-11-03T16:27:20Z",
+  "primary": {
+    "pr": 361,
+    "head": "be59ddefe44f8d74b4610f23d7d52be0ab5e08d5",
+    "tree": "e2c2d1ca46702ec09204e6b7c91bea1d405de17a",
+    "run": 41661352329,
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 126006282640,
+        "name": "Image Docker (construction et démarrage)",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Construction de l'image",
+            "conclusion": "success"
+          },
+          {
+            "name": "Démarrage et vérifications",
+            "conclusion": "success"
+          },
+          {
+            "name": "Journaux du conteneur",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "id": 126006283147,
+        "name": "Types et suite complète (réseau fournisseur interdit)",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Installation",
+            "conclusion": "success"
+          },
+          {
+            "name": "ffmpeg",
+            "conclusion": "success"
+          },
+          {
+            "name": "Vérification des types",
+            "conclusion": "success"
+          },
+          {
+            "name": "Tests (réseau fournisseur interdit)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "id": 126006283283,
+        "name": "SYNA — confirmation gratuite dans le Studio compilé",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run npm ci",
+            "conclusion": "success"
+          },
+          {
+            "name": "Navigateur isolé",
+            "conclusion": "success"
+          },
+          {
+            "name": "Build de production sans fournisseur",
+            "conclusion": "success"
+          },
+          {
+            "name": "Produits, services, conflits, réseau et A1",
+            "conclusion": "success"
+          },
+          {
+            "name": "Cible revalidée conservée après relecture périodique du projet (plus de 15 s)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Drapeau fermé sans confirmation ni repli payant",
+            "conclusion": "success"
+          },
+          {
+            "name": "Couleurs natives réellement peintes",
+            "conclusion": "success"
+          },
+          {
+            "name": "Phrases gratuites Site et créations V2, Encre/Plein cadre, 17 secondes",
+            "conclusion": "success"
+          },
+          {
+            "name": "Rapport textuel des nouveaux parcours gratuits",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves synthétiques du parcours gratuit",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "id": 126006283313,
+        "name": "Theme Check, build et recettes natives compilées",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Installation",
+            "conclusion": "success"
+          },
+          {
+            "name": "ffmpeg",
+            "conclusion": "success"
+          },
+          {
+            "name": "Shopify Theme Check (30 thèmes : FR, EN, multi-produit, niche, services FR et EN, ZIP client)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Build de production",
+            "conclusion": "success"
+          },
+          {
+            "name": "Conversation lot A sur le build compilé (sans fournisseur)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Dialogue IA lot B sur le build compilé (fournisseur HTTP simulé)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Navigateur de recette isolée",
+            "conclusion": "success"
+          },
+          {
+            "name": "Interface conversationnelle sur le build compilé (fournisseur HTTP simulé)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Conserver les preuves navigateur fictives, y compris en cas d’échec",
+            "conclusion": "success"
+          },
+          {
+            "name": "Rôles bornés lot C sur le build compilé (fournisseur HTTP simulé)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Outil natif de compréhension lot D sur le build compilé (fournisseur HTTP simulé)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves de l’exécution depuis SYNA",
+            "conclusion": "success"
+          },
+          {
+            "name": "Retouche et annulation depuis SYNA sur le build compilé (fournisseur HTTP simulé)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves des retouches natives depuis SYNA",
+            "conclusion": "success"
+          },
+          {
+            "name": "Composition native et textes acquis depuis SYNA, rendu et exports (HTTP simulé)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves de composition et limites des plateformes",
+            "conclusion": "success"
+          },
+          {
+            "name": "Export natif depuis SYNA, téléchargement et reprise sans fournisseur réel",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves des exports natifs de SYNA",
+            "conclusion": "success"
+          },
+          {
+            "name": "Captures natives, correction ciblée et recapture depuis SYNA",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves du rendu natif et de sa correction",
+            "conclusion": "success"
+          },
+          {
+            "name": "Recherche native depuis SYNA (sources fictives préacquises, fournisseur HTTP simulé)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves de recherche native depuis SYNA",
+            "conclusion": "success"
+          },
+          {
+            "name": "Export Shopify contrôlé sur le build compilé",
+            "conclusion": "success"
+          },
+          {
+            "name": "Catalogue SYNA natif, brouillons, variantes, reprise, annulation et aperçu (IA HTTP simulée)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves du Catalogue SYNA",
+            "conclusion": "success"
+          },
+          {
+            "name": "Images natives depuis SYNA, devis, bibliothèque et reprise (fournisseurs HTTP simulés)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves des images natives de SYNA",
+            "conclusion": "success"
+          },
+          {
+            "name": "Retouches SYNA, source et style, versions et insertion annulable (HTTP simulé)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves des retouches natives de SYNA",
+            "conclusion": "success"
+          },
+          {
+            "name": "Logos SYNA, trois directions, reprise et réutilisation (HTTP simulé)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves des logos natifs de SYNA",
+            "conclusion": "success"
+          },
+          {
+            "name": "Vidéos SYNA, montage natif, retouche et restauration (cognition HTTP simulée)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves des montages vidéo natifs de SYNA",
+            "conclusion": "success"
+          },
+          {
+            "name": "Clips IA et voix SYNA depuis le Studio compilé (fournisseurs HTTP simulés)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves des clips IA natifs de SYNA",
+            "conclusion": "success"
+          },
+          {
+            "name": "Correction vocale ciblée depuis SYNA compilé (fournisseurs HTTP simulés)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves de la correction vocale ciblée",
+            "conclusion": "success"
+          },
+          {
+            "name": "Reprise d’un plan depuis SYNA compilé (fournisseurs HTTP simulés)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves de la reprise ciblée du clip",
+            "conclusion": "success"
+          },
+          {
+            "name": "Brouillons et calendrier SYNA depuis le Studio compilé (cognition simulée, zéro fournisseur média)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves de la préparation sociale native",
+            "conclusion": "success"
+          },
+          {
+            "name": "Visuel social depuis SYNA, devis borné et échec conservant les acquis (HTTP simulé)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves de la production sociale bornée",
+            "conclusion": "success"
+          },
+          {
+            "name": "Campagne native depuis SYNA et édition manuelle (transport cognitif simulé)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves des brouillons de campagne natifs",
+            "conclusion": "success"
+          },
+          {
+            "name": "Visuel publicitaire natif depuis SYNA et refus sans rachat (HTTP simulé)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves des visuels publicitaires natifs",
+            "conclusion": "success"
+          },
+          {
+            "name": "Ratio social demandé conservé dans le Studio compilé (HTTP simulé)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves du ratio social natif",
+            "conclusion": "success"
+          },
+          {
+            "name": "Acquis social après conflit et réemploi sans IA depuis le Studio compilé",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves du réemploi social sans achat",
+            "conclusion": "success"
+          },
+          {
+            "name": "Intégration SYNA, compteurs natifs et suivi panneau fermé (HTTP simulé)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves de cohérence du Studio communication",
+            "conclusion": "success"
+          },
+          {
+            "name": "Rédaction et retouche SYNA natives, Catalogue/variante/service, versions conservées (HTTP simulé)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves de rédaction native SYNA",
+            "conclusion": "success"
+          },
+          {
+            "name": "Proposition de marque native depuis SYNA (simulation HTTP isolée)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves de la proposition de marque SYNA",
+            "conclusion": "success"
+          },
+          {
+            "name": "Brouillon Blog natif depuis SYNA, quota et suivi panneau fermé (HTTP simulé)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves du Blog natif SYNA",
+            "conclusion": "success"
+          },
+          {
+            "name": "Choix puis validation du logo natif depuis SYNA (HTTP simulé)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves du choix natif du logo",
+            "conclusion": "success"
+          },
+          {
+            "name": "Recette commune produit et service dans SYNA (HTTP simulé)",
+            "conclusion": "success"
+          },
+          {
+            "name": "Preuves du parcours commun",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "id": 126049942966,
+        "name": "Typecheck, tests, Theme Check, build",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success"
+          },
+          {
+            "name": "Verdict obligatoire de tous les contrôles",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success"
+          }
+        ]
+      }
+    ]
+  },
+  "leaves": [
+    {
+      "pr": 356,
+      "head": "759a2e34c21bc203e87e77461d3a701093ec1595",
+      "run": 41650826363,
+      "conclusion": "success"
+    },
+    {
+      "pr": 359,
+      "head": "95d2d79b0890814aedcd9a20090884832861d9d6",
+      "run": 41661276805,
+      "conclusion": "success"
+    },
+    {
+      "pr": 360,
+      "head": "e4aa91b9c3723dc3a347d08647ff2b70a7beb298",
+      "run": 41654870389,
+      "conclusion": "success"
+    },
+    {
+      "pr": 362,
+      "head": "580d8105cd1a71ec5e5d703dbd01aed450c3952a",
+      "run": 41664285864,
+      "conclusion": "success"
+    }
+  ],
+  "prs": [
+    {
+      "pr": 356,
+      "head": "759a2e34c21bc203e87e77461d3a701093ec1595",
+      "base": "e2d8c8ed91fbb0d20cad93e3db1470e1045f5654",
+      "draft": true,
+      "merged": false,
+      "state": "open"
+    },
+    {
+      "pr": 359,
+      "head": "95d2d79b0890814aedcd9a20090884832861d9d6",
+      "base": "759a2e34c21bc203e87e77461d3a701093ec1595",
+      "draft": true,
+      "merged": false,
+      "state": "open"
+    },
+    {
+      "pr": 360,
+      "head": "e4aa91b9c3723dc3a347d08647ff2b70a7beb298",
+      "base": "759a2e34c21bc203e87e77461d3a701093ec1595",
+      "draft": true,
+      "merged": false,
+      "state": "open"
+    },
+    {
+      "pr": 361,
+      "head": "be59ddefe44f8d74b4610f23d7d52be0ab5e08d5",
+      "base": "759a2e34c21bc203e87e77461d3a701093ec1595",
+      "draft": true,
+      "merged": false,
+      "state": "open"
+    },
+    {
+      "pr": 362,
+      "head": "580d8105cd1a71ec5e5d703dbd01aed450c3952a",
+      "base": "95d2d79b0890814aedcd9a20090884832861d9d6",
+      "draft": true,
+      "merged": false,
+      "state": "open"
+    }
+  ],
+  "main": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+  "tests": {
+    "passed": 5370,
+    "skipped": 31,
+    "filesPassed": 581,
+    "filesSkipped": 1,
+    "durationSeconds": 2097.33
+  },
+  "localUI": {
+    "newCases": 8,
+    "legacyRecipes": 3,
+    "legacyCasesPerRecipe": 4,
+    "sourceCommit": "be59ddefe44f8d74b4610f23d7d52be0ab5e08d5",
+    "captures": 52,
+    "traces": 8
+  },
+  "realProviderCalls": 0
+}

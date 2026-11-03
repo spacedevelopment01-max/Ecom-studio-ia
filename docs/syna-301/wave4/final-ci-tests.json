@@ -1,0 +1,12 @@
+{
+  "run": 41661352329,
+  "head": "be59ddefe44f8d74b4610f23d7d52be0ab5e08d5",
+  "conclusion": "success",
+  "job": 126006283147,
+  "passed": 5370,
+  "skipped": 31,
+  "testFilesPassed": 581,
+  "testFilesSkipped": 1,
+  "durationSeconds": 2097.33,
+  "types": "PASS"
+}

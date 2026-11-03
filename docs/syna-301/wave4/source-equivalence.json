@@ -1,0 +1,33 @@
+{
+  "convergence": "be59ddefe44f8d74b4610f23d7d52be0ab5e08d5",
+  "cssLeaf": "580d8105cd1a71ec5e5d703dbd01aed450c3952a",
+  "cssBase": "95d2d79b0890814aedcd9a20090884832861d9d6",
+  "scopedDiffFiles": [
+    "theme-base/assets/theme.css",
+    "scripts/verify-native-section-colors301.ts"
+  ],
+  "blobs": {
+    "theme-base/assets/theme.css": {
+      "convergence": "d1edbeba2ac665d5735dc1f99a55a8cb26aaac29",
+      "leaf": "d1edbeba2ac665d5735dc1f99a55a8cb26aaac29",
+      "identical": true
+    },
+    "scripts/verify-native-section-colors301.ts": {
+      "convergence": "25f1a6754946a70897f7e5b8ce2011fcb9a2f202",
+      "leaf": "25f1a6754946a70897f7e5b8ce2011fcb9a2f202",
+      "identical": true
+    }
+  },
+  "mandatoryLegacyRecipeUnchanged": {
+    "ancestor": "759a2e34",
+    "script": "scripts/verify-syna284-b1-confirmation-ui.ts",
+    "blob": "c02a4419f8b957805441335a5b259ed1d248d9fa"
+  },
+  "requiredCodeAncestors": [
+    "759a2e34c21bc203e87e77461d3a701093ec1595",
+    "95d2d79b0890814aedcd9a20090884832861d9d6",
+    "e4aa91b9c3723dc3a347d08647ff2b70a7beb298",
+    "0c6fdbedf94567e8ed20c8502852e9c52f2b2ea0",
+    "e2d8c8ed91fbb0d20cad93e3db1470e1045f5654"
+  ]
+}
