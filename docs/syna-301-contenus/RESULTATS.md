@@ -46,12 +46,14 @@ Preuves : `RESUME-CONTENUS-301.json`, `captures/`.
   - le raccordement et la date lisible.
 - Tests de Codex `conversation301-business-content.test.ts` (29) et `integration276.test.ts` (tête #310 `f3c1dc15`) verts ;
   `npx tsc --noEmit` : aucune erreur.
-- `npx vitest run` complet (sur `ba290bf1`, avant la fusion de `f3c1dc15`) : 4 729 réussis, 18 échecs, **aucun dû à cette
-  branche**. 16 viennent de l'extraction partielle de ce conteneur, faute de place sur le disque (`docs/` et `reports/`
-  absents) ; rejoués dans une extraction complète, ils passent. S'y ajoutent `theme211-render-evidence` (Chromium
-  attendu à `/usr/bin/chromium`), un dépassement de délai `video-bounded-chain` (11 sur 11 rejoué seul) et
-  `integration276`, qui échouait aussi sur la base #310 `baeafcbc` : Codex l'a corrigé dans `f3c1dc15`, fusionné ici,
-  et il passe.
+- `npx vitest run` complet (sur `ba290bf1`, avant la fusion de `f3c1dc15`) : 4 729 réussis ; 14 fichiers en échec (18 tests,
+  plus 3 fichiers qui ne se chargent pas), **aucun dû à cette branche** :
+  - 11 fichiers à cause de l'extraction partielle de ce conteneur, faute de place sur le disque (`docs/` et `reports/`
+    absents). Rejoués dans une extraction complète, ils passent ;
+  - `theme211-render-evidence` : Chromium attendu à `/usr/bin/chromium` ;
+  - `video-bounded-chain` : dépassement de délai sous la charge ; il passe 11 sur 11 rejoué seul ;
+  - `integration276` : il échouait aussi sur la base #310 `baeafcbc`. Codex l'a corrigé dans `f3c1dc15`, fusionné ici,
+    et il passe.
 
 ## Limites
 - Prestations, horaires et intervenants (`services.update`), photos, création, suppression et statut ne sont pas
