@@ -6,11 +6,13 @@ import { useProject } from "./project-context";
 import { AssetThumb, JobProgress, ROLE_LABEL, StatusBadge, useActive, type AssetView } from "./common";
 import { AssetViewer } from "./asset-viewer";
 import { useT } from "../i18n";
+import { useAgentFocus, useAgentUi } from "./agent-ui-context";
+import { FILES_CHANGED_EVENT, type FilesChange } from "@/lib/local-files-confirmation-client";
 
 type FolderView = { id: string; name: string; parentId: string | null; system: boolean; key: string | null; count: number; total?: number };
 
 export default function TabFichiers() {
-  const { id } = useProject();
+  const { id, data: project } = useProject();
   const toast = useToast();
   const t = useT();
   const [folder, setFolder] = useState<string | null>(null);
@@ -28,6 +30,25 @@ export default function TabFichiers() {
   useEffect(() => {
     if (!active.length) reload();
   }, [active.length, reload]);
+  // #301 C24 : le fichier ouvert devient la cible de SYNA (comme dans Images) ; un rangement confirmé dans SYNA
+  // relit aussitôt la liste et la fiche ouverte, sans attendre l'actualisation du Studio.
+  const agentUi = useAgentUi() && project?.conversationContext === true, { setFocus: setAgentFocus } = useAgentFocus();
+  // Cible : la fiche ouverte, sinon l'unique fichier coché (une sélection multiple ne désigne rien).
+  const only = sel.size === 1 ? data?.assets.find((a) => sel.has(a.id)) ?? null : null;
+  const designated = viewer ?? only;
+  useEffect(() => {
+    if (agentUi && designated) setAgentFocus({ projectId: id, tab: "fichiers", label: designated.name, target: { kind: "asset", assetId: designated.id, version: designated.version } });
+  }, [agentUi, id, designated?.id, designated?.version, designated?.name, setAgentFocus]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const changed = (e: Event) => {
+      const d = (e as CustomEvent<FilesChange>).detail;
+      if (d?.projectId !== id) return;
+      setViewer((v) => (v && v.id === d.assetId ? { ...v, name: d.name, folderId: d.folderId } : v));
+      reload();
+    };
+    window.addEventListener(FILES_CHANGED_EVENT, changed);
+    return () => window.removeEventListener(FILES_CHANGED_EVENT, changed);
+  }, [id, reload]);
   const folders = data?.folders ?? [];
   const children = (pid: string | null) => folders.filter((f) => f.parentId === pid);
   const path = useMemo(() => {

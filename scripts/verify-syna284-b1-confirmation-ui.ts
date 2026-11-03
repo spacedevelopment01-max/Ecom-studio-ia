@@ -51,7 +51,15 @@ await splash.waitFor({state:'hidden'});const nudge=page.locator('[data-tuto-nudg
    const heading=frame().locator(`[data-es-section="index:${f.section}"]`).getByRole('heading').first();await heading.waitFor();await heading.scrollIntoViewIfNeeded();
    await heading.evaluate(el=>new Promise<void>(resolve=>{if(el.ownerDocument.readyState==='complete')resolve();else el.ownerDocument.defaultView!.addEventListener('load',()=>resolve(),{once:true});}));
    const tools=page.locator('[data-site-tools]');if(!(await tools.getAttribute('open')))await tools.locator(':scope > summary').click();await page.getByRole('button',{name:'Désigner',exact:true}).click();const close=page.getByRole('button',{name:'Fermer les outils',exact:true});if(await close.isVisible())await close.click();
-   await heading.click();await panel.waitFor();await panel.locator('[data-agent-active-context]').getByText(/Section désignée/).waitFor();
+   // Locator clicks omit the preview's CSS scale after mobile/desktop changes. Use one real pointer click,
+   // measured in the current DOM, and reject any overlay or wrong target before sending it.
+   const childPoint=await heading.evaluate(el=>{const r=el.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2,hit=el.ownerDocument.elementFromPoint(x,y);return{x,y,width:r.width,height:r.height,hitIsHeading:hit===el||!!hit&&el.contains(hit)};});
+   assert.ok(childPoint.width>0&&childPoint.height>0,'The exact native heading must have a visible rectangle');
+   assert.equal(childPoint.hitIsHeading,true,'The child hit-test must resolve to the exact requested heading');
+   const pointer=await page.locator('iframe[title^="Aperçu"]').evaluate((el,p)=>{const iframe=el as HTMLIFrameElement,r=iframe.getBoundingClientRect(),sx=r.width/iframe.offsetWidth,sy=r.height/iframe.offsetHeight,x=r.x+(iframe.clientLeft+p.x)*sx,y=r.y+(iframe.clientTop+p.y)*sy;return{x,y,sx,sy,parentHitIsIframe:el.ownerDocument.elementFromPoint(x,y)===iframe};},childPoint);
+   assert.ok(Number.isFinite(pointer.x)&&Number.isFinite(pointer.y)&&pointer.sx>0&&pointer.sy>0,'The native iframe scale and pointer must be valid');
+   assert.equal(pointer.parentHitIsIframe,true,'The parent hit-test must resolve to this exact preview iframe');
+   await page.mouse.click(pointer.x,pointer.y);await panel.waitFor();await panel.locator('[data-agent-active-context]').getByText(/Section désignée/).waitFor();
   };
   const message=async(text:string)=>{await panel.getByRole('textbox',{name:'Décrivez votre projet ou posez votre question à SYNA'}).fill(text);await panel.getByRole('button',{name:'Enregistrer',exact:true}).click();await free.getByRole('button',{name:'Confirmer la modification gratuite',exact:true}).waitFor();};
   const applied=async()=>{await free.getByText(/Résultat enregistré · version/).waitFor();};

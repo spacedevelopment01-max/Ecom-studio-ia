@@ -9,12 +9,13 @@ import { useState } from "react";
 import { ArrowDown, ArrowUp, Eye, Plus, Save, Send, X } from "lucide-react";
 import { api, Badge, Button, Card, Empty, Input, Modal, Spinner, Textarea, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
+import { DesignateContentForSyna, useContentChanged } from "./syna-designate-content";
 import { useT } from "../i18n";
 import { MediaPicker } from "./common";
 
 type Status = "draft" | "published" | "withdrawn" | "archived";
 type Photo = { assetId: string; alt: string };
-type Real = { id: string; handle: string; title: string; summary: string; need: string; work: string; category: string; location: string; period: string; photos: Photo[]; before: Photo | null; status: Status };
+type Real = { id: string; handle: string; title: string; summary: string; need: string; work: string; category: string; location: string; period: string; photos: Photo[]; before: Photo | null; status: Status; updatedAt?: number };
 const STATUS: Record<Status, { fr: string; en: string; tone: "neutral" | "ok" | "warn" | "bad" }> = {
   draft: { fr: "Brouillon", en: "Draft", tone: "neutral" }, published: { fr: "En ligne", en: "Live", tone: "ok" },
   withdrawn: { fr: "Retirée", en: "Withdrawn", tone: "warn" }, archived: { fr: "Archivée", en: "Archived", tone: "bad" },
@@ -26,6 +27,7 @@ export default function TabRealisations() {
   const toast = useToast();
   const { id, data: project } = useProject();
   const { data, reload } = useApi<{ realisations: Real[] }>(`/api/projects/${id}/realisations`);
+  useContentChanged("realisations", reload);
   const [editing, setEditing] = useState<Partial<Real> | null>(null);
   const versionId = project?.theme?.versionId ?? null;
   const post = async (payload: Record<string, unknown>, done?: string) => {
@@ -66,6 +68,7 @@ export default function TabRealisations() {
                   <Button size="sm" variant="ghost" aria-label={t("Descendre", "Down")} icon={<ArrowDown className="size-4" />} onClick={() => move(i, 1)}>{""}</Button>
                   {preview(r) && r.status !== "archived" && <a className="inline-flex items-center gap-1 px-2 text-xs underline" href={preview(r)!} target="_blank" rel="noreferrer">{t("Aperçu", "Preview")}</a>}
                   <Button size="sm" variant="secondary" onClick={() => setEditing(r)}>{t("Modifier", "Edit")}</Button>
+                  <DesignateContentForSyna type="realisations" itemId={r.id} updatedAt={r.updatedAt} label={r.title} />
                   {r.status !== "published" && r.status !== "archived" && <Button size="sm" onClick={() => post({ action: "status", id: r.id, status: "published" }, t(`« ${r.title} » publiée.`, `“${r.title}” published.`))}>{t("Publier", "Publish")}</Button>}
                   {r.status === "published" && <Button size="sm" variant="ghost" onClick={() => post({ action: "status", id: r.id, status: "withdrawn" }, t("Réalisation retirée du site.", "Project withdrawn from the site."))}>{t("Retirer", "Withdraw")}</Button>}
                   {r.status !== "archived" && r.status !== "published" && <Button size="sm" variant="ghost" onClick={() => post({ action: "status", id: r.id, status: "archived" })}>{t("Archiver", "Archive")}</Button>}
