@@ -49,7 +49,7 @@ Les premiers essais de recette conservés localement incluent des erreurs de sé
 
 ## CI — état intermédiaire, aucun vert global anticipé
 
-Au03/11/2026 vers13:28 UTC :
+Relevé intermédiaire initial vers13:28 UTC ; [état actualisé et têtes exactes](CI-STATE.json). La CI Blog a depuis terminé SUCCESS,69 étapes natives et verdict global compris. :
 
 | PR | Run | Suite complète | Docker / confirmation gratuite obligatoire | Recettes natives |
 |---|---|---|---|---|
