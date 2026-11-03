@@ -7,12 +7,12 @@ Consigne : commentaire6605791977 de #301 ; demandes et preuves Claude #358. Rapp
 | Lot | PR | SHA exact |
 |---|---|---|
 | Verrou réel des cinq cartes, assertion CI corrigée | #356 | 759a2e34c21bc203e87e77461d3a701093ec1595 |
-| Phrases natives Site et portée exacte des couleurs | #359 | 75e2faafc6f5427dcd678e3dfeca543d3229f7be |
+| Phrases natives Site et portée exacte des couleurs | #359 | 95d2d79b0890814aedcd9a20090884832861d9d6 |
 | Effets géométriques publicitaires annoncés | #360 | e4aa91b9c3723dc3a347d08647ff2b70a7beb298 |
 | Rendu natif des couleurs privées | #362 | 0c6fdbedf94567e8ed20c8502852e9c52f2b2ea0 |
-| Convergence figée, recette obligatoire | #361 | 121888359a04c252e100530f6764d3d40bc9214a |
+| Convergence figée, recette obligatoire | #361 | be59ddefe44f8d74b4610f23d7d52be0ab5e08d5 |
 
-Arbre final81c007dee7afd75b832e3cffb5183bb3cd3643a9. Tous les SHA des quatre lots et #348e2d8c8ed sont de vrais ancêtres vérifiés. Aucun développement acquis refait ni branche Claude modifiée. Les deux contrats sont docs/syna-301/PHRASES-GRATUITES-SITE.md et PUBLICITES-V2-EFFETS-NATIFS.md sur la tête finale.
+Arbre finale2c2d1ca46702ec09204e6b7c91bea1d405de17a. Tous les SHA des quatre lots et #348e2d8c8ed sont de vrais ancêtres vérifiés. Aucun développement acquis refait ni branche Claude modifiée. Les deux contrats sont docs/syna-301/PHRASES-GRATUITES-SITE.md et PUBLICITES-V2-EFFETS-NATIFS.md sur la tête finale.
 
 ## Causes corrigées
 
@@ -36,19 +36,27 @@ Même chaîne : proposition → avant/après → accord explicite gratuit → é
 
 ## Preuves locales et limites de provenance
 
-- 11/11 ciblés verrou/services.97/97 Site sur six suites à la première livraison, puis12/12 sur la précision finale des effets de couleur.44/44 publicitaires sur trois suites. Ces batteries se recouvrent : pas de somme présentée comme couverture indépendante.
+- 11/11 ciblés verrou/services.97/97 Site sur six suites à la première livraison, puis12/12 sur la précision des effets de couleur et36/36 (13cas natifs+23B1) sur la clarification gratuite historique.44/44 publicitaires sur trois suites. Ces batteries se recouvrent : pas de somme présentée comme couverture indépendante.
 -18 documents V2 bruts : count3,6feed+3story+9combinés. Parent18/18 refus422 ; correctif18/18 propositions200 puis vraie tâche locale, version/reçu relus, images identiques et retry sans nouvelle version. Les dépendances fournisseur sont injectées et synthétiques. Le JSON ads18-first-green-summary est explicitement la première sonde verte, antérieure au garde supplémentaire sur calque verrouillé ; la batterie44/44 et la suite finale couvrent ensuite ce garde.
 -8/8 parcours navigateur de préqualification : Site et publicité, Encre/Plein,1440/390. Application compilée98721ace58090eddfaa46e78f14040c7873b024f, propre, API/version vérifiée. Recette ce932c09fd15408d373ccda534d018b615a15864611a01a47695cfb3d2192fdc. Fond réel rgb(29,78,216), texte blanc, titre principal rouge rgb(180,35,24), FAQ après la section, undo reçu, annulation sans écriture, accord après17s, réponse perdue/retry identique, recharge et PNG publicitaire.
-- Le code livré12188835 précise encore le message sur les boutons et inclut le harnais qualifié ; SHA256 de sa recette95a3fdbc93ed8249c62f42fa32bbea3fde4373c91050067e4d0952bd737675c3. Le quatrième contrôle CI rejoue les8cas sur son build exact. Attendre son artefact avant de confondre préqualification et preuve finale.
+- Le code livrébe59ddef précise encore le message sur les boutons et inclut le harnais qualifié ; SHA256 de sa recette95a3fdbc93ed8249c62f42fa32bbea3fde4373c91050067e4d0952bd737675c3. Le quatrième contrôle CI rejoue les8cas sur son build exact. Attendre son artefact avant de confondre préqualification et preuve finale.
 - A2 native préselectionnée par fixtures puis reprise par bouton réel du Studio. Cette recette ne revendique pas la désignation par clic dans l'éditeur : elle complète la recette indépendante de Claude.
 - Un exemple publicitaire en UI par configuration (4) complète18 documents côté HTTP/moteur. Aucune affirmation de qualité créative ou d'absence de tout chevauchement visuel sur toutes les créations.
 
 Passes insuffisantes conservées et non comptées : claimNext avant la réponse HTTP de confirmation ; image non encore décodée ; contrôle de --c-bg sans contrôle de peinture ; tentative de revalidation après recharge/message global ayant retiré la cible. Harnais corrigé sans affaiblir les gardes. Le JSON de préqualification original conserve ses champs ; la conservation d'accent y désigne les réglages, pas une promesse de conservation visuelle de tous les descendants.
 
+## Validation locale exacte de la tête livrée
+
+Le build de production be59ddef est propre, API/version et arbre e2c2d1ca46702ec09204e6b7c91bea1d405de17a vérifiés. final-local-browser-be59ddef.json : **8/8 PASS sur cette tête exacte**, même recette SHA25695a3fdbc93ed8249c62f42fa32bbea3fde4373c91050067e4d0952bd737675c3, Encre/Plein1440/390. Les valeurs peintes, les versions et les reçus sont relus.52PNG et8traces restent locaux ; seul leur manifeste de noms/SHA256 est publié.
+
+Les trois recettes historiques obligatoires, sans aucun changement de leur script par rapport à759a2e34, passent aussi sur ce build : ouverte, attente après revalidation de plus de15s, drapeau fermé. Chacune produit4cas produits/services/A1, errors[]. Voir legacy-*-be59ddef.json. Ces observations recouvrent des parcours communs ; pas de somme présentée comme opérations distinctes.
+
+La CI de12188835 avait réellement échoué sur la clarification « Change le titre joliment » : le texte n'incluait plus « gratuitement », attendu par le parcours historique. La formulation a été rétablie dans l'application, sans modifier ni contourner l'assertion obligatoire. Nouveau test : state ambiguous,0€,pas de devis, pas d'écriture.36/36 ciblés PASS, types PASS. Le code et les nouvelles recettes sont désormais figés surbe59ddef ; seul le verdict CI reste à relever.
+
 ## CI à relever avant verdict
 
 - #356759a2e34 : https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41650826363 — types et5353tests PASS,31ignorés ; Docker et confirmation gratuits PASS ; recettes natives encore en cours à la collecte.
-- #36112188835 : https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41659593159 — en cours à la collecte. Les quatre contrôles et leur verdict global doivent tous réussir. Aucun contrôle supprimé, ignoré ou transformé en succès conditionnel.
+- #361be59ddef : https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41661352329 — en cours à la collecte. Les quatre contrôles et leur verdict global doivent tous réussir. Aucun contrôle supprimé, ignoré ou transformé en succès conditionnel.
 
 ## Coordination et limites
 

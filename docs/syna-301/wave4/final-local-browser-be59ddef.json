@@ -1,0 +1,190 @@
+{
+  "recipeSha256": "95a3fdbc93ed8249c62f42fa32bbea3fde4373c91050067e4d0952bd737675c3",
+  "sourceCommit": "be59ddefe44f8d74b4610f23d7d52be0ab5e08d5",
+  "sourceTree": "e2c2d1ca46702ec09204e6b7c91bea1d405de17a",
+  "selection": "native A2 synthetic fixture preselected; not a browser designation claim",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "cases": [
+    {
+      "label": "site-encre-1440",
+      "status": "PASS",
+      "colorFree": true,
+      "nativeComputedColor": {
+        "background": "rgb(29, 78, 216)",
+        "text": "rgb(255, 255, 255)",
+        "expected": "rgb(29, 78, 216)"
+      },
+      "primaryTextColor": "rgb(180, 35, 24)",
+      "primaryTextVersion": 3,
+      "accentSettingsPreserved": true,
+      "buttonTextMayFollowPrimary": true,
+      "faqAfterSelected": true,
+      "undoReceipt": "fe2df92f-5c2f-4aab-a07c-be39c1d1af4c",
+      "zeroAiBudget": true,
+      "cancelNoWrite": true,
+      "waitMsAtLeast": 17000,
+      "lostResponseSameConfirmation": true,
+      "versions": [
+        1,
+        2,
+        4,
+        5
+      ],
+      "nativeResultHttp": 200,
+      "reload": true,
+      "globalColorClarifies": true
+    },
+    {
+      "label": "ad-encre-1440",
+      "status": "PASS",
+      "nativeV2": true,
+      "secondaryEffectsDisclosed": true,
+      "twoNativePreviews": true,
+      "cancelNoWrite": true,
+      "waitMsAtLeast": 17000,
+      "explicitFreeAgreement": true,
+      "nativeReceipt": true,
+      "version": 2,
+      "png": true,
+      "reload": true
+    },
+    {
+      "label": "site-encre-390",
+      "status": "PASS",
+      "colorFree": true,
+      "nativeComputedColor": {
+        "background": "rgb(29, 78, 216)",
+        "text": "rgb(255, 255, 255)",
+        "expected": "rgb(29, 78, 216)"
+      },
+      "primaryTextColor": "rgb(180, 35, 24)",
+      "primaryTextVersion": 3,
+      "accentSettingsPreserved": true,
+      "buttonTextMayFollowPrimary": true,
+      "faqAfterSelected": true,
+      "undoReceipt": "59669877-d988-44a6-832a-c9d1216772d6",
+      "zeroAiBudget": true,
+      "cancelNoWrite": true,
+      "waitMsAtLeast": 17000,
+      "lostResponseSameConfirmation": true,
+      "versions": [
+        1,
+        2,
+        4,
+        5
+      ],
+      "nativeResultHttp": 200,
+      "reload": true,
+      "globalColorClarifies": true
+    },
+    {
+      "label": "ad-encre-390",
+      "status": "PASS",
+      "nativeV2": true,
+      "secondaryEffectsDisclosed": true,
+      "twoNativePreviews": true,
+      "cancelNoWrite": true,
+      "waitMsAtLeast": 17000,
+      "explicitFreeAgreement": true,
+      "nativeReceipt": true,
+      "version": 2,
+      "png": true,
+      "reload": true
+    },
+    {
+      "label": "site-plein-1440",
+      "status": "PASS",
+      "colorFree": true,
+      "nativeComputedColor": {
+        "background": "rgb(29, 78, 216)",
+        "text": "rgb(255, 255, 255)",
+        "expected": "rgb(29, 78, 216)"
+      },
+      "primaryTextColor": "rgb(180, 35, 24)",
+      "primaryTextVersion": 3,
+      "accentSettingsPreserved": true,
+      "buttonTextMayFollowPrimary": true,
+      "faqAfterSelected": true,
+      "undoReceipt": "3ad18f46-7b0e-4dd2-a487-4a7b5380d727",
+      "zeroAiBudget": true,
+      "cancelNoWrite": true,
+      "waitMsAtLeast": 17000,
+      "lostResponseSameConfirmation": true,
+      "versions": [
+        1,
+        2,
+        4,
+        5
+      ],
+      "nativeResultHttp": 200,
+      "reload": true,
+      "globalColorClarifies": true
+    },
+    {
+      "label": "ad-plein-1440",
+      "status": "PASS",
+      "nativeV2": true,
+      "secondaryEffectsDisclosed": true,
+      "twoNativePreviews": true,
+      "cancelNoWrite": true,
+      "waitMsAtLeast": 17000,
+      "explicitFreeAgreement": true,
+      "nativeReceipt": true,
+      "version": 2,
+      "png": true,
+      "reload": true
+    },
+    {
+      "label": "site-plein-390",
+      "status": "PASS",
+      "colorFree": true,
+      "nativeComputedColor": {
+        "background": "rgb(29, 78, 216)",
+        "text": "rgb(255, 255, 255)",
+        "expected": "rgb(29, 78, 216)"
+      },
+      "primaryTextColor": "rgb(180, 35, 24)",
+      "primaryTextVersion": 3,
+      "accentSettingsPreserved": true,
+      "buttonTextMayFollowPrimary": true,
+      "faqAfterSelected": true,
+      "undoReceipt": "9b704756-8626-47e2-8be6-3eddca7f4799",
+      "zeroAiBudget": true,
+      "cancelNoWrite": true,
+      "waitMsAtLeast": 17000,
+      "lostResponseSameConfirmation": true,
+      "versions": [
+        1,
+        2,
+        4,
+        5
+      ],
+      "nativeResultHttp": 200,
+      "reload": true,
+      "globalColorClarifies": true
+    },
+    {
+      "label": "ad-plein-390",
+      "status": "PASS",
+      "nativeV2": true,
+      "secondaryEffectsDisclosed": true,
+      "twoNativePreviews": true,
+      "cancelNoWrite": true,
+      "waitMsAtLeast": 17000,
+      "explicitFreeAgreement": true,
+      "nativeReceipt": true,
+      "version": 2,
+      "png": true,
+      "reload": true
+    }
+  ],
+  "runtime": {
+    "commit": "be59ddefe44f8d74b4610f23d7d52be0ab5e08d5",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "status": "PASS"
+}

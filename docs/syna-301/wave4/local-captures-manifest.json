@@ -1,0 +1,306 @@
+{
+  "publication": "local files only, no screenshot or trace data published",
+  "sourceCommit": "be59ddefe44f8d74b4610f23d7d52be0ab5e08d5",
+  "files": [
+    {
+      "file": "ad-encre-1440-avant-apres-calques-annonces.png",
+      "bytes": 425620,
+      "sha256": "37938a91e6952a0a84294b0b59d189e3bb334538baa2b4e71438d3d3a3cc2063"
+    },
+    {
+      "file": "ad-encre-1440-recu-calques-enregistres.png",
+      "bytes": 426542,
+      "sha256": "629d54d2ef53b1c04e7ed1f1c1685bd4b61d7ae933ea51f5ce2ce2690e88b379"
+    },
+    {
+      "file": "ad-encre-1440-recu-recharge.png",
+      "bytes": 424119,
+      "sha256": "753793e844e11be35e10c9987176a78d72137947c23d39201cd3c5c19f1d0a71"
+    },
+    {
+      "file": "ad-encre-1440-trace.zip",
+      "bytes": 5639926,
+      "sha256": "34a93dcf036a165e2348da0376abe6a7f3c06100dc619e7f8656ef9da235ace0"
+    },
+    {
+      "file": "ad-encre-390-avant-apres-calques-annonces.png",
+      "bytes": 302497,
+      "sha256": "763b08fcb6dd197176897ea89e7cb18300753388ab705e6492a95bd54715cc58"
+    },
+    {
+      "file": "ad-encre-390-recu-calques-enregistres.png",
+      "bytes": 202677,
+      "sha256": "d8dbad70ee1e7c87d15c721bd46b432e0bbb0dd1ea7d5f429e3977ae2a9d8049"
+    },
+    {
+      "file": "ad-encre-390-recu-recharge.png",
+      "bytes": 359345,
+      "sha256": "dc1e23235d9b13e5470d38615f17f3d597691fba4155d0b1a90d23d26eef8b3c"
+    },
+    {
+      "file": "ad-encre-390-trace.zip",
+      "bytes": 3799859,
+      "sha256": "bcf60028240a2f7ae9cd4cacb48857d03bffe80fe823013a3e39676737f242fa"
+    },
+    {
+      "file": "ad-plein-1440-avant-apres-calques-annonces.png",
+      "bytes": 337836,
+      "sha256": "8c8e1cc84831452e0bfae859092590368d2f510006cb15781a0cd6abcdbf6ff0"
+    },
+    {
+      "file": "ad-plein-1440-recu-calques-enregistres.png",
+      "bytes": 331962,
+      "sha256": "86e5c28083f48873d70017257a4d11a95c4616a32c679c0c5b8498ecd1c41702"
+    },
+    {
+      "file": "ad-plein-1440-recu-recharge.png",
+      "bytes": 330746,
+      "sha256": "1c4fe6e38e3287b755dc325d009da561b18311796030217c7dae3b062ace285e"
+    },
+    {
+      "file": "ad-plein-1440-trace.zip",
+      "bytes": 5808510,
+      "sha256": "4105500af3affb5abecf4da5c6f73c16a931c644662ff7a7989149d1f53ed1b6"
+    },
+    {
+      "file": "ad-plein-390-avant-apres-calques-annonces.png",
+      "bytes": 269287,
+      "sha256": "acf7c464f5ad6bff40d35d953b11ab6a89768cb6971c60bf98cd305198f3b0fe"
+    },
+    {
+      "file": "ad-plein-390-recu-calques-enregistres.png",
+      "bytes": 145479,
+      "sha256": "6225c3b7e3a1b321041ce35891721cbdafa9379d311a9fecad956603bcd8cf7d"
+    },
+    {
+      "file": "ad-plein-390-recu-recharge.png",
+      "bytes": 280527,
+      "sha256": "9e0e04e9f77ca34d13467bfeb8142da4f802fe375217baa00477d8d15b3244c6"
+    },
+    {
+      "file": "ad-plein-390-trace.zip",
+      "bytes": 3578137,
+      "sha256": "8088aec052846ace9bb476e2ef6a3d4dd93dee4a1b2f9c01b8d62a296f906090"
+    },
+    {
+      "file": "site-encre-1440-annulation-avant-apres.png",
+      "bytes": 241842,
+      "sha256": "05eddc7747dc09df511d0a0ef73b0dbba3a2611eebd873cefdb9a2ca78c6650a"
+    },
+    {
+      "file": "site-encre-1440-annulation-recue-rechargee.png",
+      "bytes": 241796,
+      "sha256": "5bcfa05de81cfac0f3a15c3f3aeb38fef8cf49b1ee36e74b99ecef91e7e1bf09"
+    },
+    {
+      "file": "site-encre-1440-couleur-avant-apres.png",
+      "bytes": 249422,
+      "sha256": "c0daad9ffc2539658d5ac8a84f885a411122c0ec84ec3aaf1e81168f5c5ac024"
+    },
+    {
+      "file": "site-encre-1440-couleur-recue17s.png",
+      "bytes": 170961,
+      "sha256": "ed69f5abd037d2ae9ea23ae123d76fd981c09349dce16f22a220949f53854e72"
+    },
+    {
+      "file": "site-encre-1440-couleur-resultat-natif.png",
+      "bytes": 169322,
+      "sha256": "b425a029c6edfaa6c4e51fd9ba39426a5ac400e5e08f4d55c0b4494cf6392497"
+    },
+    {
+      "file": "site-encre-1440-faq-avant-apres.png",
+      "bytes": 256476,
+      "sha256": "1858f481a03f6e406875cd943e697f454d04dba7ab53a9e8dbf7fb8c93a4568e"
+    },
+    {
+      "file": "site-encre-1440-faq-recu-reponse-perdue.png",
+      "bytes": 171289,
+      "sha256": "17c0f959d1316f0197313cae2f3f99fa3c43e7c3640bb295b6f53e93ec7112fa"
+    },
+    {
+      "file": "site-encre-1440-faq-resultat-natif.png",
+      "bytes": 104796,
+      "sha256": "90a1e0b09f85200d08875c47eabbcb439f6f24e0e3080b7da7e48417c742032d"
+    },
+    {
+      "file": "site-encre-1440-texte-principal-effets-bornos.png",
+      "bytes": 247764,
+      "sha256": "4a54bfabccbe7e7f68e0ffcec6da248fe39293641a9174a2858ef1d93d73261c"
+    },
+    {
+      "file": "site-encre-1440-texte-principal-resultat-natif.png",
+      "bytes": 176854,
+      "sha256": "7972301efc77fb515a801d395e7895c63335348e226e710a47725fb967c69b00"
+    },
+    {
+      "file": "site-encre-1440-trace.zip",
+      "bytes": 23565735,
+      "sha256": "a554b2caa4560beed7281bf3b3902633e1a3d5f4361f0350b7f784a265859f29"
+    },
+    {
+      "file": "site-encre-390-annulation-avant-apres.png",
+      "bytes": 64238,
+      "sha256": "0a055ddba52e8982549b9f1b03fced8fa826235946ad6326004395ebd910d0a9"
+    },
+    {
+      "file": "site-encre-390-annulation-recue-rechargee.png",
+      "bytes": 68245,
+      "sha256": "3746c70fc2fb8a8be4535473c937934f0a40d01e46f711151fe8ff8a49803f18"
+    },
+    {
+      "file": "site-encre-390-couleur-avant-apres.png",
+      "bytes": 76485,
+      "sha256": "eca94a353b793f58521d5084d4ef4861eb958358ac0e5cc245fa149544d961c4"
+    },
+    {
+      "file": "site-encre-390-couleur-recue17s.png",
+      "bytes": 75314,
+      "sha256": "8239f711143dab4390d8613ec02fef637304ee7b32cf2d611877d3f888ab2c69"
+    },
+    {
+      "file": "site-encre-390-couleur-resultat-natif.png",
+      "bytes": 88314,
+      "sha256": "beabf7f8df6c7bc9d4faf237dfd9119716d5279ed474d3df70c438a17ed045b2"
+    },
+    {
+      "file": "site-encre-390-faq-avant-apres.png",
+      "bytes": 76183,
+      "sha256": "5eff930552b381f24c7f7c171bf3117670eb44acc3276941450ae2bc33c1c4e9"
+    },
+    {
+      "file": "site-encre-390-faq-recu-reponse-perdue.png",
+      "bytes": 68371,
+      "sha256": "cc462d7bc0c436c73ad9dfab87a100f93bbf7ae594b2a2582845d514fb2af776"
+    },
+    {
+      "file": "site-encre-390-faq-resultat-natif.png",
+      "bytes": 70302,
+      "sha256": "a827db99f70567bebe4a099f05d4aee2c078561a13f3f5140e42383b275cfa67"
+    },
+    {
+      "file": "site-encre-390-texte-principal-effets-bornos.png",
+      "bytes": 76996,
+      "sha256": "885f3aca059c25874d04e1f41d761a8d9d5f5f862f65333684e753f39224ea59"
+    },
+    {
+      "file": "site-encre-390-texte-principal-resultat-natif.png",
+      "bytes": 91367,
+      "sha256": "bd438b536c3914ded312cade29556601b4aac9bf6f8fdc3bad13be8484967dc9"
+    },
+    {
+      "file": "site-encre-390-trace.zip",
+      "bytes": 18344910,
+      "sha256": "0ae80ac815453c07e740085340f23d752ccfb6160983224eecb0991a61acaa9b"
+    },
+    {
+      "file": "site-plein-1440-annulation-avant-apres.png",
+      "bytes": 225785,
+      "sha256": "d974d96148459400a9d5c6cc5fb511e3a8dc0f0722dfc4aeeafd8a76f0d8a2f9"
+    },
+    {
+      "file": "site-plein-1440-annulation-recue-rechargee.png",
+      "bytes": 227012,
+      "sha256": "a656a3776ebbe93d15c6fdfde769075e3ee6fb7557754507f659f2d8acc6a83c"
+    },
+    {
+      "file": "site-plein-1440-couleur-avant-apres.png",
+      "bytes": 239125,
+      "sha256": "8e53bdfec89fb83be4d0d80717e93ca6949536046a972f9b6be32bec9f7d803c"
+    },
+    {
+      "file": "site-plein-1440-couleur-recue17s.png",
+      "bytes": 157384,
+      "sha256": "f928a860aaad7842d455b28f118c726e4d1c263d0015b33c17ceb6d9469b5213"
+    },
+    {
+      "file": "site-plein-1440-couleur-resultat-natif.png",
+      "bytes": 169322,
+      "sha256": "b425a029c6edfaa6c4e51fd9ba39426a5ac400e5e08f4d55c0b4494cf6392497"
+    },
+    {
+      "file": "site-plein-1440-faq-avant-apres.png",
+      "bytes": 242105,
+      "sha256": "791f65bb557ef01eabbb728ea9f07d9599f2d3da79f2448b215e25ba28b70adf"
+    },
+    {
+      "file": "site-plein-1440-faq-recu-reponse-perdue.png",
+      "bytes": 156747,
+      "sha256": "43461639fe73e9c245c47c07e492495930bdb02fa16cb7d7c3b16c2a204169df"
+    },
+    {
+      "file": "site-plein-1440-faq-resultat-natif.png",
+      "bytes": 104796,
+      "sha256": "90a1e0b09f85200d08875c47eabbcb439f6f24e0e3080b7da7e48417c742032d"
+    },
+    {
+      "file": "site-plein-1440-texte-principal-effets-bornos.png",
+      "bytes": 233976,
+      "sha256": "5be4fd98d56ef2da0df81df0ee4b292abf5aaabf2c08a9635aab49ea5efa2f56"
+    },
+    {
+      "file": "site-plein-1440-texte-principal-resultat-natif.png",
+      "bytes": 176854,
+      "sha256": "7972301efc77fb515a801d395e7895c63335348e226e710a47725fb967c69b00"
+    },
+    {
+      "file": "site-plein-1440-trace.zip",
+      "bytes": 22732113,
+      "sha256": "ddd4d089493f9639038f7baf944330ba1acc3aa8f49322e2580a4962debdb727"
+    },
+    {
+      "file": "site-plein-390-annulation-avant-apres.png",
+      "bytes": 73033,
+      "sha256": "5fef1420baeaa3f07e4f8e4ed98a825422d9b51d23331399a79171f2947a6e9f"
+    },
+    {
+      "file": "site-plein-390-annulation-recue-rechargee.png",
+      "bytes": 80475,
+      "sha256": "fd320e27c05b390b2d6b3c27cced91b26a24d253336d038fe86c7c5509996d12"
+    },
+    {
+      "file": "site-plein-390-couleur-avant-apres.png",
+      "bytes": 87711,
+      "sha256": "9c9aa0060d01a04d695a2b5ca69f5062f312915fbf63b782987ea64f9b95715d"
+    },
+    {
+      "file": "site-plein-390-couleur-recue17s.png",
+      "bytes": 84483,
+      "sha256": "25c1df0878c9d016bd5a59ab855dfae7e0f1f6de969805706073c3f98debdcd3"
+    },
+    {
+      "file": "site-plein-390-couleur-resultat-natif.png",
+      "bytes": 88314,
+      "sha256": "beabf7f8df6c7bc9d4faf237dfd9119716d5279ed474d3df70c438a17ed045b2"
+    },
+    {
+      "file": "site-plein-390-faq-avant-apres.png",
+      "bytes": 80377,
+      "sha256": "18dd3390a63706209368b9bc685bf4d5b9648a52053ac9c44b8c34aeeb7c0ca5"
+    },
+    {
+      "file": "site-plein-390-faq-recu-reponse-perdue.png",
+      "bytes": 75387,
+      "sha256": "cb48a6b461b49f7fdcba73ac944a05142c07218617ea163bc3edd0b5a16e7e33"
+    },
+    {
+      "file": "site-plein-390-faq-resultat-natif.png",
+      "bytes": 70302,
+      "sha256": "a827db99f70567bebe4a099f05d4aee2c078561a13f3f5140e42383b275cfa67"
+    },
+    {
+      "file": "site-plein-390-texte-principal-effets-bornos.png",
+      "bytes": 86414,
+      "sha256": "8ef61f19f803338ead0816db179db59f2080d2bc2d4c7314e2a626b5a485602b"
+    },
+    {
+      "file": "site-plein-390-texte-principal-resultat-natif.png",
+      "bytes": 91367,
+      "sha256": "bd438b536c3914ded312cade29556601b4aac9bf6f8fdc3bad13be8484967dc9"
+    },
+    {
+      "file": "site-plein-390-trace.zip",
+      "bytes": 19518520,
+      "sha256": "ed61b41e7aedf90ee9cb357ef656f4e34b494afeedbd4d3d06637da07e79ab24"
+    }
+  ]
+}
