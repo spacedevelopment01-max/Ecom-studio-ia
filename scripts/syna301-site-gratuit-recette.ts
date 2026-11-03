@@ -185,7 +185,7 @@ try {
       if (desktop) await step("conflit : modification manuelle entre proposition et accord → refus, la modification manuelle reste", async () => {
         if (!(await panel.locator("[data-agent-active-context]").getByText(/Section désignée/).count())) await designate();
         await say("Mets le fond de cette section en vert"); await confirmBtn().waitFor();
-        const manual = structuredClone(currentTheme(k.pid)!.spec) as ReturnType<typeof spec>; manual.templates.index.sections[k.section].settings.heading = "Titre humain à préserver";
+        const manual = structuredClone(currentTheme(k.pid)!.spec) as unknown as ReturnType<typeof spec>; manual.templates.index.sections[k.section].settings.heading = "Titre humain à préserver";
         saveThemeVersion(k.pid, manual as never, "Modification manuelle fictive", "user"); const v = version();
         await confirmBtn().click();
         await free.getByText(/La cible ou sa version a changé|changé|conflit/i).first().waitFor();
