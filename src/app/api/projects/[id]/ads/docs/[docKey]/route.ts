@@ -80,7 +80,7 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
   const initial=latestDoc(p.id,docKey);
   if(!initial)throw new HttpError(404,L("Création introuvable.","Creative not found."));
   const mutates=["save","restore","restyle","duplicate","reflow","edit"].includes(b.action);
-  if(mutates){if(b.expectedVersion==null)throw new HttpError(428,"Rechargez la création et indiquez sa version enregistrée. Votre brouillon reste conservé.","ad_doc_version_required");assertDocVersion(p.id,docKey,b.expectedVersion);}
+  if(mutates){if(b.expectedVersion==null)throw new HttpError(428,"La version enregistrée est requise avant toute modification.","ad_doc_version_required");assertDocVersion(p.id,docKey,b.expectedVersion);}
   const writeGuard=()=>({expectedVersion:b.expectedVersion!});
   const forkKey=()=>{if(!b.operationId)throw new HttpError(428,"Identifiant de tentative nécessaire pour créer cette copie.","ad_doc_operation_required");return guardedForkKey(p.id,user.id,docKey,b.expectedVersion!,b.operationId,b.action,{platform:b.platform??null,aspect:b.aspect??null});};
   const forkGuard=()=>({expectedVersion:0,source:{docKey,expectedVersion:b.expectedVersion!}});
