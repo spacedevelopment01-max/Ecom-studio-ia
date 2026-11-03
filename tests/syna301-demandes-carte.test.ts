@@ -128,6 +128,8 @@ it('raccordement : carte unique, pas de devis, fenêtre native relue',()=>{
  const panel=read('src/components/studio/conversation-panel.tsx'),card=read('src/components/studio/conversation-local-site-requests.tsx');
  expect(panel.match(/<ConversationLocalSiteRequests /g)).toHaveLength(1);
  expect(panel).toContain('!handlesLocalRequests(v)');
+ expect(panel).toContain("handlesLocalRequests(next)?'':");
+ expect(panel).not.toContain('setNotice(next.localRequests');
  expect(read('src/components/studio/site-publication.tsx')).toContain('SITE_REQUESTS_CHANGED_EVENT');
  expect(SITE_REQUESTS_CHANGED_EVENT).toBe('studio:site-requests-changed');
  expect(card).toContain("kind:'site-request',requestId:r.id,fingerprint:r.fingerprint");
