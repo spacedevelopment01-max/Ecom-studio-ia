@@ -54,6 +54,7 @@ type Handler = (ctx: JobContext) => Promise<unknown>;
 export const handlers: Record<string, Handler> = {
   "agent.reason": async ctx => (await import('../src/lib/orchestrator/conversation/intelligence')).runCognitiveJob(ctx),
   "agent.theme.capture": async ctx => (await import('../src/lib/orchestrator/conversation/render-tool-execution')).runRenderCapture(ctx),
+  "agent.ad-document.local": async ctx => (await import('../src/lib/orchestrator/conversation/ad-document-tool-execution')).runAdDocument(ctx),
   "agent.theme.export": async ctx => (await import('../src/lib/orchestrator/conversation/export-tool-execution')).runNativeExport(ctx),
   "agent.theme.change": async ctx => (await import('../src/lib/orchestrator/conversation/theme-tool-execution')).runThemeChange(ctx),
   "agent.catalogue.change": async ctx => (await import('../src/lib/orchestrator/conversation/catalogue-tool-execution')).runCatalogueChange(ctx),
@@ -82,11 +83,13 @@ export const handlers: Record<string, Handler> = {
   "stock.search": async (ctx) => findStockPhotos(ctx, ctx.payload.projectId, ctx.payload.n ?? 2),
 
   /** Tri des photos du produit, détourage et contrôle (ajout d'une photo, « Refaire le détourage »). */
-  "cutout.run": async (ctx) => {
+  "cutout.run": async (ctx) => withAiDisabled("détourage interactif local gratuit, aucun devis IA accepté", async () => {
+    // Ce job dédié provient de l’écran Produit ; les pipelines inclus appellent ensureCutouts directement.
+    // Ne pas laisser un ancien payload, ou aiOff:false, réactiver le tri/contrôle visuel payant.
     const project = loadProject(ctx.payload.projectId);
     const list = ctx.payload.redo ? await redoCutout(ctx, project, ctx.payload.redo) : await ensureCutouts(ctx, project);
     return { valid: list.length, summary: cutoutSummary(project.id) };
-  },
+  }),
 
   /** Jeu d'images : Image Engine V2 (composants locaux, photos libres, génération contrôlée). */
   "images.generate": async (ctx) => {
@@ -106,7 +109,8 @@ export const handlers: Record<string, Handler> = {
     return { outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, origin: o.origin })), stoppedByCostCap: r.stoppedByCostCap,delivery };
   },
   /** Banque de vidéos : plans libres de droits (gratuit) ou plan filmé par l'IA (payant, prix accepté). */
-  "video.bank.stock": async (ctx) => (await import("../src/lib/media/bank-video")).findBankClips(ctx, ctx.payload.projectId, ctx.payload.request),
+  // This native royalty-free bank job never authorizes paid vision, even for old/forged payloads.
+  "video.bank.stock": async (ctx) => withAiDisabled("Native free stock-video search without paid consent", async () => (await import("../src/lib/media/bank-video")).findBankClips(ctx, ctx.payload.projectId, ctx.payload.request)),
   "video.bank.ai": async (ctx) => {
     const r=await(await import("../src/lib/media/bank-video")).createBankClip(ctx,ctx.payload.projectId,ctx.payload.request);
     return {...r,delivery:await videoDelivery(ctx.payload.projectId,r.assetId)};
@@ -243,7 +247,8 @@ export const handlers: Record<string, Handler> = {
     return { name: b.name };
   },
 
-  "copy.build": async (ctx) => {
+  "copy.build": async (ctx) => withAiDisabled("rédaction native locale gratuite, aucun devis IA accepté", async () => {
+    // Job autonome /copy ; le pipeline initial et les outils SYNA devisés restent distincts.
     const p = loadProject(ctx.payload.projectId);
     if (llmConfigured()) {
       const r = await aiShopCopyChecked({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:copy` }, p, (m) => ctx.progress(0.5, m), (k, fn) => ctx.step(k, fn));
@@ -252,7 +257,7 @@ export const handlers: Record<string, Handler> = {
     }
     remember(p.id, { kind: "artifact", key: "shop_copy", value: JSON.stringify(localCopy(p.product, p.brand!, p)), source: "local" });
     return { local: true };
-  },
+  }),
 
   "shop.build": async (ctx) => buildShop(ctx, ctx.payload.projectId, { useAi: ctx.payload.useAi, engine: ctx.payload.engine, language: ctx.payload.language }),
   "shop.direction": async (ctx) => switchDirection(ctx, ctx.payload.projectId, ctx.payload.direction),

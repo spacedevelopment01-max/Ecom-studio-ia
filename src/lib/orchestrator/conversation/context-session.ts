@@ -1,3 +1,4 @@
+import {latestDoc} from '../../ad-doc/store';
 /** A2 : sélection persistante, relecture native et reprise explicitement consentie.
  * Les seuls effets de ces commandes sont dans le fil SYNA, jamais dans les données métier.
  */
@@ -31,6 +32,7 @@ function currentCandidate(c:ConversationRow,selection:ActiveContext):ActiveConte
  const t=selection.target;if(!t)return selection;
  try{
   let target=structuredClone(t);
+  if(target.kind==='ad-document-text'){const current=latestDoc(c.project_id!,target.docKey);if(!current)return null;target.version=current.version.version;}
   if(target.kind==='content-item')target.version=adapter(target.type).get(c.project_id!,target.itemId).version;
   if('versionId'in target){const theme=currentTheme(c.project_id!);if(!theme)return null;target.versionId=theme.version.id;}
   if(target.kind==='site-request')target.fingerprint=nativeSiteRequest(c,target.requestId).fingerprint;
