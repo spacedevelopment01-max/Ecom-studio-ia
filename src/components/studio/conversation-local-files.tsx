@@ -1,4 +1,5 @@
 "use client";
+import {localEditAllowed} from '@/lib/existing-local-edits';
 import {useEffect,useState} from 'react';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {hasNativeFilesReceipt} from '@/lib/local-files-confirmation-client';
@@ -14,8 +15,8 @@ export function ConversationLocalFiles({view,confirmation,busy,selectionMatches}
  const [folders,setFolders]=useState<Record<string,string>>({});
  const needsFolders=s?.command==='move'&&!!s.diff?.before.folderId;
  useEffect(()=>{if(!needsFolders||!view.projectId)return;let alive=true;api<{folders:{id:string;name:string}[]}>(`/api/projects/${view.projectId}/files?folder=root`).then(r=>{if(alive)setFolders(Object.fromEntries(r.folders.map(f=>[f.id,f.name])));}).catch(()=>{});return()=>{alive=false;};},[needsFolders,view.projectId]);
- if(view.recovery||(!s&&!state.error&&!state.uncertain))return null;
- const enabled=view.localFilesExecution?.enabled&&!view.readOnlyReason&&!state.blocked,valid=hasNativeFilesReceipt(view);
+ if(!localEditAllowed(view,'files')||(!s&&!state.error&&!state.uncertain))return null;
+ const enabled=view.localFilesExecution?.enabled&&localEditAllowed(view,'files')&&!state.blocked,valid=hasNativeFilesReceipt(view);
  const folderLabel=(id:string|null)=>id===null?t('Racine (aucun dossier)','Root (no folder)'):id===s?.folder?.id?s.folder.label:folders[id]??t('Dossier actuel','Current folder');
  const row=(label:string,before:string,after:string)=><><dt className="font-semibold">{label}</dt><dd className="grid gap-1"><span><span className="text-muted">{t('Avant : ','Before: ')}</span>{before}</span><span><span className="text-muted">{t('Après confirmation : ','After confirmation: ')}</span>{after}</span></dd></>;
  return <section aria-label={t('Rangement gratuit du fichier','Free file organisation')} data-syna-files-card className="space-y-3 rounded-xl border border-line p-4 text-sm">

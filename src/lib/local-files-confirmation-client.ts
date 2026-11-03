@@ -1,3 +1,4 @@
+import {localEditAllowed} from './existing-local-edits';
 import type {ConversationView} from './orchestrator/conversation/contract';
 /**
  * #301 C24 — transport sans interface de la confirmation gratuite d'un rangement de fichier (contrat #305 de Codex).
@@ -26,7 +27,7 @@ export function createLocalFilesConfirmation(options:{conversationId:string;fetc
   if(!alive)return;options.onView(v);
   if(hasNativeFilesReceipt(v)&&v.localFiles!.receiptId!==applied){const s=v.localFiles!;applied=s.receiptId;await options.onApplied({projectId:v.projectId!,assetId:s.asset!.id,name:s.asset!.name,folderId:s.asset!.folderId,receiptId:s.receiptId!});}
  }
- async function refresh(){const v=await request(route) as ConversationView;await accept(v);emit({blocked:!!v.recovery||!!v.readOnlyReason||!v.localFilesExecution?.enabled});return v;}
+ async function refresh(){const v=await request(route) as ConversationView;await accept(v);emit({blocked:!localEditAllowed(v,'files')||!v.localFilesExecution?.enabled});return v;}
  async function locked(action:()=>Promise<void>){
   if(busy||!alive)return;busy=true;emit({busy:true,error:''});
   try{await action();}
@@ -41,7 +42,7 @@ export function createLocalFilesConfirmation(options:{conversationId:string;fetc
   dispose(){alive=false;},
   refresh:()=>locked(async()=>{const v=await refresh();if(pending&&hasNativeFilesReceipt(v)&&v.localFiles!.receiptId===pending.requestId){clear();emit({uncertain:false,error:''});}}),
   confirm:()=>locked(async()=>{
-   const v=options.view(),s=v.localFiles;if(v.recovery||!v.localFilesExecution?.enabled||v.readOnlyReason)throw Object.assign(new Error('Rangement gratuit indisponible.'),{status:403});
+   const v=options.view(),s=v.localFiles;if(!localEditAllowed(v,'files')||!v.localFilesExecution?.enabled)throw Object.assign(new Error('Rangement gratuit indisponible.'),{status:403});
    if(!pending){if(s?.state!=='proposed'||!s.proposalId||!s.diff||!s.asset)throw Object.assign(new Error('Demandez une nouvelle proposition gratuite.'),{status:409});pending={action:'confirm-files',proposalId:s.proposalId,confirmation:true,revision:v.revision,projectRevision:v.projectRevision,requestId:uuid()};try{options.storage?.setItem(key,JSON.stringify(pending));}catch{}}
    const response=await request(route,pending) as ConversationView;
    if(!hasNativeFilesReceipt(response))throw new Error('Enregistrement du fichier non confirmé.');
