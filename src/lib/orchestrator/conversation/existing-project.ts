@@ -13,7 +13,7 @@ import {activeContextEnabled,observedActiveContext,resolveActiveContext} from '.
 import {contextPresentation} from './context-session';
 import {metaOf} from './store';
 import {existingLocalCapabilities,existingLocalOperation,type ExistingLocalCapabilities} from './existing-local-policy';
-import {proposeLocalSite,confirmLocalSite} from './local-site';
+import {proposeLocalSite,confirmLocalSite,cancelLocalSite} from './local-site';
 import {proposeLocalFiles,confirmLocalFiles} from './local-files';
 
 const reason=(local?:ExistingLocalCapabilities|null)=>local?L('La fiche et les outils IA restent en lecture seule. Seules les retouches locales indiquées sont proposées à 0 €, puis appliquées après votre confirmation explicite. Aucun contenu n’est régénéré.', 'The brief and AI tools remain read-only. Only the listed local edits can be proposed at €0 and applied after your explicit confirmation. No content is regenerated.'):L('Projet existant repris en lecture seule. Le site, les médias, les droits et l’ancienne discussion sont conservés. Vous pouvez enregistrer des messages ; aucune réponse IA ni modification métier n’est activée dans A1.', 'Existing project resumed read-only. The site, media, entitlements and previous discussion are preserved. You may save messages; A1 enables no AI reply or business change.');
@@ -104,8 +104,7 @@ export function submitExistingProjectMessage(user:User,cid:string,cmd:Command,ha
     if(localAllowed){
       const active={...c,state_json:JSON.stringify(metadata)};
       if(operation==='local-site'){
-        metadata.localSite=cmd.action==='confirm-local'?confirmLocalSite(user,active,metadata,cmd.proposalId):proposeLocalSite(user,active,metadata,(cmd as Extract<Command,{action:'message'}>).text);
-        localMessage=metadata.localSite.message;
+        if(cmd.action==='cancel-local'){cancelLocalSite(metadata,cmd.proposalId);localMessage='Proposition gratuite annulée, aucune version modifiée.';}else{metadata.localSite=cmd.action==='confirm-local'?confirmLocalSite(user,active,metadata,cmd.proposalId,cmd.requestId):proposeLocalSite(user,active,metadata,(cmd as Extract<Command,{action:'message'}>).text);localMessage=metadata.localSite.message;}
       }else{
         metadata.localFiles=cmd.action==='confirm-files'?confirmLocalFiles(user,active,metadata,cmd.proposalId,cmd.requestId):proposeLocalFiles(user,active,metadata,(cmd as Extract<Command,{action:'message'}>).text);
         localMessage=metadata.localFiles.message;

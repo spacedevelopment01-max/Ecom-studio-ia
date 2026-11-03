@@ -474,6 +474,19 @@ jobs:
         run: SYNA_UI_PRODUCTION=1 NODE_OPTIONS="--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-syna284-b1-confirmation-ui.ts work/preuves-confirmation-gratuite/rafraichissement --wait-project-refresh
       - name: Drapeau fermé sans confirmation ni repli payant
         run: SYNA_UI_PRODUCTION=1 SYNA_UI_CLOSED=1 NODE_OPTIONS="--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-syna284-b1-confirmation-ui.ts work/preuves-confirmation-gratuite/fermee
+      - name: Couleurs natives réellement peintes
+        run: NODE_OPTIONS="--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-native-section-colors301.ts
+      - name: Phrases gratuites Site et créations V2, Encre/Plein cadre, 17 secondes
+        timeout-minutes: 10
+        run: STUDIO_PROOF_OUTPUT=work/preuves-parity301-wave4 STUDIO_PROOF_COMMIT="$(git rev-parse HEAD)" NODE_OPTIONS="--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-parity301-wave4-ui.ts
+      - name: Rapport textuel des nouveaux parcours gratuits
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: syna-parity301-wave4-text
+          path: work/preuves-parity301-wave4/proof.json
+          if-no-files-found: warn
+          retention-days: 14
       - name: Preuves synthétiques du parcours gratuit
         if: ${{ always() }}
         uses: actions/upload-artifact@v4

@@ -33,11 +33,9 @@ export function createLocalSiteConfirmation(options:{conversationId:string;fetch
   }),
   cancel:()=>locked(async()=>{
    if(pending)throw new Error('Vérifiez d’abord la confirmation dont la réponse est incertaine.');
-   const proposal=options.view().localSite?.proposalId,v=await refresh(),context=v.activeContext?.presentation;
+   const proposal=options.view().localSite?.proposalId,v=await refresh();
    if(!proposal||v.localSite?.proposalId!==proposal)return;
-   if(context?.state!=='valid'||!context.selection)throw Object.assign(new Error('La cible a changé : cette proposition ne peut plus être exécutée. Revalidez puis demandez une nouvelle proposition.'),{status:409,context});
-   // Existing A2 select invalidates proposals while retaining exactly the same valid target.
-   await request(route+'/context',{action:'select',revision:v.revision,requestId:uuid(),context:context.selection});await refresh();emit({context:null});
+   await request(route,{action:'cancel-local',proposalId:proposal,revision:v.revision,projectRevision:v.projectRevision,requestId:uuid()});await refresh();emit({context:null});
   }),
   revalidate:()=>locked(async()=>{
    const v=options.view(),fresh=v.activeContext?.presentation,context=fresh&&fresh.revision>=(state.context?.revision??0)?fresh:state.context,r=context?.recovery;
