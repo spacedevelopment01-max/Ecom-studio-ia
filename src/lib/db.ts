@@ -881,7 +881,7 @@ CREATE TABLE IF NOT EXISTS ad_documents (
   rendered_asset_id TEXT,
   created_at INTEGER NOT NULL
 );
-CREATE UNIQUE INDEX IF NOT EXISTS ad_documents_version ON ad_documents(doc_key, version);
+CREATE UNIQUE INDEX IF NOT EXISTS ad_documents_version ON ad_documents(project_id, doc_key, version);
 CREATE INDEX IF NOT EXISTS ad_documents_project ON ad_documents(project_id, created_at);
 
 -- Video Engine V2 : documents vidéo (timeline éditable) versionnés, comme les documents publicitaires.
@@ -1165,6 +1165,14 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
 ];
 
 function migrate(db: Database.Database) {
+  // The native document namespace is project scoped, like every document read/CAS guard.
+  // Upgrade only the historical index, atomically and without rewriting any document or media.
+  db.transaction(() => {
+    const columns = db.prepare("PRAGMA index_info(ad_documents_version)").all() as { name: string }[];
+    if (columns.map(column => column.name).join(",") === "doc_key,version") {
+      db.exec("DROP INDEX ad_documents_version; CREATE UNIQUE INDEX ad_documents_version ON ad_documents(project_id, doc_key, version)");
+    }
+  }).immediate();
   for (const [table, column, ddl] of ADDED_COLUMNS) {
     const cols = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
     if (cols.some((c) => c.name === column)) continue;

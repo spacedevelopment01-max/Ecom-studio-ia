@@ -66,7 +66,7 @@ export function saveVersion(projectId: string, docKey: string, doc: AdDocument, 
   const { marketingStrategy: _untrustedStamp, ...meta } = doc.meta;
   doc = { ...doc, meta: { ...meta, ...(strategy ? { marketingStrategy: strategy } : {}) } };
   return tx(() => {
-  const version = (one<{ v: number }>("SELECT MAX(version) v FROM ad_documents WHERE doc_key = ?", docKey)?.v ?? 0) + 1;
+  const version = (one<{ v: number }>("SELECT MAX(version) v FROM ad_documents WHERE project_id = ? AND doc_key = ?", projectId, docKey)?.v ?? 0) + 1;
   const vid = id();
   run("INSERT INTO ad_documents (id, project_id, doc_key, version, source, note, doc_json, rendered_asset_id, created_at) VALUES (?,?,?,?,?,?,?,?,?)", vid, projectId, docKey, version, doc.meta.source, (o.note ?? "").slice(0, 200), JSON.stringify(doc), o.renderedAssetId ?? null, now());
   strategyContent(projectId, "ad", vid, { stamp: strategy, protected: doc.meta.source === "user" });
