@@ -5,7 +5,7 @@ import {localFilesEnabled,localFilesCandidate,proposeLocalFiles,confirmLocalFile
 import {localBusinessContentEnabled,localBusinessContentCandidate,proposeLocalBusinessContent,confirmLocalBusinessContent} from './local-business-content';
 import {localRequestsCandidate,proposeLocalRequests,confirmLocalRequest,localRequestsView} from './local-site-requests';
 import {withAiDisabled} from '../../ai/access';
-import {localSiteEnabled,localSiteCandidate,proposeLocalSite,confirmLocalSite} from './local-site';
+import {localSiteEnabled,localSiteCandidate,proposeLocalSite,confirmLocalSite,cancelLocalSite} from './local-site';
 import {conversationBlogEnabled,conversationBrandReviewEnabled} from './tool-flags';
 /** Une conversation dans l'orchestrateur : interpréter/proposer ≠ autoriser/exécuter un outil. */
 import { HttpError, type User } from "../../auth";
@@ -237,10 +237,9 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
       const active={...c,state_json:JSON.stringify(m)};
       m.localRequests=cmd.action==='confirm-site-request'?confirmLocalRequest(user,active,m,cmd.proposalId,cmd.requestId):proposeLocalRequests(user,active,m,(cmd as Extract<Command,{action:'message'}>).text);
       message=m.localRequests.message;
-    } else if(localCommand||cmd.action==='confirm-local'){
+    } else if(localCommand||cmd.action==='confirm-local'||cmd.action==='cancel-local'){
       const active={...c,state_json:JSON.stringify(m)};
-      m.localSite=cmd.action==='confirm-local'?confirmLocalSite(user,active,m,cmd.proposalId):proposeLocalSite(user,active,m,(cmd as Extract<Command,{action:'message'}>).text);
-      message=m.localSite.message;
+      if(cmd.action==='cancel-local'){cancelLocalSite(m,cmd.proposalId);message='Proposition gratuite annulée, aucune version modifiée.';}else{m.localSite=cmd.action==='confirm-local'?confirmLocalSite(user,active,m,cmd.proposalId,cmd.requestId):proposeLocalSite(user,active,m,(cmd as Extract<Command,{action:'message'}>).text);message=m.localSite.message;}
     } else if (cmd.action === 'message' && intelligenceEnabled()) {
       // Conservation exacte, sans classification locale ni appel facturant implicite.
       let writable = true;
@@ -369,7 +368,7 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
     if(!promptsCommand)delete m.localPrompts;
     if(!serviceCommand&&cmd.action!=='confirm-service-profile'&&cmd.action!=='cancel-service-profile'){delete m.serviceProfile;delete m.serviceProfileProposal;}
     if(!businessCommand&&cmd.action!=='confirm-business-content'){delete m.localBusinessContent;delete m.localBusinessContentProposal;}
-    if(!localCommand&&cmd.action!=='confirm-local')delete m.localSite;
+    if(!localCommand&&cmd.action!=='confirm-local'&&cmd.action!=='cancel-local')delete m.localSite;
     if(!fileCommand&&cmd.action!=='confirm-files'){delete m.localFiles;delete m.localFilesProposal;}
     if(!requestCommand&&cmd.action!=='confirm-site-request'){delete m.localRequests;delete m.localRequestProposal;}
     const next = c.revision + 1;
@@ -394,6 +393,6 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
 /** Une commande locale candidate ne peut jamais devenir un appel fournisseur implicite. */
 export async function submitConversation(user:User,cid:string,raw:unknown,tests:TestDependencies={}):Promise<ConversationView>{
  const parsed=CommandSchema.safeParse(raw),cmd=parsed.success?parsed.data:null;
- const local=cmd?.action==='message'&&adDocumentCandidate(cmd.text)||cmd?.action==='confirm-local'||cmd?.action==='confirm-site-request'||cmd?.action==='confirm-files'||cmd?.action==='confirm-business-content'||cmd?.action==='confirm-service-profile'||cmd?.action==='cancel-service-profile'||cmd?.action==='message'&&(localPromptsCandidate(cmd.text)||localRequestsCandidate(cmd.text)||localSiteCandidate(cmd.text)||localFilesCandidate(cmd.text)||localBusinessContentCandidate(cmd.text)||serviceProfileCandidate(cmd.text));
+ const local=cmd?.action==='message'&&adDocumentCandidate(cmd.text)||cmd?.action==='confirm-local'||cmd?.action==='cancel-local'||cmd?.action==='confirm-site-request'||cmd?.action==='confirm-files'||cmd?.action==='confirm-business-content'||cmd?.action==='confirm-service-profile'||cmd?.action==='cancel-service-profile'||cmd?.action==='message'&&(localPromptsCandidate(cmd.text)||localRequestsCandidate(cmd.text)||localSiteCandidate(cmd.text)||localFilesCandidate(cmd.text)||localBusinessContentCandidate(cmd.text)||serviceProfileCandidate(cmd.text));
  return local?withAiDisabled('B1 : retouche gratuite déterministe, aucun devis IA',()=>submitConversationImpl(user,cid,raw,tests)):submitConversationImpl(user,cid,raw,tests);
 }

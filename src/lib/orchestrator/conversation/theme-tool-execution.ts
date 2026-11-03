@@ -92,7 +92,7 @@ function previewCompose(user:User,pid:string,plan:CompositionPlan){
   if(plan.pages.every(page=>JSON.stringify(cur.spec.templates[page.template])===JSON.stringify(spec.templates[page.template])))throw new HttpError(409,'Cette composition est déjà en place ; aucune version inutile.');
   return{cur,spec,changes,startingWithoutTheme:preview.startingWithoutTheme};
 }
-function previewUndo(user:User,pid:string,m:Meta){
+export function previewNativeThemeUndo(user:User,pid:string,m:Pick<Meta,'beforeVersionId'|'targetVersionId'|'undoSourceFingerprint'|'changes'>){
   requirePlan(user,pid);const cur=current(pid,m.beforeVersionId),target=m.targetVersionId?themeVersion(pid,m.targetVersionId):null;
   if(!target)throw new HttpError(404,'Version précédente introuvable.');
   // L'annulation vise le résultat du reçu, pas le repère de navigation antérieur à notre propre édition.
@@ -120,11 +120,11 @@ export function quoteThemeUndo(user:User,cid:string,cmd:Extract<ThemeToolCommand
   const saved=themeVersion(pid,original.resultVersionId);if(!saved||fingerprint(saved.spec)!==original.resultFingerprint)throw new HttpError(409,'La preuve de cette version manque.');
   const cur=current(pid,cmd.currentVersionId);if(cur.version.id!==original.resultVersionId)throw new HttpError(409,'Une modification est passée depuis : annulation refusée pour préserver vos derniers changements.','agent_theme_conflict');
   const at=now(),m:Meta={schema:1,id:id(),conversationId:cid,kind:'undo',revision:c.revision,projectRevision:stateOf(pid)?.revision??0,beforeVersionId:cur.version.id,targetVersionId:original.beforeVersionId,changes:original.changes.map(d=>({...d,before:d.after,after:d.before})),previewFingerprint:'',summary:'Annuler cette retouche en créant une nouvelle version ; historique conservé.',createdAt:at,expiresAt:at+15*60000};
-  const preview=previewUndo(user,pid,m);m.undoSourceFingerprint=preview.undoSourceFingerprint;m.previewFingerprint=fingerprint(preview.spec);m.changes=preview.changes;save(pid,m);return publicQuote(m);
+  const preview=previewNativeThemeUndo(user,pid,m);m.undoSourceFingerprint=preview.undoSourceFingerprint;m.previewFingerprint=fingerprint(preview.spec);m.changes=preview.changes;save(pid,m);return publicQuote(m);
 });}
 function recheck(user:User,cid:string,pid:string,m:Meta){
   const c=ownedConversation(user,cid);if(m.contextPin)checkedContextPin(c,m.contextPin);if(m.expiresAt<now()||c.revision!==m.revision||stateOf(pid)?.revision!==m.projectRevision)throw new HttpError(409,'Ce devis de retouche est périmé ou son contexte a changé.','agent_theme_quote_stale');
-  const preview=m.kind==='edit'?previewEdit(user,cid,pid,ThemeToolPlanSchema.parse(m.plan)):m.kind==='compose'?previewCompose(user,pid,CompositionPlanSchema.parse(m.compositionPlan)):previewUndo(user,pid,m);
+  const preview=m.kind==='edit'?previewEdit(user,cid,pid,ThemeToolPlanSchema.parse(m.plan)):m.kind==='compose'?previewCompose(user,pid,CompositionPlanSchema.parse(m.compositionPlan)):previewNativeThemeUndo(user,pid,m);
   if(preview.cur.version.id!==m.beforeVersionId||fingerprint(preview.spec)!==m.previewFingerprint)throw new HttpError(409,'Le contenu, les médias ou les consignes ont changé. Préparez un nouveau devis local.','agent_theme_conflict');return preview;
 }
 export function confirmThemeChange(user:User,cid:string,cmd:Extract<ThemeToolCommand,{action:'confirm'}>){return tx(()=>{
