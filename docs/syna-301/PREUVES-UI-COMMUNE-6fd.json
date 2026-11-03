@@ -1,0 +1,1911 @@
+{
+  "schema": 1,
+  "sourceCommit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+  "sourceTree": "1d303664973b784b00c3edcddb17652cc5a532d3",
+  "buildProof": "build-proof.json",
+  "runs": [
+    {
+      "id": "files",
+      "kind": "common",
+      "status": "PASS",
+      "cases": 4,
+      "caseDetails": [
+        {
+          "mode": "encre",
+          "format": "ordinateur",
+          "steps": [
+            {
+              "etape": "ouverture de Fichiers dans le mode du compte",
+              "ok": true,
+              "detail": "mode encre"
+            },
+            {
+              "etape": "désignation : un fichier coché devient la cible de SYNA",
+              "ok": true,
+              "detail": "Média désigné · version 1"
+            },
+            {
+              "etape": "demande ambiguë : explication, aucun bouton, rien d'écrit",
+              "ok": true
+            },
+            {
+              "etape": "annulation avant l'accord : rien n'est écrit",
+              "ok": true
+            },
+            {
+              "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis",
+              "ok": true
+            },
+            {
+              "etape": "réponse perdue après l'enregistrement : vérification sans deuxième écriture",
+              "ok": true,
+              "detail": "1 seule confirmation enregistrée"
+            },
+            {
+              "etape": "reçu relu, liste Fichiers à jour sans recharger",
+              "ok": true
+            },
+            {
+              "etape": "rechargement : nom et reçu conservés",
+              "ok": true
+            },
+            {
+              "etape": "déplacement vers un dossier existant",
+              "ok": true
+            },
+            {
+              "etape": "fichier intact : octets, version, aucune copie",
+              "ok": true
+            }
+          ],
+          "ok": true
+        },
+        {
+          "mode": "encre",
+          "format": "telephone",
+          "steps": [
+            {
+              "etape": "ouverture de Fichiers dans le mode du compte",
+              "ok": true,
+              "detail": "mode encre"
+            },
+            {
+              "etape": "désignation : un fichier coché devient la cible de SYNA",
+              "ok": true,
+              "detail": "Média désigné · version 1"
+            },
+            {
+              "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis",
+              "ok": true
+            },
+            {
+              "etape": "confirmation gratuite",
+              "ok": true
+            },
+            {
+              "etape": "reçu relu, liste Fichiers à jour sans recharger",
+              "ok": true
+            },
+            {
+              "etape": "rechargement : nom et reçu conservés",
+              "ok": true
+            },
+            {
+              "etape": "fichier intact : octets, version, aucune copie",
+              "ok": true
+            }
+          ],
+          "ok": true
+        },
+        {
+          "mode": "plein",
+          "format": "ordinateur",
+          "steps": [
+            {
+              "etape": "ouverture de Fichiers dans le mode du compte",
+              "ok": true,
+              "detail": "mode plein"
+            },
+            {
+              "etape": "désignation : un fichier coché devient la cible de SYNA",
+              "ok": true,
+              "detail": "Média désigné · version 1"
+            },
+            {
+              "etape": "demande ambiguë : explication, aucun bouton, rien d'écrit",
+              "ok": true
+            },
+            {
+              "etape": "annulation avant l'accord : rien n'est écrit",
+              "ok": true
+            },
+            {
+              "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis",
+              "ok": true
+            },
+            {
+              "etape": "réponse perdue après l'enregistrement : vérification sans deuxième écriture",
+              "ok": true,
+              "detail": "1 seule confirmation enregistrée"
+            },
+            {
+              "etape": "reçu relu, liste Fichiers à jour sans recharger",
+              "ok": true
+            },
+            {
+              "etape": "rechargement : nom et reçu conservés",
+              "ok": true
+            },
+            {
+              "etape": "déplacement vers un dossier existant",
+              "ok": true
+            },
+            {
+              "etape": "fichier intact : octets, version, aucune copie",
+              "ok": true
+            }
+          ],
+          "ok": true
+        },
+        {
+          "mode": "plein",
+          "format": "telephone",
+          "steps": [
+            {
+              "etape": "ouverture de Fichiers dans le mode du compte",
+              "ok": true,
+              "detail": "mode plein"
+            },
+            {
+              "etape": "désignation : un fichier coché devient la cible de SYNA",
+              "ok": true,
+              "detail": "Média désigné · version 1"
+            },
+            {
+              "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis",
+              "ok": true
+            },
+            {
+              "etape": "confirmation gratuite",
+              "ok": true
+            },
+            {
+              "etape": "reçu relu, liste Fichiers à jour sans recharger",
+              "ok": true
+            },
+            {
+              "etape": "rechargement : nom et reçu conservés",
+              "ok": true
+            },
+            {
+              "etape": "fichier intact : octets, version, aucune copie",
+              "ok": true
+            }
+          ],
+          "ok": true
+        }
+      ],
+      "runtime": {
+        "commit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "actualCounters": {
+        "jobs": 0,
+        "calls": 0,
+        "usage": 0,
+        "reservations": 0
+      },
+      "summary": "files/RESUME-FICHIERS-301.json",
+      "captureCount": 28,
+      "blockedExternalAttempts": [
+        "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap",
+        "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap",
+        "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap",
+        "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap"
+      ],
+      "errors": []
+    },
+    {
+      "id": "contenus",
+      "kind": "common",
+      "status": "PASS",
+      "cases": 4,
+      "caseDetails": [
+        {
+          "mode": "encre",
+          "format": "ordinateur",
+          "type": "plats",
+          "steps": [
+            {
+              "etape": "ouverture de l'espace natif dans le mode du compte",
+              "ok": true
+            },
+            {
+              "etape": "« Désigner pour SYNA » : la fiche devient la cible",
+              "ok": true,
+              "detail": "Contenu désigné : Velouté de saison · modifié le 03/11/2026 00:35"
+            },
+            {
+              "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis, aucune écriture",
+              "ok": true,
+              "detail": "Avant : 16,00 € | Après confirmation : 18,50 €"
+            },
+            {
+              "etape": "réponse perdue après l'enregistrement : vérification sans deuxième écriture",
+              "ok": true,
+              "detail": "1 seule confirmation enregistrée"
+            },
+            {
+              "etape": "valeur exacte enregistrée, statut inchangé, espace à jour sans recharger",
+              "ok": true
+            },
+            {
+              "etape": "la désignation suit la nouvelle version : une 2e demande reste possible",
+              "ok": true
+            },
+            {
+              "etape": "rechargement : valeur et reçu conservés",
+              "ok": true
+            }
+          ],
+          "ok": true
+        },
+        {
+          "mode": "encre",
+          "format": "telephone",
+          "type": "biens",
+          "steps": [
+            {
+              "etape": "ouverture de l'espace natif dans le mode du compte",
+              "ok": true
+            },
+            {
+              "etape": "« Désigner pour SYNA » : la fiche devient la cible",
+              "ok": true,
+              "detail": "Contenu désigné : Maison fictive · modifié le 03/11/2026 00:35"
+            },
+            {
+              "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis, aucune écriture",
+              "ok": true,
+              "detail": "Avant : Maison fictive | Après confirmation : Maison des Tilleuls | Avant : maison-fictive-v-0001 | Après confirmation : maison-des-tilleuls-v-0001"
+            },
+            {
+              "etape": "confirmation gratuite",
+              "ok": true
+            },
+            {
+              "etape": "valeur exacte enregistrée, statut inchangé, espace à jour sans recharger",
+              "ok": true
+            },
+            {
+              "etape": "la désignation suit la nouvelle version : une 2e demande reste possible",
+              "ok": true
+            },
+            {
+              "etape": "rechargement : valeur et reçu conservés",
+              "ok": true
+            }
+          ],
+          "ok": true
+        },
+        {
+          "mode": "plein",
+          "format": "ordinateur",
+          "type": "realisations",
+          "steps": [
+            {
+              "etape": "ouverture de l'espace natif dans le mode du compte",
+              "ok": true
+            },
+            {
+              "etape": "« Désigner pour SYNA » : la fiche devient la cible",
+              "ok": true,
+              "detail": "Contenu désigné : Aménagement de van fictif · modifié le 03/11/2026 00:35"
+            },
+            {
+              "etape": "demande ambiguë : explication, aucun bouton, rien d'écrit",
+              "ok": true
+            },
+            {
+              "etape": "annulation avant l'accord : rien n'est écrit",
+              "ok": true
+            },
+            {
+              "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis, aucune écriture",
+              "ok": true,
+              "detail": "Avant : Aménagement de van fictif | Après confirmation : Van Sprinter aménagé"
+            },
+            {
+              "etape": "confirmation gratuite",
+              "ok": true
+            },
+            {
+              "etape": "valeur exacte enregistrée, statut inchangé, espace à jour sans recharger",
+              "ok": true
+            },
+            {
+              "etape": "la désignation suit la nouvelle version : une 2e demande reste possible",
+              "ok": true
+            },
+            {
+              "etape": "rechargement : valeur et reçu conservés",
+              "ok": true
+            }
+          ],
+          "ok": true
+        },
+        {
+          "mode": "plein",
+          "format": "telephone",
+          "type": "plats",
+          "steps": [
+            {
+              "etape": "ouverture de l'espace natif dans le mode du compte",
+              "ok": true
+            },
+            {
+              "etape": "« Désigner pour SYNA » : la fiche devient la cible",
+              "ok": true,
+              "detail": "Contenu désigné : Velouté de saison · modifié le 03/11/2026 00:35"
+            },
+            {
+              "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis, aucune écriture",
+              "ok": true,
+              "detail": "Avant : 16,00 € | Après confirmation : 21,00 €"
+            },
+            {
+              "etape": "confirmation gratuite",
+              "ok": true
+            },
+            {
+              "etape": "valeur exacte enregistrée, statut inchangé, espace à jour sans recharger",
+              "ok": true
+            },
+            {
+              "etape": "la désignation suit la nouvelle version : une 2e demande reste possible",
+              "ok": true
+            },
+            {
+              "etape": "rechargement : valeur et reçu conservés",
+              "ok": true
+            }
+          ],
+          "ok": true
+        }
+      ],
+      "runtime": {
+        "commit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "actualCounters": {
+        "jobs": 0,
+        "calls": 0,
+        "usage": 0,
+        "reservations": 0
+      },
+      "summary": "contenus/RESUME-CONTENUS-301.json",
+      "captureCount": 26,
+      "blockedExternalAttempts": [
+        "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap",
+        "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap",
+        "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap",
+        "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap"
+      ],
+      "errors": []
+    },
+    {
+      "id": "b1-open",
+      "kind": "b1",
+      "status": "PASS",
+      "cases": 4,
+      "caseDetails": [
+        {
+          "business": "products",
+          "http": [
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "context",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 409
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "context",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "native-restore",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 402
+            }
+          ],
+          "permissionsRevokedNoWrite": true,
+          "ambiguityNoWrite": true,
+          "iframeOrderVerified": true,
+          "projectFieldsIntact": true,
+          "otherProjectsIntact": true,
+          "oldVersionsIntact": true,
+          "realSelection": true,
+          "typedCommand": true,
+          "freeDiff": true,
+          "doubleClickOneVersion": true,
+          "refreshPersistent": true,
+          "lostResponseSameCommand": true,
+          "manualRaceExplicitRevalidation": true,
+          "projectRefreshAfterRevalidation": false,
+          "newProposalRequired": true,
+          "manualNativeRestore": true,
+          "zipChanged": [
+            "templates/index.json"
+          ],
+          "paidRequests": 0,
+          "jsErrors": []
+        },
+        {
+          "business": "services",
+          "http": [
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "context",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 409
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "context",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "native-restore",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 402
+            }
+          ],
+          "permissionsRevokedNoWrite": true,
+          "ambiguityNoWrite": true,
+          "iframeOrderVerified": true,
+          "projectFieldsIntact": true,
+          "otherProjectsIntact": true,
+          "oldVersionsIntact": true,
+          "realSelection": true,
+          "typedCommand": true,
+          "freeDiff": true,
+          "doubleClickOneVersion": true,
+          "refreshPersistent": true,
+          "lostResponseSameCommand": true,
+          "manualRaceExplicitRevalidation": true,
+          "projectRefreshAfterRevalidation": false,
+          "newProposalRequired": true,
+          "manualNativeRestore": true,
+          "zipChanged": [
+            "templates/index.json"
+          ],
+          "paidRequests": 0,
+          "jsErrors": []
+        },
+        {
+          "business": "products",
+          "A1ReadOnly": true,
+          "noFreeControl": true
+        },
+        {
+          "business": "services",
+          "A1ReadOnly": true,
+          "noFreeControl": true
+        }
+      ],
+      "runtime": {
+        "commit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "actualCounters": {
+        "ai_calls": 0,
+        "jobs": 0,
+        "usage_events": 0,
+        "ai_reservations": 0
+      },
+      "summary": "b1-open/RESUME-UI.json",
+      "captureCount": 10,
+      "blockedExternalAttempts": [],
+      "errors": []
+    },
+    {
+      "id": "b1-refresh17s",
+      "kind": "b1",
+      "status": "PASS",
+      "cases": 4,
+      "caseDetails": [
+        {
+          "business": "products",
+          "http": [
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "context",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 409
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "context",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "native-restore",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 402
+            }
+          ],
+          "permissionsRevokedNoWrite": true,
+          "ambiguityNoWrite": true,
+          "iframeOrderVerified": true,
+          "projectFieldsIntact": true,
+          "otherProjectsIntact": true,
+          "oldVersionsIntact": true,
+          "realSelection": true,
+          "typedCommand": true,
+          "freeDiff": true,
+          "doubleClickOneVersion": true,
+          "refreshPersistent": true,
+          "lostResponseSameCommand": true,
+          "manualRaceExplicitRevalidation": true,
+          "projectRefreshAfterRevalidation": true,
+          "newProposalRequired": true,
+          "manualNativeRestore": true,
+          "zipChanged": [
+            "templates/index.json"
+          ],
+          "paidRequests": 0,
+          "jsErrors": []
+        },
+        {
+          "business": "services",
+          "http": [
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "context",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 409
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "context",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "native-restore",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "GET",
+              "endpoint": "conversation",
+              "status": 200
+            },
+            {
+              "method": "POST",
+              "endpoint": "conversation",
+              "status": 402
+            }
+          ],
+          "permissionsRevokedNoWrite": true,
+          "ambiguityNoWrite": true,
+          "iframeOrderVerified": true,
+          "projectFieldsIntact": true,
+          "otherProjectsIntact": true,
+          "oldVersionsIntact": true,
+          "realSelection": true,
+          "typedCommand": true,
+          "freeDiff": true,
+          "doubleClickOneVersion": true,
+          "refreshPersistent": true,
+          "lostResponseSameCommand": true,
+          "manualRaceExplicitRevalidation": true,
+          "projectRefreshAfterRevalidation": true,
+          "newProposalRequired": true,
+          "manualNativeRestore": true,
+          "zipChanged": [
+            "templates/index.json"
+          ],
+          "paidRequests": 0,
+          "jsErrors": []
+        },
+        {
+          "business": "products",
+          "A1ReadOnly": true,
+          "noFreeControl": true
+        },
+        {
+          "business": "services",
+          "A1ReadOnly": true,
+          "noFreeControl": true
+        }
+      ],
+      "runtime": {
+        "commit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "actualCounters": {
+        "ai_calls": 0,
+        "jobs": 0,
+        "usage_events": 0,
+        "ai_reservations": 0
+      },
+      "summary": "b1-refresh17s/RESUME-UI.json",
+      "captureCount": 10,
+      "blockedExternalAttempts": [],
+      "errors": []
+    },
+    {
+      "id": "b1-closed",
+      "kind": "b1",
+      "status": "PASS",
+      "cases": 4,
+      "caseDetails": [
+        {
+          "business": "products",
+          "flagClosed": true,
+          "noDeadConfirmation": true,
+          "noPaidFallback": true,
+          "manualPreviewIntact": true
+        },
+        {
+          "business": "services",
+          "flagClosed": true,
+          "noDeadConfirmation": true,
+          "noPaidFallback": true,
+          "manualPreviewIntact": true
+        },
+        {
+          "business": "products",
+          "A1ReadOnly": true,
+          "noFreeControl": true
+        },
+        {
+          "business": "services",
+          "A1ReadOnly": true,
+          "noFreeControl": true
+        }
+      ],
+      "runtime": {
+        "commit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "actualCounters": {
+        "ai_calls": 0,
+        "jobs": 0,
+        "usage_events": 0,
+        "ai_reservations": 0
+      },
+      "summary": "b1-closed/RESUME-UI.json",
+      "captureCount": 0,
+      "blockedExternalAttempts": [],
+      "errors": []
+    },
+    {
+      "id": "files-card-full-extra",
+      "kind": "supplemental",
+      "status": "PASS",
+      "cases": 1,
+      "caseDetails": [
+        {
+          "mode": "encre",
+          "format": "ordinateur",
+          "steps": [
+            {
+              "etape": "ouverture de Fichiers dans le mode du compte",
+              "ok": true,
+              "detail": "mode encre"
+            },
+            {
+              "etape": "désignation : un fichier coché devient la cible de SYNA",
+              "ok": true,
+              "detail": "Média désigné · version 1"
+            },
+            {
+              "etape": "demande ambiguë : explication, aucun bouton, rien d'écrit",
+              "ok": true
+            },
+            {
+              "etape": "annulation avant l'accord : rien n'est écrit",
+              "ok": true
+            },
+            {
+              "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis",
+              "ok": true
+            },
+            {
+              "etape": "réponse perdue après l'enregistrement : vérification sans deuxième écriture",
+              "ok": true,
+              "detail": "1 seule confirmation enregistrée"
+            },
+            {
+              "etape": "reçu relu, liste Fichiers à jour sans recharger",
+              "ok": true
+            },
+            {
+              "etape": "rechargement : nom et reçu conservés",
+              "ok": true
+            },
+            {
+              "etape": "déplacement vers un dossier existant",
+              "ok": true
+            },
+            {
+              "etape": "fichier intact : octets, version, aucune copie",
+              "ok": true
+            }
+          ],
+          "ok": true
+        }
+      ],
+      "runtime": {
+        "commit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "actualCounters": {
+        "jobs": 0,
+        "calls": 0,
+        "usage": 0,
+        "reservations": 0
+      },
+      "summary": "files-card-full-extra/RESUME-FICHIERS-301.json",
+      "captureCount": 11,
+      "blockedExternalAttempts": [
+        "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap"
+      ],
+      "errors": []
+    },
+    {
+      "id": "contenus-card-full-extra",
+      "kind": "supplemental",
+      "status": "PASS",
+      "cases": 1,
+      "caseDetails": [
+        {
+          "mode": "plein",
+          "format": "ordinateur",
+          "type": "realisations",
+          "steps": [
+            {
+              "etape": "ouverture de l'espace natif dans le mode du compte",
+              "ok": true
+            },
+            {
+              "etape": "« Désigner pour SYNA » : la fiche devient la cible",
+              "ok": true,
+              "detail": "Contenu désigné : Aménagement de van fictif · modifié le 03/11/2026 00:39"
+            },
+            {
+              "etape": "demande ambiguë : explication, aucun bouton, rien d'écrit",
+              "ok": true
+            },
+            {
+              "etape": "annulation avant l'accord : rien n'est écrit",
+              "ok": true
+            },
+            {
+              "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis, aucune écriture",
+              "ok": true,
+              "detail": "Avant : Aménagement de van fictif | Après confirmation : Van Sprinter aménagé"
+            },
+            {
+              "etape": "confirmation gratuite",
+              "ok": true
+            },
+            {
+              "etape": "valeur exacte enregistrée, statut inchangé, espace à jour sans recharger",
+              "ok": true
+            },
+            {
+              "etape": "la désignation suit la nouvelle version : une 2e demande reste possible",
+              "ok": true
+            },
+            {
+              "etape": "rechargement : valeur et reçu conservés",
+              "ok": true
+            }
+          ],
+          "ok": true
+        }
+      ],
+      "runtime": {
+        "commit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "actualCounters": {
+        "jobs": 0,
+        "calls": 0,
+        "usage": 0,
+        "reservations": 0
+      },
+      "summary": "contenus-card-full-extra/RESUME-CONTENUS-301.json",
+      "captureCount": 9,
+      "blockedExternalAttempts": [
+        "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap"
+      ],
+      "errors": []
+    }
+  ],
+  "mandatoryCommonUICases": 8,
+  "mandatoryB1Runs": 3,
+  "mandatoryB1Cases": 12,
+  "supplementalCases": 2,
+  "realProviderCalls": 0,
+  "realSpendMicro": 0,
+  "captureCount": 94,
+  "captures": [
+    {
+      "path": "b1-open/products-desktop-confirmation.png",
+      "sha256": "0dcad02136d97a3901efa960a7b17e18b606459e0f8b556b9bd8d075b1c8c7ed"
+    },
+    {
+      "path": "b1-open/products-desktop-recu.png",
+      "sha256": "8adf5bda10c20e10872595f90b7ddcbe9cc70190eec8ef83adc64169ac6d7b46"
+    },
+    {
+      "path": "b1-open/products-desktop-resultat.png",
+      "sha256": "aaba59db2efc9fb1bdba60039d6df0d6d81f0e8a39dc9aa29b57b19cf690fe1b"
+    },
+    {
+      "path": "b1-open/products-mobile-confirmation.png",
+      "sha256": "f696b1eefd702d6abe94888ef44a9f64ec245c36e61a418ec1732a7c65944652"
+    },
+    {
+      "path": "b1-open/products-mobile-resultat.png",
+      "sha256": "ac126679984fabd81e72913678bcd28a447cbcf7965e9627e842a5c7a3e4dfa7"
+    },
+    {
+      "path": "b1-open/services-desktop-confirmation.png",
+      "sha256": "c1db5b043e8201ca6fe307ade401738125ad948d4fd10401322ff9996d064432"
+    },
+    {
+      "path": "b1-open/services-desktop-recu.png",
+      "sha256": "85eb898d2205ed60de68f0cde926ac2ac0610c46140477c05de6cab91a3f3aaa"
+    },
+    {
+      "path": "b1-open/services-desktop-resultat.png",
+      "sha256": "64b171cdf58c03f363f4feece1af8d0916d1110ad4fcf1952d6825cec28e4060"
+    },
+    {
+      "path": "b1-open/services-mobile-confirmation.png",
+      "sha256": "82ef67d21d3b9adb73c01d8b9fe257c94a76bc2d300ea0cc0330e595b0bffc2c"
+    },
+    {
+      "path": "b1-open/services-mobile-resultat.png",
+      "sha256": "2d34786c730563feec3dfe1d6ee6cc938ef30fa3b2fca069503fe754cf37f954"
+    },
+    {
+      "path": "b1-refresh17s/products-desktop-confirmation.png",
+      "sha256": "2d0ed94935262b399ea83c39679dca839fce654666741149b776b37769697348"
+    },
+    {
+      "path": "b1-refresh17s/products-desktop-recu.png",
+      "sha256": "56a79d7f84d4660a05d2ab9a09541043b04dc46200bc5f3b42201bf463e02798"
+    },
+    {
+      "path": "b1-refresh17s/products-desktop-resultat.png",
+      "sha256": "aaba59db2efc9fb1bdba60039d6df0d6d81f0e8a39dc9aa29b57b19cf690fe1b"
+    },
+    {
+      "path": "b1-refresh17s/products-mobile-confirmation.png",
+      "sha256": "f696b1eefd702d6abe94888ef44a9f64ec245c36e61a418ec1732a7c65944652"
+    },
+    {
+      "path": "b1-refresh17s/products-mobile-resultat.png",
+      "sha256": "4ea8c2d880b48c359744c467e02cfb3124a3533339187da98df6b6eb63f203d6"
+    },
+    {
+      "path": "b1-refresh17s/services-desktop-confirmation.png",
+      "sha256": "c1db5b043e8201ca6fe307ade401738125ad948d4fd10401322ff9996d064432"
+    },
+    {
+      "path": "b1-refresh17s/services-desktop-recu.png",
+      "sha256": "54a7286bda73fd9034f346858057da0b29cc77a40d06e2f6aada493a9a3a26b6"
+    },
+    {
+      "path": "b1-refresh17s/services-desktop-resultat.png",
+      "sha256": "64b171cdf58c03f363f4feece1af8d0916d1110ad4fcf1952d6825cec28e4060"
+    },
+    {
+      "path": "b1-refresh17s/services-mobile-confirmation.png",
+      "sha256": "82ef67d21d3b9adb73c01d8b9fe257c94a76bc2d300ea0cc0330e595b0bffc2c"
+    },
+    {
+      "path": "b1-refresh17s/services-mobile-resultat.png",
+      "sha256": "2d34786c730563feec3dfe1d6ee6cc938ef30fa3b2fca069503fe754cf37f954"
+    },
+    {
+      "path": "contenus/encre-ordinateur-plats-0-espace.png",
+      "sha256": "31c770f9793ff3bc849ee119f0cdecab3187e56680ba279e2b7f82e376cee390"
+    },
+    {
+      "path": "contenus/encre-ordinateur-plats-1-designation.png",
+      "sha256": "3015ee417923496517c2d4f5dc24c6fb424d0470955b67155e18e6dc534630f7"
+    },
+    {
+      "path": "contenus/encre-ordinateur-plats-3-proposition.png",
+      "sha256": "76eeb57041fa048e9f30fead2951d80e749916ca118a25bc5c0b75de17ff3d88"
+    },
+    {
+      "path": "contenus/encre-ordinateur-plats-4-reponse-perdue.png",
+      "sha256": "96b512960f1673dfcfbd09ac9b495968b8794802157ac0f385e8b8f1f10c9ad4"
+    },
+    {
+      "path": "contenus/encre-ordinateur-plats-5-recu.png",
+      "sha256": "7b1c308acc5d50fe1f989a3aa003450e085f4d41e3c6ce06d618e492432a8ddc"
+    },
+    {
+      "path": "contenus/encre-ordinateur-plats-6-espace-a-jour.png",
+      "sha256": "79ef8ad4fd9e64c45e34843488d6f3e4d110013db2fee49b0d5c07ec1042dded"
+    },
+    {
+      "path": "contenus/encre-ordinateur-plats-7-apres-rechargement.png",
+      "sha256": "945cc3e56e0e6dc3e462282050cfb371f6d695f0775acdfc9a17ca67bca334b6"
+    },
+    {
+      "path": "contenus/encre-telephone-biens-0-espace.png",
+      "sha256": "1c0480945a1de1cf6118d434a22e0e792f0bfaa4eca51c46fd20265bf1d0a91f"
+    },
+    {
+      "path": "contenus/encre-telephone-biens-1-designation.png",
+      "sha256": "48e5c6e59076a565e481ca3fe123dbea625632d8663f9b8824008f6c0cd63c9d"
+    },
+    {
+      "path": "contenus/encre-telephone-biens-3-proposition.png",
+      "sha256": "4ea5e0c1ae939bea0454db9dec685be559c32c1e41605253d0d711976127e92c"
+    },
+    {
+      "path": "contenus/encre-telephone-biens-5-recu.png",
+      "sha256": "3051a8157fc901902482335cc6360edfc8b0108067865d3d2e541d9ef36b487d"
+    },
+    {
+      "path": "contenus/encre-telephone-biens-6-espace-a-jour.png",
+      "sha256": "1454ec02482e9a38c0fb97408c1d3d8dbfb13487f8ccc20919786e5b9da88ea2"
+    },
+    {
+      "path": "contenus/encre-telephone-biens-7-apres-rechargement.png",
+      "sha256": "fac98e66d55930a0a7fc10826bd5a9bb21146573467662c55446b8b51efbf481"
+    },
+    {
+      "path": "contenus/plein-ordinateur-realisations-0-espace.png",
+      "sha256": "3d8a827cd5de991c0186609817f6dc7d8fb95e8244d42a59337ca2c50c2b220b"
+    },
+    {
+      "path": "contenus/plein-ordinateur-realisations-1-designation.png",
+      "sha256": "400f252d6a16b8f56d5149aa3bb792d1a69e355a3025ded97276548fc753fae3"
+    },
+    {
+      "path": "contenus/plein-ordinateur-realisations-2-ambigu.png",
+      "sha256": "a0d8bca5011863e98ccbe4c6977deabfd759fb66e39e6ada94e7ce82662bd987"
+    },
+    {
+      "path": "contenus/plein-ordinateur-realisations-3-proposition.png",
+      "sha256": "b7fba7e7c9f92e26ba995bab5d64d400c1d55478086b1d772f4a8d7f101770b8"
+    },
+    {
+      "path": "contenus/plein-ordinateur-realisations-5-recu.png",
+      "sha256": "e621080824ca2c2bd7684a93ea6398f26529efbf59842fc2730d575e78b5d770"
+    },
+    {
+      "path": "contenus/plein-ordinateur-realisations-6-espace-a-jour.png",
+      "sha256": "348de38d5b5bc0ce4a58b1a20d7cd9cff078ccb5f604c44c89cb96388eb9563a"
+    },
+    {
+      "path": "contenus/plein-ordinateur-realisations-7-apres-rechargement.png",
+      "sha256": "e6882b15c6240c75b4cb9717bb3329e9e266752297c5096216a64c59c4cf2eca"
+    },
+    {
+      "path": "contenus/plein-telephone-plats-0-espace.png",
+      "sha256": "edc2597ba1f196600d55c287384b7b3f404a84ec063f47c01683bf316a23fa14"
+    },
+    {
+      "path": "contenus/plein-telephone-plats-1-designation.png",
+      "sha256": "1593dc33acf85dbb31574a81981c2e8fc3fdfb50d5e63376f9baf516e3c3f1b1"
+    },
+    {
+      "path": "contenus/plein-telephone-plats-3-proposition.png",
+      "sha256": "6d623772b8d862baf2c46b290323bc819f084bbf4b428af23249a8c9a0fdd297"
+    },
+    {
+      "path": "contenus/plein-telephone-plats-5-recu.png",
+      "sha256": "cfb9059ebe0f8aa07de0383676978122d6ecc7bf18396fadb626e90c52ca0b72"
+    },
+    {
+      "path": "contenus/plein-telephone-plats-6-espace-a-jour.png",
+      "sha256": "57c292f8d4af81c6db4bd056e9b694041b0b9af3f7dd58cfa86c5ec85aeeec59"
+    },
+    {
+      "path": "contenus/plein-telephone-plats-7-apres-rechargement.png",
+      "sha256": "c047626f3837377615b77cf9d64cf6c9814178a3e716554417daa4ff717edb32"
+    },
+    {
+      "path": "contenus-card-full-extra/plein-ordinateur-realisations-0-espace.png",
+      "sha256": "3d8a827cd5de991c0186609817f6dc7d8fb95e8244d42a59337ca2c50c2b220b"
+    },
+    {
+      "path": "contenus-card-full-extra/plein-ordinateur-realisations-1-designation.png",
+      "sha256": "b6888ef4db75ab89fee69b9eadf00661dc04a6c60595b5b2fb27a19e147f207f"
+    },
+    {
+      "path": "contenus-card-full-extra/plein-ordinateur-realisations-2-ambigu.png",
+      "sha256": "cd827e70742d8e98b8a1f002e9bba50d7c768156f512d3cac1eed9f01edc5d57"
+    },
+    {
+      "path": "contenus-card-full-extra/plein-ordinateur-realisations-3-proposition.png",
+      "sha256": "2dc5f7be15d88cf73d6664ad0f5e2c05a1e0a45747c575cd8709691d9bebe063"
+    },
+    {
+      "path": "contenus-card-full-extra/plein-ordinateur-realisations-5-recu.png",
+      "sha256": "8515f0364be8fdaf5776db25401e0cac1ec3b74714bcf37a6a4de8d9dc539969"
+    },
+    {
+      "path": "contenus-card-full-extra/plein-ordinateur-realisations-6-espace-a-jour.png",
+      "sha256": "348de38d5b5bc0ce4a58b1a20d7cd9cff078ccb5f604c44c89cb96388eb9563a"
+    },
+    {
+      "path": "contenus-card-full-extra/plein-ordinateur-realisations-7-apres-rechargement.png",
+      "sha256": "e6882b15c6240c75b4cb9717bb3329e9e266752297c5096216a64c59c4cf2eca"
+    },
+    {
+      "path": "contenus-card-full-extra/plein-ordinateur-realisations-card-full-before-confirmation.png",
+      "sha256": "ee3154c75d2c0c86e58f427d652fec32038c0ce15b4d435408f6d15a0968775c"
+    },
+    {
+      "path": "contenus-card-full-extra/plein-ordinateur-realisations-card-full.png",
+      "sha256": "59989c25243a104aafff13c0a5f26c3428357666d5f08b524dd51faa15404128"
+    },
+    {
+      "path": "files/encre-ordinateur-1-designation.png",
+      "sha256": "4aad2753649de2909326c0416ec318d2efaa5bff1fd639c44426916ad2a9956a"
+    },
+    {
+      "path": "files/encre-ordinateur-2-ambigu.png",
+      "sha256": "8d7b934e3c9c50847d80d5f2b2b6b63d688a22042363ba396c850ceb5d74034d"
+    },
+    {
+      "path": "files/encre-ordinateur-3-proposition.png",
+      "sha256": "2f1cda4ce1fa6c3796cb1e74c835e683b78192a6e35061ac0f47fcb343855fdd"
+    },
+    {
+      "path": "files/encre-ordinateur-4-reponse-perdue.png",
+      "sha256": "7d91a0b97ecbdae8837fea736ddb266d9b5f3c92f82901fa1feef3b68c955563"
+    },
+    {
+      "path": "files/encre-ordinateur-5-recu.png",
+      "sha256": "3053f881e5e0fe09ff6f191c520bea7accef2d1eb69f3351161d58d7353d423f"
+    },
+    {
+      "path": "files/encre-ordinateur-6-liste-a-jour.png",
+      "sha256": "b9aac55fe66ca8a38a97e99a22fd404a4c5e5e42b3fe558fbcbc7d039cb68cf6"
+    },
+    {
+      "path": "files/encre-ordinateur-7-apres-rechargement.png",
+      "sha256": "072ba50304db997390a75b8c6c26ab236ccf07295c3cc7bd0bdb0fe2ce31cc66"
+    },
+    {
+      "path": "files/encre-ordinateur-8-deplacement-proposition.png",
+      "sha256": "8004e246951a95f828c0301f6370091e5dff783e327c474eba94526f18a62d65"
+    },
+    {
+      "path": "files/encre-ordinateur-9-dans-le-dossier.png",
+      "sha256": "cc8cd9663420c91e1c7f83d1a21d2d5696ef8ca96be159a18e61528b61acaaca"
+    },
+    {
+      "path": "files/encre-telephone-1-designation.png",
+      "sha256": "e5fab7d2d1c8ab61c718b74ebd3b109a7fe276f8f95a7f1e4b8070bf1e1229f7"
+    },
+    {
+      "path": "files/encre-telephone-3-proposition.png",
+      "sha256": "f6025511e24d372e329c7602061305d087646718b157f5a1465f61d45c30528d"
+    },
+    {
+      "path": "files/encre-telephone-5-recu.png",
+      "sha256": "69b5df20e009a51de4be319664d959fe1c760c0114660f197ecf72141070751b"
+    },
+    {
+      "path": "files/encre-telephone-6-liste-a-jour.png",
+      "sha256": "4f626a2a075edc2c0025f745d65a5d539682f966ad223b7d2d1152cc4ed93c76"
+    },
+    {
+      "path": "files/encre-telephone-7-apres-rechargement.png",
+      "sha256": "660b00db61092cc01d39761244b5db088deea929965f39790423d7ef8731db2d"
+    },
+    {
+      "path": "files/plein-ordinateur-1-designation.png",
+      "sha256": "13999a567a7a23ea461795fabd0e92f25c98d367446e56c94cda37b4d7cfbd04"
+    },
+    {
+      "path": "files/plein-ordinateur-2-ambigu.png",
+      "sha256": "69fa22ba77ce2f8ee4194e31c0d87fe0d97591a7d7df4fe06b78c6ca60d6e3cd"
+    },
+    {
+      "path": "files/plein-ordinateur-3-proposition.png",
+      "sha256": "087e721486d52f5f5e55d39ee5dde5091b68f2058ecbd750d958dad8f01587e7"
+    },
+    {
+      "path": "files/plein-ordinateur-4-reponse-perdue.png",
+      "sha256": "30f6beb516297b9691441746b0eee0836488cce2c0ed9c8d9485b15cdd569dd1"
+    },
+    {
+      "path": "files/plein-ordinateur-5-recu.png",
+      "sha256": "1431a4cf8280dd2c161cbba9f3df50e7f6a2d49435e98f4afaed1dda6cad375e"
+    },
+    {
+      "path": "files/plein-ordinateur-6-liste-a-jour.png",
+      "sha256": "9481ce09616d8e2a30208e9914b09e25504f42e614181ea8b967528762c81e4d"
+    },
+    {
+      "path": "files/plein-ordinateur-7-apres-rechargement.png",
+      "sha256": "ce957060768ae5883df5f2bca237bd8966614e9ce4320382cf98aa855b504caf"
+    },
+    {
+      "path": "files/plein-ordinateur-8-deplacement-proposition.png",
+      "sha256": "4edd608d4bf47255d8b2201de581ea58cdf521b333caef050986225b1b5df0d1"
+    },
+    {
+      "path": "files/plein-ordinateur-9-dans-le-dossier.png",
+      "sha256": "3e407d2a98c0a9507467bf52ac160b7c15cecb32ac1890760f8a7e67f31c3bd8"
+    },
+    {
+      "path": "files/plein-telephone-1-designation.png",
+      "sha256": "8ff8389b40d4a7f6df4139accd4e60e65f3dae32bfca9229801ac0619b3b1eb3"
+    },
+    {
+      "path": "files/plein-telephone-3-proposition.png",
+      "sha256": "2a9d6aaba70f0a99bdd284546f507fdd10c7a3d640621e708626e5852432d5b1"
+    },
+    {
+      "path": "files/plein-telephone-5-recu.png",
+      "sha256": "cc1fc710bfd4f70e1d6944b71a3b28629b83989ef8336043018735f78ec94b04"
+    },
+    {
+      "path": "files/plein-telephone-6-liste-a-jour.png",
+      "sha256": "c34ea79ad2da44126eb206a86fe2cf37c1651f9dfe43ccea47aaec86bca06da9"
+    },
+    {
+      "path": "files/plein-telephone-7-apres-rechargement.png",
+      "sha256": "16c43bd633ee8eaa3c4e460fcbd826764d85bd0581fc866502003fc83d1c2774"
+    },
+    {
+      "path": "files-card-full-extra/encre-ordinateur-1-designation.png",
+      "sha256": "4aad2753649de2909326c0416ec318d2efaa5bff1fd639c44426916ad2a9956a"
+    },
+    {
+      "path": "files-card-full-extra/encre-ordinateur-2-ambigu.png",
+      "sha256": "8d7b934e3c9c50847d80d5f2b2b6b63d688a22042363ba396c850ceb5d74034d"
+    },
+    {
+      "path": "files-card-full-extra/encre-ordinateur-3-proposition.png",
+      "sha256": "2f1cda4ce1fa6c3796cb1e74c835e683b78192a6e35061ac0f47fcb343855fdd"
+    },
+    {
+      "path": "files-card-full-extra/encre-ordinateur-4-reponse-perdue.png",
+      "sha256": "b26051eadd8bd4088459202d3476e3a6b25e784d5268dc4c806e93fb785e6bed"
+    },
+    {
+      "path": "files-card-full-extra/encre-ordinateur-5-recu.png",
+      "sha256": "8951ff349e69ae7ec0aa2102da38971ae16d614f4d3cf467f746d2b7adb65c2d"
+    },
+    {
+      "path": "files-card-full-extra/encre-ordinateur-6-liste-a-jour.png",
+      "sha256": "b9aac55fe66ca8a38a97e99a22fd404a4c5e5e42b3fe558fbcbc7d039cb68cf6"
+    },
+    {
+      "path": "files-card-full-extra/encre-ordinateur-7-apres-rechargement.png",
+      "sha256": "8aa29bc7b4ed39fc4b7ae415bc2d1507bb7d2e87f7e4eb1277dedb10279718db"
+    },
+    {
+      "path": "files-card-full-extra/encre-ordinateur-8-deplacement-proposition.png",
+      "sha256": "ceb1fb31953d28060f5d3d8c8bae6d4887c134352a7b547a65c63e88e93ee06d"
+    },
+    {
+      "path": "files-card-full-extra/encre-ordinateur-9-dans-le-dossier.png",
+      "sha256": "2fe587e97008572e8074b89111e5095492279d291bd46cc778b655b83cce5c89"
+    },
+    {
+      "path": "files-card-full-extra/encre-ordinateur-card-full-before-confirmation.png",
+      "sha256": "6925d10fa7a5d6dd740cbecc95bc38d5336735e2c941ffcb8ead0efd35b371cb"
+    },
+    {
+      "path": "files-card-full-extra/encre-ordinateur-card-full.png",
+      "sha256": "3c1f1f6d192b0ffdc0dcf00d6f7b71e94c0f22d44be4807f2194e517125e3cf6"
+    }
+  ],
+  "scriptSources": [
+    {
+      "path": "scripts/syna301-fichiers-recette.ts",
+      "sha256": "136afac217bd593bc9ae78cfb99ca77dff8045fe49b4c75e6d316db1568d96bd",
+      "gitBlob": "50446e0d452c126db07c76b6953edc98be9f7065"
+    },
+    {
+      "path": "scripts/syna301-contenus-recette.ts",
+      "sha256": "2aa62055dac6efad56551395e95e5d4499f46888ef601acfc912c760946f4a2f",
+      "gitBlob": "71d6620129c61a64fbe01698258804883959ea67"
+    },
+    {
+      "path": "scripts/verify-syna284-b1-confirmation-ui.ts",
+      "sha256": "3e6c684cb3cd6ce92c401e3524cce426aa4939780777ae063d654629fa999b39",
+      "gitBlob": "b43a41c6c7208eedc08837cedf59cb73c751de55"
+    }
+  ],
+  "harnessAdaptations": "prepared-harness-manifest.json",
+  "timeoutsChanged": false,
+  "assertionsRemoved": false,
+  "trackedSourceChanged": false,
+  "rootCaptureReview": {
+    "count": 8,
+    "source": "root feedback during this run",
+    "observations": [
+      "Mobile receipts and desktop price preview reviewed OK",
+      "Original Files and Realisation before/after cards partly below fold; originals retained, complete locator captures added separately"
+    ]
+  },
+  "additionalCaptureReview": {
+    "reviewer": "content_parity",
+    "inspected": [
+      "files-card-full-extra/encre-ordinateur-card-full.png",
+      "contenus-card-full-extra/plein-ordinateur-realisations-card-full.png"
+    ],
+    "result": "Full before/after and explicit free confirmation visible"
+  },
+  "scopeErrata": [
+    "Address/slug change shown for BIEN only. Realisation qualification proves name and unchanged draft status; no Realisation URL assertion or UI preview claimed.",
+    "Contenus four cases sample three types across modes/sizes; not all types in every mode/size.",
+    "B1 uses the exact native script329, not the alternate shared-shell integration recipe.",
+    "Closed B1 branch supplies JSON/assertion proof and no PNG in the original script."
+  ],
+  "network": "Google Fonts CSS attempts from synthetic theme blocked: four per original Files/Contenus run and one per supplemental run; no IA provider call or spend. Do not claim zero external attempts.",
+  "cleanup": {
+    "checkedAt": "2026-11-03T00:40:35.159114+00:00",
+    "ownRemainingServerWorkerChromium": [],
+    "browserClosed": true
+  },
+  "allStudioParityQualified": false
+}

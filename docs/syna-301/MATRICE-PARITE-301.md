@@ -118,3 +118,12 @@ Ces preuves testent les écrans natifs exacts, **pas les nouvelles cartes ni la 
 Aucune fusion main, activation client, mise en production, réservation/paiement/publication externe ni dépense fournisseur réelle. La [synthèse d’exécution](COMPTE-RENDU-EXECUTION-301.md) complète cette matrice sans remplacer les preuves individuelles.
 
 Gel : #325 a pour tête `52a02981663d02940ab81439a39c023144f8395b`, un test de consignes ajouté au code produit de `c966be7`. Les preuves71/4 restent attribuées à c966 ; la fixture SYNA réelle63/3 à52a. Réemploi gratuit vérifié sans nouveau job, SDK ni version. CI de cette nouvelle tête encore pending. Le CSV précise cette séparation ; sous-ensemble de convergence371/25 passé avant publication.
+
+
+## Qualification UI commune complementaire — source6fd
+
+Production propre `6fd996637611c929ba9dfe258a320435dfe62f2f`, arbre `1d303664973b784b00c3edcddb17652cc5a532d3` : Fichiers4/4 et Contenus4/4 PASS, Encre/Plein cadre ordinateur/telephone ; trois types contenus repartis, pas matrice exhaustive type×mode×taille. Avant/apres, accord gratuit, resultat natif/recu/reload qualifies sur les cas executes. Captures entieres supplementaires :2cas. Les sources cartes sont #328 `d71315348e2de18d6197576ae1e07fe39939e7d0` et #330 `356b20ab3d2d4ff2bab0a55869a36c35b2c49f31`.
+
+Seules les lignes `properties.update`, `menu.update`, `projects.update`, `files.organize` recoivent ce scope UI complementaire. Elles restent **PARTIEL** : renommage/prix ou nom/dossier ne valent pas CRUD complet ; anciensA1 non qualifies. Effet URL/adresse prouve pour BIEN seul ; realisation : nom et statut draft conserve, aucune assertion URL.
+
+Preuve brute : `/workspace/work/preuves-convergence6fd/FINAL-REPLAY-SUMMARY.json` (94captures et empreintes). B1 : trois recettes4cas chacune PASS dont attente17s et drapeaux fermes ; preuve distincte, pas reecriture des autres lignes canoniques.0appel fournisseur reel/0depense ; tentatives CSS Google Fonts bloquees presentes, donc pas zero tentative externe. Finance9 et Social possedent leurs manifests distincts ; cela ne qualifie pas les199autres lignes financieres NON_TESTE. Sources et captures historiques conservees. Aucun statut global SYNA_OK deduit.

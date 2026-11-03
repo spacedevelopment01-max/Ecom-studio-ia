@@ -1,0 +1,164 @@
+{
+  "schema": "finance-guards-integration-1",
+  "sourceCommit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+  "provider": "mocked-sdk-no-transport",
+  "results": [
+    {
+      "operation": "prompt-run",
+      "projectSynthetic": true,
+      "status": 409,
+      "sdkAttempts": 0,
+      "models": [],
+      "networkFetchAttempts": 0,
+      "jobs": [],
+      "calls": [],
+      "usage": [],
+      "reservations": [],
+      "financialApprovalFields": false,
+      "body": {
+        "error": "Exécution IA indisponible : un devis lié à ce prompt et votre confirmation sont nécessaires. Vous pouvez toujours compléter, copier et modifier vos prompts gratuitement.",
+        "code": "prompt_run_consent_unavailable"
+      }
+    },
+    {
+      "operation": "files.classify",
+      "projectSynthetic": true,
+      "status": 200,
+      "sdkAttempts": 0,
+      "models": [],
+      "networkFetchAttempts": 0,
+      "jobs": [
+        {
+          "type": "files.classify",
+          "status": "queued"
+        }
+      ],
+      "calls": [],
+      "usage": [],
+      "reservations": [],
+      "financialApprovalFields": false,
+      "dispatcherError": "",
+      "mode": "local_rules",
+      "localMoved": 1,
+      "acquiredNameVersionBytesPreserved": true
+    },
+    {
+      "operation": "content.v2.create",
+      "projectSynthetic": true,
+      "status": 409,
+      "sdkAttempts": 0,
+      "models": [],
+      "networkFetchAttempts": 0,
+      "jobs": [],
+      "calls": [],
+      "usage": [],
+      "reservations": [],
+      "financialApprovalFields": false,
+      "dispatcherError": "",
+      "body": {
+        "error": "Cette rédaction nécessite un devis et votre confirmation dans SYNA avant toute dépense IA.",
+        "code": "QUOTE_REQUIRED"
+      }
+    },
+    {
+      "operation": "content.v2.edit",
+      "projectSynthetic": true,
+      "status": 200,
+      "sdkAttempts": 0,
+      "models": [],
+      "networkFetchAttempts": 0,
+      "jobs": [],
+      "calls": [],
+      "usage": [],
+      "reservations": [],
+      "financialApprovalFields": false,
+      "needsAi": true,
+      "applied": false,
+      "acquiredDocumentPreserved": true
+    },
+    {
+      "operation": "ads.doc.ai_edit",
+      "projectSynthetic": true,
+      "status": 409,
+      "sdkAttempts": 0,
+      "models": [],
+      "networkFetchAttempts": 0,
+      "jobs": [],
+      "calls": [],
+      "usage": [],
+      "reservations": [],
+      "financialApprovalFields": false,
+      "acquiredDocumentPreserved": true
+    },
+    {
+      "operation": "campaigns.v2.generate-missing-numeric",
+      "projectSynthetic": true,
+      "status": 409,
+      "sdkAttempts": 0,
+      "models": [],
+      "networkFetchAttempts": 0,
+      "jobs": [],
+      "calls": [],
+      "usage": [],
+      "reservations": [],
+      "readinessSimulated": true,
+      "body": {
+        "error": "Vérifiez et acceptez le devis de cette campagne avant de lancer."
+      }
+    },
+    {
+      "operation": "social.v2.create-one-missing-numeric",
+      "projectSynthetic": true,
+      "status": 409,
+      "sdkAttempts": 0,
+      "models": [],
+      "networkFetchAttempts": 0,
+      "jobs": [],
+      "calls": [],
+      "usage": [],
+      "reservations": [],
+      "readinessSimulated": true,
+      "body": {
+        "error": "Prix à accepter avant de lancer (il a pu changer) : vérifiez-le puis relancez."
+      }
+    },
+    {
+      "operation": "images.copy-review.resume-missing-numeric",
+      "projectSynthetic": true,
+      "status": 409,
+      "sdkAttempts": 0,
+      "models": [],
+      "networkFetchAttempts": 0,
+      "jobs": [
+        {
+          "type": "image.ai_post",
+          "status": "failed"
+        }
+      ],
+      "calls": [],
+      "usage": [],
+      "reservations": [],
+      "readinessSimulated": true,
+      "body": {
+        "error": "Acceptez le devis actuel avant de reprendre l’image. Le plafond de la tâche reste inchangé.",
+        "code": "QUOTE_REQUIRED"
+      }
+    },
+    {
+      "operation": "social.v2.produce-zero-below-estimate",
+      "projectSynthetic": true,
+      "status": 409,
+      "sdkAttempts": 0,
+      "models": [],
+      "networkFetchAttempts": 0,
+      "jobs": [],
+      "calls": [],
+      "usage": [],
+      "reservations": [],
+      "readinessSimulated": true,
+      "approvedEstimateMicro": 0,
+      "serverEstimateMicro": 350880,
+      "dispatcherError": ""
+    }
+  ]
+}
