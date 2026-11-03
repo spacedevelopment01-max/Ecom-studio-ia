@@ -95,15 +95,18 @@ describe("P1 — sections remplies par un onglet métier", () => {
 });
 
 describe("P2 — SYNA connaît les contenus métier sans prétendre les modifier", () => {
-  it("opérations listées comme non raccordées (écran natif) ; relevé : contenus et site hébergé en lecture seule", async () => {
+  it("catalogue métier borné et désactivé ; publication non raccordée, observation en lecture seule", async () => {
     for (const id of ["menu.update", "projects.update", "services.booking", "site.requests", "site.host.publish", "site.domain.connect"]) expect(STUDIO_OPERATIONS.some((o) => o.id === id), id).toBe(true);
     const u = await account();
     const pid = project(u, "services");
     const conv = openProjectConversation(u, pid);
     const photo = (await saveAsset({ projectId: pid, userId: u.id, data: await sharp({ create: { width: 300, height: 200, channels: 3, background: "#7a6" } }).jpeg().toBuffer(), name: "chantier.jpg", mime: "image/jpeg", origin: "upload", status: "approved" })).id;
     const a = { u, pid, photo: async () => photo };
+    vi.stubEnv("STUDIO_CONVERSATION_CONTEXT", "1");
+    vi.stubEnv("STUDIO_CONVERSATION_BUSINESS_CONTENT", "0");
     const cat = studioOperationCatalogue(a.pid, true);
-    for (const id of ["projects.update", "site.host.publish"]) expect(cat.rows.find((r) => r.id === id)).toMatchObject({ implementation: "absent_from_syna", availability: "not_connected_native_screen_only", confirmation: "not_connected" });
+    expect(cat.rows.find((r) => r.id === "projects.update")).toMatchObject({ implementation: "implemented", connectionEnabled: false, availability: "disabled_or_locked", confirmation: "separate_explicit_free_confirmation", supportedActions: ["rename"], unsupportedActions: ["create", "delete", "publish", "status", "bulk", "photos"], cost: "free" });
+    expect(cat.rows.find((r) => r.id === "site.host.publish")).toMatchObject({ implementation: "absent_from_syna", connectionEnabled: false, availability: "not_connected_native_screen_only", confirmation: "not_connected" });
     expect(cat.rows.find((r) => r.id === "site.host.publish")?.sensitive).toBe(true);
     const r = createRealisation(a.pid, { title: "Tableau neuf", summary: "Tableau remplacé.", photos: [{ assetId: await a.photo(), alt: "" }] });
     setRealisationStatus(a.pid, r.id, "published");
