@@ -15,22 +15,26 @@ export const CONTENT_CHANGED_EVENT='studio:content-changed';
 export const hasNativeContentReceipt=(v:ConversationView)=>{const s=v.localBusinessContent;return s?.state==='applied'&&s.actionsExecuted===true&&!!s.receiptId&&!!s.item?.id&&!!s.item.version&&!!s.target&&s.item.version!==s.target.version;};
 export const handlesFreeContent=(v:ConversationView)=>!!v.localBusinessContent&&(v.localBusinessContent.state==='proposed'||v.localBusinessContent.state==='applied'||!!v.localBusinessContentExecution?.enabled);
 export function createLocalBusinessContentConfirmation(options:{conversationId:string;fetch:typeof fetch;view:()=>ConversationView;onView:(v:ConversationView)=>void;onState:(s:BusinessContentConfirmationState)=>void;onApplied:(change:BusinessContentChange)=>Promise<void>|void;storage?:Pick<Storage,'getItem'|'setItem'|'removeItem'>;uuid?:()=>string}){
+ // A controller may outlive its rendered conversation until effect cleanup.
+ const scopeProject=options.view().projectId;
+ const inScope=()=>options.view().id===options.conversationId&&options.view().projectId===scopeProject;
  const route=`/api/studio-agent/conversations/${options.conversationId}`,key=`syna-free-content:${options.conversationId}`;
  let alive=true,busy=false,pending:Pending|null=null,applied:string|undefined;
  let state:BusinessContentConfirmationState={busy:false,error:'',uncertain:false};
  try{const raw=options.storage?.getItem(key);if(raw){const p=JSON.parse(raw);if(p.action==='confirm-business-content'&&typeof p.proposalId==='string'&&typeof p.requestId==='string'&&p.confirmation===true&&Number.isInteger(p.revision)&&(p.projectRevision===null||Number.isInteger(p.projectRevision)))pending=p;}}catch{/* stockage indisponible : jamais un accord */}
  state.uncertain=!!pending;
- const emit=(patch:Partial<BusinessContentConfirmationState>)=>{state={...state,...patch};if(alive)options.onState(state);};
+ const emit=(patch:Partial<BusinessContentConfirmationState>)=>{state={...state,...patch};if(alive&&inScope())options.onState(state);};
  const clear=()=>{pending=null;try{options.storage?.removeItem(key);}catch{}};
+ const reconcile=(v:ConversationView)=>{const proposal=v.localBusinessContent;if(pending&&proposal?.state==='proposed'&&proposal.proposalId&&pending.proposalId!==proposal.proposalId){clear();emit({uncertain:false,error:''});}};
  const uuid=()=>options.uuid?.()??crypto.randomUUID();
- async function request(path:string,body?:unknown){const r=await options.fetch(path,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{cache:'no-store'});const data=await r.json();if(!r.ok)throw Object.assign(new Error(data.error??`Erreur ${r.status}`),{status:r.status});return data;}
+ async function request(path:string,body?:unknown){if(!alive||!inScope())throw new Error('Conversation changée.');const r=await options.fetch(path,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{cache:'no-store'});const data=await r.json();if(!r.ok)throw Object.assign(new Error(data.error??`Erreur ${r.status}`),{status:r.status});return data;}
  async function accept(v:ConversationView){
-  if(!alive)return;options.onView(v);
+  if(!alive||!inScope())return;options.onView(v);
   if(hasNativeContentReceipt(v)&&v.localBusinessContent!.receiptId!==applied){const s=v.localBusinessContent!;applied=s.receiptId;await options.onApplied({projectId:v.projectId!,type:s.item!.type,itemId:s.item!.id,version:s.item!.version,title:s.item!.title,receiptId:s.receiptId!});}
  }
- async function refresh(){const v=await request(route) as ConversationView;await accept(v);emit({blocked:!!v.recovery||!!v.readOnlyReason||!v.localBusinessContentExecution?.enabled});return v;}
+ async function refresh(){const v=await request(route) as ConversationView;if(inScope())reconcile(v);await accept(v);emit({blocked:!!v.recovery||!!v.readOnlyReason||!v.localBusinessContentExecution?.enabled});return v;}
  async function locked(action:()=>Promise<void>){
-  if(busy||!alive)return;busy=true;emit({busy:true,error:''});
+  if(busy||!alive||!inScope())return;reconcile(options.view());busy=true;emit({busy:true,error:''});
   try{await action();}
   catch(error){const e=error as Error&{status?:number};
    if(e.status){clear();emit({blocked:[401,402,403,404].includes(e.status),uncertain:false,error:e.message});if(e.status===409){try{await refresh();}catch{/* l'erreur affichée reste la vraie cause */}}}
@@ -45,9 +49,9 @@ export function createLocalBusinessContentConfirmation(options:{conversationId:s
   confirm:()=>locked(async()=>{
    const v=options.view(),s=v.localBusinessContent;if(v.recovery||!v.localBusinessContentExecution?.enabled||v.readOnlyReason)throw Object.assign(new Error('Modification gratuite indisponible.'),{status:403});
    if(!pending){if(s?.state!=='proposed'||!s.proposalId||!s.diff||!s.target)throw Object.assign(new Error('Demandez une nouvelle proposition gratuite.'),{status:409});pending={action:'confirm-business-content',proposalId:s.proposalId,confirmation:true,revision:v.revision,projectRevision:v.projectRevision,requestId:uuid()};try{options.storage?.setItem(key,JSON.stringify(pending));}catch{}}
-   const response=await request(route,pending) as ConversationView;
+   const command=pending;const response=await request(route,command) as ConversationView;
    if(!hasNativeContentReceipt(response))throw new Error('Enregistrement du contenu non confirmé.');
-   const next=await refresh();if(!hasNativeContentReceipt(next)||next.localBusinessContent!.receiptId!==pending.requestId)throw new Error('Modification enregistrée à vérifier.');clear();emit({uncertain:false});
+   const next=await refresh();if(!hasNativeContentReceipt(next)||next.localBusinessContent!.receiptId!==command.requestId)throw new Error('Modification enregistrée à vérifier.');clear();emit({uncertain:false});
   }),
   cancel:()=>locked(async()=>{
    if(pending)throw new Error('Vérifiez d’abord la confirmation dont la réponse est incertaine.');
