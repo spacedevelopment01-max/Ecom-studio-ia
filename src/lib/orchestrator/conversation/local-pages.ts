@@ -13,7 +13,7 @@ import type {ThemeSpec} from '../../theme/spec';
 import type {ConversationRow,ConversationState} from './contract';
 type PageRequest={kind:'create';title:string;model:string}|{kind:'rename';handle:string;title:string}|{kind:'navigation';handle:string;show:boolean}|{kind:'duplicate'|'remove';handle:string};
 export type PagesProposal={id:string;versionId:string;fingerprint:string;resultFingerprint:string;request:PageRequest;expiresAt:number;diff:{before:string;after:string};path:string};
-export type PagesPresentation={schema:'syna-local-pages-1';state:'ambiguous'|'proposed'|'applied';message:string;projectId:string;financialConsent:false;costEur:0;providerCalls:0;publication:false;confirmationRequired:boolean;actionsExecuted:boolean;proposalId?:string;command?:PageRequest['kind'];diff?:{before:string;after:string};target?:string;models?:{id:string;label:string}[];receiptId?:string;version?:{id:string;parentId:string;number:number};previewHref?:string};
+export type PagesPresentation={schema:'syna-local-pages-1';state:'ambiguous'|'proposed'|'applied';message:string;projectId:string;financialConsent:false;costEur:0;providerCalls:0;publication:false;confirmationRequired:boolean;actionsExecuted:boolean;proposalId?:string;command?:PageRequest['kind'];diff?:{before:string;after:string};target?:string;models?:{id:string;label:string;previewHref:string}[];modelId?:string;modelPreviewHref?:string;sourceVersionId?:string;receiptId?:string;version?:{id:string;parentId:string;number:number};previewHref?:string};
 export const localPagesEnabled=()=>localSiteEnabled();
 export const localPagesCandidate=(text:string)=>/^(?:ajoute|cr[ée]e|renomme|rebaptise|duplique|supprime|retire|enl[èe]ve|masque|affiche|quels?|liste|montre)\b/iu.test(text.trim())&&/\bpages?\b/iu.test(text.replace(/[«“"][^»”"]*[»”"]/gu,''));
 const fp=(spec:ThemeSpec)=>stableHash('native-pages-exact-1',spec);
@@ -42,7 +42,7 @@ function apply(c:ConversationRow,spec:ThemeSpec,r:PageRequest){
  return{spec:removePage(spec,handle,true).spec,handle};
 }
 export function proposeLocalPages(user:User,c:ConversationRow,m:ConversationState,text:string):PagesPresentation{
- const pending=m.localPagesClarification;delete m.localPagesProposal;delete m.localPagesClarification;const cur=current(user,c),models=PAGE_MODELS.filter(x=>x.kind==='page').map(x=>({id:x.id,label:x.name.fr}));
+ const pending=m.localPagesClarification;delete m.localPagesProposal;delete m.localPagesClarification;const cur=current(user,c),models=PAGE_MODELS.filter(x=>x.kind==='page').map(x=>({id:x.id,label:x.name.fr,previewHref:`/preview/${c.project_id}/v/model-${x.id}`}));
  const question=(message:string)=>present(c,'ambiguous',message,{models});
  let input=text.trim();if(pending&&pagesModelReplyCandidate(input)){if(pending.expiresAt<now()||pending.versionId!==cur.version.id||pending.tab!==(m.activeContextTab??null))return question('Le site ou le contexte a changé depuis le choix du modèle. Redonnez la page et son modèle ; aucun changement.');input=`Ajoute une page «${pending.title}» avec le modèle «${modelAnswer(input)}»`;}let request:PageRequest|undefined;
  const nav=/^(masque|retire|enl[èe]ve|ajoute|affiche) la page [«“"]([^»”"\r\n]+)[»”"] (?:du|au|dans le) menu\s*[.!]?$/iu.exec(input);
@@ -66,7 +66,7 @@ export function proposeLocalPages(user:User,c:ConversationRow,m:ConversationStat
  const page=result.spec.store.pages.find(p=>p.handle===result.handle),prior=cur.spec.store.pages.find(p=>p.handle===result.handle);
  const describe=(p:typeof page,s:ThemeSpec)=>p?`${p.title} · /pages/${p.handle} · ${p.status==='draft'?'brouillon':'page existante'} · ${inNavigation(structuredClone(s),p.handle)?'dans le menu':'hors du menu'}`:'Page absente';
  const diff={before:describe(prior,cur.spec),after:describe(page,result.spec)},p:PagesProposal={id:id(),versionId:cur.version.id,fingerprint:fp(cur.spec),resultFingerprint:fp(result.spec),request,expiresAt:now()+15*60000,diff,path:'/pages/'+result.handle};m.localPagesProposal=p;
- return present(c,'proposed','Vérifiez cette opération dans la version de travail. Après accord gratuit, une version native sera enregistrée, avec historique conservé. Les nouvelles pages et copies restent en brouillon hors du menu ; aucun appel IA ni mise en ligne.',{proposalId:p.id,command:request.kind,target:p.path,diff,confirmationRequired:true});
+ return present(c,'proposed','Vérifiez cette opération dans la version de travail. Après accord gratuit, une version native sera enregistrée, avec historique conservé. Les nouvelles pages et copies restent en brouillon hors du menu ; aucun appel IA ni mise en ligne.',{proposalId:p.id,command:request.kind,target:p.path,diff,confirmationRequired:true,sourceVersionId:cur.version.id,...(request.kind==='create'?{modelId:request.model,modelPreviewHref:`/preview/${c.project_id}/v/model-${request.model}`}:{})});
 }
 export function confirmLocalPages(user:User,c:ConversationRow,m:ConversationState,proposalId:string,requestId:string):PagesPresentation{
  const cur=current(user,c),p=m.localPagesProposal;if(!p||p.id!==proposalId||p.expiresAt<now()||p.versionId!==cur.version.id||p.fingerprint!==fp(cur.spec))throw new HttpError(409,'Le site ou la proposition de page a changé. Préparez un nouvel accord gratuit.');
