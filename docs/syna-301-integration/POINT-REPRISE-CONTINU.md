@@ -1,41 +1,51 @@
-# #301 — reprise continue (4 novembre 2026)
+# Reprise continue #301 — 4 novembre 2026, après les lots #372–#376
 
-Mission **non terminée** : consignes #301/6618265320 et #301/6618279690. Continuer immédiatement les lacunes indépendantes ; ne pas attendre une nouvelle consigne ni confondre un lot local vert avec la parité complète.
+Mission INACHEVÉE. Poursuivre sans nouvelle validation sur les lacunes indépendantes. Zéro fournisseur réel/client/activation/envoi/fusion main/déploiement. Claude possède UI/cartes/désignation/verrou commun/recettes indépendantes ; Codex moteurs/contrats/intention/recovery. Ne pas refaire #348.
 
-Base commune Claude #363 : `f25a729036cc03975d6ac7b95eef945a5214177a`. Branche de travail Codex : `codex/parity301-native-section-actions`, tête `8e836499742aa452fd4dd00944f93c0b4e15058f`. Ascendance cumulative, aucune branche de Claude modifiée. Aucun main, déploiement, activation client ou fournisseur réel.
+## Base et livraisons exactes
 
-| Lot | PR brouillon | Commit livré | Preuves locales | CI connue |
-|---|---|---|---|---|
-| Confirmations périmées et changement de projet, cinq transports | #364 | `958a4ddea960f48751b8bd5a567c39f96c7fb674` | 35 nouveaux cas (29 échouaient avant),81 existants, types | run41741979583 ; Docker et confirmation gratuite compilée réussis ; suite complète/thèmes en cours |
-| Contraste hérité fond/accent/secondaire/boutons | #365 | `4df1e1ec9c0f90d5882ae580a100a3443c2bb0f1` | 6 nouveaux dont conversation/SQLite,18 couleurs,36 Site/B1, types | run41742511723 en cours |
-| Horaires naturels et clarification profil/créneaux | #366 | `413170ac084e92b94bb5b9ed277fcc518a4d0656` | 9 nouveaux (7 échouaient avant),8 sécurité existants, types | run41742901271 en cours |
-| Métadonnées SEO exactes gratuites | #367 | `7418d2228ca51a00e82e94c86d9f073962a45af0` | 14 natifs/HTML,42 confirmations,13 Site,16 catalogue, types | run41743805258 en cours |
-| Masquer/supprimer et libellés de bouton | #368 | `8e836499742aa452fd4dd00944f93c0b4e15058f` (moteur `bffb67a70602539ac2231fd3015fea223c4eb7c2`) | 15 natifs,49 régressions, types et build ; recette compilée4/4,0 appel IA,0 erreur JS | run41745217253 en cours sur cette tête exacte ; première tête remplacée uniquement par le choix/traçage du navigateur local |
+Reprise opérationnelle depuis Claude #369 ea6f0fd9e206833c16e4dd0798cc3ab2c850435e (tous acquis #364–#370 conservés). Ne PAS refusionner l’ancienne convergence #371/827795d : sa panne retry gratuit est déjà corrigée par Claude (même proposition incertaine conserve Vérifier/Réessayer). Cause #371 démontrée dans job126309082940/run41748993830 : bouton Réessayer gratuit désactivé ; Docker n’était pas la cause.
 
-Ne pas additionner ces suites comme des cas tous distincts : plusieurs régressions sont communes. Aucun test supprimé, aucun garde-fou financier affaibli. Les quatre contrôles obligatoires restent requis ; #368 renforce le contrôle existant de confirmation gratuite avec sa recette supplémentaire, sans autoriser les échecs.
+Pile courte de PR brouillon (chaque base = précédent, première base Claude) :
 
-## Interfaces et contrats pour Claude
+| PR | SHA livré | Contrat / preuve | CI sur le SHA |
+|---|---|---|---|
+| #372 image acquise |73c8865a942b556035dd89258a05f6cdfdf2a4c1|12 nouveaux+24 régressions ; build production et recette4/4,16 étapes,17s réelles,0IA/externe/JS,octets chargés/rendu natif,reload/undo exacts|41797066076 en cours ; Docker et contrôle gratuit obligatoires SUCCESS|
+| #373 stock natif |97a8a15820fca4f350845b7b8473d9f41650cdac|11 nouveaux+9 PATCH ;56 confirmations+40 catalogue ;20 connaissance ;types|41799372210 en cours ; Docker et contrôle gratuit SUCCESS au dernier relevé|
+| #374 prestation nom |d315af5ea0c82f646bc531b40f941a4fa777934d|7 nouveaux+9 horaires+56 confirmations=72 ;20 connaissance ;types|41800023935 en cours ; Docker SUCCESS|
+| #375 calendrier local |0561c6cfc9aee5609fe71e00dd07544efe5e6258|16 nouveaux dont DST ;63 confirmations ;16 registre ;types|41800842314 en cours|
+| #376 choix thème |cf159b91358934c3d83bb203a2c011eb1a49360d|10 nouveaux ;70 confirmations ;20 connaissance ;types|41801965980 en cours|
 
-Messages transmis dans #363 : 6618450673 (#364),6618516476 (#365),6618563308 (#366),6618681788 (#367),6618868528 (#368). Claude garde cartes/désignation/aperçus/intégration et recettes **indépendantes** Encre/Plein 1440/390. Aucun composant modifié par ces lots.
+Relever le verdict FINAL de chaque run et ses résultats exacts ; ne pas transformer « en cours » en succès. Les quatre contrôles obligatoires restent présents. Ne pas relancer les mêmes tests locaux déjà verts sans changement ou échec nouveau. Aucun test supprimé.
 
-- #364/#365/#366 : contrats existants inchangés ; nouvelles formulations horaires, aucune modification des créneaux réservables.
-- #367 : `view.localSeo`, schema `syna-local-seo-1`, `localSeoExecution.enabled`, `diff.before/after`, `target` = `/` ou `/pages/handle`, `label`, `field`, `proposalId`. Commandes `confirm-seo` (confirmation:true) et `cancel-seo` avec révisions/requestId. Transport `createLocalSeoConfirmation`, callback `{projectId,versionId,version,receiptId}`. Carte dédiée/verrou partagé à intégrer par Claude ; six cartes existantes à préserver. Thèmes importés, reprise A1 et SEO produits/collections/documents acquis hors contrat actuel.
-- #368 : `localSite.command` étendu avec `hide/remove/button`, même carte/transport gratuit. Section entière requise pour masquer/supprimer ; champ de bouton natif unique pour son texte ; destination conservée. Annulation via reçu courant ; forfait basique reste bloqué pour la structure.
+## Contrats transmis à Claude
 
-## Reprise exacte dans l’environnement
+Commentaires #369 :6625882119 image ;6626227076 stock+preuveimage ;6626321489 prestation ;6626437806 calendrier ;6626597189 thème. Réutiliser les docs LOT-STOCK-NATIF / LOT-PRESTATION-NOM / LOT-CALENDRIER-DATE / LOT-CHOIX-THEME dans chaque PR. Les cinq fonctions manquantes de son tableau16 v4 ont maintenant un contrat backend ; cela ne prouve pas cinq cartes ou recettes UI complètes. Image possède sa recette indépendante sur la carte Site existante ; miniatures avant/après restent à Claude. Pas de modification de sa branche.
 
-Workspace `/workspace/work/parity301-next-domains`, dépendances partagées avec `/workspace/Ecom-studio-ia/node_modules`. État durable hors Git : `/workspace/work/parity301-continuous-state.json`.
+Image preuve durable (texte+harnais, captures locales seulement) : branche codex/parity301-existing-image-proof, commit1f6002edbaa9e6ba8ea28b6c9d2807512bc2c46f. App réellement construite sur73c8865…, BUILD_ID oD5zUyaIukXgRxc7bpF3w. `scripts/parity301-existing-image-proof.ts` / `PREUVE-IMAGE-COMPILEE.json`. Deux faux échecs initiaux du harnais corrigés : URL data URI sans filename, puis PNG réencodé par themeAssetBinary ; comparaison finale = octets compilés réellement chargés. Aucun correctif produit inventé.
 
-Tous les tests/builds de l’application avec `NODE_OPTIONS="--import=$PWD/scripts/lot9/network-guard.mjs"`. Aucun secret configuré, aucune donnée client ; Vitest utilise ses bases isolées, recette un répertoire temporaire séparé. Build de production local réussi, journal `/tmp/parity301-sections-build-final.log` ; il correspond au moteur livré #368 (seule la recette/navigateur a ensuite changé).
+## Limites moteur précises
 
-Recette terminée4/4 : `/tmp/parity301-native-sections-proof.log`, sortie `/tmp/parity301-native-sections-proof/RESUME-SECTIONS-NATIVES-301.json`. Attendre la fin réelle : une ancienne sortie d’échec navigateur peut subsister pendant le nouveau run. Premier essai bloqué par le navigateur Playwright manquant ; Chromium système `/usr/bin/chromium` utilisé ensuite, version et exécutable consignés. Aucun faux succès revendiqué. Captures **locales uniquement**, rapport textuel seul ajouté à la CI. Sur téléphone, désignation reprise depuis une fixture A2 native (limite explicite) ; sur ordinateur, désignation depuis l’aperçu réel. La recette exige : phrase naturelle, diff, pas d’écriture avant accord,17 secondes réelles, une version, disparition dans l’aperçu/base, rechargement sans double écriture, annulation naturelle et restauration exacte.
+- Stock : une variante exacte, deux versions+empreinte ; pas bulk/sync ;null≠0,policy/SKU/prix conservés. Carte/recette Catalogue à intégrer.
+- Prestation : profil Activité et saveServices CAS/empreinte, clé/alias stables ;« cette prestation » demande précision puis nom/clé exacts. Services réservables distincts. Carte Horaires à adapter selon field.
+- Calendrier : seules dates éditoriales planned/draft/review ;approved/scheduled/paused/sent/failed refusés pour éviter un envoi. Toute modification calendrier/paramètres invalide ;DST gap/fold clarifiés. Carte/fuseau/recette à intégrer.
+- Thème : aperçu natif INACTIF avant accord, moteur buildShop(useAi:false,prepareOnly:true), galerie/droits/gate/empreintes ;marque/médias/historique conservés. Défaut natif reproduit : heading manuel hero_split_1 non reporté vers Rive (carryOver.dropped). NOUVELLE CONFIRMATION BLOQUÉE si dropped non vide, site manuel exact préservé. Ne pas contourner le refus ni copier arbitrairement vers un autre champ ;politique native de report à traiter séparément. Ni premier site/importé/publication. Carte/deux vrais aperçus/recette à intégrer.
 
-Résultat : quatre parcours réussis, huit confirmations après17 secondes réelles,0 appel IA/erreur JS/requête hors boucle locale. Rapport versionné `preuves/sections-natives-368.json`. Consigner résultat et limites dans #368/#363 ; suivre les CI des SHA livrés sans relances aveugles. Si un contrôle échoue, lire sa cause réelle et conserver tous les garde-fous.
+## Matrice unique
 
-## Travail restant immédiat
+162 unités conservées depuis f64a6b0 (CSV/MD seulement, ancienne pile source NON fusionnée).52 PARTIEL,80 ABSENT,4 NON_TESTE,26 BLOQUE ;aucune complète. Les77 décompositions sont un inventaire, pas77 bugs. Rapport/générateur valident unicité et champs de suivi. Réévaluer les acquis Claude à partir de ses recettes sans certifier des opérations voisines par association.
 
-La matrice cumulative est `MATRICE-CONVERGENCE-84.csv` (nom historique conservé ;85 lignes avec l’édition SEO exacte distincte), rendu via `python3 scripts/parity301-render-matrix.py`. Chaque ligne garde manque/responsable/dépendance/critère/preuve. Aucune complète.
+## Workspace et commandes
 
-Prochaine lacune diagnostiquée : pages natives, source `src/app/api/projects/[id]/theme/pages/route.ts`, moteurs `theme/pages.ts` et `theme/page-templates.ts`. Conserver `assertPageModels` pour ajout/modèles/duplication et les versions/CAS ; choisir un modèle explicite avant création, ne pas inventer des garanties ou publier. Phrase « Ajoute une page « Nos garanties » » encore non raccordée. Aucun code Pages commencé.
+Exécution disponible. Nouveau worktree `/workspace/work/parity301-intents-v5`, dernier moteur propre cf159b9… ;branche documentation codex/parity301-continuous-matrix-v3. node_modules symlink partagé. `.next` correspond toujours à IMAGE73c8865…, PAS aux derniers moteurs. Harnais image local untracked préservé, publié séparément. Avant nouveau build, retirer seulement un cache webpack inactif si espace nécessaire (~450Mo libres ;.next/cache/webpack~795Mo), jamais sources/données. L’ancien `/workspace/work/parity301-next-domains` reste interrompu en merge (HEAD e1ba254,MERGE_HEAD30f67e…) : ne pas reset ni réutiliser.
 
-Puis images/boutons détaillés/thèmes, services et réservations structurés, stock/variantes, calendrier/brouillons, fichiers/pièces jointes et le reste des lignes. Connexions/consentements : raccorder le parcours explicite sûr, laisser les accès réels interdits documentés et poursuivre les modules indépendants. Ne jamais réétiqueter une ligne en complète sur la seule base d’un test moteur ou d’une CI verte.
+Tous processus app/tests/build : `NODE_OPTIONS="--import=$PWD/scripts/lot9/network-guard.mjs"`. Vitest/tsx/Chromium nécessitent le droit IPC/serveur local (sandbox require_escalated déjà utilisé). Aucun secret fournisseur. Fakes en /tmp, stockage réel interdit dans les recettes. Chromium système `/usr/bin/chromium`.
+
+Logs locaux : `/tmp/parity301-image-final2.log`, image-types-final, image-build, existing-image-proof-v3.log et dossier JSON/captures ;stock-final/regressions/knowledge/types-delivery ;service-name-tests/knowledge/types-final ;calendar-dst-final/types-delivery ;theme-guards-final/knowledge/types-final. Préserver les preuves, ne pas annoncer un build du nouveau SHA sur l’ancien .next.
+
+## Prochaines tâches indépendantes
+
+1. Terminer les CI sur SHA livrés, corriger seulement les échecs démontrés ;continuer pendant les CI.
+2. Bibliothèque naturelle lecture/recherche/dossiers et pièces jointes : route native `/api/projects/[id]/files` importe déjà via checkedUpload (200Mo max,fichiers actifs refusés,propriétaire,dossier,rate limit). Conversation accepte photoIds existants mais upload avant projet et vision non raccordés ;ne pas inventer analyse ni fournisseur sans devis. Commencer lecture metadata native cloisonnée et contrat Claude, puis upload réutilisant sécurités natives/idempotence.
+3. Étendre les intentions et moteurs manquants dans les162 lignes sans refaire acquis. Version restore/motion thème, créations/suppressions métier, réservations, autres champs prestation et fichiers restent à vérifier. Si blocage, le nommer et poursuivre les autres lignes.
+4. Après cartes Claude, nouveau build commun et recettes naturelles compilées des nouveaux domaines4modes/tactile/17s ;pas de parité complète tant que ces preuves et CI manquent.

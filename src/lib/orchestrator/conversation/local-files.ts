@@ -1,7 +1,8 @@
 /** Raccordement gratuit des métadonnées natives ; une proposition n’est jamais une autorisation. */
-import {HttpError,type User} from '../../auth';
+import {strategyVisibilitySql} from '../../marketing-strategy/visibility';
+import {HttpError,ownedProject,type User} from '../../auth';
 import {all,id,now,one} from '../../db';
-import {getAsset,type Asset,type Folder} from '../../library';
+import {assetUrl,listFolders,getAsset,type Asset,type Folder} from '../../library';
 import {changeFileMetadata,fileMetadataFingerprint} from '../../library-local-change';
 import {stableHash} from '../../brain/hash';
 import {requirePlan} from '../../plan-gates';
@@ -10,11 +11,13 @@ import {checkedContextPin,type ContextPin} from './context-session';
 import type {ConversationRow,ConversationState} from './contract';
 type Snapshot={name:string;folderId:string|null};
 export type LocalFilesProposal={id:string;kind:'rename'|'move';pin:ContextPin;assetId:string;version:number;fingerprint:string;diff:{before:Snapshot;after:Snapshot};folder?:Pick<Folder,'id'|'name'|'parent_id'>;expiresAt:number};
-export type LocalFilesPresentation={schema:'syna-local-files-1';command?:'rename'|'move';state:'proposed'|'applied'|'ambiguous'|'error';message:string;financialConsent:false;costEur:0;providerCalls:0;confirmationRequired:boolean;actionsExecuted:boolean;proposalId?:string;diff?:LocalFilesProposal['diff'];asset?:{id:string;version:number;name:string;folderId:string|null};folder?:{id:string;label:string};receiptId?:string};
+export type LocalFilesPresentation={schema:'syna-local-files-1';command?:'rename'|'move'|'read';projectId?:string;nativeHref?:string;vision?:false;items?:LibraryItem[];folders?:{id:string;name:string;parentId:string|null}[];hasMore?:boolean;state:'listed'|'proposed'|'applied'|'ambiguous'|'error';message:string;financialConsent:false;costEur:0;providerCalls:0;confirmationRequired:boolean;actionsExecuted:boolean;proposalId?:string;diff?:LocalFilesProposal['diff'];asset?:{id:string;version:number;name:string;folderId:string|null};folder?:{id:string;label:string};receiptId?:string};
+export type LibraryItem={id:string;name:string;kind:string;mime:string;version:number;folderId:string|null;href:string;thumbHref:string|null;target:{kind:'asset';assetId:string;version:number}};
 const present=(state:LocalFilesPresentation['state'],message:string,extra:Partial<LocalFilesPresentation>={}):LocalFilesPresentation=>({schema:'syna-local-files-1',state,message,financialConsent:false,costEur:0,providerCalls:0,confirmationRequired:false,actionsExecuted:false,...extra});
 const plain=(s:string)=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 export const localFilesEnabled=()=>activeContextEnabled()&&process.env.STUDIO_CONVERSATION_FILES==='1';
-export const localFilesCandidate=(text:string)=>/^(?:renomme|rename|deplace|move)\s+(?:ce|le|this|the)\s+(?:fichier|file)\b/.test(plain(text.trim()));
+const libraryReadCandidate=(text:string)=>/^(?:liste|montre|affiche|cherche|recherche)\b/iu.test(text.trim())&&/\b(?:fichiers?|photos?|images?|vid[ée]os?|dossiers?)\b/iu.test(text);
+export const localFilesCandidate=(text:string)=>libraryReadCandidate(text)||/^(?:renomme|rename|deplace|move)\s+(?:ce|le|this|the)\s+(?:fichier|file)\b/.test(plain(text.trim()));
 function fail(message:string):never{throw new HttpError(422,message,'conversation_file_ambiguous');}
 function selected(c:ConversationRow,pin?:ContextPin):{pin:ContextPin;asset:Asset}{
  const checked=checkedContextPin(c,pin),target=checked?.selection.target;
@@ -27,6 +30,7 @@ function selected(c:ConversationRow,pin?:ContextPin):{pin:ContextPin;asset:Asset
 export function proposeLocalFiles(user:User,c:ConversationRow,m:ConversationState,text:string):LocalFilesPresentation{
  delete m.localFilesProposal;
  if(!localFilesEnabled())return present('error','Les modifications gratuites de fichiers ne sont pas activées. Aucun appel IA lancé.');
+ if(libraryReadCandidate(text))return readNativeLibrary(user,c,text);
  try{
   const rename=/^(?:Renomme (?:ce|le) fichier en|Rename (?:this|the) file to)\s+[«“"]([^\r\n]{1,200})[»”"]\s*[.!]?$/i.exec(text.trim());
   const move=/^(?:D[ée]place (?:ce|le) fichier (?:vers|dans) le dossier|Move (?:this|the) file to (?:the )?folder)\s+[«“"]([^\r\n]{1,200})[»”"]\s*[.!]?$/i.exec(text.trim());
@@ -47,4 +51,17 @@ export function confirmLocalFiles(user:User,c:ConversationRow,m:ConversationStat
  if(p.folder){const f=one<Folder>('SELECT * FROM folders WHERE id=? AND project_id=?',p.folder.id,c.project_id);if(!f)throw new HttpError(404,'Dossier introuvable.');if(stableHash('folder',{id:f.id,name:f.name,parent_id:f.parent_id})!==stableHash('folder',p.folder))throw new HttpError(409,'Le dossier a changé. Demandez une nouvelle proposition.');}
  const saved=changeFileMetadata({assetId:p.assetId,projectId:c.project_id!,userId:c.user_id},p.kind==='rename'?{name:p.diff.after.name}:{folderId:p.diff.after.folderId},p.fingerprint);delete m.localFilesProposal;
  return present('applied','Fichier enregistré et relu. Aucun crédit consommé.',{command:p.kind,proposalId:p.id,diff:p.diff,asset:{id:saved.id,version:saved.version,name:saved.name,folderId:saved.folder_id},...(p.folder?{folder:{id:p.folder.id,label:p.folder.name}}:{}),receiptId:requestId,actionsExecuted:true});
+}
+
+function readNativeLibrary(user:User,c:ConversationRow,text:string):LocalFilesPresentation{
+ if(!c.project_id)throw new HttpError(409,'Rattachez un projet pour consulter sa bibliothèque native.');ownedProject(user,c.project_id);requirePlan(user,c.project_id);
+ const extra={command:'read' as const,projectId:c.project_id,nativeHref:`/studio/${c.project_id}/fichiers`,vision:false as const};
+ const list=/^(?:liste|montre|affiche) (?:les|mes) (fichiers|photos|images|vid[ée]os|dossiers)(?: de (?:mon|ce) projet| du projet)?\s*[.!]?$/iu.exec(text.trim());
+ const search=/^(?:cherche|recherche) (?:le|un) fichier [«“"]([^»”"\r\n]{1,200})[»”"]\s*[.!]?$/iu.exec(text.trim());
+ if(!list&&!search)return present('ambiguous','Précisez : Montre les fichiers de mon projet, Liste les photos, Montre les dossiers, ou Cherche le fichier « nom exact ». Lecture de métadonnées seulement, aucune analyse visuelle ni recherche externe.',extra);
+ if(list&&plain(list[1])==='dossiers'){const folders=listFolders(c.project_id);return present('listed','Dossiers natifs du projet. Aucun rangement ni changement effectué.',{...extra,folders:folders.slice(0,50).map(f=>({id:f.id,name:f.name,parentId:f.parent_id})),hasMore:folders.length>50});}
+ const where=["project_id=?","user_id=?","deleted_at IS NULL","status!='rejected'","COALESCE(role,'')!='theme-render-capture'",strategyVisibilitySql(c.project_id,'asset','assets.id')],args:unknown[]=[c.project_id,c.user_id];
+ if(list&&/photos|images/iu.test(list[1]))where.push("kind='image'");if(list&&/vid[ée]os/iu.test(list[1]))where.push("kind='video'");if(search){where.push('(id=? OR name=?)');args.push(search[1].trim(),search[1].trim());}
+ const found=all<Asset>(`SELECT * FROM assets WHERE ${where.join(' AND ')} ORDER BY created_at DESC,id LIMIT 51`,...args),items=found.slice(0,50).map(a=>({id:a.id,name:a.name,kind:a.kind,mime:a.mime,version:a.version,folderId:a.folder_id&&one('SELECT 1 FROM folders WHERE id=? AND project_id=?',a.folder_id,c.project_id)?a.folder_id:null,href:assetUrl(a),thumbHref:a.thumb_key?assetUrl(a,{thumb:true}):a.kind==='image'?assetUrl(a):null,target:{kind:'asset' as const,assetId:a.id,version:a.version}}));
+ return present('listed',search&&found.length>1?'Plusieurs fichiers portent ce nom. Désignez leur identifiant exact avant toute modification ; aucun premier résultat choisi.':found.length?'Fichiers natifs retrouvés. Métadonnées et liens uniquement : aucune image analysée, aucun contenu décrit, aucune modification.':'Aucun fichier autorisé correspondant dans la bibliothèque de ce projet ; aucun média substitué.',{...extra,items,hasMore:found.length>50});
 }
