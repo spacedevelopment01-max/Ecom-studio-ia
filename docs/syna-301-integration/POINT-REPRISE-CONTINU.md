@@ -1,3 +1,37 @@
+# Point actif : preuve production V9 et lot Stock #407
+
+La mission #301 reste inachevée. Continuer les modules indépendants. Aucun fournisseur réel, projet client, publication, activation, fusion main ou déploiement.
+
+## Livraisons exactes
+
+Le dernier code livré est **#407, f3ca45bb5b775e0cd6f970ec381218c0f77968f6**, branche codex/parity301-stock-natural-requests. Son parent est #406, 1a7280772ad7e3f92bf9ff9703a77ca2fb9339e0. Huit cas rouges avant correction, puis 29 tests sur quatre fichiers et les types passent. Les demandes interrogatives de stock utilisent les accords et cibles natifs inchangés. Contrat transmis à Claude dans #369/6633539304.
+
+La convergence #406 réunit #402–#405 et les composants EXACTS de Claude 4780571b, sans modifier sa branche. Les contrats Prompts A1, profil interrogatif et photos préparées figurent dans les trois documents LOT correspondants, avec leurs tests et limites. Les écritures et outils A1 restent bornés ; aucun drapeau n’a été activé dans un environnement client.
+
+## Preuve de production indépendante obtenue
+
+**#406 : quatre parcours sur quatre, 20 étapes**, Encre/Plein cadre, ordinateur/téléphone tactile. Build HWgGEuhumzxC4dHxcw4-0, APIversion propre sur 1a728077. Dossiers : annulation sans écriture, nouvel accord après 17 secondes, même identité et parent, arbre/actifs/octets conservés, reçu et rechargement. Prompts préparés : bibliothèque privée créée par POST natif et favori PATCH, formulations interrogative et favoris, aucun corps dans le DTO ou l’interface, aucun bouton d’action, rechargement et commande mixte clarifiée sans lignes.
+
+Attentes réelles : 17001,60 / 17001,91 / 17000,93 / 17000,59 ms. Quatre recherches SIMULÉES intégralement conservées, zéro nouvelle tentative IA, zéro requête externe, erreur JavaScript ou job. Rapport PREUVE-DOSSIERS-PROMPTS-PREPARE-V9.json ; harnais scripts/parity301-prepared-folders-prompts-proof.ts. Captures locales dans /tmp/parity301-prepared-folders-prompts-v9 ; base fictive conservée dans /tmp/ecs-lot7-301-rEAkmY. Preuve transmise à Claude dans #369/6633502267. Ce build ne prouve pas les nouvelles formulations Stock de f3ca45bb, les exceptions A1 ou les nouvelles pièces jointes.
+
+## CI observées
+
+- #394 à #401 : SUCCESS complet sur leurs SHA. Pour #401/e7452632 : run 41837147432, 5913 tests réussis et 31 exclusions préexistantes, 631 fichiers réussis et un exclu. Les références antérieures sont conservées plus bas.
+- #402/5950fc2c : run 41840639425, suite complète 5933 tests réussis et 31 exclusions, 632 fichiers réussis et un exclu ; Docker et confirmation obligatoires verts, grandes recettes encore en cours.
+- #403/b650c52 : run 41846181130, Docker et confirmation verts, suite et grandes recettes en cours.
+- #404/eb0f687 : run 41846832989, Docker et confirmation verts, suite et grandes recettes en cours.
+- #405/50e5d1e : run 41848102025 ; #406/1a728077 : run 41848828779. Docker vert, autres contrôles en cours au dernier relevé. #407 : observer le SHA f3ca45bb.
+
+Ne pas anticiper les verdicts finaux ni relancer les contrôles verts. Aucun test ou garde-fou supprimé.
+
+## Environnement et prochaines actions
+
+Source : /workspace/work/parity301-ci-guards, branche documentaire codex/parity301-continuous-proofs-v9, code #407. Compilation : /workspace/work/parity301-intents-v5, propre sur 1a728077, branche codex/parity301-compiled-v9. Le build ci-dessus est terminé ; recette achevée et serveur/navigateur arrêtés. Précharger le garde réseau pour tout Node/test/build : NODE_OPTIONS=--import=$PWD/scripts/lot9/network-guard.mjs.
+
+Observer les CI sur ces SHA stables. Consulter Claude pour les cartes #400, les exceptions A1 #402/#403 et la photo #405. Préparer les recettes des contrats suivants quand leurs cartes arrivent. Pendant l’attente, poursuivre une lacune indépendante après reproduction : CRUD du profil et services réservables par stores distincts, opérations natives du Catalogue ou autres lectures A1. Ne pas refaire #348 ou répéter une recette qualifiée sans nouvelle raison. La matrice conserve 165 unités : 62 PARTIEL, 73 ABSENT, 4 NON_TESTE, 26 BLOQUE ; aucune complète.
+
+---
+
 # Reprise active — convergence V9 et lots #403–#405
 
 La mission #301 reste ouverte. Aucun fournisseur réel, client, activation, publication, fusion main ou déploiement. Continuer les tâches indépendantes sans attendre une nouvelle consigne.
