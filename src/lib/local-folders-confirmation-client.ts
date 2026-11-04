@@ -1,3 +1,4 @@
+import {nativeLocalEditAllowed} from './existing-local-edits';
 import type {ConversationView} from './orchestrator/conversation/contract';
 /** Native folder creation transport: explicit free agreement, same-request retry, server receipt re-read. */
 type Pending={action:'confirm-folder';proposalId:string;confirmation:true;revision:number;projectRevision:number|null;requestId:string};
@@ -24,7 +25,7 @@ export function createLocalFoldersConfirmation(options:{conversationId:string;fe
   if(!alive||!inScope())return;options.onView(v);
   if(hasLocalFoldersReceipt(v)&&v.localFolders!.receiptId!==applied){const s=v.localFolders!;applied=s.receiptId;await options.onApplied({projectId:v.projectId!,folderId:s.result!.id,name:s.result!.name,parentId:s.result!.parentId,receiptId:s.receiptId!});}
  }
- async function refresh(){const v=await request(route) as ConversationView;if(inScope())reconcile(v);await accept(v);emit({blocked:!!v.recovery||!!v.readOnlyReason||!v.localFoldersExecution?.enabled});return v;}
+ async function refresh(){const v=await request(route) as ConversationView;if(inScope())reconcile(v);await accept(v);emit({blocked:!nativeLocalEditAllowed(v)||!v.localFoldersExecution?.enabled});return v;}
  async function locked(action:()=>Promise<void>){
   if(busy||!alive||!inScope())return;reconcile(options.view());busy=true;emit({busy:true,error:''});
   try{await action();}
@@ -39,7 +40,7 @@ export function createLocalFoldersConfirmation(options:{conversationId:string;fe
   dispose(){alive=false;},
   refresh:()=>locked(async()=>{const v=await refresh();if(pending&&hasLocalFoldersReceipt(v)&&v.localFolders!.receiptId===pending.requestId){clear();emit({uncertain:false,error:''});}}),
   confirm:()=>locked(async()=>{
-   const v=options.view(),s=v.localFolders;if(v.recovery||!v.localFoldersExecution?.enabled||v.readOnlyReason)throw Object.assign(new Error('Modification gratuite indisponible.'),{status:403});
+   const v=options.view(),s=v.localFolders;if(!nativeLocalEditAllowed(v)||!v.localFoldersExecution?.enabled)throw Object.assign(new Error('Modification gratuite indisponible.'),{status:403});
    if(!pending){if(s?.state!=='proposed'||!s.proposalId||!s.diff)throw Object.assign(new Error('Demandez une nouvelle proposition gratuite.'),{status:409});pending={action:'confirm-folder',proposalId:s.proposalId,confirmation:true,revision:v.revision,projectRevision:v.projectRevision,requestId:uuid()};try{options.storage?.setItem(key,JSON.stringify(pending));}catch{}}
    const command=pending;const response=await request(route,command) as ConversationView;
    if(!hasLocalFoldersReceipt(response))throw new Error('Enregistrement du dossier non confirmé.');

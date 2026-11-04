@@ -131,6 +131,8 @@ export type ActionCard = {
   href?: string;
 };
 export type ConversationView = {
+  /** Permission for native free project operations; independent of the acquired preparation brief lock. A1 uses recovery.localEdits only. */
+  localEditsWritable?:boolean;
   localAdDocument?:ReturnType<typeof import('./ad-document-tool-execution').adDocumentPresentation>;
   localAdDocumentExecution?:{enabled:true};
   localPromptsRead?:{enabled:true};

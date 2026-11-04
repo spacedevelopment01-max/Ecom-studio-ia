@@ -1,0 +1,18 @@
+# Projet préparé : verrou de fiche et retouches natives distincts
+
+Défaut confirmé par Claude #369/commentaire6628337323 et trois tests normatifs rouges : la préparation acquise rend readOnlyReason non nul, masque des exécutions gratuites et bloque leurs contrôleurs, alors que le moteur natif accepte l'accord (Stock relu12). Ce verrou porte sur la fiche, pas sur tout le projet.
+
+Contrat retenu : **localEditsWritable:boolean** dans la vue courante hors reprise A1. Calculé par le serveur pour un projet possédé avec abonnement actif, indépendamment du verrou de fiche. Chaque famille conserve aussi son drapeau d'exécution et tous les contrôles natifs (ressource/version/forfait/busy/concurrence/consentement). Ce booléen n'est pas une commande ni une permission client acceptée par les endpoints.
+
+- readOnlyReason et correctionFields restent les règles de la FICHE. Sur préparation acquise, la raison reste présente, les champs de correction restent vides et une édition de fiche retourne409. Aucune donnée acquise n'est réécrite.
+- Les quinze exécutions gratuites natives sont projetées selon localEditsWritable + leur drapeau. Abonnement révoqué :booléenfalse et aucune de ces exécutions. Les droits de ressources précis restent contrôlés à la proposition et à l'accord.
+- `nativeLocalEditAllowed(view)` (existing-local-edits.ts) : domaines sans exception A1 ; refuse toute recovery, puis utilise localEditsWritable, avec repli compatible sur !readOnlyReason pour les anciennes vues.
+- `localEditAllowed(view,'local-site'|'files')` : A1 reste EXCLUSIVEMENT soumis à recovery.localEdits.ops. Sinon même booléen explicite/repli compatible. Aucune nouvelle opération A1 autorisée ; les exceptions Site/Fichiers déjà acquises sont conservées.
+- Les transports utilisent ces helpers et leur propre execution.enabled, gardent le retry du même requestId, l'invalidation des accords périmés et les scopes. Une interdiction explicite localEditsWritable:false bloque même une vue de fiche éditable.
+- PhotoImport et bibliothèque de prompts couplés à la fiche restent dans leur garde existante pour ce lot ; aucune ouverture implicite du parcours photoIds/brief préparé. Ni génération, devis, achat ni publication ne sont ouverts par ce bit.
+
+À Claude : pour vos cartes gratuites, utiliser le helper correspondant ET execution.enabled, pas !readOnlyReason. Garder le verrou commun/invalidation. Pour les cartes Site/Fichiers, conserver le helper A1 ; les autres cartes utilisent nativeLocalEditAllowed. Ne pas remplacer le contrôle de la FICHE lui-même. Aucune modification de composant ou style dans ce correctif.
+
+Preuves :4 tests métier (3rouges avant correctif), dont proposition naturelle Stock avec cible envoyée dans le message, confirmation via son vrai contrôleur et moteur natif/SQLite, stock12, préparation intégrale inchangée, zéro dépense.140 tests du protocole multi-domaines, dont42nouveaux :projet préparé autorisé, interdiction explicite malgré fiche éditable, A1allowlist inchangée dans14contrôleurs.1test de désignation Stock Claude +81régressions A1/recovery/corbeille/Site/Publicité =**226réussis**,types propres. Aucun test supprimé, workflow modifié ou garde financier réduit.
+
+Base de convergence :#394895f2895b5f3e3e3ba19b3185fe2e4a38f6d0aee, vrai merge de72111052 etClaude12d75fed ; tous ses composants graphiques sont repris à l'identique. Son correctif Stock de contexte du message est conservé. Les cartes de cette base ont encore leurs anciens tests de verrou : leur adaptation et les recettes indépendantes compilées4modes sur projet préparé restent à Claude. Ce lot ne prétend donc pas avoir corrigé l'UI préparée de bout en bout.
