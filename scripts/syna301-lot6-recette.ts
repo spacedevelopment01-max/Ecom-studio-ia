@@ -33,6 +33,7 @@ const { sha256 } = await import("../src/lib/secrets");
 const { writeSynaPrefs } = await import("../src/lib/syna-ui/prefs-store");
 const sharp = (await import("sharp")).default;
 const { chromium } = await import("playwright");
+const { prepareProject, realAiCalls, simulatedFixtureCalls, PREPARED } = await import("./syna301-recette-preparee");
 
 type Mode = "encre" | "plein";
 type Format = "ordinateur" | "telephone";
@@ -46,6 +47,7 @@ const SIZE = { ordinateur: { width: 1440, height: 1000 }, telephone: { width: 39
 const prepared: (typeof CASES[number] & Awaited<ReturnType<typeof localSiteFixture>> & { token: string })[] = [];
 for (const k of CASES) {
   const f = await runWithLang({ ui: "fr", content: "fr" }, () => localSiteFixture(k.business));
+  prepareProject(f.u as never, f.c.id, f.pid);
   saveServices(f.pid, { ...emptyServiceProfile(), hours: "Lundi 09–17", phone: "04 00 00 00 00", email: "atelier@example.test", area: "Lyon", services: [{ name: "Diagnostic", description: "Examen fourni", price: "50 €", duration: "30 min" }] } as never);
   const token = id(); run("INSERT INTO sessions(id,user_id,expires_at,created_at) VALUES(?,?,?,?)", sha256(token), f.u.id, now() + 3600000, now());
   writeSynaPrefs(f.u.id, "account", null, { mode: k.mode, panel: "collapsed" });
@@ -129,8 +131,8 @@ try {
     await ctx.close();
   }
   await b.close();
-  const calls = one<{ n: number }>("SELECT COUNT(*) n FROM ai_calls")!.n;
-  console.log(`· appels IA : ${calls} · requêtes refusées hors boucle locale : ${forbidden.length} · erreurs JS : ${jsErrors.length}`);
+  const calls = realAiCalls();
+  console.log(`· projet ${PREPARED ? "PRÉPARÉ" : "neuf"} · lignes simulées : ${simulatedFixtureCalls()} · appels IA : ${calls} · requêtes refusées hors boucle locale : ${forbidden.length} · erreurs JS : ${jsErrors.length}`);
   if (calls) errors.push(`ai_calls = ${calls}`); if (jsErrors.length) errors.push(...jsErrors);
 } catch (e) { errors.push(String(e)); console.error("✗ " + String(e)); }
 finally {
