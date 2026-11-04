@@ -31,6 +31,8 @@ ligne, activation, action externe réelle ni dépense fournisseur.
 `codex/parity301-continuous-matrix-v2` (`docs/syna-301-integration/POINT-REPRISE-CONTINU.md`), matrice cumulative portée à
 162 unités avec les omissions. Sa convergence `827795d0` (ancienne tête Claude `30f67e6c`) ne doit pas être fusionnée.
 
+| 3 — Image d'une section | contrat Codex `73c8865a` (image existante du projet) ; miniatures avant / après dans la carte Site | recette `scripts/syna301-image-recette.ts` 4/4 : champ pointant sur l'image choisie, pixels de l'aperçu enregistré identiques, aucune autre section ni fichier modifié |
+
 ## Reste à vérifier ou à faire (ordre proposé)
 
 1. Manque signalé à Codex : aucune phrase ne publie une page brouillon (le menu la refuse donc, à raison) ; champ
