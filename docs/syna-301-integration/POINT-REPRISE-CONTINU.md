@@ -1,114 +1,97 @@
-# Reprise continue #301 — 4 novembre 2026
+# Reprise continue #301 — 4 novembre 2026, 11 h 30 UTC
 
-**Mission inachevée. Poursuivre les lacunes indépendantes sans nouvelle autorisation.** Aucun fournisseur réel, projet client, envoi, activation, fusion main ou déploiement. Claude possède les interfaces, cartes, désignations, verrou commun et recettes indépendantes ; Codex les moteurs, contrats, intentions, droits et reprises. Ne pas refaire #348.
+**Mission inachevée : continuer sans nouvelle autorisation entre les lots.** Aucun fournisseur réel, client, envoi/activation, fusion main ou déploiement. Codex possède moteurs/contrats/intentions/permissions/reprise ; Claude possède composants, désignation, aperçu, verrou commun et recettes indépendantes. Ne pas refaire #348.
 
-## Source commune
+## Source commune actuelle
 
-PR brouillon #383, branche `codex/parity301-convergence-v4`, SHA `af6e16b85a054e02ff797f68eb24e85276dafbb1`. Vraie fusion de deux parents :
+**PR brouillon #394, branche codex/parity301-convergence-v6, SHA a593e6ea510232f0a0946c369538fab29a60a327.**
 
-- Codex `0b627c90cceead14070e4c159b9b0e2d43a64366` (tous les moteurs et correctifs ci-dessous).
-- Claude #369 `b280657b0e13d03a7b3321b04439d9497074a5eb` (miniatures image).
+- Parent du correctif :895f2895b5f3e3e3ba19b3185fe2e4a38f6d0aee, vrai merge de Codex 72111052a36cae4bcbd729a7b2d3a4f29af72b12 et Claude 12d75fed730636a8727aa340535541882c27d39c.
+- Tous les composants graphiques Claude sont repris à l'identique. Sa branche est inchangée. Son correctif de désignation Stock depuis le message est conservé et testé.
+- a593e6ea ajoute le contrat de permission native décrit ci-dessous ; aucun composant/style modifié dans ce correctif. La branche codex/parity301-prepared-local-permissions pointe aussi sur ce SHA, sans PR supplémentaire nécessaire.
+- Ne pas refusionner l'ancienne convergence #371 / 827795d :ses anciens défauts sont déjà corrigés dans l'ascendance.
 
-Les cinq fichiers Claude sont repris tels quels, sans conflit ni retouche graphique. Sa branche reste inchangée. Ne pas refusionner l’ancienne convergence #371 `827795d` : son défaut de retry est déjà corrigé par Claude dans la base `ea6f0fd9`.
+## Blocage préparé : contrat corrigé, cartes à intégrer
 
-## Livraisons et CI
+Claude #369/commentaire6628337323 a démontré qu'un projet dont la préparation est acquise garde un readOnlyReason de FICHE, et que ce verrou masquait des exécutions natives gratuites pourtant acceptées par les moteurs. Trois tests normatifs ont reproduit le défaut.
 
-Toutes les PR sont brouillon et non fusionnées. Chaque base est la précédente ; la documentation `2691bf2` s’intercale avant #377.
+Contrat livré dans a593e6ea :**localEditsWritable:boolean**, calculé serveur propriétaire/forfait actif ; drapeau de chaque opération et tous ses contrôles natifs restent obligatoires. readOnlyReason/correctionFields et le refus409 de réécriture de fiche restent inchangés. `nativeLocalEditAllowed(v)` pour les domaines sans exception A1 ; `localEditAllowed(v,'local-site'|'files')` conserve exclusivement recovery.localEdits.ops en A1. Aucun droit A1 supplémentaire. Photo/brief et prompts gardent leurs conditions existantes pour ce lot.
 
-| PR | SHA livré | Preuves locales | CI au relevé |
-|---|---|---|---|
-| #372 image | 73c8865a942b556035dd89258a05f6cdfdf2a4c1 | 12 métier +24 régressions ; recette production 4/4,17s,toucher,reload,undo | **SUCCESS 41797066076** :5556 pass/31 skips ;601 fichiers pass/1 skip ;quatre contrôles et verdict verts |
-| #373 stock | 97a8a15820fca4f350845b7b8473d9f41650cdac | 11 métier +9 PATCH ;56 confirmations +40 catalogue ;20 connaissance ;types | **SUCCESS 41799372210** :5574 pass/31 skips ;602 fichiers pass/1 skip ;quatre contrôles et verdict verts |
-| #374 prestation | d315af5ea0c82f646bc531b40f941a4fa777934d | 7 nouveaux +9 horaires +56 confirmations ;20 connaissance ;types | 41800023935 :une attente d’inventaire obsolète,5580 pass/31 skips ;corrigée dans #380 |
-| #375 calendrier | 0561c6cfc9aee5609fe71e00dd07544efe5e6258 | 16 métier dont DST ;63 transports ;16 registre ;types | 41800842314 :deux attentes obsolètes,5602 pass/31 skips ;corrigées dans #380 |
-| #376 thème | cf159b91358934c3d83bb203a2c011eb1a49360d | 10 métier ;70 transports ;20 connaissance ;types | 41801965980 :suite en échec sur attentes anciennes ;Docker/recettes/contrôle gratuit verts ;inclure #380/#381 |
-| #377 bibliothèque | 2da4884f4c828e588992f9da3471d3c70132db0c | 7 nouveaux +20 Fichiers ;20 connaissance ;types | 41802991745 :dernière vue en cours ;hérite des attentes anciennes avant #380 |
-| #378 photo | 0d37f5fc74490b378c81d997150172613e56b439 | 14 routes/DB/octets/transports ;20 connaissance ;types | 41804686463 :dernière vue en cours ;inclure #380 |
-| #379 animations | 93f5bf94b865f5ea5065970ccd801a022b7f000f | 9 métier +77 transports +16 registre ;types | 41805672739 :dernière vue en cours ;inclure #380 |
-| #380 deux tests CI | 1091793754e016ee8bf98cd671368c1379afc0a6 | 59 ciblés,worktree isolé ;types ;aucun code applicatif modifié | 41807018751 en cours |
-| #381 report manuel | 04b37b021fc3cd88bc1954e86c51d56cc2316c96 | 3 rouge→vert +10 thème ;14 report/adaptation ;types | 41808380657 en cours |
-| #382 restauration | 0b627c90cceead14070e4c159b9b0e2d43a64366 | 13 métier +112 régressions (84 transports,16 registre,12 image) ;types | 41808879291 en cours |
-| #383 convergence | af6e16b85a054e02ff797f68eb24e85276dafbb1 | carte Claude ;build production propre ;image 4/4 avec miniatures,17s,vrai toucher | 41809285172 en cours :attendre son propre verdict final |
+**226 tests ciblés et types passent** :4 métier dont3 rouges avant,140 protocole dont42 nouveaux,1désignationStockClaude,81 régressions A1/recovery/corbeille/Site/Publicité. Stock vraiment confirmé par son contrôleur/moteur/SQLite sur projet préparé, préparation entière identique ; interdiction explicite et abonnement révoqué bloquent.
 
-Ne jamais déduire le succès d’un nouveau SHA d’un ancien verdict. Ne pas relancer les anciens commits pour les deux assertions déjà corrigées dans #380 : qualifier le descendant complet, puis corriger tout autre défaut démontré. Les quatre contrôles obligatoires restent présents. Aucun test supprimé ;les 31 skips sont ceux qui existaient déjà.
+À Claude :adapter les conditions des cartes encore fondées sur !readOnlyReason (Stock/Calendrier/Thème/SEO/Pages/Profil/Publicité etc., et revalidation ad-document dans conversation-panel). Site/Fichiers utilisent déjà le helper partagé. Contrat complet :LOT-PERMISSIONS-PROJET-PREPARE.md. Message avec SHA et instructions transmis dans #369/commentaires6629227199 et6629399174.
 
-### Causes CI et correctif commun
+## Preuve compilée réellement exécutée
 
-Logs #374/job126473233504 :`conversation301-business-content` attend encore `services.update` absent, alors que le profil exact est implémenté avec son drapeau fermé. Logs #375/job126475918471 :même attente, plus `calendar.update` attendu absent malgré le raccordement des dates de brouillons. Les stderr « cookies hors contexte » proviennent de tests administrateur qui passent ;ils ne causent pas ces échecs.
+Build production propre **a593e6ea**, BUILD_ID **jwsvUx8YsZIInqI3NCScA**. /api/version confirme ce SHA, originbuild,production,treeclean,compiled-build.
 
-#380 modifie uniquement ces deux tests. Ils vérifient maintenant les actions supportées/interdites, le périmètre partiel, l’accord gratuit, le coût nul et la fermeture par drapeaux. Réservations, calendriers approuvés/programmés/en pause, publication, approbation, bulk et génération restent interdits. Blog/social publish et ads.launch restent absents. Les anciens verdicts ne sont pas réécrits comme succès.
+**Image sur projets PRÉPARÉS :4/4 parcours,16 étapes**, Encre/Plein×1440/390, produits/services. Les4vues servies prouvent localEditsWritable=true et fiche encore verrouillée. Première image native désignée à la souris/au toucher réel ; miniatures chargées/pixels après exacts ; annulation sans écriture ; nouvelle proposition,minimum monotone17 s,accord/version/champ exact,image iframe effectivement chargée ; reload sans doublon ; annulation naturelle avec accord et restauration exacte.
 
-## Recette commune réellement exécutée
+La fixture contient4 recherches acquises SIMULÉES. Premier relevé brut conservé :parcours4/4 mais échec du compteur globalai_calls=4. Second relevé capture et vérifie intégralement la baseline identifiée provider=simulated/model=fixture/id=fixture_research_*. **4→4,baseline inchangée,0nouvelle tentative,0externe,0JS.** Aucune ligne supprimée, tout appel inconnu/nouveau ou baseline modifiée ferait échouer la recette. Voir PREUVE-IMAGE-PROJET-PREPARE.md, PREUVE-IMAGE-PREPARE-V2.json et scripts/parity301-prepared-image-proof.ts. Captures locales /tmp/parity301-prepared-image-v2 uniquement ; aucune capture GitHub ajoutée.
 
-Application `af6e16b…`, BUILD_ID `onDHt-VFlzkgfMG7m02ho`. `/api/version` confirme :commit exact, `commitOrigin:build`, `mode:production`, `tree:clean`, `source:compiled-build`. Serveur `next start`, stockage fictif `/tmp`, clés fournisseurs vides et garde réseau lot9.
+Cette preuve qualifie Image/Site préparé ; pas les autres cartes. La précédente preuve Image4/4 sur488da3e est conservée dans PREUVE-IMAGE-CONVERGENCE-V5.json. Le signalement hero_editorial_1 non visible n'a pas été reproduit :première cible native produits réellement cliquée/touchée, template es-image→img ; aucune correction graphique spéculative.
 
-Image :**4/4 parcours,16 étapes**, Encre/Plein ×1440/390, produits/services. Vraie souris et vrai toucher pour désigner l’image ;deux miniatures chargées ;URI avant native et URI après exacte ;pixels RGBA après identiques à la photo choisie. Pas d’écriture avant l’accord ni après annulation. Quatre accords image après 17 secondes réelles ;une version, seul champ et fichier attendus ;image iframe chargée comparée aux octets du compilateur natif. Rechargement sans doublon, puis quatre accords d’annulation et restauration exacte. **0 IA,0 requête externe,0 erreur JavaScript.**
+## Lots livrés, tous brouillon et non fusionnés
 
-Harnais :`scripts/parity301-existing-image-proof.ts`. Rapport :`PREUVE-IMAGE-CONVERGENCE-V4.json`. Captures locales seulement dans `/tmp/parity301-convergence-v4-image`. Le précédent rapport `1f6002ed…` porte sur l’application `73c8865…` ;ne pas les confondre.
+| PR | SHA | Résultat local et limite |
+|---|---|---|
+| #372 image | 73c8865a942b556035dd89258a05f6cdfdf2a4c1 | 12 métier+24 régressions,recette production4/4 ; noms/stems uniques,octets/source/version/undo natifs |
+| #373 stock | 97a8a15820fca4f350845b7b8473d9f41650cdac | 11 métier+9PATCH natifs ; produit/variante/CAS,aucune synchronisation |
+| #374 nom prestation | d315af5ea0c82f646bc531b40f941a4fa777934d | 7 métier,identités/alias natifs ; pas un service réservable |
+| #375 calendrier | 0561c6cfc9aee5609fe71e00dd07544efe5e6258 | 16 métier ; brouillons/planned/review seulement,timezone/DST,snapshot entier ; aucun envoi |
+| #376 choix thème | cf159b91358934c3d83bb203a2c011eb1a49360d | 10 métier ; aperçu INACTIF puis choix de travail gratuit,garde natif et report manuel ; amélioré#381 |
+| #377 bibliothèque | 2da4884f4c828e588992f9da3471d3c70132db0c | 7 nouveaux+20 fichiers ; metadata/ID/URL/version,aucune vision |
+| #378 photo | 0d37f5fc74490b378c81d997150172613e56b439 | 14routes/SQLite/fichiers/reçu atomique ; photo explicitement jointe,aucune analyse ; UI encore ouverte |
+| #379 animation | 93f5bf94b865f5ea5065970ccd801a022b7f000f | 9 nouveaux+93 régressions ; droits natifs/Créer/locks conservés |
+| #380 deux tests CI | 1091793754e016ee8bf98cd671368c1379afc0a6 | 59 ciblés ; attentes services/calendar obsolètes corrigées,seulement2 tests ; son autre défaut de harnais temps est#385 |
+| #381 baseline manuelle | 04b37b021fc3cd88bc1954e86c51d56cc2316c96 | 3 rouges→verts+10thème+14natifs ; fallback natif seulement,perte bloquée avant choix |
+| #382 restauration site | 0b627c90cceead14070e4c159b9b0e2d43a64366 | 13 métier+112 régressions ; versions acquises/2aperçus/hashmédias/reçus undo gratuits ; importé exclu |
+| #383 convergenceV4 | af6e16b85a054e02ff797f68eb24e85276dafbb1 | vrai merge miniatures Claude b280657b ; build propre/Image4/4/16 étapes |
+| #384 coordonnées | 8024d2e9acbf296002ea5ef543ccb4bbedb6c771 | 8 métier+20 knowledge/types ; téléphone/email/zone ; adresse synchronisée exclue |
+| #385 attente fiable | df4fce028547771f3e96d3a187a3919c51fe062d | 3 tests/types ; minimum monotone17000ms,8 accords réels en4 parcours ; aucun seuil/workflow/garde réduit |
+| #386 atomicité dossier | 3a035bf2a44eb37bedf0e249e6f0f9f38d22cee3 | 2 rouges→verts,3 tests+7bibliothèque ; validation avant UPDATE des seuls champs fournis |
+| #387 créer dossier | 9c9efda6f23224f9983fb39c932af181154fc128 | 14 métier+91 transports+30 régressions ; parent/racine exacts,aucun fichier déplacé |
+| #388 convergenceV5 | 488da3e572c0fd2d2289021c1134b795d3719dce | vrai merge#387/#385 ; production/Image4/4/16 étapes,versionAPI vérifiée |
+| #389 dialogue dossier | e8c5a2c15332c270d06db13b3b0c6903e315b9db | 8 nouveaux+14 métier+91 transports ; phrases sans guillemets,précision persistante du parent,reload/TTL,accord distinct |
+| #390 prix profil | 43b1256c3fbd98501299ba5169c0618f53715ce6 | 8 nouveaux+52 régressions ; prix affiché textuel,effacement natif rouge→vert,réservation inchangée |
+| #391 durée profil | 4f3f0df14310f0ed5c8593f0016a9834e06b0bf3 | 7 nouveaux+68 régressions ; durée affichée textuelle,effacement natif rouge→vert,aucun créneau modifié |
+| #392 description profil | 9f40fb52b3bcd25d1172672077d39e03896f3812 | 7 nouveaux+59 régressions ; texte fourni multiligne,aucun fait généré,bulk=clarification gratuite |
+| #393 corbeille | 72111052a36cae4bcbd729a7b2d3a4f29af72b12 | 162 ciblés/types ; restauration d’un fichier acquis,ID/version/octets/statut conservés ; pas de nouveau droit A1 |
+| #394 convergence/permission | a593e6ea510232f0a0946c369538fab29a60a327 | Claude 12d+Codex 721,vrai merge ; 226 ciblés/types+preuve Image préparée4/4 ; autres cartes préparées à adapter |
 
-Claude signalait `hero_editorial_1/image` non visible :**non reproduit sur af6e16b**. Notre première cible produits, sans en sauter une, est précisément cette image ;elle est cliquée et touchée avec succès. Diagnostic natif :`/tmp/parity301-hero-diagnostic.log`. Le template appelle `es-image` et produit un img ;mon ancien terme « image de fond » était inexact. Aucun template ni backend n’a été modifié pour ce cas. Le harnais Claude livré dans b280 utilise `next dev` et un repère repris sur téléphone ;notre preuve utilise la production, le vrai toucher et 17s. Demander version/clé/trace DOM précise si le défaut persiste ailleurs.
+Les contrats LOT-*.md sont dans ce dossier et chaque SHA exploitable a été transmis à Claude dans #369. Les cartes des nouveaux champs Profil, photo, animation, restauration site, dossiers et corbeille restent à intégrer/qualifier. Les recettes déclarées par Claude sur 12d (Stock/Calendrier/Prestation/Bibliothèque4/4,Thème services2/2) ne sont pas des preuves indépendantes compilées sur a593 ; produits/préparés restent à rejouer.
 
-## Contrats transmis à Claude et limites
+## CI exacte au dernier relevé
 
-Tous les SHA et contrats sont publiés dans #369. Lire les documents `LOT-*` de chaque PR. La carte Image de Claude est intégrée à la convergence ;les autres cartes restent à raccorder. Partir d’un descendant incluant #380 et #381.
+| PR/SHA | Run | Résultat |
+|---|---|---|
+| #372 / 73c8865 | 41797066076 | SUCCESS :5556 pass/31 skips,601fichierspass/1skip |
+| #373 / 97a8a15 | 41799372210 | SUCCESS :5574 pass/31 skips,602fichierspass/1skip |
+| #381 / 04b37b0 | 41808380657 | SUCCESS :5661 pass/31 skips,609fichierspass/1skip |
+| #382 / 0b627c9 | 41808879291 | SUCCESS :5681 pass/31 skips,610fichierspass/1skip |
+| #383 / af6e16b | 41809285172 | SUCCESS :5682 pass/31 skips,611fichierspass/1skip |
+| #384 / 8024d2e | 41812294387 | SUCCESS :5690 pass/31 skips,612fichierspass/1skip |
+| #385 / df4fce0 | 41812683859 | SUCCESS :5685 pass/31 skips,612fichierspass/1skip |
+| #388 / 488da3e | 41813937435 | Suite5717 pass/31 skips,615fichierspass/1skip ; Docker etconfirmation obligatoire verts,grandes recettes en cours |
+| #394a593e6ea | 41820841545 | CI en cours sur CE SHA,aucun verdict anticipé |
 
-- **Stock** :`localStock`, confirm/cancel-stock, versions produit et variante, empreinte, null distinct de zéro, prix/SKU/policy conservés. Pas de bulk/synchronisation. Carte Catalogue et recette à faire.
-- **Prestations** :`serviceProfile.field=service-name|hours`, clé/alias natifs, CAS et empreinte complète. « Cette prestation » demande une précision, puis nom/clé exacts. Services réservables distincts. Carte Horaires à généraliser.
-- **Calendrier** :`localCalendar`, confirm/cancel-calendar, événement `studio:social-changed`. Seulement dates éditoriales planned/draft/review ;aucune programmation/envoi. Égalités de dates et heures DST ambiguës/inexistantes refusées.
-- **Choix de thème** :`localThemeChoice`, confirm/cancel-theme-choice, vrai aperçu inactif puis accord de remplacement du site de travail. #381 exige une référence automatique prouvée ;sinon refus. `dropped` bloque la confirmation ;pas de mapping arbitraire. Ni premier site, importé ou publication.
-- **Bibliothèque** :`localFiles.state=listed,command=read,vision=false`, métadonnées/liens/A2/dossiers,50+hasMore. Aucune mutation ni meta brute. Ancienne proposition de renommage invalidée. Liste/sélection UI à faire.
-- **Photo** :capability `photoImport`, POST/GET conversations/:cid/photos, une photo200Mo, reçu atomique et lease5min, transport upload/verify/retry. Stockage client de l’identité seulement ;photoId explicitement joint au message. Pas d’avant-projet/A1/vision/PDF/vidéo. Bouton/miniature à faire.
-- **Animations** :`localSiteMotion`, confirm/cancel-motion, set_global natif. Le garde conversationnel Créer refuse checkbox/select, les boutons manuels restent inchangés :distinction de droits à traiter sans contournement implicite. Reduced motion conservé. Carte à faire.
-- **Restauration** :`localThemeRestore`, confirm/cancel-restore, numéro/ID acquis exact et deux aperçus. Undo des reçus gratuits courants animation/SEO/pages/thème/restauration, ancien contrat Site/image conservé. Acquis restaurables en forfait actif Créer ;pas de nouvel achat/importé/publication. Carte à faire.
+Les skips sont préexistants,pas ajoutés. Les anciennes CI #374/#375 attendent à tort services.update/calendar.update absents ; #380 corrige ces deux attentes en renforçant les assertions. Les stderr cookies hors contexte sont des tests administrateur qui passent. #380 reste historiquement rouge sur son assertion de temps avant clic :#385 corrige la mesure monotone,sans prétendre réparer une perte applicative ni maquiller l'ancien SHA.
 
-#381 corrige une perte native reproduite :sans ancien gate, `preservation(null,current)` oubliait les retouches. Repli strict vers première composition1/system/parent=null/non importée, sans inventer une référence manuelle. Un réglage global manuel est effectivement reporté ;un titre sans équivalent reste bloqué.
+Création d'une PR séparée poura593 :plusieurs ReadTimeout puis erreur interne MCP32603 ; liste de PR vérifiée,sans doublon. CLI configurée mais appel réseau Forbidden :aucun proxy/politique/identité modifié. Solution livrée :avance rapide non forcée de notre branche #394895→a593,PR toujours brouillon,CI déclenchée. Ne pas continuer à créer une hypothétique#395.
 
-## Matrice unique
+## Matrice unique et workspace
 
-162 unités conservées, mêmes CSV/MD et identifiants ;les 77 décompositions restent un inventaire. **58 PARTIEL,74 ABSENT,4 NON_TESTE,26 BLOQUE ;aucune complète.** Périmètres et formulations contradictoires des nouveaux lots actualisés. Ne pas certifier une UI ou une opération voisine à partir d’un moteur partiel.
+Même CSV/MD historiques MATRICE-CONVERGENCE-84.*,163 unités (162conservées+omission folders.create). **60 PARTIEL,73 ABSENT,4 NON_TESTE,26 BLOQUE ; aucune complète.** Les77 décompositions sont un inventaire,pas77bugs prouvés. Corbeille et champs Profil actualisés ; cartes préparées/CI communes restent des critères ouverts.
 
-## Workspace et reprise
+- Source compilée propre :/workspace/work/parity301-intents-v5,branche locale codex/parity301-compiled-permissions,HEAD a593. Build /tmp/parity301-prepared-permissions-build.log terminé0.
+- Recette préparée :/tmp/parity301-prepared-image-v2,log voisin ; harnais temporaire ignoré.next/prepared-image-proof.mts,version publiée comme scripts/parity301-prepared-image-proof.ts. Premier relevé brut conservé /tmp/parity301-prepared-image.
+- Documentation courante :/workspace/work/parity301-ci-guards,branche codex/parity301-continuous-matrix-v6,base a593,modifications de docs/harnais/preuves seulement. .next y est un lien vers le build source.
+- Ancien checkout de panne parity301-next-domains avec merge/WIP reste INTACT. Ne pas reset/clean ce checkout. Aucun build/Chromium concurrent nécessaire. Garder suffisamment de disque ; seul notre cache.next/cache/webpack peut être libéré quand inactif.
 
-Principal :`/workspace/work/parity301-intents-v5`, branche convergence-v4, HEAD af6e16b. Fichiers suivis propres ;harnais Image et diagnostic héros non suivis, également conservés dans les preuves documentaires. `.next` correspond exactement à af6e16b et au BUILD_ID ci-dessus. `node_modules` pointe vers `/workspace/Ecom-studio-ia/node_modules`. Le cache webpack inactif a été supprimé avant build faute de place ;ne supprimer que ce cache si aucun build/serveur ne l’utilise, jamais les données ou sources.
+## Prochaines actions exactes
 
-Second worktree :`/workspace/work/parity301-ci-guards`, HEAD04b37b0, branche theme-baseline-guard, propre. Ancien `/workspace/work/parity301-next-domains` toujours interrompu en merge (e1ba254/MERGE_HEAD30f67e), **intouché :ne pas reset**.
-
-Tous les processus app/tests/build :`NODE_OPTIONS="--import=$PWD/scripts/lot9/network-guard.mjs"`. IPC/tsx/Vitest/Chromium demandent l’exécution locale autorisée (`require_escalated`). Aucun secret fournisseur configuré. Recettes sur données fictives `/tmp`, refus du stockage préexistant, Chromium `/usr/bin/chromium`.
-
-Logs :`/tmp/parity301-convergence-v4-build.log`, `convergence-v4-image.log` et dossier de résultats ;`ci-capability-guards.log` ;`theme-baseline-loss-red.log`, `theme-baseline-green.log`, `baseline-native-regressions.log` ;`restore-final.log`, `restore-regressions.log`, `photo-transport-final.log`, `motion-final.log` et types correspondants.
-
-## Prochaines tâches indépendantes
-
-1. Relever les verdicts finaux #380–#383 sur leurs SHA et publier les comptes exacts. Continuer les domaines indépendants durant les CI ;corriger seulement les échecs démontrés.
-2. Reprendre les cartes livrées par Claude sur une branche de convergence propre, reconstruire puis tester les vrais parcours quatre modes/toucher/17s. Ne pas modifier sa branche ni déduire une preuve de deux piles séparées.
-3. Profil services :téléphone/e-mail/zone peuvent être des champs exacts avec CAS/empreinte. Validation native :area300,phone40,email160+regex. **Adresse couplée** :PATCH projet appelle `syncBookingAddress` après saveServices et crée une version du site. Ne pas raccorder address par une simple écriture de profil sans traiter cette concurrence. Même prudence pour bookingUrl/contactModes ;les services réservables ont leurs propres IDs/versions.
-4. Continuer CRUD métiers, variantes/réservations, dossiers/versions de fichiers et champs restants de la matrice. Vérifier #348 avant développement. Connexions/publications réelles restent interdites ;seuls contrats et fixtures peuvent être qualifiés sans nouvel accord réel.
-
-## Reprise prioritaire actualisée — 4 novembre, 10 h 24 UTC
-
-La source commune suivante est **PR #388 / codex/parity301-convergence-v5 / 488da3e572c0fd2d2289021c1134b795d3719dce**, vrai merge des parents #387 `9c9efda6f23224f9983fb39c932af181154fc128` et #385 `df4fce028547771f3e96d3a187a3919c51fe062d`. Sa construction propre est en cours : ne pas attribuer à ce SHA les anciennes preuves af6. Les fichiers graphiques Claude sont inchangés.
-
-Nouveaux lots livrés, brouillon et non fusionnés :
-
-- **#384** `8024d2e9acbf296002ea5ef543ccb4bbedb6c771` : téléphone/e-mail/zone du profil, aperçu et accord gratuit/CAS/validation partagée au PATCH natif. 8 tests + 20 connaissances/types passent. Adresse toujours exclue, car syncBookingAddress touche aussi le site.
-- **#385** `df4fce028547771f3e96d3a187a3919c51fe062d` : contrôle monotone d’au moins 17000 ms, seuil et contrôles inchangés. #380 échouait dans l’assertion de délai AVANT clic, pas une perte applicative démontrée. Trois tests/type passent ; véritable recette sections af6 4/4, huit accords après minimum17s, reload/undo,0IA/externe/JS. La cause précise minuteur/horloge civile n’est pas départagée par les logs. Run #385 `41812683859` en cours.
-- **#386** `3a035bf2a44eb37bedf0e249e6f0f9f38d22cee3` : vrai PATCH dossier répondait400/404 mais avait déjà renommé. Deux tests rouges avant,3verts après+7bibliothèque/types. Validation complète puis UPDATE des seuls champs fournis. Aucun moteur dossier réinventé.
-- **#387** `9c9efda6f23224f9983fb39c932af181154fc128` : création d’un dossier natif vide, parent/racine explicites, localFolders / confirm-folder / cancel-folder et contrôleur persistant. 14 métier +91 transports (7 nouveaux) +30 régressions/types passent. Cartes et recettes Claude à faire ; pas de déplacement/suppression implicite.
-
-Chaque contrat et SHA a été transmis à Claude dans #369 (commentaires 6628121531,6628186393,6628213551,6628333533,6628370123). Les nouvelles cartes restent sa responsabilité ; aucune modification directe de sa branche.
-
-CI exactes relevées : #381 suite5661pass/31skips,609fichierspass/1skip ; #382 suite5681pass/31skips,610fichierspass/1skip ; #383 suite5682pass/31skips,611fichierspass/1skip. Docker et confirmation obligatoire verts sur ces trois SHA ; grandes recettes encore en cours, aucun verdict global anticipé. #384 run41812294387 en cours, Docker vert. #380 reste historiquement rouge sur son contrôle du temps ; son correctif est #385, ne pas maquiller le vieux SHA.
-
-Matrice canonique mise à jour sans perdre les162 unités : **163 unités**, ajout explicite de l’omission native folders.create ; **59 PARTIEL,74 ABSENT,4 NON_TESTE,26 BLOQUE**, aucune complète. Chemin historique conservé. Coordonnées services et défaut d’atomicité documentés sur leurs lignes.
-
-Workspace : source propre dans /workspace/work/parity301-intents-v5, branche convergence-v5, build /tmp/parity301-convergence-v5-build.log en cours (session76961). Documentation dans /workspace/work/parity301-ci-guards, branche continuous-matrix-v5, basée sur488da3e ; .next est un lien vers le build source. Ne pas exécuter deux builds/recettes simultanément. Aucun ancien checkout de panne nettoyé.
-
-Prochaines actions : observer le build puis vérifier /api/version sur488da3e ; suivre les CI finales des SHA exacts, poursuivre les modules indépendants. Étendre les formulations/clarifications naturelles et les opérations de dossiers (renommer/déplacer/supprimer vide) avec moteur natif partagé, concurrence et reçus prouvés ; restauration corbeille/native files et services réservables restent ouverts. Ne pas considérer la création de dossier comme preuve de ses autres actions. Attendre seulement les dépendances réelles de cartes Claude, continuer les autres moteurs. Aucun fournisseur/client/main/déploiement.
-
-### Résultats postérieurs au point de 10 h 24
-
-Build #388 terminé avec succès, source propre488da3e. Recette Image sur CE SHA :4/4,16étapes,souris/toucher réels,miniatures chargées et pixels vérifiés,17s monotones,accord/reload/undo,0IA/externe/JS ; /api/version confirme488da3e,originbuild,production,treeclean,compiled-build,BUILD_ID7Ttu5MU3GFZhao5wEzAKq. Rapport PREUVE-IMAGE-CONVERGENCE-V5.json ;captures locales /tmp/parity301-convergence-v5-image uniquement.
-
-CI #381 désormais **SUCCESS** run41808380657 :les quatre contrôles obligatoires et le verdict global sont verts ;5661pass/31skips existants. #382/#383 grandes recettes toujours en cours. #384 et #385 confirmation gratuite obligatoire désormais verte, Docker vert, suites/grandes recettes en cours ;ne pas déclarer toute leur CI verte.
-
-Lot dossier-dialogue en cours de livraison sur branche codex/parity301-folder-dialogue, base documentaire17a940a6322a0d6e7ba1882e440babf08380a0d8 :8 nouveaux tests +14 métier existants +91 transports =113pass,typespropres. LOT-DOSSIER-DIALOGUE.md décrit les phrases sans guillemets et la question persistante/réponse destination gratuite, sans accord implicite. Trois fichiers moteur/contrat/index,un test etdocs ;aucune interface. Prochaine étape :publication et transmission du SHA exact à Claude, puis opérations dossiers/fichiers restantes pendant les CI. La matrice reste163 unités,aucune complète ;la carte etrecette de ces nouveaux champs restent ouvertes.
+1. Suivre la CI41820841545 au SHA a593 ; corriger seulement les défauts démontrés,ne pas relancer tous les tests sans cause.
+2. Intégrer sur NOTRE branche le prochain commit exploitable Claude qui adapte ses cartes à localEditsWritable/helpers. Ne pas modifier sa branche. Rebuild propre,puis vraies recettes préparéesStock/Calendrier/Thème/SEO/Pages/Profil/Publicité4modes17 s,toucher,accord/annulation/reload/conflits. Les transports sont prêts ; pas de preuve finale de ces cartes actuellement.
+3. Continuer les lacunes moteur indépendantes durant les CI :variantes multiples et clarifications Stock dans le vrai parcours (Claude ne les a pas qualifiées),CRUD dossiers,versions/corbeille/consignes,nouveaux champs et services réservables avec leurs propres IDs/versions. Adresse du profil appelle syncBookingAddress et crée une version du site :pas d'écriture simple de profil.
+4. Photo/brief sur projet préparé,lecture de prompts après verrou,réservations et demandes externes restent à qualifier. A1 garde seulement ses exceptions explicitement existantes,aucune permission générale déduite du nouveau booléen.
+5. Connexions/envois/publication/domaine/paiement réels restent non autorisés. Préparer les scénarios/contrats nécessaires,poursuivre les autres modules sans achat ni activation. Mission complète seulement après couverture vérifiée ou exclusion précise décidée par le propriétaire,aucune conclusion “terminé” par fin de lot/CI.
