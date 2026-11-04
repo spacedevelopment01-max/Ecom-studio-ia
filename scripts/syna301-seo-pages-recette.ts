@@ -6,7 +6,7 @@
  *    la version enregistrée ; « Modifie la métadescription… » → Annuler → rien d'écrit ;
  *  - Pages (#370) : « Ajoute une page « Nos garanties » » → modèles natifs proposés (aperçu) → « Choisir » remplit la
  *    phrase du client, qu'il envoie → proposition → confirmation → page relue dans la version (brouillon) ;
- *  - Sections (#368) : section désignée → « Masque cette section » → confirmation → section masquée, seule elle change.
+ *  - Sections (#368) : section désignée dans l'aperçu (téléphone : toucher réel, écran tactile) → « Masque cette section » → confirmation → section masquée, seule elle change.
  * Stockage isolé, clés vides, réseau hors boucle locale refusé, 0 appel IA exigé.
  * Usage : npx tsx scripts/syna301-seo-pages-recette.ts <dossier de sortie>
  */
@@ -67,7 +67,7 @@ try {
   const b = await chromium.launch({ args: ["--no-sandbox", "--disable-background-networking"] });
   for (const k of prepared) {
     const label = `${k.mode}-${k.format}-${k.business}`, steps: Step[] = [], desktop = k.format === "ordinateur";
-    const ctx = await b.newContext({ viewport: SIZE[k.format], locale: "fr-FR", reducedMotion: "reduce" });
+    const ctx = await b.newContext({ viewport: SIZE[k.format], locale: "fr-FR", reducedMotion: "reduce", ...(k.format === "telephone" ? { hasTouch: true, isMobile: true } : {}) });
     await ctx.addInitScript(() => { (globalThis as { __name?: unknown }).__name = (t: unknown) => t; try { sessionStorage.setItem("ecsSeen", "1"); } catch { /* */ } });
     await ctx.addCookies([{ name: "ecs_session", value: k.token, url: origin }]);
     await ctx.route("**/*", (r) => { if (new URL(r.request().url()).origin === origin) return r.continue(); forbidden.push(r.request().url()); return r.abort(); });
@@ -91,7 +91,8 @@ try {
     // Désignation : ordinateur = outil natif « Désigner » de l'aperçu ; téléphone = même désignation enregistrée
     // côté conversation (A2) puis « Reprendre le repère sauvegardé » dans le panneau, comme après un rechargement.
     const designate = async () => {
-      if (desktop) {
+      // Ordinateur et téléphone : outil natif « Désigner » de l'aperçu, puis clic (ordinateur) ou toucher réel (téléphone).
+      if (true) {
         await closeSyna();
         const tab = page.getByRole("tab", { name: "Aperçu", exact: true }); if (await tab.count()) await tab.click();
         const heading = frame().locator(`[data-es-section="index:${k.section}"]`).getByRole("heading").first();
@@ -99,7 +100,7 @@ try {
         const tools = page.locator("[data-site-tools]"); if (!(await tools.getAttribute("open"))) await tools.locator(":scope > summary").click();
         await page.getByRole("button", { name: "Désigner", exact: true }).click();
         const close = page.getByRole("button", { name: "Fermer les outils", exact: true }); if (await close.isVisible()) await close.click();
-        await heading.click(); await panel.waitFor();
+        if (desktop) await heading.click(); else await heading.tap(); await panel.waitFor();
       } else {
         k.select(false); await page.reload({ waitUntil: "networkidle" }); await openSyna();
         const resume = panel.getByRole("button", { name: /^Reprendre le repère sauvegardé/ });
