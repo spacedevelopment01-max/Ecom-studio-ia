@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYNA — site, aperçu et sélection d'un élément (Encre)</title>
+<link rel="stylesheet" href="encre.css">
+<link rel="stylesheet" href="plein.css">
+<script src="mode.js"></script>
+<style>
+.site3 { display: grid; grid-template-columns: 240px minmax(0, 1fr) 340px; min-height: 0; }
+.struct { border-right: 1px solid var(--rule); background: var(--sheet); overflow: auto; padding: 14px 10px; display: grid; align-content: start; gap: 2px; }
+.struct .label { padding: 8px 10px 6px; }
+.struct a { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; font-size: 13px; color: var(--ink-2); text-decoration: none; }
+.struct a.on { background: var(--blue-soft); color: var(--blue); font-weight: 600; }
+.struct a small { font: 400 10.5px var(--f-mono); color: var(--muted); }
+.struct a.managed small { color: var(--na); }
+.inspect { border-left: 1px solid var(--rule); background: var(--sheet); overflow: auto; display: grid; align-content: start; }
+.inspect section { padding: 16px; border-bottom: 1px solid var(--rule); display: grid; gap: 12px; }
+.inspect h3 { margin: 0; font: 500 19px var(--f-voice); }
+.carte { padding: 24px 32px 30px; display: grid; gap: 4px; position: relative; }
+.carte h3 { margin: 0 0 10px; font: 500 26px var(--f-voice); }
+.dish { display: grid; grid-template-columns: 1fr auto; gap: 4px 20px; padding: 12px 0; border-bottom: 1px solid #ece6df; font-size: 14px; }
+.dish b { font-weight: 600; }
+.dish span { color: #6d655d; font-size: 13px; }
+.dish .p { font-family: var(--f-mono); color: #1d1a17; }
+.managed-tag { position: absolute; right: 14px; bottom: 14px; background: var(--na-soft); color: var(--na); border: 1px dotted var(--na); border-radius: 6px; padding: 4px 8px; font: 500 11px var(--f-ui); }
+.main-narrow { grid-template-columns: 380px minmax(0, 1fr); }
+[data-mode="plein"] .main-narrow { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 760px) { .main-narrow { grid-template-columns: minmax(0, 1fr); } .site3 { grid-template-columns: minmax(0, 1fr); } .struct, .inspect { display: none; } }
+</style>
+</head>
+<body>
+<div class="app m-work">
+  <header class="top">
+    <div class="brand"><span class="studio">E-com Studio</span><span class="project">Table Saison <em>· restaurant</em></span></div>
+    <nav class="spaces" aria-label="Espaces de travail"><a href="#" aria-current="page">Site</a><a href="#">Carte</a><a href="#">Rendez-vous</a><a href="#">Marque</a><a href="#">Images</a><a href="#">Diffusion</a><a href="#">Projet</a></nav>
+    <div class="meter"><div class="budget"><span>Budget IA du mois · <b>81 %</b> restant</span><div class="gauge"><i style="width:81%"></i></div></div><div class="avatar">TS</div></div>
+  </header>
+  <div class="main main-narrow">
+    <section class="convo" aria-label="Conversation avec SYNA">
+      <div class="convo-head"><div class="syna-mark"><span class="name">Syna</span><span class="mem">mémoire du projet · à jour</span></div></div>
+      <div class="thread">
+        <div class="msg-user">Change le prix du velouté à 14 € et renomme la section « Notre carte de saison ».</div>
+        <div class="msg-syna"><span class="who">Syna</span>
+          <p>Je peux renommer le titre de la section : c'est une retouche exacte du texte, gratuite et annulable.</p>
+          <p>Le <strong>prix du velouté</strong> vient de votre carte : je ne sais pas encore la modifier moi-même. Je vous ai ouvert la ligne du plat dans l'espace Carte, vous pouvez le changer en un clic.</p>
+        </div>
+        <article class="card">
+          <div class="card-h"><h4>Ce que je peux faire</h4><span class="state s-proposal">Proposition</span></div>
+          <ol class="steps">
+            <li class="step"><span class="n">01</span><div><div class="t">Titre : « Notre carte de saison »</div><div class="d">Retouche exacte · version 8 · annulable</div></div><span class="cost">0 %</span></li>
+            <li class="step"><span class="n">02</span><div><div class="t">Prix du velouté → 14 €</div><div class="d">Géré par l'espace Carte · pas encore raccordé à Syna</div></div><span class="state s-na">Non disponible</span></li>
+          </ol>
+          <div class="card-f"><a class="btn small" href="#">Ouvrir la ligne dans Carte</a><button class="btn primary small">Appliquer l'étape 1</button></div>
+        </article>
+      </div>
+      <div class="composer"><div class="ctx"><span class="chip sel">Sélection : section Carte · Accueil <button aria-label="Retirer">×</button></span></div><div class="field"><span></span><textarea rows="1" placeholder="Demandez à Syna…"></textarea><button class="send" aria-label="Envoyer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button></div></div>
+    </section>
+
+    <div class="site3">
+      <nav class="struct" aria-label="Structure de la page">
+        <span class="label">Accueil · sections</span>
+        <a href="#"><span>En-tête</span><small>fixe</small></a>
+        <a href="#"><span>Bannière d'accueil</span><small>texte, image</small></a>
+        <a href="#"><span>Philosophie</span><small>texte</small></a>
+        <a href="#" class="on managed"><span>Carte du moment</span><small>espace Carte</small></a>
+        <a href="#"><span>Réserver une table</span><small>réservation</small></a>
+        <a href="#"><span>Le lieu</span><small>galerie</small></a>
+        <a href="#"><span>Pied de page</span><small>fixe</small></a>
+        <span class="label" style="margin-top:12px">Pages</span>
+        <a href="#"><span>La carte</span><small>8 plats</small></a><a href="#"><span>Groupes</span></a><a href="#"><span>Contact</span></a>
+      </nav>
+      <section class="work" aria-label="Aperçu">
+        <div class="work-bar"><div class="left"><span class="crumb">Accueil</span><div class="seg" role="group" aria-label="Appareil"><button aria-pressed="true">Ordinateur</button><button aria-pressed="false">Téléphone</button></div></div><div class="right"><span class="version">Version <b>7</b></span><button class="btn small">Historique</button></div></div>
+        <div class="stage">
+          <div class="frame">
+            <div class="frame-bar"><i></i><i></i><i></i><span>Aperçu · table saison — accueil</span></div>
+            <div class="site-nav"><span>La carte · Groupes · Le lieu</span><b>TABLE SAISON</b><span>Réserver</span></div>
+            <div class="carte">
+              <span class="managed-tag">Contenu de l'espace Carte</span>
+              <div class="sel-outline" style="inset:8px"></div>
+              <div class="sel-tag" style="left:18px;top:18px">Section Carte du moment <button>Demander à Syna</button><button>Ouvrir Carte</button></div>
+              <h3 style="margin-top:34px">Notre carte du moment</h3>
+              <div class="dish"><b>Velouté de céleri, noisettes torréfiées</b><span class="p">12 €</span><span>Céleri-rave, noisette, huile de cerfeuil</span></div>
+              <div class="dish"><b>Poisson du jour, légumes glacés</b><span class="p">24 €</span><span>Selon l'arrivage</span></div>
+              <div class="dish"><b>Figues rôties, crème au miel</b><span class="p">9 €</span><span>Dessert de saison</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <aside class="inspect" aria-label="Élément sélectionné">
+        <section><span class="label">Élément sélectionné</span><h3>Section « Carte du moment »</h3>
+          <div class="banner na"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><div><b>Contenu géré par l'espace Carte</b><p>Les plats, prix et allergènes se modifient dans Carte. Syna peut retoucher le titre et l'intro de la section.</p></div><span></span></div>
+        </section>
+        <section><span class="label">Modifier à la main</span>
+          <div class="form"><label>Titre<input value="Notre carte du moment"></label><label>Nombre de plats affichés<select><option>3</option><option>6</option></select></label></div>
+          <div class="actions"><button class="btn small">Masquer la section</button><button class="btn small">Monter</button><button class="btn small">Descendre</button></div>
+        </section>
+        <section><span class="label">Historique de la section</span><div class="mini">v7 · aujourd'hui 13:40 · Syna · titre<br>v6 · hier · vous · ordre des sections</div></section>
+      </aside>
+    </div>
+  </div>
+  <nav class="tabbar" aria-label="Navigation mobile"><a href="#">Syna</a><a href="#" aria-current="page">Aperçu</a><a href="#">Espaces</a><a href="#">Suivi</a></nav>
+</div>
+<script>document.querySelectorAll(".thread").forEach(t=>t.scrollTop=t.scrollHeight)</script>
+</body>
+</html>

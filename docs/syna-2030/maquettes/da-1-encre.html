@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYNA — conversation et espace de travail (Encre)</title>
+<link rel="stylesheet" href="encre.css">
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><span class="studio">E-com Studio</span><span class="project">SILLON <em>· boutique</em></span></div>
+    <nav class="spaces" aria-label="Espaces de travail">
+      <a href="#" aria-current="page">Site</a><a href="#">Catalogue</a><a href="#">Marque</a><a href="#">Images</a><a href="#">Vidéos</a><a href="#">Diffusion</a><a href="#">Projet</a>
+    </nav>
+    <div class="meter">
+      <div class="budget" title="Budget IA du mois, forfait Développer"><span>Budget IA du mois · <b>62 %</b> restant</span><div class="gauge"><i style="width:62%"></i></div></div>
+      <div class="avatar" aria-label="Compte">TL</div>
+    </div>
+  </header>
+
+  <div class="main">
+    <!-- Conversation unique -->
+    <section class="convo" aria-label="Conversation avec SYNA">
+      <div class="convo-head">
+        <div class="syna-mark"><span class="name">Syna</span><span class="mem">mémoire du projet · à jour</span></div>
+        <div class="head-actions">
+          <button class="icon-btn" aria-label="Historique et tâches"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4M12 7v5l3 2"/></svg></button>
+          <button class="icon-btn" aria-label="Réduire la conversation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button>
+        </div>
+      </div>
+
+      <div class="thread">
+        <div class="day">Aujourd'hui · 14:02</div>
+        <a class="m-only m-peek" href="#"><img src="img/sillon-hero.jpg" alt=""><span><b>Image d'en-tête · Accueil</b><br>Sélectionnée dans l'aperçu · ouvrir</span></a>
+        <div class="msg-user">Mets la photo du lac en haut de l'accueil et ajoute une finition Cuivre à 139 €.</div>
+        <div class="msg-syna">
+          <span class="who">Syna</span>
+          <p>Je propose deux étapes. La première remplace l'image d'en-tête par la photo du lac, déjà dans votre bibliothèque : aucune création, donc rien sur votre budget IA.</p>
+          <p>La seconde ajoute la finition <strong>Cuivre</strong> en brouillon dans le catalogue. Le stock reste à zéro tant que vous ne l'avez pas saisi.</p>
+        </div>
+        <article class="card" aria-label="Plan proposé">
+          <div class="card-h"><h4>Plan en 2 étapes</h4><span class="state s-proposal">Proposition</span></div>
+          <ol class="steps">
+            <li class="step"><span class="n">01</span><div><div class="t">Image d'en-tête de l'accueil</div><div class="d">Retouche exacte · photo « machine, tasse, lac » · version 13 créée, annulable</div></div><span class="cost">0 %</span></li>
+            <li class="step"><span class="n">02</span><div><div class="t">Catalogue · finition Cuivre, 139 €</div><div class="d">Brouillon de variante · référence SIL-CUI · stock à saisir</div></div><span class="cost">0 %</span></li>
+          </ol>
+          <div class="card-f"><span class="note">Aucun appel IA payant. Rien n'est publié.</span><div class="actions"><button class="btn ghost small">Modifier</button><button class="btn primary small">Appliquer les 2 étapes</button></div></div>
+        </article>
+      </div>
+
+      <div class="composer">
+        <div class="ctx"><span class="chip sel">Sélection : image d'en-tête · Accueil <button aria-label="Retirer la sélection">×</button></span><span class="chip">Page : Accueil</span></div>
+        <div class="field">
+          <button class="icon-btn" aria-label="Joindre un fichier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 11.5 12.4 19a5 5 0 0 1-7-7l8-8a3.3 3.3 0 0 1 4.7 4.7l-8 8a1.7 1.7 0 0 1-2.4-2.4L15 7"/></svg></button>
+          <label class="sr" for="m">Message à Syna</label>
+          <textarea id="m" rows="1" placeholder="Demandez à Syna…"></textarea>
+          <button class="send" aria-label="Envoyer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>
+        </div>
+        <div class="hint"><span>Syna demande toujours avant de dépenser</span><span>Entrée ↵</span></div>
+      </div>
+    </section>
+
+    <!-- Espace de travail -->
+    <section class="work" aria-label="Espace de travail : site">
+      <div class="work-bar">
+        <div class="left"><span class="crumb">Accueil<small>/</small></span>
+          <div class="seg" role="group" aria-label="Appareil"><button aria-pressed="true">Ordinateur</button><button aria-pressed="false">Tablette</button><button aria-pressed="false">Téléphone</button></div>
+        </div>
+        <div class="right"><span class="version">Version <b>12</b> · enregistrée à 13:58</span><button class="btn small">Historique</button><button class="btn small">Exporter</button><button class="btn small">Publier…</button></div>
+      </div>
+      <div class="stage">
+        <div class="frame">
+          <div class="frame-bar"><i></i><i></i><i></i><span>Aperçu · sillon — accueil</span></div>
+          <div class="site-nav"><span>Machine · Rituel · Journal</span><b>SILLON</b><span>Panier (0)</span></div>
+          <div class="site-hero">
+            <img src="img/sillon-hero.jpg" alt="Machine SILLON sur une table, face à une route de montagne">
+            <div class="copy"><h2>L'espresso suit la route.</h2><p>Une machine nomade, pensée pour les haltes.</p><span>Découvrir la machine</span></div>
+            <div class="sel-outline"></div>
+            <div class="sel-tag">Image d'en-tête <button>Demander à Syna</button><button>Modifier à la main</button></div>
+          </div>
+          <div class="site-row">
+            <div><h3>Un rituel, partout.</h3><p>Quatre gestes, vingt-cinq secondes d'extraction, une tasse qui tient la route.</p></div>
+            <img src="img/sillon-lac.jpg" alt="Machine SILLON et une tasse sur un rocher au bord d'un lac">
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <nav class="tabbar" aria-label="Navigation mobile">
+    <a href="#" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5h16v10H8l-4 4z"/></svg>Syna</a>
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 9h18"/></svg>Aperçu</a>
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Espaces</a>
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4M12 7v5l3 2"/></svg>Suivi</a>
+  </nav>
+</div>
+<script>document.querySelectorAll(".thread").forEach(t=>t.scrollTop=t.scrollHeight)</script>
+</body>
+</html>
