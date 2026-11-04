@@ -15,6 +15,8 @@ const base = z.object({
   projectRevision: z.number().int().min(0).nullable(),
 });
 export const CommandSchema = z.discriminatedUnion("action", [
+  base.extend({action:z.literal("confirm-folder"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-folder"),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal("confirm-stock"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal("confirm-calendar"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal("confirm-restore"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
@@ -59,6 +61,7 @@ export type ConversationState = {
   localAdDocumentProposalId?:string;
   localPrompts?:import('./local-prompts').LocalPromptsState;
   localPagesClarification?:{title:string;versionId:string;expiresAt:number;tab:string|null};
+  localFolderProposal?:import("./local-folders").FolderProposal;
   localStockProposal?:import("./local-stock").StockProposal;
   localCalendarProposal?:import("./local-calendar").CalendarProposal;
   localThemeRestoreProposal?:import("./local-theme-restore").RestoreProposal;
@@ -67,6 +70,7 @@ export type ConversationState = {
   localPagesProposal?:import("./local-pages").PagesProposal;
   localSeoProposal?:import("./local-seo").SeoProposal;
   serviceProfileProposal?:import("./local-service-profile").ServiceProfileProposal;
+  localFolders?:import("./local-folders").FolderPresentation;
   localStock?:import("./local-stock").StockPresentation;
   localCalendar?:import("./local-calendar").CalendarPresentation;
   localThemeRestore?:import("./local-theme-restore").RestorePresentation;
@@ -130,6 +134,7 @@ export type ConversationView = {
   localFilesExecution?: {enabled:true};
   localFiles?: import('./local-files').LocalFilesPresentation;
   localBusinessContentExecution?:{enabled:true};
+  localFolders?:import("./local-folders").FolderPresentation;
   localStock?:import("./local-stock").StockPresentation;
   localCalendar?:import("./local-calendar").CalendarPresentation;
   localThemeRestore?:import("./local-theme-restore").RestorePresentation;
@@ -138,6 +143,7 @@ export type ConversationView = {
   localPages?:import("./local-pages").PagesPresentation;
   localSeo?:import("./local-seo").SeoPresentation;
   serviceProfile?:import("./local-service-profile").ServiceProfilePresentation;
+  localFoldersExecution?:{enabled:true};
   localStockExecution?:{enabled:true};
   localCalendarExecution?:{enabled:true};
   localThemeRestoreExecution?:{enabled:true};
