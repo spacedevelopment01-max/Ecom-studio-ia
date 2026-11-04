@@ -1,5 +1,5 @@
 "use client";
-import {nativeLocalEditAllowed} from '@/lib/existing-local-edits';
+import {localEditAllowed} from '@/lib/existing-local-edits';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {hasLocalFolderRenameReceipt} from '@/lib/local-folder-rename-confirmation-client';
 import type {useLocalFolderRenameConfirmation} from './use-local-folder-rename-confirmation';
@@ -11,8 +11,9 @@ import {useT} from '../i18n';
  */
 export function ConversationLocalFolderRename({view,confirmation,busy}:{view:ConversationView;confirmation:ReturnType<typeof useLocalFolderRenameConfirmation>;busy:boolean}){
  const t=useT(),s=view.localFolderRename,{controller,state}=confirmation;
- if(view.recovery||(!s&&!state.error&&!state.uncertain))return null;
- const enabled=view.localFolderRenameExecution?.enabled&&nativeLocalEditAllowed(view)&&!state.blocked;
+ // Anciens projets (A1, #402) : ouvert seulement si le serveur liste l'opération ; sinon même règle que les projets suivis.
+ if(!localEditAllowed(view,'folder-rename')||(!s&&!state.error&&!state.uncertain))return null;
+ const enabled=view.localFolderRenameExecution?.enabled&&localEditAllowed(view,'folder-rename')&&!state.blocked;
  return <section aria-label={t('Renommer un dossier — gratuit','Rename a folder — free')} data-syna-folder-rename-card className="min-w-0 space-y-3 rounded-xl border border-line p-4 text-sm">
   <p className="font-semibold">{t('Gratuit — 0 €','Free — €0')}</p>{s&&<p>{s.message}</p>}
   {s?.diff&&<dl className="space-y-1 break-words"><dt className="text-muted">{t('Nom actuel','Current name')}</dt><dd>{s.diff.before.name}</dd><dt className="text-muted">{t('Après confirmation','After confirmation')}</dt><dd><strong>{s.diff.after.name}</strong></dd></dl>}

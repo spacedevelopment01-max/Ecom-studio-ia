@@ -1,5 +1,5 @@
 "use client";
-import {nativeLocalEditAllowed} from '@/lib/existing-local-edits';
+import {localEditAllowed} from '@/lib/existing-local-edits';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {hasLocalFolderMoveReceipt} from '@/lib/local-folder-move-confirmation-client';
 import type {useLocalFolderMoveConfirmation} from './use-local-folder-move-confirmation';
@@ -11,8 +11,9 @@ import {useT} from '../i18n';
  */
 export function ConversationLocalFolderMove({view,confirmation,busy}:{view:ConversationView;confirmation:ReturnType<typeof useLocalFolderMoveConfirmation>;busy:boolean}){
  const t=useT(),s=view.localFolderMove,{controller,state}=confirmation;
- if(view.recovery||(!s&&!state.error&&!state.uncertain))return null;
- const enabled=view.localFolderMoveExecution?.enabled&&nativeLocalEditAllowed(view)&&!state.blocked;
+ // Anciens projets (A1, #402) : ouvert seulement si le serveur liste l'opération ; sinon même règle que les projets suivis.
+ if(!localEditAllowed(view,'folder-move')||(!s&&!state.error&&!state.uncertain))return null;
+ const enabled=view.localFolderMoveExecution?.enabled&&localEditAllowed(view,'folder-move')&&!state.blocked;
  const where=(parent:{id:string;name:string}|undefined,parentId:string|null)=>parentId===null?t('Racine (aucun dossier)','Root (no folder)'):parent?.name??t('dossier choisi','chosen folder');
  return <section aria-label={t('Déplacer un dossier — gratuit','Move a folder — free')} data-syna-folder-move-card className="min-w-0 space-y-3 rounded-xl border border-line p-4 text-sm">
   <p className="font-semibold">{t('Gratuit — 0 €','Free — €0')}</p>{s&&<p>{s.message}</p>}
