@@ -4,7 +4,7 @@
 
 ## Blocage constaté
 
-L’environnement `ccarenv_b64_Y2NhcmVudl84MDM3MmEyMmNlM2M4MTkxYmY1ZWE1YmZiOGFkZDU0OA` est devenu indisponible. Dernier échec : `exec-server transport disconnected; failed to resume exec-server session; unknown session id`. Le connecteur cloud indique `connectivity: offline`, aucune capacité disponible, même si sa phase observée reste `running` ; aucune cause racine n’est démontrée et aucun outil de redémarrage n’est disponible. Ce n’est pas un refus d’approbation. Docker GitHub est vert sur plusieurs lots ; ne pas attribuer cette panne à Docker sans preuve.
+L’environnement `ccarenv_b64_Y2NhcmVudl84MDM3MmEyMmNlM2M4MTkxYmY1ZWE1YmZiOGFkZDU0OA` est devenu indisponible. Dernier échec : `exec-server transport disconnected; failed to resume exec-server session; unknown session id`. Le premier relevé cloud indiquait `connectivity: offline`. Au relevé suivant, la connectivité est revenue à `connected`, mais aucune capacité d’exécution n’était disponible et le terminal a répondu `No usable execution environment is available`. La phase observée reste `running` ; aucune cause racine n’est démontrée et aucun outil de redémarrage n’est disponible. Ce n’est pas un refus d’approbation. Docker GitHub est vert sur plusieurs lots ; ne pas attribuer cette panne à Docker sans preuve.
 
 GitHub est resté accessible : les correctifs exécutés ont été publiés et la convergence reconstruite à partir des snapshots immuables a été soumise à sa CI. Les nouvelles recettes de convergence ne sont pas déclarées exécutées localement après la panne.
 
@@ -15,12 +15,12 @@ Base commune #363 : `f25a729036cc03975d6ac7b95eef945a5214177a`. Toutes les PR re
 | PR | Tête publiée | Preuves acquises | CI à suivre |
 |---|---|---|---|
 | #364 — confirmation/proposition/projet, cinq transports | `958a4ddea960f48751b8bd5a567c39f96c7fb674` | 35 nouveaux cas (29 rouges avant),81 existants, types ; Docker et confirmation compilée verts au relevé | 41741979583 |
-| #365 — contraste moteur natif | `4df1e1ec9c0f90d5882ae580a100a3443c2bb0f1` | 6 nouveaux dont phrase/SQLite,18 couleurs,36 Site/B1 ; types/suite complète,Docker,confirmation CI verts ; natif en cours au relevé | 41742511723 |
+| #365 — contraste moteur natif | `4df1e1ec9c0f90d5882ae580a100a3443c2bb0f1` | 6 nouveaux dont phrase/SQLite,18 couleurs,36 Site/B1 ; CI complète SUCCESS : quatre contrôles + verdict global ;5444 tests passent,31 skips existants,591 fichiers passent/1 skip | 41742511723 |
 | #366 — horaires naturels | `413170ac084e92b94bb5b9ed277fcc518a4d0656` | 9 nouveaux +8 sécurité ; types/suite complète,Docker,confirmation CI verts ; natif en cours au relevé | 41742901271 |
 | #367 — SEO exact gratuit | `7418d2228ca51a00e82e94c86d9f073962a45af0` | 14 natifs/HTML ;42 confirmations,13 Site,16 catalogue, types ; flag lu tardivement dans #370 | 41743805258 |
 | #368 — masquer/supprimer, libellés de bouton | `8e836499742aa452fd4dd00944f93c0b4e15058f` | 15 nouveaux +49 régressions ; build/types ; parcours compilé4/4 local ET contrôle obligatoire CI,0 IA/JS/externe ; huit accords après17s | 41745217253 |
 | #370 — Pages natives | `e1ba25425e6fff3fc13280d7ab71e21d2154b8c7` | 20 métier,49 confirmations dont7 Pages,16 catalogue ;14 SEO au raccordement ; types ; aucune carte Pages qualifiée | 41747837472 |
-| #371 — convergence Claude + Codex | `827795d014c3ebc2f251e7209ad85b88d4332c66` | 113 tests combinés sur fusion locale AVANT panne ; nouveau harnais production ensuite soumis à CI, pas validé localement | chercher le run de cette tête exacte |
+| #371 — convergence Claude + Codex | `827795d014c3ebc2f251e7209ad85b88d4332c66` | 113 tests combinés sur fusion locale AVANT panne ; nouveau harnais production ensuite soumis à CI, pas validé localement | 41748993830 en cours |
 
 Les suites se recouvrent : ne pas additionner les réexécutions. Un contrôle individuel vert n’est pas le verdict global.
 
@@ -66,3 +66,7 @@ Dernière tentative : étendre les cas de changement de projet au transport Site
 Même matrice cumulative CSV/MD, désormais162 unités :85 précédentes +77 vérifications décomposées depuis OMISSIONS-MATRICE de Claude. Ces77 sont des omissions de couverture signalées par lecture, pas77 bogues reproduits ni une autorisation de refaire l’acquis #348. Certaines détaillent une ligne parente. Chaque ligne porte manque/responsable/dépendance/critère/preuve ; aucune complète.
 
 Priorités : cartes/recettes SEO et Pages avec Claude ; risque Site pendant changement de projet à reproduire ; contraste cumulé à mesurer ; images et choix de thème ; prestations/réservation structurées ; stock/variantes ; calendrier/brouillons ; pièces jointes/bibliothèque ; puis omissions natives. Conserver les droits inclus/acquis et retouches gratuites, les devis existants avant toute dépense. Les accès réels interdits restent ouverts ; développer et tester les parcours simulés de connexion/consentement, puis poursuivre les modules indépendants. Ne pas conclure au succès de la mission parce que les lots ou la CI passent.
+
+## Dernier relevé CI
+
+#365 run41742511723 : SUCCESS global sur4df1e1e,5444 tests passent/31 skips existants (aucun skip ajouté par ces lots). #371 run41748993830 : en cours sur827795d…. #364/#366/#367/#368/#370 restent en cours au relevé ; ne pas les annoncer entièrement validées. Les nouveaux modes production/harness de #371 restent à qualifier par cette CI, l’exécution locale étant indisponible.

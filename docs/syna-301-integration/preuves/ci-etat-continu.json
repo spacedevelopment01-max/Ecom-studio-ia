@@ -1,0 +1,131 @@
+{
+  "schema": "syna301-ci-snapshot-1",
+  "scope": "instantané, pas une promesse de résultat futur",
+  "sourceCandidate": "827795d014c3ebc2f251e7209ad85b88d4332c66",
+  "workflows": [
+    {
+      "pr": 364,
+      "sha": "958a4ddea960f48751b8bd5a567c39f96c7fb674",
+      "runs": [
+        {
+          "id": 41741979583,
+          "name": "CI",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_number": 1029,
+          "jobs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41741979583/jobs",
+          "logs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41741979583/logs",
+          "workflow_id": 373581696
+        }
+      ]
+    },
+    {
+      "pr": 365,
+      "sha": "4df1e1ec9c0f90d5882ae580a100a3443c2bb0f1",
+      "runs": [
+        {
+          "id": 41742511723,
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 1030,
+          "jobs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41742511723/jobs",
+          "logs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41742511723/logs",
+          "workflow_id": 373581696
+        }
+      ]
+    },
+    {
+      "pr": 366,
+      "sha": "413170ac084e92b94bb5b9ed277fcc518a4d0656",
+      "runs": [
+        {
+          "id": 41742901271,
+          "name": "CI",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_number": 1031,
+          "jobs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41742901271/jobs",
+          "logs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41742901271/logs",
+          "workflow_id": 373581696
+        }
+      ]
+    },
+    {
+      "pr": 367,
+      "sha": "7418d2228ca51a00e82e94c86d9f073962a45af0",
+      "runs": [
+        {
+          "id": 41743805258,
+          "name": "CI",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_number": 1032,
+          "jobs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41743805258/jobs",
+          "logs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41743805258/logs",
+          "workflow_id": 373581696
+        }
+      ]
+    },
+    {
+      "pr": 368,
+      "sha": "8e836499742aa452fd4dd00944f93c0b4e15058f",
+      "runs": [
+        {
+          "id": 41745217253,
+          "name": "CI",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_number": 1034,
+          "jobs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41745217253/jobs",
+          "logs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41745217253/logs",
+          "workflow_id": 373581696
+        }
+      ]
+    },
+    {
+      "pr": 370,
+      "sha": "e1ba25425e6fff3fc13280d7ab71e21d2154b8c7",
+      "runs": [
+        {
+          "id": 41747837472,
+          "name": "CI",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_number": 1036,
+          "jobs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41747837472/jobs",
+          "logs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41747837472/logs",
+          "workflow_id": 373581696
+        }
+      ]
+    },
+    {
+      "pr": 371,
+      "sha": "827795d014c3ebc2f251e7209ad85b88d4332c66",
+      "runs": [
+        {
+          "id": 41748993830,
+          "name": "CI",
+          "status": "in_progress",
+          "conclusion": null,
+          "run_number": 1037,
+          "jobs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41748993830/jobs",
+          "logs_url": "https://api.github.com/repos/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41748993830/logs",
+          "workflow_id": 373581696
+        }
+      ]
+    }
+  ],
+  "passed365": [
+    "2026-11-04T00:23:02.5158323Z  Test Files  591 passed | 1 skipped (592)",
+    "2026-11-04T00:23:02.5213580Z       Tests  5444 passed | 31 skipped (5475)",
+    "2026-11-04T00:23:02.5214331Z    Start at  23:54:40",
+    "2026-11-04T00:23:02.5226715Z    Duration  1702.49s (tests 80%, import 19%, transform 1%)"
+  ],
+  "executionEnvironment": {
+    "terminal": "No usable execution environment is available",
+    "connectivityLastObserved": "connected",
+    "capabilities": [],
+    "cause": "non démontrée"
+  }
+}

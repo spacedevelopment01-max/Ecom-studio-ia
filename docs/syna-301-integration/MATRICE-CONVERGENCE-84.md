@@ -4,7 +4,7 @@ Source de travail : branche codex/parity301-continuous-matrix-v2, descendant de 
 
 **Aucune ligne complète.** 85 lignes précédentes + 77 actions décomposées depuis l’inventaire de Claude #369. Les ajouts sont des vérifications à effectuer, pas 77 défauts reproduits ; certains détaillent une ligne parente. Lecture source uniquement : vérifier les acquis #348 et les adaptateurs avant de développer. Aucun fournisseur réel, action client, connexion réelle ou publication certifiés. Un blocage du réel ne dispense pas de raccorder le parcours simulé de consentement.
 
-Les CI sont suivies sur leurs commits ; aucun verdict global vert ne se déduit des seuls tests ciblés. État du runtime, limites et reprise exacte : POINT-REPRISE-CONTINU.md.
+La CI complète de #365 est verte (run41742511723, source4df1e1e). Les autres CI sont suivies sur leurs commits ; aucun verdict global vert ne se déduit des seuls tests ciblés. État du runtime, limites et reprise exacte : POINT-REPRISE-CONTINU.md.
 
 | Statut | Nombre |
 |---|---:|
