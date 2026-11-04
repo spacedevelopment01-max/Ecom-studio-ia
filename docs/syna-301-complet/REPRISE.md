@@ -22,10 +22,12 @@ ligne, activation, action externe réelle ni dépense fournisseur.
 
 | 3 — Pages et sections | créer avec modèle, renommer, refus honnête du menu pour un brouillon (sans liste de modèles hors sujet), retirer une page publiée du menu, dupliquer, supprimer une page ; supprimer une section | recette `scripts/syna301-pages-sections-recette.ts` 4/4 : titre et menu relus dans la version, page supprimée absente, seule la section visée supprimée, carte sans alerte trompeuse |
 
+| 3 — Texte de bouton | bouton désigné dans l'aperçu (ordinateur) ou par repère repris (téléphone) ; libellé « Élément désigné : Bouton · … » au lieu de « Page désignée : undefined » | recette `scripts/syna301-bouton-recette.ts` 4/4 : libellé relu en base et dans le bouton rendu, lien et autres sections inchangés |
+
 ## Reste à vérifier ou à faire (ordre proposé)
 
-1. Recette navigateur du texte de bouton (#368) sur une section qui a un bouton. Manque signalé à Codex : aucune
-   phrase ne publie une page brouillon (le menu la refuse donc, à raison).
+1. Manque signalé à Codex : aucune phrase ne publie une page brouillon (le menu la refuse donc, à raison) ; champ
+   explicite « choix du modèle » souhaité dans la présentation Pages (la carte s'appuie aujourd'hui sur le message).
 2. Lot 3 restant (phrases naturelles) : choix du thème, prestations / réservation, stock / variantes, calendrier /
    brouillons, pièces jointes / bibliothèque, boutons / images.
 3. Omissions de la matrice (`OMISSIONS-MATRICE.md`) à faire entrer dans la matrice commune de Codex (85 lignes).
