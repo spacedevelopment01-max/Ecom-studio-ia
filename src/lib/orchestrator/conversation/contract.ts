@@ -17,9 +17,11 @@ const base = z.object({
 export const CommandSchema = z.discriminatedUnion("action", [
   base.extend({action:z.literal("confirm-stock"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal("confirm-calendar"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("confirm-motion"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal("confirm-theme-choice"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal("cancel-stock"),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal("cancel-calendar"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("cancel-motion"),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal("cancel-theme-choice"),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal("confirm-pages"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal("cancel-pages"),proposalId:z.string().min(1).max(120)}).strict(),
@@ -57,12 +59,14 @@ export type ConversationState = {
   localPagesClarification?:{title:string;versionId:string;expiresAt:number;tab:string|null};
   localStockProposal?:import("./local-stock").StockProposal;
   localCalendarProposal?:import("./local-calendar").CalendarProposal;
+  localSiteMotionProposal?:import("./local-site-motion").MotionProposal;
   localThemeChoiceProposal?:import("./local-theme-choice").ThemeChoiceProposal;
   localPagesProposal?:import("./local-pages").PagesProposal;
   localSeoProposal?:import("./local-seo").SeoProposal;
   serviceProfileProposal?:import("./local-service-profile").ServiceProfileProposal;
   localStock?:import("./local-stock").StockPresentation;
   localCalendar?:import("./local-calendar").CalendarPresentation;
+  localSiteMotion?:import("./local-site-motion").MotionPresentation;
   localThemeChoice?:import("./local-theme-choice").ThemeChoicePresentation;
   localPages?:import("./local-pages").PagesPresentation;
   localSeo?:import("./local-seo").SeoPresentation;
@@ -124,12 +128,14 @@ export type ConversationView = {
   localBusinessContentExecution?:{enabled:true};
   localStock?:import("./local-stock").StockPresentation;
   localCalendar?:import("./local-calendar").CalendarPresentation;
+  localSiteMotion?:import("./local-site-motion").MotionPresentation;
   localThemeChoice?:import("./local-theme-choice").ThemeChoicePresentation;
   localPages?:import("./local-pages").PagesPresentation;
   localSeo?:import("./local-seo").SeoPresentation;
   serviceProfile?:import("./local-service-profile").ServiceProfilePresentation;
   localStockExecution?:{enabled:true};
   localCalendarExecution?:{enabled:true};
+  localSiteMotionExecution?:{enabled:true};
   localThemeChoiceExecution?:{enabled:true};
   localPagesExecution?:{enabled:true};
   localSeoExecution?:{enabled:true};
