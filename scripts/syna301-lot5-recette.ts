@@ -132,6 +132,12 @@ try {
       });
       await step("Composeur : « Importer une photo » → miniature « importée, non analysée » → jointe au message suivant puis retirée", async () => {
         await openSyna(); await panel.getByRole("button", { name: "Lien / photo", exact: true }).click();
+        if (PREPARED) {
+          // Constat (contrat #378 / a593e6ea) : l'import photo reste sous la garde de la fiche ; sur un projet préparé il
+          // n'est pas projeté. On vérifie qu'aucun bouton trompeur n'est affiché, sans contourner la garde.
+          await page.waitForTimeout(1500); check(!(await panel.getByLabel("Choisir une photo à importer", { exact: true }).count()), "import photo affiché sur un projet préparé");
+          constats.push(`${label} : import photo non disponible sur projet préparé (garde serveur photoImport = fiche modifiable)`); return "NON DISPONIBLE (projet préparé, constat)";
+        }
         await panel.getByLabel("Choisir une photo à importer", { exact: true }).setInputFiles(photoFile);
         const chips = panel.getByRole("list", { name: "Photos jointes au prochain message", exact: true }); await chips.waitFor();
         check(/importée, non analysée/.test(await chips.innerText()), "mention non analysée");
@@ -163,7 +169,7 @@ try {
 } catch (e) { errors.push(String(e)); console.error("✗ " + String(e)); }
 finally {
   stop();
-  fs.writeFileSync(path.join(out, "RESUME-LOT5-301.json"), JSON.stringify({ schema: "syna301-lot5-recette-1", results, errors, constats, forbidden: [...new Set(forbidden)], coutIA: 0 }, null, 2) + "\n");
+  fs.writeFileSync(path.join(out, "RESUME-LOT5-301.json"), JSON.stringify({ schema: "syna301-lot5-recette-1", results, errors, constats, constats, forbidden: [...new Set(forbidden)], coutIA: 0 }, null, 2) + "\n");
   fs.writeFileSync(path.join(out, "serveur-local.log"), log.slice(-200000));
   fs.rmSync(dir, { recursive: true, force: true });
   const ok = results.filter((r) => r.ok).length; console.log(`${ok}/${results.length} parcours réussis`); if (constats.length) console.log("Constats :\n" + constats.join("\n"));
