@@ -15,7 +15,7 @@ import { z } from "zod";
 import { HttpError } from "../auth";
 import { all } from "../db";
 import { L } from "../i18n-server";
-import { currentTheme, loadProject, saveServices, saveThemeVersion } from "../projects";
+import { currentTheme, loadProject, previewThemeVersionSpec, saveServices, saveThemeVersion } from "../projects";
 import { rdvSection, type RdvKind } from "../rendez-vous";
 import type { SectionInstance, ThemeSpec } from "../theme/spec";
 
@@ -142,7 +142,7 @@ function syncShown(spec: ThemeSpec, kind: RdvKind, byId: Map<string, { name: str
  * Construit l’aperçu depuis la source native actuelle, sans enregistrer de version, de profil ou de réservation.
  * Les appelants doivent contrôler les droits ; sourceVersionId sert à revalider leur accord avant enregistrement.
  */
-export function previewPrestations(projectId: string, raw: unknown) {
+function buildPrestations(projectId: string, raw: unknown) {
   const input = prestationsInput.parse(raw);
   const cur = currentTheme(projectId);
   if (!cur) throw new HttpError(409, L("Créez d'abord le site dans l'onglet Site.", "Create the site in the Site tab first."));
@@ -232,9 +232,15 @@ export function previewPrestations(projectId: string, raw: unknown) {
   return { sourceVersionId: cur.version.id, spec, warnings, address: input.address };
 }
 
+/** Aperçu de la source qui sera effectivement enregistrée, vocabulaire et sécurité inclus. */
+export function previewPrestations(projectId: string, raw: unknown) {
+  const built = buildPrestations(projectId, raw);
+  return { ...built, spec: previewThemeVersionSpec(projectId, built.spec) };
+}
+
 /** Même moteur que l’aperçu ; seuls l’enregistrement et la synchronisation du profil écrivent. */
 export function savePrestations(projectId: string, raw: unknown) {
-  const { spec, warnings, address } = previewPrestations(projectId, raw);
+  const { spec, warnings, address } = buildPrestations(projectId, raw);
   const v = saveThemeVersion(projectId, spec, L("Prestations et horaires", "Services and hours"), "user");
   // Adresse unique (#239, phase 4) : celle des réservations est aussi celle du profil d'activité.
   if (address !== undefined) {

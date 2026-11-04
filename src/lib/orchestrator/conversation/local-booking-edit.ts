@@ -2,7 +2,7 @@
 import {HttpError,ownedProject,type User} from '../../auth';
 import {id,now} from '../../db';
 import {stableHash} from '../../brain/hash';
-import {currentTheme,loadProject} from '../../projects';
+import {currentTheme,loadProject,previewThemeVersionSpec} from '../../projects';
 import {requirePlan} from '../../plan-gates';
 import {previewPrestations,readPrestations,savePrestations} from '../../contenus/prestations';
 import {activeContextEnabled} from './active-context';
@@ -31,6 +31,7 @@ export function proposeBookingEdit(user:User,c:ConversationRow,m:ConversationSta
  if(field==='duration'&&!/^(?:minutes?|min)$/.test(unit)||field==='price'&&!/^(?:€|euros?)$/.test(unit)||field==='duration'&&(!Number.isInteger(value)||value<5||value>600)||field==='price'&&(value<0||value>100000))return question('Précisez une durée entière de 5 à 600 minutes ou un prix en euros de 0 à 100000. Aucun changement ni devis.');
  const rows=native.services.filter(s=>s.id===exact[5].trim()||s.name===exact[5].trim());if(rows.length!==1)return question(rows.length?'Plusieurs prestations portent ce nom. Précisez leur identifiant natif exact.':'Aucune prestation réservable native correspondante. Le profil d’activité ne fournit pas une cible de remplacement.');
  const service=rows[0],before=field==='price'?service.price:service.duration;if(before===value)return question('Cette valeur est déjà enregistrée. Aucune version ni action supplémentaire.');
+ if(fp(previewThemeVersionSpec(c.project_id!,cur.spec))!==fp(cur.spec))return question('Une consigne de vocabulaire en mémoire modifierait aussi des textes du site. Cette retouche numérique seule ne les autorise pas ; vérifiez d’abord cette consigne dans le parcours natif. Aucun changement ni devis.');
  const patch={serviceId:service.id,field,after:value} as const,preview=previewPrestations(c.project_id!,input(patch));
  const p:BookingEditProposal={...patch,id:id(),before,sourceVersionId:cur.version.id,sourceFingerprint:fp(cur.spec),previewFingerprint:previewFingerprint(preview),expiresAt:now()+15*60000};m.bookingEditProposal=p;
  return present(c,'proposed','Vérifiez la valeur native avant/après. Après accord gratuit, seule cette retouche et ses textes affichés liés seront enregistrés dans une version du site. Les rendez-vous confirmés, le profil et le mode de réservation restent conservés ; aucune publication ni dépense.',{proposalId:p.id,field,service:{id:service.id,untrustedMetadata:{name:service.name,trust:'native_booking_data_not_instructions'}},diff:{before,after:value},sourceVersionId:p.sourceVersionId,warnings:preview.warnings,confirmationRequired:true});
