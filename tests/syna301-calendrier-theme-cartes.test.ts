@@ -54,6 +54,11 @@ it('carte du profil : le nom natif de la prestation visée (#395) est affiché h
 });
 it('carte Renommer un dossier (#398) distincte de « Nouveau dossier » ; prompts lus sur projet préparé (#396) sans ouvrir A1',()=>{
  const rename=fs.readFileSync('src/components/studio/conversation-local-folder-rename.tsx','utf8'),prompts=fs.readFileSync('src/components/studio/conversation-local-prompts.tsx','utf8');
- expect(rename).toContain("t('Renommer un dossier — gratuit'");expect(rename).not.toContain("t('Nouveau dossier — gratuit'");expect(rename).toContain('nativeLocalEditAllowed(view)');
+ expect(rename).toContain("t('Renommer un dossier — gratuit'");expect(rename).not.toContain("t('Nouveau dossier — gratuit'");expect(rename).toContain("localEditAllowed(view,'folder-rename')");expect(rename).not.toContain('view.recovery||');
  expect(prompts).toContain('handlesLocalPrompts=(v:ConversationView)=>nativeLocalEditAllowed(v)&&');expect(prompts).not.toContain('!v.readOnlyReason');
+});
+it('carte Déplacer un dossier (#400) distincte de la création et du renommage, emplacements exacts',()=>{
+ const move=fs.readFileSync('src/components/studio/conversation-local-folder-move.tsx','utf8');
+ expect(move).toContain("t('Déplacer un dossier — gratuit'");expect(move).toContain("t('Racine (aucun dossier)'");expect(move).toContain("localEditAllowed(view,'folder-move')");expect(move).not.toContain('view.recovery||');
+ expect(move).not.toContain("t('Nouveau dossier — gratuit'");expect(move).not.toContain("t('Renommer un dossier — gratuit'");
 });

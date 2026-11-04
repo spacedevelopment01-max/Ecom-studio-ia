@@ -1,8 +1,9 @@
 /**
- * Recette #301 « SYNA complète », lot 7 — renommage de dossier (#398), phrases Fichiers naturelles (#397) et lecture des prompts (#396) de Codex dans la conversation SYNA du
+ * Recette #301 « SYNA complète », lot 7 — renommage et déplacement de dossier (#398, #400), phrases Fichiers naturelles (#397) et lecture des prompts (#396) de Codex dans la conversation SYNA du
  * Studio, Encre / Plein cadre × 1440 / 390 px, projet de services. Phrases d'origine des contrats, rien d'aménagé :
  *  1. Fichiers : « Renomme le dossier Photos en Photos clients » → carte « Renommer un dossier » → accord → nom relu,
  *     même identifiant, même parent ;
+ *  1 bis. « Déplace le dossier Photos clients dans le dossier Archives » → carte « Déplacer un dossier » → accord → parent relu ;
  *  2. Fichiers : fichier coché → « Peux-tu renommer ce fichier en « photo accueil.png » ? » (phrase polie) → accord → nom relu,
  *     octets inchangés ;
  *  3. « Affiche ma bibliothèque de prompts » → lecture seule gratuite, aucun bouton d'action.
@@ -110,6 +111,15 @@ try {
         check(folderRow().name === "Photos", "écriture avant l'accord"); await noQuote(); await shot("1-dossier");
         await confirm(card, /Enregistré et relu · reçu/);
         const r = folderRow(); check(r.name === "Photos clients" && r.id === folder.id && r.parent_id === null, `relu : ${JSON.stringify(r)}`); await noOverflow();
+      });
+      await step("« Déplace le dossier Photos clients dans le dossier Archives » → accord → parent relu, nom conservé", async () => {
+        const archives = createFolder(k.pid, "Archives", null);
+        const card = panel.getByRole("region", { name: "Déplacer un dossier — gratuit", exact: true });
+        await say("Déplace le dossier Photos clients dans le dossier Archives"); await card.getByRole("button", { name: "Confirmer gratuitement", exact: true }).waitFor();
+        const txt = await card.innerText(); check(/Photos clients/.test(txt) && /Racine/.test(txt) && /Archives/.test(txt), `carte : ${txt}`);
+        check(folderRow().parent_id === null, "écriture avant l'accord"); await noQuote(); await shot("1b-deplacement");
+        await confirm(card, /Enregistré et relu · reçu/);
+        const r = folderRow(); check(r.parent_id === archives.id && r.name === "Photos clients" && r.id === folder.id, `relu : ${JSON.stringify(r)}`); await noOverflow();
       });
       await step("Fichiers : fichier coché → « Peux-tu renommer ce fichier en « photo accueil.png » ? » → accord → nom relu, octets inchangés", async () => {
         const card = panel.getByRole("region", { name: "Rangement gratuit du fichier", exact: true });
