@@ -1,4 +1,4 @@
-import {nativeLocalEditAllowed} from './existing-local-edits';
+import {localEditAllowed} from './existing-local-edits';
 import type {ConversationView} from './orchestrator/conversation/contract';
 /** Native folder move transport: explicit free agreement, same-request retry, server receipt re-read. */
 type Pending={action:'confirm-folder-move';proposalId:string;confirmation:true;revision:number;projectRevision:number|null;requestId:string};
@@ -28,7 +28,7 @@ export function createLocalFolderMoveConfirmation(options:{conversationId:string
   if(!alive||!inScope()||v.id!==options.conversationId||v.projectId!==scopeProject)return;options.onView(v);if(!alive||!inScope())return;
   if(hasLocalFolderMoveReceipt(v)&&v.localFolderMove!.receiptId!==applied){const s=v.localFolderMove!;applied=s.receiptId;await options.onApplied({projectId:v.projectId!,folderId:s.result!.id,name:s.result!.name,parentId:s.result!.parentId,receiptId:s.receiptId!});}
  }
- async function refresh(){const v=await request(route) as ConversationView;if(inScope())reconcile(v);await accept(v);emit({blocked:!nativeLocalEditAllowed(v)||!v.localFolderMoveExecution?.enabled});return v;}
+ async function refresh(){const v=await request(route) as ConversationView;if(inScope())reconcile(v);await accept(v);emit({blocked:!localEditAllowed(v,'folder-move')||!v.localFolderMoveExecution?.enabled});return v;}
  async function locked(action:()=>Promise<void>){
   if(busy||!alive||!inScope())return;reconcile(options.view());busy=true;emit({busy:true,error:''});
   try{await action();}
@@ -43,7 +43,7 @@ export function createLocalFolderMoveConfirmation(options:{conversationId:string
   dispose(){alive=false;},
   refresh:()=>locked(async()=>{const v=await refresh();if(pending&&hasLocalFolderMoveReceipt(v)&&v.localFolderMove!.receiptId===pending.requestId){clear();emit({uncertain:false,error:''});}}),
   confirm:()=>locked(async()=>{
-   const v=options.view(),s=v.localFolderMove;if(!nativeLocalEditAllowed(v)||!v.localFolderMoveExecution?.enabled)throw Object.assign(new Error('Modification gratuite indisponible.'),{status:403});
+   const v=options.view(),s=v.localFolderMove;if(!localEditAllowed(v,'folder-move')||!v.localFolderMoveExecution?.enabled)throw Object.assign(new Error('Modification gratuite indisponible.'),{status:403});
    if(!pending){if(s?.state!=='proposed'||!s.proposalId||!s.diff)throw Object.assign(new Error('Demandez une nouvelle proposition gratuite.'),{status:409});pending={action:'confirm-folder-move',proposalId:s.proposalId,confirmation:true,revision:v.revision,projectRevision:v.projectRevision,requestId:uuid()};try{options.storage?.setItem(key,JSON.stringify(pending));}catch{}}
    const command=pending;const response=await request(route,command) as ConversationView;
    if(!hasLocalFolderMoveReceipt(response)||response.localFolderMove!.receiptId!==command.requestId||response.localFolderMove!.proposalId!==command.proposalId)throw new Error('Enregistrement du dossier non confirmé.');
