@@ -1,3 +1,41 @@
+# Reprise active : preuves V10 obtenues, correctif CI #411, audit Images
+
+La mission #301 reste ouverte. Aucune dépense fournisseur réelle, donnée client, activation, publication, fusion main ou mise en production. Continuer les lacunes indépendantes pendant les CI ; ne pas refaire #348.
+
+## Code et CI prioritaires
+
+**Dernier code livré : #411, c094116af043cb729d5eeb45235199dfbc58e1de**, branche codex/parity301-prompts-read-permission-ci. Parent #410, 1c6ece6b1d81ca56f2103f5114575671c9a1ebb6. Répare uniquement une attente de test incohérente avec le droit préparé de lecture des prompts. Reproduction locale : deux succès/un échec. Après correction : 56 tests sur quatre fichiers et types verts, dont deux GET réels supplémentaires (Préparation verrouillée autorisée, forfait retiré sans lecteur/carte). Aucun composant, moteur, droit ou workflow modifié. Contrat LOT-CI-PROMPTS-PERMISSION.md, transmis à Claude dans #369/6634357679.
+
+CI à suivre sur ce SHA : **run41855880282**. Ne pas considérer la CI terminée. #406 a un échec observé dans sa suite complète, job126639332100 : 5972 succès, un échec, 31 exclusions existantes. L’ancienne assertion readOnlyReason modifiait le message mais conservait le droit serveur actif. Ce rouge reste historique et ne doit pas être masqué ; les descendants antérieurs au correctif peuvent l’hériter. Le quatrième contrôle obligatoire de confirmation gratuite reste intact.
+
+#394 à #402 : SUCCESS complet sur leurs SHA. Suites #403/#404/#405 : respectivement5949/5958/5971 tests réussis et31exclusions préexistantes,633/634/635 fichiers réussis etunexclu ; Docker/confirmation verts, grandes recettes encore à observer. Runs41846181130/41846832989/41848102025. Autres runs : #40641848828779, #40741849991916, #40841851915469, #40941853173903 et #410 à lire par son SHA. Aucun verdict global anticipé.
+
+## Trois preuves indépendantes de production obtenues
+
+Toutes sur **#410/1c6ece6b**, composants EXACTS de Claude bdba24fe, build **7xwc-ACTdmEkd_leBCxvX**, APIversion production/compiled-build/clean. Le correctif de test #411 ne change pas le produit, mais ces preuves gardent leur SHA réel.
+
+- **A1 :8/8**, produits et services × Encre/Plein × ordinateur/téléphone tactile. 64 étapes,24 accords réels≥17s (minimum17000,10ms). Avis de lecture seule conservé ; hors exception, aucune action/devis. Fichier désigné et renommé, dossier renommé puis déplacé avec annulation et nouvel accord, reçus/rechargements. ProjectRevision:null, stateOf:null, actionsEnabled/aiEnabled:false. Métier, thème complet, shop.chat, autres actifs et octets exacts. BaselineIA0→0, aucune dépense/externe/JS. Rapport PREUVE-DOSSIERS-A1-PRODUITS-SERVICES-V10.json ; harnais scripts/parity301-existing-folders-proof.ts ; base fictive /tmp/ecs-a1-301-3qkcYL.
+- **Dossiers préparés :4/4**, services × quatre formats. 16 étapes,12 accords≥17s. Renommage puis déplacement dans Archives, annulation/reprise et retour à la racine avec un accord distinct, reçu/rechargement. Préparation, thème, actifs et octets conservés. Quatre recherches SIMULÉES entièrement inchangées, zéro nouvelle tentativeIA/externe/JS/job. Rapport PREUVE-DEPLACEMENT-DOSSIERS-PREPARE-V10.json ; harnais scripts/parity301-prepared-folder-move-proof.ts ; base /tmp/ecs-lot7-301-SeovW9.
+- **Stock interrogatif :4/4**, produits préparés × quatre formats. 20 étapes,quatre accords≥17s. Variante désignée dans le Catalogue natif, « Peux-tu mettre le stock de cette variante à12 ? », annulation, reçu/reload ; prix/SKU/politique/variante sœur exacts. Quatre recherches SIMULÉES entièrement inchangées, zéro nouvelle tentativeIA/JS/job. Quatre requêtes CSS GoogleFonts bloquées et consignées ; ne pas annoncer zéro tentative externe pour cette recette. Rapport PREUVE-STOCK-NATUREL-PREPARE-V10.json ; harnais scripts/parity301-prepared-stock-natural-proof.ts ; base /tmp/ecs-stock301-zKEURk.
+
+Total V10 :16 parcours,100 étapes,40 accords différés. Captures LOCALES uniquement dans les trois dossiers /tmp/parity301-existing-folders-v10, /tmp/parity301-prepared-folder-move-v10 et /tmp/parity301-prepared-stock-natural-v10. Aucun rapport ou ancienne preuve réattribué à une autre source.
+
+## Environnement et incident résolu
+
+Source /workspace/work/parity301-ci-guards : branche documentaire codex/parity301-continuous-proofs-v10, code#411. Root de compilation /workspace/work/parity301-intents-v5 : propre sur1c6ece6b, branche codex/parity301-compiled-v10, build ci-dessus, recettes terminées et serveurs/navigateurs arrêtés.
+
+Le premier checkout/build V10 a manqué d’espace (Next arrêté avant compilation). Trois packs Git temporaires récents, sans processus/descripteur actif, ont été supprimés :tmp_pack_q5ebE4 (1716071340 octets),tmp_pack_lVFOyX (881197056),tmp_pack_D6CcSP (402391040). Aucun pack valide ou source supprimé. Les29fichiers du checkout partiel correspondaient tous au commit publié ; index rétabli sans écart, puis buildV2 réussi. Notre cache webpack inactif de806MiB a ensuite été retiré ; runtime compilé conservé. Logs /tmp/parity301-convergence-v10-build.log et build-v2.log. Ne pas toucher aux autres checkouts ou projets clients. Précharger le garde réseau pour toutNode/test/build.
+
+## Suite exacte
+
+1. Terminer et publier cette branche de preuves (trois harnais/rapports, matrice et ce point) sans déplacer les têtes CI. Les types des harnais archivés passent.
+2. Corriger un écart de portée démontrable par source : la Banque Images native emploie BANK_IMAGE_ROLES, alors que #409 filtre seulement kind=image. Reproduire avec une image de banque et des visuels publicité/logo/nonclassés. Imposer les rôles natifs depuis Images sans restreindre la restauration générale de Fichiers ; conserver le contexte du lien natif. Ne pas modifier les composants de Claude. Puis qualifier le vrai parcours Images sur un build propre du correctif, sans régénération.
+3. Suivre la CI complète du correctif #411 et les autres suites sans relancer les contrôles verts. Reconsulter Claude pour les cartes #403 (prompts A1), #405 (photos du fil sur préparé) et #408 (lecture des services réservables). Tous les contrats/commits sont transmis ; sa branche n’a pas été modifiée. Les modifications des services réservables demandent encore un aperçu partagé sans écriture autour de savePrestations ; aucun identifiant commun avec le profil.
+
+Matrice cumulative166opérations :64PARTIEL/72ABSENT/4NON_TESTE/26BLOQUE,aucune complète. Garder ouverts les périmètres et CI non qualifiés, poursuivre les autres tâches sûres.
+
+---
+
 # Reprise active : convergence V10, Réservations et Images
 
 La mission #301 reste ouverte. Aucun fournisseur réel, client, activation, publication, fusion main ou déploiement. Continuer les tâches indépendantes pendant les CI et les adaptations de Claude.
