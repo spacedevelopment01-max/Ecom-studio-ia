@@ -5,4 +5,7 @@ import type {ConversationView} from './orchestrator/conversation/contract';
  * reste en lecture seule : aucune autre carte, aucun devis, aucun outil ne s'ouvre ici.
  */
 export type ExistingLocalOp='local-site'|'files';
-export const localEditAllowed=(v:ConversationView,op:ExistingLocalOp)=>v.recovery?v.recovery.localEdits?.ops.includes(op)===true:!v.readOnlyReason;
+export const localEditAllowed=(v:ConversationView,op:ExistingLocalOp)=>v.recovery?v.recovery.localEdits?.ops.includes(op)===true:(v.localEditsWritable??!v.readOnlyReason);
+
+/** Native domains without an A1 exception must never infer permission from a free editable fiche. */
+export const nativeLocalEditAllowed=(v:ConversationView)=>!v.recovery&&(v.localEditsWritable??!v.readOnlyReason);

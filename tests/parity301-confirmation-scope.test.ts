@@ -72,6 +72,15 @@ function setup(d:D,pending:'stale'|'same'|'none'='stale'){
  return{client,old,bodies,map,applied,onView,fetch,options,shown:()=>shown,setView:(v:ConversationView)=>{shown=v;server=v;},clientOnly:(v:ConversationView)=>{shown=v;},delay:()=>{delay=true;},entered,release:()=>release!()};
 }
 for(const d of domains){
+ it(d.name+': prepared fiche lock does not block an explicitly authorized native free confirmation',async()=>{
+  const t=setup(d,'none');t.setView({...t.shown(),readOnlyReason:'Fiche acquise verrouillée',localEditsWritable:true});await t.client.confirm();expect(t.bodies).toHaveLength(1);expect(t.applied).toHaveBeenCalledOnce();expect(t.client.getState().error).toBe('');
+ });
+ it(d.name+': explicit native denial cannot be overridden by an editable fiche',async()=>{
+  const t=setup(d,'none');t.setView({...t.shown(),readOnlyReason:null,localEditsWritable:false});await t.client.confirm();expect(t.bodies).toHaveLength(0);expect(t.applied).not.toHaveBeenCalled();expect(t.client.getState().blocked).toBe(true);
+ });
+ it(d.name+': native permission never expands the A1 local operation allowlist',async()=>{
+  const t=setup(d,'none');t.setView({...t.shown(),readOnlyReason:'A1',localEditsWritable:true,recovery:{mode:'read-only',localEdits:{ops:['files']}}} as unknown as ConversationView);await t.client.confirm();expect(t.bodies).toHaveLength(d.name==='files'?1:0);if(d.name!=='files')expect(t.applied).not.toHaveBeenCalled();
+ });
  it(d.name+': stale stored confirmation cannot replace the displayed new proposal',async()=>{
   const t=setup(d);await t.client.confirm();expect(t.bodies).toHaveLength(1);expect(t.bodies[0]).toMatchObject({action:d.action,proposalId:'new',requestId:'request-new'});expect(t.map.size).toBe(0);expect(t.client.getState().uncertain).toBe(false);
  });

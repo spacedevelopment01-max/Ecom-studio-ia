@@ -1,0 +1,1489 @@
+[
+  {
+    "platforms": [
+      "meta_feed"
+    ],
+    "docKey": "ad:1054c684ffecb7f796ad",
+    "status": 200,
+    "effects": [
+      {
+        "field": "w",
+        "property": "w",
+        "before": 648,
+        "after": 777.6,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "h",
+        "property": "h",
+        "before": 175,
+        "after": 210,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "font.size",
+        "property": "font.size",
+        "before": 81,
+        "after": 97,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "autoFit.minSize",
+        "property": "autoFit.minSize",
+        "before": 45,
+        "after": 54,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "subline.y",
+        "property": "y",
+        "before": 261.6,
+        "after": 287.96,
+        "layerId": "subline",
+        "layerName": "Ligne",
+        "role": "subtitle",
+        "secondary": true
+      }
+    ],
+    "nativeOps": [
+      "title",
+      "subline"
+    ],
+    "resultVersion": 2,
+    "receipt": "j6pbpvcq0pfd2umz",
+    "delivered": true
+  },
+  {
+    "platforms": [
+      "meta_feed"
+    ],
+    "docKey": "ad:2c3c5e276060356bce92",
+    "status": 200,
+    "effects": [
+      {
+        "field": "x",
+        "property": "x",
+        "before": 622.8,
+        "after": 614,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "w",
+        "property": "w",
+        "before": 381.2,
+        "after": 414,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "h",
+        "property": "h",
+        "before": 303,
+        "after": 363.59999999999997,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "font.size",
+        "property": "font.size",
+        "before": 97,
+        "after": 116,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "autoFit.minSize",
+        "property": "autoFit.minSize",
+        "before": 55,
+        "after": 66,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "subline.y",
+        "property": "y",
+        "before": 395,
+        "after": 441.55999999999995,
+        "layerId": "subline",
+        "layerName": "Ligne",
+        "role": "subtitle",
+        "secondary": true
+      },
+      {
+        "field": "cta.y",
+        "property": "y",
+        "before": 517,
+        "after": 522.52,
+        "layerId": "cta",
+        "layerName": "Bouton",
+        "role": "cta",
+        "secondary": true
+      }
+    ],
+    "nativeOps": [
+      "title",
+      "subline",
+      "cta"
+    ],
+    "resultVersion": 2,
+    "receipt": "tyc2n2ov4mpoa52i",
+    "delivered": true
+  },
+  {
+    "platforms": [
+      "meta_feed"
+    ],
+    "docKey": "ad:776e33c26a581e0d9820",
+    "status": 200,
+    "effects": [
+      {
+        "field": "x",
+        "property": "x",
+        "before": 76,
+        "after": 65,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "w",
+        "property": "w",
+        "before": 928,
+        "after": 950,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "h",
+        "property": "h",
+        "before": 221,
+        "after": 265.2,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "font.size",
+        "property": "font.size",
+        "before": 104,
+        "after": 125,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "autoFit.minSize",
+        "property": "autoFit.minSize",
+        "before": 57,
+        "after": 68,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "subline.y",
+        "property": "y",
+        "before": 412.56,
+        "after": 445.96,
+        "layerId": "subline",
+        "layerName": "Ligne",
+        "role": "subtitle",
+        "secondary": true
+      },
+      {
+        "field": "cta.y",
+        "property": "y",
+        "before": 491.76,
+        "after": 494.91999999999996,
+        "layerId": "cta",
+        "layerName": "Bouton",
+        "role": "cta",
+        "secondary": true
+      }
+    ],
+    "nativeOps": [
+      "title",
+      "subline",
+      "cta"
+    ],
+    "resultVersion": 2,
+    "receipt": "k57xfwyekn64nyg8",
+    "delivered": true
+  },
+  {
+    "platforms": [
+      "meta_feed"
+    ],
+    "docKey": "ad:81dea2a4b8c667b7a9c2",
+    "status": 200,
+    "effects": [
+      {
+        "field": "x",
+        "property": "x",
+        "before": 76,
+        "after": 65,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "w",
+        "property": "w",
+        "before": 928,
+        "after": 950,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "h",
+        "property": "h",
+        "before": 97,
+        "after": 116.39999999999999,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "font.size",
+        "property": "font.size",
+        "before": 85,
+        "after": 102,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "autoFit.minSize",
+        "property": "autoFit.minSize",
+        "before": 47,
+        "after": 56,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "subline.y",
+        "property": "y",
+        "before": 199.6,
+        "after": 210.35999999999999,
+        "layerId": "subline",
+        "layerName": "Ligne",
+        "role": "subtitle",
+        "secondary": true
+      }
+    ],
+    "nativeOps": [
+      "title",
+      "subline"
+    ],
+    "resultVersion": 2,
+    "receipt": "ea2pkv15tyc8wi6b",
+    "delivered": true
+  },
+  {
+    "platforms": [
+      "meta_feed"
+    ],
+    "docKey": "ad:90d09b49e9a21025901c",
+    "status": 200,
+    "effects": [
+      {
+        "field": "x",
+        "property": "x",
+        "before": 76,
+        "after": 65,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "w",
+        "property": "w",
+        "before": 928,
+        "after": 950,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "h",
+        "property": "h",
+        "before": 221,
+        "after": 265.2,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "font.size",
+        "property": "font.size",
+        "before": 104,
+        "after": 125,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "autoFit.minSize",
+        "property": "autoFit.minSize",
+        "before": 57,
+        "after": 68,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "subline.y",
+        "property": "y",
+        "before": 415.8,
+        "after": 445.96,
+        "layerId": "subline",
+        "layerName": "Ligne",
+        "role": "subtitle",
+        "secondary": true
+      }
+    ],
+    "nativeOps": [
+      "title",
+      "subline"
+    ],
+    "resultVersion": 2,
+    "receipt": "c869c1bnrd0qkjji",
+    "delivered": true
+  },
+  {
+    "platforms": [
+      "meta_feed"
+    ],
+    "docKey": "ad:af93462f5c7894730dd1",
+    "status": 200,
+    "effects": [
+      {
+        "field": "x",
+        "property": "x",
+        "before": 622.8,
+        "after": 614,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "w",
+        "property": "w",
+        "before": 381.2,
+        "after": 414,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "h",
+        "property": "h",
+        "before": 259,
+        "after": 310.8,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "font.size",
+        "property": "font.size",
+        "before": 83,
+        "after": 100,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "autoFit.minSize",
+        "property": "autoFit.minSize",
+        "before": 55,
+        "after": 66,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "subline.y",
+        "property": "y",
+        "before": 347.76,
+        "after": 388.76,
+        "layerId": "subline",
+        "layerName": "Ligne",
+        "role": "subtitle",
+        "secondary": true
+      },
+      {
+        "field": "cta.y",
+        "property": "y",
+        "before": 458.96,
+        "after": 469.71999999999997,
+        "layerId": "cta",
+        "layerName": "Bouton",
+        "role": "cta",
+        "secondary": true
+      }
+    ],
+    "nativeOps": [
+      "title",
+      "subline",
+      "cta"
+    ],
+    "resultVersion": 2,
+    "receipt": "c3w0k0ki250jbgee",
+    "delivered": true
+  },
+  {
+    "platforms": [
+      "meta_story"
+    ],
+    "docKey": "ad:3bd21a4d3245dcb79889",
+    "status": 200,
+    "effects": [
+      {
+        "field": "x",
+        "property": "x",
+        "before": 76,
+        "after": 65,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "w",
+        "property": "w",
+        "before": 928,
+        "after": 950,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "h",
+        "property": "h",
+        "before": 229,
+        "after": 274.8,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "font.size",
+        "property": "font.size",
+        "before": 108,
+        "after": 130,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "autoFit.minSize",
+        "property": "autoFit.minSize",
+        "before": 59,
+        "after": 71,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "subline.y",
+        "property": "y",
+        "before": 616.56,
+        "after": 651.5600000000001,
+        "layerId": "subline",
+        "layerName": "Ligne",
+        "role": "subtitle",
+        "secondary": true
+      },
+      {
+        "field": "cta.y",
+        "property": "y",
+        "before": 695.76,
+        "after": 700.5200000000001,
+        "layerId": "cta",
+        "layerName": "Bouton",
+        "role": "cta",
+        "secondary": true
+      }
+    ],
+    "nativeOps": [
+      "title",
+      "subline",
+      "cta"
+    ],
+    "resultVersion": 2,
+    "receipt": "ljhepb3t2xit4uhr",
+    "delivered": true
+  },
+  {
+    "platforms": [
+      "meta_story"
+    ],
+    "docKey": "ad:48199461bf6aacdb75b2",
+    "status": 200,
+    "effects": [
+      {
+        "field": "x",
+        "property": "x",
+        "before": 76,
+        "after": 65,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "y",
+        "property": "y",
+        "before": 269,
+        "after": 268,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "w",
+        "property": "w",
+        "before": 928,
+        "after": 950,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "h",
+        "property": "h",
+        "before": 193,
+        "after": 231.6,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "font.size",
+        "property": "font.size",
+        "before": 89,
+        "after": 107,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "autoFit.minSize",
+        "property": "autoFit.minSize",
+        "before": 49,
+        "after": 59,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "subline.y",
+        "property": "y",
+        "before": 483.6,
+        "after": 512.5600000000001,
+        "layerId": "subline",
+        "layerName": "Ligne",
+        "role": "subtitle",
+        "secondary": true
+      },
+      {
+        "field": "cta.y",
+        "property": "y",
+        "before": 1444,
+        "after": 1443,
+        "layerId": "cta",
+        "layerName": "Bouton",
+        "role": "cta",
+        "secondary": true
+      }
+    ],
+    "nativeOps": [
+      "title",
+      "subline",
+      "cta"
+    ],
+    "resultVersion": 2,
+    "receipt": "omg6clrguc8ugyc2",
+    "delivered": true
+  },
+  {
+    "platforms": [
+      "meta_story"
+    ],
+    "docKey": "ad:5436a60d1d0f78d4b75a",
+    "status": 200,
+    "effects": [
+      {
+        "field": "x",
+        "property": "x",
+        "before": 76,
+        "after": 65,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "w",
+        "property": "w",
+        "before": 928,
+        "after": 950,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "h",
+        "property": "h",
+        "before": 229,
+        "after": 274.8,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "font.size",
+        "property": "font.size",
+        "before": 108,
+        "after": 130,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "autoFit.minSize",
+        "property": "autoFit.minSize",
+        "before": 59,
+        "after": 71,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "subline.y",
+        "property": "y",
+        "before": 619.8,
+        "after": 651.5600000000001,
+        "layerId": "subline",
+        "layerName": "Ligne",
+        "role": "subtitle",
+        "secondary": true
+      }
+    ],
+    "nativeOps": [
+      "title",
+      "subline"
+    ],
+    "resultVersion": 2,
+    "receipt": "6yuyotfytt4g8dcc",
+    "delivered": true
+  },
+  {
+    "platforms": [
+      "meta_feed",
+      "meta_story"
+    ],
+    "docKey": "ad:03b55e7fee874fbbca3e",
+    "status": 200,
+    "effects": [
+      {
+        "field": "x",
+        "property": "x",
+        "before": 76,
+        "after": 65,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "w",
+        "property": "w",
+        "before": 928,
+        "after": 950,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "h",
+        "property": "h",
+        "before": 229,
+        "after": 274.8,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "font.size",
+        "property": "font.size",
+        "before": 108,
+        "after": 130,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "autoFit.minSize",
+        "property": "autoFit.minSize",
+        "before": 59,
+        "after": 71,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "subline.y",
+        "property": "y",
+        "before": 616.56,
+        "after": 651.5600000000001,
+        "layerId": "subline",
+        "layerName": "Ligne",
+        "role": "subtitle",
+        "secondary": true
+      },
+      {
+        "field": "cta.y",
+        "property": "y",
+        "before": 695.76,
+        "after": 700.5200000000001,
+        "layerId": "cta",
+        "layerName": "Bouton",
+        "role": "cta",
+        "secondary": true
+      }
+    ],
+    "nativeOps": [
+      "title",
+      "subline",
+      "cta"
+    ],
+    "resultVersion": 2,
+    "receipt": "tqanuhie450wertx",
+    "delivered": true
+  },
+  {
+    "platforms": [
+      "meta_feed",
+      "meta_story"
+    ],
+    "docKey": "ad:07cd7ea8c8694dc328db",
+    "status": 200,
+    "effects": [
+      {
+        "field": "w",
+        "property": "w",
+        "before": 648,
+        "after": 777.6,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "h",
+        "property": "h",
+        "before": 175,
+        "after": 210,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "font.size",
+        "property": "font.size",
+        "before": 81,
+        "after": 97,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "autoFit.minSize",
+        "property": "autoFit.minSize",
+        "before": 45,
+        "after": 54,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "subline.y",
+        "property": "y",
+        "before": 261.6,
+        "after": 287.96,
+        "layerId": "subline",
+        "layerName": "Ligne",
+        "role": "subtitle",
+        "secondary": true
+      }
+    ],
+    "nativeOps": [
+      "title",
+      "subline"
+    ],
+    "resultVersion": 2,
+    "receipt": "ozs0l0cz2utz3tnz",
+    "delivered": true
+  },
+  {
+    "platforms": [
+      "meta_feed",
+      "meta_story"
+    ],
+    "docKey": "ad:1ad82ad90cc4bccdbdf0",
+    "status": 200,
+    "effects": [
+      {
+        "field": "x",
+        "property": "x",
+        "before": 622.8,
+        "after": 614,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "w",
+        "property": "w",
+        "before": 381.2,
+        "after": 414,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "h",
+        "property": "h",
+        "before": 303,
+        "after": 363.59999999999997,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "font.size",
+        "property": "font.size",
+        "before": 97,
+        "after": 116,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "autoFit.minSize",
+        "property": "autoFit.minSize",
+        "before": 55,
+        "after": 66,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "subline.y",
+        "property": "y",
+        "before": 395,
+        "after": 441.55999999999995,
+        "layerId": "subline",
+        "layerName": "Ligne",
+        "role": "subtitle",
+        "secondary": true
+      },
+      {
+        "field": "cta.y",
+        "property": "y",
+        "before": 517,
+        "after": 522.52,
+        "layerId": "cta",
+        "layerName": "Bouton",
+        "role": "cta",
+        "secondary": true
+      }
+    ],
+    "nativeOps": [
+      "title",
+      "subline",
+      "cta"
+    ],
+    "resultVersion": 2,
+    "receipt": "ved233uc4tzqgc7l",
+    "delivered": true
+  },
+  {
+    "platforms": [
+      "meta_feed",
+      "meta_story"
+    ],
+    "docKey": "ad:4f01ac995d3c8a60b045",
+    "status": 200,
+    "effects": [
+      {
+        "field": "x",
+        "property": "x",
+        "before": 76,
+        "after": 65,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "w",
+        "property": "w",
+        "before": 928,
+        "after": 950,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "h",
+        "property": "h",
+        "before": 97,
+        "after": 116.39999999999999,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "font.size",
+        "property": "font.size",
+        "before": 85,
+        "after": 102,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "autoFit.minSize",
+        "property": "autoFit.minSize",
+        "before": 47,
+        "after": 56,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "subline.y",
+        "property": "y",
+        "before": 199.6,
+        "after": 210.35999999999999,
+        "layerId": "subline",
+        "layerName": "Ligne",
+        "role": "subtitle",
+        "secondary": true
+      }
+    ],
+    "nativeOps": [
+      "title",
+      "subline"
+    ],
+    "resultVersion": 2,
+    "receipt": "g9uayujdxepijcr6",
+    "delivered": true
+  },
+  {
+    "platforms": [
+      "meta_feed",
+      "meta_story"
+    ],
+    "docKey": "ad:5e11c2200aea002fa992",
+    "status": 200,
+    "effects": [
+      {
+        "field": "x",
+        "property": "x",
+        "before": 622.8,
+        "after": 614,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "w",
+        "property": "w",
+        "before": 381.2,
+        "after": 414,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "h",
+        "property": "h",
+        "before": 259,
+        "after": 310.8,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "font.size",
+        "property": "font.size",
+        "before": 83,
+        "after": 100,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "autoFit.minSize",
+        "property": "autoFit.minSize",
+        "before": 55,
+        "after": 66,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "subline.y",
+        "property": "y",
+        "before": 347.76,
+        "after": 388.76,
+        "layerId": "subline",
+        "layerName": "Ligne",
+        "role": "subtitle",
+        "secondary": true
+      },
+      {
+        "field": "cta.y",
+        "property": "y",
+        "before": 458.96,
+        "after": 469.71999999999997,
+        "layerId": "cta",
+        "layerName": "Bouton",
+        "role": "cta",
+        "secondary": true
+      }
+    ],
+    "nativeOps": [
+      "title",
+      "subline",
+      "cta"
+    ],
+    "resultVersion": 2,
+    "receipt": "ypob5repls2nkc7k",
+    "delivered": true
+  },
+  {
+    "platforms": [
+      "meta_feed",
+      "meta_story"
+    ],
+    "docKey": "ad:855f0ffe8f749c389ba9",
+    "status": 200,
+    "effects": [
+      {
+        "field": "x",
+        "property": "x",
+        "before": 76,
+        "after": 65,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "y",
+        "property": "y",
+        "before": 269,
+        "after": 268,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "w",
+        "property": "w",
+        "before": 928,
+        "after": 950,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "h",
+        "property": "h",
+        "before": 193,
+        "after": 231.6,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "font.size",
+        "property": "font.size",
+        "before": 89,
+        "after": 107,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "autoFit.minSize",
+        "property": "autoFit.minSize",
+        "before": 49,
+        "after": 59,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "subline.y",
+        "property": "y",
+        "before": 483.6,
+        "after": 512.5600000000001,
+        "layerId": "subline",
+        "layerName": "Ligne",
+        "role": "subtitle",
+        "secondary": true
+      },
+      {
+        "field": "cta.y",
+        "property": "y",
+        "before": 1444,
+        "after": 1443,
+        "layerId": "cta",
+        "layerName": "Bouton",
+        "role": "cta",
+        "secondary": true
+      }
+    ],
+    "nativeOps": [
+      "title",
+      "subline",
+      "cta"
+    ],
+    "resultVersion": 2,
+    "receipt": "dpokbmpw1jrv4w5k",
+    "delivered": true
+  },
+  {
+    "platforms": [
+      "meta_feed",
+      "meta_story"
+    ],
+    "docKey": "ad:967bd9977edafb9f8d4f",
+    "status": 200,
+    "effects": [
+      {
+        "field": "x",
+        "property": "x",
+        "before": 76,
+        "after": 65,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "w",
+        "property": "w",
+        "before": 928,
+        "after": 950,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "h",
+        "property": "h",
+        "before": 229,
+        "after": 274.8,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "font.size",
+        "property": "font.size",
+        "before": 108,
+        "after": 130,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "autoFit.minSize",
+        "property": "autoFit.minSize",
+        "before": 59,
+        "after": 71,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "subline.y",
+        "property": "y",
+        "before": 619.8,
+        "after": 651.5600000000001,
+        "layerId": "subline",
+        "layerName": "Ligne",
+        "role": "subtitle",
+        "secondary": true
+      }
+    ],
+    "nativeOps": [
+      "title",
+      "subline"
+    ],
+    "resultVersion": 2,
+    "receipt": "jqfg4wtjn2j93w0a",
+    "delivered": true
+  },
+  {
+    "platforms": [
+      "meta_feed",
+      "meta_story"
+    ],
+    "docKey": "ad:9c622db4a24d878bd31e",
+    "status": 200,
+    "effects": [
+      {
+        "field": "x",
+        "property": "x",
+        "before": 76,
+        "after": 65,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "w",
+        "property": "w",
+        "before": 928,
+        "after": 950,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "h",
+        "property": "h",
+        "before": 221,
+        "after": 265.2,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "font.size",
+        "property": "font.size",
+        "before": 104,
+        "after": 125,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "autoFit.minSize",
+        "property": "autoFit.minSize",
+        "before": 57,
+        "after": 68,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "subline.y",
+        "property": "y",
+        "before": 415.8,
+        "after": 445.96,
+        "layerId": "subline",
+        "layerName": "Ligne",
+        "role": "subtitle",
+        "secondary": true
+      }
+    ],
+    "nativeOps": [
+      "title",
+      "subline"
+    ],
+    "resultVersion": 2,
+    "receipt": "uje8nrtpnxx3075b",
+    "delivered": true
+  },
+  {
+    "platforms": [
+      "meta_feed",
+      "meta_story"
+    ],
+    "docKey": "ad:a5f95faef70b805cf58c",
+    "status": 200,
+    "effects": [
+      {
+        "field": "x",
+        "property": "x",
+        "before": 76,
+        "after": 65,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "w",
+        "property": "w",
+        "before": 928,
+        "after": 950,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "h",
+        "property": "h",
+        "before": 221,
+        "after": 265.2,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "font.size",
+        "property": "font.size",
+        "before": 104,
+        "after": 125,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "autoFit.minSize",
+        "property": "autoFit.minSize",
+        "before": 57,
+        "after": 68,
+        "layerId": "title",
+        "layerName": "Titre",
+        "role": "title",
+        "secondary": false
+      },
+      {
+        "field": "subline.y",
+        "property": "y",
+        "before": 412.56,
+        "after": 445.96,
+        "layerId": "subline",
+        "layerName": "Ligne",
+        "role": "subtitle",
+        "secondary": true
+      },
+      {
+        "field": "cta.y",
+        "property": "y",
+        "before": 491.76,
+        "after": 494.91999999999996,
+        "layerId": "cta",
+        "layerName": "Bouton",
+        "role": "cta",
+        "secondary": true
+      }
+    ],
+    "nativeOps": [
+      "title",
+      "subline",
+      "cta"
+    ],
+    "resultVersion": 2,
+    "receipt": "3h942tex4ghe0v70",
+    "delivered": true
+  }
+]

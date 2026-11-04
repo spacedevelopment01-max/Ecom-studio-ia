@@ -1,9 +1,12 @@
+import {nativeLocalEditAllowed} from './existing-local-edits';
 import type {ConversationView} from './orchestrator/conversation/contract';
 /** Native theme-choice transport: explicit free agreement, same-request retry, server receipt re-read. */
 type Pending={action:'confirm-theme-choice';proposalId:string;confirmation:true;revision:number;projectRevision:number|null;requestId:string};
 export type LocalThemeChoiceConfirmationState={busy:boolean;error:string;uncertain:boolean;blocked?:boolean};
 export type LocalThemeChoiceChange={projectId:string;versionId:string;receiptId:string};
-export const LOCAL_STOCK_CHANGED_EVENT='studio:theme-changed';
+export const LOCAL_THEME_CHOICE_CHANGED_EVENT='studio:theme-changed';
+/** Backward-compatible alias for existing cards. */
+export const LOCAL_STOCK_CHANGED_EVENT=LOCAL_THEME_CHOICE_CHANGED_EVENT;
 export const hasLocalThemeChoiceReceipt=(v:ConversationView)=>{const s=v.localThemeChoice;return s?.schema==='syna-local-theme-choice-1'&&s.state==='applied'&&s.actionsExecuted===true&&s.financialConsent===false&&s.costEur===0&&s.providerCalls===0&&s.publication===false&&s.confirmationRequired===false&&!!s.receiptId&&s.projectId===v.projectId&&!!s.direction&&!!s.version?.id&&!!s.version.parentId&&s.version.id!==s.version.parentId&&Number.isSafeInteger(s.version.number)&&s.version.number>1&&!!s.previewHref;};
 export const handlesLocalThemeChoice=(v:ConversationView)=>!!v.localThemeChoice&&(v.localThemeChoice.state==='proposed'||v.localThemeChoice.state==='applied'||!!v.localThemeChoiceExecution?.enabled);
 export function createLocalThemeChoiceConfirmation(options:{conversationId:string;fetch:typeof fetch;view:()=>ConversationView;onView:(v:ConversationView)=>void;onState:(s:LocalThemeChoiceConfirmationState)=>void;onApplied:(change:LocalThemeChoiceChange)=>Promise<void>|void;storage?:Pick<Storage,'getItem'|'setItem'|'removeItem'>;uuid?:()=>string}){
@@ -24,7 +27,7 @@ export function createLocalThemeChoiceConfirmation(options:{conversationId:strin
   if(!alive||!inScope())return;options.onView(v);
   if(hasLocalThemeChoiceReceipt(v)&&v.localThemeChoice!.receiptId!==applied){const s=v.localThemeChoice!;applied=s.receiptId;await options.onApplied({projectId:v.projectId!,versionId:s.version!.id,receiptId:s.receiptId!});}
  }
- async function refresh(){const v=await request(route) as ConversationView;if(inScope())reconcile(v);await accept(v);emit({blocked:!!v.recovery||!!v.readOnlyReason||!v.localThemeChoiceExecution?.enabled});return v;}
+ async function refresh(){const v=await request(route) as ConversationView;if(inScope())reconcile(v);await accept(v);emit({blocked:!nativeLocalEditAllowed(v)||!v.localThemeChoiceExecution?.enabled});return v;}
  async function locked(action:()=>Promise<void>){
   if(busy||!alive||!inScope())return;reconcile(options.view());busy=true;emit({busy:true,error:''});
   try{await action();}
@@ -39,7 +42,7 @@ export function createLocalThemeChoiceConfirmation(options:{conversationId:strin
   dispose(){alive=false;},
   refresh:()=>locked(async()=>{const v=await refresh();if(pending&&hasLocalThemeChoiceReceipt(v)&&v.localThemeChoice!.receiptId===pending.requestId){clear();emit({uncertain:false,error:''});}}),
   confirm:()=>locked(async()=>{
-   const v=options.view(),s=v.localThemeChoice;if(v.recovery||!v.localThemeChoiceExecution?.enabled||v.readOnlyReason)throw Object.assign(new Error('Modification gratuite indisponible.'),{status:403});
+   const v=options.view(),s=v.localThemeChoice;if(!nativeLocalEditAllowed(v)||!v.localThemeChoiceExecution?.enabled)throw Object.assign(new Error('Modification gratuite indisponible.'),{status:403});
    if(!pending){if(s?.state!=='proposed'||!s.proposalId||!s.diff)throw Object.assign(new Error('Demandez une nouvelle proposition gratuite.'),{status:409});pending={action:'confirm-theme-choice',proposalId:s.proposalId,confirmation:true,revision:v.revision,projectRevision:v.projectRevision,requestId:uuid()};try{options.storage?.setItem(key,JSON.stringify(pending));}catch{}}
    const command=pending;const response=await request(route,command) as ConversationView;
    if(!hasLocalThemeChoiceReceipt(response))throw new Error('Enregistrement du theme-choice non confirmé.');

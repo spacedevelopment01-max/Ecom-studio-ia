@@ -1,0 +1,214 @@
+[
+ {
+  "op": "C05 titre (B1)",
+  "text": "Remplace le titre de cette section par « Titre sondé »",
+  "erreur": null,
+  "carteGratuite": {
+   "state": "proposed",
+   "message": "Modification comprise. Vérifiez cet aperçu puis confirmez gratuitement."
+  },
+  "seo": null,
+  "pages": null,
+  "horaires": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C05 couleur du titre",
+  "text": "Mets le titre de cette section en rouge",
+  "erreur": null,
+  "carteGratuite": {
+   "state": "proposed",
+   "message": "Alternative native explicite : couleur principale des textes de cette section, ou son fond selon la demande. Certains boutons utilisent aussi cette couleur de t"
+  },
+  "seo": null,
+  "pages": null,
+  "horaires": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C05 couleur principale",
+  "text": "Change la couleur principale du site en #1e3a8a",
+  "erreur": null,
+  "carteGratuite": {
+   "state": "ambiguous",
+   "message": "La couleur globale de tout le site est distincte de celle d’une section. Précisez une section entière et son fond ou ses textes ; aucune couleur globale ne sera"
+  },
+  "seo": null,
+  "pages": null,
+  "horaires": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C07 masquer section",
+  "text": "Masque cette section",
+  "erreur": null,
+  "carteGratuite": {
+   "state": "ambiguous",
+   "message": "Désignez la section entière avant de la masquer ou de la supprimer."
+  },
+  "seo": null,
+  "pages": null,
+  "horaires": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C07 supprimer section",
+  "text": "Supprime cette section",
+  "erreur": null,
+  "carteGratuite": {
+   "state": "ambiguous",
+   "message": "Désignez la section entière avant de la masquer ou de la supprimer."
+  },
+  "seo": null,
+  "pages": null,
+  "horaires": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C07 ajouter section",
+  "text": "Ajoute une section FAQ après cette section",
+  "erreur": null,
+  "carteGratuite": {
+   "state": "proposed",
+   "message": "FAQ native après cette section, avec questions/réponses de départ à compléter, rien d’inventé. Vérifiez avant/après puis confirmez gratuitement."
+  },
+  "seo": null,
+  "pages": null,
+  "horaires": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C07 ajouter page",
+  "text": "Ajoute une page « Nos garanties »",
+  "erreur": null,
+  "carteGratuite": null,
+  "seo": null,
+  "pages": {
+   "state": "ambiguous",
+   "message": "Quel modèle natif souhaitez-vous pour cette nouvelle page ? Aucun contenu ne sera inventé. Indiquez par exemple : Ajoute"
+  },
+  "horaires": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C05 bouton",
+  "text": "Remplace le texte du bouton de cette section par « Demander un devis »",
+  "erreur": null,
+  "carteGratuite": {
+   "state": "ambiguous",
+   "message": "Bouton absent ou ambigu : désignez son champ de libellé natif. Aucun autre texte ne changera."
+  },
+  "seo": null,
+  "pages": null,
+  "horaires": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C05 image",
+  "text": "Remplace l’image de cette section par la photo de l’atelier",
+  "erreur": null,
+  "carteGratuite": {
+   "state": "ambiguous",
+   "message": "Image cible absente ou ambiguë : désignez son champ natif précis. Aucun autre média ne changera."
+  },
+  "seo": null,
+  "pages": null,
+  "horaires": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C05 annuler",
+  "text": "Annule la dernière retouche du site",
+  "erreur": null,
+  "carteGratuite": {
+   "state": "ambiguous",
+   "message": "Aucune dernière retouche avec reçu encore courante à annuler. Une modification manuelle plus récente ne sera pas effacée ; utilisez les versions natives."
+  },
+  "seo": null,
+  "pages": null,
+  "horaires": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C06 thème",
+  "text": "Choisis le thème Rive pour mon site",
+  "erreur": null,
+  "carteGratuite": null,
+  "seo": null,
+  "pages": null,
+  "horaires": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C15 SEO",
+  "text": "Remplace le titre SEO de la page d’accueil par « Aménagement de vans à Lyon »",
+  "erreur": null,
+  "carteGratuite": null,
+  "seo": {
+   "state": "proposed",
+   "message": "Vérifiez le texte SEO exact et la page. Après accord gratuit, une nouvelle version native sera enregistrée ; aucun conte"
+  },
+  "pages": null,
+  "horaires": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C22 horaires",
+  "text": "Change les horaires du mardi : 9 h – 18 h",
+  "erreur": null,
+  "carteGratuite": null,
+  "seo": null,
+  "pages": null,
+  "horaires": {
+   "state": "ambiguous",
+   "message": "Parlez-vous des horaires affichés du profil d’activité ou des créneaux réservables ? Aucun changement. Pour remplacer le"
+  },
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C21 prestation",
+  "text": "Renomme cette prestation en « Aménagement complet »",
+  "erreur": "Ouvrez Activité pour modifier les horaires du profil de ce projet. Les créneaux réservables sont distincts.",
+  "carteGratuite": null,
+  "seo": null,
+  "pages": null,
+  "horaires": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C16 calendrier",
+  "text": "Déplace ma prochaine publication au 12 novembre",
+  "erreur": "Ouvrez Calendrier pour déplacer une date éditoriale locale.",
+  "carteGratuite": null,
+  "seo": null,
+  "pages": null,
+  "horaires": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C12 stock",
+  "text": "Mets le stock de ce produit à 12",
+  "erreur": "Les prestations et réservations sont distinctes du stock e-commerce.",
+  "carteGratuite": null,
+  "seo": null,
+  "pages": null,
+  "horaires": null,
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ }
+]

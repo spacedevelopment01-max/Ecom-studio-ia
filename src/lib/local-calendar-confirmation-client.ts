@@ -1,9 +1,12 @@
+import {nativeLocalEditAllowed} from './existing-local-edits';
 import type {ConversationView} from './orchestrator/conversation/contract';
 /** Native calendar transport: explicit free agreement, same-request retry, server receipt re-read. */
 type Pending={action:'confirm-calendar';proposalId:string;confirmation:true;revision:number;projectRevision:number|null;requestId:string};
 export type LocalCalendarConfirmationState={busy:boolean;error:string;uncertain:boolean;blocked?:boolean};
 export type LocalCalendarChange={projectId:string;postId:string;receiptId:string};
-export const LOCAL_STOCK_CHANGED_EVENT='studio:social-changed';
+export const LOCAL_CALENDAR_CHANGED_EVENT='studio:social-changed';
+/** Backward-compatible alias for existing cards. */
+export const LOCAL_STOCK_CHANGED_EVENT=LOCAL_CALENDAR_CHANGED_EVENT;
 export const hasLocalCalendarReceipt=(v:ConversationView)=>{const s=v.localCalendar;return s?.schema==='syna-local-calendar-1'&&s.state==='applied'&&s.actionsExecuted===true&&s.financialConsent===false&&s.costEur===0&&s.providerCalls===0&&s.publication===false&&s.scheduling===false&&s.confirmationRequired===false&&!!s.receiptId&&s.projectId===v.projectId&&!!s.target?.postId&&['planned','draft','review'].includes(s.target.status)&&!!s.target.timezone&&Number.isFinite(s.diff?.before)&&Number.isFinite(s.diff?.after);};
 export const handlesLocalCalendar=(v:ConversationView)=>!!v.localCalendar&&(v.localCalendar.state==='proposed'||v.localCalendar.state==='applied'||!!v.localCalendarExecution?.enabled);
 export function createLocalCalendarConfirmation(options:{conversationId:string;fetch:typeof fetch;view:()=>ConversationView;onView:(v:ConversationView)=>void;onState:(s:LocalCalendarConfirmationState)=>void;onApplied:(change:LocalCalendarChange)=>Promise<void>|void;storage?:Pick<Storage,'getItem'|'setItem'|'removeItem'>;uuid?:()=>string}){
@@ -24,7 +27,7 @@ export function createLocalCalendarConfirmation(options:{conversationId:string;f
   if(!alive||!inScope())return;options.onView(v);
   if(hasLocalCalendarReceipt(v)&&v.localCalendar!.receiptId!==applied){const s=v.localCalendar!;applied=s.receiptId;await options.onApplied({projectId:v.projectId!,postId:s.target!.postId,receiptId:s.receiptId!});}
  }
- async function refresh(){const v=await request(route) as ConversationView;if(inScope())reconcile(v);await accept(v);emit({blocked:!!v.recovery||!!v.readOnlyReason||!v.localCalendarExecution?.enabled});return v;}
+ async function refresh(){const v=await request(route) as ConversationView;if(inScope())reconcile(v);await accept(v);emit({blocked:!nativeLocalEditAllowed(v)||!v.localCalendarExecution?.enabled});return v;}
  async function locked(action:()=>Promise<void>){
   if(busy||!alive||!inScope())return;reconcile(options.view());busy=true;emit({busy:true,error:''});
   try{await action();}
@@ -39,7 +42,7 @@ export function createLocalCalendarConfirmation(options:{conversationId:string;f
   dispose(){alive=false;},
   refresh:()=>locked(async()=>{const v=await refresh();if(pending&&hasLocalCalendarReceipt(v)&&v.localCalendar!.receiptId===pending.requestId){clear();emit({uncertain:false,error:''});}}),
   confirm:()=>locked(async()=>{
-   const v=options.view(),s=v.localCalendar;if(v.recovery||!v.localCalendarExecution?.enabled||v.readOnlyReason)throw Object.assign(new Error('Modification gratuite indisponible.'),{status:403});
+   const v=options.view(),s=v.localCalendar;if(!nativeLocalEditAllowed(v)||!v.localCalendarExecution?.enabled)throw Object.assign(new Error('Modification gratuite indisponible.'),{status:403});
    if(!pending){if(s?.state!=='proposed'||!s.proposalId||!s.diff)throw Object.assign(new Error('Demandez une nouvelle proposition gratuite.'),{status:409});pending={action:'confirm-calendar',proposalId:s.proposalId,confirmation:true,revision:v.revision,projectRevision:v.projectRevision,requestId:uuid()};try{options.storage?.setItem(key,JSON.stringify(pending));}catch{}}
    const command=pending;const response=await request(route,command) as ConversationView;
    if(!hasLocalCalendarReceipt(response))throw new Error('Enregistrement du calendar non confirmé.');

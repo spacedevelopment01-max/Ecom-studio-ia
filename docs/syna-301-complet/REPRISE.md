@@ -7,7 +7,7 @@ ligne, activation, action externe réelle ni dépense fournisseur.
 
 - Branche Claude : `claude/syna-301-complet` (PR brouillon #369), partie de #363 `f25a7290`.
 - Intègre par fusion, sans les modifier : #364 (`958a4dde`) puis la chaîne #365 → #366 → #367 → #368 → #370 de Codex
-  (`e1ba2542`).
+  (`e1ba2542`), l'image `73c8865a`, puis #373 → #374 (`d315af5e`), #375 → #376 (`cf159b91`), #377 (`2da4884f`), la pile #378 → #387 (`9c9efda6`, convergence Codex #383 incluse) et le correctif CI #385 (`df4fce02`).
 
 ## Fait et vérifié
 
@@ -33,19 +33,35 @@ ligne, activation, action externe réelle ni dépense fournisseur.
 
 | 3 — Image d'une section | contrat Codex `73c8865a` (image existante du projet) ; miniatures avant / après dans la carte Site | recette `scripts/syna301-image-recette.ts` 4/4 : champ pointant sur l'image choisie, pixels de l'aperçu enregistré identiques, aucune autre section ni fichier modifié |
 
+| 3 — Stock | carte « Stock — gratuit » (contrat #373) ; correctif : le moteur lit la désignation envoyée avec la phrase (« Désigner pour SYNA » du Catalogue) | `tests/syna301-stock-designation-message.test.ts` rouge puis vert ; recette `scripts/syna301-stock-recette.ts` 4/4 : stock relu, prix / référence / politique inchangés, Catalogue à jour |
+| 3 — Prestation | carte Horaires adaptée au champ `service-name` (#374) : liste des prestations, « Renommer » remplit la phrase | recette `scripts/syna301-prestation-recette.ts` 4/4 : nom relu, autres champs et prestation voisine inchangés |
+| 3 — Calendrier, Thème | cartes « Calendrier — gratuit » (dates avec fuseau) et « Thème du site — gratuit » (deux vrais aperçus, aucun accord si le moteur refuse) ; verrou commun 11 cartes | tests `syna301-calendrier-theme-cartes`, `syna301-phrases-ecrans-naturels` (16/16 phrases gratuites) ; recettes `syna301-calendrier-recette.ts` et `syna301-theme-recette.ts` : voir l'état ci-dessous |
+
+| 5 — Animations, versions, dossier, photo, coordonnées | cartes #379 / #382 / #387, carte du profil élargie (#384 : téléphone, e-mail, zone), import de photo dans le composeur (#378, « importée, non analysée », jointe explicitement au message suivant) ; verrou commun 14 cartes | recette `scripts/syna301-lot5-recette.ts` **4/4** (5 étapes chacun : réglage relu, restauration relue, dossier relu à la racine, photo jointe au message suivant via `photoIds`, téléphone relu) ; lancer un cas à la fois (`RECETTE_CAS=encre-telephone`) : à quatre cas d'affilée, le conteneur tue le serveur de développement par manque de mémoire |
+
 ## Reste à vérifier ou à faire (ordre proposé)
 
-1. Manque signalé à Codex : aucune phrase ne publie une page brouillon (le menu la refuse donc, à raison) ; champ
-   explicite « choix du modèle » souhaité dans la présentation Pages (la carte s'appuie aujourd'hui sur le message).
-2. Lot 3 restant (phrases naturelles) : choix du thème, prestations / réservation, stock / variantes, calendrier /
-   brouillons, pièces jointes / bibliothèque, boutons / images.
-3. Omissions de la matrice (`OMISSIONS-MATRICE.md`) à faire entrer dans la matrice commune de Codex (85 lignes).
+0. **Bloquant transversal (contrat Codex)** : projet préparé = fiche en lecture seule → 7 cartes sans accord (projection
+   `readOnlyReason===null` dans `conversationView`, `blocked` des transports, et mes cartes qui testent `!readOnlyReason`).
+   Le serveur accepte pourtant l'accord. Proposition : séparer « fiche en lecture seule » de « retouches gratuites
+   permises » (nouveau champ ou exécutions projetées sans dépendre de la fiche), puis aligner transports et cartes.
+   Preuve : `tests/syna301-projet-prepare-cartes.test.ts`, `preuves/sonde-v5-projet-prepare.json`.
+1. Fait : recettes Calendrier 4/4, Thème services 2/2 (produits bloqués, voir 0), Bibliothèque (#377) 4/4
+   (`scripts/syna301-bibliotheque-recette.ts` : liste depuis le Pilote, dossiers, photos, recherche exacte, « Désigner »
+   puis renommage relu). Reste pour la bibliothèque : pièces jointes envoyées depuis la conversation et lecture d'image
+   (non raccordées par Codex, à ne pas annoncer).
+2. Manque signalé à Codex : aucune phrase ne publie une page brouillon ; champ explicite « choix du modèle » souhaité
+   dans la présentation Pages ; choix du thème bloqué dès qu'une retouche manuelle ne se reporte pas (moteur natif).
+3. Lot 3 restant : pièces jointes / bibliothèque ; réservation (au-delà du nom de prestation) ; variantes multiples
+   dans la recette Stock.
+4. Omissions de la matrice (`OMISSIONS-MATRICE.md`) à faire entrer dans la matrice commune de Codex.
 
 ## Relancer les preuves
 
 ```bash
 NODE_OPTIONS=--max-old-space-size=6144 npx tsc --noEmit && npx vitest run
 npx tsx scripts/syna301-seo-pages-recette.ts <sortie>             # navigateur, ~10 min
+npx tsx scripts/syna301-{stock,prestation,calendrier,theme}-recette.ts <sortie>   # une à la fois (mémoire)
 npx tsx scripts/syna301-confirmation-perimee-recette.ts <sortie>
 DIRECTION=atelier BUSINESS=services npx tsx scripts/syna301-contraste-section.ts <sortie.json>
 scripts/verify-theme.sh --rapide
