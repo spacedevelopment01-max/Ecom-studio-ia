@@ -1,3 +1,4 @@
+import {nativeLocalEditAllowed} from './existing-local-edits';
 import type {ConversationView} from './orchestrator/conversation/contract';
 import type {ConversationPhotoReceipt} from './orchestrator/conversation/photo-import';
 export const CONVERSATION_PHOTO_IMPORTED_EVENT='studio:files-changed';
@@ -15,7 +16,7 @@ export function createConversationPhotoImport(options:{conversationId:string;vie
  let state:PhotoImportState={busy:false,uncertain:!!pending,error:'',requiresFile:!!pending};
  const emit=(patch:Partial<PhotoImportState>)=>{state={...state,...patch};if(inScope())options.onState(state);};
  const clear=()=>{pending=null;file=null;try{options.storage?.removeItem(key);}catch{}};
- const enabled=()=>inScope()&&!options.view().readOnlyReason&&!options.view().recovery&&options.view().photoImport?.enabled===true;
+ const enabled=()=>inScope()&&nativeLocalEditAllowed(options.view())&&options.view().photoImport?.enabled===true;
  async function request(init?:RequestInit){const requestId=pending!.requestId,r=await options.fetch(init?route:route+'?requestId='+encodeURIComponent(requestId),init??{cache:'no-store'}),body=await r.json();if(!r.ok)throw Object.assign(new Error(body.error??`Erreur ${r.status}`),{status:r.status});return body;}
  async function accept(body:unknown,requestId:string){
   if(!inScope())return;if(!hasConversationPhotoReceipt(body,options.conversationId,projectId!,requestId))throw Error('Import non confirmé par un reçu natif. Aucun résultat visuel déduit.');
