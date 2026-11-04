@@ -44,7 +44,7 @@ export function proposeLocalFiles(user:User,c:ConversationRow,m:ConversationStat
   const rename=/^(?:Renomme (?:ce|le) fichier en|Rename (?:this|the) file to)\s+([\s\S]+)$/iu.exec(fileRequest(text));
   const move=/^(?:D[ée]place (?:ce|le) fichier (?:vers|dans) le dossier|Move (?:this|the) file to (?:the )?folder)\s+([\s\S]+)$/iu.exec(fileRequest(text));
   const name=exactMetadataName(rename?.[1]??move?.[1]??'');
-  if((!rename&&!move)||!name)fail('Précisez un seul nom exact : Renomme ce fichier en nom, ou Déplace ce fichier vers le dossier nom ou identifiant exact. Utilisez des guillemets pour un nom contenant une conjonction.');
+  if((!rename&&!move)||!name)fail('Précisez : Renomme ce fichier en « nom exact » ou Déplace ce fichier vers le dossier « nom ou identifiant exact ».');
   requirePlan(user,c.project_id!);const {pin,asset:a}=selected(c),after:Snapshot={name:a.name,folderId:a.folder_id};
   let folder:LocalFilesProposal['folder'];
   if(rename){after.name=name;if(!after.name||after.name===a.name)fail('Le nouveau nom est vide ou identique. Aucun changement.');}
