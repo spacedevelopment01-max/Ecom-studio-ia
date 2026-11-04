@@ -1,3 +1,4 @@
+import {checkedServiceContact,type ServiceContactField} from '../../service-contact-validation';
 /** First exact native business-profile field. Never a booking/content-item identity. */
 import {unsafeContentReason} from '../../theme/content-security';
 import {HttpError,ownedProject,type User} from '../../auth';
@@ -7,11 +8,12 @@ import {loadProject,saveServices} from '../../projects';
 import {requirePlan} from '../../plan-gates';
 import {activeContextEnabled} from './active-context';
 import type {ConversationRow,ConversationState} from './contract';
-export type ServiceProfileProposal={id:string;version:number;fingerprint:string;before:string;after:string;expiresAt:number;field?:'service-name';serviceKey?:string};
-export type ServiceProfilePresentation={schema:'syna-service-profile-1';state:'proposed'|'applied'|'ambiguous';field:'hours'|'service-name';serviceKey?:string;choices?:{key:string;name:string}[];message:string;financialConsent:false;costEur:0;providerCalls:0;confirmationRequired:boolean;actionsExecuted:boolean;publication:false;proposalId?:string;diff?:{before:string;after:string};sourceVersion?:number;resultVersion?:number;receiptId?:string;projectId:string};
+export type ServiceProfileProposal={id:string;version:number;fingerprint:string;before:string;after:string;expiresAt:number;field?:'service-name'|ServiceContactField;serviceKey?:string};
+export type ServiceProfilePresentation={schema:'syna-service-profile-1';state:'proposed'|'applied'|'ambiguous';field:'hours'|'service-name'|ServiceContactField|'contact';serviceKey?:string;choices?:{key:string;name:string}[];message:string;financialConsent:false;costEur:0;providerCalls:0;confirmationRequired:boolean;actionsExecuted:boolean;publication:false;proposalId?:string;diff?:{before:string;after:string};sourceVersion?:number;resultVersion?:number;receiptId?:string;projectId:string};
 export const serviceProfileEnabled=()=>activeContextEnabled()&&process.env.STUDIO_CONVERSATION_SERVICE_PROFILE==='1';
 /** Catch native scheduling requests before any paid reasoning; an unclear target stays a free question. */
-export const serviceProfileCandidate=(text:string)=>/^(?:renomme|rebaptise) (?:cette|la) prestation\b/iu.test(text.trim())||/\b(?:horaires?|cr[ée]neaux|disponibilit[ée]s?)\b/iu.test(text)&&/^(?:remplace|change|modifie|mets?|nos? |les? |mes? )/iu.test(text.trim());
+const contactCandidate=(text:string)=>/^(?:mets?|remplace|change|modifie|efface|vide|supprime)\b/iu.test(text.trim())&&/\b(?:t[ée]l[ée]phone|courriel|e-?mail|coordonn[ée]es|zone d[’']intervention|adresse)\b/iu.test(text);
+export const serviceProfileCandidate=(text:string)=>contactCandidate(text)||/^(?:renomme|rebaptise) (?:cette|la) prestation\b/iu.test(text.trim())||/\b(?:horaires?|cr[ée]neaux|disponibilit[ée]s?)\b/iu.test(text)&&/^(?:remplace|change|modifie|mets?|nos? |les? |mes? )/iu.test(text.trim());
 function requestedHours(text:string):string|undefined{
  const match=/^(?:(?:remplace|change|modifie|mets?) (?:les |mes )?horaires (?:du profil(?: d[’']activit[ée])?|d[’']ouverture) (?:par|pour|[àa])\s*:?[ \t]*|(?:nos?|les?|mes?) horaires (?:du profil(?: d[’']activit[ée])?|d[’']ouverture) sont\s*:?[ \t]*)([^\r\n]+)$/iu.exec(text.trim());
  if(!match)return;
@@ -21,7 +23,7 @@ function requestedHours(text:string):string|undefined{
 }
 
 const fp=(profile:unknown)=>stableHash('native-business-profile-1',profile);
-function profile(user:User,c:ConversationRow,m:ConversationState){if(!serviceProfileEnabled())throw new HttpError(404,'Modification du profil indisponible.');if(!c.project_id)throw new HttpError(409,'Rattachez un projet de services.');ownedProject(user,c.project_id);requirePlan(user,c.project_id);const p=loadProject(c.project_id);if(p.business!=='services'||m.activeContextTab!=='produit')throw new HttpError(409,'Ouvrez Activité pour modifier les horaires du profil de ce projet. Les créneaux réservables sont distincts.');return p;}
+function profile(user:User,c:ConversationRow,m:ConversationState){if(!serviceProfileEnabled())throw new HttpError(404,'Modification du profil indisponible.');if(!c.project_id)throw new HttpError(409,'Rattachez un projet de services.');ownedProject(user,c.project_id);requirePlan(user,c.project_id);const p=loadProject(c.project_id);if(p.business!=='services'||m.activeContextTab!=='produit')throw new HttpError(409,'Ouvrez Activité pour modifier le profil de ce projet. Les créneaux réservables et le compte sont distincts.');return p;}
 const present=(c:ConversationRow,state:ServiceProfilePresentation['state'],message:string,extra:Partial<ServiceProfilePresentation>={}):ServiceProfilePresentation=>({schema:'syna-service-profile-1',state,field:'hours',projectId:c.project_id!,message,financialConsent:false,costEur:0,providerCalls:0,confirmationRequired:false,actionsExecuted:false,publication:false,...extra});
 export function proposeServiceProfile(user:User,c:ConversationRow,m:ConversationState,text:string){
  delete m.serviceProfileProposal;
@@ -37,6 +39,18 @@ export function proposeServiceProfile(user:User,c:ConversationRow,m:Conversation
   const proposal:ServiceProfileProposal={id:id(),version:p.servicesVersion,fingerprint:fp(p.services),field:'service-name',serviceKey:item.key,before:item.name,after,expiresAt:now()+15*60000};m.serviceProfileProposal=proposal;
   return present(c,'proposed','Vérifiez le nom exact de cette prestation du profil. Prix, durée, description et autres prestations conservés. Les réservations, contenus acquis et site existant ne seront pas réécrits.',{field:'service-name',serviceKey:item.key,proposalId:proposal.id,diff:{before:proposal.before,after},sourceVersion:proposal.version,confirmationRequired:true});
  }
+ if(contactCandidate(text)){
+  const p=profile(user,c,m),question=(message:string)=>present(c,'ambiguous',message,{field:'contact'});
+  const label="(?:le |mon |la |ma |l[’'])(t[ée]l[ée]phone|num[ée]ro de t[ée]l[ée]phone|e-?mail|courriel|zone d[’']intervention) du profil";
+  const change=new RegExp("^(?:mets?|remplace|change|modifie) "+label+" (?:par|pour|[àa])\\s*:?[ \\t]*(.+)$",'iu').exec(text.trim()),clear=new RegExp("^(?:efface|vide) "+label+"\\s*[.!]?$",'iu').exec(text.trim());
+  if(!change&&!clear)return question('Précisez le téléphone, l’e-mail ou la zone d’intervention du PROFIL : Mets le téléphone du profil à « 01 23 45 67 89 ». Les coordonnées du compte et des réservations sont distinctes. L’adresse liée à la réservation du site reste dans son formulaire natif pour ce lot. Aucun devis ni changement.');
+  const name=(change??clear)![1],field:ServiceContactField=/t[ée]l[ée]phone/iu.test(name)?'phone':/courriel|mail/iu.test(name)?'email':'area';let raw='';
+  if(change){const source=change[2].trim(),quoted=/^[«“"]([^»”"\r\n]*)[»”"]\s*[.!]?$/u.exec(source);if(!quoted&&(/[«»“”"]|\b(?:puis|ensuite)\b|[\r\n]/iu.test(source)))return question('Donnez une seule valeur exacte, ou Efface le champ du profil explicitement. Aucune commande chaînée ne sera appliquée.');raw=quoted?quoted[1]:source;}
+  let after:string;try{after=checkedServiceContact(field,raw);}catch(e){if(e instanceof HttpError&&e.status===400)return question(e.message);throw e;}
+  const before=p.services[field];if(typeof before!=='string')return question('Le champ natif ne contient pas un texte valide. Rechargez le profil ;aucune autre donnée ne sera normalisée silencieusement.');if(before===after)return question('Cette coordonnée est déjà enregistrée. Aucun changement ni nouvelle version.');
+  const proposal:ServiceProfileProposal={id:id(),version:p.servicesVersion,fingerprint:fp(p.services),field,before,after,expiresAt:now()+15*60000};m.serviceProfileProposal=proposal;
+  return present(c,'proposed','Vérifiez ce champ exact du profil du projet. Après accord gratuit, les coordonnées du profil peuvent être utilisées par les parcours natifs qui le lisent. Aucun e-mail,appel ou rendez-vous ne sera envoyé ou créé ici ;adresse,autres coordonnées et prestations conservées.',{field,proposalId:proposal.id,diff:{before,after},sourceVersion:proposal.version,confirmationRequired:true});
+ }
  const value=requestedHours(text);
  if(!value){
   if(!c.project_id)throw new HttpError(409,'Rattachez un projet de services.');ownedProject(user,c.project_id);requirePlan(user,c.project_id);
@@ -50,7 +64,7 @@ export function proposeServiceProfile(user:User,c:ConversationRow,m:Conversation
 }
 
 export function confirmServiceProfile(user:User,c:ConversationRow,m:ConversationState,proposalId:string,requestId:string){const p=profile(user,c,m),proposal=m.serviceProfileProposal;if(!proposal||proposal.id!==proposalId||proposal.expiresAt<now()||proposal.version!==p.servicesVersion||proposal.fingerprint!==fp(p.services))throw new HttpError(409,'Le profil ou la proposition a changé. Relisez et préparez un nouvel accord gratuit.','service_profile_conflict');const expected=structuredClone(p.services);
- if(proposal.field==='service-name'){const items=expected.services.filter(x=>x.key===proposal.serviceKey);if(items.length!==1||items[0].name!==proposal.before)throw new HttpError(409,'La prestation a changé.');items[0].name=proposal.after;}else expected.hours=proposal.after;
+ if(proposal.field==='service-name'){const items=expected.services.filter(x=>x.key===proposal.serviceKey);if(items.length!==1||items[0].name!==proposal.before)throw new HttpError(409,'La prestation a changé.');items[0].name=proposal.after;}else if(proposal.field){expected[proposal.field]=checkedServiceContact(proposal.field,proposal.after);}else expected.hours=proposal.after;
  // saveServices preserves native content aliases so acquired documents keep their identity.
  expected.services=expected.services.map(item=>{const old=p.services.services.find(x=>x.key===item.key)!;return{...item,contentAliases:[...new Set([...(old.contentAliases??[]),...(item.contentAliases??[]),old.name,item.name])]};});
- saveServices(p.id,expected,proposal.version);const read=loadProject(p.id);if(read.servicesVersion!==proposal.version+1||fp(read.services)!==fp(expected))throw new HttpError(409,'Enregistrement natif non confirmé.');delete m.serviceProfileProposal;return present(c,'applied',proposal.field==='service-name'?'Nom de la prestation enregistré et relu. Identité et alias natifs conservés ; aucune réservation ni création acquise réécrite.':'Horaires du profil enregistrés et relus. Aucun appel IA ni reconstruction du site ou des créneaux réservables.',{...(proposal.field==='service-name'?{field:'service-name' as const,serviceKey:proposal.serviceKey}:{}),proposalId:proposal.id,diff:{before:proposal.before,after:proposal.after},sourceVersion:proposal.version,resultVersion:read.servicesVersion,receiptId:requestId,actionsExecuted:true});}
+ saveServices(p.id,expected,proposal.version);const read=loadProject(p.id);if(read.servicesVersion!==proposal.version+1||fp(read.services)!==fp(expected))throw new HttpError(409,'Enregistrement natif non confirmé.');delete m.serviceProfileProposal;return present(c,'applied',proposal.field&&proposal.field!=='service-name'?'Coordonnée du profil enregistrée et relue. Aucun message,appel ni rendez-vous créé.':proposal.field==='service-name'?'Nom de la prestation enregistré et relu. Identité et alias natifs conservés ; aucune réservation ni création acquise réécrite.':'Horaires du profil enregistrés et relus. Aucun appel IA ni reconstruction du site ou des créneaux réservables.',{...(proposal.field?{field:proposal.field,...(proposal.field==='service-name'?{serviceKey:proposal.serviceKey}:{})}:{}),proposalId:proposal.id,diff:{before:proposal.before,after:proposal.after},sourceVersion:proposal.version,resultVersion:read.servicesVersion,receiptId:requestId,actionsExecuted:true});}
