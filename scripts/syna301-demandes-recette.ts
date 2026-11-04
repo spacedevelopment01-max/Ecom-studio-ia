@@ -90,6 +90,8 @@ try {
     const page = await context.newPage();
     page.setDefaultTimeout(45000);
     page.on("pageerror", (e) => jsErrors.push(`${label} : ${e.message}`));
+    const confirmBodies: Record<string, unknown>[] = [];
+    page.on("request", (r) => { if (r.method() === "POST" && /"confirm-site-request"/.test(r.postData() ?? "")) confirmBodies.push(JSON.parse(r.postData()!)); });
     const panel = page.locator("#syna-panel:visible"), card = panel.getByRole("region", { name: "Demandes reçues", exact: true });
     const shot = async (name: string) => { const file = `${label}-${name}.png`; await page.screenshot({ path: path.join(out, file) }); return file; };
     const step = async (etape: string, fn: () => Promise<string | void>) => {
@@ -197,6 +199,26 @@ try {
         await openSyna();
         await card.getByRole("status").getByText(/Enregistré et relu · reçu/).waitFor();
         await shot("7-apres-rechargement");
+      });
+      await step("ancien accord resté en mémoire + rechargement : seule la nouvelle proposition (autre demande) est confirmée", async () => {
+        const stale = confirmBodies.at(-1); check(stale?.proposalId, "corps de confirmation non relevé");
+        const key = `syna-free-requests:${k.cid}`;
+        await page.evaluate(([kk, v]) => sessionStorage.setItem(kk, v), [key, JSON.stringify(stale)] as const);
+        await page.reload({ waitUntil: "networkidle" });
+        await send("Montre les demandes reçues de ce projet");
+        await card.locator(`[data-syna-request="${k.trap}"]`).getByRole("button", { name: "Désigner cette demande", exact: true }).click();
+        await card.locator(`[data-syna-request="${k.trap}"]`).getByRole("button", { name: "Demande désignée", exact: true }).waitFor();
+        await send("Marque cette demande comme lue");
+        await confirmBtn().waitFor();
+        const turns = () => all<{ request_json: string }>("SELECT request_json FROM agent_conversation_turns WHERE conversation_id=?", k.cid).filter((t) => /confirm-site-request/.test(t.request_json)).length;
+        const before = confirmBodies.length, n = turns();
+        await confirmBtn().click(); await card.getByRole("status").getByText(/Enregistré et relu · reçu/).waitFor();
+        const sent = confirmBodies.slice(before);
+        check(sent.length === 1 && sent[0].proposalId !== stale!.proposalId && sent[0].requestId !== stale!.requestId, `envois : ${JSON.stringify(sent)}`);
+        check(turns() === n + 1, "écritures en double ou absentes");
+        check(row(k.pid, k.trap).read_at !== null && row(k.pid, k.trap).handled_at === null, "statut de l'autre demande inattendu");
+        check(!(await page.evaluate((kk) => sessionStorage.getItem(kk), key)), "accord encore en mémoire");
+        await shot("8-ancien-accord-ecarte"); return `envoyé ${sent[0].proposalId}, ancien ${stale!.proposalId} écarté`;
       });
     } catch (e) { errors.push(`${label} : ${String(e).slice(0, 300)}`); }
     results.push({ mode: k.mode, format: k.format, steps, ok: steps.length > 0 && steps.every((s) => s.ok) });
