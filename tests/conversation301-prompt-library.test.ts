@@ -87,3 +87,18 @@ it('nested sync/async AI-disabled scopes restore the outer reason',async()=>{awa
 it('sync throws and async rejects restore the AI-disabled scope',async()=>{const error=new Error('controlled failure');expect(()=>withAiDisabled('sync failure',()=>{throw error;})).toThrow(error);expect(aiDisabledReason()).toBeNull();await expect(withAiDisabled('async failure',async()=>{await Promise.resolve();throw error;})).rejects.toBe(error);expect(aiDisabledReason()).toBeNull();});
 it('the real spending guard rejects before a provider sentinel or reservation, in both scope forms',async()=>{const f=await fixture(),spend=emptySpend(),provider=vi.fn(()=>{throw Error('Provider must never run');});expect(()=>withAiDisabled('read scope',()=>{assertAiAllowed(f.u.id,f.pid);return provider();})).toThrow(/read scope/);await expect(withAiDisabled('read scope async',async()=>{await Promise.resolve();assertAiAllowed(f.u.id,f.pid);return provider();})).rejects.toThrow(/read scope async/);expect(provider).not.toHaveBeenCalled();expect(emptySpend()).toEqual(spend);expect(aiDisabledReason()).toBeNull();});
 it('flag off preserves ordinary conversation response fields and the native GET shape',async()=>{const f=await fixture();vi.stubEnv('STUDIO_CONVERSATION_PROMPTS','0');const native=nativeRows(),spend=emptySpend(),r=await thread.POST(req(command(f,'Je prépare une boutique de produits fictifs.')),ctx(f.c.id));expect(r.status).toBe(200);const view=await r.json();expect(view.localPromptsRead).toBeUndefined();expect(view.localPrompts).toBeUndefined();expect(JSON.stringify(view)).not.toContain(TITLE);const read=await(await library.GET()).json();expect(Object.keys(read).sort()).toEqual(['categories','favorites','prompts','sectors']);expect(read.prompts.find((p:any)=>p.id===f.promptId).body).toBe(BODY);expect(nativeRows()).toEqual(native);expect(emptySpend()).toEqual(spend);});
+
+
+it.each(['products','services'] as const)('%s: acquired preparation does not hide a free metadata read or rewrite the brief',async business=>{
+ const {seedSourcedAnglesForTest}=await import('./sourced-strategy-fixture');
+ const {stateOf}=await import('@/lib/preparation/store');
+ const f=await fixture(business);seedSourcedAnglesForTest(f.pid);
+ const before=stateOf(f.pid),native=nativeRows(),spend=emptySpend(),v=conversationView(f.u,f.c.id);
+ expect(v.readOnlyReason).toMatch(/préparation engagée/);expect(v.localEditsWritable).toBe(true);
+ expect(v.localPromptsRead).toEqual({enabled:true});
+ const response=await thread.POST(req(command(f)),ctx(f.c.id));expect(response.status,await response.clone().text()).toBe(200);
+ const listed=await response.json();expect(listed.localPrompts).toMatchObject({state:'listed',readOnly:true,actionsExecuted:false,providerCalls:0});
+ expect(listed.localPrompts.rows.some((p:any)=>p.id===f.promptId)).toBe(true);expect(JSON.stringify(listed.localPrompts)).not.toContain(BODY);
+ const loaded=await thread.GET(req(),ctx(f.c.id));expect(loaded.status).toBe(200);const reread=await loaded.json();expect(reread.localPrompts).toEqual(listed.localPrompts);expect(reread.readOnlyReason).toMatch(/préparation engagée/);
+ expect(stateOf(f.pid)).toEqual(before);expect(nativeRows()).toEqual(native);expect(emptySpend()).toEqual(spend);expect(fetch).not.toHaveBeenCalled();
+});

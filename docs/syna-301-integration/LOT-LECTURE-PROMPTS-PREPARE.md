@@ -1,0 +1,9 @@
+# Lecture des métadonnées de prompts sur projet préparé
+
+Le verrou de fiche masquait localPromptsRead et le résultat alors que la bibliothèque native reste lisible sans modification ni dépense. Deux tests métier produits/services reproduisent localPromptsRead undefined sur préparation acquise (23 anciens tests passent). Le premier essai du nouveau harnais avait un import stateOf incorrect ; il est conservé séparément dans /tmp/parity301-prepared-prompts-red.log et ne constitue pas la preuve applicative. La vraie reproduction est /tmp/parity301-prepared-prompts-red-v2.log.
+
+Correctif limité à conversationView : le DTO et sa capacité de lecture utilisent localEditsWritable et le drapeau PROMPTS, au lieu de readOnlyReason de fiche. Aucun lecteur natif, prix, consentement, prompt, moteur, workflow ou composant Claude modifié. Le plan reste obligatoire même pour administrateur ; fermeture de drapeau, A1, propriétaire et projets masqués/archivés conservent leurs tests.
+
+42 tests ciblés passent : bibliothèque native/HTTP auth/SQLite, préparations produits+services intégralement conservées, contenu des prompts non exposé, titres traités comme données non fiables, aucun classificateur/fournisseur/réservation/dépense. Les tests de consentement payant, ancienne UI et permissions préparées sont conservés. CI complète du SHA de cette PR à observer ; aucune preuve navigateur de ce nouveau lot anticipée.
+
+À Claude : handlesLocalPrompts doit distinguer permission de lecture et readOnlyReason de fiche, via nativeLocalEditAllowed(view) + localPromptsRead.enabled, sans ouvrir recovery/A1 ni permettre exécution/édition. Le composant lui appartient et n’est pas modifié ici. Recette compilée préparée à réaliser après convergence UI ; cette limitation doit rester dans la matrice. Aucune exécution de prompt ni lecture de corps raccordée.
