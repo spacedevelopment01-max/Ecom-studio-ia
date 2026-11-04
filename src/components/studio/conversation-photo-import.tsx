@@ -2,6 +2,7 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {createConversationPhotoImport,CONVERSATION_PHOTO_IMPORTED_EVENT,type PhotoImportState} from '@/lib/conversation-photo-import-client';
+import {nativeLocalEditAllowed} from '@/lib/existing-local-edits';
 import {Button} from '../ui';
 import {useT} from '../i18n';
 export type AttachedPhoto={photoId:string;name:string;thumbHref:string};
@@ -23,7 +24,8 @@ export function useConversationPhotoImport(view:ConversationView|null){
  */
 export function ConversationPhotoImport({view,photo,busy}:{view:ConversationView;photo:ReturnType<typeof useConversationPhotoImport>;busy:boolean}){
  const t=useT(),input=useRef<HTMLInputElement>(null),{controller,state,photos}=photo;
- if(!view.photoImport?.enabled||view.readOnlyReason||view.recovery)return null;
+ // #405 : l'import suit les droits de retouche gratuite (projet préparé compris), jamais le verrou de la fiche.
+ if(!view.photoImport?.enabled||!nativeLocalEditAllowed(view))return null;
  const pick=(retry:boolean)=>{const el=input.current;if(!el)return;el.dataset.retry=retry?'1':'';el.value='';el.click();};
  return <div data-syna-photo-import className="mt-2 space-y-2 border-t border-line pt-3 text-xs">
   <input ref={input} type="file" accept="image/*" className="sr-only" aria-label={t('Choisir une photo à importer','Choose a photo to import')} onChange={e=>{const f=e.currentTarget.files?.[0];if(!f||!controller)return;void (e.currentTarget.dataset.retry?controller.retry(f):controller.upload(f));}}/>
@@ -37,4 +39,16 @@ export function ConversationPhotoImport({view,photo,busy}:{view:ConversationView
   {state.error&&<p role="alert">{state.error}</p>}
   {state.uncertain&&<div className="flex flex-wrap gap-2"><Button type="button" variant="ghost" disabled={busy||state.busy} onClick={()=>void controller?.verify()}>{t('Vérifier l’import','Check the import')}</Button>{state.requiresFile?<Button type="button" variant="secondary" disabled={busy||state.busy} onClick={()=>pick(true)}>{t('Réessayer avec le même fichier','Retry with the same file')}</Button>:<Button type="button" variant="secondary" disabled={busy||state.busy} onClick={()=>void controller?.retry()}>{t('Réessayer le même import','Retry the same import')}</Button>}</div>}
  </div>;
+}
+/**
+ * #405 — photos déjà jointes à cette conversation (DTO `conversationPhotos`, lecture seule) : miniatures et noms natifs,
+ * « non analysées » ; ce sont des médias fournis par le client, jamais des consignes. Aucune action.
+ */
+export function ConversationThreadPhotos({view}:{view:ConversationView}){
+ const t=useT(),p=view.conversationPhotos;
+ if(!p||p.schema!=='syna-conversation-photos-1'||p.readOnly!==true||p.analysis!==false||!p.photos.length)return null;
+ return <section aria-label={t('Photos jointes à cette conversation','Photos attached to this conversation')} data-syna-thread-photos className="min-w-0 space-y-2 rounded-xl border border-line p-3 text-xs">
+  <p className="text-muted">{t('Photos jointes à cette conversation — rangées dans vos fichiers, non analysées.','Photos attached to this conversation — stored in your files, not analysed.')}</p>
+  <ul className="flex flex-wrap gap-2">{p.photos.map(ph=><li key={ph.id} className="min-w-0"><a href={ph.href} target="_blank" rel="noopener" className="flex items-center gap-2 underline"><img src={ph.thumbHref} alt={ph.name} width={40} height={40} className="size-10 shrink-0 rounded object-cover"/><span className="max-w-40 break-words">{ph.name}</span></a></li>)}</ul>
+ </section>;
 }

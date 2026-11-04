@@ -29,7 +29,7 @@ import {handlesLocalFolderRename} from "@/lib/local-folder-rename-confirmation-c
 import {useLocalFolderMoveConfirmation} from "./use-local-folder-move-confirmation";
 import {ConversationLocalFolderMove} from "./conversation-local-folder-move";
 import {handlesLocalFolderMove} from "@/lib/local-folder-move-confirmation-client";
-import {ConversationPhotoImport,useConversationPhotoImport} from "./conversation-photo-import";
+import {ConversationPhotoImport,ConversationThreadPhotos,useConversationPhotoImport} from "./conversation-photo-import";
 import {ConversationLocalSeo} from "./conversation-local-seo";
 import {ConversationLocalPages} from "./conversation-local-pages";
 import {handlesLocalSeo} from "@/lib/local-seo-confirmation-client";
@@ -187,6 +187,7 @@ export function ConversationPanel({projectId,subscriptionKey,compact=false,onCre
       {v&&<ConversationLocalFiles view={v} confirmation={files} busy={interactionBusy} selectionMatches={!!currentFocus&&currentFocus.tab==='fichiers'&&currentFocus.target.kind==='asset'&&currentFocus.target.assetId===v.localFiles?.asset?.id} onDesignate={item=>{if(!projectId)return;setFocus({projectId,tab:'fichiers',label:item.name,target:item.target});if(!(activeTab.success&&activeTab.data==='fichiers'))router.push(`/studio/${projectId}/fichiers`);}}/>}
       {v&&<ConversationLocalSeo view={v} confirmation={seo} busy={interactionBusy}/>}
       {v&&<ConversationLocalPages view={v} confirmation={pages} busy={interactionBusy} onSuggest={text=>setText(text)}/>}
+      {v&&<ConversationThreadPhotos view={v}/>}
       {v&&<ConversationLocalStock view={v} confirmation={stock} busy={interactionBusy}/>}
       {v&&<ConversationLocalCalendar view={v} confirmation={calendar} busy={interactionBusy}/>}
       {v&&<ConversationLocalThemeChoice view={v} confirmation={themeChoice} busy={interactionBusy} onSuggest={text=>setText(text)}/>}

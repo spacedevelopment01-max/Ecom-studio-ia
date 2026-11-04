@@ -132,12 +132,6 @@ try {
       });
       await step("Composeur : « Importer une photo » → miniature « importée, non analysée » → jointe au message suivant puis retirée", async () => {
         await openSyna(); await panel.getByRole("button", { name: "Lien / photo", exact: true }).click();
-        if (PREPARED) {
-          // Constat (contrat #378 / a593e6ea) : l'import photo reste sous la garde de la fiche ; sur un projet préparé il
-          // n'est pas projeté. On vérifie qu'aucun bouton trompeur n'est affiché, sans contourner la garde.
-          await page.waitForTimeout(1500); check(!(await panel.getByLabel("Choisir une photo à importer", { exact: true }).count()), "import photo affiché sur un projet préparé");
-          constats.push(`${label} : import photo non disponible sur projet préparé (garde serveur photoImport = fiche modifiable)`); return "NON DISPONIBLE (projet préparé, constat)";
-        }
         await panel.getByLabel("Choisir une photo à importer", { exact: true }).setInputFiles(photoFile);
         const chips = panel.getByRole("list", { name: "Photos jointes au prochain message", exact: true }); await chips.waitFor();
         check(/importée, non analysée/.test(await chips.innerText()), "mention non analysée");
@@ -147,7 +141,11 @@ try {
         await say("Voici la photo de l’atelier pour le site");
         const end = Date.now() + 30000; while (Date.now() < end && bodies.length === n) await page.waitForTimeout(200);
         const sent = bodies.slice(n).find((b) => b.action === "message") as { photoIds?: string[] } | undefined; check(JSON.stringify(sent?.photoIds) === JSON.stringify([asset!.id]), `photoIds envoyés : ${JSON.stringify(sent?.photoIds)}`);
-        await chips.waitFor({ state: "detached" }); await noOverflow(); return asset!.id.slice(0, 8);
+        await chips.waitFor({ state: "detached" });
+        // #405 : la photo jointe apparaît dans le fil, en lecture seule, non analysée (projet neuf comme préparé).
+        const thread = panel.getByRole("region", { name: "Photos jointes à cette conversation", exact: true }); await thread.waitFor();
+        check((await thread.getByRole("img", { name: "photo-atelier-recette.png", exact: true }).count()) === 1, "photo absente du fil");
+        await noOverflow(); return asset!.id.slice(0, 8);
       });
       await step("Activité : « Mets le téléphone du profil à « 01 23 45 67 89 » » → accord → téléphone relu, autres champs intacts", async () => {
         await goto("produit"); const card = panel.getByRole("region", { name: "Téléphone du profil d’activité", exact: true }), before = loadProject(k.pid).services;
