@@ -12,8 +12,8 @@ for r in rows:
         assert r[key],(r['operation'],key)
 def clean(value):return value.replace('|','/').replace('\n',' ')
 md=[f'# Matrice unique de convergence #301 — {len(rows)} opérations','',
-    '162 unités de vérification : inventaire cumulé f64a6b0, conservé sans fusion de son ancienne pile source. Reprise sur Claude #369 ea6f0fd9 puis PR courtes #372–#376. Les 77 décompositions ajoutées à l’inventaire ne sont pas 77 défauts démontrés. Le nom historique du fichier reste inchangé.','',
-    '**Aucune ligne complète. PARTIEL décrit seulement le sous-parcours prouvé.** Aucun fournisseur réel, connexion réelle ou publication certifié. Les CI des nouveaux commits sont en cours ; ne pas les déclarer vertes avant leur verdict. Le CSV conserve les relevés natifs, phrases et modes hérités ; les ajouts moteur ne certifient pas automatiquement ces modes.','',
+    '162 unités conservées depuis f64a6b0,baseClaude#369ea6f0fd9,puis PR#372–#382 etconvergence#383af6e16b. Les77 décompositions restent un inventaire,pas77 défauts démontrés ;chemin etidentifiants historiques conservés.','',
+    '**Aucune ligne complète. PARTIEL décrit seulement le sous-parcours prouvé.** Aucun fournisseur réel, connexion réelle ou publication certifié. CI finales #372 et#373 SUCCESS ;autres SHA à qualifier. Les deux attentes CI historiques devenues fausses sont corrigées dans#380,sans suppression de tests ni transformation de leur ancien échec en succès. Le CSV conserve les relevés natifs, phrases et modes hérités ; les ajouts moteur ne certifient pas automatiquement ces modes.','',
     '| Statut | Nombre |','|---|---:|']
 md += [f'| {status} | {count} |' for status,count in sorted(Counter(r['statut'] for r in rows).items())]
 md += ['','| Cap. | Opération | Statut | Preuve actuelle | Manque | Responsable | Dépendance | Critère de fermeture |','|---|---|---|---|---|---|---|---|']
