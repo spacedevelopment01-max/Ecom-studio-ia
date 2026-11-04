@@ -15,6 +15,7 @@ import dynamic from "next/dynamic";
 const SubscriptionsAdmin = dynamic(() => import("./admin-plans").then((m) => m.SubscriptionsAdmin), { ssr: false });
 const CallsAdmin = dynamic(() => import("./admin-plans").then((m) => m.CallsAdmin), { ssr: false });
 const AccountingView = dynamic(() => import("./admin-accounting").then((m) => m.AccountingView), { ssr: false });
+const WaitlistAdmin = dynamic(() => import("./admin-waitlist").then((m) => m.WaitlistAdmin), { ssr: false });
 import { TextRoutingPanel, type TextRoutingData } from "./admin-text-routing";
 import type { MediaRoutingData } from "./admin-media-routing";
 const MediaRoutingPanel = dynamic(() => import("./admin-media-routing").then((m) => m.MediaRoutingPanel), { ssr: false });
@@ -49,6 +50,7 @@ type Overview = {
 const SECTIONS = [
   ["bord", "Tableau de bord", "Dashboard"],
   ["clients", "Clients", "Customers"],
+  ["attente", "Liste d'attente", "Waitlist"],
   ["abonnements", "Abonnements", "Subscriptions"],
   ["themes", "Thèmes et forfaits", "Themes and plans"],
   ["rdv", "Rendez-vous", "Appointments"],
@@ -136,6 +138,7 @@ export function AdminConsole() {
             {tab === "emails" && <SmtpSettings data={data} set={set} />}
             {tab === "bord" && (dash ? <DashboardView d={dash} onClients={() => setTab("clients")} /> : <div className="skeleton h-72 rounded-3xl" />)}
             {tab === "clients" && (dash ? <Clients d={dash} reload={() => { reload(); reloadDash(); }} /> : <div className="skeleton h-72 rounded-3xl" />)}
+            {tab === "attente" && <WaitlistAdmin />}
             {tab === "compta" && <AccountingView />}
             {tab === "abonnements" && <SubscriptionsAdmin />}
             {tab === "themes" && <ThemeRightsAdmin />}
