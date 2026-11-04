@@ -45,8 +45,15 @@ export function ConversationPhotoImport({view,photo,busy}:{view:ConversationView
  * « non analysées » ; ce sont des médias fournis par le client, jamais des consignes. Aucune action.
  */
 export function ConversationThreadPhotos({view}:{view:ConversationView}){
- const t=useT(),p=view.conversationPhotos;
- if(!p||p.schema!=='syna-conversation-photos-1'||p.readOnly!==true||p.analysis!==false||!p.photos.length)return null;
+ const t=useT(),p=view.conversationPhotos,brief=view.summary?.photoIds??[];
+ // Projet neuf : la photo jointe entre dans la fiche (summary.photoIds) ; on la montre aussi, en lecture seule.
+ if((!p||p.schema!=='syna-conversation-photos-1'||p.readOnly!==true||p.analysis!==false||!p.photos.length)){
+  if(!brief.length||view.recovery)return null;
+  return <section aria-label={t('Photos de votre fiche','Photos in your brief')} data-syna-brief-photos className="min-w-0 space-y-2 rounded-xl border border-line p-3 text-xs">
+   <p className="text-muted">{t('Photos de votre fiche — rangées dans vos fichiers, non analysées.','Photos in your brief — stored in your files, not analysed.')}</p>
+   <ul className="flex flex-wrap gap-2">{brief.map(id=><li key={id}><a href={`/api/files/${id}`} target="_blank" rel="noopener"><img src={`/api/files/${id}`} alt={t('Photo de la fiche','Brief photo')} width={40} height={40} className="size-10 rounded object-cover"/></a></li>)}</ul>
+  </section>;
+ }
  return <section aria-label={t('Photos jointes à cette conversation','Photos attached to this conversation')} data-syna-thread-photos className="min-w-0 space-y-2 rounded-xl border border-line p-3 text-xs">
   <p className="text-muted">{t('Photos jointes à cette conversation — rangées dans vos fichiers, non analysées.','Photos attached to this conversation — stored in your files, not analysed.')}</p>
   <ul className="flex flex-wrap gap-2">{p.photos.map(ph=><li key={ph.id} className="min-w-0"><a href={ph.href} target="_blank" rel="noopener" className="flex items-center gap-2 underline"><img src={ph.thumbHref} alt={ph.name} width={40} height={40} className="size-10 shrink-0 rounded object-cover"/><span className="max-w-40 break-words">{ph.name}</span></a></li>)}</ul>

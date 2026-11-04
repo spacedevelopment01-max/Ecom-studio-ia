@@ -67,3 +67,7 @@ it('import photo (#405) : droits de retouche gratuite, pas le verrou de fiche ; 
  expect(photo).toContain('if(!view.photoImport?.enabled||!nativeLocalEditAllowed(view))return null;');expect(photo).not.toContain('view.readOnlyReason||view.recovery');
  expect(photo).toContain("p.schema!=='syna-conversation-photos-1'||p.readOnly!==true||p.analysis!==false");expect(photo).toContain('non analysées');
 });
+it('projet neuf : la photo jointe à la fiche reste visible dans la conversation, en lecture seule',()=>{
+ const photo=fs.readFileSync('src/components/studio/conversation-photo-import.tsx','utf8');
+ expect(photo).toContain("t('Photos de votre fiche'");expect(photo).toContain('view.summary?.photoIds');expect(photo).toContain('src={`/api/files/${id}`}');
+});

@@ -143,8 +143,9 @@ try {
         const sent = bodies.slice(n).find((b) => b.action === "message") as { photoIds?: string[] } | undefined; check(JSON.stringify(sent?.photoIds) === JSON.stringify([asset!.id]), `photoIds envoyés : ${JSON.stringify(sent?.photoIds)}`);
         await chips.waitFor({ state: "detached" });
         // #405 : la photo jointe apparaît dans le fil, en lecture seule, non analysée (projet neuf comme préparé).
-        const thread = panel.getByRole("region", { name: "Photos jointes à cette conversation", exact: true }); await thread.waitFor();
-        check((await thread.getByRole("img", { name: "photo-atelier-recette.png", exact: true }).count()) === 1, "photo absente du fil");
+        // Projet préparé : la photo rejoint le fil ; projet neuf : elle entre dans la fiche. Dans les deux cas, elle est visible.
+        if (PREPARED) { const thread = panel.getByRole("region", { name: "Photos jointes à cette conversation", exact: true }); await thread.waitFor(); check((await thread.getByRole("img", { name: "photo-atelier-recette.png", exact: true }).count()) === 1, "photo absente du fil"); }
+        else { const fiche = panel.getByRole("region", { name: "Photos de votre fiche", exact: true }); await fiche.waitFor(); const im = fiche.locator(`img[src="/api/files/${asset!.id}"]`); await page.waitForFunction((el) => (el as HTMLImageElement).complete && (el as HTMLImageElement).naturalWidth > 0, await im.elementHandle(), { timeout: 30000 }); }
         await noOverflow(); return asset!.id.slice(0, 8);
       });
       await step("Activité : « Mets le téléphone du profil à « 01 23 45 67 89 » » → accord → téléphone relu, autres champs intacts", async () => {
