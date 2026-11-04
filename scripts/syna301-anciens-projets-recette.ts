@@ -5,6 +5,9 @@
  *   enregistrée, sans devis ni action ; dans Fichiers, un fichier coché + « Renomme ce fichier en « … » » donne la carte
  *   gratuite, la confirmation écrit le nom, le reçu est relu, la liste se met à jour ; rechargement : reçu conservé ;
  *   le projet reste en lecture seule (aucune Préparation créée), 0 appel IA.
+ *   Avec RECETTE_A1_DOSSIERS=1 (contrat #402, réglages EXISTING_FOLDER_RENAME / EXISTING_FOLDER_MOVE fermés par défaut et
+ *   ouverts ici seulement) : « Renomme le dossier Photos en Photos clients » puis « Déplace le dossier Photos clients dans
+ *   le dossier Archives » → cartes gratuites, accords, nom puis parent relus, toujours sans Préparation.
  * Stockage isolé, clés vides, réseau hors boucle locale refusé, comptes fictifs.
  * Usage : npx tsx scripts/syna301-anciens-projets-recette.ts <dossier de sortie>
  */
@@ -18,13 +21,13 @@ if (process.env.DATABASE_FILE || process.env.STORAGE_DIR || process.env.DATA_DIR
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), "ecs-a1-301-"));
 process.env.DATA_DIR = dir; process.env.STOCK_OFFLINE = "1"; process.env.APP_SECRET = "a1-301-" + randomUUID();
 for (const key of ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "DASHSCOPE_API_KEY", "FAL_KEY", "GOOGLE_API_KEY", "PIXABAY_API_KEY"]) process.env[key] = "";
-Object.assign(process.env, Object.fromEntries(["LOT_A", "AI", "UI", "CONTEXT", "LOCAL_SITE", "FILES", "EXISTING_LOCAL"].map((k) => ["STUDIO_CONVERSATION_" + k, "1"])), { STUDIO_SYNA_SHELL: "1" });
+Object.assign(process.env, Object.fromEntries(["LOT_A", "AI", "UI", "CONTEXT", "LOCAL_SITE", "FILES", "EXISTING_LOCAL", ...(process.env.RECETTE_A1_DOSSIERS === "1" ? ["EXISTING_FOLDER_RENAME", "EXISTING_FOLDER_MOVE"] : [])].map((k) => ["STUDIO_CONVERSATION_" + k, "1"])), { STUDIO_SYNA_SHELL: "1" });
 const out = path.resolve(process.argv[2] ?? "work/recette-anciens-projets-301");
 fs.mkdirSync(out, { recursive: true });
 
 const { historicalProject } = await import("../tests/conversation284-fixtures");
 const { openProjectConversation } = await import("../src/lib/orchestrator/conversation");
-const { getAsset } = await import("../src/lib/library");
+const { getAsset, createFolder } = await import("../src/lib/library");
 const { stateOf } = await import("../src/lib/preparation/store");
 const { writeSynaPrefs } = await import("../src/lib/syna-ui/prefs-store");
 const { id, run, one, now } = await import("../src/lib/db");
@@ -36,7 +39,7 @@ type Format = "ordinateur" | "telephone";
 const CASES: { mode: Mode; format: Format }[] = [{ mode: "encre", format: "ordinateur" }, { mode: "encre", format: "telephone" }, { mode: "plein", format: "ordinateur" }, { mode: "plein", format: "telephone" }];
 const SIZE = { ordinateur: { width: 1440, height: 1000 }, telephone: { width: 390, height: 844 } } as const;
 
-const prepared: (typeof CASES[number] & { pid: string; token: string; assetId: string; name: string })[] = [];
+const prepared: (typeof CASES[number] & { pid: string; token: string; assetId: string; name: string; folderId: string; archivesId: string })[] = [];
 for (const k of CASES) {
   const f = await historicalProject("products");
   openProjectConversation(f.u, f.pid);
@@ -45,7 +48,8 @@ for (const k of CASES) {
   const token = id();
   run("INSERT INTO sessions(id,user_id,expires_at,created_at) VALUES(?,?,?,?)", sha256(token), f.u.id, now() + 3600000, now());
   writeSynaPrefs(f.u.id, "account", null, { mode: k.mode, panel: "collapsed" });
-  prepared.push({ ...k, pid: f.pid, token, assetId: a.id, name: a.name });
+  const photos = createFolder(f.pid, "Photos", null), archives = createFolder(f.pid, "Archives", null);
+  prepared.push({ ...k, pid: f.pid, token, assetId: a.id, name: a.name, folderId: photos.id, archivesId: archives.id });
 }
 
 const port = 6000 + Math.floor(Math.random() * 90), origin = `http://localhost:${port}`;
@@ -71,7 +75,7 @@ try {
     await context.addCookies([{ name: "ecs_session", value: k.token, url: origin }]);
     await context.route("**/*", (r) => { if (new URL(r.request().url()).origin === origin) return r.continue(); forbidden.push(r.request().url()); return r.abort(); });
     const page = await context.newPage();
-    page.setDefaultTimeout(45000);
+    page.setDefaultTimeout(150000);
     page.on("pageerror", (e) => jsErrors.push(`${label} : ${e.message}`));
     const panel = page.locator("#syna-panel:visible"), card = panel.getByRole("region", { name: "Rangement gratuit du fichier", exact: true });
     const shot = async (name: string) => { const file = `${label}-${name}.png`; await page.screenshot({ path: path.join(out, file) }); return file; };
@@ -119,6 +123,19 @@ try {
         await shot("3-recu-liste");
       });
       await step("rechargement : reçu conservé", async () => { await page.reload({ waitUntil: "networkidle" }); await openSyna(); await card.getByRole("status").getByText(/Enregistré et relu · reçu/).waitFor(); await shot("4-apres-rechargement"); });
+      if (process.env.RECETTE_A1_DOSSIERS === "1") {
+        const folderRow = () => one<{ id: string; name: string; parent_id: string | null }>("SELECT id,name,parent_id FROM folders WHERE id=?", k.folderId)!;
+        for (const [titre, phrase, region, verifie] of [
+          ["A1 : « Renomme le dossier Photos en Photos clients » → accord → nom relu", "Renomme le dossier Photos en Photos clients", "Renommer un dossier — gratuit", () => folderRow().name === "Photos clients" && folderRow().parent_id === null],
+          ["A1 : « Déplace le dossier Photos clients dans le dossier Archives » → accord → parent relu", "Déplace le dossier Photos clients dans le dossier Archives", "Déplacer un dossier — gratuit", () => folderRow().parent_id === k.archivesId && folderRow().name === "Photos clients"],
+        ] as const) await step(titre, async () => {
+          const c = panel.getByRole("region", { name: region, exact: true }), before = JSON.stringify(folderRow());
+          await send(phrase); await c.getByRole("button", { name: "Confirmer gratuitement", exact: true }).waitFor();
+          check(JSON.stringify(folderRow()) === before, "écriture avant l'accord");
+          await c.getByRole("button", { name: "Confirmer gratuitement", exact: true }).click(); await c.getByRole("status").getByText(/Enregistré et relu · reçu/).waitFor();
+          check(verifie(), `relu : ${JSON.stringify(folderRow())}`); check(!stateOf(k.pid), "une Préparation a été créée");
+        });
+      }
     } catch (e) { errors.push(`${label} : ${String(e).slice(0, 300)}`); }
     results.push({ mode: k.mode, format: k.format, steps, ok: steps.length > 0 && steps.every((s) => s.ok) });
     await context.close();

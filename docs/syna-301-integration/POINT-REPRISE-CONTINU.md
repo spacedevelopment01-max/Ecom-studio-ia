@@ -1,3 +1,37 @@
+# Reprise active : convergence V10, Réservations et Images
+
+La mission #301 reste ouverte. Aucun fournisseur réel, client, activation, publication, fusion main ou déploiement. Continuer les tâches indépendantes pendant les CI et les adaptations de Claude.
+
+## Derniers lots et convergence
+
+**#408 — 9b6794114aa8193d6aa1302dd413dee00693bc93** : lecture de la configuration des services réservables avec le moteur readPrestations et l’API privée réels, distincts du profil d’activité. BOOKING_READ reste fermé par défaut. 66 tests sur six fichiers et les types passent, dont 20 nouveaux ; deux cas rouges avant raccordement. Aucun rendez-vous créé ni disponibilité en temps réel certifiée. Carte et recette restent ouvertes. Contrat transmis dans #369/6633804057.
+
+**#409 — f554a6cd428b52fa65ff6b75f51e0dafa72d971c** : restauration des images acquises avec le moteur Fichiers. Filtre de type image obligatoire, même accord et reçu, aucun rachat ou régénération. 53 tests uniques sur cinq fichiers et types, dont 13 nouveaux ; quatre cas rouges initiaux. La suite passe 52 tests, puis les 13 nouveaux sont revérifiés après ajout du cas A1. Contrat transmis dans #369/6633980731. Carte générique inchangée ; nouvelle recette à qualifier.
+
+La branche indépendante **codex/parity301-convergence-v10** réunit #409/f554a6cd et Claude bdba24fe9d3f75e856f5def26e786d311178f568. Ses composants sont repris EXACTEMENT, sans modifier sa branche. **120 tests sur onze fichiers et les types passent** : 110 cas croisés puis les dix cas des deux autres fichiers de cartes modifiés. Aucun parcours navigateur V10 anticipé.
+
+Claude confirme #401/#402 et ses 17 cartes dans #369/6633704343 : déplacement de dossier et exceptions A1 renommage/déplacement. Ses recettes annoncées ne remplacent pas notre preuve indépendante de production. #403 lecture A1, #405 photo préparée et #408 lecture Réservations restent à intégrer chez lui ; tous les contrats et commits ont été transmis.
+
+## CI et preuves exactes
+
+**#394 à #402 : SUCCESS complet sur leurs SHA.** #402/5950fc2c, run41840639425 : 5933 tests réussis, 31 exclusions préexistantes, 632 fichiers réussis et un exclu. #401/e7452632, run41837147432 : 5913 tests, mêmes exclusions, 631 fichiers et un exclu.
+
+Runs encore à observer : #403/41846181130, #404/41846832989, #405/41848102025, #406/41848828779, #407/41849991916, #408/41851915469 et #409/41853173903. Aucun échec connu au dernier relevé ; ne pas anticiper les verdicts ou relancer les contrôles verts. Aucun contrôle supprimé ou affaibli.
+
+La preuve de production précédente reste #406/1a728077, buildHWgGEuhumzxC4dHxcw4-0 : quatre parcours sur quatre et 20 étapes. Dossier : annulation, nouvel accord après17s, reçu et rechargement. Prompts préparés : bibliothèque privée/favoris et commande mixte. Quatre recherches SIMULÉES intégralement inchangées ; zéro nouvelle tentative IA, requête externe, erreurJS ou job. Bruts et harnais en90541b10, captures locales seulement. Cette preuve ne qualifie pas les nouveaux contrats #407–#409 ou A1.
+
+## Environnement et suite
+
+Source : /workspace/work/parity301-ci-guards. Publier et aligner exactement V10 avant compilation. Checkout de build : /workspace/work/parity301-intents-v5, encore propre sur1a728077, branche codex/parity301-compiled-v9, sans serveur actif. Précharger scripts/lot9/network-guard.mjs pour tout Node/test/build ; données fictives seulement.
+
+1. Publier V10 et le compiler proprement dans notre checkout, avec les composants de Claude à l’identique.
+2. Exécuter la preuve indépendante du déplacement de dossier et des exceptions A1 dans les quatre formats : annulation, accord après au moins17s, reçu natif, rechargement, aucune Préparation créée dans A1 et baselines simulées conservées. Aucun drapeau activé hors recette.
+3. Observer les CI stables. Consulter les adaptations Claude pour #403/#405/#408, puis qualifier ces parcours. Pendant l’attente, poursuivre une lacune indépendante après reproduction. Les modifications des services réservables nécessitent encore un contrat de préparation/aperçu sans écriture autour de savePrestations ; ne pas inventer de version commune avec le profil.
+
+Matrice : **166 opérations, 64 PARTIEL, 72 ABSENT, 4 NON_TESTE, 26 BLOQUE, aucune complète**. La nouvelle lecture services.booking.list est une omission distincte ; services.booking reste absent pour les modifications. Native.images.restore est partiel uniquement pour le sous-parcours prouvé.
+
+---
+
 # Point actif : preuve production V9 et lot Stock #407
 
 La mission #301 reste inachevée. Continuer les modules indépendants. Aucun fournisseur réel, projet client, publication, activation, fusion main ou déploiement.
