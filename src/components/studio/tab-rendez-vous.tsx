@@ -65,7 +65,7 @@ export default function TabRendezVous() {
   const days = lang === "en" ? DAYS_EN : DAYS_FR;
   const r = data.rules;
   return (
-    <div className="grid gap-5" data-rdv={data.kind}>
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5" data-rdv={data.kind}>
       <Card className="p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
