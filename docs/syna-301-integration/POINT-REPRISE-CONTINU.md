@@ -1,3 +1,15 @@
+# Reprise prioritaire — convergence compilée V7
+
+Source actuelle **cb383590a7811df94153b9698754d3b071bde228**, PR brouillon #394 et complément isolé #395. Vrai merge ce6f96a6 de 06c35ebf et Claude ecfaa73d ; composants Claude repris à l’identique. Le texte historique ci-dessous reste daté ; ne pas en déduire que les anciennes cartes attendent encore leur adaptation : ecfaa73d l’a intégrée, les preuves compilées restent à qualifier domaine par domaine.
+
+Build production propre terminé, BUILD_ID **KqRyToh4Fq2rBTZFXDwi3**. Stock multivariante PRÉPARÉ réellement exécuté : **4/4,20 étapes**, Encre/Plein ordinateur/toucher mobile. Annulation sans écriture,4 confirmations après17001.52/17002.38/17001.02/17002.69ms, reçu/reload sans doublon ; seule quantité ciblée changée, versions produit/variante +1, sœur/prix/SKU/politiques/options identiques. APIversion SHA/prod/clean/build et permission native + fiche verrouillée vérifiées. Baseline4recherches simulées 4→4 intégralement inchangée,0nouvelle tentative/0job/0JS ;4requêtes GoogleFonts CSS bloquées conservées. Rapport PREUVE-STOCK-MULTIVARIANTE-PREPARE-V7.json et harnais scripts/parity301-prepared-stock-proof.ts. Captures locales /tmp/parity301-prepared-multivariant-stock-v7 uniquement. Ancien Stock multivariante a593 non préparé4/4 conservé séparément V6. Aucun correctif applicatif supplémentaire nécessaire pour le sélecteur de variantes déjà natif.
+
+#395 : serviceName du profil proposé/appliqué, aucun nom singulier inventé en ambiguïté ;6tests dont5rouges avant+29régressions/types. Événements Calendrier/Choix de thème nommés explicitement, anciens alias conservés. Claude informé #369/6630144835 des preuves Stock et du SHA exploitable.
+
+CI CB en cours : runs41825544838 et41825362424. Aucun verdict final anticipé. Profil prix/durée/description et dossier sur projets préparés, même build, en cours dans /tmp/parity301-prepared-lot6-v7 ; ne pas anticiper ce résultat. Branche d’exécution codex/parity301-compiled-v7, aucun build supplémentaire à lancer pendant Chromium. Pour reprendre : vérifier log et processus, puis qualifier domaines indépendants, observer CI exacteCB, actualiser matrice sans déclarer la parité complète. 163unités conservées,60PARTIEL/73ABSENT/4NON_TESTE/26BLOQUE à ce relevé. Photos liées à une fiche verrouillée et prompts restent à analyser séparément ; ne pas élargir A1.
+
+---
+
 # Reprise continue #301 — 4 novembre 2026, 11 h 30 UTC
 
 **Mission inachevée : continuer sans nouvelle autorisation entre les lots.** Aucun fournisseur réel, client, envoi/activation, fusion main ou déploiement. Codex possède moteurs/contrats/intentions/permissions/reprise ; Claude possède composants, désignation, aperçu, verrou commun et recettes indépendantes. Ne pas refaire #348.
