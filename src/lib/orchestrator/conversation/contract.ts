@@ -15,6 +15,10 @@ const base = z.object({
   projectRevision: z.number().int().min(0).nullable(),
 });
 export const CommandSchema = z.discriminatedUnion("action", [
+  base.extend({action:z.literal("confirm-pages"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-pages"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("confirm-seo"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-seo"),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal("cancel-local"),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal("confirm-service-profile"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal("cancel-service-profile"),proposalId:z.string().min(1).max(120)}).strict(),
@@ -44,7 +48,12 @@ export type Command = z.infer<typeof CommandSchema>;
 export type ConversationState = {
   localAdDocumentProposalId?:string;
   localPrompts?:import('./local-prompts').LocalPromptsState;
+  localPagesClarification?:{title:string;versionId:string;expiresAt:number;tab:string|null};
+  localPagesProposal?:import("./local-pages").PagesProposal;
+  localSeoProposal?:import("./local-seo").SeoProposal;
   serviceProfileProposal?:import("./local-service-profile").ServiceProfileProposal;
+  localPages?:import("./local-pages").PagesPresentation;
+  localSeo?:import("./local-seo").SeoPresentation;
   serviceProfile?:import("./local-service-profile").ServiceProfilePresentation;
   localBusinessContentProposal?:import('./local-business-content').LocalBusinessContentProposal;
   localBusinessContent?:import('./local-business-content').LocalBusinessContentPresentation;
@@ -100,7 +109,11 @@ export type ConversationView = {
   localFilesExecution?: {enabled:true};
   localFiles?: import('./local-files').LocalFilesPresentation;
   localBusinessContentExecution?:{enabled:true};
+  localPages?:import("./local-pages").PagesPresentation;
+  localSeo?:import("./local-seo").SeoPresentation;
   serviceProfile?:import("./local-service-profile").ServiceProfilePresentation;
+  localPagesExecution?:{enabled:true};
+  localSeoExecution?:{enabled:true};
   serviceProfileExecution?:{enabled:true};
   localBusinessContent?:import('./local-business-content').LocalBusinessContentPresentation;
   localRequestsExecution?:{enabled:true};

@@ -1,3 +1,5 @@
+import {localPagesEnabled,localPagesCandidate,pagesModelReplyCandidate,hasPagesModelReply,proposeLocalPages,confirmLocalPages} from "./local-pages";
+import {localSeoEnabled,localSeoCandidate,proposeLocalSeo,confirmLocalSeo} from "./local-seo";
 import {serviceProfileEnabled,serviceProfileCandidate,proposeServiceProfile,confirmServiceProfile} from "./local-service-profile";
 import {adDocumentCandidate,adDocumentToolsEnabled,proposeAdDocument,bindAdDocumentProposal,adDocumentPresentation} from './ad-document-tool-execution';
 import {localPromptsEnabled,localPromptsCandidate,listLocalPrompts,localPromptsView} from './local-prompts';
@@ -68,6 +70,10 @@ export function conversationView(user: User, cid: string, before?: number,includ
     ...(readOnlyReason===null&&c.project_id&&adDocumentToolsEnabled()?{localAdDocumentExecution:{enabled:true as const}}:{}),
     ...(m.localFiles?{localFiles:m.localFiles}:{}),
     ...(c.project_id&&localFilesEnabled()?{localFilesExecution:{enabled:true as const}}:{}),
+    ...(m.localPages?{localPages:m.localPages}:{}),
+    ...(c.project_id&&readOnlyReason===null&&localPagesEnabled()?{localPagesExecution:{enabled:true as const}}:{}),
+    ...(m.localSeo?{localSeo:m.localSeo}:{}),
+    ...(c.project_id&&readOnlyReason===null&&localSeoEnabled()?{localSeoExecution:{enabled:true as const}}:{}),
     ...(m.serviceProfile?{serviceProfile:m.serviceProfile}:{}),
     ...(c.project_id&&readOnlyReason===null&&serviceProfileEnabled()?{serviceProfileExecution:{enabled:true as const}}:{}),
     ...(m.localBusinessContent?{localBusinessContent:m.localBusinessContent}:{}),
@@ -196,10 +202,12 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
   if(adCommand){const selected=metaOf(initial).activeContext,target=selected?.target;if(cmd.action==='message'&&cmd.context&&(cmd.context.tab!==selected?.tab||cmd.context.projectId!==undefined&&cmd.context.projectId!==initial.project_id||stableHash('ad-document-selected',cmd.context.target)!==stableHash('ad-document-selected',target)))throw new HttpError(409,'La sélection affichée diffère du repère sauvegardé. Confirmez sa désignation avant de proposer la retouche.');if(target?.kind!=='ad-document-text')throw new HttpError(409,'Désignez le titre enregistré dans le contexte partagé avant cette demande.');const proposed=await proposeAdDocument(user,cid,{action:'propose',revision:cmd.revision,projectRevision:cmd.projectRevision!,docKey:target.docKey,layerId:target.layerId,expectedVersion:target.version,operation:'title-larger'});adProposalId=proposed.proposalId;}
   const fileCommand=cmd.action==='message'&&localFilesCandidate(cmd.text);
   const requestCommand=cmd.action==='message'&&localRequestsCandidate(cmd.text);
-  const localCommand=cmd.action==='message'&&localSiteCandidate(cmd.text);
+  const pagesCommand=cmd.action==='message'&&(localPagesCandidate(cmd.text)||hasPagesModelReply(metaOf(initial),cmd.text));
+  const seoCommand=cmd.action==='message'&&localSeoCandidate(cmd.text);
+  const localCommand=cmd.action==='message'&&!seoCommand&&!pagesCommand&&localSiteCandidate(cmd.text);
   const serviceCommand=cmd.action==='message'&&serviceProfileCandidate(cmd.text);
   const businessCommand=cmd.action==='message'&&localBusinessContentCandidate(cmd.text);
-  const intent = cmd.action === "message" && !adCommand && !localCommand && !fileCommand && !businessCommand && !serviceCommand && !requestCommand && !promptsCommand && !intelligenceEnabled() ? await understand({ text: cmd.text }, { aiActive: !!tests.classify, classify: tests.classify }) : null;
+  const intent = cmd.action === "message" && !pagesCommand && !seoCommand && !adCommand && !localCommand && !fileCommand && !businessCommand && !serviceCommand && !requestCommand && !promptsCommand && !intelligenceEnabled() ? await understand({ text: cmd.text }, { aiActive: !!tests.classify, classify: tests.classify }) : null;
   return tx(() => {
     const c = ownedConversation(user, cid);
     const prior = one<{ request_hash: string; response_json: string }>("SELECT request_hash,response_json FROM agent_conversation_turns WHERE conversation_id=? AND request_id=?", cid, cmd.requestId);
@@ -227,6 +235,10 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
       const active={...c,state_json:JSON.stringify(m)};
       m.localFiles=cmd.action==='confirm-files'?confirmLocalFiles(user,active,m,cmd.proposalId,cmd.requestId):proposeLocalFiles(user,active,m,(cmd as Extract<Command,{action:'message'}>).text);
       message=m.localFiles.message;
+    }else if(pagesCommand||cmd.action==='confirm-pages'||cmd.action==='cancel-pages'){
+      if(cmd.action==='cancel-pages'){if(!localPagesEnabled())throw new HttpError(404,'Pages natives gratuites indisponibles.');if(m.localPagesProposal?.id!==cmd.proposalId)throw new HttpError(409,'Proposition de page périmée.');delete m.localPagesProposal;delete m.localPages;message='Proposition de page annulée, aucun changement.';}else{m.localPages=cmd.action==='confirm-pages'?confirmLocalPages(user,c,m,cmd.proposalId,cmd.requestId):proposeLocalPages(user,c,m,(cmd as Extract<Command,{action:'message'}>).text);message=m.localPages.message;}
+    }else if(seoCommand||cmd.action==='confirm-seo'||cmd.action==='cancel-seo'){
+      if(cmd.action==='cancel-seo'){if(!localSeoEnabled())throw new HttpError(404,'Retouches SEO gratuites indisponibles.');if(m.localSeoProposal?.id!==cmd.proposalId)throw new HttpError(409,'Proposition SEO périmée.');delete m.localSeoProposal;delete m.localSeo;message='Proposition SEO annulée, aucun changement.';}else{m.localSeo=cmd.action==='confirm-seo'?confirmLocalSeo(user,c,m,cmd.proposalId,cmd.requestId):proposeLocalSeo(user,c,m,(cmd as Extract<Command,{action:'message'}>).text);message=m.localSeo.message;}
     }else if(serviceCommand||cmd.action==='confirm-service-profile'||cmd.action==='cancel-service-profile'){
       if(cmd.action==='cancel-service-profile'){if(m.serviceProfileProposal?.id!==cmd.proposalId)throw new HttpError(409,'Proposition périmée.');delete m.serviceProfileProposal;delete m.serviceProfile;message='Proposition annulée, aucun changement.';}else{m.serviceProfile=cmd.action==='confirm-service-profile'?confirmServiceProfile(user,c,m,cmd.proposalId,cmd.requestId):proposeServiceProfile(user,c,m,(cmd as Extract<Command,{action:'message'}>).text);message=m.serviceProfile.message;}
     }else if(businessCommand||cmd.action==='confirm-business-content'){
@@ -366,6 +378,8 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
     if(cmd.action==='message'&&studioKnowledgeEnabled())m.studioObservation=captureStudioObservation(c);
     if(!adCommand)delete m.localAdDocumentProposalId;
     if(!promptsCommand)delete m.localPrompts;
+    if(!pagesCommand&&cmd.action!=='confirm-pages'&&cmd.action!=='cancel-pages'){delete m.localPages;delete m.localPagesProposal;delete m.localPagesClarification;}
+    if(!seoCommand&&cmd.action!=='confirm-seo'&&cmd.action!=='cancel-seo'){delete m.localSeo;delete m.localSeoProposal;}
     if(!serviceCommand&&cmd.action!=='confirm-service-profile'&&cmd.action!=='cancel-service-profile'){delete m.serviceProfile;delete m.serviceProfileProposal;}
     if(!businessCommand&&cmd.action!=='confirm-business-content'){delete m.localBusinessContent;delete m.localBusinessContentProposal;}
     if(!localCommand&&cmd.action!=='confirm-local'&&cmd.action!=='cancel-local')delete m.localSite;
@@ -393,6 +407,7 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
 /** Une commande locale candidate ne peut jamais devenir un appel fournisseur implicite. */
 export async function submitConversation(user:User,cid:string,raw:unknown,tests:TestDependencies={}):Promise<ConversationView>{
  const parsed=CommandSchema.safeParse(raw),cmd=parsed.success?parsed.data:null;
- const local=cmd?.action==='message'&&adDocumentCandidate(cmd.text)||cmd?.action==='confirm-local'||cmd?.action==='cancel-local'||cmd?.action==='confirm-site-request'||cmd?.action==='confirm-files'||cmd?.action==='confirm-business-content'||cmd?.action==='confirm-service-profile'||cmd?.action==='cancel-service-profile'||cmd?.action==='message'&&(localPromptsCandidate(cmd.text)||localRequestsCandidate(cmd.text)||localSiteCandidate(cmd.text)||localFilesCandidate(cmd.text)||localBusinessContentCandidate(cmd.text)||serviceProfileCandidate(cmd.text));
+ const pagesReply=cmd?.action==='message'&&pagesModelReplyCandidate(cmd.text)&&hasPagesModelReply(metaOf(ownedConversation(user,cid,true)),cmd.text);
+ const local=pagesReply||cmd?.action==='confirm-pages'||cmd?.action==='cancel-pages'||cmd?.action==='message'&&localPagesCandidate(cmd.text)||cmd?.action==='confirm-seo'||cmd?.action==='cancel-seo'||cmd?.action==='message'&&localSeoCandidate(cmd.text)||cmd?.action==='message'&&adDocumentCandidate(cmd.text)||cmd?.action==='confirm-local'||cmd?.action==='cancel-local'||cmd?.action==='confirm-site-request'||cmd?.action==='confirm-files'||cmd?.action==='confirm-business-content'||cmd?.action==='confirm-service-profile'||cmd?.action==='cancel-service-profile'||cmd?.action==='message'&&(localPromptsCandidate(cmd.text)||localRequestsCandidate(cmd.text)||localSiteCandidate(cmd.text)||localFilesCandidate(cmd.text)||localBusinessContentCandidate(cmd.text)||serviceProfileCandidate(cmd.text));
  return local?withAiDisabled('B1 : retouche gratuite déterministe, aucun devis IA',()=>submitConversationImpl(user,cid,raw,tests)):submitConversationImpl(user,cid,raw,tests);
 }

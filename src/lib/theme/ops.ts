@@ -302,6 +302,19 @@ export function applyOps(input: ThemeSpec, ops: ThemeOp[], ctx: ApplyContext = {
           if (op.colors.background && !op.colors.text && typeof target.text === "string" && contrast(target.text, target.background) < 4.5) {
             target.text = contrast("#111111", target.background) >= contrast("#FFFFFF", target.background) ? "#111111" : "#FFFFFF";
           }
+          // Native schemes reuse accents in headings/outline buttons and surface in cards.
+          // A new background must not silently make these inherited colours unreadable.
+          // Keep explicitly requested values exact; imported schemes have unknown roles.
+          if (op.colors.background && !spec.imported) {
+            const hex = (v: unknown): v is string => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v);
+            const readable = (fg: string, bg: string) => contrast(fg, bg) >= 4.5;
+            const ink = (bg: string) => contrast('#111111', bg) >= contrast('#FFFFFF', bg) ? '#111111' : '#FFFFFF';
+            for (const role of ['text', 'muted', 'accent']) {
+              if (!op.colors[role] && hex(target[role]) && !readable(target[role], target.background)) target[role] = ink(target.background);
+            }
+            if (!op.colors.surface && hex(target.surface) && ['text', 'muted', 'accent'].some(role => hex(target[role]) && !readable(target[role], target.surface))) target.surface = target.background;
+            if (!op.colors.accent_text && hex(target.accent_text) && hex(target.accent) && !readable(target.accent_text, target.accent)) target.accent_text = ink(target.accent);
+          }
           spec.settings.color_schemes = schemes as any;
           s.settings.color_scheme = own;
           applied.push(L(`Couleurs de la section ${op.section} (elle seule) : ${Object.entries(op.colors).map(([k, v]) => `${k} ${v.toUpperCase()}`).join(", ")}`, `Colors of section ${op.section} (only): ${Object.entries(op.colors).map(([k, v]) => `${k} ${v.toUpperCase()}`).join(", ")}`));
