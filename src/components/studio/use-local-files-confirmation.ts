@@ -9,6 +9,6 @@ export function useLocalFilesConfirmation(view:ConversationView|null,onView:(v:C
  const[state,setState]=useState<FilesConfirmationState>({busy:false,error:'',uncertain:false});
  const controller=useMemo(()=>view?createLocalFilesConfirmation({conversationId:view.id,fetch:(...args)=>fetch(...args),view:()=>current.current!,onView:v=>callback.current(v),onState:setState,onApplied:(change:FilesChange)=>{window.dispatchEvent(new CustomEvent<FilesChange>(FILES_CHANGED_EVENT,{detail:change}));},storage:typeof window==='undefined'?undefined:window.sessionStorage}):null,[view?.id]);
  useEffect(()=>{if(controller){controller.activate();setState(controller.getState());}return()=>controller?.dispose();},[controller]);
- useStaleConfirmation(controller,state.uncertain,view?.localFiles);
+ useStaleConfirmation(controller,state.uncertain,view?.localFiles,view?`syna-free-files:${view.id}`:null);
  return{controller,state};
 }

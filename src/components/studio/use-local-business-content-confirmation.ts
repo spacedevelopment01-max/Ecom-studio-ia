@@ -9,6 +9,6 @@ export function useLocalBusinessContentConfirmation(view:ConversationView|null,o
  const[state,setState]=useState<BusinessContentConfirmationState>({busy:false,error:'',uncertain:false});
  const controller=useMemo(()=>view?createLocalBusinessContentConfirmation({conversationId:view.id,fetch:(...args)=>fetch(...args),view:()=>current.current!,onView:v=>callbacks.current.onView(v),onState:setState,onApplied:(change:BusinessContentChange)=>{callbacks.current.onApplied(change);window.dispatchEvent(new CustomEvent<BusinessContentChange>(CONTENT_CHANGED_EVENT,{detail:change}));},storage:typeof window==='undefined'?undefined:window.sessionStorage}):null,[view?.id]);
  useEffect(()=>{if(controller){controller.activate();setState(controller.getState());}return()=>controller?.dispose();},[controller]);
- useStaleConfirmation(controller,state.uncertain,view?.localBusinessContent);
+ useStaleConfirmation(controller,state.uncertain,view?.localBusinessContent,view?`syna-free-content:${view.id}`:null);
  return{controller,state};
 }

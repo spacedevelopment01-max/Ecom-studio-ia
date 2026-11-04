@@ -10,9 +10,12 @@ import {expect,it,vi} from 'vitest';
 import {createLocalSiteConfirmation} from '@/lib/local-site-confirmation-client';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 
-it('les six cartes gratuites branchent la relecture sur leur proposition affichée',()=>{
+it('les six cartes gratuites branchent la relecture sur leur proposition affichée et leur clé de mémoire',()=>{
+ const hook=fs.readFileSync('src/components/studio/use-stale-confirmation.ts','utf8');
+ // Réponse perdue pour la proposition affichée : aucune relecture automatique (le contrôle obligatoire exige « Réessayer »).
+ expect(hook).toContain('if(stored&&stored!==proposal)void controller.refresh();');
  const hooks={'use-local-files-confirmation.ts':'localFiles','use-local-business-content-confirmation.ts':'localBusinessContent','use-local-site-requests-confirmation.ts':'localRequests','use-service-profile-confirmation.ts':'serviceProfile','use-local-ad-document-confirmation.ts':'localAdDocument','use-local-site-confirmation.ts':'localSite'};
- for(const [f,field] of Object.entries(hooks))expect(fs.readFileSync('src/components/studio/'+f,'utf8')).toContain(`useStaleConfirmation(controller,state.uncertain,view?.${field})`);
+ for(const [f,field] of Object.entries(hooks))expect(fs.readFileSync('src/components/studio/'+f,'utf8')).toContain(`useStaleConfirmation(controller,state.uncertain,view?.${field},view?`);
 });
 
 it('carte du site : la relecture abandonne l’accord d’une autre proposition, sans écrire',async()=>{

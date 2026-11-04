@@ -8,6 +8,6 @@ export function useLocalSiteConfirmation(view:ConversationView|null,onView:(v:Co
  const[state,setState]=useState<FreeConfirmationState>({busy:false,error:'',uncertain:false,context:null});
  const controller=useMemo(()=>view?createLocalSiteConfirmation({conversationId:view.id,fetch:(...args)=>fetch(...args),view:()=>current.current!,onView:v=>callbacks.current.onView(v),onState:setState,onApplied:v=>callbacks.current.onApplied(v),onRevalidated:v=>callbacks.current.onRevalidated?.(v),storage:typeof window==='undefined'?undefined:window.sessionStorage}):null,[view?.id]);
  useEffect(()=>{if(controller){controller.activate();setState(controller.getState());}return()=>controller?.dispose();},[controller]);
- useStaleConfirmation(controller,state.uncertain,view?.localSite);
+ useStaleConfirmation(controller,state.uncertain,view?.localSite,view?`syna-free-confirmation:${view.id}`:null);
  return{controller,state};
 }

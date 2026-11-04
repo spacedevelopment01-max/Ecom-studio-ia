@@ -9,6 +9,6 @@ export function useServiceProfileConfirmation(view:ConversationView|null,onView:
  const[state,setState]=useState<ServiceProfileConfirmationState>({busy:false,error:'',uncertain:false});
  const controller=useMemo(()=>view?createServiceProfileConfirmation({conversationId:view.id,fetch:(...args)=>fetch(...args),view:()=>current.current!,onView:v=>callbacks.current.onView(v),onState:setState,onApplied:(change:ServiceProfileChange)=>{callbacks.current.onApplied(change);window.dispatchEvent(new CustomEvent<ServiceProfileChange>(SERVICE_PROFILE_CHANGED_EVENT,{detail:change}));},storage:typeof window==='undefined'?undefined:window.sessionStorage}):null,[view?.id]);
  useEffect(()=>{if(controller){controller.activate();setState(controller.getState());}return()=>controller?.dispose();},[controller]);
- useStaleConfirmation(controller,state.uncertain,view?.serviceProfile);
+ useStaleConfirmation(controller,state.uncertain,view?.serviceProfile,view?`syna-free-service-profile:${view.id}`:null);
  return{controller,state};
 }
