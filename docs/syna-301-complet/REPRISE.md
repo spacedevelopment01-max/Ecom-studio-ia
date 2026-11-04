@@ -5,51 +5,37 @@ ligne, activation, action externe réelle ni dépense fournisseur.
 
 ## Branche et base
 
-- Branche Claude : `claude/syna-301-complet`, partie de #363 `f25a7290` (base commune imposée).
-- Intègre #364 de Codex (`958a4dde`, confirmations liées à la proposition et au projet courants) par fusion ; aucune
-  branche de Codex modifiée.
+- Branche Claude : `claude/syna-301-complet` (PR brouillon #369), partie de #363 `f25a7290`.
+- Intègre par fusion, sans les modifier : #364 (`958a4dde`) puis la chaîne #365 → #366 → #367 → #368 → #370 de Codex
+  (`e1ba2542`).
 
-## Lot 1 — confirmation périmée (fait, à garder vert)
+## Fait et vérifié
 
-| Élément | Où | Preuve |
+| Lot | Contenu | Preuve |
 |---|---|---|
-| Transports des 5 cartes (Fichiers, Contenus, Demandes, Horaires, Publicité) | #364 Codex | `tests/parity301-confirmation-scope.test.ts` (35) |
-| Contrôle indépendant des 5 cartes | `tests/syna301-confirmation-perimee-cartes.test.ts` (18) | vert sur #364 |
-| **Défaut d'interface trouvé au navigateur** : après rechargement, la nouvelle carte restait « incertaine » (Confirmer grisé, « Réessayer la même confirmation » aurait enregistré la nouvelle proposition) | `src/components/studio/use-stale-confirmation.ts` branché sur les 6 cartes ; relecture côté Site (`local-site-confirmation-client.ts`) | `tests/syna301-confirmation-perimee-interface.test.ts` ; recette navigateur `scripts/syna301-confirmation-perimee-recette.ts` **4/4** (Encre / Plein, 1440 / 390) : ancien accord écarté, une seule écriture, nom relu, autre projet sans héritage, 0 appel IA |
+| 1 — confirmation périmée | transports des 5 cartes (#364 Codex) ; crochet d'interface `use-stale-confirmation.ts` sur les 8 cartes : relecture seule **uniquement** si l'accord en mémoire vise une autre proposition (une réponse perdue pour la proposition affichée garde « Vérifier » / « Réessayer », exigés par le contrôle obligatoire) | 18 tests indépendants + test d'interface ; recette navigateur Fichiers 4/4 ; contrôle obligatoire vert en CI sur `04d881ee` |
+| 2 — contraste | moteur #365 (Codex) + règles CSS des cartes « verre » et textes atténués (Claude) ; ma surcouche `theme.liquid` retirée (mesure identique, respect des couleurs demandées) | mesure navigateur 199 → 6 sous 4,5:1 ; Theme Check rapide valide |
+| 2 — SEO | carte « Retouche SEO gratuite » (contrat #367) | recette `scripts/syna301-seo-pages-recette.ts` 4/4 : titre relu dans l'onglet de la page, annulation sans écriture |
+| 3 — Pages | carte « Pages du site » (contrat #370) : modèles natifs avec aperçu, « Choisir » remplit la phrase du client | même recette 4/4 : page relue dans la version enregistrée |
+| 3 — Masquer une section | carte du site (#368) ; après le reçu, message « Section masquée : elle n'est plus désignée » au lieu de l'alerte « cible changée » | même recette 4/4 : seule la section visée change |
 
-Limite : la recette navigateur couvre Fichiers ; les quatre autres cartes partagent le même crochet d'interface et
-sont couvertes par les tests de protocole, pas encore par un parcours navigateur dédié.
+## Reste à vérifier ou à faire (ordre proposé)
 
-## Lot 2 — contraste après couleur de section (fait côté thème)
-
-- Cause : `section_colors` ne change que fond et texte ; surface, texte secondaire, accent et texte de bouton restaient
-  ceux de l'ancien fond.
-- Correctif : `theme-base/layout/theme.liquid` (schémas `es-*` seulement, recalcul uniquement si contraste < 4,5:1),
-  `theme-base/assets/theme.css` (cartes « verre », textes atténués des prestations / infos pratiques).
-- Mesure navigateur `scripts/syna301-contraste-section.ts` (chaque texte visible, fond composé réel) : **199 → 6**
-  textes sous 4,5:1 (atelier, clinique, terroir produits + atelier services ; fonds bleu, vert sombre, crème).
-  Restants : bouton d'origine du thème sur crème à 4,46 (préexistant, hors recoloration) ; carte Google sur bleu
-  (dégradé décoratif, mesure au pire cas). Texte sur photo voilée non mesurable (exclu, signalé).
-- Test : `tests/syna301-contraste-section.test.ts` ; Theme Check rapide : valide.
-
-## Lot 2 — reste à faire (Codex : routage ; Claude : interface et recette)
-
-1. SEO : la phrase « titre SEO de la page d'accueil » est aiguillée vers la grammaire du site (clarification inadaptée).
-2. Horaires : phrase naturelle (« Change les horaires du mardi : 9 h – 18 h ») non comprise ; distinguer profil
-   d'activité et créneaux de réservation.
-3. Dès qu'un contrat Codex arrive : fusion dans cette branche, carte, recette Encre / Plein × 1440 / 390.
-
-## Lot 3+ — phrases naturelles absentes (voir `docs/syna-301-integration/TABLEAU-16-PHRASES.md`)
-
-Masquer / supprimer une section, page, bouton, image, choix du thème, prestations / réservation, stock / variantes,
-calendrier / brouillons, pièces jointes / bibliothèque ; puis domaines restants de la matrice
-(`docs/syna-301-integration/MATRICE-CONVERGENCE-84.md`), parcours multi-étapes, anciens / nouveaux projets.
+1. Recette navigateur : horaires naturels (#366, carte Horaires existante), supprimer une section et texte de bouton
+   (#368), renommer / menu / dupliquer / supprimer une page (#370), recette Contenus après rechargement
+   (`scripts/syna301-contenus-recette.ts`, étape ajoutée, non lancée).
+2. Lot 3 restant (phrases naturelles) : choix du thème, prestations / réservation, stock / variantes, calendrier /
+   brouillons, pièces jointes / bibliothèque, boutons / images.
+3. Omissions de la matrice (`OMISSIONS-MATRICE.md`) à faire entrer dans la matrice commune de Codex (85 lignes).
 
 ## Relancer les preuves
 
 ```bash
-npx tsc --noEmit && npx vitest run
-npx tsx scripts/syna301-confirmation-perimee-recette.ts <sortie>      # navigateur, ~6 min
+NODE_OPTIONS=--max-old-space-size=6144 npx tsc --noEmit && npx vitest run
+npx tsx scripts/syna301-seo-pages-recette.ts <sortie>             # navigateur, ~10 min
+npx tsx scripts/syna301-confirmation-perimee-recette.ts <sortie>
 DIRECTION=atelier BUSINESS=services npx tsx scripts/syna301-contraste-section.ts <sortie.json>
 scripts/verify-theme.sh --rapide
+# contrôle obligatoire : build à la tête puis scripts/verify-syna284-b1-confirmation-ui.ts (3 variantes) et
+# STUDIO_PROOF_COMMIT=$(git rev-parse HEAD) scripts/verify-parity301-wave4-ui.ts (arbre propre)
 ```
