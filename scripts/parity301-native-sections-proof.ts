@@ -48,6 +48,7 @@ process.on("exit", stop);
 
 type Step = { etape: string; ok: boolean; detail?: string; capture?: string };
 const results: { mode: Mode; format: Format; business: string; steps: Step[]; ok: boolean }[] = [];
+let browserVersion='not_started';
 const errors: string[] = [], forbidden: string[] = [], jsErrors: string[] = [];
 const check = (c: unknown, m: string) => { if (!c) throw Error(m); };
 const spec = (pid: string) => currentTheme(pid)!.spec as unknown as { templates: { index: { order: string[]; sections: Record<string, { type: string; disabled?: boolean; settings: Record<string, unknown> }> } } };
@@ -55,7 +56,8 @@ const spec = (pid: string) => currentTheme(pid)!.spec as unknown as { templates:
 try {
   const start = Date.now();
   for (;;) { if (Date.now() - start > 240000) throw Error("Next non prêt : " + log.slice(-800)); try { if ((await fetch(origin + "/connexion", { signal: AbortSignal.timeout(3000) })).ok) break; } catch { /* attente */ } await new Promise((r) => setTimeout(r, 1000)); }
-  const b = await chromium.launch({ args: ["--no-sandbox", "--disable-background-networking"] });
+  const b = await chromium.launch({ ...(process.env.STUDIO_PROOF_CHROMIUM?{executablePath:process.env.STUDIO_PROOF_CHROMIUM}:{}),args: ["--no-sandbox", "--disable-background-networking"] });
+  browserVersion=b.version();
   for (const k of prepared) {
     const label = `${k.mode}-${k.format}-${k.business}`, steps: Step[] = [], desktop = k.format === "ordinateur";
     const ctx = await b.newContext({ viewport: SIZE[k.format], locale: "fr-FR", reducedMotion: "reduce" });
@@ -147,7 +149,7 @@ try {
 } catch (e) { errors.push(String(e)); console.error("✗ " + String(e)); }
 finally {
   stop();
-  fs.writeFileSync(path.join(out, "RESUME-SECTIONS-NATIVES-301.json"), JSON.stringify({ schema: "syna301-native-sections-compiled-1", sourceCommit:process.env.STUDIO_PROOF_COMMIT??null,buildId:fs.readFileSync(".next/BUILD_ID","utf8").trim(),results, errors, forbidden: [...new Set(forbidden)], coutIA: 0 }, null, 2) + "\n");
+  fs.writeFileSync(path.join(out, "RESUME-SECTIONS-NATIVES-301.json"), JSON.stringify({ schema: "syna301-native-sections-compiled-1", sourceCommit:process.env.STUDIO_PROOF_COMMIT??null,browserVersion,browserExecutable:process.env.STUDIO_PROOF_CHROMIUM??"playwright-bundled",buildId:fs.readFileSync(".next/BUILD_ID","utf8").trim(),results, errors, forbidden: [...new Set(forbidden)], coutIA: 0 }, null, 2) + "\n");
   fs.writeFileSync(path.join(out, "serveur-local.log"), log.slice(-200000));
   fs.rmSync(dir, { recursive: true, force: true });
   const ok = results.filter((r) => r.ok).length; console.log(`${ok}/${results.length} parcours réussis`);
