@@ -1,4 +1,5 @@
 "use client";
+import {nativeLocalEditAllowed} from '@/lib/existing-local-edits';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {adDocumentJobPending,hasAdDocumentReceipt} from '@/lib/local-ad-document-confirmation-client';
 import type {useLocalAdDocumentConfirmation} from './use-local-ad-document-confirmation';
@@ -22,7 +23,7 @@ export function adReceiptStateLabel(state:string,t:(fr:string,en:string)=>string
  }
 }
 export function ConversationLocalAdDocument({view,confirmation,busy,selectionMatches}:{view:ConversationView;confirmation:ReturnType<typeof useLocalAdDocumentConfirmation>;busy:boolean;selectionMatches:boolean}){
- const t=useT(),s=view.localAdDocument,{controller,state}=confirmation;if(view.recovery||view.readOnlyReason||(!s&&!state.error&&!state.uncertain))return null;
+ const t=useT(),s=view.localAdDocument,{controller,state}=confirmation;if(!nativeLocalEditAllowed(view)||(!s&&!state.error&&!state.uncertain))return null;
  const enabled=!!view.localAdDocumentExecution?.enabled&&!state.blocked,valid=hasAdDocumentReceipt(view),waiting=adDocumentJobPending(view);
  const preview=(side:'before'|'after')=>{const expected=`/api/studio-agent/conversations/${view.id}/ad-documents?receipt=${encodeURIComponent(s?.proposalId??'')}&preview=${side}`;return s?.previews?.[side]===expected?expected:null;};
  const exportHref=s?.version&&s.exportHref===`/api/projects/${view.projectId}/ads/docs/${encodeURIComponent(s.target.docKey)}?export=png&version=${s.version.version}`?s.exportHref:null;

@@ -1,4 +1,5 @@
 "use client";
+import {nativeLocalEditAllowed} from '@/lib/existing-local-edits';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {hasLocalThemeRestoreReceipt} from '@/lib/local-theme-restore-confirmation-client';
 import type {useLocalThemeRestoreConfirmation} from './use-local-theme-restore-confirmation';
@@ -12,7 +13,7 @@ import {useT} from '../i18n';
 export function ConversationLocalThemeRestore({view,confirmation,busy,onSuggest}:{view:ConversationView;confirmation:ReturnType<typeof useLocalThemeRestoreConfirmation>;busy:boolean;onSuggest:(text:string)=>void}){
  const t=useT(),s=view.localThemeRestore,{controller,state}=confirmation;
  if(view.recovery||(!s&&!state.error&&!state.uncertain))return null;
- const enabled=view.localThemeRestoreExecution?.enabled&&!view.readOnlyReason&&!state.blocked;
+ const enabled=view.localThemeRestoreExecution?.enabled&&nativeLocalEditAllowed(view)&&!state.blocked;
  return <section aria-label={t('Versions du site — gratuit','Site versions — free')} data-syna-restore-card className="min-w-0 space-y-3 rounded-xl border border-line p-4 text-sm">
   <p className="font-semibold">{t('Gratuit — 0 €','Free — €0')}</p>{s&&<p>{s.message}</p>}
   {!!s?.choices?.length&&s.state!=='proposed'&&<ul aria-label={t('Versions du site','Site versions')} className="space-y-2">{s.choices.map(c=><li key={c.id} className="flex min-w-0 flex-wrap items-center gap-2">

@@ -1,4 +1,5 @@
 "use client";
+import {nativeLocalEditAllowed} from '@/lib/existing-local-edits';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {hasLocalThemeChoiceReceipt} from '@/lib/local-theme-choice-confirmation-client';
 import type {useLocalThemeChoiceConfirmation} from './use-local-theme-choice-confirmation';
@@ -12,7 +13,7 @@ import {useT} from '../i18n';
 export function ConversationLocalThemeChoice({view,confirmation,busy,onSuggest}:{view:ConversationView;confirmation:ReturnType<typeof useLocalThemeChoiceConfirmation>;busy:boolean;onSuggest:(text:string)=>void}){
  const t=useT(),s=view.localThemeChoice,{controller,state}=confirmation;
  if(view.recovery||(!s&&!state.error&&!state.uncertain))return null;
- const enabled=view.localThemeChoiceExecution?.enabled&&!view.readOnlyReason&&!state.blocked;
+ const enabled=view.localThemeChoiceExecution?.enabled&&nativeLocalEditAllowed(view)&&!state.blocked;
  return <section aria-label={t('Thème du site — gratuit','Site theme — free')} data-syna-theme-choice-card className="min-w-0 space-y-3 rounded-xl border border-line p-4 text-sm">
   <p className="font-semibold">{t('Gratuit — 0 €','Free — €0')}</p>{s&&<p>{s.message}</p>}
   {s?.diff&&<dl className="space-y-1"><dt className="text-muted">{t('Thème actuel','Current theme')}</dt><dd>{s.diff.before}</dd><dt className="text-muted">{t('Après confirmation','After confirmation')}</dt><dd>{s.diff.after}</dd></dl>}

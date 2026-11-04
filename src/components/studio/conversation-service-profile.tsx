@@ -1,4 +1,5 @@
 "use client";
+import {nativeLocalEditAllowed} from '@/lib/existing-local-edits';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {hasServiceProfileReceipt} from '@/lib/service-profile-confirmation-client';
 import type {useServiceProfileConfirmation} from './use-service-profile-confirmation';
@@ -8,7 +9,7 @@ import {useT} from '../i18n';
 export function ConversationServiceProfile({view,confirmation,busy,onActivity,onSuggest}:{view:ConversationView;confirmation:ReturnType<typeof useServiceProfileConfirmation>;busy:boolean;onActivity:boolean;onSuggest?:(text:string)=>void}){
  const t=useT(),s=view.serviceProfile,{controller,state}=confirmation;
  if(view.recovery||(!s&&!state.error&&!state.uncertain))return null;
- const enabled=view.serviceProfileExecution?.enabled&&!view.readOnlyReason&&!state.blocked;
+ const enabled=view.serviceProfileExecution?.enabled&&nativeLocalEditAllowed(view)&&!state.blocked;
  const service=s?.field==='service-name'||s?.field==='service-price'||s?.field==='service-duration'||s?.field==='service-description';
  // Choix d'une prestation : le bouton remplit la phrase exacte du contrat (#374, #390, #391, #392), jamais une action.
  const suggest:Record<string,[string,(n:string)=>string]>={'service-name':[t('Renommer','Rename'),n=>`Renomme la prestation « ${n} » en « »`],'service-price':[t('Changer le prix','Change the price'),n=>`Mets le prix de la prestation du profil « ${n} » à « »`],'service-duration':[t('Changer la durée','Change the duration'),n=>`Mets la durée de la prestation du profil « ${n} » à « »`],'service-description':[t('Changer la description','Change the description'),n=>`Remplace la description de la prestation du profil « ${n} » par « »`]};

@@ -1,4 +1,5 @@
 "use client";
+import {nativeLocalEditAllowed} from '@/lib/existing-local-edits';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {hasLocalFoldersReceipt} from '@/lib/local-folders-confirmation-client';
 import type {useLocalFoldersConfirmation} from './use-local-folders-confirmation';
@@ -11,7 +12,7 @@ import {useT} from '../i18n';
 export function ConversationLocalFolders({view,confirmation,busy}:{view:ConversationView;confirmation:ReturnType<typeof useLocalFoldersConfirmation>;busy:boolean}){
  const t=useT(),s=view.localFolders,{controller,state}=confirmation;
  if(view.recovery||(!s&&!state.error&&!state.uncertain))return null;
- const enabled=view.localFoldersExecution?.enabled&&!view.readOnlyReason&&!state.blocked;
+ const enabled=view.localFoldersExecution?.enabled&&nativeLocalEditAllowed(view)&&!state.blocked;
  const where=(parentId:string|null|undefined)=>parentId?(s?.parent?.id===parentId?s.parent.name:t('dossier choisi','chosen folder')):t('Racine (aucun dossier)','Root (no folder)');
  return <section aria-label={t('Nouveau dossier — gratuit','New folder — free')} data-syna-folder-card className="min-w-0 space-y-3 rounded-xl border border-line p-4 text-sm">
   <p className="font-semibold">{t('Gratuit — 0 €','Free — €0')}</p>{s&&<p>{s.message}</p>}

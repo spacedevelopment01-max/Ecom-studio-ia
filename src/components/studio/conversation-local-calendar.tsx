@@ -1,4 +1,5 @@
 "use client";
+import {nativeLocalEditAllowed} from '@/lib/existing-local-edits';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {hasLocalCalendarReceipt} from '@/lib/local-calendar-confirmation-client';
 import type {useLocalCalendarConfirmation} from './use-local-calendar-confirmation';
@@ -16,7 +17,7 @@ export function calendarDate(ms:number,timeZone:string,lang:'fr'|'en'='fr'){
 export function ConversationLocalCalendar({view,confirmation,busy}:{view:ConversationView;confirmation:ReturnType<typeof useLocalCalendarConfirmation>;busy:boolean}){
  const t=useT(),{lang}=useLang(),s=view.localCalendar,{controller,state}=confirmation;
  if(view.recovery||(!s&&!state.error&&!state.uncertain))return null;
- const enabled=view.localCalendarExecution?.enabled&&!view.readOnlyReason&&!state.blocked,tz=s?.target?.timezone??'UTC';
+ const enabled=view.localCalendarExecution?.enabled&&nativeLocalEditAllowed(view)&&!state.blocked,tz=s?.target?.timezone??'UTC';
  return <section aria-label={t('Calendrier — gratuit','Calendar — free')} data-syna-calendar-card className="min-w-0 space-y-3 rounded-xl border border-line p-4 text-sm">
   <p className="font-semibold">{t('Gratuit — 0 €','Free — €0')}</p>{s&&<p>{s.message}</p>}
   {s?.target&&<p className="break-words">{t('Publication : ','Post: ')}<strong>{s.target.title||t('(sans titre)','(untitled)')}</strong></p>}

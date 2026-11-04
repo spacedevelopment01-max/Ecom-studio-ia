@@ -1,4 +1,5 @@
 "use client";
+import {nativeLocalEditAllowed} from '@/lib/existing-local-edits';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {hasLocalPagesReceipt} from '@/lib/local-pages-confirmation-client';
 import type {useLocalPagesConfirmation} from './use-local-pages-confirmation';
@@ -14,7 +15,7 @@ export const modelQuestion=(message:string)=>/mod[èe]le/i.test(message);
 export function ConversationLocalPages({view,confirmation,busy,onSuggest}:{view:ConversationView;confirmation:ReturnType<typeof useLocalPagesConfirmation>;busy:boolean;onSuggest:(text:string)=>void}){
  const t=useT(),s=view.localPages,{controller,state}=confirmation;
  if(view.recovery||(!s&&!state.error&&!state.uncertain))return null;
- const enabled=view.localPagesExecution?.enabled&&!view.readOnlyReason&&!state.blocked;
+ const enabled=view.localPagesExecution?.enabled&&nativeLocalEditAllowed(view)&&!state.blocked;
  const label:Record<string,string>={create:t('Nouvelle page (brouillon, hors du menu)','New page (draft, not in the menu)'),rename:t('Renommer la page','Rename the page'),navigation:t('Menu du site','Site menu'),duplicate:t('Copie de la page (brouillon)','Copy of the page (draft)'),remove:t('Supprimer la page','Delete the page')};
  return <section aria-label={t('Pages du site — gratuit','Site pages — free')} data-syna-pages-card className="min-w-0 space-y-3 rounded-xl border border-line p-4 text-sm">
   <p className="font-semibold">{t('Gratuit — 0 €','Free — €0')}</p>{s&&<p>{s.message}</p>}

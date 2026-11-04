@@ -1,4 +1,5 @@
 "use client";
+import {nativeLocalEditAllowed} from '@/lib/existing-local-edits';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {hasLocalStockReceipt} from '@/lib/local-stock-confirmation-client';
 import type {useLocalStockConfirmation} from './use-local-stock-confirmation';
@@ -12,7 +13,7 @@ import {useT} from '../i18n';
 export function ConversationLocalStock({view,confirmation,busy}:{view:ConversationView;confirmation:ReturnType<typeof useLocalStockConfirmation>;busy:boolean}){
  const t=useT(),s=view.localStock,{controller,state}=confirmation;
  if(view.recovery||(!s&&!state.error&&!state.uncertain))return null;
- const enabled=view.localStockExecution?.enabled&&!view.readOnlyReason&&!state.blocked;
+ const enabled=view.localStockExecution?.enabled&&nativeLocalEditAllowed(view)&&!state.blocked;
  const qty=(n:number|null|undefined)=>n===null||n===undefined?t('suivi du stock désactivé','stock tracking off'):t(`${n} en stock`,`${n} in stock`);
  return <section aria-label={t('Stock — gratuit','Stock — free')} data-syna-stock-card className="min-w-0 space-y-3 rounded-xl border border-line p-4 text-sm">
   <p className="font-semibold">{t('Gratuit — 0 €','Free — €0')}</p>{s&&<p>{s.message}</p>}

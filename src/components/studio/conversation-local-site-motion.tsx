@@ -1,4 +1,5 @@
 "use client";
+import {nativeLocalEditAllowed} from '@/lib/existing-local-edits';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {hasLocalSiteMotionReceipt} from '@/lib/local-site-motion-confirmation-client';
 import type {useLocalSiteMotionConfirmation} from './use-local-site-motion-confirmation';
@@ -11,7 +12,7 @@ import {useT} from '../i18n';
 export function ConversationLocalSiteMotion({view,confirmation,busy}:{view:ConversationView;confirmation:ReturnType<typeof useLocalSiteMotionConfirmation>;busy:boolean}){
  const t=useT(),s=view.localSiteMotion,{controller,state}=confirmation;
  if(view.recovery||(!s&&!state.error&&!state.uncertain))return null;
- const enabled=view.localSiteMotionExecution?.enabled&&!view.readOnlyReason&&!state.blocked;
+ const enabled=view.localSiteMotionExecution?.enabled&&nativeLocalEditAllowed(view)&&!state.blocked;
  const label=({motion_enabled:t('Animations du site','Site animations'),motion_intensity:t('Intensité des animations','Animation intensity'),motion_parallax:t('Parallaxe','Parallax')} as Record<string,string>)[s?.key??'']??t('Réglage','Setting');
  const value=(v:boolean|string)=>v===true?t('activées','on'):v===false?t('désactivées','off'):({subtle:t('discrète','subtle'),normal:t('normale','normal'),expressive:t('expressive','expressive')} as Record<string,string>)[v]??String(v);
  return <section aria-label={t('Animations — gratuit','Animations — free')} data-syna-motion-card className="min-w-0 space-y-3 rounded-xl border border-line p-4 text-sm">
