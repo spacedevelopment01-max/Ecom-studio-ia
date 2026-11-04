@@ -48,3 +48,7 @@ it('carte du profil : prix, durée et description des prestations (#390 → #392
  expect(profile).toContain('Remplace la description de la prestation du profil « ${n} » par « »');
  expect(profile).toContain("t('(effacé)'");
 });
+it('carte du profil : le nom natif de la prestation visée (#395) est affiché hors ambiguïté',()=>{
+ const profile=fs.readFileSync('src/components/studio/conversation-service-profile.tsx','utf8');
+ expect(profile).toContain("service&&s?.serviceName&&s.state!=='ambiguous'");expect(profile).toContain('data-syna-service-name');
+});

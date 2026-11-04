@@ -169,7 +169,7 @@ try {
 } catch (e) { errors.push(String(e)); console.error("✗ " + String(e)); }
 finally {
   stop();
-  fs.writeFileSync(path.join(out, "RESUME-LOT5-301.json"), JSON.stringify({ schema: "syna301-lot5-recette-1", results, errors, constats, constats, forbidden: [...new Set(forbidden)], coutIA: 0 }, null, 2) + "\n");
+  fs.writeFileSync(path.join(out, "RESUME-LOT5-301.json"), JSON.stringify({ schema: "syna301-lot5-recette-1", results, errors, constats, forbidden: [...new Set(forbidden)], coutIA: 0 }, null, 2) + "\n");
   fs.writeFileSync(path.join(out, "serveur-local.log"), log.slice(-200000));
   fs.rmSync(dir, { recursive: true, force: true });
   const ok = results.filter((r) => r.ok).length; console.log(`${ok}/${results.length} parcours réussis`); if (constats.length) console.log("Constats :\n" + constats.join("\n"));
