@@ -27,8 +27,9 @@ function assertGlobalCardLock(panel:string){
    if(ts.isCallExpression(node.initializer)&&ts.isIdentifier(node.initializer.expression)&&/^use.*Confirmation$/.test(node.initializer.expression.text))hooks.push(node.name.text);
   }ts.forEachChild(node,visit);
  }visit(source);
- // Intégration #301 v3 : la carte « Demandes reçues » (#354) rejoint le même verrou global.
- expect(hooks.sort()).toEqual(['adDocument','content','files','free','requests','service']);expect(expression).toBeDefined();
+ // Intégration #301 v3 : la carte « Demandes reçues » (#354) rejoint le même verrou global ; « SYNA complète » : cartes SEO (#367)
+ // et Pages (#370) aussi.
+ expect(hooks.sort()).toEqual(['adDocument','content','files','free','pages','requests','seo','service']);expect(expression).toBeDefined();
  const print=ts.createPrinter().printNode(ts.EmitHint.Expression,expression!,source);
  const evaluate=new Function('busy',...hooks,'adDocumentJobPending','v','return '+print) as (...args:any[])=>boolean;
  const state=(active:string|null)=>evaluate(active==='busy',...hooks.map(name=>({state:{busy:name===active}})),()=>active==='pending-ad-job',{});
@@ -42,7 +43,7 @@ it('projette seulement le drapeau métier authentifié, garde bouton fermé si d
  for(const enabled of ['0','1']){vi.stubEnv('STUDIO_CONVERSATION_BUSINESS_CONTENT',enabled);const r=await projectGET(new Request('http://localhost/api/projects/'+pid),{params:Promise.resolve({id:pid})});expect(r.status).toBe(200);expect((await r.json()).conversationBusinessContent).toBe(enabled==='1');}
  vi.stubEnv('STUDIO_CONVERSATION_CONTEXT','0');const closed=await projectGET(new Request('http://localhost/api/projects/'+pid),{params:Promise.resolve({id:pid})});expect((await closed.json()).conversationBusinessContent).toBe(false);
  session.user=await account();expect((await projectGET(new Request('http://localhost/api/projects/'+pid),{params:Promise.resolve({id:pid})})).status).toBe(404);
- const panel=read('src/components/studio/conversation-panel.tsx'),gate=read('src/components/studio/syna-designate-content.tsx');expect(gate).toContain('if(!agentUi||!data?.conversationBusinessContent||!updatedAt)return null;');assertGlobalCardLock(panel);expect(panel).toContain('mutation.current||interactionBusy');for(const component of ['ConversationLocalSite','ConversationLocalFiles','ConversationLocalBusinessContent','ConversationServiceProfile','ConversationLocalSiteRequests','ConversationLocalAdDocument'])expect(panel).toMatch(new RegExp(component+'[^\\n]+busy=\\{interactionBusy\\}'));expect(panel).toContain('!handlesFreeFiles(v)&&!handlesFreeContent(v)');expect(panel).toContain("target.kind==='site-request'");expect(panel).toContain("target.kind==='content-item'");
+ const panel=read('src/components/studio/conversation-panel.tsx'),gate=read('src/components/studio/syna-designate-content.tsx');expect(gate).toContain('if(!agentUi||!data?.conversationBusinessContent||!updatedAt)return null;');assertGlobalCardLock(panel);expect(panel).toContain('mutation.current||interactionBusy');for(const component of ['ConversationLocalSeo','ConversationLocalPages','ConversationLocalSite','ConversationLocalFiles','ConversationLocalBusinessContent','ConversationServiceProfile','ConversationLocalSiteRequests','ConversationLocalAdDocument'])expect(panel).toMatch(new RegExp(component+'[^\\n]+busy=\\{interactionBusy\\}'));expect(panel).toContain('!handlesFreeFiles(v)&&!handlesFreeContent(v)');expect(panel).toContain("target.kind==='site-request'");expect(panel).toContain("target.kind==='content-item'");
 });
 it.each(['files','business']as const)('deux contextes et confirmations concurrentes : seul le dernier contexte %s peut écrire',async last=>{
  const u=await account(),pid=project(u,'services');session.user=u;const c=openProjectConversation(u,pid),source=Buffer.from('OCTETS ACQUIS'),asset=await saveAsset({projectId:pid,userId:u.id,name:'original.txt',mime:'text/plain',data:source,origin:'upload'}),item=createRealisation(pid,{title:'Titre original',summary:'Description conservée.'}),ctx={params:Promise.resolve({cid:c.id})};
