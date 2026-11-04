@@ -171,21 +171,28 @@ export function savePrestations(projectId: string, raw: unknown) {
       next.push({ key: old?.key ?? `${blockType}-${id}`, block: { type: blockType, settings } });
       byId.set(id, { name: s.name, oldName: prev?.name ?? s.name, duration: s.duration, price: s.price, priceFrom: s.priceFrom });
     }
-    let staffBlocks = others.filter((b) => b.block.type === "member");
-    if (input.staff && sec.kind === "salon") {
-      const oldStaff = new Map(staffBlocks.map((b) => [String(b.block.settings?.member_id ?? ""), b]));
-      const usedStaff=new Set<string>();
-      staffBlocks = input.staff.map((m) => {
-        const known=!!m.id&&oldStaff.has(m.id),id=known?m.id!:newNativeId(m.name,usedStaff,oldStaff);usedStaff.add(id);
-        const old = oldStaff.get(id);
-        return { key: old?.key ?? `member-${id}`, block: { ...(old?.block ?? {}), type: "member", settings: { ...(old?.block.settings ?? {}), member_id: id, name: m.name, initial: m.name.charAt(0).toUpperCase(), title: m.title, skills: m.skills.join(","), days: m.days.join(",") } } };
-      });
-    }
     const rest = others.filter((b) => b.block.type !== "member");
-    const all3 = [...next, ...staffBlocks, ...rest];
+    const all3 = [...next, ...others.filter((b) => b.block.type === "member"), ...rest];
     section.blocks = Object.fromEntries(all3.map((b) => [b.key, b.block as never]));
     section.block_order = all3.map((b) => b.key);
     syncShown(spec, sec.kind, byId);
+  }
+  if (input.staff && sec.kind === "salon") {
+    const currentBlocks = blocksOf(section);
+    const oldStaff = new Map(currentBlocks.filter((b) => b.block.type === "member").map((b) => [String(b.block.settings?.member_id ?? ""), b]));
+    const usedStaff = new Set<string>();
+    const staffBlocks = input.staff.map((m) => {
+      const known = !!m.id && oldStaff.has(m.id);
+      const id = known ? m.id! : newNativeId(m.name, usedStaff, oldStaff);
+      usedStaff.add(id);
+      const old = oldStaff.get(id);
+      return { key: old?.key ?? `member-${id}`, block: { ...(old?.block ?? {}), type: "member", settings: { ...(old?.block.settings ?? {}), member_id: id, name: m.name, initial: m.name.charAt(0).toUpperCase(), title: m.title, skills: m.skills.join(","), days: m.days.join(",") } } };
+    });
+    const firstMember = currentBlocks.findIndex((b) => b.block.type === "member");
+    const keptBlocks = currentBlocks.filter((b) => b.block.type !== "member");
+    keptBlocks.splice(firstMember < 0 ? keptBlocks.length : firstMember, 0, ...staffBlocks);
+    section.blocks = Object.fromEntries(keptBlocks.map((b) => [b.key, b.block]));
+    section.block_order = keptBlocks.map((b) => b.key);
   }
   if (input.hours && sec.kind !== "restaurant") for (const d of DAYS) if (input.hours[d] !== undefined) st[`hours_${d}`] = input.hours[d]!.trim().replace(/\s*-\s*/g, "-").replace(/\s*,\s*/g, ", ");
   if (input.closures !== undefined) st.closures = input.closures.trim();
