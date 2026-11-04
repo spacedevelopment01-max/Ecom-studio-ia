@@ -482,6 +482,17 @@ jobs:
       - name: Masquer et supprimer depuis une phrase naturelle, annulation et 17 secondes
         timeout-minutes: 10
         run: STUDIO_PROOF_COMMIT="$(git rev-parse HEAD)" NODE_OPTIONS="--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/parity301-native-sections-proof.ts work/preuves-sections-natives301
+      - name: Confirmation périmée après rechargement, nouvelle proposition et changement de projet
+        timeout-minutes: 10
+        run: SYNA_UI_PRODUCTION=1 STUDIO_PROOF_COMMIT="$(git rev-parse HEAD)" NODE_OPTIONS="--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/syna301-confirmation-perimee-recette.ts work/preuves-confirmation-perimee301
+      - name: Rapport textuel de la confirmation périmée
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: syna-confirmation-perimee301-text
+          path: work/preuves-confirmation-perimee301/RESUME-PERIMEE-301.json
+          if-no-files-found: warn
+          retention-days: 14
       - name: Rapport textuel des sections natives
         if: ${{ always() }}
         uses: actions/upload-artifact@v4

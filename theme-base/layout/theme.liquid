@@ -68,14 +68,44 @@
               contraste est insuffisant ; « fill » pour un fond d'accent sous le texte d'accent (boutons, pastilles),
               rapproché du noir ou du blanc selon ce texte. Un accent déjà lisible reste strictement identique.
             endcomment
+            comment
+              Section recolorée seule (schéma « es-<section> », opération section_colors du Studio et de SYNA) : seuls le fond
+              et le texte changent, la surface des cartes, le texte secondaire et l'accent viennent de l'ancien fond et peuvent
+              devenir illisibles (recette #301 : surtitre, chiffres, cartes, bouton sur fond bleu). Ils sont rapprochés du
+              nouveau fond / texte uniquement quand le contraste est insuffisant ; les autres schémas ne changent pas.
+            endcomment
+            assign s_surface = scheme.settings.surface
+            assign s_muted = scheme.settings.muted
+            assign s_accent_text = scheme.settings.accent_text
+            assign own_section = scheme.id | slice: 0, 3
+            if own_section == 'es-'
+              assign sv = scheme.settings.text | color_contrast: s_surface
+              if sv < 4.5
+                assign s_surface = scheme.settings.background | color_mix: scheme.settings.text, 92
+              endif
+              for i in (1..8)
+                assign mv = s_muted | color_contrast: scheme.settings.background
+                assign ms = s_muted | color_contrast: s_surface
+                if mv < 4.5 or ms < 4.5
+                  assign s_muted = s_muted | color_mix: scheme.settings.text, 70
+                endif
+              endfor
+            endif
             assign accent_ink = scheme.settings.accent
             for i in (1..8)
               assign ink_ratio = accent_ink | color_contrast: scheme.settings.background
-              assign ink_surface = accent_ink | color_contrast: scheme.settings.surface
+              assign ink_surface = accent_ink | color_contrast: s_surface
               if ink_ratio < 4.5 or ink_surface < 4.5
                 assign accent_ink = accent_ink | color_mix: scheme.settings.text, 82
               endif
             endfor
+            if own_section == 'es-'
+              assign ink_ratio = accent_ink | color_contrast: scheme.settings.background
+              assign ink_surface = accent_ink | color_contrast: s_surface
+              if ink_ratio < 4.5 or ink_surface < 4.5
+                assign accent_ink = scheme.settings.text
+              endif
+            endif
             assign accent_fill = scheme.settings.accent
             assign fill_target = '#000000'
             assign at_bright = scheme.settings.accent_text | color_brightness
@@ -88,9 +118,33 @@
                 assign accent_fill = accent_fill | color_mix: fill_target, 90
               endif
             endfor
+            if own_section == 'es-'
+              comment
+                Texte des boutons de la section : lisible sur tout le dégradé du bouton (accent éclairci → assombri), en
+                gardant le texte d'accent d'origine s'il suffit, sinon le fond, le texte, le noir ou le blanc.
+              endcomment
+              assign ink_light = accent_ink | color_mix: '#ffffff', 80
+              assign ink_dark = accent_ink | color_mix: '#000000', 80
+              assign at_candidates = s_accent_text | append: ',' | append: scheme.settings.background | append: ',' | append: scheme.settings.text | append: ',#000000,#FFFFFF' | split: ','
+              for cand in at_candidates
+                assign c1 = cand | color_contrast: accent_ink
+                assign c2 = cand | color_contrast: ink_light
+                assign c3 = cand | color_contrast: ink_dark
+                if c1 >= 4.5 and c2 >= 4.5 and c3 >= 4.5
+                  assign s_accent_text = cand
+                  break
+                endif
+              endfor
+            endif
           -%}
           --c-accent-ink: {{ accent_ink }};
           --c-accent-fill: {{ accent_fill }};
+          {%- if own_section == 'es-' %}
+          --c-surface: {{ s_surface }};
+          --c-muted: {{ s_muted }};
+          --c-accent: {{ accent_ink }};
+          --c-accent-text: {{ s_accent_text }};
+          {%- endif %}
         }
       {% endfor %}
 
