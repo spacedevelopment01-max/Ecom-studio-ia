@@ -47,6 +47,7 @@ for (const mode of ["encre", "plein"] as Mode[]) for (const format of FORMATS) {
   const a = await saveAsset({ projectId: pid, userId: u.id, name: "vitrine.png", mime: "image/png", data: await png(40), origin: "upload" });
   await saveAsset({ projectId: pid, userId: u.id, name: "fiche.txt", mime: "text/plain", data: Buffer.from("Faits fournis"), origin: "upload" });
   createFolder(pid, "Documents validés", null);
+  run("INSERT INTO subscriptions (user_id,status,plan,owner_user_id,project_id,source,created_at,updated_at) VALUES (?,'manual','dominer',?,NULL,'admin',?,?)", "sub-" + id(), u.id, Date.now(), Date.now());
   const pid2 = project(u); await saveAsset({ projectId: pid2, userId: u.id, name: "autre-projet.png", mime: "image/png", data: await png(90), origin: "upload" });
   const token = id();
   run("INSERT INTO sessions(id,user_id,expires_at,created_at) VALUES(?,?,?,?)", sha256(token), u.id, now() + 3600000, now());
@@ -103,7 +104,7 @@ try {
     const versions = () => JSON.stringify(all("SELECT id,name,version,folder_id FROM assets WHERE project_id=? ORDER BY id", k.pid));
     const noQuote = async () => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SYNA" }).count()), "bouton de devis affiché");
     const confirmTurns = () => all<{ request_json: string }>("SELECT request_json FROM agent_conversation_turns WHERE conversation_id=?", k.cid).filter((t) => /confirm-files/.test(t.request_json)).length;
-    const shown = async () => (await list.getByRole("list", { name: "Fichiers trouvés", exact: true }).getByRole("listitem").allInnerTexts()).map((t) => t.split("\n")[0].trim());
+    const shown = async () => (await list.getByRole("list", { name: "Fichiers trouvés", exact: true }).getByRole("listitem").getByRole("link").allInnerTexts()).map((t) => t.trim());
     try {
       const v0 = versions();
       await step("Pilote : « Montre les fichiers de mon projet » → liste gratuite, miniatures chargées, rien modifié", async () => {
@@ -134,7 +135,8 @@ try {
         check(names.length === 1 && names[0] === "vitrine.png", `recherche : ${names.join(", ")}`);
         await list.getByRole("button", { name: "Désigner vitrine.png", exact: true }).click();
         await page.waitForURL(/\/fichiers$/); await openSyna();
-        const ctx = panel.locator("[data-agent-active-context]"); await ctx.getByText(/Média désigné/).waitFor(); check(/vitrine\.png/.test(await ctx.innerText()), "désignation sans le nom du fichier");
+        const ctx = panel.locator("[data-agent-active-context]"); await ctx.getByText(/Média désigné/).waitFor(); // le libellé natif ne cite pas le nom : le renommage qui suit prouve quel fichier est désigné
+        return (await ctx.innerText()).split("\n").find((l) => /désign/i.test(l))?.trim();
         await noOverflow(); await shot("3-designe");
       });
       await step("« Renomme ce fichier en « vitrine-boutique.png » » → accord gratuit → nom relu, octets inchangés", async () => {

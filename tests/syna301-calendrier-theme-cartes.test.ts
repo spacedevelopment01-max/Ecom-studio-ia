@@ -19,3 +19,11 @@ it('la carte Thème montre les deux vrais aperçus et ne propose la confirmation
  expect(card.slice(card.indexOf("s?.state==='proposed'&&enabled&&<div"),card.indexOf("'Confirmer gratuitement'"))).not.toContain('\n');
  expect(card).toContain('onSuggest(`Choisis le thème ${c.name} pour mon site`)');
 });
+it('carte Fichiers en lecture (#377) : liste, miniatures, liens, « Désigner » explicite, jamais de reçu ni d’analyse annoncée',()=>{
+ const card=fs.readFileSync('src/components/studio/conversation-local-files.tsx','utf8'),panel=fs.readFileSync('src/components/studio/conversation-panel.tsx','utf8');
+ expect(card).toContain("s?.command==='read'");expect(card).toContain('data-syna-library-items');expect(card).toContain('src={item.thumbHref}');
+ expect(card).toContain('n’a pas regardé les images');expect(card).toContain("t('Fichiers du projet — lecture gratuite'");
+ expect(card).toContain('onDesignate(item)');expect(card).not.toContain('loading="lazy"');
+ // La désignation reprend exactement le repère natif de l'écran Fichiers.
+ expect(panel).toContain("setFocus({projectId,tab:'fichiers',label:item.name,target:item.target})");
+});

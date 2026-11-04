@@ -7,7 +7,7 @@ ligne, activation, action externe réelle ni dépense fournisseur.
 
 - Branche Claude : `claude/syna-301-complet` (PR brouillon #369), partie de #363 `f25a7290`.
 - Intègre par fusion, sans les modifier : #364 (`958a4dde`) puis la chaîne #365 → #366 → #367 → #368 → #370 de Codex
-  (`e1ba2542`), l'image `73c8865a`, puis #373 → #374 (`d315af5e`) et #375 → #376 (`cf159b91`).
+  (`e1ba2542`), l'image `73c8865a`, puis #373 → #374 (`d315af5e`), #375 → #376 (`cf159b91`) et #377 (`2da4884f`).
 
 ## Fait et vérifié
 
@@ -44,8 +44,10 @@ ligne, activation, action externe réelle ni dépense fournisseur.
    Le serveur accepte pourtant l'accord. Proposition : séparer « fiche en lecture seule » de « retouches gratuites
    permises » (nouveau champ ou exécutions projetées sans dépendre de la fiche), puis aligner transports et cartes.
    Preuve : `tests/syna301-projet-prepare-cartes.test.ts`, `preuves/sonde-v5-projet-prepare.json`.
-1. Recettes navigateur : Calendrier 4/4 ; Thème services 2/2, produits bloqués (voir 0) ; Bibliothèque (#377) à raccorder
-   (`scripts/syna301-bibliotheque-recette.ts` prêt, patch de carte prêt dans le dossier de travail).
+1. Fait : recettes Calendrier 4/4, Thème services 2/2 (produits bloqués, voir 0), Bibliothèque (#377) 4/4
+   (`scripts/syna301-bibliotheque-recette.ts` : liste depuis le Pilote, dossiers, photos, recherche exacte, « Désigner »
+   puis renommage relu). Reste pour la bibliothèque : pièces jointes envoyées depuis la conversation et lecture d'image
+   (non raccordées par Codex, à ne pas annoncer).
 2. Manque signalé à Codex : aucune phrase ne publie une page brouillon ; champ explicite « choix du modèle » souhaité
    dans la présentation Pages ; choix du thème bloqué dès qu'une retouche manuelle ne se reporte pas (moteur natif).
 3. Lot 3 restant : pièces jointes / bibliothèque ; réservation (au-delà du nom de prestation) ; variantes multiples
