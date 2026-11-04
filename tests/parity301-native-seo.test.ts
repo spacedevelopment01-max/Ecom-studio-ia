@@ -1,0 +1,47 @@
+import {it,expect,beforeEach,afterEach,vi} from 'vitest';
+import {localSiteFixture} from './conversation284-b1-fixtures';
+import {submitConversation,conversationView} from '@/lib/orchestrator/conversation';
+import {currentTheme,saveThemeVersion} from '@/lib/projects';
+import {renderPage} from '@/lib/theme/render';
+import {all,id,run} from '@/lib/db';
+import {emptySpend,account} from './conversation209-fixtures';
+import {CommandSchema} from '@/lib/orchestrator/conversation/contract';
+import {createLocalSeoConfirmation,hasLocalSeoReceipt} from '@/lib/local-seo-confirmation-client';
+beforeEach(()=>{for(const f of ['LOT_A','AI','CONTEXT','LOCAL_SITE'])vi.stubEnv('STUDIO_CONVERSATION_'+f,'1');vi.stubGlobal('fetch',vi.fn(()=>{throw Error('NO_PROVIDER');}));});afterEach(()=>{expect(fetch).not.toHaveBeenCalled();vi.unstubAllGlobals();vi.unstubAllEnvs();});
+const agree=(v:any)=>({action:'confirm-seo',proposalId:v.localSeo.proposalId,confirmation:true,revision:v.revision,projectRevision:v.projectRevision,requestId:id()});
+for(const business of ['products','services'] as const)for(const text of ['Remplace le titre SEO de la page d’accueil par « Atelier fictif — devis »','Mets le titre SEO de l’accueil à « Atelier fictif — devis »','Modifie la métadescription de la page d’accueil par « Des prestations fictives sur demande. »'])it(business+' '+text,async()=>{
+ const f=await localSiteFixture(business);f.select();const before=currentTheme(f.pid)!,spend=emptySpend(),p=await submitConversation(f.u,f.c.id,f.message(text));
+ expect(p.localSite).toBeUndefined();expect(p.localSeo).toMatchObject({state:'proposed',target:'/',label:'Accueil',confirmationRequired:true,costEur:0,providerCalls:0});expect(p.action?.state).not.toBe('quote');expect(currentTheme(f.pid)).toEqual(before);
+ const cmd=agree(p),saved=await submitConversation(f.u,f.c.id,cmd),after=currentTheme(f.pid)!;expect(hasLocalSeoReceipt(saved)).toBe(true);expect(after.version.parent_id).toBe(before.version.id);expect(after.spec.templates).toEqual(before.spec.templates);expect(after.spec.store.pages).toEqual(before.spec.store.pages);
+ const field=p.localSeo!.field!;expect(after.spec.store.seo![field]).toBe(p.localSeo!.diff!.after);expect(after.spec.store.seo![field==='title'?'description':'title']).toBe(before.spec.store.seo?.[field==='title'?'description':'title']??'');
+ const html=(await renderPage({spec:after.spec,base:'',cart:[]},'/',new URLSearchParams())).html;expect(html).toContain(p.localSeo!.diff!.after);expect(await submitConversation(f.u,f.c.id,cmd)).toEqual(saved);expect(currentTheme(f.pid)!.version.id).toBe(after.version.id);expect(emptySpend()).toEqual(spend);expect(all('SELECT id FROM jobs WHERE project_id=?',f.pid)).toHaveLength(0);
+});
+it('a named native page keeps its body/status/other metadata; home is a valid page handle distinct from homepage',async()=>{
+ const f=await localSiteFixture(),before=currentTheme(f.pid)!,spec=structuredClone(before.spec);spec.store.pages.push({handle:'home',title:'Nos garanties',body_html:'<p>Corps conservé</p>',seo:{title:'Ancien SEO',description:'Description conservée'}} as any);saveThemeVersion(f.pid,spec,'Page fictive','user');
+ const p=await submitConversation(f.u,f.c.id,f.message('Change le titre SEO de la page « Nos garanties » pour « Garanties fictives »'));expect(p.localSeo).toMatchObject({state:'proposed',target:'/pages/home'});await submitConversation(f.u,f.c.id,agree(p));const after=currentTheme(f.pid)!;expect(after.spec.store.pages.find(p=>p.handle==='home')).toEqual({...spec.store.pages.find(p=>p.handle==='home'),seo:{title:'Garanties fictives',description:'Description conservée'}});expect(after.spec.store.seo).toEqual(spec.store.seo);
+});
+it('unclear SEO, unknown page, unsupported markup and excess length ask a free question and invalidate old proposals',async()=>{
+ const f=await localSiteFixture(),before=currentTheme(f.pid)!;for(const text of ['Change le titre SEO joliment','Remplace le titre SEO de la page « inconnue » par « Nouveau »','Remplace le titre SEO de l’accueil par « <script>alert(1)</script> »','Remplace le titre SEO de l’accueil par « '+ 'x'.repeat(71)+' »']){const p=await submitConversation(f.u,f.c.id,f.message(text));expect(p.localSeo).toMatchObject({state:'ambiguous',confirmationRequired:false,actionsExecuted:false});expect(p.localSite).toBeUndefined();expect(p.action?.state).not.toBe('quote');}expect(currentTheme(f.pid)).toEqual(before);
+});
+it('SEO words inside a visible title are still a section title, not a metadata command',async()=>{const f=await localSiteFixture();f.select();const p=await submitConversation(f.u,f.c.id,f.message('Remplace le titre par « Mon SEO local »'));expect(p.localSeo).toBeUndefined();expect(p.localSite).toMatchObject({state:'proposed',command:'title'});});
+it('concurrent native version and expiry both invalidate the SEO agreement without replacing current work',async()=>{
+ const f=await localSiteFixture();for(const expired of [false,true]){const p=await submitConversation(f.u,f.c.id,f.message('Remplace le titre SEO de l’accueil par « Nouveau SEO »'));if(expired)run("UPDATE agent_conversations SET state_json=json_set(state_json,'$.localSeoProposal.expiresAt',0) WHERE id=?",f.c.id);else{const current=currentTheme(f.pid)!;saveThemeVersion(f.pid,current.spec,'Changement manuel','user',undefined,current.version.id);}const before=currentTheme(f.pid);await expect(submitConversation(f.u,f.c.id,agree(p))).rejects.toMatchObject({status:409});expect(currentTheme(f.pid)).toEqual(before);}
+});
+it('cancel, feature flag, foreign user, financial confirmation false and expired plan never write',async()=>{
+ const f=await localSiteFixture(),p=await submitConversation(f.u,f.c.id,f.message('Remplace le titre SEO de l’accueil par « Nouveau SEO »')),before=currentTheme(f.pid),cmd=agree(p);expect(CommandSchema.safeParse({...cmd,confirmation:false}).success).toBe(false);await expect(submitConversation(await account(),f.c.id,cmd)).rejects.toMatchObject({status:404});vi.stubEnv('STUDIO_CONVERSATION_LOCAL_SITE','0');await expect(submitConversation(f.u,f.c.id,cmd)).rejects.toMatchObject({status:404});vi.stubEnv('STUDIO_CONVERSATION_LOCAL_SITE','1');await submitConversation(f.u,f.c.id,{action:'cancel-seo',proposalId:cmd.proposalId,revision:cmd.revision,projectRevision:cmd.projectRevision,requestId:id()});
+ const v=conversationView(f.u,f.c.id);expect(v.localSeo).toBeUndefined();await expect(submitConversation(f.u,f.c.id,{...cmd,revision:v.revision,requestId:id()})).rejects.toMatchObject({status:409});run("UPDATE subscriptions SET status='cancelled' WHERE user_id=?",f.u.id);await expect(submitConversation(f.u,f.c.id,{...cmd,revision:v.revision,requestId:id()})).rejects.toMatchObject({status:402});expect(currentTheme(f.pid)).toEqual(before);
+});
+it('lost server response retries the identical durable SEO agreement, one native version and one receipt',async()=>{
+ const f=await localSiteFixture();let view=await submitConversation(f.u,f.c.id,f.message('Remplace le titre SEO de l’accueil par « Nouveau SEO »')),lost=true,applied=0;const bodies:any[]=[],version=currentTheme(f.pid)!.version.number;
+ const transport=(async(_url:any,init?:RequestInit)=>{if(!init?.body)return Response.json(conversationView(f.u,f.c.id));const body=JSON.parse(String(init.body));bodies.push(body);const result=await submitConversation(f.u,f.c.id,body);if(lost){lost=false;throw Error('Lost response');}return Response.json(result);}) as typeof fetch;
+ const client=createLocalSeoConfirmation({conversationId:f.c.id,fetch:transport,view:()=>view,onView:v=>{view=v;},onState:()=>{},onApplied:()=>{applied++;}});await client.confirm();expect(client.getState().uncertain).toBe(true);await client.confirm();expect(bodies).toHaveLength(2);expect(bodies[1]).toEqual(bodies[0]);expect(currentTheme(f.pid)!.version.number).toBe(version+1);expect(hasLocalSeoReceipt(view)).toBe(true);expect(applied).toBe(1);
+});
+it('ambiguous page titles require a native handle; an explicit /pages/ path resolves the intended existing page',async()=>{
+ const f=await localSiteFixture(),cur=currentTheme(f.pid)!,spec=structuredClone(cur.spec);for(const handle of ['garanties-a','garanties-b'])spec.store.pages.push({handle,title:'Garanties',body_html:'Conserver'} as any);saveThemeVersion(f.pid,spec,'Pages fictives','user');
+ const ambiguous=await submitConversation(f.u,f.c.id,f.message('Remplace le titre SEO de la page « Garanties » par « Nouveau SEO »'));expect(ambiguous.localSeo!.state).toBe('ambiguous');
+ const exact=await submitConversation(f.u,f.c.id,f.message('Remplace le titre SEO de la page « /pages/garanties-b » par « Nouveau SEO »'));expect(exact.localSeo).toMatchObject({state:'proposed',target:'/pages/garanties-b'});
+});
+it('native SEO receipt cannot claim a supplier call, spend, publication, foreign project or same version as its parent',async()=>{
+ const f=await localSiteFixture(),p=await submitConversation(f.u,f.c.id,f.message('Remplace le titre SEO de l’accueil par « Nouveau SEO »')),v=await submitConversation(f.u,f.c.id,agree(p));expect(hasLocalSeoReceipt(v)).toBe(true);
+ for(const patch of [{providerCalls:1},{costEur:1},{publication:true},{financialConsent:true},{projectId:'foreign'},{receiptId:''},{version:{...v.localSeo!.version,id:v.localSeo!.version!.parentId}},{confirmationRequired:true}])expect(hasLocalSeoReceipt({...v,localSeo:{...v.localSeo!,...patch} as any})).toBe(false);
+});
