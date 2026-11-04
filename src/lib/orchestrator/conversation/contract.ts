@@ -15,6 +15,8 @@ const base = z.object({
   projectRevision: z.number().int().min(0).nullable(),
 });
 export const CommandSchema = z.discriminatedUnion("action", [
+  base.extend({action:z.literal('confirm-booking-edit'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal('cancel-booking-edit'),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal("confirm-file-restore"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal("cancel-file-restore"),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal("confirm-folder-move"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
@@ -64,6 +66,8 @@ export const CommandSchema = z.discriminatedUnion("action", [
 export type Command = z.infer<typeof CommandSchema>;
 /** Un seul Brief natif pour le brouillon ; après rattachement, il est retiré et relu via stateOf(projectId). */
 export type ConversationState = {
+  bookingEditProposal?:import('./local-booking-edit').BookingEditProposal;
+  bookingEdit?:import('./local-booking-edit').BookingEditPresentation;
   bookingServices?:import('./local-booking-services').BookingServicesState;
   conversationPhotoIds?:string[];
   localAdDocumentProposalId?:string;
@@ -141,6 +145,8 @@ export type ActionCard = {
   href?: string;
 };
 export type ConversationView = {
+  bookingEdit?:import('./local-booking-edit').BookingEditPresentation;
+  bookingEditExecution?:{enabled:true};
   bookingServicesRead?:{enabled:true};
   bookingServices?:import('./local-booking-services').BookingServicesPresentation;
   /** Permission for native free project operations; independent of the acquired preparation brief lock. A1 uses recovery.localEdits only. */
