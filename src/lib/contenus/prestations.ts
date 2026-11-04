@@ -133,10 +133,10 @@ function syncShown(spec: ThemeSpec, kind: RdvKind, byId: Map<string, { name: str
 }
 
 /**
- * Enregistre les prestations, horaires et intervenants dans la section lue par le moteur, et crée une version du site.
- * Refuse de supprimer une prestation qui a des rendez-vous à venir ; signale ceux dont la durée change.
+ * Construit l’aperçu depuis la source native actuelle, sans enregistrer de version, de profil ou de réservation.
+ * Les appelants doivent contrôler les droits ; sourceVersionId sert à revalider leur accord avant enregistrement.
  */
-export function savePrestations(projectId: string, raw: unknown) {
+export function previewPrestations(projectId: string, raw: unknown) {
   const input = prestationsInput.parse(raw);
   const cur = currentTheme(projectId);
   if (!cur) throw new HttpError(409, L("Créez d'abord le site dans l'onglet Site.", "Create the site in the Site tab first."));
@@ -210,11 +210,17 @@ export function savePrestations(projectId: string, raw: unknown) {
     if (r.minParty > r.maxParty) throw new HttpError(400, L("Le nombre minimum de couverts dépasse le maximum.", "The minimum party size exceeds the maximum."));
     Object.assign(st, { open_days: [...new Set(r.openDays)].sort().join(","), lunch_slots: r.lunchSlots.trim(), dinner_slots: r.dinnerSlots.trim(), capacity: r.capacity, min_party: r.minParty, max_party: r.maxParty });
   }
+  return { sourceVersionId: cur.version.id, spec, warnings, address: input.address };
+}
+
+/** Même moteur que l’aperçu ; seuls l’enregistrement et la synchronisation du profil écrivent. */
+export function savePrestations(projectId: string, raw: unknown) {
+  const { spec, warnings, address } = previewPrestations(projectId, raw);
   const v = saveThemeVersion(projectId, spec, L("Prestations et horaires", "Services and hours"), "user");
   // Adresse unique (#239, phase 4) : celle des réservations est aussi celle du profil d'activité.
-  if (input.address !== undefined) {
+  if (address !== undefined) {
     const profile = loadProject(projectId).services;
-    if (profile.address.trim() !== input.address) saveServices(projectId, { ...profile, address: input.address });
+    if (profile.address.trim() !== address) saveServices(projectId, { ...profile, address: address });
   }
   return { versionId: v.id, number: v.number, warnings, prestations: readPrestations(projectId) };
 }
