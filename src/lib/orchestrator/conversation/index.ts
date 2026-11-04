@@ -104,9 +104,9 @@ export function conversationView(user: User, cid: string, before?: number,includ
     ...(c.project_id&&localEditsWritable&&serviceProfileEnabled()?{serviceProfileExecution:{enabled:true as const}}:{}),
     ...(m.localBusinessContent?{localBusinessContent:m.localBusinessContent}:{}),
     ...(c.project_id&&localEditsWritable&&localBusinessContentEnabled()?{localBusinessContentExecution:{enabled:true as const}}:{}),
-    // Conserver l'historique lisible quand la fiche est verrouillée, sans appeler ni exposer le lecteur protégé.
-    ...(m.localPrompts&&readOnlyReason===null&&localPromptsEnabled()?{localPrompts:localPromptsView(user,c,m.localPrompts)}:{}),
-    ...(c.project_id&&readOnlyReason===null&&localPromptsEnabled()?{localPromptsRead:{enabled:true as const}}:{}),
+    // Lecture gratuite native indépendante du verrou de fiche ; forfait et drapeau toujours requis.
+    ...(m.localPrompts&&localEditsWritable&&localPromptsEnabled()?{localPrompts:localPromptsView(user,c,m.localPrompts)}:{}),
+    ...(c.project_id&&localEditsWritable&&localPromptsEnabled()?{localPromptsRead:{enabled:true as const}}:{}),
     ...(m.localRequests?{localRequests:localRequestsView(user,c,m.localRequests)}:{}),
     ...(c.project_id&&localEditsWritable&&siteRequestsEnabled()?{localRequestsExecution:{enabled:true as const}}:{}),
     ...(m.localSite?{localSite:m.localSite}:{}),

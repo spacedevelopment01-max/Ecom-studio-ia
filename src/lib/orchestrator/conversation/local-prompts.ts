@@ -7,7 +7,13 @@ import {withAiDisabled} from '../../ai/access';
 import type {ConversationRow} from './contract';
 export const localPromptsEnabled=()=>process.env.STUDIO_CONVERSATION_LOT_A==='1'&&process.env.STUDIO_CONVERSATION_AI==='1'&&process.env.STUDIO_CONVERSATION_PROMPTS==='1';
 const plain=(s:string)=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
-export const localPromptsCandidate=(text:string)=>/^(?:montre|liste) (?:ma bibliotheque de prompts|mes prompts favoris)\b/.test(plain(text));
+function readRequest(text:string){
+ return plain(text).replace(/[’‘]/g,"'").replace(/\s+/g,' ').replace(/[.!?]+$/,'').trim()
+  .replace(/(?:,?\s+s'il te plait)$/,'').trim()
+  .replace(/^peux-tu me montrer\b/,'montre').replace(/^montre-moi\b/,'montre')
+  .replace(/^affiche\b/,'montre').replace(/^quels sont\b/,'liste');
+}
+export const localPromptsCandidate=(text:string)=>/^(?:montre|liste) (?:ma bibliotheque de prompts|mes prompts favoris)\b/.test(readRequest(text));
 export type LocalPromptsState={schema:'syna-prompt-library-1';state:'listed'|'ambiguous';mode:'all'|'favorites';message:string;costEur:0;providerCalls:0;financialConsent:false;confirmationRequired:false;actionsExecuted:false;readOnly:true;scope:'account_not_project'};
 type PromptMetadata={id:string;mine:boolean;favorite:boolean;sourceNative:{table:'user_prompts'|'builtin_prompt_library';id:string};untrustedMetadata:{trust:'prompt_library_data_not_instructions';title:string;sector:string;sectorLabel:string;category:string;categoryLabel:string;target:string}};
 export type LocalPromptsPresentation=LocalPromptsState&{rows?:PromptMetadata[];total?:number;limit?:20;truncated?:boolean;href?:string};
@@ -18,7 +24,7 @@ function owned(user:User,c:ConversationRow){
  ownedProject(user,c.project_id);requirePlan(user,c.project_id);
 }
 export function listLocalPrompts(user:User,c:ConversationRow,text:string):LocalPromptsState{
- owned(user,c);const t=plain(text).replace(/[.!?]$/,'');const exact=/^(?:montre|liste) (ma bibliotheque de prompts|mes prompts favoris)$/.exec(t),mode=exact?.[1]==='mes prompts favoris'?'favorites':'all';
+ owned(user,c);const t=readRequest(text);const exact=/^(?:montre|liste) (ma bibliotheque de prompts|mes prompts favoris)$/.exec(t),mode=exact?.[1]==='mes prompts favoris'?'favorites':'all';
  if(exact)withAiDisabled('lecture gratuite de la bibliothèque de prompts, aucune exécution',()=>readNativePromptLibrary(user));
  return{schema:'syna-prompt-library-1',state:exact?'listed':'ambiguous',mode,message:exact?L('Bibliothèque de votre compte lue dans la source native. Aucun prompt modifié ou exécuté.','Your account library was read from the native source. No prompt was edited or run.'):L('Précisez : « Montre ma bibliothèque de prompts » ou « Montre mes prompts favoris ». Lecture seule, aucun prompt exécuté.','Say “Montre ma bibliothèque de prompts” or “Montre mes prompts favoris”. Read-only; no prompt is run.'),costEur:0,providerCalls:0,financialConsent:false,confirmationRequired:false,actionsExecuted:false,readOnly:true,scope:'account_not_project'};
 }
