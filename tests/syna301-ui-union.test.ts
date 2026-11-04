@@ -29,7 +29,7 @@ function assertGlobalCardLock(panel:string){
  }visit(source);
  // Intégration #301 v3 : la carte « Demandes reçues » (#354) rejoint le même verrou global ; « SYNA complète » : cartes SEO (#367)
  // et Pages (#370) aussi, puis Stock (#373), Calendrier (#375) et Choix du thème (#376).
- expect(hooks.sort()).toEqual(['adDocument','calendar','content','files','free','pages','requests','seo','service','stock','themeChoice']);expect(expression).toBeDefined();
+ expect(hooks.sort()).toEqual(['adDocument','calendar','content','fileRestore','files','folders','free','motion','pages','requests','restore','seo','service','stock','themeChoice']);expect(expression).toBeDefined();
  const print=ts.createPrinter().printNode(ts.EmitHint.Expression,expression!,source);
  const evaluate=new Function('busy',...hooks,'adDocumentJobPending','v','return '+print) as (...args:any[])=>boolean;
  const state=(active:string|null)=>evaluate(active==='busy',...hooks.map(name=>({state:{busy:name===active}})),()=>active==='pending-ad-job',{});

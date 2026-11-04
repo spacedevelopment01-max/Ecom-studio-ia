@@ -7,7 +7,7 @@ ligne, activation, action externe réelle ni dépense fournisseur.
 
 - Branche Claude : `claude/syna-301-complet` (PR brouillon #369), partie de #363 `f25a7290`.
 - Intègre par fusion, sans les modifier : #364 (`958a4dde`) puis la chaîne #365 → #366 → #367 → #368 → #370 de Codex
-  (`e1ba2542`), l'image `73c8865a`, puis #373 → #374 (`d315af5e`), #375 → #376 (`cf159b91`) et #377 (`2da4884f`).
+  (`e1ba2542`), l'image `73c8865a`, puis #373 → #374 (`d315af5e`), #375 → #376 (`cf159b91`), #377 (`2da4884f`), la pile #378 → #387 (`9c9efda6`, convergence Codex #383 incluse) et le correctif CI #385 (`df4fce02`).
 
 ## Fait et vérifié
 
@@ -36,6 +36,8 @@ ligne, activation, action externe réelle ni dépense fournisseur.
 | 3 — Stock | carte « Stock — gratuit » (contrat #373) ; correctif : le moteur lit la désignation envoyée avec la phrase (« Désigner pour SYNA » du Catalogue) | `tests/syna301-stock-designation-message.test.ts` rouge puis vert ; recette `scripts/syna301-stock-recette.ts` 4/4 : stock relu, prix / référence / politique inchangés, Catalogue à jour |
 | 3 — Prestation | carte Horaires adaptée au champ `service-name` (#374) : liste des prestations, « Renommer » remplit la phrase | recette `scripts/syna301-prestation-recette.ts` 4/4 : nom relu, autres champs et prestation voisine inchangés |
 | 3 — Calendrier, Thème | cartes « Calendrier — gratuit » (dates avec fuseau) et « Thème du site — gratuit » (deux vrais aperçus, aucun accord si le moteur refuse) ; verrou commun 11 cartes | tests `syna301-calendrier-theme-cartes`, `syna301-phrases-ecrans-naturels` (16/16 phrases gratuites) ; recettes `syna301-calendrier-recette.ts` et `syna301-theme-recette.ts` : voir l'état ci-dessous |
+
+| 5 — Animations, versions, dossier, photo, coordonnées | cartes #379 / #382 / #387, carte du profil élargie (#384 : téléphone, e-mail, zone), import de photo dans le composeur (#378, « importée, non analysée », jointe explicitement au message suivant) ; verrou commun 14 cartes | recette `scripts/syna301-lot5-recette.ts` **4/4** (5 étapes chacun : réglage relu, restauration relue, dossier relu à la racine, photo jointe au message suivant via `photoIds`, téléphone relu) ; lancer un cas à la fois (`RECETTE_CAS=encre-telephone`) : à quatre cas d'affilée, le conteneur tue le serveur de développement par manque de mémoire |
 
 ## Reste à vérifier ou à faire (ordre proposé)
 

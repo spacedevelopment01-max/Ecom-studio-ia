@@ -29,6 +29,7 @@ const { writeSynaPrefs } = await import("../src/lib/syna-ui/prefs-store");
 const { id, run, one, all, now } = await import("../src/lib/db");
 const { sha256 } = await import("../src/lib/secrets");
 const { chromium } = await import("playwright");
+const { prepareProject, realAiCalls, simulatedFixtureCalls, PREPARED } = await import("./syna301-recette-preparee");
 
 type Mode = "encre" | "plein";
 type Format = { name: "ordinateur" | "telephone"; width: number; height: number };
@@ -36,6 +37,7 @@ const FORMATS: Format[] = [{ name: "ordinateur", width: 1440, height: 1000 }, { 
 const cases: { mode: Mode; format: Format; pid: string; cid: string; token: string }[] = [];
 for (const mode of ["encre", "plein"] as Mode[]) for (const format of FORMATS) {
   const u = await account(), pid = project(u, "services"), c = openProjectConversation(u, pid);
+  prepareProject(u as never, c.id, pid);
   saveServices(pid, { ...emptyServiceProfile(), hours: "Lundi 09–17", services: [{ name: "Diagnostic", description: "Examen fourni", price: "50 €", duration: "30 min" }, { name: "Accompagnement", description: "Suivi fourni", price: "100 €", duration: "60 min" }] } as never);
   const token = id();
   run("INSERT INTO sessions(id,user_id,expires_at,created_at) VALUES(?,?,?,?)", sha256(token), u.id, now() + 3600000, now());
@@ -137,8 +139,8 @@ try {
     await context.close();
   }
   await b.close();
-  const calls = one<{ n: number }>("SELECT COUNT(*) n FROM ai_calls")!.n, jobs = one<{ n: number }>("SELECT COUNT(*) n FROM jobs")!.n;
-  console.log(`· appels IA : ${calls} · tâches : ${jobs} · requêtes refusées hors boucle locale : ${forbidden.length} · erreurs JS : ${jsErrors.length}`);
+  const calls = realAiCalls(), jobs = one<{ n: number }>("SELECT COUNT(*) n FROM jobs")!.n;
+  console.log(`· projet ${PREPARED ? "PRÉPARÉ" : "neuf"} · lignes simulées : ${simulatedFixtureCalls()} · appels IA : ${calls} · tâches : ${jobs} · requêtes refusées hors boucle locale : ${forbidden.length} · erreurs JS : ${jsErrors.length}`);
   if (calls) errors.push(`ai_calls = ${calls}`);
   if (jsErrors.length) errors.push(...jsErrors);
 } catch (e) {

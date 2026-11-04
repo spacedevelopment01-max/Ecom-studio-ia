@@ -29,6 +29,7 @@ const { writeSynaPrefs } = await import("../src/lib/syna-ui/prefs-store");
 const { id, run, one, all, now } = await import("../src/lib/db");
 const { sha256 } = await import("../src/lib/secrets");
 const { chromium } = await import("playwright");
+const { prepareProject, realAiCalls, simulatedFixtureCalls, PREPARED } = await import("./syna301-recette-preparee");
 
 type Mode = "encre" | "plein";
 type Format = { name: "ordinateur" | "telephone"; width: number; height: number };
@@ -36,6 +37,7 @@ const FORMATS: Format[] = [{ name: "ordinateur", width: 1440, height: 1000 }, { 
 const cases: { mode: Mode; format: Format; pid: string; cid: string; token: string }[] = [];
 for (const mode of ["encre", "plein"] as Mode[]) for (const format of FORMATS) {
   const u = await account(), pid = project(u), c = openProjectConversation(u, pid);
+  prepareProject(u as never, c.id, pid);
   const date = Math.floor(now() / 60000) * 60000 + 3 * 86400000;
   const post = createManualPost(loadProject(pid), u.id, { network: "facebook", format: "text", title: "Brouillon fictif", caption: "Texte conservé", hashtags: "#Fictif", media: [], scheduledAt: date } as never);
   const token = id();
@@ -138,8 +140,8 @@ try {
     await context.close();
   }
   await b.close();
-  const calls = one<{ n: number }>("SELECT COUNT(*) n FROM ai_calls")!.n, jobs = one<{ n: number }>("SELECT COUNT(*) n FROM jobs")!.n;
-  console.log(`· appels IA : ${calls} · tâches : ${jobs} · requêtes refusées hors boucle locale : ${forbidden.length} · erreurs JS : ${jsErrors.length}`);
+  const calls = realAiCalls(), jobs = one<{ n: number }>("SELECT COUNT(*) n FROM jobs")!.n;
+  console.log(`· projet ${PREPARED ? "PRÉPARÉ" : "neuf"} · lignes simulées : ${simulatedFixtureCalls()} · appels IA : ${calls} · tâches : ${jobs} · requêtes refusées hors boucle locale : ${forbidden.length} · erreurs JS : ${jsErrors.length}`);
   if (calls) errors.push(`ai_calls = ${calls}`);
   if (jsErrors.length) errors.push(...jsErrors);
 } catch (e) {

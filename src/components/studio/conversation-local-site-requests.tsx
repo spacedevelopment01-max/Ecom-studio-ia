@@ -1,4 +1,5 @@
 "use client";
+import {nativeLocalEditAllowed} from '@/lib/existing-local-edits';
 import {usePathname} from 'next/navigation';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {hasNativeRequestReceipt} from '@/lib/local-site-requests-confirmation-client';
@@ -15,7 +16,7 @@ import {useLang,useT} from '../i18n';
 const status=(s:{read:boolean;handled:boolean},t:ReturnType<typeof useT>)=>s.handled?t('Traitée','Handled'):s.read?t('Lue, non traitée','Read, not handled'):t('Nouvelle','New');
 export function ConversationLocalSiteRequests({view,confirmation,busy}:{view:ConversationView;confirmation:ReturnType<typeof useLocalSiteRequestsConfirmation>;busy:boolean}){
  const t=useT(),{lang}=useLang(),pathname=usePathname(),{focus,setFocus}=useAgentFocus(),s=view.localRequests,{controller,state}=confirmation;
- if(view.recovery||view.readOnlyReason||(!s&&!state.error&&!state.uncertain))return null;
+ if(!nativeLocalEditAllowed(view)||(!s&&!state.error&&!state.uncertain))return null;
  const pid=view.projectId,onSite=!!pid&&pathname.split('/')[3]==='boutique',enabled=!!view.localRequestsExecution?.enabled&&!state.blocked,valid=hasNativeRequestReceipt(view);
  const designated=(id:string)=>focus?.target.kind==='site-request'&&focus.target.requestId===id;
  const selectionMatches=!!s?.request&&designated(s.request.id)&&focus?.target.kind==='site-request'&&focus.target.fingerprint===s.request.fingerprint;

@@ -1,4 +1,5 @@
 "use client";
+import {nativeLocalEditAllowed} from '@/lib/existing-local-edits';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {hasLocalSeoReceipt} from '@/lib/local-seo-confirmation-client';
 import type {useLocalSeoConfirmation} from './use-local-seo-confirmation';
@@ -11,7 +12,7 @@ import {useT} from '../i18n';
 export function ConversationLocalSeo({view,confirmation,busy}:{view:ConversationView;confirmation:ReturnType<typeof useLocalSeoConfirmation>;busy:boolean}){
  const t=useT(),s=view.localSeo,{controller,state}=confirmation;
  if(view.recovery||(!s&&!state.error&&!state.uncertain))return null;
- const enabled=view.localSeoExecution?.enabled&&!view.readOnlyReason&&!state.blocked;
+ const enabled=view.localSeoExecution?.enabled&&nativeLocalEditAllowed(view)&&!state.blocked;
  const field=s?.field==='description'?t('Méta-description (texte sous le titre dans Google)','Meta description (text under the title in Google)'):s?.field==='title'?t('Titre SEO (titre affiché dans Google et l’onglet)','SEO title (title shown in Google and the browser tab)'):'';
  const page=s?.label||(s?.target==='/'?t('Page d’accueil','Home page'):s?.target);
  return <section aria-label={t('Retouche SEO gratuite','Free SEO edit')} data-syna-seo-card className="min-w-0 space-y-3 rounded-xl border border-line p-4 text-sm">

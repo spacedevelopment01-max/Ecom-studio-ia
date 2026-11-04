@@ -1,4 +1,5 @@
 "use client";
+import {nativeLocalEditAllowed} from '@/lib/existing-local-edits';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {hasNativeContentReceipt} from '@/lib/local-business-content-confirmation-client';
 import type {useLocalBusinessContentConfirmation} from './use-local-business-content-confirmation';
@@ -13,7 +14,7 @@ const TAB={biens:'biens',plats:'carte',realisations:'realisations'} as const;
 export function ConversationLocalBusinessContent({view,confirmation,busy,selectionMatches}:{view:ConversationView;confirmation:ReturnType<typeof useLocalBusinessContentConfirmation>;busy:boolean;selectionMatches:boolean}){
  const t=useT(),{lang}=useLang(),s=view.localBusinessContent,{controller,state}=confirmation;
  if(view.recovery||(!s&&!state.error&&!state.uncertain))return null;
- const enabled=view.localBusinessContentExecution?.enabled&&!view.readOnlyReason&&!state.blocked,valid=hasNativeContentReceipt(view);
+ const enabled=view.localBusinessContentExecution?.enabled&&nativeLocalEditAllowed(view)&&!state.blocked,valid=hasNativeContentReceipt(view);
  const kind=s?.target?.type??s?.item?.type,noun=kind==='biens'?t('Bien','Property'):kind==='plats'?t('Plat','Dish'):kind==='realisations'?t('Réalisation','Project'):'';
  const value=(v:string|number|null|undefined)=>v==null||v===''?t('(vide)','(empty)'):s?.field==='price'&&typeof v==='number'?new Intl.NumberFormat(lang==='en'?'en-GB':'fr-FR',{style:'currency',currency:'EUR'}).format(v):String(v);
  const effect=(f:string)=>f==='handle'?t('Adresse de la page','Page address'):f;

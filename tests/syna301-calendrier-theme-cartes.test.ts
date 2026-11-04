@@ -27,3 +27,24 @@ it('carte Fichiers en lecture (#377) : liste, miniatures, liens, « Désigner »
  // La désignation reprend exactement le repère natif de l'écran Fichiers.
  expect(panel).toContain("setFocus({projectId,tab:'fichiers',label:item.name,target:item.target})");
 });
+it('cartes Animations (#379), Versions (#382), Dossier (#387), coordonnées (#384) et import photo (#378) : libellés honnêtes, aucune action sur une liste',()=>{
+ const read=(f:string)=>fs.readFileSync('src/components/studio/'+f,'utf8');
+ const motion=read('conversation-local-site-motion.tsx'),restore=read('conversation-local-theme-restore.tsx'),folders=read('conversation-local-folders.tsx'),profile=read('conversation-service-profile.tsx'),photo=read('conversation-photo-import.tsx'),panel=read('conversation-panel.tsx');
+ expect(motion).toContain("subtle:t('discrète'");expect(motion).toContain('hasLocalSiteMotionReceipt(view)');
+ // Versions : « Restaurer » remplit la phrase exacte, jamais sur la version actuelle ; confirmation seulement à l'état proposé.
+ expect(restore).toContain('onSuggest(`Restaure la version ${c.number} du site`)');expect(restore).toContain('{!c.current&&<Button');
+ expect(restore.split("'Confirmer gratuitement'").length).toBe(2);expect(restore).toContain("s?.state==='proposed'&&enabled&&<div");
+ expect(folders).toContain("t('Racine (aucun dossier)'");expect(folders).toContain('aucun fichier n’est déplacé');
+ for(const f of ['phone','email','area','contact'])expect(profile).toContain(f+':t(');
+ // Photo : import gratuit non analysé, jointe explicitement au message suivant puis oubliée.
+ expect(photo).toContain("'importée, non analysée'");expect(photo).not.toContain('loading="lazy"');
+ expect(panel).toContain('photoIds:photo.photos.map(p=>p.photoId)');expect(panel).toContain("setText('');photo.clear();");
+});
+it('carte du profil : prix, durée et description des prestations (#390 → #392) avec la phrase exacte de chaque champ',()=>{
+ const profile=fs.readFileSync('src/components/studio/conversation-service-profile.tsx','utf8');
+ for(const f of ['service-price','service-duration','service-description'])expect(profile).toContain(`'${f}':t(`);
+ expect(profile).toContain('Mets le prix de la prestation du profil « ${n} » à « »');
+ expect(profile).toContain('Mets la durée de la prestation du profil « ${n} » à « »');
+ expect(profile).toContain('Remplace la description de la prestation du profil « ${n} » par « »');
+ expect(profile).toContain("t('(effacé)'");
+});
