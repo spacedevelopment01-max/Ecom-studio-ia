@@ -1,3 +1,48 @@
+# Point de reprise après #402
+
+La mission #301 reste inachevée. Continuer les lots indépendants sans demander une nouvelle validation. Aucun fournisseur réel, projet client, publication, activation, fusion main ou déploiement.
+
+## Dernière livraison et environnement
+
+**PR brouillon #402 : `5950fc2c2cdd1639634d38274a38791c52331881`, branche `codex/parity301-existing-folder-access`.** Parent : convergence #401, `e745263291dc36ded53a858ca90851008867b3ad`. Aucun composant Claude modifié.
+
+Le code de travail se trouve dans `/workspace/work/parity301-ci-guards`. Cette branche documentaire reprend le code #402 et actualise seulement la matrice et ce point. Le checkout d’exécution `/workspace/work/parity301-intents-v5` reste propre sur D7, avec le build `tf_kwZDK1SseJ07RKa0Tp` ; aucun serveur ni navigateur n’est actif.
+
+## Accès A1 raccordé et borné
+
+#402 raccorde le renommage et le déplacement natifs aux anciens projets A1, sous deux drapeaux indépendants, **fermés par défaut** : `STUDIO_CONVERSATION_EXISTING_FOLDER_RENAME` et `STUDIO_CONVERSATION_EXISTING_FOLDER_MOVE`. Ils exigent aussi EXISTING_LOCAL et les gardes natifs. Aucun environnement client ou fichier .env n’a été activé.
+
+La fiche et les outils IA gardent leurs permissions actuelles : `actionsEnabled:false`, `aiEnabled:false`, `projectRevision:null`, `creation:null`, `correctionFields:[]`. Les cas testés conservent leur absence de Préparation (`stateOf:null`). Aucun identifiant ou numéro de version de fiche n’est inventé pour accéder aux dossiers.
+
+**106 tests sur cinq fichiers et les types passent**, dont 20 nouveaux cas A1. Produits/services acquis, shop.chat, actifs, octets et dépenses restent identiques. Les contrôles couvrent HTTP/auth/CSRF/accord littéral, réponse perdue récupérée par GET sans second POST, concurrence, expiration, annulation, nouveau tour, bit client forgé et retrait du drapeau ou du forfait avant cache. Quatre cas manquants ont échoué avant raccordement. Voir `LOT-ANCIENS-PROJETS-DOSSIERS.md`.
+
+À Claude : les deux cartes utilisent `localEditAllowed(view,'folder-rename'|'folder-move')` et leur capacité serveur. Les factories ont ce contrôle ; ne pas bloquer ces exceptions explicitement déclarées par un rejet global de `view.recovery`. `nativeLocalEditAllowed` reste inchangé et interdit les autres domaines A1. L’adaptation de la carte Prompts préparée et les nouvelles cartes de dossiers, leur verrou commun et les recettes compilées dans les quatre formats après au moins 17 secondes restent ouvertes. Contrats et commits publiés dans #369, commentaire `6632303636`. Dernier HEAD Claude observé : `ecfaa73d27e9e4ece1cb10adee04053e42b33f36`, à reconsulter avant intégration ; aucun nouvel accord de sa part n’est supposé.
+
+## CI observées sur les SHA livrés
+
+| Source | Run | Résultat observé |
+|---|---|---|
+| #394/#395, CB | 41825544838 et 41825362424 | **SUCCESS complet**. 5 832 tests réussis, 31 exclusions existantes ; 627 fichiers réussis, 1 exclu. Natif 69/69, confirmation 18/18, Docker et verdict verts. |
+| #396, 506735a7 | 41828309600 | **SUCCESS complet**. 5 840 tests réussis, 31 exclusions ; 627 fichiers réussis, 1 exclu. Tous les contrôles sont verts. |
+| #397, D7 | 41829717764 | **SUCCESS complet**. 5 841 tests réussis, 31 exclusions ; 627 fichiers réussis, 1 exclu. Tous les contrôles sont verts. |
+| #398, 504de588 | 41832270177 | Suite 5 869 tests réussis / 31 exclusions, 628 fichiers / 1 exclu. Docker et confirmation verts ; grandes recettes en cours. |
+| #399, f7b26159 | 41833620428 | Suite 5 873 tests réussis / 31 exclusions, 629 fichiers / 1 exclu. Docker et confirmation verts ; grandes recettes en cours. |
+| #400, 9b050ff3 | 41835440257 | Suite 5 902 tests réussis / 31 exclusions, 630 fichiers / 1 exclu. Docker et confirmation verts ; grandes recettes en cours. |
+| #401, e7452632 | 41837147432 | Suite 5 913 tests réussis / 31 exclusions, 631 fichiers / 1 exclu. Docker et confirmation verts ; grandes recettes en cours. |
+| #402, 5950fc2c | 41840639425 | En cours, Docker vert. Aucun autre verdict anticipé. |
+
+Les 31 exclusions sont préexistantes. Aucun test ni contrôle obligatoire ou financier n’a été supprimé. Ne pas relancer les contrôles déjà verts.
+
+## Prochaines actions
+
+1. Observer les CI restantes sur leurs SHA, tout en continuant les lots indépendants. Préserver les têtes des PR pour laisser finir leurs CI.
+2. Reconsulter les travaux de Claude et intégrer ses cartes sur une nouvelle branche. Qualifier A1 produits/services, Encre/Plein ordinateur/toucher, au moins 17 secondes, source native, reçu, rechargement, réponse perdue et conflit. Les fonctions A1 de #402 n’ont pas encore de preuve navigateur.
+3. Vérifier la prochaine lacune sûre : bibliothèque de prompts en lecture seule sur A1, actuellement hors reprise, ou CRUD profil/réservation par store natif distinct. Un droit de lecture ne donne aucun droit d’édition ou de génération. Les pièces jointes demandent un contrat distinct : `photoIds` modifie encore la fiche ; ne pas forcer `assertBriefWritable`.
+
+Matrice unique : **165 unités, 62 PARTIEL, 73 ABSENT, 4 NON_TESTE, 26 BLOQUE, aucune complète**. Les modes A1 ajoutés ne sont pas de nouvelles opérations. Les preuves UI antérieures gardent leur SHA : CB pour quatre recettes (84 étapes, 40 accords après au moins 17 secondes), D7 pour Fichiers naturels (40 étapes, 8 accords). Captures locales seulement. L’historique ci-dessous conserve les preuves et leurs limites.
+
+---
+
 # Convergence backend V8 — priorité de reprise
 
 La mission #301 reste ouverte. Cette convergence reprend les parents `db7600b4` (preuves), `9b050ff3` (Fichiers et dossiers) et `506735a7` (prompts). Tous les composants de Claude restent identiques à `ecfaa73d` ; sa branche n’est pas modifiée.
