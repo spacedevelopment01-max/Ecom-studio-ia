@@ -52,3 +52,8 @@ it('carte du profil : le nom natif de la prestation visée (#395) est affiché h
  const profile=fs.readFileSync('src/components/studio/conversation-service-profile.tsx','utf8');
  expect(profile).toContain("service&&s?.serviceName&&s.state!=='ambiguous'");expect(profile).toContain('data-syna-service-name');
 });
+it('carte Renommer un dossier (#398) distincte de « Nouveau dossier » ; prompts lus sur projet préparé (#396) sans ouvrir A1',()=>{
+ const rename=fs.readFileSync('src/components/studio/conversation-local-folder-rename.tsx','utf8'),prompts=fs.readFileSync('src/components/studio/conversation-local-prompts.tsx','utf8');
+ expect(rename).toContain("t('Renommer un dossier — gratuit'");expect(rename).not.toContain("t('Nouveau dossier — gratuit'");expect(rename).toContain('nativeLocalEditAllowed(view)');
+ expect(prompts).toContain('handlesLocalPrompts=(v:ConversationView)=>nativeLocalEditAllowed(v)&&');expect(prompts).not.toContain('!v.readOnlyReason');
+});
