@@ -138,8 +138,9 @@ export function createFolder(projectId: string, name: string, parentId: string |
 /** Empêche de déplacer un dossier dans l'un de ses descendants. */
 export function isDescendant(projectId: string, folderId: string, maybeChild: string | null): boolean {
   let cur = maybeChild;
-  let guard = 0;
-  while (cur && guard++ < 64) {
+  const visited = new Set<string>();
+  while (cur && !visited.has(cur)) {
+    visited.add(cur);
     if (cur === folderId) return true;
     cur = one<{ parent_id: string | null }>("SELECT parent_id FROM folders WHERE id = ? AND project_id = ?", cur, projectId)?.parent_id ?? null;
   }
