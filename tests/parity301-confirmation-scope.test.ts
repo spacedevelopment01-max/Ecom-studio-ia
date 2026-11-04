@@ -12,7 +12,9 @@ import {createLocalStockConfirmation} from '@/lib/local-stock-confirmation-clien
 import {createLocalCalendarConfirmation} from '@/lib/local-calendar-confirmation-client';
 import {createLocalThemeChoiceConfirmation} from '@/lib/local-theme-choice-confirmation-client';
 import {createLocalSiteMotionConfirmation} from '@/lib/local-site-motion-confirmation-client';
+import {createLocalThemeRestoreConfirmation} from '@/lib/local-theme-restore-confirmation-client';
 const domains=[
+ {name:'restore',field:'localThemeRestore',flag:'localThemeRestoreExecution',key:'syna-free-restore:',action:'confirm-restore',create:createLocalThemeRestoreConfirmation},
  {name:'motion',field:'localSiteMotion',flag:'localSiteMotionExecution',key:'syna-free-motion:',action:'confirm-motion',create:createLocalSiteMotionConfirmation},
  {name:'theme',field:'localThemeChoice',flag:'localThemeChoiceExecution',key:'syna-free-theme-choice:',action:'confirm-theme-choice',create:createLocalThemeChoiceConfirmation},
  {name:'calendar',field:'localCalendar',flag:'localCalendarExecution',key:'syna-free-calendar:',action:'confirm-calendar',create:createLocalCalendarConfirmation},
@@ -30,6 +32,7 @@ function view(d:D,q='new',state='proposed',requestId='request-new'):Conversation
  const s:any={schema:'syna-service-profile-1',state,proposalId:q,id:q,field:'hours',projectId:'p',sourceVersion:1,resultVersion:2,
  diff:{before:{read:false,handled:false},after:{read:true,handled:false}},target:{type:'biens',itemId:'item',version:'1'},asset:{id:'asset',name:'name',version:2,folderId:null},item:{id:'item',type:'biens',version:'2',title:'title'},request:{id:'request'},
  actionsExecuted:state==='applied',receiptId:requestId,confirmationRequired:state==='proposed',costEur:0,providerCalls:0,financialConsent:false,publication:false};
+ if(d.name==='restore')Object.assign(s,{schema:'syna-local-theme-restore-1',targetVersionId:'v0',version:{id:'v2',parentId:'v1',number:2},previewHref:'/preview/p/v/v2'});
  if(d.name==='motion')Object.assign(s,{schema:'syna-local-site-motion-1',key:'motion_enabled',diff:{before:true,after:false},version:{id:'v2',parentId:'v1',number:2}});
  if(d.name==='theme')Object.assign(s,{schema:'syna-local-theme-choice-1',direction:'rive',version:{id:'v2',parentId:'v1',number:2},previewHref:'/preview/p/v/v2'});
  if(d.name==='calendar')Object.assign(s,{schema:'syna-local-calendar-1',scheduling:false,target:{postId:'post',title:'Title',status:'review',timezone:'Europe/Paris'},diff:{before:100,after:200}});
@@ -70,7 +73,7 @@ for(const d of domains){
   const t=setup(d,'same');await t.client.confirm();expect(t.bodies).toEqual([t.old]);expect(t.map.size).toBe(0);
  });
  it(d.name+': stale stored intent cannot block cancellation of the displayed new proposal',async()=>{
-  const t=setup(d);await t.client.cancel();expect(t.bodies).toHaveLength(1);expect(t.bodies[0].action).toBe(d.name==='motion'?'cancel-motion':d.name==='theme'?'cancel-theme-choice':d.name==='calendar'?'cancel-calendar':d.name==='stock'?'cancel-stock':d.name==='ad'?'cancel':d.name==='hours'?'cancel-service-profile':d.name==='seo'?'cancel-seo':d.name==='pages'?'cancel-pages':'select');if(d.name==='motion'||d.name==='theme'||d.name==='calendar'||d.name==='stock'||d.name==='ad'||d.name==='hours'||d.name==='seo'||d.name==='pages')expect(t.bodies[0].proposalId).toBe('new');expect(t.bodies.every(b=>b.proposalId!=='old')).toBe(true);expect(t.applied).not.toHaveBeenCalled();
+  const t=setup(d);await t.client.cancel();expect(t.bodies).toHaveLength(1);expect(t.bodies[0].action).toBe(d.name==='restore'?'cancel-restore':d.name==='motion'?'cancel-motion':d.name==='theme'?'cancel-theme-choice':d.name==='calendar'?'cancel-calendar':d.name==='stock'?'cancel-stock':d.name==='ad'?'cancel':d.name==='hours'?'cancel-service-profile':d.name==='seo'?'cancel-seo':d.name==='pages'?'cancel-pages':'select');if(d.name==='restore'||d.name==='motion'||d.name==='theme'||d.name==='calendar'||d.name==='stock'||d.name==='ad'||d.name==='hours'||d.name==='seo'||d.name==='pages')expect(t.bodies[0].proposalId).toBe('new');expect(t.bodies.every(b=>b.proposalId!=='old')).toBe(true);expect(t.applied).not.toHaveBeenCalled();
  });
  it(d.name+': refresh discards a superseded pending intent without any write',async()=>{
   const t=setup(d);await t.client.refresh();expect(t.bodies).toEqual([]);expect(t.client.getState().uncertain).toBe(false);expect(t.map.size).toBe(0);
