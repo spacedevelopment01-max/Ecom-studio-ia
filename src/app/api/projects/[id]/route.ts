@@ -130,7 +130,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
     const bookingUrl = sv.bookingUrl.trim();
     if (bookingUrl && !/^https?:\/\/\S+$/i.test(bookingUrl)) throw new HttpError(400, L("Lien de prise de rendez-vous invalide (il doit commencer par https://).", "Invalid booking link (it must start with https://)."));
     saveServices(p.id, {
-      services: sv.services.map((x) => ({ ...(x.key?{key:x.key}:{}),name: x.name.trim(), description: x.description.trim(), ...(x.price?.trim() ? { price: x.price.trim() } : {}), ...(x.duration?.trim() ? { duration: x.duration.trim() } : {}) })).filter((x) => x.name),
+      services: sv.services.map((x) => ({ ...(x.key?{key:x.key}:{}),name: x.name.trim(), description: x.description.trim(), price: x.price?.trim() || undefined, duration: x.duration?.trim() || undefined })).filter((x) => x.name),
       area: checkedServiceContact('area',sv.area),
       address: sv.address.trim(),
       phone: checkedServiceContact('phone',sv.phone),

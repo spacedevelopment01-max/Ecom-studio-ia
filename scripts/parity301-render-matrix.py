@@ -12,8 +12,8 @@ for r in rows:
         assert r[key],(r['operation'],key)
 def clean(value):return value.replace('|','/').replace('\n',' ')
 md=[f'# Matrice unique de convergence #301 — {len(rows)} opérations','',
-    '162 unités conservées depuis f64a6b0,baseClaude#369ea6f0fd9,puis PR#372–#382 etconvergence#383af6e16b. Les77 décompositions restent un inventaire,pas77 défauts démontrés ;chemin etidentifiants historiques conservés.','',
-    '**Aucune ligne complète. PARTIEL décrit seulement le sous-parcours prouvé.** Aucun fournisseur réel, connexion réelle ou publication certifié. CI finales #372 et#373 SUCCESS ;autres SHA à qualifier. Les deux attentes CI historiques devenues fausses sont corrigées dans#380,sans suppression de tests ni transformation de leur ancien échec en succès. Le CSV conserve les relevés natifs, phrases et modes hérités ; les ajouts moteur ne certifient pas automatiquement ces modes.','',
+    '162 unités conservées et une omission native folders.create ajoutée : 163 unités. Base Claude #369 et PR #372–#387, convergence #388 488da3e. Les77 décompositions restent un inventaire,pas77 défauts démontrés ;chemin etidentifiants historiques conservés.','',
+    '**Aucune ligne complète. PARTIEL décrit seulement le sous-parcours prouvé.** Aucun fournisseur réel, connexion réelle ou publication certifié. CI finales #372 et #373 SUCCESS ; suites #381/#382/#383 vertes, grandes recettes encore en cours ; CI #384–#388 à qualifier. Les deux attentes CI historiques devenues fausses sont corrigées dans#380,sans suppression de tests ni transformation de leur ancien échec en succès. Le CSV conserve les relevés natifs, phrases et modes hérités ; les ajouts moteur ne certifient pas automatiquement ces modes.','',
     '| Statut | Nombre |','|---|---:|']
 md += [f'| {status} | {count} |' for status,count in sorted(Counter(r['statut'] for r in rows).items())]
 md += ['','| Cap. | Opération | Statut | Preuve actuelle | Manque | Responsable | Dépendance | Critère de fermeture |','|---|---|---|---|---|---|---|---|']

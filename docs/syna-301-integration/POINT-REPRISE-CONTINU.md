@@ -83,3 +83,32 @@ Logs :`/tmp/parity301-convergence-v4-build.log`, `convergence-v4-image.log` et d
 2. Reprendre les cartes livrées par Claude sur une branche de convergence propre, reconstruire puis tester les vrais parcours quatre modes/toucher/17s. Ne pas modifier sa branche ni déduire une preuve de deux piles séparées.
 3. Profil services :téléphone/e-mail/zone peuvent être des champs exacts avec CAS/empreinte. Validation native :area300,phone40,email160+regex. **Adresse couplée** :PATCH projet appelle `syncBookingAddress` après saveServices et crée une version du site. Ne pas raccorder address par une simple écriture de profil sans traiter cette concurrence. Même prudence pour bookingUrl/contactModes ;les services réservables ont leurs propres IDs/versions.
 4. Continuer CRUD métiers, variantes/réservations, dossiers/versions de fichiers et champs restants de la matrice. Vérifier #348 avant développement. Connexions/publications réelles restent interdites ;seuls contrats et fixtures peuvent être qualifiés sans nouvel accord réel.
+
+## Reprise prioritaire actualisée — 4 novembre, 10 h 24 UTC
+
+La source commune suivante est **PR #388 / codex/parity301-convergence-v5 / 488da3e572c0fd2d2289021c1134b795d3719dce**, vrai merge des parents #387 `9c9efda6f23224f9983fb39c932af181154fc128` et #385 `df4fce028547771f3e96d3a187a3919c51fe062d`. Sa construction propre est en cours : ne pas attribuer à ce SHA les anciennes preuves af6. Les fichiers graphiques Claude sont inchangés.
+
+Nouveaux lots livrés, brouillon et non fusionnés :
+
+- **#384** `8024d2e9acbf296002ea5ef543ccb4bbedb6c771` : téléphone/e-mail/zone du profil, aperçu et accord gratuit/CAS/validation partagée au PATCH natif. 8 tests + 20 connaissances/types passent. Adresse toujours exclue, car syncBookingAddress touche aussi le site.
+- **#385** `df4fce028547771f3e96d3a187a3919c51fe062d` : contrôle monotone d’au moins 17000 ms, seuil et contrôles inchangés. #380 échouait dans l’assertion de délai AVANT clic, pas une perte applicative démontrée. Trois tests/type passent ; véritable recette sections af6 4/4, huit accords après minimum17s, reload/undo,0IA/externe/JS. La cause précise minuteur/horloge civile n’est pas départagée par les logs. Run #385 `41812683859` en cours.
+- **#386** `3a035bf2a44eb37bedf0e249e6f0f9f38d22cee3` : vrai PATCH dossier répondait400/404 mais avait déjà renommé. Deux tests rouges avant,3verts après+7bibliothèque/types. Validation complète puis UPDATE des seuls champs fournis. Aucun moteur dossier réinventé.
+- **#387** `9c9efda6f23224f9983fb39c932af181154fc128` : création d’un dossier natif vide, parent/racine explicites, localFolders / confirm-folder / cancel-folder et contrôleur persistant. 14 métier +91 transports (7 nouveaux) +30 régressions/types passent. Cartes et recettes Claude à faire ; pas de déplacement/suppression implicite.
+
+Chaque contrat et SHA a été transmis à Claude dans #369 (commentaires 6628121531,6628186393,6628213551,6628333533,6628370123). Les nouvelles cartes restent sa responsabilité ; aucune modification directe de sa branche.
+
+CI exactes relevées : #381 suite5661pass/31skips,609fichierspass/1skip ; #382 suite5681pass/31skips,610fichierspass/1skip ; #383 suite5682pass/31skips,611fichierspass/1skip. Docker et confirmation obligatoire verts sur ces trois SHA ; grandes recettes encore en cours, aucun verdict global anticipé. #384 run41812294387 en cours, Docker vert. #380 reste historiquement rouge sur son contrôle du temps ; son correctif est #385, ne pas maquiller le vieux SHA.
+
+Matrice canonique mise à jour sans perdre les162 unités : **163 unités**, ajout explicite de l’omission native folders.create ; **59 PARTIEL,74 ABSENT,4 NON_TESTE,26 BLOQUE**, aucune complète. Chemin historique conservé. Coordonnées services et défaut d’atomicité documentés sur leurs lignes.
+
+Workspace : source propre dans /workspace/work/parity301-intents-v5, branche convergence-v5, build /tmp/parity301-convergence-v5-build.log en cours (session76961). Documentation dans /workspace/work/parity301-ci-guards, branche continuous-matrix-v5, basée sur488da3e ; .next est un lien vers le build source. Ne pas exécuter deux builds/recettes simultanément. Aucun ancien checkout de panne nettoyé.
+
+Prochaines actions : observer le build puis vérifier /api/version sur488da3e ; suivre les CI finales des SHA exacts, poursuivre les modules indépendants. Étendre les formulations/clarifications naturelles et les opérations de dossiers (renommer/déplacer/supprimer vide) avec moteur natif partagé, concurrence et reçus prouvés ; restauration corbeille/native files et services réservables restent ouverts. Ne pas considérer la création de dossier comme preuve de ses autres actions. Attendre seulement les dépendances réelles de cartes Claude, continuer les autres moteurs. Aucun fournisseur/client/main/déploiement.
+
+### Résultats postérieurs au point de 10 h 24
+
+Build #388 terminé avec succès, source propre488da3e. Recette Image sur CE SHA :4/4,16étapes,souris/toucher réels,miniatures chargées et pixels vérifiés,17s monotones,accord/reload/undo,0IA/externe/JS ; /api/version confirme488da3e,originbuild,production,treeclean,compiled-build,BUILD_ID7Ttu5MU3GFZhao5wEzAKq. Rapport PREUVE-IMAGE-CONVERGENCE-V5.json ;captures locales /tmp/parity301-convergence-v5-image uniquement.
+
+CI #381 désormais **SUCCESS** run41808380657 :les quatre contrôles obligatoires et le verdict global sont verts ;5661pass/31skips existants. #382/#383 grandes recettes toujours en cours. #384 et #385 confirmation gratuite obligatoire désormais verte, Docker vert, suites/grandes recettes en cours ;ne pas déclarer toute leur CI verte.
+
+Lot dossier-dialogue en cours de livraison sur branche codex/parity301-folder-dialogue, base documentaire17a940a6322a0d6e7ba1882e440babf08380a0d8 :8 nouveaux tests +14 métier existants +91 transports =113pass,typespropres. LOT-DOSSIER-DIALOGUE.md décrit les phrases sans guillemets et la question persistante/réponse destination gratuite, sans accord implicite. Trois fichiers moteur/contrat/index,un test etdocs ;aucune interface. Prochaine étape :publication et transmission du SHA exact à Claude, puis opérations dossiers/fichiers restantes pendant les CI. La matrice reste163 unités,aucune complète ;la carte etrecette de ces nouveaux champs restent ouvertes.
