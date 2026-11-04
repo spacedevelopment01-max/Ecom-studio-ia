@@ -12,7 +12,7 @@ for r in rows:
         assert r[key],(r['operation'],key)
 def clean(value):return value.replace('|','/').replace('\n',' ')
 md=[f'# Matrice unique de convergence #301 — {len(rows)} opérations','',
-    '162 unités initiales conservées, trois omissions natives de dossiers ajoutées :165 unités. Les décompositions restent un inventaire, pas une liste de défauts démontrés. Voir POINT-REPRISE-CONTINU.md pour les SHA et CI observées.','',
+    '162 unités initiales conservées et omissions natives détaillées dans le CSV. Les décompositions restent un inventaire, pas une liste de défauts démontrés. Voir POINT-REPRISE-CONTINU.md pour les SHA et CI observées.','',
     '**Aucune ligne complète. PARTIEL décrit seulement le sous-parcours prouvé.** Aucun fournisseur réel, connexion réelle ou publication certifié. Chaque preuve garde son SHA et ses limites ; une CI verte ne certifie pas toute la parité. Les cartes et recettes communes encore manquantes sont indiquées par opération.','',
     '| Statut | Nombre |','|---|---:|']
 md += [f'| {status} | {count} |' for status,count in sorted(Counter(r['statut'] for r in rows).items())]
