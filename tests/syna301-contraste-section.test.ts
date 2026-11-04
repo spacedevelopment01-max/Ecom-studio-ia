@@ -1,9 +1,10 @@
 /**
  * #301 « SYNA complète », lot 2 — couleur d'une seule section (section_colors, Studio et SYNA) : seuls fond et texte
- * changent ; surface, texte secondaire, accent et texte des boutons venaient de l'ancien fond et devenaient illisibles
+ * changeaient ; surface, texte secondaire, accent et texte des boutons venaient de l'ancien fond et devenaient illisibles
  * (mesure navigateur scripts/syna301-contraste-section.ts : 199 textes sous 4,5:1 avant, 6 après sur 4 configurations).
- * Le thème les recalcule pour le schéma « es-<section> » uniquement quand le contraste manque ; les autres schémas
- * sont rendus à l'identique.
+ * Le moteur (#365 de Codex) adapte les couleurs héritées illisibles en gardant exactes les couleurs demandées ; le thème
+ * (#369) fait suivre les cartes « verre » et les textes atténués. Contrôle de bout en bout : couleurs rendues lisibles,
+ * schémas d'origine rendus à l'identique.
  */
 import {expect,it} from 'vitest';
 import {applyOps} from '@/lib/theme/ops';
