@@ -1,5 +1,6 @@
 /** Existing project image: actual compiled Studio, natural phrase, real mouse/touch designation, 17s, free confirmation, persisted native result and undo. No supplier. */
 import fs from "node:fs";
+import { waitAtLeast } from "./lot9/wait-at-least";
 import os from "node:os";
 import path from "node:path";
 import { spawn,execFileSync } from "node:child_process";
@@ -106,7 +107,7 @@ try {
         await free.scrollIntoViewIfNeeded();await shot('2-proposition-image');await free.getByRole('button',{name:'Annuler la modification gratuite',exact:true}).click();await confirmBtn().waitFor({state:'detached'});check(version()===v0,'écriture après annulation');
       });
       await step('nouvel accord après17s, image relue dans la base et réellement chargée dans l’aperçu',async()=>{
-        await say("Remplace l'image de cette section par la photo de l'atelier");await confirmBtn().waitFor();const since=Date.now();await page.waitForTimeout(17000);check(Date.now()-since>=17000,'attente réelle');check(await confirmBtn().isEnabled(),'accord disparu après actualisation');await confirmBtn().click();await free.getByText(/Résultat enregistré/).waitFor();check(version()===v0+1,'une version attendue');
+        await say("Remplace l'image de cette section par la photo de l'atelier");await confirmBtn().waitFor();const elapsed=await waitAtLeast(17000,(ms)=>page.waitForTimeout(ms));check(elapsed>=17000,'attente réelle monotone');check(await confirmBtn().isEnabled(),'accord disparu après actualisation');await confirmBtn().click();await free.getByText(/Résultat enregistré/).waitFor();check(version()===v0+1,'une version attendue');
         const cur=currentTheme(k.pid)!,filename=String(cur.spec.templates.index.sections[k.target.sid].settings[k.target.key+'_asset']);check(cur.spec.files[filename]===k.source.id,'mauvais média enregistré');
         const expected=structuredClone(before);expected.files[filename]=k.source.id;expected.templates.index.sections[k.target.sid].settings[k.target.key+'_asset']=filename;check(JSON.stringify(cur.spec)===JSON.stringify(expected),'autre champ ou section modifiés');
         const rendered=await themeAssetBinary(cur.spec,filename,libraryLoader);check(!!rendered,"média natif non compilé");const img=frame().locator(`[data-es-section="index:${k.target.sid}"] img`).first();await img.waitFor();let loaded=false;for(let n=0;n<40;n++){const displayed=await img.evaluate((e:HTMLImageElement)=>({src:e.currentSrc||e.src,ready:e.complete&&e.naturalWidth>0}));if(displayed.ready&&displayed.src.startsWith('data:image/')&&Buffer.from(displayed.src.slice(displayed.src.indexOf(',')+1),'base64').equals(rendered!.data)){loaded=true;break;}await page.waitForTimeout(250);}check(loaded,'les octets effectivement chargés dans l’aperçu ne correspondent pas à l’image choisie');await shot('3-image-enregistree');
