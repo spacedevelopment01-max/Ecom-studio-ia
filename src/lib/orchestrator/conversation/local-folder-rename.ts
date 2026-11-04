@@ -7,7 +7,7 @@ import {requirePlan} from '../../plan-gates';
 import {localFilesEnabled} from './local-files';
 import type {ConversationRow,ConversationState} from './contract';
 
-type FolderSnapshot={id:string;name:string;parentId:string|null;system:boolean};
+export type FolderSnapshot={id:string;name:string;parentId:string|null;system:boolean};
 export type FolderRenameProposal={id:string;folderId:string;before:FolderSnapshot;after:FolderSnapshot;fingerprint:string;expiresAt:number};
 export type FolderRenamePresentation={schema:'syna-folder-rename-1';state:'ambiguous'|'proposed'|'applied';projectId:string;message:string;financialConsent:false;costEur:0;providerCalls:0;publication:false;confirmationRequired:boolean;actionsExecuted:boolean;proposalId?:string;diff?:{before:FolderSnapshot;after:FolderSnapshot};result?:FolderSnapshot;receiptId?:string;nativeHref:string};
 export const localFolderRenameEnabled=()=>localFilesEnabled();
