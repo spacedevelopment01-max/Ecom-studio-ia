@@ -14,7 +14,13 @@ export const serviceProfileEnabled=()=>activeContextEnabled()&&process.env.STUDI
 /** Catch native scheduling requests before any paid reasoning; an unclear target stays a free question. */
 const contactCandidate=(text:string)=>/^(?:mets?|remplace|change|modifie|efface|vide|supprime)\b/iu.test(text.trim())&&/\b(?:t[ée]l[ée]phone|courriel|e-?mail|coordonn[ée]es|zone d[’']intervention|adresse)\b/iu.test(text);
 const detailCandidate=(text:string)=>/^(?:mets?|remplace|change|modifie|efface|vide)\b/iu.test(text.trim())&&/\b(?:prix|dur[ée]es?|descriptions?)\b/iu.test(text)&&/\bprestations?\b/iu.test(text);
-export const serviceProfileCandidate=(text:string)=>detailCandidate(text)||contactCandidate(text)||/^(?:renomme|rebaptise) (?:cette|la) prestation\b/iu.test(text.trim())||/\b(?:horaires?|cr[ée]neaux|disponibilit[ée]s?)\b/iu.test(text)&&/^(?:remplace|change|modifie|mets?|nos? |les? |mes? )/iu.test(text.trim());
+/** Normalize only the request envelope; exact quoted values remain native data. */
+function profileRequest(text:string):string{
+ return text.trim().replace(/\s*\?\s*$/u,'').trim()
+  .replace(/,?\s+s[’']il te pla[iî]t\s*$/iu,'').trim()
+  .replace(/^(?:peux|pourrais)-tu (modifier|remplacer|changer|mettre|renommer|rebaptiser|effacer|vider)\b/iu,(_all,verb:string)=>({modifier:'modifie',remplacer:'remplace',changer:'change',mettre:'mets',renommer:'renomme',rebaptiser:'rebaptise',effacer:'efface',vider:'vide'}[verb.toLowerCase()]!));
+}
+export const serviceProfileCandidate=(raw:string)=>{const text=profileRequest(raw);return detailCandidate(text)||contactCandidate(text)||/^(?:renomme|rebaptise) (?:cette|la) prestation\b/iu.test(text.trim())||/\b(?:horaires?|cr[ée]neaux|disponibilit[ée]s?)\b/iu.test(text)&&/^(?:remplace|change|modifie|mets?|nos? |les? |mes? )/iu.test(text.trim());};
 function requestedHours(text:string):string|undefined{
  const match=/^(?:(?:remplace|change|modifie|mets?) (?:les |mes )?horaires (?:du profil(?: d[’']activit[ée])?|d[’']ouverture) (?:par|pour|[àa])\s*:?[ \t]*|(?:nos?|les?|mes?) horaires (?:du profil(?: d[’']activit[ée])?|d[’']ouverture) sont\s*:?[ \t]*)([^\r\n]+)$/iu.exec(text.trim());
  if(!match)return;
@@ -26,7 +32,8 @@ function requestedHours(text:string):string|undefined{
 const fp=(profile:unknown)=>stableHash('native-business-profile-1',profile);
 function profile(user:User,c:ConversationRow,m:ConversationState){if(!serviceProfileEnabled())throw new HttpError(404,'Modification du profil indisponible.');if(!c.project_id)throw new HttpError(409,'Rattachez un projet de services.');ownedProject(user,c.project_id);requirePlan(user,c.project_id);const p=loadProject(c.project_id);if(p.business!=='services'||m.activeContextTab!=='produit')throw new HttpError(409,'Ouvrez Activité pour modifier le profil de ce projet. Les créneaux réservables et le compte sont distincts.');return p;}
 const present=(c:ConversationRow,state:ServiceProfilePresentation['state'],message:string,extra:Partial<ServiceProfilePresentation>={}):ServiceProfilePresentation=>({schema:'syna-service-profile-1',state,field:'hours',projectId:c.project_id!,message,financialConsent:false,costEur:0,providerCalls:0,confirmationRequired:false,actionsExecuted:false,publication:false,...extra});
-export function proposeServiceProfile(user:User,c:ConversationRow,m:ConversationState,text:string){
+export function proposeServiceProfile(user:User,c:ConversationRow,m:ConversationState,rawText:string){
+ const text=profileRequest(rawText);
  delete m.serviceProfileProposal;
  if(!serviceProfileEnabled())throw new HttpError(404,'Modification du profil indisponible.');
  if(detailCandidate(text)){
