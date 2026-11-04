@@ -1,8 +1,10 @@
 "use client";
+import {localReadAllowed} from '@/lib/existing-local-edits';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {useT} from '../i18n';
 /** A read result is complete; metadata titles never request a quote or execution. */
-export const handlesLocalPrompts=(v:ConversationView)=>!v.readOnlyReason&&!v.recovery&&v.localPromptsRead?.enabled===true&&v.localPrompts?.readOnly===true&&(v.localPrompts.state==='listed'||v.localPrompts.state==='ambiguous');
+// #396 / #403 : lecture permise sur projet préparé et, si le serveur l'ouvre, sur un ancien projet (A1) ; jamais d'écriture.
+export const handlesLocalPrompts=(v:ConversationView)=>localReadAllowed(v,'prompts')&&v.localPrompts?.readOnly===true&&(v.localPrompts.state==='listed'||v.localPrompts.state==='ambiguous');
 export function ConversationLocalPrompts({view}:{view:ConversationView}){
  const t=useT(),x=view.localPrompts;if(!handlesLocalPrompts(view)||!x)return null;
  const href=view.projectId&&x.href===`/studio/${encodeURIComponent(view.projectId)}/prompts`?x.href:null;

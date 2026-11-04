@@ -1,0 +1,141 @@
+{
+  "schema": "syna301-lot6-recette-1",
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Activité : prix affiché « 75 € » → accord → relu, autres champs intacts",
+          "ok": true
+        },
+        {
+          "etape": "durée « 45 min » puis description multiligne → accords → relues",
+          "ok": true
+        },
+        {
+          "etape": "« Efface le prix … » → « (effacé) » → prix vide relu",
+          "ok": true
+        },
+        {
+          "etape": "Fichiers : « Crée un dossier Photos atelier » → question → rechargement → « à la racine » → accord → relu",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Activité : prix affiché « 75 € » → accord → relu, autres champs intacts",
+          "ok": true
+        },
+        {
+          "etape": "durée « 45 min » puis description multiligne → accords → relues",
+          "ok": true
+        },
+        {
+          "etape": "« Efface le prix … » → « (effacé) » → prix vide relu",
+          "ok": true
+        },
+        {
+          "etape": "Fichiers : « Crée un dossier Photos atelier » → question → rechargement → « à la racine » → accord → relu",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Activité : prix affiché « 75 € » → accord → relu, autres champs intacts",
+          "ok": true
+        },
+        {
+          "etape": "durée « 45 min » puis description multiligne → accords → relues",
+          "ok": true
+        },
+        {
+          "etape": "« Efface le prix … » → « (effacé) » → prix vide relu",
+          "ok": true
+        },
+        {
+          "etape": "Fichiers : « Crée un dossier Photos atelier » → question → rechargement → « à la racine » → accord → relu",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Activité : prix affiché « 75 € » → accord → relu, autres champs intacts",
+          "ok": true
+        },
+        {
+          "etape": "durée « 45 min » puis description multiligne → accords → relues",
+          "ok": true
+        },
+        {
+          "etape": "« Efface le prix … » → « (effacé) » → prix vide relu",
+          "ok": true
+        },
+        {
+          "etape": "Fichiers : « Crée un dossier Photos atelier » → question → rechargement → « à la racine » → accord → relu",
+          "ok": true
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "constats": [],
+  "forbidden": [],
+  "coutIA": 0,
+  "servedVersion": {
+    "commit": "cb383590a7811df94153b9698754d3b071bde228",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "acquiredFixtureCalls": {
+    "before": 4,
+    "after": 4,
+    "unchanged": true,
+    "newCalls": 0
+  },
+  "waits": [
+    17002.397279,
+    17004.268761000003,
+    17000.344318000003,
+    17000.323921999996,
+    17003.051888,
+    17003.195384000006,
+    17002.433594000002,
+    17003.243696000005,
+    17006.76928400001,
+    17002.84380999999,
+    17003.77416100001,
+    17002.639479999983,
+    17002.219031000015,
+    17002.16591000001,
+    17003.662336999987,
+    17002.99086000002,
+    17002.559001999965,
+    17002.56047700002,
+    17006.478619,
+    17002.62991899997
+  ],
+  "buildId": "KqRyToh4Fq2rBTZFXDwi3"
+}

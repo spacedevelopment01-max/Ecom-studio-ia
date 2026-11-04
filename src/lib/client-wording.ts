@@ -197,7 +197,7 @@ export function applyWording(text: string, rules: WordingRule[]): string {
 }
 
 /** Clés et valeurs jamais réécrites : identifiants, types et références de fichiers (photos, vidéos). */
-const KEEP_KEY = /^(id|type|key|src|url|image|images|video|videos|poster|asset|assetId|assets|file|files|font|fonts)$|(_image|_video|_asset|_id|Id|_url|Url)$/;
+const KEEP_KEY = /^(id|type|key|order|block_order|src|url|image|images|video|videos|poster|asset|assetId|assets|file|files|font|fonts)$|(_image|_video|_asset|_id|Id|_url|Url)$/;
 const KEEP_VALUE = /^(https?:|\/api\/|shopify:\/\/|data:)/;
 
 /**

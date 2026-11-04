@@ -75,7 +75,7 @@ it('phrases réelles : aucune écriture sans accord, aucun appel IA, relevé de 
   const v=conversationView(f.u,f.c.id);
   expect(currentTheme(f.pid)!.version.number,`${op} : écriture sans accord`).toBe(before);
   expect(aiCalls(),`${op} : appel IA`).toBe(calls);
-  out.push({op,text,erreur,carteGratuite:v.localSite?{state:v.localSite.state,message:String(v.localSite.message).slice(0,160)}:null,reponse:String(v.message??'').slice(0,160),intelligence:v.intelligence?.state??null});
+  out.push({op,text,erreur,carteGratuite:v.localSite?{state:v.localSite.state,message:String(v.localSite.message).slice(0,160)}:null,seo:v.localSeo?{state:v.localSeo.state,message:String(v.localSeo.message).slice(0,120)}:null,pages:v.localPages?{state:v.localPages.state,message:String(v.localPages.message).slice(0,120)}:null,horaires:v.serviceProfile?{state:v.serviceProfile.state,message:String(v.serviceProfile.message).slice(0,120)}:null,reponse:String(v.message??'').slice(0,160),intelligence:v.intelligence?.state??null});
  }
  // La seule grammaire gratuite du site connue au relevé #348 (B1) reste disponible.
  expect(out[0]).toMatchObject({carteGratuite:{state:'proposed'}});

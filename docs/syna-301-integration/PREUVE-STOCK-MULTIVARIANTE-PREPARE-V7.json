@@ -1,0 +1,194 @@
+{
+  "schema": "syna301-multivariant-stock-compiled-1",
+  "prepared": true,
+  "acquiredFixtureCalls": {
+    "before": 4,
+    "after": 4,
+    "unchanged": true,
+    "newCalls": 0
+  },
+  "sourceCommit": "cb383590a7811df94153b9698754d3b071bde228",
+  "servedVersion": {
+    "commit": "cb383590a7811df94153b9698754d3b071bde228",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "buildId": "KqRyToh4Fq2rBTZFXDwi3",
+  "browserVersion": "154.0.8037.57",
+  "selections": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "target": {
+        "kind": "catalogue-variant",
+        "productId": "srxq4y1tuvc11oqw",
+        "productVersion": 1,
+        "variantId": "xtym4450kty6g5tf",
+        "version": 1
+      }
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "target": {
+        "kind": "catalogue-variant",
+        "productId": "lwelkrv5wwd6yiw9",
+        "productVersion": 1,
+        "variantId": "w9k4jjhhyjei1oyn",
+        "version": 1
+      }
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "target": {
+        "kind": "catalogue-variant",
+        "productId": "r7ryywgdwfl6tduw",
+        "productVersion": 1,
+        "variantId": "dsf8a39xko6wjqey",
+        "version": 1
+      }
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "target": {
+        "kind": "catalogue-variant",
+        "productId": "v8no5yhjkchq4jpg",
+        "productVersion": 1,
+        "variantId": "lw329txsbeplv22n",
+        "version": 1
+      }
+    }
+  ],
+  "waits": [
+    17001.521870999997,
+    17002.384816,
+    17001.022589,
+    17002.692939999994
+  ],
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "steps": [
+        {
+          "etape": "Catalogue ouvert dans le mode du compte, produit désigné (« Désigner pour SYNA »)",
+          "ok": true,
+          "detail": "Variante désignée : Capteur fictif · Rouge / M · version 1"
+        },
+        {
+          "etape": "« Mets le stock de cette variante à 12 » → Gratuit — 0 €, 2 → 12, aucun devis, rien d'écrit",
+          "ok": true
+        },
+        {
+          "etape": "annulation sans écriture puis nouvelle proposition de la même variante",
+          "ok": true
+        },
+        {
+          "etape": "confirmation → reçu, stock relu à 12 ; prix, référence et politique inchangés ; Catalogue à jour",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé, aucune nouvelle écriture",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "steps": [
+        {
+          "etape": "Catalogue ouvert dans le mode du compte, produit désigné (« Désigner pour SYNA »)",
+          "ok": true,
+          "detail": "Variante désignée : Capteur fictif · Rouge / M · version 1"
+        },
+        {
+          "etape": "« Mets le stock de cette variante à 12 » → Gratuit — 0 €, 2 → 12, aucun devis, rien d'écrit",
+          "ok": true
+        },
+        {
+          "etape": "annulation sans écriture puis nouvelle proposition de la même variante",
+          "ok": true
+        },
+        {
+          "etape": "confirmation → reçu, stock relu à 12 ; prix, référence et politique inchangés ; Catalogue à jour",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé, aucune nouvelle écriture",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "steps": [
+        {
+          "etape": "Catalogue ouvert dans le mode du compte, produit désigné (« Désigner pour SYNA »)",
+          "ok": true,
+          "detail": "Variante désignée : Capteur fictif · Rouge / M · version 1"
+        },
+        {
+          "etape": "« Mets le stock de cette variante à 12 » → Gratuit — 0 €, 2 → 12, aucun devis, rien d'écrit",
+          "ok": true
+        },
+        {
+          "etape": "annulation sans écriture puis nouvelle proposition de la même variante",
+          "ok": true
+        },
+        {
+          "etape": "confirmation → reçu, stock relu à 12 ; prix, référence et politique inchangés ; Catalogue à jour",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé, aucune nouvelle écriture",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "steps": [
+        {
+          "etape": "Catalogue ouvert dans le mode du compte, produit désigné (« Désigner pour SYNA »)",
+          "ok": true,
+          "detail": "Variante désignée : Capteur fictif · Rouge / M · version 1"
+        },
+        {
+          "etape": "« Mets le stock de cette variante à 12 » → Gratuit — 0 €, 2 → 12, aucun devis, rien d'écrit",
+          "ok": true
+        },
+        {
+          "etape": "annulation sans écriture puis nouvelle proposition de la même variante",
+          "ok": true
+        },
+        {
+          "etape": "confirmation → reçu, stock relu à 12 ; prix, référence et politique inchangés ; Catalogue à jour",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé, aucune nouvelle écriture",
+          "ok": true
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "forbidden": [
+    "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap",
+    "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap",
+    "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap",
+    "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap"
+  ],
+  "coutIA": 0
+}

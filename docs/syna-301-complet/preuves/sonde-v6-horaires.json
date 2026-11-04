@@ -1,0 +1,24 @@
+[
+ {
+  "op": "C22 horaires (phrase d’origine, écran Activité)",
+  "text": "Change les horaires du mardi : 9 h – 18 h",
+  "erreur": null,
+  "carte": {
+   "state": "ambiguous",
+   "message": "Parlez-vous des horaires affichés du profil d’activité ou des créneaux réservables ? Aucun changement. Pour remplacer le texte complet du profil, ouvrez Activit"
+  },
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ },
+ {
+  "op": "C22 horaires (phrase exacte du contrat #355, hors des 16)",
+  "text": "Remplace les horaires du profil d’activité par « Mardi 10–18 »",
+  "erreur": null,
+  "carte": {
+   "state": "proposed",
+   "message": "Vérifiez le remplacement du texte complet des horaires du profil. Ce texte sera utilisé par les prochaines créations ; le site existant et les créneaux de réser"
+  },
+  "reponse": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+  "intelligence": "requires_quote"
+ }
+]

@@ -1,0 +1,273 @@
+[
+ {
+  "platforms": [
+   "meta_feed"
+  ],
+  "doc": "ad:0109a999f741ea03145b",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)",
+   "Bouton (y)"
+  ],
+  "annonces": 3,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed"
+  ],
+  "doc": "ad:5a8127445f0f2d4ba054",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)"
+  ],
+  "annonces": 2,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed"
+  ],
+  "doc": "ad:7f6bfc9371b8a89c3cd8",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)",
+   "Bouton (y)"
+  ],
+  "annonces": 3,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed"
+  ],
+  "doc": "ad:8f4a6fdfe13ef5858fd6",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)"
+  ],
+  "annonces": 2,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed"
+  ],
+  "doc": "ad:97ae40cc0bbafd3e67da",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)",
+   "Bouton (y)"
+  ],
+  "annonces": 3,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed"
+  ],
+  "doc": "ad:d817cea483698c44b2e2",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)"
+  ],
+  "annonces": 2,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_story"
+  ],
+  "doc": "ad:bd3cb3286166e62fb5c0",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)",
+   "Bouton (y)"
+  ],
+  "annonces": 3,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_story"
+  ],
+  "doc": "ad:daa7649b5c84dc509a4f",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)"
+  ],
+  "annonces": 2,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_story"
+  ],
+  "doc": "ad:e887b59fd8ecc3308798",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)",
+   "Bouton (y)"
+  ],
+  "annonces": 3,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:038c801b6ac165ce24dc",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)",
+   "Bouton (y)"
+  ],
+  "annonces": 3,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:106f7fad766037570958",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)",
+   "Bouton (y)"
+  ],
+  "annonces": 3,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:27d671b0d0d344dd39ca",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)"
+  ],
+  "annonces": 2,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:292ae4d2e7362d9ed669",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)",
+   "Bouton (y)"
+  ],
+  "annonces": 3,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:4f146c70e0f996bd8302",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)"
+  ],
+  "annonces": 2,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:70f3e67049e39ce2d84d",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)",
+   "Bouton (y)"
+  ],
+  "annonces": 3,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:97870c2a4e535d33a1d4",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)"
+  ],
+  "annonces": 2,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:c61e7d57e027ec380b0d",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)",
+   "Bouton (y)"
+  ],
+  "annonces": 3,
+  "nouveauxChevauchements": []
+ },
+ {
+  "platforms": [
+   "meta_feed",
+   "meta_story"
+  ],
+  "doc": "ad:e6d2b4c0f430beb0e6da",
+  "status": 200,
+  "result": "proposed",
+  "calquesModifies": [
+   "Titre (titre)",
+   "Ligne (y)"
+  ],
+  "annonces": 2,
+  "nouveauxChevauchements": []
+ }
+]

@@ -1,4 +1,4 @@
-import {changeFileMetadata} from '@/lib/library-local-change';
+import {changeFileMetadata,restoreFileMetadata} from '@/lib/library-local-change';
 import fs from "node:fs";
 import { recordMediaRejection } from "@/lib/brain/rejections";
 import { z } from "zod";
@@ -65,7 +65,7 @@ export const PATCH = handle(async (req: Request, ctx: { params: Promise<{ fid: s
   // Média créatif écarté par le client : refus mémorisé pour les prochains visuels et photos (Project Brain).
   if (b.status === "rejected" && a.status !== "rejected" && a.project_id) recordMediaRejection(a.project_id, a);
   if (b.starred !== undefined) run("UPDATE assets SET starred = ? WHERE id = ?", b.starred ? 1 : 0, a.id);
-  if (b.restore) run("UPDATE assets SET deleted_at = NULL WHERE id = ?", a.id);
+  if (b.restore) restoreFileMetadata({assetId:a.id,projectId:a.project_id,userId:a.user_id});
   return ok({ asset: publicAssetSummary(getAsset(a.id)!) });
 });
 

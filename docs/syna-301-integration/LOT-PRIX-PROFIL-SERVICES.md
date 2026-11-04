@@ -1,0 +1,13 @@
+# Prix affiché d'une prestation du profil
+
+Phrases : « Mets le prix de la prestation du profil “Diagnostic” à “75 €” », « Change le prix de la prestation du profil “clé native” pour “dès 80 €” », « Efface le prix de la prestation du profil “Diagnostic” ». Nom ou clé unique du profil exigé. Une demande sans précision profil/réservation reste une question gratuite ; aucun prix numérique ni devise ne sont inventés. Les guillemets français, courbes et doubles sont acceptés.
+
+Contrat serviceProfile existant : field ajoute service-price, serviceKey obligatoire, diff avant/après complet, sourceVersion, accord confirm-service-profile séparé, reçu relu version+1/coût0/providerCalls0/financialConsentfalse/publicationfalse. L'effacement est un texte vide dans le diff, jamais un tarif réservable zéro. Contrôleur et événement existants inchangés. Le registre ne déclare plus tous les prix absents : seul exact-service-price est raccordé ; descriptions/réservations/CRUD restent distincts.
+
+Moteur natif saveServices/CAS et empreinte du profil entier, alias/clé/source et autres prestations conservés ; limite native brute60 caractères, trim, pas de contenu actif. Aucun achat, facture, devis client, paiement, réservation ou reconstruction du thème.
+
+Défaut natif démontré et corrigé : le PATCH du formulaire omettait price après effacement ; saveServices fusionne les métadonnées acquises et conservait donc l'ancien prix malgré HTTP200. Un test rouge natif prouve “50 €” toujours présent après suppression. Le PATCH transmet maintenant explicitement price:undefined lors de cet effacement ; le moteur utilise le même signal explicite. Le DAO et sa conservation des alias/métadonnées ne sont pas réécrits. Le résultat JSON relu est vérifié intégralement ; aucune comparaison affaiblie. La durée est un autre champ, inchangé dans ce lot.
+
+Preuves :8 tests métier, dont comparaison au vrai PATCH authentifié, thème natif de réservation intégralement inchangé, effacement rouge→vert, parentés/alias/prestations conservés, ambiguïté/clé, limites/no-op/chaîne, CAS manuel/annulation/TTL, propriétaire, même requestId une seule version, reçu falsifié refusé et forfait Créer épuisé.52 régressions passent (nom7, coordonnées8, contenu29, CAS natif8) ; types propres. Les fixtures ont été corrigées sans modifier les assertions : contactModes explicite cohérent avec le mode principal, création d'un autre compte avant le relevé ledger. Aucun fournisseur réel, client ou interface modifié.
+
+À Claude : afficher le prix complet et l'identité du profil (distincte des services réservables), aperçu/accord gratuit/verrou/reload ; recette indépendante4modes17s sur un même descendant compilé. Aucune qualification UI de ce nouveau champ revendiquée.

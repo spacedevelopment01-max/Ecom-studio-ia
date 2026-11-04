@@ -1,0 +1,145 @@
+{
+  "schema": "syna301-calendrier-recette-1",
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "steps": [
+        {
+          "etape": "Calendrier ouvert dans le mode du compte, brouillon visible",
+          "ok": true
+        },
+        {
+          "etape": "« Décale ma prochaine publication de 2 jours » → Gratuit — 0 €, dates avec fuseau, aucun devis, rien d'écrit",
+          "ok": true,
+          "detail": "lundi 9 novembre 2026 à 13:11 UTC+1 (Europe/Paris)"
+        },
+        {
+          "etape": "Annuler → aucune écriture ; nouvelle proposition",
+          "ok": true
+        },
+        {
+          "etape": "confirmation → reçu, date relue +2 jours ; texte, statut, réseau inchangés ; aucune programmation",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé, aucune nouvelle écriture",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "steps": [
+        {
+          "etape": "Calendrier ouvert dans le mode du compte, brouillon visible",
+          "ok": true
+        },
+        {
+          "etape": "« Décale ma prochaine publication de 2 jours » → Gratuit — 0 €, dates avec fuseau, aucun devis, rien d'écrit",
+          "ok": true,
+          "detail": "lundi 9 novembre 2026 à 13:11 UTC+1 (Europe/Paris)"
+        },
+        {
+          "etape": "Annuler → aucune écriture ; nouvelle proposition",
+          "ok": true
+        },
+        {
+          "etape": "confirmation → reçu, date relue +2 jours ; texte, statut, réseau inchangés ; aucune programmation",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé, aucune nouvelle écriture",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "steps": [
+        {
+          "etape": "Calendrier ouvert dans le mode du compte, brouillon visible",
+          "ok": true
+        },
+        {
+          "etape": "« Décale ma prochaine publication de 2 jours » → Gratuit — 0 €, dates avec fuseau, aucun devis, rien d'écrit",
+          "ok": true,
+          "detail": "lundi 9 novembre 2026 à 13:11 UTC+1 (Europe/Paris)"
+        },
+        {
+          "etape": "Annuler → aucune écriture ; nouvelle proposition",
+          "ok": true
+        },
+        {
+          "etape": "confirmation → reçu, date relue +2 jours ; texte, statut, réseau inchangés ; aucune programmation",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé, aucune nouvelle écriture",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "steps": [
+        {
+          "etape": "Calendrier ouvert dans le mode du compte, brouillon visible",
+          "ok": true
+        },
+        {
+          "etape": "« Décale ma prochaine publication de 2 jours » → Gratuit — 0 €, dates avec fuseau, aucun devis, rien d'écrit",
+          "ok": true,
+          "detail": "lundi 9 novembre 2026 à 13:11 UTC+1 (Europe/Paris)"
+        },
+        {
+          "etape": "Annuler → aucune écriture ; nouvelle proposition",
+          "ok": true
+        },
+        {
+          "etape": "confirmation → reçu, date relue +2 jours ; texte, statut, réseau inchangés ; aucune programmation",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé, aucune nouvelle écriture",
+          "ok": true
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "forbidden": [
+    "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap",
+    "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap",
+    "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap",
+    "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap"
+  ],
+  "coutIA": 0,
+  "servedVersion": {
+    "commit": "cb383590a7811df94153b9698754d3b071bde228",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "acquiredFixtureCalls": {
+    "before": 4,
+    "after": 4,
+    "unchanged": true,
+    "newCalls": 0
+  },
+  "waits": [
+    17000.295033000002,
+    17001.085525000002,
+    17000.819015999994,
+    17003.229992000008
+  ],
+  "buildId": "KqRyToh4Fq2rBTZFXDwi3"
+}

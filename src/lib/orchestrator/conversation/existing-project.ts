@@ -12,9 +12,12 @@ import type { Command, ConversationRow, ConversationView } from './contract';
 import {activeContextEnabled,observedActiveContext,resolveActiveContext} from './active-context';
 import {contextPresentation} from './context-session';
 import {metaOf} from './store';
-import {existingLocalCapabilities,existingLocalOperation,type ExistingLocalCapabilities} from './existing-local-policy';
+import {existingLocalCapabilities,existingLocalOperation,existingLocalReads,type ExistingLocalCapabilities,type ExistingLocalReadCapabilities} from './existing-local-policy';
 import {proposeLocalSite,confirmLocalSite,cancelLocalSite} from './local-site';
 import {proposeLocalFiles,confirmLocalFiles} from './local-files';
+import {proposeFolderRename,confirmFolderRename} from './local-folder-rename';
+import {proposeFolderMove,confirmFolderMove} from './local-folder-move';
+import {localPromptsCandidate,listLocalPrompts,localPromptsView} from './local-prompts';
 
 const reason=(local?:ExistingLocalCapabilities|null)=>local?L('La fiche et les outils IA restent en lecture seule. Seules les retouches locales indiquées sont proposées à 0 €, puis appliquées après votre confirmation explicite. Aucun contenu n’est régénéré.', 'The brief and AI tools remain read-only. Only the listed local edits can be proposed at €0 and applied after your explicit confirmation. No content is regenerated.'):L('Projet existant repris en lecture seule. Le site, les médias, les droits et l’ancienne discussion sont conservés. Vous pouvez enregistrer des messages ; aucune réponse IA ni modification métier n’est activée dans A1.', 'Existing project resumed read-only. The site, media, entitlements and previous discussion are preserved. You may save messages; A1 enables no AI reply or business change.');
 
@@ -53,20 +56,23 @@ function snapshot(c:ConversationRow){
   return{data,p,version:stableHash('existing-project-context-1',{data,project:p.row})};
 }
 /** La fiche et les adaptateurs généraux restent fermés ; localEdits décrit l'exception gratuite exacte. */
-export type ExistingProjectRecovery={schema:'existing-project-recovery-1';state:'read-only';context:ReturnType<typeof snapshot>['data'];contextVersion:string;observedAt:number;actionsEnabled:false;aiEnabled:false;providerCalls:0;localEdits?:ExistingLocalCapabilities};
+export type ExistingProjectRecovery={schema:'existing-project-recovery-1';state:'read-only';context:ReturnType<typeof snapshot>['data'];contextVersion:string;observedAt:number;actionsEnabled:false;aiEnabled:false;providerCalls:0;localEdits?:ExistingLocalCapabilities;localReads?:ExistingLocalReadCapabilities};
 
 export function existingProjectView(user:User,cid:string,before?:number):ConversationView{
   return readSnapshot(()=>{
     const c=ownedConversation(user,cid,true);
     if(!isExistingProjectRead(c))throw new HttpError(409,'conversation_not_existing_read');
     const {data,p,version}=snapshot(c);
-    const local=existingLocalCapabilities(),metadata=metaOf(c);
+    const local=existingLocalCapabilities(),reads=existingLocalReads(),metadata=metaOf(c);
     return{
       schema:'studio-conversation-1',id:c.id,projectId:c.project_id,revision:c.revision,projectRevision:null,mode:'local',progress:'review',
       message:reason(local),readOnlyReason:reason(local),question:null,correctionFields:[],creation:null,action:null,
-      recovery:{schema:'existing-project-recovery-1',state:'read-only',context:data,contextVersion:version,observedAt:now(),actionsEnabled:false,aiEnabled:false,providerCalls:0,...(local?{localEdits:local}:{})},
+      recovery:{schema:'existing-project-recovery-1',state:'read-only',context:data,contextVersion:version,observedAt:now(),actionsEnabled:false,aiEnabled:false,providerCalls:0,...(local?{localEdits:local}:{}),...(reads?{localReads:reads}:{})},
+      ...(reads?.ops.includes('prompts')?{localPromptsRead:{enabled:true as const},...(metadata.localPrompts?{localPrompts:localPromptsView(user,c,metadata.localPrompts)}:{})}:{}),
       ...(local?.ops.includes('local-site')?{localSiteExecution:{enabled:true as const},...(metadata.localSite?{localSite:metadata.localSite}:{})}:{}),
       ...(local?.ops.includes('files')?{localFilesExecution:{enabled:true as const},...(metadata.localFiles?{localFiles:metadata.localFiles}:{})}:{}),
+      ...(local?.ops.includes('folder-rename')?{localFolderRenameExecution:{enabled:true as const},...(metadata.localFolderRename?{localFolderRename:metadata.localFolderRename}:{})}:{}),
+      ...(local?.ops.includes('folder-move')?{localFolderMoveExecution:{enabled:true as const},...(metadata.localFolderMove?{localFolderMove:metadata.localFolderMove}:{})}:{}),
       tools:[{id:'brief.update',state:'unavailable',executionEnabled:false}],
       ...(activeContextEnabled()?{activeContext:{enabled:true as const,current:observedActiveContext(c,JSON.parse(c.state_json).activeContext),presentation:contextPresentation(c)}}:{}),
       summary:{description:p.product.summary,business:p.business,businessSource:'existing',target:'',goals:'',offerName:p.product.name,brandName:p.brand?.name??'',constraints:'',services:p.services.services.map(s=>({name:s.name,description:s.description,source:'projects.business_json'})),contactModes:p.services.contactModes??[],facts:[],unknown:data.missing,referenceUrls:[],photoIds:[],approved:false,preparationStatus:'absent'},
@@ -81,13 +87,16 @@ export function submitExistingProjectMessage(user:User,cid:string,cmd:Command,ha
     const c=ownedConversation(user,cid,true);
     if(!isExistingProjectRead(c))throw new HttpError(409,'conversation_not_existing_read');
     const local=existingLocalCapabilities(),operation=existingLocalOperation(cmd),localAllowed=!!operation&&!!local?.ops.includes(operation);
+    const promptsCommand=cmd.action==='message'&&localPromptsCandidate(cmd.text),promptsAllowed=existingLocalReads()?.ops.includes('prompts')===true;
     // Le retrait du drapeau/droit ne transforme pas un ancien reçu en nouveau pouvoir d'exécution.
-    if((cmd.action==='confirm-local'||cmd.action==='confirm-files')&&!localAllowed)throw new HttpError(409,reason(),'conversation_existing_read_only');
+    if((cmd.action==='confirm-local'||cmd.action==='confirm-files'||cmd.action==='confirm-folder-rename'||cmd.action==='cancel-folder-rename'||cmd.action==='confirm-folder-move'||cmd.action==='cancel-folder-move')&&!localAllowed)throw new HttpError(409,reason(),'conversation_existing_read_only');
     const prior=one<{request_hash:string;response_json:string}>("SELECT request_hash,response_json FROM agent_conversation_turns WHERE conversation_id=? AND request_id=?",cid,cmd.requestId);
     if(prior){
       if(prior.request_hash!==hash)throw new HttpError(409,L('Cet identifiant correspond à une autre demande.','This identifier belongs to another request.'),'conversation_idempotency_conflict');
       // Même reçu de parole ; la relecture du contexte vivant passe par GET.
-      return JSON.parse(prior.response_json) as ConversationView;
+      const cached=JSON.parse(prior.response_json) as ConversationView;
+      if(promptsCommand&&!promptsAllowed&&(cached.localPrompts||cached.localPromptsRead))throw new HttpError(409,'La lecture de cette bibliothèque n’est plus disponible dans cette reprise. Aucun prompt exécuté.','conversation_existing_read_only');
+      return cached;
     }
     if(cmd.revision!==c.revision||cmd.projectRevision!==null)throw new HttpError(409,L('La conversation a changé. Rechargez avant de répondre.','The conversation changed. Reload before replying.'),'conversation_conflict');
     if(c.revision>=1000)throw new HttpError(409,'conversation_limit');
@@ -100,14 +109,24 @@ export function submitExistingProjectMessage(user:User,cid:string,cmd:Command,ha
       if(cmd.context.target||!metadata.activeContext?.target){metadata.activeContext=resolved.selection;metadata.activeContextReference=stableHash('conversation-active-context-1',resolved);metadata.activeContextIdentity=resolved.canonical.identity;}
     }
     let localMessage:string|undefined;
-    if(cmd.action==='message'){delete metadata.localSiteProposal;delete metadata.localSite;delete metadata.localFilesProposal;delete metadata.localFiles;}
-    if(localAllowed){
+    if(cmd.action==='message'){delete metadata.localPrompts;delete metadata.localSiteProposal;delete metadata.localSite;delete metadata.localFilesProposal;delete metadata.localFiles;delete metadata.localFolderRenameProposal;delete metadata.localFolderRename;delete metadata.localFolderMoveProposal;delete metadata.localFolderMove;}
+    if(promptsCommand){
+      if(promptsAllowed){metadata.localPrompts=listLocalPrompts(user,c,(cmd as Extract<Command,{action:'message'}>).text);localMessage=metadata.localPrompts.message;}
+    }else if(localAllowed){
       const active={...c,state_json:JSON.stringify(metadata)};
       if(operation==='local-site'){
         if(cmd.action==='cancel-local'){cancelLocalSite(metadata,cmd.proposalId);localMessage='Proposition gratuite annulée, aucune version modifiée.';}else{metadata.localSite=cmd.action==='confirm-local'?confirmLocalSite(user,active,metadata,cmd.proposalId,cmd.requestId):proposeLocalSite(user,active,metadata,(cmd as Extract<Command,{action:'message'}>).text);localMessage=metadata.localSite.message;}
-      }else{
+      }else if(operation==='files'){
         metadata.localFiles=cmd.action==='confirm-files'?confirmLocalFiles(user,active,metadata,cmd.proposalId,cmd.requestId):proposeLocalFiles(user,active,metadata,(cmd as Extract<Command,{action:'message'}>).text);
         localMessage=metadata.localFiles.message;
+      }else if(operation==='folder-rename'){
+        if(cmd.action==='cancel-folder-rename'){if(metadata.localFolderRenameProposal?.id!==cmd.proposalId)throw new HttpError(409,'Proposition périmée.');delete metadata.localFolderRenameProposal;delete metadata.localFolderRename;localMessage='Renommage du dossier annulé, aucun changement.';}
+        else{metadata.localFolderRename=cmd.action==='confirm-folder-rename'?confirmFolderRename(user,active,metadata,cmd.proposalId,cmd.requestId):proposeFolderRename(user,active,metadata,(cmd as Extract<Command,{action:'message'}>).text);localMessage=metadata.localFolderRename.message;}
+      }else if(operation==='folder-move'){
+        if(cmd.action==='cancel-folder-move'){if(metadata.localFolderMoveProposal?.id!==cmd.proposalId)throw new HttpError(409,'Proposition périmée.');delete metadata.localFolderMoveProposal;delete metadata.localFolderMove;localMessage='Déplacement du dossier annulé, aucun changement.';}
+        else{metadata.localFolderMove=cmd.action==='confirm-folder-move'?confirmFolderMove(user,active,metadata,cmd.proposalId,cmd.requestId):proposeFolderMove(user,active,metadata,(cmd as Extract<Command,{action:'message'}>).text);localMessage=metadata.localFolderMove.message;}
+      }else{
+        throw new HttpError(409,'Opération locale non raccordée. Aucun changement.');
       }
     }
     const next=c.revision+1;

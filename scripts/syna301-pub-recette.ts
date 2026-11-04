@@ -126,6 +126,8 @@ try {
     const page = await context.newPage();
     page.setDefaultTimeout(60000);
     page.on("pageerror", (e) => jsErrors.push(`${label} : ${e.message}`));
+    const adConfirms: Record<string, unknown>[] = [];
+    page.on("request", (r) => { if (r.method() === "POST" && /\/ad-documents$/.test(new URL(r.url()).pathname) && /"action":"confirm"/.test(r.postData() ?? "")) adConfirms.push(JSON.parse(r.postData()!)); });
     const panel = page.locator("#syna-panel:visible"), card = panel.getByRole("region", { name: "Modification gratuite de la création", exact: true });
     const prompts = panel.getByRole("region", { name: "Bibliothèque de prompts", exact: true });
     const shot = async (name: string) => { const file = `${label}-${name}.png`; await page.screenshot({ path: path.join(out, file) }); return file; };
@@ -150,7 +152,7 @@ try {
         await shot("0-publicites");
         return `${await page.getByTestId("edit-creative").count()} création(s)`;
       });
-      await step("éditeur : titre sélectionné, « Désigner le titre pour SYNA »", async () => {
+      const designateTitle = async (shotPrefix = "") => {
         const docs = await (await page.request.get(`${origin}/api/projects/${k.pid}/ads/docs`)).json() as { docs: { docKey: string }[] };
         const idx = docs.docs.findIndex((d) => d.docKey === k.docKey); check(idx >= 0, "création introuvable dans la liste native");
         await page.getByTestId("edit-creative").nth(idx).click();
@@ -162,7 +164,7 @@ try {
         if (!desktop) await page.getByRole("button", { name: "Plus", exact: true }).click();
         const designate = page.getByRole("button", { name: "Désigner le titre pour SYNA", exact: true });
         await designate.waitFor({ timeout: 15000 });
-        await shot("1-editeur-titre");
+        await shot(shotPrefix + "1-editeur-titre");
         await designate.click();
         await panel.waitFor();
         // Contrat #347 : la désignation partagée est confirmée explicitement dans la conversation.
@@ -170,6 +172,9 @@ try {
         await use.waitFor({ timeout: 90000 });
         await use.click();
         await panel.getByText("Titre enregistré désigné. Vous pouvez demander sa retouche gratuite.", { exact: true }).waitFor();
+      };
+      await step("éditeur : titre sélectionné, « Désigner le titre pour SYNA »", async () => {
+        await designateTitle();
         await shot("2-titre-designe");
       });
       const propose = async () => {
@@ -253,6 +258,22 @@ try {
         await page.reload({ waitUntil: "networkidle" }); await openSyna();
         await card.getByRole("status").getByText(/Enregistré et relu · version/).waitFor();
         await shot("7-apres-rechargement");
+      });
+      await step("ancien accord resté en mémoire + rechargement : seule la nouvelle proposition est confirmée", async () => {
+        const stale = adConfirms.at(-1); check(stale?.proposalId, "corps de confirmation non relevé");
+        const key = `syna-free-ad-document:${k.cid}`;
+        await page.evaluate(([kk, v]) => sessionStorage.setItem(kk, v), [key, JSON.stringify(stale)] as const);
+        await page.reload({ waitUntil: "networkidle" });
+        // Après un reçu, l'ancien repère vise une version dépassée : le client désigne de nouveau le titre dans l'éditeur.
+        await designateTitle("8a-");
+        const before = versions(), sentBefore = adConfirms.length;
+        await propose();
+        await card.getByRole("button", { name: "Confirmer gratuitement", exact: true }).click();
+        await card.getByRole("status").getByText(/Enregistré et relu · version/).waitFor({ timeout: 120000 });
+        const sent = adConfirms.slice(sentBefore);
+        check(sent.length === 1 && sent[0].proposalId !== stale!.proposalId && sent[0].requestId !== stale!.requestId, `envois : ${JSON.stringify(sent)}`);
+        check(versions().length === before.length + 1, `versions ${before} → ${versions()}`);
+        await shot("8-ancien-accord-ecarte"); return `envoyé ${sent[0].proposalId}, ancien ${stale!.proposalId} écarté`;
       });
       await step("bibliothèque de prompts : lecture seule, aucune exécution", async () => {
         const jobs = one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE project_id=?", k.pid)!.n;

@@ -1,0 +1,8 @@
+import fs from 'node:fs';import os from 'node:os';import path from 'node:path';
+if(process.env.DATABASE_FILE||process.env.STORAGE_DIR||process.env.DATA_DIR)throw Error('Refus du stockage préexistant');
+for(const key of ['ANTHROPIC_API_KEY','OPENAI_API_KEY','DASHSCOPE_API_KEY','FAL_KEY','GOOGLE_API_KEY','PIXABAY_API_KEY'])process.env[key]='';
+process.env.STUDIO_CONVERSATION_INTELLIGENCE='0';
+const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ecs-herodiag-'));process.env.DATA_DIR=dir;process.env.STOCK_OFFLINE='1';for(const k of ['LOT_A','AI','CONTEXT','LOCAL_SITE'])process.env['STUDIO_CONVERSATION_'+k]='1';
+const {localSiteFixture}=await import('../tests/conversation284-b1-fixtures');const {sectionSchema}=await import('../src/lib/theme/spec');const {currentTheme}=await import('../src/lib/projects');const {renderPage}=await import('../src/lib/theme/render');
+for(const business of ['products','services']as const){const f=await localSiteFixture(business),cur=currentTheme(f.pid)!,targets=cur.spec.templates.index.order.flatMap(sid=>{const s=cur.spec.templates.index.sections[sid];return(sectionSchema(cur.spec,s.type)?.settings??[]).filter(d=>d.type==='image_picker'&&d.id&&s.settings[d.id+'_asset']&&cur.spec.files[String(s.settings[d.id+'_asset'])]).map(d=>({sid,key:d.id!,type:s.type,disabled:!!s.disabled,filename:String(s.settings[d.id!+'_asset'])}));});const html=(await renderPage({spec:cur.spec,base:'/diagnostic',cart:[]},'/',new URLSearchParams())).html;fs.writeFileSync('/tmp/parity301-hero-'+business+'.html',html);console.log(JSON.stringify({business,targets:targets.slice(0,5),imageCount:(html.match(/<img\b/g)||[]).length,editorial:html.includes('es-hero-edito__img')}));}
+fs.rmSync(dir,{recursive:true,force:true});

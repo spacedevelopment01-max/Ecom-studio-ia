@@ -1,0 +1,173 @@
+{
+  "schema": "syna301-fichiers-recette-1",
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "steps": [
+        {
+          "etape": "ouverture de Fichiers dans le mode du compte",
+          "ok": true,
+          "detail": "mode encre"
+        },
+        {
+          "etape": "désignation : un fichier coché devient la cible de SYNA",
+          "ok": true,
+          "detail": "Média désigné · version 1"
+        },
+        {
+          "etape": "demande ambiguë : explication, aucun bouton, rien d'écrit",
+          "ok": true
+        },
+        {
+          "etape": "annulation avant l'accord : rien n'est écrit",
+          "ok": true
+        },
+        {
+          "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis",
+          "ok": true
+        },
+        {
+          "etape": "réponse perdue après l'enregistrement : vérification sans deuxième écriture",
+          "ok": false,
+          "detail": "ReferenceError: waitAtLeast is not defined",
+          "capture": "encre-ordinateur-echec-5.png"
+        }
+      ],
+      "ok": false
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "steps": [
+        {
+          "etape": "ouverture de Fichiers dans le mode du compte",
+          "ok": true,
+          "detail": "mode encre"
+        },
+        {
+          "etape": "désignation : un fichier coché devient la cible de SYNA",
+          "ok": true,
+          "detail": "Média désigné · version 1"
+        },
+        {
+          "etape": "demande ambiguë : explication, aucun bouton, rien d'écrit",
+          "ok": true
+        },
+        {
+          "etape": "annulation avant l'accord : rien n'est écrit",
+          "ok": true
+        },
+        {
+          "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis",
+          "ok": true
+        },
+        {
+          "etape": "confirmation gratuite",
+          "ok": false,
+          "detail": "ReferenceError: waitAtLeast is not defined",
+          "capture": "encre-telephone-echec-5.png"
+        }
+      ],
+      "ok": false
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "steps": [
+        {
+          "etape": "ouverture de Fichiers dans le mode du compte",
+          "ok": true,
+          "detail": "mode plein"
+        },
+        {
+          "etape": "désignation : un fichier coché devient la cible de SYNA",
+          "ok": true,
+          "detail": "Média désigné · version 1"
+        },
+        {
+          "etape": "demande ambiguë : explication, aucun bouton, rien d'écrit",
+          "ok": true
+        },
+        {
+          "etape": "annulation avant l'accord : rien n'est écrit",
+          "ok": true
+        },
+        {
+          "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis",
+          "ok": true
+        },
+        {
+          "etape": "réponse perdue après l'enregistrement : vérification sans deuxième écriture",
+          "ok": false,
+          "detail": "ReferenceError: waitAtLeast is not defined",
+          "capture": "plein-ordinateur-echec-5.png"
+        }
+      ],
+      "ok": false
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "steps": [
+        {
+          "etape": "ouverture de Fichiers dans le mode du compte",
+          "ok": true,
+          "detail": "mode plein"
+        },
+        {
+          "etape": "désignation : un fichier coché devient la cible de SYNA",
+          "ok": true,
+          "detail": "Média désigné · version 1"
+        },
+        {
+          "etape": "demande ambiguë : explication, aucun bouton, rien d'écrit",
+          "ok": true
+        },
+        {
+          "etape": "annulation avant l'accord : rien n'est écrit",
+          "ok": true
+        },
+        {
+          "etape": "proposition : avant / après, Gratuit — 0 €, aucun devis",
+          "ok": true
+        },
+        {
+          "etape": "confirmation gratuite",
+          "ok": false,
+          "detail": "ReferenceError: waitAtLeast is not defined",
+          "capture": "plein-telephone-echec-5.png"
+        }
+      ],
+      "ok": false
+    }
+  ],
+  "errors": [
+    "encre-ordinateur : ReferenceError: waitAtLeast is not defined",
+    "encre-telephone : ReferenceError: waitAtLeast is not defined",
+    "plein-ordinateur : ReferenceError: waitAtLeast is not defined",
+    "plein-telephone : ReferenceError: waitAtLeast is not defined"
+  ],
+  "forbidden": [
+    "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap",
+    "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap",
+    "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap",
+    "https://fonts.googleapis.com/css2?family=Unbounded:wght@300;800&family=Manrope:wght@500;600&display=swap"
+  ],
+  "coutIA": 0,
+  "servedVersion": {
+    "commit": "d7a04a1612096288c436c7b60ae7d8feba82a0aa",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "acquiredFixtureCalls": {
+    "before": 4,
+    "after": 4,
+    "unchanged": true,
+    "newCalls": 0
+  },
+  "waits": [],
+  "buildId": "tf_kwZDK1SseJ07RKa0Tp"
+}

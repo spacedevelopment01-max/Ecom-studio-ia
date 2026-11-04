@@ -1,0 +1,156 @@
+{
+  "schema": "syna301-native-sections-compiled-1",
+  "sourceCommit": "8e836499742aa452fd4dd00944f93c0b4e15058f",
+  "browserVersion": "154.0.8037.57",
+  "browserExecutable": "/usr/bin/chromium",
+  "buildId": "TLROy0MFiCpAgINrV7NIq",
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "business": "products",
+      "steps": [
+        {
+          "etape": "Studio compilé ouvert et section désignée",
+          "ok": true
+        },
+        {
+          "etape": "Cache cette section : proposition naturelle, avant/après, aucune écriture",
+          "ok": true
+        },
+        {
+          "etape": "Cache cette section : accord après 17 secondes et résultat natif relu",
+          "ok": true
+        },
+        {
+          "etape": "Cache cette section : annulation naturelle, accord puis contenu restauré",
+          "ok": true
+        },
+        {
+          "etape": "Supprime cette section : proposition naturelle, avant/après, aucune écriture",
+          "ok": true
+        },
+        {
+          "etape": "Supprime cette section : accord après 17 secondes et résultat natif relu",
+          "ok": true
+        },
+        {
+          "etape": "Supprime cette section : annulation naturelle, accord puis contenu restauré",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Studio compilé ouvert et section désignée",
+          "ok": true
+        },
+        {
+          "etape": "Cache cette section : proposition naturelle, avant/après, aucune écriture",
+          "ok": true
+        },
+        {
+          "etape": "Cache cette section : accord après 17 secondes et résultat natif relu",
+          "ok": true
+        },
+        {
+          "etape": "Cache cette section : annulation naturelle, accord puis contenu restauré",
+          "ok": true
+        },
+        {
+          "etape": "Supprime cette section : proposition naturelle, avant/après, aucune écriture",
+          "ok": true
+        },
+        {
+          "etape": "Supprime cette section : accord après 17 secondes et résultat natif relu",
+          "ok": true
+        },
+        {
+          "etape": "Supprime cette section : annulation naturelle, accord puis contenu restauré",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Studio compilé ouvert et section désignée",
+          "ok": true
+        },
+        {
+          "etape": "Cache cette section : proposition naturelle, avant/après, aucune écriture",
+          "ok": true
+        },
+        {
+          "etape": "Cache cette section : accord après 17 secondes et résultat natif relu",
+          "ok": true
+        },
+        {
+          "etape": "Cache cette section : annulation naturelle, accord puis contenu restauré",
+          "ok": true
+        },
+        {
+          "etape": "Supprime cette section : proposition naturelle, avant/après, aucune écriture",
+          "ok": true
+        },
+        {
+          "etape": "Supprime cette section : accord après 17 secondes et résultat natif relu",
+          "ok": true
+        },
+        {
+          "etape": "Supprime cette section : annulation naturelle, accord puis contenu restauré",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "business": "products",
+      "steps": [
+        {
+          "etape": "Studio compilé ouvert et section désignée",
+          "ok": true
+        },
+        {
+          "etape": "Cache cette section : proposition naturelle, avant/après, aucune écriture",
+          "ok": true
+        },
+        {
+          "etape": "Cache cette section : accord après 17 secondes et résultat natif relu",
+          "ok": true
+        },
+        {
+          "etape": "Cache cette section : annulation naturelle, accord puis contenu restauré",
+          "ok": true
+        },
+        {
+          "etape": "Supprime cette section : proposition naturelle, avant/après, aucune écriture",
+          "ok": true
+        },
+        {
+          "etape": "Supprime cette section : accord après 17 secondes et résultat natif relu",
+          "ok": true
+        },
+        {
+          "etape": "Supprime cette section : annulation naturelle, accord puis contenu restauré",
+          "ok": true
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "forbidden": [],
+  "coutIA": 0
+}

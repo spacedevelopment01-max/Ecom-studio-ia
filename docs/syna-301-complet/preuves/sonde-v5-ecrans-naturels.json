@@ -1,0 +1,28 @@
+[
+ {
+  "op": "C06 thème",
+  "ecran": "Site",
+  "etat": "proposed",
+  "message": "Aperçu natif conservé dans les versions inactives, sans remplacement du site courant. Vérifiez l’ensemble du nouveau thème, les réglages reportés et les élément"
+ },
+ {
+  "op": "C21 prestation",
+  "ecran": "Activité",
+  "etat": "ambiguous",
+  "champ": "service-name",
+  "choix": 2,
+  "message": "Quelle prestation du profil d’activité ? Indiquez son nom exact : Renomme la prestation « Nom actuel » en « Nouveau nom ». Les services réservables ont des iden"
+ },
+ {
+  "op": "C16 calendrier",
+  "ecran": "Calendrier",
+  "etat": "proposed",
+  "message": "Vérifiez la date et le fuseau de ce brouillon. Après accord gratuit, seule sa date éditoriale locale changera. Aucun contenu approuvé, programmé ou envoyé."
+ },
+ {
+  "op": "C12 stock",
+  "ecran": "Catalogue",
+  "etat": "proposed",
+  "message": "Vérifiez la quantité et la variante exactes. Seul ce stock natif changera après accord gratuit ; prix, SKU, autres variantes et politique de vente conservés. St"
+ }
+]

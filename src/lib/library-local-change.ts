@@ -17,3 +17,16 @@ export function changeFileMetadata(scope:{assetId:string;projectId:string;userId
   return saved;
  });
 }
+
+/** Same native trash restoration for Fichiers and SYNA; content versions/bytes never change. */
+export function restoreFileMetadata(scope:{assetId:string;projectId:string;userId:string},expectedFingerprint?:string):Asset{
+ return tx(()=>{
+  const a=one<Asset>('SELECT * FROM assets WHERE id=? AND project_id=? AND user_id=?',scope.assetId,scope.projectId,scope.userId);
+  if(!a)throw new HttpError(404,'Fichier introuvable.');
+  if(expectedFingerprint&&fileMetadataFingerprint(a)!==expectedFingerprint)throw new HttpError(409,'Le fichier a changé. Préparez un nouvel accord gratuit.');
+  run('UPDATE assets SET deleted_at=NULL WHERE id=? AND project_id=? AND user_id=?',a.id,scope.projectId,scope.userId);
+  const saved=one<Asset>('SELECT * FROM assets WHERE id=? AND project_id=? AND user_id=?',a.id,scope.projectId,scope.userId)!;
+  if(saved.deleted_at!==null)throw new HttpError(409,'Restauration native non confirmée.');
+  return saved;
+ });
+}

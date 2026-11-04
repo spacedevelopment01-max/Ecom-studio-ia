@@ -15,6 +15,30 @@ const base = z.object({
   projectRevision: z.number().int().min(0).nullable(),
 });
 export const CommandSchema = z.discriminatedUnion("action", [
+  base.extend({action:z.literal('confirm-booking-edit'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal('cancel-booking-edit'),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("confirm-file-restore"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-file-restore"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("confirm-folder-move"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-folder-move"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("confirm-folder-rename"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-folder-rename"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("confirm-folder"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-folder"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("confirm-stock"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("confirm-calendar"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("confirm-restore"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("confirm-motion"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("confirm-theme-choice"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-stock"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("cancel-calendar"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("cancel-restore"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("cancel-motion"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("cancel-theme-choice"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("confirm-pages"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-pages"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("confirm-seo"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-seo"),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal("cancel-local"),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal("confirm-service-profile"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal("cancel-service-profile"),proposalId:z.string().min(1).max(120)}).strict(),
@@ -42,9 +66,37 @@ export const CommandSchema = z.discriminatedUnion("action", [
 export type Command = z.infer<typeof CommandSchema>;
 /** Un seul Brief natif pour le brouillon ; après rattachement, il est retiré et relu via stateOf(projectId). */
 export type ConversationState = {
+  bookingEditProposal?:import('./local-booking-edit').BookingEditProposal;
+  bookingEdit?:import('./local-booking-edit').BookingEditPresentation;
+  bookingServices?:import('./local-booking-services').BookingServicesState;
+  conversationPhotoIds?:string[];
   localAdDocumentProposalId?:string;
   localPrompts?:import('./local-prompts').LocalPromptsState;
+  localPagesClarification?:{title:string;versionId:string;expiresAt:number;tab:string|null};
+  localFolderClarification?:{name:string;expiresAt:number};
+  localFileRestoreProposal?:import("./local-file-restore").FileRestoreProposal;
+  localFolderMoveProposal?:import("./local-folder-move").FolderMoveProposal;
+  localFolderRenameProposal?:import("./local-folder-rename").FolderRenameProposal;
+  localFolderProposal?:import("./local-folders").FolderProposal;
+  localStockProposal?:import("./local-stock").StockProposal;
+  localCalendarProposal?:import("./local-calendar").CalendarProposal;
+  localThemeRestoreProposal?:import("./local-theme-restore").RestoreProposal;
+  localSiteMotionProposal?:import("./local-site-motion").MotionProposal;
+  localThemeChoiceProposal?:import("./local-theme-choice").ThemeChoiceProposal;
+  localPagesProposal?:import("./local-pages").PagesProposal;
+  localSeoProposal?:import("./local-seo").SeoProposal;
   serviceProfileProposal?:import("./local-service-profile").ServiceProfileProposal;
+  localFileRestore?:import("./local-file-restore").FileRestorePresentation;
+  localFolderMove?:import("./local-folder-move").FolderMovePresentation;
+  localFolderRename?:import("./local-folder-rename").FolderRenamePresentation;
+  localFolders?:import("./local-folders").FolderPresentation;
+  localStock?:import("./local-stock").StockPresentation;
+  localCalendar?:import("./local-calendar").CalendarPresentation;
+  localThemeRestore?:import("./local-theme-restore").RestorePresentation;
+  localSiteMotion?:import("./local-site-motion").MotionPresentation;
+  localThemeChoice?:import("./local-theme-choice").ThemeChoicePresentation;
+  localPages?:import("./local-pages").PagesPresentation;
+  localSeo?:import("./local-seo").SeoPresentation;
   serviceProfile?:import("./local-service-profile").ServiceProfilePresentation;
   localBusinessContentProposal?:import('./local-business-content').LocalBusinessContentProposal;
   localBusinessContent?:import('./local-business-content').LocalBusinessContentPresentation;
@@ -93,14 +145,44 @@ export type ActionCard = {
   href?: string;
 };
 export type ConversationView = {
+  bookingEdit?:import('./local-booking-edit').BookingEditPresentation;
+  bookingEditExecution?:{enabled:true};
+  bookingServicesRead?:{enabled:true};
+  bookingServices?:import('./local-booking-services').BookingServicesPresentation;
+  /** Permission for native free project operations; independent of the acquired preparation brief lock. A1 uses recovery.localEdits only. */
+  localEditsWritable?:boolean;
   localAdDocument?:ReturnType<typeof import('./ad-document-tool-execution').adDocumentPresentation>;
   localAdDocumentExecution?:{enabled:true};
   localPromptsRead?:{enabled:true};
   localPrompts?:import('./local-prompts').LocalPromptsPresentation;
+  conversationPhotos?:import('./photo-attachments').ConversationPhotos;
+  photoImport?:{enabled:true;endpoint:string;maxFileBytes:number;kind:'image';analysis:false};
   localFilesExecution?: {enabled:true};
   localFiles?: import('./local-files').LocalFilesPresentation;
   localBusinessContentExecution?:{enabled:true};
+  localFileRestore?:import("./local-file-restore").FileRestorePresentation;
+  localFolderMove?:import("./local-folder-move").FolderMovePresentation;
+  localFolderRename?:import("./local-folder-rename").FolderRenamePresentation;
+  localFolders?:import("./local-folders").FolderPresentation;
+  localStock?:import("./local-stock").StockPresentation;
+  localCalendar?:import("./local-calendar").CalendarPresentation;
+  localThemeRestore?:import("./local-theme-restore").RestorePresentation;
+  localSiteMotion?:import("./local-site-motion").MotionPresentation;
+  localThemeChoice?:import("./local-theme-choice").ThemeChoicePresentation;
+  localPages?:import("./local-pages").PagesPresentation;
+  localSeo?:import("./local-seo").SeoPresentation;
   serviceProfile?:import("./local-service-profile").ServiceProfilePresentation;
+  localFileRestoreExecution?:{enabled:true};
+  localFolderMoveExecution?:{enabled:true};
+  localFolderRenameExecution?:{enabled:true};
+  localFoldersExecution?:{enabled:true};
+  localStockExecution?:{enabled:true};
+  localCalendarExecution?:{enabled:true};
+  localThemeRestoreExecution?:{enabled:true};
+  localSiteMotionExecution?:{enabled:true};
+  localThemeChoiceExecution?:{enabled:true};
+  localPagesExecution?:{enabled:true};
+  localSeoExecution?:{enabled:true};
   serviceProfileExecution?:{enabled:true};
   localBusinessContent?:import('./local-business-content').LocalBusinessContentPresentation;
   localRequestsExecution?:{enabled:true};

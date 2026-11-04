@@ -15,7 +15,7 @@ import { z } from "zod";
 import { HttpError } from "../auth";
 import { all } from "../db";
 import { L } from "../i18n-server";
-import { currentTheme, loadProject, saveServices, saveThemeVersion } from "../projects";
+import { currentTheme, loadProject, previewThemeVersionSpec, saveServices, saveThemeVersion } from "../projects";
 import { rdvSection, type RdvKind } from "../rendez-vous";
 import type { SectionInstance, ThemeSpec } from "../theme/spec";
 
@@ -24,6 +24,15 @@ const HOURS = /^\s*$|^\s*\d{2}:\d{2}\s*-\s*\d{2}:\d{2}(\s*,\s*\d{2}:\d{2}\s*-\s*
 const SLOTS = /^\s*$|^\s*\d{2}:\d{2}(\s*,\s*\d{2}:\d{2})*\s*$/;
 const CLOSURES = /^\s*$|^\s*\d{4}-\d{2}-\d{2}(\.\.\d{4}-\d{2}-\d{2})?(\s*,\s*\d{4}-\d{2}-\d{2}(\.\.\d{4}-\d{2}-\d{2})?)*\s*$/;
 const slug = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "prestation";
+/** Existing IDs are opaque. A new name must never overwrite an acquired identity or exceed the input contract. */
+function newNativeId(name:string,used:Set<string>,reserved:{has:(id:string)=>boolean}){
+  const base=slug(name);let candidate=base,n=1;
+  while(used.has(candidate)||reserved.has(candidate)){const suffix=`-${++n}`;candidate=base.slice(0,40-suffix.length)+suffix;}
+  return candidate;
+}
+function uniqueProvidedIds(rows:{id?:string}[],ctx:z.RefinementCtx){
+  const seen=new Set<string>();rows.forEach((row,index)=>{if(!row.id)return;if(seen.has(row.id))ctx.addIssue({code:'custom',path:[index,'id'],message:'Identifiant natif dupliqué : rechargez avant d’enregistrer.'});seen.add(row.id);});
+}
 const toMin = (hm: string) => Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3, 5));
 
 const hoursSchema = z.string().max(120).regex(HOURS, "horaires : « 09:00-12:00, 14:00-18:00 » ou vide (fermé)").refine((v) => !v.trim() || !HOURS.test(v) || v.split(",").every((r) => { const [a, b] = r.split("-").map((x) => x.trim()); return toMin(a) < toMin(b) && toMin(b) <= 24 * 60; }), "horaires : l'heure de fin doit suivre l'heure de début");
@@ -44,9 +53,15 @@ const staffSchema = z.object({
   skills: z.array(z.string().max(40)).max(40).default([]),
   days: z.array(z.number().int().min(0).max(6)).max(7).default([]),
 });
+const servicePatchSchema = z.object({
+  id: z.string().min(1).max(40),
+  price: z.number().min(0).max(100000).nullable().optional(),
+  duration: z.number().int().min(5).max(600).optional(),
+}).strict().refine((v) => v.price !== undefined || v.duration !== undefined, "Précisez le prix ou la durée.");
 export const prestationsInput = z.object({
-  services: z.array(serviceSchema).max(60).optional(),
-  staff: z.array(staffSchema).max(20).optional(),
+  servicePatch: servicePatchSchema.optional(),
+  services: z.array(serviceSchema).max(60).superRefine(uniqueProvidedIds).optional(),
+  staff: z.array(staffSchema).max(20).superRefine(uniqueProvidedIds).optional(),
   hours: z.object(Object.fromEntries(DAYS.map((d) => [d, hoursSchema])) as Record<(typeof DAYS)[number], typeof hoursSchema>).partial().optional(),
   address: z.string().trim().max(300).optional(),
   closures: z.string().max(2000).regex(CLOSURES, "fermetures : dates AAAA-MM-JJ ou périodes AAAA-MM-JJ..AAAA-MM-JJ").optional(),
@@ -58,7 +73,7 @@ export const prestationsInput = z.object({
     minParty: z.number().int().min(1).max(50),
     maxParty: z.number().int().min(1).max(50),
   }).optional(),
-});
+}).refine((v) => !v.servicePatch || !v.services, "Ne mélangez pas remplacement et retouche ciblée des prestations.");
 export type PrestationsInput = z.infer<typeof prestationsInput>;
 
 /** Rendez-vous confirmés à venir, par prestation (salon : `salon_appointments.service`, cabinet : séance). */
@@ -104,15 +119,15 @@ export const shownPrice = (price: number, from: boolean) => { const n = Math.rou
 export const shownDuration = (m: number) => (m < 60 ? `${m} min` : `${Math.floor(m / 60)} h${m % 60 ? ` ${String(m % 60).padStart(2, "0")}` : ""}`);
 
 /** Textes affichés des autres sections, remis d'accord avec la source quand ils sont remplis. */
-function syncShown(spec: ThemeSpec, kind: RdvKind, byId: Map<string, { name: string; oldName: string; duration: number; price: number | null; priceFrom: boolean }>) {
+function syncShown(spec: ThemeSpec, kind: RdvKind, byId: Map<string, { name: string; oldName: string; duration: number | null; price: number | null; priceFrom: boolean }>, fields = { price: true, duration: true }) {
   const idKey = kind === "salon" ? "service_id" : "seance_id";
   const nameKeys = ["name", "title"];
   const fix = (v: Record<string, unknown>) => {
     const ref = String(v[idKey] ?? v.ref_id ?? "");
     const s = byId.get(ref);
     if (!s) return;
-    if (typeof v.price === "string" && v.price.trim() && s.price != null) v.price = shownPrice(s.price, s.priceFrom);
-    if (typeof v.duration === "string" && v.duration.trim()) v.duration = shownDuration(s.duration);
+    if (fields.price && typeof v.price === "string" && v.price.trim() && s.price != null) v.price = shownPrice(s.price, s.priceFrom);
+    if (fields.duration && typeof v.duration === "string" && v.duration.trim() && s.duration != null) v.duration = shownDuration(s.duration);
     for (const k of nameKeys) if (typeof v[k] === "string" && v[k] === s.oldName && s.oldName !== s.name) v[k] = s.name;
   };
   const containers = [spec.groups?.header, spec.groups?.footer, ...Object.values(spec.templates ?? {})];
@@ -124,10 +139,10 @@ function syncShown(spec: ThemeSpec, kind: RdvKind, byId: Map<string, { name: str
 }
 
 /**
- * Enregistre les prestations, horaires et intervenants dans la section lue par le moteur, et crée une version du site.
- * Refuse de supprimer une prestation qui a des rendez-vous à venir ; signale ceux dont la durée change.
+ * Construit l’aperçu depuis la source native actuelle, sans enregistrer de version, de profil ou de réservation.
+ * Les appelants doivent contrôler les droits ; sourceVersionId sert à revalider leur accord avant enregistrement.
  */
-export function savePrestations(projectId: string, raw: unknown) {
+function buildPrestations(projectId: string, raw: unknown) {
   const input = prestationsInput.parse(raw);
   const cur = currentTheme(projectId);
   if (!cur) throw new HttpError(409, L("Créez d'abord le site dans l'onglet Site.", "Create the site in the Site tab first."));
@@ -152,8 +167,7 @@ export function savePrestations(projectId: string, raw: unknown) {
     const next: { key: string; block: { type: string; settings: Record<string, unknown> } }[] = [];
     for (const s of input.services) {
       const known = !!s.id && oldBlocks.has(s.id);
-      let id = known ? s.id! : slug(s.name);
-      while (!known && (used.has(id) || oldBlocks.has(id))) id = `${id}-2`;
+      const id = known ? s.id! : newNativeId(s.name,used,oldBlocks);
       used.add(id);
       const old = oldBlocks.get(id);
       const prev = before.services.find((x) => x.id === id);
@@ -163,20 +177,41 @@ export function savePrestations(projectId: string, raw: unknown) {
       next.push({ key: old?.key ?? `${blockType}-${id}`, block: { type: blockType, settings } });
       byId.set(id, { name: s.name, oldName: prev?.name ?? s.name, duration: s.duration, price: s.price, priceFrom: s.priceFrom });
     }
-    let staffBlocks = others.filter((b) => b.block.type === "member");
-    if (input.staff && sec.kind === "salon") {
-      const oldStaff = new Map(staffBlocks.map((b) => [String(b.block.settings?.member_id ?? ""), b]));
-      staffBlocks = input.staff.map((m) => {
-        const id = m.id && oldStaff.has(m.id) ? m.id : slug(m.name);
-        const old = oldStaff.get(id);
-        return { key: old?.key ?? `member-${id}`, block: { ...(old?.block ?? {}), type: "member", settings: { ...(old?.block.settings ?? {}), member_id: id, name: m.name, initial: m.name.charAt(0).toUpperCase(), title: m.title, skills: m.skills.join(","), days: m.days.join(",") } } };
-      });
-    }
     const rest = others.filter((b) => b.block.type !== "member");
-    const all3 = [...next, ...staffBlocks, ...rest];
+    const all3 = [...next, ...others.filter((b) => b.block.type === "member"), ...rest];
     section.blocks = Object.fromEntries(all3.map((b) => [b.key, b.block as never]));
     section.block_order = all3.map((b) => b.key);
     syncShown(spec, sec.kind, byId);
+  }
+  if (input.servicePatch) {
+    const patch = input.servicePatch;
+    const blockType = sec.kind === "salon" ? "service" : "seance";
+    const idKey = sec.kind === "salon" ? "service_id" : "seance_id";
+    const rows = blocksOf(section).filter((b) => b.block.type === blockType && b.block.settings?.[idKey] === patch.id);
+    const previous = before.services.filter((s) => s.id === patch.id);
+    if (sec.kind === "restaurant" || rows.length !== 1 || previous.length !== 1) throw new HttpError(409, "Prestation réservable native absente ou ambiguë. Rechargez sans substitution.");
+    const old = previous[0], settings = rows[0].block.settings!;
+    if (patch.price !== undefined) settings.price = patch.price ?? "";
+    if (patch.duration !== undefined) settings.duration = patch.duration;
+    if (patch.duration !== undefined && old.upcoming && old.duration !== patch.duration) warnings.push(L(`« ${old.name} » : les rendez-vous déjà pris (${old.upcoming}) conservent leur durée enregistrée (${old.duration} min).`, `“${old.name}”: already booked appointments (${old.upcoming}) keep their recorded length (${old.duration} min).`));
+    syncShown(spec, sec.kind, new Map([[patch.id, { name: old.name, oldName: old.name, duration: patch.duration ?? old.duration, price: patch.price !== undefined ? patch.price : old.price, priceFrom: old.priceFrom }]]), { price: patch.price !== undefined, duration: patch.duration !== undefined });
+  }
+  if (input.staff && sec.kind === "salon") {
+    const currentBlocks = blocksOf(section);
+    const oldStaff = new Map(currentBlocks.filter((b) => b.block.type === "member").map((b) => [String(b.block.settings?.member_id ?? ""), b]));
+    const usedStaff = new Set<string>();
+    const staffBlocks = input.staff.map((m) => {
+      const known = !!m.id && oldStaff.has(m.id);
+      const id = known ? m.id! : newNativeId(m.name, usedStaff, oldStaff);
+      usedStaff.add(id);
+      const old = oldStaff.get(id);
+      return { key: old?.key ?? `member-${id}`, block: { ...(old?.block ?? {}), type: "member", settings: { ...(old?.block.settings ?? {}), member_id: id, name: m.name, initial: m.name.charAt(0).toUpperCase(), title: m.title, skills: m.skills.join(","), days: m.days.join(",") } } };
+    });
+    const firstMember = currentBlocks.findIndex((b) => b.block.type === "member");
+    const keptBlocks = currentBlocks.filter((b) => b.block.type !== "member");
+    keptBlocks.splice(firstMember < 0 ? keptBlocks.length : firstMember, 0, ...staffBlocks);
+    section.blocks = Object.fromEntries(keptBlocks.map((b) => [b.key, b.block]));
+    section.block_order = keptBlocks.map((b) => b.key);
   }
   if (input.hours && sec.kind !== "restaurant") for (const d of DAYS) if (input.hours[d] !== undefined) st[`hours_${d}`] = input.hours[d]!.trim().replace(/\s*-\s*/g, "-").replace(/\s*,\s*/g, ", ");
   if (input.closures !== undefined) st.closures = input.closures.trim();
@@ -194,11 +229,23 @@ export function savePrestations(projectId: string, raw: unknown) {
     if (r.minParty > r.maxParty) throw new HttpError(400, L("Le nombre minimum de couverts dépasse le maximum.", "The minimum party size exceeds the maximum."));
     Object.assign(st, { open_days: [...new Set(r.openDays)].sort().join(","), lunch_slots: r.lunchSlots.trim(), dinner_slots: r.dinnerSlots.trim(), capacity: r.capacity, min_party: r.minParty, max_party: r.maxParty });
   }
+  return { sourceVersionId: cur.version.id, spec, warnings, address: input.address };
+}
+
+/** Aperçu de la source qui sera effectivement enregistrée, vocabulaire et sécurité inclus. */
+export function previewPrestations(projectId: string, raw: unknown) {
+  const built = buildPrestations(projectId, raw);
+  return { ...built, spec: previewThemeVersionSpec(projectId, built.spec) };
+}
+
+/** Même moteur que l’aperçu ; seuls l’enregistrement et la synchronisation du profil écrivent. */
+export function savePrestations(projectId: string, raw: unknown) {
+  const { spec, warnings, address } = buildPrestations(projectId, raw);
   const v = saveThemeVersion(projectId, spec, L("Prestations et horaires", "Services and hours"), "user");
   // Adresse unique (#239, phase 4) : celle des réservations est aussi celle du profil d'activité.
-  if (input.address !== undefined) {
+  if (address !== undefined) {
     const profile = loadProject(projectId).services;
-    if (profile.address.trim() !== input.address) saveServices(projectId, { ...profile, address: input.address });
+    if (profile.address.trim() !== address) saveServices(projectId, { ...profile, address: address });
   }
   return { versionId: v.id, number: v.number, warnings, prestations: readPrestations(projectId) };
 }

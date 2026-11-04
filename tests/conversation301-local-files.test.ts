@@ -34,3 +34,28 @@ it('autre fichier ou dossier changé après proposition : accord ancien sans eff
 it('proposition expirée et deuxième commande de confirmation refusées sans seconde mutation',async()=>{const f=await fixture(),p=await propose(f),cmd=confirm(f,p);run("UPDATE agent_conversations SET state_json=json_set(state_json,'$.localFilesProposal.expiresAt',0) WHERE id=?",f.c.id);await expect(submitConversation(f.u,f.c.id,cmd)).rejects.toMatchObject({status:409});const current=await propose(f);const accepted=confirm(f,current);await submitConversation(f.u,f.c.id,accepted);await expect(submitConversation(f.u,f.c.id,{...accepted,requestId:id(),revision:conversationView(f.u,f.c.id).revision})).rejects.toMatchObject({status:409});expect(getAsset(f.a.id)?.name).toBe('preuve finale.txt');});
 
 it('catalogue : projet absent puis drapeau fermé restent indisponibles, sans annoncer un contrôle prêt',async()=>{const row=(pid:string|null)=>studioOperationCatalogue(pid,true).rows.find(x=>x.id==='files.organize')!;expect(row(null)).toMatchObject({connectionEnabled:false,availability:'project_required'});const f=await fixture();vi.stubEnv('STUDIO_CONVERSATION_FILES','0');expect(row(f.pid)).toMatchObject({connectionEnabled:false,availability:'disabled_or_locked'});vi.stubEnv('STUDIO_CONVERSATION_FILES','1');expect(row(f.pid)).toMatchObject({connectionEnabled:true,availability:'native_target_and_metadata_checks_each_confirmation',confirmation:'separate_explicit_free_confirmation',cost:'free',evidence:'isolated_local_execution'});});
+
+it.each([
+ ['Renomme ce fichier en photo accueil.png','rename'],
+ ['Peux-tu renommer ce fichier en « photo accueil.png » ?','rename'],
+ ['Déplace ce fichier dans le dossier Documents validés','move'],
+ ['Peux-tu déplacer ce fichier vers le dossier « Documents validés » ?','move'],
+] as const)('natural file metadata request %s requires explicit agreement and preserves bytes',async(text,kind)=>{
+ const f=await fixture(),before=getAsset(f.a.id)!,bytes=assetData(before),spend=emptySpend(),p=await propose(f,text);
+ expect(p.localFiles).toMatchObject({state:'proposed',command:kind,confirmationRequired:true,costEur:0,providerCalls:0});expect(getAsset(f.a.id)).toEqual(before);
+ const saved=await submitConversation(f.u,f.c.id,confirm(f,p));expect(saved.localFiles).toMatchObject({state:'applied',actionsExecuted:true});
+ expect(getAsset(f.a.id)).toEqual({...before,...(kind==='rename'?{name:'photo accueil.png'}:{folder_id:f.folder.id})});expect(assetData(getAsset(f.a.id)!)).toEqual(bytes);expect(emptySpend()).toEqual(spend);expect(fetch).not.toHaveBeenCalled();
+});
+
+it.each([
+ 'Renomme ce fichier en photo.png puis supprime tout',
+ 'Peux-tu déplacer ce fichier dans le dossier Documents validés et publier le site ?',
+ 'Renomme ce fichier en « photo.png » puis génère une vidéo',
+ 'Renomme ce fichier en « guillemet non fermé',
+])('ambiguous metadata request %s never writes or calls paid reasoning',async text=>{
+ const f=await fixture(),before=getAsset(f.a.id),spend=emptySpend(),p=await propose(f,text);
+ expect(p.localFiles).toMatchObject({state:'ambiguous',confirmationRequired:false,actionsExecuted:false});expect(getAsset(f.a.id)).toEqual(before);expect(emptySpend()).toEqual(spend);expect(fetch).not.toHaveBeenCalled();
+});
+it('quoted exact name may contain a conjunction and stays literal native data',async()=>{
+ const f=await fixture(),p=await propose(f,'Renomme ce fichier en « avant et après.txt »');expect(p.localFiles).toMatchObject({state:'proposed',diff:{after:{name:'avant et après.txt'}}});await submitConversation(f.u,f.c.id,confirm(f,p));expect(getAsset(f.a.id)?.name).toBe('avant et après.txt');expect(fetch).not.toHaveBeenCalled();
+});

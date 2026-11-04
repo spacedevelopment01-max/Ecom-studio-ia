@@ -39,12 +39,12 @@ const { chromium } = await import("playwright");
 
 type Mode = "encre" | "plein";
 type Type = "biens" | "plats" | "realisations";
-type Case = { mode: Mode; format: "ordinateur" | "telephone"; type: Type; ask: string; expect: { field: "title" | "price"; value: string | number; shown: RegExp }; extras: boolean; lose: boolean };
+type Case = { mode: Mode; format: "ordinateur" | "telephone"; type: Type; ask: string; expect: { field: "title" | "price"; value: string | number; shown: RegExp }; extras: boolean; lose: boolean; second: { ask: string; field: "title" | "price"; value: string | number } };
 const CASES: Case[] = [
-  { mode: "encre", format: "ordinateur", type: "plats", ask: "Modifie le prix de ce plat à 18,50 €", expect: { field: "price", value: 18.5, shown: /18,50?\s?€/ }, extras: false, lose: true },
-  { mode: "encre", format: "telephone", type: "biens", ask: "Renomme ce bien en « Maison des Tilleuls »", expect: { field: "title", value: "Maison des Tilleuls", shown: /Maison des Tilleuls/ }, extras: false, lose: false },
-  { mode: "plein", format: "ordinateur", type: "realisations", ask: "Renomme cette réalisation en « Van Sprinter aménagé »", expect: { field: "title", value: "Van Sprinter aménagé", shown: /Van Sprinter aménagé/ }, extras: true, lose: false },
-  { mode: "plein", format: "telephone", type: "plats", ask: "Modifie le prix de ce plat à 21 €", expect: { field: "price", value: 21, shown: /21(,00)?\s?€/ }, extras: false, lose: false },
+  { mode: "encre", format: "ordinateur", type: "plats", ask: "Modifie le prix de ce plat à 18,50 €", expect: { field: "price", value: 18.5, shown: /18,50?\s?€/ }, extras: false, lose: true, second: { ask: "Modifie le prix de ce plat à 19 €", field: "price", value: 19 } },
+  { mode: "encre", format: "telephone", type: "biens", ask: "Renomme ce bien en « Maison des Tilleuls »", expect: { field: "title", value: "Maison des Tilleuls", shown: /Maison des Tilleuls/ }, extras: false, lose: false, second: { ask: "Renomme ce bien en « Maison des Saules »", field: "title", value: "Maison des Saules" } },
+  { mode: "plein", format: "ordinateur", type: "realisations", ask: "Renomme cette réalisation en « Van Sprinter aménagé »", expect: { field: "title", value: "Van Sprinter aménagé", shown: /Van Sprinter aménagé/ }, extras: true, lose: false, second: { ask: "Renomme cette réalisation en « Fourgon aménagé »", field: "title", value: "Fourgon aménagé" } },
+  { mode: "plein", format: "telephone", type: "plats", ask: "Modifie le prix de ce plat à 21 €", expect: { field: "price", value: 21, shown: /21(,00)?\s?€/ }, extras: false, lose: false, second: { ask: "Modifie le prix de ce plat à 22 €", field: "price", value: 22 } },
 ];
 const TAB = { biens: "biens", plats: "carte", realisations: "realisations" } as const;
 const INITIAL = { biens: "Maison fictive", plats: "Velouté de saison", realisations: "Aménagement de van fictif" } as const;
@@ -95,6 +95,8 @@ try {
     const page = await context.newPage();
     page.setDefaultTimeout(45000);
     page.on("pageerror", (e) => jsErrors.push(`${label} : ${e.message}`));
+    const confirmBodies: Record<string, unknown>[] = [];
+    page.on("request", (r) => { if (r.method() === "POST" && /"confirm-business-content"/.test(r.postData() ?? "")) confirmBodies.push(JSON.parse(r.postData()!)); });
     const panel = page.locator("#syna-panel:visible"), card = panel.getByRole("region", { name: "Modification gratuite du contenu", exact: true });
     const shot = async (name: string) => { const file = `${label}-${name}.png`; await page.screenshot({ path: path.join(out, file) }); return file; };
     const step = async (etape: string, fn: () => Promise<string | void>) => {
@@ -212,6 +214,27 @@ try {
         await page.locator('[aria-controls="syna-panel"]:visible').first().click();
         await card.getByRole("status").getByText(/Enregistré et relu · reçu/).waitFor();
         await shot("7-apres-rechargement");
+      });
+      await step("ancien accord resté en mémoire + rechargement : seule la nouvelle proposition est confirmée", async () => {
+        const stale = confirmBodies.at(-1); check(stale?.proposalId, "corps de confirmation non relevé");
+        const key = `syna-free-content:${k.cid}`;
+        await page.evaluate(([kk, v]) => sessionStorage.setItem(kk, v), [key, JSON.stringify(stale)] as const);
+        await page.reload({ waitUntil: "networkidle" });
+        await designate();
+        await send(k.second.ask);
+        await card.getByRole("button", { name: "Confirmer gratuitement", exact: true }).waitFor();
+        const turns = () => all<{ request_json: string }>("SELECT request_json FROM agent_conversation_turns WHERE conversation_id=?", k.cid).filter((t) => /confirm-business-content/.test(t.request_json)).length;
+        const before = confirmBodies.length, n = turns();
+        await card.getByRole("button", { name: "Confirmer gratuitement", exact: true }).click();
+        await card.getByRole("status").getByText(/Enregistré et relu · reçu/).waitFor();
+        const sent = confirmBodies.slice(before);
+        check(sent.length === 1 && sent[0].proposalId !== stale!.proposalId && sent[0].requestId !== stale!.requestId, `envois : ${JSON.stringify(sent)}`);
+        check(turns() === n + 1, "écritures en double ou absentes");
+        const it = item();
+        check(k.second.field === "title" ? it.title === k.second.value : it.data.price === k.second.value, `valeur relue : ${it.title} / ${it.data.price}`);
+        check(!(await page.evaluate((kk) => sessionStorage.getItem(kk), key)), "accord encore en mémoire");
+        await shot("8-ancien-accord-ecarte");
+        return `envoyé ${sent[0].proposalId}, ancien ${stale!.proposalId} écarté`;
       });
     } catch (e) { errors.push(`${label} : ${String(e).slice(0, 300)}`); }
     results.push({ mode: k.mode, format: k.format, type: k.type, steps, ok: steps.length > 0 && steps.every((s) => s.ok) });
