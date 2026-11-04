@@ -1,0 +1,116 @@
+{
+  "schema": "syna301-lot8-recette-1",
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "« Peux-tu me montrer les services réservables du site ? » → lecture seule, mêmes services que la réservation native",
+          "ok": true,
+          "detail": "3 services"
+        },
+        {
+          "etape": "Images : image et document mis à la corbeille par la route native → « Montre la corbeille des images » → seule l'image",
+          "ok": true
+        },
+        {
+          "etape": "« Restaurer » → « Restaure l’image « id » de la corbeille » → accord → image relue, mêmes octets, lien vers Images",
+          "ok": true,
+          "detail": "image revenue dans la Banque après rechargement"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "« Peux-tu me montrer les services réservables du site ? » → lecture seule, mêmes services que la réservation native",
+          "ok": true,
+          "detail": "3 services"
+        },
+        {
+          "etape": "Images : image et document mis à la corbeille par la route native → « Montre la corbeille des images » → seule l'image",
+          "ok": true
+        },
+        {
+          "etape": "« Restaurer » → « Restaure l’image « id » de la corbeille » → accord → image relue, mêmes octets, lien vers Images",
+          "ok": true,
+          "detail": "image revenue dans la Banque après rechargement"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "« Peux-tu me montrer les services réservables du site ? » → lecture seule, mêmes services que la réservation native",
+          "ok": true,
+          "detail": "3 services"
+        },
+        {
+          "etape": "Images : image et document mis à la corbeille par la route native → « Montre la corbeille des images » → seule l'image",
+          "ok": true
+        },
+        {
+          "etape": "« Restaurer » → « Restaure l’image « id » de la corbeille » → accord → image relue, mêmes octets, lien vers Images",
+          "ok": true,
+          "detail": "image revenue dans la Banque après rechargement"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "« Peux-tu me montrer les services réservables du site ? » → lecture seule, mêmes services que la réservation native",
+          "ok": true,
+          "detail": "3 services"
+        },
+        {
+          "etape": "Images : image et document mis à la corbeille par la route native → « Montre la corbeille des images » → seule l'image",
+          "ok": true
+        },
+        {
+          "etape": "« Restaurer » → « Restaure l’image « id » de la corbeille » → accord → image relue, mêmes octets, lien vers Images",
+          "ok": true,
+          "detail": "image revenue dans la Banque après rechargement"
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "constats": [],
+  "forbidden": [],
+  "coutIA": 0,
+  "servedVersion": {
+    "commit": "9f8507c7776906e1ef85764b6419ce652b64c3c8",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "waits": [
+    17001.199435,
+    17003.390398999996,
+    17000.562660000003,
+    17001.323371000006
+  ],
+  "jsErrors": [],
+  "baselineQuotes": 0,
+  "quotesAfter": 0,
+  "baselineSpend": "[{\"t\":\"usage_events\",\"n\":0},{\"t\":\"ledger\",\"n\":4},{\"t\":\"jobs\",\"n\":0}]",
+  "spendAfter": "[{\"t\":\"usage_events\",\"n\":0},{\"t\":\"ledger\",\"n\":4},{\"t\":\"jobs\",\"n\":0}]",
+  "baselineAIUnchanged": true
+}

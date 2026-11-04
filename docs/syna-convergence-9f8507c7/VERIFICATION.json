@@ -1,0 +1,100 @@
+{
+  "commit": "9f8507c7776906e1ef85764b6419ce652b64c3c8",
+  "runId": 41881648681,
+  "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41881648681",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 126755753100,
+      "name": "Types et suite compl\u00e8te (r\u00e9seau fournisseur interdit)",
+      "conclusion": "success"
+    },
+    {
+      "id": 126755753869,
+      "name": "Theme Check, build et recettes natives compil\u00e9es",
+      "conclusion": "success"
+    },
+    {
+      "id": 126755753912,
+      "name": "Image Docker (construction et d\u00e9marrage)",
+      "conclusion": "success"
+    },
+    {
+      "id": 126755753922,
+      "name": "SYNA \u2014 confirmation gratuite dans le Studio compil\u00e9",
+      "conclusion": "success"
+    },
+    {
+      "id": 126791968264,
+      "name": "Typecheck, tests, Theme Check, build",
+      "conclusion": "success"
+    }
+  ],
+  "suite": {
+    "passedTests": 6109,
+    "preexistingSkippedTests": 31,
+    "passedFiles": 650,
+    "preexistingSkippedFiles": 1
+  },
+  "independentTargeted": {
+    "files": 10,
+    "passed": 77
+  },
+  "independentBuildId": "EjTDhC-HYFN21izgKOSsO",
+  "proofs": [
+    {
+      "name": "booking",
+      "source": "/tmp/syna-convergence-9f-booking/RESUME-LOT9-301.json",
+      "cases": 4,
+      "steps": 8,
+      "waits": 4,
+      "minWaitMs": 17000.818182,
+      "sha256": "05097188b7fd7caa81e1d422d890724244a3bf7a5ad1e508ee4ca955cba87726"
+    },
+    {
+      "name": "booking-new",
+      "source": "/tmp/syna-convergence-9f-booking-new/RESUME-LOT9-301.json",
+      "cases": 2,
+      "steps": 4,
+      "waits": 2,
+      "minWaitMs": 17000.214696000003,
+      "sha256": "d1d272086ddb5335381f127f761a935cf5cc76ea008b7c1a7eb1a24dd54cba13"
+    },
+    {
+      "name": "read-trash",
+      "source": "/tmp/syna-convergence-9f-read-trash/RESUME-LOT8-301.json",
+      "cases": 4,
+      "steps": 12,
+      "waits": 4,
+      "minWaitMs": 17000.562660000003,
+      "sha256": "c65ffaccfb8400e2a0f5006f41b26f9fef13f67e3da3180d91f94923cbeda5c6"
+    },
+    {
+      "name": "photo-profile",
+      "source": "/tmp/syna-convergence-9f-photo-profile/RESUME-LOT5-301.json",
+      "cases": 4,
+      "steps": 8,
+      "waits": 4,
+      "minWaitMs": 17002.606711,
+      "sha256": "a70fc259f250fd92380eb27f8154f7abe70294c66693fc6a9053948bc47cf11c"
+    },
+    {
+      "name": "a1",
+      "source": "/tmp/syna-convergence-9f-a1/RESUME-ANCIENS-PROJETS-301.json",
+      "cases": 4,
+      "steps": 32,
+      "waits": 12,
+      "minWaitMs": 17000.201734000002,
+      "sha256": "d1e0143d69a4cae74d0c2482c0b7fda15411fc0dddc7648fb8489666a87d8ae5"
+    }
+  ],
+  "totalJourneys": 18,
+  "totalSteps": 64,
+  "totalDelayedAgreements": 26,
+  "minAgreementWaitMs": 17000.201734000002,
+  "legacyStatuses": [],
+  "reviewThreads": {
+    "open": 0,
+    "resolvedOutdated": 1
+  }
+}

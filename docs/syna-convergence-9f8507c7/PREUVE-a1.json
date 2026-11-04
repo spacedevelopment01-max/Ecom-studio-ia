@@ -1,0 +1,191 @@
+{
+  "schema": "syna301-anciens-projets-recette-1",
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "steps": [
+        {
+          "etape": "ancien projet : avis de lecture seule visible, mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "demande hors exception : enregistrée seulement, aucun devis ni action",
+          "ok": true
+        },
+        {
+          "etape": "Fichiers : fichier coché, « Renomme ce fichier en … » → carte gratuite",
+          "ok": true
+        },
+        {
+          "etape": "confirmation : reçu relu, nom écrit, liste à jour, projet toujours en lecture seule",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Renomme le dossier Photos en Photos clients » → accord → nom relu",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Déplace le dossier Photos clients dans le dossier Archives » → accord → parent relu",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Affiche ma bibliothèque de prompts » → lecture seule gratuite, aucun bouton (#403)",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "steps": [
+        {
+          "etape": "ancien projet : avis de lecture seule visible, mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "demande hors exception : enregistrée seulement, aucun devis ni action",
+          "ok": true
+        },
+        {
+          "etape": "Fichiers : fichier coché, « Renomme ce fichier en … » → carte gratuite",
+          "ok": true
+        },
+        {
+          "etape": "confirmation : reçu relu, nom écrit, liste à jour, projet toujours en lecture seule",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Renomme le dossier Photos en Photos clients » → accord → nom relu",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Déplace le dossier Photos clients dans le dossier Archives » → accord → parent relu",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Affiche ma bibliothèque de prompts » → lecture seule gratuite, aucun bouton (#403)",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "steps": [
+        {
+          "etape": "ancien projet : avis de lecture seule visible, mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "demande hors exception : enregistrée seulement, aucun devis ni action",
+          "ok": true
+        },
+        {
+          "etape": "Fichiers : fichier coché, « Renomme ce fichier en … » → carte gratuite",
+          "ok": true
+        },
+        {
+          "etape": "confirmation : reçu relu, nom écrit, liste à jour, projet toujours en lecture seule",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Renomme le dossier Photos en Photos clients » → accord → nom relu",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Déplace le dossier Photos clients dans le dossier Archives » → accord → parent relu",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Affiche ma bibliothèque de prompts » → lecture seule gratuite, aucun bouton (#403)",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "steps": [
+        {
+          "etape": "ancien projet : avis de lecture seule visible, mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "demande hors exception : enregistrée seulement, aucun devis ni action",
+          "ok": true
+        },
+        {
+          "etape": "Fichiers : fichier coché, « Renomme ce fichier en … » → carte gratuite",
+          "ok": true
+        },
+        {
+          "etape": "confirmation : reçu relu, nom écrit, liste à jour, projet toujours en lecture seule",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Renomme le dossier Photos en Photos clients » → accord → nom relu",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Déplace le dossier Photos clients dans le dossier Archives » → accord → parent relu",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Affiche ma bibliothèque de prompts » → lecture seule gratuite, aucun bouton (#403)",
+          "ok": true
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "forbidden": [],
+  "coutIA": 0,
+  "servedVersion": {
+    "commit": "9f8507c7776906e1ef85764b6419ce652b64c3c8",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "waits": [
+    17002.059603,
+    17001.893494,
+    17001.343854,
+    17001.065359,
+    17003.11669200001,
+    17002.119279000006,
+    17000.201734000002,
+    17002.468181000004,
+    17002.490996999986,
+    17000.683701,
+    17003.082209999993,
+    17002.517713999987
+  ],
+  "jsErrors": [],
+  "baselineQuotes": 0,
+  "quotesAfter": 0,
+  "baselineSpend": "[{\"t\":\"usage_events\",\"n\":0},{\"t\":\"ledger\",\"n\":4},{\"t\":\"jobs\",\"n\":0}]",
+  "spendAfter": "[{\"t\":\"usage_events\",\"n\":0},{\"t\":\"ledger\",\"n\":4},{\"t\":\"jobs\",\"n\":0}]",
+  "baselineAIUnchanged": true
+}
