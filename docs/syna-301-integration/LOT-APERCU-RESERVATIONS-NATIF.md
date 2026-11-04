@@ -1,0 +1,9 @@
+# Réservations : aperçu natif sans enregistrement
+
+Prérequis du futur accord gratuit SYNA : previewPrestations(projectId, raw) construit un clone de la source native actuelle et retourne {sourceVersionId, spec, warnings, address}. Aucun profil, version ou rendez-vous n’est enregistré. sourceVersionId est l’UUID de la source actuelle, jamais une version future inventée. L’adresse retournée est normalisée par le schéma natif.
+
+savePrestations appelle ce même constructeur puis réalise les seules écritures : version restaurable et synchronisation éventuelle de l’adresse du profil. Il ne faut pas enregistrer directement un spec fourni par le client : le futur adaptateur devra revalider droits, intention, sourceUUID/empreinte et confirmation gratuite, puis repasser l’entrée bornée au moteur natif. Cette fonction interne ne crée aucun endpoint ni droit SYNA supplémentaire et ne remplace pas le contrôle de propriétaire des routes.
+
+26tests sur quatre fichiers et types verts, réseau fournisseur interdit. Sept nouveaux cas vérifient les trois familles salon/cabinet/restaurant, déterminisme, projet/profil/thème/versions/dépenses inchangés avant enregistrement, égalité de l’aperçu et de la source réellement enregistrée, équipe seule, entrées invalides/doublons, suppression refusée avec rendez-vous confirmé futur, prix/durée acquis de celui-ci inchangés, et renouvellement de sourceVersionId après modification indépendante. Les tests préexistants d’identité, PUT et réservation restent actifs. Journaux : /tmp/parity301-booking-preview-green.log et /tmp/parity301-booking-preview-types.log.
+
+Pas de carte, d’intention de modification ou de qualification navigateur nouvelle dans ce lot. services.booking reste ouvert ; lecture native #408 distincte. Aucune modification des composants ou de la branche Claude, donnée client, activation, dépense, fusion main ou déploiement. CI finale à observer sur le commit livré.
