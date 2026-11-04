@@ -4,7 +4,9 @@ import type {ConversationView} from './orchestrator/conversation/contract';
 type Pending={action:'confirm-theme-choice';proposalId:string;confirmation:true;revision:number;projectRevision:number|null;requestId:string};
 export type LocalThemeChoiceConfirmationState={busy:boolean;error:string;uncertain:boolean;blocked?:boolean};
 export type LocalThemeChoiceChange={projectId:string;versionId:string;receiptId:string};
-export const LOCAL_STOCK_CHANGED_EVENT='studio:theme-changed';
+export const LOCAL_THEME_CHOICE_CHANGED_EVENT='studio:theme-changed';
+/** Backward-compatible alias for existing cards. */
+export const LOCAL_STOCK_CHANGED_EVENT=LOCAL_THEME_CHOICE_CHANGED_EVENT;
 export const hasLocalThemeChoiceReceipt=(v:ConversationView)=>{const s=v.localThemeChoice;return s?.schema==='syna-local-theme-choice-1'&&s.state==='applied'&&s.actionsExecuted===true&&s.financialConsent===false&&s.costEur===0&&s.providerCalls===0&&s.publication===false&&s.confirmationRequired===false&&!!s.receiptId&&s.projectId===v.projectId&&!!s.direction&&!!s.version?.id&&!!s.version.parentId&&s.version.id!==s.version.parentId&&Number.isSafeInteger(s.version.number)&&s.version.number>1&&!!s.previewHref;};
 export const handlesLocalThemeChoice=(v:ConversationView)=>!!v.localThemeChoice&&(v.localThemeChoice.state==='proposed'||v.localThemeChoice.state==='applied'||!!v.localThemeChoiceExecution?.enabled);
 export function createLocalThemeChoiceConfirmation(options:{conversationId:string;fetch:typeof fetch;view:()=>ConversationView;onView:(v:ConversationView)=>void;onState:(s:LocalThemeChoiceConfirmationState)=>void;onApplied:(change:LocalThemeChoiceChange)=>Promise<void>|void;storage?:Pick<Storage,'getItem'|'setItem'|'removeItem'>;uuid?:()=>string}){
