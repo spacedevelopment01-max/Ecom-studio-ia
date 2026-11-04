@@ -34,6 +34,7 @@ type Format = { name: "ordinateur" | "telephone"; width: number; height: number 
 const FORMATS: Format[] = [{ name: "ordinateur", width: 1440, height: 1000 }, { name: "telephone", width: 390, height: 844 }];
 const cases: { mode: Mode; format: Format; pid: string; cid: string; token: string }[] = [];
 for (const mode of ["encre", "plein"] as Mode[]) for (const format of FORMATS) {
+  if (process.env.RECETTE_CAS && !process.env.RECETTE_CAS.split(",").includes(`${mode}-${format.name}`)) continue;
   const u = await account(), pid = project(u), c = openProjectConversation(u, pid);
   prepareProject(u as never, c.id, pid);
   const prod = createProduct(pid, { title: "Capteur fictif", price: 1200, variants: [{ options: [], sku: "CAPT-1", stock: 2, stockPolicy: "deny" }] } as never);
@@ -73,7 +74,7 @@ try {
     await context.addCookies([{ name: "ecs_session", value: k.token, url: origin }]);
     await context.route("**/*", (r) => { if (new URL(r.request().url()).origin === origin) return r.continue(); forbidden.push(r.request().url()); return r.abort(); });
     const page = await context.newPage();
-    page.setDefaultTimeout(45000);
+    page.setDefaultTimeout(150000); // première compilation du serveur de développement : plusieurs dizaines de secondes
     page.on("pageerror", (e) => jsErrors.push(`${label} : ${e.message}`));
     const panel = page.locator("#syna-panel:visible");
     const shot = async (name: string, full = false) => { const file = `${label}-${name}.png`; await page.screenshot({ path: path.join(out, file), fullPage: full }); return file; };
