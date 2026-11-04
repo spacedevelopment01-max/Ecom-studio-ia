@@ -16,7 +16,7 @@ champ « titre » d'une section désigné, 0 écriture sans accord et 0 appel IA
 | 8 | Remplace le texte du bouton de cette section par « … » | devis seulement | **gratuit** — demande de désigner le bouton | ✓ `syna301-bouton-recette` |
 | 9 | Remplace l'image de cette section par la photo de l'atelier | devis seulement | **gratuit** (contrat Codex `73c8865a`) — image EXISTANTE du projet, champ image désigné | ✓ `syna301-image-recette` 4/4 (miniatures, pixels relus) |
 | 10 | Annule la dernière retouche du site | gratuit si reçu courant | idem (sans reçu : refus gratuit explicite) | ✓ (#363) |
-| 11 | Choisis le thème Rive pour mon site | devis seulement | **gratuit** (contrat #376) — aperçu natif inactif, accord séparé ; refusé si des retouches ne se reportent pas | ✓ services 2/2 (`syna301-theme-recette`) ; **produits BLOQUÉ** : angle Stratégie exigé (refus honnête), puis projet préparé = lecture seule, aucun accord possible |
+| 11 | Choisis le thème Rive pour mon site | devis seulement | **gratuit** (contrat #376) — aperçu natif inactif, accord séparé ; refusé si des retouches ne se reportent pas | ✓ 4/4 sur projets **préparés** (produits et services) : produits — refus honnête sans angle, angle choisi dans Stratégie, aperçu, accord, version relue |
 | 12 | Remplace le titre SEO de la page d'accueil par « … » | clarification inadaptée | **gratuit** (proposition SEO exacte) | ✓ `syna301-seo-pages-recette` |
 | 13 | Change les horaires du mardi : 9 h – 18 h | devis seulement | **clarification gratuite** profil / créneaux ; « Les horaires du profil sont : … » → gratuit | ✓ `syna301-horaires-recette` |
 | 14 | Renomme cette prestation en « Aménagement complet » | devis seulement | **précision gratuite** (contrat #374) avec la liste des prestations ; « Renommer » remplit la phrase exacte | ✓ `syna301-prestation-recette` 4/4 |
@@ -30,12 +30,12 @@ sans accord ; aucun appel IA. Une réponse gratuite n'est pas encore « terminé
 navigateur, et le choix du thème reste bloqué par le moteur dès qu'une retouche manuelle ne se reporte pas (défaut natif
 signalé par Codex, non contourné).
 
-## Limite transversale constatée le 4 novembre : projets préparés
+## Projets préparés (4 novembre) : limite levée
 
-Toutes les recettes ci-dessus utilisent des projets de test **sans préparation engagée**. Dès qu'un projet a une
-préparation engagée (recherche, marque, contenus — le cas de tout projet réellement construit), la conversation passe en
-« lecture seule » pour la fiche (`readOnlyReason`) et **7 cartes gratuites sur 11 n'offrent plus d'accord** (Stock,
-Calendrier, Thème, Pages, SEO, Prestation / Horaires, Publicité), alors que le serveur accepte encore la proposition et
-l'accord (stock relu à 12). Les cartes Site et Fichiers sont aussi masquées par l'interface. Relevé :
-`preuves/sonde-v5-projet-prepare.json` (`tests/syna301-projet-prepare-cartes.test.ts`). Décision de contrat transmise
-à Codex ; tant qu'elle n'est pas prise, ces phrases ne sont **pas** terminées pour les vrais projets.
+Constat du matin : sur un projet dont la préparation est engagée (tout projet réellement construit), la fiche passe en
+lecture seule et 7 cartes gratuites sur 11 n'offraient plus d'accord. Contrat retenu avec Codex (`a593e6ea`) :
+`readOnlyReason` reste réservé à la fiche, `localEditsWritable` ouvre les retouches gratuites ; cartes alignées
+(`2497fea3`). Recettes rejouées sur projets **préparés** (`RECETTE_PREPARE=1`) : Calendrier 4/4, Prestation 4/4,
+lot 6 4/4, Thème 4/4, SEO / Pages 4/4, Stock 3/4 + reprise, lot 5 (photo exceptée) : voir `REPRISE.md`.
+**Reste ouvert** : l'import de photo depuis la conversation n'est pas proposé sur un projet préparé (garde serveur
+`photoImport` liée à la fiche, laissée telle quelle par Codex pour ce lot) — à raccorder.

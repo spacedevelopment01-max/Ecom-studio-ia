@@ -106,11 +106,11 @@ try {
       await step("Activité : prix affiché « 75 € » → accord → relu, autres champs intacts", async () => {
         await goto("produit"); check((await page.locator("[data-syna-shell]").first().getAttribute("data-syna-shell")) === k.mode, "mode");
         const before = svc();
-        await agree("Prix affiché d’une prestation du profil", "Mets le prix de la prestation du profil « Diagnostic » à « 75 € »", /50 €/, () => { const a = svc(); return a.price === "75 €" && a.duration === before.duration && a.description === before.description; }, "1-prix");
+        await agree("Prix affiché d’une prestation du profil", "Mets le prix de la prestation du profil « Diagnostic » à « 75 € »", /Prestation : Diagnostic[\s\S]*50 €/, () => { const a = svc(); return a.price === "75 €" && a.duration === before.duration && a.description === before.description; }, "1-prix");
       });
-      await step("durée « 45 min » puis description multiligne → accords → relues", async () => {
+      await step("durée « 45 min » puis description sur deux lignes (saut de ligne conservé) → accords → relues", async () => {
         await agree("Durée affichée d’une prestation du profil", "Mets la durée de la prestation du profil « Diagnostic » à « 45 min »", /30 min/, () => svc().duration === "45 min" && svc().price === "75 €", "2-duree");
-        await agree("Description d’une prestation du profil", "Remplace la description de la prestation du profil « Diagnostic » par « Texte fourni par le client. »", /Examen fourni/, () => svc().description === "Texte fourni par le client." && svc().duration === "45 min", "3-description");
+        await agree("Description d’une prestation du profil", "Remplace la description de la prestation du profil « Diagnostic » par « Texte fourni par le client.\nDeuxième ligne fournie. »", /Examen fourni[\s\S]*Deuxième ligne fournie/, () => svc().description === "Texte fourni par le client.\nDeuxième ligne fournie." && svc().duration === "45 min", "3-description");
       });
       await step("« Efface le prix … » → « (effacé) » → prix vide relu", async () => {
         await agree("Prix affiché d’une prestation du profil", "Efface le prix de la prestation du profil « Diagnostic »", /\(effacé\)/, () => !svc().price && svc().duration === "45 min", "4-efface");

@@ -1,3 +1,79 @@
+# Reprise active — convergence V9 et lots #403–#405
+
+La mission #301 reste ouverte. Aucun fournisseur réel, client, activation, publication, fusion main ou déploiement. Continuer les tâches indépendantes sans attendre une nouvelle consigne.
+
+## Sources exactes
+
+- #403 : b650c52e3b75fe81317bd269abb1963a47e98459, lecture privée des métadonnées de prompts sur A1. Droit de lecture séparé, EXISTING_PROMPTS_READ fermé par défaut, localReadAllowed(view,'prompts').105tests/6fichiers/types,16nouveaux.
+- #404 : eb0f687f6103b27ac880e606b29489bfcceda219, demandes interrogatives du profil natif, mêmes DTO/accords.68tests/9fichiers/types,9nouveaux et9rouges initiaux. Dernière relecture exacte des9nouveaux également verte.
+- #405 : 50e5d1e93c7b958238eef871cb1e7478edd0734c, photos sur projet préparé. Import natif, désignation conservée dans conversationPhotos et le fil ;Préparation etsummary.photoIds inchangés.81tests uniques/7fichiers/types dont13nouveaux,2rouges initiaux. A1 reste bloqué. Contrat LOT-PHOTOS-PROJET-PREPARE.md.
+- Convergence V9 sur branche indépendante codex/parity301-convergence-v9 :parents #405/50e5d1e, Claude4780571bb6d1772c3e241f793cbcfa4f4b6f98f8 etdocs8f3fe564bf74e14104ab8ba0911575b91d29ffb8. Les composants de Claude sont repris EXACTEMENT, sans retouche.79tests croisés/6fichiers+12tests de cartes/3fichiers ettypes passent. Pas de recette compilée V9 anticipée.
+
+Claude a confirmé son intégration de#395–#399 etses cartes préparées, renommage de dossier etlecture prompts dans #369/6632505222, tête4780571b. Il annonce notamment un vrai saut de ligne dans sa nouvelle recette Profil ;nos anciennes preuves CB restent une seule ligne. Ses recettes ne deviennent pas nos preuves indépendantes. #400 carte déplacement, exceptions A1 #402/#403 etnouveaucontratphoto#405 restentàqualifier. Contrats exacts publiés #369/6633004258,6633091316,6633271800. Ne jamais modifier sa branche.
+
+## CI observées
+
+#394/#395 CB, #396/506735a7, #397/D7, #398/504de588, #399/f7b26159 et#400/9b050ff3 :SUCCESS complet. Runs respectifs41825544838+41825362424,41828309600,41829717764,41832270177,41833620428,41835440257. Suites respectives5832,5840,5841,5869,5873,5902 tests réussis, toujours31exclusions préexistantes.
+
+#401/e7452632 run41837147432 :suite5913 verte,Docker etconfirmation obligatoires verts,grandes recettes encore en cours (étape63 observée). #402/5950fc2c run41840639425 en cours. #403/b650c52 run41846181130 en cours. #404/eb0f687 run41846832989 en cours. #405 etV9 :observer leur nouveau run sur SHA exact. Ne pas annoncer un verdict global avant sa fin, ne pas relancer les jobs verts.
+
+## Environnement et prochain travail
+
+Source de travail /workspace/work/parity301-ci-guards. Checkout de compilation /workspace/work/parity301-intents-v5 encore propre surD7 etbuild tf_kwZDK1SseJ07RKa0Tp au moment de ce point ;aucun serveur actif. Environ392MiB disque libre :nettoyer uniquement notre cache webpack inactif si nécessaire, pas d’autres travaux.
+
+1. Publier/aligner V9, puis préparer un build propre dans le checkout de compilation, avec NODE_OPTIONS=--import=$PWD/scripts/lot9/network-guard.mjs etclés fournisseur vidées. APIversion doit correspondre auSHApropre.
+2. Exécuter une preuve production indépendante Prompts préparés etRenommage dossier depuis phrase naturelle, Encre/Plein×ordinateur/toucher, attentes réelles≥17s etrelectures natives ;captures locales uniquement. Garder les baselines SIMULÉES entières, compter séparément les nouvelles tentatives.
+3. Observer les CI par SHA sans bouger les têtes. Suivre les adaptations Claude #400/#402/#403/#405 ;ne pas élargir soi-même ses cartes. En cas d’attente, poursuivre une lacune sûre de la matrice avec moteur natif ettests ;ne pas inventer d’identifiant commun profil/réservation.
+
+Matrice165unités,62PARTIEL/73ABSENT/4NON_TESTE/26BLOQUE,aucune complète. Preuves production antérieures CB :84étapes/40accords≥17s ;D7 Fichiers naturels :40étapes/8accords≥17s. Leurs SHA ne sont pas réattribués aux nouveaux lots.
+
+---
+
+# Point de reprise après #402
+
+La mission #301 reste inachevée. Continuer les lots indépendants sans demander une nouvelle validation. Aucun fournisseur réel, projet client, publication, activation, fusion main ou déploiement.
+
+## Dernière livraison et environnement
+
+**PR brouillon #402 : `5950fc2c2cdd1639634d38274a38791c52331881`, branche `codex/parity301-existing-folder-access`.** Parent : convergence #401, `e745263291dc36ded53a858ca90851008867b3ad`. Aucun composant Claude modifié.
+
+Le code de travail se trouve dans `/workspace/work/parity301-ci-guards`. Cette branche documentaire reprend le code #402 et actualise seulement la matrice et ce point. Le checkout d’exécution `/workspace/work/parity301-intents-v5` reste propre sur D7, avec le build `tf_kwZDK1SseJ07RKa0Tp` ; aucun serveur ni navigateur n’est actif.
+
+## Accès A1 raccordé et borné
+
+#402 raccorde le renommage et le déplacement natifs aux anciens projets A1, sous deux drapeaux indépendants, **fermés par défaut** : `STUDIO_CONVERSATION_EXISTING_FOLDER_RENAME` et `STUDIO_CONVERSATION_EXISTING_FOLDER_MOVE`. Ils exigent aussi EXISTING_LOCAL et les gardes natifs. Aucun environnement client ou fichier .env n’a été activé.
+
+La fiche et les outils IA gardent leurs permissions actuelles : `actionsEnabled:false`, `aiEnabled:false`, `projectRevision:null`, `creation:null`, `correctionFields:[]`. Les cas testés conservent leur absence de Préparation (`stateOf:null`). Aucun identifiant ou numéro de version de fiche n’est inventé pour accéder aux dossiers.
+
+**106 tests sur cinq fichiers et les types passent**, dont 20 nouveaux cas A1. Produits/services acquis, shop.chat, actifs, octets et dépenses restent identiques. Les contrôles couvrent HTTP/auth/CSRF/accord littéral, réponse perdue récupérée par GET sans second POST, concurrence, expiration, annulation, nouveau tour, bit client forgé et retrait du drapeau ou du forfait avant cache. Quatre cas manquants ont échoué avant raccordement. Voir `LOT-ANCIENS-PROJETS-DOSSIERS.md`.
+
+À Claude : les deux cartes utilisent `localEditAllowed(view,'folder-rename'|'folder-move')` et leur capacité serveur. Les factories ont ce contrôle ; ne pas bloquer ces exceptions explicitement déclarées par un rejet global de `view.recovery`. `nativeLocalEditAllowed` reste inchangé et interdit les autres domaines A1. L’adaptation de la carte Prompts préparée et les nouvelles cartes de dossiers, leur verrou commun et les recettes compilées dans les quatre formats après au moins 17 secondes restent ouvertes. Contrats et commits publiés dans #369, commentaire `6632303636`. Dernier HEAD Claude observé : `ecfaa73d27e9e4ece1cb10adee04053e42b33f36`, à reconsulter avant intégration ; aucun nouvel accord de sa part n’est supposé.
+
+## CI observées sur les SHA livrés
+
+| Source | Run | Résultat observé |
+|---|---|---|
+| #394/#395, CB | 41825544838 et 41825362424 | **SUCCESS complet**. 5 832 tests réussis, 31 exclusions existantes ; 627 fichiers réussis, 1 exclu. Natif 69/69, confirmation 18/18, Docker et verdict verts. |
+| #396, 506735a7 | 41828309600 | **SUCCESS complet**. 5 840 tests réussis, 31 exclusions ; 627 fichiers réussis, 1 exclu. Tous les contrôles sont verts. |
+| #397, D7 | 41829717764 | **SUCCESS complet**. 5 841 tests réussis, 31 exclusions ; 627 fichiers réussis, 1 exclu. Tous les contrôles sont verts. |
+| #398, 504de588 | 41832270177 | Suite 5 869 tests réussis / 31 exclusions, 628 fichiers / 1 exclu. Docker et confirmation verts ; grandes recettes en cours. |
+| #399, f7b26159 | 41833620428 | Suite 5 873 tests réussis / 31 exclusions, 629 fichiers / 1 exclu. Docker et confirmation verts ; grandes recettes en cours. |
+| #400, 9b050ff3 | 41835440257 | Suite 5 902 tests réussis / 31 exclusions, 630 fichiers / 1 exclu. Docker et confirmation verts ; grandes recettes en cours. |
+| #401, e7452632 | 41837147432 | Suite 5 913 tests réussis / 31 exclusions, 631 fichiers / 1 exclu. Docker et confirmation verts ; grandes recettes en cours. |
+| #402, 5950fc2c | 41840639425 | En cours, Docker vert. Aucun autre verdict anticipé. |
+
+Les 31 exclusions sont préexistantes. Aucun test ni contrôle obligatoire ou financier n’a été supprimé. Ne pas relancer les contrôles déjà verts.
+
+## Prochaines actions
+
+1. Observer les CI restantes sur leurs SHA, tout en continuant les lots indépendants. Préserver les têtes des PR pour laisser finir leurs CI.
+2. Reconsulter les travaux de Claude et intégrer ses cartes sur une nouvelle branche. Qualifier A1 produits/services, Encre/Plein ordinateur/toucher, au moins 17 secondes, source native, reçu, rechargement, réponse perdue et conflit. Les fonctions A1 de #402 n’ont pas encore de preuve navigateur.
+3. Vérifier la prochaine lacune sûre : bibliothèque de prompts en lecture seule sur A1, actuellement hors reprise, ou CRUD profil/réservation par store natif distinct. Un droit de lecture ne donne aucun droit d’édition ou de génération. Les pièces jointes demandent un contrat distinct : `photoIds` modifie encore la fiche ; ne pas forcer `assertBriefWritable`.
+
+Matrice unique : **165 unités, 62 PARTIEL, 73 ABSENT, 4 NON_TESTE, 26 BLOQUE, aucune complète**. Les modes A1 ajoutés ne sont pas de nouvelles opérations. Les preuves UI antérieures gardent leur SHA : CB pour quatre recettes (84 étapes, 40 accords après au moins 17 secondes), D7 pour Fichiers naturels (40 étapes, 8 accords). Captures locales seulement. L’historique ci-dessous conserve les preuves et leurs limites.
+
+---
+
 # Convergence backend V8 — priorité de reprise
 
 La mission #301 reste ouverte. Cette convergence reprend les parents `db7600b4` (preuves), `9b050ff3` (Fichiers et dossiers) et `506735a7` (prompts). Tous les composants de Claude restent identiques à `ecfaa73d` ; sa branche n’est pas modifiée.

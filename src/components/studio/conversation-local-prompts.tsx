@@ -1,8 +1,9 @@
 "use client";
+import {nativeLocalEditAllowed} from '@/lib/existing-local-edits';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {useT} from '../i18n';
 /** A read result is complete; metadata titles never request a quote or execution. */
-export const handlesLocalPrompts=(v:ConversationView)=>!v.readOnlyReason&&!v.recovery&&v.localPromptsRead?.enabled===true&&v.localPrompts?.readOnly===true&&(v.localPrompts.state==='listed'||v.localPrompts.state==='ambiguous');
+export const handlesLocalPrompts=(v:ConversationView)=>nativeLocalEditAllowed(v)&&v.localPromptsRead?.enabled===true&&v.localPrompts?.readOnly===true&&(v.localPrompts.state==='listed'||v.localPrompts.state==='ambiguous');
 export function ConversationLocalPrompts({view}:{view:ConversationView}){
  const t=useT(),x=view.localPrompts;if(!handlesLocalPrompts(view)||!x)return null;
  const href=view.projectId&&x.href===`/studio/${encodeURIComponent(view.projectId)}/prompts`?x.href:null;
