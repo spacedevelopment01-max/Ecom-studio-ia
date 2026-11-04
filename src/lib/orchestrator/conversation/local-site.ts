@@ -1,3 +1,4 @@
+import {chooseSiteImage,checkedSiteImage,currentSiteImage,siteImageView,type SiteImagePin,type SiteImageView} from './local-site-image';
 /** B1 : proposition et application gratuites ; aucune cognition, aucun devis financier. */
 import {HttpError,type User} from '../../auth';
 import {id,now,one,json} from '../../db';
@@ -17,9 +18,9 @@ import {previewNativeThemeUndo,themeToolsRegistry} from './theme-tool-execution'
 import {themeTargetPaths} from './theme-tool-context';
 import type {ConversationRow,ConversationState} from './contract';
 
-export type LocalSiteProposal={id:string;kind:'title'|'button'|'hide'|'remove'|'move'|'color'|'faq'|'undo';request:NativeLocalRequest;address:NativeLocalAddress;pin?:ContextPin;versionId:string;fingerprint:string;resultFingerprint:string;ops:ThemeOp[];diff:{before:unknown;after:unknown};expiresAt:number;undo?:{turnId?:string;toolReceiptId?:string;receiptId:string;receiptFingerprint:string;targetVersionId:string;sourceFingerprint?:string}};
+export type LocalSiteProposal={id:string;kind:'image'|'title'|'button'|'hide'|'remove'|'move'|'color'|'faq'|'undo';request:NativeLocalRequest;address:NativeLocalAddress;pin?:ContextPin;image?:SiteImagePin;versionId:string;fingerprint:string;resultFingerprint:string;ops:ThemeOp[];diff:{before:unknown;after:unknown};expiresAt:number;undo?:{turnId?:string;toolReceiptId?:string;receiptId:string;receiptFingerprint:string;targetVersionId:string;sourceFingerprint?:string}};
 export type LocalSiteScope={projectId:string;versionId:string;template:string;section:string;block?:string;key?:string;label:string;pagePaths:string[];labels:Record<string,string>};
-export type LocalSitePresentation={command?:'title'|'button'|'hide'|'remove'|'move'|'color'|'faq'|'undo';receiptId?:string;sourceReceiptId?:string;scope?:LocalSiteScope;schema:'syna-local-site-1';state:'ambiguous'|'proposed'|'applied'|'error';message:string;financialConsent:false;costEur:0;providerCalls:0;confirmationRequired:boolean;proposalId?:string;diff?:{before:unknown;after:unknown};version?:{id:string;number:number;parentId:string;fingerprint:string};previewHref?:string;restore?:{endpoint:string;versionId:string;manual:true};actionsExecuted:boolean};
+export type LocalSitePresentation={command?:'image'|'title'|'button'|'hide'|'remove'|'move'|'color'|'faq'|'undo';receiptId?:string;sourceReceiptId?:string;scope?:LocalSiteScope;media?:{before:SiteImageView|null;after:SiteImageView};schema:'syna-local-site-1';state:'ambiguous'|'proposed'|'applied'|'error';message:string;financialConsent:false;costEur:0;providerCalls:0;confirmationRequired:boolean;proposalId?:string;diff?:{before:unknown;after:unknown};version?:{id:string;number:number;parentId:string;fingerprint:string};previewHref?:string;restore?:{endpoint:string;versionId:string;manual:true};actionsExecuted:boolean};
 const present=(state:LocalSitePresentation['state'],message:string,extra:Partial<LocalSitePresentation>={}):LocalSitePresentation=>({schema:'syna-local-site-1',state,message,financialConsent:false,costEur:0,providerCalls:0,confirmationRequired:false,actionsExecuted:false,...extra});
 export const localSiteCandidate=(text:string)=>nativeLocalRequest(text).candidate;
 export const localSiteEnabled=()=>activeContextEnabled()&&process.env.STUDIO_CONVERSATION_LOCAL_SITE==='1';
@@ -65,7 +66,9 @@ function preview(user:User,c:ConversationRow,p:LocalSiteProposal){
   if(cur.spec.locks.includes(`${a.template}:${sid}`)||managed.has(`${a.template}:${sid}`))fail('Section protégée ou issue de contenus métier : utilisez son espace natif.');
   if(!container?.order.includes(sid)||container.sections[sid]?.disabled)fail('Section de destination absente ou masquée.');
  }
- const project=loadProject(c.project_id!),native=localFirst(cur.spec,'',null,[],project.business,()=>null,projectKind(project),{request:p.request,address:a});
+ if(p.image)checkedSiteImage(c,p.image);
+ const mediaFile=(aid:string)=>p.image&&aid===p.image.assetId?(checkedSiteImage(c,p.image),{filename:p.image.filename}):null;
+ const project=loadProject(c.project_id!),native=localFirst(cur.spec,'',null,[],project.business,mediaFile,projectKind(project),{request:p.request,address:a});
  if(!native||native.revert||native.direction||native.ops.length!==1)fail('Le moteur local ne peut pas appliquer cette demande exactement.');
  if(p.request.kind==='title'){
   const target=resolveActiveContext(c,{projectId:c.project_id!,tab:'boutique',target:{kind:'theme-field',versionId:cur.version.id,template:a.template,section:a.section,block:a.block,key:a.key!}});
@@ -79,13 +82,19 @@ function preview(user:User,c:ConversationRow,p:LocalSiteProposal){
   if(target.kind!=='theme-field'||!target.contentRead||target.text===null||!buttonKey(a.key!,a.block?section?.blocks?.[a.block]?.type:undefined)||!['text','inline_richtext'].includes(target.fieldType)||!p.request.value.trim()||p.request.value.length>160||unsafeContentReason(p.request.value))fail('Désignez un libellé de bouton natif court ; texte exact de 160 caractères maximum.');
   if('text'in target&&target.text===p.request.value)fail('Ce libellé est déjà en place. Aucune nouvelle version.');
  }
+ if(p.request.kind==='image'){
+  if(p.image&&cur.spec.files[p.image.filename]&&cur.spec.files[p.image.filename]!==p.image.assetId)fail('Le nom de fichier natif est déjà lié à une autre image ; aucune référence partagée ne sera remplacée.');
+  const target=resolveActiveContext(c,{projectId:c.project_id!,tab:'boutique',target:{kind:'theme-field',versionId:cur.version.id,template:a.template,section:a.section,block:a.block,key:a.key!}});
+  if(target.kind!=='theme-field'||target.fieldType!=='image_picker'||!p.image||native!.ops.some(op=>op.op!=='use_media'||op.assetId!==p.image!.assetId))fail('Désignez un champ image natif précis.');
+  if('media'in target&&target.media?.id===p.image!.assetId)fail('Cette image est déjà utilisée dans ce champ. Aucune nouvelle version.');
+ }
  if(p.request.kind==='color'){
   if(native!.ops.some(op=>op.op!=='section_colors'||op.template!==a.template||op.section!==a.section))fail('Couleur globale ou cible ambiguë : précisez la section entière.');
  }
  if(p.request.kind==='faq'&&native!.ops.some(op=>op.op!=='add_section'||op.template!==a.template||op.position?.after!==a.section||!/faq|collapsible/.test(op.type)))fail('La FAQ ne peut pas être ajoutée exactement après la section désignée.');
  // Les règles d'abonnement restent celles des opérations conversationnelles existantes.
  assertThemeOperations(c.project_id!,cur.spec,native!.ops,true);
- const applied=applyOps(cur.spec,native!.ops,{storeKind:projectKind(project)});
+ const applied=applyOps(cur.spec,native!.ops,{storeKind:projectKind(project),mediaFile});
  if(p.request.kind==='title'||p.request.kind==='button'){const s=containerOf(applied.spec,a.template)!.sections[a.section];if((a.block?s.blocks![a.block].settings:s.settings)[a.key!]!==p.request.value)fail('Le moteur ne conserve pas ce texte exactement.');}
  if(p.request.kind==='color')for(const template of ['group:header','group:footer',...Object.keys(cur.spec.templates)]){const other=containerOf(cur.spec,template);for(const sid of other?.order??[])if((template!==a.template||sid!==a.section)&&stableHash('colours',colours(cur.spec,template,sid))!==stableHash('colours',colours(applied.spec,template,sid)))fail('Le schéma partagé toucherait une autre section. Aucun changement ; utilisez les réglages natifs pour isoler la section.');}
  if(applied.rejected.length||validateSpec(applied.spec).length)fail('Opération refusée par la validation native.');
@@ -111,7 +120,7 @@ export function proposeLocalSite(user:User,c:ConversationRow,m:ConversationState
   const t=pin!.selection.target!;if(t.kind!=='theme-field'&&t.kind!=='theme-section')fail('Désignez une section ou un champ natif sur la page concernée.');
   const target=t as Extract<typeof t,{kind:'theme-field'|'theme-section'}>,cur=currentTheme(c.project_id!)!,address:NativeLocalAddress={template:target.template,section:target.section,...(target.block?{block:target.block}:{})};
   if(managedSections(cur.spec,c.project_id!).has(`${address.template}:${address.section}`))fail('Section issue de contenus métier : utilisez son espace natif.');
-  const request=parsed.request;
+  const request=parsed.request;let image:SiteImagePin|undefined;
   if(request.kind==='title'){
    if(target.kind==='theme-field')address.key=target.key;
    else{
@@ -119,6 +128,13 @@ export function proposeLocalSite(user:User,c:ConversationRow,m:ConversationState
     const titles=defs?.filter(d=>['heading','title','heading_line1'].includes(d.id??'')&&['text','inline_richtext'].includes(d.type))??[];
     if(titles.length!==1)fail('Titre absent ou ambigu : désignez sa clé native.');address.key=titles[0].id;
    }
+  }else if(request.kind==='image'){
+   const section=containerOf(cur.spec,target.template)!.sections[target.section],schema=sectionSchema(cur.spec,section.type),candidates:{key:string;block?:string}[]=[];
+   for(const d of schema?.settings??[])if(d.id&&d.type==='image_picker')candidates.push({key:d.id});
+   for(const [bid,b] of Object.entries(section.blocks??{}))for(const d of schema?.blocks.find(v=>v.type===b.type)?.settings??[])if(d.id&&d.type==='image_picker')candidates.push({key:d.id,block:bid});
+   const matches=target.kind==='theme-field'?candidates.filter(v=>v.key===target.key&&v.block===target.block):target.block?candidates.filter(v=>v.block===target.block):candidates;
+   if(matches.length!==1)fail('Image cible absente ou ambiguë : désignez son champ natif précis. Aucun autre média ne changera.');
+   address.key=matches[0].key;address.block=matches[0].block;image=chooseSiteImage(c,request.assetName);request.assetId=image.assetId;
   }else if(request.kind==='button'){
    const section=containerOf(cur.spec,target.template)!.sections[target.section],schema=sectionSchema(cur.spec,section.type);
    const candidates:{key:string;block?:string}[]=[];
@@ -136,11 +152,14 @@ export function proposeLocalSite(user:User,c:ConversationRow,m:ConversationState
    if(ids.length!==1||ids[0]===target.section)fail('Destination absente, ambiguë ou identique. Donnez un ID natif unique sur la même page.');address.anchorId=ids[0];
   }
   if(request.kind==='color'||request.kind==='faq'){delete address.block;delete address.key;}
-  const p:LocalSiteProposal={id:id(),kind:request.kind,request,address,pin:pin!,versionId:cur.version.id,fingerprint:fp(cur.spec),resultFingerprint:'',ops:[],diff:{before:null,after:null},expiresAt:now()+15*60000};
+  const p:LocalSiteProposal={id:id(),kind:request.kind,request,address,pin:pin!,...(image?{image}:{}),versionId:cur.version.id,fingerprint:fp(cur.spec),resultFingerprint:'',ops:[],diff:{before:null,after:null},expiresAt:now()+15*60000};
   const result=preview(user,c,p);p.ops=result.ops;p.resultFingerprint=fp(result.spec);
   const section=containerOf(cur.spec,address.template)!.sections[address.section],changed=containerOf(result.spec,address.template)!.sections[address.section];
-  p.diff=request.kind==='hide'?{before:'Section visible',after:'Section masquée (contenu conservé dans cette version)'}:request.kind==='remove'?{before:`Section « ${String(section.settings.heading??section.settings.title??address.section)} » présente et visible`,after:'Section supprimée de cette page ; historique et versions précédentes conservés.'}:request.kind==='color'?{before:JSON.stringify(colours(cur.spec,address.template,address.section),null,2),after:JSON.stringify(colours(result.spec,address.template,address.section),null,2)}:request.kind==='faq'?{before:'Ordre : '+containerOf(cur.spec,address.template)!.order.join(' → '),after:'FAQ après '+address.section+' — contenu de départ à compléter : '+JSON.stringify(containerOf(result.spec,address.template)!.order.filter(s=>!containerOf(cur.spec,address.template)!.sections[s]).map(s=>({id:s,...containerOf(result.spec,address.template)!.sections[s]})),null,2)}:request.kind==='title'||request.kind==='button'?{before:(address.block?section.blocks![address.block].settings:section.settings)[address.key!],after:(address.block?changed.blocks![address.block].settings:changed.settings)[address.key!]}:{before:containerOf(cur.spec,address.template)!.order,after:containerOf(result.spec,address.template)!.order};
-  m.localSiteProposal=p;return present('proposed',request.kind==='hide'?'Cette section entière sera masquée. Son contenu reste dans la version ; aucune autre section ne change. Vérifiez puis confirmez gratuitement.':request.kind==='remove'?'Cette section entière sera supprimée de cette page après accord explicite. Versions et historique conservés pour annulation ; aucune autre section ne change. Vérifiez puis confirmez gratuitement.':request.kind==='button'?'Seul le libellé exact du bouton désigné change ; sa destination et son comportement restent identiques. Vérifiez puis confirmez gratuitement.':request.kind==='color'?'Alternative native explicite : couleur principale des textes de cette section, ou son fond selon la demande. Certains boutons utilisent aussi cette couleur de texte. Le titre seul n’est pas ciblé ; un changement de fond adapte aussi les accents, textes secondaires, surfaces et textes des boutons si leur contraste devient insuffisant (hors couleurs explicitement demandées et thèmes importés). Aucune autre section ni couleur globale ne change. Vérifiez les couleurs avant/après puis confirmez gratuitement.':request.kind==='faq'?'FAQ native après cette section, avec questions/réponses de départ à compléter, rien d’inventé. Vérifiez avant/après puis confirmez gratuitement.':'Modification comprise. Vérifiez cet aperçu puis confirmez gratuitement.',{command:p.kind,scope:proposalScope(c,p),proposalId:p.id,diff:p.diff,confirmationRequired:true});
+  const imageKey=address.key?.endsWith('_asset')?address.key:address.key+'_asset';
+  const beforeImage=image?currentSiteImage(c,cur.spec.files[String((address.block?section.blocks![address.block].settings:section.settings)[imageKey])]):null;
+  const media=image?{before:beforeImage,after:siteImageView(checkedSiteImage(c,image))}:undefined;
+  p.diff=request.kind==='image'?{before:beforeImage?.name??'Image native désignée',after:image!.name}:request.kind==='hide'?{before:'Section visible',after:'Section masquée (contenu conservé dans cette version)'}:request.kind==='remove'?{before:`Section « ${String(section.settings.heading??section.settings.title??address.section)} » présente et visible`,after:'Section supprimée de cette page ; historique et versions précédentes conservés.'}:request.kind==='color'?{before:JSON.stringify(colours(cur.spec,address.template,address.section),null,2),after:JSON.stringify(colours(result.spec,address.template,address.section),null,2)}:request.kind==='faq'?{before:'Ordre : '+containerOf(cur.spec,address.template)!.order.join(' → '),after:'FAQ après '+address.section+' — contenu de départ à compléter : '+JSON.stringify(containerOf(result.spec,address.template)!.order.filter(s=>!containerOf(cur.spec,address.template)!.sections[s]).map(s=>({id:s,...containerOf(result.spec,address.template)!.sections[s]})),null,2)}:request.kind==='title'||request.kind==='button'?{before:(address.block?section.blocks![address.block].settings:section.settings)[address.key!],after:(address.block?changed.blocks![address.block].settings:changed.settings)[address.key!]}:{before:containerOf(cur.spec,address.template)!.order,after:containerOf(result.spec,address.template)!.order};
+  m.localSiteProposal=p;return present('proposed',request.kind==='image'?'Remplacer uniquement ce champ image par le média existant indiqué. Aucun nouvel achat, génération ou fichier supprimé. Vérifiez avant/après puis confirmez gratuitement.':request.kind==='hide'?'Cette section entière sera masquée. Son contenu reste dans la version ; aucune autre section ne change. Vérifiez puis confirmez gratuitement.':request.kind==='remove'?'Cette section entière sera supprimée de cette page après accord explicite. Versions et historique conservés pour annulation ; aucune autre section ne change. Vérifiez puis confirmez gratuitement.':request.kind==='button'?'Seul le libellé exact du bouton désigné change ; sa destination et son comportement restent identiques. Vérifiez puis confirmez gratuitement.':request.kind==='color'?'Alternative native explicite : couleur principale des textes de cette section, ou son fond selon la demande. Certains boutons utilisent aussi cette couleur de texte. Le titre seul n’est pas ciblé ; un changement de fond adapte aussi les accents, textes secondaires, surfaces et textes des boutons si leur contraste devient insuffisant (hors couleurs explicitement demandées et thèmes importés). Aucune autre section ni couleur globale ne change. Vérifiez les couleurs avant/après puis confirmez gratuitement.':request.kind==='faq'?'FAQ native après cette section, avec questions/réponses de départ à compléter, rien d’inventé. Vérifiez avant/après puis confirmez gratuitement.':'Modification comprise. Vérifiez cet aperçu puis confirmez gratuitement.',{command:p.kind,scope:proposalScope(c,p),proposalId:p.id,diff:p.diff,...(media?{media}:{}),confirmationRequired:true});
  }catch(e){if(e instanceof ContextConflict)throw e;if(e instanceof HttpError)return present(e.status===422?'ambiguous':'error',e.message);throw e;}
 }
 /** Présentation native uniquement : aucune nouvelle opération ni autorisation. */
