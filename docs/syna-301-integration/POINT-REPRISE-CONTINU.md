@@ -1,3 +1,67 @@
+# Convergence backend V8 — priorité de reprise
+
+La mission #301 reste ouverte. Cette convergence reprend les parents `db7600b4` (preuves), `9b050ff3` (Fichiers et dossiers) et `506735a7` (prompts). Tous les composants de Claude restent identiques à `ecfaa73d` ; sa branche n’est pas modifiée.
+
+- **124 tests ciblés sur six fichiers et les types passent** sur cette réunion de branches. Trois nouveaux parcours croisés vérifient les anciens accords invalidés par une lecture, le nouvel accord explicite encore possible, la composition renommage de fichier/renommage de dossier/déplacement et les domaines fermés indépendamment. Préparation acquise et dépenses restent intactes ; zéro appel fournisseur.
+- **#400 / `9b050ff3a14411867b3fa768c58138c8393494ec`** raccorde `folders.move` : 90 tests sur sept fichiers et types, dont 29 nouveaux. Contrat `LOT-DEPLACEMENT-DOSSIER.md`. Carte et recette navigateur compilée restent à intégrer par Claude, comme `folders.rename` #398.
+- **#399 / `f7b261591cf4c024f54fbc57182d0698f2ba44f8`** corrige le défaut natif démontré à 70 niveaux : deux rouges→verts, déplacement valide conservé,35 tests / types. Aucun dossier client modifié. Contrat `LOT-CYCLE-DOSSIER-PROFOND.md`.
+- Claude a reçu ces contrats et commits dans #369, commentaires `6631194514` et `6631466853`. L’adaptation de la bibliothèque de prompts sur projet préparé et les deux nouvelles cartes de dossiers restent ouvertes. Ne pas présenter un moteur/API testé comme une interface qualifiée.
+- **CI complète CB / #394 et #395 : SUCCESS**, runs `41825544838` et `41825362424`. Pour41825544838 : 5 832 tests réussis,31 exclusions préexistantes,627 fichiers réussis et1 exclu ;Docker 7/7 étapes,confirmation gratuite obligatoire 18/18,recettes natives 69/69,verdict global vert. Aucun contrôle ignoré dans ces jobs.
+- **#396 /506735a7** :suite5 840 tests réussis/31 exclusions,627 fichiers/1 exclu ;Docker etconfirmation verts,grandes recettes encore à observer (run41828309600). **#397 /D7** :suite5 841 tests réussis/31 exclusions,627 fichiers/1 exclu ;Docker etconfirmation verts,grandes recettes en cours (run41829717764).
+- **#398 /504de588** :run41832270177 en cours, Docker / confirmation verts au dernier relevé. **#399 /f7b26159** :run41833620428 en cours. **#400 /9b050ff3** :run41835440257 en cours. La CI de cette nouvelle convergence doit être observée sur son propre SHA  ; aucun verdict anticipé.
+- Matrice unique :**165 unités** (164 conservées+omission `folders.move`),**62 PARTIEL / 73 ABSENT / 4 NON_TESTE / 26 BLOQUE**, aucune complète. Les preuves compilées antérieures gardent leurs SHA :CB pour Stock / Profil-Dossiers / Calendrier / SEO-Pages-Section,D7 pour Fichiers naturels ;ne pas les réattribuer à V8.
+
+Prochaines actions :observer les CI sans relancer les contrôles verts ;reprendre la prochaine lacune indépendante pendant les CI et les cartes Claude (autres CRUD / profil et réservation,pièces jointes conversationnelles distinctes de la fiche,autres domaines de la matrice). Dès que les cartes arrivent,converger sur une autre branche etqualifier prompts / dossiers dans les quatre formats≥17 s. Garder A1 strictement dans ses permissions actuelles ;aucune dépense réelle, activation, action externe,main ou déploiement.
+
+Le checkout d’exécution reste `/workspace/work/parity301-intents-v5`, propre surD7 avec build `tf_kwZDK1SseJ07RKa0Tp`, sans serveur navigateur actif. Le checkout de travail est `/workspace/work/parity301-ci-guards`, branche `codex/parity301-convergence-v8`. Aligner l’arbre / commit API avant tout lot suivant. Voir ci-dessous les preuves et limites cumulatives.
+
+---
+
+# Point de reprise — lots naturels et renommage de dossier
+
+La mission reste inachevée. Continuer les lots indépendants sans demander une nouvelle autorisation. Aucun fournisseur réel, projet client, activation, publication, fusion main ou déploiement.
+
+## Livraisons et preuves actuelles
+
+- **Fichiers, PR #397 : `d7a04a1612096288c436c7b60ae7d8feba82a0aa`.** Branche `codex/parity301-natural-file-metadata`. Compilation propre, production, BUILD_ID `tf_kwZDK1SseJ07RKa0Tp`. Le checkout d’exécution `/workspace/work/parity301-intents-v5` reste propre sur `codex/parity301-compiled-files-natural`. Aucun navigateur ni build ne tourne après la recette.
+- **Recette Fichiers préparés : 4/4, 40 étapes, 8 accords après au moins 17 secondes.** Formulations sans guillemets sur ordinateur et polies au toucher ; désignation native, clarification, annulation, réponse perdue sur les deux ordinateurs récupérée avec un seul POST, reçu/rechargement, déplacement dans les quatre formats, octets et version 1 conservés, aucune copie. L’API confirme la permission native, le verrou de fiche et le SHA du build. Les quatre recherches simulées acquises restent intégralement identiques : 4→4, aucune nouvelle tentative IA, tâche ou erreur JS. Quatre requêtes Google Fonts sont bloquées. Voir `PREUVE-FICHIERS-NATURELS-PREPARE-V2.json` et `scripts/parity301-prepared-natural-files-proof.ts`. Captures locales dans `/tmp/parity301-prepared-natural-files-v2`, jamais ajoutées à GitHub.
+- **Traçabilité du harnais :** V1 a échoué avant accord car l’import `waitAtLeast` manquait ; brut conservé dans `PREUVE-FICHIERS-NATURELS-HARNAIS-V1.json`. Aucun correctif applicatif pour cet échec. Une première compilation locale a également été arrêtée pour charger explicitement la garde réseau ; seule la compilation V2 terminée avec cette garde est utilisée comme preuve. Logs distincts `/tmp/parity301-natural-files-build-initial-stopped.log` et `/tmp/parity301-natural-files-build-v2.log`.
+- **Renommage d’un dossier, PR #398 : `504de58833ed3851b31719c9e1efe865ad8126d7`.** Branche `codex/parity301-folder-rename`, parent D7. Moteur natif partagé avec PATCH, contrat et transport, aucun composant Claude modifié. **57 tests et types passent** : 28 nouveaux et 29 régressions, routes authentifiées/CSRF, préparation conservée, A1, solde nul, homonymes/concurrence, rollback du reçu et des métadonnées, réponse perdue, ancien pending et changement de projet. Voir `LOT-RENOMMAGE-DOSSIER.md`. Carte et recette compilée indépendante encore requises ; ne pas afficher cette action dans la carte Nouveau dossier.
+- **Bibliothèque de prompts, PR #396 : `506735a7b19b972d4b613d05db2eeb4f537232ed`.** Lecture des métadonnées sur projet préparé et formulations usuelles. L’adaptation de la carte par Claude reste ouverte : `nativeLocalEditAllowed(view)` et `localPromptsRead.enabled`, sans ouvrir A1, ni corps/exécution/édition de prompt.
+
+Claude a reçu les contrats et SHA dans #369, commentaires `6630709513` et `6630984345`. Son dernier HEAD observé est `ecfaa73d27e9e4ece1cb10adee04053e42b33f36` : le relire avant toute nouvelle convergence. Sa branche reste intacte.
+
+## CI exacte au dernier relevé
+
+| Source | Run | Résultat observé |
+|---|---|---|
+| CB / #394 et #395 | 41825544838 | **5 832 tests réussis**, 31 exclusions préexistantes ; 627 fichiers réussis, 1 exclu. Docker et confirmation gratuite obligatoire verts. Grandes recettes encore en cours. |
+| #396 / 506735a7 | 41828309600 | Docker et confirmation obligatoire verts ; suite et grandes recettes en cours. |
+| #397 / D7 | 41829717764 | Docker et confirmation obligatoire verts ; suite et grandes recettes en cours. |
+| #398 / 504de588 | 41832270177 | En cours ; aucun verdict final anticipé. |
+
+La matrice conserve les 163 unités précédentes et ajoute l’omission native `folders.rename` : **164 unités, 61 PARTIEL, 73 ABSENT, 4 NON_TESTE, 26 BLOQUE, aucune complète**. Chaque ligne garde son responsable, sa dépendance, son critère et sa preuve. Cette branche de preuves réunit réellement les parents `5faaf289` et D7 ; le code Fichiers D7 et les composants graphiques Claude sont conservés.
+
+## Prochaines actions
+
+1. Observer les CI finales de ces SHA ; ne pas relancer les contrôles déjà verts.
+2. Converger `506735a7` et `504de588` avec les composants Claude dès qu’ils sont prêts, sur une nouvelle branche indépendante. Qualifier la bibliothèque préparée et la nouvelle carte de renommage de dossier dans les quatre formats, avec au moins 17 secondes avant accord.
+3. Continuer les autres lacunes indépendantes : déplacement/suppression de dossiers vides, autres CRUD, contenus et réservation. Les pièces jointes méritent un contrat distinct : `photoIds` modifie encore la fiche, donc ne pas forcer `assertBriefWritable` pour ouvrir les projets préparés.
+
+---
+
+# Reprise prioritaire — convergence compilée V7
+
+Source actuelle **cb383590a7811df94153b9698754d3b071bde228**, PR brouillon #394 et complément isolé #395. Vrai merge ce6f96a6 de 06c35ebf et Claude ecfaa73d ; composants Claude repris à l’identique. Le texte historique ci-dessous reste daté ; ne pas en déduire que les anciennes cartes attendent encore leur adaptation : ecfaa73d l’a intégrée, les preuves compilées restent à qualifier domaine par domaine.
+
+Build production propre terminé, BUILD_ID **KqRyToh4Fq2rBTZFXDwi3**. Stock multivariante PRÉPARÉ réellement exécuté : **4/4,20 étapes**, Encre/Plein ordinateur/toucher mobile. Annulation sans écriture,4 confirmations après17001.52/17002.38/17001.02/17002.69ms, reçu/reload sans doublon ; seule quantité ciblée changée, versions produit/variante +1, sœur/prix/SKU/politiques/options identiques. APIversion SHA/prod/clean/build et permission native + fiche verrouillée vérifiées. Baseline4recherches simulées 4→4 intégralement inchangée,0nouvelle tentative/0job/0JS ;4requêtes GoogleFonts CSS bloquées conservées. Rapport PREUVE-STOCK-MULTIVARIANTE-PREPARE-V7.json et harnais scripts/parity301-prepared-stock-proof.ts. Captures locales /tmp/parity301-prepared-multivariant-stock-v7 uniquement. Ancien Stock multivariante a593 non préparé4/4 conservé séparément V6. Aucun correctif applicatif supplémentaire nécessaire pour le sélecteur de variantes déjà natif.
+
+#395 : serviceName du profil proposé/appliqué, aucun nom singulier inventé en ambiguïté ;6tests dont5rouges avant+29régressions/types. Événements Calendrier/Choix de thème nommés explicitement, anciens alias conservés. Claude informé #369/6630144835 des preuves Stock et du SHA exploitable.
+
+CI CB en cours : runs41825544838 et41825362424. Aucun verdict final anticipé. Profil prix/durée/description et dossier sur projets préparés, même build :4/4,16étapes,20accords tous≥17000ms ; prix75€/durée45min/description fournie/effacementprix/destinationracine clarifiée aprèsreload/dossier relu. Baseline4→4 inchangée,0nouvelle tentative/0externe/0JS. Rapport PREUVE-PROFIL-DOSSIERS-PREPARE-V7.json, harnais scripts/parity301-prepared-profile-folder-proof.ts ;captures locales /tmp/parity301-prepared-lot6-v7. Calendrier préparé terminé :4/4,20étapes,4accords≥17s,annulation/reload/+2jours,fuseau/texte/statut/réseauconservés,0nouvelleIA/0job/0JS,4GoogleFonts bloquées. Rapport PREUVE-CALENDRIER-PREPARE-V7.json etharnais scripts/parity301-prepared-calendar-proof.ts. Branche d’exécution codex/parity301-compiled-v7, aucun build supplémentaire à lancer pendant Chromium. Pour reprendre : vérifier log et processus, puis qualifier domaines indépendants, observer CI exacteCB, actualiser matrice sans déclarer la parité complète. 163unités conservées,60PARTIEL/73ABSENT/4NON_TESTE/26BLOQUE à ce relevé. Lecture metadata de prompts corrigée dansPRbrouillon#396/b59283baf847785c739bad9f0c51476daa46db0c (parentCB),2rouges→verts,42tests/types ; adaptationUI transmiseClaude#369/6630247893,CI41827028216en cours. Photos liées à une fiche verrouillée restent à analyser séparément ; ne pas élargir A1.
+
+---
+
 # Reprise continue #301 — 4 novembre 2026, 11 h 30 UTC
 
 **Mission inachevée : continuer sans nouvelle autorisation entre les lots.** Aucun fournisseur réel, client, envoi/activation, fusion main ou déploiement. Codex possède moteurs/contrats/intentions/permissions/reprise ; Claude possède composants, désignation, aperçu, verrou commun et recettes indépendantes. Ne pas refaire #348.
@@ -95,3 +159,16 @@ Même CSV/MD historiques MATRICE-CONVERGENCE-84.*,163 unités (162conservées+om
 3. Continuer les lacunes moteur indépendantes durant les CI :variantes multiples et clarifications Stock dans le vrai parcours (Claude ne les a pas qualifiées),CRUD dossiers,versions/corbeille/consignes,nouveaux champs et services réservables avec leurs propres IDs/versions. Adresse du profil appelle syncBookingAddress et crée une version du site :pas d'écriture simple de profil.
 4. Photo/brief sur projet préparé,lecture de prompts après verrou,réservations et demandes externes restent à qualifier. A1 garde seulement ses exceptions explicitement existantes,aucune permission générale déduite du nouveau booléen.
 5. Connexions/envois/publication/domaine/paiement réels restent non autorisés. Préparer les scénarios/contrats nécessaires,poursuivre les autres modules sans achat ni activation. Mission complète seulement après couverture vérifiée ou exclusion précise décidée par le propriétaire,aucune conclusion “terminé” par fin de lot/CI.
+
+Précision preuve Profil V7 : le libellé brut du harnais Claude disait «description multiligne», mais sa phrase envoyée contient UNE ligne, vérifiée exactement. Le brut est conservé ; seul le compte rendu/harnais reproductible corrige ce libellé, sans revendiquer de preuve navigateur multiligne. Les tests moteur multiligne #392 restent distincts.
+
+
+## Relevé suivant : SEO/Pages/Section et intentions naturelles
+
+Sur le même CB compilé, SEO/Pages/Section préparé **4/4,28étapes,12accords≥17s** : titre SEO relu dans le<title> servi, annulation métadescription sans écriture, modèle natif sélectionné, page brouillon enregistrée et relue, seule section désignée masquée. Baseline4simulées→4 inchangée,0nouvelle tentative/0externe/0JS. Harnais scripts/parity301-prepared-seo-pages-proof.ts et PREUVE-SEO-PAGES-SECTION-PREPARE-V7.json. Premier essai de harnais avait omis l’import all et échoué avant navigateur ;corrigé sans changement applicatif,log /tmp/parity301-prepared-seo-pages-v7.log distinct du succès /tmp/parity301-prepared-seo-pages-v7-v2. Captures locales seulement.
+
+#396 est désormais **506735a7b19b972d4b613d05db2eeb4f537232ed**,2commits depuisCB. Lecture préparée +4formulations usuelles dont polies,4rouges→verts et2demandes mixtes refusées.42tests initiaux,39bibliothèque/consentement puis31bibliothèque avec2mixtes ;types verts. CI du nouveauSHA run41828309600 ;ancienb592 nonattribuable. Carte Claude encore à adapter ;message#369/6630431121.
+
+#397 indépendante **19b546e8a6921fdd26b312b81316f45a05e2601d**,parentCB,branche codex/parity301-natural-file-metadata. Renommage/déplacement gratuits sans guillemets obligatoires etpolitesse,reçus/DTO/transports natifs inchangés.4rouges→verts,56ciblés(Fichiers/A1/bibliothèque),puis29Fichiers avec4mixtes+1nom cité littéral ;types verts. Aucune preuve compilée de ces NOUVELLES formulations anticipée. Contrat LOT-FICHIERS-PHRASES-NATURELLES.md ;Claudeinformé#369/6630530671.
+
+CI CB run41825544838 :Docker ETconfirmationgratuite obligatoire SUCCESS ;suitecomplète etgrandesrecettes encoreencours au dernier relevé. Prochaine action :observer ces verdicts et CI#396/#397 sans relancer les contrôles déjàverts ;converger les petits lots surune nouvelle branche,reprendre les cartes Claude sans modifier sa branche,qualifier les nouvelles formulations compilées,puis continuer les lacunes restantes. Photo :import natif gratuit possible mais photoIds modifie actuellement la fiche ;ne pas ouvrir l’UI surprojetpréparé sans contrat de piècejointe distinct,ne pas forcer assertBriefWritable. Toutes lesrestrictions initiales demeurent.
