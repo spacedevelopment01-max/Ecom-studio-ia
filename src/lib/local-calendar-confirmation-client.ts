@@ -4,7 +4,9 @@ import type {ConversationView} from './orchestrator/conversation/contract';
 type Pending={action:'confirm-calendar';proposalId:string;confirmation:true;revision:number;projectRevision:number|null;requestId:string};
 export type LocalCalendarConfirmationState={busy:boolean;error:string;uncertain:boolean;blocked?:boolean};
 export type LocalCalendarChange={projectId:string;postId:string;receiptId:string};
-export const LOCAL_STOCK_CHANGED_EVENT='studio:social-changed';
+export const LOCAL_CALENDAR_CHANGED_EVENT='studio:social-changed';
+/** Backward-compatible alias for existing cards. */
+export const LOCAL_STOCK_CHANGED_EVENT=LOCAL_CALENDAR_CHANGED_EVENT;
 export const hasLocalCalendarReceipt=(v:ConversationView)=>{const s=v.localCalendar;return s?.schema==='syna-local-calendar-1'&&s.state==='applied'&&s.actionsExecuted===true&&s.financialConsent===false&&s.costEur===0&&s.providerCalls===0&&s.publication===false&&s.scheduling===false&&s.confirmationRequired===false&&!!s.receiptId&&s.projectId===v.projectId&&!!s.target?.postId&&['planned','draft','review'].includes(s.target.status)&&!!s.target.timezone&&Number.isFinite(s.diff?.before)&&Number.isFinite(s.diff?.after);};
 export const handlesLocalCalendar=(v:ConversationView)=>!!v.localCalendar&&(v.localCalendar.state==='proposed'||v.localCalendar.state==='applied'||!!v.localCalendarExecution?.enabled);
 export function createLocalCalendarConfirmation(options:{conversationId:string;fetch:typeof fetch;view:()=>ConversationView;onView:(v:ConversationView)=>void;onState:(s:LocalCalendarConfirmationState)=>void;onApplied:(change:LocalCalendarChange)=>Promise<void>|void;storage?:Pick<Storage,'getItem'|'setItem'|'removeItem'>;uuid?:()=>string}){
