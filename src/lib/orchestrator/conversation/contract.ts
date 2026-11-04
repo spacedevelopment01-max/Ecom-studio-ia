@@ -64,6 +64,7 @@ export const CommandSchema = z.discriminatedUnion("action", [
 export type Command = z.infer<typeof CommandSchema>;
 /** Un seul Brief natif pour le brouillon ; après rattachement, il est retiré et relu via stateOf(projectId). */
 export type ConversationState = {
+  conversationPhotoIds?:string[];
   localAdDocumentProposalId?:string;
   localPrompts?:import('./local-prompts').LocalPromptsState;
   localPagesClarification?:{title:string;versionId:string;expiresAt:number;tab:string|null};
@@ -145,6 +146,7 @@ export type ConversationView = {
   localAdDocumentExecution?:{enabled:true};
   localPromptsRead?:{enabled:true};
   localPrompts?:import('./local-prompts').LocalPromptsPresentation;
+  conversationPhotos?:import('./photo-attachments').ConversationPhotos;
   photoImport?:{enabled:true;endpoint:string;maxFileBytes:number;kind:'image';analysis:false};
   localFilesExecution?: {enabled:true};
   localFiles?: import('./local-files').LocalFilesPresentation;

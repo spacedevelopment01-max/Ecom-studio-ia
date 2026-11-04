@@ -1,3 +1,4 @@
+import {lockedPhotoMessage,attachLockedPhotos,threadPhotos} from './photo-attachments';
 import {localFolderMoveEnabled,localFolderMoveCandidate,proposeFolderMove,confirmFolderMove} from "./local-folder-move";
 import {localFolderRenameEnabled,localFolderRenameCandidate,proposeFolderRename,confirmFolderRename} from "./local-folder-rename";
 import {localFileRestoreEnabled,localFileRestoreCandidate,proposeFileRestore,confirmFileRestore} from "./local-file-restore";
@@ -78,12 +79,13 @@ export function conversationView(user: User, cid: string, before?: number,includ
     message: !b.input.description ? L("Décrivez votre projet en quelques mots. Vous pouvez joindre un lien ; aucune création n’est lancée.", "Describe your project in a few words. You may add a link; no creation is started.") : L("Compréhension locale à relire. Vos réponses sont conservées ; aucune étape n’est validée automatiquement.", "Local understanding to review. Your answers are kept; no step is automatically approved."),
     question: key ? questionFor(key, b, m) : null, correctionFields: readOnlyReason?[]:[...EDIT_FIELDS],readOnlyReason,
     localEditsWritable,
+    conversationPhotos:threadPhotos(user,c,m),
     creation: c.project_id ? null : creationFields(b,m),
     ...(localEditsWritable&&adDocumentToolsEnabled()&&m.localAdDocumentProposalId?{localAdDocument:adDocumentPresentation(user,c.id,m.localAdDocumentProposalId)}:{}),
     ...(localEditsWritable&&c.project_id&&adDocumentToolsEnabled()?{localAdDocumentExecution:{enabled:true as const}}:{}),
     ...(m.localFiles?{localFiles:m.localFiles}:{}),
     ...(c.project_id&&localEditsWritable&&localFilesEnabled()?{localFilesExecution:{enabled:true as const}}:{}),
-    ...(c.project_id&&readOnlyReason===null&&localFilesEnabled()?{photoImport:{enabled:true as const,endpoint:`/api/studio-agent/conversations/${c.id}/photos`,maxFileBytes:MAX_CONVERSATION_PHOTO_BYTES,kind:'image' as const,analysis:false as const}}:{}),
+    ...(c.project_id&&localEditsWritable&&localFilesEnabled()?{photoImport:{enabled:true as const,endpoint:`/api/studio-agent/conversations/${c.id}/photos`,maxFileBytes:MAX_CONVERSATION_PHOTO_BYTES,kind:'image' as const,analysis:false as const}}:{}),
     ...(m.localFileRestore?{localFileRestore:m.localFileRestore}:{}),
     ...(m.localFolderMove?{localFolderMove:m.localFolderMove}:{}),
     ...(c.project_id&&localEditsWritable&&localFolderMoveEnabled()?{localFolderMoveExecution:{enabled:true as const}}:{}),
@@ -216,6 +218,7 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
   // Propriété et reprise contrôlées AVANT même un classificateur simulé ; recontrôle atomique après l'await.
   const initial=ownedConversation(user, cid, true);
   if(isExistingProjectRead(initial))return submitExistingProjectMessage(user,cid,cmd,hash);
+  if(lockedPhotoMessage(user,initial,cmd)&&cmd.action==='message')return withAiDisabled('Photos jointes sans analyse ni réécriture de la fiche',()=>attachLockedPhotos(user,cid,cmd,hash,()=>conversationView(user,cid,undefined,false)));
   const promptsCommand=cmd.action==='message'&&localPromptsCandidate(cmd.text);
   const folderMoveCommand=cmd.action==='message'&&localFolderMoveCandidate(cmd.text);
   if((folderMoveCommand||cmd.action==='confirm-folder-move'||cmd.action==='cancel-folder-move')&&!localFolderMoveEnabled())throw new HttpError(404,'Déplacement gratuit de dossier indisponible.');
