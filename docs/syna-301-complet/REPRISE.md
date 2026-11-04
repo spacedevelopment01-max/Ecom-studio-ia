@@ -17,11 +17,12 @@ ligne, activation, action externe réelle ni dépense fournisseur.
 | 2 — contraste | moteur #365 (Codex) + règles CSS des cartes « verre » et textes atténués (Claude) ; ma surcouche `theme.liquid` retirée (mesure identique, respect des couleurs demandées) | mesure navigateur 199 → 6 sous 4,5:1 ; Theme Check rapide valide |
 | 2 — SEO | carte « Retouche SEO gratuite » (contrat #367) | recette `scripts/syna301-seo-pages-recette.ts` 4/4 : titre relu dans l'onglet de la page, annulation sans écriture |
 | 3 — Pages | carte « Pages du site » (contrat #370) : modèles natifs avec aperçu, « Choisir » remplit la phrase du client | même recette 4/4 : page relue dans la version enregistrée |
+| 2 — Horaires naturels | carte Horaires existante sur le contrat #366 : « Change les horaires du mardi… » → clarification profil / créneaux sans devis ; « Les horaires du profil sont : … » → avant / après, accord, reçu | recette `scripts/syna301-horaires-recette.ts` 4/4 : champ Horaires de l'écran Activité relu sans recharger, puis après rechargement |
 | 3 — Masquer une section | carte du site (#368) ; après le reçu, message « Section masquée : elle n'est plus désignée » au lieu de l'alerte « cible changée » | même recette 4/4 : seule la section visée change |
 
 ## Reste à vérifier ou à faire (ordre proposé)
 
-1. Recette navigateur : horaires naturels (#366, carte Horaires existante), supprimer une section et texte de bouton
+1. Recette navigateur : supprimer une section et texte de bouton
    (#368), renommer / menu / dupliquer / supprimer une page (#370).
 2. Lot 3 restant (phrases naturelles) : choix du thème, prestations / réservation, stock / variantes, calendrier /
    brouillons, pièces jointes / bibliothèque, boutons / images.
