@@ -1,5 +1,6 @@
 /** Compiled Studio proof: natural hide/delete, free before/after, real 17s, native receipt/reload and natural undo. No supplier. Mobile designation is restored from a native A2 fixture; desktop designation uses the actual preview. */
 import fs from "node:fs";
+import { waitAtLeast } from "./lot9/wait-at-least";
 import os from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
@@ -126,7 +127,7 @@ try {
           await noQuote('section gratuite');check(version()===v0,'écriture avant accord');await shot(action.startsWith('Cache')?'2-masquer-proposition':'5-supprimer-proposition');
         });
         await step(action+' : accord après 17 secondes et résultat natif relu',async()=>{
-          const since=Date.now();await page.waitForTimeout(17000);check(Date.now()-since>=17000,'attente réelle');check(await confirmBtn().isEnabled(),'accord perdu après actualisation');await confirmBtn().click();
+          const elapsed=await waitAtLeast(17000,(ms)=>page.waitForTimeout(ms));check(elapsed>=17000,'attente réelle monotone');check(await confirmBtn().isEnabled(),'accord perdu après actualisation');await confirmBtn().click();
           await free.getByText(/Résultat enregistré/).waitFor();check(version()===v0+1,'une version attendue');
           const after=spec(k.pid).templates.index;if(action.startsWith('Cache'))check(after.sections[k.section]?.disabled===true,'section non masquée');else check(!after.sections[k.section]&&!after.order.includes(k.section),'section non supprimée');
           await frame().locator(`[data-es-section="index:${k.section}"]`).waitFor({state:'hidden',timeout:20000});await shot(action.startsWith('Cache')?'3-masquee':'6-supprimee');
