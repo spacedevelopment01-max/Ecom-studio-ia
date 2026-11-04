@@ -14,7 +14,7 @@ it('les neuf cartes gratuites branchent la relecture sur leur proposition affich
  const hook=fs.readFileSync('src/components/studio/use-stale-confirmation.ts','utf8');
  // Réponse perdue pour la proposition affichée : aucune relecture automatique (le contrôle obligatoire exige « Réessayer »).
  expect(hook).toContain('if(stored&&stored!==proposal)void controller.refresh();');
- const hooks={'use-local-files-confirmation.ts':'localFiles','use-local-business-content-confirmation.ts':'localBusinessContent','use-local-site-requests-confirmation.ts':'localRequests','use-service-profile-confirmation.ts':'serviceProfile','use-local-ad-document-confirmation.ts':'localAdDocument','use-local-site-confirmation.ts':'localSite','use-local-seo-confirmation.ts':'localSeo','use-local-pages-confirmation.ts':'localPages','use-local-stock-confirmation.ts':'localStock'};
+ const hooks={'use-local-files-confirmation.ts':'localFiles','use-local-business-content-confirmation.ts':'localBusinessContent','use-local-site-requests-confirmation.ts':'localRequests','use-service-profile-confirmation.ts':'serviceProfile','use-local-ad-document-confirmation.ts':'localAdDocument','use-local-site-confirmation.ts':'localSite','use-local-seo-confirmation.ts':'localSeo','use-local-pages-confirmation.ts':'localPages','use-local-stock-confirmation.ts':'localStock','use-local-calendar-confirmation.ts':'localCalendar','use-local-theme-choice-confirmation.ts':'localThemeChoice'};
  for(const [f,field] of Object.entries(hooks))expect(fs.readFileSync('src/components/studio/'+f,'utf8')).toContain(`useStaleConfirmation(controller,state.uncertain,view?.${field},view?`);
 });
 
