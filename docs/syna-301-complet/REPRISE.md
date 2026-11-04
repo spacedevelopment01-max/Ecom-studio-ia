@@ -39,7 +39,13 @@ ligne, activation, action externe réelle ni dépense fournisseur.
 
 ## Reste à vérifier ou à faire (ordre proposé)
 
-1. Recettes navigateur Calendrier et Thème (scripts prêts) : relever le résultat, corriger l'interface si besoin.
+0. **Bloquant transversal (contrat Codex)** : projet préparé = fiche en lecture seule → 7 cartes sans accord (projection
+   `readOnlyReason===null` dans `conversationView`, `blocked` des transports, et mes cartes qui testent `!readOnlyReason`).
+   Le serveur accepte pourtant l'accord. Proposition : séparer « fiche en lecture seule » de « retouches gratuites
+   permises » (nouveau champ ou exécutions projetées sans dépendre de la fiche), puis aligner transports et cartes.
+   Preuve : `tests/syna301-projet-prepare-cartes.test.ts`, `preuves/sonde-v5-projet-prepare.json`.
+1. Recettes navigateur : Calendrier 4/4 ; Thème services 2/2, produits bloqués (voir 0) ; Bibliothèque (#377) à raccorder
+   (`scripts/syna301-bibliotheque-recette.ts` prêt, patch de carte prêt dans le dossier de travail).
 2. Manque signalé à Codex : aucune phrase ne publie une page brouillon ; champ explicite « choix du modèle » souhaité
    dans la présentation Pages ; choix du thème bloqué dès qu'une retouche manuelle ne se reporte pas (moteur natif).
 3. Lot 3 restant : pièces jointes / bibliothèque ; réservation (au-delà du nom de prestation) ; variantes multiples

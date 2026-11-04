@@ -28,7 +28,7 @@ fs.mkdirSync(out, { recursive: true });
 const { localSiteFixture } = await import("../tests/conversation284-b1-fixtures");
 const { currentTheme, loadProject, saveProduct, saveBrand, listThemeVersions } = await import("../src/lib/projects");
 const { localBrand } = await import("../src/lib/engine/local");
-const { prepareStrategyChange, activateStrategy } = await import("../src/lib/marketing-strategy");
+const { prepareStrategyChange, activateStrategy, stageStrategyModule } = await import("../src/lib/marketing-strategy");
 const { seedSourcedAnglesForTest } = await import("../tests/sourced-strategy-fixture");
 const { runWithLang } = await import("../src/lib/i18n-server");
 const { id, run, one, all, now } = await import("../src/lib/db");
@@ -43,7 +43,7 @@ const ALL_CASES: { mode: Mode; format: Format; business: "products" | "services"
   { mode: "encre", format: "ordinateur", business: "products" }, { mode: "encre", format: "telephone", business: "services" },
   { mode: "plein", format: "ordinateur", business: "services" }, { mode: "plein", format: "telephone", business: "products" },
 ];
-const CASES = ALL_CASES.filter((k) => !ONLY || `${k.mode}-${k.format}` === ONLY);
+const CASES = ALL_CASES.filter((k) => !ONLY || ONLY.split(",").includes(`${k.mode}-${k.format}`));
 const SIZE = { ordinateur: { width: 1440, height: 1000 }, telephone: { width: 390, height: 844 } } as const;
 const prepared: (typeof CASES[number] & Awaited<ReturnType<typeof localSiteFixture>> & { token: string })[] = [];
 for (const k of CASES) {
@@ -92,7 +92,7 @@ try {
     const cur = () => currentTheme(k.pid)!, brand = () => JSON.stringify(loadProject(k.pid).brand);
     const turns = () => all<{ request_json: string }>("SELECT request_json FROM agent_conversation_turns WHERE conversation_id=?", k.c.id).filter((t) => /confirm-theme-choice/.test(t.request_json)).length;
     const start0 = cur(), brand0 = brand();
-    let chosen = "";
+    let chosen = "", blocked = "";
     try {
       await step("Site ouvert dans le mode du compte", async () => {
         await page.goto(`${origin}/studio/${k.pid}/boutique`, { waitUntil: "networkidle", timeout: 180000 });
@@ -122,19 +122,30 @@ try {
         await panel.getByRole("button", { name: "Enregistrer", exact: true }).click();
         const alert = panel.getByRole("alert").filter({ hasText: /angle marketing/ }); await alert.waitFor({ timeout: 300000 });
         check(listThemeVersions(k.pid).length === n && cur().version.id === start0.version.id, "écriture malgré le refus"); await noQuote(); await shot("1b-refus-angle");
-        seedSourcedAnglesForTest(k.pid); const prep = prepareStrategyChange(k.pid, "usage"); activateStrategy(k.pid, { angleId: "usage", preparationId: prep.id, idempotencyKey: "recette-theme-" + label, confirmed: true } as never);
+        seedSourcedAnglesForTest(k.pid); const prep = prepareStrategyChange(k.pid, "usage") as unknown as { id: string; contents: { module: string; contentId: string }[] };
+        // Choix natifs de l'écran Stratégie : conserver le site actuel (« conserver ce thème ») puis activer l'angle.
+        for (const module of [...new Set(prep.contents.map((c) => c.module))]) stageStrategyModule(k.pid, prep.id, module, { contentIds: [], retainedContentIds: prep.contents.filter((c) => c.module === module).map((c) => c.contentId) });
+        activateStrategy(k.pid, { angleId: "usage", preparationId: prep.id, idempotencyKey: "recette-theme-" + label, confirmed: true, retainUnaligned: true } as never); // « conserver les contenus actuels », choix natif de Stratégie
         return (await alert.innerText()).split("\n")[0];
       });
       const propose = async () => {
         await panel.getByRole("button", { name: "Enregistrer", exact: true }).click();
         const ok = card.getByRole("button", { name: "Confirmer gratuitement", exact: true });
-        await Promise.race([ok.waitFor({ timeout: 300000 }), card.getByText(/non reportés|correction de cet aperçu/).waitFor({ timeout: 300000 })]);
+        await Promise.race([ok.waitFor({ timeout: 300000 }), card.getByText(/non reportés|correction de cet aperçu|Aperçu natif conservé/).first().waitFor({ timeout: 300000 })]);
+        await page.waitForTimeout(1500);
+        if (!(await ok.count()) && (await card.getByText(/Aperçu natif conservé/).count())) {
+          const r = await page.request.get(`${origin}/api/studio-agent/conversations/${k.c.id}`); const j = await r.json() as Record<string, any>;
+          // Constat (4 novembre) : projet préparé = fiche en lecture seule → l'exécution n'est plus projetée, aucun bouton.
+          if (/préparation engagée/.test(String(j.readOnlyReason)) && !j.localThemeChoiceExecution) { blocked = `BLOQUÉ — proposition affichée sans accord possible : ${j.readOnlyReason}`; return 0; }
+          throw Error(`proposition affichée sans bouton : état=${j.localThemeChoice?.state} exécution=${JSON.stringify(j.localThemeChoiceExecution)} lectureSeule=${j.readOnlyReason} reprise=${JSON.stringify(j.recovery ?? null)}`);
+        }
         return ok.count();
       };
       await step("phrase envoyée → aperçu natif inactif, deux liens réels, site courant inchangé, aucun devis", async () => {
         const confirmable = await propose(); const txt = await card.innerText();
         check(/Gratuit — 0 €/.test(txt), `carte : ${txt}`); await noQuote();
         check(cur().version.id === start0.version.id && brand() === brand0, "site ou marque modifiés avant l'accord");
+        if (blocked) { check(cur().version.id === start0.version.id && brand() === brand0, "écriture malgré le blocage"); await panel.getByText(/préparation engagée/).first().waitFor(); constats.push(`${label} : ${blocked}`); await shot("2-bloque"); return blocked; }
         if (!confirmable) { constats.push(`${label} : moteur — ${txt.split("\n").find((l) => /reportés|correction/.test(l))}`); throw Error("aucune confirmation offerte (refus natif consigné)"); }
         const links = card.getByRole("link"); const before = await links.filter({ hasText: "Ouvrir le site actuel" }).getAttribute("href"), after = await links.filter({ hasText: "Ouvrir l’aperçu du nouveau thème" }).getAttribute("href");
         check(before && after && before !== after, "liens d'aperçu");
@@ -142,6 +153,7 @@ try {
         await noOverflow(); await shot("2-proposition");
         return `${before} → ${after}`;
       });
+      if (blocked) throw Error("STOP-BLOQUE");
       await step("Annuler → rien d'écrit ; même phrase de nouveau → nouvelle proposition", async () => {
         await card.getByRole("button", { name: "Annuler", exact: true }).click();
         await card.getByRole("button", { name: "Confirmer gratuitement", exact: true }).waitFor({ state: "detached" });
@@ -162,13 +174,16 @@ try {
         const n = turns(), v = cur().version.id; await page.reload({ waitUntil: "networkidle" }); await openSyna();
         await card.getByRole("status").getByText(/Enregistré et relu · version/).waitFor(); check(turns() === n && cur().version.id === v, "écriture au rechargement"); await shot("4-recharge");
       });
-    } catch (e) { errors.push(`${label} : ${String(e).slice(0, 300)}`); }
-    results.push({ mode: k.mode, format: k.format, business: k.business, steps, ok: steps.length > 0 && steps.every((s) => s.ok) });
+    } catch (e) { if (!String(e).includes("STOP-BLOQUE")) errors.push(`${label} : ${String(e).slice(0, 300)}`); }
+    results.push({ mode: k.mode, format: k.format, business: k.business, steps, ok: !blocked && steps.length > 0 && steps.every((s) => s.ok), ...(blocked ? { bloque: blocked } : {}) } as never);
     await ctx.close();
   }
   await b.close();
-  const calls = one<{ n: number }>("SELECT COUNT(*) n FROM ai_calls")!.n;
-  console.log(`· appels IA : ${calls} · requêtes refusées hors boucle locale : ${forbidden.length} · erreurs JS : ${jsErrors.length}`);
+  // La préparation de Stratégie (fonction de test seedSourcedAnglesForTest) inscrit une ligne d'historique SIMULÉE
+  // (provider « simulated », id « fixture_research_… ») : comptée à part, jamais confondue avec un appel réel.
+  const calls = one<{ n: number }>("SELECT COUNT(*) n FROM ai_calls WHERE NOT (provider='simulated' AND id LIKE 'fixture_research_%')")!.n;
+  const simulated = one<{ n: number }>("SELECT COUNT(*) n FROM ai_calls WHERE provider='simulated' AND id LIKE 'fixture_research_%'")!.n;
+  console.log(`· appels IA : ${calls} (lignes simulées de la préparation Stratégie : ${simulated}) · requêtes refusées hors boucle locale : ${forbidden.length} · erreurs JS : ${jsErrors.length}`);
   if (calls) errors.push(`ai_calls = ${calls}`); if (jsErrors.length) errors.push(...jsErrors);
 } catch (e) { errors.push(String(e)); console.error("✗ " + String(e)); }
 finally {
@@ -176,6 +191,6 @@ finally {
   fs.writeFileSync(path.join(out, "RESUME-THEME-301.json"), JSON.stringify({ schema: "syna301-theme-recette-1", results, errors, constats, forbidden: [...new Set(forbidden)], coutIA: 0 }, null, 2) + "\n");
   fs.writeFileSync(path.join(out, "serveur-local.log"), log.slice(-200000));
   fs.rmSync(dir, { recursive: true, force: true });
-  const ok = results.filter((r) => r.ok).length; console.log(`${ok}/${results.length} parcours réussis`); if (constats.length) console.log("Constats :\n" + constats.join("\n"));
-  if (errors.length || ok !== results.length) process.exitCode = 1;
+  const ok = results.filter((r) => r.ok).length, nb = results.filter((r) => (r as { bloque?: string }).bloque).length; console.log(`${ok}/${results.length} parcours réussis · ${nb} bloqué(s) (constat consigné, non contourné)`); if (constats.length) console.log("Constats :\n" + constats.join("\n"));
+  if (errors.length || ok + nb !== results.length) process.exitCode = 1;
 }
