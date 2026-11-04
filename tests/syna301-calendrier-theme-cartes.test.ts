@@ -40,3 +40,11 @@ it('cartes Animations (#379), Versions (#382), Dossier (#387), coordonnées (#38
  expect(photo).toContain("'importée, non analysée'");expect(photo).not.toContain('loading="lazy"');
  expect(panel).toContain('photoIds:photo.photos.map(p=>p.photoId)');expect(panel).toContain("setText('');photo.clear();");
 });
+it('carte du profil : prix, durée et description des prestations (#390 → #392) avec la phrase exacte de chaque champ',()=>{
+ const profile=fs.readFileSync('src/components/studio/conversation-service-profile.tsx','utf8');
+ for(const f of ['service-price','service-duration','service-description'])expect(profile).toContain(`'${f}':t(`);
+ expect(profile).toContain('Mets le prix de la prestation du profil « ${n} » à « »');
+ expect(profile).toContain('Mets la durée de la prestation du profil « ${n} » à « »');
+ expect(profile).toContain('Remplace la description de la prestation du profil « ${n} » par « »');
+ expect(profile).toContain("t('(effacé)'");
+});
