@@ -1,3 +1,4 @@
+import {BANK_IMAGE_ROLES,isBankImage} from '../../media/bank';
 /** Native trash metadata only: explicit selection, exact byte acquisition retained, separate free agreement. */
 import {HttpError,ownedProject,type User} from '../../auth';
 import {all,id,now,one} from '../../db';
@@ -10,7 +11,7 @@ import {requirePlan} from '../../plan-gates';
 import {localFilesEnabled} from './local-files';
 import type {ConversationRow,ConversationState} from './contract';
 export type TrashItem={id:string;name:string;version:number;kind:string;mime:string;folderId:string|null;deletedAt:number;href:string};
-export type FileRestoreProposal={id:string;assetId:string;fingerprint:string;metadataFingerprint:string;bytesHash:string;expiresAt:number;kindScope?:'image'};
+export type FileRestoreProposal={id:string;assetId:string;fingerprint:string;metadataFingerprint:string;bytesHash:string;expiresAt:number;kindScope?:'image';bankScope?:true};
 export type FileRestorePresentation={schema:'syna-local-file-restore-1';state:'listed'|'ambiguous'|'proposed'|'applied';projectId:string;nativeHref:string;message:string;financialConsent:false;costEur:0;providerCalls:0;publication:false;confirmationRequired:boolean;actionsExecuted:boolean;items?:TrashItem[];hasMore?:boolean;proposalId?:string;asset?:TrashItem;diff?:{before:{deletedAt:number;folderId:string|null};after:{deletedAt:null;folderId:string|null}};result?:{id:string;version:number;deletedAt:null;folderId:string|null};receiptId?:string};
 export const localFileRestoreEnabled=()=>localFilesEnabled();
 function trashRequest(text:string){return text.trim().replace(/\s*\?\s*$/u,'').trim().replace(/,?\s+s[’']il te pla[iî]t$/iu,'').trim().replace(/^peux-tu restaurer\b/iu,'restaure').replace(/^peux-tu me montrer\b/iu,'montre');}
@@ -26,25 +27,26 @@ const visible=(c:ConversationRow,extra:string,args:unknown[]=[])=>{
 };
 export function proposeFileRestore(user:User,c:ConversationRow,m:ConversationState,text:string):FileRestorePresentation{
  const request=trashRequest(text),imageScope=m.activeContextTab==='images'||/^(?:restaure|r[ée]cup[èe]re|remets?) (?:l[’']image|la photo)\b/iu.test(request)||/^(?:montre|liste|affiche) (?:la corbeille des images|les (?:images|photos) (?:de|dans) la corbeille)\s*[.!]?$/iu.test(request);
- delete m.localFileRestoreProposal;owned(user,c,m,imageScope);
- const show=(state:FileRestorePresentation['state'],message:string,extra:Partial<FileRestorePresentation>={})=>present(c,state,message,{...(imageScope?{nativeHref:`/studio/${c.project_id}/images`}:{}),...extra});
- const found=(extra:string,args:unknown[]=[])=>visible(c,(imageScope?"AND kind='image' ":'')+extra,args);
- if(/^(?:montre|liste|affiche) (?:la corbeille(?: des images)?|les (?:fichiers|images|photos) (?:de|dans) la corbeille)\s*[.!]?$/iu.test(request)){const rows=found('');return show('listed','Corbeille native de ce projet : métadonnées et liens seulement. Aucun fichier restauré, supprimé, analysé ni généré.',{items:rows.slice(0,50).map(item),hasMore:rows.length>50});}
+ const bankScope=m.activeContextTab==='images';
+ delete m.localFileRestoreProposal;owned(user,c,m,bankScope);
+ const show=(state:FileRestorePresentation['state'],message:string,extra:Partial<FileRestorePresentation>={})=>present(c,state,message,{...(bankScope?{nativeHref:`/studio/${c.project_id}/images`}:{}),...extra});
+ const found=(extra:string,args:unknown[]=[])=>visible(c,(imageScope?"AND kind='image' ":'')+(bankScope?`AND role IN (${BANK_IMAGE_ROLES.map(()=>'?').join(',')}) `:'')+extra,[...(bankScope?BANK_IMAGE_ROLES:[]),...args]);
+ if(/^(?:montre|liste|affiche) (?:la corbeille(?: des images)?|les (?:fichiers|images|photos) (?:de|dans) la corbeille)\s*[.!]?$/iu.test(request)){const rows=found('');return show('listed',bankScope?'Corbeille de la Banque Images de ce projet : métadonnées et liens seulement. Les publicités et logos restent dans leurs domaines ;aucune restauration ou génération.':'Corbeille native de ce projet : métadonnées et liens seulement. Aucun fichier restauré, supprimé, analysé ni généré.',{items:rows.slice(0,50).map(item),hasMore:rows.length>50});}
  const exact=/^(?:restaure|r[ée]cup[èe]re|remets?) (?:le fichier|l[’']image|la photo) [«“"]([^»”"\r\n]+)[»”"] (?:de|depuis|dans) la corbeille\s*[.!]?$/iu.exec(request);
  if(!exact)return show('ambiguous','Quel fichier exact de la corbeille de ce projet ? Montre la corbeille, puis Restaure le fichier « nom ou identifiant exact » de la corbeille. Aucun premier résultat ni rachat.');
  const key=exact[1].trim(),matches=found('AND (id=? OR name=?)',[key,key]);
- if(matches.length!==1)return show('ambiguous',matches.length?'Plusieurs fichiers portent ce nom ; précisez leur identifiant natif exact. Aucun premier résultat choisi.':'Aucun fichier autorisé correspondant dans la corbeille de ce projet. Aucun média substitué ni achat.',{items:matches.slice(0,50).map(item),hasMore:matches.length>50});
+ if(matches.length!==1)return show('ambiguous',matches.length?'Plusieurs fichiers portent ce nom ; précisez leur identifiant natif exact. Aucun premier résultat choisi.':bankScope?'Aucune image autorisée de la Banque ne correspond. Consultez Fichiers pour les autres visuels acquis. Aucun média substitué ni achat.':'Aucun fichier autorisé correspondant dans la corbeille de ce projet. Aucun média substitué ni achat.',{items:matches.slice(0,50).map(item),hasMore:matches.length>50});
  const a=matches[0];let bytesHash:string;try{bytesHash=sha256(assetData(a));}catch{return show('ambiguous','Les octets acquis de ce fichier sont indisponibles. Aucune restauration annoncée, aucune régénération ou dépense implicite.');}
- const p:FileRestoreProposal={id:id(),assetId:a.id,fingerprint:fp(a),metadataFingerprint:fileMetadataFingerprint(a),bytesHash,expiresAt:now()+15*60000,...(imageScope?{kindScope:'image' as const}:{})};m.localFileRestoreProposal=p;
+ const p:FileRestoreProposal={id:id(),assetId:a.id,fingerprint:fp(a),metadataFingerprint:fileMetadataFingerprint(a),bytesHash,expiresAt:now()+15*60000,...(imageScope?{kindScope:'image' as const}:{}),...(bankScope?{bankScope:true as const}:{})};m.localFileRestoreProposal=p;
  return show('proposed','Vérifiez le fichier exact et sa sortie de corbeille. Après accord gratuit, seul cet état natif sera restauré ; nom, statut, dossier actuel, version et octets conservés. Le fichier redevient disponible aux parcours natifs qui le lisent. Aucun appel fournisseur ni publication.',{proposalId:p.id,asset:item(a),diff:{before:{deletedAt:a.deleted_at!,folderId:a.folder_id},after:{deletedAt:null,folderId:a.folder_id}},confirmationRequired:true});
 }
 export function confirmFileRestore(user:User,c:ConversationRow,m:ConversationState,proposalId:string,requestId:string):FileRestorePresentation{
- const p=m.localFileRestoreProposal;owned(user,c,m,p?.kindScope==='image');
+ const p=m.localFileRestoreProposal;owned(user,c,m,p?.bankScope===true);
  if(!p||p.id!==proposalId||p.expiresAt<now())throw new HttpError(409,'Proposition de restauration périmée. Préparez un nouvel accord gratuit.');
  const a=one<Asset>(`SELECT * FROM assets WHERE id=? AND project_id=? AND user_id=? AND ${strategyVisibilitySql(c.project_id!,'asset','assets.id')}`,p.assetId,c.project_id,c.user_id);
- if(!a||!valid(c,a)||(p.kindScope==='image'&&a.kind!=='image')||a.deleted_at===null||fp(a)!==p.fingerprint||fileMetadataFingerprint(a)!==p.metadataFingerprint)throw new HttpError(409,'Le fichier ou son état natif a changé. Les modifications manuelles sont conservées.');
+ if(!a||!valid(c,a)||(p.kindScope==='image'&&a.kind!=='image')||(p.bankScope&&!isBankImage(a))||a.deleted_at===null||fp(a)!==p.fingerprint||fileMetadataFingerprint(a)!==p.metadataFingerprint)throw new HttpError(409,'Le fichier ou son état natif a changé. Les modifications manuelles sont conservées.');
  let hash:string;try{hash=sha256(assetData(a));}catch{throw new HttpError(409,'Les octets acquis ne sont plus disponibles ; aucune restauration.');}if(hash!==p.bytesHash)throw new HttpError(409,'Les octets acquis ont changé. Aucun résultat annoncé.');
  const saved=restoreFileMetadata({assetId:a.id,projectId:c.project_id!,userId:c.user_id},p.metadataFingerprint);
  if(fp(saved)!==fp({...a,deleted_at:null}))throw new HttpError(409,'Restauration native exacte non confirmée.');delete m.localFileRestoreProposal;
- return present(c,'applied','Fichier natif restauré et relu, sans nouvelle version de contenu ni achat. Nom, statut, dossier et octets acquis conservés.',{...(p.kindScope==='image'?{nativeHref:`/studio/${c.project_id}/images`}:{}),proposalId:p.id,asset:item(a),diff:{before:{deletedAt:a.deleted_at,folderId:a.folder_id},after:{deletedAt:null,folderId:a.folder_id}},result:{id:saved.id,version:saved.version,deletedAt:null,folderId:saved.folder_id},receiptId:requestId,actionsExecuted:true});
+ return present(c,'applied','Fichier natif restauré et relu, sans nouvelle version de contenu ni achat. Nom, statut, dossier et octets acquis conservés.',{...(p.bankScope?{nativeHref:`/studio/${c.project_id}/images`}:{}),proposalId:p.id,asset:item(a),diff:{before:{deletedAt:a.deleted_at,folderId:a.folder_id},after:{deletedAt:null,folderId:a.folder_id}},result:{id:saved.id,version:saved.version,deletedAt:null,folderId:saved.folder_id},receiptId:requestId,actionsExecuted:true});
 }
