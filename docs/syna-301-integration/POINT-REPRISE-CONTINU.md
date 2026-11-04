@@ -1,3 +1,22 @@
+# Convergence backend V8 — priorité de reprise
+
+La mission #301 reste ouverte. Cette convergence reprend les parents `db7600b4` (preuves), `9b050ff3` (Fichiers et dossiers) et `506735a7` (prompts). Tous les composants de Claude restent identiques à `ecfaa73d` ; sa branche n’est pas modifiée.
+
+- **124 tests ciblés sur six fichiers et les types passent** sur cette réunion de branches. Trois nouveaux parcours croisés vérifient les anciens accords invalidés par une lecture, le nouvel accord explicite encore possible, la composition renommage de fichier/renommage de dossier/déplacement et les domaines fermés indépendamment. Préparation acquise et dépenses restent intactes ; zéro appel fournisseur.
+- **#400 / `9b050ff3a14411867b3fa768c58138c8393494ec`** raccorde `folders.move` : 90 tests sur sept fichiers et types, dont 29 nouveaux. Contrat `LOT-DEPLACEMENT-DOSSIER.md`. Carte et recette navigateur compilée restent à intégrer par Claude, comme `folders.rename` #398.
+- **#399 / `f7b261591cf4c024f54fbc57182d0698f2ba44f8`** corrige le défaut natif démontré à 70 niveaux : deux rouges→verts, déplacement valide conservé,35 tests / types. Aucun dossier client modifié. Contrat `LOT-CYCLE-DOSSIER-PROFOND.md`.
+- Claude a reçu ces contrats et commits dans #369, commentaires `6631194514` et `6631466853`. L’adaptation de la bibliothèque de prompts sur projet préparé et les deux nouvelles cartes de dossiers restent ouvertes. Ne pas présenter un moteur/API testé comme une interface qualifiée.
+- **CI complète CB / #394 et #395 : SUCCESS**, runs `41825544838` et `41825362424`. Pour41825544838 : 5 832 tests réussis,31 exclusions préexistantes,627 fichiers réussis et1 exclu ;Docker 7/7 étapes,confirmation gratuite obligatoire 18/18,recettes natives 69/69,verdict global vert. Aucun contrôle ignoré dans ces jobs.
+- **#396 /506735a7** :suite5 840 tests réussis/31 exclusions,627 fichiers/1 exclu ;Docker etconfirmation verts,grandes recettes encore à observer (run41828309600). **#397 /D7** :suite5 841 tests réussis/31 exclusions,627 fichiers/1 exclu ;Docker etconfirmation verts,grandes recettes en cours (run41829717764).
+- **#398 /504de588** :run41832270177 en cours, Docker / confirmation verts au dernier relevé. **#399 /f7b26159** :run41833620428 en cours. **#400 /9b050ff3** :run41835440257 en cours. La CI de cette nouvelle convergence doit être observée sur son propre SHA  ; aucun verdict anticipé.
+- Matrice unique :**165 unités** (164 conservées+omission `folders.move`),**62 PARTIEL / 73 ABSENT / 4 NON_TESTE / 26 BLOQUE**, aucune complète. Les preuves compilées antérieures gardent leurs SHA :CB pour Stock / Profil-Dossiers / Calendrier / SEO-Pages-Section,D7 pour Fichiers naturels ;ne pas les réattribuer à V8.
+
+Prochaines actions :observer les CI sans relancer les contrôles verts ;reprendre la prochaine lacune indépendante pendant les CI et les cartes Claude (autres CRUD / profil et réservation,pièces jointes conversationnelles distinctes de la fiche,autres domaines de la matrice). Dès que les cartes arrivent,converger sur une autre branche etqualifier prompts / dossiers dans les quatre formats≥17 s. Garder A1 strictement dans ses permissions actuelles ;aucune dépense réelle, activation, action externe,main ou déploiement.
+
+Le checkout d’exécution reste `/workspace/work/parity301-intents-v5`, propre surD7 avec build `tf_kwZDK1SseJ07RKa0Tp`, sans serveur navigateur actif. Le checkout de travail est `/workspace/work/parity301-ci-guards`, branche `codex/parity301-convergence-v8`. Aligner l’arbre / commit API avant tout lot suivant. Voir ci-dessous les preuves et limites cumulatives.
+
+---
+
 # Point de reprise — lots naturels et renommage de dossier
 
 La mission reste inachevée. Continuer les lots indépendants sans demander une nouvelle autorisation. Aucun fournisseur réel, projet client, activation, publication, fusion main ou déploiement.

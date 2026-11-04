@@ -17,6 +17,10 @@ const base = z.object({
 export const CommandSchema = z.discriminatedUnion("action", [
   base.extend({action:z.literal("confirm-file-restore"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal("cancel-file-restore"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("confirm-folder-move"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-folder-move"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("confirm-folder-rename"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-folder-rename"),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal("confirm-folder"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal("cancel-folder"),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal("confirm-stock"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
@@ -65,6 +69,8 @@ export type ConversationState = {
   localPagesClarification?:{title:string;versionId:string;expiresAt:number;tab:string|null};
   localFolderClarification?:{name:string;expiresAt:number};
   localFileRestoreProposal?:import("./local-file-restore").FileRestoreProposal;
+  localFolderMoveProposal?:import("./local-folder-move").FolderMoveProposal;
+  localFolderRenameProposal?:import("./local-folder-rename").FolderRenameProposal;
   localFolderProposal?:import("./local-folders").FolderProposal;
   localStockProposal?:import("./local-stock").StockProposal;
   localCalendarProposal?:import("./local-calendar").CalendarProposal;
@@ -75,6 +81,8 @@ export type ConversationState = {
   localSeoProposal?:import("./local-seo").SeoProposal;
   serviceProfileProposal?:import("./local-service-profile").ServiceProfileProposal;
   localFileRestore?:import("./local-file-restore").FileRestorePresentation;
+  localFolderMove?:import("./local-folder-move").FolderMovePresentation;
+  localFolderRename?:import("./local-folder-rename").FolderRenamePresentation;
   localFolders?:import("./local-folders").FolderPresentation;
   localStock?:import("./local-stock").StockPresentation;
   localCalendar?:import("./local-calendar").CalendarPresentation;
@@ -142,6 +150,8 @@ export type ConversationView = {
   localFiles?: import('./local-files').LocalFilesPresentation;
   localBusinessContentExecution?:{enabled:true};
   localFileRestore?:import("./local-file-restore").FileRestorePresentation;
+  localFolderMove?:import("./local-folder-move").FolderMovePresentation;
+  localFolderRename?:import("./local-folder-rename").FolderRenamePresentation;
   localFolders?:import("./local-folders").FolderPresentation;
   localStock?:import("./local-stock").StockPresentation;
   localCalendar?:import("./local-calendar").CalendarPresentation;
@@ -152,6 +162,8 @@ export type ConversationView = {
   localSeo?:import("./local-seo").SeoPresentation;
   serviceProfile?:import("./local-service-profile").ServiceProfilePresentation;
   localFileRestoreExecution?:{enabled:true};
+  localFolderMoveExecution?:{enabled:true};
+  localFolderRenameExecution?:{enabled:true};
   localFoldersExecution?:{enabled:true};
   localStockExecution?:{enabled:true};
   localCalendarExecution?:{enabled:true};
