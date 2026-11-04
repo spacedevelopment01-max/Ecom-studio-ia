@@ -1,3 +1,4 @@
+import {nativeLocalEditAllowed} from './existing-local-edits';
 import type {ConversationView} from './orchestrator/conversation/contract';
 /** Native profile transport: explicit free agreement, same-request retry, server receipt re-read. */
 type Pending={action:'confirm-service-profile';proposalId:string;confirmation:true;revision:number;projectRevision:number|null;requestId:string};
@@ -24,7 +25,7 @@ export function createServiceProfileConfirmation(options:{conversationId:string;
   if(!alive||!inScope())return;options.onView(v);
   if(hasServiceProfileReceipt(v)&&v.serviceProfile!.receiptId!==applied){const s=v.serviceProfile!;applied=s.receiptId;await options.onApplied({projectId:v.projectId!,version:s.resultVersion!,receiptId:s.receiptId!});}
  }
- async function refresh(){const v=await request(route) as ConversationView;if(inScope())reconcile(v);await accept(v);emit({blocked:!!v.recovery||!!v.readOnlyReason||!v.serviceProfileExecution?.enabled});return v;}
+ async function refresh(){const v=await request(route) as ConversationView;if(inScope())reconcile(v);await accept(v);emit({blocked:!nativeLocalEditAllowed(v)||!v.serviceProfileExecution?.enabled});return v;}
  async function locked(action:()=>Promise<void>){
   if(busy||!alive||!inScope())return;reconcile(options.view());busy=true;emit({busy:true,error:''});
   try{await action();}
@@ -39,7 +40,7 @@ export function createServiceProfileConfirmation(options:{conversationId:string;
   dispose(){alive=false;},
   refresh:()=>locked(async()=>{const v=await refresh();if(pending&&hasServiceProfileReceipt(v)&&v.serviceProfile!.receiptId===pending.requestId){clear();emit({uncertain:false,error:''});}}),
   confirm:()=>locked(async()=>{
-   const v=options.view(),s=v.serviceProfile;if(v.recovery||!v.serviceProfileExecution?.enabled||v.readOnlyReason)throw Object.assign(new Error('Modification gratuite indisponible.'),{status:403});
+   const v=options.view(),s=v.serviceProfile;if(!nativeLocalEditAllowed(v)||!v.serviceProfileExecution?.enabled)throw Object.assign(new Error('Modification gratuite indisponible.'),{status:403});
    if(!pending){if(s?.state!=='proposed'||!s.proposalId||!s.diff)throw Object.assign(new Error('Demandez une nouvelle proposition gratuite.'),{status:409});pending={action:'confirm-service-profile',proposalId:s.proposalId,confirmation:true,revision:v.revision,projectRevision:v.projectRevision,requestId:uuid()};try{options.storage?.setItem(key,JSON.stringify(pending));}catch{}}
    const command=pending;const response=await request(route,command) as ConversationView;
    if(!hasServiceProfileReceipt(response))throw new Error('Enregistrement du contenu non confirmé.');

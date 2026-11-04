@@ -1,3 +1,4 @@
+import {nativeLocalEditAllowed} from './existing-local-edits';
 import type {ConversationView} from './orchestrator/conversation/contract';
 /**
  * #301 C21 — transport sans interface de la confirmation gratuite d'un contenu métier (bien, plat, réalisation ;
@@ -32,7 +33,7 @@ export function createLocalBusinessContentConfirmation(options:{conversationId:s
   if(!alive||!inScope())return;options.onView(v);
   if(hasNativeContentReceipt(v)&&v.localBusinessContent!.receiptId!==applied){const s=v.localBusinessContent!;applied=s.receiptId;await options.onApplied({projectId:v.projectId!,type:s.item!.type,itemId:s.item!.id,version:s.item!.version,title:s.item!.title,receiptId:s.receiptId!});}
  }
- async function refresh(){const v=await request(route) as ConversationView;if(inScope())reconcile(v);await accept(v);emit({blocked:!!v.recovery||!!v.readOnlyReason||!v.localBusinessContentExecution?.enabled});return v;}
+ async function refresh(){const v=await request(route) as ConversationView;if(inScope())reconcile(v);await accept(v);emit({blocked:!nativeLocalEditAllowed(v)||!v.localBusinessContentExecution?.enabled});return v;}
  async function locked(action:()=>Promise<void>){
   if(busy||!alive||!inScope())return;reconcile(options.view());busy=true;emit({busy:true,error:''});
   try{await action();}
@@ -47,7 +48,7 @@ export function createLocalBusinessContentConfirmation(options:{conversationId:s
   dispose(){alive=false;},
   refresh:()=>locked(async()=>{const v=await refresh();if(pending&&hasNativeContentReceipt(v)&&v.localBusinessContent!.receiptId===pending.requestId){clear();emit({uncertain:false,error:''});}}),
   confirm:()=>locked(async()=>{
-   const v=options.view(),s=v.localBusinessContent;if(v.recovery||!v.localBusinessContentExecution?.enabled||v.readOnlyReason)throw Object.assign(new Error('Modification gratuite indisponible.'),{status:403});
+   const v=options.view(),s=v.localBusinessContent;if(!nativeLocalEditAllowed(v)||!v.localBusinessContentExecution?.enabled)throw Object.assign(new Error('Modification gratuite indisponible.'),{status:403});
    if(!pending){if(s?.state!=='proposed'||!s.proposalId||!s.diff||!s.target)throw Object.assign(new Error('Demandez une nouvelle proposition gratuite.'),{status:409});pending={action:'confirm-business-content',proposalId:s.proposalId,confirmation:true,revision:v.revision,projectRevision:v.projectRevision,requestId:uuid()};try{options.storage?.setItem(key,JSON.stringify(pending));}catch{}}
    const command=pending;const response=await request(route,command) as ConversationView;
    if(!hasNativeContentReceipt(response))throw new Error('Enregistrement du contenu non confirmé.');

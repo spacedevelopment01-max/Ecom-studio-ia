@@ -15,6 +15,8 @@ const base = z.object({
   projectRevision: z.number().int().min(0).nullable(),
 });
 export const CommandSchema = z.discriminatedUnion("action", [
+  base.extend({action:z.literal("confirm-file-restore"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-file-restore"),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal("confirm-folder"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal("cancel-folder"),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal("confirm-stock"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
@@ -62,6 +64,7 @@ export type ConversationState = {
   localPrompts?:import('./local-prompts').LocalPromptsState;
   localPagesClarification?:{title:string;versionId:string;expiresAt:number;tab:string|null};
   localFolderClarification?:{name:string;expiresAt:number};
+  localFileRestoreProposal?:import("./local-file-restore").FileRestoreProposal;
   localFolderProposal?:import("./local-folders").FolderProposal;
   localStockProposal?:import("./local-stock").StockProposal;
   localCalendarProposal?:import("./local-calendar").CalendarProposal;
@@ -71,6 +74,7 @@ export type ConversationState = {
   localPagesProposal?:import("./local-pages").PagesProposal;
   localSeoProposal?:import("./local-seo").SeoProposal;
   serviceProfileProposal?:import("./local-service-profile").ServiceProfileProposal;
+  localFileRestore?:import("./local-file-restore").FileRestorePresentation;
   localFolders?:import("./local-folders").FolderPresentation;
   localStock?:import("./local-stock").StockPresentation;
   localCalendar?:import("./local-calendar").CalendarPresentation;
@@ -127,6 +131,8 @@ export type ActionCard = {
   href?: string;
 };
 export type ConversationView = {
+  /** Permission for native free project operations; independent of the acquired preparation brief lock. A1 uses recovery.localEdits only. */
+  localEditsWritable?:boolean;
   localAdDocument?:ReturnType<typeof import('./ad-document-tool-execution').adDocumentPresentation>;
   localAdDocumentExecution?:{enabled:true};
   localPromptsRead?:{enabled:true};
@@ -135,6 +141,7 @@ export type ConversationView = {
   localFilesExecution?: {enabled:true};
   localFiles?: import('./local-files').LocalFilesPresentation;
   localBusinessContentExecution?:{enabled:true};
+  localFileRestore?:import("./local-file-restore").FileRestorePresentation;
   localFolders?:import("./local-folders").FolderPresentation;
   localStock?:import("./local-stock").StockPresentation;
   localCalendar?:import("./local-calendar").CalendarPresentation;
@@ -144,6 +151,7 @@ export type ConversationView = {
   localPages?:import("./local-pages").PagesPresentation;
   localSeo?:import("./local-seo").SeoPresentation;
   serviceProfile?:import("./local-service-profile").ServiceProfilePresentation;
+  localFileRestoreExecution?:{enabled:true};
   localFoldersExecution?:{enabled:true};
   localStockExecution?:{enabled:true};
   localCalendarExecution?:{enabled:true};
