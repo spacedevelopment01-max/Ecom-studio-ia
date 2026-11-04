@@ -11,9 +11,11 @@ for r in rows:
     for key in ['manque','responsable','dependance','critere_fermeture','preuve_actuelle']:
         assert r[key],(r['operation'],key)
 def clean(value):return value.replace('|','/').replace('\n',' ')
-md=[f'# Matrice unique de convergence #301 — {len(rows)} opérations','',
-    'Base : #363 `f25a729036cc03975d6ac7b95eef945a5214177a`, complétée par #364–#368. Le nom du fichier est conservé pour les liens existants ; l’édition SEO exacte ajoute une opération distincte aux 84 initiales.','',
-    '**Aucune ligne complète. PARTIEL décrit seulement le sous-parcours prouvé.** Aucun fournisseur réel, connexion réelle ou publication certifié. Les CI des nouveaux commits sont en cours ; ne pas les déclarer vertes avant leur verdict. Le CSV conserve les relevés natifs, phrases et modes hérités ; les ajouts moteur ne certifient pas automatiquement ces modes.','',
+added=sum(r['recettes']=='relevé source Claude #369, pas une recette' for r in rows)
+md=[f'# Matrice unique de convergence #301 — {len(rows)} unités de vérification','',
+    'Source de travail : branche codex/parity301-continuous-matrix-v2, descendant de la convergence #371 `827795d014c3ebc2f251e7209ad85b88d4332c66`. Même CSV et même historique, aucune deuxième matrice.','',
+    f'**Aucune ligne complète.** {len(rows)-added} lignes précédentes + {added} actions décomposées depuis l’inventaire de Claude #369. Les ajouts sont des vérifications à effectuer, pas {added} défauts reproduits ; certains détaillent une ligne parente. Lecture source uniquement : vérifier les acquis #348 et les adaptateurs avant de développer. Aucun fournisseur réel, action client, connexion réelle ou publication certifiés. Un blocage du réel ne dispense pas de raccorder le parcours simulé de consentement.','',
+    'Les CI sont suivies sur leurs commits ; aucun verdict global vert ne se déduit des seuls tests ciblés. État du runtime, limites et reprise exacte : POINT-REPRISE-CONTINU.md.','',
     '| Statut | Nombre |','|---|---:|']
 md += [f'| {status} | {count} |' for status,count in sorted(Counter(r['statut'] for r in rows).items())]
 md += ['','| Cap. | Opération | Statut | Preuve actuelle | Manque | Responsable | Dépendance | Critère de fermeture |','|---|---|---|---|---|---|---|---|']

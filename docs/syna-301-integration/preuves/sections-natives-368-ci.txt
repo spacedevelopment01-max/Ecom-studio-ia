@@ -1,0 +1,9 @@
+# Preuve du contrôle obligatoire #368, pas certification de la convergence #371
+PR source head: 8e836499742aa452fd4dd00944f93c0b4e15058f
+Run: https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41745217253
+Job: https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/41745217253/job/126296696649
+Conclusion du job lue via API: success
+Extrait textuel non modifié des lignes pertinentes:
+2026-11-04T00:24:45.0246234Z ##[group]Run STUDIO_PROOF_COMMIT="$(git rev-parse HEAD)" NODE_OPTIONS="--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/parity301-native-sections-proof.ts work/preuves-sections-natives301
+2026-11-04T00:28:17.2949103Z · appels IA : 0 · requêtes refusées hors boucle locale : 0 · erreurs JS : 0
+2026-11-04T00:28:17.3002149Z 4/4 parcours réussis
