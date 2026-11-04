@@ -53,7 +53,13 @@ const staffSchema = z.object({
   skills: z.array(z.string().max(40)).max(40).default([]),
   days: z.array(z.number().int().min(0).max(6)).max(7).default([]),
 });
+const servicePatchSchema = z.object({
+  id: z.string().min(1).max(40),
+  price: z.number().min(0).max(100000).nullable().optional(),
+  duration: z.number().int().min(5).max(600).optional(),
+}).strict().refine((v) => v.price !== undefined || v.duration !== undefined, "Précisez le prix ou la durée.");
 export const prestationsInput = z.object({
+  servicePatch: servicePatchSchema.optional(),
   services: z.array(serviceSchema).max(60).superRefine(uniqueProvidedIds).optional(),
   staff: z.array(staffSchema).max(20).superRefine(uniqueProvidedIds).optional(),
   hours: z.object(Object.fromEntries(DAYS.map((d) => [d, hoursSchema])) as Record<(typeof DAYS)[number], typeof hoursSchema>).partial().optional(),
@@ -67,7 +73,7 @@ export const prestationsInput = z.object({
     minParty: z.number().int().min(1).max(50),
     maxParty: z.number().int().min(1).max(50),
   }).optional(),
-});
+}).refine((v) => !v.servicePatch || !v.services, "Ne mélangez pas remplacement et retouche ciblée des prestations.");
 export type PrestationsInput = z.infer<typeof prestationsInput>;
 
 /** Rendez-vous confirmés à venir, par prestation (salon : `salon_appointments.service`, cabinet : séance). */
@@ -113,15 +119,15 @@ export const shownPrice = (price: number, from: boolean) => { const n = Math.rou
 export const shownDuration = (m: number) => (m < 60 ? `${m} min` : `${Math.floor(m / 60)} h${m % 60 ? ` ${String(m % 60).padStart(2, "0")}` : ""}`);
 
 /** Textes affichés des autres sections, remis d'accord avec la source quand ils sont remplis. */
-function syncShown(spec: ThemeSpec, kind: RdvKind, byId: Map<string, { name: string; oldName: string; duration: number; price: number | null; priceFrom: boolean }>) {
+function syncShown(spec: ThemeSpec, kind: RdvKind, byId: Map<string, { name: string; oldName: string; duration: number | null; price: number | null; priceFrom: boolean }>, fields = { price: true, duration: true }) {
   const idKey = kind === "salon" ? "service_id" : "seance_id";
   const nameKeys = ["name", "title"];
   const fix = (v: Record<string, unknown>) => {
     const ref = String(v[idKey] ?? v.ref_id ?? "");
     const s = byId.get(ref);
     if (!s) return;
-    if (typeof v.price === "string" && v.price.trim() && s.price != null) v.price = shownPrice(s.price, s.priceFrom);
-    if (typeof v.duration === "string" && v.duration.trim()) v.duration = shownDuration(s.duration);
+    if (fields.price && typeof v.price === "string" && v.price.trim() && s.price != null) v.price = shownPrice(s.price, s.priceFrom);
+    if (fields.duration && typeof v.duration === "string" && v.duration.trim() && s.duration != null) v.duration = shownDuration(s.duration);
     for (const k of nameKeys) if (typeof v[k] === "string" && v[k] === s.oldName && s.oldName !== s.name) v[k] = s.name;
   };
   const containers = [spec.groups?.header, spec.groups?.footer, ...Object.values(spec.templates ?? {})];
@@ -176,6 +182,19 @@ export function previewPrestations(projectId: string, raw: unknown) {
     section.blocks = Object.fromEntries(all3.map((b) => [b.key, b.block as never]));
     section.block_order = all3.map((b) => b.key);
     syncShown(spec, sec.kind, byId);
+  }
+  if (input.servicePatch) {
+    const patch = input.servicePatch;
+    const blockType = sec.kind === "salon" ? "service" : "seance";
+    const idKey = sec.kind === "salon" ? "service_id" : "seance_id";
+    const rows = blocksOf(section).filter((b) => b.block.type === blockType && b.block.settings?.[idKey] === patch.id);
+    const previous = before.services.filter((s) => s.id === patch.id);
+    if (sec.kind === "restaurant" || rows.length !== 1 || previous.length !== 1) throw new HttpError(409, "Prestation réservable native absente ou ambiguë. Rechargez sans substitution.");
+    const old = previous[0], settings = rows[0].block.settings!;
+    if (patch.price !== undefined) settings.price = patch.price ?? "";
+    if (patch.duration !== undefined) settings.duration = patch.duration;
+    if (patch.duration !== undefined && old.upcoming && old.duration !== patch.duration) warnings.push(L(`« ${old.name} » : les rendez-vous déjà pris (${old.upcoming}) conservent leur durée enregistrée (${old.duration} min).`, `“${old.name}”: already booked appointments (${old.upcoming}) keep their recorded length (${old.duration} min).`));
+    syncShown(spec, sec.kind, new Map([[patch.id, { name: old.name, oldName: old.name, duration: patch.duration ?? old.duration, price: patch.price !== undefined ? patch.price : old.price, priceFrom: old.priceFrom }]]), { price: patch.price !== undefined, duration: patch.duration !== undefined });
   }
   if (input.staff && sec.kind === "salon") {
     const currentBlocks = blocksOf(section);
