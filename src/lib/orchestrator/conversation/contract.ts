@@ -64,6 +64,7 @@ export const CommandSchema = z.discriminatedUnion("action", [
 export type Command = z.infer<typeof CommandSchema>;
 /** Un seul Brief natif pour le brouillon ; après rattachement, il est retiré et relu via stateOf(projectId). */
 export type ConversationState = {
+  bookingServices?:import('./local-booking-services').BookingServicesState;
   conversationPhotoIds?:string[];
   localAdDocumentProposalId?:string;
   localPrompts?:import('./local-prompts').LocalPromptsState;
@@ -140,6 +141,8 @@ export type ActionCard = {
   href?: string;
 };
 export type ConversationView = {
+  bookingServicesRead?:{enabled:true};
+  bookingServices?:import('./local-booking-services').BookingServicesPresentation;
   /** Permission for native free project operations; independent of the acquired preparation brief lock. A1 uses recovery.localEdits only. */
   localEditsWritable?:boolean;
   localAdDocument?:ReturnType<typeof import('./ad-document-tool-execution').adDocumentPresentation>;
