@@ -40,5 +40,5 @@ it('aucune carte quand la lecture est fermée, sur un lien étranger ou un ancie
 });
 it('le panneau monte la carte et retire le devis payant sur cette lecture',()=>{
  const p=readFileSync('src/components/studio/conversation-panel.tsx','utf8');
- expect(p).toContain('<ConversationBookingServices view={v}/>');expect(p).toContain('!handlesBookingServices(v)&&');expect(p).toContain('handlesBookingServices(next)?');
+ expect(p).toContain('<ConversationBookingServices view={v}/>');expect(p).toContain('!handlesBookingServices(v)&&');expect(p).toMatch(/handlesBookingServices\(next\)(\|\|handlesLocalBookingEdit\(next\))?\?''/);
 });
