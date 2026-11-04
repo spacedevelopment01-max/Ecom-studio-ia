@@ -217,11 +217,16 @@ export class ThemeConflict extends Error { }
  * Nouvelle version du thème. `expectedParent` : la modification a été préparée sur cette version ; si une autre
  * modification est passée entre-temps, rien n'est écrit (ThemeConflict) au lieu d'écraser silencieusement.
  */
-export function saveThemeVersion(projectId: string, spec: ThemeSpec, summary: string, author: "ai" | "user" | "system", qc?: unknown, expectedParent?: string | null, options: { activate?: boolean } = {}): ThemeVersion {
+/** Même normalisation et sécurité que l’enregistrement, sans version ni écriture. */
+export function previewThemeVersionSpec(projectId: string, spec: ThemeSpec): ThemeSpec {
   assertProjectScope(projectId);
-  // Vocabulaire du client (ex. « montre », jamais « chronographe ») : appliqué à tous les textes du site enregistré.
-  spec = applyWordingDeep(spec, loadWordingRules(projectId));
-  assertSafeThemeContent(spec);
+  const prepared = applyWordingDeep(spec, loadWordingRules(projectId));
+  assertSafeThemeContent(prepared);
+  return prepared;
+}
+
+export function saveThemeVersion(projectId: string, spec: ThemeSpec, summary: string, author: "ai" | "user" | "system", qc?: unknown, expectedParent?: string | null, options: { activate?: boolean } = {}): ThemeVersion {
+  spec = previewThemeVersionSpec(projectId, spec);
   return tx(() => {
     const cur = one<{ current_theme_version_id: string | null }>("SELECT current_theme_version_id FROM projects WHERE id = ?", projectId);
     const gate = (qc as { gate?: { verdict?: string; checked?: boolean } } | null)?.gate;
