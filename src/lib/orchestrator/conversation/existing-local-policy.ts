@@ -3,9 +3,14 @@ import {localSiteCandidate,localSiteEnabled} from './local-site';
 import {localFilesCandidate,localFilesEnabled} from './local-files';
 import {localFolderRenameCandidate,localFolderRenameEnabled} from './local-folder-rename';
 import {localFolderMoveCandidate,localFolderMoveEnabled} from './local-folder-move';
+import {localPromptsEnabled} from './local-prompts';
 import type {Command} from './contract';
 export type ExistingLocalOperation='local-site'|'files'|'folder-rename'|'folder-move';
 export type ExistingLocalCapabilities={schema:'existing-local-free-1';ops:ExistingLocalOperation[];confirmationRequired:true;costEur:0;providerCalls:0;financialConsent:false};
+export type ExistingLocalReadCapabilities={schema:'existing-local-read-1';ops:'prompts'[];readOnly:true;confirmationRequired:false;costEur:0;providerCalls:0;financialConsent:false};
+export function existingLocalReads():ExistingLocalReadCapabilities|null{
+ return process.env.STUDIO_CONVERSATION_EXISTING_PROMPTS_READ==='1'&&localPromptsEnabled()?{schema:'existing-local-read-1',ops:['prompts'],readOnly:true,confirmationRequired:false,costEur:0,providerCalls:0,financialConsent:false}:null;
+}
 export function existingLocalCapabilities():ExistingLocalCapabilities|null{
  if(process.env.STUDIO_CONVERSATION_EXISTING_LOCAL!=='1')return null;
  const ops:ExistingLocalOperation[]=[];
