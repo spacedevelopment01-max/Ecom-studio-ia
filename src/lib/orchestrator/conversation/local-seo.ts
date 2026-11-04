@@ -11,7 +11,7 @@ import type {ThemeSpec} from '../../theme/spec';
 import type {ConversationRow,ConversationState} from './contract';
 export type SeoProposal={id:string;versionId:string;fingerprint:string;target:string;field:'title'|'description';before:string;after:string;label:string;expiresAt:number};
 export type SeoPresentation={schema:'syna-local-seo-1';state:'ambiguous'|'proposed'|'applied';message:string;projectId:string;financialConsent:false;costEur:0;providerCalls:0;publication:false;confirmationRequired:boolean;actionsExecuted:boolean;proposalId?:string;field?:'title'|'description';target?:string;label?:string;diff?:{before:string;after:string};receiptId?:string;version?:{id:string;parentId:string;number:number};previewHref?:string};
-export const localSeoEnabled=localSiteEnabled;
+export const localSeoEnabled=()=>localSiteEnabled();
 export const localSeoCandidate=(text:string)=>/^(?:remplace|change|modifie|mets?)\b/iu.test(text.trim())&&/\bSEO\b|m[ée]tadescription/iu.test(text.replace(/[«“"][^»”"]*[»”"]/gu,''));
 const fp=(spec:ThemeSpec)=>stableHash('native-seo-exact-1',spec);
 const present=(c:ConversationRow,state:SeoPresentation['state'],message:string,extra:Partial<SeoPresentation>={}):SeoPresentation=>({schema:'syna-local-seo-1',state,message,projectId:c.project_id!,financialConsent:false,costEur:0,providerCalls:0,publication:false,confirmationRequired:false,actionsExecuted:false,...extra});
