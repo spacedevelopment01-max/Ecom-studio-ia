@@ -1,3 +1,76 @@
+# Reprise prioritaire : #418/#419 livrés, CI finale et carte Réservations à poursuivre
+
+Mission #301 ouverte ; aucune dépense fournisseur réelle, donnée client, activation, publication, fusion main ou déploiement. Continuer les tâches indépendantes sans attendre de nouvelle consigne.
+
+## Dernier code et contrats transmis
+
+**#419 /00afb4c4a3653393ccb7b0a7c955656e5cd78fcf**, branche codex/parity301-booking-preview-wording, parent **#418/a31c8d3d12d8e9c063e272c47d1232ba08707660** (codex/parity301-booking-service-patch), puis#417/81433c15→#416/10cd443d→#415/e4d4db0d→#414/05b89fc4. Tous brouillons, bases stables ;aucune branche Claude modifiée. Source de compilation/edit actuelle /workspace/work/parity301-intents-v5, branche documentaireV12 aprèspublication, code00afb4c4. Le build .next est encore celui de#413/3b54dfbe (QcnDvnA7TT22d5jArByuE) :ne pas le qualifier comme build de ces nouveaux commits ;recompiler avant recette.
+
+#418 raccorde réellement le prix et la durée des prestations réservables salon/cabinet àdes phrases naturelles, sousBOOKING_EDIT fermépar défaut.108tests uniques/10fichiers/types (78groupés puis54voisins,24communs),32nouveaux conversation/vraieAPI. DTO **syna-booking-edit-1**, bookingEditExecution.enabled, états ambiguous/proposed/applied, serviceID natif/untrustedMetadata,field price|duration,diff numérique,sourceVersionId UUID,warnings,nativeHref. POST confirm-booking-edit exige confirmation:true etproposition/révisions/requestId ;cancel-booking-edit séparé. Propriété/forfait/drapeau avantcache,sourceUUID/empreinte/TTL etaperçu+warnings revalidés,savePrestations/relecture exacte,receiptId/resultVersionId,reprise sansdeuxversions. Le profil etles rendez-vous acquis restent intacts ;soldeIA nul autorisé. Un nouveau rendez-vous qui change l’avertissement invalide l’accord. Voir LOT-RETOUCHE-RESERVABLE-NATURELLE.md, transmisClaude #369/6636182454.
+
+#419 corrige deux rouges aperçu/vocabulaire, puis un défaut natif d’identifiants :la consigne pouvait réécrire block_order etfaire disparaître une prestation. previewThemeVersionSpec partage vocabulaire/sécurité natifs sansécriture ;normalisation une fois àl’enregistrement ;order/block_order préservés. Consigne globale enattente =clarification gratuite avant proposition numérique ;mémoire changée après proposition =409 avantversion.56tests/5fichiers/types,5nouveaux,aucune garde ni exclusion permanente ajoutée. Contrat inchangé, pas de migration des anciennes sources corrompues. Voir LOT-APERCU-RESERVATIONS-VOCABULAIRE.md, transmisClaude #369/6636395503.
+
+**Carte, aperçu visible, verrou partagé, contrôleur de reprise et recette navigateur Réservations restent ouverts chezClaude.** Aucune capture ou preuve navigateur nouvelle revendiquée pour#414–#419. services.booking devient PARTIEL pour ce sous-parcours moteur seulement ;horaires/créneaux/équipe/noms/descriptions/capacité restent ouverts. Matrice166unités :65PARTIEL/71ABSENT/4NON_TESTE/26BLOQUE,aucune complète.
+
+## Validation complète et environnement : verdicts conservés
+
+La suite locale EXACTE **81433c15** (avant#418/#419) est terminée :**24fichiers enéchec/619réussis/1exclu ;94tests enéchec/5928réussis/31exclusions préexistantes**,1096,83s. Cause diagnostiquée :checkout sparse excluait public/theme-assets,films/fontes,références de thèmes,.claude/skills,fixture PNG archivée et.devcontainer. Aucun défaut de thème corrigé,aucun test supprimé,aucune relance des619fichiers déjà verts.
+
+Après restauration des fichiers SUIVIS àleur SHA :les24fichiers concernés ont été revérifiés,22verts/2échecs,274tests verts/2échecs/16exclusions existantes. Deux restaurations ponctuelles de documents avaient été retirées parune actualisation sparse :manifestTRAVERSE etinventaire de sections. Rétablies àl’identique, puis **2fichiers/21tests verts**. L’ensemble des fichiers de la suite a donc été couvert vert après correction de l’environnement, surlemême code81433c15,avec les trois verdicts bruts conservés. Ce n’est ni une nouvelle exécution monolithique entièrement verte,ni une validation de#418/#419.
+
+Journaux locaux : /tmp/parity301-81433c15-full-suite.log et-clean.log ; /tmp/parity301-81433c15-fixture-recheck.log ; /tmp/parity301-81433c15-final-two-fixtures.log. Les tests ont utilisé scripts/lot9/network-guard.mjs,aucun fournisseur réel. Le PNG archivé reste une fixture acquise ;le fournisseur utilisé par ces tests est simulé.
+
+CI **#418/run41868833969** :DockerSUCCESS ;suite,confirmation obligatoire etgrandes recettes encore en cours au dernier relevé. **#419/run41870438857** en cours. #415/run41865740137,#416/run41866225595,#417/run41866701157 et#414/run41864581107 restent àobserver surleurs SHA. Ne pas convertir un statut intermédiaire enSUCCESS. Le quatrième contrôle de confirmation gratuite reste obligatoire etinchangé. Les rouges historiques#411/#413 restent rouges (même collision vidéo corrigée#415) ;#413Dockerjournal404BlobNotFound,aucune correction spéculative. #394–#405 avaient leur CI complèteSUCCESS,distincte desnouveaux commits.
+
+## Point de reprise matériel exact
+
+- /workspace/work/parity301-intents-v5 :code00afb4c4,branche documentaireV12 ;dernier build ancien3b54dfbe,aucun serveur/navigateur. Derniers tests#41956/types verts,aucun WIP métier.
+- /workspace/work/parity301-ci-guards :code81433c15,références restaurées etfin des trois vérifications ;trois documents intermédiaires modifiés (repris danscette livraison),aucun WIP métier. Ne pas écraser ces documents sans vérifier la livraisonV12.
+- Répertoire sparse élargi aux seules dépendances démontrées. docs/coordination avait matérialisé352MiB d’artefacts inutiles ;son exclusion rétablie etseul BIBLIOTHEQUE_SECTIONS_COUVERTURE.md restauré exactement,après les tests verts. Une future actualisation sparse peut nécessiter de restaurer ànouveau ce fichier. ManifestTRAVERSE etOFFRES_VALIDEES.json présents. Aucune source,client,autre checkout oupackGit valide supprimé. L’extension sparse est terminée ;aucun test/processus de vérification encore actif. Disque~715MiB libres :vérifier espace avant nouveau build,ne pas supprimer letravail d’un autre.
+
+1. Suivre les CI finales desSHA#418/#419 et diagnostiquer uniquement les erreurs démontrées. Ne pas relancer les contrôles verts. Vérifier le quatrième contrôle obligatoire.
+2. Reconsulter Claude#369 ;reprendre sa carte BOOKING_EDIT/contrôleur sur notre convergence,composants exacts de sa branche. Anciennes cartes PromptsA1#403,photo préparée#405 etlecture Réservations#408 àqualifier aussi. Dernière tête Claude observée bdba24fe,aucun nouvel acquittement supposé.
+3. Recompiler une convergence propre,avecgarde réseau etclés fournisseur vides,puis vrais parcours conversationnels Encre/Plein1440/390tactile,≥17s,annulation/conflit/recharge/perte réseau/reçu/résultat natif. Distinguer moteurAPI depreuveUI,simulé deréel.
+4. Poursuivre lacunes indépendantes :horaires/créneaux réservables puis autres lignes de matrice ;utiliser la source native etun accord exact sansrendre le profil etles réservations interchangeables. Ne pas refaire#348 ni ouvrir de dépense/action externe réelle. Préserver les opérations manuelles gratuites.
+
+Les preuves navigateur précédentes conservent leur SHA réel,rapports etcaptures locales :Images#4134/4,16étapes/4accords≥17s ;V10#41016parcours,100étapes/40accords. Historique détaillé ci-dessous ;le présent point prime pour les derniers statuts etla suite. La mission n’est pas déclarée terminée.
+
+---
+
+# Reprise active : routage CI corrigé et prérequis Réservations livrés
+
+La mission #301 reste ouverte. Continuer sans nouvelle autorisation les lacunes indépendantes. Aucune dépense réelle, donnée client, activation, publication, fusion main ou déploiement.
+
+## Derniers lots livrés, interfaces Claude intactes
+
+- **#414 /05b89fc48b44c44ebbb93d0fade7bdcb91d3d28d**, codex/parity301-booking-native-identities : quatre défauts HTTP reproduits (doublons écrasés, homonymes perdus, IDs générés>40nonréenregistrables). Correctif natif19lignes ;50tests uniques/5fichiers/types. Édition manuelle gratuite sans abonnement/solde conservée. Rapport LOT-IDENTITES-RESERVATIONS-NATIVES.md.
+- **#415 /e4d4db0d45f645c3030e745c9f2f78f1cfd83257**, codex/parity301-restore-intent-routing : la restauration de montage « en conservant les fichiers… » était interceptée par la corbeille. Trois cas rouges ;détecteur désormais borné au complément immédiat,55tests/5fichiers/types. Le test vidéo initialement défaillant reste inchangé ;garde-fous et demandes mixtes médias conservés. Rapport LOT-ROUTAGE-RESTAURATIONS-NATIVES.md.
+- **#416 /10cd443d8a6cced2df31cadba93830b7c73fde0e**, codex/parity301-booking-staff-only : deux PUT200 sans effet reproduits pour remplacement/retrait de l’équipe sans services. Traitement natif indépendant limité salon ;autres blocs/services, champs vides/personnalisés,profil exacts.63tests/6fichiers/types. Rapport LOT-INTERVENANTS-SEULS-NATIFS.md.
+- **#417 /81433c15cc2ea822ed698ad01931db92c747aacc**, codex/parity301-booking-native-preview : previewPrestations(projectId,raw) retourne sourceVersionId UUID actuel,spec cloné,warnings,address normalisée sans écriture. savePrestations utilise le même constructeur.26tests/4fichiers/types dont7nouveaux :salon/cabinet/restaurant,déterminisme,aucune version/profil/dépense avant accord,aperçu égal àla source enregistrée,rendez-vous confirmé acquis protégé,UUID renouvelé après changement indépendant. Rapport LOT-APERCU-RESERVATIONS-NATIF.md.
+
+Chaîne :61736db1(documentationV11/code#413)→05b89fc4→e4d4db0d→10cd443d→81433c15. Chaque PR est courte et empilée sur une base stable ;aucune tête précédente déplacée. Tous les contrats/SHA envoyés à Claude dans #369 (commentaires6635636393,6635772596,6635835022,6635900735). Aucun composant ni branche Claude modifié. services.booking reste ABSENT pour le raccordement conversationnel ;ces prérequis ne sont pas un parcours Studio validé.
+
+## CI : échecs réels et limites exactes
+
+#394–#405 restent SUCCESS complets sur leurs SHA. #411/run41855880282 suite :**1échec,6016réussites,31exclusions préexistantes,637fichiers réussis/1échec/1exclu**. #413/run41859968768 suite :**1échec,6027réussites,31exclusions existantes,638fichiers réussis/1échec/1exclu**. Même cause réelle :conversation211-video-motion.test.ts, Corbeille native avec SYNA indisponible, corrigée par#415. Ne pas attribuer ces succès partiels àune CI verte.
+
+Le quatrième contrôle obligatoire de confirmation gratuite est SUCCESS sur#411 et#413, intact. Docker#411SUCCESS. Docker#413FAILURE, mais journal API job126678751719 inaccessible404BlobNotFound :cause technique nonétablie,aucun correctif Docker spéculatif ni boucle de relance. Grandes recettes encore en cours selonAPI ;certains jobs sont annoncés in_progress malgré leurs dernières étapes terminées,donc ne pas inventer un statut final.
+
+#414/run41864581107 et#415/run41865740137 enfile ;#417/run41866701157 enfile ;#416 àlire parSHA. Une suite complète locale surle code EXACT81433c15 est lancée, journal /tmp/parity301-81433c15-full-suite.log ;résultat àconsulter avant conclusion. Ne pas modifier les sources pendant cette vérification. ChaqueNode/test/build utilise NODE_OPTIONS --import=$PWD/scripts/lot9/network-guard.mjs ;aucun fournisseur réel.
+
+## Reprise exacte
+
+Source /workspace/work/parity301-ci-guards, code81433c15 (branche documentaire aprèspublication,aucun WIP métier). Runtime compilé indépendant /workspace/work/parity301-intents-v5 sur#413/3b54dfbe, buildQcnDvnA7TT22d5jArByuE, aucune recette nouvelle attribuée aux#414–#417. Serveurs et navigateurs précédents arrêtés. Disque ~1,2Gdisponible ;ne pas supprimer les anciens checkouts/packs valides. Suite complète locale en cours seulement.
+
+1. Lire le verdict de la suite locale session38438 etles CI exactes des nouveauxSHA. Corriger uniquement les échecs démontrés ;ne pas supprimer tests/contrôles ni relancer les verts.
+2. Développer l’adaptateur services.booking sur branche indépendante :langage naturel avecclarification,IDs natifs etsourceUUID distincts duprofil,cible/champ borné,aperçu sansécriture,empreinte etforfait/propriété avantcache,TTL etconfirmation gratuite obligatoire,écriture via moteur natif,relecture/reçu/reprise sansdoublon. Ne jamais accepter un spec client àenregistrer ni recréer tous les services àpartir d’un DTO normalisé. Préserver prix/durée des rendez-vous confirmés etles opérations manuelles gratuites.
+3. Reconsulter Claude #369, tête observée bdba24fe :cartes PromptsA1#403(localReadAllowed),photos préparées#405(conversationPhotos),lecture Réservations#408 àqualifier. Garder composants exacts lorsde convergence sur notre branche ;pas de modification directe de sa branche. Lui transmettre chaque contrat prêt.
+4. Continuer les autres lacunes de la matrice, puis recettes deproduction depuis phrases naturelles,Encre/Plein ordinateur/tactile,attente≥17s,annulations/conflits/reload/perte réseau,projets produits ETservices,anciens ETnouveaux. Pas de recette fabriquée àla place de la phrase.
+
+La preuve Images4/4,16étapes/4accords≥17s etles preuves V10 (16parcours/100étapes/40accords) restent attachées àleursSHA réels et auxrapports ci-dessous. Captures LOCALES seulement. Matrice166opérations :64PARTIEL/72ABSENT/4NON_TESTE/26BLOQUE,aucune complète. Historique conservé ci-dessous ;le présent point prime pour les nouveaux statuts CI et prochaines actions.
+
+---
+
 # Reprise active : corbeille Banque Images vérifiée, CI et intégrations à poursuivre
 
 La mission #301 n’est pas terminée. Continuer les modules indépendants et transmettre les corrections à Claude. Aucune dépense fournisseur réelle, modification client, activation, publication, fusion main ou déploiement.
