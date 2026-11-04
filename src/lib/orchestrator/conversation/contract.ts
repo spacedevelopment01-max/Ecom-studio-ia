@@ -61,6 +61,7 @@ export type ConversationState = {
   localAdDocumentProposalId?:string;
   localPrompts?:import('./local-prompts').LocalPromptsState;
   localPagesClarification?:{title:string;versionId:string;expiresAt:number;tab:string|null};
+  localFolderClarification?:{name:string;expiresAt:number};
   localFolderProposal?:import("./local-folders").FolderProposal;
   localStockProposal?:import("./local-stock").StockProposal;
   localCalendarProposal?:import("./local-calendar").CalendarProposal;
