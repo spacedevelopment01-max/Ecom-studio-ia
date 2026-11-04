@@ -14,7 +14,7 @@ champ « titre » d'une section désigné, 0 écriture sans accord et 0 appel IA
 | 6 | Ajoute une section FAQ après cette section | gratuit | gratuit | ✓ (#363) |
 | 7 | Ajoute une page « Nos garanties » | devis seulement | **gratuit** — choix du modèle natif (aperçus), puis brouillon | ✓ `syna301-seo-pages-recette`, `syna301-pages-sections-recette` |
 | 8 | Remplace le texte du bouton de cette section par « … » | devis seulement | **gratuit** — demande de désigner le bouton | ✓ `syna301-bouton-recette` |
-| 9 | Remplace l'image de cette section par la photo de l'atelier | devis seulement | **toujours sans action** | — |
+| 9 | Remplace l'image de cette section par la photo de l'atelier | devis seulement | **gratuit** (contrat Codex `73c8865a`) — image EXISTANTE du projet, champ image désigné | ✓ `syna301-image-recette` 4/4 (miniatures, pixels relus) |
 | 10 | Annule la dernière retouche du site | gratuit si reçu courant | idem (sans reçu : refus gratuit explicite) | ✓ (#363) |
 | 11 | Choisis le thème Rive pour mon site | devis seulement | **toujours sans action** | — |
 | 12 | Remplace le titre SEO de la page d'accueil par « … » | clarification inadaptée | **gratuit** (proposition SEO exacte) | ✓ `syna301-seo-pages-recette` |
@@ -23,6 +23,6 @@ champ « titre » d'une section désigné, 0 écriture sans accord et 0 appel IA
 | 15 | Déplace ma prochaine publication au 12 novembre | devis seulement | **toujours sans action** | — |
 | 16 | Mets le stock de ce produit à 12 | devis seulement | **toujours sans action** | — |
 
-**Bilan honnête** : 11 phrases sur 16 reçoivent une réponse gratuite (proposition ou précision honnête), contre 6 en v3.
-**5 restent sans action** (image, thème, prestation, calendrier, stock) : elles attendent les contrats de Codex. Aucune
+**Bilan honnête** (mis à jour après le contrat image) : 12 phrases sur 16 reçoivent une réponse gratuite (proposition ou précision honnête), contre 6 en v3.
+**4 restent sans action** (thème, prestation, calendrier, stock) : elles attendent les contrats de Codex. Aucune
 phrase n'écrit sans accord ; aucun appel IA.
