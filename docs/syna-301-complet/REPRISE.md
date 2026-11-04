@@ -7,7 +7,7 @@ ligne, activation, action externe réelle ni dépense fournisseur.
 
 - Branche Claude : `claude/syna-301-complet` (PR brouillon #369), partie de #363 `f25a7290`.
 - Intègre par fusion, sans les modifier : #364 (`958a4dde`) puis la chaîne #365 → #366 → #367 → #368 → #370 de Codex
-  (`e1ba2542`), l'image `73c8865a`, puis #373 → #374 (`d315af5e`), #375 → #376 (`cf159b91`), #377 (`2da4884f`), la pile #378 → #387 (`9c9efda6`, convergence Codex #383 incluse), le correctif CI #385 (`df4fce02`), #388 → #392 (`9f40fb52`) le correctif des projets préparés + corbeille #393 (`a593e6ea`), #395 (`cb383590`), #396 (`506735a7`), #397 → #399 (`f7b26159`) la convergence #401 (`e7452632`, #400 inclus) et #402 (`5950fc2c`, dossiers des anciens projets).
+  (`e1ba2542`), l'image `73c8865a`, puis #373 → #374 (`d315af5e`), #375 → #376 (`cf159b91`), #377 (`2da4884f`), la pile #378 → #387 (`9c9efda6`, convergence Codex #383 incluse), le correctif CI #385 (`df4fce02`), #388 → #392 (`9f40fb52`) le correctif des projets préparés + corbeille #393 (`a593e6ea`), #395 (`cb383590`), #396 (`506735a7`), #397 → #399 (`f7b26159`) la convergence #401 (`e7452632`, #400 inclus) #402 (`5950fc2c`, dossiers des anciens projets) et #403 → #407 (`f3ca45bb` : prompts A1, phrases du profil et du Stock, photos sur projet préparé).
 
 ## Fait et vérifié
 
@@ -37,6 +37,7 @@ ligne, activation, action externe réelle ni dépense fournisseur.
 | 3 — Prestation | carte Horaires adaptée au champ `service-name` (#374) : liste des prestations, « Renommer » remplit la phrase | recette `scripts/syna301-prestation-recette.ts` 4/4 : nom relu, autres champs et prestation voisine inchangés |
 | 3 — Calendrier, Thème | cartes « Calendrier — gratuit » (dates avec fuseau) et « Thème du site — gratuit » (deux vrais aperçus, aucun accord si le moteur refuse) ; verrou commun 11 cartes | tests `syna301-calendrier-theme-cartes`, `syna301-phrases-ecrans-naturels` (16/16 phrases gratuites) ; recettes `syna301-calendrier-recette.ts` et `syna301-theme-recette.ts` : voir l'état ci-dessous |
 
+| A1 — Prompts des anciens projets (#403) | `handlesLocalPrompts` sur `localReadAllowed(view,'prompts')` ; réglage `EXISTING_PROMPTS_READ` fermé par défaut | même recette A1 : « Affiche ma bibliothèque de prompts » → lecture seule sans bouton, 4/4 |
 | A1 — Dossiers des anciens projets (#402) | cartes Renommer / Déplacer un dossier sur `localEditAllowed(view,'folder-rename'|'folder-move')` ; réglages serveur `EXISTING_FOLDER_RENAME` / `EXISTING_FOLDER_MOVE` **fermés par défaut** (ouverts seulement dans la recette) | `RECETTE_A1_DOSSIERS=1 scripts/syna301-anciens-projets-recette.ts` 4/4 : nom puis parent relus, projet toujours en lecture seule, aucune Préparation |
 | 7 — Renommer / déplacer un dossier, phrases Fichiers naturelles, prompts sur projet préparé | cartes « Renommer un dossier » (#398) et « Déplacer un dossier » (#400), distinctes de « Nouveau dossier », `handlesLocalPrompts` sur `nativeLocalEditAllowed` (#396), phrases sans guillemets (#397, aucune carte à changer) | recette `scripts/syna301-lot7-recette.ts` **4/4 sur projets préparés** : nom du dossier relu (même identifiant, même parent), dossier déplacé dans « Archives » (parent relu, nom conservé), fichier renommé par une phrase polie (octets inchangés), prompts en lecture seule sans bouton |
 | 6 — Prix, durée, description des prestations ; dialogue dossier ; corbeille | carte du profil élargie (#390 → #392), dialogue dossier (#389, question sans accord), carte Corbeille (#393) | recette `scripts/syna301-lot6-recette.ts` 4/4 (projet neuf) ; corbeille : recette `scripts/syna301-corbeille-recette.ts` 4/4 sur projets préparés + 1 neuf |
@@ -50,9 +51,9 @@ ligne, activation, action externe réelle ni dépense fournisseur.
    Recettes rejouées sur projets préparés (`RECETTE_PREPARE=1`, pilotes `scratchpad/run-prepared.sh` et
    `run-reprises.sh`, un cas par serveur) : Stock 4/4, Calendrier 4/4, Prestation 4/4, lot 5 4/4, lot 6 4/4, Thème 4/4
    (produits compris), SEO / Pages 4/4, Corbeille 4/4 (+ 1 cas neuf). Lot 6 rejoué avec le nom de la prestation (#395) et
-   une description réellement sur deux lignes. **Seul manque constaté** : l'import de photo depuis la conversation n'est
-   pas proposé sur un projet préparé (garde serveur `photoImport` liée à la fiche, laissée telle quelle par Codex) —
-   constat consigné par le lot 5, à raccorder par Codex.
+   une description réellement sur deux lignes. Import de photo : levé par #405 ; recette du lot 5 rejouée **4/4 sur projets
+   préparés** (photo visible dans le fil, `conversationPhotos`) et 2 cas neufs (photo visible dans la fiche, nouveau bloc
+   « Photos de votre fiche »).
 1. Fait : recettes Calendrier 4/4, Thème services 2/2 (produits bloqués, voir 0), Bibliothèque (#377) 4/4
    (`scripts/syna301-bibliotheque-recette.ts` : liste depuis le Pilote, dossiers, photos, recherche exacte, « Désigner »
    puis renommage relu). Reste pour la bibliothèque : pièces jointes envoyées depuis la conversation et lecture d'image
