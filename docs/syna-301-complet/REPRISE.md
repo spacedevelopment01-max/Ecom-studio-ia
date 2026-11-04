@@ -24,6 +24,13 @@ ligne, activation, action externe réelle ni dépense fournisseur.
 
 | 3 — Texte de bouton | bouton désigné dans l'aperçu (ordinateur) ou par repère repris (téléphone) ; libellé « Élément désigné : Bouton · … » au lieu de « Page désignée : undefined » | recette `scripts/syna301-bouton-recette.ts` 4/4 : libellé relu en base et dans le bouton rendu, lien et autres sections inchangés |
 
+| 1 — Site / changement de projet | garde « conversation + projet courants » sur le transport Site (comme #364 sur les cinq autres) | `tests/syna301-site-changement-projet.test.ts` rouge puis vert |
+| Relecture automatique | second bouton natif `button2_label` reconnu (section à deux boutons = demande laquelle) | `tests/syna301-bouton-second.test.ts` rouge puis vert |
+
+État de Codex (04/11, ~00 h 52 UTC) : environnement d'exécution indisponible, point de reprise publié sur
+`codex/parity301-continuous-matrix-v2` (`docs/syna-301-integration/POINT-REPRISE-CONTINU.md`), matrice cumulative portée à
+162 unités avec les omissions. Sa convergence `827795d0` (ancienne tête Claude `30f67e6c`) ne doit pas être fusionnée.
+
 ## Reste à vérifier ou à faire (ordre proposé)
 
 1. Manque signalé à Codex : aucune phrase ne publie une page brouillon (le menu la refuse donc, à raison) ; champ
