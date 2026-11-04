@@ -7,7 +7,9 @@ import {createLocalRequestsConfirmation} from '@/lib/local-site-requests-confirm
 import {createServiceProfileConfirmation} from '@/lib/service-profile-confirmation-client';
 import {createLocalAdDocumentConfirmation} from '@/lib/local-ad-document-confirmation-client';
 import {createLocalSeoConfirmation} from '@/lib/local-seo-confirmation-client';
+import {createLocalPagesConfirmation} from '@/lib/local-pages-confirmation-client';
 const domains=[
+ {name:'pages',field:'localPages',flag:'localPagesExecution',key:'syna-free-pages:',action:'confirm-pages',create:createLocalPagesConfirmation},
  {name:'seo',field:'localSeo',flag:'localSeoExecution',key:'syna-free-seo:',action:'confirm-seo',create:createLocalSeoConfirmation},
  {name:'files',field:'localFiles',flag:'localFilesExecution',key:'syna-free-files:',action:'confirm-files',create:createLocalFilesConfirmation},
  {name:'content',field:'localBusinessContent',flag:'localBusinessContentExecution',key:'syna-free-content:',action:'confirm-business-content',create:createLocalBusinessContentConfirmation},
@@ -20,6 +22,7 @@ function view(d:D,q='new',state='proposed',requestId='request-new'):Conversation
  const s:any={schema:'syna-service-profile-1',state,proposalId:q,id:q,field:'hours',projectId:'p',sourceVersion:1,resultVersion:2,
  diff:{before:{read:false,handled:false},after:{read:true,handled:false}},target:{type:'biens',itemId:'item',version:'1'},asset:{id:'asset',name:'name',version:2,folderId:null},item:{id:'item',type:'biens',version:'2',title:'title'},request:{id:'request'},
  actionsExecuted:state==='applied',receiptId:requestId,confirmationRequired:state==='proposed',costEur:0,providerCalls:0,financialConsent:false,publication:false};
+ if(d.name==='pages')Object.assign(s,{schema:'syna-local-pages-1',version:{id:'v2',parentId:'v1',number:2}});
  if(d.name==='seo')Object.assign(s,{schema:'syna-local-seo-1',field:'title',version:{id:'v2',parentId:'v1',number:2}});
  if(d.name==='ad')Object.assign(s,{state:state==='applied'?'saved':state,recorded:state==='applied',delivered:state==='applied',version:{id:'v2',version:2},exportHref:'/native.png',...(state==='applied'?{job:{id:'job',status:'done'}}:{})});
  return{id:'c',projectId:'p',revision:5,projectRevision:2,[d.flag]:{enabled:true},[d.field]:s,activeContext:{presentation:{state:'valid',selection:{projectId:'p',tab:'fichiers',target:{kind:'asset',assetId:'asset',version:1}}}}} as unknown as ConversationView;
@@ -55,7 +58,7 @@ for(const d of domains){
   const t=setup(d,'same');await t.client.confirm();expect(t.bodies).toEqual([t.old]);expect(t.map.size).toBe(0);
  });
  it(d.name+': stale stored intent cannot block cancellation of the displayed new proposal',async()=>{
-  const t=setup(d);await t.client.cancel();expect(t.bodies).toHaveLength(1);expect(t.bodies[0].action).toBe(d.name==='ad'?'cancel':d.name==='hours'?'cancel-service-profile':d.name==='seo'?'cancel-seo':'select');if(d.name==='ad'||d.name==='hours'||d.name==='seo')expect(t.bodies[0].proposalId).toBe('new');expect(t.bodies.every(b=>b.proposalId!=='old')).toBe(true);expect(t.applied).not.toHaveBeenCalled();
+  const t=setup(d);await t.client.cancel();expect(t.bodies).toHaveLength(1);expect(t.bodies[0].action).toBe(d.name==='ad'?'cancel':d.name==='hours'?'cancel-service-profile':d.name==='seo'?'cancel-seo':d.name==='pages'?'cancel-pages':'select');if(d.name==='ad'||d.name==='hours'||d.name==='seo'||d.name==='pages')expect(t.bodies[0].proposalId).toBe('new');expect(t.bodies.every(b=>b.proposalId!=='old')).toBe(true);expect(t.applied).not.toHaveBeenCalled();
  });
  it(d.name+': refresh discards a superseded pending intent without any write',async()=>{
   const t=setup(d);await t.client.refresh();expect(t.bodies).toEqual([]);expect(t.client.getState().uncertain).toBe(false);expect(t.map.size).toBe(0);
