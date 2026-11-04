@@ -1,3 +1,36 @@
+# Point de reprise — lots naturels et renommage de dossier
+
+La mission reste inachevée. Continuer les lots indépendants sans demander une nouvelle autorisation. Aucun fournisseur réel, projet client, activation, publication, fusion main ou déploiement.
+
+## Livraisons et preuves actuelles
+
+- **Fichiers, PR #397 : `d7a04a1612096288c436c7b60ae7d8feba82a0aa`.** Branche `codex/parity301-natural-file-metadata`. Compilation propre, production, BUILD_ID `tf_kwZDK1SseJ07RKa0Tp`. Le checkout d’exécution `/workspace/work/parity301-intents-v5` reste propre sur `codex/parity301-compiled-files-natural`. Aucun navigateur ni build ne tourne après la recette.
+- **Recette Fichiers préparés : 4/4, 40 étapes, 8 accords après au moins 17 secondes.** Formulations sans guillemets sur ordinateur et polies au toucher ; désignation native, clarification, annulation, réponse perdue sur les deux ordinateurs récupérée avec un seul POST, reçu/rechargement, déplacement dans les quatre formats, octets et version 1 conservés, aucune copie. L’API confirme la permission native, le verrou de fiche et le SHA du build. Les quatre recherches simulées acquises restent intégralement identiques : 4→4, aucune nouvelle tentative IA, tâche ou erreur JS. Quatre requêtes Google Fonts sont bloquées. Voir `PREUVE-FICHIERS-NATURELS-PREPARE-V2.json` et `scripts/parity301-prepared-natural-files-proof.ts`. Captures locales dans `/tmp/parity301-prepared-natural-files-v2`, jamais ajoutées à GitHub.
+- **Traçabilité du harnais :** V1 a échoué avant accord car l’import `waitAtLeast` manquait ; brut conservé dans `PREUVE-FICHIERS-NATURELS-HARNAIS-V1.json`. Aucun correctif applicatif pour cet échec. Une première compilation locale a également été arrêtée pour charger explicitement la garde réseau ; seule la compilation V2 terminée avec cette garde est utilisée comme preuve. Logs distincts `/tmp/parity301-natural-files-build-initial-stopped.log` et `/tmp/parity301-natural-files-build-v2.log`.
+- **Renommage d’un dossier, PR #398 : `504de58833ed3851b31719c9e1efe865ad8126d7`.** Branche `codex/parity301-folder-rename`, parent D7. Moteur natif partagé avec PATCH, contrat et transport, aucun composant Claude modifié. **57 tests et types passent** : 28 nouveaux et 29 régressions, routes authentifiées/CSRF, préparation conservée, A1, solde nul, homonymes/concurrence, rollback du reçu et des métadonnées, réponse perdue, ancien pending et changement de projet. Voir `LOT-RENOMMAGE-DOSSIER.md`. Carte et recette compilée indépendante encore requises ; ne pas afficher cette action dans la carte Nouveau dossier.
+- **Bibliothèque de prompts, PR #396 : `506735a7b19b972d4b613d05db2eeb4f537232ed`.** Lecture des métadonnées sur projet préparé et formulations usuelles. L’adaptation de la carte par Claude reste ouverte : `nativeLocalEditAllowed(view)` et `localPromptsRead.enabled`, sans ouvrir A1, ni corps/exécution/édition de prompt.
+
+Claude a reçu les contrats et SHA dans #369, commentaires `6630709513` et `6630984345`. Son dernier HEAD observé est `ecfaa73d27e9e4ece1cb10adee04053e42b33f36` : le relire avant toute nouvelle convergence. Sa branche reste intacte.
+
+## CI exacte au dernier relevé
+
+| Source | Run | Résultat observé |
+|---|---|---|
+| CB / #394 et #395 | 41825544838 | **5 832 tests réussis**, 31 exclusions préexistantes ; 627 fichiers réussis, 1 exclu. Docker et confirmation gratuite obligatoire verts. Grandes recettes encore en cours. |
+| #396 / 506735a7 | 41828309600 | Docker et confirmation obligatoire verts ; suite et grandes recettes en cours. |
+| #397 / D7 | 41829717764 | Docker et confirmation obligatoire verts ; suite et grandes recettes en cours. |
+| #398 / 504de588 | 41832270177 | En cours ; aucun verdict final anticipé. |
+
+La matrice conserve les 163 unités précédentes et ajoute l’omission native `folders.rename` : **164 unités, 61 PARTIEL, 73 ABSENT, 4 NON_TESTE, 26 BLOQUE, aucune complète**. Chaque ligne garde son responsable, sa dépendance, son critère et sa preuve. Cette branche de preuves réunit réellement les parents `5faaf289` et D7 ; le code Fichiers D7 et les composants graphiques Claude sont conservés.
+
+## Prochaines actions
+
+1. Observer les CI finales de ces SHA ; ne pas relancer les contrôles déjà verts.
+2. Converger `506735a7` et `504de588` avec les composants Claude dès qu’ils sont prêts, sur une nouvelle branche indépendante. Qualifier la bibliothèque préparée et la nouvelle carte de renommage de dossier dans les quatre formats, avec au moins 17 secondes avant accord.
+3. Continuer les autres lacunes indépendantes : déplacement/suppression de dossiers vides, autres CRUD, contenus et réservation. Les pièces jointes méritent un contrat distinct : `photoIds` modifie encore la fiche, donc ne pas forcer `assertBriefWritable` pour ouvrir les projets préparés.
+
+---
+
 # Reprise prioritaire — convergence compilée V7
 
 Source actuelle **cb383590a7811df94153b9698754d3b071bde228**, PR brouillon #394 et complément isolé #395. Vrai merge ce6f96a6 de 06c35ebf et Claude ecfaa73d ; composants Claude repris à l’identique. Le texte historique ci-dessous reste daté ; ne pas en déduire que les anciennes cartes attendent encore leur adaptation : ecfaa73d l’a intégrée, les preuves compilées restent à qualifier domaine par domaine.
