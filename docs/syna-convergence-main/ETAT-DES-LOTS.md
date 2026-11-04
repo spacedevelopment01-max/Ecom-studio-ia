@@ -38,7 +38,7 @@ dans la suite complète. Leurs fusions d'essai n'apportent rien d'autre que des 
 | `codex/logo-294-consent`, `codex/logo-295-ci-authorization` (#295, #298) | code déjà présent ; il ne reste que le rapport et les captures `docs/logo-294/` (documentation, hors SYNA) |
 | `codex/syna-284-audit-parite` | documentation d'audit #284 seulement (aucun code) |
 | `codex/parity301-continuous-matrix-v2` | documentation remplacée par la v12 |
-| `claude/liste-attente-420` (#421) | chantier distinct (liste d'attente), sa propre PR |
+| `claude/liste-attente-420` (#421) | chantier distinct (liste d'attente), fusionné dans `main` par sa propre PR (`91650e33`) ; `main` a ensuite été réintégré ici, sans conflit |
 
 ## Correctif ajouté dans cette convergence
 
