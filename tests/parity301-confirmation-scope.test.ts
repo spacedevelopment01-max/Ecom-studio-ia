@@ -10,7 +10,9 @@ import {createLocalSeoConfirmation} from '@/lib/local-seo-confirmation-client';
 import {createLocalPagesConfirmation} from '@/lib/local-pages-confirmation-client';
 import {createLocalStockConfirmation} from '@/lib/local-stock-confirmation-client';
 import {createLocalCalendarConfirmation} from '@/lib/local-calendar-confirmation-client';
+import {createLocalThemeChoiceConfirmation} from '@/lib/local-theme-choice-confirmation-client';
 const domains=[
+ {name:'theme',field:'localThemeChoice',flag:'localThemeChoiceExecution',key:'syna-free-theme-choice:',action:'confirm-theme-choice',create:createLocalThemeChoiceConfirmation},
  {name:'calendar',field:'localCalendar',flag:'localCalendarExecution',key:'syna-free-calendar:',action:'confirm-calendar',create:createLocalCalendarConfirmation},
  {name:'stock',field:'localStock',flag:'localStockExecution',key:'syna-free-stock:',action:'confirm-stock',create:createLocalStockConfirmation},
  {name:'pages',field:'localPages',flag:'localPagesExecution',key:'syna-free-pages:',action:'confirm-pages',create:createLocalPagesConfirmation},
@@ -26,6 +28,7 @@ function view(d:D,q='new',state='proposed',requestId='request-new'):Conversation
  const s:any={schema:'syna-service-profile-1',state,proposalId:q,id:q,field:'hours',projectId:'p',sourceVersion:1,resultVersion:2,
  diff:{before:{read:false,handled:false},after:{read:true,handled:false}},target:{type:'biens',itemId:'item',version:'1'},asset:{id:'asset',name:'name',version:2,folderId:null},item:{id:'item',type:'biens',version:'2',title:'title'},request:{id:'request'},
  actionsExecuted:state==='applied',receiptId:requestId,confirmationRequired:state==='proposed',costEur:0,providerCalls:0,financialConsent:false,publication:false};
+ if(d.name==='theme')Object.assign(s,{schema:'syna-local-theme-choice-1',direction:'rive',version:{id:'v2',parentId:'v1',number:2},previewHref:'/preview/p/v/v2'});
  if(d.name==='calendar')Object.assign(s,{schema:'syna-local-calendar-1',scheduling:false,target:{postId:'post',title:'Title',status:'review',timezone:'Europe/Paris'},diff:{before:100,after:200}});
  if(d.name==='stock')Object.assign(s,{schema:'syna-local-stock-1',synchronization:false,target:{productId:'product',variantId:'variant',productVersion:1,variantVersion:1},result:{productVersion:2,variantVersion:2}});
  if(d.name==='pages')Object.assign(s,{schema:'syna-local-pages-1',version:{id:'v2',parentId:'v1',number:2}});
@@ -64,7 +67,7 @@ for(const d of domains){
   const t=setup(d,'same');await t.client.confirm();expect(t.bodies).toEqual([t.old]);expect(t.map.size).toBe(0);
  });
  it(d.name+': stale stored intent cannot block cancellation of the displayed new proposal',async()=>{
-  const t=setup(d);await t.client.cancel();expect(t.bodies).toHaveLength(1);expect(t.bodies[0].action).toBe(d.name==='calendar'?'cancel-calendar':d.name==='stock'?'cancel-stock':d.name==='ad'?'cancel':d.name==='hours'?'cancel-service-profile':d.name==='seo'?'cancel-seo':d.name==='pages'?'cancel-pages':'select');if(d.name==='calendar'||d.name==='stock'||d.name==='ad'||d.name==='hours'||d.name==='seo'||d.name==='pages')expect(t.bodies[0].proposalId).toBe('new');expect(t.bodies.every(b=>b.proposalId!=='old')).toBe(true);expect(t.applied).not.toHaveBeenCalled();
+  const t=setup(d);await t.client.cancel();expect(t.bodies).toHaveLength(1);expect(t.bodies[0].action).toBe(d.name==='theme'?'cancel-theme-choice':d.name==='calendar'?'cancel-calendar':d.name==='stock'?'cancel-stock':d.name==='ad'?'cancel':d.name==='hours'?'cancel-service-profile':d.name==='seo'?'cancel-seo':d.name==='pages'?'cancel-pages':'select');if(d.name==='theme'||d.name==='calendar'||d.name==='stock'||d.name==='ad'||d.name==='hours'||d.name==='seo'||d.name==='pages')expect(t.bodies[0].proposalId).toBe('new');expect(t.bodies.every(b=>b.proposalId!=='old')).toBe(true);expect(t.applied).not.toHaveBeenCalled();
  });
  it(d.name+': refresh discards a superseded pending intent without any write',async()=>{
   const t=setup(d);await t.client.refresh();expect(t.bodies).toEqual([]);expect(t.client.getState().uncertain).toBe(false);expect(t.map.size).toBe(0);
