@@ -46,3 +46,15 @@ it('modification faite ailleurs : alerte en mots, sans identifiant visible, mêm
  }
  expect(currentTheme(f.pid)!.spec.templates.index.sections[f.section].settings.heading).toBe('Titre humain à préserver');
 });
+it('revue Codex : retouche SYNA enregistrée PUIS modification faite ailleurs → alerte de modification externe, pas « Retouche enregistrée »',async()=>{
+ const f=await localSiteFixture('products');f.select(false);
+ const p=await submitConversation(f.u,f.c.id,f.message('Change le titre par « Offrez ce moment. »'));
+ await submitConversation(f.u,f.c.id,{action:'confirm-local',proposalId:p.localSite!.proposalId!,confirmation:true,revision:p.revision,projectRevision:p.projectRevision,requestId:id()});
+ const manual=structuredClone(currentTheme(f.pid)!.spec);manual.templates.index.sections[f.section].settings.heading='Titre humain ensuite';saveThemeVersion(f.pid,manual,'Modification manuelle fictive','user');
+ const v=conversationView(f.u,f.c.id),out=html(v);
+ expect(out).toContain('Résultat enregistré');
+ expect(v.activeContext?.presentation?.needsRevalidation).toBe(true);
+ expect(out).toContain('data-syna-site-revalidation="external"');
+ expect(visible(out)).toContain('La section a changé depuis votre désignation');
+ expect(visible(out)).not.toContain('Retouche enregistrée : la section désignée');
+});

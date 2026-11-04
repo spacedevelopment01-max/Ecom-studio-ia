@@ -26,6 +26,10 @@ export function ConversationLocalSite({view,confirmation,busy,selectionMatches,o
  const s=view.localSite,{controller,state}=confirmation,fresh=view.activeContext?.presentation,context=fresh&&fresh.revision>=(state.context?.revision??0)?fresh:state.context;
  if(!localEditAllowed(view,'local-site')||(!s&&!state.error&&!context?.needsRevalidation))return null;
  const needsSelection=s?.command!=='undo',scope=s?.scope,valid=hasNativeLocalReceipt(view),enabled=view.localSiteExecution?.enabled&&localEditAllowed(view,'local-site')&&!state.blocked;
+ // Revue Codex (#422) : « sa propre retouche » seulement si la version actuelle proposée à la revalidation est bien celle
+ // de son reçu ; une modification faite ailleurs APRÈS le reçu garde l'alerte de modification externe.
+ const currentTarget=context?.recovery?.current?.selection?.target as {versionId?:string}|null|undefined;
+ const ownReceipt=valid&&!!s?.version?.id&&currentTarget?.versionId===s.version.id;
  const display=(value:unknown)=>Array.isArray(value)?value.map(id=>`${scope?.labels[String(id)]??id} (${id})`).join(' → '):String(value??'');
  return <section aria-label="Retouche gratuite" className="space-y-3 rounded-xl border border-line p-4 text-sm">
   <p className="font-semibold">Gratuit — 0 €</p>{s&&<p>{s.message}</p>}
@@ -44,6 +48,6 @@ export function ConversationLocalSite({view,confirmation,busy,selectionMatches,o
   {/* Capture HEUREN (#301) : après SA PROPRE retouche enregistrée, la désignation vise l'ancienne version (c'est normal) :
       on le dit simplement, sans identifiants. Une modification faite ailleurs garde l'alerte, en mots. Le bouton
       « Revalider la cible actuelle » (accord explicite, aucune nouvelle écriture) reste le même dans les deux cas. */}
-  {enabled&&needsSelection&&context?.needsRevalidation&&!(valid&&(s!.command==='hide'||s!.command==='remove'))&&<div data-syna-site-revalidation={valid?'own-receipt':'external'}>{valid?<p>Retouche enregistrée : la section désignée a maintenant une nouvelle version. Pour une autre demande sur cette section, revalidez-la d’abord.</p>:<p>La section a changé depuis votre désignation (modification faite ailleurs). Rien n’a été écrit : une nouvelle proposition sera nécessaire.</p>}{context.recovery?.current&&<><Button disabled={busy||state.busy} onClick={()=>void controller?.revalidate()}>Revalider la cible actuelle</Button><details className="text-xs text-muted"><summary className="cursor-pointer">Détail technique</summary><p className="break-all">Version désignée : {context.reference} · version actuelle : {context.recovery.current.reference}</p></details></>}{!context.recovery?.current&&<p>Resélectionnez la cible dans l’aperçu natif.</p>}</div>}
+  {enabled&&needsSelection&&context?.needsRevalidation&&!(valid&&(s!.command==='hide'||s!.command==='remove'))&&<div data-syna-site-revalidation={ownReceipt?'own-receipt':'external'}>{ownReceipt?<p>Retouche enregistrée : la section désignée a maintenant une nouvelle version. Pour une autre demande sur cette section, revalidez-la d’abord.</p>:<p>La section a changé depuis votre désignation (modification faite ailleurs). Rien n’a été écrit : une nouvelle proposition sera nécessaire.</p>}{context.recovery?.current&&<><Button disabled={busy||state.busy} onClick={()=>void controller?.revalidate()}>Revalider la cible actuelle</Button><details className="text-xs text-muted"><summary className="cursor-pointer">Détail technique</summary><p className="break-all">Version désignée : {context.reference} · version actuelle : {context.recovery.current.reference}</p></details></>}{!context.recovery?.current&&<p>Resélectionnez la cible dans l’aperçu natif.</p>}</div>}
  </section>;
 }
