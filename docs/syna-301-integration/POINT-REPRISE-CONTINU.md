@@ -1,3 +1,37 @@
+# Reprise active : corbeille Banque Images vérifiée, CI et intégrations à poursuivre
+
+La mission #301 n’est pas terminée. Continuer les modules indépendants et transmettre les corrections à Claude. Aucune dépense fournisseur réelle, modification client, activation, publication, fusion main ou déploiement.
+
+## Dernière livraison et preuve
+
+**#413 — 3b54dfbe8ebf125b6039f035e2c024ec07d73a4e**, branche codex/parity301-image-bank-trash-scope. Parent documentaire45dcec21, qui reprend le correctif CI #411/c094116a et les moteurs précédents. Cinq cas rouges/un vert ont démontré que #409 ne suivait pas les rôles natifs de la Banque Images. Correction avec BANK_IMAGE_ROLES/isBankImage, portée recontrôlée avant accord et lien du contexte exact ; Fichiers conserve sa restauration générale gratuite. 61 tests sur cinq fichiers et types, dont onze nouveaux ; les onze repassent après précision du message. Aucun composant ou garde financier modifié. Contrat LOT-CORBEILLE-IMAGES-PORTEE-NATIVE.md, transmis à Claude dans #369/6634964864.
+
+**Preuve indépendante de production :4/4,16étapes,quatre accords≥17s**, minimum17000,57ms. Source3b54dfbe, build **QcnDvnA7TT22d5jArByuE**, APIversion compiled-build/production/clean. Services préparés, Encre/Plein, ordinateur/téléphone réellement tactile. Corbeille créée par les routes natives ; document, publicité et logo exclus de la Banque. Suggestion d’ID exacte puis « Peux-tu restaurer l’image… ? », aperçu avant/après, annulation, nouvel accord, reçu et rechargement. Image réellement chargée dans la Banque et ses octets vérifiés par HTTP. Tous les autres acquis, Préparation et thème inchangés. Quatre recherches SIMULÉES intégralement conservées ; aucune nouvelle tentativeIA, requête externe, erreurJS ou job. Rapport PREUVE-CORBEILLE-IMAGES-BANQUE-V11.json, harnais scripts/parity301-image-bank-trash-proof.ts, captures locales /tmp/parity301-image-bank-trash et base fictive /tmp/ecs-corbeille301-Ki3VoE.
+
+Deux détails d’affichage à transmettre à Claude : le lien de reçu porte encore le libellé générique « Voir dans Fichiers » alors que sa destination native est Images ; la photo640×480 (4:3) reçoit le badge16:9 dans la Banque. Dimensions et octets natifs sont conservés ; aucun composant de notre côté modifié.
+
+## CI exacte
+
+#394 à #405 : **SUCCESS complet sur leurs SHA**. Derniers runs : #403/b650c52→41846181130 (5949 tests), #404/eb0f687→41846832989 (5958), #405/50e5d1e→41848102025 (5971). Toujours31exclusions existantes ;633/634/635 fichiers réussis etunexclu. Ces succès ne certifient pas leurs cartes encore manquantes.
+
+**#411/c094116af043cb729d5eeb45235199dfbc58e1de**, correctif de test seul, run41855880282 : Docker et confirmation obligatoire verts ; suite et grandes recettes encore en cours au dernier relevé. #406 a un échec de suite connu (5972 succès/un échec/31exclusions), reproduit puis corrigé par #411 avec56tests ciblés/types et deux nouveaux GET réels. Ne pas transformer cet ancien rouge en succès ni supprimer un contrôle.
+
+**#413/3b54dfbe**, run41859968768 : CI complète en cours, à observer sur ce SHA. Les autres anciennes convergences peuvent hériter de l’attente de test corrigée par #411. Le quatrième contrôle de confirmation gratuite demeure obligatoire. Ne pas relancer les contrôles déjà verts.
+
+## Sources, environnement et suite
+
+Source : /workspace/work/parity301-ci-guards, branche documentaire codex/parity301-continuous-proofs-v11, code#413. Checkout de compilation : /workspace/work/parity301-intents-v5, branche codex/parity301-compiled-bank-scope, propre sur3b54dfbe, build ci-dessus. Toutes les recettes sont terminées ; aucun serveur/navigateur actif. Les types du harnais archivé passent. Précharger scripts/lot9/network-guard.mjs pour chaque Node/test/build.
+
+Le cache webpack de notre build terminé a été retiré pour laisser de l’espace. Un pack Git temporaire fermé de notre fetch précédent (tmp_pack_TCn3cp,394002432octets), vérifié sans descripteur actif, a aussi été retiré ; aucun pack valide/source/autre checkout touché. Les preuves précédentes gardent leur source#410/1c6ece6b, build7xwc-ACTdmEkd_leBCxvX :A1 8/8,64étapes/24accords ;Dossiers préparés4/4,16étapes/12accords ;Stock interrogatif4/4,20étapes/4accords. Stock consigne quatre GoogleFonts bloquées, pas zéro tentative externe. Ces100étapes/40accords sont publiés en45dcec21, sans réattribution au nouveau SHA.
+
+1. Publier cette branche de preuves sans déplacer les têtes #411/#413. Envoyer àClaude le rapport Images et les deux détails d’affichage, puis observer les CI finales sur leurs SHA.
+2. Relire les adaptations de Claude : Prompts A1 #403, photo du fil sur préparé #405, lecture des services réservables #408. Ses composants actuels bdba24fe sont repris à l’identique ; sa branche n’a pas été modifiée. Ne pas compter une carte ou recette en attente comme qualifiée.
+3. Poursuivre les lacunes indépendantes : services réservables natifs (prévisualisation sans écriture nécessaire autour de savePrestations avant raccordement des modifications), autres fonctions de la matrice. Vérifier d’abord les identités de services/intervenants et les risques de collisions, avec fixtures et vraie API ; aucun identifiant commun avec le profil. Ne pas refaire #348 ni répéter une recette verte sans nouvelle raison.
+
+Matrice cumulative166opérations :64PARTIEL/72ABSENT/4NON_TESTE/26BLOQUE,aucune complète. Les limites de périmètre et de CI restent explicites.
+
+---
+
 # Reprise active : preuves V10 obtenues, correctif CI #411, audit Images
 
 La mission #301 reste ouverte. Aucune dépense fournisseur réelle, donnée client, activation, publication, fusion main ou mise en production. Continuer les lacunes indépendantes pendant les CI ; ne pas refaire #348.
