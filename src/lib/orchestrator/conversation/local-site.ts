@@ -17,9 +17,9 @@ import {previewNativeThemeUndo,themeToolsRegistry} from './theme-tool-execution'
 import {themeTargetPaths} from './theme-tool-context';
 import type {ConversationRow,ConversationState} from './contract';
 
-export type LocalSiteProposal={id:string;kind:'title'|'move'|'color'|'faq'|'undo';request:NativeLocalRequest;address:NativeLocalAddress;pin?:ContextPin;versionId:string;fingerprint:string;resultFingerprint:string;ops:ThemeOp[];diff:{before:unknown;after:unknown};expiresAt:number;undo?:{turnId?:string;toolReceiptId?:string;receiptId:string;receiptFingerprint:string;targetVersionId:string;sourceFingerprint?:string}};
+export type LocalSiteProposal={id:string;kind:'title'|'button'|'hide'|'remove'|'move'|'color'|'faq'|'undo';request:NativeLocalRequest;address:NativeLocalAddress;pin?:ContextPin;versionId:string;fingerprint:string;resultFingerprint:string;ops:ThemeOp[];diff:{before:unknown;after:unknown};expiresAt:number;undo?:{turnId?:string;toolReceiptId?:string;receiptId:string;receiptFingerprint:string;targetVersionId:string;sourceFingerprint?:string}};
 export type LocalSiteScope={projectId:string;versionId:string;template:string;section:string;block?:string;key?:string;label:string;pagePaths:string[];labels:Record<string,string>};
-export type LocalSitePresentation={command?:'title'|'move'|'color'|'faq'|'undo';receiptId?:string;sourceReceiptId?:string;scope?:LocalSiteScope;schema:'syna-local-site-1';state:'ambiguous'|'proposed'|'applied'|'error';message:string;financialConsent:false;costEur:0;providerCalls:0;confirmationRequired:boolean;proposalId?:string;diff?:{before:unknown;after:unknown};version?:{id:string;number:number;parentId:string;fingerprint:string};previewHref?:string;restore?:{endpoint:string;versionId:string;manual:true};actionsExecuted:boolean};
+export type LocalSitePresentation={command?:'title'|'button'|'hide'|'remove'|'move'|'color'|'faq'|'undo';receiptId?:string;sourceReceiptId?:string;scope?:LocalSiteScope;schema:'syna-local-site-1';state:'ambiguous'|'proposed'|'applied'|'error';message:string;financialConsent:false;costEur:0;providerCalls:0;confirmationRequired:boolean;proposalId?:string;diff?:{before:unknown;after:unknown};version?:{id:string;number:number;parentId:string;fingerprint:string};previewHref?:string;restore?:{endpoint:string;versionId:string;manual:true};actionsExecuted:boolean};
 const present=(state:LocalSitePresentation['state'],message:string,extra:Partial<LocalSitePresentation>={}):LocalSitePresentation=>({schema:'syna-local-site-1',state,message,financialConsent:false,costEur:0,providerCalls:0,confirmationRequired:false,actionsExecuted:false,...extra});
 export const localSiteCandidate=(text:string)=>nativeLocalRequest(text).candidate;
 export const localSiteEnabled=()=>activeContextEnabled()&&process.env.STUDIO_CONVERSATION_LOCAL_SITE==='1';
@@ -74,6 +74,11 @@ function preview(user:User,c:ConversationRow,p:LocalSiteProposal){
   if('text'in target&&target.text===p.request.value)fail('Ce titre est déjà en place. Aucune nouvelle version.');
   if(unsafeContentReason(p.request.value))fail('Le titre contient du contenu actif non autorisé.');
  }
+ if(p.request.kind==='button'){
+  const target=resolveActiveContext(c,{projectId:c.project_id!,tab:'boutique',target:{kind:'theme-field',versionId:cur.version.id,template:a.template,section:a.section,block:a.block,key:a.key!}});
+  if(target.kind!=='theme-field'||!target.contentRead||target.text===null||!buttonKey(a.key!,a.block?section?.blocks?.[a.block]?.type:undefined)||!['text','inline_richtext'].includes(target.fieldType)||!p.request.value.trim()||p.request.value.length>160||unsafeContentReason(p.request.value))fail('Désignez un libellé de bouton natif court ; texte exact de 160 caractères maximum.');
+  if('text'in target&&target.text===p.request.value)fail('Ce libellé est déjà en place. Aucune nouvelle version.');
+ }
  if(p.request.kind==='color'){
   if(native!.ops.some(op=>op.op!=='section_colors'||op.template!==a.template||op.section!==a.section))fail('Couleur globale ou cible ambiguë : précisez la section entière.');
  }
@@ -81,12 +86,13 @@ function preview(user:User,c:ConversationRow,p:LocalSiteProposal){
  // Les règles d'abonnement restent celles des opérations conversationnelles existantes.
  assertThemeOperations(c.project_id!,cur.spec,native!.ops,true);
  const applied=applyOps(cur.spec,native!.ops,{storeKind:projectKind(project)});
- if(p.request.kind==='title'){const s=containerOf(applied.spec,a.template)!.sections[a.section];if((a.block?s.blocks![a.block].settings:s.settings)[a.key!]!==p.request.value)fail('Le moteur ne conserve pas ce texte exactement.');}
+ if(p.request.kind==='title'||p.request.kind==='button'){const s=containerOf(applied.spec,a.template)!.sections[a.section];if((a.block?s.blocks![a.block].settings:s.settings)[a.key!]!==p.request.value)fail('Le moteur ne conserve pas ce texte exactement.');}
  if(p.request.kind==='color')for(const template of ['group:header','group:footer',...Object.keys(cur.spec.templates)]){const other=containerOf(cur.spec,template);for(const sid of other?.order??[])if((template!==a.template||sid!==a.section)&&stableHash('colours',colours(cur.spec,template,sid))!==stableHash('colours',colours(applied.spec,template,sid)))fail('Le schéma partagé toucherait une autre section. Aucun changement ; utilisez les réglages natifs pour isoler la section.');}
  if(applied.rejected.length||validateSpec(applied.spec).length)fail('Opération refusée par la validation native.');
  if(fp(applied.spec)===fp(cur.spec))fail('La section est déjà à cette position. Aucune nouvelle version.');
  return{cur,spec:applied.spec,ops:native!.ops};
 }
+const buttonKey=(key:string,blockType?:string)=>/^(?:button(?:_\d+)?_(?:label|text)(?:_\d+)?|cta_(?:label|text))$/.test(key)||!!blockType&&/button|cta/.test(blockType)&&['label','text'].includes(key);
 const plain=(text:string)=>text.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/^(?:le|la|les)\s+|^l['’]\s*/,'');
 export function proposeLocalSite(user:User,c:ConversationRow,m:ConversationState,text:string):LocalSitePresentation{
  delete m.localSiteProposal;
@@ -112,6 +118,16 @@ export function proposeLocalSite(user:User,c:ConversationRow,m:ConversationState
     const titles=defs?.filter(d=>['heading','title','heading_line1'].includes(d.id??'')&&['text','inline_richtext'].includes(d.type))??[];
     if(titles.length!==1)fail('Titre absent ou ambigu : désignez sa clé native.');address.key=titles[0].id;
    }
+  }else if(request.kind==='button'){
+   const section=containerOf(cur.spec,target.template)!.sections[target.section],schema=sectionSchema(cur.spec,section.type);
+   const candidates:{key:string;block?:string}[]=[];
+   for(const d of schema?.settings??[])if(d.id&&buttonKey(d.id)&&['text','inline_richtext'].includes(d.type))candidates.push({key:d.id});
+   for(const [bid,b] of Object.entries(section.blocks??{}))for(const d of schema?.blocks.find(v=>v.type===b.type)?.settings??[])if(d.id&&buttonKey(d.id,b.type)&&['text','inline_richtext'].includes(d.type))candidates.push({key:d.id,block:bid});
+   const matches=target.kind==='theme-field'?candidates.filter(v=>v.key===target.key&&v.block===target.block):target.block?candidates.filter(v=>v.block===target.block):candidates;
+   if(matches.length!==1)fail('Bouton absent ou ambigu : désignez son champ de libellé natif. Aucun autre texte ne changera.');
+   address.key=matches[0].key;address.block=matches[0].block;
+  }else if(request.kind==='hide'||request.kind==='remove'){
+   if(target.kind!=='theme-section'||target.block)fail('Désignez la section entière avant de la masquer ou de la supprimer.');
   }else if(request.kind==='move'){
    if(target.kind!=='theme-section'||target.block)fail('Désignez la section entière à déplacer.');
    const container=containerOf(cur.spec,target.template)!;
@@ -122,15 +138,15 @@ export function proposeLocalSite(user:User,c:ConversationRow,m:ConversationState
   const p:LocalSiteProposal={id:id(),kind:request.kind,request,address,pin:pin!,versionId:cur.version.id,fingerprint:fp(cur.spec),resultFingerprint:'',ops:[],diff:{before:null,after:null},expiresAt:now()+15*60000};
   const result=preview(user,c,p);p.ops=result.ops;p.resultFingerprint=fp(result.spec);
   const section=containerOf(cur.spec,address.template)!.sections[address.section],changed=containerOf(result.spec,address.template)!.sections[address.section];
-  p.diff=request.kind==='color'?{before:JSON.stringify(colours(cur.spec,address.template,address.section),null,2),after:JSON.stringify(colours(result.spec,address.template,address.section),null,2)}:request.kind==='faq'?{before:'Ordre : '+containerOf(cur.spec,address.template)!.order.join(' → '),after:'FAQ après '+address.section+' — contenu de départ à compléter : '+JSON.stringify(containerOf(result.spec,address.template)!.order.filter(s=>!containerOf(cur.spec,address.template)!.sections[s]).map(s=>({id:s,...containerOf(result.spec,address.template)!.sections[s]})),null,2)}:request.kind==='title'?{before:(address.block?section.blocks![address.block].settings:section.settings)[address.key!],after:(address.block?changed.blocks![address.block].settings:changed.settings)[address.key!]}:{before:containerOf(cur.spec,address.template)!.order,after:containerOf(result.spec,address.template)!.order};
-  m.localSiteProposal=p;return present('proposed',request.kind==='color'?'Alternative native explicite : couleur principale des textes de cette section, ou son fond selon la demande. Certains boutons utilisent aussi cette couleur de texte. Le titre seul n’est pas ciblé ; un changement de fond adapte aussi les accents, textes secondaires, surfaces et textes des boutons si leur contraste devient insuffisant (hors couleurs explicitement demandées et thèmes importés). Aucune autre section ni couleur globale ne change. Vérifiez les couleurs avant/après puis confirmez gratuitement.':request.kind==='faq'?'FAQ native après cette section, avec questions/réponses de départ à compléter, rien d’inventé. Vérifiez avant/après puis confirmez gratuitement.':'Modification comprise. Vérifiez cet aperçu puis confirmez gratuitement.',{command:p.kind,scope:proposalScope(c,p),proposalId:p.id,diff:p.diff,confirmationRequired:true});
+  p.diff=request.kind==='hide'?{before:'Section visible',after:'Section masquée (contenu conservé dans cette version)'}:request.kind==='remove'?{before:`Section « ${String(section.settings.heading??section.settings.title??address.section)} » présente et visible`,after:'Section supprimée de cette page ; historique et versions précédentes conservés.'}:request.kind==='color'?{before:JSON.stringify(colours(cur.spec,address.template,address.section),null,2),after:JSON.stringify(colours(result.spec,address.template,address.section),null,2)}:request.kind==='faq'?{before:'Ordre : '+containerOf(cur.spec,address.template)!.order.join(' → '),after:'FAQ après '+address.section+' — contenu de départ à compléter : '+JSON.stringify(containerOf(result.spec,address.template)!.order.filter(s=>!containerOf(cur.spec,address.template)!.sections[s]).map(s=>({id:s,...containerOf(result.spec,address.template)!.sections[s]})),null,2)}:request.kind==='title'||request.kind==='button'?{before:(address.block?section.blocks![address.block].settings:section.settings)[address.key!],after:(address.block?changed.blocks![address.block].settings:changed.settings)[address.key!]}:{before:containerOf(cur.spec,address.template)!.order,after:containerOf(result.spec,address.template)!.order};
+  m.localSiteProposal=p;return present('proposed',request.kind==='hide'?'Cette section entière sera masquée. Son contenu reste dans la version ; aucune autre section ne change. Vérifiez puis confirmez gratuitement.':request.kind==='remove'?'Cette section entière sera supprimée de cette page après accord explicite. Versions et historique conservés pour annulation ; aucune autre section ne change. Vérifiez puis confirmez gratuitement.':request.kind==='button'?'Seul le libellé exact du bouton désigné change ; sa destination et son comportement restent identiques. Vérifiez puis confirmez gratuitement.':request.kind==='color'?'Alternative native explicite : couleur principale des textes de cette section, ou son fond selon la demande. Certains boutons utilisent aussi cette couleur de texte. Le titre seul n’est pas ciblé ; un changement de fond adapte aussi les accents, textes secondaires, surfaces et textes des boutons si leur contraste devient insuffisant (hors couleurs explicitement demandées et thèmes importés). Aucune autre section ni couleur globale ne change. Vérifiez les couleurs avant/après puis confirmez gratuitement.':request.kind==='faq'?'FAQ native après cette section, avec questions/réponses de départ à compléter, rien d’inventé. Vérifiez avant/après puis confirmez gratuitement.':'Modification comprise. Vérifiez cet aperçu puis confirmez gratuitement.',{command:p.kind,scope:proposalScope(c,p),proposalId:p.id,diff:p.diff,confirmationRequired:true});
  }catch(e){if(e instanceof ContextConflict)throw e;if(e instanceof HttpError)return present(e.status===422?'ambiguous':'error',e.message);throw e;}
 }
 /** Présentation native uniquement : aucune nouvelle opération ni autorisation. */
 function proposalScope(c:ConversationRow,p:LocalSiteProposal):LocalSiteScope{
  const spec=themeVersion(c.project_id!,p.versionId)!.spec,container=containerOf(spec,p.address.template)!;
  const labels=Object.fromEntries(container.order.map(sid=>{const section=container.sections[sid];return[sid,String(section.settings.heading||section.settings.title||sectionSchema(spec,section.type)?.name||sid)];}));
- return{projectId:c.project_id!,versionId:p.versionId,...p.address,label:labels[p.address.section],pagePaths:themeTargetPaths(spec,p.address.template),labels};
+ return{projectId:c.project_id!,versionId:p.versionId,...p.address,label:labels[p.address.section]??p.address.section,pagePaths:themeTargetPaths(spec,p.address.template),labels};
 }
 export function confirmLocalSite(user:User,c:ConversationRow,m:ConversationState,proposalId:string,requestId?:string):LocalSitePresentation{
  const p=m.localSiteProposal;if(!p||p.id!==proposalId||p.expiresAt<now())throw new HttpError(409,'Cette proposition gratuite est périmée. Reformulez la demande.','conversation_local_stale');
