@@ -221,6 +221,18 @@ CREATE TABLE IF NOT EXISTS agent_conversation_turns (
   UNIQUE(conversation_id, revision),
   UNIQUE(conversation_id, request_id)
 );
+CREATE TABLE IF NOT EXISTS agent_conversation_photo_imports (
+  conversation_id TEXT NOT NULL REFERENCES agent_conversations(id) ON DELETE CASCADE,
+  request_id TEXT NOT NULL,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  request_hash TEXT NOT NULL,
+  data_hash TEXT NOT NULL,
+  state TEXT NOT NULL CHECK(state IN ('pending','saved')),
+  lease_token TEXT NOT NULL,
+  asset_id TEXT REFERENCES assets(id) ON DELETE SET NULL,
+  updated_at INTEGER NOT NULL,
+  PRIMARY KEY(conversation_id,request_id)
+);
 CREATE TABLE IF NOT EXISTS agent_conversation_quotes (
   id TEXT PRIMARY KEY,
   conversation_id TEXT NOT NULL REFERENCES agent_conversations(id) ON DELETE CASCADE,

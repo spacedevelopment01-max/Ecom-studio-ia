@@ -118,6 +118,7 @@ export type ConversationView = {
   localAdDocumentExecution?:{enabled:true};
   localPromptsRead?:{enabled:true};
   localPrompts?:import('./local-prompts').LocalPromptsPresentation;
+  photoImport?:{enabled:true;endpoint:string;maxFileBytes:number;kind:'image';analysis:false};
   localFilesExecution?: {enabled:true};
   localFiles?: import('./local-files').LocalFilesPresentation;
   localBusinessContentExecution?:{enabled:true};

@@ -1,3 +1,4 @@
+import {MAX_CONVERSATION_PHOTO_BYTES} from './photo-import';
 import {localThemeChoiceEnabled,localThemeChoiceCandidate,prepareLocalThemeChoice,acceptPreparedThemeChoice,confirmLocalThemeChoice} from './local-theme-choice';
 import {localCalendarEnabled,localCalendarCandidate,proposeLocalCalendar,confirmLocalCalendar} from './local-calendar';
 import {localStockEnabled,localStockCandidate,proposeLocalStock,confirmLocalStock} from "./local-stock";
@@ -73,6 +74,7 @@ export function conversationView(user: User, cid: string, before?: number,includ
     ...(readOnlyReason===null&&c.project_id&&adDocumentToolsEnabled()?{localAdDocumentExecution:{enabled:true as const}}:{}),
     ...(m.localFiles?{localFiles:m.localFiles}:{}),
     ...(c.project_id&&localFilesEnabled()?{localFilesExecution:{enabled:true as const}}:{}),
+    ...(c.project_id&&readOnlyReason===null&&localFilesEnabled()?{photoImport:{enabled:true as const,endpoint:`/api/studio-agent/conversations/${c.id}/photos`,maxFileBytes:MAX_CONVERSATION_PHOTO_BYTES,kind:'image' as const,analysis:false as const}}:{}),
     ...(m.localStock?{localStock:m.localStock}:{}),
     ...(m.localCalendar?{localCalendar:m.localCalendar}:{}),
     ...(m.localThemeChoice?{localThemeChoice:m.localThemeChoice}:{}),
