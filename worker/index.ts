@@ -31,6 +31,7 @@ import { isLang } from "../src/lib/i18n";
 import { json, one } from "../src/lib/db";
 import { migrateLegacySecrets } from "../src/lib/secrets-migration";
 import { processOutbox } from "../src/lib/sites/notify";
+import { processWaitlistOutbox } from "../src/lib/waitlist";
 import { cleanupInterrupted } from "../src/lib/sites/maintenance";
 import { recheckDomains } from "../src/lib/sites/domains";
 import { sitesDomain } from "../src/lib/sites/host-match";
@@ -132,6 +133,8 @@ async function tick() {
     try { cleanupInterrupted(); } catch (e) { logError("worker:sites-cleanup", e); }
     // Domaines reliés par les clients : preuve DNS revérifiée chaque jour (domaine expiré ou DNS changé → « perdu »).
     if (sitesDomain()) await recheckDomains().catch((e) => logError("worker:sites-domains", e));
+    // Liste d'attente (#420) : notifications internes des nouvelles inscriptions encore à envoyer (reprises espacées).
+    await processWaitlistOutbox().catch((e) => logError("worker:waitlist-notify", e));
     // Anciens abonnements Stripe dont l'arrêt a échoué (changement de forfait) : nouvel essai.
     await retryStripeCancellations().catch((e) => logError("worker:stripe-cancel", e));
     // L'identifiant du worker change à chaque démarrage : les battements des anciens démarrages sont purgés.
