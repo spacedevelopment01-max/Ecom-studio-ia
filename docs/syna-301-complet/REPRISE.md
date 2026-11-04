@@ -45,9 +45,10 @@ ligne, activation, action externe réelle ni dépense fournisseur.
 0. **Projets préparés — résolu côté contrat (Codex `a593e6ea`) et cartes alignées (`2497fea3`)** : `readOnlyReason` reste
    réservé à la fiche ; `localEditsWritable` ouvre les retouches gratuites ; les cartes testent `nativeLocalEditAllowed`
    (Site / Fichiers : `localEditAllowed`, exception A1 inchangée). Test `tests/syna301-projet-prepare-cartes.test.ts`.
-   Recettes rejouées sur projets préparés (`RECETTE_PREPARE=1`, pilote `scratchpad/run-prepared.sh`, un cas par serveur) :
-   Calendrier 4/4, Prestation 4/4, Stock 3/4 (premier cas : délai de première compilation, délai allongé et cas à
-   rejouer avec `RECETTE_CAS=encre-ordinateur`) ; lot 5, lot 6, Thème, SEO / Pages en cours au moment de cette mise à jour.
+   Recettes rejouées sur projets préparés (`RECETTE_PREPARE=1`, pilotes `scratchpad/run-prepared.sh` puis
+   `run-reprises.sh`, un cas par serveur) : Calendrier 4/4, Prestation 4/4, lot 6 4/4, Thème 4/4 (produits compris),
+   SEO / Pages 4/4 ; Stock 3/4 + reprise du premier cas ; lot 5 : animations, versions, dossier et téléphone OK, import
+   photo NON proposé sur projet préparé (garde serveur `photoImport` = fiche modifiable) — constat consigné, à raccorder.
 1. Fait : recettes Calendrier 4/4, Thème services 2/2 (produits bloqués, voir 0), Bibliothèque (#377) 4/4
    (`scripts/syna301-bibliotheque-recette.ts` : liste depuis le Pilote, dossiers, photos, recherche exacte, « Désigner »
    puis renommage relu). Reste pour la bibliothèque : pièces jointes envoyées depuis la conversation et lecture d'image
