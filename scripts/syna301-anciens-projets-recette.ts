@@ -7,7 +7,8 @@
  *   le projet reste en lecture seule (aucune Préparation créée), 0 appel IA.
  *   Avec RECETTE_A1_DOSSIERS=1 (contrat #402, réglages EXISTING_FOLDER_RENAME / EXISTING_FOLDER_MOVE fermés par défaut et
  *   ouverts ici seulement) : « Renomme le dossier Photos en Photos clients » puis « Déplace le dossier Photos clients dans
- *   le dossier Archives » → cartes gratuites, accords, nom puis parent relus, toujours sans Préparation.
+ *   le dossier Archives » → cartes gratuites, accords, nom puis parent relus, toujours sans Préparation ; et (#403, réglage
+ *   EXISTING_PROMPTS_READ fermé par défaut) « Affiche ma bibliothèque de prompts » → lecture seule sans bouton.
  * Stockage isolé, clés vides, réseau hors boucle locale refusé, comptes fictifs.
  * Usage : npx tsx scripts/syna301-anciens-projets-recette.ts <dossier de sortie>
  */
@@ -21,7 +22,7 @@ if (process.env.DATABASE_FILE || process.env.STORAGE_DIR || process.env.DATA_DIR
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), "ecs-a1-301-"));
 process.env.DATA_DIR = dir; process.env.STOCK_OFFLINE = "1"; process.env.APP_SECRET = "a1-301-" + randomUUID();
 for (const key of ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "DASHSCOPE_API_KEY", "FAL_KEY", "GOOGLE_API_KEY", "PIXABAY_API_KEY"]) process.env[key] = "";
-Object.assign(process.env, Object.fromEntries(["LOT_A", "AI", "UI", "CONTEXT", "LOCAL_SITE", "FILES", "EXISTING_LOCAL", ...(process.env.RECETTE_A1_DOSSIERS === "1" ? ["EXISTING_FOLDER_RENAME", "EXISTING_FOLDER_MOVE"] : [])].map((k) => ["STUDIO_CONVERSATION_" + k, "1"])), { STUDIO_SYNA_SHELL: "1" });
+Object.assign(process.env, Object.fromEntries(["LOT_A", "AI", "UI", "CONTEXT", "LOCAL_SITE", "FILES", "EXISTING_LOCAL", ...(process.env.RECETTE_A1_DOSSIERS === "1" ? ["EXISTING_FOLDER_RENAME", "EXISTING_FOLDER_MOVE", "EXISTING_PROMPTS_READ", "PROMPTS"] : [])].map((k) => ["STUDIO_CONVERSATION_" + k, "1"])), { STUDIO_SYNA_SHELL: "1" });
 const out = path.resolve(process.argv[2] ?? "work/recette-anciens-projets-301");
 fs.mkdirSync(out, { recursive: true });
 
@@ -134,6 +135,11 @@ try {
           check(JSON.stringify(folderRow()) === before, "écriture avant l'accord");
           await c.getByRole("button", { name: "Confirmer gratuitement", exact: true }).click(); await c.getByRole("status").getByText(/Enregistré et relu · reçu/).waitFor();
           check(verifie(), `relu : ${JSON.stringify(folderRow())}`); check(!stateOf(k.pid), "une Préparation a été créée");
+        });
+        await step("A1 : « Affiche ma bibliothèque de prompts » → lecture seule gratuite, aucun bouton (#403)", async () => {
+          const prompts = panel.getByRole("region", { name: "Bibliothèque de prompts", exact: true });
+          await send("Affiche ma bibliothèque de prompts"); await prompts.getByText("Lecture seule — 0 €", { exact: true }).waitFor();
+          check(!(await prompts.getByRole("button").count()), "bouton d'action"); check(!stateOf(k.pid), "une Préparation a été créée");
         });
       }
     } catch (e) { errors.push(`${label} : ${String(e).slice(0, 300)}`); }
