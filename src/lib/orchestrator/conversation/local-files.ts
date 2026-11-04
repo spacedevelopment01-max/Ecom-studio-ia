@@ -17,7 +17,16 @@ const present=(state:LocalFilesPresentation['state'],message:string,extra:Partia
 const plain=(s:string)=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 export const localFilesEnabled=()=>activeContextEnabled()&&process.env.STUDIO_CONVERSATION_FILES==='1';
 const libraryReadCandidate=(text:string)=>/^(?:liste|montre|affiche|cherche|recherche)\b/iu.test(text.trim())&&/\b(?:fichiers?|photos?|images?|vid[ée]os?|dossiers?)\b/iu.test(text);
-export const localFilesCandidate=(text:string)=>libraryReadCandidate(text)||/^(?:renomme|rename|deplace|move)\s+(?:ce|le|this|the)\s+(?:fichier|file)\b/.test(plain(text.trim()));
+function fileRequest(text:string){
+ const s=text.trim();return /^peux-tu /iu.test(s)?s.replace(/^peux-tu renommer\b/iu,'Renomme').replace(/^peux-tu d[ée]placer\b/iu,'Déplace').replace(/\?$/u,'').trim():s;
+}
+function exactMetadataName(raw:string):string|undefined{
+ const s=raw.trim(),quoted=/^[«“"]([^»”"\r\n]{1,200})[»”"]\s*[.!?]?$/u.exec(s);
+ if(quoted)return quoted[1].trim();
+ if(!s||s.length>200||/[«»“”"\r\n]|\b(?:puis|ensuite|et)\b/iu.test(s))return;
+ return s;
+}
+export const localFilesCandidate=(text:string)=>libraryReadCandidate(text)||/^(?:renomme|rename|deplace|move)\s+(?:ce|le|this|the)\s+(?:fichier|file)\b/.test(plain(fileRequest(text)));
 function fail(message:string):never{throw new HttpError(422,message,'conversation_file_ambiguous');}
 function selected(c:ConversationRow,pin?:ContextPin):{pin:ContextPin;asset:Asset}{
  const checked=checkedContextPin(c,pin),target=checked?.selection.target;
@@ -32,13 +41,14 @@ export function proposeLocalFiles(user:User,c:ConversationRow,m:ConversationStat
  if(!localFilesEnabled())return present('error','Les modifications gratuites de fichiers ne sont pas activées. Aucun appel IA lancé.');
  if(libraryReadCandidate(text))return readNativeLibrary(user,c,text);
  try{
-  const rename=/^(?:Renomme (?:ce|le) fichier en|Rename (?:this|the) file to)\s+[«“"]([^\r\n]{1,200})[»”"]\s*[.!]?$/i.exec(text.trim());
-  const move=/^(?:D[ée]place (?:ce|le) fichier (?:vers|dans) le dossier|Move (?:this|the) file to (?:the )?folder)\s+[«“"]([^\r\n]{1,200})[»”"]\s*[.!]?$/i.exec(text.trim());
-  if(!rename&&!move)fail('Précisez : Renomme ce fichier en « nom exact » ou Déplace ce fichier vers le dossier « nom ou identifiant exact ».');
+  const rename=/^(?:Renomme (?:ce|le) fichier en|Rename (?:this|the) file to)\s+([\s\S]+)$/iu.exec(fileRequest(text));
+  const move=/^(?:D[ée]place (?:ce|le) fichier (?:vers|dans) le dossier|Move (?:this|the) file to (?:the )?folder)\s+([\s\S]+)$/iu.exec(fileRequest(text));
+  const name=exactMetadataName(rename?.[1]??move?.[1]??'');
+  if((!rename&&!move)||!name)fail('Précisez un seul nom exact : Renomme ce fichier en nom, ou Déplace ce fichier vers le dossier nom ou identifiant exact. Utilisez des guillemets pour un nom contenant une conjonction.');
   requirePlan(user,c.project_id!);const {pin,asset:a}=selected(c),after:Snapshot={name:a.name,folderId:a.folder_id};
   let folder:LocalFilesProposal['folder'];
-  if(rename){after.name=rename[1].trim();if(!after.name||after.name===a.name)fail('Le nouveau nom est vide ou identique. Aucun changement.');}
-  if(move){const target=move[1].trim(),matches=all<Folder>('SELECT * FROM folders WHERE project_id=? AND (id=? OR name=?)',c.project_id,target,target);if(matches.length!==1)fail('Dossier absent ou ambigu : donnez un identifiant ou un nom unique de ce projet.');folder={id:matches[0].id,name:matches[0].name,parent_id:matches[0].parent_id};after.folderId=folder.id;if(after.folderId===a.folder_id)fail('Le fichier est déjà dans ce dossier. Aucun changement.');}
+  if(rename){after.name=name;if(!after.name||after.name===a.name)fail('Le nouveau nom est vide ou identique. Aucun changement.');}
+  if(move){const target=name,matches=all<Folder>('SELECT * FROM folders WHERE project_id=? AND (id=? OR name=?)',c.project_id,target,target);if(matches.length!==1)fail('Dossier absent ou ambigu : donnez un identifiant ou un nom unique de ce projet.');folder={id:matches[0].id,name:matches[0].name,parent_id:matches[0].parent_id};after.folderId=folder.id;if(after.folderId===a.folder_id)fail('Le fichier est déjà dans ce dossier. Aucun changement.');}
   const p:LocalFilesProposal={id:id(),kind:rename?'rename':'move',pin,assetId:a.id,version:a.version,fingerprint:fileMetadataFingerprint(a),diff:{before:{name:a.name,folderId:a.folder_id},after},...(folder?{folder}:{}),expiresAt:now()+15*60000};m.localFilesProposal=p;
   return present('proposed','Vérifiez la modification de ce fichier puis confirmez gratuitement.',{command:p.kind,proposalId:p.id,diff:p.diff,asset:{id:a.id,version:a.version,name:a.name,folderId:a.folder_id},...(folder?{folder:{id:folder.id,label:folder.name}}:{}),confirmationRequired:true});
  }catch(e){if(e instanceof HttpError&&e.status===422)return present('ambiguous',e.message);throw e;}
