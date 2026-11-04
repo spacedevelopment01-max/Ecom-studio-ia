@@ -1,3 +1,7 @@
+import {localFoldersEnabled,localFoldersCandidate,proposeLocalFolder,confirmLocalFolder} from "./local-folders";
+import {localThemeRestoreEnabled,localThemeRestoreCandidate,localThemeRestoreGuardCandidate,hasCurrentVersionUndo,proposeLocalThemeRestore,confirmLocalThemeRestore} from './local-theme-restore';
+import {localSiteMotionEnabled,localSiteMotionCandidate,proposeLocalSiteMotion,confirmLocalSiteMotion} from './local-site-motion';
+import {MAX_CONVERSATION_PHOTO_BYTES} from './photo-import';
 import {localThemeChoiceEnabled,localThemeChoiceCandidate,prepareLocalThemeChoice,acceptPreparedThemeChoice,confirmLocalThemeChoice} from './local-theme-choice';
 import {localCalendarEnabled,localCalendarCandidate,proposeLocalCalendar,confirmLocalCalendar} from './local-calendar';
 import {localStockEnabled,localStockCandidate,proposeLocalStock,confirmLocalStock} from "./local-stock";
@@ -73,11 +77,18 @@ export function conversationView(user: User, cid: string, before?: number,includ
     ...(readOnlyReason===null&&c.project_id&&adDocumentToolsEnabled()?{localAdDocumentExecution:{enabled:true as const}}:{}),
     ...(m.localFiles?{localFiles:m.localFiles}:{}),
     ...(c.project_id&&localFilesEnabled()?{localFilesExecution:{enabled:true as const}}:{}),
+    ...(c.project_id&&readOnlyReason===null&&localFilesEnabled()?{photoImport:{enabled:true as const,endpoint:`/api/studio-agent/conversations/${c.id}/photos`,maxFileBytes:MAX_CONVERSATION_PHOTO_BYTES,kind:'image' as const,analysis:false as const}}:{}),
+    ...(m.localFolders?{localFolders:m.localFolders}:{}),
     ...(m.localStock?{localStock:m.localStock}:{}),
     ...(m.localCalendar?{localCalendar:m.localCalendar}:{}),
+    ...(m.localThemeRestore?{localThemeRestore:m.localThemeRestore}:{}),
+    ...(m.localSiteMotion?{localSiteMotion:m.localSiteMotion}:{}),
     ...(m.localThemeChoice?{localThemeChoice:m.localThemeChoice}:{}),
+    ...(c.project_id&&readOnlyReason===null&&localFoldersEnabled()?{localFoldersExecution:{enabled:true as const}}:{}),
     ...(c.project_id&&readOnlyReason===null&&localStockEnabled()?{localStockExecution:{enabled:true as const}}:{}),
     ...(c.project_id&&readOnlyReason===null&&localCalendarEnabled()?{localCalendarExecution:{enabled:true as const}}:{}),
+    ...(c.project_id&&readOnlyReason===null&&localThemeRestoreEnabled()?{localThemeRestoreExecution:{enabled:true as const}}:{}),
+    ...(c.project_id&&readOnlyReason===null&&localSiteMotionEnabled()?{localSiteMotionExecution:{enabled:true as const}}:{}),
     ...(c.project_id&&readOnlyReason===null&&localThemeChoiceEnabled()?{localThemeChoiceExecution:{enabled:true as const}}:{}),
     ...(m.localPages?{localPages:m.localPages}:{}),
     ...(c.project_id&&readOnlyReason===null&&localPagesEnabled()?{localPagesExecution:{enabled:true as const}}:{}),
@@ -209,10 +220,13 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
   const adCommand=cmd.action==='message'&&adDocumentCandidate(cmd.text);
   let adProposalId:string|undefined;
   if(adCommand){const selected=metaOf(initial).activeContext,target=selected?.target;if(cmd.action==='message'&&cmd.context&&(cmd.context.tab!==selected?.tab||cmd.context.projectId!==undefined&&cmd.context.projectId!==initial.project_id||stableHash('ad-document-selected',cmd.context.target)!==stableHash('ad-document-selected',target)))throw new HttpError(409,'La sélection affichée diffère du repère sauvegardé. Confirmez sa désignation avant de proposer la retouche.');if(target?.kind!=='ad-document-text')throw new HttpError(409,'Désignez le titre enregistré dans le contexte partagé avant cette demande.');const proposed=await proposeAdDocument(user,cid,{action:'propose',revision:cmd.revision,projectRevision:cmd.projectRevision!,docKey:target.docKey,layerId:target.layerId,expectedVersion:target.version,operation:'title-larger'});adProposalId=proposed.proposalId;}
+  const folderCommand=cmd.action==='message'&&localFoldersCandidate(cmd.text);
   const fileCommand=cmd.action==='message'&&localFilesCandidate(cmd.text);
   const requestCommand=cmd.action==='message'&&localRequestsCandidate(cmd.text);
   const themeChoiceCommand=cmd.action==='message'&&localThemeChoiceCandidate(cmd.text);
   const preparedThemeChoice=themeChoiceCommand?await prepareLocalThemeChoice(user,initial,(cmd as Extract<Command,{action:'message'}>).text,cmd.action==='message'?cmd.context?.tab??metaOf(initial).activeContextTab:undefined):null;
+  const motionCommand=cmd.action==='message'&&localSiteMotionCandidate(cmd.text);
+  const restoreCommand=cmd.action==='message'&&(localThemeRestoreCandidate(cmd.text)||hasCurrentVersionUndo(initial,cmd.text));
   const calendarCommand=cmd.action==='message'&&localCalendarCandidate(cmd.text);
   const stockCommand=cmd.action==='message'&&localStockCandidate(cmd.text);
   const pagesCommand=cmd.action==='message'&&(localPagesCandidate(cmd.text)||hasPagesModelReply(metaOf(initial),cmd.text));
@@ -220,7 +234,7 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
   const localCommand=cmd.action==='message'&&!seoCommand&&!pagesCommand&&localSiteCandidate(cmd.text);
   const serviceCommand=cmd.action==='message'&&serviceProfileCandidate(cmd.text);
   const businessCommand=cmd.action==='message'&&localBusinessContentCandidate(cmd.text);
-  const intent = cmd.action === "message" && !themeChoiceCommand && !calendarCommand && !stockCommand && !pagesCommand && !seoCommand && !adCommand && !localCommand && !fileCommand && !businessCommand && !serviceCommand && !requestCommand && !promptsCommand && !intelligenceEnabled() ? await understand({ text: cmd.text }, { aiActive: !!tests.classify, classify: tests.classify }) : null;
+  const intent = cmd.action === "message" && !folderCommand && !themeChoiceCommand && !motionCommand && !restoreCommand && !calendarCommand && !stockCommand && !pagesCommand && !seoCommand && !adCommand && !localCommand && !fileCommand && !businessCommand && !serviceCommand && !requestCommand && !promptsCommand && !intelligenceEnabled() ? await understand({ text: cmd.text }, { aiActive: !!tests.classify, classify: tests.classify }) : null;
   return tx(() => {
     const c = ownedConversation(user, cid);
     const prior = one<{ request_hash: string; response_json: string }>("SELECT request_hash,response_json FROM agent_conversation_turns WHERE conversation_id=? AND request_id=?", cid, cmd.requestId);
@@ -244,12 +258,19 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
     if(adCommand&&adProposalId){bindAdDocumentProposal(user,c.id,adProposalId,c.revision+1);m.localAdDocumentProposalId=adProposalId;message='Vérifiez les aperçus et les changements exacts puis confirmez gratuitement. Aucun appel IA.';}else if(promptsCommand){
       m.localPrompts=listLocalPrompts(user,c,(cmd as Extract<Command,{action:'message'}>).text);
       message=m.localPrompts.message;
+    }else if(folderCommand||cmd.action==='confirm-folder'||cmd.action==='cancel-folder'){
+      if(cmd.action==='cancel-folder'){if(!localFoldersEnabled())throw new HttpError(404,'Dossiers indisponibles.');if(m.localFolderProposal?.id!==cmd.proposalId)throw new HttpError(409,'Proposition périmée.');delete m.localFolderProposal;delete m.localFolders;message='Création du dossier annulée, aucun changement.';}else{m.localFolders=cmd.action==='confirm-folder'?confirmLocalFolder(user,c,m,cmd.proposalId,cmd.requestId):proposeLocalFolder(user,c,m,(cmd as Extract<Command,{action:'message'}>).text);message=m.localFolders.message;}
     }else if(fileCommand||cmd.action==='confirm-files'){
       const active={...c,state_json:JSON.stringify(m)};
       m.localFiles=cmd.action==='confirm-files'?confirmLocalFiles(user,active,m,cmd.proposalId,cmd.requestId):proposeLocalFiles(user,active,m,(cmd as Extract<Command,{action:'message'}>).text);
       message=m.localFiles.message;
     }else if(themeChoiceCommand||cmd.action==='confirm-theme-choice'||cmd.action==='cancel-theme-choice'){
       if(cmd.action==='cancel-theme-choice'){if(!localThemeChoiceEnabled())throw new HttpError(404,'Choix de thème indisponible.');if(m.localThemeChoiceProposal?.id!==cmd.proposalId)throw new HttpError(409,'Proposition de thème périmée.');delete m.localThemeChoice;delete m.localThemeChoiceProposal;message='Proposition de thème annulée, aucun changement.';}else{m.localThemeChoice=cmd.action==='confirm-theme-choice'?confirmLocalThemeChoice(user,c,m,cmd.proposalId,cmd.requestId):acceptPreparedThemeChoice(user,c,m,preparedThemeChoice!);message=m.localThemeChoice.message;}
+    }else if(motionCommand||cmd.action==='confirm-motion'||cmd.action==='cancel-motion'){
+      if(cmd.action==='cancel-motion'){if(!localSiteMotionEnabled())throw new HttpError(404,'Réglage d’animation indisponible.');if(m.localSiteMotionProposal?.id!==cmd.proposalId)throw new HttpError(409,'Proposition d’animation périmée.');delete m.localSiteMotion;delete m.localSiteMotionProposal;message='Proposition d’animation annulée, aucun changement.';}else{m.localSiteMotion=cmd.action==='confirm-motion'?confirmLocalSiteMotion(user,c,m,cmd.proposalId,cmd.requestId):proposeLocalSiteMotion(user,c,m,(cmd as Extract<Command,{action:'message'}>).text);message=m.localSiteMotion.message;}
+    }else if(restoreCommand||cmd.action==='confirm-restore'||cmd.action==='cancel-restore'){
+      delete m.localSiteProposal;delete m.localSite;
+      if(cmd.action==='cancel-restore'){if(!localThemeRestoreEnabled())throw new HttpError(404,'Restauration native indisponible.');if(m.localThemeRestoreProposal?.id!==cmd.proposalId)throw new HttpError(409,'Proposition de restauration périmée.');delete m.localThemeRestore;delete m.localThemeRestoreProposal;message='Proposition de restauration annulée, aucun changement.';}else{m.localThemeRestore=cmd.action==='confirm-restore'?confirmLocalThemeRestore(user,c,m,cmd.proposalId,cmd.requestId):proposeLocalThemeRestore(user,c,m,(cmd as Extract<Command,{action:'message'}>).text);message=m.localThemeRestore.message;}
     }else if(calendarCommand||cmd.action==='confirm-calendar'||cmd.action==='cancel-calendar'){
       if(cmd.action==='cancel-calendar'){if(!localCalendarEnabled())throw new HttpError(404,'Calendrier local indisponible.');if(m.localCalendarProposal?.id!==cmd.proposalId)throw new HttpError(409,'Proposition de calendrier périmée.');delete m.localCalendar;delete m.localCalendarProposal;message='Proposition de calendrier annulée, aucun changement.';}else{m.localCalendar=cmd.action==='confirm-calendar'?confirmLocalCalendar(user,c,m,cmd.proposalId,cmd.requestId):proposeLocalCalendar(user,c,m,(cmd as Extract<Command,{action:'message'}>).text);message=m.localCalendar.message;}
     }else if(stockCommand||cmd.action==='confirm-stock'||cmd.action==='cancel-stock'){
@@ -397,8 +418,11 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
     if(cmd.action==='message'&&studioKnowledgeEnabled())m.studioObservation=captureStudioObservation(c);
     if(!adCommand)delete m.localAdDocumentProposalId;
     if(!promptsCommand)delete m.localPrompts;
+    if(!folderCommand&&cmd.action!=='confirm-folder'&&cmd.action!=='cancel-folder'){delete m.localFolders;delete m.localFolderProposal;}
     if(!stockCommand&&cmd.action!=='confirm-stock'&&cmd.action!=='cancel-stock'){delete m.localStock;delete m.localStockProposal;}
     if(!calendarCommand&&cmd.action!=='confirm-calendar'&&cmd.action!=='cancel-calendar'){delete m.localCalendar;delete m.localCalendarProposal;}
+    if(!restoreCommand&&cmd.action!=='confirm-restore'&&cmd.action!=='cancel-restore'){delete m.localThemeRestore;delete m.localThemeRestoreProposal;}
+    if(!motionCommand&&cmd.action!=='confirm-motion'&&cmd.action!=='cancel-motion'){delete m.localSiteMotion;delete m.localSiteMotionProposal;}
     if(!themeChoiceCommand&&cmd.action!=='confirm-theme-choice'&&cmd.action!=='cancel-theme-choice'){delete m.localThemeChoice;delete m.localThemeChoiceProposal;}
     if(!pagesCommand&&cmd.action!=='confirm-pages'&&cmd.action!=='cancel-pages'){delete m.localPages;delete m.localPagesProposal;delete m.localPagesClarification;}
     if(!seoCommand&&cmd.action!=='confirm-seo'&&cmd.action!=='cancel-seo'){delete m.localSeo;delete m.localSeoProposal;}
@@ -430,6 +454,6 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
 export async function submitConversation(user:User,cid:string,raw:unknown,tests:TestDependencies={}):Promise<ConversationView>{
  const parsed=CommandSchema.safeParse(raw),cmd=parsed.success?parsed.data:null;
  const pagesReply=cmd?.action==='message'&&pagesModelReplyCandidate(cmd.text)&&hasPagesModelReply(metaOf(ownedConversation(user,cid,true)),cmd.text);
- const local=cmd?.action==='confirm-theme-choice'||cmd?.action==='cancel-theme-choice'||cmd?.action==='message'&&localThemeChoiceCandidate(cmd.text)||cmd?.action==='confirm-calendar'||cmd?.action==='cancel-calendar'||cmd?.action==='message'&&localCalendarCandidate(cmd.text)||cmd?.action==='confirm-stock'||cmd?.action==='cancel-stock'||cmd?.action==='message'&&localStockCandidate(cmd.text)||pagesReply||cmd?.action==='confirm-pages'||cmd?.action==='cancel-pages'||cmd?.action==='message'&&localPagesCandidate(cmd.text)||cmd?.action==='confirm-seo'||cmd?.action==='cancel-seo'||cmd?.action==='message'&&localSeoCandidate(cmd.text)||cmd?.action==='message'&&adDocumentCandidate(cmd.text)||cmd?.action==='confirm-local'||cmd?.action==='cancel-local'||cmd?.action==='confirm-site-request'||cmd?.action==='confirm-files'||cmd?.action==='confirm-business-content'||cmd?.action==='confirm-service-profile'||cmd?.action==='cancel-service-profile'||cmd?.action==='message'&&(localPromptsCandidate(cmd.text)||localRequestsCandidate(cmd.text)||localSiteCandidate(cmd.text)||localFilesCandidate(cmd.text)||localBusinessContentCandidate(cmd.text)||serviceProfileCandidate(cmd.text));
+ const local=cmd?.action==='confirm-folder'||cmd?.action==='cancel-folder'||cmd?.action==='message'&&localFoldersCandidate(cmd.text)||cmd?.action==='confirm-restore'||cmd?.action==='cancel-restore'||cmd?.action==='message'&&localThemeRestoreGuardCandidate(cmd.text)||cmd?.action==='confirm-motion'||cmd?.action==='cancel-motion'||cmd?.action==='message'&&localSiteMotionCandidate(cmd.text)||cmd?.action==='confirm-theme-choice'||cmd?.action==='cancel-theme-choice'||cmd?.action==='message'&&localThemeChoiceCandidate(cmd.text)||cmd?.action==='confirm-calendar'||cmd?.action==='cancel-calendar'||cmd?.action==='message'&&localCalendarCandidate(cmd.text)||cmd?.action==='confirm-stock'||cmd?.action==='cancel-stock'||cmd?.action==='message'&&localStockCandidate(cmd.text)||pagesReply||cmd?.action==='confirm-pages'||cmd?.action==='cancel-pages'||cmd?.action==='message'&&localPagesCandidate(cmd.text)||cmd?.action==='confirm-seo'||cmd?.action==='cancel-seo'||cmd?.action==='message'&&localSeoCandidate(cmd.text)||cmd?.action==='message'&&adDocumentCandidate(cmd.text)||cmd?.action==='confirm-local'||cmd?.action==='cancel-local'||cmd?.action==='confirm-site-request'||cmd?.action==='confirm-files'||cmd?.action==='confirm-business-content'||cmd?.action==='confirm-service-profile'||cmd?.action==='cancel-service-profile'||cmd?.action==='message'&&(localPromptsCandidate(cmd.text)||localRequestsCandidate(cmd.text)||localSiteCandidate(cmd.text)||localFilesCandidate(cmd.text)||localBusinessContentCandidate(cmd.text)||serviceProfileCandidate(cmd.text));
  return local?withAiDisabled('B1 : retouche gratuite déterministe, aucun devis IA',()=>submitConversationImpl(user,cid,raw,tests)):submitConversationImpl(user,cid,raw,tests);
 }

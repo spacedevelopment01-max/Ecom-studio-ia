@@ -504,13 +504,16 @@ async function buildShopInScope(ctx:JobContext|null,projectId:string,opts:Parame
  * Dernière composition automatique (version enregistrée avec son contrôle de qualité « gate ») au plus tard à la
  * version donnée : c'est la base de comparaison pour reconnaître les ajouts et réglages du client.
  */
-function compositionBaseline(projectId: string, upToNumber: number): ThemeSpec | null {
+export function compositionBaseline(projectId: string, upToNumber: number): ThemeSpec | null {
   const versions = listThemeVersions(projectId).filter((v) => v.number <= upToNumber);
   for (const v of versions) {
     const qc = json<{ gate?: unknown; clientCompositionBaseline?: ThemeSpec }>((v as { qc?: string }).qc ?? "{}", {});
     if (qc && typeof qc === "object" && "gate" in qc) return qc.clientCompositionBaseline ?? themeVersion(projectId, v.id)?.spec ?? null;
   }
-  return null;
+  // Legacy automatic first composition: its provenance is server-owned. A later manual version is not a baseline.
+  const first = versions.find(v=>v.number===1&&v.author==='system'&&v.parent_id===null);
+  const initial = first ? themeVersion(projectId,first.id)?.spec : null;
+  return initial && !initial.imported ? initial : null;
 }
 
 /** Change de direction : nouvelle version complète (l'ancienne reste restaurable), ajouts et réglages du client reportés. */

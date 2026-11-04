@@ -4,7 +4,7 @@ import {all,id,now} from '../../db';
 import {stableHash} from '../../brain/hash';
 import {currentTheme,loadProject,themeVersion,saveThemeVersion} from '../../projects';
 import {requirePlan,assertThemeAllowed} from '../../plan-gates';
-import {buildShop} from '../../engine/shop';
+import {buildShop,compositionBaseline} from '../../engine/shop';
 import {DIRECTIONS,type DirectionId} from '../../theme/directions';
 import {themeRecommendation} from '../../theme/theme-recommendation';
 import {validateSpec} from '../../theme/ops';
@@ -28,6 +28,7 @@ export async function prepareLocalThemeChoice(user:User,c:ConversationRow,text:s
  const name=normal(match[1]),found=DIRECTIONS.filter(x=>normal(x.id)===name||normal(x.name)===name);if(found.length!==1)return question('Thème inconnu ou ambigu : choisissez un identifiant exact de la galerie. Aucun autre thème substitué.');
  const direction=found[0].id;if(!eligible.includes(direction))return question('Ce thème n’est pas disponible pour la catégorie de ce projet dans la galerie native. Le site existant est conservé.');assertThemeAllowed(p.id,direction,cur.spec.direction);
  if(direction===cur.spec.direction)return question('Ce thème est déjà installé. Aucune recomposition ni nouvelle version.');
+ if(!compositionBaseline(p.id,cur.version.number))return question('La composition automatique de référence manque. Les retouches manuelles ne peuvent pas être identifiées avec certitude ;le site courant est conservé,aucun remplacement proposé.');
  const fingerprint=source(p.id);
  // Same native builder and preservation rules; no brand mutation, media preparation or AI for reference themes.
  const result=await buildShop(null,p.id,{direction,useAi:false,prepareOnly:true}),preview=themeVersion(p.id,result.versionId);

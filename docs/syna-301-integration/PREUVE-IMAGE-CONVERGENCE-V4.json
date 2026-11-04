@@ -1,0 +1,114 @@
+{
+  "schema": "syna301-existing-image-compiled-1",
+  "sourceCommit": "af6e16b85a054e02ff797f68eb24e85276dafbb1",
+  "serverMode": "production",
+  "buildId": "onDHt-VFlzkgfMG7m02ho",
+  "servedVersion": {
+    "commit": "af6e16b85a054e02ff797f68eb24e85276dafbb1",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "business": "products",
+      "steps": [
+        {
+          "etape": "image désignée dans l’aperçu réel (toucher sur téléphone)",
+          "ok": true
+        },
+        {
+          "etape": "phrase naturelle, avant/après, source existante et annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "nouvel accord après17s, image relue dans la base et réellement chargée dans l’aperçu",
+          "ok": true
+        },
+        {
+          "etape": "annulation naturelle avec accord et contenu natif restauré",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "image désignée dans l’aperçu réel (toucher sur téléphone)",
+          "ok": true
+        },
+        {
+          "etape": "phrase naturelle, avant/après, source existante et annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "nouvel accord après17s, image relue dans la base et réellement chargée dans l’aperçu",
+          "ok": true
+        },
+        {
+          "etape": "annulation naturelle avec accord et contenu natif restauré",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "image désignée dans l’aperçu réel (toucher sur téléphone)",
+          "ok": true
+        },
+        {
+          "etape": "phrase naturelle, avant/après, source existante et annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "nouvel accord après17s, image relue dans la base et réellement chargée dans l’aperçu",
+          "ok": true
+        },
+        {
+          "etape": "annulation naturelle avec accord et contenu natif restauré",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "business": "products",
+      "steps": [
+        {
+          "etape": "image désignée dans l’aperçu réel (toucher sur téléphone)",
+          "ok": true
+        },
+        {
+          "etape": "phrase naturelle, avant/après, source existante et annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "nouvel accord après17s, image relue dans la base et réellement chargée dans l’aperçu",
+          "ok": true
+        },
+        {
+          "etape": "annulation naturelle avec accord et contenu natif restauré",
+          "ok": true
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "forbidden": [],
+  "coutIA": 0
+}
