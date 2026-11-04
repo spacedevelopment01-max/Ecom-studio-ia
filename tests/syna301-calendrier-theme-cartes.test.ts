@@ -57,3 +57,8 @@ it('carte Renommer un dossier (#398) distincte de « Nouveau dossier » ; prompt
  expect(rename).toContain("t('Renommer un dossier — gratuit'");expect(rename).not.toContain("t('Nouveau dossier — gratuit'");expect(rename).toContain('nativeLocalEditAllowed(view)');
  expect(prompts).toContain('handlesLocalPrompts=(v:ConversationView)=>nativeLocalEditAllowed(v)&&');expect(prompts).not.toContain('!v.readOnlyReason');
 });
+it('carte Déplacer un dossier (#400) distincte de la création et du renommage, emplacements exacts',()=>{
+ const move=fs.readFileSync('src/components/studio/conversation-local-folder-move.tsx','utf8');
+ expect(move).toContain("t('Déplacer un dossier — gratuit'");expect(move).toContain("t('Racine (aucun dossier)'");expect(move).toContain('nativeLocalEditAllowed(view)');
+ expect(move).not.toContain("t('Nouveau dossier — gratuit'");expect(move).not.toContain("t('Renommer un dossier — gratuit'");
+});
