@@ -92,7 +92,8 @@ function preview(user:User,c:ConversationRow,p:LocalSiteProposal){
  if(fp(applied.spec)===fp(cur.spec))fail('La section est déjà à cette position. Aucune nouvelle version.');
  return{cur,spec:applied.spec,ops:native!.ops};
 }
-const buttonKey=(key:string,blockType?:string)=>/^(?:button(?:_\d+)?_(?:label|text)(?:_\d+)?|cta_(?:label|text))$/.test(key)||!!blockType&&/button|cta/.test(blockType)&&['label','text'].includes(key);
+// Clés natives des boutons : button_label, button_2_label et aussi button2_label (second bouton des héros natifs).
+export const buttonKey=(key:string,blockType?:string)=>/^(?:button(?:_?\d+)?_(?:label|text)(?:_\d+)?|cta_(?:label|text))$/.test(key)||!!blockType&&/button|cta/.test(blockType)&&['label','text'].includes(key);
 const plain=(text:string)=>text.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/^(?:le|la|les)\s+|^l['’]\s*/,'');
 export function proposeLocalSite(user:User,c:ConversationRow,m:ConversationState,text:string):LocalSitePresentation{
  delete m.localSiteProposal;
