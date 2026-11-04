@@ -102,6 +102,7 @@ export const STUDIO_OPERATIONS:readonly Definition[]=[
  op('folders.rename','fichiers','Renommer un dossier précis','Rename one exact folder','folder-rename'),
  op('folders.create','fichiers','Créer un dossier vide avec parent exact','Create an empty folder with exact parent','folders'),
  op('native.files.restore','fichiers','Restaurer un fichier acquis de la corbeille','Restore an acquired file from trash','file-restore'),
+ op('native.images.restore','images','Restaurer une image acquise de la corbeille, sans régénération','Restore an acquired image from trash without regeneration','file-restore'),
  op('files.organize','fichiers','Ranger ou renommer un fichier','Organize or rename a file','files'),
  op('files.delete','fichiers','Supprimer un fichier','Delete a file','none',true),
  op('connections.configure','connexions','Connecter un compte externe','Connect an external account','none',true),
