@@ -20,10 +20,12 @@ ligne, activation, action externe réelle ni dépense fournisseur.
 | 2 — Horaires naturels | carte Horaires existante sur le contrat #366 : « Change les horaires du mardi… » → clarification profil / créneaux sans devis ; « Les horaires du profil sont : … » → avant / après, accord, reçu | recette `scripts/syna301-horaires-recette.ts` 4/4 : champ Horaires de l'écran Activité relu sans recharger, puis après rechargement |
 | 3 — Masquer une section | carte du site (#368) ; après le reçu, message « Section masquée : elle n'est plus désignée » au lieu de l'alerte « cible changée » | même recette 4/4 : seule la section visée change |
 
+| 3 — Pages et sections | créer avec modèle, renommer, refus honnête du menu pour un brouillon (sans liste de modèles hors sujet), retirer une page publiée du menu, dupliquer, supprimer une page ; supprimer une section | recette `scripts/syna301-pages-sections-recette.ts` 4/4 : titre et menu relus dans la version, page supprimée absente, seule la section visée supprimée, carte sans alerte trompeuse |
+
 ## Reste à vérifier ou à faire (ordre proposé)
 
-1. Recette navigateur : supprimer une section et texte de bouton
-   (#368), renommer / menu / dupliquer / supprimer une page (#370).
+1. Recette navigateur du texte de bouton (#368) sur une section qui a un bouton. Manque signalé à Codex : aucune
+   phrase ne publie une page brouillon (le menu la refuse donc, à raison).
 2. Lot 3 restant (phrases naturelles) : choix du thème, prestations / réservation, stock / variantes, calendrier /
    brouillons, pièces jointes / bibliothèque, boutons / images.
 3. Omissions de la matrice (`OMISSIONS-MATRICE.md`) à faire entrer dans la matrice commune de Codex (85 lignes).

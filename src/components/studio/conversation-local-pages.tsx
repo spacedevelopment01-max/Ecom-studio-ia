@@ -9,6 +9,8 @@ import {useT} from '../i18n';
  * menu), renommer, afficher / retirer du menu, dupliquer, supprimer. Avant / après, accord gratuit, reçu relu, lien vers
  * la page dans la version enregistrée. Le choix d'un modèle remplit la phrase du client : rien n'est envoyé sans lui.
  */
+/** Le moteur joint les modèles à toute clarification ; ils ne s'affichent que si la question porte sur le modèle de page. */
+export const modelQuestion=(message:string)=>/mod[èe]le/i.test(message);
 export function ConversationLocalPages({view,confirmation,busy,onSuggest}:{view:ConversationView;confirmation:ReturnType<typeof useLocalPagesConfirmation>;busy:boolean;onSuggest:(text:string)=>void}){
  const t=useT(),s=view.localPages,{controller,state}=confirmation;
  if(view.recovery||(!s&&!state.error&&!state.uncertain))return null;
@@ -16,7 +18,7 @@ export function ConversationLocalPages({view,confirmation,busy,onSuggest}:{view:
  const label:Record<string,string>={create:t('Nouvelle page (brouillon, hors du menu)','New page (draft, not in the menu)'),rename:t('Renommer la page','Rename the page'),navigation:t('Menu du site','Site menu'),duplicate:t('Copie de la page (brouillon)','Copy of the page (draft)'),remove:t('Supprimer la page','Delete the page')};
  return <section aria-label={t('Pages du site — gratuit','Site pages — free')} data-syna-pages-card className="min-w-0 space-y-3 rounded-xl border border-line p-4 text-sm">
   <p className="font-semibold">{t('Gratuit — 0 €','Free — €0')}</p>{s&&<p>{s.message}</p>}
-  {s?.state==='ambiguous'&&!!s.models?.length&&<ul className="space-y-2" aria-label={t('Modèles de page natifs','Native page models')}>{s.models.map(m=><li key={m.id} className="flex flex-wrap items-center gap-2"><span className="min-w-0 flex-1 basis-40 break-words">{m.label}</span><a href={m.previewHref} target="_blank" rel="noreferrer" className="text-xs underline">{t('Aperçu','Preview')}</a><Button size="sm" variant="secondary" disabled={busy} onClick={()=>onSuggest(t(`Je choisis le modèle « ${m.label} »`,`Je choisis le modèle « ${m.label} »`))}>{t('Choisir','Choose')}</Button></li>)}</ul>}
+  {s?.state==='ambiguous'&&!!s.models?.length&&modelQuestion(s.message)&&<ul className="space-y-2" aria-label={t('Modèles de page natifs','Native page models')}>{s.models.map(m=><li key={m.id} className="flex flex-wrap items-center gap-2"><span className="min-w-0 flex-1 basis-40 break-words">{m.label}</span><a href={m.previewHref} target="_blank" rel="noreferrer" className="text-xs underline">{t('Aperçu','Preview')}</a><Button size="sm" variant="secondary" disabled={busy} onClick={()=>onSuggest(t(`Je choisis le modèle « ${m.label} »`,`Je choisis le modèle « ${m.label} »`))}>{t('Choisir','Choose')}</Button></li>)}</ul>}
   {s?.command&&<p className="break-words"><strong>{label[s.command]??s.command}</strong>{s.target&&<> · <code className="text-xs">{s.target}</code></>}</p>}
   {s?.diff&&<dl className="space-y-1 whitespace-pre-wrap break-words"><dt className="text-muted">{t('Avant','Before')}</dt><dd>{s.diff.before||t('(aucune)','(none)')}</dd><dt className="text-muted">{t('Après confirmation','After confirmation')}</dt><dd>{s.diff.after}</dd></dl>}
   {s?.state==='proposed'&&s.modelPreviewHref&&<a href={s.modelPreviewHref} target="_blank" rel="noreferrer" className="inline-block text-xs underline">{t('Voir l’aperçu du modèle','View the model preview')}</a>}
