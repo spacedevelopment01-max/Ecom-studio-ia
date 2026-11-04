@@ -102,3 +102,21 @@ it.each(['products','services'] as const)('%s: acquired preparation does not hid
  const loaded=await thread.GET(req(),ctx(f.c.id));expect(loaded.status).toBe(200);const reread=await loaded.json();expect(reread.localPrompts).toEqual(listed.localPrompts);expect(reread.readOnlyReason).toMatch(/préparation engagée/);
  expect(stateOf(f.pid)).toEqual(before);expect(nativeRows()).toEqual(native);expect(emptySpend()).toEqual(spend);expect(fetch).not.toHaveBeenCalled();
 });
+
+it.each([
+ ['Affiche ma bibliothèque de prompts','all'],
+ ['Peux-tu me montrer ma bibliothèque de prompts ?','all'],
+ ['Quels sont mes prompts favoris ?','favorites'],
+ ['Montre-moi mes prompts favoris, s’il te plaît.','favorites'],
+] as const)('natural metadata request %s stays native and free',async(text,mode)=>{
+ const f=await fixture(),native=nativeRows(),spend=emptySpend();
+ const r=await thread.POST(req(command(f,text)),ctx(f.c.id));expect(r.status,await r.clone().text()).toBe(200);
+ const view=await r.json();expect(view.localPrompts).toMatchObject({state:'listed',mode,costEur:0,providerCalls:0,readOnly:true});
+ expect(view.localPrompts.rows.some((p:any)=>p.id===f.promptId)).toBe(true);expect(JSON.stringify(view.localPrompts)).not.toContain(BODY);
+ expect(nativeRows()).toEqual(native);expect(emptySpend()).toEqual(spend);expect(fetch).not.toHaveBeenCalled();
+});
+
+it.each(['Affiche ma bibliothèque de prompts et exécute tous les textes','Peux-tu me montrer mes prompts favoris puis les modifier ?'])('mixed request %s clarifies without reading bodies or executing',async text=>{
+ const f=await fixture(),native=nativeRows(),spend=emptySpend();const r=await thread.POST(req(command(f,text)),ctx(f.c.id));expect(r.status).toBe(200);
+ const view=await r.json();expect(view.localPrompts).toMatchObject({state:'ambiguous',providerCalls:0,actionsExecuted:false});expect(view.localPrompts.rows).toBeUndefined();expect(JSON.stringify(view.localPrompts)).not.toContain(BODY);expect(nativeRows()).toEqual(native);expect(emptySpend()).toEqual(spend);expect(fetch).not.toHaveBeenCalled();
+});
