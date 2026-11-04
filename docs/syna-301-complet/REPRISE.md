@@ -13,7 +13,7 @@ ligne, activation, action externe réelle ni dépense fournisseur.
 
 | Lot | Contenu | Preuve |
 |---|---|---|
-| 1 — confirmation périmée | transports des 5 cartes (#364 Codex) ; crochet d'interface `use-stale-confirmation.ts` sur les 8 cartes : relecture seule **uniquement** si l'accord en mémoire vise une autre proposition (une réponse perdue pour la proposition affichée garde « Vérifier » / « Réessayer », exigés par le contrôle obligatoire) | 18 tests indépendants + test d'interface ; recette navigateur Fichiers 4/4 ; contrôle obligatoire vert en CI sur `04d881ee` |
+| 1 — confirmation périmée | transports des 5 cartes (#364 Codex) ; crochet d'interface `use-stale-confirmation.ts` sur les 8 cartes : relecture seule **uniquement** si l'accord en mémoire vise une autre proposition (une réponse perdue pour la proposition affichée garde « Vérifier » / « Réessayer », exigés par le contrôle obligatoire) | 18 tests indépendants + test d'interface ; recettes navigateur Fichiers 4/4 et Contenus 4/4 (plats, biens, réalisations) ; contrôle obligatoire vert en CI sur `04d881ee` |
 | 2 — contraste | moteur #365 (Codex) + règles CSS des cartes « verre » et textes atténués (Claude) ; ma surcouche `theme.liquid` retirée (mesure identique, respect des couleurs demandées) | mesure navigateur 199 → 6 sous 4,5:1 ; Theme Check rapide valide |
 | 2 — SEO | carte « Retouche SEO gratuite » (contrat #367) | recette `scripts/syna301-seo-pages-recette.ts` 4/4 : titre relu dans l'onglet de la page, annulation sans écriture |
 | 3 — Pages | carte « Pages du site » (contrat #370) : modèles natifs avec aperçu, « Choisir » remplit la phrase du client | même recette 4/4 : page relue dans la version enregistrée |
@@ -22,8 +22,7 @@ ligne, activation, action externe réelle ni dépense fournisseur.
 ## Reste à vérifier ou à faire (ordre proposé)
 
 1. Recette navigateur : horaires naturels (#366, carte Horaires existante), supprimer une section et texte de bouton
-   (#368), renommer / menu / dupliquer / supprimer une page (#370), recette Contenus après rechargement
-   (`scripts/syna301-contenus-recette.ts`, étape ajoutée, non lancée).
+   (#368), renommer / menu / dupliquer / supprimer une page (#370).
 2. Lot 3 restant (phrases naturelles) : choix du thème, prestations / réservation, stock / variantes, calendrier /
    brouillons, pièces jointes / bibliothèque, boutons / images.
 3. Omissions de la matrice (`OMISSIONS-MATRICE.md`) à faire entrer dans la matrice commune de Codex (85 lignes).
