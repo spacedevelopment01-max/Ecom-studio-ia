@@ -13,8 +13,8 @@ import * as cabinet from '@/lib/cabinet/booking';
 import { PUT } from '@/app/api/projects/[id]/prestations/route';
 
 const at = Date.parse('2026-11-05T08:00:00Z'), date = '2026-11-20';
-beforeEach(() => { vi.stubGlobal('fetch', vi.fn(() => { throw Error('NO_PROVIDER'); })); });
-afterEach(() => { expect(fetch).not.toHaveBeenCalled(); vi.unstubAllGlobals(); });
+beforeEach(() => { vi.stubGlobal('fetch', vi.fn(() => { throw Error('NO_PROVIDER'); })); vi.spyOn(Date, 'now').mockReturnValue(at); });
+afterEach(() => { expect(fetch).not.toHaveBeenCalled(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 async function fixture(kind: 'salon' | 'cabinet', sourceId = 'Diagnostic__ID') {
   const u = await account(), pid = project(u, 'services'); saveThemeVersion(pid, serviceSpec(kind === 'salon' ? 'atelier-nuance' : 'parenthese'), 'Source fictive', 'user');
   savePrestations(pid, { services: [{ name: 'Diagnostic acquis', duration: 30, price: 50, modes: 'cabinet' }], ...(kind === 'salon' ? { staff: [{ name: 'Alex acquis', skills: [], days: [] }] } : {}) });
