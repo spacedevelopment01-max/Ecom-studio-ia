@@ -1,3 +1,7 @@
+## Reprise active — 5 novembre 2026,14 h 47 Paris
+
+Lire d’abord [REPRISE-5-NOVEMBRE-RESERVATIONS.md](REPRISE-5-NOVEMBRE-RESERVATIONS.md). Tête fonctionnelle#440/f1cf44ae,preuve bibliothèque5a89a93f (application69b1756f),matrice170:71PARTIEL/69ABSENT/4NON_TESTE/26BLOQUE. CI#423/#431/#434 entièrement vertes ;nouveaux runs en cours etDocker#437 à diagnostiquer après fin du run (logs404/relance403 encore actif). Aucune mission complète annoncée. Prochain domaine équipe/intervenants salon à analyser. Les états ci-dessous sont historiques.
+
 ## Dernier point actif — 5 novembre 2026, 13 h 44 Paris
 
 Lire [REPRISE-5-NOVEMBRE-RESERVATIONS.md](REPRISE-5-NOVEMBRE-RESERVATIONS.md), mise à jour en tête : **9b02c829/#436**, chaîne#423–#436,251tests nouveaux,dernier ciblage225/10fichiers/types. Nouveau contrat dossier vide après moteur atomique#435 ;cartes et recettes Claude toujoursmanquantes. Matrice170opérations/70PARTIEL/70ABSENT/4NON_TESTE/26BLOQUE. CI#423 complèteverte ;#431suite complète/Docker/confirmationverts,natifencours. Prochaine lacune :corbeille d’unfichier,analyse seulement. Les relevés ci-dessous sont historiques.

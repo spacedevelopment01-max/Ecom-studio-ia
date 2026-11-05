@@ -1,3 +1,48 @@
+## Point de reprise actif — 5 novembre 2026, 13 h 47 UTC /14 h 47 Paris
+
+Ce point remplace les états historiques ci-dessous. **Mission complète non terminée ; environnement fonctionnel.** Main demeure la base6354f327/#422 ; aucune fusion ni activation/dépense/client/déploiement.
+
+Tête fonctionnelle : **f1cf44ae0584a377d06a6371634417d806e156f3 /#440**. Chaîne linéaire #423→#440, chaque PR brouillon cible la précédente. Depuis l'ancien point :
+
+| PR | Commit | Sous-parcours borné | Nouveaux tests |
+|---|---|---|---:|
+|437|a0f5ccdf6c4ec426ca581800e6791f29f6689eea|Corbeille native atomique commune au DELETE manuel, protections statut/original et date de rejeu|13|
+|438|69b1756f7e6d7c7f10c7d9b8d5540a264315dc55|Lecture des fichiers directs du dossier exact, outsideQuotes, variantes naturelles, refus de devis cognitif gratuit|15|
+|439|6149e4a3a23b47e5416ab4f7ede64d71d93d82f7|Intention naturelle/aperçu/accord/reçu/reprise de corbeille, restauration native conservée|29|
+|440|f1cf44ae0584a377d06a6371634417d806e156f3|Couple min/max des nouveaux groupes restaurant, capacité et réservations acquises intactes|22|
+
+**330 tests nouveaux distincts sur #423–#440.** Dernières régressions :#438107/6 ;#439129/6 ;#44087/5,types verts. Ensembles qui se recoupent : ne pas les additionner. #439/#440 ont de vrais HTTP17s+GET projet/conversation/accord/résultat natif/rejeu. Les cartes corbeille et restaurant restent à intégrer par Claude ; aucun composant graphique de Claude modifié. Contrats LOT-CORBEILLE-FICHIER-SYNA.md et LOT-TAILLE-GROUPES-RESTAURANT.md. FILE_TRASH et RESTAURANT_SETTINGS fermés par défaut. Coordination#301 commentaires6659395428 et6659591425.
+
+### Preuves réellement compilées
+
+Branche `codex/syna-library-folder-proof-69b1756f`, commit **5a89a93f85a893c85963c49656c8fe4c07142fc9**. Source de l'application **69b1756f**, build **RZOlN5nxSKyT1Rk4Zdc7H**, production propre, vrais sessions/Next/Chromium et fixtures isolées. Rapport `preuves-library-folder-69b1756f/RAPPORT.md`.
+
+16 parcours/64 étapes (neufs/préparés ×Produits/Services ×Encre/Plein ×ordinateur/tactile),lecture ciblée puis renommage acquis,annulation/16attentes≥17s/accord/reçu/reload/relecture.16écritures natives,8réponses perdues rejouées au même corps/requestId ;octets/versions/thème/arbre voisin intacts. Comparaison de TOUTES les lignes6tables financières identique,8recherches simulées acquises conservées,0nouvelleIA/job/usage/devis/extérieur/JS. Quatre compléments visuels/16étapes montrent le fichier dans le cadre et le dossier natif panneau replié.130PNG restent locales dans /workspace/work/preuves-syna301-library-folder-69b1756f-{prepares-final,neufs-final,visibilite}.
+
+Premiers JSON financiers refusés conservés :initialisation native de quotas à la première lecture. Le harnais initialise maintenant ces quotas pendant le seed AVANT baseline,puis compare tout sans filtrer les écarts ;les16parcours ont été requalifiés. Aucun code financier modifié. Cette preuve **ne qualifie pas#439/#440 ou les cartes de réservation absentes**. Coordination6659555889.
+
+### CI observées
+
+- #423/bb0f7b49 :5contrôles entièrement verts,run42013974148 ;6136passés/31ignorés.
+- #431/9cfc7715 :5contrôles entièrement verts,run42021961326 ;6272passés/31ignorés,662fichiers/1ignoré.
+- #434/22889658 :**5contrôles entièrement verts**,run42025619574 ;6338passés/31ignorés,665fichiers/1ignoré.
+- #436/9b02c829 :suite6380/31skip verte,667fichiers/1skip ;Docker/confirmationgratuite verts,natif long encore en cours au dernier relevé.
+- #437/a0f5ccdf :Docker rouge,job127262583705 ;logs GitHub BlobNotFound404 à deux lectures. Relance de ce seul job refusée403 « workflow run containing this job is already running ». Cause code non démontrée,pas de changement aveugle du workflow. Autres jobs en cours,confirmation gratuite verte. Reprendre le diagnostic quand le run42032614535 finit.
+- #438/69b1756f :run42034971509 en cours,Docker vert ;ne pas anticiper le verdict.
+- #439/6149e4a3 :run42037394386 en cours. #440 à relever après déclenchement.
+
+Aucun contrôle supprimé ou rendu facultatif ; le contrôle de confirmation gratuite reste obligatoire. Les anciens rouges avant#431 ne sont pas effacés.
+
+### Couverture et suite immédiate
+
+Matrice canonique **170 opérations uniques :71PARTIEL/69ABSENT/4NON_TESTE/26BLOQUE ;aucune complète**. files.delete passe ABSENT→PARTIEL,les autres sous-parcours ne sont pas artificiellement comptés comme complets. Cartes Claude manquantes :horaires/restaurant/fermetures/textes/prestations/suppression dossier/corbeille ;attendre leur commit exact pour une vraie recette commune. Continuer les autres lacunes indépendantes pendant les CI.
+
+Checkouts :`/workspace/work/parity301-file-trash-syna` tête fonctionnelle#440 propre ;`/workspace/work/parity301-intents-v5` branche de preuves5a89a93f,build figé69b1756f ;`/workspace/work/parity301-booking-docs` branche documentaire cumulative. Le checkouthistorique parity301-ci-guards contient toujours ses3WIP documentaires,à préserver. Aucun processus de recette de ce lot encore actif. Espace libre environ690MiB ;ne pas mélanger un nouveau code au build69b1756f.
+
+Prochaine lacune à vérifier :**équipe/intervenants des réservations salon**,en commençant par le renommage natif exact sans changer les IDs,jours,prestations ni rendez-vous acquis. Analyse seulement à cet instant,aucun nouveau code ou branche commencé. Vérifier le moteur existant avant nouveau patch. Les réservations clientes/création/suppression/notifications et fournisseurs réels restent non qualifiés. Aucun test réel payant lancé :préparer devis/plafonds et demander accord seulement si indispensable.
+
+---
+
 ## Mise à jour active — 5 novembre 2026, 13 h 44 Paris
 
 Tête fonctionnelle : **9b02c829a537b1e80f9551a0866d4cff2d411da8 /#436**. Après #434 : **#435 b24179b6e2a9184bf43235c554c7a4fe67968f1f**, moteur natif de suppression atomique de dossier vide (11 nouveaux tests,71/4 fichiers/types,2courses SQLite reproduites) ; puis **#436**, contrat naturel strict de suppression de dossier sans sous-dossier ni référence de fichier, même dans la corbeille (31 nouveaux,225tests distincts/10fichiers/types,HTTP17s et reprise sans supprimer un nouvel homonyme).
