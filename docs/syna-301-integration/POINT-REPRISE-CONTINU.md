@@ -1,3 +1,21 @@
+## Reprise prioritaire — 5nov2026,11h49UTC /12h49Paris
+
+EnvironnementOK,mainbase6354f327/#422. Têtefonctionnelle **9cfc77150615162c02236db2aad71dcd70e8d3b0/#431**,chaînelinéaire#423→#424→#425→#426→#427→#428→#429→#430→#431. Aucunmerge main/dépense/client/activation/déploiement.
+
+Depuislerelevéprécédent :#429 c9a6f830641e8a7ca6c09f59c739e553b282d524,retraitcibléfermetures18nouveaux/98ciblés4fichiers+types. #430 fa20aaa4b2091f9c4f683e6722d94baf25304403,gardeAPIquote/confirmcognitifsdesrequêtesgratuites,4rougesréels puis13nouveaux+83régressions3fichiers=96uniques4fichiers/types ;nouvellequestion distincte payante toujours surdevis. #431 9cfc7715 corrigeCI#424 sansouvrirdrapeau :Activité+phrasecréneauxincomplète→clarificationprofilseule,66tests/5fichiers+typesdont8nouveaux ;Rendez-vous etdemandesavecvaleursrestentgardés.
+
+**DiagnosticStudio réellementcompilé :16/16nouveauxparcours BLOQUÉSUI**,sourcec9a6f830,BUILD_IDLUJqaPqWtwx8QP2NZgH81. Encre/Plein×ordinateur/tactile×Horaires/Restaurant/Ajoutfermeture/Retraitfermeture :POST200/proposedgratuit,maispasdecarted’accord (0boutonconfirmation,1boutondevisgénérique),aucuneécriturecontournéeparAPI. 4attentes17020ms,0JS/extérieur,hashsIA/jobs/usage/ledger/devisinchangés,16fixturesSIMrecherchepréacquisesconservées. JSON+rapport+harnaispubliés **eb6afdb6e4453d81d890808ad56b4c9ba73cecee**,branchecodex/syna-booking-visibility-c9a6f830. PNG16localesuniquement/workspace/work/preuves-syna301-booking-c9a6f830-visibility. NePASattribuercebuildàfa20/9cfc,nonrecompilésdepuis. #430fermeAPIpayantmaisnecréeaucunecarteUI.
+
+Claudealerté#301commentaires6657020797/6657154353/6657224873 (ainsiqueleschainescontratsprécédentes). Pasencorederéponse/cartesnouveauxau11h49UTC. Luiappartiennentcartes3DTOs+handlesdetoutesgardespanneau+verrou/reprise/refreshbooking,recettecommune4formatspréparé/neuf≥17s. Autrelibellénatifdéfectueuxtrouvésurlacapture :tab-rendez-vous.tsx109 affiche« ouvert »pourranges.length=0alorsquemoteur[]fermé ;transmisàClaude,sansmodifierlecomposant.
+
+CI :#424suitecomplète **failure1/6197** (6165passés/31skip),job127205115147/run42015562741 ;régressionnaturelleActivitéprécisémentcorrigée#431,anciens9testsconservés. #423suitecomplète **6136passés/31skip,654fichierspassés/1skip**,job127199719478 ;Docker/confirmationgratuitevertsmaisnatiflongencoreencours. Tousautresruns encoreencoursaurelevé11h44UTC ;aucunvertglobalprésumé.
+
+Runs àsuivre :#42342013974148,#42442015562741,#42542016531277,#42642017997568,#42742018470932,#42842019225565,#42942019907308 ;#430/#431récentsàdécouvrirauSHAexact. NerepasrelancerlesCIanciensSHAsdontunedépendanceestdéjàcorrigée,niattendreleursvertsavantlesdomainesindépendants. Préserverl’échechistorique ;qualifierCI finaleduSHAintégré.
+
+Matrice169opérations,68PARTIEL/71ABSENT/4NON_TESTE/26BLOQUE,aucunecomplète. Les3sous-opérationsréservationrestentPARTIELLES etmentionnentleBLOCAGEUIprouvé. Suitedumoteurpossibleindépendante :capacitérestaurantciblée (sourceagrégée,couvertsparcréneau,pasdefaussecapacitépargroupe),équipe,autrestrousmatrice. Aucunbesoind’environnementGitHubsupplémentairepourcettesession.
+
+---
+
 ## Mise à jour active — 5nov2026,11h29UTC /12h29Paris
 
 #427 b5cbbd14a7bb2d08955661139f2db8b60d18b82e après#426 :validation datesréelles/inversées native,66tests/6fichiers+types,8nouveaux. #428 1d97dfb7bdb077d4b68cbe548596e62cea0785d1 après#427 :ajoutdefermeturesdatées3moteurs,103tests/6fichiers+types,dont26nouveaux. Vraie attente17s puisGETprojet/accord/relecture native1version ;aucune carte/navigateur nouveau qualifié. ContratLOT-FERMETURES-DATEES-SYNA.md transmisClaude,commentaire6656841873. Matrice169opérations,68PARTIEL/71ABSENT/4NON_TESTE/26BLOQUE,aucunecomplète.
