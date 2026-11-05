@@ -1,3 +1,4 @@
+import {memoryForgetCandidate} from './local-memory-forget';
 import {workshopScheduleCandidate} from './local-workshop-schedule';
 import {workshopPriceCandidate} from './local-workshop-price';
 import {workshopCapacityCandidate} from './local-workshop-capacity';
@@ -106,6 +107,10 @@ function assertNoPaidBookingFallback(c:ConversationRow){
  const text=request?.action==='message'&&typeof request.text==='string'?request.text:null;
  if(m.workshopSchedule||m.workshopPrice||m.workshopCapacity||m.bookingTimezone||m.bookingMove||m.bookingWorkshops||m.bookingAvailability||m.bookingStaffCatalog||m.bookingWindow||m.bookingCancel||m.bookingServiceCatalog||m.bookingRecords||m.bookingStaff||m.bookingServiceText||m.bookingHours||m.restaurantSettings||m.bookingClosures||text&&(workshopScheduleCandidate(text)||workshopPriceCandidate(text)||workshopCapacityCandidate(text)||bookingTimezoneCandidate(text)||bookingMoveCandidate(text)||bookingWorkshopsCandidate(text)||bookingAvailabilityCandidate(text)||bookingStaffCatalogCandidate(text)||bookingWindowCandidate(text)||bookingCancelCandidate(text)||bookingServiceCatalogCandidate(text)||bookingRecordsCandidate(text)||bookingStaffCandidate(text)||bookingServiceTextCandidate(text)||bookingHoursCandidate(text)||restaurantSettingsCandidate(text)||bookingClosuresCandidate(text)))throw new HttpError(409,L('Cette demande utilise un parcours gratuit de réservation. Vérifiez son aperçu et son accord ; aucun devis IA ne sera créé.','This request uses a free booking workflow. Review its preview and consent; no AI quote will be created.'),'conversation_free_booking_reply');
 }
+function assertNoPaidMemoryForgetFallback(c:ConversationRow){
+ const last=one<{request_json:string}>("SELECT request_json FROM agent_conversation_turns WHERE conversation_id=? AND json_extract(request_json,'$.action') IN ('message','answer-ai') ORDER BY revision DESC LIMIT 1",c.id),request=last?json<{action?:string;text?:string}>(last.request_json,{}):null;
+ if(metaOf(c).memoryForget||request?.action==='message'&&typeof request.text==='string'&&memoryForgetCandidate(request.text))throw new HttpError(409,L('Cet oubli de mémoire utilise un parcours gratuit. Vérifiez son aperçu et son accord ; aucun devis IA ne sera créé.','This memory forgetting uses a free workflow. Review its preview and consent; no AI quote will be created.'),'conversation_free_memory_reply');
+}
 function assertNoPaidFolderDeleteFallback(c:ConversationRow){
  const last=one<{request_json:string}>("SELECT request_json FROM agent_conversation_turns WHERE conversation_id=? AND json_extract(request_json,'$.action') IN ('message','answer-ai') ORDER BY revision DESC LIMIT 1",c.id),request=last?json<{action?:string;text?:string}>(last.request_json,{}):null;
  if(metaOf(c).localFolderDelete||request?.action==='message'&&typeof request.text==='string'&&localFolderDeleteCandidate(request.text))throw new HttpError(409,L('Cette suppression de dossier utilise un parcours gratuit. Vérifiez son aperçu et son accord ; aucun devis IA ne sera créé.','This folder deletion uses a free workflow. Review its preview and consent; no AI quote will be created.'),'conversation_free_folder_reply');
@@ -124,7 +129,7 @@ export function createCognitiveQuote(user: User, cid: string, input: { revision:
     const c = ownedConversation(user, cid), current = currentBrief(c);
     if (c.revision >= 999) throw new HttpError(409, 'conversation_limit');
     if (input.revision !== c.revision || input.projectRevision !== current.revision) throw new HttpError(409, L('Le contexte a changé : rechargez le dialogue.', 'Context changed: reload the conversation.'), 'conversation_quote_stale');
-    assertNoPaidBookingFallback(c);assertNoPaidFolderDeleteFallback(c);assertNoPaidLibraryReadFallback(c);assertNoPaidFileTrashFallback(c);
+    assertNoPaidMemoryForgetFallback(c);assertNoPaidBookingFallback(c);assertNoPaidFolderDeleteFallback(c);assertNoPaidLibraryReadFallback(c);assertNoPaidFileTrashFallback(c);
     if (metaOf(c).intelligence?.pendingJobId && activeJob(metaOf(c).intelligence!.pendingJobId!)) throw new HttpError(409, L('Une réponse est déjà en préparation.', 'A reply is already being prepared.'), 'conversation_ai_pending');
     const key = account(c, user, input.subscriptionKey);
     return scoped(c, user.id, key, () => {
@@ -149,7 +154,7 @@ function checkedQuote(user: User, cid: string, qid: string, refresh = true,accep
   const accepted=acceptedJob&&q.job_id===acceptedJob.id&&acceptedJob.user_id===user.id&&acceptedJob.project_id===c.project_id&&acceptedJob.type==='agent.reason'&&acceptedJob.created_at>=q.created_at&&acceptedJob.created_at<=q.created_at+expires;
   const validUntil=accepted?acceptedJob.created_at+expires:q.created_at+expires;
   if (now()>validUntil || c.revision !== q.revision || currentBrief(c).revision !== q.project_revision) throw new HttpError(409, L('Ce devis a expiré ou son contexte a changé.', 'This quote expired or its context changed.'), 'conversation_quote_stale');
-  assertNoPaidBookingFallback(c);assertNoPaidFolderDeleteFallback(c);assertNoPaidLibraryReadFallback(c);assertNoPaidFileTrashFallback(c);
+  assertNoPaidMemoryForgetFallback(c);assertNoPaidBookingFallback(c);assertNoPaidFolderDeleteFallback(c);assertNoPaidLibraryReadFallback(c);assertNoPaidFileTrashFallback(c);
   const key = account(c, user, q.billing_key), saved = JSON.parse(q.plan_json) as Plan;
   if (key !== q.billing_key) throw new HttpError(409, 'conversation_billing_changed');
   if (refresh) scoped(c, user.id, key, () => {
