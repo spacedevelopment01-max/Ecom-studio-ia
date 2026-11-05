@@ -1,0 +1,29 @@
+import {outsideQuotes} from './outside-quotes';
+import {HttpError,ownedProject,type User} from '../../auth';
+import {all,id,now} from '../../db';
+import {requirePlan} from '../../plan-gates';
+import {previewPostDuplicate,applyPostDuplicate,type PostDuplicateSource,type PostDuplicateSnapshot} from '../../contenus/social-duplicate';
+import {activeContextEnabled} from './active-context';
+import type {ConversationRow,ConversationState} from './contract';
+export const socialDuplicateEnabled=()=>activeContextEnabled()&&process.env.STUDIO_CONVERSATION_SOCIAL_DUPLICATE==='1';
+function request(raw:string){return raw.trim().replace(/[.!?]+$/u,'').trim().replace(/,?\s+s[’']il te pla[iî]t$/iu,'').trim().replace(/^(?:(?:peux|pourrais)-tu|je (?:veux|voudrais|souhaite)|j[’']aimerais) (dupliquer|copier)\b/iu,(_,v:string)=>v.toLowerCase()==='dupliquer'?'duplique':'copie');}
+export const socialDuplicateCandidate=(raw:string)=>/^(?:duplique|copie) (?:la|cette|les) publications?\b/iu.test(outsideQuotes(request(raw)));
+export type SocialDuplicateProposal={id:string;source:PostDuplicateSource;snapshot:PostDuplicateSnapshot;expiresAt:number};
+export type SocialDuplicatePresentation={schema:'syna-social-duplicate-1';state:'ambiguous'|'proposed'|'applied';projectId:string;nativeHref:string;message:string;source?:PostDuplicateSource;diff?:{before:{sourceId:string;kept:true};after:{newCopy:true;status:'review';mediaIds:string[];scheduledAt:number|null;approved:false;publication:false}};confirmationRequired:boolean;financialConsent:false;costEur:0;providerCalls:0;publication:false;actionsExecuted:boolean;reversible:false;proposalId?:string;result?:{id:string;status:'review';sourceId:string};receiptId?:string;warnings?:string[]};
+const present=(c:ConversationRow,state:SocialDuplicatePresentation['state'],message:string,extra:Partial<SocialDuplicatePresentation>={}):SocialDuplicatePresentation=>({schema:'syna-social-duplicate-1',state,projectId:c.project_id!,nativeHref:`/studio/${c.project_id}/publications`,message,confirmationRequired:false,financialConsent:false,costEur:0,providerCalls:0,publication:false,actionsExecuted:false,reversible:false,...extra});
+function owned(user:User,c:ConversationRow,m:ConversationState){if(!socialDuplicateEnabled())throw new HttpError(404,'Duplication de publication avec SYNA indisponible.');if(!c.project_id||c.user_id!==user.id)throw new HttpError(404,'Conversation introuvable.');ownedProject(user,c.project_id);requirePlan(user,c.project_id);if(m.activeContextTab!=='publications')throw new HttpError(409,'Ouvrez Publications pour désigner la source exacte à copier.');}
+const fields=(p:SocialDuplicateProposal)=>({proposalId:p.id,source:p.source,diff:{before:{sourceId:p.source.id,kept:true as const},after:{newCopy:true as const,status:'review' as const,mediaIds:p.source.media.map(m=>m.id),scheduledAt:p.source.scheduledAt,approved:false as const,publication:false as const}}});
+export function proposeSocialDuplicate(user:User,c:ConversationRow,m:ConversationState,text:string):SocialDuplicatePresentation{
+ delete m.socialDuplicateProposal;owned(user,c,m);const match=/^(?:duplique|copie) (?:la|cette) publication(?: identifiée par)? (?:«([^»\r\n]{1,200})»|“([^”\r\n]{1,200})”|"([^"\r\n]{1,200})")$/iu.exec(request(text)),question=(message:string)=>present(c,'ambiguous',message);
+ if(!match)return question('Précisez une publication unique : Duplique la publication « titre ou ID exact ». Aucun lot ou média supplémentaire créé.');
+ const value=match.slice(1,4).find(v=>typeof v==='string')!.trim(),byId=/publication identifiée par/iu.test(outsideQuotes(request(text))),matches=all<{id:string;title:string}>('SELECT id,title FROM posts WHERE project_id=?',c.project_id).filter(p=>p.id===value||!byId&&p.title===value);
+ if(matches.length!==1)return question(matches.length?'Plusieurs publications correspondent. Précisez leur identifiant exact ; aucune première source choisie.':'Publication absente de ce projet. Aucun contenu substitué.');
+ let preview:ReturnType<typeof previewPostDuplicate>;try{preview=previewPostDuplicate(c.project_id!,matches[0].id);}catch(error){if(error instanceof HttpError&&[400,404,409].includes(error.status))return question(error.message);throw error;}
+ const p:SocialDuplicateProposal={id:id(),...preview,expiresAt:now()+15*60000};m.socialDuplicateProposal=p;
+ return present(c,'proposed','Vérifiez la source et les médias réutilisés. L’accord gratuit crée une seule copie à valider ; l’original reste intact.',{...fields(p),confirmationRequired:true,warnings:['Les mêmes médias acquis sont réutilisés, sans génération IA. La copie n’est pas approuvée : aucune programmation ni publication n’est activée.','Une date déjà renseignée peut être reprise comme indication, sans activer son envoi. Aucun historique distant ou accord de publication repris.','Annuler avant accord conserve la source sans créer de copie. Aucune annulation automatique promise après création.',...(p.source.media.some(m=>m.inTrash)?['Certains médias sont déjà en corbeille. Ils restent en corbeille ; la copie doit être relue avant toute utilisation.']:[])]});
+}
+export function confirmSocialDuplicate(user:User,c:ConversationRow,m:ConversationState,proposalId:string,requestId:string):SocialDuplicatePresentation{
+ owned(user,c,m);const p=m.socialDuplicateProposal;if(!p||p.id!==proposalId||p.expiresAt<now())throw new HttpError(409,'Proposition de duplication périmée. Relisez la source avant accord.');
+ const result=applyPostDuplicate(c.project_id!,p.snapshot);delete m.socialDuplicateProposal;
+ return present(c,'applied','Copie créée et relue, à valider. Original et médias acquis conservés ; aucun envoi, génération ou coût IA.',{...fields(p),result:{id:result.copy.id,status:'review',sourceId:p.source.id},receiptId:requestId,actionsExecuted:true});
+}
