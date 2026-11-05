@@ -1,3 +1,5 @@
+Reprise prioritaire : [bilan du5novembre,15h56UTC](REPRISE-5-NOVEMBRE-RESERVATIONS.md), #452/fb38d8c5. Mission incomplète ;prochain audit des places des ateliers cabinet.
+
 Reprise prioritaire : [bilan du5novembre,15h32UTC](REPRISE-5-NOVEMBRE-RESERVATIONS.md), #449/fc47fd31. Mission incomplète ;prochaine lecture de disponibilités et audit des groupes restaurant.
 
 ## Reprise active — 5 novembre 2026, 16 h 03 Paris
