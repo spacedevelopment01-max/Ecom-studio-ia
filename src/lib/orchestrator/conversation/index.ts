@@ -1,6 +1,6 @@
 import {bookingClosuresEnabled,bookingClosuresCandidate,proposeBookingClosures,confirmBookingClosures} from './local-booking-closures';
 import {restaurantSettingsEnabled,restaurantSettingsCandidate,proposeRestaurantSettings,confirmRestaurantSettings} from './local-restaurant-settings';
-import {bookingHoursEnabled,bookingHoursCandidate,proposeBookingHours,confirmBookingHours} from './local-booking-hours';
+import {bookingHoursEnabled,bookingHoursCandidate,bookingHoursIncompleteRequest,proposeBookingHours,confirmBookingHours} from './local-booking-hours';
 import {bookingEditEnabled,bookingEditCandidate,proposeBookingEdit,confirmBookingEdit} from './local-booking-edit';
 import {bookingServicesEnabled,bookingServicesCandidate,listBookingServices,bookingServicesView} from './local-booking-services';
 import {lockedPhotoMessage,attachLockedPhotos,threadPhotos} from './photo-attachments';
@@ -238,7 +238,8 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
   if((bookingClosuresCommand||cmd.action==='confirm-booking-closures'||cmd.action==='cancel-booking-closures')&&!bookingClosuresEnabled())throw new HttpError(404,'Fermetures datées avec SYNA indisponibles.');
   const restaurantCommand=cmd.action==='message'&&restaurantSettingsCandidate(cmd.text);
   if((restaurantCommand||cmd.action==='confirm-restaurant-settings'||cmd.action==='cancel-restaurant-settings')&&!restaurantSettingsEnabled())throw new HttpError(404,'Réglages restaurant avec SYNA indisponibles.');
-  const bookingHoursCommand=cmd.action==='message'&&!restaurantCommand&&!bookingClosuresCommand&&bookingHoursCandidate(cmd.text);
+  const profileHoursClarification=cmd.action==='message'&&(cmd.context?.tab??metaOf(initial).activeContextTab)==='produit'&&serviceProfileEnabled()&&bookingHoursIncompleteRequest(cmd.text);
+  const bookingHoursCommand=cmd.action==='message'&&!restaurantCommand&&!bookingClosuresCommand&&!profileHoursClarification&&bookingHoursCandidate(cmd.text);
   if((bookingHoursCommand||cmd.action==='confirm-booking-hours'||cmd.action==='cancel-booking-hours')&&!bookingHoursEnabled())throw new HttpError(404,'Horaires réservables avec SYNA indisponibles.');
   const bookingEditCommand=cmd.action==='message'&&bookingEditCandidate(cmd.text);
   if((bookingEditCommand||cmd.action==='confirm-booking-edit'||cmd.action==='cancel-booking-edit')&&!bookingEditEnabled())throw new HttpError(404,'Retouche gratuite des services réservables indisponible.');
