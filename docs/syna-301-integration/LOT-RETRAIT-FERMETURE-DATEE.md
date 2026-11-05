@@ -1,0 +1,13 @@
+# Retirer seulement les dates de fermeture désignées
+
+5novembre2026,Europe/Paris. Lot court après #428/1d97dfb7. Même moteur natif savePrestations/closures,même carte bookingClosures,schéma syna-booking-closures-1 etconfirm-booking-closures/cancel-booking-closures,drapeau BOOKING_CLOSURES fermé par défaut. Pas de composantClaude modifié.
+
+Ajoute operation:add/remove (champ optionnel dans la présentation pour compatibilité des anciens reçus) ;propositions/reçus nouveaux l’indiquent. Phrases testées : « Retire la fermeture des réservations le 2026-12-25 », « Peux-tu retirer la fermeture des réservations du 2026-12-02 au 2026-12-04 ? », « Supprime la fermeture des réservations le 2026-12-25 ». outsideQuotes protège les valeurscitées.
+
+Soustrait les dates inclusives visées dans CHAQUE entrée qui les recouvre ;scinde les périodes si nécessaire. Conserve les autres dates etchamps,ID/thème natif/version/empreinte/TTL/accord/reçu atomique/reprise. Un jour fermé dans l’horaire hebdomadaire reste fermé ;retirer une exception ne garantit jamais une disponibilité. Aucune réservation cliente déplacée/annulée,aucun mode modifié.
+
+Deux précautions démontrées par tests : une datehistorique invalide doit clarifier plutôt que d’annoncer faussement « déjà fermé » ;une période salon/cabinet historique>400jours ne doit pas être scindée,car deux sous-périodes rendraient actives des dates précédemment tronquées par le moteur. Retraitrefusé dans ce cas,sans migration implicite. Aucun changement des bornes natives. Restaurant nonexpansé conserve sa soustraction par intervalles.
+
+18tests nouveaux verts : trois moteurs,singleton/bords/suppression complète,recouvrements multiples,bissextile/année suivante,absence sans écriture de normalisation,acquisinvalides,conflitmanuel,outsideQuotes,confirmation obligatoire/annulation,hebdomadaire encore fermé,historique>400protégé. 98tests/4fichiers verts avec ajoutfermetures26/restaurant24/horaires30 ;types verts. L’ensemble reprend aussi la vraie attente17s etGETprojet de#428. Pas de fournisseurs ;fixtures isolées,garde réseau active. Logs /tmp/parity301-closure-remove-{first,final,types-final}.log.
+
+Claude : réutiliser lacarte#428,afficher l’opération exacte (Ajout/Retrait) etlediff complet,nepas annoncer une réouverture effective. Même verrou/reprise/devis masqué/refreshstudio:booking-changed. Ajouter recettecompilée retirant une dateau milieud’unepériode,avant/après visibles dansRendez-vous,reload/réponseperdue/conflit et4formats≥17s. PARTIEL tantque cartes/CIcommune etrecetteindépendante nonqualifiées. CI auSHApublié àsuivre ;aucune main/dépense/client/activation/production.
