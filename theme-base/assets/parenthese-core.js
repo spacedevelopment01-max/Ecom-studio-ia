@@ -181,11 +181,13 @@
   }
 
   /** État d'un atelier : invalid (date/heure/durée non réglées), past, full ou open. */
-  function atelierStatus(cfg, atelier, taken, at) {
-    if (!atelier || !atelier.date || !atelier.time || !atelier.duration || !atelier.capacity) return 'invalid';
+  function atelierStatus(cfg, atelier, taken, at, busy) {
+    if (!atelier || !atelier.date || !atelier.time || !atelier.duration || !atelier.capacity || toMin(atelier.time) + atelier.duration > 1440) return 'invalid';
     var now = nowIn(cfg.timezone, at);
     if (atelier.date < now.date || (atelier.date === now.date && toMin(atelier.time) <= now.minute)) return 'past';
-    return remaining(atelier, taken) > 0 ? 'open' : 'full';
+    if (remaining(atelier, taken) <= 0) return 'full';
+    if (overlaps(busy, toMin(atelier.time), toMin(atelier.time) + atelier.duration)) return 'unavailable';
+    return 'open';
   }
 
   var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -202,10 +204,11 @@
     ctx = ctx || {};
     if (req.kind === 'atelier') {
       var a = atelierById(cfg, req.atelier);
-      var st = atelierStatus(cfg, a, ctx.taken, at);
+      var st = atelierStatus(cfg, a, ctx.taken, at, ctx.busy);
       if (!a || st === 'invalid') errors.push('service');
       else if (st === 'past') errors.push('past');
       else if (st === 'full') errors.push('full');
+      else if (st === 'unavailable') errors.push('slot_taken');
     } else {
       var svc = seanceById(cfg, req.service);
       if (!svc || !svc.duration) errors.push('service');
