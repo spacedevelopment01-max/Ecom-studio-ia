@@ -1,0 +1,230 @@
+{
+  "schema": "syna301-folder-read-production-1",
+  "prepared": false,
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Lecture naturelle : dossier cité corbeille, cible exacte visible sans devis ni accord",
+          "ok": true
+        },
+        {
+          "etape": "Renommage : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "17 secondes, actualisation projet, accord ; réponse perdue reprise sans doublon",
+          "ok": true
+        },
+        {
+          "etape": "Résultat natif visible après reçu et rechargement, nouvelle lecture exacte",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "business": "products",
+      "steps": [
+        {
+          "etape": "Lecture naturelle : dossier cité corbeille, cible exacte visible sans devis ni accord",
+          "ok": true
+        },
+        {
+          "etape": "Renommage : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "17 secondes, actualisation projet, accord ; réponse perdue reprise sans doublon",
+          "ok": true
+        },
+        {
+          "etape": "Résultat natif visible après reçu et rechargement, nouvelle lecture exacte",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Lecture naturelle : dossier cité corbeille, cible exacte visible sans devis ni accord",
+          "ok": true
+        },
+        {
+          "etape": "Renommage : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "17 secondes, actualisation projet, accord ; réponse perdue reprise sans doublon",
+          "ok": true
+        },
+        {
+          "etape": "Résultat natif visible après reçu et rechargement, nouvelle lecture exacte",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "business": "products",
+      "steps": [
+        {
+          "etape": "Lecture naturelle : dossier cité corbeille, cible exacte visible sans devis ni accord",
+          "ok": true
+        },
+        {
+          "etape": "Renommage : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "17 secondes, actualisation projet, accord ; réponse perdue reprise sans doublon",
+          "ok": true
+        },
+        {
+          "etape": "Résultat natif visible après reçu et rechargement, nouvelle lecture exacte",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Lecture naturelle : dossier cité corbeille, cible exacte visible sans devis ni accord",
+          "ok": true
+        },
+        {
+          "etape": "Renommage : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "17 secondes, actualisation projet, accord ; réponse perdue reprise sans doublon",
+          "ok": true
+        },
+        {
+          "etape": "Résultat natif visible après reçu et rechargement, nouvelle lecture exacte",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "business": "products",
+      "steps": [
+        {
+          "etape": "Lecture naturelle : dossier cité corbeille, cible exacte visible sans devis ni accord",
+          "ok": true
+        },
+        {
+          "etape": "Renommage : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "17 secondes, actualisation projet, accord ; réponse perdue reprise sans doublon",
+          "ok": true
+        },
+        {
+          "etape": "Résultat natif visible après reçu et rechargement, nouvelle lecture exacte",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Lecture naturelle : dossier cité corbeille, cible exacte visible sans devis ni accord",
+          "ok": true
+        },
+        {
+          "etape": "Renommage : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "17 secondes, actualisation projet, accord ; réponse perdue reprise sans doublon",
+          "ok": true
+        },
+        {
+          "etape": "Résultat natif visible après reçu et rechargement, nouvelle lecture exacte",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "business": "products",
+      "steps": [
+        {
+          "etape": "Lecture naturelle : dossier cité corbeille, cible exacte visible sans devis ni accord",
+          "ok": true
+        },
+        {
+          "etape": "Renommage : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "17 secondes, actualisation projet, accord ; réponse perdue reprise sans doublon",
+          "ok": true
+        },
+        {
+          "etape": "Résultat natif visible après reçu et rechargement, nouvelle lecture exacte",
+          "ok": true
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [
+    "financial tables changed"
+  ],
+  "constats": [],
+  "forbidden": [],
+  "coutIA": 0,
+  "financialUnchanged": false,
+  "servedVersion": {
+    "commit": "69b1756f7e6d7c7f10c7d9b8d5540a264315dc55",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "acquiredFixtureCalls": {
+    "before": 0,
+    "after": 0,
+    "unchanged": true,
+    "newCalls": 0
+  },
+  "waits": [
+    17001.25273,
+    17000.759319999997,
+    17000.786046999994,
+    17001.307929999995,
+    17000.847120000006,
+    17000.987337,
+    17000.64055299999,
+    17001.67299600001
+  ],
+  "jsErrors": [],
+  "buildId": "RZOlN5nxSKyT1Rk4Zdc7H"
+}

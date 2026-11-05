@@ -1,0 +1,893 @@
+{
+  "schema": "syna301-folder-read-production-1",
+  "prepared": true,
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Lecture naturelle : dossier cité corbeille, cible exacte visible sans devis ni accord",
+          "ok": true
+        },
+        {
+          "etape": "Renommage : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "17 secondes, actualisation projet, accord ; réponse perdue reprise sans doublon",
+          "ok": true
+        },
+        {
+          "etape": "Résultat natif visible après reçu et rechargement, nouvelle lecture exacte",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Lecture naturelle : dossier cité corbeille, cible exacte visible sans devis ni accord",
+          "ok": true
+        },
+        {
+          "etape": "Renommage : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "17 secondes, actualisation projet, accord ; réponse perdue reprise sans doublon",
+          "ok": true
+        },
+        {
+          "etape": "Résultat natif visible après reçu et rechargement, nouvelle lecture exacte",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Lecture naturelle : dossier cité corbeille, cible exacte visible sans devis ni accord",
+          "ok": true
+        },
+        {
+          "etape": "Renommage : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "17 secondes, actualisation projet, accord ; réponse perdue reprise sans doublon",
+          "ok": true
+        },
+        {
+          "etape": "Résultat natif visible après reçu et rechargement, nouvelle lecture exacte",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Lecture naturelle : dossier cité corbeille, cible exacte visible sans devis ni accord",
+          "ok": true
+        },
+        {
+          "etape": "Renommage : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "17 secondes, actualisation projet, accord ; réponse perdue reprise sans doublon",
+          "ok": true
+        },
+        {
+          "etape": "Résultat natif visible après reçu et rechargement, nouvelle lecture exacte",
+          "ok": true
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "constats": [],
+  "forbidden": [],
+  "coutIA": 0,
+  "financialUnchanged": true,
+  "financialAudit": {
+    "before": {
+      "ai_calls": [
+        {
+          "id": "fixture_research_bndzl1wcim74q2pm",
+          "created_at": 1793885930546,
+          "user_id": "h6dpi809co6enugl",
+          "project_id": "svdef5tnu5zamzk7",
+          "job_id": null,
+          "task": "strategy",
+          "step": null,
+          "candidate_id": null,
+          "attempt": 0,
+          "call_try": 0,
+          "provider": "simulated",
+          "requested_model": "fixture",
+          "served_model": null,
+          "unit": "tokens",
+          "input_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "output_tokens": 0,
+          "quantity": 0,
+          "latency_ms": null,
+          "http_attempts": null,
+          "stop_reason": null,
+          "effort": null,
+          "cost": 0,
+          "estimated": 0,
+          "usage_key": "simulated-research:p6m9y7etwqr3vdbn",
+          "usage_event_id": null,
+          "billing_dedup": 0,
+          "status": "ok",
+          "error_kind": null,
+          "prompt_key": null,
+          "prompt_hash": null,
+          "quality_check_id": null,
+          "brain_scope": null,
+          "brain_hash": null,
+          "brain_version": null,
+          "intent": null,
+          "plan_id": null,
+          "step_id": null,
+          "routing_reason": null,
+          "routing_fallback": 0,
+          "routing_escalation": 0,
+          "skills": null
+        },
+        {
+          "id": "fixture_research_271cw61j3ieo9k22",
+          "created_at": 1793885930749,
+          "user_id": "cymjb9ukpojcuyhj",
+          "project_id": "p8cffv4hxndu0eb1",
+          "job_id": null,
+          "task": "strategy",
+          "step": null,
+          "candidate_id": null,
+          "attempt": 0,
+          "call_try": 0,
+          "provider": "simulated",
+          "requested_model": "fixture",
+          "served_model": null,
+          "unit": "tokens",
+          "input_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "output_tokens": 0,
+          "quantity": 0,
+          "latency_ms": null,
+          "http_attempts": null,
+          "stop_reason": null,
+          "effort": null,
+          "cost": 0,
+          "estimated": 0,
+          "usage_key": "simulated-research:tbebz67uclg482d9",
+          "usage_event_id": null,
+          "billing_dedup": 0,
+          "status": "ok",
+          "error_kind": null,
+          "prompt_key": null,
+          "prompt_hash": null,
+          "quality_check_id": null,
+          "brain_scope": null,
+          "brain_hash": null,
+          "brain_version": null,
+          "intent": null,
+          "plan_id": null,
+          "step_id": null,
+          "routing_reason": null,
+          "routing_fallback": 0,
+          "routing_escalation": 0,
+          "skills": null
+        },
+        {
+          "id": "fixture_research_z46gomjb88i9bucc",
+          "created_at": 1793885930947,
+          "user_id": "iik0fu2p2ynuxh4k",
+          "project_id": "9q3jsu7b0w49j2vw",
+          "job_id": null,
+          "task": "strategy",
+          "step": null,
+          "candidate_id": null,
+          "attempt": 0,
+          "call_try": 0,
+          "provider": "simulated",
+          "requested_model": "fixture",
+          "served_model": null,
+          "unit": "tokens",
+          "input_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "output_tokens": 0,
+          "quantity": 0,
+          "latency_ms": null,
+          "http_attempts": null,
+          "stop_reason": null,
+          "effort": null,
+          "cost": 0,
+          "estimated": 0,
+          "usage_key": "simulated-research:9m9m0y33izs84mcx",
+          "usage_event_id": null,
+          "billing_dedup": 0,
+          "status": "ok",
+          "error_kind": null,
+          "prompt_key": null,
+          "prompt_hash": null,
+          "quality_check_id": null,
+          "brain_scope": null,
+          "brain_hash": null,
+          "brain_version": null,
+          "intent": null,
+          "plan_id": null,
+          "step_id": null,
+          "routing_reason": null,
+          "routing_fallback": 0,
+          "routing_escalation": 0,
+          "skills": null
+        },
+        {
+          "id": "fixture_research_4fz3u7p22cm6tvul",
+          "created_at": 1793885931148,
+          "user_id": "kwxo47x9f1571t4m",
+          "project_id": "04kn0r3knnz801e5",
+          "job_id": null,
+          "task": "strategy",
+          "step": null,
+          "candidate_id": null,
+          "attempt": 0,
+          "call_try": 0,
+          "provider": "simulated",
+          "requested_model": "fixture",
+          "served_model": null,
+          "unit": "tokens",
+          "input_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "output_tokens": 0,
+          "quantity": 0,
+          "latency_ms": null,
+          "http_attempts": null,
+          "stop_reason": null,
+          "effort": null,
+          "cost": 0,
+          "estimated": 0,
+          "usage_key": "simulated-research:ne301lp8284sdm4g",
+          "usage_event_id": null,
+          "billing_dedup": 0,
+          "status": "ok",
+          "error_kind": null,
+          "prompt_key": null,
+          "prompt_hash": null,
+          "quality_check_id": null,
+          "brain_scope": null,
+          "brain_hash": null,
+          "brain_version": null,
+          "intent": null,
+          "plan_id": null,
+          "step_id": null,
+          "routing_reason": null,
+          "routing_fallback": 0,
+          "routing_escalation": 0,
+          "skills": null
+        }
+      ],
+      "agent_conversation_quotes": [],
+      "jobs": [],
+      "ledger": [
+        {
+          "id": "871yz770ti7zlg7j",
+          "user_id": "h6dpi809co6enugl",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885930416
+        },
+        {
+          "id": "bhwdqczjent9kv2j",
+          "user_id": "cymjb9ukpojcuyhj",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885930659
+        },
+        {
+          "id": "ipv5uoi25fa9bvc0",
+          "user_id": "iik0fu2p2ynuxh4k",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885930858
+        },
+        {
+          "id": "l0jbfqr1fyyimhqi",
+          "user_id": "kwxo47x9f1571t4m",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885931059
+        }
+      ],
+      "quota_usage": [
+        {
+          "user_id": "h6dpi809co6enugl",
+          "period_start": 1793885930416,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "h6dpi809co6enugl",
+          "period_start": 1793885930416,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "h6dpi809co6enugl",
+          "period_start": 1793885930416,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "h6dpi809co6enugl",
+          "period_start": 1793885930416,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "cymjb9ukpojcuyhj",
+          "period_start": 1793885930659,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "cymjb9ukpojcuyhj",
+          "period_start": 1793885930659,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "cymjb9ukpojcuyhj",
+          "period_start": 1793885930659,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "cymjb9ukpojcuyhj",
+          "period_start": 1793885930659,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "iik0fu2p2ynuxh4k",
+          "period_start": 1793885930858,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "iik0fu2p2ynuxh4k",
+          "period_start": 1793885930858,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "iik0fu2p2ynuxh4k",
+          "period_start": 1793885930858,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "iik0fu2p2ynuxh4k",
+          "period_start": 1793885930858,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "kwxo47x9f1571t4m",
+          "period_start": 1793885931059,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "kwxo47x9f1571t4m",
+          "period_start": 1793885931059,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "kwxo47x9f1571t4m",
+          "period_start": 1793885931059,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "kwxo47x9f1571t4m",
+          "period_start": 1793885931059,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        }
+      ],
+      "usage_events": []
+    },
+    "after": {
+      "ai_calls": [
+        {
+          "id": "fixture_research_bndzl1wcim74q2pm",
+          "created_at": 1793885930546,
+          "user_id": "h6dpi809co6enugl",
+          "project_id": "svdef5tnu5zamzk7",
+          "job_id": null,
+          "task": "strategy",
+          "step": null,
+          "candidate_id": null,
+          "attempt": 0,
+          "call_try": 0,
+          "provider": "simulated",
+          "requested_model": "fixture",
+          "served_model": null,
+          "unit": "tokens",
+          "input_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "output_tokens": 0,
+          "quantity": 0,
+          "latency_ms": null,
+          "http_attempts": null,
+          "stop_reason": null,
+          "effort": null,
+          "cost": 0,
+          "estimated": 0,
+          "usage_key": "simulated-research:p6m9y7etwqr3vdbn",
+          "usage_event_id": null,
+          "billing_dedup": 0,
+          "status": "ok",
+          "error_kind": null,
+          "prompt_key": null,
+          "prompt_hash": null,
+          "quality_check_id": null,
+          "brain_scope": null,
+          "brain_hash": null,
+          "brain_version": null,
+          "intent": null,
+          "plan_id": null,
+          "step_id": null,
+          "routing_reason": null,
+          "routing_fallback": 0,
+          "routing_escalation": 0,
+          "skills": null
+        },
+        {
+          "id": "fixture_research_271cw61j3ieo9k22",
+          "created_at": 1793885930749,
+          "user_id": "cymjb9ukpojcuyhj",
+          "project_id": "p8cffv4hxndu0eb1",
+          "job_id": null,
+          "task": "strategy",
+          "step": null,
+          "candidate_id": null,
+          "attempt": 0,
+          "call_try": 0,
+          "provider": "simulated",
+          "requested_model": "fixture",
+          "served_model": null,
+          "unit": "tokens",
+          "input_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "output_tokens": 0,
+          "quantity": 0,
+          "latency_ms": null,
+          "http_attempts": null,
+          "stop_reason": null,
+          "effort": null,
+          "cost": 0,
+          "estimated": 0,
+          "usage_key": "simulated-research:tbebz67uclg482d9",
+          "usage_event_id": null,
+          "billing_dedup": 0,
+          "status": "ok",
+          "error_kind": null,
+          "prompt_key": null,
+          "prompt_hash": null,
+          "quality_check_id": null,
+          "brain_scope": null,
+          "brain_hash": null,
+          "brain_version": null,
+          "intent": null,
+          "plan_id": null,
+          "step_id": null,
+          "routing_reason": null,
+          "routing_fallback": 0,
+          "routing_escalation": 0,
+          "skills": null
+        },
+        {
+          "id": "fixture_research_z46gomjb88i9bucc",
+          "created_at": 1793885930947,
+          "user_id": "iik0fu2p2ynuxh4k",
+          "project_id": "9q3jsu7b0w49j2vw",
+          "job_id": null,
+          "task": "strategy",
+          "step": null,
+          "candidate_id": null,
+          "attempt": 0,
+          "call_try": 0,
+          "provider": "simulated",
+          "requested_model": "fixture",
+          "served_model": null,
+          "unit": "tokens",
+          "input_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "output_tokens": 0,
+          "quantity": 0,
+          "latency_ms": null,
+          "http_attempts": null,
+          "stop_reason": null,
+          "effort": null,
+          "cost": 0,
+          "estimated": 0,
+          "usage_key": "simulated-research:9m9m0y33izs84mcx",
+          "usage_event_id": null,
+          "billing_dedup": 0,
+          "status": "ok",
+          "error_kind": null,
+          "prompt_key": null,
+          "prompt_hash": null,
+          "quality_check_id": null,
+          "brain_scope": null,
+          "brain_hash": null,
+          "brain_version": null,
+          "intent": null,
+          "plan_id": null,
+          "step_id": null,
+          "routing_reason": null,
+          "routing_fallback": 0,
+          "routing_escalation": 0,
+          "skills": null
+        },
+        {
+          "id": "fixture_research_4fz3u7p22cm6tvul",
+          "created_at": 1793885931148,
+          "user_id": "kwxo47x9f1571t4m",
+          "project_id": "04kn0r3knnz801e5",
+          "job_id": null,
+          "task": "strategy",
+          "step": null,
+          "candidate_id": null,
+          "attempt": 0,
+          "call_try": 0,
+          "provider": "simulated",
+          "requested_model": "fixture",
+          "served_model": null,
+          "unit": "tokens",
+          "input_tokens": 0,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": 0,
+          "output_tokens": 0,
+          "quantity": 0,
+          "latency_ms": null,
+          "http_attempts": null,
+          "stop_reason": null,
+          "effort": null,
+          "cost": 0,
+          "estimated": 0,
+          "usage_key": "simulated-research:ne301lp8284sdm4g",
+          "usage_event_id": null,
+          "billing_dedup": 0,
+          "status": "ok",
+          "error_kind": null,
+          "prompt_key": null,
+          "prompt_hash": null,
+          "quality_check_id": null,
+          "brain_scope": null,
+          "brain_hash": null,
+          "brain_version": null,
+          "intent": null,
+          "plan_id": null,
+          "step_id": null,
+          "routing_reason": null,
+          "routing_fallback": 0,
+          "routing_escalation": 0,
+          "skills": null
+        }
+      ],
+      "agent_conversation_quotes": [],
+      "jobs": [],
+      "ledger": [
+        {
+          "id": "871yz770ti7zlg7j",
+          "user_id": "h6dpi809co6enugl",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885930416
+        },
+        {
+          "id": "bhwdqczjent9kv2j",
+          "user_id": "cymjb9ukpojcuyhj",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885930659
+        },
+        {
+          "id": "ipv5uoi25fa9bvc0",
+          "user_id": "iik0fu2p2ynuxh4k",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885930858
+        },
+        {
+          "id": "l0jbfqr1fyyimhqi",
+          "user_id": "kwxo47x9f1571t4m",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885931059
+        }
+      ],
+      "quota_usage": [
+        {
+          "user_id": "h6dpi809co6enugl",
+          "period_start": 1793885930416,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "h6dpi809co6enugl",
+          "period_start": 1793885930416,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "h6dpi809co6enugl",
+          "period_start": 1793885930416,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "h6dpi809co6enugl",
+          "period_start": 1793885930416,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "cymjb9ukpojcuyhj",
+          "period_start": 1793885930659,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "cymjb9ukpojcuyhj",
+          "period_start": 1793885930659,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "cymjb9ukpojcuyhj",
+          "period_start": 1793885930659,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "cymjb9ukpojcuyhj",
+          "period_start": 1793885930659,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "iik0fu2p2ynuxh4k",
+          "period_start": 1793885930858,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "iik0fu2p2ynuxh4k",
+          "period_start": 1793885930858,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "iik0fu2p2ynuxh4k",
+          "period_start": 1793885930858,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "iik0fu2p2ynuxh4k",
+          "period_start": 1793885930858,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "kwxo47x9f1571t4m",
+          "period_start": 1793885931059,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "kwxo47x9f1571t4m",
+          "period_start": 1793885931059,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "kwxo47x9f1571t4m",
+          "period_start": 1793885931059,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "kwxo47x9f1571t4m",
+          "period_start": 1793885931059,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        }
+      ],
+      "usage_events": []
+    },
+    "changedTables": []
+  },
+  "agreementAudit": [
+    {
+      "case": "encre-ordinateur-services",
+      "prepared": true,
+      "nativeWrites": 1,
+      "confirmationPosts": 2,
+      "identicalReplay": true,
+      "requestIds": [
+        "67b71000-052f-43d9-b876-04b39c7a8770",
+        "67b71000-052f-43d9-b876-04b39c7a8770"
+      ]
+    },
+    {
+      "case": "encre-telephone-services",
+      "prepared": true,
+      "nativeWrites": 1,
+      "confirmationPosts": 1,
+      "identicalReplay": null,
+      "requestIds": [
+        "350d86fb-15e5-4197-b5ad-1fb457fb678b"
+      ]
+    },
+    {
+      "case": "plein-ordinateur-services",
+      "prepared": true,
+      "nativeWrites": 1,
+      "confirmationPosts": 2,
+      "identicalReplay": true,
+      "requestIds": [
+        "a8cdbcf3-2a79-42df-bcef-abde3772409e",
+        "a8cdbcf3-2a79-42df-bcef-abde3772409e"
+      ]
+    },
+    {
+      "case": "plein-telephone-services",
+      "prepared": true,
+      "nativeWrites": 1,
+      "confirmationPosts": 1,
+      "identicalReplay": null,
+      "requestIds": [
+        "fa72f390-6a81-400b-a94f-b9c8005e47bd"
+      ]
+    }
+  ],
+  "servedVersion": {
+    "commit": "69b1756f7e6d7c7f10c7d9b8d5540a264315dc55",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "acquiredFixtureCalls": {
+    "before": 4,
+    "after": 4,
+    "unchanged": true,
+    "newCalls": 0
+  },
+  "waits": [
+    17002.060493,
+    17001.478515000003,
+    17001.914316000002,
+    17000.441867999994
+  ],
+  "jsErrors": [],
+  "buildId": "RZOlN5nxSKyT1Rk4Zdc7H"
+}
