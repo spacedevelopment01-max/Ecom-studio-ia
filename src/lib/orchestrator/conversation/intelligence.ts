@@ -1,3 +1,4 @@
+import {bookingWorkshopsCandidate} from './local-booking-workshops';
 import {bookingAvailabilityCandidate} from './local-booking-availability';
 import {bookingServiceCatalogCandidate} from './local-booking-service-catalog';
 import {bookingRecordsCandidate} from './local-booking-records';
@@ -95,7 +96,7 @@ function makePlan(c: ConversationRow, user: User,selectedRole:AgentRole='princip
 function assertNoPaidBookingFallback(c:ConversationRow){
  const m=metaOf(c),last=one<{request_json:string}>("SELECT request_json FROM agent_conversation_turns WHERE conversation_id=? AND json_extract(request_json,'$.action') IN ('message','answer-ai') ORDER BY revision DESC LIMIT 1",c.id),request=last?json<{action?:string;text?:string}>(last.request_json,{}):null;
  const text=request?.action==='message'&&typeof request.text==='string'?request.text:null;
- if(m.bookingAvailability||m.bookingServiceCatalog||m.bookingRecords||m.bookingStaff||m.bookingServiceText||m.bookingHours||m.restaurantSettings||m.bookingClosures||text&&(bookingAvailabilityCandidate(text)||bookingServiceCatalogCandidate(text)||bookingRecordsCandidate(text)||bookingStaffCandidate(text)||bookingServiceTextCandidate(text)||bookingHoursCandidate(text)||restaurantSettingsCandidate(text)||bookingClosuresCandidate(text)))throw new HttpError(409,L('Cette demande utilise un parcours gratuit de réservation. Vérifiez son aperçu et son accord ; aucun devis IA ne sera créé.','This request uses a free booking workflow. Review its preview and consent; no AI quote will be created.'),'conversation_free_booking_reply');
+ if(m.bookingWorkshops||m.bookingAvailability||m.bookingServiceCatalog||m.bookingRecords||m.bookingStaff||m.bookingServiceText||m.bookingHours||m.restaurantSettings||m.bookingClosures||text&&(bookingWorkshopsCandidate(text)||bookingAvailabilityCandidate(text)||bookingServiceCatalogCandidate(text)||bookingRecordsCandidate(text)||bookingStaffCandidate(text)||bookingServiceTextCandidate(text)||bookingHoursCandidate(text)||restaurantSettingsCandidate(text)||bookingClosuresCandidate(text)))throw new HttpError(409,L('Cette demande utilise un parcours gratuit de réservation. Vérifiez son aperçu et son accord ; aucun devis IA ne sera créé.','This request uses a free booking workflow. Review its preview and consent; no AI quote will be created.'),'conversation_free_booking_reply');
 }
 function assertNoPaidFolderDeleteFallback(c:ConversationRow){
  const last=one<{request_json:string}>("SELECT request_json FROM agent_conversation_turns WHERE conversation_id=? AND json_extract(request_json,'$.action') IN ('message','answer-ai') ORDER BY revision DESC LIMIT 1",c.id),request=last?json<{action?:string;text?:string}>(last.request_json,{}):null;
