@@ -15,6 +15,8 @@ const base = z.object({
   projectRevision: z.number().int().min(0).nullable(),
 });
 export const CommandSchema = z.discriminatedUnion("action", [
+  base.extend({action:z.literal('confirm-restaurant-settings'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal('cancel-restaurant-settings'),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal('confirm-booking-hours'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal('cancel-booking-hours'),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal('confirm-booking-edit'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
@@ -68,6 +70,8 @@ export const CommandSchema = z.discriminatedUnion("action", [
 export type Command = z.infer<typeof CommandSchema>;
 /** Un seul Brief natif pour le brouillon ; après rattachement, il est retiré et relu via stateOf(projectId). */
 export type ConversationState = {
+  restaurantSettingsProposal?:import('./local-restaurant-settings').RestaurantSettingsProposal;
+  restaurantSettings?:import('./local-restaurant-settings').RestaurantSettingsPresentation;
   bookingHoursProposal?:import('./local-booking-hours').BookingHoursProposal;
   bookingHours?:import('./local-booking-hours').BookingHoursPresentation;
   bookingEditProposal?:import('./local-booking-edit').BookingEditProposal;
@@ -149,6 +153,8 @@ export type ActionCard = {
   href?: string;
 };
 export type ConversationView = {
+  restaurantSettings?:import('./local-restaurant-settings').RestaurantSettingsPresentation;
+  restaurantSettingsExecution?:{enabled:true};
   bookingHours?:import('./local-booking-hours').BookingHoursPresentation;
   bookingHoursExecution?:{enabled:true};
   bookingEdit?:import('./local-booking-edit').BookingEditPresentation;
