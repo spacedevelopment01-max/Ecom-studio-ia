@@ -1,3 +1,25 @@
+## Reprise active — 5 novembre 2026, Europe/Paris — réservations natives
+
+Environnement de session fonctionnel : Node, Git, tests, GitHub. Aucun manque de configuration pour cette session ; le bot GitHub « create an environment » concernait son déclenchement séparé. Reprise depuis main6354f327888d70c64ce4d86604b7b8fdc768947c (#422), bilan/reprise lus. Aucun merge main, activation, client ou fournisseur réel.
+
+Lots courts indépendants/empilés transmis à Claude dans #301 :
+- #423 bb0f7b490aa8321ba6fc59f5f23e30c005a7cf56 : heures impossibles réellement acceptées corrigées ;58tests/5fichiers,types. Parent main.
+- #424 1c0166f77cdd7b36ce6feb87120ff46f254425a5 : horaires hebdomadaires salon/cabinet depuis conversation ;113tests uniques/8fichiers,types,30nouveaux. Parent #423.
+- #425 bb3b7025bce9e99685a7119a8ca6babe2f35e4d4 : restaurantPatch strict +semaine explicitement vide respectée serveur/public ;32tests/4fichiers,types,9nouveaux. Parent #424.
+- #426 8cb35ff024a1f9be78f0300554acd1d83bd918ab : jours etcréneaux déjeuner/dîner depuis conversation ;69tests uniques/4fichiers,types,24nouveaux. Parent #425.
+
+69/113/58/32 partagent des régressions : ne pas additionner ces totaux comme tests distincts. Horaires/restaurant :54tests conversation nouveaux ;validation horloges7 +patchrestaurant9 nouveaux. Preuves exactes et limites dans LOT-VALIDATION-HEURES-NATIVES.md, LOT-HORAIRES-RESERVABLES-SYNA.md, LOT-RESTAURANT-PATCH-NATIF.md, LOT-RESTAURANT-CONVERSATION.md.
+
+CI observée à11h19UTC : #423 run42013974148, #424 run42015562741, #425 run42016531277 en cours ;Docker#425 ettypes#425 verts,plusieurs recettescompilées#425 vertes. #426 nouvellement lancé. Aucun verdictfinal revendiqué. Relire chaque run/SHA, ne pas répéter les tests déjà verts sans nouveau motif.
+
+Matrice canonique :168opérations,67PARTIEL/71ABSENT/4NON_TESTE/26BLOQUE,aucune complète. Deux sous-opérations ajoutées services.booking.hours/services.booking.restaurant ;services.booking parent reste PARTIEL.
+
+Contrats transmis Claude : #301 commentaires6656331336/6656470648/6656668408. Cartes/handles/verrou/reprise,studio:booking-changed etrecettes compilées préparé/neuf Encre/Plein ordinateur/tactile≥17s toujours attendus. Drapeaux STUDIO_CONVERSATION_BOOKING_HOURS/STUDIO_CONVERSATION_RESTAURANT_SETTINGS fermés par défaut ;ne pas les ouvrir sanscartes. Aucun composantClaude modifié. Ancienbuildlocal9f8507c7/BUILD_ID EjTDhC-HYFN21izgKOSsO ne qualifie PAS ceslots.
+
+Suite immédiate : fermetures datées natives (valider réellement les dates ;ne pas effacer les fermetures acquises), puis autres trous de réservation/équipe/prestations. Continuer pendant CI/cartes. Recette complète desnouveauxlots uniquement sur un build/SHAcommun intégrantClaude ;conserver frontend exact etpreuves sansredistribuerlescaptureslocales. Fournisseurs réels restentpréparés/chiffrés pouraccord,sansappel.
+
+---
+
 # Reprise prioritaire : #418/#419 livrés, CI finale et carte Réservations à poursuivre
 
 Mission #301 ouverte ; aucune dépense fournisseur réelle, donnée client, activation, publication, fusion main ou déploiement. Continuer les tâches indépendantes sans attendre de nouvelle consigne.
