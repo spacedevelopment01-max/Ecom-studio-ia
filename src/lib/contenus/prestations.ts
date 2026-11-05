@@ -97,7 +97,14 @@ const staffPatchSchema=z.object({
   days:staffSchema.shape.days.removeDefault().optional(),
 }).strict().refine(v=>v.name!==undefined||v.title!==undefined||v.skills!==undefined||v.days!==undefined||v.hours!==undefined,"Précisez le nom, la spécialité, les compétences, les horaires propres ou les jours de l’intervenant.");
 const bookingTimezoneSchema=z.string().min(1).max(80).regex(/^(?:UTC|[A-Za-z_+-]+(?:\/[A-Za-z0-9_+.-]+){1,2})$/).refine(value=>{try{new Intl.DateTimeFormat('en',{timeZone:value}).format(0);return true;}catch{return false;}},"Précisez un fuseau IANA exact pris en charge, par exemple Europe/Paris. Aucun repli UTC.");
+const workshopScheduleSchema=z.object({
+  id:z.string().min(1).max(80),
+  date:z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(realClosureDate,"Précisez une date civile réelle.").optional(),
+  time:z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/).optional(),
+  durationMinutes:z.number().int().min(5).max(600).optional(),
+}).strict().refine(v=>v.date!==undefined||v.time!==undefined||v.durationMinutes!==undefined,"Précisez la date, l’heure ou la durée de l’atelier.");
 export const prestationsInput = z.object({
+  workshopSchedulePatch:workshopScheduleSchema.optional(),
   workshopPricePatch:z.object({id:z.string().min(1).max(80),price:serviceSchema.shape.price.unwrap().multipleOf(0.01)}).strict().optional(),
   workshopCapacityPatch:z.object({id:z.string().min(1).max(80),capacity:z.number().int().min(1).max(500)}).strict().optional(),
   bookingTimezonePatch:z.object({timezone:bookingTimezoneSchema}).strict().optional(),
@@ -117,7 +124,7 @@ export const prestationsInput = z.object({
   restaurantPartyPatch: restaurantSchema.pick({minParty:true,maxParty:true}).strict().refine(r=>r.minParty<=r.maxParty,"Le nombre minimum de couverts dépasse le maximum.").optional(),
   restaurantCapacityPatch: restaurantSchema.pick({capacity:true}).strict().optional(),
   restaurantPatch: restaurantSchema.pick({openDays:true,lunchSlots:true,dinnerSlots:true}).partial().strict().refine(v=>v.openDays!==undefined||v.lunchSlots!==undefined||v.dinnerSlots!==undefined,"Précisez le jour ou le service à modifier.").optional(),
-}).refine(v=>!v.workshopPricePatch||Object.values(v).filter(x=>x!==undefined).length===1,"Ne mélangez pas le tarif ciblé d’un atelier avec un autre réglage.").refine(v=>!v.workshopCapacityPatch||Object.values(v).filter(x=>x!==undefined).length===1,"Ne mélangez pas la capacité ciblée d’un atelier avec un autre réglage.").refine(v=>!v.bookingTimezonePatch||Object.values(v).filter(x=>x!==undefined).length===1,"Ne mélangez pas le fuseau ciblé du calendrier avec un autre réglage.").refine(v=>!v.bookingWindowPatch||Object.values(v).filter(x=>x!==undefined).length===1,"Ne mélangez pas les règles ciblées de réservation avec un autre réglage.").refine(v=>!(v.staffAdd||v.staffRemove)||Object.values(v).filter(x=>x!==undefined).length===1,"L’ajout ou le retrait ciblé d’un intervenant ne se mélange pas avec un autre réglage.").refine(v=>!(v.serviceAdd||v.serviceRemove)||Object.values(v).filter(x=>x!==undefined).length===1,"L’ajout ou le retrait ciblé d’une prestation ne se mélange pas avec un autre réglage.").refine(v=>!v.staffPatch||!v.staff,"Ne mélangez pas remplacement et retouche ciblée des intervenants.").refine(v=>!v.restaurantPartyPatch||!v.restaurant&&!v.restaurantPatch&&!v.restaurantCapacityPatch,"Ne mélangez pas taille des groupes et autres réglages restaurant.").refine(v=>!v.restaurantCapacityPatch||!v.restaurant&&!v.restaurantPatch,"Ne mélangez pas retouche de capacité et autres réglages restaurant.").refine((v) => !v.servicePatch || !v.services, "Ne mélangez pas remplacement et retouche ciblée des prestations.").refine(v=>!v.restaurantPatch||!v.restaurant,"Ne mélangez pas remplacement et retouche ciblée du restaurant.");
+}).refine(v=>!v.workshopSchedulePatch||Object.values(v).filter(x=>x!==undefined).length===1,"Ne mélangez pas la période ciblée d’un atelier avec un autre réglage.").refine(v=>!v.workshopPricePatch||Object.values(v).filter(x=>x!==undefined).length===1,"Ne mélangez pas le tarif ciblé d’un atelier avec un autre réglage.").refine(v=>!v.workshopCapacityPatch||Object.values(v).filter(x=>x!==undefined).length===1,"Ne mélangez pas la capacité ciblée d’un atelier avec un autre réglage.").refine(v=>!v.bookingTimezonePatch||Object.values(v).filter(x=>x!==undefined).length===1,"Ne mélangez pas le fuseau ciblé du calendrier avec un autre réglage.").refine(v=>!v.bookingWindowPatch||Object.values(v).filter(x=>x!==undefined).length===1,"Ne mélangez pas les règles ciblées de réservation avec un autre réglage.").refine(v=>!(v.staffAdd||v.staffRemove)||Object.values(v).filter(x=>x!==undefined).length===1,"L’ajout ou le retrait ciblé d’un intervenant ne se mélange pas avec un autre réglage.").refine(v=>!(v.serviceAdd||v.serviceRemove)||Object.values(v).filter(x=>x!==undefined).length===1,"L’ajout ou le retrait ciblé d’une prestation ne se mélange pas avec un autre réglage.").refine(v=>!v.staffPatch||!v.staff,"Ne mélangez pas remplacement et retouche ciblée des intervenants.").refine(v=>!v.restaurantPartyPatch||!v.restaurant&&!v.restaurantPatch&&!v.restaurantCapacityPatch,"Ne mélangez pas taille des groupes et autres réglages restaurant.").refine(v=>!v.restaurantCapacityPatch||!v.restaurant&&!v.restaurantPatch,"Ne mélangez pas retouche de capacité et autres réglages restaurant.").refine((v) => !v.servicePatch || !v.services, "Ne mélangez pas remplacement et retouche ciblée des prestations.").refine(v=>!v.restaurantPatch||!v.restaurant,"Ne mélangez pas remplacement et retouche ciblée du restaurant.");
 export type PrestationsInput = z.infer<typeof prestationsInput>;
 
 /** Rendez-vous confirmés à venir, par prestation (salon : `salon_appointments.service`, cabinet : séance). */
@@ -143,7 +150,12 @@ const blocksOf = (s: SectionInstance) => (s.block_order ?? Object.keys(s.blocks 
 /** Inert confirmed counts, including acquired raw-ID aliases; never initializes tables. */
 function workshopCounts(projectId:string){
  try{return new Map(all<{service:string;n:number}>("SELECT service,COUNT(*) n FROM cabinet_appointments WHERE project_id=? AND kind='atelier' AND status='confirmed' GROUP BY service",projectId).map(r=>[r.service,r.n]));}
- catch(error){if(error instanceof Error&&error.message==='no such table: cabinet_appointments')return new Map<string,number>();throw new HttpError(409,'Les inscriptions aux ateliers ne peuvent pas être vérifiées. Aucune capacité modifiée.','workshop_records_unavailable');}
+ catch(error){if(error instanceof Error&&error.message==='no such table: cabinet_appointments')return new Map<string,number>();throw new HttpError(409,'Les inscriptions aux ateliers ne peuvent pas être vérifiées. Aucun réglage modifié.','workshop_records_unavailable');}
+}
+/** Read existing consultation intervals without creating a lazy booking table. */
+function workshopScheduleBusy(projectId:string,date:string){
+ try{return all<{start_min:number;end_min:number}>("SELECT start_min,end_min FROM cabinet_appointments WHERE project_id=? AND kind='seance' AND status='confirmed' AND date=?",projectId,date);}
+ catch(error){if(error instanceof Error&&error.message==='no such table: cabinet_appointments')return [];throw new HttpError(409,'L’occupation du cabinet ne peut pas être vérifiée. Aucun réglage modifié.','workshop_records_unavailable');}
 }
 function workshopCanonicalId(block:{settings:Record<string,unknown>}){
  const st=block.settings??{},raw=String(st.atelier_id??''),title=String(st.title??'');
@@ -152,7 +164,7 @@ function workshopCanonicalId(block:{settings:Record<string,unknown>}){
 }
 function workshopCapacityRows(projectId:string,section:SectionInstance){
  const native=cabinetConfigFromSection(section).ateliers,counts=workshopCounts(projectId),raw=Object.values(section.blocks??{}).filter(b=>b.type==='atelier');
- return native.map(a=>{const matches=raw.filter(b=>workshopCanonicalId(b)===a.id),keys=new Set([a.id,...matches.map(b=>String(b.settings?.atelier_id??'')).filter(Boolean)]),confirmedCount=[...keys].reduce((n,key)=>n+(counts.get(key)??0),0);return{id:a.id,title:a.title,date:a.date,time:a.time,price:a.price,capacity:a.capacity,confirmedCount,remaining:cabinetCore.remaining(a,confirmedCount),identityAmbiguous:matches.length!==1||native.filter(other=>other.id===a.id).length!==1};});
+ return native.map(a=>{const matches=raw.filter(b=>workshopCanonicalId(b)===a.id),keys=new Set([a.id,...matches.map(b=>String(b.settings?.atelier_id??'')).filter(Boolean)]),confirmedCount=[...keys].reduce((n,key)=>n+(counts.get(key)??0),0);return{id:a.id,title:a.title,date:a.date,time:a.time,durationMinutes:a.duration,price:a.price,capacity:a.capacity,confirmedCount,remaining:cabinetCore.remaining(a,confirmedCount),identityAmbiguous:matches.length!==1||native.filter(other=>other.id===a.id).length!==1};});
 }
 
 /** Lecture pour l'éditeur : ce que lit réellement le moteur de réservation. */
@@ -223,6 +235,29 @@ function buildPrestations(projectId: string, raw: unknown) {
   const st = (section.settings ??= {}) as Record<string, unknown>;
   const warnings: string[] = [];
   const before = readPrestations(projectId)!;
+
+  if(input.workshopSchedulePatch){
+    if(sec.kind!=='cabinet')throw new HttpError(409,'Ce calendrier ne comporte pas d’atelier de cabinet natif.');
+    const active=[...Object.values(spec.groups??{}),...Object.values(spec.templates??{})].flatMap(c=>Object.values(c?.sections??{})).filter(s=>!s.disabled&&['an-salon','pa-cabinet','ts-restaurant'].includes(s.type));if(active.length!==1)throw new HttpError(409,'Plusieurs calendriers natifs correspondent. Aucun atelier choisi implicitement.');
+    const patch=input.workshopSchedulePatch,rows=before.workshops.filter(a=>a.id===patch.id),targets=Object.values(section.blocks??{}).filter(b=>b.type==='atelier'&&workshopCanonicalId(b)===patch.id);
+    if(rows.length!==1||rows[0].identityAmbiguous||targets.length!==1)throw new HttpError(409,'Atelier natif absent ou ambigu. Précisez son identifiant canonique exact.');
+    const prior=rows[0],changed=patch.date!==undefined&&patch.date!==prior.date||patch.time!==undefined&&patch.time!==prior.time||patch.durationMinutes!==undefined&&patch.durationMinutes!==prior.durationMinutes;
+    if(changed&&prior.confirmedCount>0)throw new HttpError(409,'Cet atelier a des inscriptions confirmées. Sa période ne peut pas changer implicitement ; aucune inscription déplacée, annulée ou notifiée.','workshop_schedule_has_confirmed');
+    const blocks=sectionSchema(spec,section.type)?.blocks?.filter(b=>b.type==='atelier')??[];
+    for(const [field,value] of Object.entries({date:patch.date,time:patch.time,duration:patch.durationMinutes})){
+      if(value===undefined)continue;const defs=blocks.length===1?blocks[0].settings?.filter(d=>d.id===field)??[]:[];
+      if(defs.length!==1||defs[0].type!==(field==='duration'?'number':'text'))throw new HttpError(409,'Réglage natif de période absent ou ambigu.');
+      const checked=coerceSetting(defs[0],value);if(!checked.ok||checked.value!==value)throw new HttpError(400,'Période native non exacte. Aucun arrondi.');targets[0].settings[field]=value;
+    }
+    const cfg=cabinetConfigFromSection(section),a=cabinetCore.atelierById(cfg,patch.id);
+    if(!bookingTimezoneSchema.safeParse(cfg.timezone).success)throw new HttpError(409,'Le fuseau natif du calendrier ne peut pas être vérifié. Aucun repli UTC.');
+    const local=cabinetCore.nowIn(cfg.timezone,now());
+    if(!a||!a.date||!a.time||!a.duration||toMin(a.time)+a.duration>1440||a.date<local.date||a.date===local.date&&toMin(a.time)<=local.minute)throw new HttpError(409,'Précisez une période native complète, future, terminant au plus tard à minuit.');
+    if(patch.date!==undefined&&a.date!==patch.date||patch.time!==undefined&&a.time!==patch.time||patch.durationMinutes!==undefined&&a.duration!==patch.durationMinutes)throw new HttpError(409,'La période cible n’est pas confirmée par le moteur natif.');
+    const start=toMin(a.time),end=start+a.duration,busy=workshopScheduleBusy(projectId,a.date),other=cfg.ateliers.filter(w=>w.id!==a.id&&w.date===a.date&&w.time&&w.duration);
+    if(busy.some(b=>b.start_min<end&&b.end_min>start)||other.some(w=>toMin(w.time)<end&&toMin(w.time)+w.duration!>start))throw new HttpError(409,'La période cible chevauche une séance confirmée ou un atelier natif. Aucune réservation modifiée.','workshop_schedule_busy');
+    warnings.push(L('Seule la période de cet atelier change. Aucun déplacement, annulation ou message aux inscrits ; une inscription confirmée interdit tout changement de période. Les autres ateliers, prix, capacités et mode restent inchangés.','Only this workshop period changes. No enrolment move, cancellation or message; a confirmed enrolment prevents any period change. Other workshops, prices, capacities and mode stay unchanged.'));
+  }
 
   if(input.workshopPricePatch){
     if(sec.kind!=='cabinet')throw new HttpError(409,'Ce calendrier ne comporte pas d’atelier de cabinet natif.');
