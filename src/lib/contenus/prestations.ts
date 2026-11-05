@@ -34,6 +34,10 @@ function uniqueProvidedIds(rows:{id?:string}[],ctx:z.RefinementCtx){
   const seen=new Set<string>();rows.forEach((row,index)=>{if(!row.id)return;if(seen.has(row.id))ctx.addIssue({code:'custom',path:[index,'id'],message:'Identifiant natif dupliqué : rechargez avant d’enregistrer.'});seen.add(row.id);});
 }
 const toMin = (hm: string) => Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3, 5));
+/** ISO dates must round-trip: Date.parse alone silently rolls February 31 into March. */
+const realClosureDate = (date: string) => { const stamp=Date.parse(date+"T00:00:00Z"); return Number.isFinite(stamp)&&new Date(stamp).toISOString().slice(0,10)===date; };
+const validClosureDates = (text: string) => !text.trim() || text.split(",").every(part=>{const [start,end]=part.trim().split("..");return realClosureDate(start)&&(!end||realClosureDate(end)&&end>=start);});
+
 
 const hoursSchema = z.string().max(120).regex(HOURS, "horaires : « 09:00-12:00, 14:00-18:00 » ou vide (fermé)").refine((v) => !v.trim() || !HOURS.test(v) || v.split(",").every((r) => { const [a, b] = r.split("-").map((x) => x.trim()); return toMin(a) < toMin(b) && toMin(b) <= 24 * 60; }), "horaires : l'heure de fin doit suivre l'heure de début");
 const serviceSchema = z.object({
@@ -72,7 +76,7 @@ export const prestationsInput = z.object({
   staff: z.array(staffSchema).max(20).superRefine(uniqueProvidedIds).optional(),
   hours: z.object(Object.fromEntries(DAYS.map((d) => [d, hoursSchema])) as Record<(typeof DAYS)[number], typeof hoursSchema>).partial().optional(),
   address: z.string().trim().max(300).optional(),
-  closures: z.string().max(2000).regex(CLOSURES, "fermetures : dates AAAA-MM-JJ ou périodes AAAA-MM-JJ..AAAA-MM-JJ").optional(),
+  closures: z.string().max(2000).regex(CLOSURES, "fermetures : dates AAAA-MM-JJ ou périodes AAAA-MM-JJ..AAAA-MM-JJ").refine(validClosureDates,"fermetures : dates réelles et fin postérieure ou égale au début").optional(),
   restaurant: restaurantSchema.optional(),
   restaurantPatch: restaurantSchema.pick({openDays:true,lunchSlots:true,dinnerSlots:true}).partial().strict().refine(v=>v.openDays!==undefined||v.lunchSlots!==undefined||v.dinnerSlots!==undefined,"Précisez le jour ou le service à modifier.").optional(),
 }).refine((v) => !v.servicePatch || !v.services, "Ne mélangez pas remplacement et retouche ciblée des prestations.").refine(v=>!v.restaurantPatch||!v.restaurant,"Ne mélangez pas remplacement et retouche ciblée du restaurant.");
