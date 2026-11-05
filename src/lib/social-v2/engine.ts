@@ -387,7 +387,7 @@ function snapshotForUndo(projectId: string, ids: string[], summary: string) {
   run("INSERT INTO social_edit_undo (project_id, at, summary, rows, created, after) VALUES (?,?,?,?, '[]', '{}') ON CONFLICT(project_id) DO UPDATE SET at = excluded.at, summary = excluded.summary, rows = excluded.rows, created = '[]', after = '{}'", projectId, now(), summary.slice(0, 300), JSON.stringify(rows));
 }
 
-/** État d'après la retouche (id → updated_at) : une publication modifiée ensuite n'est jamais écrasée par l'annulation. */
+/** État d'après la retouche (id → jeton versionné et empreinte) : une publication modifiée ensuite n'est jamais écrasée par l'annulation. */
 type UndoRow=Record<string,unknown>&{id:string;status:string;updated_at:number};
 type UndoStamp={schema:'native-social-undo-1';updatedAt:number;fingerprint:string};
 /** Bind every native field, including content, acquired approval and locks; timestamps alone are not versions. */
@@ -440,9 +440,9 @@ function undoLastEdit(p: Project): EditOutcome {
       kept.push(`${pid} : ${L("visuel d'origine supprimé", "original visual deleted")}`);
       continue;
     }
+    if(UNDO_COLS.every(key=>cur[key]===r[key]))continue;
     const live = ["scheduled", "paused"].includes(String(r.status));
     const values = UNDO_COLS.map((c) => (c === "status" && live ? (r.approved_hash ? "approved" : "review") : r[c]) as never);
-    if(UNDO_COLS.every((key,index)=>cur[key]===values[index]))continue;
     run(`UPDATE posts SET ${UNDO_COLS.map((c) => `${c} = ?`).join(", ")}, updated_at = ? WHERE id = ?`, ...values, now(), pid);
     removeUsages("post", pid);
     for (const m of media) addUsage(m, "post", pid, "Publication");

@@ -24,10 +24,19 @@ Un parcours de nouvel aperçu explicite pour ces historiques reste à concevoir/
 
 ## Vérifications
 
-**14 nouveaux tests ; 33 cas distincts validés dans trois fichiers ; types verts.** Moteur natif, scènes calendrier existantes et social-v2-engine. Cas à timestamp identique, champs link/hashtags, historiques anciens/incomplets, états published/publishing/uncertain fictifs, refus sans perte, rollback après une première vraie restauration, vues natives et attente réelle monotone ≥17 secondes sans réécriture de la source.
+**16 nouveaux tests ; 35 cas distincts validés ensemble dans trois fichiers sur le dernier code ; types verts.** Moteur natif, scènes calendrier existantes et social-v2-engine. Cas à timestamp identique, champs link/hashtags, historiques anciens/incomplets, états published/publishing/uncertain fictifs, refus sans perte, rollback après une première vraie restauration, vues natives et attente réelle monotone ≥17 secondes sans réécriture de la source.
 
 Le premier passage complet avait31 verts/1 échec de fixture : le test supposait l’original restauré en premier. L’assertion utilise maintenant l’ID réellement restauré avant d’injecter l’erreur ; ce cas a été rejoué seul avec succès. Aucune assertion de conservation affaiblie. Les cas non sélectionnés dans ce rejeu ne sont pas comptés comme exécutés à nouveau.
 
 Vrai handler HTTP/session/SQLite : budget IA explicitement indisponible, deux demandes natives identiques sur journal ancien → refus200/applied=false, aucune confirmation IA, données/journal/wallet/compteurs inchangés. Régressions avec dépendances fournisseurs simulées ; nouveaux cas sans fournisseur réel.
 
 Logs : `/tmp/parity301-native-social-undo-first.log`, `-final.log`, `-rollback-final.log`, `-http-final.log`, `-http-budget-final.log`, `-types-final.log`. Pas de recette navigateur nouvelle, pas de qualification complète de l’annulation dans SYNA. CI finale du commit GitHub publié à suivre séparément. Aucun fournisseur/dépense/client réel, publication, activation, main ou déploiement.
+
+
+## Complément : source programmée ou en pause intacte
+
+La relecture après publication initiale a démontré deux rouges supplémentaires sur c067eb98 (arbre identique au premier commit distant0518e098) : l’annulation d’une copie réécrivait une source intacte en statut approved lorsqu’elle était scheduled ou paused. États et approbation acquis fictifs semés en SQLite, pas une programmation/publication réellement exécutée. Le test compare TOUTE la ligne source et interdit tout UPDATE posts pendant l’annulation de cette seule copie.
+
+Le premier lancement de ces deux nouveaux tests a échoué dans la fixture (objet User passé à SQL au lieu de user.id). Après correction de la seule fixture, les deux défauts de statut ont été réellement reproduits. Correction : comparer d’abord les champs à l’état original brut, avant toute normalisation de statut pour les restaurations nécessaires. La source intacte est sautée ; une vraie restauration vers un état programmé continue de passer par les contrôles existants.
+
+Dernier passage :35/35, trois fichiers (16 gardes +17 social-v2-engine +2 calendrier), types verts, attente réelle≥17s. Logs /tmp/parity301-social-undo-acquired-source-red.log (fixture), -red-corrected-fixture.log (deux vrais rouges), /tmp/parity301-native-social-undo-acquired-final.log et -types.log. Le verdict CI de l’ancien0518e098 ne doit pas être attribué à cette correction suivante. Aucun nouveau parcours central ni fournisseur.
