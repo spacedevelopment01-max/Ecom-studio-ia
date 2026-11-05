@@ -29,6 +29,8 @@ export const CommandSchema = z.discriminatedUnion("action", [
   base.extend({action:z.literal('cancel-booking-timezone'),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal('confirm-workshop-capacity'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal('cancel-workshop-capacity'),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal('confirm-memory-add'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal('cancel-memory-add'),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal('confirm-memory-forget'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal('cancel-memory-forget'),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal('confirm-workshop-schedule'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
@@ -107,6 +109,7 @@ export type ConversationState = {
   bookingMoveProposal?:import('./local-booking-move').BookingMoveProposal;
   bookingTimezoneProposal?:import('./local-booking-timezone').BookingTimezoneProposal;
   workshopCapacityProposal?:import('./local-workshop-capacity').WorkshopCapacityProposal;
+  memoryAddProposal?:import('./local-memory-add').MemoryAddProposal;
   memoryForgetProposal?:import('./local-memory-forget').MemoryForgetProposal;
   workshopScheduleProposal?:import('./local-workshop-schedule').WorkshopScheduleProposal;
   workshopPriceProposal?:import('./local-workshop-price').WorkshopPriceProposal;
@@ -117,6 +120,7 @@ export type ConversationState = {
   bookingMove?:import('./local-booking-move').BookingMovePresentation;
   bookingTimezone?:import('./local-booking-timezone').BookingTimezonePresentation;
   workshopCapacity?:import('./local-workshop-capacity').WorkshopCapacityPresentation;
+  memoryAdd?:import('./local-memory-add').MemoryAddPresentation;
   memoryForget?:import('./local-memory-forget').MemoryForgetPresentation;
   workshopSchedule?:import('./local-workshop-schedule').WorkshopSchedulePresentation;
   workshopPrice?:import('./local-workshop-price').WorkshopPricePresentation;
@@ -233,6 +237,7 @@ export type ConversationView = {
   bookingMove?:import('./local-booking-move').BookingMovePresentation;
   bookingTimezone?:import('./local-booking-timezone').BookingTimezonePresentation;
   workshopCapacity?:import('./local-workshop-capacity').WorkshopCapacityPresentation;
+  memoryAdd?:import('./local-memory-add').MemoryAddPresentation;
   memoryForget?:import('./local-memory-forget').MemoryForgetPresentation;
   workshopSchedule?:import('./local-workshop-schedule').WorkshopSchedulePresentation;
   workshopPrice?:import('./local-workshop-price').WorkshopPricePresentation;
@@ -243,6 +248,7 @@ export type ConversationView = {
   bookingMoveExecution?:{enabled:true};
   bookingTimezoneExecution?:{enabled:true};
   workshopCapacityExecution?:{enabled:true};
+  memoryAddExecution?:{enabled:true};
   memoryForgetExecution?:{enabled:true};
   workshopScheduleExecution?:{enabled:true};
   workshopPriceExecution?:{enabled:true};
