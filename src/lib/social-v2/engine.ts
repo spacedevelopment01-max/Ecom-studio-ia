@@ -1,3 +1,4 @@
+import {stableHash} from '../brain/hash';
 import {serviceStrategyProject} from '../marketing-strategy';
 import { recordedContentStrategy, strategyContent } from "../strategy-consumption";
 import { planOfProject } from "../plan-gates";
@@ -12,7 +13,7 @@ import { PLANS } from "../plans";
  */
 import { addDays, format } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
-import { all, id, json, now, one, run } from "../db";
+import { all, id, json, now, one, run, tx } from "../db";
 import { addUsage, getAsset, removeUsages } from "../library";
 import type { Project } from "../projects";
 import { createHash } from "node:crypto";
@@ -387,9 +388,19 @@ function snapshotForUndo(projectId: string, ids: string[], summary: string) {
 }
 
 /** État d'après la retouche (id → updated_at) : une publication modifiée ensuite n'est jamais écrasée par l'annulation. */
+type UndoRow=Record<string,unknown>&{id:string;status:string;updated_at:number};
+type UndoStamp={schema:'native-social-undo-1';updatedAt:number;fingerprint:string};
+/** Bind every native field, including content, acquired approval and locks; timestamps alone are not versions. */
+function undoFingerprint(row:UndoRow){return stableHash('native-social-undo-1',row);}
+function undoUnchanged(row:UndoRow,after:Record<string,unknown>){
+ const value=after[row.id];if(!value||typeof value!=='object')return false;
+ const stamp=value as Partial<UndoStamp>;
+ return stamp.schema==='native-social-undo-1'&&stamp.updatedAt===row.updated_at&&stamp.fingerprint===undoFingerprint(row);
+}
+
 function finishUndo(projectId: string, ids: string[], created: string[]) {
   const list = [...ids, ...created];
-  const after = list.length ? Object.fromEntries(all<{ id: string; updated_at: number }>(`SELECT id, updated_at FROM posts WHERE id IN (${list.map(() => "?").join(",")})`, ...list).map((r) => [r.id, r.updated_at])) : {};
+  const after = list.length ? Object.fromEntries(all<UndoRow>(`SELECT * FROM posts WHERE id IN (${list.map(() => "?").join(",")})`, ...list).map((r) => [r.id, {schema:'native-social-undo-1',updatedAt:r.updated_at,fingerprint:undoFingerprint(r)} satisfies UndoStamp])) : {};
   run("UPDATE social_edit_undo SET created = ?, after = ? WHERE project_id = ?", JSON.stringify(created), JSON.stringify(after), projectId);
 }
 
@@ -400,23 +411,24 @@ function finishUndo(projectId: string, ids: string[], created: string[]) {
  * calendrier et nombre par jour du forfait) ; si ce n'est plus possible, elle reste approuvée et c'est dit.
  */
 function undoLastEdit(p: Project): EditOutcome {
+ return tx(()=>{
   const u = one<{ rows: string; created: string; after: string; summary: string }>("SELECT rows, created, after, summary FROM social_edit_undo WHERE project_id = ?", p.id);
   if (!u) return { ids: [], costMicro: 0, applied: false, by: "none", summary: L("Aucune modification récente à annuler.", "No recent change to undo.") };
   const rows = json<Record<string, unknown>[]>(u.rows, []);
-  const after = json<Record<string, number>>(u.after, {});
+  const after = json<Record<string, unknown>>(u.after, {});
   const kept: string[] = [];
   const toSchedule: string[] = [];
   let restored = 0;
   for (const r of rows) {
     const pid = r.id as string;
-    const cur = one<{ status: string; updated_at: number }>("SELECT status, updated_at FROM posts WHERE id = ? AND project_id = ?", pid, p.id);
+    const cur = one<UndoRow>("SELECT * FROM posts WHERE id = ? AND project_id = ?", pid, p.id);
     if (!cur) continue;
     if (SENT.has(cur.status)) {
       kept.push(`${pid} : ${L("envoyée entre-temps", "sent in the meantime")}`);
       continue;
     }
-    if (after[pid] != null && cur.updated_at !== after[pid]) {
-      kept.push(`${pid} : ${L("modifiée depuis, modification gardée", "changed since, change kept")}`);
+    if (!undoUnchanged(cur,after)) {
+      kept.push(`${pid} : ${L("modifiée depuis ou historique incomplet, état actuel gardé", "changed since or incomplete history, current state kept")}`);
       continue;
     }
     if (typeof r.scheduled_at === "number" && r.scheduled_at < now() - 60_000) {
@@ -430,6 +442,7 @@ function undoLastEdit(p: Project): EditOutcome {
     }
     const live = ["scheduled", "paused"].includes(String(r.status));
     const values = UNDO_COLS.map((c) => (c === "status" && live ? (r.approved_hash ? "approved" : "review") : r[c]) as never);
+    if(UNDO_COLS.every((key,index)=>cur[key]===values[index]))continue;
     run(`UPDATE posts SET ${UNDO_COLS.map((c) => `${c} = ?`).join(", ")}, updated_at = ? WHERE id = ?`, ...values, now(), pid);
     removeUsages("post", pid);
     for (const m of media) addUsage(m, "post", pid, "Publication");
@@ -448,16 +461,18 @@ function undoLastEdit(p: Project): EditOutcome {
   }
   let removed = 0;
   for (const nid of json<string[]>(u.created, [])) {
-    const cur = one<{ updated_at: number }>("SELECT updated_at FROM posts WHERE id = ? AND project_id = ? AND status NOT IN ('publishing','published','uncertain')", nid, p.id);
+    const cur = one<UndoRow>("SELECT * FROM posts WHERE id = ? AND project_id = ? AND status NOT IN ('publishing','published','uncertain')", nid, p.id);
     if (!cur) continue;
-    if (after[nid] != null && cur.updated_at !== after[nid]) {
-      kept.push(`${nid} : ${L("copie modifiée depuis, gardée", "copy changed since, kept")}`);
+    if (!undoUnchanged(cur,after)) {
+      kept.push(`${nid} : ${L("copie modifiée depuis ou historique incomplet, gardée", "copy changed since or incomplete history, kept")}`);
       continue;
     }
     removeUsages("post", nid);
     removed += run("DELETE FROM posts WHERE id = ? AND project_id = ?", nid, p.id).changes;
   }
-  run("DELETE FROM social_edit_undo WHERE project_id = ?", p.id);
+  if(restored+removed>0)run("DELETE FROM social_edit_undo WHERE project_id = ?", p.id);
   const keptNote = kept.length ? L(` ; ${kept.length} laissée(s) telle(s) quelle(s)`, `; ${kept.length} left as they are`) : "";
+  if(!restored&&!removed)return{ids:rows.map(r=>r.id as string),costMicro:0,applied:false,by:'none',refused:kept.length?kept:undefined,summary:L("Aucune publication modifiée : les changements ultérieurs ou l’historique incomplet sont conservés. Le journal reste disponible.","No post changed: later edits or incomplete history are preserved. The undo journal remains available.")};
   return { ids: rows.map((r) => r.id as string), costMicro: 0, applied: restored + removed > 0, by: "local", refused: kept.length ? kept : undefined, summary: L(`Dernière modification annulée (« ${u.summary} ») : ${restored} publication(s) remise(s) comme avant${removed ? `, ${removed} copie(s) retirée(s)` : ""}${keptNote}.`, `Last change undone ("${u.summary}"): ${restored} post(s) restored${removed ? `, ${removed} copy(ies) removed` : ""}${keptNote}.`) };
+ });
 }
