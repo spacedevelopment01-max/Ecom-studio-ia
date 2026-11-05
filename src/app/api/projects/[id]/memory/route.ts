@@ -1,5 +1,6 @@
+import { deleteProjectMemoryItem } from '@/lib/contenus/project-memory';
 import { z } from "zod";
-import { all, run } from "@/lib/db";
+import { all } from "@/lib/db";
 import { body, handle, ok } from "@/lib/http";
 import { remember } from "@/lib/projects";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
@@ -19,6 +20,6 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
 export const DELETE = handle(async (req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
   const mid = new URL(req.url).searchParams.get("item");
-  run("DELETE FROM memory WHERE id = ? AND project_id = ? AND kind != 'artifact'", mid, p.id);
+  deleteProjectMemoryItem(p.id, mid);
   return ok();
 });
