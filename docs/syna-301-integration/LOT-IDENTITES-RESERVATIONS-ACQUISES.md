@@ -22,6 +22,8 @@ Les contrôles de jour local, statut confirmé, échec SQL, version et transacti
 
 **11 nouveaux tests ; 83 cas distincts dans 6 fichiers et types verts.** Source opaque/canonique, vraie réservation native future, refus de suppression sans version, avertissement de durée et rendez-vous exact, ajout ciblé ou complet sans collision, intervenant, identifiant de propriété héritée. Régressions des dates/fuseaux, ajout/retrait ciblés, intervenant ciblé, éditeur natif et identités bornées acquises.
 
+L’horloge métier est fixée au 5 novembre 2026, comme l’instant des réservations natives, pour que les cas « à venir » restent reproductibles lors des futures CI. Les onze cas et les types ont été revérifiés après cette stabilisation, sans nouvelle unité comptée.
+
 Véritables helpers et handlers HTTP **en processus**, SQLite/Session isolées et données fictives ; aucun fournisseur, notification ou projet client. Logs locaux : `/tmp/parity301-native-booking-id-alias-parent-red.log`, `/tmp/parity301-native-booking-id-prototype-red.log`, `/tmp/parity301-native-booking-id-alias-final.log`, `...-identity-regressions.log`, `...-types-final.log`.
 
 Parent #454. Préalable découvert avant le raccordement de l’ajout/retrait d’intervenants, qui reste une lacune à traiter ensuite. Aucun nouveau drapeau, DTO ou composant ; aucune nouvelle recette navigateur revendiquée. Pas de dépense, activation, fusion ou déploiement.
