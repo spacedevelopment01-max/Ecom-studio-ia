@@ -13,10 +13,12 @@
  */
 import { z } from "zod";
 import { HttpError } from "../auth";
-import { all } from "../db";
+import { all, now } from "../db";
 import { L } from "../i18n-server";
 import { currentTheme, loadProject, previewThemeVersionSpec, saveServices, saveThemeVersion } from "../projects";
 import { rdvSection, type RdvKind } from "../rendez-vous";
+import { core as salonCore } from "../salon/booking";
+import { core as cabinetCore } from "../cabinet/booking";
 import type { SectionInstance, ThemeSpec } from "../theme/spec";
 
 export const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
@@ -95,10 +97,12 @@ export const prestationsInput = z.object({
 export type PrestationsInput = z.infer<typeof prestationsInput>;
 
 /** Rendez-vous confirmés à venir, par prestation (salon : `salon_appointments.service`, cabinet : séance). */
-function futureBookings(projectId: string, kind: RdvKind): Record<string, number> {
-  const today = new Date().toISOString().slice(0, 10);
+function futureBookings(projectId: string, kind: RdvKind, timezone: unknown): Record<string, number> {
   const table = kind === "salon" ? "salon_appointments" : kind === "cabinet" ? "cabinet_appointments" : null;
   if (!table) return {};
+  // Dates belong to the widget's calendar, not the server's UTC day. Reuse its default/fallback rules.
+  const zone = typeof timezone === "string" ? timezone.trim() : "";
+  const today = (kind === "salon" ? salonCore : cabinetCore).nowIn(zone || "Europe/Paris", now()).date;
   try {
     return Object.fromEntries(all<{ service: string; n: number }>(`SELECT service, COUNT(*) n FROM ${table} WHERE project_id = ? AND status = 'confirmed' AND date >= ? GROUP BY service`, projectId, today).map((r) => [r.service, r.n]));
   } catch { return {}; }
@@ -113,7 +117,7 @@ export function readPrestations(projectId: string) {
   const sec = cur ? rdvSection(cur.spec as ThemeSpec) : null;
   if (!sec) return null;
   const st = (sec.section.settings ?? {}) as Record<string, unknown>;
-  const booked = futureBookings(projectId, sec.kind);
+  const booked = futureBookings(projectId, sec.kind, st.timezone);
   const blocks = blocksOf(sec.section);
   const services = sec.kind === "salon"
     ? blocks.filter((b) => b.block.type === "service").map(({ block: b }) => { const v = b.settings ?? {}; return { id: String(v.service_id ?? ""), name: String(v.name ?? ""), category: String(v.category ?? "coupe"), short: String(v.short ?? ""), duration: num(v.duration), price: num(v.price), priceFrom: !!v.price_from, upcoming: booked[String(v.service_id ?? "")] ?? 0 }; })
