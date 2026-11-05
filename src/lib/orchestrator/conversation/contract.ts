@@ -15,6 +15,8 @@ const base = z.object({
   projectRevision: z.number().int().min(0).nullable(),
 });
 export const CommandSchema = z.discriminatedUnion("action", [
+  base.extend({action:z.literal('confirm-booking-service-text'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal('cancel-booking-service-text'),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal('confirm-booking-closures'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal('cancel-booking-closures'),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal('confirm-restaurant-settings'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
@@ -72,6 +74,8 @@ export const CommandSchema = z.discriminatedUnion("action", [
 export type Command = z.infer<typeof CommandSchema>;
 /** Un seul Brief natif pour le brouillon ; après rattachement, il est retiré et relu via stateOf(projectId). */
 export type ConversationState = {
+  bookingServiceTextProposal?:import('./local-booking-service-text').BookingServiceTextProposal;
+  bookingServiceText?:import('./local-booking-service-text').BookingServiceTextPresentation;
   bookingClosuresProposal?:import('./local-booking-closures').BookingClosuresProposal;
   bookingClosures?:import('./local-booking-closures').BookingClosuresPresentation;
   restaurantSettingsProposal?:import('./local-restaurant-settings').RestaurantSettingsProposal;
@@ -157,6 +161,8 @@ export type ActionCard = {
   href?: string;
 };
 export type ConversationView = {
+  bookingServiceText?:import('./local-booking-service-text').BookingServiceTextPresentation;
+  bookingServiceTextExecution?:{enabled:true};
   bookingClosures?:import('./local-booking-closures').BookingClosuresPresentation;
   bookingClosuresExecution?:{enabled:true};
   restaurantSettings?:import('./local-restaurant-settings').RestaurantSettingsPresentation;

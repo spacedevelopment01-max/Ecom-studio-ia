@@ -59,9 +59,11 @@ const staffSchema = z.object({
 });
 const servicePatchSchema = z.object({
   id: z.string().min(1).max(40),
+  name: serviceSchema.shape.name.optional(),
+  short: serviceSchema.shape.short.removeDefault().optional(),
   price: z.number().min(0).max(100000).nullable().optional(),
   duration: z.number().int().min(5).max(600).optional(),
-}).strict().refine((v) => v.price !== undefined || v.duration !== undefined, "Précisez le prix ou la durée.");
+}).strict().refine((v) => v.price !== undefined || v.duration !== undefined || v.name !== undefined || v.short !== undefined, "Précisez le nom, la description courte, le prix ou la durée.");
 const restaurantSchema = z.object({
     openDays: z.array(z.number().int().min(0).max(6)).max(7),
     lunchSlots: z.string().max(200).regex(SLOTS, "créneaux : « 12:00, 12:30 »"),
@@ -78,8 +80,9 @@ export const prestationsInput = z.object({
   address: z.string().trim().max(300).optional(),
   closures: z.string().max(2000).regex(CLOSURES, "fermetures : dates AAAA-MM-JJ ou périodes AAAA-MM-JJ..AAAA-MM-JJ").refine(validClosureDates,"fermetures : dates réelles et fin postérieure ou égale au début").optional(),
   restaurant: restaurantSchema.optional(),
+  restaurantCapacityPatch: restaurantSchema.pick({capacity:true}).strict().optional(),
   restaurantPatch: restaurantSchema.pick({openDays:true,lunchSlots:true,dinnerSlots:true}).partial().strict().refine(v=>v.openDays!==undefined||v.lunchSlots!==undefined||v.dinnerSlots!==undefined,"Précisez le jour ou le service à modifier.").optional(),
-}).refine((v) => !v.servicePatch || !v.services, "Ne mélangez pas remplacement et retouche ciblée des prestations.").refine(v=>!v.restaurantPatch||!v.restaurant,"Ne mélangez pas remplacement et retouche ciblée du restaurant.");
+}).refine(v=>!v.restaurantCapacityPatch||!v.restaurant&&!v.restaurantPatch,"Ne mélangez pas retouche de capacité et autres réglages restaurant.").refine((v) => !v.servicePatch || !v.services, "Ne mélangez pas remplacement et retouche ciblée des prestations.").refine(v=>!v.restaurantPatch||!v.restaurant,"Ne mélangez pas remplacement et retouche ciblée du restaurant.");
 export type PrestationsInput = z.infer<typeof prestationsInput>;
 
 /** Rendez-vous confirmés à venir, par prestation (salon : `salon_appointments.service`, cabinet : séance). */
@@ -197,10 +200,12 @@ function buildPrestations(projectId: string, raw: unknown) {
     const previous = before.services.filter((s) => s.id === patch.id);
     if (sec.kind === "restaurant" || rows.length !== 1 || previous.length !== 1) throw new HttpError(409, "Prestation réservable native absente ou ambiguë. Rechargez sans substitution.");
     const old = previous[0], settings = rows[0].block.settings!;
+    if (patch.name !== undefined) settings.name = patch.name;
+    if (patch.short !== undefined) settings.short = patch.short;
     if (patch.price !== undefined) settings.price = patch.price ?? "";
     if (patch.duration !== undefined) settings.duration = patch.duration;
     if (patch.duration !== undefined && old.upcoming && old.duration !== patch.duration) warnings.push(L(`« ${old.name} » : les rendez-vous déjà pris (${old.upcoming}) conservent leur durée enregistrée (${old.duration} min).`, `“${old.name}”: already booked appointments (${old.upcoming}) keep their recorded length (${old.duration} min).`));
-    syncShown(spec, sec.kind, new Map([[patch.id, { name: old.name, oldName: old.name, duration: patch.duration ?? old.duration, price: patch.price !== undefined ? patch.price : old.price, priceFrom: old.priceFrom }]]), { price: patch.price !== undefined, duration: patch.duration !== undefined });
+    syncShown(spec, sec.kind, new Map([[patch.id, { name: patch.name ?? old.name, oldName: old.name, duration: patch.duration ?? old.duration, price: patch.price !== undefined ? patch.price : old.price, priceFrom: old.priceFrom }]]), { price: patch.price !== undefined, duration: patch.duration !== undefined });
   }
   if (input.staff && sec.kind === "salon") {
     const currentBlocks = blocksOf(section);
@@ -234,6 +239,10 @@ function buildPrestations(projectId: string, raw: unknown) {
     const r = input.restaurant;
     if (r.minParty > r.maxParty) throw new HttpError(400, L("Le nombre minimum de couverts dépasse le maximum.", "The minimum party size exceeds the maximum."));
     Object.assign(st, { open_days: [...new Set(r.openDays)].sort().join(","), lunch_slots: r.lunchSlots.trim(), dinner_slots: r.dinnerSlots.trim(), capacity: r.capacity, min_party: r.minParty, max_party: r.maxParty });
+  }
+  if (input.restaurantCapacityPatch) {
+    if (sec.kind !== "restaurant") throw new HttpError(409,"Ce site ne comporte pas de réservation restaurant native.");
+    st.capacity = input.restaurantCapacityPatch.capacity;
   }
   if (input.restaurantPatch) {
     if (sec.kind !== "restaurant") throw new HttpError(409,"Ce site ne comporte pas de réservation restaurant native.");
