@@ -1,3 +1,17 @@
+## Reprise active — 5 novembre 2026, 17 h 40 UTC
+
+**SYNA complète n’est pas terminée.** Dernier lot livré : **#457 / e31c3171d65e7b7ce06aea578ca44fbdeddc3213**, moteur natif staffAdd/staffRemove, parent **#456 /35bb6fc3df09c832b75fb01b1d91f28d5550871e**, après #455 tête **2a51db4300769980243186c1719426b3ec314af6** (code 0a538370 + horloge fixe). Main de référence reste #422 /6354f327888d70c64ce4d86604b7b8fdc768947c ; aucun merge/deploy/activation.
+
+#456 : 11 nouveaux tests rouges avant déplacement de neuf lectures de configuration sous le verrou de réservation ; 55 cas distincts et types verts. Trois moteurs, création/déplacements client et professionnel, capacités restaurant/atelier. Ordonnancement déterministe d’une véritable publication concurrente, pas preuve multiprocessus.
+
+#457 : 25 nouveaux tests, 92 cas distincts dans cinq fichiers et types verts ; dernier avertissement recontrôlé séparément. Ajout ciblé, conservation des voisins et des identités opaques/canoniques, retrait bloqué par rendez-vous confirmé du jour local ou à venir et erreur SQL. Deux cas rouges supplémentaires ont révélé le contournement par libellé acquis vide, corrigé sans modifier ce libellé ni les rendez-vous. Rapport LOT-INTERVENANTS-AJOUT-RETRAIT-NATIFS.md. Politique de remplacement manuel complet inchangée. Pas encore de carte ou de recette conversationnelle pour ce contrat.
+
+**En cours** dans `/workspace/work/parity301-file-trash-syna`, branche `codex/parity301-booking-staff-catalog-conversation` issue de #457 : raccordement naturel BOOKING_STAFF_CATALOG, aperçu/accord gratuit/reçu/rejeu, réutilisation du parseur natif de jours et catégories. Modifications non encore livrées, ne pas les annoncer validées. Reprendre les logs `/tmp/parity301-booking-staff-catalog-first.log` et les types. Carte, handle et recette Studio compilée indépendante à Claude ; ne pas modifier ses composants. Aucun droit A1 nouveau.
+
+CI relevée : **#450 /5eb35dc0 entièrement verte** (run42056767665, cinq contrôles, après relance installation ONNX HTTP504), **#453 /c2f9798a entièrement verte** (run42061429264, cinq contrôles). #452 et #454 : suite/types, Docker, confirmation gratuite verts ; recettes longues encore en cours. #455 tête2a51 : Docker/confirmation verts, autres en cours. #456/#457 à relever. Ne pas reporter la CI d’un descendant sur un autre commit.
+
+Cumul **670 nouveaux tests distincts #423–#457**, sans additionner les régressions répétées. Matrice encore **176 opérations uniques, 78 PARTIEL /68 ABSENT /4 NON_TESTE /26 BLOQUE**, aucune complète ; le moteur staffAdd/remove ne ferme pas les parcours conversationnels. Coordination Claude #301 commentaire6664747532. Fournisseurs interdits et fetch refusé, SQLite isolée et projets fictifs. Les anciennes preuves navigateur ne qualifient pas ces nouveaux contrats.
+
 ## Reprise active — 5 novembre 2026, 16 h 36 UTC / 17 h 36 Paris
 
 **La mission SYNA complète n’est pas terminée.** Dernière tête fonctionnelle : **#455 / 0a538370b7b61198b9a3d9e10029d8403001b04c**, branche `codex/parity301-native-booking-id-alias-guards`, checkout `/workspace/work/parity301-file-trash-syna`, propre. Parent **#454 / 0262f6fcaddeac7d2d253a525ba717203e4b1239**, puis #453/c2f9798a, #452/fb38d8c5, #451/545c9643, #450/5eb35dc0. Main locale et distante ont été comparées : **6354f327888d70c64ce4d86604b7b8fdc768947c**, toujours #422.
