@@ -1,0 +1,1009 @@
+{
+  "schema": "syna301-folder-read-production-1",
+  "prepared": false,
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Lecture naturelle : dossier cité corbeille, cible exacte visible sans devis ni accord",
+          "ok": true
+        },
+        {
+          "etape": "Renommage : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "17 secondes, actualisation projet, accord ; réponse perdue reprise sans doublon",
+          "ok": true
+        },
+        {
+          "etape": "Résultat natif visible après reçu et rechargement, nouvelle lecture exacte",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "business": "products",
+      "steps": [
+        {
+          "etape": "Lecture naturelle : dossier cité corbeille, cible exacte visible sans devis ni accord",
+          "ok": true
+        },
+        {
+          "etape": "Renommage : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "17 secondes, actualisation projet, accord ; réponse perdue reprise sans doublon",
+          "ok": true
+        },
+        {
+          "etape": "Résultat natif visible après reçu et rechargement, nouvelle lecture exacte",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Lecture naturelle : dossier cité corbeille, cible exacte visible sans devis ni accord",
+          "ok": true
+        },
+        {
+          "etape": "Renommage : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "17 secondes, actualisation projet, accord ; réponse perdue reprise sans doublon",
+          "ok": true
+        },
+        {
+          "etape": "Résultat natif visible après reçu et rechargement, nouvelle lecture exacte",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "business": "products",
+      "steps": [
+        {
+          "etape": "Lecture naturelle : dossier cité corbeille, cible exacte visible sans devis ni accord",
+          "ok": true
+        },
+        {
+          "etape": "Renommage : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "17 secondes, actualisation projet, accord ; réponse perdue reprise sans doublon",
+          "ok": true
+        },
+        {
+          "etape": "Résultat natif visible après reçu et rechargement, nouvelle lecture exacte",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Lecture naturelle : dossier cité corbeille, cible exacte visible sans devis ni accord",
+          "ok": true
+        },
+        {
+          "etape": "Renommage : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "17 secondes, actualisation projet, accord ; réponse perdue reprise sans doublon",
+          "ok": true
+        },
+        {
+          "etape": "Résultat natif visible après reçu et rechargement, nouvelle lecture exacte",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "business": "products",
+      "steps": [
+        {
+          "etape": "Lecture naturelle : dossier cité corbeille, cible exacte visible sans devis ni accord",
+          "ok": true
+        },
+        {
+          "etape": "Renommage : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "17 secondes, actualisation projet, accord ; réponse perdue reprise sans doublon",
+          "ok": true
+        },
+        {
+          "etape": "Résultat natif visible après reçu et rechargement, nouvelle lecture exacte",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Lecture naturelle : dossier cité corbeille, cible exacte visible sans devis ni accord",
+          "ok": true
+        },
+        {
+          "etape": "Renommage : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "17 secondes, actualisation projet, accord ; réponse perdue reprise sans doublon",
+          "ok": true
+        },
+        {
+          "etape": "Résultat natif visible après reçu et rechargement, nouvelle lecture exacte",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "business": "products",
+      "steps": [
+        {
+          "etape": "Lecture naturelle : dossier cité corbeille, cible exacte visible sans devis ni accord",
+          "ok": true
+        },
+        {
+          "etape": "Renommage : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "17 secondes, actualisation projet, accord ; réponse perdue reprise sans doublon",
+          "ok": true
+        },
+        {
+          "etape": "Résultat natif visible après reçu et rechargement, nouvelle lecture exacte",
+          "ok": true
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "constats": [],
+  "forbidden": [],
+  "coutIA": 0,
+  "financialUnchanged": true,
+  "financialAudit": {
+    "before": {
+      "ai_calls": [],
+      "agent_conversation_quotes": [],
+      "jobs": [],
+      "ledger": [
+        {
+          "id": "k40ggf2i3gaulnev",
+          "user_id": "kbaz967jvdj3a9xy",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885692327
+        },
+        {
+          "id": "ooqzpralvn4jlaze",
+          "user_id": "jz25xd3oqxnlswt2",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885692562
+        },
+        {
+          "id": "g0bqabpoy9uexzrt",
+          "user_id": "pbffwvpb7ya5s9h1",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885692768
+        },
+        {
+          "id": "ula3kwfoir5aarl3",
+          "user_id": "lzl0366v0wh0cqgf",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885692966
+        },
+        {
+          "id": "5ui7hkxeqg52vu1u",
+          "user_id": "v8zk3ai03izmmirp",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885693168
+        },
+        {
+          "id": "r6fmicpjifezsol3",
+          "user_id": "14m698m35w0st8lk",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885693360
+        },
+        {
+          "id": "vq2solp4f92vjf1s",
+          "user_id": "k0jujuljp9i2jzi6",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885693550
+        },
+        {
+          "id": "2zmk5be1x8x9fz05",
+          "user_id": "8k6e9rbcuoxo3arz",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885693739
+        }
+      ],
+      "quota_usage": [
+        {
+          "user_id": "kbaz967jvdj3a9xy",
+          "period_start": 1793885692327,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "kbaz967jvdj3a9xy",
+          "period_start": 1793885692327,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "kbaz967jvdj3a9xy",
+          "period_start": 1793885692327,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "kbaz967jvdj3a9xy",
+          "period_start": 1793885692327,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "jz25xd3oqxnlswt2",
+          "period_start": 1793885692562,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "jz25xd3oqxnlswt2",
+          "period_start": 1793885692562,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "jz25xd3oqxnlswt2",
+          "period_start": 1793885692562,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "jz25xd3oqxnlswt2",
+          "period_start": 1793885692562,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "pbffwvpb7ya5s9h1",
+          "period_start": 1793885692768,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "pbffwvpb7ya5s9h1",
+          "period_start": 1793885692768,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "pbffwvpb7ya5s9h1",
+          "period_start": 1793885692768,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "pbffwvpb7ya5s9h1",
+          "period_start": 1793885692768,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "lzl0366v0wh0cqgf",
+          "period_start": 1793885692966,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "lzl0366v0wh0cqgf",
+          "period_start": 1793885692966,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "lzl0366v0wh0cqgf",
+          "period_start": 1793885692966,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "lzl0366v0wh0cqgf",
+          "period_start": 1793885692966,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "v8zk3ai03izmmirp",
+          "period_start": 1793885693168,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "v8zk3ai03izmmirp",
+          "period_start": 1793885693168,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "v8zk3ai03izmmirp",
+          "period_start": 1793885693168,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "v8zk3ai03izmmirp",
+          "period_start": 1793885693168,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "14m698m35w0st8lk",
+          "period_start": 1793885693360,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "14m698m35w0st8lk",
+          "period_start": 1793885693360,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "14m698m35w0st8lk",
+          "period_start": 1793885693360,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "14m698m35w0st8lk",
+          "period_start": 1793885693360,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "k0jujuljp9i2jzi6",
+          "period_start": 1793885693550,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "k0jujuljp9i2jzi6",
+          "period_start": 1793885693550,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "k0jujuljp9i2jzi6",
+          "period_start": 1793885693550,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "k0jujuljp9i2jzi6",
+          "period_start": 1793885693550,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "8k6e9rbcuoxo3arz",
+          "period_start": 1793885693739,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "8k6e9rbcuoxo3arz",
+          "period_start": 1793885693739,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "8k6e9rbcuoxo3arz",
+          "period_start": 1793885693739,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "8k6e9rbcuoxo3arz",
+          "period_start": 1793885693739,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        }
+      ],
+      "usage_events": []
+    },
+    "after": {
+      "ai_calls": [],
+      "agent_conversation_quotes": [],
+      "jobs": [],
+      "ledger": [
+        {
+          "id": "k40ggf2i3gaulnev",
+          "user_id": "kbaz967jvdj3a9xy",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885692327
+        },
+        {
+          "id": "ooqzpralvn4jlaze",
+          "user_id": "jz25xd3oqxnlswt2",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885692562
+        },
+        {
+          "id": "g0bqabpoy9uexzrt",
+          "user_id": "pbffwvpb7ya5s9h1",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885692768
+        },
+        {
+          "id": "ula3kwfoir5aarl3",
+          "user_id": "lzl0366v0wh0cqgf",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885692966
+        },
+        {
+          "id": "5ui7hkxeqg52vu1u",
+          "user_id": "v8zk3ai03izmmirp",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885693168
+        },
+        {
+          "id": "r6fmicpjifezsol3",
+          "user_id": "14m698m35w0st8lk",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885693360
+        },
+        {
+          "id": "vq2solp4f92vjf1s",
+          "user_id": "k0jujuljp9i2jzi6",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885693550
+        },
+        {
+          "id": "2zmk5be1x8x9fz05",
+          "user_id": "8k6e9rbcuoxo3arz",
+          "type": "allowance",
+          "bucket": "monthly",
+          "amount": 43000000,
+          "ref": null,
+          "note": "Budget IA du forfait",
+          "created_at": 1793885693739
+        }
+      ],
+      "quota_usage": [
+        {
+          "user_id": "kbaz967jvdj3a9xy",
+          "period_start": 1793885692327,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "kbaz967jvdj3a9xy",
+          "period_start": 1793885692327,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "kbaz967jvdj3a9xy",
+          "period_start": 1793885692327,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "kbaz967jvdj3a9xy",
+          "period_start": 1793885692327,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "jz25xd3oqxnlswt2",
+          "period_start": 1793885692562,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "jz25xd3oqxnlswt2",
+          "period_start": 1793885692562,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "jz25xd3oqxnlswt2",
+          "period_start": 1793885692562,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "jz25xd3oqxnlswt2",
+          "period_start": 1793885692562,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "pbffwvpb7ya5s9h1",
+          "period_start": 1793885692768,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "pbffwvpb7ya5s9h1",
+          "period_start": 1793885692768,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "pbffwvpb7ya5s9h1",
+          "period_start": 1793885692768,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "pbffwvpb7ya5s9h1",
+          "period_start": 1793885692768,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "lzl0366v0wh0cqgf",
+          "period_start": 1793885692966,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "lzl0366v0wh0cqgf",
+          "period_start": 1793885692966,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "lzl0366v0wh0cqgf",
+          "period_start": 1793885692966,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "lzl0366v0wh0cqgf",
+          "period_start": 1793885692966,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "v8zk3ai03izmmirp",
+          "period_start": 1793885693168,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "v8zk3ai03izmmirp",
+          "period_start": 1793885693168,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "v8zk3ai03izmmirp",
+          "period_start": 1793885693168,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "v8zk3ai03izmmirp",
+          "period_start": 1793885693168,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "14m698m35w0st8lk",
+          "period_start": 1793885693360,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "14m698m35w0st8lk",
+          "period_start": 1793885693360,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "14m698m35w0st8lk",
+          "period_start": 1793885693360,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "14m698m35w0st8lk",
+          "period_start": 1793885693360,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "k0jujuljp9i2jzi6",
+          "period_start": 1793885693550,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "k0jujuljp9i2jzi6",
+          "period_start": 1793885693550,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "k0jujuljp9i2jzi6",
+          "period_start": 1793885693550,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "k0jujuljp9i2jzi6",
+          "period_start": 1793885693550,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "8k6e9rbcuoxo3arz",
+          "period_start": 1793885693739,
+          "key": "visuals",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "8k6e9rbcuoxo3arz",
+          "period_start": 1793885693739,
+          "key": "aiVideos",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "8k6e9rbcuoxo3arz",
+          "period_start": 1793885693739,
+          "key": "ugc",
+          "included": 0,
+          "rollover": 0,
+          "used": 0
+        },
+        {
+          "user_id": "8k6e9rbcuoxo3arz",
+          "period_start": 1793885693739,
+          "key": "blog",
+          "included": 10,
+          "rollover": 0,
+          "used": 0
+        }
+      ],
+      "usage_events": []
+    },
+    "changedTables": []
+  },
+  "agreementAudit": [
+    {
+      "case": "encre-ordinateur-services",
+      "prepared": false,
+      "nativeWrites": 1,
+      "confirmationPosts": 2,
+      "identicalReplay": true,
+      "requestIds": [
+        "2b8f9062-69f9-49c7-abcd-d65092867224",
+        "2b8f9062-69f9-49c7-abcd-d65092867224"
+      ]
+    },
+    {
+      "case": "encre-ordinateur-products",
+      "prepared": false,
+      "nativeWrites": 1,
+      "confirmationPosts": 2,
+      "identicalReplay": true,
+      "requestIds": [
+        "d10d43a1-cba9-4449-84e4-64396e11f64e",
+        "d10d43a1-cba9-4449-84e4-64396e11f64e"
+      ]
+    },
+    {
+      "case": "encre-telephone-services",
+      "prepared": false,
+      "nativeWrites": 1,
+      "confirmationPosts": 1,
+      "identicalReplay": null,
+      "requestIds": [
+        "1cf6006e-2cc8-49d1-b0cf-f3b682e4e6db"
+      ]
+    },
+    {
+      "case": "encre-telephone-products",
+      "prepared": false,
+      "nativeWrites": 1,
+      "confirmationPosts": 1,
+      "identicalReplay": null,
+      "requestIds": [
+        "9e01d254-229a-4cad-a9cd-60a13a3ddc19"
+      ]
+    },
+    {
+      "case": "plein-ordinateur-services",
+      "prepared": false,
+      "nativeWrites": 1,
+      "confirmationPosts": 2,
+      "identicalReplay": true,
+      "requestIds": [
+        "61af9589-f046-4f33-92cf-555327d2a7d3",
+        "61af9589-f046-4f33-92cf-555327d2a7d3"
+      ]
+    },
+    {
+      "case": "plein-ordinateur-products",
+      "prepared": false,
+      "nativeWrites": 1,
+      "confirmationPosts": 2,
+      "identicalReplay": true,
+      "requestIds": [
+        "cf7ff99b-e459-494c-8acd-9e6a02c45605",
+        "cf7ff99b-e459-494c-8acd-9e6a02c45605"
+      ]
+    },
+    {
+      "case": "plein-telephone-services",
+      "prepared": false,
+      "nativeWrites": 1,
+      "confirmationPosts": 1,
+      "identicalReplay": null,
+      "requestIds": [
+        "d10661a2-ed8c-45a3-ae82-95184ea747f7"
+      ]
+    },
+    {
+      "case": "plein-telephone-products",
+      "prepared": false,
+      "nativeWrites": 1,
+      "confirmationPosts": 1,
+      "identicalReplay": null,
+      "requestIds": [
+        "f3787d04-9ef0-4781-bb79-74ea79f8e8ff"
+      ]
+    }
+  ],
+  "servedVersion": {
+    "commit": "69b1756f7e6d7c7f10c7d9b8d5540a264315dc55",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "acquiredFixtureCalls": {
+    "before": 0,
+    "after": 0,
+    "unchanged": true,
+    "newCalls": 0
+  },
+  "waits": [
+    17002.933925,
+    17000.934846000004,
+    17001.021733,
+    17000.927243,
+    17000.707594000007,
+    17001.293409000005,
+    17001.250459000003,
+    17001.03484899999
+  ],
+  "jsErrors": [],
+  "buildId": "RZOlN5nxSKyT1Rk4Zdc7H"
+}
