@@ -16,10 +16,10 @@ import { HttpError } from "../auth";
 import { all, now } from "../db";
 import { L } from "../i18n-server";
 import { currentTheme, loadProject, previewThemeVersionSpec, saveServices, saveThemeVersion } from "../projects";
-import { rdvSection, type RdvKind } from "../rendez-vous";
+import { rdvSection, rdvRules, type RdvKind } from "../rendez-vous";
 import { core as salonCore, configFromSection as salonConfigFromSection } from "../salon/booking";
 import { core as cabinetCore } from "../cabinet/booking";
-import type { SectionInstance, ThemeSpec } from "../theme/spec";
+import { coerceSetting, sectionSchema, type SectionInstance, type ThemeSpec } from "../theme/spec";
 
 export const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
 const HOURS = /^\s*$|^\s*(?:[01]\d|2[0-3]):[0-5]\d\s*-\s*(?:(?:[01]\d|2[0-3]):[0-5]\d|24:00)(\s*,\s*(?:[01]\d|2[0-3]):[0-5]\d\s*-\s*(?:(?:[01]\d|2[0-3]):[0-5]\d|24:00))*\s*$/;
@@ -97,6 +97,7 @@ const staffPatchSchema=z.object({
   days:staffSchema.shape.days.removeDefault().optional(),
 }).strict().refine(v=>v.name!==undefined||v.title!==undefined||v.skills!==undefined||v.days!==undefined||v.hours!==undefined,"Précisez le nom, la spécialité, les compétences, les horaires propres ou les jours de l’intervenant.");
 export const prestationsInput = z.object({
+  bookingWindowPatch: z.object({ horizonDays: z.number().int().min(7).max(180).optional(), leadMinutes: z.number().int().min(0).max(2880).optional() }).strict().refine(v=>Object.values(v).filter(x=>x!==undefined).length===1,"Précisez exactement l’horizon ou le délai minimal de réservation.").optional(),
   staffAdd: staffSchema.omit({ id: true }).strict().optional(),
   staffRemove: z.object({ id: z.string().min(1).max(40) }).strict().optional(),
   serviceAdd: serviceSchema.omit({ id: true }).strict().optional(),
@@ -112,7 +113,7 @@ export const prestationsInput = z.object({
   restaurantPartyPatch: restaurantSchema.pick({minParty:true,maxParty:true}).strict().refine(r=>r.minParty<=r.maxParty,"Le nombre minimum de couverts dépasse le maximum.").optional(),
   restaurantCapacityPatch: restaurantSchema.pick({capacity:true}).strict().optional(),
   restaurantPatch: restaurantSchema.pick({openDays:true,lunchSlots:true,dinnerSlots:true}).partial().strict().refine(v=>v.openDays!==undefined||v.lunchSlots!==undefined||v.dinnerSlots!==undefined,"Précisez le jour ou le service à modifier.").optional(),
-}).refine(v=>!(v.staffAdd||v.staffRemove)||Object.values(v).filter(x=>x!==undefined).length===1,"L’ajout ou le retrait ciblé d’un intervenant ne se mélange pas avec un autre réglage.").refine(v=>!(v.serviceAdd||v.serviceRemove)||Object.values(v).filter(x=>x!==undefined).length===1,"L’ajout ou le retrait ciblé d’une prestation ne se mélange pas avec un autre réglage.").refine(v=>!v.staffPatch||!v.staff,"Ne mélangez pas remplacement et retouche ciblée des intervenants.").refine(v=>!v.restaurantPartyPatch||!v.restaurant&&!v.restaurantPatch&&!v.restaurantCapacityPatch,"Ne mélangez pas taille des groupes et autres réglages restaurant.").refine(v=>!v.restaurantCapacityPatch||!v.restaurant&&!v.restaurantPatch,"Ne mélangez pas retouche de capacité et autres réglages restaurant.").refine((v) => !v.servicePatch || !v.services, "Ne mélangez pas remplacement et retouche ciblée des prestations.").refine(v=>!v.restaurantPatch||!v.restaurant,"Ne mélangez pas remplacement et retouche ciblée du restaurant.");
+}).refine(v=>!v.bookingWindowPatch||Object.values(v).filter(x=>x!==undefined).length===1,"Ne mélangez pas l’horizon ou le délai minimal avec un autre réglage.").refine(v=>!(v.staffAdd||v.staffRemove)||Object.values(v).filter(x=>x!==undefined).length===1,"L’ajout ou le retrait ciblé d’un intervenant ne se mélange pas avec un autre réglage.").refine(v=>!(v.serviceAdd||v.serviceRemove)||Object.values(v).filter(x=>x!==undefined).length===1,"L’ajout ou le retrait ciblé d’une prestation ne se mélange pas avec un autre réglage.").refine(v=>!v.staffPatch||!v.staff,"Ne mélangez pas remplacement et retouche ciblée des intervenants.").refine(v=>!v.restaurantPartyPatch||!v.restaurant&&!v.restaurantPatch&&!v.restaurantCapacityPatch,"Ne mélangez pas taille des groupes et autres réglages restaurant.").refine(v=>!v.restaurantCapacityPatch||!v.restaurant&&!v.restaurantPatch,"Ne mélangez pas retouche de capacité et autres réglages restaurant.").refine((v) => !v.servicePatch || !v.services, "Ne mélangez pas remplacement et retouche ciblée des prestations.").refine(v=>!v.restaurantPatch||!v.restaurant,"Ne mélangez pas remplacement et retouche ciblée du restaurant.");
 export type PrestationsInput = z.infer<typeof prestationsInput>;
 
 /** Rendez-vous confirmés à venir, par prestation (salon : `salon_appointments.service`, cabinet : séance). */
@@ -160,7 +161,8 @@ export function readPrestations(projectId: string) {
     // Valeurs proposées par le studio et jamais modifiées : le restaurateur doit les vérifier.
     defaults: String(st.lunch_slots ?? "") === "12:00, 12:30, 13:00" && String(st.dinner_slots ?? "").startsWith("19:00, 19:30, 20:00") && Number(st.capacity) === 24,
   } : null;
-  return { kind: sec.kind, live: st.booking_mode === "live", versionId: cur!.version.id, address: String(st.address ?? ""), services, staff, hours, closures: String(st.closures ?? ""), restaurant, open: sec.kind === "restaurant" ? !!restaurant!.openDays.length : Object.values(hours).some((h) => h.trim()) };
+  const {horizonDays,leadMinutes}=rdvRules(projectId,sec.kind);
+  return { bookingWindow:{horizonDays,leadMinutes}, kind: sec.kind, live: st.booking_mode === "live", versionId: cur!.version.id, address: String(st.address ?? ""), services, staff, hours, closures: String(st.closures ?? ""), restaurant, open: sec.kind === "restaurant" ? !!restaurant!.openDays.length : Object.values(hours).some((h) => h.trim()) };
 }
 
 /** Prix et durée affichés sans script, au format de la composition (« 45 € », « À partir de 45 € », « 1 h 30 »). */
@@ -202,6 +204,17 @@ function buildPrestations(projectId: string, raw: unknown) {
   const st = (section.settings ??= {}) as Record<string, unknown>;
   const warnings: string[] = [];
   const before = readPrestations(projectId)!;
+
+  if(input.bookingWindowPatch){
+    const patch=input.bookingWindowPatch,key=patch.horizonDays!==undefined?'horizon_days':'lead_minutes',value=patch.horizonDays??patch.leadMinutes!;
+    const defs=sectionSchema(spec,section.type)?.settings?.filter(d=>d.id===key)??[];
+    if(defs.length!==1||defs[0].type!=='range')throw new HttpError(409,'Règle native absente ou ambiguë. Aucun autre réglage substitué.');
+    const checked=coerceSetting(defs[0],value);
+    // Native editor coercion is shared, but a targeted command must never silently round or clamp.
+    if(!checked.ok||checked.value!==value)throw new HttpError(400,'Valeur hors bornes ou pas natif. Aucun arrondi ou remplacement implicite.');
+    st[key]=value;
+    warnings.push(L('Seuls les futurs créneaux proposés changent. Les rendez-vous acquis gardent leurs dates, heures et identités. Le mode de réservation reste inchangé.','Only future offered slots change. Existing appointments keep their dates, times and identities. Booking mode stays unchanged.'));
+  }
 
   if (input.staffAdd || input.staffRemove) {
     if (sec.kind !== 'salon') throw new HttpError(409, 'Ce site ne comporte pas d’intervenants de salon natifs.');
