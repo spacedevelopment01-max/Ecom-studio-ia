@@ -1,3 +1,5 @@
+Reprise prioritaire : [bilan du5novembre,15h32UTC](REPRISE-5-NOVEMBRE-RESERVATIONS.md), #449/fc47fd31. Mission incomplète ;prochaine lecture de disponibilités et audit des groupes restaurant.
+
 ## Reprise active — 5 novembre 2026, 16 h 03 Paris
 
 Lire [REPRISE-5-NOVEMBRE-RESERVATIONS.md](REPRISE-5-NOVEMBRE-RESERVATIONS.md). Tête#446 :code79f19b37 puisdoc1ffe53c6. Fermetures A1 :20nouveaux/96ciblés/types ;matrice172,aucune complète. #438 CI entièrement verte ;#437 relance2 en cours après Docker inconnu/timeout natif100min. Git push fonctionne avec helper CLI ponctuel. Prochaine vérification non codée :garde de suppression des prestations au jour local du moteur. États suivants historiques.
