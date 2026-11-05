@@ -89,12 +89,13 @@ const restaurantSchema = z.object({
     maxParty: z.number().int().min(1).max(50),
 });
 const staffPatchSchema=z.object({
+  hours:hoursSchema.optional(),
   id:z.string().min(1).max(40),
   name:staffSchema.shape.name.optional(),
   title:staffSchema.shape.title.removeDefault().optional(),
   skills:staffSchema.shape.skills.removeDefault().optional(),
   days:staffSchema.shape.days.removeDefault().optional(),
-}).strict().refine(v=>v.name!==undefined||v.title!==undefined||v.skills!==undefined||v.days!==undefined,"Précisez le nom, la spécialité, les compétences ou les jours de l’intervenant.");
+}).strict().refine(v=>v.name!==undefined||v.title!==undefined||v.skills!==undefined||v.days!==undefined||v.hours!==undefined,"Précisez le nom, la spécialité, les compétences, les horaires propres ou les jours de l’intervenant.");
 export const prestationsInput = z.object({
   staffAdd: staffSchema.omit({ id: true }).strict().optional(),
   staffRemove: z.object({ id: z.string().min(1).max(40) }).strict().optional(),
@@ -150,7 +151,7 @@ export function readPrestations(projectId: string) {
     : sec.kind === "cabinet"
       ? blocks.filter((b) => b.block.type === "seance").map(({ block: b }) => { const v = b.settings ?? {}; return { id: String(v.seance_id ?? ""), name: String(v.name ?? ""), short: String(v.short ?? ""), duration: num(v.duration), price: num(v.price), priceFrom: false, modes: String(v.modes ?? "cabinet"), upcoming: upcoming(v.seance_id, v.name) }; })
       : [];
-  const staff = sec.kind === "salon" ? blocks.filter((b) => b.block.type === "member").map(({ block: b }) => { const v = b.settings ?? {}; return { id: String(v.member_id ?? ""), name: String(v.name ?? ""), title: String(v.title ?? ""), skills: String(v.skills ?? "").split(",").map((x) => x.trim()).filter(Boolean), days: String(v.days ?? "").split(",").map((x) => x.trim()).filter(Boolean).map(Number) }; }) : [];
+  const staff = sec.kind === "salon" ? blocks.filter((b) => b.block.type === "member").map(({ block: b }) => { const v = b.settings ?? {}; return { id: String(v.member_id ?? ""), name: String(v.name ?? ""), title: String(v.title ?? ""), ...(Object.hasOwn(v,"hours")?{hours:String(v.hours??"")} : {}), skills: String(v.skills ?? "").split(",").map((x) => x.trim()).filter(Boolean), days: String(v.days ?? "").split(",").map((x) => x.trim()).filter(Boolean).map(Number) }; }) : [];
   const hours = Object.fromEntries(DAYS.map((d) => [d, String(st[`hours_${d}`] ?? "")]));
   const restaurant = sec.kind === "restaurant" ? {
     openDays: String(st.open_days ?? "").split(",").map((x) => x.trim()).filter(Boolean).map(Number),
@@ -309,6 +310,7 @@ function buildPrestations(projectId: string, raw: unknown) {
     if(patch.title!==undefined)settings.title=patch.title;
     if(patch.skills!==undefined)settings.skills=patch.skills.join(',');
     if(patch.days!==undefined)settings.days=patch.days.join(',');
+    if(patch.hours!==undefined){settings.hours=patch.hours.trim().replace(/\s*-\s*/g,'-').replace(/\s*,\s*/g,', ');warnings.push(L('Les horaires propres limitent les futurs créneaux aux horaires du salon. Vide : héritage des horaires du salon, sans fermeture individuelle. Les rendez-vous acquis restent inchangés.', 'Individual hours constrain future slots within salon hours. Empty inherits salon hours, without individually closing bookings. Existing appointments remain unchanged.'));}
   }
   if (input.staff && sec.kind === "salon") {
     const currentBlocks = blocksOf(section);
