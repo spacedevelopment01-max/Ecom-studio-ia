@@ -59,9 +59,11 @@ const staffSchema = z.object({
 });
 const servicePatchSchema = z.object({
   id: z.string().min(1).max(40),
+  name: serviceSchema.shape.name.optional(),
+  short: serviceSchema.shape.short.removeDefault().optional(),
   price: z.number().min(0).max(100000).nullable().optional(),
   duration: z.number().int().min(5).max(600).optional(),
-}).strict().refine((v) => v.price !== undefined || v.duration !== undefined, "Précisez le prix ou la durée.");
+}).strict().refine((v) => v.price !== undefined || v.duration !== undefined || v.name !== undefined || v.short !== undefined, "Précisez le nom, la description courte, le prix ou la durée.");
 const restaurantSchema = z.object({
     openDays: z.array(z.number().int().min(0).max(6)).max(7),
     lunchSlots: z.string().max(200).regex(SLOTS, "créneaux : « 12:00, 12:30 »"),
@@ -198,10 +200,12 @@ function buildPrestations(projectId: string, raw: unknown) {
     const previous = before.services.filter((s) => s.id === patch.id);
     if (sec.kind === "restaurant" || rows.length !== 1 || previous.length !== 1) throw new HttpError(409, "Prestation réservable native absente ou ambiguë. Rechargez sans substitution.");
     const old = previous[0], settings = rows[0].block.settings!;
+    if (patch.name !== undefined) settings.name = patch.name;
+    if (patch.short !== undefined) settings.short = patch.short;
     if (patch.price !== undefined) settings.price = patch.price ?? "";
     if (patch.duration !== undefined) settings.duration = patch.duration;
     if (patch.duration !== undefined && old.upcoming && old.duration !== patch.duration) warnings.push(L(`« ${old.name} » : les rendez-vous déjà pris (${old.upcoming}) conservent leur durée enregistrée (${old.duration} min).`, `“${old.name}”: already booked appointments (${old.upcoming}) keep their recorded length (${old.duration} min).`));
-    syncShown(spec, sec.kind, new Map([[patch.id, { name: old.name, oldName: old.name, duration: patch.duration ?? old.duration, price: patch.price !== undefined ? patch.price : old.price, priceFrom: old.priceFrom }]]), { price: patch.price !== undefined, duration: patch.duration !== undefined });
+    syncShown(spec, sec.kind, new Map([[patch.id, { name: patch.name ?? old.name, oldName: old.name, duration: patch.duration ?? old.duration, price: patch.price !== undefined ? patch.price : old.price, priceFrom: old.priceFrom }]]), { price: patch.price !== undefined, duration: patch.duration !== undefined });
   }
   if (input.staff && sec.kind === "salon") {
     const currentBlocks = blocksOf(section);
