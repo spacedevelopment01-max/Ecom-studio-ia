@@ -219,7 +219,8 @@ function buildPrestations(projectId: string, raw: unknown) {
       const acquired = Object.values(section.blocks ?? {}).filter(b => b.type === 'member');
       if (acquired.length >= 20) throw new HttpError(409, 'La limite native de 20 intervenants est atteinte.');
       const member = input.staffAdd!, blocks = section.blocks ??= {};
-      const reserved = new Set(acquired.flatMap(b => [String(b.settings?.member_id ?? ''), engineStaffId(b.settings?.member_id, b.settings?.name) ?? '']));
+      // The shared engine treats `any` as no preference, never as one newly allocated person.
+      const reserved = new Set(['any', ...acquired.flatMap(b => [String(b.settings?.member_id ?? ''), engineStaffId(b.settings?.member_id, b.settings?.name) ?? ''])]);
       const staffId = newNativeId(member.name, new Set(), reserved), baseKey = `member-${staffId}`;
       let key = baseKey, suffix = 1; while (key in blocks) key = `${baseKey}-${++suffix}`;
       blocks[key] = { type: 'member', settings: { member_id: staffId, name: member.name, initial: member.name.charAt(0).toUpperCase(), title: member.title, skills: member.skills.join(','), days: member.days.join(',') } };
@@ -315,7 +316,7 @@ function buildPrestations(projectId: string, raw: unknown) {
   if (input.staff && sec.kind === "salon") {
     const currentBlocks = blocksOf(section);
     const oldStaff = new Map(currentBlocks.filter((b) => b.block.type === "member").map((b) => [String(b.block.settings?.member_id ?? ""), b]));
-    const reservedStaff = new Set([...oldStaff].flatMap(([raw, { block }]) => [raw, engineStaffId(block.settings?.member_id, block.settings?.name) ?? '']));
+    const reservedStaff = new Set(['any', ...[...oldStaff].flatMap(([raw, { block }]) => [raw, engineStaffId(block.settings?.member_id, block.settings?.name) ?? ''])]);
     const usedStaff = new Set<string>();
     const staffBlocks = input.staff.map((m) => {
       const known = !!m.id && oldStaff.has(m.id);
