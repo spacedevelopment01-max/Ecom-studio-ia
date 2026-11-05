@@ -1,3 +1,4 @@
+import {bookingRecordsCandidate} from './local-booking-records';
 import {bookingStaffCandidate} from './local-booking-staff';
 import {localFileTrashCandidate} from './local-file-trash';
 import {libraryReadCandidate} from './local-files';
@@ -92,7 +93,7 @@ function makePlan(c: ConversationRow, user: User,selectedRole:AgentRole='princip
 function assertNoPaidBookingFallback(c:ConversationRow){
  const m=metaOf(c),last=one<{request_json:string}>("SELECT request_json FROM agent_conversation_turns WHERE conversation_id=? AND json_extract(request_json,'$.action') IN ('message','answer-ai') ORDER BY revision DESC LIMIT 1",c.id),request=last?json<{action?:string;text?:string}>(last.request_json,{}):null;
  const text=request?.action==='message'&&typeof request.text==='string'?request.text:null;
- if(m.bookingStaff||m.bookingServiceText||m.bookingHours||m.restaurantSettings||m.bookingClosures||text&&(bookingStaffCandidate(text)||bookingServiceTextCandidate(text)||bookingHoursCandidate(text)||restaurantSettingsCandidate(text)||bookingClosuresCandidate(text)))throw new HttpError(409,L('Cette demande utilise un parcours gratuit de réservation. Vérifiez son aperçu et son accord ; aucun devis IA ne sera créé.','This request uses a free booking workflow. Review its preview and consent; no AI quote will be created.'),'conversation_free_booking_reply');
+ if(m.bookingRecords||m.bookingStaff||m.bookingServiceText||m.bookingHours||m.restaurantSettings||m.bookingClosures||text&&(bookingRecordsCandidate(text)||bookingStaffCandidate(text)||bookingServiceTextCandidate(text)||bookingHoursCandidate(text)||restaurantSettingsCandidate(text)||bookingClosuresCandidate(text)))throw new HttpError(409,L('Cette demande utilise un parcours gratuit de réservation. Vérifiez son aperçu et son accord ; aucun devis IA ne sera créé.','This request uses a free booking workflow. Review its preview and consent; no AI quote will be created.'),'conversation_free_booking_reply');
 }
 function assertNoPaidFolderDeleteFallback(c:ConversationRow){
  const last=one<{request_json:string}>("SELECT request_json FROM agent_conversation_turns WHERE conversation_id=? AND json_extract(request_json,'$.action') IN ('message','answer-ai') ORDER BY revision DESC LIMIT 1",c.id),request=last?json<{action?:string;text?:string}>(last.request_json,{}):null;
