@@ -1,3 +1,19 @@
+## Reprise active — 5 novembre 2026,14 h 29 UTC /15 h 29 Paris
+
+Tête fonctionnelle propre **df592995a8ed0a2a02bf911bf363ddd55caf14b6 /#444**,branche codex/parity301-existing-booking-read,checkout parity301-file-trash-syna. Exception A1 de lecture planning livrée :EXISTING_BOOKING_RECORDS_READ fermé,sous BOOKING_RECORDS/LOT_A/AI/CONTEXT,services seulement ;recovery.localReads op booking-records,localReadAllowed(view,booking-records). **Aucun droit d’écriture ou IA générale ouvert.**
+
+15nouveaux tests,101distincts/5fichiers/types (56/3 +45/2 disjoints). Parent3rouges sursalon/cabinet/restaurant ;troismoteurs historiques,A1tables/octets/Préparation/version/shop.chat intacts,droits/drapeaux/produits/rejeu avantcache/budget0/actes toujoursfermés/rollback. HTTPauth17s+GET projet/fil/relecture/reçu1message ;withAiDisabled surGETetPOSTnatifs. Aucun composant graphique modifié,carte A1 etrecette compilée Claude toujours àintégrer. Contrat LOT-LECTURE-PLANNING-ANCIENS-PROJETS.md ;coordination#301 commentaire6660503664.
+
+**420 tests nouveaux distincts #423–#444.** Matrice172opérations inchangées :74PARTIEL/68ABSENT/4NON_TESTE/26BLOQUE ;aucune complète. Les limites/cartes/CI précédentes restent applicables,les états inférieurs sont historiques. Preuve5a89a93f uniquement source69b1756f,#438 ;ne qualifie aucune nouvelle carte.
+
+Prochaine lacune analysée,**pas encore codée** :horaires hebdomadaires salon/cabinet en reprise A1. Réutiliser local-booking-hours.ts et ses gardes sans toucher au moteur. ExistingLocalOperation/localEditAllowed peuvent ajouter booking-hours sous EXISTING_LOCAL +EXISTING_BOOKING_HOURS séparé/fermé +BOOKING_HOURS/LOT_A/AI/CONTEXT etprojet services. Dans existing-project :classification exacte outsideQuotes déjànative,capacité/vuesmétadonnées,sélection contexte,confirmation/cancel,rollback etretrait avantcache ;aucune Préparation/IA globale. Tests comparer toutes tables sauf changements natifs attendusprojects/theme_versions,anciennesversions/actifs/octets/shop.chat/profil/réservations intacts ;preview/cancel/conflits/17s/accord/rejeu1version,droits/drapeaux/budget0. Informer Claude d’utiliser localEditAllowed(view,booking-hours),jamais le droit de lecture pour écrire. Autres nouveaux domaines A1 restentfermés.
+
+CI#423/#431/#434/#436 entièrementvertes ;#437 Docker toujoursrouge,logs404/relance403 car run actif,suite6393/31skip etconfirmation vertes ;#438 suite6408/31skip,Docker/confirmation verts,natif long encours ;#439/#440 longsencours ;#441run42039970165,#44242041304283,#44342043352250 ;relever#444 aprèsdéclenchement. Aucun garde/contrôle gratuit affaibli. Aucun serveur de recette deceslotsencoreactif,disque~660MiB. Préserver3WIPhistoriquesparity301-ci-guards. Environnement fonctionne,main6354f327 inchangé au dernierrelevé. Aucun fournisseur/client/activation/déploiement/fusion main.
+
+Mission globale en cours ;continuer leslacunes indépendantes etcoordonner lescartesClaude sansattendre lesCIlongues. Siun testpayant devientindispensable,préparer devis/plafondpouraccord,nepaslancer.
+
+---
+
 ## Reprise active — 5 novembre 2026,14 h 18 UTC /15 h 18 Paris
 
 Tête fonctionnelle propre **9fc4cbdbe0b139963a2cee240e0024d5db40f3bd /#443** (branche codex/parity301-booking-records-read).25nouveaux tests,89distincts/4fichiers/types verts ;HTTPauth17s+GET projet/GET natif/relecture d’ajout manuel/rejeu1message sans écriture métier. Contrat `bookingRecords`/`bookingRecordsRead`,BOOKING_RECORDS fermé,lecture datée93jours maximum/numéro précis/50métadonnées,GET relit les moteurs natifs salon/cabinet/restaurant. Contacts/notes/jetons/hashes/liens de gestion exclus ;sourcekind changée=unavailable,aucune substitution. Numéro cité vide reproduit rouge puis clarifié. Aucune réservation réelle ni disponibilité/activation annoncée. Rapport LOT-LECTURE-RESERVATIONS-NATIVES.md ;coordination#301 commentaire6660232073. Carte/anti-devis/recette compilée Claude restent ouverts.
