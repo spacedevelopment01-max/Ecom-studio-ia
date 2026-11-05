@@ -97,7 +97,7 @@ const staffPatchSchema=z.object({
   days:staffSchema.shape.days.removeDefault().optional(),
 }).strict().refine(v=>v.name!==undefined||v.title!==undefined||v.skills!==undefined||v.days!==undefined||v.hours!==undefined,"Précisez le nom, la spécialité, les compétences, les horaires propres ou les jours de l’intervenant.");
 export const prestationsInput = z.object({
-  bookingWindowPatch: z.object({ slotStepMinutes: z.number().int().min(10).max(120).optional(), horizonDays: z.number().int().min(7).max(180).optional(), leadMinutes: z.number().int().min(0).max(2880).optional() }).strict().refine(v=>Object.values(v).filter(x=>x!==undefined).length===1,"Précisez exactement l’horizon, le délai minimal ou le pas des créneaux.").optional(),
+  bookingWindowPatch: z.object({ cancelHours: z.number().int().min(0).max(72).optional(), slotStepMinutes: z.number().int().min(10).max(120).optional(), horizonDays: z.number().int().min(7).max(180).optional(), leadMinutes: z.number().int().min(0).max(2880).optional() }).strict().refine(v=>Object.values(v).filter(x=>x!==undefined).length===1,"Précisez exactement l’horizon, le délai minimal, le pas des créneaux ou le délai client d’annulation/modification.").optional(),
   staffAdd: staffSchema.omit({ id: true }).strict().optional(),
   staffRemove: z.object({ id: z.string().min(1).max(40) }).strict().optional(),
   serviceAdd: serviceSchema.omit({ id: true }).strict().optional(),
@@ -161,8 +161,8 @@ export function readPrestations(projectId: string) {
     // Valeurs proposées par le studio et jamais modifiées : le restaurateur doit les vérifier.
     defaults: String(st.lunch_slots ?? "") === "12:00, 12:30, 13:00" && String(st.dinner_slots ?? "").startsWith("19:00, 19:30, 20:00") && Number(st.capacity) === 24,
   } : null;
-  const {horizonDays,leadMinutes,step}=rdvRules(projectId,sec.kind);
-  return { bookingWindow:{horizonDays,leadMinutes,slotStepMinutes:step}, kind: sec.kind, live: st.booking_mode === "live", versionId: cur!.version.id, address: String(st.address ?? ""), services, staff, hours, closures: String(st.closures ?? ""), restaurant, open: sec.kind === "restaurant" ? !!restaurant!.openDays.length : Object.values(hours).some((h) => h.trim()) };
+  const {horizonDays,leadMinutes,step,cancelHours}=rdvRules(projectId,sec.kind);
+  return { bookingWindow:{horizonDays,leadMinutes,slotStepMinutes:step,cancelHours}, kind: sec.kind, live: st.booking_mode === "live", versionId: cur!.version.id, address: String(st.address ?? ""), services, staff, hours, closures: String(st.closures ?? ""), restaurant, open: sec.kind === "restaurant" ? !!restaurant!.openDays.length : Object.values(hours).some((h) => h.trim()) };
 }
 
 /** Prix et durée affichés sans script, au format de la composition (« 45 € », « À partir de 45 € », « 1 h 30 »). */
@@ -206,14 +206,15 @@ function buildPrestations(projectId: string, raw: unknown) {
   const before = readPrestations(projectId)!;
 
   if(input.bookingWindowPatch){
-    const patch=input.bookingWindowPatch,key=patch.horizonDays!==undefined?'horizon_days':patch.leadMinutes!==undefined?'lead_minutes':'slot_step',value=patch.horizonDays??patch.leadMinutes??patch.slotStepMinutes!;
+    const patch=input.bookingWindowPatch,key=patch.cancelHours!==undefined?'cancel_hours':patch.horizonDays!==undefined?'horizon_days':patch.leadMinutes!==undefined?'lead_minutes':'slot_step',value=patch.cancelHours??patch.horizonDays??patch.leadMinutes??patch.slotStepMinutes!;
     const defs=sectionSchema(spec,section.type)?.settings?.filter(d=>d.id===key)??[];
     if(defs.length!==1||defs[0].type!=='range')throw new HttpError(409,'Règle native absente ou ambiguë. Aucun autre réglage substitué.');
     const checked=coerceSetting(defs[0],value);
     // Native editor coercion is shared, but a targeted command must never silently round or clamp.
     if(!checked.ok||checked.value!==value)throw new HttpError(400,'Valeur hors bornes ou pas natif. Aucun arrondi ou remplacement implicite.');
     st[key]=value;
-    warnings.push(L('Seuls les futurs créneaux proposés changent. Les rendez-vous acquis gardent leurs dates, heures et identités. Le mode de réservation reste inchangé.','Only future offered slots change. Existing appointments keep their dates, times and identities. Booking mode stays unchanged.'));
+    if(patch.cancelHours!==undefined)warnings.push(L('Ce délai régit les futures demandes d’annulation et de déplacement en ligne des clients, y compris pour les rendez-vous déjà enregistrés. Aucun rendez-vous n’est annulé ou déplacé ; les actions professionnelles conservent leurs droits natifs. Aucun message automatique.','This deadline governs future client self-service cancellations and rescheduling, including appointments already booked. No appointment is canceled or moved; professional actions retain their native permissions. No automatic message.'));
+    else warnings.push(L('Seuls les futurs créneaux proposés changent. Les rendez-vous acquis gardent leurs dates, heures et identités. Le mode de réservation reste inchangé.','Only future offered slots change. Existing appointments keep their dates, times and identities. Booking mode stays unchanged.'));
   }
 
   if (input.staffAdd || input.staffRemove) {

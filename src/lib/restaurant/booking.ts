@@ -211,8 +211,8 @@ export function modifyReservation(projectId: string, number: string, token: stri
 
 /** Annulation définitive : la réservation n'est plus active et libère ses couverts. */
 export function cancelReservation(projectId: string, number: string, token: string, at = now()): Reservation {
-  liveRestaurant(projectId);
   return tx(() => {
+    liveRestaurant(projectId);
     const res = reservationByToken(projectId, number, token);
     if (res.status === "canceled") return res;
     run("UPDATE restaurant_reservations SET status = 'canceled', canceled_at = ?, updated_at = ? WHERE id = ?", at, at, res.id);
