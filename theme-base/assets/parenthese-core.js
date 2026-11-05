@@ -120,8 +120,8 @@
     };
   }
 
-  function seanceById(cfg, id) { for (var i = 0; i < cfg.seances.length; i++) if (cfg.seances[i].id === id) return cfg.seances[i]; return null; }
-  function atelierById(cfg, id) { for (var i = 0; i < cfg.ateliers.length; i++) if (cfg.ateliers[i].id === id) return cfg.ateliers[i]; return null; }
+  function seanceById(cfg, id) { var matches = cfg.seances.filter(function (s) { return s.id === id; }); return matches.length === 1 ? matches[0] : null; }
+  function atelierById(cfg, id) { var matches = cfg.ateliers.filter(function (a) { return a.id === id; }); return matches.length === 1 ? matches[0] : null; }
 
   /** Statut d'une date pour le cabinet : past, closed, beyond (au-delà de l'horizon) ou open. */
   function dateStatus(cfg, date, at) {
@@ -183,6 +183,7 @@
   /** État d'un atelier : invalid (date/heure/durée non réglées), past, full ou open. */
   function atelierStatus(cfg, atelier, taken, at, busy) {
     if (!atelier || !atelier.date || !atelier.time || !atelier.duration || !atelier.capacity || toMin(atelier.time) + atelier.duration > 1440) return 'invalid';
+    if (cfg.ateliers.filter(function (a) { return a.id === atelier.id; }).length > 1) return 'invalid';
     var now = nowIn(cfg.timezone, at);
     if (atelier.date < now.date || (atelier.date === now.date && toMin(atelier.time) <= now.minute)) return 'past';
     if (remaining(atelier, taken) <= 0) return 'full';
