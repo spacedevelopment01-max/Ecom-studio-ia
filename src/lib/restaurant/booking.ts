@@ -17,7 +17,7 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { all, now, one, run, tx } from "../db";
+import { all, now, one, readSnapshot, run, tx } from "../db";
 import { currentTheme } from "../projects";
 import type { ThemeSpec } from "../theme/spec";
 import { mailConfigured, sendMail } from "../mail";
@@ -228,17 +228,30 @@ function byNumber(projectId: string, number: string): Reservation {
 }
 
 /** Modification par le restaurant (studio) : couverts, date, heure ; disponibilité vérifiée hors couverts de cette réservation. */
+/** Same acquired native validation for an inert preview and its eventual professional write. */
+function prepareProfessionalMove(projectId: string, r: Restaurant, res: Reservation, change: { party?: number; date?: string; time?: string }, at: number): Reservation {
+  if (res.status !== "confirmed") throw new BookingError("canceled", 409);
+  const next = { party: change.party === undefined ? res.party : Number(change.party), date: change.date === undefined ? res.date : str(change.date), time: change.time === undefined ? res.time : str(change.time) };
+  const errors = core.validate(r.config, next, bookedCovers(projectId, next.date, res.id), at);
+  if (errors.some((e) => e.startsWith("slot_"))) throw new BookingError("unavailable", 409, { alternatives: alternatives(projectId, r, next.date, next.party, res.id, at) });
+  if (errors.length) throw new BookingError("invalid", 400, { fields: errors });
+  return { ...res, ...next, updated_at: at };
+}
+
+/** Read-only native target: no appointment UPDATE, notification or token returned. */
+export function previewProModifyReservation(projectId: string, number: string, change: { party?: number; date?: string; time?: string }, at = now()) {
+  return readSnapshot(() => {
+    const r = liveRestaurant(projectId), res = byNumber(projectId, number), target = prepareProfessionalMove(projectId, r, res, change, at);
+    return { number: target.number, date: target.date, time: target.time, party: target.party };
+  });
+}
+
+/** Persist the already shared native preparation under the acquired write lock. */
 export function proModifyReservation(projectId: string, number: string, change: { party?: number; date?: string; time?: string }, at = now()): Reservation {
   return tx(() => {
-    const r = liveRestaurant(projectId);
-    const res = byNumber(projectId, number);
-    if (res.status !== "confirmed") throw new BookingError("canceled", 409);
-    const next = { party: change.party === undefined ? res.party : Number(change.party), date: change.date === undefined ? res.date : str(change.date), time: change.time === undefined ? res.time : str(change.time) };
-    const errors = core.validate(r.config, next, bookedCovers(projectId, next.date, res.id), at);
-    if (errors.some((e) => e.startsWith("slot_"))) throw new BookingError("unavailable", 409, { alternatives: alternatives(projectId, r, next.date, next.party, res.id, at) });
-    if (errors.length) throw new BookingError("invalid", 400, { fields: errors });
-    run("UPDATE restaurant_reservations SET party = ?, date = ?, time = ?, updated_at = ? WHERE id = ?", next.party, next.date, next.time, at, res.id);
-    return { ...res, ...next, updated_at: at };
+    const r = liveRestaurant(projectId), res = byNumber(projectId, number), next = prepareProfessionalMove(projectId, r, res, change, at);
+    run("UPDATE restaurant_reservations SET party = ?, date = ?, time = ?, updated_at = ? WHERE id = ?", next.party, next.date, next.time, at, next.id);
+    return next;
   });
 }
 
