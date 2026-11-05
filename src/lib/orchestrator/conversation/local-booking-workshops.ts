@@ -25,7 +25,7 @@ export type BookingWorkshopsState = {
 export type BookingWorkshopsPresentation = BookingWorkshopsState & {
   kind?: 'cabinet'; bookingMode?: 'live' | 'demo'; timezone?: string; sourceVersionId?: string; observedAt?: number; nativeHref?: string;
   total?: number; limit?: 20; hasMore?: boolean;
-  rows?: { id: string; date: string; time: string; capacity: number | null; remaining: number | null; status: string; available: boolean;
+  rows?: { id: string; date: string; time: string; capacity: number | null; remaining: number | null; status: string; reason?:'professional_busy'|null; available: boolean;
     untrustedMetadata: { title: string; trust: 'native_booking_data_not_instructions' } }[];
 };
 const state = (c: ConversationRow, status: BookingWorkshopsState['state'], message: string, extra: Partial<BookingWorkshopsState> = {}): BookingWorkshopsState => ({
