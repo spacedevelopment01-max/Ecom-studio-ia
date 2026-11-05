@@ -1,6 +1,6 @@
-import { changeFolderMetadata } from "@/lib/folder-metadata";
+import { changeFolderMetadata, deleteEmptyFolder } from "@/lib/folder-metadata";
 import { z } from "zod";
-import { one, run } from "@/lib/db";
+import { one } from "@/lib/db";
 import { body, handle, ok } from "@/lib/http";
 import { HttpError, ownedProject, requireUser } from "@/lib/auth";
 import { type Folder } from "@/lib/library";
@@ -25,8 +25,6 @@ export const PATCH = handle(async (req: Request, ctx: { params: Promise<{ fid: s
 /** Suppression d'un dossier vide (les fichiers ne sont jamais supprimés implicitement). */
 export const DELETE = handle(async (_req: Request, ctx: { params: Promise<{ fid: string }> }) => {
   const f = await folderOf(ctx);
-  if (f.system_key) throw new HttpError(400, L("Les dossiers de base du projet ne peuvent pas être supprimés (vous pouvez les renommer).", "The project's default folders cannot be deleted (you can rename them)."));
-  if (one("SELECT 1 FROM assets WHERE folder_id = ? AND deleted_at IS NULL", f.id) || one("SELECT 1 FROM folders WHERE parent_id = ?", f.id)) throw new HttpError(409, L("Le dossier n'est pas vide : déplacez d'abord son contenu.", "The folder is not empty: move its contents first."));
-  run("DELETE FROM folders WHERE id = ?", f.id);
+  deleteEmptyFolder(f.project_id,f.id);
   return ok();
 });
