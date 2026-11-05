@@ -1,3 +1,4 @@
+import {outsideQuotes} from './outside-quotes';
 import {BANK_IMAGE_ROLES,isBankImage} from '../../media/bank';
 /** Native trash metadata only: explicit selection, exact byte acquisition retained, separate free agreement. */
 import {HttpError,ownedProject,type User} from '../../auth';
@@ -15,7 +16,7 @@ export type FileRestoreProposal={id:string;assetId:string;fingerprint:string;met
 export type FileRestorePresentation={schema:'syna-local-file-restore-1';state:'listed'|'ambiguous'|'proposed'|'applied';projectId:string;nativeHref:string;message:string;financialConsent:false;costEur:0;providerCalls:0;publication:false;confirmationRequired:boolean;actionsExecuted:boolean;items?:TrashItem[];hasMore?:boolean;proposalId?:string;asset?:TrashItem;diff?:{before:{deletedAt:number;folderId:string|null};after:{deletedAt:null;folderId:string|null}};result?:{id:string;version:number;deletedAt:null;folderId:string|null};receiptId?:string};
 export const localFileRestoreEnabled=()=>localFilesEnabled();
 function trashRequest(text:string){return text.trim().replace(/\s*\?\s*$/u,'').trim().replace(/,?\s+s[’']il te pla[iî]t$/iu,'').trim().replace(/^peux-tu restaurer\b/iu,'restaure').replace(/^peux-tu me montrer\b/iu,'montre');}
-export const localFileRestoreCandidate=(raw:string)=>{const text=trashRequest(raw);return (/^(?:montre|liste|affiche)\b/iu.test(text.trim())&&/\bcorbeille\b/iu.test(text))||(/^(?:restaure|r[ée]cup[èe]re|remets?)\s+(?:(?:le|la|les|un|une|des|ce|cet|cette|ces)\s+|l[’'])(?:fichiers?|images?|photos?)\b/iu.test(text));};
+export const localFileRestoreCandidate=(raw:string)=>{const text=trashRequest(raw);return (/^(?:montre|liste|affiche)\b/iu.test(text.trim())&&/\bcorbeille\b/iu.test(outsideQuotes(text)))||(/^(?:restaure|r[ée]cup[èe]re|remets?)\s+(?:(?:le|la|les|un|une|des|ce|cet|cette|ces)\s+|l[’'])(?:fichiers?|images?|photos?)\b/iu.test(text));};
 const present=(c:ConversationRow,state:FileRestorePresentation['state'],message:string,extra:Partial<FileRestorePresentation>={}):FileRestorePresentation=>({schema:'syna-local-file-restore-1',state,projectId:c.project_id!,nativeHref:`/studio/${c.project_id}/fichiers`,message,financialConsent:false,costEur:0,providerCalls:0,publication:false,confirmationRequired:false,actionsExecuted:false,...extra});
 const fp=(a:Asset)=>stableHash('native-file-restore-1',a);
 const valid=(c:ConversationRow,a:Asset)=>a.project_id===c.project_id&&a.user_id===c.user_id&&a.role!=='theme-render-capture'&&a.storage_key.startsWith(`${c.user_id}/${c.project_id}/`)&&(!a.thumb_key||a.thumb_key.startsWith(`${c.user_id}/${c.project_id}/`));

@@ -1,4 +1,5 @@
 /** Raccordement gratuit des métadonnées natives ; une proposition n’est jamais une autorisation. */
+import {outsideQuotes} from './outside-quotes';
 import {strategyVisibilitySql} from '../../marketing-strategy/visibility';
 import {HttpError,ownedProject,type User} from '../../auth';
 import {all,id,now,one} from '../../db';
@@ -11,12 +12,14 @@ import {checkedContextPin,type ContextPin} from './context-session';
 import type {ConversationRow,ConversationState} from './contract';
 type Snapshot={name:string;folderId:string|null};
 export type LocalFilesProposal={id:string;kind:'rename'|'move';pin:ContextPin;assetId:string;version:number;fingerprint:string;diff:{before:Snapshot;after:Snapshot};folder?:Pick<Folder,'id'|'name'|'parent_id'>;expiresAt:number};
-export type LocalFilesPresentation={schema:'syna-local-files-1';command?:'rename'|'move'|'read';projectId?:string;nativeHref?:string;vision?:false;items?:LibraryItem[];folders?:{id:string;name:string;parentId:string|null}[];hasMore?:boolean;state:'listed'|'proposed'|'applied'|'ambiguous'|'error';message:string;financialConsent:false;costEur:0;providerCalls:0;confirmationRequired:boolean;actionsExecuted:boolean;proposalId?:string;diff?:LocalFilesProposal['diff'];asset?:{id:string;version:number;name:string;folderId:string|null};folder?:{id:string;label:string};receiptId?:string};
+export type LocalFilesPresentation={schema:'syna-local-files-1';command?:'rename'|'move'|'read';projectId?:string;nativeHref?:string;vision?:false;items?:LibraryItem[];folders?:{id:string;name:string;parentId:string|null}[];hasMore?:boolean;readScope?:{folderId:string;folderName:string;descendants:false};state:'listed'|'proposed'|'applied'|'ambiguous'|'error';message:string;financialConsent:false;costEur:0;providerCalls:0;confirmationRequired:boolean;actionsExecuted:boolean;proposalId?:string;diff?:LocalFilesProposal['diff'];asset?:{id:string;version:number;name:string;folderId:string|null};folder?:{id:string;label:string};receiptId?:string};
 export type LibraryItem={id:string;name:string;kind:string;mime:string;version:number;folderId:string|null;href:string;thumbHref:string|null;target:{kind:'asset';assetId:string;version:number}};
 const present=(state:LocalFilesPresentation['state'],message:string,extra:Partial<LocalFilesPresentation>={}):LocalFilesPresentation=>({schema:'syna-local-files-1',state,message,financialConsent:false,costEur:0,providerCalls:0,confirmationRequired:false,actionsExecuted:false,...extra});
 const plain=(s:string)=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 export const localFilesEnabled=()=>activeContextEnabled()&&process.env.STUDIO_CONVERSATION_FILES==='1';
-const libraryReadCandidate=(text:string)=>/^(?:liste|montre|affiche|cherche|recherche)\b/iu.test(text.trim())&&/\b(?:fichiers?|photos?|images?|vid[ée]os?|dossiers?)\b/iu.test(text);
+function libraryRequest(raw:string){return raw.trim().replace(/\s*[?.!]\s*$/u,'').trim().replace(/^peux-tu me montrer\b/iu,'Montre').replace(/^peux-tu (?:montrer|afficher|lister)\b/iu,m=>/montrer/iu.test(m)?'Montre':/afficher/iu.test(m)?'Affiche':'Liste').replace(/^(?:je voudrais|j[’']aimerais) voir\b/iu,'Montre').replace(/^montre-moi\b/iu,'Montre');}
+export const libraryReadCandidate=(text:string)=>/^(?:liste|montre|affiche|cherche|recherche)\b/iu.test(outsideQuotes(libraryRequest(text)))&&/\b(?:fichiers?|photos?|images?|vid[ée]os?|dossiers?)\b/iu.test(outsideQuotes(libraryRequest(text)));
+export const scopedLibraryReadCandidate=(text:string)=>libraryReadCandidate(text)&&/^(?:liste|montre|affiche) (?:les|mes) (?:fichiers|photos|images|vid[ée]os) (?:du|dans le) dossier\b/iu.test(outsideQuotes(libraryRequest(text)));
 function fileRequest(text:string){
  const s=text.trim();return /^peux-tu /iu.test(s)?s.replace(/^peux-tu renommer\b/iu,'Renomme').replace(/^peux-tu d[ée]placer\b/iu,'Déplace').replace(/\?$/u,'').trim():s;
 }
@@ -66,12 +69,18 @@ export function confirmLocalFiles(user:User,c:ConversationRow,m:ConversationStat
 function readNativeLibrary(user:User,c:ConversationRow,text:string):LocalFilesPresentation{
  if(!c.project_id)throw new HttpError(409,'Rattachez un projet pour consulter sa bibliothèque native.');ownedProject(user,c.project_id);requirePlan(user,c.project_id);
  const extra={command:'read' as const,projectId:c.project_id,nativeHref:`/studio/${c.project_id}/fichiers`,vision:false as const};
- const list=/^(?:liste|montre|affiche) (?:les|mes) (fichiers|photos|images|vid[ée]os|dossiers)(?: de (?:mon|ce) projet| du projet)?\s*[.!]?$/iu.exec(text.trim());
- const search=/^(?:cherche|recherche) (?:le|un) fichier [«“"]([^»”"\r\n]{1,200})[»”"]\s*[.!]?$/iu.exec(text.trim());
- if(!list&&!search)return present('ambiguous','Précisez : Montre les fichiers de mon projet, Liste les photos, Montre les dossiers, ou Cherche le fichier « nom exact ». Lecture de métadonnées seulement, aucune analyse visuelle ni recherche externe.',extra);
+ const request=libraryRequest(text);
+ const scoped=/^(?:liste|montre|affiche) (?:les|mes) (fichiers|photos|images|vid[ée]os) (?:du|dans le) dossier (?:«([^»\r\n]{1,200})»|“([^”\r\n]{1,200})”|"([^"\r\n]{1,200})")$/iu.exec(request);
+ const list=/^(?:liste|montre|affiche) (?:les|mes) (fichiers|photos|images|vid[ée]os|dossiers)(?: de (?:mon|ce) projet| du projet)?\s*[.!]?$/iu.exec(request);
+ const search=/^(?:cherche|recherche) (?:le|un) fichier [«“"]([^»”"\r\n]{1,200})[»”"]\s*[.!]?$/iu.exec(request);
+ if(!list&&!search&&!scoped)return present('ambiguous','Précisez : Montre les fichiers de mon projet, Liste les photos, Montre les dossiers, ou Cherche le fichier « nom exact ». Lecture de métadonnées seulement, aucune analyse visuelle ni recherche externe.',extra);
  if(list&&plain(list[1])==='dossiers'){const folders=listFolders(c.project_id);return present('listed','Dossiers natifs du projet. Aucun rangement ni changement effectué.',{...extra,folders:folders.slice(0,50).map(f=>({id:f.id,name:f.name,parentId:f.parent_id})),hasMore:folders.length>50});}
+ let readScope:LocalFilesPresentation['readScope'];
+ if(scoped){const name=(scoped[2]??scoped[3]??scoped[4]).trim(),folders=all<Folder>('SELECT * FROM folders WHERE project_id=? AND (id=? OR name=?)',c.project_id,name,name);if(folders.length!==1)return present('ambiguous','Dossier absent ou ambigu : précisez son nom unique ou son identifiant exact dans ce projet. Aucun autre dossier consulté.',extra);readScope={folderId:folders[0].id,folderName:folders[0].name,descendants:false};}
  const where=["project_id=?","user_id=?","deleted_at IS NULL","status!='rejected'","COALESCE(role,'')!='theme-render-capture'",strategyVisibilitySql(c.project_id,'asset','assets.id')],args:unknown[]=[c.project_id,c.user_id];
- if(list&&/photos|images/iu.test(list[1]))where.push("kind='image'");if(list&&/vid[ée]os/iu.test(list[1]))where.push("kind='video'");if(search){where.push('(id=? OR name=?)');args.push(search[1].trim(),search[1].trim());}
+ if(readScope){where.push('folder_id=?');args.push(readScope.folderId);}
+ const kind=scoped?.[1]??list?.[1];
+ if(kind&&/photos|images/iu.test(kind))where.push("kind='image'");if(kind&&/vid[ée]os/iu.test(kind))where.push("kind='video'");if(search){where.push('(id=? OR name=?)');args.push(search[1].trim(),search[1].trim());}
  const found=all<Asset>(`SELECT * FROM assets WHERE ${where.join(' AND ')} ORDER BY created_at DESC,id LIMIT 51`,...args),items=found.slice(0,50).map(a=>({id:a.id,name:a.name,kind:a.kind,mime:a.mime,version:a.version,folderId:a.folder_id&&one('SELECT 1 FROM folders WHERE id=? AND project_id=?',a.folder_id,c.project_id)?a.folder_id:null,href:assetUrl(a),thumbHref:a.thumb_key?assetUrl(a,{thumb:true}):a.kind==='image'?assetUrl(a):null,target:{kind:'asset' as const,assetId:a.id,version:a.version}}));
- return present('listed',search&&found.length>1?'Plusieurs fichiers portent ce nom. Désignez leur identifiant exact avant toute modification ; aucun premier résultat choisi.':found.length?'Fichiers natifs retrouvés. Métadonnées et liens uniquement : aucune image analysée, aucun contenu décrit, aucune modification.':'Aucun fichier autorisé correspondant dans la bibliothèque de ce projet ; aucun média substitué.',{...extra,items,hasMore:found.length>50});
+ return present('listed',readScope?`Fichiers directement présents dans le dossier « ${readScope.folderName} » : ${Math.min(found.length,50)} résultat(s)${found.length>50?' (autres résultats disponibles)':''}. Sous-dossiers exclus. Métadonnées et liens uniquement, sans analyse ni modification.`:search&&found.length>1?'Plusieurs fichiers portent ce nom. Désignez leur identifiant exact avant toute modification ; aucun premier résultat choisi.':found.length?'Fichiers natifs retrouvés. Métadonnées et liens uniquement : aucune image analysée, aucun contenu décrit, aucune modification.':'Aucun fichier autorisé correspondant dans la bibliothèque de ce projet ; aucun média substitué.',{...extra,...(readScope?{readScope}:{}),items,hasMore:found.length>50});
 }
