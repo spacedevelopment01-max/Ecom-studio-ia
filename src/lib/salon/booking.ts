@@ -480,11 +480,15 @@ export function proMoveAppointment(projectId: string, number: string, change: { 
     if (a.status !== "confirmed") throw new BookingError("canceled", 409);
     const q: SlotQuery = { date: str(change.date), service: a.service, staff: str(change.staff) || a.staff, length: a.length };
     const config = configForAcquiredMove(r.config, a);
-    const errors = core.validate(config, { ...q, time: str(change.time) }, busyFor(projectId, q.date, a.id), at);
+    const busy = busyFor(projectId, q.date, a.id);
+    const errors = core.validate(config, { ...q, time: str(change.time) }, busy, at);
     if (errors.length) throw new BookingError(errors.includes("slot_taken") || errors.includes("time") ? "unavailable" : "invalid", 409, { alternatives: alternatives({ ...r, config }, projectId, q, a.id, at) });
+    const slot = core.slotsFor(config, { ...q, busy }, at).find(s => s.time === str(change.time));
+    const staff = q.staff === "any" ? slot && core.assign(config, slot.staff, busy) : q.staff;
+    if (!staff) throw new BookingError("unavailable", 409, { alternatives: alternatives({ ...r, config }, projectId, q, a.id, at) });
     const start = core.toMin(str(change.time));
-    run("UPDATE salon_appointments SET date = ?, start_min = ?, end_min = ?, staff = ?, updated_at = ? WHERE id = ?", q.date, start, start + (a.end_min - a.start_min), q.staff, at, a.id);
-    return publicView({ ...a, date: q.date, start_min: start, end_min: start + (a.end_min - a.start_min), staff: q.staff ?? a.staff, updated_at: at });
+    run("UPDATE salon_appointments SET date = ?, start_min = ?, end_min = ?, staff = ?, updated_at = ? WHERE id = ?", q.date, start, start + (a.end_min - a.start_min), staff, at, a.id);
+    return publicView({ ...a, date: q.date, start_min: start, end_min: start + (a.end_min - a.start_min), staff, updated_at: at });
   });
 }
 
