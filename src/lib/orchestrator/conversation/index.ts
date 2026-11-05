@@ -21,7 +21,7 @@ import {localSeoEnabled,localSeoCandidate,proposeLocalSeo,confirmLocalSeo} from 
 import {serviceProfileEnabled,serviceProfileCandidate,proposeServiceProfile,confirmServiceProfile} from "./local-service-profile";
 import {adDocumentCandidate,adDocumentToolsEnabled,proposeAdDocument,bindAdDocumentProposal,adDocumentPresentation} from './ad-document-tool-execution';
 import {localPromptsEnabled,localPromptsCandidate,listLocalPrompts,localPromptsView} from './local-prompts';
-import {localFilesEnabled,localFilesCandidate,proposeLocalFiles,confirmLocalFiles} from './local-files';
+import {localFilesEnabled,localFilesCandidate,scopedLibraryReadCandidate,proposeLocalFiles,confirmLocalFiles} from './local-files';
 import {localBusinessContentEnabled,localBusinessContentCandidate,proposeLocalBusinessContent,confirmLocalBusinessContent} from './local-business-content';
 import {localRequestsCandidate,proposeLocalRequests,confirmLocalRequest,localRequestsView} from './local-site-requests';
 import {withAiDisabled} from '../../ai/access';
@@ -244,7 +244,8 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
   if((bookingServiceTextCommand||cmd.action==='confirm-booking-service-text'||cmd.action==='cancel-booking-service-text')&&!bookingServiceTextEnabled())throw new HttpError(404,'Textes de prestations réservables avec SYNA indisponibles.');
   const folderDeleteCommand=cmd.action==='message'&&localFolderDeleteCandidate(cmd.text);
   if((folderDeleteCommand||cmd.action==='confirm-folder-delete'||cmd.action==='cancel-folder-delete')&&!localFolderDeleteEnabled())throw new HttpError(404,'Suppression de dossier vide avec SYNA indisponible.');
-  const priorityLocalCommand=bookingServiceTextCommand||folderDeleteCommand;
+  const scopedLibraryReadCommand=cmd.action==='message'&&scopedLibraryReadCandidate(cmd.text);
+  const priorityLocalCommand=bookingServiceTextCommand||folderDeleteCommand||scopedLibraryReadCommand;
   const bookingClosuresCommand=cmd.action==='message'&&!priorityLocalCommand&&bookingClosuresCandidate(cmd.text);
   if((bookingClosuresCommand||cmd.action==='confirm-booking-closures'||cmd.action==='cancel-booking-closures')&&!bookingClosuresEnabled())throw new HttpError(404,'Fermetures datées avec SYNA indisponibles.');
   const restaurantCommand=cmd.action==='message'&&!priorityLocalCommand&&restaurantSettingsCandidate(cmd.text);
@@ -278,7 +279,7 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
   if(adCommand){const selected=metaOf(initial).activeContext,target=selected?.target;if(cmd.action==='message'&&cmd.context&&(cmd.context.tab!==selected?.tab||cmd.context.projectId!==undefined&&cmd.context.projectId!==initial.project_id||stableHash('ad-document-selected',cmd.context.target)!==stableHash('ad-document-selected',target)))throw new HttpError(409,'La sélection affichée diffère du repère sauvegardé. Confirmez sa désignation avant de proposer la retouche.');if(target?.kind!=='ad-document-text')throw new HttpError(409,'Désignez le titre enregistré dans le contexte partagé avant cette demande.');const proposed=await proposeAdDocument(user,cid,{action:'propose',revision:cmd.revision,projectRevision:cmd.projectRevision!,docKey:target.docKey,layerId:target.layerId,expectedVersion:target.version,operation:'title-larger'});adProposalId=proposed.proposalId;}
   const fileRestoreCommand=cmd.action==='message'&&!priorityLocalCommand&&localFileRestoreCandidate(cmd.text);
   const folderCommand=cmd.action==='message'&&!priorityLocalCommand&&(localFoldersCandidate(cmd.text)||hasFolderClarificationReply(metaOf(initial),cmd.text));
-  const fileCommand=cmd.action==='message'&&!priorityLocalCommand&&localFilesCandidate(cmd.text);
+  const fileCommand=cmd.action==='message'&&(!priorityLocalCommand||scopedLibraryReadCommand)&&localFilesCandidate(cmd.text);
   const requestCommand=cmd.action==='message'&&!priorityLocalCommand&&localRequestsCandidate(cmd.text);
   const themeChoiceCommand=cmd.action==='message'&&!priorityLocalCommand&&localThemeChoiceCandidate(cmd.text);
   const preparedThemeChoice=themeChoiceCommand?await prepareLocalThemeChoice(user,initial,(cmd as Extract<Command,{action:'message'}>).text,cmd.action==='message'?cmd.context?.tab??metaOf(initial).activeContextTab:undefined):null;
