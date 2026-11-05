@@ -1,3 +1,5 @@
+import {localFileTrashCandidate} from './local-file-trash';
+import {libraryReadCandidate} from './local-files';
 import {localFolderDeleteCandidate} from './local-folder-delete';
 import {bookingServiceTextCandidate} from './local-booking-service-text';
 import {bookingHoursCandidate} from './local-booking-hours';
@@ -95,13 +97,21 @@ function assertNoPaidFolderDeleteFallback(c:ConversationRow){
  const last=one<{request_json:string}>("SELECT request_json FROM agent_conversation_turns WHERE conversation_id=? AND json_extract(request_json,'$.action') IN ('message','answer-ai') ORDER BY revision DESC LIMIT 1",c.id),request=last?json<{action?:string;text?:string}>(last.request_json,{}):null;
  if(metaOf(c).localFolderDelete||request?.action==='message'&&typeof request.text==='string'&&localFolderDeleteCandidate(request.text))throw new HttpError(409,L('Cette suppression de dossier utilise un parcours gratuit. Vérifiez son aperçu et son accord ; aucun devis IA ne sera créé.','This folder deletion uses a free workflow. Review its preview and consent; no AI quote will be created.'),'conversation_free_folder_reply');
 }
+function assertNoPaidFileTrashFallback(c:ConversationRow){
+ const last=one<{request_json:string}>("SELECT request_json FROM agent_conversation_turns WHERE conversation_id=? AND json_extract(request_json,'$.action') IN ('message','answer-ai') ORDER BY revision DESC LIMIT 1",c.id),request=last?json<{action?:string;text?:string}>(last.request_json,{}):null;
+ if(metaOf(c).localFileTrash||request?.action==='message'&&typeof request.text==='string'&&localFileTrashCandidate(request.text))throw new HttpError(409,L('Cette demande utilise la corbeille gratuite. Aucun devis IA ne sera créé.','This request uses free native trash. No AI quote will be created.'),'conversation_free_file_trash_reply');
+}
+function assertNoPaidLibraryReadFallback(c:ConversationRow){
+ const last=one<{request_json:string}>("SELECT request_json FROM agent_conversation_turns WHERE conversation_id=? AND json_extract(request_json,'$.action') IN ('message','answer-ai') ORDER BY revision DESC LIMIT 1",c.id),request=last?json<{action?:string;text?:string}>(last.request_json,{}):null;
+ if(metaOf(c).localFiles?.command==='read'||request?.action==='message'&&typeof request.text==='string'&&libraryReadCandidate(request.text))throw new HttpError(409,L('Cette demande utilise une lecture gratuite des fichiers. Aucun devis IA ne sera créé.','This request uses a free file read. No AI quote will be created.'),'conversation_free_library_reply');
+}
 export function createCognitiveQuote(user: User, cid: string, input: { revision: number; projectRevision: number | null; subscriptionKey?: string;role?:AgentRole }) {
   assertIntelligenceEnabled();
   return tx(() => {
     const c = ownedConversation(user, cid), current = currentBrief(c);
     if (c.revision >= 999) throw new HttpError(409, 'conversation_limit');
     if (input.revision !== c.revision || input.projectRevision !== current.revision) throw new HttpError(409, L('Le contexte a changé : rechargez le dialogue.', 'Context changed: reload the conversation.'), 'conversation_quote_stale');
-    assertNoPaidBookingFallback(c);assertNoPaidFolderDeleteFallback(c);
+    assertNoPaidBookingFallback(c);assertNoPaidFolderDeleteFallback(c);assertNoPaidLibraryReadFallback(c);assertNoPaidFileTrashFallback(c);
     if (metaOf(c).intelligence?.pendingJobId && activeJob(metaOf(c).intelligence!.pendingJobId!)) throw new HttpError(409, L('Une réponse est déjà en préparation.', 'A reply is already being prepared.'), 'conversation_ai_pending');
     const key = account(c, user, input.subscriptionKey);
     return scoped(c, user.id, key, () => {
@@ -126,7 +136,7 @@ function checkedQuote(user: User, cid: string, qid: string, refresh = true,accep
   const accepted=acceptedJob&&q.job_id===acceptedJob.id&&acceptedJob.user_id===user.id&&acceptedJob.project_id===c.project_id&&acceptedJob.type==='agent.reason'&&acceptedJob.created_at>=q.created_at&&acceptedJob.created_at<=q.created_at+expires;
   const validUntil=accepted?acceptedJob.created_at+expires:q.created_at+expires;
   if (now()>validUntil || c.revision !== q.revision || currentBrief(c).revision !== q.project_revision) throw new HttpError(409, L('Ce devis a expiré ou son contexte a changé.', 'This quote expired or its context changed.'), 'conversation_quote_stale');
-  assertNoPaidBookingFallback(c);assertNoPaidFolderDeleteFallback(c);
+  assertNoPaidBookingFallback(c);assertNoPaidFolderDeleteFallback(c);assertNoPaidLibraryReadFallback(c);assertNoPaidFileTrashFallback(c);
   const key = account(c, user, q.billing_key), saved = JSON.parse(q.plan_json) as Plan;
   if (key !== q.billing_key) throw new HttpError(409, 'conversation_billing_changed');
   if (refresh) scoped(c, user.id, key, () => {

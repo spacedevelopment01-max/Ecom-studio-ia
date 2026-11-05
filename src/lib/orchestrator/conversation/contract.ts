@@ -15,6 +15,8 @@ const base = z.object({
   projectRevision: z.number().int().min(0).nullable(),
 });
 export const CommandSchema = z.discriminatedUnion("action", [
+  base.extend({action:z.literal('confirm-file-trash'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal('cancel-file-trash'),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal('confirm-folder-delete'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal('cancel-folder-delete'),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal('confirm-booking-service-text'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
@@ -76,6 +78,8 @@ export const CommandSchema = z.discriminatedUnion("action", [
 export type Command = z.infer<typeof CommandSchema>;
 /** Un seul Brief natif pour le brouillon ; après rattachement, il est retiré et relu via stateOf(projectId). */
 export type ConversationState = {
+  localFileTrashProposal?:import('./local-file-trash').FileTrashProposal;
+  localFileTrash?:import('./local-file-trash').FileTrashPresentation;
   localFolderDeleteProposal?:import('./local-folder-delete').FolderDeleteProposal;
   localFolderDelete?:import('./local-folder-delete').FolderDeletePresentation;
   bookingServiceTextProposal?:import('./local-booking-service-text').BookingServiceTextProposal;
@@ -165,6 +169,8 @@ export type ActionCard = {
   href?: string;
 };
 export type ConversationView = {
+  localFileTrash?:import('./local-file-trash').FileTrashPresentation;
+  localFileTrashExecution?:{enabled:true};
   localFolderDelete?:import('./local-folder-delete').FolderDeletePresentation;
   localFolderDeleteExecution?:{enabled:true};
   bookingServiceText?:import('./local-booking-service-text').BookingServiceTextPresentation;
