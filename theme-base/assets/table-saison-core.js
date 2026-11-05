@@ -91,12 +91,21 @@
     return any ? 'open' : 'closed';
   }
 
+  /** Accept numeric draft values without truncating fractions or concatenating occupied covers with strings. */
+  function partyCount(value) {
+    if (typeof value !== 'number' && (typeof value !== 'string' || !value.trim())) return NaN;
+    var count = Number(value);
+    return isFinite(count) && Math.floor(count) === count ? count : NaN;
+  }
+
   /**
    * Créneaux d'une date pour un groupe : chaque service avec ses heures, et pour chaque heure la disponibilité.
    * `booked` : couverts déjà pris par heure (« 19:30 » → 12). Raison d'indisponibilité : « past », « full ».
    */
   function slotsFor(raw, date, party, booked, now) {
     var cfg = normalize(raw);
+    party = partyCount(party);
+    if (!(party >= cfg.minParty && party <= cfg.maxParty)) return [];
     var status = dateStatus(cfg, date, now);
     if (status !== 'open') return [];
     var cur = nowIn(cfg.timezone, now);
@@ -118,7 +127,7 @@
   /** Vérifie une demande complète ; renvoie la liste des erreurs (codes) — vide si la demande est recevable. */
   function validate(raw, req, booked, now) {
     var cfg = normalize(raw), errors = [];
-    var party = parseInt(req && req.party, 10);
+    var party = partyCount(req && req.party);
     if (!(party >= cfg.minParty && party <= cfg.maxParty)) errors.push('party');
     var st = dateStatus(cfg, req && req.date, now);
     if (st !== 'open') errors.push('date_' + st);
