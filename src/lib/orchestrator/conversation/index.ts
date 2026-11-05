@@ -1,3 +1,4 @@
+import {localFolderDeleteEnabled,localFolderDeleteCandidate,proposeFolderDelete,confirmFolderDelete} from './local-folder-delete';
 import {bookingServiceTextEnabled,bookingServiceTextCandidate,proposeBookingServiceText,confirmBookingServiceText} from './local-booking-service-text';
 import {bookingClosuresEnabled,bookingClosuresCandidate,proposeBookingClosures,confirmBookingClosures} from './local-booking-closures';
 import {restaurantSettingsEnabled,restaurantSettingsCandidate,proposeRestaurantSettings,confirmRestaurantSettings} from './local-restaurant-settings';
@@ -119,6 +120,8 @@ export function conversationView(user: User, cid: string, before?: number,includ
     ...(m.localBusinessContent?{localBusinessContent:m.localBusinessContent}:{}),
     ...(c.project_id&&localEditsWritable&&localBusinessContentEnabled()?{localBusinessContentExecution:{enabled:true as const}}:{}),
     // Lecture gratuite native indépendante du verrou de fiche ; forfait et drapeau toujours requis.
+    ...(m.localFolderDelete&&localEditsWritable&&localFolderDeleteEnabled()?{localFolderDelete:m.localFolderDelete}:{}),
+    ...(c.project_id&&localEditsWritable&&localFolderDeleteEnabled()?{localFolderDeleteExecution:{enabled:true as const}}:{}),
     ...(m.bookingServiceText&&localEditsWritable&&bookingServiceTextEnabled()?{bookingServiceText:m.bookingServiceText}:{}),
     ...(c.project_id&&localEditsWritable&&bookingServiceTextEnabled()?{bookingServiceTextExecution:{enabled:true as const}}:{}),
     ...(m.bookingClosures&&localEditsWritable&&bookingClosuresEnabled()?{bookingClosures:m.bookingClosures}:{}),
@@ -239,21 +242,24 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
   if(lockedPhotoMessage(user,initial,cmd)&&cmd.action==='message')return withAiDisabled('Photos jointes sans analyse ni réécriture de la fiche',()=>attachLockedPhotos(user,cid,cmd,hash,()=>conversationView(user,cid,undefined,false)));
   const bookingServiceTextCommand=cmd.action==='message'&&bookingServiceTextCandidate(cmd.text);
   if((bookingServiceTextCommand||cmd.action==='confirm-booking-service-text'||cmd.action==='cancel-booking-service-text')&&!bookingServiceTextEnabled())throw new HttpError(404,'Textes de prestations réservables avec SYNA indisponibles.');
-  const bookingClosuresCommand=cmd.action==='message'&&!bookingServiceTextCommand&&bookingClosuresCandidate(cmd.text);
+  const folderDeleteCommand=cmd.action==='message'&&localFolderDeleteCandidate(cmd.text);
+  if((folderDeleteCommand||cmd.action==='confirm-folder-delete'||cmd.action==='cancel-folder-delete')&&!localFolderDeleteEnabled())throw new HttpError(404,'Suppression de dossier vide avec SYNA indisponible.');
+  const priorityLocalCommand=bookingServiceTextCommand||folderDeleteCommand;
+  const bookingClosuresCommand=cmd.action==='message'&&!priorityLocalCommand&&bookingClosuresCandidate(cmd.text);
   if((bookingClosuresCommand||cmd.action==='confirm-booking-closures'||cmd.action==='cancel-booking-closures')&&!bookingClosuresEnabled())throw new HttpError(404,'Fermetures datées avec SYNA indisponibles.');
-  const restaurantCommand=cmd.action==='message'&&!bookingServiceTextCommand&&restaurantSettingsCandidate(cmd.text);
+  const restaurantCommand=cmd.action==='message'&&!priorityLocalCommand&&restaurantSettingsCandidate(cmd.text);
   if((restaurantCommand||cmd.action==='confirm-restaurant-settings'||cmd.action==='cancel-restaurant-settings')&&!restaurantSettingsEnabled())throw new HttpError(404,'Réglages restaurant avec SYNA indisponibles.');
   const profileHoursClarification=cmd.action==='message'&&(cmd.context?.tab??metaOf(initial).activeContextTab)==='produit'&&serviceProfileEnabled()&&bookingHoursIncompleteRequest(cmd.text);
-  const bookingHoursCommand=cmd.action==='message'&&!bookingServiceTextCommand&&!restaurantCommand&&!bookingClosuresCommand&&!profileHoursClarification&&bookingHoursCandidate(cmd.text);
+  const bookingHoursCommand=cmd.action==='message'&&!priorityLocalCommand&&!restaurantCommand&&!bookingClosuresCommand&&!profileHoursClarification&&bookingHoursCandidate(cmd.text);
   if((bookingHoursCommand||cmd.action==='confirm-booking-hours'||cmd.action==='cancel-booking-hours')&&!bookingHoursEnabled())throw new HttpError(404,'Horaires réservables avec SYNA indisponibles.');
-  const bookingEditCommand=cmd.action==='message'&&!bookingServiceTextCommand&&bookingEditCandidate(cmd.text);
+  const bookingEditCommand=cmd.action==='message'&&!priorityLocalCommand&&bookingEditCandidate(cmd.text);
   if((bookingEditCommand||cmd.action==='confirm-booking-edit'||cmd.action==='cancel-booking-edit')&&!bookingEditEnabled())throw new HttpError(404,'Retouche gratuite des services réservables indisponible.');
-  const bookingReadCommand=cmd.action==='message'&&!bookingServiceTextCommand&&bookingServicesCandidate(cmd.text);
+  const bookingReadCommand=cmd.action==='message'&&!priorityLocalCommand&&bookingServicesCandidate(cmd.text);
   if(bookingReadCommand&&!bookingServicesEnabled())throw new HttpError(404,'Lecture des services réservables indisponible.');
-  const promptsCommand=cmd.action==='message'&&!bookingServiceTextCommand&&localPromptsCandidate(cmd.text);
-  const folderMoveCommand=cmd.action==='message'&&!bookingServiceTextCommand&&localFolderMoveCandidate(cmd.text);
+  const promptsCommand=cmd.action==='message'&&!priorityLocalCommand&&localPromptsCandidate(cmd.text);
+  const folderMoveCommand=cmd.action==='message'&&!priorityLocalCommand&&localFolderMoveCandidate(cmd.text);
   if((folderMoveCommand||cmd.action==='confirm-folder-move'||cmd.action==='cancel-folder-move')&&!localFolderMoveEnabled())throw new HttpError(404,'Déplacement gratuit de dossier indisponible.');
-  const folderRenameCommand=cmd.action==='message'&&!bookingServiceTextCommand&&localFolderRenameCandidate(cmd.text);
+  const folderRenameCommand=cmd.action==='message'&&!priorityLocalCommand&&localFolderRenameCandidate(cmd.text);
   if((folderRenameCommand||cmd.action==='confirm-folder-rename'||cmd.action==='cancel-folder-rename')&&!localFolderRenameEnabled())throw new HttpError(404,'Renommage gratuit de dossier indisponible.');
   if(cmd.action==='confirm-site-request'&&!siteRequestsEnabled())throw new HttpError(404,'Demandes reçues avec SYNA indisponibles.');
   if(initial.project_id)requirePlan(user,initial.project_id);
@@ -267,25 +273,25 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
   else if(!pendingSubscriptions(user.id).length)throw new HttpError(402,L("Rattachez ce brouillon à votre projet avant de le poursuivre.","Link this draft to your project before continuing."),"subscription_required");
   if(initial.revision!==cmd.revision || currentBrief(initial).revision!==cmd.projectRevision)throw new HttpError(409,L("La conversation ou la fiche a changé. Rechargez avant de répondre.","The conversation or brief changed. Reload before answering."),initial.revision!==cmd.revision?"conversation_conflict":"conversation_brief_conflict");
   // Réutilisation de l'Intent Engine ; pas de classificateur ou d'appel IA de production dans le lot A.
-  const adCommand=cmd.action==='message'&&!bookingServiceTextCommand&&adDocumentCandidate(cmd.text);
+  const adCommand=cmd.action==='message'&&!priorityLocalCommand&&adDocumentCandidate(cmd.text);
   let adProposalId:string|undefined;
   if(adCommand){const selected=metaOf(initial).activeContext,target=selected?.target;if(cmd.action==='message'&&cmd.context&&(cmd.context.tab!==selected?.tab||cmd.context.projectId!==undefined&&cmd.context.projectId!==initial.project_id||stableHash('ad-document-selected',cmd.context.target)!==stableHash('ad-document-selected',target)))throw new HttpError(409,'La sélection affichée diffère du repère sauvegardé. Confirmez sa désignation avant de proposer la retouche.');if(target?.kind!=='ad-document-text')throw new HttpError(409,'Désignez le titre enregistré dans le contexte partagé avant cette demande.');const proposed=await proposeAdDocument(user,cid,{action:'propose',revision:cmd.revision,projectRevision:cmd.projectRevision!,docKey:target.docKey,layerId:target.layerId,expectedVersion:target.version,operation:'title-larger'});adProposalId=proposed.proposalId;}
-  const fileRestoreCommand=cmd.action==='message'&&!bookingServiceTextCommand&&localFileRestoreCandidate(cmd.text);
-  const folderCommand=cmd.action==='message'&&!bookingServiceTextCommand&&(localFoldersCandidate(cmd.text)||hasFolderClarificationReply(metaOf(initial),cmd.text));
-  const fileCommand=cmd.action==='message'&&!bookingServiceTextCommand&&localFilesCandidate(cmd.text);
-  const requestCommand=cmd.action==='message'&&!bookingServiceTextCommand&&localRequestsCandidate(cmd.text);
-  const themeChoiceCommand=cmd.action==='message'&&!bookingServiceTextCommand&&localThemeChoiceCandidate(cmd.text);
+  const fileRestoreCommand=cmd.action==='message'&&!priorityLocalCommand&&localFileRestoreCandidate(cmd.text);
+  const folderCommand=cmd.action==='message'&&!priorityLocalCommand&&(localFoldersCandidate(cmd.text)||hasFolderClarificationReply(metaOf(initial),cmd.text));
+  const fileCommand=cmd.action==='message'&&!priorityLocalCommand&&localFilesCandidate(cmd.text);
+  const requestCommand=cmd.action==='message'&&!priorityLocalCommand&&localRequestsCandidate(cmd.text);
+  const themeChoiceCommand=cmd.action==='message'&&!priorityLocalCommand&&localThemeChoiceCandidate(cmd.text);
   const preparedThemeChoice=themeChoiceCommand?await prepareLocalThemeChoice(user,initial,(cmd as Extract<Command,{action:'message'}>).text,cmd.action==='message'?cmd.context?.tab??metaOf(initial).activeContextTab:undefined):null;
-  const motionCommand=cmd.action==='message'&&!bookingServiceTextCommand&&localSiteMotionCandidate(cmd.text);
-  const restoreCommand=cmd.action==='message'&&!bookingServiceTextCommand&&(localThemeRestoreCandidate(cmd.text)||hasCurrentVersionUndo(initial,cmd.text));
-  const calendarCommand=cmd.action==='message'&&!bookingServiceTextCommand&&localCalendarCandidate(cmd.text);
-  const stockCommand=cmd.action==='message'&&!bookingServiceTextCommand&&localStockCandidate(cmd.text);
-  const pagesCommand=cmd.action==='message'&&!bookingServiceTextCommand&&(localPagesCandidate(cmd.text)||hasPagesModelReply(metaOf(initial),cmd.text));
-  const seoCommand=cmd.action==='message'&&!bookingServiceTextCommand&&localSeoCandidate(cmd.text);
-  const localCommand=cmd.action==='message'&&!bookingServiceTextCommand&&!seoCommand&&!pagesCommand&&localSiteCandidate(cmd.text);
-  const serviceCommand=cmd.action==='message'&&!bookingServiceTextCommand&&serviceProfileCandidate(cmd.text);
-  const businessCommand=cmd.action==='message'&&!bookingServiceTextCommand&&localBusinessContentCandidate(cmd.text);
-  const intent = cmd.action === "message" && !fileRestoreCommand && !folderMoveCommand && !folderRenameCommand && !folderCommand && !themeChoiceCommand && !motionCommand && !restoreCommand && !calendarCommand && !stockCommand && !pagesCommand && !seoCommand && !adCommand && !localCommand && !fileCommand && !businessCommand && !serviceCommand && !requestCommand && !promptsCommand && !bookingServiceTextCommand && !bookingReadCommand && !bookingEditCommand && !bookingHoursCommand && !restaurantCommand && !intelligenceEnabled() ? await understand({ text: cmd.text }, { aiActive: !!tests.classify, classify: tests.classify }) : null;
+  const motionCommand=cmd.action==='message'&&!priorityLocalCommand&&localSiteMotionCandidate(cmd.text);
+  const restoreCommand=cmd.action==='message'&&!priorityLocalCommand&&(localThemeRestoreCandidate(cmd.text)||hasCurrentVersionUndo(initial,cmd.text));
+  const calendarCommand=cmd.action==='message'&&!priorityLocalCommand&&localCalendarCandidate(cmd.text);
+  const stockCommand=cmd.action==='message'&&!priorityLocalCommand&&localStockCandidate(cmd.text);
+  const pagesCommand=cmd.action==='message'&&!priorityLocalCommand&&(localPagesCandidate(cmd.text)||hasPagesModelReply(metaOf(initial),cmd.text));
+  const seoCommand=cmd.action==='message'&&!priorityLocalCommand&&localSeoCandidate(cmd.text);
+  const localCommand=cmd.action==='message'&&!priorityLocalCommand&&!seoCommand&&!pagesCommand&&localSiteCandidate(cmd.text);
+  const serviceCommand=cmd.action==='message'&&!priorityLocalCommand&&serviceProfileCandidate(cmd.text);
+  const businessCommand=cmd.action==='message'&&!priorityLocalCommand&&localBusinessContentCandidate(cmd.text);
+  const intent = cmd.action === "message" && !fileRestoreCommand && !folderMoveCommand && !folderRenameCommand && !folderCommand && !themeChoiceCommand && !motionCommand && !restoreCommand && !calendarCommand && !stockCommand && !pagesCommand && !seoCommand && !adCommand && !localCommand && !fileCommand && !businessCommand && !serviceCommand && !requestCommand && !promptsCommand && !priorityLocalCommand && !bookingReadCommand && !bookingEditCommand && !bookingHoursCommand && !restaurantCommand && !intelligenceEnabled() ? await understand({ text: cmd.text }, { aiActive: !!tests.classify, classify: tests.classify }) : null;
   return tx(() => {
     const c = ownedConversation(user, cid);
     const prior = one<{ request_hash: string; response_json: string }>("SELECT request_hash,response_json FROM agent_conversation_turns WHERE conversation_id=? AND request_id=?", cid, cmd.requestId);
@@ -306,8 +312,11 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
       m.activeContextTab=cmd.context.tab;
       if(cmd.context.target||!m.activeContext?.target){m.activeContext=resolved.selection;m.activeContextReference=stableHash('conversation-active-context-1',resolved);m.activeContextIdentity=resolved.canonical.identity;}
     }
-    if(bookingServiceTextCommand||cmd.action==='confirm-booking-service-text'||cmd.action==='cancel-booking-service-text'){
-      if(cmd.action==='cancel-booking-service-text'){if(m.bookingServiceTextProposal?.id!==cmd.proposalId)throw new HttpError(409,'Proposition fermeture périmée.');delete m.bookingServiceTextProposal;delete m.bookingServiceText;message='Réglage fermeture annulé, aucun changement.';}
+    if(folderDeleteCommand||cmd.action==='confirm-folder-delete'||cmd.action==='cancel-folder-delete'){
+      if(cmd.action==='cancel-folder-delete'){if(m.localFolderDeleteProposal?.id!==cmd.proposalId)throw new HttpError(409,'Proposition de suppression périmée.');delete m.localFolderDeleteProposal;delete m.localFolderDelete;message='Suppression du dossier annulée, aucun changement.';}
+      else{m.localFolderDelete=cmd.action==='confirm-folder-delete'?confirmFolderDelete(user,c,m,cmd.proposalId,cmd.requestId):proposeFolderDelete(user,c,m,(cmd as Extract<Command,{action:'message'}>).text);message=m.localFolderDelete.message;}
+    }else if(bookingServiceTextCommand||cmd.action==='confirm-booking-service-text'||cmd.action==='cancel-booking-service-text'){
+      if(cmd.action==='cancel-booking-service-text'){if(m.bookingServiceTextProposal?.id!==cmd.proposalId)throw new HttpError(409,'Proposition de texte réservable périmée.');delete m.bookingServiceTextProposal;delete m.bookingServiceText;message='Retouche de texte réservable annulée, aucun changement.';}
       else{m.bookingServiceText=cmd.action==='confirm-booking-service-text'?confirmBookingServiceText(user,c,m,cmd.proposalId,cmd.requestId):proposeBookingServiceText(user,c,m,(cmd as Extract<Command,{action:'message'}>).text);message=m.bookingServiceText.message;}
     }else if(bookingClosuresCommand||cmd.action==='confirm-booking-closures'||cmd.action==='cancel-booking-closures'){
       if(cmd.action==='cancel-booking-closures'){if(m.bookingClosuresProposal?.id!==cmd.proposalId)throw new HttpError(409,'Proposition fermeture périmée.');delete m.bookingClosuresProposal;delete m.bookingClosures;message='Réglage fermeture annulé, aucun changement.';}
@@ -490,6 +499,7 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
     if(cmd.action==='message'&&studioKnowledgeEnabled())m.studioObservation=captureStudioObservation(c);
     if(!adCommand)delete m.localAdDocumentProposalId;
     if(!promptsCommand)delete m.localPrompts;
+    if(!folderDeleteCommand&&cmd.action!=='confirm-folder-delete'&&cmd.action!=='cancel-folder-delete'){delete m.localFolderDelete;delete m.localFolderDeleteProposal;}
     if(!bookingServiceTextCommand&&cmd.action!=='confirm-booking-service-text'&&cmd.action!=='cancel-booking-service-text'){delete m.bookingServiceText;delete m.bookingServiceTextProposal;}
     if(!bookingClosuresCommand&&cmd.action!=='confirm-booking-closures'&&cmd.action!=='cancel-booking-closures'){delete m.bookingClosures;delete m.bookingClosuresProposal;}
     if(!restaurantCommand&&cmd.action!=='confirm-restaurant-settings'&&cmd.action!=='cancel-restaurant-settings'){delete m.restaurantSettings;delete m.restaurantSettingsProposal;}
@@ -535,6 +545,6 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
 export async function submitConversation(user:User,cid:string,raw:unknown,tests:TestDependencies={}):Promise<ConversationView>{
  const parsed=CommandSchema.safeParse(raw),cmd=parsed.success?parsed.data:null;
  const pagesReply=cmd?.action==='message'&&pagesModelReplyCandidate(cmd.text)&&hasPagesModelReply(metaOf(ownedConversation(user,cid,true)),cmd.text);
- const local=cmd?.action==='confirm-booking-service-text'||cmd?.action==='cancel-booking-service-text'||cmd?.action==='message'&&bookingServiceTextCandidate(cmd.text)||cmd?.action==='confirm-booking-closures'||cmd?.action==='cancel-booking-closures'||cmd?.action==='message'&&bookingClosuresCandidate(cmd.text)||cmd?.action==='confirm-restaurant-settings'||cmd?.action==='cancel-restaurant-settings'||cmd?.action==='message'&&restaurantSettingsCandidate(cmd.text)||cmd?.action==='confirm-booking-hours'||cmd?.action==='cancel-booking-hours'||cmd?.action==='message'&&bookingHoursCandidate(cmd.text)||cmd?.action==='confirm-booking-edit'||cmd?.action==='cancel-booking-edit'||cmd?.action==='message'&&bookingEditCandidate(cmd.text)||cmd?.action==='confirm-folder-move'||cmd?.action==='cancel-folder-move'||cmd?.action==='message'&&localFolderMoveCandidate(cmd.text)||cmd?.action==='confirm-folder-rename'||cmd?.action==='cancel-folder-rename'||cmd?.action==='message'&&localFolderRenameCandidate(cmd.text)||cmd?.action==='confirm-file-restore'||cmd?.action==='cancel-file-restore'||cmd?.action==='message'&&localFileRestoreCandidate(cmd.text)||cmd?.action==='message'&&hasFolderClarificationReply(metaOf(ownedConversation(user,cid,true)),cmd.text)||cmd?.action==='confirm-folder'||cmd?.action==='cancel-folder'||cmd?.action==='message'&&localFoldersCandidate(cmd.text)||cmd?.action==='confirm-restore'||cmd?.action==='cancel-restore'||cmd?.action==='message'&&localThemeRestoreGuardCandidate(cmd.text)||cmd?.action==='confirm-motion'||cmd?.action==='cancel-motion'||cmd?.action==='message'&&localSiteMotionCandidate(cmd.text)||cmd?.action==='confirm-theme-choice'||cmd?.action==='cancel-theme-choice'||cmd?.action==='message'&&localThemeChoiceCandidate(cmd.text)||cmd?.action==='confirm-calendar'||cmd?.action==='cancel-calendar'||cmd?.action==='message'&&localCalendarCandidate(cmd.text)||cmd?.action==='confirm-stock'||cmd?.action==='cancel-stock'||cmd?.action==='message'&&localStockCandidate(cmd.text)||pagesReply||cmd?.action==='confirm-pages'||cmd?.action==='cancel-pages'||cmd?.action==='message'&&localPagesCandidate(cmd.text)||cmd?.action==='confirm-seo'||cmd?.action==='cancel-seo'||cmd?.action==='message'&&localSeoCandidate(cmd.text)||cmd?.action==='message'&&adDocumentCandidate(cmd.text)||cmd?.action==='confirm-local'||cmd?.action==='cancel-local'||cmd?.action==='confirm-site-request'||cmd?.action==='confirm-files'||cmd?.action==='confirm-business-content'||cmd?.action==='confirm-service-profile'||cmd?.action==='cancel-service-profile'||cmd?.action==='message'&&(bookingServicesCandidate(cmd.text)||localPromptsCandidate(cmd.text)||localRequestsCandidate(cmd.text)||localSiteCandidate(cmd.text)||localFilesCandidate(cmd.text)||localBusinessContentCandidate(cmd.text)||serviceProfileCandidate(cmd.text));
+ const local=cmd?.action==='confirm-folder-delete'||cmd?.action==='cancel-folder-delete'||cmd?.action==='message'&&localFolderDeleteCandidate(cmd.text)||cmd?.action==='confirm-booking-service-text'||cmd?.action==='cancel-booking-service-text'||cmd?.action==='message'&&bookingServiceTextCandidate(cmd.text)||cmd?.action==='confirm-booking-closures'||cmd?.action==='cancel-booking-closures'||cmd?.action==='message'&&bookingClosuresCandidate(cmd.text)||cmd?.action==='confirm-restaurant-settings'||cmd?.action==='cancel-restaurant-settings'||cmd?.action==='message'&&restaurantSettingsCandidate(cmd.text)||cmd?.action==='confirm-booking-hours'||cmd?.action==='cancel-booking-hours'||cmd?.action==='message'&&bookingHoursCandidate(cmd.text)||cmd?.action==='confirm-booking-edit'||cmd?.action==='cancel-booking-edit'||cmd?.action==='message'&&bookingEditCandidate(cmd.text)||cmd?.action==='confirm-folder-move'||cmd?.action==='cancel-folder-move'||cmd?.action==='message'&&localFolderMoveCandidate(cmd.text)||cmd?.action==='confirm-folder-rename'||cmd?.action==='cancel-folder-rename'||cmd?.action==='message'&&localFolderRenameCandidate(cmd.text)||cmd?.action==='confirm-file-restore'||cmd?.action==='cancel-file-restore'||cmd?.action==='message'&&localFileRestoreCandidate(cmd.text)||cmd?.action==='message'&&hasFolderClarificationReply(metaOf(ownedConversation(user,cid,true)),cmd.text)||cmd?.action==='confirm-folder'||cmd?.action==='cancel-folder'||cmd?.action==='message'&&localFoldersCandidate(cmd.text)||cmd?.action==='confirm-restore'||cmd?.action==='cancel-restore'||cmd?.action==='message'&&localThemeRestoreGuardCandidate(cmd.text)||cmd?.action==='confirm-motion'||cmd?.action==='cancel-motion'||cmd?.action==='message'&&localSiteMotionCandidate(cmd.text)||cmd?.action==='confirm-theme-choice'||cmd?.action==='cancel-theme-choice'||cmd?.action==='message'&&localThemeChoiceCandidate(cmd.text)||cmd?.action==='confirm-calendar'||cmd?.action==='cancel-calendar'||cmd?.action==='message'&&localCalendarCandidate(cmd.text)||cmd?.action==='confirm-stock'||cmd?.action==='cancel-stock'||cmd?.action==='message'&&localStockCandidate(cmd.text)||pagesReply||cmd?.action==='confirm-pages'||cmd?.action==='cancel-pages'||cmd?.action==='message'&&localPagesCandidate(cmd.text)||cmd?.action==='confirm-seo'||cmd?.action==='cancel-seo'||cmd?.action==='message'&&localSeoCandidate(cmd.text)||cmd?.action==='message'&&adDocumentCandidate(cmd.text)||cmd?.action==='confirm-local'||cmd?.action==='cancel-local'||cmd?.action==='confirm-site-request'||cmd?.action==='confirm-files'||cmd?.action==='confirm-business-content'||cmd?.action==='confirm-service-profile'||cmd?.action==='cancel-service-profile'||cmd?.action==='message'&&(bookingServicesCandidate(cmd.text)||localPromptsCandidate(cmd.text)||localRequestsCandidate(cmd.text)||localSiteCandidate(cmd.text)||localFilesCandidate(cmd.text)||localBusinessContentCandidate(cmd.text)||serviceProfileCandidate(cmd.text));
  return local?withAiDisabled('B1 : retouche gratuite déterministe, aucun devis IA',()=>submitConversationImpl(user,cid,raw,tests)):submitConversationImpl(user,cid,raw,tests);
 }
