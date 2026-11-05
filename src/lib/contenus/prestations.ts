@@ -18,7 +18,7 @@ import { L } from "../i18n-server";
 import { currentTheme, loadProject, previewThemeVersionSpec, saveServices, saveThemeVersion } from "../projects";
 import { rdvSection, rdvRules, type RdvKind } from "../rendez-vous";
 import { core as salonCore, configFromSection as salonConfigFromSection } from "../salon/booking";
-import { core as cabinetCore } from "../cabinet/booking";
+import { core as cabinetCore, configFromSection as cabinetConfigFromSection } from "../cabinet/booking";
 import { coerceSetting, sectionSchema, type SectionInstance, type ThemeSpec } from "../theme/spec";
 
 export const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
@@ -98,6 +98,7 @@ const staffPatchSchema=z.object({
 }).strict().refine(v=>v.name!==undefined||v.title!==undefined||v.skills!==undefined||v.days!==undefined||v.hours!==undefined,"Précisez le nom, la spécialité, les compétences, les horaires propres ou les jours de l’intervenant.");
 const bookingTimezoneSchema=z.string().min(1).max(80).regex(/^(?:UTC|[A-Za-z_+-]+(?:\/[A-Za-z0-9_+.-]+){1,2})$/).refine(value=>{try{new Intl.DateTimeFormat('en',{timeZone:value}).format(0);return true;}catch{return false;}},"Précisez un fuseau IANA exact pris en charge, par exemple Europe/Paris. Aucun repli UTC.");
 export const prestationsInput = z.object({
+  workshopCapacityPatch:z.object({id:z.string().min(1).max(80),capacity:z.number().int().min(1).max(500)}).strict().optional(),
   bookingTimezonePatch:z.object({timezone:bookingTimezoneSchema}).strict().optional(),
   bookingWindowPatch: z.object({ cancelHours: z.number().int().min(0).max(72).optional(), slotStepMinutes: z.number().int().min(10).max(120).optional(), horizonDays: z.number().int().min(7).max(180).optional(), leadMinutes: z.number().int().min(0).max(2880).optional() }).strict().refine(v=>Object.values(v).filter(x=>x!==undefined).length===1,"Précisez exactement l’horizon, le délai minimal, le pas des créneaux ou le délai client d’annulation/modification.").optional(),
   staffAdd: staffSchema.omit({ id: true }).strict().optional(),
@@ -115,7 +116,7 @@ export const prestationsInput = z.object({
   restaurantPartyPatch: restaurantSchema.pick({minParty:true,maxParty:true}).strict().refine(r=>r.minParty<=r.maxParty,"Le nombre minimum de couverts dépasse le maximum.").optional(),
   restaurantCapacityPatch: restaurantSchema.pick({capacity:true}).strict().optional(),
   restaurantPatch: restaurantSchema.pick({openDays:true,lunchSlots:true,dinnerSlots:true}).partial().strict().refine(v=>v.openDays!==undefined||v.lunchSlots!==undefined||v.dinnerSlots!==undefined,"Précisez le jour ou le service à modifier.").optional(),
-}).refine(v=>!v.bookingTimezonePatch||Object.values(v).filter(x=>x!==undefined).length===1,"Ne mélangez pas le fuseau ciblé du calendrier avec un autre réglage.").refine(v=>!v.bookingWindowPatch||Object.values(v).filter(x=>x!==undefined).length===1,"Ne mélangez pas les règles ciblées de réservation avec un autre réglage.").refine(v=>!(v.staffAdd||v.staffRemove)||Object.values(v).filter(x=>x!==undefined).length===1,"L’ajout ou le retrait ciblé d’un intervenant ne se mélange pas avec un autre réglage.").refine(v=>!(v.serviceAdd||v.serviceRemove)||Object.values(v).filter(x=>x!==undefined).length===1,"L’ajout ou le retrait ciblé d’une prestation ne se mélange pas avec un autre réglage.").refine(v=>!v.staffPatch||!v.staff,"Ne mélangez pas remplacement et retouche ciblée des intervenants.").refine(v=>!v.restaurantPartyPatch||!v.restaurant&&!v.restaurantPatch&&!v.restaurantCapacityPatch,"Ne mélangez pas taille des groupes et autres réglages restaurant.").refine(v=>!v.restaurantCapacityPatch||!v.restaurant&&!v.restaurantPatch,"Ne mélangez pas retouche de capacité et autres réglages restaurant.").refine((v) => !v.servicePatch || !v.services, "Ne mélangez pas remplacement et retouche ciblée des prestations.").refine(v=>!v.restaurantPatch||!v.restaurant,"Ne mélangez pas remplacement et retouche ciblée du restaurant.");
+}).refine(v=>!v.workshopCapacityPatch||Object.values(v).filter(x=>x!==undefined).length===1,"Ne mélangez pas la capacité ciblée d’un atelier avec un autre réglage.").refine(v=>!v.bookingTimezonePatch||Object.values(v).filter(x=>x!==undefined).length===1,"Ne mélangez pas le fuseau ciblé du calendrier avec un autre réglage.").refine(v=>!v.bookingWindowPatch||Object.values(v).filter(x=>x!==undefined).length===1,"Ne mélangez pas les règles ciblées de réservation avec un autre réglage.").refine(v=>!(v.staffAdd||v.staffRemove)||Object.values(v).filter(x=>x!==undefined).length===1,"L’ajout ou le retrait ciblé d’un intervenant ne se mélange pas avec un autre réglage.").refine(v=>!(v.serviceAdd||v.serviceRemove)||Object.values(v).filter(x=>x!==undefined).length===1,"L’ajout ou le retrait ciblé d’une prestation ne se mélange pas avec un autre réglage.").refine(v=>!v.staffPatch||!v.staff,"Ne mélangez pas remplacement et retouche ciblée des intervenants.").refine(v=>!v.restaurantPartyPatch||!v.restaurant&&!v.restaurantPatch&&!v.restaurantCapacityPatch,"Ne mélangez pas taille des groupes et autres réglages restaurant.").refine(v=>!v.restaurantCapacityPatch||!v.restaurant&&!v.restaurantPatch,"Ne mélangez pas retouche de capacité et autres réglages restaurant.").refine((v) => !v.servicePatch || !v.services, "Ne mélangez pas remplacement et retouche ciblée des prestations.").refine(v=>!v.restaurantPatch||!v.restaurant,"Ne mélangez pas remplacement et retouche ciblée du restaurant.");
 export type PrestationsInput = z.infer<typeof prestationsInput>;
 
 /** Rendez-vous confirmés à venir, par prestation (salon : `salon_appointments.service`, cabinet : séance). */
@@ -137,6 +138,21 @@ function futureBookings(projectId: string, kind: RdvKind, timezone: unknown, gro
 
 const num = (v: unknown) => (v === "" || v == null || Number.isNaN(Number(v)) ? null : Number(v));
 const blocksOf = (s: SectionInstance) => (s.block_order ?? Object.keys(s.blocks ?? {})).map((k) => ({ key: k, block: s.blocks![k] })).filter((x) => x.block);
+
+/** Inert confirmed counts, including acquired raw-ID aliases; never initializes tables. */
+function workshopCounts(projectId:string){
+ try{return new Map(all<{service:string;n:number}>("SELECT service,COUNT(*) n FROM cabinet_appointments WHERE project_id=? AND kind='atelier' AND status='confirmed' GROUP BY service",projectId).map(r=>[r.service,r.n]));}
+ catch(error){if(error instanceof Error&&error.message==='no such table: cabinet_appointments')return new Map<string,number>();throw new HttpError(409,'Les inscriptions aux ateliers ne peuvent pas être vérifiées. Aucune capacité modifiée.','workshop_records_unavailable');}
+}
+function workshopCanonicalId(block:{settings:Record<string,unknown>}){
+ const st=block.settings??{},raw=String(st.atelier_id??''),title=String(st.title??'');
+ if(!raw&&!title)return undefined;
+ return cabinetCore.normalize({ateliers:[{id:raw,title:title||'_identity_guard_'}]}).ateliers[0]?.id;
+}
+function workshopCapacityRows(projectId:string,section:SectionInstance){
+ const native=cabinetConfigFromSection(section).ateliers,counts=workshopCounts(projectId),raw=Object.values(section.blocks??{}).filter(b=>b.type==='atelier');
+ return native.map(a=>{const matches=raw.filter(b=>workshopCanonicalId(b)===a.id),keys=new Set([a.id,...matches.map(b=>String(b.settings?.atelier_id??'')).filter(Boolean)]),confirmedCount=[...keys].reduce((n,key)=>n+(counts.get(key)??0),0);return{id:a.id,title:a.title,date:a.date,time:a.time,capacity:a.capacity,confirmedCount,remaining:cabinetCore.remaining(a,confirmedCount),identityAmbiguous:matches.length!==1||native.filter(other=>other.id===a.id).length!==1};});
+}
 
 /** Lecture pour l'éditeur : ce que lit réellement le moteur de réservation. */
 export function readPrestations(projectId: string) {
@@ -164,7 +180,7 @@ export function readPrestations(projectId: string) {
     defaults: String(st.lunch_slots ?? "") === "12:00, 12:30, 13:00" && String(st.dinner_slots ?? "").startsWith("19:00, 19:30, 20:00") && Number(st.capacity) === 24,
   } : null;
   const {horizonDays,leadMinutes,step,cancelHours,timezone}=rdvRules(projectId,sec.kind);
-  return { bookingTimezone:timezone, bookingWindow:{horizonDays,leadMinutes,slotStepMinutes:step,cancelHours}, kind: sec.kind, live: st.booking_mode === "live", versionId: cur!.version.id, address: String(st.address ?? ""), services, staff, hours, closures: String(st.closures ?? ""), restaurant, open: sec.kind === "restaurant" ? !!restaurant!.openDays.length : Object.values(hours).some((h) => h.trim()) };
+  return { workshops:sec.kind==='cabinet'?workshopCapacityRows(projectId,sec.section):[], bookingTimezone:timezone, bookingWindow:{horizonDays,leadMinutes,slotStepMinutes:step,cancelHours}, kind: sec.kind, live: st.booking_mode === "live", versionId: cur!.version.id, address: String(st.address ?? ""), services, staff, hours, closures: String(st.closures ?? ""), restaurant, open: sec.kind === "restaurant" ? !!restaurant!.openDays.length : Object.values(hours).some((h) => h.trim()) };
 }
 
 /** Prix et durée affichés sans script, au format de la composition (« 45 € », « À partir de 45 € », « 1 h 30 »). */
@@ -206,6 +222,18 @@ function buildPrestations(projectId: string, raw: unknown) {
   const st = (section.settings ??= {}) as Record<string, unknown>;
   const warnings: string[] = [];
   const before = readPrestations(projectId)!;
+
+  if(input.workshopCapacityPatch){
+    if(sec.kind!=='cabinet')throw new HttpError(409,'Ce calendrier ne comporte pas d’atelier de cabinet natif.');
+    const active=[...Object.values(spec.groups??{}),...Object.values(spec.templates??{})].flatMap(c=>Object.values(c?.sections??{})).filter(s=>!s.disabled&&['an-salon','pa-cabinet','ts-restaurant'].includes(s.type));if(active.length!==1)throw new HttpError(409,'Plusieurs calendriers natifs correspondent. Aucun atelier choisi implicitement.');
+    const patch=input.workshopCapacityPatch,rows=before.workshops.filter(a=>a.id===patch.id),targets=Object.values(section.blocks??{}).filter(b=>b.type==='atelier'&&workshopCanonicalId(b)===patch.id);
+    if(rows.length!==1||rows[0].identityAmbiguous||targets.length!==1)throw new HttpError(409,'Atelier natif absent ou ambigu. Précisez son identifiant canonique exact.');
+    if(patch.capacity<rows[0].confirmedCount)throw new HttpError(409,'La capacité ne peut pas descendre sous les inscriptions confirmées. Aucune inscription annulée ou déplacée.','workshop_capacity_below_confirmed');
+    const blocks=sectionSchema(spec,section.type)?.blocks?.filter(b=>b.type==='atelier')??[],defs=blocks.length===1?blocks[0].settings?.filter(d=>d.id==='capacity')??[]:[];
+    if(defs.length!==1||defs[0].type!=='number')throw new HttpError(409,'Réglage natif de capacité absent ou ambigu.');const checked=coerceSetting(defs[0],patch.capacity);if(!checked.ok||checked.value!==patch.capacity)throw new HttpError(400,'Capacité native non exacte. Aucun arrondi.');targets[0].settings.capacity=patch.capacity;
+    if(cabinetConfigFromSection(section).ateliers.find(a=>a.id===patch.id)?.capacity!==patch.capacity)throw new HttpError(409,'La capacité cible n’est pas confirmée par le moteur natif.');
+    warnings.push(L('Seule la capacité de cet atelier change. Inscriptions confirmées, dates, heures, identités, prix, notes et ateliers voisins conservés. Aucun message ou activation automatique. De nouvelles inscriptions imposent une nouvelle vérification.','Only this workshop capacity changes. Confirmed enrolments, dates, times, identities, prices, notes and neighbouring workshops stay unchanged. No automatic message or activation. New enrolments require a fresh check.'));
+  }
 
   if(input.bookingTimezonePatch){
     const active=[...Object.values(spec.groups??{}),...Object.values(spec.templates??{})].flatMap(c=>Object.values(c?.sections??{})).filter(s=>!s.disabled&&['an-salon','pa-cabinet','ts-restaurant'].includes(s.type));
