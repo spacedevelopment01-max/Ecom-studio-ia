@@ -17,7 +17,7 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { all, now, one, run, tx } from "../db";
+import { all, now, one, readSnapshot, run, tx } from "../db";
 import { currentTheme } from "../projects";
 import type { SectionInstance, ThemeSpec } from "../theme/spec";
 import { mailConfigured, sendMail } from "../mail";
@@ -473,22 +473,35 @@ function byNumber(projectId: string, number: string): Appointment {
  * professionnel. Même contrôle de créneau que le site, dans la même transaction exclusive ; le délai d'annulation
  * imposé aux clients ne s'applique pas au salon.
  */
+/** Same acquired native validation for an inert preview and its eventual professional write. */
+function prepareProfessionalMove(projectId: string, r: Salon, a: Appointment, change: { date: string; time: string; staff?: string }, at: number): Appointment {
+  if (a.status !== "confirmed") throw new BookingError("canceled", 409);
+  const q: SlotQuery = { date: str(change.date), service: a.service, staff: str(change.staff) || a.staff, length: a.length };
+  const config = configForAcquiredMove(r.config, a);
+  const busy = busyFor(projectId, q.date, a.id);
+  const errors = core.validate(config, { ...q, time: str(change.time) }, busy, at);
+  if (errors.length) throw new BookingError(errors.includes("slot_taken") || errors.includes("time") ? "unavailable" : "invalid", 409, { alternatives: alternatives({ ...r, config }, projectId, q, a.id, at) });
+  const slot = core.slotsFor(config, { ...q, busy }, at).find(s => s.time === str(change.time));
+  const staff = q.staff === "any" ? slot && core.assign(config, slot.staff, busy) : q.staff;
+  if (!staff) throw new BookingError("unavailable", 409, { alternatives: alternatives({ ...r, config }, projectId, q, a.id, at) });
+  const start = core.toMin(str(change.time));
+  return { ...a, date: q.date, start_min: start, end_min: start + (a.end_min - a.start_min), staff, updated_at: at };
+}
+
+/** Read-only native target: no appointment UPDATE, notification or token returned. */
+export function previewProMoveAppointment(projectId: string, number: string, change: { date: string; time: string; staff?: string }, at = now()) {
+  return readSnapshot(() => {
+    const r = liveSalon(projectId), a = byNumber(projectId, number), target = prepareProfessionalMove(projectId, r, a, change, at);
+    return { number: target.number, date: target.date, time: core.toTime(target.start_min), end: core.toTime(target.end_min), staffId: target.staff };
+  });
+}
+
+/** Persist the already shared native preparation under the acquired write lock. */
 export function proMoveAppointment(projectId: string, number: string, change: { date: string; time: string; staff?: string }, at = now()) {
   return tx(() => {
-    const r = liveSalon(projectId);
-    const a = byNumber(projectId, number);
-    if (a.status !== "confirmed") throw new BookingError("canceled", 409);
-    const q: SlotQuery = { date: str(change.date), service: a.service, staff: str(change.staff) || a.staff, length: a.length };
-    const config = configForAcquiredMove(r.config, a);
-    const busy = busyFor(projectId, q.date, a.id);
-    const errors = core.validate(config, { ...q, time: str(change.time) }, busy, at);
-    if (errors.length) throw new BookingError(errors.includes("slot_taken") || errors.includes("time") ? "unavailable" : "invalid", 409, { alternatives: alternatives({ ...r, config }, projectId, q, a.id, at) });
-    const slot = core.slotsFor(config, { ...q, busy }, at).find(s => s.time === str(change.time));
-    const staff = q.staff === "any" ? slot && core.assign(config, slot.staff, busy) : q.staff;
-    if (!staff) throw new BookingError("unavailable", 409, { alternatives: alternatives({ ...r, config }, projectId, q, a.id, at) });
-    const start = core.toMin(str(change.time));
-    run("UPDATE salon_appointments SET date = ?, start_min = ?, end_min = ?, staff = ?, updated_at = ? WHERE id = ?", q.date, start, start + (a.end_min - a.start_min), staff, at, a.id);
-    return publicView({ ...a, date: q.date, start_min: start, end_min: start + (a.end_min - a.start_min), staff, updated_at: at });
+    const r = liveSalon(projectId), a = byNumber(projectId, number), next = prepareProfessionalMove(projectId, r, a, change, at);
+    run("UPDATE salon_appointments SET date = ?, start_min = ?, end_min = ?, staff = ?, updated_at = ? WHERE id = ?", next.date, next.start_min, next.end_min, next.staff, at, next.id);
+    return publicView(next);
   });
 }
 

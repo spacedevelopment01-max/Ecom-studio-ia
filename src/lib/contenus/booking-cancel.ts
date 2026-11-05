@@ -51,3 +51,5 @@ export function cancelExactNativeBooking(projectId:string,expected:BookingCancel
   return after.view;
  });
 }
+/** Shared inert binding for another exact professional transition; does not cancel anything. */
+export const readExactNativeBookingSnapshot = previewNativeBookingCancel;
