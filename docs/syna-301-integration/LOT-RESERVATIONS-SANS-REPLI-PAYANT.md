@@ -1,0 +1,13 @@
+# Interdire le repli cognitif payant d’une demande de réservation gratuite
+
+5nov2026,Europe/Paris,parent#429/c9a6f830. DémonstrationStudio compilé c9a6f830/buildLUJqaPqWtwx8QP2NZgH81 :16demandes saisies en4formats,16propositions gratuites natives,mais0carteconfirmable et1boutondevis générique chacune. Cartes/handles àintégrer parClaude,drapeaux restentfermés horsruntimefictif. Preuveseb6afdb6,branchecodex/syna-booking-visibility-c9a6f830 ;pasdecomposantClaude modifié.
+
+QuatretestsAPIrouges ontcréé un deviscognitif local pourHoraires/Restaurant/Ajoutfermeture/Retraitfermeture (fournisseurde langage configurémaisstrictementsimulé,aucunappel). Le texte gratuit pouvait donc être converti enréflexionpayante siunclientutilisait lepanneauou l’endpointgénérique.
+
+Correctionminimale :createCognitiveQuote etcheckedQuote refusent ces demandes avec409/codeconversation_free_booking_reply,avantcomptefournisseur/route/plafond oucréationdejob. Propriétaire etrévision existants restent contrôlés. Vérifie lesprésentations natives conservées etladernièrevéritabledemandeclient (message/answer-ai),avec lesmêmescandidates outsideQuotes. Mêmeaprèsannulation,accordgratuit,drapeau retiré ouclarification,aucundeviscognitif necompense une fonctiongratuite. Unenouvellequestion distincte efface leparcoursgratuit etconserve sondevis/accordpayant normal ;uneinstructiongratuiteseulementcitée dansunequestion explicative ne déclenchepas cettegarde. Lesjobs déjàacceptés gardentleurreprise idempotente acquise,pasdenouvelappel.
+
+13nouveauxtestsverts,dont4rougesavantcorrectif :les4domaines,accord/annulation/flag/ambiguïté,confirm d’unancienpayload,compteétranger,nouvellequestionpayantelégitime,motscités,vraishandlersHTTPquote/confirm. Aucuneconsultationfournisseur/job/dépense danslesrefus. Le payloaddedevisancien estunefixturelocalemanuellementinsérée,pasundeviscrééparl’endpointcorrigé.
+
+96tests uniques/4fichiersverts combinés :13nouveauxfinals +83régressionspassées dansl’exécutiongroupée (intelligence211,retoucheréservable,fermeturesavecvraieattente17s). L’uniqueéchec initialdecomparaisonHTTP concernaitledevis légitimementcrééparuncasprécédent dumêmefichier ;assertion maintenuemaisbornéeàlaconversationtestée,puis13/13verts. Typesfinauxverts. Logs/tmp/parity301-booking-no-paid-fallback-{red,first-green,final,http-final,types-final}.log. Fournisseurseulementsimulé,fetchinterdit,gardeNode,donnéesfictives.
+
+Limites :la gardeAPI empêcheledevis,ellenerendpaslacarteUIvisible. Claude doitmasquerleboutondevis etbrancherles3cartesavantouvrirlesdrapeaux,puisrecetterleSHAcommun.CIcomplèteauSHApubliéàsuivre. RégressionCI#424dansparity301-natural-hours priseenlotdistinct,noncachéeiciparunsuppressiondetest. Aucunmain/client/activation/déploiement/dépense réelle.

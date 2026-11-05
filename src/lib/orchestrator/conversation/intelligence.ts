@@ -1,3 +1,6 @@
+import {bookingHoursCandidate} from './local-booking-hours';
+import {restaurantSettingsCandidate} from './local-restaurant-settings';
+import {bookingClosuresCandidate} from './local-booking-closures';
 /** Dialogue cognitif : devis exact → accord → worker natif → reçu ; aucun SDK, wallet ou moteur parallèle. */
 import { z } from 'zod';
 import { HttpError, type User } from '../../auth';
@@ -80,12 +83,19 @@ function makePlan(c: ConversationRow, user: User,selectedRole:AgentRole='princip
   const hash = stableHash('cognitive-quote-B1', { call, cap, estimate, contextHash: prepared.fingerprint });
   return { call, hash, capMicro: cap, estimateMicro: estimate, contextHash: prepared.fingerprint,role };
 }
+/** A native free request must never be converted into a paid cognitive reply by a stale UI. */
+function assertNoPaidBookingFallback(c:ConversationRow){
+ const m=metaOf(c),last=one<{request_json:string}>("SELECT request_json FROM agent_conversation_turns WHERE conversation_id=? AND json_extract(request_json,'$.action') IN ('message','answer-ai') ORDER BY revision DESC LIMIT 1",c.id),request=last?json<{action?:string;text?:string}>(last.request_json,{}):null;
+ const text=request?.action==='message'&&typeof request.text==='string'?request.text:null;
+ if(m.bookingHours||m.restaurantSettings||m.bookingClosures||text&&(bookingHoursCandidate(text)||restaurantSettingsCandidate(text)||bookingClosuresCandidate(text)))throw new HttpError(409,L('Cette demande utilise un parcours gratuit de réservation. Vérifiez son aperçu et son accord ; aucun devis IA ne sera créé.','This request uses a free booking workflow. Review its preview and consent; no AI quote will be created.'),'conversation_free_booking_reply');
+}
 export function createCognitiveQuote(user: User, cid: string, input: { revision: number; projectRevision: number | null; subscriptionKey?: string;role?:AgentRole }) {
   assertIntelligenceEnabled();
   return tx(() => {
     const c = ownedConversation(user, cid), current = currentBrief(c);
     if (c.revision >= 999) throw new HttpError(409, 'conversation_limit');
     if (input.revision !== c.revision || input.projectRevision !== current.revision) throw new HttpError(409, L('Le contexte a changé : rechargez le dialogue.', 'Context changed: reload the conversation.'), 'conversation_quote_stale');
+    assertNoPaidBookingFallback(c);
     if (metaOf(c).intelligence?.pendingJobId && activeJob(metaOf(c).intelligence!.pendingJobId!)) throw new HttpError(409, L('Une réponse est déjà en préparation.', 'A reply is already being prepared.'), 'conversation_ai_pending');
     const key = account(c, user, input.subscriptionKey);
     return scoped(c, user.id, key, () => {
@@ -110,6 +120,7 @@ function checkedQuote(user: User, cid: string, qid: string, refresh = true,accep
   const accepted=acceptedJob&&q.job_id===acceptedJob.id&&acceptedJob.user_id===user.id&&acceptedJob.project_id===c.project_id&&acceptedJob.type==='agent.reason'&&acceptedJob.created_at>=q.created_at&&acceptedJob.created_at<=q.created_at+expires;
   const validUntil=accepted?acceptedJob.created_at+expires:q.created_at+expires;
   if (now()>validUntil || c.revision !== q.revision || currentBrief(c).revision !== q.project_revision) throw new HttpError(409, L('Ce devis a expiré ou son contexte a changé.', 'This quote expired or its context changed.'), 'conversation_quote_stale');
+  assertNoPaidBookingFallback(c);
   const key = account(c, user, q.billing_key), saved = JSON.parse(q.plan_json) as Plan;
   if (key !== q.billing_key) throw new HttpError(409, 'conversation_billing_changed');
   if (refresh) scoped(c, user.id, key, () => {
