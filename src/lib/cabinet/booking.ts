@@ -317,8 +317,8 @@ export function moveAppointment(projectId: string, token: string, change: { date
 
 /** Annulation confirmée : le rendez-vous n'est plus actif ; le créneau ou la place d'atelier est rendu. */
 export function cancelAppointment(projectId: string, token: string, at = now()) {
-  const r = liveCabinet(projectId);
   return tx(() => {
+    const r = liveCabinet(projectId);
     const a = ownedAppointment(projectId, tokenOf(projectId, token, at));
     if (a.status === "canceled") return publicView(a, r);
     if (!core.changeAllowed(r.config, { date: a.date, time: core.toTime(a.start_min) }, at)) throw new BookingError("too_late", 409);
