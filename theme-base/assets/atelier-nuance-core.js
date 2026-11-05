@@ -56,7 +56,7 @@
   function parseHours(text) {
     var out = [];
     String(text == null ? '' : text).split(/[,;]+/).forEach(function (part) {
-      var m = /([01]?\d|2[0-3])[:h.]?([0-5]\d)?\s*[-–à]+\s*([01]?\d|2[0-4])[:h.]?([0-5]\d)?/.exec(part.trim());
+      var m = /([01]?\d|2[0-3])[:h.]?([0-5]\d)?\s*[-–à]+\s*(2[0-4]|[01]?\d)[:h.]?([0-5]\d)?/.exec(part.trim());
       if (!m) return;
       var a = Number(m[1]) * 60 + Number(m[2] || 0), b = Number(m[3]) * 60 + Number(m[4] || 0);
       if (b > a) out.push([a, Math.min(b, 1440)]);
