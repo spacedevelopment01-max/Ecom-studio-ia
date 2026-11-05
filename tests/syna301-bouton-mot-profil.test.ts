@@ -3,7 +3,7 @@
  * « Recevoir mon devis encre telephone » » partait vers le profil d'activité (mot « téléphone » lu DANS la valeur citée)
  * et répondait « Modification du profil indisponible ». La revue de Codex a relevé le même défaut pour le stock ; un
  * relevé de tous les aiguilleurs placés avant celui du site l'a aussi trouvé pour le calendrier, le choix du thème et
- * les animations. Les mots-clés de ces domaines se lisent désormais hors des valeurs citées : le texte voulu d'une section
+ * les animations ; la revue suivante l'a relevé pour les réservations (« Prix réservable »). Les mots-clés de ces domaines se lisent désormais hors des valeurs citées : le texte voulu d'une section
  * reste une retouche gratuite du site ; les vraies demandes de ces domaines ne changent pas.
  */
 import {it,expect,beforeEach,afterEach,vi} from 'vitest';
@@ -14,6 +14,7 @@ import {localStockCandidate} from '@/lib/orchestrator/conversation/local-stock';
 import {localCalendarCandidate} from '@/lib/orchestrator/conversation/local-calendar';
 import {localThemeChoiceCandidate} from '@/lib/orchestrator/conversation/local-theme-choice';
 import {localSiteMotionCandidate} from '@/lib/orchestrator/conversation/local-site-motion';
+import {bookingEditCandidate} from '@/lib/orchestrator/conversation/local-booking-edit';
 import {localSiteCandidate} from '@/lib/orchestrator/conversation/local-site';
 import {contextView,submitContext} from '@/lib/orchestrator/conversation/context-session';
 import {currentTheme} from '@/lib/projects';
@@ -21,8 +22,8 @@ import {id} from '@/lib/db';
 const providers=vi.fn(()=>{throw Error('NO_PROVIDER');});
 beforeEach(()=>{for(const flag of ['LOT_A','AI','CONTEXT','LOCAL_SITE'])vi.stubEnv('STUDIO_CONVERSATION_'+flag,'1');vi.stubGlobal('fetch',providers);});
 afterEach(()=>{expect(providers).not.toHaveBeenCalled();vi.unstubAllGlobals();vi.unstubAllEnvs();});
-const DOMAINS={serviceProfileCandidate,localStockCandidate,localCalendarCandidate,localThemeChoiceCandidate,localSiteMotionCandidate};
-const VALUES=['Recevoir mon devis encre telephone','Appelez-nous par téléphone','Voir nos horaires','Écrivez-nous par e-mail','Voir le prix des prestations','Stock disponible','Voir le stock','Voir le calendrier','Changer de thème','Animation garantie'];
+const DOMAINS={serviceProfileCandidate,localStockCandidate,localCalendarCandidate,localThemeChoiceCandidate,localSiteMotionCandidate,bookingEditCandidate};
+const VALUES=['Recevoir mon devis encre telephone','Appelez-nous par téléphone','Voir nos horaires','Écrivez-nous par e-mail','Voir le prix des prestations','Stock disponible','Voir le stock','Voir le calendrier','Changer de thème','Animation garantie','Prix réservable','Tarif de réservation','Durée réservable'];
 const FRAMES=['Remplace le texte du bouton de cette section par « %s »','Change le titre de cette section par « %s »','Change le titre de cette section par “%s”','Change le titre de cette section par "%s"'];
 
 it('une valeur citée ne fait jamais d’une retouche de section une demande d’un autre domaine',()=>{
@@ -40,6 +41,7 @@ it('les vraies demandes de chaque domaine restent reconnues (mot-clé hors des g
  for(const t of ['Déplace ma prochaine publication au dimanche à 2h30','Change la date de la publication « Lancement » au 12 novembre'])expect(localCalendarCandidate(t),t).toBe(true);
  for(const t of ['Choisis le thème Rive pour mon site','Choisis le thème « Onde » pour mon site'])expect(localThemeChoiceCandidate(t),t).toBe(true);
  for(const t of ['Désactive les animations du site','Désactive la parallaxe','Coupe les animations'])expect(localSiteMotionCandidate(t),t).toBe(true);
+ for(const t of ['Change la durée de réservation de « Diagnostic fictif » à 45 minutes','Change le tarif du service réservable « Diagnostic fictif » à 60,50 euros','Mets le prix réservable de cette prestation à 60 €'])expect(bookingEditCandidate(t),t).toBe(true);
 });
 
 for(const profile of [false,true])it(`bouton désigné sur un projet de services, profil ${profile?'ouvert':'fermé'} : carte gratuite du site, aucun appel`,async()=>{

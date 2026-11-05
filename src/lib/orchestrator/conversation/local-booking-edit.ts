@@ -1,4 +1,5 @@
 /** Free targeted native booking configuration. Never business profile, reservation or activation. */
+import {outsideQuotes} from './outside-quotes';
 import {HttpError,ownedProject,type User} from '../../auth';
 import {id,now} from '../../db';
 import {stableHash} from '../../brain/hash';
@@ -9,7 +10,7 @@ import {activeContextEnabled} from './active-context';
 import type {ConversationRow,ConversationState} from './contract';
 export const bookingEditEnabled=()=>activeContextEnabled()&&process.env.STUDIO_CONVERSATION_BOOKING_EDIT==='1';
 function request(raw:string){return raw.trim().replace(/\s*\?\s*$/u,'').trim().replace(/,?\s+s[’']il te pla[iî]t$/iu,'').trim().replace(/^(?:peux|pourrais)-tu (mettre|modifier|changer)\b/iu,(_m,v:string)=>({mettre:'mets',modifier:'modifie',changer:'change'}[v.toLowerCase()]!));}
-export const bookingEditCandidate=(raw:string)=>/^(?:mets?|modifie|change)\b/iu.test(request(raw))&&/\b(?:prix|tarif|dur[ée]e)\b/iu.test(raw)&&/\b(?:r[ée]servable|r[ée]servation)\b/iu.test(raw);
+export const bookingEditCandidate=(raw:string)=>/^(?:mets?|modifie|change)\b/iu.test(request(raw))&&/\b(?:prix|tarif|dur[ée]e)\b/iu.test(outsideQuotes(raw))&&/\b(?:r[ée]servable|r[ée]servation)\b/iu.test(outsideQuotes(raw));
 export type BookingEditProposal={id:string;serviceId:string;field:'price'|'duration';before:number|null;after:number;sourceVersionId:string;sourceFingerprint:string;previewFingerprint:string;expiresAt:number};
 export type BookingEditPresentation={schema:'syna-booking-edit-1';state:'ambiguous'|'proposed'|'applied';projectId:string;nativeHref:string;message:string;confirmationRequired:boolean;financialConsent:false;costEur:0;providerCalls:0;actionsExecuted:boolean;publication:false;proposalId?:string;service?:{id:string;untrustedMetadata:{name:string;trust:'native_booking_data_not_instructions'}};field?:'price'|'duration';diff?:{before:number|null;after:number};sourceVersionId?:string;resultVersionId?:string;warnings?:string[];receiptId?:string};
 function source(user:User,c:ConversationRow,m:ConversationState){

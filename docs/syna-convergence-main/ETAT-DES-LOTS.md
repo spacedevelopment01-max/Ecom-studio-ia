@@ -65,7 +65,14 @@ La revue de Codex a relevé le même défaut pour le **stock** (« Change le tit
 disponible » »). Un relevé de tous les aiguilleurs placés avant celui du site l'a aussi trouvé pour le **calendrier**
 (« Voir le calendrier »), le **choix du thème** (« Changer de thème ») et les **animations** (« Animation garantie »).
 Ces quatre aiguilleurs lisent eux aussi leurs mots-clés hors des valeurs citées, avec une fonction commune
-(`outside-quotes.ts`). Après correction, le relevé ne trouve plus aucun cas.
+(`outside-quotes.ts`). La revue suivante l'a encore relevé pour les **réservations** (« Prix réservable »), corrigé de
+la même façon. Le relevé a alors été élargi à 78 valeurs portant les mots-clés réels de chaque aiguilleur, sous 5 formes
+de phrase. Sans ce dernier correctif, il retrouvait les 12 cas des réservations ; avec lui, il ne trouve plus aucun cas.
+
+**Proposition de stock après retrait de la désignation** (revue de Codex) : retirer ou changer la désignation annulait
+déjà les propositions en attente du site, des fichiers, du profil, des contenus métier et des demandes. Celle du stock
+restait confirmable et modifiait le stock de l'ancienne cible. Elle est désormais annulée de la même façon.
+Test : `tests/parity301-native-stock.test.ts` (accord refusé, stock inchangé).
 
 Test : `tests/syna301-bouton-mot-profil.test.ts` (6 tests). Il couvre les cinq domaines, trois formes de guillemets, des
 phrases de contrôle qui doivent rester reconnues, et des retouches réelles (bouton sur un projet de services, titre sur
