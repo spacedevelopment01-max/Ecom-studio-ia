@@ -1,3 +1,13 @@
+## Reprise active — 5 novembre 2026, 17 h 48 UTC
+
+**SYNA reste incomplète.** Livré **#459 /e370e720211a4d4eed59d0998e503ea9902dced0**, parent #458/ea90b114 puis #457/e31c3171, #456/35bb6fc3. Horaires propres natifs +conversation, field hours dans bookingStaff existant/même BOOKING_STAFF/actions, aucun droit A1. 34 nouveaux tests (14 natifs,20 conversationnels),156 distincts/sept fichiers/types. Les vingt nouveaux conversationnels sont19 dans la suite finale +1 contrôle additionnel du retrait de forfait avant rejeu, déjà correct sans correction. Quatre parcours natifs rouges sur parent ; défaut de proposition d’intervenant encore visible après clear démontré puis corrigé. Vide signifie héritage du salon et non fermeture ;rendez-vous acquis inchangés. Rapport LOT-HORAIRES-PROPRES-INTERVENANT.md. Contrats transmis à Claude commentaire6665063783 ;cartes et recette compilée toujours ouvertes.
+
+Cumul **735 nouveaux tests distincts #423–#459**. Matrice178 opérations,80 PARTIEL/68 ABSENT/4 NON_TESTE/26 BLOQUE, aucune complète. Main distante revérifiée identique #422/6354f327888d70c64ce4d86604b7b8fdc768947c.
+
+**En cours** `/workspace/work/parity301-file-trash-syna`, branche `codex/parity301-staff-availability-read` issue de e370e720 : lecteur bookingAvailability avec préférence d’un intervenant exact, via moteur salon.availability. Modifications non encore testées/livrées. Ajouter cas identité ambiguë/incompatible/retirée, pas de repli any, relecture GET après occupation/renommage, A1 readonly exact,17s et finances/tables inchangées. Le mot réservé moteur any ne doit jamais élargir une préférence explicite. Aucun composant Claude.
+
+CI : #458 run42076618873 en cours ;#459 à relever. #456 suite/types/Docker/confirmation verts,recettes longues en cours ;#455 même situation. #457 Docker vert,autres en cours au dernier relevé. #452 relance acceptée après annulation ~100min. #450/#453/#454 entièrement vertes ;aucun report entre SHA. Point précédent garde tous les détails des lots. Aucun fournisseur,client,activation,fusion ou déploiement.
+
 ## Reprise active — 5 novembre 2026, 17 h 43 UTC
 
 **La mission reste incomplète.** Livraison **#458 /ea90b114108bc722e14ac1e5c1a046ac977116d3**, parent #457/e31c3171 puis #456/35bb6fc3. 31 nouveaux tests, 153 cas ciblés distincts /six fichiers et types verts. Catalogue naturel d’intervenants avec DTO bookingStaffCatalog/Execution, schéma syna-booking-staff-catalog-1, BOOKING_STAFF_CATALOG fermé par défaut, confirm/cancel-booking-staff-catalog, confirmation littéralement true. Aucun droit A1, carte ou preuve navigateur acquis par ce lot. Contrats précis dans LOT-INTERVENANTS-AJOUT-RETRAIT-SYNA.md, transmis à Claude #301 commentaire6664898663. Cumul **701 nouveaux tests distincts #423–#458**.
