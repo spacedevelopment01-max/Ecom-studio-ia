@@ -1,4 +1,5 @@
 /** Local editorial dates only. Never approves, schedules, resumes or publishes a post. */
+import {outsideQuotes} from './outside-quotes';
 import {formatInTimeZone} from 'date-fns-tz';
 import {findDates} from '../../social-v2/edit-dates';
 import {HttpError,ownedProject,type User} from '../../auth';
@@ -15,7 +16,7 @@ type Post={id:string;project_id:string;status:string;scheduled_at:number|null;ti
 export type CalendarProposal={id:string;postId:string;fingerprint:string;before:number;after:number;timezone:string;expiresAt:number};
 export type CalendarPresentation={schema:'syna-local-calendar-1';state:'ambiguous'|'proposed'|'applied';projectId:string;message:string;financialConsent:false;costEur:0;providerCalls:0;publication:false;scheduling:false;confirmationRequired:boolean;actionsExecuted:boolean;proposalId?:string;target?:{postId:string;title:string;status:string;timezone:string};diff?:{before:number;after:number};receiptId?:string;nativeHref?:string};
 export const localCalendarEnabled=()=>conversationSocialEnabled();
-export const localCalendarCandidate=(text:string)=>/^(?:d[ée]place|d[ée]cale|reporte|avance|repousse|change|mets?)\b/iu.test(text.trim())&&/\b(?:publications?|calendrier)\b/iu.test(text);
+export const localCalendarCandidate=(text:string)=>/^(?:d[ée]place|d[ée]cale|reporte|avance|repousse|change|mets?)\b/iu.test(text.trim())&&/\b(?:publications?|calendrier)\b/iu.test(outsideQuotes(text));
 const present=(c:ConversationRow,state:CalendarPresentation['state'],message:string,extra:Partial<CalendarPresentation>={}):CalendarPresentation=>({schema:'syna-local-calendar-1',state,projectId:c.project_id!,message,financialConsent:false,costEur:0,providerCalls:0,publication:false,scheduling:false,confirmationRequired:false,actionsExecuted:false,...extra});
 function owned(user:User,c:ConversationRow,m:ConversationState){if(!localCalendarEnabled())throw new HttpError(404,'Calendrier local indisponible.');if(!c.project_id)throw new HttpError(409,'Rattachez un projet.');ownedProject(user,c.project_id);requirePlan(user,c.project_id);if(m.activeContextTab!=='calendrier')throw new HttpError(409,'Ouvrez Calendrier pour déplacer une date éditoriale locale.');return loadProject(c.project_id);}
 const rows=(pid:string)=>all<Post>('SELECT * FROM posts WHERE project_id=? ORDER BY id',pid);

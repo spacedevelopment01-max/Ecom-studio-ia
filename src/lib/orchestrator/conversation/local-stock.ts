@@ -1,4 +1,5 @@
 /** Exact native variant stock. A product never implies a bulk variant edit or remote synchronization. */
+import {outsideQuotes} from './outside-quotes';
 import {HttpError,ownedProject,type User} from '../../auth';
 import {id,now} from '../../db';
 import {getProduct,setVariantStock,type StudioProduct} from '../../products/catalog';
@@ -14,7 +15,7 @@ export type StockPresentation={schema:'syna-local-stock-1';state:'ambiguous'|'pr
 export const localStockEnabled=()=>conversationCatalogueEnabled();
 /** A bounded request envelope; quantity, target and compound suffix remain exact. */
 function stockRequest(text:string):string{return text.trim().replace(/\s*\?\s*$/u,'').trim().replace(/,?\s+s[’']il te pla[iî]t\s*$/iu,'').trim().replace(/^(?:peux|pourrais)-tu (mettre|fixer|r[ée]gler|changer|modifier|d[ée]finir|passer|d[ée]sactiver)\b/iu,(_all,verb:string)=>({mettre:'mets',fixer:'fixe',régler:'règle',regler:'règle',changer:'change',modifier:'modifie',définir:'définis',definir:'définis',passer:'passe',désactiver:'désactive',desactiver:'désactive'}[verb.toLowerCase()]!));}
-export const localStockCandidate=(raw:string)=>{const text=stockRequest(raw);return /\bstock\b/iu.test(text)&&/^(?:mets?|fixe|r[èe]gle|change|modifie|d[ée]finis|passe|d[ée]sactive)\b/iu.test(text.trim());};
+export const localStockCandidate=(raw:string)=>{const text=stockRequest(raw);return /\bstock\b/iu.test(outsideQuotes(text))&&/^(?:mets?|fixe|r[èe]gle|change|modifie|d[ée]finis|passe|d[ée]sactive)\b/iu.test(text.trim());};
 const present=(c:ConversationRow,state:StockPresentation['state'],message:string,extra:Partial<StockPresentation>={}):StockPresentation=>({schema:'syna-local-stock-1',state,projectId:c.project_id!,message,financialConsent:false,costEur:0,providerCalls:0,publication:false,synchronization:false,confirmationRequired:false,actionsExecuted:false,...extra});
 const fp=(p:StudioProduct)=>stableHash('native-stock-1',p);
 function owned(user:User,c:ConversationRow){if(!localStockEnabled())throw new HttpError(404,'Stock natif avec SYNA indisponible.');if(!c.project_id)throw new HttpError(409,'Rattachez un projet avec un catalogue natif.');ownedProject(user,c.project_id);requirePlan(user,c.project_id);if(loadProject(c.project_id).business==='services')throw new HttpError(409,'Les prestations et réservations sont distinctes du stock e-commerce.');}

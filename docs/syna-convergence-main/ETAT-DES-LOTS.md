@@ -61,7 +61,15 @@ ou « Voir le prix des prestations ». Le défaut est apparu avec la reconnaissa
 passage de cette recette en 4/4. Les mots-clés du profil (téléphone, e-mail, adresse, prix, durée, description, horaires)
 se lisent désormais **hors des valeurs citées**. Les vraies demandes du profil sont reconnues comme avant.
 
-Test : `tests/syna301-bouton-mot-profil.test.ts`. Il échoue sans le correctif et passe avec, profil fermé comme ouvert.
+La revue de Codex a relevé le même défaut pour le **stock** (« Change le titre de cette section par « Stock
+disponible » »). Un relevé de tous les aiguilleurs placés avant celui du site l'a aussi trouvé pour le **calendrier**
+(« Voir le calendrier »), le **choix du thème** (« Changer de thème ») et les **animations** (« Animation garantie »).
+Ces quatre aiguilleurs lisent eux aussi leurs mots-clés hors des valeurs citées, avec une fonction commune
+(`outside-quotes.ts`). Après correction, le relevé ne trouve plus aucun cas.
+
+Test : `tests/syna301-bouton-mot-profil.test.ts` (6 tests). Il couvre les cinq domaines, trois formes de guillemets, des
+phrases de contrôle qui doivent rester reconnues, et des retouches réelles (bouton sur un projet de services, titre sur
+un projet de produits, domaines fermés ou ouverts). Il échoue sans les correctifs et passe avec.
 
 ## Activation
 

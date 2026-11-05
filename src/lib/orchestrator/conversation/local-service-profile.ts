@@ -1,3 +1,4 @@
+import {outsideQuotes} from './outside-quotes';
 import {checkedServiceContact,type ServiceContactField} from '../../service-contact-validation';
 /** First exact native business-profile field. Never a booking/content-item identity. */
 import {unsafeContentReason} from '../../theme/content-security';
@@ -13,7 +14,7 @@ export type ServiceProfilePresentation={schema:'syna-service-profile-1';state:'p
 export const serviceProfileEnabled=()=>activeContextEnabled()&&process.env.STUDIO_CONVERSATION_SERVICE_PROFILE==='1';
 /** Catch native scheduling requests before any paid reasoning; an unclear target stays a free question. */
 /** Les mots-clés du profil se lisent hors des valeurs citées : « Appelez-nous par téléphone » reste le texte voulu d’un bouton, jamais une demande de coordonnées. */
-const unquoted=(text:string)=>text.replace(/«[^»\r\n]*»|“[^”\r\n]*”|"[^"\r\n]*"/gu,' ');
+const unquoted=outsideQuotes;
 const contactCandidate=(text:string)=>/^(?:mets?|remplace|change|modifie|efface|vide|supprime)\b/iu.test(text.trim())&&/\b(?:t[ée]l[ée]phone|courriel|e-?mail|coordonn[ée]es|zone d[’']intervention|adresse)\b/iu.test(unquoted(text));
 const detailCandidate=(text:string)=>/^(?:mets?|remplace|change|modifie|efface|vide)\b/iu.test(text.trim())&&/\b(?:prix|dur[ée]es?|descriptions?)\b/iu.test(unquoted(text))&&/\bprestations?\b/iu.test(unquoted(text));
 /** Normalize only the request envelope; exact quoted values remain native data. */

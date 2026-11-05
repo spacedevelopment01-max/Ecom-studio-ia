@@ -1,4 +1,5 @@
 /** Native global motion settings. Exact local operations, no CSS rewrite or invented visual outcome. */
+import {outsideQuotes} from './outside-quotes';
 import {HttpError,ownedProject,type User} from '../../auth';
 import {id,now} from '../../db';
 import {stableHash} from '../../brain/hash';
@@ -13,7 +14,7 @@ type MotionKey='motion_enabled'|'motion_intensity'|'motion_parallax';
 export type MotionProposal={id:string;key:MotionKey;value:boolean|string;versionId:string;fingerprint:string;resultFingerprint:string;before:boolean|string;expiresAt:number};
 export type MotionPresentation={schema:'syna-local-site-motion-1';state:'ambiguous'|'proposed'|'applied';projectId:string;message:string;financialConsent:false;costEur:0;providerCalls:0;publication:false;confirmationRequired:boolean;actionsExecuted:boolean;proposalId?:string;key?:MotionKey;diff?:{before:boolean|string;after:boolean|string};receiptId?:string;version?:{id:string;parentId:string;number:number};previewHref?:string};
 export const localSiteMotionEnabled=()=>localSiteEnabled();
-export const localSiteMotionCandidate=(text:string)=>/^(?:active|d[ée]sactive|change|modifie|r[èe]gle|mets?|passe|r[ée]duis|coupe|arr[êe]te|diminue|stoppe)\b/iu.test(text.trim())&&/\b(?:animations?|parallaxe)\b/iu.test(text);
+export const localSiteMotionCandidate=(text:string)=>/^(?:active|d[ée]sactive|change|modifie|r[èe]gle|mets?|passe|r[ée]duis|coupe|arr[êe]te|diminue|stoppe)\b/iu.test(text.trim())&&/\b(?:animations?|parallaxe)\b/iu.test(outsideQuotes(text));
 const fp=(s:unknown)=>stableHash('native-site-motion-1',s);
 const present=(c:ConversationRow,state:MotionPresentation['state'],message:string,extra:Partial<MotionPresentation>={}):MotionPresentation=>({schema:'syna-local-site-motion-1',state,projectId:c.project_id!,message,financialConsent:false,costEur:0,providerCalls:0,publication:false,confirmationRequired:false,actionsExecuted:false,...extra});
 function current(user:User,c:ConversationRow,m:ConversationState){if(!localSiteMotionEnabled())throw new HttpError(404,'Réglages gratuits du site indisponibles.');if(!c.project_id)throw new HttpError(409,'Rattachez un projet avec un site natif.');ownedProject(user,c.project_id);requirePlan(user,c.project_id);if(m.activeContextTab!=='boutique')throw new HttpError(409,'Ouvrez Site pour régler ses animations.');const cur=currentTheme(c.project_id);if(!cur||cur.spec.imported)throw new HttpError(409,'Ces réglages concernent un thème natif ; le thème importé conserve son propre éditeur.');return cur;}

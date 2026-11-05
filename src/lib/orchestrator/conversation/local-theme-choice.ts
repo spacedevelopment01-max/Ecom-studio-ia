@@ -1,4 +1,5 @@
 /** Native gallery choice: retained inactive native preview, then a separate free agreement. */
+import {outsideQuotes} from './outside-quotes';
 import {HttpError,ownedProject,type User} from '../../auth';
 import {all,id,now} from '../../db';
 import {stableHash} from '../../brain/hash';
@@ -14,7 +15,7 @@ export type ThemeChoiceProposal={id:string;direction:DirectionId;sourceVersionId
 export type ThemeChoicePresentation={schema:'syna-local-theme-choice-1';state:'ambiguous'|'proposed'|'applied';projectId:string;message:string;financialConsent:false;costEur:0;providerCalls:0;publication:false;confirmationRequired:boolean;actionsExecuted:boolean;proposalId?:string;direction?:string;diff?:{before:string;after:string};preview?:{beforeHref:string;afterHref:string;retainedInactive:true};choices?:{id:string;name:string}[];receiptId?:string;version?:{id:string;parentId:string;number:number};previewHref?:string};
 export type PreparedThemeChoice={proposal?:ThemeChoiceProposal;presentation:ThemeChoicePresentation};
 export const localThemeChoiceEnabled=()=>conversationThemeToolsEnabled()&&conversationContextEnabled();
-export const localThemeChoiceCandidate=(text:string)=>/^(?:choisis|s[ée]lectionne|applique|adopte|change)\b/iu.test(text.trim())&&/\bth[èe]me\b/iu.test(text);
+export const localThemeChoiceCandidate=(text:string)=>/^(?:choisis|s[ée]lectionne|applique|adopte|change)\b/iu.test(text.trim())&&/\bth[èe]me\b/iu.test(outsideQuotes(text));
 const present=(c:ConversationRow,state:ThemeChoicePresentation['state'],message:string,extra:Partial<ThemeChoicePresentation>={}):ThemeChoicePresentation=>({schema:'syna-local-theme-choice-1',state,projectId:c.project_id!,message,financialConsent:false,costEur:0,providerCalls:0,publication:false,confirmationRequired:false,actionsExecuted:false,...extra});
 function current(user:User,c:ConversationRow,tab:string|null|undefined){if(!localThemeChoiceEnabled())throw new HttpError(404,'Choix de thème indisponible.');if(!c.project_id)throw new HttpError(409,'Rattachez un projet avec un site natif.');ownedProject(user,c.project_id);requirePlan(user,c.project_id);if(tab!=='boutique')throw new HttpError(409,'Ouvrez Site pour choisir un thème.');const cur=currentTheme(c.project_id);if(!cur||cur.spec.imported)throw new HttpError(409,'Le choix gratuit nécessite un site natif existant. Le thème importé reste dans son éditeur.');return cur;}
 const source=(pid:string)=>stableHash('native-theme-choice-source-1',{project:loadProject(pid),current:currentTheme(pid),assets:all('SELECT * FROM assets WHERE project_id=? ORDER BY id',pid),memory:all('SELECT * FROM memory WHERE project_id=? ORDER BY id',pid),documents:all('SELECT * FROM content_documents WHERE project_id=? ORDER BY id',pid)});
