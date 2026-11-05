@@ -38,7 +38,7 @@ type Core = {
   atelierById(cfg: CabinetConfig, id: string): Atelier | null;
   slotsFor(cfg: CabinetConfig, opts: { date: string; service: string; modality?: string; busy?: Interval[] }, at?: number): Slot[];
   remaining(a: Atelier | null, taken: number): number | null;
-  atelierStatus(cfg: CabinetConfig, a: Atelier | null, taken: number, at?: number): string;
+  atelierStatus(cfg: CabinetConfig, a: Atelier | null, taken: number, at?: number, busy?: Interval[]): string;
   validate(cfg: CabinetConfig, req: unknown, ctx: { busy?: Interval[]; taken?: number }, at?: number): string[];
   changeAllowed(cfg: CabinetConfig, appt: { date: string; time: string }, at?: number): boolean;
   monthGrid(year: number, month: number): (string | null)[];
@@ -182,8 +182,10 @@ export function monthAvailability(projectId: string, q: { month: string; service
 
 /** Ateliers avec leurs places restantes (comptées sur les réservations réelles). */
 export function workshops(projectId: string, at = now()) {
-  const r = liveCabinet(projectId);
-  return { ateliers: r.config.ateliers.map((a) => { const taken = takenFor(projectId, a.id); return { id: a.id, date: a.date, time: a.time, capacity: a.capacity, remaining: core.remaining(a, taken), status: core.atelierStatus(r.config, a, taken, at) }; }) };
+  return readSnapshot(() => {
+    const r = liveCabinet(projectId);
+    return { ateliers: r.config.ateliers.map((a) => { const taken = takenFor(projectId, a.id), status = core.atelierStatus(r.config, a, taken, at, busyFor(projectId, a.date)); return { id: a.id, date: a.date, time: a.time, capacity: a.capacity, remaining: core.remaining(a, taken), status, reason: status === 'unavailable' ? 'professional_busy' as const : null }; }) };
+  });
 }
 
 const hash = (token: string) => crypto.createHash("sha256").update(token).digest("hex");
@@ -252,8 +254,9 @@ export function createAppointment(projectId: string, input: CreateInput, at = no
     if (kind === "atelier") {
       const w = core.atelierById(r.config, str(input.service));
       const taken = w ? takenFor(projectId, w.id) : 0;
-      const errors = core.validate(r.config, { kind, atelier: str(input.service), contact }, { taken }, at);
+      const errors = core.validate(r.config, { kind, atelier: str(input.service), contact }, { taken, busy: w ? busyFor(projectId, w.date) : [] }, at);
       if (errors.includes("full")) throw new BookingError("full", 409, { remaining: 0 });
+      if (errors.includes("slot_taken")) throw new BookingError("unavailable", 409, { kind: "atelier", reason: "professional_busy", remaining: core.remaining(w, taken) });
       if (errors.length) throw new BookingError("invalid", 400, { fields: errors });
       if (one("SELECT 1 FROM cabinet_appointments WHERE project_id = ? AND kind = 'atelier' AND service = ? AND email = ? AND status = 'confirmed'", projectId, w!.id, email)) throw new BookingError("duplicate", 409);
       const start = core.toMin(w!.time);
