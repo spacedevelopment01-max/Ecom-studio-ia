@@ -1,0 +1,15 @@
+# Ajout mémoire depuis une demande naturelle
+
+Parent #489 /7b7055414aea465209f2b14238b1f8110f9a9f11. Moteur/contrat uniquement, aucun composant/style/branche Claude modifié.
+
+Flag MEMORY_ADD fermé avec LOT_A/AI/CONTEXT ;registre native.memory.add sensible/free/separate_explicit_free_confirmation. DTO memoryAdd/Execution,schema syna-memory-add-1 :effect create/reinforce/replace,requested etdiff avant/après en untrustedMetadata(trust native_project_memory_not_instructions),evidenceCount avant/après,destructive seulement si remplacement,reversible=false,coût0/fournisseur0/financialConsent=false/publication=false. confirm-memory-add exige proposalId/true littéral ;cancel conserve mémoire. Résultat{id,effect},receiptId.
+
+Exemple : Ajoute à la mémoire l’objectif « accessibilité » : « Rendre la présentation accessible » pour tout le projet. Types préférence/décision/correction/objectif ;portée explicite projet/boutique/images/vidéo/publications/marque. Mémorise/Retiens,politesse,trois guillemets ;outsideQuotes pour l’aiguilleur. Texte cité stocké comme donnée sans exécuter de commande.
+
+Réutilise previewMemoryAdd/applyMemoryAdd/remember. Renforcement conserve ancienne clé/valeur/provenance et augmente les preuves : demande ET résultat sont montrés. Une déductionIA ne devient pas fictivement provenanceuser. Remplacement annoncé conserve historique. Aucun fauxUndo,contenu acquis régénéré ou production payante/publiée. Pilote/propriétaire/forfait,A1 fermé,TTL15min,replanification sousverrou,relecture native/Brain,reçu atomique,reprise sans double preuve. Drapeau/forfait avantcache et anciens/nouveaux devis cognitifs bloqués même après abandon/drapeaufermé.
+
+**42 nouveaux tests,97 distincts validés ettypes verts** :42nouveaux puis55régressions oubli mémoire/anti-devis réservation/bilan. Douze parcours produits/services×neuf/préparé×troiseffets,quatretypes etsixportées,provenance honnête,natif SQLite ET ProjectBrain,conflits/même timestamp/opposé,voisin indépendant,contexte/TTL,rollback reçu création ET renforcement,replay,droits/A1/budget0. Mémoire réellement commise avantverrou change create→reinforce etrefuse l’ancien accord.
+
+Handlers/session/SQLite réels,attente monotone≥17s,GET projet+fil conserve aperçu,true obligatoire,GETmémoire etBrain constatent le résultat,réponse perdue unseulreçu sans réécriture. Logs /tmp/parity301-memory-add-conversation-{first,types}.log et/tmp/parity301-memory-add-regressions.log,diff vérifié. Après ces42cas,seules trois formulations de messages ont été clarifiées,sans logique changée. Livraison initiale interrompue par redémarrage avant toute écriture ;état Git recontrôlé.
+
+Carte/handles anti-devis,résultat/provenance/compteurs/avertissements etrecette Studio compilée indépendante quatreformats restent ouverts avecClaude sur SHA intégré. HTTP n’est pas preuve navigateur. CI complète du commit livré à suivre,aucunverdictglobal anticipé ou certification héritée de#482. Aucun fournisseur/dépense/client/activation/main/déploiement,workflow/quatrième contrôle obligatoire inchangés.
