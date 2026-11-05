@@ -82,6 +82,7 @@ export const CommandSchema = z.discriminatedUnion("action", [
 export type Command = z.infer<typeof CommandSchema>;
 /** Un seul Brief natif pour le brouillon ; après rattachement, il est retiré et relu via stateOf(projectId). */
 export type ConversationState = {
+  bookingAvailability?:import('./local-booking-availability').BookingAvailabilityState;
   bookingServiceCatalogProposal?:import('./local-booking-service-catalog').BookingServiceCatalogProposal;
   bookingServiceCatalog?:import('./local-booking-service-catalog').BookingServiceCatalogPresentation;
   bookingRecords?:import('./local-booking-records').BookingRecordsState;
@@ -186,6 +187,8 @@ export type ConversationView = {
   localFileTrashExecution?:{enabled:true};
   localFolderDelete?:import('./local-folder-delete').FolderDeletePresentation;
   localFolderDeleteExecution?:{enabled:true};
+  bookingAvailability?:import('./local-booking-availability').BookingAvailabilityPresentation;
+  bookingAvailabilityRead?:{enabled:true};
   bookingServiceCatalog?:import('./local-booking-service-catalog').BookingServiceCatalogPresentation;
   bookingServiceCatalogExecution?:{enabled:true};
   bookingServiceText?:import('./local-booking-service-text').BookingServiceTextPresentation;
