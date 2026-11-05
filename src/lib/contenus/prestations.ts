@@ -96,7 +96,9 @@ const staffPatchSchema=z.object({
   skills:staffSchema.shape.skills.removeDefault().optional(),
   days:staffSchema.shape.days.removeDefault().optional(),
 }).strict().refine(v=>v.name!==undefined||v.title!==undefined||v.skills!==undefined||v.days!==undefined||v.hours!==undefined,"Précisez le nom, la spécialité, les compétences, les horaires propres ou les jours de l’intervenant.");
+const bookingTimezoneSchema=z.string().min(1).max(80).regex(/^(?:UTC|[A-Za-z_+-]+(?:\/[A-Za-z0-9_+.-]+){1,2})$/).refine(value=>{try{new Intl.DateTimeFormat('en',{timeZone:value}).format(0);return true;}catch{return false;}},"Précisez un fuseau IANA exact pris en charge, par exemple Europe/Paris. Aucun repli UTC.");
 export const prestationsInput = z.object({
+  bookingTimezonePatch:z.object({timezone:bookingTimezoneSchema}).strict().optional(),
   bookingWindowPatch: z.object({ cancelHours: z.number().int().min(0).max(72).optional(), slotStepMinutes: z.number().int().min(10).max(120).optional(), horizonDays: z.number().int().min(7).max(180).optional(), leadMinutes: z.number().int().min(0).max(2880).optional() }).strict().refine(v=>Object.values(v).filter(x=>x!==undefined).length===1,"Précisez exactement l’horizon, le délai minimal, le pas des créneaux ou le délai client d’annulation/modification.").optional(),
   staffAdd: staffSchema.omit({ id: true }).strict().optional(),
   staffRemove: z.object({ id: z.string().min(1).max(40) }).strict().optional(),
@@ -113,7 +115,7 @@ export const prestationsInput = z.object({
   restaurantPartyPatch: restaurantSchema.pick({minParty:true,maxParty:true}).strict().refine(r=>r.minParty<=r.maxParty,"Le nombre minimum de couverts dépasse le maximum.").optional(),
   restaurantCapacityPatch: restaurantSchema.pick({capacity:true}).strict().optional(),
   restaurantPatch: restaurantSchema.pick({openDays:true,lunchSlots:true,dinnerSlots:true}).partial().strict().refine(v=>v.openDays!==undefined||v.lunchSlots!==undefined||v.dinnerSlots!==undefined,"Précisez le jour ou le service à modifier.").optional(),
-}).refine(v=>!v.bookingWindowPatch||Object.values(v).filter(x=>x!==undefined).length===1,"Ne mélangez pas les règles ciblées de réservation avec un autre réglage.").refine(v=>!(v.staffAdd||v.staffRemove)||Object.values(v).filter(x=>x!==undefined).length===1,"L’ajout ou le retrait ciblé d’un intervenant ne se mélange pas avec un autre réglage.").refine(v=>!(v.serviceAdd||v.serviceRemove)||Object.values(v).filter(x=>x!==undefined).length===1,"L’ajout ou le retrait ciblé d’une prestation ne se mélange pas avec un autre réglage.").refine(v=>!v.staffPatch||!v.staff,"Ne mélangez pas remplacement et retouche ciblée des intervenants.").refine(v=>!v.restaurantPartyPatch||!v.restaurant&&!v.restaurantPatch&&!v.restaurantCapacityPatch,"Ne mélangez pas taille des groupes et autres réglages restaurant.").refine(v=>!v.restaurantCapacityPatch||!v.restaurant&&!v.restaurantPatch,"Ne mélangez pas retouche de capacité et autres réglages restaurant.").refine((v) => !v.servicePatch || !v.services, "Ne mélangez pas remplacement et retouche ciblée des prestations.").refine(v=>!v.restaurantPatch||!v.restaurant,"Ne mélangez pas remplacement et retouche ciblée du restaurant.");
+}).refine(v=>!v.bookingTimezonePatch||Object.values(v).filter(x=>x!==undefined).length===1,"Ne mélangez pas le fuseau ciblé du calendrier avec un autre réglage.").refine(v=>!v.bookingWindowPatch||Object.values(v).filter(x=>x!==undefined).length===1,"Ne mélangez pas les règles ciblées de réservation avec un autre réglage.").refine(v=>!(v.staffAdd||v.staffRemove)||Object.values(v).filter(x=>x!==undefined).length===1,"L’ajout ou le retrait ciblé d’un intervenant ne se mélange pas avec un autre réglage.").refine(v=>!(v.serviceAdd||v.serviceRemove)||Object.values(v).filter(x=>x!==undefined).length===1,"L’ajout ou le retrait ciblé d’une prestation ne se mélange pas avec un autre réglage.").refine(v=>!v.staffPatch||!v.staff,"Ne mélangez pas remplacement et retouche ciblée des intervenants.").refine(v=>!v.restaurantPartyPatch||!v.restaurant&&!v.restaurantPatch&&!v.restaurantCapacityPatch,"Ne mélangez pas taille des groupes et autres réglages restaurant.").refine(v=>!v.restaurantCapacityPatch||!v.restaurant&&!v.restaurantPatch,"Ne mélangez pas retouche de capacité et autres réglages restaurant.").refine((v) => !v.servicePatch || !v.services, "Ne mélangez pas remplacement et retouche ciblée des prestations.").refine(v=>!v.restaurantPatch||!v.restaurant,"Ne mélangez pas remplacement et retouche ciblée du restaurant.");
 export type PrestationsInput = z.infer<typeof prestationsInput>;
 
 /** Rendez-vous confirmés à venir, par prestation (salon : `salon_appointments.service`, cabinet : séance). */
@@ -161,8 +163,8 @@ export function readPrestations(projectId: string) {
     // Valeurs proposées par le studio et jamais modifiées : le restaurateur doit les vérifier.
     defaults: String(st.lunch_slots ?? "") === "12:00, 12:30, 13:00" && String(st.dinner_slots ?? "").startsWith("19:00, 19:30, 20:00") && Number(st.capacity) === 24,
   } : null;
-  const {horizonDays,leadMinutes,step,cancelHours}=rdvRules(projectId,sec.kind);
-  return { bookingWindow:{horizonDays,leadMinutes,slotStepMinutes:step,cancelHours}, kind: sec.kind, live: st.booking_mode === "live", versionId: cur!.version.id, address: String(st.address ?? ""), services, staff, hours, closures: String(st.closures ?? ""), restaurant, open: sec.kind === "restaurant" ? !!restaurant!.openDays.length : Object.values(hours).some((h) => h.trim()) };
+  const {horizonDays,leadMinutes,step,cancelHours,timezone}=rdvRules(projectId,sec.kind);
+  return { bookingTimezone:timezone, bookingWindow:{horizonDays,leadMinutes,slotStepMinutes:step,cancelHours}, kind: sec.kind, live: st.booking_mode === "live", versionId: cur!.version.id, address: String(st.address ?? ""), services, staff, hours, closures: String(st.closures ?? ""), restaurant, open: sec.kind === "restaurant" ? !!restaurant!.openDays.length : Object.values(hours).some((h) => h.trim()) };
 }
 
 /** Prix et durée affichés sans script, au format de la composition (« 45 € », « À partir de 45 € », « 1 h 30 »). */
@@ -204,6 +206,16 @@ function buildPrestations(projectId: string, raw: unknown) {
   const st = (section.settings ??= {}) as Record<string, unknown>;
   const warnings: string[] = [];
   const before = readPrestations(projectId)!;
+
+  if(input.bookingTimezonePatch){
+    const active=[...Object.values(spec.groups??{}),...Object.values(spec.templates??{})].flatMap(c=>Object.values(c?.sections??{})).filter(s=>!s.disabled&&['an-salon','pa-cabinet','ts-restaurant'].includes(s.type));
+    if(active.length!==1)throw new HttpError(409,'Plusieurs calendriers natifs correspondent. Aucun fuseau choisi implicitement.');
+    const value=input.bookingTimezonePatch.timezone,defs=sectionSchema(spec,section.type)?.settings?.filter(d=>d.id==='timezone')??[];
+    if(defs.length!==1||defs[0].type!=='text')throw new HttpError(409,'Réglage natif de fuseau absent ou ambigu. Aucun autre réglage substitué.');
+    const checked=coerceSetting(defs[0],value);if(!checked.ok||checked.value!==value)throw new HttpError(400,'Le fuseau natif ne correspond pas exactement à la cible. Aucun remplacement implicite.');
+    st.timezone=value;
+    warnings.push(L('Le nouveau fuseau change l’interprétation temporelle du calendrier et des rendez-vous déjà enregistrés : délais clients, disponibilités et dates locales. Les dates/heures stockées restent identiques, sans conversion ni migration des réservations. Aucun message automatique, activation ou autre règle modifiée.','The new time zone changes the calendar and existing appointments’ time interpretation: client deadlines, availability and local dates. Stored dates/times stay identical, without booking conversion or migration. No automatic message, activation or other rule changed.'));
+  }
 
   if(input.bookingWindowPatch){
     const patch=input.bookingWindowPatch,key=patch.cancelHours!==undefined?'cancel_hours':patch.horizonDays!==undefined?'horizon_days':patch.leadMinutes!==undefined?'lead_minutes':'slot_step',value=patch.cancelHours??patch.horizonDays??patch.leadMinutes??patch.slotStepMinutes!;
