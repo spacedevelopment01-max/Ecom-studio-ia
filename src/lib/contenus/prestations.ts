@@ -17,7 +17,7 @@ import { all, now } from "../db";
 import { L } from "../i18n-server";
 import { currentTheme, loadProject, previewThemeVersionSpec, saveServices, saveThemeVersion } from "../projects";
 import { rdvSection, type RdvKind } from "../rendez-vous";
-import { core as salonCore } from "../salon/booking";
+import { core as salonCore, configFromSection as salonConfigFromSection } from "../salon/booking";
 import { core as cabinetCore } from "../cabinet/booking";
 import type { SectionInstance, ThemeSpec } from "../theme/spec";
 
@@ -37,12 +37,17 @@ function uniqueProvidedIds(rows:{id?:string}[],ctx:z.RefinementCtx){
 }
 /** Keep acquired source IDs opaque while accounting for the IDs actually used by the shared engines. */
 function engineServiceId(kind: RdvKind, id: unknown, name: unknown) {
-  const service = { id, name };
+  // A cleared label must not hide the identity of an acquired booking. This placeholder is never persisted.
+  const service = { id, name: id ? 'Identité acquise' : name };
   return kind === 'salon' ? salonCore.normalize({ services: [service] }).services[0]?.id
     : kind === 'cabinet' ? cabinetCore.normalize({ seances: [service] }).seances[0]?.id : undefined;
 }
 function engineStaffId(id: unknown, name: unknown) {
-  return salonCore.normalize({ staff: [{ id, name }] }).staff[0]?.id;
+  return salonCore.normalize({ staff: [{ id, name: id ? 'Identité acquise' : name }] }).staff[0]?.id;
+}
+function upcomingCount(booked: Record<string, number>, raw: string, effective?: string) {
+  const count = (key: string) => Object.hasOwn(booked, key) ? booked[key] : 0;
+  return count(raw) + (effective && effective !== raw ? count(effective) : 0);
 }
 const toMin = (hm: string) => Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3, 5));
 /** ISO dates must round-trip: Date.parse alone silently rolls February 31 into March. */
@@ -91,6 +96,8 @@ const staffPatchSchema=z.object({
   days:staffSchema.shape.days.removeDefault().optional(),
 }).strict().refine(v=>v.name!==undefined||v.title!==undefined||v.skills!==undefined||v.days!==undefined,"Précisez le nom, la spécialité, les compétences ou les jours de l’intervenant.");
 export const prestationsInput = z.object({
+  staffAdd: staffSchema.omit({ id: true }).strict().optional(),
+  staffRemove: z.object({ id: z.string().min(1).max(40) }).strict().optional(),
   serviceAdd: serviceSchema.omit({ id: true }).strict().optional(),
   serviceRemove: z.object({ id: z.string().min(1).max(40) }).strict().optional(),
   staffPatch:staffPatchSchema.optional(),
@@ -104,18 +111,19 @@ export const prestationsInput = z.object({
   restaurantPartyPatch: restaurantSchema.pick({minParty:true,maxParty:true}).strict().refine(r=>r.minParty<=r.maxParty,"Le nombre minimum de couverts dépasse le maximum.").optional(),
   restaurantCapacityPatch: restaurantSchema.pick({capacity:true}).strict().optional(),
   restaurantPatch: restaurantSchema.pick({openDays:true,lunchSlots:true,dinnerSlots:true}).partial().strict().refine(v=>v.openDays!==undefined||v.lunchSlots!==undefined||v.dinnerSlots!==undefined,"Précisez le jour ou le service à modifier.").optional(),
-}).refine(v=>!(v.serviceAdd||v.serviceRemove)||Object.values(v).filter(x=>x!==undefined).length===1,"L’ajout ou le retrait ciblé d’une prestation ne se mélange pas avec un autre réglage.").refine(v=>!v.staffPatch||!v.staff,"Ne mélangez pas remplacement et retouche ciblée des intervenants.").refine(v=>!v.restaurantPartyPatch||!v.restaurant&&!v.restaurantPatch&&!v.restaurantCapacityPatch,"Ne mélangez pas taille des groupes et autres réglages restaurant.").refine(v=>!v.restaurantCapacityPatch||!v.restaurant&&!v.restaurantPatch,"Ne mélangez pas retouche de capacité et autres réglages restaurant.").refine((v) => !v.servicePatch || !v.services, "Ne mélangez pas remplacement et retouche ciblée des prestations.").refine(v=>!v.restaurantPatch||!v.restaurant,"Ne mélangez pas remplacement et retouche ciblée du restaurant.");
+}).refine(v=>!(v.staffAdd||v.staffRemove)||Object.values(v).filter(x=>x!==undefined).length===1,"L’ajout ou le retrait ciblé d’un intervenant ne se mélange pas avec un autre réglage.").refine(v=>!(v.serviceAdd||v.serviceRemove)||Object.values(v).filter(x=>x!==undefined).length===1,"L’ajout ou le retrait ciblé d’une prestation ne se mélange pas avec un autre réglage.").refine(v=>!v.staffPatch||!v.staff,"Ne mélangez pas remplacement et retouche ciblée des intervenants.").refine(v=>!v.restaurantPartyPatch||!v.restaurant&&!v.restaurantPatch&&!v.restaurantCapacityPatch,"Ne mélangez pas taille des groupes et autres réglages restaurant.").refine(v=>!v.restaurantCapacityPatch||!v.restaurant&&!v.restaurantPatch,"Ne mélangez pas retouche de capacité et autres réglages restaurant.").refine((v) => !v.servicePatch || !v.services, "Ne mélangez pas remplacement et retouche ciblée des prestations.").refine(v=>!v.restaurantPatch||!v.restaurant,"Ne mélangez pas remplacement et retouche ciblée du restaurant.");
 export type PrestationsInput = z.infer<typeof prestationsInput>;
 
 /** Rendez-vous confirmés à venir, par prestation (salon : `salon_appointments.service`, cabinet : séance). */
-function futureBookings(projectId: string, kind: RdvKind, timezone: unknown): Record<string, number> {
+function futureBookings(projectId: string, kind: RdvKind, timezone: unknown, groupBy: 'service' | 'staff' = 'service'): Record<string, number> {
   const table = kind === "salon" ? "salon_appointments" : kind === "cabinet" ? "cabinet_appointments" : null;
   if (!table) return {};
   // Dates belong to the widget's calendar, not the server's UTC day. Reuse its default/fallback rules.
   const zone = typeof timezone === "string" ? timezone.trim() : "";
   const today = (kind === "salon" ? salonCore : cabinetCore).nowIn(zone || "Europe/Paris", now()).date;
+  const column = groupBy === 'staff' ? 'staff' : 'service';
   try {
-    return Object.fromEntries(all<{ service: string; n: number }>(`SELECT service, COUNT(*) n FROM ${table} WHERE project_id = ? AND status = 'confirmed' AND date >= ? GROUP BY service`, projectId, today).map((r) => [r.service, r.n]));
+    return Object.fromEntries(all<{ native_id: string; n: number }>(`SELECT ${column} AS native_id, COUNT(*) n FROM ${table} WHERE project_id = ? AND status = 'confirmed' AND date >= ? GROUP BY ${column}`, projectId, today).map((r) => [r.native_id, r.n]));
   } catch (error) {
     // A lazily uninitialized table has no bookings. Any other read failure must not authorize deletion.
     if (error instanceof Error && error.message === `no such table: ${table}`) return {};
@@ -134,9 +142,7 @@ export function readPrestations(projectId: string) {
   const st = (sec.section.settings ?? {}) as Record<string, unknown>;
   const booked = futureBookings(projectId, sec.kind, st.timezone);
   const upcoming = (id: unknown, name: unknown) => {
-    const raw = String(id ?? ''), effective = engineServiceId(sec.kind, id, name);
-    const count = (key: string) => Object.hasOwn(booked, key) ? booked[key] : 0;
-    return count(raw) + (effective && effective !== raw ? count(effective) : 0);
+    return upcomingCount(booked, String(id ?? ''), engineServiceId(sec.kind, id, name));
   };
   const blocks = blocksOf(sec.section);
   const services = sec.kind === "salon"
@@ -195,6 +201,30 @@ function buildPrestations(projectId: string, raw: unknown) {
   const st = (section.settings ??= {}) as Record<string, unknown>;
   const warnings: string[] = [];
   const before = readPrestations(projectId)!;
+
+  if (input.staffAdd || input.staffRemove) {
+    if (sec.kind !== 'salon') throw new HttpError(409, 'Ce site ne comporte pas d’intervenants de salon natifs.');
+    if (input.staffRemove) {
+      const staffId = input.staffRemove.id;
+      const rows = Object.entries(section.blocks ?? {}).filter(([, b]) => b.type === 'member' && b.settings?.member_id === staffId);
+      if (rows.length !== 1 || before.staff.filter(m => m.id === staffId).length !== 1) throw new HttpError(409, 'Intervenant natif absent ou ambigu. Rechargez sans substitution.');
+      const [key, member] = rows[0], settings = member.settings;
+      const booked = futureBookings(projectId, 'salon', st.timezone, 'staff');
+      if (upcomingCount(booked, staffId, engineStaffId(settings.member_id, settings.name)) > 0) throw new HttpError(409, 'Cet intervenant a des rendez-vous confirmés du jour local ou à venir. Réattribuez-les explicitement avant de le retirer.', 'staff_has_bookings');
+      delete section.blocks![key];
+      if (section.block_order) section.block_order = section.block_order.filter(k => k !== key);
+      if (!salonConfigFromSection(section).staff.length) warnings.push(L('Dernier intervenant retiré : aucun créneau ne sera proposé par le calendrier. Le mode de réservation reste inchangé.', 'Last staff member removed: the calendar will offer no slots. Booking mode stays unchanged.'));
+    } else {
+      const acquired = Object.values(section.blocks ?? {}).filter(b => b.type === 'member');
+      if (acquired.length >= 20) throw new HttpError(409, 'La limite native de 20 intervenants est atteinte.');
+      const member = input.staffAdd!, blocks = section.blocks ??= {};
+      const reserved = new Set(acquired.flatMap(b => [String(b.settings?.member_id ?? ''), engineStaffId(b.settings?.member_id, b.settings?.name) ?? '']));
+      const staffId = newNativeId(member.name, new Set(), reserved), baseKey = `member-${staffId}`;
+      let key = baseKey, suffix = 1; while (key in blocks) key = `${baseKey}-${++suffix}`;
+      blocks[key] = { type: 'member', settings: { member_id: staffId, name: member.name, initial: member.name.charAt(0).toUpperCase(), title: member.title, skills: member.skills.join(','), days: member.days.join(',') } };
+      if (section.block_order) section.block_order.push(key);
+    }
+  }
 
   if (input.serviceAdd || input.serviceRemove) {
     if (sec.kind === "restaurant") throw new HttpError(409, "Ce site ne comporte pas de prestations réservables salon ou cabinet.");
