@@ -1,3 +1,17 @@
+## Mise à jour active — 5 novembre 2026, 13 h 44 Paris
+
+Tête fonctionnelle : **9b02c829a537b1e80f9551a0866d4cff2d411da8 /#436**. Après #434 : **#435 b24179b6e2a9184bf43235c554c7a4fe67968f1f**, moteur natif de suppression atomique de dossier vide (11 nouveaux tests,71/4 fichiers/types,2courses SQLite reproduites) ; puis **#436**, contrat naturel strict de suppression de dossier sans sous-dossier ni référence de fichier, même dans la corbeille (31 nouveaux,225tests distincts/10fichiers/types,HTTP17s et reprise sans supprimer un nouvel homonyme).
+
+**251 tests nouveaux distincts sur #423–#436.** Les ensembles225 et281 se recoupent : ne pas les additionner. La carte dossier reste PARTIELLE ;drapeau FOLDER_DELETE fermé,Claude doit intégrer aperçu irréversible,handle anti-devis/verrou/reprise etrafraîchissement Fichiers avec sélection du parent. Contrat LOT-SUPPRESSION-DOSSIER-SYNA.md ;transmis dans#301 commentaire6658264344. Aucun composant Claude modifié.
+
+Matrice : **170 opérations,70PARTIEL/70ABSENT/4NON_TESTE/26BLOQUE**. La ligne native.files.empty-folder-delete existait déjà :mise àjour,aucune nouvelle unité artificielle.
+
+CI#431 :suite complète verte **6272passés/31ignorés,662fichiers passés/1ignoré** (job127226656964). Docker etconfirmationgratuite verts ;recettesnatives longues encoreencours. #434 :Docker etconfirmationgratuite verts,suitecomplète etnatifencours au dernier relevé. #423 seule CI entièrementverte confirmée àcepoint. Vérifier lesruns desnouveaux#435/#436 auSHAexact.
+
+**Prochaine lacune indépendante :mise àla corbeille d’un fichier**,analyse native seulement àcepoint. La route DELETE de src/app/api/files/[fid]/route.ts protège actuellement les originaux meta.protected etlesusages post scheduled/publishing/published,mais lit lescontrôles hors transaction. Réutiliser library-local-change.ts,protéger lesconcurrences etlesoctets/versions acquis ;vérifier avanttoutecorrection avecdeuxconnexionsSQLite comme#435. Puis contrat naturel,cibleexacte/aperçu/accord/résultat/reprise,restore natif etgarde anti-repli payant. Aucun code nouveau de corbeille encoreécrit. Aucunmain/client/activation/fournisseur/déploiement.
+
+---
+
 # Reprise SYNA #301 — 5 novembre 2026, 13 h 17 Paris
 
 **La mission complète reste en cours.** L’environnement fonctionne. Les contrats serveur ci-dessous sont livrés et testés, mais leurs nouvelles cartes et la recette commune de Claude restent à intégrer. Aucune fonctionnalité nouvelle n’est déclarée complète par les seuls tests backend.

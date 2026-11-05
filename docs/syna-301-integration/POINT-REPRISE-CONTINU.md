@@ -1,3 +1,9 @@
+## Dernier point actif — 5 novembre 2026, 13 h 44 Paris
+
+Lire [REPRISE-5-NOVEMBRE-RESERVATIONS.md](REPRISE-5-NOVEMBRE-RESERVATIONS.md), mise à jour en tête : **9b02c829/#436**, chaîne#423–#436,251tests nouveaux,dernier ciblage225/10fichiers/types. Nouveau contrat dossier vide après moteur atomique#435 ;cartes et recettes Claude toujoursmanquantes. Matrice170opérations/70PARTIEL/70ABSENT/4NON_TESTE/26BLOQUE. CI#423 complèteverte ;#431suite complète/Docker/confirmationverts,natifencours. Prochaine lacune :corbeille d’unfichier,analyse seulement. Les relevés ci-dessous sont historiques.
+
+---
+
 ## Point de reprise actif — 5 novembre 2026, 13 h 17 Paris
 
 Lire d’abord [REPRISE-5-NOVEMBRE-RESERVATIONS.md](REPRISE-5-NOVEMBRE-RESERVATIONS.md) : tête **228896588237dc2ebba6bc5a0ebb4d79b1db200c/#434**, chaîne #423–#434, **281 tests /16 fichiers et types verts,209nouveaux**, quatre contrats gratuits fermés par défaut. **#423 CI complète verte** ; #424 échec historique corrigé par #431, autres CI à suivre sur leurs SHA. Diagnostic compilé c9a6 :16blocagesUI réellement observés,aucune carte nouvelle déclarée complète. Matrice170opérations/69PARTIEL/71ABSENT/4NON_TESTE/26BLOQUE. Prochaine lacune indépendante :suppression sûre de dossier vide,analyse seulement à ce point. Environnement fonctionnel,main toujours6354f327 ;aucun client/fournisseur réel/main/activation/déploiement.
