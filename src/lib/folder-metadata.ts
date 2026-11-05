@@ -25,3 +25,18 @@ export function changeFolderMetadata(projectId:string,folderId:string,change:{na
   return saved;
  });
 }
+
+/** Shared native deletion: the emptiness check and delete use one immediate transaction. */
+export function deleteEmptyFolder(projectId:string,folderId:string,options:{expectedTree?:string;requireNoAssetReferences?:boolean}={}):Folder{
+ return tx(()=>{
+  const f=one<Folder>("SELECT * FROM folders WHERE id = ? AND project_id = ?",folderId,projectId);
+  if(!f)throw new HttpError(404,L("Dossier introuvable.","Folder not found."));
+  if(options.expectedTree&&folderTreeFingerprint(projectId)!==options.expectedTree)throw new HttpError(409,'Les dossiers ont changé. Préparez un nouvel accord gratuit.');
+  if(f.system_key)throw new HttpError(400,L("Les dossiers de base du projet ne peuvent pas être supprimés (vous pouvez les renommer).","The project's default folders cannot be deleted (you can rename them)."));
+  if(one("SELECT 1 FROM assets WHERE folder_id = ? AND deleted_at IS NULL",f.id)||one("SELECT 1 FROM folders WHERE parent_id = ?",f.id))throw new HttpError(409,L("Le dossier n'est pas vide : déplacez d'abord son contenu.","The folder is not empty: move its contents first."));
+  if(options.requireNoAssetReferences&&one("SELECT 1 FROM assets WHERE folder_id = ?",f.id))throw new HttpError(409,'Des fichiers dans la corbeille gardent ce rattachement. Aucun fichier ou lien de dossier ne sera modifié implicitement.');
+  const result=run("DELETE FROM folders WHERE id = ? AND project_id = ?",f.id,projectId);
+  if(result.changes!==1||one("SELECT 1 FROM folders WHERE id = ?",f.id))throw new HttpError(409,'Suppression native du dossier non confirmée.');
+  return f;
+ });
+}
