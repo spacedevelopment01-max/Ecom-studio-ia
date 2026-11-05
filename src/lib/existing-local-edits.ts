@@ -10,9 +10,11 @@ export const localEditAllowed=(v:ConversationView,op:ExistingLocalOp)=>v.recover
 /** Native domains without an A1 exception must never infer permission from a free editable fiche. */
 export const nativeLocalEditAllowed=(v:ConversationView)=>!v.recovery&&(v.localEditsWritable??!v.readOnlyReason);
 
-/** Account metadata can be readable while the brief and every business action remain closed. */
-export const localReadAllowed=(v:ConversationView,op:'prompts')=>{
- if(op!=='prompts'||v.localPromptsRead?.enabled!==true)return false;
+/** Explicit native metadata reads keep the brief and business actions closed. */
+export const localReadAllowed=(v:ConversationView,op:'prompts'|'booking-records')=>{
+ if(op!=='prompts'&&op!=='booking-records')return false;
+ const enabled=op==='prompts'?v.localPromptsRead?.enabled===true:v.bookingRecordsRead?.enabled===true;
+ if(!enabled)return false;
  if(!v.recovery)return v.localEditsWritable??!v.readOnlyReason;
  const cap=v.recovery.localReads;
  return cap?.schema==='existing-local-read-1'&&cap.readOnly===true&&cap.confirmationRequired===false&&cap.costEur===0&&cap.providerCalls===0&&cap.financialConsent===false&&cap.ops.includes(op);
