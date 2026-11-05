@@ -35,6 +35,15 @@ function newNativeId(name:string,used:Set<string>,reserved:{has:(id:string)=>boo
 function uniqueProvidedIds(rows:{id?:string}[],ctx:z.RefinementCtx){
   const seen=new Set<string>();rows.forEach((row,index)=>{if(!row.id)return;if(seen.has(row.id))ctx.addIssue({code:'custom',path:[index,'id'],message:'Identifiant natif dupliqué : rechargez avant d’enregistrer.'});seen.add(row.id);});
 }
+/** Keep acquired source IDs opaque while accounting for the IDs actually used by the shared engines. */
+function engineServiceId(kind: RdvKind, id: unknown, name: unknown) {
+  const service = { id, name };
+  return kind === 'salon' ? salonCore.normalize({ services: [service] }).services[0]?.id
+    : kind === 'cabinet' ? cabinetCore.normalize({ seances: [service] }).seances[0]?.id : undefined;
+}
+function engineStaffId(id: unknown, name: unknown) {
+  return salonCore.normalize({ staff: [{ id, name }] }).staff[0]?.id;
+}
 const toMin = (hm: string) => Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3, 5));
 /** ISO dates must round-trip: Date.parse alone silently rolls February 31 into March. */
 const realClosureDate = (date: string) => { const stamp=Date.parse(date+"T00:00:00Z"); return Number.isFinite(stamp)&&new Date(stamp).toISOString().slice(0,10)===date; };
@@ -124,11 +133,16 @@ export function readPrestations(projectId: string) {
   if (!sec) return null;
   const st = (sec.section.settings ?? {}) as Record<string, unknown>;
   const booked = futureBookings(projectId, sec.kind, st.timezone);
+  const upcoming = (id: unknown, name: unknown) => {
+    const raw = String(id ?? ''), effective = engineServiceId(sec.kind, id, name);
+    const count = (key: string) => Object.hasOwn(booked, key) ? booked[key] : 0;
+    return count(raw) + (effective && effective !== raw ? count(effective) : 0);
+  };
   const blocks = blocksOf(sec.section);
   const services = sec.kind === "salon"
-    ? blocks.filter((b) => b.block.type === "service").map(({ block: b }) => { const v = b.settings ?? {}; return { id: String(v.service_id ?? ""), name: String(v.name ?? ""), category: String(v.category ?? "coupe"), short: String(v.short ?? ""), duration: num(v.duration), price: num(v.price), priceFrom: !!v.price_from, upcoming: booked[String(v.service_id ?? "")] ?? 0 }; })
+    ? blocks.filter((b) => b.block.type === "service").map(({ block: b }) => { const v = b.settings ?? {}; return { id: String(v.service_id ?? ""), name: String(v.name ?? ""), category: String(v.category ?? "coupe"), short: String(v.short ?? ""), duration: num(v.duration), price: num(v.price), priceFrom: !!v.price_from, upcoming: upcoming(v.service_id, v.name) }; })
     : sec.kind === "cabinet"
-      ? blocks.filter((b) => b.block.type === "seance").map(({ block: b }) => { const v = b.settings ?? {}; return { id: String(v.seance_id ?? ""), name: String(v.name ?? ""), short: String(v.short ?? ""), duration: num(v.duration), price: num(v.price), priceFrom: false, modes: String(v.modes ?? "cabinet"), upcoming: booked[String(v.seance_id ?? "")] ?? 0 }; })
+      ? blocks.filter((b) => b.block.type === "seance").map(({ block: b }) => { const v = b.settings ?? {}; return { id: String(v.seance_id ?? ""), name: String(v.name ?? ""), short: String(v.short ?? ""), duration: num(v.duration), price: num(v.price), priceFrom: false, modes: String(v.modes ?? "cabinet"), upcoming: upcoming(v.seance_id, v.name) }; })
       : [];
   const staff = sec.kind === "salon" ? blocks.filter((b) => b.block.type === "member").map(({ block: b }) => { const v = b.settings ?? {}; return { id: String(v.member_id ?? ""), name: String(v.name ?? ""), title: String(v.title ?? ""), skills: String(v.skills ?? "").split(",").map((x) => x.trim()).filter(Boolean), days: String(v.days ?? "").split(",").map((x) => x.trim()).filter(Boolean).map(Number) }; }) : [];
   const hours = Object.fromEntries(DAYS.map((d) => [d, String(st[`hours_${d}`] ?? "")]));
@@ -198,7 +212,7 @@ function buildPrestations(projectId: string, raw: unknown) {
       const acquired = Object.values(section.blocks ?? {}).filter(b => b.type === blockType);
       if (acquired.length >= 60) throw new HttpError(409, "La limite native de 60 prestations est atteinte.");
       const service = input.serviceAdd!;
-      const reserved = new Set(acquired.map(b => String(b.settings?.[idKey] ?? "")));
+      const reserved = new Set(acquired.flatMap(b => [String(b.settings?.[idKey] ?? ""), engineServiceId(sec.kind, b.settings?.[idKey], b.settings?.name) ?? '']));
       const serviceId = newNativeId(service.name, new Set(), reserved);
       const blocks = section.blocks ??= {};
       const baseKey = `${blockType}-${serviceId}`;
@@ -220,12 +234,13 @@ function buildPrestations(projectId: string, raw: unknown) {
     const blockType = sec.kind === "salon" ? "service" : "seance";
     const idKey = sec.kind === "salon" ? "service_id" : "seance_id";
     const oldBlocks = new Map(blocksOf(section).filter((b) => b.block.type === blockType).map((b) => [String(b.block.settings?.[idKey] ?? ""), b]));
+    const reserved = new Set([...oldBlocks].flatMap(([raw, { block }]) => [raw, engineServiceId(sec.kind, block.settings?.[idKey], block.settings?.name) ?? '']));
     const others = blocksOf(section).filter((b) => b.block.type !== blockType);
     const byId = new Map<string, { name: string; oldName: string; duration: number; price: number | null; priceFrom: boolean }>();
     const next: { key: string; block: { type: string; settings: Record<string, unknown> } }[] = [];
     for (const s of input.services) {
       const known = !!s.id && oldBlocks.has(s.id);
-      const id = known ? s.id! : newNativeId(s.name,used,oldBlocks);
+      const id = known ? s.id! : newNativeId(s.name,used,reserved);
       used.add(id);
       const old = oldBlocks.get(id);
       const prev = before.services.find((x) => x.id === id);
@@ -268,10 +283,11 @@ function buildPrestations(projectId: string, raw: unknown) {
   if (input.staff && sec.kind === "salon") {
     const currentBlocks = blocksOf(section);
     const oldStaff = new Map(currentBlocks.filter((b) => b.block.type === "member").map((b) => [String(b.block.settings?.member_id ?? ""), b]));
+    const reservedStaff = new Set([...oldStaff].flatMap(([raw, { block }]) => [raw, engineStaffId(block.settings?.member_id, block.settings?.name) ?? '']));
     const usedStaff = new Set<string>();
     const staffBlocks = input.staff.map((m) => {
       const known = !!m.id && oldStaff.has(m.id);
-      const id = known ? m.id! : newNativeId(m.name, usedStaff, oldStaff);
+      const id = known ? m.id! : newNativeId(m.name, usedStaff, reservedStaff);
       usedStaff.add(id);
       const old = oldStaff.get(id);
       return { key: old?.key ?? `member-${id}`, block: { ...(old?.block ?? {}), type: "member", settings: { ...(old?.block.settings ?? {}), member_id: id, name: m.name, initial: m.name.charAt(0).toUpperCase(), title: m.title, skills: m.skills.join(","), days: m.days.join(",") } } };
