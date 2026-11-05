@@ -1,3 +1,24 @@
+## Reprise active — 5 novembre 2026,14 h 04 UTC /15 h 04 Paris
+
+Ce point remplace les états historiques plus bas. **Mission complète toujours en cours ; environnement fonctionnel.**
+
+Tête fonctionnelle **39f6341f7844a828229ffeee5da44ee32118a5e5 /#442**. Après#440 :
+
+- **#441 f1bbe41031a56edfa34276b5e05f2b16a9eda34c** :staffPatch natif strict id/name/title/skills/days ;19nouveaux,41distincts/3fichiers/types. Nom adapte l'initiale, champs omis jamais réinitialisés. IDs/order/horaires/voisins/rendez-vous/occupation acquis exacts.
+- **#442 39f6341f** :intentions nom/spécialité/jours/catégories d'un intervenant salon exact ;31nouveaux,109distincts/6fichiers/types (63/3 +46/3 disjoints). HTTPauth préparé≥17s,GET projet/conversation,accord littéral/GET natif/reçu1version/préparation intacte. Moteur partagé du site vérifie futurs jours/compétences ;rendez-vous et occupation acquis inchangés. outsideQuotes+priorité,droits/TTL/kinds/onglet/homonymes/conflits/devis+acceptation cognitifs refusés ;réordre d'ensemble=no-op. BOOKING_STAFF fermé,carte bookingStaff/bookingStaffExecution ;confirm/cancel-booking-staff. **Carte/handle/rafraîchissement studio:booking-changed Claude et recette compilée restent ouverts.** Voir LOT-INTERVENANT-SYNA.md ;coordination#301 commentaire6659949164.
+
+**380 tests nouveaux distincts sur#423–#442.** Aucun composant Claude modifié,aucune fusion,dépense réelle,activation,projet client ou déploiement. Main revérifié à13h48UTC :toujours6354f327888d70c64ce4d86604b7b8fdc768947c. Les fixtures vides/session étrangère/client_id manquant du premier essai natif ont été corrigées avant conclusion ;comparaison parent/correctif avec bonnes fixtures conservée. Aucun échec de fixture annoncé comme défaut produit.
+
+Matrice canonique **171 opérations uniques :72PARTIEL/69ABSENT/4NON_TESTE/26BLOQUE**,aucune complète. Une omission native existante est détaillée en services.booking.staff,le parent reste PARTIEL. Création/suppression services/intervenants,horaires individuels,réservations clientes,notifications et A1 restent à qualifier/raccorder séparément. Les preuves bibliothèque5a89a93f portent seulement sur l'application69b1756f (#438),jamais sur#439–#442.
+
+CI mise àjour : **#436 désormais entièrement verte**,5contrôles/run42029332860,6380tests/31skip,667fichiers/1skip. #437 suite complète6393/31skip,668fichiers/1skip etconfirmation gratuite vertes ;Docker rouge,logs404,relance refusée403 car run actif,aucun correctif aveugle. #438 suite6408/31skip,669fichiers/1skip +Docker/confirmationgratuite verts ;natif long encore en cours. #439 et#440 :Docker/confirmationgratuite verts,autres jobs en cours au dernier relevé. #440 run42038764153. Relever runs#441/#442 auSHAexact. Contrôle gratuit toujours obligatoire.
+
+Checkouts :parity301-file-trash-syna sur#442 propre ;parity301-intents-v5 surpreuve5a89a93f,build figé69b1756f ;parity301-booking-docs surdocs cumulative. Aucun harnais de ce lot encore actif. Espace libre environ660MiB ;préserver les3WIP historiques parity301-ci-guards. Aucun nouveau lot commencé àcet instant.
+
+**Prochaine analyse indépendante : lecture des réservations clientes datées depuis les moteurs natifs** (salon/cabinet/restaurant),droits/PII minimales/secrets de gestion jamais exposés,aucune annulation/déplacement/notification. Vérifier source et matrice avant d'écrire. Poursuivre aussi la coordination Claude pourqualifier sescartes quandunSHAsera disponible ;pas de réponse Claude observée au dernier relevé. Ne pas attendre lesCIlonguespourcontinuer lesdomaines indépendants. Tests fournisseurs réels payants non lancés ;devis/plafonds et accord requis siindispensables.
+
+---
+
 ## Point de reprise actif — 5 novembre 2026, 13 h 47 UTC /14 h 47 Paris
 
 Ce point remplace les états historiques ci-dessous. **Mission complète non terminée ; environnement fonctionnel.** Main demeure la base6354f327/#422 ; aucune fusion ni activation/dépense/client/déploiement.

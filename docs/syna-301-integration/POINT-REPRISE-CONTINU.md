@@ -1,3 +1,7 @@
+## Reprise active — 5 novembre 2026,15 h 04 Paris
+
+Lire [REPRISE-5-NOVEMBRE-RESERVATIONS.md](REPRISE-5-NOVEMBRE-RESERVATIONS.md). Tête#442/39f6341f,prérequis#441/f1bbe410 ;matrice171:72PARTIEL/69ABSENT/4NON_TESTE/26BLOQUE,aucune complète. Preuve bibliothèque5a89a93f seulement surapplication69b1756f. #436 CI entière verte ;nouveaux runs à suivre,#437 Docker non diagnostiqué faute logs/runactif. Prochaine analyse:lecture datée des réservations natives,aucun nouveau code commencé. États suivants historiques.
+
 ## Reprise active — 5 novembre 2026,14 h 47 Paris
 
 Lire d’abord [REPRISE-5-NOVEMBRE-RESERVATIONS.md](REPRISE-5-NOVEMBRE-RESERVATIONS.md). Tête fonctionnelle#440/f1cf44ae,preuve bibliothèque5a89a93f (application69b1756f),matrice170:71PARTIEL/69ABSENT/4NON_TESTE/26BLOQUE. CI#423/#431/#434 entièrement vertes ;nouveaux runs en cours etDocker#437 à diagnostiquer après fin du run (logs404/relance403 encore actif). Aucune mission complète annoncée. Prochain domaine équipe/intervenants salon à analyser. Les états ci-dessous sont historiques.
