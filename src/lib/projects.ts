@@ -132,6 +132,22 @@ const originOf = (source: string): MemoryOrigin => (source === "user" ? "user" :
  *    une même entrée répétée renforce les preuves (evidence_json.count) ; la préférence contraire remplace l'ancienne.
  * Provenance honnête : origin (user, inference, import, system…) déduit de la source si non fourni.
  */
+export type RememberInput={kind:string;key:string;value:string;status?:string;source:string;scope?:string;origin?:MemoryOrigin;normKey?:string};
+export type RememberPlanRow=MemoryItem&{project_id:string;superseded_by:string|null}&Record<string,unknown>;
+const SAME_MEMORY_SQL="SELECT * FROM memory WHERE project_id = ? AND kind = ? AND state = 'active' AND (norm_key = ? OR (norm_key IS NULL AND key = ?) OR (key = ? AND ? IN ('decision','correction'))) ORDER BY created_at DESC";
+/** Native readonly decision shared by remember and its consent preview; facts/artifacts use their separate path. */
+export function readRememberPlan(projectId:string,item:RememberInput,includeCandidates=false){
+ if(item.kind==='artifact'||item.kind==='fact')throw new HttpError(400,'Les faits et artefacts ne relèvent pas de cet aperçu mémoire.');
+ const scope=item.scope??'all',status=item.status??'confirmed',origin=item.origin??originOf(item.source);
+ const n=item.normKey?{normKey:item.normKey,concept:null,polarity:null}:normalizeMemory(item.kind,scope,item.key,item.value);
+ const args=[projectId,item.kind,n.normKey,item.key,item.key,item.kind] as const;
+ const same=one<RememberPlanRow>(SAME_MEMORY_SQL+' LIMIT 1',...args);
+ const reinforce=!!same&&(!['decision','correction'].includes(item.kind)||same.value===item.value);
+ const opposite=reinforce?null:oppositeKey(n);
+ const opposites=opposite?all<RememberPlanRow>("SELECT * FROM memory WHERE project_id = ? AND state = 'active' AND norm_key = ?",projectId,opposite):[];
+ return{scope,status,origin,n,same,reinforce,replaced:[...(!reinforce&&same?[same]:[]),...opposites],candidates:includeCandidates?all<RememberPlanRow>(SAME_MEMORY_SQL,...args):[]};
+}
+
 export function remember(projectId: string, item: { kind: string; key: string; value: string; status?: string; source: string; scope?: string; origin?: MemoryOrigin; normKey?: string }) {
   const scope = item.scope ?? "all";
   const status = item.status ?? "confirmed";
@@ -144,27 +160,17 @@ export function remember(projectId: string, item: { kind: string; key: string; v
     }
     return insertMemory(projectId, { ...item, scope, status, origin, normKey: null });
   }
-  const n = item.normKey ? { normKey: item.normKey, concept: null, polarity: null } : normalizeMemory(item.kind, scope, item.key, item.value);
   return tx(() => {
     // Même entrée active (même clé normalisée, ou ancienne ligne sans clé normalisée pour la même clé) : déduplication.
-    const same = one<{ id: string; value: string; evidence_json: string }>(
-      "SELECT id, value, evidence_json FROM memory WHERE project_id = ? AND kind = ? AND state = 'active' AND (norm_key = ? OR (norm_key IS NULL AND key = ?) OR (key = ? AND ? IN ('decision','correction'))) ORDER BY created_at DESC LIMIT 1",
-      projectId,
-      item.kind,
-      n.normKey,
-      item.key,
-      item.key,
-      item.kind,
-    );
-    if (same && (!["decision", "correction"].includes(item.kind) || same.value === item.value)) {
+    const plan=readRememberPlan(projectId,item),same=plan.same,n=plan.n;
+    if (same && plan.reinforce) {
       const ev = json<{ count?: number }>(same.evidence_json, {});
       run("UPDATE memory SET norm_key = ?, status = ?, scope = ?, evidence_json = ?, updated_at = ? WHERE id = ?", n.normKey, status, scope, JSON.stringify({ ...ev, count: (ev.count ?? 1) + 1, lastAt: now() }), now(), same.id);
       return same.id;
     }
     const mid = insertMemory(projectId, { ...item, scope, status, origin, normKey: n.normKey });
     // Décision remplacée, ou préférence contraire (« je préfère les badges » après « pas de badge ») : historique.
-    const opposite = oppositeKey(n);
-    const replaced = [...(same ? [same.id] : []), ...(opposite ? all<{ id: string }>("SELECT id FROM memory WHERE project_id = ? AND state = 'active' AND norm_key = ?", projectId, opposite).map((r) => r.id) : [])];
+    const replaced = plan.replaced.map(row=>row.id);
     for (const old of replaced) run("UPDATE memory SET state = 'superseded', superseded_by = ?, updated_at = ? WHERE id = ?", mid, now(), old);
     return mid;
   });
