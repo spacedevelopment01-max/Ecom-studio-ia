@@ -1,0 +1,28 @@
+
+ RUN  v5.0.3 /tmp/parity301-undo-main-6354f327
+
+ ❯ tests/parity301-native-social-undo-guard.test.ts (13 tests | 1 failed) 18502ms
+   × a usage failure after the first native restoration rolls the entire undo and journal back 119ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/parity301-native-social-undo-guard.test.ts > a usage failure after the first native restoration rolls the entire undo and journal back
+AssertionError: expected [Function] to throw error matching /undo reference failure/ but got 'expected \'cancelled\' to be \'review…'
+
+- Expected:
+/undo reference failure/
+
++ Received:
+"expected 'cancelled' to be 'review' // Object.is equality"
+
+ ❯ tests/parity301-native-social-undo-guard.test.ts:20:753
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 31 passed (32)
+   Start at  23:21:23
+   Duration  22.70s (tests 70%, transform 16%, import 13%)
+

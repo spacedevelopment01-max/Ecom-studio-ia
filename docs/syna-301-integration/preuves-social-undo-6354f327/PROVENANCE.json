@@ -1,0 +1,69 @@
+{
+  "baseMain": "6354f327888d70c64ce4d86604b7b8fdc768947c",
+  "localFix": "c067eb98e82bcf19020cae0be5354e3149766753",
+  "localFixTree": "7591150a86ae74d1c6a490eb2ad4effcffb02c50",
+  "diagnostic": {
+    "passed": 1,
+    "failed": 2,
+    "fixedClock": true,
+    "multiprocess": false
+  },
+  "corrected": {
+    "newTests": 14,
+    "distinctValidated": 33,
+    "types": "passed",
+    "realMonotonicDelayMs": 17000,
+    "browserRecipe": false,
+    "realProviderCalls": 0
+  },
+  "files": [
+    {
+      "file": "diagnostic-main.txt",
+      "sha256": "deece9a1b246563e49a1cedd59a39e65da7dff2af8dce224320ef8a91286f4d0"
+    },
+    {
+      "file": "parity301-native-social-undo-final.log",
+      "sha256": "02d8e581bab6b476febf379ee91bf32235f1f90907cbd93fec64b1dcb60c2ad9"
+    },
+    {
+      "file": "parity301-native-social-undo-first.log",
+      "sha256": "00f256d95ec399b7e07b74156c2b73592554b0b69d7eb73abf250272b632858e"
+    },
+    {
+      "file": "parity301-native-social-undo-http-budget-final.log",
+      "sha256": "b1ed25575218231cbadcd177396e0b50bb7b796b321fff31d0a63238a009c470"
+    },
+    {
+      "file": "parity301-native-social-undo-http-final.log",
+      "sha256": "19c7cc2be910c68fa76fb9989315fe531355934201f9aebb212999299014e516"
+    },
+    {
+      "file": "parity301-native-social-undo-rollback-final.log",
+      "sha256": "d48a5be3852534f47735c4c04b6565e2f658e7829310feb9ba23ec10254dd02f"
+    },
+    {
+      "file": "parity301-native-social-undo-types-final.log",
+      "sha256": "b6403ca485a85ef2a37b272546a2d1bdcfecfeaae1603490b12a59851c0d4580"
+    },
+    {
+      "file": "parity301-social-undo-integration-tests.log",
+      "sha256": "2e57a4eae9bcf7f8801f7b4e38bab232b2379a7e70b3f0cb4ed6c9f9429fa3f9"
+    },
+    {
+      "file": "parity301-social-undo-integration-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "parity301-social-undo-main-6354f327.log",
+      "sha256": "d30164b9f3e3c47a545553b1b479cf426ae8a90224b229cd7fa1fca43a4bb4ed"
+    }
+  ],
+  "publishedFix": "0518e09865b06bbd97bb2b95fca6d066476907df",
+  "combinedProof": {
+    "baseRemote": "bffa3a7f127548e97e80e3269d79f9df29b22038",
+    "localCommit": "f1631f070",
+    "testsPassed": 53,
+    "types": "passed",
+    "publishedAsIntegration": false
+  }
+}

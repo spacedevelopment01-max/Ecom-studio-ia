@@ -1,0 +1,12 @@
+{
+  "branch": "codex/parity301-native-social-undo-guard",
+  "local": "c067eb98e82bcf19020cae0be5354e3149766753",
+  "remote": "0518e09865b06bbd97bb2b95fca6d066476907df",
+  "tree": "7591150a86ae74d1c6a490eb2ad4effcffb02c50",
+  "base": "6354f327888d70c64ce4d86604b7b8fdc768947c",
+  "pr": 494,
+  "method": "GitHub connector git-object API ; blobs and complete tree verified identical to local",
+  "realProviderCalls": 0,
+  "realSpend": 0,
+  "productionActivation": false
+}

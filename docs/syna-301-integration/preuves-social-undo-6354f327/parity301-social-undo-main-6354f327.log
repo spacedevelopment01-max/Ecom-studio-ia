@@ -1,0 +1,57 @@
+
+ RUN  v5.0.3 /tmp/parity301-undo-main-6354f327
+
+ ❯ tests/parity301-social-undo-diagnostic.test.ts (3 tests | 2 failed) 382ms
+   × a copy edited natively at the same timestamp must not be deleted by undo 124ms
+   × a source edited natively at the same timestamp must not be overwritten by undo 114ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/parity301-social-undo-diagnostic.test.ts > a copy edited natively at the same timestamp must not be deleted by undo
+AssertionError: expected [] to deeply equal [ { id: 'jx019ca5pvo67scy', …(1) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "caption": "COPIE_MODIFIEE_MANUELLEMENT",
+-     "id": "jx019ca5pvo67scy",
+-   },
+- ]
++ []
+
+ ❯ tests/parity301-social-undo-diagnostic.test.ts:11:328
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/parity301-social-undo-diagnostic.test.ts > a source edited natively at the same timestamp must not be overwritten by undo
+AssertionError: expected [ { id: '3rz4kk2icgo491z7', …(1) } ] to deeply equal [ { id: '3rz4kk2icgo491z7', …(1) } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "caption": "SOURCE_MODIFIEE_MANUELLEMENT",
++     "caption": "TEXTE_AVANT",
+      "id": "3rz4kk2icgo491z7",
+    },
+  ]
+
+ ❯ tests/parity301-social-undo-diagnostic.test.ts:12:335
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed (3)
+   Start at  23:13:08
+   Duration  4.41s (transform 57%, import 34%, tests 9%)
+
+  Transform  transforming modules took 2.41s · 57% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

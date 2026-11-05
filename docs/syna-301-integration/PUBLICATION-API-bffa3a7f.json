@@ -1,0 +1,10 @@
+{
+  "branch": "codex/parity301-social-duplicate-conversation",
+  "local": "8dd313adc69b4d3c4625c953c3ec0aabdaf944a8",
+  "remote": "bffa3a7f127548e97e80e3269d79f9df29b22038",
+  "tree": "ae4d3efcc2869d9069d841fcab918de0aa51b5d9",
+  "method": "GitHub connector git-object API ; blobs and complete tree verified identical to local",
+  "realProviderCalls": 0,
+  "realSpend": 0,
+  "productionActivation": false
+}

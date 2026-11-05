@@ -1,3 +1,35 @@
+## Reprise active — 5 novembre 2026, après #493, #494 et audit Claude #492
+
+**Mission SYNA complète non atteinte.** Lire ce bloc avant les historiques ci-dessous. Main relu : `6354f327888d70c64ce4d86604b7b8fdc768947c` (#422), jamais modifié ici. L’environnement fonctionne ; le blocage concerne seulement l’authentification Git CLI expirée. Les publications récentes passent par le connecteur GitHub autorisé ; blobs et arbre complets vérifiés identiques aux sources locales. Ne pas afficher de secrets ni réessayer aveuglément Git push.
+
+### Dernières livraisons exploitables
+
+- **#493 / bffa3a7f127548e97e80e3269d79f9df29b22038**, parent distant #491/9bb10f32 : duplication sociale conversationnelle au même format. 39 nouveaux tests /82 cas distincts +types. Source exacte, aperçu sans écriture, accord gratuit, nouveau post review, médias acquis partagés, provenance et source conservées, reçu atomique, reprise une copie. Vrai HTTP/SQLite/GET après attente monotone ≥17 s. SOCIAL_DUPLICATE fermé par défaut avec LOT_A/AI/CONTEXT, A1 fermé. Carte/handles et navigateur non qualifiés. Aucun Undo promis. Local8dd313ad et arbre ae4d3efcc2869d9069d841fcab918de0aa51b5d9. Contrat transmis Claude #301 commentaire6671878761.
+- **#494 / 0518e09865b06bbd97bb2b95fca6d066476907df**, parent directement main6354 : correctif P1 du moteur natif d’annulation sociale. Deux pertes de données reproduites sur main à timestamp identique. Empreinte de toute la ligne dans le journal privé, transaction/rollback, refus visible sans faux succès, pas de réécriture source intacte. 14 nouveaux /33 distincts +types. Application propre sur #493 : **53/53 ettypes**, commit local de preuve f1631f070 ; ce n’est pas une branche intégrée par Claude. **Anciens journaux à timestamps seuls conservés mais refusés automatiquement ; nouvel aperçu non livré.** Limite à examiner avant intégration. Localc067eb98/arbre7591150a86ae74d1c6a490eb2ad4effcffb02c50. Aucun nouveau routeur, carte ou style. Claude #492 commentaire6672418801 et #301 commentaire6672420586.
+
+### Audit Claude et direction de reprise
+
+Claude a rendu l’audit #492 commentaire **6672153913** sur main6354 : le système actuel propose des accès bornés, pas une boucle généraliste multi-outils ; photos non analysées dans le chat, vidéos/documents/création complète non raccordés ; une réponse IA réelle reste bloquée par la configuration du fournisseur tarifé. Les détails et estimations sont ceux de son audit, pas une validation fournisseur de Codex. Aucun appel payant autorisé ici.
+
+**Ne pas ajouter de nouveaux aiguilleurs ni commencer une refonte pendant cette coordination.** Préserver les correctifs natifs utiles séparément de leur raccordement conversationnel. La pile #423–#493 reste non fusionnée ; l’audit recommande de ne pas l’intégrer en bloc. Aucune clôture de PR, suppression de tests, simplification des accords ou modification de branche Claude n’a été faite. Prochaine étape utile : vérifier les CI restantes, remettre les preuves/limites exactes à Claude, distinguer moteurs réutilisables et adaptateurs à revoir. Ne pas annoncer « SYNA complète ».
+
+### Couverture et preuves
+
+Matrice **183 opérations /87 PARTIEL /65 ABSENT /4 NON_TESTE /27 BLOQUE**, aucune complète. Les lignes mémoire natives ne restent plus faussement NON_TESTE ; duplication passe PARTIEL sur son seul périmètre prouvé ; annulation sociale ajoutée séparément et BLOQUE. Cumul **1500 nouveaux cas distincts livrés #423–#494**, répartis entre branches ; ce n’est PAS le nombre d’une CI intégrée. Dernières nouvelles cartes réservations/mémoire/duplication sans recette navigateur. La recette compilée produit/service sur fbdfa18d/#482 (preuves audit35a2ed93,14HTTP simulés/0fournisseur) ne certifie pas ces cartes ni le multimodal réel.
+
+CI complètes prouvées #482–#486 et #489 : cinq contrôles verts sur leurs SHA exacts. #486/df2f5f3c run42116984755 verdict127597162500 ; #489/7b705541 run42120028148 verdict127596400409. #493/bffa run42127070952 : Docker et confirmation gratuite verts, types passés mais suite/recettes encore en cours. #491/9bb run42123467771 : types/suite, Docker et confirmation verts, recette en cours (étape ffmpeg au dernier relevé). #490 run42121416487 et #488 run42118923653 : recettes encore en cours ; #487 à relever. **#494/0518 run42130885686 : en cours**, aucun verdict global anticipé. Le quatrième contrôle gratuit reste obligatoire et inchangé.
+
+### Reprise technique exacte
+
+- Fonctionnel : `/workspace/work/parity301-file-trash-syna`, branche codex/parity301-social-duplicate-conversation, local8dd /distantbffa, propre.
+- P1 indépendant : `/tmp/parity301-undo-main-6354f327`, branche codex/parity301-native-social-undo-guard, localc067 /distant0518, propre.
+- Combinaison locale : `/tmp/parity301-undo-integration-bffa`, branche codex/parity301-social-undo-integration-proof, HEADf1631f070 ;53/53+types. Pas publiée comme intégration.
+- Audit : `/workspace/work/parity301-booking-docs`, sparse checkout documentaire ; pour les sources utiliser git show, pas des fichiers absents. État local/distant dans `/workspace/work/parity301-publication-state.json`. Les métadonnées API diffèrent ; toujours transmettre le SHA DISTANT.
+- Preuves durables : docs `preuves-social-undo-6354f327`, diagnostic source TXT, rouge main, logs natifs/HTTP/rollback/types et combinaison. Manifest de provenance. Plus PUBLICATION-API-bffa3a7f.json et PUBLICATION-API-0518e098.json.
+- NODE_OPTIONS=--import=$PWD/scripts/lot9/network-guard.mjs pour tout Node/test/build ; comptes fictifs/DATA_DIR isolés. Aucun fournisseur, dépense, client, activation, fusion ou déploiement.
+
+Les blocs suivants sont historiques et ne définissent pas la prochaine tâche.
+
 ## Reprise active — 5 novembre 2026, après livraison #491 par API GitHub
 
 **Mission incomplète.** #491 SHA DISTANT **9bb10f3233624a5f52ba150b72d212e0513a58fd**,parent#490/3a63955a,branche codex/parity301-native-social-duplicate-usages. Localtesté **1e75291d02fc945eb70e906d2ea3ceddb2de698e** :arbre EXACTEMENTidentique **19615917f12e2743e3f7596ed262389106b62975**,troisblobs vérifiés. Gitpush aéchoué Invalidusernameortoken ;connecteurGitHub autorisépushfonctionne. APIcreate_blob/create_tree/create_commit/create_branch utilisées ;seulesmétadonnéescommitdiffèrent. **UTILISER9bb10f32pourClaude/CI/parents distants**,nepasprésenter1e75commecommitpublié. PUBLICATION-API-9bb10f32.json traceSHA/blobs/limites,sanssecret. Les tentativesparamètresoutil incorrects n’ontcréé aucunrefavant lederniercreate_branch ;arbre vérifié avant branche/PR.
