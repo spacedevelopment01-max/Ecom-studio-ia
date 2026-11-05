@@ -1,3 +1,11 @@
+## Point de reprise actif — 5 novembre 2026, 13 h 17 Paris
+
+Lire d’abord [REPRISE-5-NOVEMBRE-RESERVATIONS.md](REPRISE-5-NOVEMBRE-RESERVATIONS.md) : tête **228896588237dc2ebba6bc5a0ebb4d79b1db200c/#434**, chaîne #423–#434, **281 tests /16 fichiers et types verts,209nouveaux**, quatre contrats gratuits fermés par défaut. **#423 CI complète verte** ; #424 échec historique corrigé par #431, autres CI à suivre sur leurs SHA. Diagnostic compilé c9a6 :16blocagesUI réellement observés,aucune carte nouvelle déclarée complète. Matrice170opérations/69PARTIEL/71ABSENT/4NON_TESTE/26BLOQUE. Prochaine lacune indépendante :suppression sûre de dossier vide,analyse seulement à ce point. Environnement fonctionnel,main toujours6354f327 ;aucun client/fournisseur réel/main/activation/déploiement.
+
+Les relevés ci-dessous sont historiques ;leurs états CI peuvent avoir changé. Ne pas substituer une ancienne tête ou un ancien build au point actif.
+
+---
+
 ## Reprise prioritaire — 5nov2026,11h49UTC /12h49Paris
 
 EnvironnementOK,mainbase6354f327/#422. Têtefonctionnelle **9cfc77150615162c02236db2aad71dcd70e8d3b0/#431**,chaînelinéaire#423→#424→#425→#426→#427→#428→#429→#430→#431. Aucunmerge main/dépense/client/activation/déploiement.
