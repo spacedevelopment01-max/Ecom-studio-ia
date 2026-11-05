@@ -1,3 +1,19 @@
+## Reprise active — 5 novembre 2026,14 h 42 UTC /15 h 42 Paris
+
+Tête propre **0272c9eaf667a2d335a5653fb85bd1508b22eb64 /#445**,branche codex/parity301-existing-booking-hours,checkout parity301-file-trash-syna. Horaires A1 livrés sans nouveau moteur :EXISTING_LOCAL +EXISTING_BOOKING_HOURS +BOOKING_HOURS/LOT_A/AI/CONTEXT,fermés par défaut,projet services. Droit exact recovery.localEdits.ops booking-hours,localEditAllowed(view,booking-hours),mêmebookingHours/confirm-cancel/accord littéral/event studio:booking-changed. Les autres domaines,A1IAgénérale etPréparation restentfermés.
+
+**16nouveaux tests ;106distincts/5fichiers/types** (61/3 +45/2 disjoints),parent2rouges. Deuxmoteurs,preview/cancel/TTL/conflit/budget0/droits/flagscacherefusés,uneversion/unjourseulement ;rollbackversion+pointeuretproposition si écriture du reçu échoue,puisretrylégitimeuneversion. Rendez-vous acquis du mardi conservés après fermeture. HTTPauth17s/GET projet/fil,fauxaccordsrefusés,natif/rejeu1tour1version,aucunePréparation. Anciennesversions/profil/tables/octets/shop.chat/réservations exacts,projet nechange que pointeurversion/date natifs. Contrat LOT-HORAIRES-ANCIENS-PROJETS.md,coordination#301 commentaire6660797967. Carte/handle/recette compilée Claude ouverts.
+
+**436 tests nouveaux distincts #423–#445.** Matrice172inchangée :74PARTIEL/68ABSENT/4NON_TESTE/26BLOQUE,aucunecomplète. Preuve5a89a93f seulement application69b1756f (#438),pas nouvellescartes. Touslesétatsci-dessoushistoriques.
+
+Prochaine lacune indépendante analysée,**aucun code commencé** :fermetures datées A1. Réutiliser local-booking-closures.ts (add/remove,moteurs3kinds,guarddates/range400/versions/FP/receipts) sous nouvelle exception booking-closures dans ExistingLocalOperation/localEditAllowed,EXISTING_LOCAL+EXISTING_BOOKING_CLOSURES séparé/fermé +BOOKING_CLOSURES/LOT_A/AI/CONTEXT etservices. Existing-project :capacité/vues/handlers/annulation/cleanup,retraitavantcache,aucunePréparation ouactivation. Classifier closure avant hours ;hours exclutdéjàclosures/restaurants. Tests3kindssansmutationsdesacquis,versions+jourcibléuniquement,HTTP17s/rejeu,droits/conflits/TTL/flags/actesautresfermés ;cartesClaudeavec localEditAllowed(view,booking-closures). Ne pas réécrirele moteurou retesterinutilement touteslesvalidationsnativesdéjàqualifiées.
+
+CI#423/#431/#434/#436 entièrementvertes. #440 suitecomplète6459/31skip,671fichiers/1skip ;Docker/confirmationgratuite verts,natiflongencours. #439 recettesnatives/Docker/confirmationvertes,suitecomplète encoreencours au dernierrelevé. #437Dockerrouge/logs404/relance403 car runactif,suite6393/31skipverte ;aucun diagnosticcode démontré. #438suite6408/31skip +Docker/confirmationverts,natiflongencours. #441/#442/#443 longsencours. Relever#444/#445 aprèsdéclenchement. Le contrôle gratuit resteobligatoire.
+
+Source/pointdepreuve/docscheckouts inchangés,aucun serveur de recette deceslotsactif,disque~660MiB,préserver3WIPhistoriques. Environnementfonctionne,main6354f327 dernierrelevé. Aucune fusion/dépense/client/activation/réservationréelle/déploiement. Missionglobaleencours ;continuer sansattendrelesCI,coordinationClaude en#301.
+
+---
+
 ## Reprise active — 5 novembre 2026,14 h 29 UTC /15 h 29 Paris
 
 Tête fonctionnelle propre **df592995a8ed0a2a02bf911bf363ddd55caf14b6 /#444**,branche codex/parity301-existing-booking-read,checkout parity301-file-trash-syna. Exception A1 de lecture planning livrée :EXISTING_BOOKING_RECORDS_READ fermé,sous BOOKING_RECORDS/LOT_A/AI/CONTEXT,services seulement ;recovery.localReads op booking-records,localReadAllowed(view,booking-records). **Aucun droit d’écriture ou IA générale ouvert.**

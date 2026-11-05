@@ -1,3 +1,7 @@
+## Reprise active — 5 novembre 2026,15 h 42 Paris
+
+Lire [REPRISE-5-NOVEMBRE-RESERVATIONS.md](REPRISE-5-NOVEMBRE-RESERVATIONS.md). Tête#445/0272c9ea,horaires A1 natifs16nouveaux/106ciblés/types. Matrice172inchangée,aucune complète. Prochaine lacune:fermetures datées A1,analyse seule,aucun code commencé. Cartes/CI nouvelles ouvertes ;états suivants historiques.
+
 ## Reprise active — 5 novembre 2026,15 h 29 Paris
 
 Lire [REPRISE-5-NOVEMBRE-RESERVATIONS.md](REPRISE-5-NOVEMBRE-RESERVATIONS.md). Tête#444/df592995,lecture planning A1 bornée15nouveaux/101ciblés/types. Matrice172inchangée74PARTIEL/68ABSENT/4NON_TESTE/26BLOQUE. Prochaine lacune analysée:horaires natifs A1 sous droit distinct,aucun code commencé. Cartes/CI nouvelles encore ouvertes ;états suivants historiques.
