@@ -1,4 +1,4 @@
-# Matrice unique de convergence #301 — 178 opérations
+# Matrice unique de convergence #301 — 179 opérations
 
 162 unités initiales conservées et omissions natives détaillées dans le CSV. Les décompositions restent un inventaire, pas une liste de défauts démontrés. Voir POINT-REPRISE-CONTINU.md pour les SHA et CI observées.
 
@@ -9,7 +9,7 @@
 | ABSENT | 68 |
 | BLOQUE | 26 |
 | NON_TESTE | 4 |
-| PARTIEL | 80 |
+| PARTIEL | 81 |
 
 | Cap. | Opération | Statut | Preuve actuelle | Manque | Responsable | Dépendance | Critère de fermeture |
 |---|---|---|---|---|---|---|---|
@@ -191,3 +191,4 @@
 | C22 | appointments.workshops | PARTIEL | 23 nouveaux /91 cas/types ;2rouges fonctionnels parent après correction fixture jetons(table séparée). Vraies SQLite/Session/HTTP17s+GET projet/fil,nouvelobservedAt et compte natif,rejeu sans inscription. Empreintes métier/fichiers exactes ;confirmés atelier seuls,annulés/séances/démo exclus,plein/annulation/null/homonymes/IDdupliquésmêmeautredate/troncature20+cibleomise/droits/anciensdevis/A1. Carte et navigateur ouverts. / #454/0262f6fc :18 nouveaux /94 cas distincts dans5fichiers et types ;lectures A1 sous droits séparés EXISTING_BOOKING_AVAILABILITY_READ /EXISTING_BOOKING_WORKSHOPS_READ,localReadAllowed exact,aucun droit écriture/Préparation. DeuxHTTP17s+GET/nouvelobservedAt/rejeu1tour,IA0 et transitions,sources historiques/finances/octets exacts,révocation avantcache. Carte/recette A1 ouvertes. | Carte/recette compilée indépendante4formats,CI finale intégrée ;inscription/annulation/édition d’atelier/date relative/carte A1. | Codex moteur/contrat/intentions ;Claude carte/recette indépendante | #453/c2f9798a parent#452 ;BOOKING_WORKSHOPS fermé sousLOT_A/AI/CONTEXT ;bookingWorkshops/bookingWorkshopsRead ;lecture seule sans accord commercial. | Phrases/cible/date/fuseau/observedAt clairs,places/statuts actuels,occupation+annulation relues,GET≥17s/rejeu1tour,aucune donnée cliente ou inscription,quatreformats+CI finale. |
 | C22 | services.booking.staff.add | PARTIEL | SQLite/routes natives fictives,fetch interdit ;cartes et recette Studio compilée indépendante non qualifiées. | Carte/handle/rafraîchissement et recette indépendante Claude quatre formats,CI finale du SHA intégré ;aucun droit A1 ajouté. | Codex moteur/contrat/intentions ; Claude carte/recette indépendante | #457/e31c3171 après #456/35bb6fc3 ;#458/ea90b114 ;BOOKING_STAFF_CATALOG fermé sous LOT_A/AI/CONTEXT. | Phrase naturelle,cible exacte,diff complet et avertissements,annulation/17s/accord gratuit/résultat visible/reload/réponse perdue sans doublon ;conflits et acquis conservés ;CI finale commune. |
 | C22 | services.booking.staff.remove | PARTIEL | SQLite/routes natives fictives,fetch interdit ;cartes et recette Studio compilée indépendante non qualifiées. | Carte/handle/rafraîchissement et recette indépendante Claude quatre formats,CI finale du SHA intégré ;aucun droit A1 ajouté. | Codex moteur/contrat/intentions ; Claude carte/recette indépendante | #457/e31c3171 après #456/35bb6fc3 ;#458/ea90b114 ;BOOKING_STAFF_CATALOG fermé sous LOT_A/AI/CONTEXT. | Phrase naturelle,cible exacte,diff complet et avertissements,annulation/17s/accord gratuit/résultat visible/reload/réponse perdue sans doublon ;conflits et acquis conservés ;CI finale commune. |
+| C22 | appointments.window | PARTIEL | SQLite/routes natives fictives et budgetIA0 ;cartes et recette Studio compilée indépendante non qualifiées. | Carte/handle/rafraîchissement et recette indépendante Claude quatre formats,CI finale du SHA intégré ;pas des créneaux/délai annulation/fuseau encore distincts. | Codex moteur/contrat/intentions ; Claude carte/recette indépendante | #462/5f5bd50c après #461/a715c912 ;#463/10acd660 ;BOOKING_WINDOW fermé sous LOT_A/AI/CONTEXT. | Phrase naturelle,cible exacte,diff complet et avertissements,annulation/17s/accord gratuit/résultat visible/reload/réponse perdue sans doublon ;conflits et acquis conservés ;CI finale commune. |
