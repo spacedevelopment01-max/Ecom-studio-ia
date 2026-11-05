@@ -1,3 +1,4 @@
+import {proposeBookingHours,confirmBookingHours} from './local-booking-hours';
 import {bookingRecordsCandidate,listBookingRecords,bookingRecordsView} from './local-booking-records';
 /** A1 : projection des acquis natifs, sans analyse, initialisation ni écriture budgétaire.
  * Les seules écritures métier optionnelles sont les retouches locales sous drapeau et accord explicite.
@@ -64,13 +65,14 @@ export function existingProjectView(user:User,cid:string,before?:number):Convers
     const c=ownedConversation(user,cid,true);
     if(!isExistingProjectRead(c))throw new HttpError(409,'conversation_not_existing_read');
     const {data,p,version}=snapshot(c);
-    const local=existingLocalCapabilities(),reads=existingLocalReads(p.business==='services'),metadata=metaOf(c);
+    const local=existingLocalCapabilities(p.business==='services'),reads=existingLocalReads(p.business==='services'),metadata=metaOf(c);
     return{
       schema:'studio-conversation-1',id:c.id,projectId:c.project_id,revision:c.revision,projectRevision:null,mode:'local',progress:'review',
       message:reason(local),readOnlyReason:reason(local),question:null,correctionFields:[],creation:null,action:null,
       recovery:{schema:'existing-project-recovery-1',state:'read-only',context:data,contextVersion:version,observedAt:now(),actionsEnabled:false,aiEnabled:false,providerCalls:0,...(local?{localEdits:local}:{}),...(reads?{localReads:reads}:{})},
       ...(reads?.ops.includes('booking-records')?{bookingRecordsRead:{enabled:true as const},...(metadata.bookingRecords?{bookingRecords:bookingRecordsView(user,c,metadata.bookingRecords)}:{})}:{}),
       ...(reads?.ops.includes('prompts')?{localPromptsRead:{enabled:true as const},...(metadata.localPrompts?{localPrompts:localPromptsView(user,c,metadata.localPrompts)}:{})}:{}),
+      ...(local?.ops.includes('booking-hours')?{bookingHoursExecution:{enabled:true as const},...(metadata.bookingHours?{bookingHours:metadata.bookingHours}:{})}:{}),
       ...(local?.ops.includes('local-site')?{localSiteExecution:{enabled:true as const},...(metadata.localSite?{localSite:metadata.localSite}:{})}:{}),
       ...(local?.ops.includes('files')?{localFilesExecution:{enabled:true as const},...(metadata.localFiles?{localFiles:metadata.localFiles}:{})}:{}),
       ...(local?.ops.includes('folder-rename')?{localFolderRenameExecution:{enabled:true as const},...(metadata.localFolderRename?{localFolderRename:metadata.localFolderRename}:{})}:{}),
@@ -88,16 +90,17 @@ export function submitExistingProjectMessage(user:User,cid:string,cmd:Command,ha
   return tx(()=>{
     const c=ownedConversation(user,cid,true);
     if(!isExistingProjectRead(c))throw new HttpError(409,'conversation_not_existing_read');
-    const local=existingLocalCapabilities(),operation=existingLocalOperation(cmd),localAllowed=!!operation&&!!local?.ops.includes(operation);
+    const local=existingLocalCapabilities(loadProject(c.project_id!).business==='services'),operation=existingLocalOperation(cmd),localAllowed=!!operation&&!!local?.ops.includes(operation);
     const reads=existingLocalReads(loadProject(c.project_id!).business==='services'),recordsCommand=cmd.action==='message'&&bookingRecordsCandidate(cmd.text),recordsAllowed=reads?.ops.includes('booking-records')===true;
     const promptsCommand=cmd.action==='message'&&localPromptsCandidate(cmd.text),promptsAllowed=reads?.ops.includes('prompts')===true;
     // Le retrait du drapeau/droit ne transforme pas un ancien reçu en nouveau pouvoir d'exécution.
-    if((cmd.action==='confirm-local'||cmd.action==='confirm-files'||cmd.action==='confirm-folder-rename'||cmd.action==='cancel-folder-rename'||cmd.action==='confirm-folder-move'||cmd.action==='cancel-folder-move')&&!localAllowed)throw new HttpError(409,reason(),'conversation_existing_read_only');
+    if((cmd.action==='confirm-booking-hours'||cmd.action==='cancel-booking-hours'||cmd.action==='confirm-local'||cmd.action==='confirm-files'||cmd.action==='confirm-folder-rename'||cmd.action==='cancel-folder-rename'||cmd.action==='confirm-folder-move'||cmd.action==='cancel-folder-move')&&!localAllowed)throw new HttpError(409,reason(),'conversation_existing_read_only');
     const prior=one<{request_hash:string;response_json:string}>("SELECT request_hash,response_json FROM agent_conversation_turns WHERE conversation_id=? AND request_id=?",cid,cmd.requestId);
     if(prior){
       if(prior.request_hash!==hash)throw new HttpError(409,L('Cet identifiant correspond à une autre demande.','This identifier belongs to another request.'),'conversation_idempotency_conflict');
       // Même reçu de parole ; la relecture du contexte vivant passe par GET.
       const cached=JSON.parse(prior.response_json) as ConversationView;
+      if(operation==='booking-hours'&&!localAllowed&&(cached.bookingHours||cached.bookingHoursExecution))throw new HttpError(409,'La retouche gratuite des horaires n’est plus disponible dans cette reprise. Aucun horaire modifié.','conversation_existing_read_only');
       if(recordsCommand&&!recordsAllowed&&(cached.bookingRecords||cached.bookingRecordsRead))throw new HttpError(409,'La lecture de ce planning n’est plus disponible dans cette reprise. Aucun rendez-vous modifié.','conversation_existing_read_only');
       if(promptsCommand&&!promptsAllowed&&(cached.localPrompts||cached.localPromptsRead))throw new HttpError(409,'La lecture de cette bibliothèque n’est plus disponible dans cette reprise. Aucun prompt exécuté.','conversation_existing_read_only');
       return cached;
@@ -113,14 +116,17 @@ export function submitExistingProjectMessage(user:User,cid:string,cmd:Command,ha
       if(cmd.context.target||!metadata.activeContext?.target){metadata.activeContext=resolved.selection;metadata.activeContextReference=stableHash('conversation-active-context-1',resolved);metadata.activeContextIdentity=resolved.canonical.identity;}
     }
     let localMessage:string|undefined;
-    if(cmd.action==='message'){delete metadata.bookingRecords;delete metadata.localPrompts;delete metadata.localSiteProposal;delete metadata.localSite;delete metadata.localFilesProposal;delete metadata.localFiles;delete metadata.localFolderRenameProposal;delete metadata.localFolderRename;delete metadata.localFolderMoveProposal;delete metadata.localFolderMove;}
+    if(cmd.action==='message'){delete metadata.bookingHours;delete metadata.bookingHoursProposal;delete metadata.bookingRecords;delete metadata.localPrompts;delete metadata.localSiteProposal;delete metadata.localSite;delete metadata.localFilesProposal;delete metadata.localFiles;delete metadata.localFolderRenameProposal;delete metadata.localFolderRename;delete metadata.localFolderMoveProposal;delete metadata.localFolderMove;}
     if(recordsCommand){
       if(recordsAllowed){metadata.bookingRecords=listBookingRecords(user,c,metadata,(cmd as Extract<Command,{action:'message'}>).text);localMessage=metadata.bookingRecords.message;}
     }else if(promptsCommand){
       if(promptsAllowed){metadata.localPrompts=listLocalPrompts(user,c,(cmd as Extract<Command,{action:'message'}>).text);localMessage=metadata.localPrompts.message;}
     }else if(localAllowed){
       const active={...c,state_json:JSON.stringify(metadata)};
-      if(operation==='local-site'){
+      if(operation==='booking-hours'){
+        if(cmd.action==='cancel-booking-hours'){if(metadata.bookingHoursProposal?.id!==cmd.proposalId)throw new HttpError(409,'Proposition d’horaires périmée.');delete metadata.bookingHoursProposal;delete metadata.bookingHours;localMessage='Retouche des horaires annulée, aucun changement.';}
+        else{metadata.bookingHours=cmd.action==='confirm-booking-hours'?confirmBookingHours(user,active,metadata,cmd.proposalId,cmd.requestId):proposeBookingHours(user,active,metadata,(cmd as Extract<Command,{action:'message'}>).text);localMessage=metadata.bookingHours.message;}
+      }else if(operation==='local-site'){
         if(cmd.action==='cancel-local'){cancelLocalSite(metadata,cmd.proposalId);localMessage='Proposition gratuite annulée, aucune version modifiée.';}else{metadata.localSite=cmd.action==='confirm-local'?confirmLocalSite(user,active,metadata,cmd.proposalId,cmd.requestId):proposeLocalSite(user,active,metadata,(cmd as Extract<Command,{action:'message'}>).text);localMessage=metadata.localSite.message;}
       }else if(operation==='files'){
         metadata.localFiles=cmd.action==='confirm-files'?confirmLocalFiles(user,active,metadata,cmd.proposalId,cmd.requestId):proposeLocalFiles(user,active,metadata,(cmd as Extract<Command,{action:'message'}>).text);
