@@ -1,5 +1,4 @@
-import { deleteProjectMemoryItem } from '@/lib/contenus/project-memory';
-import { z } from "zod";
+import { deleteProjectMemoryItem,memoryAddInput } from '@/lib/contenus/project-memory';
 import { all } from "@/lib/db";
 import { body, handle, ok } from "@/lib/http";
 import { remember } from "@/lib/projects";
@@ -12,7 +11,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
-  const b = await body(req, z.object({ kind: z.enum(["decision", "correction", "preference", "goal"]), key: z.string().min(1).max(120), value: z.string().min(1).max(2000), scope: z.enum(["all", "shop", "images", "video", "social", "brand"]).default("all") }));
+  const b = await body(req, memoryAddInput);
   remember(p.id, { ...b, source: "user" });
   return ok();
 });
