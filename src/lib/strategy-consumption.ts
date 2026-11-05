@@ -112,8 +112,10 @@ export function jobStrategy(projectId:string,type:string,payload:any,executing=f
 }
 
 /** Preserve provenance across manual editing without requiring new spending rights or current facts. */
-export function recordedContentStrategy(projectId:string,module:string,contentId:string):StrategyStamp|null {
- defaultStrategy(projectId);const r=one<any>('SELECT strategy_id,version,angle_id,input_digest FROM marketing_strategy_contents WHERE project_id=? AND module=? AND content_id=?',projectId,module,contentId);
+export function recordedContentStrategy(projectId:string,module:string,contentId:string,initialize=true):StrategyStamp|null {
+ if(initialize)defaultStrategy(projectId);
+ let r:any;try{r=one<any>('SELECT strategy_id,version,angle_id,input_digest FROM marketing_strategy_contents WHERE project_id=? AND module=? AND content_id=?',projectId,module,contentId);}
+ catch(error){if(!initialize&&error instanceof Error&&error.message==='no such table: marketing_strategy_contents')return null;throw error;}
  return r?.strategy_id?{id:r.strategy_id,version:r.version,angleId:r.angle_id,inputDigest:r.input_digest}:null;
 }
 
