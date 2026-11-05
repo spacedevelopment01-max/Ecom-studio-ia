@@ -2,6 +2,8 @@ import {bookingHoursCandidate,bookingHoursEnabled} from './local-booking-hours';
 import {bookingClosuresCandidate,bookingClosuresEnabled} from './local-booking-closures';
 import {restaurantSettingsCandidate} from './local-restaurant-settings';
 import {bookingRecordsEnabled} from './local-booking-records';
+import {bookingAvailabilityEnabled} from './local-booking-availability';
+import {bookingWorkshopsEnabled} from './local-booking-workshops';
 /** Exception locale bornée, fermée par défaut ; aucune permission générale ou Préparation créée. */
 import {localSiteCandidate,localSiteEnabled} from './local-site';
 import {localFilesCandidate,localFilesEnabled} from './local-files';
@@ -11,11 +13,13 @@ import {localPromptsEnabled} from './local-prompts';
 import type {Command} from './contract';
 export type ExistingLocalOperation='booking-closures'|'booking-hours'|'local-site'|'files'|'folder-rename'|'folder-move';
 export type ExistingLocalCapabilities={schema:'existing-local-free-1';ops:ExistingLocalOperation[];confirmationRequired:true;costEur:0;providerCalls:0;financialConsent:false};
-export type ExistingLocalReadCapabilities={schema:'existing-local-read-1';ops:('prompts'|'booking-records')[];readOnly:true;confirmationRequired:false;costEur:0;providerCalls:0;financialConsent:false};
+export type ExistingLocalReadCapabilities={schema:'existing-local-read-1';ops:('prompts'|'booking-records'|'booking-availability'|'booking-workshops')[];readOnly:true;confirmationRequired:false;costEur:0;providerCalls:0;financialConsent:false};
 export function existingLocalReads(bookingRecordsProject=false):ExistingLocalReadCapabilities|null{
  const ops:ExistingLocalReadCapabilities['ops']=[];
  if(process.env.STUDIO_CONVERSATION_EXISTING_PROMPTS_READ==='1'&&localPromptsEnabled())ops.push('prompts');
  if(bookingRecordsProject&&process.env.STUDIO_CONVERSATION_EXISTING_BOOKING_RECORDS_READ==='1'&&bookingRecordsEnabled())ops.push('booking-records');
+ if(bookingRecordsProject&&process.env.STUDIO_CONVERSATION_EXISTING_BOOKING_AVAILABILITY_READ==='1'&&bookingAvailabilityEnabled())ops.push('booking-availability');
+ if(bookingRecordsProject&&process.env.STUDIO_CONVERSATION_EXISTING_BOOKING_WORKSHOPS_READ==='1'&&bookingWorkshopsEnabled())ops.push('booking-workshops');
  return ops.length?{schema:'existing-local-read-1',ops,readOnly:true,confirmationRequired:false,costEur:0,providerCalls:0,financialConsent:false}:null;
 }
 export function existingLocalCapabilities(bookingProject=false):ExistingLocalCapabilities|null{

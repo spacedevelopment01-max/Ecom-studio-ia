@@ -11,9 +11,9 @@ export const localEditAllowed=(v:ConversationView,op:ExistingLocalOp)=>v.recover
 export const nativeLocalEditAllowed=(v:ConversationView)=>!v.recovery&&(v.localEditsWritable??!v.readOnlyReason);
 
 /** Explicit native metadata reads keep the brief and business actions closed. */
-export const localReadAllowed=(v:ConversationView,op:'prompts'|'booking-records')=>{
- if(op!=='prompts'&&op!=='booking-records')return false;
- const enabled=op==='prompts'?v.localPromptsRead?.enabled===true:v.bookingRecordsRead?.enabled===true;
+export const localReadAllowed=(v:ConversationView,op:'prompts'|'booking-records'|'booking-availability'|'booking-workshops')=>{
+ if(!['prompts','booking-records','booking-availability','booking-workshops'].includes(op))return false;
+ const enabled=op==='prompts'?v.localPromptsRead?.enabled===true:op==='booking-records'?v.bookingRecordsRead?.enabled===true:op==='booking-availability'?v.bookingAvailabilityRead?.enabled===true:v.bookingWorkshopsRead?.enabled===true;
  if(!enabled)return false;
  if(!v.recovery)return v.localEditsWritable??!v.readOnlyReason;
  const cap=v.recovery.localReads;
