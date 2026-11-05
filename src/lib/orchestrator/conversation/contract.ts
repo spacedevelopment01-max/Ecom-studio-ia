@@ -23,6 +23,8 @@ export const CommandSchema = z.discriminatedUnion("action", [
   base.extend({action:z.literal('cancel-folder-delete'),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal('confirm-booking-staff-catalog'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal('confirm-booking-window'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal('confirm-booking-move'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal('cancel-booking-move'),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal('confirm-booking-cancel'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal('confirm-booking-service-catalog'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal('cancel-booking-staff-catalog'),proposalId:z.string().min(1).max(120)}).strict(),
@@ -92,10 +94,12 @@ export type ConversationState = {
   bookingAvailability?:import('./local-booking-availability').BookingAvailabilityState;
   bookingStaffCatalogProposal?:import('./local-booking-staff-catalog').BookingStaffCatalogProposal;
   bookingWindowProposal?:import('./local-booking-window').BookingWindowProposal;
+  bookingMoveProposal?:import('./local-booking-move').BookingMoveProposal;
   bookingCancelProposal?:import('./local-booking-cancel').BookingCancelProposal;
   bookingServiceCatalogProposal?:import('./local-booking-service-catalog').BookingServiceCatalogProposal;
   bookingStaffCatalog?:import('./local-booking-staff-catalog').BookingStaffCatalogPresentation;
   bookingWindow?:import('./local-booking-window').BookingWindowPresentation;
+  bookingMove?:import('./local-booking-move').BookingMovePresentation;
   bookingCancel?:import('./local-booking-cancel').BookingCancelPresentation;
   bookingServiceCatalog?:import('./local-booking-service-catalog').BookingServiceCatalogPresentation;
   bookingRecords?:import('./local-booking-records').BookingRecordsState;
@@ -206,10 +210,12 @@ export type ConversationView = {
   bookingAvailabilityRead?:{enabled:true};
   bookingStaffCatalog?:import('./local-booking-staff-catalog').BookingStaffCatalogPresentation;
   bookingWindow?:import('./local-booking-window').BookingWindowPresentation;
+  bookingMove?:import('./local-booking-move').BookingMovePresentation;
   bookingCancel?:import('./local-booking-cancel').BookingCancelPresentation;
   bookingServiceCatalog?:import('./local-booking-service-catalog').BookingServiceCatalogPresentation;
   bookingStaffCatalogExecution?:{enabled:true};
   bookingWindowExecution?:{enabled:true};
+  bookingMoveExecution?:{enabled:true};
   bookingCancelExecution?:{enabled:true};
   bookingServiceCatalogExecution?:{enabled:true};
   bookingServiceText?:import('./local-booking-service-text').BookingServiceTextPresentation;
