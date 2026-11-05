@@ -1,3 +1,13 @@
+## Reprise active — 5 novembre 2026, 17 h 43 UTC
+
+**La mission reste incomplète.** Livraison **#458 /ea90b114108bc722e14ac1e5c1a046ac977116d3**, parent #457/e31c3171 puis #456/35bb6fc3. 31 nouveaux tests, 153 cas ciblés distincts /six fichiers et types verts. Catalogue naturel d’intervenants avec DTO bookingStaffCatalog/Execution, schéma syna-booking-staff-catalog-1, BOOKING_STAFF_CATALOG fermé par défaut, confirm/cancel-booking-staff-catalog, confirmation littéralement true. Aucun droit A1, carte ou preuve navigateur acquis par ce lot. Contrats précis dans LOT-INTERVENANTS-AJOUT-RETRAIT-SYNA.md, transmis à Claude #301 commentaire6664898663. Cumul **701 nouveaux tests distincts #423–#458**.
+
+Matrice **178 opérations uniques :80 PARTIEL /68 ABSENT /4 NON_TESTE /26 BLOQUE**, aucune complète. Deux sous-actions natives réelles ajout/retrait d’intervenant détaillées, domaine parent toujours partiel. Ne pas compter les régressions répétées comme nouveaux tests.
+
+**Lot suivant en cours** : `/workspace/work/parity301-file-trash-syna`, branche `codex/parity301-native-staff-hours`, parent ea90b114. Horaires propres natifs déjà présents dans an-salon.liquid, moteur worksAt ; contrat staffPatch ne les expose pas. Nouveau test tests/parity301-native-staff-hours.test.ts en cours de preuve rouge, aucun code corrigé à ce point. Réutiliser hoursSchema, pas de transformation des rendez-vous acquis. Vide signifie héritage des horaires du salon, jamais fermeture individuelle. Ne pas modifier les composants Claude.
+
+CI #454/0262f6fc entièrement verte (run42063364492, cinq contrôles). #452/fb38 annulée après environ100minutes pendant recette sociale, log « The operation was canceled » ; relance des échecs acceptée. Aucun défaut produit démontré. #455 tête2a51 suite/types, Docker et confirmation verts, recettes longues en cours. #456 run42070019372 et #457 run42075423988 en cours. #458 à relever. Aucun contrôle gratuit rendu optionnel, aucune CI héritée d’un autre SHA. Pas de dépense, activation client, publication ou fusion.
+
 ## Reprise active — 5 novembre 2026, 17 h 40 UTC
 
 **SYNA complète n’est pas terminée.** Dernier lot livré : **#457 / e31c3171d65e7b7ce06aea578ca44fbdeddc3213**, moteur natif staffAdd/staffRemove, parent **#456 /35bb6fc3df09c832b75fb01b1d91f28d5550871e**, après #455 tête **2a51db4300769980243186c1719426b3ec314af6** (code 0a538370 + horloge fixe). Main de référence reste #422 /6354f327888d70c64ce4d86604b7b8fdc768947c ; aucun merge/deploy/activation.
