@@ -1,0 +1,22 @@
+{
+  "pr": 491,
+  "remoteCommit": "9bb10f3233624a5f52ba150b72d212e0513a58fd",
+  "localTestedCommit": "1e75291d02fc945eb70e906d2ea3ceddb2de698e",
+  "identicalTree": "19615917f12e2743e3f7596ed262389106b62975",
+  "remoteParent": "3a63955aec85a07d7df4921cceb1e05a9a5dfafb",
+  "reason": "Git CLI authentication expired; authorized GitHub connector created identical blobs/tree and a commit with different metadata. No credential displayed.",
+  "blobs": {
+    "LOT-DUPLICATION-SOCIALE-USAGES-NATIFS.md": "4e41c1f3184310b812eac9c6935db7e7d6ad309c",
+    "src/lib/social-v2/engine.ts": "16a107b3728310485e3ae3dedb142f7cda419c47",
+    "tests/parity301-native-social-duplicate-usages.test.ts": "47155094766252b38f8654b15c090babc6ded044"
+  },
+  "tests": {
+    "new": 14,
+    "distinct": 31,
+    "types": "passed",
+    "realProviders": 0,
+    "realPublication": false,
+    "browserRecipe": false
+  },
+  "ci": "Pending on remote commit; no inherited verdict"
+}

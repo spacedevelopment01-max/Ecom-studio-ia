@@ -12,7 +12,7 @@ import { PLANS } from "../plans";
  */
 import { addDays, format } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
-import { all, id, json, now, one, run } from "../db";
+import { all, id, json, now, one, run, tx } from "../db";
 import { addUsage, getAsset, removeUsages } from "../library";
 import type { Project } from "../projects";
 import { createHash } from "node:crypto";
@@ -142,16 +142,22 @@ export function editPostV2(p: Project, postId: string, patch: ManualPatch): { re
 }
 
 export function duplicatePostV2(p: Project, postId: string): string {
-  const r = one<{ project_id: string }>("SELECT project_id FROM posts WHERE id = ?", postId);
+  return tx(()=>{
+  const r = one<{ project_id: string;media:string }>("SELECT project_id,media FROM posts WHERE id = ?", postId);
   if (!r || r.project_id !== p.id) throw new Error("publication introuvable");
+  const media=json<unknown>(r.media,null);
+  if(!Array.isArray(media)||media.some(m=>typeof m!=='string'||!m))throw new Error("références médias invalides");
+  for(const m of media)if(getAsset(m)?.project_id!==p.id)throw new Error("média étranger au projet ou introuvable");
   const nid = id();
   run(
     `INSERT INTO posts (id, project_id, plan_id, campaign_id, connection_id, network, format, status, scheduled_at, timezone, title, caption, hashtags, link, angle, media, brief, publish_key, created_at, updated_at, engine, pillar, objective, content_hash, group_id, user_edited)
      SELECT ?, project_id, plan_id, campaign_id, connection_id, network, format, 'review', scheduled_at, timezone, title, caption, hashtags, link, angle, media, brief, ?, ?, ?, 'v2', pillar, objective, content_hash, NULL, 1 FROM posts WHERE id = ?`,
     nid, `dup:${nid}`, now(), now(), postId,
   );
+  for(const m of media)addUsage(m,"post",nid,"Publication");
   strategyContent(p.id,"post",nid,{stamp:recordedContentStrategy(p.id,"post",postId),protected:true});
   return nid;
+  });
 }
 
 /** Supprimer : seulement ce qui n'est jamais parti (l'historique des publications envoyées est conservé). */
