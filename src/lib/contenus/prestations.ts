@@ -58,6 +58,14 @@ const servicePatchSchema = z.object({
   price: z.number().min(0).max(100000).nullable().optional(),
   duration: z.number().int().min(5).max(600).optional(),
 }).strict().refine((v) => v.price !== undefined || v.duration !== undefined, "Précisez le prix ou la durée.");
+const restaurantSchema = z.object({
+    openDays: z.array(z.number().int().min(0).max(6)).max(7),
+    lunchSlots: z.string().max(200).regex(SLOTS, "créneaux : « 12:00, 12:30 »"),
+    dinnerSlots: z.string().max(200).regex(SLOTS, "créneaux : « 19:00, 19:30 »"),
+    capacity: z.number().int().min(1).max(500),
+    minParty: z.number().int().min(1).max(50),
+    maxParty: z.number().int().min(1).max(50),
+});
 export const prestationsInput = z.object({
   servicePatch: servicePatchSchema.optional(),
   services: z.array(serviceSchema).max(60).superRefine(uniqueProvidedIds).optional(),
@@ -65,15 +73,9 @@ export const prestationsInput = z.object({
   hours: z.object(Object.fromEntries(DAYS.map((d) => [d, hoursSchema])) as Record<(typeof DAYS)[number], typeof hoursSchema>).partial().optional(),
   address: z.string().trim().max(300).optional(),
   closures: z.string().max(2000).regex(CLOSURES, "fermetures : dates AAAA-MM-JJ ou périodes AAAA-MM-JJ..AAAA-MM-JJ").optional(),
-  restaurant: z.object({
-    openDays: z.array(z.number().int().min(0).max(6)).max(7),
-    lunchSlots: z.string().max(200).regex(SLOTS, "créneaux : « 12:00, 12:30 »"),
-    dinnerSlots: z.string().max(200).regex(SLOTS, "créneaux : « 19:00, 19:30 »"),
-    capacity: z.number().int().min(1).max(500),
-    minParty: z.number().int().min(1).max(50),
-    maxParty: z.number().int().min(1).max(50),
-  }).optional(),
-}).refine((v) => !v.servicePatch || !v.services, "Ne mélangez pas remplacement et retouche ciblée des prestations.");
+  restaurant: restaurantSchema.optional(),
+  restaurantPatch: restaurantSchema.pick({openDays:true,lunchSlots:true,dinnerSlots:true}).partial().strict().refine(v=>v.openDays!==undefined||v.lunchSlots!==undefined||v.dinnerSlots!==undefined,"Précisez le jour ou le service à modifier.").optional(),
+}).refine((v) => !v.servicePatch || !v.services, "Ne mélangez pas remplacement et retouche ciblée des prestations.").refine(v=>!v.restaurantPatch||!v.restaurant,"Ne mélangez pas remplacement et retouche ciblée du restaurant.");
 export type PrestationsInput = z.infer<typeof prestationsInput>;
 
 /** Rendez-vous confirmés à venir, par prestation (salon : `salon_appointments.service`, cabinet : séance). */
@@ -228,6 +230,13 @@ function buildPrestations(projectId: string, raw: unknown) {
     const r = input.restaurant;
     if (r.minParty > r.maxParty) throw new HttpError(400, L("Le nombre minimum de couverts dépasse le maximum.", "The minimum party size exceeds the maximum."));
     Object.assign(st, { open_days: [...new Set(r.openDays)].sort().join(","), lunch_slots: r.lunchSlots.trim(), dinner_slots: r.dinnerSlots.trim(), capacity: r.capacity, min_party: r.minParty, max_party: r.maxParty });
+  }
+  if (input.restaurantPatch) {
+    if (sec.kind !== "restaurant") throw new HttpError(409,"Ce site ne comporte pas de réservation restaurant native.");
+    const patch = input.restaurantPatch;
+    if (patch.openDays !== undefined) st.open_days = [...new Set(patch.openDays)].sort().join(",");
+    if (patch.lunchSlots !== undefined) st.lunch_slots = patch.lunchSlots.trim();
+    if (patch.dinnerSlots !== undefined) st.dinner_slots = patch.dinnerSlots.trim();
   }
   return { sourceVersionId: cur.version.id, spec, warnings, address: input.address };
 }

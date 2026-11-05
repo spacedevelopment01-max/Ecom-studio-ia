@@ -61,7 +61,7 @@
   function rules() {
     var C = core(), list = function (v) { return String(v || '').split(/[\s,;]+/).filter(C.isTime); };
     return C.normalize({
-      timezone: CFG.timezone, openDays: String(CFG.openDays || '0,1,2,3,4,5,6').split(/[\s,;]+/).map(Number).filter(function (d) { return d >= 0 && d <= 6; }),
+      timezone: CFG.timezone, openDays: String(CFG.openDays == null ? '0,1,2,3,4,5,6' : CFG.openDays).split(/[\s,;]+/).filter(Boolean).map(Number).filter(function (d) { return d >= 0 && d <= 6; }),
       closures: C.parseClosures(CFG.closures), capacity: CFG.capacity, minParty: CFG.minParty, maxParty: CFG.maxParty, horizonDays: CFG.horizonDays, leadMinutes: CFG.leadMinutes,
       services: (CFG.services || []).map(function (s) { return { id: s.id, label: s.label, slots: list(s.slots) }; })
     });

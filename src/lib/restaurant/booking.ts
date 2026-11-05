@@ -94,7 +94,7 @@ export function restaurantSection(spec: Pick<ThemeSpec, "templates" | "groups">)
 
 /** Règles d'un restaurant lues dans les réglages de sa section de réservation (même lecture que le site). */
 export function configFromSettings(s: Record<string, unknown>): RestaurantConfig {
-  const days = String(s.open_days ?? "1,2,3,4,5,6").split(/[\s,;]+/).map(Number).filter((d) => Number.isInteger(d) && d >= 0 && d <= 6);
+  const days = String(s.open_days ?? "1,2,3,4,5,6").split(/[\s,;]+/).filter(Boolean).map(Number).filter((d) => Number.isInteger(d) && d >= 0 && d <= 6);
   return core.normalize({
     timezone: str(s.timezone) || "Europe/Paris",
     openDays: days,
