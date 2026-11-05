@@ -333,6 +333,13 @@ function ownedAppointment(projectId: string, t: Token, number: string): Appointm
   return a;
 }
 
+/** A move preserves the acquired interval; validate and suggest alternatives using that same duration. */
+function configForAcquiredMove(config: SalonConfig, a: Appointment): SalonConfig {
+  const duration = a.end_min - a.start_min;
+  if (!Number.isInteger(duration) || duration <= 0) throw new BookingError("invalid", 409);
+  return { ...config, services: config.services.map(service => service.id === a.service ? { ...service, duration, lengths: a.length && service.lengths[a.length] ? { ...service.lengths, [a.length]: { ...service.lengths[a.length], duration } } : service.lengths } : service) };
+}
+
 /**
  * Déplacement : le nouveau créneau (même prestation, même professionnel) est vérifié sans compter ce rendez-vous puis
  * écrit dans la même transaction ; l'ancien n'est libéré qu'à ce moment-là. Refusé dans le délai réglé par le salon.
@@ -345,8 +352,9 @@ export function moveAppointment(projectId: string, token: string, number: string
     if (a.status !== "confirmed") throw new BookingError("canceled", 409);
     if (!core.changeAllowed(r.config, { date: a.date, time: core.toTime(a.start_min) }, at)) throw new BookingError("too_late", 409);
     const q: SlotQuery = { date: str(change.date), service: a.service, staff: a.staff, length: a.length };
-    const errors = core.validate(r.config, { ...q, time: str(change.time) }, busyFor(projectId, q.date, a.id), at);
-    if (errors.length) throw new BookingError(errors.includes("slot_taken") || errors.includes("time") ? "unavailable" : "invalid", 409, { alternatives: alternatives(r, projectId, q, a.id, at) });
+    const config = configForAcquiredMove(r.config, a);
+    const errors = core.validate(config, { ...q, time: str(change.time) }, busyFor(projectId, q.date, a.id), at);
+    if (errors.length) throw new BookingError(errors.includes("slot_taken") || errors.includes("time") ? "unavailable" : "invalid", 409, { alternatives: alternatives({ ...r, config }, projectId, q, a.id, at) });
     const start = core.toMin(str(change.time));
     run("UPDATE salon_appointments SET date = ?, start_min = ?, end_min = ?, updated_at = ? WHERE id = ?", q.date, start, start + (a.end_min - a.start_min), at, a.id);
     return publicView({ ...a, date: q.date, start_min: start, end_min: start + (a.end_min - a.start_min), updated_at: at });
@@ -471,8 +479,9 @@ export function proMoveAppointment(projectId: string, number: string, change: { 
     const a = byNumber(projectId, number);
     if (a.status !== "confirmed") throw new BookingError("canceled", 409);
     const q: SlotQuery = { date: str(change.date), service: a.service, staff: str(change.staff) || a.staff, length: a.length };
-    const errors = core.validate(r.config, { ...q, time: str(change.time) }, busyFor(projectId, q.date, a.id), at);
-    if (errors.length) throw new BookingError(errors.includes("slot_taken") || errors.includes("time") ? "unavailable" : "invalid", 409, { alternatives: alternatives(r, projectId, q, a.id, at) });
+    const config = configForAcquiredMove(r.config, a);
+    const errors = core.validate(config, { ...q, time: str(change.time) }, busyFor(projectId, q.date, a.id), at);
+    if (errors.length) throw new BookingError(errors.includes("slot_taken") || errors.includes("time") ? "unavailable" : "invalid", 409, { alternatives: alternatives({ ...r, config }, projectId, q, a.id, at) });
     const start = core.toMin(str(change.time));
     run("UPDATE salon_appointments SET date = ?, start_min = ?, end_min = ?, staff = ?, updated_at = ? WHERE id = ?", q.date, start, start + (a.end_min - a.start_min), q.staff, at, a.id);
     return publicView({ ...a, date: q.date, start_min: start, end_min: start + (a.end_min - a.start_min), staff: q.staff ?? a.staff, updated_at: at });
