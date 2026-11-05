@@ -1,3 +1,4 @@
+import {BOOKING_READ_DATE_PATTERN,resolveBookingReadDate,type BookingReadDateResolution} from './booking-read-date';
 /** Owner-scoped remaining workshop places from the native cabinet engine. No enrolment or activation. */
 import { outsideQuotes } from './outside-quotes';
 import { withAiDisabled } from '../../ai/access';
@@ -19,7 +20,7 @@ export const bookingWorkshopsCandidate = (raw: string) => /^(?:montre|liste|affi
 export type BookingWorkshopsState = {
   schema: 'syna-booking-workshops-read-1'; state: 'listed' | 'ambiguous' | 'unavailable'; projectId: string; message: string;
   readOnly: true; scope: 'native_workshop_remaining_places_not_enrolment'; confirmationRequired: false; financialConsent: false;
-  costEur: 0; providerCalls: 0; actionsExecuted: false; publication: false; date?: string; workshopId?: string;
+  costEur: 0; providerCalls: 0; actionsExecuted: false; publication: false; date?: string; workshopId?: string; dateResolution?:BookingReadDateResolution;
 };
 export type BookingWorkshopsPresentation = BookingWorkshopsState & {
   kind?: 'cabinet'; bookingMode?: 'live' | 'demo'; timezone?: string; sourceVersionId?: string; observedAt?: number; nativeHref?: string;
@@ -37,12 +38,10 @@ function owned(user: User, c: ConversationRow) {
   ownedProject(user, c.project_id); requirePlan(user, c.project_id);
   if (loadProject(c.project_id).business !== 'services') throw new HttpError(409, 'Les ateliers réservables sont distincts du catalogue produit.');
 }
-function parse(raw: string) {
-  const text = request(raw), many = /^(?:montre|liste|affiche) les ateliers (?:disponibles|du cabinet) le (\d{4}-\d{2}-\d{2})$/iu.exec(text);
-  const one = /^(?:montre|liste|affiche) les places disponibles de l[’']atelier (?:«([^»\r\n]+)»|“([^”\r\n]+)”|"([^"\r\n]+)") le (\d{4}-\d{2}-\d{2})$/iu.exec(text);
-  if (!many && !one) return null;
-  const date = many?.[1] ?? one![4], at = Date.parse(date + 'T00:00:00Z'), source = one ? (one[1] ?? one[2] ?? one[3]).trim() : undefined;
-  return Number.isFinite(at) && new Date(at).toISOString().slice(0, 10) === date && (!one || source) ? { date, source } : null;
+function parse(raw:string){
+ const text=request(raw),many=new RegExp("^(?:montre|liste|affiche) les ateliers (?:disponibles|du cabinet) (?:le )?("+BOOKING_READ_DATE_PATTERN+")$",'iu').exec(text);
+ const quoted='(?:«([^»\\r\\n]+)»|“([^”\\r\\n]+)”|"([^"\\r\\n]+)")',one=new RegExp("^(?:montre|liste|affiche) les places disponibles de l[’']atelier "+quoted+" (?:le )?("+BOOKING_READ_DATE_PATTERN+")$",'iu').exec(text);
+ if(!many&&!one)return null;const source=one?(one[1]??one[2]??one[3]).trim():undefined;return one&&!source?null:{dateToken:many?.[1]??one![4],source};
 }
 export function listBookingWorkshops(user: User, c: ConversationRow, m: ConversationState, raw: string): BookingWorkshopsState {
   return withAiDisabled('Lecture gratuite des ateliers natifs, aucune inscription ni IA', () => readSnapshot(() => {
@@ -52,10 +51,11 @@ export function listBookingWorkshops(user: User, c: ConversationRow, m: Conversa
     const cur = currentTheme(c.project_id!), sec = cur && rdvSection(cur.spec);
     if (!sec) return state(c, 'unavailable', 'Aucun moteur de réservation natif disponible.');
     if (sec.kind !== 'cabinet') throw new HttpError(409, 'Ce planning n’est pas un cabinet avec ateliers natifs. Aucun restaurant ou salon substitué.');
-    const all = cabinetOf(c.project_id!).config.ateliers, selected = all.filter(a => a.date === parsed.date && (!parsed.source || a.id === parsed.source || a.title === parsed.source));
+    const config=cabinetOf(c.project_id!).config,resolved=resolveBookingReadDate(parsed.dateToken,config.timezone,now());if(!resolved)return question('Précisez une date réelle ou aujourd’hui/demain/après-demain avec un fuseau natif valide. Aucun repli UTC.');
+    const all = config.ateliers, selected = all.filter(a => a.date === resolved.date && (!parsed.source || a.id === parsed.source || a.title === parsed.source));
     if (parsed.source && selected.length !== 1) return question('Précisez un atelier natif unique à cette date, par identifiant en cas d’homonymes. Aucun premier atelier choisi.');
     if (selected.some(a => all.filter(other => other.id === a.id).length !== 1)) return question('Identifiant d’atelier natif dupliqué. Vérifiez le planning avant de consulter les places.');
-    return state(c, 'listed', 'Places restantes natives à cet instant. Aucune inscription ni place retenue ou garantie ; une inscription doit recontrôler la capacité.', { date: parsed.date, ...(parsed.source ? { workshopId: selected[0].id } : {}) });
+    return state(c, 'listed', 'Places restantes natives à cet instant. Aucune inscription ni place retenue ou garantie ; une inscription doit recontrôler la capacité.', { date: resolved.date, ...(resolved.dateResolution?{dateResolution:resolved.dateResolution}:{}), ...(parsed.source ? { workshopId: selected[0].id } : {}) });
   }));
 }
 export function bookingWorkshopsView(user: User, c: ConversationRow, s: BookingWorkshopsState): BookingWorkshopsPresentation {
@@ -63,6 +63,7 @@ export function bookingWorkshopsView(user: User, c: ConversationRow, s: BookingW
     owned(user, c); if (s.state !== 'listed' || !s.date) return s;
     const cur = currentTheme(c.project_id!), sec = cur && rdvSection(cur.spec);
     if (!cur || !sec || sec.kind !== 'cabinet') return state(c, 'unavailable', 'Le moteur a changé. Reformulez sans substituer un autre planning.');
+    if(s.dateResolution&&cabinetOf(c.project_id!).config.timezone!==s.dateResolution.timezone)return state(c,'unavailable','Le fuseau natif a changé depuis la date relative. Demandez une nouvelle lecture ; aucun jour réinterprété au rafraîchissement.');
     const native = cabinetOf(c.project_id!), at = now();
     if (native.mode !== 'live') return { ...state(c, 'unavailable', 'Le cabinet est en démonstration. Aucune place réelle consultée et aucune activation automatique.'), kind: 'cabinet', bookingMode: 'demo' };
     const selected = native.config.ateliers.filter(a => a.date === s.date && (!s.workshopId || a.id === s.workshopId));

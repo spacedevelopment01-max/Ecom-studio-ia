@@ -76,11 +76,11 @@ it.each(['salon', 'cabinet', 'restaurant'] as const)('%s demo is unavailable and
 
 it.each([
   'Montre les créneaux disponibles',
-  'Montre les créneaux disponibles pour le service réservable « Diagnostic fictif » demain',
+  'Montre les créneaux disponibles pour le service réservable « Diagnostic fictif » la semaine prochaine',
   'Montre les créneaux disponibles pour le service réservable « Diagnostic fictif » le 2026-02-31',
   'Montre les créneaux disponibles pour le service réservable « absent » le 2026-11-10',
   'Montre les créneaux disponibles pour le service réservable « Diagnostic fictif » le 2026-11-10 puis réserve',
-])('invalid, missing, relative or chained target clarifies without inventing availability: %s', async text => {
+])('invalid, missing, ambiguous-relative or chained target clarifies without inventing availability: %s', async text => {
   const f = await fixture(), fp = businessFingerprints(), p = await say(f, text);
   expect(p.bookingAvailability).toMatchObject({ state: 'ambiguous', confirmationRequired: false }); expect(p.bookingAvailability!.rows).toBeUndefined(); expect(businessFingerprints()).toEqual(fp);
 });

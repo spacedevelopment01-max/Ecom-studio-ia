@@ -72,7 +72,7 @@ it('large native workshop lists disclose truncation; an exact omitted ID can sti
   const exact = await say(f, phrase.replace('Pause fictive', 'extra-20')); expect(exact.bookingWorkshops).toMatchObject({ state: 'listed', total: 1, hasMore: false, rows: [{ id: 'extra-20', remaining: 3 }] }); expect(businessFingerprints()).toEqual(fp);
 });
 
-it.each(['Montre les ateliers disponibles demain', 'Montre les ateliers disponibles le 2026-02-31', `Montre les places disponibles de l’atelier « absent » le ${date}`, `Montre les places disponibles de l’atelier « Pause fictive » le ${date} puis réserve`])('invalid, absent, relative or chained read clarifies without an inscription: %s', async text => {
+it.each(['Montre les ateliers disponibles la semaine prochaine', 'Montre les ateliers disponibles le 2026-02-31', `Montre les places disponibles de l’atelier « absent » le ${date}`, `Montre les places disponibles de l’atelier « Pause fictive » le ${date} puis réserve`])('invalid, absent, ambiguous-relative or chained read clarifies without an inscription: %s', async text => {
   const f = await fixture(), fp = businessFingerprints(), p = await say(f, text); expect(p.bookingWorkshops?.state).toBe('ambiguous'); expect(p.bookingWorkshops!.rows).toBeUndefined(); expect(businessFingerprints()).toEqual(fp);
 });
 
@@ -96,7 +96,7 @@ it('quoted action words stay workshop-title data and do not route to file, hours
 });
 
 it.each(['listed', 'ambiguous', 'disabled'])('%s free workshop read cannot create or accept a paid quote', async status => {
-  const f = await fixture(), p = await say(f, status === 'ambiguous' ? 'Montre les ateliers disponibles demain' : phrase); if (status === 'disabled') vi.stubEnv('STUDIO_CONVERSATION_BOOKING_WORKSHOPS', '0');
+  const f = await fixture(), p = await say(f, status === 'ambiguous' ? 'Montre les ateliers disponibles la semaine prochaine' : phrase); if (status === 'disabled') vi.stubEnv('STUDIO_CONVERSATION_BOOKING_WORKSHOPS', '0');
   const v = conversationView(f.u, f.c.id), spend = emptySpend(), quotes = all('SELECT * FROM agent_conversation_quotes'); expect(() => createCognitiveQuote(f.u, f.c.id, { revision: v.revision, projectRevision: v.projectRevision })).toThrow(/parcours gratuit de réservation/); expect(all('SELECT * FROM agent_conversation_quotes')).toEqual(quotes);
   const q = id(); run('INSERT INTO agent_conversation_quotes(id,conversation_id,revision,project_revision,billing_key,plan_json,created_at) VALUES(?,?,?,?,?,?,?)', q, f.c.id, v.revision, v.projectRevision, f.u.id, '{}', now()); expect(() => confirmCognitiveQuote(f.u, f.c.id, q, id())).toThrow(/parcours gratuit de réservation/); expect(emptySpend()).toEqual(spend); expect(p.bookingWorkshops?.financialConsent).toBe(false);
 });
