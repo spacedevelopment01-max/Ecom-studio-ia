@@ -72,7 +72,15 @@ const restaurantSchema = z.object({
     minParty: z.number().int().min(1).max(50),
     maxParty: z.number().int().min(1).max(50),
 });
+const staffPatchSchema=z.object({
+  id:z.string().min(1).max(40),
+  name:staffSchema.shape.name.optional(),
+  title:staffSchema.shape.title.removeDefault().optional(),
+  skills:staffSchema.shape.skills.removeDefault().optional(),
+  days:staffSchema.shape.days.removeDefault().optional(),
+}).strict().refine(v=>v.name!==undefined||v.title!==undefined||v.skills!==undefined||v.days!==undefined,"Précisez le nom, la spécialité, les compétences ou les jours de l’intervenant.");
 export const prestationsInput = z.object({
+  staffPatch:staffPatchSchema.optional(),
   servicePatch: servicePatchSchema.optional(),
   services: z.array(serviceSchema).max(60).superRefine(uniqueProvidedIds).optional(),
   staff: z.array(staffSchema).max(20).superRefine(uniqueProvidedIds).optional(),
@@ -83,7 +91,7 @@ export const prestationsInput = z.object({
   restaurantPartyPatch: restaurantSchema.pick({minParty:true,maxParty:true}).strict().refine(r=>r.minParty<=r.maxParty,"Le nombre minimum de couverts dépasse le maximum.").optional(),
   restaurantCapacityPatch: restaurantSchema.pick({capacity:true}).strict().optional(),
   restaurantPatch: restaurantSchema.pick({openDays:true,lunchSlots:true,dinnerSlots:true}).partial().strict().refine(v=>v.openDays!==undefined||v.lunchSlots!==undefined||v.dinnerSlots!==undefined,"Précisez le jour ou le service à modifier.").optional(),
-}).refine(v=>!v.restaurantPartyPatch||!v.restaurant&&!v.restaurantPatch&&!v.restaurantCapacityPatch,"Ne mélangez pas taille des groupes et autres réglages restaurant.").refine(v=>!v.restaurantCapacityPatch||!v.restaurant&&!v.restaurantPatch,"Ne mélangez pas retouche de capacité et autres réglages restaurant.").refine((v) => !v.servicePatch || !v.services, "Ne mélangez pas remplacement et retouche ciblée des prestations.").refine(v=>!v.restaurantPatch||!v.restaurant,"Ne mélangez pas remplacement et retouche ciblée du restaurant.");
+}).refine(v=>!v.staffPatch||!v.staff,"Ne mélangez pas remplacement et retouche ciblée des intervenants.").refine(v=>!v.restaurantPartyPatch||!v.restaurant&&!v.restaurantPatch&&!v.restaurantCapacityPatch,"Ne mélangez pas taille des groupes et autres réglages restaurant.").refine(v=>!v.restaurantCapacityPatch||!v.restaurant&&!v.restaurantPatch,"Ne mélangez pas retouche de capacité et autres réglages restaurant.").refine((v) => !v.servicePatch || !v.services, "Ne mélangez pas remplacement et retouche ciblée des prestations.").refine(v=>!v.restaurantPatch||!v.restaurant,"Ne mélangez pas remplacement et retouche ciblée du restaurant.");
 export type PrestationsInput = z.infer<typeof prestationsInput>;
 
 /** Rendez-vous confirmés à venir, par prestation (salon : `salon_appointments.service`, cabinet : séance). */
@@ -207,6 +215,15 @@ function buildPrestations(projectId: string, raw: unknown) {
     if (patch.duration !== undefined) settings.duration = patch.duration;
     if (patch.duration !== undefined && old.upcoming && old.duration !== patch.duration) warnings.push(L(`« ${old.name} » : les rendez-vous déjà pris (${old.upcoming}) conservent leur durée enregistrée (${old.duration} min).`, `“${old.name}”: already booked appointments (${old.upcoming}) keep their recorded length (${old.duration} min).`));
     syncShown(spec, sec.kind, new Map([[patch.id, { name: patch.name ?? old.name, oldName: old.name, duration: patch.duration ?? old.duration, price: patch.price !== undefined ? patch.price : old.price, priceFrom: old.priceFrom }]]), { price: patch.price !== undefined, duration: patch.duration !== undefined });
+  }
+  if (input.staffPatch) {
+    const patch=input.staffPatch,rows=blocksOf(section).filter(b=>b.block.type==='member'&&b.block.settings?.member_id===patch.id);
+    if(sec.kind!=='salon'||rows.length!==1||before.staff.filter(m=>m.id===patch.id).length!==1)throw new HttpError(409,"Intervenant natif absent ou ambigu. Rechargez sans substitution.");
+    const settings=rows[0].block.settings!;
+    if(patch.name!==undefined){settings.name=patch.name;settings.initial=patch.name.charAt(0).toUpperCase();}
+    if(patch.title!==undefined)settings.title=patch.title;
+    if(patch.skills!==undefined)settings.skills=patch.skills.join(',');
+    if(patch.days!==undefined)settings.days=patch.days.join(',');
   }
   if (input.staff && sec.kind === "salon") {
     const currentBlocks = blocksOf(section);
