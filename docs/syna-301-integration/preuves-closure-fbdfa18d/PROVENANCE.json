@@ -1,0 +1,57 @@
+{
+  "schema": "syna-closure-proof-1",
+  "recordedAt": "2026-11-05T20:41:38.387501+00:00",
+  "application": {
+    "commit": "fbdfa18deb6056c5377e4d33de7f4d6db1519cba",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "buildId": "iml3cdoHnoaNUzaHdvrhV",
+  "passed": true,
+  "cases": 2,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "simulatedHttpCallsAtEnd": 14,
+  "limits": [
+    "Recette de bilan produit/service, pas qualification des nouvelles cartes de réservation.",
+    "Fournisseur HTTP local simulé ; qualité créative réelle non qualifiée.",
+    "Aucun CMS installé ou client réel modifié ; aucune activation ou publication.",
+    "CI GitHub complète du SHA encore en file au relevé."
+  ],
+  "initialAttempt": {
+    "passed": false,
+    "stage": "before browser journey",
+    "reason": "Playwright ffmpeg-1011 cache executable missing",
+    "retainedAt": "/tmp/parity301-closure-fbdfa18d-proof"
+  },
+  "runtimeFix": {
+    "productCodeChanged": false,
+    "playwrightBrowsersPath": "/tmp/parity301-playwright",
+    "ffmpegSymlinkTarget": "/usr/bin/ffmpeg",
+    "ffmpegVersion": "7.1.5-0+deb13u1"
+  },
+  "artifacts": [
+    {
+      "path": "closure/parcours.json",
+      "bytes": 9687,
+      "sha256": "02156a632287e713e88af8fc23f83f0bdcfa24be2a5c1d4715faa343ee0d2577"
+    },
+    {
+      "path": "closure/captures/01-produit-mobile.png",
+      "bytes": 81357,
+      "sha256": "8cc583f388232b51c86e13f411b2d00813341ca2a562cf693ce1a05e869efc58"
+    },
+    {
+      "path": "closure/captures/02-service-ordinateur.png",
+      "bytes": 111623,
+      "sha256": "0f52f2ab6bceb1ac767efc6f8bcd1b55529f796ef86db55c4ce1eaf391f1999a"
+    },
+    {
+      "path": "closure/parcours.webm",
+      "bytes": 1954888,
+      "sha256": "4e1a3d0bee6d8dc70876b5d64b22e2554f2d26e1c9fd95c78ebbaf5c02a1b890"
+    }
+  ]
+}
