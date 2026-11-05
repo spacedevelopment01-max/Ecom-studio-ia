@@ -363,8 +363,8 @@ export function moveAppointment(projectId: string, token: string, number: string
 
 /** Annulation explicite : le rendez-vous n'est plus actif et libère son créneau. Refusée dans le délai réglé par le salon. */
 export function cancelAppointment(projectId: string, token: string, number: string, at = now()) {
-  const r = liveSalon(projectId);
   return tx(() => {
+    const r = liveSalon(projectId);
     const t = tokenOf(projectId, token, at);
     const a = ownedAppointment(projectId, t, number);
     if (a.status === "canceled") return publicView(a);
