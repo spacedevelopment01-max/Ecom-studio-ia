@@ -287,6 +287,13 @@ export function appointmentFor(projectId: string, token: string, at = now()) {
   return { appointment: publicView(a, r), changeAllowed: a.status === "confirmed" && core.changeAllowed(r.config, { date: a.date, time: core.toTime(a.start_min) }, at), cancelTerms: r.cancelTerms };
 }
 
+/** A move preserves the acquired interval; validate and suggest alternatives using that same duration. */
+function configForAcquiredMove(config: CabinetConfig, a: Appointment): CabinetConfig {
+  const duration = a.end_min - a.start_min;
+  if (!Number.isInteger(duration) || duration <= 0) throw new BookingError("invalid", 409);
+  return { ...config, seances: config.seances.map(service => service.id === a.service ? { ...service, duration } : service) };
+}
+
 /**
  * Modification d'horaire d'une séance : le nouveau créneau est vérifié sans compter ce rendez-vous puis écrit dans la
  * même transaction ; l'ancien n'est libéré qu'à ce moment. Un atelier ne se déplace pas (sa date est celle de l'atelier).
@@ -299,8 +306,9 @@ export function moveAppointment(projectId: string, token: string, change: { date
     if (a.kind !== "seance") throw new BookingError("not_movable", 409);
     if (!core.changeAllowed(r.config, { date: a.date, time: core.toTime(a.start_min) }, at)) throw new BookingError("too_late", 409);
     const q = { date: str(change.date) || a.date, service: a.service };
-    const errors = core.validate(r.config, { kind: "seance", ...q, modality: a.modality, time: str(change.time) }, { busy: busyFor(projectId, q.date, a.id) }, at);
-    if (errors.length) throw new BookingError(errors.includes("slot_taken") || errors.includes("time") ? "unavailable" : "invalid", 409, { alternatives: alternatives(r, projectId, q, a.id, at) });
+    const config = configForAcquiredMove(r.config, a);
+    const errors = core.validate(config, { kind: "seance", ...q, modality: a.modality, time: str(change.time) }, { busy: busyFor(projectId, q.date, a.id) }, at);
+    if (errors.length) throw new BookingError(errors.includes("slot_taken") || errors.includes("time") ? "unavailable" : "invalid", 409, { alternatives: alternatives({ ...r, config }, projectId, q, a.id, at) });
     const start = core.toMin(str(change.time));
     run("UPDATE cabinet_appointments SET date = ?, start_min = ?, end_min = ?, updated_at = ? WHERE id = ?", q.date, start, start + (a.end_min - a.start_min), at, a.id);
     return publicView({ ...a, date: q.date, start_min: start, end_min: start + (a.end_min - a.start_min), updated_at: at }, r);
@@ -333,8 +341,9 @@ export function proMoveAppointment(projectId: string, number: string, change: { 
     if (a.status !== "confirmed") throw new BookingError("canceled", 409);
     if (a.kind !== "seance") throw new BookingError("not_movable", 409);
     const q = { date: str(change.date) || a.date, service: a.service };
-    const errors = core.validate(r.config, { kind: "seance", ...q, modality: a.modality, time: str(change.time) }, { busy: busyFor(projectId, q.date, a.id) }, at);
-    if (errors.length) throw new BookingError(errors.includes("slot_taken") || errors.includes("time") ? "unavailable" : "invalid", 409, { alternatives: alternatives(r, projectId, q, a.id, at) });
+    const config = configForAcquiredMove(r.config, a);
+    const errors = core.validate(config, { kind: "seance", ...q, modality: a.modality, time: str(change.time) }, { busy: busyFor(projectId, q.date, a.id) }, at);
+    if (errors.length) throw new BookingError(errors.includes("slot_taken") || errors.includes("time") ? "unavailable" : "invalid", 409, { alternatives: alternatives({ ...r, config }, projectId, q, a.id, at) });
     const start = core.toMin(str(change.time));
     run("UPDATE cabinet_appointments SET date = ?, start_min = ?, end_min = ?, updated_at = ? WHERE id = ?", q.date, start, start + (a.end_min - a.start_min), at, a.id);
     return publicView({ ...a, date: q.date, start_min: start, end_min: start + (a.end_min - a.start_min), updated_at: at }, r);
