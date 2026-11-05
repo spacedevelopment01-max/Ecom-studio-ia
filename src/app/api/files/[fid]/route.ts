@@ -1,8 +1,8 @@
-import {changeFileMetadata,restoreFileMetadata} from '@/lib/library-local-change';
+import {changeFileMetadata,restoreFileMetadata,trashFileMetadata} from '@/lib/library-local-change';
 import fs from "node:fs";
 import { recordMediaRejection } from "@/lib/brain/rejections";
 import { z } from "zod";
-import { all, json, now, one, run } from "@/lib/db";
+import { all, run } from "@/lib/db";
 import { body, handle, ok, parseRange } from "@/lib/http";
 import { HttpError, ownedProject, requireUser } from "@/lib/auth";
 import { getAsset, publicAssetSummary, usagesOf, type Asset } from "@/lib/library";
@@ -72,10 +72,6 @@ export const PATCH = handle(async (req: Request, ctx: { params: Promise<{ fid: s
 /** Mise à la corbeille (restaurable). Un média utilisé par une publication programmée ou publiée reste protégé. */
 export const DELETE = handle(async (_req: Request, ctx: { params: Promise<{ fid: string }> }) => {
   const a = await assetOf(ctx);
-  const used = all<{ target_type: string; target_id: string }>("SELECT target_type, target_id FROM asset_usages WHERE asset_id = ?", a.id);
-  const blocking = used.filter((u) => u.target_type === "post" && one("SELECT 1 FROM posts WHERE id = ? AND status IN ('scheduled','publishing','published')", u.target_id));
-  if (blocking.length) throw new HttpError(409, L("Ce média est utilisé par une publication programmée ou publiée : retirez-le d'abord de la publication.", "This media is used by a scheduled or published post: remove it from the post first."));
-  if (a.role === "original" && json<any>(a.meta, {}).protected) throw new HttpError(409, L("Original protégé.", "Protected original."));
-  run("UPDATE assets SET deleted_at = ? WHERE id = ?", now(), a.id);
-  return ok({ usages: used.length });
+  const saved=trashFileMetadata({assetId:a.id,projectId:a.project_id,userId:a.user_id});
+  return ok({ usages: saved.usages.length });
 });
