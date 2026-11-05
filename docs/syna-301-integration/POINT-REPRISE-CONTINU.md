@@ -1,3 +1,7 @@
+## Reprise active — 5 novembre 2026,15 h 18 Paris
+
+Lire [REPRISE-5-NOVEMBRE-RESERVATIONS.md](REPRISE-5-NOVEMBRE-RESERVATIONS.md). Tête#443/9fc4cbdb,lecture planning native minimale25nouveaux/89ciblés/types ;matrice172:74PARTIEL/68ABSENT/4NON_TESTE/26BLOQUE,aucune complète. Prochaine analyse déjà faite :exception A1 de lecture planning,aucun code commencé. Cartes/CI nouvelles encore ouvertes ;états suivants historiques.
+
 ## Reprise active — 5 novembre 2026,15 h 04 Paris
 
 Lire [REPRISE-5-NOVEMBRE-RESERVATIONS.md](REPRISE-5-NOVEMBRE-RESERVATIONS.md). Tête#442/39f6341f,prérequis#441/f1bbe410 ;matrice171:72PARTIEL/69ABSENT/4NON_TESTE/26BLOQUE,aucune complète. Preuve bibliothèque5a89a93f seulement surapplication69b1756f. #436 CI entière verte ;nouveaux runs à suivre,#437 Docker non diagnostiqué faute logs/runactif. Prochaine analyse:lecture datée des réservations natives,aucun nouveau code commencé. États suivants historiques.

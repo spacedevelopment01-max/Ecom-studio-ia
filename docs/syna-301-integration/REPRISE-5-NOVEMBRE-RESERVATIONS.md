@@ -1,3 +1,19 @@
+## Reprise active — 5 novembre 2026,14 h 18 UTC /15 h 18 Paris
+
+Tête fonctionnelle propre **9fc4cbdbe0b139963a2cee240e0024d5db40f3bd /#443** (branche codex/parity301-booking-records-read).25nouveaux tests,89distincts/4fichiers/types verts ;HTTPauth17s+GET projet/GET natif/relecture d’ajout manuel/rejeu1message sans écriture métier. Contrat `bookingRecords`/`bookingRecordsRead`,BOOKING_RECORDS fermé,lecture datée93jours maximum/numéro précis/50métadonnées,GET relit les moteurs natifs salon/cabinet/restaurant. Contacts/notes/jetons/hashes/liens de gestion exclus ;sourcekind changée=unavailable,aucune substitution. Numéro cité vide reproduit rouge puis clarifié. Aucune réservation réelle ni disponibilité/activation annoncée. Rapport LOT-LECTURE-RESERVATIONS-NATIVES.md ;coordination#301 commentaire6660232073. Carte/anti-devis/recette compilée Claude restent ouverts.
+
+**405 tests nouveaux distincts #423–#443.** Matrice **172 opérations :74PARTIEL/68ABSENT/4NON_TESTE/26BLOQUE**,aucune complète. Ajout de la lecture native omise appointments.list ;appointments.settings passe documentairement àPARTIEL car ses sous-actions sont prouvées,mais sa commande générale du registre reste adapter:none. Aucun succès de plus ni fonction supplémentaire déduit de cette réconciliation. Tous les anciens états ci-dessous sont historiques.
+
+Prochaine lacune indépendante :**lecture planning dans une reprise A1**. Analyse faite seulement :existing-local-policy dispose d’une capacité de lecture prompts isolée ;prévoir une opération booking-records sous drapeau EXISTING_BOOKING_RECORDS_READ séparé/fermé,condition projet services et mêmes gardes natifs,aucune permission d’écriture ou IA. existing-project doit contrôler retrait de droits/drapeau AVANT retour du cache et ne créer aucune Préparation ;localReadAllowed doit reconnaître la nouvelle capacité précise. Ajouter un verrou withAiDisabled sur la lecture native GET (actuellement pure sans fournisseur) comme les autres lecteurs. Tests historiques/versions/shop.chat/octets/finances conservés,flagoff/compte/plan/cachedreply et mutateurs toujours refusés,puis HTTP17s. **Aucun code ou branche A1 nouveau commencé à cet instant.**
+
+CI :#423/#431/#434/#436 entièrement vertes ;#437 suite6393/31skip etconfirmation gratuites vertes,Docker rouge/logs404/relance403 car run encore actif,natif long en cours. #438 suite6408/31skip,Docker/confirmation verts,natif long en cours. #439/#440 Docker/confirmation verts,autres jobs en cours. #441 run42039970165 ;#442 run42041304283 ;relever#443 après déclenchement. Aucun garde ni contrôle gratuit affaibli. Environnement fonctionne ;pas de blocage “create environment”. Les cartes nouvelles Claude et recettes communes restent les blocages UI documentés,aucune réponse Claude observée au dernier relevé.
+
+La preuve5a89a93f reste uniquement l’application69b1756f/buildRZOlN5nxSKyT1Rk4Zdc7H :16parcours/64étapes +4compléments,130PNG locales,0provider/extérieur/JS/finances modifiées après baseline initialisée. Elle ne qualifie pas les nouveaux contrats#439–#443. Source principale parity301-file-trash-syna propre#443 ;preuve checkout parity301-intents-v5 propre5a89a93f ;docs checkout parity301-booking-docs. Espace libre~660MiB ;aucun serveur de recette de ces lots actif ;3WIP historiques à préserver.
+
+Aucune fusion,activation,déploiement,client ou fournisseur réel. Continuer les lacunes indépendantes sans attendre les CI ;préparer devis et accord seulement si un test fournisseur réel payant devient indispensable. Mission globale non terminée.
+
+---
+
 ## Reprise active — 5 novembre 2026,14 h 04 UTC /15 h 04 Paris
 
 Ce point remplace les états historiques plus bas. **Mission complète toujours en cours ; environnement fonctionnel.**
