@@ -1,3 +1,5 @@
+import {bookingAvailabilityCandidate,listBookingAvailability,bookingAvailabilityView} from './local-booking-availability';
+import {bookingWorkshopsCandidate,listBookingWorkshops,bookingWorkshopsView} from './local-booking-workshops';
 import {proposeBookingClosures,confirmBookingClosures} from './local-booking-closures';
 import {proposeBookingHours,confirmBookingHours} from './local-booking-hours';
 import {bookingRecordsCandidate,listBookingRecords,bookingRecordsView} from './local-booking-records';
@@ -71,6 +73,8 @@ export function existingProjectView(user:User,cid:string,before?:number):Convers
       schema:'studio-conversation-1',id:c.id,projectId:c.project_id,revision:c.revision,projectRevision:null,mode:'local',progress:'review',
       message:reason(local),readOnlyReason:reason(local),question:null,correctionFields:[],creation:null,action:null,
       recovery:{schema:'existing-project-recovery-1',state:'read-only',context:data,contextVersion:version,observedAt:now(),actionsEnabled:false,aiEnabled:false,providerCalls:0,...(local?{localEdits:local}:{}),...(reads?{localReads:reads}:{})},
+      ...(reads?.ops.includes('booking-availability')?{bookingAvailabilityRead:{enabled:true as const},...(metadata.bookingAvailability?{bookingAvailability:bookingAvailabilityView(user,c,metadata.bookingAvailability)}:{})}:{}),
+      ...(reads?.ops.includes('booking-workshops')?{bookingWorkshopsRead:{enabled:true as const},...(metadata.bookingWorkshops?{bookingWorkshops:bookingWorkshopsView(user,c,metadata.bookingWorkshops)}:{})}:{}),
       ...(reads?.ops.includes('booking-records')?{bookingRecordsRead:{enabled:true as const},...(metadata.bookingRecords?{bookingRecords:bookingRecordsView(user,c,metadata.bookingRecords)}:{})}:{}),
       ...(reads?.ops.includes('prompts')?{localPromptsRead:{enabled:true as const},...(metadata.localPrompts?{localPrompts:localPromptsView(user,c,metadata.localPrompts)}:{})}:{}),
       ...(local?.ops.includes('booking-closures')?{bookingClosuresExecution:{enabled:true as const},...(metadata.bookingClosures?{bookingClosures:metadata.bookingClosures}:{})}:{}),
@@ -94,6 +98,8 @@ export function submitExistingProjectMessage(user:User,cid:string,cmd:Command,ha
     if(!isExistingProjectRead(c))throw new HttpError(409,'conversation_not_existing_read');
     const local=existingLocalCapabilities(loadProject(c.project_id!).business==='services'),operation=existingLocalOperation(cmd),localAllowed=!!operation&&!!local?.ops.includes(operation);
     const reads=existingLocalReads(loadProject(c.project_id!).business==='services'),recordsCommand=cmd.action==='message'&&bookingRecordsCandidate(cmd.text),recordsAllowed=reads?.ops.includes('booking-records')===true;
+    const availabilityCommand=cmd.action==='message'&&bookingAvailabilityCandidate(cmd.text),availabilityAllowed=reads?.ops.includes('booking-availability')===true;
+    const workshopsCommand=cmd.action==='message'&&bookingWorkshopsCandidate(cmd.text),workshopsAllowed=reads?.ops.includes('booking-workshops')===true;
     const promptsCommand=cmd.action==='message'&&localPromptsCandidate(cmd.text),promptsAllowed=reads?.ops.includes('prompts')===true;
     // Le retrait du drapeau/droit ne transforme pas un ancien reçu en nouveau pouvoir d'exécution.
     if((cmd.action==='confirm-booking-closures'||cmd.action==='cancel-booking-closures'||cmd.action==='confirm-booking-hours'||cmd.action==='cancel-booking-hours'||cmd.action==='confirm-local'||cmd.action==='confirm-files'||cmd.action==='confirm-folder-rename'||cmd.action==='cancel-folder-rename'||cmd.action==='confirm-folder-move'||cmd.action==='cancel-folder-move')&&!localAllowed)throw new HttpError(409,reason(),'conversation_existing_read_only');
@@ -104,6 +110,8 @@ export function submitExistingProjectMessage(user:User,cid:string,cmd:Command,ha
       const cached=JSON.parse(prior.response_json) as ConversationView;
       if(operation==='booking-closures'&&!localAllowed&&(cached.bookingClosures||cached.bookingClosuresExecution))throw new HttpError(409,'Les fermetures datées ne sont plus disponibles dans cette reprise. Aucune date modifiée.','conversation_existing_read_only');
       if(operation==='booking-hours'&&!localAllowed&&(cached.bookingHours||cached.bookingHoursExecution))throw new HttpError(409,'La retouche gratuite des horaires n’est plus disponible dans cette reprise. Aucun horaire modifié.','conversation_existing_read_only');
+      if(availabilityCommand&&!availabilityAllowed&&(cached.bookingAvailability||cached.bookingAvailabilityRead))throw new HttpError(409,'La lecture des disponibilités n’est plus disponible dans cette reprise. Aucune réservation modifiée.','conversation_existing_read_only');
+      if(workshopsCommand&&!workshopsAllowed&&(cached.bookingWorkshops||cached.bookingWorkshopsRead))throw new HttpError(409,'La lecture des ateliers n’est plus disponible dans cette reprise. Aucune inscription modifiée.','conversation_existing_read_only');
       if(recordsCommand&&!recordsAllowed&&(cached.bookingRecords||cached.bookingRecordsRead))throw new HttpError(409,'La lecture de ce planning n’est plus disponible dans cette reprise. Aucun rendez-vous modifié.','conversation_existing_read_only');
       if(promptsCommand&&!promptsAllowed&&(cached.localPrompts||cached.localPromptsRead))throw new HttpError(409,'La lecture de cette bibliothèque n’est plus disponible dans cette reprise. Aucun prompt exécuté.','conversation_existing_read_only');
       return cached;
@@ -119,8 +127,12 @@ export function submitExistingProjectMessage(user:User,cid:string,cmd:Command,ha
       if(cmd.context.target||!metadata.activeContext?.target){metadata.activeContext=resolved.selection;metadata.activeContextReference=stableHash('conversation-active-context-1',resolved);metadata.activeContextIdentity=resolved.canonical.identity;}
     }
     let localMessage:string|undefined;
-    if(cmd.action==='message'){delete metadata.bookingClosures;delete metadata.bookingClosuresProposal;delete metadata.bookingHours;delete metadata.bookingHoursProposal;delete metadata.bookingRecords;delete metadata.localPrompts;delete metadata.localSiteProposal;delete metadata.localSite;delete metadata.localFilesProposal;delete metadata.localFiles;delete metadata.localFolderRenameProposal;delete metadata.localFolderRename;delete metadata.localFolderMoveProposal;delete metadata.localFolderMove;}
-    if(recordsCommand){
+    if(cmd.action==='message'){delete metadata.bookingAvailability;delete metadata.bookingWorkshops;delete metadata.bookingClosures;delete metadata.bookingClosuresProposal;delete metadata.bookingHours;delete metadata.bookingHoursProposal;delete metadata.bookingRecords;delete metadata.localPrompts;delete metadata.localSiteProposal;delete metadata.localSite;delete metadata.localFilesProposal;delete metadata.localFiles;delete metadata.localFolderRenameProposal;delete metadata.localFolderRename;delete metadata.localFolderMoveProposal;delete metadata.localFolderMove;}
+    if(availabilityCommand){
+      if(availabilityAllowed){metadata.bookingAvailability=listBookingAvailability(user,c,metadata,(cmd as Extract<Command,{action:'message'}>).text);localMessage=metadata.bookingAvailability.message;}
+    }else if(workshopsCommand){
+      if(workshopsAllowed){metadata.bookingWorkshops=listBookingWorkshops(user,c,metadata,(cmd as Extract<Command,{action:'message'}>).text);localMessage=metadata.bookingWorkshops.message;}
+    }else if(recordsCommand){
       if(recordsAllowed){metadata.bookingRecords=listBookingRecords(user,c,metadata,(cmd as Extract<Command,{action:'message'}>).text);localMessage=metadata.bookingRecords.message;}
     }else if(promptsCommand){
       if(promptsAllowed){metadata.localPrompts=listLocalPrompts(user,c,(cmd as Extract<Command,{action:'message'}>).text);localMessage=metadata.localPrompts.message;}
