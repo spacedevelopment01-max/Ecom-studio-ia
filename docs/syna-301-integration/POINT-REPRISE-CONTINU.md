@@ -1,3 +1,5 @@
+Reprise prioritaire : [#494 tête finale aa4f6828,16nouveaux/35tests et combinaison55/55](REPRISE-5-NOVEMBRE-RESERVATIONS.md). Mission incomplète ; anciens journaux limités, CI exacte à suivre.
+
 Reprise prioritaire : [5 novembre, après #493/#494 et audit Claude #492](REPRISE-5-NOVEMBRE-RESERVATIONS.md). Mission incomplète ; aucune refonte ni nouvel aiguilleur engagé. Suivre CI exactes et limites des anciens journaux avant intégration.
 
 Reprise prioritaire : [5 novembre,16h36UTC](REPRISE-5-NOVEMBRE-RESERVATIONS.md),#455/0a538370. Mission incomplète ;prochain lot natif ajout/retrait d’intervenants.

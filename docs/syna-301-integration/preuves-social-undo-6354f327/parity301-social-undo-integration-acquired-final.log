@@ -1,0 +1,9 @@
+
+ RUN  v5.0.3 /tmp/parity301-undo-integration-bffa
+
+
+ Test Files  2 passed (2)
+      Tests  55 passed (55)
+   Start at  23:48:40
+   Duration  26.98s (tests 83%, transform 11%, import 6%)
+

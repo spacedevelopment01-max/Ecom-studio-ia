@@ -1,7 +1,7 @@
 {
   "baseMain": "6354f327888d70c64ce4d86604b7b8fdc768947c",
-  "localFix": "c067eb98e82bcf19020cae0be5354e3149766753",
-  "localFixTree": "7591150a86ae74d1c6a490eb2ad4effcffb02c50",
+  "localFix": "1994f659134ed4fa6e92e0b52cf7771bf2a70537",
+  "localFixTree": "7d286e8d6e11a96d582bb574e3347cca463eb13b",
   "diagnostic": {
     "passed": 1,
     "failed": 2,
@@ -9,8 +9,8 @@
     "multiprocess": false
   },
   "corrected": {
-    "newTests": 14,
-    "distinctValidated": 33,
+    "newTests": 16,
+    "distinctValidated": 35,
     "types": "passed",
     "realMonotonicDelayMs": 17000,
     "browserRecipe": false,
@@ -20,6 +20,14 @@
     {
       "file": "diagnostic-main.txt",
       "sha256": "deece9a1b246563e49a1cedd59a39e65da7dff2af8dce224320ef8a91286f4d0"
+    },
+    {
+      "file": "parity301-native-social-undo-acquired-final.log",
+      "sha256": "78be04974ed7ea5c97c5b9978cb418abe75b52717e02c76eb9550a15b7d3e853"
+    },
+    {
+      "file": "parity301-native-social-undo-acquired-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
       "file": "parity301-native-social-undo-final.log",
@@ -46,6 +54,22 @@
       "sha256": "b6403ca485a85ef2a37b272546a2d1bdcfecfeaae1603490b12a59851c0d4580"
     },
     {
+      "file": "parity301-social-undo-acquired-source-red-corrected-fixture.log",
+      "sha256": "dddbf3b2677d2324f217c16eebc476983665ffa419503829890f74d1401ae214"
+    },
+    {
+      "file": "parity301-social-undo-acquired-source-red.log",
+      "sha256": "3b5b0ac1af10858aaaeab0546a526c66ee1273fd86c4aa8c17c01ec65bb024e1"
+    },
+    {
+      "file": "parity301-social-undo-integration-acquired-final.log",
+      "sha256": "967e54bca1283de165e09f159d8244818aa4a80e24c1ee28c3c672ce3942391f"
+    },
+    {
+      "file": "parity301-social-undo-integration-acquired-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
       "file": "parity301-social-undo-integration-tests.log",
       "sha256": "2e57a4eae9bcf7f8801f7b4e38bab232b2379a7e70b3f0cb4ed6c9f9429fa3f9"
     },
@@ -58,12 +82,23 @@
       "sha256": "d30164b9f3e3c47a545553b1b479cf426ae8a90224b229cd7fa1fca43a4bb4ed"
     }
   ],
-  "publishedFix": "0518e09865b06bbd97bb2b95fca6d066476907df",
+  "publishedFix": "aa4f6828b3f89595deff1fab4dfb0d83b8acecb8",
   "combinedProof": {
     "baseRemote": "bffa3a7f127548e97e80e3269d79f9df29b22038",
-    "localCommit": "f1631f070",
-    "testsPassed": 53,
+    "localCommit": "a753e570d",
+    "testsPassed": 55,
     "types": "passed",
     "publishedAsIntegration": false
+  },
+  "additionalDiagnostic": {
+    "baseLocal": "c067eb98e82bcf19020cae0be5354e3149766753",
+    "baseRemote": "0518e09865b06bbd97bb2b95fca6d066476907df",
+    "actualFailures": 2,
+    "fixtureFailuresBeforeCorrection": 2,
+    "statesSeededSQL": [
+      "scheduled",
+      "paused"
+    ],
+    "realScheduleOrPublication": false
   }
 }

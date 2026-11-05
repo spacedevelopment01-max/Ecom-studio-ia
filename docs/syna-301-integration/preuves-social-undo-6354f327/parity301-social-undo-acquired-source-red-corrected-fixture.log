@@ -1,0 +1,69 @@
+
+ RUN  v5.0.3 /tmp/parity301-undo-main-6354f327
+
+ ❯ tests/parity301-native-social-undo-guard.test.ts (16 tests | 2 failed | 14 skipped) 267ms
+   × undo a copy preserves its untouched scheduled source without rescheduling or rewriting it 145ms
+   × undo a copy preserves its untouched paused source without rescheduling or rewriting it 120ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/parity301-native-social-undo-guard.test.ts > undo a copy preserves its untouched scheduled source without rescheduling or rewriting it
+AssertionError: expected { id: 'u5r7lag9q9jwtq1a', …(39) } to deeply equal { id: 'u5r7lag9q9jwtq1a', …(39) }
+
+- Expected
++ Received
+
+@@ -32,11 +32,11 @@
+    "publish_key": "fixture:u5r7lag9q9jwtq1a",
+    "published_at": null,
+    "remote_id": null,
+    "remote_url": null,
+    "scheduled_at": 1794304800000,
+-   "status": "scheduled",
++   "status": "approved",
+    "timezone": "Europe/Paris",
+    "title": "Source fictive",
+    "updated_at": 1793865600000,
+    "user_edited": 0,
+  }
+
+ ❯ tests/parity301-native-social-undo-guard.test.ts:29:522
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/parity301-native-social-undo-guard.test.ts > undo a copy preserves its untouched paused source without rescheduling or rewriting it
+AssertionError: expected { id: 'civ4c2fxe6hgy0zk', …(39) } to deeply equal { id: 'civ4c2fxe6hgy0zk', …(39) }
+
+- Expected
++ Received
+
+@@ -32,11 +32,11 @@
+    "publish_key": "fixture:civ4c2fxe6hgy0zk",
+    "published_at": null,
+    "remote_id": null,
+    "remote_url": null,
+    "scheduled_at": 1794304800000,
+-   "status": "paused",
++   "status": "approved",
+    "timezone": "Europe/Paris",
+    "title": "Source fictive",
+    "updated_at": 1793865600000,
+    "user_edited": 0,
+  }
+
+ ❯ tests/parity301-native-social-undo-guard.test.ts:29:522
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 14 skipped (16)
+   Start at  23:47:13
+   Duration  4.42s (transform 59%, import 34%, tests 6%)
+
+  Transform  transforming modules took 2.51s · 59% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+
