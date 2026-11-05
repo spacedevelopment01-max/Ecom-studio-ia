@@ -21,6 +21,8 @@ export const CommandSchema = z.discriminatedUnion("action", [
   base.extend({action:z.literal('cancel-file-trash'),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal('confirm-folder-delete'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal('cancel-folder-delete'),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal('confirm-booking-service-catalog'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal('cancel-booking-service-catalog'),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal('confirm-booking-service-text'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal('cancel-booking-service-text'),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal('confirm-booking-closures'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
@@ -80,6 +82,8 @@ export const CommandSchema = z.discriminatedUnion("action", [
 export type Command = z.infer<typeof CommandSchema>;
 /** Un seul Brief natif pour le brouillon ; après rattachement, il est retiré et relu via stateOf(projectId). */
 export type ConversationState = {
+  bookingServiceCatalogProposal?:import('./local-booking-service-catalog').BookingServiceCatalogProposal;
+  bookingServiceCatalog?:import('./local-booking-service-catalog').BookingServiceCatalogPresentation;
   bookingRecords?:import('./local-booking-records').BookingRecordsState;
   bookingStaffProposal?:import('./local-booking-staff').BookingStaffProposal;
   bookingStaff?:import('./local-booking-staff').BookingStaffPresentation;
@@ -182,6 +186,8 @@ export type ConversationView = {
   localFileTrashExecution?:{enabled:true};
   localFolderDelete?:import('./local-folder-delete').FolderDeletePresentation;
   localFolderDeleteExecution?:{enabled:true};
+  bookingServiceCatalog?:import('./local-booking-service-catalog').BookingServiceCatalogPresentation;
+  bookingServiceCatalogExecution?:{enabled:true};
   bookingServiceText?:import('./local-booking-service-text').BookingServiceTextPresentation;
   bookingServiceTextExecution?:{enabled:true};
   bookingClosures?:import('./local-booking-closures').BookingClosuresPresentation;
