@@ -241,12 +241,12 @@ export function publicView(a: Appointment) {
 /** Enregistre un rendez-vous après vérification atomique du créneau sur toute sa durée. */
 export function createAppointment(projectId: string, input: CreateInput, at = now()): { appointment: Appointment; clientToken: string | null; duplicate: boolean } {
   ensureTables();
-  const r = liveSalon(projectId);
   const email = str(input.email).toLowerCase(), idem = /^[\w-]{8,80}$/.test(String(input.idem ?? "")) ? String(input.idem) : null;
   const length = ["short", "mid", "long"].includes(String(input.length)) ? String(input.length) : "";
   const q: SlotQuery = { date: str(input.date), service: str(input.service), staff: str(input.staff) || "any", length };
   const contact = { firstName: input.firstName, lastName: input.lastName, email, phone: str(input.phone), terms: input.terms === true };
   return tx(() => {
+    const r = liveSalon(projectId);
     if (idem) {
       const prev = one<Appointment>("SELECT * FROM salon_appointments WHERE project_id = ? AND idem = ?", projectId, idem);
       // Double clic ou renvoi du même formulaire : le même rendez-vous, sans nouvel accès (le premier reste valable).
@@ -338,8 +338,8 @@ function ownedAppointment(projectId: string, t: Token, number: string): Appointm
  * écrit dans la même transaction ; l'ancien n'est libéré qu'à ce moment-là. Refusé dans le délai réglé par le salon.
  */
 export function moveAppointment(projectId: string, token: string, number: string, change: { date: string; time: string }, at = now()) {
-  const r = liveSalon(projectId);
   return tx(() => {
+    const r = liveSalon(projectId);
     const t = tokenOf(projectId, token, at);
     const a = ownedAppointment(projectId, t, number);
     if (a.status !== "confirmed") throw new BookingError("canceled", 409);
@@ -466,8 +466,8 @@ function byNumber(projectId: string, number: string): Appointment {
  * imposé aux clients ne s'applique pas au salon.
  */
 export function proMoveAppointment(projectId: string, number: string, change: { date: string; time: string; staff?: string }, at = now()) {
-  const r = liveSalon(projectId);
   return tx(() => {
+    const r = liveSalon(projectId);
     const a = byNumber(projectId, number);
     if (a.status !== "confirmed") throw new BookingError("canceled", 409);
     const q: SlotQuery = { date: str(change.date), service: a.service, staff: str(change.staff) || a.staff, length: a.length };

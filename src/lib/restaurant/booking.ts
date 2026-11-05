@@ -152,10 +152,10 @@ export function publicView(res: Reservation) {
 /** Enregistre une réservation après vérification atomique de la disponibilité. */
 export function createReservation(projectId: string, input: CreateInput, at = now()): { reservation: Reservation; token: string | null; duplicate: boolean } {
   ensureTables();
-  const r = liveRestaurant(projectId);
   const email = str(input.email).toLowerCase(), idem = /^[\w-]{8,80}$/.test(String(input.idem ?? "")) ? String(input.idem) : null;
   const request = { party: Number(input.party), date: str(input.date), time: str(input.time), contact: { firstName: input.firstName, lastName: input.lastName, email, phone: str(input.phone), terms: input.terms === true } };
   return tx(() => {
+    const r = liveRestaurant(projectId);
     if (idem) {
       const prev = one<Reservation>("SELECT * FROM restaurant_reservations WHERE project_id = ? AND idem = ?", projectId, idem);
       // Double clic ou renvoi du même formulaire : la même réservation, sans nouveau jeton (le premier reste valable).
@@ -192,8 +192,8 @@ export function reservationByToken(projectId: string, number: string, token: str
 
 /** Modification (personnes, date, heure, remarque) : disponibilité vérifiée de nouveau, hors couverts de cette réservation. */
 export function modifyReservation(projectId: string, number: string, token: string, change: { party?: number; date?: string; time?: string; note?: string }, at = now()): Reservation {
-  const r = liveRestaurant(projectId);
   return tx(() => {
+    const r = liveRestaurant(projectId);
     const res = reservationByToken(projectId, number, token);
     if (res.status !== "confirmed") throw new BookingError("canceled", 409);
     const next = { party: change.party === undefined ? res.party : Number(change.party), date: change.date === undefined ? res.date : str(change.date), time: change.time === undefined ? res.time : str(change.time) };
@@ -229,8 +229,8 @@ function byNumber(projectId: string, number: string): Reservation {
 
 /** Modification par le restaurant (studio) : couverts, date, heure ; disponibilité vérifiée hors couverts de cette réservation. */
 export function proModifyReservation(projectId: string, number: string, change: { party?: number; date?: string; time?: string }, at = now()): Reservation {
-  const r = liveRestaurant(projectId);
   return tx(() => {
+    const r = liveRestaurant(projectId);
     const res = byNumber(projectId, number);
     if (res.status !== "confirmed") throw new BookingError("canceled", 409);
     const next = { party: change.party === undefined ? res.party : Number(change.party), date: change.date === undefined ? res.date : str(change.date), time: change.time === undefined ? res.time : str(change.time) };

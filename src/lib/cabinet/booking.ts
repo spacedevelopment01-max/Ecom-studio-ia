@@ -233,11 +233,11 @@ function alternatives(r: Cabinet, projectId: string, q: { date: string; service:
 /** Enregistre un rendez-vous (séance : créneau vérifié sur toute la durée ; atelier : place comptée) dans une transaction. */
 export function createAppointment(projectId: string, input: CreateInput, at = now()): { appointment: Appointment; token: string | null; duplicate: boolean } {
   ensureTables();
-  const r = liveCabinet(projectId);
   const email = str(input.email).toLowerCase(), idem = /^[\w-]{8,80}$/.test(String(input.idem ?? "")) ? String(input.idem) : null;
   const kind = input.kind === "atelier" ? "atelier" : "seance";
   const contact = { firstName: input.firstName, lastName: input.lastName, email, phone: str(input.phone), terms: input.terms === true };
   return tx(() => {
+    const r = liveCabinet(projectId);
     if (idem) {
       const prev = one<Appointment>("SELECT * FROM cabinet_appointments WHERE project_id = ? AND idem = ?", projectId, idem);
       // Double clic ou renvoi du même formulaire : le même rendez-vous, sans nouvel accès.
@@ -292,8 +292,8 @@ export function appointmentFor(projectId: string, token: string, at = now()) {
  * même transaction ; l'ancien n'est libéré qu'à ce moment. Un atelier ne se déplace pas (sa date est celle de l'atelier).
  */
 export function moveAppointment(projectId: string, token: string, change: { date: string; time: string }, at = now()) {
-  const r = liveCabinet(projectId);
   return tx(() => {
+    const r = liveCabinet(projectId);
     const a = ownedAppointment(projectId, tokenOf(projectId, token, at));
     if (a.status !== "confirmed") throw new BookingError("canceled", 409);
     if (a.kind !== "seance") throw new BookingError("not_movable", 409);
@@ -327,8 +327,8 @@ function byNumber(projectId: string, number: string): Appointment {
 
 /** Déplacement d'une séance par le cabinet (studio) : même contrôle de créneau, sans le délai imposé aux clients. */
 export function proMoveAppointment(projectId: string, number: string, change: { date: string; time: string }, at = now()) {
-  const r = liveCabinet(projectId);
   return tx(() => {
+    const r = liveCabinet(projectId);
     const a = byNumber(projectId, number);
     if (a.status !== "confirmed") throw new BookingError("canceled", 409);
     if (a.kind !== "seance") throw new BookingError("not_movable", 409);
