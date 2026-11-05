@@ -24,7 +24,10 @@ export function emptyInput(): Input {
 export function metaOf(c: ConversationRow): ConversationState {
   return JSON.parse(c.state_json) as ConversationState;
 }
-export function ownedConversation(user: User, conversationId: string): ConversationRow {
+export function isExistingProjectRead(c: ConversationRow) {
+  return !!c.project_id && metaOf(c).recovery?.mode === 'read-only';
+}
+export function ownedConversation(user: User, conversationId: string, allowExistingRead = false): ConversationRow {
   assertConversationEnabled();
   const c = one<ConversationRow>("SELECT * FROM agent_conversations WHERE id=? AND user_id=?", conversationId, user.id);
   if (!c) throw new HttpError(404, L("Conversation introuvable.", "Conversation not found."), "conversation_not_found");
@@ -32,6 +35,12 @@ export function ownedConversation(user: User, conversationId: string): Conversat
     ownedProject(user, c.project_id);
     identifyProject(c.project_id);
     setProjectContentLang(loadProject(c.project_id).settings.language);
+    if (isExistingProjectRead(c)) {
+      requirePlan(user, c.project_id);
+      // Tous les adaptateurs et la cognition passent par ce garde par défaut.
+      // Seules les lectures/écritures du fil A1 optent explicitement pour la lecture historique.
+      if (!allowExistingRead) throw new HttpError(409, L("Ce projet est repris en lecture seule. Les outils et réponses IA ne sont pas raccordés dans A1 ; utilisez les écrans existants.", "This project is resumed read-only. Tools and AI replies are not connected in A1; use the existing screens."), 'conversation_existing_read_only');
+    }
   }
   return c;
 }
@@ -63,12 +72,12 @@ export function openDraft(user: User) {
 export function projectConversation(user: User, projectId: string) {
   assertConversationEnabled(); ownedProject(user, projectId);
   const c = one<ConversationRow>("SELECT * FROM agent_conversations WHERE project_id=? AND user_id=?", projectId, user.id);
-  return c ? ownedConversation(user, c.id) : null;
+  return c ? ownedConversation(user, c.id, true) : null;
 }
 function hasAcquiredData(p:ReturnType<typeof loadProject>){
   return stableHash("conversation-empty-product",p.product)!==stableHash("conversation-empty-product",emptyProduct()) || Object.keys(json(p.row.brand_json,{})).length>0 || Object.keys(json(p.row.strategy_json,{})).length>0 || p.catalog.length || p.sources.length || p.row.current_theme_version_id || one("SELECT 1 FROM theme_versions WHERE project_id=? LIMIT 1",p.id) || one("SELECT 1 FROM jobs WHERE project_id=? LIMIT 1",p.id) || one("SELECT 1 FROM assets WHERE project_id=? LIMIT 1",p.id) || one("SELECT 1 FROM ai_calls WHERE project_id=? LIMIT 1",p.id);
 }
-/** Rattachement seulement à un projet vide, déjà créé par le système d'abonnement existant. */
+/** Le brouillon ne remplace jamais des acquis. Un ancien projet se rattache en lecture seulement. */
 export function openProjectConversation(user: User, projectId: string, draftId?: string, draftRevision?: number) {
   assertConversationEnabled(); ownedProject(user, projectId); requirePlan(user, projectId); identifyProject(projectId);
   return tx(() => {
@@ -96,8 +105,13 @@ export function openProjectConversation(user: User, projectId: string, draftId?:
       return ownedConversation(user, c.id);
     }
     if (!s) {
-      if(hasAcquiredData(p) || p.services.services.length || p.services.email || p.services.phone)
-        throw new HttpError(409,L("La migration de ce projet existant n’est pas raccordée au lot A. Son parcours reste intact.","Migration of this existing project is not connected in lot A. Its workflow remains intact."),"conversation_migration_unavailable");
+      if (hasAcquiredData(p) || stableHash('conversation-services', p.services) !== stableHash('conversation-services', emptyServiceProfile())) {
+        const cid=id(),t=now(),m=metadata(null,true);
+        m.business=p.business;
+        m.recovery={schema:'existing-project-read-1',mode:'read-only'};
+        run("INSERT INTO agent_conversations (id,user_id,project_id,state_json,created_at,updated_at) VALUES (?,?,?,?,?,?)",cid,user.id,projectId,JSON.stringify(m),t,t);
+        return ownedConversation(user,cid,true);
+      }
       const input = { ...emptyInput(), business: p.business, offerName: p.product.name, description: p.product.summary, services: p.services };
       initialize(projectId, input);
     }

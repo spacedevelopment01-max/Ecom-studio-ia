@@ -138,8 +138,9 @@ export function createFolder(projectId: string, name: string, parentId: string |
 /** Empêche de déplacer un dossier dans l'un de ses descendants. */
 export function isDescendant(projectId: string, folderId: string, maybeChild: string | null): boolean {
   let cur = maybeChild;
-  let guard = 0;
-  while (cur && guard++ < 64) {
+  const visited = new Set<string>();
+  while (cur && !visited.has(cur)) {
+    visited.add(cur);
     if (cur === folderId) return true;
     cur = one<{ parent_id: string | null }>("SELECT parent_id FROM folders WHERE id = ? AND project_id = ?", cur, projectId)?.parent_id ?? null;
   }
@@ -177,7 +178,9 @@ async function probeVideo(file: string): Promise<{ width?: number; height?: numb
 
 const SAFE_EXT = new Set(["png", "jpg", "jpeg", "webp", "gif", "avif", "heic", "heif", "svg", "mp4", "mov", "webm", "m4v", "mp3", "wav", "m4a", "ogg", "pdf", "zip", "csv", "txt", "json", "md", "docx", "xlsx", "pptx", "ttf", "otf", "woff", "woff2", "psd", "ai", "eps"]);
 
-export async function saveAsset(input: SaveAssetInput): Promise<Asset> {
+/** Optional synchronous SERVER callback, never an HTTP field: participates in the existing asset transaction. */
+export async function saveAsset(input: SaveAssetInput, commit?: (asset: Asset) => undefined): Promise<Asset> {
+  if(commit&&(typeof commit!=="function"||commit.constructor.name==='AsyncFunction'))throw new Error('Asset commit must be synchronous');
   assertProjectOwner(input.userId, input.projectId);
   if (!assetWithinScope({ user_id: input.userId, project_id: input.projectId })) throw new HttpError(404, L("Média introuvable.", "Media not found."));
   for (const ref of [input.sourceAssetId, input.versionOf]) {
@@ -233,7 +236,7 @@ export async function saveAsset(input: SaveAssetInput): Promise<Asset> {
   }
 
   const folderId = input.folderId !== undefined ? input.folderId : input.folderKey ? folderByKey(input.projectId, input.folderKey) : null;
-  return tx(() => {
+  try { return tx(() => {
   let version = 1;
   if (input.versionOf) {
     version = (one<{ v: number }>("SELECT MAX(version) v FROM assets WHERE version_of = ? OR id = ?", input.versionOf, input.versionOf)?.v ?? 1) + 1;
@@ -264,8 +267,15 @@ export async function saveAsset(input: SaveAssetInput): Promise<Asset> {
     now(),
   );
   if (input.origin === "generated") strategyContent(input.projectId, "asset", aid, { stamp: strategy });
-  return getAsset(aid)!;
-  });
+  const asset=getAsset(aid)!;
+  const result:unknown=commit?.(asset);
+  if(result&&typeof (result as {then?:unknown}).then==='function')throw new Error('Asset commit must be synchronous');
+  return asset;
+  }); } catch(error) {
+    // Only private files allocated by THIS failed attempt; acquired files and aliases are never removed.
+    if(commit)for(const created of [key,thumbKey])if(created){try{fs.rmSync(storagePath(created),{force:true});}catch{}}
+    throw error;
+  }
 }
 
 export function getAsset(assetId: string): Asset | undefined {

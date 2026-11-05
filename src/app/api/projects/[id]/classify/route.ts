@@ -5,6 +5,6 @@ import { L } from "@/lib/i18n-server";
 
 export const POST = handle(async (_req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  const job = enqueue({ userId: user.id, projectId: p.id, type: "files.classify", label: L("Classement des fichiers", "Sorting files"), payload: { projectId: p.id } });
+  const job = enqueue({ userId: user.id, projectId: p.id, type: "files.classify", label: L("Classement local des fichiers", "Local file sorting"), payload: { projectId: p.id,localOnly:true,aiOff:true,costCapMicro:0 } });
   return ok({ jobId: job.id });
 });

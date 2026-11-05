@@ -17,7 +17,8 @@ import type { ProjectSub } from "./project-subscription";
 import { costUsage, type CostAction } from "@/lib/ai/cost-confirm";
 export { costUsage, type CostAction } from "@/lib/ai/cost-confirm";
 
-type State = { kind: "confirm" | "empty"; many?: boolean; local: boolean; sub: ProjectSub; resolve: (go: boolean) => void };
+type ExactQuote={estimatePct:number;maximumPct:number;maximumCalls?:number;retriesIncluded?:boolean};
+type State = { kind: "confirm" | "empty"; many?: boolean; local: boolean; sub: ProjectSub;quote?:ExactQuote; resolve: (go: boolean) => void };
 
 export function useCostConfirm() {
   const t = useT();
@@ -30,20 +31,20 @@ export function useCostConfirm() {
 
   /** Résout vrai si l'action peut partir. */
   const confirm = useCallback(
-    async (action: CostAction, opts: { beats?: number; localOk?: boolean; videos?: "ai" | "edited" | "none" } = {}) => {
+    async (action: CostAction, opts: { beats?: number; localOk?: boolean; videos?: "ai" | "edited" | "none";quote?:ExactQuote } = {}) => {
       const u = costUsage(action, opts.videos);
-      if (!u || !projectId) return true;
+      if (!u || !projectId) return !opts.quote;
       let sub: ProjectSub | null;
       try {
         sub = (await api<{ subscription: ProjectSub | null }>(`/api/projects/${projectId}/subscription`)).subscription;
       } catch {
-        return true; // la vérification ne doit jamais bloquer : le serveur contrôle le budget
+        return !opts.quote; // Un devis exact ne vaut jamais confirmation quand sa fenêtre n'a pas été montrée.
       }
       // Découverte (sans forfait) : moteur local, aucun budget à décompter.
-      if (!sub?.ai) return true;
+      if (!sub?.ai) return !opts.quote;
       const kind: State["kind"] = sub.ai.paused ? "empty" : "confirm";
-      if (kind === "confirm" && !u.ask) return true;
-      return new Promise<boolean>((resolve) => setState({ kind, many: u.many, local: u.local, sub: sub!, resolve }));
+      if (kind === "confirm" && !u.ask && !opts.quote) return true;
+      return new Promise<boolean>((resolve) => setState({ kind, many: u.many, local: u.local, sub: sub!,quote:opts.quote, resolve }));
     },
     [projectId],
   );
@@ -70,6 +71,7 @@ export function useCostConfirm() {
   const left = ai ? aiLeftPct(ai) : 0;
   const renews = s ? formatDate(s.sub.aiRenewsAt ?? s.sub.periodEnd ?? Date.now(), { day: "numeric", month: "long" }) : "";
   const canTopUp = !!s && (s.sub.status === "active" || s.sub.status === "manual");
+  const quotePct=(value:number)=>new Intl.NumberFormat(lang,{maximumSignificantDigits:6}).format(value);
   const title = !s ? "" : s.kind === "empty" ? left > 0 ? t("Budget IA disponible insuffisant", "Insufficient available AI budget") : t("Budget IA du projet épuisé", "Project AI budget used up") : t("Avant de lancer", "Before you start");
   const dialog = (
     <Modal open={!!s} onClose={() => close(false)} title={title}>
@@ -85,6 +87,7 @@ export function useCostConfirm() {
                     : t("Cette création utilise une part du budget IA de ce projet.", "This uses part of this project's AI budget.")}
                 </span>
               </p>
+              {s.quote&&<p data-exact-image-quote>{s.quote.retriesIncluded ? t(`Plafond de cette demande : ${quotePct(s.quote.maximumPct)} % du budget IA. Les contrôles et reprises éventuelles restent dans ce plafond.`,`Request cap: ${quotePct(s.quote.maximumPct)}% of the AI budget. Checks and any retries stay within this cap.`) : t(`Devis de cette demande : estimation ${quotePct(s.quote.estimatePct)} % ; plafond ${quotePct(s.quote.maximumPct)} % du budget IA. Au plus ${s.quote.maximumCalls} appels, sans relance automatique.`,`Quote for this request: estimate ${quotePct(s.quote.estimatePct)}%; cap ${quotePct(s.quote.maximumPct)}% of the AI budget. At most ${s.quote.maximumCalls} calls, without automatic retry.`)}</p>}
               <div>
                 <p className="flex items-center justify-between gap-3 text-xs text-ink-2">
                   <span className="inline-flex items-center gap-1.5"><Gauge className="size-3.5" aria-hidden />{t("Budget IA du projet", "Project AI budget")}</span>

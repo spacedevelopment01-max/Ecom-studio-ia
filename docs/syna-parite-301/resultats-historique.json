@@ -1,0 +1,309 @@
+{
+ "schema": "syna-parite-301-resultats-1",
+ "resultats": {
+  "encre": {
+   "ui": "PASSE",
+   "specialists": "PASSE",
+   "specialists-tools-tools-ui": "PASSE",
+   "specialists-tools-theme-ui": "PASSE",
+   "composition-ui-original-ui": "PASSE",
+   "exports-ui": "PASSE",
+   "render-ui": "PASSE",
+   "research-ui": "PASSE",
+   "catalogue-ui": "PASSE",
+   "images-ui": "PASSE",
+   "retouches-ui": "PASSE",
+   "logos-ui": "PASSE",
+   "videos-ui": "PASSE",
+   "generated-videos-ui": "PASSE",
+   "voice-ui": "PASSE",
+   "clip-ui": "PASSE",
+   "social-ui": "PASSE",
+   "social-production-ui": "PASSE",
+   "campaign-ui": "PASSE",
+   "campaign-visual-ui": "PASSE",
+   "social-aspect-ui": "PASSE",
+   "social-reuse-ui": "PASSE",
+   "background-communication-ui": "PASSE",
+   "content-ui": "PASSE",
+   "brand-ui-brand-review-brand-correction": "PASSE",
+   "blog-ui": "PASSE",
+   "logo-selection-ui": "PASSE",
+   "closure-ui": "PASSE",
+   "context-ui": "PASSE",
+   "context-manual-ui": "PASSE",
+   "choices-ui": "PASSE",
+   "knowledge-ui": "ECHEC",
+   "targeted-copy-ui": "PASSE",
+   "acquired-copy-ui": "PASSE",
+   "recette-292": "PASSE",
+   "fichiers-301": "PASSE",
+   "contenus-301": "PASSE"
+  },
+  "plein": {
+   "ui": "PASSE",
+   "specialists": "PASSE",
+   "specialists-tools-tools-ui": "PASSE",
+   "specialists-tools-theme-ui": "PASSE",
+   "composition-ui-original-ui": "PASSE",
+   "exports-ui": "PASSE",
+   "render-ui": "PASSE",
+   "research-ui": "PASSE",
+   "catalogue-ui": "PASSE",
+   "images-ui": "PASSE",
+   "retouches-ui": "PASSE",
+   "logos-ui": "PASSE",
+   "videos-ui": "PASSE",
+   "generated-videos-ui": "PASSE",
+   "voice-ui": "PASSE",
+   "clip-ui": "PASSE",
+   "social-ui": "PASSE",
+   "social-production-ui": "PASSE",
+   "campaign-ui": "PASSE",
+   "campaign-visual-ui": "PASSE",
+   "social-aspect-ui": "PASSE",
+   "social-reuse-ui": "PASSE",
+   "background-communication-ui": "PASSE",
+   "content-ui": "PASSE",
+   "brand-ui-brand-review-brand-correction": "PASSE",
+   "blog-ui": "PASSE",
+   "logo-selection-ui": "PASSE",
+   "closure-ui": "PASSE",
+   "context-ui": "PASSE",
+   "context-manual-ui": "PASSE",
+   "choices-ui": "PASSE",
+   "knowledge-ui": "ECHEC",
+   "targeted-copy-ui": "PASSE",
+   "acquired-copy-ui": "PASSE",
+   "recette-292": "PASSE",
+   "fichiers-301": "PASSE",
+   "contenus-301": "PASSE"
+  }
+ },
+ "historique": {
+  "encre": {
+   "ui": [
+    "parite-encre:ECHEC",
+    "parite-encre-reprise:ECHEC",
+    "parite-extra-encre:PASSE"
+   ],
+   "specialists": [
+    "parite-encre:PASSE"
+   ],
+   "specialists-tools-tools-ui": [
+    "parite-encre:ECHEC",
+    "parite-encre-reprise:PASSE"
+   ],
+   "specialists-tools-theme-ui": [
+    "parite-encre:ECHEC",
+    "parite-encre-reprise:PASSE"
+   ],
+   "composition-ui-original-ui": [
+    "parite-encre:PASSE",
+    "parite-verif-apercu-encre:PASSE"
+   ],
+   "exports-ui": [
+    "parite-encre:PASSE"
+   ],
+   "render-ui": [
+    "parite-encre:PASSE"
+   ],
+   "research-ui": [
+    "parite-encre:PASSE"
+   ],
+   "catalogue-ui": [
+    "parite-encre:ECHEC",
+    "parite-encre-reprise:PASSE"
+   ],
+   "images-ui": [
+    "parite-encre:PASSE"
+   ],
+   "retouches-ui": [
+    "parite-encre:PASSE"
+   ],
+   "logos-ui": [
+    "parite-encre:PASSE"
+   ],
+   "videos-ui": [
+    "parite-encre:PASSE"
+   ],
+   "generated-videos-ui": [
+    "parite-encre:PASSE"
+   ],
+   "voice-ui": [
+    "parite-encre:PASSE"
+   ],
+   "clip-ui": [
+    "parite-encre:PASSE"
+   ],
+   "social-ui": [
+    "parite-encre:PASSE"
+   ],
+   "social-production-ui": [
+    "parite-encre:PASSE"
+   ],
+   "campaign-ui": [
+    "parite-encre:ECHEC",
+    "parite-encre-reprise:PASSE"
+   ],
+   "campaign-visual-ui": [
+    "parite-encre:PASSE"
+   ],
+   "social-aspect-ui": [
+    "parite-encre:PASSE"
+   ],
+   "social-reuse-ui": [
+    "parite-encre:PASSE"
+   ],
+   "background-communication-ui": [
+    "parite-encre:PASSE"
+   ],
+   "content-ui": [
+    "parite-encre:PASSE"
+   ],
+   "brand-ui-brand-review-brand-correction": [
+    "parite-encre:PASSE"
+   ],
+   "blog-ui": [
+    "parite-encre:PASSE"
+   ],
+   "logo-selection-ui": [
+    "parite-encre:PASSE"
+   ],
+   "closure-ui": [
+    "parite-encre:PASSE"
+   ],
+   "context-ui": [
+    "parite-extra-encre:PASSE",
+    "parite-verif-apercu-encre:PASSE"
+   ],
+   "context-manual-ui": [
+    "parite-extra-encre:PASSE"
+   ],
+   "choices-ui": [
+    "parite-extra-encre:PASSE"
+   ],
+   "knowledge-ui": [
+    "parite-extra-encre:ECHEC"
+   ],
+   "targeted-copy-ui": [
+    "parite-extra-encre:PASSE"
+   ],
+   "acquired-copy-ui": [
+    "parite-extra-encre:PASSE"
+   ]
+  },
+  "plein": {
+   "ui": [
+    "parite-plein:PASSE",
+    "parite-extra-plein:PASSE"
+   ],
+   "specialists": [
+    "parite-plein:PASSE"
+   ],
+   "specialists-tools-tools-ui": [
+    "parite-plein:PASSE"
+   ],
+   "specialists-tools-theme-ui": [
+    "parite-plein:PASSE"
+   ],
+   "composition-ui-original-ui": [
+    "parite-plein:ECHEC",
+    "parite-plein-reprise:ECHEC",
+    "parite-verif-apercu:PASSE"
+   ],
+   "exports-ui": [
+    "parite-plein:PASSE"
+   ],
+   "render-ui": [
+    "parite-plein:ECHEC",
+    "parite-plein-reprise:PASSE"
+   ],
+   "research-ui": [
+    "parite-plein:PASSE"
+   ],
+   "catalogue-ui": [
+    "parite-plein:ECHEC",
+    "parite-plein-reprise:PASSE"
+   ],
+   "images-ui": [
+    "parite-plein:PASSE"
+   ],
+   "retouches-ui": [
+    "parite-plein:PASSE"
+   ],
+   "logos-ui": [
+    "parite-plein:PASSE"
+   ],
+   "videos-ui": [
+    "parite-plein:PASSE"
+   ],
+   "generated-videos-ui": [
+    "parite-plein:PASSE"
+   ],
+   "voice-ui": [
+    "parite-plein:PASSE"
+   ],
+   "clip-ui": [
+    "parite-plein:PASSE"
+   ],
+   "social-ui": [
+    "parite-plein:PASSE"
+   ],
+   "social-production-ui": [
+    "parite-plein:PASSE"
+   ],
+   "campaign-ui": [
+    "parite-plein:PASSE"
+   ],
+   "campaign-visual-ui": [
+    "parite-plein:PASSE"
+   ],
+   "social-aspect-ui": [
+    "parite-plein:PASSE"
+   ],
+   "social-reuse-ui": [
+    "parite-plein:PASSE"
+   ],
+   "background-communication-ui": [
+    "parite-plein:PASSE"
+   ],
+   "content-ui": [
+    "parite-plein:PASSE"
+   ],
+   "brand-ui-brand-review-brand-correction": [
+    "parite-plein:ECHEC",
+    "diag-brand-plein:PASSE"
+   ],
+   "blog-ui": [
+    "parite-plein:PASSE"
+   ],
+   "logo-selection-ui": [
+    "parite-plein:PASSE"
+   ],
+   "closure-ui": [
+    "parite-plein:PASSE"
+   ],
+   "context-ui": [
+    "parite-extra-plein:ECHEC",
+    "parite-verif-apercu:PASSE"
+   ],
+   "context-manual-ui": [
+    "parite-extra-plein:ECHEC",
+    "parite-verif-apercu:PASSE"
+   ],
+   "choices-ui": [
+    "parite-extra-plein:PASSE"
+   ],
+   "knowledge-ui": [
+    "parite-extra-plein:ECHEC"
+   ],
+   "targeted-copy-ui": [
+    "parite-extra-plein:PASSE"
+   ],
+   "acquired-copy-ui": [
+    "parite-extra-plein:PASSE"
+   ]
+  }
+ }
+}

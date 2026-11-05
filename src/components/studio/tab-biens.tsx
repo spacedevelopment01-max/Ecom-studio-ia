@@ -11,6 +11,7 @@ import { Archive, ArrowDown, ArrowUp, Check, Eye, ImagePlus, KeyRound, Map as Ma
 import { api, Badge, Button, Card, cx, Empty, Field, Input, Modal, Select, Spinner, Textarea, useApi, useToast } from "../ui";
 import { useT } from "../i18n";
 import { useProject } from "./project-context";
+import { DesignateContentForSyna, useContentChanged } from "./syna-designate-content";
 import { MediaPicker, type AssetView } from "./common";
 
 type Photo = { assetId: string; alt: string };
@@ -49,6 +50,7 @@ export default function TabBiens() {
   const { id, data: project } = useProject();
   const [archives, setArchives] = useState(false);
   const { data, loading, reload } = useApi<{ biens: Bien[] }>(`/api/projects/${id}/biens${archives ? "?archives=1" : ""}`);
+  useContentChanged("biens", reload);
   const [editing, setEditing] = useState<Bien | null>(null);
   const [adding, setAdding] = useState(false);
   const biens = data?.biens ?? [];
@@ -122,6 +124,7 @@ export default function TabBiens() {
                     <Button size="sm" variant="ghost" aria-label={t("Descendre", "Move down")} disabled={i === biens.length - 1} onClick={() => move(b, 1)} icon={<ArrowDown className="size-4" />} />
                     {href && <a href={href} target="_blank" rel="noopener" className="inline-flex h-8 items-center gap-1.5 rounded-full border border-line px-3 text-[13px] hover:border-ink"><Eye className="size-3.5" />{t("Prévisualiser", "Preview")}</a>}
                     <Button size="sm" variant="secondary" onClick={() => setEditing(b)}>{t("Modifier", "Edit")}</Button>
+                    <DesignateContentForSyna type="biens" itemId={b.id} updatedAt={b.updatedAt} label={b.data.title || b.ref} />
                     {(b.status === "draft" || b.status === "withdrawn") && <Button size="sm" variant="signal" icon={<Send className="size-3.5" />} onClick={() => setStatus(b, "published")}>{t("Publier", "Publish")}</Button>}
                     {b.status === "published" && <Button size="sm" variant="secondary" icon={<Undo2 className="size-3.5" />} onClick={() => setStatus(b, "withdrawn")}>{t("Retirer", "Hide")}</Button>}
                     {b.status === "published" && <Button size="sm" variant="secondary" icon={<Check className="size-3.5" />} onClick={() => setStatus(b, b.transaction === "vente" ? "sold" : "rented")}>{b.transaction === "vente" ? t("Vendu", "Sold") : t("Loué", "Let")}</Button>}

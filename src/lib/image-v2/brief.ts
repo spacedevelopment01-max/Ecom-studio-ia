@@ -189,9 +189,10 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
     understanding = { source: category.source === "generic" ? "generic" : "product", id: category.id, confidence: category.source === "core" ? "high" : category.source === "sector" ? "medium" : "low" };
   }
 
-  if (req.topic?.trim()) {
-    subject = `${subject} — ${req.topic.trim().slice(0, 160)}`;
-    subjectFr = `${subjectFr} — ${req.topic.trim().slice(0, 160)}`;
+  const requestedTopic=req.topic?.trim(),instructions=req.instructions?.trim()?req.instructions:undefined;
+  if (requestedTopic) {
+    subject = `${subject} — ${requestedTopic}`;
+    subjectFr = `${subjectFr} — ${requestedTopic}`;
   }
   const dir = chooseDirection({
     business: p.business,
@@ -206,11 +207,13 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
   const d = { ...DIRECTIONS[dir.id], ...(people ? {} : DIRECTION_NO_PEOPLE[dir.id]) };
   const identity = productKind ? productIdentity(p, { hasReference: !!req.references?.length }) : null;
   const palette = brand?.palette ? uniq(Object.values(brand.palette).filter((x): x is string => typeof x === "string" && /^#/.test(x))).slice(0, 5) : [];
+  const replacesFallback=!req.nativeEdit&&!req.shot&&!!(sceneFr||productSceneFr)&&!!(requestedTopic||instructions);
 
   return {
-    version: req.nativeEdit ? `${BRIEF_VERSION}.edit1` : req.bindingDigest ? `${BRIEF_VERSION}.bound3` : req.shot ? `${BRIEF_VERSION}.directed2` : BRIEF_VERSION,
+    version: (req.nativeEdit ? `${BRIEF_VERSION}.edit1` : req.bindingDigest ? `${BRIEF_VERSION}.bound3` : req.shot ? `${BRIEF_VERSION}.directed2` : BRIEF_VERSION)+(replacesFallback?'.intent1':''),
     ...(req.nativeEdit?{nativeEdit:req.nativeEdit}:{}),
-    ...(req.instructions?{instructions:req.instructions}:{}),
+    ...(instructions?{instructions}:{}),
+    ...(requestedTopic?{requestedTopic}:{}),
     ...(req.bindingDigest?{bindingDigest:req.bindingDigest}:{}),
     kind: req.kind,
     support,
@@ -250,7 +253,8 @@ export function generationRequestPrompt(b:VisualBrief,rules:WordingRule[],correc
 /** Empreinte stable du brief : même brief → même image réutilisable, même contrôle déjà payé. */
 export function briefHash(b: VisualBrief): string {
   // Sans personne : clé distincte (une image faite quand les personnes étaient permises n'est pas réutilisée).
-  const key = { v: b.version, ...(b.bindingDigest?{binding:b.bindingDigest}:{}), ...(b.instructions?{ins:b.instructions}:{}), k: b.kind, s: b.support, sub: b.subject, a: b.action, e: b.environment, d: b.artDirection, f: b.format.aspect, var: b.variant?.index ?? null, ref: b.references, fid: b.productFidelity, ...(b.shotKey ? { sh: b.shotKey } : {}), ...(b.people === false ? { np: 1 } : {}), ...(b.format.textZone !== FORMATS[b.format.aspect].textZone ? { tz: b.format.textZone } : {}) };
+  const replacesFallback=!b.nativeEdit&&!b.shotKey&&!!(b.fr?.scene||b.fr?.productScene)&&!!(b.requestedTopic?.trim()||b.instructions?.trim());
+  const key = { v: b.version, ...(b.bindingDigest?{binding:b.bindingDigest}:{}), ...(replacesFallback&&b.requestedTopic?{topic:b.requestedTopic}:{}), ...(b.instructions?{ins:b.instructions}:{}), k: b.kind, s: b.support, sub: b.subject, a: b.action, e: b.environment, d: b.artDirection, f: b.format.aspect, var: b.variant?.index ?? null, ref: b.references, fid: b.productFidelity, ...(b.shotKey ? { sh: b.shotKey } : {}), ...(b.people === false ? { np: 1 } : {}), ...(b.format.textZone !== FORMATS[b.format.aspect].textZone ? { tz: b.format.textZone } : {}) };
   return crypto.createHash("sha256").update(JSON.stringify(key)).digest("hex").slice(0, 16);
 }
 
@@ -266,6 +270,9 @@ export function generationPrompt(b: VisualBrief, extra?: string | null): string 
   const d = { ...DIRECTIONS[b.artDirection], ...(b.people === false ? DIRECTION_NO_PEOPLE[b.artDirection] : {}) };
   // Brief en français (ancien brief sans version française : données d'origine).
   const f = b.fr ?? { subject: b.subject, action: b.action, environment: b.environment, negative: b.negative };
+  // Une demande explicite prime sur les objets/décors de repli, jamais sur la fidélité ou les personnes.
+  const requestedScene=!!(f.scene||f.productScene)&&!b.shotKey&&!!(b.requestedTopic?.trim()||b.instructions?.trim());
+  const subject=requestedScene&&!b.productFidelity?b.requestedTopic||'la scène décrite dans les consignes du client':f.subject;
   const zone = b.format.textZone !== "none" ? ` ; ${ZONE_FR[b.format.textZone] ?? b.format.textZone} de l'image reste dégagé et calme (surface unie)` : "";
   // Univers sans produit ni personne : nature morte au décor entièrement décrit (liste fermée d'objets), sans la
   // composition générique de la direction (« quelques accessoires raffinés » amenait des objets hors sujet).
@@ -274,15 +281,15 @@ export function generationPrompt(b: VisualBrief, extra?: string | null): string 
   const exact=b.instructions?`\nConsignes exactes du client : ${b.instructions}. Ne pas écrire ces consignes sur l’image. Les restrictions de fidélité et de personnes restent obligatoires.`:"";
   // Une composition explicite remplace le décor générique ; ses quatre champs doivent atteindre le fournisseur.
   // Les anciens briefs sans composition gardent leur scène fermée et leur empreinte de réutilisation.
-  if (f.scene && !b.shotKey) return stillLifePrompt(f.scene, { aspect: b.format.aspect, zone: b.format.textZone, correction: extra })+exact;
-  if (f.productScene && b.productFidelity && !b.shotKey) return productScenePromptFr(f.productScene, { aspect: b.format.aspect, zone: b.format.textZone, mood: d.mood, correction: extra })+exact;
+  if (f.scene && !b.shotKey && !requestedScene) return stillLifePrompt(f.scene, { aspect: b.format.aspect, zone: b.format.textZone, correction: extra })+exact;
+  if (f.productScene && b.productFidelity && !b.shotKey && !requestedScene) return productScenePromptFr(f.productScene, { aspect: b.format.aspect, zone: b.format.textZone, mood: d.mood, correction: extra })+exact;
   return [
-    `Photographie, style ${d.label}. Sujet : ${f.subject}.`,
+    `Photographie, style ${d.label}. Sujet : ${subject}.`,
     // Publicité : niveau campagne d'agence (lumière travaillée, matières, profondeur), un seul point focal, de l'air.
     b.support === "ad" ? "Photographie de campagne publicitaire haut de gamme pour les réseaux sociaux : un seul point focal net, lumière naturelle ou dorée travaillée, matières et textures riches, faible profondeur de champ, étalonnage soigné, bel espace libre, réaliste et crédible (jamais un rendu 3D, jamais un dessin)." : "",
-    f.action ? `Action : ${f.action}.` : "",
-    f.environment ? `Décor : ${f.environment}.` : "",
-    `Composition : ${b.composition}. Lumière : ${b.lighting}. Prise de vue : ${b.framing}. Ambiance : ${d.mood}.`,
+    !requestedScene&&f.action ? `Action : ${f.action}.` : "",
+    !requestedScene&&f.environment ? `Décor : ${f.environment}.` : "",
+    requestedScene?`Ambiance : ${d.mood}. La composition, le décor et l’éclairage suivent la demande explicite ; ne pas leur substituer une scène automatique.`:`Composition : ${b.composition}. Lumière : ${b.lighting}. Prise de vue : ${b.framing}. Ambiance : ${d.mood}.`,
     b.palette.length ? `Touches de couleur en accord avec ${b.palette.join(", ")}.` : "",
     // Zone calme décrite comme une surface, sans jamais parler de texte (essai ARVEN : « zone gardée calme pour un
     // texte » a fait écrire un faux texte à cet endroit).

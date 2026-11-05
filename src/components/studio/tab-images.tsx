@@ -7,6 +7,7 @@
  * par l'IA (prix affiché avant ; jamais de gabarit ni de photo libre à la place), importer ses propres photos.
  * IA d'images indisponible : la raison est dite et le bouton payant reste désactivé.
  */
+import { aspectLabel } from "@/lib/aspect-label";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ImagePlus, Search, Upload, Wand2 } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, Field, Input, Modal, Select, Toggle, useApi, useToast } from "../ui";
@@ -315,7 +316,7 @@ export default function TabImages() {
                   </div>
                   <div className="flex items-center justify-between gap-2 px-3 py-2">
                     <span className="truncate text-xs">{ROLE_LABEL[a.role ?? ""] ?? a.name}</span>
-                    {a.width && a.height ? <Badge className="shrink-0">{a.width >= a.height * 1.3 ? "16:9" : a.height >= a.width * 1.3 ? "9:16" : a.height > a.width * 1.05 ? "4:5" : "1:1"}</Badge> : null}
+                    {a.width && a.height ? <Badge className="shrink-0">{aspectLabel(a.width, a.height)}</Badge> : null}
                   </div>
                 </button>
               );
@@ -413,8 +414,11 @@ function CreateImage({ services, q, onStarted,preparation }: { preparation?:Them
     sending.current=true;
     setBusy(true);
     try {
-      if (!(await cost.confirm("image"))) return;
-      const r = await api<{ jobId?: string }>(`/api/projects/${id}/images/v2`, { body: { action: "generate", operationId:operation.current??(operation.current=crypto.randomUUID()), request: { ...(preparation?{themePlacement:preparation.themePlacement}:{}),kind: f.kind, aspect: f.aspect, topic: f.topic.trim() || undefined, count: f.count, allowGenerate: true, noStock: true } } });
+      const operationId=operation.current??(operation.current=crypto.randomUUID()),request={...(preparation?{themePlacement:preparation.themePlacement}:{}),kind:f.kind,aspect:f.aspect,topic:f.topic.trim()||undefined,count:f.count,allowGenerate:true,noStock:true};
+      const quote=await api<{jobId?:string;approvalToken:string;maximumMicro:number;estimatePct:number;maximumPct:number;maximumCalls:number}>(`/api/projects/${id}/images/v2`,{body:{action:'quote',operationId,request}});
+      if(quote.jobId){onStarted(quote.jobId);return;}
+      if(quote.maximumMicro>0&&!(await cost.confirm('image',{quote})))return;
+      const r = await api<{ jobId?: string }>(`/api/projects/${id}/images/v2`, { body: { action:'generate',operationId,request,approvalToken:quote.approvalToken,confirmation:true } });
       onStarted(r.jobId);
     } catch (e) {
       toast("bad", (e as Error).message);

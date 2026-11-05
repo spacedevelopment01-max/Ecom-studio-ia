@@ -1,0 +1,192 @@
+{
+  "schema": "syna301-demandes-recette-1",
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "steps": [
+        {
+          "etape": "Site ouvert dans le mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "« Montre les demandes reçues de ce projet » : liste en lecture seule, piège affiché comme donnée",
+          "ok": true,
+          "detail": "2 affichées sur 2"
+        },
+        {
+          "etape": "« Désigner cette demande »",
+          "ok": true
+        },
+        {
+          "etape": "traitement en masse refusé, sans bouton",
+          "ok": true
+        },
+        {
+          "etape": "« … comme lue » puis Annuler : rien d'écrit",
+          "ok": true
+        },
+        {
+          "etape": "liste rouverte et demande désignée de nouveau",
+          "ok": true
+        },
+        {
+          "etape": "« Marque cette demande comme traitée » : avant / après, Gratuit — 0 €, aucune écriture",
+          "ok": true
+        },
+        {
+          "etape": "réponse perdue après l'enregistrement : vérification, une seule confirmation",
+          "ok": true
+        },
+        {
+          "etape": "source native : demande traitée, piège intact, rien d'effacé ni publié",
+          "ok": true
+        },
+        {
+          "etape": "fenêtre native Site › Publication : la demande apparaît traitée",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé dans la conversation",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "steps": [
+        {
+          "etape": "Site ouvert dans le mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "« Montre les demandes reçues de ce projet » : liste en lecture seule, piège affiché comme donnée",
+          "ok": true,
+          "detail": "2 affichées sur 2"
+        },
+        {
+          "etape": "« Désigner cette demande »",
+          "ok": true
+        },
+        {
+          "etape": "« Marque cette demande comme traitée » : avant / après, Gratuit — 0 €, aucune écriture",
+          "ok": true
+        },
+        {
+          "etape": "confirmation gratuite, reçu relu",
+          "ok": true
+        },
+        {
+          "etape": "source native : demande traitée, piège intact, rien d'effacé ni publié",
+          "ok": true
+        },
+        {
+          "etape": "fenêtre native Site › Publication : la demande apparaît traitée",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé dans la conversation",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "steps": [
+        {
+          "etape": "Site ouvert dans le mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "« Montre les demandes reçues de ce projet » : liste en lecture seule, piège affiché comme donnée",
+          "ok": true,
+          "detail": "2 affichées sur 2"
+        },
+        {
+          "etape": "« Désigner cette demande »",
+          "ok": true
+        },
+        {
+          "etape": "traitement en masse refusé, sans bouton",
+          "ok": true
+        },
+        {
+          "etape": "« … comme lue » puis Annuler : rien d'écrit",
+          "ok": true
+        },
+        {
+          "etape": "liste rouverte et demande désignée de nouveau",
+          "ok": true
+        },
+        {
+          "etape": "« Marque cette demande comme traitée » : avant / après, Gratuit — 0 €, aucune écriture",
+          "ok": true
+        },
+        {
+          "etape": "confirmation gratuite, reçu relu",
+          "ok": true
+        },
+        {
+          "etape": "source native : demande traitée, piège intact, rien d'effacé ni publié",
+          "ok": true
+        },
+        {
+          "etape": "fenêtre native Site › Publication : la demande apparaît traitée",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé dans la conversation",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "steps": [
+        {
+          "etape": "Site ouvert dans le mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "« Montre les demandes reçues de ce projet » : liste en lecture seule, piège affiché comme donnée",
+          "ok": true,
+          "detail": "2 affichées sur 2"
+        },
+        {
+          "etape": "« Désigner cette demande »",
+          "ok": true
+        },
+        {
+          "etape": "« Marque cette demande comme traitée » : avant / après, Gratuit — 0 €, aucune écriture",
+          "ok": true
+        },
+        {
+          "etape": "confirmation gratuite, reçu relu",
+          "ok": true
+        },
+        {
+          "etape": "source native : demande traitée, piège intact, rien d'effacé ni publié",
+          "ok": true
+        },
+        {
+          "etape": "fenêtre native Site › Publication : la demande apparaît traitée",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé dans la conversation",
+          "ok": true
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "forbidden": [],
+  "coutIA": 0
+}

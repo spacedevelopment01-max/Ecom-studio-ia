@@ -1,0 +1,265 @@
+{
+  "schema": "syna-b1-live-1",
+  "http": [
+    {
+      "business": "products",
+      "action": "read",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "products",
+      "action": "select",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "products",
+      "action": "read",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "products",
+      "action": "message",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "products",
+      "action": "read",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "products",
+      "action": "confirm-local",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "products",
+      "action": "confirm-local",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "products",
+      "action": "read",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "products",
+      "action": "select",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "products",
+      "action": "read",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "products",
+      "action": "message",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "products",
+      "action": "read",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "products",
+      "action": "confirm-local",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "products",
+      "action": "confirm-local",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "products",
+      "action": "read",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "products",
+      "action": "read",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "services",
+      "action": "read",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "services",
+      "action": "select",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "services",
+      "action": "read",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "services",
+      "action": "message",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "services",
+      "action": "read",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "services",
+      "action": "confirm-local",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "services",
+      "action": "confirm-local",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "services",
+      "action": "read",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "services",
+      "action": "select",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "services",
+      "action": "read",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "services",
+      "action": "message",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "services",
+      "action": "read",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "services",
+      "action": "confirm-local",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "services",
+      "action": "confirm-local",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "services",
+      "action": "read",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "business": "services",
+      "action": "read",
+      "status": 200,
+      "expected": 200
+    }
+  ],
+  "scenarios": [
+    {
+      "business": "products",
+      "titleApplied": true,
+      "sectionMoved": true,
+      "retryWithoutDuplicate": true,
+      "previousVersionsIntact": true,
+      "renderVerified": true,
+      "exportChangedFiles": [
+        "templates/index.json"
+      ],
+      "realShopifyZipChangedFiles": [
+        "templates/index.json"
+      ],
+      "nativeManualRestoreVerified": true,
+      "invariantBefore": "32640ae7def31986e0cc5415066d53fe161dddf0a3f13f1533dd89743b46e3da",
+      "invariantAfter": "32640ae7def31986e0cc5415066d53fe161dddf0a3f13f1533dd89743b46e3da",
+      "equal": true
+    },
+    {
+      "business": "services",
+      "titleApplied": true,
+      "sectionMoved": true,
+      "retryWithoutDuplicate": true,
+      "previousVersionsIntact": true,
+      "renderVerified": true,
+      "exportChangedFiles": [
+        "templates/index.json"
+      ],
+      "realShopifyZipChangedFiles": [
+        "templates/index.json"
+      ],
+      "nativeManualRestoreVerified": true,
+      "invariantBefore": "32640ae7def31986e0cc5415066d53fe161dddf0a3f13f1533dd89743b46e3da",
+      "invariantAfter": "32640ae7def31986e0cc5415066d53fe161dddf0a3f13f1533dd89743b46e3da",
+      "equal": true
+    }
+  ],
+  "screenshots": [
+    {
+      "business": "products",
+      "label": "desktop",
+      "file": "products-desktop-preview.png",
+      "kind": "existing native preview, not new SYNA UI"
+    },
+    {
+      "business": "products",
+      "label": "mobile",
+      "file": "products-mobile-preview.png",
+      "kind": "existing native preview, not new SYNA UI"
+    },
+    {
+      "business": "services",
+      "label": "desktop",
+      "file": "services-desktop-preview.png",
+      "kind": "existing native preview, not new SYNA UI"
+    },
+    {
+      "business": "services",
+      "label": "mobile",
+      "file": "services-mobile-preview.png",
+      "kind": "existing native preview, not new SYNA UI"
+    }
+  ],
+  "providerCalls": 0,
+  "apiCostEur": 0,
+  "errors": [],
+  "ui": "Commands and free confirmation through real SYNA HTTP route; no frontend confirmation UI wired. Screenshots are the existing native preview only."
+}

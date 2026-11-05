@@ -8,6 +8,7 @@ import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner
 import { useProject } from "./project-context";
 import { useAgentUi,useAgentFocus,useAgentPanel } from "./agent-ui-context";
 import {previewSelectionScope} from '@/lib/conversation-presentation';
+import {canAdoptRevalidatedPreviewScope} from '@/lib/preview-revalidated-scope';
 import { useCostConfirm } from "./cost-confirm";
 import dynamic from "next/dynamic";
 // Fenêtres ouvertes à la demande (import, bibliothèque de sections, galerie) : chargées à leur première ouverture.
@@ -146,7 +147,10 @@ export default function TabBoutique() {
   const custom = useCustomThemeStatus(id);
   const agentUi=useAgentUi();
   const contextUi=agentUi&&data?.conversationContext===true;
-  const {setFocus:setAgentFocus,clearSerial}=useAgentFocus();
+  const {focus:agentFocus,setFocus:setAgentFocus,clearSerial}=useAgentFocus();
+  // Le focus peut être revalidé avant que la relecture périodique recharge le thème.
+  // Lire son dernier état lors des changements de preview, sans republier sur chaque changement de focus.
+  const agentFocusRef=useRef(agentFocus);agentFocusRef.current=agentFocus;
   const {setOpen:setAgentOpen}=useAgentPanel();
   const [view, setView] = useState<"chat" | "preview" | "structure">(agentUi?'preview':'chat');
   const [device, setDevice] = useState<keyof typeof DEVICES>("desktop");
@@ -226,9 +230,12 @@ export default function TabBoutique() {
   const selectionCurrent=!!selection&&selectionScope?.versionId===versionId&&selectionScope?.page===page;
   useEffect(()=>{
     if(!contextUi||!versionId)return;
+    if(canAdoptRevalidatedPreviewScope({projectId:id,versionId,page,selection,scope:selectionScope,focus:agentFocusRef.current})){
+      setSelectionScope({versionId,page});return;
+    }
     setAgentFocus({projectId:id,tab:'boutique',label:selectionCurrent?[selection!.kind,selection!.text].filter(Boolean).join(' · '):page,target:selectionCurrent?{kind:'theme-section',versionId,template:selection!.template,section:selection!.section,...(selection!.block?{block:selection!.block}:{})}:{kind:'theme-page',versionId,path:page}});
     if(selection&&!selectionCurrent)setSelection(null);
-  },[contextUi,id,versionId,page,selection,selectionCurrent,setAgentFocus]);
+  },[contextUi,id,versionId,page,selection,selectionScope,selectionCurrent,setAgentFocus]);
   const src = versionId ? `/preview/${id}/v/${versionId}${page === "/" ? "" : page}` : null;
   useEffect(()=>{if(!contextUi||!clearSerial)return;setSelection(null);iframe.current?.contentWindow?.postMessage({source:'es-studio',type:'unpick'},'*');},[contextUi,clearSerial]);
 
@@ -736,13 +743,17 @@ export default function TabBoutique() {
       )}
       <div ref={frameBox} className="relative flex-1 overflow-hidden bg-paper-2 p-0 sm:p-4">
         {/* L'aperçu n'est créé qu'une fois la largeur mesurée : sinon l'iframe est recréée (double chargement). */}
-        {src && (device !== "desktop" || boxW !== 0) && (desktopScale < 1 ? (
-          <div className="mx-auto overflow-hidden rounded-none bg-white shadow-soft sm:rounded-2xl" style={{ width: DESKTOP_W * desktopScale, height: "100%" }}>
-            <iframe ref={iframe} key={versionId ?? ""} src={src} sandbox={theme.sandbox ?? PREVIEW_SANDBOX} title={isServices ? t("Aperçu du site", "Website preview") : t("Aperçu de la boutique", "Store preview")} className="block border-0 bg-white" style={{ width: DESKTOP_W, height: `${100 / desktopScale}%`, transform: `scale(${desktopScale})`, transformOrigin: "0 0" }} />
+        {/* Une seule enveloppe, quel que soit l'agrandissement : franchir le seuil (ouvrir ou replier SYNA en Plein cadre)
+            ne recrée jamais l'iframe — pas de rechargement, de page blanche ni de défilement perdu (#301). Changer de format
+            (ordinateur / tablette / téléphone) la recrée volontairement : la page est rechargée à la bonne largeur, avec ses
+            outils (désignation) initialisés pour ce format. */}
+        {src && (device !== "desktop" || boxW !== 0) && (
+          <div data-preview-frame className={desktopScale < 1 ? "mx-auto overflow-hidden rounded-none bg-white shadow-soft sm:rounded-2xl" : "contents"} style={desktopScale < 1 ? { width: DESKTOP_W * desktopScale, height: "100%" } : undefined}>
+            <iframe ref={iframe} key={`${versionId ?? ""}:${device}`} src={src} sandbox={theme.sandbox ?? PREVIEW_SANDBOX} title={isServices ? t("Aperçu du site", "Website preview") : t("Aperçu de la boutique", "Store preview")}
+              className={desktopScale < 1 ? "block border-0 bg-white" : "mx-auto block h-full min-h-[70dvh] w-full rounded-none border-0 bg-white shadow-soft transition-[max-width] duration-500 sm:rounded-2xl"}
+              style={desktopScale < 1 ? { width: DESKTOP_W, height: `${100 / desktopScale}%`, transform: `scale(${desktopScale})`, transformOrigin: "0 0" } : { maxWidth: DEVICES[device].w }} />
           </div>
-        ) : (
-          <iframe ref={iframe} key={versionId ?? ""} src={src} sandbox={theme.sandbox ?? PREVIEW_SANDBOX} title={isServices ? t("Aperçu du site", "Website preview") : t("Aperçu de la boutique", "Store preview")} className="mx-auto block h-full min-h-[70dvh] w-full rounded-none border-0 bg-white shadow-soft transition-[max-width] duration-500 sm:rounded-2xl" style={{ maxWidth: DEVICES[device].w }} />
-        ))}
+        )}
         {src && discovery && (
           <div className="pointer-events-none absolute inset-0 grid place-items-center overflow-hidden" aria-hidden>
             <span className="-rotate-[30deg] select-none whitespace-nowrap font-display text-[clamp(3rem,12vw,9rem)] font-semibold uppercase tracking-[.2em] text-black/[.07] [text-shadow:0_0_1px_rgba(255,255,255,.4)]">{t("Aperçu", "Preview")}</span>

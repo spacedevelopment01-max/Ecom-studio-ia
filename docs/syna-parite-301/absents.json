@@ -1,0 +1,102 @@
+{
+  "native.pages": {
+    "statut": "ABSENT",
+    "note": "aucun outil SYNA : pages et navigation restent dans Boutique › Structure (natif)"
+  },
+  "native.sections": {
+    "statut": "ABSENT",
+    "note": "ajout/suppression de section hors des retouches gratuites B1 : natif seulement"
+  },
+  "native.custom-theme": {
+    "statut": "ABSENT",
+    "note": "thème sur mesure (theme.custom) : aucun adaptateur SYNA"
+  },
+  "native.ad-document-edit": {
+    "statut": "ABSENT",
+    "note": "documents publicitaires à calques : éditeur natif seulement"
+  },
+  "native.ad-regenerate": {
+    "statut": "ABSENT",
+    "note": "nouvelle version d'un document publicitaire : natif seulement"
+  },
+  "native.initial-batch": {
+    "statut": "ABSENT",
+    "note": "lot initial 10 + 10 et pilote automatique : natif seulement"
+  },
+  "services.update": {
+    "statut": "ABSENT",
+    "note": "prestations et coordonnées : hors du raccordement #310 (biens, plats, réalisations seulement)"
+  },
+  "services.booking": {
+    "statut": "ABSENT",
+    "note": "réglages de réservation : natif seulement"
+  },
+  "site.requests": {
+    "statut": "ABSENT",
+    "note": "lecture des demandes reçues : natif ; faux accusés corrigés par Codex (#308)"
+  },
+  "appointments.settings": {
+    "statut": "ABSENT",
+    "note": "règles de réservation : natif seulement"
+  },
+  "appointments.create": {
+    "statut": "BLOQUE_CONNEXION_OU_CONSENTEMENT",
+    "note": "rendez-vous réel : acte sensible, jamais exécuté dans cette recette"
+  },
+  "appointments.cancel": {
+    "statut": "BLOQUE_CONNEXION_OU_CONSENTEMENT",
+    "note": "annulation réelle : acte sensible, jamais exécuté"
+  },
+  "site.host.publish": {
+    "statut": "BLOQUE_CONNEXION_OU_CONSENTEMENT",
+    "note": "publication réelle : interdite sans accord du propriétaire"
+  },
+  "site.domain.connect": {
+    "statut": "BLOQUE_CONNEXION_OU_CONSENTEMENT",
+    "note": "domaine réel : interdit sans accord"
+  },
+  "theme.publish": {
+    "statut": "BLOQUE_CONNEXION_OU_CONSENTEMENT",
+    "note": "publication CMS réelle : interdite sans accord"
+  },
+  "connections.configure": {
+    "statut": "BLOQUE_CONNEXION_OU_CONSENTEMENT",
+    "note": "compte externe réel : aucune connexion dans cette recette"
+  },
+  "catalogue.sync": {
+    "statut": "BLOQUE_CONNEXION_OU_CONSENTEMENT",
+    "note": "boutique connectée réelle requise"
+  },
+  "blog.publish": {
+    "statut": "BLOQUE_CONNEXION_OU_CONSENTEMENT",
+    "note": "publication réelle : interdite sans accord"
+  },
+  "social.publish": {
+    "statut": "BLOQUE_CONNEXION_OU_CONSENTEMENT",
+    "note": "publication réseau réelle : interdite sans accord"
+  },
+  "ads.launch": {
+    "statut": "BLOQUE_CONNEXION_OU_CONSENTEMENT",
+    "note": "campagne réelle : interdite sans accord"
+  },
+  "calendar.update": {
+    "statut": "ABSENT",
+    "note": "déplacement d'une publication programmée : natif seulement"
+  },
+  "prompts.edit": {
+    "statut": "ABSENT",
+    "note": "consignes des moteurs : natif (administration) seulement"
+  },
+  "files.delete": {
+    "statut": "ABSENT",
+    "note": "suppression : volontairement hors SYNA (acte destructif), natif avec corbeille"
+  },
+  "native.workflow": {
+    "statut": "ABSENT",
+    "note": "ancien workflow : natif seulement"
+  },
+  "native.brand-propagation": {
+    "statut": "ABSENT",
+    "note": "propagation de marque (/brand/impact) : natif seulement"
+  }
+}

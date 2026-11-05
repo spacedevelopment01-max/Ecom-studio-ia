@@ -1,4 +1,5 @@
 "use client";
+import {useNativeLogoConsent} from './native-logo-consent';
 import { MarketingStrategy } from "./marketing-strategy";
 import { AiWait } from "../wait-time";
 import { useEffect, useState } from "react";
@@ -50,7 +51,9 @@ export default function TabMarque() {
   // et se met à jour à la fin (aucune requête longue que le relais d'un codespace pourrait couper).
   // Logo V2 : son avancement (étapes, échecs) est affiché dans son propre panneau.
   const logoJobs = useActive("brand.logo").filter((j) => !j.type.startsWith("brand.logo.v2"));
+  const logoPurchase=useNativeLogoConsent(id,()=>{void reload();void reloadIdent();});
   const chooseLogo = async (b: { proposalId?: string; regenerate?: boolean }) => {
+    if(b.regenerate){await logoPurchase.ask({operation:'generate',style:'auto',renew:true,feedback:''});return;}
     setChoosing(b.proposalId ?? "regenerate");
     try {
       const r = await api<{ jobId: string }>(`/api/projects/${id}/brand/logo`, { body: b });
@@ -143,6 +146,7 @@ export default function TabMarque() {
       {logoJobs[0] && <JobProgress job={logoJobs[0]} />}
       <BrandPropagationCard />
       {byRole("logo") && <IdentityBoardCard projectId={id} board={byRole("brand-board") ?? null} onDone={reloadLogos} />}
+      {logoPurchase.dialog}
       {!ident?.provided && <LogoV2Panel onApplied={() => { reloadLogos(); reloadIdent(); reload(); }} />}
       {!ident?.provided && <FullLogoPanel onApplied={() => { reloadLogos(); reloadIdent(); reload(); }} />}
       {!ident?.provided && routes.length > 0 && <LogoRoutes routes={routes} max={ident!.max ?? 3} current={ident!.current} choosing={choosing} locked={validated.has("logo")} onChoose={(k) => chooseLogo({ proposalId: k })} onRegenerate={() => chooseLogo({ regenerate: true })} onDelete={async (k) => { try { await api(`/api/projects/${id}/brand/logo?proposal=${encodeURIComponent(k)}`, { method: "DELETE" }); reloadIdent(); } catch (e) { toast("bad", (e as Error).message); } }} />}
@@ -452,8 +456,8 @@ function SocialKit({ tick }: { tick: number }) {
   const redo = async (voice: boolean) => {
     setBusy(true);
     try {
-      await api(`/api/projects/${id}/brand/social`, { body: { voice } });
-      toast("ok", t("Kit réseaux sociaux mis à jour.", "Social media kit updated."));
+      const result = await api<{ message?: string }>(`/api/projects/${id}/brand/social`, { body: { voice } });
+      toast("ok", result.message ?? t("Kit réseaux sociaux mis à jour.", "Social media kit updated."));
       reload();
     } catch (e) {
       toast("bad", (e as Error).message);

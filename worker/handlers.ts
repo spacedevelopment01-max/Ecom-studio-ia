@@ -1,3 +1,4 @@
+import {createHash} from "node:crypto";
 import { jobStrategy, withStrategyScope, strategyStamp } from "../src/lib/strategy-consumption";
 import { HttpError } from "../src/lib/auth";
 import { assertRepairableConversation } from "../src/lib/theme/plan-access";
@@ -8,13 +9,13 @@ import { withAccessScope } from "../src/lib/access-scope";
 import { isAutoUsable } from "../src/lib/quality/usable";
 import { projectKind } from "@/lib/theme/project-kind";
 import { all, json, now, one, run } from "../src/lib/db";
-import { sectionGenerationAllowed } from "../src/lib/theme/custom-access";
-import { JobCancelled, JobContext, JobPaused, PermanentError, UserFacingError } from "../src/lib/jobs";
+import { sectionGenerationAllowed,assertSectionGeneration } from "../src/lib/theme/custom-access";
+import { getJob, JobCancelled, JobContext, JobPaused, PermanentError, UserFacingError } from "../src/lib/jobs";
 import { runPipeline } from "../src/lib/engine/pipeline";
 import { produceVideo } from "../src/lib/engine/videos";
 import { produceUgc, writeUgcScript } from "../src/lib/engine/ugc";
 import { writeBlogArticle } from "../src/lib/engine/blog";
-import { withQuotaScope } from "../src/lib/ai/access";
+import { withQuotaScope,withAiDisabled,aiDisabledReason,assertAiAllowed } from "../src/lib/ai/access";
 import { consumeQuota } from "../src/lib/quotas";
 import { buildShop, switchDirection, themeFileName } from "../src/lib/engine/shop";
 import { buildCustomTheme } from "../src/lib/engine/custom-theme";
@@ -53,6 +54,7 @@ type Handler = (ctx: JobContext) => Promise<unknown>;
 export const handlers: Record<string, Handler> = {
   "agent.reason": async ctx => (await import('../src/lib/orchestrator/conversation/intelligence')).runCognitiveJob(ctx),
   "agent.theme.capture": async ctx => (await import('../src/lib/orchestrator/conversation/render-tool-execution')).runRenderCapture(ctx),
+  "agent.ad-document.local": async ctx => (await import('../src/lib/orchestrator/conversation/ad-document-tool-execution')).runAdDocument(ctx),
   "agent.theme.export": async ctx => (await import('../src/lib/orchestrator/conversation/export-tool-execution')).runNativeExport(ctx),
   "agent.theme.change": async ctx => (await import('../src/lib/orchestrator/conversation/theme-tool-execution')).runThemeChange(ctx),
   "agent.catalogue.change": async ctx => (await import('../src/lib/orchestrator/conversation/catalogue-tool-execution')).runCatalogueChange(ctx),
@@ -81,11 +83,13 @@ export const handlers: Record<string, Handler> = {
   "stock.search": async (ctx) => findStockPhotos(ctx, ctx.payload.projectId, ctx.payload.n ?? 2),
 
   /** Tri des photos du produit, détourage et contrôle (ajout d'une photo, « Refaire le détourage »). */
-  "cutout.run": async (ctx) => {
+  "cutout.run": async (ctx) => withAiDisabled("détourage interactif local gratuit, aucun devis IA accepté", async () => {
+    // Ce job dédié provient de l’écran Produit ; les pipelines inclus appellent ensureCutouts directement.
+    // Ne pas laisser un ancien payload, ou aiOff:false, réactiver le tri/contrôle visuel payant.
     const project = loadProject(ctx.payload.projectId);
     const list = ctx.payload.redo ? await redoCutout(ctx, project, ctx.payload.redo) : await ensureCutouts(ctx, project);
     return { valid: list.length, summary: cutoutSummary(project.id) };
-  },
+  }),
 
   /** Jeu d'images : Image Engine V2 (composants locaux, photos libres, génération contrôlée). */
   "images.generate": async (ctx) => {
@@ -105,7 +109,8 @@ export const handlers: Record<string, Handler> = {
     return { outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, origin: o.origin })), stoppedByCostCap: r.stoppedByCostCap,delivery };
   },
   /** Banque de vidéos : plans libres de droits (gratuit) ou plan filmé par l'IA (payant, prix accepté). */
-  "video.bank.stock": async (ctx) => (await import("../src/lib/media/bank-video")).findBankClips(ctx, ctx.payload.projectId, ctx.payload.request),
+  // This native royalty-free bank job never authorizes paid vision, even for old/forged payloads.
+  "video.bank.stock": async (ctx) => withAiDisabled("Native free stock-video search without paid consent", async () => (await import("../src/lib/media/bank-video")).findBankClips(ctx, ctx.payload.projectId, ctx.payload.request)),
   "video.bank.ai": async (ctx) => {
     const r=await(await import("../src/lib/media/bank-video")).createBankClip(ctx,ctx.payload.projectId,ctx.payload.request);
     return {...r,delivery:await videoDelivery(ctx.payload.projectId,r.assetId)};
@@ -124,11 +129,14 @@ export const handlers: Record<string, Handler> = {
   "image.v2": async (ctx) => {
     if(ctx.payload.agentImageQuote){const{runAgentImageCreation}=await import('../src/lib/orchestrator/conversation/image-tool-execution');return runAgentImageCreation(ctx);}
     const { runImageEngineV2 } = await import("../src/lib/image-v2/engine");
-    const r = await runImageEngineV2(ctx, ctx.payload.projectId, ctx.payload.request);
+    const stockOnly=ctx.payload.request?.allowGenerate===false;
+    const execute=()=>ctx.payload.nativeImageQuote?import('../src/lib/image-v2/native-approval').then(m=>m.runNativeImageGeneration(ctx)):runImageEngineV2(ctx,ctx.payload.projectId,ctx.payload.request);
+    const r = stockOnly?await withAiDisabled('recherche gratuite de photos libres, sans devis IA accepté',execute):await execute();
     // Reprise payée (1re image refusée par le contrôle) : annoncée au client, en % du budget IA.
     const { retryNotice } = await import("../src/lib/ai/budget-pct");
     const p = loadProject(ctx.payload.projectId);
     const delivery=await imageDelivery(p.id,r.outcomes.map(o=>o.assetId),{expected:ctx.payload.request?.count??1,reasons:r.outcomes.map(o=>o.reason)});
+    if(stockOnly)delivery.message+=' '+L('Recherche gratuite : vérifications locales et de licence, sans contrôle visuel IA.','Free search: local and licence checks, without AI visual review.');
     const tries = Math.max(1, ...r.outcomes.filter((o) => o.assetId).map((o) => o.attempts ?? 1));
     const notice = retryNotice(p.userId, p.id, tries, r.costMicro);
     return { outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, origin: o.origin, score: o.score })), stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, delivery, ...(notice ? { notice } : {}) };
@@ -136,16 +144,19 @@ export const handlers: Record<string, Handler> = {
 
   /** Retouche par l'IA d'une photo livrée (publicité, publication) : seule la demande du client change, original gardé. */
   "image.edit": async (ctx) => {
-    const { editProjectPhoto } = await import("../src/lib/image-v2/edit-photo");
-    const r=await editProjectPhoto(ctx, ctx.payload.projectId, ctx.payload.assetId, ctx.payload.instruction);
+    const { runNativePhotoEdit } = await import("../src/lib/image-v2/native-edit-approval");
+    const r=await runNativePhotoEdit(ctx);
     return {...r,delivery:await imageDelivery(ctx.payload.projectId,[r.assetId])};
   },
 
   /** SEO & Copywriting V2 : stratégie, brief, rédaction (locale puis IA contrôlée), barrière SEO, document versionné. */
   "content.v2": async (ctx) => {
     const { runContentEngineV2 } = await import("../src/lib/seo-v2/engine");
-    const r = await runContentEngineV2(ctx, ctx.payload.projectId, ctx.payload.request);
-    return { docKey: r.docKey, verdict: r.verdict, codes: r.codes, by: r.by, costMicro: r.costMicro, skipped: r.skipped, stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, notes: r.notes.slice(0, 20), delivery: r.delivery };
+    const r = ctx.payload.request?.type==='blog_article'
+      ? await (await import('../src/lib/seo-v2/native-blog-consent')).runNativeBlog(ctx)
+      : await runContentEngineV2(ctx, ctx.payload.projectId, ctx.payload.request);
+    const articleId=ctx.payload.request?.type==='blog_article'&&r.docKey?(await import('../src/lib/seo-v2/blog')).blogIdFor(r.docKey):null;
+    return { ...(articleId?{articleId}:{}),docKey: r.docKey, verdict: r.verdict, codes: r.codes, by: r.by, costMicro: r.costMicro, skipped: r.skipped, stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, notes: r.notes.slice(0, 20), delivery: r.delivery };
   },
   /** Vidéo V2 : intention, stratégie, script, storyboard, plans, document éditable, rendu, barrière vidéo. */
   "video.v2": async (ctx) => {
@@ -218,21 +229,13 @@ export const handlers: Record<string, Handler> = {
   /** Logo V2 : territoires créatifs, construction hybride, barrière V2 (aucun mockup avant le choix). */
   "brand.logo.v2": async (ctx) => {
     if(ctx.payload.agentLogoQuote){const{runAgentLogoCreation}=await import("../src/lib/orchestrator/conversation/logo-tool-execution");return runAgentLogoCreation(ctx);}
-    const { runLogoEngineV2 } = await import("../src/lib/logo-v2/engine");
-    const r = await runLogoEngineV2(ctx, ctx.payload.projectId, { avoid: ctx.payload.avoid, style: ctx.payload.style, renew: ctx.payload.renew, correction: ctx.payload.correction });
-    const { currentSeries } = await import("../src/lib/logo-v2/direction-series");
-    const series = currentSeries(ctx.payload.projectId);
-    if (series && series.status !== "complete") throw new UserFacingError(`Série incomplète : ${series.directions.length}/3 directions complètes. Les résultats acceptés sont conservés ; reprise ciblée nécessaire.`);
-    const delivery=await imageDelivery(ctx.payload.projectId,series?series.directions.map(d=>d.logoId):r.shown.map(d=>d.assetId),{expected:series?3:Math.max(1,r.shown.length),reasons:r.notes});
-    delivery.message=L(`${delivery.delivered} logo(s) enregistré(s), à examiner avant votre choix.`,`${delivery.delivered} logo(s) saved, for review before your choice.`);
-    return { shown: series?.directions.length ?? r.shown.length, generated: r.shown.length, discarded: r.discarded.length, territories: r.territories.length, stoppedByCostCap: r.stoppedByCostCap,delivery };
+    const {runNativeLogo}=await import("../src/lib/logo-v2/native-consent");
+    return runNativeLogo(ctx);
   },
   /** Logo V2 : nouvelle version d'un logo complet, demandée par le client (une image, coût accepté). */
   "brand.logo.v2.redraw": async (ctx) => {
-    const { redrawArtwork } = await import("../src/lib/logo-v2/engine");
-    const r=await redrawArtwork(ctx, ctx.payload.projectId, ctx.payload.assetId, { feedback: ctx.payload.feedback });
-    if(!r.assetId)throw new UserFacingError(L("Le nouveau logo n’a pas été livré. La version précédente est conservée ; aucun nouvel essai payant automatique.","The new logo was not delivered. The previous version is kept; no automatic paid retry."));
-    return {...r,delivery:await imageDelivery(ctx.payload.projectId,[r.assetId])};
+    const {runNativeLogo}=await import("../src/lib/logo-v2/native-consent");
+    return runNativeLogo(ctx);
   },
   /** Logo V2 choisi : décision du client, déclinaisons, système de marque. */
   "brand.logo.v2.choose": async (ctx) => {
@@ -247,7 +250,8 @@ export const handlers: Record<string, Handler> = {
     return { name: b.name };
   },
 
-  "copy.build": async (ctx) => {
+  "copy.build": async (ctx) => withAiDisabled("rédaction native locale gratuite, aucun devis IA accepté", async () => {
+    // Job autonome /copy ; le pipeline initial et les outils SYNA devisés restent distincts.
     const p = loadProject(ctx.payload.projectId);
     if (llmConfigured()) {
       const r = await aiShopCopyChecked({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:copy` }, p, (m) => ctx.progress(0.5, m), (k, fn) => ctx.step(k, fn));
@@ -256,7 +260,7 @@ export const handlers: Record<string, Handler> = {
     }
     remember(p.id, { kind: "artifact", key: "shop_copy", value: JSON.stringify(localCopy(p.product, p.brand!, p)), source: "local" });
     return { local: true };
-  },
+  }),
 
   "shop.build": async (ctx) => buildShop(ctx, ctx.payload.projectId, { useAi: ctx.payload.useAi, engine: ctx.payload.engine, language: ctx.payload.language }),
   "shop.direction": async (ctx) => switchDirection(ctx, ctx.payload.projectId, ctx.payload.direction),
@@ -267,6 +271,15 @@ export const handlers: Record<string, Handler> = {
   "shop.chat": async (ctx) => {
     const { projectId, messageId, message, selection, attachments, page } = ctx.payload;
     const p = loadProject(projectId);
+    // The explicit native Generate action is included in Dominer, not an unguarded paid chat retry.
+    // Existing queued jobs predate the marker: their persisted native user message carries the same intent.
+    const sectionGeneration=ctx.payload.sectionGeneration===true||!!one("SELECT 1 FROM chat_messages WHERE id=? AND project_id=? AND job_id=? AND role='user' AND (content LIKE '✨ Générer : %' OR content LIKE '✨ Generate : %')",messageId,projectId,ctx.job.id);
+    if(sectionGeneration){
+      const owner=one<{id:string;role:'client'|'admin'}>('SELECT id,role FROM users WHERE id=?',p.userId);
+      if(!owner)throw new UserFacingError('Compte du projet introuvable.');
+      assertSectionGeneration(owner,projectId);
+      assertAiAllowed(owner.id,projectId);
+    }
     const cur = currentTheme(projectId);
     if (!cur) throw new UserFacingError(L("Créez d'abord la boutique.", "Create the store first."));
     const history = all<{ role: string; content: string }>("SELECT role, content FROM chat_messages WHERE project_id = ? AND thread = 'shop' AND id != ? ORDER BY created_at DESC LIMIT 10", projectId, messageId).reverse();
@@ -457,9 +470,17 @@ export const handlers: Record<string, Handler> = {
   "files.classify": async (ctx) => {
     const projectId = ctx.payload.projectId;
     const p = loadProject(projectId);
+    const job=getJob(ctx.job.id);
+    if(!job||job.type!=='files.classify'||job.user_id!==p.userId||job.project_id!==projectId||ctx.job.user_id!==job.user_id||ctx.job.project_id!==job.project_id)throw new HttpError(404,"Projet introuvable.");
+    const parent=job.parent_id?getJob(job.parent_id):null,key=parent?`pipeline-classify:${parent.id}`:'';
+    const hashed=`job:v2:${createHash('sha256').update(JSON.stringify([job.user_id,job.project_id,job.type,key])).digest('hex')}`;
+    // Seul l'enfant initial exact du pipeline conserve son moteur IA déjà autorisé. Un marqueur HTTP ne crée pas ce droit.
+    const initial=!!parent&&parent.type==='pipeline.run'&&parent.user_id===job.user_id&&parent.project_id===job.project_id&&[key,hashed].includes(job.idempotency_key??'');
+    const localOnly=!initial||ctx.payload.localOnly===true||ctx.payload.aiOff===true;
+    const execute=async()=>{
     const folders = listFolders(projectId).filter((f) => f.system_key);
     const loose = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND user_id=? AND folder_id IS NULL AND deleted_at IS NULL LIMIT 60", projectId,p.userId);
-    if (!loose.length) return { moved: 0 };
+    if (!loose.length) return { moved: 0,...(localOnly?{mode:"local_rules" as const}: {}) };
     const rules: [RegExp, string][] = [
       [/logo/, "brand.logos"],
       [/cutout|detour/, "product.cutouts"],
@@ -472,7 +493,7 @@ export const handlers: Record<string, Handler> = {
       [/video/, "videos.social"],
     ];
     let items: { id: string; folder: string; name?: string }[];
-    if (llmConfigured()) {
+    if (!localOnly && !aiDisabledReason() && llmConfigured()) {
       const r = await aiClassify({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:classify` }, loose.map((a) => ({ id: a.id, name: a.name, kind: a.kind, role: a.role, meta: a.meta })), folders.map((f) => ({ key: f.system_key!, name: f.name })));
       items = r.items;
     } else {
@@ -492,7 +513,9 @@ export const handlers: Record<string, Handler> = {
       run("UPDATE assets SET folder_id = ?, name = ? WHERE id = ?", f.id, it.name ? `${it.name.replace(/[^\p{L}\p{N}-]+/gu, "-").slice(0, 80)}${ext}` : a.name, a.id);
       moved++;
     }
-    return { moved };
+    return { moved,...(localOnly?{mode:"local_rules" as const}: {}) };
+    };
+    return localOnly?withAiDisabled("classement natif gratuit par règles locales, noms conservés",execute):execute();
   },
 
   "canva.send": async (ctx) => {

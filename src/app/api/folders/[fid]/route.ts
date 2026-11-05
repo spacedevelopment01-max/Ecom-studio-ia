@@ -1,8 +1,9 @@
+import { changeFolderMetadata } from "@/lib/folder-metadata";
 import { z } from "zod";
 import { one, run } from "@/lib/db";
 import { body, handle, ok } from "@/lib/http";
 import { HttpError, ownedProject, requireUser } from "@/lib/auth";
-import { isDescendant, type Folder } from "@/lib/library";
+import { type Folder } from "@/lib/library";
 import { L } from "@/lib/i18n-server";
 
 async function folderOf(ctx: { params: Promise<{ fid: string }> }) {
@@ -17,12 +18,7 @@ async function folderOf(ctx: { params: Promise<{ fid: string }> }) {
 export const PATCH = handle(async (req: Request, ctx: { params: Promise<{ fid: string }> }) => {
   const f = await folderOf(ctx);
   const b = await body(req, z.object({ name: z.string().trim().min(1).max(120).optional(), parentId: z.string().nullable().optional() }));
-  if (b.name) run("UPDATE folders SET name = ? WHERE id = ?", b.name, f.id);
-  if (b.parentId !== undefined) {
-    if (b.parentId && (b.parentId === f.id || isDescendant(f.project_id, f.id, b.parentId))) throw new HttpError(400, L("Impossible de déplacer un dossier dans lui-même.", "A folder cannot be moved into itself."));
-    if (b.parentId && !one("SELECT 1 FROM folders WHERE id = ? AND project_id = ?", b.parentId, f.project_id)) throw new HttpError(404, L("Dossier de destination introuvable.", "Destination folder not found."));
-    run("UPDATE folders SET parent_id = ? WHERE id = ?", b.parentId, f.id);
-  }
+  changeFolderMetadata(f.project_id,f.id,b);
   return ok();
 });
 

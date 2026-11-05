@@ -99,13 +99,14 @@ export function createRealisation(projectId: string, raw: unknown): Realisation 
     rid, projectId, uniqueHandle(projectId, d.title), d.title, d.summary, d.need, d.work, d.category, d.location, d.period, JSON.stringify(d.photos), d.before ? JSON.stringify(d.before) : null, position, now(), now());
   return getRealisation(projectId, rid);
 }
+// updated_at sert de version native : progression stricte même si l’horloge reste fixe ou recule.
 export function updateRealisation(projectId: string, rid: string, raw: unknown): Realisation {
   const cur = getRealisation(projectId, rid);
   const d = realisationSchema.parse({ ...cur, ...(raw as object) });
   assertMedia(projectId, d);
   const missing = cur.status === "published" ? missingForPublication(d) : [];
   if (missing.length) throw new HttpError(400, L(`Cette réalisation est en ligne : gardez ${missing.join(" et ")}, ou retirez-la d'abord.`, `This project is live: keep ${missing.join(" and ")}, or withdraw it first.`));
-  run("UPDATE realisations SET title = ?, summary = ?, need = ?, work = ?, category = ?, location = ?, period = ?, photos = ?, before = ?, updated_at = ? WHERE id = ? AND project_id = ?",
+  run("UPDATE realisations SET title = ?, summary = ?, need = ?, work = ?, category = ?, location = ?, period = ?, photos = ?, before = ?, updated_at = MAX(?, updated_at + 1) WHERE id = ? AND project_id = ?",
     d.title, d.summary, d.need, d.work, d.category, d.location, d.period, JSON.stringify(d.photos), d.before ? JSON.stringify(d.before) : null, now(), rid, projectId);
   return getRealisation(projectId, rid);
 }
@@ -113,12 +114,12 @@ export function setRealisationStatus(projectId: string, rid: string, status: Rea
   const cur = getRealisation(projectId, rid);
   const missing = status === "published" ? missingForPublication(cur) : [];
   if (missing.length) throw new HttpError(400, L(`Pour publier cette réalisation, ajoutez ${missing.join(" et ")}.`, `To publish this project, add ${missing.join(" and ")}.`));
-  run("UPDATE realisations SET status = ?, published_at = CASE WHEN ? = 'published' THEN COALESCE(published_at, ?) ELSE published_at END, updated_at = ? WHERE id = ? AND project_id = ?", status, status, now(), now(), rid, projectId);
+  run("UPDATE realisations SET status = ?, published_at = CASE WHEN ? = 'published' THEN COALESCE(published_at, ?) ELSE published_at END, updated_at = MAX(?, updated_at + 1) WHERE id = ? AND project_id = ?", status, status, now(), now(), rid, projectId);
   return getRealisation(projectId, rid);
 }
 export function reorderRealisations(projectId: string, ids: string[]) {
   ensureTables();
-  tx(() => ids.forEach((rid, i) => run("UPDATE realisations SET position = ?, updated_at = ? WHERE id = ? AND project_id = ?", i, now(), rid, projectId)));
+  tx(() => ids.forEach((rid, i) => run("UPDATE realisations SET position = ?, updated_at = MAX(?, updated_at + 1) WHERE id = ? AND project_id = ?", i, now(), rid, projectId)));
 }
 
 /** Le projet a-t-il une réalisation publiée (sinon rien n'est injecté) ? */

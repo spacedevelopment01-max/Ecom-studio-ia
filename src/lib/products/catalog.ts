@@ -209,13 +209,16 @@ export function updateProduct(projectId: string, productId: string, input: Produ
   });
 }
 
-/** Stock d'une variante (vente, réception, synchronisation) : seule la quantité change. */
+/** Stock d'une variante : la version de sa fiche doit aussi invalider les formulaires et repères anciens. */
 export function setVariantStock(projectId: string, variantId: string, stock: number | null) {
   ensureProductTables();
-  const r = one<VariantRow>("SELECT * FROM studio_variants WHERE id = ? AND project_id = ?", variantId, projectId);
-  if (!r) throw new HttpError(404, L("Variante introuvable.", "Variant not found."));
-  const d = { ...variantSchema.parse(json(r.data_json, {})), stock };
-  run("UPDATE studio_variants SET data_json = ?, version = version + 1, updated_at = ? WHERE id = ?", JSON.stringify(d), now(), variantId);
+  tx(() => {
+    const r = one<VariantRow>("SELECT * FROM studio_variants WHERE id = ? AND project_id = ?", variantId, projectId);
+    if (!r) throw new HttpError(404, L("Variante introuvable.", "Variant not found."));
+    const d = { ...variantSchema.parse(json(r.data_json, {})), stock }, at = now();
+    run("UPDATE studio_variants SET data_json = ?, version = version + 1, updated_at = ? WHERE id = ?", JSON.stringify(d), at, variantId);
+    run("UPDATE studio_products SET version = version + 1, updated_at = ? WHERE id = ? AND project_id = ?", at, r.product_id, projectId);
+  });
 }
 
 export function moveProduct(projectId: string, productId: string, dir: "up" | "down") {

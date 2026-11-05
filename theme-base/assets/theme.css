@@ -29,7 +29,7 @@ a { color: inherit; }
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
-[class*="color-scheme-"] { background: var(--c-bg); color: var(--c-text); }
+[class*="color-scheme-"], [class*="color-es-"] { background: var(--c-bg); color: var(--c-text); }
 
 .es-container { width: 100%; max-width: var(--page-width); margin-inline: auto; padding-inline: var(--gutter); }
 .es-section { padding-top: calc(var(--pt, 96px) * var(--space-scale) * .62); padding-bottom: calc(var(--pb, 96px) * var(--space-scale) * .62); position: relative; }
@@ -1450,3 +1450,10 @@ body[data-logo-light] .es-header--transparent:not(.is-scrolled) .es-header__logo
 .es-star-illus__star { fill: var(--cv-star, #F2B84B); filter: drop-shadow(0 0 18px rgba(255, 214, 120, .55)); }
 .es-star-illus__planet { fill: color-mix(in srgb, var(--c-accent) 70%, #fff); opacity: .85; }
 .es-star-illus__dots { fill: var(--cv-star, #F2B84B); }
+
+/* Section recolorée seule (schéma « es-<section> », Studio et SYNA) : les cartes « verre » des directions atelier et terroir
+   ont un blanc figé ; elles prennent la surface du nouveau schéma, recalculée lisible dans theme.liquid (#301). */
+.es-section[class*="color-es-"].es-features--glow .es-feature { background: var(--c-surface); }
+/* Textes volontairement atténués (mélange texte / fond figé dans la section) : dans une section recolorée, ils
+   reprennent le texte du nouveau schéma, dont la lisibilité est garantie (#301). */
+.es-section[class*="color-es-"] :is(.es-svc__text, .es-svc__duration, .es-info__row dd, .es-info__map-gate p) { color: var(--c-text); }

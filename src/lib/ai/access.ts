@@ -19,7 +19,9 @@ const store = runScope;
  * et tout appel payant qui partirait quand même est refusé avant l'envoi. Rien ne se dépense sans accord.
  */
 const aiOff = new AsyncLocalStorage<{ reason: string }>();
-export function withAiDisabled<T>(reason: string, fn: () => Promise<T>): Promise<T> {
+export function withAiDisabled<T>(reason: string, fn: () => Promise<T>): Promise<T>;
+export function withAiDisabled<T>(reason: string, fn: () => T): T;
+export function withAiDisabled<T>(reason: string, fn: () => T): T {
   return aiOff.run({ reason }, fn);
 }
 export const aiDisabledReason = () => aiOff.getStore()?.reason ?? null;

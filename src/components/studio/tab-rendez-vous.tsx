@@ -5,7 +5,7 @@
  * intervenants (source unique : la section de réglages du thème, ouverte ici dans son éditeur) ; liaison des boutons du
  * site au service réel du studio. Tout est vérifié côté serveur (créneau libre, aucune double réservation).
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CalendarDays, Link2, Plus, Settings2, XCircle, MoveRight } from "lucide-react";
 import { api, Badge, Button, Card, Field, Input, Select, useApi, useToast, Empty, Modal } from "../ui";
 import { useProject } from "./project-context";
@@ -32,6 +32,8 @@ export default function TabRendezVous() {
   const [from, setFrom] = useState(() => iso(new Date(Date.now() - 7 * 86400000)));
   const [to, setTo] = useState(() => iso(new Date(Date.now() + 60 * 86400000)));
   const { data, reload } = useApi<View>(`/api/projects/${id}/rendez-vous?du=${from}&au=${to}`);
+  // Retouche réservable confirmée dans SYNA (#418) : la page se relit aussitôt, sans rechargement.
+  useEffect(() => { const on = () => reload(); window.addEventListener("studio:booking-changed", on); return () => window.removeEventListener("studio:booking-changed", on); }, [reload]);
   const [editing, setEditing] = useState(false);
   const [advanced, setAdvanced] = useState(false);
   const [adding, setAdding] = useState(false);
@@ -65,7 +67,7 @@ export default function TabRendezVous() {
   const days = lang === "en" ? DAYS_EN : DAYS_FR;
   const r = data.rules;
   return (
-    <div className="grid gap-5" data-rdv={data.kind}>
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5" data-rdv={data.kind}>
       <Card className="p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>

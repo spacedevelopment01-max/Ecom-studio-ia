@@ -27,6 +27,7 @@ vi.mock("@/lib/logo-v2/ai", async original => ({ ...await original<object>(), re
   }),
 }) }));
 import sharp from "sharp";
+import {prepareGuidedLogo,confirmedGuidedLogo,runConfirmedGuidedLogo} from "./logo295-guided-fixture";
 import { localTerritories } from "@/lib/logo-v2/territories";
 import { ART_CRITERIA, type Territory, type BrandBrief } from "@/lib/logo-v2/types";
 import { runLogoEngineV2 } from "@/lib/logo-v2/engine";
@@ -51,21 +52,21 @@ const job = (uid: string, pid: string, type = "brand.logo.v2", payload: object =
 };
 describe("trois directions, reprise, sélection et charte : chaîne réelle avec fournisseur injecté", () => {
   it("une interruption conserve la première direction avant les appels suivants et la reprise ne la redessine pas", async () => {
-    const f = await fixture(); validatedBrand(f.pid, f.input); control.draws = []; control.accepted = ["t1", "t2", "t3"]; control.failAt = "t2";
+    const f = await fixture(); validatedBrand(f.pid, f.input); await prepareGuidedLogo(f.pid); control.draws = []; control.accepted = ["t1", "t2", "t3"]; control.failAt = "t2";
     try {
-      await expect(runForUser(f.uid, () => runLogoEngineV2(job(f.uid, f.pid), f.pid), "normal", f.pid)).rejects.toThrow(/Interruption simulée/);
+      await expect(runForUser(f.uid, () => runConfirmedGuidedLogo(f.pid), "normal", f.pid)).rejects.toThrow(/Interruption simulée/);
       const kept = currentSeries(f.pid)!.directions[0];
       expect(currentSeries(f.pid)?.directions).toHaveLength(1);
       control.failAt = null;
-      await runForUser(f.uid, () => runLogoEngineV2(job(f.uid, f.pid, "brand.logo.v2", { correction: "Reprendre uniquement après l’interruption du traitement." }), f.pid), "normal", f.pid);
+      await runForUser(f.uid, () => runConfirmedGuidedLogo(f.pid, "Reprendre uniquement après l’interruption du traitement."), "normal", f.pid);
       expect(control.draws).toEqual(["t1", "t2", "t2", "t3"]);
       expect(currentSeries(f.pid)?.directions[0].logoId).toBe(kept.logoId);
       expect(currentSeries(f.pid)?.status).toBe("complete");
     } finally { control.failAt = null; control.uncertain = false; }
   });
   it("un résultat incertain arrête la série sans relais ni reprise du même appel ; les directions acceptées restent enregistrées", async () => {
-    const f = await fixture(); validatedBrand(f.pid, f.input); control.draws = []; control.accepted = ["t1", "t2", "t3"]; control.failAt = "t2"; control.uncertain = true; control.enableRelay = true; control.relayCalls = 0;
-    const ctx = job(f.uid, f.pid);
+    const f = await fixture(); validatedBrand(f.pid, f.input); await prepareGuidedLogo(f.pid); control.draws = []; control.accepted = ["t1", "t2", "t3"]; control.failAt = "t2"; control.uncertain = true; control.enableRelay = true; control.relayCalls = 0;
+    const ctx = await confirmedGuidedLogo(f.pid);
     try {
       await expect(runForUser(f.uid, () => runLogoEngineV2(ctx, f.pid), "normal", f.pid)).rejects.toThrow(/incertain/);
       expect(currentSeries(f.pid)?.directions).toHaveLength(1);
@@ -78,9 +79,9 @@ describe("trois directions, reprise, sélection et charte : chaîne réelle avec
     } finally { control.failAt = null; control.uncertain = false; control.enableRelay = false; }
   });
   it("bloque le duo secondaire/accent partagé avant le premier dessin, sans substitution locale", async () => {
-    const f = await fixture(); validatedBrand(f.pid, f.input); control.draws = []; control.copiedPalettes = true;
+    const f = await fixture(); validatedBrand(f.pid, f.input); await prepareGuidedLogo(f.pid); control.draws = []; control.copiedPalettes = true;
     try {
-      await expect(runForUser(f.uid, () => runLogoEngineV2(job(f.uid, f.pid), f.pid), "normal", f.pid)).rejects.toThrow(/Palettes à revoir/);
+      await expect(runForUser(f.uid, () => runConfirmedGuidedLogo(f.pid), "normal", f.pid)).rejects.toThrow(/Palettes à revoir/);
       expect(control.draws).toEqual([]);
       expect(currentSeries(f.pid)?.status).toBe("partial");
       expect(currentSeries(f.pid)?.directions).toEqual([]);
@@ -88,17 +89,16 @@ describe("trois directions, reprise, sélection et charte : chaîne réelle avec
     } finally { control.copiedPalettes = false; }
   });
   it("répare seulement les directions manquantes, conserve le nom, choisit l'ensemble sans génération ni thème", async () => {
-    const f = await fixture(); validatedBrand(f.pid, f.input); control.draws = []; control.accepted = ["t1"];
+    const f = await fixture(); validatedBrand(f.pid, f.input); await prepareGuidedLogo(f.pid); control.draws = []; control.accepted = ["t1"];
     const name = loadProject(f.pid).brand!.name;
-    const first = await runForUser(f.uid, () => runLogoEngineV2(job(f.uid, f.pid), f.pid), "normal", f.pid);
+    const first = await runForUser(f.uid, () => runConfirmedGuidedLogo(f.pid), "normal", f.pid);
     expect(currentSeries(f.pid)?.status).toBe("partial");
     expect(currentSeries(f.pid)?.directions).toHaveLength(1);
     const kept = currentSeries(f.pid)!.directions[0].logoId;
     expect(await applyBestLogoV2(null, f.pid, first.shown)).toBeNull();
     expect(loadProject(f.pid).brand?.logo.assetId).toBeUndefined();
     control.accepted = ["t1", "t2", "t3"];
-    const resumed = job(f.uid, f.pid, "brand.logo.v2", { correction: "Corriger uniquement les deux directions refusées." });
-    await runForUser(f.uid, () => runLogoEngineV2(resumed, f.pid), "normal", f.pid);
+    await runForUser(f.uid, () => runConfirmedGuidedLogo(f.pid, "Corriger uniquement les deux directions refusées."), "normal", f.pid);
     expect(control.draws).toEqual(["t1", "t2", "t3", "t2", "t3"]);
     expect(currentSeries(f.pid)?.status).toBe("complete");
     expect(currentSeries(f.pid)?.directions[0].logoId).toBe(kept);

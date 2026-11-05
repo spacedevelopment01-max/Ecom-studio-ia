@@ -1,0 +1,127 @@
+{
+  "schema": "syna301-corbeille-recette-1",
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Images : mise en corbeille native de la photo et autres acquis, sans génération",
+          "ok": true
+        },
+        {
+          "etape": "Montre la corbeille : Banque Images seule, autres domaines exclus, aucun accord sur la liste",
+          "ok": true
+        },
+        {
+          "etape": "Suggestion ID natif puis phrase interrogative image : aperçu, annulation et nouvel accord≥17s",
+          "ok": true
+        },
+        {
+          "etape": "Rechargement, reçu et vraie image dans la Banque native ; Préparation et octets conservés",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Images : mise en corbeille native de la photo et autres acquis, sans génération",
+          "ok": true
+        },
+        {
+          "etape": "Montre la corbeille : Banque Images seule, autres domaines exclus, aucun accord sur la liste",
+          "ok": true
+        },
+        {
+          "etape": "Suggestion ID natif puis phrase interrogative image : aperçu, annulation et nouvel accord≥17s",
+          "ok": true
+        },
+        {
+          "etape": "Rechargement, reçu et vraie image dans la Banque native ; Préparation et octets conservés",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Images : mise en corbeille native de la photo et autres acquis, sans génération",
+          "ok": true
+        },
+        {
+          "etape": "Montre la corbeille : Banque Images seule, autres domaines exclus, aucun accord sur la liste",
+          "ok": true
+        },
+        {
+          "etape": "Suggestion ID natif puis phrase interrogative image : aperçu, annulation et nouvel accord≥17s",
+          "ok": true
+        },
+        {
+          "etape": "Rechargement, reçu et vraie image dans la Banque native ; Préparation et octets conservés",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Images : mise en corbeille native de la photo et autres acquis, sans génération",
+          "ok": true
+        },
+        {
+          "etape": "Montre la corbeille : Banque Images seule, autres domaines exclus, aucun accord sur la liste",
+          "ok": true
+        },
+        {
+          "etape": "Suggestion ID natif puis phrase interrogative image : aperçu, annulation et nouvel accord≥17s",
+          "ok": true
+        },
+        {
+          "etape": "Rechargement, reçu et vraie image dans la Banque native ; Préparation et octets conservés",
+          "ok": true
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "constats": [],
+  "forbidden": [],
+  "coutIA": 0,
+  "servedVersion": {
+    "commit": "3b54dfbe8ebf125b6039f035e2c024ec07d73a4e",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "acquiredFixtureCalls": {
+    "before": 4,
+    "after": 4,
+    "unchanged": true,
+    "newCalls": 0
+  },
+  "waits": [
+    17002.306529,
+    17001.019496000004,
+    17000.854967,
+    17000.570707000006
+  ],
+  "jsErrors": [],
+  "fixtureDataDir": "/tmp/ecs-corbeille301-Ki3VoE",
+  "buildId": "QcnDvnA7TT22d5jArByuE"
+}

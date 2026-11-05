@@ -48,7 +48,7 @@ describe("prompts : compléter et lancer", () => {
     expect(r.missing).toContain("cible");
   });
 
-  it("lancer avec l'IA : refus clair sans IA (découverte), réponse avec le projet sinon", async () => {
+  it("lancer avec l'IA : refus sans forfait ou devis lié, complétion gratuite conservée", async () => {
     const pid = await project();
     const { POST } = await import("@/app/api/projects/[id]/prompt-run/route");
     aiOn = false;
@@ -57,9 +57,18 @@ describe("prompts : compléter et lancer", () => {
     expect((await off.json()).error).toMatch(/forfaits/);
     expect(calls).toHaveLength(0);
     aiOn = true;
-    const on = await (await POST(post(`/api/projects/${pid}/prompt-run`, { body: sample.body }), ctx({ id: pid }))).json();
-    expect(on.answer).toMatch(/Positionnement/);
-    expect(calls[0].prompt).toContain("Espace Ancrage");
-    expect(calls[0].context).toBeTruthy();
+    const { grantProjectPlan } = await import("./communication-choice-fixture");
+    grantProjectPlan(pid, "creer");
+    const on = await POST(post(`/api/projects/${pid}/prompt-run`, { body: sample.body }), ctx({ id: pid }));
+    expect(on.status).toBe(409);
+    expect(await on.json()).toMatchObject({ code: "prompt_run_consent_unavailable" });
+    expect(calls).toHaveLength(0);
+    // La complétion native reste utilisable indépendamment de l'exécution IA bloquée.
+    const { POST: fill } = await import("@/app/api/projects/[id]/prompt-fill/route");
+    const filled = await (await fill(post(`/api/projects/${pid}/prompt-fill`, { body: sample.body }), ctx({ id: pid }))).json();
+    expect(filled.body).toContain("Espace Ancrage");
+    const { projectContext } = await import("@/lib/ai/context");
+    const { loadProject } = await import("@/lib/projects");
+    expect(projectContext(loadProject(pid))).toBeTruthy();
   });
 });

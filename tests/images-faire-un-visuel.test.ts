@@ -110,7 +110,7 @@ describe("Faire un visuel (onglet Images)", async () => {
     expect(fetchCalls).toBe(0);
   });
 
-  it("API (images 100 % IA) : plus de visuel gratuit du studio ; sans IA, refus ; sinon publication entière par l'IA ; devis lisible avant", async () => {
+  it("API historique : anciens refus conservés, devis GET lisible et créations sans accord serveur refusées", async () => {
     const u = await user();
     const pid = await seedThemeScenario(u.id, "artisan");
     grantProjectPlan(pid, "dominer");
@@ -127,15 +127,12 @@ describe("Faire un visuel (onglet Images)", async () => {
 
     aiOn = true;
     const a = await post(pid, { mode: "single", visual: "ai_post", kind: "service", format: "story", headline: "Titre" });
-    expect(a.status).toBe(200);
-    const ja = getJob((await a.json()).jobId)!;
-    expect(ja.type).toBe("image.ai_post");
-    expect(JSON.parse(ja.payload).request).toMatchObject({ kind: "service", format: "story", headline: "Titre" });
+    expect(a.status).toBe(409);
+    expect((await a.json()).code).toBe('image_consent_required');
     const i = await post(pid, { mode: "single", visual: "ai_image", kind: "service", format: "portrait", headline: "Autre" });
-    // Visuel de prestation avec texte : publication entière par l'IA (plus de texte du studio posé sur une image).
-    const ji = getJob((await i.json()).jobId)!;
-    expect(ji.type).toBe("image.ai_post");
-    expect(JSON.parse(ji.payload).request).toMatchObject({ kind: "service", headline: "Autre" });
+    expect(i.status).toBe(409);
+    expect((await i.json()).code).toBe('image_consent_required');
+    const {all}=await import('@/lib/db');expect(all('SELECT id FROM jobs WHERE project_id=?',pid)).toHaveLength(0);
     aiOn = false;
   }, 60_000);
 

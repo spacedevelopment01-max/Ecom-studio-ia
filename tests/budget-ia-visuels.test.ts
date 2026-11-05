@@ -76,21 +76,20 @@ describe("Visuel de prestation : choix de l'image", async () => {
 
   const launch = async (pid: string, body: object) => {
     const r = await fr(() => images.POST(new Request(`http://localhost:3000/api/projects/${pid}/images`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }), { params: Promise.resolve({ id: pid }) } as any));
-    expect(r.status).toBe(200);
-    const job = getJob((await r.json()).jobId)!;
-    run("UPDATE jobs SET status = 'running', locked_by = NULL WHERE id = ?", job.id);
-    return job;
+    expect(r.status).toBe(409);
+    return await r.json();
   };
 
-  it("images 100 % IA : un visuel de prestation part vers l'IA (publication entière), jamais un visuel typographique du studio", async () => {
+  it("ancienne création de prestation : le forfait ne vaut pas consentement et aucun visuel n'est lancé", async () => {
     const u = await createUser(`bg${Date.now()}@test.fr`, "motdepasse-test", "P");
     sessionUser = { ...u, role: "client" };
     const pid = await seedThemeScenario(u.id, "artisan");
     grantProjectPlan(pid, "dominer");
     for (const background of ["image", "none"]) {
-      const job = await launch(pid, { mode: "single", kind: "service", format: "portrait", serviceIndex: background === "none" ? 1 : 0, background });
-      expect(job.type).toBe("image.ai_post");
+      const result = await launch(pid, { mode: "single", kind: "service", format: "portrait", serviceIndex: background === "none" ? 1 : 0, background });
+      expect(result.code).toBe('image_consent_required');
     }
+    const {all}=await import('@/lib/db');expect(all('SELECT id FROM jobs WHERE project_id=?',pid)).toHaveLength(0);
   }, 120_000);
 
   it("ancienne tâche image.single restée en file : passe par l'IA d'images ; sans IA, refus expliqué (aucun gabarit)", async () => {

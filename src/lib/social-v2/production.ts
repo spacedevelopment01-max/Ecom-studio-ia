@@ -135,6 +135,17 @@ export function estimateProduction(p: Project, ids: string[], deps: Pick<SocialD
   return { posts: lines.length, free: lines.filter((l) => !l.paid).length, paid: lines.filter((l) => l.paid).length, estimateMicro: lines.reduce((s, l) => s + l.estimateMicro, 0), capMicro: lines.reduce((s, l) => s + l.capMicro, 0), lines: lines.map(({ capMicro: _c, ...l }) => l), notes };
 }
 
+/** Native numeric approval: recheck the current server estimate before queueing and execution.
+ * The targeted SYNA path has its own bound publicationQuote; this does not replace that contract.
+ */
+export function assertProductionEstimate(p: Project, ids: string[], deps: Pick<SocialDeps, "estimate" | "probable" | "aiActive">, o: { allowPaid: boolean; approvedEstimateMicro?: number | null; aiImages?: number | null; aiBackground?: boolean; replace?: boolean }) {
+  if (!o.allowPaid || !deps.aiActive) return;
+  const quote = estimateProduction(p, ids, deps, o);
+  if (quote.estimateMicro > 0 && (o.approvedEstimateMicro == null || o.approvedEstimateMicro < quote.estimateMicro)) {
+    throw new HttpError(409, "Prix à accepter avant de lancer (il a pu changer) : vérifiez-le puis relancez.");
+  }
+}
+
 /** `notice` : message au client (reprise débitée, annoncée en % du budget IA). */
 export type ProductionResult = { produced: number; skipped: number; failed: number; spentMicro: number; stoppedByCap: boolean; notes: string[]; byMethod: Record<string, number>; notice?: string };
 
@@ -149,6 +160,7 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
   if (o.allowPaid && !allowPaid) notes.push(deps.aiActive ? "estimation non acceptée ou au-delà du plafond : les images attendent leur création par l'IA" : "IA non disponible : les images attendent leur création par l'IA (vidéos de la bibliothèque seulement)");
   const selected=selectRows(p.id,ids),changed=new Set(o.expectedInputs?ids.filter(id=>{const row=selected.find(r=>r.id===id);if(!row||!o.expectedInputs![id])return true;try{return productionInputToken(p,row)!==o.expectedInputs![id];}catch{return true;}}):[]);
   const rows = selected.filter(r=>!changed.has(r.id)).filter((r) => PRODUCIBLE.has(r.status) && (o.replace || r.media === "[]") && (!o.replace || !o.replaceFrom || o.replaceFrom[r.id] === r.media)).slice(0, o.batchSize ?? 30);
+  if (!o.publicationQuote && o.approvedEstimateMicro != null) assertProductionEstimate(p, rows.map(r => r.id), deps, o);
   const pools = { image: libraryPool(p.id, "image"), video: libraryPool(p.id, "video") };
   const used = new Map<string, number>();
   const aiIds = aiImageIds(rows, o.aiImages);

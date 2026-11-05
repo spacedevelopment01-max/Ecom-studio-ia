@@ -1,0 +1,171 @@
+{
+  "schema": "syna301-native-ui-proof-1",
+  "domain": "C13",
+  "pull_request": 314,
+  "head": "dc3c3a7623e3a6defddc5e50d4bc224353d3bc7a",
+  "parent": "29a21dc359b8da489455f676991405e05aa8ae4f",
+  "runtime": {
+    "commit": "dc3c3a7623e3a6defddc5e50d4bc224353d3bc7a",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "native_ui_status": "PASS",
+  "source_ui_modified": false,
+  "encre_plein_cadre_combined_status": "NON_TESTE",
+  "provider_creative_quality_qualified": false,
+  "real_provider_calls": 0,
+  "real_cost_eur": 0,
+  "cases": [
+    {
+      "business": "products",
+      "viewport_width": 1440,
+      "exact_topic": "Un atelier vide de céramique, établi en bois et lumière naturelle.",
+      "topic_wire_exact": true,
+      "cancel_no_job_or_spend": true,
+      "explicit_quote_and_consent": true,
+      "one_job": "8nsxkp5xfj7y7ozm",
+      "lost_response": false,
+      "retry_reuses_accepted_job": false,
+      "result_reloaded": true,
+      "asset": {
+        "id": "58rj7di75iqc3yoj",
+        "version": 1,
+        "sha256": "9fc2ec1d23bd38ed881285e7d3fb28035366065f56530ba0647cd3bc084ba3d2",
+        "bytes": 252625
+      },
+      "simulated_cost_micro": 221811,
+      "maximum_quote_micro": 387045,
+      "project_product_and_services_unchanged": true,
+      "javascript_errors": []
+    },
+    {
+      "business": "services",
+      "viewport_width": 390,
+      "exact_topic": "Un atelier vide destiné à aménager des vans, établi en bois, lumière naturelle.",
+      "topic_wire_exact": true,
+      "cancel_no_job_or_spend": true,
+      "explicit_quote_and_consent": true,
+      "one_job": "7oakji5vgfk2atw1",
+      "lost_response": true,
+      "retry_reuses_accepted_job": true,
+      "result_reloaded": true,
+      "asset": {
+        "id": "amfs38j413wfok1m",
+        "version": 1,
+        "sha256": "6368bdd367db0d7bc7e2df414c129c1084868143729ac7fe7a2bfd1ad8929f70",
+        "bytes": 278563
+      },
+      "simulated_cost_micro": 221811,
+      "maximum_quote_micro": 390007,
+      "project_product_and_services_unchanged": true,
+      "javascript_errors": []
+    }
+  ],
+  "wire_requests": [
+    {
+      "nativeTopicExact": true,
+      "operation": "generate",
+      "hasReference": false,
+      "referenceProof": null,
+      "promptSha256": "cf5963d5e79541e0752a2e33fe1a5591700b52afd49df9ecd0eee90b33e5badb",
+      "wirePromptSha256": "cf5963d5e79541e0752a2e33fe1a5591700b52afd49df9ecd0eee90b33e5badb",
+      "multipartLineEndingsDecoded": false,
+      "promptBytes": 830,
+      "requestRef": "68199b4ce3134fb8",
+      "simulatedResponseStatus": 200
+    },
+    {
+      "nativeTopicExact": true,
+      "operation": "generate",
+      "hasReference": false,
+      "referenceProof": null,
+      "promptSha256": "889bfd5e9133f5c0e05071b0a14982606fbb7a344cb1648fa54340d3567de086",
+      "wirePromptSha256": "889bfd5e9133f5c0e05071b0a14982606fbb7a344cb1648fa54340d3567de086",
+      "multipartLineEndingsDecoded": false,
+      "promptBytes": 1276,
+      "requestRef": "68199b4ce3134fb8",
+      "simulatedResponseStatus": 200
+    }
+  ],
+  "totals": {
+    "native_http_simulated_calls": 4,
+    "native_image_simulated_calls": 2,
+    "native_vision_simulated_calls": 2,
+    "native_cost_simulated_micro": 443622,
+    "whole_harness_cost_simulated_micro": 467358,
+    "whole_harness_http_simulated_calls": 7
+  },
+  "captures": [
+    {
+      "path": "native307/products-devis-avant-annulation.png",
+      "sha256": "096de9d93e2f03fa45ff79746f16b27aa48da71423f12dbccae0019dcd0bdf07"
+    },
+    {
+      "path": "native307/products-devis-exact-confirmation.png",
+      "sha256": "096de9d93e2f03fa45ff79746f16b27aa48da71423f12dbccae0019dcd0bdf07"
+    },
+    {
+      "path": "native307/products-resultat-recharge.png",
+      "sha256": "5d2dd6757306a029b979d4f09d90f9a2afd68ee3f03482e75254f2c6c27e0365"
+    },
+    {
+      "path": "native307/services-devis-avant-annulation.png",
+      "sha256": "30f4bd34edcefc85ef900fb4c053e88948ba4b116bec3dcda63edd98a9cd1c07"
+    },
+    {
+      "path": "native307/services-devis-exact-confirmation.png",
+      "sha256": "30f4bd34edcefc85ef900fb4c053e88948ba4b116bec3dcda63edd98a9cd1c07"
+    },
+    {
+      "path": "native307/services-reponse-perdue.png",
+      "sha256": "62262179fcae64f8c22c84a28fc6653709528156eafe74443758c17781ffe815"
+    },
+    {
+      "path": "native307/services-resultat-recharge.png",
+      "sha256": "3749331c7c4ef47610e2a3eb48e78b3f77bbb194aab5849a93190c0ca94fdde8"
+    }
+  ],
+  "capture_review": [
+    "products-devis-exact-confirmation.png",
+    "products-resultat-recharge.png",
+    "services-devis-exact-confirmation.png",
+    "services-resultat-recharge.png"
+  ],
+  "raw_proofs": [
+    "api-proof.json",
+    "native307/native307-proof.json"
+  ],
+  "build_log": "/tmp/parity301-image-topic-ui-build.log",
+  "recipe_log": "/tmp/parity301-image-topic-ui.log",
+  "source_worktree": "/workspace/work/parity301-image-topic-ui",
+  "branch": "codex/parity301-image-topic-ui-proof",
+  "cleanup": {
+    "all_server_worker_exit_codes": [
+      [
+        "worker",
+        0,
+        null
+      ],
+      [
+        "server",
+        0,
+        null
+      ],
+      [
+        "server",
+        0,
+        null
+      ]
+    ],
+    "browser_closed": true,
+    "temporary_scripts_removed": true,
+    "browser_slot_released": true
+  },
+  "limits": [
+    "Fake image pattern is a technical transport fixture, not proof of ceramics/van image quality from a real supplier.",
+    "Native Images screen tested; SYNA conversation parity and both Claude modes still require integrated qualification.",
+    "No complete CI, merge, deployment, client activation or real supplier connection performed."
+  ]
+}

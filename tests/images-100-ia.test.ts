@@ -56,20 +56,18 @@ describe("Images finales 100 % IA", async () => {
     expect((await off.json()).error).toMatch(/aucune image n'est créée à la place par un gabarit/i);
   });
 
-  it("onglet Images : chaque type part vers l'IA (image produit, scène, bannière : génération seule ; visuels avec texte : publication IA)", async () => {
+  it("ancienne API Images : chaque type exige le nouveau parcours devisé, sans tâche implicite", async () => {
     const pid = seed("cosmetic");
     sessionUser = { ...u, role: "client" };
     aiOn = true;
     for (const [kind, type, v2] of [["packshot", "image.v2", "packshot"], ["scene", "image.v2", "lifestyle"], ["banner", "image.v2", "banner"], ["ambiance", "image.v2", "ambiance"], ["promo", "image.ai_post", null]] as const) {
       const r = await post(pid, { mode: "single", kind, headline: kind });
-      expect(r.status, kind).toBe(200);
-      const j = lastJob(pid);
-      expect(j.type, kind).toBe(type);
-      const req = JSON.parse(j.payload).request;
-      if (v2) expect(req).toMatchObject({ kind: v2, noStock: true, allowGenerate: true });
+      expect(r.status, kind).toBe(409);
+      expect((await r.json()).code).toBe('image_consent_required');
+      if (v2) expect(imageV2Kind(false,kind)).toBe(v2);
     }
-    await post(pid, { mode: "set" });
-    expect(lastJob(pid).type).toBe("images.generate");
+    expect((await post(pid, { mode: "set" })).status).toBe(409);
+    expect(one('SELECT id FROM jobs WHERE project_id=?',pid)).toBeUndefined();
     expect(imageV2Kind(true, "scene")).toBe("trade_photo");
   });
 

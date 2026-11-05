@@ -1,0 +1,142 @@
+{
+  "schema": "syna301-lot7-recette-1",
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Dossier : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "Dossier : nouvel accord après17s, reçu natif, liste et rechargement",
+          "ok": true
+        },
+        {
+          "etape": "Bibliothèque préparée : formulation interrogative, titre privé, aucun corps ni bouton",
+          "ok": true
+        },
+        {
+          "etape": "Favoris : phrase naturelle, source privée identique après relecture",
+          "ok": true
+        },
+        {
+          "etape": "Commande mixte : clarification sans lignes ni exécution, bibliothèque inchangée",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Dossier : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "Dossier : nouvel accord après17s, reçu natif, liste et rechargement",
+          "ok": true
+        },
+        {
+          "etape": "Bibliothèque préparée : formulation interrogative, titre privé, aucun corps ni bouton",
+          "ok": true
+        },
+        {
+          "etape": "Favoris : phrase naturelle, source privée identique après relecture",
+          "ok": true
+        },
+        {
+          "etape": "Commande mixte : clarification sans lignes ni exécution, bibliothèque inchangée",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Dossier : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "Dossier : nouvel accord après17s, reçu natif, liste et rechargement",
+          "ok": true
+        },
+        {
+          "etape": "Bibliothèque préparée : formulation interrogative, titre privé, aucun corps ni bouton",
+          "ok": true
+        },
+        {
+          "etape": "Favoris : phrase naturelle, source privée identique après relecture",
+          "ok": true
+        },
+        {
+          "etape": "Commande mixte : clarification sans lignes ni exécution, bibliothèque inchangée",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Dossier : aperçu avant/après puis annulation sans écriture",
+          "ok": true
+        },
+        {
+          "etape": "Dossier : nouvel accord après17s, reçu natif, liste et rechargement",
+          "ok": true
+        },
+        {
+          "etape": "Bibliothèque préparée : formulation interrogative, titre privé, aucun corps ni bouton",
+          "ok": true
+        },
+        {
+          "etape": "Favoris : phrase naturelle, source privée identique après relecture",
+          "ok": true
+        },
+        {
+          "etape": "Commande mixte : clarification sans lignes ni exécution, bibliothèque inchangée",
+          "ok": true
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "constats": [],
+  "forbidden": [],
+  "coutIA": 0,
+  "servedVersion": {
+    "commit": "1a7280772ad7e3f92bf9ff9703a77ca2fb9339e0",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "acquiredFixtureCalls": {
+    "before": 4,
+    "after": 4,
+    "unchanged": true,
+    "newCalls": 0
+  },
+  "waits": [
+    17001.604503000002,
+    17001.907126,
+    17000.925335000007,
+    17000.58843100001
+  ],
+  "jsErrors": [],
+  "buildId": "HWgGEuhumzxC4dHxcw4-0"
+}

@@ -1,0 +1,135 @@
+{
+  "schema": "syna301-lot7-recette-1",
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Fichiers : « Renomme le dossier Photos en Photos clients » → accord → nom relu, même dossier",
+          "ok": true
+        },
+        {
+          "etape": "« Déplace le dossier Photos clients dans le dossier Archives » → accord → parent relu, nom conservé",
+          "ok": true
+        },
+        {
+          "etape": "Déplacement à la racine : nouvel aperçu, accord distinct après17s et reçu",
+          "ok": true
+        },
+        {
+          "etape": "Rechargement natif : reçu, structure exacte, actifs et Préparation conservés",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Fichiers : « Renomme le dossier Photos en Photos clients » → accord → nom relu, même dossier",
+          "ok": true
+        },
+        {
+          "etape": "« Déplace le dossier Photos clients dans le dossier Archives » → accord → parent relu, nom conservé",
+          "ok": true
+        },
+        {
+          "etape": "Déplacement à la racine : nouvel aperçu, accord distinct après17s et reçu",
+          "ok": true
+        },
+        {
+          "etape": "Rechargement natif : reçu, structure exacte, actifs et Préparation conservés",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Fichiers : « Renomme le dossier Photos en Photos clients » → accord → nom relu, même dossier",
+          "ok": true
+        },
+        {
+          "etape": "« Déplace le dossier Photos clients dans le dossier Archives » → accord → parent relu, nom conservé",
+          "ok": true
+        },
+        {
+          "etape": "Déplacement à la racine : nouvel aperçu, accord distinct après17s et reçu",
+          "ok": true
+        },
+        {
+          "etape": "Rechargement natif : reçu, structure exacte, actifs et Préparation conservés",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Fichiers : « Renomme le dossier Photos en Photos clients » → accord → nom relu, même dossier",
+          "ok": true
+        },
+        {
+          "etape": "« Déplace le dossier Photos clients dans le dossier Archives » → accord → parent relu, nom conservé",
+          "ok": true
+        },
+        {
+          "etape": "Déplacement à la racine : nouvel aperçu, accord distinct après17s et reçu",
+          "ok": true
+        },
+        {
+          "etape": "Rechargement natif : reçu, structure exacte, actifs et Préparation conservés",
+          "ok": true
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "constats": [],
+  "forbidden": [],
+  "coutIA": 0,
+  "servedVersion": {
+    "commit": "1c6ece6b1d81ca56f2103f5114575671c9a1ebb6",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "acquiredFixtureCalls": {
+    "before": 4,
+    "after": 4,
+    "unchanged": true,
+    "newCalls": 0
+  },
+  "waits": [
+    17000.556022,
+    17003.781026,
+    17001.158343999996,
+    17002.765712,
+    17002.985503999997,
+    17003.642552999998,
+    17001.433808,
+    17001.461620999995,
+    17002.98246900001,
+    17003.166494000005,
+    17002.646269999997,
+    17003.337100999983
+  ],
+  "jsErrors": [],
+  "fixtureDataDir": "/tmp/ecs-lot7-301-SeovW9",
+  "buildId": "7xwc-ACTdmEkd_leBCxvX"
+}

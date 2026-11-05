@@ -513,9 +513,9 @@ export function withQuotedVideoRoute<T>(route:{provider:string;model:string},fn:
 }
 
 /** Borne d'UNE photographie, mêmes formules que sa réservation native. Aucune grille de prix parallèle. */
-export function photoRequestMaxMicro(route:{provider:string;model:string},input:{prompt:string;references:number;aspect:string}):number{
+export function photoRequestMaxMicro(route:{provider:string;model:string},input:{prompt:string;references:number;aspect:string;quality?:"medium"|"high"}):number{
   const size=input.aspect==='1:1'?'1024x1024':input.aspect==='16:9'?'1536x1024':'1024x1536';
-  const micro=route.provider==='openai'?openaiImageMax(route.model,{prompt:input.prompt,images:input.references,size,quality:'high'}):route.provider==='google'?geminiImageMax(route.model,{prompt:input.prompt,images:input.references}):cost(route.provider,route.model,{images:1,input:Buffer.byteLength(input.prompt,'utf8')}).micro;
+  const micro=route.provider==='openai'?openaiImageMax(route.model,{prompt:input.prompt,images:input.references,size,quality:input.quality??'high'}):route.provider==='google'?geminiImageMax(route.model,{prompt:input.prompt,images:input.references}):cost(route.provider,route.model,{images:1,input:Buffer.byteLength(input.prompt,'utf8')}).micro;
   return mediaReservationMaxMicro(micro);
 }
 

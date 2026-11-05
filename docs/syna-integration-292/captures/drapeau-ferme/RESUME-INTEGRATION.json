@@ -1,0 +1,62 @@
+{
+  "schema": "syna-integration-recette-1",
+  "closed": true,
+  "runtime": {
+    "commit": "80f939219ebec4ae987a801065f3b8a284a96a13",
+    "commitOrigin": "dev-start",
+    "mode": "development",
+    "tree": "clean",
+    "source": "dev-server"
+  },
+  "cases": [
+    {
+      "case": "encre-products",
+      "flagClosed": true,
+      "noDeadConfirmation": true,
+      "noPaidFallback": true,
+      "manualPreviewIntact": true
+    },
+    {
+      "case": "encre-services",
+      "flagClosed": true,
+      "noDeadConfirmation": true,
+      "noPaidFallback": true,
+      "manualPreviewIntact": true
+    },
+    {
+      "case": "plein-products",
+      "flagClosed": true,
+      "noDeadConfirmation": true,
+      "noPaidFallback": true,
+      "manualPreviewIntact": true
+    },
+    {
+      "case": "plein-services",
+      "flagClosed": true,
+      "noDeadConfirmation": true,
+      "noPaidFallback": true,
+      "manualPreviewIntact": true
+    },
+    {
+      "case": "historique-encre-products",
+      "A1ReadOnly": true,
+      "noFreeControl": true
+    },
+    {
+      "case": "historique-plein-services",
+      "A1ReadOnly": true,
+      "noFreeControl": true
+    }
+  ],
+  "switches": [],
+  "screenshots": [
+    "encre-products-drapeau-ferme.png",
+    "encre-services-drapeau-ferme.png",
+    "plein-products-drapeau-ferme.png",
+    "plein-services-drapeau-ferme.png",
+    "historique-encre-products-telephone-390.png",
+    "historique-plein-services-telephone-390.png"
+  ],
+  "errors": [],
+  "designation17s": []
+}

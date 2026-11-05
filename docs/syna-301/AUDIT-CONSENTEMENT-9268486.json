@@ -1,0 +1,239 @@
+{
+  "schema": "finance-audit-301-observations-1",
+  "sourceTree": "9268486f21ff650d3faa55e1051bb477f006220a",
+  "provider": "mocked-sdk-no-transport",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "results": [
+    {
+      "operation": "prompt-run",
+      "projectSynthetic": true,
+      "status": 500,
+      "sdkAttempts": 1,
+      "models": [
+        "claude-sonnet-5-5"
+      ],
+      "networkFetchAttempts": 0,
+      "jobs": [],
+      "calls": [
+        {
+          "status": "error",
+          "cost": 0
+        }
+      ],
+      "usage": [],
+      "reservations": [
+        {
+          "status": "released",
+          "amount": 73627,
+          "actual": null
+        }
+      ],
+      "financialApprovalFields": false
+    },
+    {
+      "operation": "files.classify",
+      "projectSynthetic": true,
+      "status": 200,
+      "sdkAttempts": 1,
+      "models": [
+        "claude-haiku-4-5"
+      ],
+      "networkFetchAttempts": 0,
+      "jobs": [
+        {
+          "type": "files.classify",
+          "status": "queued"
+        }
+      ],
+      "calls": [
+        {
+          "status": "error",
+          "cost": 0
+        }
+      ],
+      "usage": [],
+      "reservations": [
+        {
+          "status": "released",
+          "amount": 27784,
+          "actual": null
+        }
+      ],
+      "financialApprovalFields": false,
+      "dispatcherError": "Error: SENTINELLE_FOURNISSEUR_AUCUN_TRANSPORT"
+    },
+    {
+      "operation": "content.v2.create",
+      "projectSynthetic": true,
+      "status": 200,
+      "sdkAttempts": 1,
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "networkFetchAttempts": 0,
+      "jobs": [
+        {
+          "type": "content.v2",
+          "status": "queued"
+        }
+      ],
+      "calls": [
+        {
+          "status": "error",
+          "cost": 0
+        }
+      ],
+      "usage": [],
+      "reservations": [
+        {
+          "status": "released",
+          "amount": 147253,
+          "actual": null
+        }
+      ],
+      "financialApprovalFields": false,
+      "dispatcherError": ""
+    },
+    {
+      "operation": "content.v2.edit",
+      "projectSynthetic": true,
+      "status": 500,
+      "sdkAttempts": 1,
+      "models": [
+        "claude-sonnet-5-5"
+      ],
+      "networkFetchAttempts": 0,
+      "jobs": [],
+      "calls": [
+        {
+          "status": "error",
+          "cost": 0
+        }
+      ],
+      "usage": [],
+      "reservations": [
+        {
+          "status": "released",
+          "amount": 73627,
+          "actual": null
+        }
+      ],
+      "financialApprovalFields": false
+    },
+    {
+      "operation": "ads.doc.ai_edit",
+      "projectSynthetic": true,
+      "status": 500,
+      "sdkAttempts": 1,
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "networkFetchAttempts": 0,
+      "jobs": [],
+      "calls": [
+        {
+          "status": "error",
+          "cost": 0
+        }
+      ],
+      "usage": [],
+      "reservations": [
+        {
+          "status": "released",
+          "amount": 147253,
+          "actual": null
+        }
+      ],
+      "financialApprovalFields": false
+    },
+    {
+      "operation": "campaigns.v2.generate-missing-numeric",
+      "projectSynthetic": true,
+      "status": 409,
+      "sdkAttempts": 0,
+      "models": [],
+      "networkFetchAttempts": 0,
+      "jobs": [],
+      "calls": [],
+      "usage": [],
+      "reservations": [],
+      "readinessSimulated": true,
+      "body": {
+        "error": "Vérifiez et acceptez le devis de cette campagne avant de lancer."
+      }
+    },
+    {
+      "operation": "social.v2.create-one-missing-numeric",
+      "projectSynthetic": true,
+      "status": 409,
+      "sdkAttempts": 0,
+      "models": [],
+      "networkFetchAttempts": 0,
+      "jobs": [],
+      "calls": [],
+      "usage": [],
+      "reservations": [],
+      "readinessSimulated": true,
+      "body": {
+        "error": "Prix à accepter avant de lancer (il a pu changer) : vérifiez-le puis relancez."
+      }
+    },
+    {
+      "operation": "images.copy-review.resume-missing-numeric",
+      "projectSynthetic": true,
+      "status": 409,
+      "sdkAttempts": 0,
+      "models": [],
+      "networkFetchAttempts": 0,
+      "jobs": [
+        {
+          "type": "image.ai_post",
+          "status": "failed"
+        }
+      ],
+      "calls": [],
+      "usage": [],
+      "reservations": [],
+      "readinessSimulated": true,
+      "body": {
+        "error": "Acceptez le devis actuel avant de reprendre l’image. Le plafond de la tâche reste inchangé.",
+        "code": "QUOTE_REQUIRED"
+      }
+    },
+    {
+      "operation": "social.v2.produce-zero-below-estimate",
+      "projectSynthetic": true,
+      "status": 200,
+      "sdkAttempts": 1,
+      "models": [
+        "claude-sonnet-5-5"
+      ],
+      "networkFetchAttempts": 0,
+      "jobs": [
+        {
+          "type": "social.v2.produce",
+          "status": "queued"
+        }
+      ],
+      "calls": [
+        {
+          "status": "error",
+          "cost": 0
+        }
+      ],
+      "usage": [],
+      "reservations": [
+        {
+          "status": "released",
+          "amount": 73627,
+          "actual": null
+        }
+      ],
+      "readinessSimulated": true,
+      "approvedEstimateMicro": 0,
+      "serverEstimateMicro": 350880,
+      "dispatcherError": "Error: Aucune publication complète produite : publication w331ln : visuel IA non validé par le contrôle, à refaire (aucun gabarit à la place) ; SENTINELLE_FOURNISSEUR_AUCUN_TRANSPORT"
+    }
+  ]
+}

@@ -1,0 +1,200 @@
+{
+  "schema": "syna301-seo-pages-recette-1",
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "business": "products",
+      "steps": [
+        {
+          "etape": "Site ouvert dans le mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "SEO : phrase naturelle → carte gratuite, avant / après, aucun devis, rien d'écrit",
+          "ok": true,
+          "detail": "Vérifiez le texte SEO exact et la page. Après accord gratuit, une nouvelle version native sera enregistrée ; aucun contenu visible, autre métadonnée, site publié ni document éditorial acquis ne sera r"
+        },
+        {
+          "etape": "SEO : confirmation gratuite → reçu, nouvelle version, titre relu dans la page enregistrée",
+          "ok": true,
+          "detail": "v1 → v2, <title> Atelier recette encre ordinateur — accueil – Capteurs de ruc"
+        },
+        {
+          "etape": "SEO : métadescription → Annuler → rien d'écrit",
+          "ok": true
+        },
+        {
+          "etape": "Pages : « Ajoute une page » → modèles natifs proposés, aperçu, choix rempli dans la phrase du client",
+          "ok": true,
+          "detail": "7 modèles, choisi « À propos — L'entreprise »"
+        },
+        {
+          "etape": "Pages : confirmation → reçu, page relue dans la version enregistrée (brouillon)",
+          "ok": true,
+          "detail": "/preview/uiuxoi4fkdba1wsz/v/nx0flutdf6si02po/pages/nos-garanties"
+        },
+        {
+          "etape": "Section : « Masque cette section » → confirmation → seule cette section est masquée",
+          "ok": true,
+          "detail": "v3 → v4"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Site ouvert dans le mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "SEO : phrase naturelle → carte gratuite, avant / après, aucun devis, rien d'écrit",
+          "ok": true,
+          "detail": "Vérifiez le texte SEO exact et la page. Après accord gratuit, une nouvelle version native sera enregistrée ; aucun contenu visible, autre métadonnée, site publié ni document éditorial acquis ne sera r"
+        },
+        {
+          "etape": "SEO : confirmation gratuite → reçu, nouvelle version, titre relu dans la page enregistrée",
+          "ok": true,
+          "detail": "v1 → v2, <title> Atelier recette encre telephone — accueil – Atelier des cord"
+        },
+        {
+          "etape": "SEO : métadescription → Annuler → rien d'écrit",
+          "ok": true
+        },
+        {
+          "etape": "Pages : « Ajoute une page » → modèles natifs proposés, aperçu, choix rempli dans la phrase du client",
+          "ok": true,
+          "detail": "7 modèles, choisi « À propos — L'entreprise »"
+        },
+        {
+          "etape": "Pages : confirmation → reçu, page relue dans la version enregistrée (brouillon)",
+          "ok": true,
+          "detail": "/preview/4pyo0eqw3zesrzuz/v/832bk6t9lrxukvnz/pages/nos-garanties"
+        },
+        {
+          "etape": "Section : « Masque cette section » → confirmation → seule cette section est masquée",
+          "ok": true,
+          "detail": "v3 → v4"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "Site ouvert dans le mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "SEO : phrase naturelle → carte gratuite, avant / après, aucun devis, rien d'écrit",
+          "ok": true,
+          "detail": "Vérifiez le texte SEO exact et la page. Après accord gratuit, une nouvelle version native sera enregistrée ; aucun contenu visible, autre métadonnée, site publié ni document éditorial acquis ne sera r"
+        },
+        {
+          "etape": "SEO : confirmation gratuite → reçu, nouvelle version, titre relu dans la page enregistrée",
+          "ok": true,
+          "detail": "v1 → v2, <title> Atelier recette plein ordinateur — accueil – Atelier des cor"
+        },
+        {
+          "etape": "SEO : métadescription → Annuler → rien d'écrit",
+          "ok": true
+        },
+        {
+          "etape": "Pages : « Ajoute une page » → modèles natifs proposés, aperçu, choix rempli dans la phrase du client",
+          "ok": true,
+          "detail": "7 modèles, choisi « À propos — L'entreprise »"
+        },
+        {
+          "etape": "Pages : confirmation → reçu, page relue dans la version enregistrée (brouillon)",
+          "ok": true,
+          "detail": "/preview/rftpx749spcdhljl/v/ekb4zla0xypvnx4o/pages/nos-garanties"
+        },
+        {
+          "etape": "Section : « Masque cette section » → confirmation → seule cette section est masquée",
+          "ok": true,
+          "detail": "v3 → v4"
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "business": "products",
+      "steps": [
+        {
+          "etape": "Site ouvert dans le mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "SEO : phrase naturelle → carte gratuite, avant / après, aucun devis, rien d'écrit",
+          "ok": true,
+          "detail": "Vérifiez le texte SEO exact et la page. Après accord gratuit, une nouvelle version native sera enregistrée ; aucun contenu visible, autre métadonnée, site publié ni document éditorial acquis ne sera r"
+        },
+        {
+          "etape": "SEO : confirmation gratuite → reçu, nouvelle version, titre relu dans la page enregistrée",
+          "ok": true,
+          "detail": "v1 → v2, <title> Atelier recette plein telephone — accueil – Capteurs de ruch"
+        },
+        {
+          "etape": "SEO : métadescription → Annuler → rien d'écrit",
+          "ok": true
+        },
+        {
+          "etape": "Pages : « Ajoute une page » → modèles natifs proposés, aperçu, choix rempli dans la phrase du client",
+          "ok": true,
+          "detail": "7 modèles, choisi « À propos — L'entreprise »"
+        },
+        {
+          "etape": "Pages : confirmation → reçu, page relue dans la version enregistrée (brouillon)",
+          "ok": true,
+          "detail": "/preview/82u8o18zypwyfinc/v/ejtyw5vdbbdr9z30/pages/nos-garanties"
+        },
+        {
+          "etape": "Section : « Masque cette section » → confirmation → seule cette section est masquée",
+          "ok": true,
+          "detail": "v3 → v4"
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "forbidden": [],
+  "coutIA": 0,
+  "servedVersion": {
+    "commit": "cb383590a7811df94153b9698754d3b071bde228",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "acquiredFixtureCalls": {
+    "before": 4,
+    "after": 4,
+    "unchanged": true,
+    "newCalls": 0
+  },
+  "waits": [
+    17001.872237,
+    17004.497510999998,
+    17003.210965000006,
+    17000.50147799999,
+    17003.488880000004,
+    17000.59400299999,
+    17001.197895999998,
+    17004.169464999984,
+    17001.67310300001,
+    17004.106025000016,
+    17003.737519999995,
+    17000.60951000001
+  ],
+  "buildId": "KqRyToh4Fq2rBTZFXDwi3"
+}

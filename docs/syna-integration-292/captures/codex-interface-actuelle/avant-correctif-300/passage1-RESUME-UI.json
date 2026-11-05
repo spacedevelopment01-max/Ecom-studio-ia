@@ -1,0 +1,21 @@
+{
+  "runtime": {
+    "commit": "531ef3b5c904f1953bb922167eac048e875730cf",
+    "commitOrigin": "dev-start",
+    "mode": "development",
+    "tree": "clean",
+    "source": "dev-server"
+  },
+  "schema": "syna-free-confirmation-ui-1",
+  "cases": [],
+  "screenshots": [
+    "products-desktop-confirmation.png",
+    "products-mobile-confirmation.png",
+    "products-desktop-recu.png",
+    "products-desktop-resultat.png",
+    "products-mobile-resultat.png"
+  ],
+  "errors": [
+    "TimeoutError: locator.waitFor: Timeout 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('dialog', { name: 'SYNA — conversation du projet', exact: true }).getByRole('region', { name: 'Retouche gratuite', exact: true }).getByRole('button', { name: 'Confirmer la modification gratuite', exact: true }) to be visible\u001b[22m\n"
+  ]
+}

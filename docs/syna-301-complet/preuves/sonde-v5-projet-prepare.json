@@ -1,0 +1,35 @@
+{
+ "releve": {
+  "avant": {
+   "readOnlyReason": null,
+   "executions": [
+    "localSiteExecution",
+    "localFilesExecution",
+    "localStockExecution",
+    "localCalendarExecution",
+    "localThemeChoiceExecution",
+    "localPagesExecution",
+    "localSeoExecution",
+    "serviceProfileExecution",
+    "localBusinessContentExecution",
+    "localRequestsExecution",
+    "localAdDocumentExecution"
+   ]
+  },
+  "apres": {
+   "readOnlyReason": "Ce projet a déjà une préparation engagée ou validée. Modifiez-le dans le parcours existant ; vos acquis restent conservés.",
+   "executions": [
+    "localSiteExecution",
+    "localFilesExecution",
+    "localBusinessContentExecution",
+    "localRequestsExecution"
+   ]
+  }
+ },
+ "stock": {
+  "proposition": "proposed",
+  "accord": "applied",
+  "stockRelu": 12,
+  "boutonProjete": false
+ }
+}

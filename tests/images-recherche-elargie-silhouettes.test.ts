@@ -8,6 +8,8 @@
  */
 import fs from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import {nativeImageConfirmedFixture} from './native-image-consent-fixture';
+vi.mock('@/lib/ai/config',async orig=>({...await orig<any>(),activeProviderKey:()=> 'FAUX FOURNISSEUR SANS APPEL'}));
 
 let sessionUser: any = null;
 vi.mock("@/lib/auth", async (orig) => {
@@ -64,7 +66,7 @@ describe("Images : recherche élargie et silhouettes (photos libres)", async () 
     const p = noPeople();
     sessionUser = { ...u, role: "client" };
     grantProjectPlan(p.id, "vendre");
-    const post = (request: unknown) => fr(() => route.POST(new Request(`http://localhost:3000/api/projects/${p.id}/images/v2`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "generate", request }) }), { params: Promise.resolve({ id: p.id }) } as any)) as Promise<Response>;
+    const post = (request: unknown) => nativeImageConfirmedFixture(data=>fr(() => route.POST(new Request(`http://localhost:3000/api/projects/${p.id}/images/v2`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(data) }), { params: Promise.resolve({ id: p.id }) } as any)) as Promise<Response>,{action:'generate',request});
     const r = await post({ kind: "stock_photo", aspect: "4:5", topic: "  escape game ", count: 2, allowGenerate: false, broad: true, silhouettes: true });
     expect(r.status).toBe(200);
     const payload = json<any>(getJob((await r.json()).jobId)!.payload, {});

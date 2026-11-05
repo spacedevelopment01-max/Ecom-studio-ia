@@ -1,0 +1,435 @@
+{
+  "runtime": {
+    "commit": "a80b4454fb041759dfd2feeff29281bc7532f9f6",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "schema": "syna-free-confirmation-ui-1",
+  "cases": [
+    {
+      "business": "products",
+      "http": [
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "context",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 409
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "context",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "native-restore",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 402
+        }
+      ],
+      "permissionsRevokedNoWrite": true,
+      "ambiguityNoWrite": true,
+      "iframeOrderVerified": true,
+      "projectFieldsIntact": true,
+      "otherProjectsIntact": true,
+      "oldVersionsIntact": true,
+      "realSelection": true,
+      "typedCommand": true,
+      "freeDiff": true,
+      "doubleClickOneVersion": true,
+      "refreshPersistent": true,
+      "lostResponseSameCommand": true,
+      "manualRaceExplicitRevalidation": true,
+      "newProposalRequired": true,
+      "manualNativeRestore": true,
+      "zipChanged": [
+        "templates/index.json"
+      ],
+      "paidRequests": 0,
+      "jsErrors": []
+    },
+    {
+      "business": "services",
+      "http": [
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "context",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 409
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "context",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "native-restore",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "endpoint": "conversation",
+          "status": 200
+        },
+        {
+          "method": "POST",
+          "endpoint": "conversation",
+          "status": 402
+        }
+      ],
+      "permissionsRevokedNoWrite": true,
+      "ambiguityNoWrite": true,
+      "iframeOrderVerified": true,
+      "projectFieldsIntact": true,
+      "otherProjectsIntact": true,
+      "oldVersionsIntact": true,
+      "realSelection": true,
+      "typedCommand": true,
+      "freeDiff": true,
+      "doubleClickOneVersion": true,
+      "refreshPersistent": true,
+      "lostResponseSameCommand": true,
+      "manualRaceExplicitRevalidation": true,
+      "newProposalRequired": true,
+      "manualNativeRestore": true,
+      "zipChanged": [
+        "templates/index.json"
+      ],
+      "paidRequests": 0,
+      "jsErrors": []
+    },
+    {
+      "business": "products",
+      "A1ReadOnly": true,
+      "noFreeControl": true
+    },
+    {
+      "business": "services",
+      "A1ReadOnly": true,
+      "noFreeControl": true
+    }
+  ],
+  "screenshots": [
+    "products-desktop-confirmation.png",
+    "products-mobile-confirmation.png",
+    "products-desktop-recu.png",
+    "products-desktop-resultat.png",
+    "products-mobile-resultat.png",
+    "services-desktop-confirmation.png",
+    "services-mobile-confirmation.png",
+    "services-desktop-recu.png",
+    "services-desktop-resultat.png",
+    "services-mobile-resultat.png"
+  ],
+  "errors": []
+}

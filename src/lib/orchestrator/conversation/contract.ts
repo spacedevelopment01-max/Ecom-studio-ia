@@ -15,6 +15,37 @@ const base = z.object({
   projectRevision: z.number().int().min(0).nullable(),
 });
 export const CommandSchema = z.discriminatedUnion("action", [
+  base.extend({action:z.literal('confirm-booking-edit'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal('cancel-booking-edit'),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("confirm-file-restore"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-file-restore"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("confirm-folder-move"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-folder-move"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("confirm-folder-rename"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-folder-rename"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("confirm-folder"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-folder"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("confirm-stock"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("confirm-calendar"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("confirm-restore"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("confirm-motion"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("confirm-theme-choice"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-stock"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("cancel-calendar"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("cancel-restore"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("cancel-motion"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("cancel-theme-choice"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("confirm-pages"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-pages"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("confirm-seo"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-seo"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("cancel-local"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("confirm-service-profile"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("cancel-service-profile"),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal("confirm-files"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal('confirm-business-content'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("confirm-site-request"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal("confirm-local"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal("open-strategy-comparison"),comparisonId:z.string().min(1).max(100)}).strict(),
   base.extend({action:z.literal("compare-strategy-options"),angleIds:z.array(z.enum(ANGLE_IDS)).min(2).max(5).optional(),sourceComparisonId:z.string().min(1).max(100).optional(),sourceVersion:z.string().regex(/^[a-f0-9]{64}$/).optional()}).strict(),
   base.extend({action:z.literal("decide-strategy-option"),comparisonId:z.string().min(1).max(100),version:z.string().regex(/^[a-f0-9]{64}$/),angleId:z.enum(ANGLE_IDS),decision:z.enum(["prefer","reject"]),reason:z.string().trim().min(1).max(1200)}).strict(),
@@ -35,6 +66,40 @@ export const CommandSchema = z.discriminatedUnion("action", [
 export type Command = z.infer<typeof CommandSchema>;
 /** Un seul Brief natif pour le brouillon ; après rattachement, il est retiré et relu via stateOf(projectId). */
 export type ConversationState = {
+  bookingEditProposal?:import('./local-booking-edit').BookingEditProposal;
+  bookingEdit?:import('./local-booking-edit').BookingEditPresentation;
+  bookingServices?:import('./local-booking-services').BookingServicesState;
+  conversationPhotoIds?:string[];
+  localAdDocumentProposalId?:string;
+  localPrompts?:import('./local-prompts').LocalPromptsState;
+  localPagesClarification?:{title:string;versionId:string;expiresAt:number;tab:string|null};
+  localFolderClarification?:{name:string;expiresAt:number};
+  localFileRestoreProposal?:import("./local-file-restore").FileRestoreProposal;
+  localFolderMoveProposal?:import("./local-folder-move").FolderMoveProposal;
+  localFolderRenameProposal?:import("./local-folder-rename").FolderRenameProposal;
+  localFolderProposal?:import("./local-folders").FolderProposal;
+  localStockProposal?:import("./local-stock").StockProposal;
+  localCalendarProposal?:import("./local-calendar").CalendarProposal;
+  localThemeRestoreProposal?:import("./local-theme-restore").RestoreProposal;
+  localSiteMotionProposal?:import("./local-site-motion").MotionProposal;
+  localThemeChoiceProposal?:import("./local-theme-choice").ThemeChoiceProposal;
+  localPagesProposal?:import("./local-pages").PagesProposal;
+  localSeoProposal?:import("./local-seo").SeoProposal;
+  serviceProfileProposal?:import("./local-service-profile").ServiceProfileProposal;
+  localFileRestore?:import("./local-file-restore").FileRestorePresentation;
+  localFolderMove?:import("./local-folder-move").FolderMovePresentation;
+  localFolderRename?:import("./local-folder-rename").FolderRenamePresentation;
+  localFolders?:import("./local-folders").FolderPresentation;
+  localStock?:import("./local-stock").StockPresentation;
+  localCalendar?:import("./local-calendar").CalendarPresentation;
+  localThemeRestore?:import("./local-theme-restore").RestorePresentation;
+  localSiteMotion?:import("./local-site-motion").MotionPresentation;
+  localThemeChoice?:import("./local-theme-choice").ThemeChoicePresentation;
+  localPages?:import("./local-pages").PagesPresentation;
+  localSeo?:import("./local-seo").SeoPresentation;
+  serviceProfile?:import("./local-service-profile").ServiceProfilePresentation;
+  localBusinessContentProposal?:import('./local-business-content').LocalBusinessContentProposal;
+  localBusinessContent?:import('./local-business-content').LocalBusinessContentPresentation;
   schemaVersion: 1;
   draft: Brief | null;
   business: BusinessType | null;
@@ -43,9 +108,20 @@ export type ConversationState = {
   answeredOrder: QuestionKey[];
   editing?: QuestionKey;
   intelligence?: import('./intelligence-contract').CognitiveState;
+  localFilesProposal?: import('./local-files').LocalFilesProposal;
+  localFiles?: import('./local-files').LocalFilesPresentation;
+  localRequestProposal?:import('./local-site-requests').LocalRequestProposal;
+  localRequests?:import('./local-site-requests').LocalRequestsState;
+  localSiteProposal?: import('./local-site').LocalSiteProposal;
+  localSite?: import('./local-site').LocalSitePresentation;
   activeContext?: ActiveContext;
+  activeContextReference?: string;
+  activeContextIdentity?: string;
+  activeContextTab?: ActiveContext['tab'];
   strategyChoices?:import("./strategy-choices").StrategyChoicesState;
   studioObservation?:import('./studio-observation').StudioObservation;
+  /** A1 : rattachement historique en lecture, jamais une nouvelle Préparation. */
+  recovery?: { schema: 'existing-project-read-1'; mode: 'read-only' };
 };
 export type ConversationRow = { id: string; user_id: string; project_id: string | null; revision: number; state_json: string; created_at: number; updated_at: number };
 export type ChoiceCard = {
@@ -69,7 +145,52 @@ export type ActionCard = {
   href?: string;
 };
 export type ConversationView = {
+  bookingEdit?:import('./local-booking-edit').BookingEditPresentation;
+  bookingEditExecution?:{enabled:true};
+  bookingServicesRead?:{enabled:true};
+  bookingServices?:import('./local-booking-services').BookingServicesPresentation;
+  /** Permission for native free project operations; independent of the acquired preparation brief lock. A1 uses recovery.localEdits only. */
+  localEditsWritable?:boolean;
+  localAdDocument?:ReturnType<typeof import('./ad-document-tool-execution').adDocumentPresentation>;
+  localAdDocumentExecution?:{enabled:true};
+  localPromptsRead?:{enabled:true};
+  localPrompts?:import('./local-prompts').LocalPromptsPresentation;
+  conversationPhotos?:import('./photo-attachments').ConversationPhotos;
+  photoImport?:{enabled:true;endpoint:string;maxFileBytes:number;kind:'image';analysis:false};
+  localFilesExecution?: {enabled:true};
+  localFiles?: import('./local-files').LocalFilesPresentation;
+  localBusinessContentExecution?:{enabled:true};
+  localFileRestore?:import("./local-file-restore").FileRestorePresentation;
+  localFolderMove?:import("./local-folder-move").FolderMovePresentation;
+  localFolderRename?:import("./local-folder-rename").FolderRenamePresentation;
+  localFolders?:import("./local-folders").FolderPresentation;
+  localStock?:import("./local-stock").StockPresentation;
+  localCalendar?:import("./local-calendar").CalendarPresentation;
+  localThemeRestore?:import("./local-theme-restore").RestorePresentation;
+  localSiteMotion?:import("./local-site-motion").MotionPresentation;
+  localThemeChoice?:import("./local-theme-choice").ThemeChoicePresentation;
+  localPages?:import("./local-pages").PagesPresentation;
+  localSeo?:import("./local-seo").SeoPresentation;
+  serviceProfile?:import("./local-service-profile").ServiceProfilePresentation;
+  localFileRestoreExecution?:{enabled:true};
+  localFolderMoveExecution?:{enabled:true};
+  localFolderRenameExecution?:{enabled:true};
+  localFoldersExecution?:{enabled:true};
+  localStockExecution?:{enabled:true};
+  localCalendarExecution?:{enabled:true};
+  localThemeRestoreExecution?:{enabled:true};
+  localSiteMotionExecution?:{enabled:true};
+  localThemeChoiceExecution?:{enabled:true};
+  localPagesExecution?:{enabled:true};
+  localSeoExecution?:{enabled:true};
+  serviceProfileExecution?:{enabled:true};
+  localBusinessContent?:import('./local-business-content').LocalBusinessContentPresentation;
+  localRequestsExecution?:{enabled:true};
+  localRequests?:import('./local-site-requests').LocalRequestsPresentation;
+  localSiteExecution?: {enabled:true};
+  localSite?: import('./local-site').LocalSitePresentation;
   schema: "studio-conversation-1";
+  recovery?: import('./existing-project').ExistingProjectRecovery;
   id: string;
   projectId: string | null;
   revision: number;
@@ -88,7 +209,7 @@ export type ConversationView = {
   socialExecution?:{enabled:true};
   contentExecution?:{enabled:true};
   videoExecution?: {enabled:true;generation?:true;voice?:true;clip?:true};
-  activeContext?: {enabled:true;current:ReturnType<typeof import('./active-context').observedActiveContext>};
+  activeContext?: {enabled:true;current:ReturnType<typeof import('./active-context').observedActiveContext>;presentation?:ReturnType<typeof import('./context-session').contextPresentation>};
   strategyChoices?:ReturnType<typeof import("./strategy-choices").strategyChoicesView>;
   studioHelp?:{observation:import('./studio-observation').StudioObservation;capabilities:ReturnType<typeof import('./studio-operations').studioOperationCatalogue>};
   progress: "describe" | "clarify" | "collect" | "review";
@@ -98,7 +219,7 @@ export type ConversationView = {
   readOnlyReason: string | null;
   creation: ReturnType<typeof import("./creation").creationFields> | null;
   tools: { id: string; state: "available" | "quote_only" | "not_connected" | "unavailable"; executionEnabled: boolean }[];
-  summary: { description: string; business: BusinessType | null; businessSource: ConversationState["businessSource"]; target: string; goals: string; offerName: string; brandName: string; constraints: string; services: {name:string;description:string;source:string}[]; contactModes: string[]; facts: { key: string; label: string; value: string; status: string; source: string }[]; unknown: string[]; referenceUrls: string[]; photoIds: string[]; approved: boolean; preparationStatus:"draft"|"approved"|"stale" };
+  summary: { description: string; business: BusinessType | null; businessSource: ConversationState["businessSource"]; target: string; goals: string; offerName: string; brandName: string; constraints: string; services: {name:string;description:string;source:string}[]; contactModes: string[]; facts: { key: string; label: string; value: string; status: string; source: string }[]; unknown: string[]; referenceUrls: string[]; photoIds: string[]; approved: boolean; preparationStatus:"draft"|"approved"|"stale"|"absent" };
   action: ActionCard | null;
   history: { revision: number; request: unknown; message: string; at: number }[];
   historyBefore: number | null;

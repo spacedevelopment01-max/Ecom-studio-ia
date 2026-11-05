@@ -3,7 +3,7 @@ import { grantProjectPlan } from "./communication-choice-fixture";
  * Retouches demandées en phrase libre dans l'éditeur :
  *  - demande composée comprise par le moteur local, gratuit (« augmente la taille du texte et du titre et centre-le
  *    sur l'image avec le bouton ») ;
- *  - ce que le moteur local ne comprend pas part à l'IA, qui rend des modifications bornées (IA simulée ici) ;
+ *  - le fallback HTTP sans devis lié est refusé ; le moteur IA conserve ses modifications bornées (IA simulée ici) ;
  *  - un autre format s'affiche d'abord en APERÇU : rien n'est créé tant que le client ne valide pas.
  */
 import sharp from "sharp";
@@ -30,7 +30,7 @@ describe("retouches composées, IA de secours et aperçu des formats", async () 
   const { runAdEngineV2 } = await import("@/lib/ads-v2/engine");
   const { byRole } = await import("@/lib/ad-doc/ops");
   const { localAdEdit } = await import("@/lib/ad-doc/local-edit");
-  const { aiChangesToOps } = await import("@/lib/ad-doc/ai-edit");
+  const { aiChangesToOps, aiAdEdit } = await import("@/lib/ad-doc/ai-edit");
   const { latestDoc } = await import("@/lib/ad-doc/store");
   const route = await import("@/app/api/projects/[id]/ads/docs/[docKey]/route");
   const { seedImageFixture, seedCutout } = await import("./image-v2-fixtures");
@@ -49,7 +49,7 @@ describe("retouches composées, IA de secours et aperçu des formats", async () 
     const o = r.outcomes.find((x) => x.aspect === "1:1")!;
     return { p, docKey: json<any>(getAsset(o.assetId!)!.meta, {}).adV2.docKey as string };
   }
-  const post = (pid: string, docKey: string, b: unknown) => fr(() => route.POST(new Request(`http://localhost:3000/api/projects/${pid}/ads/docs/${encodeURIComponent(docKey)}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) }), { params: Promise.resolve({ id: pid, docKey }) } as any));
+  const post = (pid: string, docKey: string, b: unknown) => fr(() => route.POST(new Request(`http://localhost:3000/api/projects/${pid}/ads/docs/${encodeURIComponent(docKey)}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({...(["save","edit","restore","restyle","duplicate","reflow"].includes((b as any).action)?{expectedVersion:latestDoc(pid,docKey)?.version.version,operationId:crypto.randomUUID()}:{}),...(b as object)}) }), { params: Promise.resolve({ id: pid, docKey }) } as any));
 
   it("« augmente la taille du texte et du titre et centre-le sur l'image avec le bouton » : fait en local, gratuit", async () => {
     const { p, docKey } = await generated();
@@ -76,14 +76,18 @@ describe("retouches composées, IA de secours et aperçu des formats", async () 
     expect(r.summary).toMatch(/centré/);
   }, 120_000);
 
-  it("demande non comprise en local → IA : modifications bornées, calques inconnus ou fond ignorés", async () => {
+  it("demande non comprise : devis requis par HTTP, moteur IA borné conservé", async () => {
     const { p, docKey } = await generated();
     const doc = latestDoc(p.id, docKey)!.doc;
     expect(localAdEdit(doc, "rends l'ensemble plus aéré façon magazine").local).toBe(false);
     sessionUser = { ...u, role: "client" };
+    const callsBefore = llm.length;
     const res = await post(p.id, docKey, { action: "ai_edit", instruction: "rends l'ensemble plus aéré façon magazine", doc });
-    expect(res.status).toBe(200);
-    const body = await res.json();
+    expect(res.status).toBe(409);
+    expect(await res.json()).toMatchObject({ code: "ad_doc_consent_unavailable" });
+    expect(llm).toHaveLength(callsBefore);
+    // Le moteur reste testable indépendamment : seule l'entrée HTTP sans devis est fermée.
+    const body = await aiAdEdit({ userId: u.id, projectId: p.id }, doc, "rends l'ensemble plus aéré façon magazine");
     expect(body.ops).toEqual([{ op: "update", id: "title", patch: expect.objectContaining({ y: 120, font: expect.objectContaining({ size: 90 }) }) }]);
     expect(llm.at(-1).prompt).toContain("plus aéré");
     // Rien n'est enregistré par l'IA : la version reste la même (l'éditeur applique, le client enregistre).

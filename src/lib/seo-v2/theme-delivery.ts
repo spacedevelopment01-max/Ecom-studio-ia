@@ -128,7 +128,14 @@ export function deliverContent(spec: ThemeSpec, p: Project, lang: string) {
     const type = page.kind === "service" ? "service_page" : page.kind === "brand" ? "brand_page" : page.kind === "local" ? "local_page" : null;
     if (!type) continue;
     const doc = referenceDoc(p.id, type, lang, page.key);
-    if (!doc) continue;
+    if (!doc) {
+      // Un document SEO seul ne crée pas une page et ne remplace jamais son corps manuel.
+      // Utiliser la même association injective que les autres livraisons, pas un titre ou une URL inventée.
+      const existing = productMatches.get(page.key);
+      const native = existing?.url?.startsWith("/pages/") ? spec.store.pages.find((p) => `/pages/${p.handle}` === existing.url) : null;
+      if (native) native.seo = seo(page.key, native.seo, type);
+      continue;
+    }
     let handle = page.url?.startsWith("/pages/") ? page.url.slice(7) : `texte-${slugify(page.key)}`;
     // Le nom d'un nouveau fichier ne donne aucun droit sur une page historique déjà présente.
     if (!page.url) {

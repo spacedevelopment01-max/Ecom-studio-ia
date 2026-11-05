@@ -16,19 +16,22 @@ import { useT } from "../../i18n";
 import { JobProgress, MediaPicker } from "../common";
 import { AiWait } from "../../wait-time";
 import { useCostConfirm } from "../cost-confirm";
+import {useAgentFocus,useAgentPanel,useAgentUi} from "../agent-ui-context";
 import { useProject } from "../project-context";
 import { History, type DocOp } from "@/lib/ad-doc/ops";
 import { localAdEdit } from "@/lib/ad-doc/local-edit";
+import {requestCreativeVersion,type CreativeVersionOperation} from "@/lib/ad-doc/new-version-client";
 import { ANIM_DURATION_S } from "@/lib/ad-doc/animate";
 import { newLayerId } from "@/lib/ad-doc/geometry";
 import type { AdDocument, Layer } from "@/lib/ad-doc/types";
+import {readEditorDraft,writeEditorDraft,clearEditorDraft,editorDraftForHead,sameEditorDraft} from "@/lib/ad-doc/client-drafts";
 import type { RenderEnv } from "@/lib/ad-doc/render";
 import { browserEnv, docImages, ensureDocFonts, useFontCatalog } from "./resources";
 import { EditorCanvas, InlineText } from "./canvas";
 import { IconBtn, LayersPanel, PropertiesPanel } from "./panels";
 
 type Version = { id: string; docKey: string; version: number; source: string; note: string; renderedAssetId: string | null; createdAt: number };
-type View = { docKey: string; doc: AdDocument; version: Version; versions: Version[]; metrics: { minFontPx: number; textContrast: number; textShare: number }; problems: { layerId: string; code: string; message: string }[]; edit?: { local: boolean; reason?: string; summary?: string; paid?: { kind: "image" | "creative"; reason: string; imageRequest?: { kind: string; topic: string } } | null } };
+type View = { localAdDocumentCapability?:boolean;docKey: string; doc: AdDocument; version: Version; versions: Version[]; metrics: { minFontPx: number; textContrast: number; textShare: number }; problems: { layerId: string; code: string; message: string }[]; edit?: { local: boolean; reason?: string; summary?: string; paid?: { kind: "image" | "creative"; reason: string; imageRequest?: { kind: string; topic: string } } | null } };
 
 const FORMATS: { platform: string; aspect: string; label: string }[] = [
   { platform: "meta_feed", aspect: "1:1", label: "1:1 · Meta" },
@@ -51,18 +54,10 @@ function useIsMobile() {
   return m;
 }
 
-const draftKey = (docKey: string) => `ad-editor:${docKey}`;
-const readDraft = (docKey: string): { doc: AdDocument; base: number; at: number } | null => {
-  try {
-    const raw = localStorage.getItem(draftKey(docKey));
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-};
 
 export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId: string; docKey: string; onClose: () => void }) {
   const t = useT();
+  const {setFocus}=useAgentFocus(),{setOpen}=useAgentPanel(),synaEnabled=useAgentUi();
   const toast = useToast();
   const cost = useCostConfirm();
   const { data: project } = useProject();
@@ -76,6 +71,9 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
   const [selected, setSelected] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
+  const currentDraft=useRef<{projectId:string;docKey:string;doc:AdDocument|null;base:number;dirty:boolean}>({projectId,docKey,doc:null,base:0,dirty:false});
+  const activeDraftContext=useRef({projectId,docKey});
+  activeDraftContext.current={projectId,docKey};
   const [saving, setSaving] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [stage, setStage] = useState({ w: 800, h: 600 });
@@ -84,10 +82,14 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
   const [picker, setPicker] = useState<null | "replace" | "add">(null);
   const [ask, setAsk] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
+  const editSending=useRef(false),editOperation=useRef<{intent:string;id:string}|null>(null);
+  const backgroundSending=useRef(false),backgroundOperation=useRef<{intent:string;id:string}|null>(null);
+  const duplicateOperation=useRef<{intent:string;id:string}|null>(null);
+  const creativeOperation=useRef<CreativeVersionOperation["current"]>(null);
   const [photoChoice, setPhotoChoice] = useState<View["edit"] | null>(null);
   const [draft, setDraft] = useState<{ doc: AdDocument } | null>(null);
   const stageRef = useRef<HTMLDivElement>(null);
-  const [fmtPreview, setFmtPreview] = useState<{ f: { platform: string; aspect: string; label: string }; image: string } | null>(null);
+  const [fmtPreview, setFmtPreview] = useState<{ f: { platform: string; aspect: string; label: string }; image: string;version:number;operationId:string } | null>(null);
   // Aperçu animé (gratuit, dans le navigateur) : même calcul que la vidéo exportée, joué une fois (7 s).
   const [playT, setPlayT] = useState<number | null>(null);
   const playing = useRef<number | null>(null);
@@ -120,11 +122,12 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
       setView(v);
       hist.current = new History(v.doc);
       setDoc(v.doc);
+      currentDraft.current={projectId,docKey:key,doc:v.doc,base:v.version.version,dirty:false};
       setDirty(false);
       setSelected(null);
-      const d = readDraft(key);
-      // Brouillon non enregistré plus récent que la version enregistrée : proposé, jamais imposé.
-      setDraft(d && d.base === v.version.version && JSON.stringify(d.doc) !== JSON.stringify(v.doc) ? { doc: d.doc } : null);
+      const d=editorDraftForHead(readEditorDraft(projectId,key),{doc:v.doc,base:v.version.version});
+      // Même version native uniquement : aucun remplacement automatique ni reprise d’un brouillon périmé.
+      setDraft(d?{doc:d.doc}:null);
     },
     [docKey, projectId],
   );
@@ -161,13 +164,10 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
     (next: AdDocument) => {
       setDoc(next);
       setDirty(true);
-      try {
-        localStorage.setItem(draftKey(docKey), JSON.stringify({ doc: next, base: view?.version.version ?? 0, at: Date.now() }));
-      } catch {
-        /* stockage indisponible : le travail reste en mémoire jusqu'à l'enregistrement */
-      }
+      currentDraft.current={projectId,docKey,doc:next,base:view?.version.version??0,dirty:true};
+      writeEditorDraft(projectId,docKey,{doc:next,base:view?.version.version??0});
     },
-    [docKey, view],
+    [projectId,docKey, view],
   );
   const apply = useCallback(
     (op: DocOp, merge?: string) => {
@@ -188,21 +188,35 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
     if (!doc) return null;
     setSaving(true);
     try {
-      const v = await api<View>(base, { body: { action: "save", doc, note: "modification manuelle" } });
+      const v = await api<View>(base, { body: { action: "save", expectedVersion:view?.version.version,doc, note: "modification manuelle" } });
+      const saved={doc,base:view?.version.version??0},live=currentDraft.current;
+      const sameContext=activeDraftContext.current.projectId===projectId&&activeDraftContext.current.docKey===docKey&&live.projectId===projectId&&live.docKey===docKey;
+      if(!sameContext||live.base!==saved.base){
+        toast("ok",t("La création précédente a été enregistrée. La création ouverte n'a pas été modifiée.","The previous creative was saved. The open creative was not changed."));
+        return v;
+      }
       setView(v);
-      setDirty(false);
-      try {
-        localStorage.removeItem(draftKey(docKey));
-      } catch {}
-      toast("ok", t(`Enregistré (version ${v.version.version}).`, `Saved (version ${v.version.version}).`));
+      const savedCurrent=!!live.doc&&sameEditorDraft({doc:live.doc,base:live.base},saved);
+      if(savedCurrent){currentDraft.current={projectId,docKey,doc,base:v.version.version,dirty:false};setDirty(false);}
+      else if(live.dirty&&live.doc){
+        // Notre propre sauvegarde est confirmée : même brouillon, nouvelle base native ; aucun mélange de calques.
+        currentDraft.current={...live,base:v.version.version};
+        writeEditorDraft(projectId,docKey,{doc:live.doc,base:v.version.version});
+      }
+      clearEditorDraft(projectId,docKey,saved);
+      toast("ok", savedCurrent?t(`Enregistré (version ${v.version.version}).`, `Saved (version ${v.version.version}).`):t(`Version ${v.version.version} enregistrée ; vos modifications plus récentes restent non enregistrées. Copiez-les avant d'actualiser.`, `Version ${v.version.version} saved; your newer changes are still unsaved. Copy them before refreshing.`));
       return v;
     } catch (e) {
-      toast("bad", (e as Error).message);
+      // Flush the current dirty state before reporting a failed save, including edits made while awaiting HTTP.
+      const live=currentDraft.current;
+      const warnUnsaved=live.dirty&&live.doc&&activeDraftContext.current.projectId===projectId&&activeDraftContext.current.docKey===docKey&&live.projectId===projectId&&live.docKey===docKey;
+      if(warnUnsaved)writeEditorDraft(projectId,docKey,{doc:live.doc!,base:live.base});
+      toast("bad", `${(e as Error).message}${warnUnsaved?` ${t("Copiez vos modifications non enregistrées avant d'actualiser ou de fermer cet éditeur.", "Copy your unsaved changes before refreshing or closing this editor.")}`:""}`);
       return null;
     } finally {
       setSaving(false);
     }
-  }, [base, doc, docKey, t, toast]);
+  }, [base, doc, docKey,projectId, t, toast,view?.version.version]);
 
   // Raccourcis clavier (ordinateur) : annuler, rétablir, enregistrer, supprimer, dupliquer, déplacer au clavier.
   useEffect(() => {
@@ -282,10 +296,15 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
 
   /** Génération d'image payante, seulement après accord (forfait affiché), puis pose sur la photo de la création. */
   const generateBackground = async (topic: string) => {
-    if (!(await cost.confirm("images"))) return;
+    if(backgroundSending.current)return;
+    backgroundSending.current=true;
     setBusy(t("Image en préparation (IA)…", "Image being prepared (AI)…"));
     try {
-      const r = await api<{ jobId: string }>(`/api/projects/${projectId}/images/v2`, { body: { action: "generate", request: { kind: "ambiance", topic, aspect: doc.width > doc.height * 1.3 ? "16:9" : doc.height > doc.width * 1.3 ? "9:16" : doc.height > doc.width * 1.1 ? "4:5" : "1:1", count: 1, allowGenerate: true } } });
+      const request={kind:'ambiance',topic,aspect:doc.width>doc.height*1.3?'16:9':doc.height>doc.width*1.3?'9:16':doc.height>doc.width*1.1?'4:5':'1:1',count:1,allowGenerate:true},intent=JSON.stringify({projectId,docKey,request});
+      if(backgroundOperation.current?.intent!==intent)backgroundOperation.current={intent,id:crypto.randomUUID()};
+      const operationId=backgroundOperation.current.id,quote=await api<{jobId?:string;approvalToken:string;maximumMicro:number;estimatePct:number;maximumPct:number;maximumCalls:number}>(`/api/projects/${projectId}/images/v2`,{body:{action:'quote',operationId,request}});
+      if(!quote.jobId&&quote.maximumMicro>0&&!(await cost.confirm('images',{quote})))return;
+      const r = quote.jobId?{jobId:quote.jobId}:await api<{ jobId: string }>(`/api/projects/${projectId}/images/v2`, { body: { action:'generate',operationId,request,approvalToken:quote.approvalToken,confirmation:true } });
       for (let i = 0; i < 300; i++) {
         await new Promise((res) => setTimeout(res, 2000));
         const jobs = await api<{ jobs: { id: string; status: string; result: any; error: string | null }[] }>(`/api/projects/${projectId}/jobs?type=image.v2`);
@@ -297,11 +316,13 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
         if (target) apply({ op: "image", id: target, assetId: asset });
         else addImageLayer(asset);
         toast("ok", t("Nouvelle image posée : enregistrez pour la garder.", "New image placed: save to keep it."));
+        backgroundOperation.current=null;
         return;
       }
     } catch (e) {
       toast("bad", (e as Error).message);
     } finally {
+      backgroundSending.current=false;
       setBusy(null);
     }
   };
@@ -315,10 +336,15 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
     const q = instruction.trim();
     const target = layer?.kind === "image" && layer.assetId && layer.role !== "logo" ? layer : (doc.layers.find((l) => l.id === photoLayer()) as Extract<Layer, { kind: "image" }> | undefined);
     if (!q || !target?.assetId) return toast("bad", t("Aucune photo à retoucher dans cette création.", "No photo to edit in this creative."));
-    if (!(await cost.confirm("images"))) return;
+    if(editSending.current)return;
+    editSending.current=true;
     setBusy(t("Retouche de la photo par l'IA…", "AI is editing the photo…"));
     try {
-      const r = await api<{ jobId: string }>(`/api/projects/${projectId}/images/v2`, { body: { action: "edit", assetId: target.assetId, instruction: q } });
+      const request={assetId:target.assetId,instruction:q},intent=JSON.stringify({projectId,docKey,request});
+      if(editOperation.current?.intent!==intent)editOperation.current={intent,id:crypto.randomUUID()};
+      const operationId=editOperation.current.id,quote=await api<{jobId?:string;approvalToken:string;maximumMicro:number;estimatePct:number;maximumPct:number;maximumCalls:number}>(`/api/projects/${projectId}/images/v2`,{body:{action:'quote_edit',operationId,...request}});
+      if(!quote.jobId&&!(await cost.confirm('images',{quote})))return;
+      const r=quote.jobId?{jobId:quote.jobId}:await api<{jobId:string}>(`/api/projects/${projectId}/images/v2`,{body:{action:'edit',operationId,...request,confirmation:true,approvalToken:quote.approvalToken}});
       for (let i = 0; i < 300; i++) {
         await new Promise((res) => setTimeout(res, 2000));
         const jobs = await api<{ jobs: { id: string; status: string; result: any; error: string | null }[] }>(`/api/projects/${projectId}/jobs?type=image.edit`);
@@ -326,6 +352,7 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
         if (!j || j.status === "queued" || j.status === "running") continue;
         if (j.status !== "done" || !j.result?.assetId) throw new Error(j.error || t("La retouche n'a pas abouti.", "The edit did not complete."));
         apply({ op: "image", id: target.id, assetId: j.result.assetId });
+        editOperation.current=null;
         setAsk("");
         toast("ok", t("Photo retouchée par l'IA : enregistrez pour la garder (« Annuler » remet l'ancienne).", "Photo edited by AI: save to keep it (“Undo” brings back the previous one)."));
         return;
@@ -334,6 +361,7 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
     } catch (e) {
       toast("bad", (e as Error).message);
     } finally {
+      editSending.current=false;
       setBusy(null);
     }
   };
@@ -354,11 +382,12 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
       return;
     }
     if (r.paid?.kind === "creative") {
-      if (!window.confirm(t("Une nouvelle version demande une proposition de l'IA (rédaction et création). Elle s'ajoutera à vos créations, sans modifier celle-ci. Continuer ?", "A new version needs an AI proposal (copy and creative). It will be added to your creatives without changing this one. Continue?"))) return;
-      // Avec l'IA, les nouvelles photos utilisent le forfait : quota affiché et accord demandé avant toute dépense.
-      if (project?.ai.llm && !(await cost.confirm("images"))) return;
       try {
-        await api(`/api/projects/${projectId}/campaigns/v2`, { body: { action: "generate", count: 1 } });
+        const result=await requestCreativeVersion(body=>api(`/api/projects/${projectId}/campaigns/v2`,{body}),quote=>{
+          const pct=(n:number)=>new Intl.NumberFormat(undefined,{maximumSignificantDigits:6}).format(n);
+          return window.confirm(t(`Une nouvelle proposition s’ajoutera sans modifier cette création. Devis : estimation ${pct(quote.estimatePct!)} % ; plafond ${pct(quote.maximumPct!)} % du budget IA, pour ${quote.concepts} concept(s) et ${quote.images} image(s). Les reprises restent plafonnées. Continuer ?`,`A new proposal will be added without changing this creative. Quote: estimate ${pct(quote.estimatePct!)}%; cap ${pct(quote.maximumPct!)}% of the AI budget, for ${quote.concepts} concept(s) and ${quote.images} image(s). Retries stay capped. Continue?`));
+        },creativeOperation);
+        if(!result)return;
         toast("ok", t("Nouvelle proposition en préparation : elle apparaîtra dans vos créations.", "New proposal in progress: it will appear in your creatives."));
       } catch (e) {
         toast("bad", (e as Error).message);
@@ -393,7 +422,7 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
   const restore = async (version: number) => {
     if (dirty && !window.confirm(t("Des modifications ne sont pas enregistrées : les abandonner pour restaurer cette version ?", "Some changes are not saved: discard them to restore this version?"))) return;
     try {
-      await api(base, { body: { action: "restore", version } });
+      await api(base, { body: { action: "restore", version,expectedVersion:view?.version.version } });
       await load();
       toast("ok", t(`Version ${version} restaurée (l'historique est conservé).`, `Version ${version} restored (history kept).`));
       setPanel(null);
@@ -405,17 +434,18 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
   const previewFormat = async (f: { platform: string; aspect: string; label: string }) => {
     if (dirty && !(await save())) return;
     try {
-      const r = await api<{ preview: { image: string } }>(base, { body: { action: "preview_reflow", platform: f.platform, aspect: f.aspect } });
-      setFmtPreview({ f, image: r.preview.image });
+      const r = await api<{version:number; preview: { image: string } }>(base, { body: { action: "preview_reflow", platform: f.platform, aspect: f.aspect } });
+      setFmtPreview({ f, image: r.preview.image,version:r.version,operationId:crypto.randomUUID() });
     } catch (e) {
       toast("bad", (e as Error).message);
     }
   };
   const reformat = async (f: { platform: string; aspect: string }) => {
-    setFmtPreview(null);
+    const proposed=fmtPreview;if(!proposed)return;
     if (dirty && !(await save())) return;
     try {
-      const v = await api<View>(base, { body: { action: "reflow", platform: f.platform, aspect: f.aspect } });
+      const v = await api<View>(base, { body: { action: "reflow", platform: f.platform, aspect: f.aspect,expectedVersion:proposed.version,operationId:proposed.operationId } });
+      setFmtPreview(null);
       setDocKey(v.docKey);
       await load(v.docKey);
       toast("ok", t(`Copie au format ${f.aspect} créée : vos modifications sont conservées.`, `${f.aspect} copy created: your changes are kept.`));
@@ -426,14 +456,21 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
     }
   };
   const duplicateCreative = async () => {
-    if (dirty && !(await save())) return;
-    const v = await api<View>(base, { body: { action: "duplicate" } });
+    try {
+    const current=dirty?await save():view;if(!current)return;
+    const intent=JSON.stringify({docKey,version:current.version.version});
+    if(duplicateOperation.current?.intent!==intent)duplicateOperation.current={intent,id:crypto.randomUUID()};
+    const v=await api<View>(base,{body:{action:"duplicate",expectedVersion:current.version.version,operationId:duplicateOperation.current.id}});
+    duplicateOperation.current=null;
     setDocKey(v.docKey);
     await load(v.docKey);
     toast("ok", t("Copie créée : vous modifiez maintenant la copie.", "Copy created: you are now editing the copy."));
+    } catch (e) {
+      toast("bad", `${(e as Error).message} ${t("Vérifiez les créations enregistrées avant de réessayer : la copie peut avoir été créée si la réponse a été perdue.", "Check the saved creatives before retrying: the copy may have been created if the response was lost.")}`);
+    }
   };
   const close = () => {
-    if (dirty && !window.confirm(t("Des modifications ne sont pas enregistrées. Fermer quand même ? (Elles restent proposées à la prochaine ouverture.)", "Some changes are not saved. Close anyway? (They will be offered next time.)"))) return;
+    if (dirty && !window.confirm(t("Des modifications ne sont pas enregistrées. Copiez-les avant de fermer : la reprise locale n'est pas garantie. Fermer quand même ?", "Some changes are not saved. Copy them before closing: local recovery is not guaranteed. Close anyway?"))) return;
     onClose();
   };
 
@@ -460,8 +497,11 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
 
   const propsPanel = catalog && <PropertiesPanel doc={doc} layer={layer} apply={apply} catalog={catalog} onPickImage={() => setPicker("replace")} onUploadImage={upload} onDuplicate={duplicate} onDelete={remove} />;
   const layersPanel = <LayersPanel doc={doc} selectedId={selected} onSelect={(id) => (setSelected(id), setSheet(null))} apply={apply} />;
+  const titles=doc.layers.filter(l=>l.role==="title"),title=titles[0];
+  const canDesignateTitle=synaEnabled&&view.localAdDocumentCapability===true&&!dirty&&!saving&&titles.length===1&&title?.kind==="text"&&title.visible&&!title.locked&&selected===title.id;
   const askBox = (
     <form className="flex items-center gap-2" onSubmit={(e) => (e.preventDefault(), askEdit())}>
+      {canDesignateTitle&&<Button type="button" size="sm" variant="secondary" onClick={()=>{if(dirty||saving||!title)return;setFocus({projectId,tab:'publicites',label:t('Titre de création','Creative title'),target:{kind:'ad-document-text',docKey,layerId:title.id,version:view.version.version}});onClose();setOpen(true);}}>{t('Désigner le titre pour SYNA','Select title for SYNA')}</Button>}
       <input value={ask} onChange={(e) => setAsk(e.target.value)} placeholder={t("Demander une retouche : « Agrandis le titre », « Ajoute des pétales sur la table »…", "Ask for a change: “Make the title bigger”, “Add petals on the table”…")} className="h-10 min-w-0 flex-1 rounded-full border border-line bg-card px-4 text-sm outline-none focus:border-ink" aria-label={t("Demander une retouche", "Ask for a change")} data-testid="ask-input" />
       <Button type="submit" size="sm" icon={<Send className="size-4" />} disabled={!ask.trim()}>{t("Appliquer", "Apply")}</Button>
       {project?.ai.image && photoLayer() && (
@@ -566,8 +606,8 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
       {draft && (
         <div className="flex flex-wrap items-center gap-2 border-b border-line bg-warn-soft px-4 py-2 text-sm text-warn" role="status">
           {t("Des modifications non enregistrées ont été retrouvées sur cet appareil.", "Unsaved changes were found on this device.")}
-          <Button size="sm" variant="secondary" onClick={() => (hist.current?.reset(doc), applyMany([]), setDoc(draft.doc), hist.current?.reset(draft.doc), setDirty(true), setDraft(null))}>{t("Les reprendre", "Recover them")}</Button>
-          <Button size="sm" variant="ghost" onClick={() => { try { localStorage.removeItem(draftKey(docKey)); } catch {} setDraft(null); }}>{t("Ignorer", "Discard")}</Button>
+          <Button size="sm" variant="secondary" onClick={() => {hist.current?.reset(draft.doc);commit(draft.doc);setDraft(null);}}>{t("Les reprendre", "Recover them")}</Button>
+          <Button size="sm" variant="ghost" onClick={() => {clearEditorDraft(projectId,docKey,{doc:draft.doc,base:view?.version.version??0});setDraft(null);}}>{t("Ignorer", "Discard")}</Button>
         </div>
       )}
       {busy && <div className="flex items-center gap-2 border-b border-line bg-card px-4 py-2 text-sm"><Spinner /> {busy}</div>}

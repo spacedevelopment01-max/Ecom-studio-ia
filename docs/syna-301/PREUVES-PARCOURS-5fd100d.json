@@ -1,0 +1,489 @@
+{
+  "scope": "Production compiled exact 5fd100d, before domain patches; providers local mocks, no creative quality/provider/network external qualification. UI modes not both qualified by these recipes. SHA256 anchors full local raw proofs. Costs use allSimulatedTotals, not baseline simulatedTotals. No sum across overlapping suites.",
+  "runs": [
+    {
+      "run": "catalogue-content-qualified",
+      "proofLocalPath": "/workspace/work/preuves-parity301-catalogue-content-qualified/api-proof.json",
+      "proofSha256": "11e51401648bb02771d96728624683fa0b42b900935d6c68f9d18c0686a34f89",
+      "source": {
+        "commit": "5fd100d8129f352f5bf19c70da501be3e71b7b78",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "success": true,
+      "provider": "local-http-simulation",
+      "realProviderCalls": 0,
+      "realCostEur": 0,
+      "allSimulatedTotals": {
+        "providerHttpCalls": 35,
+        "videoClipCalls": 0,
+        "videoVoiceCalls": 0,
+        "textHttpCalls": 35,
+        "imageHttpCalls": 0,
+        "tokenCounts": 35,
+        "calls": 35,
+        "usage": 27,
+        "simulatedMicro": 185932
+      },
+      "ui": {
+        "blogUi": {
+          "passed": true,
+          "transport": "native SDK/worker/HTTP loopback simulated",
+          "realProviderCalls": 0,
+          "realCostEur": 0,
+          "casesCount": 3,
+          "scenes": [
+            {
+              "case": "produit",
+              "passed": true
+            },
+            {
+              "case": "service",
+              "passed": true
+            },
+            {
+              "case": "reserve-apres-gel",
+              "passed": true
+            }
+          ]
+        },
+        "contentUi": {
+          "passed": true,
+          "transport": "native SDK/HTTP loopback simulated",
+          "realProviderCalls": 0,
+          "realCostEur": 0,
+          "creativeQualityQualified": false,
+          "casesCount": 2,
+          "scenes": [
+            {
+              "case": "product",
+              "name": "Emporte-pièce de maroquinerie",
+              "passed": true
+            },
+            {
+              "case": "service",
+              "name": "Remise en état de stores bannes",
+              "passed": true
+            }
+          ]
+        },
+        "catalogueUi": {
+          "schema": "agent211-D8-browser-proof-1",
+          "realProviderCalls": 0,
+          "realCostEur": 0,
+          "casesCount": 4,
+          "scenes": [
+            {
+              "scene": "mono",
+              "business": "products"
+            },
+            {
+              "scene": "multi",
+              "business": "products"
+            },
+            {
+              "scene": "inedit",
+              "business": "products"
+            },
+            {
+              "scene": "services",
+              "business": "services"
+            }
+          ]
+        }
+      },
+      "finishedAt": "2026-11-02T20:46:16.433Z"
+    },
+    {
+      "run": "social-campaign",
+      "proofLocalPath": "/workspace/work/preuves-parity301-social-campaign/api-proof.json",
+      "proofSha256": "2ea2bd418f999cfca806c26f7d9fd5baa70d531f0d1d99f9b64e579a239f2c37",
+      "source": {
+        "commit": "5fd100d8129f352f5bf19c70da501be3e71b7b78",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "success": true,
+      "provider": "local-http-simulation",
+      "realProviderCalls": 0,
+      "realCostEur": 0,
+      "allSimulatedTotals": {
+        "providerHttpCalls": 19,
+        "videoClipCalls": 0,
+        "videoVoiceCalls": 0,
+        "textHttpCalls": 15,
+        "imageHttpCalls": 4,
+        "tokenCounts": 15,
+        "calls": 19,
+        "usage": 17,
+        "simulatedMicro": 530654
+      },
+      "ui": {
+        "socialUi": {
+          "passed": true,
+          "realProviderCalls": 0,
+          "realCostEur": 0,
+          "captures": 4,
+          "nativeLocalPreparationOnly": true
+        },
+        "campaignUi": {
+          "passed": true,
+          "realProviderCalls": 0,
+          "realCostEur": 0,
+          "captures": 3,
+          "preparationOnly": true
+        },
+        "campaignVisualUi": {
+          "realProviderCalls": 0,
+          "realCostEur": 0,
+          "creativeQualityQualified": false,
+          "transport": "native SDK/HTTP loopback simulation",
+          "passed": true,
+          "campaignId": "syna-rybvinv78bizb5k5",
+          "foreign": 404,
+          "csrf": 403,
+          "reloadNoCall": true,
+          "firstAssetPreserved": true
+        },
+        "socialProductionUi": {
+          "realProviderCalls": 0,
+          "realCostEur": 0,
+          "transport": "native SDK/HTTP loopback simulation",
+          "creativeQualityQualified": false,
+          "passed": true,
+          "foreign": 404,
+          "csrf": 403,
+          "reloadNoCall": true,
+          "previousVersionPreserved": true
+        }
+      },
+      "finishedAt": "2026-11-02T20:48:15.709Z"
+    },
+    {
+      "run": "images-isolated",
+      "proofLocalPath": "/workspace/work/preuves-parity301-images-isolated/api-proof.json",
+      "proofSha256": "a01b41c6b3e6ece9af92ab530b0f90770803bf1a03ce9cfd0422a5fb21c7c867",
+      "source": {
+        "commit": "5fd100d8129f352f5bf19c70da501be3e71b7b78",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "success": true,
+      "provider": "local-http-simulation",
+      "realProviderCalls": 0,
+      "realCostEur": 0,
+      "allSimulatedTotals": {
+        "providerHttpCalls": 36,
+        "videoClipCalls": 0,
+        "videoVoiceCalls": 0,
+        "textHttpCalls": 22,
+        "imageHttpCalls": 14,
+        "tokenCounts": 22,
+        "calls": 36,
+        "usage": 35,
+        "simulatedMicro": 2986399
+      },
+      "ui": {
+        "imagesUi": {
+          "cases": 5,
+          "proof": "images-browser-proof.json",
+          "realProviderCalls": 0,
+          "creativeQualityQualified": false
+        }
+      },
+      "finishedAt": "2026-11-02T20:51:05.249Z"
+    },
+    {
+      "run": "video-ai",
+      "proofLocalPath": "/workspace/work/preuves-parity301-video-ai/api-proof.json",
+      "proofSha256": "0fb024bdcf9b8160de9e877752c5f19684a5b928d7183e6616da2b37740c8d3b",
+      "source": {
+        "commit": "5fd100d8129f352f5bf19c70da501be3e71b7b78",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "success": true,
+      "provider": "local-http-simulation",
+      "realProviderCalls": 0,
+      "realCostEur": 0,
+      "allSimulatedTotals": {
+        "providerHttpCalls": 57,
+        "videoClipCalls": 15,
+        "videoVoiceCalls": 8,
+        "textHttpCalls": 34,
+        "imageHttpCalls": 0,
+        "tokenCounts": 34,
+        "calls": 59,
+        "usage": 55,
+        "simulatedMicro": 6292985
+      },
+      "ui": {
+        "generatedVideosUi": {
+          "passed": true,
+          "cases": 4,
+          "realProviderCalls": 0,
+          "realCostEur": 0,
+          "creativeQualityQualified": false
+        },
+        "voiceUi": {
+          "passed": true,
+          "realProviderCalls": 0,
+          "realCostEur": 0,
+          "naturalSpeechQualified": false,
+          "captures": 4
+        },
+        "clipUi": {
+          "passed": true,
+          "realProviderCalls": 0,
+          "realCostEur": 0,
+          "naturalSpeechQualified": false,
+          "captures": 3
+        }
+      },
+      "finishedAt": "2026-11-02T20:57:38.274Z"
+    },
+    {
+      "run": "site-isolated",
+      "proofLocalPath": "/workspace/work/preuves-parity301-site-isolated/api-proof.json",
+      "proofSha256": "4cbd14840636550d813b88fcb56e7cdb5c977838231ab8c3cd0b344b4f759a40",
+      "source": {
+        "commit": "5fd100d8129f352f5bf19c70da501be3e71b7b78",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "success": true,
+      "provider": "local-http-simulation",
+      "realProviderCalls": 0,
+      "realCostEur": 0,
+      "allSimulatedTotals": {
+        "providerHttpCalls": 18,
+        "videoClipCalls": 0,
+        "videoVoiceCalls": 0,
+        "textHttpCalls": 18,
+        "imageHttpCalls": 0,
+        "tokenCounts": 18,
+        "calls": 22,
+        "usage": 18,
+        "simulatedMicro": 142416
+      },
+      "ui": {
+        "compositionUi": {
+          "schema": "agent211-E2-browser-proof-1",
+          "realBrowser": true,
+          "provider": "local-http-simulated",
+          "realProviderCalls": 0,
+          "reportCount": 4,
+          "scenes": [
+            {},
+            {},
+            {},
+            {}
+          ]
+        },
+        "originalUi": {
+          "passed": true,
+          "realProviderCalls": 0,
+          "realCostEur": 0,
+          "creativeQualityQualified": false,
+          "casesCount": 4,
+          "scenes": [
+            {
+              "scene": "mono"
+            },
+            {
+              "scene": "multi"
+            },
+            {
+              "scene": "service"
+            },
+            {
+              "scene": "holdout"
+            }
+          ]
+        },
+        "exportUi": {
+          "schema": "agent211-D3-browser-proof-1",
+          "realProviderCalls": 0,
+          "reportCount": 2,
+          "scenes": [
+            {
+              "business": "products"
+            },
+            {
+              "business": "services"
+            }
+          ]
+        },
+        "renderUi": {
+          "schema": "agent211-E3-browser-proof-1",
+          "realProviderCalls": 0,
+          "reportCount": 2,
+          "scenes": [
+            {
+              "business": "products"
+            },
+            {
+              "business": "services"
+            }
+          ]
+        }
+      },
+      "finishedAt": "2026-11-02T21:04:10.272Z"
+    },
+    {
+      "run": "strategy-brand",
+      "proofLocalPath": "/workspace/work/preuves-parity301-strategy-brand/api-proof.json",
+      "proofSha256": "d1816976d8fe3666a850bbd23d08029b286c40ae93c716db086bbfa34e5ca144",
+      "source": {
+        "commit": "5fd100d8129f352f5bf19c70da501be3e71b7b78",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "success": true,
+      "provider": "local-http-simulation",
+      "realProviderCalls": 0,
+      "realCostEur": 0,
+      "allSimulatedTotals": {
+        "providerHttpCalls": 44,
+        "videoClipCalls": 0,
+        "videoVoiceCalls": 0,
+        "textHttpCalls": 35,
+        "imageHttpCalls": 9,
+        "tokenCounts": 35,
+        "calls": 50,
+        "usage": 39,
+        "simulatedMicro": 1011981
+      },
+      "ui": {
+        "brandUi": {
+          "passed": true,
+          "transport": "native SDK/HTTP loopback simulated",
+          "realProviderCalls": 0,
+          "realCostEur": 0,
+          "creativeQualityQualified": false,
+          "casesCount": 3,
+          "scenes": [
+            {
+              "case": "produit",
+              "business": "products",
+              "passed": true
+            },
+            {
+              "case": "service",
+              "business": "services",
+              "passed": true
+            },
+            {
+              "case": "reserve",
+              "business": "products",
+              "passed": true
+            }
+          ]
+        },
+        "researchUi": {
+          "schema": "agent211-D4-browser-proof-1",
+          "realBrowser": true,
+          "realProviderCalls": 0,
+          "realInternetConsultation": false,
+          "reportCount": 2,
+          "scenes": [
+            {},
+            {}
+          ]
+        },
+        "strategyChoicesUi": {
+          "schema": "agent211-D7-choices-browser-1",
+          "provider": "simulated-local-http",
+          "adviceQuality": "not_qualified",
+          "realProviderCalls": 0,
+          "casesCount": 3,
+          "scenes": [
+            {
+              "scene": {
+                "id": "produit-mono",
+                "business": "products",
+                "width": 1440,
+                "storeType": "mono"
+              }
+            },
+            {
+              "scene": {
+                "id": "produit-multi",
+                "business": "products",
+                "width": 1024,
+                "storeType": "multi"
+              }
+            },
+            {
+              "scene": {
+                "id": "service",
+                "business": "services",
+                "width": 390,
+                "storeType": "mono"
+              }
+            }
+          ]
+        },
+        "logosUi": {
+          "passed": true,
+          "cases": 3,
+          "realProviderCalls": 0,
+          "realCostEur": 0,
+          "creativeQualityQualified": false
+        }
+      },
+      "finishedAt": "2026-11-02T21:38:47.117Z"
+    },
+    {
+      "run": "motion-isolated",
+      "proofLocalPath": "/workspace/work/preuves-parity301-motion-isolated/api-proof.json",
+      "proofSha256": "581ed408b34646cc7c7a77c963f5957b901497660f3045e337fbe45276026061",
+      "source": {
+        "commit": "5fd100d8129f352f5bf19c70da501be3e71b7b78",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "success": true,
+      "provider": "local-http-simulation",
+      "realProviderCalls": 0,
+      "realCostEur": 0,
+      "allSimulatedTotals": {
+        "providerHttpCalls": 20,
+        "videoClipCalls": 0,
+        "videoVoiceCalls": 0,
+        "textHttpCalls": 20,
+        "imageHttpCalls": 0,
+        "tokenCounts": 20,
+        "calls": 22,
+        "usage": 20,
+        "simulatedMicro": 158240
+      },
+      "ui": {
+        "videosUi": {
+          "passed": true,
+          "cases": 4,
+          "realProviderCalls": 0,
+          "realCostEur": 0,
+          "newAiClips": 0,
+          "newAiVoices": 0,
+          "creativeQualityQualified": false
+        }
+      },
+      "finishedAt": "2026-11-02T22:01:30.268Z"
+    }
+  ]
+}

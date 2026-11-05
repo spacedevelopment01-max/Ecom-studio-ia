@@ -1,0 +1,81 @@
+{
+  "sourceCommit": "a80b4454fb041759dfd2feeff29281bc7532f9f6",
+  "tests": {
+    "passed": 131,
+    "files": 8,
+    "typecheck": "success",
+    "build": "success"
+  },
+  "captures": [
+    {
+      "path": "captures/products-desktop-confirmation.png",
+      "sha256": "2d0ed94935262b399ea83c39679dca839fce654666741149b776b37769697348",
+      "bytes": 191043,
+      "synthetic": true,
+      "inspectedBeforePublication": true
+    },
+    {
+      "path": "captures/products-mobile-confirmation.png",
+      "sha256": "f696b1eefd702d6abe94888ef44a9f64ec245c36e61a418ec1732a7c65944652",
+      "bytes": 57524,
+      "synthetic": true,
+      "inspectedBeforePublication": true
+    },
+    {
+      "path": "captures/products-desktop-recu.png",
+      "sha256": "09bfa372361ecd9510f6547d149f9f012fea8183759850dc27ccb6ea36545098",
+      "bytes": 193628,
+      "synthetic": true,
+      "inspectedBeforePublication": true
+    },
+    {
+      "path": "captures/products-desktop-resultat.png",
+      "sha256": "aaba59db2efc9fb1bdba60039d6df0d6d81f0e8a39dc9aa29b57b19cf690fe1b",
+      "bytes": 116334,
+      "synthetic": true,
+      "inspectedBeforePublication": true
+    },
+    {
+      "path": "captures/products-mobile-resultat.png",
+      "sha256": "4ea8c2d880b48c359744c467e02cfb3124a3533339187da98df6b6eb63f203d6",
+      "bytes": 64661,
+      "synthetic": true,
+      "inspectedBeforePublication": true
+    },
+    {
+      "path": "captures/services-desktop-confirmation.png",
+      "sha256": "e2221d49b89c0d990c9bad7dc7cfc7ef622babf9719003d70faf307cac90a2ad",
+      "bytes": 236409,
+      "synthetic": true,
+      "inspectedBeforePublication": true
+    },
+    {
+      "path": "captures/services-mobile-confirmation.png",
+      "sha256": "82ef67d21d3b9adb73c01d8b9fe257c94a76bc2d300ea0cc0330e595b0bffc2c",
+      "bytes": 53729,
+      "synthetic": true,
+      "inspectedBeforePublication": true
+    },
+    {
+      "path": "captures/services-desktop-recu.png",
+      "sha256": "8e5ebd15474c4df3990c1a3e78e96a2841295109eb9732fa662712b81760e349",
+      "bytes": 251227,
+      "synthetic": true,
+      "inspectedBeforePublication": true
+    },
+    {
+      "path": "captures/services-desktop-resultat.png",
+      "sha256": "64b171cdf58c03f363f4feece1af8d0916d1110ad4fcf1952d6825cec28e4060",
+      "bytes": 193157,
+      "synthetic": true,
+      "inspectedBeforePublication": true
+    },
+    {
+      "path": "captures/services-mobile-resultat.png",
+      "sha256": "0d1ad74039b3db9d6e6b2f85fe4f2b0c891524223a161377dc99573ab8d1dbc1",
+      "bytes": 81120,
+      "synthetic": true,
+      "inspectedBeforePublication": true
+    }
+  ]
+}

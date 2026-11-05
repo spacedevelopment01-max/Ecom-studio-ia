@@ -1,0 +1,120 @@
+{
+  "applicationCommit": "9a2e50f7ac5e958d32ab542acaf686097cdc9dee",
+  "dataScope": "synthetic isolated fixtures only; no client data, credentials, sessions or raw rows published",
+  "http": [
+    {
+      "project": "synthetic-products",
+      "operation": "open-project",
+      "status": 200
+    },
+    {
+      "project": "synthetic-products",
+      "operation": "open-project",
+      "status": 200
+    },
+    {
+      "project": "synthetic-products",
+      "operation": "save-or-read-thread",
+      "status": 200
+    },
+    {
+      "project": "synthetic-products",
+      "operation": "save-or-read-thread",
+      "status": 200
+    },
+    {
+      "project": "synthetic-products",
+      "operation": "save-or-read-thread",
+      "status": 200,
+      "historyCount": 1
+    },
+    {
+      "project": "synthetic-services",
+      "operation": "open-project",
+      "status": 200
+    },
+    {
+      "project": "synthetic-services",
+      "operation": "open-project",
+      "status": 200
+    },
+    {
+      "project": "synthetic-services",
+      "operation": "save-or-read-thread",
+      "status": 200
+    },
+    {
+      "project": "synthetic-services",
+      "operation": "save-or-read-thread",
+      "status": 200
+    },
+    {
+      "project": "synthetic-services",
+      "operation": "save-or-read-thread",
+      "status": 200,
+      "historyCount": 1
+    }
+  ],
+  "ui": [
+    {
+      "business": "products",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "label": "desktop",
+      "file": "products-desktop.png",
+      "reload": true,
+      "pageErrors": []
+    },
+    {
+      "business": "products",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "label": "mobile",
+      "file": "products-mobile.png",
+      "reload": true,
+      "pageErrors": []
+    },
+    {
+      "business": "services",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "label": "desktop",
+      "file": "services-desktop.png",
+      "reload": true,
+      "pageErrors": []
+    },
+    {
+      "business": "services",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "label": "mobile",
+      "file": "services-mobile.png",
+      "reload": true,
+      "pageErrors": []
+    }
+  ],
+  "fingerprints": {
+    "scope": "all non-conversation tables and all isolated storage files",
+    "tablesCompared": 84,
+    "filesCompared": 4,
+    "beforeAggregateSha256": "998e66e46318a1b50ab65a593454d6560eb9abdb700e3f04c667bb81ba7ed4e6",
+    "afterAggregateSha256": "998e66e46318a1b50ab65a593454d6560eb9abdb700e3f04c667bb81ba7ed4e6",
+    "equal": true
+  },
+  "cost": {
+    "realProviderCalls": 0,
+    "aiCalls": 0,
+    "jobs": 0,
+    "aiCostEur": 0,
+    "network": "loopback only; native network guard"
+  },
+  "errors": []
+}

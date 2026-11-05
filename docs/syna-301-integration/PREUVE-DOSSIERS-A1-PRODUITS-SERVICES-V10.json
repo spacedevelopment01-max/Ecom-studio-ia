@@ -1,0 +1,370 @@
+{
+  "schema": "syna301-anciens-projets-recette-1",
+  "results": [
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "business": "products",
+      "steps": [
+        {
+          "etape": "ancien projet : avis de lecture seule visible, mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "demande hors exception : enregistrée seulement, aucun devis ni action",
+          "ok": true
+        },
+        {
+          "etape": "Fichiers : fichier coché, « Renomme ce fichier en … » → carte gratuite",
+          "ok": true
+        },
+        {
+          "etape": "confirmation : reçu relu, nom écrit, liste à jour, projet toujours en lecture seule",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Renomme le dossier Photos en Photos clients » → accord → nom relu",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Déplace le dossier Photos clients dans le dossier Archives » → accord → parent relu",
+          "ok": true
+        },
+        {
+          "etape": "Rechargement final : accord dossier, A1 et données natives exactes",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "business": "products",
+      "steps": [
+        {
+          "etape": "ancien projet : avis de lecture seule visible, mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "demande hors exception : enregistrée seulement, aucun devis ni action",
+          "ok": true
+        },
+        {
+          "etape": "Fichiers : fichier coché, « Renomme ce fichier en … » → carte gratuite",
+          "ok": true
+        },
+        {
+          "etape": "confirmation : reçu relu, nom écrit, liste à jour, projet toujours en lecture seule",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Renomme le dossier Photos en Photos clients » → accord → nom relu",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Déplace le dossier Photos clients dans le dossier Archives » → accord → parent relu",
+          "ok": true
+        },
+        {
+          "etape": "Rechargement final : accord dossier, A1 et données natives exactes",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "business": "products",
+      "steps": [
+        {
+          "etape": "ancien projet : avis de lecture seule visible, mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "demande hors exception : enregistrée seulement, aucun devis ni action",
+          "ok": true
+        },
+        {
+          "etape": "Fichiers : fichier coché, « Renomme ce fichier en … » → carte gratuite",
+          "ok": true
+        },
+        {
+          "etape": "confirmation : reçu relu, nom écrit, liste à jour, projet toujours en lecture seule",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Renomme le dossier Photos en Photos clients » → accord → nom relu",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Déplace le dossier Photos clients dans le dossier Archives » → accord → parent relu",
+          "ok": true
+        },
+        {
+          "etape": "Rechargement final : accord dossier, A1 et données natives exactes",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "business": "products",
+      "steps": [
+        {
+          "etape": "ancien projet : avis de lecture seule visible, mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "demande hors exception : enregistrée seulement, aucun devis ni action",
+          "ok": true
+        },
+        {
+          "etape": "Fichiers : fichier coché, « Renomme ce fichier en … » → carte gratuite",
+          "ok": true
+        },
+        {
+          "etape": "confirmation : reçu relu, nom écrit, liste à jour, projet toujours en lecture seule",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Renomme le dossier Photos en Photos clients » → accord → nom relu",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Déplace le dossier Photos clients dans le dossier Archives » → accord → parent relu",
+          "ok": true
+        },
+        {
+          "etape": "Rechargement final : accord dossier, A1 et données natives exactes",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "ancien projet : avis de lecture seule visible, mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "demande hors exception : enregistrée seulement, aucun devis ni action",
+          "ok": true
+        },
+        {
+          "etape": "Fichiers : fichier coché, « Renomme ce fichier en … » → carte gratuite",
+          "ok": true
+        },
+        {
+          "etape": "confirmation : reçu relu, nom écrit, liste à jour, projet toujours en lecture seule",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Renomme le dossier Photos en Photos clients » → accord → nom relu",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Déplace le dossier Photos clients dans le dossier Archives » → accord → parent relu",
+          "ok": true
+        },
+        {
+          "etape": "Rechargement final : accord dossier, A1 et données natives exactes",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "encre",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "ancien projet : avis de lecture seule visible, mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "demande hors exception : enregistrée seulement, aucun devis ni action",
+          "ok": true
+        },
+        {
+          "etape": "Fichiers : fichier coché, « Renomme ce fichier en … » → carte gratuite",
+          "ok": true
+        },
+        {
+          "etape": "confirmation : reçu relu, nom écrit, liste à jour, projet toujours en lecture seule",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Renomme le dossier Photos en Photos clients » → accord → nom relu",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Déplace le dossier Photos clients dans le dossier Archives » → accord → parent relu",
+          "ok": true
+        },
+        {
+          "etape": "Rechargement final : accord dossier, A1 et données natives exactes",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "ordinateur",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "ancien projet : avis de lecture seule visible, mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "demande hors exception : enregistrée seulement, aucun devis ni action",
+          "ok": true
+        },
+        {
+          "etape": "Fichiers : fichier coché, « Renomme ce fichier en … » → carte gratuite",
+          "ok": true
+        },
+        {
+          "etape": "confirmation : reçu relu, nom écrit, liste à jour, projet toujours en lecture seule",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Renomme le dossier Photos en Photos clients » → accord → nom relu",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Déplace le dossier Photos clients dans le dossier Archives » → accord → parent relu",
+          "ok": true
+        },
+        {
+          "etape": "Rechargement final : accord dossier, A1 et données natives exactes",
+          "ok": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "mode": "plein",
+      "format": "telephone",
+      "business": "services",
+      "steps": [
+        {
+          "etape": "ancien projet : avis de lecture seule visible, mode du compte",
+          "ok": true
+        },
+        {
+          "etape": "demande hors exception : enregistrée seulement, aucun devis ni action",
+          "ok": true
+        },
+        {
+          "etape": "Fichiers : fichier coché, « Renomme ce fichier en … » → carte gratuite",
+          "ok": true
+        },
+        {
+          "etape": "confirmation : reçu relu, nom écrit, liste à jour, projet toujours en lecture seule",
+          "ok": true
+        },
+        {
+          "etape": "rechargement : reçu conservé",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Renomme le dossier Photos en Photos clients » → accord → nom relu",
+          "ok": true
+        },
+        {
+          "etape": "A1 : « Déplace le dossier Photos clients dans le dossier Archives » → accord → parent relu",
+          "ok": true
+        },
+        {
+          "etape": "Rechargement final : accord dossier, A1 et données natives exactes",
+          "ok": true
+        }
+      ],
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "forbidden": [],
+  "coutIA": 0,
+  "servedVersion": {
+    "commit": "1c6ece6b1d81ca56f2103f5114575671c9a1ebb6",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "acquiredFixtureCalls": {
+    "before": 0,
+    "after": 0,
+    "unchanged": true,
+    "newCalls": 0
+  },
+  "waits": [
+    17001.046305999997,
+    17000.143852,
+    17001.902389000003,
+    17000.335321,
+    17001.089582,
+    17001.098979999995,
+    17000.877978999997,
+    17001.417149000015,
+    17003.28172900001,
+    17001.303052000003,
+    17001.20085600001,
+    17003.443654000002,
+    17000.714841000008,
+    17000.106538000022,
+    17003.287565000006,
+    17000.679497999954,
+    17001.191942000005,
+    17003.589615000004,
+    17001.172068999964,
+    17000.870898000023,
+    17003.00324599998,
+    17001.16577999998,
+    17000.268123000045,
+    17001.408819999953
+  ],
+  "jsErrors": [],
+  "fixtureDataDir": "/tmp/ecs-a1-301-3qkcYL",
+  "buildId": "7xwc-ACTdmEkd_leBCxvX"
+}

@@ -221,6 +221,18 @@ CREATE TABLE IF NOT EXISTS agent_conversation_turns (
   UNIQUE(conversation_id, revision),
   UNIQUE(conversation_id, request_id)
 );
+CREATE TABLE IF NOT EXISTS agent_conversation_photo_imports (
+  conversation_id TEXT NOT NULL REFERENCES agent_conversations(id) ON DELETE CASCADE,
+  request_id TEXT NOT NULL,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  request_hash TEXT NOT NULL,
+  data_hash TEXT NOT NULL,
+  state TEXT NOT NULL CHECK(state IN ('pending','saved')),
+  lease_token TEXT NOT NULL,
+  asset_id TEXT REFERENCES assets(id) ON DELETE SET NULL,
+  updated_at INTEGER NOT NULL,
+  PRIMARY KEY(conversation_id,request_id)
+);
 CREATE TABLE IF NOT EXISTS agent_conversation_quotes (
   id TEXT PRIMARY KEY,
   conversation_id TEXT NOT NULL REFERENCES agent_conversations(id) ON DELETE CASCADE,
@@ -881,7 +893,7 @@ CREATE TABLE IF NOT EXISTS ad_documents (
   rendered_asset_id TEXT,
   created_at INTEGER NOT NULL
 );
-CREATE UNIQUE INDEX IF NOT EXISTS ad_documents_version ON ad_documents(doc_key, version);
+CREATE UNIQUE INDEX IF NOT EXISTS ad_documents_version ON ad_documents(project_id, doc_key, version);
 CREATE INDEX IF NOT EXISTS ad_documents_project ON ad_documents(project_id, created_at);
 
 -- Video Engine V2 : documents vidéo (timeline éditable) versionnés, comme les documents publicitaires.
@@ -1094,6 +1106,7 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ["projects", "catalog_json", "TEXT NOT NULL DEFAULT '[]'"],
   ["projects", "business_type", "TEXT NOT NULL DEFAULT 'products'"],
   ["projects", "business_json", "TEXT NOT NULL DEFAULT '{}'"],
+  ["projects", "business_version", "INTEGER NOT NULL DEFAULT 0"],
   ["subscriptions", "plan", "TEXT"], // creer | vendre | dominer (null : ancien abonnement → « Créer »)
   ["subscriptions", "billing", "TEXT"], // month | year
   ["payments", "label", "TEXT"],
@@ -1165,6 +1178,14 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
 ];
 
 function migrate(db: Database.Database) {
+  // The native document namespace is project scoped, like every document read/CAS guard.
+  // Upgrade only the historical index, atomically and without rewriting any document or media.
+  db.transaction(() => {
+    const columns = db.prepare("PRAGMA index_info(ad_documents_version)").all() as { name: string }[];
+    if (columns.map(column => column.name).join(",") === "doc_key,version") {
+      db.exec("DROP INDEX ad_documents_version; CREATE UNIQUE INDEX ad_documents_version ON ad_documents(project_id, doc_key, version)");
+    }
+  }).immediate();
   for (const [table, column, ddl] of ADDED_COLUMNS) {
     const cols = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
     if (cols.some((c) => c.name === column)) continue;

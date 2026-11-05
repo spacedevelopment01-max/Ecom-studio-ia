@@ -8,6 +8,7 @@ export type Overview = {
   /** Repère natif du parcours SYNA ; fermé si absent ou désactivé sur le serveur. */
   conversationContext?:boolean;
   conversationCatalogue?:boolean;
+  conversationBusinessContent?:boolean;
   preparation?: {revision:number}|null;
   /** Forfait du projet (null : découverte, sans abonnement). */
   plan?: string | null;
@@ -17,6 +18,7 @@ export type Overview = {
   business: BusinessType;
   previewSandbox?: string;
   services: ServiceProfile;
+  servicesVersion?:number;
   brand: Brand | null;
   strategy: Strategy | null;
   settings: ProjectSettings;

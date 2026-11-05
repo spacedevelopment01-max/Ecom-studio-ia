@@ -1,4 +1,5 @@
 "use client";
+import {useNativeLogoConsent} from './native-logo-consent';
 import { DirectionCards } from "./direction-cards";
 import type { DirectionSeries } from "@/lib/logo-v2/direction-series";
 /**
@@ -128,42 +129,9 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
       setBusy(null);
     }
   }
-  /** Devis avant tout appel payant : montant MAXIMAL (qui sert aussi de plafond), accepté par le client. */
-  async function quote(assetId?: string): Promise<{ ai: boolean; quote: { mode: string; creations: number; images: number; maxEur: number; probableEur?: number | null; relayEur?: number | null } | null } | null> {
-    try {
-      return await api(`/api/projects/${id}/brand/logo-v2`, { body: { action: "quote", ...(assetId ? { assetId } : {}) } });
-    } catch (e) {
-      toast("bad", (e as Error).message);
-      return null;
-    }
-  }
-  const eur = (maxEur: number) => budget.label(Math.round(maxEur * 1e6));
-  const generate = async () => {
-    const q = await quote();
-    if (!q) return;
-    const msg = !q.ai || !q.quote
-      ? t("Fournisseur de dessin requis indisponible : les directions restent en attente, sans remplacement local.", "Required artwork provider unavailable: directions stay pending, without a local substitute.")
-      : q.quote.mode === "artwork"
-        ? t(
-            `Créer ${q.quote.creations} logos complets dessinés par l'IA d'images ? Devis : ${eur(q.quote.probableEur ?? q.quote.maxEur)} (${q.quote.images} images et leurs relectures).${q.quote.relayEur ? ` Si le contrôle juge un logo insuffisant, OpenAI le redessine : ${eur(q.quote.relayEur)} de plus par logo repris, seulement si c'est nécessaire.` : ""} Plafond : ${eur(q.quote.maxEur)}, rien ne sera utilisé au-delà ; seul ce qui est vraiment utilisé est décompté.`,
-            `Create ${q.quote.creations} full logos drawn by the image AI? Quote: ${eur(q.quote.probableEur ?? q.quote.maxEur)} (${q.quote.images} images and their reviews).${q.quote.relayEur ? ` If the check finds a logo below standard, OpenAI redraws it: ${eur(q.quote.relayEur)} more per redrawn logo, only when needed.` : ""} Cap: ${eur(q.quote.maxEur)}, nothing is used beyond it; only what is actually used is counted.`,
-          )
-        : t(`Créer ${q.quote.creations} directions de logo construites ? Devis : ${eur(q.quote.maxEur)} au maximum (relectures par l'IA) ; seul ce qui est vraiment utilisé est décompté. C'est aussi le plafond.`, `Create ${q.quote.creations} built logo directions? Quote: ${eur(q.quote.maxEur)} at most (AI reviews); only what is actually used is counted. This is also the cap.`);
-    if (!window.confirm(msg)) return;
-    const partial = data?.rights?.partial;
-    const feedback = partial ? window.prompt(t("Quel défaut corriger dans les directions manquantes ? Les directions acceptées sont réutilisées.", "What should be corrected in missing directions? Accepted directions are reused."), "") : undefined;
-    if (partial && (!feedback || feedback.trim().length < 8)) return;
-    post({ action: "generate", style, renew: !!data?.rights?.used && !partial, feedback }, t("Directions créatives lancées : quelques minutes.", "Creative directions started: a few minutes."), "gen");
-  };
-  const redraw = async (p: Proposal) => {
-    const q = await quote(p.id);
-    if (!q) return;
-    const price = q.quote ? eur(q.quote.probableEur ?? q.quote.maxEur) : t("[non disponible]", "[not available]");
-    const relay = q.quote?.relayEur ? t(` ; si le contrôle la juge insuffisante, OpenAI la redessine (${eur(q.quote.relayEur)} de plus, seulement si nécessaire)`, `; if the check finds it below standard, OpenAI redraws it (${eur(q.quote.relayEur)} more, only when needed)`) : "";
-    const feedback = window.prompt(t(`Nouvelle version de « ${p.territory.name} » : une image payée, ${price}${relay}. Vos remarques (facultatif) :`, `New version of "${p.territory.name}": one paid image, ${price}${relay}. Your remarks (optional):`), "");
-    if (feedback === null) return;
-    post({ action: "redraw", assetId: p.id, feedback }, t("Nouvelle version en cours : la précédente reste disponible.", "New version in progress: the previous one stays available."), `v${p.id}`);
-  };
+  const purchase=useNativeLogoConsent(id,jobId=>{setSubmittedJob(jobId);void reload();});
+  const generate=async()=>{const partial=data?.rights?.partial,feedback=partial?window.prompt(t("Quel défaut corriger dans les directions manquantes ?","What should be corrected in missing directions?"),''):'';if(partial&&(!feedback||feedback.trim().length<8))return;await purchase.ask({operation:'generate',style,renew:!!data?.rights?.used&&!partial,feedback:feedback??''});};
+  const redraw=async(p:Proposal)=>{const feedback=window.prompt(t('Vos remarques pour la nouvelle version (facultatif) :','Feedback for the new version (optional):'),'');if(feedback===null)return;await purchase.ask({operation:'redraw',assetId:p.id,feedback,style:'auto',renew:false});};
   const proposals = data?.proposals ?? [];
   const studio = data?.studio ?? [];
   const card = (p: Proposal, isStudio: boolean) => (
@@ -219,6 +187,7 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
   const managedRunHasDirections=!!data?.run&&!!data.series?.some(s=>s.requestKeys.includes(data.run!.id)&&s.directions.length>0);
   return (
     <Card className="min-w-0 p-5 sm:p-7">
+      {purchase.dialog}
       <SectionTitle
         title={t("Logo", "Logo")}
         action={

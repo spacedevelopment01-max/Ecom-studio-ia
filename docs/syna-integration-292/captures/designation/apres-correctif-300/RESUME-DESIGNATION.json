@@ -1,0 +1,68 @@
+{
+  "schema": "syna-integration-designation-1",
+  "attenteMs": 17000,
+  "results": [
+    {
+      "mode": "encre",
+      "scenario": "temoin",
+      "avantAttente": "Section désignée : Titre · Un aperçu natif, une conversation commune.",
+      "apresAttente": "Section désignée : Titre · Un aperçu natif, une conversation commune.",
+      "designationConservee": true,
+      "reponseSyna": "proposition gratuite (Confirmer)",
+      "propositionGratuite": true,
+      "capture": "encre-temoin-apres-attente.png"
+    },
+    {
+      "mode": "encre",
+      "scenario": "restauration",
+      "avantAttente": "Section désignée : Titre · Un aperçu natif, une conversation commune.",
+      "apresAttente": "Section désignée : Titre · Un aperçu natif, une conversation commune.",
+      "designationConservee": true,
+      "reponseSyna": "proposition gratuite (Confirmer)",
+      "propositionGratuite": true,
+      "capture": "encre-restauration-apres-attente.png"
+    },
+    {
+      "mode": "encre",
+      "scenario": "modification-manuelle",
+      "avantAttente": "Section désignée : Image et texte",
+      "apresAttente": "Section désignée : Titre · Un aperçu natif, une conversation commune.",
+      "designationConservee": true,
+      "reponseSyna": "proposition gratuite (Confirmer)",
+      "propositionGratuite": true,
+      "capture": "encre-modification-manuelle-apres-attente.png"
+    },
+    {
+      "mode": "plein",
+      "scenario": "temoin",
+      "avantAttente": "Section désignée : Titre · Un aperçu natif, une conversation commune.",
+      "apresAttente": "Section désignée : Titre · Un aperçu natif, une conversation commune.",
+      "designationConservee": true,
+      "reponseSyna": "proposition gratuite (Confirmer)",
+      "propositionGratuite": true,
+      "capture": "plein-temoin-apres-attente.png"
+    },
+    {
+      "mode": "plein",
+      "scenario": "restauration",
+      "avantAttente": "Section désignée : Titre · Un aperçu natif, une conversation commune.",
+      "apresAttente": "Section désignée : Titre · Un aperçu natif, une conversation commune.",
+      "designationConservee": true,
+      "reponseSyna": "proposition gratuite (Confirmer)",
+      "propositionGratuite": true,
+      "capture": "plein-restauration-apres-attente.png"
+    },
+    {
+      "mode": "plein",
+      "scenario": "modification-manuelle",
+      "avantAttente": "Section désignée : Image et texte",
+      "apresAttente": "Section désignée : Titre · Un aperçu natif, une conversation commune.",
+      "designationConservee": true,
+      "reponseSyna": "proposition gratuite (Confirmer)",
+      "propositionGratuite": true,
+      "capture": "plein-modification-manuelle-apres-attente.png"
+    }
+  ],
+  "errors": [],
+  "defaut": false
+}

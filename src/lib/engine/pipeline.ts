@@ -671,7 +671,7 @@ async function analyzeService(ctx: JobContext, payload: PipelinePayload): Promis
   // Relance d'analyse : les informations saisies ou confirmées par le client sont conservées (Project Brain).
   product = mergeProductProfile(p.product, product);
   saveProduct(projectId, product);
-  saveServices(projectId, offer);
+  saveServices(projectId, offer,p.servicesVersion);
   if (product.name) run("UPDATE projects SET name = CASE WHEN name LIKE 'Nouveau projet%' OR name LIKE 'New project%' THEN ? ELSE name END WHERE id = ?", inp.brandName || product.name, projectId);
   const missing = inBothLangs(() =>
     [

@@ -1,0 +1,38 @@
+{
+ "tete": "ee0847d4",
+ "tete_vague2": "e2d8c8ed",
+ "recettes": {
+  "site-gratuit-301": {"operations": ["theme.exact-edit", "theme.undo", "native.sections"], "encre": "PASSE", "plein": "PASSE", "tete": "ee0847d4"},
+  "pub-301": {"operations": ["native.ad-document-edit", "prompts.list"], "encre": "PASSE", "plein": "PASSE", "tete": "ee0847d4"},
+  "demandes-301": {"operations": ["site.requests"], "encre": "PASSE", "plein": "PASSE", "tete": "ee0847d4"},
+  "anciens-projets-301": {"operations": ["conversation.resume-existing", "files.organize"], "encre": "PASSE", "plein": "PASSE", "tete": "ee0847d4"},
+  "recette-292": {"operations": ["conversation.persist", "context.mode-switch", "context.selection-revalidated", "theme.exact-edit", "theme.undo"], "encre": "PASSE", "plein": "PASSE", "tete": "ee0847d4"}
+ },
+ "force": {
+  "native.sections": {"statut": "PARTIEL", "note": "ajout d'une FAQ après une section par phrase (gratuit, recette 4/4) ; masquer, supprimer, autres types de section : absents (devis seulement)"},
+  "native.ad-document-edit": {"statut": "PARTIEL", "note": "« Agrandis le titre » : 18/18 créations brutes proposées, calques secondaires (y) annoncés avant accord, aucun nouveau chevauchement de boîtes, recette 4/4 ; seule opération publicitaire raccordée"},
+  "services.update": {"statut": "PARTIEL", "note": "horaires du profil seulement et formulation exacte (contrat #355, preuve UI de Codex) ; sonde Claude : carte proposée sans écriture ; non rejoué dans le navigateur par Claude ; phrase naturelle : devis seulement"},
+  "theme.undo": {"statut": "PARTIEL", "note": "annulation de la dernière retouche avec reçu courant, par phrase (recette 4/4) ; sans reçu courant : refus gratuit explicite"},
+  "theme.exact-edit": {"statut": "PARTIEL", "note": "titre exact et couleur des textes / du fond d'UNE section par phrase ; bouton, image, couleur d'un seul titre : absents ; accents inchangés, lisibilité non garantie sur fond très différent"}
+ },
+ "absents": {},
+ "phrases": {
+  "theme.exact-edit": "carte gratuite (titre exact, couleur de section) ; bouton / image : devis seulement",
+  "theme.undo": "carte gratuite avec reçu courant ; sinon refus gratuit",
+  "native.sections": "carte gratuite (FAQ après la section) ; masquer / supprimer : devis seulement",
+  "native.pages": "devis seulement",
+  "theme.select": "devis seulement (le natif sait le faire gratuitement)",
+  "seo.update": "clarification gratuite inadaptée (aucun outil SEO)",
+  "services.booking": "devis seulement",
+  "appointments.settings": "devis seulement",
+  "services.update": "formulation exacte seulement (horaires du profil)",
+  "calendar.update": "devis seulement",
+  "catalogue.stock": "devis seulement (aucune fiche désignable par phrase)",
+  "native.ad-document-edit": "carte gratuite (18/18 créations brutes)",
+  "site.requests": "carte gratuite (lister, marquer lue / traitée)",
+  "files.organize": "carte gratuite (renommer un fichier coché)",
+  "prompts.list": "carte gratuite en lecture seule",
+  "native.prompt-run": "refus explicite (aucune tâche)"
+ },
+ "codex_syna": {"services.update": "PARTIEL"}
+}

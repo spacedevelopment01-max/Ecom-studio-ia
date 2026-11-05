@@ -1,0 +1,38 @@
+{
+  "runtime": {
+    "commit": "a80b4454fb041759dfd2feeff29281bc7532f9f6",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "schema": "syna-free-confirmation-ui-1",
+  "cases": [
+    {
+      "business": "products",
+      "flagClosed": true,
+      "noDeadConfirmation": true,
+      "noPaidFallback": true,
+      "manualPreviewIntact": true
+    },
+    {
+      "business": "services",
+      "flagClosed": true,
+      "noDeadConfirmation": true,
+      "noPaidFallback": true,
+      "manualPreviewIntact": true
+    },
+    {
+      "business": "products",
+      "A1ReadOnly": true,
+      "noFreeControl": true
+    },
+    {
+      "business": "services",
+      "A1ReadOnly": true,
+      "noFreeControl": true
+    }
+  ],
+  "screenshots": [],
+  "errors": []
+}

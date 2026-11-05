@@ -12,7 +12,7 @@ concurrency:
 jobs:
   verifications:
     name: Typecheck, tests, Theme Check, build
-    needs: [tests, natif, image-docker]
+    needs: [tests, natif, image-docker, confirmation-gratuite]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -21,11 +21,13 @@ jobs:
         env:
           TESTS_RESULT: ${{ needs.tests.result }}
           NATIVE_RESULT: ${{ needs.natif.result }}
+          FREE_CONFIRMATION_RESULT: ${{ needs.confirmation-gratuite.result }}
           DOCKER_RESULT: ${{ needs.image-docker.result }}
         run: |
           test "$TESTS_RESULT" = success
           test "$NATIVE_RESULT" = success
           test "$DOCKER_RESULT" = success
+          test "$FREE_CONFIRMATION_RESULT" = success
 
   tests:
     name: Types et suite complète (réseau fournisseur interdit)
@@ -447,3 +449,62 @@ jobs:
       - name: Journaux du conteneur
         if: always()
         run: docker logs studio 2>&1 | tail -80 || true
+
+  confirmation-gratuite:
+    name: SYNA — confirmation gratuite dans le Studio compilé
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Navigateur isolé
+        run: npx playwright install --with-deps chromium
+      - name: Build de production sans fournisseur
+        run: NODE_OPTIONS="--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npm run build
+      - name: Produits, services, conflits, réseau et A1
+        run: SYNA_UI_PRODUCTION=1 NODE_OPTIONS="--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-syna284-b1-confirmation-ui.ts work/preuves-confirmation-gratuite/ouverte
+      - name: Cible revalidée conservée après relecture périodique du projet (plus de 15 s)
+        run: SYNA_UI_PRODUCTION=1 NODE_OPTIONS="--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-syna284-b1-confirmation-ui.ts work/preuves-confirmation-gratuite/rafraichissement --wait-project-refresh
+      - name: Drapeau fermé sans confirmation ni repli payant
+        run: SYNA_UI_PRODUCTION=1 SYNA_UI_CLOSED=1 NODE_OPTIONS="--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-syna284-b1-confirmation-ui.ts work/preuves-confirmation-gratuite/fermee
+      - name: Couleurs natives réellement peintes
+        run: NODE_OPTIONS="--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-native-section-colors301.ts
+      - name: Phrases gratuites Site et créations V2, Encre/Plein cadre, 17 secondes
+        timeout-minutes: 10
+        run: STUDIO_PROOF_OUTPUT=work/preuves-parity301-wave4 STUDIO_PROOF_COMMIT="$(git rev-parse HEAD)" NODE_OPTIONS="--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-parity301-wave4-ui.ts
+      - name: Masquer et supprimer depuis une phrase naturelle, annulation et 17 secondes
+        timeout-minutes: 10
+        run: STUDIO_PROOF_COMMIT="$(git rev-parse HEAD)" NODE_OPTIONS="--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/parity301-native-sections-proof.ts work/preuves-sections-natives301
+      - name: Rapport textuel des sections natives
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: syna-sections-natives301-text
+          path: work/preuves-sections-natives301/RESUME-SECTIONS-NATIVES-301.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Rapport textuel des nouveaux parcours gratuits
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: syna-parity301-wave4-text
+          path: work/preuves-parity301-wave4/proof.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preuves synthétiques du parcours gratuit
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: syna-confirmation-gratuite
+          path: |
+            work/preuves-confirmation-gratuite/**/*.png
+            work/preuves-confirmation-gratuite/**/RESUME-UI.json
+          if-no-files-found: warn
+          retention-days: 14

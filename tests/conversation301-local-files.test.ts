@@ -1,0 +1,61 @@
+import {afterEach,beforeEach,it,expect,vi} from 'vitest';
+const jar=vi.hoisted(()=>({token:''}));
+vi.mock('next/headers',()=>({cookies:async()=>({get:()=>jar.token?{value:jar.token}:undefined,set:()=>{},delete:()=>{}})}));
+import * as thread from '@/app/api/studio-agent/conversations/[cid]/route';
+import * as files from '@/app/api/files/[fid]/route';
+import {account,project,emptySpend} from './conversation209-fixtures';
+import {openProjectConversation,conversationView,submitConversation} from '@/lib/orchestrator/conversation';
+import {submitContext} from '@/lib/orchestrator/conversation/context-session';
+import {studioOperationCatalogue} from '@/lib/orchestrator/conversation/studio-operations';
+import {saveAsset,getAsset,createFolder,assetData} from '@/lib/library';
+import {id,now,run,one,all} from '@/lib/db';
+import {sha256} from '@/lib/secrets';
+beforeEach(()=>{jar.token='';vi.stubEnv('STUDIO_CONVERSATION_LOT_A','1');vi.stubEnv('STUDIO_CONVERSATION_CONTEXT','1');vi.stubEnv('STUDIO_CONVERSATION_AI','1');vi.stubEnv('STUDIO_CONVERSATION_FILES','1');vi.stubGlobal('fetch',vi.fn(()=>{throw Error('Fournisseur interdit');}));});
+afterEach(()=>{vi.unstubAllEnvs();vi.unstubAllGlobals();});
+function login(uid:string){jar.token=id();run('INSERT INTO sessions(id,user_id,expires_at,created_at) VALUES(?,?,?,?)',sha256(jar.token),uid,now()+3600000,now());}
+const req=(body?:unknown)=>new Request('http://localhost/api/conversation',{method:body?'POST':'GET',headers:{'content-type':'application/json',origin:'http://localhost'},...(body?{body:JSON.stringify(body)}:{})});
+async function fixture(){const u=await account(),pid=project(u),c=openProjectConversation(u,pid);const a=await saveAsset({projectId:pid,userId:u.id,name:'source.txt',mime:'text/plain',data:Buffer.from('OCTETS SYNTHETIQUES'),origin:'upload'});const folder=createFolder(pid,'Documents validés',null);login(u.id);const select=()=>submitContext(u,c.id,{action:'select',revision:conversationView(u,c.id).revision,requestId:id(),context:{projectId:pid,tab:'fichiers',target:{kind:'asset',assetId:a.id,version:a.version}}});select();return{u,pid,c,a,folder,select};}
+const command=(f:Awaited<ReturnType<typeof fixture>>,extra:Record<string,unknown>)=>{const v=conversationView(f.u,f.c.id);return{revision:v.revision,projectRevision:v.projectRevision,requestId:id(),...extra};};
+async function propose(f:Awaited<ReturnType<typeof fixture>>,text='Renomme ce fichier en « preuve finale.txt »'){const r=await thread.POST(req(command(f,{action:'message',text})),{params:Promise.resolve({cid:f.c.id})});expect(r.status).toBe(200);return await r.json();}
+const confirm=(f:Awaited<ReturnType<typeof fixture>>,p:any)=>command(f,{action:'confirm-files',proposalId:p.localFiles.proposalId,confirmation:true});
+
+it('HTTP : proposition gratuite puis confirmation, reçu relu et réessai identique sans doublon ni octets changés',async()=>{
+ const f=await fixture(),before=getAsset(f.a.id)!,bytes=assetData(before),spend=emptySpend();const p=await propose(f);expect(p.localFiles).toMatchObject({schema:'syna-local-files-1',state:'proposed',confirmationRequired:true,providerCalls:0,costEur:0,diff:{before:{name:'source.txt'},after:{name:'preuve finale.txt'}}});expect(getAsset(f.a.id)).toEqual(before);
+ const cmd=confirm(f,p),ctx={params:Promise.resolve({cid:f.c.id})},r=await thread.POST(req(cmd),ctx);expect(r.status).toBe(200);const delivered=await r.json();expect(delivered.localFiles).toMatchObject({state:'applied',actionsExecuted:true,asset:{id:f.a.id,version:f.a.version,name:'preuve finale.txt'},receiptId:cmd.requestId});expect(getAsset(f.a.id)).toEqual({...before,name:'preuve finale.txt'});expect(assetData(getAsset(f.a.id)!)).toEqual(bytes);
+ const retry=await thread.POST(req(cmd),ctx);expect(retry.status).toBe(200);expect(await retry.json()).toEqual(delivered);const read=await thread.GET(req(),ctx);expect((await read.json()).localFiles).toEqual(delivered.localFiles);expect(all('SELECT * FROM agent_conversation_turns WHERE conversation_id=? AND request_id=?',f.c.id,cmd.requestId)).toHaveLength(1);expect(emptySpend()).toEqual(spend);expect(fetch).not.toHaveBeenCalled();
+});
+it('déplacement exact vers dossier du projet ; même moteur natif PATCH',async()=>{const f=await fixture(),p=await propose(f,'Déplace ce fichier vers le dossier « Documents validés »');expect(p.localFiles.state).toBe('proposed');await submitConversation(f.u,f.c.id,confirm(f,p));expect(getAsset(f.a.id)?.folder_id).toBe(f.folder.id);const r=await files.PATCH(new Request('http://localhost/api/files/'+f.a.id,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({name:'nom natif.txt',folderId:null})}),{params:Promise.resolve({fid:f.a.id})});expect(r.status).toBe(200);expect(getAsset(f.a.id)).toMatchObject({name:'nom natif.txt',folder_id:null});});
+it.each(['nom changé','déplacement changé','version changée','supprimé','sélection changée','dossier disparu','drapeau fermé','droits révoqués'])('refuse confirmation si %s, aucune mutation supplémentaire',async mode=>{const f=await fixture(),p=await propose(f,'Déplace ce fichier vers le dossier « Documents validés »'),cmd=confirm(f,p);if(mode==='nom changé')run('UPDATE assets SET name=? WHERE id=?','Titre humain',f.a.id);if(mode==='déplacement changé'){const manual=createFolder(f.pid,'Dossier manuel',null);run('UPDATE assets SET folder_id=? WHERE id=?',manual.id,f.a.id)};if(mode==='version changée')run('UPDATE assets SET version=version+1 WHERE id=?',f.a.id);if(mode==='supprimé')run('UPDATE assets SET deleted_at=? WHERE id=?',now(),f.a.id);if(mode==='sélection changée'){f.select();Object.assign(cmd,command(f,{}));}if(mode==='dossier disparu')run('DELETE FROM folders WHERE id=?',f.folder.id);if(mode==='drapeau fermé')vi.stubEnv('STUDIO_CONVERSATION_FILES','0');if(mode==='droits révoqués')run("UPDATE subscriptions SET status='canceled' WHERE project_id=?",f.pid);const before=getAsset(f.a.id),spend=emptySpend();await expect(submitConversation(f.u,f.c.id,cmd)).rejects.toMatchObject({status:mode==='drapeau fermé'?404:mode==='droits révoqués'?402:mode==='dossier disparu'?404:409});expect(getAsset(f.a.id)).toEqual(before);expect(emptySpend()).toEqual(spend);});
+it.each(['Renomme ce fichier joliment','Renomme ce fichier en « source.txt »','Déplace ce fichier vers le dossier « Inconnu »','Supprime ce fichier'])('pas de faux succès pour %s',async text=>{const f=await fixture(),before=getAsset(f.a.id),p=await propose(f,text);expect(p.localFiles?.state).not.toBe('proposed');expect(p.localFiles?.actionsExecuted).not.toBe(true);expect(getAsset(f.a.id)).toEqual(before);});
+it('dossiers homonymes : demande de précision, aucun choix automatique',async()=>{const f=await fixture();createFolder(f.pid,f.folder.name,f.folder.id);const p=await propose(f,'Déplace ce fichier vers le dossier « Documents validés »');expect(p.localFiles.state).toBe('ambiguous');});
+it('autre compte et confirmation falsifiée refusés',async()=>{const f=await fixture(),p=await propose(f),cmd=confirm(f,p),before=getAsset(f.a.id);await expect(submitConversation(await account(),f.c.id,cmd)).rejects.toMatchObject({status:404});await expect(submitConversation(f.u,f.c.id,{...cmd,proposalId:'forged',requestId:id()})).rejects.toMatchObject({status:409});expect(getAsset(f.a.id)).toEqual(before);});
+it('dossier étranger refusé sans renommage partiel dans le moteur natif comme dans SYNA',async()=>{const f=await fixture(),other=await account(),otherPid=project(other),folder=createFolder(otherPid,'Dossier étranger',null),before=getAsset(f.a.id);const p=await propose(f,`Déplace ce fichier vers le dossier « ${folder.id} »`);expect(p.localFiles.state).toBe('ambiguous');const r=await files.PATCH(new Request('http://localhost/api/files/'+f.a.id,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({name:'Ne pas écrire.txt',folderId:folder.id})}),{params:Promise.resolve({fid:f.a.id})});expect(r.status).toBe(404);expect(getAsset(f.a.id)).toEqual(before);});
+it('autre fichier ou dossier changé après proposition : accord ancien sans effet',async()=>{const f=await fixture(),p=await propose(f,'Déplace ce fichier vers le dossier « Documents validés »'),cmd=confirm(f,p);run('UPDATE folders SET name=? WHERE id=?','Nom manuel',f.folder.id);const before=getAsset(f.a.id);await expect(submitConversation(f.u,f.c.id,cmd)).rejects.toMatchObject({status:409});expect(getAsset(f.a.id)).toEqual(before);});
+it('proposition expirée et deuxième commande de confirmation refusées sans seconde mutation',async()=>{const f=await fixture(),p=await propose(f),cmd=confirm(f,p);run("UPDATE agent_conversations SET state_json=json_set(state_json,'$.localFilesProposal.expiresAt',0) WHERE id=?",f.c.id);await expect(submitConversation(f.u,f.c.id,cmd)).rejects.toMatchObject({status:409});const current=await propose(f);const accepted=confirm(f,current);await submitConversation(f.u,f.c.id,accepted);await expect(submitConversation(f.u,f.c.id,{...accepted,requestId:id(),revision:conversationView(f.u,f.c.id).revision})).rejects.toMatchObject({status:409});expect(getAsset(f.a.id)?.name).toBe('preuve finale.txt');});
+
+it('catalogue : projet absent puis drapeau fermé restent indisponibles, sans annoncer un contrôle prêt',async()=>{const row=(pid:string|null)=>studioOperationCatalogue(pid,true).rows.find(x=>x.id==='files.organize')!;expect(row(null)).toMatchObject({connectionEnabled:false,availability:'project_required'});const f=await fixture();vi.stubEnv('STUDIO_CONVERSATION_FILES','0');expect(row(f.pid)).toMatchObject({connectionEnabled:false,availability:'disabled_or_locked'});vi.stubEnv('STUDIO_CONVERSATION_FILES','1');expect(row(f.pid)).toMatchObject({connectionEnabled:true,availability:'native_target_and_metadata_checks_each_confirmation',confirmation:'separate_explicit_free_confirmation',cost:'free',evidence:'isolated_local_execution'});});
+
+it.each([
+ ['Renomme ce fichier en photo accueil.png','rename'],
+ ['Peux-tu renommer ce fichier en « photo accueil.png » ?','rename'],
+ ['Déplace ce fichier dans le dossier Documents validés','move'],
+ ['Peux-tu déplacer ce fichier vers le dossier « Documents validés » ?','move'],
+] as const)('natural file metadata request %s requires explicit agreement and preserves bytes',async(text,kind)=>{
+ const f=await fixture(),before=getAsset(f.a.id)!,bytes=assetData(before),spend=emptySpend(),p=await propose(f,text);
+ expect(p.localFiles).toMatchObject({state:'proposed',command:kind,confirmationRequired:true,costEur:0,providerCalls:0});expect(getAsset(f.a.id)).toEqual(before);
+ const saved=await submitConversation(f.u,f.c.id,confirm(f,p));expect(saved.localFiles).toMatchObject({state:'applied',actionsExecuted:true});
+ expect(getAsset(f.a.id)).toEqual({...before,...(kind==='rename'?{name:'photo accueil.png'}:{folder_id:f.folder.id})});expect(assetData(getAsset(f.a.id)!)).toEqual(bytes);expect(emptySpend()).toEqual(spend);expect(fetch).not.toHaveBeenCalled();
+});
+
+it.each([
+ 'Renomme ce fichier en photo.png puis supprime tout',
+ 'Peux-tu déplacer ce fichier dans le dossier Documents validés et publier le site ?',
+ 'Renomme ce fichier en « photo.png » puis génère une vidéo',
+ 'Renomme ce fichier en « guillemet non fermé',
+])('ambiguous metadata request %s never writes or calls paid reasoning',async text=>{
+ const f=await fixture(),before=getAsset(f.a.id),spend=emptySpend(),p=await propose(f,text);
+ expect(p.localFiles).toMatchObject({state:'ambiguous',confirmationRequired:false,actionsExecuted:false});expect(getAsset(f.a.id)).toEqual(before);expect(emptySpend()).toEqual(spend);expect(fetch).not.toHaveBeenCalled();
+});
+it('quoted exact name may contain a conjunction and stays literal native data',async()=>{
+ const f=await fixture(),p=await propose(f,'Renomme ce fichier en « avant et après.txt »');expect(p.localFiles).toMatchObject({state:'proposed',diff:{after:{name:'avant et après.txt'}}});await submitConversation(f.u,f.c.id,confirm(f,p));expect(getAsset(f.a.id)?.name).toBe('avant et après.txt');expect(fetch).not.toHaveBeenCalled();
+});

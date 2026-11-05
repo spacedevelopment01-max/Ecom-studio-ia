@@ -1,0 +1,266 @@
+{
+  "sourceCommit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+  "sourceTree": "1d303664973b784b00c3edcddb17652cc5a532d3",
+  "trackedClean": true,
+  "finance": {
+    "tests": 9,
+    "passed": 9,
+    "results": [
+      {
+        "operation": "prompt-run",
+        "before": {
+          "sourceTree": "9268486f21ff650d3faa55e1051bb477f006220a",
+          "status": 500,
+          "sdkAttempts": 1
+        },
+        "after": {
+          "sourceCommit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+          "sourceTree": "1d303664973b784b00c3edcddb17652cc5a532d3",
+          "status": 409,
+          "sdkAttempts": 0,
+          "networkFetchAttempts": 0,
+          "aiCalls": 0,
+          "usageEvents": 0,
+          "reservations": 0,
+          "details": {}
+        }
+      },
+      {
+        "operation": "files.classify",
+        "before": {
+          "sourceTree": "9268486f21ff650d3faa55e1051bb477f006220a",
+          "status": 200,
+          "sdkAttempts": 1
+        },
+        "after": {
+          "sourceCommit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+          "sourceTree": "1d303664973b784b00c3edcddb17652cc5a532d3",
+          "status": 200,
+          "sdkAttempts": 0,
+          "networkFetchAttempts": 0,
+          "aiCalls": 0,
+          "usageEvents": 0,
+          "reservations": 0,
+          "details": {
+            "mode": "local_rules",
+            "localMoved": 1,
+            "acquiredNameVersionBytesPreserved": true
+          }
+        }
+      },
+      {
+        "operation": "content.v2.create",
+        "before": {
+          "sourceTree": "9268486f21ff650d3faa55e1051bb477f006220a",
+          "status": 200,
+          "sdkAttempts": 1
+        },
+        "after": {
+          "sourceCommit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+          "sourceTree": "1d303664973b784b00c3edcddb17652cc5a532d3",
+          "status": 409,
+          "sdkAttempts": 0,
+          "networkFetchAttempts": 0,
+          "aiCalls": 0,
+          "usageEvents": 0,
+          "reservations": 0,
+          "details": {}
+        }
+      },
+      {
+        "operation": "content.v2.edit",
+        "before": {
+          "sourceTree": "9268486f21ff650d3faa55e1051bb477f006220a",
+          "status": 500,
+          "sdkAttempts": 1
+        },
+        "after": {
+          "sourceCommit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+          "sourceTree": "1d303664973b784b00c3edcddb17652cc5a532d3",
+          "status": 200,
+          "sdkAttempts": 0,
+          "networkFetchAttempts": 0,
+          "aiCalls": 0,
+          "usageEvents": 0,
+          "reservations": 0,
+          "details": {
+            "needsAi": true,
+            "applied": false,
+            "acquiredDocumentPreserved": true
+          }
+        }
+      },
+      {
+        "operation": "ads.doc.ai_edit",
+        "before": {
+          "sourceTree": "9268486f21ff650d3faa55e1051bb477f006220a",
+          "status": 500,
+          "sdkAttempts": 1
+        },
+        "after": {
+          "sourceCommit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+          "sourceTree": "1d303664973b784b00c3edcddb17652cc5a532d3",
+          "status": 409,
+          "sdkAttempts": 0,
+          "networkFetchAttempts": 0,
+          "aiCalls": 0,
+          "usageEvents": 0,
+          "reservations": 0,
+          "details": {
+            "acquiredDocumentPreserved": true
+          }
+        }
+      },
+      {
+        "operation": "campaigns.v2.generate-missing-numeric",
+        "before": {
+          "sourceTree": "9268486f21ff650d3faa55e1051bb477f006220a",
+          "status": 409,
+          "sdkAttempts": 0
+        },
+        "after": {
+          "sourceCommit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+          "sourceTree": "1d303664973b784b00c3edcddb17652cc5a532d3",
+          "status": 409,
+          "sdkAttempts": 0,
+          "networkFetchAttempts": 0,
+          "aiCalls": 0,
+          "usageEvents": 0,
+          "reservations": 0,
+          "details": {}
+        }
+      },
+      {
+        "operation": "social.v2.create-one-missing-numeric",
+        "before": {
+          "sourceTree": "9268486f21ff650d3faa55e1051bb477f006220a",
+          "status": 409,
+          "sdkAttempts": 0
+        },
+        "after": {
+          "sourceCommit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+          "sourceTree": "1d303664973b784b00c3edcddb17652cc5a532d3",
+          "status": 409,
+          "sdkAttempts": 0,
+          "networkFetchAttempts": 0,
+          "aiCalls": 0,
+          "usageEvents": 0,
+          "reservations": 0,
+          "details": {}
+        }
+      },
+      {
+        "operation": "images.copy-review.resume-missing-numeric",
+        "before": {
+          "sourceTree": "9268486f21ff650d3faa55e1051bb477f006220a",
+          "status": 409,
+          "sdkAttempts": 0
+        },
+        "after": {
+          "sourceCommit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+          "sourceTree": "1d303664973b784b00c3edcddb17652cc5a532d3",
+          "status": 409,
+          "sdkAttempts": 0,
+          "networkFetchAttempts": 0,
+          "aiCalls": 0,
+          "usageEvents": 0,
+          "reservations": 0,
+          "details": {}
+        }
+      },
+      {
+        "operation": "social.v2.produce-zero-below-estimate",
+        "before": {
+          "sourceTree": "9268486f21ff650d3faa55e1051bb477f006220a",
+          "status": 200,
+          "sdkAttempts": 1
+        },
+        "after": {
+          "sourceCommit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+          "sourceTree": "1d303664973b784b00c3edcddb17652cc5a532d3",
+          "status": 409,
+          "sdkAttempts": 0,
+          "networkFetchAttempts": 0,
+          "aiCalls": 0,
+          "usageEvents": 0,
+          "reservations": 0,
+          "details": {}
+        }
+      }
+    ]
+  },
+  "nativeSocial": {
+    "schema": "social-production211-compiled-proof-1",
+    "isolatedSyntheticData": true,
+    "realProviderCalls": 0,
+    "realCostEur": 0,
+    "expectedLocalProviderRequests": 0,
+    "nativeWorker": true,
+    "creativeQualityQualified": false,
+    "nativeApprovals": [
+      {
+        "kind": "text",
+        "serverEstimateMicro": 350880,
+        "approvedEstimateMicro": 350880,
+        "maxCostEur": 1
+      },
+      {
+        "kind": "context",
+        "serverEstimateMicro": 350880,
+        "approvedEstimateMicro": 350880,
+        "maxCostEur": 1
+      },
+      {
+        "kind": "deleted",
+        "serverEstimateMicro": 350880,
+        "approvedEstimateMicro": 350880,
+        "maxCostEur": 1
+      }
+    ],
+    "version": {
+      "commit": "6fd996637611c929ba9dfe258a320435dfe62f2f",
+      "commitOrigin": "build",
+      "mode": "production",
+      "tree": "clean",
+      "source": "compiled-build"
+    },
+    "passed": true,
+    "failures": [
+      {
+        "kind": "text",
+        "status": "failed",
+        "progress": 0,
+        "sourceKept": true,
+        "providerCalls": 0
+      },
+      {
+        "kind": "context",
+        "status": "failed",
+        "progress": 0,
+        "sourceKept": true,
+        "providerCalls": 0
+      },
+      {
+        "kind": "deleted",
+        "status": "failed",
+        "progress": 0,
+        "sourceKept": true,
+        "providerCalls": 0
+      }
+    ],
+    "freeReuse": {
+      "produced": 1,
+      "newMediaCalls": 0,
+      "newJobs": 0,
+      "sourceMissingDidNotBlockAcquired": true,
+      "sha256": "b0e4e9fbb2a046d5ce215783ec352b15965f3e37cd79acb78cd4b1096735b8ee"
+    },
+    "foreign": 404,
+    "csrf": 403,
+    "empty": 400,
+    "localProviderRequests": 0
+  },
+  "scope": "8 endpoints / 9 audited payloads plus 3 source-version failures and acquired free reuse; not global financial certification",
+  "realProviderCalls": 0,
+  "realCostEur": 0
+}

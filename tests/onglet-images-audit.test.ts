@@ -8,6 +8,7 @@ vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 import fs from "node:fs";
 import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import {nativeImageConfirmedFixture} from './native-image-consent-fixture';
 
 let keys: Record<string, string | null> = {};
 let sessionUser: any = null;
@@ -37,7 +38,7 @@ describe("onglet Images — audit", async () => {
   const pid = seedImageFixture(u.id, "cosmetic");
   grantProjectPlan(pid, "vendre");
   const ctx = { params: Promise.resolve({ id: pid }) } as any;
-  const postV2 = (b: unknown) => fr(() => v2.POST(new Request(`http://localhost:3000/api/projects/${pid}/images/v2`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) }), ctx));
+  const postV2 = (b: unknown) => nativeImageConfirmedFixture(data=>fr(() => v2.POST(new Request(`http://localhost:3000/api/projects/${pid}/images/v2`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(data) }), ctx)),b);
   const payloadOf = async (res: Response) => JSON.parse(one<{ payload: string }>("SELECT payload FROM jobs WHERE id = ?", (await res.json()).jobId)!.payload);
 
   beforeEach(() => {
@@ -47,6 +48,7 @@ describe("onglet Images — audit", async () => {
   });
 
   it("une image demandée à l'IA n'est jamais remplacée par une photo libre (même sans « noStock »)", async () => {
+    keys={alibaba:'FAUSSE CLE DE RECETTE',anthropic:'FAUSSE CLE DE RECETTE'};
     const r = await postV2({ action: "generate", request: { kind: "ambiance", topic: "table en bois", aspect: "4:5", count: 1, allowGenerate: true } });
     expect(r.status).toBe(200);
     expect((await payloadOf(r)).request).toMatchObject({ allowGenerate: true, noStock: true });
