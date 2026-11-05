@@ -27,6 +27,8 @@ export const CommandSchema = z.discriminatedUnion("action", [
   base.extend({action:z.literal('cancel-booking-move'),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal('confirm-booking-timezone'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal('cancel-booking-timezone'),proposalId:z.string().min(1).max(120)}).strict(),
+  base.extend({action:z.literal('confirm-workshop-capacity'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
+  base.extend({action:z.literal('cancel-workshop-capacity'),proposalId:z.string().min(1).max(120)}).strict(),
   base.extend({action:z.literal('confirm-booking-cancel'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal('confirm-booking-service-catalog'),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal('cancel-booking-staff-catalog'),proposalId:z.string().min(1).max(120)}).strict(),
@@ -98,12 +100,14 @@ export type ConversationState = {
   bookingWindowProposal?:import('./local-booking-window').BookingWindowProposal;
   bookingMoveProposal?:import('./local-booking-move').BookingMoveProposal;
   bookingTimezoneProposal?:import('./local-booking-timezone').BookingTimezoneProposal;
+  workshopCapacityProposal?:import('./local-workshop-capacity').WorkshopCapacityProposal;
   bookingCancelProposal?:import('./local-booking-cancel').BookingCancelProposal;
   bookingServiceCatalogProposal?:import('./local-booking-service-catalog').BookingServiceCatalogProposal;
   bookingStaffCatalog?:import('./local-booking-staff-catalog').BookingStaffCatalogPresentation;
   bookingWindow?:import('./local-booking-window').BookingWindowPresentation;
   bookingMove?:import('./local-booking-move').BookingMovePresentation;
   bookingTimezone?:import('./local-booking-timezone').BookingTimezonePresentation;
+  workshopCapacity?:import('./local-workshop-capacity').WorkshopCapacityPresentation;
   bookingCancel?:import('./local-booking-cancel').BookingCancelPresentation;
   bookingServiceCatalog?:import('./local-booking-service-catalog').BookingServiceCatalogPresentation;
   bookingRecords?:import('./local-booking-records').BookingRecordsState;
@@ -216,12 +220,14 @@ export type ConversationView = {
   bookingWindow?:import('./local-booking-window').BookingWindowPresentation;
   bookingMove?:import('./local-booking-move').BookingMovePresentation;
   bookingTimezone?:import('./local-booking-timezone').BookingTimezonePresentation;
+  workshopCapacity?:import('./local-workshop-capacity').WorkshopCapacityPresentation;
   bookingCancel?:import('./local-booking-cancel').BookingCancelPresentation;
   bookingServiceCatalog?:import('./local-booking-service-catalog').BookingServiceCatalogPresentation;
   bookingStaffCatalogExecution?:{enabled:true};
   bookingWindowExecution?:{enabled:true};
   bookingMoveExecution?:{enabled:true};
   bookingTimezoneExecution?:{enabled:true};
+  workshopCapacityExecution?:{enabled:true};
   bookingCancelExecution?:{enabled:true};
   bookingServiceCatalogExecution?:{enabled:true};
   bookingServiceText?:import('./local-booking-service-text').BookingServiceTextPresentation;
