@@ -1,3 +1,5 @@
+Reprise prioritaire : [5 novembre,16h36UTC](REPRISE-5-NOVEMBRE-RESERVATIONS.md),#455/0a538370. Mission incomplète ;prochain lot natif ajout/retrait d’intervenants.
+
 Reprise prioritaire : [5novembre16h09UTC](REPRISE-5-NOVEMBRE-RESERVATIONS.md),#453/c2f9798a. Mission incomplète ;prochaines lectures A1 disponibilité/ateliers sousdroits précis.
 
 Reprise prioritaire : [bilan du5novembre,15h56UTC](REPRISE-5-NOVEMBRE-RESERVATIONS.md), #452/fb38d8c5. Mission incomplète ;prochain audit des places des ateliers cabinet.
