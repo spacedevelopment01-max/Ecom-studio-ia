@@ -1,3 +1,29 @@
+## Reprise active — 5 novembre 2026, 15 h 03 UTC / 16 h 03 Paris
+
+**La mission globale n’est pas terminée.** Tête fonctionnelle et documentaire de la PR **#446 :1ffe53c65a4580cbc2647c9fa97c89aa7eb633c6**. Le code est dans **79f19b3729202a91e05ef765fae5bfd28e5e02b0**, puis le rapport a été clarifié dans1ffe53c6 :ne pas reprendre seulement le dernier commit documentaire. Branche `codex/parity301-existing-booking-closures`, checkout `/workspace/work/parity301-file-trash-syna`, propre.
+
+Le lot ouvre seulement les fermetures datées A1 sous **EXISTING_LOCAL +EXISTING_BOOKING_CLOSURES +BOOKING_CLOSURES/LOT_A/AI/CONTEXT**, fermés par défaut. Droit exact `recovery.localEdits.ops:booking-closures`, helper `localEditAllowed(view,'booking-closures')`, mêmes accords natifs add/remove et événement studio:booking-changed. Ni lecture ni horaires ne suffisent à donner ce droit. Aucun autre acte A1, Préparation ou IA générale ouvert.
+
+**20 nouveaux tests ;96 cas distincts dans5fichiers et types verts** :50/3,un cas supplémentaire de coexistence des droits,puis45régressions disjointes. Parent6rouges sur ajout/retrait des3moteurs. Aperçu sansécriture,accord/reçu/rejeu1version,acquis conservés ;réservations existantes non annulées sur le jour fermé. Retrait avant cache,conflits/TTL/produits/forfait/compte/budget0,rollback version+pointeur si reçu échoue. Handlers HTTP exercés en processus avec vraies Session/SQLite,après17s+GET projet/fil/natif ;ce n’est pas une nouvelle preuve navigateur. Carte/handle/recette compilée de Claude restent ouverts. Contrat lisible LOT-FERMETURES-ANCIENS-PROJETS.md ;coordination#301 commentaire6661296525.
+
+**456 tests nouveaux distincts sur#423–#446.** Matrice172 inchangée :74PARTIEL/68ABSENT/4NON_TESTE/26BLOQUE,aucune ligne complète. La preuve navigateur5a89a93f couvre uniquement source69b1756f/#438,buildRZOlN5nxSKyT1Rk4Zdc7H :16parcours/64étapes+4compléments,130PNG locales,finances/acquis exacts et0provider/extérieur/JS. Elle ne qualifie pas les nouvelles cartes.
+
+### CI et environnement
+
+**#438 est maintenant entièrement verte**,5contrôles dont verdict,run42034971509/SHA69b1756f ;6408passés/31skip,669fichiers/1skip. Elle rejoint#423/#431/#434/#436. #440 suite6459/31skip,Docker/confirmation verts,natif long encore en cours au dernier relevé.
+
+#437 tentative1 a fini rouge :Docker échoué (logs BlobNotFound404 même après fin),natif annulé après environ100min,limite configurée100min ;suite6393/31skip etconfirmation gratuites vertes. **Relance des jobs échoués acceptée**,tentative2 en cours :Docker127322755406,natif127322755942 ;types127322848950 etconfirmation127322759576 affichés verts. Ne pas affirmer un nouveau verdict global ni modifier le code sans défaut démontré. Les contrôles gratuits restent obligatoires. Nouveaux runs :#44442045307930,#44542047371418 ;relever#446 au SHA1ffe53c6.
+
+L’environnement fonctionne. Le push documentaire6449340e a d’abord échoué faute de credential helper Git,puis a été publié avec la CLI déjà authentifiée. Pour les prochaines publications utiliser ponctuellement `GIT_TERMINAL_PROMPT=0 git -c credential.helper='!gh auth git-credential' push origin HEAD:refs/heads/codex/...`. Aucun secret affiché/stocké,aucune configuration globale changée. Les appels API GitHub passent par le connecteur ;api.github.com est hors de la politique shell. Référence runtime reconnectée/running,réseau enforced,aucun secret/identity déclaré par la configuration ;le CLI Git a été vérifié par un push réussi.
+
+### Prochaine lacune à vérifier
+
+**Suppression de prestation réservable :audit de la protection des rendez-vous acquis au fuseau du moteur.** Aucun code/branche de ce nouveau lot commencé. `src/lib/contenus/prestations.ts:futureBookings` calcule aujourd’hui avec `new Date().toISOString().slice(0,10)` (UTC),alors que les dates des rendez-vous sont locales au widget. Reproduire avant toute correction :à2026-11-06T01Z,America/Los_Angeles est encore le5novembre ;une réservation du5novembre peut être future mais ne plus compter dans le garde de suppression. Tester salon/cabinet et,àl’inverse,un jour déjà passé dans un fuseau oriental. Réutiliser les `core.nowIn(timezone,now()).date` natifs (at explicite :VM Date peut être figée avant fakeTimers),timezone du widget et non du profil. Garder les suppressions historiques/annulées et les autres gardes natifs. Corriger seulement si démontré,puis préparer le raccordement ciblé des créations/suppressions de prestations sans reconstruire les champs voisins. Aucun fournisseur ni opération client réelle.
+
+Checkouts :source indiqué ci-dessus,preuve `parity301-intents-v5` propre5a89a93f avec build figé69b1756f,docs `parity301-booking-docs`. Aucun serveur de recette de ces lots actif ;espace libre~660MiB ;préserver les3WIP historiques de parity301-ci-guards. Main6354f327 dernier relevé,aucune fusion/activation/déploiement/donnée client/dépense réelle. Continuer les lacunes indépendantes pendant lesCI ;les états ci-dessous sont historiques.
+
+---
+
 ## Reprise active — 5 novembre 2026,14 h 42 UTC /15 h 42 Paris
 
 Tête propre **0272c9eaf667a2d335a5653fb85bd1508b22eb64 /#445**,branche codex/parity301-existing-booking-hours,checkout parity301-file-trash-syna. Horaires A1 livrés sans nouveau moteur :EXISTING_LOCAL +EXISTING_BOOKING_HOURS +BOOKING_HOURS/LOT_A/AI/CONTEXT,fermés par défaut,projet services. Droit exact recovery.localEdits.ops booking-hours,localEditAllowed(view,booking-hours),mêmebookingHours/confirm-cancel/accord littéral/event studio:booking-changed. Les autres domaines,A1IAgénérale etPréparation restentfermés.

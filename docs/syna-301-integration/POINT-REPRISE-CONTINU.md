@@ -1,3 +1,7 @@
+## Reprise active — 5 novembre 2026, 16 h 03 Paris
+
+Lire [REPRISE-5-NOVEMBRE-RESERVATIONS.md](REPRISE-5-NOVEMBRE-RESERVATIONS.md). Tête#446 :code79f19b37 puisdoc1ffe53c6. Fermetures A1 :20nouveaux/96ciblés/types ;matrice172,aucune complète. #438 CI entièrement verte ;#437 relance2 en cours après Docker inconnu/timeout natif100min. Git push fonctionne avec helper CLI ponctuel. Prochaine vérification non codée :garde de suppression des prestations au jour local du moteur. États suivants historiques.
+
 ## Reprise active — 5 novembre 2026,15 h 42 Paris
 
 Lire [REPRISE-5-NOVEMBRE-RESERVATIONS.md](REPRISE-5-NOVEMBRE-RESERVATIONS.md). Tête#445/0272c9ea,horaires A1 natifs16nouveaux/106ciblés/types. Matrice172inchangée,aucune complète. Prochaine lacune:fermetures datées A1,analyse seule,aucun code commencé. Cartes/CI nouvelles ouvertes ;états suivants historiques.
