@@ -1,3 +1,13 @@
+## Mise à jour active — 5nov2026,11h29UTC /12h29Paris
+
+#427 b5cbbd14a7bb2d08955661139f2db8b60d18b82e après#426 :validation datesréelles/inversées native,66tests/6fichiers+types,8nouveaux. #428 1d97dfb7bdb077d4b68cbe548596e62cea0785d1 après#427 :ajoutdefermeturesdatées3moteurs,103tests/6fichiers+types,dont26nouveaux. Vraie attente17s puisGETprojet/accord/relecture native1version ;aucune carte/navigateur nouveau qualifié. ContratLOT-FERMETURES-DATEES-SYNA.md transmisClaude,commentaire6656841873. Matrice169opérations,68PARTIEL/71ABSENT/4NON_TESTE/26BLOQUE,aucunecomplète.
+
+CI11h27UTC :#423 types/suitecomplète,Docker etconfirmationgratuite verts,natif long encoreencours ;#424/#425Docker etconfirmationgratuite verts,autresencours. #426run42017997568encours ;#427/#428nouveauxruns àsuivre. Aucun échec constaté ni vertglobal anticipé. Vérifier SHAexact etpreuveUI sur intégrationClaude encoreabsente.
+
+Suite indépendante :retraitciblé de fermeture (soustrairelapériodedesacquissansleseffacer),puisautrestrousréservation/équipe/prestations etmatrice. Chaîneexploitable#423→#424→#425→#426→#427→#428 ;branche documentairecourante contient leurascendance etlamatrice,celle-ci reste distincte desPRfonctionnelles. Aucun merge versmain,activation,dépense,client ouproduction.
+
+---
+
 ## Reprise active — 5 novembre 2026, Europe/Paris — réservations natives
 
 Environnement de session fonctionnel : Node, Git, tests, GitHub. Aucun manque de configuration pour cette session ; le bot GitHub « create an environment » concernait son déclenchement séparé. Reprise depuis main6354f327888d70c64ce4d86604b7b8fdc768947c (#422), bilan/reprise lus. Aucun merge main, activation, client ou fournisseur réel.
