@@ -25,7 +25,7 @@ export const bookingStaffCatalogCandidate = (raw: string) => {
     || /^(?:supprime|retire) (?:tous les intervenants|toutes les intervenantes)\b/iu.test(text);
 };
 
-type Staff = { id: string; name: string; title: string; skills: string[]; days: number[] };
+type Staff = { id: string; name: string; title: string; hours?: string; skills: string[]; days: number[] };
 type Operation = 'add' | 'remove';
 export type BookingStaffCatalogProposal = {
   id: string; operation: Operation; input: PrestationsInput; before: Staff | null; after: Staff | null;
@@ -57,7 +57,7 @@ function members(spec: ThemeSpec): Staff[] {
   const blocks = sec.section.blocks ?? {};
   return (sec.section.block_order ?? Object.keys(blocks)).map(k => blocks[k]).filter(b => b?.type === 'member').map(b => {
     const st = b.settings;
-    return { id: String(st.member_id ?? ''), name: String(st.name ?? ''), title: String(st.title ?? ''),
+    return { id: String(st.member_id ?? ''), name: String(st.name ?? ''), title: String(st.title ?? ''), ...(Object.hasOwn(st,'hours')?{hours:String(st.hours??'')} : {}),
       skills: String(st.skills ?? '').split(',').map(s => s.trim()).filter(Boolean), days: String(st.days ?? '').split(',').map(s => s.trim()).filter(Boolean).map(Number) };
   });
 }
