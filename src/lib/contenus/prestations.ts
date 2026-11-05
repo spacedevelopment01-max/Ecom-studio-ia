@@ -13,10 +13,12 @@
  */
 import { z } from "zod";
 import { HttpError } from "../auth";
-import { all } from "../db";
+import { all, now } from "../db";
 import { L } from "../i18n-server";
 import { currentTheme, loadProject, previewThemeVersionSpec, saveServices, saveThemeVersion } from "../projects";
 import { rdvSection, type RdvKind } from "../rendez-vous";
+import { core as salonCore } from "../salon/booking";
+import { core as cabinetCore } from "../cabinet/booking";
 import type { SectionInstance, ThemeSpec } from "../theme/spec";
 
 export const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
@@ -80,6 +82,8 @@ const staffPatchSchema=z.object({
   days:staffSchema.shape.days.removeDefault().optional(),
 }).strict().refine(v=>v.name!==undefined||v.title!==undefined||v.skills!==undefined||v.days!==undefined,"Précisez le nom, la spécialité, les compétences ou les jours de l’intervenant.");
 export const prestationsInput = z.object({
+  serviceAdd: serviceSchema.omit({ id: true }).strict().optional(),
+  serviceRemove: z.object({ id: z.string().min(1).max(40) }).strict().optional(),
   staffPatch:staffPatchSchema.optional(),
   servicePatch: servicePatchSchema.optional(),
   services: z.array(serviceSchema).max(60).superRefine(uniqueProvidedIds).optional(),
@@ -91,17 +95,23 @@ export const prestationsInput = z.object({
   restaurantPartyPatch: restaurantSchema.pick({minParty:true,maxParty:true}).strict().refine(r=>r.minParty<=r.maxParty,"Le nombre minimum de couverts dépasse le maximum.").optional(),
   restaurantCapacityPatch: restaurantSchema.pick({capacity:true}).strict().optional(),
   restaurantPatch: restaurantSchema.pick({openDays:true,lunchSlots:true,dinnerSlots:true}).partial().strict().refine(v=>v.openDays!==undefined||v.lunchSlots!==undefined||v.dinnerSlots!==undefined,"Précisez le jour ou le service à modifier.").optional(),
-}).refine(v=>!v.staffPatch||!v.staff,"Ne mélangez pas remplacement et retouche ciblée des intervenants.").refine(v=>!v.restaurantPartyPatch||!v.restaurant&&!v.restaurantPatch&&!v.restaurantCapacityPatch,"Ne mélangez pas taille des groupes et autres réglages restaurant.").refine(v=>!v.restaurantCapacityPatch||!v.restaurant&&!v.restaurantPatch,"Ne mélangez pas retouche de capacité et autres réglages restaurant.").refine((v) => !v.servicePatch || !v.services, "Ne mélangez pas remplacement et retouche ciblée des prestations.").refine(v=>!v.restaurantPatch||!v.restaurant,"Ne mélangez pas remplacement et retouche ciblée du restaurant.");
+}).refine(v=>!(v.serviceAdd||v.serviceRemove)||Object.values(v).filter(x=>x!==undefined).length===1,"L’ajout ou le retrait ciblé d’une prestation ne se mélange pas avec un autre réglage.").refine(v=>!v.staffPatch||!v.staff,"Ne mélangez pas remplacement et retouche ciblée des intervenants.").refine(v=>!v.restaurantPartyPatch||!v.restaurant&&!v.restaurantPatch&&!v.restaurantCapacityPatch,"Ne mélangez pas taille des groupes et autres réglages restaurant.").refine(v=>!v.restaurantCapacityPatch||!v.restaurant&&!v.restaurantPatch,"Ne mélangez pas retouche de capacité et autres réglages restaurant.").refine((v) => !v.servicePatch || !v.services, "Ne mélangez pas remplacement et retouche ciblée des prestations.").refine(v=>!v.restaurantPatch||!v.restaurant,"Ne mélangez pas remplacement et retouche ciblée du restaurant.");
 export type PrestationsInput = z.infer<typeof prestationsInput>;
 
 /** Rendez-vous confirmés à venir, par prestation (salon : `salon_appointments.service`, cabinet : séance). */
-function futureBookings(projectId: string, kind: RdvKind): Record<string, number> {
-  const today = new Date().toISOString().slice(0, 10);
+function futureBookings(projectId: string, kind: RdvKind, timezone: unknown): Record<string, number> {
   const table = kind === "salon" ? "salon_appointments" : kind === "cabinet" ? "cabinet_appointments" : null;
   if (!table) return {};
+  // Dates belong to the widget's calendar, not the server's UTC day. Reuse its default/fallback rules.
+  const zone = typeof timezone === "string" ? timezone.trim() : "";
+  const today = (kind === "salon" ? salonCore : cabinetCore).nowIn(zone || "Europe/Paris", now()).date;
   try {
     return Object.fromEntries(all<{ service: string; n: number }>(`SELECT service, COUNT(*) n FROM ${table} WHERE project_id = ? AND status = 'confirmed' AND date >= ? GROUP BY service`, projectId, today).map((r) => [r.service, r.n]));
-  } catch { return {}; }
+  } catch (error) {
+    // A lazily uninitialized table has no bookings. Any other read failure must not authorize deletion.
+    if (error instanceof Error && error.message === `no such table: ${table}`) return {};
+    throw new HttpError(409, "Les rendez-vous ne peuvent pas être vérifiés. Rechargez avant de modifier les prestations.", "booking_records_unavailable");
+  }
 }
 
 const num = (v: unknown) => (v === "" || v == null || Number.isNaN(Number(v)) ? null : Number(v));
@@ -113,7 +123,7 @@ export function readPrestations(projectId: string) {
   const sec = cur ? rdvSection(cur.spec as ThemeSpec) : null;
   if (!sec) return null;
   const st = (sec.section.settings ?? {}) as Record<string, unknown>;
-  const booked = futureBookings(projectId, sec.kind);
+  const booked = futureBookings(projectId, sec.kind, st.timezone);
   const blocks = blocksOf(sec.section);
   const services = sec.kind === "salon"
     ? blocks.filter((b) => b.block.type === "service").map(({ block: b }) => { const v = b.settings ?? {}; return { id: String(v.service_id ?? ""), name: String(v.name ?? ""), category: String(v.category ?? "coupe"), short: String(v.short ?? ""), duration: num(v.duration), price: num(v.price), priceFrom: !!v.price_from, upcoming: booked[String(v.service_id ?? "")] ?? 0 }; })
@@ -171,6 +181,36 @@ function buildPrestations(projectId: string, raw: unknown) {
   const st = (section.settings ??= {}) as Record<string, unknown>;
   const warnings: string[] = [];
   const before = readPrestations(projectId)!;
+
+  if (input.serviceAdd || input.serviceRemove) {
+    if (sec.kind === "restaurant") throw new HttpError(409, "Ce site ne comporte pas de prestations réservables salon ou cabinet.");
+    const blockType = sec.kind === "salon" ? "service" : "seance";
+    const idKey = sec.kind === "salon" ? "service_id" : "seance_id";
+    if (input.serviceRemove) {
+      const serviceId = input.serviceRemove.id;
+      const rows = Object.entries(section.blocks ?? {}).map(([key, block]) => ({ key, block })).filter(b => b.block.type === blockType && b.block.settings?.[idKey] === serviceId);
+      const services = before.services.filter(s => s.id === serviceId);
+      if (rows.length !== 1 || services.length !== 1) throw new HttpError(409, "Prestation réservable native absente ou ambiguë. Rechargez sans substitution.");
+      if (services[0].upcoming) throw new HttpError(409, "Cette prestation a des rendez-vous à venir. Gardez-la jusqu’à ses derniers rendez-vous.", "service_has_bookings");
+      delete section.blocks![rows[0].key];
+      if (section.block_order) section.block_order = section.block_order.filter(key => key !== rows[0].key);
+    } else {
+      const acquired = Object.values(section.blocks ?? {}).filter(b => b.type === blockType);
+      if (acquired.length >= 60) throw new HttpError(409, "La limite native de 60 prestations est atteinte.");
+      const service = input.serviceAdd!;
+      const reserved = new Set(acquired.map(b => String(b.settings?.[idKey] ?? "")));
+      const serviceId = newNativeId(service.name, new Set(), reserved);
+      const blocks = section.blocks ??= {};
+      const baseKey = `${blockType}-${serviceId}`;
+      let key = baseKey, suffix = 1;
+      while (key in blocks) key = `${baseKey}-${++suffix}`;
+      blocks[key] = { type: blockType, settings: {
+        [idKey]: serviceId, name: service.name, short: service.short, duration: service.duration, price: service.price ?? "",
+        ...(sec.kind === "salon" ? { category: service.category ?? "coupe", price_from: service.priceFrom } : { modes: service.modes ?? "cabinet" }),
+      } };
+      if (section.block_order) section.block_order.push(key);
+    }
+  }
 
   if (input.services && sec.kind !== "restaurant") {
     const kept = new Set(input.services.map((s) => s.id).filter(Boolean));
