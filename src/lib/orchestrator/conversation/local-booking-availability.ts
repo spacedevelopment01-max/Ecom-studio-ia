@@ -1,3 +1,4 @@
+import {BOOKING_READ_DATE_PATTERN,resolveBookingReadDate,type BookingReadDateResolution} from './booking-read-date';
 /** Read native availability only. Never activate, reserve, hold a slot or notify a customer. */
 import { outsideQuotes } from './outside-quotes';
 import { withAiDisabled } from '../../ai/access';
@@ -5,7 +6,7 @@ import { HttpError, ownedProject, type User } from '../../auth';
 import { now, readSnapshot } from '../../db';
 import { currentTheme, loadProject } from '../../projects';
 import { requirePlan } from '../../plan-gates';
-import { rdvSection, type RdvKind } from '../../rendez-vous';
+import { rdvRules,rdvSection, type RdvKind } from '../../rendez-vous';
 import * as salon from '../../salon/booking';
 import * as cabinet from '../../cabinet/booking';
 import * as restaurant from '../../restaurant/booking';
@@ -23,7 +24,7 @@ type Filter = { kind: RdvKind; date: string; serviceId?: string; modality?: stri
 export type BookingAvailabilityState = {
   schema: 'syna-booking-availability-read-1'; state: 'listed' | 'ambiguous' | 'unavailable'; projectId: string; message: string;
   readOnly: true; scope: 'native_live_availability_snapshot_not_a_booking'; confirmationRequired: false; financialConsent: false;
-  costEur: 0; providerCalls: 0; actionsExecuted: false; publication: false; filter?: Filter;
+  costEur: 0; providerCalls: 0; actionsExecuted: false; publication: false; filter?: Filter;dateResolution?:BookingReadDateResolution;
 };
 export type BookingAvailabilityPresentation = BookingAvailabilityState & {
   kind?: RdvKind; bookingMode?: 'live' | 'demo'; timezone?: string; sourceVersionId?: string; observedAt?: number; nativeHref?: string;
@@ -43,15 +44,14 @@ function owned(user: User, c: ConversationRow) {
   ownedProject(user, c.project_id); requirePlan(user, c.project_id);
   if (loadProject(c.project_id).business !== 'services') throw new HttpError(409, 'Les disponibilités réservables sont distinctes du catalogue produit.');
 }
-const realDate = (date: string) => { const at = Date.parse(date + 'T00:00:00Z'); return Number.isFinite(at) && new Date(at).toISOString().slice(0, 10) === date; };
 function parse(raw: string) {
   const text = request(raw), prefix = '^(?:montre|liste|affiche) (?:les|mes) cr[ée]neaux (?:de r[ée]servation )?disponibles';
-  const dining = new RegExp(prefix + ' du restaurant pour (\\d{1,2}) (?:personnes?|couverts?) le (\\d{4}-\\d{2}-\\d{2})$', 'iu').exec(text);
-  if (dining) return realDate(dining[2]) && Number(dining[1]) >= 1 && Number(dining[1]) <= 50 ? { target: 'restaurant' as const, party: Number(dining[1]), date: dining[2] } : null;
+  const dining = new RegExp(prefix + ' du restaurant pour (\\d{1,2}) (?:personnes?|couverts?) (?:le )?(' + BOOKING_READ_DATE_PATTERN + ')$', 'iu').exec(text);
+  if (dining) return Number(dining[1]) >= 1 && Number(dining[1]) <= 50 ? { target: 'restaurant' as const, party: Number(dining[1]), dateToken: dining[2] } : null;
   const quoted = '(?:«([^»\\r\\n]+)»|“([^”\\r\\n]+)”|"([^"\\r\\n]+)")';
-  const service = new RegExp(prefix + '(?: du (salon|cabinet))? pour (?:le service|la prestation|la s[ée]ance) r[ée]servable ' + quoted + '(?: en (cabinet|visio))?(?: longueur ' + quoted + ')?(?: avec l[’\']intervenant(?:e)? ' + quoted + ')? le (\\d{4}-\\d{2}-\\d{2})$', 'iu').exec(text);
-  if (!service || !realDate(service[12]) || !(service[2] ?? service[3] ?? service[4]).trim()) return null;
-  return { target: 'service' as const, requestedKind: service[1]?.toLowerCase(), source: (service[2] ?? service[3] ?? service[4]).trim(), modality: service[5]?.toLowerCase(), length: (service[6] ?? service[7] ?? service[8])?.trim().toLowerCase(), staffSource: [service[9], service[10], service[11]].find(value => typeof value === 'string')?.trim(), date: service[12] };
+  const service = new RegExp(prefix + '(?: du (salon|cabinet))? pour (?:le service|la prestation|la s[ée]ance) r[ée]servable ' + quoted + '(?: en (cabinet|visio))?(?: longueur ' + quoted + ')?(?: avec l[’\']intervenant(?:e)? ' + quoted + ')? (?:le )?(' + BOOKING_READ_DATE_PATTERN + ')$', 'iu').exec(text);
+  if (!service || !(service[2] ?? service[3] ?? service[4]).trim()) return null;
+  return { target: 'service' as const, requestedKind: service[1]?.toLowerCase(), source: (service[2] ?? service[3] ?? service[4]).trim(), modality: service[5]?.toLowerCase(), length: (service[6] ?? service[7] ?? service[8])?.trim().toLowerCase(), staffSource: [service[9], service[10], service[11]].find(value => typeof value === 'string')?.trim(), dateToken: service[12] };
 }
 const lengths: Record<string, string> = { court: 'short', courts: 'short', 'mi-long': 'mid', 'mi-longs': 'mid', long: 'long', longs: 'long', short: 'short', mid: 'mid' };
 export function listBookingAvailability(user: User, c: ConversationRow, m: ConversationState, raw: string): BookingAvailabilityState {
@@ -61,7 +61,8 @@ export function listBookingAvailability(user: User, c: ConversationRow, m: Conve
     if (!parsed) return question('Précisez une date réelle et une cible exacte. Salon : Montre les créneaux disponibles pour le service réservable « nom ou ID » le 2026-11-10 ; pour un membre exact, ajoutez avec l’intervenant « nom ou ID » avant la date. Cabinet : ajoutez « en cabinet » ou « en visio » avant la date. Restaurant : Montre les créneaux disponibles du restaurant pour 4 personnes le 2026-11-10. Aucune réservation ni activation.');
     if (!cur || !sec) return state(c, 'unavailable', 'Aucun moteur natif dans ce projet. Aucun autre planning consulté.');
     if (parsed.target === 'restaurant' && sec.kind !== 'restaurant' || parsed.target === 'service' && (sec.kind === 'restaurant' || parsed.requestedKind && parsed.requestedKind !== sec.kind)) throw new HttpError(409, 'Le planning demandé ne correspond pas au moteur de ce projet. Aucune substitution.');
-    let filter: Filter = { kind: sec.kind, date: parsed.date };
+    const resolved=resolveBookingReadDate(parsed.dateToken,rdvRules(c.project_id!,sec.kind).timezone,now());if(!resolved)return question('Précisez une date réelle ou aujourd’hui/demain/après-demain avec un fuseau natif valide. Aucun repli UTC ou autre jour deviné.');
+    let filter: Filter = { kind: sec.kind, date: resolved.date };
     if (parsed.target === 'restaurant') {
       const cfg = restaurant.restaurantOf(c.project_id!).config;
       if (parsed.party < cfg.minParty || parsed.party > cfg.maxParty) return question(`Le restaurant accepte des groupes de ${cfg.minParty} à ${cfg.maxParty} personnes. Précisez un effectif autorisé.`);
@@ -85,13 +86,14 @@ export function listBookingAvailability(user: User, c: ConversationRow, m: Conve
       if (parsed.staffSource !== undefined || parsed.length || !parsed.modality || !matches[0].modes.includes(parsed.modality)) return question('Précisez une modalité autorisée pour cette séance : en cabinet ou en visio. Aucun intervenant salon ou modalité implicite.');
       filter = { ...filter, serviceId: matches[0].id, modality: parsed.modality };
     }
-    return state(c, 'listed', 'Instantané natif des créneaux. Aucun créneau retenu ou garanti : la réservation doit revérifier les disponibilités. Aucune activation, réservation ou notification.', filter);
+    return {...state(c, 'listed', 'Instantané natif des créneaux. Aucun créneau retenu ou garanti : la réservation doit revérifier les disponibilités. Aucune activation, réservation ou notification.', filter),...(resolved.dateResolution?{dateResolution:resolved.dateResolution}:{})};
   }));
 }
 export function bookingAvailabilityView(user: User, c: ConversationRow, s: BookingAvailabilityState): BookingAvailabilityPresentation {
   return withAiDisabled('Lecture gratuite des disponibilités natives, aucune réservation ni IA', () => readSnapshot<BookingAvailabilityPresentation>(() => {
     owned(user, c); if (s.state !== 'listed' || !s.filter) return s;
     const cur = currentTheme(c.project_id!), sec = cur && rdvSection(cur.spec), f = s.filter;
+    if(s.dateResolution&&sec&&rdvRules(c.project_id!,sec.kind).timezone!==s.dateResolution.timezone)return state(c,'unavailable','Le fuseau natif a changé depuis la date relative. Demandez une nouvelle lecture ; aucun jour réinterprété au rafraîchissement.');
     if (!cur || !sec || sec.kind !== f.kind) return state(c, 'unavailable', 'Le moteur a changé. Reformulez la lecture sans substituer un autre planning.');
     const bookingMode = sec.section.settings.booking_mode === 'live' ? 'live' : 'demo';
     if (bookingMode !== 'live') return { ...state(c, 'unavailable', 'Le service est en démonstration. Aucune disponibilité réelle consultée et aucune activation automatique.', f), kind: f.kind, bookingMode };
