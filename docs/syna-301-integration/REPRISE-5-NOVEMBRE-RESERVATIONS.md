@@ -1,3 +1,15 @@
+## Reprise active — 5 novembre 2026, 17 h 59 UTC
+
+**La mission n’est pas complète.** Livraison **#461 /a715c912fff9b56e635b3d208c60f380cdb1671c**, parent #460/06167960 puis #459/e370e720. Trois tests rouges démontrent que créer Any peut réserver chez le voisin parce que l’ID any est un sentinel sans préférence. Deux allocations nouvelles réservent maintenant any ;identités/rendez-vous acquis exacts. 4 nouveaux tests,43 distincts/quatre fichiers/types ;quatrième contrôle acquis déjà vert sur parent. LOT-IDENTIFIANT-INTERVENANT-RESERVE.md,coordination Claude commentaire6665273908. Aucun DTO/drapeau/graphisme ajouté.
+
+Cumul **758 nouveaux tests distincts #423–#461**, matrice178 opérations80 PARTIEL/68 ABSENT/4 NON_TESTE/26 BLOQUE,aucune complète. Cartes et recette compilée indépendante restent ouvertes.
+
+**Lot en cours** `/workspace/work/parity301-file-trash-syna`, branche `codex/parity301-native-booking-window`, parent a715c912. tests/parity301-native-booking-window.test.ts :21 nouveaux cas (six parcours exacts rouges sur parent,quinze bornes/mélanges/conflits). Correctif natif non encore livré :bookingWindowPatch exclusif,exactement horizonDays ou leadMinutes ;validation par sectionSchema/coerceSetting avec refus de tout arrondi/clamp. GET Prestations expose bookingWindow effectif via rdvRules natif,aucun défaut inventé sur le moteur. Validation des trois moteurs et rendez-vous acquis,logs `/tmp/parity301-native-booking-window-{parent-red,final,types}.log` en cours. Vérifier résultats et types puis livrer PR native ;raccordement conversationnel ensuite sur branche suivante,carte Claude séparée.
+
+**CI complète verte nouvellement vérifiée** :#455 tête2a51db4300769980243186c1719426b3ec314af6,run42068174436,cinq contrôles dont verdict127425061688 ;#456/35bb6fc3df09c832b75fb01b1d91f28d5550871e,run42070019372,cinq contrôles dont verdict127428017315. #457/#458 Docker et confirmation verts,autres en cours ;#459 Docker vert,autres en cours. #460/#461 à relever. #452 relance acceptée après annulation ~100min,sans défaut produit démontré. Aucun contrôle gratuit optionnel,aucune validation héritée d’un autre SHA.
+
+Aucun fournisseur réel,client,activation,publication,fusion/déploiement. Main distante dernière vérification6354f327888d70c64ce4d86604b7b8fdc768947c.
+
 ## Reprise active — 5 novembre 2026, 17 h 55 UTC
 
 **Mission incomplète.** Livré **#460 /06167960efb25ea398e3dcfc5f88a93208dbe817**, parent #459/e370e720 puis #458/ea90b114, #457/e31c3171. Lecture disponibilités avec préférence d’intervenant exact, même BOOKING_AVAILABILITY et capacité A1 readonly exacte. staffId dans filtre, staffScope=one_exact_native_staff et staff metadata échappée. GET relit nom/compétences/identité/jours/horaires/occupation ;aucun repli any après cible absente/ambiguë/incompatible/sentinel. 19 nouveaux tests,72 distincts/trois fichiers/types,1parcours parent rouge ;7cas revérifiés après capture regex facultative correctement typée sans any. HTTP≥17s/projet/fil/nouvelle occupation/rejeu1tour,aucune écriture métier. Rapport LOT-DISPONIBILITES-INTERVENANT-EXACT.md ;coordination Claude commentaire6665202423. Carte/recette compilée encore ouvertes.
