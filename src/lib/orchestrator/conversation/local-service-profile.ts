@@ -12,15 +12,17 @@ export type ServiceProfileProposal={id:string;version:number;fingerprint:string;
 export type ServiceProfilePresentation={schema:'syna-service-profile-1';state:'proposed'|'applied'|'ambiguous';field:'hours'|'service-name'|'service-price'|'service-duration'|'service-description'|ServiceContactField|'contact';serviceKey?:string;serviceName?:string;choices?:{key:string;name:string}[];message:string;financialConsent:false;costEur:0;providerCalls:0;confirmationRequired:boolean;actionsExecuted:boolean;publication:false;proposalId?:string;diff?:{before:string;after:string};sourceVersion?:number;resultVersion?:number;receiptId?:string;projectId:string};
 export const serviceProfileEnabled=()=>activeContextEnabled()&&process.env.STUDIO_CONVERSATION_SERVICE_PROFILE==='1';
 /** Catch native scheduling requests before any paid reasoning; an unclear target stays a free question. */
-const contactCandidate=(text:string)=>/^(?:mets?|remplace|change|modifie|efface|vide|supprime)\b/iu.test(text.trim())&&/\b(?:t[ée]l[ée]phone|courriel|e-?mail|coordonn[ée]es|zone d[’']intervention|adresse)\b/iu.test(text);
-const detailCandidate=(text:string)=>/^(?:mets?|remplace|change|modifie|efface|vide)\b/iu.test(text.trim())&&/\b(?:prix|dur[ée]es?|descriptions?)\b/iu.test(text)&&/\bprestations?\b/iu.test(text);
+/** Les mots-clés du profil se lisent hors des valeurs citées : « Appelez-nous par téléphone » reste le texte voulu d’un bouton, jamais une demande de coordonnées. */
+const unquoted=(text:string)=>text.replace(/«[^»\r\n]*»|“[^”\r\n]*”|"[^"\r\n]*"/gu,' ');
+const contactCandidate=(text:string)=>/^(?:mets?|remplace|change|modifie|efface|vide|supprime)\b/iu.test(text.trim())&&/\b(?:t[ée]l[ée]phone|courriel|e-?mail|coordonn[ée]es|zone d[’']intervention|adresse)\b/iu.test(unquoted(text));
+const detailCandidate=(text:string)=>/^(?:mets?|remplace|change|modifie|efface|vide)\b/iu.test(text.trim())&&/\b(?:prix|dur[ée]es?|descriptions?)\b/iu.test(unquoted(text))&&/\bprestations?\b/iu.test(unquoted(text));
 /** Normalize only the request envelope; exact quoted values remain native data. */
 function profileRequest(text:string):string{
  return text.trim().replace(/\s*\?\s*$/u,'').trim()
   .replace(/,?\s+s[’']il te pla[iî]t\s*$/iu,'').trim()
   .replace(/^(?:peux|pourrais)-tu (modifier|remplacer|changer|mettre|renommer|rebaptiser|effacer|vider)\b/iu,(_all,verb:string)=>({modifier:'modifie',remplacer:'remplace',changer:'change',mettre:'mets',renommer:'renomme',rebaptiser:'rebaptise',effacer:'efface',vider:'vide'}[verb.toLowerCase()]!));
 }
-export const serviceProfileCandidate=(raw:string)=>{const text=profileRequest(raw);return detailCandidate(text)||contactCandidate(text)||/^(?:renomme|rebaptise) (?:cette|la) prestation\b/iu.test(text.trim())||/\b(?:horaires?|cr[ée]neaux|disponibilit[ée]s?)\b/iu.test(text)&&/^(?:remplace|change|modifie|mets?|nos? |les? |mes? )/iu.test(text.trim());};
+export const serviceProfileCandidate=(raw:string)=>{const text=profileRequest(raw);return detailCandidate(text)||contactCandidate(text)||/^(?:renomme|rebaptise) (?:cette|la) prestation\b/iu.test(text.trim())||/\b(?:horaires?|cr[ée]neaux|disponibilit[ée]s?)\b/iu.test(unquoted(text))&&/^(?:remplace|change|modifie|mets?|nos? |les? |mes? )/iu.test(text.trim());};
 function requestedHours(text:string):string|undefined{
  const match=/^(?:(?:remplace|change|modifie|mets?) (?:les |mes )?horaires (?:du profil(?: d[’']activit[ée])?|d[’']ouverture) (?:par|pour|[àa])\s*:?[ \t]*|(?:nos?|les?|mes?) horaires (?:du profil(?: d[’']activit[ée])?|d[’']ouverture) sont\s*:?[ \t]*)([^\r\n]+)$/iu.exec(text.trim());
  if(!match)return;

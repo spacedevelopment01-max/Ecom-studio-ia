@@ -53,6 +53,16 @@ Site affichait « La cible ou sa version a changé » et deux identifiants inter
 
 Test : `tests/syna301-site-revalidation-message.test.ts`, qui couvre les deux cas.
 
+**Texte de bouton contenant un mot du profil** (constaté par la recette navigateur « bouton » sur téléphone) : la phrase
+« Remplace le texte du bouton de cette section par « Recevoir mon devis encre telephone » » partait vers le profil
+d'activité, parce que le mot « téléphone » était lu dans la valeur citée. Elle répondait alors « Modification du profil
+indisponible » au lieu de la carte gratuite. Le même refus touchait « Appelez-nous par téléphone », « Voir nos horaires »
+ou « Voir le prix des prestations ». Le défaut est apparu avec la reconnaissance des coordonnées du profil, après le
+passage de cette recette en 4/4. Les mots-clés du profil (téléphone, e-mail, adresse, prix, durée, description, horaires)
+se lisent désormais **hors des valeurs citées**. Les vraies demandes du profil sont reconnues comme avant.
+
+Test : `tests/syna301-bouton-mot-profil.test.ts`. Il échoue sans le correctif et passe avec, profil fermé comme ouvert.
+
 ## Activation
 
 Toutes les fonctions SYNA restent **fermées par défaut** : elles s'activent par les réglages serveur
