@@ -1,0 +1,716 @@
+{
+  "sourceSha": "c9a6f830641e8a7ca6c09f59c739e553b282d524",
+  "buildId": "LUJqaPqWtwx8QP2NZgH81",
+  "runtime": "next-start-production",
+  "compiledStudio": true,
+  "newCardsQualified": false,
+  "dataDir": "/tmp/syna301-booking-visibility-OM7ZK0",
+  "rows": [
+    {
+      "label": "encre-ordinateur-bookingHours",
+      "request": "Change les horaires réservables du mardi de 9h à 12h et de 14h à 18h",
+      "projectId": "s3xqxeb9derz9h7x",
+      "conversationId": "nrepfamqw539xdjs",
+      "backendStatus": 200,
+      "presentation": {
+        "schema": "syna-booking-hours-1",
+        "state": "proposed",
+        "projectId": "s3xqxeb9derz9h7x",
+        "nativeHref": "/studio/s3xqxeb9derz9h7x/rendez-vous",
+        "message": "Vérifiez les plages réservables avant/après pour ce jour, chaque semaine dans le fuseau natif. Après accord gratuit, seule cette journée de configuration sera enregistrée ;profil, autres jours et rendez-vous conservés.",
+        "recurrence": "weekly",
+        "confirmationRequired": true,
+        "financialConsent": false,
+        "costEur": 0,
+        "providerCalls": 0,
+        "actionsExecuted": false,
+        "publication": false,
+        "kind": "salon",
+        "timezone": "Europe/Paris",
+        "day": "tue",
+        "dayLabel": "mardi",
+        "diff": {
+          "before": "",
+          "after": "09:00-12:00, 14:00-18:00"
+        },
+        "proposalId": "pgtswjbs8noww0uw",
+        "sourceVersionId": "79xl3wf1y2rthasn",
+        "warnings": [
+          "Ces plages hebdomadaires bornent les réservations. Les règles des prestations et intervenants continuent de limiter les créneaux effectifs ; aucune disponibilité en temps réel n’est annoncée. Les rendez-vous déjà confirmés conservent leur horaire, prix et durée."
+        ]
+      },
+      "waitMs": 17020,
+      "confirmButtons": 0,
+      "quoteButtons": 1,
+      "nativeUnchanged": true,
+      "panelText": "Syna\nune mémoire pour tout le Studio\nCommande SYNA ou commande d'affichage\n\nSYNA · VOTRE PROJET, UNE CONVERSATION\n\nSYNA\n\nJe suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût.\n\nVos choix restent les vôtres. Aucune publication automatique.\n\nVotre prochain message concerne cet écran : rendez-vous\n\nAucun objet désigné. SYNA demandera une précision si nécessaire.\n\nRepère seulement : aucune génération ni modification.\n\nCe projet a déjà une préparation engagée ou validée. Modifiez-le dans le parcours existant ; vos acquis restent conservés.\n\nVous\n\nProjet fictif pour retouches locales\n\nSYNA · Mémoire du projet\n\nMessage exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.\n\nVous\n\nChange les horaires réservables du mardi de 9h à 12h et de 14h à 18h\n\nSYNA · Mémoire du projet\n\nVérifiez les plages réservables avant/après pour ce jour, chaque semaine dans le fuseau natif. Après accord gratuit, seule cette journée de configuration sera enregistrée ;profil, autres jours et rendez-vous conservés.\n\nMessage enregistré. Demandez le devis pour une réponse de SYNA.\n\nDécrivez votre projet ou posez votre question à SYNA\nLien / photo\nEnregistrer\nVoir le devis de la réponse de SYNA\nVotre fiche commune et ses corrections",
+      "capture": "encre-ordinateur-bookingHours.png",
+      "status": "BLOCKED_UI_CARD_NOT_INTEGRATED"
+    },
+    {
+      "label": "encre-ordinateur-restaurantSettings",
+      "request": "Mets les créneaux de réservation du déjeuner à 12h15 et 13h15",
+      "projectId": "74srkv7bn93z2z4f",
+      "conversationId": "8keyhptrpua603z0",
+      "backendStatus": 200,
+      "presentation": {
+        "schema": "syna-restaurant-settings-1",
+        "state": "proposed",
+        "projectId": "74srkv7bn93z2z4f",
+        "nativeHref": "/studio/74srkv7bn93z2z4f/rendez-vous",
+        "message": "Vérifiez ce réglage de réservation récurrent du restaurant avant accord gratuit. Les créneaux du repas concernent tous les jours ouverts ; aucune réservation cliente n’est créée, déplacée ou annulée.",
+        "appliesTo": "recurring_configuration_not_live_availability",
+        "confirmationRequired": true,
+        "financialConsent": false,
+        "costEur": 0,
+        "providerCalls": 0,
+        "actionsExecuted": false,
+        "publication": false,
+        "field": "lunchSlots",
+        "timezone": "Europe/Paris",
+        "diff": {
+          "before": "12:00, 12:30, 13:00",
+          "after": "12:15, 13:15"
+        },
+        "display": {
+          "before": "12:00, 12:30, 13:00",
+          "after": "12:15, 13:15"
+        },
+        "proposalId": "h8s9xtyntmybw8xi",
+        "sourceVersionId": "rp1xirk8o39sc9ks",
+        "warnings": [
+          "Les réservations confirmées conservent leur date, heure et nombre de couverts. La capacité, les autres services, le profil et le mode de réservation restent conservés. Ceci ne prouve pas une disponibilité en temps réel."
+        ]
+      },
+      "waitMs": 0,
+      "confirmButtons": 0,
+      "quoteButtons": 1,
+      "nativeUnchanged": true,
+      "panelText": "Syna\nune mémoire pour tout le Studio\nCommande SYNA ou commande d'affichage\n\nSYNA · VOTRE PROJET, UNE CONVERSATION\n\nSYNA\n\nJe suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût.\n\nVos choix restent les vôtres. Aucune publication automatique.\n\nVotre prochain message concerne cet écran : rendez-vous\n\nAucun objet désigné. SYNA demandera une précision si nécessaire.\n\nRepère seulement : aucune génération ni modification.\n\nCe projet a déjà une préparation engagée ou validée. Modifiez-le dans le parcours existant ; vos acquis restent conservés.\n\nVous\n\nProjet fictif pour retouches locales\n\nSYNA · Mémoire du projet\n\nMessage exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.\n\nVous\n\nMets les créneaux de réservation du déjeuner à 12h15 et 13h15\n\nSYNA · Mémoire du projet\n\nVérifiez ce réglage de réservation récurrent du restaurant avant accord gratuit. Les créneaux du repas concernent tous les jours ouverts ; aucune réservation cliente n’est créée, déplacée ou annulée.\n\nMessage enregistré. Demandez le devis pour une réponse de SYNA.\n\nDécrivez votre projet ou posez votre question à SYNA\nLien / photo\nEnregistrer\nVoir le devis de la réponse de SYNA\nVotre fiche commune et ses corrections",
+      "capture": "encre-ordinateur-restaurantSettings.png",
+      "status": "BLOCKED_UI_CARD_NOT_INTEGRATED"
+    },
+    {
+      "label": "encre-ordinateur-bookingClosures",
+      "request": "Ferme les réservations le 2026-12-25",
+      "projectId": "c72p37o0n6c63sf3",
+      "conversationId": "5x6g9lmov2j29xkv",
+      "backendStatus": 200,
+      "presentation": {
+        "schema": "syna-booking-closures-1",
+        "state": "proposed",
+        "projectId": "c72p37o0n6c63sf3",
+        "nativeHref": "/studio/c72p37o0n6c63sf3/rendez-vous",
+        "message": "Vérifiez les dates inclusives et le fuseau avant accord gratuit. Seules les dates désignées seront ajoutées ou retirées des fermetures exceptionnelles. Les autres fermetures, horaires hebdomadaires et réservations clientes sont conservés ; retirer une fermeture ne garantit pas une disponibilité.",
+        "confirmationRequired": true,
+        "financialConsent": false,
+        "costEur": 0,
+        "providerCalls": 0,
+        "publication": false,
+        "actionsExecuted": false,
+        "operation": "add",
+        "kind": "cabinet",
+        "timezone": "Europe/Paris",
+        "dates": {
+          "start": "2026-12-25",
+          "end": "2026-12-25",
+          "inclusive": true
+        },
+        "diff": {
+          "before": "2026-11-20",
+          "after": "2026-11-20, 2026-12-25"
+        },
+        "proposalId": "038wl5jf7yyxd01b",
+        "sourceVersionId": "hi4nok3d5qh6t3wz",
+        "warnings": [
+          "Période inclusive, dates locales du moteur natif ; horaires hebdomadaires et autres fermetures acquises conservés. Les réservations confirmées ne sont ni déplacées ni annulées. Pas de disponibilité en temps réel ni activation du site."
+        ]
+      },
+      "waitMs": 0,
+      "confirmButtons": 0,
+      "quoteButtons": 1,
+      "nativeUnchanged": true,
+      "panelText": "Syna\nune mémoire pour tout le Studio\nCommande SYNA ou commande d'affichage\n\nSYNA · VOTRE PROJET, UNE CONVERSATION\n\nSYNA\n\nJe suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût.\n\nVos choix restent les vôtres. Aucune publication automatique.\n\nVotre prochain message concerne cet écran : rendez-vous\n\nAucun objet désigné. SYNA demandera une précision si nécessaire.\n\nRepère seulement : aucune génération ni modification.\n\nCe projet a déjà une préparation engagée ou validée. Modifiez-le dans le parcours existant ; vos acquis restent conservés.\n\nVous\n\nProjet fictif pour retouches locales\n\nSYNA · Mémoire du projet\n\nMessage exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.\n\nVous\n\nFerme les réservations le 2026-12-25\n\nSYNA · Mémoire du projet\n\nVérifiez les dates inclusives et le fuseau avant accord gratuit. Seules les dates désignées seront ajoutées ou retirées des fermetures exceptionnelles. Les autres fermetures, horaires hebdomadaires et réservations clientes sont conservés ; retirer une fermeture ne garantit pas une disponibilité.\n\nMessage enregistré. Demandez le devis pour une réponse de SYNA.\n\nDécrivez votre projet ou posez votre question à SYNA\nLien / photo\nEnregistrer\nVoir le devis de la réponse de SYNA\nVotre fiche commune et ses corrections",
+      "capture": "encre-ordinateur-bookingClosures.png",
+      "status": "BLOCKED_UI_CARD_NOT_INTEGRATED"
+    },
+    {
+      "label": "encre-ordinateur-bookingClosuresRemove",
+      "request": "Retire la fermeture des réservations le 2026-12-25",
+      "projectId": "oue5xhe2y24xuwid",
+      "conversationId": "f1xujq6b8tkkfvpx",
+      "backendStatus": 200,
+      "presentation": {
+        "schema": "syna-booking-closures-1",
+        "state": "proposed",
+        "projectId": "oue5xhe2y24xuwid",
+        "nativeHref": "/studio/oue5xhe2y24xuwid/rendez-vous",
+        "message": "Vérifiez les dates inclusives et le fuseau avant accord gratuit. Seules les dates désignées seront ajoutées ou retirées des fermetures exceptionnelles. Les autres fermetures, horaires hebdomadaires et réservations clientes sont conservés ; retirer une fermeture ne garantit pas une disponibilité.",
+        "confirmationRequired": true,
+        "financialConsent": false,
+        "costEur": 0,
+        "providerCalls": 0,
+        "publication": false,
+        "actionsExecuted": false,
+        "operation": "remove",
+        "kind": "restaurant",
+        "timezone": "Europe/Paris",
+        "dates": {
+          "start": "2026-12-25",
+          "end": "2026-12-25",
+          "inclusive": true
+        },
+        "diff": {
+          "before": "2026-12-25",
+          "after": ""
+        },
+        "proposalId": "n7860bxfh58up660",
+        "sourceVersionId": "015fm0s9rh2uiqt8",
+        "warnings": [
+          "Période inclusive, dates locales du moteur natif ; horaires hebdomadaires et autres fermetures acquises conservés. Les réservations confirmées ne sont ni déplacées ni annulées. Pas de disponibilité en temps réel ni activation du site."
+        ]
+      },
+      "waitMs": 0,
+      "confirmButtons": 0,
+      "quoteButtons": 1,
+      "nativeUnchanged": true,
+      "panelText": "Syna\nune mémoire pour tout le Studio\nCommande SYNA ou commande d'affichage\n\nSYNA · VOTRE PROJET, UNE CONVERSATION\n\nSYNA\n\nJe suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût.\n\nVos choix restent les vôtres. Aucune publication automatique.\n\nVotre prochain message concerne cet écran : rendez-vous\n\nAucun objet désigné. SYNA demandera une précision si nécessaire.\n\nRepère seulement : aucune génération ni modification.\n\nCe projet a déjà une préparation engagée ou validée. Modifiez-le dans le parcours existant ; vos acquis restent conservés.\n\nVous\n\nProjet fictif pour retouches locales\n\nSYNA · Mémoire du projet\n\nMessage exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.\n\nVous\n\nRetire la fermeture des réservations le 2026-12-25\n\nSYNA · Mémoire du projet\n\nVérifiez les dates inclusives et le fuseau avant accord gratuit. Seules les dates désignées seront ajoutées ou retirées des fermetures exceptionnelles. Les autres fermetures, horaires hebdomadaires et réservations clientes sont conservés ; retirer une fermeture ne garantit pas une disponibilité.\n\nMessage enregistré. Demandez le devis pour une réponse de SYNA.\n\nDécrivez votre projet ou posez votre question à SYNA\nLien / photo\nEnregistrer\nVoir le devis de la réponse de SYNA\nVotre fiche commune et ses corrections",
+      "capture": "encre-ordinateur-bookingClosuresRemove.png",
+      "status": "BLOCKED_UI_CARD_NOT_INTEGRATED"
+    },
+    {
+      "label": "encre-telephone-bookingHours",
+      "request": "Change les horaires réservables du mardi de 9h à 12h et de 14h à 18h",
+      "projectId": "zcwi9upcyj69bep7",
+      "conversationId": "ui5plpf9xdwrz53x",
+      "backendStatus": 200,
+      "presentation": {
+        "schema": "syna-booking-hours-1",
+        "state": "proposed",
+        "projectId": "zcwi9upcyj69bep7",
+        "nativeHref": "/studio/zcwi9upcyj69bep7/rendez-vous",
+        "message": "Vérifiez les plages réservables avant/après pour ce jour, chaque semaine dans le fuseau natif. Après accord gratuit, seule cette journée de configuration sera enregistrée ;profil, autres jours et rendez-vous conservés.",
+        "recurrence": "weekly",
+        "confirmationRequired": true,
+        "financialConsent": false,
+        "costEur": 0,
+        "providerCalls": 0,
+        "actionsExecuted": false,
+        "publication": false,
+        "kind": "salon",
+        "timezone": "Europe/Paris",
+        "day": "tue",
+        "dayLabel": "mardi",
+        "diff": {
+          "before": "",
+          "after": "09:00-12:00, 14:00-18:00"
+        },
+        "proposalId": "ho8tsgi8ioxrouoj",
+        "sourceVersionId": "th828z9cfbykq1sm",
+        "warnings": [
+          "Ces plages hebdomadaires bornent les réservations. Les règles des prestations et intervenants continuent de limiter les créneaux effectifs ; aucune disponibilité en temps réel n’est annoncée. Les rendez-vous déjà confirmés conservent leur horaire, prix et durée."
+        ]
+      },
+      "waitMs": 17020,
+      "confirmButtons": 0,
+      "quoteButtons": 1,
+      "nativeUnchanged": true,
+      "panelText": "Syna\nune mémoire pour tout le Studio\nCommande SYNA ou commande d'affichage\n\nSYNA · VOTRE PROJET, UNE CONVERSATION\n\nSYNA\n\nJe suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût.\n\nVos choix restent les vôtres. Aucune publication automatique.\n\nVotre prochain message concerne cet écran : rendez-vous\n\nAucun objet désigné. SYNA demandera une précision si nécessaire.\n\nRepère seulement : aucune génération ni modification.\n\nCe projet a déjà une préparation engagée ou validée. Modifiez-le dans le parcours existant ; vos acquis restent conservés.\n\nVous\n\nProjet fictif pour retouches locales\n\nSYNA · Mémoire du projet\n\nMessage exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.\n\nVous\n\nChange les horaires réservables du mardi de 9h à 12h et de 14h à 18h\n\nSYNA · Mémoire du projet\n\nVérifiez les plages réservables avant/après pour ce jour, chaque semaine dans le fuseau natif. Après accord gratuit, seule cette journée de configuration sera enregistrée ;profil, autres jours et rendez-vous conservés.\n\nMessage enregistré. Demandez le devis pour une réponse de SYNA.\n\nDécrivez votre projet ou posez votre question à SYNA\nLien / photo\nEnregistrer\nVoir le devis de la réponse de SYNA\nVotre fiche commune et ses corrections",
+      "capture": "encre-telephone-bookingHours.png",
+      "status": "BLOCKED_UI_CARD_NOT_INTEGRATED"
+    },
+    {
+      "label": "encre-telephone-restaurantSettings",
+      "request": "Mets les créneaux de réservation du déjeuner à 12h15 et 13h15",
+      "projectId": "5osjujfynl0oulow",
+      "conversationId": "lp3qda0r4zku6hq0",
+      "backendStatus": 200,
+      "presentation": {
+        "schema": "syna-restaurant-settings-1",
+        "state": "proposed",
+        "projectId": "5osjujfynl0oulow",
+        "nativeHref": "/studio/5osjujfynl0oulow/rendez-vous",
+        "message": "Vérifiez ce réglage de réservation récurrent du restaurant avant accord gratuit. Les créneaux du repas concernent tous les jours ouverts ; aucune réservation cliente n’est créée, déplacée ou annulée.",
+        "appliesTo": "recurring_configuration_not_live_availability",
+        "confirmationRequired": true,
+        "financialConsent": false,
+        "costEur": 0,
+        "providerCalls": 0,
+        "actionsExecuted": false,
+        "publication": false,
+        "field": "lunchSlots",
+        "timezone": "Europe/Paris",
+        "diff": {
+          "before": "12:00, 12:30, 13:00",
+          "after": "12:15, 13:15"
+        },
+        "display": {
+          "before": "12:00, 12:30, 13:00",
+          "after": "12:15, 13:15"
+        },
+        "proposalId": "aqxsv01fop8v3k7z",
+        "sourceVersionId": "x9053ckoqahluzfj",
+        "warnings": [
+          "Les réservations confirmées conservent leur date, heure et nombre de couverts. La capacité, les autres services, le profil et le mode de réservation restent conservés. Ceci ne prouve pas une disponibilité en temps réel."
+        ]
+      },
+      "waitMs": 0,
+      "confirmButtons": 0,
+      "quoteButtons": 1,
+      "nativeUnchanged": true,
+      "panelText": "Syna\nune mémoire pour tout le Studio\nCommande SYNA ou commande d'affichage\n\nSYNA · VOTRE PROJET, UNE CONVERSATION\n\nSYNA\n\nJe suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût.\n\nVos choix restent les vôtres. Aucune publication automatique.\n\nVotre prochain message concerne cet écran : rendez-vous\n\nAucun objet désigné. SYNA demandera une précision si nécessaire.\n\nRepère seulement : aucune génération ni modification.\n\nCe projet a déjà une préparation engagée ou validée. Modifiez-le dans le parcours existant ; vos acquis restent conservés.\n\nVous\n\nProjet fictif pour retouches locales\n\nSYNA · Mémoire du projet\n\nMessage exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.\n\nVous\n\nMets les créneaux de réservation du déjeuner à 12h15 et 13h15\n\nSYNA · Mémoire du projet\n\nVérifiez ce réglage de réservation récurrent du restaurant avant accord gratuit. Les créneaux du repas concernent tous les jours ouverts ; aucune réservation cliente n’est créée, déplacée ou annulée.\n\nMessage enregistré. Demandez le devis pour une réponse de SYNA.\n\nDécrivez votre projet ou posez votre question à SYNA\nLien / photo\nEnregistrer\nVoir le devis de la réponse de SYNA\nVotre fiche commune et ses corrections",
+      "capture": "encre-telephone-restaurantSettings.png",
+      "status": "BLOCKED_UI_CARD_NOT_INTEGRATED"
+    },
+    {
+      "label": "encre-telephone-bookingClosures",
+      "request": "Ferme les réservations le 2026-12-25",
+      "projectId": "ahkcddn05xmpvo38",
+      "conversationId": "h6ym7g14d8rrmnhs",
+      "backendStatus": 200,
+      "presentation": {
+        "schema": "syna-booking-closures-1",
+        "state": "proposed",
+        "projectId": "ahkcddn05xmpvo38",
+        "nativeHref": "/studio/ahkcddn05xmpvo38/rendez-vous",
+        "message": "Vérifiez les dates inclusives et le fuseau avant accord gratuit. Seules les dates désignées seront ajoutées ou retirées des fermetures exceptionnelles. Les autres fermetures, horaires hebdomadaires et réservations clientes sont conservés ; retirer une fermeture ne garantit pas une disponibilité.",
+        "confirmationRequired": true,
+        "financialConsent": false,
+        "costEur": 0,
+        "providerCalls": 0,
+        "publication": false,
+        "actionsExecuted": false,
+        "operation": "add",
+        "kind": "cabinet",
+        "timezone": "Europe/Paris",
+        "dates": {
+          "start": "2026-12-25",
+          "end": "2026-12-25",
+          "inclusive": true
+        },
+        "diff": {
+          "before": "2026-11-20",
+          "after": "2026-11-20, 2026-12-25"
+        },
+        "proposalId": "1fi3zlu02cet3hcn",
+        "sourceVersionId": "svd3qr67t7dc5g5f",
+        "warnings": [
+          "Période inclusive, dates locales du moteur natif ; horaires hebdomadaires et autres fermetures acquises conservés. Les réservations confirmées ne sont ni déplacées ni annulées. Pas de disponibilité en temps réel ni activation du site."
+        ]
+      },
+      "waitMs": 0,
+      "confirmButtons": 0,
+      "quoteButtons": 1,
+      "nativeUnchanged": true,
+      "panelText": "Syna\nune mémoire pour tout le Studio\nCommande SYNA ou commande d'affichage\n\nSYNA · VOTRE PROJET, UNE CONVERSATION\n\nSYNA\n\nJe suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût.\n\nVos choix restent les vôtres. Aucune publication automatique.\n\nVotre prochain message concerne cet écran : rendez-vous\n\nAucun objet désigné. SYNA demandera une précision si nécessaire.\n\nRepère seulement : aucune génération ni modification.\n\nCe projet a déjà une préparation engagée ou validée. Modifiez-le dans le parcours existant ; vos acquis restent conservés.\n\nVous\n\nProjet fictif pour retouches locales\n\nSYNA · Mémoire du projet\n\nMessage exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.\n\nVous\n\nFerme les réservations le 2026-12-25\n\nSYNA · Mémoire du projet\n\nVérifiez les dates inclusives et le fuseau avant accord gratuit. Seules les dates désignées seront ajoutées ou retirées des fermetures exceptionnelles. Les autres fermetures, horaires hebdomadaires et réservations clientes sont conservés ; retirer une fermeture ne garantit pas une disponibilité.\n\nMessage enregistré. Demandez le devis pour une réponse de SYNA.\n\nDécrivez votre projet ou posez votre question à SYNA\nLien / photo\nEnregistrer\nVoir le devis de la réponse de SYNA\nVotre fiche commune et ses corrections",
+      "capture": "encre-telephone-bookingClosures.png",
+      "status": "BLOCKED_UI_CARD_NOT_INTEGRATED"
+    },
+    {
+      "label": "encre-telephone-bookingClosuresRemove",
+      "request": "Retire la fermeture des réservations le 2026-12-25",
+      "projectId": "a9trgngkglxa07kp",
+      "conversationId": "xqdw9rumna73ja55",
+      "backendStatus": 200,
+      "presentation": {
+        "schema": "syna-booking-closures-1",
+        "state": "proposed",
+        "projectId": "a9trgngkglxa07kp",
+        "nativeHref": "/studio/a9trgngkglxa07kp/rendez-vous",
+        "message": "Vérifiez les dates inclusives et le fuseau avant accord gratuit. Seules les dates désignées seront ajoutées ou retirées des fermetures exceptionnelles. Les autres fermetures, horaires hebdomadaires et réservations clientes sont conservés ; retirer une fermeture ne garantit pas une disponibilité.",
+        "confirmationRequired": true,
+        "financialConsent": false,
+        "costEur": 0,
+        "providerCalls": 0,
+        "publication": false,
+        "actionsExecuted": false,
+        "operation": "remove",
+        "kind": "restaurant",
+        "timezone": "Europe/Paris",
+        "dates": {
+          "start": "2026-12-25",
+          "end": "2026-12-25",
+          "inclusive": true
+        },
+        "diff": {
+          "before": "2026-12-25",
+          "after": ""
+        },
+        "proposalId": "c9bnsho3o57wcrdn",
+        "sourceVersionId": "tkpl4dbd4prirraq",
+        "warnings": [
+          "Période inclusive, dates locales du moteur natif ; horaires hebdomadaires et autres fermetures acquises conservés. Les réservations confirmées ne sont ni déplacées ni annulées. Pas de disponibilité en temps réel ni activation du site."
+        ]
+      },
+      "waitMs": 0,
+      "confirmButtons": 0,
+      "quoteButtons": 1,
+      "nativeUnchanged": true,
+      "panelText": "Syna\nune mémoire pour tout le Studio\nCommande SYNA ou commande d'affichage\n\nSYNA · VOTRE PROJET, UNE CONVERSATION\n\nSYNA\n\nJe suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût.\n\nVos choix restent les vôtres. Aucune publication automatique.\n\nVotre prochain message concerne cet écran : rendez-vous\n\nAucun objet désigné. SYNA demandera une précision si nécessaire.\n\nRepère seulement : aucune génération ni modification.\n\nCe projet a déjà une préparation engagée ou validée. Modifiez-le dans le parcours existant ; vos acquis restent conservés.\n\nVous\n\nProjet fictif pour retouches locales\n\nSYNA · Mémoire du projet\n\nMessage exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.\n\nVous\n\nRetire la fermeture des réservations le 2026-12-25\n\nSYNA · Mémoire du projet\n\nVérifiez les dates inclusives et le fuseau avant accord gratuit. Seules les dates désignées seront ajoutées ou retirées des fermetures exceptionnelles. Les autres fermetures, horaires hebdomadaires et réservations clientes sont conservés ; retirer une fermeture ne garantit pas une disponibilité.\n\nMessage enregistré. Demandez le devis pour une réponse de SYNA.\n\nDécrivez votre projet ou posez votre question à SYNA\nLien / photo\nEnregistrer\nVoir le devis de la réponse de SYNA\nVotre fiche commune et ses corrections",
+      "capture": "encre-telephone-bookingClosuresRemove.png",
+      "status": "BLOCKED_UI_CARD_NOT_INTEGRATED"
+    },
+    {
+      "label": "plein-ordinateur-bookingHours",
+      "request": "Change les horaires réservables du mardi de 9h à 12h et de 14h à 18h",
+      "projectId": "oenbpnacrrgmj9gn",
+      "conversationId": "pzettei7coyquc2o",
+      "backendStatus": 200,
+      "presentation": {
+        "schema": "syna-booking-hours-1",
+        "state": "proposed",
+        "projectId": "oenbpnacrrgmj9gn",
+        "nativeHref": "/studio/oenbpnacrrgmj9gn/rendez-vous",
+        "message": "Vérifiez les plages réservables avant/après pour ce jour, chaque semaine dans le fuseau natif. Après accord gratuit, seule cette journée de configuration sera enregistrée ;profil, autres jours et rendez-vous conservés.",
+        "recurrence": "weekly",
+        "confirmationRequired": true,
+        "financialConsent": false,
+        "costEur": 0,
+        "providerCalls": 0,
+        "actionsExecuted": false,
+        "publication": false,
+        "kind": "salon",
+        "timezone": "Europe/Paris",
+        "day": "tue",
+        "dayLabel": "mardi",
+        "diff": {
+          "before": "",
+          "after": "09:00-12:00, 14:00-18:00"
+        },
+        "proposalId": "scl0g537zl2e94b3",
+        "sourceVersionId": "1vpc59ryxftvx9qr",
+        "warnings": [
+          "Ces plages hebdomadaires bornent les réservations. Les règles des prestations et intervenants continuent de limiter les créneaux effectifs ; aucune disponibilité en temps réel n’est annoncée. Les rendez-vous déjà confirmés conservent leur horaire, prix et durée."
+        ]
+      },
+      "waitMs": 17020,
+      "confirmButtons": 0,
+      "quoteButtons": 1,
+      "nativeUnchanged": true,
+      "panelText": "Syna\nune mémoire pour tout le Studio\n\nSYNA · VOTRE PROJET, UNE CONVERSATION\n\nSYNA\n\nJe suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût.\n\nVos choix restent les vôtres. Aucune publication automatique.\n\nVotre prochain message concerne cet écran : rendez-vous\n\nAucun objet désigné. SYNA demandera une précision si nécessaire.\n\nRepère seulement : aucune génération ni modification.\n\nCe projet a déjà une préparation engagée ou validée. Modifiez-le dans le parcours existant ; vos acquis restent conservés.\n\nVous\n\nProjet fictif pour retouches locales\n\nSYNA · Mémoire du projet\n\nMessage exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.\n\nVous\n\nChange les horaires réservables du mardi de 9h à 12h et de 14h à 18h\n\nSYNA · Mémoire du projet\n\nVérifiez les plages réservables avant/après pour ce jour, chaque semaine dans le fuseau natif. Après accord gratuit, seule cette journée de configuration sera enregistrée ;profil, autres jours et rendez-vous conservés.\n\nMessage enregistré. Demandez le devis pour une réponse de SYNA.\n\nDécrivez votre projet ou posez votre question à SYNA\nLien / photo\nEnregistrer\nVoir le devis de la réponse de SYNA\nVotre fiche commune et ses corrections",
+      "capture": "plein-ordinateur-bookingHours.png",
+      "status": "BLOCKED_UI_CARD_NOT_INTEGRATED"
+    },
+    {
+      "label": "plein-ordinateur-restaurantSettings",
+      "request": "Mets les créneaux de réservation du déjeuner à 12h15 et 13h15",
+      "projectId": "8bjx1qntv6ugsxly",
+      "conversationId": "i2kqufq6y8rd4yxk",
+      "backendStatus": 200,
+      "presentation": {
+        "schema": "syna-restaurant-settings-1",
+        "state": "proposed",
+        "projectId": "8bjx1qntv6ugsxly",
+        "nativeHref": "/studio/8bjx1qntv6ugsxly/rendez-vous",
+        "message": "Vérifiez ce réglage de réservation récurrent du restaurant avant accord gratuit. Les créneaux du repas concernent tous les jours ouverts ; aucune réservation cliente n’est créée, déplacée ou annulée.",
+        "appliesTo": "recurring_configuration_not_live_availability",
+        "confirmationRequired": true,
+        "financialConsent": false,
+        "costEur": 0,
+        "providerCalls": 0,
+        "actionsExecuted": false,
+        "publication": false,
+        "field": "lunchSlots",
+        "timezone": "Europe/Paris",
+        "diff": {
+          "before": "12:00, 12:30, 13:00",
+          "after": "12:15, 13:15"
+        },
+        "display": {
+          "before": "12:00, 12:30, 13:00",
+          "after": "12:15, 13:15"
+        },
+        "proposalId": "lr55rkki6ulc44nv",
+        "sourceVersionId": "6j9dljbocmhcyuvz",
+        "warnings": [
+          "Les réservations confirmées conservent leur date, heure et nombre de couverts. La capacité, les autres services, le profil et le mode de réservation restent conservés. Ceci ne prouve pas une disponibilité en temps réel."
+        ]
+      },
+      "waitMs": 0,
+      "confirmButtons": 0,
+      "quoteButtons": 1,
+      "nativeUnchanged": true,
+      "panelText": "Syna\nune mémoire pour tout le Studio\n\nSYNA · VOTRE PROJET, UNE CONVERSATION\n\nSYNA\n\nJe suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût.\n\nVos choix restent les vôtres. Aucune publication automatique.\n\nVotre prochain message concerne cet écran : rendez-vous\n\nAucun objet désigné. SYNA demandera une précision si nécessaire.\n\nRepère seulement : aucune génération ni modification.\n\nCe projet a déjà une préparation engagée ou validée. Modifiez-le dans le parcours existant ; vos acquis restent conservés.\n\nVous\n\nProjet fictif pour retouches locales\n\nSYNA · Mémoire du projet\n\nMessage exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.\n\nVous\n\nMets les créneaux de réservation du déjeuner à 12h15 et 13h15\n\nSYNA · Mémoire du projet\n\nVérifiez ce réglage de réservation récurrent du restaurant avant accord gratuit. Les créneaux du repas concernent tous les jours ouverts ; aucune réservation cliente n’est créée, déplacée ou annulée.\n\nMessage enregistré. Demandez le devis pour une réponse de SYNA.\n\nDécrivez votre projet ou posez votre question à SYNA\nLien / photo\nEnregistrer\nVoir le devis de la réponse de SYNA\nVotre fiche commune et ses corrections",
+      "capture": "plein-ordinateur-restaurantSettings.png",
+      "status": "BLOCKED_UI_CARD_NOT_INTEGRATED"
+    },
+    {
+      "label": "plein-ordinateur-bookingClosures",
+      "request": "Ferme les réservations le 2026-12-25",
+      "projectId": "x18nsgyzr2lr0mqw",
+      "conversationId": "cfnwqdkpr8pr2een",
+      "backendStatus": 200,
+      "presentation": {
+        "schema": "syna-booking-closures-1",
+        "state": "proposed",
+        "projectId": "x18nsgyzr2lr0mqw",
+        "nativeHref": "/studio/x18nsgyzr2lr0mqw/rendez-vous",
+        "message": "Vérifiez les dates inclusives et le fuseau avant accord gratuit. Seules les dates désignées seront ajoutées ou retirées des fermetures exceptionnelles. Les autres fermetures, horaires hebdomadaires et réservations clientes sont conservés ; retirer une fermeture ne garantit pas une disponibilité.",
+        "confirmationRequired": true,
+        "financialConsent": false,
+        "costEur": 0,
+        "providerCalls": 0,
+        "publication": false,
+        "actionsExecuted": false,
+        "operation": "add",
+        "kind": "cabinet",
+        "timezone": "Europe/Paris",
+        "dates": {
+          "start": "2026-12-25",
+          "end": "2026-12-25",
+          "inclusive": true
+        },
+        "diff": {
+          "before": "2026-11-20",
+          "after": "2026-11-20, 2026-12-25"
+        },
+        "proposalId": "szylymhct7ccz0rq",
+        "sourceVersionId": "0nl59gsonlek2may",
+        "warnings": [
+          "Période inclusive, dates locales du moteur natif ; horaires hebdomadaires et autres fermetures acquises conservés. Les réservations confirmées ne sont ni déplacées ni annulées. Pas de disponibilité en temps réel ni activation du site."
+        ]
+      },
+      "waitMs": 0,
+      "confirmButtons": 0,
+      "quoteButtons": 1,
+      "nativeUnchanged": true,
+      "panelText": "Syna\nune mémoire pour tout le Studio\n\nSYNA · VOTRE PROJET, UNE CONVERSATION\n\nSYNA\n\nJe suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût.\n\nVos choix restent les vôtres. Aucune publication automatique.\n\nVotre prochain message concerne cet écran : rendez-vous\n\nAucun objet désigné. SYNA demandera une précision si nécessaire.\n\nRepère seulement : aucune génération ni modification.\n\nCe projet a déjà une préparation engagée ou validée. Modifiez-le dans le parcours existant ; vos acquis restent conservés.\n\nVous\n\nProjet fictif pour retouches locales\n\nSYNA · Mémoire du projet\n\nMessage exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.\n\nVous\n\nFerme les réservations le 2026-12-25\n\nSYNA · Mémoire du projet\n\nVérifiez les dates inclusives et le fuseau avant accord gratuit. Seules les dates désignées seront ajoutées ou retirées des fermetures exceptionnelles. Les autres fermetures, horaires hebdomadaires et réservations clientes sont conservés ; retirer une fermeture ne garantit pas une disponibilité.\n\nMessage enregistré. Demandez le devis pour une réponse de SYNA.\n\nDécrivez votre projet ou posez votre question à SYNA\nLien / photo\nEnregistrer\nVoir le devis de la réponse de SYNA\nVotre fiche commune et ses corrections",
+      "capture": "plein-ordinateur-bookingClosures.png",
+      "status": "BLOCKED_UI_CARD_NOT_INTEGRATED"
+    },
+    {
+      "label": "plein-ordinateur-bookingClosuresRemove",
+      "request": "Retire la fermeture des réservations le 2026-12-25",
+      "projectId": "orqwgkppsxu60m4z",
+      "conversationId": "9edz928nho59n3bt",
+      "backendStatus": 200,
+      "presentation": {
+        "schema": "syna-booking-closures-1",
+        "state": "proposed",
+        "projectId": "orqwgkppsxu60m4z",
+        "nativeHref": "/studio/orqwgkppsxu60m4z/rendez-vous",
+        "message": "Vérifiez les dates inclusives et le fuseau avant accord gratuit. Seules les dates désignées seront ajoutées ou retirées des fermetures exceptionnelles. Les autres fermetures, horaires hebdomadaires et réservations clientes sont conservés ; retirer une fermeture ne garantit pas une disponibilité.",
+        "confirmationRequired": true,
+        "financialConsent": false,
+        "costEur": 0,
+        "providerCalls": 0,
+        "publication": false,
+        "actionsExecuted": false,
+        "operation": "remove",
+        "kind": "restaurant",
+        "timezone": "Europe/Paris",
+        "dates": {
+          "start": "2026-12-25",
+          "end": "2026-12-25",
+          "inclusive": true
+        },
+        "diff": {
+          "before": "2026-12-25",
+          "after": ""
+        },
+        "proposalId": "zbnrinnqbmkybagf",
+        "sourceVersionId": "v5tm8cewtyxwna9w",
+        "warnings": [
+          "Période inclusive, dates locales du moteur natif ; horaires hebdomadaires et autres fermetures acquises conservés. Les réservations confirmées ne sont ni déplacées ni annulées. Pas de disponibilité en temps réel ni activation du site."
+        ]
+      },
+      "waitMs": 0,
+      "confirmButtons": 0,
+      "quoteButtons": 1,
+      "nativeUnchanged": true,
+      "panelText": "Syna\nune mémoire pour tout le Studio\n\nSYNA · VOTRE PROJET, UNE CONVERSATION\n\nSYNA\n\nJe suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût.\n\nVos choix restent les vôtres. Aucune publication automatique.\n\nVotre prochain message concerne cet écran : rendez-vous\n\nAucun objet désigné. SYNA demandera une précision si nécessaire.\n\nRepère seulement : aucune génération ni modification.\n\nCe projet a déjà une préparation engagée ou validée. Modifiez-le dans le parcours existant ; vos acquis restent conservés.\n\nVous\n\nProjet fictif pour retouches locales\n\nSYNA · Mémoire du projet\n\nMessage exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.\n\nVous\n\nRetire la fermeture des réservations le 2026-12-25\n\nSYNA · Mémoire du projet\n\nVérifiez les dates inclusives et le fuseau avant accord gratuit. Seules les dates désignées seront ajoutées ou retirées des fermetures exceptionnelles. Les autres fermetures, horaires hebdomadaires et réservations clientes sont conservés ; retirer une fermeture ne garantit pas une disponibilité.\n\nMessage enregistré. Demandez le devis pour une réponse de SYNA.\n\nDécrivez votre projet ou posez votre question à SYNA\nLien / photo\nEnregistrer\nVoir le devis de la réponse de SYNA\nVotre fiche commune et ses corrections",
+      "capture": "plein-ordinateur-bookingClosuresRemove.png",
+      "status": "BLOCKED_UI_CARD_NOT_INTEGRATED"
+    },
+    {
+      "label": "plein-telephone-bookingHours",
+      "request": "Change les horaires réservables du mardi de 9h à 12h et de 14h à 18h",
+      "projectId": "kz8zxxosj6fr4hb2",
+      "conversationId": "ggzwy5dg9oc4swi6",
+      "backendStatus": 200,
+      "presentation": {
+        "schema": "syna-booking-hours-1",
+        "state": "proposed",
+        "projectId": "kz8zxxosj6fr4hb2",
+        "nativeHref": "/studio/kz8zxxosj6fr4hb2/rendez-vous",
+        "message": "Vérifiez les plages réservables avant/après pour ce jour, chaque semaine dans le fuseau natif. Après accord gratuit, seule cette journée de configuration sera enregistrée ;profil, autres jours et rendez-vous conservés.",
+        "recurrence": "weekly",
+        "confirmationRequired": true,
+        "financialConsent": false,
+        "costEur": 0,
+        "providerCalls": 0,
+        "actionsExecuted": false,
+        "publication": false,
+        "kind": "salon",
+        "timezone": "Europe/Paris",
+        "day": "tue",
+        "dayLabel": "mardi",
+        "diff": {
+          "before": "",
+          "after": "09:00-12:00, 14:00-18:00"
+        },
+        "proposalId": "32cude4kqhnxr96s",
+        "sourceVersionId": "xyk3v5vzawi9b7ih",
+        "warnings": [
+          "Ces plages hebdomadaires bornent les réservations. Les règles des prestations et intervenants continuent de limiter les créneaux effectifs ; aucune disponibilité en temps réel n’est annoncée. Les rendez-vous déjà confirmés conservent leur horaire, prix et durée."
+        ]
+      },
+      "waitMs": 17020,
+      "confirmButtons": 0,
+      "quoteButtons": 1,
+      "nativeUnchanged": true,
+      "panelText": "Syna\nune mémoire pour tout le Studio\n\nSYNA · VOTRE PROJET, UNE CONVERSATION\n\nSYNA\n\nJe suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût.\n\nVos choix restent les vôtres. Aucune publication automatique.\n\nVotre prochain message concerne cet écran : rendez-vous\n\nAucun objet désigné. SYNA demandera une précision si nécessaire.\n\nRepère seulement : aucune génération ni modification.\n\nCe projet a déjà une préparation engagée ou validée. Modifiez-le dans le parcours existant ; vos acquis restent conservés.\n\nVous\n\nProjet fictif pour retouches locales\n\nSYNA · Mémoire du projet\n\nMessage exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.\n\nVous\n\nChange les horaires réservables du mardi de 9h à 12h et de 14h à 18h\n\nSYNA · Mémoire du projet\n\nVérifiez les plages réservables avant/après pour ce jour, chaque semaine dans le fuseau natif. Après accord gratuit, seule cette journée de configuration sera enregistrée ;profil, autres jours et rendez-vous conservés.\n\nMessage enregistré. Demandez le devis pour une réponse de SYNA.\n\nDécrivez votre projet ou posez votre question à SYNA\nLien / photo\nEnregistrer\nVoir le devis de la réponse de SYNA\nVotre fiche commune et ses corrections",
+      "capture": "plein-telephone-bookingHours.png",
+      "status": "BLOCKED_UI_CARD_NOT_INTEGRATED"
+    },
+    {
+      "label": "plein-telephone-restaurantSettings",
+      "request": "Mets les créneaux de réservation du déjeuner à 12h15 et 13h15",
+      "projectId": "4ft16nvfpwbfunjn",
+      "conversationId": "cp5xszxh0gh3x6oq",
+      "backendStatus": 200,
+      "presentation": {
+        "schema": "syna-restaurant-settings-1",
+        "state": "proposed",
+        "projectId": "4ft16nvfpwbfunjn",
+        "nativeHref": "/studio/4ft16nvfpwbfunjn/rendez-vous",
+        "message": "Vérifiez ce réglage de réservation récurrent du restaurant avant accord gratuit. Les créneaux du repas concernent tous les jours ouverts ; aucune réservation cliente n’est créée, déplacée ou annulée.",
+        "appliesTo": "recurring_configuration_not_live_availability",
+        "confirmationRequired": true,
+        "financialConsent": false,
+        "costEur": 0,
+        "providerCalls": 0,
+        "actionsExecuted": false,
+        "publication": false,
+        "field": "lunchSlots",
+        "timezone": "Europe/Paris",
+        "diff": {
+          "before": "12:00, 12:30, 13:00",
+          "after": "12:15, 13:15"
+        },
+        "display": {
+          "before": "12:00, 12:30, 13:00",
+          "after": "12:15, 13:15"
+        },
+        "proposalId": "dbwb9x7dvy0amad8",
+        "sourceVersionId": "dckvg281nsbfurtr",
+        "warnings": [
+          "Les réservations confirmées conservent leur date, heure et nombre de couverts. La capacité, les autres services, le profil et le mode de réservation restent conservés. Ceci ne prouve pas une disponibilité en temps réel."
+        ]
+      },
+      "waitMs": 0,
+      "confirmButtons": 0,
+      "quoteButtons": 1,
+      "nativeUnchanged": true,
+      "panelText": "Syna\nune mémoire pour tout le Studio\n\nSYNA · VOTRE PROJET, UNE CONVERSATION\n\nSYNA\n\nJe suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût.\n\nVos choix restent les vôtres. Aucune publication automatique.\n\nVotre prochain message concerne cet écran : rendez-vous\n\nAucun objet désigné. SYNA demandera une précision si nécessaire.\n\nRepère seulement : aucune génération ni modification.\n\nCe projet a déjà une préparation engagée ou validée. Modifiez-le dans le parcours existant ; vos acquis restent conservés.\n\nVous\n\nProjet fictif pour retouches locales\n\nSYNA · Mémoire du projet\n\nMessage exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.\n\nVous\n\nMets les créneaux de réservation du déjeuner à 12h15 et 13h15\n\nSYNA · Mémoire du projet\n\nVérifiez ce réglage de réservation récurrent du restaurant avant accord gratuit. Les créneaux du repas concernent tous les jours ouverts ; aucune réservation cliente n’est créée, déplacée ou annulée.\n\nMessage enregistré. Demandez le devis pour une réponse de SYNA.\n\nDécrivez votre projet ou posez votre question à SYNA\nLien / photo\nEnregistrer\nVoir le devis de la réponse de SYNA\nVotre fiche commune et ses corrections",
+      "capture": "plein-telephone-restaurantSettings.png",
+      "status": "BLOCKED_UI_CARD_NOT_INTEGRATED"
+    },
+    {
+      "label": "plein-telephone-bookingClosures",
+      "request": "Ferme les réservations le 2026-12-25",
+      "projectId": "0cvq3uk4e2qw0dzo",
+      "conversationId": "4k7hqj9u1s8lpt3h",
+      "backendStatus": 200,
+      "presentation": {
+        "schema": "syna-booking-closures-1",
+        "state": "proposed",
+        "projectId": "0cvq3uk4e2qw0dzo",
+        "nativeHref": "/studio/0cvq3uk4e2qw0dzo/rendez-vous",
+        "message": "Vérifiez les dates inclusives et le fuseau avant accord gratuit. Seules les dates désignées seront ajoutées ou retirées des fermetures exceptionnelles. Les autres fermetures, horaires hebdomadaires et réservations clientes sont conservés ; retirer une fermeture ne garantit pas une disponibilité.",
+        "confirmationRequired": true,
+        "financialConsent": false,
+        "costEur": 0,
+        "providerCalls": 0,
+        "publication": false,
+        "actionsExecuted": false,
+        "operation": "add",
+        "kind": "cabinet",
+        "timezone": "Europe/Paris",
+        "dates": {
+          "start": "2026-12-25",
+          "end": "2026-12-25",
+          "inclusive": true
+        },
+        "diff": {
+          "before": "2026-11-20",
+          "after": "2026-11-20, 2026-12-25"
+        },
+        "proposalId": "vzk32zwvmp5939mt",
+        "sourceVersionId": "1qjmu7wkkvyi2wgv",
+        "warnings": [
+          "Période inclusive, dates locales du moteur natif ; horaires hebdomadaires et autres fermetures acquises conservés. Les réservations confirmées ne sont ni déplacées ni annulées. Pas de disponibilité en temps réel ni activation du site."
+        ]
+      },
+      "waitMs": 0,
+      "confirmButtons": 0,
+      "quoteButtons": 1,
+      "nativeUnchanged": true,
+      "panelText": "Syna\nune mémoire pour tout le Studio\n\nSYNA · VOTRE PROJET, UNE CONVERSATION\n\nSYNA\n\nJe suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût.\n\nVos choix restent les vôtres. Aucune publication automatique.\n\nVotre prochain message concerne cet écran : rendez-vous\n\nAucun objet désigné. SYNA demandera une précision si nécessaire.\n\nRepère seulement : aucune génération ni modification.\n\nCe projet a déjà une préparation engagée ou validée. Modifiez-le dans le parcours existant ; vos acquis restent conservés.\n\nVous\n\nProjet fictif pour retouches locales\n\nSYNA · Mémoire du projet\n\nMessage exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.\n\nVous\n\nFerme les réservations le 2026-12-25\n\nSYNA · Mémoire du projet\n\nVérifiez les dates inclusives et le fuseau avant accord gratuit. Seules les dates désignées seront ajoutées ou retirées des fermetures exceptionnelles. Les autres fermetures, horaires hebdomadaires et réservations clientes sont conservés ; retirer une fermeture ne garantit pas une disponibilité.\n\nMessage enregistré. Demandez le devis pour une réponse de SYNA.\n\nDécrivez votre projet ou posez votre question à SYNA\nLien / photo\nEnregistrer\nVoir le devis de la réponse de SYNA\nVotre fiche commune et ses corrections",
+      "capture": "plein-telephone-bookingClosures.png",
+      "status": "BLOCKED_UI_CARD_NOT_INTEGRATED"
+    },
+    {
+      "label": "plein-telephone-bookingClosuresRemove",
+      "request": "Retire la fermeture des réservations le 2026-12-25",
+      "projectId": "gq6gtc0o2497wyza",
+      "conversationId": "kq6dz4zr7tbxk639",
+      "backendStatus": 200,
+      "presentation": {
+        "schema": "syna-booking-closures-1",
+        "state": "proposed",
+        "projectId": "gq6gtc0o2497wyza",
+        "nativeHref": "/studio/gq6gtc0o2497wyza/rendez-vous",
+        "message": "Vérifiez les dates inclusives et le fuseau avant accord gratuit. Seules les dates désignées seront ajoutées ou retirées des fermetures exceptionnelles. Les autres fermetures, horaires hebdomadaires et réservations clientes sont conservés ; retirer une fermeture ne garantit pas une disponibilité.",
+        "confirmationRequired": true,
+        "financialConsent": false,
+        "costEur": 0,
+        "providerCalls": 0,
+        "publication": false,
+        "actionsExecuted": false,
+        "operation": "remove",
+        "kind": "restaurant",
+        "timezone": "Europe/Paris",
+        "dates": {
+          "start": "2026-12-25",
+          "end": "2026-12-25",
+          "inclusive": true
+        },
+        "diff": {
+          "before": "2026-12-25",
+          "after": ""
+        },
+        "proposalId": "nctiousvvsfch8si",
+        "sourceVersionId": "6z94hwm0f9eo04xi",
+        "warnings": [
+          "Période inclusive, dates locales du moteur natif ; horaires hebdomadaires et autres fermetures acquises conservés. Les réservations confirmées ne sont ni déplacées ni annulées. Pas de disponibilité en temps réel ni activation du site."
+        ]
+      },
+      "waitMs": 0,
+      "confirmButtons": 0,
+      "quoteButtons": 1,
+      "nativeUnchanged": true,
+      "panelText": "Syna\nune mémoire pour tout le Studio\n\nSYNA · VOTRE PROJET, UNE CONVERSATION\n\nSYNA\n\nJe suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût.\n\nVos choix restent les vôtres. Aucune publication automatique.\n\nVotre prochain message concerne cet écran : rendez-vous\n\nAucun objet désigné. SYNA demandera une précision si nécessaire.\n\nRepère seulement : aucune génération ni modification.\n\nCe projet a déjà une préparation engagée ou validée. Modifiez-le dans le parcours existant ; vos acquis restent conservés.\n\nVous\n\nProjet fictif pour retouches locales\n\nSYNA · Mémoire du projet\n\nMessage exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.\n\nVous\n\nRetire la fermeture des réservations le 2026-12-25\n\nSYNA · Mémoire du projet\n\nVérifiez les dates inclusives et le fuseau avant accord gratuit. Seules les dates désignées seront ajoutées ou retirées des fermetures exceptionnelles. Les autres fermetures, horaires hebdomadaires et réservations clientes sont conservés ; retirer une fermeture ne garantit pas une disponibilité.\n\nMessage enregistré. Demandez le devis pour une réponse de SYNA.\n\nDécrivez votre projet ou posez votre question à SYNA\nLien / photo\nEnregistrer\nVoir le devis de la réponse de SYNA\nVotre fiche commune et ses corrections",
+      "capture": "plein-telephone-bookingClosuresRemove.png",
+      "status": "BLOCKED_UI_CARD_NOT_INTEGRATED"
+    }
+  ],
+  "errors": [],
+  "jsErrors": [],
+  "externalAttemptsBlocked": [],
+  "baselinePreserved": true,
+  "before": {
+    "ai_calls": "a5d0bf5cd03ae11a599d61ece997bb57f15d61859ee0935e77b90040db35a0ba",
+    "jobs": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "usage_events": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "ledger": "23a22b24a5a4af51de157edc77c53a8e2ab8f10fa6cdd6f4fcf196edac587c92",
+    "agent_conversation_quotes": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "after": {
+    "ai_calls": "a5d0bf5cd03ae11a599d61ece997bb57f15d61859ee0935e77b90040db35a0ba",
+    "jobs": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "usage_events": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "ledger": "23a22b24a5a4af51de157edc77c53a8e2ab8f10fa6cdd6f4fcf196edac587c92",
+    "agent_conversation_quotes": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  }
+}
