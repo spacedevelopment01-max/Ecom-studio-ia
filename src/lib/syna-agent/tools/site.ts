@@ -6,7 +6,10 @@ import { OpSchema, applyOps, outline, validateSpec, type ThemeOp } from "../../t
 import { assertThemeOperations } from "../../theme/plan-access";
 import { assertSectionGeneration } from "../../theme/custom-access";
 import { projectKind } from "../../theme/project-kind";
-import { getAsset } from "../../library";
+import { one } from "../../db";
+import { assetData, assetUrl, getAsset, saveAsset } from "../../library";
+import { aiSiteMockup, siteMockupMaxMicro } from "../../ai/media-providers";
+import { getStrategyState } from "../../marketing-strategy";
 import { buildShop, themeFileName } from "../../engine/shop";
 import { DIRECTIONS } from "../../theme/directions";
 import { themeRecommendation } from "../../theme/theme-recommendation";
@@ -95,7 +98,7 @@ const applyVersionTool: AgentTool<{ versionId: string; reason?: string }> = {
 
 const mockupsTool: AgentTool<{ directions?: string[]; count?: number }> = {
   name: "site.mockups", module: "site", kind: "generate", needsProject: true,
-  description: "Prépare jusqu'à 3 maquettes COMPLÈTES du site (pages, produits, marque) dans des thèmes différents de la galerie, sans changer le site courant (versions inactives, gratuit, moteur natif). Sans `directions`, prend le thème recommandé et ses alternatives pour ce type de projet. Exige une marque (brand.save ou brand.create). Le client choisit ensuite ; appliquez son choix avec site.use_version.",
+  description: "PROTOTYPES de thèmes de la galerie (pas des maquettes) : prépare jusqu'à 3 versions COMPLÈTES du site (pages, produits, marque) dans des thèmes différents de la galerie, sans changer le site courant (versions inactives, gratuit, moteur natif). Sans `directions`, prend le thème recommandé et ses alternatives pour ce type de projet. Exige une marque (brand.save ou brand.create). Le client choisit ensuite ; appliquez son choix avec site.use_version.",
   args: z.object({ directions: z.array(z.string().max(60)).max(3).optional(), count: z.number().int().min(1).max(3).default(3) }).strict(),
   run: async (ctx, a) => {
     const p = project(ctx);
@@ -166,4 +169,77 @@ const pagesTool: AgentTool<any> = {
   },
 };
 
-export const siteTools: AgentTool[] = [outlineTool, editTool, versionsTool, applyVersionTool, mockupsTool, rebuildTool, pagesTool];
+
+/* ---------- Maquettes du site par l'IA d'images (une planche par direction) ---------- */
+type MockupArgs = { directions: { name: string; style: string }[] };
+
+/** Pages montrées sur la planche, selon l'activité. */
+const MOCKUP_PAGES = {
+  products: ["Accueil", "Fiche produit", "Panier", "Notre histoire", "Questions fréquentes", "Contact"],
+  services: ["Accueil", "Prestations", "Réalisations", "À propos", "Demande de devis ou rendez-vous", "Contact"],
+};
+
+/** Logo validé et photo du produit (références envoyées à l'IA d'images). */
+function mockupReferences(p: any): { logo: Buffer | null; product: Buffer | null; problem: string | null } {
+  const logoId = p.brand?.logo?.assetId as string | undefined;
+  if (!p.brand || !logoId) return { logo: null, product: null, problem: L("L'identité visuelle (logo, couleurs, polices) doit être créée et validée avant les maquettes : lancez brand.create.", "Create the visual identity (logo, colours, fonts) before mockups: run brand.create.") };
+  const la = getAsset(logoId);
+  if (!la || la.project_id !== p.id || la.deleted_at) return { logo: null, product: null, problem: L("Logo introuvable dans les Fichiers : refaites ou validez l'identité visuelle.", "Logo not found.") };
+  const photo = one<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND deleted_at IS NULL AND kind='image' AND role IN ('original','product') ORDER BY created_at ASC LIMIT 1", p.id);
+  const pa = photo ? getAsset(photo.id) : null;
+  return { logo: assetData(la), product: pa ? assetData(pa) : null, problem: null };
+}
+
+function mockupPrompt(p: any, d: { name: string; style: string }): string {
+  const services = p.business === "services";
+  const pages = MOCKUP_PAGES[services ? "services" : "products"];
+  const pal = p.brand?.palette ?? {};
+  const colors = Object.entries(pal).filter(([, v]) => typeof v === "string" && /^#/.test(v as string)).map(([k, v]) => `${k} ${v}`).join(", ");
+  let angle = "";
+  try { const st: any = getStrategyState(p.id); const a = st.active ? st.angles?.find((x: any) => x.id === st.active.angleId) ?? st.active.angle : null; if (a) angle = `Angle marketing choisi : « ${a.title ?? ""} » — accroche « ${a.message ?? a.promise ?? ""} », émotion ${a.emotion ?? ""}.`; } catch { /* sans angle actif */ }
+  const price = p.product?.price?.status === "confirmed" && p.product.price.amount != null ? `${(p.product.price.amount / 100).toFixed(2).replace(".", ",").replace(",00", "")} €` : "";
+  const facts = (p.product?.facts ?? []).filter((f: any) => f.status === "confirmed").map((f: any) => `${f.label} : ${f.value}`).slice(0, 8).join(" ; ");
+  return [
+    `Planche de présentation d'une MAQUETTE DE SITE WEB complète (design UI professionnel, rendu net et lisible), direction graphique « ${d.name} » : ${d.style}.`,
+    `La planche montre côte à côte, en grille sur un fond neutre, les pages suivantes en version ordinateur, chacune avec son nom écrit au-dessus : ${pages.join(", ")}. Chaque page montre son en-tête avec le logo et le menu, ses sections et son pied de page.`,
+    `Marque : « ${p.brand?.name ?? p.name} »${p.brand?.tagline ? `, signature « ${p.brand.tagline} »` : ""}. Le logo fourni en référence est reproduit à l'identique dans l'en-tête de chaque page (aucun autre logo inventé).`,
+    colors ? `Couleurs de l'identité, à respecter strictement : ${colors}.` : "",
+    p.brand?.fonts ? `Polices : titres ${p.brand.fonts.heading}, textes ${p.brand.fonts.body}.` : "",
+    angle,
+    services ? `Activité : ${p.product?.name || p.name}.` : `Produit vendu : ${p.product?.name || p.name}${price ? `, prix ${price}` : ""}. La photo du produit fournie en référence est utilisée telle quelle sur l'accueil et la fiche produit (même produit, mêmes couleurs, rien de redessiné).`,
+    facts ? `Faits confirmés utilisables dans les textes : ${facts}.` : "",
+    "Textes en français, courts et lisibles. Aucun avis client, note, étoile, garantie, promotion, label ou chiffre inventé. Aucune personne reconnaissable. Pas de filigrane.",
+  ].filter(Boolean).join("\n");
+}
+
+const mockupImagesTool: AgentTool<MockupArgs> = {
+  name: "site.mockup_images", module: "site", kind: "generate", needsProject: true,
+  description: "Crée les MAQUETTES du site avec l'IA d'images : pour chaque direction graphique (1 à 3 : name + style décrit), UNE grande planche montrant toutes les pages (accueil, fiche produit, panier, histoire, FAQ, contact — ou prestations, réalisations, devis pour un service) avec le logo, les couleurs et les polices de l'identité et la photo du produit. Payant (budget autorisé). Exige l'identité visuelle validée avec un logo : brand.create d'abord. Le client choisit une maquette ; elle sert ensuite de modèle au code du site.",
+  args: z.object({ directions: z.array(z.object({ name: z.string().min(1).max(60), style: z.string().min(1).max(400) }).strict()).min(1).max(3) }).strict(),
+  estimate: (ctx, a) => {
+    const p: any = project(ctx), refs = mockupReferences(p);
+    if (refs.problem) throw new HttpError(409, refs.problem);
+    const one = siteMockupMaxMicro(refs.product ? 2 : 1);
+    if (one == null) throw new HttpError(409, L("Aucun modèle d'images utilisable pour les maquettes (administration › Médias, usage « texte et logo sur les images »).", "No usable image model for mockups."));
+    return { maxMicro: one * a.directions.length, label: L("maquettes du site", "site mockups") };
+  },
+  run: async (ctx, a) => {
+    const p: any = project(ctx), refs = mockupReferences(p);
+    if (refs.problem) return { ok: false, summary: refs.problem };
+    const out: { n: number; direction: string; assetId: string; href: string }[] = [], failed: string[] = [];
+    for (const [i, d] of a.directions.entries()) {
+      try {
+        const prompt = mockupPrompt(p, d);
+        const img = await aiSiteMockup({ userId: ctx.user.id, projectId: p.id, usageKey: `syna:${ctx.runId}:mockup:${i}:${stableHash("syna-mockup", prompt).slice(0, 12)}` }, { prompt, logo: refs.logo, product: refs.product });
+        const jpeg = img[0] === 0xff && img[1] === 0xd8;
+        const asset: any = await saveAsset({ projectId: p.id, userId: ctx.user.id, data: img, name: `maquette-${i + 1}-${d.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 30)}.${jpeg ? "jpg" : "png"}`, mime: jpeg ? "image/jpeg" : "image/png", role: "mockup", origin: "generated", meta: { synaMockup: { runId: ctx.runId, direction: d } } });
+        out.push({ n: i + 1, direction: d.name, assetId: asset.id, href: assetUrl({ id: asset.id }) });
+      } catch (e: any) { failed.push(`${d.name} : ${short(e?.message, 200)}`); }
+    }
+    remember(p.id, { kind: "artifact", key: `syna.mockup_images.${ctx.runId}`, value: JSON.stringify(out), source: "local", origin: "system" as any });
+    return { ok: out.length > 0, summary: L(`${out.length} maquette(s) créée(s)${failed.length ? ` ; échec : ${failed.join(" | ")}` : ""}. Le client choisit ; rien n'est appliqué au site.`, `${out.length} mockup(s) created.`), data: { mockups: out, failed },
+      changes: out.map((m) => ({ module: "fichiers", object: `maquette ${m.n} — ${m.direction}`, summary: L("planche créée par l'IA d'images", "AI mockup board"), after: m, verified: true })) };
+  },
+};
+
+export const siteTools: AgentTool[] = [outlineTool, editTool, versionsTool, applyVersionTool, mockupImagesTool, mockupsTool, rebuildTool, pagesTool];

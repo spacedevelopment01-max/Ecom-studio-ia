@@ -166,6 +166,11 @@ function ToolResult({ m, projectId, onChoose, busy }: { m: Msg; projectId: strin
           <div className="relative h-40 overflow-hidden"><iframe title={x.name} src={x.preview} className="pointer-events-none absolute left-0 top-0 h-[640px] w-[1280px] origin-top-left scale-[0.25]" loading="lazy" /></div>
           <div className="flex items-center justify-between gap-2 px-2 py-1 text-xs"><span>{x.n}. {x.name}</span><span className="flex gap-1"><a className="underline" href={x.preview} target="_blank" rel="noreferrer">{t("Voir", "View")}</a><Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(x.n)}>{t("Choisir", "Choose")}</Button></span></div>
         </div>))}</div>}
+      {mockups && mockups.some((x) => x.href && !x.versionId) && <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3" data-syna-mockup-images>{mockups.filter((x) => x.href && !x.versionId).map((x) => (
+        <div key={x.assetId} className="overflow-hidden rounded-lg border border-line bg-card">
+          <a href={x.href} target="_blank" rel="noreferrer"><img src={x.href} alt={`${t("Maquette", "Mockup")} ${x.n} — ${x.direction}`} className="h-56 w-full object-cover object-top" loading="lazy" /></a>
+          <div className="flex items-center justify-between gap-2 px-2 py-1 text-xs"><span>{x.n}. {x.direction}</span><span className="flex gap-1"><a className="underline" href={x.href} target="_blank" rel="noreferrer">{t("Agrandir", "Enlarge")}</a><Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(x.n)}>{t("Choisir", "Choose")}</Button></span></div>
+        </div>))}</div>}
       {c.data?.preview && !mockups && <a className="mt-1 inline-block text-xs underline" href={c.data.preview} target="_blank" rel="noreferrer">{t("Voir l'aperçu", "Open preview")}</a>}
       {c.data?.href && <a className="mt-1 inline-block text-xs underline" href={c.data.href} data-syna-download>{t("Télécharger", "Download")} {c.data.name ?? ""}</a>}
     </div>

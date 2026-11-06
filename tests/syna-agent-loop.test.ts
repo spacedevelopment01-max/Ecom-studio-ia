@@ -8,7 +8,19 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import sharp from "sharp";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+// Maquettes images : aucune image payante pendant les tests (planche simulée, plafond fixe).
+const mockupCalls = vi.hoisted(() => ({ n: 0, prompts: [] as string[], refs: [] as number[] }));
+vi.mock("@/lib/ai/media-providers", async (orig) => ({
+  ...(await orig<object>()),
+  siteMockupMaxMicro: () => 200_000,
+  aiSiteMockup: async (_ctx: unknown, input: { prompt: string; logo?: Buffer | null; product?: Buffer | null }) => {
+    mockupCalls.n++; mockupCalls.prompts.push(input.prompt); mockupCalls.refs.push([input.logo, input.product].filter(Boolean).length);
+    const { default: sharp } = await import("sharp");
+    return sharp({ create: { width: 64, height: 96, channels: 3, background: { r: 200, g: 180, b: 160 } } }).png().toBuffer();
+  },
+}));
 
 process.env.STUDIO_SYNA_AGENT = "1";
 
@@ -209,6 +221,34 @@ describe("SYNA agent — un fil, des outils natifs, des changements vérifiés",
     expect(seen).toBe("vu");
     const tool = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND role='tool'", s.cid).map((m) => JSON.parse(m.content_json)).find((m) => m.tool === "pilot.run");
     expect(tool.ok).toBe(false);
+  });
+
+
+  it("maquettes images : refusées sans identité visuelle, puis une planche par direction avec logo et photo en références", async () => {
+    const s = await shop("maquettes");
+    const { run: dbRun } = await import("@/lib/db");
+    const brand = loadProject(s.p.id).brand as any;
+    dbRun("UPDATE projects SET brand_json=? WHERE id=?", JSON.stringify({ ...brand, logo: { ...(brand?.logo ?? {}), assetId: null } }), s.p.id);
+    const refused = await send(s.user, s.cid, "Fais-moi les maquettes.", (step) => step === 0 ? { message: "", actions: [{ tool: "site.mockup_images", args: { directions: [{ name: "Urbain", style: "sobre" }] } }], done: false } : { message: "Il faut d'abord l'identité.", actions: [], done: true });
+    expect(refused.status).toBe("done");
+    expect(mockupCalls.n).toBe(0);
+    const failed = all<any>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND role='tool'", s.cid).map((r) => JSON.parse(r.content_json)).find((c) => c.tool === "site.mockup_images");
+    expect(failed.ok).toBe(false);
+    expect(failed.summary).toMatch(/identité visuelle|brand.create/);
+    const logoId = one<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND role='logo' ORDER BY created_at LIMIT 1", s.p.id)!.id;
+    dbRun("UPDATE projects SET brand_json=? WHERE id=?", JSON.stringify({ ...brand, logo: { ...(brand?.logo ?? {}), assetId: logoId } }), s.p.id);
+    const before = all<any>("SELECT id FROM assets WHERE project_id=? AND role='mockup'", s.p.id).length;
+    const done = await send(s.user, s.cid, "Maintenant les maquettes.", (step) => step === 0 ? { message: "", actions: [{ tool: "site.mockup_images", args: { directions: [{ name: "Urbain", style: "sobre et contrasté" }, { name: "Voyage", style: "chaleureux" }] } }], done: false } : { message: "Voici les deux maquettes.", actions: [], done: true });
+    const toolMsgs = all<any>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND role='tool'", s.cid).map((r) => JSON.parse(r.content_json)).filter((c) => c.tool === "site.mockup_images");
+    expect(toolMsgs.at(-1).ok).toBe(true);
+    expect(done.status).toBe("done");
+    expect(mockupCalls.n).toBe(2);
+    expect(mockupCalls.refs.every((n) => n >= 1)).toBe(true);
+    expect(mockupCalls.prompts[0]).toMatch(/Accueil.*Fiche produit.*Panier/);
+    const assets = all<any>("SELECT id, meta FROM assets WHERE project_id=? AND role='mockup'", s.p.id);
+    expect(assets.length - before).toBe(2);
+    const view = threadView(s.user, s.cid) as any;
+    expect(JSON.stringify(view)).toContain("maquette 1 — Urbain");
   });
 
   it("le droit au projet est relu : un autre compte ne peut pas lire ni écrire dans le fil", async () => {

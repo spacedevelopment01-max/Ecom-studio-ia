@@ -641,6 +641,25 @@ export function textLayoutMaxMicro(): number | null {
   return mediaReservationMaxMicro(micro);
 }
 
+/**
+ * Maquette de site par l'IA d'images : UNE grande planche (portrait) montrant toutes les pages d'une direction
+ * graphique. Le logo et la photo du produit sont envoyés en références (reproduits, jamais réinventés).
+ * Même circuit que les autres images : route de l'usage « texte et logo sur les images », réservation, facturation.
+ */
+export async function aiSiteMockup(ctx: Ctx, input: { prompt: string; logo?: Buffer | null; product?: Buffer | null }) {
+  const references = [...(input.logo ? [{ role: "logo" as const, data: input.logo, essential: true }] : []), ...(input.product ? [{ role: "product" as const, data: input.product, essential: true }] : [])];
+  return generateImage(ctx, { text: input.prompt, aspect: "2:3", reference: null, refMax: 1024, references, quality: "high", strictQuality: true, usage: "text_layout", need: { text: true, references: references.length } });
+}
+
+/** Coût maximal d'une maquette de site (une planche), null si aucun modèle n'est utilisable. */
+export function siteMockupMaxMicro(references = 2): number | null {
+  const r = mediaRouteFor("text_layout", { text: true, references });
+  if (!r) return null;
+  const prompt = "x".repeat(PUBLICATION_PROMPT_MAX_BYTES);
+  const micro = r.provider === "openai" ? openaiImageMax(r.model, { prompt, images: references, size: "1024x1536", quality: "high" }) : r.provider === "google" ? geminiImageMax(r.model, { prompt, images: references }) : cost(r.provider, r.model, { images: 1 }).micro;
+  return mediaReservationMaxMicro(micro);
+}
+
 export const prepareImageReference=(data:Buffer,max=768)=>sharp(data).rotate().resize(max,max,{fit:"inside",withoutEnlargement:true}).png().toBuffer();
 
 export const PUBLICATION_PROMPT_MAX_BYTES=24000;
