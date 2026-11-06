@@ -199,8 +199,10 @@ Les thèmes de référence sont excellents sur les textes et la mise en page, ma
 
 - 3 maquettes avec une **vraie différence de mise en page** (structure de l'accueil, grille, traitement des photos,
   typographie de titre), toutes fidèles à l'identité choisie (logo, slogan, couleurs, polices).
-- Chaque maquette : une grande planche lisible avec les pages principales (accueil, fiche produit ou prestation,
-  collection ou réalisations, contact) et la version téléphone de l'accueil.
+- Chaque maquette montre tout le site de façon **lisible** : **une ou plusieurs images** selon ce qui donne le meilleur
+  résultat (décision du propriétaire du 6 novembre 2026), comme les planches de Thomas (ex. accueil ordinateur ;
+  fiche produit ou prestation ; pages secondaires ; version téléphone). Toutes les images d'une même maquette gardent
+  exactement le même style.
 - Textes et images de la maquette parlent du **vrai produit ou service** du projet, avec des textes émotionnels.
 
 ---

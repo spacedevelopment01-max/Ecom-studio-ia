@@ -27,7 +27,7 @@ Ce document transmet à une nouvelle session les décisions prises avec l'utilis
 3. Recherche web (OpenAI `web_search` ou Claude `web_search`)
 4. **5 angles marketing**
 5. **Identité visuelle** : nom, logo, slogan, couleurs, polices, toute l'image de marque. Elle vient **avant** le thème.
-6. **Maquettes** : une maquette est une **image créée par IA qui montre tout le site**, toutes les pages concernées, sur **1 grande planche par maquette**. Outil `site.mockup_images`.
+6. **Maquettes** : une maquette est une **image créée par IA qui montre tout le site**, toutes les pages concernées, sur **1 grande planche par maquette** — précisé le 6 novembre : **plusieurs images par maquette si c'est mieux** (lisibilité d'abord). Outil `site.mockup_images`.
 7. L'utilisateur **choisit** une maquette.
 8. **Claude code la maquette choisie** en thème. Étape non construite. Piste : `src/lib/engine/custom-theme.ts` avec l'image en référence. À construire seulement après accord.
 9. Plus tard : les vidéos (fal).
