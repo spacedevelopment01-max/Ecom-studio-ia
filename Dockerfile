@@ -15,7 +15,7 @@ FROM node:22-bookworm-slim
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 DATA_DIR=/data PORT=3000 CHROMIUM=/usr/bin/chromium
 # Chromium sert à la relecture visuelle des boutiques par l'IA (captures ordinateur et téléphone).
-RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg ca-certificates tini chromium fonts-liberation && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg poppler-utils ca-certificates tini chromium fonts-liberation && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app /app
 RUN mkdir -p /data && chown -R node:node /data /app
 USER node
