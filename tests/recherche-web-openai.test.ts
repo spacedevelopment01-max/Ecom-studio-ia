@@ -15,7 +15,7 @@ vi.hoisted(() => {
   process.env.DATA_DIR = fs.mkdtempSync(p.join(os.tmpdir(), "ecs-websearch-"));
 });
 
-vi.mock("@/lib/ai/config", async (orig) => ({ ...(await orig<object>()), activeProviderKey: (p: string) => (p === "openai" ? "cle-de-test-1234567890abcdef" : null) }));
+vi.mock("@/lib/ai/config", async (orig) => ({ ...(await orig<object>()), activeProviderKey: (p: string) => (p === "openai" || p === "anthropic" ? "cle-de-test-1234567890abcdef" : null) }));
 
 describe("recherche web OpenAI (outil web_search)", async () => {
   const { createUser } = await import("@/lib/auth");
@@ -82,7 +82,7 @@ describe("recherche web OpenAI (outil web_search)", async () => {
     expect(ws.webSearchRoute()).toBeNull();
     expect(ws.webSearchQuoteMicro()).toBeNull();
     const u = await client();
-    await expect(search(u.id)).rejects.toThrow(/openai:web_search/);
+    await expect(search(u.id)).rejects.toThrow(/web_search/);
     expect(calls).toEqual([]);
   });
 
@@ -95,7 +95,7 @@ describe("recherche web OpenAI (outil web_search)", async () => {
     expect(r.rejected).toEqual(expect.arrayContaining([{ url: "https://fr.aliexpress.com/item/1.html", reason: "place de marché exclue" }, { url: "https://invente.exemple.fr/page", reason: "lien non renvoyé par la recherche" }]));
     const [res] = all<{ status: string; amount: number; actual: number }>("SELECT status, amount, actual FROM ai_reservations WHERE user_id = ?", u.id);
     expect(res.status).toBe("settled");
-    expect(res.amount).toBe(ws.webSearchMaxMicro("gpt-5.6-terra", 600));
+    expect(res.amount).toBe(ws.webSearchMaxMicro("openai", "gpt-5.6-terra", 600));
     const usd = (30000 * 2 + 2000 * 12) / 1e6 + 2 * 0.01;
     const { usdToEur } = await import("@/lib/ai/config");
     expect(res.actual).toBe(Math.round(usd * usdToEur() * 1e6));
@@ -107,7 +107,7 @@ describe("recherche web OpenAI (outil web_search)", async () => {
   it("refus net du fournisseur : réservation rendue, rien facturé", async () => {
     ws.webSearchDeps.send = async () => { calls.push("send"); throw new ProviderHttpError(400, "outil refusé"); };
     const u = await client();
-    await expect(search(u.id)).rejects.toThrow(/refusée par OpenAI/);
+    await expect(search(u.id)).rejects.toThrow(/refusée par le fournisseur/);
     const [res] = all<{ status: string }>("SELECT status FROM ai_reservations WHERE user_id = ?", u.id);
     expect(res.status).toBe("released");
   });
@@ -118,6 +118,38 @@ describe("recherche web OpenAI (outil web_search)", async () => {
     const b = await search(u.id, "meme-cle");
     expect(b).toEqual(a);
     expect(calls.filter((c) => c === "send")).toHaveLength(1);
+  });
+
+  it("Claude (Anthropic) : même réservation, recherches facturées, places de marché bloquées dès la recherche, liens vérifiés", async () => {
+    setJsonSetting("ai.routes", { strategy: { provider: "anthropic", model: "claude-opus-5-5", effort: "high" } });
+    setJsonSetting("ai.prices", { "anthropic:claude-opus-5-5": { unit: "tokens", inputPerM: 4, outputPerM: 20 }, "anthropic:web_search": { unit: "call", perCall: 0.01 } });
+    let sent: any = null;
+    ws.webSearchDeps.anthropicCount = async () => (calls.push("count"), 700);
+    ws.webSearchDeps.anthropicSend = async (params: any) => {
+      calls.push("send"); sent = params;
+      return { model: "claude-opus-5-5", stop_reason: "end_turn", usage: { input_tokens: 25000, output_tokens: 1500, cache_read_input_tokens: 0, server_tool_use: { web_search_requests: 3 } },
+        content: [
+          { type: "server_tool_use", name: "web_search", input: { query: "sac" } },
+          { type: "web_search_tool_result", content: [{ type: "web_search_result", url: "https://marque-a.fr/sac", title: "A" }, { type: "web_search_result", url: "https://forum.exemple.fr/avis", title: "Avis" }] },
+          { type: "text", text: JSON.stringify({ sources: [
+            { url: "https://marque-a.fr/sac", title: "A", category: "competitors", excerpt: excerpt("A") },
+            { url: "https://forum.exemple.fr/avis", title: "Avis", category: "customers", excerpt: excerpt("C") },
+            { url: "https://invente.exemple.fr", title: "X", category: "offer", excerpt: excerpt("X") },
+          ] }), citations: [] },
+        ] };
+    };
+    const u = await client();
+    const r = await search(u.id);
+    expect(calls).toEqual(["count", "send"]);
+    expect(sent.tools[0]).toMatchObject({ type: "web_search_20260209", name: "web_search", max_uses: ws.MAX_SEARCHES });
+    expect(sent.tools[0].blocked_domains).toContain("aliexpress.com");
+    expect(r.searches).toBe(3);
+    expect(r.findings.map((f) => f.url)).toEqual(["https://marque-a.fr/sac", "https://forum.exemple.fr/avis"]);
+    const [res] = all<{ status: string; amount: number; actual: number; provider: string }>("SELECT status, amount, actual, provider FROM ai_reservations WHERE user_id = ?", u.id);
+    expect(res).toMatchObject({ status: "settled", provider: "anthropic" });
+    expect(res.amount).toBe(ws.webSearchMaxMicro("anthropic", "claude-opus-5-5", 700));
+    const { usdToEur } = await import("@/lib/ai/config");
+    expect(res.actual).toBe(Math.round(((25000 * 4 + 1500 * 20) / 1e6 + 3 * 0.01) * usdToEur() * 1e6));
   });
 
   it("recherche native : page lisible lue par le Studio, sinon extrait rapporté marqué ; lien du client sur une place de marché écarté", async () => {
