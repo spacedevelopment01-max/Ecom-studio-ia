@@ -16,8 +16,69 @@ type View = {
   run: { id: string; status: string; step: number; pending: any; error: string | null } | null;
   budget: { authorizedPct: number | null; spentPct: number | null };
   attachments: { id: string; kind: string; name: string; analysis: any }[];
-  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[] };
+  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null };
 };
+type Face = { family: string; file: string; weight: number } | null;
+type IdentityCard = {
+  key: "A" | "B" | "C"; name: string; nameStyle: string; slogan: string; promise: string; territory: string;
+  palette: { dark: string; primary: string; secondary: string; accent: string; light: string }; paletteFamily: string;
+  fontStyle: string; tone: { adjectives: string[]; avoid: string[] }; logoStyleLabel: string; logoIdea: string; why: string;
+  faces: { heading: Face; body: Face };
+};
+type Identities = { round: number; issues: string[]; chosen: { key: string; mix: Record<string, string> } | null; list: IdentityCard[] };
+
+/** Étape 1 : les 3 identités côte à côte, chacune dans SES couleurs et SES vraies polices. */
+function IdentityCards({ ids, busy, onChoose }: { ids: Identities; busy: boolean; onChoose: (key: string) => void }) {
+  const t = useT();
+  const faces = ids.list.flatMap((x) => [x.faces.heading, x.faces.body]).filter((f): f is NonNullable<Face> => !!f);
+  const css = [...new Map(faces.map((f) => [f.file, f])).values()].map((f) => `@font-face{font-family:"SINA ${f.family}";src:url(/api/syna/fonts/${f.file}) format("truetype");font-weight:${f.weight};font-display:swap}`).join("");
+  const fam = (f: Face, fallback: string) => (f ? `"SINA ${f.family}", ${fallback}` : fallback);
+  return (
+    <div className="@container mt-2 space-y-2" data-syna-identities={ids.round}>
+      <style>{css}</style>
+      {/* Largeur du fil (panneau étroit ou plein cadre), pas de l'écran : une carte par ligne dans le panneau. */}
+      <div className="grid grid-cols-1 gap-2 @3xl:grid-cols-3">
+        {ids.list.map((x) => {
+          const chosen = ids.chosen?.key === x.key;
+          return (
+            <article key={x.key} className={cx("overflow-hidden rounded-xl border", chosen ? "border-ink ring-2 ring-ink" : "border-line")} data-identity={x.key}>
+              <div className="px-4 pb-4 pt-3" style={{ background: x.palette.light, color: x.palette.dark, fontFamily: fam(x.faces.body, "sans-serif") }}>
+                <p className="text-[11px] uppercase tracking-wider opacity-70">{t("Identité", "Identity")} {x.key} · {x.territory}</p>
+                <h3 className="mt-2 text-3xl leading-tight" style={{ color: x.palette.primary, fontFamily: fam(x.faces.heading, "serif"), fontWeight: x.faces.heading?.weight ?? 600 }}>{x.name}</h3>
+                <p className="mt-1 text-base">{x.slogan}</p>
+                <p className="mt-3 text-sm opacity-90">{x.promise}</p>
+                <span className="mt-3 inline-block rounded-full px-3 py-1 text-xs font-semibold" style={{ background: x.palette.accent, color: contrastText(x.palette.accent, x.palette.dark, x.palette.light) }}>{t("Bouton d'exemple", "Sample button")}</span>
+              </div>
+              <div className="flex h-6 border-y border-black/10" aria-label={t("Palette", "Palette")}>
+                {(["dark", "primary", "secondary", "accent", "light"] as const).map((r) => <span key={r} className={cx("flex-1", r === "light" && "border-l border-black/10")} style={{ background: x.palette[r] }} title={`${r} ${x.palette[r]}`} />)}
+              </div>
+              <dl className="space-y-1 bg-card px-4 py-3 text-xs">
+                <div><dt className="inline font-semibold">{t("Couleurs", "Colours")} : </dt><dd className="inline">{x.paletteFamily} ({Object.values(x.palette).join(" ")})</dd></div>
+                <div><dt className="inline font-semibold">{t("Polices", "Fonts")} : </dt><dd className="inline">{x.faces.heading?.family ?? "?"} / {x.faces.body?.family ?? "?"}{x.fontStyle ? ` — ${x.fontStyle}` : ""}</dd></div>
+                <div><dt className="inline font-semibold">{t("Ton", "Tone")} : </dt><dd className="inline">{x.tone.adjectives.join(", ")} · {t("jamais", "never")} : {x.tone.avoid.join(", ")}</dd></div>
+                <div><dt className="inline font-semibold">{t("Idée de logo", "Logo idea")} : </dt><dd className="inline">{x.logoStyleLabel} — {x.logoIdea}</dd></div>
+                <div><dt className="inline font-semibold">{t("Pourquoi pour toi", "Why it fits you")} : </dt><dd className="inline">{x.why}</dd></div>
+              </dl>
+              <div className="border-t border-line bg-card px-4 py-2">
+                {chosen
+                  ? <p className="text-xs font-semibold">✓ {t("Identité choisie", "Chosen identity")}</p>
+                  : !ids.chosen && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(x.key)}>{t(`Je choisis ${x.key}`, `I choose ${x.key}`)}</Button>}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+      {!ids.chosen && <p className="text-xs text-muted">{t("Tu peux aussi mélanger (par exemple le nom de A avec les couleurs de C), retoucher un nom ou un slogan, ou demander une nouvelle proposition : écris-le simplement.", "You can also mix (e.g. A's name with C's colours), tweak a name or tagline, or ask for a new proposal.")}</p>}
+      {!!ids.issues.length && <p className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-xs text-ink dark:bg-amber-950/30" data-syna-identity-issues>{t("Points que le contrôle du Studio n'a pas pu valider", "Points the Studio check could not validate")} : {ids.issues.join(" ; ")}</p>}
+    </div>
+  );
+}
+/** Texte lisible sur une couleur (clair ou sombre de la palette). */
+function contrastText(bg: string, dark: string, light: string) {
+  const lum = (h: string) => { const n = parseInt(h.slice(1), 16); const c = [n >> 16 & 255, n >> 8 & 255, n & 255].map((v) => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+  const ratio = (a: string, b: string) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  return ratio(bg, dark) >= ratio(bg, light) ? dark : light;
+}
 const WORKING = ["queued", "running", "waiting_jobs"];
 
 /** Frise du chantier : les étapes 0 à 13 du parcours de création, leur état, l'étape en cours. */
@@ -135,6 +196,8 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
 
   // Les résultats d'outils d'une même exécution sont regroupés sous la réponse de SINA, par module.
   const items = useMemo(() => groupThread(v?.messages ?? []), [v?.messages]);
+  // Cartes des identités : sous la DERNIÈRE proposition réussie (les anciennes sont remplacées).
+  const lastIdentity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "identity.propose" && m.content?.ok)?.id, [v?.messages]);
   if (!v) return <div className="p-4 text-sm text-muted">{error || t("Ouverture du fil SINA…", "Opening SINA thread…")}</div>;
   const pending = v.run?.status === "waiting_confirmation" ? v.run.pending : null;
 
@@ -164,7 +227,10 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
                 <p className="font-medium">{it.m.content.question.text}</p>
                 {!!it.m.content.question.choices?.length && <div className="mt-2 flex flex-wrap gap-2">{it.m.content.question.choices.map((c: string) => <Button key={c} size="sm" variant="secondary" disabled={busy || working} onClick={() => send(c)}>{c}</Button>)}</div>}
               </div>}
-              {it.tools.map((tm) => <ToolResult key={tm.id} m={tm} projectId={v.projectId} onChoose={(n) => send(t(`Je choisis la maquette ${n}.`, `I choose mockup ${n}.`))} busy={busy || working} />)}
+              {it.tools.map((tm) => <div key={tm.id}>
+                <ToolResult m={tm} projectId={v.projectId} onChoose={(n) => send(t(`Je choisis la maquette ${n}.`, `I choose mockup ${n}.`))} busy={busy || working} />
+                {tm.id === lastIdentity && v.journey?.identities && <IdentityCards ids={v.journey.identities} busy={busy || working} onChoose={(k) => send(t(`Je choisis l'identité ${k}.`, `I choose identity ${k}.`))} />}
+              </div>)}
             </div>
           : <EventLine key={it.m.id} m={it.m} />)}
         {pending && <div className="rounded-xl border border-amber-400 bg-amber-50 px-3 py-2 text-ink dark:bg-amber-950/30" data-syna-confirmation>

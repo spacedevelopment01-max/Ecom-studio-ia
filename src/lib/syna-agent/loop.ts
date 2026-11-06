@@ -26,6 +26,7 @@ import { projectSnapshot } from "./snapshot";
 import { SYNA_SYSTEM } from "./prompt";
 import { JOURNEY_STEPS, READY_STEPS, currentStep, journeyContext, journeyOf } from "./journey";
 import { localDecision } from "./local-step";
+import { LOGO_STYLE_LABEL, fontFace } from "./identities";
 
 export const MAX_STEPS = 12;
 const MAX_ACTIONS = 8;
@@ -185,6 +186,7 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
         if (e instanceof CostCapReached) return askBudget(r, null);
         throw e;
       }
+      if (!local) out = withoutRepeatedQuestion(out);
       addMessage(r.conversation_id, "assistant", { ...out, step, ...(local ? { local: true } : {}) }, r.id);
       if (!out.actions.length) {
         updateRun(r.id, { status: out.question ? "waiting_user" : "done" });
@@ -276,6 +278,16 @@ function askBudget(r: SynaRun, _x: null) {
   return { runId: r.id, waiting: "budget" };
 }
 
+/**
+ * La question va dans « question », jamais aussi à la fin de « message » (essai réel : le modèle la répétait, le client
+ * la lisait deux fois). Une dernière phrase interrogative du message est retirée quand une question est posée.
+ */
+export function withoutRepeatedQuestion(out: StepOutput): StepOutput {
+  if (!out.question || !out.message) return out;
+  const m = /^([\s\S]*?[.!…:])\s+([^.!?…]*\?)\s*$/.exec(out.message.trim());
+  return m && m[1].trim() ? { ...out, message: m[1].trim() } : out;
+}
+
 /** Décision du moteur local pour le message du client de cette demande, ou null (→ Claude). */
 function localStepFor(r: SynaRun): StepOutput | null {
   const msgs = lastMessages(r.conversation_id, 60);
@@ -295,7 +307,8 @@ function localStepFor(r: SynaRun): StepOutput | null {
  * (questions de départ, suivi, étape pas encore disponible) ; Claude Opus pour créer ou réfléchir (étapes créatives).
  */
 export function modelFor(currentStepNumber: number): { provider: "anthropic"; model: string; effort?: string } | undefined {
-  const simple = currentStepNumber === 0 || !READY_STEPS.includes(currentStepNumber);
+  // Étape 1 : la création des identités se fait dans l'outil identity.propose (modèle fort) ; le fil reste léger.
+  const simple = currentStepNumber <= 1 || !READY_STEPS.includes(currentStepNumber);
   return simple ? { provider: "anthropic", model: "claude-haiku-5-5", effort: "low" } : undefined;
 }
 
@@ -360,7 +373,18 @@ export function threadView(user: User, cid: string) {
     budget: budgetState(user.id, c.project_id, cid),
     attachments: attachmentsOf(cid).map((a) => ({ id: a.id, kind: a.kind, name: a.name, analysis: a.analysis })),
     tools: allTools().length,
-    journey: (() => { const j = journeyOf(cid); return { current: currentStep(j), mode: j.mode, keep: j.keep, steps: JOURNEY_STEPS.map((s) => ({ n: s.n, fr: s.fr, en: s.en, status: j.steps[s.n]?.status ?? "todo", ready: READY_STEPS.includes(s.n) })) }; })(),
+    journey: (() => {
+      const j = journeyOf(cid);
+      return {
+        current: currentStep(j), mode: j.mode, keep: j.keep,
+        steps: JOURNEY_STEPS.map((s) => ({ n: s.n, fr: s.fr, en: s.en, status: j.steps[s.n]?.status ?? "todo", ready: READY_STEPS.includes(s.n) })),
+        // Étape 1 : la dernière proposition d'identités (cartes du fil), avec les fichiers de leurs vraies polices.
+        identities: j.identities ? {
+          round: j.identities.round, issues: j.identities.issues, chosen: j.identityChoice ?? null,
+          list: j.identities.list.map((x) => ({ ...x, logoStyleLabel: LOGO_STYLE_LABEL[x.logoStyle], faces: { heading: fontFace(x.fonts.heading), body: fontFace(x.fonts.body) } })),
+        } : null,
+      };
+    })(),
   };
 }
 

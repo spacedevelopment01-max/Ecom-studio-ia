@@ -1,0 +1,215 @@
+/**
+ * SINA (#492) — étape 1 du parcours : 3 identités de marque vraiment différentes (charte qualité 2026 § 2.1), contrôle
+ * gratuit du Studio avec une reprise au plus, choix du client (avec mélange et retouches mot pour mot) enregistré comme
+ * marque du projet, refonte respectée (nom, slogan, logo gardés). Aucun appel d'IA : le modèle est simulé.
+ */
+import { describe, expect, it } from "vitest";
+
+process.env.STUDIO_SYNA_AGENT = "1";
+
+describe("SINA — étape 1 : 3 identités de marque", async () => {
+  const { one } = await import("@/lib/db");
+  const { runWithLang } = await import("@/lib/i18n-server");
+  const { loadProject } = await import("@/lib/projects");
+  const { account } = await import("./conversation209-fixtures");
+  const { threadFor } = await import("@/lib/syna-agent/thread");
+  const { getTool } = await import("@/lib/syna-agent/registry");
+  const { threadView } = await import("@/lib/syna-agent/loop");
+  const { identityDeps, IDENTITY_CAP_MICRO, IDENTITY_MODEL, mixIdentity } = await import("@/lib/syna-agent/tools/identity");
+  const I = await import("@/lib/syna-agent/identities");
+  const J = await import("@/lib/syna-agent/journey");
+  const fr = <T,>(fn: () => Promise<T> | T) => runWithLang({ ui: "fr", content: "fr" }, async () => fn());
+
+  const ctxOf = (user: any, cid: string) => ({ user, conversationId: cid, runId: "test", projectId: null as string | null, attachment: () => null }) as any;
+  const call = async (name: string, ctx: any, args: unknown) => {
+    ctx.projectId = one<{ project_id: string | null }>("SELECT project_id FROM agent_conversations WHERE id=?", ctx.conversationId)?.project_id ?? null;
+    return fr(() => getTool(name)!.run(ctx, getTool(name)!.args.parse(args)));
+  };
+
+  const good = (): any[] => [
+    { key: "A", name: "Maison Ocre", nameStyle: "mot français évocateur", nameWhy: "", slogan: "La chaleur du fait main", sloganTone: "poétique", promise: "Des bougies coulées à la main qui réchauffent ton intérieur.", territory: "fierté artisanale", palette: { dark: "#1C1A17", primary: "#7A2E1F", secondary: "#E9DCC8", accent: "#C8742B", light: "#F6F1EA" }, paletteFamily: "tons chauds ton sur ton", fonts: { heading: "cormorant_n6", body: "inter_n4" }, fontStyle: "serif fine contrastée", tone: { adjectives: ["chaleureux", "précis", "sincère"], avoid: ["superlatifs", "jargon", "promesses"] }, logoStyle: "embleme", logoIdea: "Une flamme dans un sceau rond.", why: "Ta clientèle aime l'artisanat." },
+    { key: "B", name: "Lumo", nameStyle: "mot inventé court", nameWhy: "", slogan: "Allume l'instant", sloganTone: "direct", promise: "Une lumière douce pour chaque moment calme.", territory: "évasion", palette: { dark: "#101820", primary: "#1F4E79", secondary: "#D6E4F0", accent: "#F2B134", light: "#F8FAFC" }, paletteFamily: "sombre et un accent vif", fonts: { heading: "archivo_n8", body: "dm_sans_n4" }, fontStyle: "grotesque grasse", tone: { adjectives: ["direct", "lumineux", "moderne"], avoid: ["mièvrerie", "jargon", "promesses"] }, logoStyle: "lettrage", logoIdea: "Le O de Lumo devient une flamme.", why: "Tu veux une image moderne." },
+    { key: "C", name: "Brin & Cire", nameStyle: "nom composé", nameWhy: "", slogan: "Complice de tes soirées", sloganTone: "complice et léger", promise: "Des bougies joyeuses à offrir et à s'offrir.", territory: "complicité joyeuse", palette: { dark: "#1A1F16", primary: "#2F5D3A", secondary: "#DCE8D2", accent: "#E07A5F", light: "#F7F5EF" }, paletteFamily: "clair et frais", fonts: { heading: "nunito_n8", body: "karla_n4" }, fontStyle: "ronde épaisse", tone: { adjectives: ["complice", "léger", "joyeux"], avoid: ["froideur", "jargon", "promesses"] }, logoStyle: "mascotte", logoIdea: "Une petite bougie souriante.", why: "Tu vends beaucoup en cadeau." },
+  ];
+
+  /** Fil avec l'étape 0 validée (création complète ou refonte), comme après un vrai parcours. */
+  async function stepOneThread(opts: { keep?: string[]; name?: string; slogan?: string; image?: string } = {}) {
+    const user = await account();
+    const cid = threadFor(user, null), ctx = ctxOf(user, cid);
+    await call("start.answer", ctx, { answers: [{ field: "business", value: "products" }, { field: "offer", value: "Des bougies parfumées coulées à la main." }] });
+    await call("start.answer", ctx, { answers: [{ field: "existing", value: opts.keep ? "Oui, un logo et un nom" : "Rien, je pars de zéro." }] });
+    if (opts.keep) await call("start.keep", ctx, { keep: opts.keep, name: opts.name, slogan: opts.slogan });
+    await call("start.answer", ctx, { answers: [
+      { field: "audience", value: "Femmes de 25 à 45 ans qui aiment décorer leur intérieur." },
+      { field: "image", value: opts.image ?? "Chaleureux, artisanal, haut de gamme. Pas de rose." },
+      { field: "setup", value: "3 produits" }, { field: "market", value: "En ligne, France." }, { field: "price", value: "25 €" },
+      { field: "difference", value: "Cire de colza française." }, { field: "taste", status: "none" }, { field: "photos", value: "Pas de photos pour l'instant." },
+      { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
+    ] });
+    const ok = await call("start.confirm", ctx, {});
+    expect(ok.ok).toBe(true);
+    return { user, cid, ctx, pid: one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string };
+  }
+
+  it("contrôle gratuit : une série correcte passe", () => {
+    expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: good() }).identities, J.emptyJourney())).toEqual([]);
+  });
+
+  it("contrôle gratuit : noms, slogans, styles de logo, polices, contrastes et couleurs refusées", () => {
+    const j = J.emptyJourney();
+    j.start.image = { value: "Moderne et doux, surtout pas de rouge.", status: "answered", source: "client", at: 1 };
+    const bad = good();
+    bad[1].name = "Maison  ocre"; // même nom que A
+    bad[1].slogan = "Une lumière douce pour chaque instant calme"; // 7 mots
+    bad[2].logoStyle = "embleme"; // même style que A
+    bad[2].fonts.heading = "cormorant_n5"; // même famille de titres que A
+    bad[2].palette.primary = "#C9D6C0"; // titre illisible sur le fond clair
+    bad[0].fonts.body = "comic_sans_n4"; // hors liste
+    const issues = I.identityIssues(I.IdentitiesSchema.parse({ identities: bad }).identities, j).join("\n");
+    expect(issues).toMatch(/même nom/);
+    expect(issues).toMatch(/slogan de 7 mots/);
+    expect(issues).toMatch(/même style de logo/);
+    expect(issues).toMatch(/même police de titres/);
+    expect(issues).toMatch(/Identité C — .*contraste/);
+    expect(issues).toMatch(/comic_sans_n4.*hors liste/);
+    expect(issues).toMatch(/Identité A : primary #7A2E1F .*refusée.*rouge/);
+    expect(I.refusedColors("J'aime le vert et le bleu, mais pas de rose ni de violet.")).toEqual(expect.arrayContaining(["rose", "violet"]));
+    expect(I.refusedColors("J'aime le vert et le bleu.")).toEqual([]);
+  });
+
+  it("consignes de Claude : charte § 2.1, styles de logo, polices autorisées, refonte et fiche du client", () => {
+    expect(I.IDENTITY_SYSTEM).toMatch(/au moins 4 des 6 axes/);
+    for (const s of ["embleme", "mascotte", "artdeco"]) expect(I.IDENTITY_SYSTEM).toContain(s);
+    expect(I.IDENTITY_SYSTEM).toMatch(/cormorant \(Cormorant/);
+    expect(I.IDENTITY_SYSTEM).toMatch(/Interdits : inventer un chiffre, un avis/);
+    const j = J.emptyJourney();
+    j.start.offer = { value: "Bougies coulées main", status: "answered", source: "client", at: 1 };
+    j.keep = ["logo", "nom", "slogan"]; j.keptValues = { name: "Brume d'Ambre", slogan: "L'ambre au cœur" }; j.mode = "refonte";
+    const prompt = I.identityPrompt(j, { guidance: "Plus coloré" });
+    expect(prompt).toMatch(/Offre : Bougies coulées main/);
+    expect(prompt).toMatch(/« Brume d'Ambre » \(name identique/);
+    expect(prompt).toMatch(/« L'ambre au cœur »/);
+    expect(prompt).toMatch(/Plus coloré/);
+    // Refonte : un nom différent du nom gardé est refusé par le contrôle.
+    expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: good() }).identities, j).join("\n")).toMatch(/nom gardé « Brume d'Ambre » doit être repris mot pour mot/);
+  });
+
+  it("remise en forme tolérante : police donnée par son nom, style de logo accentué", () => {
+    const raw = good();
+    raw[0].fonts = { heading: "Playfair Display", body: "Inter" };
+    raw[1].logoStyle = "Emblème";
+    raw[1].palette = good()[1].palette;
+    const out = I.prepareIdentities({ identities: raw });
+    expect(out.identities[0].fonts).toEqual({ heading: "playfair_display_n7", body: "inter_n4" });
+    expect(out.identities[1].logoStyle).toBe("embleme");
+    expect(I.fontFace("cormorant_n6")).toEqual({ family: "Cormorant", file: "Cormorant-600.ttf", weight: 600 });
+  });
+
+  it("la question n'est jamais lue deux fois : la dernière phrase interrogative du message est retirée", async () => {
+    const { withoutRepeatedQuestion } = await import("@/lib/syna-agent/loop");
+    const out = (message: string) => withoutRepeatedQuestion({ message, actions: [], question: { text: "Laquelle préfères-tu ?" }, done: false }).message;
+    expect(out("Voici tes 3 identités. Laquelle te plaît le plus ?")).toBe("Voici tes 3 identités.");
+    expect(out("Laquelle te plaît le plus ?")).toBe("Laquelle te plaît le plus ?"); // rien d'autre : gardé
+    expect(out("C'est noté, merci.")).toBe("C'est noté, merci.");
+    expect(withoutRepeatedQuestion({ message: "Tu es prêt ?", actions: [], question: null, done: true }).message).toBe("Tu es prêt ?");
+  });
+
+  it("proposition refusée tant que l'étape 0 n'est pas validée", async () => {
+    const user = await account();
+    const cid = threadFor(user, null), ctx = ctxOf(user, cid);
+    await call("start.answer", ctx, { answers: [{ field: "business", value: "products" }, { field: "offer", value: "Des bougies." }] });
+    const r = await call("identity.propose", ctx, {});
+    expect(r.ok).toBe(false);
+    expect(r.summary).toMatch(/étape 0/);
+  });
+
+  it("proposition : modèle fort, plafond annoncé, une reprise si le contrôle échoue, cartes servies à l'interface", async () => {
+    const { cid, ctx, user } = await stepOneThread();
+    const calls: any[] = [];
+    const first = good(); first[2].logoStyle = "embleme"; // défaut : même style que A
+    identityDeps.generate = async (c) => { calls.push(c); return { identities: calls.length === 1 ? first : good(), comparison: "4 axes différents par paire." }; };
+    try {
+      expect(await getTool("identity.propose")!.estimate!(ctx, {})).toEqual({ maxMicro: IDENTITY_CAP_MICRO, label: "3 identités de marque" });
+      const r = await call("identity.propose", ctx, {});
+      expect(r.ok).toBe(true);
+      expect(calls).toHaveLength(2); // une reprise, avec les corrections exactes
+      expect(calls[0].routing.prefer).toEqual(IDENTITY_MODEL);
+      expect(calls[0].task).toBe("strategy");
+      expect(calls[0].prompt).toMatch(/Client idéal : Femmes de 25 à 45 ans/);
+      expect(calls[1].prompt).toMatch(/Corrections exigées .*\n- Deux identités ont le même style de logo/);
+      expect(r.summary).toMatch(/Contrôle du Studio : OK/);
+      const j = J.journeyOf(cid);
+      expect(j.steps[1].status).toBe("review");
+      expect(j.identities?.list.map((x) => x.name)).toEqual(["Maison Ocre", "Lumo", "Brin & Cire"]);
+      expect(J.journeyContext(j)).toMatch(/proposition n° 1 .*A « Maison Ocre »/);
+      expect(J.journeyContext(j)).toMatch(/MÉLANGER/);
+      const view = await fr(() => threadView(user, cid));
+      expect(view.journey.identities?.list[0].faces.heading).toEqual({ family: "Cormorant", file: "Cormorant-600.ttf", weight: 600 });
+      expect(view.journey.identities?.list[2].logoStyleLabel).toBe("mascotte illustrée");
+
+      // Nouvelle proposition partielle : seule C est refaite, A et B restent identiques.
+      identityDeps.generate = async () => { const g = good(); g[0].name = "Changé"; g[2].name = "Cirette"; return { identities: g }; };
+      const redo = await call("identity.propose", ctx, { redo: ["C"], guidance: "Un nom plus court pour C" });
+      expect(redo.ok).toBe(true);
+      expect(J.journeyOf(cid).identities?.list.map((x) => x.name)).toEqual(["Maison Ocre", "Lumo", "Cirette"]);
+      expect(J.journeyOf(cid).identities?.round).toBe(2);
+    } finally { identityDeps.generate = undefined; }
+  });
+
+  it("points non validés après la reprise : dits au client, jamais présentés comme bons", async () => {
+    const { cid, ctx } = await stepOneThread();
+    identityDeps.generate = async () => { const g = good(); g[1].name = "Maison Ocre"; return { identities: g }; };
+    try {
+      const r = await call("identity.propose", ctx, {});
+      expect(r.ok).toBe(true);
+      expect(r.summary).toMatch(/Points non validés .*même nom/);
+      expect(J.journeyContext(J.journeyOf(cid))).toMatch(/n'a pas pu valider .*même nom/);
+    } finally { identityDeps.generate = undefined; }
+  });
+
+  it("choix du client avec mélange et retouche mot pour mot : marque du projet enregistrée, étape 1 validée", async () => {
+    const { cid, ctx, pid } = await stepOneThread();
+    identityDeps.generate = async () => ({ identities: good() });
+    try { await call("identity.propose", ctx, {}); } finally { identityDeps.generate = undefined; }
+    const r = await call("identity.choose", ctx, { key: "A", mix: { palette: "C" }, slogan: "La chaleur des mains" });
+    expect(r.ok).toBe(true);
+    expect(r.summary).toMatch(/Identité A \(avec palette de C\)/);
+    const b = loadProject(pid).brand!;
+    expect(b.name).toBe("Maison Ocre");
+    expect(b.tagline).toBe("La chaleur des mains");
+    expect(b.palette).toEqual(good()[2].palette);
+    expect(b.fonts).toEqual({ heading: "cormorant_n6", body: "inter_n4" });
+    expect(b.tone.dont).toEqual(["superlatifs", "jargon", "promesses"]);
+    expect(b.alternatives).toEqual(["Lumo", "Brin & Cire"]);
+    expect(b.logo.status).toBe("proposed");
+    expect(loadProject(pid).name).toBe("Maison Ocre"); // le nom provisoire est remplacé
+    expect(JSON.parse(one<any>("SELECT value FROM memory WHERE project_id=? AND key='syna.identite'", pid).value).mix).toEqual({ palette: "C" });
+    const j = J.journeyOf(cid);
+    expect(j.steps[1].status).toBe("done");
+    expect(j.steps[2].status).toBe("todo");
+    expect(J.currentStep(j)).toBe(2);
+    expect(mixIdentity(good() as any, "B", { name: "C" }).name).toBe("Brin & Cire");
+    // Une fois choisie, l'identité n'est pas reproposée en douce.
+    expect((await call("identity.propose", ctx, {})).ok).toBe(false);
+  });
+
+  it("refonte : nom, slogan et logo gardés ; aucun nouveau logo (étape 2 sans objet) ; nom non modifiable", async () => {
+    const { cid, ctx, pid } = await stepOneThread({ keep: ["logo", "slogan"], name: "Brume d'Ambre", slogan: "L'ambre au cœur" });
+    const kept = good().map((x) => ({ ...x, name: "Brume d'Ambre", slogan: "L'ambre au cœur" }));
+    const seen: any[] = [];
+    identityDeps.generate = async (c) => { seen.push(c); return { identities: kept }; };
+    try { expect((await call("identity.propose", ctx, {})).ok).toBe(true); } finally { identityDeps.generate = undefined; }
+    expect(seen).toHaveLength(1); // nom et slogan gardés repris mot pour mot : aucune reprise
+    expect(seen[0].prompt).toMatch(/Refonte : le client garde TEL QUEL logo, slogan, nom/);
+    expect((await call("identity.choose", ctx, { key: "B", name: "Autre nom" })).ok).toBe(false);
+    const r = await call("identity.choose", ctx, { key: "B" });
+    expect(r.ok).toBe(true);
+    const b = loadProject(pid).brand!;
+    expect(b.name).toBe("Brume d'Ambre");
+    expect(b.nameStatus).toBe("provided");
+    expect(b.tagline).toBe("L'ambre au cœur");
+    const j = J.journeyOf(cid);
+    expect(j.steps[2].status).toBe("skipped");
+    expect(J.currentStep(j)).toBe(3);
+  });
+});

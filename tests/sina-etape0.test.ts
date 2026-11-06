@@ -54,9 +54,9 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
 
   it("une étape pas encore construite est annoncée, sans outil payant", () => {
     const j = J.emptyJourney();
-    J.setStep(j, 0, "done"); J.setStep(j, 1, "doing");
-    expect(J.currentStep(j)).toBe(1);
-    expect(J.READY_STEPS).not.toContain(1);
+    J.setStep(j, 0, "done"); J.setStep(j, 1, "done"); J.setStep(j, 2, "doing");
+    expect(J.currentStep(j)).toBe(2);
+    expect(J.READY_STEPS).not.toContain(2);
     expect(J.journeyContext(j)).toMatch(/n'est pas encore disponible .*AUCUN outil payant/);
   });
 
@@ -323,8 +323,9 @@ describe("SINA — niveaux de coût : gratuit (moteur local), Haiku, Opus", asyn
 
   it("modèle par réponse : Haiku pour l'étape 0 et une étape pas encore disponible, Opus pour une étape créative prête", () => {
     expect(modelFor(0)).toMatchObject({ model: "claude-haiku-5-5" });
-    expect(modelFor(1)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 1 pas encore construite : simple annonce
-    J.READY_STEPS.push(1);
-    try { expect(modelFor(1)).toBeUndefined(); } finally { J.READY_STEPS.pop(); }
+    expect(modelFor(1)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 1 : le fil reste léger, la création est dans l'outil (modèle fort)
+    expect(modelFor(2)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 2 pas encore construite : simple annonce
+    J.READY_STEPS.push(2);
+    try { expect(modelFor(2)).toBeUndefined(); } finally { J.READY_STEPS.pop(); }
   });
 });

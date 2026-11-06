@@ -11,6 +11,7 @@
 import { HttpError } from "../auth";
 import { json, now, one, run, tx } from "../db";
 import { L } from "../i18n-server";
+import type { Identity } from "./identities";
 
 export const JOURNEY_STEPS = [
   { n: 0, fr: "Questions de départ", en: "Getting started" },
@@ -33,7 +34,7 @@ export type StepNumber = (typeof JOURNEY_STEPS)[number]["n"];
  * Étapes déjà construites dans le parcours SINA. Les autres sont annoncées au client mais SINA n'y lance rien
  * (aucun outil payant) : elle ne doit jamais partir seule sur une étape que le parcours ne sait pas encore mener.
  */
-export const READY_STEPS: number[] = [0];
+export const READY_STEPS: number[] = [0, 1];
 /** à faire · en cours · à valider par le client · validée · sans objet (ex. étape 7 quand le client choisit un de nos thèmes). */
 export type StepStatus = "todo" | "doing" | "review" | "done" | "skipped";
 
@@ -66,6 +67,9 @@ export type Journey = {
   imported: ImportedSite[];
   /** Textes exacts gardés en refonte (nom, slogan), repris mot pour mot ensuite. */
   keptValues?: { name?: string; slogan?: string };
+  /** Étape 1 : dernière proposition des 3 identités (contrôlée par le Studio) et choix du client. */
+  identities?: { list: Identity[]; issues: string[]; comparison: string; at: number; round: number; guidance?: string; corrected?: string[] };
+  identityChoice?: { key: "A" | "B" | "C"; mix: Partial<Record<string, "A" | "B" | "C">>; at: number };
 };
 
 export const emptyJourney = (): Journey => ({
@@ -177,5 +181,20 @@ export function journeyContext(j: Journey): string {
       ? `Prochaine question à poser (UNE seule, avec tes mots, en reprenant ce que le client a déjà dit) : ${missing[0]} — « ${QUESTIONS[missing[0]](j).fr} ». Restent ensuite : ${missing.slice(1).join(", ") || "rien"}.`
       : "Toutes les questions ont une réponse : fais le RÉSUMÉ (« Voici ce que j'ai compris ») et demande au client de confirmer ou corriger ; à sa confirmation, appelle start.confirm.");
   }
+  if (cur === 1) lines.push(...identityStepContext(j));
   return lines.join("\n");
+}
+
+/** Étape 1 : que faire selon l'état des propositions. */
+function identityStepContext(j: Journey): string[] {
+  const id = j.identities;
+  if (!id?.list.length) return [
+    "Étape 1 (3 identités de marque) : rien n'est encore proposé. Si le client est prêt (il dit oui, on continue, vas-y…), appelle identity.propose (sans guidance) en annonçant que la création prend environ une minute. S'il pose une question, réponds-y d'abord. N'invente aucune identité toi-même : seul identity.propose les crée.",
+  ];
+  const out = [
+    `Étape 1 — proposition n° ${id.round} (les cartes complètes sont affichées au client dans le fil) : ${id.list.map((x) => `${x.key} « ${x.name} » (slogan « ${x.slogan} », territoire ${x.territory}, logo ${x.logoStyle})`).join(" ; ")}.`,
+    "Présente-les en 3 lignes courtes au plus (la différence de chacune), sans recopier les cartes, puis demande laquelle il préfère. Il peut : en choisir une ; MÉLANGER (ex. le nom de A avec les couleurs de C → identity.choose key « A », mix {palette: « C »}) ; retoucher le nom ou le slogan avec ses mots (identity.choose name / slogan) ; ou demander une nouvelle proposition (identity.propose avec guidance = ses mots, et redo = les identités à refaire s'il en garde certaines). Ne choisis jamais à sa place ; en cas de doute sur son choix, pose UNE question.",
+  ];
+  if (id.issues.length) out.push(`Points que le contrôle du Studio n'a pas pu valider (dis-les honnêtement au client, en mots simples) : ${id.issues.join(" ; ")}.`);
+  return out;
 }
