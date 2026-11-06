@@ -69,10 +69,25 @@ export function submitMessage(user: User, cid: string, input: { requestId: strin
   return getRun(r.id)!;
 }
 
-function schedule(r: SynaRun, dependsOn: string[] = []) {
-  const job = enqueue({ userId: r.user_id, projectId: r.project_id, type: "syna.agent", label: L("SYNA travaille", "SYNA is working"), payload: { runId: r.id }, maxAttempts: 2, dependsOn, idempotencyKey: `syna:${r.id}:${r.step}:${dependsOn.join(",")}` });
+/**
+ * Reprise de l'exécution. Les créations natives attendues ne sont PAS des dépendances bloquantes : une création en
+ * échec doit aussi réveiller SYNA pour qu'elle l'explique et propose la suite. La tâche de reprise relit leur état.
+ */
+function schedule(r: SynaRun, waitFor: string[] = [], delayMs = 0) {
+  const job = enqueue({ userId: r.user_id, projectId: r.project_id, type: "syna.agent", label: L("SYNA travaille", "SYNA is working"), payload: { runId: r.id }, maxAttempts: 2, runAt: delayMs ? Date.now() + delayMs : undefined, idempotencyKey: `syna:${r.id}:${r.step}:${Date.now()}:${newId()}` });
   trackJob(r.conversation_id, r.id, job.id, "agent");
-  updateRun(r.id, { job_id: job.id, status: dependsOn.length ? "waiting_jobs" : "queued", waiting_jobs: JSON.stringify(dependsOn) });
+  updateRun(r.id, { job_id: job.id, status: waitFor.length ? "waiting_jobs" : "queued", waiting_jobs: JSON.stringify(waitFor) });
+}
+
+const ACTIVE_JOB = ["queued", "running", "paused"];
+/** Attente courte dans la tâche de reprise, puis nouvelle reprise planifiée : aucune place de worker gardée longtemps. */
+async function waitForJobs(jobs: string[], maxMs = 45_000) {
+  const t0 = Date.now();
+  for (;;) {
+    if (!jobs.some((j) => ACTIVE_JOB.includes(getJob(j)?.status ?? ""))) return true;
+    if (Date.now() - t0 > maxMs) return false;
+    await new Promise((res) => setTimeout(res, 3000));
+  }
 }
 
 /** Accord du client sur l'action en attente (sensible ou hors budget) : exécutée telle quelle, puis SYNA continue. */
@@ -115,6 +130,7 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
   try {
     // 1. Résultats des créations natives attendues (images, vidéos, thème…).
     const waited = json<string[]>(r.waiting_jobs, []);
+    if (waited.length && !(await waitForJobs(waited))) { schedule(r, waited, 10_000); return { runId, waiting: waited }; }
     if (waited.length) {
       const results = waited.map((jid) => { const j = getJob(jid); return { job: jid, type: j?.type, status: j?.status, message: j?.message, result: clip(j?.result ? json(j.result, j.result) : null, 1500), error: j?.error ? clip(j.error, 400) : undefined }; });
       addMessage(r.conversation_id, "tool", { key: `jobs:${r.step}`, tool: "jobs.wait", ok: results.every((x) => x.status === "done"), summary: L("Créations natives terminées : relisez-les avant de conclure.", "Native creations finished: read them back before concluding."), data: results }, r.id);

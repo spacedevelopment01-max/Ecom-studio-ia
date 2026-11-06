@@ -177,6 +177,28 @@ describe("SYNA agent — un fil, des outils natifs, des changements vérifiés",
     expect(doc.clips.map((c: any) => Math.round(c.durationS * 2) / 2)).toEqual([1, 2, 1.5]);
   });
 
+  it("une création attendue qui échoue réveille SYNA, qui voit l'échec et conclut (jamais bloquée)", async () => {
+    const s = await shop("echec");
+    const images = all<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND kind='image' AND deleted_at IS NULL LIMIT 2", s.p.id).map((x) => x.id);
+    const r = submitMessage(s.user, s.cid, { requestId: "echec-1", text: "Fais une petite vidéo." });
+    let seen: any = null;
+    const reason = async (call: any) => {
+      const step = getRun(r.id)!.step - 1;
+      if (step === 0) return { message: "", actions: [{ tool: "video.montage", args: { purpose: "organic", aspect: "1:1", scenes: images.map((assetId) => ({ assetId })), line: "", cta: "", music: "none" } }], done: false };
+      seen = call.prompt;
+      return { message: "Le rendu a échoué ; je vous propose de relancer.", actions: [], done: true };
+    };
+    await fr(() => runAgent(r.id, r.job_id!, { reason }));
+    const waiting = getRun(r.id)!;
+    expect(waiting.status).toBe("waiting_jobs");
+    const [render] = JSON.parse(waiting.waiting_jobs);
+    one("UPDATE jobs SET status='failed', error='rendu impossible (simulé)' WHERE id=? RETURNING 1", render);
+    await fr(() => runAgent(r.id, getRun(r.id)!.job_id!, { reason }));
+    expect(getRun(r.id)!.status).toBe("done");
+    expect(seen).toContain("jobs.wait");
+    expect(seen).toContain("ÉCHEC");
+  });
+
   it("le droit au projet est relu : un autre compte ne peut pas lire ni écrire dans le fil", async () => {
     const s = await shop("droits");
     const other = await createUser(`intrus-${Date.now()}@test.fr`, "motdepasse-test", "X");

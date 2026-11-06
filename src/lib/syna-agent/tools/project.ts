@@ -8,7 +8,7 @@ import { createProjectWithSubscription, NoFreeSubscription, pendingSubscriptions
 import { ensureFolders, saveAsset } from "../../library";
 import { initialize, approve, queuePreparation } from "../../preparation/engine";
 import { stateOf } from "../../preparation/store";
-import { createQuote } from "../../preparation/quote";
+import { createQuote, quoteOf } from "../../preparation/quote";
 import { emptyInput } from "../../orchestrator/conversation/store";
 import { emptyServiceProfile, SECTOR_IDS, type ProductProfile } from "../../project-types";
 import { getJob, publicJob } from "../../jobs";
@@ -118,11 +118,11 @@ const pilotRunTool: AgentTool<{ step: (typeof STEPS)[number]; action: (typeof AC
   args: z.object({ step: z.enum(STEPS), action: z.enum(ACTIONS), slot: z.string().max(80).optional(), correction: z.string().max(2000).optional() }).strict(),
   estimate: (ctx, a) => { const p = project(ctx); const q = createQuote(p.id, a.step, a.action, a.slot, a.correction) as any; return { maxMicro: q.capMicro ?? 0, label: `${a.step}/${a.action}` }; },
   run: (ctx, a) => {
-    const p = project(ctx), q = createQuote(p.id, a.step, a.action, a.slot, a.correction) as any, s = stateOf(p.id);
+    const p = project(ctx), created = createQuote(p.id, a.step, a.action, a.slot, a.correction) as any, q = quoteOf(p.id, created.id, a.correction) as any, s = stateOf(p.id);
     if (!s) return { ok: false, summary: L("Parcours non démarré.", "Pipeline not started.") };
     const r: any = queuePreparation(p.id, s.revision, a.step, a.action, { capMicro: q.capMicro, paid: q.paid, slot: q.slot, correction: q.correction, analysisFingerprint: q.analysisFingerprint });
     const jid = r?.jobId ?? r?.job?.id ?? stateOf(p.id)?.pending?.jobId;
-    return { ok: !!jid, summary: L(`Étape ${a.step}/${a.action} lancée (plafond ${q.maxBudgetPct ?? 0} % du budget).`, `Step ${a.step}/${a.action} started.`), jobs: jid ? [jid] : [], data: { quoteMaxPct: q.maxBudgetPct } };
+    return { ok: !!jid, summary: L(`Étape ${a.step}/${a.action} lancée (plafond ${created.maxBudgetPct ?? 0} % du budget).`, `Step ${a.step}/${a.action} started.`), jobs: jid ? [jid] : [], data: { quoteMaxPct: created.maxBudgetPct } };
   },
 };
 
