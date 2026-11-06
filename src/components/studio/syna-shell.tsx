@@ -31,6 +31,7 @@ import { useProject } from "./project-context";
 import { TutorialButton, TutorialsMenuLink } from "./tutorial";
 import { AiUsageBar, PlanLink, QuotaBanner, useBilling } from "../billing-client";
 import { ConversationPanel } from "./conversation-panel";
+import { SynaThread } from "./syna-thread";
 import { useAgentPanel, useAgentUi } from "./agent-ui-context";
 import { ActiveJobs, MobileLangToggle, MobileMenu, Notifications, ProjectSwitcher, QuickSearch, SpaceGuide, STATUS, TABS, navCtx, spaceBadge, tabIcon, tabLabel, tabsOf, type TabId } from "./shell";
 import { advancedOpen, navSpace, space, spacePurpose, SPACE_GROUPS } from "@/lib/studio-nav";
@@ -172,15 +173,15 @@ function ModeSwitch() {
 }
 
 /** La coquille SYNA, avec ses réglages lus sur le serveur (`initialPrefs`) : aucun clignotement au chargement. */
-export function SynaStudioShell({ projectId, children, initialPrefs = null }: { projectId: string; children: ReactNode; initialPrefs?: StoredSynaPrefs | null }) {
+export function SynaStudioShell({ projectId, children, initialPrefs = null, agent = false }: { projectId: string; children: ReactNode; initialPrefs?: StoredSynaPrefs | null; agent?: boolean }) {
   return (
     <SynaPrefsProvider projectId={projectId} initial={initialPrefs}>
-      <ShellInner projectId={projectId}>{children}</ShellInner>
+      <ShellInner projectId={projectId} agent={agent}>{children}</ShellInner>
     </SynaPrefsProvider>
   );
 }
 
-function ShellInner({ projectId, children }: { projectId: string; children: ReactNode }) {
+function ShellInner({ projectId, children, agent = false }: { projectId: string; children: ReactNode; agent?: boolean }) {
   const t = useT();
   const { lang } = useLang();
   const pathname = usePathname();
@@ -519,7 +520,7 @@ function ShellInner({ projectId, children }: { projectId: string; children: Reac
                 <div className="ss-panel-cmd" hidden={plein}>
                   <SynaCommandBar variant="inline" agentUi={agentUi} onOpenSyna={openSyna} value={cmdValue} onValue={setCmdValue} feedback={cmdFeedback} onFeedback={setCmdFeedback} />
                 </div>
-                <div className="ss-panel-b"><ConversationPanel key={projectId} projectId={projectId} compact /></div>
+                <div className="ss-panel-b">{agent ? <SynaThread key={projectId} projectId={projectId} compact /> : <ConversationPanel key={projectId} projectId={projectId} compact />}</div>
               </aside>
             )}
           </div>

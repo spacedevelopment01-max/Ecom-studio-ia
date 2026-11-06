@@ -11,6 +11,7 @@ import { exportAndRecord } from "../../cms-v2/record";
 import { readPrestations, savePrestations, prestationsInput } from "../../contenus/prestations";
 import { rdvOverview, setRdvLive, proMove, proCancel, proCreate, type RdvKind } from "../../rendez-vous";
 import { enqueue } from "../../jobs";
+import { assetUrl } from "../../library";
 import { L } from "../../i18n-server";
 import type { AgentTool, Change } from "../types";
 import { project, same, short } from "./common";
@@ -122,7 +123,7 @@ const exportTool: AgentTool<{ platform: "shopify" | "woocommerce" | "prestashop"
     if (!cur) return { ok: false, summary: L("Aucun site à exporter.", "No site to export.") };
     const r = await exportAndRecord({ id: p.id, userId: p.userId }, { spec: cur.spec, number: cur.version.number, id: cur.version.id }, a.platform, "fr");
     const saved = r.assetId ? one("SELECT 1 FROM assets WHERE id=? AND project_id=?", r.assetId, p.id) : null;
-    return { ok: !!saved, summary: saved ? L(`Export ${a.platform} prêt : ${r.name} (${r.verdict}).`, `Export ready: ${r.name}.`) : L(`Export refusé par le contrôle : ${r.message}`, `Export rejected: ${r.message}`), data: { assetId: r.assetId, name: r.name, verdict: r.verdict, href: r.assetId ? `/api/assets/${r.assetId}?download=1` : null, issues: r.issues.slice(0, 5) },
+    return { ok: !!saved, summary: saved ? L(`Export ${a.platform} prêt : ${r.name} (${r.verdict}).`, `Export ready: ${r.name}.`) : L(`Export refusé par le contrôle : ${r.message}`, `Export rejected: ${r.message}`), data: { assetId: r.assetId, name: r.name, verdict: r.verdict, href: r.assetId ? assetUrl({ id: r.assetId }, { download: true }) : null, issues: r.issues.slice(0, 5) },
       changes: saved ? [{ module: "exports", object: r.name, summary: `${a.platform}, version ${cur.version.number}, ${r.verdict}`, after: r.assetId, verified: true }] : [] };
   },
 };

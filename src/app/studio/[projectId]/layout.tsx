@@ -9,6 +9,7 @@ import { AgentUiProvider } from "@/components/studio/agent-ui-context";
 import { conversationUiEnabled } from "@/lib/orchestrator/conversation/ui-enabled";
 import { SYNA_SHELL_COOKIE, studioShellVariant } from "@/lib/syna-ui/studio-shell";
 import { readSynaPrefs } from "@/lib/syna-ui/prefs-store";
+import { synaAgentEnabled } from "@/lib/syna-agent/enabled";
 
 export default async function ProjectLayout({ children, params }: { children: React.ReactNode; params: Promise<{ projectId: string }> }) {
   const { projectId } = await params;
@@ -19,9 +20,9 @@ export default async function ProjectLayout({ children, params }: { children: Re
   // d'affichage (compte, projet) sont lus ici pour s'afficher sans clignotement.
   const shell = studioShellVariant(process.env, (await cookies()).get(SYNA_SHELL_COOKIE)?.value);
   return (
-    <AgentUiProvider enabled={conversationUiEnabled()}><ProjectProvider id={projectId}>
+    <AgentUiProvider enabled={conversationUiEnabled() || synaAgentEnabled()}><ProjectProvider id={projectId}>
       {shell.variant === "syna"
-        ? <SynaStudioShell projectId={projectId} initialPrefs={readSynaPrefs(user.id, projectId)}>{children}</SynaStudioShell>
+        ? <SynaStudioShell projectId={projectId} initialPrefs={readSynaPrefs(user.id, projectId)} agent={synaAgentEnabled()}>{children}</SynaStudioShell>
         : <StudioShell projectId={projectId} synaShell={shell.available ? <SynaShellSwitch to="syna" /> : undefined}>{children}</StudioShell>}
     </ProjectProvider></AgentUiProvider>
   );
