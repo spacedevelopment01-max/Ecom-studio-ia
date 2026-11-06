@@ -18,8 +18,8 @@ const filesTool: AgentTool<{ kind?: "image" | "video" | "archive" | "document"; 
   args: z.object({ kind: z.enum(["image", "video", "archive", "document"]).optional(), limit: z.number().int().min(1).max(200).default(60) }).strict(),
   run: (ctx, a) => {
     const p = project(ctx);
-    const rows = all<any>(`SELECT id,name,kind,role,origin,folder_id,meta_json,created_at FROM assets WHERE project_id=? AND deleted_at IS NULL ${a.kind ? "AND kind=?" : ""} ORDER BY created_at DESC LIMIT ?`, p.id, ...(a.kind ? [a.kind] : []), a.limit);
-    return { ok: true, summary: L(`${rows.length} média(s).`, `${rows.length} media.`), data: rows.map((r) => { const m = json<any>(r.meta_json, {}); return { assetId: r.id, name: r.name, kind: r.kind, role: r.role, origin: r.origin, folderId: r.folder_id, width: m.width, height: m.height, duration: m.duration, at: r.created_at }; }) };
+    const rows = all<any>(`SELECT id,name,kind,role,origin,folder_id,meta,created_at FROM assets WHERE project_id=? AND deleted_at IS NULL ${a.kind ? "AND kind=?" : ""} ORDER BY created_at DESC LIMIT ?`, p.id, ...(a.kind ? [a.kind] : []), a.limit);
+    return { ok: true, summary: L(`${rows.length} média(s).`, `${rows.length} media.`), data: rows.map((r) => { const m = json<any>(r.meta, {}); return { assetId: r.id, name: r.name, kind: r.kind, role: r.role, origin: r.origin, folderId: r.folder_id, width: m.width, height: m.height, duration: m.duration, at: r.created_at }; }) };
   },
 };
 
