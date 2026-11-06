@@ -31,6 +31,13 @@ import type { Deliverable } from "../quality/policies";
 import { mapEffort, modelStatus, TEXT_MODELS, textModel, thinkingOutsideMaxOutput } from "./text-models";
 import { ProviderHttpError, hasTextAdapter, textAdapters, type TextPart, type TextRequest, type TextResult, type TextTurn } from "./text-providers";
 
+/**
+ * Conversation de l'agent (SYNA) : réfléchir sur le projet n'est pas une création. Elle reste possible quand les faits
+ * ont changé depuis le choix de l'angle, pour que SYNA puisse justement re-préparer l'angle ; chaque création payante
+ * garde son propre contrôle de fraîcheur de la stratégie.
+ */
+const reasoningOnly = (call: { task: string }) => call.task === "agent_conversation";
+
 export type LlmImage = { data: Buffer; label?: string };
 
 export type LlmCall = {
@@ -300,7 +307,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     operationPending();
   }
   if (call.acquiredOnly) throw new UserFacingError(L("Le reçu acquis n’est pas disponible. Aucun nouvel appel envoyé.", "The acquired receipt is unavailable. No new request sent."));
-  if (call.projectId) assertStrategyInputsCurrent(call.projectId);
+  if (call.projectId && !reasoningOnly(call)) assertStrategyInputsCurrent(call.projectId);
   const decision = routeLlm(call);
   if (call.expectedRoute && (decision.provider !== call.expectedRoute.provider || decision.model !== call.expectedRoute.model || (decision.effort ?? '') !== (call.expectedRoute.effort ?? '')))
     throw new UserFacingError(L("La route IA a changé : demandez un nouveau devis. Aucun appel envoyé.", "The AI route changed: request a new quote. No request sent."));
@@ -327,7 +334,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   // Aucun repli serveur (`fallbacks`) : un modèle de repli serait facturé à son propre tarif, non couvert.
   const maxMicro = await maxCostMicro(route.model, params, format);
   assertUnderCostCap(maxMicro);
-  if (call.projectId) assertStrategyInputsCurrent(call.projectId);
+  if (call.projectId && !reasoningOnly(call)) assertStrategyInputsCurrent(call.projectId);
   const reservation = reserve(call.userId, maxMicro, { ...operation, provider: "anthropic", model: route.model, jobId: call.jobId });
   if (!isHaiku) {
     params.thinking = { type: "adaptive" };
@@ -498,7 +505,7 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
   const { brain } = brainOf(call);
   const maxMicro = await otherMaxCostMicro(provider, req, (r) => adapter.count(r, key));
   assertUnderCostCap(maxMicro);
-  if (call.projectId) assertStrategyInputsCurrent(call.projectId);
+  if (call.projectId && !reasoningOnly(call)) assertStrategyInputsCurrent(call.projectId);
   const reservation = reserve(call.userId, maxMicro, { ...operation, provider, model, jobId: call.jobId });
   const started = Date.now();
   let attempts = 0;

@@ -234,7 +234,7 @@ const researchRead: AgentTool<{}> = {
 
 const strategyChoose: AgentTool<{ angleId: string }> = {
   name: "strategy.choose", module: "stratégie", kind: "write", needsProject: true,
-  description: "Active l'angle marketing CHOISI PAR LE CLIENT parmi ceux de strategy.read (fil conducteur du site, des contenus et des publicités). Ne choisissez jamais à sa place : demandez-lui s'il n'a pas choisi. Ensuite, validez la recherche avec pilot.approve {step:\"research\", choiceId: le même angle}.",
+  description: "Active l'angle marketing CHOISI PAR LE CLIENT parmi ceux de strategy.read (fil conducteur du site, des contenus et des publicités). Ne choisissez jamais à sa place : demandez-lui s'il n'a pas choisi. Ensuite, validez la recherche avec pilot.approve {step:\"research\", choiceId: le même angle}. Sert aussi à RE-PRÉPARER l'angle déjà choisi quand les informations du projet ont changé (erreur « Préparez à nouveau cet angle ») : relancez-le avec le même angleId, gratuitement.",
   args: z.object({ angleId: z.string().max(40) }).strict(),
   run: (ctx, a) => {
     const p = project(ctx), before = strategyState(p.id).active;

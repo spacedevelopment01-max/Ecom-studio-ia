@@ -123,10 +123,20 @@ export async function runAgentJob(ctx: JobContext, deps: AgentDeps = {}) {
 export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {}) {
   let r = getRun(runId);
   if (!r || ["done", "failed", "cancelled"].includes(r.status)) return { runId, skipped: true };
-  const user = userOf(r.user_id);
-  if (r.project_id) requirePlan(user, r.project_id);
-  updateRun(r.id, { status: "running", error: null });
-  const tctx = toolContext(user, r);
+  // Toute erreur, même avant la première étape (droits, forfait), clôt la demande et s'affiche dans le fil :
+  // jamais une demande « en attente » pour toujours.
+  let user: User, tctx: ReturnType<typeof toolContext>;
+  try {
+    user = userOf(r.user_id);
+    if (r.project_id) requirePlan(user, r.project_id);
+    updateRun(r.id, { status: "running", error: null });
+    tctx = toolContext(user, r);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    addMessage(r.conversation_id, "event", { kind: "error", message: clip(msg, 500) }, r.id);
+    updateRun(runId, { status: "failed", error: clip(msg, 1000) as string });
+    return { runId, failed: msg };
+  }
   try {
     // 1. Résultats des créations natives attendues (images, vidéos, thème…).
     const waited = json<string[]>(r.waiting_jobs, []);
