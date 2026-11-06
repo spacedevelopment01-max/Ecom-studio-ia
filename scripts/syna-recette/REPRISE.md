@@ -90,3 +90,40 @@ Outils de recette dans ce dossier :
 - `lancer-agent.mts` : Studio privé ;
 - `chat.cjs` / `fil.cjs` : parler à SYNA et lire le fil ;
 - `banc-angles.mts` : banc d'essai des angles.
+
+## 8. Décisions du 6 novembre 2026 (nouveau parcours de création d'un projet)
+
+**Consigne n° 1 : la qualité.** Logos, textes (copywriting), référencement (SEO), images et thèmes doivent être au niveau
+des meilleurs sites de 2026. Une finition « années 2000 » ne doit jamais être montrée au client. On **planifie avant de
+construire**, pour ne pas refaire dix fois la même chose. L'utilisateur peut fournir autant d'exemples que nécessaire.
+
+Parcours voulu, tout piloté par SYNA (elle pose ses questions au lieu d'inventer) :
+0. SYNA s'ouvre à la création du projet et pose toutes les questions utiles ; elle peut en reposer en cours de route.
+1. 3 identités de marque **vraiment différentes** (nom, slogan, couleurs, polices…) — Claude.
+2. 3 logos, un par identité, **chacun différent** et adapté à son identité — images.
+3. Après validation de l'identité par le client : image de marque complète (déclinaisons du logo, planche, charte).
+4. 5 angles marketing émotionnels, choix du client — Claude.
+5. Toute l'activité selon l'angle choisi (infos de l'entreprise, stratégie, prix…), questions si besoin — Claude.
+6. Choix : un de nos thèmes ou création. Création = 3 maquettes images du site complet, mises en page vraiment
+   différentes, identité respectée, textes émotionnels et SEO sur le produit ou service du projet.
+7. Maquette choisie → thème codé à l'identique (Claude), images par l'IA, sections modifiables dans le Studio, Shopify et
+   autres plateformes, toutes les pages (produits, CGV…), en-tête, pied, responsive, liens qui marchent, aucune image
+   en double, produits créés dans l'onglet Produits et reliés au site. Le blog vient plus tard (étape 12).
+8. Ou un de nos thèmes : images et textes adaptés (SEO, textes émotionnels), mêmes exigences qu'au 7.
+9. 3 groupes de publications (chaque taille de réseau), groupes sans ressemblance, titre + texte + hashtags, réseau indiqué.
+10. Pareil pour les publicités images.
+11. Calendrier : nombre de posts par jour, sur 7, 15 ou 30 jours ; 1 post décliné par format ; sujets variés (produit,
+    conseil, avis, service, erreurs à éviter…) ; heures vues avec le client ; emojis si le client le veut ; aucune image
+    répétée, aucune image reprise du thème. **Pour l'instant sans publication automatique** (accords des plateformes à
+    obtenir par l'utilisateur) : le client sait quel jour publier quelle image avec quel texte.
+12. 2 articles de blog reliés au site (liens prévus dans le thème). Vidéos publicitaires : plus tard.
+13. Tous les fichiers rangés dans le Studio.
+
+Images : l'utilisateur avait choisi Qwen ; SYNA est passée sur OpenAI. **À comparer en réel (coût et qualité)** avant de
+trancher. Prix relevés : Qwen-Image 3.0 Pro ≈ 0,081 $ l'image ; OpenAI GPT Image 2.5 ≈ 0,05 $ (moyenne) à 0,09 $ (haute).
+
+Estimation donnée à l'utilisateur pour un projet complet (calendrier de 14 posts) : 28 à 56 € avec création de maquettes,
+20 à 41 € avec un de nos thèmes. À confirmer par des essais réels.
+
+À corriger après accord : plafond des images OpenAI à 0,10 $ (0,09 $ est un peu juste), plafond à part pour les grandes
+planches de maquettes (jusqu'à 0,14 $ en haute qualité).
