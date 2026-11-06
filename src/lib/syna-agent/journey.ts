@@ -112,23 +112,23 @@ export function missingFields(j: Journey): StartField[] {
 }
 
 export const QUESTIONS: Record<StartField, (j: Journey) => { fr: string; en: string }> = {
-  business: () => ({ fr: "Vous vendez des produits, ou vous proposez des services ?", en: "Do you sell products, or offer services?" }),
+  business: () => ({ fr: "Tu vends des produits, ou tu proposes des services ?", en: "Do you sell products, or offer services?" }),
   offer: (j) => j.start.business?.value === "services"
-    ? { fr: "Présentez-moi vos prestations en quelques phrases, avec vos mots.", en: "Describe your services in a few sentences, in your own words." }
-    : { fr: "Présentez-moi votre produit en quelques phrases, et joignez des photos si vous en avez (le vrai produit, sous plusieurs angles).", en: "Describe your product in a few sentences and attach photos if you have any." },
-  existing: () => ({ fr: "Avez-vous déjà quelque chose : un nom, un logo, des couleurs, un site ou des réseaux sociaux ? Si vous avez un lien, donnez-le-moi : je le lis pour gagner du temps.", en: "Do you already have a name, a logo, colours, a website or social accounts? Share a link and I'll read it." }),
-  keep: () => ({ fr: "Qu'est-ce que vous voulez garder tel quel (logo, nom, slogan, couleurs, polices, textes, photos…) ? Tout le reste, je le recrée.", en: "What do you want to keep as is (logo, name, tagline, colours, fonts, texts, photos…)? I'll recreate everything else." }),
-  audience: () => ({ fr: "À qui vous adressez-vous ? Décrivez votre client idéal : âge, situation, ce qu'il cherche.", en: "Who is it for? Describe your ideal customer: age, situation, what they're looking for." }),
+    ? { fr: "Présente-moi tes prestations en quelques phrases, avec tes mots.", en: "Describe your services in a few sentences, in your own words." }
+    : { fr: "Présente-moi ton produit en quelques phrases, et joins des photos si tu en as (le vrai produit, sous plusieurs angles).", en: "Describe your product in a few sentences and attach photos if you have any." },
+  existing: () => ({ fr: "As-tu déjà quelque chose : un nom, un logo, des couleurs, un site ou des réseaux sociaux ? Si tu as un lien, donne-le-moi : je le lis pour gagner du temps.", en: "Do you already have a name, a logo, colours, a website or social accounts? Share a link and I'll read it." }),
+  keep: () => ({ fr: "Qu'est-ce que tu veux garder tel quel (logo, nom, slogan, couleurs, polices, textes, photos…) ? Tout le reste, je le recrée.", en: "What do you want to keep as is (logo, name, tagline, colours, fonts, texts, photos…)? I'll recreate everything else." }),
+  audience: () => ({ fr: "À qui t'adresses-tu ? Décris ton client idéal : âge, situation, ce qu'il cherche.", en: "Who is it for? Describe your ideal customer: age, situation, what they're looking for." }),
   market: (j) => j.start.business?.value === "services"
-    ? { fr: "Où intervenez-vous : adresse ou zone (ville, rayon) ? Chez le client, chez vous, ou en ligne ?", en: "Where do you work: address or area? At the client's, at your place, or online?" }
-    : { fr: "Où vendez-vous : seulement en ligne, ou aussi en boutique ou sur des marchés ? Dans quels pays livrez-vous ?", en: "Where do you sell: online only, or also in a shop or at markets? Which countries do you ship to?" },
+    ? { fr: "Où interviens-tu : adresse ou zone (ville, rayon) ? Chez le client, chez toi, ou en ligne ?", en: "Where do you work: address or area? At the client's, at your place, or online?" }
+    : { fr: "Où vends-tu : seulement en ligne, ou aussi en boutique ou sur des marchés ? Dans quels pays livres-tu ?", en: "Where do you sell: online only, or also in a shop or at markets? Which countries do you ship to?" },
   price: (j) => j.start.business?.value === "services"
-    ? { fr: "Quels sont vos tarifs et durées, même approximatifs ?", en: "What are your prices and durations, even roughly?" }
-    : { fr: "Quel prix de vente prévoyez-vous (ou une fourchette) ? Y a-t-il des variantes (tailles, couleurs…) ?", en: "What selling price do you plan (or a range)? Any variants (sizes, colours…)?" },
-  difference: () => ({ fr: "Qu'est-ce qui vous rend différent, avec vos mots ?", en: "What makes you different, in your own words?" }),
-  taste: () => ({ fr: "Quels sites, marques ou styles aimez-vous ? Et ce que vous n'aimez pas ? Des liens ou des captures sont les bienvenus.", en: "Which websites, brands or styles do you like? And dislike? Links or screenshots welcome." }),
-  contact: () => ({ fr: "Vos coordonnées pour le site : nom de l'entreprise, e-mail, téléphone, adresse (et SIRET si vous l'avez). Vous pouvez en donner une partie maintenant et le reste plus tard.", en: "Your contact details for the site: company name, email, phone, address (and company number). Some now, the rest later is fine." }),
-  platform: () => ({ fr: "Sur quelle plateforme vendrez-vous : Shopify, WooCommerce, PrestaShop, ou vous ne savez pas encore ?", en: "Which platform will you sell on: Shopify, WooCommerce, PrestaShop, or not sure yet?" }),
+    ? { fr: "Quels sont tes tarifs et durées, même approximatifs ?", en: "What are your prices and durations, even roughly?" }
+    : { fr: "Quel prix de vente prévois-tu (ou une fourchette) ? Y a-t-il des variantes (tailles, couleurs…) ?", en: "What selling price do you plan (or a range)? Any variants (sizes, colours…)?" },
+  difference: () => ({ fr: "Qu'est-ce qui te rend différent, avec tes mots ?", en: "What makes you different, in your own words?" }),
+  taste: () => ({ fr: "Quels sites, marques ou styles aimes-tu ? Et ce que tu n'aimes pas ? Des liens ou des captures sont les bienvenus.", en: "Which websites, brands or styles do you like? And dislike? Links or screenshots welcome." }),
+  contact: () => ({ fr: "Tes coordonnées pour le site : nom de l'entreprise, e-mail, téléphone, adresse (et SIRET si tu l'as). Tu peux en donner une partie maintenant et le reste plus tard.", en: "Your contact details for the site: company name, email, phone, address (and company number). Some now, the rest later is fine." }),
+  platform: () => ({ fr: "Sur quelle plateforme vendras-tu : Shopify, WooCommerce, PrestaShop, ou tu ne sais pas encore ?", en: "Which platform will you sell on: Shopify, WooCommerce, PrestaShop, or not sure yet?" }),
 };
 
 export const FIELD_LABEL: Record<StartField, { fr: string; en: string }> = {

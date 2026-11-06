@@ -63,7 +63,8 @@ describe("activation de la coquille", () => {
     const layout = read("src/app/studio/[projectId]/layout.tsx");
     expect(layout).toContain("studioShellVariant(process.env");
     expect(layout).toMatch(/synaShell=\{shell\.available \? <SynaShellSwitch to="syna" \/> : undefined\}/);
-    expect(layout).toContain("AgentUiProvider enabled={conversationUiEnabled()}");
+    // L'interface de l'agent est aussi active quand SINA (agent #492) est activée.
+    expect(layout).toContain("AgentUiProvider enabled={conversationUiEnabled() || synaAgentEnabled()}");
   });
 });
 

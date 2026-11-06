@@ -113,7 +113,7 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
     const out = await oi.mediaProgress.run((p) => events.push(`${p.phase}${p.partials ? `:${p.partials}` : ""}`), () => fr(() => mp.logoArtworkImage({ ...c, usageKey: "k-ok" }, { prompt: "logo Sébastien Blanc" })));
     expect(out.equals(realPng)).toBe(true);
     expect(srv.requests).toHaveLength(1);
-    expect(srv.requests[0]).toMatchObject({ model: "gpt-image-2.5-sunburst", stream: true, partial_images: 2, quality: "high", size: "1024x1024" });
+    expect(srv.requests[0]).toMatchObject({ model: "gpt-image-2.5-sunburst", stream: true, partial_images: 2, quality: "medium", size: "1024x1024" });
     expect(srv.requests[0].background).toBeUndefined();
     // Prix par image injecté : réception tracée, mais aucune facture au jeton déduite de ce forfait simulé.
     expect(events).toEqual(["sent", "partial:1", "partial:2", "received:2"]);

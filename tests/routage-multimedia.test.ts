@@ -128,7 +128,7 @@ describe("routage multimédia V2", async () => {
   it("logo complet : modèle imposé et réservation réglée", async () => {
     const c = await client();
     await fr(() => mp.fullLogoImage(ctx(c), { brief: "monogramme", name: "Somnéa" }));
-    expect(oa.calls[0]).toMatchObject({ kind: "generate", model: "gpt-image-2.5-sunburst", quality: "high" });
+    expect(oa.calls[0]).toMatchObject({ kind: "generate", model: "gpt-image-2.5-sunburst", quality: "medium" }); // logos en qualité moyenne par défaut (choix du propriétaire)
     expect(reservations(c.userId)).toEqual([{ status: "settled", provider: "openai", model: "gpt-image-2.5-sunburst" }]);
   });
 

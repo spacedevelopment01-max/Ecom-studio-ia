@@ -59,6 +59,12 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
 
   // Suivi de l'exécution : relecture régulière tant que SINA travaille, puis rafraîchissement des onglets du Studio.
   const working = !!v?.run && WORKING.includes(v.run.status);
+  // Brouillon : dès que SINA a créé le projet, le client est emmené dans son projet, où la même conversation continue
+  // (sinon l'accueil, qui affiche alors « Mes projets », ferait disparaître le fil en pleine étape 0).
+  const moved = useRef(false);
+  useEffect(() => {
+    if (!projectId && v?.projectId && !moved.current) { moved.current = true; router.push(`/studio/${v.projectId}/pilote`); }
+  }, [projectId, v?.projectId, router]);
   useEffect(() => {
     if (!v) return;
     if (!working) {
@@ -119,7 +125,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
       {v.journey && <JourneyBar journey={v.journey} compact={compact} />}
 
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-3 py-3" aria-live="polite">
-        {!items.length && <p className="text-muted">{t("Décrivez votre objectif, joignez une photo, une vidéo ou un document : SINA choisit les outils du Studio, les enchaîne et vous montre ce qui a changé.", "Describe your goal or attach a photo, video or document.")}</p>}
+        {!items.length && <p className="text-muted">{t("Décris ton objectif, joins une photo, une vidéo ou un document : SINA choisit les outils du Studio, les enchaîne et te montre ce qui a changé.", "Describe your goal or attach a photo, video or document.")}</p>}
         {items.map((it) => it.kind === "user"
           ? <div key={it.m.id} className="ml-6 rounded-2xl bg-ink px-3 py-2 text-paper" data-syna-user>
               <p className="whitespace-pre-wrap">{it.m.content.text}</p>
@@ -139,7 +145,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
           <p className="font-medium">{pending.reason === "budget" ? t("Dépense au-delà du budget autorisé", "Spending beyond the authorised budget") : t("Action à confirmer", "Action to confirm")}</p>
           <p className="mt-1 whitespace-pre-wrap text-sm">{pending.preview}</p>
           {pending.tool === "budget.raise"
-            ? <p className="mt-2 text-xs">{t("Augmentez le budget autorisé ci-dessus, puis demandez à SINA de continuer.", "Raise the budget above, then ask SINA to continue.")}</p>
+            ? <p className="mt-2 text-xs">{t("Augmente le budget autorisé ci-dessus, puis demande à SINA de continuer.", "Raise the budget above, then ask SINA to continue.")}</p>
             : <div className="mt-2 flex gap-2"><Button size="sm" onClick={() => decide(pending.id, true)} disabled={busy}>{t("Confirmer", "Confirm")}</Button><Button size="sm" variant="secondary" onClick={() => decide(pending.id, false)} disabled={busy}>{t("Refuser", "Decline")}</Button></div>}
         </div>}
         {working && <p className="text-xs text-muted" data-syna-working>{v.run?.status === "waiting_jobs" ? t("SINA attend la fin d'une création (images, vidéo ou site) puis reprend seule…", "SINA is waiting for a creation to finish…") : t("SINA travaille…", "SINA is working…")}</p>}
@@ -149,7 +155,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
 
       <div className="border-t border-line p-3">
         {!!files.length && <div className="mb-2 flex flex-wrap gap-1">{files.map((f) => <span key={f.id} className="rounded-full border border-line px-2 py-0.5 text-xs">{f.kind === "video" ? "🎬" : f.kind === "image" ? "🖼" : "📄"} {f.name} <button type="button" aria-label={t("Retirer", "Remove")} onClick={() => setFiles((x) => x.filter((y) => y.id !== f.id))}>×</button></span>)}</div>}
-        <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={compact ? 3 : 4} maxLength={8000} placeholder={t("Votre demande, même avec plusieurs modifications…", "Your request, even with several changes…")} aria-label={t("Message à SINA", "Message to SINA")}
+        <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={compact ? 3 : 4} maxLength={8000} placeholder={t("Ta demande, même avec plusieurs modifications…", "Your request, even with several changes…")} aria-label={t("Message à SINA", "Message to SINA")}
           onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); send(); } }} />
         <div className="mt-2 flex items-center justify-between gap-2">
           <input ref={fileInput} type="file" accept={ACCEPT} multiple className="sr-only" aria-label={t("Joindre des fichiers", "Attach files")} onChange={(e) => attach(e.target.files)} />
@@ -206,7 +212,7 @@ function ToolResult({ m, projectId, onChoose, busy }: { m: Msg; projectId: strin
 function EventLine({ m }: { m: Msg }) {
   const t = useT(), c = m.content;
   if (c.kind === "error") return <p className="text-xs text-red-600">{t("Erreur : ", "Error: ")}{c.message}</p>;
-  if (c.kind === "stopped") return <p className="text-xs text-muted">{t("Arrêté à votre demande.", "Stopped.")}</p>;
+  if (c.kind === "stopped") return <p className="text-xs text-muted">{t("Arrêté à ta demande.", "Stopped.")}</p>;
   if (c.kind === "waiting_jobs") return <p className="text-xs text-muted">⏳ {t("Création lancée en arrière-plan ; SINA reprendra seule.", "Creation running in the background; SINA will resume.")}</p>;
   return null;
 }
