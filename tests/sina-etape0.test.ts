@@ -156,6 +156,23 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     expect(http("PATCH")).not.toThrow();
   });
 
+  it("niveau gratuit dans la vraie boucle : une réponse simple n'appelle pas l'IA", async () => {
+    const { addMessage } = await import("@/lib/syna-agent/store");
+    const user = await account();
+    const cid = threadFor(user, null), ctx = ctxOf(user, cid);
+    await call("start.answer", ctx, { answers: [{ field: "business", value: "services" }, { field: "offer", value: "Coaching sportif à domicile." }] });
+    await call("project.create", ctx, { name: "Coach", business: "services", description: "Coaching sportif à domicile." });
+    addMessage(cid, "assistant", { message: "Bien reçu.", actions: [], question: { text: "As-tu déjà quelque chose ?" }, done: false, askField: "existing", step: 0 }, null);
+    const r = submitMessage(user, cid, { requestId: `req-${Math.random()}`, text: "Rien, je pars de zéro" });
+    let calls = 0;
+    await fr(() => runAgent(r.id, r.job_id!, { reason: async () => { calls++; throw new Error("l'IA ne doit pas être appelée"); } }));
+    expect(calls).toBe(0);
+    expect(getRun(r.id)!.status).toBe("waiting_user");
+    expect(J.journeyOf(cid).start.existing?.value).toMatch(/je pars de zéro/);
+    const last = all<any>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND role='assistant' ORDER BY seq DESC LIMIT 1", cid).map((m) => json<any>(m.content_json, {}))[0];
+    expect(last).toMatchObject({ local: true, askField: "audience" });
+  });
+
   it("un projet créé sans le parcours SINA n'est jamais verrouillé", async () => {
     const { underConstruction } = await import("@/lib/syna-agent/construction");
     const { project } = await import("./conversation209-fixtures");
@@ -179,5 +196,54 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     expect(view.journey.current).toBe(0);
     expect(view.journey.steps).toHaveLength(14);
     run("SELECT 1");
+  });
+});
+
+describe("SINA — niveaux de coût : gratuit (moteur local), Haiku, Opus", async () => {
+  const L = await import("@/lib/syna-agent/local-step");
+  const J = await import("@/lib/syna-agent/journey");
+  const { modelFor } = await import("@/lib/syna-agent/loop");
+  const base = () => { const j = J.emptyJourney(); j.start.business = { value: "services", status: "answered", source: "client", at: 1 }; j.start.offer = { value: "Coaching sportif à domicile.", status: "answered", source: "client", at: 1 }; return j; };
+  const ctx = (j: any, askField: string | null, userText: string, extra: Partial<{ hasAttachments: boolean; hasProject: boolean }> = {}) => ({ journey: j, askField, userText, hasAttachments: false, hasProject: true, seq: 3, ...extra });
+
+  it("réponse simple à la question posée : enregistrée sans IA, question suivante posée", () => {
+    const d = L.localDecision(ctx(base(), "existing", "Rien, je pars de zéro"))!;
+    expect(d.answer).toMatchObject({ field: "existing", status: "answered" });
+    expect(d.out.actions[0]).toMatchObject({ tool: "start.answer" });
+    expect(d.out.askField).toBe("audience");
+    expect(d.out.question?.text).toMatch(/client idéal/);
+  });
+
+  it("dans le doute, jamais de devinette : Claude reprend", () => {
+    expect(L.localDecision(ctx(base(), "existing", "Oui, voici mon site https://exemple.fr"))).toBeNull();
+    expect(L.localDecision(ctx(base(), "audience", "Plus tard"))).toBeNull(); // indispensable
+    expect(L.localDecision(ctx(base(), "audience", "Ça veut dire quoi client idéal ?"))).toBeNull(); // question du client
+    expect(L.localDecision(ctx(base(), "market", "Bordeaux", { hasAttachments: true }))).toBeNull(); // pièce jointe
+    expect(L.localDecision(ctx(base(), "price", "60 €"))).toBeNull(); // pas la question en cours (existing manque)
+    expect(L.localDecision(ctx(base(), null, "Bordeaux"))).toBeNull(); // question inconnue
+    expect(L.parseSimpleAnswer("business", "un peu des deux, produits et services")).toBeNull();
+  });
+
+  it("dernière réponse : résumé construit sans rien réécrire, puis validation par « oui »", () => {
+    const j = base();
+    j.start.existing = { value: "Rien : je pars de zéro.", status: "answered", source: "client", at: 1 };
+    for (const f of ["audience", "market", "price", "difference", "taste"] as const) j.start[f] = { value: `réponse ${f}`, status: "answered", source: "client", at: 1 };
+    const d = L.localDecision(ctx(j, "contact", "Plus tard"))!;
+    expect(d.out.askField).toBe("confirm");
+    expect(d.out.message).toMatch(/Voici ce que j'ai compris/);
+    expect(d.out.message).toMatch(/réponse difference/);
+    expect(d.out.message).toMatch(/Plus tard/);
+    j.start.contact = { value: "", status: "later", source: "client", at: 1 };
+    const ok = L.localDecision(ctx(j, "confirm", "Oui, tout est juste, on continue"))!;
+    expect(ok.confirm).toBe(true);
+    expect(ok.out.actions[0].tool).toBe("start.confirm");
+    expect(L.localDecision(ctx(j, "confirm", "Non, le prix est faux"))).toBeNull();
+  });
+
+  it("modèle par réponse : Haiku pour l'étape 0 et une étape pas encore disponible, Opus pour une étape créative prête", () => {
+    expect(modelFor(0)).toMatchObject({ model: "claude-haiku-5-5" });
+    expect(modelFor(1)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 1 pas encore construite : simple annonce
+    J.READY_STEPS.push(1);
+    try { expect(modelFor(1)).toBeUndefined(); } finally { J.READY_STEPS.pop(); }
   });
 });

@@ -23,7 +23,8 @@ import { budgetState, jobSpentMicro, trackJob, authorizeBudgetPct, DEFAULT_BUDGE
 import { attachmentsOf, attachmentImages, describeAttachment } from "./attachments";
 import { projectSnapshot } from "./snapshot";
 import { SYNA_SYSTEM } from "./prompt";
-import { JOURNEY_STEPS, currentStep, journeyContext, journeyOf } from "./journey";
+import { JOURNEY_STEPS, READY_STEPS, currentStep, journeyContext, journeyOf } from "./journey";
+import { localDecision } from "./local-step";
 
 export const MAX_STEPS = 12;
 const MAX_ACTIONS = 8;
@@ -33,6 +34,8 @@ export const StepSchema = z.object({
   actions: z.array(z.object({ tool: z.string().min(1).max(80), args: z.record(z.string(), z.unknown()).default({}), why: z.string().max(400).optional() })).max(MAX_ACTIONS).default([]),
   question: z.object({ text: z.string().min(1).max(1200), choices: z.array(z.string().max(200)).max(8).optional() }).nullable().optional(),
   done: z.boolean().default(false),
+  /** Champ de la fiche de départ demandé par la question (étape 0), ou « confirm » pour le résumé. */
+  askField: z.string().max(20).optional(),
 });
 export type StepOutput = z.infer<typeof StepSchema>;
 
@@ -168,13 +171,16 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       const step = r.step;
       updateRun(r.id, { step: step + 1 });
       let out: StepOutput;
-      try {
+      // Niveau gratuit : réponse simple à la question posée (étape 0) traitée par le moteur local, sans IA.
+      const local = step === 0 ? localStepFor(r) : null;
+      if (local) out = local;
+      else try {
         out = await reason(user, r, jobId, step, deps);
       } catch (e) {
         if (e instanceof CostCapReached) return askBudget(r, null);
         throw e;
       }
-      addMessage(r.conversation_id, "assistant", { ...out, step }, r.id);
+      addMessage(r.conversation_id, "assistant", { ...out, step, ...(local ? { local: true } : {}) }, r.id);
       if (!out.actions.length) {
         updateRun(r.id, { status: out.question ? "waiting_user" : "done" });
         return { runId, steps: step + 1 };
@@ -210,6 +216,12 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
         if (res.jobs?.length) launched.push(...res.jobs);
       }
       if (launched.length) return suspend(getRun(runId)!, launched);
+      // Le moteur local a déjà écrit sa réponse (question suivante, résumé ou validation) : pas d'appel à l'IA ensuite,
+      // sauf si une de ses actions a échoué (Claude reprend alors pour l'expliquer).
+      if (local) {
+        const failed = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE run_id=? AND role='tool'", r.id).some((m) => json<any>(m.content_json, {}).ok === false);
+        if (!failed) { updateRun(r.id, { status: out.question ? "waiting_user" : "done" }); return { runId, steps: step + 1 }; }
+      }
     }
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -259,6 +271,29 @@ function askBudget(r: SynaRun, _x: null) {
   return { runId: r.id, waiting: "budget" };
 }
 
+/** Décision du moteur local pour le message du client de cette demande, ou null (→ Claude). */
+function localStepFor(r: SynaRun): StepOutput | null {
+  const msgs = lastMessages(r.conversation_id, 60);
+  const mine = msgs.filter((m) => m.runId === r.id && m.role === "user").pop();
+  if (!mine) return null;
+  const before = msgs.filter((m) => m.seq < mine.seq);
+  const lastAssistant = [...before].reverse().find((m) => m.role === "assistant");
+  const d = localDecision({
+    journey: journeyOf(r.conversation_id), userText: String(mine.content?.text ?? ""), hasAttachments: !!mine.content?.attachments?.length,
+    askField: (lastAssistant?.content?.askField as string | undefined) ?? null, hasProject: !!r.project_id, seq: mine.seq,
+  });
+  return d ? d.out : null;
+}
+
+/**
+ * Modèle de chaque réponse (économie à qualité égale) : Claude Haiku 5.5, le moins cher, pour les échanges simples
+ * (questions de départ, suivi, étape pas encore disponible) ; Claude Opus pour créer ou réfléchir (étapes créatives).
+ */
+export function modelFor(currentStepNumber: number): { provider: "anthropic"; model: string; effort?: string } | undefined {
+  const simple = currentStepNumber === 0 || !READY_STEPS.includes(currentStepNumber);
+  return simple ? { provider: "anthropic", model: "claude-haiku-5-5", effort: "low" } : undefined;
+}
+
 /** Un pas de raisonnement : fil complet + état du projet + pièces jointes (vision) → JSON d'actions. */
 async function reason(user: User, r: SynaRun, jobId: string, step: number, deps: AgentDeps): Promise<StepOutput> {
   const history = lastMessages(r.conversation_id, 120);
@@ -272,7 +307,7 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
     context: `# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id))}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget autorisé pour SINA\nAutorisé : ${b.authorizedPct ?? 0} % du budget IA ; engagé : ${b.spentPct ?? 0} %. Au-delà, le serveur demande l'accord du client.\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}`,
     prompt: `# Fil de la conversation (le plus ancien d'abord ; vos propres réponses incluses)\n${serialize(history)}\n\nÉtape ${step + 1} de cette demande. Répondez avec l'objet JSON {message, actions, question, done}.`,
     images: images.length ? images : undefined,
-    maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}`, routing: { difficulty: "complex" },
+    maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}`, routing: { difficulty: "complex", prefer: modelFor(currentStep(journeyOf(r.conversation_id))) },
   };
   if (deps.reason) return StepSchema.parse(await deps.reason(call));
   const cap = b.remainingMicro + jobSpentMicro(jobId);

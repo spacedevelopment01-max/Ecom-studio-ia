@@ -25,6 +25,7 @@ import { assertUnderCostCap, recordCall, redact, shortHash, skillsOfReference } 
 import { brainMetaOf } from "../brain/facade";
 import { getJsonSetting } from "../settings";
 import { route, type Difficulty, type RouteDecision, type RoutingHistory } from "../orchestrator/router";
+import { modelInfo } from "../orchestrator/capabilities";
 import { routingHistoryFor } from "../orchestrator/history";
 import { pinnedTasks, routingMode } from "../orchestrator/text-routing";
 import type { Deliverable } from "../quality/policies";
@@ -77,7 +78,11 @@ export type LlmCall = {
    * Router V2 : difficulté, livrable contrôlé et historique de l'étape (note précédente, verdict, cause d'échec).
    * Absent : le routage par défaut de la tâche (identique à celui d'avant la phase 3).
    */
-  routing?: { difficulty?: Difficulty; deliverable?: Deliverable; history?: RoutingHistory };
+  routing?: {
+    difficulty?: Difficulty; deliverable?: Deliverable; history?: RoutingHistory;
+    /** Modèle choisi par l'appelant pour cet appel (ex. SINA : Haiku pour un échange simple), s'il est utilisable. */
+    prefer?: { provider: "anthropic"; model: string; effort?: string };
+  };
 };
 
 /**
@@ -85,6 +90,13 @@ export type LlmCall = {
  * Un appel arrivé ici est déjà engagé vers l'IA : jamais de bascule silencieuse vers le moteur local.
  */
 export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing"> & { userId?: string }): RouteDecision {
+  const pref = call.routing?.prefer;
+  if (pref && pref.provider === "anthropic") {
+    const info = modelInfo(pref.provider, pref.model);
+    if (info && (!call.images?.length || info.capabilities.includes("vision"))) {
+      return { mode: "llm", provider: pref.provider, model: pref.model, effort: (pref.effort ?? undefined) as RouteDecision["effort"], tier: info.tier, reason: "modèle choisi par l'appelant (échange simple)", fallback: false, escalation: false, qualityTarget: null };
+    }
+  }
   const custom = getJsonSetting<Partial<Record<TaskId, unknown>>>("ai.routes", {});
   const auto = routingMode() === "auto";
   return route({

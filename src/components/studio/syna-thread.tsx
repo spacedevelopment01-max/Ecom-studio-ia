@@ -42,6 +42,31 @@ function JourneyBar({ journey, compact }: { journey: NonNullable<View["journey"]
     </div>
   );
 }
+/**
+ * Texte de SINA : paragraphes, listes à puces (« - … ») et gras (**…**) rendus proprement, sans jamais interpréter de
+ * HTML (aucun risque d'injection : seuls du texte et des balises <strong>, <ul>, <li>, <p> sont produits).
+ */
+function inline(s: string, key: string) {
+  return s.split(/(\*\*[^*]+\*\*)/g).map((part, i) => /^\*\*[^*]+\*\*$/.test(part) ? <strong key={`${key}-${i}`}>{part.slice(2, -2)}</strong> : <span key={`${key}-${i}`}>{part}</span>);
+}
+export function RichText({ text }: { text: string }) {
+  const blocks: React.ReactNode[] = [];
+  let list: string[] = [], para: string[] = [];
+  const flushList = () => { if (list.length) { const items = list, k = blocks.length; blocks.push(<ul key={`ul${k}`} className="mt-1 list-disc space-y-0.5 pl-5">{items.map((x, i) => <li key={i}>{inline(x, `li${k}-${i}`)}</li>)}</ul>); list = []; } };
+  // Lignes consécutives = un paragraphe (retours à la ligne gardés) ; une ligne vide sépare les paragraphes.
+  const flushPara = () => { if (para.length) { const lines = para, k = blocks.length; blocks.push(<p key={`p${k}`} className="[&:not(:first-child)]:mt-2">{lines.map((l, i) => <span key={i}>{i > 0 && <br />}{inline(l, `p${k}-${i}`)}</span>)}</p>); para = []; } };
+  for (const raw of String(text ?? "").split("\n")) {
+    const line = raw.trimEnd();
+    const bullet = /^\s*[-•*]\s+(.*)$/.exec(line);
+    if (bullet) { flushPara(); list.push(bullet[1]); continue; }
+    flushList();
+    if (!line.trim()) { flushPara(); continue; }
+    para.push(line);
+  }
+  flushPara(); flushList();
+  return <div data-syna-text>{blocks}</div>;
+}
+
 const ACCEPT = "image/*,video/mp4,video/quicktime,video/webm,application/pdf,.docx,.txt,.md,.csv";
 
 export function SynaThread({ projectId, compact = false, subscriptionKey }: { projectId: string | null; compact?: boolean; subscriptionKey?: string }) {
@@ -133,7 +158,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
             </div>
           : it.kind === "assistant"
           ? <div key={it.m.id} className="mr-4 space-y-2" data-syna-assistant>
-              {!!it.m.content.message && <div className="rounded-2xl border border-line bg-card px-3 py-2"><p className="whitespace-pre-wrap">{it.m.content.message}</p></div>}
+              {!!it.m.content.message && <div className="rounded-2xl border border-line bg-card px-3 py-2"><RichText text={it.m.content.message} /></div>}
               {it.m.content.question && <div className="rounded-xl border border-accent/40 bg-paper-2 px-3 py-2" data-syna-question>
                 <p className="font-medium">{it.m.content.question.text}</p>
                 {!!it.m.content.question.choices?.length && <div className="mt-2 flex flex-wrap gap-2">{it.m.content.question.choices.map((c: string) => <Button key={c} size="sm" variant="secondary" disabled={busy || working} onClick={() => send(c)}>{c}</Button>)}</div>}
