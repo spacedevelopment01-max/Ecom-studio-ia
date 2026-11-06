@@ -275,11 +275,14 @@ function newAttachmentSinceLastAssistant(h: SynaMessage[]) {
 
 /** Fil lisible par le modèle : paroles exactes, réponses de SYNA, résultats d'outils (tronqués), accords. */
 export function serialize(h: SynaMessage[]): string {
-  return h.map((m) => {
-    const c = m.content;
+  // Demande en cours : résultats complets ; demandes précédentes : résumés courts (moins de jetons relus à chaque étape).
+  let lastUser = -1;
+  h.forEach((m, i) => { if (m.role === "user") lastUser = i; });
+  return h.map((m, i) => {
+    const c = m.content, current = i > lastUser, dataMax = current ? 12000 : 300, argsMax = current ? 400 : 160;
     if (m.role === "user") return `[client #${m.seq}] ${c.text}${c.attachments?.length ? ` (pièces jointes : ${c.attachments.join(", ")})` : ""}`;
-    if (m.role === "assistant") return `[SYNA #${m.seq}] ${c.message}${c.actions?.length ? `\n  actions : ${c.actions.map((a: any) => `${a.tool} ${JSON.stringify(a.args)}`.slice(0, 400)).join(" | ")}` : ""}${c.question ? `\n  question : ${c.question.text}` : ""}`;
-    if (m.role === "tool") return `[résultat ${c.tool} #${m.seq}] ${c.ok ? "OK" : "ÉCHEC"} — ${c.summary}${c.changes?.length ? `\n  changements vérifiés : ${c.changes.map((x: any) => `${x.module}/${x.object} : ${x.summary}${x.verified ? "" : " (non vérifié)"}`).join(" ; ")}` : ""}${c.data != null ? `\n  données : ${JSON.stringify(c.data).slice(0, 3000)}` : ""}`;
+    if (m.role === "assistant") return `[SYNA #${m.seq}] ${c.message}${c.actions?.length ? `\n  actions : ${c.actions.map((a: any) => `${a.tool} ${JSON.stringify(a.args)}`.slice(0, argsMax)).join(" | ")}` : ""}${c.question ? `\n  question : ${c.question.text}` : ""}`;
+    if (m.role === "tool") return `[résultat ${c.tool} #${m.seq}] ${c.ok ? "OK" : "ÉCHEC"} — ${c.summary}${c.changes?.length ? `\n  changements vérifiés : ${c.changes.map((x: any) => `${x.module}/${x.object} : ${x.summary}${x.verified ? "" : " (non vérifié)"}`).join(" ; ")}` : ""}${c.data != null ? `\n  données : ${JSON.stringify(c.data).slice(0, dataMax)}` : ""}`;
     if (c.kind === "confirmation") return `[accord demandé #${m.seq}] ${c.pending?.tool} — ${c.pending?.reason}`;
     if (c.kind === "approved" || c.kind === "declined") return `[client : ${c.kind === "approved" ? "ACCORD" : "REFUS"} pour ${c.tool}]`;
     return `[événement ${c.kind}]`;
