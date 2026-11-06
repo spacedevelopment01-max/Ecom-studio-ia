@@ -6,7 +6,7 @@ import { id, now, one, run } from "../../db";
 import { DEFAULT_SETTINGS, loadProject, remember, saveProduct, saveServices } from "../../projects";
 import { createProjectWithSubscription, NoFreeSubscription, pendingSubscriptions } from "../../project-billing";
 import { ensureFolders, saveAsset } from "../../library";
-import { initialize, approve, queuePreparation } from "../../preparation/engine";
+import { initialize, approve, queuePreparation, answerBriefQuestion } from "../../preparation/engine";
 import { stateOf } from "../../preparation/store";
 import { createQuote, quoteOf } from "../../preparation/quote";
 import { emptyInput } from "../../orchestrator/conversation/store";
@@ -106,7 +106,9 @@ const pilotStateTool: AgentTool<{}> = {
     const p = project(ctx), s = stateOf(p.id);
     if (!s) return { ok: true, summary: L("Parcours non démarré.", "Not started."), data: null };
     const stages = Object.fromEntries(Object.entries(s.stages).map(([k, v]: any) => [k, { status: v?.status, provenance: v?.data?.provenance, keys: v?.data ? Object.keys(v.data).slice(0, 12) : [], choices: v?.data?.angles?.map?.((x: any) => ({ id: x.id, title: x.title ?? x.name })) ?? v?.data?.options?.map?.((x: any) => ({ id: x.id, title: x.title ?? x.name })) }]));
-    return { ok: true, summary: L(`Parcours, révision ${s.revision}.`, `Pipeline revision ${s.revision}.`), data: { revision: s.revision, pending: s.pending ?? null, stages } };
+    const brief: any = (s.stages as any).brief?.data;
+    const openQuestions = (brief?.profile?.questions ?? []).filter((q: any) => !q.answer && !q.later).map((q: any) => ({ id: q.id, question: q.question, required: q.required }));
+    return { ok: true, summary: L(`Parcours, révision ${s.revision} ; ${openQuestions.length} question(s) ouverte(s) dans la fiche.`, `Pipeline revision ${s.revision}.`), data: { revision: s.revision, pending: s.pending ?? null, stages, openQuestions, missing: brief?.missing ?? [] } };
   },
 };
 
@@ -123,6 +125,25 @@ const pilotRunTool: AgentTool<{ step: (typeof STEPS)[number]; action: (typeof AC
     const r: any = queuePreparation(p.id, s.revision, a.step, a.action, { capMicro: q.capMicro, paid: q.paid, slot: q.slot, correction: q.correction, analysisFingerprint: q.analysisFingerprint });
     const jid = r?.jobId ?? r?.job?.id ?? stateOf(p.id)?.pending?.jobId;
     return { ok: !!jid, summary: L(`Étape ${a.step}/${a.action} lancée (plafond ${created.maxBudgetPct ?? 0} % du budget).`, `Step ${a.step}/${a.action} started.`), jobs: jid ? [jid] : [], data: { quoteMaxPct: created.maxBudgetPct } };
+  },
+};
+
+const pilotAnswerTool: AgentTool<{ answers: { questionId: string; answer?: string; later?: boolean }[] }> = {
+  name: "pilot.answer", module: "pilote", kind: "write", needsProject: true,
+  description: "Répond aux questions ouvertes de la fiche du parcours (prix TTC, public visé, etc.) avec les MOTS DU CLIENT, par identifiant de question (pilot.state → openQuestions). later=true reporte une question non indispensable.",
+  args: z.object({ answers: z.array(z.object({ questionId: z.string().max(120), answer: z.string().max(3000).optional(), later: z.boolean().optional() }).strict()).min(1).max(20) }).strict(),
+  run: (ctx, a) => {
+    const p = project(ctx), changes: any[] = [], failed: string[] = [];
+    for (const x of a.answers) {
+      const s = stateOf(p.id);
+      if (!s) return { ok: false, summary: L("Parcours non démarré.", "Not started.") };
+      try { answerBriefQuestion(p.id, s.revision, x.questionId, x.later ? { later: true } : { answer: x.answer ?? "" }); }
+      catch (e: any) { failed.push(`${x.questionId} : ${short(e?.message, 160)}`); continue; }
+      const q = ((stateOf(p.id)!.stages as any).brief?.data?.profile?.questions ?? []).find((y: any) => y.id === x.questionId);
+      changes.push({ module: "pilote", object: q?.question ?? x.questionId, summary: x.later ? L("reportée", "postponed") : String(q?.answer ?? x.answer), after: q?.answer ?? null, verified: !!q && (x.later ? !!q.later : (q.answer ?? "") !== "") });
+    }
+    const missing = ((stateOf(p.id)!.stages as any).brief?.data?.missing ?? []) as unknown[];
+    return { ok: !failed.length, summary: L(`${changes.length} réponse(s) enregistrée(s) dans la fiche${failed.length ? ` ; refusées : ${failed.join(" ; ")}` : ""}. Encore manquant : ${missing.length}.`, `${changes.length} answer(s) saved.`), changes, data: { missing } };
   },
 };
 
@@ -187,5 +208,5 @@ const strategyChoose: AgentTool<{ angleId: string }> = {
   },
 };
 
-export const projectTools: AgentTool[] = [strategyRead, strategyChoose, createTool, profileTool, servicesTool, pilotStateTool, pilotRunTool, pilotApproveTool, noteTool, attachmentReadTool, jobTool];
+export const projectTools: AgentTool[] = [strategyRead, strategyChoose, createTool, profileTool, servicesTool, pilotStateTool, pilotRunTool, pilotAnswerTool, pilotApproveTool, noteTool, attachmentReadTool, jobTool];
 export const _unused = { HttpError };
