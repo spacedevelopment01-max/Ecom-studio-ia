@@ -6,7 +6,7 @@ import { id, now, one, run } from "../../db";
 import { DEFAULT_SETTINGS, loadProject, remember, saveProduct, saveServices } from "../../projects";
 import { createProjectWithSubscription, NoFreeSubscription, pendingSubscriptions } from "../../project-billing";
 import { ensureFolders, saveAsset } from "../../library";
-import { initialize, approve, queuePreparation, answerBriefQuestion, editBrief, references } from "../../preparation/engine";
+import { initialize, approve, queuePreparation, answerBriefQuestion, editBrief, references, updateOfferFacts } from "../../preparation/engine";
 import { stateOf } from "../../preparation/store";
 import { createQuote, quoteOf } from "../../preparation/quote";
 import { emptyInput } from "../../orchestrator/conversation/store";
@@ -57,7 +57,7 @@ const createTool: AgentTool<{ name: string; business: "products" | "services"; s
 
 const profileTool: AgentTool<any> = {
   name: "project.profile", module: "projet", kind: "write", needsProject: true,
-  description: "Enregistre la fiche de l'offre utilisée par tous les moteurs (marque, site, contenus) : nom, catégorie, secteur, résumé, couleurs vues sur les photos, matières, prix confirmé par le client, variantes. Les champs absents restent inchangés. Ce qui vient d'une photo reste « proposé », jamais un fait confirmé.",
+  description: "Enregistre la fiche de l'offre utilisée par tous les moteurs (marque, site, contenus) ; les FAITS (prix, matières, présentation, couleurs, variantes) n'ont besoin d'aucune analyse et gardent l'angle choisi ; nom, catégorie, secteur, résumé, couleurs vues sur les photos, matières, prix confirmé par le client, variantes. Les champs absents restent inchangés. Ce qui vient d'une photo reste « proposé », jamais un fait confirmé.",
   args: z.object({
     name: z.string().max(160).optional(), nameStatus: z.enum(["provided", "proposed"]).optional(), category: z.string().max(120).optional(), sector: z.enum(SECTOR_IDS).optional(),
     summary: z.string().max(4000).optional(), colors: z.array(z.object({ hex: z.string().regex(/^#[0-9a-fA-F]{6}$/), name: z.string().max(40), share: z.number().min(0).max(1) })).max(8).optional(),
@@ -68,6 +68,29 @@ const profileTool: AgentTool<any> = {
   }).strict(),
   run: (ctx, a: any) => {
     const p = project(ctx), before = p.product;
+    // Fiche du Pilote validée : les FAITS passent par la porte native (fiche + produit ensemble, angle conservé) ;
+    // un changement de nom, catégorie ou secteur est une nouvelle offre (fiche du Pilote, nouvelle analyse).
+    const briefApproved = stateOf(p.id)?.stages.brief?.status === "approved";
+    const coreChange = (a.name && a.name !== before.name) || (a.category && a.category !== before.category) || (a.sector && a.sector !== before.sector);
+    if (briefApproved && coreChange) return { ok: false, summary: L("Le nom, la catégorie ou le secteur définissent l'offre : modifiez-les dans la fiche du Pilote (pilot.answer champs offerName/description), ce qui demande une nouvelle analyse. Les faits (prix, matières, présentation) se modifient ici sans analyse.", "Name, category or sector define the offer: change them in the Pilot brief.") };
+    const applyFacts = (next: ProductProfile) => {
+      if (a.summary) { next.summary = a.summary; next.summaryStatus = "provided"; }
+      if (a.colors || a.materials || a.visualDescription) next.visual = { ...next.visual, ...(a.colors ? { colors: a.colors } : {}), ...(a.materials ? { materials: a.materials } : {}), ...(a.visualDescription ? { description: a.visualDescription } : {}) };
+      // Le profil stocke le prix en centimes (comme le catalogue) ; l'outil le reçoit en euros.
+      if (a.price) {
+        next.price = { amount: cents(a.price.amount), currency: a.price.currency, status: "confirmed" };
+        const shown = `${String(a.price.amount).replace(".", ",")} € TTC`;
+        for (const f of next.facts ?? []) if (/prix/i.test(f.label) && f.status !== "unknown") { f.value = shown; f.status = "confirmed"; f.source = "user"; }
+      }
+      if (a.variants) next.variants = a.variants;
+      for (const aid of a.sourceAttachmentIds ?? []) { const at = ctx.attachment(aid); if (at && !next.sources.some((s) => s.ref === (at.assetId ?? at.id))) next.sources.push({ type: "photo", ref: at.assetId ?? at.id, summary: short(a.visualDescription ?? at.name, 200) }); }
+    };
+    if (briefApproved) {
+      try { updateOfferFacts(p.id, applyFacts); }
+      catch (e: any) { return { ok: false, summary: short(e?.message, 300) }; }
+      const read = loadProject(p.id).product;
+      return { ok: true, summary: L("Faits de l'offre enregistrés dans la fiche et le Pilote ; angle et étapes validées conservés.", "Offer facts saved; angle kept."), data: { name: read.name, price: read.price }, changes: [{ module: "projet", object: "faits de l'offre", summary: Object.keys(a).join(", "), before: { price: before.price, summary: short(before.summary, 120) }, after: { price: read.price, summary: short(read.summary, 120) }, verified: read.price?.amount === (a.price ? cents(a.price.amount) : read.price?.amount) }] };
+    }
     const next: ProductProfile = structuredClone(before);
     if (a.name) { next.name = a.name; next.nameStatus = a.nameStatus ?? "proposed"; }
     if (a.category) next.category = a.category;
@@ -137,7 +160,7 @@ const pilotRunTool: AgentTool<{ step: (typeof STEPS)[number]; action: (typeof AC
 
 const pilotAnswerTool: AgentTool<{ answers?: { questionId: string; answer?: string; later?: boolean }[]; fields?: { target?: string; constraints?: string; offerName?: string; brandName?: string; description?: string; referenceUrls?: string[] } }> = {
   name: "pilot.answer", module: "pilote", kind: "write", needsProject: true,
-  description: "Complète gratuitement la fiche du parcours avec les MOTS DU CLIENT : `fields` pour les champs du brief (target = public visé « À qui cette offre s'adresse-t-elle ? », constraints, offerName, brandName, description, referenceUrls = liens donnés par le client, lus par la recherche) ; `answers` pour les questions ouvertes par identifiant (pilot.state → openQuestions ; later=true reporte une question facultative, seulement si le client l'accepte). Ne relancez JAMAIS une analyse payante pour corriger ou ajouter une information : utilisez cet outil.",
+  description: "Complète gratuitement la fiche du parcours avec les MOTS DU CLIENT : `fields` pour les champs du brief (target = public visé « À qui cette offre s'adresse-t-elle ? », constraints, offerName, brandName, description, referenceUrls = liens donnés par le client, lus par la recherche) ; `answers` pour les questions ouvertes par identifiant (pilot.state → openQuestions ; later=true reporte une question facultative, seulement si le client l'accepte). Ne relancez JAMAIS une analyse payante pour corriger ou ajouter une information : utilisez cet outil. Pour un simple FAIT de l'offre (prix, dimensions, matières, présentation) une fois la fiche validée, utilisez project.profile : il met à jour la fiche et le Pilote sans rouvrir la fiche ni périmer l'angle.",
   args: z.object({ answers: z.array(z.object({ questionId: z.string().max(120), answer: z.string().max(3000).optional(), later: z.boolean().optional() }).strict()).max(20).optional(), fields: z.object({ target: z.string().max(1200).optional(), constraints: z.string().max(5000).optional(), offerName: z.string().max(160).optional(), brandName: z.string().max(80).optional(), description: z.string().max(8000).optional(), referenceUrls: z.array(z.string().url().max(500)).max(12).optional() }).strict().optional() }).strict(),
   run: (ctx, a) => {
     const p = project(ctx), changes: any[] = [], failed: string[] = [];

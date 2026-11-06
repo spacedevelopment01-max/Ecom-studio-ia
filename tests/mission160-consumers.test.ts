@@ -113,9 +113,13 @@ it('un ancien contexte de rédaction ne mélange pas les angles et ne part pas a
  expect(one<{n:number}>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',f.pid)?.n).toBe(0);
 });
 
-it('un fait changé exige une recherche acquise puis une réconciliation explicite du même angle, sans droit supplémentaire',async()=>{
+it('un fait changé (présentation) garde l’angle ; une nouvelle offre exige une recherche acquise puis une réconciliation explicite du même angle, sans droit supplémentaire',async()=>{
  const f=await fixture();activate(f.pid,'usage');
+ // Règle du propriétaire (06/11/2026) : un fait ne périme pas l'angle.
  saveProduct(f.pid,{...f.project().product,summary:'Un sac de transport destiné aux trajets de week-end, avec rangement.'});
+ expect(()=>assertStrategyInputsCurrent(f.pid)).not.toThrow();
+ // Nouvelle offre (catégorie) : angle périmé, recherche puis réconciliation.
+ saveProduct(f.pid,{...f.project().product,category:'Bagagerie de week-end'});
  expect(()=>assertStrategyInputsCurrent(f.pid)).toThrow(/Préparez à nouveau cet angle/);
  expect(()=>withStrategyScope(f.pid,()=>null)).toThrow();
  expect(()=>activate(f.pid,'usage')).toThrow(/Aucun nouvel angle sourcé/);acquiredChoicesForTest(f.pid);

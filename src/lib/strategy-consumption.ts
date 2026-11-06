@@ -4,7 +4,7 @@ import { one } from './db';
 import { HttpError } from "./auth";
 /** Strategy provenance for one execution. A concurrent activation never relabels acquired content. */
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { activeStrategy, defaultStrategy, serviceStrategyProject, communicationStrategy, recordStrategyContent, strategyContext, strategyContextFor, currentStrategyInputDigest, assertStrategyPreparationCurrent } from './marketing-strategy';
+import { activeStrategy, defaultStrategy, serviceStrategyProject, communicationStrategy, recordStrategyContent, strategyContext, strategyContextFor, strategyInputsCurrent, assertStrategyPreparationCurrent } from './marketing-strategy';
 
 type Selection = NonNullable<ReturnType<typeof activeStrategy>>;
 export type StrategyStamp = Pick<Selection, 'id' | 'version' | 'angleId' | 'inputDigest'>;
@@ -45,7 +45,7 @@ function assertSelectionCurrent(projectId: string, selected: Selection, prepared
   if(selected.id.startsWith("draft-"))assertStrategyPreparationCurrent(projectId,selected.id.slice(6));
   const active = activeStrategy(projectId);
   if(serviceStrategyProject(projectId)&&!selected.id.startsWith("draft-"))communicationStrategy(projectId,{strategyId:selected.id});
-  if (selected.inputDigest !== currentStrategyInputDigest(projectId) || (!serviceStrategyProject(projectId) && !prepared && !selected.id.startsWith('draft-') && active?.angleId !== selected.angleId)) {
+  if (!strategyInputsCurrent(projectId, selected.inputDigest) || (!serviceStrategyProject(projectId) && !prepared && !selected.id.startsWith('draft-') && active?.angleId !== selected.angleId)) {
     throw new HttpError(409, "Les informations du projet ou son angle ont changé. Préparez à nouveau cet angle pour réconcilier les faits et l’identité avant toute nouvelle création. Vos contenus acquis et vos choix sont conservés.", "strategy_inputs_stale");
   }
 }

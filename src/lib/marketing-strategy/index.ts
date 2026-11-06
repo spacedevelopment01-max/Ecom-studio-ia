@@ -14,6 +14,7 @@ import {
   inputDigest,
   GENERALIST_EXPLANATION,
   GENERALIST_EXPLANATION_EN,
+  sameStrategyInputs,
 } from "./proposals";
 import {
   ANGLE_IDS,
@@ -81,11 +82,14 @@ export function communicationStrategy(projectId:string,options:{angleId?:string;
  schema();const s=options.strategyId?version(one('SELECT * FROM marketing_strategy_versions WHERE project_id=? AND id=?',projectId,options.strategyId)):options.angleId?version(one('SELECT * FROM marketing_strategy_versions WHERE project_id=? AND angle_id=? ORDER BY version DESC LIMIT 1',projectId,canonicalAngle(options.angleId))):activeStrategy(projectId);
  if(!s||!one('SELECT 1 FROM marketing_strategy_used WHERE project_id=? AND angle_id=?',projectId,s.angleId))throw new HttpError(409,'Choisissez explicitement un angle autorisé dans Stratégie avant de créer cette communication.','strategy_communication_choice_required');
  quota(projectId,s.angleId);
- if(s.inputDigest!==currentStrategyInputDigest(projectId))throw new HttpError(409,'Les informations ont changé. Réconciliez cet angle avant de créer une nouvelle communication ; les versions acquises sont conservées.','strategy_inputs_stale');
+ if(!sameStrategyInputs(s.inputDigest,loadProject(projectId)))throw new HttpError(409,'Les informations ont changé. Réconciliez cet angle avant de créer une nouvelle communication ; les versions acquises sont conservées.','strategy_inputs_stale');
  return s;
 }
 export const currentStrategyInputDigest = (projectId: string): string =>
   inputDigest(loadProject(projectId));
+/** Empreinte enregistrée encore valable (règle v2 : seuls les changements de l'offre périment un angle, pas les faits). */
+export const strategyInputsCurrent = (projectId: string, stored: string | null | undefined): boolean =>
+  sameStrategyInputs(stored, loadProject(projectId));
 export function strategyContext(projectId: string): string {
   return strategyContextFor(activeStrategy(projectId));
 }
@@ -170,7 +174,7 @@ function authorizedAngles(projectId:string):MarketingAngle[]{
 function selectableAngle(state:StrategyState,angleId:AngleId):MarketingAngle{
  const fresh=state.angles.find(a=>a.id===angleId);if(fresh)return fresh;
  const old=all<any>('SELECT * FROM marketing_strategy_versions WHERE project_id=? AND angle_id=? ORDER BY version DESC LIMIT 1',state.projectId,angleId)[0];
- if(state.usedAngleIds.includes(angleId)&&old?.input_digest===state.analysis.currentInputDigest)return JSON.parse(old.angle_json);
+ if(state.usedAngleIds.includes(angleId)&&sameStrategyInputs(old?.input_digest,loadProject(state.projectId)))return JSON.parse(old.angle_json);
  throw new HttpError(409,'Aucun nouvel angle sourcé disponible pour ces informations. Les choix historiques restent conservés.','strategy_research_required');
 }
 /** Mutable native records need a content identity as well as a stable database ID. */
@@ -406,7 +410,7 @@ export function getStrategyState(projectId: string): StrategyState {
   const stored=json<any>(set?.analysis_json,{}),current=marketingResearch(p);
   const acquired=current.data?current:stored.method==='sourced_ai_research'&&stored.evidence?marketingResearch(p,stored.evidence):current;
   const {evidence:privateReceipt,...publicAnalysis}=stored;
-  const ready=!!acquired.data&&stored.method==='sourced_ai_research'&&set?.input_digest===digest&&stored.researchDigest===acquired.digest;
+  const ready=!!acquired.data&&stored.method==='sourced_ai_research'&&sameStrategyInputs(set?.input_digest,p)&&stored.researchDigest===acquired.digest;
   const angles = ready?json<MarketingAngle[]>(set.angles_json, []):[];
   const active = activeStrategy(projectId);
   const usedAngleIds = all<{ angle_id: AngleId }>(
@@ -806,7 +810,7 @@ export function activateStrategy(
     if((prep.scope??'project')!==(serviceStrategyProject(projectId)?'service_communication':'project'))throw new HttpError(409,'La portée de préparation a changé. Préparez un nouveau choix sans remplacer les contenus existants.','strategy_preparation_stale');
     if (
       prep.researchDigest !== selectableAngle(getStrategyState(projectId),angleId).researchDigest ||
-      prep.inputDigest !== inputDigest(loadProject(projectId)) ||
+      !sameStrategyInputs(prep.inputDigest, loadProject(projectId)) ||
       prep.baseStrategyId !== (current?.id ?? null)
     )
       throw new HttpError(
@@ -1041,7 +1045,7 @@ export function assertStrategyPreparationCurrent(projectId:string,preparationId:
  schema();const prep=readPreparation(projectId,preparationId);quota(projectId,prep.angleId);
  if((prep.scope??'project')!==(serviceStrategyProject(projectId)?'service_communication':'project'))throw new HttpError(409,'La portée de préparation a changé. Préparez un nouveau choix.','strategy_preparation_stale');
  if(prep.status!=='prepared')throw new HttpError(409,'Cette préparation est clôturée.','strategy_preparation_closed');
- if(prep.inputDigest!==currentStrategyInputDigest(projectId)||prep.baseStrategyId!==(activeStrategy(projectId)?.id??null))throw new HttpError(409,'Le projet ou son angle actif a changé ; actualisez la préparation. Aucun nouvel appel n’a été lancé.','strategy_preparation_stale');
+ if(!sameStrategyInputs(prep.inputDigest,loadProject(projectId))||prep.baseStrategyId!==(activeStrategy(projectId)?.id??null))throw new HttpError(409,'Le projet ou son angle actif a changé ; actualisez la préparation. Aucun nouvel appel n’a été lancé.','strategy_preparation_stale');
  return prep;
 }
 

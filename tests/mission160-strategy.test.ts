@@ -420,14 +420,17 @@ it("ancien contenu programmé passe en revue, archives publiées préservées et
   );
   expect(() => activate(f.pid, "usage")).toThrow(/en cours/);
 });
-it("nouvelle donnée produit invalide la compatibilité sans supprimer les versions", async () => {
+it("nouvelle offre invalide la compatibilité sans supprimer les versions ; un simple fait la garde", async () => {
   const f = await fixture();
   activate(f.pid, "usage");
   recordStrategyContent(f.pid, "custom", "piece");
   expect(() => assertContentAlignment(f.pid, "custom", "piece")).not.toThrow();
+  // Règle du propriétaire (06/11/2026) : un fait (présentation) ne change pas l'offre.
+  saveProduct(f.pid, { ...loadProject(f.pid).product, summary: "Le sac a désormais deux compartiments confirmés." });
+  expect(() => assertContentAlignment(f.pid, "custom", "piece")).not.toThrow();
   saveProduct(f.pid, {
     ...loadProject(f.pid).product,
-    summary: "Le sac a désormais deux compartiments confirmés.",
+    category: "Bagagerie de voyage",
   });
   expect(() => assertContentAlignment(f.pid, "custom", "piece")).toThrow(
     /pas été vérifié/,
