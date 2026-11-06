@@ -139,3 +139,27 @@ recherche et fiche bien ; salon : prestations et rendez-vous…) :
 2. **Banc d'essai qualité** (payant, prix annoncé avant, accord écrit) : modèles d'images (OpenAI 2.5, OpenAI 2.6, Qwen)
    et de textes (Opus 5.5, Fable 5.1) sur un même projet exemple.
 3. Construction étape par étape (0 → 13), chaque étape essayée en réel et validée avec captures avant la suivante.
+
+---
+
+## Ajouts validés par le propriétaire (6 novembre 2026)
+
+1. **Partir de l'existant, et mode « refonte »** : le client donne un lien (ancien site, Instagram, boutique Etsy) ou
+   des photos ; SINA lit tout et ne pose que les questions manquantes. Le client peut dire ce qu'il garde et ce qu'il
+   change, par exemple « refais tout, garde le logo et le slogan, change tout le reste » : les éléments gardés sont
+   repris tels quels (jamais redessinés), tout le reste est recréé selon le parcours.
+2. **Suivi du chantier en direct** : frise des étapes 0 à 13 (fait, en cours, à valider), budget utilisé en %, pause
+   et reprise.
+3. **Mélanger les identités** : « le nom de la A avec les couleurs de la B » ; SINA recompose sans tout refaire.
+4. **Le logo en situation** avant le choix (emballage, vitrine, écran de téléphone).
+5. **Liste de ce qui manque avant de publier** (SIRET, adresse, horaires, informations des CGV, mentions légales…),
+   questions une par une ; rien n'est publié avec des trous.
+6. **Comptes réseaux prêts à l'emploi** : bio par réseau, photo de profil (symbole du logo), bannières aux bons
+   formats, icônes des « stories à la une ».
+7. **Textes des e-mails automatiques** dans le ton de la marque (bienvenue, confirmation de commande, panier abandonné,
+   confirmation de rendez-vous).
+8. **Services : fiche Google** (description, catégories, premières publications) pour être trouvé localement.
+9. **Services : carte de visite et flyer prêts à imprimer**, avec QR code vers le site.
+10. **Livret de lancement PDF** en fin de parcours : identité, site, calendrier, prochaines étapes.
+
+Écartée : la comparaison avec les concurrents.
