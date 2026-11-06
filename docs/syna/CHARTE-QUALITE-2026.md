@@ -40,7 +40,7 @@ Les 3 identités proposées diffèrent sur **au moins 4 des 6 axes**, dont toujo
 | 3. Famille de couleurs | sombre et un accent vif / tons chauds ton sur ton / clair et pastel |
 | 4. Famille de polices | serif fine contrastée / sans serif condensée très grasse / ronde épaisse |
 | 5. Ton du slogan | poétique / direct et impératif / complice et léger |
-| 6. Type de logo | voir 2.2 |
+| 6. Style de logo | voir 2.3 |
 
 Contrôle : Claude compare les trois identités axe par axe ; deux identités trop proches → la plus faible est refaite avant
 d'être montrée.
@@ -53,27 +53,49 @@ convient à ce client ».
 Vérification du nom : recherche web (domaine, réseaux, marque connue du même secteur). Le résultat est indicatif ; le
 client vérifie lui-même à l'INPI. SYNA ne garantit jamais qu'un nom est libre.
 
-### 2.2 Trois logos, chacun d'un type différent
+### 2.2 Niveau visé : les exemples du propriétaire (6 novembre 2026)
 
-| Identité | Type de logo imposé |
-|---|---|
-| A | **Logotype** : le nom seul, lettrage dessiné (ligature, coupe, détail propre à la marque) |
-| B | **Symbole + nom** : un pictogramme simple et le nom à côté |
-| C | **Monogramme ou emblème** : initiales ou forme fermée, utilisable seule en avatar |
+Cinq planches de 50 logos (mode et beauté, maison, cuisine, services, tech et loisirs) fixent le niveau. Ce sont des
+**références de niveau et de variété, jamais des modèles à recopier** (ni leurs noms, ni leurs dessins). Elles ne sont pas
+versionnées (images du propriétaire).
 
-### 2.3 Critères d'un logo 2026 (tous obligatoires)
+Ce qu'elles montrent :
+- **Une idée tirée du métier ou du nom**, simple et astucieuse : un éclair qui forme le V d'un électricien, une goutte
+  qui contient une gourde, deux dés pour « Dé Deux », une spirale d'argile, une bobine de fil qui écrit le nom, un
+  casque dont l'arceau forme une lettre.
+- **Une grande variété de styles**, choisis selon l'univers du client : lettrage seul raffiné, symbole + nom,
+  monogramme, emblème ou badge fermé, cachet ou tampon, mascotte illustrée sympathique, trait continu (line art),
+  icône abstraite colorée, pixel, brutaliste à ombre décalée, isométrie 3D, tache d'aquarelle, art déco, pop art.
+- **Une typographie forte et choisie pour l'émotion** : serif élégante pour le luxe, grasse et ronde pour l'enfance ou la
+  gourmandise, condensée et penchée pour le sport, espacée et fine pour le bien-être.
+- **Peu de couleurs** (1 à 3 le plus souvent, plus seulement quand le style l'exige : aquarelle, pop art), contrastées,
+  accordées à l'univers.
+- **Une exécution impeccable** : dessin vectoriel net, épaisseurs cohérentes, nom parfaitement lisible, composition
+  équilibrée et centrée.
 
-1. Une seule idée forte, compréhensible en une seconde.
-2. Lisible et reconnaissable à **32 px** (icône d'application, favicon) et en très grand.
-3. Fonctionne en **une seule couleur** (noir sur blanc, blanc sur fond sombre) sans perdre son sens.
-4. **Interdits** (finition « années 2000 ») : dégradés décoratifs, reflets, biseaux, ombres portées, effet 3D, contour
-   lumineux, texture, clipart, globe, ampoule, engrenage, cœur générique, « swoosh », polices fantaisie usées.
-5. Formes nettes, épaisseurs régulières, espacement des lettres travaillé, aucune lettre déformée ni fausse lettre.
-6. Orthographe exacte du nom, aucun mot ni lettre en trop.
+### 2.3 Trois logos, trois styles différents
+
+Pour un même client, les 3 logos (un par identité) utilisent **trois styles différents** de la liste ci-dessus, choisis
+parmi ceux qui conviennent à son métier et à chaque identité (ex. pour une boulangerie : badge rétro, lettrage serif
+élégant, mascotte gourmande). Deux logos ne doivent jamais se ressembler (forme, style, couleurs, police).
+
+### 2.4 Critères d'un logo 2026 (tous obligatoires)
+
+1. Une seule idée forte, liée au métier, au produit ou au nom, compréhensible en une seconde.
+2. Nom parfaitement lisible, orthographe exacte, aucun mot, lettre ou fausse lettre en trop.
+3. Reconnaissable en petit (avatar, favicon 32 px : au moins le symbole ou l'initiale) et en très grand.
+4. Exécution vectorielle nette : bords francs, épaisseurs régulières, espacement des lettres travaillé.
+5. Le style choisi est assumé jusqu'au bout (une texture d'aquarelle ou une 3D isométrique est permise si c'est LE
+   style du logo, propre et maîtrisée).
+6. **Interdits** (finition « années 2000 » ou amateur) : effets « WordArt » (chrome, reflets brillants, biseaux, ombre
+   portée floue), photo ou rendu réaliste dans le logo, clipart générique sans lien avec la marque (globe, poignée de
+   main), plus de couleurs que le style n'en demande, police système banale (Arial, Comic Sans, Papyrus), texte
+   illisible ou déformé, composition déséquilibrée.
 7. Fond uni ou transparent, logo entier, centré, avec de l'air autour.
 8. Cohérent avec la palette et les polices de son identité.
+9. Ne ressemble pas à un logo de marque existante connue.
 
-### 2.4 Image de marque complète (après validation du client)
+### 2.5 Image de marque complète (après validation du client)
 
 - Le logo choisi est **vectorisé** (SVG) ; toutes les déclinaisons sont faites à partir de ce dessin, donc identiques :
   couleur, noir, blanc sur fond sombre, symbole seul, version horizontale, version empilée, favicon 32 et 512 px,
@@ -225,7 +247,7 @@ interdite par les règles des régies (santé, avant/après trompeur, urgence ar
 | Livrable | Contrôle |
 |---|---|
 | Identités | différence sur ≥ 4 axes ; critères 2.1 |
-| Logo | critères 2.3, vérifiés sur l'image à 32 px et en grand |
+| Logo | critères 2.4, vérifiés sur l'image en petit et en grand |
 | Textes | critères 3 et règles communes |
 | Images | critères 5, image par image |
 | Site | captures à 5 largeurs, liens testés, images en double recherchées, Theme Check, SEO section 4 |

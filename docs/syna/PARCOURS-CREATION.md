@@ -43,13 +43,13 @@ Fin d'étape : SYNA résume ce qu'elle a compris et le client confirme. Analyse 
 
 ## Étape 2 — 3 logos, un par identité 🔧
 
-- Un logo par identité, de type imposé (logotype / symbole + nom / monogramme), charte § 2.2 et 2.3.
+- Un logo par identité, trois styles différents adaptés au métier (charte § 2.2 à 2.4, niveau des 50 exemples du propriétaire).
 - Contrôle de chaque logo (Claude, vision) ; une reprise au plus, annoncée.
 - Le client choisit **une identité complète** (il peut demander des retouches : nom, couleur…).
 
 ## Étape 3 — Image de marque complète (après validation du client) 🔧
 
-- Vectorisation du logo choisi, déclinaisons exactes, planche de marque, charte PDF (charte qualité § 2.4).
+- Vectorisation du logo choisi, déclinaisons exactes, planche de marque, charte PDF (charte qualité § 2.5).
 - Planche refaite avec la charte (`saveIdentityBoard`).
 
 ## Étape 4 — 5 angles marketing ✅
