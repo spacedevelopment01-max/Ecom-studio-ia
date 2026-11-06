@@ -207,6 +207,23 @@ const strategyRead: AgentTool<{}> = {
   run: (ctx) => { const st = getStrategyState(project(ctx).id); return { ok: true, summary: st.active ? L(`Angle actif : ${st.active.angleId}.`, `Active angle: ${st.active.angleId}.`) : L(`Aucun angle actif ; ${st.angles.length} proposé(s).`, `No active angle.`), data: { research: st.research ? { status: st.research.status, message: st.research.message } : null, angles: st.angles.map((x: any) => ({ id: x.id, title: x.title ?? x.name, promise: short(x.promise ?? x.summary ?? x.hook ?? "", 200) })), recommendation: st.recommendation, active: st.active ? { angleId: st.active.angleId, version: st.active.version } : null, missingQuestions: st.missingQuestions } }; },
 };
 
+
+const researchRead: AgentTool<{}> = {
+  name: "research.read", module: "stratégie", kind: "read", needsProject: true,
+  description: "Lit la recherche marketing du Pilote (brouillon ou validée) : couverture, les 5 angles avec cible, motivation, accroche, arguments et LEURS SOURCES (titre, lien, famille, lue par le Studio ou extrait de la recherche web), recommandation, et les sources écartées avec la raison. À utiliser pour présenter les angles au client avec leurs sources. Après son choix : pilot.approve {step:\"research\"} puis strategy.choose.",
+  args: z.object({}).strict(),
+  run: (ctx) => {
+    const p = project(ctx), r: any = (stateOf(p.id)?.stages as any)?.research;
+    if (!r?.data) return { ok: true, summary: L("Aucune recherche marketing enregistrée.", "No marketing research yet."), data: null };
+    const d = r.data, byId = new Map<string, any>((d.sources ?? []).map((s: any) => [s.id, s]));
+    const src = (id: string) => { const s = byId.get(id); return s ? { id, title: s.title, url: s.url, family: s.category, read: s.via === "openai_web_search" ? "extrait rapporté par la recherche web OpenAI" : "page lue par le Studio" } : { id, title: "source inconnue" }; };
+    const angles = (d.angles ?? []).map((a: any) => ({ id: a.id, title: a.title, audience: a.audience, motivation: a.motivation, message: a.message, arguments: (a.arguments ?? []).slice(0, 4).map((x: string) => short(x, 200)), sources: (a.sourceIds ?? []).map(src) }));
+    const used = (d.sources ?? []).filter((s: any) => s.status === "consulted" && s.relevance?.accepted !== false).map((s: any) => src(s.id));
+    const excluded = (d.sources ?? []).filter((s: any) => s.status !== "consulted" || s.relevance?.accepted === false).map((s: any) => ({ url: s.url, reason: s.error ?? s.relevance?.reason ?? "non retenue" }));
+    return { ok: true, summary: L(`Recherche ${r.status} : ${angles.length} angle(s), ${used.length} source(s) retenue(s), ${excluded.length} écartée(s).`, `Research ${r.status}: ${angles.length} angles.`), data: { status: r.status, coverage: d.coverage, angles, recommendedId: d.recommendedId, recommendation: d.recommendation, sources: used, excluded } };
+  },
+};
+
 const strategyChoose: AgentTool<{ angleId: string }> = {
   name: "strategy.choose", module: "stratégie", kind: "write", needsProject: true,
   description: "Active l'angle marketing CHOISI PAR LE CLIENT parmi ceux de strategy.read (fil conducteur du site, des contenus et des publicités). Ne choisissez jamais à sa place : demandez-lui s'il n'a pas choisi.",
@@ -221,5 +238,5 @@ const strategyChoose: AgentTool<{ angleId: string }> = {
   },
 };
 
-export const projectTools: AgentTool[] = [strategyRead, strategyChoose, createTool, profileTool, servicesTool, pilotStateTool, pilotRunTool, pilotAnswerTool, pilotApproveTool, noteTool, attachmentReadTool, jobTool];
+export const projectTools: AgentTool[] = [strategyRead, researchRead, strategyChoose, createTool, profileTool, servicesTool, pilotStateTool, pilotRunTool, pilotAnswerTool, pilotApproveTool, noteTool, attachmentReadTool, jobTool];
 export const _unused = { HttpError };
