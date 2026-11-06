@@ -129,7 +129,7 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
       expect(ok.ok).toBe(true);
       const j = J.journeyOf(cid);
       expect(j.steps[0].status).toBe("done");
-      expect(j.steps[1].status).toBe("doing");
+      expect(j.steps[1].status).toBe("todo"); // rien n'est en cours tant que l'étape 1 n'a pas commencé
       expect(J.currentStep(j)).toBe(1);
       const input = (stateOf(pid)!.stages as any).brief.data.input;
       expect(input.target).toMatch(/maisons anciennes/);
@@ -164,7 +164,31 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     expect(http("PATCH")).not.toThrow();
   });
 
-  it("niveau gratuit dans la vraie boucle : une réponse simple n'appelle pas l'IA", async () => {
+  it("réponses personnalisées (par défaut) : le Studio enregistre la réponse lui-même, puis Haiku rédige une seule réponse", async () => {
+    const { addMessage } = await import("@/lib/syna-agent/store");
+    const user = await account();
+    const cid = threadFor(user, null), ctx = ctxOf(user, cid);
+    await call("start.answer", ctx, { answers: [{ field: "business", value: "services" }, { field: "offer", value: "Coaching sportif à domicile." }] });
+    addMessage(cid, "assistant", { message: "Bien reçu.", actions: [], question: { text: "As-tu déjà quelque chose ?" }, done: false, askField: "existing", step: 0 }, null);
+    const r = submitMessage(user, cid, { requestId: `req-${Math.random()}`, text: "Rien, je pars de zéro" });
+    const seen: any[] = [];
+    await fr(() => runAgent(r.id, r.job_id!, { reason: async (c) => {
+      // La réponse est déjà enregistrée AVANT que le modèle n'écrive : il ne peut pas l'oublier.
+      expect(J.journeyOf(cid).start.existing?.value).toMatch(/je pars de zéro/);
+      seen.push(c.routing?.prefer);
+      return { message: "Super, on part de zéro ensemble !", actions: [], question: { text: "À qui t'adresses-tu ?" }, done: false, askField: "audience" };
+    } }));
+    expect(seen).toHaveLength(1);
+    expect(seen[0]).toMatchObject({ model: "claude-haiku-5-5" });
+    expect(getRun(r.id)!.status).toBe("waiting_user");
+  });
+
+  it("réglage « réponses locales » : une réponse simple n'appelle pas du tout l'IA", async () => {
+    const { setJsonSetting } = await import("@/lib/settings");
+    setJsonSetting("syna.replies", "locales");
+    try { await localOnly(); } finally { setJsonSetting("syna.replies", "personnalisees"); }
+  });
+  async function localOnly() {
     const { addMessage } = await import("@/lib/syna-agent/store");
     const user = await account();
     const cid = threadFor(user, null), ctx = ctxOf(user, cid);
@@ -178,7 +202,7 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     expect(J.journeyOf(cid).start.existing?.value).toMatch(/je pars de zéro/);
     const last = all<any>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND role='assistant' ORDER BY seq DESC LIMIT 1", cid).map((m) => json<any>(m.content_json, {}))[0];
     expect(last).toMatchObject({ local: true, askField: "audience" });
-  });
+  }
 
   it("un projet créé sans le parcours SINA n'est jamais verrouillé", async () => {
     const { underConstruction } = await import("@/lib/syna-agent/construction");

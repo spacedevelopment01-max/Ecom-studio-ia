@@ -7,10 +7,11 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { cx } from "../ui";
 import { useT } from "../i18n";
+import { stepLabel } from "./journey-labels";
 
 export type ChantierData = {
   current: number; mode: "creation" | "refonte"; keep: string[];
-  steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped" }[];
+  steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[];
   fiche: { fr: string; en: string; value: string; later: boolean }[];
 };
 
@@ -18,7 +19,6 @@ export function ChantierView({ data }: { data: ChantierData }) {
   const t = useT(), router = useRouter();
   // Avancée en direct : la page se relit seule pendant que SINA travaille.
   useEffect(() => { const h = setInterval(() => router.refresh(), 8000); return () => clearInterval(h); }, [router]);
-  const label = { todo: t("à faire", "to do"), doing: t("en cours", "in progress"), review: t("à valider", "to approve"), done: t("validée", "approved"), skipped: t("sans objet", "not needed") };
   return (
     <div className="space-y-6" data-chantier>
       <section className="rounded-3xl border border-line bg-card p-5 sm:p-7">
@@ -28,7 +28,7 @@ export function ChantierView({ data }: { data: ChantierData }) {
           {data.steps.map((s) => (
             <li key={s.n} className={cx("flex items-center gap-3 rounded-2xl border px-3 py-2.5", s.n === data.current ? "border-signal bg-signal-soft" : "border-line")} data-step={s.n} data-status={s.status}>
               <span className={cx("flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold", s.status === "done" ? "bg-ink text-paper" : s.n === data.current ? "bg-signal text-paper" : "bg-paper-2 text-muted")}>{s.status === "done" ? "✓" : s.n}</span>
-              <span className="min-w-0 flex-1"><span className="block text-sm font-medium">{t(s.fr, s.en)}</span><span className="block text-xs text-muted">{label[s.status]}</span></span>
+              <span className="min-w-0 flex-1"><span className="block text-sm font-medium">{t(s.fr, s.en)}</span><span className="block text-xs text-muted">{stepLabel(s, data.current, t)}</span></span>
             </li>
           ))}
         </ol>

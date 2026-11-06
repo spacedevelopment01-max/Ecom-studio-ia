@@ -16,6 +16,7 @@ import { llmJson, type LlmCall, type LlmImage } from "../ai/llm";
 import { withTrace, CostCapReached } from "../ai/trace";
 import { requirePlan } from "../plan-gates";
 import { L } from "../i18n-server";
+import { getJsonSetting } from "../settings";
 import { allTools, getTool, isSensitive, toolCatalog } from "./registry";
 import type { AgentTool, ToolContext, ToolResult } from "./types";
 import { authorizedBudget, addMessage, createRun, getRun, lastMessages, pendingOf, recordChanges, runByRequest, activeRun, updateRun, type PendingAction, type SynaRun, type SynaMessage } from "./store";
@@ -171,8 +172,12 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       const step = r.step;
       updateRun(r.id, { step: step + 1 });
       let out: StepOutput;
-      // Niveau gratuit : réponse simple à la question posée (étape 0) traitée par le moteur local, sans IA.
-      const local = step === 0 ? localStepFor(r) : null;
+      // Niveau gratuit : réponse simple à la question posée (étape 0) enregistrée par le moteur local, sans IA. Réglage
+      // « syna.replies » : « personnalisées » (par défaut, choix du propriétaire) = le moteur local enregistre, puis
+      // Claude Haiku rédige la réponse au client ; « locales » = le moteur local écrit aussi la réponse (0 €).
+      const localFull = step === 0 ? localStepFor(r) : null;
+      const personalized = getJsonSetting<string>("syna.replies", "personnalisees") !== "locales";
+      const local = localFull && personalized ? { message: "", actions: localFull.actions, question: null, done: false } as StepOutput : localFull;
       if (local) out = local;
       else try {
         out = await reason(user, r, jobId, step, deps);
@@ -218,7 +223,7 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       if (launched.length) return suspend(getRun(runId)!, launched);
       // Le moteur local a déjà écrit sa réponse (question suivante, résumé ou validation) : pas d'appel à l'IA ensuite,
       // sauf si une de ses actions a échoué (Claude reprend alors pour l'expliquer).
-      if (local) {
+      if (local && !personalized) {
         const failed = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE run_id=? AND role='tool'", r.id).some((m) => json<any>(m.content_json, {}).ok === false);
         if (!failed) { updateRun(r.id, { status: out.question ? "waiting_user" : "done" }); return { runId, steps: step + 1 }; }
       }
@@ -353,7 +358,7 @@ export function threadView(user: User, cid: string) {
     budget: budgetState(user.id, c.project_id, cid),
     attachments: attachmentsOf(cid).map((a) => ({ id: a.id, kind: a.kind, name: a.name, analysis: a.analysis })),
     tools: allTools().length,
-    journey: (() => { const j = journeyOf(cid); return { current: currentStep(j), mode: j.mode, keep: j.keep, steps: JOURNEY_STEPS.map((s) => ({ n: s.n, fr: s.fr, en: s.en, status: j.steps[s.n]?.status ?? "todo" })) }; })(),
+    journey: (() => { const j = journeyOf(cid); return { current: currentStep(j), mode: j.mode, keep: j.keep, steps: JOURNEY_STEPS.map((s) => ({ n: s.n, fr: s.fr, en: s.en, status: j.steps[s.n]?.status ?? "todo", ready: READY_STEPS.includes(s.n) })) }; })(),
   };
 }
 

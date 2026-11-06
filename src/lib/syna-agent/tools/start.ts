@@ -217,7 +217,7 @@ const confirmTool: AgentTool<{}> = {
     const logoId = j0.keep.includes("logo") ? await keepLogo(ctx, j0) : null;
     remember(pid, { kind: "decision", key: "syna.depart", value: `Étape 0 validée par le client. ${j0.mode === "refonte" ? `Refonte : garder tel quel ${j0.keep.join(", ")}.` : "Création complète."}`, source: "user" } as any);
     if (j0.keep.length) remember(pid, { kind: "decision", key: "syna.garder", value: j0.keep.join(", "), source: "user" } as any);
-    const j = updateJourney(ctx.conversationId, (j) => { setStep(j, 0, "done"); setStep(j, 1, "doing"); });
+    const j = updateJourney(ctx.conversationId, (j) => { setStep(j, 0, "done"); setStep(j, 1, "todo"); });
     return {
       ok: true,
       summary: L(`Étape 0 validée : tout ce que tu as dit est reporté dans ton projet${j0.keep.length ? ` ; gardé tel quel : ${j0.keep.join(", ")}${j0.keep.includes("logo") ? (logoId ? " (logo rangé)" : " (logo introuvable : envoie-moi le fichier)") : ""}` : ""}. Prochaine étape : les 3 identités de marque.`, "Step 0 validated."),

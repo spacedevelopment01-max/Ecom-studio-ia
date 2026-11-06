@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { api, Button, cx, Textarea } from "../ui";
 import { useT } from "../i18n";
 import { useOptionalProject } from "./project-context";
+import { stepLabel } from "./journey-labels";
 
 type Msg = { id: string; seq: number; role: "user" | "assistant" | "tool" | "event"; runId: string | null; content: any; createdAt: number };
 type View = {
@@ -15,27 +16,27 @@ type View = {
   run: { id: string; status: string; step: number; pending: any; error: string | null } | null;
   budget: { authorizedPct: number | null; spentPct: number | null };
   attachments: { id: string; kind: string; name: string; analysis: any }[];
-  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped" }[] };
+  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[] };
 };
 const WORKING = ["queued", "running", "waiting_jobs"];
 
 /** Frise du chantier : les étapes 0 à 13 du parcours de création, leur état, l'étape en cours. */
 function JourneyBar({ journey, compact }: { journey: NonNullable<View["journey"]>; compact: boolean }) {
   const t = useT();
-  const label = { todo: t("à faire", "to do"), doing: t("en cours", "in progress"), review: t("à valider", "to approve"), done: t("validée", "approved"), skipped: t("sans objet", "not needed") };
   const cur = journey.steps.find((s) => s.n === journey.current);
+  const started = cur && cur.status !== "todo";
   return (
     <div className="border-b border-line px-3 py-2" data-syna-journey>
       <div className="flex items-center justify-between gap-2 text-xs">
-        <span className="font-medium">{t("Étape", "Step")} {journey.current} · {cur ? t(cur.fr, cur.en) : ""}</span>
+        <span className="font-medium">{started ? `${t("Étape", "Step")} ${journey.current}` : t("Prochaine étape", "Next step")} · {cur ? t(cur.fr, cur.en) : ""}{cur && !started && cur.ready === false ? ` · ${t("bientôt disponible", "coming soon")}` : ""}</span>
         {journey.mode === "refonte" && <span className="text-muted">{t("Refonte · gardé tel quel", "Redesign · kept as is")} : {journey.keep.join(", ")}</span>}
       </div>
       <ol className={cx("mt-1.5 flex gap-1", compact ? "" : "sm:gap-1.5")} aria-label={t("Étapes du parcours", "Journey steps")}>
         {journey.steps.map((s) => (
-          <li key={s.n} className="min-w-0 flex-1" title={`${s.n}. ${t(s.fr, s.en)} — ${label[s.status]}`} data-step={s.n} data-status={s.status}>
+          <li key={s.n} className="min-w-0 flex-1" title={`${s.n}. ${t(s.fr, s.en)} — ${stepLabel(s, journey.current, t)}`} data-step={s.n} data-status={s.status}>
             <span className={cx("block h-1.5 rounded-full",
-              s.status === "done" ? "bg-ink" : s.status === "doing" ? "bg-signal" : s.status === "review" ? "bg-warn" : s.status === "skipped" ? "bg-line opacity-50" : "bg-line")} />
-            <span className="sr-only">{s.n}. {t(s.fr, s.en)} : {label[s.status]}</span>
+              s.status === "done" ? "bg-ink" : s.status === "doing" ? "bg-signal" : s.n === journey.current && s.status === "todo" ? "bg-signal opacity-40" : s.status === "review" ? "bg-warn" : s.status === "skipped" ? "bg-line opacity-50" : "bg-line")} />
+            <span className="sr-only">{s.n}. {t(s.fr, s.en)} : {stepLabel(s, journey.current, t)}</span>
           </li>
         ))}
       </ol>
