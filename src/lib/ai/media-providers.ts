@@ -750,7 +750,7 @@ export async function fullLogoImage(ctx: Ctx, input: { brief: string; name: stri
 ${input.colors?.length ? `Couleurs : UNIQUEMENT celles de la marque, ${input.colors.join(", ")} (plus du blanc ou un presque noir si besoin) ; le logo suit la charte graphique.
 ` : ""}Texte du logo, écrit EXACTEMENT, accents compris : le nom « ${input.name} »${input.descriptor ? ` et, plus petite, la ligne d'activités « ${input.descriptor} »` : ""}${input.tagline ? ` et, en plus petit encore, le slogan de la marque « ${input.tagline} »` : ""}. Aucun autre mot${input.tagline ? "" : ", aucun slogan"}, aucune fausse lettre.
 Niveau attendu : un logo moderne et professionnel pour une vraie petite entreprise, original, fait pour cette marque seulement, jamais la copie d'un logo existant. Suis la composition et le style choisis dans le brief. Contours nets, logo centré, marges généreuses, sur un fond transparent ou blanc pur. Aucune maquette, aucun papier, aucun mur, aucune photo en fond, aucun cadre autour de l'image.`;
-  return generateImage(ctx, { text, aspect: "1:1", reference: null, quality: "high", strictQuality: true, usage: "logo", need: { text: true } });
+  return generateImage(ctx, { text, aspect: "1:1", reference: null, quality: logoQuality(), strictQuality: true, usage: "logo", need: { text: true } });
 }
 
 /**
@@ -758,8 +758,16 @@ Niveau attendu : un logo moderne et professionnel pour une vraie petite entrepri
  * dégradé…) dessiné par le modèle d'images de l'usage « Logos ». La demande complète vient du moteur Logo V2
  * (style, texte exact) ; haute qualité, fond transparent quand le modèle le permet.
  */
+/**
+ * Qualité des dessins de logo (décision du propriétaire, 06/11/2026) : « medium » par défaut, environ 4 fois moins cher
+ * que « high » ; l'administration peut repasser en haute qualité (`ai.media.quality` → `logo: "high"`).
+ */
+export function logoQuality(): "medium" | "high" {
+  return getJsonSetting<Partial<Record<string, string>>>("ai.media.quality", {}).logo === "high" ? "high" : "medium";
+}
+
 export async function logoArtworkImage(ctx: Ctx, input: { prompt: string }) {
-  return generateImage(ctx, { text: clampBytes(input.prompt, LOGO_PROMPT_MAX_BYTES), aspect: "1:1", reference: null, quality: "high", strictQuality: true, usage: "logo", need: { text: true } });
+  return generateImage(ctx, { text: clampBytes(input.prompt, LOGO_PROMPT_MAX_BYTES), aspect: "1:1", reference: null, quality: logoQuality(), strictQuality: true, usage: "logo", need: { text: true } });
 }
 
 /**
@@ -808,7 +816,7 @@ export function logoArtworkMaxMicro(opts: { text?: boolean } = { text: true }): 
   if (!r) return null;
   const prompt = "x".repeat(LOGO_PROMPT_MAX_BYTES);
   const model = r.model;
-  const micro = r.provider === "openai" ? openaiImageMax(model, { prompt, images: 0, size: "1024x1024", quality: "high" }) : r.provider === "google" ? geminiImageMax(model, { prompt, images: 0 }) : cost(r.provider, model, { images: 1 }).micro;
+  const micro = r.provider === "openai" ? openaiImageMax(model, { prompt, images: 0, size: "1024x1024", quality: logoQuality() }) : r.provider === "google" ? geminiImageMax(model, { prompt, images: 0 }) : cost(r.provider, model, { images: 1 }).micro;
   return mediaReservationMaxMicro(micro);
 }
 

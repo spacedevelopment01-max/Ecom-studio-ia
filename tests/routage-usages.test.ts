@@ -241,7 +241,7 @@ describe("routage multimédia par usage", async () => {
   it("logo imposé : fond blanc sans transparence, ancienne route ignorée, refus fournisseur conservé", async () => {
     const c = await client(); setUsage("logo", { primary: "openai:gpt-image-1", backup: "google:gemini-2.5-flash-image" });
     await fr(() => mp.logoArtworkImage(ctx(c), { prompt: "logo complet" }));
-    expect(oa.calls.at(-1)).toMatchObject({ model: "gpt-image-2.5-sunburst", quality: "high" });
+    expect(oa.calls.at(-1)).toMatchObject({ model: "gpt-image-2.5-sunburst", quality: "medium" });
     expect(oa.calls.at(-1).background).toBeUndefined();
     oa.mode = "400";
     const err = await fr(() => mp.logoArtworkImage(ctx(c), { prompt: "logo complet" })).catch(e => e);

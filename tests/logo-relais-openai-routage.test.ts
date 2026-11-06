@@ -77,7 +77,7 @@ describe("relais de qualité des logos (OpenAI)", async () => {
     const c = await client();
     await fr(() => runForUser(c.userId, () => mp.logoArtworkImage({ ...c, usageKey: "mandatory-1" }, { prompt: "Dessine le logo de la marque de test." })));
     expect(oa.calls).toHaveLength(1);
-    expect(oa.calls[0]).toMatchObject({ kind: "generate", model: REQUIRED_LOGO_MODEL, quality: "high" });
+    expect(oa.calls[0]).toMatchObject({ kind: "generate", model: REQUIRED_LOGO_MODEL, quality: "medium" }); // décision du propriétaire (06/11/2026) : logos en qualité moyenne par défaut
     expect(net.calls).toEqual([]);
     expect(all("SELECT * FROM ai_reservations WHERE user_id=? AND status='settled'", c.userId)).toHaveLength(1);
     expect(all<{ estimated: number }>("SELECT estimated FROM ai_calls WHERE user_id=?", c.userId)[0].estimated).toBe(1);
