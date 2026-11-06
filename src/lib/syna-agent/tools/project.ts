@@ -6,7 +6,7 @@ import { id, now, one, run } from "../../db";
 import { DEFAULT_SETTINGS, loadProject, remember, saveProduct, saveServices } from "../../projects";
 import { createProjectWithSubscription, NoFreeSubscription, pendingSubscriptions } from "../../project-billing";
 import { ensureFolders, saveAsset } from "../../library";
-import { initialize, approve, queuePreparation, answerBriefQuestion } from "../../preparation/engine";
+import { initialize, approve, queuePreparation, answerBriefQuestion, editBrief } from "../../preparation/engine";
 import { stateOf } from "../../preparation/store";
 import { createQuote, quoteOf } from "../../preparation/quote";
 import { emptyInput } from "../../orchestrator/conversation/store";
@@ -128,13 +128,22 @@ const pilotRunTool: AgentTool<{ step: (typeof STEPS)[number]; action: (typeof AC
   },
 };
 
-const pilotAnswerTool: AgentTool<{ answers: { questionId: string; answer?: string; later?: boolean }[] }> = {
+const pilotAnswerTool: AgentTool<{ answers?: { questionId: string; answer?: string; later?: boolean }[]; fields?: { target?: string; constraints?: string; offerName?: string; brandName?: string; description?: string } }> = {
   name: "pilot.answer", module: "pilote", kind: "write", needsProject: true,
-  description: "Répond aux questions ouvertes de la fiche du parcours (prix TTC, public visé, etc.) avec les MOTS DU CLIENT, par identifiant de question (pilot.state → openQuestions). later=true reporte une question non indispensable.",
-  args: z.object({ answers: z.array(z.object({ questionId: z.string().max(120), answer: z.string().max(3000).optional(), later: z.boolean().optional() }).strict()).min(1).max(20) }).strict(),
+  description: "Complète gratuitement la fiche du parcours avec les MOTS DU CLIENT : `fields` pour les champs du brief (target = public visé « À qui cette offre s'adresse-t-elle ? », constraints, offerName, brandName, description) ; `answers` pour les questions ouvertes par identifiant (pilot.state → openQuestions ; later=true reporte une question facultative, seulement si le client l'accepte). Ne relancez JAMAIS une analyse payante pour corriger ou ajouter une information : utilisez cet outil.",
+  args: z.object({ answers: z.array(z.object({ questionId: z.string().max(120), answer: z.string().max(3000).optional(), later: z.boolean().optional() }).strict()).max(20).optional(), fields: z.object({ target: z.string().max(1200).optional(), constraints: z.string().max(5000).optional(), offerName: z.string().max(160).optional(), brandName: z.string().max(80).optional(), description: z.string().max(8000).optional() }).strict().optional() }).strict(),
   run: (ctx, a) => {
     const p = project(ctx), changes: any[] = [], failed: string[] = [];
-    for (const x of a.answers) {
+    if (a.fields && Object.keys(a.fields).length) {
+      const s = stateOf(p.id);
+      if (!s) return { ok: false, summary: L("Parcours non démarré.", "Not started.") };
+      const before = (s.stages as any).brief.data.input;
+      try { editBrief(p.id, s.revision, { ...before, ...a.fields }); }
+      catch (e: any) { failed.push(`champs : ${short(e?.message, 200)}`); }
+      const after = (stateOf(p.id)!.stages as any).brief.data.input;
+      for (const k of Object.keys(a.fields)) changes.push({ module: "pilote", object: `fiche › ${k}`, summary: `${short(before[k] || "—", 60)} → ${short(after[k], 60)}`, before: before[k], after: after[k], verified: after[k] === (a.fields as any)[k] });
+    }
+    for (const x of a.answers ?? []) {
       const s = stateOf(p.id);
       if (!s) return { ok: false, summary: L("Parcours non démarré.", "Not started.") };
       try { answerBriefQuestion(p.id, s.revision, x.questionId, x.later ? { later: true } : { answer: x.answer ?? "" }); }
