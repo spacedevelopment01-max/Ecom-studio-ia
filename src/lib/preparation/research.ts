@@ -8,7 +8,7 @@ import { isMarketplace, type WebFinding } from "../ai/web-search";
 export type WebDiscover = (query: string) => Promise<WebFinding[]>;
 export function webResearchQuery(p: Project, brief: Brief): string {
   return JSON.stringify({
-    demande: "Trouve des pages web utiles pour définir des angles marketing de cette offre (offre, concurrents, clients, secteur).",
+    demande: "Trouve des pages web utiles pour définir des angles marketing émotionnels de cette offre : ce que les clients désirent, craignent ou regrettent, comment les concurrents se présentent, les repères du secteur.",
     offre: { nom: brief.profile.name, categorie: brief.profile.category, resume: brief.profile.summary, activite: p.business },
     publicVise: brief.input.target, zone: p.business === "services" ? brief.services.area : undefined, langue: "français",
   });

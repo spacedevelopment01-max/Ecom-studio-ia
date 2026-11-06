@@ -68,6 +68,10 @@ export type Angle = {
   tone?: string;
   visualDirection?: string;
   message?: string;
+  /** Émotion visée par l'angle (envie, peur, fierté…) ; absente des anciennes recherches. */
+  emotion?: string;
+  /** Preuves non confirmées dont l'angle aurait besoin : questions à poser au client. */
+  proofsToConfirm?: string[];
   arguments: string[];
   objections: { objection: string; answer: string }[];
   reason: string;
