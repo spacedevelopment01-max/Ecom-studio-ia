@@ -1,0 +1,9 @@
+{
+  "branch": "codex/parity301-native-social-format-guard",
+  "local": "7ed85a6839abc5898dc874bf5921115f0e2d918b",
+  "remote": "47993550823506667e5b8eaae2a261e48b90e4e0",
+  "tree": "cc638ea5bfba46c7ac34f592ef4a967fe73acdb4",
+  "base": "6354f327888d70c64ce4d86604b7b8fdc768947c",
+  "pr": 495,
+  "method": "GitHub git-object API; blobs and full tree match tested local source"
+}

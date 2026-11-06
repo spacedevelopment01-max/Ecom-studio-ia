@@ -1,0 +1,36 @@
+
+ RUN  v5.0.3 /tmp/parity301-format-main-6354f327
+
+ ❯ tests/parity301-native-social-format-guard.test.ts (10 tests | 1 failed | 8 skipped) 277ms
+   × malformed acquired media not-json cannot become an apparently successful empty copy 138ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/parity301-native-social-format-guard.test.ts > malformed acquired media not-json cannot become an apparently successful empty copy
+AssertionError: promise resolved "{ id: 'ga1biqa18x6wigfh', …(1) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "assetId": null,
++   "id": "ga1biqa18x6wigfh",
+  }
+
+ ❯ tests/parity301-native-social-format-guard.test.ts:20:340
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 8 skipped (10)
+   Start at  23:57:53
+   Duration  4.39s (transform 59%, import 34%, tests 7%)
+
+  Transform  transforming modules took 2.47s · 59% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

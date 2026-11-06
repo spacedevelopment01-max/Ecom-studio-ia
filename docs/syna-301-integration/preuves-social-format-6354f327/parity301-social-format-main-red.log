@@ -1,0 +1,98 @@
+
+ RUN  v5.0.3 /tmp/parity301-format-main-6354f327
+
+ ❯ tests/parity301-native-social-format-guard.test.ts (3 tests | 2 failed) 1522ms
+   × a real edit committed during local reformat refuses a mixed-state clone and preserves that acquired edit 613ms
+   × failure attaching the second reformatted medium rolls back the clone and its usages 478ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/parity301-native-social-format-guard.test.ts > a real edit committed during local reformat refuses a mixed-state clone and preserves that acquired edit
+AssertionError: promise resolved "{ id: '3r8gh175d3kgy91p', …(1) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "assetId": "ty4l9htups9dr46o",
++   "id": "3r8gh175d3kgy91p",
+  }
+
+ ❯ tests/parity301-native-social-format-guard.test.ts:12:517
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/parity301-native-social-format-guard.test.ts > failure attaching the second reformatted medium rolls back the clone and its usages
+AssertionError: expected [ …(2) ] to deeply equal [ { id: 'ulwcqov6ojm1t767', …(39) } ]
+
+- Expected
++ Received
+
+@@ -39,6 +39,48 @@
+      "timezone": "Europe/Paris",
+      "title": "Titre acquis",
+      "updated_at": 1793922942812,
+      "user_edited": 1,
+    },
++   {
++     "angle": null,
++     "approved_at": null,
++     "approved_by": null,
++     "approved_hash": null,
++     "attempts": 0,
++     "auto_approved": 0,
++     "brief": "{}",
++     "campaign_id": null,
++     "caption": "Texte acquis",
++     "connection_id": null,
++     "content_hash": "5726f3b1fca4b7d2b0b2c65e2b49f92d",
++     "created_at": 1793922943171,
++     "engine": "v2",
++     "error": null,
++     "format": "image",
++     "gate": "{}",
++     "group_id": null,
++     "hashtags": "",
++     "id": "wfmtb1iff6z758i4",
++     "link": null,
++     "lock_token": null,
++     "locked_at": null,
++     "media": "[\"08hklvqvr31nd2mj\",\"66h59iz2il5fr3v9\"]",
++     "network": "instagram",
++     "objective": null,
++     "pillar": null,
++     "plan_id": null,
++     "production": "{}",
++     "project_id": "zkfop6wiyrfeuhro",
++     "publish_job_id": null,
++     "publish_key": "dup:wfmtb1iff6z758i4",
++     "published_at": null,
++     "remote_id": null,
++     "remote_url": null,
++     "scheduled_at": null,
++     "status": "review",
++     "timezone": "Europe/Paris",
++     "title": "Titre acquis",
++     "updated_at": 1793922943171,
++     "user_edited": 1,
++   },
+  ]
+
+ ❯ tests/parity301-native-social-format-guard.test.ts:13:713
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed (3)
+   Start at  23:55:38
+   Duration  5.54s (transform 45%, tests 29%, import 26%)
+
+  Transform  transforming modules took 2.39s · 45% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

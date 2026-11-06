@@ -1,0 +1,59 @@
+{
+  "branch": "codex/parity301-native-social-format-guard",
+  "local": "7ed85a6839abc5898dc874bf5921115f0e2d918b",
+  "remote": "47993550823506667e5b8eaae2a261e48b90e4e0",
+  "tree": "cc638ea5bfba46c7ac34f592ef4a967fe73acdb4",
+  "base": "6354f327888d70c64ce4d86604b7b8fdc768947c",
+  "pr": 495,
+  "newTests": 10,
+  "baseValidation": {
+    "passed": 27,
+    "files": 2,
+    "types": "passed"
+  },
+  "combinedValidation": {
+    "commitLocal": "b4cfd3da2",
+    "passed": 79,
+    "files": 4,
+    "types": "passed"
+  },
+  "realProviderCalls": 0,
+  "realSpend": 0,
+  "browserRecipe": false,
+  "nativeHTTPMonotonicWaitMs": 17000,
+  "limits": [
+    "asynchronous converted assets may remain after failure",
+    "poster and AI-image variants not newly qualified",
+    "no conversation contract or POST idempotency added"
+  ],
+  "files": [
+    {
+      "file": "parity301-social-format-final.log",
+      "sha256": "c494d159d74876d9fc04bac39d70a6f35830e4e64dacd51f9233758ef62a983f"
+    },
+    {
+      "file": "parity301-social-format-first.log",
+      "sha256": "67aac43f945be31338f1fbb922f94943b5fe8129abc84447c5feff5b68849b02"
+    },
+    {
+      "file": "parity301-social-format-integration-final.log",
+      "sha256": "33621d63267b98a889ddaec59767b45d830b90c0386fc75f62cc07f062099a9b"
+    },
+    {
+      "file": "parity301-social-format-integration-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "parity301-social-format-main-red.log",
+      "sha256": "646c8cd9df4ef94fc4de8d3bbdd94b872722d65c24d2014d23dc2a73fbf530e9"
+    },
+    {
+      "file": "parity301-social-format-malformed-red.log",
+      "sha256": "5798d02c4005488bbf101a7d06aa37573d3fdcae296502f3ca565a35fec28a25"
+    },
+    {
+      "file": "parity301-social-format-types-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

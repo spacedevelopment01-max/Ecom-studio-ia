@@ -1,0 +1,18 @@
+{
+  "head": "bffa3a7f127548e97e80e3269d79f9df29b22038",
+  "run": 42127070952,
+  "jobs": {
+    "tests": 127593855178,
+    "native": 127593855423,
+    "docker": 127593855490,
+    "freeConfirmation": 127593855585,
+    "verdict": 127617233086
+  },
+  "allConclusions": "success",
+  "testsPassed": 7615,
+  "testsSkipped": 31,
+  "filesPassed": 724,
+  "filesSkipped": 1,
+  "newCardQualified": false,
+  "inheritsTo494Or495": false
+}
