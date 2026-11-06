@@ -179,7 +179,11 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
         // Accord explicite : actions sensibles, et dépenses au-delà du budget autorisé.
         if (isSensitive(t, parsed.data, tctx)) return askConfirmation(r, t, parsed.data, tctx, "sensitive");
         if (t.estimate) {
-          const est = await t.estimate(tctx, parsed.data);
+          // Un refus du moteur natif pendant le devis (étape préalable, droits, tarif) est un résultat d'outil : SYNA
+          // le lit et s'adapte (question au client, autre outil), l'exécution ne s'arrête pas.
+          let est: Awaited<ReturnType<NonNullable<AgentTool["estimate"]>>>;
+          try { est = await t.estimate(tctx, parsed.data); }
+          catch (e) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, args: parsed.data, ok: false, summary: L("Refus avant exécution : ", "Refused before running: ") + String(clip(e instanceof Error ? e.message : String(e), 600)) }, r.id); continue; }
           const b = budgetState(user.id, r.project_id, r.conversation_id);
           if (est.maxMicro > b.remainingMicro) return askConfirmation(r, t, parsed.data, tctx, "budget", est.maxMicro);
         }

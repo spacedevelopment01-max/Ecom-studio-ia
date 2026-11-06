@@ -199,6 +199,18 @@ describe("SYNA agent — un fil, des outils natifs, des changements vérifiés",
     expect(seen).toContain("ÉCHEC");
   });
 
+  it("un refus du moteur natif pendant le devis est lu par SYNA, l'exécution continue", async () => {
+    const s = await shop("refus");
+    let seen = "";
+    const run = await send(s.user, s.cid, "Lance la recherche marketing.", (step) => step === 0
+      ? { message: "", actions: [{ tool: "pilot.run", args: { step: "content", action: "generate" } }], done: false }
+      : (seen = "vu", { message: "L'étape précédente doit d'abord être validée : voulez-vous que je la valide ?", actions: [], question: { text: "Je valide l'étape précédente ?", choices: ["Oui", "Non"] }, done: false }));
+    expect(run.status).toBe("waiting_user");
+    expect(seen).toBe("vu");
+    const tool = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND role='tool'", s.cid).map((m) => JSON.parse(m.content_json)).find((m) => m.tool === "pilot.run");
+    expect(tool.ok).toBe(false);
+  });
+
   it("le droit au projet est relu : un autre compte ne peut pas lire ni écrire dans le fil", async () => {
     const s = await shop("droits");
     const other = await createUser(`intrus-${Date.now()}@test.fr`, "motdepasse-test", "X");
