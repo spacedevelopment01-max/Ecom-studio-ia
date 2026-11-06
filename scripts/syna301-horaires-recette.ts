@@ -1,6 +1,6 @@
 /**
- * Recette #301 « SYNA complète » — horaires du profil d'activité en phrase naturelle (contrat #366 de Codex), dans la
- * conversation SYNA de l'écran Activité, Encre / Plein cadre, 1440 / 390 px. Phrases d'origine, rien d'aménagé :
+ * Recette #301 « SINA complète » — horaires du profil d'activité en phrase naturelle (contrat #366 de Codex), dans la
+ * conversation SINA de l'écran Activité, Encre / Plein cadre, 1440 / 390 px. Phrases d'origine, rien d'aménagé :
  *  1. « Change les horaires du mardi : 9 h – 18 h » → clarification gratuite profil / créneaux : aucun bouton de
  *     confirmation, aucun devis, rien d'écrit ;
  *  2. « Les horaires du profil sont : Mardi 9 h – 18 h » → carte Gratuit — 0 €, avant / après exacts, rien d'écrit ;
@@ -83,10 +83,10 @@ try {
       catch (e) { steps.push({ etape, ok: false, detail: String(e).slice(0, 400), capture: await shot("echec-" + steps.length).catch(() => undefined) }); console.log(`  ✗ ${label} · ${etape} : ${String(e).slice(0, 300)}`); throw e; }
     };
     const openSyna = async () => { if (!(await panel.count())) await page.locator('[aria-controls="syna-panel"]:visible').first().click(); await panel.waitFor(); };
-    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SYNA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
+    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SINA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
     const send = async (text: string) => {
       await openSyna();
-      await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SYNA" }).fill(text);
+      await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SINA" }).fill(text);
       await panel.getByRole("button", { name: "Enregistrer", exact: true }).click();
     };
     const noOverflow = async () => check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "débordement horizontal");
@@ -94,7 +94,7 @@ try {
     const card = panel.getByRole("region", { name: "Horaires du profil d’activité", exact: true });
     const hours = () => (loadProject(k.pid).services as { hours?: string } | undefined)?.hours;
     const turns = () => all<{ request_json: string }>("SELECT request_json FROM agent_conversation_turns WHERE conversation_id=?", k.cid).filter((t) => /confirm-service-profile/.test(t.request_json)).length;
-    const noQuote = async () => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SYNA" }).count()), "bouton de devis affiché");
+    const noQuote = async () => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SINA" }).count()), "bouton de devis affiché");
     try {
       await step("écran Activité ouvert dans le mode du compte", async () => {
         await page.goto(`${origin}/studio/${k.pid}/produit`, { waitUntil: "networkidle", timeout: 180000 });

@@ -1,7 +1,7 @@
 /**
- * Recette #301 « SYNA complète » — stock d'un produit en phrase naturelle (contrat #373 de Codex), dans la
- * conversation SYNA de l'écran Catalogue, Encre / Plein cadre, 1440 / 390 px. Phrases d'origine, rien d'aménagé :
- *  Catalogue : « Désigner pour SYNA » sur la fiche → « Mets le stock de ce produit à 12 » → carte Gratuit — 0 €, 2 → 12 →
+ * Recette #301 « SINA complète » — stock d'un produit en phrase naturelle (contrat #373 de Codex), dans la
+ * conversation SINA de l'écran Catalogue, Encre / Plein cadre, 1440 / 390 px. Phrases d'origine, rien d'aménagé :
+ *  Catalogue : « Désigner pour SINA » sur la fiche → « Mets le stock de ce produit à 12 » → carte Gratuit — 0 €, 2 → 12 →
  *  confirmation → stock relu, prix / référence / politique inchangés, Catalogue à jour ; rechargement sans écriture.
  * Stockage isolé, clés vides, réseau hors boucle locale refusé, 0 appel IA exigé.
  * Usage : npx tsx scripts/syna301-stock-recette.ts <dossier de sortie>
@@ -83,10 +83,10 @@ try {
       catch (e) { steps.push({ etape, ok: false, detail: String(e).slice(0, 400), capture: await shot("echec-" + steps.length).catch(() => undefined) }); console.log(`  ✗ ${label} · ${etape} : ${String(e).slice(0, 300)}`); throw e; }
     };
     const openSyna = async () => { if (!(await panel.count())) await page.locator('[aria-controls="syna-panel"]:visible').first().click(); await panel.waitFor(); };
-    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SYNA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
+    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SINA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
     const send = async (text: string) => {
       await openSyna();
-      await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SYNA" }).fill(text);
+      await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SINA" }).fill(text);
       await panel.getByRole("button", { name: "Enregistrer", exact: true }).click();
     };
     const noOverflow = async () => check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "débordement horizontal");
@@ -95,14 +95,14 @@ try {
     const card = panel.getByRole("region", { name: "Stock — gratuit", exact: true });
     const stock = () => (getProduct(k.pid, kk.productId) as { variants: { stock: number | null; sku?: string; stockPolicy?: string }[]; data: { price?: number } });
     const turns = () => all<{ request_json: string }>("SELECT request_json FROM agent_conversation_turns WHERE conversation_id=?", k.cid).filter((t) => /confirm-stock/.test(t.request_json)).length;
-    const noQuote = async () => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SYNA" }).count()), "bouton de devis affiché");
+    const noQuote = async () => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SINA" }).count()), "bouton de devis affiché");
     try {
-      await step("Catalogue ouvert dans le mode du compte, produit désigné (« Désigner pour SYNA »)", async () => {
+      await step("Catalogue ouvert dans le mode du compte, produit désigné (« Désigner pour SINA »)", async () => {
         await page.goto(`${origin}/studio/${k.pid}/catalogue`, { waitUntil: "networkidle", timeout: 180000 });
         await page.locator("#ecs-splash").waitFor({ state: "hidden" }).catch(() => {});
         const nudge = page.locator("[data-tuto-nudge]"); if (await nudge.isVisible()) await nudge.locator("button").last().click();
         check((await page.locator("[data-syna-shell]").first().getAttribute("data-syna-shell")) === k.mode, "mode");
-        await page.getByRole("button", { name: "Désigner pour SYNA", exact: true }).first().click();
+        await page.getByRole("button", { name: "Désigner pour SINA", exact: true }).first().click();
         await panel.waitFor(); await panel.locator("[data-agent-active-context]").getByText(/désign/i).first().waitFor();
         await noOverflow(); await shot("1-designe");
         return (await panel.locator("[data-agent-active-context]").innerText()).split("\n").find((l) => /désign/i.test(l))?.trim();

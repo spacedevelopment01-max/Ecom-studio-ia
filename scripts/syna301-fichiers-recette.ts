@@ -1,8 +1,8 @@
 /**
- * Recette #301 C24 — ranger un fichier acquis depuis SYNA (contrat #305 de Codex), vrai parcours dans la coquille.
+ * Recette #301 C24 — ranger un fichier acquis depuis SINA (contrat #305 de Codex), vrai parcours dans la coquille.
  *
  * Pour chaque mode (Encre, Plein cadre) et chaque format (ordinateur 1440 px, téléphone 390 px) :
- *  1. dans Fichiers, la personne coche UN fichier : SYNA affiche « Média désigné » ;
+ *  1. dans Fichiers, la personne coche UN fichier : SINA affiche « Média désigné » ;
  *  2. « Renomme ce fichier en « … » » : carte avant / après, « Gratuit — 0 € », aucun devis ;
  *  3. ordinateur : la réponse à la confirmation est perdue APRÈS l'enregistrement → « Vérifier l'enregistrement »
  *     retrouve le reçu sans deuxième écriture ; téléphone : confirmation directe ;
@@ -93,10 +93,10 @@ try {
       catch (e) { steps.push({ etape, ok: false, detail: String(e).slice(0, 400), capture: await shot("echec-" + steps.length).catch(() => undefined) }); console.log(`  ✗ ${label} · ${etape} : ${String(e).slice(0, 300)}`); throw e; }
     };
     const openSyna = async () => { if (!(await panel.count())) await page.locator('[aria-controls="syna-panel"]:visible').first().click(); await panel.waitFor(); };
-    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SYNA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
+    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SINA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
     const send = async (text: string) => {
       await openSyna();
-      await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SYNA" }).fill(text);
+      await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SINA" }).fill(text);
       await panel.getByRole("button", { name: "Enregistrer", exact: true }).click();
     };
     const assetRow = () => getAsset(k.assetId)!;
@@ -114,7 +114,7 @@ try {
         await noOverflow();
         return `mode ${mode}`;
       });
-      await step("désignation : un fichier coché devient la cible de SYNA", async () => {
+      await step("désignation : un fichier coché devient la cible de SINA", async () => {
         await page.getByRole("checkbox", { name: "Sélectionner photo-atelier.png", exact: true }).check();
         await openSyna();
         const line = await panel.locator("[data-agent-active-context]").innerText();
@@ -142,7 +142,7 @@ try {
         const txt = await card.innerText();
         check(/Gratuit — 0 €/.test(txt) && /Avant : photo-atelier\.png/.test(txt) && /Après confirmation : preuve finale\.png/.test(txt), `carte incomplète : ${txt}`);
         check(!/devis|crédit/i.test(txt.replace("Aucun crédit consommé", "")), "la carte parle d'un devis");
-        check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SYNA" }).count()), "bouton de devis affiché pour un rangement gratuit");
+        check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SINA" }).count()), "bouton de devis affiché pour un rangement gratuit");
         check(assetRow().name === "photo-atelier.png", "écriture avant l'accord");
         await noOverflow();
         await shot("3-proposition");

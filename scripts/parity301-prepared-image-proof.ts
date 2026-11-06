@@ -93,9 +93,9 @@ try {
       catch (e) { steps.push({ etape, ok: false, detail: String(e).slice(0, 400), capture: await shot("echec-" + steps.length).catch(() => undefined) }); console.log(`  ✗ ${label} · ${etape} : ${String(e).slice(0, 300)}`); throw e; }
     };
     const openSyna = async () => { for (let i = 0; i < 3 && !(await panel.count()); i++) { await page.locator('[aria-controls="syna-panel"]:visible').first().click(); await panel.waitFor({ timeout: 10000 }).catch(() => {}); } await panel.waitFor(); };
-    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SYNA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
-    const noQuote = async (when: string) => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SYNA" }).count()), `bouton de devis affiché (${when})`);
-    const say=async(text:string)=>{await openSyna();await panel.getByRole('textbox',{name:'Décrivez votre projet ou posez votre question à SYNA'}).fill(text);await panel.getByRole('button',{name:'Enregistrer',exact:true}).click();};
+    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SINA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
+    const noQuote = async (when: string) => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SINA" }).count()), `bouton de devis affiché (${when})`);
+    const say=async(text:string)=>{await openSyna();await panel.getByRole('textbox',{name:'Décrivez votre projet ou posez votre question à SINA'}).fill(text);await panel.getByRole('button',{name:'Enregistrer',exact:true}).click();};
     const confirmBtn=()=>free.getByRole('button',{name:'Confirmer la modification gratuite',exact:true});
     const version=()=>currentTheme(k.pid)!.version.number;
     try{

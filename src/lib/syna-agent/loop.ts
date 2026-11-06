@@ -60,7 +60,7 @@ export function submitMessage(user: User, cid: string, input: { requestId: strin
   const prior = runByRequest(cid, input.requestId);
   if (prior) return prior;
   const current = activeRun(cid);
-  if (current && current.status !== "waiting_confirmation") throw new HttpError(409, L("SINA travaille encore sur votre demande précédente. Attendez sa réponse ou arrêtez-la.", "SINA is still working on your previous request. Wait or stop it."), "syna_busy");
+  if (current && current.status !== "waiting_confirmation") throw new HttpError(409, L("SINA travaille encore sur ta demande précédente. Attends sa réponse ou arrête-la.", "SINA is still working on your previous request. Wait or stop it."), "syna_busy");
   if (current) { updateRun(current.id, { status: "cancelled", pending_json: null }); addMessage(cid, "event", { kind: "pending_dropped", runId: current.id }, current.id); }
   const attachments = (input.attachmentIds ?? []).filter((aid) => attachmentsOf(cid).some((a) => a.id === aid));
   if (authorizedBudget(cid) == null) { try { authorizeBudgetPct(user.id, c.project_id, cid, DEFAULT_BUDGET_PCT); } catch { /* budget non mesurable : accord demandé */ } }
@@ -96,7 +96,7 @@ export function decidePending(user: User, cid: string, input: { pendingId: strin
   const r = activeRun(cid);
   if (!r || r.user_id !== user.id || r.status !== "waiting_confirmation") throw new HttpError(409, L("Aucune action en attente d'accord.", "No action awaits your approval."));
   const p = pendingOf(r);
-  if (!p || p.id !== input.pendingId) throw new HttpError(409, L("Cette proposition a changé. Relisez la conversation.", "This proposal changed. Reload the conversation."));
+  if (!p || p.id !== input.pendingId) throw new HttpError(409, L("Cette proposition a changé. Relis la conversation.", "This proposal changed. Reload the conversation."));
   addMessage(cid, "event", { kind: input.approve ? "approved" : "declined", pendingId: p.id, tool: p.tool }, r.id);
   if (!input.approve) {
     addMessage(cid, "tool", { key: `pending:${p.id}`, tool: p.tool, ok: false, summary: L("Le client a refusé cette action. Rien n'a été modifié.", "The client declined this action. Nothing was changed.") }, r.id);
@@ -144,7 +144,7 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
     if (waited.length && !(await waitForJobs(waited))) { schedule(r, waited, 10_000); return { runId, waiting: waited }; }
     if (waited.length) {
       const results = waited.map((jid) => { const j = getJob(jid); return { job: jid, type: j?.type, status: j?.status, message: j?.message, result: clip(j?.result ? json(j.result, j.result) : null, 1500), error: j?.error ? clip(j.error, 400) : undefined }; });
-      addMessage(r.conversation_id, "tool", { key: `jobs:${r.step}`, tool: "jobs.wait", ok: results.every((x) => x.status === "done"), summary: L("Créations natives terminées : relisez-les avant de conclure.", "Native creations finished: read them back before concluding."), data: results }, r.id);
+      addMessage(r.conversation_id, "tool", { key: `jobs:${r.step}`, tool: "jobs.wait", ok: results.every((x) => x.status === "done"), summary: L("Créations terminées : SINA les relit avant de conclure.", "Native creations finished: read them back before concluding."), data: results }, r.id);
       updateRun(r.id, { waiting_jobs: "[]" });
     }
     // 2. Action approuvée (ou refusée) par le client.
@@ -253,7 +253,7 @@ async function askConfirmation(r: SynaRun, t: AgentTool, args: unknown, ctx: Too
 }
 
 function askBudget(r: SynaRun, _x: null) {
-  const p: PendingAction = { id: newId(), tool: "budget.raise", args: {}, reason: "budget", preview: L("Le budget autorisé pour SINA est atteint. Augmentez-le pour qu'elle continue.", "SINA's authorised budget is used up. Raise it to continue."), createdAt: Date.now() };
+  const p: PendingAction = { id: newId(), tool: "budget.raise", args: {}, reason: "budget", preview: L("Le budget autorisé pour SINA est atteint. Augmente-le pour qu'elle continue.", "SINA's authorised budget is used up. Raise it to continue."), createdAt: Date.now() };
   updateRun(r.id, { status: "waiting_confirmation", pending_json: JSON.stringify(p), step: Math.max(0, r.step - 1) });
   addMessage(r.conversation_id, "event", { kind: "confirmation", pending: p, budget: budgetState(r.user_id, r.project_id, r.conversation_id) }, r.id);
   return { runId: r.id, waiting: "budget" };

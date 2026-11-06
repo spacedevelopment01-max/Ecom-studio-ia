@@ -1,13 +1,13 @@
 /**
- * Mission #282, lot 1 — recette de la coquille SYNA dans un vrai navigateur, sur une base temporaire isolée.
+ * Mission #282, lot 1 — recette de la coquille SINA dans un vrai navigateur, sur une base temporaire isolée.
  *
  *   npx tsx scripts/syna-lot1-recette.ts <dossier>
  *
  * Deux projets de démonstration (SILLON, boutique ; TABLE SAISON, restaurant). Le Studio est lancé en développement
  * deux fois, sur ce serveur local seulement :
- *   A. coquille SYNA activée (STUDIO_SYNA_SHELL=1) et panneau SYNA visible (drapeaux d'interface STUDIO_CONVERSATION_*) ;
- *   B. coquille activée, drapeaux SYNA fermés (comme une installation où SYNA n'est pas ouverte).
- * Aucune clé d'IA, aucun message envoyé à SYNA, aucun réseau extérieur (toute requête hors du serveur local est comptée).
+ *   A. coquille SINA activée (STUDIO_SYNA_SHELL=1) et panneau SINA visible (drapeaux d'interface STUDIO_CONVERSATION_*) ;
+ *   B. coquille activée, drapeaux SINA fermés (comme une installation où SINA n'est pas ouverte).
+ * Aucune clé d'IA, aucun message envoyé à SINA, aucun réseau extérieur (toute requête hors du serveur local est comptée).
  * Résultat : captures et `recette.json` dans le dossier.
  */
 import fs from "node:fs";
@@ -92,7 +92,7 @@ async function go(page: Page, origin: string, key: string, tab: string) {
 }
 
 const pageFacts = (page: Page) => page.evaluate(() => {
-  const pill = [...document.querySelectorAll("button")].some((b) => /^\s*SYNA\s*$/.test(b.textContent ?? "") && b.className.includes("bg-ink") && getComputedStyle(b).position === "fixed");
+  const pill = [...document.querySelectorAll("button")].some((b) => /^\s*SINA\s*$/.test(b.textContent ?? "") && b.className.includes("bg-ink") && getComputedStyle(b).position === "fixed");
   return {
     shell: document.querySelector("[data-syna-shell]") ? "syna" : "classic",
     overflow: document.documentElement.scrollWidth - innerWidth,
@@ -129,7 +129,7 @@ const contrast = (page: Page) => page.evaluate(() => {
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium", args: ["--no-sandbox"] });
 let studio: Awaited<ReturnType<typeof startStudio>> | null = null;
 try {
-  // ——— A. Coquille + SYNA visible ———
+  // ——— A. Coquille + SINA visible ———
   studio = await startStudio({ STUDIO_SYNA_SHELL: "1", STUDIO_CONVERSATION_LOT_A: "1", STUDIO_CONVERSATION_AI: "1", STUDIO_CONVERSATION_UI: "1" });
   const shots: unknown[] = [];
   for (const vp of VIEWPORTS) for (const dark of [false, true]) {
@@ -145,9 +145,9 @@ try {
   }
   report.shots = shots;
   const sh = shots as { file: string; shell: string; overflow: number; blackPill: boolean; rail: boolean; tab: boolean; errors: string[]; contrast: { fails: string[]; min: number } }[];
-  ok("coquille SYNA affichée sur les 24 captures", sh.every((x) => x.shell === "syna"));
+  ok("coquille SINA affichée sur les 24 captures", sh.every((x) => x.shell === "syna"));
   ok("aucune pastille noire flottante", sh.every((x) => !x.blackPill));
-  ok("onglet signature à l'ordinateur et à la tablette, onglet Syna au téléphone", sh.every((x) => (x.file.includes("telephone") ? x.tab : x.rail)));
+  ok("onglet signature à l'ordinateur et à la tablette, onglet Sina au téléphone", sh.every((x) => (x.file.includes("telephone") ? x.tab : x.rail)));
   ok("aucun débordement horizontal", sh.every((x) => x.overflow <= 0), sh.filter((x) => x.overflow > 0).map((x) => x.file));
   ok("aucune erreur JavaScript", sh.every((x) => !x.errors.length), sh.flatMap((x) => x.errors));
   ok("contraste mesuré de la coquille ≥ seuil AA", sh.every((x) => !x.contrast.fails.length), sh.flatMap((x) => x.contrast.fails).slice(0, 8));
@@ -182,7 +182,7 @@ try {
     await s.context.close();
   }
 
-  // SYNA à l'ordinateur : colonne, clavier, Échap, brouillon conservé.
+  // SINA à l'ordinateur : colonne, clavier, Échap, brouillon conservé.
   {
     const s = await session(browser, studio.origin, VIEWPORTS[0]);
     await go(s.page, studio.origin, "sillon", "pilote");
@@ -191,7 +191,7 @@ try {
     await s.page.keyboard.press("Enter");
     await s.page.waitForSelector("#syna-panel:not([hidden])");
     const docked = await s.page.evaluate(() => ({ role: document.querySelector("#syna-panel")?.getAttribute("role"), modal: document.querySelector("#syna-panel")?.getAttribute("aria-modal"), inPanel: !!document.activeElement?.closest("#syna-panel") }));
-    ok("ordinateur : SYNA s'ouvre au clavier en colonne à côté de l'espace (non modale)", docked.role === "complementary" && !docked.modal, docked);
+    ok("ordinateur : SINA s'ouvre au clavier en colonne à côté de l'espace (non modale)", docked.role === "complementary" && !docked.modal, docked);
     // Contenu réel du panneau (le même ConversationPanel qu'aujourd'hui) : on attend qu'il ait fini de charger.
     await s.page.waitForFunction(() => !/Reprise de votre conversation/.test(document.querySelector("#syna-panel")?.textContent ?? ""), null, { timeout: 120000 }).catch(() => undefined);
     await s.page.waitForTimeout(800);
@@ -207,7 +207,7 @@ try {
     await s.page.keyboard.press("Escape");
     await s.page.waitForTimeout(300);
     const closed = await s.page.evaluate(() => ({ hidden: document.querySelector("#syna-panel")?.hasAttribute("hidden"), focus: (document.activeElement as HTMLElement | null)?.dataset.variant ?? document.activeElement?.tagName }));
-    ok("Échap replie SYNA et rend le focus à l'onglet signature", !!closed.hidden && closed.focus === "rail", closed);
+    ok("Échap replie SINA et rend le focus à l'onglet signature", !!closed.hidden && closed.focus === "rail", closed);
     await s.page.locator('.ss-nav a[data-space="images"]').click();
     await s.page.waitForURL(/\/images$/);
     await s.page.locator('.sy-trigger[data-variant="rail"]').click();
@@ -218,11 +218,11 @@ try {
     report.composerAvailable = !!hasBox;
     // La bulle des tutoriels ne recouvre pas la colonne ouverte.
     const nudge = await s.page.evaluate(() => { const n = document.querySelector("[data-tuto-nudge]"); const p = document.querySelector("#syna-panel"); if (!n || !p) return null; const a = n.getBoundingClientRect(), b = p.getBoundingClientRect(); return a.right <= b.left + 1; });
-    ok("la bulle « Première visite ? » ne recouvre pas la colonne SYNA ouverte", nudge !== false, nudge);
+    ok("la bulle « Première visite ? » ne recouvre pas la colonne SINA ouverte", nudge !== false, nudge);
     await s.context.close();
   }
 
-  // SYNA à la tablette : panneau modal, Tab qui reste dedans, Échap.
+  // SINA à la tablette : panneau modal, Tab qui reste dedans, Échap.
   {
     const s = await session(browser, studio.origin, VIEWPORTS[1]);
     await go(s.page, studio.origin, "sillon", "catalogue");
@@ -235,11 +235,11 @@ try {
     for (let i = 0; i < 12; i++) { await s.page.keyboard.press("Tab"); inside &&= await s.page.evaluate(() => !!document.activeElement?.closest("#syna-panel")); }
     await s.page.keyboard.press("Escape");
     const hidden = await s.page.evaluate(() => document.querySelector("#syna-panel")?.hasAttribute("hidden"));
-    ok("tablette : SYNA en panneau modal, le focus reste dedans, Échap le ferme", modal === "true" && inside && !!hidden, { modal, inside, hidden });
+    ok("tablette : SINA en panneau modal, le focus reste dedans, Échap le ferme", modal === "true" && inside && !!hidden, { modal, inside, hidden });
     await s.context.close();
   }
 
-  // Téléphone : onglet Syna, barre toujours visible, feuilles Espaces et Suivi.
+  // Téléphone : onglet Sina, barre toujours visible, feuilles Espaces et Suivi.
   {
     const s = await session(browser, studio.origin, VIEWPORTS[2]);
     await go(s.page, studio.origin, "table-saison", "carte");
@@ -248,7 +248,7 @@ try {
     await s.page.waitForTimeout(800);
     await s.page.screenshot({ path: path.join(out, "syna--telephone-390--ouverte.png") });
     const geo = await s.page.evaluate(() => ({ panelBottom: document.querySelector("#syna-panel")!.getBoundingClientRect().bottom, barTop: document.querySelector("[data-mobile-nav]")!.getBoundingClientRect().top }));
-    ok("téléphone : SYNA s'ouvre au-dessus de la barre basse, qui reste visible", geo.panelBottom <= geo.barTop + 1, geo);
+    ok("téléphone : SINA s'ouvre au-dessus de la barre basse, qui reste visible", geo.panelBottom <= geo.barTop + 1, geo);
     await s.page.locator(".ss-tabbar .ss-tab").first().click();
     await s.page.locator('.ss-tabbar button[aria-controls="ss-spaces"]').click();
     await s.page.waitForSelector("#ss-spaces");
@@ -317,7 +317,7 @@ try {
   }
   await studio.stop();
 
-  // ——— B. Coquille, drapeaux SYNA fermés ———
+  // ——— B. Coquille, drapeaux SINA fermés ———
   studio = await startStudio({ STUDIO_SYNA_SHELL: "1" });
   for (const vp of [VIEWPORTS[0], VIEWPORTS[2]]) {
     const s = await session(browser, studio.origin, vp);
@@ -325,7 +325,7 @@ try {
     await s.page.screenshot({ path: path.join(out, `drapeaux-fermes--${vp.label}.png`) });
     const f = await pageFacts(s.page);
     const panel = await s.page.locator("#syna-panel, [aria-controls='syna-panel']").count();
-    ok(`drapeaux SYNA fermés (${vp.label}) : coquille sans aucun accès ni panneau SYNA`, f.shell === "syna" && !f.rail && !f.tab && panel === 0 && !f.blackPill, { ...f, panel });
+    ok(`drapeaux SINA fermés (${vp.label}) : coquille sans aucun accès ni panneau SINA`, f.shell === "syna" && !f.rail && !f.tab && panel === 0 && !f.blackPill, { ...f, panel });
     await s.context.close();
   }
   await studio.stop();

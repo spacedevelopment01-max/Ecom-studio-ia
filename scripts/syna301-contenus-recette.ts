@@ -1,11 +1,11 @@
 /**
- * Recette #301 C21 — modifier un bien, un plat ou une réalisation depuis SYNA (contrat #310 de Codex), vrai parcours
+ * Recette #301 C21 — modifier un bien, un plat ou une réalisation depuis SINA (contrat #310 de Codex), vrai parcours
  * dans la coquille Encre / Plein cadre, ordinateur (1440 px) et téléphone (390 px) :
  *   encre · ordinateur  : plat — prix « 18,50 € », réponse perdue après l'enregistrement, vérification sans 2e écriture ;
  *   encre · téléphone   : bien — nouveau nom ;
  *   plein · ordinateur  : réalisation — demande ambiguë, annulation, nouveau nom (adresse de page annoncée) ;
  *   plein · téléphone   : plat — prix.
- * À chaque fois : « Désigner pour SYNA » dans l'espace natif, carte avant / après « Gratuit — 0 € » sans devis,
+ * À chaque fois : « Désigner pour SINA » dans l'espace natif, carte avant / après « Gratuit — 0 € » sans devis,
  * reçu relu, liste de l'espace à jour sans recharger, rechargement, statut inchangé, 0 appel IA, aucun débordement.
  * Stockage temporaire isolé, clés vides, réseau hors boucle locale refusé, comptes et contenus fictifs.
  * Usage : npx tsx scripts/syna301-contenus-recette.ts <dossier de sortie>
@@ -103,15 +103,15 @@ try {
       try { const detail = await fn(); steps.push({ etape, ok: true, ...(detail ? { detail } : {}) }); console.log(`  ✓ ${label} · ${etape}${detail ? " — " + detail : ""}`); }
       catch (e) { steps.push({ etape, ok: false, detail: String(e).slice(0, 400), capture: await shot("echec-" + steps.length).catch(() => undefined) }); console.log(`  ✗ ${label} · ${etape} : ${String(e).slice(0, 300)}`); throw e; }
     };
-    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SYNA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
+    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SINA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
     const designate = async () => {
       await closeSyna();
-      await page.getByRole("button", { name: "Désigner pour SYNA", exact: true }).first().click();
+      await page.getByRole("button", { name: "Désigner pour SINA", exact: true }).first().click();
       await panel.waitFor();
       await panel.locator("[data-agent-active-context]").getByText(/Contenu désigné/).waitFor();
     };
     const send = async (text: string) => {
-      await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SYNA" }).fill(text);
+      await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SINA" }).fill(text);
       await panel.getByRole("button", { name: "Enregistrer", exact: true }).click();
     };
     const item = () => adapter(k.type).get(k.pid, k.itemId) as { title: string; status: string | null; version: string; data: { price?: number | null } };
@@ -128,7 +128,7 @@ try {
         await noOverflow();
         await shot("0-espace");
       });
-      await step("« Désigner pour SYNA » : la fiche devient la cible", async () => {
+      await step("« Désigner pour SINA » : la fiche devient la cible", async () => {
         await designate();
         const line = await panel.locator("[data-agent-active-context]").innerText();
         check(line.includes(INITIAL[k.type]), `désignation inattendue : ${line}`);
@@ -159,7 +159,7 @@ try {
         const txt = await card.innerText();
         check(/Gratuit — 0 €/.test(txt) && /Avant : /.test(txt) && k.expect.shown.test(txt), `carte incomplète : ${txt}`);
         check(/Aucun appel de publication/.test(txt), "absence de publication non annoncée");
-        check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SYNA" }).count()), "bouton de devis pour une modification gratuite");
+        check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SINA" }).count()), "bouton de devis pour une modification gratuite");
         check(item().version === before, "écriture avant l'accord");
         await noOverflow();
         await shot("3-proposition");
@@ -201,7 +201,7 @@ try {
         await shot("6-espace-a-jour");
       });
       await step("la désignation suit la nouvelle version : une 2e demande reste possible", async () => {
-        await page.getByRole("button", { name: /Désigné pour SYNA|Désigner pour SYNA/ }).first().waitFor();
+        await page.getByRole("button", { name: /Désigné pour SINA|Désigner pour SINA/ }).first().waitFor();
         await page.locator('[aria-controls="syna-panel"]:visible').first().click();
         await panel.waitFor();
         const sel = await panel.locator("[data-agent-active-context]").innerText();

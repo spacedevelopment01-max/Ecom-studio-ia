@@ -1,6 +1,6 @@
 /**
- * #301 « SYNA complète », lot 2 — mesure du contraste réel après « couleur d'une section » (opération native
- * section_colors, la même que SYNA propose). Pour chaque section de l'accueil : fond repeint (bleu, puis vert sombre,
+ * #301 « SINA complète », lot 2 — mesure du contraste réel après « couleur d'une section » (opération native
+ * section_colors, la même que SINA propose). Pour chaque section de l'accueil : fond repeint (bleu, puis vert sombre,
  * puis clair), rendu Liquid réel du studio dans Chromium, et pour CHAQUE élément portant du texte visible : rapport de
  * contraste WCAG entre sa couleur et le fond réellement peint derrière lui. Les boutons sont aussi mesurés contre le
  * fond de la section (composant d'interface, 3:1).

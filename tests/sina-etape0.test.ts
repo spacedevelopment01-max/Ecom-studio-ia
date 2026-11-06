@@ -45,6 +45,20 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     expect(J.journeyContext(j)).toMatch(/Prochaine question à poser .*offer/);
   });
 
+  it("une étape pas encore construite est annoncée, sans outil payant", () => {
+    const j = J.emptyJourney();
+    J.setStep(j, 0, "done"); J.setStep(j, 1, "doing");
+    expect(J.currentStep(j)).toBe(1);
+    expect(J.READY_STEPS).not.toContain(1);
+    expect(J.journeyContext(j)).toMatch(/n'est pas encore disponible .*AUCUN outil payant/);
+  });
+
+  it("coût de SINA : le catalogue des outils (fixe) est mis en cache AVANT le contexte qui change à chaque pas", async () => {
+    const { promptHead } = await import("@/lib/ai/llm");
+    expect(promptHead({ task: "agent_conversation", context: "état du projet", reference: "catalogue" })).toEqual({ cached: ["catalogue"], after: ["état du projet"] });
+    expect(promptHead({ task: "strategy" as any, context: "contexte", reference: "référence" })).toEqual({ cached: ["contexte", "référence"], after: [] });
+  });
+
   it("une réponse indispensable ne peut pas être reportée ; une réponse donnée n'est plus demandée", async () => {
     const user = await account();
     const cid = threadFor(user, null), ctx = ctxOf(user, cid);
@@ -118,6 +132,35 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
       expect(j.imported[0].logoSrc).toBeTruthy();
       expect(all<any>("SELECT id FROM assets WHERE project_id=? AND role='logo' AND origin='upload'", pid).length).toBe(1);
     } finally { startDeps.fetchImpl = undefined; }
+  });
+
+  it("mode chantier : pendant la construction, le client suit sans modifier ; SINA et la lecture restent libres", async () => {
+    const { withAccessScope } = await import("@/lib/access-scope");
+    const { assertNotUnderConstruction, underConstruction } = await import("@/lib/syna-agent/construction");
+    const user = await account();
+    const cid = threadFor(user, null), ctx = ctxOf(user, cid);
+    await call("start.answer", ctx, { answers: [{ field: "business", value: "products" }, { field: "offer", value: "Un sac de voyage." }] });
+    await call("project.create", ctx, { name: "Chantier", business: "products", description: "Un sac de voyage." });
+    const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
+    expect(underConstruction(pid)).toBe(true);
+    const http = (method: string, path = `/api/projects/${pid}/brand`) => () => withAccessScope({ kind: "http", method, path }, () => assertNotUnderConstruction(pid));
+    expect(http("PATCH")).toThrow(/en construction avec SINA/);
+    expect(http("POST", `/api/projects/${pid}/theme`)).toThrow(/en construction/);
+    expect(http("GET")).not.toThrow();
+    expect(http("POST", `/api/projects/${pid}/subscription`)).not.toThrow();
+    // Les actions de SINA (tâches de fond) ne passent pas par ce verrou.
+    expect(() => withAccessScope({ kind: "worker" }, () => assertNotUnderConstruction(pid))).not.toThrow();
+    // Fin de l'étape 13 : tout le Studio s'ouvre.
+    J.updateJourney(cid, (j) => { for (let n = 0; n <= 13; n++) J.setStep(j, n, "done"); });
+    expect(underConstruction(pid)).toBe(false);
+    expect(http("PATCH")).not.toThrow();
+  });
+
+  it("un projet créé sans le parcours SINA n'est jamais verrouillé", async () => {
+    const { underConstruction } = await import("@/lib/syna-agent/construction");
+    const { project } = await import("./conversation209-fixtures");
+    const user = await account();
+    expect(underConstruction(project(user))).toBe(false);
   });
 
   it("SINA relit le parcours à chaque pas et la frise est servie à l'interface", async () => {

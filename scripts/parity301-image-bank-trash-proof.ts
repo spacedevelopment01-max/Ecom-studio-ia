@@ -89,9 +89,9 @@ try {
       catch (e) { steps.push({ etape, ok: false, detail: String(e).slice(0, 400), capture: await shot("echec-" + steps.length).catch(() => undefined) }); console.log(`  ✗ ${label} · ${etape} : ${String(e).slice(0, 300)}`); throw e; }
     };
     const openSyna = async () => { for (let i = 0; i < 3 && !(await panel.count()); i++) { await page.locator('[aria-controls="syna-panel"]:visible').first().click(); await panel.waitFor({ timeout: 10000 }).catch(() => {}); } await panel.waitFor(); };
-    const box = () => panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SYNA" });
+    const box = () => panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SINA" });
     const say = async (text: string) => { await openSyna(); await box().fill(text); const response=page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname==='/api/studio-agent/conversations/'+k.c.id);await activate(panel.getByRole('button',{name:'Enregistrer',exact:true}));check((await response).ok(),'message failed'); };
-    const noQuote = async () => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SYNA" }).count()), "bouton de devis affiché");
+    const noQuote = async () => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SINA" }).count()), "bouton de devis affiché");
     const noOverflow = async () => check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), "débordement horizontal");
     const goto = async (tab: string) => { await page.goto(`${origin}/studio/${k.pid}/${tab}`, { waitUntil: "networkidle", timeout: 180000 }); await page.locator("#ecs-splash").waitFor({ state: "hidden" }).catch(() => {}); const nudge = page.locator("[data-tuto-nudge]"); if (await nudge.isVisible()) await nudge.locator("button").last().click(); };
     const cur = () => currentTheme(k.pid)!;
@@ -120,7 +120,7 @@ try {
       await step('Rechargement, reçu et vraie image dans la Banque native ; Préparation et octets conservés',async()=>{
         const before=JSON.stringify(getAsset(a.id));await page.reload({waitUntil:'networkidle'});await openSyna();await card.getByRole('status').getByText(/Enregistré et relu · reçu/).waitFor();check(JSON.stringify(getAsset(a.id))===before,'write on reload');const native=await ctx.request.get(origin+'/api/projects/'+k.pid+'/files?kind=image');check(native.ok(),'native gallery GET');check((await native.json()).assets.some((r:any)=>r.id===a.id),'restored native asset missing');
         const file=await ctx.request.get(origin+'/api/files/'+a.id);check(file.ok()&&digest(await file.body())===bytes,'restored file bytes');check(JSON.stringify(stateOf(k.pid))===preparation&&JSON.stringify(currentTheme(k.pid))===theme,'acquired project changed');
-        await activate(panel.getByRole('button',{name:'Replier SYNA',exact:true}).first());await panel.waitFor({state:'hidden'});const image=page.getByRole('img',{name:a.name,exact:true});await image.scrollIntoViewIfNeeded();await image.waitFor({state:'visible'});await page.waitForFunction(name=>Array.from(document.images).some(i=>i.alt===name&&i.complete&&i.naturalWidth>0),a.name);await noOverflow();await shot('4-banque-native');
+        await activate(panel.getByRole('button',{name:'Replier SINA',exact:true}).first());await panel.waitFor({state:'hidden'});const image=page.getByRole('img',{name:a.name,exact:true});await image.scrollIntoViewIfNeeded();await image.waitFor({state:'visible'});await page.waitForFunction(name=>Array.from(document.images).some(i=>i.alt===name&&i.complete&&i.naturalWidth>0),a.name);await noOverflow();await shot('4-banque-native');
       });
     } catch (e) { errors.push(`${label} : ${String(e).slice(0, 300)}`); }
     results.push({ mode: k.mode, format: k.format, business: k.business, steps, ok: steps.length > 0 && steps.every((s) => s.ok) });

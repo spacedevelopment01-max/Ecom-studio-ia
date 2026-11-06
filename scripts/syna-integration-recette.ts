@@ -1,6 +1,6 @@
 /**
  * Recette commune Claude + Codex (#292) : le parcours de confirmation gratuite de Codex (#291,
- * `scripts/verify-syna284-b1-confirmation-ui.ts`) rejoué DANS la coquille SYNA, en Encre et en Plein cadre.
+ * `scripts/verify-syna284-b1-confirmation-ui.ts`) rejoué DANS la coquille SINA, en Encre et en Plein cadre.
  *
  * Mêmes données fictives, même garde réseau, mêmes assertions que la recette de Codex. Seuls changent :
  * - les sélecteurs de la coquille (panneau `#syna-panel`, ouverture par l'accès de la coquille, pas par la pastille) ;
@@ -108,7 +108,7 @@ try {
     page.on("request", (r) => { if (r.method() === "POST" && /\/(intelligence|theme-tools|tools)(?:$|\?)/.test(r.url())) forbidden.push(r.url()); });
     page.setDefaultTimeout(45000);
 
-    // Coquille SYNA : un seul panneau `#syna-panel` (colonne, feuille ou panneau selon la taille et le mode).
+    // Coquille SINA : un seul panneau `#syna-panel` (colonne, feuille ou panneau selon la taille et le mode).
     const panel = page.locator("#syna-panel"), free = panel.getByRole("region", { name: "Retouche gratuite", exact: true });
     const frame = () => page.frameLocator('iframe[title^="Aperçu"]');
     const capture = async (name: string) => {
@@ -123,16 +123,16 @@ try {
       if (await nudge.isVisible()) await nudge.locator("button").last().click();
     };
     const shellMode = () => page.locator("[data-syna-shell]").first().getAttribute("data-syna-shell");
-    const collapse = async () => { if (await panel.isVisible()) await panel.getByRole("button", { name: "Replier SYNA", exact: true }).click(); await panel.waitFor({ state: "hidden" }); };
+    const collapse = async () => { if (await panel.isVisible()) await panel.getByRole("button", { name: "Replier SINA", exact: true }).click(); await panel.waitFor({ state: "hidden" }); };
     const openPanel = async () => {
       if (await panel.isVisible()) return;
-      // L'accès de la coquille : onglet signature (Encre) ou onglet Syna (téléphone) ; Ctrl J partout (Plein cadre).
+      // L'accès de la coquille : onglet signature (Encre) ou onglet Sina (téléphone) ; Ctrl J partout (Plein cadre).
       const trigger = page.locator('[aria-controls="syna-panel"]').filter({ visible: true }).first();
       if (await trigger.count()) await trigger.click();
       else { await page.locator("#studio-main").click({ position: { x: 4, y: 4 } }); await page.keyboard.press("Control+j"); }
       await panel.waitFor();
     };
-    const textbox = () => panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SYNA" });
+    const textbox = () => panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SINA" });
     const select = async () => {
       await collapse();
       const tab = page.getByRole("tab", { name: "Aperçu", exact: true });
@@ -211,7 +211,7 @@ try {
     await page.goto(`${origin}/studio/${f.pid}/boutique`, { waitUntil: "networkidle", timeout: 180000 });
     await dismiss();
     assert.equal(await shellMode(), f.mode, "le mode du compte est appliqué au chargement");
-    assert.equal(await page.getByRole("button", { name: "SYNA", exact: true }).count(), 0, "plus de pastille noire dans la coquille");
+    assert.equal(await page.getByRole("button", { name: "SINA", exact: true }).count(), 0, "plus de pastille noire dans la coquille");
     await select();
     step(`${label} : sélection native dans l'aperçu`);
 
@@ -221,7 +221,7 @@ try {
       await panel.getByRole("button", { name: "Enregistrer", exact: true }).click();
       await free.getByText("Les retouches gratuites ne sont pas activées ici. Aucun appel IA lancé.", { exact: true }).waitFor();
       assert.equal(await free.getByRole("button", { name: "Confirmer la modification gratuite", exact: true }).count(), 0);
-      assert.equal(await panel.getByRole("button", { name: "Voir le devis de la réponse de SYNA", exact: true }).count(), 0);
+      assert.equal(await panel.getByRole("button", { name: "Voir le devis de la réponse de SINA", exact: true }).count(), 0);
       assert.equal(currentTheme(f.pid)!.version.id, before);
       assert.deepEqual(forbidden, []);
       await capture("drapeau-ferme");
@@ -251,7 +251,7 @@ try {
     await message(`Remplace le titre de cette section par “${title}”`);
     assert.equal(currentTheme(f.pid)!.version.number, versionBefore);
     await free.getByText("Gratuit — 0 €", { exact: true }).waitFor();
-    assert.equal(await panel.getByRole("button", { name: "Voir le devis de la réponse de SYNA", exact: true }).count(), 0);
+    assert.equal(await panel.getByRole("button", { name: "Voir le devis de la réponse de SINA", exact: true }).count(), 0);
     // Bascule pendant le diff ouvert : la proposition, le coût, la sélection et le brouillon restent.
     await switchTwice("le diff ouvert", async () => (await free.getByText("Gratuit — 0 €", { exact: true }).isVisible()) && (await free.getByRole("button", { name: "Confirmer la modification gratuite", exact: true }).isVisible()));
     assert.equal(currentTheme(f.pid)!.version.number, versionBefore, "la bascule n'exécute rien");
@@ -262,13 +262,13 @@ try {
       await openPanel();
       await free.getByRole("button", { name: "Confirmer la modification gratuite", exact: true }).scrollIntoViewIfNeeded();
       await free.evaluate((el) => el.scrollIntoView({ block: "start" }));
-      // Plein cadre : la barre de commande ne recouvre jamais la feuille SYNA (ni sa zone de saisie).
+      // Plein cadre : la barre de commande ne recouvre jamais la feuille SINA (ni sa zone de saisie).
       if (f.mode === "plein") {
         const overlap = await page.evaluate(() => {
           const p = document.querySelector("#syna-panel")?.getBoundingClientRect(), c = document.querySelector(".ss-cmd-zone .ss-cmd-form")?.getBoundingClientRect();
           return !!p && !!c && p.width > 0 && c.width > 0 && p.bottom > c.top + 1 && p.left < c.right && p.right > c.left;
         });
-        assert.ok(!overlap, `${label} ${name} : la barre de commande recouvre la feuille SYNA`);
+        assert.ok(!overlap, `${label} ${name} : la barre de commande recouvre la feuille SINA`);
       }
       // Aucune page plus large que l'écran, à chaque taille.
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `${label} ${name} : débordement horizontal`);
@@ -422,7 +422,7 @@ try {
     else { await page.locator("#studio-main").click({ position: { x: 4, y: 4 } }); await page.keyboard.press("Control+j"); }
     await panel.getByText("Contexte existant · lecture seule", { exact: true }).waitFor();
     assert.equal(await panel.getByRole("region", { name: "Retouche gratuite", exact: true }).count(), 0);
-    assert.equal(await panel.getByRole("button", { name: "Voir le devis de la réponse de SYNA", exact: true }).count(), 0);
+    assert.equal(await panel.getByRole("button", { name: "Voir le devis de la réponse de SINA", exact: true }).count(), 0);
     await page.screenshot({ path: path.join(out, `historique-${f.mode}-${f.business}-telephone-390.png`) });
     proof.screenshots.push(`historique-${f.mode}-${f.business}-telephone-390.png`);
     proof.cases.push({ case: `historique-${f.mode}-${f.business}`, A1ReadOnly: true, noFreeControl: true });

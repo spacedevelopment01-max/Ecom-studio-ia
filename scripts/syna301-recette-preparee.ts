@@ -1,5 +1,5 @@
 /**
- * #301 « SYNA complète » — option des recettes : RECETTE_PREPARE=1 rend le projet de test « préparé » (recherche acquise,
+ * #301 « SINA complète » — option des recettes : RECETTE_PREPARE=1 rend le projet de test « préparé » (recherche acquise,
  * comme tout projet réellement construit) avec la fonction de test seedSourcedAnglesForTest, puis vérifie que la
  * conversation est bien en lecture seule pour la FICHE. Les retouches gratuites doivent alors rester disponibles
  * (contrat localEditsWritable, a593e6ea). La ligne d'historique SIMULÉE que cette fonction inscrit (provider « simulated »,

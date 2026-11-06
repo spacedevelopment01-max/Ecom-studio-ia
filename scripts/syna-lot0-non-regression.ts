@@ -6,7 +6,7 @@
  * Une seule base temporaire (deux projets de démonstration : SILLON et TABLE SAISON), le même compte, les mêmes
  * pages : chaque copie du dépôt est lancée à son tour en développement, puis chaque capture « avant » est comparée
  * pixel par pixel à la capture « après ». Animations coupées pour des captures stables. Aucune IA (clés vides),
- * aucun réseau fournisseur. Le panneau SYNA actuel est affiché par ses drapeaux d'interface sur ce serveur local
+ * aucun réseau fournisseur. Le panneau SINA actuel est affiché par ses drapeaux d'interface sur ce serveur local
  * seulement (aucun message envoyé), pour vérifier que la pastille actuelle est inchangée.
  */
 import fs from "node:fs";

@@ -1,5 +1,5 @@
 /**
- * Studio PRIVÉ de recette #492 (jamais déployé) : SYNA agent ouvert (STUDIO_SYNA_AGENT=1, coquille SYNA),
+ * Studio PRIVÉ de recette #492 (jamais déployé) : SINA agent ouvert (STUDIO_SYNA_AGENT=1, coquille SINA),
  * worker actif, comptes fictifs (mot de passe fictif de recette, aucune donnée réelle).
  * Clés : OpenAI / DashScope / fal injectées par le proxy de la session ; la clé Anthropic vient de la variable
  * d'environnement STUDIO_ANTHROPIC_KEY (réglages de l'environnement, jamais dans le code ni le fil) et est
@@ -53,7 +53,7 @@ const origin = `http://localhost:${port}`;
 const common = { ...process.env, ...env, APP_URL: origin, NEXT_TELEMETRY_DISABLED: "1" };
 const web = spawn(process.execPath, [path.resolve("node_modules/next/dist/bin/next"), "start", "-p", String(port), "-H", "0.0.0.0"], { env: { ...common, NODE_OPTIONS: "--max-old-space-size=4096" }, stdio: "inherit" });
 const worker = spawn(path.resolve("node_modules/.bin/tsx"), ["worker/index.ts"], { env: { ...common, WORKER_CONCURRENCY: "3" }, stdio: "inherit" });
-console.log(`Studio privé SYNA agent : ${origin} — mot de passe des comptes fictifs : ${PASSWORD}`);
+console.log(`Studio privé SINA agent : ${origin} — mot de passe des comptes fictifs : ${PASSWORD}`);
 const stop = () => { web.kill(); worker.kill(); };
 process.on("SIGTERM", stop); process.on("SIGINT", stop);
 web.on("exit", (c) => { worker.kill(); process.exit(c ?? 0); });

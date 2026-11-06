@@ -81,9 +81,9 @@ try {
     page.setDefaultTimeout(45000);
     const panel = page.locator("#syna-panel"), free = panel.getByRole("region", { name: "Retouche gratuite", exact: true });
     const frame = () => page.frameLocator('iframe[title^="Aperçu"]');
-    const textbox = () => panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SYNA" });
+    const textbox = () => panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SINA" });
     const designation = async () => designationLine(await panel.locator("[data-agent-active-context]").innerText().catch(() => ""));
-    const collapse = async () => { if (await panel.isVisible()) await panel.getByRole("button", { name: "Replier SYNA", exact: true }).click(); await panel.waitFor({ state: "hidden" }); };
+    const collapse = async () => { if (await panel.isVisible()) await panel.getByRole("button", { name: "Replier SINA", exact: true }).click(); await panel.waitFor({ state: "hidden" }); };
     const select = async () => {
       await collapse();
       const heading = frame().locator(`[data-es-section="index:${f.section}"]`).getByRole("heading").first();
@@ -97,7 +97,7 @@ try {
       await panel.locator("[data-agent-active-context]").getByText(/Section désignée/).waitFor();
     };
     const send = async (text: string) => { await textbox().fill(text); await panel.getByRole("button", { name: "Enregistrer", exact: true }).click(); };
-    // Réponse de SYNA à la demande : proposition gratuite (bouton Confirmer) ou demande de précision.
+    // Réponse de SINA à la demande : proposition gratuite (bouton Confirmer) ou demande de précision.
     const outcome = async () => {
       const confirm = free.getByRole("button", { name: "Confirmer la modification gratuite", exact: true });
       const ask = panel.getByText(/Précisez gratuitement|Désignez une section/).last();
@@ -159,7 +159,7 @@ try {
     await page.screenshot({ path: path.join(out, `${label}-reponse.png`) });
     const r: Result = { mode: f.mode, scenario: f.scenario, avantAttente: avant, apresAttente: apres, designationConservee: /Section désignée/.test(apres), reponseSyna: o.text, propositionGratuite: o.ok, capture };
     results.push(r);
-    console.log(`${r.designationConservee && r.propositionGratuite ? "✓" : "✗"} ${label} : avant « ${avant} » → après ${WAIT / 1000} s « ${apres} » ; SYNA : ${o.text}`);
+    console.log(`${r.designationConservee && r.propositionGratuite ? "✓" : "✗"} ${label} : avant « ${avant} » → après ${WAIT / 1000} s « ${apres} » ; SINA : ${o.text}`);
     await context.close();
   }
   await b.close();

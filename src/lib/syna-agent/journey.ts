@@ -29,6 +29,11 @@ export const JOURNEY_STEPS = [
   { n: 13, fr: "Rangement des fichiers", en: "File tidy-up" },
 ] as const;
 export type StepNumber = (typeof JOURNEY_STEPS)[number]["n"];
+/**
+ * Étapes déjà construites dans le parcours SINA. Les autres sont annoncées au client mais SINA n'y lance rien
+ * (aucun outil payant) : elle ne doit jamais partir seule sur une étape que le parcours ne sait pas encore mener.
+ */
+export const READY_STEPS: number[] = [0];
 /** à faire · en cours · à valider par le client · validée · sans objet (ex. étape 7 quand le client choisit un de nos thèmes). */
 export type StepStatus = "todo" | "doing" | "review" | "done" | "skipped";
 
@@ -143,6 +148,10 @@ export function journeyContext(j: Journey): string {
   const cur = currentStep(j);
   const steps = JOURNEY_STEPS.map((s) => `${s.n}. ${s.fr} = ${j.steps[s.n]?.status ?? "todo"}`).join(" ; ");
   const lines = [`Parcours de création (étapes 0 à 13) : ${steps}. Étape en cours : ${cur}.`];
+  if (!READY_STEPS.includes(cur)) {
+    const s = JOURNEY_STEPS.find((x) => x.n === cur)!;
+    lines.push(`L'étape ${cur} (« ${s.fr} ») n'est pas encore disponible dans le parcours. Dis-le simplement au client (la suite arrive très bientôt), réponds à ses questions, mais n'utilise AUCUN outil payant et ne lance aucune autre étape (ni recherche, ni angles, ni marque, ni site).`);
+  }
   if (cur === 0) {
     const filled = START_FIELDS.filter((f) => j.start[f]).map((f) => `${f} = ${j.start[f]!.status === "answered" ? `« ${j.start[f]!.value.slice(0, 400)} »` : j.start[f]!.status} (${j.start[f]!.source})`);
     const missing = missingFields(j);

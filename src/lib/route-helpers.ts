@@ -3,6 +3,7 @@ import { ownedProject, requireUser, type User } from "./auth";
 import { loadProject, type Project } from "./projects";
 import { setProjectContentLang } from "./i18n-server";
 import { identifyProject } from "./access-scope";
+import { assertNotUnderConstruction } from "./syna-agent/construction";
 
 export type Ctx<P extends Record<string, string> = { id: string }> = { params: Promise<P> };
 
@@ -11,6 +12,8 @@ export async function projectFromCtx(ctx: Ctx): Promise<{ user: User; project: P
   const { id } = await ctx.params;
   ownedProject(user, id);
   identifyProject(id);
+  // Mode chantier : pendant la construction avec SINA, le client suit le projet mais ne le modifie pas lui-même.
+  assertNotUnderConstruction(id);
   const project = loadProject(id);
   setProjectContentLang(project.settings.language);
   return { user, project };

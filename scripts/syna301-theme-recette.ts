@@ -1,6 +1,6 @@
 /**
- * Recette #301 « SYNA complète » — choix d'un thème de la galerie en phrase naturelle (contrat #376 de Codex), dans la
- * conversation SYNA de l'écran Site, Encre / Plein cadre, 1440 / 390 px, produits et services. Rien d'aménagé :
+ * Recette #301 « SINA complète » — choix d'un thème de la galerie en phrase naturelle (contrat #376 de Codex), dans la
+ * conversation SINA de l'écran Site, Encre / Plein cadre, 1440 / 390 px, produits et services. Rien d'aménagé :
  *  « Choisis un autre thème pour mon site » → clarification gratuite avec la liste native → bouton d'un thème → la phrase
  *  du client est remplie, il l'envoie → aperçu NATIF INACTIF préparé sans IA (site courant inchangé), deux liens d'aperçu
  *  réels → Annuler → rien d'écrit → nouvelle proposition → confirmation → reçu, nouvelle version relue dans la direction
@@ -88,8 +88,8 @@ try {
       catch (e) { steps.push({ etape, ok: false, detail: String(e).slice(0, 400), capture: await shot("echec-" + steps.length).catch(() => undefined) }); console.log(`  ✗ ${label} · ${etape} : ${String(e).slice(0, 300)}`); throw e; }
     };
     const openSyna = async () => { for (let i = 0; i < 3 && !(await panel.count()); i++) { await page.locator('[aria-controls="syna-panel"]:visible').first().click(); await panel.waitFor({ timeout: 10000 }).catch(() => {}); } await panel.waitFor(); };
-    const say = async (text: string) => { await openSyna(); await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SYNA" }).fill(text); await panel.getByRole("button", { name: "Enregistrer", exact: true }).click(); };
-    const noQuote = async () => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SYNA" }).count()), "bouton de devis affiché");
+    const say = async (text: string) => { await openSyna(); await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SINA" }).fill(text); await panel.getByRole("button", { name: "Enregistrer", exact: true }).click(); };
+    const noQuote = async () => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SINA" }).count()), "bouton de devis affiché");
     const noOverflow = async () => check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), "débordement horizontal");
     const cur = () => currentTheme(k.pid)!, brand = () => JSON.stringify(loadProject(k.pid).brand);
     const turns = () => all<{ request_json: string }>("SELECT request_json FROM agent_conversation_turns WHERE conversation_id=?", k.c.id).filter((t) => /confirm-theme-choice/.test(t.request_json)).length;
@@ -114,7 +114,7 @@ try {
         const others = names.filter((x) => norm(x) !== norm(start0.spec.direction) && norm(x) !== norm(String(start0.spec.name ?? "")));
         chosen = others.find((x) => /rive/i.test(x)) ?? others[0];
         await list.getByRole("button", { name: chosen, exact: true }).click();
-        const box = panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SYNA" });
+        const box = panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SINA" });
         check((await box.inputValue()) === `Choisis le thème ${chosen} pour mon site`, `phrase remplie : ${await box.inputValue()}`);
         await noOverflow(); await shot("1-liste");
         return `${names.length} thèmes · choisi : ${chosen}`;

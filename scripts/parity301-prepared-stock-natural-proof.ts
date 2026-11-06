@@ -85,10 +85,10 @@ try {
       catch (e) { steps.push({ etape, ok: false, detail: String(e).slice(0, 400), capture: await shot("echec-" + steps.length).catch(() => undefined) }); console.log(`  ✗ ${label} · ${etape} : ${String(e).slice(0, 300)}`); throw e; }
     };
     const openSyna = async () => { if (!(await panel.count())) await page.locator('[aria-controls="syna-panel"]:visible').first().click(); await panel.waitFor(); };
-    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SYNA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
+    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SINA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
     const send = async (text: string) => {
       await openSyna();
-      await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SYNA" }).fill(text);
+      await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SINA" }).fill(text);
       await panel.getByRole("button", { name: "Enregistrer", exact: true }).click();
     };
     const noOverflow = async () => check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "débordement horizontal");
@@ -98,15 +98,15 @@ try {
     const stock=()=>getProduct(k.pid,kk.productId);
     const selected=()=>stock().variants.find(v=>v.id===kk.variantId)!;
     const turns = () => all<{ request_json: string }>("SELECT request_json FROM agent_conversation_turns WHERE conversation_id=?", k.cid).filter((t) => /confirm-stock/.test(t.request_json)).length;
-    const noQuote = async () => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SYNA" }).count()), "bouton de devis affiché");
+    const noQuote = async () => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SINA" }).count()), "bouton de devis affiché");
     try {
-      await step("Catalogue ouvert dans le mode du compte, produit désigné (« Désigner pour SYNA »)", async () => {
+      await step("Catalogue ouvert dans le mode du compte, produit désigné (« Désigner pour SINA »)", async () => {
         await page.goto(`${origin}/studio/${k.pid}/catalogue`, { waitUntil: "networkidle", timeout: 180000 });
         await page.locator("#ecs-splash").waitFor({ state: "hidden" }).catch(() => {});
         const response=await context.request.get(`${origin}/api/studio-agent/conversations/${k.cid}`);check(response.ok(),'vue préparée');const view=await response.json();check(view.localEditsWritable===true&&/préparation engagée/.test(view.readOnlyReason??''),'permission native ou verrou fiche perdu');
         const nudge = page.locator("[data-tuto-nudge]"); if (await nudge.isVisible()) await nudge.locator("button").last().click();
         check((await page.locator("[data-syna-shell]").first().getAttribute("data-syna-shell")) === k.mode, "mode");
-        const productButton=page.getByRole("button",{name:"Désigner pour SYNA",exact:true}).first();if(desktop)await productButton.click();else await productButton.tap();
+        const productButton=page.getByRole("button",{name:"Désigner pour SINA",exact:true}).first();if(desktop)await productButton.click();else await productButton.tap();
         await panel.waitFor();await panel.getByText('Catalogue de ce projet',{exact:true}).click();await panel.getByText('Choisir une variante précise',{exact:true}).click();const variant=panel.getByRole('button',{name:/Rouge \/ M.*ROUGE-M/});await variant.waitFor();if(desktop)await variant.click();else await variant.tap();await panel.locator("[data-agent-active-context]").getByText(/désign/i).first().waitFor();
         await noOverflow(); await shot("1-designe");
         return (await panel.locator("[data-agent-active-context]").innerText()).split("\n").find((l) => /désign/i.test(l))?.trim();

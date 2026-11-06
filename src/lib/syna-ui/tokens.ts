@@ -86,8 +86,8 @@ export const SYNA_DEFAULT_ACCENT: Record<SynaMode, SynaAccent> = { encre: "encre
 
 /** Typographies (polices sous licence SIL OFL 1.1, servies depuis `public/syna/fonts/` et `/fonts/bricolage.woff2`). */
 export const SYNA_FONTS: Record<SynaMode, { voice: string; ui: string; display: string; mono: string }> = {
-  encre: { voice: "Sina Newsreader", ui: "Sina Geist", display: "Sina Newsreader", mono: "Sina Geist Mono" },
-  plein: { voice: "Sina Onest", ui: "Sina Onest", display: "Sina Bricolage", mono: "Sina Geist Mono" },
+  encre: { voice: "Syna Newsreader", ui: "Syna Geist", display: "Syna Newsreader", mono: "Syna Geist Mono" },
+  plein: { voice: "Syna Onest", ui: "Syna Onest", display: "Syna Bricolage", mono: "Syna Geist Mono" },
 };
 
 // ——— Contraste (WCAG 2.x) ———

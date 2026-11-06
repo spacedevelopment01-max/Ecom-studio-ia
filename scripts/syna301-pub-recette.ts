@@ -1,10 +1,10 @@
 /**
- * Recette #282/#301 — publicité (#345/#347, convergence #348) et bibliothèque de prompts (#344), pilotées depuis SYNA dans
+ * Recette #282/#301 — publicité (#345/#347, convergence #348) et bibliothèque de prompts (#344), pilotées depuis SINA dans
  * la coquille Encre / Plein cadre, ordinateur 1440 px et téléphone 390 px.
  *
  * Parcours publicitaire (créations du moteur V2 générées avec des outils SIMULÉS, aucun appel IA ; le titre est d'abord réduit
  * par le client dans l'éditeur natif, car sur la création brute du moteur l'agrandissement est refusé — limite vérifiée) :
- *   Publicités › Modifier → sélection du titre sur le canevas → « Désigner le titre pour SYNA » → (« Utiliser ce titre
+ *   Publicités › Modifier → sélection du titre sur le canevas → « Désigner le titre pour SINA » → (« Utiliser ce titre
  *   enregistré ») → « Agrandis le titre de la création sélectionnée » → carte gratuite : aperçus avant / après, effets,
  *   « Gratuit — 0 € », aucun devis, aucune écriture → [ordinateur : annulation persistante puis nouvelle proposition,
  *   attente réelle de 17 s] → « Confirmer gratuitement » → tâche native gratuite (worker réel) → reçu « Enregistré et relu ·
@@ -136,7 +136,7 @@ try {
       catch (e) { steps.push({ etape, ok: false, detail: String(e).slice(0, 400), capture: await shot("echec-" + steps.length).catch(() => undefined) }); console.log(`  ✗ ${label} · ${etape} : ${String(e).slice(0, 300)}`); throw e; }
     };
     const openSyna = async () => { if (!(await panel.count())) await page.locator('[aria-controls="syna-panel"]:visible').first().click(); await panel.waitFor(); };
-    const send = async (text: string) => { await openSyna(); await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SYNA" }).fill(text); await panel.getByRole("button", { name: "Enregistrer", exact: true }).click(); };
+    const send = async (text: string) => { await openSyna(); await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SINA" }).fill(text); await panel.getByRole("button", { name: "Enregistrer", exact: true }).click(); };
     const versions = () => all<{ version: number }>("SELECT version FROM ad_documents WHERE project_id=? AND doc_key=? ORDER BY version", k.pid, k.docKey).map((r) => r.version);
     const noOverflow = async () => check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "débordement horizontal");
     const imgLoaded = (name: string) => card.getByRole("img", { name }).evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0);
@@ -162,7 +162,7 @@ try {
         await page.mouse.click(box.x + (t.x + t.w / 2) * s, box.y + (t.y + Math.min(t.h, 60) / 2) * s);
         // Téléphone : la zone de demande (et la désignation) est dans la feuille « Plus » de l'éditeur.
         if (!desktop) await page.getByRole("button", { name: "Plus", exact: true }).click();
-        const designate = page.getByRole("button", { name: "Désigner le titre pour SYNA", exact: true });
+        const designate = page.getByRole("button", { name: "Désigner le titre pour SINA", exact: true });
         await designate.waitFor({ timeout: 15000 });
         await shot(shotPrefix + "1-editeur-titre");
         await designate.click();
@@ -173,7 +173,7 @@ try {
         await use.click();
         await panel.getByText("Titre enregistré désigné. Vous pouvez demander sa retouche gratuite.", { exact: true }).waitFor();
       };
-      await step("éditeur : titre sélectionné, « Désigner le titre pour SYNA »", async () => {
+      await step("éditeur : titre sélectionné, « Désigner le titre pour SINA »", async () => {
         await designateTitle();
         await shot("2-titre-designe");
       });
@@ -190,7 +190,7 @@ try {
         await card.getByRole("img", { name: "Aperçu exact après confirmation" }).waitFor();
         await page.waitForFunction(() => [...document.querySelectorAll<HTMLImageElement>("#syna-panel img")].every((i) => i.complete));
         check(await imgLoaded("Création avant modification") && await imgLoaded("Aperçu exact après confirmation"), "aperçus non chargés");
-        check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SYNA" }).count()), "bouton de devis pour un acte gratuit");
+        check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SINA" }).count()), "bouton de devis pour un acte gratuit");
         check(JSON.stringify(versions()) === JSON.stringify(before), "écriture avant l'accord");
         // Calques secondaires : annoncés avant l'accord, jamais « seul le titre » si d'autres bougent.
         const secondary = k.expected.filter((id) => id !== k.titleId);

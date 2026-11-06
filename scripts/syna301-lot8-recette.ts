@@ -1,6 +1,6 @@
 /**
- * Recette #301 « SYNA complète », lot 8 — lecture des services réservables (#408) et corbeille depuis Images (#409, #413) de
- * Codex dans la conversation SYNA du Studio, Encre / Plein cadre × 1440 / 390 px, projet de services avec réservation native :
+ * Recette #301 « SINA complète », lot 8 — lecture des services réservables (#408) et corbeille depuis Images (#409, #413) de
+ * Codex dans la conversation SINA du Studio, Encre / Plein cadre × 1440 / 390 px, projet de services avec réservation native :
  *  1. « Peux-tu me montrer les services réservables du site ? » → carte en lecture seule, mêmes services que la
  *     configuration native, aucun bouton, lien vers Rendez-vous suivi ;
  *  2. Images : image mise à la corbeille par la route native → « Montre la corbeille des images » → seule l'image est
@@ -94,17 +94,17 @@ try {
         const trigger = page.locator('[aria-controls="syna-panel"]:visible').first();
         try { await trigger.click({ timeout: 20000 }); }
         catch (e) {
-          // Diagnostic : qui reçoit le toucher à la place du bouton « Syna » ?
+          // Diagnostic : qui reçoit le toucher à la place du bouton « Sina » ?
           const who = await trigger.evaluate((el) => { const r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2, top = document.elementFromPoint(x, y); return `bouton ${Math.round(r.left)},${Math.round(r.top)} ${Math.round(r.width)}×${Math.round(r.height)} · fenêtre ${innerWidth}×${innerHeight} · reçu par ${top ? top.tagName + "." + String(top.className).slice(0, 80) + (el.contains(top) ? " (le bouton)" : "") : "rien"}`; }).catch((x) => String(x));
-          throw Error(`bouton Syna inaccessible : ${who} · ${String(e).slice(0, 120)}`);
+          throw Error(`bouton Sina inaccessible : ${who} · ${String(e).slice(0, 120)}`);
         }
         await panel.waitFor({ timeout: 10000 }).catch(() => {});
       }
       await panel.waitFor();
     };
-    const box = () => panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SYNA" });
+    const box = () => panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SINA" });
     const say = async (text: string) => { await openSyna(); await box().fill(text); await panel.getByRole("button", { name: "Enregistrer", exact: true }).click(); };
-    const noQuote = async () => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SYNA" }).count()), "bouton de devis affiché");
+    const noQuote = async () => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SINA" }).count()), "bouton de devis affiché");
     const noOverflow = async () => check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), "débordement horizontal");
     const goto = async (tab: string) => { await page.goto(`${origin}/studio/${k.pid}/${tab}`, { waitUntil: "networkidle", timeout: 180000 }); await page.locator("#ecs-splash").waitFor({ state: "hidden" }).catch(() => {}); const nudge = page.locator("[data-tuto-nudge]"); if (await nudge.isVisible()) await nudge.locator("button").last().click(); };
     const cur = () => currentTheme(k.pid)!;

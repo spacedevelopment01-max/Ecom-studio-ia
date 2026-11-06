@@ -11,7 +11,7 @@
  *    du guide « Image generation » : 1024×1024 « high » = 1 756 jetons, 1024×1536 « high » = 1 372 jetons, + 2 aperçus
  *    de 100 jetons, soit au plus 0,059 $. Plafond retenu : 0,09 $ par image (couvre aussi deux images de référence).
  *  - Taux BCE du 06/11/2026 : 1 € = 1,1165 $ (0,8957 € pour 1 $), arrondi prudent à 0,90.
- * Choix de l'utilisateur : toutes les images de SYNA chez OpenAI (logos : Sunburst imposé ; maquettes : Flare, sans
+ * Choix de l'utilisateur : toutes les images de SINA chez OpenAI (logos : Sunburst imposé ; maquettes : Flare, sans
  * secours), tout le reste chez Claude.
  */
 export const DATE_VERIFICATION_TARIFS = Date.UTC(2026, 10, 6, 12, 0, 0);

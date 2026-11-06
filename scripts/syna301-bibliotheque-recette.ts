@@ -1,9 +1,9 @@
 /**
- * Recette #301 « SYNA complète » — lecture de la bibliothèque en phrases naturelles (contrat #377 de Codex), Encre /
+ * Recette #301 « SINA complète » — lecture de la bibliothèque en phrases naturelles (contrat #377 de Codex), Encre /
  * Plein cadre × 1440 / 390 px. Rien d'aménagé :
  *  1. depuis le Pilote, « Montre les fichiers de mon projet » → carte « Fichiers du projet — lecture gratuite » : les trois
  *     fichiers du projet (pas celui d'un autre projet), miniatures réellement chargées, liens, aucune modification,
- *     aucun devis, mention que SYNA n'a pas regardé les images ;
+ *     aucun devis, mention que SINA n'a pas regardé les images ;
  *  2. « Montre les dossiers » → le dossier natif ; « Liste les photos » → seulement les images ;
  *  3. « Cherche le fichier « vitrine.png » » → un seul résultat → « Désigner » → écran Fichiers, « Média désigné » ;
  *  4. « Renomme ce fichier en « vitrine-boutique.png » » → carte de rangement → confirmation → nom relu en base ;
@@ -94,15 +94,15 @@ try {
       catch (e) { steps.push({ etape, ok: false, detail: String(e).slice(0, 400), capture: await shot("echec-" + steps.length).catch(() => undefined) }); console.log(`  ✗ ${label} · ${etape} : ${String(e).slice(0, 300)}`); throw e; }
     };
     const openSyna = async () => { for (let i = 0; i < 3 && !(await panel.count()); i++) { await page.locator('[aria-controls="syna-panel"]:visible').first().click(); await panel.waitFor({ timeout: 10000 }).catch(() => {}); } await panel.waitFor(); };
-    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SYNA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
+    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SINA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
     const send = async (text: string) => {
       await openSyna();
-      await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SYNA" }).fill(text);
+      await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SINA" }).fill(text);
       await panel.getByRole("button", { name: "Enregistrer", exact: true }).click();
     };
     const noOverflow = async () => check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "débordement horizontal");
     const versions = () => JSON.stringify(all("SELECT id,name,version,folder_id FROM assets WHERE project_id=? ORDER BY id", k.pid));
-    const noQuote = async () => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SYNA" }).count()), "bouton de devis affiché");
+    const noQuote = async () => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SINA" }).count()), "bouton de devis affiché");
     const confirmTurns = () => all<{ request_json: string }>("SELECT request_json FROM agent_conversation_turns WHERE conversation_id=?", k.cid).filter((t) => /confirm-files/.test(t.request_json)).length;
     const shown = async () => (await list.getByRole("list", { name: "Fichiers trouvés", exact: true }).getByRole("listitem").getByRole("link").allInnerTexts()).map((t) => t.trim());
     try {

@@ -118,7 +118,7 @@ jobs:
       - name: Outil natif de compréhension lot D sur le build compilé (fournisseur HTTP simulé)
         run: STUDIO_CONVERSATION_SPECIALISTS=1 STUDIO_CONVERSATION_TOOLS=1 NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D-proof --specialists --tools --tools-ui
 
-      - name: Preuves de l’exécution depuis SYNA
+      - name: Preuves de l’exécution depuis SINA
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -126,10 +126,10 @@ jobs:
           path: /tmp/agent211-D-proof
           if-no-files-found: ignore
 
-      - name: Retouche et annulation depuis SYNA sur le build compilé (fournisseur HTTP simulé)
+      - name: Retouche et annulation depuis SINA sur le build compilé (fournisseur HTTP simulé)
         run: STUDIO_CONVERSATION_SPECIALISTS=1 STUDIO_CONVERSATION_TOOLS=1 NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D2-proof --specialists --tools --theme-ui
 
-      - name: Preuves des retouches natives depuis SYNA
+      - name: Preuves des retouches natives depuis SINA
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -137,7 +137,7 @@ jobs:
           path: /tmp/agent211-D2-proof
           if-no-files-found: ignore
 
-      - name: Composition native et textes acquis depuis SYNA, rendu et exports (HTTP simulé)
+      - name: Composition native et textes acquis depuis SINA, rendu et exports (HTTP simulé)
         run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-E2-proof --composition-ui --original-ui
 
       - name: Preuves de composition et limites des plateformes
@@ -148,10 +148,10 @@ jobs:
           path: /tmp/agent211-E2-proof
           if-no-files-found: ignore
 
-      - name: Export natif depuis SYNA, téléchargement et reprise sans fournisseur réel
+      - name: Export natif depuis SINA, téléchargement et reprise sans fournisseur réel
         run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D3-proof --exports-ui
 
-      - name: Preuves des exports natifs de SYNA
+      - name: Preuves des exports natifs de SINA
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -159,7 +159,7 @@ jobs:
           path: /tmp/agent211-D3-proof
           if-no-files-found: ignore
 
-      - name: Captures natives, correction ciblée et recapture depuis SYNA
+      - name: Captures natives, correction ciblée et recapture depuis SINA
         run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-E3-proof --render-ui
 
       - name: Preuves du rendu natif et de sa correction
@@ -172,10 +172,10 @@ jobs:
 
       # Le build compilé peut différer du code source (empaquetage Next) : export Shopify par la vraie route du serveur
       # compilé, Theme Check réellement exécuté et 0 erreur exigée (#202). Base et démonstration fictives, aucune IA.
-      - name: Recherche native depuis SYNA (sources fictives préacquises, fournisseur HTTP simulé)
+      - name: Recherche native depuis SINA (sources fictives préacquises, fournisseur HTTP simulé)
         run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D4-proof --research-ui
 
-      - name: Preuves de recherche native depuis SYNA
+      - name: Preuves de recherche native depuis SINA
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -186,10 +186,10 @@ jobs:
       - name: Export Shopify contrôlé sur le build compilé
         run: npx tsx scripts/export-shopify-build-check.ts
 
-      - name: Catalogue SYNA natif, brouillons, variantes, reprise, annulation et aperçu (IA HTTP simulée)
+      - name: Catalogue SINA natif, brouillons, variantes, reprise, annulation et aperçu (IA HTTP simulée)
         run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D8-proof --catalogue-ui
 
-      - name: Preuves du Catalogue SYNA
+      - name: Preuves du Catalogue SINA
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -197,10 +197,10 @@ jobs:
           path: /tmp/agent211-D8-proof
           if-no-files-found: ignore
 
-      - name: Images natives depuis SYNA, devis, bibliothèque et reprise (fournisseurs HTTP simulés)
+      - name: Images natives depuis SINA, devis, bibliothèque et reprise (fournisseurs HTTP simulés)
         run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D9a-proof --images-ui
 
-      - name: Preuves des images natives de SYNA
+      - name: Preuves des images natives de SINA
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -208,10 +208,10 @@ jobs:
           path: /tmp/agent211-D9a-proof
           if-no-files-found: ignore
 
-      - name: Retouches SYNA, source et style, versions et insertion annulable (HTTP simulé)
+      - name: Retouches SINA, source et style, versions et insertion annulable (HTTP simulé)
         run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D9b-proof --retouches-ui
 
-      - name: Preuves des retouches natives de SYNA
+      - name: Preuves des retouches natives de SINA
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -219,10 +219,10 @@ jobs:
           path: /tmp/agent211-D9b-proof
           if-no-files-found: ignore
 
-      - name: Logos SYNA, trois directions, reprise et réutilisation (HTTP simulé)
+      - name: Logos SINA, trois directions, reprise et réutilisation (HTTP simulé)
         run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D9c-proof --logos-ui
 
-      - name: Preuves des logos natifs de SYNA
+      - name: Preuves des logos natifs de SINA
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -230,10 +230,10 @@ jobs:
           path: /tmp/agent211-D9c-proof
           if-no-files-found: ignore
 
-      - name: Vidéos SYNA, montage natif, retouche et restauration (cognition HTTP simulée)
+      - name: Vidéos SINA, montage natif, retouche et restauration (cognition HTTP simulée)
         run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D10a-proof --videos-ui
 
-      - name: Preuves des montages vidéo natifs de SYNA
+      - name: Preuves des montages vidéo natifs de SINA
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -241,10 +241,10 @@ jobs:
           path: /tmp/agent211-D10a-proof
           if-no-files-found: warn
 
-      - name: Clips IA et voix SYNA depuis le Studio compilé (fournisseurs HTTP simulés)
+      - name: Clips IA et voix SINA depuis le Studio compilé (fournisseurs HTTP simulés)
         run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D10b2-proof --generated-videos-ui
 
-      - name: Preuves des clips IA natifs de SYNA
+      - name: Preuves des clips IA natifs de SINA
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -252,7 +252,7 @@ jobs:
           path: /tmp/agent211-D10b2-proof
           if-no-files-found: warn
 
-      - name: Correction vocale ciblée depuis SYNA compilé (fournisseurs HTTP simulés)
+      - name: Correction vocale ciblée depuis SINA compilé (fournisseurs HTTP simulés)
         run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D10c3-proof --voice-ui
 
       - name: Preuves de la correction vocale ciblée
@@ -263,7 +263,7 @@ jobs:
           path: /tmp/agent211-D10c3-proof
           if-no-files-found: warn
 
-      - name: Reprise d’un plan depuis SYNA compilé (fournisseurs HTTP simulés)
+      - name: Reprise d’un plan depuis SINA compilé (fournisseurs HTTP simulés)
         run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D10c4-proof --clip-ui
 
       - name: Preuves de la reprise ciblée du clip
@@ -274,7 +274,7 @@ jobs:
           path: /tmp/agent211-D10c4-proof
           if-no-files-found: warn
 
-      - name: Brouillons et calendrier SYNA depuis le Studio compilé (cognition simulée, zéro fournisseur média)
+      - name: Brouillons et calendrier SINA depuis le Studio compilé (cognition simulée, zéro fournisseur média)
         run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D11a-proof --social-ui
 
       - name: Preuves de la préparation sociale native
@@ -285,7 +285,7 @@ jobs:
           path: /tmp/agent211-D11a-proof
           if-no-files-found: warn
 
-      - name: Visuel social depuis SYNA, devis borné et échec conservant les acquis (HTTP simulé)
+      - name: Visuel social depuis SINA, devis borné et échec conservant les acquis (HTTP simulé)
         run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-social-production --social-production-ui
         env:
           NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
@@ -297,7 +297,7 @@ jobs:
           path: reports/ci-agent211-social-production
           if-no-files-found: warn
 
-      - name: Campagne native depuis SYNA et édition manuelle (transport cognitif simulé)
+      - name: Campagne native depuis SINA et édition manuelle (transport cognitif simulé)
         run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D11b-proof --campaign-ui
 
       - name: Preuves des brouillons de campagne natifs
@@ -308,7 +308,7 @@ jobs:
           path: /tmp/agent211-D11b-proof
           if-no-files-found: ignore
 
-      - name: Visuel publicitaire natif depuis SYNA et refus sans rachat (HTTP simulé)
+      - name: Visuel publicitaire natif depuis SINA et refus sans rachat (HTTP simulé)
         run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-campaign-visual --campaign-visual-ui
         env:
           NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
@@ -344,7 +344,7 @@ jobs:
           path: reports/ci-agent211-social-reuse
           if-no-files-found: warn
 
-      - name: Intégration SYNA, compteurs natifs et suivi panneau fermé (HTTP simulé)
+      - name: Intégration SINA, compteurs natifs et suivi panneau fermé (HTTP simulé)
         run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-communication-integration --background-communication-ui
         env:
           NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
@@ -356,11 +356,11 @@ jobs:
           path: reports/ci-agent211-communication-integration
           if-no-files-found: warn
 
-      - name: Rédaction et retouche SYNA natives, Catalogue/variante/service, versions conservées (HTTP simulé)
+      - name: Rédaction et retouche SINA natives, Catalogue/variante/service, versions conservées (HTTP simulé)
         run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-native-content --content-ui
         env:
           NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
-      - name: Preuves de rédaction native SYNA
+      - name: Preuves de rédaction native SINA
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -368,12 +368,12 @@ jobs:
           path: reports/ci-agent211-native-content
           if-no-files-found: warn
 
-      - name: Proposition de marque native depuis SYNA (simulation HTTP isolée)
+      - name: Proposition de marque native depuis SINA (simulation HTTP isolée)
         timeout-minutes: 8
         env:
           NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
         run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-native-brand --brand-ui --brand-review --brand-correction
-      - name: Preuves de la proposition de marque SYNA
+      - name: Preuves de la proposition de marque SINA
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -381,12 +381,12 @@ jobs:
           path: reports/ci-agent211-native-brand
           if-no-files-found: warn
 
-      - name: Brouillon Blog natif depuis SYNA, quota et suivi panneau fermé (HTTP simulé)
+      - name: Brouillon Blog natif depuis SINA, quota et suivi panneau fermé (HTTP simulé)
         timeout-minutes: 8
         env:
           NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
         run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-native-blog --blog-ui
-      - name: Preuves du Blog natif SYNA
+      - name: Preuves du Blog natif SINA
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -394,7 +394,7 @@ jobs:
           path: reports/ci-agent211-native-blog
           if-no-files-found: warn
 
-      - name: Choix puis validation du logo natif depuis SYNA (HTTP simulé)
+      - name: Choix puis validation du logo natif depuis SINA (HTTP simulé)
         timeout-minutes: 8
         env:
           NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
@@ -406,7 +406,7 @@ jobs:
           name: agent211-logo-selection
           path: reports/ci-agent211-logo-selection
           if-no-files-found: warn
-      - name: Recette commune produit et service dans SYNA (HTTP simulé)
+      - name: Recette commune produit et service dans SINA (HTTP simulé)
         timeout-minutes: 8
         env:
           NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
@@ -451,7 +451,7 @@ jobs:
         run: docker logs studio 2>&1 | tail -80 || true
 
   confirmation-gratuite:
-    name: SYNA — confirmation gratuite dans le Studio compilé
+    name: SINA — confirmation gratuite dans le Studio compilé
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:

@@ -1,4 +1,4 @@
-// Usage : node chat.cjs <profil> <nom> <url> <message> [fichier1,fichier2] — envoie dans le vrai fil SYNA et attend la fin.
+// Usage : node chat.cjs <profil> <nom> <url> <message> [fichier1,fichier2] — envoie dans le vrai fil SINA et attend la fin.
 const { chromium } = require('playwright');
 const fs = require('fs');
 const S = __dirname, [,, profil, nom, url, message, files] = process.argv;

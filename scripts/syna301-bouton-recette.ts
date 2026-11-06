@@ -1,6 +1,6 @@
 /**
- * Recette #301 « SYNA complète » — texte d'un bouton par phrase naturelle (contrat #368 de Codex) dans la conversation
- * SYNA du Studio, Encre / Plein cadre, 1440 / 390 px. Le client désigne LE bouton (ordinateur : outil natif « Désigner »
+ * Recette #301 « SINA complète » — texte d'un bouton par phrase naturelle (contrat #368 de Codex) dans la conversation
+ * SINA du Studio, Encre / Plein cadre, 1440 / 390 px. Le client désigne LE bouton (ordinateur : outil natif « Désigner »
  * puis clic sur le bouton dans l'aperçu ; téléphone : repère enregistré puis « Reprendre le repère sauvegardé »), puis
  * « Remplace le texte du bouton de cette section par « … » » → carte Gratuit — 0 €, avant / après exacts, aucun devis,
  * rien d'écrit → confirmation → reçu, libellé relu en base et dans le bouton rendu de la version enregistrée, lien du
@@ -81,8 +81,8 @@ try {
       catch (e) { steps.push({ etape, ok: false, detail: String(e).slice(0, 400), capture: await shot("echec-" + steps.length).catch(() => undefined) }); console.log(`  ✗ ${label} · ${etape} : ${String(e).slice(0, 300)}`); throw e; }
     };
     const openSyna = async () => { for (let i = 0; i < 3 && !(await panel.count()); i++) { await page.locator('[aria-controls="syna-panel"]:visible').first().click(); await panel.waitFor({ timeout: 10000 }).catch(() => {}); } await panel.waitFor(); };
-    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SYNA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
-    const noQuote = async (when: string) => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SYNA" }).count()), `bouton de devis affiché (${when})`);
+    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SINA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
+    const noQuote = async (when: string) => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SINA" }).count()), `bouton de devis affiché (${when})`);
     const version = () => currentTheme(k.pid)!.version.number;
     // Couleur réellement peinte : l'élément de la section qui porte la classe du schéma (l'enveloppe data-es-section n'a pas de fond).
     const sectionBg = () => frame().locator(`[data-es-section="index:${k.section}"]`).first().evaluate((el) => { const t = (el.matches('[class*="color-"]') ? el : el.querySelector('[class*="color-"]')) as HTMLElement | null; if (!t) return "aucun élément coloré"; const s = getComputedStyle(t); return `${s.backgroundColor}|${s.color}|${t.className.match(/color-[\w-]+/)?.[0] ?? ""}`; });
@@ -115,7 +115,7 @@ try {
       if (await resume.waitFor({ timeout: 5000 }).then(() => true, () => false)) { await resume.click(); if (await ctxBox.getByText(/Section désignée/).waitFor({ timeout: 10000 }).then(() => true, () => false)) return "repère repris"; }
       await designate(); return "désignée de nouveau";
     };
-    const say = async (text: string) => { await openSyna(); await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SYNA" }).fill(text); await panel.getByRole("button", { name: "Enregistrer", exact: true }).click(); };
+    const say = async (text: string) => { await openSyna(); await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SINA" }).fill(text); await panel.getByRole("button", { name: "Enregistrer", exact: true }).click(); };
     const confirmBtn = () => free.getByRole("button", { name: "Confirmer la modification gratuite", exact: true });
     const BTN = { products: "newsletter_1", services: "cta_banner_2" }[k.business as "products" | "services"];
     const LABEL = `Recevoir mon devis ${k.mode} ${k.format}`;

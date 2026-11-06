@@ -110,8 +110,9 @@ export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing"> & { 
  */
 export function strictTextQuoteInput(call: LlmCall, schema: z.ZodType): { maximumTokens: number; typicalTokens: number } {
   if (call.images?.length) throw new UserFacingError('Le devis texte ne couvre pas des images. / Text quote does not cover images.');
-  const stable = [call.context, call.reference].filter(Boolean) as string[];
+  const { cached: stable, after } = promptHead(call);
   const content: unknown[] = stable.map((text, i) => i === stable.length - 1 ? { type: 'text', text, cache_control: { type: 'ephemeral' } } : { type: 'text', text });
+  for (const text of after) content.push({ type: 'text', text });
   const volatile = brainOf(call).volatile;
   if (volatile) content.push({ type: 'text', text: volatile });
   content.push({ type: 'text', text: call.prompt });
@@ -187,12 +188,24 @@ async function imageBlock(img: LlmImage): Promise<Anthropic.ImageBlockParam> {
   return { type: "image", source: { type: "base64", media_type: "image/jpeg", data: jpeg.toString("base64") } };
 }
 
+/**
+ * Blocs de tête et point de cache. D'ordinaire, contexte du projet puis référence de la tâche, tous deux mis en cache.
+ * Pour la conversation de SINA, le contexte (parcours, état du projet, budget) change à CHAQUE pas alors que la
+ * référence (catalogue des outils, ~19 000 jetons) ne change pas : la référence passe en tête avec le point de cache et
+ * le contexte vient après, sinon tout le préfixe était réécrit en cache à chaque pas (coût multiplié par ~3).
+ */
+export function promptHead(call: Pick<LlmCall, "task" | "context" | "reference">): { cached: string[]; after: string[] } {
+  if (call.task === "agent_conversation") return { cached: [call.reference].filter(Boolean) as string[], after: [call.context].filter(Boolean) as string[] };
+  return { cached: [call.context, call.reference].filter(Boolean) as string[], after: [] };
+}
+
 async function buildContent(call: LlmCall): Promise<Anthropic.ContentBlockParam[]> {
   const content: Anthropic.ContentBlockParam[] = [];
   // Contexte du projet puis référence de la tâche en tête : identiques d'un appel à l'autre (corrections,
   // contrôles, retouches successives), ils sont mis en cache — réponses plus rapides et moins coûteuses.
-  const stable = [call.context, call.reference].filter(Boolean) as string[];
+  const { cached: stable, after } = promptHead(call);
   stable.forEach((text, i) => content.push(i === stable.length - 1 ? { type: "text", text, cache_control: { type: "ephemeral" } } : { type: "text", text }));
+  for (const text of after) content.push({ type: "text", text });
   // Après le point de cache : le contexte volatil (créations récentes) peut changer sans invalider le préfixe.
   const { volatile } = brainOf(call);
   if (volatile) content.push({ type: "text", text: volatile });
