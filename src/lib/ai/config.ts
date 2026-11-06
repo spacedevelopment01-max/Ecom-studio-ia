@@ -145,7 +145,9 @@ export const DEFAULT_ROUTES: Record<TaskId, Route> = POLICY_ROUTES;
 export type Price =
   | { unit: "tokens"; inputPerM: number; outputPerM: number; imageInputPerM?: number; imageOutputPerM?: number }
   | { unit: "image"; perImage: number; inputPerM?: number }
-  | { unit: "video_second"; perSecond: number };
+  | { unit: "video_second"; perSecond: number }
+  /** Outil facturé à l'appel (ex. recherche web OpenAI : `openai:web_search`). */
+  | { unit: "call"; perCall: number };
 
 export const DEFAULT_PRICES: Record<string, Price> = {
   "anthropic:claude-fable-5-1": { unit: "tokens", inputPerM: 10, outputPerM: 50 },
@@ -243,6 +245,7 @@ export function priceValid(p: Price): boolean {
   if (p.unit === "tokens") return pos(p.inputPerM) && pos(p.outputPerM);
   if (p.unit === "image") return pos(p.perImage);
   if (p.unit === "video_second") return pos(p.perSecond);
+  if (p.unit === "call") return pos(p.perCall);
   return false;
 }
 

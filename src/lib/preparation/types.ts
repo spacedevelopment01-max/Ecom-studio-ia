@@ -54,6 +54,8 @@ export type Source = {
   category?: "offer" | "competitors" | "customers" | "sector";
   contentHash?: string;
   relevance?: { accepted: boolean; reason: string };
+  /** Page lue par le Studio, ou extrait rapporté par la recherche web OpenAI (lien vérifié, page non relue ici). */
+  via?: "page" | "openai_web_search";
 };
 export type Angle = {
   id: string;

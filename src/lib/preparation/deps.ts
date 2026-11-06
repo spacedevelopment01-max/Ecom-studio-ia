@@ -30,6 +30,7 @@ import type { JobContext } from "../jobs";
 import type { Project } from "../projects";
 import type { Brief, Research, Identity, Contents, VisualSlot } from "./types";
 import { researchProject } from "./research";
+import { openaiWebResearch, webSearchRoute } from "../ai/web-search";
 import { analyzeResearch } from "./research-ai";
 import { sitePlan } from "./plan";
 import { latestContent } from "../seo-v2/store";
@@ -73,7 +74,9 @@ export const realDependencies: Dependencies = {
   inspect: inspectBrief,
   async research(p, b, ctx, paid) {
     if(!paid||!analyzed(b)||b.missing.length||!documentsMatch(p.id,b.documentStamp))throw new Error("Compréhension IA validée et fournisseur autorisé nécessaires avant toute recherche ; aucun angle local de remplacement.");
-    const r = await ctx.step("research-pages-v3",()=>researchProject(p, b));
+    // Recherche web OpenAI quand elle est configurée (clé, modèle confirmé, tarif de l'outil), sinon lecture directe.
+    const web = webSearchRoute() ? async (query: string) => (await openaiWebResearch({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:research-web` }, query)).findings : null;
+    const r = await ctx.step("research-pages-v4",()=>researchProject(p, b, undefined, undefined, web));
     remember(p.id,{kind:"artifact",key:"marketing.research.pages",value:JSON.stringify(r),source:"local"});
     return analyzeResearch(p, ctx, r);
   },

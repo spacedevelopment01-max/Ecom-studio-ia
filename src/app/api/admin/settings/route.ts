@@ -16,6 +16,7 @@ const PriceSchema = z.discriminatedUnion("unit", [
   z.object({ unit: z.literal("tokens"), inputPerM: pos, outputPerM: pos, imageInputPerM: pos.optional(), imageOutputPerM: pos.optional() }),
   z.object({ unit: z.literal("image"), perImage: pos }),
   z.object({ unit: z.literal("video_second"), perSecond: pos }),
+  z.object({ unit: z.literal("call"), perCall: pos }),
 ]);
 
 // Réglages SMTP (serveur, identifiant, mot de passe, expéditeur) : chiffrés comme les clés, jamais renvoyés en clair.
@@ -101,6 +102,7 @@ export const POST = handle(async (req: Request) => {
       const [prov, ...rest] = b.price.key.split(":");
       const mm = mediaModel(prov, rest.join(":"));
       if (mm && !priceUnitFits(mm, b.price.value.unit)) throw new HttpError(400, L(`Unité de tarif incompatible avec ${mm.label} : ${mm.kind === "video" ? "prix à la seconde attendu" : mm.provider === "openai" ? "prix aux jetons ou à l'image attendu" : "prix à l'image attendu"}.`, `Price unit incompatible with ${mm.label}: ${mm.kind === "video" ? "per-second price expected" : mm.provider === "openai" ? "token or per-image price expected" : "per-image price expected"}.`));
+      if (b.price.value.unit === "call" && b.price.key !== "openai:web_search") throw new HttpError(400, L("Le tarif à l'appel est réservé à la recherche web OpenAI (openai:web_search).", "Per-call pricing is reserved for OpenAI web search (openai:web_search)."));
       if (!mm && textModel(prov, rest.join(":")) && b.price.value.unit !== "tokens") throw new HttpError(400, L("Un modèle de texte se paie aux jetons.", "A text model is priced per token."));
     }
     const prices = getJsonSetting<Record<string, unknown>>("ai.prices", {});
