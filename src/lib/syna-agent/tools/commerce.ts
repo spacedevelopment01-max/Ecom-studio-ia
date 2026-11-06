@@ -54,7 +54,7 @@ const brandCreate: AgentTool<{ guidance?: string }> = {
   description: "Crée l'identité complète avec le moteur natif (IA) : nom proposé, signature, palette, polices, puis 3 pistes de logo contrôlées et la charte. Payant (budget autorisé). guidance = consignes exactes du client. Les éléments déjà validés sont conservés.",
   args: z.object({ guidance: z.string().max(2000).optional() }).strict(),
   estimate: () => ({ maxMicro: 3_000_000, label: "marque + logo" }),
-  run: (ctx, a) => { const p = project(ctx), j = enqueue({ userId: ctx.user.id, projectId: p.id, type: "brand.build", label: L("Marque avec SYNA", "Brand with SYNA"), payload: { projectId: p.id, guidance: a.guidance, costCapMicro: 3_000_000 }, maxAttempts: 1 }); return { ok: true, summary: L("Création de la marque lancée.", "Brand creation started."), jobs: [j.id] }; },
+  run: (ctx, a) => { const p = project(ctx), j = enqueue({ userId: ctx.user.id, projectId: p.id, type: "brand.build", label: L("Marque avec SINA", "Brand with SINA"), payload: { projectId: p.id, guidance: a.guidance, costCapMicro: 3_000_000 }, maxAttempts: 1 }); return { ok: true, summary: L("Création de la marque lancée.", "Brand creation started."), jobs: [j.id] }; },
 };
 
 /* ---------- Publicités (documents à calques) ---------- */
@@ -86,7 +86,7 @@ const adsEdit: AgentTool<{ docKey: string; ops: z.infer<typeof DocOpSchema>[]; n
     const p = project(ctx), cur = latestDoc(p.id, a.docKey);
     if (!cur) return { ok: false, summary: L("Visuel introuvable.", "Ad not found.") };
     const next = applyDocOps(cur.doc, a.ops as DocOp[]);
-    const v = await saveAndRender(p.id, ctx.user.id, a.docKey, { ...next, meta: { ...next.meta, source: "user" } } as any, a.note ?? "retouche SYNA");
+    const v = await saveAndRender(p.id, ctx.user.id, a.docKey, { ...next, meta: { ...next.meta, source: "user" } } as any, a.note ?? "retouche SINA");
     const read = latestDoc(p.id, a.docKey)!;
     const layer = (doc: any, lid: string) => doc.layers.find((x: any) => x.id === lid);
     const changes: Change[] = a.ops.map((o) => ({ module: "publicités", object: `${a.docKey} › ${o.id}`, summary: `${short(layer(cur.doc, o.id)?.text ?? layer(cur.doc, o.id)?.color ?? o.op, 60)} → ${short(layer(read.doc, o.id)?.text ?? layer(read.doc, o.id)?.color ?? o.op, 60)}`, before: layer(cur.doc, o.id), after: layer(read.doc, o.id), verified: read.version.version === v.version }));

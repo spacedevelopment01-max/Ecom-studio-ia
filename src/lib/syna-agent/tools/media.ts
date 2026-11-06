@@ -38,7 +38,7 @@ const imageQuotes = new Map<string, { operationId: string; token: string; maximu
 
 const imagesTool: AgentTool<z.infer<typeof NativeImageRequestSchema>> = {
   name: "images.generate", module: "images", kind: "generate", needsProject: true,
-  description: "Crée 1 à 4 images avec le moteur d'images natif (photos libres de droits d'abord, sinon génération IA contrôlée), débitées sur le budget autorisé : kind (type de visuel), support (site, product_page, ad, social…), aspect, count, topic, text. Le résultat arrive dans Images / Fichiers ; SYNA reprend quand c'est prêt.",
+  description: "Crée 1 à 4 images avec le moteur d'images natif (photos libres de droits d'abord, sinon génération IA contrôlée), débitées sur le budget autorisé : kind (type de visuel), support (site, product_page, ad, social…), aspect, count, topic, text. Le résultat arrive dans Images / Fichiers ; SINA reprend quand c'est prêt.",
   args: NativeImageRequestSchema,
   estimate: async (ctx, a) => { const p = project(ctx), operationId = `syna-${newId()}`, q = await quoteNativeImageGeneration(ctx.user, p.id, operationId, a); imageQuotes.set(`${ctx.runId}:${imageBindingHash(a)}`, { operationId, token: q.approvalToken, maximumMicro: q.maximumMicro }); return { maxMicro: q.maximumMicro, label: "images" }; },
   run: async (ctx, a) => {
@@ -46,9 +46,9 @@ const imagesTool: AgentTool<z.infer<typeof NativeImageRequestSchema>> = {
     let q = imageQuotes.get(key);
     if (!q) { const operationId = `syna-${newId()}`, r = await quoteNativeImageGeneration(ctx.user, p.id, operationId, a); q = { operationId, token: r.approvalToken, maximumMicro: r.maximumMicro }; }
     const approval = await checkedNativeImageApproval(ctx.user, p.id, q.operationId, a, q.token, true);
-    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: "image.v2", idempotencyKey: nativeImageJobKey(ctx.user.id, p.id, q.operationId, a), maxAttempts: 1, label: L("Images : création demandée à SYNA", "Images: created with SYNA"), payload: { projectId: p.id, request: a, costCapMicro: approval.cost.capMicro, nativeImageQuote: { operationId: q.operationId, requestHash: imageBindingHash(a), token: q.token } } });
+    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: "image.v2", idempotencyKey: nativeImageJobKey(ctx.user.id, p.id, q.operationId, a), maxAttempts: 1, label: L("Images : création demandée à SINA", "Images: created with SINA"), payload: { projectId: p.id, request: a, costCapMicro: approval.cost.capMicro, nativeImageQuote: { operationId: q.operationId, requestHash: imageBindingHash(a), token: q.token } } });
     imageQuotes.delete(key);
-    return { ok: true, summary: L("Création d'images lancée ; SYNA relira les images obtenues.", "Image creation started."), jobs: [job.id] };
+    return { ok: true, summary: L("Création d'images lancée ; SINA relira les images obtenues.", "Image creation started."), jobs: [job.id] };
   },
 };
 
@@ -74,9 +74,9 @@ const montageTool: AgentTool<{ purpose: "ad" | "organic"; aspect: "9:16" | "16:9
     const plan: any = { tool: "videos.motion", aspect: a.aspect, purpose: a.purpose, scenes: scenes.map((s) => ({ durationS: s.durationS, camera: s.camera, title: s.title, titleColor: s.titleColor, place: s.place })), line: a.line, cta: a.cta, music: a.music };
     const doc = conversationMotionDocument(p, plan, scenes.map((s) => s.assetId));
     const docKey = `vid:${newId()}`;
-    const v = saveVideoVersion(p.id, docKey, doc, { note: rhythm ? `montage SYNA au rythme de la vidéo de référence (${rhythm.join(" / ")} s)` : "montage SYNA" } as any);
+    const v = saveVideoVersion(p.id, docKey, doc, { note: rhythm ? `montage SINA au rythme de la vidéo de référence (${rhythm.join(" / ")} s)` : "montage SINA" } as any);
     const read = latestVideo(p.id, docKey);
-    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: "video.v2.render", label: L("Vidéo : montage SYNA", "Video: SYNA edit"), payload: { projectId: p.id, docKey, request: { as: a.purpose === "ad" ? "ad" : "post" }, costCapMicro: 0 }, maxAttempts: 1 });
+    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: "video.v2.render", label: L("Vidéo : montage SINA", "Video: SINA edit"), payload: { projectId: p.id, docKey, request: { as: a.purpose === "ad" ? "ad" : "post" }, costCapMicro: 0 }, maxAttempts: 1 });
     const total = scenes.reduce((n, s) => n + s.durationS, 0);
     return { ok: !!read, summary: L(`Vidéo ${a.purpose === "ad" ? "publicitaire" : ""} enregistrée (${scenes.length} plans, ${total.toFixed(1)} s${rhythm ? ", rythme de la référence" : ""}) ; rendu MP4 lancé.`, `Video saved; render started.`), jobs: [job.id], data: { docKey, version: (v as any).version ?? (v as any).number, durations: scenes.map((s) => s.durationS) },
       changes: [{ module: "vidéos", object: docKey, summary: `${scenes.length} plans : ${scenes.map((s) => s.durationS).join(" / ")} s`, after: { docKey, durations: scenes.map((s) => s.durationS) }, verified: !!read }] };

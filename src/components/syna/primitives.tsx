@@ -1,5 +1,5 @@
 /**
- * SYNA — primitives présentatives communes aux deux présentations (Encre et Plein cadre). Mission #282, lot 0.
+ * SINA — primitives présentatives communes aux deux présentations (Encre et Plein cadre). Mission #282, lot 0.
  *
  * Règles :
  * - purement présentatives : aucune requête, aucune écriture, aucun stockage, aucune simulation de succès ;
@@ -281,7 +281,7 @@ export function SynaSelectionChip({ kind, name, where, onClear, lang = "fr" }: S
   );
 }
 
-// ——— Accès à SYNA ———
+// ——— Accès à SINA ———
 
 export type SynaTriggerStatus = "idle" | "working" | "notice" | "error";
 
@@ -290,7 +290,7 @@ export type SynaTriggerProps = {
   variant: "rail" | "commandbar" | "tab";
   expanded?: boolean;
   status?: SynaTriggerStatus;
-  /** Ce que SYNA fait ou a fini (« Création de 3 images », « 3 images prêtes »). */
+  /** Ce que SINA fait ou a fini (« Création de 3 images », « 3 images prêtes »). */
   statusText?: string;
   /** Barre réduite en pastille pendant un travail à la main (Plein cadre). */
   compact?: boolean;
@@ -302,7 +302,7 @@ export type SynaTriggerProps = {
   lang?: Lang;
 };
 
-/** Point d'accès à SYNA. Jamais une pastille noire flottante : un onglet signature ou une barre de commande. */
+/** Point d'accès à SINA. Jamais une pastille noire flottante : un onglet signature ou une barre de commande. */
 export function SynaTrigger({ variant, expanded, status = "idle", statusText, compact, shortcut, controls, current, onActivate, lang = "fr" }: SynaTriggerProps) {
   const t = (k: Parameters<typeof synaText>[0]) => synaText(k, lang);
   const dot = status === "notice" || status === "error";
@@ -322,7 +322,7 @@ export function SynaTrigger({ variant, expanded, status = "idle", statusText, co
     return (
       <button {...common} data-compact={compact ? "" : undefined} aria-label={compact ? `${t("openSyna")}${spoken ? ` — ${spoken}` : ""}` : undefined}>
         <span className="sy-dot" data-tone={status === "error" ? "bad" : undefined} aria-hidden="true" />
-        <span className="sy-cmd-text">{compact ? "Syna" : statusText ?? t("askSyna")}</span>
+        <span className="sy-cmd-text">{compact ? "Sina" : statusText ?? t("askSyna")}</span>
         {!compact && status === "working" ? <span className="sy-sr">{t("working")}</span> : null}
         {!compact && shortcut ? <kbd className="sy-kbd" aria-hidden="true">{shortcut}</kbd> : null}
         {!compact ? <span className="sy-cmd-go" aria-hidden="true"><ArrowIcon /></span> : null}
@@ -332,7 +332,7 @@ export function SynaTrigger({ variant, expanded, status = "idle", statusText, co
   const name = `${expanded ? t("closeSyna") : t("openSyna")}${spoken ? ` — ${spoken}` : ""}`;
   return (
     <button {...common} aria-label={name}>
-      <span className="sy-wordmark" aria-hidden="true">Syna</span>
+      <span className="sy-wordmark" aria-hidden="true">Sina</span>
       {variant === "rail" && shortcut ? <span className="sy-trigger-hint" aria-hidden="true">{shortcut}</span> : null}
       {dot ? <span className="sy-dot" data-tone={status === "error" ? "bad" : undefined} aria-hidden="true" /> : null}
     </button>
@@ -344,7 +344,7 @@ export function SynaTrigger({ variant, expanded, status = "idle", statusText, co
 export function SynaMessage({ from, children, lang = "fr" }: { from: "syna" | "user"; children: ReactNode; lang?: Lang }) {
   return (
     <div className="sy-msg" data-from={from}>
-      {from === "syna" ? <span className="sy-who">Syna</span> : <span className="sy-sr">{lang === "en" ? "You" : "Vous"} :</span>}
+      {from === "syna" ? <span className="sy-who">Sina</span> : <span className="sy-sr">{lang === "en" ? "You" : "Vous"} :</span>}
       {children}
     </div>
   );

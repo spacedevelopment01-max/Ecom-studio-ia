@@ -1,6 +1,6 @@
 "use client";
 /**
- * « Personnaliser l'interface » (mission #282, lot 1 bis) : réglages réels de la coquille SYNA, enregistrés sur le
+ * « Personnaliser l'interface » (mission #282, lot 1 bis) : réglages réels de la coquille SINA, enregistrés sur le
  * compte (ou seulement pour ce projet) et retrouvés sur les autres appareils. Aucun réglage ne peut masquer une
  * confirmation, un coût ou la navigation ; les trois bleus sont tous contrôlés AA ; les largeurs sont bornées.
  */
@@ -60,7 +60,7 @@ export function SynaCustomize({ onClose, docked }: { onClose: () => void; docked
         <div className="ss-field" role="group" aria-label={T("Mode", "Mode")}>
           <span className="ss-field-l">{T("Mode", "Mode")}{own("mode") && <em className="ss-own">{T("ce projet", "this project")}</em>}</span>
           <div className="ss-modes">
-            {([["encre", "Encre", T("La conversation à côté de votre travail", "The conversation next to your work")], ["plein", T("Plein cadre", "Full frame"), T("Le résultat d'abord, SYNA en barre de commande", "The result first, SYNA in a command bar")]] as const).map(([m, name, hint]) => (
+            {([["encre", "Encre", T("La conversation à côté de votre travail", "The conversation next to your work")], ["plein", T("Plein cadre", "Full frame"), T("Le résultat d'abord, SINA en barre de commande", "The result first, SINA in a command bar")]] as const).map(([m, name, hint]) => (
               <button key={m} type="button" className="ss-mode" data-mode={m} aria-pressed={r.mode === m} onClick={() => p.update({ mode: m })}>
                 <span className="ss-mode-art" aria-hidden="true"><i /><b /></span>
                 <span className="ss-mode-n">{name}{r.mode === m && <Check className="size-4" aria-hidden />}</span>
@@ -101,7 +101,7 @@ export function SynaCustomize({ onClose, docked }: { onClose: () => void; docked
           <p className="sy-small">{T("Plus étroite = aperçu plus grand. Aussi en glissant le bord de la conversation.", "Narrower = larger preview. Also by dragging the conversation edge.")}</p>
         </div>
 
-        <Seg label={T("Conversation SYNA", "SYNA conversation")} value={r.panel} overridden={own("panel")} onChange={(v) => p.update({ panel: v })} options={[{ id: "pinned", label: T("Ouverte à l'arrivée", "Open on arrival") }, { id: "collapsed", label: T("Repliée", "Collapsed") }]} />
+        <Seg label={T("Conversation SINA", "SINA conversation")} value={r.panel} overridden={own("panel")} onChange={(v) => p.update({ panel: v })} options={[{ id: "pinned", label: T("Ouverte à l'arrivée", "Open on arrival") }, { id: "collapsed", label: T("Repliée", "Collapsed") }]} />
         <Seg label={T("Densité", "Density")} value={r.density} overridden={own("density")} onChange={(v) => p.update({ density: v })} options={[{ id: "comfortable", label: T("Confortable", "Comfortable") }, { id: "compact", label: T("Compacte", "Compact") }]} />
         <Seg label={T("Taille du texte", "Text size")} value={r.textSize} overridden={own("textSize")} onChange={(v) => p.update({ textSize: v })} options={[{ id: "normal", label: T("Normale", "Normal") }, { id: "large", label: T("Grande", "Large") }]} />
 

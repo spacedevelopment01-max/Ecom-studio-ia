@@ -1,5 +1,5 @@
 /**
- * Recette SYNA (#492) : les tarifs vérifiés du 06/11/2026 réappliqués au démarrage du Studio privé rendent les logos
+ * Recette SINA (#492) : les tarifs vérifiés du 06/11/2026 réappliqués au démarrage du Studio privé rendent les logos
  * (Sunburst) et les maquettes (Flare) chiffrables, avec un plafond borné — aucun appel payant ici.
  */
 import { describe, expect, it, vi } from "vitest";

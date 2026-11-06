@@ -1,4 +1,4 @@
-/** SYNA/devis/accord/enveloppe/worker natifs ; clip et QC injectés, rendu FFmpeg réel isolé. */
+/** SINA/devis/accord/enveloppe/worker natifs ; clip et QC injectés, rendu FFmpeg réel isolé. */
 import {beforeEach,afterEach,it,expect,vi}from 'vitest';
 import {zodOutputFormat}from '@anthropic-ai/sdk/helpers/zod';
 import {account,project,sender}from './conversation209-fixtures';
@@ -44,15 +44,15 @@ it.each(['queued','failed']as const)('sans document acquis, une tâche %s ne dev
  const f=await fixture(),q=f.quote();f.confirm(q.id);if(state==='failed'){f.deps.directClip=vi.fn(async()=>{throw Error('Échec fictif avant tout média');});await expect(f.finish()).rejects.toThrow('Échec fictif');}
  try{expect(videoGenerationReceipt(f.u,f.c.id,q.id)).toMatchObject({delivered:false,isCurrent:false,output:null,docKey:null,versionId:null,job:{status:state}});expect(f.deps.directClip).toHaveBeenCalledTimes(state==='failed'?1:0);expect(fetch).not.toHaveBeenCalled();}finally{if(state==='queued'){const j=claimNext(['video.scenes'])!;failJob(j,new Error('Fin de recette sans appel'),{permanent:true});}}
 });
-it('la reprise guidée historique ne rachète pas les clips SYNA hors de leur devis et de leur enveloppe',async()=>{
+it('la reprise guidée historique ne rachète pas les clips SINA hors de leur devis et de leur enveloppe',async()=>{
  const f=await fixture(),q=f.quote();f.confirm(q.id);const j=claimNext(['video.scenes'])!;failJob(j,new Error('Refus fictif avant envoi'),{permanent:true});sessionUser=f.u;
  const route=await import('@/app/api/projects/[id]/creative/video/route'),ctx={params:Promise.resolve({id:f.pid})},snapshot=()=>Object.fromEntries(['jobs','ai_calls','ai_reservations','usage_events'].map(t=>[t,all('SELECT id FROM '+t+' WHERE project_id=?',f.pid)])),before=snapshot();
  const response=await route.POST(new Request('http://localhost',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'repair',jobId:j.id,index:0,kind:'clip'})}),ctx),body=await response.json();expect(response.status,JSON.stringify(body)).toBe(409);expect(body.code).toBe('video_repair_quote_required');
  const listed=await(await route.GET(new Request('http://localhost'),ctx)).json();expect(listed.drafts.find((d:{id:string})=>d.id===j.id)).toMatchObject({repairBlocked:true,retakeMicro:0});expect(snapshot()).toEqual(before);expect(fetch).not.toHaveBeenCalled();
  sessionUser=await account();expect((await route.GET(new Request('http://localhost'),ctx)).status).toBe(404);expect(snapshot()).toEqual(before);
 });
-it('la reprise guidée historique sans devis SYNA conserve son fonctionnement natif',async()=>{
- const f=await fixture(),q=f.quote(),confirmed=f.confirm(q.id),j=claimNext(['video.scenes'])!;expect(j.id).toBe(confirmed.job!.id);failJob(j,new Error('Fin de fixture SYNA sans appel'),{permanent:true});sessionUser=f.u;
+it('la reprise guidée historique sans devis SINA conserve son fonctionnement natif',async()=>{
+ const f=await fixture(),q=f.quote(),confirmed=f.confirm(q.id),j=claimNext(['video.scenes'])!;expect(j.id).toBe(confirmed.job!.id);failJob(j,new Error('Fin de fixture SINA sans appel'),{permanent:true});sessionUser=f.u;
  const {approveVideoScenario,sceneApprovalRequest}=await import('@/lib/video-v2/approval');const{quotedGeneration,approval,...original}=JSON.parse(j.payload).request;const request={...original,key:'native-legacy-repair:'+id()};request.approval=approveVideoScenario(loadProject(f.pid),sceneApprovalRequest(request),approval.scenario,approval.capMicro).approval;
  const legacy=enqueue({userId:f.u.id,projectId:f.pid,type:'video.scenes',label:'Ancienne création native fictive',payload:{projectId:f.pid,request}});run("UPDATE jobs SET status='failed',error='Refus fictif avant envoi' WHERE id=?",legacy.id);
  const route=await import('@/app/api/projects/[id]/creative/video/route'),ctx={params:Promise.resolve({id:f.pid})},listed=await(await route.GET(new Request('http://localhost'),ctx)).json();expect(listed.drafts.find((d:{id:string})=>d.id===legacy.id)).toMatchObject({repairBlocked:false});

@@ -1,4 +1,4 @@
-/** Lecture simple d'une feuille CSS pour les contrôles du lot 0 de SYNA (#282) : règles, sélecteurs et déclarations. */
+/** Lecture simple d'une feuille CSS pour les contrôles du lot 0 de SINA (#282) : règles, sélecteurs et déclarations. */
 import fs from "node:fs";
 import path from "node:path";
 

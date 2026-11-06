@@ -867,7 +867,7 @@ function PostPreview({ media, caption, hashtags, network }: { media: AssetView[]
   );
 }
 
-/** Même éditeur natif pour la liste Publications et le panneau SYNA. */
+/** Même éditeur natif pour la liste Publications et le panneau SINA. */
 export function SocialPostEditor({postId,onClose,onChanged}:{postId:string;onClose:()=>void;onChanged:()=>void}){
   const{id}=useProject(),t=useT(),{data,error,reload}=useApi<Data>(`/api/projects/${id}/social/v2`);
   if(!data)return <div role={error?'alert':'status'} className="rounded-xl border border-line p-4 text-sm"><p>{error||t('Ouverture de l’éditeur Publications…','Opening the Posts editor…')}</p><Button variant="ghost" className="min-h-11" onClick={onClose}>{t('Fermer','Close')}</Button></div>;

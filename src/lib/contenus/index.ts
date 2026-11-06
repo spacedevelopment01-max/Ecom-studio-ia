@@ -10,7 +10,7 @@ import { withRealisations } from "./realisations";
 
 /**
  * Sections du thème enregistré dont le contenu vient d'un onglet métier et est remplacé au rendu (carte, réalisations) :
- * clé « gabarit:section » → onglet. SYNA ne les retouche ni ne les retire (#276) ; sans contenu métier, aucune.
+ * clé « gabarit:section » → onglet. SINA ne les retouche ni ne les retire (#276) ; sans contenu métier, aucune.
  */
 export function managedSections(spec: ThemeSpec, projectId: string): Map<string, "carte" | "realisations"> {
   const out = new Map<string, "carte" | "realisations">();

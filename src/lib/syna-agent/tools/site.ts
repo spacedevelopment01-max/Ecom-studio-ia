@@ -89,7 +89,7 @@ const applyVersionTool: AgentTool<{ versionId: string; reason?: string }> = {
     if (!target) return { ok: false, summary: L("Version introuvable dans ce projet.", "Version not found in this project.") };
     assertThemeAllowed(p.id, target.spec.direction, cur?.spec.direction);
     if (validateSpec(target.spec).length) return { ok: false, summary: L("Cette version ne passe pas la validation du thème.", "This version fails theme validation.") };
-    const v = saveThemeVersion(p.id, target.spec, a.reason ?? `Version ${target.version.number} reprise avec SYNA`, "user", JSON.parse(target.version.qc || "null"), cur?.version.id ?? null);
+    const v = saveThemeVersion(p.id, target.spec, a.reason ?? `Version ${target.version.number} reprise avec SINA`, "user", JSON.parse(target.version.qc || "null"), cur?.version.id ?? null);
     const read = currentTheme(p.id)!, ok = read.version.id === v.id && stableHash("syna-site", read.spec) === stableHash("syna-site", target.spec);
     return { ok, summary: L(`Site de travail : ${target.spec.name} (version ${v.number}), relu.`, `Working site: ${target.spec.name} (version ${v.number}).`), data: { versionId: v.id, preview: previewUrl(p.id, v.id) },
       changes: [{ module: "site", object: "site de travail", summary: `${cur?.spec.name ?? "aucun"} v${cur?.version.number ?? "-"} → ${read.spec.name} v${v.number}`, before: cur?.version.id ?? null, after: v.id, verified: ok }] };
@@ -134,8 +134,8 @@ const rebuildTool: AgentTool<{ direction?: string }> = {
     const direction = a.direction ?? cur?.spec.direction ?? themeRecommendation(p, "fr").recommended;
     if (!direction) return { ok: false, summary: L("Choisissez d'abord un thème (site.mockups).", "Choose a theme first.") };
     assertThemeAllowed(p.id, direction, cur?.spec.direction);
-    const j = enqueue({ userId: ctx.user.id, projectId: p.id, type: "shop.direction", label: L("Construction du site avec SYNA", "Site build with SYNA"), payload: { projectId: p.id, direction }, maxAttempts: 1 });
-    return { ok: true, summary: L("Construction du site lancée ; SYNA relira le résultat.", "Site build started."), jobs: [j.id], data: { direction } };
+    const j = enqueue({ userId: ctx.user.id, projectId: p.id, type: "shop.direction", label: L("Construction du site avec SINA", "Site build with SINA"), payload: { projectId: p.id, direction }, maxAttempts: 1 });
+    return { ok: true, summary: L("Construction du site lancée ; SINA relira le résultat.", "Site build started."), jobs: [j.id], data: { direction } };
   },
 };
 
@@ -162,7 +162,7 @@ const pagesTool: AgentTool<any> = {
     spec = (spec as any).spec ?? spec;
     const problems = validateSpec(spec);
     if (problems.length) return { ok: false, summary: problems.slice(0, 3).join(" ; ") };
-    const v = saveThemeVersion(p.id, spec, `Page ${a.handle} : ${a.action} (SYNA)`, "user", undefined, cur.version.id);
+    const v = saveThemeVersion(p.id, spec, `Page ${a.handle} : ${a.action} (SINA)`, "user", undefined, cur.version.id);
     const read = currentTheme(p.id)!, after = a.action === "remove" ? null : page(read.spec);
     const ok = read.version.id === v.id && (a.action === "remove" ? !page(read.spec) : true);
     return { ok, summary: L(`Page ${a.handle} : ${a.action} enregistré (version ${v.number}).`, `Page ${a.handle}: ${a.action} saved.`), data: { versionId: v.id }, changes: [{ module: "site", object: `page ${a.handle}`, summary: `${a.action}`, before, after, verified: ok }] };

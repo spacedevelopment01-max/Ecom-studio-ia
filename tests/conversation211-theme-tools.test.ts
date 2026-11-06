@@ -51,7 +51,7 @@ it.each(['edit','undo'] as const)('lit un reçu cohérent si le worker finit ent
   expect(all('SELECT id FROM theme_versions WHERE project_id=?',f.pid)).toEqual(versions);expect(all('SELECT id FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);expect(fetch).not.toHaveBeenCalled();
  }finally{writer.close();vi.restoreAllMocks();}
 });
-describe('#211 D2 — retouche exacte et annulation depuis SYNA',()=>{
+describe('#211 D2 — retouche exacte et annulation depuis SINA',()=>{
   it.each(['products','services']as const)('modifie une vraie version puis annule sans appel IA ni perte (%s)',async business=>{
     const f=await fixture(business),before=balance(f.u.id),q=f.quote();expect(q.costPct).toBe(0);expect(q.confirmationRequired).toBe(true);expect(q.changes[0].after).toBe(f.replacement);expect(currentTheme(f.pid)!.version.id).toBe(f.initial.version.id);
     const pending=f.confirm(q.id);expect(pending.delivered).toBe(false);expect(f.confirm(q.id).job!.id).toBe(pending.job!.id);await finish();
@@ -115,7 +115,7 @@ describe('#211 D2 — retouche exacte et annulation depuis SYNA',()=>{
     const f=await fixture(),q=f.quote();f.confirm(q.id);await finish();const r=themeChangeReceipt(f.u,f.c.id,q.id);run('UPDATE theme_versions SET qc=? WHERE id=?',JSON.stringify({gate:{verdict:'REJECTED'}}),f.initial.version.id);
     expect(()=>quoteThemeUndo(f.u,f.c.id,{action:'quote-undo',receiptId:q.id,currentVersionId:r.version!.id})).toThrow('pas utilisable');expect(currentTheme(f.pid)!.version.id).toBe(r.version!.id);
   });
-  it('réutilise la proposition acquise après un échec local sans nouvel appel à SYNA',async()=>{
+  it('réutilise la proposition acquise après un échec local sans nouvel appel à SINA',async()=>{
     const f=await fixture(),q=f.quote(),pending=f.confirm(q.id),source=conversationView(f.u,f.c.id);run("UPDATE jobs SET status='failed',error='Écriture locale interrompue avant application' WHERE id=?",pending.job!.id);
     const next=quoteThemeChange(f.u,f.c.id,{action:'quote',revision:source.revision,projectRevision:source.projectRevision!,proposalReceiptId:source.intelligence!.lastReceiptId!});expect(next.id).not.toBe(q.id);expect(next.costPct).toBe(0);f.confirm(next.id);await finish();expect(themeChangeReceipt(f.u,f.c.id,next.id).delivered).toBe(true);expect(all('SELECT id FROM theme_versions WHERE project_id=?',f.pid)).toHaveLength(2);expect(all('SELECT id FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);
   });

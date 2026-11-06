@@ -1,5 +1,5 @@
 /**
- * #301 « SYNA complète », lot 2 — couleur d'une seule section (section_colors, Studio et SYNA) : seuls fond et texte
+ * #301 « SINA complète », lot 2 — couleur d'une seule section (section_colors, Studio et SINA) : seuls fond et texte
  * changeaient ; surface, texte secondaire, accent et texte des boutons venaient de l'ancien fond et devenaient illisibles
  * (mesure navigateur scripts/syna301-contraste-section.ts : 199 textes sous 4,5:1 avant, 6 après sur 4 configurations).
  * Le moteur (#365 de Codex) adapte les couleurs héritées illisibles en gardant exactes les couleurs demandées ; le thème

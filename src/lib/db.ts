@@ -244,7 +244,7 @@ CREATE TABLE IF NOT EXISTS agent_conversation_quotes (
   job_id TEXT REFERENCES jobs(id)
 );
 CREATE INDEX IF NOT EXISTS agent_quotes_conversation ON agent_conversation_quotes(conversation_id, created_at);
--- SYNA agent (#492) : un seul fil par conversation, réponses de SYNA, résultats d'outils et changements vérifiés.
+-- SINA agent (#492) : un seul fil par conversation, réponses de SINA, résultats d'outils et changements vérifiés.
 CREATE TABLE IF NOT EXISTS syna_messages (
   id TEXT PRIMARY KEY,
   conversation_id TEXT NOT NULL REFERENCES agent_conversations(id) ON DELETE CASCADE,

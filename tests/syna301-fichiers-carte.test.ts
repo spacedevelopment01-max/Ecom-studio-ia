@@ -1,5 +1,5 @@
 /**
- * #301 C24 — carte Fichiers de SYNA, côté interface (contrat #305 de Codex, moteur inchangé).
+ * #301 C24 — carte Fichiers de SINA, côté interface (contrat #305 de Codex, moteur inchangé).
  * Le transport est exercé contre le vrai moteur de conversation (aucun simulacre métier) : proposition, accord explicite,
  * reçu relu, réponse perdue rejouée à l'identique, annulation par sélection A2, refus sans faux succès.
  */

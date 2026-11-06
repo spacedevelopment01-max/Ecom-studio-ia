@@ -27,7 +27,7 @@ function assertGlobalCardLock(panel:string){
    if(ts.isCallExpression(node.initializer)&&ts.isIdentifier(node.initializer.expression)&&/^use.*Confirmation$/.test(node.initializer.expression.text))hooks.push(node.name.text);
   }ts.forEachChild(node,visit);
  }visit(source);
- // Intégration #301 v3 : la carte « Demandes reçues » (#354) rejoint le même verrou global ; « SYNA complète » : cartes SEO (#367)
+ // Intégration #301 v3 : la carte « Demandes reçues » (#354) rejoint le même verrou global ; « SINA complète » : cartes SEO (#367)
  // et Pages (#370) aussi, puis Stock (#373), Calendrier (#375) et Choix du thème (#376).
  expect(hooks.sort()).toEqual(['adDocument','bookingEdit','calendar','content','fileRestore','files','folderMove','folderRename','folders','free','motion','pages','requests','restore','seo','service','stock','themeChoice']);expect(expression).toBeDefined();
  const print=ts.createPrinter().printNode(ts.EmitHint.Expression,expression!,source);

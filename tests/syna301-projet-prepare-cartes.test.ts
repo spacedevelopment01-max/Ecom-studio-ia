@@ -1,5 +1,5 @@
 /**
- * #301 « SYNA complète » — relevé : projet dont la préparation est engagée (recherche acquise, comme tout projet réellement
+ * #301 « SINA complète » — relevé : projet dont la préparation est engagée (recherche acquise, comme tout projet réellement
  * construit). La conversation y est « en lecture seule » pour la FICHE ; on relève quelles exécutions gratuites restent
  * projetées dans la vue, et si le serveur accepte une proposition puis un accord Stock. Relevé du 4 novembre : 7 exécutions
  * disparaissaient ; contrat retenu avec Codex (a593e6ea) : `readOnlyReason` reste réservé à la fiche et

@@ -6,7 +6,7 @@ import type {useLocalFileRestoreConfirmation} from './use-local-file-restore-con
 import {Button} from '../ui';
 import {useT,useLang} from '../i18n';
 /**
- * #301 « SYNA complète » — carte Corbeille gratuite (contrat #393 de Codex) : liste des fichiers supprimés (noms et
+ * #301 « SINA complète » — carte Corbeille gratuite (contrat #393 de Codex) : liste des fichiers supprimés (noms et
  * liens seulement), « Restaurer » remplit la phrase exacte avec l'identifiant (jamais le premier homonyme), accord
  * gratuit, fichier relu sorti de la corbeille. La version et les octets du fichier ne changent pas.
  */

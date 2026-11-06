@@ -1,4 +1,4 @@
-/** Métadonnées locales uniquement : même moteur pour l’écran Fichiers et SYNA. Aucun octet ni version de contenu recréé. */
+/** Métadonnées locales uniquement : même moteur pour l’écran Fichiers et SINA. Aucun octet ni version de contenu recréé. */
 import {HttpError} from './auth';
 import {one,run,tx} from './db';
 import {stableHash} from './brain/hash';
@@ -18,7 +18,7 @@ export function changeFileMetadata(scope:{assetId:string;projectId:string;userId
  });
 }
 
-/** Same native trash restoration for Fichiers and SYNA; content versions/bytes never change. */
+/** Same native trash restoration for Fichiers and SINA; content versions/bytes never change. */
 export function restoreFileMetadata(scope:{assetId:string;projectId:string;userId:string},expectedFingerprint?:string):Asset{
  return tx(()=>{
   const a=one<Asset>('SELECT * FROM assets WHERE id=? AND project_id=? AND user_id=?',scope.assetId,scope.projectId,scope.userId);

@@ -7,6 +7,6 @@ export const runtime = "nodejs";
 /** Ouvre (ou retrouve) LE fil du projet, ou le brouillon du compte sans projet. */
 export const POST = handle(async (req: Request) => {
   assertSynaAgent(); const user = await requireUser();
-  const { projectId } = await body(req, z.object({ projectId: z.string().max(40).nullable() }).strict());
-  return ok(openThread(user, projectId));
+  const { projectId, subscriptionKey } = await body(req, z.object({ projectId: z.string().max(40).nullable(), subscriptionKey: z.string().max(80).optional() }).strict());
+  return ok(openThread(user, projectId, subscriptionKey));
 });

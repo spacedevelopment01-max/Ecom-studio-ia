@@ -1,5 +1,5 @@
 /**
- * Boucle d'agent SYNA (#492). Un message du client lance une exécution (tâche de fond reprenable) :
+ * Boucle d'agent SINA (#492). Un message du client lance une exécution (tâche de fond reprenable) :
  *   1. le modèle relit le fil complet (ses propres réponses, les décisions, les résultats d'outils, les pièces jointes) ;
  *   2. il choisit des outils du registre commun et leurs arguments ;
  *   3. le serveur valide, applique droits / budget autorisé / accord des actions sensibles, exécute la fonction native
@@ -23,6 +23,7 @@ import { budgetState, jobSpentMicro, trackJob, authorizeBudgetPct, DEFAULT_BUDGE
 import { attachmentsOf, attachmentImages, describeAttachment } from "./attachments";
 import { projectSnapshot } from "./snapshot";
 import { SYNA_SYSTEM } from "./prompt";
+import { JOURNEY_STEPS, currentStep, journeyContext, journeyOf } from "./journey";
 
 export const MAX_STEPS = 12;
 const MAX_ACTIONS = 8;
@@ -59,7 +60,7 @@ export function submitMessage(user: User, cid: string, input: { requestId: strin
   const prior = runByRequest(cid, input.requestId);
   if (prior) return prior;
   const current = activeRun(cid);
-  if (current && current.status !== "waiting_confirmation") throw new HttpError(409, L("SYNA travaille encore sur votre demande précédente. Attendez sa réponse ou arrêtez-la.", "SYNA is still working on your previous request. Wait or stop it."), "syna_busy");
+  if (current && current.status !== "waiting_confirmation") throw new HttpError(409, L("SINA travaille encore sur votre demande précédente. Attendez sa réponse ou arrêtez-la.", "SINA is still working on your previous request. Wait or stop it."), "syna_busy");
   if (current) { updateRun(current.id, { status: "cancelled", pending_json: null }); addMessage(cid, "event", { kind: "pending_dropped", runId: current.id }, current.id); }
   const attachments = (input.attachmentIds ?? []).filter((aid) => attachmentsOf(cid).some((a) => a.id === aid));
   if (authorizedBudget(cid) == null) { try { authorizeBudgetPct(user.id, c.project_id, cid, DEFAULT_BUDGET_PCT); } catch { /* budget non mesurable : accord demandé */ } }
@@ -71,10 +72,10 @@ export function submitMessage(user: User, cid: string, input: { requestId: strin
 
 /**
  * Reprise de l'exécution. Les créations natives attendues ne sont PAS des dépendances bloquantes : une création en
- * échec doit aussi réveiller SYNA pour qu'elle l'explique et propose la suite. La tâche de reprise relit leur état.
+ * échec doit aussi réveiller SINA pour qu'elle l'explique et propose la suite. La tâche de reprise relit leur état.
  */
 function schedule(r: SynaRun, waitFor: string[] = [], delayMs = 0) {
-  const job = enqueue({ userId: r.user_id, projectId: r.project_id, type: "syna.agent", label: L("SYNA travaille", "SYNA is working"), payload: { runId: r.id }, maxAttempts: 2, runAt: delayMs ? Date.now() + delayMs : undefined, idempotencyKey: `syna:${r.id}:${r.step}:${Date.now()}:${newId()}` });
+  const job = enqueue({ userId: r.user_id, projectId: r.project_id, type: "syna.agent", label: L("SINA travaille", "SINA is working"), payload: { runId: r.id }, maxAttempts: 2, runAt: delayMs ? Date.now() + delayMs : undefined, idempotencyKey: `syna:${r.id}:${r.step}:${Date.now()}:${newId()}` });
   trackJob(r.conversation_id, r.id, job.id, "agent");
   updateRun(r.id, { job_id: job.id, status: waitFor.length ? "waiting_jobs" : "queued", waiting_jobs: JSON.stringify(waitFor) });
 }
@@ -90,7 +91,7 @@ async function waitForJobs(jobs: string[], maxMs = 45_000) {
   }
 }
 
-/** Accord du client sur l'action en attente (sensible ou hors budget) : exécutée telle quelle, puis SYNA continue. */
+/** Accord du client sur l'action en attente (sensible ou hors budget) : exécutée telle quelle, puis SINA continue. */
 export function decidePending(user: User, cid: string, input: { pendingId: string; approve: boolean }) {
   const r = activeRun(cid);
   if (!r || r.user_id !== user.id || r.status !== "waiting_confirmation") throw new HttpError(409, L("Aucune action en attente d'accord.", "No action awaits your approval."));
@@ -189,7 +190,7 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
         // Accord explicite : actions sensibles, et dépenses au-delà du budget autorisé.
         if (isSensitive(t, parsed.data, tctx)) return askConfirmation(r, t, parsed.data, tctx, "sensitive");
         if (t.estimate) {
-          // Un refus du moteur natif pendant le devis (étape préalable, droits, tarif) est un résultat d'outil : SYNA
+          // Un refus du moteur natif pendant le devis (étape préalable, droits, tarif) est un résultat d'outil : SINA
           // le lit et s'adapte (question au client, autre outil), l'exécution ne s'arrête pas.
           let est: Awaited<ReturnType<NonNullable<AgentTool["estimate"]>>>;
           try { est = await t.estimate(tctx, parsed.data); }
@@ -252,7 +253,7 @@ async function askConfirmation(r: SynaRun, t: AgentTool, args: unknown, ctx: Too
 }
 
 function askBudget(r: SynaRun, _x: null) {
-  const p: PendingAction = { id: newId(), tool: "budget.raise", args: {}, reason: "budget", preview: L("Le budget autorisé pour SYNA est atteint. Augmentez-le pour qu'elle continue.", "SYNA's authorised budget is used up. Raise it to continue."), createdAt: Date.now() };
+  const p: PendingAction = { id: newId(), tool: "budget.raise", args: {}, reason: "budget", preview: L("Le budget autorisé pour SINA est atteint. Augmentez-le pour qu'elle continue.", "SINA's authorised budget is used up. Raise it to continue."), createdAt: Date.now() };
   updateRun(r.id, { status: "waiting_confirmation", pending_json: JSON.stringify(p), step: Math.max(0, r.step - 1) });
   addMessage(r.conversation_id, "event", { kind: "confirmation", pending: p, budget: budgetState(r.user_id, r.project_id, r.conversation_id) }, r.id);
   return { runId: r.id, waiting: "budget" };
@@ -268,7 +269,7 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
     task: "agent_conversation", userId: user.id, projectId: r.project_id, jobId,
     system: SYNA_SYSTEM, promptKey: "syna-agent-1",
     reference: `# Outils disponibles (registre commun)\n\n${toolCatalog(!!r.project_id)}`,
-    context: `# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget autorisé pour SYNA\nAutorisé : ${b.authorizedPct ?? 0} % du budget IA ; engagé : ${b.spentPct ?? 0} %. Au-delà, le serveur demande l'accord du client.\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}`,
+    context: `# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id))}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget autorisé pour SINA\nAutorisé : ${b.authorizedPct ?? 0} % du budget IA ; engagé : ${b.spentPct ?? 0} %. Au-delà, le serveur demande l'accord du client.\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}`,
     prompt: `# Fil de la conversation (le plus ancien d'abord ; vos propres réponses incluses)\n${serialize(history)}\n\nÉtape ${step + 1} de cette demande. Répondez avec l'objet JSON {message, actions, question, done}.`,
     images: images.length ? images : undefined,
     maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}`, routing: { difficulty: "complex" },
@@ -283,7 +284,7 @@ function newAttachmentSinceLastAssistant(h: SynaMessage[]) {
   return false;
 }
 
-/** Fil lisible par le modèle : paroles exactes, réponses de SYNA, résultats d'outils (tronqués), accords. */
+/** Fil lisible par le modèle : paroles exactes, réponses de SINA, résultats d'outils (tronqués), accords. */
 export function serialize(h: SynaMessage[]): string {
   // Demande en cours : résultats complets ; demandes précédentes : résumés courts (moins de jetons relus à chaque étape).
   let lastUser = -1;
@@ -291,7 +292,7 @@ export function serialize(h: SynaMessage[]): string {
   return h.map((m, i) => {
     const c = m.content, current = i > lastUser, dataMax = current ? 12000 : 300, argsMax = current ? 400 : 160;
     if (m.role === "user") return `[client #${m.seq}] ${c.text}${c.attachments?.length ? ` (pièces jointes : ${c.attachments.join(", ")})` : ""}`;
-    if (m.role === "assistant") return `[SYNA #${m.seq}] ${c.message}${c.actions?.length ? `\n  actions : ${c.actions.map((a: any) => `${a.tool} ${JSON.stringify(a.args)}`.slice(0, argsMax)).join(" | ")}` : ""}${c.question ? `\n  question : ${c.question.text}` : ""}`;
+    if (m.role === "assistant") return `[SINA #${m.seq}] ${c.message}${c.actions?.length ? `\n  actions : ${c.actions.map((a: any) => `${a.tool} ${JSON.stringify(a.args)}`.slice(0, argsMax)).join(" | ")}` : ""}${c.question ? `\n  question : ${c.question.text}` : ""}`;
     if (m.role === "tool") return `[résultat ${c.tool} #${m.seq}] ${c.ok ? "OK" : "ÉCHEC"} — ${c.summary}${c.changes?.length ? `\n  changements vérifiés : ${c.changes.map((x: any) => `${x.module}/${x.object} : ${x.summary}${x.verified ? "" : " (non vérifié)"}`).join(" ; ")}` : ""}${c.data != null ? `\n  données : ${JSON.stringify(c.data).slice(0, dataMax)}` : ""}`;
     if (c.kind === "confirmation") return `[accord demandé #${m.seq}] ${c.pending?.tool} — ${c.pending?.reason}`;
     if (c.kind === "approved" || c.kind === "declined") return `[client : ${c.kind === "approved" ? "ACCORD" : "REFUS"} pour ${c.tool}]`;
@@ -317,6 +318,7 @@ export function threadView(user: User, cid: string) {
     budget: budgetState(user.id, c.project_id, cid),
     attachments: attachmentsOf(cid).map((a) => ({ id: a.id, kind: a.kind, name: a.name, analysis: a.analysis })),
     tools: allTools().length,
+    journey: (() => { const j = journeyOf(cid); return { current: currentStep(j), mode: j.mode, keep: j.keep, steps: JOURNEY_STEPS.map((s) => ({ n: s.n, fr: s.fr, en: s.en, status: j.steps[s.n]?.status ?? "todo" })) }; })(),
   };
 }
 

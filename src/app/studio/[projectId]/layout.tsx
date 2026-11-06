@@ -15,7 +15,7 @@ export default async function ProjectLayout({ children, params }: { children: Re
   const { projectId } = await params;
   const user = await currentUser();
   if (!user || !one("SELECT 1 FROM projects WHERE id = ? AND user_id = ? AND archived = 0", projectId, user.id)) notFound();
-  // Mission #282, lot 1 : nouvelle coquille SYNA seulement si l'installation l'active (STUDIO_SYNA_SHELL=1), avec retour
+  // Mission #282, lot 1 : nouvelle coquille SINA seulement si l'installation l'active (STUDIO_SYNA_SHELL=1), avec retour
   // possible à l'interface actuelle sur cet appareil. Sans la variable : Studio inchangé. Lot 1 bis : ses réglages
   // d'affichage (compte, projet) sont lus ici pour s'afficher sans clignotement.
   const shell = studioShellVariant(process.env, (await cookies()).get(SYNA_SHELL_COOKIE)?.value);

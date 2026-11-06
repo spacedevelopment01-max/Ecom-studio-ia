@@ -1,4 +1,4 @@
-/** Registre commun des outils SYNA : une seule source pour le choix des outils, les droits, le coût et la confirmation. */
+/** Registre commun des outils SINA : une seule source pour le choix des outils, les droits, le coût et la confirmation. */
 import { z } from "zod";
 import type { AgentTool, ToolContext } from "./types";
 import { TOOL_LIST } from "./tools";
@@ -8,7 +8,7 @@ function ensureLoaded() {
   if (tools) return;
   tools = new Map();
   for (const t of TOOL_LIST) {
-    if (tools.has(t.name)) throw new Error(`Outil SYNA en double : ${t.name}`);
+    if (tools.has(t.name)) throw new Error(`Outil SINA en double : ${t.name}`);
     tools.set(t.name, t);
   }
 }

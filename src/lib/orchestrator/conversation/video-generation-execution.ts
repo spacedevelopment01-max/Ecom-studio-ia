@@ -1,4 +1,4 @@
-/** SYNA → devis/accord → même worker video.scenes et mêmes versions/bibliothèque. */
+/** SINA → devis/accord → même worker video.scenes et mêmes versions/bibliothèque. */
 import {HttpError,type User}from '../../auth';
 import {all,id,json,now,one,tx,readSnapshot}from '../../db';
 import {loadProject,remember}from '../../projects';
@@ -32,7 +32,7 @@ type Prepared=ReturnType<typeof validateVideoGeneration>;
 type Pin={assetId:string;version:number;sha256:string};
 type Saved={schema:1;id:string;conversationId:string;sourceReceiptId:string;revision:number;projectRevision:number;createdAt:number;expiresAt:number;boundId:string;prepared:Prepared;identity:string;cost:ReturnType<typeof boundedSceneQuote>|null;request:ThreeScenesRequest;confirmedAt?:number;jobId?:string;output?:Pin;docKey?:string;versionId?:string;reusedFrom?:string};
 const prefix='agent.video.generation.';
-function owned(u:User,cid:string,write=false){if(!conversationVideoGenerationEnabled())throw new HttpError(404,L('Clips IA avec SYNA indisponibles.','AI clips with SYNA unavailable.'));const c=ownedConversation(u,cid);if(!c.project_id)throw new HttpError(409,L('Créez d’abord le projet.','Create the project first.'));if(write)requirePlan(u,c.project_id);return{c,pid:c.project_id};}
+function owned(u:User,cid:string,write=false){if(!conversationVideoGenerationEnabled())throw new HttpError(404,L('Clips IA avec SINA indisponibles.','AI clips with SINA unavailable.'));const c=ownedConversation(u,cid);if(!c.project_id)throw new HttpError(409,L('Créez d’abord le projet.','Create the project first.'));if(write)requirePlan(u,c.project_id);return{c,pid:c.project_id};}
 function read(pid:string,qid:string){return json<Saved|null>(one<{value:string}>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key=?",pid,prefix+qid)?.value,null);}
 function records(pid:string,cid:string){return all<{value:string}>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key LIKE 'agent.video.generation.%' ORDER BY created_at DESC,rowid DESC LIMIT 100",pid).map(r=>json<Saved|null>(r.value,null)).filter((m):m is Saved=>!!m&&m.conversationId===cid);}
 /** Les 100 reçus d’affichage ne bornent jamais la recherche d’un achat déjà acquis.
@@ -70,7 +70,7 @@ export function confirmVideoGeneration(u:User,cid:string,cmd:Extract<VideoGenera
  if(!m.cost||boundedSceneQuote(loadProject(pid),m.prepared.request,m.prepared.scenario).fingerprint!==m.cost.fingerprint)throw new HttpError(409,L('Le tarif, la route ou le contexte du contrôle a changé : actualisez le devis sans générer.','Price, route or review context changed: refresh the quote without generating.'));
  if(one("SELECT 1 FROM jobs WHERE project_id=? AND type LIKE 'video.%' AND status IN ('queued','running','paused','blocked')",pid))throw new HttpError(409,L('Une tâche vidéo est déjà active.','A video job is already active.'));
  requireCreationPlan(u,pid,'videos');assertCanSpend(u.id,m.cost.capMicro,pid);const b=allocateAgentContinuation(m.boundId,u.id,m.cost.capMicro,m.cost.maximumCalls);assertBoundQuote(b,m.cost.capMicro);
- const j=enqueue({userId:u.id,projectId:pid,type:'video.scenes',label:L('Clips IA : scénario accepté avec SYNA','AI clips: scenario approved with SYNA'),payload:{projectId:pid,request:m.request,agentVideoGenerationQuote:{conversationId:cid,quoteId:m.id},costCapMicro:m.cost.capMicro},idempotencyKey:'agent-video-generation:'+m.id,maxAttempts:1});bindAgentJob(m.boundId,u.id,j.id,'media');m.confirmedAt=now();m.jobId=j.id;save(pid,m);return videoGenerationReceipt(u,cid,m.id);
+ const j=enqueue({userId:u.id,projectId:pid,type:'video.scenes',label:L('Clips IA : scénario accepté avec SINA','AI clips: scenario approved with SINA'),payload:{projectId:pid,request:m.request,agentVideoGenerationQuote:{conversationId:cid,quoteId:m.id},costCapMicro:m.cost.capMicro},idempotencyKey:'agent-video-generation:'+m.id,maxAttempts:1});bindAgentJob(m.boundId,u.id,j.id,'media');m.confirmedAt=now();m.jobId=j.id;save(pid,m);return videoGenerationReceipt(u,cid,m.id);
 });}
 export async function runAgentVideoGeneration(ctx:JobContext,injected?:ThreeScenesDeps){
  const q=ctx.payload.agentVideoGenerationQuote as{conversationId:string;quoteId:string}|undefined,u=one<User>('SELECT * FROM users WHERE id=?',ctx.job.user_id);if(!u||!q)throw new HttpError(404,'video_generation_quote_missing');const{pid,m}=located(u,q.conversationId,q.quoteId,true);if(m.jobId!==ctx.job.id||ctx.job.project_id!==pid||ctx.job.type!=='video.scenes'||!m.cost||m.reusedFrom)throw new HttpError(404,'video_generation_job_mismatch');recheck(u,q.conversationId,pid,m);m.docKey=sceneDocumentKey(loadProject(pid),m.request);save(pid,m);

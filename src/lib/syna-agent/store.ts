@@ -1,4 +1,4 @@
-/** Fil SYNA : messages (client, SYNA, résultats d'outils), exécutions reprenables, pièces jointes, changements, budget. */
+/** Fil SINA : messages (client, SINA, résultats d'outils), exécutions reprenables, pièces jointes, changements, budget. */
 import { all, id, json, now, one, run, tx } from "../db";
 import type { Change } from "./types";
 

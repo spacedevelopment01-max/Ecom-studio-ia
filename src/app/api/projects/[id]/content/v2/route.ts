@@ -44,7 +44,7 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
 
 /**
  * Rédaction d'un contenu. Sans IA (forfait Découverte, IA coupée) : rédaction locale immédiate, 0 €. Avec IA :
- * réemploi gratuit d'un résultat acquis identique ; sinon devis et confirmation dans SYNA.
+ * réemploi gratuit d'un résultat acquis identique ; sinon devis et confirmation dans SINA.
  */
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);

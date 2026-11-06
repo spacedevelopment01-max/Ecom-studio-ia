@@ -1,8 +1,8 @@
-/** SYNA lot 0 (#282) : réglages d'affichage — projet > compte > défaut, valeurs invalides ignorées, bornes respectées. */
+/** SINA lot 0 (#282) : réglages d'affichage — projet > compte > défaut, valeurs invalides ignorées, bornes respectées. */
 import { describe, expect, it } from "vitest";
 import { SYNA_DEFAULT_PREFS, resetAccountSynaPrefs, resolveSynaPrefs, sanitizeSynaPrefs, synaScopeAttributes } from "@/lib/syna-ui/preferences";
 
-describe("réglages SYNA", () => {
+describe("réglages SINA", () => {
   it("par défaut : Encre, comme le Studio, bleu d'encre, 440 px, confortable, texte normal, épinglé", () => {
     const p = resolveSynaPrefs();
     expect(p).toMatchObject({ mode: "encre", appearance: "auto", accent: "encre", convoWidth: 440, density: "comfortable", textSize: "normal", panel: "pinned" });

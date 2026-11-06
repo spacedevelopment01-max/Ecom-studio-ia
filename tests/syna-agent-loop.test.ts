@@ -1,5 +1,5 @@
 /**
- * SYNA agent (#492) — boucle, registre commun, droits, accords, budget, reprise et pièces jointes.
+ * SINA agent (#492) — boucle, registre commun, droits, accords, budget, reprise et pièces jointes.
  * Le modèle est SIMULÉ (aucun appel IA) : il lit la base comme le ferait le modèle après ses outils de lecture.
  * Chaque test part du fil (submitMessage → exécution) et vérifie l'effet DANS LE PROJET, pas un message « c'est fait ».
  */
@@ -24,7 +24,7 @@ vi.mock("@/lib/ai/media-providers", async (orig) => ({
 
 process.env.STUDIO_SYNA_AGENT = "1";
 
-describe("SYNA agent — un fil, des outils natifs, des changements vérifiés", async () => {
+describe("SINA agent — un fil, des outils natifs, des changements vérifiés", async () => {
   const { createUser } = await import("@/lib/auth");
   const { json, one, all } = await import("@/lib/db");
   const { loadProject, currentTheme } = await import("@/lib/projects");
@@ -47,7 +47,7 @@ describe("SYNA agent — un fil, des outils natifs, des changements vérifiés",
 
   /** Projet réel du Studio : visuel publicitaire en calques, site construit, produit à deux variantes. */
   async function shop(label: string) {
-    const u = await createUser(`syna-${label}-${Date.now()}@test.fr`, "motdepasse-test", "SYNA");
+    const u = await createUser(`syna-${label}-${Date.now()}@test.fr`, "motdepasse-test", "SINA");
     const p = loadProject(seedImageFixture(u.id, "cosmetic"));
     grantProjectPlan(p.id, "dominer");
     const cutId = await seedCutout(u.id, p.id), cut = assetData(getAsset(cutId)!);
@@ -108,7 +108,7 @@ describe("SYNA agent — un fil, des outils natifs, des changements vérifiés",
     expect(ad.version.version).toBe(before.ad + 1);
     expect(JSON.stringify(ad.doc.layers)).toContain("39 € seulement");
     expect(p.brand?.logo.assetId ?? null).toBe(s.logoAsset);
-    // Changements vérifiés par module, visibles dans le fil ; réponses de SYNA conservées.
+    // Changements vérifiés par module, visibles dans le fil ; réponses de SINA conservées.
     const view = threadView(s.user, s.cid);
     const modules = all<{ module: string; verified: number }>("SELECT module,verified FROM syna_changes WHERE conversation_id=?", s.cid);
     expect(new Set(modules.map((m) => m.module))).toEqual(new Set(["mémoire", "site", "catalogue", "publicités"]));
@@ -117,7 +117,7 @@ describe("SYNA agent — un fil, des outils natifs, des changements vérifiés",
     expect(one<{ n: number }>("SELECT COUNT(*) n FROM ai_calls")!.n).toBe(aiCallsBefore);
   });
 
-  it("plusieurs produits correspondent : SYNA pose UNE question et ne modifie rien", async () => {
+  it("plusieurs produits correspondent : SINA pose UNE question et ne modifie rien", async () => {
     const s = await shop("ambigu");
     createProduct(s.p.id, { title: "Crème Noire", price: 2000 } as any);
     const run = await send(s.user, s.cid, "Mets le noir à 39 €.", (step) => {
@@ -142,7 +142,7 @@ describe("SYNA agent — un fil, des outils natifs, des changements vérifiés",
     expect(getRun(run.id)!.status).toBe("done");
   });
 
-  it("dépense hors budget autorisé : SYNA s'arrête et demande l'accord, sans rien lancer", async () => {
+  it("dépense hors budget autorisé : SINA s'arrête et demande l'accord, sans rien lancer", async () => {
     const s = await shop("budget");
     one("UPDATE syna_budgets SET authorized_micro=0 WHERE conversation_id=? RETURNING 1", s.cid);
     const jobsBefore = one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE type='brand.build'")!.n;
@@ -189,7 +189,7 @@ describe("SYNA agent — un fil, des outils natifs, des changements vérifiés",
     expect(doc.clips.map((c: any) => Math.round(c.durationS * 2) / 2)).toEqual([1, 2, 1.5]);
   });
 
-  it("une création attendue qui échoue réveille SYNA, qui voit l'échec et conclut (jamais bloquée)", async () => {
+  it("une création attendue qui échoue réveille SINA, qui voit l'échec et conclut (jamais bloquée)", async () => {
     const s = await shop("echec");
     const images = all<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND kind='image' AND deleted_at IS NULL LIMIT 2", s.p.id).map((x) => x.id);
     const r = submitMessage(s.user, s.cid, { requestId: "echec-1", text: "Fais une petite vidéo." });
@@ -211,7 +211,7 @@ describe("SYNA agent — un fil, des outils natifs, des changements vérifiés",
     expect(seen).toContain("ÉCHEC");
   });
 
-  it("un refus du moteur natif pendant le devis est lu par SYNA, l'exécution continue", async () => {
+  it("un refus du moteur natif pendant le devis est lu par SINA, l'exécution continue", async () => {
     const s = await shop("refus");
     let seen = "";
     const run = await send(s.user, s.cid, "Lance la recherche marketing.", (step) => step === 0

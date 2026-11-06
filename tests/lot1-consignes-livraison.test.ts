@@ -72,7 +72,7 @@ describe("Lot 1 — consignes et livraison", async () => {
   const seed = (kind: Parameters<typeof seedImageFixture>[1] = "hightech") => { const pid = seedImageFixture(user.id, kind); grantProjectPlan(pid, "dominer"); return pid; };
   const writes = () => remote.calls.filter((p) => !/Tu relis UN contenu/.test(JSON.stringify(p.system)));
 
-  it("route sans devis refusée ; SYNA devis → accord → worker → véritable adaptateur : deux demandes et phrases finales distinctes, puis réutilisation sans appel", async () => {
+  it("route sans devis refusée ; SINA devis → accord → worker → véritable adaptateur : deux demandes et phrases finales distinctes, puis réutilisation sans appel", async () => {
     for (const key of ['STUDIO_CONVERSATION_LOT_A','STUDIO_CONVERSATION_AI','STUDIO_CONVERSATION_CONTEXT','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_CONTENT']) vi.stubEnv(key, '1');
     const author = await account(), pid = project(author), conversation = openProjectConversation(author, pid), send = sender(author, conversation.id);
     const source = loadProject(seed());

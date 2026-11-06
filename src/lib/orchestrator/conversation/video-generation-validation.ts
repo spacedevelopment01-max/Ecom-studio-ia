@@ -1,4 +1,4 @@
-/** Même cible native et mêmes fichiers pour SYNA, le devis, l’accord et le worker. */
+/** Même cible native et mêmes fichiers pour SINA, le devis, l’accord et le worker. */
 import {HttpError}from '../../auth';
 import {loadProject}from '../../projects';
 import {getProduct,listProducts}from '../../products/catalog';

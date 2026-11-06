@@ -1,5 +1,5 @@
 /**
- * #301 C22 — carte « Demandes reçues » de SYNA, côté interface (moteur de Codex `local-site-requests.ts`, inchangé).
+ * #301 C22 — carte « Demandes reçues » de SINA, côté interface (moteur de Codex `local-site-requests.ts`, inchangé).
  * Transport exercé contre le vrai moteur : liste en lecture seule, désignation, marquage lue / traitée, accord explicite,
  * reçu relu dans la source native, réponse perdue rejouée à l'identique, annulation A2, refus sans faux succès.
  */

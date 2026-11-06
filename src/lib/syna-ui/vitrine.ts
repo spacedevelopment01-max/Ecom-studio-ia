@@ -1,5 +1,5 @@
 /**
- * Vitrine interne des fondations SYNA (lot 0) : page de contrôle visuel, jamais montrée aux clients.
+ * Vitrine interne des fondations SINA (lot 0) : page de contrôle visuel, jamais montrée aux clients.
  * Ouverte en développement ; en production seulement si `SYNA_VITRINE=1` est posé volontairement.
  */
 import { SYNA_ACCENTS, SYNA_MODES } from "./tokens";

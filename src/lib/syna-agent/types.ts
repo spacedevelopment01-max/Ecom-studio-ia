@@ -1,5 +1,5 @@
 /**
- * SYNA agent (#492) : contrat commun des outils. Chaque outil enveloppe une fonction NATIVE du Studio (même moteur,
+ * SINA agent (#492) : contrat commun des outils. Chaque outil enveloppe une fonction NATIVE du Studio (même moteur,
  * mêmes droits, mêmes versions) ; aucune règle par formulation. Le modèle choisit l'outil et ses arguments, le
  * serveur valide les arguments, applique les droits, le budget autorisé et les confirmations, puis vérifie l'effet.
  */
@@ -26,9 +26,9 @@ export type ToolResult = {
   /** Données utiles à l'étape suivante (identifiants, listes…), tronquées avant l'envoi au modèle. */
   data?: unknown;
   changes?: Change[];
-  /** Tâches natives lancées (images, vidéos, thème…) : SYNA reprend quand elles sont terminées. */
+  /** Tâches natives lancées (images, vidéos, thème…) : SINA reprend quand elles sont terminées. */
   jobs?: string[];
-  /** Ambiguïté : SYNA doit demander au client (plusieurs produits correspondent…). */
+  /** Ambiguïté : SINA doit demander au client (plusieurs produits correspondent…). */
   ambiguous?: { question: string; choices: string[] };
 };
 

@@ -33,10 +33,12 @@ const createTool: AgentTool<{ name: string; business: "products" | "services"; s
     if (!pendingSubscriptions(ctx.user.id).length) return { ok: false, summary: L("Aucun abonnement libre : chaque abonnement finance un seul projet.", "No free subscription.") };
     const pid = id();
     try {
-      createProjectWithSubscription(ctx.user.id, null, () => {
+      const chosen = (JSON.parse(one<{ state_json: string | null }>("SELECT state_json FROM agent_conversations WHERE id=?", ctx.conversationId)?.state_json ?? "{}") as { subscriptionKey?: string }).subscriptionKey;
+      const key = chosen && pendingSubscriptions(ctx.user.id).some((s) => s.user_id === chosen) ? chosen : null;
+      createProjectWithSubscription(ctx.user.id, key, () => {
         run("INSERT INTO projects (id, user_id, name, status, platform, store_type, business_type, business_json, settings_json, sources_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
           pid, ctx.user.id, a.name, "draft", "shopify", a.storeType ?? "mono", a.business, a.business === "services" ? JSON.stringify(emptyServiceProfile()) : "{}",
-          JSON.stringify({ ...DEFAULT_SETTINGS, mode: "assisted", timezone: (ctx.user as any).timezone ?? DEFAULT_SETTINGS.timezone, language: "fr" }), "[]", now(), now());
+          JSON.stringify({ ...DEFAULT_SETTINGS, mode: "guided", timezone: (ctx.user as any).timezone ?? DEFAULT_SETTINGS.timezone, language: "fr" }), "[]", now(), now());
         return { projectId: pid, result: pid };
       });
     } catch (e) { if (e instanceof NoFreeSubscription) return { ok: false, summary: L("L'abonnement vient d'être utilisé.", "Subscription already used.") }; throw e; }
@@ -146,7 +148,7 @@ const STEPS = ["brief", "research", "brand", "content", "media"] as const;
 const ACTIONS = ["analyze", "generate", "logo", "image", "collect"] as const;
 const pilotRunTool: AgentTool<{ step: (typeof STEPS)[number]; action: (typeof ACTIONS)[number]; slot?: string; correction?: string }> = {
   name: "pilot.run", module: "pilote", kind: "generate", needsProject: true,
-  description: "Lance une étape IA du parcours natif avec son devis natif (débité sur le budget autorisé) : brief/analyze (comprendre l'offre et ses photos), research/generate (recherche et 5 angles marketing), brand/generate (identité), brand/logo (3 pistes de logo), content/generate (textes des pages ; slot = une page), media/image ou media/collect (visuels d'un emplacement). Tâche de fond ; SYNA reprend quand elle est finie.",
+  description: "Lance une étape IA du parcours natif avec son devis natif (débité sur le budget autorisé) : brief/analyze (comprendre l'offre et ses photos), research/generate (recherche et 5 angles marketing), brand/generate (identité), brand/logo (3 pistes de logo), content/generate (textes des pages ; slot = une page), media/image ou media/collect (visuels d'un emplacement). Tâche de fond ; SINA reprend quand elle est finie.",
   args: z.object({ step: z.enum(STEPS), action: z.enum(ACTIONS), slot: z.string().max(80).optional(), correction: z.string().max(2000).optional() }).strict(),
   estimate: (ctx, a) => { const p = project(ctx); const q = createQuote(p.id, a.step, a.action, a.slot, a.correction) as any; return { maxMicro: q.capMicro ?? 0, label: `${a.step}/${a.action}` }; },
   run: (ctx, a) => {

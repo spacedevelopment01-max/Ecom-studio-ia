@@ -6,7 +6,7 @@ import type {useLocalBookingEditConfirmation} from './use-local-booking-edit-con
 import {Button} from '../ui';
 import {useT} from '../i18n';
 /**
- * #301 « SYNA complète » — carte « Retouche réservable » (contrat #418 / #419 de Codex) : prix ou durée d'une prestation
+ * #301 « SINA complète » — carte « Retouche réservable » (contrat #418 / #419 de Codex) : prix ou durée d'une prestation
  * de la réservation native, avant / après en € ou en minutes, accord gratuit, valeur relue dans une nouvelle version.
  * Le nom de la prestation est une donnée saisie, affichée telle quelle.
  */

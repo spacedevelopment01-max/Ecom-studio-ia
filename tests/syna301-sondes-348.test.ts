@@ -2,13 +2,13 @@
  * #301 vague 2 — sondes des phrases réelles sur la convergence #348, gardées comme garde-fous permanents.
  *
  * 1. Seize phrases qu'un client écrit vraiment (site, sections, pages, thème, SEO, horaires, prestations, calendrier,
- *    stock), envoyées à SYNA sur un projet de services avec une section désignée : quelle que soit la réponse (carte
+ *    stock), envoyées à SINA sur un projet de services avec une section désignée : quelle que soit la réponse (carte
  *    gratuite, précision demandée ou réflexion sur devis), RIEN n'est écrit sans accord explicite et AUCUN appel IA
  *    n'a lieu. Le relevé exact (quelle phrase donne quelle carte) est écrit dans PROBE_OUT si la variable est fournie :
- *    c'est la preuve des actions SYNA absentes transmise à Codex. Il n'est pas figé ici, pour que chaque nouveau
+ *    c'est la preuve des actions SINA absentes transmise à Codex. Il n'est pas figé ici, pour que chaque nouveau
  *    contrat de Codex le fasse évoluer sans casser ce test.
  *    Le même relevé est fait sur le moteur local natif de l'onglet Boutique (localFirst, section désignée) : il montre
- *    ce que le Studio sait déjà faire gratuitement et que SYNA n'atteint pas encore (« moteur local d'abord »).
+ *    ce que le Studio sait déjà faire gratuitement et que SINA n'atteint pas encore (« moteur local d'abord »).
  * 2. « Agrandis le titre » sur chaque création du moteur V2 (outils simulés) : la réponse est soit une proposition
  *    gratuite, soit un refus explicite 422 ; jamais une écriture avant l'accord.
  *

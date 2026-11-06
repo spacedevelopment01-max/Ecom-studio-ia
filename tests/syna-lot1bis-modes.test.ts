@@ -1,5 +1,5 @@
 /**
- * SYNA lot 1 bis (#282) : les deux modes de la coquille, rendus réellement (React), à partir des réglages lus sur le
+ * SINA lot 1 bis (#282) : les deux modes de la coquille, rendus réellement (React), à partir des réglages lus sur le
  * serveur. Un seul balisage pour les écrans et la conversation ; seules la mise en page et les accès changent.
  */
 import fs from "node:fs";
@@ -65,7 +65,7 @@ describe("deux vrais modes à partir des réglages du serveur", () => {
       expect(html.indexOf('id="studio-main"')).toBeLessThan(html.indexOf('id="ecran-actuel"'));
     }
   });
-  it("SYNA fermée sur l'installation : aucune conversation simulée, la barre ne sert qu'aux commandes d'affichage", () => {
+  it("SINA fermée sur l'installation : aucune conversation simulée, la barre ne sert qu'aux commandes d'affichage", () => {
     const html = render({ mode: "plein" }, false);
     expect(html).not.toContain('aria-controls="syna-panel"');
     expect(html).not.toContain("data-conversation-panel");

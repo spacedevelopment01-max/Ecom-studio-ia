@@ -30,7 +30,7 @@ export default function TabFichiers() {
   useEffect(() => {
     if (!active.length) reload();
   }, [active.length, reload]);
-  // #301 C24 : le fichier ouvert devient la cible de SYNA (comme dans Images) ; un rangement confirmé dans SYNA
+  // #301 C24 : le fichier ouvert devient la cible de SINA (comme dans Images) ; un rangement confirmé dans SINA
   // relit aussitôt la liste et la fiche ouverte, sans attendre l'actualisation du Studio.
   const agentUi = useAgentUi() && project?.conversationContext === true, { setFocus: setAgentFocus } = useAgentFocus();
   // Cible : la fiche ouverte, sinon l'unique fichier coché (une sélection multiple ne désigne rien).

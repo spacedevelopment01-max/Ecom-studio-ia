@@ -1,5 +1,5 @@
 /**
- * SYNA lot 1 bis (#282) — réglages d'affichage du Studio enregistrés sur le serveur, par compte et, au choix, par projet.
+ * SINA lot 1 bis (#282) — réglages d'affichage du Studio enregistrés sur le serveur, par compte et, au choix, par projet.
  *
  * - Une ligne par compte (`project_id = ''`) et une ligne facultative par projet (exception au réglage du compte).
  * - Valeurs validées (`sanitizeSynaPrefs`) et version de schéma enregistrée : une valeur inconnue est ignorée, jamais

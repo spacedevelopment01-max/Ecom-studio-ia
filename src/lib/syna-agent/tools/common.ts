@@ -1,4 +1,4 @@
-/** Aides communes des outils SYNA : projet du fil (droits relus), relecture et changements vérifiés. */
+/** Aides communes des outils SINA : projet du fil (droits relus), relecture et changements vérifiés. */
 import { HttpError } from "../../auth";
 import { loadProject } from "../../projects";
 import { requirePlan } from "../../plan-gates";

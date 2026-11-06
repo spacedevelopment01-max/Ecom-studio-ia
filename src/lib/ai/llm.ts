@@ -32,8 +32,8 @@ import { mapEffort, modelStatus, TEXT_MODELS, textModel, thinkingOutsideMaxOutpu
 import { ProviderHttpError, hasTextAdapter, textAdapters, type TextPart, type TextRequest, type TextResult, type TextTurn } from "./text-providers";
 
 /**
- * Conversation de l'agent (SYNA) : réfléchir sur le projet n'est pas une création. Elle reste possible quand les faits
- * ont changé depuis le choix de l'angle, pour que SYNA puisse justement re-préparer l'angle ; chaque création payante
+ * Conversation de l'agent (SINA) : réfléchir sur le projet n'est pas une création. Elle reste possible quand les faits
+ * ont changé depuis le choix de l'angle, pour que SINA puisse justement re-préparer l'angle ; chaque création payante
  * garde son propre contrôle de fraîcheur de la stratégie.
  */
 const reasoningOnly = (call: { task: string }) => call.task === "agent_conversation";

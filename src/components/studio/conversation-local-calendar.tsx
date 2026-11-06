@@ -11,7 +11,7 @@ export function calendarDate(ms:number,timeZone:string,lang:'fr'|'en'='fr'){
  catch{return new Date(ms).toISOString()+' (UTC)';}
 }
 /**
- * #301 « SYNA complète » — carte Calendrier gratuite (contrat #375 de Codex) : date éditoriale d'un brouillon,
+ * #301 « SINA complète » — carte Calendrier gratuite (contrat #375 de Codex) : date éditoriale d'un brouillon,
  * avant / après avec fuseau, accord gratuit, reçu relu. Aucune programmation, aucun envoi, aucun appel IA.
  */
 export function ConversationLocalCalendar({view,confirmation,busy}:{view:ConversationView;confirmation:ReturnType<typeof useLocalCalendarConfirmation>;busy:boolean}){

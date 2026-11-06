@@ -6,7 +6,7 @@ import type {useLocalFolderRenameConfirmation} from './use-local-folder-rename-c
 import {Button} from '../ui';
 import {useT} from '../i18n';
 /**
- * #301 « SYNA complète » — carte Renommer un dossier gratuite (contrat #398 de Codex), distincte de « Nouveau dossier » :
+ * #301 « SINA complète » — carte Renommer un dossier gratuite (contrat #398 de Codex), distincte de « Nouveau dossier » :
  * ancien et nouveau nom exacts, accord gratuit, nom relu. Le dossier garde son contenu et sa place.
  */
 export function ConversationLocalFolderRename({view,confirmation,busy}:{view:ConversationView;confirmation:ReturnType<typeof useLocalFolderRenameConfirmation>;busy:boolean}){

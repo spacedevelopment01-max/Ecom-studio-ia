@@ -1,5 +1,5 @@
 /**
- * #301 — lot 1 de la consigne « SYNA complète » : le défaut de confirmation périmée démontré sur la carte du site (#363)
+ * #301 — lot 1 de la consigne « SINA complète » : le défaut de confirmation périmée démontré sur la carte du site (#363)
  * vérifié sur les autres cartes gratuites (Fichiers, Contenus, Demandes reçues, Horaires). Une confirmation restée en
  * mémoire de session pour une AUTRE proposition que celle affichée (rechargement juste après un reçu, nouvelle proposition)
  * n'est jamais rejouée à sa place ; une réponse perdue pour la proposition affichée reste rejouée à l'identique ; la clé

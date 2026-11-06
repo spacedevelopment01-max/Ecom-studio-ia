@@ -37,7 +37,7 @@ export function SitePublication({ open, onClose, projectId, focusRequest }: { op
   const toast = useToast();
   const url = `/api/projects/${projectId}/site-publication`;
   const { data, reload } = useApi<Overview>(open ? url : null);
-  // #301 C22 : un statut confirmé depuis SYNA relit aussitôt la liste native (aucune double source d'état).
+  // #301 C22 : un statut confirmé depuis SINA relit aussitôt la liste native (aucune double source d'état).
   useEffect(() => {
     const changed = (e: Event) => { if ((e as CustomEvent<{ projectId?: string }>).detail?.projectId === projectId) void reload(); };
     window.addEventListener(SITE_REQUESTS_CHANGED_EVENT, changed);

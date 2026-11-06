@@ -136,7 +136,7 @@ export function estimateProduction(p: Project, ids: string[], deps: Pick<SocialD
 }
 
 /** Native numeric approval: recheck the current server estimate before queueing and execution.
- * The targeted SYNA path has its own bound publicationQuote; this does not replace that contract.
+ * The targeted SINA path has its own bound publicationQuote; this does not replace that contract.
  */
 export function assertProductionEstimate(p: Project, ids: string[], deps: Pick<SocialDeps, "estimate" | "probable" | "aiActive">, o: { allowPaid: boolean; approvedEstimateMicro?: number | null; aiImages?: number | null; aiBackground?: boolean; replace?: boolean }) {
   if (!o.allowPaid || !deps.aiActive) return;

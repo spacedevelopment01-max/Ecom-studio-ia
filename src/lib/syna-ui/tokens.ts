@@ -1,5 +1,5 @@
 /**
- * SYNA — jetons visuels des deux présentations du Studio (mission #282, lot 0).
+ * SINA — jetons visuels des deux présentations du Studio (mission #282, lot 0).
  *
  * Source unique des couleurs : `src/components/syna/syna.css` reprend exactement ces valeurs (vérifié par
  * `tests/syna-lot0-tokens.test.ts`), et chaque couple texte / fond est contrôlé au niveau AA (4,5:1 pour le texte,
@@ -86,8 +86,8 @@ export const SYNA_DEFAULT_ACCENT: Record<SynaMode, SynaAccent> = { encre: "encre
 
 /** Typographies (polices sous licence SIL OFL 1.1, servies depuis `public/syna/fonts/` et `/fonts/bricolage.woff2`). */
 export const SYNA_FONTS: Record<SynaMode, { voice: string; ui: string; display: string; mono: string }> = {
-  encre: { voice: "Syna Newsreader", ui: "Syna Geist", display: "Syna Newsreader", mono: "Syna Geist Mono" },
-  plein: { voice: "Syna Onest", ui: "Syna Onest", display: "Syna Bricolage", mono: "Syna Geist Mono" },
+  encre: { voice: "Sina Newsreader", ui: "Sina Geist", display: "Sina Newsreader", mono: "Sina Geist Mono" },
+  plein: { voice: "Sina Onest", ui: "Sina Onest", display: "Sina Bricolage", mono: "Sina Geist Mono" },
 };
 
 // ——— Contraste (WCAG 2.x) ———
@@ -113,7 +113,7 @@ export function contrastRatio(a: string, b: string): number {
 
 export type ContrastCheck = { mode: SynaMode; scheme: SynaScheme; accent: SynaAccent; fg: string; bg: string; ratio: number; min: number };
 
-/** Tous les couples texte / fond et contours / fond que les composants SYNA utilisent réellement. */
+/** Tous les couples texte / fond et contours / fond que les composants SINA utilisent réellement. */
 export function contrastChecks(): ContrastCheck[] {
   const out: ContrastCheck[] = [];
   for (const mode of SYNA_MODES) for (const scheme of SYNA_SCHEMES) for (const accent of SYNA_ACCENTS) {

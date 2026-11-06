@@ -1,5 +1,5 @@
 /**
- * Pièces jointes du fil SYNA : photos, vidéos, documents. Contrôle des octets par le validateur natif ; les photos
+ * Pièces jointes du fil SINA : photos, vidéos, documents. Contrôle des octets par le validateur natif ; les photos
  * et vidéos d'un projet sont aussi rangées dans la bibliothèque native (Fichiers / Images) pour que les outils du
  * Studio les réutilisent. Analyse locale gratuite à l'import (dimensions, plans et rythme d'une vidéo, texte d'un
  * document) ; la lecture visuelle est faite par le modèle (vision) dans le fil, sur le budget autorisé.

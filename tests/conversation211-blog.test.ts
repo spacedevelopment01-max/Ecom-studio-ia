@@ -1,4 +1,4 @@
-/** Blog natif depuis SYNA : transport entièrement simulé, aucune clé ni API réelle. */
+/** Blog natif depuis SINA : transport entièrement simulé, aucune clé ni API réelle. */
 import {it,expect,beforeEach,afterEach,vi} from 'vitest';
 import {account,project,sender} from './conversation209-fixtures';
 import {openProjectConversation,conversationView} from '@/lib/orchestrator/conversation';

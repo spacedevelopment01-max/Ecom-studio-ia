@@ -5,5 +5,6 @@ import { catalogueTools } from "./catalogue";
 import { projectTools } from "./project";
 import { mediaTools } from "./media";
 import { commerceTools } from "./commerce";
+import { startTools } from "./start";
 
-export const TOOL_LIST: AgentTool[] = [...projectTools, ...siteTools, ...catalogueTools, ...commerceTools, ...mediaTools];
+export const TOOL_LIST: AgentTool[] = [...startTools, ...projectTools, ...siteTools, ...catalogueTools, ...commerceTools, ...mediaTools];

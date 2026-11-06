@@ -1,6 +1,6 @@
 "use client";
 /**
- * SYNA agent (#492) : LE fil unique du projet. Discussion libre, pièces jointes (photos, vidéos, documents), actions
+ * SINA agent (#492) : LE fil unique du projet. Discussion libre, pièces jointes (photos, vidéos, documents), actions
  * dans tous les modules, accords pour les actions sensibles et hors budget, changements vérifiés par module.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -15,11 +15,36 @@ type View = {
   run: { id: string; status: string; step: number; pending: any; error: string | null } | null;
   budget: { authorizedPct: number | null; spentPct: number | null };
   attachments: { id: string; kind: string; name: string; analysis: any }[];
+  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped" }[] };
 };
 const WORKING = ["queued", "running", "waiting_jobs"];
+
+/** Frise du chantier : les étapes 0 à 13 du parcours de création, leur état, l'étape en cours. */
+function JourneyBar({ journey, compact }: { journey: NonNullable<View["journey"]>; compact: boolean }) {
+  const t = useT();
+  const label = { todo: t("à faire", "to do"), doing: t("en cours", "in progress"), review: t("à valider", "to approve"), done: t("validée", "approved"), skipped: t("sans objet", "not needed") };
+  const cur = journey.steps.find((s) => s.n === journey.current);
+  return (
+    <div className="border-b border-line px-3 py-2" data-syna-journey>
+      <div className="flex items-center justify-between gap-2 text-xs">
+        <span className="font-medium">{t("Étape", "Step")} {journey.current} · {cur ? t(cur.fr, cur.en) : ""}</span>
+        {journey.mode === "refonte" && <span className="text-muted">{t("Refonte · gardé tel quel", "Redesign · kept as is")} : {journey.keep.join(", ")}</span>}
+      </div>
+      <ol className={cx("mt-1.5 flex gap-1", compact ? "" : "sm:gap-1.5")} aria-label={t("Étapes du parcours", "Journey steps")}>
+        {journey.steps.map((s) => (
+          <li key={s.n} className="min-w-0 flex-1" title={`${s.n}. ${t(s.fr, s.en)} — ${label[s.status]}`} data-step={s.n} data-status={s.status}>
+            <span className={cx("block h-1.5 rounded-full",
+              s.status === "done" ? "bg-ink" : s.status === "doing" ? "bg-signal" : s.status === "review" ? "bg-warn" : s.status === "skipped" ? "bg-line opacity-50" : "bg-line")} />
+            <span className="sr-only">{s.n}. {t(s.fr, s.en)} : {label[s.status]}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
 const ACCEPT = "image/*,video/mp4,video/quicktime,video/webm,application/pdf,.docx,.txt,.md,.csv";
 
-export function SynaThread({ projectId, compact = false }: { projectId: string | null; compact?: boolean }) {
+export function SynaThread({ projectId, compact = false, subscriptionKey }: { projectId: string | null; compact?: boolean; subscriptionKey?: string }) {
   const t = useT(), router = useRouter(), project = useOptionalProject();
   const [v, setV] = useState<View | null>(null);
   const [text, setText] = useState(""), [files, setFiles] = useState<{ id: string; name: string; kind: string }[]>([]);
@@ -27,12 +52,12 @@ export function SynaThread({ projectId, compact = false }: { projectId: string |
   const end = useRef<HTMLDivElement>(null), fileInput = useRef<HTMLInputElement>(null), lastRun = useRef<string>("");
 
   const load = useCallback(async () => {
-    const view = await api<View>("/api/syna/open", { body: { projectId } });
+    const view = await api<View>("/api/syna/open", { body: { projectId, ...(projectId ? {} : subscriptionKey ? { subscriptionKey } : {}) } });
     setV(view);
-  }, [projectId]);
+  }, [projectId, subscriptionKey]);
   useEffect(() => { load().catch((e) => setError(e.message)); }, [load]);
 
-  // Suivi de l'exécution : relecture régulière tant que SYNA travaille, puis rafraîchissement des onglets du Studio.
+  // Suivi de l'exécution : relecture régulière tant que SINA travaille, puis rafraîchissement des onglets du Studio.
   const working = !!v?.run && WORKING.includes(v.run.status);
   useEffect(() => {
     if (!v) return;
@@ -76,9 +101,9 @@ export function SynaThread({ projectId, compact = false }: { projectId: string |
   }
   async function stop() { if (v) setV(await api<View>(`/api/syna/${v.conversationId}/stop`, { body: {} })); }
 
-  // Les résultats d'outils d'une même exécution sont regroupés sous la réponse de SYNA, par module.
+  // Les résultats d'outils d'une même exécution sont regroupés sous la réponse de SINA, par module.
   const items = useMemo(() => groupThread(v?.messages ?? []), [v?.messages]);
-  if (!v) return <div className="p-4 text-sm text-muted">{error || t("Ouverture du fil SYNA…", "Opening SYNA thread…")}</div>;
+  if (!v) return <div className="p-4 text-sm text-muted">{error || t("Ouverture du fil SINA…", "Opening SINA thread…")}</div>;
   const pending = v.run?.status === "waiting_confirmation" ? v.run.pending : null;
 
   return (
@@ -91,9 +116,10 @@ export function SynaThread({ projectId, compact = false }: { projectId: string |
           : <span className="flex items-center gap-1">{t("Budget autorisé (%)", "Authorised budget (%)")}<input className="w-14 rounded border border-line bg-card px-1" value={budgetEdit} onChange={(e) => setBudgetEdit(e.target.value)} inputMode="decimal" aria-label={t("Budget autorisé en pourcentage", "Authorised budget in percent")} /><Button size="sm" variant="secondary" onClick={saveBudget}>OK</Button></span>}
         {working && <Button size="sm" variant="ghost" onClick={stop}>{t("Arrêter", "Stop")}</Button>}
       </div>
+      {v.journey && <JourneyBar journey={v.journey} compact={compact} />}
 
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-3 py-3" aria-live="polite">
-        {!items.length && <p className="text-muted">{t("Décrivez votre objectif, joignez une photo, une vidéo ou un document : SYNA choisit les outils du Studio, les enchaîne et vous montre ce qui a changé.", "Describe your goal or attach a photo, video or document.")}</p>}
+        {!items.length && <p className="text-muted">{t("Décrivez votre objectif, joignez une photo, une vidéo ou un document : SINA choisit les outils du Studio, les enchaîne et vous montre ce qui a changé.", "Describe your goal or attach a photo, video or document.")}</p>}
         {items.map((it) => it.kind === "user"
           ? <div key={it.m.id} className="ml-6 rounded-2xl bg-ink px-3 py-2 text-paper" data-syna-user>
               <p className="whitespace-pre-wrap">{it.m.content.text}</p>
@@ -113,17 +139,17 @@ export function SynaThread({ projectId, compact = false }: { projectId: string |
           <p className="font-medium">{pending.reason === "budget" ? t("Dépense au-delà du budget autorisé", "Spending beyond the authorised budget") : t("Action à confirmer", "Action to confirm")}</p>
           <p className="mt-1 whitespace-pre-wrap text-sm">{pending.preview}</p>
           {pending.tool === "budget.raise"
-            ? <p className="mt-2 text-xs">{t("Augmentez le budget autorisé ci-dessus, puis demandez à SYNA de continuer.", "Raise the budget above, then ask SYNA to continue.")}</p>
+            ? <p className="mt-2 text-xs">{t("Augmentez le budget autorisé ci-dessus, puis demandez à SINA de continuer.", "Raise the budget above, then ask SINA to continue.")}</p>
             : <div className="mt-2 flex gap-2"><Button size="sm" onClick={() => decide(pending.id, true)} disabled={busy}>{t("Confirmer", "Confirm")}</Button><Button size="sm" variant="secondary" onClick={() => decide(pending.id, false)} disabled={busy}>{t("Refuser", "Decline")}</Button></div>}
         </div>}
-        {working && <p className="text-xs text-muted" data-syna-working>{v.run?.status === "waiting_jobs" ? t("SYNA attend la fin d'une création (images, vidéo ou site) puis reprend seule…", "SYNA is waiting for a creation to finish…") : t("SYNA travaille…", "SYNA is working…")}</p>}
+        {working && <p className="text-xs text-muted" data-syna-working>{v.run?.status === "waiting_jobs" ? t("SINA attend la fin d'une création (images, vidéo ou site) puis reprend seule…", "SINA is waiting for a creation to finish…") : t("SINA travaille…", "SINA is working…")}</p>}
         {v.run?.status === "failed" && <p className="text-xs text-red-600">{t("L'exécution s'est arrêtée : ", "The run stopped: ")}{v.run.error}</p>}
         <div ref={end} />
       </div>
 
       <div className="border-t border-line p-3">
         {!!files.length && <div className="mb-2 flex flex-wrap gap-1">{files.map((f) => <span key={f.id} className="rounded-full border border-line px-2 py-0.5 text-xs">{f.kind === "video" ? "🎬" : f.kind === "image" ? "🖼" : "📄"} {f.name} <button type="button" aria-label={t("Retirer", "Remove")} onClick={() => setFiles((x) => x.filter((y) => y.id !== f.id))}>×</button></span>)}</div>}
-        <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={compact ? 3 : 4} maxLength={8000} placeholder={t("Votre demande, même avec plusieurs modifications…", "Your request, even with several changes…")} aria-label={t("Message à SYNA", "Message to SYNA")}
+        <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={compact ? 3 : 4} maxLength={8000} placeholder={t("Votre demande, même avec plusieurs modifications…", "Your request, even with several changes…")} aria-label={t("Message à SINA", "Message to SINA")}
           onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); send(); } }} />
         <div className="mt-2 flex items-center justify-between gap-2">
           <input ref={fileInput} type="file" accept={ACCEPT} multiple className="sr-only" aria-label={t("Joindre des fichiers", "Attach files")} onChange={(e) => attach(e.target.files)} />
@@ -181,6 +207,6 @@ function EventLine({ m }: { m: Msg }) {
   const t = useT(), c = m.content;
   if (c.kind === "error") return <p className="text-xs text-red-600">{t("Erreur : ", "Error: ")}{c.message}</p>;
   if (c.kind === "stopped") return <p className="text-xs text-muted">{t("Arrêté à votre demande.", "Stopped.")}</p>;
-  if (c.kind === "waiting_jobs") return <p className="text-xs text-muted">⏳ {t("Création lancée en arrière-plan ; SYNA reprendra seule.", "Creation running in the background; SYNA will resume.")}</p>;
+  if (c.kind === "waiting_jobs") return <p className="text-xs text-muted">⏳ {t("Création lancée en arrière-plan ; SINA reprendra seule.", "Creation running in the background; SINA will resume.")}</p>;
   return null;
 }

@@ -1,12 +1,12 @@
 /**
- * Choix de l'interface du Studio (mission #282, lot 1) : nouvelle coquille SYNA ou interface actuelle.
+ * Choix de l'interface du Studio (mission #282, lot 1) : nouvelle coquille SINA ou interface actuelle.
  *
  * - La nouvelle coquille n'existe sur une installation que si `STUDIO_SYNA_SHELL=1` est posé (variable d'environnement,
  *   décidée par le propriétaire). Sans elle, le Studio est exactement celui d'aujourd'hui.
  * - Quand elle existe, chacun peut revenir à l'interface actuelle et en repartir (cookie `ecs-syna-shell`, sur cet
  *   appareil) : retour arrière immédiat pendant la transition. Les préférences de compte et de projet (mode Encre ou
  *   Plein cadre, personnalisation) relèvent du lot 1 bis.
- * - Aucune fonction n'est retirée : mêmes routes, mêmes espaces, même conversation SYNA, mêmes drapeaux.
+ * - Aucune fonction n'est retirée : mêmes routes, mêmes espaces, même conversation SINA, mêmes drapeaux.
  */
 export const SYNA_SHELL_COOKIE = "ecs-syna-shell";
 export type StudioShellVariant = "syna" | "classic";

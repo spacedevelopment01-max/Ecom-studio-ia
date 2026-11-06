@@ -1,4 +1,4 @@
-/** État du projet relu à chaque étape de SYNA : bref, à jour, avec les identifiants utiles. */
+/** État du projet relu à chaque étape de SINA : bref, à jour, avec les identifiants utiles. */
 import { all, json, one } from "../db";
 import { currentTheme, loadProject } from "../projects";
 import { listProducts } from "../products/catalog";

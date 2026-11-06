@@ -743,7 +743,7 @@ export default function TabBoutique() {
       )}
       <div ref={frameBox} className="relative flex-1 overflow-hidden bg-paper-2 p-0 sm:p-4">
         {/* L'aperçu n'est créé qu'une fois la largeur mesurée : sinon l'iframe est recréée (double chargement). */}
-        {/* Une seule enveloppe, quel que soit l'agrandissement : franchir le seuil (ouvrir ou replier SYNA en Plein cadre)
+        {/* Une seule enveloppe, quel que soit l'agrandissement : franchir le seuil (ouvrir ou replier SINA en Plein cadre)
             ne recrée jamais l'iframe — pas de rechargement, de page blanche ni de défilement perdu (#301). Changer de format
             (ordinateur / tablette / téléphone) la recrée volontairement : la page est rechargée à la bonne largeur, avec ses
             outils (désignation) initialisés pour ce format. */}

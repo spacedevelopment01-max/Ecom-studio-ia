@@ -3,7 +3,7 @@ import {useStaleConfirmation} from './use-stale-confirmation';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {createLocalFileRestoreConfirmation,LOCAL_FILE_RESTORE_CHANGED_EVENT,type LocalFileRestoreChange,type LocalFileRestoreConfirmationState} from '@/lib/local-file-restore-confirmation-client';
-/** #301 « SYNA complète » : branche le transport Corbeille de Codex (#393) ; l'écran Fichiers se relit après le reçu. */
+/** #301 « SINA complète » : branche le transport Corbeille de Codex (#393) ; l'écran Fichiers se relit après le reçu. */
 export function useLocalFileRestoreConfirmation(view:ConversationView|null,onView:(v:ConversationView)=>void,onApplied:(change:LocalFileRestoreChange)=>Promise<void>|void){
  const current=useRef(view),callbacks=useRef({onView,onApplied});current.current=view;callbacks.current={onView,onApplied};
  const[state,setState]=useState<LocalFileRestoreConfirmationState>({busy:false,error:'',uncertain:false});

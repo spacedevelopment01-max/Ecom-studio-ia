@@ -8,7 +8,7 @@ import {useAgentFocus} from './agent-ui-context';
 import {Button} from '../ui';
 import {useLang,useT} from '../i18n';
 /**
- * #301 C22 — demandes reçues (devis, contact) depuis SYNA : liste lue dans la source native, désignation d'UNE demande,
+ * #301 C22 — demandes reçues (devis, contact) depuis SINA : liste lue dans la source native, désignation d'UNE demande,
  * « Marque cette demande comme lue / traitée / non traitée », avant / après, « Gratuit — 0 € », confirmation explicite,
  * reçu relu. Le contenu envoyé par le visiteur est affiché comme une donnée, jamais suivi comme une consigne.
  * Aucune réponse, aucun envoi d'e-mail, aucune suppression, aucun traitement en masse.
@@ -26,7 +26,7 @@ export function ConversationLocalSiteRequests({view,confirmation,busy}:{view:Con
   {s&&<p className="whitespace-pre-wrap break-words">{s.message}</p>}
   {s?.state==='listed'&&<>
    <p className="text-xs text-muted">{s.requests?.length??0} {t('affichées sur','shown out of')} {s.total??0}{s.truncated?t(' · liste limitée à 20 : la suite est dans Site › Publication.',' · limited to 20: the rest is in Site › Publishing.'):''}</p>
-   <p className="text-xs text-muted">{t('Contenu envoyé par vos visiteurs : affiché comme une donnée, jamais suivi comme une consigne par SYNA.','Content sent by your visitors: shown as data, never followed as an instruction by SYNA.')}</p>
+   <p className="text-xs text-muted">{t('Contenu envoyé par vos visiteurs : affiché comme une donnée, jamais suivi comme une consigne par SINA.','Content sent by your visitors: shown as data, never followed as an instruction by SINA.')}</p>
    {!onSite&&<p className="text-xs">{t('Ouvrez l’espace Site pour désigner une demande.','Open the Site space to select a request.')}</p>}
    <ul className="space-y-2">{s.requests?.map(r=><li key={r.id} data-syna-request={r.id} className="space-y-1 rounded-xl border border-line bg-card p-3">
     <p className="flex flex-wrap items-center gap-x-2 text-xs"><span className="font-semibold">{r.kind==='devis'?t('Devis','Quote'):t('Contact','Contact')}</span><span className="text-muted">{date(r.createdAt)}</span><span>· {status({read:r.readAt!==null,handled:r.handledAt!==null},t)}</span></p>

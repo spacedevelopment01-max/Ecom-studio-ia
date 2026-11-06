@@ -837,7 +837,7 @@ export function mediaReusable(projectId: string, s = stateOf(projectId)): boolea
   const p = loadProject(projectId), c = s?.stages.content?.data, m = s?.stages.media?.data;
   return !!c && !!m?.slots.length && m.slots.filter(slot=>!(slot.kind==="video"&&slot.source==="ai"&&!slot.assetId)).every(slot => !!slot.assetId && slot.alignment?.status === "accepted" && (s?.simulation || (!slotIssues(p, slot, getAsset(slot.assetId)).length && slot.alignment.contextHash === placementHash(p, c, slot))));
 }
-/** Les adaptateurs SYNA restent dans la même cohorte d’essais native. */
+/** Les adaptateurs SINA restent dans la même cohorte d’essais native. */
 export function preparationAttemptCount(projectId: string, hash: string) {
   return one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE project_id=? AND type IN ('project.prepare','agent.brand.propose') AND json_extract(payload,'$.inputHash')=?", projectId, hash)?.n ?? 0;
 }

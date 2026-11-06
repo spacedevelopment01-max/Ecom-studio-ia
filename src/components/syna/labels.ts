@@ -1,5 +1,5 @@
 /**
- * Libellés FR / EN des primitives SYNA (lot 0). Aucun texte n'est écrit dans syna.css.
+ * Libellés FR / EN des primitives SINA (lot 0). Aucun texte n'est écrit dans syna.css.
  */
 import type { Lang } from "@/lib/i18n";
 
@@ -22,12 +22,12 @@ export function stateLabel(state: SynaState, lang: Lang = "fr"): string {
 }
 
 const TEXT = {
-  conversation: ["Conversation avec Syna", "Conversation with Syna"],
+  conversation: ["Conversation avec Sina", "Conversation with Sina"],
   workspace: ["Espace de travail", "Workspace"],
-  openSyna: ["Ouvrir Syna", "Open Syna"],
-  closeSyna: ["Replier Syna", "Collapse Syna"],
-  askSyna: ["Demandez à Syna…", "Ask Syna…"],
-  working: ["Syna travaille", "Syna is working"],
+  openSyna: ["Ouvrir Sina", "Open Sina"],
+  closeSyna: ["Replier Sina", "Collapse Sina"],
+  askSyna: ["Demandez à Sina…", "Ask Sina…"],
+  working: ["Sina travaille", "Sina is working"],
   clearSelection: ["Retirer la sélection", "Clear selection"],
   selection: ["Élément désigné", "Selected element"],
   budgetMonth: ["Budget IA du mois", "AI budget this month"],
@@ -39,7 +39,7 @@ const TEXT = {
   leftAfter: ["Reste après", "Left after"],
   overBudget: ["Cette création dépasse le budget restant : rien ne sera lancé sans recharge ou sans réduire la demande.", "This creation exceeds the remaining budget: nothing will start without a top-up or a smaller request."],
   alternatives: ["Autres possibilités", "Other options"],
-  message: ["Message à Syna", "Message to Syna"],
+  message: ["Message à Sina", "Message to Sina"],
   send: ["Envoyer", "Send"],
   steps: ["Étapes", "Steps"],
   progress: ["Progression", "Progress"],

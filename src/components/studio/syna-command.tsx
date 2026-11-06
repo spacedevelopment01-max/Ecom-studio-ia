@@ -1,11 +1,11 @@
 "use client";
 /**
- * Barre de commande SYNA (mission #282, lot 1 bis).
+ * Barre de commande SINA (mission #282, lot 1 bis).
  *
  * Les commandes d'affichage (« Passe en Plein cadre », « Reviens à Encre », « Agrandis l'aperçu »…) sont reconnues ici,
- * sur place, avant tout envoi : aucune IA, aucun coût, aucune fausse réponse de SYNA, et on peut annuler. Une demande
- * ambiguë reçoit une question. Toute autre demande est confiée à la conversation SYNA existante (ouverte, texte placé
- * dans sa zone de saisie quand elle en a une) — jamais traitée ici. Si SYNA n'est pas ouverte sur l'installation, on le
+ * sur place, avant tout envoi : aucune IA, aucun coût, aucune fausse réponse de SINA, et on peut annuler. Une demande
+ * ambiguë reçoit une question. Toute autre demande est confiée à la conversation SINA existante (ouverte, texte placé
+ * dans sa zone de saisie quand elle en a une) — jamais traitée ici. Si SINA n'est pas ouverte sur l'installation, on le
  * dit, sans rien envoyer.
  */
 import { useId, useRef, type FormEvent } from "react";
@@ -38,7 +38,7 @@ export function SynaCommandBar({ variant, agentUi, onOpenSyna, working, workingT
   /** Texte partagé entre les deux places de la barre (Encre et Plein cadre) : rien n'est perdu en changeant de mode. */
   value: string;
   onValue: (v: string) => void;
-  /** État de la conversation SYNA (ouverte / repliée), annoncé par le bouton. */
+  /** État de la conversation SINA (ouverte / repliée), annoncé par le bouton. */
   expanded?: boolean;
   /** Confirmation partagée aussi : une commande qui change de mode reste confirmée (et annulable) à la nouvelle place. */
   feedback: Feedback;
@@ -81,27 +81,27 @@ export function SynaCommandBar({ variant, agentUi, onOpenSyna, working, workingT
     const cmd = parseSynaUiCommand(text);
     if (cmd) { run(cmd); if (cmd.kind !== "ask") setValue(""); return; }
     if (!agentUi) {
-      setFeedback({ text: T("Ce n'est pas une commande d'affichage, et SYNA n'est pas ouverte sur cette installation : rien n'a été envoyé.", "This is not a display command, and SYNA is not enabled on this installation: nothing was sent.") });
+      setFeedback({ text: T("Ce n'est pas une commande d'affichage, et SINA n'est pas ouverte sur cette installation : rien n'a été envoyé.", "This is not a display command, and SINA is not enabled on this installation: nothing was sent.") });
       return;
     }
     onOpenSyna();
     // La conversation se monte à l'ouverture : on y dépose le texte au rendu suivant, sans l'envoyer.
     requestAnimationFrame(() => requestAnimationFrame(() => {
       const placed = fillConversation(text);
-      setFeedback({ text: placed ? T("Demande placée dans la conversation SYNA : relisez-la puis envoyez.", "Request placed in the SYNA conversation: review it, then send.") : T("Ce n'est pas une commande d'affichage : écrivez-la à SYNA dans la conversation.", "Not a display command: write it to SYNA in the conversation.") });
+      setFeedback({ text: placed ? T("Demande placée dans la conversation SINA : relisez-la puis envoyez.", "Request placed in the SINA conversation: review it, then send.") : T("Ce n'est pas une commande d'affichage : écrivez-la à SINA dans la conversation.", "Not a display command: write it to SINA in the conversation.") });
       if (placed) setValue("");
     }));
   };
 
   const placeholder = !agentUi
     ? T("Commande d'affichage… ex. « Passe en Encre »", "Display command… e.g. “Back to Ink”")
-    : variant === "bar" ? T("Demandez à Syna…", "Ask Syna…")
+    : variant === "bar" ? T("Demandez à Sina…", "Ask Sina…")
     : T("Commande rapide : « Passe en Plein cadre », « Agrandis l'aperçu »…", "Quick command: “Switch to full frame”, “Enlarge the preview”…");
   return (
     <div className="ss-cmd" data-variant={variant} data-working={working ? "" : undefined}>
-      <form className="ss-cmd-form" onSubmit={submit} role="search" aria-label={T("Commande SYNA", "SYNA command")}>
+      <form className="ss-cmd-form" onSubmit={submit} role="search" aria-label={T("Commande SINA", "SINA command")}>
         <span className="ss-cmd-dot" aria-hidden="true" />
-        <label htmlFor={`${id}-c`} className="sy-sr">{T("Commande SYNA ou commande d'affichage", "SYNA command or display command")}</label>
+        <label htmlFor={`${id}-c`} className="sy-sr">{T("Commande SINA ou commande d'affichage", "SINA command or display command")}</label>
         <input
           ref={input}
           id={`${id}-c`}
@@ -115,7 +115,7 @@ export function SynaCommandBar({ variant, agentUi, onOpenSyna, working, workingT
           title={T("Commandes d'affichage reconnues sur place, sans IA : « Reviens à Encre », « Passe en Plein cadre », « Agrandis l'aperçu », « Mode sombre »…", "Display commands handled locally, no AI: “Back to Ink”, “Switch to full frame”, “Enlarge the preview”, “Dark mode”…")}
           data-syna-command
         />
-        <button type="submit" className="ss-cmd-go" aria-expanded={!value.trim() ? expanded : undefined} aria-controls={!value.trim() && expanded !== undefined ? "syna-panel" : undefined} aria-label={value.trim() ? T("Valider", "Submit") : agentUi ? T("Ouvrir Syna", "Open Syna") : T("Valider", "Submit")}><ArrowRight className="size-4" aria-hidden /></button>
+        <button type="submit" className="ss-cmd-go" aria-expanded={!value.trim() ? expanded : undefined} aria-controls={!value.trim() && expanded !== undefined ? "syna-panel" : undefined} aria-label={value.trim() ? T("Valider", "Submit") : agentUi ? T("Ouvrir Sina", "Open Sina") : T("Valider", "Submit")}><ArrowRight className="size-4" aria-hidden /></button>
       </form>
       <div className="ss-cmd-feedback" role="status" aria-live="polite">
         {feedback && (

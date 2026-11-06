@@ -46,7 +46,7 @@ export function logoCreationQuote(p:Project,input:LogoCreationInput){
  const imageRoute=mediaRouteFor('logo',{text:true}),imageMaximum=logoArtworkMaxMicro();
  if(!imageRoute||!Number.isSafeInteger(imageMaximum)||imageMaximum!<=0)throw blocked('Modèle de logo ou plafond indisponible. Aucun dessin local de remplacement.','Logo model or bound unavailable. No local substitute.');
  // La politique native actuelle interdit tout relais. Un changement de politique exige sa propre qualification.
- if(logoQualityRelay())throw blocked('Le relais a changé ; son devis doit être qualifié avant utilisation avec SYNA.','The relay changed; its quote needs qualification before use with SYNA.');
+ if(logoQualityRelay())throw blocked('Le relais a changé ; son devis doit être qualifié avant utilisation avec SINA.','The relay changed; its quote needs qualification before use with SINA.');
  const requests=missing.map(t=>{
   const per=directionBrief(brief,t,territories,true),prompt=artworkPrompt(t,per,undefined,input.instructions),images=[{data:Buffer.alloc(1),label:'logo'},{data:Buffer.alloc(1),label:'palette'}];
   const call=withSelectedStrategy(logoArtworkReviewRequest(per,t,artworkText(t,per),{userId:p.userId,projectId:p.id,jobId:null},images)),route=routeLlm(call);

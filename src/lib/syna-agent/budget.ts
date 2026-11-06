@@ -1,4 +1,4 @@
-/** Budget autorisé du fil SYNA : SYNA travaille sans devis à chaque message tant que le maximum engagé reste dessous. */
+/** Budget autorisé du fil SINA : SINA travaille sans devis à chaque message tant que le maximum engagé reste dessous. */
 import { all, now, one, run } from "../db";
 import { budgetPctOf, pctBaseFor } from "../ai/budget-pct";
 import { pctToMicro } from "../budget-pct";

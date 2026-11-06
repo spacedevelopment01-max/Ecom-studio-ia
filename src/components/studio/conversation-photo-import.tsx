@@ -6,7 +6,7 @@ import {nativeLocalEditAllowed} from '@/lib/existing-local-edits';
 import {Button} from '../ui';
 import {useT} from '../i18n';
 export type AttachedPhoto={photoId:string;name:string;thumbHref:string};
-/** #301 « SYNA complète » — branche le transport d'import photo de Codex (#378) : import gratuit, jamais analysé. */
+/** #301 « SINA complète » — branche le transport d'import photo de Codex (#378) : import gratuit, jamais analysé. */
 export function useConversationPhotoImport(view:ConversationView|null){
  const current=useRef(view);current.current=view;
  const[state,setState]=useState<PhotoImportState>({busy:false,uncertain:false,error:'',requiresFile:false});
@@ -19,7 +19,7 @@ export function useConversationPhotoImport(view:ConversationView|null){
  return{controller,state,photos,remove:(photoId:string)=>setPhotos(list=>list.filter(p=>p.photoId!==photoId)),clear:()=>setPhotos([])};
 }
 /**
- * Bouton « Importer une photo » du composeur SYNA : la photo est enregistrée gratuitement dans les fichiers du projet,
+ * Bouton « Importer une photo » du composeur SINA : la photo est enregistrée gratuitement dans les fichiers du projet,
  * « importée, non analysée », puis jointe EXPLICITEMENT au prochain message (photoIds). Rien n'est analysé ni généré.
  */
 export function ConversationPhotoImport({view,photo,busy}:{view:ConversationView;photo:ReturnType<typeof useConversationPhotoImport>;busy:boolean}){

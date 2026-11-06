@@ -1,6 +1,6 @@
 /**
- * Recette #292 : la coquille Encre / Plein cadre avec le moteur SYNA de Codex.
- * - Plein cadre sur tablette : la feuille SYNA s'arrête au-dessus de la barre de commande (défaut trouvé par la recette).
+ * Recette #292 : la coquille Encre / Plein cadre avec le moteur SINA de Codex.
+ * - Plein cadre sur tablette : la feuille SINA s'arrête au-dessus de la barre de commande (défaut trouvé par la recette).
  * - Une seule conversation : la coquille rend le ConversationPanel de Codex, qui porte la confirmation gratuite (#291).
  */
 import fs from "node:fs";
@@ -11,7 +11,7 @@ const root = path.resolve(import.meta.dirname, "..");
 const read = (p: string) => fs.readFileSync(path.join(root, p), "utf8");
 
 describe("recette d'intégration #292", () => {
-  it("Plein cadre, tablette : la feuille SYNA laisse la place de la barre de commande", () => {
+  it("Plein cadre, tablette : la feuille SINA laisse la place de la barre de commande", () => {
     const css = read("src/components/studio/syna-shell.css");
     const rule = css.match(/\.syna-ui\[data-syna-mode="plein"\] \.ss-panel\.is-overlay \{[^}]*\}/)?.[0] ?? "";
     expect(rule).toMatch(/bottom: calc\(96px \+ env\(safe-area-inset-bottom, 0px\)\)/);
@@ -28,7 +28,7 @@ describe("recette d'intégration #292", () => {
 });
 
 describe("recette #301 : la coquille ne recouvre jamais les fenêtres natives du Studio", () => {
-  it("barre du téléphone et feuilles Espaces / Suivi sous les modales natives (z 90), au-dessus de la conversation SYNA (45)", () => {
+  it("barre du téléphone et feuilles Espaces / Suivi sous les modales natives (z 90), au-dessus de la conversation SINA (45)", () => {
     const css = read("src/components/studio/syna-shell.css");
     const z = (sel: string) => Number(css.match(new RegExp(sel.replace(/[.]/g, "\\.") + " \\{[^}]*?z-index: (\\d+)"))?.[1]);
     const ui = read("src/components/ui.tsx");
@@ -42,10 +42,10 @@ describe("recette #301 : la coquille ne recouvre jamais les fenêtres natives du
   });
 });
 
-describe("recette #301 : l'aperçu du site n'est jamais recréé quand SYNA s'ouvre ou se replie", () => {
+describe("recette #301 : l'aperçu du site n'est jamais recréé quand SINA s'ouvre ou se replie", () => {
   it("une seule iframe d'aperçu, dans une enveloppe stable ; seul son style dépend de l'agrandissement", () => {
     const tab = read("src/components/studio/tab-boutique.tsx");
-    // Avant : deux branches (réduit / pleine largeur) → franchir le seuil, par ex. replier SYNA en Plein cadre à 1440 px,
+    // Avant : deux branches (réduit / pleine largeur) → franchir le seuil, par ex. replier SINA en Plein cadre à 1440 px,
     // recréait l'iframe (page blanche, rechargement, défilement perdu ; recette composition-ui 2 échecs sur 2).
     expect(tab.match(/<iframe ref=\{iframe\}/g)?.length).toBe(1);
     expect(tab).toMatch(/<div data-preview-frame className=\{desktopScale < 1 \? [^}]+ : "contents"\}/);

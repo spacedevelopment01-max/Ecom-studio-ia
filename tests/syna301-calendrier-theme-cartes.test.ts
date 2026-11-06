@@ -1,4 +1,4 @@
-/** #301 « SYNA complète » — cartes Calendrier (#375) et Choix du thème (#376) : fuseau toujours affiché, aucun accord sur un refus. */
+/** #301 « SINA complète » — cartes Calendrier (#375) et Choix du thème (#376) : fuseau toujours affiché, aucun accord sur un refus. */
 import fs from 'node:fs';
 import {expect,it} from 'vitest';
 import {calendarDate} from '@/components/studio/conversation-local-calendar';

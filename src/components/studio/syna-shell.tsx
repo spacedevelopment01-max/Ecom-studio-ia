@@ -1,19 +1,19 @@
 "use client";
 /**
- * Coquille SYNA du Studio (mission #282, lot 1) — présentation « Encre ».
+ * Coquille SINA du Studio (mission #282, lot 1) — présentation « Encre ».
  *
- * Ce qui change : l'habillage (menu des espaces, en-tête, accès à SYNA, barre du téléphone).
+ * Ce qui change : l'habillage (menu des espaces, en-tête, accès à SINA, barre du téléphone).
  * Ce qui ne change pas : les écrans de chaque espace (rendus tels quels, hors du conteneur `.syna-ui`), leurs adresses,
  * la règle `spaceVisible`, les pastilles, la recherche rapide, les tutoriels, les tâches, les notifications, le budget,
- * le forfait, le compte, et la conversation SYNA elle-même (le même `ConversationPanel`, mêmes routes, même fil).
+ * le forfait, le compte, et la conversation SINA elle-même (le même `ConversationPanel`, mêmes routes, même fil).
  *
- * L'ancienne pastille noire flottante n'est pas affichée ici : SYNA est une colonne repliable à droite, avec un onglet
- * signature quand elle est repliée, et l'onglet « Syna » de la barre basse au téléphone. Si les drapeaux
- * `STUDIO_CONVERSATION_*` sont fermés, aucun accès à SYNA n'apparaît (comme aujourd'hui).
+ * L'ancienne pastille noire flottante n'est pas affichée ici : SINA est une colonne repliable à droite, avec un onglet
+ * signature quand elle est repliée, et l'onglet « Sina » de la barre basse au téléphone. Si les drapeaux
+ * `STUDIO_CONVERSATION_*` sont fermés, aucun accès à SINA n'apparaît (comme aujourd'hui).
  *
  * Lot 1 bis : deux présentations du MÊME Studio, au choix et à tout moment —
  * - Encre : menu complet, conversation en colonne à côté de l'espace de travail ;
- * - Plein cadre : menu compact, l'espace de travail d'abord, SYNA en barre de commande (zone réservée) et en feuille.
+ * - Plein cadre : menu compact, l'espace de travail d'abord, SINA en barre de commande (zone réservée) et en feuille.
  * Le mode ne change que des classes et des positions : l'arbre des écrans, la conversation (`ConversationPanel`) et la
  * barre de commande ne sont jamais recréés (brouillon, sélection, page, défilement et tâches conservés). Réglages lus
  * et enregistrés par `SynaPrefsProvider` (compte, projet), personnalisation dans `SynaCustomize`, commandes d'affichage
@@ -59,7 +59,7 @@ export function SynaShellSwitch({ to, compact }: { to: StudioShellVariant; compa
       onClick={() => { document.cookie = synaShellCookie(to); router.refresh(); }}
       aria-label={compact ? label : undefined}
       className={compact ? "ss-foot-link" : "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-ink-2 hover:bg-paper-2 hover:text-ink"}
-      title={to === "classic" ? t("Revenir à l'interface actuelle du Studio (sur cet appareil)", "Go back to the current Studio interface (on this device)") : t("Essayer la nouvelle interface SYNA (sur cet appareil)", "Try the new SYNA interface (on this device)")}
+      title={to === "classic" ? t("Revenir à l'interface actuelle du Studio (sur cet appareil)", "Go back to the current Studio interface (on this device)") : t("Essayer la nouvelle interface SINA (sur cet appareil)", "Try the new SINA interface (on this device)")}
     >
       {to === "classic" ? <Undo2 className="size-4 shrink-0" /> : <Sparkles className="size-4 shrink-0" />}
       {!compact && <span className="truncate">{label}</span>}
@@ -131,7 +131,7 @@ function Sheet({ label, onClose, children, id }: { label: string; onClose: () =>
   );
 }
 
-/** Hauteur cachée par le clavier virtuel (téléphone) : la barre de commande et la feuille SYNA restent au-dessus. */
+/** Hauteur cachée par le clavier virtuel (téléphone) : la barre de commande et la feuille SINA restent au-dessus. */
 function useKeyboardInset(): number {
   const [inset, setInset] = useState(0);
   useEffect(() => {
@@ -172,7 +172,7 @@ function ModeSwitch() {
   );
 }
 
-/** La coquille SYNA, avec ses réglages lus sur le serveur (`initialPrefs`) : aucun clignotement au chargement. */
+/** La coquille SINA, avec ses réglages lus sur le serveur (`initialPrefs`) : aucun clignotement au chargement. */
 export function SynaStudioShell({ projectId, children, initialPrefs = null, agent = false }: { projectId: string; children: ReactNode; initialPrefs?: StoredSynaPrefs | null; agent?: boolean }) {
   return (
     <SynaPrefsProvider projectId={projectId} initial={initialPrefs}>
@@ -230,7 +230,7 @@ function ShellInner({ projectId, children, agent = false }: { projectId: string;
   keysRef.current = { toggleFold, plein, update: prefsCtx.update, mode, agentUi, toggleSyna: () => setOpen(!open) };
   useEffect(() => {
     // Raccourcis : « [ » replie le menu (Encre), Alt+1…9 change d'espace, Ctrl / ⌘ + Maj + M change de mode,
-    // Ctrl / ⌘ + J ouvre ou replie SYNA.
+    // Ctrl / ⌘ + J ouvre ou replie SINA.
     const onKey = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement | null;
       const typing = !!el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
@@ -239,7 +239,7 @@ function ShellInner({ projectId, children, agent = false }: { projectId: string;
         keysRef.current.update({ mode: keysRef.current.mode === "plein" ? "encre" : "plein" });
         return;
       }
-      // Ctrl / ⌘ + J : ouvrir ou replier SYNA (si elle est ouverte sur l'installation).
+      // Ctrl / ⌘ + J : ouvrir ou replier SINA (si elle est ouverte sur l'installation).
       if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "j" && keysRef.current.agentUi) {
         e.preventDefault();
         keysRef.current.toggleSyna();
@@ -311,7 +311,7 @@ function ShellInner({ projectId, children, agent = false }: { projectId: string;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 
-  // ——— SYNA : colonne (Encre) ou feuille (Plein cadre) à côté de l'espace de travail dès 1280 px ; par-dessus sinon.
+  // ——— SINA : colonne (Encre) ou feuille (Plein cadre) à côté de l'espace de travail dès 1280 px ; par-dessus sinon.
   const docked = useMedia("(min-width: 1280px)");
   const wide = useMedia("(min-width: 1024px)");
   const [mounted, setMounted] = useState(false);
@@ -404,7 +404,7 @@ function ShellInner({ projectId, children, agent = false }: { projectId: string;
   const openSyna = () => { setSheet(null); setOpen(true); };
   const synaColumnOpen = agentUi && open && docked;
   const sideW = compactNav ? 72 : 252;
-  // Espace de travail jamais recouvert : place réservée pour la barre de commande (Plein cadre) et pour SYNA ouverte à côté.
+  // Espace de travail jamais recouvert : place réservée pour la barre de commande (Plein cadre) et pour SINA ouverte à côté.
   const mainStyle: CSSProperties = {
     ...(plein ? { paddingBottom: `calc(${wide ? 112 : 96}px + env(safe-area-inset-bottom, 0px))` } : {}),
     ...(plein && synaColumnOpen ? { paddingRight: convoW + 40 } : {}),
@@ -489,7 +489,7 @@ function ShellInner({ projectId, children, agent = false }: { projectId: string;
         </main>
       </div>
 
-      {/* SYNA : onglet signature, colonne (Encre) ou feuille (Plein cadre) — le même panneau, jamais recréé */}
+      {/* SINA : onglet signature, colonne (Encre) ou feuille (Plein cadre) — le même panneau, jamais recréé */}
       {agentUi && (
         <SynaScope prefs={scopePrefs} lang={lang} className={cx("ss-syna-scope", synaColumnOpen && "is-docked")} style={{ ["--sy-convo-w" as string]: `${convoW}px`, ["--ss-kb" as string]: `${kb}px` } as CSSProperties}>
           <div className="ss-syna-col">
@@ -498,7 +498,7 @@ function ShellInner({ projectId, children, agent = false }: { projectId: string;
                 <SynaTrigger variant="rail" expanded={open} controls="syna-panel" status={running.length ? "working" : "idle"} statusText={runningText} onActivate={() => setOpen(!open)} lang={lang} />
               </div>
             )}
-            {open && !docked && <button type="button" className="ss-scrim ss-syna-scrim" aria-label={t("Fermer SYNA", "Close SYNA")} tabIndex={-1} onClick={close} />}
+            {open && !docked && <button type="button" className="ss-scrim ss-syna-scrim" aria-label={t("Fermer SINA", "Close SINA")} tabIndex={-1} onClick={close} />}
             {(mounted || open) && (
               <aside
                 ref={panel}
@@ -507,15 +507,15 @@ function ShellInner({ projectId, children, agent = false }: { projectId: string;
                 className={cx("ss-panel", docked ? "is-docked" : "is-overlay")}
                 role={docked ? "complementary" : "dialog"}
                 aria-modal={docked ? undefined : true}
-                aria-label={t("SYNA — conversation du projet", "SYNA — project conversation")}
+                aria-label={t("SINA — conversation du projet", "SINA — project conversation")}
               >
                 {docked && (
                   <div className="ss-resize" role="separator" aria-orientation="vertical" tabIndex={0} aria-valuemin={SYNA_CONVO_WIDTH.min} aria-valuemax={SYNA_CONVO_WIDTH.max} aria-valuenow={convoW}
                     aria-label={t("Largeur de la conversation (flèches gauche / droite)", "Conversation width (left / right arrows)")} onPointerDown={startDrag} onKeyDown={keyResize} />
                 )}
                 <div className="ss-panel-h">
-                  <span className="ss-panel-mark"><span className="sy-wordmark">Syna</span><span className="sy-small">{t("une mémoire pour tout le Studio", "one memory across the Studio")}</span></span>
-                  <button type="button" className="ss-icon-btn" onClick={close} aria-label={t("Replier SYNA", "Collapse SYNA")} title={t("Replier (Échap)", "Collapse (Esc)")}><X className="size-4" /></button>
+                  <span className="ss-panel-mark"><span className="sy-wordmark">Sina</span><span className="sy-small">{t("une mémoire pour tout le Studio", "one memory across the Studio")}</span></span>
+                  <button type="button" className="ss-icon-btn" onClick={close} aria-label={t("Replier SINA", "Collapse SINA")} title={t("Replier (Échap)", "Collapse (Esc)")}><X className="size-4" /></button>
                 </div>
                 <div className="ss-panel-cmd" hidden={plein}>
                   <SynaCommandBar variant="inline" agentUi={agentUi} onOpenSyna={openSyna} value={cmdValue} onValue={setCmdValue} feedback={cmdFeedback} onFeedback={setCmdFeedback} />
@@ -548,7 +548,7 @@ function ShellInner({ projectId, children, agent = false }: { projectId: string;
         )}
       </SynaScope>
 
-      {/* Téléphone et tablette (Encre) : Syna · espace actuel · Espaces · Suivi ; feuilles communes aux deux modes */}
+      {/* Téléphone et tablette (Encre) : Sina · espace actuel · Espaces · Suivi ; feuilles communes aux deux modes */}
       <SynaScope prefs={scopePrefs} lang={lang} className="ss-tab-scope lg:hidden">
         {!plein && (
           <nav className="ss-tabbar" data-mobile-nav aria-label={t("Navigation du Studio", "Studio navigation")}>

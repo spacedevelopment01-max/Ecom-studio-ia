@@ -1,6 +1,6 @@
 "use client";
 /**
- * Réglages d'affichage de la coquille SYNA (mission #282, lot 1 bis) : une seule source pour les deux modes.
+ * Réglages d'affichage de la coquille SINA (mission #282, lot 1 bis) : une seule source pour les deux modes.
  *
  * - Lus sur le serveur au chargement de la page (aucun clignotement), puis gardés ici.
  * - Chaque changement s'applique tout de suite (sans recharger, sans toucher à l'arbre des écrans) puis s'enregistre sur
