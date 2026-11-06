@@ -16,9 +16,8 @@ import { getStrategyState, prepareStrategyChange, activateStrategy, stageStrateg
 
 /** Comme l'action « analyser » du comparateur (gratuite) : la recherche terminée devient des angles proposés. */
 function strategyState(projectId: string) {
-  const st = getStrategyState(projectId);
-  if (st.angles.length) return st;
-  try { return proposeStrategies(projectId); } catch { return st; }
+  // Idempotent : renvoie l'état tel quel s'il est à jour, sinon reprend la recherche acquise (aucun nouvel appel).
+  try { return proposeStrategies(projectId); } catch { return getStrategyState(projectId); }
 }
 import { L } from "../../i18n-server";
 import type { AgentTool } from "../types";
