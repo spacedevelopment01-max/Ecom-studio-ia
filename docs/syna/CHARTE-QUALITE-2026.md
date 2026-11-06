@@ -192,6 +192,27 @@ Les thèmes de référence sont excellents sur les textes et la mise en page, ma
 5. Texte dans l'image : court, exact, lisible sur téléphone ; logo réel du client.
 6. Aucune image répétée hors déclinaisons de format ; aucune image reprise du site.
 
+### Niveau visé (exemples fournis par le propriétaire le 6 novembre 2026)
+
+Cinq planches d'exemples (mode et beauté, maison, cuisine, services, tech et loisirs ; 50 publications) montrent le
+**niveau et le style** attendus. Ce sont des références, **jamais des modèles à recopier** : chaque client a ses propres
+sujets, son identité, ses couleurs et ses photos. Elles ne sont pas versionnées (images du propriétaire).
+
+Ce qui fait leur niveau, à reproduire avec l'identité de chaque client :
+- **Un sujet utile par publication**, jamais une simple pub : « 5 erreurs à éviter », « comment choisir », « l'ordre
+  d'application », « les coulisses », « checklist », « avant / après », « quiz », « comparer A ou B ».
+- **Titre accrocheur en deux temps** : « Sujet : promesse » (« Bougie : 5 erreurs à éviter », « Électricien : quand
+  appeler un pro ? »), très grand, avec un mot surligné ou sur un bandeau de couleur.
+- **3 points au plus**, chacun avec une petite icône au trait (ou ✓ / ✗ / numéros), phrases courtes et concrètes.
+- **Un appel à l'action en pastille** qui fait agir la communauté : « Enregistre ce mémo », « Essaie ce geste »,
+  « Vote en commentaire », « Partage à un ami », « Fais défiler ».
+- **Une vraie photo d'ambiance** du sujet (produit en situation, lieu, geste), lumière soignée, place laissée au texte.
+- **Format natif de chaque réseau** : Story 9:16, carré 1:1, carrousel 4:5, portrait 3:4, Facebook et LinkedIn 1,91:1,
+  Pinterest 2:3, TikTok 9:16, miniature YouTube 16:9 ; la composition est refaite pour chaque format, pas recadrée.
+- **Variété dans un même lot** : sujets, mises en page, fonds et tons différents d'une publication à l'autre.
+- Le texte de l'image est **exact et sans faute** ; les chiffres affichés sont vrais ou viennent du client
+  (jamais inventés).
+
 ## 8. Publicités images
 
 Mêmes règles que les publications, plus : une accroche par visuel (6 mots au plus), un bouton d'action, aucune promesse
