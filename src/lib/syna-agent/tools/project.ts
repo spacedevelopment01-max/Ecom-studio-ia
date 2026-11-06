@@ -12,7 +12,14 @@ import { createQuote, quoteOf } from "../../preparation/quote";
 import { emptyInput } from "../../orchestrator/conversation/store";
 import { emptyServiceProfile, SECTOR_IDS, type ProductProfile } from "../../project-types";
 import { getJob, publicJob } from "../../jobs";
-import { getStrategyState, prepareStrategyChange, activateStrategy, stageStrategyModule } from "../../marketing-strategy";
+import { getStrategyState, prepareStrategyChange, activateStrategy, stageStrategyModule, proposeStrategies } from "../../marketing-strategy";
+
+/** Comme l'action « analyser » du comparateur (gratuite) : la recherche terminée devient des angles proposés. */
+function strategyState(projectId: string) {
+  const st = getStrategyState(projectId);
+  if (st.angles.length) return st;
+  try { return proposeStrategies(projectId); } catch { return st; }
+}
 import { L } from "../../i18n-server";
 import type { AgentTool } from "../types";
 import { attachmentsOf } from "../attachments";
@@ -204,7 +211,7 @@ const strategyRead: AgentTool<{}> = {
   name: "strategy.read", module: "stratégie", kind: "read", needsProject: true,
   description: "Lit la stratégie marketing : état de la recherche, les 5 angles proposés (id, titre, promesse), l'angle recommandé, l'angle actif. Un site de boutique ne se construit qu'avec un angle choisi par le client.",
   args: z.object({}).strict(),
-  run: (ctx) => { const st = getStrategyState(project(ctx).id); return { ok: true, summary: st.active ? L(`Angle actif : ${st.active.angleId}.`, `Active angle: ${st.active.angleId}.`) : L(`Aucun angle actif ; ${st.angles.length} proposé(s).`, `No active angle.`), data: { research: st.research ? { status: st.research.status, message: st.research.message } : null, angles: st.angles.map((x: any) => ({ id: x.id, title: x.title ?? x.name, promise: short(x.promise ?? x.summary ?? x.hook ?? "", 200) })), recommendation: st.recommendation, active: st.active ? { angleId: st.active.angleId, version: st.active.version } : null, missingQuestions: st.missingQuestions } }; },
+  run: (ctx) => { const st = strategyState(project(ctx).id); return { ok: true, summary: st.active ? L(`Angle actif : ${st.active.angleId}.`, `Active angle: ${st.active.angleId}.`) : L(`Aucun angle actif ; ${st.angles.length} proposé(s).`, `No active angle.`), data: { research: st.research ? { status: st.research.status, message: st.research.message } : null, angles: st.angles.map((x: any) => ({ id: x.id, title: x.title ?? x.name, promise: short(x.promise ?? x.summary ?? x.hook ?? "", 200) })), recommendation: st.recommendation, active: st.active ? { angleId: st.active.angleId, version: st.active.version } : null, missingQuestions: st.missingQuestions } }; },
 };
 
 
@@ -226,10 +233,10 @@ const researchRead: AgentTool<{}> = {
 
 const strategyChoose: AgentTool<{ angleId: string }> = {
   name: "strategy.choose", module: "stratégie", kind: "write", needsProject: true,
-  description: "Active l'angle marketing CHOISI PAR LE CLIENT parmi ceux de strategy.read (fil conducteur du site, des contenus et des publicités). Ne choisissez jamais à sa place : demandez-lui s'il n'a pas choisi.",
+  description: "Active l'angle marketing CHOISI PAR LE CLIENT parmi ceux de strategy.read (fil conducteur du site, des contenus et des publicités). Ne choisissez jamais à sa place : demandez-lui s'il n'a pas choisi. Ensuite, validez la recherche avec pilot.approve {step:\"research\", choiceId: le même angle}.",
   args: z.object({ angleId: z.string().max(40) }).strict(),
   run: (ctx, a) => {
-    const p = project(ctx), before = getStrategyState(p.id).active;
+    const p = project(ctx), before = strategyState(p.id).active;
     const prep = prepareStrategyChange(p.id, a.angleId);
     for (const c of prep.contents.filter((c: any) => !c.aligned && !c.published)) stageStrategyModule(p.id, prep.id, c.module, { contentIds: [], retainedContentIds: [c.contentId] });
     const act = activateStrategy(p.id, { angleId: a.angleId, preparationId: prep.id, idempotencyKey: `syna-${ctx.runId}-${prep.id}`, confirmed: true, retainUnaligned: true });
