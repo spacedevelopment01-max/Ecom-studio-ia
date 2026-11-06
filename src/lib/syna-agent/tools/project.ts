@@ -23,7 +23,7 @@ function strategyState(projectId: string) {
 import { L } from "../../i18n-server";
 import type { AgentTool } from "../types";
 import { attachmentsOf } from "../attachments";
-import { project, short } from "./common";
+import { cents, project, short } from "./common";
 
 const createTool: AgentTool<{ name: string; business: "products" | "services"; storeType?: "mono" | "multi" | "niche"; description: string }> = {
   name: "project.create", module: "projet", kind: "write",
@@ -63,7 +63,7 @@ const profileTool: AgentTool<any> = {
     name: z.string().max(160).optional(), nameStatus: z.enum(["provided", "proposed"]).optional(), category: z.string().max(120).optional(), sector: z.enum(SECTOR_IDS).optional(),
     summary: z.string().max(4000).optional(), colors: z.array(z.object({ hex: z.string().regex(/^#[0-9a-fA-F]{6}$/), name: z.string().max(40), share: z.number().min(0).max(1) })).max(8).optional(),
     materials: z.array(z.string().max(60)).max(10).optional(), visualDescription: z.string().max(1200).optional(),
-    price: z.object({ amount: z.number().min(0).max(1_000_000), currency: z.string().regex(/^[A-Z]{3}$/).default("EUR") }).optional(),
+    price: z.object({ amount: z.number().min(0).max(1_000_000).describe("Prix TTC en euros (ex. 89)"), currency: z.string().regex(/^[A-Z]{3}$/).default("EUR") }).optional(),
     variants: z.array(z.object({ name: z.string().max(40), values: z.array(z.string().max(60)).max(30) })).max(3).optional(),
     sourceAttachmentIds: z.array(z.string().max(40)).max(12).optional(),
   }).strict(),
@@ -75,7 +75,8 @@ const profileTool: AgentTool<any> = {
     if (a.sector) next.sector = a.sector;
     if (a.summary) { next.summary = a.summary; next.summaryStatus = "proposed"; }
     if (a.colors || a.materials || a.visualDescription) next.visual = { ...next.visual, ...(a.colors ? { colors: a.colors } : {}), ...(a.materials ? { materials: a.materials } : {}), ...(a.visualDescription ? { description: a.visualDescription } : {}) };
-    if (a.price) next.price = { amount: a.price.amount, currency: a.price.currency, status: "confirmed" };
+    // Le profil stocke le prix en centimes (comme le catalogue) ; l'outil le reçoit en euros.
+    if (a.price) next.price = { amount: cents(a.price.amount), currency: a.price.currency, status: "confirmed" };
     if (a.variants) next.variants = a.variants;
     for (const aid of a.sourceAttachmentIds ?? []) { const at = ctx.attachment(aid); if (at && !next.sources.some((s) => s.ref === (at.assetId ?? at.id))) next.sources.push({ type: "photo", ref: at.assetId ?? at.id, summary: short(a.visualDescription ?? at.name, 200) }); }
     saveProduct(p.id, next);
