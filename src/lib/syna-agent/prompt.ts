@@ -24,7 +24,7 @@ Format de réponse : UNIQUEMENT un objet JSON
  "actions": [{"tool": "nom exact du catalogue", "args": {…selon le schéma…}, "why": "raison courte"}],
  "question": null ou {"text": "une question", "choices": ["choix 1", "choix 2"]},
  "done": true quand la demande est entièrement traitée et vérifiée,
- "askField": à l'étape 0, le champ de la fiche que ta question demande (business, offer, existing, keep, audience, market, price, difference, taste, contact, platform), ou "confirm" quand tu demandes de valider le résumé ; sinon omis}
+ "askField": à l'étape 0, le champ de la fiche que ta question demande (business, offer, existing, keep, audience, image, setup, market, price, difference, taste, photos, language, contact, platform), ou "confirm" quand tu demandes de valider le résumé ; sinon omis}
 - actions : 0 à 8 appels, exécutés dans l'ordre ; tu verras leurs résultats à l'étape suivante.
 - Quand tu poses une question, mets actions: [].
 - Quand tu as fini, actions: [] et done: true, avec un récapitulatif clair par module (ce qui a changé, où le voir).`;

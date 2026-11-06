@@ -4,9 +4,10 @@
  */
 import { z } from "zod";
 import fs from "node:fs";
-import { all, one } from "../../db";
+import { all, one, run } from "../../db";
 import { L } from "../../i18n-server";
-import { loadProject, remember } from "../../projects";
+import { loadProject, remember, saveServices } from "../../projects";
+import type { ContactMode } from "../../project-types";
 import { saveAsset } from "../../library";
 import { editBrief } from "../../preparation/engine";
 import { stateOf } from "../../preparation/store";
@@ -60,7 +61,7 @@ const stateTool: AgentTool<{}> = {
 
 const answerTool: AgentTool<any> = {
   name: "start.answer", module: "parcours", kind: "write",
-  description: "Enregistre une ou plusieurs réponses du client dans la fiche de départ (étape 0). Champs : business (« products » ou « services »), offer, existing, audience, market, price, difference, taste, contact, platform (shopify, woocommerce, prestashop ou « à décider »). Reprends les mots du client sans rien inventer. status « later » si le client veut répondre plus tard (refusé pour business, offer, audience), « none » s'il n'a rien à dire. Une réponse déjà connue peut être corrigée si le client la change. Gratuit, utilisable avant la création du projet.",
+  description: "Enregistre une ou plusieurs réponses du client dans la fiche de départ (étape 0). Champs : business (« products » ou « services »), offer, existing, audience, image (3 mots d'image voulue, couleurs refusées), setup (boutique : nombre de produits au lancement ; services : façon d'être contacté), market, price, difference, taste, photos (photos du client : en a-t-il, les a-t-il envoyées), language (français seulement, ou français et anglais), contact, platform (shopify, woocommerce, prestashop ou « à décider »). Reprends les mots du client sans rien inventer. status « later » si le client veut répondre plus tard (refusé pour business, offer, audience), « none » s'il n'a rien à dire. Une réponse déjà connue peut être corrigée si le client la change. Gratuit, utilisable avant la création du projet.",
   args: z.object({
     answers: z.array(z.object({
       field: z.enum(START_FIELDS.filter((f) => f !== "keep") as [StartField, ...StartField[]]),
@@ -174,6 +175,37 @@ async function keepLogo(ctx: ToolContext, j: Journey): Promise<string | null> {
   return a.id;
 }
 
+/** Modes de contact reconnus dans les mots du client (services). */
+export function contactModesFrom(text: string): ContactMode[] {
+  const m: ContactMode[] = [];
+  if (/r[ée]serv|rendez-vous|en ligne|cr[ée]neau/i.test(text)) m.push("booking");
+  if (/devis/i.test(text)) m.push("quote");
+  if (/appel|t[ée]l[ée]phone/i.test(text)) m.push("call");
+  if (/formulaire|e-?mail|message/i.test(text)) m.push("form");
+  return m;
+}
+/** Nombre de produits au lancement (boutique), s'il est donné en chiffres ou en toutes lettres simples. */
+export function productCountFrom(text: string): number | null {
+  const d = /\d+/.exec(text);
+  if (d) return Number(d[0]);
+  const words: Record<string, number> = { un: 1, une: 1, seul: 1, deux: 2, trois: 3, quatre: 4, cinq: 5, six: 6, dix: 10 };
+  const w = /\b(un|une|seul|deux|trois|quatre|cinq|six|dix)\b/i.exec(text);
+  return w ? words[w[1].toLowerCase()] : null;
+}
+/** Organisation choisie : type de boutique (un produit ou plusieurs) ou bouton principal du site de services. */
+function applySetup(pid: string, business: string, setup: string) {
+  if (!setup) return;
+  if (business === "services") {
+    const modes = contactModesFrom(setup);
+    if (!modes.length) return;
+    const p = loadProject(pid);
+    saveServices(pid, { ...p.services, contactMode: modes[0], contactModes: modes }, p.servicesVersion);
+  } else {
+    const n = productCountFrom(setup);
+    if (n) run("UPDATE projects SET store_type=? WHERE id=?", n <= 1 ? "mono" : "multi", pid);
+  }
+}
+
 const confirmTool: AgentTool<{}> = {
   name: "start.confirm", module: "parcours", kind: "write",
   description: "À appeler UNIQUEMENT après que le client a confirmé le résumé « Voici ce que j'ai compris ». Valide l'étape 0 : reporte la fiche dans le projet (cible, consignes, description, liens, photos jointes), garde tel quel ce que le client a choisi de garder (logo rangé comme logo du client), mémorise la décision et passe à l'étape 1. Refusé s'il manque une réponse indispensable. Gratuit.",
@@ -194,6 +226,7 @@ const confirmTool: AgentTool<{}> = {
     const constraints = [
       v("market") && `Où : ${v("market")}`, v("price") && `Prix : ${v("price")}`, v("difference") && `Ce qui le rend différent : ${v("difference")}`,
       v("taste") && `Goûts : ${v("taste")}`, v("platform") && `Plateforme : ${v("platform")}`, v("contact") && `Coordonnées : ${v("contact")}`,
+      v("image") && `Image voulue : ${v("image")}`, v("setup") && `Organisation : ${v("setup")}`, v("photos") && `Photos du client : ${v("photos")}`, v("language") && `Langue du site : ${v("language")}`,
       j0.keep.length && `Refonte : garder tel quel ${j0.keep.join(", ")} ; tout le reste est recréé.`,
     ].filter(Boolean).join("\n");
     const st = stateOf(pid);
@@ -214,6 +247,7 @@ const confirmTool: AgentTool<{}> = {
         services: old.services ?? p.services,
       });
     }
+    applySetup(pid, v("business") || p.business, v("setup"));
     const logoId = j0.keep.includes("logo") ? await keepLogo(ctx, j0) : null;
     remember(pid, { kind: "decision", key: "syna.depart", value: `Étape 0 validée par le client. ${j0.mode === "refonte" ? `Refonte : garder tel quel ${j0.keep.join(", ")}.` : "Création complète."}`, source: "user" } as any);
     if (j0.keep.length) remember(pid, { kind: "decision", key: "syna.garder", value: j0.keep.join(", "), source: "user" } as any);

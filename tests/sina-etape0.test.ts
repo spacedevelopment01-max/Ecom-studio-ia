@@ -40,7 +40,7 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
   it("ordre des questions : « garder » seulement s'il existe déjà quelque chose, plateforme seulement pour une boutique", () => {
     const j = J.emptyJourney();
     expect(J.currentStep(j)).toBe(0);
-    expect(J.missingFields(j)).toEqual(["business", "offer", "existing", "audience", "market", "price", "difference", "taste", "contact", "platform"]);
+    expect(J.missingFields(j)).toEqual(["business", "offer", "existing", "audience", "image", "setup", "market", "price", "difference", "taste", "photos", "language", "contact", "platform"]);
     j.start.business = { value: "services", status: "answered", source: "client", at: 1 };
     j.start.existing = { value: "Non, rien encore", status: "answered", source: "client", at: 1 };
     expect(J.missingFields(j)).not.toContain("keep");
@@ -117,6 +117,10 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
 
       await call("start.answer", ctx, { answers: [
         { field: "audience", value: "Propriétaires de maisons anciennes, 35-60 ans." },
+        { field: "image", value: "Soigné, rassurant, artisanal. Pas de rouge." },
+        { field: "setup", value: "Par une demande de devis, ou un appel." },
+        { field: "photos", value: "Oui, des photos de mes chantiers." },
+        { field: "language", value: "Français seulement" },
         { field: "market", value: "Lyon et 30 km autour, chez le client." },
         { field: "price", status: "later" },
         { field: "difference", value: "Des finitions nettes et un chantier propre." },
@@ -134,6 +138,9 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
       const input = (stateOf(pid)!.stages as any).brief.data.input;
       expect(input.target).toMatch(/maisons anciennes/);
       expect(input.constraints).toMatch(/Refonte : garder tel quel logo, slogan/);
+      expect(input.constraints).toMatch(/Image voulue : Soigné, rassurant, artisanal/);
+      // Organisation : le bouton principal du site de services suit la réponse du client.
+      expect(loadProject(pid).services.contactModes).toEqual(["quote", "call"]);
       expect(input.referenceUrls).toEqual(expect.arrayContaining(["https://exemple-reference.fr"]));
       expect(input.referenceUrls.some((u: string) => u.startsWith("https://custom.test"))).toBe(true);
       expect(one<any>("SELECT value FROM memory WHERE project_id=? AND key='syna.garder'", pid).value).toBe("logo, slogan");
@@ -260,7 +267,7 @@ describe("SINA — niveaux de coût : gratuit (moteur local), Haiku, Opus", asyn
   it("dernière réponse : résumé construit sans rien réécrire, puis validation par « oui »", () => {
     const j = base();
     j.start.existing = { value: "Rien : je pars de zéro.", status: "answered", source: "client", at: 1 };
-    for (const f of ["audience", "market", "price", "difference", "taste"] as const) j.start[f] = { value: `réponse ${f}`, status: "answered", source: "client", at: 1 };
+    for (const f of ["audience", "image", "setup", "market", "price", "difference", "taste", "photos", "language"] as const) j.start[f] = { value: `réponse ${f}`, status: "answered", source: "client", at: 1 };
     const d = L.localDecision(ctx(j, "contact", "Plus tard"))!;
     expect(d.out.askField).toBe("confirm");
     expect(d.out.message).toMatch(/Voici ce que j'ai compris/);
@@ -271,6 +278,22 @@ describe("SINA — niveaux de coût : gratuit (moteur local), Haiku, Opus", asyn
     expect(ok.confirm).toBe(true);
     expect(ok.out.actions[0].tool).toBe("start.confirm");
     expect(L.localDecision(ctx(j, "confirm", "Non, le prix est faux"))).toBeNull();
+  });
+
+  it("questions ajoutées : photos et langue reconnues sans IA quand la réponse est simple", () => {
+    expect(L.parseSimpleAnswer("photos", "Pas encore de photos")).toMatchObject({ value: "Pas de photos pour l'instant." });
+    expect(L.parseSimpleAnswer("photos", "Oui, je t'envoie mes photos")).toBeNull(); // photos promises : Claude
+    expect(L.parseSimpleAnswer("language", "Français et anglais")).toMatchObject({ value: "Français et anglais" });
+    expect(L.parseSimpleAnswer("language", "français seulement")).toMatchObject({ value: "Français seulement" });
+  });
+
+  it("organisation : modes de contact et nombre de produits lus dans les mots du client", async () => {
+    const { contactModesFrom, productCountFrom } = await import("@/lib/syna-agent/tools/start");
+    expect(contactModesFrom("Réservation en ligne surtout, sinon un appel")).toEqual(["booking", "call"]);
+    expect(contactModesFrom("une demande de devis")).toEqual(["quote"]);
+    expect(productCountFrom("Un seul produit pour commencer")).toBe(1);
+    expect(productCountFrom("Environ 12 produits")).toBe(12);
+    expect(productCountFrom("je ne sais pas")).toBeNull();
   });
 
   it("modèle par réponse : Haiku pour l'étape 0 et une étape pas encore disponible, Opus pour une étape créative prête", () => {

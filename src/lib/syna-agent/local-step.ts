@@ -12,6 +12,8 @@ export const LOCAL_CHOICES: Partial<Record<StartField, string[]>> = {
   business: ["Des produits", "Des services"],
   existing: ["Rien, je pars de zéro", "J'ai déjà un nom, un logo ou un site"],
   contact: ["Plus tard"],
+  photos: ["Pas encore de photos"],
+  language: ["Français seulement", "Français et anglais"],
   platform: ["Shopify", "WooCommerce", "PrestaShop", "Je ne sais pas encore"],
 };
 export const CONFIRM_CHOICES = ["Oui, tout est juste, on continue", "Je veux corriger quelque chose"];
@@ -39,6 +41,11 @@ export function parseSimpleAnswer(field: StartField, raw: string): { value: stri
     }
     case "offer": case "keep": return null; // création du projet, photos, éléments à garder : Claude.
     case "audience": return later ? null : { value: text, status: "answered" }; // indispensable : jamais « plus tard ».
+    case "photos": return /^(pas encore|non|aucune?|pas de photos?|rien)\b/i.test(text) || later ? { value: "Pas de photos pour l'instant.", status: "answered" } : null; // photos promises ou jointes : Claude.
+    case "language": {
+      const en = /anglais|english|bilingue|les deux/i.test(text), fr = /fran[çc]ais|french/i.test(text);
+      return en ? { value: "Français et anglais", status: "answered" } : fr ? { value: "Français seulement", status: "answered" } : later ? { value: "", status: "later" } : null;
+    }
     default: return later ? { value: "", status: "later" } : { value: text, status: "answered" };
   }
 }

@@ -38,7 +38,12 @@ export const READY_STEPS: number[] = [0];
 export type StepStatus = "todo" | "doing" | "review" | "done" | "skipped";
 
 /** Champs de la fiche de départ, dans l'ordre où SINA les demande. */
-export const START_FIELDS = ["business", "offer", "existing", "keep", "audience", "market", "price", "difference", "taste", "contact", "platform"] as const;
+/**
+ * Ordre des questions. Ajouts du 6 novembre (validés par le propriétaire) : image voulue (pour 3 identités dans ce que
+ * le client veut), organisation (nombre de produits ou façon d'être contacté : thème et bouton principal du site),
+ * photos du client (règle : aucune personne créée sans sa photo) et langue du site.
+ */
+export const START_FIELDS = ["business", "offer", "existing", "keep", "audience", "image", "setup", "market", "price", "difference", "taste", "photos", "language", "contact", "platform"] as const;
 export type StartField = (typeof START_FIELDS)[number];
 /** Indispensables pour valider l'étape 0 (les autres acceptent « plus tard » ou « rien »). */
 export const REQUIRED_FIELDS: StartField[] = ["business", "offer", "audience"];
@@ -131,6 +136,12 @@ export const QUESTIONS: Record<StartField, (j: Journey) => { fr: string; en: str
     ? { fr: "Quels sont tes tarifs et durées, même approximatifs ?", en: "What are your prices and durations, even roughly?" }
     : { fr: "Quel prix de vente prévois-tu (ou une fourchette) ? Y a-t-il des variantes (tailles, couleurs…) ?", en: "What selling price do you plan (or a range)? Any variants (sizes, colours…)?" },
   difference: () => ({ fr: "Qu'est-ce qui te rend différent, avec tes mots ?", en: "What makes you different, in your own words?" }),
+  image: () => ({ fr: "Donne-moi 3 mots pour l'image que tu veux donner (par exemple chaleureux, haut de gamme, fun), et les couleurs que tu ne veux surtout pas.", en: "Give me 3 words for the image you want to convey (e.g. warm, premium, fun), and any colours you don't want." }),
+  setup: (j) => j.start.business?.value === "services"
+    ? { fr: "Comment tes clients doivent-ils te contacter : réservation en ligne, demande de devis, appel, ou formulaire de contact ?", en: "How should clients reach you: online booking, quote request, phone call, or contact form?" }
+    : { fr: "Combien de produits vas-tu vendre au lancement ?", en: "How many products will you sell at launch?" },
+  photos: () => ({ fr: "As-tu tes propres photos (ton produit, toi au travail, ton lieu, tes réalisations) ? Si oui, envoie-les-moi ; sinon, dis-le simplement.", en: "Do you have your own photos (product, you at work, your place, your work)? If so, send them; otherwise just say so." }),
+  language: () => ({ fr: "Ton site doit-il être en français seulement, ou aussi en anglais ?", en: "Should your site be in French only, or in English too?" }),
   taste: () => ({ fr: "Quels sites, marques ou styles aimes-tu ? Et ce que tu n'aimes pas ? Des liens ou des captures sont les bienvenus.", en: "Which websites, brands or styles do you like? And dislike? Links or screenshots welcome." }),
   contact: () => ({ fr: "Tes coordonnées pour le site : nom de l'entreprise, e-mail, téléphone, adresse (et SIRET si tu l'as). Tu peux en donner une partie maintenant et le reste plus tard.", en: "Your contact details for the site: company name, email, phone, address (and company number). Some now, the rest later is fine." }),
   platform: () => ({ fr: "Sur quelle plateforme vendras-tu : Shopify, WooCommerce, PrestaShop, ou tu ne sais pas encore ?", en: "Which platform will you sell on: Shopify, WooCommerce, PrestaShop, or not sure yet?" }),
@@ -141,6 +152,8 @@ export const FIELD_LABEL: Record<StartField, { fr: string; en: string }> = {
   keep: { fr: "À garder", en: "To keep" }, audience: { fr: "Client idéal", en: "Ideal customer" }, market: { fr: "Où", en: "Where" },
   price: { fr: "Prix", en: "Price" }, difference: { fr: "Différence", en: "Difference" }, taste: { fr: "Goûts", en: "Taste" },
   contact: { fr: "Coordonnées", en: "Contact" }, platform: { fr: "Plateforme", en: "Platform" },
+  image: { fr: "Image voulue", en: "Desired image" }, setup: { fr: "Organisation", en: "Set-up" },
+  photos: { fr: "Tes photos", en: "Your photos" }, language: { fr: "Langue du site", en: "Site language" },
 };
 
 /** Texte relu par SINA à chaque pas : où en est le parcours et que faire maintenant. */
