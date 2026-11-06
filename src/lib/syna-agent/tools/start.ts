@@ -34,7 +34,7 @@ const view = (j: Journey) => ({
 
 /** Nom provisoire tiré des mots du client (« Coach sportif. Séances… » → « Coach sportif (provisoire) »). */
 export function provisionalName(offer: string): string {
-  const head = offer.trim().split(/[.,;:!?\n(]/)[0].trim().replace(/^(je suis|je fais|je vends|c'est|nous sommes|on est)\s+/i, "");
+  const head = offer.trim().split(/[.,;:!?\n(]/)[0].trim().replace(/^(je suis|je fais|je vends|je propose|c'est|nous sommes|nous faisons|on est|on fait)\s+/i, "").replace(/^(de la|de l'|du|des|un|une|le|la|les|l')\s*/i, "");
   const short = head.length > 40 ? head.slice(0, 40).replace(/\s+\S*$/, "") : head;
   return `${(short || "Mon projet").replace(/^./, (c) => c.toUpperCase())} (provisoire)`;
 }
@@ -106,7 +106,7 @@ const importTool: AgentTool<{ url: string }> = {
     try { host = new URL(/^https?:\/\//i.test(a.url) ? a.url : `https://${a.url}`).hostname; } catch { return { ok: false, summary: L("Ce lien n'est pas une adresse web valide.", "Invalid link.") }; }
     if (BLOCKING_HOSTS.test(host)) return { ok: false, summary: L(`${host} ne se laisse pas lire automatiquement. Demandez au client des captures d'écran de sa page, ou ses photos et son logo en pièces jointes.`, `${host} can't be read automatically: ask for screenshots or files.`) };
     let site;
-    try { site = await importSite(a.url, { maxPages: 6, fetchImpl: startDeps.fetchImpl }); }
+    try { site = await importSite(a.url, { maxPages: 12, fetchImpl: startDeps.fetchImpl }); }
     catch (e) { return { ok: false, summary: L(`Lecture du site impossible : ${short((e as Error).message, 200)}. Demandez des captures ou les fichiers au client.`, "Site could not be read.") }; }
     const contact = Object.fromEntries(Object.entries({ phone: site.contact.phone, email: site.contact.email, address: site.contact.address, hours: site.contact.hours }).filter(([, v]) => !!v)) as Record<string, string>;
     const imported = {
@@ -115,8 +115,8 @@ const importTool: AgentTool<{ url: string }> = {
       products: site.products.length, pages: site.pages.length, contact, socials: site.contact.socials, warnings: site.warnings.slice(0, 5),
     };
     const existing = [
-      site.name && `nom « ${site.name} »`, site.tagline && `slogan « ${site.tagline} »`, site.logo?.src && "un logo",
-      imported.colors.length && `couleurs ${imported.colors.join(" ")}`, imported.fonts.length && `polices ${imported.fonts.join(", ")}`,
+      site.name && `nom « ${site.name} »`, site.tagline && site.tagline.length <= 90 && `slogan « ${site.tagline} »`, site.logo?.src && "un logo",
+      imported.colors.length && `${imported.colors.length} couleurs`, imported.fonts.length && `polices ${imported.fonts.join(", ")}`,
       `site ${imported.url}`, Object.keys(site.contact.socials).length && `réseaux ${Object.keys(site.contact.socials).join(", ")}`,
     ].filter(Boolean).join(", ");
     const j = updateJourney(ctx.conversationId, (j) => {
@@ -124,12 +124,13 @@ const importTool: AgentTool<{ url: string }> = {
       const at = Date.now();
       if (!j.start.existing) j.start.existing = { value: existing, status: "answered", source: "site", at };
       if (!j.start.contact && Object.keys(contact).length) j.start.contact = { value: Object.entries(contact).map(([k, v]) => `${k} : ${v}`).join(" ; "), status: "answered", source: "site", at };
-      if (!j.start.business) j.start.business = { value: site.business, status: "answered", source: "site", at };
+      // Le type d'activité deviné à partir d'un site n'est pas fiable (essai réel : un plâtrier classé « boutique ») :
+      // il n'est jamais prérempli, SINA le demande toujours au client.
     });
     if (ctx.projectId) remember(ctx.projectId, { kind: "artifact", key: "site_import", value: JSON.stringify(site), source: "link", status: "confirmed" });
     return {
       ok: true,
-      summary: L(`Site lu : ${existing}. ${site.products.length} produit(s), ${site.pages.length} page(s).${site.warnings.length ? ` Limites : ${site.warnings.slice(0, 2).join(" ; ")}` : ""}`, "Site read."),
+      summary: L(`Site lu : ${existing}. ${site.pages.length} page${site.pages.length > 1 ? "s" : ""}${site.products.length ? `, ${site.products.length} produit${site.products.length > 1 ? "s" : ""}` : ""}.`, "Site read."),
       data: { ...imported, aDemander: missingFields(j) },
       changes: [{ module: "parcours", object: "existant lu", summary: short(existing, 200), after: imported, verified: true }],
     };
@@ -151,6 +152,11 @@ const keepTool: AgentTool<any> = {
       j.start.keep = { value: j.keep.length ? `${j.keep.join(", ")}${a.note ? ` — ${a.note}` : ""}` : "rien, tout recréer", status: "answered", source: "client", at: Date.now() };
       (j as any).logoAttachmentId = a.logoAttachmentId ?? (j as any).logoAttachmentId;
     });
+    // Nom confirmé après la validation de l'étape 0 : le projet prend tout de suite le vrai nom de la marque.
+    if (a.name && j.keep.includes("nom") && j.steps[0]?.status === "done" && ctx.projectId) {
+      run("UPDATE projects SET name=? WHERE id=?", a.name.trim(), ctx.projectId);
+      remember(ctx.projectId, { kind: "decision", key: "syna.nom", value: a.name.trim(), source: "user" } as any);
+    }
     const named = [j.keptValues?.name && `nom « ${j.keptValues.name} »`, j.keptValues?.slogan && `slogan « ${j.keptValues.slogan} »`].filter(Boolean).join(", ");
     return { ok: true, summary: L(j.keep.length ? `À garder tel quel : ${j.keep.join(", ")}${named ? ` (${named})` : ""} ; le reste sera recréé.${a.keep.includes("logo") && a.name && !a.keep.includes("nom") ? " Ton logo contient le nom de ta marque : je garde donc aussi le nom." : ""}` : "Tout sera recréé.", "Keep list saved."), data: { mode: j.mode, keep: j.keep }, changes: [{ module: "parcours", object: "à garder", summary: j.keep.join(", ") || "rien", before, after: j.keep, verified: true }] };
   },

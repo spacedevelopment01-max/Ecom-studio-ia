@@ -34,7 +34,8 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
   it("nom provisoire tiré des mots du client", async () => {
     const { provisionalName } = await import("@/lib/syna-agent/tools/start");
     expect(provisionalName("Je suis coach sportif. Je fais des séances à domicile.")).toBe("Coach sportif (provisoire)");
-    expect(provisionalName("Un sac de voyage modulable en toile kaki, avec plusieurs poches")).toBe("Un sac de voyage modulable en toile kaki (provisoire)");
+    expect(provisionalName("Un sac de voyage modulable en toile kaki, avec plusieurs poches")).toBe("Sac de voyage modulable en toile kaki (provisoire)");
+    expect(provisionalName("Je fais de la plâtrerie, des cloisons et de la peinture.")).toBe("Plâtrerie (provisoire)");
   });
 
   it("ordre des questions : « garder » seulement s'il existe déjà quelque chose, plateforme seulement pour une boutique", () => {
@@ -105,6 +106,7 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
       const j1 = J.journeyOf(cid);
       expect(j1.imported).toHaveLength(1);
       expect(j1.start.existing?.source).toBe("site");
+      expect(j1.start.business?.source).toBe("client"); // jamais déduit du site lu (peu fiable)
       expect(J.missingFields(j1)).toContain("keep");
 
       const keep = await call("start.keep", ctx, { keep: ["logo", "slogan"] });
@@ -168,6 +170,9 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     expect(one<any>("SELECT value FROM memory WHERE project_id=? AND key='syna.slogan'", pid).value).toBe("Le parfum des heures douces.");
     expect((stateOf(pid)!.stages as any).brief.data.input.brandName).toBe("Brume d'Ambre");
     expect(withoutIds("Logo joint (842che1vm4a9rb04). Prix : 32 €.")).toBe("Logo joint. Prix : 32 €.");
+    // Nom confirmé APRÈS la validation (cas vu en réel) : le projet prend quand même le vrai nom.
+    await call("start.keep", ctx, { keep: ["logo", "slogan", "nom"], name: "Brume d'Ambre Atelier", slogan: "Le parfum des heures douces." });
+    expect(loadProject(pid).name).toBe("Brume d'Ambre Atelier");
   });
 
   it("mode chantier : pendant la construction, le client suit sans modifier ; SINA et la lecture restent libres", async () => {
