@@ -67,7 +67,7 @@ export function localDecision(c: LocalContext): LocalDecision | null {
   const ack = ACKS[c.seq % ACKS.length];
   // Validation du résumé.
   if (c.askField === "confirm") {
-    if (missing.length || !c.hasProject || !YES.test(c.userText.trim()) || c.userText.length > 120) return null;
+    if (missing.length || !YES.test(c.userText.trim()) || c.userText.length > 120) return null; // start.confirm crée le projet s'il manque
     return {
       confirm: true,
       out: { message: "Parfait, l'étape 0 est validée. Je garde toutes tes réponses pour la suite. La prochaine étape : tes 3 identités de marque.", actions: [{ tool: "start.confirm", args: {}, why: "validation du résumé par le client (moteur local)" }], question: null, done: true },

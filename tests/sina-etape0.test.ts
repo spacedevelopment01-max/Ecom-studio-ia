@@ -31,6 +31,12 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     return fr(() => getTool(name)!.run(ctx, getTool(name)!.args.parse(args)));
   };
 
+  it("nom provisoire tiré des mots du client", async () => {
+    const { provisionalName } = await import("@/lib/syna-agent/tools/start");
+    expect(provisionalName("Je suis coach sportif. Je fais des séances à domicile.")).toBe("Coach sportif (provisoire)");
+    expect(provisionalName("Un sac de voyage modulable en toile kaki, avec plusieurs poches")).toBe("Un sac de voyage modulable en toile kaki (provisoire)");
+  });
+
   it("ordre des questions : « garder » seulement s'il existe déjà quelque chose, plateforme seulement pour une boutique", () => {
     const j = J.emptyJourney();
     expect(J.currentStep(j)).toBe(0);
@@ -67,6 +73,7 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     const r = await call("start.answer", ctx, { answers: [{ field: "business", value: "products" }, { field: "offer", value: "Un sac de voyage modulable en toile." }] });
     expect(r.ok).toBe(true);
     expect((r.data as any).prochaine).toBe("existing");
+    expect(r.summary).not.toMatch(/\b(offer|existing)\b/); // jamais d'identifiant technique affiché au client
     expect(J.missingFields(J.journeyOf(cid))).not.toContain("offer");
   });
 
@@ -79,9 +86,11 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     const ctx = ctxOf(user, cid);
     startDeps.fetchImpl = fixtureFetcher("custom");
     try {
-      await call("start.answer", ctx, { answers: [{ field: "business", value: "services" }, { field: "offer", value: "Peinture intérieure et rénovation de murs." }] });
-      const created = await call("project.create", ctx, { name: "Projet refonte", business: "services", description: "Peinture intérieure et rénovation de murs." });
+      // Le projet est créé par le Studio lui-même dès que l'activité et l'offre sont connues (pas par le modèle).
+      const created = await call("start.answer", ctx, { answers: [{ field: "business", value: "services" }, { field: "offer", value: "Peinture intérieure et rénovation de murs." }] });
       expect(created.ok).toBe(true);
+      expect(created.summary).toMatch(/projet est créé/);
+      expect(one<any>("SELECT name FROM projects WHERE id=(SELECT project_id FROM agent_conversations WHERE id=?)", cid).name).toMatch(/^Peinture intérieure.*\(provisoire\)$/);
       const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
       expect(one<any>("SELECT user_id FROM subscriptions WHERE project_id=?", pid).user_id).toBe(chosen);
       expect(loadProject(pid).settings.mode).toBe("guided");
@@ -140,7 +149,6 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     const user = await account();
     const cid = threadFor(user, null), ctx = ctxOf(user, cid);
     await call("start.answer", ctx, { answers: [{ field: "business", value: "products" }, { field: "offer", value: "Un sac de voyage." }] });
-    await call("project.create", ctx, { name: "Chantier", business: "products", description: "Un sac de voyage." });
     const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
     expect(underConstruction(pid)).toBe(true);
     const http = (method: string, path = `/api/projects/${pid}/brand`) => () => withAccessScope({ kind: "http", method, path }, () => assertNotUnderConstruction(pid));
@@ -161,7 +169,6 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     const user = await account();
     const cid = threadFor(user, null), ctx = ctxOf(user, cid);
     await call("start.answer", ctx, { answers: [{ field: "business", value: "services" }, { field: "offer", value: "Coaching sportif à domicile." }] });
-    await call("project.create", ctx, { name: "Coach", business: "services", description: "Coaching sportif à domicile." });
     addMessage(cid, "assistant", { message: "Bien reçu.", actions: [], question: { text: "As-tu déjà quelque chose ?" }, done: false, askField: "existing", step: 0 }, null);
     const r = submitMessage(user, cid, { requestId: `req-${Math.random()}`, text: "Rien, je pars de zéro" });
     let calls = 0;

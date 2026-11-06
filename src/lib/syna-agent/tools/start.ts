@@ -31,6 +31,26 @@ const view = (j: Journey) => ({
   existantLu: j.imported,
 });
 
+/** Nom provisoire tiré des mots du client (« Coach sportif. Séances… » → « Coach sportif (provisoire) »). */
+export function provisionalName(offer: string): string {
+  const head = offer.trim().split(/[.,;:!?\n(]/)[0].trim().replace(/^(je suis|je fais|je vends|c'est|nous sommes|on est)\s+/i, "");
+  const short = head.length > 40 ? head.slice(0, 40).replace(/\s+\S*$/, "") : head;
+  return `${(short || "Mon projet").replace(/^./, (c) => c.toUpperCase())} (provisoire)`;
+}
+
+/**
+ * Le projet est créé par le Studio lui-même dès que l'activité et l'offre sont connues (gratuit, déterministe) :
+ * on ne dépend pas du modèle pour une action aussi essentielle (essai réel : Haiku ne l'avait pas fait).
+ */
+async function ensureProject(ctx: ToolContext, j: Journey): Promise<string | null> {
+  if (ctx.projectId) return ctx.projectId;
+  const business = j.start.business?.value, offer = j.start.offer?.value;
+  if (!offer || (business !== "products" && business !== "services")) return null;
+  const create = (await import("../registry")).getTool("project.create")!;
+  const res = await create.run(ctx, { name: provisionalName(offer), business, description: offer });
+  return res.ok ? (ctx.projectId ?? null) : null;
+}
+
 const stateTool: AgentTool<{}> = {
   name: "start.state", module: "parcours", kind: "read",
   description: "Lit le parcours de création (étapes 0 à 13) et la fiche de départ : ce que le client a déjà dit (avec la source : client, site lu, formulaire, photo), les champs encore à demander dans l'ordre, le mode (création ou refonte) et ce qu'il faut garder tel quel. Gratuit, utilisable avant la création du projet.",
@@ -48,7 +68,7 @@ const answerTool: AgentTool<any> = {
       status: z.enum(["answered", "later", "none"]).default("answered"),
     })).min(1).max(11),
   }).strict(),
-  run: (ctx, a: { answers: { field: StartField; value: string; status: FieldAnswer["status"] }[] }) => {
+  run: async (ctx, a: { answers: { field: StartField; value: string; status: FieldAnswer["status"] }[] }) => {
     for (const x of a.answers) {
       if (x.status !== "answered" && REQUIRED_FIELDS.includes(x.field)) return { ok: false, summary: L(`« ${FIELD_LABEL[x.field].fr} » est indispensable : il faut une réponse maintenant.`, `"${FIELD_LABEL[x.field].en}" is required now.`) };
       if (x.status === "answered" && !x.value.trim()) return { ok: false, summary: L(`Réponse vide pour « ${FIELD_LABEL[x.field].fr} ».`, "Empty answer.") };
@@ -60,11 +80,12 @@ const answerTool: AgentTool<any> = {
       if (j.steps[0]?.status === "todo") setStep(j, 0, "doing");
     });
     const next = missingFields(j);
+    const created = !ctx.projectId ? await ensureProject(ctx, j) : null;
     return {
       ok: true,
-      summary: L(`Fiche de départ : ${a.answers.map((x) => FIELD_LABEL[x.field].fr).join(", ")} enregistré. ${next.length ? `Prochaine question : ${next[0]}.` : "Tout est renseigné : résumé à faire confirmer."}`, "Start sheet saved."),
+      summary: L(`${a.answers.map((x) => FIELD_LABEL[x.field].fr).join(", ")} : c'est noté.${created ? " Ton projet est créé." : ""}${next.length ? "" : " Tout est renseigné."}`, "Saved."),
       data: { prochaine: next[0] ?? null, question: next[0] ? QUESTIONS[next[0]](j).fr : null, restent: next.slice(1) },
-      changes: a.answers.map((x) => ({ module: "parcours", object: `fiche de départ · ${FIELD_LABEL[x.field].fr}`, summary: x.status === "answered" ? short(x.value, 160) : x.status, before: before[x.field] ?? null, after: j.start[x.field], verified: true })),
+      changes: a.answers.map((x) => ({ module: "parcours", object: `fiche de départ · ${FIELD_LABEL[x.field].fr}`, summary: x.status === "answered" ? short(x.value, 160) : x.status === "later" ? "plus tard" : "rien", before: before[x.field] ?? null, after: j.start[x.field], verified: true })),
     };
   },
 };
@@ -154,7 +175,7 @@ async function keepLogo(ctx: ToolContext, j: Journey): Promise<string | null> {
 }
 
 const confirmTool: AgentTool<{}> = {
-  name: "start.confirm", module: "parcours", kind: "write", needsProject: true,
+  name: "start.confirm", module: "parcours", kind: "write",
   description: "À appeler UNIQUEMENT après que le client a confirmé le résumé « Voici ce que j'ai compris ». Valide l'étape 0 : reporte la fiche dans le projet (cible, consignes, description, liens, photos jointes), garde tel quel ce que le client a choisi de garder (logo rangé comme logo du client), mémorise la décision et passe à l'étape 1. Refusé s'il manque une réponse indispensable. Gratuit.",
   args: z.object({}).strict(),
   run: async (ctx) => {
@@ -163,7 +184,8 @@ const confirmTool: AgentTool<{}> = {
     if (missing.length) return { ok: false, summary: L(`Il manque encore : ${missing.map((f) => FIELD_LABEL[f].fr).join(", ")}.`, `Still missing: ${missing.join(", ")}.`) };
     const open = missingFields(j0);
     if (open.length) return { ok: false, summary: L(`Questions pas encore posées : ${open.map((f) => FIELD_LABEL[f].fr).join(", ")}. Posez-les (le client peut répondre « plus tard »).`, "Some questions were not asked yet.") };
-    const pid = ctx.projectId!;
+    const pid = await ensureProject(ctx, j0);
+    if (!pid) return { ok: false, summary: L("Le projet n'a pas pu être créé (aucun abonnement libre ?).", "Project could not be created.") };
     const p = loadProject(pid);
     const v = (f: StartField) => (j0.start[f]?.status === "answered" ? j0.start[f]!.value : "");
     // Photos jointes au fil, rangées dans la bibliothèque : enfin transmises à l'analyse (défaut corrigé).
@@ -198,7 +220,7 @@ const confirmTool: AgentTool<{}> = {
     const j = updateJourney(ctx.conversationId, (j) => { setStep(j, 0, "done"); setStep(j, 1, "doing"); });
     return {
       ok: true,
-      summary: L(`Étape 0 validée : fiche reportée dans le projet (${photoIds.length} photo(s), ${urls.length} lien(s))${j0.keep.length ? ` ; gardé tel quel : ${j0.keep.join(", ")}${j0.keep.includes("logo") ? (logoId ? " (logo rangé)" : " (logo introuvable : demandez le fichier)") : ""}` : ""}. Étape suivante : 1, les 3 identités de marque.`, "Step 0 validated."),
+      summary: L(`Étape 0 validée : tout ce que tu as dit est reporté dans ton projet${j0.keep.length ? ` ; gardé tel quel : ${j0.keep.join(", ")}${j0.keep.includes("logo") ? (logoId ? " (logo rangé)" : " (logo introuvable : envoie-moi le fichier)") : ""}` : ""}. Prochaine étape : les 3 identités de marque.`, "Step 0 validated."),
       data: { etapeEnCours: currentStep(j), photos: photoIds.length, liens: urls, logo: logoId },
       changes: [{ module: "parcours", object: "étape 0", summary: "validée par le client", before: "doing", after: "done", verified: true }],
     };
