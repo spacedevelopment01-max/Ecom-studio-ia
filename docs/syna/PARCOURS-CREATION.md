@@ -70,12 +70,29 @@ SYNA demande : « Partir d'un de nos thèmes, ou créer un site sur mesure à pa
 **Création** : 3 maquettes images (charte § 6, « Maquettes images »), vraiment différentes, fidèles à l'identité choisie,
 textes émotionnels et vrais produits ou services. Le client choisit une maquette.
 
+**Aucune page oubliée** — liste de base, adaptée au métier par SINA (restaurant : carte et réservation ; immobilier :
+recherche et fiche bien ; salon : prestations et rendez-vous…) :
+
+- *Boutique (produits)* : accueil ; catalogue ; catégorie ; fiche produit (chaque type de produit) ; panier (page et
+  tiroir) et panier vide ; recherche et « aucun résultat » ; notre histoire ; contact ; FAQ ; livraison et retours ;
+  guide des tailles si utile ; compte client (connexion, inscription, mot de passe oublié, mon compte, commandes,
+  adresses) ; CGV ; mentions légales ; confidentialité ; cookies ; page « boutique bientôt ouverte » ; 404 ; blog (liste
+  et article, prévus pour l'étape 12). **Pas de page de paiement** : elle est fournie par la plateforme (Shopify) ou
+  prend le style du thème (WooCommerce, PrestaShop).
+- *Services* : accueil ; prestations et page de chaque prestation ; tarifs ; réalisations et page de chaque projet ;
+  l'entreprise ; méthode ; zone d'intervention ; FAQ ; contact ; demande de devis et confirmation ; prise de
+  rendez-vous ou réservation, confirmation et gestion (si le métier s'y prête) ; conditions de prestation ; mentions
+  légales ; confidentialité ; cookies ; plan du site ; 404 ; blog (liste et article). Publication par le Studio avec le
+  domaine du client.
+- Chaque page en version ordinateur et téléphone ; en-tête et pied de page sur toutes.
+
 ## Étape 7 — Thème codé d'après la maquette choisie 🆕
 
 - Claude code le thème : en-tête, pied, accueil, collection, fiches produit (ou prestations), panier, à propos, contact,
   FAQ, recherche, 404, pages légales (CGV, mentions, confidentialité, livraison et retours, cookies), modèles de blog
   prêts pour l'étape 12.
-- Sections modifiables dans le Studio, par SYNA et dans Shopify ; export vers les autres plateformes.
+- Sections modifiables dans le Studio, par SINA et dans Shopify ; export vers WooCommerce et PrestaShop (Wix et
+  Squarespace retirés le 6 novembre).
 - Images du site créées par l'IA d'images (aucune en double), produits reliés à l'onglet Produits.
 - Boucle de contrôle : captures à 5 largeurs comparées à la maquette par Claude, corrections, liens testés, Theme Check,
   SEO complet (charte § 4).

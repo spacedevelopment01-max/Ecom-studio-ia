@@ -127,3 +127,20 @@ Estimation donnée à l'utilisateur pour un projet complet (calendrier de 14 pos
 
 À corriger après accord : plafond des images OpenAI à 0,10 $ (0,09 $ est un peu juste), plafond à part pour les grandes
 planches de maquettes (jusqu'à 0,14 $ en haute qualité).
+
+## 9. Décisions du 6 novembre 2026 (suite)
+
+- **SYNA s'appelle désormais SINA** (nom affiché partout : interface, textes, documents). Les noms internes du code
+  (dossiers `syna-agent`, tables, branches) restent inchangés pour ne rien casser.
+- **Maquettes : aucune page oubliée**, liste adaptée au type de projet (voir `docs/syna/PARCOURS-CREATION.md`, étape 6).
+  Une maquette peut compter plusieurs images si c'est plus lisible.
+- **Boutiques (produits)** : pages jusqu'au **panier** compris. Le paiement se fait sur la plateforme (Shopify : page de
+  paiement de Shopify, non modifiable par un thème ; WooCommerce et PrestaShop : la page de paiement prend le style du
+  thème exporté, à vérifier pendant la construction).
+- **Sites de services** : publiés par le Studio avec le **domaine du client** relié dans le Studio (`src/lib/sites/`,
+  domaine déjà possédé par le client ; le Studio n'achète ni ne génère de nom de domaine — vérifié dans le code le
+  6 novembre).
+- **Exports Wix et Squarespace retirés** (ce n'étaient que des « kits de reprise ») : restent Shopify, WooCommerce,
+  PrestaShop, et la publication par le Studio pour les services.
+- Ordre de construction choisi : tout construire avant les essais réels, en commençant par l'étape 7 (la plus risquée),
+  testée gratuitement puis sur une planche de Thomas (APLAT) comparée au vrai thème, avec accord sur le prix.
