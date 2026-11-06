@@ -44,6 +44,11 @@ if (process.env.STUDIO_ANTHROPIC_KEY) {
   console.log("Clé Anthropic enregistrée (chiffrée) depuis STUDIO_ANTHROPIC_KEY.");
 } else console.log("STUDIO_ANTHROPIC_KEY absente : Claude indisponible dans le Studio privé.");
 
+// Tarifs vérifiés le 06/11/2026 (prix publics, voir tarifs-verifies.ts) : réappliqués à chaque démarrage.
+const { appliquerTarifsVerifies } = await import("./tarifs-verifies");
+await appliquerTarifsVerifies();
+console.log("Tarifs vérifiés du 06/11/2026 appliqués (recherche web Claude, images OpenAI, taux 0,90).");
+
 const origin = `http://localhost:${port}`;
 const common = { ...process.env, ...env, APP_URL: origin, NEXT_TELEMETRY_DISABLED: "1" };
 const web = spawn(process.execPath, [path.resolve("node_modules/next/dist/bin/next"), "start", "-p", String(port), "-H", "0.0.0.0"], { env: { ...common, NODE_OPTIONS: "--max-old-space-size=4096" }, stdio: "inherit" });
