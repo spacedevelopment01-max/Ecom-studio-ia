@@ -176,6 +176,8 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
       // La réponse est déjà enregistrée AVANT que le modèle n'écrive : il ne peut pas l'oublier.
       expect(J.journeyOf(cid).start.existing?.value).toMatch(/je pars de zéro/);
       seen.push(c.routing?.prefer);
+      // Variété : SINA voit les débuts de ses derniers messages pour ne pas les répéter.
+      expect(String(c.context)).toMatch(/Débuts de tes derniers messages .*« Bien reçu\.… »/);
       return { message: "Super, on part de zéro ensemble !", actions: [], question: { text: "À qui t'adresses-tu ?" }, done: false, askField: "audience" };
     } }));
     expect(seen).toHaveLength(1);

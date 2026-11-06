@@ -302,6 +302,8 @@ export function modelFor(currentStepNumber: number): { provider: "anthropic"; mo
 /** Un pas de raisonnement : fil complet + état du projet + pièces jointes (vision) → JSON d'actions. */
 async function reason(user: User, r: SynaRun, jobId: string, step: number, deps: AgentDeps): Promise<StepOutput> {
   const history = lastMessages(r.conversation_id, 120);
+  // Variété des réponses : les débuts de tes derniers messages, à ne pas reprendre.
+  const openings = history.filter((m) => m.role === "assistant" && m.content?.message).slice(-4).map((m) => String(m.content.message).split(/\s+/).slice(0, 5).join(" "));
   const images: LlmImage[] = step === 0 || newAttachmentSinceLastAssistant(history) ? attachmentImages(r.conversation_id, history) : [];
   const b = budgetState(user.id, r.project_id, r.conversation_id);
   const snapshot = r.project_id ? await projectSnapshot(toolContext(user, r)) : L("Aucun projet rattaché (brouillon). Pour agir sur un site ou une boutique, créez d'abord le projet avec project.create.", "No project linked yet (draft). Create it with project.create before acting.");
@@ -309,7 +311,7 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
     task: "agent_conversation", userId: user.id, projectId: r.project_id, jobId,
     system: SYNA_SYSTEM, promptKey: "syna-agent-1",
     reference: `# Outils disponibles (registre commun)\n\n${toolCatalog(!!r.project_id)}`,
-    context: `# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id))}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget autorisé pour SINA\nAutorisé : ${b.authorizedPct ?? 0} % du budget IA ; engagé : ${b.spentPct ?? 0} %. Au-delà, le serveur demande l'accord du client.\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}`,
+    context: `# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id))}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget autorisé pour SINA\nAutorisé : ${b.authorizedPct ?? 0} % du budget IA ; engagé : ${b.spentPct ?? 0} %. Au-delà, le serveur demande l'accord du client.\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}`,
     prompt: `# Fil de la conversation (le plus ancien d'abord ; vos propres réponses incluses)\n${serialize(history)}\n\nÉtape ${step + 1} de cette demande. Répondez avec l'objet JSON {message, actions, question, done}.`,
     images: images.length ? images : undefined,
     maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}`, routing: { difficulty: "complex", prefer: modelFor(currentStep(journeyOf(r.conversation_id))) },
