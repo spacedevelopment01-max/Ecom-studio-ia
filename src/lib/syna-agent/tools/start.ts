@@ -52,6 +52,9 @@ async function ensureProject(ctx: ToolContext, j: Journey): Promise<string | nul
   return res.ok ? (ctx.projectId ?? null) : null;
 }
 
+/** Retire les identifiants techniques (pièce jointe, projet…) d'un texte montré au client. */
+export const withoutIds = (s: string) => s.replace(/\b(?:pi[eè]ce(?: jointe)?|fichier|id)\s*:?\s*[a-z0-9]{12,}\b\s*:?\s*/gi, "").replace(/\b(?=[a-z0-9]*\d)[a-z0-9]{16}\b/g, "").replace(/\(\s*\)/g, "").replace(/\(\s+/g, "(").replace(/ {2,}/g, " ").replace(/\s+\./g, ".").trim();
+
 const stateTool: AgentTool<{}> = {
   name: "start.state", module: "parcours", kind: "read",
   description: "Lit le parcours de création (étapes 0 à 13) et la fiche de départ : ce que le client a déjà dit (avec la source : client, site lu, formulaire, photo), les champs encore à demander dans l'ordre, le mode (création ou refonte) et ce qu'il faut garder tel quel. Gratuit, utilisable avant la création du projet.",
@@ -77,7 +80,7 @@ const answerTool: AgentTool<any> = {
     }
     const before = journeyOf(ctx.conversationId).start;
     const j = updateJourney(ctx.conversationId, (j) => {
-      for (const x of a.answers) j.start[x.field] = { value: x.value.trim(), status: x.status, source: "client", at: Date.now() };
+      for (const x of a.answers) j.start[x.field] = { value: withoutIds(x.value), status: x.status, source: "client", at: Date.now() };
       if (j.steps[0]?.status === "todo") setStep(j, 0, "doing");
     });
     const next = missingFields(j);
@@ -135,18 +138,21 @@ const importTool: AgentTool<{ url: string }> = {
 
 const keepTool: AgentTool<any> = {
   name: "start.keep", module: "parcours", kind: "write",
-  description: `Mode refonte : enregistre ce que le client garde TEL QUEL (jamais redessiné ni réécrit ensuite) parmi ${KEEPABLE.join(", ")} ; tout le reste sera recréé. keep: [] si le client veut tout recréer. logoAttachmentId : pièce jointe qui est le logo du client (s'il garde son logo et l'a joint). Gratuit.`,
-  args: z.object({ keep: z.array(z.enum(KEEPABLE)).max(KEEPABLE.length), note: z.string().max(1000).optional(), logoAttachmentId: z.string().max(40).optional() }).strict(),
-  run: (ctx, a: { keep: (typeof KEEPABLE)[number][]; note?: string; logoAttachmentId?: string }) => {
+  description: `Mode refonte : enregistre ce que le client garde TEL QUEL (jamais redessiné ni réécrit ensuite) parmi ${KEEPABLE.join(", ")} ; tout le reste sera recréé. keep: [] si le client veut tout recréer. logoAttachmentId : pièce jointe qui est le logo du client (s'il garde son logo et l'a joint). name / slogan : textes EXACTS du nom et du slogan existants (tels qu'écrits par le client ou sur son logo). Un logo gardé qui contient le nom garde aussi ce nom (on ne peut pas changer de nom en gardant le logo) : donne alors name. Gratuit.`,
+  args: z.object({ keep: z.array(z.enum(KEEPABLE)).max(KEEPABLE.length), note: z.string().max(1000).optional(), logoAttachmentId: z.string().max(40).optional(), name: z.string().max(120).optional(), slogan: z.string().max(200).optional() }).strict(),
+  run: (ctx, a: { keep: (typeof KEEPABLE)[number][]; note?: string; logoAttachmentId?: string; name?: string; slogan?: string }) => {
     if (a.logoAttachmentId && !ctx.attachment(a.logoAttachmentId)) return { ok: false, summary: L("Pièce jointe du logo introuvable dans ce fil.", "Logo attachment not found.") };
     const before = journeyOf(ctx.conversationId).keep;
     const j = updateJourney(ctx.conversationId, (j) => {
-      j.keep = [...new Set(a.keep)];
+      // Logo gardé avec le nom dedans : le nom est gardé aussi (sinon le logo et la marque se contrediraient).
+      j.keep = [...new Set([...a.keep, ...(a.keep.includes("logo") && a.name ? ["nom" as const] : [])])];
+      j.keptValues = { ...(j.keptValues ?? {}), ...(a.name ? { name: a.name.trim() } : {}), ...(a.slogan ? { slogan: a.slogan.trim() } : {}) };
       j.mode = j.keep.length ? "refonte" : "creation";
       j.start.keep = { value: j.keep.length ? `${j.keep.join(", ")}${a.note ? ` — ${a.note}` : ""}` : "rien, tout recréer", status: "answered", source: "client", at: Date.now() };
       (j as any).logoAttachmentId = a.logoAttachmentId ?? (j as any).logoAttachmentId;
     });
-    return { ok: true, summary: L(j.keep.length ? `À garder tel quel : ${j.keep.join(", ")} ; le reste sera recréé.` : "Tout sera recréé.", "Keep list saved."), data: { mode: j.mode, keep: j.keep }, changes: [{ module: "parcours", object: "à garder", summary: j.keep.join(", ") || "rien", before, after: j.keep, verified: true }] };
+    const named = [j.keptValues?.name && `nom « ${j.keptValues.name} »`, j.keptValues?.slogan && `slogan « ${j.keptValues.slogan} »`].filter(Boolean).join(", ");
+    return { ok: true, summary: L(j.keep.length ? `À garder tel quel : ${j.keep.join(", ")}${named ? ` (${named})` : ""} ; le reste sera recréé.${a.keep.includes("logo") && a.name && !a.keep.includes("nom") ? " Ton logo contient le nom de ta marque : je garde donc aussi le nom." : ""}` : "Tout sera recréé.", "Keep list saved."), data: { mode: j.mode, keep: j.keep }, changes: [{ module: "parcours", object: "à garder", summary: j.keep.join(", ") || "rien", before, after: j.keep, verified: true }] };
   },
 };
 
@@ -238,7 +244,7 @@ const confirmTool: AgentTool<{}> = {
         business: (v("business") as "products" | "services") || p.business,
         description: v("offer") || old.description || "",
         offerName: old.offerName || p.product.name || p.name,
-        brandName: j0.keep.includes("nom") && kept?.name ? kept.name : (old.brandName ?? ""),
+        brandName: j0.keep.includes("nom") && (j0.keptValues?.name || kept?.name) ? (j0.keptValues?.name || kept!.name!) : (old.brandName ?? ""),
         target: v("audience"),
         constraints,
         photoIds: [...new Set([...(old.photoIds ?? []), ...photoIds])],
@@ -248,6 +254,11 @@ const confirmTool: AgentTool<{}> = {
       });
     }
     applySetup(pid, v("business") || p.business, v("setup"));
+    // Nom gardé : le projet prend le vrai nom de la marque (au lieu du nom provisoire) ; slogan gardé mot pour mot.
+    const keptName = j0.keep.includes("nom") ? (j0.keptValues?.name || j0.imported[0]?.name) : undefined;
+    if (keptName) run("UPDATE projects SET name=? WHERE id=?", keptName, pid);
+    if (j0.keep.includes("slogan") && j0.keptValues?.slogan) remember(pid, { kind: "decision", key: "syna.slogan", value: j0.keptValues.slogan, source: "user" } as any);
+    if (keptName) remember(pid, { kind: "decision", key: "syna.nom", value: keptName, source: "user" } as any);
     const logoId = j0.keep.includes("logo") ? await keepLogo(ctx, j0) : null;
     remember(pid, { kind: "decision", key: "syna.depart", value: `Étape 0 validée par le client. ${j0.mode === "refonte" ? `Refonte : garder tel quel ${j0.keep.join(", ")}.` : "Création complète."}`, source: "user" } as any);
     if (j0.keep.length) remember(pid, { kind: "decision", key: "syna.garder", value: j0.keep.join(", "), source: "user" } as any);

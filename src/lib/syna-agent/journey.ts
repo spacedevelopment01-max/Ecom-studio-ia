@@ -64,6 +64,8 @@ export type Journey = {
   keep: Keepable[];
   mode: "creation" | "refonte";
   imported: ImportedSite[];
+  /** Textes exacts gardés en refonte (nom, slogan), repris mot pour mot ensuite. */
+  keptValues?: { name?: string; slogan?: string };
 };
 
 export const emptyJourney = (): Journey => ({

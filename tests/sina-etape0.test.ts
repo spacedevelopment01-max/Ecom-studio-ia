@@ -150,6 +150,26 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     } finally { startDeps.fetchImpl = undefined; }
   });
 
+  it("refonte avec un logo qui contient le nom : le nom est gardé aussi, le projet prend le vrai nom, le slogan est mémorisé mot pour mot", async () => {
+    const { withoutIds } = await import("@/lib/syna-agent/tools/start");
+    const user = await account();
+    const cid = threadFor(user, null), ctx = ctxOf(user, cid);
+    await call("start.answer", ctx, { answers: [{ field: "business", value: "products" }, { field: "offer", value: "Bougies parfumées artisanales en cire de soja." }] });
+    await call("start.answer", ctx, { answers: [{ field: "existing", value: "Marque : Brume d'Ambre. Logo joint (pièce 842che1vm4a9rb04 : monogramme BA)." }] });
+    expect(J.journeyOf(cid).start.existing?.value).toBe("Marque : Brume d'Ambre. Logo joint (monogramme BA).");
+    const keep = await call("start.keep", ctx, { keep: ["logo", "slogan"], name: "Brume d'Ambre", slogan: "Le parfum des heures douces." });
+    expect(keep.summary).toMatch(/je garde donc aussi le nom/);
+    expect(J.journeyOf(cid).keep).toEqual(["logo", "slogan", "nom"]);
+    await call("start.answer", ctx, { answers: ["audience", "image", "setup", "market", "price", "difference", "taste", "photos", "language", "contact", "platform"].map((f) => ({ field: f, value: f === "audience" ? "Femmes de 30 à 50 ans." : f === "platform" ? "shopify" : `réponse ${f}` })) });
+    const ok = await call("start.confirm", ctx, {});
+    expect(ok.ok).toBe(true);
+    const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
+    expect(loadProject(pid).name).toBe("Brume d'Ambre");
+    expect(one<any>("SELECT value FROM memory WHERE project_id=? AND key='syna.slogan'", pid).value).toBe("Le parfum des heures douces.");
+    expect((stateOf(pid)!.stages as any).brief.data.input.brandName).toBe("Brume d'Ambre");
+    expect(withoutIds("Logo joint (842che1vm4a9rb04). Prix : 32 €.")).toBe("Logo joint. Prix : 32 €.");
+  });
+
   it("mode chantier : pendant la construction, le client suit sans modifier ; SINA et la lecture restent libres", async () => {
     const { withAccessScope } = await import("@/lib/access-scope");
     const { assertNotUnderConstruction, underConstruction } = await import("@/lib/syna-agent/construction");
