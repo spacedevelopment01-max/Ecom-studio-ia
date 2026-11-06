@@ -57,22 +57,19 @@ const AUDIENCE_FACT = /public|cible|audience|client(e|s)? vis/i;
  * Empreinte v2 (décision du propriétaire, 06/11/2026) : un angle marketing est une raison émotionnelle d'acheter, il
  * reste valable quand seuls des FAITS changent (prix, dimensions, matières, catalogue, texte de présentation). Seule une
  * nouvelle offre le périme : activité, langue, nom, catégorie, secteur, public visé, prestations (noms et zone),
- * identité de marque, liens et consignes confirmées du client.
+ * liens et consignes confirmées du client. L'identité de marque, construite après l'angle, ne le périme pas.
  */
 export function inputDigest(p: Project) {
   const v1 = JSON.parse(canonicalJSON(coreOfferBase(p)));
   return "v2:" + createHash("sha256").update(canonicalJSON(v1)).digest("hex");
 }
 function coreOfferBase(p: Project) {
-  const brand = p.brand
-    ? (({ direction, paletteMode, generatedBy, checks, validated, alternatives, taglineAlternatives, ...identity }) => identity)(p.brand)
-    : null;
+  // L'identité visuelle se construit APRÈS l'angle et à partir de lui (ordre du propriétaire) : elle ne le périme pas.
   return {
     business: p.business,
     language: p.settings.language ?? "fr",
     product: { name: p.product?.name ?? "", category: p.product?.category ?? "", sector: p.product?.sector ?? null, audience: (p.product?.facts ?? []).filter((f) => AUDIENCE_FACT.test(f.label)).map((f) => f.value) },
     services: { names: (p.services?.services ?? []).map((x) => x.name), area: p.services?.area ?? "" },
-    brand,
     sources: p.sources,
     constraints: memory(p.id)
       .filter((m) => m.source === "user" && m.status === "confirmed" && ["correction", "preference", "goal"].includes(m.kind))

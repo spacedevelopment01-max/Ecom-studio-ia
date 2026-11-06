@@ -640,7 +640,10 @@ it("seule la direction de composition change : données stratégiques et compati
     generatedBy: "ai",
   });
   expect(() => assertContentAlignment(f.pid, "custom", "kept")).not.toThrow();
+  // Règle du propriétaire (06/11/2026) : nom, logo et couleurs ne changent pas l'offre ; la cible, si.
   saveBrand(f.pid, { ...brand, name: "Une autre identité" });
+  expect(() => assertContentAlignment(f.pid, "custom", "kept")).not.toThrow();
+  saveProduct(f.pid, { ...loadProject(f.pid).product, category: "Une autre offre" });
   expect(() => assertContentAlignment(f.pid, "custom", "kept")).toThrow();
 });
 it("un média supprimé après préparation ne peut pas être déclaré vérifié", async () => {
@@ -755,5 +758,6 @@ it('une réanalyse ne transforme pas un angle activé en une autre cible sans co
  const {clientFixture}=await import('./mission154-fixtures');const f=await clientFixture({strategy:null,incomplete:true});
  seedSourcedAnglesForTest(f.pid);const before=getStrategyState(f.pid);const p=prepareStrategyChange(f.pid,'usage');activateStrategy(f.pid,{angleId:'usage',preparationId:p.id,idempotencyKey:'fixed-target-160',confirmed:true,retainUnaligned:true});
  const {loadProject,saveBrand}=await import('@/lib/projects');const project=loadProject(f.pid);saveBrand(f.pid,{...project.brand!,audience:'Une nouvelle cible arbitraire obtenue par réanalyse'});
- expect(()=>proposeStrategies(f.pid)).toThrow(/contexte|recherche/i);const after=getStrategyState(f.pid);expect(after.legacyAngles?.map(a=>a.audience)).toEqual(before.angles.map(a=>a.audience));expect(after.usedAngleIds).toEqual(['usage']);
+ // Règle du propriétaire (06/11/2026) : l'identité ne périme pas l'angle ; ses cibles restent celles de la recherche acquise.
+const after=proposeStrategies(f.pid);expect(after.angles.map(a=>a.audience)).toEqual(before.angles.map(a=>a.audience));expect(after.usedAngleIds).toEqual(['usage']);
 });
