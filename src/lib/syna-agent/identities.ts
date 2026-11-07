@@ -147,7 +147,7 @@ Les trois identités diffèrent sur au moins 4 des 6 axes, dont toujours le prem
 6. Style de logo : trois styles DIFFÉRENTS parmi ${PROPOSED_LOGO_STYLES.map((s) => `${s} (${LOGO_STYLE_LABEL[s]})`).join(", ")}, choisis pour le métier du client et pour chaque identité. Rendus INTERDITS par le propriétaire (jamais dans une idée de logo) : ${FORBIDDEN_LOGO_RENDERS.join(" ; ")}.
 
 Chaque identité contient :
-- name : RÈGLE DU PROPRIÉTAIRE : le nom a une LOGIQUE claire avec le produit ou le service, jamais un mot pris au hasard ni choisi pour sa seule sonorité. Il part d'un élément réel du produit (pour un service : du geste ou de l'outil du métier) : une partie qu'on peut montrer du doigt (comme la mèche d'une bougie ou le carré d'une tablette), sa matière, sa forme, le geste pour s'en servir ou ce qu'il change concrètement pour le client. Le client comprend le lien tout de suite, ou dès qu'on le lui explique en une phrase. Applique la MÉTHODE DE NOMMAGE (ci-dessous) : une deuxième lecture (expression courante, double sens) est un plus quand elle vient naturellement, jamais au prix de la logique ; sens positif ou neutre. Pour CHAQUE identité, écris d'abord dans nameCandidates 12 à 20 pistes, chacune tirée d'un élément du produit, puis garde celle dont la logique est la plus évidente et la plus belle ; trois noms tirés de trois éléments différents. nameAnchor = l'élément du produit dont part le nom (2 à 6 mots) ; nameTest = ce qu'un inconnu imagine en lisant le nom seul ; nameExpression = le mot ou l'expression d'origine et son sens courant ; nameStyle dit le détail de départ ; nameWhy = la logique en une ou deux phrases simples, MONTRÉE AU CLIENT (« Pars de … ; … »). Le nom FAIT MARQUE : on l'imagine en grand sur l'étiquette du produit, une enseigne ou un logo ; ce n'est jamais une phrase, un adjectif ni une tournure de conversation (« Bien Roulé », « Ça Roule », « Dans le Sac » ont été refusés : trop « phrase », pas assez « marque »). Les trois noms sont de trois GENRES différents (nameKind) : « mot » = un seul mot qui existe, tiré d'une pièce, d'une matière ou d'un geste du produit (comme Repli, Écume, Strate) ; « invente » = un mot inventé court (2 ou 3 syllabes), construit à partir d'un mot du produit, facile à prononcer et à écrire, au sens positif ; « deux_mots » = un nom court de deux mots forts (un petit mot comme « de » ou « la » en plus au besoin) qui sonne comme une marque (comme Dernier Carré, Double Fond, Tour de Table), jamais une phrase. Jamais le nom d'une marque connue ni un nom des exemples.
+- name : RÈGLE DU PROPRIÉTAIRE : le nom a une LOGIQUE claire avec le produit ou le service, jamais un mot pris au hasard ni choisi pour sa seule sonorité. Il part d'un élément réel du produit (pour un service : du geste ou de l'outil du métier) : une partie qu'on peut montrer du doigt (comme la mèche d'une bougie ou le carré d'une tablette), sa matière, sa forme, le geste pour s'en servir ou ce qu'il change concrètement pour le client. Le client comprend le lien tout de suite, ou dès qu'on le lui explique en une phrase. Applique la MÉTHODE DE NOMMAGE (ci-dessous) : une deuxième lecture (expression courante, double sens) est un plus quand elle vient naturellement, jamais au prix de la logique ; sens positif ou neutre. Pour CHAQUE identité, écris d'abord dans nameCandidates 12 à 20 pistes, chacune tirée d'un élément du produit, puis garde celle dont la logique est la plus évidente et la plus belle ; trois noms tirés de trois éléments différents. nameAnchor = l'élément du produit dont part le nom (2 à 6 mots) ; nameTest = ce qu'un inconnu imagine en lisant le nom seul ; nameExpression = le mot ou l'expression d'origine et son sens courant ; nameStyle dit le détail de départ ; nameWhy = la logique en une ou deux phrases simples, MONTRÉE AU CLIENT (« Pars de … ; … »). Le nom FAIT MARQUE : on l'imagine en grand sur l'étiquette du produit, une enseigne ou un logo ; ce n'est jamais une phrase, un adjectif ni une tournure de conversation (« Bien Roulé », « Ça Roule », « Dans le Sac » ont été refusés : trop « phrase », pas assez « marque »). Le genre des noms dépend de l'activité (la consigne « # Genre des noms » du message le précise) ; les genres possibles (nameKind) : « mot » = un seul mot qui existe, tiré d'une pièce, d'une matière ou d'un geste du produit (comme Repli, Écume, Strate) ; « invente » = un mot inventé court (2 ou 3 syllabes), construit à partir d'un mot du produit, facile à prononcer et à écrire, au sens positif ; « deux_mots » = un nom court de deux mots forts (un petit mot comme « de » ou « la » en plus au besoin) qui sonne comme une marque (comme Dernier Carré, Double Fond, Tour de Table), jamais une phrase. Jamais le nom d'une marque connue ni un nom des exemples.
 - slogan : une phrase courte et concrète (9 mots au plus), en français, souvent au tutoiement ou à l'impératif, qui dit le bénéfice avec une image simple, sans promesse invérifiable ; sloganTone dit son ton.
 - promise : la promesse en une phrase, du point de vue du client final.
 - territory : le territoire émotionnel en quelques mots.
@@ -306,7 +306,8 @@ export function identityIssues(list: Identity[], j: Journey): string[] {
   }
   if (!keptName) {
     const kinds = list.map((x) => x.nameKind);
-    if (kinds.some((k) => !k) || new Set(kinds).size < list.length) issues.push("Les trois noms doivent être de trois genres différents (nameKind : mot, invente, deux_mots).");
+    if (nameKindsFor(j) === "produits") { for (const x of list) if (x.nameKind !== "invente") issues.push(`Identité ${x.key} : marque de produits → le nom doit être un mot inventé (nameKind « invente »), pas « ${x.name} ».`); }
+    else if (kinds.some((k) => !k) || new Set(kinds).size < list.length) issues.push("Les trois noms doivent être de trois genres différents (nameKind : mot, invente, deux_mots).");
     for (const x of list) if ((x.nameKind === "mot" || x.nameKind === "invente") && words(x.name) > 1) issues.push(`Identité ${x.key} : « ${x.name} » doit tenir en un seul mot (genre ${x.nameKind === "mot" ? "mot" : "mot inventé"}).`);
     const names = list.map((x) => norm(x.name));
     if (new Set(names).size < names.length) issues.push("Deux identités ont le même nom : trois noms différents sont attendus.");
@@ -326,6 +327,20 @@ export function identityIssues(list: Identity[], j: Journey): string[] {
 }
 
 /** Demande à Claude : fiche de départ, contraintes de refonte, éventuelles consignes du client et corrections du contrôle. */
+/**
+ * Genres de noms attendus (choix du propriétaire du 7 novembre 2026 : « le mot inventé est le mieux, surtout pour
+ * un produit ; pour un service c'est différent ») : produits = trois mots inventés ; services = trois genres.
+ */
+export function nameKindsFor(j: Journey): "produits" | "services" {
+  return j.start.business?.status === "answered" && j.start.business.value === "services" ? "services" : "produits";
+}
+
+export function nameKindRule(j: Journey): string {
+  return nameKindsFor(j) === "produits"
+    ? "# Genre des noms : MARQUE DE PRODUITS → les TROIS noms sont des MOTS INVENTÉS (nameKind « invente », choix du propriétaire), chacun tiré d'un élément différent du produit et construit d'une façon différente : un mot du produit raccourci avec une terminaison qui sonne marque (comme « Reflo », de reflet) ; deux mots du produit fondus en un seul ; une racine du produit avec une sonorité vive. Un seul mot de 2 ou 3 syllabes, qui se prononce comme il s'écrit en français, sans sens négatif à l'oral, jamais une marque connue. Lu seul, on devine le produit ou sa matière ; nameWhy dit de quel mot il vient."
+    : "# Genre des noms : ENTREPRISE DE SERVICES → trois genres différents (nameKind) : un « mot » qui existe, un mot « invente », un nom en « deux_mots » ; pour un service, les vrais mots et les expressions du métier sont souvent les plus parlants.";
+}
+
 export function identityPrompt(j: Journey, opts: { guidance?: string; feedback?: string[]; previous?: Identity[]; redo?: string[]; namesOnly?: boolean } = {}): string {
   const parts = [
     "# Fiche de départ du client (étape 0, ses mots)",
@@ -333,6 +348,8 @@ export function identityPrompt(j: Journey, opts: { guidance?: string; feedback?:
     "",
     "# Existant et refonte",
     keepConstraints(j),
+    "",
+    nameKindRule(j),
   ];
   if (j.imported.length) parts.push(`Site existant lu : ${j.imported.map((s) => `${s.url} (nom « ${s.name ?? "?"} », slogan « ${s.tagline ?? "?"} », couleurs ${s.colors?.join(" ") || "?"}, polices ${s.fonts?.join(", ") || "?"})`).join(" ; ")}.`);
   if (opts.guidance) parts.push("", "# Ce que le client demande pour cette nouvelle proposition", opts.guidance);
