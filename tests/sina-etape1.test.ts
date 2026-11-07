@@ -339,6 +339,10 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     const real = good(); real[0].nameKind = "mot";
     expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: real }).identities, prod).join()).toMatch(/Identité A : marque de produits → le nom doit être un mot inventé/);
     expect(I.identityPrompt(prod)).toMatch(/# Genre des noms : MARQUE DE PRODUITS/);
+    // « C'est un peu mieux » : repères de vrais noms inventés et de leur fabrication ; fusion invisible, pas de terminaison plaquée.
+    expect(refs).toMatch(/Velcro \(« velours » \+ « crochet »/);
+    expect(refs).toMatch(/la fusion est INVISIBLE[^]*pas de terminaison plaquée/);
+    expect(I.nameKindRule(prod)).toMatch(/au moins 15 mots inventés[^]*jamais le premier venu/);
     const serv = J.emptyJourney(); serv.start.business = { value: "services", status: "answered", source: "client", at: 1 } as any;
     expect(I.nameKindRule(serv)).toMatch(/ENTREPRISE DE SERVICES → trois genres différents/);
     expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: good() }).identities, serv).join()).toMatch(/trois genres différents/);

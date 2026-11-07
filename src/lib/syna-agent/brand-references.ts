@@ -135,6 +135,21 @@ export const PALETTE_EXAMPLES: PaletteExample[] = [
 ];
 
 /** Texte des références placé dans les consignes de Claude (mises en cache) : niveau et esprit, jamais à recopier. */
+/**
+ * Noms INVENTÉS célèbres et leur fabrication (repères d'oreille pour les marques de produits, choix du propriétaire du
+ * 7 novembre 2026). Ce sont des marques existantes : modèles de construction, jamais à imiter ni à copier.
+ */
+export const INVENTED_NAME_EXAMPLES: { name: string; how: string }[] = [
+  { name: "Velcro", how: "« velours » + « crochet » : deux mots du produit fondus sans couture visible" },
+  { name: "Vélib'", how: "« vélo » + « liberté » : le produit et ce qu'il apporte, en deux syllabes" },
+  { name: "Duracell", how: "« durable » + « cell » (pile) : la qualité et l'objet, d'un seul souffle" },
+  { name: "Febreze", how: "« fabric » (tissu) + « breeze » (brise) : la matière et l'effet" },
+  { name: "Gore-Tex", how: "le nom du fabricant + « tex » (textile) : la matière dite en une syllabe" },
+  { name: "Twingo", how: "« twist », « swing » et « tango » mélangés : le rythme et la gaieté de la voiture" },
+  { name: "Nutella", how: "« nut » (noisette) + une terminaison douce « -ella » : l'ingrédient rendu chantant" },
+  { name: "Lego", how: "« leg godt » (joue bien, en danois) raccourci : le geste d'usage en deux syllabes" },
+];
+
 export function referencesForPrompt(): string {
   const names = (kind: NameExample["kind"]) => NAME_EXAMPLES.filter((x) => x.kind === kind).map((x) => `${x.name} (${x.activity}) : ${x.logic}`).join("\n");
   const pal = PALETTE_EXAMPLES.map((p) => p.ground === "degrade"
@@ -143,7 +158,7 @@ export function referencesForPrompt(): string {
   return `MÉTHODE DE NOMMAGE du propriétaire du Studio (à appliquer pour CHAQUE nom) : pars d'un DÉTAIL RÉEL du produit ou du service (un geste, une matière, une sensation, un moment ou un résultat), puis cherche un mot ou une expression qui lui donne une DEUXIÈME LECTURE (expression courante détournée, double sens, mot qui évoque aussi une émotion ou un caractère). Le nom est court (1 à 3 mots), en français, facile à dire et à retenir ; on comprend le métier et on sourit ou on est intrigué.
 CE QUI FAIT UN BON NOM (règle du propriétaire du 7 novembre 2026, après des noms refusés : « Sangle Réflexe », « Roulé Bouclé », « Rabâche », « Repris de Route », « Ça Roule ») :
 1. LA LOGIQUE D'ABORD : chaque nom a un lien évident avec le produit ou le service ; on peut dire en une phrase pourquoi ce nom pour ce produit (« Repli » : le sac se replie ; « La Mèche Courte » : la mèche de la bougie). Jamais un mot pris au hasard, jamais un nom choisi pour sa sonorité ou parce que l'expression est connue.
-2. Ce sont des mots ou des expressions qui existent en français (Songe, Écume, Strate ; « avoir la mèche courte », « roue libre », « au poil »), pas deux mots assemblés pour l'occasion ; le lien au produit vient d'un mot de l'expression ou de la scène qu'elle évoque. EXCEPTION choisie par le propriétaire pour les MARQUES DE PRODUITS : un mot inventé court, construit à partir d'un mot du produit (« Reflo », de reflet), est le genre préféré.
+2. Ce sont des mots ou des expressions qui existent en français (Songe, Écume, Strate ; « avoir la mèche courte », « roue libre », « au poil »), pas deux mots assemblés pour l'occasion ; le lien au produit vient d'un mot de l'expression ou de la scène qu'elle évoque. EXCEPTION choisie par le propriétaire pour les MARQUES DE PRODUITS : un mot inventé court, construit à partir d'un mot du produit (« Reflo », de reflet), est le genre préféré. Repères de NOMS INVENTÉS célèbres et de leur fabrication (modèles de construction, jamais à copier) : ${INVENTED_NAME_EXAMPLES.map((x) => `${x.name} (${x.how})`).join(" ; ")}. Ce qui fait un beau nom inventé : la fusion est INVISIBLE, on lit un seul mot naturel et pas deux mots collés (« Bâchemin » montrait la soudure) ; 2 ou 3 syllabes avec du rythme ; le mot du produit reste reconnaissable mais transformé ; pas de terminaison plaquée qui sonne générique (« -co », « -ly », « -io » ajoutés au bout d'un mot, comme « Étanco ») ; il se dit facilement en français, et si possible dans d'autres langues ; il n'a pas besoin d'explication pour plaire à l'oreille.
 3. Le sens courant est positif ou neutre (jamais rabâcher, déroute, repris de justice, à bout, en panne).
 4. Il sonne bien à voix haute, s'écrit sans hésiter et se retient du premier coup.
 Ses 50 exemples, avec leur logique (niveau et esprit attendus ; ne recopie jamais ces noms) :
