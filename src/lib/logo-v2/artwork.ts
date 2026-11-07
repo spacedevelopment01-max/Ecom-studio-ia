@@ -525,8 +525,19 @@ export const SVG_FIDELITY = 0.96;
  * Version SVG seulement si elle reproduit fidèlement le dessin : aplats de 4 couleurs au plus (une texture ou un
  * dégradé ne se vectorise pas fidèlement), chaque couleur vectorisée puis le résultat recomparé pixel par pixel.
  */
+/** Pixel de bord : mélange d'une teinte principale avec le blanc du fond d'origine (anticrénelage). */
+function blendOfTop(tops: number[][], r: number, g: number, b: number): boolean {
+  return tops.some((c) => {
+    const t = [r, g, b].map((v, k) => (255 - c[k] === 0 ? null : (v - c[k]) / (255 - c[k]))).filter((x): x is number => x != null);
+    if (!t.length) return false;
+    const m = t.reduce((a, x) => a + x, 0) / t.length;
+    return m > 0 && m < 1 && t.every((x) => Math.abs(x - m) < 0.12);
+  });
+}
+
 export async function faithfulSvg(png: Buffer): Promise<{ ok: true; svg: string; fidelity: number } | { ok: false; reason: string }> {
-  const { data, info } = await sharp(png).ensureAlpha().resize({ width: 512, height: 512, fit: "inside" }).raw().toBuffer({ resolveWithObject: true });
+  // Tracé en 1024 px : les déliés fins d'un lettrage se perdaient en 512 px (essai réel : 89 % de fidélité).
+  const { data, info } = await sharp(png).ensureAlpha().resize({ width: 1024, height: 1024, fit: "inside", withoutEnlargement: true }).raw().toBuffer({ resolveWithObject: true });
   const N = info.width * info.height;
   const q = (v: number) => Math.round(v / 24) * 24;
   const hist = new Map<string, number>();
@@ -539,10 +550,52 @@ export async function faithfulSvg(png: Buffer): Promise<{ ok: true; svg: string;
   }
   if (opaque < N * 0.01) return { ok: false, reason: "image vide" };
   const top = [...hist.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4);
-  const covered = top.reduce((s, [, n]) => s + n, 0) / opaque;
+  // Un aplat dessiné par une IA n'est jamais parfaitement uni (légères variations, bords adoucis) : un pixel compte
+  // comme couvert s'il est PROCHE d'une des 4 teintes principales, ou s'il est un bord semi-transparent (essai réel :
+  // un lettrage vert et or en aplats comptait 85 % et n'avait pas de version vectorielle). La fidélité du tracé, vérifiée
+  // ensuite pixel par pixel, reste le vrai juge.
+  const tops = top.map(([k]) => k.split(",").map(Number));
+  let near = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] < 128) continue;
+    if (data[i + 3] < 230 || tops.some((c) => (c[0] - data[i]) ** 2 + (c[1] - data[i + 1]) ** 2 + (c[2] - data[i + 2]) ** 2 <= 40 ** 2) || blendOfTop(tops, data[i], data[i + 1], data[i + 2])) near++;
+  }
+  const covered = near / opaque;
   if (covered < 0.93) return { ok: false, reason: `dégradés, textures ou nuances (${Math.round(covered * 100)} % du dessin en 4 aplats) : une version vectorielle ne serait pas fidèle` };
-  const colours = top.filter(([, n]) => n / opaque > 0.01).map(([k]) => k.split(",").map(Number));
-  const nearest = (r: number, g: number, b: number) => colours.reduce((best, c, i) => ((c[0] - r) ** 2 + (c[1] - g) ** 2 + (c[2] - b) ** 2 < (colours[best][0] - r) ** 2 + (colours[best][1] - g) ** 2 + (colours[best][2] - b) ** 2 ? i : best), 0);
+  // Grain ou texture (papier, traces de matière) : les pixels pleins d'un vrai aplat sont presque tous TRÈS proches de la
+  // teinte moyenne de leur aplat (mesuré sur 5 logos : 82 à 91 % à moins de 8) ; une texture les disperse (mesuré : 66 %). La
+  // version vectorielle perdrait cette matière : refusée.
+  const sums = tops.map(() => [0, 0, 0, 0]);
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] < 230) continue;
+    let bi = -1, bd = 40 ** 2 + 1;
+    tops.forEach((c, k) => { const d = (c[0] - data[i]) ** 2 + (c[1] - data[i + 1]) ** 2 + (c[2] - data[i + 2]) ** 2; if (d < bd) { bd = d; bi = k; } });
+    if (bi >= 0) { sums[bi][0] += data[i]; sums[bi][1] += data[i + 1]; sums[bi][2] += data[i + 2]; sums[bi][3]++; }
+  }
+  const means = sums.filter((m) => m[3]).map((m) => [m[0] / m[3], m[1] / m[3], m[2] / m[3]]);
+  let solid = 0, tight = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] < 230) continue;
+    solid++;
+    if (means.some((c) => (c[0] - data[i]) ** 2 + (c[1] - data[i + 1]) ** 2 + (c[2] - data[i + 2]) ** 2 <= 8 ** 2)) tight++;
+  }
+  if (solid && tight / solid < 0.75) return { ok: false, reason: `texture ou grain (${Math.round((tight / solid) * 100)} % du dessin en aplats francs) : une version vectorielle perdrait sa matière` };
+  // Teintes voisines (même vert coupé en deux cases de l'histogramme) fusionnées : sinon un même aplat est tracé en
+  // deux calques entremêlés et la version vectorielle s'éloigne du dessin.
+  const colours: number[][] = [];
+  for (const [k, n] of top) {
+    if (n / opaque <= 0.01) continue;
+    const c = k.split(",").map(Number);
+    if (!colours.some((d) => (d[0] - c[0]) ** 2 + (d[1] - c[1]) ** 2 + (d[2] - c[2]) ** 2 <= 48 ** 2)) colours.push(c);
+  }
+  // Teinte la plus proche, en tenant compte des bords : un pixel mêlé de blanc (anticrénelage) appartient à la teinte
+  // dont il est un MÉLANGE avec le blanc (essai réel : le bord vert des lettres rangé dans le doré dessinait un liseré).
+  const residual = (c: number[], r: number, g: number, b: number) => {
+    const den = (255 - c[0]) ** 2 + (255 - c[1]) ** 2 + (255 - c[2]) ** 2;
+    const t = den ? Math.max(0, Math.min(1, ((r - c[0]) * (255 - c[0]) + (g - c[1]) * (255 - c[1]) + (b - c[2]) * (255 - c[2])) / den)) : 0;
+    return (c[0] + t * (255 - c[0]) - r) ** 2 + (c[1] + t * (255 - c[1]) - g) ** 2 + (c[2] + t * (255 - c[2]) - b) ** 2;
+  };
+  const nearest = (r: number, g: number, b: number) => colours.reduce((best, c, i) => (residual(c, r, g, b) < residual(colours[best], r, g, b) ? i : best), 0);
   const label = new Int16Array(N).fill(-1);
   for (let p = 0; p < N; p++) if (data[p * 4 + 3] >= 128) label[p] = nearest(data[p * 4], data[p * 4 + 1], data[p * 4 + 2]);
   const paths: string[] = [];
@@ -555,7 +608,7 @@ export async function faithfulSvg(png: Buffer): Promise<{ ok: true; svg: string;
     }
     const svg: string = ImageTracer.imagedataToSVG(
       { width: info.width, height: info.height, data: mask },
-      { numberofcolors: 2, colorsampling: 0, pal: [{ r: 0, g: 0, b: 0, a: 255 }, { r: 255, g: 255, b: 255, a: 255 }], ltres: 1, qtres: 1, pathomit: 8, roundcoords: 1, blurradius: 0, viewbox: true, desc: false },
+      { numberofcolors: 2, colorsampling: 0, pal: [{ r: 0, g: 0, b: 0, a: 255 }, { r: 255, g: 255, b: 255, a: 255 }], ltres: 0.2, qtres: 0.2, pathomit: 8, roundcoords: 1, blurradius: 0, viewbox: true, desc: false },
     );
     const ds = [...svg.matchAll(/<path fill="rgb\(0,0,0\)"[^>]*\sd="([^"]+)"/g)].map((m) => m[1].trim());
     if (ds.length) paths.push(`<path fill="#${c.map((v) => Math.min(255, v).toString(16).padStart(2, "0")).join("")}" fill-rule="evenodd" d="${ds.join(" ").replace(/\s+/g, " ")}"/>`);

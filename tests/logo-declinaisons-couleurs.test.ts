@@ -167,4 +167,21 @@ describe("File des tâches : appliquer le logo choisi passe avant les longues t�
     expect(Array.from(kept.getContext("2d").getImageData(k, k, 1, 1).data.slice(0, 3))).toEqual([0x3a, 0x7a, 0x3a]); // couleurs gardées
     expect(Array.from(kept.getContext("2d").getImageData(k, 3, 1, 1).data.slice(0, 3))).toEqual([255, 255, 255]); // pastille claire
   });
+  it("version vectorielle (essai réel du 7 novembre) : un lettrage en aplats est vectorisé, lisse et fidèle ; une texture ne l'est jamais", async () => {
+    const { faithfulSvg } = await import("@/lib/logo-v2/artwork");
+    // Aplats « dessinés par une IA » : légères variations de teinte et bords adoucis.
+    const flat = await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300"><rect width="600" height="300" fill="white" fill-opacity="0"/><text x="40" y="200" font-family="serif" font-size="170" fill="#2E4A33">Brindi</text><ellipse cx="545" cy="80" rx="22" ry="12" fill="#C9A04E"/></svg>`)).png().toBuffer();
+    const { data, info } = await sharp(flat).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    for (let i = 0; i < data.length; i += 4) if (data[i + 3] > 0) for (let k = 0; k < 3; k++) data[i + k] = Math.max(0, Math.min(255, data[i + k] + ((i / 4) % 7) - 3));
+    const noisy = await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+    const r = await faithfulSvg(noisy);
+    expect(r.ok).toBe(true);
+    expect((r as any).fidelity).toBeGreaterThan(0.96);
+    // Texture (grain marqué dans l'aplat) : refusée, la matière serait perdue.
+    for (let i = 0; i < data.length; i += 4) if (data[i + 3] > 0) for (let k = 0; k < 3; k++) data[i + k] = Math.max(0, Math.min(255, data[i + k] + (((i / 4) * 2654435761) % 41) - 20));
+    const grain = await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+    const g = await faithfulSvg(grain);
+    expect(g.ok).toBe(false);
+    expect((g as any).reason).toMatch(/texture ou grain|dégradés, textures ou nuances/);
+  });
 });

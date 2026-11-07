@@ -11,6 +11,7 @@ import { createCanvas } from "@napi-rs/canvas";
 import { contrast } from "../color";
 import { canvasFamily, font } from "../media/fonts";
 import { isDetailedSolidMark } from "../media/identity-board";
+import { faithfulSvg } from "../logo-v2/artwork";
 import { all } from "../db";
 import { L } from "../i18n-server";
 import { assetData, getAsset, saveAsset, type Asset } from "../library";
@@ -97,7 +98,13 @@ export async function buildBrandKit(projectId: string): Promise<BrandKit> {
   if (!derived("favicon-32")) await save("favicon-32", "favicon-32.png", detailed ? initialFavicon(b.name, b.palette, canvasFamily(b.fonts.heading, "Inter"), 32) : await faviconPng(markData, 32));
   if (!derived("favicon-512")) await save("favicon-512", "icone-512.png", await faviconPng(markData, 512));
   if (!derived("social-avatar")) await save("social-avatar", "avatar-reseaux.png", await avatarPng(markData, b.palette.light && b.palette.light !== "#000000" ? b.palette.light : "#FFFFFF"));
-  if (!derived("logo-svg")) notes.push(L("Logo vectoriel (SVG) impossible : le dessin a des dégradés, des textures ou trop de couleurs pour être retracé fidèlement. Le logo est livré en PNG haute définition.", "No faithful SVG: the drawing has gradients or textures; the logo is delivered as high-resolution PNG."));
+  if (!derived("logo-svg")) {
+    // La VRAIE raison (essai réel : « dégradés et textures » était dit pour un lettrage en aplats).
+    const why = await faithfulSvg(assetData(main)).then((r) => (r.ok ? null : r.reason)).catch(() => null);
+    notes.push(why && /dégradés|nuances|texture|grain/.test(why)
+      ? L("Pas de logo vectoriel (SVG) : le dessin a des nuances, des dégradés ou une texture, pas seulement des aplats ; un tracé vectoriel ne lui serait pas fidèle. Le logo est livré en PNG haute définition.", "No SVG: the drawing uses gradients and shading; delivered as high-resolution PNG.")
+      : L("Pas de logo vectoriel (SVG) : le tracé automatique ne reproduit pas assez fidèlement ce dessin. Le logo est livré en PNG haute définition.", "No SVG: the automatic tracing is not faithful enough; delivered as high-resolution PNG."));
+  }
   // Planche et charte : faites au choix du logo ; refaites seulement si elles manquent ou sont plus anciennes que lui.
   let board = latestOf(projectId, "brand-board");
   if (!board || board.created_at < main.created_at) board = (await saveIdentityBoard(projectId).catch((e) => { notes.push(L(`Planche de marque non refaite : ${(e as Error).message}`, "Brand board not rebuilt.")); return null; })) ?? board;
