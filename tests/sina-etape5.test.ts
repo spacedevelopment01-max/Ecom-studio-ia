@@ -86,4 +86,8 @@ describe("SINA — étape 5 : l'activité complète", async () => {
     expect(gaps).toEqual(["prix manquant pour « Confiture de figue »"]);
     expect((await call("activity.validate", ctx, {})).summary).toMatch(/prix manquant/);
   });
+  it("faits de l'offre lisibles : jamais la question du moteur comme titre", () => {
+    expect(Act.factLine({ label: "Pouvez-vous recopier la liste des ingrédients de chaque parfum ? (ex. abricots 65 %)", value: "Abricot : abricots 65 %…" })).toBe("Abricot : abricots 65 %…");
+    expect(Act.factLine({ label: "Matière", value: "cuivre" })).toBe("Matière : cuivre");
+  });
 });

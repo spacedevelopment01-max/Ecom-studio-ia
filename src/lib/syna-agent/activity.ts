@@ -50,6 +50,15 @@ export type ActivityPlan = {
   at: number;
 };
 
+/**
+ * Un fait de l'offre en une ligne lisible : son libellé court, ou la réponse seule quand le libellé est la question posée
+ * au client (essai réel : « Pouvez-vous recopier la liste des ingrédients… ? : Abricot… »).
+ */
+export function factLine(f: { label: string; value: string }): string {
+  const label = f.label.trim();
+  return /\?\s*(\(.*\))?$/.test(label) || label.length > 60 ? f.value : `${label} : ${f.value}`;
+}
+
 /** Le plan de l'activité tel qu'il est aujourd'hui (lecture, gratuit). */
 export function activityPlan(projectId: string, j: Journey): ActivityPlan {
   const p = loadProject(projectId);
@@ -66,7 +75,7 @@ export function activityPlan(projectId: string, j: Journey): ActivityPlan {
     angle: a ? { id: a.id, title: a.title, goal: a.goal, message: a.message, story: a.story, show: a.show, cta: a.cta, others: ids.slice(1).map((id) => j.angles!.list.find((x) => x.id === id)?.title ?? id) } : null,
     keyMessages: (raw?.arguments ?? []).slice(0, 5).map((x: string) => String(x).slice(0, 300)),
     objections: (raw?.objections ?? []).slice(0, 5).map((o: any) => ({ objection: String(o.objection).slice(0, 300), answer: String(o.answer).slice(0, 400) })),
-    offer: { price, facts: p.product.facts.filter((f) => f.status === "confirmed").map((f) => `${f.label} : ${f.value}`).slice(0, 12) },
+    offer: { price, facts: p.product.facts.filter((f) => f.status === "confirmed").map(factLine).slice(0, 12) },
     products: listProducts(projectId).map((x) => ({ id: x.id, title: x.data.title, price: x.data.price == null ? null : x.data.price / 100, status: x.status })),
     at: Date.now(),
   };
