@@ -88,6 +88,8 @@ export type Journey = {
   activity?: ActivityPlan;
   /** Étape 6 : thèmes montrés au client (site composé dans chacun) et thème qu'il a choisi. */
   themes?: SinaThemes;
+  /** Étape 6 : le choix DU CLIENT entre un thème du Studio et une maquette sur mesure (jamais fait à sa place). */
+  siteMode?: { mode: "theme" | "mockup"; at: number };
   themeChoice?: { id: string; jobId: string; at: number };
 };
 
@@ -206,7 +208,8 @@ export function journeyContext(j: Journey): string {
   if (cur === 4) lines.push(...anglesStepContext(j));
   if (cur === 5) lines.push(...activityStepContext(j));
   if (cur === 6) lines.push(...themeStepContext(j));
-  if (READY_STEPS.includes(cur) && STEP_GUIDES[cur]) lines.push(STEP_GUIDES[cur]);
+  // Étape 6 : la consigne des maquettes ne vaut qu'après le choix « maquette sur mesure » du client.
+  if (READY_STEPS.includes(cur) && STEP_GUIDES[cur] && !(cur === 6 && j.siteMode?.mode !== "mockup")) lines.push(STEP_GUIDES[cur]);
   return lines.join("\n");
 }
 
@@ -215,7 +218,7 @@ export function journeyContext(j: Journey): string {
  * l'étape est ouverte, après ses essais réels.
  */
 export const STEP_GUIDES: Partial<Record<number, string>> = {
-  6: "Étape 6 (thème ou maquettes) : demande au client s'il préfère un de nos thèmes (étape 8) ou des maquettes sur mesure. Pour des maquettes : mockup.pages (liste exacte des pages, ordinateur et téléphone), puis mockup.prepare avec 1 à 3 directions graphiques vraiment différentes (gratuit) ; annonce le coût des images (coutMaxMicro, en % du budget) et attends son accord écrit avant mockup.generate ; une image ratée est dite ratée. Le client peut aussi fournir ses propres images (mockup.attach). Il choisit une maquette COMPLÈTE (mockup.choose), jamais à sa place.",
+  6: "Étape 6, maquettes sur mesure : mockup.pages (liste exacte des pages, ordinateur et téléphone), puis mockup.prepare avec 1 à 3 directions graphiques vraiment différentes (gratuit) ; annonce le coût des images (coutMaxMicro, en % du budget) et attends son accord écrit avant mockup.generate ; une image ratée est dite ratée. Le client peut aussi fournir ses propres images (mockup.attach). Il choisit une maquette COMPLÈTE (mockup.choose), jamais à sa place.",
   7: "Étape 7 (site codé d'après la maquette) : annonce le devis de site.code_from_mockup et attends l'accord du client ; à la fin, lis mockup.report et dis honnêtement, page par page, ce qui est conforme et ce qui ne l'est pas. Le site codé est une version inactive : le client décide de l'appliquer (site.use_version).",
   11: "Étape 11 (calendrier de publication, MANUEL pour l'instant : le client publie lui-même, la publication automatique viendra après les accords des plateformes) : demande d'abord au client, UNE question à la fois et seulement si l'information manque : sur combien de jours (7, 15 ou 30), combien de publications par jour, à quelles heures, sur quels réseaux, avec ou sans émojis, avec ou sans les publicités. Puis appelle calendar.plan ; montre-lui le calendrier (calendar.read) jour par jour et dis-lui qu'il peut l'ajouter à son agenda (fichier .ics) et cocher chaque publication une fois postée (calendar.mark_done). S'il manque des publications pour remplir les jours, dis-le simplement et propose d'en créer (payant, devis d'abord).",
 };
@@ -240,7 +243,10 @@ export function activityStepContext(j: Journey): string[] {
 /** Étape 6 : un de nos thèmes ou des maquettes sur mesure. */
 export function themeStepContext(j: Journey): string[] {
   const t = j.themes;
-  const base = "Étape 6 (thème ou maquettes) : explique en deux phrases le choix : un de nos thèmes (prêt, gratuit, le site se compose aussitôt avec sa marque et ses produits, puis on l'adapte) ou des maquettes sur mesure (images créées pour lui, PAYANTES, puis site codé d'après la maquette). Recommande le thème quand rien ne demande du sur-mesure. Pour les thèmes : appelle theme.propose (gratuit) : il AFFICHE les cartes avec SON site dans chaque thème et le lien vers la démonstration complète ; ne recopie pas les cartes. Le client choisit (theme.choose avec l'identifiant de SA carte), jamais toi ; « voir tous les thèmes » → theme.propose all: true. Un thème non inclus dans son forfait : dis-le, ne le choisis pas.";
+  if (j.siteMode?.mode === "mockup") return ["Étape 6 — le client a vu les thèmes et choisi une MAQUETTE SUR MESURE (site.mode). Suis la consigne des maquettes ci-dessous ; s'il revient à un thème du Studio, theme.choose avec la carte qu'il désigne."];
+  // Consigne du propriétaire (7 novembre) : les cartes des thèmes d'abord ; une fois qu'il les a vues, le client choisit
+  // un thème du Studio ou une maquette sur mesure — lui, jamais SINA.
+  const base = "Étape 6 (thème ou maquettes) : commence par appeler theme.propose (gratuit) : il AFFICHE les cartes des thèmes du Studio avec SON site composé dans chacun et le lien vers la démonstration complète ; ne recopie pas les cartes. Puis explique en deux phrases ses deux possibilités : choisir un de ces thèmes (gratuit : son site s'y compose aussitôt, puis on l'adapte) ou demander une maquette sur mesure (des images de son site créées pour lui, PAYANTES, prix annoncé avant, puis le site est codé d'après la maquette). Ne choisis jamais à sa place et ne pousse ni l'un ni l'autre. Un thème choisi → theme.choose avec l'identifiant de SA carte ; « voir tous les thèmes » → theme.propose all: true ; une maquette sur mesure → site.mode mode mockup. Un thème non inclus dans son forfait : dis-le, ne le choisis pas.";
   if (!t?.list.length) return [base];
   return [base, `Thèmes affichés : ${t.list.map((x) => `${x.id} « ${x.name} »${x.recommended ? " (recommandé)" : ""}${x.allowed ? "" : " (non inclus dans son forfait)"}`).join(" ; ")}.`];
 }

@@ -234,11 +234,11 @@ type Themes = { list: { id: string; name: string; tagline: string; description: 
  * Étape 6 : un de nos thèmes. Chaque carte montre le site DU CLIENT composé dans ce thème (vignette du Studio), la
  * raison, la démonstration complète ; le choix est celui du client (bouton), jamais fait à sa place.
  */
-function ThemeCards({ themes, projectId, busy, onChoose, onAll }: { themes: Themes; projectId: string; busy: boolean; onChoose: (name: string) => void; onAll: () => void }) {
+function ThemeCards({ themes, projectId, busy, onChoose, onAll, onMockup }: { themes: Themes; projectId: string; busy: boolean; onChoose: (name: string) => void; onAll: () => void; onMockup: () => void }) {
   const t = useT();
   return (
     <div className="@container mt-2 space-y-2" data-syna-themes>
-      <p className="text-xs text-muted">{t("Chaque aperçu montre TON site (ta marque, tes produits) composé dans le thème. Le choix est gratuit et l'ancienne version reste restaurable.", "Each preview shows YOUR site in the theme. Choosing is free.")}</p>
+      <p className="text-xs text-muted">{t("Chaque aperçu montre TON site (ta marque, tes produits) composé dans le thème. Choisir un thème est gratuit ; tu peux aussi préférer une maquette sur mesure (payante, prix annoncé avant).", "Each preview shows YOUR site in the theme. Choosing a theme is free; you can also prefer a custom mockup (paid, price shown first).")}</p>
       <div className="grid grid-cols-1 gap-3 @2xl:grid-cols-3">
         {themes.list.map((th) => {
           const chosen = themes.chosen === th.id;
@@ -264,7 +264,11 @@ function ThemeCards({ themes, projectId, busy, onChoose, onAll }: { themes: Them
           );
         })}
       </div>
-      {!themes.chosen && !themes.all && <Button size="sm" variant="ghost" disabled={busy} onClick={onAll} data-themes-all>{t("Voir tous les thèmes", "See all themes")}</Button>}
+      {!themes.chosen && <div className="flex flex-wrap items-center gap-2">
+        {!themes.all && <Button size="sm" variant="ghost" disabled={busy} onClick={onAll} data-themes-all>{t("Voir tous les thèmes", "See all themes")}</Button>}
+        {/* Après avoir vu les thèmes, le client peut préférer une maquette sur mesure (payante, prix annoncé avant). */}
+        <Button size="sm" variant="secondary" disabled={busy} onClick={onMockup} data-themes-mockup>{t("Je préfère une maquette sur mesure", "I'd rather have a custom mockup")}</Button>
+      </div>}
     </div>
   );
 }
@@ -504,7 +508,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
                 {tm.id === lastLogos && v.journey?.logos && <LogoCards logos={v.journey.logos} brandBg={brandBackground(v.journey.identities)} busy={busy || working} onChoose={(k) => send(t(`Je choisis le logo ${k}.`, `I choose logo ${k}.`))} />}
                 {tm.id === lastActivity && v.journey?.activity && <ActivityCard a={v.journey.activity} busy={busy || working} onValidate={() => send(t("Je valide mon activité.", "I validate my business."))} />}
                 {tm.id === lastAngles && v.journey?.angles && <AngleCards angles={v.journey.angles} busy={busy || working} onChoose={(titles) => send(titles.length > 1 ? t(`Je choisis ces angles : ${titles.map((x, i) => `« ${x} »${i === 0 ? " (principal)" : ""}`).join(", ")}.`, `I choose these angles: ${titles.join(", ")}.`) : t(`Je choisis l'angle « ${titles[0]} ».`, `I choose the angle "${titles[0]}".`))} />}
-                {tm.id === lastThemes && v.journey?.themes && v.projectId && <ThemeCards themes={v.journey.themes} projectId={v.projectId} busy={busy || working} onChoose={(name) => send(t(`Je choisis le thème ${name}.`, `I choose the ${name} theme.`))} onAll={() => send(t("Je veux voir tous les thèmes.", "I want to see all themes."))} />}
+                {tm.id === lastThemes && v.journey?.themes && v.projectId && <ThemeCards themes={v.journey.themes} projectId={v.projectId} busy={busy || working} onChoose={(name) => send(t(`Je choisis le thème ${name}.`, `I choose the ${name} theme.`))} onAll={() => send(t("Je veux voir tous les thèmes.", "I want to see all themes."))} onMockup={() => send(t("Je préfère une maquette sur mesure.", "I'd rather have a custom mockup."))} />}
                 {tm.id === lastKit && v.journey?.brandKit && <BrandKitCard kit={v.journey.brandKit} darkBg={v.journey.identities?.final?.palette.dark ?? "#16161A"} busy={busy || working} onValidate={() => send(t("Je valide mon image de marque.", "I validate my brand kit."))} />}
                 {tm.id === lastCalendar && v.projectId && <CalendarCard projectId={v.projectId} refreshKey={tm.id} />}
                 {tm.id === lastIdentity && v.journey?.identities && <IdentityCards ids={v.journey.identities} busy={busy || working} onChoose={(k) => send(t(`Je choisis l'identité ${k}.`, `I choose identity ${k}.`))} />}

@@ -17,6 +17,23 @@ import { blockers, stateOf } from "../../preparation/engine";
 import { ACTIVE_THEMES } from "../../theme/theme-fit";
 import { DIRECTIONS } from "../../theme/directions";
 
+const modeTool: AgentTool<{ mode: "theme" | "mockup" }> = {
+  name: "site.mode", module: "site", kind: "write", needsProject: true,
+  description: "Étape 6 : enregistre le choix DU CLIENT, après avoir vu les cartes des thèmes, d'une maquette sur mesure (mode mockup, payante) plutôt qu'un thème du Studio — seulement après sa réponse, jamais à sa place (un thème choisi passe par theme.choose). Gratuit.",
+  args: z.object({ mode: z.enum(["theme", "mockup"]) }).strict(),
+  run: (ctx, a) => {
+    const j = journeyOf(ctx.conversationId);
+    if (j.steps[5]?.status !== "done") return { ok: false, summary: L("L'activité complète (étape 5) doit être validée avant le choix du site.", "Validate step 5 first.") };
+    if (j.steps[6]?.status === "done") return { ok: false, summary: L("Le site est déjà choisi pour cette étape.", "Already chosen."), hint: "Pour changer, le client doit le demander clairement." };
+    updateJourney(ctx.conversationId, (x) => { x.siteMode = { mode: a.mode, at: Date.now() }; setStep(x, 6, "doing"); });
+    return {
+      ok: true,
+      summary: a.mode === "theme" ? L("Choix noté : un thème du Studio.", "Choice saved: a Studio theme.") : L("Choix noté : une maquette sur mesure.", "Choice saved: a custom mockup."),
+      hint: a.mode === "theme" ? "Il choisit sa carte : theme.choose avec son identifiant." : "Suis maintenant la consigne des maquettes (pages, directions, devis avant toute image).",
+    };
+  },
+};
+
 const proposeTool: AgentTool<{ all?: boolean }> = {
   name: "theme.propose", module: "site", kind: "read", needsProject: true,
   description: "Étape 6, volet « un de nos thèmes » (gratuit) : AFFICHE au client des cartes de thèmes du catalogue, chacune avec SON site composé dans ce thème, la raison du choix, le lien vers la démonstration complète et ce que son forfait inclut. Trois thèmes (le recommandé d'abord) ; all: true pour tout le catalogue quand le client veut tout voir.",
@@ -59,6 +76,7 @@ const chooseTool: AgentTool<{ id: string }> = {
       ?? enqueue({ userId: ctx.user.id, projectId: p.id, type: "shop.direction", idempotencyKey: `theme:${currentTheme(p.id)?.version.id ?? "initial"}:${strategyVersion}:${a.id}`, label: L(`Direction ${name}`, `${name} direction`), payload: { projectId: p.id, direction: a.id, strategyVersion } });
     if (["failed", "cancelled"].includes(job.status)) return { ok: false, summary: L("La composition précédente dans ce thème a échoué : elle est gardée dans le suivi des tâches pour en voir la cause.", "The previous attempt failed."), hint: "Dis-le au client simplement ; ne relance rien sans sa demande." };
     updateJourney(ctx.conversationId, (x) => {
+      x.siteMode = { mode: "theme", at: Date.now() };
       x.themeChoice = { id: a.id, jobId: job.id, at: Date.now() };
       setStep(x, 6, "done");
       setStep(x, 7, "skipped", L("Un de nos thèmes a été choisi : pas de site codé d'après une maquette.", "One of our themes was chosen."));
@@ -72,4 +90,4 @@ const chooseTool: AgentTool<{ id: string }> = {
   },
 };
 
-export const themeTools: AgentTool[] = [proposeTool, chooseTool];
+export const themeTools: AgentTool[] = [modeTool, proposeTool, chooseTool];

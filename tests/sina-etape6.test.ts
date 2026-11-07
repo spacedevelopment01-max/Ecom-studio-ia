@@ -41,7 +41,10 @@ describe("SINA — étape 6 : un de nos thèmes", async () => {
     expect(J.READY_STEPS).toContain(6);
     expect(J.currentStep(J.journeyOf(cid))).toBe(6);
     expect(modelFor(6)?.model).toMatch(/haiku/); // gratuit, fil léger
-    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/Étape 6 \(thème ou maquettes\)[^]*theme\.propose[^]*jamais toi/);
+    // Consigne du propriétaire : les cartes des thèmes d'abord, puis le client choisit un thème ou une maquette.
+    const ctx0 = J.journeyContext(J.journeyOf(cid));
+    expect(ctx0).toMatch(/commence par appeler theme\.propose[^]*choisir un de ces thèmes[^]*maquette sur mesure[^]*PAYANTES[^]*Ne choisis jamais à sa place/);
+    expect(ctx0).not.toMatch(/mockup\.pages/); // consigne des maquettes seulement après ce choix
     const r = await call("theme.propose", ctx, {});
     expect(r.ok).toBe(true);
     const j = J.journeyOf(cid);
@@ -93,8 +96,17 @@ describe("SINA — étape 6 : un de nos thèmes", async () => {
     expect(all("SELECT id FROM jobs WHERE project_id=? AND type='shop.direction'", pid)).toHaveLength(1);
     const j = J.journeyOf(cid);
     expect(j.themeChoice?.id).toBe(id);
+    expect(j.siteMode?.mode).toBe("theme");
     expect(j.steps[6].status).toBe("done");
     expect(j.steps[7].status).toBe("skipped");
     expect(J.currentStep(j)).toBe(8);
+  });
+
+  it("après avoir vu les thèmes, choix « maquette sur mesure » : la consigne des maquettes s'applique", async () => {
+    const { ctx, cid } = await stepSix();
+    expect((await call("theme.propose", ctx, {})).ok).toBe(true);
+    expect((await call("site.mode", ctx, { mode: "mockup" })).summary).toBe("Choix noté : une maquette sur mesure.");
+    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/a vu les thèmes et choisi une MAQUETTE SUR MESURE[^]*Étape 6, maquettes sur mesure : mockup\.pages/);
+    expect(J.journeyOf(cid).steps[6].status).toBe("doing");
   });
 });
