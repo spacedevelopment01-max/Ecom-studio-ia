@@ -155,4 +155,8 @@ describe("SINA — étape 2 : 3 logos", async () => {
     expect(r.ok).toBe(false);
     expect(r.summary).toMatch(/étape 1/);
   });
+
+  it("motif du contrôle dit simplement au client (essai réel)", () => {
+    expect(G.clientReason("sous la barrière (7.4/10, attendu 7.5) — aucune nouvelle image sans votre accord (bouton « Nouvelle version »)")).toBe("note 7,4/10, il faut 7,5");
+  });
 });

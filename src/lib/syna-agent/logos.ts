@@ -33,8 +33,11 @@ export const ENGINE_STYLE: Record<Identity["logoStyle"], LogoStyle> = {
   isometrie: "illustrated", aquarelle: "textured", artdeco: "premium", popart: "illustrated",
 };
 
-/** Plafond de l'adaptation des idées de logo (un appel Claude, modèle fort). */
-export const LOGO_TERRITORIES_CAP_MICRO = 300_000;
+/**
+ * Plafond de l'adaptation des idées de logo (un appel Claude, modèle fort). Il doit couvrir le PIRE CAS d'un appel,
+ * compté avant l'envoi (essai réel : 0,30 € ne suffisait pas, l'appel n'est jamais parti) ; même plafond que les identités.
+ */
+export const LOGO_TERRITORIES_CAP_MICRO = 600_000;
 export const LOGO_TERRITORIES_MODEL = { provider: "anthropic" as const, model: "claude-opus-5-5", effort: "medium" };
 
 export const SinaTerritoriesSchema = z.object({
@@ -108,7 +111,7 @@ async function adaptIdeas(ctx: JobContext, p: ReturnType<typeof loadProject>, so
     task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id,
     system: LOGO_TERRITORIES_SYSTEM, promptKey: "syna-logo-territories-1",
     prompt: logoTerritoriesPrompt(p.brand!, sources, guidance) + (feedback?.length ? `\n\n# Corrections exigées par le contrôle du Studio\n${feedback.map((f) => `- ${f}`).join("\n")}` : ""),
-    maxTokens: 16000, maxOutputTokens: 20000, usageKey: `${ctx.job.id}:sina-logo-territories:${feedback?.length ? 2 : 1}`,
+    maxTokens: 12000, maxOutputTokens: 16000, usageKey: `${ctx.job.id}:sina-logo-territories:${feedback?.length ? 2 : 1}`,
     routing: { difficulty: "complex", prefer: LOGO_TERRITORIES_MODEL },
   };
   if (logoDeps.territories) return SinaTerritoriesSchema.parse(await logoDeps.territories(call)).territories as SinaTerritory[];
@@ -119,6 +122,18 @@ async function adaptIdeas(ctx: JobContext, p: ReturnType<typeof loadProject>, so
 
 export type SinaLogo = { source: "A" | "B" | "C"; name: string; style: LogoStyle; assetId: string | null; verdict: string; score: number | null; reason: string; best?: boolean };
 
+/**
+ * Motif du contrôle dit au client (tutoiement, sans renvoyer vers un bouton d'un autre écran) : « note 7,4/10, il
+ * faut 7,5 » au lieu de « sous la barrière (7.4/10, attendu 7.5) — aucune nouvelle image sans votre accord (bouton…) ».
+ */
+export function clientReason(reason: string): string {
+  return reason
+    .replace(/\s*[—-]\s*aucune nouvelle image sans votre accord[^)]*\)?\)?/i, "")
+    .replace(/sous la barrière \((\d+(?:[.,]\d+)?)\/10, attendu (\d+(?:[.,]\d+)?)\)/i, (_m, a: string, b: string) => `note ${a.replace(".", ",")}/10, il faut ${b.replace(".", ",")}`)
+    .replace(/\bvotre\b/g, "ton").replace(/\bvos\b/g, "tes").replace(/\bvous\b/g, "toi")
+    .trim();
+}
+
 /** Proposition retenue de chaque territoire (FINALE d'abord, puis version du studio, puis meilleur essai). */
 export function logosOfRun(run: EngineRun, territories: SinaTerritory[]): SinaLogo[] {
   const all: ProposalResult[] = [...run.shown, ...run.studio, ...run.discarded];
@@ -126,7 +141,7 @@ export function logosOfRun(run: EngineRun, territories: SinaTerritory[]): SinaLo
   return run.territories.map((t) => {
     const src = territories.find((x) => x.name === t.name)?.source ?? "A";
     const mine = all.filter((r) => r.territory.id === t.id || r.territory.id === `${t.id}-relais` || r.territory.name === t.name).sort((a, b) => rank(b) - rank(a))[0];
-    return { source: src, name: t.name, style: t.style, assetId: mine?.assetId ?? null, verdict: mine?.verdict ?? "ECHEC", score: mine?.score ?? null, reason: mine?.reason ?? L("aucun dessin obtenu", "no drawing obtained"), ...(mine?.assetId && mine.assetId === run.best ? { best: true } : {}) };
+    return { source: src, name: t.name, style: t.style, assetId: mine?.assetId ?? null, verdict: mine?.verdict ?? "ECHEC", score: mine?.score ?? null, reason: mine?.reason ? clientReason(mine.reason) : L("aucun dessin obtenu", "no drawing obtained"), ...(mine?.assetId && mine.assetId === run.best ? { best: true } : {}) };
   });
 }
 
