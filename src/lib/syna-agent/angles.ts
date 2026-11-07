@@ -7,6 +7,7 @@
  * fiche à analyser → questions éventuelles au client → fiche validée (le client a confirmé son résumé à l'étape 0) →
  * recherche → angles affichés → choix du client. Aucune étape n'est payée deux fois : chaque appel reprend où on en est.
  */
+import { all } from "../db";
 import { L } from "../i18n-server";
 import { loadProject } from "../projects";
 import { approve, editBrief, queuePreparation } from "../preparation/engine";
@@ -63,6 +64,20 @@ export function anglesOf(d: any): SinaAngles {
   return { list, recommendedId: d.recommendedId ?? null, recommendation: s(d.recommendation, 600), sourceCount: used, at: Date.now() };
 }
 
+/** Pourcentage lisible (« 8 % », « 4,5 % ») : jamais « 7.994748837209302 % » (essai réel du 7 novembre). */
+export const pct = (x: number | null | undefined) => (x == null ? "?" : `${String(Math.round(x * 10) / 10).replace(".", ",")} %`);
+
+/**
+ * Dernier échec de la recherche (le Pilote le garde) avec ce qu'il a RÉELLEMENT coûté (appels enregistrés) : SINA ne
+ * dit jamais « rien n'a été débité » sans ce chiffre (essai réel : la recherche web avait coûté 0,29 €).
+ */
+export function researchFailure(projectId: string): { message: string; costMicro: number } | null {
+  const e: any = stateOf(projectId)?.error;
+  if (!e || e.step !== "research") return null;
+  const costMicro = e.jobId ? all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE job_id=?", e.jobId)[0]?.c ?? 0 : 0;
+  return { message: String(e.message ?? ""), costMicro };
+}
+
 /** Coût maximal de la prochaine étape payante (analyse de la fiche ou recherche), sans rien créer. */
 export function anglesMaxMicro(projectId: string): number {
   const ph = anglesPhase(projectId);
@@ -89,13 +104,18 @@ export function advanceAngles(projectId: string): { phase: AnglesPhase; jobId?: 
     approve(projectId, st().revision, "brief", {} as any);
     ph = anglesPhase(projectId);
   }
-  if (ph.kind === "research") return queue(projectId, "research", "generate", ph);
+  if (ph.kind === "research") {
+    // Nouvel essai après un échec : le moteur exige de dire ce qu'il faut corriger (deux essais au plus pour les
+    // mêmes données) — la raison de l'échec précédent, mot pour mot.
+    const failed = researchFailure(projectId);
+    return queue(projectId, "research", "generate", ph, failed ? L(`Nouvel essai après l'échec précédent : ${failed.message}`, `New attempt after: ${failed.message}`).slice(0, 1900) : undefined);
+  }
   return { phase: ph };
 }
 
-function queue(projectId: string, step: "brief" | "research", action: "analyze" | "generate", phase: AnglesPhase) {
-  const created = createQuote(projectId, step, action) as any;
-  const q = quoteOf(projectId, created.id) as any;
+function queue(projectId: string, step: "brief" | "research", action: "analyze" | "generate", phase: AnglesPhase, correction?: string) {
+  const created = createQuote(projectId, step, action, undefined, correction) as any;
+  const q = quoteOf(projectId, created.id, correction) as any;
   const r: any = queuePreparation(projectId, stateOf(projectId)!.revision, step, action, { capMicro: q.capMicro, paid: q.paid, slot: q.slot, correction: q.correction, analysisFingerprint: q.analysisFingerprint });
   const jobId = r?.jobId ?? r?.job?.id ?? stateOf(projectId)?.pending?.jobId;
   return { phase, jobId, maxPct: created.maxBudgetPct };

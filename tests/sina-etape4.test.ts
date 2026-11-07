@@ -125,4 +125,31 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     expect(a.list[0].proofsToConfirm).toEqual(["Fruits de la Drôme"]);
     expect(a.list[0].arguments).toHaveLength(3);
   });
+  it("essai réel du 7 novembre : pourcentages lisibles, accord lisible, coût réel d'un échec dit au client, relance seulement à sa demande", async () => {
+    const { run, id, now } = await import("@/lib/db");
+    const { commitState } = await import("@/lib/preparation/store");
+    const T = await import("@/lib/syna-agent/tools/angles");
+    expect(A.pct(7.994748837209302)).toBe("8 %");
+    expect(A.pct(4.4757162790697675)).toBe("4,5 %");
+    expect(T.questionList([{ id: "s-ingr", question: "Ingrédients ?" }], ["Ingrédients ?", "Autre point"])).toBe("[s-ingr] Ingrédients ? ; Autre point");
+    const { user, ctx, pid } = await stepFour();
+    // Demande d'accord : une phrase pour le client, jamais « angles.propose {} ».
+    expect(await getTool("angles.propose")!.preview!(ctx, {})).toMatch(/^Analyse de ta fiche de départ par l'IA, avant la recherche : au plus \d+(,\d)? % du budget IA du mois\.$/);
+    await call("angles.propose", ctx, {});
+    await execute();
+    await call("angles.propose", ctx, {}); // fiche validée, recherche lancée
+    expect(await getTool("angles.propose")!.preview!(ctx, {})).toMatch(/^Recherche web sur ton marché et 5 angles marketing/);
+    const jobId = claimNext(["project.prepare"])!.id;
+    // La recherche échoue après un appel payant (pages non lues) : 0,29 € réellement dépensés.
+    run("INSERT INTO ai_calls(id,created_at,user_id,project_id,job_id,task,provider,requested_model,unit,cost,status) VALUES(?,?,?,?,?,?,?,?,?,?,?)", id(), now(), user.id, pid, jobId, "strategy", "anthropic", "test", "request", 290_365, "ok");
+    completeJob(jobId, {});
+    commitState(pid, stateOf(pid)!.revision, (st) => { (st as any).error = { step: "research", jobId, revision: st.revision, message: "Recherche Internet incomplète : compléter les pages pertinentes avant de payer une analyse d’angles.", at: Date.now() }; (st.stages as any).research = undefined; });
+    const r = await call("angles.propose", ctx, {});
+    expect(r.ok).toBe(false);
+    expect(r.jobs ?? []).toHaveLength(0); // jamais relancée (payante) sans la demande du client
+    expect(r.summary).toMatch(/Elle a coûté \d+(,\d)? % du budget \(appels réellement faits\)/);
+    expect((r.data as any).coutPct).toBeGreaterThan(0);
+    const again = await call("angles.propose", ctx, { retry: true });
+    expect(again.jobs).toHaveLength(1);
+  });
 });
