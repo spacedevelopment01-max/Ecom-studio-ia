@@ -16,7 +16,7 @@ type View = {
   run: { id: string; status: string; step: number; pending: any; error: string | null } | null;
   budget: { authorizedPct: number | null; spentPct: number | null };
   attachments: { id: string; kind: string; name: string; analysis: any }[];
-  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; logos?: Logos | null; brandKit?: Kit | null; angles?: Angles | null };
+  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; logos?: Logos | null; brandKit?: Kit | null; angles?: Angles | null; activity?: Activity | null };
 };
 type Face = { family: string; file: string; weight: number } | null;
 type IdentityCard = { nameWhy?: string;
@@ -228,6 +228,32 @@ function AngleCards({ angles, busy, onChoose }: { angles: Angles; busy: boolean;
   );
 }
 
+type Activity = {
+  company: Record<string, string | undefined>; missing: { key: string; question: string; required: boolean }[];
+  angle: { title: string; goal: string; message: string; story: string; cta: string; others: string[] } | null;
+  keyMessages: string[]; objections: { objection: string; answer: string }[]; offer: { price: string | null; facts: string[] };
+  products: { id: string; title: string; price: number | null; status: string }[]; gaps: string[]; validated: boolean;
+};
+const COMPANY_LABELS: [string, string][] = [["legalName", "Entreprise"], ["email", "E-mail"], ["phone", "Téléphone"], ["address", "Adresse"], ["siret", "SIRET"], ["shipping", "Livraison"], ["returns", "Retours"]];
+
+/** Étape 5 : « Ton activité » — ce que le site va dire, réuni en une carte, puis la validation du client. */
+function ActivityCard({ a, busy, onValidate }: { a: Activity; busy: boolean; onValidate: () => void }) {
+  const t = useT();
+  const block = (title: string, body: React.ReactNode) => <section className="space-y-1"><h5 className="text-[11px] font-semibold uppercase tracking-wider text-muted">{title}</h5>{body}</section>;
+  return (
+    <div className="mt-2 space-y-3 rounded-xl border border-line bg-card p-4 text-xs" data-syna-activity>
+      <h4 className="text-base font-semibold">{t("Ton activité", "Your business")}</h4>
+      {block(t("L'entreprise", "The company"), <dl className="grid grid-cols-1 gap-x-4 gap-y-0.5 sm:grid-cols-2">{COMPANY_LABELS.map(([k, label]) => <div key={k}><dt className="inline font-semibold">{label} : </dt><dd className={cx("inline", !a.company[k] && "text-amber-700")}>{a.company[k] || (a.missing.some((m) => m.key === k) ? t("à compléter", "to complete") : t("plus tard", "later"))}</dd></div>)}</dl>)}
+      {a.angle && block(t("Angle principal", "Main angle"), <div><p className="text-sm font-semibold">{a.angle.title}{a.angle.goal ? <span className="font-normal text-muted"> — {a.angle.goal}</span> : null}</p>{!!a.angle.message && <p className="italic">« {a.angle.message} »</p>}{!!a.angle.cta && <p>{t("Appel à l'action", "Call to action")} : {a.angle.cta}</p>}{!!a.angle.others.length && <p className="text-muted">{t("Aussi retenus", "Also selected")} : {a.angle.others.join(", ")}</p>}</div>)}
+      {!!a.keyMessages.length && block(t("Messages clés", "Key messages"), <ul className="list-disc pl-4">{a.keyMessages.map((m) => <li key={m}>{m}</li>)}</ul>)}
+      {!!a.objections.length && block(t("Objections et réponses", "Objections and answers"), <ul className="space-y-1">{a.objections.map((o) => <li key={o.objection}><span className="font-semibold">« {o.objection} »</span> — {o.answer}</li>)}</ul>)}
+      {block(t("L'offre", "The offer"), <div>{a.offer.price && <p>{t("Prix confirmé", "Confirmed price")} : {a.offer.price}</p>}{!!a.offer.facts.length && <ul className="list-disc pl-4">{a.offer.facts.map((f) => <li key={f}>{f}</li>)}</ul>}</div>)}
+      {block(t("Produits (onglet Produits)", "Products"), a.products.length ? <ul className="space-y-0.5">{a.products.map((x) => <li key={x.id} className="flex justify-between gap-2"><span>{x.title}</span><span className={x.price == null ? "text-amber-700" : ""}>{x.price == null ? t("prix à compléter", "price missing") : `${String(x.price.toFixed(2)).replace(".", ",")} €`}</span></li>)}</ul> : <p className="text-amber-700">{t("Aucun produit pour l'instant.", "No product yet.")}</p>)}
+      {a.validated ? <p className="font-semibold">✓ {t("Activité validée", "Business validated")}</p> : a.gaps.length ? <p className="text-amber-700" data-activity-gaps>{t("Encore à compléter", "Still to complete")} : {a.gaps.join(" ; ")}</p> : <Button size="sm" disabled={busy} onClick={onValidate}>{t("Je valide mon activité", "I validate my business")}</Button>}
+    </div>
+  );
+}
+
 type Kit = { validated: boolean; notes: string[]; items: { key: string; label: string; href: string; dark?: boolean; downloadHref?: string }[]; board: string | null; book: string | null; pages: string[] };
 
 /** Étape 3 : l'image de marque complète (planche, déclinaisons du logo, charte PDF), puis la validation du client. */
@@ -398,6 +424,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
   // Cartes des identités : sous la DERNIÈRE proposition réussie (les anciennes sont remplacées).
   const lastCalendar = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && String(m.content?.tool ?? "").startsWith("calendar.") && m.content?.ok)?.id, [v?.messages]);
   const lastAngles = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "angles.propose" && m.content?.ok && m.content?.data?.angles)?.id, [v?.messages]);
+  const lastActivity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "activity.plan" && m.content?.ok)?.id, [v?.messages]);
   const lastKit = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "brand.kit" && m.content?.ok)?.id, [v?.messages]);
   const lastLogos = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && (m.content?.tool === "logo.propose" || (m.content?.tool === "jobs.wait" && JSON.stringify(m.content?.data ?? "").includes("syna.logos"))) && m.content?.ok)?.id, [v?.messages]);
   const lastIdentity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "identity.propose" && m.content?.ok)?.id, [v?.messages]);
@@ -433,6 +460,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
               {it.tools.map((tm) => <div key={tm.id}>
                 <ToolResult m={tm} projectId={v.projectId} onChoose={(n) => send(t(`Je choisis la maquette ${n}.`, `I choose mockup ${n}.`))} busy={busy || working} />
                 {tm.id === lastLogos && v.journey?.logos && <LogoCards logos={v.journey.logos} brandBg={brandBackground(v.journey.identities)} busy={busy || working} onChoose={(k) => send(t(`Je choisis le logo ${k}.`, `I choose logo ${k}.`))} />}
+                {tm.id === lastActivity && v.journey?.activity && <ActivityCard a={v.journey.activity} busy={busy || working} onValidate={() => send(t("Je valide mon activité.", "I validate my business."))} />}
                 {tm.id === lastAngles && v.journey?.angles && <AngleCards angles={v.journey.angles} busy={busy || working} onChoose={(titles) => send(titles.length > 1 ? t(`Je choisis ces angles : ${titles.map((x, i) => `« ${x} »${i === 0 ? " (principal)" : ""}`).join(", ")}.`, `I choose these angles: ${titles.join(", ")}.`) : t(`Je choisis l'angle « ${titles[0]} ».`, `I choose the angle "${titles[0]}".`))} />}
                 {tm.id === lastKit && v.journey?.brandKit && <BrandKitCard kit={v.journey.brandKit} darkBg={v.journey.identities?.final?.palette.dark ?? "#16161A"} busy={busy || working} onValidate={() => send(t("Je valide mon image de marque.", "I validate my brand kit."))} />}
                 {tm.id === lastCalendar && v.projectId && <CalendarCard projectId={v.projectId} refreshKey={tm.id} />}

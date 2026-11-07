@@ -15,6 +15,7 @@ import type { Identity } from "./identities";
 import type { SinaLogo } from "./logos";
 import type { BrandKit } from "./brand-kit";
 import type { SinaAngles } from "./angles";
+import type { ActivityPlan } from "./activity";
 
 export const JOURNEY_STEPS = [
   { n: 0, fr: "Questions de départ", en: "Getting started" },
@@ -37,7 +38,7 @@ export type StepNumber = (typeof JOURNEY_STEPS)[number]["n"];
  * Étapes déjà construites dans le parcours SINA. Les autres sont annoncées au client mais SINA n'y lance rien
  * (aucun outil payant) : elle ne doit jamais partir seule sur une étape que le parcours ne sait pas encore mener.
  */
-export const READY_STEPS: number[] = [0, 1, 2, 3, 4];
+export const READY_STEPS: number[] = [0, 1, 2, 3, 4, 5];
 /** à faire · en cours · à valider par le client · validée · sans objet (ex. étape 7 quand le client choisit un de nos thèmes). */
 export type StepStatus = "todo" | "doing" | "review" | "done" | "skipped";
 
@@ -82,6 +83,8 @@ export type Journey = {
   angles?: SinaAngles;
   /** Angle principal (id) et, dans l'ordre, tous les angles retenus (ids ; le premier est le principal). */
   angleChoice?: { id: string; ids?: string[]; at: number };
+  /** Étape 5 : le plan de l'activité tel qu'affiché au client (coordonnées, stratégie, offre, produits). */
+  activity?: ActivityPlan;
 };
 
 export const emptyJourney = (): Journey => ({
@@ -197,6 +200,7 @@ export function journeyContext(j: Journey): string {
   if (cur === 2) lines.push(...logoStepContext(j));
   if (cur === 3) lines.push(...brandKitStepContext(j));
   if (cur === 4) lines.push(...anglesStepContext(j));
+  if (cur === 5) lines.push(...activityStepContext(j));
   if (READY_STEPS.includes(cur) && STEP_GUIDES[cur]) lines.push(STEP_GUIDES[cur]);
   return lines.join("\n");
 }
@@ -218,6 +222,14 @@ export function logoStepContext(j: Journey): string[] {
   const lines = [`Étape 2 — proposition n° ${lg.round} (les logos sont affichés au client dans le fil) : ${lg.list.map((x) => `${x.source} « ${x.name} » (${x.style}) : ${x.verdict === "FINAL" ? `validé par le contrôle, ${x.score ?? "?"}/10` : x.verdict === "PROVISIONAL" ? "version du studio" : x.assetId ? `NON validé par le contrôle (${x.reason})` : `pas de dessin (${x.reason})`}`).join(" ; ")}.`,
     "Présente-les en 2 ou 3 phrases (honnêtement : un logo non validé est dit non validé), puis demande lequel il choisit (logo.choose). Il peut demander une nouvelle proposition avec ses mots (logo.propose avec guidance, payant). Ne choisis jamais à sa place."];
   return lines;
+}
+
+/** Étape 5 : l'activité complète (gratuite). */
+export function activityStepContext(j: Journey): string[] {
+  const a = j.activity;
+  const base = "Étape 5 (activité complète, GRATUITE) : on réunit tout ce que le site va dire. 1) appelle activity.plan : il AFFICHE la carte « Ton activité » et renvoie ce qui manque ; 2) pose les questions manquantes UNE par UNE (coordonnées : activity.company avec ses mots ; facultatif reporté seulement s'il le demande) ; 3) PRODUITS : s'il n'y en a aucun dans l'onglet Produits, propose la liste tirée de SA fiche (un produit par parfum, modèle ou formule, et les coffrets ou lots qu'il a cités) avec SES prix, sans en inventer aucun ; demande son accord, puis crée chaque produit avec catalogue.create (titre, prix confirmé, description courte avec les faits confirmés : ingrédients, poids, composition) ; un prix manquant se demande, jamais il ne se devine ; 4) rappelle activity.plan pour mettre la carte à jour ; 5) quand rien ne manque, demande s'il valide (activity.validate).";
+  if (!a) return [base];
+  return [base, `État : ${a.products.length} produit(s) dans l'onglet Produits${a.products.length ? ` (${a.products.map((x) => `${x.title} ${x.price == null ? "sans prix" : `${x.price} €`}`).join(", ")})` : ""} ; coordonnées manquantes : ${a.missing.map((m) => m.key).join(", ") || "aucune"} ; angle principal : ${a.angle?.title ?? "aucun"}.`];
 }
 
 /** Étape 4 : les 5 angles marketing. */

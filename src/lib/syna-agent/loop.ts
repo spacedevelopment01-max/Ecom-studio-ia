@@ -12,6 +12,7 @@ import { z } from "zod";
 import { HttpError, type User } from "../auth";
 import { one, all, json, run as sql, id as newId } from "../db";
 import { budgetPctText } from "../ai/budget-pct";
+import { activityGaps } from "./activity";
 import { enqueue, getJob, type JobContext } from "../jobs";
 import { llmJson, type LlmCall, type LlmImage } from "../ai/llm";
 import { withTrace, CostCapReached } from "../ai/trace";
@@ -324,7 +325,8 @@ export function modelFor(currentStepNumber: number): { provider: "anthropic"; mo
   // Étape 2 de même : le dessin et le contrôle des logos se font dans la tâche logo.propose.
   // Étape 3 : l'image de marque est rendue par le Studio (brand.kit), sans IA.
   // Étape 4 : la recherche et les angles sont faits par les tâches du Pilote (angles.propose).
-  const simple = currentStepNumber <= 4 || !READY_STEPS.includes(currentStepNumber);
+  // Étape 5 : l'activité est rassemblée par des outils gratuits ; le fil reste sur le modèle léger.
+  const simple = currentStepNumber <= 5 || !READY_STEPS.includes(currentStepNumber);
   return simple ? { provider: "anthropic", model: "claude-haiku-5-5", effort: "low" } : undefined;
 }
 
@@ -421,6 +423,8 @@ export function threadView(user: User, cid: string) {
         } : null,
         // Étape 2 : les 3 logos (images servies par la bibliothèque du projet) et le logo choisi.
         logos: j.logos ? { round: j.logos.round, chosen: j.logoChoice?.source ?? null, list: j.logos.list.map((x) => ({ ...x, href: x.assetId ? assetUrl({ id: x.assetId }) : null })) } : null,
+        // Étape 5 : le plan de l'activité.
+        activity: j.activity ? { ...j.activity, gaps: activityGaps(j.activity), validated: j.steps[5]?.status === "done" } : null,
         // Étape 4 : les 5 angles marketing et l'angle choisi.
         angles: j.angles ? { list: j.angles.list, recommendedId: j.angles.recommendedId, sourceCount: j.angles.sourceCount, chosen: j.angleChoice?.ids ?? (j.angleChoice ? [j.angleChoice.id] : null) } : null,
         // Étape 3 : l'image de marque (déclinaisons, planche, charte PDF), servie par la bibliothèque du projet.
