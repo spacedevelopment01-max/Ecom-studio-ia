@@ -75,7 +75,7 @@ const profileTool: AgentTool<any> = {
     // un changement de nom, catégorie ou secteur est une nouvelle offre (fiche du Pilote, nouvelle analyse).
     const briefApproved = stateOf(p.id)?.stages.brief?.status === "approved";
     const coreChange = (a.name && a.name !== before.name) || (a.category && a.category !== before.category) || (a.sector && a.sector !== before.sector);
-    if (briefApproved && coreChange) return { ok: false, summary: L("Le nom, la catégorie ou le secteur définissent l'offre : modifiez-les dans la fiche du Pilote (pilot.answer champs offerName/description), ce qui demande une nouvelle analyse. Les faits (prix, matières, présentation) se modifient ici sans analyse.", "Name, category or sector define the offer: change them in the Pilot brief.") };
+    if (briefApproved && coreChange) return { ok: false, summary: L("Le nom, la catégorie ou le secteur définissent l'offre : les changer demande une nouvelle analyse de la fiche. Les faits (prix, matières, présentation) se modifient sans analyse.", "Name, category or sector define the offer: change them in the Pilot brief."), hint: "Modifie-les dans la fiche du Pilote (pilot.answer champs offerName/description)." };
     const applyFacts = (next: ProductProfile) => {
       if (a.summary) { next.summary = a.summary; next.summaryStatus = "provided"; }
       if (a.colors || a.materials || a.visualDescription) next.visual = { ...next.visual, ...(a.colors ? { colors: a.colors } : {}), ...(a.materials ? { materials: a.materials } : {}), ...(a.visualDescription ? { description: a.visualDescription } : {}) };
@@ -240,7 +240,7 @@ const strategyRead: AgentTool<{}> = {
   run: (ctx) => {
     // Pendant l'étape 4 du parcours, les angles passent par angles.propose (cartes et sources) ; essais réels : une
     // lecture ici était tronquée et n'affichait aucune carte.
-    if (currentStep(journeyOf(ctx.conversationId)) === 4) return { ok: false, summary: L("Pendant l'étape 4 du parcours, utilise angles.propose : il range et affiche les 5 angles en cartes, avec leurs sources.", "Use angles.propose during step 4.") };
+    if (currentStep(journeyOf(ctx.conversationId)) === 4) return { ok: false, summary: L("Les angles s'affichent en cartes à cette étape.", "Angles are shown as cards at this step."), hint: "Pendant l'étape 4 du parcours, utilise angles.propose : il range et affiche les 5 angles en cartes, avec leurs sources." };
     const st = strategyState(project(ctx).id); return { ok: true, summary: st.active ? L(`Angle actif : ${st.active.angleId}.`, `Active angle: ${st.active.angleId}.`) : L(`Aucun angle actif ; ${st.angles.length} proposé(s).`, `No active angle.`), data: { research: st.research ? { status: st.research.status, message: st.research.message } : null, angles: st.angles.map((x: any) => ({ id: x.id, title: x.title ?? x.name, promise: short(x.promise ?? x.summary ?? x.hook ?? "", 200) })), recommendation: st.recommendation, active: st.active ? { angleId: st.active.angleId, version: st.active.version } : null, missingQuestions: st.missingQuestions } }; },
 };
 
@@ -252,7 +252,7 @@ const researchRead: AgentTool<{}> = {
   run: (ctx) => {
     // Pendant l'étape 4 du parcours, les angles passent par angles.propose (cartes et sources) ; essais réels : une
     // lecture ici était tronquée et n'affichait aucune carte.
-    if (currentStep(journeyOf(ctx.conversationId)) === 4) return { ok: false, summary: L("Pendant l'étape 4 du parcours, utilise angles.propose : il range et affiche les 5 angles en cartes, avec leurs sources.", "Use angles.propose during step 4.") };
+    if (currentStep(journeyOf(ctx.conversationId)) === 4) return { ok: false, summary: L("Les angles s'affichent en cartes à cette étape.", "Angles are shown as cards at this step."), hint: "Pendant l'étape 4 du parcours, utilise angles.propose : il range et affiche les 5 angles en cartes, avec leurs sources." };
     const p = project(ctx), r: any = (stateOf(p.id)?.stages as any)?.research;
     if (!r?.data) return { ok: true, summary: L("Aucune recherche marketing enregistrée.", "No marketing research yet."), data: null };
     const d = r.data, byId = new Map<string, any>((d.sources ?? []).map((s: any) => [s.id, s]));

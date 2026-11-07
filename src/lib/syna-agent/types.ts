@@ -28,6 +28,10 @@ export type ToolResult = {
   changes?: Change[];
   /** Tâches natives lancées (images, vidéos, thème…) : SINA reprend quand elles sont terminées. */
   jobs?: string[];
+  /** Consigne pour SINA seule (outils à rappeler, questions à poser…) : jamais montrée au client (essai réel du 7 novembre). */
+  hint?: string;
+  /** Erreur de SINA elle-même (argument mal formé) : le modèle la voit et se corrige, le client ne la voit jamais. */
+  internal?: boolean;
   /** Ambiguïté : SINA doit demander au client (plusieurs produits correspondent…). */
   ambiguous?: { question: string; choices: string[] };
 };

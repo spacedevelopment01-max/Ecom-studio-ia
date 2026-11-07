@@ -66,7 +66,7 @@ const chooseTool: AgentTool<{ source: "A" | "B" | "C" }> = {
     const p = project(ctx);
     const j = journeyOf(ctx.conversationId);
     const logo = j.logos?.list.find((x) => x.source === a.source);
-    if (!logo?.assetId) return { ok: false, summary: L(`Aucun logo ${a.source} dessiné : lance d'abord logo.propose.`, `No logo ${a.source} drawn yet.`) };
+    if (!logo?.assetId) return { ok: false, summary: L(`Aucun logo ${a.source} dessiné pour l'instant.`, `No logo ${a.source} drawn yet.`), hint: "Lance d'abord logo.propose." };
     const asset = getAsset(logo.assetId);
     if (!asset || asset.project_id !== p.id || asset.deleted_at) throw new HttpError(404, L("Logo introuvable dans les Fichiers.", "Logo not found."));
     const before = p.brand?.logo?.assetId ?? null;

@@ -88,9 +88,9 @@ const proposeTool: AgentTool<{ guidance?: string; redo?: Key[]; only?: "noms" }>
     project(ctx);
     const j = journeyOf(ctx.conversationId);
     if (j.steps[0]?.status !== "done") return { ok: false, summary: L("L'étape 0 (questions de départ) n'est pas encore validée : termine-la d'abord.", "Step 0 is not validated yet.") };
-    if (j.steps[1]?.status === "done") return { ok: false, summary: L("L'identité est déjà choisie. Pour la changer, le client doit le demander clairement (identity.choose avec une autre identité).", "The identity is already chosen.") };
+    if (j.steps[1]?.status === "done") return { ok: false, summary: L("L'identité est déjà choisie.", "The identity is already chosen."), hint: "Pour la changer, le client doit le demander clairement (identity.choose avec une autre identité)." };
     const previous = j.identities?.list;
-    if ((a.redo?.length || a.only) && !previous?.length) return { ok: false, summary: L("Aucune proposition à refaire : lance d'abord une proposition complète.", "Nothing to redo yet.") };
+    if ((a.redo?.length || a.only) && !previous?.length) return { ok: false, summary: L("Aucune proposition à refaire pour l'instant.", "Nothing to redo yet."), hint: "Lance d'abord une proposition complète." };
     updateJourney(ctx.conversationId, (x) => setStep(x, 1, "doing"));
     let out: { identities: Identity[]; comparison: string };
     let issues: string[] = [], firstIssues: string[] = [];
@@ -121,7 +121,7 @@ const proposeTool: AgentTool<{ guidance?: string; redo?: Key[]; only?: "noms" }>
     });
     return {
       ok: true,
-      summary: L(`3 identités proposées (proposition n° ${round}) : ${out.identities.map((x) => `${x.key} « ${x.name} »`).join(", ")}.${issues.length ? ` Points non validés par le contrôle (à dire au client) : ${issues.join(" ; ")}` : " Contrôle du Studio : OK."}`, "3 identities proposed."),
+      summary: L(`3 identités proposées (proposition n° ${round}) : ${out.identities.map((x) => `${x.key} « ${x.name} »`).join(", ")}.${issues.length ? ` Points non validés par le contrôle : ${issues.join(" ; ")}` : " Contrôle du Studio : OK."}`, "3 identities proposed."), ...(issues.length ? { hint: "Dis ces points non validés au client." } : {}),
       data: { proposition: round, identites: out.identities.map(identityView), pointsNonValides: issues, comparaison: short(out.comparison, 600) },
       changes: [{ module: "marque", object: "3 identités de marque", summary: out.identities.map((x) => `${x.key} : ${x.name} — ${x.slogan}`).join(" | "), after: out.identities.map((x) => x.name), verified: true }],
     };
@@ -193,7 +193,7 @@ const chooseTool: AgentTool<{ key: Key; mix?: Partial<Record<Part, Key>>; name?:
     const p = project(ctx);
     const j = journeyOf(ctx.conversationId);
     const list = j.identities?.list;
-    if (!list?.length) return { ok: false, summary: L("Aucune identité proposée : lance d'abord identity.propose.", "No identity proposed yet.") };
+    if (!list?.length) return { ok: false, summary: L("Aucune identité proposée pour l'instant.", "No identity proposed yet."), hint: "Lance d'abord identity.propose." };
     if (j.keep.includes("nom") && a.name) return { ok: false, summary: L("Le client garde son nom tel quel : il ne peut pas être changé ici.", "The name is kept as is.") };
     if (j.keep.includes("slogan") && a.slogan) return { ok: false, summary: L("Le client garde son slogan tel quel : il ne peut pas être changé ici.", "The tagline is kept as is.") };
     const chosen = mixIdentity(list, a.key, a.mix, { name: a.name, slogan: a.slogan });

@@ -24,7 +24,7 @@ const kitTool: AgentTool<Record<string, never>> = {
     updateJourney(ctx.conversationId, (x) => { x.brandKit = kit; setStep(x, 3, "review"); });
     return {
       ok: true,
-      summary: L(`Image de marque prête : ${kit.items.map((x) => x.label).join(", ")}${kit.boardId ? ", planche de marque" : ""}${kit.bookId ? `, charte PDF (${kit.pageIds.length} pages)` : ""}.${kit.notes.length ? ` À dire au client : ${kit.notes.join(" ; ")}` : ""}`, "Brand kit ready."),
+      summary: L(`Image de marque prête : ${kit.items.map((x) => x.label).join(", ")}${kit.boardId ? ", planche de marque" : ""}${kit.bookId ? `, charte PDF (${kit.pageIds.length} pages)` : ""}.${kit.notes.length ? ` ${kit.notes.join(" ")}` : ""}`, "Brand kit ready."), ...(kit.notes.length ? { hint: "Dis ces remarques au client, simplement." } : {}),
       data: { elements: kit.items.map((x) => x.label), planche: !!kit.boardId, charte: !!kit.bookId, pages: kit.pageIds.length, points: kit.notes },
       changes: [{ module: "marque", object: "image de marque", summary: `${kit.items.length} déclinaisons${kit.boardId ? ", planche" : ""}${kit.bookId ? ", charte PDF" : ""}`, after: kit.items.map((x) => x.key), verified: true }],
     };
@@ -38,7 +38,7 @@ const validateTool: AgentTool<Record<string, never>> = {
   run: (ctx) => {
     project(ctx);
     const j = journeyOf(ctx.conversationId);
-    if (!j.brandKit) return { ok: false, summary: L("Aucune image de marque préparée : lance d'abord brand.kit.", "No brand kit yet.") };
+    if (!j.brandKit) return { ok: false, summary: L("Aucune image de marque préparée pour l'instant.", "No brand kit yet."), hint: "Lance d'abord brand.kit." };
     updateJourney(ctx.conversationId, (x) => { setStep(x, 3, "done"); setStep(x, 4, "todo"); });
     return { ok: true, summary: L("Image de marque validée. Étape 3 terminée. Prochaine étape : les 5 angles marketing.", "Brand kit validated."), changes: [{ module: "marque", object: "image de marque", summary: "validée par le client", verified: true }] };
   },

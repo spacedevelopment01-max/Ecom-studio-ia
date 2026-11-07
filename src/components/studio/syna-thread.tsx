@@ -513,6 +513,8 @@ const READ_TOOLS = /^(site\.outline|site\.versions|catalogue\.list|ads\.list|pos
 
 function ToolResult({ m, projectId, onChoose, busy }: { m: Msg; projectId: string | null; onChoose: (n: number) => void; busy: boolean }) {
   const t = useT(), c = m.content;
+  // Erreur de SINA elle-même (argument mal formé) : elle se corrige seule, le client ne la voit jamais.
+  if (c.internal) return null;
   if (READ_TOOLS.test(c.tool) && c.ok) return <p className="text-xs text-muted" data-syna-read={c.tool}>🔎 {c.summary}</p>;
   const mockups: any[] | undefined = c.data?.mockups;
   const changes: any[] = c.changes ?? [];

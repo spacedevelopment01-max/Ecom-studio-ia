@@ -22,7 +22,7 @@ const proposeTool: AgentTool<{ retry?: boolean; redo?: string }> = {
   name: "angles.propose", module: "stratégie", kind: "generate", needsProject: true,
   description: "Étape 4 : prépare les 5 angles marketing du client (recherche web sur son marché, places de marché exclues, sources réelles). Automate à rappeler après chaque tâche : 1) fait comprendre la fiche de départ par l'IA (payant, tâche de fond) ; 2) s'il manque une information, renvoie les QUESTIONS à poser au client (réponds avec pilot.answer, puis rappelle angles.propose) ; 3) lance la recherche et les 5 angles (payant, tâche de fond de quelques minutes) ; 4) quand tout est prêt, les angles s'affichent dans le fil. Devis annoncé avant chaque partie payante. redo = la demande du client, avec SES mots, quand il veut une NOUVELLE proposition d'angles alors qu'ils sont prêts (nouvelle recherche payante ; les angles précédents restent conservés).",
   args: z.object({ retry: z.boolean().optional(), redo: z.string().min(8).max(1500).optional() }).strict(),
-  estimate: (ctx, a) => ({ maxMicro: anglesMaxMicro(project(ctx).id, a.redo), label: L("5 angles marketing", "5 marketing angles") }),
+  estimate: (ctx, a) => ({ maxMicro: anglesMaxMicro(project(ctx).id, a.redo), label: anglesPhase(project(ctx).id).kind === "analyze" ? L("analyse de ta fiche de départ, puis recherche web et 5 angles marketing", "brief analysis, then research and 5 angles") : L("recherche web et 5 angles marketing", "research and 5 marketing angles") }),
   // Demande d'accord lisible par le client (essai réel : il voyait « angles.propose {} »).
   preview: (ctx, a) => {
     const pid = project(ctx).id;
@@ -38,11 +38,11 @@ const proposeTool: AgentTool<{ retry?: boolean; redo?: string }> = {
     const j = journeyOf(ctx.conversationId);
     if (j.steps[3]?.status !== "done") return { ok: false, summary: L("L'image de marque (étape 3) doit être validée avant les angles marketing.", "Validate the brand kit first (step 3).") };
     if (j.steps[4]?.status === "done") return { ok: false, summary: L("L'angle marketing est déjà choisi.", "The angle is already chosen.") };
-    if (running(p.id)) return { ok: true, summary: L("Une préparation est déjà en cours : SINA reprend quand elle est finie.", "A preparation is already running.") };
+    if (running(p.id)) return { ok: true, summary: L("Une préparation est déjà en cours ; je reprends dès qu'elle est finie.", "A preparation is already running.") };
     // Après un échec de la recherche : on dit ce qui s'est passé et ce que ça a VRAIMENT coûté ; on ne relance (payant)
     // que si le client l'a demandé (retry).
     const failed = researchFailure(p.id);
-    if (failed && anglesPhase(p.id).kind === "research" && !a.retry) return { ok: false, summary: L(`La dernière recherche n'a pas abouti : ${failed.message} Elle a coûté ${pct(budgetPctOf(p.id, failed.costMicro))} du budget (appels réellement faits) ; l'analyse des angles, elle, n'a pas été payée. Dis-le au client avec ce chiffre, puis demande-lui s'il veut relancer (angles.propose avec retry: true, payant).`, "The last research failed."), data: { echec: failed.message, coutPct: budgetPctOf(p.id, failed.costMicro) } };
+    if (failed && anglesPhase(p.id).kind === "research" && !a.retry) return { ok: false, summary: L(`La dernière recherche n'a pas abouti : ${failed.message} Elle a coûté ${pct(budgetPctOf(p.id, failed.costMicro))} du budget (appels réellement faits) ; l'analyse des angles, elle, n'a pas été payée.`, "The last research failed."), hint: "Dis-le au client avec ce chiffre, puis demande-lui s'il veut relancer (angles.propose avec retry: true, payant).", data: { echec: failed.message, coutPct: budgetPctOf(p.id, failed.costMicro) } };
     const r = advanceAngles(p.id, a.redo);
     updateJourney(ctx.conversationId, (x) => setStep(x, 4, r.phase.kind === "ready" ? "review" : "doing"));
     if (r.jobId) return {
@@ -51,7 +51,7 @@ const proposeTool: AgentTool<{ retry?: boolean; redo?: string }> = {
         ? L(`Analyse de la fiche de départ lancée (1re partie, quelques minutes, au plus ${pct(r.maxPct)} du budget). Ensuite : la recherche web et les 5 angles.`, "Brief analysis started.")
         : L(`Recherche web et 5 angles marketing lancés (quelques minutes, au plus ${pct(r.maxPct)} du budget).`, "Research started."),
     };
-    if (r.phase.kind === "questions") return { ok: false, summary: L(`Avant la recherche, il manque des informations : pose ces questions au client une par une, enregistre ses réponses avec pilot.answer, puis rappelle angles.propose. ${questionList(r.phase.questions, r.phase.missing)}`, "Questions to ask first."), data: { questions: r.phase.questions, manquant: r.phase.missing } };
+    if (r.phase.kind === "questions") return { ok: false, summary: L("Avant la recherche, il me manque une ou deux précisions sur tes produits.", "A few details are needed before the research."), hint: `Pose ces questions au client UNE par UNE, enregistre ses réponses avec pilot.answer, puis rappelle angles.propose. ${questionList(r.phase.questions, r.phase.missing)}`, data: { questions: r.phase.questions, manquant: r.phase.missing } };
     if (r.phase.kind === "ready") {
       const angles = r.phase.angles;
       updateJourney(ctx.conversationId, (x) => { x.angles = angles; setStep(x, 4, "review"); });

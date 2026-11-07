@@ -76,7 +76,7 @@ const answerTool: AgentTool<any> = {
     for (const x of a.answers) {
       if (x.status !== "answered" && REQUIRED_FIELDS.includes(x.field)) return { ok: false, summary: L(`« ${FIELD_LABEL[x.field].fr} » est indispensable : il faut une réponse maintenant.`, `"${FIELD_LABEL[x.field].en}" is required now.`) };
       if (x.status === "answered" && !x.value.trim()) return { ok: false, summary: L(`Réponse vide pour « ${FIELD_LABEL[x.field].fr} ».`, "Empty answer.") };
-      if (x.field === "business" && x.status === "answered" && !["products", "services"].includes(x.value.trim())) return { ok: false, summary: L("business vaut « products » ou « services ».", "business is \"products\" or \"services\".") };
+      if (x.field === "business" && x.status === "answered" && !["products", "services"].includes(x.value.trim())) return { ok: false, internal: true, summary: L("business vaut « products » ou « services ».", "business is \"products\" or \"services\".") };
     }
     const before = journeyOf(ctx.conversationId).start;
     const j = updateJourney(ctx.conversationId, (j) => {
@@ -104,10 +104,10 @@ const importTool: AgentTool<{ url: string }> = {
   run: async (ctx, a) => {
     let host = "";
     try { host = new URL(/^https?:\/\//i.test(a.url) ? a.url : `https://${a.url}`).hostname; } catch { return { ok: false, summary: L("Ce lien n'est pas une adresse web valide.", "Invalid link.") }; }
-    if (BLOCKING_HOSTS.test(host)) return { ok: false, summary: L(`${host} ne se laisse pas lire automatiquement. Demandez au client des captures d'écran de sa page, ou ses photos et son logo en pièces jointes.`, `${host} can't be read automatically: ask for screenshots or files.`) };
+    if (BLOCKING_HOSTS.test(host)) return { ok: false, summary: L(`${host} ne se laisse pas lire automatiquement.`, `${host} can't be read automatically.`), hint: "Demande au client des captures d'écran de sa page, ou ses photos et son logo en pièces jointes." };
     let site;
     try { site = await importSite(a.url, { maxPages: 12, fetchImpl: startDeps.fetchImpl }); }
-    catch (e) { return { ok: false, summary: L(`Lecture du site impossible : ${short((e as Error).message, 200)}. Demandez des captures ou les fichiers au client.`, "Site could not be read.") }; }
+    catch (e) { return { ok: false, summary: L(`Lecture du site impossible : ${short((e as Error).message, 200)}.`, "Site could not be read."), hint: "Demande des captures ou les fichiers au client." }; }
     const contact = Object.fromEntries(Object.entries({ phone: site.contact.phone, email: site.contact.email, address: site.contact.address, hours: site.contact.hours }).filter(([, v]) => !!v)) as Record<string, string>;
     const imported = {
       url: site.finalUrl || site.url, name: site.name || undefined, tagline: site.tagline || undefined, logoSrc: site.logo?.src,

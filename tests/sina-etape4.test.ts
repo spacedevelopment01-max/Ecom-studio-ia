@@ -3,6 +3,7 @@
  * angles) tourne avec ses dépendances SIMULÉES (aucun appel réel, aucun réseau) ; SINA l'enchaîne, montre les angles
  * avec leurs sources et enregistre le choix du client.
  */
+import fs from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 process.env.STUDIO_SYNA_AGENT = "1";
@@ -68,15 +69,25 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     expect(J.journeyContext(J.journeyOf(cid))).toMatch(/n'utilise jamais research\.read ni strategy\.read à cette étape/);
     expect((await getTool("angles.propose")!.estimate!(ctx, {})).maxMicro).toBeGreaterThan(0);
     // Pendant l'étape 4, les vieilles lectures renvoient vers angles.propose (cartes et sources).
-    expect((await call("research.read", ctx, {})).summary).toMatch(/utilise angles\.propose/);
+    const guard = await call("research.read", ctx, {});
+    expect(guard.hint).toMatch(/utilise angles\.propose/); // consigne pour SINA seule
+    expect(guard.summary).not.toMatch(/angles\.propose/); // jamais un nom d'outil montré au client
+    const { serialize } = await import("@/lib/syna-agent/loop");
+    expect(serialize([{ seq: 1, role: "tool", content: { tool: "research.read", ok: false, summary: guard.summary, hint: guard.hint } } as any])).toMatch(/consigne \(pour toi seule\) : Pendant l'étape 4/);
     expect((await call("strategy.read", ctx, {})).ok).toBe(false);
     const { SYNA_SYSTEM } = await import("@/lib/syna-agent/prompt");
     expect(SYNA_SYSTEM).toMatch(/ne promets JAMAIS un devis ou une demande d'accord que tu ne montres pas/);
     expect(SYNA_SYSTEM).toMatch(/Accusé de réception : il porte SEULEMENT sur la dernière réponse du client/);
     expect(SYNA_SYSTEM).toMatch(/Le message ne l'annonce pas et ne la paraphrase pas \(« il me reste à savoir… »/);
     expect(SYNA_SYSTEM).toMatch(/les logos proposés et la planche de marque te sont JOINTS \(tu les vois\)[^]*Une image qui ne t'est pas jointe, ne la décris jamais/);
+    expect(SYNA_SYSTEM).toMatch(/Tu parles de toi à la PREMIÈRE personne/); // jamais « SINA va chercher… » (essai réel du 7 novembre)
+    expect(fs.readFileSync("src/lib/syna-agent/journey.ts", "utf8")).not.toMatch(/que SINA va chercher/);
     // 1) La fiche doit être comprise : tâche d'analyse (payante, devis du Pilote).
     expect(A.anglesPhase(pid).kind).toBe("analyze");
+    // Devis de l'étape (essai réel du 7 novembre) : analyse de la fiche PUIS recherche, jamais la recherche seule.
+    const { webSearchQuoteMicro } = await import("@/lib/ai/web-search");
+    const researchOnly = 1_000_000 + (webSearchQuoteMicro() ?? 0);
+    expect(A.anglesMaxMicro(pid)).toBeGreaterThan(researchOnly);
     const r1 = await call("angles.propose", ctx, {});
     expect(r1.ok).toBe(true);
     expect(r1.jobs).toHaveLength(1);
@@ -85,6 +96,7 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     expect((await call("angles.propose", ctx, {})).jobs ?? []).toHaveLength(0);
     await execute();
     // 2) Fiche comprise : validée (le client a confirmé son résumé à l'étape 0) et recherche lancée.
+    expect(A.anglesMaxMicro(pid)).toBe(researchOnly); // fiche comprise : reste la recherche seule
     const r2 = await call("angles.propose", ctx, {});
     expect(r2.ok).toBe(true);
     expect(r2.jobs).toHaveLength(1);

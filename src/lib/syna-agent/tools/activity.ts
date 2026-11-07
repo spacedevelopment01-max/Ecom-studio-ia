@@ -41,7 +41,7 @@ const companyTool: AgentTool<{ fields?: Record<string, string | undefined>; late
     const refused = (a.later ?? []).filter((k) => !postponed.includes(k as any));
     return {
       ok: !refused.length,
-      summary: L(`Coordonnées enregistrées : ${Object.keys(a.fields ?? {}).join(", ") || "aucune"}${postponed.length ? ` ; plus tard : ${postponed.join(", ")}` : ""}${refused.length ? ` ; impossible de reporter (obligatoire pour le site) : ${refused.join(", ")}` : ""}. Rappelle activity.plan pour mettre la carte à jour.`, "Company details saved."),
+      summary: L(`Coordonnées enregistrées : ${Object.keys(a.fields ?? {}).join(", ") || "aucune"}${postponed.length ? ` ; plus tard : ${postponed.join(", ")}` : ""}${refused.length ? ` ; impossible de reporter (obligatoire pour le site) : ${refused.join(", ")}` : ""}.`, "Company details saved."), hint: "Rappelle activity.plan pour mettre la carte à jour.",
       changes: Object.entries(a.fields ?? {}).filter((e): e is [string, string] => typeof e[1] === "string").map(([k, v]) => ({ module: "activité", object: COMPANY_FIELDS.find((f) => f.key === k)!.label, summary: v, after: saved?.[k as keyof typeof saved] ?? null, verified: saved?.[k as keyof typeof saved] === v.trim() })),
     };
   },

@@ -71,6 +71,11 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     const cid = threadFor(user, null), ctx = ctxOf(user, cid);
     const refused = await call("start.answer", ctx, { answers: [{ field: "audience", status: "later" }] });
     expect(refused.ok).toBe(false);
+    // Valeur mal formée par SINA (essai réel du 7 novembre : « ✕ business vaut… » affiché au client) : erreur interne,
+    // vue par le modèle seul.
+    const bad = await call("start.answer", ctx, { answers: [{ field: "business", value: "produits" }] });
+    expect(bad.ok).toBe(false);
+    expect(bad.internal).toBe(true);
     const r = await call("start.answer", ctx, { answers: [{ field: "business", value: "products" }, { field: "offer", value: "Un sac de voyage modulable en toile." }] });
     expect(r.ok).toBe(true);
     expect((r.data as any).prochaine).toBe("existing");
@@ -99,7 +104,7 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
       // Lien vers un réseau social : refus honnête, pas de devinette.
       const insta = await call("start.import", ctx, { url: "https://www.instagram.com/exemple" });
       expect(insta.ok).toBe(false);
-      expect(insta.summary).toMatch(/captures/);
+      expect(insta.hint).toMatch(/captures/); // consigne pour SINA, jamais affichée telle quelle
 
       const imp = await call("start.import", ctx, { url: "https://custom.test/" });
       expect(imp.ok).toBe(true);

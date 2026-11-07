@@ -205,7 +205,7 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
         const t = getTool(a.tool);
         if (!t) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, ok: false, summary: L("Outil inconnu : choisissez un outil du catalogue.", "Unknown tool: choose a tool from the catalogue.") }, r.id); continue; }
         const parsed = t.args.safeParse(a.args);
-        if (!parsed.success) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, ok: false, summary: L("Arguments invalides : ", "Invalid arguments: ") + parsed.error.issues.slice(0, 4).map((x) => `${x.path.join(".")}: ${x.message}`).join(" ; ") }, r.id); continue; }
+        if (!parsed.success) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, ok: false, internal: true, summary: L("Arguments invalides : ", "Invalid arguments: ") + parsed.error.issues.slice(0, 4).map((x) => `${x.path.join(".")}: ${x.message}`).join(" ; ") }, r.id); continue; }
         if (t.needsProject && !r.project_id) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, ok: false, summary: L("Aucun projet n'est encore rattaché : créez d'abord le projet (outil project.create).", "No project yet: create it first (project.create).") }, r.id); continue; }
         // Accord explicite : actions sensibles, et dépenses au-delà du budget autorisé.
         if (isSensitive(t, parsed.data, tctx)) return askConfirmation(r, t, parsed.data, tctx, "sensitive");
@@ -257,7 +257,7 @@ function suspend(r: SynaRun, jobs: string[]) {
 async function execute(t: AgentTool, args: unknown, ctx: ToolContext, key: string, r: SynaRun): Promise<ToolResult> {
   const prior = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND run_id=? AND role='tool'", r.conversation_id, r.id)
     .map((m) => json<any>(m.content_json, {})).find((m) => m.key === key && m.tool === t.name);
-  if (prior) return prior.result ?? { ok: prior.ok, summary: prior.summary, data: prior.data, jobs: prior.jobs };
+  if (prior) return prior.result ?? { ok: prior.ok, summary: prior.summary, hint: prior.hint, data: prior.data, jobs: prior.jobs };
   if (t.needsProject && ctx.projectId) requirePlan(ctx.user, ctx.projectId);
   let res: ToolResult;
   try {
@@ -267,7 +267,7 @@ async function execute(t: AgentTool, args: unknown, ctx: ToolContext, key: strin
     res = { ok: false, summary: L("Échec de l'outil : ", "Tool failed: ") + clip(msg, 600) };
   }
   if (res.changes?.length) recordChanges(r.conversation_id, r.id, t.name, res.changes);
-  addMessage(r.conversation_id, "tool", { key, tool: t.name, args, ok: res.ok, summary: res.summary, data: clip(res.data, 6000), changes: res.changes, jobs: res.jobs, ambiguous: res.ambiguous }, r.id);
+  addMessage(r.conversation_id, "tool", { key, tool: t.name, args, ok: res.ok, summary: res.summary, ...(res.hint ? { hint: res.hint } : {}), ...(res.internal ? { internal: true } : {}), data: clip(res.data, 6000), changes: res.changes, jobs: res.jobs, ambiguous: res.ambiguous }, r.id);
   return res;
 }
 
@@ -406,7 +406,7 @@ export function serialize(h: SynaMessage[]): string {
     const c = m.content, current = i > lastUser, dataMax = current ? 12000 : 300, argsMax = current ? 400 : 160;
     if (m.role === "user") return `[client #${m.seq}] ${c.text}${c.attachments?.length ? ` (pièces jointes : ${c.attachments.join(", ")})` : ""}`;
     if (m.role === "assistant") return `[SINA #${m.seq}] ${c.message}${c.actions?.length ? `\n  actions : ${c.actions.map((a: any) => `${a.tool} ${JSON.stringify(a.args)}`.slice(0, argsMax)).join(" | ")}` : ""}${c.question ? `\n  question : ${c.question.text}` : ""}`;
-    if (m.role === "tool") return `[résultat ${c.tool} #${m.seq}] ${c.ok ? "OK" : "ÉCHEC"} — ${c.summary}${c.changes?.length ? `\n  changements vérifiés : ${c.changes.map((x: any) => `${x.module}/${x.object} : ${x.summary}${x.verified ? "" : " (non vérifié)"}`).join(" ; ")}` : ""}${c.data != null ? `\n  données : ${JSON.stringify(c.data).slice(0, dataMax)}` : ""}`;
+    if (m.role === "tool") return `[résultat ${c.tool} #${m.seq}] ${c.ok ? "OK" : "ÉCHEC"} — ${c.summary}${c.hint ? `\n  consigne (pour toi seule) : ${c.hint}` : ""}${c.changes?.length ? `\n  changements vérifiés : ${c.changes.map((x: any) => `${x.module}/${x.object} : ${x.summary}${x.verified ? "" : " (non vérifié)"}`).join(" ; ")}` : ""}${c.data != null ? `\n  données : ${JSON.stringify(c.data).slice(0, dataMax)}` : ""}`;
     if (c.kind === "confirmation") return `[accord demandé #${m.seq}] ${c.pending?.tool} — ${c.pending?.reason}`;
     if (c.kind === "approved" || c.kind === "declined") return `[client : ${c.kind === "approved" ? "ACCORD" : "REFUS"} pour ${c.tool}]`;
     return `[événement ${c.kind}]`;

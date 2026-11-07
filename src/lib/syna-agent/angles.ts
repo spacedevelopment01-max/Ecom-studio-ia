@@ -13,6 +13,7 @@ import { loadProject } from "../projects";
 import { approve, editBrief, queuePreparation } from "../preparation/engine";
 import { stateOf } from "../preparation/store";
 import { analyzed } from "../preparation/understanding";
+import { analysisCostPlan } from "../preparation/inspect";
 import { createQuote, quoteOf } from "../preparation/quote";
 import { webSearchQuoteMicro } from "../ai/web-search";
 import { activateStrategy, getStrategyState, prepareStrategyChange, proposeStrategies, stageStrategyModule } from "../marketing-strategy";
@@ -88,10 +89,16 @@ export function anglesMaxMicro(projectId: string, redo?: string): number {
   // Lire des angles prêts, poser des questions : gratuit (essai réel : le devis d'une recherche bloquait la lecture).
   if (ph.kind === "ready" && redo) return 1_000_000 + (webSearchQuoteMicro() ?? 0);
   if (ph.kind === "ready" || ph.kind === "questions" || ph.kind === "running") return 0;
+  const research = 1_000_000 + (webSearchQuoteMicro() ?? 0);
+  // Fiche encore à analyser : le devis couvre TOUTE l'étape, analyse puis recherche (essai réel du 7 novembre : « au
+  // plus 2,3 % » annoncé, puis l'analyse lancée « au plus 8 % »). Plafond calculé sans créer de devis.
   if (ph.kind === "analyze") {
-    try { return (createQuote(projectId, "brief", "analyze") as any).capMicro ?? 1_000_000; } catch { return 1_000_000; }
+    try {
+      const plan = analysisCostPlan(loadProject(projectId), (stateOf(projectId)!.stages as any).brief.data);
+      return (plan?.maxMicro ?? 1_000_000) + research;
+    } catch { return 1_000_000 + research; }
   }
-  return 1_000_000 + (webSearchQuoteMicro() ?? 0);
+  return research;
 }
 
 /**
