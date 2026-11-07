@@ -125,7 +125,26 @@ export type SinaLogo = { source: "A" | "B" | "C"; name: string; style: LogoStyle
  * Motif du contrôle dit au client (tutoiement, sans renvoyer vers un bouton d'un autre écran) : « note 7,4/10, il
  * faut 7,5 » au lieu de « sous la barrière (7.4/10, attendu 7.5) — aucune nouvelle image sans votre accord (bouton…) ».
  */
+/** Défauts du contrôle, dits au client en clair (essai réel : « défaut bloquant : artifacts »). */
+export const CLIENT_DEFECTS: Record<string, string> = {
+  artifacts: "des détails mal dessinés (formes ou lettres déformées)",
+  amateur: "un rendu daté ou peu soigné",
+  cliche: "un dessin trop banal",
+  generic_concept: "une idée trop générique",
+  forbidden: "un rendu que le Studio refuse",
+  extra_text: "des mots en trop dans le logo",
+  name_mismatch: "le nom mal écrit",
+  text_mismatch: "un texte mal écrit",
+  text_unreadable: "un texte illisible",
+  resembles_known_brand: "une ressemblance avec une marque connue",
+  unauthorized_person: "une personne dessinée",
+  placeholder_shape: "une forme vide sans idée",
+  duplicate: "un logo trop proche d'un autre",
+  corrupt: "une image abîmée",
+};
+
 export function clientReason(reason: string): string {
+  reason = reason.replace(/défaut (bloquant|rédhibitoire) : ([a-z_, ]+)/i, (_m, _k: string, codes: string) => `refusé par le contrôle : ${codes.split(/,\s*/).map((c) => CLIENT_DEFECTS[c.trim()] ?? c.trim().replace(/_/g, " ")).join(", ")}`);
   return reason
     .replace(/\s*[—-]\s*aucune nouvelle image sans votre accord[^)]*\)?\)?/i, "")
     .replace(/sous la barrière \((\d+(?:[.,]\d+)?)\/10, attendu (\d+(?:[.,]\d+)?)\)/i, (_m, a: string, b: string) => `note ${a.replace(".", ",")}/10, il faut ${b.replace(".", ",")}`)
@@ -172,9 +191,12 @@ export async function runSinaLogosJob(ctx: JobContext) {
   };
   const run = await runLogoEngineV2(ctx, projectId, { ai, territories: 3, capMicro: Math.max(1, capMicro - jobSpentMicro(ctx.job.id)), instructions: guidance });
   const logos = logosOfRun(run);
+  // Notes internes du moteur (modèle, relais, clé, tarif) : jamais montrées au client (essai réel : « dessiné par le
+  // modèle principal faute de relais de secours »).
+  const notes = run.notes.filter((n) => !/relais|cl[ée] |tarif|mod[eè]le principal|provider|fournisseur/i.test(n)).slice(0, 8);
   updateJourney(conversationId, (x) => {
-    x.logos = { list: logos, at: Date.now(), round: (x.logos?.round ?? 0) + 1, notes: run.notes.slice(0, 8) };
+    x.logos = { list: logos, at: Date.now(), round: (x.logos?.round ?? 0) + 1, notes };
     setStep(x, 2, "review");
   });
-  return { logos, notes: run.notes.slice(0, 8), stoppedByCostCap: run.stoppedByCostCap };
+  return { logos, notes, stoppedByCostCap: run.stoppedByCostCap };
 }

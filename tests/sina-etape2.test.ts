@@ -284,6 +284,11 @@ describe("SINA — étape 2 : 3 logos", async () => {
     expect(r.summary).toMatch(/étape 1/);
   });
 
+  it("essai réel (thés) : jamais de code technique dit au client (« artifacts »)", () => {
+    expect(G.clientReason("défaut bloquant : artifacts")).toBe("refusé par le contrôle : des détails mal dessinés (formes ou lettres déformées)");
+    expect(G.clientReason("défaut rédhibitoire : resembles_known_brand, forbidden")).toBe("refusé par le contrôle : une ressemblance avec une marque connue, un rendu que le Studio refuse");
+  });
+
   it("motif du contrôle dit simplement au client (essai réel)", () => {
     expect(G.clientReason("sous la barrière (7.4/10, attendu 7.5) — aucune nouvelle image sans votre accord (bouton « Nouvelle version »)")).toBe("note 7,4/10, il faut 7,5");
   });
