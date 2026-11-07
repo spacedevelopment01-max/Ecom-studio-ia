@@ -242,7 +242,7 @@ const strategyRead: AgentTool<{}> = {
 
 const researchRead: AgentTool<{}> = {
   name: "research.read", module: "stratégie", kind: "read", needsProject: true,
-  description: "Lit la recherche marketing du Pilote (brouillon ou validée) : couverture, les 5 angles avec cible, motivation, accroche, arguments et LEURS SOURCES (titre, lien, famille, lue par le Studio ou extrait de la recherche web), recommandation, et les sources écartées avec la raison. À utiliser pour présenter les angles au client avec leurs sources. Après son choix : pilot.approve {step:\"research\"} puis strategy.choose.",
+  description: "Hors parcours (pendant l'étape 4 du parcours, utilise angles.propose, qui affiche les angles en cartes). Lit la recherche marketing du Pilote (brouillon ou validée) : couverture, les 5 angles avec cible, motivation, accroche, arguments et LEURS SOURCES (titre, lien, famille, lue par le Studio ou extrait de la recherche web), recommandation, et les sources écartées avec la raison. À utiliser pour présenter les angles au client avec leurs sources. Après son choix : pilot.approve {step:\"research\"} puis strategy.choose.",
   args: z.object({}).strict(),
   run: (ctx) => {
     const p = project(ctx), r: any = (stateOf(p.id)?.stages as any)?.research;

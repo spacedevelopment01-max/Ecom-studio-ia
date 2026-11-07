@@ -64,6 +64,8 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     expect(J.currentStep(J.journeyOf(cid))).toBe(4);
     expect(modelFor(4)?.model).toMatch(/haiku/); // le travail est dans les tâches du Pilote
     expect(J.journeyContext(J.journeyOf(cid))).toMatch(/Étape 4 \(5 angles marketing\)[^]*PAYANT[^]*angles\.propose/);
+    // Essai réel : SINA avait lu les angles avec research.read (lecture tronquée, aucune carte).
+    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/n'utilise jamais research\.read ni strategy\.read à cette étape/);
     expect((await getTool("angles.propose")!.estimate!(ctx, {})).maxMicro).toBeGreaterThan(0);
     // 1) La fiche doit être comprise : tâche d'analyse (payante, devis du Pilote).
     expect(A.anglesPhase(pid).kind).toBe("analyze");
