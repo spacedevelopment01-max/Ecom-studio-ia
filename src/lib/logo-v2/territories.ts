@@ -41,7 +41,8 @@ export const TerritorySchema = z.object({
   colors: z.array(z.string().regex(/^#[0-9a-fA-F]{6}$/)).max(4).optional().catch(undefined),
 });
 export const TerritoriesSchema = z.object({ territories: z.array(TerritorySchema).min(1).max(8) });
-export type TerritoryDraft = z.infer<typeof TerritorySchema>;
+/** Le schéma public n'accepte que les styles proposables ; en interne, le moteur connaît aussi « libre » (SINA). */
+export type TerritoryDraft = Omit<z.infer<typeof TerritorySchema>, "style"> & { style?: LogoStyle };
 
 /** Familles réellement disponibles pour chaque style (le texte est rendu avec la vraie police : texte exact). */
 export const STYLE_FONTS: Record<TypeStyle, string[]> = {
