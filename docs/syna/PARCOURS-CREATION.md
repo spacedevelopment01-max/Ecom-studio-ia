@@ -98,6 +98,40 @@ recherche et fiche bien ; salon : prestations et rendez-vous…) :
   SEO complet (charte § 4).
 - Base existante : moteur de thème sur mesure (`src/lib/engine/custom-theme.ts`) — il ne part pas encore d'une image.
 
+**Préparé le 7 novembre (étapes 6 et 7, dans le code, testé sans aucune dépense : tout est simulé)** — dossier
+`src/lib/syna-agent/mockup-code/`, essais `tests/sina-etape7.test.ts` :
+- **Liste exacte des pages** (`pages.ts`) : boutique (sans page de paiement ; catégorie seulement s'il y a plusieurs
+  produits ; une fiche par type de produit ; panier, tiroir et panier vide ; comptes clients ; pages légales ; « bientôt
+  ouverte » ; 404 ; blog) et services (prestations, tarifs, réalisations, méthode, zone, devis et confirmation,
+  rendez-vous si le métier s'y prête, plan du site…), pages du métier (restaurant : carte ; immobilier : recherche et
+  fiche bien). Chaque page en ordinateur (1440 px) et téléphone (390 px), en-tête et pied compris.
+- **Maquette en plusieurs images** (`mockup-set.ts`) : découpage comme les planches de Thomas (pages clés seules,
+  autres pages groupées, écrans de téléphone côte à côte), rangé dans la mémoire du projet ; **contrôle de
+  couverture** : une page ou une version sans image reste un manque, et le choix du client est refusé tant que la
+  maquette n'est pas complète.
+- **Consignes des images de maquette** (`prompts.ts`), en français, dans l'ordre du guide des images : identité choisie
+  (rôles des couleurs des palettes du 7 novembre : bouton, détails, texte et titres, fond blanc / dégradé / sombre),
+  polices, vrais produits ou prestations (prix confirmés seulement), angle marketing, interdits. Coût maximal donné
+  avant toute création ; **aucune image n'est créée par ce code**.
+- **Étape 7** (`pipeline.ts`, `deps.ts`, `job.ts`) : lecture de chaque image (Claude, vision) en description de page
+  (sections, textes mot pour mot, images, couleurs, typographie, espacements) ; sections qui font fonctionner la page
+  (achat, panier, recherche, collections, formulaires, textes légaux, réservation) prises dans la bibliothèque, le reste
+  écrit sur mesure et validé par le moteur du thème sur mesure ; en-tête et pied dessinés une fois ; boucle par page :
+  captures (Chromium local, gratuit), ressemblance locale gratuite + comparaison par Claude, corrections, 3 tours au
+  plus ; contrôles finaux gratuits : débordements à 1440, 768, 430, 390 et 360 px, liens internes, SEO de base (titre,
+  méta-description, un seul H1, textes alternatifs, données structurées), Theme Check. Plafond de dépense vérifié avant
+  chaque appel. Résultat : **nouvelle version inactive** du site + rapport page par page (conforme, à corriger, sans
+  maquette, non vérifiée…) ; une page ratée n'est jamais présentée comme bonne ; le client décide ensuite.
+- Outils de SINA (prêts, **pas encore enregistrés**) : `mockup.pages`, `mockup.prepare`, `mockup.attach`,
+  `mockup.choose`, `site.code_from_mockup`, `mockup.report` ; tâche de fond `syna.mockup.code`.
+- **Reste à essayer en réel** (payant, prix annoncé avant, accord écrit) : création des images de maquette (outil de
+  génération à brancher sur les consignes préparées), qualité de la lecture des images, de l'écriture des sections et
+  de la comparaison par Claude, coût réel d'une étape 7 complète (le devis actuel est un maximum prudent), captures sur
+  un vrai site. Restent aussi à construire : création des images du site par l'IA d'images (les emplacements et leurs
+  consignes sont listés dans le rapport), données structurées `Organization` / `LocalBusiness` sur l'accueil (le thème
+  ne les a pas encore), panier rempli et tiroir (non capturables dans l'aperçu), comptes clients (gabarits Shopify, à
+  vérifier sur la plateforme), mise en page propre à chaque type de produit, rapport en anglais.
+
 ## Étape 8 — Un de nos thèmes, adapté 🔧
 
 - Le client choisit parmi les thèmes proposés (`MAQUETTE_THEMES`).
@@ -184,3 +218,12 @@ recherche et fiche bien ; salon : prestations et rendez-vous…) :
 10. **Livret de lancement PDF** en fin de parcours : identité, site, calendrier, prochaines étapes.
 
 Écartée : la comparaison avec les concurrents.
+
+### Branchement (7 novembre, nuit)
+
+- Outils enregistrés dans SINA : `mockup.pages`, `mockup.prepare`, `mockup.generate` (création des images manquantes
+  d'une maquette, payante, plafonnée au devis, image ratée signalée), `mockup.attach`, `mockup.choose`,
+  `site.code_from_mockup`, `mockup.report` ; `calendar.plan`, `calendar.read`, `calendar.mark_done`, `calendar.move`.
+- Tâche de fond `syna.mockup.code` branchée dans le worker.
+- Consignes des étapes 6, 7 et 11 prêtes dans `STEP_GUIDES` (`src/lib/syna-agent/journey.ts`) ; elles s'appliqueront
+  quand ces étapes seront ouvertes (`READY_STEPS`), après leurs essais réels, dans l'ordre du parcours.
