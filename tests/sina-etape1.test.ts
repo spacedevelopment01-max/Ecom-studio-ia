@@ -171,6 +171,10 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     expect(out("C'est noté, merci.")).toBe("C'est noté, merci.");
     expect(out("Voici tes identités.\n\nLaquelle te plaît le plus ? Tu peux aussi mélanger.")).toBe("Voici tes identités.");
     expect(withoutRepeatedQuestion({ message: "Tu es prêt ?", actions: [], question: null, done: true }).message).toBe("Tu es prêt ?");
+    // Essai réel (thés) : la dernière phrase annonçait la question avec les mêmes mots.
+    const q2 = { text: "Présente-moi ton produit en quelques phrases, et joins des photos si tu en as." };
+    expect(withoutRepeatedQuestion({ message: "Merci, c'est noté. Présente-moi maintenant ton produit en quelques phrases :", actions: [], question: q2, done: false }).message).toBe("Merci, c'est noté.");
+    expect(withoutRepeatedQuestion({ message: "Merci, c'est noté. Voici la suite :", actions: [], question: q2, done: false }).message).toBe("Merci, c'est noté. Voici la suite :");
   });
 
   it("proposition refusée tant que l'étape 0 n'est pas validée", async () => {
