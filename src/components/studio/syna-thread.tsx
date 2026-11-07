@@ -44,16 +44,17 @@ function IdentityCards({ ids, busy, onChoose }: { ids: Identities; busy: boolean
             <article key={x.key} className={cx("overflow-hidden rounded-xl border", chosen ? "border-ink ring-2 ring-ink" : "border-line")} data-identity={x.key}>
               <div className="px-4 pb-4 pt-3" style={{ background: x.ground === "sombre" ? x.palette.dark : x.ground === "degrade" && x.gradient ? `linear-gradient(135deg, ${x.gradient.from}, ${x.gradient.to})` : x.palette.light, color: x.ground === "sombre" ? x.palette.light : x.ground === "degrade" && x.gradient ? readable(x.palette, [x.gradient.from, x.gradient.to]) : x.palette.dark, fontFamily: fam(x.faces.body, "sans-serif") }}>
                 <p className="text-[11px] uppercase tracking-wider opacity-70">{t("Identité", "Identity")} {x.key} · {t({ blanc: "fond blanc", degrade: "fond en dégradé", sombre: "fond sombre" }[x.ground] ?? "", { blanc: "white background", degrade: "gradient background", sombre: "dark background" }[x.ground] ?? "")} · {x.territory}</p>
-                <h3 className="mt-2 text-3xl leading-tight" style={{ color: x.palette.primary, fontFamily: fam(x.faces.heading, "serif"), fontWeight: x.faces.heading?.weight ?? 600 }}>{x.name}</h3>
+                <h3 className="mt-2 text-3xl leading-tight" style={{ fontFamily: fam(x.faces.heading, "serif"), fontWeight: x.faces.heading?.weight ?? 600 }}>{x.name}</h3>
+                <span className="mt-2 block h-1 w-10 rounded-full" style={{ background: x.palette.accent }} aria-hidden />
                 <p className="mt-1 text-base">{x.slogan}</p>
                 <p className="mt-3 text-sm opacity-90">{x.promise}</p>
-                <span className="mt-3 inline-block rounded-full px-3 py-1 text-xs font-semibold" style={{ background: x.palette.accent, color: contrastText(x.palette.accent, x.palette.dark, x.palette.light) }}>{t("Bouton d'exemple", "Sample button")}</span>
+                <span className="mt-3 inline-block rounded-full px-3 py-1 text-xs font-semibold" style={{ background: x.palette.primary, color: [x.palette.dark, x.palette.light, "#141414", "#FFFFFF"].reduce((a, b) => (ratioOf(b, x.palette.primary) > ratioOf(a, x.palette.primary) ? b : a)) }}>{t("Bouton d'exemple", "Sample button")}</span>
               </div>
               <div className="flex h-6 border-y border-black/10" aria-label={t("Palette", "Palette")}>
-                {(["dark", "primary", "secondary", "accent", "light"] as const).map((r) => <span key={r} className={cx("flex-1", r === "light" && "border-l border-black/10")} style={{ background: x.palette[r] }} title={`${r} ${x.palette[r]}`} />)}
+                {(["light", "dark", "primary", "secondary", "accent"] as const).map((r) => <span key={r} className={cx("flex-1", r === "light" && "border-r border-black/10")} style={{ background: x.palette[r] }} title={`${r} ${x.palette[r]}`} />)}
               </div>
               <dl className="space-y-1 bg-card px-4 py-3 text-xs">
-                <div><dt className="inline font-semibold">{t("Couleurs", "Colours")} : </dt><dd className="inline">{x.paletteFamily} ({Object.values(x.palette).join(" ")})</dd></div>
+                <div><dt className="inline font-semibold">{t("Couleurs", "Colours")} : </dt><dd className="inline">{x.paletteFamily} — {x.ground === "degrade" && x.gradient ? `${t("dégradé", "gradient")} ${x.gradient.from} → ${x.gradient.to}` : `${t("fond", "background")} ${x.ground === "sombre" ? x.palette.dark : x.palette.light}`}, {t("texte", "text")} {x.ground === "sombre" ? x.palette.light : x.palette.dark}, {t("bouton", "button")} {x.palette.primary}, {t("surface", "surface")} {x.palette.secondary}, {t("accent", "accent")} {x.palette.accent}</dd></div>
                 <div><dt className="inline font-semibold">{t("Polices", "Fonts")} : </dt><dd className="inline">{x.faces.heading?.family ?? "?"} / {x.faces.body?.family ?? "?"}{x.fontStyle ? ` — ${x.fontStyle}` : ""}</dd></div>
                 <div><dt className="inline font-semibold">{t("Ton", "Tone")} : </dt><dd className="inline">{x.tone.adjectives.join(", ")} · {t("jamais", "never")} : {x.tone.avoid.join(", ")}</dd></div>
                 <div><dt className="inline font-semibold">{t("Idée de logo", "Logo idea")} : </dt><dd className="inline">{x.logoStyleLabel} — {x.logoIdea}</dd></div>

@@ -97,9 +97,14 @@ export type Brand = {
    */
   paletteMode?: "direction" | "client";
   /** Fond de page de l'identité choisie (SINA, étape 1) : blanc, dégradé de couleurs ou sombre (texte clair). */
-  ground?: "blanc" | "degrade" | "sombre";
+  ground?: "blanc" | "degrade" | "sombre" | "uni";
   /** Fond en dégradé : ses deux couleurs. */
   gradient?: { from: string; to: string };
+  /**
+   * Rôles de la palette d'une identité SINA (« sina-2026 », palettes du propriétaire du 7 novembre) : primary = bouton
+   * (couleur de marque), accent = détails graphiques, titres dans la couleur du texte. Absent : rôles historiques.
+   */
+  paletteRoles?: "sina-2026";
   clientPalette?: BrandPalette;
   fonts: { heading: string; body: string };
   logo: {

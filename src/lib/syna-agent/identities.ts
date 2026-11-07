@@ -7,8 +7,9 @@
 import { z } from "zod";
 import { FONT_FILES, FONT_HANDLES } from "../theme/render";
 import { BRAND_RULES } from "../media/identity-board";
-import { contrast, hexToRgb, luminance, onColor, sameColor } from "../color";
+import { contrast, hexToRgb, luminance, sameColor } from "../color";
 import { FIELD_LABEL, START_FIELDS, type Journey } from "./journey";
+import { referencesForPrompt } from "./brand-references";
 
 /** Styles de logo de la charte (§ 2.2) : les 3 identités en prennent 3 différents. */
 export const LOGO_STYLES = ["lettrage", "symbole", "monogramme", "embleme", "cachet", "mascotte", "trait", "abstrait", "pixel", "brutaliste", "isometrie", "aquarelle", "artdeco", "popart"] as const;
@@ -42,10 +43,18 @@ export const IdentitySchema = z.object({
   sloganTone: z.string().max(80).default(""),
   promise: z.string().max(260),
   territory: z.string().max(160),
-  /** Fond de page (règles du propriétaire, 6 et 7 novembre) : un blanc, un dégradé de couleurs, un sombre par série. */
-  ground: z.enum(["blanc", "degrade", "sombre"]),
+  /**
+   * Fond de page (règles du propriétaire, 6 et 7 novembre) : un blanc, un dégradé de couleurs, un sombre par série.
+   * « uni » (fond clair coloré) existe dans ses exemples de palettes ; il n'entre pas dans une série de trois.
+   */
+  ground: z.enum(["blanc", "degrade", "sombre", "uni"]),
   /** Fond en dégradé : ses deux couleurs (de haut en bas, en diagonale). */
   gradient: z.object({ from: hex, to: hex }).optional(),
+  /**
+   * Rôles (palettes du propriétaire du 7 novembre) : primary = BOUTON (couleur de marque et d'action), secondary =
+   * SURFACE (cartes, bandeaux), accent = détails graphiques, light / dark = fond et texte (inversés sur fond sombre).
+   * Les titres prennent la couleur du texte.
+   */
   palette: z.object({ dark: hex, primary: hex, secondary: hex, accent: hex, light: hex }),
   paletteFamily: z.string().max(120).default(""),
   fonts: z.object({ heading: z.string().max(40), body: z.string().max(40) }),
@@ -76,13 +85,13 @@ Les trois identités diffèrent sur au moins 4 des 6 axes, dont toujours le prem
 6. Style de logo : trois styles DIFFÉRENTS parmi ${LOGO_STYLES.map((s) => `${s} (${LOGO_STYLE_LABEL[s]})`).join(", ")}, choisis pour le métier du client et pour chaque identité.
 
 Chaque identité contient :
-- name : le CONCEPT du projet (ce que le client fait, comment, d'où, pour quelle émotion) se retrouve dans le nom, de façon astucieuse et poussée plus loin qu'une simple description : jeu de mots, image, mot-valise, détournement d'un mot du métier ou du terroir, contraction, expression… (niveau visé : « Cuivre & Verger » pour une cuisson au chaudron et des fruits de verger, « Tartinou » pour des confitures conviviales, mais en allant encore plus loin dans l'idée). Pour CHAQUE identité, explore mentalement au moins 20 pistes et garde la plus forte : 3 mots au plus, facile à dire, à écrire et à retenir ; on comprend en un instant de quoi parle la marque, et on sourit ou on est intrigué. Jamais un nom vide de sens (une sonorité sans lien avec le projet), jamais le nom d'une marque connue. nameStyle dit son style, nameWhy montre le lien entre le nom et le concept du projet.
-- slogan : 6 mots au plus, en français, sans promesse invérifiable ; sloganTone dit son ton.
+- name : le concept du projet (son métier, son geste, sa matière, son lieu ou l'émotion qu'il donne) se devine dans le nom par une IMAGE, au niveau et dans l'esprit des exemples du propriétaire ci-dessous, en allant chercher plus loin qu'une description. Pour CHAQUE identité, explore mentalement au moins 20 pistes et garde la plus forte : 3 mots au plus, facile à dire, à écrire et à retenir, élégant et sobre ; aucun jeu de mots appuyé, aucun mot-valise forcé avec un nom de lieu, jamais une sonorité vide de sens, jamais le nom d'une marque connue ni un nom des exemples. nameStyle dit sa forme, nameWhy montre l'image du métier que porte le nom.
+- slogan : une phrase courte et concrète (9 mots au plus), en français, souvent au tutoiement ou à l'impératif, qui dit le bénéfice avec une image simple, sans promesse invérifiable ; sloganTone dit son ton.
 - promise : la promesse en une phrase, du point de vue du client final.
 - territory : le territoire émotionnel en quelques mots.
 - ground : le fond de page de l'identité. Les trois identités ont trois fonds DIFFÉRENTS : une « blanc » (fond blanc pur ou presque, ex. #FFFFFF), une « degrade » (fond en dégradé de deux couleurs franches et actuelles, donné dans gradient {from, to}, ex. pêche lumineux vers lilas, jamais beige ni crème), une « sombre » (fond très foncé, presque noir ou nuit profonde, texte clair dessus).
-- palette : 5 couleurs en hexadécimal. light = le neutre clair (le fond si ground est blanc ; le texte si ground est sombre) ; dark = le neutre foncé (le texte si ground est blanc ; le fond si ground est sombre) ; sur un dégradé, le texte est light ou dark, celui qui se lit le mieux sur les deux couleurs du dégradé ; primary = couleur de marque (titres, lisible sur le fond) ; secondary = couleur de surface (bandeaux, cartes) ; accent = boutons (texte lisible dessus). Contraste d'au moins 4,5:1 pour texte/fond, titre/fond, texte/surface et texte/bouton (sur un dégradé : sur ses deux couleurs, 3:1 suffit pour les grands titres). paletteFamily nomme la famille de couleurs.
-- Couleurs de 2026 : vives, franches et actuelles (ex. vert électrique, bleu outremer, rouge tomate, jaune citron, violet profond, corail, rose fluo si le client l'accepte…), jamais ternes, boueuses, délavées ou « vintage » sauf demande expresse du client. La couleur de marque et l'accent sont saturés. D'une identité à l'autre, la couleur de marque et l'accent appartiennent à des familles de teintes NETTEMENT différentes (jamais trois orangés, jamais trois verts).
+- palette : 5 couleurs en hexadécimal, avec les rôles des exemples du propriétaire. light = le clair (le fond si ground est blanc ; le texte si ground est sombre) ; dark = le texte foncé TEINTÉ (encre, aubergine, graphite vert…, jamais un noir pur ; c'est le fond si ground est sombre) ; primary = le BOUTON, couleur de marque et d'action ; secondary = la SURFACE (cartes, bandeaux : version très claire et douce, ou foncée sur fond sombre) ; accent = les détails graphiques. Les titres prennent la couleur du texte. Contraste d'au moins 4,5:1 pour texte/fond (sur un dégradé : sur ses deux couleurs), texte/surface et texte du bouton/bouton. paletteFamily = le nom d'ambiance en 2 à 4 mots (ex. « Verger électrique », « Cacao et lavande »).
+- Couleurs de 2026 : accordées entre elles et actuelles, dans l'esprit des palettes du propriétaire : parfois franches (dégradés lumineux, boutons vifs), parfois fines et sourdes, jamais ternes au hasard, boueuses ou criardes. D'une identité à l'autre, la couleur du bouton appartient à des familles de teintes NETTEMENT différentes (jamais trois orangés, jamais trois verts).
 - fonts : deux poignées « clé_nN » de la liste autorisée (N = graisse / 100 disponible pour cette police) ; heading = titres, body = textes (graisse 4). Trois polices de titres différentes d'une identité à l'autre. fontStyle nomme la famille de polices.
 - tone : 3 adjectifs du ton de voix et 3 choses à ne jamais dire ou faire.
 - logoStyle et logoIdea : l'idée du logo, simple et astucieuse, où le concept du projet et le nom se rejoignent dans le dessin, poussée plus loin qu'une simple illustration du produit (ex. un éclair qui forme le V d'un électricien, une goutte qui contient une gourde), décrite en une ou deux phrases ; aucun WordArt, aucun dégradé gratuit.
@@ -91,6 +100,8 @@ Chaque identité contient :
 Règles de cohésion de toute création : ${BRAND_RULES.join(" ")}
 
 Interdits : inventer un chiffre, un avis, une note, une certification, une garantie, un délai, un prix ; reprendre une couleur que le client refuse ; utiliser une police hors liste ; copier une marque existante. Le vocabulaire du client est repris tel quel. Tout est rédigé en français et en tutoyant le client quand tu t'adresses à lui (why, nameWhy).
+
+${referencesForPrompt()}
 
 Polices autorisées (clé, famille, caractère, graisses) :
 ${FONT_LIST}
@@ -162,19 +173,8 @@ export function oklch(hexColor: string): { l: number; c: number; h: number } {
   return { l: L, c: Math.hypot(A, B), h: (Math.atan2(B, A) * 180 / Math.PI + 360) % 360 };
 }
 const hueGap = (a: number, b: number) => { const d = Math.abs(a - b) % 360; return d > 180 ? 360 - d : d; };
-/** Seuils (règle du propriétaire du 6 novembre : couleurs vives et à l'air du temps, vraiment différentes). */
-export const COLOR_RULES = { primaryChroma: 0.13, accentChroma: 0.15, hueGap: 40 };
-/**
- * Couleur vive : saturation perçue suffisante, ou couleur claire et franchement saturée. Le turquoise et le cyan
- * plafonnent naturellement plus bas en saturation perçue (essai réel : un turquoise vif #1FC7B6 jugé « terne » à tort) ;
- * un brun foncé (#8A3B12) reste terne.
- */
-export function isVivid(hexColor: string, minChroma: number): boolean {
-  const o = oklch(hexColor);
-  if (o.c >= minChroma) return true;
-  const { s } = hueSat(hexColor);
-  return o.c >= 0.11 && s >= 0.7 && o.l >= 0.6;
-}
+/** Écart minimal de teinte entre les boutons de deux identités (règle du propriétaire : jamais trois orangés). */
+export const COLOR_RULES = { hueGap: 40 };
 
 type Gradient = { from: string; to: string };
 /** Contraste le plus faible d'une couleur sur un fond (uni, ou les deux couleurs d'un dégradé). */
@@ -183,10 +183,14 @@ const minContrast = (fg: string, bgs: string[]) => Math.min(...bgs.map((b) => co
 export function groundPresentation(p: Identity["palette"], ground: Identity["ground"], gradient?: Gradient) {
   const bgs = ground === "sombre" ? [p.dark] : ground === "degrade" && gradient ? [gradient.from, gradient.to] : [p.light];
   const text = ground === "sombre" ? p.light : ground === "degrade" ? (minContrast(p.dark, bgs) >= minContrast(p.light, bgs) ? p.dark : p.light) : p.dark;
-  return { backgrounds: bgs, text, heading: p.primary, surface: p.secondary, surfaceText: onColor(p.secondary, p.dark, p.light), button: p.accent, buttonText: onColor(p.accent, p.dark, p.light) };
+  // Palettes du propriétaire : titres dans la couleur du texte, bouton = couleur de marque (primary).
+  // Texte posé sur une couleur : celui de la palette, ou un noir / blanc presque purs s'ils se lisent mieux
+  // (palettes du propriétaire : texte presque noir sur un bouton rose vif, n° 21).
+  const on = (bg: string) => [p.dark, p.light, "#141414", "#FFFFFF"].reduce((a, b) => (contrast(b, bg) > contrast(a, bg) ? b : a));
+  return { backgrounds: bgs, text, heading: text, surface: p.secondary, surfaceText: on(p.secondary), button: p.primary, buttonText: on(p.primary) };
 }
 
-/** Contrôle d'une palette : fond conforme à son type, contrastes, couleurs vives. */
+/** Contrôle d'une palette : fond conforme à son type, contrastes, rôles distincts (calé sur les 49 palettes du propriétaire). */
 export function paletteIssues(p: Identity["palette"], ground: Identity["ground"], gradient?: Gradient): string[] {
   const issues: string[] = [];
   const L = (x: string) => oklch(x);
@@ -195,21 +199,20 @@ export function paletteIssues(p: Identity["palette"], ground: Identity["ground"]
     if (!gradient) issues.push("fond « dégradé » : ses deux couleurs (gradient from / to) manquent.");
     else {
       const a = L(gradient.from), b = L(gradient.to);
-      if (sameColor(gradient.from, gradient.to) || (hueGap(a.h, b.h) < 25 && Math.abs(a.l - b.l) < 0.08)) issues.push(`fond « dégradé » ${gradient.from} → ${gradient.to} : deux couleurs nettement différentes sont attendues.`);
-      if (Math.max(a.c, b.c) < 0.06) issues.push(`fond « dégradé » ${gradient.from} → ${gradient.to} : un dégradé de couleurs est attendu (ni gris, ni beige, ni crème).`);
+      if (sameColor(gradient.from, gradient.to) || (hueGap(a.h, b.h) < 25 && Math.abs(a.l - b.l) < 0.04 && Math.abs(a.c - b.c) < 0.04)) issues.push(`fond « dégradé » ${gradient.from} → ${gradient.to} : deux couleurs nettement différentes sont attendues.`);
+      // Un vrai dégradé de couleurs : ni gris, ni beige ou crème pâle (un dégradé sombre et sourd, ou pâle de deux teintes, reste permis : n° 26 et 39).
+      if (Math.max(a.c, b.c) < 0.03 || (Math.min(a.l, b.l) > 0.85 && Math.max(a.c, b.c) < 0.06 && hueGap(a.h, b.h) < 40)) issues.push(`fond « dégradé » ${gradient.from} → ${gradient.to} : un dégradé de couleurs est attendu (ni gris, ni beige, ni crème).`);
     }
   }
-  if (ground === "sombre" && luminance(p.dark) > 0.03) issues.push(`fond « sombre » ${p.dark} : un fond très foncé est attendu (presque noir ou nuit profonde).`);
-  if (ground === "blanc" && luminance(p.dark) > 0.12) issues.push(`dark ${p.dark} : le texte doit être foncé.`);
+  if (ground === "uni" && luminance(p.light) < 0.6) issues.push(`fond « uni » ${p.light} : un fond clair est attendu.`);
+  if (ground === "sombre" && luminance(p.dark) > 0.05) issues.push(`fond « sombre » ${p.dark} : un fond très foncé est attendu.`);
+  if ((ground === "blanc" || ground === "uni") && luminance(p.dark) > 0.12) issues.push(`dark ${p.dark} : le texte doit être foncé.`);
   if (ground === "sombre" && luminance(p.light) < 0.65) issues.push(`light ${p.light} : le texte sur fond sombre doit être clair.`);
   const v = groundPresentation(p, ground, gradient);
-  const titleMin = ground === "degrade" ? 3 : 4.5;
-  for (const [role, fg, bgs, min] of [["texte/fond", v.text, v.backgrounds, 4.5], ["titre/fond", v.heading, v.backgrounds, titleMin], ["texte/surface", v.surfaceText, [v.surface], 4.5], ["texte/bouton", v.buttonText, [v.button], 4.5]] as const) {
+  for (const [role, fg, bgs, min] of [["texte/fond", v.text, v.backgrounds, 4.5], ["texte/surface", v.surfaceText, [v.surface], 4.5], ["texte/bouton", v.buttonText, [v.button], 4.5]] as const) {
     const c = minContrast(fg, [...bgs]);
     if (c < min) issues.push(`${role} : contraste ${c.toFixed(2)}:1 inférieur à ${String(min).replace(".", ",")}:1.`);
   }
-  if (!isVivid(p.primary, COLOR_RULES.primaryChroma)) issues.push(`couleur de marque ${p.primary} trop terne : une couleur plus vive est attendue.`);
-  if (!isVivid(p.accent, COLOR_RULES.accentChroma)) issues.push(`accent ${p.accent} trop terne : une couleur vive est attendue.`);
   for (const [a, b] of [["primary", "secondary"], ["primary", "accent"], ["secondary", "accent"]] as const) if (sameColor(p[a], p[b])) issues.push(`${a}/${b} : couleurs indiscernables.`);
   return issues;
 }
@@ -224,7 +227,7 @@ export function identityIssues(list: Identity[], j: Journey): string[] {
     const tag = `Identité ${x.key}`;
     if (keptName && x.name.trim() !== keptName.trim()) issues.push(`${tag} : le nom gardé « ${keptName} » doit être repris mot pour mot.`);
     if (keptSlogan && x.slogan.trim() !== keptSlogan.trim()) issues.push(`${tag} : le slogan gardé « ${keptSlogan} » doit être repris mot pour mot.`);
-    if (!keptSlogan && words(x.slogan) > 6) issues.push(`${tag} : slogan de ${words(x.slogan)} mots (6 au plus).`);
+    if (!keptSlogan && words(x.slogan) > 9) issues.push(`${tag} : slogan de ${words(x.slogan)} mots (9 au plus).`);
     if (!keptName && words(x.name.replace(/&/g, "")) > 3) issues.push(`${tag} : nom trop long (3 mots au plus).`);
     if (!FONT_HANDLES.includes(x.fonts.heading)) issues.push(`${tag} : police de titres « ${x.fonts.heading} » hors liste (clé_nN d'une graisse disponible).`);
     if (!FONT_HANDLES.includes(x.fonts.body)) issues.push(`${tag} : police de textes « ${x.fonts.body} » hors liste.`);
@@ -243,12 +246,10 @@ export function identityIssues(list: Identity[], j: Journey): string[] {
   if (!j.keep.includes("polices") && new Set(list.map((x) => fontKey(x.fonts.heading))).size < list.length) issues.push("Deux identités ont la même police de titres : trois familles différentes sont attendues.");
   if (!j.keep.includes("couleurs")) {
     // Trois fonds de page : un blanc, un dégradé de couleurs, un sombre (règles du propriétaire des 6 et 7 novembre).
-    if (new Set(list.map((x) => x.ground)).size < list.length) issues.push(`Fonds de page : ${list.map((x) => `${x.key} ${x.ground}`).join(", ")} ; il faut un fond blanc, un fond en dégradé de couleurs et un fond sombre.`);
+    if ([...list.map((x) => x.ground)].sort().join() !== "blanc,degrade,sombre") issues.push(`Fonds de page : ${list.map((x) => `${x.key} ${x.ground}`).join(", ")} ; il faut un fond blanc, un fond en dégradé de couleurs et un fond sombre.`);
     for (const [i, a] of list.entries()) for (const b of list.slice(i + 1)) {
-      for (const role of ["primary", "accent"] as const) {
-        const gap = hueGap(oklch(a.palette[role]).h, oklch(b.palette[role]).h);
-        if (gap < COLOR_RULES.hueGap) issues.push(`Identités ${a.key}/${b.key} : ${role === "primary" ? "couleurs de marque" : "accents"} de la même famille (${a.palette[role]} / ${b.palette[role]}) ; des teintes nettement différentes sont attendues.`);
-      }
+      const gap = hueGap(oklch(a.palette.primary).h, oklch(b.palette.primary).h);
+      if (gap < COLOR_RULES.hueGap) issues.push(`Identités ${a.key}/${b.key} : boutons (couleur de marque) de la même famille (${a.palette.primary} / ${b.palette.primary}) ; des teintes nettement différentes sont attendues.`);
     }
   }
   return [...new Set(issues)];

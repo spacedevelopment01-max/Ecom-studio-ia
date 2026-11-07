@@ -60,49 +60,62 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     j.start.image = { value: "Moderne et doux, surtout pas de rouge.", status: "answered", source: "client", at: 1 };
     const bad = good();
     bad[1].name = "ocrea "; // même nom que A
-    bad[1].slogan = "Une lumière douce pour chaque instant calme"; // 7 mots
+    bad[1].slogan = "Une lumière douce et chaude pour chaque instant calme du soir"; // 11 mots
     bad[2].logoStyle = "embleme"; // même style que A
     bad[2].fonts.heading = "cormorant_n5"; // même famille de titres que A
-    bad[2].palette.primary = "#1E1B4B"; // titre illisible sur le fond sombre
+    bad[0].palette.dark = "#9CA3AF"; // texte gris clair illisible sur fond blanc
     bad[0].fonts.body = "comic_sans_n4"; // hors liste
     const issues = I.identityIssues(I.IdentitiesSchema.parse({ identities: bad }).identities, j).join("\n");
     expect(issues).toMatch(/même nom/);
-    expect(issues).toMatch(/slogan de 7 mots/);
+    expect(issues).toMatch(/slogan de 11 mots \(9 au plus\)/);
     expect(issues).toMatch(/même style de logo/);
     expect(issues).toMatch(/même police de titres/);
-    expect(issues).toMatch(/Identité C — .*contraste/);
+    expect(issues).toMatch(/Identité A — texte\/fond : contraste/);
     expect(issues).toMatch(/comic_sans_n4.*hors liste/);
     expect(issues).toMatch(/Identité B : primary #B91C1C .*refusée.*rouge/);
     expect(I.refusedColors("J'aime le vert et le bleu, mais pas de rose ni de violet.")).toEqual(expect.arrayContaining(["rose", "violet"]));
     expect(I.refusedColors("J'aime le vert et le bleu.")).toEqual([]);
   });
 
-  it("règles du propriétaire (6 et 7 novembre) : un fond blanc, un dégradé, un sombre ; couleurs vives et de teintes différentes ; le concept du projet dans le nom", () => {
+  it("règles du propriétaire (6 et 7 novembre) : un fond blanc, un dégradé, un sombre ; boutons de teintes différentes", () => {
     const j = J.emptyJourney();
     const bad = good();
     bad[1].ground = "blanc"; bad[1].palette.light = "#FFFFFF"; // deux fonds blancs, aucun dégradé
-    bad[0].palette.accent = "#C8742B"; bad[0].palette.primary = "#8A3B12"; // ternes (cuivre, caramel)
-    bad[2].palette.accent = "#FB923C"; // accent orangé comme celui de A : même famille
+    bad[2].palette.primary = "#3B82F6"; // bouton bleu comme celui de A : même famille
     bad[2].name = "Cuivre & Verger"; // nom avec « & » : permis (le propriétaire préférait ces noms)
     const issues = I.identityIssues(I.IdentitiesSchema.parse({ identities: bad }).identities, j).join("\n");
     expect(issues).toMatch(/Fonds de page : A blanc, B blanc, C sombre ; il faut un fond blanc, un fond en dégradé de couleurs et un fond sombre/);
-    expect(issues).toMatch(/Identité A — couleur de marque #8A3B12 trop terne/);
-    expect(issues).toMatch(/Identité A — accent #C8742B trop terne/);
-    expect(issues).toMatch(/Identités A\/C : accents de la même famille/);
+    expect(issues).toMatch(/Identités A\/C : boutons \(couleur de marque\) de la même famille/);
     expect(issues).not.toMatch(/Cuivre & Verger|nom trop long/);
     // Un dégradé doit être un vrai dégradé de couleurs (ni beige ni crème), un fond sombre vraiment foncé.
     expect(I.paletteIssues(good()[1].palette, "degrade", { from: "#F5EEDC", to: "#EFE6D2" }).join()).toMatch(/dégradé de couleurs est attendu|nettement différentes/);
     expect(I.paletteIssues(good()[1].palette, "degrade").join()).toMatch(/deux couleurs .* manquent/);
     expect(I.paletteIssues(good()[1].palette, "degrade", good()[1].gradient)).toEqual([]);
-    expect(I.paletteIssues({ ...good()[2].palette, dark: "#3A3A4A" }, "sombre").join()).toMatch(/fond très foncé/);
-    expect(I.isVivid("#1FC7B6", I.COLOR_RULES.accentChroma)).toBe(true); // turquoise vif (essai réel)
-    expect(I.isVivid("#8A3B12", I.COLOR_RULES.primaryChroma)).toBe(false); // cuivre brun : terne
-    expect(I.isVivid("#3F5A1E", I.COLOR_RULES.primaryChroma)).toBe(false); // olive : terne
+    expect(I.paletteIssues({ ...good()[2].palette, dark: "#4A4A5A" }, "sombre").join()).toMatch(/fond très foncé/);
     expect(I.IDENTITY_SYSTEM).toMatch(/une « blanc » .* une « degrade » .* jamais beige ni crème.* une « sombre »/);
-    expect(I.IDENTITY_SYSTEM).toMatch(/le CONCEPT du projet .* se retrouve dans le nom/);
-    expect(I.IDENTITY_SYSTEM).toMatch(/où le concept du projet et le nom se rejoignent dans le dessin/);
     expect(I.IDENTITY_SYSTEM).toMatch(/jamais trois orangés/);
     expect(I.IDENTITY_SYSTEM).toMatch(/au moins 20 pistes/);
+  });
+
+  it("références du propriétaire (7 novembre) : ses 49 palettes passent le contrôle, ses 50 noms et slogans aussi, et Claude les reçoit comme exemples à ne pas recopier", async () => {
+    const R = await import("@/lib/syna-agent/brand-references");
+    expect(R.NAME_EXAMPLES).toHaveLength(50);
+    expect(R.PALETTE_EXAMPLES).toHaveLength(49);
+    for (const p of R.PALETTE_EXAMPLES) {
+      const sombre = p.ground === "sombre";
+      const palette = p.ground === "degrade"
+        ? { light: R.luminanceOf(p.texte) > 0.5 ? p.texte : "#FFFFFF", dark: R.luminanceOf(p.texte) > 0.5 ? p.depart! : p.texte, primary: p.bouton, secondary: p.arrivee!, accent: p.accent }
+        : { light: sombre ? p.texte : p.fond!, dark: sombre ? p.fond! : p.texte, primary: p.bouton, secondary: p.surface!, accent: p.accent };
+      expect([p.name, I.paletteIssues(palette, p.ground, p.ground === "degrade" ? { from: p.depart!, to: p.arrivee! } : undefined)]).toEqual([p.name, []]);
+    }
+    for (const n of R.NAME_EXAMPLES) {
+      expect(n.slogan.split(/\s+/).length, n.slogan).toBeLessThanOrEqual(9);
+      expect(n.name.replace(/&/g, "").trim().split(/\s+/).length, n.name).toBeLessThanOrEqual(3);
+    }
+    expect(I.IDENTITY_SYSTEM).toContain("Braise Douce — « Du feu, juste ce qu'il faut. »");
+    expect(I.IDENTITY_SYSTEM).toContain("Verger électrique [dégradé] départ #FFF36E → arrivée #FF8EC9");
+    expect(I.IDENTITY_SYSTEM).toMatch(/ne recopie jamais ces noms ni ces slogans/);
+    expect(I.IDENTITY_SYSTEM).toMatch(/les titres prennent la couleur du texte ; le bouton porte la couleur de marque/);
   });
 
   it("consignes de Claude : charte § 2.1, styles de logo, polices autorisées, refonte et fiche du client", () => {

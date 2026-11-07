@@ -154,6 +154,7 @@ export function brandFromIdentity(p: ReturnType<typeof loadProject>, x: Identity
     palette: x.palette,
     ground: x.ground,
     ...(x.gradient ? { gradient: x.gradient } : {}),
+    paletteRoles: "sina-2026",
     paletteMode: j.keep.includes("couleurs") ? "client" : "direction",
     ...(j.keep.includes("couleurs") ? { clientPalette: x.palette } : {}),
     fonts: x.fonts,

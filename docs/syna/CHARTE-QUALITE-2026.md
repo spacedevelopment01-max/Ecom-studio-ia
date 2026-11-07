@@ -46,12 +46,16 @@ Les 3 identités proposées diffèrent sur **au moins 4 des 6 axes**, dont toujo
 (`src/lib/syna-agent/identities.ts`) :
 - **Trois fonds de page** : une identité sur fond blanc, une sur fond en **dégradé de couleurs** (jamais beige ni
   crème), une sur fond sombre (texte clair).
-- **Couleurs vives et à l'air du temps** : couleur de marque et accent saturés, jamais ternes ni « vintage délavé » ;
-  d'une identité à l'autre, couleurs de marque et accents de familles de teintes nettement différentes (jamais trois
-  orangés).
-- **Le concept du projet dans le nom et le logo, poussé plus loin** : niveau visé « Cuivre & Verger » ou « Tartinou »
-  (le métier, le geste, le lieu ou l'émotion se reconnaissent), en allant encore plus loin dans l'idée ; jamais une
-  sonorité vide de sens. Les noms à « & » ou en deux mots sont permis (3 mots au plus).
+- **Références du propriétaire du 7 novembre** (`src/lib/syna-agent/brand-references.ts`, exemples à ne jamais
+  recopier) : « 50 noms et leurs slogans » et « 50 palettes de couleurs ».
+  - Noms sobres et évocateurs : une image du métier ou de son geste (Braise Douce, Cabosse & Sel, Grain d'Altitude),
+    « X & Y », « Maison / Atelier / Studio … », ou un mot inventé doux (Noctelle, Savelle) ; aucun jeu de mots appuyé.
+  - Slogans courts et concrets (9 mots au plus), souvent au tutoiement : « Fais le noir, trouve le calme. »
+  - Palettes à cinq rôles : fond, texte (foncé teinté, jamais noir pur), bouton (couleur de marque), surface,
+    accent (détails) ; dégradé à 135° (départ, arrivée) ; titres dans la couleur du texte. Couleurs accordées et
+    actuelles, franches ou fines selon l'univers. D'une identité à l'autre, boutons de teintes nettement différentes.
+  - Le contrôle du Studio est calé sur ces exemples : les 49 palettes lisibles du document le passent (la n° 11, au
+    texte illisible dans le document, est écartée).
 
 Contrôle : Claude compare les trois identités axe par axe ; deux identités trop proches → la plus faible est refaite avant
 d'être montrée.
