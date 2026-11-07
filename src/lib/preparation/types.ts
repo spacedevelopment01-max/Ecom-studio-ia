@@ -77,6 +77,12 @@ export type Angle = {
   reason: string;
   sourceIds: string[];
   hypothesis: boolean;
+  /** Format du propriétaire (7 novembre 2026) : objectif, récit, scènes, publication conseillée, appel à l'action. */
+  goal?: string;
+  story?: string;
+  show?: string;
+  organicExample?: string;
+  cta?: string;
 };
 export type Research = {
   formatVersion?: 2 | 3;

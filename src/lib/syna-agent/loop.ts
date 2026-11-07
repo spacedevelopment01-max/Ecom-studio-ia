@@ -422,7 +422,7 @@ export function threadView(user: User, cid: string) {
         // Étape 2 : les 3 logos (images servies par la bibliothèque du projet) et le logo choisi.
         logos: j.logos ? { round: j.logos.round, chosen: j.logoChoice?.source ?? null, list: j.logos.list.map((x) => ({ ...x, href: x.assetId ? assetUrl({ id: x.assetId }) : null })) } : null,
         // Étape 4 : les 5 angles marketing et l'angle choisi.
-        angles: j.angles ? { list: j.angles.list, recommendedId: j.angles.recommendedId, sourceCount: j.angles.sourceCount, chosen: j.angleChoice?.id ?? null } : null,
+        angles: j.angles ? { list: j.angles.list, recommendedId: j.angles.recommendedId, sourceCount: j.angles.sourceCount, chosen: j.angleChoice?.ids ?? (j.angleChoice ? [j.angleChoice.id] : null) } : null,
         // Étape 3 : l'image de marque (déclinaisons, planche, charte PDF), servie par la bibliothèque du projet.
         brandKit: j.brandKit ? {
           validated: j.steps[3]?.status === "done", notes: j.brandKit.notes,

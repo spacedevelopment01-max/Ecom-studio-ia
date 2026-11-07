@@ -20,6 +20,8 @@ import { activateStrategy, getStrategyState, prepareStrategyChange, proposeStrat
 export type SinaAngle = {
   id: string; title: string; audience: string; motivation: string; message: string; emotion: string;
   proofsToConfirm: string[]; arguments: string[]; sources: { title: string; url: string }[];
+  /** Format du propriétaire (guide du 7 novembre 2026) : objectif, pourquoi, récit, scènes, publication, appel. */
+  goal: string; why: string; story: string; show: string; organicExample: string; cta: string;
 };
 export type SinaAngles = { list: SinaAngle[]; recommendedId: string | null; recommendation: string; sourceCount: number; at: number };
 
@@ -58,6 +60,8 @@ export function anglesOf(d: any): SinaAngles {
     id: s(a.id, 40), title: s(a.title, 120), audience: s(a.audience), motivation: s(a.motivation), message: s(a.message), emotion: s(a.emotion, 120),
     proofsToConfirm: (a.proofsToConfirm ?? []).slice(0, 4).map((x: string) => s(x, 200)),
     arguments: (a.arguments ?? []).slice(0, 3).map((x: string) => s(x, 200)),
+    goal: s(a.goal, 100), why: s(a.reason, 500), story: s(a.story ?? a.communicationChange ?? a.positioning, 700),
+    show: s(a.show ?? a.visualDirection, 600), organicExample: s(a.organicExample, 400), cta: s(a.cta, 80),
     sources: (a.sourceIds ?? []).map((id: string) => byId.get(id)).filter((x: any) => x?.url).slice(0, 4).map((x: any) => ({ title: s(x.title || x.url, 120), url: s(x.url, 500) })),
   }));
   const used = (d.sources ?? []).filter((x: any) => x.status === "consulted" && x.relevance?.accepted !== false).length;
@@ -123,12 +127,40 @@ function queue(projectId: string, step: "brief" | "research", action: "analyze" 
   return { phase, jobId, maxPct: created.maxBudgetPct };
 }
 
-/** Choix du client : l'angle devient le fil conducteur (stratégie active) et la recherche est validée. */
-export function chooseAngle(projectId: string, angleId: string, idempotencyKey: string) {
-  try { proposeStrategies(projectId); } catch { /* état déjà à jour */ }
+/** Nombre d'angles que le forfait du client permet d'utiliser (1, 2 ou 5). */
+export function angleLimit(projectId: string): number {
+  return getStrategyState(projectId).limit || 1;
+}
+
+function activate(projectId: string, angleId: string, idempotencyKey: string) {
   const prep = prepareStrategyChange(projectId, angleId);
   for (const c of prep.contents.filter((c: any) => !c.aligned && !c.published)) stageStrategyModule(projectId, prep.id, c.module, { contentIds: [], retainedContentIds: [c.contentId] });
   activateStrategy(projectId, { angleId, preparationId: prep.id, idempotencyKey, confirmed: true, retainUnaligned: true });
+}
+
+/**
+ * Choix du client, UN OU PLUSIEURS angles (demande du propriétaire du 7 novembre : « le client doit pouvoir en choisir
+ * plusieurs ») : le PREMIER est l'angle principal (fil conducteur du site, stratégie active) ; les autres sont retenus
+ * pour les publications et les publicités (un angle principal par contenu). Le forfait fixe le nombre d'angles.
+ */
+export function chooseAngles(projectId: string, angleIds: string[], idempotencyKey: string) {
+  try { proposeStrategies(projectId); } catch { /* état déjà à jour */ }
+  const [principal, ...others] = angleIds;
+  // Les angles retenus en plus sont activés d'abord (ils comptent dans le forfait), l'angle principal en dernier : il
+  // reste l'angle actif.
+  for (const id of others) activate(projectId, id, `${idempotencyKey}-${id}`);
+  activate(projectId, principal, `${idempotencyKey}-${principal}`);
+  const s0 = stateOf(projectId)!;
+  if ((s0.stages as any).research?.status !== "approved") approve(projectId, s0.revision, "research", { choiceId: principal } as any);
+  const active = getStrategyState(projectId).active?.angleId ?? null;
+  const approved = (stateOf(projectId)!.stages as any).research?.status === "approved";
+  return { active, approved, ok: active === principal && approved };
+}
+
+/** Choix d'un seul angle (compatibilité). */
+export function chooseAngle(projectId: string, angleId: string, idempotencyKey: string) {
+  try { proposeStrategies(projectId); } catch { /* état déjà à jour */ }
+  activate(projectId, angleId, idempotencyKey);
   const s0 = stateOf(projectId)!;
   if ((s0.stages as any).research?.status !== "approved") approve(projectId, s0.revision, "research", { choiceId: angleId } as any);
   const active = getStrategyState(projectId).active?.angleId ?? null;

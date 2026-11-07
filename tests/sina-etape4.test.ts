@@ -98,11 +98,19 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     expect(view.journey.angles!.list).toHaveLength(5);
     expect(view.journey.angles!.chosen).toBeNull();
     // 4) Choix du client : angle actif (fil conducteur) et recherche validée ; étape 5 ouverte.
-    expect((await call("angles.choose", ctx, { angleId: "inconnu" })).ok).toBe(false);
-    const pick = j.angles!.list.find((x) => x.id === (j.angles!.recommendedId ?? "")) ?? j.angles!.list[0];
-    const c = await call("angles.choose", ctx, { angleId: pick.id });
+    expect((await call("angles.choose", ctx, { angleIds: ["inconnu"] })).ok).toBe(false);
+    // Plusieurs angles (demande du propriétaire), dans la limite du forfait ; le premier est l'angle principal.
+    const limit = A.angleLimit(pid);
+    const ids = j.angles!.list.map((x) => x.id);
+    const tooMany = await call("angles.choose", ctx, { angleIds: ids.slice(0, Math.min(5, limit + 1)) });
+    if (limit < 5) { expect(tooMany.ok).toBe(false); expect(tooMany.summary).toMatch(new RegExp(`forfait du client permet ${limit} angle`)); }
+    const pickIds = ids.slice(0, Math.min(2, limit));
+    const c = limit >= 5 ? tooMany : await call("angles.choose", ctx, { angleIds: pickIds });
     expect(c.ok).toBe(true);
-    expect(getStrategyState(pid).active?.angleId).toBe(pick.id);
+    const principal = (limit >= 5 ? ids.slice(0, 5) : pickIds)[0];
+    expect(getStrategyState(pid).active?.angleId).toBe(principal);
+    expect(J.journeyOf(cid).angleChoice!.ids![0]).toBe(principal);
+    expect((await fr(() => threadView(user, cid))).journey.angles!.chosen![0]).toBe(principal);
     expect(stateOf(pid)!.stages.research!.status).toBe("approved");
     expect(J.journeyOf(cid).steps[4].status).toBe("done");
     expect(J.currentStep(J.journeyOf(cid))).toBe(5);
@@ -115,6 +123,18 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     const r = await call("angles.propose", ctx, {});
     expect(r.ok).toBe(false);
     expect(r.summary).toMatch(/étape 3/);
+  });
+
+  it("format du guide du propriétaire (7 novembre) : titre court, objectif, pourquoi, accroche, récit, scènes, publication, appel, à confirmer", async () => {
+    const R = await import("@/lib/preparation/research-ai");
+    expect(R.OWNER_ANGLE_FORMAT).toMatch(/title = un titre COURT et clair de 2 à 6 mots/);
+    expect(R.OWNER_ANGLE_FORMAT).toMatch(/« Le goût du fruit », « Le savoir-faire du producteur », « L'origine et la saison », « Le plaisir au quotidien », « Le cadeau gourmand »/);
+    expect(R.OWNER_ANGLE_FORMAT).toMatch(/jamais comme des questions au vouvoiement/);
+    const a = A.anglesOf({ sources: [], angles: [{ id: "usage", title: "Le goût du fruit", goal: "Donner envie de goûter", reason: "Le client cherche un parfum qu'il aime.", message: "Ferme les yeux. Retrouve le goût de la fraise.", story: "Décris le goût de chaque recette.", show: "Un fruit ouvert, puis une tartine.", organicExample: "« Plutôt lisse ou avec des morceaux ? »", cta: "Découvre les parfums.", proofsToConfirm: ["Parfums disponibles, ingrédients"], sourceIds: [] }] }).list[0];
+    expect(a).toMatchObject({ title: "Le goût du fruit", goal: "Donner envie de goûter", why: "Le client cherche un parfum qu'il aime.", story: "Décris le goût de chaque recette.", show: "Un fruit ouvert, puis une tartine.", organicExample: "« Plutôt lisse ou avec des morceaux ? »", cta: "Découvre les parfums." });
+    // Ancienne recherche (sans ces champs) : rien d'inventé, on reprend ce qui existe.
+    const old = A.anglesOf({ sources: [], angles: [{ id: "usage", title: "T", reason: "R", visualDirection: "Scènes", communicationChange: "Récit", sourceIds: [] }] }).list[0];
+    expect(old).toMatchObject({ goal: "", show: "Scènes", story: "Récit", cta: "", organicExample: "" });
   });
 
   it("angles montrés au client : sources réelles (titre, lien), preuves à confirmer, jamais plus de 4 sources par angle", () => {

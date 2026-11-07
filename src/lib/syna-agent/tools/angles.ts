@@ -7,7 +7,7 @@ import { one } from "../../db";
 import { L } from "../../i18n-server";
 import type { AgentTool } from "../types";
 import { journeyOf, setStep, updateJourney } from "../journey";
-import { advanceAngles, anglesMaxMicro, anglesPhase, chooseAngle, pct, researchFailure } from "../angles";
+import { advanceAngles, angleLimit, anglesMaxMicro, anglesPhase, chooseAngles, pct, researchFailure } from "../angles";
 import { budgetPctOf as pctOfUser } from "../../ai/budget-pct";
 import { loadProject } from "../../projects";
 const budgetPctOf = (pid: string, micro: number) => pctOfUser(loadProject(pid).userId, micro, pid);
@@ -60,21 +60,27 @@ const proposeTool: AgentTool<{ retry?: boolean }> = {
   },
 };
 
-const chooseTool: AgentTool<{ angleId: string }> = {
+const chooseTool: AgentTool<{ angleIds: string[] }> = {
   name: "angles.choose", module: "stratégie", kind: "write", needsProject: true,
-  description: "Étape 4 : enregistre l'angle marketing CHOISI PAR LE CLIENT (jamais à sa place) : il devient le fil conducteur du site, des publications et des publicités ; la recherche est validée et l'étape 5 s'ouvre. angleId = l'identifiant d'un angle affiché. Gratuit.",
-  args: z.object({ angleId: z.string().min(1).max(40) }).strict(),
+  description: "Étape 4 : enregistre le ou les angles CHOISIS PAR LE CLIENT (jamais à sa place). Il peut en choisir PLUSIEURS : angleIds dans l'ordre, le PREMIER est l'angle principal (fil conducteur du site), les suivants servent aux publications et publicités (un angle principal par contenu). Son forfait fixe le nombre d'angles possibles (1, 2 ou 5) : s'il en choisit trop, dis-le-lui et demande lesquels garder. La recherche est validée et l'étape 5 s'ouvre. Gratuit.",
+  args: z.object({ angleIds: z.array(z.string().min(1).max(40)).min(1).max(5) }).strict(),
   run: (ctx, a) => {
     const p = project(ctx);
     const j = journeyOf(ctx.conversationId);
-    const angle = j.angles?.list.find((x) => x.id === a.angleId);
-    if (!angle) return { ok: false, summary: L(`Angle « ${a.angleId} » inconnu : choisis parmi ${j.angles?.list.map((x) => x.id).join(", ") || "(aucun angle encore)"}.`, "Unknown angle.") };
-    const r = chooseAngle(p.id, a.angleId, `syna-${ctx.runId}-angle-${a.angleId}`);
-    if (r.ok) updateJourney(ctx.conversationId, (x) => { x.angleChoice = { id: a.angleId, at: Date.now() }; setStep(x, 4, "done"); setStep(x, 5, "todo"); });
+    const ids = [...new Set(a.angleIds)];
+    const unknown = ids.filter((id) => !j.angles?.list.some((x) => x.id === id));
+    if (unknown.length) return { ok: false, summary: L(`Angle inconnu : ${unknown.join(", ")} ; choisis parmi ${j.angles?.list.map((x) => x.id).join(", ") || "(aucun angle encore)"}.`, "Unknown angle.") };
+    const limit = angleLimit(p.id);
+    if (ids.length > limit) return { ok: false, summary: L(`Le forfait du client permet ${limit} angle${limit > 1 ? "s" : ""} ; il en a choisi ${ids.length}. Dis-le-lui simplement et demande lequel ou lesquels garder (le premier sera l'angle principal).`, "Too many angles for the plan.") };
+    const r = chooseAngles(p.id, ids, `syna-${ctx.runId}-angles`);
+    const titles = ids.map((id) => j.angles!.list.find((x) => x.id === id)!.title);
+    if (r.ok) updateJourney(ctx.conversationId, (x) => { x.angleChoice = { id: ids[0], ids, at: Date.now() }; setStep(x, 4, "done"); setStep(x, 5, "todo"); });
     return {
       ok: r.ok,
-      summary: r.ok ? L(`Angle « ${angle.title} » choisi : c'est le fil conducteur de la marque. Étape 4 validée. Prochaine étape : l'activité complète.`, "Angle chosen.") : L(`L'angle n'a pas pu être enregistré (actif : ${r.active ?? "aucun"}, recherche validée : ${r.approved ? "oui" : "non"}).`, "Angle not saved."),
-      changes: [{ module: "stratégie", object: L("angle marketing", "marketing angle"), summary: angle.title, after: r.active, verified: r.ok }],
+      summary: r.ok
+        ? L(`Angle principal : « ${titles[0]} »${titles.length > 1 ? ` ; aussi retenus pour les publications et publicités : ${titles.slice(1).map((t) => `« ${t} »`).join(", ")}` : ""}. Étape 4 validée. Prochaine étape : l'activité complète.`, "Angles chosen.")
+        : L(`Les angles n'ont pas pu être enregistrés (actif : ${r.active ?? "aucun"}, recherche validée : ${r.approved ? "oui" : "non"}).`, "Angles not saved."),
+      changes: [{ module: "stratégie", object: L("angles marketing", "marketing angles"), summary: titles.join(" + "), after: ids, verified: r.ok }],
     };
   },
 };

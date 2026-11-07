@@ -171,36 +171,59 @@ function LogoCards({ logos, brandBg, busy, onChoose }: { logos: Logos; brandBg: 
   );
 }
 
-type Angles = { list: { id: string; title: string; audience: string; motivation: string; message: string; emotion: string; proofsToConfirm: string[]; arguments: string[]; sources: { title: string; url: string }[] }[]; recommendedId: string | null; sourceCount: number; chosen: string | null };
+type Angles = { list: { id: string; title: string; goal?: string; why?: string; story?: string; show?: string; organicExample?: string; cta?: string; audience: string; motivation: string; message: string; emotion: string; proofsToConfirm: string[]; arguments: string[]; sources: { title: string; url: string }[] }[]; recommendedId: string | null; sourceCount: number; chosen: string[] | null };
 
-/** Étape 4 : les 5 angles marketing, avec leurs sources réelles et ce qui reste à confirmer, puis le choix du client. */
-function AngleCards({ angles, busy, onChoose }: { angles: Angles; busy: boolean; onChoose: (id: string, title: string) => void }) {
+/** Couleurs des bandeaux, reprises du guide « 5 angles marketing » du propriétaire. */
+const ANGLE_BANDS = ["#9C3343", "#74533F", "#43644A", "#B46D25", "#73507F"];
+
+/**
+ * Étape 4 : les 5 angles au format du guide du propriétaire (7 novembre 2026) — bandeau titre + objectif, pourquoi,
+ * accroche, ce qu'on raconte, ce qu'on montre, publication conseillée, appel à l'action, informations à confirmer,
+ * sources. Le client peut en choisir PLUSIEURS : le premier coché est l'angle principal.
+ */
+function AngleCards({ angles, busy, onChoose }: { angles: Angles; busy: boolean; onChoose: (titles: string[]) => void }) {
   const t = useT();
+  const [picked, setPicked] = useState<string[]>([]);
+  const chosen = angles.chosen ?? [];
+  const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+  const row = (label: string, value?: string | null) => (value ? <div><dt className="font-semibold" style={{ color: "inherit" }}>{label}</dt><dd className="text-ink/90">{value}</dd></div> : null);
   return (
     <div className="@container mt-2 space-y-2" data-syna-angles>
-      <p className="text-xs text-muted">{t(`${angles.sourceCount} sources lues sur le web (places de marché exclues).`, `${angles.sourceCount} web sources read.`)}</p>
-      <div className="grid grid-cols-1 gap-2 @3xl:grid-cols-2">
-        {angles.list.map((a) => {
-          const chosen = angles.chosen === a.id;
+      <p className="text-xs text-muted">{t(`${angles.sourceCount} sources lues sur le web (places de marché exclues). Tu peux choisir un ou plusieurs angles : le premier coché sera l'angle principal de ton site, les autres serviront aux publications et aux publicités.`, `${angles.sourceCount} web sources read. You can pick one or several angles.`)}</p>
+      <div className="grid grid-cols-1 gap-3 @3xl:grid-cols-2">
+        {angles.list.map((a, i) => {
+          const band = ANGLE_BANDS[i % ANGLE_BANDS.length];
+          const rank = chosen.length ? chosen.indexOf(a.id) : picked.indexOf(a.id);
           return (
-            <article key={a.id} className={cx("rounded-xl border bg-card p-3 text-xs", chosen ? "border-ink ring-2 ring-ink" : "border-line", angles.chosen && !chosen && "opacity-60")} data-angle={a.id}>
-              <div className="flex items-start justify-between gap-2">
-                <h4 className="text-sm font-semibold">{a.title}</h4>
-                {angles.recommendedId === a.id && <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">{t("Recommandé", "Recommended")}</span>}
-              </div>
-              {!!a.message && <p className="mt-1 text-sm italic">« {a.message} »</p>}
-              <dl className="mt-2 space-y-1">
-                {!!a.audience && <div><dt className="inline font-semibold">{t("Pour qui", "For whom")} : </dt><dd className="inline">{a.audience}</dd></div>}
-                {!!a.emotion && <div><dt className="inline font-semibold">{t("Émotion", "Emotion")} : </dt><dd className="inline">{a.emotion}</dd></div>}
-                {!!a.motivation && <div><dt className="inline font-semibold">{t("Ce qui les fait acheter", "Why they buy")} : </dt><dd className="inline">{a.motivation}</dd></div>}
-                {!!a.proofsToConfirm.length && <div className="text-amber-700"><dt className="inline font-semibold">{t("À confirmer par toi", "To confirm")} : </dt><dd className="inline">{a.proofsToConfirm.join(" ; ")}</dd></div>}
+            <article key={a.id} className={cx("overflow-hidden rounded-xl border bg-card text-xs", rank >= 0 ? "ring-2" : "border-line", chosen.length > 0 && rank < 0 && "opacity-60")} style={rank >= 0 ? { borderColor: band, boxShadow: `0 0 0 2px ${band}` } : undefined} data-angle={a.id}>
+              <header className="px-4 py-3 text-white" style={{ background: band }}>
+                <div className="flex items-start justify-between gap-2">
+                  <h4 className="text-base font-bold leading-tight">{String(i + 1).padStart(2, "0")}  {a.title}</h4>
+                  {angles.recommendedId === a.id && <span className="shrink-0 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold" style={{ color: band }}>{t("Recommandé", "Recommended")}</span>}
+                </div>
+                {!!a.goal && <p className="mt-1 text-sm opacity-90">{a.goal}</p>}
+              </header>
+              <dl className="space-y-2 px-4 py-3" style={{ color: band }}>
+                {row(t("Pourquoi cet angle", "Why this angle"), a.why || a.motivation)}
+                {row(t("Accroche proposée", "Proposed hook"), a.message)}
+                {row(t("Ce qu'on raconte", "What we tell"), a.story)}
+                {row(t("Ce qu'on montre", "What we show"), a.show)}
+                {row(t("Exemple de contenu organique", "Organic content example"), a.organicExample)}
+                {row(t("Appel à l'action", "Call to action"), a.cta)}
+                {row(t("Informations à confirmer", "To confirm"), a.proofsToConfirm.join(" ; "))}
               </dl>
-              {!!a.sources.length && <p className="mt-2 text-[11px] text-muted">{t("Sources", "Sources")} : {a.sources.map((x, i) => <span key={x.url}>{i ? " · " : ""}<a className="underline" href={x.url} target="_blank" rel="noreferrer">{x.title}</a></span>)}</p>}
-              <div className="mt-2">{chosen ? <p className="font-semibold">✓ {t("Angle de ta marque", "Your brand angle")}</p> : !angles.chosen && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(a.id, a.title)}>{t("Je choisis cet angle", "I choose this angle")}</Button>}</div>
+              {!!a.sources.length && <p className="px-4 pb-2 text-[11px] text-muted">{t("Sources", "Sources")} : {a.sources.map((x, k) => <span key={x.url}>{k ? " · " : ""}<a className="underline" href={x.url} target="_blank" rel="noreferrer">{x.title}</a></span>)}</p>}
+              <div className="border-t border-line px-4 py-2">
+                {chosen.length
+                  ? rank >= 0 && <p className="font-semibold" style={{ color: band }}>✓ {rank === 0 ? t("Angle principal", "Main angle") : t("Angle retenu", "Selected angle")}</p>
+                  : <Button size="sm" variant={rank >= 0 ? "primary" : "secondary"} disabled={busy} onClick={() => toggle(a.id)} data-angle-pick={a.id}>{rank >= 0 ? (rank === 0 ? t("✓ Angle principal", "✓ Main angle") : t(`✓ Retenu (${rank + 1})`, `✓ Selected (${rank + 1})`)) : t("Choisir cet angle", "Pick this angle")}</Button>}
+              </div>
+              <p className="px-4 pb-2 text-[10px] text-muted">{t("Un angle principal par contenu. Les scènes doivent démontrer la promesse.", "One main angle per content.")}</p>
             </article>
           );
         })}
       </div>
+      {!chosen.length && !!picked.length && <Button disabled={busy} onClick={() => onChoose(picked.map((id) => angles.list.find((x) => x.id === id)!.title))} data-angles-validate>{t(picked.length > 1 ? `Valider mes ${picked.length} angles` : "Valider cet angle", picked.length > 1 ? `Confirm my ${picked.length} angles` : "Confirm this angle")}</Button>}
     </div>
   );
 }
@@ -410,7 +433,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
               {it.tools.map((tm) => <div key={tm.id}>
                 <ToolResult m={tm} projectId={v.projectId} onChoose={(n) => send(t(`Je choisis la maquette ${n}.`, `I choose mockup ${n}.`))} busy={busy || working} />
                 {tm.id === lastLogos && v.journey?.logos && <LogoCards logos={v.journey.logos} brandBg={brandBackground(v.journey.identities)} busy={busy || working} onChoose={(k) => send(t(`Je choisis le logo ${k}.`, `I choose logo ${k}.`))} />}
-                {tm.id === lastAngles && v.journey?.angles && <AngleCards angles={v.journey.angles} busy={busy || working} onChoose={(id, title) => send(t(`Je choisis l'angle « ${title} ».`, `I choose the angle "${title}".`))} />}
+                {tm.id === lastAngles && v.journey?.angles && <AngleCards angles={v.journey.angles} busy={busy || working} onChoose={(titles) => send(titles.length > 1 ? t(`Je choisis ces angles : ${titles.map((x, i) => `« ${x} »${i === 0 ? " (principal)" : ""}`).join(", ")}.`, `I choose these angles: ${titles.join(", ")}.`) : t(`Je choisis l'angle « ${titles[0]} ».`, `I choose the angle "${titles[0]}".`))} />}
                 {tm.id === lastKit && v.journey?.brandKit && <BrandKitCard kit={v.journey.brandKit} darkBg={v.journey.identities?.final?.palette.dark ?? "#16161A"} busy={busy || working} onValidate={() => send(t("Je valide mon image de marque.", "I validate my brand kit."))} />}
                 {tm.id === lastCalendar && v.projectId && <CalendarCard projectId={v.projectId} refreshKey={tm.id} />}
                 {tm.id === lastIdentity && v.journey?.identities && <IdentityCards ids={v.journey.identities} busy={busy || working} onChoose={(k) => send(t(`Je choisis l'identité ${k}.`, `I choose identity ${k}.`))} />}
