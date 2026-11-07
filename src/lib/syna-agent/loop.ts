@@ -215,7 +215,8 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
           try { est = await t.estimate(tctx, parsed.data); }
           catch (e) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, args: parsed.data, ok: false, summary: L("Refus avant exécution : ", "Refused before running: ") + String(clip(e instanceof Error ? e.message : String(e), 600)) }, r.id); continue; }
           const b = budgetState(user.id, r.project_id, r.conversation_id);
-          if (est.maxMicro > b.remainingMicro) return askConfirmation(r, t, parsed.data, tctx, "budget", est.maxMicro);
+          // Une action gratuite (devis à 0, ex. lire des angles prêts) ne demande jamais d'accord de dépense.
+          if (est.maxMicro > 0 && est.maxMicro > b.remainingMicro) return askConfirmation(r, t, parsed.data, tctx, "budget", est.maxMicro);
         }
         const res = await execute(t, parsed.data, tctx, key, r);
         // Un projet créé pendant l'exécution devient le projet de la suite (droits relus à chaque outil).

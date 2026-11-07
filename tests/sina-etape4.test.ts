@@ -85,6 +85,7 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     // actuel (sources réelles, reçu d'appel) est posée par la fixture commune des angles sourcés.
     seedSourcedAnglesForTest(pid);
     // 3) Les 5 angles sont prêts : rangés dans le parcours, affichés avec leurs sources.
+    expect(A.anglesMaxMicro(pid)).toBe(0); // les lire est gratuit : jamais de devis ni d'accord de dépense
     const r3 = await call("angles.propose", ctx, {});
     expect(r3.ok).toBe(true);
     const j = J.journeyOf(cid);

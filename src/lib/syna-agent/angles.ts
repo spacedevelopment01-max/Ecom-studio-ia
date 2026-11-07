@@ -81,6 +81,8 @@ export function researchFailure(projectId: string): { message: string; costMicro
 /** Coût maximal de la prochaine étape payante (analyse de la fiche ou recherche), sans rien créer. */
 export function anglesMaxMicro(projectId: string): number {
   const ph = anglesPhase(projectId);
+  // Lire des angles prêts, poser des questions : gratuit (essai réel : le devis d'une recherche bloquait la lecture).
+  if (ph.kind === "ready" || ph.kind === "questions" || ph.kind === "running") return 0;
   if (ph.kind === "analyze") {
     try { return (createQuote(projectId, "brief", "analyze") as any).capMicro ?? 1_000_000; } catch { return 1_000_000; }
   }
