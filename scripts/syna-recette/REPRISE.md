@@ -144,3 +144,21 @@ planches de maquettes (jusqu'à 0,14 $ en haute qualité).
   PrestaShop, et la publication par le Studio pour les services.
 - Ordre de construction choisi : tout construire avant les essais réels, en commençant par l'étape 7 (la plus risquée),
   testée gratuitement puis sur une planche de Thomas (APLAT) comparée au vrai thème, avec accord sur le prix.
+
+## 10. État au 7 novembre 2026 (nuit) — parcours EN PAUSE jusqu'à la consigne de l'utilisateur
+
+- **Étape 0** terminée et vérifiée en réel (essais 0 à 8).
+- **Étape 1 (3 identités)** construite et essayée en réel sur le client fictif « confitures de la Drôme »
+  (Studio privé, données `agent492-e8`, compte `boutique492@example.com`) : 5 propositions, dernière avec les noms
+  « Tour de Main », « Heure Dorée », « Pot Commun ». **Le client n'a pas encore choisi** : reprendre par le choix
+  (ou un mélange) pour vérifier identity.choose en réel, puis l'étape 2.
+  - Règles de l'utilisateur appliquées et contrôlées : trois fonds (blanc, dégradé de couleurs, sombre ; jamais
+    beige ni crème), palettes à cinq rôles calées sur ses 50 palettes, boutons de teintes différentes, **méthode de
+    nommage du 7 novembre** (un détail réel du métier + une deuxième lecture), seule référence des noms
+    (`src/lib/syna-agent/brand-references.ts`). Option « nouveaux noms seulement » (couleurs et polices gardées).
+  - Dépense Claude totale des essais : environ 5,8 € sur 20 €.
+- **Étapes 6, 7 et 11 préparées dans le code, sans aucun appel payant** (tests simulés) : maquettes sur mesure
+  (`src/lib/syna-agent/mockup-code/`), site codé d'après la maquette (tâche `syna.mockup.code`), calendrier manuel
+  (`src/lib/syna-agent/calendar.ts`). Outils enregistrés ; consignes prêtes (`STEP_GUIDES`) ; ces étapes ne sont pas
+  encore ouvertes (`READY_STEPS` = 0 et 1) : elles s'ouvriront dans l'ordre, après leurs essais réels.
+- Questions ouvertes à poser à l'utilisateur : voir `docs/syna/PARCOURS-CREATION.md` (étapes 7 et 11).
