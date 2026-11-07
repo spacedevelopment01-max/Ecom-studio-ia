@@ -110,7 +110,7 @@ describe("SINA — étape 5 : l'activité complète", async () => {
     expect(Act.factLine({ label: "Pouvez-vous recopier la liste des ingrédients de chaque parfum ? (ex. abricots 65 %)", value: "Abricot : abricots 65 %…" })).toBe("Abricot : abricots 65 %…");
     expect(Act.factLine({ label: "Matière", value: "cuivre" })).toBe("Matière : cuivre");
     // Compositions de plusieurs produits d'un bloc : une ligne par produit (essai réel du 7 novembre).
-    expect(Act.factItems("Thé vert jasmin : Sencha 85 %, jasmin 15 %. Thé noir aux agrumes : Assam 80 %. Rooibos vanille : rooibos 92 %. Tout est bio.")).toEqual(["Thé vert jasmin : Sencha 85 %, jasmin 15 %.", "Thé noir aux agrumes : Assam 80 %.", "Rooibos vanille : rooibos 92 %. Tout est bio."]);
+    expect(Act.factItems("Thé vert jasmin : Sencha 85 %, jasmin 15 %. Thé noir aux agrumes : Assam 80 %. Rooibos vanille : rooibos 92 %. Tout est bio.")).toEqual(["Thé vert jasmin : Sencha 85\u00a0%, jasmin 15\u00a0%.", "Thé noir aux agrumes : Assam 80\u00a0%.", "Rooibos vanille : rooibos 92\u00a0%. Tout est bio."]);
     expect(Act.factItems("Matière : cuivre")).toEqual(["Matière : cuivre"]);
     // « Plus tard » jamais proposé pour une coordonnée obligatoire (essai réel du 7 novembre : la livraison).
 

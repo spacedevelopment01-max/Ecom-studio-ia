@@ -67,7 +67,9 @@ export function factLine(f: { label: string; value: string }): string {
  */
 export function factItems(line: string): string[] {
   const parts = line.split(/(?<=\.)\s+(?=[A-ZÀ-Ý][^.:\n]{1,50}\s:\s)/).map((x) => x.trim()).filter(Boolean);
-  return parts.length >= 3 ? parts : [line];
+  // Nombre et unité jamais séparés en fin de ligne (essai réel : « 8 » puis « % » à la ligne).
+  const tie = (x: string) => x.replace(/(\d)\s+(%|€|g\b|kg\b|ml\b|cl\b|l\b)/g, "$1\u00a0$2");
+  return (parts.length >= 3 ? parts : [line]).map(tie);
 }
 
 /** Le plan de l'activité tel qu'il est aujourd'hui (lecture, gratuit). */
