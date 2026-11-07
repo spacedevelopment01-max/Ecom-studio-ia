@@ -284,8 +284,14 @@ function askBudget(r: SynaRun, _x: null) {
  */
 export function withoutRepeatedQuestion(out: StepOutput): StepOutput {
   if (!out.question || !out.message) return out;
-  const m = /^([\s\S]*?[.!…:])\s+([^.!?…]*\?)\s*$/.exec(out.message.trim());
-  return m && m[1].trim() ? { ...out, message: m[1].trim() } : out;
+  // Le message s'arrête avant sa première phrase interrogative (et ce qui la suit), s'il reste quelque chose avant.
+  const msg = out.message.trim();
+  const q = msg.indexOf("?");
+  if (q < 0) return out;
+  const before = msg.slice(0, q);
+  const cut = Math.max(before.lastIndexOf(". "), before.lastIndexOf("! "), before.lastIndexOf("… "), before.lastIndexOf(": "), before.lastIndexOf("\n"));
+  const kept = cut >= 0 ? msg.slice(0, cut + 1).trim() : "";
+  return kept ? { ...out, message: kept } : out;
 }
 
 /** Décision du moteur local pour le message du client de cette demande, ou null (→ Claude). */

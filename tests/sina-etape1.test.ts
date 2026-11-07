@@ -28,7 +28,7 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
 
   const good = (): any[] => [
     { key: "A", name: "Ocrea", nameStyle: "mot français évocateur", nameWhy: "", slogan: "La chaleur du fait main", sloganTone: "poétique", promise: "Des bougies coulées à la main qui réchauffent ton intérieur.", territory: "fierté artisanale", ground: "blanc", palette: { dark: "#111111", primary: "#1D4ED8", secondary: "#DBEAFE", accent: "#F97316", light: "#FFFFFF" }, paletteFamily: "tons chauds ton sur ton", fonts: { heading: "cormorant_n6", body: "inter_n4" }, fontStyle: "serif fine contrastée", tone: { adjectives: ["chaleureux", "précis", "sincère"], avoid: ["superlatifs", "jargon", "promesses"] }, logoStyle: "embleme", logoIdea: "Une flamme dans un sceau rond.", why: "Ta clientèle aime l'artisanat." },
-    { key: "B", name: "Lumo", nameStyle: "mot inventé court", nameWhy: "", slogan: "Allume l'instant", sloganTone: "direct", promise: "Une lumière douce pour chaque moment calme.", territory: "évasion", ground: "creme", palette: { dark: "#1F1A14", primary: "#B91C1C", secondary: "#FDE68A", accent: "#16A34A", light: "#F5EEDC" }, paletteFamily: "sombre et un accent vif", fonts: { heading: "archivo_n8", body: "dm_sans_n4" }, fontStyle: "grotesque grasse", tone: { adjectives: ["direct", "lumineux", "moderne"], avoid: ["mièvrerie", "jargon", "promesses"] }, logoStyle: "lettrage", logoIdea: "Le O de Lumo devient une flamme.", why: "Tu veux une image moderne." },
+    { key: "B", name: "Lumo", nameStyle: "mot inventé court", nameWhy: "", slogan: "Allume l'instant", sloganTone: "direct", promise: "Une lumière douce pour chaque moment calme.", territory: "évasion", ground: "degrade", gradient: { from: "#FFD6A5", to: "#C8B6FF" }, palette: { dark: "#1F1A14", primary: "#B91C1C", secondary: "#FDE68A", accent: "#16A34A", light: "#F5EEDC" }, paletteFamily: "sombre et un accent vif", fonts: { heading: "archivo_n8", body: "dm_sans_n4" }, fontStyle: "grotesque grasse", tone: { adjectives: ["direct", "lumineux", "moderne"], avoid: ["mièvrerie", "jargon", "promesses"] }, logoStyle: "lettrage", logoIdea: "Le O de Lumo devient une flamme.", why: "Tu veux une image moderne." },
     { key: "C", name: "Brindille", nameStyle: "nom composé", nameWhy: "", slogan: "Complice de tes soirées", sloganTone: "complice et léger", promise: "Des bougies joyeuses à offrir et à s'offrir.", territory: "complicité joyeuse", ground: "sombre", palette: { dark: "#0B0B12", primary: "#FACC15", secondary: "#312E81", accent: "#C084FC", light: "#F5F5F7" }, paletteFamily: "clair et frais", fonts: { heading: "nunito_n8", body: "karla_n4" }, fontStyle: "ronde épaisse", tone: { adjectives: ["complice", "léger", "joyeux"], avoid: ["froideur", "jargon", "promesses"] }, logoStyle: "mascotte", logoIdea: "Une petite bougie souriante.", why: "Tu vends beaucoup en cadeau." },
   ];
 
@@ -77,27 +77,30 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     expect(I.refusedColors("J'aime le vert et le bleu.")).toEqual([]);
   });
 
-  it("règles du propriétaire (6 novembre) : un fond blanc, un crème, un sombre ; couleurs vives et de teintes différentes ; noms forts", () => {
+  it("règles du propriétaire (6 et 7 novembre) : un fond blanc, un dégradé, un sombre ; couleurs vives et de teintes différentes ; le concept du projet dans le nom", () => {
     const j = J.emptyJourney();
     const bad = good();
-    bad[1].ground = "blanc"; bad[1].palette.light = "#FFFFFF"; // deux fonds blancs, aucun crème
+    bad[1].ground = "blanc"; bad[1].palette.light = "#FFFFFF"; // deux fonds blancs, aucun dégradé
     bad[0].palette.accent = "#C8742B"; bad[0].palette.primary = "#8A3B12"; // ternes (cuivre, caramel)
     bad[2].palette.accent = "#FB923C"; // accent orangé comme celui de A : même famille
-    bad[2].name = "Maison Cuivre"; bad[1].name = "Cuivre & Verger";
+    bad[2].name = "Cuivre & Verger"; // nom avec « & » : permis (le propriétaire préférait ces noms)
     const issues = I.identityIssues(I.IdentitiesSchema.parse({ identities: bad }).identities, j).join("\n");
-    expect(issues).toMatch(/Fonds de page : A blanc, B blanc, C sombre ; il faut un fond blanc, un fond crème et un fond sombre/);
+    expect(issues).toMatch(/Fonds de page : A blanc, B blanc, C sombre ; il faut un fond blanc, un fond en dégradé de couleurs et un fond sombre/);
     expect(issues).toMatch(/Identité A — couleur de marque #8A3B12 trop terne/);
     expect(issues).toMatch(/Identité A — accent #C8742B trop terne/);
     expect(issues).toMatch(/Identités A\/C : accents de la même famille/);
-    expect(issues).toMatch(/« Maison Cuivre » trop banal/);
-    expect(issues).toMatch(/« Cuivre & Verger » trop banal/);
-    // Un fond crème doit être vraiment crème, un fond sombre vraiment foncé.
-    expect(I.paletteIssues({ ...good()[1].palette, light: "#FFFFFF" }, "creme").join()).toMatch(/crème ou ivoire/);
+    expect(issues).not.toMatch(/Cuivre & Verger|nom trop long/);
+    // Un dégradé doit être un vrai dégradé de couleurs (ni beige ni crème), un fond sombre vraiment foncé.
+    expect(I.paletteIssues(good()[1].palette, "degrade", { from: "#F5EEDC", to: "#EFE6D2" }).join()).toMatch(/dégradé de couleurs est attendu|nettement différentes/);
+    expect(I.paletteIssues(good()[1].palette, "degrade").join()).toMatch(/deux couleurs .* manquent/);
+    expect(I.paletteIssues(good()[1].palette, "degrade", good()[1].gradient)).toEqual([]);
     expect(I.paletteIssues({ ...good()[2].palette, dark: "#3A3A4A" }, "sombre").join()).toMatch(/fond très foncé/);
     expect(I.isVivid("#1FC7B6", I.COLOR_RULES.accentChroma)).toBe(true); // turquoise vif (essai réel)
     expect(I.isVivid("#8A3B12", I.COLOR_RULES.primaryChroma)).toBe(false); // cuivre brun : terne
     expect(I.isVivid("#3F5A1E", I.COLOR_RULES.primaryChroma)).toBe(false); // olive : terne
-    expect(I.IDENTITY_SYSTEM).toMatch(/une « blanc » .* une « creme » .* une « sombre »/);
+    expect(I.IDENTITY_SYSTEM).toMatch(/une « blanc » .* une « degrade » .* jamais beige ni crème.* une « sombre »/);
+    expect(I.IDENTITY_SYSTEM).toMatch(/le CONCEPT du projet .* se retrouve dans le nom/);
+    expect(I.IDENTITY_SYSTEM).toMatch(/où le concept du projet et le nom se rejoignent dans le dessin/);
     expect(I.IDENTITY_SYSTEM).toMatch(/jamais trois orangés/);
     expect(I.IDENTITY_SYSTEM).toMatch(/au moins 20 pistes/);
   });
@@ -136,6 +139,7 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     expect(out("Voici tes 3 identités. Laquelle te plaît le plus ?")).toBe("Voici tes 3 identités.");
     expect(out("Laquelle te plaît le plus ?")).toBe("Laquelle te plaît le plus ?"); // rien d'autre : gardé
     expect(out("C'est noté, merci.")).toBe("C'est noté, merci.");
+    expect(out("Voici tes identités.\n\nLaquelle te plaît le plus ? Tu peux aussi mélanger.")).toBe("Voici tes identités.");
     expect(withoutRepeatedQuestion({ message: "Tu es prêt ?", actions: [], question: null, done: true }).message).toBe("Tu es prêt ?");
   });
 

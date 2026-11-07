@@ -42,14 +42,16 @@ Les 3 identités proposées diffèrent sur **au moins 4 des 6 axes**, dont toujo
 | 5. Ton du slogan | poétique / direct et impératif / complice et léger |
 | 6. Style de logo | voir 2.3 |
 
-**Règles du propriétaire du 6 novembre 2026 (premier essai réel, confitures)** — contrôlées par le Studio
+**Règles du propriétaire des 6 et 7 novembre 2026 (essai réel, confitures)** — contrôlées par le Studio
 (`src/lib/syna-agent/identities.ts`) :
-- **Trois fonds de page** : une identité sur fond blanc, une sur fond crème, une sur fond sombre (texte clair).
+- **Trois fonds de page** : une identité sur fond blanc, une sur fond en **dégradé de couleurs** (jamais beige ni
+  crème), une sur fond sombre (texte clair).
 - **Couleurs vives et à l'air du temps** : couleur de marque et accent saturés, jamais ternes ni « vintage délavé » ;
   d'une identité à l'autre, couleurs de marque et accents de familles de teintes nettement différentes (jamais trois
   orangés).
-- **Des noms forts** : courts (2 mots au plus), sonores, propres à la marque ; refusés : « Maison … », « Grand … »,
-  « L'Atelier de … », « … & … », le nom du produit lui-même, et autres formules toutes faites.
+- **Le concept du projet dans le nom et le logo, poussé plus loin** : niveau visé « Cuivre & Verger » ou « Tartinou »
+  (le métier, le geste, le lieu ou l'émotion se reconnaissent), en allant encore plus loin dans l'idée ; jamais une
+  sonorité vide de sens. Les noms à « & » ou en deux mots sont permis (3 mots au plus).
 
 Contrôle : Claude compare les trois identités axe par axe ; deux identités trop proches → la plus faible est refaite avant
 d'être montrée.

@@ -67,7 +67,7 @@ async function generate(ctx: ToolContext, j: Journey, opts: { guidance?: string;
 /** Vue courte d'une identité (lue par SINA et montrée dans le fil). */
 export const identityView = (x: Identity) => ({
   cle: x.key, nom: x.name, slogan: x.slogan, promesse: x.promise, territoire: x.territory,
-  fond: x.ground, couleurs: x.palette, polices: { titres: fontFamily(x.fonts.heading), textes: fontFamily(x.fonts.body) },
+  fond: x.ground, ...(x.gradient ? { degrade: x.gradient } : {}), couleurs: x.palette, polices: { titres: fontFamily(x.fonts.heading), textes: fontFamily(x.fonts.body) },
   ton: x.tone.adjectives.join(", "), logo: `${LOGO_STYLE_LABEL[x.logoStyle]} — ${x.logoIdea}`, pourquoi: x.why,
 });
 
@@ -129,7 +129,7 @@ export function mixIdentity(list: Identity[], key: Key, mix: Partial<Record<Part
     name: edits.name?.trim() || pick(mix.name).name,
     nameWhy: edits.name ? "" : pick(mix.name).nameWhy,
     slogan: edits.slogan?.trim() || pick(mix.slogan).slogan,
-    palette: pick(mix.palette).palette, paletteFamily: pick(mix.palette).paletteFamily, ground: pick(mix.palette).ground,
+    palette: pick(mix.palette).palette, paletteFamily: pick(mix.palette).paletteFamily, ground: pick(mix.palette).ground, gradient: pick(mix.palette).gradient,
     fonts: pick(mix.fonts).fonts, fontStyle: pick(mix.fonts).fontStyle,
     tone: pick(mix.tone).tone,
     logoStyle: pick(mix.logo).logoStyle, logoIdea: pick(mix.logo).logoIdea,
@@ -153,6 +153,7 @@ export function brandFromIdentity(p: ReturnType<typeof loadProject>, x: Identity
     tone: { voice: x.tone.adjectives.join(", "), do: base.tone?.do ?? [], dont: x.tone.avoid },
     palette: x.palette,
     ground: x.ground,
+    ...(x.gradient ? { gradient: x.gradient } : {}),
     paletteMode: j.keep.includes("couleurs") ? "client" : "direction",
     ...(j.keep.includes("couleurs") ? { clientPalette: x.palette } : {}),
     fonts: x.fonts,

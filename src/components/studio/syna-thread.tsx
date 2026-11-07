@@ -20,7 +20,7 @@ type View = {
 };
 type Face = { family: string; file: string; weight: number } | null;
 type IdentityCard = {
-  key: "A" | "B" | "C"; name: string; nameStyle: string; slogan: string; promise: string; territory: string; ground: "blanc" | "creme" | "sombre";
+  key: "A" | "B" | "C"; name: string; nameStyle: string; slogan: string; promise: string; territory: string; ground: "blanc" | "degrade" | "sombre"; gradient?: { from: string; to: string };
   palette: { dark: string; primary: string; secondary: string; accent: string; light: string }; paletteFamily: string;
   fontStyle: string; tone: { adjectives: string[]; avoid: string[] }; logoStyleLabel: string; logoIdea: string; why: string;
   faces: { heading: Face; body: Face };
@@ -42,8 +42,8 @@ function IdentityCards({ ids, busy, onChoose }: { ids: Identities; busy: boolean
           const chosen = ids.chosen?.key === x.key;
           return (
             <article key={x.key} className={cx("overflow-hidden rounded-xl border", chosen ? "border-ink ring-2 ring-ink" : "border-line")} data-identity={x.key}>
-              <div className="px-4 pb-4 pt-3" style={{ background: x.ground === "sombre" ? x.palette.dark : x.palette.light, color: x.ground === "sombre" ? x.palette.light : x.palette.dark, fontFamily: fam(x.faces.body, "sans-serif") }}>
-                <p className="text-[11px] uppercase tracking-wider opacity-70">{t("Identité", "Identity")} {x.key} · {t({ blanc: "fond blanc", creme: "fond crème", sombre: "fond sombre" }[x.ground] ?? "", { blanc: "white background", creme: "cream background", sombre: "dark background" }[x.ground] ?? "")} · {x.territory}</p>
+              <div className="px-4 pb-4 pt-3" style={{ background: x.ground === "sombre" ? x.palette.dark : x.ground === "degrade" && x.gradient ? `linear-gradient(135deg, ${x.gradient.from}, ${x.gradient.to})` : x.palette.light, color: x.ground === "sombre" ? x.palette.light : x.ground === "degrade" && x.gradient ? readable(x.palette, [x.gradient.from, x.gradient.to]) : x.palette.dark, fontFamily: fam(x.faces.body, "sans-serif") }}>
+                <p className="text-[11px] uppercase tracking-wider opacity-70">{t("Identité", "Identity")} {x.key} · {t({ blanc: "fond blanc", degrade: "fond en dégradé", sombre: "fond sombre" }[x.ground] ?? "", { blanc: "white background", degrade: "gradient background", sombre: "dark background" }[x.ground] ?? "")} · {x.territory}</p>
                 <h3 className="mt-2 text-3xl leading-tight" style={{ color: x.palette.primary, fontFamily: fam(x.faces.heading, "serif"), fontWeight: x.faces.heading?.weight ?? 600 }}>{x.name}</h3>
                 <p className="mt-1 text-base">{x.slogan}</p>
                 <p className="mt-3 text-sm opacity-90">{x.promise}</p>
@@ -72,6 +72,15 @@ function IdentityCards({ ids, busy, onChoose }: { ids: Identities; busy: boolean
       {!!ids.issues.length && <p className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-xs text-ink dark:bg-amber-950/30" data-syna-identity-issues>{t("Points que le contrôle du Studio n'a pas pu valider", "Points the Studio check could not validate")} : {ids.issues.join(" ; ")}</p>}
     </div>
   );
+}
+/** Texte le plus lisible sur les deux couleurs d'un dégradé. */
+function readable(p: { dark: string; light: string }, bgs: string[]) {
+  const worst = (fg: string) => Math.min(...bgs.map((b) => ratioOf(fg, b)));
+  return worst(p.dark) >= worst(p.light) ? p.dark : p.light;
+}
+function ratioOf(a: string, b: string) {
+  const lum = (h: string) => { const n = parseInt(h.slice(1), 16); const c = [n >> 16 & 255, n >> 8 & 255, n & 255].map((v) => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+  const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05);
 }
 /** Texte lisible sur une couleur (clair ou sombre de la palette). */
 function contrastText(bg: string, dark: string, light: string) {
