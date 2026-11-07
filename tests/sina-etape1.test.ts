@@ -165,6 +165,9 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
 
   it("la question n'est jamais lue deux fois : la dernière phrase interrogative du message est retirée", async () => {
     const { withoutRepeatedQuestion } = await import("@/lib/syna-agent/loop");
+    const { fixElision } = await import("@/lib/syna-agent/loop");
+    expect(fixElision("Activité : boutique en ligne. - Produits : 6 mélanges. - Prix : 8,50 € les thés.")).toBe("Activité : boutique en ligne.\n- Produits : 6 mélanges.\n- Prix : 8,50 € les thés.");
+    expect(fixElision("Le thé vert - au jasmin - est doux.")).toBe("Le thé vert - au jasmin - est doux.");
     const out = (message: string) => withoutRepeatedQuestion({ message, actions: [], question: { text: "Laquelle préfères-tu ?" }, done: false }).message;
     expect(out("Voici tes 3 identités. Laquelle te plaît le plus ?")).toBe("Voici tes 3 identités.");
     expect(out("Laquelle te plaît le plus ?")).toBe("Laquelle te plaît le plus ?"); // rien d'autre : gardé

@@ -416,6 +416,8 @@ export function mixLabel(list: Identity[], c: { key: string; mix: Partial<Record
  * Le « h » n'est pas touché (h aspiré : « je hais »).
  */
 export function fixElision(s: string): string {
+  // Liste écrite sur une seule ligne (« … uniquement. - Produits : … - Prix : … », essai réel) : une ligne par élément.
+  s = s.replace(/([.!?…])\s+-\s+(?=[A-ZÀ-Ý][^:\n]{0,40}\s?:)/g, "$1\n- ").replace(/ :\s+-\s+(?=[A-ZÀ-Ý][^:\n]{0,40}\s?:)/g, " :\n- ");
   // Seulement « je », « le », « ne », « que » (jamais « me » ou « se » : SINA répond aussi en anglais, « me and… »).
   return s.replace(/\b([JjLlNn]e|[Qq]ue) ([aeiouyéèêàâîôûAEIOUYÉÈÊÀÂÎÔÛ])/g, (_m, w: string, v: string) => `${w.slice(0, -1)}'${v}`);
 }
