@@ -55,6 +55,8 @@ export const handlers: Record<string, Handler> = {
   "agent.reason": async ctx => (await import('../src/lib/orchestrator/conversation/intelligence')).runCognitiveJob(ctx),
   /** SYNA agent (#492) : une exécution reprenable du fil (raisonnement, outils, vérification). */
   "syna.agent": async (ctx) => (await import("../src/lib/syna-agent/loop")).runAgentJob(ctx),
+  // SINA (#492), étape 2 : 3 logos de 3 styles pour l'identité choisie (moteur de logos V2, plafonné au devis).
+  "syna.logos": async (ctx) => (await import("../src/lib/syna-agent/logos")).runSinaLogosJob(ctx),
   // SINA (#492), étape 7 : site codé d'après la maquette choisie (payant, plafonné au devis).
   "syna.mockup.code": async (ctx) => (await import("../src/lib/syna-agent/mockup-code/job")).runMockupCodeJob(ctx),
   "agent.theme.capture": async ctx => (await import('../src/lib/orchestrator/conversation/render-tool-execution')).runRenderCapture(ctx),

@@ -70,7 +70,7 @@ const answerTool: AgentTool<any> = {
       field: z.enum(START_FIELDS.filter((f) => f !== "keep") as [StartField, ...StartField[]]),
       value: z.string().max(4000).default(""),
       status: z.enum(["answered", "later", "none"]).default("answered"),
-    })).min(1).max(11),
+    })).min(1).max(START_FIELDS.length),
   }).strict(),
   run: async (ctx, a: { answers: { field: StartField; value: string; status: FieldAnswer["status"] }[] }) => {
     for (const x of a.answers) {

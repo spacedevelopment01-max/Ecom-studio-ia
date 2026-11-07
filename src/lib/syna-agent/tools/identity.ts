@@ -177,7 +177,9 @@ export function brandFromIdentity(p: ReturnType<typeof loadProject>, x: Identity
       ? { ...base.logo, assetId: logoAssetId, status: "provided", concept: x.logoIdea }
       : { concept: `${LOGO_STYLE_LABEL[x.logoStyle]} — ${x.logoIdea}`, status: "proposed" },
     story: base.story || x.why,
-    validated: [...new Set([...(base.validated ?? []), "identity"])],
+    // Choix du client : nom, palette et polices verrouillés (aucun traitement automatique ne les change, ex. couleurs
+    // tirées d'un logo) ; le slogan n'est pas verrouillé ici pour ne pas l'écrire dans les logos.
+    validated: [...new Set([...(base.validated ?? []), "identity", "name", "palette", "fonts"])],
     generatedBy: "ai",
   };
 }

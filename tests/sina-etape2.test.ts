@@ -1,0 +1,158 @@
+/**
+ * SINA (#492) — étape 2 du parcours : 3 logos de 3 styles pour l'identité CHOISIE, tirés des 3 idées de logo de
+ * l'étape 1 et adaptés par Claude, dessinés et contrôlés par le moteur de logos V2, puis choisis par le client.
+ * Aucun appel d'IA : l'adaptation des idées et le moteur (dessin, relecture) sont simulés.
+ */
+import { describe, expect, it } from "vitest";
+
+process.env.STUDIO_SYNA_AGENT = "1";
+
+describe("SINA — étape 2 : 3 logos", async () => {
+  const { one, run } = await import("@/lib/db");
+  const { runWithLang } = await import("@/lib/i18n-server");
+  const { loadProject } = await import("@/lib/projects");
+  const { JobContext } = await import("@/lib/jobs");
+  const { account } = await import("./conversation209-fixtures");
+  const { threadFor } = await import("@/lib/syna-agent/thread");
+  const { getTool } = await import("@/lib/syna-agent/registry");
+  const { threadView, modelFor } = await import("@/lib/syna-agent/loop");
+  const { identityDeps } = await import("@/lib/syna-agent/tools/identity");
+  const { logoToolDeps } = await import("@/lib/syna-agent/tools/logo");
+  const G = await import("@/lib/syna-agent/logos");
+  const J = await import("@/lib/syna-agent/journey");
+  const { artFixture } = await import("./logo-v2-fixtures");
+  const { mockAi } = await import("./logo-v2-mock");
+  const { ART_CRITERIA } = await import("@/lib/logo-v2/types");
+  const fr = <T,>(fn: () => Promise<T> | T) => runWithLang({ ui: "fr", content: "fr" }, async () => fn());
+  const ctxOf = (user: any, cid: string) => ({ user, conversationId: cid, runId: `run-${Date.now()}`, projectId: null as string | null, attachment: () => null }) as any;
+  const call = async (name: string, ctx: any, args: unknown) => {
+    ctx.projectId = one<{ project_id: string | null }>("SELECT project_id FROM agent_conversations WHERE id=?", ctx.conversationId)?.project_id ?? null;
+    return fr(() => getTool(name)!.run(ctx, getTool(name)!.args.parse(args)));
+  };
+
+  const identities = (): any[] => [
+    { key: "A", name: "Tour de Main", nameStyle: "", nameWhy: "", slogan: "Du fruit, du cuivre, et du temps.", sloganTone: "", promise: "Une confiture cuite lentement.", territory: "fierté artisanale", ground: "blanc", palette: { dark: "#1F2A3A", primary: "#24508C", secondary: "#F6E7D3", accent: "#C2652B", light: "#FFFFFF" }, paletteFamily: "Faïence et cuivre", fonts: { heading: "playfair_display_n7", body: "karla_n4" }, fontStyle: "", tone: { adjectives: ["fier", "précis", "chaleureux"], avoid: ["légende", "jargon", "superlatifs"] }, logoStyle: "cachet", logoIdea: "Un cachet rond d'épicerie fine avec le chaudron vu de dessus.", why: "" },
+    { key: "B", name: "Heure Dorée", nameStyle: "", nameWhy: "", slogan: "Ouvre le pot, l'heure dorée revient.", sloganTone: "", promise: "L'été de la Drôme en pot.", territory: "évasion solaire", ground: "degrade", gradient: { from: "#FFE27A", to: "#FFA864" }, palette: { dark: "#2A1E14", primary: "#1F6B3A", secondary: "#FFF1C9", accent: "#D9472B", light: "#FFF8E6" }, paletteFamily: "Abricot et basilic", fonts: { heading: "cormorant_n6", body: "dm_sans_n4" }, fontStyle: "", tone: { adjectives: ["lumineux", "sensoriel", "apaisé"], avoid: ["clichés", "santé", "agressif"] }, logoStyle: "aquarelle", logoIdea: "Une tache d'aquarelle abricot coupée par le bord d'une bassine en cuivre.", why: "" },
+    { key: "C", name: "Pot Commun", nameStyle: "", nameWhy: "", slogan: "Pose-le au milieu, tout le monde y trempe.", sloganTone: "", promise: "Une confiture à partager.", territory: "complicité joyeuse", ground: "sombre", palette: { dark: "#10241F", primary: "#FFC23D", secondary: "#1F3A33", accent: "#FF7A45", light: "#FFF5E1" }, paletteFamily: "Pin et soleil", fonts: { heading: "nunito_n9", body: "work_sans_n4" }, fontStyle: "", tone: { adjectives: ["joyeux", "franc", "généreux"], avoid: ["moquerie", "infantiliser", "émojis"] }, logoStyle: "monogramme", logoIdea: "Un monogramme de deux « P » dos à dos qui forment un pot.", why: "" },
+  ];
+
+  /** Fil à l'étape 2 : étape 0 validée, identité B choisie avec les couleurs de A (comme l'essai réel). */
+  async function stepTwo() {
+    const user = await account();
+    const cid = threadFor(user, null), ctx = ctxOf(user, cid);
+    await call("start.answer", ctx, { answers: [{ field: "business", value: "products" }, { field: "offer", value: "Des confitures cuites au chaudron." }] });
+    await call("start.answer", ctx, { answers: [
+      { field: "existing", value: "Rien, je pars de zéro." }, { field: "audience", value: "Des gourmands de 30 à 60 ans." }, { field: "image", value: "Gourmand, authentique, solaire." },
+      { field: "setup", value: "4 produits" }, { field: "market", value: "En ligne, France." }, { field: "price", value: "7,90 €" }, { field: "difference", value: "Cuisson au chaudron." },
+      { field: "taste", status: "none" }, { field: "photos", value: "Pas de photos pour l'instant." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
+    ] });
+    expect((await call("start.confirm", ctx, {})).ok).toBe(true);
+    identityDeps.generate = async () => ({ identities: identities() });
+    try { expect((await call("identity.propose", ctx, {})).ok).toBe(true); } finally { identityDeps.generate = undefined; }
+    expect((await call("identity.choose", ctx, { key: "B", mix: { palette: "A" } })).ok).toBe(true);
+    const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
+    return { user, cid, ctx, pid };
+  }
+
+  /** Idées adaptées par « Claude » : trois styles, couleurs de la palette choisie, nom exact. */
+  const territories = (name: string) => [
+    { source: "A", name: "Aquarelle au chaudron", style: "textured", markType: "symbol_wordmark", composition: "stacked", construction: "organic", sobriety: 4, symbolIdea: "tache d'aquarelle abricot coupée par une bassine", typography: { style: "classic_serif", weight: "regular", case: "title", tracking: "normal", rationale: "fine" } },
+    { source: "B", name: "Cachet d'épicerie", style: "emblem", markType: "emblem", composition: "badge", construction: "geometric", sobriety: 3, symbolIdea: "chaudron vu de dessus dans un sceau", typography: { style: "high_contrast_serif", weight: "bold", case: "upper", tracking: "wide", rationale: "sceau" } },
+    { source: "C", name: "Monogramme HD", style: "monogram", markType: "monogram", composition: "horizontal", construction: "typographic", sobriety: 2, symbolIdea: "les initiales H et D réunies en pot", typography: { style: "geometric_sans", weight: "bold", case: "upper", tracking: "tight", rationale: "initiales" } },
+  ].map((t) => ({ ...t, concept: `Concept « ${t.name} » pour ${name}, tiré de l'idée de logo de départ.`, whyItFits: "Parce que cela montre la cuisson lente et le soleil des fruits.", colorRole: { ink: "dark", accent: "primary", rationale: "palette choisie" }, distinctive: "une idée simple et propre à la marque", avoid: ["dégradé gratuit"], descriptor: null, imageBrief: `A clean vector logo for "${name}", ${t.name}, colors #1F2A3A and #24508C on a plain white background, centered, nothing else.`, colors: ["#1F2A3A", "#24508C"] }));
+
+  let n = 0;
+  const jobCtx = (user: any, pid: string, payload: Record<string, unknown>) => {
+    const jid = `job-sina-logos-${Date.now()}-${n++}`;
+    run("INSERT INTO jobs (id, user_id, project_id, type, label, payload, status, run_at, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)", jid, user.id, pid, "syna.logos", "logos", JSON.stringify(payload), "running", Date.now(), Date.now(), Date.now());
+    return new JobContext(one<any>("SELECT * FROM jobs WHERE id = ?", jid));
+  };
+  const artReview = (score: number, exp: any) => ({ criteria: Object.fromEntries(ART_CRITERIA.map((k) => [k, score])) as any, textRead: exp.name, nameExact: true, extraText: false, nameBox: null, clumsyCliche: false, resemblesKnownBrand: false, amateur: false, artifacts: false, issues: [], needsSimplifiedMark: true, genericConcept: false, fix: { target: "none", instruction: "" } });
+  const ART: Record<string, number> = { "Aquarelle au chaudron": 1, "Cachet d'épicerie": 2, "Monogramme HD": 3 };
+  const fakeEngine = (log: { calls: string[]; prompts: string[] }, scores: Record<string, number> = {}) => () => ({
+    ...mockAi(log),
+    artworkRoute: () => ({ provider: "openai", model: "gpt-image-1" }),
+    async drawArtwork(t: any) { log.calls.push(`art:${t.name}`); return artFixture(ART[t.name] ?? 0); },
+    async reviewArtwork(_b: Buffer, t: any, _brief: any, exp: any) { log.calls.push(`review:${t.name}`); return artReview(scores[t.name] ?? 8.6, exp); },
+  }) as any;
+
+  it("modèle et parcours : l'étape 2 est ouverte, le fil reste léger (Haiku), le contexte explique quoi faire", () => {
+    expect(J.READY_STEPS).toContain(2);
+    expect(modelFor(2)).toMatchObject({ model: "claude-haiku-5-5" });
+    const j = J.emptyJourney();
+    for (const s of [0, 1]) J.setStep(j, s, "done");
+    expect(J.journeyContext(j)).toMatch(/Étape 2 \(3 logos\) : rien n'est encore dessiné.*logo\.propose/);
+  });
+
+  it("consignes : idées de l'étape 1 adaptées à l'identité choisie, nom exact seul texte, couleurs de la palette", () => {
+    const brand: any = { name: "Heure Dorée", tagline: "Ouvre le pot, l'heure dorée revient.", ground: "blanc", palette: identities()[0].palette, fonts: identities()[1].fonts, personality: ["lumineux"], positioning: "x" };
+    const prompt = G.logoTerritoriesPrompt(brand, identities() as any);
+    expect(prompt).toContain("Nom exact : « Heure Dorée »");
+    expect(prompt).toMatch(/C\. Style « monogramme » .*imaginée pour « Pot Commun »/);
+    expect(G.LOGO_TERRITORIES_SYSTEM).toMatch(/le seul texte du logo est le nom EXACT/i);
+    expect(G.LOGO_TERRITORIES_SYSTEM).toMatch(/monogramme « PP » imaginé pour « Pot Commun » devient un monogramme des initiales du nom choisi/);
+    const ok = territories("Heure Dorée") as any;
+    expect(G.territoryIssues(ok, brand)).toEqual([]);
+    const bad = territories("Heure Dorée") as any;
+    bad[1].style = "textured"; bad[2].colors = ["#FF00FF"]; bad[0].descriptor = "CONFITURES";
+    const issues = G.territoryIssues(bad, brand).join(" ");
+    expect(issues).toMatch(/Trois styles de logo différents/);
+    expect(issues).toMatch(/couleur #FF00FF hors de la palette/);
+    expect(issues).toMatch(/descriptor doit être null/);
+  });
+
+  it("proposition complète : devis annoncé, 3 logos dessinés et contrôlés, rangés dans le parcours, affichés, puis choix du client", async () => {
+    const { user, cid, ctx, pid } = await stepTwo();
+    expect(loadProject(pid).brand!.validated).toEqual(expect.arrayContaining(["identity", "name", "palette", "fonts"]));
+    logoToolDeps.maxMicro = () => 900_000;
+    try {
+      expect(await getTool("logo.propose")!.estimate!(ctx, {})).toEqual({ maxMicro: 900_000, label: "3 logos" });
+      const r = await call("logo.propose", ctx, {});
+      expect(r.ok).toBe(true);
+      expect(r.jobs).toHaveLength(1);
+      expect(J.journeyOf(cid).steps[2].status).toBe("doing");
+      const job = one<any>("SELECT * FROM jobs WHERE id=?", r.jobs![0]);
+      expect(job.type).toBe(G.SINA_LOGOS_JOB);
+    } finally { logoToolDeps.maxMicro = undefined; }
+    const log = { calls: [] as string[], prompts: [] as string[] };
+    const seen: any[] = [];
+    G.logoDeps.territories = async (c) => { seen.push(c); return { territories: territories("Heure Dorée") }; };
+    G.logoDeps.ai = fakeEngine(log, { "Monogramme HD": 4 });
+    try {
+      const out = await fr(() => G.runSinaLogosJob(jobCtx(user, pid, { projectId: pid, conversationId: cid, capMicro: 900_000 })));
+      expect(out.logos.map((x) => x.source).sort()).toEqual(["A", "B", "C"]);
+    } finally { G.logoDeps.territories = undefined; G.logoDeps.ai = undefined; }
+    // L'idée de l'identité retenue (B, aquarelle) passe en premier, puis les deux autres.
+    expect(seen[0].prompt).toMatch(/A\. Style « tache d'aquarelle »[\s\S]*B\. Style « cachet ou tampon »[\s\S]*C\. Style « monogramme »/);
+    expect(seen[0].routing.prefer).toEqual(G.LOGO_TERRITORIES_MODEL);
+    expect(log.calls.filter((c) => c.startsWith("art:"))).toHaveLength(3);
+    const j = J.journeyOf(cid);
+    expect(j.steps[2].status).toBe("review");
+    const byName = Object.fromEntries(j.logos!.list.map((x) => [x.name, x]));
+    expect(byName["Cachet d'épicerie"].verdict).toBe("FINAL");
+    expect(byName["Monogramme HD"].verdict).not.toBe("FINAL"); // note 4/10 : jamais présenté comme bon
+    expect(J.journeyContext(j)).toMatch(/Étape 2 — proposition n° 1 .*NON validé par le contrôle/);
+    const view = await fr(() => threadView(user, cid));
+    expect(view.journey.logos!.list.every((x) => !x.assetId || !!x.href)).toBe(true);
+    // Choix du client : le logo devient celui de la marque, étape 2 validée, étape 3 ouverte.
+    const pick = j.logos!.list.find((x) => x.verdict === "FINAL")!;
+    const c = await call("logo.choose", ctx, { source: pick.source });
+    expect(c.ok).toBe(true);
+    const b = loadProject(pid).brand!;
+    expect(b.logo.status).toBe("validated");
+    expect(b.palette).toEqual(identities()[0].palette); // palette verrouillée : jamais recolorée par le logo
+    const after = J.journeyOf(cid);
+    expect(after.steps[2].status).toBe("done");
+    expect(J.currentStep(after)).toBe(3);
+    expect((await call("logo.propose", ctx, {})).ok).toBe(false); // logo déjà choisi : pas de nouvelle série en douce
+  });
+
+  it("refusé avant l'identité choisie", async () => {
+    const user = await account();
+    const cid = threadFor(user, null), ctx = ctxOf(user, cid);
+    await call("start.answer", ctx, { answers: [{ field: "business", value: "products" }, { field: "offer", value: "Des bougies." }] });
+    const r = await call("logo.propose", ctx, {});
+    expect(r.ok).toBe(false);
+    expect(r.summary).toMatch(/étape 1/);
+  });
+});

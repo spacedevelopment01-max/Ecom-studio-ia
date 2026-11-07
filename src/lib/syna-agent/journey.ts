@@ -12,6 +12,7 @@ import { HttpError } from "../auth";
 import { json, now, one, run, tx } from "../db";
 import { L } from "../i18n-server";
 import type { Identity } from "./identities";
+import type { SinaLogo } from "./logos";
 
 export const JOURNEY_STEPS = [
   { n: 0, fr: "Questions de départ", en: "Getting started" },
@@ -34,7 +35,7 @@ export type StepNumber = (typeof JOURNEY_STEPS)[number]["n"];
  * Étapes déjà construites dans le parcours SINA. Les autres sont annoncées au client mais SINA n'y lance rien
  * (aucun outil payant) : elle ne doit jamais partir seule sur une étape que le parcours ne sait pas encore mener.
  */
-export const READY_STEPS: number[] = [0, 1];
+export const READY_STEPS: number[] = [0, 1, 2];
 /** à faire · en cours · à valider par le client · validée · sans objet (ex. étape 7 quand le client choisit un de nos thèmes). */
 export type StepStatus = "todo" | "doing" | "review" | "done" | "skipped";
 
@@ -70,6 +71,9 @@ export type Journey = {
   /** Étape 1 : dernière proposition des 3 identités (contrôlée par le Studio) et choix du client. */
   identities?: { list: Identity[]; issues: string[]; comparison: string; at: number; round: number; guidance?: string; corrected?: string[] };
   identityChoice?: { key: "A" | "B" | "C"; mix: Partial<Record<string, "A" | "B" | "C">>; at: number };
+  /** Étape 2 : dernière proposition des 3 logos (moteur de logos V2) et logo choisi par le client. */
+  logos?: { list: SinaLogo[]; at: number; round: number; notes?: string[] };
+  logoChoice?: { source: "A" | "B" | "C"; assetId: string; at: number };
 };
 
 export const emptyJourney = (): Journey => ({
@@ -182,6 +186,7 @@ export function journeyContext(j: Journey): string {
       : "Toutes les questions ont une réponse : fais le RÉSUMÉ (« Voici ce que j'ai compris ») et demande au client de confirmer ou corriger ; à sa confirmation, appelle start.confirm.");
   }
   if (cur === 1) lines.push(...identityStepContext(j));
+  if (cur === 2) lines.push(...logoStepContext(j));
   if (READY_STEPS.includes(cur) && STEP_GUIDES[cur]) lines.push(STEP_GUIDES[cur]);
   return lines.join("\n");
 }
@@ -195,6 +200,15 @@ export const STEP_GUIDES: Partial<Record<number, string>> = {
   7: "Étape 7 (site codé d'après la maquette) : annonce le devis de site.code_from_mockup et attends l'accord du client ; à la fin, lis mockup.report et dis honnêtement, page par page, ce qui est conforme et ce qui ne l'est pas. Le site codé est une version inactive : le client décide de l'appliquer (site.use_version).",
   11: "Étape 11 (calendrier de publication, MANUEL pour l'instant : le client publie lui-même, la publication automatique viendra après les accords des plateformes) : demande d'abord au client, UNE question à la fois et seulement si l'information manque : sur combien de jours (7, 15 ou 30), combien de publications par jour, à quelles heures, sur quels réseaux, avec ou sans émojis, avec ou sans les publicités. Puis appelle calendar.plan ; montre-lui le calendrier (calendar.read) jour par jour et dis-lui qu'il peut l'ajouter à son agenda (fichier .ics) et cocher chaque publication une fois postée (calendar.mark_done). S'il manque des publications pour remplir les jours, dis-le simplement et propose d'en créer (payant, devis d'abord).",
 };
+
+/** Étape 2 : que faire selon l'état des logos (contexte relu par SINA). */
+export function logoStepContext(j: Journey): string[] {
+  const lg = j.logos;
+  if (!lg?.list.length) return ["Étape 2 (3 logos) : rien n'est encore dessiné. Si le client est prêt, annonce le coût (logo.propose donne le devis) et lance logo.propose : 3 logos de 3 styles différents pour SON identité, tirés des 3 idées de logo de l'étape 1. Le dessin prend quelques minutes."];
+  const lines = [`Étape 2 — proposition n° ${lg.round} (les logos sont affichés au client dans le fil) : ${lg.list.map((x) => `${x.source} « ${x.name} » (${x.style}) : ${x.verdict === "FINAL" ? `validé par le contrôle, ${x.score ?? "?"}/10` : x.verdict === "PROVISIONAL" ? "version du studio" : x.assetId ? `NON validé par le contrôle (${x.reason})` : `pas de dessin (${x.reason})`}`).join(" ; ")}.`,
+    "Présente-les en 2 ou 3 phrases (honnêtement : un logo non validé est dit non validé), puis demande lequel il choisit (logo.choose). Il peut demander une nouvelle proposition avec ses mots (logo.propose avec guidance, payant). Ne choisis jamais à sa place."];
+  return lines;
+}
 
 /** Étape 1 : que faire selon l'état des propositions. */
 function identityStepContext(j: Journey): string[] {

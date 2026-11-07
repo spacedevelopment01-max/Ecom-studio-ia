@@ -28,6 +28,7 @@ import { JOURNEY_STEPS, READY_STEPS, currentStep, journeyContext, journeyOf } fr
 import { localDecision } from "./local-step";
 import { LOGO_STYLE_LABEL, fontFace, type Identity } from "./identities";
 import { mixIdentity } from "./tools/identity";
+import { assetUrl } from "../library";
 
 export const MAX_STEPS = 12;
 const MAX_ACTIONS = 8;
@@ -315,7 +316,8 @@ function localStepFor(r: SynaRun): StepOutput | null {
  */
 export function modelFor(currentStepNumber: number): { provider: "anthropic"; model: string; effort?: string } | undefined {
   // Étape 1 : la création des identités se fait dans l'outil identity.propose (modèle fort) ; le fil reste léger.
-  const simple = currentStepNumber <= 1 || !READY_STEPS.includes(currentStepNumber);
+  // Étape 2 de même : le dessin et le contrôle des logos se font dans la tâche logo.propose.
+  const simple = currentStepNumber <= 2 || !READY_STEPS.includes(currentStepNumber);
   return simple ? { provider: "anthropic", model: "claude-haiku-5-5", effort: "low" } : undefined;
 }
 
@@ -410,6 +412,8 @@ export function threadView(user: User, cid: string) {
           // Identité retenue telle qu'enregistrée (mélange compris) : la carte « Ton identité » montre le vrai résultat.
           final: j.identityChoice ? { ...cardOf(mixIdentity(j.identities.list, j.identityChoice.key, j.identityChoice.mix as any)), mixLabel: mixLabel(j.identities.list, j.identityChoice) } : null,
         } : null,
+        // Étape 2 : les 3 logos (images servies par la bibliothèque du projet) et le logo choisi.
+        logos: j.logos ? { round: j.logos.round, chosen: j.logoChoice?.source ?? null, list: j.logos.list.map((x) => ({ ...x, href: x.assetId ? assetUrl({ id: x.assetId }) : null })) } : null,
       };
     })(),
   };
