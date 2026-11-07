@@ -228,30 +228,30 @@ function AngleCards({ angles, busy, onChoose }: { angles: Angles; busy: boolean;
   );
 }
 
-type Themes = { list: { id: string; name: string; tagline: string; description: string; why: string; recommended: boolean; allowed: boolean; blocked?: string; demo: boolean }[]; recommendedId: string | null; all: boolean; kind: string | null; chosen: string | null };
+type Themes = { list: { id: string; name: string; tagline: string; preview: string; why: string; recommended: boolean; allowed: boolean; blocked?: string; demo: boolean }[]; recommendedId: string | null; all: boolean; chosen: string | null };
 
 /**
- * Étape 6 : un de nos thèmes. Chaque carte montre le site DU CLIENT composé dans ce thème (vignette du Studio), la
- * raison, la démonstration complète ; le choix est celui du client (bouton), jamais fait à sa place.
+ * Étape 6 : les thèmes du Studio TELS QU'ILS SONT (consigne du propriétaire : images et textes d'origine de leur
+ * démonstration, jamais recomposés avec le projet du client), la démonstration complète, puis le choix du client :
+ * un thème ou une maquette sur mesure, jamais fait à sa place.
  */
-function ThemeCards({ themes, projectId, busy, onChoose, onAll, onMockup }: { themes: Themes; projectId: string; busy: boolean; onChoose: (name: string) => void; onAll: () => void; onMockup: () => void }) {
+function ThemeCards({ themes, busy, onChoose, onAll, onMockup }: { themes: Themes; busy: boolean; onChoose: (name: string) => void; onAll: () => void; onMockup: () => void }) {
   const t = useT();
   return (
     <div className="@container mt-2 space-y-2" data-syna-themes>
-      <p className="text-xs text-muted">{t("Chaque aperçu montre TON site (ta marque, tes produits) composé dans le thème. Choisir un thème est gratuit ; tu peux aussi préférer une maquette sur mesure (payante, prix annoncé avant).", "Each preview shows YOUR site in the theme. Choosing a theme is free; you can also prefer a custom mockup (paid, price shown first).")}</p>
+      <p className="text-xs text-muted">{t("Voici les thèmes du Studio tels qu'ils sont, avec les images et les textes de leur démonstration. Choisir un thème est gratuit : ton site s'y compose ensuite avec ta marque et tes produits. Tu peux aussi préférer une maquette sur mesure (payante, prix annoncé avant).", "Here are the Studio themes as they are, with their demo images and copy. Choosing a theme is free; you can also prefer a custom mockup (paid, price shown first).")}</p>
       <div className="grid grid-cols-1 gap-3 @2xl:grid-cols-3">
         {themes.list.map((th) => {
           const chosen = themes.chosen === th.id;
           return (
             <article key={th.id} className={cx("overflow-hidden rounded-xl border bg-card text-xs", chosen ? "border-accent ring-2 ring-accent" : "border-line", themes.chosen && !chosen && "opacity-60")} data-theme={th.id}>
               <div className="relative aspect-[4/3] overflow-hidden bg-paper-2">
-                <img src={`/api/projects/${projectId}/theme/direction-thumb?d=${encodeURIComponent(th.id)}`} alt={t(`Ton site dans le thème ${th.name}`, `Your site in the ${th.name} theme`)} className="h-full w-full object-cover object-top" loading="lazy" />
+                <img src={th.preview} alt={t(`Démonstration du thème ${th.name}`, `${th.name} theme demo`)} className="h-full w-full object-cover object-top" loading="lazy" />
                 {th.recommended && <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-0.5 text-[10px] font-semibold text-paper">{t("Recommandé", "Recommended")}</span>}
               </div>
               <div className="space-y-1 px-3 py-2">
                 <h4 className="text-sm font-bold">{th.name} <span className="font-normal text-muted">· {th.tagline}</span></h4>
                 <p>{th.why}</p>
-                {!!th.description && <p className="text-muted">{th.description}</p>}
                 {!th.allowed && <p className="text-amber-700">{th.blocked ?? t("Non inclus dans ton forfait.", "Not included in your plan.")}</p>}
               </div>
               <div className="flex flex-wrap items-center gap-2 border-t border-line px-3 py-2">
@@ -508,7 +508,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
                 {tm.id === lastLogos && v.journey?.logos && <LogoCards logos={v.journey.logos} brandBg={brandBackground(v.journey.identities)} busy={busy || working} onChoose={(k) => send(t(`Je choisis le logo ${k}.`, `I choose logo ${k}.`))} />}
                 {tm.id === lastActivity && v.journey?.activity && <ActivityCard a={v.journey.activity} busy={busy || working} onValidate={() => send(t("Je valide mon activité.", "I validate my business."))} />}
                 {tm.id === lastAngles && v.journey?.angles && <AngleCards angles={v.journey.angles} busy={busy || working} onChoose={(titles) => send(titles.length > 1 ? t(`Je choisis ces angles : ${titles.map((x, i) => `« ${x} »${i === 0 ? " (principal)" : ""}`).join(", ")}.`, `I choose these angles: ${titles.join(", ")}.`) : t(`Je choisis l'angle « ${titles[0]} ».`, `I choose the angle "${titles[0]}".`))} />}
-                {tm.id === lastThemes && v.journey?.themes && v.projectId && <ThemeCards themes={v.journey.themes} projectId={v.projectId} busy={busy || working} onChoose={(name) => send(t(`Je choisis le thème ${name}.`, `I choose the ${name} theme.`))} onAll={() => send(t("Je veux voir tous les thèmes.", "I want to see all themes."))} onMockup={() => send(t("Je préfère une maquette sur mesure.", "I'd rather have a custom mockup."))} />}
+                {tm.id === lastThemes && v.journey?.themes && v.projectId && <ThemeCards themes={v.journey.themes} busy={busy || working} onChoose={(name) => send(t(`Je choisis le thème ${name}.`, `I choose the ${name} theme.`))} onAll={() => send(t("Je veux voir tous les thèmes.", "I want to see all themes."))} onMockup={() => send(t("Je préfère une maquette sur mesure.", "I'd rather have a custom mockup."))} />}
                 {tm.id === lastKit && v.journey?.brandKit && <BrandKitCard kit={v.journey.brandKit} darkBg={v.journey.identities?.final?.palette.dark ?? "#16161A"} busy={busy || working} onValidate={() => send(t("Je valide mon image de marque.", "I validate my brand kit."))} />}
                 {tm.id === lastCalendar && v.projectId && <CalendarCard projectId={v.projectId} refreshKey={tm.id} />}
                 {tm.id === lastIdentity && v.journey?.identities && <IdentityCards ids={v.journey.identities} busy={busy || working} onChoose={(k) => send(t(`Je choisis l'identité ${k}.`, `I choose identity ${k}.`))} />}

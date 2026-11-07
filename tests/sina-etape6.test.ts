@@ -33,6 +33,8 @@ describe("SINA — étape 6 : un de nos thèmes", async () => {
     ] });
     expect((await call("start.confirm", ctx, {})).ok).toBe(true);
     J.updateJourney(cid, (x) => { for (const n of [1, 2, 3, 4, 5]) J.setStep(x, n, "done"); J.setStep(x, 6, "todo"); });
+    // Produits créés à l'étape 5 (onglet Produits).
+    for (const title of ["Thé vert jasmin", "Rooibos vanille", "Verveine-menthe"]) await call("catalogue.create", ctx, { title });
     return { user, cid, ctx, pid: one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string };
   }
 
@@ -43,14 +45,19 @@ describe("SINA — étape 6 : un de nos thèmes", async () => {
     expect(modelFor(6)?.model).toMatch(/haiku/); // gratuit, fil léger
     // Consigne du propriétaire : les cartes des thèmes d'abord, puis le client choisit un thème ou une maquette.
     const ctx0 = J.journeyContext(J.journeyOf(cid));
-    expect(ctx0).toMatch(/commence par appeler theme\.propose[^]*choisir un de ces thèmes[^]*maquette sur mesure[^]*PAYANTES[^]*Ne choisis jamais à sa place/);
+    expect(ctx0).toMatch(/commence par appeler theme\.propose[^]*TELS QU'ILS SONT[^]*choisir un de ces thèmes[^]*maquette sur mesure[^]*PAYANTES[^]*ne pose PAS de question à boutons en plus[^]*Ne choisis jamais à sa place/);
     expect(ctx0).not.toMatch(/mockup\.pages/); // consigne des maquettes seulement après ce choix
     const r = await call("theme.propose", ctx, {});
     expect(r.ok).toBe(true);
     const j = J.journeyOf(cid);
     expect(j.themes!.list).toHaveLength(3);
     for (const t of j.themes!.list) expect(ACTIVE_THEMES as readonly string[]).toContain(t.id); // jamais un thème retiré
-    if (j.themes!.recommendedId) expect(j.themes!.list[0].id).toBe(j.themes!.recommendedId);
+    // Thèmes TELS QU'ILS SONT (consigne du propriétaire) : capture d'origine, jamais le site du client recomposé.
+    for (const t of j.themes!.list) expect(t.preview).not.toMatch(/direction-thumb|\/api\/projects/);
+    // Six mélanges : d'abord les thèmes pensés pour une petite collection (essai réel : Onde et Heuren, d'un seul produit, en tête).
+    expect(j.themes!.list.slice(0, 2).map((t) => t.id).sort()).toEqual(["museau-club", "souple"]);
+    expect(j.themes!.list[0].id).toBe(j.themes!.recommendedId);
+    expect(j.themes!.list[0].why).toMatch(/petite collection/);
     expect(j.steps[6].status).toBe("review");
     // Identifiants pour SINA seule, jamais montrés au client.
     for (const t of j.themes!.list) expect(r.summary).toContain(`« ${t.name} »`);
@@ -108,5 +115,18 @@ describe("SINA — étape 6 : un de nos thèmes", async () => {
     expect((await call("site.mode", ctx, { mode: "mockup" })).summary).toBe("Choix noté : une maquette sur mesure.");
     expect(J.journeyContext(J.journeyOf(cid))).toMatch(/a vu les thèmes et choisi une MAQUETTE SUR MESURE[^]*Étape 6, maquettes sur mesure : mockup\.pages/);
     expect(J.journeyOf(cid).steps[6].status).toBe("doing");
+  });
+
+  it("chaque thème proposé a sa capture d'origine et ce qu'il met en scène", async () => {
+    const fs = await import("node:fs");
+    const { themeChoices } = await import("@/lib/syna-agent/themes");
+    const { cid } = await stepSix();
+    const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
+    const all = await fr(() => themeChoices(pid, true));
+    expect(all.list).toHaveLength(ACTIVE_THEMES.length);
+    for (const t of all.list) {
+      expect(t.why, t.id).not.toBe("");
+      expect(fs.existsSync(`public${t.preview}`), `${t.id} : ${t.preview}`).toBe(true);
+    }
   });
 });

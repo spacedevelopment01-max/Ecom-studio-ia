@@ -1,23 +1,24 @@
 /**
- * Étape 6 du parcours SINA (#492) : THÈME OU MAQUETTES — volet « un de nos thèmes ».
+ * Étape 6 du parcours SINA (#492) : THÈME OU MAQUETTES — les thèmes du Studio montrés TELS QU'ILS SONT.
  *
- * Gratuit, sans IA. Le catalogue proposé (thèmes refaits d'après les maquettes de Thomas, `ACTIVE_THEMES`) sert à tout
- * projet ; l'usage prévu de chaque thème sert seulement à recommander (`themeRecommendation`). Chaque carte montre le
- * site DU CLIENT composé dans ce thème (vignette du Studio), le lien vers la démonstration complète, et dit si le
- * forfait l'inclut. Le choix se fait par le client, jamais à sa place ; il compose la boutique (tâche du Studio).
+ * Consigne du propriétaire (7 novembre) : SINA montre les thèmes avec leurs images et leurs textes d'origine (capture de
+ * la démonstration, lien vers la démonstration complète) ; elle ne les recompose pas avec le projet du client. Gratuit,
+ * sans IA. Le catalogue proposé (thèmes refaits d'après les maquettes de Thomas, `ACTIVE_THEMES`) sert à tout projet ;
+ * ce que chaque thème met en scène (un produit, une petite collection, des prestations) sert seulement à ordonner.
  */
 import { L } from "../i18n-server";
 import { loadProject } from "../projects";
+import { listProducts } from "../products/catalog";
 import { DIRECTIONS } from "../theme/directions";
-import { ACTIVE_THEMES, themeDesignedFor, themeKinds } from "../theme/theme-fit";
-import { themeRecommendation } from "../theme/theme-recommendation";
-import { storeKindLabel, type StoreKind } from "../theme/store-kind";
+import { ACTIVE_THEMES, themePreviewPath } from "../theme/theme-fit";
 import { themeDemoStatus } from "../theme/theme-demos";
 import { assertThemeAllowed } from "../plan-gates";
 
 export type ThemeCard = {
-  id: string; name: string; tagline: string; description: string;
-  /** Pourquoi ce thème est proposé pour CE projet (usage prévu, recommandation). */
+  id: string; name: string; tagline: string;
+  /** Capture d'origine du thème (sa démonstration, ses images et ses textes), jamais le site du client. */
+  preview: string;
+  /** Ce que le thème met en scène, au regard du projet (une phrase courte, sans jargon). */
   why: string;
   recommended: boolean;
   /** Inclus dans le forfait du projet ; sinon le motif (forfait nécessaire). */
@@ -25,36 +26,45 @@ export type ThemeCard = {
   /** Démonstration complète consultable (exports préparés). */
   demo: boolean;
 };
-export type SinaThemes = { list: ThemeCard[]; recommendedId: string | null; all: boolean; kind: string | null; at: number };
+export type SinaThemes = { list: ThemeCard[]; recommendedId: string | null; all: boolean; at: number };
 
-const kindText = (kinds: StoreKind[]) => kinds.map((k) => storeKindLabel(k, "fr").toLocaleLowerCase("fr-FR")).join(", ");
+/** Ce que chaque thème proposé met en scène (d'après ses maquettes). */
+const STAGING: Record<string, "one" | "few" | "services"> = {
+  onde: "one", heuren: "one", alcove: "one", sillon: "one", noctil: "one", traverse: "one", fraise: "one",
+  souple: "few", "museau-club": "few",
+  rive: "services", "table-saison": "services", "atelier-nuance": "services", parenthese: "services", phase: "services", "maison-horizon": "services", aplat: "services",
+};
+const WHY: Record<"one" | "few" | "services", string> = {
+  one: "Pensé pour mettre en avant un produit phare.",
+  few: "Pensé pour une petite collection de produits qui vont ensemble.",
+  services: "Pensé pour présenter des prestations et prendre des demandes.",
+};
 
 /**
- * Thèmes à montrer : le recommandé et ses alternatives d'abord, puis ceux conçus pour ce type de projet, puis les
- * autres. Trois par défaut ; tout le catalogue proposé quand le client veut tout voir.
+ * Thèmes à montrer : d'abord ceux qui mettent en scène ce que vend le client (prestations ; une collection dès deux
+ * produits ; un produit phare sinon), puis les autres. Trois par défaut ; tout le catalogue quand il veut tout voir.
  */
 export function themeChoices(projectId: string, all = false): SinaThemes {
   const p = loadProject(projectId);
-  const rec = themeRecommendation(p, "fr");
-  const kind = rec.category.kind;
+  let count = 0;
+  try { count = listProducts(projectId).length; } catch { count = 0; }
+  count = Math.max(count, p.catalog.length);
+  const wanted: "one" | "few" | "services" = p.business === "services" ? "services" : count >= 2 ? "few" : "one";
+  const fallback: "one" | "few" | "services" = wanted === "few" ? "one" : wanted === "one" ? "few" : "services";
   const active = ACTIVE_THEMES as readonly string[];
-  const order = [rec.recommended, ...rec.alternatives.map((a) => a.id), ...active.filter((id) => kind && themeDesignedFor(id, kind)), ...active]
-    .filter((x): x is string => !!x && active.includes(x));
-  const ids = [...new Set(order)].slice(0, all ? active.length : 3);
+  const rank = (id: string) => (STAGING[id] === wanted ? 0 : STAGING[id] === fallback ? 1 : 2);
+  const ordered = [...active].sort((a, b) => rank(a) - rank(b));
+  const ids = ordered.slice(0, all ? active.length : 3);
+  const recommendedId = rank(ordered[0]) === 0 ? ordered[0] : null;
   const list = ids.map((id): ThemeCard => {
     const d = DIRECTIONS.find((x) => x.id === id);
     let allowed = true, blocked: string | undefined;
     try { assertThemeAllowed(projectId, id, null); } catch (e) { allowed = false; blocked = (e as Error).message; }
-    const designed = kind ? themeDesignedFor(id, kind) : false;
-    const kinds = themeKinds(id);
-    const why = id === rec.recommended
-      ? L(`Recommandé pour ton projet (${kind ? storeKindLabel(kind, "fr").toLocaleLowerCase("fr-FR") : "ton type de boutique"}).`, "Recommended for your project.")
-      : designed
-        ? L(`Conçu d'abord pour ce type de projet (${storeKindLabel(kind!, "fr").toLocaleLowerCase("fr-FR")}).`, "Designed first for this kind of project.")
-        : L(`Conçu d'abord pour : ${kindText(kinds) || "tout type de projet"} ; il s'adapte aussi au tien.`, "Also fits your project.");
     let demo = false;
     try { demo = themeDemoStatus(id).ready; } catch { demo = false; }
-    return { id, name: d?.name ?? id, tagline: d?.tagline ?? "", description: d?.description ?? "", why, recommended: id === rec.recommended, allowed, ...(blocked ? { blocked } : {}), demo };
+    const staging = STAGING[id];
+    const why = staging ? L(WHY[staging], WHY[staging]) : "";
+    return { id, name: d?.name ?? id, tagline: d?.tagline ?? "", preview: themePreviewPath(id), why, recommended: id === recommendedId, allowed, ...(blocked ? { blocked } : {}), demo };
   });
-  return { list, recommendedId: rec.recommended, all, kind: kind ? storeKindLabel(kind, "fr") : null, at: Date.now() };
+  return { list, recommendedId, all, at: Date.now() };
 }

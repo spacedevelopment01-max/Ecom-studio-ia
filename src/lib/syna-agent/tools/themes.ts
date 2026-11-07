@@ -36,7 +36,7 @@ const modeTool: AgentTool<{ mode: "theme" | "mockup" }> = {
 
 const proposeTool: AgentTool<{ all?: boolean }> = {
   name: "theme.propose", module: "site", kind: "read", needsProject: true,
-  description: "Étape 6, volet « un de nos thèmes » (gratuit) : AFFICHE au client des cartes de thèmes du catalogue, chacune avec SON site composé dans ce thème, la raison du choix, le lien vers la démonstration complète et ce que son forfait inclut. Trois thèmes (le recommandé d'abord) ; all: true pour tout le catalogue quand le client veut tout voir.",
+  description: "Étape 6 (gratuit) : AFFICHE au client les thèmes du Studio TELS QU'ILS SONT (capture d'origine, lien vers la démonstration complète, ce que son forfait inclut), jamais recomposés avec son projet. Trois thèmes (ceux qui mettent en scène ce qu'il vend d'abord) ; all: true pour tout le catalogue quand le client veut tout voir.",
   args: z.object({ all: z.boolean().optional() }).strict(),
   run: (ctx, a) => {
     const p = project(ctx);
@@ -44,12 +44,11 @@ const proposeTool: AgentTool<{ all?: boolean }> = {
     if (j.steps[5]?.status !== "done") return { ok: false, summary: L("L'activité complète (étape 5) doit être validée avant le choix du thème.", "Validate step 5 first.") };
     const themes = themeChoices(p.id, !!a.all);
     updateJourney(ctx.conversationId, (x) => { x.themes = themes; if (x.steps[6]?.status !== "done") setStep(x, 6, "review"); });
-    const rec = themes.list.find((t) => t.recommended);
     return {
       ok: true,
-      summary: L(`${themes.list.length} thème(s) affiché(s) avec ton site : ${themes.list.map((t) => `« ${t.name} »`).join(", ")}.${rec ? ` Recommandé : « ${rec.name} ».` : ""}`, "Themes shown."),
+      summary: L(`${themes.list.length} thème(s) affiché(s) : ${themes.list.map((t) => `« ${t.name} »`).join(", ")}.`, "Themes shown."),
       hint: `Identifiants pour theme.choose : ${themes.list.map((t) => `${t.id} = « ${t.name} »${t.allowed ? "" : " (NON inclus dans son forfait)"}`).join(" ; ")}. Catalogue complet : ${ACTIVE_THEMES.length} thèmes (theme.propose all: true).`,
-      data: { themes: themes.list.map((t) => ({ id: t.id, nom: t.name, pourquoi: t.why, inclus: t.allowed, demo: t.demo })), recommande: themes.recommendedId, type: themes.kind },
+      data: { themes: themes.list.map((t) => ({ id: t.id, nom: t.name, style: t.tagline, pourquoi: t.why, inclus: t.allowed, demo: t.demo })), recommande: themes.recommendedId },
     };
   },
 };
