@@ -85,7 +85,7 @@ Les trois identités diffèrent sur au moins 4 des 6 axes, dont toujours le prem
 6. Style de logo : trois styles DIFFÉRENTS parmi ${LOGO_STYLES.map((s) => `${s} (${LOGO_STYLE_LABEL[s]})`).join(", ")}, choisis pour le métier du client et pour chaque identité.
 
 Chaque identité contient :
-- name : le concept du projet (son métier, son geste, sa matière, son lieu ou l'émotion qu'il donne) se devine dans le nom par une IMAGE, au niveau et dans l'esprit des exemples du propriétaire ci-dessous, en allant chercher plus loin qu'une description. Pour CHAQUE identité, explore mentalement au moins 20 pistes et garde la plus forte : 3 mots au plus, facile à dire, à écrire et à retenir, élégant et sobre ; aucun jeu de mots appuyé, aucun mot-valise forcé avec un nom de lieu, jamais une sonorité vide de sens, jamais le nom d'une marque connue ni un nom des exemples. nameStyle dit sa forme, nameWhy montre l'image du métier que porte le nom.
+- name : applique la MÉTHODE DE NOMMAGE du propriétaire (ci-dessous) : un détail réel du métier du client (geste, matière, sensation, moment ou résultat) + un mot ou une expression qui lui donne une deuxième lecture. Pour CHAQUE identité, explore mentalement au moins 20 pistes et garde la plus forte ; trois noms de logiques différentes (trois détails différents). Jamais une sonorité vide de sens, jamais le nom d'une marque connue ni un nom des exemples. nameStyle dit le détail de départ, nameWhy explique la logique comme dans les exemples (« Pars de … ; … »).
 - slogan : une phrase courte et concrète (9 mots au plus), en français, souvent au tutoiement ou à l'impératif, qui dit le bénéfice avec une image simple, sans promesse invérifiable ; sloganTone dit son ton.
 - promise : la promesse en une phrase, du point de vue du client final.
 - territory : le territoire émotionnel en quelques mots.
@@ -256,7 +256,7 @@ export function identityIssues(list: Identity[], j: Journey): string[] {
 }
 
 /** Demande à Claude : fiche de départ, contraintes de refonte, éventuelles consignes du client et corrections du contrôle. */
-export function identityPrompt(j: Journey, opts: { guidance?: string; feedback?: string[]; previous?: Identity[]; redo?: string[] } = {}): string {
+export function identityPrompt(j: Journey, opts: { guidance?: string; feedback?: string[]; previous?: Identity[]; redo?: string[]; namesOnly?: boolean } = {}): string {
   const parts = [
     "# Fiche de départ du client (étape 0, ses mots)",
     briefFromJourney(j),
@@ -266,7 +266,9 @@ export function identityPrompt(j: Journey, opts: { guidance?: string; feedback?:
   ];
   if (j.imported.length) parts.push(`Site existant lu : ${j.imported.map((s) => `${s.url} (nom « ${s.name ?? "?"} », slogan « ${s.tagline ?? "?"} », couleurs ${s.colors?.join(" ") || "?"}, polices ${s.fonts?.join(", ") || "?"})`).join(" ; ")}.`);
   if (opts.guidance) parts.push("", "# Ce que le client demande pour cette nouvelle proposition", opts.guidance);
-  if (opts.previous?.length && opts.redo?.length) {
+  if (opts.previous?.length && opts.namesOnly) {
+    parts.push("", "# Propositions actuelles : refais SEULEMENT les noms (name, nameStyle, nameWhy), les slogans (slogan, sloganTone) et, si le nouveau nom le demande, l'idée du logo (logoIdea, même logoStyle). Tout le reste (territoire, fond, dégradé, palette, polices, ton, promesse, pourquoi) reste À L'IDENTIQUE.", JSON.stringify(opts.previous));
+  } else if (opts.previous?.length && opts.redo?.length) {
     parts.push("", `# Propositions précédentes : refais seulement ${opts.redo.join(", ")}, garde les autres À L'IDENTIQUE (même contenu, mêmes clés)`, JSON.stringify(opts.previous));
   } else if (opts.previous?.length && opts.feedback?.length) {
     parts.push("", "# Ta proposition précédente (corrige-la selon le contrôle ci-dessous, garde ce qui est bon)", JSON.stringify(opts.previous));

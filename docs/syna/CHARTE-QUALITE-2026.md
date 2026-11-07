@@ -47,9 +47,11 @@ Les 3 identités proposées diffèrent sur **au moins 4 des 6 axes**, dont toujo
 - **Trois fonds de page** : une identité sur fond blanc, une sur fond en **dégradé de couleurs** (jamais beige ni
   crème), une sur fond sombre (texte clair).
 - **Références du propriétaire du 7 novembre** (`src/lib/syna-agent/brand-references.ts`, exemples à ne jamais
-  recopier) : « 50 noms et leurs slogans » et « 50 palettes de couleurs ».
-  - Noms sobres et évocateurs : une image du métier ou de son geste (Braise Douce, Cabosse & Sel, Grain d'Altitude),
-    « X & Y », « Maison / Atelier / Studio … », ou un mot inventé doux (Noctelle, Savelle) ; aucun jeu de mots appuyé.
+  recopier) : « 50 noms et leur logique » (méthode de nommage) et « 50 palettes de couleurs ».
+  - **Noms : méthode de nommage du 7 novembre** (« 50 noms et leur logique », seule référence des noms, qui remplace
+    la liste « 50 noms et leurs slogans ») : partir d'un détail réel du produit ou du service (geste, matière,
+    sensation, moment ou résultat), puis chercher un mot ou une expression qui lui donne une deuxième lecture
+    (« La Mèche Courte », « Le Courant Passe », « On Sème »).
   - Slogans courts et concrets (9 mots au plus), souvent au tutoiement : « Fais le noir, trouve le calme. »
   - Palettes à cinq rôles : fond, texte (foncé teinté, jamais noir pur), bouton (couleur de marque), surface,
     accent (détails) ; dégradé à 135° (départ, arrivée) ; titres dans la couleur du texte. Couleurs accordées et

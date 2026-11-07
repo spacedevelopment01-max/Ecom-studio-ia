@@ -1,6 +1,7 @@
 /**
- * Références de niveau du propriétaire pour l'étape 1 (#492, documents du 7 novembre 2026 : « 50 noms et leurs
- * slogans » et « 50 palettes de couleurs »). Ce sont des EXEMPLES pour comprendre ce qu'il recherche, jamais des
+ * Références de niveau du propriétaire pour l'étape 1 (#492, documents du 7 novembre 2026 : « 50 noms et leur
+ * logique » — méthode de nommage, seule référence des noms, qui remplace la liste « 50 noms et leurs slogans » — et
+ * « 50 palettes de couleurs »). Ce sont des EXEMPLES pour comprendre ce qu'il recherche, jamais des
  * modèles à recopier : SINA ne reprend ni ces noms, ni ces slogans, ni ces palettes telles quelles.
  *
  * Palettes : cinq rôles, comme dans le document. Fond, texte, bouton (couleur de marque et d'action), surface (cartes),
@@ -12,65 +13,65 @@ import { luminance } from "../color";
 /** Clarté d'une couleur (tests de calage des palettes). */
 export const luminanceOf = (hex: string) => luminance(hex);
 
-export type NameExample = { name: string; slogan: string; activity: string; kind: "produits" | "services" };
+export type NameExample = { name: string; activity: string; logic: string; kind: "produits" | "services" };
 export type PaletteExample = {
   name: string; ambiance: string; ground: "blanc" | "uni" | "degrade" | "sombre";
   fond?: string; depart?: string; arrivee?: string; texte: string; bouton: string; surface?: string; accent: string;
 };
 
 export const NAME_EXAMPLES: NameExample[] = [
-  ["Maison Orvane", "Chaque flamme a son parfum.", "Bougies parfumées"],
-  ["Sève Claire", "Le fruit prend des bulles.", "Boissons pétillantes aux fruits"],
-  ["Cabosse & Sel", "Le cacao dans toutes ses nuances.", "Chocolats de dégustation"],
-  ["Ligne Portée", "Emporte l'essentiel, garde les mains libres.", "Sacs et accessoires de voyage"],
-  ["Noctelle", "Fais le noir, trouve le calme.", "Masques de nuit et oreillers"],
-  ["Terre d'Usage", "De la terre à la table.", "Vaisselle en céramique"],
-  ["Braise Douce", "Du feu, juste ce qu'il faut.", "Sauces pimentées"],
-  ["Petit Sillage", "La pluie fait partie du jeu.", "Imperméables pour enfants"],
-  ["Maison Vitrail", "Porte la lumière.", "Bijoux en verre"],
-  ["Savelle", "Le soin tient dans la main.", "Savons solides"],
-  ["Grain d'Altitude", "Une origine à chaque tasse.", "Café de spécialité"],
-  ["Trace Haute", "L'essentiel pour aller plus loin.", "Accessoires de randonnée"],
-  ["Auralis", "Retrouve les détails du son.", "Casques audio"],
-  ["Papier Source", "Toute idée commence quelque part.", "Carnets et fournitures créatives"],
-  ["Volume Juste", "Plus de place pour vivre.", "Mobilier compact"],
-  ["Fauve & Fil", "La promenade, à leur rythme.", "Harnais et laisses pour chiens"],
-  ["Route des Grains", "Change d'horizon, une pincée à la fois.", "Mélanges d'épices"],
-  ["Velin", "La couleur à ton image.", "Maquillage"],
-  ["Cadence Nord", "Le confort donne le rythme.", "Chaussettes de running"],
-  ["Ligne Solaire", "La lumière sous un autre angle.", "Lunettes de soleil"],
-  ["Table Commune", "La meilleure partie, c'est ensemble.", "Jeux de société"],
-  ["Maison Frimas", "Prends le temps de fondre.", "Glaces artisanales"],
-  ["Jardin de Rebord", "Un rebord suffit pour semer.", "Kits de culture d'aromates"],
-  ["Relais Volt", "De l'énergie jusqu'au bout du trajet.", "Batteries externes"],
-  ["Lisière", "La douceur après l'eau.", "Linge de bain"],
-].map(([name, slogan, activity]): NameExample => ({ name, slogan, activity, kind: "produits" })).concat([
-  ["Atelier Nomade", "Un van à la mesure de tes voyages.", "Aménagement de vans"],
-  ["Trame Intérieure", "Des espaces dessinés pour ta façon de vivre.", "Architecture d'intérieur"],
-  ["Studio Clairjour", "Des images pour retrouver la journée.", "Photographie de mariage"],
-  ["Courant Maîtrisé", "Une installation pensée pour ton quotidien.", "Électricité résidentielle"],
-  ["Atelier Parement", "Du mur brut à la finition soignée.", "Plâtrerie et peinture"],
-  ["Cycle Service Mobile", "L'atelier vient à ton vélo.", "Réparation de vélos à domicile"],
-  ["Table de Saison", "La saison s'invite à ta table.", "Traiteur événementiel"],
-  ["Puente Langues", "L'espagnol se parle dès le premier cours.", "Cours d'espagnol"],
-  ["Mouvement Durable", "Progresse à un rythme que tu peux tenir.", "Coaching sportif"],
-  ["L'Atelier Canin", "Un soin au rythme de ton chien.", "Toilettage pour chiens"],
-  ["Clair Dossier", "Tes démarches, étape par étape.", "Assistance administrative"],
-  ["Studio Fréquence", "De la première prise au dernier épisode.", "Production de podcasts"],
-  ["Studio Contretemps", "Trouve ton style dans le mouvement.", "École de danse urbaine"],
-  ["Longitude Privée", "Un itinéraire à ton rythme.", "Création de voyages sur mesure"],
-  ["Espace Méthode", "Chaque chose à sa place, chaque geste plus simple.", "Organisation des espaces de travail"],
-  ["Ligne de Coupe", "Des vêtements ajustés à ta silhouette.", "Couture et retouches"],
-  ["Studio Mèche", "Une coupe qui suit ton style.", "Salon de coiffure"],
-  ["Strate Fabrication", "Du modèle numérique à la pièce en main.", "Prototypage et impression 3D"],
-  ["Studio Point Web", "Un site qui explique clairement ton métier.", "Création de sites pour indépendants"],
-  ["Commerce Pratique", "Apprends en construisant ta boutique.", "Formation e-commerce"],
-  ["Canopée Urbaine", "Un jardin à portée de fenêtre.", "Végétalisation de balcons et terrasses"],
-  ["Relais Locatif", "Prêt pour les prochains arrivants.", "Nettoyage entre deux locations"],
-  ["Studio Séquence", "Le bon plan, au bon moment.", "Montage vidéo"],
-  ["L'Atelier des Pâtes", "Apprends les gestes, repars avec tes créations.", "Cours de pâtisserie"],
-  ["Passage Organisé", "Fais le tri avant de faire les cartons.", "Accompagnement au tri et au déménagement"],
-].map(([name, slogan, activity]): NameExample => ({ name, slogan, activity, kind: "services" })));
+  ["La Mèche Courte", "Bougies parfumées", "Pars de la mèche, pièce centrale de la bougie. « Avoir la mèche courte » lui donne un tempérament vif."],
+  ["Fruits Défendus", "Sodas aux fruits", "Pars de l'ingrédient, le fruit. Le « fruit défendu » ajoute l'idée d'une tentation."],
+  ["Le Dernier Carré", "Chocolats", "Observe la forme de la tablette. Le dernier carré évoque celui que chacun aimerait garder."],
+  ["Repli", "Sacs de voyage pliables", "Pars du geste de replier le sac. Un mot court fait sentir la compacité."],
+  ["Songe", "Linge de lit", "Pars du moment d'usage, la nuit. Le songe évoque ce qui commence une fois couché."],
+  ["Tour de Table", "Vaisselle en céramique", "Relie le tour du potier à la table dressée. L'expression réunit les deux."],
+  ["Mordant", "Sauces pimentées", "Pars de la sensation en bouche. Le mot décrit aussi un caractère affirmé."],
+  ["Temps de Canard", "Imperméables pour enfants", "Pars de la pluie. Le canard fait penser à l'eau et donne un personnage à la marque."],
+  ["Éclat de Verre", "Bijoux en verre", "Pars de la matière. « Éclat » désigne un fragment et la lumière qu'il renvoie."],
+  ["Écume", "Savons solides", "Pars de la mousse qui apparaît au contact de l'eau. L'écume transpose cette image au bord de mer."],
+  ["Allongé", "Café de spécialité", "Pars d'une façon de servir le café. Le mot invite aussi à prolonger la pause."],
+  ["Dénivelé", "Accessoires de randonnée", "Pars d'un repère que les randonneurs regardent avant de partir. Le mot évoque l'effort et le relief."],
+  ["Sourdine", "Casques à réduction de bruit", "Pars du bénéfice recherché. Mettre le monde en sourdine traduit la réduction du bruit."],
+  ["Marge de Manœuvre", "Carnets créatifs", "Pars de la marge sur la page. L'expression évoque la liberté d'essayer."],
+  ["Double Fond", "Mobilier avec rangement intégré", "Pars du compartiment dissimulé. Le nom traduit la fonction en évoquant une cachette."],
+  ["Cavale", "Harnais et laisses pour chiens", "Pars du mouvement du chien en balade. « Cavale » donne une impression d'aventure."],
+  ["Pincée de Folie", "Mélanges d'épices", "Pars d'une mesure de cuisine. La folie évoque le petit écart qui change le plat."],
+  ["Sans Fard", "Maquillage effet peau nue", "Pars du fard, associé au maquillage. L'expression suggère aussi le naturel."],
+  ["À Pied d'Œuvre", "Chaussettes de running", "Pars du pied, en contact direct avec le produit. L'expression évoque le passage à l'action."],
+  ["Incognito", "Lunettes de soleil", "Pars de ce que cachent les verres, le regard. Le nom joue sur le plaisir de passer inaperçu."],
+  ["Jeu de Mains", "Jeux d'adresse", "Pars du geste du joueur. L'expression transforme la dextérité en promesse de jeu."],
+  ["Frisson", "Glaces artisanales", "Pars du froid à la première bouchée. Le frisson évoque aussi une émotion."],
+  ["On Sème", "Kits de culture d'aromates", "Pars de la première étape, semer. À l'oral, on entend aussi « on s'aime »."],
+  ["Dernier Pourcent", "Batteries externes", "Pars du moment où le besoin se fait sentir, à 1 %. Le nom met en scène cette urgence."],
+  ["À Sec", "Serviettes et peignoirs", "Pars du résultat après la douche. L'expression détourne l'idée de se retrouver sans eau."],
+].map(([name, activity, logic]): NameExample => ({ name, activity, logic, kind: "produits" })).concat([
+  ["Contretemps", "Escape game", "Relie le compte à rebours aux obstacles imprévus. « Contretemps » réunit les deux."],
+  ["Pièce Rapportée", "Architecture d'intérieur", "Pars de la pièce à aménager. L'expression évoque aussi un élément qu'on ajoute à un ensemble."],
+  ["Entre Deux Poses", "Photographie de mariage", "Pars des photos posées. Le nom attire l'attention sur les moments spontanés entre elles."],
+  ["Le Courant Passe", "Électricité résidentielle", "Pars du courant électrique. L'expression parle aussi du bon contact avec l'artisan."],
+  ["Seconde Couche", "Peinture et rénovation", "Pars d'un geste du métier. La seconde couche suggère aussi un nouveau départ pour la pièce."],
+  ["Roue Libre", "Réparation de vélos", "Pars d'un mécanisme du vélo. L'expression évoque aussi la liberté de repartir."],
+  ["À Table", "Traiteur événementiel", "Pars du moment où le service prend vie. L'invitation familière appelle directement les convives."],
+  ["Double Sens", "Cours d'espagnol en conversation", "Pars des mots qui changent de sens selon le contexte ou la langue. Le nom attise la curiosité."],
+  ["Souffle", "Cours de chant", "Pars de la respiration, à la base du chant. Le mot évoque aussi l'élan donné à une phrase musicale."],
+  ["Au Poil", "Toilettage canin", "Pars du pelage. L'expression décrit aussi un travail impeccable."],
+  ["Dépli", "Assistance administrative", "Pars du geste d'ouvrir un courrier plié. Le nom suggère qu'on démêle une démarche."],
+  ["Prise de Voix", "Studio de podcast", "Pars de la prise de son. La voix devient le centre du nom et évoque la prise de parole."],
+  ["Pas de Côté", "École de danse", "Pars d'un mouvement concret. L'expression évoque aussi une façon différente de bouger ou de voir."],
+  ["Bifurque", "Voyages sur mesure", "Pars du choix d'un itinéraire. Le verbe invite à quitter le trajet habituel."],
+  ["Place Nette", "Désencombrement à domicile", "Pars du résultat visible, l'espace libéré. L'expression traduit à la fois la place et l'ordre retrouvés."],
+  ["Point de Reprise", "Couture et retouches", "Pars du point de couture et de la reprise d'un vêtement. Le nom suggère aussi sa seconde vie."],
+  ["Coupe Court", "Salon spécialisé dans les coupes courtes", "Pars de la spécialité. L'expression « couper court » rend le nom direct et mémorisable."],
+  ["Strate", "Prototypage et impression 3D", "Pars de la fabrication couche par couche. Le mot condense le procédé en une image."],
+  ["Point d'Entrée", "Création de sites web", "Pars du premier accès à un site. Le nom évoque la porte d'entrée vers l'entreprise."],
+  ["Dernier Kilomètre", "Logistique e-commerce", "Pars de la dernière étape jusqu'au client. Cette image concrète résume l'enjeu de la livraison."],
+  ["Prends Racine", "Végétalisation de balcons", "Pars des plantes qui s'installent. L'expression suggère aussi qu'on a envie de rester sur son balcon."],
+  ["Entre Deux Clés", "Ménage entre deux locations", "Pars de la restitution puis de la remise des clés. Le nom situe le créneau exact du service."],
+  ["Raccord", "Montage vidéo", "Pars du passage entre deux plans. Le mot suggère aussi la continuité de l'ensemble."],
+  ["Fouetté", "Ateliers de pâtisserie", "Pars du geste au fouet. Le mot évoque aussi la texture qu'on apprend à obtenir."],
+  ["Échappée", "Aménagement de vans", "Pars de ce que rend possible le van aménagé. Le nom évoque le départ et la liberté de partir."],
+].map(([name, activity, logic]): NameExample => ({ name, activity, logic, kind: "services" })));
 
 /** Palette « fond uni ou blanc ou sombre » : fond, texte, bouton, surface, accent. */
 const solid = (name: string, ambiance: string, ground: "blanc" | "uni" | "sombre", fond: string, texte: string, bouton: string, surface: string, accent: string): PaletteExample => ({ name, ambiance, ground, fond, texte, bouton, surface, accent });
@@ -135,14 +136,17 @@ export const PALETTE_EXAMPLES: PaletteExample[] = [
 
 /** Texte des références placé dans les consignes de Claude (mises en cache) : niveau et esprit, jamais à recopier. */
 export function referencesForPrompt(): string {
-  const names = (kind: NameExample["kind"]) => NAME_EXAMPLES.filter((x) => x.kind === kind).map((x) => `${x.name} — « ${x.slogan} » (${x.activity})`).join(" ; ");
+  const names = (kind: NameExample["kind"]) => NAME_EXAMPLES.filter((x) => x.kind === kind).map((x) => `${x.name} (${x.activity}) : ${x.logic}`).join("\n");
   const pal = PALETTE_EXAMPLES.map((p) => p.ground === "degrade"
     ? `${p.ambiance} [dégradé] départ ${p.depart} → arrivée ${p.arrivee}, texte ${p.texte}, bouton ${p.bouton}, accent ${p.accent}`
     : `${p.ambiance} [fond ${p.ground}] fond ${p.fond}, texte ${p.texte}, bouton ${p.bouton}, surface ${p.surface}, accent ${p.accent}`).join("\n");
-  return `Exemples de NOMS et SLOGANS choisis par le propriétaire du Studio (niveau et esprit attendus ; ne recopie jamais ces noms ni ces slogans) :
-Produits : ${names("produits")}.
-Services : ${names("services")}.
-Ce qu'ils ont en commun : sobres, élégants, évocateurs ; une image du métier ou de son geste (la braise pour une sauce pimentée, la cabosse pour le chocolat, la sève pour une boisson aux fruits, la trame pour l'architecture d'intérieur) associée à un mot qui donne l'émotion ou la qualité (douce, claire, juste, haute) ; formes fréquentes : deux mots, « X & Y », « Maison … », « Atelier … », « Studio … », ou un mot inventé doux et prononçable (Noctelle, Savelle, Auralis, Velin). Aucun jeu de mots appuyé, aucun mot-valise forcé avec un nom de lieu. Slogans : une phrase courte et concrète (9 mots au plus), souvent au tutoiement ou à l'impératif, qui dit le bénéfice avec une image simple.
+  return `MÉTHODE DE NOMMAGE du propriétaire du Studio (à appliquer pour CHAQUE nom) : pars d'un DÉTAIL RÉEL du produit ou du service (un geste, une matière, une sensation, un moment ou un résultat), puis cherche un mot ou une expression qui lui donne une DEUXIÈME LECTURE (expression courante détournée, double sens, mot qui évoque aussi une émotion ou un caractère). Le nom est court (1 à 3 mots), en français, facile à dire et à retenir ; on comprend le métier et on sourit ou on est intrigué.
+Ses 50 exemples, avec leur logique (niveau et esprit attendus ; ne recopie jamais ces noms) :
+Produits :
+${names("produits")}
+Services :
+${names("services")}
+Slogans : une phrase courte et concrète (9 mots au plus), souvent au tutoiement ou à l'impératif, qui dit le bénéfice avec une image simple.
 
 Exemples de PALETTES choisies par le propriétaire (niveau et esprit attendus ; ne recopie jamais une palette telle quelle) :
 ${pal}

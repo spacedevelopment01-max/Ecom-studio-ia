@@ -46,12 +46,12 @@ function keptLogoImage(ctx: ToolContext, j: Journey): LlmImage[] {
   return [];
 }
 
-async function generate(ctx: ToolContext, j: Journey, opts: { guidance?: string; redo?: Key[]; previous?: Identity[] }, attempt: number, feedback?: string[]) {
+async function generate(ctx: ToolContext, j: Journey, opts: { guidance?: string; redo?: Key[]; previous?: Identity[]; namesOnly?: boolean }, attempt: number, feedback?: string[]) {
   const jobId = getRun(ctx.runId)?.job_id ?? null;
   const call = {
     task: "strategy" as const, userId: ctx.user.id, projectId: ctx.projectId, jobId,
     system: IDENTITY_SYSTEM, promptKey: "syna-identities-1",
-    prompt: identityPrompt(j, { guidance: opts.guidance, feedback, previous: feedback?.length || opts.redo?.length ? opts.previous : undefined, redo: opts.redo }),
+    prompt: identityPrompt(j, { guidance: opts.guidance, feedback, previous: feedback?.length || opts.redo?.length || opts.namesOnly ? opts.previous : undefined, redo: opts.redo, namesOnly: opts.namesOnly }),
     images: (() => { const im = keptLogoImage(ctx, j); return im.length ? im : undefined; })(),
     prepare: prepareIdentities,
     // Réflexion comprise : une limite trop basse coupait la réponse et faisait payer un second appel (essai réel).
@@ -71,10 +71,18 @@ export const identityView = (x: Identity) => ({
   ton: x.tone.adjectives.join(", "), logo: `${LOGO_STYLE_LABEL[x.logoStyle]} — ${x.logoIdea}`, pourquoi: x.why,
 });
 
-const proposeTool: AgentTool<{ guidance?: string; redo?: Key[] }> = {
+/** « Seulement les noms » : tout le reste des identités est remis tel quel (jamais changé en silence). */
+export function keepAllButNames(fresh: Identity[], previous: Identity[]): Identity[] {
+  return fresh.map((x) => {
+    const p = previous.find((y) => y.key === x.key);
+    return p ? { ...p, name: x.name, nameStyle: x.nameStyle, nameWhy: x.nameWhy, slogan: x.slogan, sloganTone: x.sloganTone, logoIdea: x.logoIdea } : x;
+  });
+}
+
+const proposeTool: AgentTool<{ guidance?: string; redo?: Key[]; only?: "noms" }> = {
   name: "identity.propose", module: "marque", kind: "generate", needsProject: true,
-  description: "Étape 1 : crée 3 identités de marque VRAIMENT différentes (nom, slogan, promesse, territoire, palette, polices, ton, idée de logo) à partir de la fiche de départ, avec Claude (modèle fort), puis les contrôle. Payant (une proposition coûte en général moins de 1 % du budget IA). À appeler quand le client est prêt, ou quand il demande une nouvelle proposition : guidance = ce qu'il veut de différent (ses mots) ; redo = les identités à refaire (les autres restent identiques). Les cartes des identités s'affichent dans le fil.",
-  args: z.object({ guidance: z.string().max(1500).optional(), redo: z.array(z.enum(KEYS)).min(1).max(3).optional() }).strict(),
+  description: "Étape 1 : crée 3 identités de marque VRAIMENT différentes (nom, slogan, promesse, territoire, palette, polices, ton, idée de logo) à partir de la fiche de départ, avec Claude (modèle fort), puis les contrôle. Payant (une proposition coûte en général moins de 1 % du budget IA). À appeler quand le client est prêt, ou quand il demande une nouvelle proposition : guidance = ce qu'il veut de différent (ses mots) ; redo = les identités à refaire (les autres restent identiques) ; only « noms » = refaire seulement les noms et les slogans (couleurs, polices et le reste gardés). Les cartes des identités s'affichent dans le fil.",
+  args: z.object({ guidance: z.string().max(1500).optional(), redo: z.array(z.enum(KEYS)).min(1).max(3).optional(), only: z.enum(["noms"]).optional() }).strict(),
   estimate: () => ({ maxMicro: IDENTITY_CAP_MICRO, label: "3 identités de marque" }),
   run: async (ctx, a) => {
     project(ctx);
@@ -82,19 +90,22 @@ const proposeTool: AgentTool<{ guidance?: string; redo?: Key[] }> = {
     if (j.steps[0]?.status !== "done") return { ok: false, summary: L("L'étape 0 (questions de départ) n'est pas encore validée : termine-la d'abord.", "Step 0 is not validated yet.") };
     if (j.steps[1]?.status === "done") return { ok: false, summary: L("L'identité est déjà choisie. Pour la changer, le client doit le demander clairement (identity.choose avec une autre identité).", "The identity is already chosen.") };
     const previous = j.identities?.list;
-    if (a.redo?.length && !previous?.length) return { ok: false, summary: L("Aucune proposition à refaire : lance d'abord une proposition complète.", "Nothing to redo yet.") };
+    if ((a.redo?.length || a.only) && !previous?.length) return { ok: false, summary: L("Aucune proposition à refaire : lance d'abord une proposition complète.", "Nothing to redo yet.") };
     updateJourney(ctx.conversationId, (x) => setStep(x, 1, "doing"));
     let out: { identities: Identity[]; comparison: string };
     let issues: string[] = [], firstIssues: string[] = [];
     try {
-      out = await generate(ctx, j, { guidance: a.guidance, redo: a.redo, previous }, 1);
+      const namesOnly = a.only === "noms";
+      out = await generate(ctx, j, { guidance: a.guidance, redo: a.redo, previous, namesOnly }, 1);
+      if (namesOnly && previous) out.identities = keepAllButNames(out.identities, previous);
       // Identités qu'on ne devait pas refaire : remises telles quelles (jamais modifiées en silence).
       if (a.redo?.length && previous) out.identities = out.identities.map((x) => (a.redo!.includes(x.key) ? x : previous.find((p) => p.key === x.key) ?? x));
       issues = identityIssues(out.identities, j);
       firstIssues = issues;
       if (issues.length) {
         // Une seule reprise, avec les corrections exactes ; au-delà, les points restants sont dits au client.
-        const retry = await generate(ctx, j, { guidance: a.guidance, redo: a.redo, previous: out.identities }, 2, issues);
+        const retry = await generate(ctx, j, { guidance: a.guidance, redo: a.redo, previous: out.identities, namesOnly }, 2, issues);
+        if (namesOnly && previous) retry.identities = keepAllButNames(retry.identities, previous);
         if (a.redo?.length && previous) retry.identities = retry.identities.map((x) => (a.redo!.includes(x.key) ? x : previous.find((p) => p.key === x.key) ?? x));
         const again = identityIssues(retry.identities, j);
         if (again.length <= issues.length) { out = retry; issues = again; }

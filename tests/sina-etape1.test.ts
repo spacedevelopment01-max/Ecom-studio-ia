@@ -109,13 +109,28 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
       expect([p.name, I.paletteIssues(palette, p.ground, p.ground === "degrade" ? { from: p.depart!, to: p.arrivee! } : undefined)]).toEqual([p.name, []]);
     }
     for (const n of R.NAME_EXAMPLES) {
-      expect(n.slogan.split(/\s+/).length, n.slogan).toBeLessThanOrEqual(9);
       expect(n.name.replace(/&/g, "").trim().split(/\s+/).length, n.name).toBeLessThanOrEqual(3);
+      expect(n.logic, n.name).toMatch(/^(Pars|Observe|Relie)/);
     }
-    expect(I.IDENTITY_SYSTEM).toContain("Braise Douce — « Du feu, juste ce qu'il faut. »");
+    // Méthode de nommage du 7 novembre : seule référence des noms (l'ancienne liste « 50 noms et leurs slogans » est retirée).
+    expect(I.IDENTITY_SYSTEM).toMatch(/MÉTHODE DE NOMMAGE .* DÉTAIL RÉEL .* DEUXIÈME LECTURE/);
+    expect(I.IDENTITY_SYSTEM).toContain("La Mèche Courte (Bougies parfumées) : Pars de la mèche");
+    expect(I.IDENTITY_SYSTEM).not.toContain("Braise Douce");
     expect(I.IDENTITY_SYSTEM).toContain("Verger électrique [dégradé] départ #FFF36E → arrivée #FF8EC9");
-    expect(I.IDENTITY_SYSTEM).toMatch(/ne recopie jamais ces noms ni ces slogans/);
+    expect(I.IDENTITY_SYSTEM).toMatch(/ne recopie jamais ces noms/);
     expect(I.IDENTITY_SYSTEM).toMatch(/les titres prennent la couleur du texte ; le bouton porte la couleur de marque/);
+  });
+
+  it("nouveaux noms seulement : couleurs, polices et le reste des identités gardés à l'identique", async () => {
+    const { keepAllButNames } = await import("@/lib/syna-agent/tools/identity");
+    const before = I.IdentitiesSchema.parse({ identities: good() }).identities;
+    const fresh = before.map((x) => ({ ...x, name: `${x.name} bis`, slogan: "Nouveau slogan.", palette: { ...x.palette, primary: "#000000" }, fonts: { heading: "inter_n7", body: "inter_n4" } }));
+    const merged = keepAllButNames(fresh, before);
+    expect(merged.map((x) => x.name)).toEqual(before.map((x) => `${x.name} bis`));
+    expect(merged.map((x) => x.palette)).toEqual(before.map((x) => x.palette));
+    expect(merged.map((x) => x.fonts)).toEqual(before.map((x) => x.fonts));
+    const j = J.emptyJourney();
+    expect(I.identityPrompt(j, { previous: before, namesOnly: true })).toMatch(/refais SEULEMENT les noms/);
   });
 
   it("consignes de Claude : charte § 2.1, styles de logo, polices autorisées, refonte et fiche du client", () => {
