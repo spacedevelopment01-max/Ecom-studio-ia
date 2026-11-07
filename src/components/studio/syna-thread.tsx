@@ -19,7 +19,7 @@ type View = {
   journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; logos?: Logos | null };
 };
 type Face = { family: string; file: string; weight: number } | null;
-type IdentityCard = {
+type IdentityCard = { nameWhy?: string;
   key: "A" | "B" | "C"; name: string; nameStyle: string; slogan: string; promise: string; territory: string; ground: "blanc" | "degrade" | "sombre"; gradient?: { from: string; to: string };
   palette: { dark: string; primary: string; secondary: string; accent: string; light: string }; paletteFamily: string;
   fontStyle: string; tone: { adjectives: string[]; avoid: string[] }; logoStyleLabel: string; logoIdea: string; why: string;
@@ -49,6 +49,7 @@ function IdentityCards({ ids, busy, onChoose }: { ids: Identities; busy: boolean
           {(["light", "dark", "primary", "secondary", "accent"] as const).map((r) => <span key={r} className={cx("flex-1", r === "light" && "border-r border-black/10")} style={{ background: x.palette[r] }} title={`${r} ${x.palette[r]}`} />)}
         </div>
         <dl className="space-y-1 bg-card px-4 py-3 text-xs">
+          {!!x.nameWhy && <div><dt className="inline font-semibold">{t("Pourquoi ce nom", "Why this name")} : </dt><dd className="inline">{x.nameWhy}</dd></div>}
           <div><dt className="inline font-semibold">{t("Couleurs", "Colours")} : </dt><dd className="inline">{x.paletteFamily} — {x.ground === "degrade" && x.gradient ? `${t("dégradé", "gradient")} ${x.gradient.from} → ${x.gradient.to}` : `${t("fond", "background")} ${x.ground === "sombre" ? x.palette.dark : x.palette.light}`}, {t("texte", "text")} {x.ground === "sombre" ? x.palette.light : x.palette.dark}, {t("bouton", "button")} {x.palette.primary}, {t("surface", "surface")} {x.palette.secondary}, {t("accent", "accent")} {x.palette.accent}</dd></div>
           <div><dt className="inline font-semibold">{t("Polices", "Fonts")} : </dt><dd className="inline">{x.faces.heading?.family ?? "?"} / {x.faces.body?.family ?? "?"}{x.fontStyle ? ` — ${x.fontStyle}` : ""}</dd></div>
           <div><dt className="inline font-semibold">{t("Ton", "Tone")} : </dt><dd className="inline">{x.tone.adjectives.join(", ")} · {t("jamais", "never")} : {x.tone.avoid.join(", ")}</dd></div>

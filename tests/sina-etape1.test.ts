@@ -94,7 +94,7 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     expect(I.paletteIssues({ ...good()[2].palette, dark: "#4A4A5A" }, "sombre").join()).toMatch(/fond très foncé/);
     expect(I.IDENTITY_SYSTEM).toMatch(/une « blanc » .* une « degrade » .* jamais beige ni crème.* une « sombre »/);
     expect(I.IDENTITY_SYSTEM).toMatch(/jamais trois orangés/);
-    expect(I.IDENTITY_SYSTEM).toMatch(/écris d.abord dans nameCandidates 12 à 20 mots ou expressions existants/);
+    expect(I.IDENTITY_SYSTEM).toMatch(/écris d.abord dans nameCandidates 12 à 20 pistes, chacune tirée d.un élément du produit/);
   });
 
   it("références du propriétaire (7 novembre) : ses 49 palettes passent le contrôle, ses 50 noms et slogans aussi, et Claude les reçoit comme exemples à ne pas recopier", async () => {
@@ -318,13 +318,13 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: bad }).identities, J.emptyJourney()).join()).toMatch(/« Pacifico » est une police de titres, manuscrite ou à chasse fixe/);
   });
   it("noms liés au PRODUIT (retour du 7 novembre : « les 3 noms n'ont rien à voir avec le produit »)", async () => {
-    expect(I.IDENTITY_SYSTEM).toMatch(/Le nom part TOUJOURS DU PRODUIT LUI-MÊME/);
-    expect(I.IDENTITY_SYSTEM).toMatch(/Un nom qui ne parle que d'un bénéfice, d'une ambiance, d'un moment ou d'une valeur, sans rien du produit, est REFUSÉ/);
-    expect(I.IDENTITY_SYSTEM).toMatch(/nameAnchor = l'élément concret du produit[^]*nameTest = ce qu'un inconnu imagine/);
+    expect(I.IDENTITY_SYSTEM).toMatch(/le nom a une LOGIQUE claire avec le produit ou le service, jamais un mot pris au hasard/);
+    expect(I.IDENTITY_SYSTEM).toMatch(/nameWhy = la logique en une ou deux phrases simples, MONTRÉE AU CLIENT/);
+    expect(I.IDENTITY_SYSTEM).toMatch(/nameAnchor = l'élément du produit dont part le nom[^]*nameTest = ce qu'un inconnu imagine/);
     // Pourquoi les noms n'étaient ni beaux ni originaux : des assemblages inventés et des jeux de mots négatifs.
     const refs = (await import("@/lib/syna-agent/brand-references")).referencesForPrompt();
-    expect(refs).toMatch(/Ce sont TOUS des mots ou des expressions qui EXISTENT déjà en français/);
-    expect(refs).toMatch(/Jamais une expression au sens négatif ou péjoratif \(rabâcher, déroute, repris de justice/);
+    expect(refs).toMatch(/LA LOGIQUE D'ABORD : chaque nom a un lien évident avec le produit ou le service/);
+    expect(refs).toMatch(/Le sens courant est positif ou neutre \(jamais rabâcher, déroute, repris de justice/);
     const few = good(); few[0].nameCandidates = ["Roue Libre"]; few[2].nameExpression = "";
     const fi = I.identityIssues(I.IdentitiesSchema.parse({ identities: few }).identities, J.emptyJourney()).join();
     expect(fi).toMatch(/Identité A : écris au moins 12 pistes dans nameCandidates/);
