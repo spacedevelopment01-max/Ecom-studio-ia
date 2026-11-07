@@ -48,6 +48,8 @@ describe("SINA — étape 5 : l'activité complète", async () => {
     expect(J.currentStep(J.journeyOf(cid))).toBe(5);
     expect(modelFor(5)?.model).toMatch(/haiku/); // tout est gratuit, le fil reste léger
     expect(J.journeyContext(J.journeyOf(cid))).toMatch(/Étape 5 \(activité complète, GRATUITE\)[^]*activity\.plan[^]*UNE par UNE[^]*SES prix, sans en inventer aucun[^]*catalogue\.create/);
+    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/y compris les facultatives \(téléphone, SIRET\), une fois chacune, en proposant « plus tard »/);
+    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/poids ou contenance qu'il a cités dans sa fiche de départ/);
     // 1) Plan : tout ce qui manque devient une question.
     const r1 = await call("activity.plan", ctx, {});
     expect(r1.ok).toBe(true);

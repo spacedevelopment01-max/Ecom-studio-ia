@@ -67,6 +67,13 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     // Essai réel : SINA avait lu les angles avec research.read (lecture tronquée, aucune carte).
     expect(J.journeyContext(J.journeyOf(cid))).toMatch(/n'utilise jamais research\.read ni strategy\.read à cette étape/);
     expect((await getTool("angles.propose")!.estimate!(ctx, {})).maxMicro).toBeGreaterThan(0);
+    // Pendant l'étape 4, les vieilles lectures renvoient vers angles.propose (cartes et sources).
+    expect((await call("research.read", ctx, {})).summary).toMatch(/utilise angles\.propose/);
+    expect((await call("strategy.read", ctx, {})).ok).toBe(false);
+    const { SYNA_SYSTEM } = await import("@/lib/syna-agent/prompt");
+    expect(SYNA_SYSTEM).toMatch(/ne promets JAMAIS un devis ou une demande d'accord que tu ne montres pas/);
+    expect(SYNA_SYSTEM).toMatch(/Accusé de réception : il porte SEULEMENT sur la dernière réponse du client/);
+    expect(SYNA_SYSTEM).toMatch(/Ne décris jamais une image que tu n'as pas vue/);
     // 1) La fiche doit être comprise : tâche d'analyse (payante, devis du Pilote).
     expect(A.anglesPhase(pid).kind).toBe("analyze");
     const r1 = await call("angles.propose", ctx, {});

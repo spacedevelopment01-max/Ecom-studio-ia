@@ -22,6 +22,7 @@ function strategyState(projectId: string) {
 import { L } from "../../i18n-server";
 import type { AgentTool } from "../types";
 import { attachmentsOf } from "../attachments";
+import { currentStep, journeyOf } from "../journey";
 import { cents, project, short } from "./common";
 
 const createTool: AgentTool<{ name: string; business: "products" | "services"; storeType?: "mono" | "multi" | "niche"; description: string }> = {
@@ -236,7 +237,11 @@ const strategyRead: AgentTool<{}> = {
   name: "strategy.read", module: "stratégie", kind: "read", needsProject: true,
   description: "Lit la stratégie marketing : état de la recherche, les 5 angles proposés (id, titre, promesse), l'angle recommandé, l'angle actif. Un site de boutique ne se construit qu'avec un angle choisi par le client.",
   args: z.object({}).strict(),
-  run: (ctx) => { const st = strategyState(project(ctx).id); return { ok: true, summary: st.active ? L(`Angle actif : ${st.active.angleId}.`, `Active angle: ${st.active.angleId}.`) : L(`Aucun angle actif ; ${st.angles.length} proposé(s).`, `No active angle.`), data: { research: st.research ? { status: st.research.status, message: st.research.message } : null, angles: st.angles.map((x: any) => ({ id: x.id, title: x.title ?? x.name, promise: short(x.promise ?? x.summary ?? x.hook ?? "", 200) })), recommendation: st.recommendation, active: st.active ? { angleId: st.active.angleId, version: st.active.version } : null, missingQuestions: st.missingQuestions } }; },
+  run: (ctx) => {
+    // Pendant l'étape 4 du parcours, les angles passent par angles.propose (cartes et sources) ; essais réels : une
+    // lecture ici était tronquée et n'affichait aucune carte.
+    if (currentStep(journeyOf(ctx.conversationId)) === 4) return { ok: false, summary: L("Pendant l'étape 4 du parcours, utilise angles.propose : il range et affiche les 5 angles en cartes, avec leurs sources.", "Use angles.propose during step 4.") };
+    const st = strategyState(project(ctx).id); return { ok: true, summary: st.active ? L(`Angle actif : ${st.active.angleId}.`, `Active angle: ${st.active.angleId}.`) : L(`Aucun angle actif ; ${st.angles.length} proposé(s).`, `No active angle.`), data: { research: st.research ? { status: st.research.status, message: st.research.message } : null, angles: st.angles.map((x: any) => ({ id: x.id, title: x.title ?? x.name, promise: short(x.promise ?? x.summary ?? x.hook ?? "", 200) })), recommendation: st.recommendation, active: st.active ? { angleId: st.active.angleId, version: st.active.version } : null, missingQuestions: st.missingQuestions } }; },
 };
 
 
@@ -245,6 +250,9 @@ const researchRead: AgentTool<{}> = {
   description: "Hors parcours (pendant l'étape 4 du parcours, utilise angles.propose, qui affiche les angles en cartes). Lit la recherche marketing du Pilote (brouillon ou validée) : couverture, les 5 angles avec cible, motivation, accroche, arguments et LEURS SOURCES (titre, lien, famille, lue par le Studio ou extrait de la recherche web), recommandation, et les sources écartées avec la raison. À utiliser pour présenter les angles au client avec leurs sources. Après son choix : pilot.approve {step:\"research\"} puis strategy.choose.",
   args: z.object({}).strict(),
   run: (ctx) => {
+    // Pendant l'étape 4 du parcours, les angles passent par angles.propose (cartes et sources) ; essais réels : une
+    // lecture ici était tronquée et n'affichait aucune carte.
+    if (currentStep(journeyOf(ctx.conversationId)) === 4) return { ok: false, summary: L("Pendant l'étape 4 du parcours, utilise angles.propose : il range et affiche les 5 angles en cartes, avec leurs sources.", "Use angles.propose during step 4.") };
     const p = project(ctx), r: any = (stateOf(p.id)?.stages as any)?.research;
     if (!r?.data) return { ok: true, summary: L("Aucune recherche marketing enregistrée.", "No marketing research yet."), data: null };
     const d = r.data, byId = new Map<string, any>((d.sources ?? []).map((s: any) => [s.id, s]));
