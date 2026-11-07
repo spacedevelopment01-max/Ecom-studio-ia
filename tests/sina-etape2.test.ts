@@ -138,6 +138,11 @@ describe("SINA — étape 2 : 3 logos", async () => {
     const view = await fr(() => threadView(user, cid));
     expect(view.journey.logos!.list.every((x) => !x.assetId || !!x.href)).toBe(true);
     // Choix du client : le logo devient celui de la marque, étape 2 validée, étape 3 ouverte.
+    // SINA VOIT les 3 logos qu'il présente (demande du propriétaire : « SINA doit lire les images »).
+    const { journeyImages } = await import("@/lib/syna-agent/attachments");
+    const seen = await journeyImages(J.journeyOf(cid));
+    expect(seen.map((x) => x.label)).toEqual(j.logos!.list.filter((x) => x.assetId).map((x) => expect.stringMatching(new RegExp(`^Logo ${x.source} — `))));
+    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/tu VOIS les 3 logos \(images jointes à ta réponse\)/);
     const pick = j.logos!.list.find((x) => x.verdict === "FINAL")!;
     const c = await call("logo.choose", ctx, { source: pick.source });
     expect(c.ok).toBe(true);
@@ -226,6 +231,9 @@ describe("SINA — étape 2 : 3 logos", async () => {
     expect(view.journey.brandKit!.items.every((x) => x.href.startsWith("/api/files/"))).toBe(true);
     expect(view.journey.brandKit!.book).toMatch(/^\/api\/files\//);
     expect(view.journey.brandKit!.validated).toBe(false);
+    // SINA voit aussi la planche de marque tant que l'image de marque n'est pas validée (plus les logos : choisi).
+    const { journeyImages: imgs } = await import("@/lib/syna-agent/attachments");
+    expect((await imgs(J.journeyOf(cid))).map((x) => x.label)).toEqual(["Planche de marque montrée au client"]);
     // Validation du client : étape 3 terminée, étape 4 ouverte.
     expect((await call("brand.kit_validate", ctx, {})).ok).toBe(true);
     expect(J.journeyOf(cid).steps[3].status).toBe("done");

@@ -139,3 +139,20 @@ export function describeAttachment(a: Attachment): string {
   if (a.kind === "video") return `- ${a.id} : vidéo « ${a.name} » ${x.duration} s, ${x.width}×${x.height}, ${x.shotCount} plans (moyenne ${x.averageShot} s, rythme ${x.rhythm}), durées des plans [${(x.shots ?? []).join(", ")}], son : ${x.audio ? "oui" : "non"}${a.assetId ? `, asset ${a.assetId}` : ""}`;
   return `- ${a.id} : document « ${a.name} », ${x.characters ?? 0} caractères. Début : ${String(x.text ?? "").slice(0, 600).replace(/\s+/g, " ")}`;
 }
+
+/**
+ * Images du parcours que SINA doit VOIR pour en parler (demande du propriétaire du 7 novembre : « SINA doit lire les
+ * images ») : les 3 logos tant que le client n'a pas choisi (étape 2), la planche de marque tant que l'image de marque
+ * n'est pas validée (étape 3). Réduites (512 px, planche 1024 px) : quelques millièmes d'euro par réponse.
+ */
+export async function journeyImages(j: { steps: Record<number, { status: string } | undefined>; logos?: { list: { source: string; name: string; assetId: string | null; verdict: string; score: number | null }[] }; logoChoice?: unknown; brandKit?: { boardId: string | null } }): Promise<LlmImage[]> {
+  const { getAsset, assetData } = await import("../library");
+  const sharp = (await import("sharp")).default;
+  const small = async (id: string, size: number) => { const a = getAsset(id); return a && !a.deleted_at ? sharp(assetData(a)).resize(size, size, { fit: "inside", withoutEnlargement: true }).png().toBuffer() : null; };
+  const out: LlmImage[] = [];
+  if (j.logos?.list.length && !j.logoChoice && j.steps[2]?.status !== "done") {
+    for (const l of j.logos.list) if (l.assetId) { const data = await small(l.assetId, 512).catch(() => null); if (data) out.push({ data, label: `Logo ${l.source} — ${l.name} (${l.verdict === "FINAL" ? `validé ${l.score ?? "?"}/10` : "non validé"})` }); }
+  }
+  if (j.brandKit?.boardId && j.steps[3]?.status !== "done") { const data = await small(j.brandKit.boardId, 1024).catch(() => null); if (data) out.push({ data, label: "Planche de marque montrée au client" }); }
+  return out;
+}

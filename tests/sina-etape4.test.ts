@@ -73,7 +73,7 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     const { SYNA_SYSTEM } = await import("@/lib/syna-agent/prompt");
     expect(SYNA_SYSTEM).toMatch(/ne promets JAMAIS un devis ou une demande d'accord que tu ne montres pas/);
     expect(SYNA_SYSTEM).toMatch(/Accusé de réception : il porte SEULEMENT sur la dernière réponse du client/);
-    expect(SYNA_SYSTEM).toMatch(/Ne décris jamais une image que tu n'as pas vue/);
+    expect(SYNA_SYSTEM).toMatch(/les logos proposés et la planche de marque te sont JOINTS \(tu les vois\)[^]*Une image qui ne t'est pas jointe, ne la décris jamais/);
     // 1) La fiche doit être comprise : tâche d'analyse (payante, devis du Pilote).
     expect(A.anglesPhase(pid).kind).toBe("analyze");
     const r1 = await call("angles.propose", ctx, {});
