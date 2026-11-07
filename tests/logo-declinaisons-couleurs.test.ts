@@ -184,4 +184,28 @@ describe("File des tâches : appliquer le logo choisi passe avant les longues t�
     expect(g.ok).toBe(false);
     expect((g as any).reason).toMatch(/texture ou grain|dégradés, textures ou nuances/);
   });
+
+  it("lettrage seul (essai réel du 7 novembre, « Brindi ») : lettres blanches sur fond sombre, initiale dessinée comme symbole", async () => {
+    // Logo en longueur : 5 lettres vert foncé qui occupent presque toute la hauteur, une feuille dorée au-dessus de la 3e.
+    const letters = Array.from({ length: 5 }, (_, i) => `<rect x="${30 + i * 170}" y="${i === 0 ? 20 : 60}" width="${i === 0 ? 130 : 110}" height="${i === 0 ? 320 : 280}" fill="#2F4A36"/>`).join("");
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="360">${letters}<ellipse cx="425" cy="30" rx="20" ry="12" fill="#C9A24A"/></svg>`;
+    const src = await sharp(Buffer.from(svg)).png().toBuffer();
+    const { nameBoxFromInk, wordmarkInitial } = await import("@/lib/logo-v2/identity");
+    const box = (await nameBoxFromInk(src, null))!;
+    expect(box).not.toBeNull();
+    expect(box.h).toBeGreaterThan(0.6);
+    const fond = await onDarkVersion(src, box);
+    expect((await px(fond, 100, 200)).slice(0, 3)).toEqual([255, 255, 255]); // initiale lisible (blanche)
+    expect((await px(fond, 600, 200)).slice(0, 3)).toEqual([255, 255, 255]);
+    const feuille = await px(fond, 425, 30);
+    expect(feuille[0]).toBeGreaterThan(180); // la feuille dorée garde sa couleur
+    expect(feuille[2]).toBeLessThan(120);
+    const ini = (await wordmarkInitial(src, box))!;
+    const t = await sharp(await sharp(ini).trim({ threshold: 5 }).png().toBuffer()).metadata();
+    // L'initiale seule (haute et étroite), jamais tout le mot (cinq fois plus large que haut).
+    expect(t.width! / t.height!).toBeLessThan(0.6);
+    // Une illustration carrée n'est jamais prise pour un lettrage.
+    const carre = await nameBoxFromInk(await emblem(), null);
+    expect(carre === null || carre.h <= 0.6).toBe(true);
+  });
 });

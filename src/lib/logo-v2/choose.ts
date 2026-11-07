@@ -22,7 +22,7 @@ import { canvasFamily } from "../media/fonts";
 import { brandBoard } from "./brand-board";
 import { ARTWORK_NEVER, faithfulSvg, STYLE_LABEL, correctArtworkText, onDarkVersion, oneColourVersion } from "./artwork";
 import { brandDiscovery } from "./discovery";
-import { artworkInks, artworkSymbol, nameBoxFromInk, paletteFromInks, squareMark, symbolFavicon } from "./identity";
+import { artworkInks, artworkSymbol, nameBoxFromInk, paletteFromInks, squareMark, symbolFavicon, wordmarkInitial } from "./identity";
 import { defaultStyle } from "./territories";
 import { json } from "../db";
 import { loadProject, saveBrand } from "../projects";
@@ -107,7 +107,9 @@ async function applyArtwork(ctx: JobContext | null, projectId: string, assetId: 
   const symbol =
     t.markType === "emblem" || t.style === "emblem"
       ? await squareMark(png)
-      : ((await artworkSymbol(png, nameBox)) ?? (t.markType === "wordmark" || t.markType === "lettermark" ? null : await squareMark(png)));
+      : ((await artworkSymbol(png, nameBox)) ??
+        // Lettrage seul : l'initiale telle qu'elle est dessinée (fidèle), sinon la version simplifiée du studio.
+        (t.markType === "wordmark" || t.markType === "lettermark" ? (nameBox ? await wordmarkInitial(png, nameBox) : null) : await squareMark(png)));
   let markPng: Buffer;
   let mark;
   if (symbol) {

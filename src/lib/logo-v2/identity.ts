@@ -201,7 +201,10 @@ export async function nameBoxFromInk(png: Buffer, hint: TextBox | null): Promise
   for (let y = y0; y <= y1; y++) for (let x = 0; x < W; x++) if (match((y * W + x) * 4)) { if (x < x0) x0 = x; if (x > x1) x1 = x; }
   const box = { x: x0 / W, y: y0 / H, w: (x1 - x0 + 1) / W, h: (y1 - y0 + 1) / H };
   // Une vraie ligne de nom : assez large, pas toute l'image.
-  if (box.w < 0.3 || box.h < 0.04 || box.h > 0.6) return hint;
+  // Exception : un LETTRAGE seul (logo en longueur, le nom couvre presque tout) est un nom, pas « toute l'image »
+  // (essai réel du 7 novembre : « Brindi » vert foncé resté foncé sur fond sombre).
+  const wordmark = W / H >= 1.8 && box.w >= 0.6;
+  if (box.w < 0.3 || box.h < 0.04 || (box.h > 0.6 && !wordmark)) return hint;
   // Garde-fou : loin de l'endroit où la relecture a lu le nom, c'est une autre partie foncée du dessin.
   if (hint && Math.abs(box.y + box.h / 2 - (hint.y + hint.h / 2)) > 0.25) return hint;
   return box;
@@ -263,6 +266,42 @@ export async function symbolByShapes(png: Buffer, box: TextBox): Promise<Buffer 
   if (!trimmed) return null;
   const m = await sharp(trimmed).metadata();
   if ((m.width ?? 0) * (m.height ?? 0) < W * H * 0.06) return null;
+  const side = Math.round(Math.max(m.width!, m.height!) * 1.16);
+  const square = await sharp({ create: { width: side, height: side, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite([{ input: trimmed, gravity: "center" }]).png().toBuffer();
+  return sharp(square).resize(1024, 1024).png().toBuffer();
+}
+
+/**
+ * Marque réduite d'un LETTRAGE seul (essai réel du 7 novembre : « Brindi » entier, illisible en favicon) : l'INITIALE
+ * telle qu'elle est dessinée dans le logo (première lettre, avec ce qui la touche au-dessus ou au-dessous : accent,
+ * feuille), en carré. Fidèle au dessin, jamais redessinée. Null si la première forme n'est pas une vraie lettre.
+ */
+export async function wordmarkInitial(png: Buffer, box: TextBox): Promise<Buffer | null> {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const W = info.width, H = info.height, N = W * H;
+  const { label, sizes } = nameShapes(data, W, H, box);
+  const ink = sizes.reduce((a, b) => a + b, 0);
+  if (!ink || sizes.length < 2) return null;
+  // Étendue horizontale de chaque forme.
+  const x0 = new Array<number>(sizes.length).fill(W), x1 = new Array<number>(sizes.length).fill(-1);
+  for (let i = 0; i < N; i++) { const k = label[i]; if (k < 0) continue; const x = i % W; if (x < x0[k]) x0[k] = x; if (x > x1[k]) x1[k] = x; }
+  const big = sizes.map((n, k) => k).filter((k) => sizes[k] >= ink * 0.04);
+  if (big.length < 2) return null;
+  const first = big.reduce((a, k) => (x0[k] < x0[a] ? k : a), big[0]);
+  // Une vraie lettre : ni toute l'encre (lettres liées en un seul trait), ni une miette.
+  if (sizes[first] > ink * 0.6 || x1[first] - x0[first] > W * 0.5) return null;
+  const keep = new Set<number>([first]);
+  // Petites formes posées au-dessus ou au-dessous de l'initiale (accent, point, feuille) : elles en font partie.
+  for (let k = 0; k < sizes.length; k++) {
+    if (k === first || sizes[k] >= sizes[first]) continue;
+    const mid = (x0[k] + x1[k]) / 2;
+    if (mid >= x0[first] && mid <= x1[first]) keep.add(k);
+  }
+  const out = Buffer.from(data);
+  for (let i = 0; i < N; i++) if (label[i] < 0 || !keep.has(label[i])) out[i * 4 + 3] = 0;
+  const trimmed = await sharp(out, { raw: { width: W, height: H, channels: 4 } }).png().toBuffer().then((b) => sharp(b).trim({ threshold: 5 }).png().toBuffer()).catch(() => null);
+  if (!trimmed) return null;
+  const m = await sharp(trimmed).metadata();
   const side = Math.round(Math.max(m.width!, m.height!) * 1.16);
   const square = await sharp({ create: { width: side, height: side, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite([{ input: trimmed, gravity: "center" }]).png().toBuffer();
   return sharp(square).resize(1024, 1024).png().toBuffer();
