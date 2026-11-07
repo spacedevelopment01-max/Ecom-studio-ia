@@ -1,7 +1,7 @@
 "use client";
 import {useEffect} from 'react';
 /**
- * #301 « SYNA complète », lot 1 — défaut vu dans le Studio compilé : après un rechargement, un accord resté en mémoire pour
+ * #301 « SINA complète », lot 1 — défaut vu dans le Studio compilé : après un rechargement, un accord resté en mémoire pour
  * une ANCIENNE proposition laissait la nouvelle carte en état « réponse incertaine » (« Confirmer » grisé, seul
  * « Réessayer la même confirmation gratuite » proposé, qui aurait enregistré la nouvelle proposition sous ce libellé).
  * Seulement quand l'accord en mémoire vise une AUTRE proposition que celle affichée, le transport relit l'état (lecture

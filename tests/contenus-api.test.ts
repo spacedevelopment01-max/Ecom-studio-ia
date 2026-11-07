@@ -66,7 +66,7 @@ describe("Espaces du studio selon le métier", () => {
   });
 });
 
-describe("API native des contenus (réutilisable par SYNA)", () => {
+describe("API native des contenus (réutilisable par SINA)", () => {
   it("manifeste, création en brouillon, consentement, versions, site jamais publié par l'API", async () => {
     const a = await site("api", "aplat");
     login(a.uid);

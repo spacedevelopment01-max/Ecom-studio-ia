@@ -6,7 +6,7 @@ import type {useLocalFolderMoveConfirmation} from './use-local-folder-move-confi
 import {Button} from '../ui';
 import {useT} from '../i18n';
 /**
- * #301 « SYNA complète » — carte Déplacer un dossier gratuite (contrat #400 de Codex), distincte de « Nouveau dossier » et
+ * #301 « SINA complète » — carte Déplacer un dossier gratuite (contrat #400 de Codex), distincte de « Nouveau dossier » et
  * de « Renommer un dossier » : dossier visé, emplacement actuel et nouvel emplacement exacts, accord gratuit, place relue.
  */
 export function ConversationLocalFolderMove({view,confirmation,busy}:{view:ConversationView;confirmation:ReturnType<typeof useLocalFolderMoveConfirmation>;busy:boolean}){

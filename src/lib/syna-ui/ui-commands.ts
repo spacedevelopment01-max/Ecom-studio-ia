@@ -1,9 +1,9 @@
 /**
- * SYNA lot 1 bis (#282) — commandes d'affichage en langage naturel, reconnues sur place, sans IA et sans coût.
+ * SINA lot 1 bis (#282) — commandes d'affichage en langage naturel, reconnues sur place, sans IA et sans coût.
  *
- * Frontière avec la future SYNA multi-actions (B3, Codex) : ce module ne reconnaît QUE des réglages d'affichage du
+ * Frontière avec la future SINA multi-actions (B3, Codex) : ce module ne reconnaît QUE des réglages d'affichage du
  * Studio (mode, apparence, largeur de l'aperçu, panneau, densité, taille du texte). Il ne répond jamais à la place de
- * SYNA, ne touche à aucune donnée du projet et ne lance rien. Une phrase qui n'est pas clairement une commande
+ * SINA, ne touche à aucune donnée du projet et ne lance rien. Une phrase qui n'est pas clairement une commande
  * d'affichage renvoie `null` : elle reste pour la conversation. Une commande d'affichage incomplète (« change le
  * mode ») demande une précision au lieu de deviner.
  */
@@ -44,7 +44,7 @@ export function parseSynaUiCommand(input: string): SynaUiCommand | null {
 
   // Largeur de l'aperçu (la conversation prend l'inverse)
   const preview = /\b(apercu|preview|site|espace de travail|workspace|resultat)\b/;
-  const convo = /\b(conversation|syna|volet|panneau|colonne|panel|column)\b/;
+  const convo = /\b(conversation|s[iy]na|volet|panneau|colonne|panel|column)\b/;
   const grow = /\b(agrandi\w*|elargi\w*|plus (grand|large)|bigger|wider|enlarge|grow)\b/;
   const shrink = /\b(redui\w*|retreci\w*|plus (petit|etroit)|smaller|narrower|shrink)\b/;
   if (has(preview) && has(grow)) return { kind: "width", delta: -WIDTH_STEP, say: ["Aperçu agrandi", "Preview enlarged"] };
@@ -55,9 +55,9 @@ export function parseSynaUiCommand(input: string): SynaUiCommand | null {
     return { kind: "ask", question: ["Agrandir quoi ?", "Enlarge what?"], options: [{ label: ["L'aperçu", "The preview"], command: "Agrandis l'aperçu" }, { label: ["La conversation", "The conversation"], command: "Agrandis la conversation" }] };
   }
 
-  // Panneau SYNA épinglé / replié
-  if (has(/\b(replie|replier|cache|masque|ferme)\b.*\b(syna|conversation|panneau|volet|colonne)\b|\b(collapse|hide)\b.*\b(syna|conversation|panel)\b/)) return { kind: "set", patch: { panel: "collapsed" }, say: ["SYNA repliée par défaut", "SYNA collapsed by default"] };
-  if (has(/\b(epingle|epingler|garde|ouvre|affiche)\b.*\b(syna|conversation|panneau|volet|colonne)\b|\bpin\b.*\b(syna|conversation|panel)\b/)) return { kind: "set", patch: { panel: "pinned" }, say: ["SYNA épinglée", "SYNA pinned"] };
+  // Panneau SINA épinglé / replié
+  if (has(/\b(replie|replier|cache|masque|ferme)\b.*\b(s[iy]na|conversation|panneau|volet|colonne)\b|\b(collapse|hide)\b.*\b(s[iy]na|conversation|panel)\b/)) return { kind: "set", patch: { panel: "collapsed" }, say: ["SINA repliée par défaut", "SINA collapsed by default"] };
+  if (has(/\b(epingle|epingler|garde|ouvre|affiche)\b.*\b(s[iy]na|conversation|panneau|volet|colonne)\b|\bpin\b.*\b(s[iy]na|conversation|panel)\b/)) return { kind: "set", patch: { panel: "pinned" }, say: ["SINA épinglée", "SINA pinned"] };
 
   // Densité et taille du texte
   if (has(/\b(plus )?(compact|dense|serre)\w*\b/) && !has(/\btexte\b/)) return { kind: "set", patch: { density: "compact" }, say: ["Densité compacte", "Compact density"] };

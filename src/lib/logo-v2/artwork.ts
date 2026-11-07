@@ -17,6 +17,7 @@ import { ensureFonts, font } from "../media/fonts";
 import { decide, type GateDecision } from "../quality/gate";
 import { WEIGHT, nearestWeight } from "./territories";
 import { fontsFor } from "./construct";
+import { nameShapes } from "./identity";
 import { ART_CRITERIA, type ArtCriterion, type ArtworkReview, type BrandBrief, type LogoStyle, type Territory, type TextBox } from "./types";
 
 // ---------------------------------------------------------------- demande au modèle d'images
@@ -37,6 +38,8 @@ export const STYLE_GUIDE: Record<LogoStyle, string> = {
     "Logo TEXTURÉ : une marque avec une vraie matière choisie pour CETTE entreprise (par exemple encre, grain, impression typographique, gravure ou trait à la main), en deux tons de la palette ; le nom reste net et propre.",
   premium:
     "Logo PREMIUM : retenue et précision, un empattement raffiné ou une linéale élégante, un interlettrage généreux, un seul détail signature discret, une ou deux couleurs, une allure haut de gamme intemporelle, sobre et sans artifice.",
+  libre:
+    "Logo LIBRE : le dessinateur a eu carte blanche sur l'idée, le symbole, la typographie et la composition ; juge-le comme un logo d'agence de 2026 : beau, moderne, mémorable, une idée propre à CETTE marque, une exécution impeccable et un nom parfaitement lisible, quel que soit le rendu choisi.",
   gradient:
     "Logo À DÉGRADÉS MODERNES : une marque contemporaine aux dégradés doux tirés des couleurs de la marque, de la profondeur par des formes translucides superposées, avec un nom en linéale nette.",
 };
@@ -51,6 +54,7 @@ export const STYLE_LABEL: Record<LogoStyle, [string, string]> = {
   textured: ["Texturé, artisanal", "Textured, artisanal"],
   gradient: ["Dégradés modernes", "Modern gradients"],
   premium: ["Premium, haut de gamme", "Premium, high-end"],
+  libre: ["Création libre", "Free creation"],
 };
 
 const COMPOSITION: Record<Territory["composition"], string> = {
@@ -71,7 +75,8 @@ const TYPO: Record<Territory["typography"]["style"], string> = {
 
 /** Texte que le logo doit montrer (nom exact, ligne d'activités réelle, slogan VALIDÉ par le client). */
 export function artworkText(t: Territory, brief: BrandBrief) {
-  return { name: brief.name, descriptor: t.descriptor, tagline: brief.tagline };
+  // Logo libre (SINA) : le nom seul ; un slogan écrit dans le logo est un texte en trop (essai réel du 7 novembre).
+  return { name: brief.name, descriptor: t.descriptor, tagline: t.style === "libre" ? null : brief.tagline };
 }
 
 /**
@@ -126,6 +131,7 @@ export function artworkPrompt(t: Territory, brief: BrandBrief, feedback?: string
     colours,
     `Le nom, parfaitement lisible${upper ? ", en capitales" : ""} : « ${name} »${txt.descriptor ? ` ; plus petite et espacée en dessous, la ligne d'activités : « ${txt.descriptor} »` : ""}${txt.tagline ? ` ; en plus petit encore, le slogan : « ${txt.tagline} »` : ""}.`,
     "Chaque mot écrit exactement, lettre par lettre, avec ses accents. Aucun autre texte.",
+    "Le symbole est un dessin net et reconnaissable, construit avec le nom en une seule composition (jamais une tache floue, jamais une lettre seule avec une simple forme géométrique, jamais un symbole posé au-dessus d'un nom en police ordinaire).",
     feedback ? `Changements pour cette version : ${end(feedback)}.` : "",
     "Logo centré, marges généreuses, fond blanc uni, dessin du logo à plat seulement : aucune maquette, aucun mur, aucun papier, aucune photo, aucune personne.",
   ];
@@ -184,6 +190,7 @@ export const INTENDED_SIZES: Record<LogoStyle, { widths: number[]; uses: string 
   minimal: { widths: [360, 160, 64], uses: "tous supports, y compris en petit" },
   monogram: { widths: [360, 160, 64], uses: "tous supports ; le monogramme seul sert en petit" },
   typographic: { widths: [360, 160, 80], uses: "tous supports ; le nom doit rester lisible en petit" },
+  libre: { widths: [360, 160, 80], uses: "en-tête de site, étiquettes, réseaux sociaux, papeterie (une version simplifiée sert au favicon)" },
 };
 
 /**
@@ -192,7 +199,8 @@ export const INTENDED_SIZES: Record<LogoStyle, { widths: number[]; uses: string 
  * nuit…), elles disparaîtraient sur fond sombre : le logo garde alors ses couleurs et reçoit un liseré clair tout
  * autour (version « autocollant »), au lieu d'être délavé en blanc.
  */
-export async function onDarkVersion(png: Buffer): Promise<Buffer> {
+export async function onDarkVersion(png: Buffer, nameBox?: TextBox | null): Promise<Buffer> {
+  if (nameBox) return onDarkWithName(png, nameBox);
   const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   let opaque = 0;
   let colouredDark = 0;
@@ -215,6 +223,42 @@ export async function onDarkVersion(png: Buffer): Promise<Buffer> {
   const mask = await sharp(ext).extractChannel("alpha").blur(r * 0.7).threshold(6).png().toBuffer();
   const halo = await sharp({ create: { width: m.width!, height: m.height!, channels: 3, background: "#FBF8F2" } }).joinChannel(mask).png().toBuffer();
   return sharp(halo).composite([{ input: ext }]).png().toBuffer();
+}
+
+/**
+ * Fond sombre quand la zone du nom est connue (essai réel du 7 novembre : nom bleu nuit invisible sur fond sombre,
+ * malgré le liseré) : le NOM foncé passe en blanc, pour être lu ; le dessin garde ses couleurs, et seules ses parties
+ * foncées (feuille bleu nuit, contour brun…) reçoivent un liseré clair juste autour d'elles.
+ */
+async function onDarkWithName(png: Buffer, box: TextBox): Promise<Buffer> {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const W = info.width, H = info.height;
+  const { label, isName } = nameShapes(data, W, H, box);
+  const nameAt = (p: number) => label[p] >= 0 && isName[label[p]];
+  // Pixels du bord des lettres (anticrénelage, non étiquetés) : rattachés à la lettre voisine, à 2 pixels près.
+  const nearName = (p: number) => {
+    const x = p % W, y = (p - x) / W;
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+      const xx = x + dx, yy = y + dy;
+      if (xx >= 0 && yy >= 0 && xx < W && yy < H && nameAt(yy * W + xx)) return true;
+    }
+    return false;
+  };
+  const dark = Buffer.alloc(W * H);
+  let darkCount = 0;
+  for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+    if (data[i + 3] < 16) continue;
+    const lum = (0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255;
+    if (lum >= 0.35) continue;
+    if (nameAt(p) || (label[p] < 0 && nearName(p))) data[i] = data[i + 1] = data[i + 2] = 255;
+    else if (data[i + 3] >= 128) { dark[p] = 255; darkCount++; }
+  }
+  const flipped = await sharp(data, { raw: { width: W, height: H, channels: 4 } }).png().toBuffer();
+  if (!darkCount) return flipped;
+  const r = Math.max(3, Math.round(Math.max(W, H) * 0.012));
+  const mask = await sharp(dark, { raw: { width: W, height: H, channels: 1 } }).blur(r * 0.7).threshold(6).png().toBuffer();
+  const halo = await sharp({ create: { width: W, height: H, channels: 3, background: "#FBF8F2" } }).joinChannel(mask).png().toBuffer();
+  return sharp(halo).composite([{ input: flipped }]).png().toBuffer();
 }
 
 /**
@@ -293,7 +337,19 @@ export const STYLE_WEIGHTS: Record<LogoStyle, Record<ArtCriterion, number>> = {
   minimal: { relevance: 1.2, originality: 1.3, craft: 1.1, typography: 1.1, composition: 1, colour: 1, legibility: 1, memorability: 1.2, distinctiveness: 1.2, intendedUse: 1.2 },
   monogram: { relevance: 1.1, originality: 1.3, craft: 1.2, typography: 1.2, composition: 1.1, colour: 1, legibility: 1, memorability: 1.2, distinctiveness: 1.2, intendedUse: 1.1 },
   typographic: { relevance: 1.1, originality: 0.9, craft: 1.1, typography: 1.6, composition: 1.1, colour: 1, legibility: 1.2, memorability: 1.1, distinctiveness: 0.9, intendedUse: 1 },
+  // Logo libre (7 novembre 2026, « la note est vraiment sévère ») : la beauté du dessin et l'impression d'ensemble
+  // d'abord ; originalité et singularité comptent, sans écraser un logo superbe ; l'usage en petit revient au studio.
+  libre: { relevance: 1, originality: 1, craft: 1.5, typography: 1.2, composition: 1.3, colour: 1.1, legibility: 1, memorability: 1.2, distinctiveness: 0.9, intendedUse: 0.6 },
 };
+
+/** Note maximale d'un logo libre au rendu daté (note de référence du propriétaire, 7 novembre 2026 : « ancien logo 3 »). */
+export const DATED_MAX_SCORE = 3;
+
+/** Note de la barrière : moyenne pondérée du style ; un logo libre daté est ramené à DATED_MAX_SCORE au plus. */
+export function freeArtworkScore(r: Pick<ArtworkReview, "criteria" | "dated">, style: LogoStyle): number {
+  const s = artworkScore(r, style);
+  return style === "libre" && r.dated ? Math.min(s, DATED_MAX_SCORE) : s;
+}
 
 export function artworkScore(r: Pick<ArtworkReview, "criteria">, style: LogoStyle): number {
   const w = STYLE_WEIGHTS[style];
@@ -319,6 +375,17 @@ export function misspelledWords(textRead: string, expected: { descriptor?: strin
  * Défauts qui interdisent un logo complet même choisi par le client : nom faux, texte faux ou inventé, ressemblance,
  * personne dessinée sans accord, copie.
  */
+/**
+ * Rendus de logo INTERDITS par le propriétaire (7 novembre 2026, premier essai réel de SINA, « tu dois même interdire
+ * ce genre de rendu ») : un logo qui en relève n'est jamais présenté comme bon ni choisissable (code « forbidden »).
+ */
+export const FORBIDDEN_LOGO_RENDERS = [
+  "un symbole réduit à une tache, une texture ou une forme floue qu'on ne reconnaît pas (aquarelle, éclaboussure, nuage de couleur)",
+  "un symbole simplement posé au-dessus ou à côté du nom écrit dans une police ordinaire, sans composition pensée avec lui",
+  "une lettre seule accompagnée d'une forme géométrique de base (arc, demi-disque, cercle, trait) : monogramme pauvre, sans vraie construction",
+  "un objet du métier dessiné de façon générique, comme une icône de banque d'images, sans idée propre à la marque",
+] as const;
+
 export const ARTWORK_NEVER = ["name_mismatch", "text_mismatch", "text_unreadable", "extra_text", "resembles_known_brand", "unauthorized_person", "corrupt", "forbidden", "placeholder_shape", "duplicate"];
 
 /** Défauts relevés par la relecture d'un logo complet. Le nom ET les autres textes sont comparés à la lecture. */
@@ -333,6 +400,7 @@ export function artworkCodes(r: ArtworkReview, expected: { name: string; descrip
   if (r.amateur) codes.push("amateur");
   if (r.artifacts) codes.push("artifacts");
   if (r.genericConcept) codes.push("generic_concept");
+  if (r.forbiddenRender) codes.push("forbidden");
   return codes;
 }
 
@@ -340,10 +408,35 @@ export function artworkCodes(r: ArtworkReview, expected: { name: string; descrip
 export function gateArtwork(r: ArtworkReview, t: Territory, expected: { name: string; descriptor?: string | null; tagline?: string | null }, attempt: number): GateDecision {
   const bad = misspelledWords(r.textRead, expected);
   const issues = bad.length ? [...r.issues, `texte mal écrit : ${bad.join(", ")}`] : r.issues;
-  return decide("logo_artwork", { checker: "ai", score: artworkScore(r, t.style), criteria: r.criteria, codes: artworkCodes(r, expected), issues }, { attempt });
+  return decide("logo_artwork", { checker: "ai", score: freeArtworkScore(r, t.style), criteria: r.criteria, codes: artworkCodes(r, expected), issues }, { attempt });
 }
 
-export const ARTWORK_REVIEW_SYSTEM = (style: LogoStyle) => `Rôle : directeur artistique qui crée les logos de PETITES ENTREPRISES (artisans, commerces, restaurants, services de proximité). Tu juges UN logo complet dessiné par une IA d'images avant qu'il soit présenté au client, sur une planche : grand format sur fond neutre, sur blanc, sur fond sombre (la VERSION CLAIRE produite automatiquement par le studio à partir de ce logo : juge sa tenue, pas le contraste des couleurs d'origine sur fond sombre), puis aux tailles prévues pour ce style.
+/**
+ * Relecture d'un logo LIBRE (SINA, carte blanche au dessinateur). Retour du propriétaire du 7 novembre 2026 sur la
+ * première série libre d'OpenAI (7,6/10) : « la note est vraiment sévère, la différence est légendaire avec ce qui
+ * sortait avant ». La note juge le logo ORIGINAL au premier regard, comme le client, sur une échelle d'agence ; la
+ * version claire sur fond sombre et les petites tailles sont fabriquées par le studio et ne retirent aucun point ;
+ * aucune idée imposée (matière, objet, geste) n'est attendue puisque le dessinateur avait carte blanche.
+ */
+export const FREE_ARTWORK_REVIEW_SYSTEM = () => `Rôle : directeur artistique d'une agence de branding de 2026, qui juge avec le regard du CLIENT. Un dessinateur a reçu CARTE BLANCHE pour créer le logo d'une marque (seuls le nom exact, ce que fait la marque, ce qu'elle doit faire ressentir et ses couleurs lui étaient donnés). Tu juges UN logo avant qu'il soit présenté au client.
+La planche montre : en grand le logo ORIGINAL (c'est lui que tu notes), le même sur blanc, puis une version claire sur fond sombre et des réductions. La version claire et les réductions sont FABRIQUÉES AUTOMATIQUEMENT par le studio (une version simplifiée servira au favicon et aux très petites tailles) : un défaut qui n'apparaît que sur elles (halo, contraste, détails fondus en petit) va dans « issues » mais NE BAISSE AUCUNE NOTE.
+Le dessinateur avait carte blanche : aucune matière, aucun objet, aucun geste, aucune police ni aucune composition n'étaient imposés. Ne retire jamais de point parce qu'un élément de l'histoire de la marque (matière, outil, lieu) n'apparaît pas ; relevance juge seulement si le logo va bien à cette marque, à son activité et à ce qu'elle doit faire ressentir.
+Note de 0 à 10, sur le logo ORIGINAL : relevance (il va à cette marque et à son esprit), originality (une idée qui lui est propre), craft (beauté et finition du dessin), typography (choix et traitement du nom), composition (équilibre, proportions), colour (accord des couleurs), legibility (le nom se lit d'un coup d'œil sur le grand format et sur blanc), memorability, distinctiveness, intendedUse (le logo original tient sur un site, une étiquette, un réseau social).
+Échelle (la même pour chaque critère), celle d'une agence qui présente son travail : 9-10 = superbe et parfaitement maîtrisé (riche ou épuré selon sa direction), on le présenterait fièrement dans le portfolio d'une grande agence ; 8 = beau, moderne, soigné, avec un vrai défaut visible ; 7 = correct mais ordinaire ; 5-6 = banal ou maladroit ; 0-4 = daté ou raté.
+NOTES DE RÉFÉRENCE DU PROPRIÉTAIRE DU STUDIO (reproduis-les, elles fixent l'échelle) :
+- 9/10 : des éléments de l'univers de la marque (par exemple fruits, feuilles, fleur) composés en UNE scène généreuse sous un soleil à rayons fins, un nom en lettrage sur mesure en deux couleurs de la marque, une finition d'illustration d'agence, chaleureux et vivant. Reprendre les codes du secteur avec cette exécution vaut 9 en originality et distinctiveness ; une lettre ornementale qui se lit après un instant, une scène riche qui se charge en petit (c'est le rôle de la version simplifiée) ne retirent rien.
+Chaque proposition suit sa propre direction artistique (illustration, lettrage ou symbole moderne, indiquée dans le concept) : juge-la dans SA direction ; un lettrage ou un symbole épuré superbe vaut 9 autant qu'une illustration riche, la sobriété n'est pas un manque.
+- 3/10 : un soleil rayé de bandes horizontales façon années 70-80, posé dans un ustensile dessiné au trait, avec le nom dans une police de catalogue : rendu DATÉ.
+Un rendu DATÉ (soleil rayé de bandes façon années 70-80, typographie de catalogue sans travail, clip-art, effets vieillis plaqués) → « dated » = true et « amateur » = true, même si le dessin est propre et lisible : sa note finale ne dépassera pas 3.
+Sois juste : la note reflète ce que tout le monde voit au premier regard, pas une liste de détails de graphiste.
+« genericConcept » = true seulement pour une forme vide sans idée, une police standard posée sans composition ou une décoration sans intention. « amateur » : rendu de générateur, déséquilibré ou daté. « artifacts » : lettres fantômes, formes fondues, détails incohérents typiques d'une IA, ou PLUSIEURS logos ou variantes dans la même image au lieu d'un seul.
+Lis tout le texte du logo LETTRE PAR LETTRE, accents compris, et recopie-le exactement dans « textRead ». « nameExact » : le nom attendu y figure exactement. « extraText » : tout autre mot que le nom, slogan compris (seul le nom est autorisé), ou des lettres parasites. « nameBox » : rectangle du NOM seul en fractions de l'image (x, y, largeur, hauteur entre 0 et 1), ou null.
+Si l'espacement ou un jeu de couleur colle deux mots du nom au point de faire lire un autre mot, legibility à 5 au plus, et dis-le dans « issues ».
+« forbiddenRender » = true quand le logo relève d'un de ces rendus INTERDITS par le propriétaire du Studio : ${FORBIDDEN_LOGO_RENDERS.join(" ; ")}.
+« clumsyCliche » : dessin grossier façon clip-art bas de gamme. « person » : une personne est dessinée (visage, tête, silhouette humaine, main), même stylisée. « resemblesKnownBrand » : rappelle un logo connu.
+« issues » : défauts concrets et précis, du plus visible au moins visible, jamais des généralités. « fix » : LA correction la plus utile pour une nouvelle version (cible et consigne précise) ; « none » si rien à corriger. « needsSimplifiedMark » : une version simplifiée est-elle nécessaire pour les petites tailles ?`;
+
+export const ARTWORK_REVIEW_SYSTEM = (style: LogoStyle) => style === "libre" ? FREE_ARTWORK_REVIEW_SYSTEM() : `Rôle : directeur artistique qui crée les logos de PETITES ENTREPRISES (artisans, commerces, restaurants, services de proximité). Tu juges UN logo complet dessiné par une IA d'images avant qu'il soit présenté au client, sur une planche : grand format sur fond neutre, sur blanc, sur fond sombre (la VERSION CLAIRE produite automatiquement par le studio à partir de ce logo : juge sa tenue, pas le contraste des couleurs d'origine sur fond sombre), puis aux tailles prévues pour ce style.
 Style demandé : ${style}. Juge-le selon CE style : ${STYLE_GUIDE[style]}
 Une texture, plusieurs couleurs, des dégradés ou un détail illustré ne sont PAS des défauts quand le style les demande. La lisibilité se juge aux usages réellement prévus (${INTENDED_SIZES[style].uses}), pas à 16 px pour un logo illustré : une version simplifiée distincte servira aux favicons, tampons et broderies.
 Juge comme le ferait le client final (une petite entreprise et sa clientèle) : le logo est-il BEAU, chaleureux, soigné, professionnel, et fait-il comprendre le métier au premier regard ? C'est ce qu'on attend ici, pas un logo conceptuel de grande agence. Les éléments attendus du métier (outils, matières, produits, lieu), un emblème rond ou un arc, une écriture script, deux couleurs franches ne sont PAS des défauts quand ils sont bien dessinés ; « clumsyCliche » = seulement un dessin grossier, mal exécuté, façon clip-art bas de gamme.
@@ -353,6 +446,7 @@ Une ligne d'activité très fine qui devient difficile à lire à la PLUS PETITE
 Échelle (la même pour chaque critère) : 9-10 = remarquable ; 8 = beau, lisible, soigné, métier compris au premier regard — de petites imperfections qu'on ne voit qu'en cherchant ne retirent rien : le patron serait content de l'afficher sur sa devanture, son camion, ses cartes ; 7 = présentable, avec un défaut que le client remarquerait (dessin maladroit par endroits, déséquilibre net, couleurs ternes) ; 5-6 = faible ou banal ; 0-4 = raté. Un logo qui plairait à la plupart des petites entreprises du métier mérite au moins 8.
 « genericConcept » = true quand la proposition repose SEULEMENT sur une forme vide sans rien du métier (cercle, triangle ou carré sans contenu), une abstraction que personne ne peut relier au métier, une police standard posée sans composition ou une décoration sans intention. Une icône du métier bien dessinée, un emblème rond réunissant les éléments du métier ou une signature script soignée ne sont PAS des concepts pauvres.
 Lis tout le texte du logo LETTRE PAR LETTRE, accents compris, et recopie-le exactement dans « textRead ». « nameExact » : le nom attendu y figure exactement. « extraText » : un mot non autorisé (slogan inventé, lettres parasites). « nameBox » : rectangle du NOM seul en fractions de l'image (x, y, largeur, hauteur entre 0 et 1), ou null.
+« forbiddenRender » = true quand le logo relève d'un de ces rendus INTERDITS par le propriétaire du Studio : ${FORBIDDEN_LOGO_RENDERS.join(" ; ")}. Un emblème rond qui intègre le nom en arc et un dessin net du métier n'en relève PAS.
 « artifacts » : lettres fantômes, formes fondues, détails incohérents typiques d'une IA. « person » : une personne est dessinée (visage, tête, silhouette humaine, main), même stylisée ou sans traits. « resemblesKnownBrand » : rappelle un logo connu. « amateur » : rendu de générateur, déséquilibré, daté.
 Sois juste et bienveillant comme un client : note ce que tu vois selon l'échelle ; ne baisse pas une note pour un détail que seul un graphiste remarquerait, ni parce que le logo montre simplement le métier ; garde les notes basses pour les défauts réellement visibles. « issues » : défauts concrets et précis (ce qui ne va pas, où, pourquoi), jamais des généralités. « fix » : LA correction la plus utile pour une nouvelle version — cible (symbol, typography, composition, colour, concept) et consigne précise qui change vraiment la proposition (ex. « symbole trop générique : remplacer le cadre par une construction des deux lettres en réserve », « référence au métier trop littérale : garder le geste, abandonner l'objet ») ; « none » si rien à corriger. « needsSimplifiedMark » : une version simplifiée est-elle nécessaire pour les petites tailles ?`;
 
@@ -431,8 +525,19 @@ export const SVG_FIDELITY = 0.96;
  * Version SVG seulement si elle reproduit fidèlement le dessin : aplats de 4 couleurs au plus (une texture ou un
  * dégradé ne se vectorise pas fidèlement), chaque couleur vectorisée puis le résultat recomparé pixel par pixel.
  */
+/** Pixel de bord : mélange d'une teinte principale avec le blanc du fond d'origine (anticrénelage). */
+function blendOfTop(tops: number[][], r: number, g: number, b: number): boolean {
+  return tops.some((c) => {
+    const t = [r, g, b].map((v, k) => (255 - c[k] === 0 ? null : (v - c[k]) / (255 - c[k]))).filter((x): x is number => x != null);
+    if (!t.length) return false;
+    const m = t.reduce((a, x) => a + x, 0) / t.length;
+    return m > 0 && m < 1 && t.every((x) => Math.abs(x - m) < 0.12);
+  });
+}
+
 export async function faithfulSvg(png: Buffer): Promise<{ ok: true; svg: string; fidelity: number } | { ok: false; reason: string }> {
-  const { data, info } = await sharp(png).ensureAlpha().resize({ width: 512, height: 512, fit: "inside" }).raw().toBuffer({ resolveWithObject: true });
+  // Tracé en 1024 px : les déliés fins d'un lettrage se perdaient en 512 px (essai réel : 89 % de fidélité).
+  const { data, info } = await sharp(png).ensureAlpha().resize({ width: 1024, height: 1024, fit: "inside", withoutEnlargement: true }).raw().toBuffer({ resolveWithObject: true });
   const N = info.width * info.height;
   const q = (v: number) => Math.round(v / 24) * 24;
   const hist = new Map<string, number>();
@@ -445,10 +550,52 @@ export async function faithfulSvg(png: Buffer): Promise<{ ok: true; svg: string;
   }
   if (opaque < N * 0.01) return { ok: false, reason: "image vide" };
   const top = [...hist.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4);
-  const covered = top.reduce((s, [, n]) => s + n, 0) / opaque;
+  // Un aplat dessiné par une IA n'est jamais parfaitement uni (légères variations, bords adoucis) : un pixel compte
+  // comme couvert s'il est PROCHE d'une des 4 teintes principales, ou s'il est un bord semi-transparent (essai réel :
+  // un lettrage vert et or en aplats comptait 85 % et n'avait pas de version vectorielle). La fidélité du tracé, vérifiée
+  // ensuite pixel par pixel, reste le vrai juge.
+  const tops = top.map(([k]) => k.split(",").map(Number));
+  let near = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] < 128) continue;
+    if (data[i + 3] < 230 || tops.some((c) => (c[0] - data[i]) ** 2 + (c[1] - data[i + 1]) ** 2 + (c[2] - data[i + 2]) ** 2 <= 40 ** 2) || blendOfTop(tops, data[i], data[i + 1], data[i + 2])) near++;
+  }
+  const covered = near / opaque;
   if (covered < 0.93) return { ok: false, reason: `dégradés, textures ou nuances (${Math.round(covered * 100)} % du dessin en 4 aplats) : une version vectorielle ne serait pas fidèle` };
-  const colours = top.filter(([, n]) => n / opaque > 0.01).map(([k]) => k.split(",").map(Number));
-  const nearest = (r: number, g: number, b: number) => colours.reduce((best, c, i) => ((c[0] - r) ** 2 + (c[1] - g) ** 2 + (c[2] - b) ** 2 < (colours[best][0] - r) ** 2 + (colours[best][1] - g) ** 2 + (colours[best][2] - b) ** 2 ? i : best), 0);
+  // Grain ou texture (papier, traces de matière) : les pixels pleins d'un vrai aplat sont presque tous TRÈS proches de la
+  // teinte moyenne de leur aplat (mesuré sur 5 logos : 82 à 91 % à moins de 8) ; une texture les disperse (mesuré : 66 %). La
+  // version vectorielle perdrait cette matière : refusée.
+  const sums = tops.map(() => [0, 0, 0, 0]);
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] < 230) continue;
+    let bi = -1, bd = 40 ** 2 + 1;
+    tops.forEach((c, k) => { const d = (c[0] - data[i]) ** 2 + (c[1] - data[i + 1]) ** 2 + (c[2] - data[i + 2]) ** 2; if (d < bd) { bd = d; bi = k; } });
+    if (bi >= 0) { sums[bi][0] += data[i]; sums[bi][1] += data[i + 1]; sums[bi][2] += data[i + 2]; sums[bi][3]++; }
+  }
+  const means = sums.filter((m) => m[3]).map((m) => [m[0] / m[3], m[1] / m[3], m[2] / m[3]]);
+  let solid = 0, tight = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] < 230) continue;
+    solid++;
+    if (means.some((c) => (c[0] - data[i]) ** 2 + (c[1] - data[i + 1]) ** 2 + (c[2] - data[i + 2]) ** 2 <= 8 ** 2)) tight++;
+  }
+  if (solid && tight / solid < 0.75) return { ok: false, reason: `texture ou grain (${Math.round((tight / solid) * 100)} % du dessin en aplats francs) : une version vectorielle perdrait sa matière` };
+  // Teintes voisines (même vert coupé en deux cases de l'histogramme) fusionnées : sinon un même aplat est tracé en
+  // deux calques entremêlés et la version vectorielle s'éloigne du dessin.
+  const colours: number[][] = [];
+  for (const [k, n] of top) {
+    if (n / opaque <= 0.01) continue;
+    const c = k.split(",").map(Number);
+    if (!colours.some((d) => (d[0] - c[0]) ** 2 + (d[1] - c[1]) ** 2 + (d[2] - c[2]) ** 2 <= 48 ** 2)) colours.push(c);
+  }
+  // Teinte la plus proche, en tenant compte des bords : un pixel mêlé de blanc (anticrénelage) appartient à la teinte
+  // dont il est un MÉLANGE avec le blanc (essai réel : le bord vert des lettres rangé dans le doré dessinait un liseré).
+  const residual = (c: number[], r: number, g: number, b: number) => {
+    const den = (255 - c[0]) ** 2 + (255 - c[1]) ** 2 + (255 - c[2]) ** 2;
+    const t = den ? Math.max(0, Math.min(1, ((r - c[0]) * (255 - c[0]) + (g - c[1]) * (255 - c[1]) + (b - c[2]) * (255 - c[2])) / den)) : 0;
+    return (c[0] + t * (255 - c[0]) - r) ** 2 + (c[1] + t * (255 - c[1]) - g) ** 2 + (c[2] + t * (255 - c[2]) - b) ** 2;
+  };
+  const nearest = (r: number, g: number, b: number) => colours.reduce((best, c, i) => (residual(c, r, g, b) < residual(colours[best], r, g, b) ? i : best), 0);
   const label = new Int16Array(N).fill(-1);
   for (let p = 0; p < N; p++) if (data[p * 4 + 3] >= 128) label[p] = nearest(data[p * 4], data[p * 4 + 1], data[p * 4 + 2]);
   const paths: string[] = [];
@@ -461,7 +608,7 @@ export async function faithfulSvg(png: Buffer): Promise<{ ok: true; svg: string;
     }
     const svg: string = ImageTracer.imagedataToSVG(
       { width: info.width, height: info.height, data: mask },
-      { numberofcolors: 2, colorsampling: 0, pal: [{ r: 0, g: 0, b: 0, a: 255 }, { r: 255, g: 255, b: 255, a: 255 }], ltres: 1, qtres: 1, pathomit: 8, roundcoords: 1, blurradius: 0, viewbox: true, desc: false },
+      { numberofcolors: 2, colorsampling: 0, pal: [{ r: 0, g: 0, b: 0, a: 255 }, { r: 255, g: 255, b: 255, a: 255 }], ltres: 0.2, qtres: 0.2, pathomit: 8, roundcoords: 1, blurradius: 0, viewbox: true, desc: false },
     );
     const ds = [...svg.matchAll(/<path fill="rgb\(0,0,0\)"[^>]*\sd="([^"]+)"/g)].map((m) => m[1].trim());
     if (ds.length) paths.push(`<path fill="#${c.map((v) => Math.min(255, v).toString(16).padStart(2, "0")).join("")}" fill-rule="evenodd" d="${ds.join(" ").replace(/\s+/g, " ")}"/>`);

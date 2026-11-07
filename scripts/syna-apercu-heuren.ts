@@ -1,7 +1,7 @@
 /**
  * Aperçu privé HEUREN (#301, convergence vers main) : prépare une base de démonstration (compte fictif, projet HEUREN
  * préparé, quatre publications à valider) puis lance le Studio COMPILÉ (`next start`) avec les fonctions gratuites de
- * SYNA ouvertes, sans aucune clé de fournisseur (aucune dépense possible) et sans accès réseau extérieur.
+ * SINA ouvertes, sans aucune clé de fournisseur (aucune dépense possible) et sans accès réseau extérieur.
  *
  * Usage : npm run build, puis
  *   SYNA_APERCU_DIR=<dossier persistant> SYNA_APERCU_PORT=3100 npx tsx scripts/syna-apercu-heuren.ts
@@ -41,7 +41,7 @@ if (!one("SELECT id FROM users WHERE email = ?", EMAIL)) {
   saveThemeVersion(kit.pid, kit.spec, "Démonstration HEUREN", "user");
   run("UPDATE projects SET name = ? WHERE id = ?", "HEUREN", kit.pid);
   const p = loadProject(kit.pid);
-  // Projet préparé, comme un client accompagné : SYNA peut retoucher (jamais la lecture seule des anciens projets).
+  // Projet préparé, comme un client accompagné : SINA peut retoucher (jamais la lecture seule des anciens projets).
   initialize(kit.pid, { ...emptyInput(), business: p.business, offerName: p.product.name, description: p.product.summary, services: p.services } as never);
   openProjectConversation(u as never, kit.pid);
   const assets = Object.fromEntries(all<{ id: string; name: string }>("SELECT id, name FROM assets WHERE project_id = ?", kit.pid).map((a) => [a.name, a.id]));

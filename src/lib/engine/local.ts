@@ -96,6 +96,11 @@ export const SECTOR_DIRECTION: Record<SectorId, DirectionId> = {
 };
 
 /** Matières reconnues dans un texte libre (FR/EN), des formes les plus précises aux plus courtes. */
+/** Outil ou lieu de fabrication juste avant une matière : la matière est la sienne, pas celle du produit vendu. */
+// « cuites AU chaudron en cuivre », « élevé EN fût de chêne », « DANS une cuve inox » : l'outil sert à fabriquer ; « Bassine à
+// confiture en cuivre » (le produit vendu est la bassine) garde sa matière.
+const TOOL_BEFORE = /\b(?:au|aux|à la|à l'|dans (?:le|la|les|un|une|des)|en|sur (?:le|la|un|une))\s+(chaudrons?|bassines?|marmites?|casseroles?|cocottes?|moules?|fours?|cuves?|fûts?|tonneaux?|alambics?|presses?|machines?|outils?|ustensiles?|fourneaux?)\b[^.,;]{0,25}$/i;
+
 const MATERIAL_WORDS: RegExp[] = [
   "acier inoxydable", "acier inox", "cuir véritable", "cuir pleine fleur", "plaqué or", "argent 925", "argent massif", "or 18 carats", "coton bio(?:logique)?", "verre trempé", "verre saphir",
   "stainless steel", "genuine leather", "full-grain leather", "sterling silver", "gold[- ]plated", "organic cotton", "sapphire glass", "tempered glass",
@@ -128,7 +133,9 @@ export function factsFromDescription(desc: string): Fact[] {
     const found: { i: number; s: string }[] = [];
     let rest = desc;
     for (const re of MATERIAL_WORDS) {
-      for (const m of rest.matchAll(re)) found.push({ i: m.index, s: m[0] });
+      // La matière d'un OUTIL de fabrication n'est pas celle du produit (essai réel du 7 novembre : « confitures cuites
+      // au chaudron en cuivre » donnait « Matière : cuivre » pour un pot de confiture).
+      for (const m of rest.matchAll(re)) if (!TOOL_BEFORE.test(rest.slice(Math.max(0, m.index - 40), m.index))) found.push({ i: m.index, s: m[0] });
       // Une forme déjà reprise est masquée : « cuir véritable » ne donne pas aussi « cuir ».
       rest = rest.replace(re, (m) => " ".repeat(m.length));
     }

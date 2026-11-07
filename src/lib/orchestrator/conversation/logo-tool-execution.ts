@@ -1,4 +1,4 @@
-/** Même SYNA, moteurs LogoV2/Brain/devis/budget/jobs/bibliothèque ; jamais d'activation de marque implicite. */
+/** Même SINA, moteurs LogoV2/Brain/devis/budget/jobs/bibliothèque ; jamais d'activation de marque implicite. */
 import {HttpError,type User}from '../../auth';
 import {all,id,json,now,one,tx,readSnapshot}from '../../db';
 import {loadProject,remember}from '../../projects';
@@ -29,7 +29,7 @@ import {validateLogoToolProposal}from './logo-tool-validation';
 import type {LogoToolCommand}from './logo-tool-contract';
 type Saved={schema:1;id:string;conversationId:string;sourceReceiptId:string;revision:number;projectRevision:number;createdAt:number;expiresAt:number;boundId:string;input:LogoCreationInput;cost:LogoCreationCost;jobId?:string;confirmedAt?:number;seriesId?:string;pins?:ReturnType<typeof logoSeriesPins>};
 const prefix='agent.logos.tool.';
-function owned(u:User,cid:string){if(!conversationLogosEnabled())throw new HttpError(404,L('Logos avec SYNA indisponibles.','Logos with SYNA unavailable.'));const c=ownedConversation(u,cid);if(!c.project_id)throw new HttpError(409,L('Créez d’abord le projet.','Create the project first.'));requirePlan(u,c.project_id);return{c,pid:c.project_id};}
+function owned(u:User,cid:string){if(!conversationLogosEnabled())throw new HttpError(404,L('Logos avec SINA indisponibles.','Logos with SINA unavailable.'));const c=ownedConversation(u,cid);if(!c.project_id)throw new HttpError(409,L('Créez d’abord le projet.','Create the project first.'));requirePlan(u,c.project_id);return{c,pid:c.project_id};}
 function read(pid:string,qid:string){return json<Saved|null>(one<{value:string}>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key=?",pid,prefix+qid)?.value,null);}
 function save(pid:string,m:Saved){const value=JSON.stringify(m);if(value.length>2000000)throw new HttpError(409,L('La demande dépasse la capacité de versionnement. Rien n’est tronqué.','Request exceeds versioning capacity. Nothing is truncated.'));remember(pid,{kind:'artifact',key:prefix+m.id,value,source:'local',origin:'system',status:'inferred'});}
 function records(pid:string,cid:string){return all<{value:string}>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key LIKE 'agent.logos.tool.%' ORDER BY created_at DESC,rowid DESC LIMIT 100",pid).map(r=>json<Saved|null>(r.value,null)).filter((m):m is Saved=>!!m&&m.conversationId===cid);}
@@ -52,7 +52,7 @@ export function confirmLogoCreation(u:User,cid:string,cmd:Extract<LogoToolComman
  if(logoCreationQuote(p,m.input).fingerprint!==m.cost.fingerprint)throw new HttpError(409,L('Route, tarif, droits ou données modifiés. Relisez le devis.','Route, price, entitlements or data changed. Review the quote.'));
  if(m.cost.reused){m.seriesId=m.cost.seriesId;m.pins=m.cost.pins;m.confirmedAt=now();save(pid,m);return logoToolReceipt(u,cid,m.id);}
  assertCanSpend(u.id,m.cost.capMicro,pid);allocateAgentContinuation(m.boundId,u.id,m.cost.capMicro,m.cost.maximumCalls);
- const j=enqueue({userId:u.id,projectId:pid,type:'brand.logo.v2',label:L('Créer les trois logos proposés avec SYNA','Create the three logos proposed with SYNA'),payload:{projectId:pid,agentLogoQuote:{conversationId:cid,quoteId:m.id},costCapMicro:m.cost.capMicro},idempotencyKey:`agent-logos:${m.id}`,maxAttempts:1});bindAgentJob(m.boundId,u.id,j.id,'identity');m.jobId=j.id;m.confirmedAt=now();save(pid,m);return logoToolReceipt(u,cid,m.id);
+ const j=enqueue({userId:u.id,projectId:pid,type:'brand.logo.v2',label:L('Créer les trois logos proposés avec SINA','Create the three logos proposed with SINA'),payload:{projectId:pid,agentLogoQuote:{conversationId:cid,quoteId:m.id},costCapMicro:m.cost.capMicro},idempotencyKey:`agent-logos:${m.id}`,maxAttempts:1});bindAgentJob(m.boundId,u.id,j.id,'identity');m.jobId=j.id;m.confirmedAt=now();save(pid,m);return logoToolReceipt(u,cid,m.id);
 });}
 export async function runAgentLogoCreation(ctx:JobContext,injected?:LogoV2Ai){
  const q=ctx.payload.agentLogoQuote as{conversationId:string;quoteId:string}|undefined,u=one<User>('SELECT * FROM users WHERE id=?',ctx.job.user_id);if(!u||!q)throw new HttpError(404,'logo_quote_missing');const{pid,m}=located(u,q.conversationId,q.quoteId);if(m.jobId!==ctx.job.id||pid!==ctx.job.project_id||ctx.job.type!=='brand.logo.v2'||m.cost.reused)throw new HttpError(404,'logo_quote_job_mismatch');

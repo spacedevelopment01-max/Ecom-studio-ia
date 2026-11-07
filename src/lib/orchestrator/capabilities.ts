@@ -34,6 +34,9 @@ export type ModelCapability = {
 export const MODELS: ModelCapability[] = [
   { provider: "local", model: "local-engine", tier: "local", capabilities: ["deterministic", "text"], effort: false },
   { provider: "anthropic", model: "claude-haiku-4-5", tier: "light", capabilities: ["text", "vision", "structured_output"], effort: false },
+  // Haiku 5.5 : 10 fois moins cher que Haiku 4.5 (0,10 / 0,50 $ par million de jetons, invites ≤ 100 000 jetons) ; choisi
+  // explicitement par les appels qui le demandent (ex. SINA pour un échange simple), sans changer le niveau « léger » par défaut.
+  { provider: "anthropic", model: "claude-haiku-5-5", tier: "light", capabilities: ["text", "vision", "structured_output"], effort: true },
   { provider: "anthropic", model: "claude-sonnet-5-5", tier: "standard", capabilities: ["text", "vision", "structured_output", "long_context"], effort: true },
   { provider: "anthropic", model: "claude-opus-5-5", tier: "strong", capabilities: ["text", "vision", "structured_output", "long_context"], effort: true },
   { provider: "openai", model: "gpt-image-1", tier: "strong", capabilities: ["image_generation", "image_edit"], effort: false },

@@ -3,19 +3,32 @@ import { createHash } from "node:crypto";
 import { importLink, safeFetch } from "../engine/import-link";
 import type { Project } from "../projects";
 import type { Brief, Research, Source } from "./types";
+import { isMarketplace, type WebFinding } from "../ai/web-search";
+/** Recherche web (OpenAI) : renvoie des pages trouvées avec un extrait rapporté ; null = recherche classique. */
+export type WebDiscover = (query: string) => Promise<WebFinding[]>;
+export function webResearchQuery(p: Project, brief: Brief): string {
+  return JSON.stringify({
+    demande: "Trouve des pages web utiles pour définir des angles marketing émotionnels de cette offre : ce que les clients désirent, craignent ou regrettent, comment les concurrents se présentent, les repères du secteur.",
+    offre: { nom: brief.profile.name, categorie: brief.profile.category, resume: brief.profile.summary, activite: p.business },
+    publicVise: brief.input.target, zone: p.business === "services" ? brief.services.area : undefined, langue: "français",
+  });
+}
 export async function researchProject(
   p: Project,
   brief: Brief,
   read = importLink,
   discover = safeFetch,
+  web: WebDiscover | null = null,
 ): Promise<Research> {
-  const candidates: { url: string; category: NonNullable<Source["category"]> }[] = [
+  const candidates: { url: string; category: NonNullable<Source["category"]>; reported?: WebFinding }[] = [
     ...(brief.input.offerUrl ? [{ url: brief.input.offerUrl, category: "offer" as const }] : []),
     ...brief.input.referenceUrls.map(url => ({ url, category: "offer" as const })),
   ];
   const topic = `${brief.profile.category || brief.profile.name} ${brief.input.target} ${p.business === "services" ? brief.services.area : ""}`;
+  // Recherche web OpenAI : liens vérifiés côté fournisseur, lus ensuite par le Studio quand c'est possible.
+  if (web) for (const f of await web(webResearchQuery(p, brief))) candidates.push({ url: f.url, category: f.category, reported: f });
   // Quatre familles de requêtes, bornées. Les résultats RSS ne sont jamais comptés comme sources lues.
-  if (read === importLink || discover !== safeFetch) for (const [category, suffix] of [
+  else if (read === importLink || discover !== safeFetch) for (const [category, suffix] of [
     ["offer", "documentation fonctionnement caractéristiques"], ["competitors", p.business === "services" ? "prestataire prestations tarifs" : "produit alternatives caractéristiques"],
     ["customers", "questions avis limites problèmes"], ["sector", "guide professionnel secteur"],
   ] as const) {
@@ -39,9 +52,12 @@ export async function researchProject(
     const url = canonical(candidate.url);
     if (seenUrls.has(url)) continue;
     seenUrls.add(url); attempts++;
+    // Les places de marché (AliExpress, Alibaba, Temu…) ne fondent jamais un angle marketing.
+    if (isMarketplace(url)) { sources.push({ id: `source-${attempts}`, url, title: url, excerpt: "", consultedAt: Date.now(), status: "unavailable", provenance: "web", category: candidate.category, error: "Place de marché exclue des sources d’angles." }); continue; }
     try {
       const r = await read(url), resolved = canonical(r.url);
       const text = r.text.replace(/\s+/g, " ").trim();
+      if (!text && candidate.reported) throw new Error("Page vide : extrait rapporté conservé.");
       const contentHash = createHash("sha256").update(text.toLowerCase()).digest("hex");
       // Identité textuelle + similarité des shingles pour les reprises quasi identiques.
       const shingles = (v: string) => new Set(v.toLowerCase().split(/\s+/).map((_, i, a) => a.slice(i, i + 5).join(" ")));
@@ -50,9 +66,16 @@ export async function researchProject(
       if ((resolved !== url && seenUrls.has(resolved)) || seenContent.has(contentHash) || duplicate) continue;
       seenUrls.add(resolved); seenContent.add(contentHash);
       sources.push({ id: `source-${attempts}`, url: r.url, title: r.title || new URL(r.url).hostname,
-        excerpt: text.slice(0, 3200), consultedAt: Date.now(), status: text ? "consulted" : "unavailable", provenance: "web", category: candidate.category, contentHash,
+        excerpt: text.slice(0, 3200), consultedAt: Date.now(), status: text ? "consulted" : "unavailable", provenance: "web", category: candidate.category, contentHash, via: "page",
         ...(!text ? { error: "Page sans texte exploitable." } : {}) });
     } catch {
+      // Page non lisible ici : l'extrait rapporté par la recherche web OpenAI est gardé, marqué comme tel.
+      const f = candidate.reported;
+      if (f) {
+        const contentHash = createHash("sha256").update(f.excerpt.toLowerCase()).digest("hex");
+        if (!seenContent.has(contentHash)) { seenContent.add(contentHash); sources.push({ id: `source-${attempts}`, url: f.url, title: f.title, excerpt: f.excerpt.slice(0, 3200), consultedAt: Date.now(), status: "consulted", provenance: "web", category: f.category, contentHash, via: "openai_web_search" }); }
+        continue;
+      }
       sources.push({ id: `source-${attempts}`, url, title: url, excerpt: "", consultedAt: Date.now(), status: "unavailable", provenance: "web", category: candidate.category, error: "Page inaccessible : couverture partielle, lien à vérifier." });
     }
   }
@@ -63,7 +86,7 @@ export async function researchProject(
       status: "partial", // Collected pages still require relevance review; never a completed study.
 
       missingCategories: ["offer", "competitors", "customers", "sector"].filter(c => !available.some(s => s.category === c)),
-      limits: ["Extraits consultés, pertinence à confirmer par l’analyse et le client ; cible 10, sans garantie d’exhaustivité.", ...(available.length < 8 ? ["Couverture indicative : l’analyse doit vérifier les familles pertinentes sans quota de remplissage."] : [])],
+      limits: ["Extraits consultés, pertinence à confirmer par l’analyse et le client ; cible 10, sans garantie d’exhaustivité.", ...(available.some(s => s.via === "openai_web_search") ? ["Certains extraits sont rapportés par la recherche web OpenAI (lien vérifié, page non relue par le Studio)."] : []), ...(available.length < 8 ? ["Couverture indicative : l’analyse doit vérifier les familles pertinentes sans quota de remplissage."] : [])],
     },
     sources,
     observations: available.map((s) => ({

@@ -18,6 +18,8 @@ export function TutorialButton({ tab, business }: { tab: string; business?: "pro
   const [nudge, setNudge] = useState(false);
   useEffect(() => {
     if (!id) return;
+    // Mode chantier (#492) : pas d'invitation au tutoriel de l'ancien Pilote pendant que SINA construit le projet.
+    if (id === "pilote" && document.querySelector("[data-chantier]")) { setNudge(false); return; }
     try { setNudge(!localStorage.getItem(SEEN(id))); } catch { setNudge(false); }
   }, [id]);
   if (!id || !TUTORIALS[id].steps.length) return null;

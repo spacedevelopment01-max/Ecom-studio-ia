@@ -16,7 +16,7 @@ import {localPromptsEnabled} from './local-prompts';
 import {localFilesEnabled} from './local-files';
 import {localBusinessContentEnabled} from './local-business-content';
 import {siteRequestsEnabled} from './active-context';
-/** Catalogue d'opérations, pas des permissions. Un module manuel n'est pas un outil SYNA. */
+/** Catalogue d'opérations, pas des permissions. Un module manuel n'est pas un outil SINA. */
 import {stableHash} from '../../brain/hash';
 import {conversationToolsEnabled,conversationThemeToolsEnabled,conversationCompositionEnabled,conversationOriginalEnabled,conversationExportsEnabled,conversationRenderEnabled,conversationResearchEnabled,conversationCatalogueEnabled,conversationImagesEnabled,conversationLogosEnabled,conversationVideosEnabled,conversationVideoGenerationEnabled,conversationVideoVoiceEnabled,conversationVideoClipEnabled,conversationSocialEnabled,conversationContentEnabled,conversationBrandEnabled} from './tool-flags';
 import {strategyChoicesEnabled} from './strategy-choices';

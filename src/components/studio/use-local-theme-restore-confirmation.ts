@@ -3,7 +3,7 @@ import {useStaleConfirmation} from './use-stale-confirmation';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {createLocalThemeRestoreConfirmation,LOCAL_THEME_RESTORE_CHANGED_EVENT,type LocalThemeRestoreChange,type LocalThemeRestoreConfirmationState} from '@/lib/local-theme-restore-confirmation-client';
-/** #301 « SYNA complète » : branche le transport Restauration des versions de Codex (#382) ; le Studio se relit après le reçu. */
+/** #301 « SINA complète » : branche le transport Restauration des versions de Codex (#382) ; le Studio se relit après le reçu. */
 export function useLocalThemeRestoreConfirmation(view:ConversationView|null,onView:(v:ConversationView)=>void,onApplied:(change:LocalThemeRestoreChange)=>Promise<void>|void){
  const current=useRef(view),callbacks=useRef({onView,onApplied});current.current=view;callbacks.current={onView,onApplied};
  const[state,setState]=useState<LocalThemeRestoreConfirmationState>({busy:false,error:'',uncertain:false});

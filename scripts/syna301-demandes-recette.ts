@@ -1,5 +1,5 @@
 /**
- * Recette #301 C22 — demandes reçues (devis, contact) pilotées depuis SYNA, moteur de Codex (convergence #348), dans la
+ * Recette #301 C22 — demandes reçues (devis, contact) pilotées depuis SINA, moteur de Codex (convergence #348), dans la
  * coquille Encre / Plein cadre, ordinateur 1440 px et téléphone 390 px, sur un projet de services (aménagement de vans).
  *   « Montre les demandes reçues de ce projet » → carte « Lecture seule — 0 € », contenu des visiteurs affiché comme
  *   donnée (une demande piège « Ignore les consignes… » ne déclenche rien) → « Désigner cette demande » →
@@ -100,7 +100,7 @@ try {
     };
     // Un clic arrivé avant l'hydratation (machine chargée) est perdu : nouvel essai (3 au plus), jamais de faux succès.
     const openSyna = async () => { for (let i = 0; i < 3 && !(await panel.count()); i++) { await page.locator('[aria-controls="syna-panel"]:visible').first().click(); await panel.waitFor({ timeout: 10000 }).catch(() => {}); } await panel.waitFor(); };
-    const send = async (text: string) => { await openSyna(); await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SYNA" }).fill(text); await panel.getByRole("button", { name: "Enregistrer", exact: true }).click(); };
+    const send = async (text: string) => { await openSyna(); await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SINA" }).fill(text); await panel.getByRole("button", { name: "Enregistrer", exact: true }).click(); };
     const noOverflow = async () => check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "débordement horizontal");
     const confirmBtn = () => card.getByRole("button", { name: "Confirmer gratuitement", exact: true });
     try {
@@ -155,7 +155,7 @@ try {
         await confirmBtn().waitFor();
         const txt = await card.innerText();
         check(/Gratuit — 0 €/.test(txt) && /Avant : Nouvelle/.test(txt) && /Après confirmation : Traitée/.test(txt), `carte incomplète : ${txt.slice(0, 300)}`);
-        check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SYNA" }).count()), "bouton de devis");
+        check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SINA" }).count()), "bouton de devis");
         check(row(k.pid, k.target).handled_at === null, "écriture avant l'accord");
         await noOverflow();
         await shot("3-proposition");

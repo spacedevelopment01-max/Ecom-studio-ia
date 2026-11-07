@@ -1,5 +1,5 @@
 /**
- * Mission #282, lot 0 — captures et contrôles de la vitrine des fondations SYNA dans un vrai navigateur.
+ * Mission #282, lot 0 — captures et contrôles de la vitrine des fondations SINA dans un vrai navigateur.
  *
  *   npx tsx scripts/syna-lot0-captures.ts <dossier-captures> [adresse-du-studio]
  *

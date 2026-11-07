@@ -159,6 +159,16 @@ export async function openaiSend(req: TextRequest, key: string, fetcher: Fetch =
   };
 }
 
+/** Corps Responses brut (outils intégrés comme web_search) : même flux, mêmes erreurs que openaiSend. */
+export async function openaiResponses(body: Record<string, unknown>, key: string, fetcher: Fetch = fetch): Promise<any> {
+  return postStream(fetcher, `${OPENAI}/responses`, bearer(key), body);
+}
+/** Comptage gratuit des jetons d'entrée d'un corps Responses (instructions + entrée + outils). */
+export async function openaiCountBody(body: Record<string, unknown>, key: string, fetcher: Fetch = fetch): Promise<number> {
+  const j = await postJson(fetcher, `${OPENAI}/responses/input_tokens`, bearer(key), body);
+  return Number(j?.input_tokens);
+}
+
 // ------------------------------------------------------------------ Google Gemini (generateContent)
 
 const GEMINI = "https://generativelanguage.googleapis.com/v1beta";

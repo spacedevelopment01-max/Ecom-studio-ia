@@ -6,7 +6,7 @@ import type {useLocalThemeChoiceConfirmation} from './use-local-theme-choice-con
 import {Button} from '../ui';
 import {useT} from '../i18n';
 /**
- * #301 « SYNA complète » — carte Choix du thème gratuite (contrat #376 de Codex) : deux vrais aperçus du projet
+ * #301 « SINA complète » — carte Choix du thème gratuite (contrat #376 de Codex) : deux vrais aperçus du projet
  * (site actuel / aperçu inactif préparé sans IA), accord gratuit séparé qui remplace le site de travail seulement,
  * reçu relu. Si le moteur signale des retouches non reportées, aucune confirmation n'est proposée (message du moteur).
  */

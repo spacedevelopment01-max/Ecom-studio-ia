@@ -53,6 +53,12 @@ type Handler = (ctx: JobContext) => Promise<unknown>;
 
 export const handlers: Record<string, Handler> = {
   "agent.reason": async ctx => (await import('../src/lib/orchestrator/conversation/intelligence')).runCognitiveJob(ctx),
+  /** SYNA agent (#492) : une exécution reprenable du fil (raisonnement, outils, vérification). */
+  "syna.agent": async (ctx) => (await import("../src/lib/syna-agent/loop")).runAgentJob(ctx),
+  // SINA (#492), étape 2 : 3 logos de 3 styles pour l'identité choisie (moteur de logos V2, plafonné au devis).
+  "syna.logos": async (ctx) => (await import("../src/lib/syna-agent/logos")).runSinaLogosJob(ctx),
+  // SINA (#492), étape 7 : site codé d'après la maquette choisie (payant, plafonné au devis).
+  "syna.mockup.code": async (ctx) => (await import("../src/lib/syna-agent/mockup-code/job")).runMockupCodeJob(ctx),
   "agent.theme.capture": async ctx => (await import('../src/lib/orchestrator/conversation/render-tool-execution')).runRenderCapture(ctx),
   "agent.ad-document.local": async ctx => (await import('../src/lib/orchestrator/conversation/ad-document-tool-execution')).runAdDocument(ctx),
   "agent.theme.export": async ctx => (await import('../src/lib/orchestrator/conversation/export-tool-execution')).runNativeExport(ctx),
@@ -576,6 +582,9 @@ for (const action of Object.keys(handlers)) {
     assertJobScope({ userId: ctx.job.user_id, projectId: ctx.job.project_id, payload: ctx.payload, parentId: ctx.job.parent_id, dependsOn: json<string[]>(ctx.job.depends_on, []) });
     assertJobEntitlements(action, ctx.job.project_id, ctx.payload);
     const pid = ctx.job.project_id;
+    // La conversation de SYNA n'est pas une création : elle doit pouvoir réfléchir et re-préparer un angle périmé.
+    // Chaque création qu'elle lance (tâche ou appel payant) garde son propre contrôle de fraîcheur de la stratégie.
+    if (action === "syna.agent") return execute(ctx);
     const selected = pid ? jobStrategy(pid, action, ctx.payload, true) : null;
     if (pid && Object.hasOwn(ctx.payload, "strategyVersion") && ctx.payload.strategyVersion !== (selected?.id ?? null) && !ctx.payload.strategyAwaitingChoice) {
       throw new HttpError(409, "L’angle actif a changé. Vérifiez et confirmez cette tâche avant une nouvelle exécution.", "strategy_changed");

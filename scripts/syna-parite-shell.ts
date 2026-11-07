@@ -1,12 +1,12 @@
 /**
- * SYNA FULL PARITY (#301) : rejoue les recettes navigateur de Codex (`verify-agent211-*-ui.ts`, lancées par
+ * SINA FULL PARITY (#301) : rejoue les recettes navigateur de Codex (`verify-agent211-*-ui.ts`, lancées par
  * `verify-agent211-build.ts`) DANS la coquille Encre / Plein cadre, sans modifier les fichiers de Codex.
  *
  * Le lanceur génère des copies temporaires (`scripts/zz-parite-*.ts`), lance la recette demandée, puis les supprime.
  * Adaptations, et rien d'autre (les vérifications de Codex restent identiques) :
- *  - ouverture de SYNA : l'accès de la coquille (`[aria-controls="syna-panel"]` visible : onglet signature en Encre,
- *    bouton « Ouvrir Syna » de la barre en Plein cadre, onglet Syna au téléphone) au lieu de la pastille noire « SYNA » ;
- *  - fenêtre SYNA : `#syna-panel:visible` (colonne, feuille ou panneau selon le mode et la taille) au lieu du dialogue du
+ *  - ouverture de SINA : l'accès de la coquille (`[aria-controls="syna-panel"]` visible : onglet signature en Encre,
+ *    bouton « Ouvrir Sina » de la barre en Plein cadre, onglet Sina au téléphone) au lieu de la pastille noire « SINA » ;
+ *  - fenêtre SINA : `#syna-panel:visible` (colonne, feuille ou panneau selon le mode et la taille) au lieu du dialogue du
  *    dock. Repliée, la colonne reste dans la page (même conversation) mais masquée : seule la fenêtre visible compte,
  *    comme un dialogue fermé qui disparaît de l'arbre d'accessibilité ;
  *  - coquille activée (`STUDIO_SYNA_SHELL=1`) et chaque compte de test reçoit le mode demandé, conversation repliée à
@@ -36,11 +36,11 @@ let replaced = { opener: 0, panel: 0 };
 for (const f of sources) {
   let s = fs.readFileSync(path.join(dir, f), "utf8");
   const before = s;
-  s = s.replace(/getByRole\('button',\{name:'SYNA',exact:true\}\)/g, () => { replaced.opener++; return `locator('[aria-controls="syna-panel"]:visible').first()`; });
-  s = s.replace(/getByRole\('dialog',\{name:'SYNA — conversation du projet',exact:true\}\)/g, () => { replaced.panel++; return `locator('#syna-panel:visible')`; });
-  // Même fenêtre désignée sans son nom (recette de la conversation) : seul dialogue SYNA visé par ces lectures de texte.
+  s = s.replace(/getByRole\('button',\{name:'SINA',exact:true\}\)/g, () => { replaced.opener++; return `locator('[aria-controls="syna-panel"]:visible').first()`; });
+  s = s.replace(/getByRole\('dialog',\{name:'SINA — conversation du projet',exact:true\}\)/g, () => { replaced.panel++; return `locator('#syna-panel:visible')`; });
+  // Même fenêtre désignée sans son nom (recette de la conversation) : seul dialogue SINA visé par ces lectures de texte.
   s = s.replace(/getByRole\('dialog'\)\.getByText\(/g, () => { replaced.panel++; return `locator('#syna-panel:visible').getByText(`; });
-  // Fenêtre SYNA passée en argument à un utilitaire (recette ui de #348 : historique sauvegardé) : même fenêtre.
+  // Fenêtre SINA passée en argument à un utilitaire (recette ui de #348 : historique sauvegardé) : même fenêtre.
   s = s.replace(/getByRole\('dialog'\),/g, () => { replaced.panel++; return `locator('#syna-panel:visible'),`; });
   // Identifiant du panneau : `#central-agent-panel` (dock) devient `#syna-panel` (coquille), modal aussi au téléphone.
   s = s.replace(/central-agent-panel/g, () => { replaced.panel++; return "syna-panel"; });

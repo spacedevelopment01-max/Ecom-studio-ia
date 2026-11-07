@@ -1,4 +1,4 @@
-/** Icônes au trait des primitives SYNA (un seul style, épaisseur 1,6, `currentColor`, toujours décoratives). */
+/** Icônes au trait des primitives SINA (un seul style, épaisseur 1,6, `currentColor`, toujours décoratives). */
 import type { SynaState } from "./labels";
 
 type P = { className?: string };

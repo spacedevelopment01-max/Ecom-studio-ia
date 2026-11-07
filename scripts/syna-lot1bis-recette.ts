@@ -6,8 +6,8 @@
  *   npx tsx scripts/syna-lot1bis-recette.ts <dossier>
  *
  * Deux comptes, deux projets fictifs (SILLON, boutique ; TABLE SAISON, restaurant) et une tâche « en cours » écrite en
- * base (aucun worker, aucune IA). Le Studio est lancé en développement : A. coquille + SYNA visibles ; B. coquille avec
- * les drapeaux SYNA fermés. Aucune clé d'IA ; toute requête hors du serveur local est comptée. Captures et
+ * base (aucun worker, aucune IA). Le Studio est lancé en développement : A. coquille + SINA visibles ; B. coquille avec
+ * les drapeaux SINA fermés. Aucune clé d'IA ; toute requête hors du serveur local est comptée. Captures et
  * `recette.json` dans le dossier.
  */
 import fs from "node:fs";
@@ -233,7 +233,7 @@ try {
     ok("1 · brouillon identique après la bascule (Ctrl Maj M), focus rendu au champ de commande", t1.mode === "plein" && t1.value === draft && t1.focusIsCommand, t1);
     // 2. Sélection et état : la conversation et l'écran de l'espace ne sont pas recréés.
     const t2 = await s.page.evaluate(() => ({ panel: !!document.querySelector('#syna-panel [data-recette="1"]'), main: !!document.querySelector('#studio-main [data-recette="1"]') }));
-    ok("2 · conversation SYNA et écran de l'espace jamais recréés par la bascule (état, sélection, brouillon conservés)", panelMark && mainMark && t2.panel && t2.main, t2);
+    ok("2 · conversation SINA et écran de l'espace jamais recréés par la bascule (état, sélection, brouillon conservés)", panelMark && mainMark && t2.panel && t2.main, t2);
     note("2 · sélection d'un élément de l'aperçu (A2)", "non réalisable sur main : la sélection A2 de Codex (#287) n'est pas fusionnée. Garantie structurelle : le contexte de sélection et la conversation ne sont pas recréés (vérifié ci-dessus).");
     // 3. Tâche en cours : même tâche, même progression, aucune nouvelle tâche ni appel.
     const jobsBefore = all("SELECT id, status, progress FROM jobs WHERE project_id = ?", P.sillon);
@@ -362,7 +362,7 @@ try {
     await a.context.close(); await b.context.close(); await c.context.close();
   }
   {
-    // 10. Clavier seul et annonces : Ctrl J ouvre SYNA, Échap ferme et rend le focus, changement de mode annoncé.
+    // 10. Clavier seul et annonces : Ctrl J ouvre SINA, Échap ferme et rend le focus, changement de mode annoncé.
     const s = await session(browser, O, VIEWPORTS.ordinateur);
     await setPrefs(s, O, { mode: "encre", panel: "collapsed", convoWidth: null });
     await go(s.page, O, "sillon", "images");
@@ -375,7 +375,7 @@ try {
     const back = await s.page.evaluate(() => ({ hidden: document.querySelector("#syna-panel")?.hasAttribute("hidden"), focus: (document.activeElement as HTMLElement | null)?.dataset.space ?? document.activeElement?.tagName }));
     await switchKeys(s.page);
     const said = await s.page.locator(".ss-custom-scope [role=status]").innerText();
-    ok("10 · Ctrl J ouvre SYNA (focus dedans), Échap la ferme et rend le focus là où il était", opened && !!back.hidden && back.focus === "images", { opened, back });
+    ok("10 · Ctrl J ouvre SINA (focus dedans), Échap la ferme et rend le focus là où il était", opened && !!back.hidden && back.focus === "images", { opened, back });
     ok("10 · le changement de mode est annoncé aux lecteurs d'écran (aria-live)", /Plein cadre/.test(said), said);
     // Bord de la conversation au clavier (séparateur ajustable).
     await switchKeys(s.page);
@@ -419,7 +419,7 @@ try {
   }
   note("12 · export ZIP octet pour octet", "non comparé en ZIP : les projets de démonstration n'ont pas de boutique composée. Garantie de code : l'export et le rendu du site ne lisent jamais ces réglages (test unitaire) et la base du projet est identique (ci-dessus).");
   {
-    // 9. Téléphone, Plein cadre : feuille SYNA au-dessus de la zone de commande, zone et feuilles utilisables.
+    // 9. Téléphone, Plein cadre : feuille SINA au-dessus de la zone de commande, zone et feuilles utilisables.
     const s = await session(browser, O, VIEWPORTS.tel360);
     await setPrefs(s, O, { mode: "plein", panel: "pinned", convoWidth: null });
     await go(s.page, O, "sillon", "boutique");
@@ -427,7 +427,7 @@ try {
     await s.page.waitForTimeout(800);
     const geo = await s.page.evaluate(() => ({ sheet: document.querySelector("#syna-panel")!.getBoundingClientRect().bottom, zone: document.querySelector(".ss-cmd-zone")!.getBoundingClientRect().top }));
     await s.page.screenshot({ path: path.join(out, "plein--telephone-360--syna-ouverte.png") });
-    ok("9 · téléphone Plein cadre : la feuille SYNA s'arrête au-dessus de la zone de commande", geo.sheet <= geo.zone + 1, geo);
+    ok("9 · téléphone Plein cadre : la feuille SINA s'arrête au-dessus de la zone de commande", geo.sheet <= geo.zone + 1, geo);
     await s.page.keyboard.press("Escape");
     await s.page.locator(".ss-cmd-zone button[aria-controls='ss-spaces']").click();
     await s.page.waitForSelector("#ss-spaces");
@@ -457,13 +457,13 @@ try {
   await studio.stop();
   studio = null;
 
-  // ——— B. Coquille, drapeaux SYNA fermés : les réglages restent cohérents, aucune conversation simulée ———
+  // ——— B. Coquille, drapeaux SINA fermés : les réglages restent cohérents, aucune conversation simulée ———
   studio = await startStudio({ STUDIO_SYNA_SHELL: "1" });
   for (const vp of [VIEWPORTS.ordinateur, VIEWPORTS.tel390]) {
     const s = await session(browser, studio.origin, vp);
     await setPrefs(s, studio.origin, { mode: "plein" });
     await go(s.page, studio.origin, "sillon", "boutique");
-    // Une vraie demande : rien n'est envoyé, la barre le dit. Puis une commande d'affichage : elle marche sans SYNA.
+    // Une vraie demande : rien n'est envoyé, la barre le dit. Puis une commande d'affichage : elle marche sans SINA.
     const c = s.page.locator("[data-syna-command]:visible").first();
     await c.fill("Crée une image de la machine"); await c.press("Enter"); await s.page.waitForTimeout(600);
     const said = await s.page.locator(".ss-cmd-feedback:visible").first().innerText().catch(() => "");
@@ -471,7 +471,7 @@ try {
     await c.fill("Reviens à Encre"); await c.press("Enter"); await s.page.waitForTimeout(800);
     const m = await modeOf(s.page);
     const anySyna = await s.page.locator("#syna-panel, [aria-controls='syna-panel']").count();
-    ok(`drapeaux SYNA fermés (${vp.label}) : « rien n'a été envoyé » pour une demande, la commande d'affichage marche, aucun accès SYNA simulé`, /rien n.a été envoyé/.test(said) && m === "encre" && anySyna === 0, { said, m, anySyna });
+    ok(`drapeaux SINA fermés (${vp.label}) : « rien n'a été envoyé » pour une demande, la commande d'affichage marche, aucun accès SINA simulé`, /rien n.a été envoyé/.test(said) && m === "encre" && anySyna === 0, { said, m, anySyna });
     await s.context.close();
   }
 } catch (e) {

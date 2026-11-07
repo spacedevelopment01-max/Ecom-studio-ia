@@ -244,6 +244,82 @@ CREATE TABLE IF NOT EXISTS agent_conversation_quotes (
   job_id TEXT REFERENCES jobs(id)
 );
 CREATE INDEX IF NOT EXISTS agent_quotes_conversation ON agent_conversation_quotes(conversation_id, created_at);
+-- SINA agent (#492) : un seul fil par conversation, réponses de SINA, résultats d'outils et changements vérifiés.
+CREATE TABLE IF NOT EXISTS syna_messages (
+  id TEXT PRIMARY KEY,
+  conversation_id TEXT NOT NULL REFERENCES agent_conversations(id) ON DELETE CASCADE,
+  seq INTEGER NOT NULL,
+  role TEXT NOT NULL,
+  run_id TEXT,
+  content_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  UNIQUE(conversation_id, seq)
+);
+CREATE TABLE IF NOT EXISTS syna_runs (
+  id TEXT PRIMARY KEY,
+  conversation_id TEXT NOT NULL REFERENCES agent_conversations(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  project_id TEXT,
+  request_id TEXT NOT NULL,
+  status TEXT NOT NULL,
+  step INTEGER NOT NULL DEFAULT 0,
+  pending_json TEXT,
+  waiting_jobs TEXT NOT NULL DEFAULT '[]',
+  job_id TEXT,
+  error TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  UNIQUE(conversation_id, request_id)
+);
+CREATE INDEX IF NOT EXISTS syna_runs_conversation ON syna_runs(conversation_id, created_at);
+CREATE TABLE IF NOT EXISTS syna_attachments (
+  id TEXT PRIMARY KEY,
+  conversation_id TEXT NOT NULL REFERENCES agent_conversations(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  kind TEXT NOT NULL,
+  name TEXT NOT NULL,
+  mime TEXT NOT NULL,
+  path TEXT NOT NULL,
+  asset_id TEXT,
+  analysis_json TEXT,
+  created_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS syna_changes (
+  id TEXT PRIMARY KEY,
+  conversation_id TEXT NOT NULL REFERENCES agent_conversations(id) ON DELETE CASCADE,
+  run_id TEXT NOT NULL,
+  module TEXT NOT NULL,
+  tool TEXT NOT NULL,
+  object TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  before_json TEXT,
+  after_json TEXT,
+  verified INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS syna_changes_conversation ON syna_changes(conversation_id, created_at);
+CREATE TABLE IF NOT EXISTS syna_jobs (
+  conversation_id TEXT NOT NULL REFERENCES agent_conversations(id) ON DELETE CASCADE,
+  job_id TEXT NOT NULL,
+  run_id TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY(conversation_id, job_id)
+);
+CREATE TABLE IF NOT EXISTS syna_budgets (
+  conversation_id TEXT PRIMARY KEY REFERENCES agent_conversations(id) ON DELETE CASCADE,
+  authorized_micro INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+-- SINA (#492), étape 11 : calendrier de publication MANUEL du projet (le client publie lui-même, jour par jour).
+-- Un calendrier courant par projet : réglages et cases datées (publication ou publicité, coche « publié »).
+-- Aucune publication automatique depuis cette table (src/lib/syna-agent/calendar.ts).
+CREATE TABLE IF NOT EXISTS syna_calendars (
+  project_id TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE,
+  plan_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
 CREATE TABLE IF NOT EXISTS agent_request_bounds (
   id TEXT PRIMARY KEY,
   conversation_id TEXT NOT NULL REFERENCES agent_conversations(id) ON DELETE CASCADE,

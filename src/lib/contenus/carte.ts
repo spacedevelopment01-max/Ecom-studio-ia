@@ -17,7 +17,7 @@ import type { SectionInstance, ThemeSpec } from "../theme/spec";
 
 let ready = false;
 function ensureCarteTables() {
-  // Le drapeau seul ne suffit pas : une création faite dans une transaction annulée (aperçu SYNA, #276) disparaît.
+  // Le drapeau seul ne suffit pas : une création faite dans une transaction annulée (aperçu SINA, #276) disparaît.
   if (ready && one("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'carte_items'")) return;
   run(`CREATE TABLE IF NOT EXISTS carte_categories (
     id TEXT PRIMARY KEY, project_id TEXT NOT NULL, title TEXT NOT NULL, position INTEGER NOT NULL, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL)`);

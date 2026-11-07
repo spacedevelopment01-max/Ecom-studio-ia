@@ -69,6 +69,8 @@ export const ArtworkReviewSchema = z.object({
   issues: z.array(z.string().max(300)).max(8).catch([]),
   needsSimplifiedMark: z.boolean().catch(true),
   genericConcept: z.boolean().catch(false),
+  forbiddenRender: z.boolean().catch(false),
+  dated: z.boolean().catch(false),
   fix: z.object({ target: z.enum(["symbol", "typography", "composition", "colour", "concept", "none"]).catch("none"), instruction: z.string().max(400).catch("") }).catch({ target: "none", instruction: "" }),
 });
 
@@ -78,7 +80,7 @@ const fontsList = () => Object.entries(STYLE_FONTS).map(([s, f]) => `${s} (${f.j
 export const BoundedArtworkReviewSchema=ArtworkReviewSchema.extend({
  criteria:z.object(Object.fromEntries(ART_CRITERIA.map(k=>[k,z.number().min(0).max(10)]))as Record<(typeof ART_CRITERIA)[number],z.ZodNumber>),
  textRead:z.string().max(300),nameExact:z.boolean(),extraText:z.boolean(),nameBox:z.object({x:frac,y:frac,w:frac,h:frac}).nullable(),
- clumsyCliche:z.boolean(),resemblesKnownBrand:z.boolean(),amateur:z.boolean(),artifacts:z.boolean(),person:z.boolean(),genericConcept:z.boolean(),needsSimplifiedMark:z.boolean(),issues:z.array(z.string().max(300)).max(8),
+ clumsyCliche:z.boolean(),resemblesKnownBrand:z.boolean(),amateur:z.boolean(),artifacts:z.boolean(),person:z.boolean(),genericConcept:z.boolean(),forbiddenRender:z.boolean(),dated:z.boolean().optional().default(false),needsSimplifiedMark:z.boolean(),issues:z.array(z.string().max(300)).max(8),
  fix:z.object({target:z.enum(['symbol','typography','composition','colour','concept','none']),instruction:z.string().max(400)}),
 });
 
@@ -89,7 +91,7 @@ Ce que veulent ces entreprises et leurs clients : un logo BEAU, soigné, chaleur
 Démarche : comprends l'entreprise, son activité réelle, sa clientèle, sa personnalité ; repère les codes visuels de son secteur et sers-t'en avec un niveau de finition supérieur.
 Chaque territoire est RÉELLEMENT différent des autres sur au moins trois de ces axes : style, type de marque (markType), composition, style typographique, construction graphique, niveau de sobriété. Jamais « le même logo dans une autre couleur ».
 Portefeuille (style libre, au moins 3 territoires) : les TROIS PREMIERS couvrent trois familles — 1) un EMBLÈME ILLUSTRÉ : les éléments du métier (outils, matières, produits, lieu) réunis dans une composition riche et équilibrée, souvent dans un cercle ou un arc, avec le nom en grand (écriture script élégante ou capitales) en deux couleurs, la ligne d'activités et éventuellement un arc de texte ; 2) une ICÔNE + NOM : une icône du métier nette, moderne et immédiatement lisible au-dessus ou à gauche du nom en lettres franches, comme les meilleurs logos de commerce ; 3) une SIGNATURE : le nom en écriture script ou en lettrage soigné, accompagné d'un signe du métier bien dessiné (outil, trace, silhouette). Les suivants sont libres.
-- style : ${LOGO_STYLES.join(", ")} — ${Object.entries(STYLE_GUIDE).map(([k, v]) => `${k} = ${v.split(":")[0].toLowerCase()}`).join(" ; ")} ;
+- style : ${LOGO_STYLES.join(", ")} — ${Object.entries(STYLE_GUIDE).filter(([k]) => (LOGO_STYLES as readonly string[]).includes(k)).map(([k, v]) => `${k} = ${v.split(":")[0].toLowerCase()}`).join(" ; ")} ;
 - markType : wordmark (nom seul dessiné), lettermark (initiale(s) seule(s) comme marque), monogram (initiales construites + nom), symbol_wordmark (symbole + nom), abstract_mark (forme abstraite + nom), emblem (sceau / badge réunissant marque et nom) — choisis ce qui sert la marque, pas par défaut ;
 - composition : horizontal, stacked, wordmark_only, badge ;
 - typography.style parmi : ${fontsList()} ; weight, case, tracking ; rationale : pourquoi ce choix (pas de faux luxe, pas d'association amateur) ;
@@ -252,7 +254,7 @@ export function logoArtworkReviewRequest(brief:BrandBrief,t:Territory,expected:{
           system: ARTWORK_REVIEW_SYSTEM(t.style),
           context: brief.brainContext,
           images,
-          prompt: `Territoire « ${t.name} » — concept : ${t.concept}\nStyle : ${t.style} ; type : ${t.markType}.\nNom attendu (exact) : « ${expected.name} ».${expected.descriptor ? ` Ligne d'activités autorisée : « ${expected.descriptor} ».` : ""}${expected.tagline ? ` Slogan validé autorisé : « ${expected.tagline} ».` : ""}\n${images.length>1 ? "La deuxième image présente l’identité appliquée, pas un deuxième logo. Dans colour, juge l'harmonie des cinq rôles et la lisibilité des associations, leur cohérence avec le même nom et la stratégie, la distinction face aux palettes des autres directions dans le contexte. Les trois premiers rôles doivent avoir des fonctions chromatiques distinctes ; les deux derniers sont des neutres. Refuse une palette arbitrairement criarde, incohérente ou une simple variation de primary ; décris précisément le problème dans issues/fix. Ne confonds pas une distance numérique avec une qualité artistique. textRead et nameBox concernent seulement le logo original dans la première image, pas les textes d’exemple de la planche.\n" : ""}Réponds { "criteria": { ${ART_CRITERIA.map((k) => `"${k}": 0`).join(", ")} }, "textRead": "…", "nameExact": true, "extraText": false, "nameBox": { "x": 0, "y": 0, "w": 0, "h": 0 }, "clumsyCliche": false, "resemblesKnownBrand": false, "amateur": false, "artifacts": false, "person": false, "genericConcept": false, "issues": [], "fix": { "target": "symbol|typography|composition|colour|concept|none", "instruction": "…" }, "needsSimplifiedMark": true }.`,
+          prompt: `Territoire « ${t.name} » — concept : ${t.concept}\nStyle : ${t.style} ; type : ${t.markType}.\nNom attendu (exact) : « ${expected.name} ».${expected.descriptor ? ` Ligne d'activités autorisée : « ${expected.descriptor} ».` : ""}${expected.tagline ? ` Slogan validé autorisé : « ${expected.tagline} ».` : ""}\n${images.length>1 ? "La deuxième image présente l’identité appliquée, pas un deuxième logo. Dans colour, juge l'harmonie des cinq rôles et la lisibilité des associations, leur cohérence avec le même nom et la stratégie, la distinction face aux palettes des autres directions dans le contexte. Les trois premiers rôles doivent avoir des fonctions chromatiques distinctes ; les deux derniers sont des neutres. Refuse une palette arbitrairement criarde, incohérente ou une simple variation de primary ; décris précisément le problème dans issues/fix. Ne confonds pas une distance numérique avec une qualité artistique. textRead et nameBox concernent seulement le logo original dans la première image, pas les textes d’exemple de la planche.\n" : ""}Réponds { "criteria": { ${ART_CRITERIA.map((k) => `"${k}": 0`).join(", ")} }, "textRead": "…", "nameExact": true, "extraText": false, "nameBox": { "x": 0, "y": 0, "w": 0, "h": 0 }, "clumsyCliche": false, "resemblesKnownBrand": false, "amateur": false, "artifacts": false, "person": false, "genericConcept": false, "forbiddenRender": false, ${t.style === "libre" ? '"dated": false, ' : ""}"issues": [], "fix": { "target": "symbol|typography|composition|colour|concept|none", "instruction": "…" }, "needsSimplifiedMark": true }.`,
           maxTokens: 3000,
         };
 }

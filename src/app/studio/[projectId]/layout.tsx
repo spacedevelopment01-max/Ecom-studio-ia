@@ -9,20 +9,25 @@ import { AgentUiProvider } from "@/components/studio/agent-ui-context";
 import { conversationUiEnabled } from "@/lib/orchestrator/conversation/ui-enabled";
 import { SYNA_SHELL_COOKIE, studioShellVariant } from "@/lib/syna-ui/studio-shell";
 import { readSynaPrefs } from "@/lib/syna-ui/prefs-store";
+import { synaAgentEnabled } from "@/lib/syna-agent/enabled";
+import { underConstruction } from "@/lib/syna-agent/construction";
+import { ConstructionBanner } from "@/components/studio/construction-banner";
 
 export default async function ProjectLayout({ children, params }: { children: React.ReactNode; params: Promise<{ projectId: string }> }) {
   const { projectId } = await params;
   const user = await currentUser();
   if (!user || !one("SELECT 1 FROM projects WHERE id = ? AND user_id = ? AND archived = 0", projectId, user.id)) notFound();
-  // Mission #282, lot 1 : nouvelle coquille SYNA seulement si l'installation l'active (STUDIO_SYNA_SHELL=1), avec retour
+  // Mission #282, lot 1 : nouvelle coquille SINA seulement si l'installation l'active (STUDIO_SYNA_SHELL=1), avec retour
   // possible à l'interface actuelle sur cet appareil. Sans la variable : Studio inchangé. Lot 1 bis : ses réglages
   // d'affichage (compte, projet) sont lus ici pour s'afficher sans clignotement.
   const shell = studioShellVariant(process.env, (await cookies()).get(SYNA_SHELL_COOKIE)?.value);
+  // Mode chantier (#492) : le client suit la construction en direct ; les modifications passent par SINA.
+  const page = synaAgentEnabled() && underConstruction(projectId) ? <><ConstructionBanner />{children}</> : children;
   return (
-    <AgentUiProvider enabled={conversationUiEnabled()}><ProjectProvider id={projectId}>
+    <AgentUiProvider enabled={conversationUiEnabled() || synaAgentEnabled()}><ProjectProvider id={projectId}>
       {shell.variant === "syna"
-        ? <SynaStudioShell projectId={projectId} initialPrefs={readSynaPrefs(user.id, projectId)}>{children}</SynaStudioShell>
-        : <StudioShell projectId={projectId} synaShell={shell.available ? <SynaShellSwitch to="syna" /> : undefined}>{children}</StudioShell>}
+        ? <SynaStudioShell projectId={projectId} initialPrefs={readSynaPrefs(user.id, projectId)} agent={synaAgentEnabled()}>{page}</SynaStudioShell>
+        : <StudioShell projectId={projectId} synaShell={shell.available ? <SynaShellSwitch to="syna" /> : undefined}>{page}</StudioShell>}
     </ProjectProvider></AgentUiProvider>
   );
 }

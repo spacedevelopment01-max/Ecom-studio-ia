@@ -45,7 +45,7 @@ describe('#211 D7 — comparer et choisir sans activation',()=>{
   expect(()=>strategyChoicesView({...ownedConversation(f.u,f.c.id),project_id:other.pid},metaOf(ownedConversation(f.u,f.c.id)))).toThrow();expect(()=>conversationView(other.u,f.c.id)).toThrow('introuvable');
  });
  it('rend un ancien choix historique sans le remplacer quand l’offre change ; annulation de mémoire encore possible',async()=>{
-  const f=await fixture(),c=await compare(f);const v=await f.send(decision(c)),last=v.strategyChoices!.decisions.at(-1)!;saveProduct(f.pid,{...loadProject(f.pid).product,summary:'Une nouvelle description, sans reprendre les propositions précédentes.'});
+  const f=await fixture(),c=await compare(f);const v=await f.send(decision(c)),last=v.strategyChoices!.decisions.at(-1)!;saveProduct(f.pid,{...loadProject(f.pid).product,category:'Une nouvelle offre, sans reprendre les propositions précédentes'});
   expect(conversationView(f.u,f.c.id).strategyChoices!.active).toMatchObject({id:c.id,version:c.version,isCurrent:false});await expect(f.send(decision(c))).rejects.toThrow('historique');expect((await f.send({action:'undo-strategy-preference',decisionId:last.id})).strategyChoices!.active!.preference.preferred).toBeNull();expect(conversationView(f.u,f.c.id).strategyChoices!.history[0].version).toBe(c.version);expect(getStrategyState(f.pid).active).toBeNull();
  });
  it('ne lance rien quand la recherche manque, que le budget est épuisé ou que la connexion fournisseur manque',async()=>{
@@ -65,7 +65,7 @@ describe('#211 D7 — comparer et choisir sans activation',()=>{
  it('refuse une vingt-et-unième comparaison sans purger ses versions et refuse une source périmée',async()=>{
   const f=await fixture(),c=await compare(f),row=ownedConversation(f.u,f.c.id),m=metaOf(row);m.strategyChoices!.comparisons=Array.from({length:20},(_,i)=>({...structuredClone(c),id:i? id():c.id,version:i?'f'.repeat(64):c.version}));run('UPDATE agent_conversations SET state_json=? WHERE id=?',JSON.stringify(m),f.c.id);
   await expect(f.send({action:'compare-strategy-options',angleIds:[c.options[0].id,c.options[1].id],sourceComparisonId:c.id,sourceVersion:c.version})).rejects.toThrow('Vingt');expect(metaOf(ownedConversation(f.u,f.c.id)).strategyChoices!.comparisons).toHaveLength(20);
-  saveProduct(f.pid,{...loadProject(f.pid).product,summary:'Autre contexte de recette.'});await expect(f.send({action:'compare-strategy-options',angleIds:[c.options[0].id,c.options[1].id],sourceComparisonId:c.id,sourceVersion:c.version})).rejects.toThrow('changé');
+  saveProduct(f.pid,{...loadProject(f.pid).product,category:'Autre offre de recette'});await expect(f.send({action:'compare-strategy-options',angleIds:[c.options[0].id,c.options[1].id],sourceComparisonId:c.id,sourceVersion:c.version})).rejects.toThrow('changé');
  });
  it('ne tronque pas les options trop longues et n’efface pas l’acquis après un refus de contexte',async()=>{
   const f=await fixture(),c=await compare(f),native=one<{angles_json:string}>('SELECT angles_json FROM marketing_strategy_sets WHERE project_id=?',f.pid)!,angles=JSON.parse(native.angles_json);angles[0].rationale='Texte fictif long '.repeat(10000);run('UPDATE marketing_strategy_sets SET angles_json=? WHERE project_id=?',JSON.stringify(angles),f.pid);

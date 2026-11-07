@@ -32,7 +32,7 @@ import {resolveActiveContext} from './active-context';
 type Diff={template:string;section:string;block?:string;key:string;before:unknown;after:unknown;media?:{beforeAssetId:string|null;afterAssetId:string|null}};
 type Meta={schema:1;id:string;conversationId:string;kind:'edit'|'compose'|'undo';sourceReceiptId?:string;revision:number;projectRevision:number;beforeVersionId:string;targetVersionId?:string;plan?:ThemeToolPlan;compositionPlan?:CompositionPlan;startingWithoutTheme?:boolean;previewFingerprint:string;changes:Diff[];summary:string;expiresAt:number;createdAt:number;jobId?:string;resultVersionId?:string;resultFingerprint?:string;contextPin?:ContextPin;undoSourceFingerprint?:string};
 const fingerprint=(spec:ThemeSpec)=>stableHash('agent-theme-native-version-v1',spec);
-const enabled=()=>{if(!conversationThemeToolsEnabled())throw new HttpError(404,'Retouches Site de SYNA indisponibles.','conversation_theme_tools_disabled');};
+const enabled=()=>{if(!conversationThemeToolsEnabled())throw new HttpError(404,'Retouches Site de SINA indisponibles.','conversation_theme_tools_disabled');};
 function owned(user:User,cid:string){enabled();const c=ownedConversation(user,cid);if(!c.project_id)throw new HttpError(409,'Créez le projet et choisissez son thème avant cette retouche.');return{c,pid:c.project_id};}
 function save(pid:string,m:Meta){remember(pid,{kind:'artifact',key:`agent.theme.tool.${m.id}`,value:JSON.stringify(m),source:'local',origin:'system',status:'inferred'});}
 function read(pid:string,qid:string){return json<Meta|null>(one<{value:string}>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key=?",pid,`agent.theme.tool.${qid}`)?.value,null);}
@@ -85,7 +85,7 @@ function previewEdit(user:User,cid:string,pid:string,plan:ThemeToolPlan){
   return{cur,spec,changes};
 }
 function previewCompose(user:User,pid:string,plan:CompositionPlan){
-  if(!conversationCompositionEnabled())throw new HttpError(404,'Composition de pages avec SYNA indisponible.');
+  if(!conversationCompositionEnabled())throw new HttpError(404,'Composition de pages avec SINA indisponible.');
   const cur=compositionBase(pid);if(!cur.isVirtual&&cur.version.id!==plan.versionId)throw new HttpError(409,'Le thème a changé. Vos versions sont conservées ; préparez une nouvelle proposition.','agent_theme_conflict');const preview=previewNativeComposition(user,pid,plan);
   const spec=applyWordingDeep(preview.spec,loadWordingRules(pid));validateExisting(spec);
   const changes:Diff[]=plan.pages.map(page=>({template:page.template,section:'$page',key:'$composition',before:compositionSnapshot(cur.spec,page.template),after:compositionSnapshot(spec,page.template)}));
@@ -140,7 +140,7 @@ export async function runThemeChange(ctx:JobContext){return withAiDisabled('Opé
     if(m.resultVersionId){const acquired=themeVersion(pid,m.resultVersionId);if(!acquired||fingerprint(acquired.spec)!==m.resultFingerprint)throw new HttpError(409,'Preuve native manquante.');return{versionId:acquired.version.id,number:acquired.version.number,fingerprint:m.resultFingerprint,reused:true};}
     const preview=recheck(user,payload.conversationId,pid,m);
     ctx.progress(0.9,L('Contrôles du thème terminés, enregistrement de la version.','Theme checks finished, saving the version.'));
-    const v=saveThemeVersion(pid,preview.spec,m.kind==='edit'?`SYNA — ${m.summary}`:m.summary,'user',undefined,m.startingWithoutTheme?null:m.beforeVersionId);
+    const v=saveThemeVersion(pid,preview.spec,m.kind==='edit'?`SINA — ${m.summary}`:m.summary,'user',undefined,m.startingWithoutTheme?null:m.beforeVersionId);
     const actual=themeVersion(pid,v.id)!;m.resultVersionId=v.id;m.resultFingerprint=fingerprint(actual.spec);save(pid,m);
     return{versionId:v.id,number:v.number,fingerprint:m.resultFingerprint,reused:false};
   });if(!result.reused)ctx.progress(1,'Version du thème enregistrée ; aucune publication.');return result;

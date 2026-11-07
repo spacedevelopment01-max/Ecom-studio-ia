@@ -7,7 +7,7 @@ vi.mock('@/lib/engine/import-link',async original=>({...await original<any>(),
 vi.mock('@/lib/ai/llm',async original=>({...await original<any>(),textProviderReady:()=>control.available,llmConfigured:()=>control.available,
  llmJson:vi.fn(async(req:any,schema:any)=>{control.llms++;control.calls.push(req);if(control.failure==='provider')throw Error('Fournisseur simulé en échec');const sources=JSON.parse(req.prompt).sources;
  const result=structuredClone(control.response);result.sourceReviews=sources.map((s:any)=>({sourceId:s.id,accepted:true,category:s.category,reason:'Pertinence simulée'}));result.observations=sources.map((s:any)=>({sourceId:s.id,quote:s.excerpt.slice(0,150)}));
- result.angles=result.angles.map((a:any)=>({...a,sourceIds:[sources[0].id,sources[1].id]}));result.recommendationSourceIds=[sources[0].id];
+ result.angles=result.angles.map((a:any)=>({emotion:'Sérénité',proofsToConfirm:[],...a,sourceIds:[sources[0].id,sources[1].id]}));result.recommendationSourceIds=[sources[0].id];
  if(control.failure==='citation')result.observations[0].quote='Citation absente de toutes les pages effectivement lues.';
  if(control.failure==='long')result.angles[0].message='Une accroche trop longue. '.repeat(20);
  if(control.failure==='duplicate')result.angles[1]={...result.angles[0],id:'reassurance'};

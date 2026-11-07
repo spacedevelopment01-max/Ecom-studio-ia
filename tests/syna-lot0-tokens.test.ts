@@ -1,4 +1,4 @@
-/** SYNA lot 0 (#282) : couleurs de syna.css identiques aux jetons, et contraste AA de tous les couples utilisés. */
+/** SINA lot 0 (#282) : couleurs de syna.css identiques aux jetons, et contraste AA de tous les couples utilisés. */
 import { describe, expect, it } from "vitest";
 import { SYNA_ACCENTS, SYNA_ACCENT_SETS, SYNA_DEFAULT_ACCENT, SYNA_MODES, SYNA_PALETTES, SYNA_SCHEMES, contrastChecks, contrastRatio } from "@/lib/syna-ui/tokens";
 import { SYNA_CSS, customProps, readCss } from "./syna-lot0-css";

@@ -1,9 +1,9 @@
 /**
- * SYNA lot 1 (#282) : la coquille SYNA du Studio.
+ * SINA lot 1 (#282) : la coquille SINA du Studio.
  * - n'apparaît que si l'installation l'active (STUDIO_SYNA_SHELL=1), avec retour possible à l'interface actuelle ;
  * - garde tous les espaces (mêmes adresses, même règle `spaceVisible`, mêmes pastilles) ;
- * - remplace la pastille noire par la colonne SYNA et ses onglets, sans seconde conversation ;
- * - n'affiche aucun accès à SYNA quand ses drapeaux sont fermés.
+ * - remplace la pastille noire par la colonne SINA et ses onglets, sans seconde conversation ;
+ * - n'affiche aucun accès à SINA quand ses drapeaux sont fermés.
  * Vrai rendu React, état d'API synthétique : aucune requête, aucun fournisseur.
  */
 import fs from "node:fs";
@@ -17,7 +17,7 @@ vi.mock("next/navigation", () => ({ usePathname: () => state.path, useRouter: ()
 vi.mock("@/components/studio/project-context", () => ({ useProject: () => ({ id: "p1", data: state.data, reload: () => {} }), useOptionalProject: () => ({ id: "p1", data: state.data, reload: () => {} }) }));
 vi.mock("@/components/ui", async (original) => ({ ...(await original<object>()), useApi: () => ({ data: { user: { role: "user", email: "x@example.invalid" } }, reload: () => {} }) }));
 vi.mock("@/components/billing-client", () => ({ useBilling: () => ({ billing: null }), AiUsageBar: () => null, PlanLink: () => null, QuotaBanner: () => null }));
-vi.mock("@/components/studio/conversation-panel", () => ({ ConversationPanel: () => h("div", { "data-conversation-panel": "" }), ConversationDock: () => h("button", { className: "fixed bottom-24 right-4 rounded-full bg-ink" }, "SYNA") }));
+vi.mock("@/components/studio/conversation-panel", () => ({ ConversationPanel: () => h("div", { "data-conversation-panel": "" }), ConversationDock: () => h("button", { className: "fixed bottom-24 right-4 rounded-full bg-ink" }, "SINA") }));
 
 import { studioShellVariant, synaShellAvailable, synaShellCookie } from "@/lib/syna-ui/studio-shell";
 import { SynaStudioShell } from "@/components/studio/syna-shell";
@@ -63,7 +63,8 @@ describe("activation de la coquille", () => {
     const layout = read("src/app/studio/[projectId]/layout.tsx");
     expect(layout).toContain("studioShellVariant(process.env");
     expect(layout).toMatch(/synaShell=\{shell\.available \? <SynaShellSwitch to="syna" \/> : undefined\}/);
-    expect(layout).toContain("AgentUiProvider enabled={conversationUiEnabled()}");
+    // L'interface de l'agent est aussi active quand SINA (agent #492) est activée.
+    expect(layout).toContain("AgentUiProvider enabled={conversationUiEnabled() || synaAgentEnabled()}");
   });
 });
 
@@ -100,10 +101,10 @@ describe("tous les espaces restent accessibles", () => {
   });
 });
 
-describe("accès à SYNA", () => {
-  it("nouvelle coquille : plus de pastille noire, un onglet signature et un onglet « Syna » au téléphone, une seule conversation", () => {
+describe("accès à SINA", () => {
+  it("nouvelle coquille : plus de pastille noire, un onglet signature et un onglet « Sina » au téléphone, une seule conversation", () => {
     const html = render("syna", true);
-    expect(html).not.toMatch(/bg-ink[^"]*"[^>]*>SYNA</);
+    expect(html).not.toMatch(/bg-ink[^"]*"[^>]*>SINA</);
     expect(html).not.toContain("fixed bottom-24 right-4");
     expect(html.match(/data-variant="rail"/g)?.length).toBe(1);
     expect(html.match(/data-variant="tab"/g)?.length).toBe(1);
@@ -112,7 +113,7 @@ describe("accès à SYNA", () => {
     // Fermée au premier accès : la conversation n'est montée qu'à l'ouverture (comme l'interface actuelle).
     expect(html).not.toContain("data-conversation-panel");
   });
-  it("drapeaux SYNA fermés : aucun accès à SYNA, aucun panneau vide (comme aujourd'hui)", () => {
+  it("drapeaux SINA fermés : aucun accès à SINA, aucun panneau vide (comme aujourd'hui)", () => {
     const html = render("syna", false);
     expect(html).not.toContain('id="syna-panel"');
     expect(html).not.toContain('aria-controls="syna-panel"');
@@ -132,7 +133,7 @@ describe("accès à SYNA", () => {
 });
 
 describe("téléphone et retour arrière", () => {
-  it("barre basse : Syna · espace actuel · Espaces · Suivi, repérée par le Studio (data-mobile-nav)", () => {
+  it("barre basse : Sina · espace actuel · Espaces · Suivi, repérée par le Studio (data-mobile-nav)", () => {
     const html = render("syna", true);
     const bar = html.slice(html.indexOf("data-mobile-nav"));
     expect(bar).toContain('data-variant="tab"');

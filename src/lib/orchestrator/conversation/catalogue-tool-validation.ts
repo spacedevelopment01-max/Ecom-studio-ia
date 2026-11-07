@@ -50,7 +50,7 @@ export function validateCatalogueProposal(c:ConversationRow,raw:unknown,source:S
  if(plan.action==='update'){
   before=getProduct(pid,plan.target!.productId);
   if(before.version!==plan.target!.version)refuse('La fiche a changé. Reprenez sa version actuelle.','The listing changed. Use its current version.','catalogue_product_stale');
-  if(before.status!=='draft')refuse('Cette version de SYNA modifie les brouillons uniquement. La fiche active reste intacte.','This SYNA version edits drafts only. The active listing stays intact.','catalogue_draft_required');
+  if(before.status!=='draft')refuse('Cette version de SINA modifie les brouillons uniquement. La fiche active reste intacte.','This SINA version edits drafts only. The active listing stays intact.','catalogue_draft_required');
   const focus=metaOf(c).activeContext;
   if(focus?.target?.kind==='catalogue-product'||focus?.target?.kind==='catalogue-variant'){
    if(focus.target.productId!==before.id)refuse('La proposition ne concerne pas le produit désigné.','The proposal does not target the selected product.','catalogue_target_mismatch');
@@ -80,7 +80,7 @@ export function validateCatalogueProposal(c:ConversationRow,raw:unknown,source:S
  const count=data.options.reduce((n,o)=>n*o.values.length,1);
  if(count>100)refuse('Cette opération dépasse 100 combinaisons. Réduisez son périmètre ; aucune valeur n’est tronquée.','This operation exceeds 100 combinations. Narrow its scope; no values are truncated.','catalogue_variant_bound');
  const combos=combinations(data.options),combinationKeys=new Set(combos.map(c=>JSON.stringify(c.map(v=>v.toLowerCase()))));
- if(before?.variants.some(v=>!combinationKeys.has(JSON.stringify(v.options.map(x=>x.toLowerCase())))))refuse('Ce changement retirerait des variantes et leurs identifiants. SYNA le refuse : leur restauration exacte n’est pas assurée.','This would remove variants and their IDs. SYNA refuses because exact restoration is not assured.','catalogue_destructive_options');
+ if(before?.variants.some(v=>!combinationKeys.has(JSON.stringify(v.options.map(x=>x.toLowerCase())))))refuse('Ce changement retirerait des variantes et leurs identifiants. SINA le refuse : leur restauration exacte n’est pas assurée.','This would remove variants and their IDs. SINA refuses because exact restoration is not assured.','catalogue_destructive_options');
  if(f.variants){
   const seen=new Set<string>();input.variants=f.variants.map(v=>{
    const k=JSON.stringify(v.options.map(x=>x.toLowerCase()));if(seen.has(k)||!combinationKeys.has(k))refuse('Combinaison dupliquée ou absente des options.','Duplicate combination or combination missing from options.','catalogue_invalid_variant');seen.add(k);

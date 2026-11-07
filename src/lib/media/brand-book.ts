@@ -20,6 +20,8 @@ export type BookInput = {
   logoLight: Image | null; // version claire
   logoWeb: Image | null; // version horizontale (site), sinon le logo principal
   mark: Image | null; // marque réduite
+  /** Marque réduite en nombreuses couleurs (illustration) : jamais recolorée d'une teinte, posée sur une pastille claire. */
+  markDetailed?: boolean;
   product: Image | null; // produit détouré (applications)
   sectorLabel: string;
   date: Date;
@@ -103,12 +105,37 @@ function tint(img: Image | null, color: string): Canvas | null {
   return c;
 }
 
+/**
+ * Marque réduite sur un fond de couleur : recolorée d'une teinte (symbole au trait), ou, si c'est une illustration en
+ * nombreuses couleurs, gardée telle quelle sur une pastille ronde claire (essai réel du 7 novembre : sinon une tache).
+ */
+export function markOnColour(img: Image | null, color: string, detailed: boolean): Canvas | null {
+  if (!img) return null;
+  if (!detailed) return tint(img, color);
+  const side = Math.max(img.width, img.height);
+  const d = Math.round(side * 1.25);
+  const c = createCanvas(d, d);
+  const x = c.getContext("2d");
+  x.fillStyle = "#FFFFFF";
+  x.beginPath();
+  x.arc(d / 2, d / 2, d / 2, 0, Math.PI * 2);
+  x.fill();
+  x.drawImage(img, (d - img.width) / 2, (d - img.height) / 2);
+  return c;
+}
+
 function cmyk(hex: string) {
   const [r, g, b] = hexToRgb(hex).map((v) => v / 255);
   const k = 1 - Math.max(r, g, b);
   if (k >= 1) return "0 · 0 · 0 · 100";
   const f = (v: number) => Math.round(((1 - v - k) / (1 - k)) * 100);
   return `${f(r)} · ${f(g)} · ${f(b)} · ${Math.round(k * 100)}`;
+}
+
+/** Ligne de couverture : secteur et date ; secteur inconnu → la date seule (jamais « Non déterminé » sur une charte). */
+export function coverLine(sector: string, date: Date, locale: string): string {
+  const known = !!sector && !/^(non déterminé|not determined)$/i.test(sector.trim());
+  return `${known ? `${sector} · ` : ""}${date.toLocaleDateString(locale, { month: "long", year: "numeric" })}`;
 }
 
 export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer } {
@@ -227,7 +254,7 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
     contain(ctx, inp.logo, W / 2 - 430, 300, 860, 400);
     if (b.tagline && b.logo.proposal !== "embleme") text(ctx, b.tagline, W / 2, 800, font(HF, 500, 44, true), ink, "center");
     text(ctx, BOOK.toLocaleUpperCase(locale), W / 2, 940, font(BF, 600, 24), accent, "center");
-    text(ctx, `${inp.sectorLabel} · ${inp.date.toLocaleDateString(locale, { month: "long", year: "numeric" })}`, W / 2, 985, font(BF, 400, 22), mix(ink, paper, 0.4), "center");
+    text(ctx, coverLine(inp.sectorLabel, inp.date, locale), W / 2, 985, font(BF, 400, 22), mix(ink, paper, 0.4), "center");
   }
 
   // 2 · Identité
@@ -268,7 +295,7 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
     contain(ctx, inp.logoLight, M + cw + 100, 430, cw - 120, 340);
     label(ctx, C("Version claire (fonds sombres)", "Light version (dark backgrounds)"), M + cw + 40, 860);
     const sw = (W - M * 2 - 80) / 3;
-    const minis: [Image | Canvas | null, string, string][] = [[inp.logoWeb, C("Version horizontale (site, en-tête)", "Horizontal version (website, header)"), "#FFFFFF"], [inp.mark, C("Marque réduite (réseaux, favicon)", "Brand mark (social, favicon)"), "#FFFFFF"], [tint(inp.mark, onColor(accent)), C("Marque réduite sur couleur", "Brand mark on color"), accent]];
+    const minis: [Image | Canvas | null, string, string][] = [[inp.logoWeb, C("Version horizontale (site, en-tête)", "Horizontal version (website, header)"), "#FFFFFF"], [inp.mark, C("Marque réduite (réseaux, favicon)", "Brand mark (social, favicon)"), "#FFFFFF"], [markOnColour(inp.mark, onColor(accent), !!inp.markDetailed), C("Marque réduite sur couleur", "Brand mark on color"), accent]];
     minis.forEach(([img, l, bg], i) => {
       const x = M + i * (sw + 40);
       card(ctx, x, 900, sw, 170, bg, bg === "#FFFFFF" ? mix(ink, paper, 0.85) : undefined);
@@ -444,7 +471,7 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
     shadow(() => card(ctx, M, 340, cw, ch, "#FFFFFF"));
     contain(ctx, inp.logoWeb ?? inp.logo, M + 60, 400, cw - 120, ch - 120);
     shadow(() => card(ctx, M + 70, 720, cw, ch, accent));
-    contain(ctx, tint(inp.mark, onColor(accent)), M + 70 + 30, 760, 140, 140);
+    contain(ctx, markOnColour(inp.mark, onColor(accent), !!inp.markDetailed), M + 70 + 30, 760, 140, 140);
     text(ctx, C("Prénom Nom", "First Last"), M + 70 + 40, 960, font(HF, 600, 32), onColor(accent));
     text(ctx, C("contact@votre-domaine.fr", "contact@your-domain.com"), M + 70 + 40, 1000, font(BF, 400, 22), onColor(accent));
     label(ctx, C("Carte de visite", "Business card"), M, 315);

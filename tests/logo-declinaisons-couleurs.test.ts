@@ -90,4 +90,122 @@ describe("File des tâches : appliquer le logo choisi passe avant les longues t�
     for (let j = claimNext(["test.long", "brand.logo.v2.choose"]); j; j = claimNext(["test.long", "brand.logo.v2.choose"])) if (j.id === quick.id || j.id === long.id) order.push(j.id);
     expect(order).toEqual([quick.id, long.id]);
   });
+  it("essai réel du 7 novembre : symbole qui frôle le nom — pris forme par forme, entier, sans les lettres", async () => {
+    // Fruit orange (haut), vague orange qui descend jusqu'à la ligne du nom, feuille bleu nuit ; lettres bleu nuit dessous.
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">
+      <circle cx="200" cy="120" r="80" fill="#C2652B"/><path d="M110 190 Q200 150 300 200 L300 225 Q200 190 110 225 Z" fill="#C2652B"/>
+      <ellipse cx="150" cy="45" rx="35" ry="15" fill="#1F2A3A"/>
+      <rect x="60" y="212" width="30" height="80" fill="#1F2A3A"/><rect x="110" y="232" width="40" height="60" fill="#1F2A3A"/><rect x="170" y="232" width="40" height="60" fill="#1F2A3A"/>
+      <rect x="230" y="232" width="40" height="60" fill="#1F2A3A"/><rect x="290" y="232" width="40" height="60" fill="#1F2A3A"/></svg>`;
+    const src = await sharp(Buffer.from(svg)).png().toBuffer();
+    const box = { x: 0.2, y: 0.57, w: 0.6, h: 0.18 }; // zone du nom lue par la relecture : trop étroite, comme en réel
+    const { symbolByShapes } = await import("@/lib/logo-v2/identity");
+    const sym = (await symbolByShapes(src, box))!;
+    expect(sym).toBeTruthy();
+    const { data, info } = await sharp(sym).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    let navy = 0, orange = 0;
+    for (let i = 0; i < data.length; i += 4) if (data[i + 3] > 200) { if (data[i] < 60) navy++; else if (data[i] > 150) orange++; }
+    expect(orange).toBeGreaterThan(navy); // le fruit et la vague sont gardés
+    expect(navy).toBeGreaterThan(0); // la feuille aussi
+    expect(navy).toBeLessThan(info.width * info.height * 0.05); // mais aucune lettre (5 lettres = bien plus de bleu nuit)
+    expect(await artworkSymbol(src, box)).toBeTruthy();
+    // Fond sombre : les lettres passent en blanc (lues), la feuille garde sa couleur avec un liseré clair, l'orange reste.
+    const dark = await onDarkVersion(src, box);
+    expect((await sharp(dark).metadata()).width).toBe(400); // pas de grand liseré autour du logo entier
+    expect((await px(dark, 75, 270)).slice(0, 3)).toEqual([255, 255, 255]); // première lettre (hors de la zone lue) : blanche
+    expect((await px(dark, 310, 260)).slice(0, 3)).toEqual([255, 255, 255]);
+    expect((await px(dark, 150, 45)).slice(0, 3)).toEqual([0x1f, 0x2a, 0x3a]); // feuille : bleu nuit gardé
+    expect((await px(dark, 113, 45))[3]).toBeGreaterThan(0); // liseré clair juste autour d'elle
+    expect((await px(dark, 200, 120)).slice(0, 3)).toEqual([0xc2, 0x65, 0x2b]); // fruit : couleur gardée
+  });
+  it("logo illustré (essai réel du 7 novembre) : zone du nom retrouvée dans l'encre, ornements sous le nom écartés du symbole", async () => {
+    // Illustration multicolore en haut, nom bleu nuit en bas (deux lignes de lettres), petits rayons dorés sous le nom.
+    const letters = Array.from({ length: 6 }, (_, i) => `<rect x="${50 + i * 52}" y="270" width="36" height="50" fill="#1A3050"/>`).join("");
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">
+      <circle cx="200" cy="140" r="100" fill="#E8A040"/><circle cx="160" cy="120" r="30" fill="#5A2A6A"/><circle cx="240" cy="150" r="30" fill="#3A7A3A"/>
+      ${letters}<rect x="190" y="340" width="6" height="25" fill="#E0B050"/><rect x="210" y="340" width="6" height="25" fill="#E0B050"/></svg>`;
+    const src = await sharp(Buffer.from(svg)).png().toBuffer();
+    const { nameBoxFromInk, symbolByShapes } = await import("@/lib/logo-v2/identity");
+    // La relecture situait le nom trop haut : la zone est recalée sur l'encre bleu nuit.
+    const box = (await nameBoxFromInk(src, { x: 0.1, y: 0.55, w: 0.8, h: 0.1 }))!;
+    expect(box.y).toBeGreaterThan(0.65);
+    expect(box.y).toBeLessThan(0.7);
+    expect(box.y + box.h).toBeGreaterThan(0.79);
+    // Loin de la zone lue : jamais une autre partie foncée du dessin.
+    expect(await nameBoxFromInk(src, { x: 0.1, y: 0.05, w: 0.8, h: 0.1 })).toEqual({ x: 0.1, y: 0.05, w: 0.8, h: 0.1 });
+    const sym = (await symbolByShapes(src, box))!;
+    const { data } = await sharp(sym).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    let navy = 0;
+    for (let i = 0; i < data.length; i += 4) if (data[i + 3] > 200 && data[i] < 40 && data[i + 2] > 60) navy++;
+    expect(navy).toBe(0); // aucune lettre
+    // Ni les rayons sous le nom : le symbole est le disque seul (aussi haut que large), pas disque + rayons (1,6 fois).
+    const t = await sharp(await sharp(sym).trim({ threshold: 5 }).png().toBuffer()).metadata();
+    expect(t.height! / t.width!).toBeLessThan(1.1);
+    const fond = await onDarkVersion(src, box);
+    expect((await px(fond, 60, 290)).slice(0, 3)).toEqual([255, 255, 255]); // nom lisible sur fond sombre
+  });
+
+  it("illustration en nombreuses couleurs : gardée en couleurs sur la planche (jamais une tache blanche)", async () => {
+    const { isDetailedSolidMark, colourCount } = await import("@/lib/media/identity-board");
+    const cols = ["#E8A040", "#5A2A6A", "#3A7A3A", "#C03020", "#2050A0", "#F0D060", "#806040", "#A0C0E0", "#E07090", "#40A0A0", "#904010", "#D0D0A0"];
+    const blobs = cols.map((c, i) => `<circle cx="${60 + (i % 4) * 90}" cy="${70 + Math.floor(i / 4) * 110}" r="42" fill="${c}"/>`).join("");
+    const ill = await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="360">${blobs}</svg>`)).png().toBuffer();
+    const { data } = await sharp(ill).ensureAlpha().resize({ width: 200, height: 200, fit: "inside" }).raw().toBuffer({ resolveWithObject: true });
+    expect(colourCount(data)).toBeGreaterThanOrEqual(10);
+    expect(await isDetailedSolidMark(ill)).toBe(true);
+    const simple = await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><path d="M20 180 L100 20 L180 180" stroke="#1F2A3A" stroke-width="14" fill="none"/></svg>`)).png().toBuffer();
+    expect(await isDetailedSolidMark(simple)).toBe(false); // symbole au trait : toujours recolorable
+  });
+  it("charte : une illustration n'est jamais recolorée en tache sur un fond de couleur (pastille claire)", async () => {
+    const { loadImage } = await import("@napi-rs/canvas");
+    const { markOnColour } = await import("@/lib/media/brand-book");
+    const ill = await loadImage(await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="40" fill="#C03020"/><circle cx="50" cy="50" r="15" fill="#3A7A3A"/></svg>`)).png().toBuffer());
+    const flat = markOnColour(ill, "#FFFFFF", false)!;
+    expect(Array.from(flat.getContext("2d").getImageData(50, 50, 1, 1).data.slice(0, 3))).toEqual([255, 255, 255]); // symbole au trait : recoloré
+    const kept = markOnColour(ill, "#FFFFFF", true)!;
+    const k = kept.width / 2;
+    expect(Array.from(kept.getContext("2d").getImageData(k, k, 1, 1).data.slice(0, 3))).toEqual([0x3a, 0x7a, 0x3a]); // couleurs gardées
+    expect(Array.from(kept.getContext("2d").getImageData(k, 3, 1, 1).data.slice(0, 3))).toEqual([255, 255, 255]); // pastille claire
+  });
+  it("version vectorielle (essai réel du 7 novembre) : un lettrage en aplats est vectorisé, lisse et fidèle ; une texture ne l'est jamais", async () => {
+    const { faithfulSvg } = await import("@/lib/logo-v2/artwork");
+    // Aplats « dessinés par une IA » : légères variations de teinte et bords adoucis.
+    const flat = await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300"><rect width="600" height="300" fill="white" fill-opacity="0"/><text x="40" y="200" font-family="serif" font-size="170" fill="#2E4A33">Brindi</text><ellipse cx="545" cy="80" rx="22" ry="12" fill="#C9A04E"/></svg>`)).png().toBuffer();
+    const { data, info } = await sharp(flat).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    for (let i = 0; i < data.length; i += 4) if (data[i + 3] > 0) for (let k = 0; k < 3; k++) data[i + k] = Math.max(0, Math.min(255, data[i + k] + ((i / 4) % 7) - 3));
+    const noisy = await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+    const r = await faithfulSvg(noisy);
+    expect(r.ok).toBe(true);
+    expect((r as any).fidelity).toBeGreaterThan(0.96);
+    // Texture (grain marqué dans l'aplat) : refusée, la matière serait perdue.
+    for (let i = 0; i < data.length; i += 4) if (data[i + 3] > 0) for (let k = 0; k < 3; k++) data[i + k] = Math.max(0, Math.min(255, data[i + k] + (((i / 4) * 2654435761) % 41) - 20));
+    const grain = await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+    const g = await faithfulSvg(grain);
+    expect(g.ok).toBe(false);
+    expect((g as any).reason).toMatch(/texture ou grain|dégradés, textures ou nuances/);
+  });
+
+  it("lettrage seul (essai réel du 7 novembre, « Brindi ») : lettres blanches sur fond sombre, initiale dessinée comme symbole", async () => {
+    // Logo en longueur : 5 lettres vert foncé qui occupent presque toute la hauteur, une feuille dorée au-dessus de la 3e.
+    const letters = Array.from({ length: 5 }, (_, i) => `<rect x="${30 + i * 170}" y="${i === 0 ? 20 : 60}" width="${i === 0 ? 130 : 110}" height="${i === 0 ? 320 : 280}" fill="#2F4A36"/>`).join("");
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="360">${letters}<ellipse cx="425" cy="30" rx="20" ry="12" fill="#C9A24A"/></svg>`;
+    const src = await sharp(Buffer.from(svg)).png().toBuffer();
+    const { nameBoxFromInk, wordmarkInitial } = await import("@/lib/logo-v2/identity");
+    const box = (await nameBoxFromInk(src, null))!;
+    expect(box).not.toBeNull();
+    expect(box.h).toBeGreaterThan(0.6);
+    const fond = await onDarkVersion(src, box);
+    expect((await px(fond, 100, 200)).slice(0, 3)).toEqual([255, 255, 255]); // initiale lisible (blanche)
+    expect((await px(fond, 600, 200)).slice(0, 3)).toEqual([255, 255, 255]);
+    const feuille = await px(fond, 425, 30);
+    expect(feuille[0]).toBeGreaterThan(180); // la feuille dorée garde sa couleur
+    expect(feuille[2]).toBeLessThan(120);
+    const ini = (await wordmarkInitial(src, box))!;
+    const t = await sharp(await sharp(ini).trim({ threshold: 5 }).png().toBuffer()).metadata();
+    // L'initiale seule (haute et étroite), jamais tout le mot (cinq fois plus large que haut).
+    expect(t.width! / t.height!).toBeLessThan(0.6);
+    // Une illustration carrée n'est jamais prise pour un lettrage.
+    const carre = await nameBoxFromInk(await emblem(), null);
+    expect(carre === null || carre.h <= 0.6).toBe(true);
+  });
 });

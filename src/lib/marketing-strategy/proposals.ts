@@ -8,7 +8,8 @@ import type { StrategySource } from "./types";
 export { GENERALIST_EXPLANATION_EN } from "./proposals-en";
 export const GENERALIST_EXPLANATION =
   "Présenter l’ensemble de votre offre reste un choix explicite. Pour un produit, il utilise une place comme les autres angles. Pour les services, le site présente déjà toute l’activité sans consommer d’angle ; ce choix concerne uniquement les publications et publicités.";
-export function inputDigest(p: Project) {
+/** Ancienne empreinte (toute la fiche, faits compris) : encore acceptée pour les choix enregistrés avant la v2. */
+export function inputDigestV1(p: Project) {
   const brand = p.brand
     ? (({
         direction,
@@ -50,6 +51,36 @@ export function inputDigest(p: Project) {
     )
     .digest("hex");
 }
+/** Faits de l'offre qui DÉFINISSENT la cible (public visé) : un changement de public reste une nouvelle offre. */
+const AUDIENCE_FACT = /public|cible|audience|client(e|s)? vis/i;
+/**
+ * Empreinte v2 (décision du propriétaire, 06/11/2026) : un angle marketing est une raison émotionnelle d'acheter, il
+ * reste valable quand seuls des FAITS changent (prix, dimensions, matières, catalogue, texte de présentation). Seule une
+ * nouvelle offre le périme : activité, langue, nom, catégorie, secteur, public visé, prestations (noms et zone),
+ * liens et consignes confirmées du client. L'identité de marque, construite après l'angle, ne le périme pas.
+ */
+export function inputDigest(p: Project) {
+  const v1 = JSON.parse(canonicalJSON(coreOfferBase(p)));
+  return "v2:" + createHash("sha256").update(canonicalJSON(v1)).digest("hex");
+}
+function coreOfferBase(p: Project) {
+  // L'identité visuelle se construit APRÈS l'angle et à partir de lui (ordre du propriétaire) : elle ne le périme pas.
+  return {
+    business: p.business,
+    language: p.settings.language ?? "fr",
+    product: { name: p.product?.name ?? "", category: p.product?.category ?? "", sector: p.product?.sector ?? null, audience: (p.product?.facts ?? []).filter((f) => AUDIENCE_FACT.test(f.label)).map((f) => f.value) },
+    services: { names: (p.services?.services ?? []).map((x) => x.name), area: p.services?.area ?? "" },
+    sources: p.sources,
+    constraints: memory(p.id)
+      .filter((m) => m.source === "user" && m.status === "confirmed" && ["correction", "preference", "goal"].includes(m.kind))
+      .map((m) => ({ kind: m.kind, key: m.key, value: m.value, scope: m.scope })),
+  };
+}
+/** Empreinte enregistrée encore valable pour ce projet (v2, ou ancienne v1 tant que rien n'a changé). */
+export function sameStrategyInputs(stored: string | null | undefined, p: Project): boolean {
+  return !!stored && (stored === inputDigest(p) || stored === inputDigestV1(p));
+}
+
 export function proposalAnalysis(p: Project) {
   const facts = p.product.facts.filter(
     (f) => f.status === "confirmed" && f.value.trim(),
@@ -168,3 +199,6 @@ export function proposalAnalysis(p: Project) {
 
 /** Research selection may later update project.strategy; it must not invalidate its own inputs. */
 export const researchOfferDigest=(p:Project)=>createHash("sha256").update(inputDigest({...p,strategy:null})+documentStamp(p.id)).digest("hex");
+/** Ancienne empreinte de l'offre d'une recherche (faits compris), acceptée pour les recherches d'avant la v2. */
+export const researchOfferDigestV1=(p:Project)=>createHash("sha256").update(inputDigestV1({...p,strategy:null})+documentStamp(p.id)).digest("hex");
+export const sameResearchOffer=(stored:string|null|undefined,p:Project)=>!!stored&&(stored===researchOfferDigest(p)||stored===researchOfferDigestV1(p));

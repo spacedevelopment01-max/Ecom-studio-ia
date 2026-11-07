@@ -1,5 +1,5 @@
 /**
- * SYNA lot 1 bis (#282) : réglages d'affichage enregistrés sur le serveur (compte, exception par projet), droits entre
+ * SINA lot 1 bis (#282) : réglages d'affichage enregistrés sur le serveur (compte, exception par projet), droits entre
  * comptes, validation, retour aux valeurs par défaut ; commandes d'affichage reconnues sur place, sans IA.
  */
 import { describe, expect, it, vi } from "vitest";
@@ -147,7 +147,7 @@ describe("commandes d'affichage locales (sans IA)", () => {
     ["Réduis l'aperçu", { kind: "width", delta: 80 }],
     ["mode sombre", { kind: "set", patch: { appearance: "dark" } }],
     ["comme l'appareil", { kind: "set", patch: { appearance: "auto" } }],
-    ["Replie Syna", { kind: "set", patch: { panel: "collapsed" } }],
+    ["Replie Sina", { kind: "set", patch: { panel: "collapsed" } }],
     ["texte plus grand", { kind: "set", patch: { textSize: "large" } }],
     ["plus compact", { kind: "set", patch: { density: "compact" } }],
     ["réinitialise l'affichage", { kind: "reset" }],

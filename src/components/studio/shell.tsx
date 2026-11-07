@@ -454,7 +454,7 @@ export function spaceBadge(data: ReturnType<typeof useProject>["data"], id: TabI
   return null;
 }
 
-export function StudioShell({ projectId, children, synaShell }: { projectId: string; children: ReactNode; /** Nouvelle interface SYNA disponible sur cette installation (mission #282, lot 1) : lien pour y revenir. */ synaShell?: ReactNode }) {
+export function StudioShell({ projectId, children, synaShell }: { projectId: string; children: ReactNode; /** Nouvelle interface SINA disponible sur cette installation (mission #282, lot 1) : lien pour y revenir. */ synaShell?: ReactNode }) {
   const agentPanel = useAgentPanel();
   const t = useT();
   const { lang } = useLang();

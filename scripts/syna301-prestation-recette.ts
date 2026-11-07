@@ -1,6 +1,6 @@
 /**
- * Recette #301 « SYNA complète » — renommer une prestation du profil d'activité en phrase naturelle (contrat #374 de Codex), dans la
- * conversation SYNA de l'écran Activité, Encre / Plein cadre, 1440 / 390 px. Phrases d'origine, rien d'aménagé :
+ * Recette #301 « SINA complète » — renommer une prestation du profil d'activité en phrase naturelle (contrat #374 de Codex), dans la
+ * conversation SINA de l'écran Activité, Encre / Plein cadre, 1440 / 390 px. Phrases d'origine, rien d'aménagé :
  *  1. « Renomme cette prestation en « … » » → précision gratuite avec la liste des prestations du profil ;
  *  2. « Renommer » remplit la phrase « Renomme la prestation « Diagnostic » en « » », complétée et envoyée → avant / après ;
  *  3. confirmation → reçu, nom relu ; prix, durée, description, clé et l'autre prestation inchangés ; écran Activité à jour.
@@ -84,10 +84,10 @@ try {
       catch (e) { steps.push({ etape, ok: false, detail: String(e).slice(0, 400), capture: await shot("echec-" + steps.length).catch(() => undefined) }); console.log(`  ✗ ${label} · ${etape} : ${String(e).slice(0, 300)}`); throw e; }
     };
     const openSyna = async () => { if (!(await panel.count())) await page.locator('[aria-controls="syna-panel"]:visible').first().click(); await panel.waitFor(); };
-    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SYNA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
+    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SINA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
     const send = async (text: string) => {
       await openSyna();
-      await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SYNA" }).fill(text);
+      await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SINA" }).fill(text);
       await panel.getByRole("button", { name: "Enregistrer", exact: true }).click();
     };
     const noOverflow = async () => check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "débordement horizontal");
@@ -95,7 +95,7 @@ try {
     const card = panel.getByRole("region", { name: "Prestation du profil d’activité", exact: true });
     const services = () => (loadProject(k.pid).services as { services: { key?: string; name: string; price?: string; duration?: string; description?: string }[] }).services;
     const turns = () => all<{ request_json: string }>("SELECT request_json FROM agent_conversation_turns WHERE conversation_id=?", k.cid).filter((t) => /confirm-service-profile/.test(t.request_json)).length;
-    const noQuote = async () => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SYNA" }).count()), "bouton de devis affiché");
+    const noQuote = async () => check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SINA" }).count()), "bouton de devis affiché");
     const NEW = `Bilan initial ${k.mode} ${k.format.name}`;
     try {
       await step("écran Activité ouvert dans le mode du compte", async () => {
@@ -114,7 +114,7 @@ try {
       });
       await step("« Renommer » sur « Diagnostic » remplit la phrase ; le client la complète et l'envoie → avant / après exacts", async () => {
         await card.getByRole("listitem").filter({ hasText: "Diagnostic" }).getByRole("button", { name: "Renommer" }).click();
-        const box = panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SYNA" });
+        const box = panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SINA" });
         const filled = await box.inputValue(); check(/Renomme la prestation « Diagnostic » en « »/.test(filled), `phrase : ${filled}`);
         await box.fill(filled.replace("« »", `« ${NEW} »`)); await panel.getByRole("button", { name: "Enregistrer", exact: true }).click();
         await card.getByRole("button", { name: "Confirmer gratuitement", exact: true }).waitFor();

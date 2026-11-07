@@ -6,7 +6,7 @@ import {stateOf,inputHash} from '../preparation/store';
 import {analyzed} from '../preparation/understanding';
 import {assertSourcedResearch,sourceCoverage} from '../preparation/research-evidence';
 import {validateResearch} from '../preparation/research-validation';
-import {researchOfferDigest} from './proposals';
+import {researchOfferDigest,sameResearchOffer} from './proposals';
 import {remember,type Project} from '../projects';
 import type {Research,Brief,State} from '../preparation/types';
 import type {Brand} from '../project-types';
@@ -43,7 +43,7 @@ export function marketingResearch(p:Project,acquired?:{brief:Brief;research:Rese
  const stage=s?.stages.research,r=acquired?.research??stage?.data;
  if(!r)return result('research_required',s?.error?.step==='research'?s.error.message:'Une recherche Internet et son analyse IA sont nécessaires. Aucun angle n’est fabriqué localement.');
  const n=r.sources.filter(s=>s.status==='consulted').length;
- if((!acquired&&(stage?.status==='stale'||stage?.inputHash!==inputHash(s!,'research')))||r.offerDigest!==researchOfferDigest(p)&&!identityResearchCompatible(p,r))return result('stale','Le contexte a changé ou la recherche est ancienne. Les choix et résultats précédents sont conservés ; préparez une recherche adaptée avant tout nouvel angle.',n);
+ if((!acquired&&(stage?.status==='stale'||stage?.inputHash!==inputHash(s!,'research')))||!sameResearchOffer(r.offerDigest,p)&&!identityResearchCompatible(p,r))return result('stale','Le contexte a changé ou la recherche est ancienne. Les choix et résultats précédents sont conservés ; préparez une recherche adaptée avant tout nouvel angle.',n);
  try{
   assertSourcedResearch(r);validateResearch(r);
   const call=r.execution&&one<{provider:string;model:string;created_at:number}>("SELECT provider,COALESCE(served_model,requested_model) model,created_at FROM ai_calls WHERE project_id=? AND usage_key=? AND status='ok' ORDER BY rowid DESC LIMIT 1",p.id,r.execution.usageKey);

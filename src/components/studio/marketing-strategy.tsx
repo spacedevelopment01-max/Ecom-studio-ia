@@ -13,7 +13,7 @@ export function MarketingStrategy({projectId,onChange}:{projectId:string;onChang
  const t=useT(),url=`/api/projects/${projectId}/marketing-strategy`;
  const {data,reload,error:loadError}=useApi<StrategyState & {revisionBundle?:RevisionBundle|null;modulePreparations?:{module:string;oldId:string;newIds:string[];state:string;note:string;preview?:string[]}[]}>(url);
  const project=useOptionalProject(),nativeRevision=project?.id===projectId?project.data?.preparation?.revision:null;
- // A job launched in SYNA changes the same native Preparation state. Refresh this projection,
+ // A job launched in SINA changes the same native Preparation state. Refresh this projection,
  // without clearing a review, typed correction or angle choice in this component.
  useEffect(()=>{if(nativeRevision!=null)void reload();},[projectId,nativeRevision,reload]);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[preparation,setPreparation]=useState<StrategyPreparation|null>(null),[retain,setRetain]=useState(false);

@@ -234,9 +234,9 @@ async function submitConversationImpl(user: User, cid: string, raw: unknown, tes
   if((folderMoveCommand||cmd.action==='confirm-folder-move'||cmd.action==='cancel-folder-move')&&!localFolderMoveEnabled())throw new HttpError(404,'Déplacement gratuit de dossier indisponible.');
   const folderRenameCommand=cmd.action==='message'&&localFolderRenameCandidate(cmd.text);
   if((folderRenameCommand||cmd.action==='confirm-folder-rename'||cmd.action==='cancel-folder-rename')&&!localFolderRenameEnabled())throw new HttpError(404,'Renommage gratuit de dossier indisponible.');
-  if(cmd.action==='confirm-site-request'&&!siteRequestsEnabled())throw new HttpError(404,'Demandes reçues avec SYNA indisponibles.');
+  if(cmd.action==='confirm-site-request'&&!siteRequestsEnabled())throw new HttpError(404,'Demandes reçues avec SINA indisponibles.');
   if(initial.project_id)requirePlan(user,initial.project_id);
-  if(promptsCommand&&!localPromptsEnabled())throw new HttpError(404,'Lecture de la bibliothèque de prompts avec SYNA indisponible.');
+  if(promptsCommand&&!localPromptsEnabled())throw new HttpError(404,'Lecture de la bibliothèque de prompts avec SINA indisponible.');
   const received = one<{request_hash:string;response_json:string}>("SELECT request_hash,response_json FROM agent_conversation_turns WHERE conversation_id=? AND request_id=?", cid, cmd.requestId);
   if (received) {
     if (received.request_hash !== hash) throw new HttpError(409, L("Cet identifiant correspond à une autre demande.", "This identifier belongs to another request."), "conversation_idempotency_conflict");

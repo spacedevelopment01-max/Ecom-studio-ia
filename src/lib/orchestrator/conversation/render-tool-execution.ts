@@ -21,7 +21,7 @@ type Output={id:string;sha256:string;metrics:Metrics};
 type Meta={schema:1;id:string;conversationId:string;sourceReceiptId?:string;revision:number;projectRevision:number;versionId:string;versionNumber:number;sourceDigest:string;paths:string[];createdAt:number;expiresAt:number;jobId?:string;outputs:Output[];reusedFrom?:string};
 const key=(qid:string)=>`agent.render.tool.${qid}`;
 const sha=(b:Buffer)=>createHash('sha256').update(b).digest('hex');
-function owned(u:User,cid:string){if(!conversationRenderEnabled())throw new HttpError(404,L('Captures de SYNA indisponibles.','SYNA captures are unavailable.'));const c=ownedConversation(u,cid);if(!c.project_id)throw new HttpError(409,L('Créez votre Site avant sa capture.','Create your Site before capturing it.'));requirePlan(u,c.project_id);return{c,pid:c.project_id};}
+function owned(u:User,cid:string){if(!conversationRenderEnabled())throw new HttpError(404,L('Captures de SINA indisponibles.','SINA captures are unavailable.'));const c=ownedConversation(u,cid);if(!c.project_id)throw new HttpError(409,L('Créez votre Site avant sa capture.','Create your Site before capturing it.'));requirePlan(u,c.project_id);return{c,pid:c.project_id};}
 function save(pid:string,m:Meta){remember(pid,{kind:'artifact',key:key(m.id),value:JSON.stringify(m),source:'local',origin:'system',status:'inferred'});}
 function read(pid:string,qid:string){return json<Meta|null>(one<{value:string}>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key=?",pid,key(qid))?.value,null);}
 function ownedMeta(u:User,cid:string,qid:string){const{c,pid}=owned(u,cid),m=read(pid,qid);if(!m||m.conversationId!==cid)throw new HttpError(404,L('Capture introuvable.','Capture not found.'));return{c,pid,m};}

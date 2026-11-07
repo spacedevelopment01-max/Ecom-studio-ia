@@ -8,10 +8,10 @@ import {api,Button} from '../ui';
 import {useT} from '../i18n';
 type LibraryItem=NonNullable<NonNullable<ConversationView['localFiles']>['items']>[number];
 /**
- * #301 C24 — carte Fichiers de SYNA (contrat #305) : avant / après, « Gratuit — 0 € », confirmation explicite,
+ * #301 C24 — carte Fichiers de SINA (contrat #305) : avant / après, « Gratuit — 0 € », confirmation explicite,
  * reçu relu sur le serveur. Distincte des cartes Site et Catalogue : elle ne parle que du fichier désigné.
- * « SYNA complète » (contrat #377) : lecture de la bibliothèque — liste des fichiers ou dossiers natifs, liens, et
- * désignation explicite d'un fichier (jamais le premier résultat) ; SYNA ne prétend pas avoir regardé les images.
+ * « SINA complète » (contrat #377) : lecture de la bibliothèque — liste des fichiers ou dossiers natifs, liens, et
+ * désignation explicite d'un fichier (jamais le premier résultat) ; SINA ne prétend pas avoir regardé les images.
  */
 export function ConversationLocalFiles({view,confirmation,busy,selectionMatches,onDesignate}:{view:ConversationView;confirmation:ReturnType<typeof useLocalFilesConfirmation>;busy:boolean;selectionMatches:boolean;onDesignate?:(item:LibraryItem)=>void}){
  const t=useT(),s=view.localFiles,{controller,state}=confirmation;
@@ -25,7 +25,7 @@ export function ConversationLocalFiles({view,confirmation,busy,selectionMatches,
  return <section aria-label={s?.command==='read'?t('Fichiers du projet — lecture gratuite','Project files — free reading'):t('Rangement gratuit du fichier','Free file organisation')} data-syna-files-card className="space-y-3 rounded-xl border border-line p-4 text-sm">
   <p className="font-semibold">{t('Gratuit — 0 €','Free — €0')}</p>
   {s&&<p>{s.message}</p>}
-  {s?.command==='read'&&<p className="text-xs text-muted">{t('Lecture des noms et des liens seulement : SYNA n’a pas regardé les images et rien n’a été modifié.','Names and links only: SYNA did not look at the images and nothing was changed.')}</p>}
+  {s?.command==='read'&&<p className="text-xs text-muted">{t('Lecture des noms et des liens seulement : SINA n’a pas regardé les images et rien n’a été modifié.','Names and links only: SINA did not look at the images and nothing was changed.')}</p>}
   {s?.command==='read'&&!!s.items?.length&&<ul aria-label={t('Fichiers trouvés','Files found')} data-syna-library-items className="space-y-2">{s.items.map(item=><li key={item.id} className="flex min-w-0 items-center gap-3">
    {item.thumbHref?<img src={item.thumbHref} alt={item.name} width={48} height={48} className="size-12 shrink-0 rounded object-cover"/>:<span aria-hidden className="grid size-12 shrink-0 place-items-center rounded border border-line text-xs text-muted">{item.kind}</span>}
    <span className="min-w-0 flex-1"><a href={item.href} target="_blank" rel="noopener" className="block break-words underline">{item.name}</a><span className="text-xs text-muted">{item.kind}{t(' · version ',' · version ')}{item.version}</span></span>

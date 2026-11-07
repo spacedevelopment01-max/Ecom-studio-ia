@@ -6,7 +6,7 @@ import type {useLocalThemeRestoreConfirmation} from './use-local-theme-restore-c
 import {Button} from '../ui';
 import {useT} from '../i18n';
 /**
- * #301 « SYNA complète » — carte Versions du site gratuite (contrat #382 de Codex) : liste des versions avec leur
+ * #301 « SINA complète » — carte Versions du site gratuite (contrat #382 de Codex) : liste des versions avec leur
  * aperçu réel, « Restaurer » remplit la phrase exacte (jamais de choix implicite), deux vrais aperçus avant l'accord,
  * reçu relu. Une liste ou un refus n'offre aucune action d'écriture.
  */

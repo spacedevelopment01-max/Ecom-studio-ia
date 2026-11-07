@@ -59,8 +59,8 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   24 octobre, PR #183, `docs/theme-briefs/onde/` : profil de conversion « onde » (`assets/onde.css`, `onde.js`, règles
   préfixées `body[data-conversion="onde"]`, aucun texte dans la feuille), sections `on-*` (en-tête, pied, fiche, panier,
   tiroir, commande d'exemple, aide) réservées à ce thème, titres Montserrat 700, textes Inter, prix illustratif centralisé
-  `ONDE_PRICE` (149 €), démonstration `tests/onde-fixtures.ts`, visuels lus dans le kit privé `public/demo/onde/`, jamais
-  copiés dans le dépôt ; cellules « ordinateur » de la planche 03 comparées à 913 px ; rapport
+  `ONDE_PRICE` (149 €), démonstration `tests/onde-fixtures.ts`, visuels du kit `public/demo/onde/`, versionnés
+  (décision du 6 novembre) ; cellules « ordinateur » de la planche 03 comparées à 913 px ; rapport
   `docs/coordination/ONDE_RESULTATS.md`), **ORBE** (lampe, e-commerce), **Atelier Rive** (prestations de services),
   **SILLON** (machine à espresso nomade, boutique spécialisée, issue #148 ; **V2** refaite d'après les trois planches
   validées et les quatre planches téléphone, PR #182 : sections `sv-*`, `theme-base/assets/sillon.css`, 129 € illustratif,
@@ -98,23 +98,23 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   **PHASE** (électricien, famille **Services**, mission du 25 octobre, planches de la PR #188) : reproduction des dix planches
   (`docs/theme-briefs/phase/`), 18 pages ordinateur et téléphone (sections `ph-*`, `theme-base/assets/phase.css` /
   `phase.js`), formulaires de contact et de devis sans envoi réel en démonstration (récapitulatif lu dans le navigateur),
-  filtres, questions, cookies ; démonstration `tests/phase-fixtures.ts`, photos du kit privé `public/demo/phase/images/`
-  (hors dépôt) ; voir `docs/LISEZMOI-phase.md`.
+  filtres, questions, cookies ; démonstration `tests/phase-fixtures.ts`, photos du kit `public/demo/phase/images/`
+  (versionnées, décision du 6 novembre) ; voir `docs/LISEZMOI-phase.md`.
   **MAISON & HORIZON** (agence immobilière, achat et location, issue #172) : thème de la **famille Prestations de services**
   (ouvert à partir du forfait Vendre, à confirmer), profil éditorial « horizon » (`assets/horizon.css`, `horizon.js`,
   sections `re-*`) ; les **biens** se saisissent dans l'espace **Biens** du studio (`src/lib/biens.ts`, table `biens`) et
   sont injectés au rendu (`withBiens`), jamais écrits dans le thème ; pages de recherche et fiche ajoutées à tout projet
   qui choisit le thème (`src/lib/theme/real-estate-site.ts`, chargé aussi dans le navigateur via `directions.ts` : imports de
   types seulement, sinon le studio ne compile plus) ; démonstration `tests/maison-horizon-fixtures.ts` (27 biens,
-  une série de photos par bien, aucune photo partagée), 90 images en grand format dans le kit privé
-  `public/demo/maison-horizon/` (non publiées sur GitHub, consigne du dossier) ; rapport
+  une série de photos par bien, aucune photo partagée), 90 images en grand format dans le kit
+  `public/demo/maison-horizon/` (versionnées, décision du 6 novembre) ; rapport
   `docs/coordination/MAISON_HORIZON_RESULTATS.md`.
   **APLAT — Plâtrerie & Peinture** (artisan, PR #187, dix planches du 25 octobre, `docs/theme-briefs/aplat/`) : thème de la
   **famille Prestations de services** (forfait Vendre, à confirmer), profil éditorial « aplat » (`assets/aplat.css`,
   `aplat.js`, sections `ap-*` réservées à ce thème), titres et textes Lato ; 18 pages (accueil, prestations, métiers,
   réalisations filtrables, détail avant/après, approche, FAQ, contact, devis en deux étapes avec photos, enduits, conseils,
   article, confirmation, pages légales, cookies réels, 404) ; démonstration `tests/aplat-fixtures.ts`, photos dans le kit
-  privé `public/demo/aplat/` (non publié) ; « Choisir ce thème » pose la structure avec les données du client
+  `public/demo/aplat/` (versionnées, décision du 6 novembre) ; « Choisir ce thème » pose la structure avec les données du client
   (`src/lib/theme/aplat-site.ts`, chargé aussi dans le navigateur : imports de types seulement), sans photo ni coordonnée
   de démonstration ; formulaires en démonstration : envoi simulé « Démonstration — demande non envoyée » ; contrôle des
   interactions `scripts/aplat-interactions.ts` ; rapport `docs/coordination/APLAT_RESULTATS.md`.
@@ -170,7 +170,11 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 
 ## Démonstrations de référence (règle du 19 octobre, retour de Thomas 15 h 07)
 
-- La démonstration FRAISE GUMMIES est la reprise complète des **sept planches corrigées** (consigne écrite de Thomas du 24 octobre, PR #185 pour les maquettes, `docs/theme-briefs/fraise-gummies/`) : sections `fg-*`, `theme-base/assets/fraise.css` / `fraise.js` (chargés par la mise en page, réglage `theme_kit`), offres 1 / 2 / 3 flacons à 16,60 / 24,90 / 33,20 € (`OFFRES_VALIDEES.json`, messages calculés par le snippet `fg-offer`), prix total du pack en premier, commande simulée sans champ de carte ; démonstration `tests/fraise-fixtures.ts`, photos du kit privé `public/demo/fraise/v2/` (hors dépôt) ; voir `docs/LISEZMOI-fraise.md`. Ne jamais la recomposer par le parcours « thème du catalogue » ni la simplifier sans consigne écrite de Thomas. L'ancienne composition Lumora reste constructible par `conversionProject(…, "fraise")` pour les anciens contrôles (lot 2C, bibliothèques par famille).
+- **Photos des 15 thèmes dans le dépôt** (décision du propriétaire du 6 novembre 2026) : les kits FRAISE, ONDE, PHASE,
+  APLAT et MAISON & HORIZON (`public/demo/<id>/`) sont versionnés et publics, comme `public/theme-assets/`, pour que le
+  Studio (Codespace compris) ait tous les thèmes complets. Les icônes du kit PHASE (non utilisées) restent hors dépôt.
+
+- La démonstration FRAISE GUMMIES est la reprise complète des **sept planches corrigées** (consigne écrite de Thomas du 24 octobre, PR #185 pour les maquettes, `docs/theme-briefs/fraise-gummies/`) : sections `fg-*`, `theme-base/assets/fraise.css` / `fraise.js` (chargés par la mise en page, réglage `theme_kit`), offres 1 / 2 / 3 flacons à 16,60 / 24,90 / 33,20 € (`OFFRES_VALIDEES.json`, messages calculés par le snippet `fg-offer`), prix total du pack en premier, commande simulée sans champ de carte ; démonstration `tests/fraise-fixtures.ts`, photos du kit `public/demo/fraise/v2/` (versionnées, décision du 6 novembre) ; voir `docs/LISEZMOI-fraise.md`. Ne jamais la recomposer par le parcours « thème du catalogue » ni la simplifier sans consigne écrite de Thomas. L'ancienne composition Lumora reste constructible par `conversionProject(…, "fraise")` pour les anciens contrôles (lot 2C, bibliothèques par famille).
 - ONDE AUDIO n'est plus la référence Pawish : refonte E-commerce (issue #158), puis reprise à l'identique des sept planches du 24 octobre (PR #183) ; sa composition (`tests/onde-fixtures.ts`, sections `on-*`, section Produit commune présente mais masquée) est figée de la même façon. Garde-fou commun : `tests/demos-fraise-onde-composition.test.ts` (liste ordonnée des sections, aucune masquée). L'ancienne composition Pawish reste constructible par `conversionProject(…, "onde")` pour les anciens contrôles du lot 2C.
 - Toute livraison d'aperçu indique le commit exporté (`resume.json`) et la version d'artefact ; vérifier l'inventaire des sections de l'export avant de publier, et comparer à la version précédente (une section de moins = à expliquer dans la PR, jamais silencieux).
 

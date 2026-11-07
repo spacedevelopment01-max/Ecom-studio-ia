@@ -133,7 +133,7 @@ export function submitExistingProjectMessage(user:User,cid:string,cmd:Command,ha
     run('UPDATE agent_conversations SET revision=?,state_json=?,updated_at=? WHERE id=? AND revision=?',next,JSON.stringify(metadata),now(),cid,c.revision);
     const response=existingProjectView(user,cid);
     response.history=[];response.historyBefore=null;
-    response.message=localMessage??(cmd.action==='message'?L('Message exact enregistré dans le fil SYNA. Aucun contenu du projet modifié, aucun appel IA.','Exact message saved in the SYNA thread. No project content changed; no AI request.'):reason(local));
+    response.message=localMessage??(cmd.action==='message'?L('Message exact enregistré dans le fil SINA. Aucun contenu du projet modifié, aucun appel IA.','Exact message saved in the SINA thread. No project content changed; no AI request.'):reason(local));
     run('INSERT INTO agent_conversation_turns (id,conversation_id,revision,request_id,request_hash,request_json,response_json,created_at) VALUES (?,?,?,?,?,?,?,?)',id(),cid,next,cmd.requestId,hash,JSON.stringify(cmd),JSON.stringify(response),now());
     return response;
   });

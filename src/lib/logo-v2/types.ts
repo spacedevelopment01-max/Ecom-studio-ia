@@ -17,7 +17,7 @@ export type BrandBrief = {
   projectId: string;
   /** Nom EXACT (accents, espaces, casse saisie) : le seul texte autorisé dans le logo. */
   name: string;
-  /** Contexte serveur SYNA accepté : la réparation locale garde aussi la casse exacte du nom. */
+  /** Contexte serveur SINA accepté : la réparation locale garde aussi la casse exacte du nom. */
   exactNameCase?: true;
   nameStatus: string;
   /** Ligne métier autorisée sous le nom (ex. « Boulangerie artisanale ») : seulement si elle vient du client. */
@@ -57,8 +57,14 @@ export type BrandBrief = {
  * sceau, badge ; « textured » : matière choisie pour l'entreprise ; « gradient » : dégradés modernes ; « premium » : sobriété
  * haut de gamme. Aucun n'est imposé : le directeur artistique choisit ce qui sert CHAQUE marque.
  */
+/**
+ * « libre » : carte blanche au modèle d'images (SINA, décision du propriétaire du 7 novembre 2026) — aucun style
+ * imposé ; la relecture juge la beauté, l'idée, la modernité et l'exécution, quel que soit le rendu choisi.
+ */
 export const LOGO_STYLES = ["illustrated", "minimal", "typographic", "monogram", "emblem", "textured", "gradient", "premium"] as const;
-export type LogoStyle = (typeof LOGO_STYLES)[number];
+/** Styles connus du moteur : ceux proposables (LOGO_STYLES, schémas publics inchangés) et « libre » (SINA seulement). */
+export const ENGINE_STYLES = [...LOGO_STYLES, "libre"] as const;
+export type LogoStyle = (typeof ENGINE_STYLES)[number];
 
 export const MARK_TYPES = ["wordmark", "lettermark", "monogram", "symbol_wordmark", "abstract_mark", "emblem"] as const;
 export type MarkType = (typeof MARK_TYPES)[number];
@@ -163,6 +169,12 @@ export type ArtworkReview = {
    * Une forme simple portée par une vraie idée graphique n'en est PAS un.
    */
   genericConcept?: boolean;
+  /**
+   * Rendu INTERDIT par le propriétaire (7 novembre 2026, FORBIDDEN_LOGO_RENDERS) : jamais présenté ni choisissable.
+   */
+  forbiddenRender?: boolean;
+  /** Rendu DATÉ (années 70-80-90, clip-art) relevé par la relecture d'un logo libre : note ramenée à 3 au plus. */
+  dated?: boolean;
   /** Correction la plus utile pour une nouvelle version : cible et consigne précise. */
   fix?: { target: "symbol" | "typography" | "composition" | "colour" | "concept" | "none"; instruction: string };
 };

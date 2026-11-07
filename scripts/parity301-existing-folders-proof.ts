@@ -89,8 +89,8 @@ try {
     };
     // Après un rechargement, un clic arrivé avant l'hydratation est perdu : nouvel essai (3 au plus), jamais de faux succès.
     const openSyna = async () => { for (let i = 0; i < 3 && !(await panel.count()); i++) { await page.locator('[aria-controls="syna-panel"]:visible').first().click(); await panel.waitFor({ timeout: 10000 }).catch(() => {}); } await panel.waitFor(); };
-    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SYNA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
-    const send = async (text: string) => { await openSyna(); await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SYNA" }).fill(text); const response=page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname==='/api/studio-agent/conversations/'+k.cid);await activate(panel.getByRole('button',{name:'Enregistrer',exact:true}));check((await response).ok(),'message failed'); };
+    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SINA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
+    const send = async (text: string) => { await openSyna(); await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SINA" }).fill(text); const response=page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname==='/api/studio-agent/conversations/'+k.cid);await activate(panel.getByRole('button',{name:'Enregistrer',exact:true}));check((await response).ok(),'message failed'); };
     try {
       await step("ancien projet : avis de lecture seule visible, mode du compte", async () => {
         await page.goto(`${origin}/studio/${k.pid}/fichiers`, { waitUntil: "networkidle", timeout: 180000 });
@@ -105,7 +105,7 @@ try {
         const jobs = one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE project_id=?", k.pid)!.n;
         await send("Rédige trois slogans pour ma boutique");
         await panel.getByText("Rédige trois slogans pour ma boutique", { exact: true }).first().waitFor();
-        check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SYNA" }).count()), "bouton de devis sur un ancien projet");
+        check(!(await panel.getByRole("button", { name: "Voir le devis de la réponse de SINA" }).count()), "bouton de devis sur un ancien projet");
         check(one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE project_id=?", k.pid)!.n === jobs, "une tâche a été lancée");
       });
       await step("Fichiers : fichier coché, « Renomme ce fichier en … » → carte gratuite", async () => {

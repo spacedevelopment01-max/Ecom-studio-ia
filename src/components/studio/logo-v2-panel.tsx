@@ -88,7 +88,7 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
   // Rafraîchi seulement pendant une tâche de logo (série, nouvelle version, application du logo choisi).
   const logoActive = useActive("brand.logo").length > 0;
   const { data, reload } = useApi<View>(`/api/projects/${id}/brand/logo-v2`, { poll: logoActive || submittedJob ? 2000 : undefined });
-  // Les acquis de SYNA rejoignent cette même galerie, même si sa tâche a fini entre deux relevés.
+  // Les acquis de SINA rejoignent cette même galerie, même si sa tâche a fini entre deux relevés.
   useEffect(() => {
     const changed=(event:Event)=>{if((event as CustomEvent<{projectId?:string}>).detail?.projectId===id)void reload();};
     window.addEventListener('studio:images-changed',changed);

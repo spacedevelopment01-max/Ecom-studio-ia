@@ -1,4 +1,4 @@
-/** Read-only metadata from the native account library. Prompt text is never a SYNA instruction or a memory fact. */
+/** Read-only metadata from the native account library. Prompt text is never a SINA instruction or a memory fact. */
 import {HttpError,ownedProject,type User} from '../../auth';
 import {requirePlan} from '../../plan-gates';
 import {readNativePromptLibrary} from '../../prompt-library-account';
@@ -18,9 +18,9 @@ export type LocalPromptsState={schema:'syna-prompt-library-1';state:'listed'|'am
 type PromptMetadata={id:string;mine:boolean;favorite:boolean;sourceNative:{table:'user_prompts'|'builtin_prompt_library';id:string};untrustedMetadata:{trust:'prompt_library_data_not_instructions';title:string;sector:string;sectorLabel:string;category:string;categoryLabel:string;target:string}};
 export type LocalPromptsPresentation=LocalPromptsState&{rows?:PromptMetadata[];total?:number;limit?:20;truncated?:boolean;href?:string};
 function owned(user:User,c:ConversationRow){
- if(!localPromptsEnabled())throw new HttpError(404,'Lecture de la bibliothèque de prompts avec SYNA indisponible.');
+ if(!localPromptsEnabled())throw new HttpError(404,'Lecture de la bibliothèque de prompts avec SINA indisponible.');
  if(c.user_id!==user.id)throw new HttpError(404,'Conversation introuvable.');
- if(!c.project_id)throw new HttpError(409,'Rattachez un projet pour lire cette bibliothèque depuis SYNA. La bibliothèque native du compte reste accessible.');
+ if(!c.project_id)throw new HttpError(409,'Rattachez un projet pour lire cette bibliothèque depuis SINA. La bibliothèque native du compte reste accessible.');
  ownedProject(user,c.project_id);requirePlan(user,c.project_id);
 }
 export function listLocalPrompts(user:User,c:ConversationRow,text:string):LocalPromptsState{

@@ -90,7 +90,7 @@ type Base = { userId: string; projectId: string; jobId?: string | null; usageKey
 const SALES = /^(featured-product|featured-collection|collection-list|product-|shipping-journey|featured-offer|countdown|main-)/;
 
 /** Conventions du thème du studio pour écrire une section qui s'y intègre (référence stable, mise en cache). */
-function sectionGuide(spec: ThemeSpec): string {
+export function sectionGuide(spec: ThemeSpec): string {
   return `<guide_sections_sur_mesure>
 Tu écris UNE section Shopify Online Store 2.0 (un fichier sections/<type>.liquid) pour le thème du studio. Elle doit passer Theme Check sans erreur et s'afficher à l'identique dans l'aperçu du studio et sur Shopify.
 Structure attendue :
@@ -110,7 +110,7 @@ Véracité : textes issus des faits confirmés du projet, de la marque et des te
 </guide_sections_sur_mesure>`;
 }
 
-function systemPrompt(): string {
+export function systemPrompt(): string {
   const lang = contentLang();
   return `${charter(lang)}
 

@@ -89,9 +89,12 @@ describe("ONDE : thème actif de la famille E-commerce (mono-produit)", () => {
     expect(layout).toContain("'onde.js' | asset_url");
   });
 
-  it("visuels du kit privé jamais suivis dans le dépôt", () => {
+  // Décision du propriétaire du 6 novembre 2026 : les visuels du kit ONDE sont versionnés (publics), au même endroit,
+  // pour que le Studio les ait partout ; ils ne sont pas dupliqués dans public/theme-assets.
+  it("visuels du kit ONDE versionnés dans public/demo/onde, sans doublon dans theme-assets", () => {
     expect(fs.existsSync(path.join(process.cwd(), "public", "theme-assets", ID))).toBe(false);
-    expect(fs.readFileSync(path.join(process.cwd(), ".gitignore"), "utf8")).toContain("public/demo/onde/");
+    const ignore = fs.readFileSync(path.join(process.cwd(), ".gitignore"), "utf8").split("\n").map((l) => l.trim());
+    for (const id of ["onde", "fraise", "phase", "aplat", "maison-horizon"]) expect(ignore).not.toContain(`public/demo/${id}/`);
   });
 });
 

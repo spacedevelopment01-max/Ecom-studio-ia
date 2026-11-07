@@ -6,7 +6,7 @@ import type {useLocalSiteMotionConfirmation} from './use-local-site-motion-confi
 import {Button} from '../ui';
 import {useT} from '../i18n';
 /**
- * #301 « SYNA complète » — carte Animations gratuite (contrat #379 de Codex) : un seul réglage natif (animations,
+ * #301 « SINA complète » — carte Animations gratuite (contrat #379 de Codex) : un seul réglage natif (animations,
  * intensité, parallaxe), avant / après en mots simples, accord gratuit, reçu relu. Aucun style inventé.
  */
 export function ConversationLocalSiteMotion({view,confirmation,busy}:{view:ConversationView;confirmation:ReturnType<typeof useLocalSiteMotionConfirmation>;busy:boolean}){

@@ -22,16 +22,14 @@ SONORE_VIDEO_WAN/ecartees-reference-pixabay/references/
 # Séquences de titres animés (régénérables : node PAYSAGISTE_VIDEO/titres/animer-titres.cjs)
 PAYSAGISTE_VIDEO/titres/anim/
 
-# Démonstrations (issue #137) : visuels du kit privé de Thomas, jamais dans le dépôt (livrés dans le ZIP, à copier ici) ;
-# vignettes des thèmes rendues avec ces visuels (scripts/theme-previews.ts), donc privées aussi.
-public/demo/fraise/
-public/demo/phase/
-public/demo/onde/
+# Démonstrations (issue #137) : visuels du kit de Thomas.
+# Décision du propriétaire du 6 novembre 2026 : les photos des thèmes FRAISE, ONDE, PHASE, APLAT et MAISON & HORIZON
+# sont versionnées et publiques, comme celles des autres thèmes, pour que le Studio les ait partout.
+# Restent hors dépôt : les anciennes démos (ORBE, Rive, directions) et les icônes du kit PHASE (non utilisées).
 public/demo/orbe/
 public/demo/rive/
 public/demo/directions/
-public/demo/maison-horizon/
-public/demo/aplat/
+public/demo/phase/icones/
 
 # Projets clients dédiés (clients/<clé>/) : médias, kits et aperçus du client, jamais dans le dépôt.
 clients/*/prive/

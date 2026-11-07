@@ -1,7 +1,7 @@
 /** Portée serveur, jamais construite à partir d'un rôle ou d'un propriétaire fourni par le navigateur. */
 import { AsyncLocalStorage } from "node:async_hooks";
 
-type AccessScope = { userId?: string; projectId?: string; administration?: boolean; kind?: "http"|"worker" };
+type AccessScope = { userId?: string; projectId?: string; administration?: boolean; kind?: "http"|"worker"; method?: string; path?: string };
 const scopes = new AsyncLocalStorage<AccessScope>();
 export const accessScope = () => scopes.getStore();
 export const withAccessScope = <T>(scope: AccessScope, fn: () => T): T => scopes.run({ ...scope }, fn);

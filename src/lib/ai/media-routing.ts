@@ -244,6 +244,7 @@ export function typicalCostMicro(m: Pick<MediaModel, "provider" | "model" | "kin
   let usd: number;
   if (p.unit === "image") usd = p.perImage;
   else if (p.unit === "video_second") usd = p.perSecond * (m.typical.seconds ?? 8);
+  else if (p.unit === "call") return null;
   else usd = ((m.typical.inputTokens ?? 2000) * (p.imageInputPerM ?? p.inputPerM) + (m.typical.outputTokens ?? 4160) * (p.imageOutputPerM ?? p.outputPerM)) / 1e6;
   return Math.round(usd * usdToEur() * EUR);
 }

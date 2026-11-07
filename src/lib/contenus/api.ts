@@ -1,6 +1,6 @@
 /**
  * API native des contenus métier (#239, phase 4) : une seule forme pour les biens, la carte, les réalisations et les
- * prestations, réutilisable plus tard par l'assistant SYNA (aucun assistant n'est branché ici).
+ * prestations, réutilisable plus tard par l'assistant SINA (aucun assistant n'est branché ici).
  *
  * - Opérations : `list`, `get`, `create`, `update`, `publish`, `withdraw`, `archive`, `status` (vendu, loué…), `reorder`.
  *   Toujours dans UN projet du compte connecté ; aucune suppression (archiver garde la donnée).

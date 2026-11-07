@@ -3,7 +3,7 @@ import {account,project,sender} from './conversation209-fixtures';
 import {createProduct,getProduct} from '@/lib/products/catalog';
 import {openProjectConversation,submitConversation} from '@/lib/orchestrator/conversation';
 import {id} from '@/lib/db';
-// Studio : « Désigner pour SYNA » dans Catalogue envoie la désignation AVEC la phrase (pas de sélection préalable).
+// Studio : « Désigner pour SINA » dans Catalogue envoie la désignation AVEC la phrase (pas de sélection préalable).
 beforeEach(()=>{for(const f of ['LOT_A','AI','CONTEXT','SPECIALISTS','TOOLS','CATALOGUE'])vi.stubEnv('STUDIO_CONVERSATION_'+f,'1');vi.stubGlobal('fetch',vi.fn(()=>{throw Error('NO_PROVIDER');}));});
 afterEach(()=>{expect(fetch).not.toHaveBeenCalled();vi.unstubAllGlobals();vi.unstubAllEnvs();});
 it('la désignation jointe à la phrase suffit au moteur Stock, proposition puis accord gratuit',async()=>{

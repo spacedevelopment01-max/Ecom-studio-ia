@@ -25,11 +25,19 @@ import { assertUnderCostCap, recordCall, redact, shortHash, skillsOfReference } 
 import { brainMetaOf } from "../brain/facade";
 import { getJsonSetting } from "../settings";
 import { route, type Difficulty, type RouteDecision, type RoutingHistory } from "../orchestrator/router";
+import { modelInfo } from "../orchestrator/capabilities";
 import { routingHistoryFor } from "../orchestrator/history";
 import { pinnedTasks, routingMode } from "../orchestrator/text-routing";
 import type { Deliverable } from "../quality/policies";
 import { mapEffort, modelStatus, TEXT_MODELS, textModel, thinkingOutsideMaxOutput } from "./text-models";
 import { ProviderHttpError, hasTextAdapter, textAdapters, type TextPart, type TextRequest, type TextResult, type TextTurn } from "./text-providers";
+
+/**
+ * Conversation de l'agent (SINA) : réfléchir sur le projet n'est pas une création. Elle reste possible quand les faits
+ * ont changé depuis le choix de l'angle, pour que SINA puisse justement re-préparer l'angle ; chaque création payante
+ * garde son propre contrôle de fraîcheur de la stratégie.
+ */
+const reasoningOnly = (call: { task: string }) => call.task === "agent_conversation";
 
 export type LlmImage = { data: Buffer; label?: string };
 
@@ -70,7 +78,11 @@ export type LlmCall = {
    * Router V2 : difficulté, livrable contrôlé et historique de l'étape (note précédente, verdict, cause d'échec).
    * Absent : le routage par défaut de la tâche (identique à celui d'avant la phase 3).
    */
-  routing?: { difficulty?: Difficulty; deliverable?: Deliverable; history?: RoutingHistory };
+  routing?: {
+    difficulty?: Difficulty; deliverable?: Deliverable; history?: RoutingHistory;
+    /** Modèle choisi par l'appelant pour cet appel (ex. SINA : Haiku pour un échange simple), s'il est utilisable. */
+    prefer?: { provider: "anthropic"; model: string; effort?: string };
+  };
 };
 
 /**
@@ -78,6 +90,13 @@ export type LlmCall = {
  * Un appel arrivé ici est déjà engagé vers l'IA : jamais de bascule silencieuse vers le moteur local.
  */
 export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing"> & { userId?: string }): RouteDecision {
+  const pref = call.routing?.prefer;
+  if (pref && pref.provider === "anthropic") {
+    const info = modelInfo(pref.provider, pref.model);
+    if (info && (!call.images?.length || info.capabilities.includes("vision"))) {
+      return { mode: "llm", provider: pref.provider, model: pref.model, effort: (pref.effort ?? undefined) as RouteDecision["effort"], tier: info.tier, reason: "modèle choisi par l'appelant (échange simple)", fallback: false, escalation: false, qualityTarget: null };
+    }
+  }
   const custom = getJsonSetting<Partial<Record<TaskId, unknown>>>("ai.routes", {});
   const auto = routingMode() === "auto";
   return route({
@@ -103,8 +122,9 @@ export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing"> & { 
  */
 export function strictTextQuoteInput(call: LlmCall, schema: z.ZodType): { maximumTokens: number; typicalTokens: number } {
   if (call.images?.length) throw new UserFacingError('Le devis texte ne couvre pas des images. / Text quote does not cover images.');
-  const stable = [call.context, call.reference].filter(Boolean) as string[];
+  const { cached: stable, after } = promptHead(call);
   const content: unknown[] = stable.map((text, i) => i === stable.length - 1 ? { type: 'text', text, cache_control: { type: 'ephemeral' } } : { type: 'text', text });
+  for (const text of after) content.push({ type: 'text', text });
   const volatile = brainOf(call).volatile;
   if (volatile) content.push({ type: 'text', text: volatile });
   content.push({ type: 'text', text: call.prompt });
@@ -180,12 +200,24 @@ async function imageBlock(img: LlmImage): Promise<Anthropic.ImageBlockParam> {
   return { type: "image", source: { type: "base64", media_type: "image/jpeg", data: jpeg.toString("base64") } };
 }
 
+/**
+ * Blocs de tête et point de cache. D'ordinaire, contexte du projet puis référence de la tâche, tous deux mis en cache.
+ * Pour la conversation de SINA, le contexte (parcours, état du projet, budget) change à CHAQUE pas alors que la
+ * référence (catalogue des outils, ~19 000 jetons) ne change pas : la référence passe en tête avec le point de cache et
+ * le contexte vient après, sinon tout le préfixe était réécrit en cache à chaque pas (coût multiplié par ~3).
+ */
+export function promptHead(call: Pick<LlmCall, "task" | "context" | "reference">): { cached: string[]; after: string[] } {
+  if (call.task === "agent_conversation") return { cached: [call.reference].filter(Boolean) as string[], after: [call.context].filter(Boolean) as string[] };
+  return { cached: [call.context, call.reference].filter(Boolean) as string[], after: [] };
+}
+
 async function buildContent(call: LlmCall): Promise<Anthropic.ContentBlockParam[]> {
   const content: Anthropic.ContentBlockParam[] = [];
   // Contexte du projet puis référence de la tâche en tête : identiques d'un appel à l'autre (corrections,
   // contrôles, retouches successives), ils sont mis en cache — réponses plus rapides et moins coûteuses.
-  const stable = [call.context, call.reference].filter(Boolean) as string[];
+  const { cached: stable, after } = promptHead(call);
   stable.forEach((text, i) => content.push(i === stable.length - 1 ? { type: "text", text, cache_control: { type: "ephemeral" } } : { type: "text", text }));
+  for (const text of after) content.push({ type: "text", text });
   // Après le point de cache : le contexte volatil (créations récentes) peut changer sans invalider le préfixe.
   const { volatile } = brainOf(call);
   if (volatile) content.push({ type: "text", text: volatile });
@@ -300,7 +332,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     operationPending();
   }
   if (call.acquiredOnly) throw new UserFacingError(L("Le reçu acquis n’est pas disponible. Aucun nouvel appel envoyé.", "The acquired receipt is unavailable. No new request sent."));
-  if (call.projectId) assertStrategyInputsCurrent(call.projectId);
+  if (call.projectId && !reasoningOnly(call)) assertStrategyInputsCurrent(call.projectId);
   const decision = routeLlm(call);
   if (call.expectedRoute && (decision.provider !== call.expectedRoute.provider || decision.model !== call.expectedRoute.model || (decision.effort ?? '') !== (call.expectedRoute.effort ?? '')))
     throw new UserFacingError(L("La route IA a changé : demandez un nouveau devis. Aucun appel envoyé.", "The AI route changed: request a new quote. No request sent."));
@@ -327,7 +359,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   // Aucun repli serveur (`fallbacks`) : un modèle de repli serait facturé à son propre tarif, non couvert.
   const maxMicro = await maxCostMicro(route.model, params, format);
   assertUnderCostCap(maxMicro);
-  if (call.projectId) assertStrategyInputsCurrent(call.projectId);
+  if (call.projectId && !reasoningOnly(call)) assertStrategyInputsCurrent(call.projectId);
   const reservation = reserve(call.userId, maxMicro, { ...operation, provider: "anthropic", model: route.model, jobId: call.jobId });
   if (!isHaiku) {
     params.thinking = { type: "adaptive" };
@@ -498,7 +530,7 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
   const { brain } = brainOf(call);
   const maxMicro = await otherMaxCostMicro(provider, req, (r) => adapter.count(r, key));
   assertUnderCostCap(maxMicro);
-  if (call.projectId) assertStrategyInputsCurrent(call.projectId);
+  if (call.projectId && !reasoningOnly(call)) assertStrategyInputsCurrent(call.projectId);
   const reservation = reserve(call.userId, maxMicro, { ...operation, provider, model, jobId: call.jobId });
   const started = Date.now();
   let attempts = 0;

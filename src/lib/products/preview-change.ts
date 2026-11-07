@@ -8,7 +8,7 @@ import {L} from '../i18n-server';
 class RollbackPreview<T>{constructor(readonly value:T){}}
 /** Comparaison des faits réellement projetés par le moteur, pas une seconde implémentation de l'import.
  * Le catalogue natif peut normaliser une ancienne boutique (SKU doublons, combinaisons incomplètes,
- * médias non représentables, indisponibilité sans quantité). SYNA ne doit pas appliquer cela en silence.
+ * médias non représentables, indisponibilité sans quantité). SINA ne doit pas appliquer cela en silence.
  */
 function commercialState(spec:ThemeSpec){return storeProducts(spec).map(p=>{const single=!p.options.length||p.variants.length===1&&p.variants[0].title==='Default Title';return({
  title:p.title,handle:p.handle,description:p.description_html,vendor:p.vendor,price:p.price??p.variants[0]?.price??null,compareAt:p.compare_at_price,currency:p.currency,options:single?[]:p.options,images:p.images,tags:p.tags,
@@ -22,7 +22,7 @@ export function previewProductMutation(projectId:string,input:ProductInput,targe
   const originalSpec=theme?withStudioProducts(theme.spec,projectId):null;
   seedFromTheme(projectId,theme?.spec);
   const importedSpec=theme?withStudioProducts(theme.spec,projectId):null;
-  if(originalSpec&&importedSpec&&JSON.stringify(commercialState(originalSpec))!==JSON.stringify(commercialState(importedSpec)))throw new HttpError(409,L('La reprise native modifierait des données commerciales existantes (variantes, références, disponibilité, prix ou médias). SYNA refuse cette reprise non fidèle. La boutique et ses données sont intactes.','Native import would alter existing commercial data (variants, references, availability, prices or media). SYNA refuses this unfaithful import. The store and its data remain intact.'),'catalogue_import_not_faithful');
+  if(originalSpec&&importedSpec&&JSON.stringify(commercialState(originalSpec))!==JSON.stringify(commercialState(importedSpec)))throw new HttpError(409,L('La reprise native modifierait des données commerciales existantes (variantes, références, disponibilité, prix ou médias). SINA refuse cette reprise non fidèle. La boutique et ses données sont intactes.','Native import would alter existing commercial data (variants, references, availability, prices or media). SINA refuses this unfaithful import. The store and its data remain intact.'),'catalogue_import_not_faithful');
   const before=target?getProduct(projectId,target.productId):null;
   const beforeSpec=theme?withStudioProducts(theme.spec,projectId,before?.status==='draft'?before:undefined):null;
   const after=target?updateProduct(projectId,target.productId,{...input,version:target.version}):createProduct(projectId,{...input,status:'draft'});

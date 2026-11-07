@@ -39,7 +39,7 @@ const EMAIL = /^[^\s@<>,;"]+@[^\s@<>,;"]+\.[^\s@<>,;"]{2,}$/;
 let ready = false;
 export function ensureNotifyTables() {
   ensureSiteTables();
-  // Le drapeau seul ne suffit pas : une création faite dans une transaction annulée (aperçu SYNA, #276) disparaît.
+  // Le drapeau seul ne suffit pas : une création faite dans une transaction annulée (aperçu SINA, #276) disparaît.
   if (ready && one("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'site_request_outbox'")) return;
   run(`CREATE TABLE IF NOT EXISTS site_notify_recipients (
     id TEXT PRIMARY KEY, project_id TEXT NOT NULL, email TEXT NOT NULL, source TEXT NOT NULL, status TEXT NOT NULL,

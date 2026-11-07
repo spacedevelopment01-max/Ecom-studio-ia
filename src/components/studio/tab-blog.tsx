@@ -100,7 +100,7 @@ export default function TabBlog() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [pending, setPending] = useState<string | null>(null);
   useEffect(()=>{if(!data||!requestedArticle)return;const key=id+":"+requestedArticle;if(handledArticle.current===key)return;handledArticle.current=key;if(data.articles.some(a=>a.id===requestedArticle))setOpenId(requestedArticle);else toast("bad", t("Article demandé absent ou retiré.","Requested article is missing or removed."));},[data,id,requestedArticle,t,toast]);
-  // Un article créé depuis SYNA reste visible si son panneau est fermé avant la fin.
+  // Un article créé depuis SINA reste visible si son panneau est fermé avant la fin.
   const activeKey=active.map(j=>j.id+":"+j.status).join("|"), lastActive=useRef(activeKey);
   useEffect(()=>{if(lastActive.current!==activeKey){lastActive.current=activeKey;void reload();}},[activeKey,reload]);
   useEffect(()=>{const changed=(e:Event)=>{if((e as CustomEvent<{projectId?:string}>).detail?.projectId===id)void reload();};window.addEventListener('studio:content-changed',changed);return()=>window.removeEventListener('studio:content-changed',changed);},[id,reload]);

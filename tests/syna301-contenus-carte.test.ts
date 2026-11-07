@@ -1,5 +1,5 @@
 /**
- * #301 C21 — carte Contenus métier de SYNA, côté interface (contrat #310 de Codex, moteur inchangé).
+ * #301 C21 — carte Contenus métier de SINA, côté interface (contrat #310 de Codex, moteur inchangé).
  * Transport exercé contre le vrai moteur : bien, plat, réalisation ; accord explicite ; reçu = objet relu à une NOUVELLE
  * version ; réponse perdue rejouée à l'identique ; annulation par sélection A2 ; refus sans faux succès.
  */
@@ -136,7 +136,7 @@ it('drapeau fermé : aucune confirmation envoyée, bouton « Désigner » masqu�
  expect(t.read()).toEqual(before);
 });
 
-it('raccordement : carte unique, bouton « Désigner pour SYNA » dans les trois espaces, relecture après écriture',()=>{
+it('raccordement : carte unique, bouton « Désigner pour SINA » dans les trois espaces, relecture après écriture',()=>{
  const read=(p:string)=>fs.readFileSync(path.resolve(import.meta.dirname,'..',p),'utf8');
  const panel=read('src/components/studio/conversation-panel.tsx');
  expect(panel.match(/<ConversationLocalBusinessContent /g)).toHaveLength(1);

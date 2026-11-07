@@ -6,7 +6,7 @@ import type {useLocalPagesConfirmation} from './use-local-pages-confirmation';
 import {Button} from '../ui';
 import {useT} from '../i18n';
 /**
- * #301 « SYNA complète » — carte Pages gratuite (contrat #370 de Codex) : créer d'après un modèle natif (brouillon hors
+ * #301 « SINA complète » — carte Pages gratuite (contrat #370 de Codex) : créer d'après un modèle natif (brouillon hors
  * menu), renommer, afficher / retirer du menu, dupliquer, supprimer. Avant / après, accord gratuit, reçu relu, lien vers
  * la page dans la version enregistrée. Le choix d'un modèle remplit la phrase du client : rien n'est envoyé sans lui.
  */

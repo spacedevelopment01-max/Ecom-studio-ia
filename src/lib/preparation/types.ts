@@ -54,6 +54,8 @@ export type Source = {
   category?: "offer" | "competitors" | "customers" | "sector";
   contentHash?: string;
   relevance?: { accepted: boolean; reason: string };
+  /** Page lue par le Studio, ou extrait rapporté par la recherche web OpenAI (lien vérifié, page non relue ici). */
+  via?: "page" | "openai_web_search";
 };
 export type Angle = {
   id: string;
@@ -66,11 +68,21 @@ export type Angle = {
   tone?: string;
   visualDirection?: string;
   message?: string;
+  /** Émotion visée par l'angle (envie, peur, fierté…) ; absente des anciennes recherches. */
+  emotion?: string;
+  /** Preuves non confirmées dont l'angle aurait besoin : questions à poser au client. */
+  proofsToConfirm?: string[];
   arguments: string[];
   objections: { objection: string; answer: string }[];
   reason: string;
   sourceIds: string[];
   hypothesis: boolean;
+  /** Format du propriétaire (7 novembre 2026) : objectif, récit, scènes, publication conseillée, appel à l'action. */
+  goal?: string;
+  story?: string;
+  show?: string;
+  organicExample?: string;
+  cta?: string;
 };
 export type Research = {
   formatVersion?: 2 | 3;

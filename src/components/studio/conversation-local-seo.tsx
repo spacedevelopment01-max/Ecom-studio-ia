@@ -6,7 +6,7 @@ import type {useLocalSeoConfirmation} from './use-local-seo-confirmation';
 import {Button} from '../ui';
 import {useT} from '../i18n';
 /**
- * #301 « SYNA complète » — carte SEO gratuite (contrat #367 de Codex) : titre SEO ou méta-description d'une page du site,
+ * #301 « SINA complète » — carte SEO gratuite (contrat #367 de Codex) : titre SEO ou méta-description d'une page du site,
  * avant / après exacts, accord gratuit explicite, reçu relu dans une version native. Aucun devis, aucune publication.
  */
 export function ConversationLocalSeo({view,confirmation,busy}:{view:ConversationView;confirmation:ReturnType<typeof useLocalSeoConfirmation>;busy:boolean}){

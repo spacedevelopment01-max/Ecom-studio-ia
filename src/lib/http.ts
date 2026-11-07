@@ -22,7 +22,8 @@ export function fail(status: number, message: string, code?: string) {
 export function handle<A extends unknown[]>(fn: (...args: A) => Promise<Response>, options?: { allowOpaqueOrigin?: (req: Request) => boolean }) {
   return async (...args: A): Promise<Response> => {
     const req = args[0] instanceof Request ? args[0] : null;
-    return withAccessScope({kind:"http"}, () => runWithLang(req ? langFromRequest(req) : {}, () => run(...args)));
+    const path = (() => { try { return req ? new URL(req.url).pathname : undefined; } catch { return undefined; } })();
+    return withAccessScope({kind:"http", method: req?.method, path}, () => runWithLang(req ? langFromRequest(req) : {}, () => run(...args)));
   };
   async function run(...args: A): Promise<Response> {
     try {

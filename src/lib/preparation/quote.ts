@@ -1,4 +1,5 @@
 import { analysisAttempts, attemptProblem } from "./analysis-attempts";
+import { webSearchQuoteMicro } from "../ai/web-search";
 import { assertAnalysisRoute } from "./evidence";
 import { analysisCostPlan } from "./inspect";
 /** Devis local en % ; le garde-fou final reste la réservation native de chaque moteur. */
@@ -111,7 +112,9 @@ export function createQuote(
         ? logoSeriesQuote().maxMicro
         : action === "image" || action === "collect"
           ? 2_000_000
-          : ["research", "brand"].includes(step)
+          : step === "research"
+            ? 1_000_000 + (webSearchQuoteMicro() ?? 0)
+            : step === "brand"
             ? 1_000_000
             : slot
               ? 600_000

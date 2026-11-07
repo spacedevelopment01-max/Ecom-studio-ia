@@ -1,5 +1,5 @@
 /**
- * Couleur d'une seule section (opération native section_colors, utilisée par l'onglet Boutique et par SYNA #359) :
+ * Couleur d'une seule section (opération native section_colors, utilisée par l'onglet Boutique et par SINA #359) :
  * l'opération crée un schéma propre « es-<section> » et la section reçoit la classe `color-es-<section>`. La règle qui
  * peint fond et texte ne visait que `color-scheme-…` : les variables changeaient (texte devenu blanc) mais le fond
  * n'était jamais peint — modification annoncée invisible et texte illisible (recette #301 v3, aperçu v2).

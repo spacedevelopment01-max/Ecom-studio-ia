@@ -1,7 +1,7 @@
 /**
- * Intégration Claude + Codex (#276) : SYNA lit la même source du Site que l'aperçu et le site hébergé (carte et
- * réalisations comprises, C1) ; les sections remplies par un onglet métier sont repérées pour que SYNA ne les retouche
- * ni ne les retire (P1) ; le relevé SYNA connaît les contenus métier et le site hébergé sans prétendre les modifier
+ * Intégration Claude + Codex (#276) : SINA lit la même source du Site que l'aperçu et le site hébergé (carte et
+ * réalisations comprises, C1) ; les sections remplies par un onglet métier sont repérées pour que SINA ne les retouche
+ * ni ne les retire (P1) ; le relevé SINA connaît les contenus métier et le site hébergé sans prétendre les modifier
  * (P2) ; l'effacement d'un compte supprime aussi les fichiers de ses sites publiés (R4). Aucun réseau.
  */
 import fs from "node:fs";
@@ -42,8 +42,8 @@ async function site(label: string, direction: string) {
   return { u, pid, photo };
 }
 
-describe("C1 — SYNA lit la source réelle du Site", () => {
-  it("export et captures SYNA : carte et réalisations présentes, comme dans l'aperçu ; sans contenu, source inchangée", async () => {
+describe("C1 — SINA lit la source réelle du Site", () => {
+  it("export et captures SINA : carte et réalisations présentes, comme dans l'aperçu ; sans contenu, source inchangée", async () => {
     const a = await site("c1-artisan", "aplat");
     const cur = currentTheme(a.pid)!;
     expect(currentSiteSource(a.pid, cur.version.id).spec).toEqual(cur.spec);
@@ -61,7 +61,7 @@ describe("C1 — SYNA lit la source réelle du Site", () => {
 });
 
 describe("P1 — sections remplies par un onglet métier", () => {
-  it("carte : repérée seulement quand un plat est publié (SYNA ne la retouche pas)", async () => {
+  it("carte : repérée seulement quand un plat est publié (SINA ne la retouche pas)", async () => {
     const resto = await site("p1-resto", "table-saison");
     const spec = currentTheme(resto.pid)!.spec as ThemeSpec;
     expect(managedSections(spec, resto.pid).size).toBe(0);
@@ -73,7 +73,7 @@ describe("P1 — sections remplies par un onglet métier", () => {
     for (const k of keys) { const [t, id] = k.split(":"); expect(spec.templates[t].sections[id].type).toMatch(/^ts-(menu|dishes)$/); }
   });
 
-  it("réalisations : la galerie générique (portfolio) est conservée par une composition SYNA, comme une section fonctionnelle", async () => {
+  it("réalisations : la galerie générique (portfolio) est conservée par une composition SINA, comme une section fonctionnelle", async () => {
     const a = await site("p1-atelier", "atelier");
     const spec = currentTheme(a.pid)!.spec as ThemeSpec;
     const sid = spec.templates.index.order.find((id) => spec.templates.index.sections[id].type === "portfolio")!;
@@ -94,7 +94,7 @@ describe("P1 — sections remplies par un onglet métier", () => {
   });
 });
 
-describe("P2 — SYNA connaît les contenus métier sans prétendre les modifier", () => {
+describe("P2 — SINA connaît les contenus métier sans prétendre les modifier", () => {
   it("catalogue métier borné et désactivé ; publication non raccordée, observation en lecture seule", async () => {
     for (const id of ["menu.update", "projects.update", "services.booking", "site.requests", "site.host.publish", "site.domain.connect"]) expect(STUDIO_OPERATIONS.some((o) => o.id === id), id).toBe(true);
     const u = await account();

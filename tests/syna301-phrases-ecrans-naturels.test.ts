@@ -1,5 +1,5 @@
 /**
- * #301 « SYNA complète » — phrases 11, 14, 15 et 16 du relevé d'origine, envoyées depuis leur écran naturel (Site,
+ * #301 « SINA complète » — phrases 11, 14, 15 et 16 du relevé d'origine, envoyées depuis leur écran naturel (Site,
  * Activité, Calendrier, Catalogue) sans aménagement : chacune reçoit une réponse gratuite (proposition ou précision),
  * rien n'est écrit sans accord, aucun appel IA. Relevé écrit dans PROBE_OUT si fourni.
  */

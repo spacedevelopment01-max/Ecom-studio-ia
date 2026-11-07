@@ -1,5 +1,5 @@
 /**
- * Recette #301 « SYNA complète », lot 1 — confirmation périmée dans le Studio compilé (carte Fichiers, correctif #364).
+ * Recette #301 « SINA complète », lot 1 — confirmation périmée dans le Studio compilé (carte Fichiers, correctif #364).
  * Scénario reproduit sans aménager le produit : après un reçu, l'accord de l'ANCIENNE proposition est remis en mémoire
  * de session (rechargement survenu avant le nettoyage), la page est rechargée, une nouvelle proposition est faite.
  * Attendu : « Confirmer » n'envoie que la proposition affichée, une seule écriture, nom exact relu ; un second projet
@@ -7,7 +7,7 @@
  * Ancien en-tête (recette C24) conservé ci-dessous pour le reste du harnais :
  *
  * Pour chaque mode (Encre, Plein cadre) et chaque format (ordinateur 1440 px, téléphone 390 px) :
- *  1. dans Fichiers, la personne coche UN fichier : SYNA affiche « Média désigné » ;
+ *  1. dans Fichiers, la personne coche UN fichier : SINA affiche « Média désigné » ;
  *  2. « Renomme ce fichier en « … » » : carte avant / après, « Gratuit — 0 € », aucun devis ;
  *  3. ordinateur : la réponse à la confirmation est perdue APRÈS l'enregistrement → « Vérifier l'enregistrement »
  *     retrouve le reçu sans deuxième écriture ; téléphone : confirmation directe ;
@@ -101,10 +101,10 @@ try {
       catch (e) { steps.push({ etape, ok: false, detail: String(e).slice(0, 400), capture: await shot("echec-" + steps.length).catch(() => undefined) }); console.log(`  ✗ ${label} · ${etape} : ${String(e).slice(0, 300)}`); throw e; }
     };
     const openSyna = async () => { if (!(await panel.count())) await page.locator('[aria-controls="syna-panel"]:visible').first().click(); await panel.waitFor(); };
-    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SYNA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
+    const closeSyna = async () => { if (await panel.count()) await panel.getByRole("button", { name: "Replier SINA", exact: true }).first().click(); await page.locator("#syna-panel:visible").waitFor({ state: "detached" }).catch(() => {}); };
     const send = async (text: string) => {
       await openSyna();
-      await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SYNA" }).fill(text);
+      await panel.getByRole("textbox", { name: "Décrivez votre projet ou posez votre question à SINA" }).fill(text);
       await panel.getByRole("button", { name: "Enregistrer", exact: true }).click();
     };
     const assetRow = () => getAsset(k.assetId)!;

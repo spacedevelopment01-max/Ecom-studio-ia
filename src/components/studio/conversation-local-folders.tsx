@@ -6,7 +6,7 @@ import type {useLocalFoldersConfirmation} from './use-local-folders-confirmation
 import {Button} from '../ui';
 import {useT} from '../i18n';
 /**
- * #301 « SYNA complète » — carte Nouveau dossier gratuite (contrat #387 de Codex) : nom intégral et dossier parent
+ * #301 « SINA complète » — carte Nouveau dossier gratuite (contrat #387 de Codex) : nom intégral et dossier parent
  * exacts (ou la racine), accord gratuit, dossier relu. Aucun fichier déplacé.
  */
 export function ConversationLocalFolders({view,confirmation,busy}:{view:ConversationView;confirmation:ReturnType<typeof useLocalFoldersConfirmation>;busy:boolean}){

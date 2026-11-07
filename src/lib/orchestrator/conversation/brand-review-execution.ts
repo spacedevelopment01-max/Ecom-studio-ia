@@ -17,7 +17,7 @@ import {cognitiveContext} from './intelligence-context';
 type Quote={schema:1;id:string;conversationId:string;sourceId:string;revision:number;projectRevision:number;sourceFingerprint:string;currentBrandHash:string;funding:string;createdAt:number;expiresAt:number;correction?:{receiptId:string;plan:BrandCorrectionPlan};acceptedRevision?:number;acceptedIdentityHash?:string;acceptedBrandHash?:string;confirmedAt?:number};
 const key=(id:string)=>`agent.brand.review.${id}`;
 const hash=(v:unknown)=>stableHash('brand-client-choice-211-v1',v);
-function owned(u:User,cid:string){if(!conversationBrandReviewEnabled())throw new HttpError(404,L('Choix de marque depuis SYNA indisponible.','Brand choice from SYNA unavailable.'));const c=ownedConversation(u,cid);if(!c.project_id)throw new HttpError(409,L('Projet absent.','Project missing.'));return{c,pid:c.project_id};}
+function owned(u:User,cid:string){if(!conversationBrandReviewEnabled())throw new HttpError(404,L('Choix de marque depuis SINA indisponible.','Brand choice from SINA unavailable.'));const c=ownedConversation(u,cid);if(!c.project_id)throw new HttpError(409,L('Projet absent.','Project missing.'));return{c,pid:c.project_id};}
 function save(pid:string,q:Quote){remember(pid,{kind:'artifact',key:key(q.id),value:JSON.stringify(q),source:'user',origin:'user',status:q.confirmedAt?'confirmed':'inferred'});}
 function read(pid:string,qid:string){return json<Quote|null>(one<{value:string}>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key=?",pid,key(qid))?.value,null);}
 function correctionOf(u:User,cid:string,sourceId:string,receiptId:string){

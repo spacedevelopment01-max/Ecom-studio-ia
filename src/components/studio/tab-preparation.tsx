@@ -837,7 +837,9 @@ export default function TabPreparation() {
                     </a>
                     <Badge>
                       {source.status === "consulted"
-                        ? t("Source consultée", "Source consulted")
+                        ? source.via === "openai_web_search"
+                          ? t("Extrait de la recherche web OpenAI", "OpenAI web search excerpt")
+                          : t("Source consultée", "Source consulted")
                         : t("Lecture impossible", "Unavailable")}
                     </Badge>
                     <p className="mt-2 text-sm">

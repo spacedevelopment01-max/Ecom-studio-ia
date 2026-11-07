@@ -1,5 +1,5 @@
 /**
- * SYNA — réglages d'affichage de l'interface de travail (mission #282, lot 0 : structure seulement).
+ * SINA — réglages d'affichage de l'interface de travail (mission #282, lot 0 : structure seulement).
  *
  * Priorité : réglage du projet > réglage du compte > valeur par défaut. Les valeurs inconnues ou hors bornes sont
  * ignorées (jamais d'erreur, jamais de réglage qui casse l'ergonomie). Ce module est pur : il ne lit ni n'écrit

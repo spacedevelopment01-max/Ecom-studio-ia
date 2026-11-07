@@ -1,4 +1,4 @@
-/** Lecture et marquage locaux de la source native. Les paroles entrantes ne sont jamais des consignes/faits SYNA. */
+/** Lecture et marquage locaux de la source native. Les paroles entrantes ne sont jamais des consignes/faits SINA. */
 import {HttpError,ownedProject,type User} from '../../auth';
 import {one,id,now} from '../../db';
 import {requirePlan} from '../../plan-gates';
@@ -16,7 +16,7 @@ export type LocalRequestsPresentation=LocalRequestsState&{requests?:RequestDto[]
 const present=(state:LocalRequestsState['state'],message:string,extra:Partial<LocalRequestsState>={}):LocalRequestsState=>({schema:'syna-site-requests-1',state,message,costEur:0,providerCalls:0,financialConsent:false,confirmationRequired:false,actionsExecuted:false,...extra});
 const plain=(s:string)=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 export const localRequestsCandidate=(text:string)=>/^(?:montre|liste) les demandes recues de ce projet\b|^marque (?:cette demande|toutes les demandes|les demandes)\b/.test(plain(text));
-function owned(user:User,c:ConversationRow){if(!siteRequestsEnabled())throw new HttpError(404,'Demandes reçues avec SYNA indisponibles.');if(!c.project_id)throw new HttpError(409,'Rattachez un projet avant de lire ses demandes.');if(c.user_id!==user.id)throw new HttpError(404,'Conversation introuvable.');ownedProject(user,c.project_id);requirePlan(user,c.project_id);return c.project_id;}
+function owned(user:User,c:ConversationRow){if(!siteRequestsEnabled())throw new HttpError(404,'Demandes reçues avec SINA indisponibles.');if(!c.project_id)throw new HttpError(409,'Rattachez un projet avant de lire ses demandes.');if(c.user_id!==user.id)throw new HttpError(404,'Conversation introuvable.');ownedProject(user,c.project_id);requirePlan(user,c.project_id);return c.project_id;}
 const status=(r:{read_at:number|null;handled_at:number|null}):Status=>({read:r.read_at!==null,handled:r.handled_at!==null});
 const meta=(r:ReturnType<typeof nativeSiteRequest>):Metadata=>({projectId:r.row.project_id,id:r.row.id,fingerprint:r.fingerprint,readAt:r.row.read_at,handledAt:r.row.handled_at});
 function ambiguous():never{throw new HttpError(422,'Désignez une demande précise puis dites : « Marque cette demande comme lue, traitée ou non traitée ». Aucun traitement en masse.');}

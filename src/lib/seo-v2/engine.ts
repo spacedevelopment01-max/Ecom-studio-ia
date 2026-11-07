@@ -54,7 +54,7 @@ export const DEFAULT_CONTENT_EDIT_CAP_EUR = 0.2;
 export type ContentRequestV2 = {
   /** Server-selected contract: an explicitly requested AI result cannot become a local substitute. */
   requireAi?: boolean;
-  /** Internal server-selected catalogue pin, never accepted by the public SYNA command. */
+  /** Internal server-selected catalogue pin, never accepted by the public SINA command. */
   nativeBinding?: import("../image-v2/request-binding").ImageBinding;
   /** Page prévue identifiée par l’orchestrateur amont ; aucune création de thème requise. */
   target?: {page:PageRef;serviceIndex?:number};
@@ -137,7 +137,7 @@ async function runContentEngineV2InScope(ctx: JobContext | null, projectId: stri
     // Fence only execution so exact acquired keys remain unchanged while unpaid calls cannot escape.
     const execute = () => engine(ctx, p, req, deps, { capMicro, spentMicro: 0, stopped: false });
     const r = await (req.requireAiConsent
-      ? withAiDisabled("Native content writing requires a confirmed SYNA quote", execute)
+      ? withAiDisabled("Native content writing requires a confirmed SINA quote", execute)
       : execute());
     if (blogBlocked) r.notes.unshift("articles écrits par l'IA non inclus dans votre forfait : brouillon local à partir des faits (gratuit)");
     return r;
@@ -212,8 +212,8 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   // The authoritative acquired-version return above remains available without another purchase.
   // Refuse only a new AI acquisition, before any article quota reservation or provider call.
   if (req.requireAiConsent && (deps.canWrite || deps.canReview)) throw new HttpError(409, L(
-    "Cette rédaction nécessite un devis et votre confirmation dans SYNA avant toute dépense IA.",
-    "This writing requires a quote and your confirmation in SYNA before any AI spending.",
+    "Cette rédaction nécessite un devis et votre confirmation dans SINA avant toute dépense IA.",
+    "This writing requires a quote and your confirmation in SINA before any AI spending.",
   ), "QUOTE_REQUIRED");
   const quotaArticleId=req.type==="blog_article"?blogIdFor(docKey):null;
   const quotaRef=quotaArticleId?reserveBlogDraft(p.userId,p.id,quotaArticleId):null;

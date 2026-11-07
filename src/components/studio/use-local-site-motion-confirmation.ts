@@ -3,7 +3,7 @@ import {useStaleConfirmation} from './use-stale-confirmation';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {createLocalSiteMotionConfirmation,LOCAL_SITE_MOTION_CHANGED_EVENT,type LocalSiteMotionChange,type LocalSiteMotionConfirmationState} from '@/lib/local-site-motion-confirmation-client';
-/** #301 « SYNA complète » : branche le transport Animations de Codex (#379) ; le Studio se relit après le reçu. */
+/** #301 « SINA complète » : branche le transport Animations de Codex (#379) ; le Studio se relit après le reçu. */
 export function useLocalSiteMotionConfirmation(view:ConversationView|null,onView:(v:ConversationView)=>void,onApplied:(change:LocalSiteMotionChange)=>Promise<void>|void){
  const current=useRef(view),callbacks=useRef({onView,onApplied});current.current=view;callbacks.current={onView,onApplied};
  const[state,setState]=useState<LocalSiteMotionConfirmationState>({busy:false,error:'',uncertain:false});

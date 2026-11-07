@@ -60,6 +60,7 @@ function usd(task: TaskId, units: { input?: number; output?: number; images?: nu
     return ((units.input ?? 0) * p.inputPerM + (units.output ?? 0) * p.outputPerM) / 1e6;
   }
   if (p.unit === "image") return (units.images ?? 0) * p.perImage;
+  if (p.unit === "call") return 0;
   return (units.seconds ?? 0) * p.perSecond;
 }
 

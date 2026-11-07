@@ -1,4 +1,4 @@
-/** Territoires IA déjà acquis par SYNA : validation native, jamais de remplissage ou génération locale. */
+/** Territoires IA déjà acquis par SINA : validation native, jamais de remplissage ou génération locale. */
 import {z} from 'zod';
 import {TerritorySchema,selectTerritories,type TerritoryDraft} from './territories';
 import {DirectionIdentitySchema,directionSetIssues} from './direction-series';

@@ -62,7 +62,7 @@ it.each(['étranger','autre-langue','autre-cible','refusé','ambigu'] as const)(
 it('une métadonnée seule ne crée jamais une page prévue sans page native associée',async()=>{
  const f=await fixture();f.save();f.spec.store.pages=f.spec.store.pages.filter(p=>p.handle!==f.handle);saveThemeVersion(f.pid,f.spec,'Page absente de recette','user');const before=structuredClone(f.spec);deliverContent(f.spec,loadProject(f.pid),'fr');expect(f.spec).toEqual(before);
 });
-it('SYNA : demande → devis sans effet → accord idempotent → worker simulé → reçu → SEO natif sans achat supplémentaire',async()=>{
+it('SINA : demande → devis sans effet → accord idempotent → worker simulé → reçu → SEO natif sans achat supplémentaire',async()=>{
  const f=await fixture('service:atelier',true),send=sender(f.u,f.c!.id),before=structuredClone(f.spec);
  await send({action:'message',text:'Rédige seulement le titre SEO et la description de la page Aménagement de vans, sans changer son corps ni son adresse.'});
  const view=conversationView(f.u,f.c!.id),quoted=await quoteContent(f.u,f.c!.id,{revision:view.revision,projectRevision:view.projectRevision!,type:'metadata',pageKey:f.target});

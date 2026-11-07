@@ -46,7 +46,7 @@ function receipt(user:User,c:ConversationRow,ref?:{turnId?:string;toolReceiptId?
 }
 
 function preview(user:User,c:ConversationRow,p:LocalSiteProposal){
- if(!localSiteEnabled())throw new HttpError(404,'Retouches locales SYNA indisponibles.','conversation_local_disabled');
+ if(!localSiteEnabled())throw new HttpError(404,'Retouches locales SINA indisponibles.','conversation_local_disabled');
  requirePlan(user,c.project_id!);
  const cur=currentTheme(c.project_id!);if(!cur||cur.version.id!==p.versionId||fp(cur.spec)!==p.fingerprint)throw new ContextConflict(c);
  if(p.kind==='undo'){
@@ -171,7 +171,7 @@ function proposalScope(c:ConversationRow,p:LocalSiteProposal):LocalSiteScope{
 export function confirmLocalSite(user:User,c:ConversationRow,m:ConversationState,proposalId:string,requestId?:string):LocalSitePresentation{
  const p=m.localSiteProposal;if(!p||p.id!==proposalId||p.expiresAt<now())throw new HttpError(409,'Cette proposition gratuite est périmée. Reformulez la demande.','conversation_local_stale');
  const result=preview(user,c,p);if(fp(result.spec)!==p.resultFingerprint||stableHash('ops',result.ops)!==stableHash('ops',p.ops))throw new ContextConflict(c);
- const v=saveThemeVersion(c.project_id!,result.spec,'SYNA — retouche locale gratuite : '+p.kind,'user',undefined,p.versionId),saved=themeVersion(c.project_id!,v.id);
+ const v=saveThemeVersion(c.project_id!,result.spec,'SINA — retouche locale gratuite : '+p.kind,'user',undefined,p.versionId),saved=themeVersion(c.project_id!,v.id);
  if(!saved||fp(saved.spec)!==p.resultFingerprint||currentTheme(c.project_id!)?.version.id!==v.id)throw new HttpError(409,'Écriture native non confirmée.','conversation_local_result_missing');
  delete m.localSiteProposal;
  // La cible reste conservée, explicitement périmée jusqu'à la revalidation A2.

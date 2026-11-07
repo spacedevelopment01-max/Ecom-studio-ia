@@ -1,4 +1,4 @@
-/** SYNA → vrais brouillons/calendrier/éditeur natifs, zéro fournisseur et aucune programmation. */
+/** SINA → vrais brouillons/calendrier/éditeur natifs, zéro fournisseur et aucune programmation. */
 import {it,expect,beforeEach,afterEach,vi}from 'vitest';
 import fs from 'node:fs';import {storagePath}from '@/lib/storage';
 import {account,project,sender}from './conversation209-fixtures';

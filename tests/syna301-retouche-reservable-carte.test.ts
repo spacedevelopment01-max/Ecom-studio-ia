@@ -68,7 +68,7 @@ it('le panneau monte la carte, la verrouille avec les autres et la page Rendez-v
  expect(readFileSync('src/components/studio/tab-rendez-vous.tsx','utf8')).toContain('window.addEventListener("studio:booking-changed", on)');
 });
 import {freeTurnSettled} from '@/lib/conversation-free-turn';
-it('après un accord ou une annulation gratuite, SYNA ne propose pas de devis payant pour la même demande',async()=>{
+it('après un accord ou une annulation gratuite, SINA ne propose pas de devis payant pour la même demande',async()=>{
  const f=await fixture(false),v=await f.send({action:'message',text:'Mets le prix réservable de « Diagnostic fictif » à 80 €',context:{tab:'rendez-vous',target:null}});
  expect(freeTurnSettled(v)).toBe(false);
  let shown=v;const ctl=createLocalBookingEditConfirmation({conversationId:f.c.id,fetch:f.transport,view:()=>shown,onView:n=>{shown=n;},onState:()=>{},onApplied:()=>{},uuid:()=>id()});

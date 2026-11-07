@@ -18,6 +18,7 @@ import { BOOKING_HINT, cleanServices, ContactModePicker, ServicesEditor } from "
 import { DeleteProjectButton } from "./delete-project";
 import { AiDescription } from "./ai-description";
 import { ConversationPanel } from "./conversation-panel";
+import { SynaThread } from "./syna-thread";
 
 type ProjectCard = { id: string; name: string; status: string; sector: string | null; platform: string; business: BusinessType; updatedAt: number; cover: string | null; palette: Record<string, string> | null; brand: string | null; logo: string | null; subscription: { id: string; plan: PlanId; status: string; billing: Billing | null; periodEnd: number | null; cancelAtPeriodEnd: boolean } | null; ai: { plan: { used: number }; credits: { used: number } | null; paused: boolean } | null };
 
@@ -409,7 +410,7 @@ function useStudioParams() {
   return p;
 }
 
-export function StudioHome({agentEnabled=false}:{agentEnabled?:boolean}) {
+export function StudioHome({agentEnabled=false,synaAgent=false}:{agentEnabled?:boolean;synaAgent?:boolean}) {
   const t = useT();
   const { lang } = useLang();
   const toast = useToast();
@@ -505,7 +506,7 @@ export function StudioHome({agentEnabled=false}:{agentEnabled?:boolean}) {
               </div>
               {projects.length > 0 && <Button variant="ghost" className="mt-6" onClick={() => setCreating(false)}>{t("← Retour à mes projets", "← Back to my projects")}</Button>}
             </div>
-            {agentEnabled&&!manual?<div><div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-xs"><span>{t('Abonnement sélectionné','Selected subscription')} : {PLANS[freeSub.plan].name[lang]}</span>{pending.length>1&&<Select aria-label={t('Abonnement à utiliser','Subscription to use')} value={freeSub.id} onChange={e=>setUseSub(e.target.value)}>{pending.map(s=><option key={s.id} value={s.id}>{PLANS[s.plan].name[lang]}</option>)}</Select>}</div><Card className="overflow-hidden"><ConversationPanel subscriptionKey={freeSub.id} onCreated={()=>reloadProjects()}/></Card><div className="mt-4 flex flex-wrap justify-center gap-3"><Button variant="ghost" onClick={()=>setManual(true)}>{t('Utiliser le formulaire manuel','Use the manual form')}</Button>{projects.length>0&&<Button variant="ghost" onClick={()=>setCreating(false)}>{t('Mes projets','My projects')}</Button>}</div></div>:<div><Card className="p-5 sm:p-7"><NewProject key={freeSub.id} subscription={freeSub.id} plan={freeSub.plan} onDone={() => reloadProjects()} /></Card>{agentEnabled&&<Button variant="ghost" className="mt-4" onClick={()=>setManual(false)}>{t('Revenir à SYNA','Return to SYNA')}</Button>}</div>}
+            {agentEnabled&&!manual?<div><div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-xs"><span>{t('Abonnement sélectionné','Selected subscription')} : {PLANS[freeSub.plan].name[lang]}</span>{pending.length>1&&<Select aria-label={t('Abonnement à utiliser','Subscription to use')} value={freeSub.id} onChange={e=>setUseSub(e.target.value)}>{pending.map(s=><option key={s.id} value={s.id}>{PLANS[s.plan].name[lang]}</option>)}</Select>}</div><Card className="overflow-hidden">{synaAgent?<div className="h-[70vh]"><SynaThread key={freeSub.id} projectId={null} subscriptionKey={freeSub.id}/></div>:<ConversationPanel subscriptionKey={freeSub.id} onCreated={()=>reloadProjects()}/>}</Card><div className="mt-4 flex flex-wrap justify-center gap-3"><Button variant="ghost" onClick={()=>setManual(true)}>{t('Utiliser le formulaire manuel','Use the manual form')}</Button>{projects.length>0&&<Button variant="ghost" onClick={()=>setCreating(false)}>{t('Mes projets','My projects')}</Button>}</div></div>:<div><Card className="p-5 sm:p-7"><NewProject key={freeSub.id} subscription={freeSub.id} plan={freeSub.plan} onDone={() => reloadProjects()} /></Card>{agentEnabled&&<Button variant="ghost" className="mt-4" onClick={()=>setManual(false)}>{t('Revenir à SINA','Return to SINA')}</Button>}</div>}
           </div>
         ) : creating || discovery ? (
           <div>

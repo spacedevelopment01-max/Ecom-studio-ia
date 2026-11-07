@@ -1,5 +1,5 @@
 /**
- * SYNA lot 0 (#282) : les fondations sont enfermées. Rien ne s'applique hors du conteneur `.syna-ui`, aucun écran du
+ * SINA lot 0 (#282) : les fondations sont enfermées. Rien ne s'applique hors du conteneur `.syna-ui`, aucun écran du
  * Studio ne les utilise encore, les primitives ne font aucune requête, et la vitrine interne est fermée en production.
  */
 import fs from "node:fs";
@@ -36,10 +36,10 @@ describe.each([["syna.css", SYNA_CSS], ["vitrine.css", VITRINE_CSS]])("%s reste 
 
 describe("polices", () => {
   const sheet = readCss(SYNA_CSS);
-  it("déclarées sous des noms propres à SYNA, fichiers présents, licence OFL jointe", () => {
+  it("déclarées sous des noms propres à SINA, fichiers présents, licence OFL jointe", () => {
     expect(sheet.fontFaces.length).toBe(6);
     for (const f of sheet.fontFaces) {
-      expect(f).toMatch(/font-family:\s*"Syna [^"]+"/);
+      expect(f).toMatch(/font-family:\s*"Syna [^"]+"/); // nom interne de la police, jamais affiché
       const url = /url\("([^"]+)"\)/.exec(f)![1];
       expect(url).toMatch(/^\/(syna\/fonts\/[\w-]+|fonts\/bricolage)\.woff2$/);
       expect(fs.existsSync(path.join(root, "public", url)), url).toBe(true);
@@ -51,16 +51,16 @@ describe("polices", () => {
 });
 
 describe("aucun écran actuel n'est touché", () => {
-  // Lot 1 : la coquille SYNA et la mise en page du projet, qui la choisit. Lot 1 bis : ses modules (réglages, commande,
+  // Lot 1 : la coquille SINA et la mise en page du projet, qui la choisit. Lot 1 bis : ses modules (réglages, commande,
   // personnalisation) et la route des réglages d'affichage. Rien d'autre.
   const allowed = [/^src\/components\/syna\//, /^src\/lib\/syna-ui\//, /^src\/app\/syna-fondations\//, /^src\/components\/studio\/syna-(shell|prefs|command|customize)\.(tsx|css)$/, /^src\/app\/studio\/\[projectId\]\/layout\.tsx$/, /^src\/app\/api\/studio\/ui-prefs\/route\.ts$/];
-  it("seules la vitrine, les fondations, la coquille SYNA et ses réglages importent les primitives SYNA", () => {
+  it("seules la vitrine, les fondations, la coquille SINA et ses réglages importent les primitives SINA", () => {
     const users = walk("src").filter((f) => !allowed.some((a) => a.test(f.split(path.sep).join("/")))).filter((f) => /components\/syna["/]|lib\/syna-ui|syna\.css/.test(read(f)));
     expect(users).toEqual([]);
   });
-  it("les variables globales du Studio ne contiennent rien de SYNA", () => {
+  it("les variables globales du Studio ne contiennent rien de SINA", () => {
     const g = read("src/app/globals.css");
-    expect(g).not.toMatch(/--sy-|syna-ui|Syna /);
+    expect(g).not.toMatch(/--sy-|syna-ui|Sina /);
   });
   it("les primitives sont présentatives : ni requête, ni stockage, ni euros", () => {
     for (const f of walk("src/components/syna").concat(walk("src/lib/syna-ui"))) {

@@ -43,7 +43,7 @@ export function proposeLocalSeo(user:User,c:ConversationRow,m:ConversationState,
 }
 export function confirmLocalSeo(user:User,c:ConversationRow,m:ConversationState,proposalId:string,requestId:string):SeoPresentation{
  const cur=current(user,c),p=m.localSeoProposal;if(!p||p.id!==proposalId||p.expiresAt<now()||p.versionId!==cur.version.id||p.fingerprint!==fp(cur.spec))throw new HttpError(409,'Le site ou la proposition SEO a changé. Préparez un nouvel accord gratuit.');
- const next=apply(cur.spec,p),v=saveThemeVersion(c.project_id!,next,'SYNA — texte SEO exact : '+p.label,'user',undefined,p.versionId),saved=themeVersion(c.project_id!,v.id);
+ const next=apply(cur.spec,p),v=saveThemeVersion(c.project_id!,next,'SINA — texte SEO exact : '+p.label,'user',undefined,p.versionId),saved=themeVersion(c.project_id!,v.id);
  if(!saved||fp(saved.spec)!==fp(next))throw new HttpError(409,'Enregistrement SEO natif non confirmé.');delete m.localSeoProposal;
  return present(c,'applied','Texte SEO enregistré et relu dans une nouvelle version native. Aucun appel IA ni publication.',{proposalId:p.id,field:p.field,target:p.target,label:p.label,diff:{before:p.before,after:p.after},receiptId:requestId,version:{id:v.id,parentId:p.versionId,number:v.number},previewHref:`/preview/${c.project_id}/v/${v.id}${p.target}`,actionsExecuted:true});
 }

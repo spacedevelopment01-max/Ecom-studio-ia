@@ -53,7 +53,7 @@ it('déclare la retouche réellement raccordée sans la confondre avec une valid
 async function finish(fake=mockDeps({reference:Buffer.from('faux'),reviewFor:()=>review(9)}),complete=true){
  const j=claimNext(['image.v2'])!;expect(j).toBeTruthy();try{const result=await runAgentImageCreation(new JobContext(j),fake.deps);if(complete)completeJob(j.id,result);return{j,result,fake};}catch(e){failJob(j,e,{permanent:true});throw e;}
 }
-describe('D9 — création native depuis SYNA',()=>{
+describe('D9 — création native depuis SINA',()=>{
  it.each(['products','services']as const)('proposition → devis → accord → fichiers → reprise, %s',async business=>{
   const f=await fixture(business),q=f.quote(),qidValue=qid(q);expect(q.kind==='quote'&&q.quote.maximumCalls).toBe(4);if(business==='products'&&q.kind==='quote'){expect(q.quote.subject).toBe('Presse de linogravure');expect(q.quote.reference?.href).toBe(assetUrl({id:f.plan.reference!.assetId}));}expect(all('SELECT * FROM jobs WHERE project_id=?',f.pid)).toHaveLength(0);
   const first=f.confirm(qidValue);expect(first.state).toBe('queued');expect(f.confirm(qidValue).job?.id).toBe(first.job?.id);const done=await finish();const receipt=imageToolReceipt(f.u,f.c.id,qidValue);expect(receipt).toMatchObject({state:'review',delivered:true,clientApproved:false,siteChanged:false});expect(receipt.outputs).toHaveLength(2);for(const output of receipt.outputs)expect(output.href).toBe(assetUrl({id:output.assetId}));expect(done.fake.log.generations).toHaveLength(2);expect(done.fake.log.prompts.every(prompt=>prompt.includes(f.plan.quote))).toBe(true);expect(f.quote().kind).toBe('receipt');expect(all('SELECT * FROM theme_versions WHERE project_id=?',f.pid)).toHaveLength(0);expect(all('SELECT * FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);
@@ -93,7 +93,7 @@ async function acquiredForEdit(business:'products'|'services'='products'){
  const quote=()=>{const v=conversationView(f.u,f.c.id);return quoteImageCreation(f.u,f.c.id,{action:'quote',revision:v.revision,projectRevision:v.projectRevision!,proposalReceiptId:proposal});};
  return{...f,original,source,style,text,editPlan:plan,editProposal:proposal,editQuote:quote};
 }
-describe('D9b — retouche dans le même SYNA et moteur natif',()=>{
+describe('D9b — retouche dans le même SINA et moteur natif',()=>{
  it('la relecture arrêtée au plafond expose seulement un essai non livrable, conservé après reprise sans nouvel appel',async()=>{
   const f=await acquiredForEdit(),quote=qid(f.editQuote()),queued=f.confirm(quote),fake=mockDeps({reference:assetData(getAsset(f.source.assetId)!),reviewFor:()=>new CostCapReached(100,200,150)});await expect(finish(fake)).rejects.toThrow('livrable');const r=imageToolReceipt(f.u,f.c.id,quote);expect(r).toMatchObject({state:'failed',delivered:false});expect(r.outputs).toHaveLength(0);expect(r.trials).toHaveLength(1);expect(r.trials[0]).toMatchObject({present:true,diagnosticOnly:true,reusable:false});expect(r.failure?.kind).toBe('review_budget_cap');expect(r.trials[0].href).toBe(assetUrl({id:r.trials[0].assetId}));expect(r.job?.progress).toBeLessThan(1);expect(fake.log.generations).toHaveLength(1);expect(f.confirm(quote).job?.id).toBe(queued.job!.id);expect(imageToolReceipt(f.u,f.c.id,quote).trials[0].sha256).toBe(r.trials[0].sha256);expect(fake.log.generations).toHaveLength(1);
  });

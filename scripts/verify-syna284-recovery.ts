@@ -57,13 +57,13 @@ try{
   const f:Fixture=fixtures[i],context=await browser.newContext({viewport,locale:'fr-FR'});await context.addCookies([{name:'ecs_session',value:sessions[i],url:origin}]);
   const page:Page=await context.newPage(),errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(`${origin}/studio/${f.pid}/boutique`,{waitUntil:'networkidle',timeout:180000});
-  const dock=page.getByRole('button',{name:'SYNA',exact:true});await dock.click();
+  const dock=page.getByRole('button',{name:'SINA',exact:true});await dock.click();
   await page.getByText(/Projet existant repris en lecture seule/).first().waitFor({timeout:30000});
   await page.getByText(`Reprise ${f.business} : conserve mon site et mes retouches.`,{exact:true}).waitFor();
-  assert.equal(await page.getByRole('button',{name:'Voir le devis de la réponse de SYNA',exact:true}).count(),0);
+  assert.equal(await page.getByRole('button',{name:'Voir le devis de la réponse de SINA',exact:true}).count(),0);
   const file=`${f.business}-${label}.png`;await page.screenshot({path:path.join(out,file),fullPage:false});
   // Fermer/réouvrir et recharger : le même fil et le même message doivent revenir.
-  await page.reload({waitUntil:'networkidle'});await page.getByRole('button',{name:'SYNA',exact:true}).click();await page.getByText(`Reprise ${f.business} : conserve mon site et mes retouches.`,{exact:true}).waitFor();
+  await page.reload({waitUntil:'networkidle'});await page.getByRole('button',{name:'SINA',exact:true}).click();await page.getByText(`Reprise ${f.business} : conserve mon site et mes retouches.`,{exact:true}).waitFor();
   assert.deepEqual(errors,[]);proof.ui.push({business:f.business,viewport,label,file,reload:true,pageErrors:errors});await context.close();
  }
  const calls=one<{n:number}>('SELECT COUNT(*) n FROM ai_calls')!.n,jobs=one<{n:number}>('SELECT COUNT(*) n FROM jobs')!.n;

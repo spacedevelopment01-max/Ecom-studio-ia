@@ -6,7 +6,7 @@ import type {useLocalStockConfirmation} from './use-local-stock-confirmation';
 import {Button} from '../ui';
 import {useT} from '../i18n';
 /**
- * #301 « SYNA complète » — carte Stock gratuite (contrat #373 de Codex) : quantité d'une variante désignée dans le
+ * #301 « SINA complète » — carte Stock gratuite (contrat #373 de Codex) : quantité d'une variante désignée dans le
  * Catalogue, avant / après exacts (« suivi désactivé » distinct de zéro), accord gratuit, reçu relu. Aucune
  * synchronisation de boutique, aucune publication, aucun appel IA.
  */

@@ -1,6 +1,6 @@
 import { analysisAttempts, attemptProblem } from "./analysis-attempts";
 import { analysisCostPlan } from "./inspect";
-import {activeStrategy,currentStrategyInputDigest,proposeStrategies} from "../marketing-strategy";
+import {activeStrategy,strategyInputsCurrent,proposeStrategies} from "../marketing-strategy";
 import {retainResearchAfterIdentityConfirmation} from "../marketing-strategy/research";
 import {researchDigest} from "../marketing-strategy/research";
 import { placementHash, receiptFor } from "./media-context";
@@ -41,6 +41,7 @@ import { withTrace } from "../ai/trace";
 import { redact } from "../redact";
 import { L } from "../i18n-server";
 import { analyzeLocally } from "./brief";
+import type { ProductProfile } from "../project-types";
 import { applyAnswer, applyFicheChange, briefMissing, type AnswerItem, type FicheChange } from "./fiche";
 import { realDependencies, type Dependencies } from "./deps";
 import {
@@ -372,7 +373,7 @@ export function approve(
       if(r.formatVersion===3){
         if(loadProject(projectId).business==='services'&&o.choiceId!=='generalist')throw new HttpError(409,'Le site de services présente toute l’activité. Validez « Présenter l’ensemble de votre offre » ; les autres angles servent aux communications.');
         const chosen=activeStrategy(projectId);
-        if(loadProject(projectId).business!=='services'&&(!chosen||chosen.angleId!==o.choiceId||chosen.inputDigest!==currentStrategyInputDigest(projectId)||chosen.angle.researchDigest!==researchDigest(r)))throw new HttpError(409,'Préparez et confirmez cet angle dans le comparateur avant de valider la recherche ; le quota et ses conséquences doivent être acceptés.');
+        if(loadProject(projectId).business!=='services'&&(!chosen||chosen.angleId!==o.choiceId||!strategyInputsCurrent(projectId,chosen.inputDigest)||chosen.angle.researchDigest!==researchDigest(r)))throw new HttpError(409,'Préparez et confirmez cet angle dans le comparateur avant de valider la recherche ; le quota et ses conséquences doivent être acceptés.');
       }
       r.selectedId = o.choiceId;
       saveStrategy(projectId, strategyOf(r));
@@ -529,6 +530,40 @@ export function approve(
     source: "local",
   });
   return result;
+}
+/** Ce qui DÉFINIT l'offre (règle v2 de l'empreinte) : nom, catégorie, secteur et public visé. */
+const AUDIENCE_LABEL = /public|cible|audience|client(e|s)? vis/i;
+const offerCore = (p: ProductProfile) => stableHash({ name: p.name, category: p.category, sector: p.sector, audience: (p.facts ?? []).filter((f) => AUDIENCE_LABEL.test(f.label)).map((f) => f.value) });
+/**
+ * FAITS de l'offre confirmés par le client (prix, dimensions, matières, présentation…), décision du propriétaire du
+ * 06/11/2026 : un fait ne change pas l'offre. La fiche du Pilote et la fiche produit sont mises à jour ENSEMBLE, sans
+ * nouvelle analyse payante ; les étapes déjà à jour le restent (empreintes ré-signées) et l'angle choisi reste valable.
+ * Un changement de nom, de catégorie, de secteur ou de public visé est une nouvelle offre : refusé ici (fiche du Pilote).
+ */
+export function updateOfferFacts(projectId: string, change: (profile: ProductProfile) => void): ProductProfile {
+  const s0 = stateOf(projectId);
+  if (!s0?.stages.brief) {
+    const p = loadProject(projectId), next = structuredClone(p.product);
+    const core = offerCore(next); change(next);
+    if (offerCore(next) !== core) throw new HttpError(409, "Changer le nom, la catégorie ou le public visé change l’offre : passez par la fiche du Pilote.", "offer_core_change");
+    saveProduct(projectId, next);
+    return next;
+  }
+  let saved: ProductProfile | null = null, approved = false;
+  commitState(projectId, s0.revision, (s) => {
+    const st = stageOf(s, "brief"), b = st.data;
+    const fresh = STEPS.filter((k) => k !== "brief" && !!s.stages[k] && s.stages[k]!.status !== "stale" && s.stages[k]!.inputHash === inputHash(s, k));
+    const core = offerCore(b.profile);
+    change(b.profile);
+    if (offerCore(b.profile) !== core) throw new HttpError(409, "Changer le nom, la catégorie ou le public visé change l’offre : passez par la fiche du Pilote.", "offer_core_change");
+    b.missing = briefMissing(b);
+    for (const k of fresh) s.stages[k]!.inputHash = inputHash(s, k);
+    saved = structuredClone(b.profile); approved = st.status === "approved";
+  });
+  // Fiche produit identique à la fiche du Pilote validée (sinon « l'offre a changé hors du parcours »).
+  if (approved) saveProduct(projectId, saved!);
+  remember(projectId, { kind: "decision", key: `offer.facts.${Date.now()}`, value: "Faits de l’offre mis à jour par le client (sans nouvelle analyse ; angle conservé).", source: "user" } as any);
+  return saved!;
 }
 export function editBrief(projectId: string, revision: number, input: Input) {
   return commitState(projectId, revision, (s) => {
@@ -802,7 +837,7 @@ export function mediaReusable(projectId: string, s = stateOf(projectId)): boolea
   const p = loadProject(projectId), c = s?.stages.content?.data, m = s?.stages.media?.data;
   return !!c && !!m?.slots.length && m.slots.filter(slot=>!(slot.kind==="video"&&slot.source==="ai"&&!slot.assetId)).every(slot => !!slot.assetId && slot.alignment?.status === "accepted" && (s?.simulation || (!slotIssues(p, slot, getAsset(slot.assetId)).length && slot.alignment.contextHash === placementHash(p, c, slot))));
 }
-/** Les adaptateurs SYNA restent dans la même cohorte d’essais native. */
+/** Les adaptateurs SINA restent dans la même cohorte d’essais native. */
 export function preparationAttemptCount(projectId: string, hash: string) {
   return one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE project_id=? AND type IN ('project.prepare','agent.brand.propose') AND json_extract(payload,'$.inputHash')=?", projectId, hash)?.n ?? 0;
 }

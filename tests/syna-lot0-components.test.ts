@@ -1,4 +1,4 @@
-/** SYNA lot 0 (#282) : vrai rendu React des primitives présentatives, FR / EN, accessibilité, aucun euro. */
+/** SINA lot 0 (#282) : vrai rendu React des primitives présentatives, FR / EN, accessibilité, aucun euro. */
 import { createElement as h } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
@@ -108,25 +108,25 @@ describe("puce de sélection", () => {
   });
 });
 
-describe("accès à SYNA (sans pastille noire)", () => {
+describe("accès à SINA (sans pastille noire)", () => {
   it("onglet signature : état ouvert, travail en cours annoncé, point seulement pour un résultat ou un échec", () => {
     const idle = html(h(SynaTrigger, { variant: "rail", expanded: false }));
     expect(idle).toContain('aria-expanded="false"');
-    expect(idle).toContain('aria-label="Ouvrir Syna"');
+    expect(idle).toContain('aria-label="Ouvrir Sina"');
     expect(idle).not.toContain("sy-dot");
-    expect(html(h(SynaTrigger, { variant: "rail", expanded: true }))).toContain('aria-label="Replier Syna"');
-    expect(html(h(SynaTrigger, { variant: "rail", status: "working", statusText: "3 images" }))).toContain('aria-label="Ouvrir Syna — Syna travaille : 3 images"');
+    expect(html(h(SynaTrigger, { variant: "rail", expanded: true }))).toContain('aria-label="Replier Sina"');
+    expect(html(h(SynaTrigger, { variant: "rail", status: "working", statusText: "3 images" }))).toContain('aria-label="Ouvrir Sina — Sina travaille : 3 images"');
     expect(html(h(SynaTrigger, { variant: "rail", status: "notice", statusText: "1 image prête" }))).toContain("sy-dot");
   });
   it("barre de commande : texte visible, raccourci annoncé seulement s'il est donné", () => {
     const bar = html(h(SynaTrigger, { variant: "commandbar" }));
-    expect(bar).toContain(">Demandez à Syna…<");
+    expect(bar).toContain(">Demandez à Sina…<");
     expect(bar).not.toContain("<kbd");
     expect(bar).not.toContain("aria-keyshortcuts");
     const k = html(h(SynaTrigger, { variant: "commandbar", shortcut: "Ctrl K", lang: "en" }));
     expect(k).toContain('aria-keyshortcuts="Ctrl+K"');
-    expect(k).toContain(">Ask Syna…<");
-    expect(html(h(SynaTrigger, { variant: "commandbar", compact: true, status: "working" }))).toContain('aria-label="Ouvrir Syna — Syna travaille"');
+    expect(k).toContain(">Ask Sina…<");
+    expect(html(h(SynaTrigger, { variant: "commandbar", compact: true, status: "working" }))).toContain('aria-label="Ouvrir Sina — Sina travaille"');
   });
   it("aucune classe de la pastille actuelle (fond encre plein, bouton flottant)", () => {
     for (const variant of ["rail", "commandbar", "tab"] as const) expect(html(h(SynaTrigger, { variant }))).not.toMatch(/bg-ink|fixed|rounded-full/);
@@ -136,7 +136,7 @@ describe("accès à SYNA (sans pastille noire)", () => {
 describe("saisie et coquille", () => {
   it("la zone de saisie a un libellé ; « Envoyer » reste inactif tant qu'aucun envoi n'est branché", () => {
     const out = html(h(SynaComposer, { defaultValue: "Bonjour" }));
-    expect(out).toMatch(/<label for="([^"]+)" class="sy-sr">Message à Syna<\/label><textarea id="\1"/);
+    expect(out).toMatch(/<label for="([^"]+)" class="sy-sr">Message à Sina<\/label><textarea id="\1"/);
     expect(out).toContain("disabled");
     expect(html(h(SynaComposer, { onSend: noop }))).not.toContain("disabled");
   });
@@ -148,7 +148,7 @@ describe("saisie et coquille", () => {
     expect(inner(encre)).toBe(inner(plein));
     expect(encre).toMatch(/^<div class="syna-ui" data-syna-mode="encre" data-syna-scheme="auto" data-syna-accent="encre"[^>]*style="--sy-convo-w:440px"/);
     expect(plein).toMatch(/^<div class="syna-ui" data-syna-mode="plein"[^>]*data-syna-accent="cobalt"[^>]*style="--sy-convo-w:420px"/);
-    expect(encre).toContain('<aside class="sy-convo" aria-label="Conversation avec Syna">');
+    expect(encre).toContain('<aside class="sy-convo" aria-label="Conversation avec Sina">');
     expect(encre).toContain('<section class="sy-work" aria-label="Espace de travail">');
   });
 });

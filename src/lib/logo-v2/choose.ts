@@ -22,7 +22,7 @@ import { canvasFamily } from "../media/fonts";
 import { brandBoard } from "./brand-board";
 import { ARTWORK_NEVER, faithfulSvg, STYLE_LABEL, correctArtworkText, onDarkVersion, oneColourVersion } from "./artwork";
 import { brandDiscovery } from "./discovery";
-import { artworkInks, artworkSymbol, paletteFromInks, squareMark, symbolFavicon } from "./identity";
+import { artworkInks, artworkSymbol, nameBoxFromInk, paletteFromInks, squareMark, symbolFavicon, wordmarkInitial } from "./identity";
 import { defaultStyle } from "./territories";
 import { json } from "../db";
 import { loadProject, saveBrand } from "../projects";
@@ -92,7 +92,9 @@ async function applyArtwork(ctx: JobContext | null, projectId: string, assetId: 
   if (handle && !(cur.validated ?? []).includes("fonts")) storeBrand({ ...cur, fonts: { ...cur.fonts, heading: handle } });
   const base = { projectId, userId: p.userId, folderKey: "brand.logos", origin: "generated" as const, meta: { engine: "logo-v2", artwork: true, territory: t.id, proposal: assetId } };
   const main = await saveAsset({ ...base, data: png, name: C("logo-principal.png", "logo-main.png"), mime: "image/png", role: "logo", sourceAssetId: assetId, status: "approved" });
-  const lightPng = await onDarkVersion(png);
+  // Zone du nom : celle de la relecture, recalée sur l'encre du nom dans le dessin (la relecture peut se tromper).
+  const nameBox = await nameBoxFromInk(png, meta.artwork?.textBox ?? null);
+  const lightPng = await onDarkVersion(png, nameBox);
   const light = await saveAsset({ ...base, data: lightPng, name: C("logo-fond-sombre.png", "logo-dark-background.png"), mime: "image/png", role: "logo-light", sourceAssetId: main.id });
   const monoPng = await oneColourVersion(png, "#111111");
   await saveAsset({ ...base, data: monoPng, name: C("logo-noir.png", "logo-black.png"), mime: "image/png", role: "logo-mono", sourceAssetId: main.id });
@@ -105,7 +107,9 @@ async function applyArtwork(ctx: JobContext | null, projectId: string, assetId: 
   const symbol =
     t.markType === "emblem" || t.style === "emblem"
       ? await squareMark(png)
-      : ((await artworkSymbol(png, meta.artwork?.textBox ?? null)) ?? (t.markType === "wordmark" || t.markType === "lettermark" ? null : await squareMark(png)));
+      : ((await artworkSymbol(png, nameBox)) ??
+        // Lettrage seul : l'initiale telle qu'elle est dessinée (fidèle), sinon la version simplifiée du studio.
+        (t.markType === "wordmark" || t.markType === "lettermark" ? (nameBox ? await wordmarkInitial(png, nameBox) : null) : await squareMark(png)));
   let markPng: Buffer;
   let mark;
   if (symbol) {
@@ -128,7 +132,7 @@ async function applyArtwork(ctx: JobContext | null, projectId: string, assetId: 
   const inks = await artworkInks(png);
   // Palette verrouillée par la direction (ou couleurs du client) : le logo ne la remplace pas.
   const fromLogo = isLocked(after, "palette") || after.paletteMode ? null : paletteFromInks(inks);
-  storeBrand({ ...after, ...(fromLogo ? { palette: fromLogo } : {}), logo: { ...after.logo, assetId: main.id, markAssetId: mark.id, concept: `${t.name} — ${t.concept}`, status: "proposed", proposal: KEY[t.markType], proposalId: assetId, route: undefined, provisional: opts.provisional, engine: "v2" } });
+  storeBrand({ ...after, ...(fromLogo ? { palette: fromLogo } : {}), logo: { ...after.logo, assetId: main.id, markAssetId: mark.id, concept: t.style === "libre" ? C(`Logo « ${t.name.toLowerCase()} » dessiné pour ${after.name}.`, `« ${t.name} » logo drawn for ${after.name}.`) : `${t.name} — ${t.concept}`, status: "proposed", proposal: KEY[t.markType], proposalId: assetId, route: undefined, provisional: opts.provisional, engine: "v2" } });
   if (!stagedBrand) markBrandLogo(projectId, main.id);
   const { swapThemeLogos } = await import("../engine/identity");
   const fresh = brand();

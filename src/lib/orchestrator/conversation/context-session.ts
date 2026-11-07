@@ -1,6 +1,6 @@
 import {latestDoc} from '../../ad-doc/store';
 /** A2 : sélection persistante, relecture native et reprise explicitement consentie.
- * Les seuls effets de ces commandes sont dans le fil SYNA, jamais dans les données métier.
+ * Les seuls effets de ces commandes sont dans le fil SINA, jamais dans les données métier.
  */
 import {z} from 'zod';
 import {HttpError,type User} from '../../auth';

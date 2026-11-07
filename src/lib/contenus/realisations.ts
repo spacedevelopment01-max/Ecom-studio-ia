@@ -22,7 +22,7 @@ import { themeLang, type SectionInstance, type StorePage, type TemplateJson, typ
 
 let ready = false;
 function ensureTables() {
-  // Le drapeau seul ne suffit pas : une création faite dans une transaction annulée (aperçu SYNA, #276) disparaît.
+  // Le drapeau seul ne suffit pas : une création faite dans une transaction annulée (aperçu SINA, #276) disparaît.
   if (ready && one("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'realisations'")) return;
   run(`CREATE TABLE IF NOT EXISTS realisations (
     id TEXT PRIMARY KEY, project_id TEXT NOT NULL, handle TEXT NOT NULL, title TEXT NOT NULL, summary TEXT NOT NULL DEFAULT '',

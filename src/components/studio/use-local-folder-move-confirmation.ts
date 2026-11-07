@@ -3,7 +3,7 @@ import {useStaleConfirmation} from './use-stale-confirmation';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import {createLocalFolderMoveConfirmation,LOCAL_FOLDER_MOVE_CHANGED_EVENT,type LocalFolderMoveChange,type LocalFolderMoveConfirmationState} from '@/lib/local-folder-move-confirmation-client';
-/** #301 « SYNA complète » : branche le transport Déplacement de dossier de Codex (#400) ; l'écran Fichiers se relit après le reçu. */
+/** #301 « SINA complète » : branche le transport Déplacement de dossier de Codex (#400) ; l'écran Fichiers se relit après le reçu. */
 export function useLocalFolderMoveConfirmation(view:ConversationView|null,onView:(v:ConversationView)=>void,onApplied:(change:LocalFolderMoveChange)=>Promise<void>|void){
  const current=useRef(view),callbacks=useRef({onView,onApplied});current.current=view;callbacks.current={onView,onApplied};
  const[state,setState]=useState<LocalFolderMoveConfirmationState>({busy:false,error:'',uncertain:false});

@@ -1,6 +1,6 @@
 "use client";
 /**
- * Vitrine interne des fondations SYNA (mission #282, lot 0). Données d'exemple, aucun appel, aucun stockage :
+ * Vitrine interne des fondations SINA (mission #282, lot 0). Données d'exemple, aucun appel, aucun stockage :
  * les réglages ne vivent que dans cette page. Sert aux captures et au contrôle visuel des deux présentations.
  */
 import "@/components/syna/syna.css";
@@ -104,7 +104,7 @@ export function SynaVitrine({ initial }: { initial: SynaVitrineState }) {
       conversation={{
         header: (
           <>
-            <span className="sv-mark"><span className="sy-wordmark">Syna</span><span className="sy-small">{L("mémoire du projet · 14 éléments", "project memory · 14 items")}</span></span>
+            <span className="sv-mark"><span className="sy-wordmark">Sina</span><span className="sy-small">{L("mémoire du projet · 14 éléments", "project memory · 14 items")}</span></span>
             <SynaButton variant="ghost" size="sm" onClick={() => set("panel", "collapsed")} aria-controls="sv-convo" aria-expanded={true}>{L("Replier", "Collapse")}</SynaButton>
           </>
         ),
@@ -150,7 +150,7 @@ export function SynaVitrine({ initial }: { initial: SynaVitrineState }) {
         <header className="sv-head">
           <div className="sv-head-t">
             <p className="sy-eyebrow">{L("E-com Studio · mission #282 · lot 0", "E-com Studio · mission #282 · lot 0")}</p>
-            <h1 className="sy-title sv-h1">{L("Fondations SYNA", "SYNA foundations")} <em>{resolved.mode === "encre" ? "Encre" : L("Plein cadre", "Full frame")}</em></h1>
+            <h1 className="sy-title sv-h1">{L("Fondations SINA", "SINA foundations")} <em>{resolved.mode === "encre" ? "Encre" : L("Plein cadre", "Full frame")}</em></h1>
             <p className="sy-body sv-intro">{L(
               "Vitrine interne : les composants du futur Studio, dans les deux présentations. Aucun écran actuel ne les utilise encore. Données d'exemple, aucun appel, aucun coût.",
               "Internal showcase: the future Studio's components, in both presentations. No current screen uses them yet. Example data, no calls, no cost.",
@@ -171,7 +171,7 @@ export function SynaVitrine({ initial }: { initial: SynaVitrineState }) {
           "The same content in both presentations. Switch modes: the typed draft, the selected element and the task stay in place.",
         )}>
           <div className="sv-shell-tools">
-            <SynaButton size="sm" onClick={() => set("panel", resolved.panel === "pinned" ? "collapsed" : "pinned")} aria-pressed={resolved.panel === "collapsed"}>{resolved.panel === "pinned" ? L("Replier Syna", "Collapse Syna") : L("Épingler Syna", "Pin Syna")}</SynaButton>
+            <SynaButton size="sm" onClick={() => set("panel", resolved.panel === "pinned" ? "collapsed" : "pinned")} aria-pressed={resolved.panel === "collapsed"}>{resolved.panel === "pinned" ? L("Replier Sina", "Collapse Sina") : L("Épingler Sina", "Pin Sina")}</SynaButton>
             <SynaButton size="sm" variant="ghost" onClick={() => setView(view === "workspace" ? "conversation" : "workspace")}>{L("Téléphone : ", "Phone: ")}{view === "workspace" ? L("voir la conversation", "show conversation") : L("voir l'aperçu", "show preview")}</SynaButton>
             {!selected ? <SynaButton size="sm" variant="ghost" onClick={() => setSelected(true)}>{L("Désigner l'en-tête", "Select the header")}</SynaButton> : null}
           </div>
@@ -184,7 +184,7 @@ export function SynaVitrine({ initial }: { initial: SynaVitrineState }) {
               <li key={s}>
                 <SynaStateBadge state={s} lang={lang} />
                 <span className="sy-small">{{
-                  proposal: L("Proposé par Syna, rien n'est lancé", "Suggested by Syna, nothing started"),
+                  proposal: L("Proposé par Sina, rien n'est lancé", "Suggested by Sina, nothing started"),
                   draft: L("Préparé, modifiable, pas publié", "Prepared, editable, not published"),
                   confirmed: L("Accepté, en attente d'exécution", "Accepted, waiting to run"),
                   running: L("En train de se faire", "Being done"),
@@ -262,7 +262,7 @@ export function SynaVitrine({ initial }: { initial: SynaVitrineState }) {
           </div>
         </Section>
 
-        <Section id="sv-access" eyebrow="06" title={L("Accès à Syna, sans pastille noire", "Access to Syna, no black pill")} intro={L(
+        <Section id="sv-access" eyebrow="06" title={L("Accès à Sina, sans pastille noire", "Access to Sina, no black pill")} intro={L(
           "Composants prêts pour le lot 1 : onglet signature (Encre), barre de commande (Plein cadre), onglet du téléphone. Le bouton actuel du Studio n'est pas remplacé dans ce lot.",
           "Components ready for lot 1: signature tab (Encre), command bar (Full frame), phone tab. The Studio's current button is not replaced in this lot.",
         )}>

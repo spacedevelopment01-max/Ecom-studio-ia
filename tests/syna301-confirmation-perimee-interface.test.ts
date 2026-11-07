@@ -1,5 +1,5 @@
 /**
- * #301 « SYNA complète », lot 1 — garde de l'interface : défaut vu dans le Studio compilé (recette
+ * #301 « SINA complète », lot 1 — garde de l'interface : défaut vu dans le Studio compilé (recette
  * scripts/syna301-confirmation-perimee-recette.ts) : un accord resté en mémoire pour une ancienne proposition laissait la
  * nouvelle carte « incertaine » (Confirmer grisé, « Réessayer la même confirmation » trompeur). Chaque carte gratuite relit
  * l'état dès qu'une proposition s'affiche avec un accord incertain ; la carte du site abandonne l'accord d'une autre
