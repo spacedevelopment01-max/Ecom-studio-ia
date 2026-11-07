@@ -101,6 +101,7 @@ describe("SINA — étape 2 : 3 logos", async () => {
     expect(new Set(t.map((x) => x.imageBrief)).size).toBe(3);
     expect(t.map((x) => x.markType)).toEqual(["symbol_wordmark", "wordmark", "symbol_wordmark"]);
     expect(t[1].concept).toMatch(/Direction « lettrage »/);
+    expect(t.map((x) => x.name)).toEqual(["Illustration", "Lettrage", "Symbole moderne"]); // noms clairs pour le client
   });
 
   it("proposition complète : devis annoncé, 3 logos dessinés et contrôlés, rangés dans le parcours, affichés, puis choix du client", async () => {
@@ -118,7 +119,7 @@ describe("SINA — étape 2 : 3 logos", async () => {
     } finally { logoToolDeps.maxMicro = undefined; }
     const log = { calls: [] as string[], prompts: [] as string[] };
     const prompts: string[] = [];
-    G.logoDeps.ai = fakeEngine(log, { "Création libre 3": 4 });
+    G.logoDeps.ai = fakeEngine(log, { "Symbole moderne": 4 });
     G.logoDeps.draw = async (prompt, tid) => { prompts.push(prompt); log.calls.push(`art:${tid}`); return artFixture(Number(tid.slice(1)) || 0); };
     try {
       const out = await fr(() => G.runSinaLogosJob(jobCtx(user, pid, { projectId: pid, conversationId: cid, capMicro: 900_000 })));
@@ -131,8 +132,8 @@ describe("SINA — étape 2 : 3 logos", async () => {
     const j = J.journeyOf(cid);
     expect(j.steps[2].status).toBe("review");
     const byName = Object.fromEntries(j.logos!.list.map((x) => [x.name, x]));
-    expect(byName["Création libre 1"].verdict).toBe("FINAL");
-    expect(byName["Création libre 3"].verdict).not.toBe("FINAL"); // note 4/10 : jamais présenté comme bon
+    expect(byName["Illustration"].verdict).toBe("FINAL");
+    expect(byName["Symbole moderne"].verdict).not.toBe("FINAL"); // note 4/10 : jamais présenté comme bon
     expect(J.journeyContext(j)).toMatch(/Étape 2 — proposition n° 1 .*NON validé par le contrôle/);
     const view = await fr(() => threadView(user, cid));
     expect(view.journey.logos!.list.every((x) => !x.assetId || !!x.href)).toBe(true);
@@ -213,6 +214,8 @@ describe("SINA — étape 2 : 3 logos", async () => {
     expect(kit.boardId).toBeTruthy();
     expect(kit.bookId).toBeTruthy();
     expect(getAsset(kit.bookId!)!.mime).toBe("application/pdf");
+    // La charte ne recopie jamais la consigne interne du dessinateur (essai réel : « carte blanche au dessinateur… »).
+    expect(loadProject(pid).brand!.logo.concept).toMatch(/^Logo « (illustration|lettrage|symbole moderne) » dessiné pour Heure Dorée\.$/);
     expect(kit.pageIds.length).toBeGreaterThan(0);
     // Ce qui manque est dit honnêtement (le dessin de test n'a pas de version vectorielle fidèle, ou il en a une).
     expect(keys.includes("svg") || kit.notes.some((n) => /vectoriel/.test(n))).toBe(true);
@@ -228,6 +231,13 @@ describe("SINA — étape 2 : 3 logos", async () => {
     expect(J.journeyOf(cid).steps[3].status).toBe("done");
     expect(J.currentStep(J.journeyOf(cid))).toBe(4);
     expect((await call("brand.kit", ctx, {})).ok).toBe(false);
+  });
+
+  it("charte PDF : couverture sans « Non déterminé » quand le secteur est inconnu (essai réel du 7 novembre)", async () => {
+    const { coverLine } = await import("@/lib/media/brand-book");
+    const d = new Date(2026, 10, 7);
+    expect(coverLine("Non déterminé", d, "fr-FR")).toBe("novembre 2026");
+    expect(coverLine("Épicerie fine", d, "fr-FR")).toBe("Épicerie fine · novembre 2026");
   });
 
   it("favicon et avatar : le symbole entier, centré, sans rien couper", async () => {

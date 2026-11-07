@@ -111,6 +111,12 @@ function cmyk(hex: string) {
   return `${f(r)} · ${f(g)} · ${f(b)} · ${Math.round(k * 100)}`;
 }
 
+/** Ligne de couverture : secteur et date ; secteur inconnu → la date seule (jamais « Non déterminé » sur une charte). */
+export function coverLine(sector: string, date: Date, locale: string): string {
+  const known = !!sector && !/^(non déterminé|not determined)$/i.test(sector.trim());
+  return `${known ? `${sector} · ` : ""}${date.toLocaleDateString(locale, { month: "long", year: "numeric" })}`;
+}
+
 export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer } {
   const b = inp.brand;
   const pal = b.palette;
@@ -227,7 +233,7 @@ export function renderBrandBook(inp: BookInput): { pages: Buffer[]; pdf: Buffer 
     contain(ctx, inp.logo, W / 2 - 430, 300, 860, 400);
     if (b.tagline && b.logo.proposal !== "embleme") text(ctx, b.tagline, W / 2, 800, font(HF, 500, 44, true), ink, "center");
     text(ctx, BOOK.toLocaleUpperCase(locale), W / 2, 940, font(BF, 600, 24), accent, "center");
-    text(ctx, `${inp.sectorLabel} · ${inp.date.toLocaleDateString(locale, { month: "long", year: "numeric" })}`, W / 2, 985, font(BF, 400, 22), mix(ink, paper, 0.4), "center");
+    text(ctx, coverLine(inp.sectorLabel, inp.date, locale), W / 2, 985, font(BF, 400, 22), mix(ink, paper, 0.4), "center");
   }
 
   // 2 · Identité

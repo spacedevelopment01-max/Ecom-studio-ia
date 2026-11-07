@@ -104,7 +104,8 @@ export function freeTerritories(f: FreeLogoFacts): TerritoryDraft[] {
     { composition: "horizontal", construction: "geometric", sobriety: 1, type: "geometric_sans" },
   ] as const;
   return axes.map((a, i) => ({
-    name: `Création libre ${i + 1}`,
+    // Nom montré au client (cartes, charte) : la direction, en clair (« Création libre 3 » ne lui disait rien).
+    name: FREE_DIRECTIONS[i].label.charAt(0).toUpperCase() + FREE_DIRECTIONS[i].label.slice(1),
     concept: `Direction « ${FREE_DIRECTIONS[i].label} », carte blanche au dessinateur pour « ${f.name} » : ${FREE_DIRECTIONS[i].text}.`,
     whyItFits: `Un logo beau et moderne pour ${f.activity.slice(0, 160)}.`,
     markType: i === 1 ? "wordmark" : "symbol_wordmark", composition: a.composition, construction: a.construction, sobriety: a.sobriety,

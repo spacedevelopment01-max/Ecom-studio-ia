@@ -128,7 +128,7 @@ async function applyArtwork(ctx: JobContext | null, projectId: string, assetId: 
   const inks = await artworkInks(png);
   // Palette verrouillée par la direction (ou couleurs du client) : le logo ne la remplace pas.
   const fromLogo = isLocked(after, "palette") || after.paletteMode ? null : paletteFromInks(inks);
-  storeBrand({ ...after, ...(fromLogo ? { palette: fromLogo } : {}), logo: { ...after.logo, assetId: main.id, markAssetId: mark.id, concept: `${t.name} — ${t.concept}`, status: "proposed", proposal: KEY[t.markType], proposalId: assetId, route: undefined, provisional: opts.provisional, engine: "v2" } });
+  storeBrand({ ...after, ...(fromLogo ? { palette: fromLogo } : {}), logo: { ...after.logo, assetId: main.id, markAssetId: mark.id, concept: t.style === "libre" ? C(`Logo « ${t.name.toLowerCase()} » dessiné pour ${after.name}.`, `« ${t.name} » logo drawn for ${after.name}.`) : `${t.name} — ${t.concept}`, status: "proposed", proposal: KEY[t.markType], proposalId: assetId, route: undefined, provisional: opts.provisional, engine: "v2" } });
   if (!stagedBrand) markBrandLogo(projectId, main.id);
   const { swapThemeLogos } = await import("../engine/identity");
   const fresh = brand();
