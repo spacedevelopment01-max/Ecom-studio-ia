@@ -16,6 +16,7 @@ import type { SinaLogo } from "./logos";
 import type { BrandKit } from "./brand-kit";
 import type { SinaAngles } from "./angles";
 import type { ActivityPlan } from "./activity";
+import type { SinaThemes } from "./themes";
 
 export const JOURNEY_STEPS = [
   { n: 0, fr: "Questions de départ", en: "Getting started" },
@@ -38,7 +39,7 @@ export type StepNumber = (typeof JOURNEY_STEPS)[number]["n"];
  * Étapes déjà construites dans le parcours SINA. Les autres sont annoncées au client mais SINA n'y lance rien
  * (aucun outil payant) : elle ne doit jamais partir seule sur une étape que le parcours ne sait pas encore mener.
  */
-export const READY_STEPS: number[] = [0, 1, 2, 3, 4, 5];
+export const READY_STEPS: number[] = [0, 1, 2, 3, 4, 5, 6];
 /** à faire · en cours · à valider par le client · validée · sans objet (ex. étape 7 quand le client choisit un de nos thèmes). */
 export type StepStatus = "todo" | "doing" | "review" | "done" | "skipped";
 
@@ -85,6 +86,9 @@ export type Journey = {
   angleChoice?: { id: string; ids?: string[]; at: number };
   /** Étape 5 : le plan de l'activité tel qu'affiché au client (coordonnées, stratégie, offre, produits). */
   activity?: ActivityPlan;
+  /** Étape 6 : thèmes montrés au client (site composé dans chacun) et thème qu'il a choisi. */
+  themes?: SinaThemes;
+  themeChoice?: { id: string; jobId: string; at: number };
 };
 
 export const emptyJourney = (): Journey => ({
@@ -201,6 +205,7 @@ export function journeyContext(j: Journey): string {
   if (cur === 3) lines.push(...brandKitStepContext(j));
   if (cur === 4) lines.push(...anglesStepContext(j));
   if (cur === 5) lines.push(...activityStepContext(j));
+  if (cur === 6) lines.push(...themeStepContext(j));
   if (READY_STEPS.includes(cur) && STEP_GUIDES[cur]) lines.push(STEP_GUIDES[cur]);
   return lines.join("\n");
 }
@@ -230,6 +235,14 @@ export function activityStepContext(j: Journey): string[] {
   const base = "Étape 5 (activité complète, GRATUITE) : on réunit tout ce que le site va dire. 1) appelle activity.plan : il AFFICHE la carte « Ton activité » et renvoie ce qui manque ; 2) pose les questions manquantes UNE par UNE, y compris les facultatives (téléphone, SIRET), une fois chacune ; « Plus tard » se propose SEULEMENT pour le téléphone et le SIRET, JAMAIS pour le nom, l'e-mail, l'adresse, la livraison ou les retours (obligatoires pour le site) (coordonnées : activity.company avec ses mots ; « plus tard » → activity.company later ; « je n'en veux pas sur le site » (pas de téléphone…) → activity.company none, jamais later) ; 3) PRODUITS : s'il n'y en a aucun dans l'onglet Produits, propose la liste tirée de SA fiche (un produit par parfum, modèle ou formule, et les coffrets ou lots qu'il a cités) avec SES prix, sans en inventer aucun ; demande son accord, puis crée chaque produit avec catalogue.create (titre, prix confirmé, description courte avec les faits du client, ses mots : ingrédients, poids ou contenance qu'il a cités dans sa fiche de départ, composition ; rien d'autre) ; un prix manquant se demande, jamais il ne se devine ; 4) rappelle activity.plan pour mettre la carte à jour ; 5) quand rien ne manque, demande s'il valide (activity.validate).";
   if (!a) return [base];
   return [base, `État : ${a.products.length} produit(s) dans l'onglet Produits${a.products.length ? ` (${a.products.map((x) => `${x.title} ${x.price == null ? "sans prix" : `${x.price} €`}`).join(", ")})` : ""} ; coordonnées manquantes : ${a.missing.map((m) => `${m.key}${m.required ? "" : " (facultative, à poser aussi)"}`).join(", ") || "aucune"} ; angle principal : ${a.angle?.title ?? "aucun"}.`];
+}
+
+/** Étape 6 : un de nos thèmes ou des maquettes sur mesure. */
+export function themeStepContext(j: Journey): string[] {
+  const t = j.themes;
+  const base = "Étape 6 (thème ou maquettes) : explique en deux phrases le choix : un de nos thèmes (prêt, gratuit, le site se compose aussitôt avec sa marque et ses produits, puis on l'adapte) ou des maquettes sur mesure (images créées pour lui, PAYANTES, puis site codé d'après la maquette). Recommande le thème quand rien ne demande du sur-mesure. Pour les thèmes : appelle theme.propose (gratuit) : il AFFICHE les cartes avec SON site dans chaque thème et le lien vers la démonstration complète ; ne recopie pas les cartes. Le client choisit (theme.choose avec l'identifiant de SA carte), jamais toi ; « voir tous les thèmes » → theme.propose all: true. Un thème non inclus dans son forfait : dis-le, ne le choisis pas.";
+  if (!t?.list.length) return [base];
+  return [base, `Thèmes affichés : ${t.list.map((x) => `${x.id} « ${x.name} »${x.recommended ? " (recommandé)" : ""}${x.allowed ? "" : " (non inclus dans son forfait)"}`).join(" ; ")}.`];
 }
 
 /** Étape 4 : les 5 angles marketing. */

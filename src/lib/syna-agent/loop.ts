@@ -367,7 +367,8 @@ export function modelFor(currentStepNumber: number): { provider: "anthropic"; mo
   // Étape 3 : l'image de marque est rendue par le Studio (brand.kit), sans IA.
   // Étape 4 : la recherche et les angles sont faits par les tâches du Pilote (angles.propose).
   // Étape 5 : l'activité est rassemblée par des outils gratuits ; le fil reste sur le modèle léger.
-  const simple = currentStepNumber <= 5 || !READY_STEPS.includes(currentStepNumber);
+  // Étape 6 : les thèmes sont montrés et appliqués par des outils gratuits (maquettes payantes : dans leurs tâches).
+  const simple = currentStepNumber <= 6 || !READY_STEPS.includes(currentStepNumber);
   return simple ? { provider: "anthropic", model: "claude-haiku-5-5", effort: "low" } : undefined;
 }
 
@@ -486,6 +487,8 @@ export function threadView(user: User, cid: string) {
         logos: j.logos ? { round: j.logos.round, chosen: j.logoChoice?.source ?? null, list: j.logos.list.map((x) => ({ ...x, href: x.assetId ? assetUrl({ id: x.assetId }) : null })) } : null,
         // Étape 5 : le plan de l'activité.
         activity: j.activity ? { ...j.activity, gaps: activityGaps(j.activity), validated: j.steps[5]?.status === "done" } : null,
+        // Étape 6 : cartes des thèmes (site du client composé dans chacun) et thème choisi.
+        themes: j.themes ? { ...j.themes, chosen: j.themeChoice?.id ?? null } : null,
         // Étape 4 : les 5 angles marketing et l'angle choisi.
         angles: j.angles ? { list: j.angles.list, recommendedId: j.angles.recommendedId, sourceCount: j.angles.sourceCount, chosen: j.angleChoice?.ids ?? (j.angleChoice ? [j.angleChoice.id] : null) } : null,
         // Étape 3 : l'image de marque (déclinaisons, planche, charte PDF), servie par la bibliothèque du projet.

@@ -16,7 +16,7 @@ type View = {
   run: { id: string; status: string; step: number; pending: any; error: string | null } | null;
   budget: { authorizedPct: number | null; spentPct: number | null };
   attachments: { id: string; kind: string; name: string; analysis: any }[];
-  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; logos?: Logos | null; brandKit?: Kit | null; angles?: Angles | null; activity?: Activity | null };
+  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; logos?: Logos | null; brandKit?: Kit | null; angles?: Angles | null; activity?: Activity | null; themes?: Themes | null };
 };
 type Face = { family: string; file: string; weight: number } | null;
 type IdentityCard = { nameWhy?: string;
@@ -228,6 +228,47 @@ function AngleCards({ angles, busy, onChoose }: { angles: Angles; busy: boolean;
   );
 }
 
+type Themes = { list: { id: string; name: string; tagline: string; description: string; why: string; recommended: boolean; allowed: boolean; blocked?: string; demo: boolean }[]; recommendedId: string | null; all: boolean; kind: string | null; chosen: string | null };
+
+/**
+ * Étape 6 : un de nos thèmes. Chaque carte montre le site DU CLIENT composé dans ce thème (vignette du Studio), la
+ * raison, la démonstration complète ; le choix est celui du client (bouton), jamais fait à sa place.
+ */
+function ThemeCards({ themes, projectId, busy, onChoose, onAll }: { themes: Themes; projectId: string; busy: boolean; onChoose: (name: string) => void; onAll: () => void }) {
+  const t = useT();
+  return (
+    <div className="@container mt-2 space-y-2" data-syna-themes>
+      <p className="text-xs text-muted">{t("Chaque aperçu montre TON site (ta marque, tes produits) composé dans le thème. Le choix est gratuit et l'ancienne version reste restaurable.", "Each preview shows YOUR site in the theme. Choosing is free.")}</p>
+      <div className="grid grid-cols-1 gap-3 @2xl:grid-cols-3">
+        {themes.list.map((th) => {
+          const chosen = themes.chosen === th.id;
+          return (
+            <article key={th.id} className={cx("overflow-hidden rounded-xl border bg-card text-xs", chosen ? "border-accent ring-2 ring-accent" : "border-line", themes.chosen && !chosen && "opacity-60")} data-theme={th.id}>
+              <div className="relative aspect-[4/3] overflow-hidden bg-paper-2">
+                <img src={`/api/projects/${projectId}/theme/direction-thumb?d=${encodeURIComponent(th.id)}`} alt={t(`Ton site dans le thème ${th.name}`, `Your site in the ${th.name} theme`)} className="h-full w-full object-cover object-top" loading="lazy" />
+                {th.recommended && <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-0.5 text-[10px] font-semibold text-paper">{t("Recommandé", "Recommended")}</span>}
+              </div>
+              <div className="space-y-1 px-3 py-2">
+                <h4 className="text-sm font-bold">{th.name} <span className="font-normal text-muted">· {th.tagline}</span></h4>
+                <p>{th.why}</p>
+                {!!th.description && <p className="text-muted">{th.description}</p>}
+                {!th.allowed && <p className="text-amber-700">{th.blocked ?? t("Non inclus dans ton forfait.", "Not included in your plan.")}</p>}
+              </div>
+              <div className="flex flex-wrap items-center gap-2 border-t border-line px-3 py-2">
+                {th.demo && <a className="underline" href={`/api/theme-demos/${th.id}/`} target="_blank" rel="noreferrer" data-theme-demo={th.id}>{t("Voir la démo complète", "See the full demo")}</a>}
+                {themes.chosen
+                  ? chosen && <p className="font-semibold">✓ {t("Thème choisi", "Theme chosen")}</p>
+                  : th.allowed && <Button size="sm" variant={th.recommended ? "primary" : "secondary"} disabled={busy} onClick={() => onChoose(th.name)} data-theme-pick={th.id}>{t("Choisir ce thème", "Choose this theme")}</Button>}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+      {!themes.chosen && !themes.all && <Button size="sm" variant="ghost" disabled={busy} onClick={onAll} data-themes-all>{t("Voir tous les thèmes", "See all themes")}</Button>}
+    </div>
+  );
+}
+
 type Activity = {
   company: Record<string, string | undefined>; none?: string[]; missing: { key: string; question: string; required: boolean }[];
   angle: { title: string; goal: string; message: string; story: string; cta: string; others: string[] } | null;
@@ -425,6 +466,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
   const lastCalendar = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && String(m.content?.tool ?? "").startsWith("calendar.") && m.content?.ok)?.id, [v?.messages]);
   const lastAngles = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "angles.propose" && m.content?.ok && m.content?.data?.angles)?.id, [v?.messages]);
   const lastActivity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "activity.plan" && m.content?.ok)?.id, [v?.messages]);
+  const lastThemes = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "theme.propose" && m.content?.ok)?.id, [v?.messages]);
   const lastKit = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "brand.kit" && m.content?.ok)?.id, [v?.messages]);
   const lastLogos = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && (m.content?.tool === "logo.propose" || (m.content?.tool === "jobs.wait" && JSON.stringify(m.content?.data ?? "").includes("syna.logos"))) && m.content?.ok)?.id, [v?.messages]);
   const lastIdentity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "identity.propose" && m.content?.ok)?.id, [v?.messages]);
@@ -462,6 +504,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
                 {tm.id === lastLogos && v.journey?.logos && <LogoCards logos={v.journey.logos} brandBg={brandBackground(v.journey.identities)} busy={busy || working} onChoose={(k) => send(t(`Je choisis le logo ${k}.`, `I choose logo ${k}.`))} />}
                 {tm.id === lastActivity && v.journey?.activity && <ActivityCard a={v.journey.activity} busy={busy || working} onValidate={() => send(t("Je valide mon activité.", "I validate my business."))} />}
                 {tm.id === lastAngles && v.journey?.angles && <AngleCards angles={v.journey.angles} busy={busy || working} onChoose={(titles) => send(titles.length > 1 ? t(`Je choisis ces angles : ${titles.map((x, i) => `« ${x} »${i === 0 ? " (principal)" : ""}`).join(", ")}.`, `I choose these angles: ${titles.join(", ")}.`) : t(`Je choisis l'angle « ${titles[0]} ».`, `I choose the angle "${titles[0]}".`))} />}
+                {tm.id === lastThemes && v.journey?.themes && v.projectId && <ThemeCards themes={v.journey.themes} projectId={v.projectId} busy={busy || working} onChoose={(name) => send(t(`Je choisis le thème ${name}.`, `I choose the ${name} theme.`))} onAll={() => send(t("Je veux voir tous les thèmes.", "I want to see all themes."))} />}
                 {tm.id === lastKit && v.journey?.brandKit && <BrandKitCard kit={v.journey.brandKit} darkBg={v.journey.identities?.final?.palette.dark ?? "#16161A"} busy={busy || working} onValidate={() => send(t("Je valide mon image de marque.", "I validate my brand kit."))} />}
                 {tm.id === lastCalendar && v.projectId && <CalendarCard projectId={v.projectId} refreshKey={tm.id} />}
                 {tm.id === lastIdentity && v.journey?.identities && <IdentityCards ids={v.journey.identities} busy={busy || working} onChoose={(k) => send(t(`Je choisis l'identité ${k}.`, `I choose identity ${k}.`))} />}
