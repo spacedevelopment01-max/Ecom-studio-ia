@@ -3,6 +3,7 @@
  * client, stratégie de l'angle choisi, offre, produits créés dans l'onglet Produits, validation du client.
  */
 import { describe, expect, it } from "vitest";
+import { withoutLaterForRequired } from "@/lib/syna-agent/loop";
 
 process.env.STUDIO_SYNA_AGENT = "1";
 
@@ -48,7 +49,7 @@ describe("SINA — étape 5 : l'activité complète", async () => {
     expect(J.currentStep(J.journeyOf(cid))).toBe(5);
     expect(modelFor(5)?.model).toMatch(/haiku/); // tout est gratuit, le fil reste léger
     expect(J.journeyContext(J.journeyOf(cid))).toMatch(/Étape 5 \(activité complète, GRATUITE\)[^]*activity\.plan[^]*UNE par UNE[^]*SES prix, sans en inventer aucun[^]*catalogue\.create/);
-    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/y compris les facultatives \(téléphone, SIRET\), une fois chacune, en proposant « plus tard »/);
+    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/y compris les facultatives \(téléphone, SIRET\), une fois chacune ; « Plus tard » se propose SEULEMENT pour le téléphone et le SIRET, JAMAIS pour le nom/);
     expect(J.journeyContext(J.journeyOf(cid))).toMatch(/poids ou contenance qu'il a cités dans sa fiche de départ/);
     // 1) Plan : tout ce qui manque devient une question.
     const r1 = await call("activity.plan", ctx, {});
@@ -59,7 +60,9 @@ describe("SINA — étape 5 : l'activité complète", async () => {
     expect((await call("activity.validate", ctx, {})).ok).toBe(false); // jamais validé avec des manques
     // 2) Coordonnées avec les mots du client ; une coordonnée obligatoire ne se reporte jamais.
     expect((await call("activity.company", ctx, { later: ["email"] })).ok).toBe(false);
+    expect(getTool("activity.company")!.description).toMatch(/MOT POUR MOT \(rien d'ajouté/);
     const c = await call("activity.company", ctx, { fields: { legalName: "Heure Dorée SAS", email: "bonjour@heuredoree.fr", address: "12 rue des Vergers, 26000 Valence", shipping: "Colissimo, 48 h, 5,90 €, offerte dès 45 €", returns: "Pas de retour une fois le pot ouvert ; 14 jours sinon." }, later: ["phone", "siret"] });
+    expect(c.summary).toMatch(/^Coordonnées enregistrées : nom de l'entreprise, e-mail de contact, adresse, livraison, retours ; plus tard : téléphone, siret\.$/);
     expect(c.ok).toBe(true);
     expect(Act.companyOf(pid)).toMatchObject({ legalName: "Heure Dorée SAS", email: "bonjour@heuredoree.fr" });
     // 3) Produits créés dans l'onglet Produits avec les prix du client.
@@ -99,6 +102,10 @@ describe("SINA — étape 5 : l'activité complète", async () => {
     // Compositions de plusieurs produits d'un bloc : une ligne par produit (essai réel du 7 novembre).
     expect(Act.factItems("Thé vert jasmin : Sencha 85 %, jasmin 15 %. Thé noir aux agrumes : Assam 80 %. Rooibos vanille : rooibos 92 %. Tout est bio.")).toEqual(["Thé vert jasmin : Sencha 85 %, jasmin 15 %.", "Thé noir aux agrumes : Assam 80 %.", "Rooibos vanille : rooibos 92 %. Tout est bio."]);
     expect(Act.factItems("Matière : cuivre")).toEqual(["Matière : cuivre"]);
+    // « Plus tard » jamais proposé pour une coordonnée obligatoire (essai réel du 7 novembre : la livraison).
+
+    expect(withoutLaterForRequired({ text: "Comment livres-tu tes sachets : quel transporteur, quel délai, quel prix de livraison, et proposes-tu la livraison offerte à partir d'un montant ?", choices: ["Plus tard"] }).choices).toEqual([]);
+    expect(withoutLaterForRequired({ text: "Veux-tu afficher un numéro de téléphone sur le site ? Si oui, lequel ?", choices: ["Plus tard"] }).choices).toEqual(["Plus tard"]);
   });
   it("essai réel : « cuites au chaudron en cuivre » ne fait jamais du cuivre la matière du produit vendu", async () => {
     const { factsFromDescription } = await import("@/lib/engine/local");

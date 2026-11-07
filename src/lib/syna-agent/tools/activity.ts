@@ -36,16 +36,18 @@ const planTool: AgentTool<Record<string, never>> = {
 
 const companyTool: AgentTool<{ fields?: Record<string, string | undefined>; later?: string[] }> = {
   name: "activity.company", module: "activité", kind: "write", needsProject: true,
-  description: `Étape 5 : enregistre les coordonnées de l'entreprise données PAR LE CLIENT, avec ses mots (champs : ${COMPANY_FIELDS.map((f) => `${f.key} = ${f.label}`).join(", ")}). later = champs facultatifs qu'il préfère donner plus tard (jamais un champ obligatoire). Rien n'est inventé. Gratuit.`,
+  description: `Étape 5 : enregistre les coordonnées de l'entreprise données PAR LE CLIENT, recopiées MOT POUR MOT (rien d'ajouté : ni précision entre parenthèses, ni statut, ni reformulation ; essai réel : « Camille Martin, EI » enregistré « Camille Martin, EI (micro-entrepreneuse) ») (champs : ${COMPANY_FIELDS.map((f) => `${f.key} = ${f.label}`).join(", ")}). later = champs facultatifs qu'il préfère donner plus tard (jamais un champ obligatoire). Rien n'est inventé. Gratuit.`,
   args: z.object({ fields: z.object(Object.fromEntries(COMPANY_FIELDS.map((f) => [f.key, z.string().min(1).max(600).optional()])) as Record<string, z.ZodOptional<z.ZodString>>).strict().optional(), later: z.array(z.enum(COMPANY_FIELDS.map((f) => f.key) as [string, ...string[]])).max(7).optional() }).strict(),
   run: (ctx, a) => {
     const p = project(ctx);
     const saved = a.fields ? saveCompany(p.id, a.fields as any) : null;
+    // Libellés du client (essai réel du 7 novembre : « legalName, email » affiché tel quel).
+    const label = (k: string) => (COMPANY_FIELDS.find((f) => f.key === k)?.label ?? k).toLocaleLowerCase("fr-FR");
     const postponed = a.later?.length ? companyLater(p.id, a.later as any) : [];
     const refused = (a.later ?? []).filter((k) => !postponed.includes(k as any));
     return {
       ok: !refused.length,
-      summary: L(`Coordonnées enregistrées : ${Object.keys(a.fields ?? {}).join(", ") || "aucune"}${postponed.length ? ` ; plus tard : ${postponed.join(", ")}` : ""}${refused.length ? ` ; impossible de reporter (obligatoire pour le site) : ${refused.join(", ")}` : ""}.`, "Company details saved."), hint: "Rappelle activity.plan pour mettre la carte à jour.",
+      summary: L(`Coordonnées enregistrées : ${Object.keys(a.fields ?? {}).map(label).join(", ") || "aucune"}${postponed.length ? ` ; plus tard : ${postponed.map(label).join(", ")}` : ""}${refused.length ? ` ; impossible de reporter (obligatoire pour le site) : ${refused.map(label).join(", ")}` : ""}.`, "Company details saved."), hint: "Rappelle activity.plan pour mettre la carte à jour.",
       changes: Object.entries(a.fields ?? {}).filter((e): e is [string, string] => typeof e[1] === "string").map(([k, v]) => ({ module: "activité", object: COMPANY_FIELDS.find((f) => f.key === k)!.label, summary: v, after: saved?.[k as keyof typeof saved] ?? null, verified: saved?.[k as keyof typeof saved] === v.trim() })),
     };
   },

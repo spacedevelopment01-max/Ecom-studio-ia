@@ -12,7 +12,7 @@ import { z } from "zod";
 import { HttpError, type User } from "../auth";
 import { one, all, json, run as sql, id as newId } from "../db";
 import { budgetPctText } from "../ai/budget-pct";
-import { activityGaps } from "./activity";
+import { activityGaps, COMPANY_FIELDS } from "./activity";
 import { enqueue, getJob, type JobContext } from "../jobs";
 import { llmJson, type LlmCall, type LlmImage } from "../ai/llm";
 import { withTrace, CostCapReached } from "../ai/trace";
@@ -193,6 +193,7 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
         if (e instanceof CostCapReached) return askBudget(r, null);
         throw e;
       }
+      if (!local && out.question?.choices?.length && currentStep(journeyOf(r.conversation_id)) === 5) out = { ...out, question: withoutLaterForRequired(out.question) };
       if (!local) out = withoutRepeatedQuestion({ ...out, message: fixElision(out.message), ...(out.question ? { question: { ...out.question, text: fixElision(out.question.text) } } : {}) });
       addMessage(r.conversation_id, "assistant", { ...out, step, ...(local ? { local: true } : {}) }, r.id);
       if (!out.actions.length) {
@@ -295,6 +296,17 @@ function overlap(a: string, b: string): number {
   const w = (t: string) => new Set(t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").match(/[a-z]{4,}/g) ?? []);
   const A = w(a), B = w(b);
   return A.size ? [...A].filter((x) => B.has(x)).length / A.size : 0;
+}
+
+/**
+ * Étape 5 : jamais « Plus tard » sur une coordonnée OBLIGATOIRE du site (essai réel du 7 novembre : proposé pour la
+ * livraison). La question est reconnue à ses mots (celle de COMPANY_FIELDS) ; téléphone et SIRET gardent le bouton.
+ */
+export function withoutLaterForRequired<Q extends { text: string; choices?: string[] }>(q: Q): Q {
+  const field = COMPANY_FIELDS.map((f) => ({ f, o: overlap(q.text, f.question) })).sort((a, b) => b.o - a.o)[0];
+  if (!field || field.o < 0.5 || !field.f.required) return q;
+  const choices = (q.choices ?? []).filter((c) => !/^\s*(plus tard|later)\b/i.test(c));
+  return { ...q, choices };
 }
 
 export function withoutRepeatedQuestion(out: StepOutput): StepOutput {
