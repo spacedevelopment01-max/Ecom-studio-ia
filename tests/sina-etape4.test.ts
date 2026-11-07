@@ -133,6 +133,9 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     expect(R.OWNER_ANGLE_FORMAT).toMatch(/title = un titre COURT et clair de 2 à 6 mots/);
     expect(R.OWNER_ANGLE_FORMAT).toMatch(/« Le goût du fruit », « Le savoir-faire du producteur », « L'origine et la saison », « Le plaisir au quotidien », « Le cadeau gourmand »/);
     expect(R.OWNER_ANGLE_FORMAT).toMatch(/jamais comme des questions au vouvoiement/);
+    // Essai réel : « Des clientes saluent déjà… » (avis d'une autre marque) et « étiquette rétro » (détail inventé).
+    expect(R.OWNER_ANGLE_FORMAT).toMatch(/clients d'AUTRES marques[^]*jamais « des clientes saluent déjà »/);
+    expect(R.OWNER_ANGLE_FORMAT).toMatch(/aucun détail du produit qui n'est pas dans les faits confirmés ou les photos \(forme ou style d'étiquette/);
     const a = A.anglesOf({ sources: [], angles: [{ id: "usage", title: "Le goût du fruit", goal: "Donner envie de goûter", reason: "Le client cherche un parfum qu'il aime.", message: "Ferme les yeux. Retrouve le goût de la fraise.", story: "Décris le goût de chaque recette.", show: "Un fruit ouvert, puis une tartine.", organicExample: "« Plutôt lisse ou avec des morceaux ? »", cta: "Découvre les parfums.", proofsToConfirm: ["Parfums disponibles, ingrédients"], sourceIds: [] }] }).list[0];
     expect(a).toMatchObject({ title: "Le goût du fruit", goal: "Donner envie de goûter", why: "Le client cherche un parfum qu'il aime.", story: "Décris le goût de chaque recette.", show: "Un fruit ouvert, puis une tartine.", organicExample: "« Plutôt lisse ou avec des morceaux ? »", cta: "Découvre les parfums." });
     // Ancienne recherche (sans ces champs) : rien d'inventé, on reprend ce qui existe.
