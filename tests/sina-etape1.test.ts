@@ -294,4 +294,27 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     expect(final.why).toBe(""); // le « pourquoi » de B parlait de ses couleurs : plus repris après le mélange
     expect(mixIdentity(good() as any, "B", { name: "A" }).why).toBe(good()[1].why); // nom seulement : gardé
   });
+
+  it("50 typographies du propriétaire (7 novembre) : toutes disponibles, fichiers et licences présents, proposées à Claude", async () => {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const { FONT_FILES, FONT_HANDLES } = await import("@/lib/theme/render");
+    const wanted = ["Inter", "Manrope", "DM Sans", "Plus Jakarta Sans", "Outfit", "Sora", "Space Grotesk", "Urbanist", "Figtree", "Geist", "Montserrat", "Poppins", "Raleway", "Nunito Sans", "Work Sans", "Lato", "Open Sans", "Source Sans 3", "Rubik", "Barlow", "Playfair Display", "Cormorant Garamond", "Bodoni Moda", "DM Serif Display", "Prata", "Libre Baskerville", "Lora", "Merriweather", "Fraunces", "Instrument Serif", "Bebas Neue", "Anton", "Oswald", "Archivo Black", "Unbounded", "Syne", "Righteous", "Abril Fatface", "Alfa Slab One", "Yeseva One", "Caveat", "Dancing Script", "Pacifico", "Sacramento", "Satisfy", "Allura", "IBM Plex Mono", "Space Mono", "JetBrains Mono", "Roboto Mono"];
+    expect(wanted).toHaveLength(50);
+    const families = new Set(Object.values(FONT_FILES).map((f) => f.family));
+    expect(wanted.filter((w) => !families.has(w))).toEqual([]);
+    for (const [key, f] of Object.entries(FONT_FILES)) {
+      for (const file of Object.values(f.files)) expect(fs.existsSync(path.join(process.cwd(), "assets", "fonts", file)), `${key} ${file}`).toBe(true);
+      expect(I.FONT_CHARACTER[key], key).toBeTruthy();
+    }
+    for (const stem of ["Manrope", "Geist", "SourceSans3", "RobotoMono"]) expect(fs.readdirSync(path.join(process.cwd(), "assets", "fonts", "licenses")).some((x) => x.startsWith(`${stem}-`)), stem).toBe(true);
+    expect(FONT_HANDLES).toEqual(expect.arrayContaining(["manrope_n8", "source_sans_3_n4", "bodoni_moda_n6", "dancing_script_n7"]));
+    expect(I.fontFace("source_sans_3_n6")).toEqual({ family: "Source Sans 3", file: "SourceSans3-600.ttf", weight: 600 });
+    expect(I.IDENTITY_SYSTEM).toContain("bodoni_moda (Bodoni Moda, serif très contrastée, mode et luxe");
+    expect(I.IDENTITY_SYSTEM).toMatch(/jamais une manuscrite ni une chasse fixe pour les textes/);
+    expect(I.bodyFontOk("inter_n4")).toBe(true);
+    for (const h of ["dancing_script_n4", "bebas_neue_n4", "roboto_mono_n4"]) expect(I.bodyFontOk(h), h).toBe(false);
+    const bad = good(); bad[0].fonts.body = "pacifico_n4";
+    expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: bad }).identities, J.emptyJourney()).join()).toMatch(/« Pacifico » est une police de titres, manuscrite ou à chasse fixe/);
+  });
 });

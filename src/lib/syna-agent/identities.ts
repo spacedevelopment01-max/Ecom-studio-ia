@@ -28,8 +28,53 @@ export const FONT_CHARACTER: Record<string, string> = {
   work_sans: "sans serif simple", space_grotesk: "grotesque technique", montserrat: "sans serif géométrique large", karla: "grotesque légère",
   libre_baskerville: "serif classique", playfair_display: "serif contrastée", poppins: "sans serif géométrique ronde", space_mono: "chasse fixe",
   oswald: "sans serif condensée",
+  manrope: "sans serif d'interface, géométrique",
+  plus_jakarta_sans: "sans serif d'interface, moderne",
+  outfit: "sans serif géométrique ronde",
+  sora: "sans serif d'interface, technique",
+  urbanist: "sans serif géométrique élancée",
+  figtree: "sans serif d'interface, amicale",
+  geist: "sans serif d'interface, tech",
+  raleway: "sans serif élégante, polyvalente",
+  nunito_sans: "sans serif douce, polyvalente",
+  open_sans: "sans serif neutre, très lisible",
+  source_sans_3: "sans serif lisible, polyvalente",
+  rubik: "sans serif aux angles arrondis",
+  barlow: "sans serif légèrement condensée",
+  cormorant_garamond: "serif élégante, éditoriale",
+  bodoni_moda: "serif très contrastée, mode et luxe",
+  dm_serif_display: "serif d'affichage contrastée (titres)",
+  prata: "serif didone élégante (titres)",
+  merriweather: "serif robuste et lisible",
+  fraunces: "serif « à l'ancienne » chaleureuse",
+  bebas_neue: "capitales condensées d'affiche (grands titres)",
+  archivo_black: "grotesque très grasse (grands titres)",
+  unbounded: "display large et ronde (grands titres)",
+  syne: "display artistique (grands titres)",
+  righteous: "display rétro arrondie (grands titres)",
+  abril_fatface: "didone très grasse (grands titres)",
+  alfa_slab_one: "slab très grasse (grands titres)",
+  yeseva_one: "serif d'affichage féminine (grands titres)",
+  caveat: "manuscrite naturelle (accents, signatures)",
+  dancing_script: "manuscrite liée (accents, signatures)",
+  pacifico: "manuscrite ronde rétro (accents)",
+  sacramento: "calligraphie fine (accents, signatures)",
+  satisfy: "manuscrite brossée (accents)",
+  allura: "calligraphie élégante (accents, signatures)",
+  ibm_plex_mono: "chasse fixe technique",
+  jetbrains_mono: "chasse fixe moderne",
+  roboto_mono: "chasse fixe neutre",
 };
 const fontKey = (handle: string) => handle.replace(/_[ni]\d$/, "");
+/**
+ * Polices de titres seulement (affiche, une seule graisse), manuscrites et à chasse fixe : jamais pour les textes
+ * (document du propriétaire du 7 novembre : « à associer à une police de texte lisible »).
+ */
+export const HEADING_ONLY = new Set(["anton", "bebas_neue", "archivo_black", "righteous", "abril_fatface", "alfa_slab_one", "yeseva_one", "dm_serif_display", "prata", "unbounded", "syne", "oswald", "instrument_serif"]);
+export const bodyFontOk = (handle: string) => {
+  const k = fontKey(handle);
+  return !HEADING_ONLY.has(k) && !["cursive", "monospace"].includes(FONT_FILES[k]?.fallback ?? "");
+};
 export const fontFamily = (handle: string) => FONT_FILES[fontKey(handle)]?.family ?? handle;
 const FONT_LIST = Object.entries(FONT_FILES).map(([k, f]) => `${k} (${f.family}, ${FONT_CHARACTER[k] ?? f.fallback} ; graisses ${Object.keys(f.files).join("/")})`).join("\n");
 
@@ -92,7 +137,7 @@ Chaque identité contient :
 - ground : le fond de page de l'identité. Les trois identités ont trois fonds DIFFÉRENTS : une « blanc » (fond blanc pur ou presque, ex. #FFFFFF), une « degrade » (fond en dégradé de deux couleurs franches et actuelles, donné dans gradient {from, to}, ex. pêche lumineux vers lilas, jamais beige ni crème), une « sombre » (fond très foncé, presque noir ou nuit profonde, texte clair dessus).
 - palette : 5 couleurs en hexadécimal, avec les rôles des exemples du propriétaire. light = le clair (le fond si ground est blanc ; le texte si ground est sombre) ; dark = le texte foncé TEINTÉ (encre, aubergine, graphite vert…, jamais un noir pur ; c'est le fond si ground est sombre) ; primary = le BOUTON, couleur de marque et d'action ; secondary = la SURFACE (cartes, bandeaux : version très claire et douce, ou foncée sur fond sombre) ; accent = les détails graphiques. Les titres prennent la couleur du texte. Contraste d'au moins 4,5:1 pour texte/fond (sur un dégradé : sur ses deux couleurs), texte/surface et texte du bouton/bouton. paletteFamily = le nom d'ambiance en 2 à 4 mots (ex. « Verger électrique », « Cacao et lavande »).
 - Couleurs de 2026 : accordées entre elles et actuelles, dans l'esprit des palettes du propriétaire : parfois franches (dégradés lumineux, boutons vifs), parfois fines et sourdes, jamais ternes au hasard, boueuses ou criardes. D'une identité à l'autre, la couleur du bouton appartient à des familles de teintes NETTEMENT différentes (jamais trois orangés, jamais trois verts).
-- fonts : deux poignées « clé_nN » de la liste autorisée (N = graisse / 100 disponible pour cette police) ; heading = titres, body = textes (graisse 4). Trois polices de titres différentes d'une identité à l'autre. fontStyle nomme la famille de polices.
+- fonts : deux poignées « clé_nN » de la liste autorisée (titres expressifs et manuscrites : seulement pour les titres, toujours associés à une police de texte lisible ; jamais une manuscrite ni une chasse fixe pour les textes) (N = graisse / 100 disponible pour cette police) ; heading = titres, body = textes (graisse 4). Trois polices de titres différentes d'une identité à l'autre. fontStyle nomme la famille de polices.
 - tone : 3 adjectifs du ton de voix et 3 choses à ne jamais dire ou faire.
 - logoStyle et logoIdea : l'idée du logo, simple et astucieuse, où le concept du projet et le nom se rejoignent dans le dessin, poussée plus loin qu'une simple illustration du produit (ex. un éclair qui forme le V d'un électricien, une goutte qui contient une gourde), décrite en une ou deux phrases ; aucun WordArt, aucun dégradé gratuit.
 - why : en une ou deux phrases, pourquoi cette identité convient à CE client (cible, image voulue, différence).
@@ -231,6 +276,7 @@ export function identityIssues(list: Identity[], j: Journey): string[] {
     if (!keptName && words(x.name.replace(/&/g, "")) > 3) issues.push(`${tag} : nom trop long (3 mots au plus).`);
     if (!FONT_HANDLES.includes(x.fonts.heading)) issues.push(`${tag} : police de titres « ${x.fonts.heading} » hors liste (clé_nN d'une graisse disponible).`);
     if (!FONT_HANDLES.includes(x.fonts.body)) issues.push(`${tag} : police de textes « ${x.fonts.body} » hors liste.`);
+    else if (!bodyFontOk(x.fonts.body)) issues.push(`${tag} : « ${fontFamily(x.fonts.body)} » est une police de titres, manuscrite ou à chasse fixe : elle ne sert jamais pour les textes (choisis une police de texte lisible).`);
     for (const p of paletteIssues(x.palette, x.ground, x.gradient)) issues.push(`${tag} — ${p}`);
     const refused = j.start.image?.status === "answered" ? refusedColors(j.start.image.value) : [];
     for (const c of refused) for (const role of ["primary", "secondary", "accent"] as const) {
