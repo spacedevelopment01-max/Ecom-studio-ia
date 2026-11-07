@@ -192,7 +192,7 @@ function identityStepContext(j: Journey): string[] {
     "Étape 1 (3 identités de marque) : rien n'est encore proposé. Si le client est prêt (il dit oui, on continue, vas-y…), appelle identity.propose (sans guidance) en annonçant que la création prend environ une minute. S'il pose une question, réponds-y d'abord. N'invente aucune identité toi-même : seul identity.propose les crée.",
   ];
   const out = [
-    `Étape 1 — proposition n° ${id.round} (les cartes complètes sont affichées au client dans le fil) : ${id.list.map((x) => `${x.key} « ${x.name} » (slogan « ${x.slogan} », territoire ${x.territory}, logo ${x.logoStyle})`).join(" ; ")}.`,
+    `Étape 1 — proposition n° ${id.round} (les cartes complètes sont affichées au client dans le fil) : ${id.list.map((x) => `${x.key} « ${x.name} » (slogan « ${x.slogan} », territoire ${x.territory}, fond ${x.ground}, logo ${x.logoStyle})`).join(" ; ")}.`,
     "Présente-les en 3 lignes courtes au plus (la différence de chacune), sans recopier les cartes, puis demande laquelle il préfère. Il peut : en choisir une ; MÉLANGER (ex. le nom de A avec les couleurs de C → identity.choose key « A », mix {palette: « C »}) ; retoucher le nom ou le slogan avec ses mots (identity.choose name / slogan) ; ou demander une nouvelle proposition (identity.propose avec guidance = ses mots, et redo = les identités à refaire s'il en garde certaines). Ne choisis jamais à sa place ; en cas de doute sur son choix, pose UNE question.",
   ];
   if (id.issues.length) out.push(`Points que le contrôle du Studio n'a pas pu valider (dis-les honnêtement au client, en mots simples) : ${id.issues.join(" ; ")}.`);

@@ -96,6 +96,8 @@ export type Brand = {
    * du client (site existant, logo fourni), gardées dans `clientPalette` et jamais effacées. Absent : ancienne marque.
    */
   paletteMode?: "direction" | "client";
+  /** Fond de page de l'identité choisie (SINA, étape 1) : blanc, crème ou sombre (texte clair sur fond foncé). */
+  ground?: "blanc" | "creme" | "sombre";
   clientPalette?: BrandPalette;
   fonts: { heading: string; body: string };
   logo: {

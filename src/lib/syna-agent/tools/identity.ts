@@ -54,7 +54,8 @@ async function generate(ctx: ToolContext, j: Journey, opts: { guidance?: string;
     prompt: identityPrompt(j, { guidance: opts.guidance, feedback, previous: feedback?.length || opts.redo?.length ? opts.previous : undefined, redo: opts.redo }),
     images: (() => { const im = keptLogoImage(ctx, j); return im.length ? im : undefined; })(),
     prepare: prepareIdentities,
-    maxTokens: 6000, maxOutputTokens: 12000,
+    // Réflexion comprise : une limite trop basse coupait la réponse et faisait payer un second appel (essai réel).
+    maxTokens: 16000, maxOutputTokens: 20000,
     usageKey: `syna-identities:${ctx.runId}:${attempt}`,
     routing: { difficulty: "complex" as const, prefer: IDENTITY_MODEL },
   };
@@ -66,7 +67,7 @@ async function generate(ctx: ToolContext, j: Journey, opts: { guidance?: string;
 /** Vue courte d'une identité (lue par SINA et montrée dans le fil). */
 export const identityView = (x: Identity) => ({
   cle: x.key, nom: x.name, slogan: x.slogan, promesse: x.promise, territoire: x.territory,
-  couleurs: x.palette, polices: { titres: fontFamily(x.fonts.heading), textes: fontFamily(x.fonts.body) },
+  fond: x.ground, couleurs: x.palette, polices: { titres: fontFamily(x.fonts.heading), textes: fontFamily(x.fonts.body) },
   ton: x.tone.adjectives.join(", "), logo: `${LOGO_STYLE_LABEL[x.logoStyle]} — ${x.logoIdea}`, pourquoi: x.why,
 });
 
@@ -128,7 +129,7 @@ export function mixIdentity(list: Identity[], key: Key, mix: Partial<Record<Part
     name: edits.name?.trim() || pick(mix.name).name,
     nameWhy: edits.name ? "" : pick(mix.name).nameWhy,
     slogan: edits.slogan?.trim() || pick(mix.slogan).slogan,
-    palette: pick(mix.palette).palette, paletteFamily: pick(mix.palette).paletteFamily,
+    palette: pick(mix.palette).palette, paletteFamily: pick(mix.palette).paletteFamily, ground: pick(mix.palette).ground,
     fonts: pick(mix.fonts).fonts, fontStyle: pick(mix.fonts).fontStyle,
     tone: pick(mix.tone).tone,
     logoStyle: pick(mix.logo).logoStyle, logoIdea: pick(mix.logo).logoIdea,
@@ -151,6 +152,7 @@ export function brandFromIdentity(p: ReturnType<typeof loadProject>, x: Identity
     personality: x.tone.adjectives,
     tone: { voice: x.tone.adjectives.join(", "), do: base.tone?.do ?? [], dont: x.tone.avoid },
     palette: x.palette,
+    ground: x.ground,
     paletteMode: j.keep.includes("couleurs") ? "client" : "direction",
     ...(j.keep.includes("couleurs") ? { clientPalette: x.palette } : {}),
     fonts: x.fonts,

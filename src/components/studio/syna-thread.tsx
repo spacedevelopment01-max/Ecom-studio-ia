@@ -20,7 +20,7 @@ type View = {
 };
 type Face = { family: string; file: string; weight: number } | null;
 type IdentityCard = {
-  key: "A" | "B" | "C"; name: string; nameStyle: string; slogan: string; promise: string; territory: string;
+  key: "A" | "B" | "C"; name: string; nameStyle: string; slogan: string; promise: string; territory: string; ground: "blanc" | "creme" | "sombre";
   palette: { dark: string; primary: string; secondary: string; accent: string; light: string }; paletteFamily: string;
   fontStyle: string; tone: { adjectives: string[]; avoid: string[] }; logoStyleLabel: string; logoIdea: string; why: string;
   faces: { heading: Face; body: Face };
@@ -42,8 +42,8 @@ function IdentityCards({ ids, busy, onChoose }: { ids: Identities; busy: boolean
           const chosen = ids.chosen?.key === x.key;
           return (
             <article key={x.key} className={cx("overflow-hidden rounded-xl border", chosen ? "border-ink ring-2 ring-ink" : "border-line")} data-identity={x.key}>
-              <div className="px-4 pb-4 pt-3" style={{ background: x.palette.light, color: x.palette.dark, fontFamily: fam(x.faces.body, "sans-serif") }}>
-                <p className="text-[11px] uppercase tracking-wider opacity-70">{t("Identité", "Identity")} {x.key} · {x.territory}</p>
+              <div className="px-4 pb-4 pt-3" style={{ background: x.ground === "sombre" ? x.palette.dark : x.palette.light, color: x.ground === "sombre" ? x.palette.light : x.palette.dark, fontFamily: fam(x.faces.body, "sans-serif") }}>
+                <p className="text-[11px] uppercase tracking-wider opacity-70">{t("Identité", "Identity")} {x.key} · {t({ blanc: "fond blanc", creme: "fond crème", sombre: "fond sombre" }[x.ground] ?? "", { blanc: "white background", creme: "cream background", sombre: "dark background" }[x.ground] ?? "")} · {x.territory}</p>
                 <h3 className="mt-2 text-3xl leading-tight" style={{ color: x.palette.primary, fontFamily: fam(x.faces.heading, "serif"), fontWeight: x.faces.heading?.weight ?? 600 }}>{x.name}</h3>
                 <p className="mt-1 text-base">{x.slogan}</p>
                 <p className="mt-3 text-sm opacity-90">{x.promise}</p>
