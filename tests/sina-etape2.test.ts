@@ -240,6 +240,19 @@ describe("SINA — étape 2 : 3 logos", async () => {
     expect(coverLine("Épicerie fine", d, "fr-FR")).toBe("Épicerie fine · novembre 2026");
   });
 
+  it("favicon d'un logo trop détaillé : l'initiale de la marque, dans sa couleur et lisible", async () => {
+    const sharp = (await import("sharp")).default;
+    const K = await import("@/lib/syna-agent/brand-kit");
+    const png = K.initialFavicon("Heure Dorée", { primary: "#24508C", light: "#FFFFFF", dark: "#1F2A3A" }, "Cormorant", 32);
+    const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    expect([info.width, info.height]).toEqual([32, 32]);
+    const at = (x: number, y: number) => Array.from(data.subarray((y * 32 + x) * 4, (y * 32 + x) * 4 + 3));
+    expect(at(4, 16)).toEqual([0x24, 0x50, 0x8c]); // fond : la couleur de marque
+    let white = 0;
+    for (let i = 0; i < data.length; i += 4) if (data[i] > 200 && data[i + 1] > 200 && data[i + 2] > 200) white++;
+    expect(white).toBeGreaterThan(40); // la lettre, dans le neutre le plus lisible
+  });
+
   it("favicon et avatar : le symbole entier, centré, sans rien couper", async () => {
     const sharp = (await import("sharp")).default;
     const K = await import("@/lib/syna-agent/brand-kit");

@@ -118,4 +118,42 @@ describe("File des tâches : appliquer le logo choisi passe avant les longues t�
     expect((await px(dark, 113, 45))[3]).toBeGreaterThan(0); // liseré clair juste autour d'elle
     expect((await px(dark, 200, 120)).slice(0, 3)).toEqual([0xc2, 0x65, 0x2b]); // fruit : couleur gardée
   });
+  it("logo illustré (essai réel du 7 novembre) : zone du nom retrouvée dans l'encre, ornements sous le nom écartés du symbole", async () => {
+    // Illustration multicolore en haut, nom bleu nuit en bas (deux lignes de lettres), petits rayons dorés sous le nom.
+    const letters = Array.from({ length: 6 }, (_, i) => `<rect x="${50 + i * 52}" y="270" width="36" height="50" fill="#1A3050"/>`).join("");
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">
+      <circle cx="200" cy="140" r="100" fill="#E8A040"/><circle cx="160" cy="120" r="30" fill="#5A2A6A"/><circle cx="240" cy="150" r="30" fill="#3A7A3A"/>
+      ${letters}<rect x="190" y="340" width="6" height="25" fill="#E0B050"/><rect x="210" y="340" width="6" height="25" fill="#E0B050"/></svg>`;
+    const src = await sharp(Buffer.from(svg)).png().toBuffer();
+    const { nameBoxFromInk, symbolByShapes } = await import("@/lib/logo-v2/identity");
+    // La relecture situait le nom trop haut : la zone est recalée sur l'encre bleu nuit.
+    const box = (await nameBoxFromInk(src, { x: 0.1, y: 0.55, w: 0.8, h: 0.1 }))!;
+    expect(box.y).toBeGreaterThan(0.65);
+    expect(box.y).toBeLessThan(0.7);
+    expect(box.y + box.h).toBeGreaterThan(0.79);
+    // Loin de la zone lue : jamais une autre partie foncée du dessin.
+    expect(await nameBoxFromInk(src, { x: 0.1, y: 0.05, w: 0.8, h: 0.1 })).toEqual({ x: 0.1, y: 0.05, w: 0.8, h: 0.1 });
+    const sym = (await symbolByShapes(src, box))!;
+    const { data } = await sharp(sym).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    let navy = 0;
+    for (let i = 0; i < data.length; i += 4) if (data[i + 3] > 200 && data[i] < 40 && data[i + 2] > 60) navy++;
+    expect(navy).toBe(0); // aucune lettre
+    // Ni les rayons sous le nom : le symbole est le disque seul (aussi haut que large), pas disque + rayons (1,6 fois).
+    const t = await sharp(await sharp(sym).trim({ threshold: 5 }).png().toBuffer()).metadata();
+    expect(t.height! / t.width!).toBeLessThan(1.1);
+    const fond = await onDarkVersion(src, box);
+    expect((await px(fond, 60, 290)).slice(0, 3)).toEqual([255, 255, 255]); // nom lisible sur fond sombre
+  });
+
+  it("illustration en nombreuses couleurs : gardée en couleurs sur la planche (jamais une tache blanche)", async () => {
+    const { isDetailedSolidMark, colourCount } = await import("@/lib/media/identity-board");
+    const cols = ["#E8A040", "#5A2A6A", "#3A7A3A", "#C03020", "#2050A0", "#F0D060", "#806040", "#A0C0E0", "#E07090", "#40A0A0", "#904010", "#D0D0A0"];
+    const blobs = cols.map((c, i) => `<circle cx="${60 + (i % 4) * 90}" cy="${70 + Math.floor(i / 4) * 110}" r="42" fill="${c}"/>`).join("");
+    const ill = await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="360">${blobs}</svg>`)).png().toBuffer();
+    const { data } = await sharp(ill).ensureAlpha().resize({ width: 200, height: 200, fit: "inside" }).raw().toBuffer({ resolveWithObject: true });
+    expect(colourCount(data)).toBeGreaterThanOrEqual(10);
+    expect(await isDetailedSolidMark(ill)).toBe(true);
+    const simple = await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><path d="M20 180 L100 20 L180 180" stroke="#1F2A3A" stroke-width="14" fill="none"/></svg>`)).png().toBuffer();
+    expect(await isDetailedSolidMark(simple)).toBe(false); // symbole au trait : toujours recolorable
+  });
 });

@@ -22,7 +22,7 @@ import { canvasFamily } from "../media/fonts";
 import { brandBoard } from "./brand-board";
 import { ARTWORK_NEVER, faithfulSvg, STYLE_LABEL, correctArtworkText, onDarkVersion, oneColourVersion } from "./artwork";
 import { brandDiscovery } from "./discovery";
-import { artworkInks, artworkSymbol, paletteFromInks, squareMark, symbolFavicon } from "./identity";
+import { artworkInks, artworkSymbol, nameBoxFromInk, paletteFromInks, squareMark, symbolFavicon } from "./identity";
 import { defaultStyle } from "./territories";
 import { json } from "../db";
 import { loadProject, saveBrand } from "../projects";
@@ -92,7 +92,9 @@ async function applyArtwork(ctx: JobContext | null, projectId: string, assetId: 
   if (handle && !(cur.validated ?? []).includes("fonts")) storeBrand({ ...cur, fonts: { ...cur.fonts, heading: handle } });
   const base = { projectId, userId: p.userId, folderKey: "brand.logos", origin: "generated" as const, meta: { engine: "logo-v2", artwork: true, territory: t.id, proposal: assetId } };
   const main = await saveAsset({ ...base, data: png, name: C("logo-principal.png", "logo-main.png"), mime: "image/png", role: "logo", sourceAssetId: assetId, status: "approved" });
-  const lightPng = await onDarkVersion(png, meta.artwork?.textBox ?? null);
+  // Zone du nom : celle de la relecture, recalée sur l'encre du nom dans le dessin (la relecture peut se tromper).
+  const nameBox = await nameBoxFromInk(png, meta.artwork?.textBox ?? null);
+  const lightPng = await onDarkVersion(png, nameBox);
   const light = await saveAsset({ ...base, data: lightPng, name: C("logo-fond-sombre.png", "logo-dark-background.png"), mime: "image/png", role: "logo-light", sourceAssetId: main.id });
   const monoPng = await oneColourVersion(png, "#111111");
   await saveAsset({ ...base, data: monoPng, name: C("logo-noir.png", "logo-black.png"), mime: "image/png", role: "logo-mono", sourceAssetId: main.id });
@@ -105,7 +107,7 @@ async function applyArtwork(ctx: JobContext | null, projectId: string, assetId: 
   const symbol =
     t.markType === "emblem" || t.style === "emblem"
       ? await squareMark(png)
-      : ((await artworkSymbol(png, meta.artwork?.textBox ?? null)) ?? (t.markType === "wordmark" || t.markType === "lettermark" ? null : await squareMark(png)));
+      : ((await artworkSymbol(png, nameBox)) ?? (t.markType === "wordmark" || t.markType === "lettermark" ? null : await squareMark(png)));
   let markPng: Buffer;
   let mark;
   if (symbol) {

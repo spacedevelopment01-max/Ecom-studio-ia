@@ -7,6 +7,10 @@
  * refait la planche ou la charte si elles manquent, et dit honnêtement ce qui n'a pas pu être fait.
  */
 import sharp from "sharp";
+import { createCanvas } from "@napi-rs/canvas";
+import { contrast } from "../color";
+import { canvasFamily, font } from "../media/fonts";
+import { isDetailedSolidMark } from "../media/identity-board";
 import { all } from "../db";
 import { L } from "../i18n-server";
 import { assetData, getAsset, saveAsset, type Asset } from "../library";
@@ -50,6 +54,29 @@ export async function avatarPng(mark: Buffer, background: string, size = 1080): 
   return sharp({ create: { width: size, height: size, channels: 4, background } }).composite([{ input: pic, gravity: "center" }]).png().toBuffer();
 }
 
+/**
+ * Favicon d'un logo trop détaillé pour 32 px (illustration en de nombreuses couleurs) : l'INITIALE de la marque, dans
+ * sa police de titres, sur sa couleur de marque (carré arrondi), le texte dans la plus lisible de ses deux neutres.
+ */
+export function initialFavicon(name: string, palette: { primary: string; light: string; dark: string }, headingFamily: string, size: number): Buffer {
+  const letter = (name.match(/\p{L}/u)?.[0] ?? "•").toLocaleUpperCase("fr-FR");
+  const c = createCanvas(size, size);
+  const ctx = c.getContext("2d");
+  const r = size * 0.22;
+  ctx.fillStyle = palette.primary;
+  ctx.beginPath();
+  ctx.roundRect(0, 0, size, size, r);
+  ctx.fill();
+  ctx.fillStyle = contrast(palette.light, palette.primary) >= contrast(palette.dark, palette.primary) ? palette.light : palette.dark;
+  ctx.font = font(headingFamily, 700, Math.round(size * 0.74));
+  ctx.textAlign = "center";
+  ctx.textBaseline = "alphabetic";
+  const m = ctx.measureText(letter);
+  const dy = (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2;
+  ctx.fillText(letter, size / 2, size / 2 + dy);
+  return c.toBuffer("image/png");
+}
+
 /** Construit (ou complète) l'image de marque du logo choisi. Gratuit, sans IA. */
 export async function buildBrandKit(projectId: string): Promise<BrandKit> {
   const p = loadProject(projectId);
@@ -62,7 +89,12 @@ export async function buildBrandKit(projectId: string): Promise<BrandKit> {
   const markData = markAsset ? assetData(markAsset) : assetData(main);
   if (!markAsset) notes.push(L("Pas de symbole séparé : le favicon et l'avatar reprennent le logo entier.", "No separate symbol: favicon and avatar use the whole logo."));
   const save = (role: string, name: string, data: Buffer) => saveAsset({ projectId, userId: p.userId, data, name, mime: "image/png", role, folderKey: "brand.logos", origin: "generated", sourceAssetId: main.id, meta: { engine: "syna-brand-kit" } });
-  if (!derived("favicon-32")) await save("favicon-32", "favicon-32.png", await faviconPng(markData, 32));
+  const detailed = await isDetailedSolidMark(markData).catch(() => false);
+  if (detailed) {
+    notes.push(L("Favicon 32 px : l'illustration est trop détaillée pour cette taille ; il reprend l'initiale de la marque, dans sa police et ses couleurs.", "32 px favicon: the illustration is too detailed; it uses the brand initial."));
+    notes.push(L("Versions une couleur (noir, blanc) : une illustration aussi détaillée y perd ses détails ; à garder pour les usages où une seule couleur est imposée (tampon, gravure).", "One-colour versions lose the illustration's details."));
+  }
+  if (!derived("favicon-32")) await save("favicon-32", "favicon-32.png", detailed ? initialFavicon(b.name, b.palette, canvasFamily(b.fonts.heading, "Inter"), 32) : await faviconPng(markData, 32));
   if (!derived("favicon-512")) await save("favicon-512", "icone-512.png", await faviconPng(markData, 512));
   if (!derived("social-avatar")) await save("social-avatar", "avatar-reseaux.png", await avatarPng(markData, b.palette.light && b.palette.light !== "#000000" ? b.palette.light : "#FFFFFF"));
   if (!derived("logo-svg")) notes.push(L("Logo vectoriel (SVG) impossible : le dessin a des dégradés, des textures ou trop de couleurs pour être retracé fidèlement. Le logo est livré en PNG haute définition.", "No faithful SVG: the drawing has gradients or textures; the logo is delivered as high-resolution PNG."));

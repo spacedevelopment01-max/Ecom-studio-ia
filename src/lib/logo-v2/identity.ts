@@ -169,11 +169,50 @@ export async function artworkSymbol(png: Buffer, box?: TextBox | null): Promise<
 }
 
 /**
+ * Zone du NOM retrouvée dans le dessin lui-même (essai réel du 7 novembre : la relecture situait le nom 15 % trop
+ * haut sur un logo illustré). Le nom est écrit d'une seule couleur foncée : on prend la couleur foncée la plus
+ * présente, puis la bande de lignes où elle se concentre (deux lignes de nom comprises), et son rectangle.
+ * Renvoie la zone de la relecture (hint) si rien de net n'est trouvé.
+ */
+export async function nameBoxFromInk(png: Buffer, hint: TextBox | null): Promise<TextBox | null> {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const W = info.width, H = info.height;
+  const counts = new Map<number, number>();
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] < 200) continue;
+    if ((0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255 >= 0.35) continue;
+    const k = ((data[i] >> 4) << 8) | ((data[i + 1] >> 4) << 4) | (data[i + 2] >> 4);
+    counts.set(k, (counts.get(k) ?? 0) + 1);
+  }
+  const top = [...counts].sort((a, b) => b[1] - a[1])[0];
+  if (!top) return hint;
+  const [r, g, b] = [top[0] >> 8, (top[0] >> 4) & 15, top[0] & 15];
+  const match = (i: number) => data[i + 3] >= 200 && Math.abs((data[i] >> 4) - r) <= 1 && Math.abs((data[i + 1] >> 4) - g) <= 1 && Math.abs((data[i + 2] >> 4) - b) <= 1;
+  const rows = new Array<number>(H).fill(0);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (match((y * W + x) * 4)) rows[y]++;
+  const peak = rows.indexOf(Math.max(...rows));
+  if (rows[peak] < W * 0.05) return hint;
+  const strong = (y: number) => rows[y] >= rows[peak] * 0.15;
+  const gap = Math.round(H * 0.04);
+  let y0 = peak, y1 = peak;
+  for (let y = peak - 1, miss = 0; y >= 0 && miss <= gap; y--) { if (strong(y)) { y0 = y; miss = 0; } else miss++; }
+  for (let y = peak + 1, miss = 0; y < H && miss <= gap; y++) { if (strong(y)) { y1 = y; miss = 0; } else miss++; }
+  let x0 = W, x1 = 0;
+  for (let y = y0; y <= y1; y++) for (let x = 0; x < W; x++) if (match((y * W + x) * 4)) { if (x < x0) x0 = x; if (x > x1) x1 = x; }
+  const box = { x: x0 / W, y: y0 / H, w: (x1 - x0 + 1) / W, h: (y1 - y0 + 1) / H };
+  // Une vraie ligne de nom : assez large, pas toute l'image.
+  if (box.w < 0.3 || box.h < 0.04 || box.h > 0.6) return hint;
+  // Garde-fou : loin de l'endroit où la relecture a lu le nom, c'est une autre partie foncée du dessin.
+  if (hint && Math.abs(box.y + box.h / 2 - (hint.y + hint.h / 2)) > 0.25) return hint;
+  return box;
+}
+
+/**
  * Formes séparées d'un logo (composantes d'encre) et celles qui sont des LETTRES du nom : presque entières dans la
  * zone du nom lue par la relecture, sans en dépasser le haut de plus d'un trait (boucle, accent). Une forme du dessin
  * qui descend dans la zone (vague, ombre) commence nettement plus haut : elle reste au dessin.
  */
-export function nameShapes(data: Buffer, W: number, H: number, box: TextBox): { label: Int32Array; isName: boolean[]; sizes: number[] } {
+export function nameShapes(data: Buffer, W: number, H: number, box: TextBox): { label: Int32Array; isName: boolean[]; sizes: number[]; tops: number[] } {
   const N = W * H;
   const label = new Int32Array(N).fill(-1);
   // La zone du nom lue par la relecture est approximative (essai réel : 12 % trop étroite) : marge en largeur.
@@ -181,6 +220,7 @@ export function nameShapes(data: Buffer, W: number, H: number, box: TextBox): { 
   const stack = new Int32Array(N);
   const isName: boolean[] = [];
   const sizes: number[] = [];
+  const tops: number[] = [];
   for (let start = 0; start < N; start++) {
     if (label[start] !== -1 || data[start * 4 + 3] < 128) continue;
     const id = isName.length;
@@ -198,8 +238,9 @@ export function nameShapes(data: Buffer, W: number, H: number, box: TextBox): { 
     }
     isName.push(inside / total >= 0.4 && top >= by0 - H * 0.04);
     sizes.push(total);
+    tops.push(top);
   }
-  return { label, isName, sizes };
+  return { label, isName, sizes, tops };
 }
 
 /**
@@ -209,8 +250,10 @@ export function nameShapes(data: Buffer, W: number, H: number, box: TextBox): { 
 export async function symbolByShapes(png: Buffer, box: TextBox): Promise<Buffer | null> {
   const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   const W = info.width, H = info.height, N = W * H;
-  const { label, isName, sizes } = nameShapes(data, W, H, box);
-  const keep = isName.map((x) => !x);
+  const { label, isName, sizes, tops } = nameShapes(data, W, H, box);
+  // Ornements SOUS le nom (rayons, filet, petit soleil) : ils accompagnent le nom, pas le symbole (essai réel).
+  const below = (box.y + box.h) * H - H * 0.02;
+  const keep = isName.map((x, k) => !x && tops[k] < below);
   let ink = 0, kept = 0, dropped = 0;
   sizes.forEach((n, k) => { ink += n; if (keep[k]) kept += n; else dropped += n; });
   if (!kept || !dropped || kept < ink * 0.15) return null;

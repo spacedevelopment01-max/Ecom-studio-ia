@@ -128,8 +128,23 @@ export async function isDetailedSolidMark(buf: Buffer): Promise<boolean> {
   }
   const coverage = opaque / ((maxX - minX + 1) * (maxY - minY + 1));
   const sd = Math.sqrt(Math.max(0, sum2 / opaque - (sum / opaque) ** 2));
-  return coverage > 0.55 && sd > 28;
+  // Illustration en couleurs (essai réel du 7 novembre : fruits, bassine et paysage devenus une tache blanche sur la
+  // planche) : beaucoup de teintes différentes, même si son contour n'est pas plein.
+  return (coverage > 0.55 && sd > 28) || (sd > 28 && colourCount(data) >= 10);
 }
+/** Nombre de teintes réellement présentes (au moins 1 % des pixels visibles chacune, couleurs regroupées). */
+export function colourCount(data: Buffer | Uint8Array): number {
+  const counts = new Map<number, number>();
+  let n = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] <= 128) continue;
+    n++;
+    const k = ((data[i] >> 5) << 6) | ((data[i + 1] >> 5) << 3) | (data[i + 2] >> 5);
+    counts.set(k, (counts.get(k) ?? 0) + 1);
+  }
+  return [...counts.values()].filter((c) => c >= n * 0.01).length;
+}
+
 /** Symboles à garder dans leurs couleurs (voir isDetailedSolidMark). */
 const KEEP_COLORS = new WeakSet<object>();
 
