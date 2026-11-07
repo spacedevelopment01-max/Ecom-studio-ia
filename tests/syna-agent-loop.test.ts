@@ -205,10 +205,15 @@ describe("SINA agent — un fil, des outils natifs, des changements vérifiés",
     expect(waiting.status).toBe("waiting_jobs");
     const [render] = JSON.parse(waiting.waiting_jobs);
     one("UPDATE jobs SET status='failed', error='rendu impossible (simulé)' WHERE id=? RETURNING 1", render);
+    // La tâche avait déjà dépensé avant d'échouer (essais réels du 7 novembre : 0,29 € puis 0,95 € dits « non débités »).
+    one("INSERT INTO ai_calls(id,created_at,user_id,project_id,job_id,task,provider,requested_model,unit,cost,status) VALUES(?,?,?,?,?,?,?,?,?,?,?) RETURNING 1", `cout-${render}`, Date.now(), s.user.id, s.p.id, render, "strategy", "anthropic", "test", "request", 290_000, "ok");
     await fr(() => runAgent(r.id, getRun(r.id)!.job_id!, { reason }));
     expect(getRun(r.id)!.status).toBe("done");
     expect(seen).toContain("jobs.wait");
     expect(seen).toContain("ÉCHEC");
+    const waitMsg = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND role='tool'", s.cid).map((m) => JSON.parse(m.content_json)).find((m) => m.tool === "jobs.wait")!;
+    expect(waitMsg.summary).toMatch(/Coût réellement dépensé par la tâche en échec : ≈.\d+(,\d)?.% de votre budget IA — dis-le au client avec ce chiffre ; ne dis jamais que rien n'a été débité/);
+    expect(waitMsg.data[0].coutReelMicro).toBe(290_000);
   });
 
   it("un refus du moteur natif pendant le devis est lu par SINA, l'exécution continue", async () => {

@@ -11,6 +11,7 @@
 import { z } from "zod";
 import { HttpError, type User } from "../auth";
 import { one, all, json, run as sql, id as newId } from "../db";
+import { budgetPctText } from "../ai/budget-pct";
 import { enqueue, getJob, type JobContext } from "../jobs";
 import { llmJson, type LlmCall, type LlmImage } from "../ai/llm";
 import { withTrace, CostCapReached } from "../ai/trace";
@@ -150,8 +151,11 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
     const waited = json<string[]>(r.waiting_jobs, []);
     if (waited.length && !(await waitForJobs(waited))) { schedule(r, waited, 10_000); return { runId, waiting: waited }; }
     if (waited.length) {
-      const results = waited.map((jid) => { const j = getJob(jid); return { job: jid, type: j?.type, status: j?.status, message: j?.message, result: clip(j?.result ? json(j.result, j.result) : null, 1500), error: j?.error ? clip(j.error, 400) : undefined }; });
-      addMessage(r.conversation_id, "tool", { key: `jobs:${r.step}`, tool: "jobs.wait", ok: results.every((x) => x.status === "done"), summary: L("Créations terminées : SINA les relit avant de conclure.", "Native creations finished: read them back before concluding."), data: results }, r.id);
+      // Coût RÉEL de chaque tâche (appels enregistrés), même en échec : SINA ne dit jamais « rien n'a été débité » sans ce
+      // chiffre (essais réels du 7 novembre : deux recherches échouées avaient coûté 0,29 € et 0,95 €).
+      const results = waited.map((jid) => { const j = getJob(jid); const spent = one<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE job_id=?", jid)?.c ?? 0; return { job: jid, type: j?.type, status: j?.status, message: j?.message, result: clip(j?.result ? json(j.result, j.result) : null, 1500), error: j?.error ? clip(j.error, 400) : undefined, coutReel: j?.user_id ? budgetPctText(j.user_id, spent, j.project_id) : null, coutReelMicro: spent }; });
+      const failedSpent = results.filter((x) => x.status !== "done" && x.coutReelMicro > 0);
+      addMessage(r.conversation_id, "tool", { key: `jobs:${r.step}`, tool: "jobs.wait", ok: results.every((x) => x.status === "done"), summary: failedSpent.length ? L(`Créations terminées, avec un échec. Coût réellement dépensé par la tâche en échec : ${failedSpent.map((x) => x.coutReel).join(", ")} — dis-le au client avec ce chiffre ; ne dis jamais que rien n'a été débité.`, "Finished with a failure; tell the real cost.") : L("Créations terminées : SINA les relit avant de conclure.", "Native creations finished: read them back before concluding."), data: results }, r.id);
       updateRun(r.id, { waiting_jobs: "[]" });
     }
     // 2. Action approuvée (ou refusée) par le client.
