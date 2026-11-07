@@ -84,8 +84,13 @@ describe("SINA — étape 2 : 3 logos", async () => {
     expect(f.feeling).toBe("lumineux, sensoriel — Gourmand, authentique, solaire.");
     const prompt = G.freeLogoPrompt(f, 1);
     expect(prompt).toMatch(/Crée le logo de la marque « Heure Dorée »\. Ce qu'elle fait : Des confitures cuites au chaudron\./);
-    expect(prompt).toMatch(/carte blanche totale sur l'idée, le symbole, la typographie et la composition : fais-toi plaisir/);
-    expect(prompt).toContain(G.FREE_MOODS[1]);
+    expect(prompt).toMatch(/Dans cette direction, tu as carte blanche totale sur l'idée, le sujet, la typographie et la composition : fais-toi plaisir/);
+    // Trois directions artistiques franchement différentes (retour du 7 novembre : « le même logo avec juste des
+    // éléments déplacés ne convient pas ») ; chaque demande nomme la sienne et écarte les deux autres.
+    expect(prompt).toContain(`Direction artistique de cette proposition : ${G.FREE_DIRECTIONS[1].text}.`);
+    expect(prompt).toMatch(/les deux autres sont « illustration » et « symbole moderne » : ne t'en approche pas\. Jamais le même logo avec des éléments déplacés/);
+    expect(G.freeLogoPrompt(f, 0)).toMatch(/les deux autres sont « lettrage » et « symbole moderne »/);
+    expect(G.FREE_DIRECTIONS.map((d) => d.label)).toEqual(["illustration", "lettrage", "symbole moderne"]);
     expect(prompt).toMatch(/Une seule proposition de logo dans l'image, jamais une planche de plusieurs versions/);
     expect(prompt).toMatch(/Le seul texte du logo est le nom « Heure Dorée »/);
     expect(prompt).toMatch(/À éviter : un rendu daté \(années 80 ou 90, clip-art\)/);
@@ -94,6 +99,8 @@ describe("SINA — étape 2 : 3 logos", async () => {
     const t = G.freeTerritories(f);
     expect(t.map((x) => x.style)).toEqual(["libre", "libre", "libre"]);
     expect(new Set(t.map((x) => x.imageBrief)).size).toBe(3);
+    expect(t.map((x) => x.markType)).toEqual(["symbol_wordmark", "wordmark", "symbol_wordmark"]);
+    expect(t[1].concept).toMatch(/Direction « lettrage »/);
   });
 
   it("proposition complète : devis annoncé, 3 logos dessinés et contrôlés, rangés dans le parcours, affichés, puis choix du client", async () => {

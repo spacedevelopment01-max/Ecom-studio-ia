@@ -26,14 +26,38 @@ import { jobSpentMicro } from "./budget";
 import { journeyOf, setStep, updateJourney, type Journey } from "./journey";
 
 /**
- * Trois pistes d'humeur seulement (jamais un style, un objet ou une forme imposés) : de la variété entre les trois
- * propositions, toute liberté de création à l'intérieur.
+ * Trois DIRECTIONS ARTISTIQUES franchement différentes, une par proposition (retour du propriétaire du 7 novembre :
+ * « la direction artistique doit être différente entre les 3 propositions, le même logo avec juste des éléments
+ * déplacés ne convient pas »). Ce sont des familles larges, jamais un objet, une matière ou une forme imposés : à
+ * l'intérieur de sa direction, le dessinateur garde carte blanche.
  */
-export const FREE_MOODS = [
-  "Proposition 1 : une idée inattendue, qui surprend et qu'on retient.",
-  "Proposition 2 : une idée élégante, épurée, très contemporaine.",
-  "Proposition 3 : une idée chaleureuse et généreuse, pleine de caractère.",
+export const FREE_DIRECTIONS = [
+  {
+    label: "illustration",
+    text: "une ILLUSTRATION riche et généreuse : un sujet ou une scène dessinés avec talent, pleins de vie et de couleurs, réunis avec le nom écrit dans un lettrage soigné",
+  },
+  {
+    label: "lettrage",
+    text: "un LETTRAGE : le nom lui-même est le dessin, un lettrage sur mesure, expressif et élégant ; au plus un petit détail graphique intégré aux lettres ; aucune illustration, aucune scène, aucun symbole séparé",
+  },
+  {
+    label: "symbole moderne",
+    text: "un SYMBOLE MODERNE : un signe graphique contemporain en aplats nets, une idée maligne qui se comprend d'un coup d'œil, composé avec le nom en typographie actuelle pour former un tout ; aucune scène, aucun détail illustré, jamais une lettre seule avec une forme de base",
+  },
 ] as const;
+
+/** Compatibilité : la ligne de direction de chaque proposition. */
+export const FREE_MOODS = FREE_DIRECTIONS.map((d, i) => `Proposition ${i + 1} : ${d.text}.`);
+
+/** Direction de la proposition n, avec les deux autres à ne pas approcher. */
+export function directionLine(n: number): string {
+  const i = n % FREE_DIRECTIONS.length;
+  const others = FREE_DIRECTIONS.filter((_, k) => k !== i).map((d) => d.label);
+  return [
+    `Direction artistique de cette proposition : ${FREE_DIRECTIONS[i].text}.`,
+    `Les trois propositions présentées au client ont trois directions artistiques complètement différentes ; les deux autres sont « ${others[0]} » et « ${others[1]} » : ne t'en approche pas. Jamais le même logo avec des éléments déplacés ou recolorés.`,
+  ].join("\n");
+}
 
 /** Ce que la marque doit faire ressentir, avec les mots du client et de l'identité choisie. */
 export type FreeLogoFacts = { name: string; activity: string; feeling: string; audience: string | null; colors: string[] };
@@ -56,8 +80,8 @@ export function freeLogoPrompt(f: FreeLogoFacts, n: number, feedback?: string): 
     `Crée le logo de la marque « ${f.name} ». Ce qu'elle fait : ${f.activity.trim().replace(/\.$/, "")}.`,
     f.feeling ? `Ce qu'elle doit faire ressentir : ${f.feeling}.` : "",
     f.audience ? `Pour qui : ${f.audience.trim().replace(/\.$/, "")}.` : "",
-    "Tu as carte blanche totale sur l'idée, le symbole, la typographie et la composition : fais-toi plaisir et surprends-nous avec un logo beau, moderne et mémorable, au niveau des meilleures agences de branding de 2026.",
-    FREE_MOODS[n % FREE_MOODS.length],
+    directionLine(n),
+    "Dans cette direction, tu as carte blanche totale sur l'idée, le sujet, la typographie et la composition : fais-toi plaisir et surprends-nous avec un logo beau, moderne et mémorable, au niveau des meilleures agences de branding de 2026.",
     `Couleurs de la marque, à utiliser librement : ${f.colors.join(", ")} (et le blanc).`,
     `Le seul texte du logo est le nom « ${f.name} », écrit exactement, lettre par lettre, avec ses accents. Aucun autre mot.`,
     `À éviter : un rendu daté (années 80 ou 90, clip-art) ; ${FORBIDDEN_LOGO_RENDERS.join(" ; ")}.`,
@@ -74,15 +98,15 @@ export function freeLogoPrompt(f: FreeLogoFacts, n: number, feedback?: string): 
  */
 export function freeTerritories(f: FreeLogoFacts): TerritoryDraft[] {
   const axes = [
-    { composition: "horizontal", construction: "organic", sobriety: 4, type: "classic_serif" },
-    { composition: "stacked", construction: "geometric", sobriety: 1, type: "geometric_sans" },
-    { composition: "badge", construction: "illustrative", sobriety: 3, type: "humanist_sans" },
+    { composition: "stacked", construction: "illustrative", sobriety: 5, type: "classic_serif" },
+    { composition: "wordmark_only", construction: "typographic", sobriety: 3, type: "humanist_sans" },
+    { composition: "horizontal", construction: "geometric", sobriety: 1, type: "geometric_sans" },
   ] as const;
   return axes.map((a, i) => ({
     name: `Création libre ${i + 1}`,
-    concept: `Carte blanche au dessinateur pour « ${f.name} » : ${FREE_MOODS[i].replace(/^Proposition \d : /, "")}`,
+    concept: `Direction « ${FREE_DIRECTIONS[i].label} », carte blanche au dessinateur pour « ${f.name} » : ${FREE_DIRECTIONS[i].text}.`,
     whyItFits: `Un logo beau et moderne pour ${f.activity.slice(0, 160)}.`,
-    markType: "symbol_wordmark", composition: a.composition, construction: a.construction, sobriety: a.sobriety,
+    markType: i === 1 ? "wordmark" : "symbol_wordmark", composition: a.composition, construction: a.construction, sobriety: a.sobriety,
     typography: { style: a.type, weight: "regular", case: "title", tracking: "normal", rationale: "libre" },
     colorRole: { ink: "dark", accent: "primary", rationale: "couleurs de la marque" },
     symbolIdea: null, distinctive: "libre", avoid: [], style: "libre" as LogoStyle, descriptor: null,
