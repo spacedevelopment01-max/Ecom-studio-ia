@@ -182,8 +182,17 @@ export function journeyContext(j: Journey): string {
       : "Toutes les questions ont une réponse : fais le RÉSUMÉ (« Voici ce que j'ai compris ») et demande au client de confirmer ou corriger ; à sa confirmation, appelle start.confirm.");
   }
   if (cur === 1) lines.push(...identityStepContext(j));
+  if (READY_STEPS.includes(cur) && STEP_GUIDES[cur]) lines.push(STEP_GUIDES[cur]);
   return lines.join("\n");
 }
+
+/**
+ * Consignes des étapes préparées dans le code mais pas encore ouvertes (READY_STEPS) : elles s'appliquent dès que
+ * l'étape est ouverte, après ses essais réels.
+ */
+export const STEP_GUIDES: Partial<Record<number, string>> = {
+  11: "Étape 11 (calendrier de publication, MANUEL pour l'instant : le client publie lui-même, la publication automatique viendra après les accords des plateformes) : demande d'abord au client, UNE question à la fois et seulement si l'information manque : sur combien de jours (7, 15 ou 30), combien de publications par jour, à quelles heures, sur quels réseaux, avec ou sans émojis, avec ou sans les publicités. Puis appelle calendar.plan ; montre-lui le calendrier (calendar.read) jour par jour et dis-lui qu'il peut l'ajouter à son agenda (fichier .ics) et cocher chaque publication une fois postée (calendar.mark_done). S'il manque des publications pour remplir les jours, dis-le simplement et propose d'en créer (payant, devis d'abord).",
+};
 
 /** Étape 1 : que faire selon l'état des propositions. */
 function identityStepContext(j: Journey): string[] {

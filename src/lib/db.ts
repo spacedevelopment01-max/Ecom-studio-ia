@@ -311,6 +311,15 @@ CREATE TABLE IF NOT EXISTS syna_budgets (
   authorized_micro INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
+-- SINA (#492), étape 11 : calendrier de publication MANUEL du projet (le client publie lui-même, jour par jour).
+-- Un calendrier courant par projet : réglages et cases datées (publication ou publicité, coche « publié »).
+-- Aucune publication automatique depuis cette table (src/lib/syna-agent/calendar.ts).
+CREATE TABLE IF NOT EXISTS syna_calendars (
+  project_id TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE,
+  plan_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
 CREATE TABLE IF NOT EXISTS agent_request_bounds (
   id TEXT PRIMARY KEY,
   conversation_id TEXT NOT NULL REFERENCES agent_conversations(id) ON DELETE CASCADE,

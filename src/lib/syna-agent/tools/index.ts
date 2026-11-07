@@ -7,5 +7,6 @@ import { mediaTools } from "./media";
 import { commerceTools } from "./commerce";
 import { startTools } from "./start";
 import { identityTools } from "./identity";
+import { calendarTools } from "./calendar";
 
-export const TOOL_LIST: AgentTool[] = [...startTools, ...identityTools, ...projectTools, ...siteTools, ...catalogueTools, ...commerceTools, ...mediaTools];
+export const TOOL_LIST: AgentTool[] = [...startTools, ...identityTools, ...projectTools, ...siteTools, ...catalogueTools, ...commerceTools, ...mediaTools, ...calendarTools];

@@ -122,6 +122,27 @@ recherche et fiche bien ; salon : prestations et rendez-vous…) :
   par date et réseau + texte prêt à copier), fichier d'agenda (.ics) avec rappel à l'heure prévue.
 - Liaison automatique plus tard, quand les réseaux auront donné leur accord.
 
+**Préparé le 7 novembre (dans le code, testé sans aucune dépense ni publication réelle)** :
+- Calendrier **manuel**, gratuit et sans IA (`src/lib/syna-agent/calendar.ts`) : construit avec les publications de
+  l'étape 9 (celles qui ont leurs images) et les publicités de l'étape 10 déjà rendues. Rien n'est inventé : s'il manque
+  des publications pour remplir les créneaux, SINA annonce combien et les laisse vides.
+- Réglages vus avec le client : 7, 15 ou 30 jours, nombre de publications par jour (limité par son forfait), heures
+  (sinon heures conseillées du Studio), ses réseaux, emojis oui ou non, publicités incluses ou non.
+- Règles : une publication par créneau, déclinée sur chacun de ses réseaux au même moment ; sujets variés (jamais deux
+  fois de suite le même groupe quand c'est possible) ; jamais deux publications le même jour sur le même réseau, sauf
+  si le client le demande ; aucune image répétée, aucune image reprise du site ; une publicité « à lancer » par jour au
+  plus, réparties sur la période.
+- Pour le client, jour par jour : heure, réseau, fichier à envoyer (nommé par date et réseau, ex.
+  `2026-11-10_instagram_11h30.jpg`), texte à copier avec ses hashtags, et une case « publié » à cocher. Fichier d'agenda
+  (.ics, rappel à l'heure prévue) et liste imprimable : `/api/projects/<projet>/calendrier?format=ics` ou `?format=txt`.
+- Outils de SINA (enregistrés) : `calendar.plan`, `calendar.read`, `calendar.mark_done`, `calendar.move`. Refaire un
+  calendrier existant demande l'accord du client ; les cases déjà publiées restent en place.
+- Les dates apparaissent aussi dans l'onglet Publications ; une publication cochée y passe « publiée » (le Studio ne la
+  renverra jamais). Rien n'est mis en « programmée » : aucune publication automatique.
+- Rappel du jour dans les notifications du Studio prêt (`remindDue`), **pas encore branché** au worker ; aucun e-mail.
+- Plus tard : publication automatique case par case (`mode`, `AUTO_PUBLISH_AVAILABLE` à `false` aujourd'hui), par la
+  programmation déjà existante du Studio, une fois les accords des réseaux obtenus. Kit du jour en ZIP : pas encore fait.
+
 ## Étape 12 — 2 articles de blog 🔧
 
 - Sujets utiles au client idéal, recherche web, SEO (charte § 4), images propres, liens vers les produits ou services.
