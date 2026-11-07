@@ -27,9 +27,9 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
   };
 
   const good = (): any[] => [
-    { key: "A", name: "Ocrea", nameStyle: "mot français évocateur", nameWhy: "", nameAnchor: "la flamme de la bougie", slogan: "La chaleur du fait main", sloganTone: "poétique", promise: "Des bougies coulées à la main qui réchauffent ton intérieur.", territory: "fierté artisanale", ground: "blanc", palette: { dark: "#111111", primary: "#1D4ED8", secondary: "#DBEAFE", accent: "#F97316", light: "#FFFFFF" }, paletteFamily: "tons chauds ton sur ton", fonts: { heading: "cormorant_n6", body: "inter_n4" }, fontStyle: "serif fine contrastée", tone: { adjectives: ["chaleureux", "précis", "sincère"], avoid: ["superlatifs", "jargon", "promesses"] }, logoStyle: "embleme", logoIdea: "Une flamme dans un sceau rond.", why: "Ta clientèle aime l'artisanat." },
-    { key: "B", name: "Lumo", nameStyle: "mot inventé court", nameWhy: "", nameAnchor: "la flamme de la bougie", slogan: "Allume l'instant", sloganTone: "direct", promise: "Une lumière douce pour chaque moment calme.", territory: "évasion", ground: "degrade", gradient: { from: "#FFD6A5", to: "#C8B6FF" }, palette: { dark: "#1F1A14", primary: "#B91C1C", secondary: "#FDE68A", accent: "#16A34A", light: "#F5EEDC" }, paletteFamily: "sombre et un accent vif", fonts: { heading: "archivo_n8", body: "dm_sans_n4" }, fontStyle: "grotesque grasse", tone: { adjectives: ["direct", "lumineux", "moderne"], avoid: ["mièvrerie", "jargon", "promesses"] }, logoStyle: "lettrage", logoIdea: "Le O de Lumo devient une flamme.", why: "Tu veux une image moderne." },
-    { key: "C", name: "Brindille", nameStyle: "nom composé", nameWhy: "", nameAnchor: "la flamme de la bougie", slogan: "Complice de tes soirées", sloganTone: "complice et léger", promise: "Des bougies joyeuses à offrir et à s'offrir.", territory: "complicité joyeuse", ground: "sombre", palette: { dark: "#0B0B12", primary: "#FACC15", secondary: "#312E81", accent: "#C084FC", light: "#F5F5F7" }, paletteFamily: "clair et frais", fonts: { heading: "nunito_n8", body: "karla_n4" }, fontStyle: "ronde épaisse", tone: { adjectives: ["complice", "léger", "joyeux"], avoid: ["froideur", "jargon", "promesses"] }, logoStyle: "mascotte", logoIdea: "Une petite bougie souriante.", why: "Tu vends beaucoup en cadeau." },
+    { key: "A", name: "Ocrea", nameStyle: "mot français évocateur", nameWhy: "", nameCandidates: ["a","b","c","d","e","f","g","h","i","j","k","l"], nameExpression: "expression existante", nameAnchor: "la flamme de la bougie", slogan: "La chaleur du fait main", sloganTone: "poétique", promise: "Des bougies coulées à la main qui réchauffent ton intérieur.", territory: "fierté artisanale", ground: "blanc", palette: { dark: "#111111", primary: "#1D4ED8", secondary: "#DBEAFE", accent: "#F97316", light: "#FFFFFF" }, paletteFamily: "tons chauds ton sur ton", fonts: { heading: "cormorant_n6", body: "inter_n4" }, fontStyle: "serif fine contrastée", tone: { adjectives: ["chaleureux", "précis", "sincère"], avoid: ["superlatifs", "jargon", "promesses"] }, logoStyle: "embleme", logoIdea: "Une flamme dans un sceau rond.", why: "Ta clientèle aime l'artisanat." },
+    { key: "B", name: "Lumo", nameStyle: "mot inventé court", nameWhy: "", nameCandidates: ["a","b","c","d","e","f","g","h","i","j","k","l"], nameExpression: "expression existante", nameAnchor: "la flamme de la bougie", slogan: "Allume l'instant", sloganTone: "direct", promise: "Une lumière douce pour chaque moment calme.", territory: "évasion", ground: "degrade", gradient: { from: "#FFD6A5", to: "#C8B6FF" }, palette: { dark: "#1F1A14", primary: "#B91C1C", secondary: "#FDE68A", accent: "#16A34A", light: "#F5EEDC" }, paletteFamily: "sombre et un accent vif", fonts: { heading: "archivo_n8", body: "dm_sans_n4" }, fontStyle: "grotesque grasse", tone: { adjectives: ["direct", "lumineux", "moderne"], avoid: ["mièvrerie", "jargon", "promesses"] }, logoStyle: "lettrage", logoIdea: "Le O de Lumo devient une flamme.", why: "Tu veux une image moderne." },
+    { key: "C", name: "Brindille", nameStyle: "nom composé", nameWhy: "", nameCandidates: ["a","b","c","d","e","f","g","h","i","j","k","l"], nameExpression: "expression existante", nameAnchor: "la flamme de la bougie", slogan: "Complice de tes soirées", sloganTone: "complice et léger", promise: "Des bougies joyeuses à offrir et à s'offrir.", territory: "complicité joyeuse", ground: "sombre", palette: { dark: "#0B0B12", primary: "#FACC15", secondary: "#312E81", accent: "#C084FC", light: "#F5F5F7" }, paletteFamily: "clair et frais", fonts: { heading: "nunito_n8", body: "karla_n4" }, fontStyle: "ronde épaisse", tone: { adjectives: ["complice", "léger", "joyeux"], avoid: ["froideur", "jargon", "promesses"] }, logoStyle: "mascotte", logoIdea: "Une petite bougie souriante.", why: "Tu vends beaucoup en cadeau." },
   ];
 
   /** Fil avec l'étape 0 validée (création complète ou refonte), comme après un vrai parcours. */
@@ -94,7 +94,7 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     expect(I.paletteIssues({ ...good()[2].palette, dark: "#4A4A5A" }, "sombre").join()).toMatch(/fond très foncé/);
     expect(I.IDENTITY_SYSTEM).toMatch(/une « blanc » .* une « degrade » .* jamais beige ni crème.* une « sombre »/);
     expect(I.IDENTITY_SYSTEM).toMatch(/jamais trois orangés/);
-    expect(I.IDENTITY_SYSTEM).toMatch(/au moins 20 pistes/);
+    expect(I.IDENTITY_SYSTEM).toMatch(/écris d.abord dans nameCandidates 12 à 20 mots ou expressions existants/);
   });
 
   it("références du propriétaire (7 novembre) : ses 49 palettes passent le contrôle, ses 50 noms et slogans aussi, et Claude les reçoit comme exemples à ne pas recopier", async () => {
@@ -317,10 +317,18 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     const bad = good(); bad[0].fonts.body = "pacifico_n4";
     expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: bad }).identities, J.emptyJourney()).join()).toMatch(/« Pacifico » est une police de titres, manuscrite ou à chasse fixe/);
   });
-  it("noms liés au PRODUIT (retour du 7 novembre : « les 3 noms n'ont rien à voir avec le produit »)", () => {
+  it("noms liés au PRODUIT (retour du 7 novembre : « les 3 noms n'ont rien à voir avec le produit »)", async () => {
     expect(I.IDENTITY_SYSTEM).toMatch(/Le nom part TOUJOURS DU PRODUIT LUI-MÊME/);
     expect(I.IDENTITY_SYSTEM).toMatch(/Un nom qui ne parle que d'un bénéfice, d'une ambiance, d'un moment ou d'une valeur, sans rien du produit, est REFUSÉ/);
     expect(I.IDENTITY_SYSTEM).toMatch(/nameAnchor = l'élément concret du produit[^]*nameTest = ce qu'un inconnu imagine/);
+    // Pourquoi les noms n'étaient ni beaux ni originaux : des assemblages inventés et des jeux de mots négatifs.
+    const refs = (await import("@/lib/syna-agent/brand-references")).referencesForPrompt();
+    expect(refs).toMatch(/Ce sont TOUS des mots ou des expressions qui EXISTENT déjà en français/);
+    expect(refs).toMatch(/Jamais une expression au sens négatif ou péjoratif \(rabâcher, déroute, repris de justice/);
+    const few = good(); few[0].nameCandidates = ["Roue Libre"]; few[2].nameExpression = "";
+    const fi = I.identityIssues(I.IdentitiesSchema.parse({ identities: few }).identities, J.emptyJourney()).join();
+    expect(fi).toMatch(/Identité A : écris au moins 12 pistes dans nameCandidates/);
+    expect(fi).toMatch(/Identité C : nameExpression vide/);
     const bad = good(); bad[1].nameAnchor = "";
     expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: bad }).identities, J.emptyJourney()).join()).toMatch(/Identité B : nameAnchor vide — dis de quel élément concret du produit/);
   });

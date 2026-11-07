@@ -141,6 +141,11 @@ export function referencesForPrompt(): string {
     ? `${p.ambiance} [dégradé] départ ${p.depart} → arrivée ${p.arrivee}, texte ${p.texte}, bouton ${p.bouton}, accent ${p.accent}`
     : `${p.ambiance} [fond ${p.ground}] fond ${p.fond}, texte ${p.texte}, bouton ${p.bouton}, surface ${p.surface}, accent ${p.accent}`).join("\n");
   return `MÉTHODE DE NOMMAGE du propriétaire du Studio (à appliquer pour CHAQUE nom) : pars d'un DÉTAIL RÉEL du produit ou du service (un geste, une matière, une sensation, un moment ou un résultat), puis cherche un mot ou une expression qui lui donne une DEUXIÈME LECTURE (expression courante détournée, double sens, mot qui évoque aussi une émotion ou un caractère). Le nom est court (1 à 3 mots), en français, facile à dire et à retenir ; on comprend le métier et on sourit ou on est intrigué.
+CE QUI REND CES NOMS BEAUX ET ORIGINAUX (analyse du 7 novembre 2026, après des noms refusés par le propriétaire : « Sangle Réflexe », « Roulé Bouclé », « Rabâche », « Repris de Route ») :
+1. Ce sont TOUS des mots ou des expressions qui EXISTENT déjà en français, que tout le monde connaît (Songe, Écume, Cavale, Strate ; « avoir la mèche courte », « temps de canard », « roue libre », « au poil », « place nette », « seconde couche »). Jamais deux mots assemblés pour l'occasion, jamais un mot-valise, jamais un mot déformé.
+2. Le lien au produit vient d'UN mot de l'expression (mèche, couche, roue, poil, fond) ou de la scène qu'elle évoque ; la deuxième lecture vient du SENS COURANT de l'expression. Le nom ne décrit pas le produit : il le suggère.
+3. Le sens courant est positif ou neutre. Jamais une expression au sens négatif ou péjoratif (rabâcher, déroute, repris de justice, à bout, en panne).
+4. Il sonne bien à voix haute, s'écrit sans hésiter et se retient du premier coup.
 Ses 50 exemples, avec leur logique (niveau et esprit attendus ; ne recopie jamais ces noms) :
 Produits :
 ${names("produits")}
