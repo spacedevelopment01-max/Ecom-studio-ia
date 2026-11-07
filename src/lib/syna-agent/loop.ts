@@ -290,13 +290,6 @@ function askBudget(r: SynaRun, _x: null) {
  * La question va dans « question », jamais aussi à la fin de « message » (essai réel : le modèle la répétait, le client
  * la lisait deux fois). Une dernière phrase interrogative du message est retirée quand une question est posée.
  */
-/** Part des mots (4 lettres et plus) d'une phrase qu'on retrouve dans l'autre. */
-function overlap(a: string, b: string): number {
-  const w = (t: string) => new Set(t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").match(/[a-z]{4,}/g) ?? []);
-  const A = w(a), B = w(b);
-  return A.size ? [...A].filter((x) => B.has(x)).length / A.size : 0;
-}
-
 export function withoutRepeatedQuestion(out: StepOutput): StepOutput {
   if (!out.question || !out.message) return out;
   // Le message s'arrête avant sa première phrase interrogative (et ce qui la suit), s'il reste quelque chose avant.
@@ -305,7 +298,9 @@ export function withoutRepeatedQuestion(out: StepOutput): StepOutput {
   // quand elle reprend les mots de la question (essai réel du 7 novembre).
   const sentences = msg.split(/(?<=[.!…])\s+/);
   const last = sentences[sentences.length - 1] ?? "";
-  if (sentences.length > 1 && /[:：]\s*$/.test(last) && overlap(last, out.question.text) >= 0.6) msg = sentences.slice(0, -1).join(" ").trim();
+  // Une phrase finale en « : » juste avant la question l'annonce toujours (« Avant d'aller plus loin, as-tu déjà
+  // quelque chose : ») : elle est retirée, la question suit.
+  if (sentences.length > 1 && /[:：]\s*$/.test(last)) msg = sentences.slice(0, -1).join(" ").trim();
   if (msg !== out.message.trim() && !msg.includes("?")) return { ...out, message: msg };
   const q = msg.indexOf("?");
   if (q < 0) return out;
