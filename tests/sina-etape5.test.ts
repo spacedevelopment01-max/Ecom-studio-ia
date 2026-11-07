@@ -62,7 +62,12 @@ describe("SINA — étape 5 : l'activité complète", async () => {
     expect((await call("activity.company", ctx, { later: ["email"] })).ok).toBe(false);
     expect(getTool("activity.company")!.description).toMatch(/MOT POUR MOT \(rien d'ajouté/);
     const c = await call("activity.company", ctx, { fields: { legalName: "Heure Dorée SAS", email: "bonjour@heuredoree.fr", address: "12 rue des Vergers, 26000 Valence", shipping: "Colissimo, 48 h, 5,90 €, offerte dès 45 €", returns: "Pas de retour une fois le pot ouvert ; 14 jours sinon." }, later: ["phone", "siret"] });
-    expect(c.summary).toMatch(/^Coordonnées enregistrées : nom de l'entreprise, e-mail de contact, adresse, livraison, retours ; plus tard : téléphone, siret\.$/);
+    expect(c.summary).toMatch(/^Coordonnées enregistrées : nom de l'entreprise, e-mail de contact, adresse, livraison, retours ; à donner plus tard : téléphone, siret\.$/);
+    // « Pas de téléphone sur le site » n'est pas « plus tard » (essai réel du 7 novembre).
+    const sans = await call("activity.company", ctx, { none: ["phone"] });
+    expect(sans.summary).toBe("Pas sur le site (ton choix) : téléphone.");
+    expect(Act.activityPlan(pid, J.journeyOf(cid)).none).toEqual(["phone"]);
+    expect((await call("activity.company", ctx, { none: ["email"] })).ok).toBe(false); // jamais une coordonnée obligatoire
     expect(c.ok).toBe(true);
     expect(Act.companyOf(pid)).toMatchObject({ legalName: "Heure Dorée SAS", email: "bonjour@heuredoree.fr" });
     // 3) Produits créés dans l'onglet Produits avec les prix du client.

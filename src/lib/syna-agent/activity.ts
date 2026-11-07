@@ -41,6 +41,8 @@ export function saveCompany(projectId: string, fields: Company): Company {
 
 export type ActivityPlan = {
   company: Company;
+  /** Coordonnées facultatives que le client ne veut PAS sur le site (« pas de téléphone »), à ne plus demander. */
+  none: (keyof Company)[];
   missing: { key: keyof Company; question: string; required: boolean }[];
   angle: { id: string; title: string; goal: string; message: string; story: string; show: string; cta: string; others: string[] } | null;
   keyMessages: string[];
@@ -73,7 +75,8 @@ export function activityPlan(projectId: string, j: Journey): ActivityPlan {
   const p = loadProject(projectId);
   const company = companyOf(projectId);
   const later = new Set<string>(((p.settings as any).companyLater ?? []) as string[]);
-  const missing = COMPANY_FIELDS.filter((f) => !company[f.key] && !later.has(f.key)).map(({ key, question, required }) => ({ key, question, required }));
+  const none = (((p.settings as any).companyNone ?? []) as (keyof Company)[]).filter((k) => !company[k]);
+  const missing = COMPANY_FIELDS.filter((f) => !company[f.key] && !later.has(f.key) && !none.includes(f.key)).map(({ key, question, required }) => ({ key, question, required }));
   const ids = j.angleChoice?.ids ?? (j.angleChoice ? [j.angleChoice.id] : []);
   const a = j.angles?.list.find((x) => x.id === ids[0]);
   // Messages clés et objections : ceux de la recherche pour CET angle (jamais réinventés).
@@ -82,7 +85,7 @@ export function activityPlan(projectId: string, j: Journey): ActivityPlan {
   const pr = p.product.price;
   const price = pr?.amount != null && pr.status === "confirmed" ? `${(pr.amount / 100).toFixed(2).replace(".", ",").replace(/,00$/, "")} ${pr.currency === "EUR" ? "€" : pr.currency}` : null;
   return {
-    company, missing,
+    company, none, missing,
     angle: a ? { id: a.id, title: a.title, goal: a.goal, message: a.message, story: a.story, show: a.show, cta: a.cta, others: ids.slice(1).map((id) => j.angles!.list.find((x) => x.id === id)?.title ?? id) } : null,
     keyMessages: (raw?.arguments ?? []).slice(0, 5).map((x: string) => String(x).slice(0, 300)),
     objections: (raw?.objections ?? []).slice(0, 5).map((o: any) => ({ objection: String(o.objection).slice(0, 300), answer: String(o.answer).slice(0, 400) })),
@@ -100,6 +103,18 @@ export function activityGaps(plan: ActivityPlan): string[] {
   for (const x of plan.products.filter((x) => x.price == null)) gaps.push(L(`prix manquant pour « ${x.title} »`, `missing price for ${x.title}`));
   if (!plan.angle) gaps.push(L("aucun angle choisi (étape 4)", "no angle chosen"));
   return gaps;
+}
+
+/**
+ * Le client ne veut PAS d'une coordonnée facultative sur le site (« pas de téléphone ») : ce n'est pas « plus tard »
+ * (essai réel du 7 novembre : « pas de téléphone » enregistré comme à donner plus tard). Jamais une coordonnée obligatoire.
+ */
+export function companyNone(projectId: string, keys: (keyof Company)[]) {
+  const p = loadProject(projectId);
+  const s = json<Record<string, unknown>>(p.row.settings_json, {});
+  const allowed = keys.filter((k) => !COMPANY_FIELDS.find((f) => f.key === k)?.required);
+  run("UPDATE projects SET settings_json=?, updated_at=? WHERE id=?", JSON.stringify({ ...s, companyNone: [...new Set([...((s.companyNone as string[]) ?? []), ...allowed])] }), Date.now(), projectId);
+  return allowed;
 }
 
 /** Le client préfère donner une coordonnée facultative plus tard (jamais une coordonnée obligatoire du site). */

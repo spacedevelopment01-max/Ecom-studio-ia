@@ -229,7 +229,7 @@ function AngleCards({ angles, busy, onChoose }: { angles: Angles; busy: boolean;
 }
 
 type Activity = {
-  company: Record<string, string | undefined>; missing: { key: string; question: string; required: boolean }[];
+  company: Record<string, string | undefined>; none?: string[]; missing: { key: string; question: string; required: boolean }[];
   angle: { title: string; goal: string; message: string; story: string; cta: string; others: string[] } | null;
   keyMessages: string[]; objections: { objection: string; answer: string }[]; offer: { price: string | null; facts: string[] };
   products: { id: string; title: string; price: number | null; status: string }[]; gaps: string[]; validated: boolean;
@@ -243,7 +243,7 @@ function ActivityCard({ a, busy, onValidate }: { a: Activity; busy: boolean; onV
   return (
     <div className="mt-2 space-y-3 rounded-xl border border-line bg-card p-4 text-xs" data-syna-activity>
       <h4 className="text-base font-semibold">{t("Ton activité", "Your business")}</h4>
-      {block(t("L'entreprise", "The company"), <dl className="grid grid-cols-1 gap-x-4 gap-y-0.5 sm:grid-cols-2">{COMPANY_LABELS.map(([k, label]) => <div key={k}><dt className="inline font-semibold">{label} : </dt><dd className={cx("inline", !a.company[k] && "text-amber-700")}>{a.company[k] || (a.missing.some((m) => m.key === k) ? t("à compléter", "to complete") : t("plus tard", "later"))}</dd></div>)}</dl>)}
+      {block(t("L'entreprise", "The company"), <dl className="grid grid-cols-1 gap-x-4 gap-y-0.5 sm:grid-cols-2">{COMPANY_LABELS.map(([k, label]) => <div key={k}><dt className="inline font-semibold">{label} : </dt><dd className={cx("inline", !a.company[k] && a.missing.some((m) => m.key === k) && "text-amber-700", !a.company[k] && !a.missing.some((m) => m.key === k) && "text-muted")}>{a.company[k] || (a.missing.some((m) => m.key === k) ? t("à compléter", "to complete") : (a.none ?? []).includes(k) ? t("pas sur le site", "not on the site") : t("plus tard", "later"))}</dd></div>)}</dl>)}
       {a.angle && block(t("Angle principal", "Main angle"), <div><p className="text-sm font-semibold">{a.angle.title}{a.angle.goal ? <span className="font-normal text-muted"> — {a.angle.goal}</span> : null}</p>{!!a.angle.message && <p className="italic">« {a.angle.message} »</p>}{!!a.angle.cta && <p>{t("Appel à l'action", "Call to action")} : {a.angle.cta}</p>}{!!a.angle.others.length && <p className="text-muted">{t("Aussi retenus", "Also selected")} : {a.angle.others.join(", ")}</p>}</div>)}
       {!!a.keyMessages.length && block(t("Messages clés", "Key messages"), <ul className="list-disc pl-4">{a.keyMessages.map((m) => <li key={m}>{m}</li>)}</ul>)}
       {!!a.objections.length && block(t("Objections et réponses", "Objections and answers"), <ul className="space-y-1">{a.objections.map((o) => <li key={o.objection}><span className="font-semibold">« {o.objection} »</span> — {o.answer}</li>)}</ul>)}
