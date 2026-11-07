@@ -18,16 +18,17 @@ export const questionList = (qs: { id: string; question: string }[], missing: st
 
 const running = (pid: string) => !!one("SELECT 1 FROM jobs WHERE project_id=? AND type='project.prepare' AND status IN ('queued','running','paused')", pid);
 
-const proposeTool: AgentTool<{ retry?: boolean }> = {
+const proposeTool: AgentTool<{ retry?: boolean; redo?: string }> = {
   name: "angles.propose", module: "stratégie", kind: "generate", needsProject: true,
-  description: "Étape 4 : prépare les 5 angles marketing du client (recherche web sur son marché, places de marché exclues, sources réelles). Automate à rappeler après chaque tâche : 1) fait comprendre la fiche de départ par l'IA (payant, tâche de fond) ; 2) s'il manque une information, renvoie les QUESTIONS à poser au client (réponds avec pilot.answer, puis rappelle angles.propose) ; 3) lance la recherche et les 5 angles (payant, tâche de fond de quelques minutes) ; 4) quand tout est prêt, les angles s'affichent dans le fil. Devis annoncé avant chaque partie payante.",
-  args: z.object({ retry: z.boolean().optional() }).strict(),
-  estimate: (ctx) => ({ maxMicro: anglesMaxMicro(project(ctx).id), label: L("5 angles marketing", "5 marketing angles") }),
+  description: "Étape 4 : prépare les 5 angles marketing du client (recherche web sur son marché, places de marché exclues, sources réelles). Automate à rappeler après chaque tâche : 1) fait comprendre la fiche de départ par l'IA (payant, tâche de fond) ; 2) s'il manque une information, renvoie les QUESTIONS à poser au client (réponds avec pilot.answer, puis rappelle angles.propose) ; 3) lance la recherche et les 5 angles (payant, tâche de fond de quelques minutes) ; 4) quand tout est prêt, les angles s'affichent dans le fil. Devis annoncé avant chaque partie payante. redo = la demande du client, avec SES mots, quand il veut une NOUVELLE proposition d'angles alors qu'ils sont prêts (nouvelle recherche payante ; les angles précédents restent conservés).",
+  args: z.object({ retry: z.boolean().optional(), redo: z.string().min(8).max(1500).optional() }).strict(),
+  estimate: (ctx, a) => ({ maxMicro: anglesMaxMicro(project(ctx).id, a.redo), label: L("5 angles marketing", "5 marketing angles") }),
   // Demande d'accord lisible par le client (essai réel : il voyait « angles.propose {} »).
-  preview: (ctx) => {
+  preview: (ctx, a) => {
     const pid = project(ctx).id;
     const kind = anglesPhase(pid).kind;
-    const max = pct(budgetPctOf(pid, anglesMaxMicro(pid)));
+    const max = pct(budgetPctOf(pid, anglesMaxMicro(pid, a.redo)));
+    if (kind === "ready" && a.redo) return L(`Nouvelle recherche web et 5 nouveaux angles, d'après ta demande : au plus ${max} du budget IA du mois.`, `New research and 5 new angles: at most ${max}.`);
     return kind === "analyze"
       ? L(`Analyse de ta fiche de départ par l'IA, avant la recherche : au plus ${max} du budget IA du mois.`, `Brief analysis: at most ${max} of the monthly AI budget.`)
       : L(`Recherche web sur ton marché et 5 angles marketing : au plus ${max} du budget IA du mois.`, `Web research and 5 angles: at most ${max} of the monthly AI budget.`);
@@ -42,7 +43,7 @@ const proposeTool: AgentTool<{ retry?: boolean }> = {
     // que si le client l'a demandé (retry).
     const failed = researchFailure(p.id);
     if (failed && anglesPhase(p.id).kind === "research" && !a.retry) return { ok: false, summary: L(`La dernière recherche n'a pas abouti : ${failed.message} Elle a coûté ${pct(budgetPctOf(p.id, failed.costMicro))} du budget (appels réellement faits) ; l'analyse des angles, elle, n'a pas été payée. Dis-le au client avec ce chiffre, puis demande-lui s'il veut relancer (angles.propose avec retry: true, payant).`, "The last research failed."), data: { echec: failed.message, coutPct: budgetPctOf(p.id, failed.costMicro) } };
-    const r = advanceAngles(p.id);
+    const r = advanceAngles(p.id, a.redo);
     updateJourney(ctx.conversationId, (x) => setStep(x, 4, r.phase.kind === "ready" ? "review" : "doing"));
     if (r.jobId) return {
       ok: true, jobs: [r.jobId],

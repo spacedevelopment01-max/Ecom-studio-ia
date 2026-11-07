@@ -88,6 +88,9 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     seedSourcedAnglesForTest(pid);
     // 3) Les 5 angles sont prêts : rangés dans le parcours, affichés avec leurs sources.
     expect(A.anglesMaxMicro(pid)).toBe(0); // les lire est gratuit : jamais de devis ni d'accord de dépense
+    // Nouvelle proposition demandée par le client (ses mots) : payante, annoncée ; la lecture reste gratuite.
+    expect(A.anglesMaxMicro(pid, "Je voudrais une nouvelle proposition d'angles.")).toBeGreaterThan(0);
+    expect(await getTool("angles.propose")!.preview!(ctx, { redo: "Je voudrais une nouvelle proposition d'angles." })).toMatch(/^Nouvelle recherche web et 5 nouveaux angles, d'après ta demande/);
     const r3 = await call("angles.propose", ctx, {});
     expect(r3.ok).toBe(true);
     const j = J.journeyOf(cid);

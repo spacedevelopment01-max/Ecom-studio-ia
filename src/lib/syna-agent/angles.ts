@@ -83,9 +83,10 @@ export function researchFailure(projectId: string): { message: string; costMicro
 }
 
 /** Coût maximal de la prochaine étape payante (analyse de la fiche ou recherche), sans rien créer. */
-export function anglesMaxMicro(projectId: string): number {
+export function anglesMaxMicro(projectId: string, redo?: string): number {
   const ph = anglesPhase(projectId);
   // Lire des angles prêts, poser des questions : gratuit (essai réel : le devis d'une recherche bloquait la lecture).
+  if (ph.kind === "ready" && redo) return 1_000_000 + (webSearchQuoteMicro() ?? 0);
   if (ph.kind === "ready" || ph.kind === "questions" || ph.kind === "running") return 0;
   if (ph.kind === "analyze") {
     try { return (createQuote(projectId, "brief", "analyze") as any).capMicro ?? 1_000_000; } catch { return 1_000_000; }
@@ -97,9 +98,12 @@ export function anglesMaxMicro(projectId: string): number {
  * Avance d'un cran. La fiche reprend d'abord le nom choisi à l'étape 1 (la recherche cherche les concurrents de CETTE
  * marque). Renvoie la tâche lancée, les questions à poser, ou les angles prêts.
  */
-export function advanceAngles(projectId: string): { phase: AnglesPhase; jobId?: string; maxPct?: number } {
+export function advanceAngles(projectId: string, redo?: string): { phase: AnglesPhase; jobId?: string; maxPct?: number } {
   const p = loadProject(projectId);
   let ph = anglesPhase(projectId);
+  // Nouvelle proposition demandée par le client (ses mots) alors que des angles sont prêts : nouvelle recherche, avec sa
+  // demande comme correction (le moteur l'exige pour un nouvel essai) ; les angles précédents restent conservés.
+  if (ph.kind === "ready" && redo && redo.trim().length >= 8) return queue(projectId, "research", "generate", { kind: "research" }, redo.trim().slice(0, 1900));
   const st = () => stateOf(projectId)!;
   if (ph.kind === "analyze") {
     const input = (st().stages as any).brief.data.input;
