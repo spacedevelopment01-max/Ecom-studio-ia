@@ -69,13 +69,15 @@ export function activityPlan(projectId: string, j: Journey): ActivityPlan {
   const a = j.angles?.list.find((x) => x.id === ids[0]);
   // Messages clés et objections : ceux de la recherche pour CET angle (jamais réinventés).
   const raw: any = ((stateOf(projectId)?.stages as any)?.research?.data?.angles ?? []).find((x: any) => x.id === ids[0]);
-  const price = p.product.price ? `${String(p.product.price.amount).replace(".", ",")} ${p.product.price.currency === "EUR" ? "€" : p.product.price.currency}` : null;
+  // Prix de la fiche en CENTIMES (essai réel : « 790 € » affiché au lieu de 7,90 €).
+  const pr = p.product.price;
+  const price = pr?.amount != null && pr.status === "confirmed" ? `${(pr.amount / 100).toFixed(2).replace(".", ",").replace(/,00$/, "")} ${pr.currency === "EUR" ? "€" : pr.currency}` : null;
   return {
     company, missing,
     angle: a ? { id: a.id, title: a.title, goal: a.goal, message: a.message, story: a.story, show: a.show, cta: a.cta, others: ids.slice(1).map((id) => j.angles!.list.find((x) => x.id === id)?.title ?? id) } : null,
     keyMessages: (raw?.arguments ?? []).slice(0, 5).map((x: string) => String(x).slice(0, 300)),
     objections: (raw?.objections ?? []).slice(0, 5).map((o: any) => ({ objection: String(o.objection).slice(0, 300), answer: String(o.answer).slice(0, 400) })),
-    offer: { price, facts: p.product.facts.filter((f) => f.status === "confirmed").map(factLine).slice(0, 12) },
+    offer: { price, facts: p.product.facts.filter((f) => f.status === "confirmed" && !(price && /^prix$/i.test(f.label.trim()))).map(factLine).slice(0, 12) },
     products: listProducts(projectId).map((x) => ({ id: x.id, title: x.data.title, price: x.data.price == null ? null : x.data.price / 100, status: x.status })),
     at: Date.now(),
   };

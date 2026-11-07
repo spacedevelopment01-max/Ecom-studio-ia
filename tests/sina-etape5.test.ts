@@ -70,6 +70,10 @@ describe("SINA — étape 5 : l'activité complète", async () => {
     expect(view.journey.activity!.gaps).toEqual([]);
     expect(view.journey.activity!.products.map((x) => x.price)).toEqual([7.9, 22]);
     expect(view.journey.activity!.angle!.title).toBe("Le goût du vrai fruit");
+    // Prix de la fiche en centimes : « 7,90 € », jamais « 790 € » (essai réel).
+    const { saveProduct, loadProject } = await import("@/lib/projects");
+    saveProduct(pid, { ...loadProject(pid).product, price: { amount: 790, currency: "EUR", status: "confirmed" } });
+    expect(Act.activityPlan(pid, J.journeyOf(cid)).offer.price).toBe("7,90 €");
     expect((await call("activity.validate", ctx, {})).ok).toBe(true);
     expect(J.journeyOf(cid).steps[5].status).toBe("done");
     expect(J.currentStep(J.journeyOf(cid))).toBe(6);
