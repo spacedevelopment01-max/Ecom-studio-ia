@@ -54,9 +54,9 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
 
   it("une étape pas encore construite est annoncée, sans outil payant", () => {
     const j = J.emptyJourney();
-    J.setStep(j, 0, "done"); J.setStep(j, 1, "done"); J.setStep(j, 2, "done"); J.setStep(j, 3, "done"); J.setStep(j, 4, "doing");
-    expect(J.currentStep(j)).toBe(4);
-    expect(J.READY_STEPS).not.toContain(4);
+    J.setStep(j, 0, "done"); J.setStep(j, 1, "done"); J.setStep(j, 2, "done"); J.setStep(j, 3, "done"); J.setStep(j, 4, "done"); J.setStep(j, 5, "doing");
+    expect(J.currentStep(j)).toBe(5);
+    expect(J.READY_STEPS).not.toContain(5);
     expect(J.journeyContext(j)).toMatch(/n'est pas encore disponible .*AUCUN outil payant/);
   });
 
@@ -326,8 +326,9 @@ describe("SINA — niveaux de coût : gratuit (moteur local), Haiku, Opus", asyn
     expect(modelFor(1)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 1 : le fil reste léger, la création est dans l'outil (modèle fort)
     expect(modelFor(2)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 2 : le dessin est dans l'outil logo.propose
     expect(modelFor(3)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 3 : l'image de marque est rendue par le Studio (brand.kit)
-    expect(modelFor(4)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 4 pas encore construite : simple annonce
-    J.READY_STEPS.push(4);
-    try { expect(modelFor(4)).toBeUndefined(); } finally { J.READY_STEPS.pop(); }
+    expect(modelFor(4)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 4 : recherche et angles dans les tâches du Pilote
+    expect(modelFor(5)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 5 pas encore construite : simple annonce
+    J.READY_STEPS.push(5);
+    try { expect(modelFor(5)).toBeUndefined(); } finally { J.READY_STEPS.pop(); }
   });
 });

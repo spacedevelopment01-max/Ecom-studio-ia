@@ -16,7 +16,7 @@ type View = {
   run: { id: string; status: string; step: number; pending: any; error: string | null } | null;
   budget: { authorizedPct: number | null; spentPct: number | null };
   attachments: { id: string; kind: string; name: string; analysis: any }[];
-  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; logos?: Logos | null; brandKit?: Kit | null };
+  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; logos?: Logos | null; brandKit?: Kit | null; angles?: Angles | null };
 };
 type Face = { family: string; file: string; weight: number } | null;
 type IdentityCard = { nameWhy?: string;
@@ -167,6 +167,40 @@ function LogoCards({ logos, brandBg, busy, onChoose }: { logos: Logos; brandBg: 
         })}
       </div>
       {!logos.chosen && <p className="text-xs text-muted">{t("Tu peux aussi demander une nouvelle proposition, avec tes mots (par exemple « plus simple », « sans illustration »).", "You can also ask for a new proposal, in your own words.")}</p>}
+    </div>
+  );
+}
+
+type Angles = { list: { id: string; title: string; audience: string; motivation: string; message: string; emotion: string; proofsToConfirm: string[]; arguments: string[]; sources: { title: string; url: string }[] }[]; recommendedId: string | null; sourceCount: number; chosen: string | null };
+
+/** Étape 4 : les 5 angles marketing, avec leurs sources réelles et ce qui reste à confirmer, puis le choix du client. */
+function AngleCards({ angles, busy, onChoose }: { angles: Angles; busy: boolean; onChoose: (id: string, title: string) => void }) {
+  const t = useT();
+  return (
+    <div className="@container mt-2 space-y-2" data-syna-angles>
+      <p className="text-xs text-muted">{t(`${angles.sourceCount} sources lues sur le web (places de marché exclues).`, `${angles.sourceCount} web sources read.`)}</p>
+      <div className="grid grid-cols-1 gap-2 @3xl:grid-cols-2">
+        {angles.list.map((a) => {
+          const chosen = angles.chosen === a.id;
+          return (
+            <article key={a.id} className={cx("rounded-xl border bg-card p-3 text-xs", chosen ? "border-ink ring-2 ring-ink" : "border-line", angles.chosen && !chosen && "opacity-60")} data-angle={a.id}>
+              <div className="flex items-start justify-between gap-2">
+                <h4 className="text-sm font-semibold">{a.title}</h4>
+                {angles.recommendedId === a.id && <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">{t("Recommandé", "Recommended")}</span>}
+              </div>
+              {!!a.message && <p className="mt-1 text-sm italic">« {a.message} »</p>}
+              <dl className="mt-2 space-y-1">
+                {!!a.audience && <div><dt className="inline font-semibold">{t("Pour qui", "For whom")} : </dt><dd className="inline">{a.audience}</dd></div>}
+                {!!a.emotion && <div><dt className="inline font-semibold">{t("Émotion", "Emotion")} : </dt><dd className="inline">{a.emotion}</dd></div>}
+                {!!a.motivation && <div><dt className="inline font-semibold">{t("Ce qui les fait acheter", "Why they buy")} : </dt><dd className="inline">{a.motivation}</dd></div>}
+                {!!a.proofsToConfirm.length && <div className="text-amber-700"><dt className="inline font-semibold">{t("À confirmer par toi", "To confirm")} : </dt><dd className="inline">{a.proofsToConfirm.join(" ; ")}</dd></div>}
+              </dl>
+              {!!a.sources.length && <p className="mt-2 text-[11px] text-muted">{t("Sources", "Sources")} : {a.sources.map((x, i) => <span key={x.url}>{i ? " · " : ""}<a className="underline" href={x.url} target="_blank" rel="noreferrer">{x.title}</a></span>)}</p>}
+              <div className="mt-2">{chosen ? <p className="font-semibold">✓ {t("Angle de ta marque", "Your brand angle")}</p> : !angles.chosen && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(a.id, a.title)}>{t("Je choisis cet angle", "I choose this angle")}</Button>}</div>
+            </article>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -340,6 +374,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
   const items = useMemo(() => groupThread(v?.messages ?? []), [v?.messages]);
   // Cartes des identités : sous la DERNIÈRE proposition réussie (les anciennes sont remplacées).
   const lastCalendar = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && String(m.content?.tool ?? "").startsWith("calendar.") && m.content?.ok)?.id, [v?.messages]);
+  const lastAngles = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "angles.propose" && m.content?.ok && m.content?.data?.angles)?.id, [v?.messages]);
   const lastKit = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "brand.kit" && m.content?.ok)?.id, [v?.messages]);
   const lastLogos = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && (m.content?.tool === "logo.propose" || (m.content?.tool === "jobs.wait" && JSON.stringify(m.content?.data ?? "").includes("syna.logos"))) && m.content?.ok)?.id, [v?.messages]);
   const lastIdentity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "identity.propose" && m.content?.ok)?.id, [v?.messages]);
@@ -375,6 +410,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
               {it.tools.map((tm) => <div key={tm.id}>
                 <ToolResult m={tm} projectId={v.projectId} onChoose={(n) => send(t(`Je choisis la maquette ${n}.`, `I choose mockup ${n}.`))} busy={busy || working} />
                 {tm.id === lastLogos && v.journey?.logos && <LogoCards logos={v.journey.logos} brandBg={brandBackground(v.journey.identities)} busy={busy || working} onChoose={(k) => send(t(`Je choisis le logo ${k}.`, `I choose logo ${k}.`))} />}
+                {tm.id === lastAngles && v.journey?.angles && <AngleCards angles={v.journey.angles} busy={busy || working} onChoose={(id, title) => send(t(`Je choisis l'angle « ${title} ».`, `I choose the angle "${title}".`))} />}
                 {tm.id === lastKit && v.journey?.brandKit && <BrandKitCard kit={v.journey.brandKit} darkBg={v.journey.identities?.final?.palette.dark ?? "#16161A"} busy={busy || working} onValidate={() => send(t("Je valide mon image de marque.", "I validate my brand kit."))} />}
                 {tm.id === lastCalendar && v.projectId && <CalendarCard projectId={v.projectId} refreshKey={tm.id} />}
                 {tm.id === lastIdentity && v.journey?.identities && <IdentityCards ids={v.journey.identities} busy={busy || working} onChoose={(k) => send(t(`Je choisis l'identité ${k}.`, `I choose identity ${k}.`))} />}

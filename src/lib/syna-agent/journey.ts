@@ -14,6 +14,7 @@ import { L } from "../i18n-server";
 import type { Identity } from "./identities";
 import type { SinaLogo } from "./logos";
 import type { BrandKit } from "./brand-kit";
+import type { SinaAngles } from "./angles";
 
 export const JOURNEY_STEPS = [
   { n: 0, fr: "Questions de départ", en: "Getting started" },
@@ -36,7 +37,7 @@ export type StepNumber = (typeof JOURNEY_STEPS)[number]["n"];
  * Étapes déjà construites dans le parcours SINA. Les autres sont annoncées au client mais SINA n'y lance rien
  * (aucun outil payant) : elle ne doit jamais partir seule sur une étape que le parcours ne sait pas encore mener.
  */
-export const READY_STEPS: number[] = [0, 1, 2, 3];
+export const READY_STEPS: number[] = [0, 1, 2, 3, 4];
 /** à faire · en cours · à valider par le client · validée · sans objet (ex. étape 7 quand le client choisit un de nos thèmes). */
 export type StepStatus = "todo" | "doing" | "review" | "done" | "skipped";
 
@@ -77,6 +78,9 @@ export type Journey = {
   logoChoice?: { source: "A" | "B" | "C"; assetId: string; at: number };
   /** Étape 3 : image de marque complète (déclinaisons, favicons, avatar, planche, charte PDF). */
   brandKit?: BrandKit;
+  /** Étape 4 : les 5 angles marketing (recherche web) et l'angle choisi par le client. */
+  angles?: SinaAngles;
+  angleChoice?: { id: string; at: number };
 };
 
 export const emptyJourney = (): Journey => ({
@@ -191,6 +195,7 @@ export function journeyContext(j: Journey): string {
   if (cur === 1) lines.push(...identityStepContext(j));
   if (cur === 2) lines.push(...logoStepContext(j));
   if (cur === 3) lines.push(...brandKitStepContext(j));
+  if (cur === 4) lines.push(...anglesStepContext(j));
   if (READY_STEPS.includes(cur) && STEP_GUIDES[cur]) lines.push(STEP_GUIDES[cur]);
   return lines.join("\n");
 }
@@ -212,6 +217,16 @@ export function logoStepContext(j: Journey): string[] {
   const lines = [`Étape 2 — proposition n° ${lg.round} (les logos sont affichés au client dans le fil) : ${lg.list.map((x) => `${x.source} « ${x.name} » (${x.style}) : ${x.verdict === "FINAL" ? `validé par le contrôle, ${x.score ?? "?"}/10` : x.verdict === "PROVISIONAL" ? "version du studio" : x.assetId ? `NON validé par le contrôle (${x.reason})` : `pas de dessin (${x.reason})`}`).join(" ; ")}.`,
     "Présente-les en 2 ou 3 phrases (honnêtement : un logo non validé est dit non validé), puis demande lequel il choisit (logo.choose). Il peut demander une nouvelle proposition avec ses mots (logo.propose avec guidance, payant). Ne choisis jamais à sa place."];
   return lines;
+}
+
+/** Étape 4 : les 5 angles marketing. */
+export function anglesStepContext(j: Journey): string[] {
+  const a = j.angles;
+  if (!a?.list.length) return ["Étape 4 (5 angles marketing) : explique en une ou deux phrases ce qu'est un angle (la façon de parler de la marque : à qui, quelle émotion, quelle promesse) et que SINA va chercher sur le web ce que vivent ses clients et ses concurrents (places de marché exclues) pour proposer 5 angles avec leurs sources. C'est PAYANT : annonce le coût (angles.propose donne le devis), puis appelle angles.propose. Rappelle angles.propose après chaque tâche terminée (analyse de la fiche, puis recherche). S'il renvoie des questions, pose-les au client UNE par UNE, enregistre ses réponses avec pilot.answer, puis rappelle angles.propose."];
+  return [
+    `Étape 4 — 5 angles prêts (affichés au client dans le fil, ${a.sourceCount} sources lues) : ${a.list.map((x) => `${x.id} « ${x.title} » (émotion : ${x.emotion || "?"} ; à confirmer : ${x.proofsToConfirm.join(", ") || "rien"})`).join(" ; ")}. Recommandé : ${a.recommendedId ?? "aucun"}.`,
+    "Présente-les en 3 phrases courtes au plus (sans recopier les cartes), dis lequel est recommandé et pourquoi en une phrase, rappelle que les preuves « à confirmer » ne seront jamais écrites sans son accord, puis demande lequel il choisit (angles.choose). Ne choisis jamais à sa place.",
+  ];
 }
 
 /** Étape 3 : image de marque complète (gratuite, rendue par le Studio). */

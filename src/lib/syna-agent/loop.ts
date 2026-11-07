@@ -318,7 +318,8 @@ export function modelFor(currentStepNumber: number): { provider: "anthropic"; mo
   // Étape 1 : la création des identités se fait dans l'outil identity.propose (modèle fort) ; le fil reste léger.
   // Étape 2 de même : le dessin et le contrôle des logos se font dans la tâche logo.propose.
   // Étape 3 : l'image de marque est rendue par le Studio (brand.kit), sans IA.
-  const simple = currentStepNumber <= 3 || !READY_STEPS.includes(currentStepNumber);
+  // Étape 4 : la recherche et les angles sont faits par les tâches du Pilote (angles.propose).
+  const simple = currentStepNumber <= 4 || !READY_STEPS.includes(currentStepNumber);
   return simple ? { provider: "anthropic", model: "claude-haiku-5-5", effort: "low" } : undefined;
 }
 
@@ -415,6 +416,8 @@ export function threadView(user: User, cid: string) {
         } : null,
         // Étape 2 : les 3 logos (images servies par la bibliothèque du projet) et le logo choisi.
         logos: j.logos ? { round: j.logos.round, chosen: j.logoChoice?.source ?? null, list: j.logos.list.map((x) => ({ ...x, href: x.assetId ? assetUrl({ id: x.assetId }) : null })) } : null,
+        // Étape 4 : les 5 angles marketing et l'angle choisi.
+        angles: j.angles ? { list: j.angles.list, recommendedId: j.angles.recommendedId, sourceCount: j.angles.sourceCount, chosen: j.angleChoice?.id ?? null } : null,
         // Étape 3 : l'image de marque (déclinaisons, planche, charte PDF), servie par la bibliothèque du projet.
         brandKit: j.brandKit ? {
           validated: j.steps[3]?.status === "done", notes: j.brandKit.notes,
