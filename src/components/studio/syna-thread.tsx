@@ -16,7 +16,7 @@ type View = {
   run: { id: string; status: string; step: number; pending: any; error: string | null } | null;
   budget: { authorizedPct: number | null; spentPct: number | null };
   attachments: { id: string; kind: string; name: string; analysis: any }[];
-  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; logos?: Logos | null };
+  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; logos?: Logos | null; brandKit?: Kit | null };
 };
 type Face = { family: string; file: string; weight: number } | null;
 type IdentityCard = { nameWhy?: string;
@@ -171,6 +171,34 @@ function LogoCards({ logos, brandBg, busy, onChoose }: { logos: Logos; brandBg: 
   );
 }
 
+type Kit = { validated: boolean; notes: string[]; items: { key: string; label: string; href: string; dark?: boolean; downloadHref?: string }[]; board: string | null; book: string | null; pages: string[] };
+
+/** Étape 3 : l'image de marque complète (planche, déclinaisons du logo, charte PDF), puis la validation du client. */
+function BrandKitCard({ kit, darkBg, busy, onValidate }: { kit: Kit; darkBg: string; busy: boolean; onValidate: () => void }) {
+  const t = useT();
+  return (
+    <div className="@container mt-2 space-y-2 rounded-xl border border-line bg-card p-3" data-syna-brand-kit>
+      {kit.board && <a href={kit.board} target="_blank" rel="noreferrer"><img src={kit.board} alt={t("Planche de marque", "Brand board")} className="w-full rounded-lg border border-line" data-kit-board /></a>}
+      <div className="grid grid-cols-2 gap-2 @xl:grid-cols-4">
+        {kit.items.filter((x) => !x.downloadHref).map((x) => (
+          <figure key={x.key} className="overflow-hidden rounded-lg border border-line" data-kit-item={x.key}>
+            <div className="flex h-28 items-center justify-center p-2" style={{ background: x.dark ? darkBg : x.key === "favicon-32" ? "#F4F4F2" : "#FFFFFF" }}>
+              <img src={x.href} alt={x.label} className={cx("max-h-full max-w-full object-contain", x.key === "avatar" && "h-24 w-24 rounded-full", x.key === "favicon-32" && "h-8 w-8")} />
+            </div>
+            <figcaption className="border-t border-line px-2 py-1 text-[11px]">{x.label}</figcaption>
+          </figure>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-2 text-xs">
+        {kit.book && <a className="underline" href={kit.book} target="_blank" rel="noreferrer" data-kit-book>{t(`Ouvrir la charte de marque (PDF, ${kit.pages.length} pages)`, `Open the brand book (PDF, ${kit.pages.length} pages)`)}</a>}
+        {kit.items.filter((x) => x.downloadHref).map((x) => <a key={x.key} className="underline" href={x.downloadHref} data-kit-download={x.key}>{t("Télécharger", "Download")} : {x.label}</a>)}
+      </div>
+      {!!kit.notes.length && <ul className="list-disc pl-4 text-xs text-amber-700" data-kit-notes>{kit.notes.map((n) => <li key={n}>{n}</li>)}</ul>}
+      {kit.validated ? <p className="text-xs font-semibold">✓ {t("Image de marque validée", "Brand kit validated")}</p> : <Button size="sm" disabled={busy} onClick={onValidate}>{t("Je valide mon image de marque", "I validate my brand kit")}</Button>}
+    </div>
+  );
+}
+
 /** Fond de la marque choisie (aperçu des logos sur ce fond) : sombre, dégradé ou couleur de surface. */
 function brandBackground(ids: Identities | null | undefined): string | null {
   const f = ids?.final;
@@ -312,6 +340,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
   const items = useMemo(() => groupThread(v?.messages ?? []), [v?.messages]);
   // Cartes des identités : sous la DERNIÈRE proposition réussie (les anciennes sont remplacées).
   const lastCalendar = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && String(m.content?.tool ?? "").startsWith("calendar.") && m.content?.ok)?.id, [v?.messages]);
+  const lastKit = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "brand.kit" && m.content?.ok)?.id, [v?.messages]);
   const lastLogos = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && (m.content?.tool === "logo.propose" || (m.content?.tool === "jobs.wait" && JSON.stringify(m.content?.data ?? "").includes("syna.logos"))) && m.content?.ok)?.id, [v?.messages]);
   const lastIdentity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "identity.propose" && m.content?.ok)?.id, [v?.messages]);
   if (!v) return <div className="p-4 text-sm text-muted">{error || t("Ouverture du fil SINA…", "Opening SINA thread…")}</div>;
@@ -346,6 +375,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
               {it.tools.map((tm) => <div key={tm.id}>
                 <ToolResult m={tm} projectId={v.projectId} onChoose={(n) => send(t(`Je choisis la maquette ${n}.`, `I choose mockup ${n}.`))} busy={busy || working} />
                 {tm.id === lastLogos && v.journey?.logos && <LogoCards logos={v.journey.logos} brandBg={brandBackground(v.journey.identities)} busy={busy || working} onChoose={(k) => send(t(`Je choisis le logo ${k}.`, `I choose logo ${k}.`))} />}
+                {tm.id === lastKit && v.journey?.brandKit && <BrandKitCard kit={v.journey.brandKit} darkBg={v.journey.identities?.final?.palette.dark ?? "#16161A"} busy={busy || working} onValidate={() => send(t("Je valide mon image de marque.", "I validate my brand kit."))} />}
                 {tm.id === lastCalendar && v.projectId && <CalendarCard projectId={v.projectId} refreshKey={tm.id} />}
                 {tm.id === lastIdentity && v.journey?.identities && <IdentityCards ids={v.journey.identities} busy={busy || working} onChoose={(k) => send(t(`Je choisis l'identité ${k}.`, `I choose identity ${k}.`))} />}
               </div>)}

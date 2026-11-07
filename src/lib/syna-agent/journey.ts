@@ -13,6 +13,7 @@ import { json, now, one, run, tx } from "../db";
 import { L } from "../i18n-server";
 import type { Identity } from "./identities";
 import type { SinaLogo } from "./logos";
+import type { BrandKit } from "./brand-kit";
 
 export const JOURNEY_STEPS = [
   { n: 0, fr: "Questions de départ", en: "Getting started" },
@@ -35,7 +36,7 @@ export type StepNumber = (typeof JOURNEY_STEPS)[number]["n"];
  * Étapes déjà construites dans le parcours SINA. Les autres sont annoncées au client mais SINA n'y lance rien
  * (aucun outil payant) : elle ne doit jamais partir seule sur une étape que le parcours ne sait pas encore mener.
  */
-export const READY_STEPS: number[] = [0, 1, 2];
+export const READY_STEPS: number[] = [0, 1, 2, 3];
 /** à faire · en cours · à valider par le client · validée · sans objet (ex. étape 7 quand le client choisit un de nos thèmes). */
 export type StepStatus = "todo" | "doing" | "review" | "done" | "skipped";
 
@@ -74,6 +75,8 @@ export type Journey = {
   /** Étape 2 : dernière proposition des 3 logos (moteur de logos V2) et logo choisi par le client. */
   logos?: { list: SinaLogo[]; at: number; round: number; notes?: string[] };
   logoChoice?: { source: "A" | "B" | "C"; assetId: string; at: number };
+  /** Étape 3 : image de marque complète (déclinaisons, favicons, avatar, planche, charte PDF). */
+  brandKit?: BrandKit;
 };
 
 export const emptyJourney = (): Journey => ({
@@ -187,6 +190,7 @@ export function journeyContext(j: Journey): string {
   }
   if (cur === 1) lines.push(...identityStepContext(j));
   if (cur === 2) lines.push(...logoStepContext(j));
+  if (cur === 3) lines.push(...brandKitStepContext(j));
   if (READY_STEPS.includes(cur) && STEP_GUIDES[cur]) lines.push(STEP_GUIDES[cur]);
   return lines.join("\n");
 }
@@ -208,6 +212,17 @@ export function logoStepContext(j: Journey): string[] {
   const lines = [`Étape 2 — proposition n° ${lg.round} (les logos sont affichés au client dans le fil) : ${lg.list.map((x) => `${x.source} « ${x.name} » (${x.style}) : ${x.verdict === "FINAL" ? `validé par le contrôle, ${x.score ?? "?"}/10` : x.verdict === "PROVISIONAL" ? "version du studio" : x.assetId ? `NON validé par le contrôle (${x.reason})` : `pas de dessin (${x.reason})`}`).join(" ; ")}.`,
     "Présente-les en 2 ou 3 phrases (honnêtement : un logo non validé est dit non validé), puis demande lequel il choisit (logo.choose). Il peut demander une nouvelle proposition avec ses mots (logo.propose avec guidance, payant). Ne choisis jamais à sa place."];
   return lines;
+}
+
+/** Étape 3 : image de marque complète (gratuite, rendue par le Studio). */
+export function brandKitStepContext(j: Journey): string[] {
+  const k = j.brandKit;
+  if (!k) return ["Étape 3 (image de marque complète) : rien n'est encore préparé. Annonce en une phrase ce que contient l'image de marque (déclinaisons du logo, favicon, avatar des réseaux, planche de marque, charte PDF), que c'est GRATUIT (aucune IA, rendu par le Studio), puis appelle brand.kit."];
+  return [
+    `Étape 3 — image de marque prête (affichée au client dans le fil) : ${k.items.map((x) => x.label).join(", ")} ; planche de marque ${k.boardId ? "oui" : "non"} ; charte PDF ${k.bookId ? `oui (${k.pageIds.length} pages)` : "non"}.`,
+    ...(k.notes.length ? [`À dire honnêtement au client : ${k.notes.join(" ; ")}`] : []),
+    "Présente-la en 2 ou 3 phrases simples, puis demande s'il la valide. À sa validation (« oui », « je valide »…), appelle brand.kit_validate. S'il veut changer le logo lui-même, rappelle que c'est l'étape 2 (logo.choose ou une nouvelle proposition, payante) ; s'il veut changer une couleur ou une police, dis-lui que c'est noté et que ce réglage arrive plus tard dans le parcours, sans rien inventer.",
+  ];
 }
 
 /** Étape 1 : que faire selon l'état des propositions. */

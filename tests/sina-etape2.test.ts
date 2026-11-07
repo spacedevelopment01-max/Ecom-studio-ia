@@ -183,6 +183,67 @@ describe("SINA — étape 2 : 3 logos", async () => {
     expect(A.artworkText({ ...t, style: "emblem" }, { name: "X", tagline: "Y" } as any).tagline).toBe("Y");
   });
 
+  it("étape 3 : image de marque complète (gratuite) — déclinaisons, favicons, avatar, planche, charte PDF, puis validation du client", async () => {
+    const sharp = (await import("sharp")).default;
+    const { assetData, getAsset } = await import("@/lib/library");
+    const { user, cid, ctx, pid } = await stepTwo();
+    // Avant le choix du logo : refusé.
+    expect((await call("brand.kit", ctx, {})).ok).toBe(false);
+    logoToolDeps.maxMicro = () => 900_000;
+    try { expect((await call("logo.propose", ctx, {})).ok).toBe(true); } finally { logoToolDeps.maxMicro = undefined; }
+    G.logoDeps.ai = fakeEngine({ calls: [], prompts: [] });
+    G.logoDeps.draw = async (_p, tid) => artFixture(Number(tid.slice(1)) || 0);
+    try { await fr(() => G.runSinaLogosJob(jobCtx(user, pid, { projectId: pid, conversationId: cid, capMicro: 900_000 }))); } finally { G.logoDeps.ai = undefined; G.logoDeps.draw = undefined; }
+    const pick = J.journeyOf(cid).logos!.list.find((x) => x.verdict === "FINAL")!;
+    expect((await call("logo.choose", ctx, { source: pick.source })).ok).toBe(true);
+    expect(J.currentStep(J.journeyOf(cid))).toBe(3);
+    expect(J.READY_STEPS).toContain(3);
+    expect(modelFor(3)?.model).toMatch(/haiku/); // le fil reste léger : le rendu est fait par le Studio
+    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/Étape 3 \(image de marque complète\) : rien n'est encore préparé[^]*GRATUIT[^]*brand\.kit/);
+    const r = await call("brand.kit", ctx, {});
+    expect(r.ok).toBe(true);
+    const kit = J.journeyOf(cid).brandKit!;
+    expect(J.journeyOf(cid).steps[3].status).toBe("review");
+    const keys = kit.items.map((x) => x.key);
+    for (const k of ["logo", "fond-sombre", "noir", "blanc", "favicon-32", "favicon-512", "avatar"]) expect(keys).toContain(k);
+    const size = async (k: string) => sharp(assetData(getAsset(kit.items.find((x) => x.key === k)!.assetId)!)).metadata();
+    expect((await size("favicon-32")).width).toBe(32);
+    expect((await size("favicon-512")).width).toBe(512);
+    expect((await size("avatar")).width).toBe(1080);
+    expect(kit.boardId).toBeTruthy();
+    expect(kit.bookId).toBeTruthy();
+    expect(getAsset(kit.bookId!)!.mime).toBe("application/pdf");
+    expect(kit.pageIds.length).toBeGreaterThan(0);
+    // Ce qui manque est dit honnêtement (le dessin de test n'a pas de version vectorielle fidèle, ou il en a une).
+    expect(keys.includes("svg") || kit.notes.some((n) => /vectoriel/.test(n))).toBe(true);
+    // Une seconde préparation ne refait pas les fichiers (aucun doublon).
+    const again = await (await import("@/lib/syna-agent/brand-kit")).buildBrandKit(pid);
+    expect(again.items.find((x) => x.key === "favicon-32")!.assetId).toBe(kit.items.find((x) => x.key === "favicon-32")!.assetId);
+    const view = await fr(() => threadView(user, cid));
+    expect(view.journey.brandKit!.items.every((x) => x.href.startsWith("/api/files/"))).toBe(true);
+    expect(view.journey.brandKit!.book).toMatch(/^\/api\/files\//);
+    expect(view.journey.brandKit!.validated).toBe(false);
+    // Validation du client : étape 3 terminée, étape 4 ouverte.
+    expect((await call("brand.kit_validate", ctx, {})).ok).toBe(true);
+    expect(J.journeyOf(cid).steps[3].status).toBe("done");
+    expect(J.currentStep(J.journeyOf(cid))).toBe(4);
+    expect((await call("brand.kit", ctx, {})).ok).toBe(false);
+  });
+
+  it("favicon et avatar : le symbole entier, centré, sans rien couper", async () => {
+    const sharp = (await import("sharp")).default;
+    const K = await import("@/lib/syna-agent/brand-kit");
+    const mark = await sharp({ create: { width: 400, height: 200, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite([{ input: await sharp({ create: { width: 380, height: 180, channels: 4, background: "#C2380F" } }).png().toBuffer(), left: 10, top: 10 }]).png().toBuffer();
+    const fav = await sharp(await K.faviconPng(mark, 512)).raw().toBuffer({ resolveWithObject: true });
+    expect(fav.info.width).toBe(512);
+    expect(fav.data[3]).toBe(0); // coin transparent : de l'air autour, rien de coupé
+    const av = await sharp(await K.avatarPng(mark, "#FFFFFF")).raw().toBuffer({ resolveWithObject: true });
+    expect(av.info.width).toBe(1080);
+    const px = (x: number, y: number) => av.data[(y * 1080 + x) * av.info.channels];
+    expect(px(540, 540)).toBeGreaterThan(150); // le symbole au centre (rouge)
+    expect(px(60, 540)).toBe(255); // bord : fond blanc, le symbole tient dans le cercle visible
+  });
+
   it("refusé avant l'identité choisie", async () => {
     const user = await account();
     const cid = threadFor(user, null), ctx = ctxOf(user, cid);

@@ -8,7 +8,8 @@ import { commerceTools } from "./commerce";
 import { startTools } from "./start";
 import { identityTools } from "./identity";
 import { logoTools } from "./logo";
+import { brandKitTools } from "./brand-kit";
 import { calendarTools } from "./calendar";
 import { mockupCodeTools } from "../mockup-code/tools";
 
-export const TOOL_LIST: AgentTool[] = [...startTools, ...identityTools, ...logoTools, ...projectTools, ...siteTools, ...catalogueTools, ...commerceTools, ...mediaTools, ...calendarTools, ...mockupCodeTools];
+export const TOOL_LIST: AgentTool[] = [...startTools, ...identityTools, ...logoTools, ...brandKitTools, ...projectTools, ...siteTools, ...catalogueTools, ...commerceTools, ...mediaTools, ...calendarTools, ...mockupCodeTools];
