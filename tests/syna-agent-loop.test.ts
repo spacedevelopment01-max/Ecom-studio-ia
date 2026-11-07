@@ -212,7 +212,8 @@ describe("SINA agent — un fil, des outils natifs, des changements vérifiés",
     expect(seen).toContain("jobs.wait");
     expect(seen).toContain("ÉCHEC");
     const waitMsg = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND role='tool'", s.cid).map((m) => JSON.parse(m.content_json)).find((m) => m.tool === "jobs.wait")!;
-    expect(waitMsg.summary).toMatch(/Coût réellement dépensé par la tâche en échec : ≈.\d+(,\d)?.% de votre budget IA — dis-le au client avec ce chiffre ; ne dis jamais que rien n'a été débité/);
+    expect(waitMsg.summary).toMatch(/Coût réellement dépensé par la tâche en échec : ≈.\d+(,\d)?.% de votre budget IA\./);
+    expect(waitMsg.hint).toMatch(/ne dis jamais que rien n'a été débité/); // consigne pour SINA seule
     expect(waitMsg.data[0].coutReelMicro).toBe(290_000);
   });
 

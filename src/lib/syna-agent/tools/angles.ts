@@ -55,7 +55,7 @@ const proposeTool: AgentTool<{ retry?: boolean; redo?: string }> = {
     if (r.phase.kind === "ready") {
       const angles = r.phase.angles;
       updateJourney(ctx.conversationId, (x) => { x.angles = angles; setStep(x, 4, "review"); });
-      return { ok: true, summary: L(`5 angles prêts (${angles.sourceCount} sources lues) : ${angles.list.map((a) => `${a.id} « ${a.title} »`).join(" ; ")}. Recommandé : ${angles.recommendedId ?? "aucun"}.`, "Angles ready."), data: { angles: angles.list.map((a) => ({ id: a.id, titre: a.title, cible: a.audience, accroche: a.message, emotion: a.emotion, aConfirmer: a.proofsToConfirm })), recommande: angles.recommendedId } };
+      return { ok: true, summary: L(`5 angles prêts (${angles.sourceCount} sources lues) : ${angles.list.map((a) => `« ${a.title} »`).join(" ; ")}.${angles.recommendedId ? ` Recommandé : « ${angles.list.find((a) => a.id === angles.recommendedId)?.title ?? angles.recommendedId} ».` : ""}`, "Angles ready."), hint: `Identifiants des angles pour angles.choose : ${angles.list.map((a) => `${a.id} = « ${a.title} »`).join(" ; ")}.`, data: { angles: angles.list.map((a) => ({ id: a.id, titre: a.title, cible: a.audience, accroche: a.message, emotion: a.emotion, aConfirmer: a.proofsToConfirm })), recommande: angles.recommendedId } };
     }
     return { ok: false, summary: L("Rien à lancer pour l'instant.", "Nothing to start.") };
   },

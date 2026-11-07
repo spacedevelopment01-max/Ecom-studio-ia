@@ -186,7 +186,7 @@ const pilotAnswerTool: AgentTool<{ answers?: { questionId: string; answer?: stri
       try { answerBriefQuestion(p.id, s.revision, x.questionId, x.later ? { later: true } : { answer: x.answer ?? "" }); }
       catch (e: any) { failed.push(`${x.questionId} : ${short(e?.message, 160)}`); continue; }
       const q = ((stateOf(p.id)!.stages as any).brief?.data?.profile?.questions ?? []).find((y: any) => y.id === x.questionId);
-      changes.push({ module: "pilote", object: q?.question ?? x.questionId, summary: x.later ? L("reportée", "postponed") : String(q?.answer ?? x.answer), after: q?.answer ?? null, verified: !!q && (x.later ? !!q.later : (q.answer ?? "") !== "") });
+      changes.push({ module: "pilote", object: q?.question ?? x.questionId, summary: x.later ? L("reportée", "postponed") : short(String(q?.answer ?? x.answer), 140), after: q?.answer ?? null, verified: !!q && (x.later ? !!q.later : (q.answer ?? "") !== "") });
     }
     const missing = ((stateOf(p.id)!.stages as any).brief?.data?.missing ?? []) as unknown[];
     return { ok: !failed.length, summary: L(`${changes.length} réponse(s) enregistrée(s) dans la fiche${failed.length ? ` ; refusées : ${failed.join(" ; ")}` : ""}. Encore manquant : ${missing.length}.`, `${changes.length} answer(s) saved.`), changes, data: { missing } };

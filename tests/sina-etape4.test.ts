@@ -113,6 +113,10 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     expect(await getTool("angles.propose")!.preview!(ctx, { redo: "Je voudrais une nouvelle proposition d'angles." })).toMatch(/^Nouvelle recherche web et 5 nouveaux angles, d'après ta demande/);
     const r3 = await call("angles.propose", ctx, {});
     expect(r3.ok).toBe(true);
+    // Essai réel du 7 novembre : « usage », « reassurance »… (identifiants internes) montrés au client.
+    const angleIds = J.journeyOf(cid).angles!.list.map((a) => a.id);
+    for (const id of angleIds) expect(r3.summary).not.toMatch(new RegExp(`(^|[ :;])${id}( |$)`));
+    expect(r3.hint).toMatch(new RegExp(`${angleIds[0]} = «`));
     const j = J.journeyOf(cid);
     expect(j.angles!.list).toHaveLength(5);
     expect(j.steps[4].status).toBe("review");

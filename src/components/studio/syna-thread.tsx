@@ -542,6 +542,6 @@ function EventLine({ m }: { m: Msg }) {
   const t = useT(), c = m.content;
   if (c.kind === "error") return <p className="text-xs text-red-600">{t("Erreur : ", "Error: ")}{c.message}</p>;
   if (c.kind === "stopped") return <p className="text-xs text-muted">{t("Arrêté à ta demande.", "Stopped.")}</p>;
-  if (c.kind === "waiting_jobs") return <p className="text-xs text-muted">⏳ {t("Création lancée en arrière-plan ; SINA reprendra seule.", "Creation running in the background; SINA will resume.")}</p>;
+  if (c.kind === "waiting_jobs") return <p className="text-xs text-muted">⏳ {t("Tâche lancée en arrière-plan ; je reprends dès qu'elle est finie.", "Task running in the background; I'll resume when it's done.")}</p>;
   return null;
 }
