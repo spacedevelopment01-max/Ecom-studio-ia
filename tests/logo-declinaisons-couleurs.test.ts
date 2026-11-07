@@ -156,4 +156,15 @@ describe("File des tâches : appliquer le logo choisi passe avant les longues t�
     const simple = await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><path d="M20 180 L100 20 L180 180" stroke="#1F2A3A" stroke-width="14" fill="none"/></svg>`)).png().toBuffer();
     expect(await isDetailedSolidMark(simple)).toBe(false); // symbole au trait : toujours recolorable
   });
+  it("charte : une illustration n'est jamais recolorée en tache sur un fond de couleur (pastille claire)", async () => {
+    const { loadImage } = await import("@napi-rs/canvas");
+    const { markOnColour } = await import("@/lib/media/brand-book");
+    const ill = await loadImage(await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="40" fill="#C03020"/><circle cx="50" cy="50" r="15" fill="#3A7A3A"/></svg>`)).png().toBuffer());
+    const flat = markOnColour(ill, "#FFFFFF", false)!;
+    expect(Array.from(flat.getContext("2d").getImageData(50, 50, 1, 1).data.slice(0, 3))).toEqual([255, 255, 255]); // symbole au trait : recoloré
+    const kept = markOnColour(ill, "#FFFFFF", true)!;
+    const k = kept.width / 2;
+    expect(Array.from(kept.getContext("2d").getImageData(k, k, 1, 1).data.slice(0, 3))).toEqual([0x3a, 0x7a, 0x3a]); // couleurs gardées
+    expect(Array.from(kept.getContext("2d").getImageData(k, 3, 1, 1).data.slice(0, 3))).toEqual([255, 255, 255]); // pastille claire
+  });
 });

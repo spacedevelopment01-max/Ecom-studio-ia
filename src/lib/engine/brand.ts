@@ -1,4 +1,5 @@
 /** Marque : direction (IA ou locale), logo vectoriel et charte. */
+import { isDetailedSolidMark } from "../media/identity-board";
 import { isLocked } from "../brain/brand-locks";
 import { all, one } from "../db";
 import { saveAsset, type Asset } from "../library";
@@ -152,6 +153,7 @@ export async function saveBrandBook(projectId: string, brandOverride?: NonNullab
     logoLight: await img(derived("logo-light")),
     logoWeb: await img(derived("logo-horizontal") ?? main),
     mark: await img(derived("logo-mark")),
+    markDetailed: await (async () => { const m = derived("logo-mark"); return m ? isDetailedSolidMark(assetData(m)).catch(() => false) : false; })(),
     // Détourage utilisable seulement (jamais un détourage refusé au contrôle ou écarté par le client).
     product: await img(all<Asset>("SELECT * FROM assets WHERE project_id = ? AND role = 'cutout' AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at DESC LIMIT 1", projectId)[0]),
     sectorLabel: sectorLabel(p.product.sector, contentLang()),
