@@ -75,17 +75,18 @@ export function freeLogoFacts(brand: Brand, j: Journey): FreeLogoFacts {
 }
 
 /** Demande au modèle d'images : courte, positive, carte blanche ; seuls le nom exact et les interdits sont fixés. */
-export function freeLogoPrompt(f: FreeLogoFacts, n: number, feedback?: string): string {
+export function freeLogoPrompt(f: FreeLogoFacts, n: number, wishes?: string, fix?: string): string {
   return [
     `Crée le logo de la marque « ${f.name} ». Ce qu'elle fait : ${f.activity.trim().replace(/\.$/, "")}.`,
-    f.feeling ? `Ce qu'elle doit faire ressentir : ${f.feeling}.` : "",
+    f.feeling ? `Ce qu'elle doit faire ressentir : ${f.feeling.trim().replace(/\.+$/, "")}.` : "",
     f.audience ? `Pour qui : ${f.audience.trim().replace(/\.$/, "")}.` : "",
     directionLine(n),
     "Dans cette direction, tu as carte blanche totale sur l'idée, le sujet, la typographie et la composition : fais-toi plaisir et surprends-nous avec un logo beau, moderne et mémorable, au niveau des meilleures agences de branding de 2026.",
     `Couleurs de la marque, à utiliser librement : ${f.colors.join(", ")} (et le blanc).`,
-    `Le seul texte du logo est le nom « ${f.name} », écrit exactement, lettre par lettre, avec ses accents. Aucun autre mot.`,
+    `Le seul texte du logo est le nom « ${f.name} », écrit exactement, lettre par lettre, avec ses accents. Aucun autre mot : ni slogan, ni phrase, ni ligne d'activité.`,
     `À éviter : un rendu daté (années 80 ou 90, clip-art) ; ${FORBIDDEN_LOGO_RENDERS.join(" ; ")}.`,
-    feedback ? `Changements demandés pour cette version : ${feedback.trim().replace(/\.$/, "")}.` : "",
+    wishes ? `Souhaits du client, avec ses mots : ${wishes.trim().replace(/\.+$/, "")}. Ils ne changent pas le texte du logo (le nom seul).` : "",
+    fix ? `Correction pour cette nouvelle version : ${fix.trim().replace(/\.+$/, "")}.` : "",
     // Essai réel du 7 novembre : en carte blanche, le modèle livrait parfois une PLANCHE de trois variantes.
     "Une seule proposition de logo dans l'image, jamais une planche de plusieurs versions ou déclinaisons.",
     "Logo seul, centré, sur un fond blanc uni, dessiné à plat : aucune maquette, aucune photo, aucune personne.",
@@ -163,7 +164,7 @@ export async function runSinaLogosJob(ctx: JobContext) {
     territories: async () => drafts,
     // Dessin LIBRE : la demande courte de carte blanche, jamais la consigne structurée du moteur (style, composition…).
     drawArtwork: async (t, _brief, feedback) => {
-      const prompt = freeLogoPrompt(facts, index(t), [guidance, feedback].filter(Boolean).join(" ; ") || undefined);
+      const prompt = freeLogoPrompt(facts, index(t), guidance, feedback);
       if (logoDeps.draw) return logoDeps.draw(prompt, t.id);
       return logoArtworkImage({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:sina-libre:${t.id}${feedback ? `:r${feedback.length}` : ""}` }, { prompt });
     },

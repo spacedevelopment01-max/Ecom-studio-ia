@@ -74,7 +74,8 @@ const TYPO: Record<Territory["typography"]["style"], string> = {
 
 /** Texte que le logo doit montrer (nom exact, ligne d'activités réelle, slogan VALIDÉ par le client). */
 export function artworkText(t: Territory, brief: BrandBrief) {
-  return { name: brief.name, descriptor: t.descriptor, tagline: brief.tagline };
+  // Logo libre (SINA) : le nom seul ; un slogan écrit dans le logo est un texte en trop (essai réel du 7 novembre).
+  return { name: brief.name, descriptor: t.descriptor, tagline: t.style === "libre" ? null : brief.tagline };
 }
 
 /**
@@ -391,7 +392,8 @@ Chaque proposition suit sa propre direction artistique (illustration, lettrage o
 Un rendu DATÉ (soleil rayé de bandes façon années 70-80, typographie de catalogue sans travail, clip-art, effets vieillis plaqués) → « dated » = true et « amateur » = true, même si le dessin est propre et lisible : sa note finale ne dépassera pas 3.
 Sois juste : la note reflète ce que tout le monde voit au premier regard, pas une liste de détails de graphiste.
 « genericConcept » = true seulement pour une forme vide sans idée, une police standard posée sans composition ou une décoration sans intention. « amateur » : rendu de générateur, déséquilibré ou daté. « artifacts » : lettres fantômes, formes fondues, détails incohérents typiques d'une IA, ou PLUSIEURS logos ou variantes dans la même image au lieu d'un seul.
-Lis tout le texte du logo LETTRE PAR LETTRE, accents compris, et recopie-le exactement dans « textRead ». « nameExact » : le nom attendu y figure exactement. « extraText » : un mot non autorisé (slogan inventé, lettres parasites). « nameBox » : rectangle du NOM seul en fractions de l'image (x, y, largeur, hauteur entre 0 et 1), ou null.
+Lis tout le texte du logo LETTRE PAR LETTRE, accents compris, et recopie-le exactement dans « textRead ». « nameExact » : le nom attendu y figure exactement. « extraText » : tout autre mot que le nom, slogan compris (seul le nom est autorisé), ou des lettres parasites. « nameBox » : rectangle du NOM seul en fractions de l'image (x, y, largeur, hauteur entre 0 et 1), ou null.
+Si l'espacement ou un jeu de couleur colle deux mots du nom au point de faire lire un autre mot, legibility à 5 au plus, et dis-le dans « issues ».
 « forbiddenRender » = true quand le logo relève d'un de ces rendus INTERDITS par le propriétaire du Studio : ${FORBIDDEN_LOGO_RENDERS.join(" ; ")}.
 « clumsyCliche » : dessin grossier façon clip-art bas de gamme. « person » : une personne est dessinée (visage, tête, silhouette humaine, main), même stylisée. « resemblesKnownBrand » : rappelle un logo connu.
 « issues » : défauts concrets et précis, du plus visible au moins visible, jamais des généralités. « fix » : LA correction la plus utile pour une nouvelle version (cible et consigne précise) ; « none » si rien à corriger. « needsSimplifiedMark » : une version simplifiée est-elle nécessaire pour les petites tailles ?`;

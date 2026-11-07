@@ -149,6 +149,40 @@ describe("SINA — étape 2 : 3 logos", async () => {
     expect((await call("logo.propose", ctx, {})).ok).toBe(false); // logo déjà choisi : pas de nouvelle série en douce
   });
 
+  it("essai réel du 7 novembre : le dessinateur ne reçoit que les mots du client, jamais un slogan ni un style inventés par SINA", async () => {
+    const { addMessage } = await import("@/lib/syna-agent/store");
+    const T = await import("@/lib/syna-agent/tools/logo");
+    const { cid, ctx } = await stepTwo();
+    await new Promise((r) => setTimeout(r, 5));
+    addMessage(cid, "user", { text: "Oui, lance les 3 logos", attachments: [] });
+    expect(T.clientLogoWishes(cid, J.journeyOf(cid).identityChoice!.at)).toBeUndefined();
+    logoToolDeps.maxMicro = () => 900_000;
+    try {
+      // SINA avait écrit : « slogan …, style brutaliste, capitales très grasses » — le client n'avait rien demandé.
+      const r = await call("logo.propose", ctx, { guidance: "Slogan « Ouvre le pot ». Style brutaliste, typographie condensée très grasse en capitales." });
+      expect(r.ok).toBe(true);
+      expect(JSON.parse(one<any>("SELECT payload FROM jobs WHERE id=?", r.jobs![0]).payload).guidance).toBeUndefined();
+    } finally { logoToolDeps.maxMicro = undefined; }
+    // Un vrai souhait du client passe, avec ses mots, sans les boutons ni les simples accords.
+    await new Promise((r) => setTimeout(r, 5));
+    addMessage(cid, "user", { text: "Je veux préciser une idée d'abord", attachments: [] });
+    addMessage(cid, "user", { text: "Plutôt sans illustration, quelque chose de très simple.", attachments: [] });
+    addMessage(cid, "user", { text: "Ok, vas-y", attachments: [] });
+    expect(T.clientLogoWishes(cid, J.journeyOf(cid).identityChoice!.at)).toBe("Plutôt sans illustration, quelque chose de très simple.");
+    // Le dessin : souhaits du client et correction du contrôle séparés ; le nom seul, ni slogan ni phrase.
+    const f = { name: "Heure Dorée", activity: "Confitures.", feeling: "Robuste. Pas de rose..", audience: null, colors: ["#000000"] };
+    const pr = G.freeLogoPrompt(f, 0, "plus simple", "le D se lit comme un O");
+    expect(pr).toMatch(/Souhaits du client, avec ses mots : plus simple\. Ils ne changent pas le texte du logo/);
+    expect(pr).toMatch(/Correction pour cette nouvelle version : le D se lit comme un O\./);
+    expect(pr).toMatch(/Aucun autre mot : ni slogan, ni phrase, ni ligne d'activité\./);
+    expect(pr).toMatch(/Pas de rose\.\n/);
+    // Relecture d'un logo libre : le slogan n'est pas un texte autorisé (il serait signalé comme texte en trop).
+    const A = await import("@/lib/logo-v2/artwork");
+    const t = { style: "libre", descriptor: null } as any;
+    expect(A.artworkText(t, { name: "Repris de Route", tagline: "Elle a fait la route. À ton tour." } as any)).toEqual({ name: "Repris de Route", descriptor: null, tagline: null });
+    expect(A.artworkText({ ...t, style: "emblem" }, { name: "X", tagline: "Y" } as any).tagline).toBe("Y");
+  });
+
   it("refusé avant l'identité choisie", async () => {
     const user = await account();
     const cid = threadFor(user, null), ctx = ctxOf(user, cid);
@@ -194,6 +228,8 @@ describe("SINA — étape 2 : 3 logos", async () => {
     // Le rendu daté est LE défaut sanctionné (essai réel : soleil rayé « années 80 » passé de 7,6 FINAL à 6,7 bloqué).
     expect(sys).toMatch(/soleil rayé de bandes horizontales façon années 70-80[^]*« amateur » = true/);
     expect(sys).toMatch(/PLUSIEURS logos ou variantes dans la même image/);
+    expect(sys).toMatch(/« extraText » : tout autre mot que le nom, slogan compris/);
+    expect(sys).toMatch(/colle deux mots du nom au point de faire lire un autre mot, legibility à 5 au plus/);
     expect(sys).toContain(A.FORBIDDEN_LOGO_RENDERS[0]);
     // Les autres styles gardent leur relecture.
     expect(A.ARTWORK_REVIEW_SYSTEM("illustrated")).toMatch(/PETITES ENTREPRISES/);
