@@ -94,4 +94,13 @@ describe("SINA — étape 5 : l'activité complète", async () => {
     expect(Act.factLine({ label: "Pouvez-vous recopier la liste des ingrédients de chaque parfum ? (ex. abricots 65 %)", value: "Abricot : abricots 65 %…" })).toBe("Abricot : abricots 65 %…");
     expect(Act.factLine({ label: "Matière", value: "cuivre" })).toBe("Matière : cuivre");
   });
+  it("essai réel : « cuites au chaudron en cuivre » ne fait jamais du cuivre la matière du produit vendu", async () => {
+    const { factsFromDescription } = await import("@/lib/engine/local");
+    const mat = (d: string) => factsFromDescription(d).find((f) => f.key === "materials")?.value ?? null;
+    expect(mat("Confitures artisanales cuites au chaudron en cuivre, avec des fruits de la Drôme.")).toBeNull();
+    expect(mat("Pain cuit au four en pierre.")).toBeNull();
+    // La matière du produit lui-même reste lue, mot pour mot.
+    expect(mat("Montre en acier et cuir véritable.")).toMatch(/acier/);
+    expect(mat("Bassine à confiture en cuivre martelé.")).toMatch(/cuivre/); // ici le produit vendu EST la bassine
+  });
 });
