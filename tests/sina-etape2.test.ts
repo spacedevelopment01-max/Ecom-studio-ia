@@ -176,4 +176,27 @@ describe("SINA — étape 2 : 3 logos", async () => {
     const ids = identities(); ids[1].logoStyle = "aquarelle";
     expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: ids }).identities, J.emptyJourney()).join(" ")).toMatch(/style de logo « tache d'aquarelle » interdit/);
   });
+  it("notation des logos libres (retour du 7 novembre : « vraiment sévère ») : le logo original au premier regard, pas les versions du studio", async () => {
+    const A = await import("@/lib/logo-v2/artwork");
+    const sys = A.ARTWORK_REVIEW_SYSTEM("libre");
+    expect(sys).toBe(A.FREE_ARTWORK_REVIEW_SYSTEM());
+    // La version claire et les réductions viennent du studio : elles ne baissent aucune note.
+    expect(sys).toMatch(/FABRIQUÉES AUTOMATIQUEMENT par le studio[^]*NE BAISSE AUCUNE NOTE/);
+    // Carte blanche : aucun élément de l'histoire de la marque n'est exigé.
+    expect(sys).toMatch(/Ne retire jamais de point parce qu'un élément de l'histoire de la marque/);
+    // Le rendu daté est LE défaut sanctionné (essai réel : soleil rayé « années 80 » passé de 7,6 FINAL à 6,7 bloqué).
+    expect(sys).toMatch(/soleil rayé de bandes horizontales façon années 70-80[^]*« amateur » = true/);
+    expect(sys).toMatch(/PLUSIEURS logos ou variantes dans la même image/);
+    expect(sys).toContain(A.FORBIDDEN_LOGO_RENDERS[0]);
+    // Les autres styles gardent leur relecture.
+    expect(A.ARTWORK_REVIEW_SYSTEM("illustrated")).toMatch(/PETITES ENTREPRISES/);
+    // Poids : la beauté du dessin et la composition d'abord, l'usage en petit compte peu (version simplifiée du studio).
+    const w = A.STYLE_WEIGHTS.libre;
+    expect(w.craft).toBeGreaterThan(w.originality);
+    expect(w.composition).toBeGreaterThan(w.distinctiveness);
+    expect(w.intendedUse).toBeLessThan(1);
+    // Calibrage réel (relecture du 7 novembre) : logo libre C 8,1 → au-dessus de la barrière ; ancien « années 80 » 6,7.
+    const libreC = { relevance: 9, originality: 7, craft: 9, typography: 8, composition: 8, colour: 9, legibility: 8, memorability: 8, distinctiveness: 7, intendedUse: 7 };
+    expect(A.artworkScore({ criteria: libreC }, "libre")).toBe(8.1);
+  });
 });
