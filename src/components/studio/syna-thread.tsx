@@ -25,49 +25,55 @@ type IdentityCard = {
   fontStyle: string; tone: { adjectives: string[]; avoid: string[] }; logoStyleLabel: string; logoIdea: string; why: string;
   faces: { heading: Face; body: Face };
 };
-type Identities = { round: number; issues: string[]; chosen: { key: string; mix: Record<string, string> } | null; list: IdentityCard[] };
+type Identities = { round: number; issues: string[]; chosen: { key: string; mix: Record<string, string> } | null; list: IdentityCard[]; final?: (IdentityCard & { mixLabel?: string }) | null };
 
 /** Étape 1 : les 3 identités côte à côte, chacune dans SES couleurs et SES vraies polices. */
 function IdentityCards({ ids, busy, onChoose }: { ids: Identities; busy: boolean; onChoose: (key: string) => void }) {
   const t = useT();
-  const faces = ids.list.flatMap((x) => [x.faces.heading, x.faces.body]).filter((f): f is NonNullable<Face> => !!f);
+  const faces = [...ids.list, ...(ids.final ? [ids.final] : [])].flatMap((x) => [x.faces.heading, x.faces.body]).filter((f): f is NonNullable<Face> => !!f);
   const css = [...new Map(faces.map((f) => [f.file, f])).values()].map((f) => `@font-face{font-family:"SINA ${f.family}";src:url(/api/syna/fonts/${f.file}) format("truetype");font-weight:${f.weight};font-display:swap}`).join("");
   const fam = (f: Face, fallback: string) => (f ? `"SINA ${f.family}", ${fallback}` : fallback);
+  const card = (x: IdentityCard, o: { key: string; label?: string; chosen?: boolean; faded?: boolean }) => {
+    const { key, label, chosen, faded } = o;
+    return (
+            <article key={key} className={cx("overflow-hidden rounded-xl border", chosen ? "border-ink ring-2 ring-ink" : "border-line", faded && "opacity-60")} data-identity={key}>
+        <div className="px-4 pb-4 pt-3" style={{ background: x.ground === "sombre" ? x.palette.dark : x.ground === "degrade" && x.gradient ? `linear-gradient(135deg, ${x.gradient.from}, ${x.gradient.to})` : x.palette.light, color: x.ground === "sombre" ? x.palette.light : x.ground === "degrade" && x.gradient ? readable(x.palette, [x.gradient.from, x.gradient.to]) : x.palette.dark, fontFamily: fam(x.faces.body, "sans-serif") }}>
+          <p className="text-[11px] uppercase tracking-wider opacity-70">{label ?? `${t("Identité", "Identity")} ${x.key}`} · {t({ blanc: "fond blanc", degrade: "fond en dégradé", sombre: "fond sombre" }[x.ground] ?? "", { blanc: "white background", degrade: "gradient background", sombre: "dark background" }[x.ground] ?? "")} · {x.territory}</p>
+          <h3 className="mt-2 text-3xl leading-tight" style={{ fontFamily: fam(x.faces.heading, "serif"), fontWeight: x.faces.heading?.weight ?? 600 }}>{x.name}</h3>
+          <span className="mt-2 block h-1 w-10 rounded-full" style={{ background: x.palette.accent }} aria-hidden />
+          <p className="mt-1 text-base">{x.slogan}</p>
+          <p className="mt-3 text-sm opacity-90">{x.promise}</p>
+          <span className="mt-3 inline-block rounded-full px-3 py-1 text-xs font-semibold" style={{ background: x.palette.primary, color: [x.palette.dark, x.palette.light, "#141414", "#FFFFFF"].reduce((a, b) => (ratioOf(b, x.palette.primary) > ratioOf(a, x.palette.primary) ? b : a)) }}>{t("Bouton d'exemple", "Sample button")}</span>
+        </div>
+        <div className="flex h-6 border-y border-black/10" aria-label={t("Palette", "Palette")}>
+          {(["light", "dark", "primary", "secondary", "accent"] as const).map((r) => <span key={r} className={cx("flex-1", r === "light" && "border-r border-black/10")} style={{ background: x.palette[r] }} title={`${r} ${x.palette[r]}`} />)}
+        </div>
+        <dl className="space-y-1 bg-card px-4 py-3 text-xs">
+          <div><dt className="inline font-semibold">{t("Couleurs", "Colours")} : </dt><dd className="inline">{x.paletteFamily} — {x.ground === "degrade" && x.gradient ? `${t("dégradé", "gradient")} ${x.gradient.from} → ${x.gradient.to}` : `${t("fond", "background")} ${x.ground === "sombre" ? x.palette.dark : x.palette.light}`}, {t("texte", "text")} {x.ground === "sombre" ? x.palette.light : x.palette.dark}, {t("bouton", "button")} {x.palette.primary}, {t("surface", "surface")} {x.palette.secondary}, {t("accent", "accent")} {x.palette.accent}</dd></div>
+          <div><dt className="inline font-semibold">{t("Polices", "Fonts")} : </dt><dd className="inline">{x.faces.heading?.family ?? "?"} / {x.faces.body?.family ?? "?"}{x.fontStyle ? ` — ${x.fontStyle}` : ""}</dd></div>
+          <div><dt className="inline font-semibold">{t("Ton", "Tone")} : </dt><dd className="inline">{x.tone.adjectives.join(", ")} · {t("jamais", "never")} : {x.tone.avoid.join(", ")}</dd></div>
+          <div><dt className="inline font-semibold">{t("Idée de logo", "Logo idea")} : </dt><dd className="inline">{x.logoStyleLabel} — {x.logoIdea}</dd></div>
+          {!!x.why && <div><dt className="inline font-semibold">{t("Pourquoi pour toi", "Why it fits you")} : </dt><dd className="inline">{x.why}</dd></div>}
+        </dl>
+        <div className="border-t border-line bg-card px-4 py-2">
+          {chosen
+            ? <p className="text-xs font-semibold">✓ {t("Ton identité, enregistrée comme marque du projet", "Your identity, saved as the project's brand")}</p>
+            : !ids.chosen && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(x.key)}>{t(`Je choisis ${x.key}`, `I choose ${x.key}`)}</Button>}
+        </div>
+      </article>
+    );
+  };
   return (
     <div className="@container mt-2 space-y-2" data-syna-identities={ids.round}>
       <style>{css}</style>
       {/* Largeur du fil (panneau étroit ou plein cadre), pas de l'écran : une carte par ligne dans le panneau. */}
+      {ids.final && <div className="space-y-1" data-syna-identity-final>
+        <p className="text-xs font-semibold">{t("Ton identité", "Your identity")}{ids.final.mixLabel ? ` · ${ids.final.mixLabel}` : ""}</p>
+        {card(ids.final, { key: "final", label: t("Ton identité", "Your identity"), chosen: true })}
+        <p className="pt-1 text-xs text-muted">{t("Les 3 propositions de départ :", "The 3 original proposals:")}</p>
+      </div>}
       <div className="grid grid-cols-1 gap-2 @3xl:grid-cols-3">
-        {ids.list.map((x) => {
-          const chosen = ids.chosen?.key === x.key;
-          return (
-            <article key={x.key} className={cx("overflow-hidden rounded-xl border", chosen ? "border-ink ring-2 ring-ink" : "border-line")} data-identity={x.key}>
-              <div className="px-4 pb-4 pt-3" style={{ background: x.ground === "sombre" ? x.palette.dark : x.ground === "degrade" && x.gradient ? `linear-gradient(135deg, ${x.gradient.from}, ${x.gradient.to})` : x.palette.light, color: x.ground === "sombre" ? x.palette.light : x.ground === "degrade" && x.gradient ? readable(x.palette, [x.gradient.from, x.gradient.to]) : x.palette.dark, fontFamily: fam(x.faces.body, "sans-serif") }}>
-                <p className="text-[11px] uppercase tracking-wider opacity-70">{t("Identité", "Identity")} {x.key} · {t({ blanc: "fond blanc", degrade: "fond en dégradé", sombre: "fond sombre" }[x.ground] ?? "", { blanc: "white background", degrade: "gradient background", sombre: "dark background" }[x.ground] ?? "")} · {x.territory}</p>
-                <h3 className="mt-2 text-3xl leading-tight" style={{ fontFamily: fam(x.faces.heading, "serif"), fontWeight: x.faces.heading?.weight ?? 600 }}>{x.name}</h3>
-                <span className="mt-2 block h-1 w-10 rounded-full" style={{ background: x.palette.accent }} aria-hidden />
-                <p className="mt-1 text-base">{x.slogan}</p>
-                <p className="mt-3 text-sm opacity-90">{x.promise}</p>
-                <span className="mt-3 inline-block rounded-full px-3 py-1 text-xs font-semibold" style={{ background: x.palette.primary, color: [x.palette.dark, x.palette.light, "#141414", "#FFFFFF"].reduce((a, b) => (ratioOf(b, x.palette.primary) > ratioOf(a, x.palette.primary) ? b : a)) }}>{t("Bouton d'exemple", "Sample button")}</span>
-              </div>
-              <div className="flex h-6 border-y border-black/10" aria-label={t("Palette", "Palette")}>
-                {(["light", "dark", "primary", "secondary", "accent"] as const).map((r) => <span key={r} className={cx("flex-1", r === "light" && "border-r border-black/10")} style={{ background: x.palette[r] }} title={`${r} ${x.palette[r]}`} />)}
-              </div>
-              <dl className="space-y-1 bg-card px-4 py-3 text-xs">
-                <div><dt className="inline font-semibold">{t("Couleurs", "Colours")} : </dt><dd className="inline">{x.paletteFamily} — {x.ground === "degrade" && x.gradient ? `${t("dégradé", "gradient")} ${x.gradient.from} → ${x.gradient.to}` : `${t("fond", "background")} ${x.ground === "sombre" ? x.palette.dark : x.palette.light}`}, {t("texte", "text")} {x.ground === "sombre" ? x.palette.light : x.palette.dark}, {t("bouton", "button")} {x.palette.primary}, {t("surface", "surface")} {x.palette.secondary}, {t("accent", "accent")} {x.palette.accent}</dd></div>
-                <div><dt className="inline font-semibold">{t("Polices", "Fonts")} : </dt><dd className="inline">{x.faces.heading?.family ?? "?"} / {x.faces.body?.family ?? "?"}{x.fontStyle ? ` — ${x.fontStyle}` : ""}</dd></div>
-                <div><dt className="inline font-semibold">{t("Ton", "Tone")} : </dt><dd className="inline">{x.tone.adjectives.join(", ")} · {t("jamais", "never")} : {x.tone.avoid.join(", ")}</dd></div>
-                <div><dt className="inline font-semibold">{t("Idée de logo", "Logo idea")} : </dt><dd className="inline">{x.logoStyleLabel} — {x.logoIdea}</dd></div>
-                <div><dt className="inline font-semibold">{t("Pourquoi pour toi", "Why it fits you")} : </dt><dd className="inline">{x.why}</dd></div>
-              </dl>
-              <div className="border-t border-line bg-card px-4 py-2">
-                {chosen
-                  ? <p className="text-xs font-semibold">✓ {t("Identité choisie", "Chosen identity")}</p>
-                  : !ids.chosen && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(x.key)}>{t(`Je choisis ${x.key}`, `I choose ${x.key}`)}</Button>}
-              </div>
-            </article>
-          );
-        })}
+        {ids.list.map((x) => card(x, { key: x.key, faded: !!ids.final }))}
       </div>
       {!ids.chosen && <p className="text-xs text-muted">{t("Tu peux aussi mélanger (par exemple le nom de A avec les couleurs de C), retoucher un nom ou un slogan, ou demander une nouvelle proposition : écris-le simplement.", "You can also mix (e.g. A's name with C's colours), tweak a name or tagline, or ask for a new proposal.")}</p>}
       {!!ids.issues.length && <p className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-xs text-ink dark:bg-amber-950/30" data-syna-identity-issues>{t("Points que le contrôle du Studio n'a pas pu valider", "Points the Studio check could not validate")} : {ids.issues.join(" ; ")}</p>}

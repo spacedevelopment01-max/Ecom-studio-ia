@@ -269,4 +269,29 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     expect(j.steps[2].status).toBe("skipped");
     expect(J.currentStep(j)).toBe(3);
   });
+
+  it("essai réel du mélange : carte « Ton identité » avec le vrai résultat, élision corrigée, pas de faux dégradé", async () => {
+    const { fixElision, mixLabel } = await import("@/lib/syna-agent/loop");
+    expect(fixElision("Je enregistre ce mélange.")).toBe("J'enregistre ce mélange.");
+    expect(fixElision("Je hais rien, je garde le nom.")).toBe("Je hais rien, je garde le nom.");
+    expect(fixElision("Tell me and I will.")).toBe("Tell me and I will.");
+    const list = I.IdentitiesSchema.parse({ identities: good() }).identities;
+    expect(mixLabel(list, { key: "B", mix: { palette: "A" } })).toBe("Lumo (B) avec les couleurs de Ocrea (A)");
+    expect(mixLabel(list, { key: "B", mix: {} })).toBe("");
+    const { cid, ctx, pid, user } = await stepOneThread();
+    identityDeps.generate = async () => ({ identities: good().map((x: any) => ({ ...x, gradient: x.gradient ?? { from: "#FFFFFF", to: "#FFFFFF" } })) });
+    try { await call("identity.propose", ctx, {}); } finally { identityDeps.generate = undefined; }
+    expect((await call("identity.choose", ctx, { key: "B", mix: { palette: "A" } })).ok).toBe(true);
+    const b = loadProject(pid).brand!;
+    expect(b.ground).toBe("blanc");
+    expect(b.gradient).toBeUndefined(); // fond blanc : aucun dégradé gardé
+    const view = await fr(() => threadView(user, cid));
+    const final = view.journey.identities!.final!;
+    expect(final.name).toBe("Lumo");
+    expect(final.palette).toEqual(good()[0].palette);
+    expect(final.ground).toBe("blanc");
+    expect(final.mixLabel).toBe("Lumo (B) avec les couleurs de Ocrea (A)");
+    expect(final.why).toBe(""); // le « pourquoi » de B parlait de ses couleurs : plus repris après le mélange
+    expect(mixIdentity(good() as any, "B", { name: "A" }).why).toBe(good()[1].why); // nom seulement : gardé
+  });
 });

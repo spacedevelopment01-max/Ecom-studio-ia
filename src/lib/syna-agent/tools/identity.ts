@@ -144,6 +144,9 @@ export function mixIdentity(list: Identity[], key: Key, mix: Partial<Record<Part
     fonts: pick(mix.fonts).fonts, fontStyle: pick(mix.fonts).fontStyle,
     tone: pick(mix.tone).tone,
     logoStyle: pick(mix.logo).logoStyle, logoIdea: pick(mix.logo).logoIdea,
+    // Le « pourquoi » d'une identité parle de SES couleurs, polices et ton : il n'est plus vrai après un mélange de ces
+    // éléments (essai réel : « fond en dégradé, vert basilic » affiché sur un fond blanc au bouton bleu).
+    why: (["palette", "fonts", "tone"] as const).some((part) => mix[part] && mix[part] !== key) ? "" : base.why,
   };
 }
 
@@ -164,7 +167,8 @@ export function brandFromIdentity(p: ReturnType<typeof loadProject>, x: Identity
     tone: { voice: x.tone.adjectives.join(", "), do: base.tone?.do ?? [], dont: x.tone.avoid },
     palette: x.palette,
     ground: x.ground,
-    ...(x.gradient ? { gradient: x.gradient } : {}),
+    // Dégradé gardé seulement pour un fond en dégradé (les autres fonds n'en ont pas).
+    ...(x.ground === "degrade" && x.gradient ? { gradient: x.gradient } : {}),
     paletteRoles: "sina-2026",
     paletteMode: j.keep.includes("couleurs") ? "client" : "direction",
     ...(j.keep.includes("couleurs") ? { clientPalette: x.palette } : {}),

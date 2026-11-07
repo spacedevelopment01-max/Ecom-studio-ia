@@ -26,7 +26,8 @@ import { projectSnapshot } from "./snapshot";
 import { SYNA_SYSTEM } from "./prompt";
 import { JOURNEY_STEPS, READY_STEPS, currentStep, journeyContext, journeyOf } from "./journey";
 import { localDecision } from "./local-step";
-import { LOGO_STYLE_LABEL, fontFace } from "./identities";
+import { LOGO_STYLE_LABEL, fontFace, type Identity } from "./identities";
+import { mixIdentity } from "./tools/identity";
 
 export const MAX_STEPS = 12;
 const MAX_ACTIONS = 8;
@@ -186,7 +187,7 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
         if (e instanceof CostCapReached) return askBudget(r, null);
         throw e;
       }
-      if (!local) out = withoutRepeatedQuestion(out);
+      if (!local) out = withoutRepeatedQuestion({ ...out, message: fixElision(out.message), ...(out.question ? { question: { ...out.question, text: fixElision(out.question.text) } } : {}) });
       addMessage(r.conversation_id, "assistant", { ...out, step, ...(local ? { local: true } : {}) }, r.id);
       if (!out.actions.length) {
         updateRun(r.id, { status: out.question ? "waiting_user" : "done" });
@@ -368,6 +369,24 @@ function clip(v: unknown, max: number): unknown {
   return typeof v === "string" ? `${s.slice(0, max)}…` : { truncated: true, preview: s.slice(0, max) };
 }
 
+const cardOf = (x: Identity) => ({ ...x, logoStyleLabel: LOGO_STYLE_LABEL[x.logoStyle], faces: { heading: fontFace(x.fonts.heading), body: fontFace(x.fonts.body) } });
+const PART_LABEL: Record<string, string> = { name: "le nom", slogan: "le slogan", palette: "les couleurs", fonts: "les polices", tone: "le ton", logo: "l'idée de logo" };
+/** « Heure Dorée (B) avec les couleurs de Tour de Main (A) » ; vide quand le client a pris une identité telle quelle. */
+export function mixLabel(list: Identity[], c: { key: string; mix: Partial<Record<string, string>> }): string {
+  const nameOf = (k: string) => `${list.find((x) => x.key === k)?.name ?? k} (${k})`;
+  const parts = Object.entries(c.mix).filter(([, k]) => k && k !== c.key).map(([part, k]) => `${PART_LABEL[part] ?? part} de ${nameOf(k!)}`);
+  return parts.length ? `${nameOf(c.key)} avec ${parts.join(", ")}` : "";
+}
+
+/**
+ * Élision oubliée par le modèle (« Je enregistre » → « J'enregistre ») : corrigée sans IA dans les réponses de SINA.
+ * Le « h » n'est pas touché (h aspiré : « je hais »).
+ */
+export function fixElision(s: string): string {
+  // Seulement « je », « le », « ne », « que » (jamais « me » ou « se » : SINA répond aussi en anglais, « me and… »).
+  return s.replace(/\b([JjLlNn]e|[Qq]ue) ([aeiouyéèêàâîôûAEIOUYÉÈÊÀÂÎÔÛ])/g, (_m, w: string, v: string) => `${w.slice(0, -1)}'${v}`);
+}
+
 export function threadView(user: User, cid: string) {
   const c = conversationOf(cid);
   if (!c || c.user_id !== user.id) throw new HttpError(404, L("Conversation introuvable.", "Conversation not found."));
@@ -387,7 +406,9 @@ export function threadView(user: User, cid: string) {
         // Étape 1 : la dernière proposition d'identités (cartes du fil), avec les fichiers de leurs vraies polices.
         identities: j.identities ? {
           round: j.identities.round, issues: j.identities.issues, chosen: j.identityChoice ?? null,
-          list: j.identities.list.map((x) => ({ ...x, logoStyleLabel: LOGO_STYLE_LABEL[x.logoStyle], faces: { heading: fontFace(x.fonts.heading), body: fontFace(x.fonts.body) } })),
+          list: j.identities.list.map(cardOf),
+          // Identité retenue telle qu'enregistrée (mélange compris) : la carte « Ton identité » montre le vrai résultat.
+          final: j.identityChoice ? { ...cardOf(mixIdentity(j.identities.list, j.identityChoice.key, j.identityChoice.mix as any)), mixLabel: mixLabel(j.identities.list, j.identityChoice) } : null,
         } : null,
       };
     })(),
