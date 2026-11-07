@@ -159,4 +159,26 @@ describe("SINA — étape 2 : 3 logos", async () => {
   it("motif du contrôle dit simplement au client (essai réel)", () => {
     expect(G.clientReason("sous la barrière (7.4/10, attendu 7.5) — aucune nouvelle image sans votre accord (bouton « Nouvelle version »)")).toBe("note 7,4/10, il faut 7,5");
   });
+
+  it("rendus interdits par le propriétaire (7 novembre) : jamais dessinés, jamais présentés ni choisissables", async () => {
+    const A = await import("@/lib/logo-v2/artwork");
+    const I = await import("@/lib/syna-agent/identities");
+    expect(A.FORBIDDEN_LOGO_RENDERS.join(" ")).toMatch(/tache, une texture ou une forme floue/);
+    expect(A.FORBIDDEN_LOGO_RENDERS.join(" ")).toMatch(/lettre seule accompagnée d'une forme géométrique de base/);
+    // Relecture : un rendu interdit devient le code « forbidden », qui interdit pour toujours le choix du logo.
+    const review: any = { criteria: {}, textRead: "Heure Dorée", nameExact: true, extraText: false, nameBox: null, clumsyCliche: false, resemblesKnownBrand: false, amateur: false, artifacts: false, issues: [], needsSimplifiedMark: true, genericConcept: false, forbiddenRender: true };
+    expect(A.artworkCodes(review, { name: "Heure Dorée" })).toContain("forbidden");
+    expect(A.ARTWORK_NEVER).toContain("forbidden");
+    expect(A.ARTWORK_REVIEW_SYSTEM("monogram")).toMatch(/« forbiddenRender » = true quand le logo relève d'un de ces rendus INTERDITS/);
+    // Dessin : la consigne demande un symbole net, construit avec le nom.
+    const t: any = { id: "t1", name: "x", concept: "un concept assez long pour le test", markType: "monogram", composition: "horizontal", typography: { style: "grotesque", weight: "bold", case: "title", tracking: "normal", rationale: "" }, colorRole: { ink: "dark", accent: "primary", rationale: "" }, sobriety: 2, construction: "typographic", symbolIdea: null, distinctive: "", avoid: [], source: "ai", style: "monogram", descriptor: null };
+    const brief: any = { name: "Heure Dorée", palette: { primary: "#24508C", secondary: "#F6E7D3", accent: "#C2652B", light: "#FFFFFF", dark: "#1F2A3A" }, trade: { label: "confitures", actions: [], objects: [], generic: false }, activity: "confitures", activities: [], paletteLocked: true, exactNameCase: true };
+    expect(A.artworkPrompt(t, brief)).toMatch(/jamais une tache floue, jamais une lettre seule avec une simple forme géométrique/);
+    // Étapes 1 et 2 : l'aquarelle n'est plus proposée, et les consignes citent les interdits.
+    expect(I.PROPOSED_LOGO_STYLES).not.toContain("aquarelle");
+    expect(I.IDENTITY_SYSTEM).toMatch(/Rendus INTERDITS par le propriétaire/);
+    expect(G.LOGO_TERRITORIES_SYSTEM).toMatch(/Rendus INTERDITS par le propriétaire du Studio/);
+    const ids = identities(); ids[1].logoStyle = "aquarelle";
+    expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: ids }).identities, J.emptyJourney()).join(" ")).toMatch(/style de logo « tache d'aquarelle » interdit/);
+  });
 });

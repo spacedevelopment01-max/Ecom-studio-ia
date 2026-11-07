@@ -10,6 +10,7 @@ import { BRAND_RULES } from "../media/identity-board";
 import { contrast, hexToRgb, luminance, sameColor } from "../color";
 import { FIELD_LABEL, START_FIELDS, type Journey } from "./journey";
 import { referencesForPrompt } from "./brand-references";
+import { FORBIDDEN_LOGO_RENDERS } from "../logo-v2/artwork";
 
 /** Styles de logo de la charte (§ 2.2) : les 3 identités en prennent 3 différents. */
 export const LOGO_STYLES = ["lettrage", "symbole", "monogramme", "embleme", "cachet", "mascotte", "trait", "abstrait", "pixel", "brutaliste", "isometrie", "aquarelle", "artdeco", "popart"] as const;
@@ -19,6 +20,12 @@ export const LOGO_STYLE_LABEL: Record<(typeof LOGO_STYLES)[number], string> = {
   pixel: "pixel", brutaliste: "brutaliste à ombre décalée", isometrie: "isométrie 3D", aquarelle: "tache d'aquarelle",
   artdeco: "art déco", popart: "pop art",
 };
+
+/**
+ * Styles proposés : tous sauf l'aquarelle (tache floue), interdite par le propriétaire le 7 novembre 2026 (premier essai
+ * réel des logos). Le style reste lisible pour les identités déjà enregistrées.
+ */
+export const PROPOSED_LOGO_STYLES: readonly (typeof LOGO_STYLES)[number][] = LOGO_STYLES.filter((s) => s !== "aquarelle");
 
 /** Polices proposables (toutes sur Google Fonts et rendues par le thème), avec leur caractère. */
 export const FONT_CHARACTER: Record<string, string> = {
@@ -127,7 +134,7 @@ Les trois identités diffèrent sur au moins 4 des 6 axes, dont toujours le prem
 3. Famille de couleurs et fond de page (un fond blanc, un fond en dégradé de couleurs, un fond sombre ; teintes nettement différentes).
 4. Famille de polices (ex. serif fine contrastée / sans serif condensée très grasse / ronde épaisse).
 5. Ton du slogan (ex. poétique / direct et impératif / complice et léger).
-6. Style de logo : trois styles DIFFÉRENTS parmi ${LOGO_STYLES.map((s) => `${s} (${LOGO_STYLE_LABEL[s]})`).join(", ")}, choisis pour le métier du client et pour chaque identité.
+6. Style de logo : trois styles DIFFÉRENTS parmi ${PROPOSED_LOGO_STYLES.map((s) => `${s} (${LOGO_STYLE_LABEL[s]})`).join(", ")}, choisis pour le métier du client et pour chaque identité. Rendus INTERDITS par le propriétaire (jamais dans une idée de logo) : ${FORBIDDEN_LOGO_RENDERS.join(" ; ")}.
 
 Chaque identité contient :
 - name : applique la MÉTHODE DE NOMMAGE du propriétaire (ci-dessous) : un détail réel du métier du client (geste, matière, sensation, moment ou résultat) + un mot ou une expression qui lui donne une deuxième lecture. Pour CHAQUE identité, explore mentalement au moins 20 pistes et garde la plus forte ; trois noms de logiques différentes (trois détails différents). Jamais une sonorité vide de sens, jamais le nom d'une marque connue ni un nom des exemples. nameStyle dit le détail de départ, nameWhy explique la logique comme dans les exemples (« Pars de … ; … »).
@@ -278,6 +285,7 @@ export function identityIssues(list: Identity[], j: Journey): string[] {
     if (!FONT_HANDLES.includes(x.fonts.body)) issues.push(`${tag} : police de textes « ${x.fonts.body} » hors liste.`);
     else if (!bodyFontOk(x.fonts.body)) issues.push(`${tag} : « ${fontFamily(x.fonts.body)} » est une police de titres, manuscrite ou à chasse fixe : elle ne sert jamais pour les textes (choisis une police de texte lisible).`);
     for (const p of paletteIssues(x.palette, x.ground, x.gradient)) issues.push(`${tag} — ${p}`);
+    if (!PROPOSED_LOGO_STYLES.includes(x.logoStyle)) issues.push(`${tag} : style de logo « ${LOGO_STYLE_LABEL[x.logoStyle]} » interdit (tache floue) ; choisis un autre style.`);
     const refused = j.start.image?.status === "answered" ? refusedColors(j.start.image.value) : [];
     for (const c of refused) for (const role of ["primary", "secondary", "accent"] as const) {
       if (HUE_RANGE[c]?.(hueSat(x.palette[role]))) issues.push(`${tag} : ${role} ${x.palette[role]} ressemble à une couleur refusée par le client (${c}).`);

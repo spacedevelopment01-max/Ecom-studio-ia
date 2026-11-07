@@ -126,6 +126,7 @@ export function artworkPrompt(t: Territory, brief: BrandBrief, feedback?: string
     colours,
     `Le nom, parfaitement lisible${upper ? ", en capitales" : ""} : « ${name} »${txt.descriptor ? ` ; plus petite et espacée en dessous, la ligne d'activités : « ${txt.descriptor} »` : ""}${txt.tagline ? ` ; en plus petit encore, le slogan : « ${txt.tagline} »` : ""}.`,
     "Chaque mot écrit exactement, lettre par lettre, avec ses accents. Aucun autre texte.",
+    "Le symbole est un dessin net et reconnaissable, construit avec le nom en une seule composition (jamais une tache floue, jamais une lettre seule avec une simple forme géométrique, jamais un symbole posé au-dessus d'un nom en police ordinaire).",
     feedback ? `Changements pour cette version : ${end(feedback)}.` : "",
     "Logo centré, marges généreuses, fond blanc uni, dessin du logo à plat seulement : aucune maquette, aucun mur, aucun papier, aucune photo, aucune personne.",
   ];
@@ -319,6 +320,17 @@ export function misspelledWords(textRead: string, expected: { descriptor?: strin
  * Défauts qui interdisent un logo complet même choisi par le client : nom faux, texte faux ou inventé, ressemblance,
  * personne dessinée sans accord, copie.
  */
+/**
+ * Rendus de logo INTERDITS par le propriétaire (7 novembre 2026, premier essai réel de SINA, « tu dois même interdire
+ * ce genre de rendu ») : un logo qui en relève n'est jamais présenté comme bon ni choisissable (code « forbidden »).
+ */
+export const FORBIDDEN_LOGO_RENDERS = [
+  "un symbole réduit à une tache, une texture ou une forme floue qu'on ne reconnaît pas (aquarelle, éclaboussure, nuage de couleur)",
+  "un symbole simplement posé au-dessus ou à côté du nom écrit dans une police ordinaire, sans composition pensée avec lui",
+  "une lettre seule accompagnée d'une forme géométrique de base (arc, demi-disque, cercle, trait) : monogramme pauvre, sans vraie construction",
+  "un objet du métier dessiné de façon générique, comme une icône de banque d'images, sans idée propre à la marque",
+] as const;
+
 export const ARTWORK_NEVER = ["name_mismatch", "text_mismatch", "text_unreadable", "extra_text", "resembles_known_brand", "unauthorized_person", "corrupt", "forbidden", "placeholder_shape", "duplicate"];
 
 /** Défauts relevés par la relecture d'un logo complet. Le nom ET les autres textes sont comparés à la lecture. */
@@ -333,6 +345,7 @@ export function artworkCodes(r: ArtworkReview, expected: { name: string; descrip
   if (r.amateur) codes.push("amateur");
   if (r.artifacts) codes.push("artifacts");
   if (r.genericConcept) codes.push("generic_concept");
+  if (r.forbiddenRender) codes.push("forbidden");
   return codes;
 }
 
@@ -353,6 +366,7 @@ Une ligne d'activité très fine qui devient difficile à lire à la PLUS PETITE
 Échelle (la même pour chaque critère) : 9-10 = remarquable ; 8 = beau, lisible, soigné, métier compris au premier regard — de petites imperfections qu'on ne voit qu'en cherchant ne retirent rien : le patron serait content de l'afficher sur sa devanture, son camion, ses cartes ; 7 = présentable, avec un défaut que le client remarquerait (dessin maladroit par endroits, déséquilibre net, couleurs ternes) ; 5-6 = faible ou banal ; 0-4 = raté. Un logo qui plairait à la plupart des petites entreprises du métier mérite au moins 8.
 « genericConcept » = true quand la proposition repose SEULEMENT sur une forme vide sans rien du métier (cercle, triangle ou carré sans contenu), une abstraction que personne ne peut relier au métier, une police standard posée sans composition ou une décoration sans intention. Une icône du métier bien dessinée, un emblème rond réunissant les éléments du métier ou une signature script soignée ne sont PAS des concepts pauvres.
 Lis tout le texte du logo LETTRE PAR LETTRE, accents compris, et recopie-le exactement dans « textRead ». « nameExact » : le nom attendu y figure exactement. « extraText » : un mot non autorisé (slogan inventé, lettres parasites). « nameBox » : rectangle du NOM seul en fractions de l'image (x, y, largeur, hauteur entre 0 et 1), ou null.
+« forbiddenRender » = true quand le logo relève d'un de ces rendus INTERDITS par le propriétaire du Studio : ${FORBIDDEN_LOGO_RENDERS.join(" ; ")}. Un emblème rond qui intègre le nom en arc et un dessin net du métier n'en relève PAS.
 « artifacts » : lettres fantômes, formes fondues, détails incohérents typiques d'une IA. « person » : une personne est dessinée (visage, tête, silhouette humaine, main), même stylisée ou sans traits. « resemblesKnownBrand » : rappelle un logo connu. « amateur » : rendu de générateur, déséquilibré, daté.
 Sois juste et bienveillant comme un client : note ce que tu vois selon l'échelle ; ne baisse pas une note pour un détail que seul un graphiste remarquerait, ni parce que le logo montre simplement le métier ; garde les notes basses pour les défauts réellement visibles. « issues » : défauts concrets et précis (ce qui ne va pas, où, pourquoi), jamais des généralités. « fix » : LA correction la plus utile pour une nouvelle version — cible (symbol, typography, composition, colour, concept) et consigne précise qui change vraiment la proposition (ex. « symbole trop générique : remplacer le cadre par une construction des deux lettres en réserve », « référence au métier trop littérale : garder le geste, abandonner l'objet ») ; « none » si rien à corriger. « needsSimplifiedMark » : une version simplifiée est-elle nécessaire pour les petites tailles ?`;
 

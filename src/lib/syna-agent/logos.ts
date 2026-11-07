@@ -18,7 +18,7 @@ import { jobSpentMicro } from "./budget";
 import type { JobContext } from "../jobs";
 import { TerritorySchema, type TerritoryDraft } from "../logo-v2/territories";
 import { LOGO_STYLES as ENGINE_STYLES, type EngineRun, type LogoStyle, type ProposalResult } from "../logo-v2/types";
-import { STYLE_GUIDE } from "../logo-v2/artwork";
+import { FORBIDDEN_LOGO_RENDERS, STYLE_GUIDE } from "../logo-v2/artwork";
 import { realLogoV2Ai, type LogoV2Ai } from "../logo-v2/ai";
 import { runLogoEngineV2 } from "../logo-v2/engine";
 import { logoSeriesQuote } from "../logo-v2/quote";
@@ -51,6 +51,7 @@ export const LOGO_TERRITORIES_SYSTEM = `Tu es directeur artistique de logos, au 
 Règles :
 - Le seul texte du logo est le nom EXACT de la marque (accents, espaces, casse) : aucun slogan, aucune ligne d'activité (descriptor: null), aucun autre mot, chiffre ou lettre.
 - Couleurs : uniquement des codes de la palette choisie (champ colors : 1 à 3 codes exacts de la palette), contrastées, accordées à l'univers.
+- Rendus INTERDITS par le propriétaire du Studio (ne jamais en proposer, même si l'idée de départ y menait : adapte-la) : ${FORBIDDEN_LOGO_RENDERS.join(" ; ")}.
 - Chaque logo est simple, astucieux, mémorisable, exécuté proprement (dessin vectoriel net, épaisseurs cohérentes, nom parfaitement lisible, composition équilibrée) ; jamais de WordArt, de dégradé gratuit, de cliché maladroit ni de ressemblance avec une marque connue.
 - Les trois logos diffèrent par leur style (champ style), leur type de marque, leur composition, leur construction et leur typographie.
 - imageBrief : en ANGLAIS, brief précis pour le modèle d'images (ce que montre le logo, l'idée centrale, la composition, le traitement du nom, les couleurs exactes en hexadécimal, la finition, ce qu'il faut éviter), fond blanc uni, logo centré, rien d'autre sur l'image.

@@ -163,6 +163,10 @@ export type ArtworkReview = {
    * Une forme simple portée par une vraie idée graphique n'en est PAS un.
    */
   genericConcept?: boolean;
+  /**
+   * Rendu INTERDIT par le propriétaire (7 novembre 2026, FORBIDDEN_LOGO_RENDERS) : jamais présenté ni choisissable.
+   */
+  forbiddenRender?: boolean;
   /** Correction la plus utile pour une nouvelle version : cible et consigne précise. */
   fix?: { target: "symbol" | "typography" | "composition" | "colour" | "concept" | "none"; instruction: string };
 };
