@@ -5,7 +5,10 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { api, Button, cx, Textarea } from "../ui";
+import { api, Button, cx, Textarea, useApi } from "../ui";
+import { ThemeDemoViewer } from "./theme-demo-viewer";
+import type { ThemeDemoStatus } from "@/lib/theme/theme-demos";
+import type { DirectionCard } from "@/lib/theme/directions";
 import { useT } from "../i18n";
 import { useOptionalProject } from "./project-context";
 import { stepLabel } from "./journey-labels";
@@ -237,6 +240,12 @@ type Themes = { list: { id: string; name: string; tagline: string; preview: stri
  */
 function ThemeCards({ themes, busy, onChoose, onAll, onMockup }: { themes: Themes; busy: boolean; onChoose: (name: string) => void; onAll: () => void; onMockup: () => void }) {
   const t = useT();
+  // Démo complète de chaque thème (ordinateur ou téléphone, toutes ses pages) : la visionneuse de la galerie du Studio.
+  const { data: demoData } = useApi<{ demos: ThemeDemoStatus[] }>("/api/theme-demos");
+  const demos = Object.fromEntries((demoData?.demos ?? []).map((x) => [x.id, x]));
+  const [viewing, setViewing] = useState<string | null>(null);
+  const shown = viewing ? themes.list.find((x) => x.id === viewing) : null;
+  const shownDemo = viewing ? demos[viewing] : null;
   return (
     <div className="@container mt-2 space-y-2" data-syna-themes>
       <p className="text-xs text-muted">{t("Voici les thèmes du Studio tels qu'ils sont, avec les images et les textes de leur démonstration. Choisir un thème est gratuit : ton site s'y compose ensuite avec ta marque et tes produits. Tu peux aussi préférer une maquette sur mesure (payante, prix annoncé avant).", "Here are the Studio themes as they are, with their demo images and copy. Choosing a theme is free; you can also prefer a custom mockup (paid, price shown first).")}</p>
@@ -245,17 +254,19 @@ function ThemeCards({ themes, busy, onChoose, onAll, onMockup }: { themes: Theme
           const chosen = themes.chosen === th.id;
           return (
             <article key={th.id} className={cx("overflow-hidden rounded-xl border bg-card text-xs", chosen ? "border-accent ring-2 ring-accent" : "border-line", themes.chosen && !chosen && "opacity-60")} data-theme={th.id}>
-              <div className="relative aspect-[4/3] overflow-hidden bg-paper-2">
+              <button type="button" className="relative block aspect-[4/3] w-full overflow-hidden bg-paper-2 disabled:cursor-default" disabled={!demos[th.id]?.ready} onClick={() => setViewing(th.id)} title={t("Voir la démo complète (ordinateur ou téléphone)", "See the full demo (desktop or phone)")} data-theme-open={th.id}>
                 <img src={th.preview} alt={t(`Démonstration du thème ${th.name}`, `${th.name} theme demo`)} className="h-full w-full object-cover object-top" loading="lazy" />
                 {th.recommended && <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-0.5 text-[10px] font-semibold text-paper">{t("Recommandé", "Recommended")}</span>}
-              </div>
+              </button>
               <div className="space-y-1 px-3 py-2">
                 <h4 className="text-sm font-bold">{th.name} <span className="font-normal text-muted">· {th.tagline}</span></h4>
                 <p>{th.why}</p>
                 {!th.allowed && <p className="text-amber-700">{th.blocked ?? t("Non inclus dans ton forfait.", "Not included in your plan.")}</p>}
               </div>
               <div className="flex flex-wrap items-center gap-2 border-t border-line px-3 py-2">
-                {th.demo && <a className="underline" href={`/api/theme-demos/${th.id}/`} target="_blank" rel="noreferrer" data-theme-demo={th.id}>{t("Voir la démo complète", "See the full demo")}</a>}
+                {demos[th.id]?.ready
+                  ? <Button size="sm" variant="ghost" onClick={() => setViewing(th.id)} data-theme-demo={th.id}>{t("Voir la démo (ordinateur / téléphone)", "See the demo (desktop / phone)")}</Button>
+                  : demoData && <span className="text-muted">{demos[th.id]?.preparing ? t("Démo en préparation…", "Demo being prepared…") : t("Démo pas encore disponible", "Demo not available yet")}</span>}
                 {themes.chosen
                   ? chosen && <p className="font-semibold">✓ {t("Thème choisi", "Theme chosen")}</p>
                   : th.allowed && <Button size="sm" variant={th.recommended ? "primary" : "secondary"} disabled={busy} onClick={() => onChoose(th.name)} data-theme-pick={th.id}>{t("Choisir ce thème", "Choose this theme")}</Button>}
@@ -264,6 +275,7 @@ function ThemeCards({ themes, busy, onChoose, onAll, onMockup }: { themes: Theme
           );
         })}
       </div>
+      {shown && shownDemo && <ThemeDemoViewer theme={{ id: shown.id, name: shown.name } as DirectionCard} status={shownDemo} onClose={() => setViewing(null)} current={themes.chosen === shown.id} blocked={shown.allowed ? null : shown.blocked ?? null} onChoose={themes.chosen || !shown.allowed ? undefined : () => { setViewing(null); onChoose(shown.name); }} choosing={busy} />}
       {!themes.chosen && <div className="flex flex-wrap items-center gap-2">
         {!themes.all && <Button size="sm" variant="ghost" disabled={busy} onClick={onAll} data-themes-all>{t("Voir tous les thèmes", "See all themes")}</Button>}
         {/* Après avoir vu les thèmes, le client peut préférer une maquette sur mesure (payante, prix annoncé avant). */}
