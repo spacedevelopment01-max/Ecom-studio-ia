@@ -69,6 +69,8 @@ describe("SINA — étape 5 : l'activité complète", async () => {
     expect((await call("activity.company", ctx, { fields: { siret: "912 345 678 00017" } })).summary).toBe("Coordonnées enregistrées : SIRET."); // sigle gardé
     const { SYNA_SYSTEM } = await import("@/lib/syna-agent/prompt");
     expect(SYNA_SYSTEM).toMatch(/jamais un gabarit à trous/);
+    expect(SYNA_SYSTEM).toMatch(/« frais de retour à la charge du client » ne devient JAMAIS « à ta charge »/);
+    expect(SYNA_SYSTEM).toMatch(/dit UNE fois que c'est noté : sans reprendre les détails de sa réponse/);
     expect(Act.activityPlan(pid, J.journeyOf(cid)).none).toEqual(["phone"]);
     expect((await call("activity.company", ctx, { none: ["email"] })).ok).toBe(false); // jamais une coordonnée obligatoire
     expect(c.ok).toBe(true);
