@@ -54,13 +54,6 @@ describe("SINA — étape 2 : 3 logos", async () => {
     return { user, cid, ctx, pid };
   }
 
-  /** Idées adaptées par « Claude » : trois styles, couleurs de la palette choisie, nom exact. */
-  const territories = (name: string) => [
-    { source: "A", name: "Aquarelle au chaudron", style: "textured", markType: "symbol_wordmark", composition: "stacked", construction: "organic", sobriety: 4, symbolIdea: "tache d'aquarelle abricot coupée par une bassine", typography: { style: "classic_serif", weight: "regular", case: "title", tracking: "normal", rationale: "fine" } },
-    { source: "B", name: "Cachet d'épicerie", style: "emblem", markType: "emblem", composition: "badge", construction: "geometric", sobriety: 3, symbolIdea: "chaudron vu de dessus dans un sceau", typography: { style: "high_contrast_serif", weight: "bold", case: "upper", tracking: "wide", rationale: "sceau" } },
-    { source: "C", name: "Monogramme HD", style: "monogram", markType: "monogram", composition: "horizontal", construction: "typographic", sobriety: 2, symbolIdea: "les initiales H et D réunies en pot", typography: { style: "geometric_sans", weight: "bold", case: "upper", tracking: "tight", rationale: "initiales" } },
-  ].map((t) => ({ ...t, concept: `Concept « ${t.name} » pour ${name}, tiré de l'idée de logo de départ.`, whyItFits: "Parce que cela montre la cuisson lente et le soleil des fruits.", colorRole: { ink: "dark", accent: "primary", rationale: "palette choisie" }, distinctive: "une idée simple et propre à la marque", avoid: ["dégradé gratuit"], descriptor: null, imageBrief: `A clean vector logo for "${name}", ${t.name}, colors #1F2A3A and #24508C on a plain white background, centered, nothing else.`, colors: ["#1F2A3A", "#24508C"] }));
-
   let n = 0;
   const jobCtx = (user: any, pid: string, payload: Record<string, unknown>) => {
     const jid = `job-sina-logos-${Date.now()}-${n++}`;
@@ -68,11 +61,9 @@ describe("SINA — étape 2 : 3 logos", async () => {
     return new JobContext(one<any>("SELECT * FROM jobs WHERE id = ?", jid));
   };
   const artReview = (score: number, exp: any) => ({ criteria: Object.fromEntries(ART_CRITERIA.map((k) => [k, score])) as any, textRead: exp.name, nameExact: true, extraText: false, nameBox: null, clumsyCliche: false, resemblesKnownBrand: false, amateur: false, artifacts: false, issues: [], needsSimplifiedMark: true, genericConcept: false, fix: { target: "none", instruction: "" } });
-  const ART: Record<string, number> = { "Aquarelle au chaudron": 1, "Cachet d'épicerie": 2, "Monogramme HD": 3 };
   const fakeEngine = (log: { calls: string[]; prompts: string[] }, scores: Record<string, number> = {}) => () => ({
     ...mockAi(log),
     artworkRoute: () => ({ provider: "openai", model: "gpt-image-1" }),
-    async drawArtwork(t: any) { log.calls.push(`art:${t.name}`); return artFixture(ART[t.name] ?? 0); },
     async reviewArtwork(_b: Buffer, t: any, _brief: any, exp: any) { log.calls.push(`review:${t.name}`); return artReview(scores[t.name] ?? 8.6, exp); },
   }) as any;
 
@@ -84,21 +75,24 @@ describe("SINA — étape 2 : 3 logos", async () => {
     expect(J.journeyContext(j)).toMatch(/Étape 2 \(3 logos\) : rien n'est encore dessiné.*logo\.propose/);
   });
 
-  it("consignes : idées de l'étape 1 adaptées à l'identité choisie, nom exact seul texte, couleurs de la palette", () => {
-    const brand: any = { name: "Heure Dorée", tagline: "Ouvre le pot, l'heure dorée revient.", ground: "blanc", palette: identities()[0].palette, fonts: identities()[1].fonts, personality: ["lumineux"], positioning: "x" };
-    const prompt = G.logoTerritoriesPrompt(brand, identities() as any);
-    expect(prompt).toContain("Nom exact : « Heure Dorée »");
-    expect(prompt).toMatch(/C\. Style « monogramme » .*imaginée pour « Pot Commun »/);
-    expect(G.LOGO_TERRITORIES_SYSTEM).toMatch(/le seul texte du logo est le nom EXACT/i);
-    expect(G.LOGO_TERRITORIES_SYSTEM).toMatch(/monogramme « PP » imaginé pour « Pot Commun » devient un monogramme des initiales du nom choisi/);
-    const ok = territories("Heure Dorée") as any;
-    expect(G.territoryIssues(ok, brand)).toEqual([]);
-    const bad = territories("Heure Dorée") as any;
-    bad[1].style = "textured"; bad[2].colors = ["#FF00FF"]; bad[0].descriptor = "CONFITURES";
-    const issues = G.territoryIssues(bad, brand).join(" ");
-    expect(issues).toMatch(/Trois styles de logo différents/);
-    expect(issues).toMatch(/couleur #FF00FF hors de la palette/);
-    expect(issues).toMatch(/descriptor doit être null/);
+  it("logos LIBRES (décision du propriétaire du 7 novembre) : carte blanche, nom exact seul texte, couleurs de la marque, interdits", () => {
+    const brand: any = { name: "Heure Dorée", positioning: "x", personality: ["lumineux", "sensoriel"], palette: identities()[0].palette };
+    const j = J.emptyJourney();
+    j.start.offer = { value: "Des confitures cuites au chaudron.", status: "answered", source: "client", at: 1 };
+    j.start.image = { value: "Gourmand, authentique, solaire.", status: "answered", source: "client", at: 1 };
+    const f = G.freeLogoFacts(brand, j);
+    expect(f.feeling).toBe("lumineux, sensoriel — Gourmand, authentique, solaire.");
+    const prompt = G.freeLogoPrompt(f, 1);
+    expect(prompt).toMatch(/Crée le logo de la marque « Heure Dorée »\. Ce qu'elle fait : Des confitures cuites au chaudron\./);
+    expect(prompt).toMatch(/carte blanche totale sur l'idée, le symbole, la typographie et la composition : fais-toi plaisir/);
+    expect(prompt).toContain(G.FREE_MOODS[1]);
+    expect(prompt).toMatch(/Le seul texte du logo est le nom « Heure Dorée »/);
+    expect(prompt).toMatch(/À éviter : un rendu daté \(années 80 ou 90, clip-art\)/);
+    // Plus aucune idée, aucun style ni objet imposé.
+    expect(prompt.split("À éviter")[0]).not.toMatch(/aquarelle|cachet|monogramme|tampon|emblème/i);
+    const t = G.freeTerritories(f);
+    expect(t.map((x) => x.style)).toEqual(["libre", "libre", "libre"]);
+    expect(new Set(t.map((x) => x.imageBrief)).size).toBe(3);
   });
 
   it("proposition complète : devis annoncé, 3 logos dessinés et contrôlés, rangés dans le parcours, affichés, puis choix du client", async () => {
@@ -115,22 +109,22 @@ describe("SINA — étape 2 : 3 logos", async () => {
       expect(job.type).toBe(G.SINA_LOGOS_JOB);
     } finally { logoToolDeps.maxMicro = undefined; }
     const log = { calls: [] as string[], prompts: [] as string[] };
-    const seen: any[] = [];
-    G.logoDeps.territories = async (c) => { seen.push(c); return { territories: territories("Heure Dorée") }; };
-    G.logoDeps.ai = fakeEngine(log, { "Monogramme HD": 4 });
+    const prompts: string[] = [];
+    G.logoDeps.ai = fakeEngine(log, { "Création libre 3": 4 });
+    G.logoDeps.draw = async (prompt, tid) => { prompts.push(prompt); log.calls.push(`art:${tid}`); return artFixture(Number(tid.slice(1)) || 0); };
     try {
       const out = await fr(() => G.runSinaLogosJob(jobCtx(user, pid, { projectId: pid, conversationId: cid, capMicro: 900_000 })));
       expect(out.logos.map((x) => x.source).sort()).toEqual(["A", "B", "C"]);
-    } finally { G.logoDeps.territories = undefined; G.logoDeps.ai = undefined; }
-    // L'idée de l'identité retenue (B, aquarelle) passe en premier, puis les deux autres.
-    expect(seen[0].prompt).toMatch(/A\. Style « tache d'aquarelle »[\s\S]*B\. Style « cachet ou tampon »[\s\S]*C\. Style « monogramme »/);
-    expect(seen[0].routing.prefer).toEqual(G.LOGO_TERRITORIES_MODEL);
+    } finally { G.logoDeps.ai = undefined; G.logoDeps.draw = undefined; }
+    // Le dessin reçoit la demande LIBRE (jamais la consigne structurée du moteur) avec le nom choisi.
+    expect(prompts).toHaveLength(3);
+    for (const pr of prompts) { expect(pr).toMatch(/« Heure Dorée »/); expect(pr).toMatch(/carte blanche totale/); }
     expect(log.calls.filter((c) => c.startsWith("art:"))).toHaveLength(3);
     const j = J.journeyOf(cid);
     expect(j.steps[2].status).toBe("review");
     const byName = Object.fromEntries(j.logos!.list.map((x) => [x.name, x]));
-    expect(byName["Cachet d'épicerie"].verdict).toBe("FINAL");
-    expect(byName["Monogramme HD"].verdict).not.toBe("FINAL"); // note 4/10 : jamais présenté comme bon
+    expect(byName["Création libre 1"].verdict).toBe("FINAL");
+    expect(byName["Création libre 3"].verdict).not.toBe("FINAL"); // note 4/10 : jamais présenté comme bon
     expect(J.journeyContext(j)).toMatch(/Étape 2 — proposition n° 1 .*NON validé par le contrôle/);
     const view = await fr(() => threadView(user, cid));
     expect(view.journey.logos!.list.every((x) => !x.assetId || !!x.href)).toBe(true);
@@ -177,7 +171,7 @@ describe("SINA — étape 2 : 3 logos", async () => {
     // Étapes 1 et 2 : l'aquarelle n'est plus proposée, et les consignes citent les interdits.
     expect(I.PROPOSED_LOGO_STYLES).not.toContain("aquarelle");
     expect(I.IDENTITY_SYSTEM).toMatch(/Rendus INTERDITS par le propriétaire/);
-    expect(G.LOGO_TERRITORIES_SYSTEM).toMatch(/Rendus INTERDITS par le propriétaire du Studio/);
+    expect(G.freeLogoPrompt({ name: "X", activity: "y", feeling: "", audience: null, colors: ["#000000"] }, 0)).toContain(A.FORBIDDEN_LOGO_RENDERS[0]);
     const ids = identities(); ids[1].logoStyle = "aquarelle";
     expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: ids }).identities, J.emptyJourney()).join(" ")).toMatch(/style de logo « tache d'aquarelle » interdit/);
   });

@@ -204,7 +204,7 @@ export const STEP_GUIDES: Partial<Record<number, string>> = {
 /** Étape 2 : que faire selon l'état des logos (contexte relu par SINA). */
 export function logoStepContext(j: Journey): string[] {
   const lg = j.logos;
-  if (!lg?.list.length) return ["Étape 2 (3 logos) : rien n'est encore dessiné. Si le client est prêt, annonce le coût (logo.propose donne le devis) et lance logo.propose : 3 logos de 3 styles différents pour SON identité, tirés des 3 idées de logo de l'étape 1. Le dessin prend quelques minutes."];
+  if (!lg?.list.length) return ["Étape 2 (3 logos) : rien n'est encore dessiné. Si le client est prêt, annonce le coût (logo.propose donne le devis) et lance logo.propose : 3 logos libres (carte blanche au dessinateur) pour SON identité. Le dessin prend quelques minutes."];
   const lines = [`Étape 2 — proposition n° ${lg.round} (les logos sont affichés au client dans le fil) : ${lg.list.map((x) => `${x.source} « ${x.name} » (${x.style}) : ${x.verdict === "FINAL" ? `validé par le contrôle, ${x.score ?? "?"}/10` : x.verdict === "PROVISIONAL" ? "version du studio" : x.assetId ? `NON validé par le contrôle (${x.reason})` : `pas de dessin (${x.reason})`}`).join(" ; ")}.`,
     "Présente-les en 2 ou 3 phrases (honnêtement : un logo non validé est dit non validé), puis demande lequel il choisit (logo.choose). Il peut demander une nouvelle proposition avec ses mots (logo.propose avec guidance, payant). Ne choisis jamais à sa place."];
   return lines;

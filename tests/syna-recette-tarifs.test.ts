@@ -24,6 +24,8 @@ describe("Studio privé de recette : tarifs vérifiés", () => {
     expect(priceFor("anthropic", "web_search")).toEqual({ unit: "call", perCall: 0.01 });
     expect(usdToEur()).toBe(0.9);
     expect(mediaRouteFor("logo", { text: true })).toMatchObject({ provider: "openai", model: "gpt-image-2.5-sunburst" });
+    const { logoQuality } = await import("@/lib/ai/media-providers");
+    expect(logoQuality()).toBe("high"); // logos en qualité haute (demande du propriétaire du 7 novembre)
     expect(mediaRouteFor("text_layout", { text: true, references: 2 })).toMatchObject({ provider: "openai", model: "gpt-image-2.5-flare" });
     const logo = openaiImageMax("gpt-image-2.5-sunburst", { prompt: "logo", images: 0, size: "1024x1024", quality: "medium" });
     const maquette = openaiImageMax("gpt-image-2.5-flare", { prompt: "maquette", images: 2, size: "1024x1536", quality: "high" });

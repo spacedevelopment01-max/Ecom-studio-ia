@@ -37,6 +37,8 @@ export const STYLE_GUIDE: Record<LogoStyle, string> = {
     "Logo TEXTURÉ : une marque avec une vraie matière choisie pour CETTE entreprise (par exemple encre, grain, impression typographique, gravure ou trait à la main), en deux tons de la palette ; le nom reste net et propre.",
   premium:
     "Logo PREMIUM : retenue et précision, un empattement raffiné ou une linéale élégante, un interlettrage généreux, un seul détail signature discret, une ou deux couleurs, une allure haut de gamme intemporelle, sobre et sans artifice.",
+  libre:
+    "Logo LIBRE : le dessinateur a eu carte blanche sur l'idée, le symbole, la typographie et la composition ; juge-le comme un logo d'agence de 2026 : beau, moderne, mémorable, une idée propre à CETTE marque, une exécution impeccable et un nom parfaitement lisible, quel que soit le rendu choisi.",
   gradient:
     "Logo À DÉGRADÉS MODERNES : une marque contemporaine aux dégradés doux tirés des couleurs de la marque, de la profondeur par des formes translucides superposées, avec un nom en linéale nette.",
 };
@@ -51,6 +53,7 @@ export const STYLE_LABEL: Record<LogoStyle, [string, string]> = {
   textured: ["Texturé, artisanal", "Textured, artisanal"],
   gradient: ["Dégradés modernes", "Modern gradients"],
   premium: ["Premium, haut de gamme", "Premium, high-end"],
+  libre: ["Création libre", "Free creation"],
 };
 
 const COMPOSITION: Record<Territory["composition"], string> = {
@@ -185,6 +188,7 @@ export const INTENDED_SIZES: Record<LogoStyle, { widths: number[]; uses: string 
   minimal: { widths: [360, 160, 64], uses: "tous supports, y compris en petit" },
   monogram: { widths: [360, 160, 64], uses: "tous supports ; le monogramme seul sert en petit" },
   typographic: { widths: [360, 160, 80], uses: "tous supports ; le nom doit rester lisible en petit" },
+  libre: { widths: [360, 160, 80], uses: "en-tête de site, étiquettes, réseaux sociaux, papeterie (une version simplifiée sert au favicon)" },
 };
 
 /**
@@ -294,6 +298,7 @@ export const STYLE_WEIGHTS: Record<LogoStyle, Record<ArtCriterion, number>> = {
   minimal: { relevance: 1.2, originality: 1.3, craft: 1.1, typography: 1.1, composition: 1, colour: 1, legibility: 1, memorability: 1.2, distinctiveness: 1.2, intendedUse: 1.2 },
   monogram: { relevance: 1.1, originality: 1.3, craft: 1.2, typography: 1.2, composition: 1.1, colour: 1, legibility: 1, memorability: 1.2, distinctiveness: 1.2, intendedUse: 1.1 },
   typographic: { relevance: 1.1, originality: 0.9, craft: 1.1, typography: 1.6, composition: 1.1, colour: 1, legibility: 1.2, memorability: 1.1, distinctiveness: 0.9, intendedUse: 1 },
+  libre: { relevance: 1.2, originality: 1.3, craft: 1.4, typography: 1.2, composition: 1.2, colour: 1, legibility: 1.1, memorability: 1.3, distinctiveness: 1.3, intendedUse: 1 },
 };
 
 export function artworkScore(r: Pick<ArtworkReview, "criteria">, style: LogoStyle): number {

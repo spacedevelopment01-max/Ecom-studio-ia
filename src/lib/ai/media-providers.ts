@@ -789,6 +789,15 @@ export async function logoArtworkRelayImage(ctx: Ctx, input: { prompt: string })
   return mediaExclude.run({ exclude: primary ? [`${primary.provider}:${primary.model}`] : [], only: `${relay.provider}:${relay.model}`, force: true }, () => logoArtworkImage(ctx, input));
 }
 
+/**
+ * COMPARATIF DE MODÈLES pour les logos (essai demandé par le propriétaire, 7 novembre 2026) : la MÊME consigne qu'un
+ * logo du parcours, dessinée par le modèle désigné, en qualité haute, sur sa route confirmée (aucun relais). Jamais
+ * utilisé par le parcours : le dessin des logos reste sur le modèle imposé (logo-policy.ts).
+ */
+export async function logoComparisonImage(ctx: Ctx, input: { prompt: string; route: { provider: string; model: string } }) {
+  return withQuotedImageRoute(input.route, () => generateImage(ctx, { text: clampBytes(input.prompt, LOGO_PROMPT_MAX_BYTES), aspect: "1:1", reference: null, quality: "high", strictQuality: true, usage: "text_layout", need: { text: true } }));
+}
+
 /** Coût MAXIMAL d'un logo redessiné par le relais OpenAI (même calcul que sa réservation). null : aucun relais. */
 export function logoRelayMaxMicro(): number | null {
   const r = logoQualityRelay();

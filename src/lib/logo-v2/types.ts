@@ -57,7 +57,11 @@ export type BrandBrief = {
  * sceau, badge ; « textured » : matière choisie pour l'entreprise ; « gradient » : dégradés modernes ; « premium » : sobriété
  * haut de gamme. Aucun n'est imposé : le directeur artistique choisit ce qui sert CHAQUE marque.
  */
-export const LOGO_STYLES = ["illustrated", "minimal", "typographic", "monogram", "emblem", "textured", "gradient", "premium"] as const;
+/**
+ * « libre » : carte blanche au modèle d'images (SINA, décision du propriétaire du 7 novembre 2026) — aucun style
+ * imposé ; la relecture juge la beauté, l'idée, la modernité et l'exécution, quel que soit le rendu choisi.
+ */
+export const LOGO_STYLES = ["illustrated", "minimal", "typographic", "monogram", "emblem", "textured", "gradient", "premium", "libre"] as const;
 export type LogoStyle = (typeof LOGO_STYLES)[number];
 
 export const MARK_TYPES = ["wordmark", "lettermark", "monogram", "symbol_wordmark", "abstract_mark", "emblem"] as const;

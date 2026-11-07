@@ -35,6 +35,8 @@ export async function appliquerTarifsVerifies() {
   const usages = getJsonSetting<Record<string, unknown>>("ai.media.usage", {});
   usages.text_layout = { mode: "manual", primary: "openai:gpt-image-2.5-flare", backup: null };
   setJsonSetting("ai.media.usage", usages);
+  // Logos en qualité haute (demande du propriétaire du 7 novembre : « le logo est important, prends un niveau élevé »).
+  setJsonSetting("ai.media.quality", { ...getJsonSetting<Record<string, string>>("ai.media.quality", {}), logo: "high" });
   const deja = Number(getSetting("ai.prices.checkedAt"));
   if (!(deja > DATE_VERIFICATION_TARIFS)) setSetting("ai.prices.checkedAt", String(DATE_VERIFICATION_TARIFS));
 }

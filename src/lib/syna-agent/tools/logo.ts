@@ -22,7 +22,7 @@ const maxMicro = () => (logoToolDeps.maxMicro ?? logosMaxMicro)();
 
 const proposeTool: AgentTool<{ guidance?: string }> = {
   name: "logo.propose", module: "marque", kind: "generate", needsProject: true,
-  description: "Étape 2 : dessine 3 logos de 3 styles différents pour l'identité CHOISIE (son nom exact, sa palette, ses polices), un par idée de logo des 3 identités de l'étape 1, adaptée à l'identité choisie. Chaque logo est relu et contrôlé par Claude ; un nom mal écrit est réécrit sans repayer ; un logo jugé insuffisant est redessiné par le modèle de relais. Payant (devis avant, en % du budget) ; tâche de fond de quelques minutes. guidance = ce que le client veut (ses mots) pour une nouvelle proposition.",
+  description: "Étape 2 : dessine 3 logos LIBRES pour l'identité CHOISIE (son nom exact, ses couleurs) : le modèle d'images a carte blanche sur l'idée, le symbole et la typographie (décision du propriétaire), seuls le nom exact et les rendus interdits sont fixés. Chaque logo est relu et contrôlé par Claude ; un nom mal écrit est réécrit sans repayer. Payant (devis avant, en % du budget) ; tâche de fond de quelques minutes. guidance = ce que le client veut (ses mots) pour une nouvelle proposition.",
   args: z.object({ guidance: z.string().max(1500).optional() }).strict(),
   estimate: () => ({ maxMicro: maxMicro(), label: L("3 logos", "3 logos") }),
   run: (ctx, a) => {
