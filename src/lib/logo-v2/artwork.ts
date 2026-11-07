@@ -17,6 +17,7 @@ import { ensureFonts, font } from "../media/fonts";
 import { decide, type GateDecision } from "../quality/gate";
 import { WEIGHT, nearestWeight } from "./territories";
 import { fontsFor } from "./construct";
+import { nameShapes } from "./identity";
 import { ART_CRITERIA, type ArtCriterion, type ArtworkReview, type BrandBrief, type LogoStyle, type Territory, type TextBox } from "./types";
 
 // ---------------------------------------------------------------- demande au modèle d'images
@@ -198,7 +199,8 @@ export const INTENDED_SIZES: Record<LogoStyle, { widths: number[]; uses: string 
  * nuit…), elles disparaîtraient sur fond sombre : le logo garde alors ses couleurs et reçoit un liseré clair tout
  * autour (version « autocollant »), au lieu d'être délavé en blanc.
  */
-export async function onDarkVersion(png: Buffer): Promise<Buffer> {
+export async function onDarkVersion(png: Buffer, nameBox?: TextBox | null): Promise<Buffer> {
+  if (nameBox) return onDarkWithName(png, nameBox);
   const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   let opaque = 0;
   let colouredDark = 0;
@@ -221,6 +223,42 @@ export async function onDarkVersion(png: Buffer): Promise<Buffer> {
   const mask = await sharp(ext).extractChannel("alpha").blur(r * 0.7).threshold(6).png().toBuffer();
   const halo = await sharp({ create: { width: m.width!, height: m.height!, channels: 3, background: "#FBF8F2" } }).joinChannel(mask).png().toBuffer();
   return sharp(halo).composite([{ input: ext }]).png().toBuffer();
+}
+
+/**
+ * Fond sombre quand la zone du nom est connue (essai réel du 7 novembre : nom bleu nuit invisible sur fond sombre,
+ * malgré le liseré) : le NOM foncé passe en blanc, pour être lu ; le dessin garde ses couleurs, et seules ses parties
+ * foncées (feuille bleu nuit, contour brun…) reçoivent un liseré clair juste autour d'elles.
+ */
+async function onDarkWithName(png: Buffer, box: TextBox): Promise<Buffer> {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const W = info.width, H = info.height;
+  const { label, isName } = nameShapes(data, W, H, box);
+  const nameAt = (p: number) => label[p] >= 0 && isName[label[p]];
+  // Pixels du bord des lettres (anticrénelage, non étiquetés) : rattachés à la lettre voisine, à 2 pixels près.
+  const nearName = (p: number) => {
+    const x = p % W, y = (p - x) / W;
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+      const xx = x + dx, yy = y + dy;
+      if (xx >= 0 && yy >= 0 && xx < W && yy < H && nameAt(yy * W + xx)) return true;
+    }
+    return false;
+  };
+  const dark = Buffer.alloc(W * H);
+  let darkCount = 0;
+  for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+    if (data[i + 3] < 16) continue;
+    const lum = (0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255;
+    if (lum >= 0.35) continue;
+    if (nameAt(p) || (label[p] < 0 && nearName(p))) data[i] = data[i + 1] = data[i + 2] = 255;
+    else if (data[i + 3] >= 128) { dark[p] = 255; darkCount++; }
+  }
+  const flipped = await sharp(data, { raw: { width: W, height: H, channels: 4 } }).png().toBuffer();
+  if (!darkCount) return flipped;
+  const r = Math.max(3, Math.round(Math.max(W, H) * 0.012));
+  const mask = await sharp(dark, { raw: { width: W, height: H, channels: 1 } }).blur(r * 0.7).threshold(6).png().toBuffer();
+  const halo = await sharp({ create: { width: W, height: H, channels: 3, background: "#FBF8F2" } }).joinChannel(mask).png().toBuffer();
+  return sharp(halo).composite([{ input: flipped }]).png().toBuffer();
 }
 
 /**

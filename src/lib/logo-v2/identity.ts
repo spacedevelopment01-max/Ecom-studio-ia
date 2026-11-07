@@ -123,7 +123,13 @@ export async function artworkSymbol(png: Buffer, box?: TextBox | null): Promise<
   const xCut = box && box.y <= 0.25 && box.x > 0.2 ? cutNear(box.x * W, W, blankCol) : -1;
   if (yCut > 0) region = { left: 0, top: 0, width: W, height: yCut };
   else if (xCut > 0) region = { left: 0, top: 0, width: xCut, height: H };
-  else {
+  else if (box && box.y > 0.25) {
+    // Aucun blanc entre le symbole et le nom (une vague qui frôle une lettre, essai réel du 7 novembre) : le symbole
+    // est pris FORME PAR FORME, en écartant les formes qui sont surtout dans la zone du nom.
+    const sym = await symbolByShapes(png, box);
+    if (sym) return sym;
+  }
+  if (!region) {
     const rows = Array.from({ length: H }, (_, y) => {
       let n = 0;
       for (let x = 0; x < W; x++) if (ink(x, y)) n++;
@@ -156,6 +162,63 @@ export async function artworkSymbol(png: Buffer, box?: TextBox | null): Promise<
   if (!trimmed) return null;
   const m = await sharp(trimmed).metadata();
   // Trop petit par rapport au logo : ce n'est pas un symbole (accent, filet, point).
+  if ((m.width ?? 0) * (m.height ?? 0) < W * H * 0.06) return null;
+  const side = Math.round(Math.max(m.width!, m.height!) * 1.16);
+  const square = await sharp({ create: { width: side, height: side, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite([{ input: trimmed, gravity: "center" }]).png().toBuffer();
+  return sharp(square).resize(1024, 1024).png().toBuffer();
+}
+
+/**
+ * Formes séparées d'un logo (composantes d'encre) et celles qui sont des LETTRES du nom : presque entières dans la
+ * zone du nom lue par la relecture, sans en dépasser le haut de plus d'un trait (boucle, accent). Une forme du dessin
+ * qui descend dans la zone (vague, ombre) commence nettement plus haut : elle reste au dessin.
+ */
+export function nameShapes(data: Buffer, W: number, H: number, box: TextBox): { label: Int32Array; isName: boolean[]; sizes: number[] } {
+  const N = W * H;
+  const label = new Int32Array(N).fill(-1);
+  // La zone du nom lue par la relecture est approximative (essai réel : 12 % trop étroite) : marge en largeur.
+  const bx0 = (box.x - 0.08) * W, bx1 = (box.x + box.w + 0.08) * W, by0 = (box.y - 0.01) * H, by1 = (box.y + box.h + 0.03) * H;
+  const stack = new Int32Array(N);
+  const isName: boolean[] = [];
+  const sizes: number[] = [];
+  for (let start = 0; start < N; start++) {
+    if (label[start] !== -1 || data[start * 4 + 3] < 128) continue;
+    const id = isName.length;
+    let sp = 0, total = 0, inside = 0, top = H;
+    stack[sp++] = start; label[start] = id;
+    while (sp) {
+      const i = stack[--sp]; total++;
+      const x = i % W, y = (i - x) / W;
+      if (y < top) top = y;
+      if (x >= bx0 && x <= bx1 && y >= by0 && y <= by1) inside++;
+      if (x > 0 && label[i - 1] === -1 && data[(i - 1) * 4 + 3] >= 128) { label[i - 1] = id; stack[sp++] = i - 1; }
+      if (x < W - 1 && label[i + 1] === -1 && data[(i + 1) * 4 + 3] >= 128) { label[i + 1] = id; stack[sp++] = i + 1; }
+      if (y > 0 && label[i - W] === -1 && data[(i - W) * 4 + 3] >= 128) { label[i - W] = id; stack[sp++] = i - W; }
+      if (y < H - 1 && label[i + W] === -1 && data[(i + W) * 4 + 3] >= 128) { label[i + W] = id; stack[sp++] = i + W; }
+    }
+    isName.push(inside / total >= 0.4 && top >= by0 - H * 0.04);
+    sizes.push(total);
+  }
+  return { label, isName, sizes };
+}
+
+/**
+ * Symbole d'un logo « symbole au-dessus du nom » dont les deux se touchent presque : les formes du dessin seules
+ * (nameShapes), lettres écartées. Null si le résultat n'est pas un vrai symbole (trop petit, ou rien d'écarté).
+ */
+export async function symbolByShapes(png: Buffer, box: TextBox): Promise<Buffer | null> {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const W = info.width, H = info.height, N = W * H;
+  const { label, isName, sizes } = nameShapes(data, W, H, box);
+  const keep = isName.map((x) => !x);
+  let ink = 0, kept = 0, dropped = 0;
+  sizes.forEach((n, k) => { ink += n; if (keep[k]) kept += n; else dropped += n; });
+  if (!kept || !dropped || kept < ink * 0.15) return null;
+  const out = Buffer.from(data);
+  for (let i = 0; i < N; i++) if (label[i] < 0 || !keep[label[i]]) out[i * 4 + 3] = 0;
+  const trimmed = await sharp(out, { raw: { width: W, height: H, channels: 4 } }).png().toBuffer().then((b) => sharp(b).trim({ threshold: 5 }).png().toBuffer()).catch(() => null);
+  if (!trimmed) return null;
+  const m = await sharp(trimmed).metadata();
   if ((m.width ?? 0) * (m.height ?? 0) < W * H * 0.06) return null;
   const side = Math.round(Math.max(m.width!, m.height!) * 1.16);
   const square = await sharp({ create: { width: side, height: side, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite([{ input: trimmed, gravity: "center" }]).png().toBuffer();

@@ -90,4 +90,32 @@ describe("File des tâches : appliquer le logo choisi passe avant les longues t�
     for (let j = claimNext(["test.long", "brand.logo.v2.choose"]); j; j = claimNext(["test.long", "brand.logo.v2.choose"])) if (j.id === quick.id || j.id === long.id) order.push(j.id);
     expect(order).toEqual([quick.id, long.id]);
   });
+  it("essai réel du 7 novembre : symbole qui frôle le nom — pris forme par forme, entier, sans les lettres", async () => {
+    // Fruit orange (haut), vague orange qui descend jusqu'à la ligne du nom, feuille bleu nuit ; lettres bleu nuit dessous.
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">
+      <circle cx="200" cy="120" r="80" fill="#C2652B"/><path d="M110 190 Q200 150 300 200 L300 225 Q200 190 110 225 Z" fill="#C2652B"/>
+      <ellipse cx="150" cy="45" rx="35" ry="15" fill="#1F2A3A"/>
+      <rect x="60" y="212" width="30" height="80" fill="#1F2A3A"/><rect x="110" y="232" width="40" height="60" fill="#1F2A3A"/><rect x="170" y="232" width="40" height="60" fill="#1F2A3A"/>
+      <rect x="230" y="232" width="40" height="60" fill="#1F2A3A"/><rect x="290" y="232" width="40" height="60" fill="#1F2A3A"/></svg>`;
+    const src = await sharp(Buffer.from(svg)).png().toBuffer();
+    const box = { x: 0.2, y: 0.57, w: 0.6, h: 0.18 }; // zone du nom lue par la relecture : trop étroite, comme en réel
+    const { symbolByShapes } = await import("@/lib/logo-v2/identity");
+    const sym = (await symbolByShapes(src, box))!;
+    expect(sym).toBeTruthy();
+    const { data, info } = await sharp(sym).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    let navy = 0, orange = 0;
+    for (let i = 0; i < data.length; i += 4) if (data[i + 3] > 200) { if (data[i] < 60) navy++; else if (data[i] > 150) orange++; }
+    expect(orange).toBeGreaterThan(navy); // le fruit et la vague sont gardés
+    expect(navy).toBeGreaterThan(0); // la feuille aussi
+    expect(navy).toBeLessThan(info.width * info.height * 0.05); // mais aucune lettre (5 lettres = bien plus de bleu nuit)
+    expect(await artworkSymbol(src, box)).toBeTruthy();
+    // Fond sombre : les lettres passent en blanc (lues), la feuille garde sa couleur avec un liseré clair, l'orange reste.
+    const dark = await onDarkVersion(src, box);
+    expect((await sharp(dark).metadata()).width).toBe(400); // pas de grand liseré autour du logo entier
+    expect((await px(dark, 75, 270)).slice(0, 3)).toEqual([255, 255, 255]); // première lettre (hors de la zone lue) : blanche
+    expect((await px(dark, 310, 260)).slice(0, 3)).toEqual([255, 255, 255]);
+    expect((await px(dark, 150, 45)).slice(0, 3)).toEqual([0x1f, 0x2a, 0x3a]); // feuille : bleu nuit gardé
+    expect((await px(dark, 113, 45))[3]).toBeGreaterThan(0); // liseré clair juste autour d'elle
+    expect((await px(dark, 200, 120)).slice(0, 3)).toEqual([0xc2, 0x65, 0x2b]); // fruit : couleur gardée
+  });
 });

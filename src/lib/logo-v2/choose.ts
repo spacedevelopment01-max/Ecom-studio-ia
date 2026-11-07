@@ -92,7 +92,7 @@ async function applyArtwork(ctx: JobContext | null, projectId: string, assetId: 
   if (handle && !(cur.validated ?? []).includes("fonts")) storeBrand({ ...cur, fonts: { ...cur.fonts, heading: handle } });
   const base = { projectId, userId: p.userId, folderKey: "brand.logos", origin: "generated" as const, meta: { engine: "logo-v2", artwork: true, territory: t.id, proposal: assetId } };
   const main = await saveAsset({ ...base, data: png, name: C("logo-principal.png", "logo-main.png"), mime: "image/png", role: "logo", sourceAssetId: assetId, status: "approved" });
-  const lightPng = await onDarkVersion(png);
+  const lightPng = await onDarkVersion(png, meta.artwork?.textBox ?? null);
   const light = await saveAsset({ ...base, data: lightPng, name: C("logo-fond-sombre.png", "logo-dark-background.png"), mime: "image/png", role: "logo-light", sourceAssetId: main.id });
   const monoPng = await oneColourVersion(png, "#111111");
   await saveAsset({ ...base, data: monoPng, name: C("logo-noir.png", "logo-black.png"), mime: "image/png", role: "logo-mono", sourceAssetId: main.id });
