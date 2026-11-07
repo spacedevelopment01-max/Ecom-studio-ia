@@ -199,4 +199,26 @@ describe("SINA — étape 2 : 3 logos", async () => {
     const libreC = { relevance: 9, originality: 7, craft: 9, typography: 8, composition: 8, colour: 9, legibility: 8, memorability: 8, distinctiveness: 7, intendedUse: 7 };
     expect(A.artworkScore({ criteria: libreC }, "libre")).toBe(8.1);
   });
+
+  it("notes de référence du propriétaire (7 novembre : « logo libre noté à 9 et ancien logo 3 ») : échelle fixée, rendu daté plafonné à 3", async () => {
+    const A = await import("@/lib/logo-v2/artwork");
+    const { BoundedArtworkReviewSchema, ArtworkReviewSchema } = await import("@/lib/logo-v2/ai");
+    const sys = A.FREE_ARTWORK_REVIEW_SYSTEM();
+    expect(sys).toMatch(/NOTES DE RÉFÉRENCE DU PROPRIÉTAIRE/);
+    expect(sys).toMatch(/- 9\/10 : [^\n]*scène généreuse[^\n]*lettrage sur mesure/);
+    expect(sys).toMatch(/- 3\/10 : un soleil rayé de bandes horizontales façon années 70-80/);
+    expect(sys).toMatch(/« dated » = true/);
+    // Relecture réelle après réglage : logo libre 8,9 (critères ci-dessous), ancien logo daté ramené à 3.
+    const libre = { relevance: 9, originality: 9, craft: 9, typography: 9, composition: 9, colour: 9, legibility: 8, memorability: 9, distinctiveness: 9, intendedUse: 8 };
+    expect(A.freeArtworkScore({ criteria: libre }, "libre")).toBe(8.9);
+    const ancien = { relevance: 8, originality: 6, craft: 8, typography: 7, composition: 8, colour: 8, legibility: 9, memorability: 7, distinctiveness: 6, intendedUse: 8 };
+    expect(A.freeArtworkScore({ criteria: ancien, dated: true }, "libre")).toBe(A.DATED_MAX_SCORE);
+    expect(A.DATED_MAX_SCORE).toBe(3);
+    // Le plafond ne concerne que les logos libres ; les autres styles gardent leur moyenne.
+    expect(A.freeArtworkScore({ criteria: ancien, dated: true }, "illustrated")).toBe(A.artworkScore({ criteria: ancien }, "illustrated"));
+    // « dated » lu dans la réponse ; absent = false (relecture bornée comprise).
+    const base = { criteria: libre, textRead: "Heure Dorée", nameExact: true, extraText: false, nameBox: null, clumsyCliche: false, resemblesKnownBrand: false, amateur: false, artifacts: false, person: false, genericConcept: false, forbiddenRender: false, issues: [], needsSimplifiedMark: true, fix: { target: "none", instruction: "" } };
+    expect(BoundedArtworkReviewSchema.parse(base).dated).toBe(false);
+    expect(ArtworkReviewSchema.parse({ ...base, dated: true }).dated).toBe(true);
+  });
 });

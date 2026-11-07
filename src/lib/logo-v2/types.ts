@@ -173,6 +173,8 @@ export type ArtworkReview = {
    * Rendu INTERDIT par le propriétaire (7 novembre 2026, FORBIDDEN_LOGO_RENDERS) : jamais présenté ni choisissable.
    */
   forbiddenRender?: boolean;
+  /** Rendu DATÉ (années 70-80-90, clip-art) relevé par la relecture d'un logo libre : note ramenée à 3 au plus. */
+  dated?: boolean;
   /** Correction la plus utile pour une nouvelle version : cible et consigne précise. */
   fix?: { target: "symbol" | "typography" | "composition" | "colour" | "concept" | "none"; instruction: string };
 };

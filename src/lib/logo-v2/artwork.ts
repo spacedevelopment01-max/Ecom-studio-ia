@@ -303,6 +303,15 @@ export const STYLE_WEIGHTS: Record<LogoStyle, Record<ArtCriterion, number>> = {
   libre: { relevance: 1, originality: 1, craft: 1.5, typography: 1.2, composition: 1.3, colour: 1.1, legibility: 1, memorability: 1.2, distinctiveness: 0.9, intendedUse: 0.6 },
 };
 
+/** Note maximale d'un logo libre au rendu daté (note de référence du propriétaire, 7 novembre 2026 : « ancien logo 3 »). */
+export const DATED_MAX_SCORE = 3;
+
+/** Note de la barrière : moyenne pondérée du style ; un logo libre daté est ramené à DATED_MAX_SCORE au plus. */
+export function freeArtworkScore(r: Pick<ArtworkReview, "criteria" | "dated">, style: LogoStyle): number {
+  const s = artworkScore(r, style);
+  return style === "libre" && r.dated ? Math.min(s, DATED_MAX_SCORE) : s;
+}
+
 export function artworkScore(r: Pick<ArtworkReview, "criteria">, style: LogoStyle): number {
   const w = STYLE_WEIGHTS[style];
   const tot = ART_CRITERIA.reduce((s, k) => s + w[k], 0);
@@ -360,7 +369,7 @@ export function artworkCodes(r: ArtworkReview, expected: { name: string; descrip
 export function gateArtwork(r: ArtworkReview, t: Territory, expected: { name: string; descriptor?: string | null; tagline?: string | null }, attempt: number): GateDecision {
   const bad = misspelledWords(r.textRead, expected);
   const issues = bad.length ? [...r.issues, `texte mal écrit : ${bad.join(", ")}`] : r.issues;
-  return decide("logo_artwork", { checker: "ai", score: artworkScore(r, t.style), criteria: r.criteria, codes: artworkCodes(r, expected), issues }, { attempt });
+  return decide("logo_artwork", { checker: "ai", score: freeArtworkScore(r, t.style), criteria: r.criteria, codes: artworkCodes(r, expected), issues }, { attempt });
 }
 
 /**
@@ -374,9 +383,11 @@ export const FREE_ARTWORK_REVIEW_SYSTEM = () => `Rôle : directeur artistique d'
 La planche montre : en grand le logo ORIGINAL (c'est lui que tu notes), le même sur blanc, puis une version claire sur fond sombre et des réductions. La version claire et les réductions sont FABRIQUÉES AUTOMATIQUEMENT par le studio (une version simplifiée servira au favicon et aux très petites tailles) : un défaut qui n'apparaît que sur elles (halo, contraste, détails fondus en petit) va dans « issues » mais NE BAISSE AUCUNE NOTE.
 Le dessinateur avait carte blanche : aucune matière, aucun objet, aucun geste, aucune police ni aucune composition n'étaient imposés. Ne retire jamais de point parce qu'un élément de l'histoire de la marque (matière, outil, lieu) n'apparaît pas ; relevance juge seulement si le logo va bien à cette marque, à son activité et à ce qu'elle doit faire ressentir.
 Note de 0 à 10, sur le logo ORIGINAL : relevance (il va à cette marque et à son esprit), originality (une idée qui lui est propre), craft (beauté et finition du dessin), typography (choix et traitement du nom), composition (équilibre, proportions), colour (accord des couleurs), legibility (le nom se lit d'un coup d'œil sur le grand format et sur blanc), memorability, distinctiveness, intendedUse (le logo original tient sur un site, une étiquette, un réseau social).
-Échelle (la même pour chaque critère), celle d'une agence qui présente son travail : 9-10 = superbe, on le présenterait fièrement dans le portfolio d'une grande agence ; 8 = beau, moderne, soigné, le client serait fier de l'afficher partout — de petites imperfections qu'on ne voit qu'en cherchant ne retirent rien ; 7 = correct mais avec un défaut que le client remarquerait au premier regard ; 5-6 = daté (années 80 ou 90, clip-art), banal ou maladroit ; 0-4 = raté. Un logo beau, moderne et soigné mérite au moins 8, même très détaillé ou très illustré.
-Compare au niveau habituel des logos dessinés par IA, souvent datés, plats ou banals : un logo riche, harmonieux, chaleureux et parfaitement maîtrisé qui sort clairement du lot mérite 9 en craft, composition et memorability. Un motif attendu du secteur (fruit, soleil, feuille, outil) n'est PAS un manque d'originalité quand il est composé avec une vraie idée et une finition d'agence.
-Un rendu DATÉ est le défaut principal à sanctionner : soleil rayé de bandes horizontales façon années 70-80, typographie de catalogue sans travail, clip-art, effets vieillis plaqués → « amateur » = true, craft et originality à 6 au plus, même si le dessin est propre et lisible.
+Échelle (la même pour chaque critère), celle d'une agence qui présente son travail : 9-10 = superbe, riche et parfaitement maîtrisé, on le présenterait fièrement dans le portfolio d'une grande agence ; 8 = beau, moderne, soigné, avec un vrai défaut visible ; 7 = correct mais ordinaire ; 5-6 = banal ou maladroit ; 0-4 = daté ou raté.
+NOTES DE RÉFÉRENCE DU PROPRIÉTAIRE DU STUDIO (reproduis-les, elles fixent l'échelle) :
+- 9/10 : des éléments de l'univers de la marque (par exemple fruits, feuilles, fleur) composés en UNE scène généreuse sous un soleil à rayons fins, un nom en lettrage sur mesure en deux couleurs de la marque, une finition d'illustration d'agence, chaleureux et vivant. Reprendre les codes du secteur avec cette exécution vaut 9 en originality et distinctiveness ; une lettre ornementale qui se lit après un instant, une scène riche qui se charge en petit (c'est le rôle de la version simplifiée) ne retirent rien.
+- 3/10 : un soleil rayé de bandes horizontales façon années 70-80, posé dans un ustensile dessiné au trait, avec le nom dans une police de catalogue : rendu DATÉ.
+Un rendu DATÉ (soleil rayé de bandes façon années 70-80, typographie de catalogue sans travail, clip-art, effets vieillis plaqués) → « dated » = true et « amateur » = true, même si le dessin est propre et lisible : sa note finale ne dépassera pas 3.
 Sois juste : la note reflète ce que tout le monde voit au premier regard, pas une liste de détails de graphiste.
 « genericConcept » = true seulement pour une forme vide sans idée, une police standard posée sans composition ou une décoration sans intention. « amateur » : rendu de générateur, déséquilibré ou daté. « artifacts » : lettres fantômes, formes fondues, détails incohérents typiques d'une IA, ou PLUSIEURS logos ou variantes dans la même image au lieu d'un seul.
 Lis tout le texte du logo LETTRE PAR LETTRE, accents compris, et recopie-le exactement dans « textRead ». « nameExact » : le nom attendu y figure exactement. « extraText » : un mot non autorisé (slogan inventé, lettres parasites). « nameBox » : rectangle du NOM seul en fractions de l'image (x, y, largeur, hauteur entre 0 et 1), ou null.
