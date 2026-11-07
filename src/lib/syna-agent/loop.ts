@@ -303,17 +303,21 @@ export function withoutRepeatedQuestion(out: StepOutput): StepOutput {
   let msg = out.message.trim();
   // Une dernière phrase qui ANNONCE la question (« Présente-moi ton produit en quelques phrases : ») la répète : retirée
   // quand elle reprend les mots de la question (essai réel du 7 novembre).
-  const sentences = msg.split(/(?<=[.!…])\s+/);
+  // Phrases ET leurs séparateurs : les retours à la ligne (listes) sont gardés tels quels (essai réel du 7 novembre :
+  // la liste des 6 produits recollée en une seule ligne).
+  const sentencesOf = (t: string) => t.split(/((?<=[.!…])\s+)/);
+  const withoutLast = (parts: string[]) => parts.slice(0, -2).join("").trim();
+  const sentences = sentencesOf(msg);
   const last = sentences[sentences.length - 1] ?? "";
   // Une phrase finale en « : » juste avant la question l'annonce toujours (« Avant d'aller plus loin, as-tu déjà
   // quelque chose : ») : elle est retirée, la question suit.
-  if (sentences.length > 1 && /[:：]\s*$/.test(last)) msg = sentences.slice(0, -1).join(" ").trim();
+  if (sentences.length > 1 && /[:：]\s*$/.test(last)) msg = withoutLast(sentences);
   // Phrases finales qui PARAPHRASENT la question (essai réel : les coordonnées demandées deux fois) : retirées tant que
   // la moitié de leurs mots se retrouvent dans la question ; la première phrase du message reste toujours.
   {
-    const parts = msg.split(/(?<=[.!…])\s+/);
-    while (parts.length > 1 && overlap(parts[parts.length - 1], out.question.text) >= 0.5) parts.pop();
-    msg = parts.join(" ").trim();
+    let parts = sentencesOf(msg);
+    while (parts.length > 1 && overlap(parts[parts.length - 1], out.question.text) >= 0.5) parts = sentencesOf(withoutLast(parts));
+    msg = parts.join("").trim();
   }
   if (msg !== out.message.trim() && !msg.includes("?")) return { ...out, message: msg };
   const q = msg.indexOf("?");

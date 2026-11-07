@@ -23,8 +23,12 @@ const planTool: AgentTool<Record<string, never>> = {
     return {
       ok: true,
       summary: gaps.length
-        ? L(`Plan de l'activité affiché. Manque encore : ${gaps.join(" ; ")}. Questions à poser au client, UNE par UNE : ${plan.missing.map((m) => `[${m.key}${m.required ? "" : ", facultatif"}] ${m.question}`).join(" | ") || "aucune"}.`, "Activity plan shown, gaps remain.")
-        : L("Plan de l'activité complet et affiché : demande au client s'il le valide (activity.validate).", "Activity plan complete."),
+        // La carte affiche déjà ce qui manque : la ligne d'état ne le répète pas (le détail va à SINA).
+        ? L("Plan de l'activité affiché.", "Activity plan shown, gaps remain.")
+        : L("Plan de l'activité complet et affiché.", "Activity plan complete."),
+      hint: gaps.length
+        ? `Encore à compléter : ${gaps.join(" ; ")}. Questions à poser au client, UNE par UNE : ${plan.missing.map((m) => `[${m.key}${m.required ? "" : ", facultatif"}] ${m.question}`).join(" | ") || "aucune"}.`
+        : "Demande au client s'il valide son activité (activity.validate).",
       data: { manque: gaps, questions: plan.missing, produits: plan.products, prix: plan.offer.price, angle: plan.angle?.title ?? null },
     };
   },

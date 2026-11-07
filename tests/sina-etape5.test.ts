@@ -53,7 +53,8 @@ describe("SINA — étape 5 : l'activité complète", async () => {
     // 1) Plan : tout ce qui manque devient une question.
     const r1 = await call("activity.plan", ctx, {});
     expect(r1.ok).toBe(true);
-    expect(r1.summary).toMatch(/Manque encore : coordonnée manquante : Nom de l'entreprise[^]*aucun produit créé/);
+    expect(r1.summary).toBe("Plan de l'activité affiché."); // la carte montre ce qui manque, sans doublon
+    expect(r1.hint).toMatch(/Encore à compléter : nom de l.entreprise[^]*aucun produit créé[^]*Questions à poser au client, UNE par UNE/);
     expect(J.journeyOf(cid).steps[5].status).toBe("doing");
     expect((await call("activity.validate", ctx, {})).ok).toBe(false); // jamais validé avec des manques
     // 2) Coordonnées avec les mots du client ; une coordonnée obligatoire ne se reporte jamais.
@@ -95,6 +96,9 @@ describe("SINA — étape 5 : l'activité complète", async () => {
   it("faits de l'offre lisibles : jamais la question du moteur comme titre", () => {
     expect(Act.factLine({ label: "Pouvez-vous recopier la liste des ingrédients de chaque parfum ? (ex. abricots 65 %)", value: "Abricot : abricots 65 %…" })).toBe("Abricot : abricots 65 %…");
     expect(Act.factLine({ label: "Matière", value: "cuivre" })).toBe("Matière : cuivre");
+    // Compositions de plusieurs produits d'un bloc : une ligne par produit (essai réel du 7 novembre).
+    expect(Act.factItems("Thé vert jasmin : Sencha 85 %, jasmin 15 %. Thé noir aux agrumes : Assam 80 %. Rooibos vanille : rooibos 92 %. Tout est bio.")).toEqual(["Thé vert jasmin : Sencha 85 %, jasmin 15 %.", "Thé noir aux agrumes : Assam 80 %.", "Rooibos vanille : rooibos 92 %. Tout est bio."]);
+    expect(Act.factItems("Matière : cuivre")).toEqual(["Matière : cuivre"]);
   });
   it("essai réel : « cuites au chaudron en cuivre » ne fait jamais du cuivre la matière du produit vendu", async () => {
     const { factsFromDescription } = await import("@/lib/engine/local");

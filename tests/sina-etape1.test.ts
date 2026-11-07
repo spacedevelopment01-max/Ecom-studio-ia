@@ -176,6 +176,9 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     expect(fixElision("Activité : boutique en ligne. - Produits : 6 mélanges. - Prix : 8,50 € les thés.")).toBe("Activité : boutique en ligne.\n- Produits : 6 mélanges.\n- Prix : 8,50 € les thés.");
     expect(fixElision("Le thé vert - au jasmin - est doux.")).toBe("Le thé vert - au jasmin - est doux.");
     const out = (message: string) => withoutRepeatedQuestion({ message, actions: [], question: { text: "Laquelle préfères-tu ?" }, done: false }).message;
+    // Essai réel du 7 novembre : la liste mise en lignes était recollée en une seule ligne.
+    const liste = fixElision("Voici la liste :\n- Thé vert jasmin, 8,50 € : Sencha. - Thé noir aux agrumes, 8,50 € : Assam. - Rooibos vanille, 8,50 € : rooibos. Je ne crée rien sans ton accord.");
+    expect(out(liste)).toBe("Voici la liste :\n- Thé vert jasmin, 8,50 € : Sencha.\n- Thé noir aux agrumes, 8,50 € : Assam.\n- Rooibos vanille, 8,50 € : rooibos. Je ne crée rien sans ton accord.");
     expect(out("Voici tes 3 identités. Laquelle te plaît le plus ?")).toBe("Voici tes 3 identités.");
     expect(out("Laquelle te plaît le plus ?")).toBe("Laquelle te plaît le plus ?"); // rien d'autre : gardé
     expect(out("C'est noté, merci.")).toBe("C'est noté, merci.");
