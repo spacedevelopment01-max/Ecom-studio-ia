@@ -74,6 +74,63 @@ function IdentityCards({ ids, busy, onChoose }: { ids: Identities; busy: boolean
     </div>
   );
 }
+type CalItem = { entryId: string; kind: "publication" | "publicite"; ymd: string; time: string; networkLabel: string; action: string; title: string; copyText: string; files: { assetId: string; fileName: string; kind: string; href: string; thumb: string }[]; status: "a_publier" | "publie" | "en_retard" | "introuvable"; statusLabel: string };
+type CalView = { days: { ymd: string; label: string; today: boolean; items: CalItem[] }[]; warnings: string[]; totals: { items: number; done: number; late: number; todo: number }; icsHref: string; printHref: string };
+
+/**
+ * Étape 11 : le calendrier de publication MANUEL dans le fil. Jour par jour : fichier à envoyer, texte à copier, case
+ * « publié » que le client coche lui-même (gratuit, sans passer par SINA, permis pendant le chantier).
+ */
+function CalendarCard({ projectId, refreshKey }: { projectId: string; refreshKey: string }) {
+  const t = useT();
+  const [v, setV] = useState<CalView | null>(null), [all, setAll] = useState(false), [err, setErr] = useState(""), [copied, setCopied] = useState("");
+  useEffect(() => { api<CalView>(`/api/projects/${projectId}/calendrier`).then(setV).catch((e) => setErr(e.message)); }, [projectId, refreshKey]);
+  async function tick(i: CalItem) {
+    try { const r = await api<{ view: CalView }>(`/api/projects/${projectId}/calendrier`, { body: { entryIds: [i.entryId], done: i.status !== "publie" } }); setV(r.view); } catch (e: any) { setErr(e.message); }
+  }
+  async function copy(i: CalItem) { try { await navigator.clipboard.writeText(i.copyText); setCopied(i.entryId); setTimeout(() => setCopied(""), 1500); } catch { /* presse-papiers refusé */ } }
+  if (err) return <p className="mt-2 text-xs text-red-600">{err}</p>;
+  if (!v) return null;
+  const days = v.days.filter((d) => d.items.length);
+  const shown = all ? days : days.slice(0, 7);
+  return (
+    <div className="mt-2 rounded-xl border border-line bg-card px-3 py-2 text-sm" data-syna-calendar>
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
+        <span>{t(`${v.totals.done} publiée(s) · ${v.totals.todo} à publier${v.totals.late ? ` · ${v.totals.late} en retard` : ""}`, `${v.totals.done} posted · ${v.totals.todo} to post${v.totals.late ? ` · ${v.totals.late} late` : ""}`)}</span>
+        <span className="flex gap-3"><a className="underline" href={v.icsHref}>{t("Ajouter à mon agenda", "Add to my calendar")}</a><a className="underline" href={v.printHref}>{t("Liste à imprimer", "Printable list")}</a></span>
+      </div>
+      <ol className="mt-2 space-y-3">
+        {shown.map((d) => (
+          <li key={d.ymd} data-calendar-day={d.ymd}>
+            <p className={cx("text-xs font-semibold first-letter:uppercase", d.today && "text-signal")}>{d.label}{d.today ? ` · ${t("aujourd'hui", "today")}` : ""}</p>
+            <ul className="mt-1 space-y-2">
+              {d.items.map((i) => (
+                <li key={i.entryId} className={cx("rounded-lg border px-2 py-2", i.status === "publie" ? "border-line opacity-70" : i.status === "en_retard" ? "border-amber-400" : "border-line")} data-calendar-entry={i.entryId} data-status={i.status}>
+                  <div className="flex items-start gap-2">
+                    {i.files[0] && <a href={i.files[0].href} download={i.files[0].fileName} title={t("Télécharger", "Download")}><img src={i.files[0].thumb} alt={i.files[0].fileName} className="h-14 w-14 rounded object-cover" loading="lazy" /></a>}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs"><b>{i.time}</b> · {i.action}</p>
+                      {i.title && <p className="truncate text-xs text-muted">{i.title}</p>}
+                      <div className="mt-1 flex flex-wrap gap-2 text-xs">
+                        {i.files.map((f) => <a key={f.assetId} className="underline" href={f.href} download={f.fileName}>{f.fileName}</a>)}
+                        {!!i.copyText && <button type="button" className="underline" onClick={() => copy(i)}>{copied === i.entryId ? t("Texte copié", "Text copied") : t("Copier le texte", "Copy the text")}</button>}
+                      </div>
+                    </div>
+                    {i.status !== "introuvable" && <label className="flex shrink-0 items-center gap-1 text-xs"><input type="checkbox" checked={i.status === "publie"} onChange={() => tick(i)} />{t("Publié", "Posted")}</label>}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ol>
+      {days.length > 7 && <button type="button" className="mt-2 text-xs underline" onClick={() => setAll((x) => !x)}>{all ? t("Voir moins", "Show less") : t(`Voir les ${days.length} jours`, `Show all ${days.length} days`)}</button>}
+      {!days.length && <p className="text-xs text-muted">{t("Rien à publier pour l'instant.", "Nothing to post yet.")}</p>}
+      {!!v.warnings.length && <p className="mt-2 text-xs text-muted">{v.warnings.join(" ")}</p>}
+    </div>
+  );
+}
+
 /** Texte le plus lisible sur les deux couleurs d'un dégradé. */
 function readable(p: { dark: string; light: string }, bgs: string[]) {
   const worst = (fg: string) => Math.min(...bgs.map((b) => ratioOf(fg, b)));
@@ -207,6 +264,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
   // Les résultats d'outils d'une même exécution sont regroupés sous la réponse de SINA, par module.
   const items = useMemo(() => groupThread(v?.messages ?? []), [v?.messages]);
   // Cartes des identités : sous la DERNIÈRE proposition réussie (les anciennes sont remplacées).
+  const lastCalendar = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && String(m.content?.tool ?? "").startsWith("calendar.") && m.content?.ok)?.id, [v?.messages]);
   const lastIdentity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "identity.propose" && m.content?.ok)?.id, [v?.messages]);
   if (!v) return <div className="p-4 text-sm text-muted">{error || t("Ouverture du fil SINA…", "Opening SINA thread…")}</div>;
   const pending = v.run?.status === "waiting_confirmation" ? v.run.pending : null;
@@ -239,6 +297,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
               </div>}
               {it.tools.map((tm) => <div key={tm.id}>
                 <ToolResult m={tm} projectId={v.projectId} onChoose={(n) => send(t(`Je choisis la maquette ${n}.`, `I choose mockup ${n}.`))} busy={busy || working} />
+                {tm.id === lastCalendar && v.projectId && <CalendarCard projectId={v.projectId} refreshKey={tm.id} />}
                 {tm.id === lastIdentity && v.journey?.identities && <IdentityCards ids={v.journey.identities} busy={busy || working} onChoose={(k) => send(t(`Je choisis l'identité ${k}.`, `I choose identity ${k}.`))} />}
               </div>)}
             </div>

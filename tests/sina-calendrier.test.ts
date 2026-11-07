@@ -232,9 +232,14 @@ describe("SINA — étape 11 : calendrier de publication manuel", async () => {
     expect(r.summary).toBe("Aujourd'hui : 2 chose(s) à publier.");
     const count = () => one<{ n: number }>("SELECT COUNT(*) n FROM notifications WHERE project_id=?", s.pid)!.n;
     const n0 = count();
-    expect(await fr(() => C.remindDue())).toBeGreaterThanOrEqual(1);
+    const { atZoned } = await import("@/lib/social-v2/planner");
+    // Jamais la nuit : avant 8 h (heure du projet), aucun rappel ; à 9 h, un seul rappel dans la journée.
+    expect(await fr(() => C.remindDue(atZoned(plus(0), "06:30", "Europe/Paris")))).toBe(0);
+    expect(count()).toBe(n0);
+    const nine = atZoned(plus(0), "09:00", "Europe/Paris");
+    expect(await fr(() => C.remindDue(nine))).toBeGreaterThanOrEqual(1);
     expect(count()).toBe(n0 + 1);
-    await fr(() => C.remindDue());
+    await fr(() => C.remindDue(nine + 3_600_000));
     expect(count()).toBe(n0 + 1);
     expect(fetch).not.toHaveBeenCalled();
   });
@@ -249,5 +254,16 @@ describe("SINA — étape 11 : calendrier de publication manuel", async () => {
     const fb = s.posts.flat().filter((pid) => one<any>("SELECT network FROM posts WHERE id=?", pid).network === "facebook");
     for (const pid of fb) expect(one<any>("SELECT scheduled_at, status FROM posts WHERE id=?", pid)).toMatchObject({ scheduled_at: null, status: "review" });
     expect(C.readCalendar(s.pid)!.entries.every((e) => e.network === "instagram")).toBe(true);
+  });
+
+  it("mise en place simple pour SINA et le client : valeurs par défaut, coche permise pendant le chantier", async () => {
+    const s = await setup(2);
+    const r = await call("calendar.plan", s.ctx, {});
+    expect(r.ok).toBe(true);
+    expect((r.data as any).settings).toMatchObject({ days: 7, perDay: 1 });
+    expect(r.summary).toContain("2 publication(s) à faire, soit 4 envois sur 2 réseau(x)");
+    const { ALWAYS_ALLOWED } = await import("@/lib/syna-agent/construction");
+    expect(ALWAYS_ALLOWED.test(`/api/projects/${s.pid}/calendrier`)).toBe(true);
+    expect(ALWAYS_ALLOWED.test(`/api/projects/${s.pid}/brand`)).toBe(false);
   });
 });

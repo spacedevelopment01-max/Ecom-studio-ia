@@ -533,15 +533,17 @@ export function calendarText(p: Project, view: CalendarView): string {
 
 /**
  * Rappel du jour (notification du Studio, une fois par jour et par projet) : ce qu'il y a à publier aujourd'hui.
- * Aucun e-mail. À brancher sur le cycle du worker quand le propriétaire le décidera (non branché aujourd'hui).
+ * Aucun e-mail. Appelé par le cycle du worker (toutes les 10 minutes au plus).
  */
+export const REMIND_HOUR = 8;
 export function remindDue(at = now()): number {
   let sent = 0;
+  // Rappel de jour, jamais la nuit : à partir de 8 h (heure du projet).
   for (const r of all<{ project_id: string; plan_json: string; user_id: string }>("SELECT c.project_id, c.plan_json, p.user_id FROM syna_calendars c JOIN projects p ON p.id = c.project_id")) {
     const cal = json<Calendar | null>(r.plan_json, null);
     if (!cal) continue;
     const today = todayOf(cal.settings.timezone, at);
-    if (cal.reminded.includes(today)) continue;
+    if (cal.reminded.includes(today) || Number(formatInTimeZone(at, cal.settings.timezone, "H")) < REMIND_HOUR) continue;
     const due = cal.entries.filter((e) => e.ymd === today && e.status === "a_publier");
     if (!due.length) continue;
     const body = due.map((e) => `${e.time} · ${networkLabel(e.network)}${e.kind === "publicite" ? L(" (publicité à lancer)", " (ad to launch)") : ""}`).join("\n");

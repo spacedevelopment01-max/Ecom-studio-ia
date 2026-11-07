@@ -11,8 +11,11 @@ import { L } from "../i18n-server";
 import { accessScope } from "../access-scope";
 import { journeyOf, type Journey } from "./journey";
 
-/** Requêtes toujours permises pendant le chantier : lecture, abonnement, mise en pause, suivi des tâches. */
-const ALWAYS_ALLOWED = /\/api\/projects\/[^/]+\/(subscription|pause|jobs)(\/|$)/;
+/**
+ * Requêtes toujours permises pendant le chantier : lecture, abonnement, mise en pause, suivi des tâches, et la case
+ * « publié » du calendrier (le client dit ce qu'il a publié lui-même : ce n'est pas une modification du Studio).
+ */
+export const ALWAYS_ALLOWED = /\/api\/projects\/[^/]+\/(subscription|pause|jobs|calendrier)(\/|$)/;
 
 export function journeyOfProject(projectId: string): Journey | null {
   const rows = all<{ id: string; state_json: string | null }>("SELECT id, state_json FROM agent_conversations WHERE project_id=?", projectId);

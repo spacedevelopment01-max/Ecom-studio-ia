@@ -227,3 +227,9 @@ recherche et fiche bien ; salon : prestations et rendez-vous…) :
 - Tâche de fond `syna.mockup.code` branchée dans le worker.
 - Consignes des étapes 6, 7 et 11 prêtes dans `STEP_GUIDES` (`src/lib/syna-agent/journey.ts`) ; elles s'appliqueront
   quand ces étapes seront ouvertes (`READY_STEPS`), après leurs essais réels, dans l'ordre du parcours.
+- Calendrier revu le 7 novembre pour une mise en place simple : carte du calendrier dans la conversation (jour par
+  jour, fichier à télécharger, « Copier le texte », case « publié » que le client coche lui-même, gratuitement et
+  même pendant le chantier, route `POST /api/projects/<projet>/calendrier`), lien « Ajouter à mon agenda » (.ics) et
+  liste à imprimer ; rappel du jour branché au worker (notification du Studio à partir de 8 h, aucun e-mail) ;
+  valeurs par défaut de `calendar.plan` : 7 jours, 1 publication par jour. Vérifié dans le Studio privé avec des
+  publications fictives (capture), sans IA.

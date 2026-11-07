@@ -15,8 +15,9 @@ const HHMM = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 
 const PlanArgs = z.object({
   startDate: YMD.optional(),
-  days: z.union([z.literal(7), z.literal(15), z.literal(30)]),
-  perDay: z.number().int().min(1).max(5),
+  // Valeurs par défaut quand le client ne précise pas : 7 jours, 1 publication par jour.
+  days: z.union([z.literal(7), z.literal(15), z.literal(30)]).default(7),
+  perDay: z.number().int().min(1).max(5).default(1),
   times: z.array(HHMM).max(5).optional(),
   networks: z.array(z.enum(PLATFORMS)).max(PLATFORMS.length).optional(),
   emojis: z.boolean().optional(),
@@ -28,7 +29,7 @@ const doneEntries = (c: Calendar | null) => (c?.entries ?? []).filter((e) => e.s
 
 const planTool: AgentTool<CalendarRequest> = {
   name: "calendar.plan", module: "calendrier", kind: "write", needsProject: true,
-  description: `Prépare (ou refait) le calendrier de publication MANUEL, gratuitement, à partir des publications et publicités déjà créées : le client publie lui-même, jour par jour. Arguments : days (${CALENDAR_DAYS.join(", ")}), perDay (publications par jour), startDate (AAAA-MM-JJ, demain par défaut), times (heures HH:MM vues avec le client, sinon heures conseillées du Studio), networks (réseaux du client), emojis (false = textes sans emojis), includeAds (publicités à lancer). Les cases déjà cochées « publié » sont gardées. Rien n'est inventé : s'il manque des publications, le nombre manquant est annoncé. Aucune publication automatique.`,
+  description: `Prépare (ou refait) le calendrier de publication MANUEL, gratuitement, à partir des publications et publicités déjà créées : le client publie lui-même, jour par jour. Arguments : days (${CALENDAR_DAYS.join(", ")} ; 7 par défaut), perDay (publications par jour ; 1 par défaut), startDate (AAAA-MM-JJ, demain par défaut), times (heures HH:MM vues avec le client, sinon heures conseillées du Studio), networks (réseaux du client), emojis (false = textes sans emojis), includeAds (publicités à lancer). Les cases déjà cochées « publié » sont gardées. Rien n'est inventé : s'il manque des publications, le nombre manquant est annoncé. Aucune publication automatique.`,
   args: PlanArgs,
   sensitive: (_a, ctx) => !!ctx.projectId && openEntries(readCalendar(ctx.projectId)) > 0,
   preview: (ctx) => { const c = ctx.projectId ? readCalendar(ctx.projectId) : null; return L(`Refaire le calendrier : ${openEntries(c)} case(s) non publiée(s) seront replacées ; ${doneEntries(c)} case(s) déjà publiée(s) restent telles quelles.`, `Rebuild the calendar: ${openEntries(c)} unposted entr(ies) will be re-placed; ${doneEntries(c)} posted entr(ies) stay as they are.`); },
@@ -37,12 +38,13 @@ const planTool: AgentTool<CalendarRequest> = {
     const saved = planCalendar(p, a);
     const read = readCalendar(p.id);
     const ok = !!read && read.updatedAt === saved.updatedAt;
-    const pubs = read?.entries.filter((e) => e.kind === "publication" && e.status === "a_publier").length ?? 0;
+    const open = read?.entries.filter((e) => e.kind === "publication" && e.status === "a_publier") ?? [];
+    const pubs = new Set(open.map((e) => e.unit)).size, sends = open.length;
     const ads = read?.entries.filter((e) => e.kind === "publicite" && e.status === "a_publier").length ?? 0;
     const v = read ? calendarView(p, read) : null;
     const summary = L(
-      `Calendrier de ${saved.settings.days} jours à partir du ${saved.settings.startDate} : ${pubs} publication(s) à faire sur ${saved.settings.networks.length} réseau(x)${ads ? `, ${ads} publicité(s) à lancer` : ""}${saved.missing ? ` ; il manque ${saved.missing} publication(s) pour remplir tous les créneaux` : ""}. Tu publies toi-même (pas de publication automatique pour l'instant).`,
-      `${saved.settings.days}-day calendar from ${saved.settings.startDate}: ${pubs} post(s) to do on ${saved.settings.networks.length} network(s)${ads ? `, ${ads} ad(s) to launch` : ""}${saved.missing ? `; ${saved.missing} post(s) missing to fill every slot` : ""}. You post yourself (no automatic posting for now).`,
+      `Calendrier de ${saved.settings.days} jours à partir du ${saved.settings.startDate} : ${pubs} publication(s) à faire${sends !== pubs ? `, soit ${sends} envois sur ${saved.settings.networks.length} réseau(x)` : ""}${ads ? `, ${ads} publicité(s) à lancer` : ""}${saved.missing ? ` ; il manque ${saved.missing} publication(s) pour remplir tous les créneaux` : ""}. Tu publies toi-même (pas de publication automatique pour l'instant).`,
+      `${saved.settings.days}-day calendar from ${saved.settings.startDate}: ${pubs} post(s) to do${sends !== pubs ? `, i.e. ${sends} sends on ${saved.settings.networks.length} network(s)` : ""}${ads ? `, ${ads} ad(s) to launch` : ""}${saved.missing ? `; ${saved.missing} post(s) missing to fill every slot` : ""}. You post yourself (no automatic posting for now).`,
     );
     const changes: Change[] = [{ module: "calendrier", object: L("calendrier de publication", "posting calendar"), summary: before ? L("calendrier refait", "calendar rebuilt") : L("calendrier créé", "calendar created"), before: before ? { entries: before.entries.length, settings: before.settings } : null, after: read ? { entries: read.entries.length, settings: read.settings } : null, verified: ok }];
     return { ok, summary, data: { settings: saved.settings, warnings: saved.warnings, missing: saved.missing, leftover: saved.leftover, totals: v?.totals, icsHref: v?.icsHref, printHref: v?.printHref }, changes };
@@ -69,7 +71,7 @@ const readTool: AgentTool<{ from?: string; to?: string; today?: boolean }> = {
 
 const doneTool: AgentTool<{ entryIds: string[]; done: boolean }> = {
   name: "calendar.mark_done", module: "calendrier", kind: "write", needsProject: true,
-  description: "Le client dit qu'il a publié (done true) ou pas encore (done false) : coche ou décoche les cases (entryId lus avec calendar.read). Une publication cochée passe « publiée » dans l'onglet Publications et ne sera jamais renvoyée par le Studio.",
+  description: "Le client dit qu'il a publié (done true) ou pas encore (done false) : coche ou décoche les cases (entryId lus avec calendar.read). Une publication cochée passe « publiée » dans l'onglet Publications et ne sera jamais renvoyée par le Studio. Le client peut aussi cocher lui-même dans la carte du calendrier, sans passer par toi.",
   args: z.object({ entryIds: z.array(z.string().min(1).max(120)).min(1).max(50), done: z.boolean().default(true) }).strict(),
   run: (ctx, a) => {
     const p = project(ctx), r = markDone(p, a.entryIds, a.done), read = readCalendar(p.id);
