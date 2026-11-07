@@ -91,6 +91,10 @@ export const IdentitySchema = z.object({
   name: z.string().min(1).max(40),
   nameStyle: z.string().max(120).default(""),
   nameWhy: z.string().max(400).default(""),
+  /** Élément concret du PRODUIT dont part le nom (retour du propriétaire du 7 novembre : « rien à voir avec le produit »). */
+  nameAnchor: z.string().max(120).default(""),
+  /** Ce qu'un inconnu imagine en lisant le nom seul (test du lien au produit). */
+  nameTest: z.string().max(200).default(""),
   slogan: z.string().max(90),
   sloganTone: z.string().max(80).default(""),
   promise: z.string().max(260),
@@ -123,7 +127,7 @@ export const IdentitiesSchema = z.object({
   comparison: z.string().max(1500).default(""),
 });
 
-const SHAPE = `{"identities": [{"key": "A", "name": "", "nameStyle": "", "nameWhy": "", "slogan": "", "sloganTone": "", "promise": "", "territory": "", "ground": "blanc|degrade|sombre", "gradient": {"from": "#RRGGBB", "to": "#RRGGBB"}, "palette": {"dark": "#RRGGBB", "primary": "#RRGGBB", "secondary": "#RRGGBB", "accent": "#RRGGBB", "light": "#RRGGBB"}, "paletteFamily": "", "fonts": {"heading": "playfair_display_n7", "body": "inter_n4"}, "fontStyle": "", "tone": {"adjectives": ["", "", ""], "avoid": ["", "", ""]}, "logoStyle": "${LOGO_STYLES.join("|")}", "logoIdea": "", "why": ""}, {"key": "B", …}, {"key": "C", …}], "comparison": ""}`;
+const SHAPE = `{"identities": [{"key": "A", "name": "", "nameStyle": "", "nameWhy": "", "nameAnchor": "", "nameTest": "", "slogan": "", "sloganTone": "", "promise": "", "territory": "", "ground": "blanc|degrade|sombre", "gradient": {"from": "#RRGGBB", "to": "#RRGGBB"}, "palette": {"dark": "#RRGGBB", "primary": "#RRGGBB", "secondary": "#RRGGBB", "accent": "#RRGGBB", "light": "#RRGGBB"}, "paletteFamily": "", "fonts": {"heading": "playfair_display_n7", "body": "inter_n4"}, "fontStyle": "", "tone": {"adjectives": ["", "", ""], "avoid": ["", "", ""]}, "logoStyle": "${LOGO_STYLES.join("|")}", "logoIdea": "", "why": ""}, {"key": "B", …}, {"key": "C", …}], "comparison": ""}`;
 
 /** Consignes stables (mises en cache) : charte § 2.1 et 2.2, règles de cohésion de marque. */
 export const IDENTITY_SYSTEM = `Tu es directrice de création d'une agence de marque de premier plan, en 2026. Tu crées pour UN client trois identités de marque complètes et VRAIMENT différentes, au niveau des meilleures marques de 2026 (jamais une finition « années 2000 »).
@@ -137,7 +141,7 @@ Les trois identités diffèrent sur au moins 4 des 6 axes, dont toujours le prem
 6. Style de logo : trois styles DIFFÉRENTS parmi ${PROPOSED_LOGO_STYLES.map((s) => `${s} (${LOGO_STYLE_LABEL[s]})`).join(", ")}, choisis pour le métier du client et pour chaque identité. Rendus INTERDITS par le propriétaire (jamais dans une idée de logo) : ${FORBIDDEN_LOGO_RENDERS.join(" ; ")}.
 
 Chaque identité contient :
-- name : applique la MÉTHODE DE NOMMAGE du propriétaire (ci-dessous) : un détail réel du métier du client (geste, matière, sensation, moment ou résultat) + un mot ou une expression qui lui donne une deuxième lecture. Pour CHAQUE identité, explore mentalement au moins 20 pistes et garde la plus forte ; trois noms de logiques différentes (trois détails différents). Jamais une sonorité vide de sens, jamais le nom d'une marque connue ni un nom des exemples. nameStyle dit le détail de départ, nameWhy explique la logique comme dans les exemples (« Pars de … ; … »).
+- name : applique la MÉTHODE DE NOMMAGE du propriétaire (ci-dessous) : un détail réel du métier du client + un mot ou une expression qui lui donne une deuxième lecture. Le nom part TOUJOURS DU PRODUIT LUI-MÊME (pour un service : du geste ou de l'outil du métier) : une partie qu'on peut montrer du doigt (comme la mèche d'une bougie ou le carré d'une tablette), sa matière, sa forme, ou le geste de s'en servir. Lu seul, sans slogan ni image, le nom fait penser au produit ou à sa matière : un inconnu devine ce qu'on vend ou de quoi c'est fait. Un nom qui ne parle que d'un bénéfice, d'une ambiance, d'un moment ou d'une valeur, sans rien du produit, est REFUSÉ (le propriétaire l'a refusé : « rien à voir avec le produit »). nameAnchor = l'élément concret du produit dont part le nom (2 à 6 mots) ; nameTest = ce qu'un inconnu imagine en lisant le nom seul ; si nameTest ne cite ni le produit ni sa matière, cherche un autre nom. Pour CHAQUE identité, explore mentalement au moins 20 pistes et garde la plus forte ; trois noms de logiques différentes (trois détails différents). Jamais une sonorité vide de sens, jamais le nom d'une marque connue ni un nom des exemples. nameStyle dit le détail de départ, nameWhy explique la logique comme dans les exemples (« Pars de … ; … »).
 - slogan : une phrase courte et concrète (9 mots au plus), en français, souvent au tutoiement ou à l'impératif, qui dit le bénéfice avec une image simple, sans promesse invérifiable ; sloganTone dit son ton.
 - promise : la promesse en une phrase, du point de vue du client final.
 - territory : le territoire émotionnel en quelques mots.
@@ -281,6 +285,7 @@ export function identityIssues(list: Identity[], j: Journey): string[] {
     if (keptSlogan && x.slogan.trim() !== keptSlogan.trim()) issues.push(`${tag} : le slogan gardé « ${keptSlogan} » doit être repris mot pour mot.`);
     if (!keptSlogan && words(x.slogan) > 9) issues.push(`${tag} : slogan de ${words(x.slogan)} mots (9 au plus).`);
     if (!keptName && words(x.name.replace(/&/g, "")) > 3) issues.push(`${tag} : nom trop long (3 mots au plus).`);
+    if (!keptName && !x.nameAnchor.trim()) issues.push(`${tag} : nameAnchor vide — dis de quel élément concret du produit (partie, matière, forme, geste) part le nom « ${x.name} » ; s'il ne part de rien du produit, change de nom.`);
     if (!FONT_HANDLES.includes(x.fonts.heading)) issues.push(`${tag} : police de titres « ${x.fonts.heading} » hors liste (clé_nN d'une graisse disponible).`);
     if (!FONT_HANDLES.includes(x.fonts.body)) issues.push(`${tag} : police de textes « ${x.fonts.body} » hors liste.`);
     else if (!bodyFontOk(x.fonts.body)) issues.push(`${tag} : « ${fontFamily(x.fonts.body)} » est une police de titres, manuscrite ou à chasse fixe : elle ne sert jamais pour les textes (choisis une police de texte lisible).`);

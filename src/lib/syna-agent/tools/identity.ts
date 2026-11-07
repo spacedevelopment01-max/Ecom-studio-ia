@@ -75,7 +75,7 @@ export const identityView = (x: Identity) => ({
 export function keepAllButNames(fresh: Identity[], previous: Identity[]): Identity[] {
   return fresh.map((x) => {
     const p = previous.find((y) => y.key === x.key);
-    return p ? { ...p, name: x.name, nameStyle: x.nameStyle, nameWhy: x.nameWhy, slogan: x.slogan, sloganTone: x.sloganTone, logoIdea: x.logoIdea } : x;
+    return p ? { ...p, name: x.name, nameStyle: x.nameStyle, nameWhy: x.nameWhy, nameAnchor: x.nameAnchor, nameTest: x.nameTest, slogan: x.slogan, sloganTone: x.sloganTone, logoIdea: x.logoIdea } : x;
   });
 }
 
