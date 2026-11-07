@@ -173,7 +173,7 @@ recherche et fiche bien ; salon : prestations et rendez-vous…) :
   calendrier existant demande l'accord du client ; les cases déjà publiées restent en place.
 - Les dates apparaissent aussi dans l'onglet Publications ; une publication cochée y passe « publiée » (le Studio ne la
   renverra jamais). Rien n'est mis en « programmée » : aucune publication automatique.
-- Rappel du jour dans les notifications du Studio prêt (`remindDue`), **pas encore branché** au worker ; aucun e-mail.
+- Rappel du jour : notification du Studio et e-mail (`remindDue`, branché au worker).
 - Plus tard : publication automatique case par case (`mode`, `AUTO_PUBLISH_AVAILABLE` à `false` aujourd'hui), par la
   programmation déjà existante du Studio, une fois les accords des réseaux obtenus. Kit du jour en ZIP : pas encore fait.
 
@@ -230,6 +230,16 @@ recherche et fiche bien ; salon : prestations et rendez-vous…) :
 - Calendrier revu le 7 novembre pour une mise en place simple : carte du calendrier dans la conversation (jour par
   jour, fichier à télécharger, « Copier le texte », case « publié » que le client coche lui-même, gratuitement et
   même pendant le chantier, route `POST /api/projects/<projet>/calendrier`), lien « Ajouter à mon agenda » (.ics) et
-  liste à imprimer ; rappel du jour branché au worker (notification du Studio à partir de 8 h, aucun e-mail) ;
+  liste à imprimer ; rappel du jour branché au worker (notification du Studio et e-mail, à partir de 8 h) ;
   valeurs par défaut de `calendar.plan` : 7 jours, 1 publication par jour. Vérifié dans le Studio privé avec des
   publications fictives (capture), sans IA.
+
+### Réponses du propriétaire (7 novembre)
+
+- Étape 7 : une page est conforme à la maquette à partir de 8/10 (seuil gardé).
+- Images des maquettes : **Qwen-Image 3.0 Pro**, pour voir le rendu (réglage `syna.mockup.image_route`, modifiable
+  sans code) ; aucun relais vers un autre modèle pendant la création.
+- Boutique à un seul produit : pas de page catégorie (en place).
+- Calendrier : **publicités hors du calendrier pour l'instant** (`includeAds` non par défaut, seulement si le client
+  le demande) ; quand il manque des publications, SINA propose d'en créer (payant, devis d'abord) ; rappel du jour
+  **aussi par e-mail**.

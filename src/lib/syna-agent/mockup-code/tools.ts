@@ -14,7 +14,8 @@ import { all } from "../../db";
 import { enqueue } from "../../jobs";
 import { L } from "../../i18n-server";
 import { assetData, assetUrl, getAsset, saveAsset } from "../../library";
-import { aiSiteMockup, siteMockupMaxMicro } from "../../ai/media-providers";
+import { aiSiteMockup, photoRequestMaxMicro, PUBLICATION_PROMPT_MAX_BYTES, withQuotedImageRoute } from "../../ai/media-providers";
+import { getJsonSetting } from "../../settings";
 
 import { getStrategyState } from "../../marketing-strategy";
 import { assertSectionGeneration } from "../../theme/custom-access";
@@ -30,7 +31,17 @@ import { step7MaxMicro } from "./pipeline";
 
 /** Remplaçables par les tests : coût d'une image de maquette et coût maximal des appels de l'étape 7. */
 export const mockupToolDeps: { imageMaxMicro?: (references: number) => number | null; callMaxMicro?: typeof step7CallMaxMicro; generateImage?: (prompt: string, refs: { logo: Buffer | null; product: Buffer | null }) => Promise<Buffer> } = {};
-const imageUnit = (refs: number) => (mockupToolDeps.imageMaxMicro ?? siteMockupMaxMicro)(refs);
+/**
+ * Modèle des images de maquette : Qwen-Image 3.0 Pro (choix du propriétaire du 7 novembre, « pour voir le rendu »),
+ * modifiable sans code par le réglage « syna.mockup.image_route » (« fournisseur:modèle »). Aucun relais vers un autre
+ * modèle : la route du devis est la seule permise pendant la création.
+ */
+export function mockupImageRoute(): { provider: string; model: string } {
+  const [provider, model] = getJsonSetting<string>("syna.mockup.image_route", "alibaba:qwen-image-3.0-pro").split(":");
+  return { provider, model };
+}
+const routeUnit = (refs: number) => { try { return photoRequestMaxMicro(mockupImageRoute(), { prompt: "x".repeat(PUBLICATION_PROMPT_MAX_BYTES), references: refs, aspect: "2:3", quality: "high" }); } catch { return null; } };
+const imageUnit = (refs: number) => (mockupToolDeps.imageMaxMicro ?? routeUnit)(refs);
 const callUnits = (userId: string) => (mockupToolDeps.callMaxMicro ?? step7CallMaxMicro)(userId);
 
 const KEY = z.enum(["A", "B", "C"]);
@@ -121,7 +132,7 @@ const generateTool: AgentTool<{ direction: "A" | "B" | "C" }> = {
     for (const img of todo(d)) {
       try {
         const data = mockupToolDeps.generateImage ? await mockupToolDeps.generateImage(img.prompt!, refs)
-          : await aiSiteMockup({ userId: ctx.user.id, projectId: p.id, usageKey: `syna:${ctx.runId}:mockup-image:${a.direction}:${img.id}` }, { prompt: img.prompt!, logo: refs.logo, product: refs.product });
+          : await withQuotedImageRoute(mockupImageRoute(), () => aiSiteMockup({ userId: ctx.user.id, projectId: p.id, usageKey: `syna:${ctx.runId}:mockup-image:${a.direction}:${img.id}` }, { prompt: img.prompt!, logo: refs.logo, product: refs.product }));
         const jpeg = data[0] === 0xff && data[1] === 0xd8;
         const asset = await saveAsset({ projectId: p.id, userId: ctx.user.id, data, name: `maquette-${a.direction}-${img.id}-${img.viewport}.${jpeg ? "jpg" : "png"}`, mime: jpeg ? "image/jpeg" : "image/png", role: "mockup", origin: "generated", meta: { synaMockup: { direction: a.direction, image: img.id, pages: img.pages, viewport: img.viewport } } });
         set = attachImage(set!, a.direction, { id: img.id, viewport: img.viewport, pages: img.pages, assetId: asset.id }).set;

@@ -457,4 +457,13 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     for (const name of ["mockup.pages", "mockup.prepare", "mockup.generate", "mockup.attach", "mockup.choose", "site.code_from_mockup", "mockup.report", "calendar.plan", "calendar.read", "calendar.mark_done", "calendar.move"]) expect(getTool(name), name).toBeTruthy();
     expect(mockupToolDeps).toHaveProperty("imageMaxMicro");
   });
+
+  it("images des maquettes : Qwen-Image 3.0 Pro par défaut (choix du propriétaire), modifiable par réglage", async () => {
+    const { mockupImageRoute } = await import("@/lib/syna-agent/mockup-code/tools");
+    const { setJsonSetting } = await import("@/lib/settings");
+    expect(mockupImageRoute()).toEqual({ provider: "alibaba", model: "qwen-image-3.0-pro" });
+    setJsonSetting("syna.mockup.image_route", "openai:gpt-image-2.5-flare");
+    try { expect(mockupImageRoute()).toEqual({ provider: "openai", model: "gpt-image-2.5-flare" }); }
+    finally { setJsonSetting("syna.mockup.image_route", "alibaba:qwen-image-3.0-pro"); }
+  });
 });

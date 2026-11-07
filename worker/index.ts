@@ -138,10 +138,10 @@ async function tick() {
     await processWaitlistOutbox().catch((e) => logError("worker:waitlist-notify", e));
     // Anciens abonnements Stripe dont l'arrêt a échoué (changement de forfait) : nouvel essai.
     await retryStripeCancellations().catch((e) => logError("worker:stripe-cancel", e));
-    // SINA (#492), calendrier manuel : rappel du jour dans le Studio (à partir de 8 h, une fois par jour ; aucun e-mail).
+    // SINA (#492), calendrier manuel : rappel du jour dans le Studio et par e-mail (à partir de 8 h, une fois par jour).
     if (now() - lastCalendarReminder > 10 * 60_000) {
       lastCalendarReminder = now();
-      try { (await import("../src/lib/syna-agent/calendar")).remindDue(); } catch (e) { logError("worker:calendar-remind", e); }
+      try { await (await import("../src/lib/syna-agent/calendar")).remindDue(); } catch (e) { logError("worker:calendar-remind", e); }
     }
     // L'identifiant du worker change à chaque démarrage : les battements des anciens démarrages sont purgés.
     run("DELETE FROM worker_heartbeat WHERE beat_at < ?", now() - 86400_000);

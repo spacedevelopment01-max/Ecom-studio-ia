@@ -20,9 +20,10 @@
  */
 import { formatInTimeZone } from "date-fns-tz";
 import { HttpError } from "../auth";
-import { all, json, now, one, run, tx } from "../db";
+import { all, json, logError, now, one, run, tx } from "../db";
 import { L } from "../i18n-server";
 import { notify, type Project } from "../projects";
+import { mailConfigured, sendMail } from "../mail";
 import { assetUrl, getAsset } from "../library";
 import { planOfProject } from "../plan-gates";
 import { PLANS } from "../plans";
@@ -205,7 +206,7 @@ export function buildCalendar(p: Project, req: CalendarRequest, previous: Calend
   const sources = publicationSources(p);
   const known = [...new Set(sources.units.flatMap((u) => u.posts.map((x) => x.network as Platform)))];
   const networks = (req.networks?.length ? PLATFORMS.filter((n) => req.networks!.includes(n)) : PLATFORMS.filter((n) => known.includes(n))) as Platform[];
-  const settings: CalendarSettings = { startDate, days: req.days, perDay, times, networks, emojis: req.emojis ?? true, includeAds: req.includeAds ?? true, timezone: tz };
+  const settings: CalendarSettings = { startDate, days: req.days, perDay, times, networks, emojis: req.emojis ?? true, includeAds: req.includeAds ?? false, timezone: tz };
 
   // Cases déjà publiées par le client : gardées telles quelles, elles occupent leur créneau.
   const kept = (previous?.entries ?? []).filter((e) => e.status === "publie");
@@ -533,13 +534,17 @@ export function calendarText(p: Project, view: CalendarView): string {
 
 /**
  * Rappel du jour (notification du Studio, une fois par jour et par projet) : ce qu'il y a à publier aujourd'hui.
- * Aucun e-mail. Appelé par le cycle du worker (toutes les 10 minutes au plus).
+ * Aussi par e-mail (décision du propriétaire du 7 novembre). Appelé par le cycle du worker (toutes les 10 minutes au plus).
  */
 export const REMIND_HOUR = 8;
-export function remindDue(at = now()): number {
+/** Envoi des e-mails de rappel (remplaçable par les tests : aucun e-mail réel). */
+export const calendarDeps: { sendMail?: (m: { to: string; subject: string; text: string }) => Promise<unknown> } = {};
+
+export async function remindDue(at = now()): Promise<number> {
   let sent = 0;
-  // Rappel de jour, jamais la nuit : à partir de 8 h (heure du projet).
-  for (const r of all<{ project_id: string; plan_json: string; user_id: string }>("SELECT c.project_id, c.plan_json, p.user_id FROM syna_calendars c JOIN projects p ON p.id = c.project_id")) {
+  // Rappel de jour, jamais la nuit : à partir de 8 h (heure du projet). Notification du Studio + e-mail (décision du
+  // propriétaire du 7 novembre), une fois par jour et par projet.
+  for (const r of all<{ project_id: string; plan_json: string; user_id: string; email: string | null; name: string }>("SELECT c.project_id, c.plan_json, p.user_id, u.email, p.name FROM syna_calendars c JOIN projects p ON p.id = c.project_id JOIN users u ON u.id = p.user_id")) {
     const cal = json<Calendar | null>(r.plan_json, null);
     if (!cal) continue;
     const today = todayOf(cal.settings.timezone, at);
@@ -547,9 +552,19 @@ export function remindDue(at = now()): number {
     const due = cal.entries.filter((e) => e.ymd === today && e.status === "a_publier");
     if (!due.length) continue;
     const body = due.map((e) => `${e.time} · ${networkLabel(e.network)}${e.kind === "publicite" ? L(" (publicité à lancer)", " (ad to launch)") : ""}`).join("\n");
-    notify(r.user_id, r.project_id, L(`Aujourd'hui : ${due.length} publication(s) à faire`, `Today: ${due.length} post(s) to do`), body, "info");
+    const units = new Set(due.map((e) => e.unit)).size;
+    const title = L(`Aujourd'hui : ${units} publication(s) à faire${due.length !== units ? ` (${due.length} envois)` : ""}`, `Today: ${units} post(s) to do${due.length !== units ? ` (${due.length} sends)` : ""}`);
+    notify(r.user_id, r.project_id, title, body, "info");
+    // Marqué avant l'envoi : un e-mail en échec n'est jamais renvoyé en boucle (la notification du Studio reste).
     cal.reminded = [...cal.reminded, today].slice(-60);
     run("UPDATE syna_calendars SET plan_json=? WHERE project_id=?", JSON.stringify(cal), r.project_id);
+    if (r.email && (calendarDeps.sendMail || mailConfigured())) {
+      const text = L(
+        `Bonjour,\n\nVoici ce que tu as à publier aujourd'hui pour « ${r.name} » :\n${body}\n\nLes images et les textes à copier sont dans ton calendrier, dans le Studio. Pense à cocher « Publié » une fois posté.\n\nE-COM STUDIO IA`,
+        `Hello,\n\nHere is what to post today for "${r.name}":\n${body}\n\nImages and texts to copy are in your calendar in the Studio. Remember to tick "Posted" once done.\n\nE-COM STUDIO IA`,
+      );
+      try { await (calendarDeps.sendMail ?? sendMail)({ to: r.email, subject: `${title} — ${r.name}`, text }); } catch (e) { logError("calendar:remind-mail", e); }
+    }
     sent++;
   }
   return sent;

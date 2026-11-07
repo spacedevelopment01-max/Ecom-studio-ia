@@ -178,14 +178,17 @@ describe("SINA — étape 11 : calendrier de publication manuel", async () => {
     await expect(call("calendar.move", s.ctx, { entryId: b.id, date: plus(6) })).rejects.toThrow("Déjà publiée");
   });
 
-  it("publicités de l'étape 10 : une case « à lancer » par publicité, réparties sur la période", async () => {
+  it("publicités de l'étape 10 : hors du calendrier par défaut ; sur demande du client, une case « à lancer » par publicité", async () => {
     const s = await setup(2);
     for (const [concept, aspects] of [["c1", ["1:1", "9:16"]], ["c2", ["4:5"]]] as const) for (const aspect of aspects) {
       const asset = await img(s.u.id, s.pid);
       const doc = { version: 1, width: 1080, height: 1080, background: "#ffffff", safe: { top: 0, bottom: 0, side: 0 }, format: { platform: "instagram", aspect }, layers: [{ id: "t", kind: "text", role: "title", text: "Le cadeau qui réchauffe 🎁", visible: true }, { id: "c", kind: "text", role: "cta", text: "Commander", visible: true }], brand: { palette: {}, fonts: { heading: "a", body: "b" }, name: "X" }, meta: { conceptId: concept, source: "engine", createdFrom: null } };
       run("INSERT INTO ad_documents(id,project_id,doc_key,version,source,note,doc_json,rendered_asset_id,created_at) VALUES(?,?,?,?,?,?,?,?,?)", id(), s.pid, `${concept}-${aspect}`, 1, "engine", "", JSON.stringify(doc), asset, now());
     }
+    // Décision du propriétaire du 7 novembre : les publicités restent hors du calendrier, sauf si le client le demande.
     await call("calendar.plan", s.ctx, { days: 7, perDay: 1 });
+    expect(C.readCalendar(s.pid)!.entries.some((e) => e.kind === "publicite")).toBe(false);
+    await call("calendar.plan", s.ctx, { days: 7, perDay: 1, includeAds: true });
     const ads = C.readCalendar(s.pid)!.entries.filter((e) => e.kind === "publicite");
     expect(ads.map((e) => e.ref)).toEqual(["c1", "c2"]);
     expect(ads[0].format).toBe("1:1 · 9:16");
@@ -221,7 +224,7 @@ describe("SINA — étape 11 : calendrier de publication manuel", async () => {
     expect(txt).toContain(`[ ] 11:30 · Publier sur ${cal.entries[0].network === "facebook" ? "Instagram" : "Facebook"}`);
   });
 
-  it("lecture par SINA et rappel du jour dans le Studio (une seule notification par jour, aucun e-mail)", async () => {
+  it("lecture par SINA et rappel du jour dans le Studio et par e-mail (une seule fois par jour)", async () => {
     const s = await setup(2);
     await call("calendar.plan", s.ctx, { days: 7, perDay: 1, startDate: plus(0), times: ["23:59"] });
     const r = await call("calendar.read", s.ctx, { today: true });
@@ -237,10 +240,20 @@ describe("SINA — étape 11 : calendrier de publication manuel", async () => {
     expect(await fr(() => C.remindDue(atZoned(plus(0), "06:30", "Europe/Paris")))).toBe(0);
     expect(count()).toBe(n0);
     const nine = atZoned(plus(0), "09:00", "Europe/Paris");
-    expect(await fr(() => C.remindDue(nine))).toBeGreaterThanOrEqual(1);
-    expect(count()).toBe(n0 + 1);
-    await fr(() => C.remindDue(nine + 3_600_000));
-    expect(count()).toBe(n0 + 1);
+    const mails: { to: string; subject: string; text: string }[] = [];
+    C.calendarDeps.sendMail = async (m) => { mails.push(m); };
+    try {
+      expect(await fr(() => C.remindDue(nine))).toBeGreaterThanOrEqual(1);
+      expect(count()).toBe(n0 + 1);
+      // Aussi par e-mail (décision du propriétaire du 7 novembre), une seule fois dans la journée.
+      const mine = mails.filter((m) => m.to === s.u.email);
+      expect(mine).toHaveLength(1);
+      expect(mine[0].subject).toContain("Aujourd'hui : 1 publication(s) à faire (2 envois)");
+      expect(mine[0].text).toContain("23:59 · ");
+      await fr(() => C.remindDue(nine + 3_600_000));
+      expect(count()).toBe(n0 + 1);
+      expect(mails.filter((m) => m.to === s.u.email)).toHaveLength(1);
+    } finally { C.calendarDeps.sendMail = undefined; }
     expect(fetch).not.toHaveBeenCalled();
   });
 
