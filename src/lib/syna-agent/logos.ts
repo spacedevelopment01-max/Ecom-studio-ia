@@ -62,6 +62,8 @@ export function freeLogoPrompt(f: FreeLogoFacts, n: number, feedback?: string): 
     `Le seul texte du logo est le nom « ${f.name} », écrit exactement, lettre par lettre, avec ses accents. Aucun autre mot.`,
     `À éviter : un rendu daté (années 80 ou 90, clip-art) ; ${FORBIDDEN_LOGO_RENDERS.join(" ; ")}.`,
     feedback ? `Changements demandés pour cette version : ${feedback.trim().replace(/\.$/, "")}.` : "",
+    // Essai réel du 7 novembre : en carte blanche, le modèle livrait parfois une PLANCHE de trois variantes.
+    "Une seule proposition de logo dans l'image, jamais une planche de plusieurs versions ou déclinaisons.",
     "Logo seul, centré, sur un fond blanc uni, dessiné à plat : aucune maquette, aucune photo, aucune personne.",
   ].filter(Boolean).join("\n");
 }

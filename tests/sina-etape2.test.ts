@@ -86,6 +86,7 @@ describe("SINA — étape 2 : 3 logos", async () => {
     expect(prompt).toMatch(/Crée le logo de la marque « Heure Dorée »\. Ce qu'elle fait : Des confitures cuites au chaudron\./);
     expect(prompt).toMatch(/carte blanche totale sur l'idée, le symbole, la typographie et la composition : fais-toi plaisir/);
     expect(prompt).toContain(G.FREE_MOODS[1]);
+    expect(prompt).toMatch(/Une seule proposition de logo dans l'image, jamais une planche de plusieurs versions/);
     expect(prompt).toMatch(/Le seul texte du logo est le nom « Heure Dorée »/);
     expect(prompt).toMatch(/À éviter : un rendu daté \(années 80 ou 90, clip-art\)/);
     // Plus aucune idée, aucun style ni objet imposé.
