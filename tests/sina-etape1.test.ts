@@ -51,6 +51,13 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     return { user, cid, ctx, pid: one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string };
   }
 
+  it("règle du propriétaire : le prix de l'action payante de l'étape est donné à SINA, qui l'annonce avant de lancer", async () => {
+    const { stepQuote } = await import("@/lib/syna-agent/loop");
+    const { user, cid, pid } = await stepOneThread();
+    const q = await stepQuote(user, { id: "run-test", conversation_id: cid, project_id: pid, user_id: user.id } as any);
+    expect(q).toMatch(/# Prix de la prochaine action payante de l'étape\nidentity\.propose \(3 identités de marque\) : au plus .*% de votre budget IA\. Dis ce prix au client AVANT de lancer/);
+  });
+
   it("contrôle gratuit : une série correcte passe", () => {
     expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: good() }).identities, J.emptyJourney())).toEqual([]);
   });

@@ -352,6 +352,24 @@ export function modelFor(currentStepNumber: number): { provider: "anthropic"; mo
   return simple ? { provider: "anthropic", model: "claude-haiku-5-5", effort: "low" } : undefined;
 }
 
+/** Action payante de chaque étape du parcours : son devis est donné à SINA, qui l'annonce AVANT de lancer. */
+const STEP_PAID_TOOL: Record<number, string> = { 1: "identity.propose", 2: "logo.propose", 4: "angles.propose" };
+
+/**
+ * Coût maximal de la prochaine action payante de l'étape en cours, en % du budget IA du client (règle du propriétaire :
+ * toujours donner le prix avant une génération payante ; essai réel : les identités étaient proposées sans prix).
+ */
+export async function stepQuote(user: User, r: SynaRun): Promise<string> {
+  const name = STEP_PAID_TOOL[currentStep(journeyOf(r.conversation_id))];
+  const t = name ? getTool(name) : null;
+  if (!t?.estimate || !r.project_id) return "";
+  try {
+    const est = await t.estimate(toolContext(user, r), {} as never);
+    if (!est.maxMicro) return "";
+    return `\n\n# Prix de la prochaine action payante de l'étape\n${name} (${est.label}) : au plus ${budgetPctText(user.id, est.maxMicro, r.project_id)}. Dis ce prix au client AVANT de lancer, dans le message où tu lui proposes de lancer.`;
+  } catch { return ""; }
+}
+
 /** Un pas de raisonnement : fil complet + état du projet + pièces jointes (vision) → JSON d'actions. */
 async function reason(user: User, r: SynaRun, jobId: string, step: number, deps: AgentDeps): Promise<StepOutput> {
   const history = lastMessages(r.conversation_id, 120);
@@ -364,7 +382,7 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
     task: "agent_conversation", userId: user.id, projectId: r.project_id, jobId,
     system: SYNA_SYSTEM, promptKey: "syna-agent-1",
     reference: `# Outils disponibles (registre commun)\n\n${toolCatalog(!!r.project_id)}`,
-    context: `# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id))}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget autorisé pour SINA\nAutorisé : ${b.authorizedPct ?? 0} % du budget IA ; engagé : ${b.spentPct ?? 0} %. Au-delà, le serveur demande l'accord du client.\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}`,
+    context: `# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id))}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget autorisé pour SINA\nAutorisé : ${b.authorizedPct ?? 0} % du budget IA ; engagé : ${b.spentPct ?? 0} %. Au-delà, le serveur demande l'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}`,
     prompt: `# Fil de la conversation (le plus ancien d'abord ; vos propres réponses incluses)\n${serialize(history)}\n\nÉtape ${step + 1} de cette demande. Répondez avec l'objet JSON {message, actions, question, done}.`,
     images: images.length ? images : undefined,
     maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}`, routing: { difficulty: "complex", prefer: modelFor(currentStep(journeyOf(r.conversation_id))) },
