@@ -98,7 +98,7 @@ export function activityPlan(projectId: string, j: Journey): ActivityPlan {
 /** Ce qui manque encore avant de valider l'étape 5 (dit au client, jamais contourné). */
 export function activityGaps(plan: ActivityPlan): string[] {
   const gaps: string[] = [];
-  for (const m of plan.missing.filter((x) => x.required)) gaps.push(L(COMPANY_FIELDS.find((f) => f.key === m.key)!.label.toLocaleLowerCase("fr-FR"), `missing: ${m.key}`));
+  for (const m of plan.missing.filter((x) => x.required)) gaps.push(L(COMPANY_FIELDS.find((f) => f.key === m.key)!.label.replace(/^(\p{Lu})(?!\p{Lu})/u, (c) => c.toLocaleLowerCase("fr-FR")), `missing: ${m.key}`));
   if (!plan.products.length) gaps.push(L("aucun produit créé dans l'onglet Produits", "no product created"));
   for (const x of plan.products.filter((x) => x.price == null)) gaps.push(L(`prix manquant pour « ${x.title} »`, `missing price for ${x.title}`));
   if (!plan.angle) gaps.push(L("aucun angle choisi (étape 4)", "no angle chosen"));

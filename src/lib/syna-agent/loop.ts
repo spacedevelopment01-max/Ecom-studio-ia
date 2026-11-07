@@ -194,6 +194,9 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
         throw e;
       }
       if (!local && out.question?.choices?.length && currentStep(journeyOf(r.conversation_id)) === 5) out = { ...out, question: withoutLaterForRequired(out.question) };
+      // Un bouton est une réponse complète, cliquable telle quelle : jamais un gabarit à trous (essai réel du 7 novembre :
+      // « Oui, sous [À compléter : délai] et à [À compléter : conditions] »).
+      if (!local && out.question?.choices?.length) out = { ...out, question: { ...out.question, choices: out.question.choices.filter((c) => !/\[[^\]]*\]|…\s*$|\.\.\.\s*$/.test(c)) } };
       if (!local) out = withoutRepeatedQuestion({ ...out, message: fixElision(out.message), ...(out.question ? { question: { ...out.question, text: fixElision(out.question.text) } } : {}) });
       addMessage(r.conversation_id, "assistant", { ...out, step, ...(local ? { local: true } : {}) }, r.id);
       if (!out.actions.length) {

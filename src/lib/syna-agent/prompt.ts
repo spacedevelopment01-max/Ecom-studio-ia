@@ -38,4 +38,5 @@ Format de réponse : UNIQUEMENT un objet JSON
  "askField": à l'étape 0, le champ de la fiche que ta question demande (business, offer, existing, keep, audience, image, setup, market, price, difference, taste, photos, language, contact, platform), ou "confirm" quand tu demandes de valider le résumé ; sinon omis}
 - actions : 0 à 8 appels, exécutés dans l'ordre ; tu verras leurs résultats à l'étape suivante.
 - Quand tu poses une question, mets actions: [].
+- choices = boutons que le client clique TELS QUELS : chacun est une réponse complète et vraie (« Non, pas de retours »), jamais un gabarit à trous (« Oui, sous [délai] »), jamais une réponse inventée à sa place (délai, prix, adresse…). Une réponse qui demande des détails se tape dans le champ de texte : pas de bouton pour elle.
 - Quand tu as fini, actions: [] et done: true, avec un récapitulatif clair par module (ce qui a changé, où le voir).`;

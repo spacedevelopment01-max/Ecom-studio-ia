@@ -42,7 +42,8 @@ const companyTool: AgentTool<{ fields?: Record<string, string | undefined>; late
     const p = project(ctx);
     const saved = a.fields ? saveCompany(p.id, a.fields as any) : null;
     // Libellés du client (essai réel du 7 novembre : « legalName, email » affiché tel quel).
-    const label = (k: string) => (COMPANY_FIELDS.find((f) => f.key === k)?.label ?? k).toLocaleLowerCase("fr-FR");
+    // Minuscule en tête de phrase seulement, jamais sur un sigle (« SIRET »).
+    const label = (k: string) => (COMPANY_FIELDS.find((f) => f.key === k)?.label ?? k).replace(/^(\p{Lu})(?!\p{Lu})/u, (c) => c.toLocaleLowerCase("fr-FR"));
     const postponed = a.later?.length ? companyLater(p.id, a.later as any) : [];
     const declined = a.none?.length ? companyNone(p.id, a.none as any) : [];
     const refused = [...(a.later ?? []).filter((k) => !postponed.includes(k as any)), ...(a.none ?? []).filter((k) => !declined.includes(k as any))];
