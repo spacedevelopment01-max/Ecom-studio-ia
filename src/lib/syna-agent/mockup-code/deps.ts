@@ -37,7 +37,7 @@ export const STEP7_CALLS: Record<CallKind, { input: number; output: number }> = 
  * environ 1 350 €, chiffre absurde pour le client.
  */
 export const STEP7_TYPICAL: Record<CallKind, { input: number; output: number }> = {
-  analyze: { input: 6_000, output: 6_000 },
+  analyze: { input: 6_000, output: 12_000 }, // essai réel du 8 novembre : 12 268 jetons de sortie pour l'accueil
   write: { input: 14_000, output: 5_000 },
   compare: { input: 5_000, output: 1_000 },
   fix: { input: 16_000, output: 5_000 },

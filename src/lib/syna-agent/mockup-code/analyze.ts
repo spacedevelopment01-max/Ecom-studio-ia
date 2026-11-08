@@ -47,12 +47,53 @@ export const AnalyzedPageSchema = z.object({
 });
 export type AnalyzedPage = z.infer<typeof AnalyzedPageSchema> & { viewport?: Viewport; imageId?: string };
 
-export const MockupAnalysisSchema = z.object({
+/**
+ * Variantes de forme de la réponse ramenées à la forme attendue (premier essai réel du 8 novembre, accueil de Brindi :
+ * lecture complète et juste, refusée pour sa forme, payée deux fois pour rien — palette en objet nommé, polices et
+ * notes en listes, nature des textes sous la clé « nature »).
+ */
+const HEX = /#[0-9a-fA-F]{6}\b/;
+const textOf = (v: unknown): string => (Array.isArray(v) ? v.map(textOf).join(" ; ") : v && typeof v === "object" ? Object.values(v as object).map(textOf).join(" ; ") : v == null ? "" : String(v));
+const kindOf = (n: unknown): string => {
+  const t = String(n ?? "").toLowerCase();
+  if (/sur-?titre/.test(t)) return "surtitre";
+  if (/sous-?titre/.test(t)) return "sous-titre";
+  if (/titre|logo/.test(t)) return "titre";
+  if (/bouton/.test(t)) return "bouton";
+  if (/lien|navigation|menu/.test(t)) return "lien";
+  if (/prix/.test(t)) return "prix";
+  if (/l[ée]gende/.test(t)) return "legende";
+  if (/paragraphe|texte|description/.test(t)) return "paragraphe";
+  return t;
+};
+export function normalizeAnalysis(raw: unknown): unknown {
+  if (!raw || typeof raw !== "object") return raw;
+  const r = { ...(raw as Record<string, unknown>) };
+  const hexes = (v: unknown): string[] => (Array.isArray(v) ? v : v && typeof v === "object" ? Object.values(v as object) : []).map((x) => (typeof x === "string" ? x.match(HEX)?.[0] : x && typeof x === "object" ? textOf(x).match(HEX)?.[0] : undefined)).filter((x): x is string => !!x).slice(0, 8);
+  r.palette = hexes(r.palette);
+  if (Array.isArray(r.fonts)) r.fonts = { heading: textOf(r.fonts[0]).slice(0, 60) || undefined, body: textOf(r.fonts[1]).slice(0, 60) || undefined };
+  else if (r.fonts && typeof r.fonts === "object") r.fonts = Object.fromEntries(Object.entries(r.fonts as object).filter(([k]) => k === "heading" || k === "body").map(([k, v]) => [k, textOf(v).slice(0, 60)]));
+  if (r.notes != null && typeof r.notes !== "string") r.notes = textOf(r.notes);
+  if (typeof r.notes === "string") r.notes = r.notes.slice(0, 800);
+  if (Array.isArray(r.pages)) r.pages = r.pages.map((pg: any) => !pg || typeof pg !== "object" ? pg : {
+    ...pg,
+    ...(pg.notes != null && typeof pg.notes !== "string" ? { notes: textOf(pg.notes).slice(0, 600) } : typeof pg.notes === "string" ? { notes: pg.notes.slice(0, 600) } : {}),
+    sections: Array.isArray(pg.sections) ? pg.sections.map((sec: any) => !sec || typeof sec !== "object" ? sec : {
+      ...sec,
+      texts: Array.isArray(sec.texts) ? sec.texts.map((t: any) => (typeof t === "string" ? { kind: "autre", text: t } : t && typeof t === "object" ? { kind: kindOf(t.kind ?? t.nature ?? t.type), text: textOf(t.text ?? t.texte ?? "").slice(0, 600) } : t)) : sec.texts,
+      ...(sec.colors && typeof sec.colors === "object" ? { colors: Object.fromEntries(["background", "text", "accent"].map((k) => [k, textOf((sec.colors as any)[k] ?? (sec.colors as any)[{ background: "fond", text: "texte", accent: "accent" }[k]!]).match(HEX)?.[0]])) } : {}),
+      ...(["typography", "spacing", "effects", "phone", "layout"].reduce((o, k) => (sec[k] != null && typeof sec[k] !== "string" ? { ...o, [k]: textOf(sec[k]) } : o), {})),
+    }) : pg.sections,
+  });
+  return r;
+}
+
+export const MockupAnalysisSchema = z.preprocess(normalizeAnalysis, z.object({
   pages: z.array(AnalyzedPageSchema).min(1).max(12),
   palette: z.array(hex).max(8).default([]),
   fonts: z.object({ heading: z.string().max(60).optional(), body: z.string().max(60).optional() }).default({}),
   notes: z.string().max(800).default(""),
-});
+}));
 export type MockupAnalysis = z.infer<typeof MockupAnalysisSchema>;
 
 /** Consigne de lecture d'une image (sert aussi au devis : même longueur). */

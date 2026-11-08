@@ -955,4 +955,23 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     const busy = await mk([{ c: "#FFFFFF", x: 20, y: 10, w: 60, h: 180 }, { c: "#2F6B4E", x: 30, y: 50, w: 20, h: 10 }, { c: "#000000", x: 60, y: 50, w: 10, h: 10 }]);
     expect(await removeBand(busy, { left: 28, right: 52, top: 48, bottom: 62 })).toBeNull();
   });
+
+  it("lecture de maquette : variantes de forme acceptées (essai réel : lecture juste refusée et payée deux fois)", async () => {
+    const { MockupAnalysisSchema } = await import("@/lib/syna-agent/mockup-code/analyze");
+    const raw = {
+      pages: [{ page: "home", region: { x: 0.1, y: 0, w: 0.8, h: 1 }, notes: ["a", "b"], sections: [{ role: "ouverture", name: "Ouverture héros", layout: "deux colonnes", texts: [{ nature: "titre principal", text: "Pose ton écran." }, { nature: "bouton", text: "Choisis." }, "texte libre"], images: [{ description: "tasse", box: { x: 0.5, y: 0.1, w: 0.3, h: 0.1 } }], colors: { fond: "#1E3B2A", texte: "blanc #FFFFFF" }, typography: ["serif", "sans"] }] }],
+      palette: { vert_fonce: "#1E3B2A", dore: "#D3A95C", note: "pas une couleur" },
+      fonts: ["Serif de titrage", "Sans-serif humaniste"],
+      notes: ["illisible : pied de page", "ambigu"],
+    };
+    const r = MockupAnalysisSchema.parse(raw);
+    expect(r.palette).toEqual(["#1E3B2A", "#D3A95C"]);
+    expect(r.fonts).toEqual({ heading: "Serif de titrage", body: "Sans-serif humaniste" });
+    expect(r.notes).toBe("illisible : pied de page ; ambigu");
+    const sec = r.pages[0].sections[0];
+    expect(sec.texts.map((t) => t.kind)).toEqual(["titre", "bouton", "autre"]);
+    expect(sec.colors).toEqual({ background: "#1E3B2A", text: "#FFFFFF" });
+    expect(sec.images[0].box).toEqual({ x: 0.5, y: 0.1, w: 0.3, h: 0.1 });
+    expect(r.pages[0].notes).toBe("a ; b");
+  });
 });
