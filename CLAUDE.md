@@ -32,6 +32,9 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 - **Logos : jamais aucune direction.** Qwen-Image 3.0 Pro dessine ; si le contrôle juge le rendu insuffisant, OpenAI
   (ChatGPT) prend le relais ; le client finit toujours avec au moins un logo (le meilleur, signalé s'il n'est pas validé).
 - **Images 100 % IA, avec Qwen-Image 3.0 Pro** (pas ChatGPT, jugé trop cher ; pas de texte posé en local à la place).
+  **Exception : maquettes de site de SINA** (étape 6) avec **OpenAI GPT Image 2.5 Flare** (décision du 8 novembre 2026, après
+  comparaison réelle : Qwen abîmait les textes de la page, OpenAI les écrivait juste). Les textes du site sont écrits
+  AVANT la maquette (`mockup.copy`, sur l'angle choisi et son émotion) et posés lettre pour lettre sur l'image.
   Consignes à Qwen **en français**, concrètes (scène, objets, lumière), seuls les textes voulus entre guillemets.
 - **Écrire une consigne d'image comme le propriétaire** (modèle réussi du 16/10, `docs/guide-images-ia.md`) : décrire
   UNE photo, en phrases complètes et logiques, dans cet ordre : 1) type de photo, format, point de vue, cadrage ;

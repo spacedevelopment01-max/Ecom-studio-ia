@@ -40,12 +40,13 @@ import { step7MaxMicro } from "./pipeline";
 /** Remplaçables par les tests : coût d'une image de maquette et coût maximal des appels de l'étape 7. */
 export const mockupToolDeps: { imageMaxMicro?: (references: number) => number | null; callMaxMicro?: typeof step7CallMaxMicro; generateImage?: (prompt: string, refs: { logo: Buffer | null; product: Buffer | null }) => Promise<Buffer> } = {};
 /**
- * Modèle des images de maquette : Qwen-Image 3.0 Pro (choix du propriétaire du 7 novembre, « pour voir le rendu »),
+ * Modèle des images de maquette : OpenAI GPT Image 2.5 Flare (choix du propriétaire du 8 novembre, après comparaison
+ * réelle sur l'accueil Brindi : Qwen abîmait les textes, OpenAI les écrivait juste ; même modèle que les logos),
  * modifiable sans code par le réglage « syna.mockup.image_route » (« fournisseur:modèle »). Aucun relais vers un autre
  * modèle : la route du devis est la seule permise pendant la création.
  */
 export function mockupImageRoute(): { provider: string; model: string } {
-  const [provider, model] = getJsonSetting<string>("syna.mockup.image_route", "alibaba:qwen-image-3.0-pro").split(":");
+  const [provider, model] = getJsonSetting<string>("syna.mockup.image_route", "openai:gpt-image-2.5-flare").split(":");
   return { provider, model };
 }
 const routeUnit = (refs: number) => { try { return photoRequestMaxMicro(mockupImageRoute(), { prompt: "x".repeat(PUBLICATION_PROMPT_MAX_BYTES), references: refs, aspect: "2:3", quality: "high" }); } catch { return null; } };
