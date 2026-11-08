@@ -341,7 +341,7 @@ function editMaxMicro(): number | null {
 }
 const editTool: AgentTool<EditArgs> = {
   name: "mockup.edit", module: "site", kind: "generate", needsProject: true,
-  description: "Étape 6 : RETOUCHE LOCALISÉE d'une image de maquette déjà créée : seules les zones demandées par le client changent, tout le reste reste identique au pixel près. À utiliser dès que le client demande de corriger des détails (retirer un bouton, réorganiser une partie, changer un texte sur l'image) : JAMAIS mockup.generate redo, qui refait toute l'image et change tout. imageId : l'image (ex. B10) ; fromVersion : le numéro de la version de cette image que le client préfère (1 = la première créée ; voir « versions » dans l'état du projet), sinon la version actuelle ; changes : 1 à 4 zones, chacune { zone : où, décrite clairement (ex. « la partie Le journal de la pause, son titre, ses cartes et son bouton »), change : ce qui doit changer, précisément }. Payant (une retouche), annonce le prix et attends l'accord.",
+  description: "Étape 6 : RETOUCHE LOCALISÉE d'une image de maquette déjà créée : seules les zones demandées par le client changent, tout le reste reste identique au pixel près. À utiliser dès que le client demande de corriger des détails (retirer un bouton, réorganiser une partie, changer un texte sur l'image) : JAMAIS mockup.generate redo, qui refait toute l'image et change tout. imageId : l'image (ex. B10) ; fromVersion : le numéro de la version de cette image que le client préfère (1 = la première créée ; voir « versions » dans l'état du projet), sinon la version actuelle ; changes : 1 à 4 zones, chacune { zone : où, décrite clairement, et pour réorganiser ou AJOUTER un élément, TOUTE la partie (ex. « toute la partie Le journal de la pause, de son titre à son bouton »), jamais un morceau ; change : ce qui doit changer, précisément }. Le contenu retouché doit tenir dans la hauteur actuelle de la partie (rien ne se décale). Une retouche ratée au contrôle n'est pas retenue : l'image d'avant reste en place. Payant (une retouche), annonce le prix et attends l'accord.",
   args: z.object({ direction: KEY, imageId: z.string().max(8), fromVersion: z.number().int().min(1).max(50).optional(), fromAssetId: z.string().max(60).optional(), changes: z.array(z.object({ zone: z.string().min(3).max(300), change: z.string().min(3).max(600) }).strict()).min(1).max(4) }).strict(),
   estimate: (ctx, a) => {
     const p = project(ctx), d = loadMockupSet(p.id)?.directions.find((x) => x.key === a.direction);
@@ -411,12 +411,16 @@ const editTool: AgentTool<EditArgs> = {
       const lost = missingTexts(a.changes, keep, after);
       if (lost.length) check = { ok: false, problems: [...(check?.problems ?? []), `texte disparu : ${lost.map((t) => `« ${t} »`).join(", ")}`], toVerify: check?.toVerify ?? [] };
     } catch { check = check ? { ...check, toVerify: [...check.toVerify, "textes des zones retouchées non relus"] } : null; }
-    if (check) { set = { ...set, directions: set.directions.map((x) => (x.key === a.direction ? { ...x, images: x.images.map((i) => (i.id === img.id ? { ...i, check: check! } : i)) } : x)) }; saveMockupSet(p.id, set); }
+    // Retouche ratée (essai réel du 8 novembre : bouton coupé en un liseré sur la partie suivante) : l'image d'avant
+    // reste l'image de la maquette ; la retouche ratée reste rangée comme version, jamais imposée.
+    const failedEdit = !!check && !check.ok;
+    if (failedEdit) { set = { ...set, directions: set.directions.map((x) => (x.key === a.direction ? { ...x, images: x.images.map((i) => (i.id === img.id ? { ...i, assetId: img.assetId, check: img.check } : i)) } : x)) }; saveMockupSet(p.id, set); }
+    else if (check) { set = { ...set, directions: set.directions.map((x) => (x.key === a.direction ? { ...x, images: x.images.map((i) => (i.id === img.id ? { ...i, check: check! } : i)) } : x)) }; saveMockupSet(p.id, set); }
     const keys = [key("locate"), key("paint"), key("verify"), `syna:${ctx.runId}:mockup-check:${a.direction}:${a.imageId}`];
     const spent = all<{ c: number | null }>(`SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key IN (${keys.map(() => "?").join(",")})`, p.id, ...keys)[0]?.c ?? 0;
     const spentText = budgetPctText(ctx.user.id, spent, p.id).replace(/de votre budget/, "de ton budget");
-    const checkText = !check ? "contrôle automatique impossible, à regarder" : check.ok ? "contrôle automatique de la mise en page : rien à signaler" : `RATÉE au contrôle automatique : ${check.problems.join(" ; ")}`;
-    const label = `${img.pages.map((k) => pageByKey(set!.pages, k)?.fr ?? k).join(", ")} — ${img.viewport === "desktop" ? "ordinateur" : "téléphone"}`;
+    const checkText = !check ? "contrôle automatique impossible, à regarder" : check.ok ? "contrôle automatique de la mise en page : rien à signaler" : `RATÉE au contrôle automatique : ${check.problems.join(" ; ")} ; l'image d'avant reste en place`;
+    const label = `${img.pages.map((k) => pageByKey(set!.pages, k)?.fr ?? k).join(", ")} — ${img.viewport === "desktop" ? "ordinateur" : "téléphone"}${failedEdit ? " (retouche ratée, non retenue)" : ""}`;
     return {
       ok: !!check?.ok,
       summary: L(`Image ${a.imageId} retouchée (seulement : ${a.changes.map((c) => c.zone).join(" ; ")} ; le reste est identique). ${checkText}. Coût réel : ${spentText}.`, `Image ${a.imageId} edited.`),

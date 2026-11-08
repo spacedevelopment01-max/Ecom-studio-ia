@@ -517,6 +517,15 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       expect(black.ok).toBe(false);
       expect(black.summary).toMatch(/RATÉE, rien n'a été remplacé.*rendue en noir/);
       expect(loadMockupSet(pid)!.directions[0].images.find((i) => i.id === homeImg.id)!.assetId).toBe(before2);
+      // Retouche ratée au contrôle (essai réel : bouton coupé) : l'image d'avant reste en place, la ratée est une version.
+      mockupToolDeps.maskEdit = async (img) => { const m = await sharp(img).metadata(); return png("#00FF00", m.width, m.height); };
+      mockupToolDeps.checkImage = async () => ({ deviceFrame: false, menuLinksAtTop: false, people: false, brokenAreas: true, textProblems: [], sections: [] });
+      const nv = imageVersions(pid, "A", homeImg.id).length;
+      const broken = await call("mockup.edit", ctx, { direction: "A", imageId: homeImg.id, changes: [{ zone: "le bouton du haut", change: "le retirer" }] });
+      expect(broken.ok).toBe(false);
+      expect(broken.summary).toMatch(/l'image d'avant reste en place/);
+      expect(loadMockupSet(pid)!.directions[0].images.find((i) => i.id === homeImg.id)!.assetId).toBe(before2);
+      expect(imageVersions(pid, "A", homeImg.id)).toHaveLength(nv + 1);
       // Une version qui n'existe pas : refusée.
       expect((await call("mockup.edit", ctx, { direction: "A", imageId: homeImg.id, fromVersion: 40, changes: [{ zone: "x x", change: "y y y" }] })).ok).toBe(false);
       const redone = loadMockupSet(pid)!.directions[0].images.find((i) => i.id === homeImg.id)!;
