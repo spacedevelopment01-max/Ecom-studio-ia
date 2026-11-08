@@ -396,7 +396,10 @@ export function lintClaims(content: unknown, p: Project): { path: string; term: 
     .toLowerCase();
   const issues: { path: string; term: string; label: string }[] = [];
   // Prix connus (produit et catalogue) : tout autre montant écrit dans un texte de vente est inventé.
-  const prices = p.business === "services" ? null : knownPrices(p);
+  // Montants de livraison écrits par le client (« 4,90 €, offerte dès 35 € ») : confirmés eux aussi (essai réel du 8 novembre).
+  const company = (p.settings as { company?: { shipping?: string; returns?: string } } | undefined)?.company;
+  const clientAmounts = [...`${company?.shipping ?? ""} ${company?.returns ?? ""}`.matchAll(/(\d+(?:[,.]\d{1,2})?)\s*€/g)].map((m) => Number(m[1].replace(",", ".")));
+  const prices = p.business === "services" ? null : [...knownPrices(p), ...clientAmounts];
   const walk = (v: unknown, path: string) => {
     if (typeof v === "string") {
       for (const [re, label] of p.business === "services" ? [...RISKY, ...RISKY_SERVICES] : RISKY) {

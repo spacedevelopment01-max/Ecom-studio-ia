@@ -1035,6 +1035,8 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     const p: any = { business: "products", product: { facts: [], questions: [], price: { amount: 8.5, status: "confirmed" } }, catalog: [], settings: { company: { shipping: "Colissimo en 48 à 72 h, 4,90 €. Offerte dès 35 € d'achat." } } };
     const text = { a: "La livraison offerte dès 35 € d'achat." };
     expect(lintClaims(text, p).map((x) => x.term.toLowerCase())).not.toContain("livraison offerte");
+    expect(lintClaims({ a: "Colissimo, 4,90 €, offerte dès 35 €." }, p)).toEqual([]); // montants donnés par le client
+    expect(lintClaims({ a: "Livraison à 2,90 €." }, p).map((x) => x.term)).toContain("2,90 €"); // montant inventé
     expect(lintClaims(text, { ...p, settings: {} }).map((x) => x.term.toLowerCase())).toContain("livraison offerte");
   });
 });
