@@ -23,6 +23,8 @@ import path from "node:path";
 import { callCostBoundMicro, estimateCallMicro, jsonCallMaxMicro, llmJson, llmText, routeLlm } from "../../ai/llm";
 import { withTrace } from "../../ai/trace";
 import { listProducts } from "../../products/catalog";
+import { buyBlockBrief, decideBuyFeatures, freeShippingFrom, loadShopOffers } from "../product-features";
+import { companyOf } from "../activity";
 import { copyLines, type PageCopy } from "./copy";
 import type { MockupDirection } from "./mockup-set";
 import type { MockupPage, Viewport } from "./pages";
@@ -59,6 +61,21 @@ export type DirectionCode = {
 export const codeKey = (direction: string) => `syna.mockup_code.${direction}`;
 
 /** Noms des produits de l'onglet Produits (étiquetage des photos de cartes). */
+/**
+ * Bloc d'achat d'une fiche produit (consigne du propriétaire du 8 novembre) : fonctions activées d'après la fiche du
+ * produit visé par la page (sinon le premier produit) et les offres saisies par le client. Gratuit, sans IA.
+ */
+export function productBuyBlock(projectId: string, page: Pick<MockupPage, "key" | "fr">): { lines: string[]; allowed: string[] } {
+  try {
+    const products = listProducts(projectId);
+    if (!products.length) return { lines: [], allowed: [] };
+    const name = page.fr.replace(/^Fiche produit\s*—\s*/i, "").trim().toLowerCase();
+    const target = products.find((x) => x.data.title.trim().toLowerCase() === name) ?? products[0];
+    const f = decideBuyFeatures(target, loadShopOffers(projectId), { catalog: products.map((x) => x.data.title), freeShippingFrom: freeShippingFrom(companyOf(projectId).shipping) });
+    return buyBlockBrief(f);
+  } catch { return { lines: [], allowed: [] }; }
+}
+
 export function productNames(projectId: string): string[] {
   try { return listProducts(projectId).map((x) => x.data.title).filter(Boolean); } catch { return []; }
 }
@@ -252,12 +269,13 @@ export async function buildCodePage(p: Project, d: Pick<MockupDirection, "key" |
   const maxNew = maxNewPhotos(page.key, library.length - elsewhere.used.length);
   const f = fontsOf(p);
   const lines = copyLines(copy), phoneLines = copyLines(copy, { phone: true });
+  const buy = page.key === "product" || page.key.startsWith("product:") ? productBuyBlock(p.id, page) : { lines: [], allowed: [] };
   const prompt = codeMockupPrompt({
     brand: { name: brand.name, palette: brand.palette as any, personality: brand.personality },
     fonts: { heading: f.heading, body: f.body },
     logo: { file: logo.name, width: logo.width, height: logo.height },
     direction: d, page, copy, lines, phoneLines, photos: library, usedElsewhere: elsewhere.used, productPhotos: elsewhere.products, maxNew,
-    baseCss: page.key === "home" ? null : code.base, shell: page.key === "home" ? null : code.shell,
+    baseCss: page.key === "home" ? null : code.base, shell: page.key === "home" ? null : code.shell, buyBlock: buy.lines,
   });
   // 1) Écriture (et suites si le fichier s'arrête avant la fin).
   let html = stripFences(await deps.writeHtml(prompt, `${o.usageKey}:html:${d.key}:${page.key}:1`));
@@ -280,7 +298,7 @@ export async function buildCodePage(p: Project, d: Pick<MockupDirection, "key" |
   const pending = parsed.newPhotos.filter((ph) => !ids[ph.id]);
   let full = autoTagProducts(resolvePhotos(parsed.html, ids), productNames(p.id));
   // 3) Captures et contrôle gratuits ; 4) une correction ciblée au plus.
-  const expect = { texts: expectedTexts(copy), allowed: [brand.name] };
+  const expect = { texts: expectedTexts(copy), allowed: [brand.name, ...buy.allowed] };
   const base = page.key === "home" ? null : code.base;
   // Contrôle des captures et des doublons de photos (gratuits).
   const inspect = async (h: string) => { const x = await deps.inspect(mockupFiles(p, h, base), expect); return { ...x, problems: [...x.problems, ...duplicatePhotos(h, others)] }; };

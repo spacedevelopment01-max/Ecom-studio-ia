@@ -67,6 +67,8 @@ export type CodeMockupInput = {
   baseCss?: string | null;
   /** En-tête et pied de page de l'accueil, à reprendre à l'identique. */
   shell?: string | null;
+  /** Fiche produit : fonctions du bloc d'achat décidées d'après la fiche du produit et les offres du client (buyBlockBrief). */
+  buyBlock?: string[];
 };
 
 /** Consigne de construction d'une page en code (une seule par page : ordinateur ET téléphone dans le même fichier). */
@@ -90,6 +92,7 @@ export function codeMockupPrompt(i: CodeMockupInput): string {
     `Logo : ${i.logo.file}${i.logo.width ? ` (${i.logo.width}×${i.logo.height})` : ""}, balise <img data-logo src="${i.logo.file}" alt="${i.brand.name}">, dans l'en-tête et le pied de page ; sur fond sombre, rends-le lisible par un filtre CSS (jamais redessiné, jamais remplacé par du texte).`,
     i.brand.personality?.length ? `Personnalité : ${i.brand.personality.join(", ")}. Ligne de marque : de l'air, ombres douces, icônes d'un seul style au trait, le symbole de la marque comme signature.` : "",
     layout ? `\nSTRUCTURE IMPOSÉE DE CETTE PAGE : ${layout}.` : "",
+    i.buyBlock?.length ? `\n${i.buyBlock.join("\n")}` : "",
     "",
     "TEXTES (à reprendre MOT POUR MOT, dans cet ordre de parties ; n'ajoute AUCUN autre texte, aucun chiffre, aucun avis, aucune promesse, aucun numéro décoratif ; le nom d'une partie n'est jamais écrit sur la page) :",
     ...i.lines,
