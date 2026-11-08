@@ -39,6 +39,10 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   l'étape 7 dans le style de la maquette, sans image à elles. **Photos du site codé** (étape 7, `site.images`) : toutes
   recréées en haute définition par le même modèle OpenAI, à l'identique de la maquette (décision du 8 novembre 2026).
   Corriger un détail d'une maquette = retouche localisée (`mockup.edit`), jamais une image refaite en entier.
+  **Maquettes en code** (décision du 8 novembre 2026, méthode par défaut de l'étape 6, `src/lib/syna-agent/mockup-code/code-*.ts`) :
+  Claude construit chaque page en HTML/CSS, photos créées une fois et partagées, contrôle automatique gratuit. Règles
+  du propriétaire : ouverture de l'accueil = **grande photo pleine** avec le titre dessus ; **jamais deux parties de même
+  disposition à la suite** ; **aucun vide** (pas de grandes marges, pas de colonne vide) ; **un thème vivant**.
   Consignes à Qwen **en français**, concrètes (scène, objets, lumière), seuls les textes voulus entre guillemets.
 - **Écrire une consigne d'image comme le propriétaire** (modèle réussi du 16/10, `docs/guide-images-ia.md`) : décrire
   UNE photo, en phrases complètes et logiques, dans cet ordre : 1) type de photo, format, point de vue, cadrage ;

@@ -63,6 +63,8 @@ describe("SINA — maquettes en code : fichier, photos, retouches", async () => 
     const copy = { seo: { title: "t", description: "d" }, sections: [{ section: "ouverture (titre, photo, bouton)", title: "Pose ton écran.", text: null, button: "Choisis", items: [] }] };
     const base = { brand: { name: "Brindi", palette: { dark: "#233A2E", primary: "#3F6B4E", secondary: "#E3EDDF", accent: "#C9A04E", light: "#FFFFFF" }, personality: ["précis"] }, fonts: { heading: { family: "Cormorant Garamond", weight: 500 }, body: { family: "Karla", weights: [400, 600] } }, logo: { file: "logo.png", width: 600, height: 200 }, direction: { name: "Bandes vertes", style: "fond vert profond, vagues dorées", ground: "sombre" }, copy, lines: ["Dans la partie ouverture : titre « Pose ton écran. »."], phoneLines: [], photos: [{ id: "p1", description: "tasse", ratio: "4:3" }], maxNew: 4 };
     const home = C.codeMockupPrompt({ ...base, page: pages.find((p) => p.key === "home")! });
+    // Consignes du propriétaire (8 novembre) : photo pleine en ouverture, jamais deux parties pareilles, aucun vide, thème vivant.
+    for (const t of ["GRANDE PHOTO PLEINE", "JAMAIS deux parties de même disposition à la suite", "AUCUN VIDE", "UN THÈME VIVANT"]) expect(home).toContain(t);
     for (const t of ["« Bandes vertes »", "#C9A04E", "« Cormorant Garamond » (500)", "titre « Pose ton écran. »", "AUCUN bouton d'action", "Jamais trois éléments côte à côte", "- p1 (4:3) : tasse", "nouvelle-1", "<style id=\"base\">", "aucun lien vers Internet", "data-part"]) expect(home).toContain(t);
     const cart = C.codeMockupPrompt({ ...base, page: pages.find((p) => p.key === "cart")!, baseCss: ":root{--x:1}", shell: "<header>h</header>", maxNew: 0 });
     expect(cart).toContain("STRUCTURE IMPOSÉE DE CETTE PAGE : une vraie page panier");
@@ -70,6 +72,7 @@ describe("SINA — maquettes en code : fichier, photos, retouches", async () => 
     expect(cart).toContain("À L'IDENTIQUE de l'accueil");
     expect(cart).toContain("Aucune photo nouvelle");
     expect(cart).not.toContain('<style id="base">');
+    expect(cart).not.toContain("GRANDE PHOTO PLEINE"); // ouverture en photo : l'accueil seulement
   });
 
   it("polices de la marque → fichiers locaux ; consigne d'une photo nouvelle sans logo ni texte", () => {
@@ -237,6 +240,36 @@ ${photo.startsWith("nouvelle") ? `<script type="application/json" id="photos-nou
     expect(d.images.every((i) => i.status === "planned")).toBe(true);
   });
 
+  it("photo non créée : gardée en attente, puis créée plus tard sans réécrire la page", async () => {
+    const { pid, ctx } = await ready();
+    codeBuildDeps.photoUnit = () => 100_000;
+    await call("mockup.prepare", ctx, { directions: [{ name: "Bandes vertes", style: "fond vert profond" }] });
+    saveSiteCopy(pid, { version: 1, angleId: null, pages: { home: homeCopy }, at: 0 });
+    let writes = 0, fail = true;
+    codeBuildDeps.deps = {
+      writeHtml: async () => { writes++; return page("nouvelle-1"); },
+      fixEdits: async () => [],
+      makePhoto: async () => { if (fail) throw new Error("Aucun fournisseur d'images configuré"); return png("#C9A04E", 320, 180); },
+      inspect: async (files) => ({ shots: { desktop: await png("#FFFFFF", 144, 300), phone: await png("#FFFFFF", 39, 300) }, problems: files.html.includes('data-photo="nouvelle-1"') ? ["ordinateur : image non chargée : nouvelle-1"] : [], toVerify: [] }),
+    };
+    try {
+      const r = await call("mockup.generate", ctx, { direction: "A" });
+      expect(r.ok).toBe(false);
+      expect(r.summary).toMatch(/1 photo\(s\) non créée\(s\) .*gardées en attente/);
+      expect(loadDirectionCode(pid, "A").pending?.home).toHaveLength(1);
+      const est = await fr(() => tool("mockup.generate").estimate!(ctx, { direction: "A" }));
+      expect(est.probableMicro).toBe(75_000); // une photo, rien d'autre
+      fail = false;
+      const r2 = await call("mockup.generate", ctx, { direction: "A" });
+      expect(r2.ok, r2.summary).toBe(true);
+      expect(writes).toBe(1); // la page n'est pas réécrite
+      const code = loadDirectionCode(pid, "A");
+      expect(code.pending?.home).toBeUndefined();
+      expect(code.pages.home.html).not.toContain("nouvelle-1");
+      expect(code.base).toBe(":root{--dark:#233A2E}");
+    } finally { codeBuildDeps.deps = undefined; codeBuildDeps.photoUnit = undefined; }
+  });
+
   it("page coupée même après deux suites : rien n'est gardé, aucune photo créée", async () => {
     const { pid, ctx } = await ready();
     codeBuildDeps.photoUnit = () => 100_000;
@@ -266,7 +299,9 @@ describe("SINA — maquettes en code : contrôle sur la page réelle (Chromium l
     const fontFiles = fc.files.map((n) => ({ name: n, data: fs.readFileSync(path.join(process.cwd(), "assets", "fonts", n)) }));
     const html = `<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="fonts.css"><style>body{margin:0;font-family:Karla}.row{display:flex;gap:8px}.row>div{width:100px;height:100px;background:#ccc}.wide{width:700px;height:10px}</style></head><body>
 <header data-part="en-tête"><img data-logo src="logo.png" alt="Brindi" width="60" height="20"><a href="#">Choisis ton mélange</a></header>
-<section data-part="détails"><h1>Pose ton écran.</h1><p>Texte inventé par le modèle</p><div class="row"><div></div><div></div><div></div></div><div class="wide"></div><img data-photo="p1" src="photos/p1.jpg" width="80" height="60"></section>
+<footer data-part="pied de page"><img data-logo src="logo.png" alt="Brindi" style="width:300px;height:20px"></footer>
+<section data-part="vide" style="height:400px"><p style="margin:0">Pose ton écran.</p></section>
+<section data-part="détails"><h1>Pose ton écran.</h1><p>Texte inventé par le modèle</p><div class="row"><div></div><div></div><div></div></div><div class="wide"></div><div data-gallery><div class="row"><div></div><div></div><div></div></div></div><img data-photo="p1" src="photos/p1.jpg" width="80" height="60"></section>
 </body></html>`;
     const r = await C.inspectCodeMockup({ html, fontsCss: fc.css, fontFiles, logo: { name: "logo.png", data: await png("#233A2E", 60, 20) }, photos: { p1: await png("#C9A04E", 80, 60) } }, { texts: ["Pose ton écran.", "Choisis ton mélange", "Texte absent de la page"], allowed: ["Brindi"] }, chromium);
     const all = r.problems.join(" | ");
@@ -278,7 +313,10 @@ describe("SINA — maquettes en code : contrôle sur la page réelle (Chromium l
     expect(all).toContain("téléphone : bouton ou lien visible dans l'en-tête : « Choisis ton mélange »");
     expect(all).toContain("téléphone : 3 éléments côte à côte dans la partie « détails »");
     expect(all).toMatch(/téléphone : la page déborde sur le côté \(\d+ px pour 390 px\)/);
-    expect(all).not.toMatch(/ordinateur : .*côte à côte/); // trois cartes de front : permis sur ordinateur
+    expect(all).not.toMatch(/ordinateur : [^|]*côte à côte/); // trois cartes de front : permis sur ordinateur
+    expect(all).toMatch(/logo déformé dans la partie « pied de page » \(300×20 px pour des proportions de 60×20\)/);
+    expect(all).not.toMatch(/logo déformé dans la partie « en-tête »/);
+    expect(all).toMatch(/ordinateur : trop d'espace vide dans la partie « vide » \(\d+ px sans rien\)/);
     expect(all).not.toContain("image non chargée");
     expect(all).not.toContain("logo absent");
     expect(all.match(/texte ajouté/g)).toHaveLength(1); // dit une seule fois pour les deux largeurs

@@ -34,7 +34,7 @@ import { project } from "../tools/common";
 import { step7CallMaxMicro, step7CallTypicalMicro } from "./deps";
 import { MOCKUP_CODE_JOB, STEP7_REPORT_KEY } from "./job";
 import { attachImage, coverageOf, loadMockupSet, plannedCodeDirection, plannedDirection, replanDirection, saveMockupSet, type MockupSet } from "./mockup-set";
-import { buildCodePage, codeBuildEstimate, codeEditEstimate, editCodePrompt, loadDirectionCode, mockupFiles, pageSource, patchCodeText, photoLibrary, realBuildDeps, retouchCodePage, type BuildDeps } from "./code-build";
+import { buildCodePage, codeBuildEstimate, completeCodePhotos, codeCallCosts, codeEditEstimate, editCodePrompt, loadDirectionCode, mockupFiles, pageSource, patchCodeText, photoLibrary, realBuildDeps, retouchCodePage, type BuildDeps } from "./code-build";
 import { expectedTexts, inspectCodeMockup } from "./code-mockup";
 import { chromiumPath } from "../../theme/snapshot";
 import { copyLines } from "./copy";
@@ -210,7 +210,7 @@ const copyEditTool: AgentTool<{ page?: string; find: string; replace: string }> 
 type PrepareArgs = { directions: { key?: "A" | "B" | "C"; name: string; style: string; ground?: "clair" | "sombre" | "marque" }[] };
 const prepareTool: AgentTool<PrepareArgs> = {
   name: "mockup.prepare", module: "site", kind: "write", needsProject: true,
-  description: "Étape 6 (préparation, GRATUITE, aucune image créée) : pour 1 à 3 directions graphiques FRANCHEMENT différentes (demande du propriétaire : des variantes proches ne conviennent pas), chacune avec name, style et ground (clair, sombre = ancrage sombre de la marque, marque = grands aplats de la couleur de marque ; trois maquettes = trois fonds différents). Le style décrit, sans nom de police ni code couleur : l'ouverture (photo pleine page avec le titre dessus, ou écran partagé, ou très grand titre typographique), la grille et le rythme, et des éléments vivants à piocher, à la façon d'une boutique gourmande : séparateurs en vague, pastilles et tampons ronds, bandeau défilant avec le slogan, cartes arrondies avec ombre douce, produits détourés qui débordent des cadres, grands chiffres ou mots en contour, motif du symbole en fond. Deux directions ne partagent ni la même ouverture, ni le même fond, ni les mêmes formes. Pour chacune, découpe chaque maquette en images (pages clés seules, autres pages groupées, version ordinateur et version téléphone) et écrit la consigne de chaque image d'après l'identité choisie, les vrais produits ou prestations et l'angle marketing. Donne le coût maximal de la création des images (à annoncer au client avant toute génération). Remplace une préparation précédente : les maquettes non citées sont retirées ; pour GARDER une maquette et ses images, reprends exactement son nom, son style et son fond (mockup.pages). Inutile de la refaire après mockup.copy : les textes sont repris tout seuls.",
+  description: "Étape 6 (préparation, GRATUITE, aucune image créée) : pour 1 à 3 directions graphiques FRANCHEMENT différentes (demande du propriétaire : des variantes proches ne conviennent pas), chacune avec name, style et ground (clair, sombre = ancrage sombre de la marque, marque = grands aplats de la couleur de marque ; trois maquettes = trois fonds différents). Le style décrit, sans nom de police ni code couleur : l'ouverture (TOUJOURS une grande photo pleine avec le titre dessus, consigne du propriétaire du 8 novembre ; ce qui varie : place et taille du titre, cadrage, voile, formes), la grille et le rythme (jamais deux parties pareilles à la suite, aucun vide), et des éléments vivants à piocher, à la façon d'une boutique gourmande : séparateurs en vague, pastilles et tampons ronds, bandeau défilant avec le slogan, cartes arrondies avec ombre douce, produits détourés qui débordent des cadres, grands chiffres ou mots en contour, motif du symbole en fond. Deux directions ne partagent ni la même mise en scène de l'ouverture, ni le même fond, ni les mêmes formes. Pour chacune, découpe chaque maquette en images (pages clés seules, autres pages groupées, version ordinateur et version téléphone) et écrit la consigne de chaque image d'après l'identité choisie, les vrais produits ou prestations et l'angle marketing. Donne le coût maximal de la création des images (à annoncer au client avant toute génération). Remplace une préparation précédente : les maquettes non citées sont retirées ; pour GARDER une maquette et ses images, reprends exactement son nom, son style et son fond (mockup.pages). Inutile de la refaire après mockup.copy : les textes sont repris tout seuls.",
   args: z.object({ directions: z.array(z.object({ key: KEY.optional(), name: z.string().min(1).max(60), style: z.string().min(1).max(700), ground: z.enum(["clair", "sombre", "marque"]).optional() }).strict()).min(1).max(3) }).strict(),
   run: (ctx, a) => {
     const p = project(ctx);
@@ -306,7 +306,7 @@ type GenArgs = { direction: "A" | "B" | "C"; pages?: string[]; viewport?: "deskt
 function codePagesTodo(p: ReturnType<typeof project>, set: MockupSet, d: MockupSet["directions"][number], a: GenArgs): { pages: string[]; problem?: string } {
   const code = loadDirectionCode(p.id, d.key);
   const required = [...new Set(d.images.flatMap((i) => i.pages))];
-  const built = (k: string) => !!code.pages[k] && d.images.some((i) => i.pages.includes(k) && i.status === "ready");
+  const built = (k: string) => !!code.pages[k] && d.images.some((i) => i.pages.includes(k) && i.status === "ready") && !code.pending?.[k]?.length;
   let keys = a.pages?.length ? [...new Set(a.pages)] : !built("home") ? ["home"] : required.filter((k) => !built(k));
   const unknown = keys.filter((k) => !pageByKey(set.pages, k));
   if (unknown.length) return { pages: [], problem: L(`Pages inconnues : ${unknown.join(", ")} (clés de mockup.pages).`, "Unknown pages.") };
@@ -320,13 +320,22 @@ function codePagesTodo(p: ReturnType<typeof project>, set: MockupSet, d: MockupS
   return { pages: keys };
 }
 
+/** Page déjà construite dont seules des photos restent à créer (sans réécrire la page). */
+const photosOnly = (pid: string, direction: string, key: string, redo?: boolean) => { const c = loadDirectionCode(pid, direction); return !redo && !!c.pages[key] && !!c.pending?.[key]?.length; };
+
 function codeEstimate(ctx: ToolContext, a: GenArgs) {
   const p = project(ctx), set = loadMockupSet(p.id)!, d = set.directions.find((x) => x.key === a.direction)!;
   if (!p.brand?.logo?.assetId) throw new HttpError(409, L("Le logo de la marque doit être créé avant les maquettes (étapes 2 et 3).", "Create the logo first."));
   const t = codePagesTodo(p, set, d, a);
   if (t.problem) throw new HttpError(409, t.problem);
   const unit = photoUnitMicro();
-  const e = unit == null ? null : codeBuildEstimate(ctx.user.id, t.pages, photoLibrary(p.id).length, unit);
+  const code = loadDirectionCode(p.id, a.direction), costs = codeCallCosts(ctx.user.id);
+  // Pages dont seules les photos manquent : les photos et une correction possible, rien d'autre.
+  const only = t.pages.filter((k) => photosOnly(p.id, a.direction, k, a.redo));
+  const extra = unit == null || !costs ? null : only.reduce((acc, k) => { const n = code.pending![k].length; return { maxMicro: acc.maxMicro + n * unit + costs.fix.max, probableMicro: acc.probableMicro + Math.round(n * unit * 0.75) }; }, { maxMicro: 0, probableMicro: 0 });
+  const full = t.pages.filter((k) => !only.includes(k));
+  const e0 = unit == null ? null : full.length ? codeBuildEstimate(ctx.user.id, full, photoLibrary(p.id).length, unit) : { maxMicro: 0, probableMicro: 0 };
+  const e = e0 && extra ? { maxMicro: e0.maxMicro + extra.maxMicro, probableMicro: e0.probableMicro + extra.probableMicro } : null;
   if (!e) throw new HttpError(409, L("Aucun modèle utilisable pour construire les maquettes (administration › Fournisseurs IA et Médias).", "No usable model."));
   return { maxMicro: e.maxMicro, probableMicro: e.probableMicro, label: L(`maquette ${a.direction} en code : ${t.pages.map((k) => pageByKey(set.pages, k)?.fr ?? k).join(", ")}`, `code mockup ${a.direction}`) };
 }
@@ -376,9 +385,15 @@ async function runCodeBuild(ctx: ToolContext, a: GenArgs) {
   for (const key of t.pages) {
     const page = pageByKey(set.pages, key)!;
     try {
-      const r = await buildCodePage(p, d, page, copy.pages[key], deps, { usageKey: base, photoBrief: brief });
+      const r = photosOnly(p.id, a.direction, key, a.redo)
+        ? await completeCodePhotos(p, a.direction, page, copy.pages[key], deps, { usageKey: base, photoBrief: brief })
+        : await buildCodePage(p, d, page, copy.pages[key], deps, { usageKey: base, photoBrief: brief });
       photos += r.newPhotos.length;
-      if (r.failed.length) failed.push(`${page.fr} : ${r.failed.join(" ; ")}`);
+      // Photos non créées sur une page construite : gardées en attente, créées plus tard sans réécrire la page.
+      const photoFails = r.shots ? r.failed.filter((x) => x.startsWith("photo ")) : [];
+      const others = r.failed.filter((x) => !photoFails.includes(x));
+      if (photoFails.length) failed.push(`${page.fr} : ${photoFails.length} photo(s) non créée(s) (${photoFails[0].replace(/^photo \S+ non créée : /, "").slice(0, 120)}), gardées en attente : un nouveau mockup.generate de cette page les crée sans réécrire la page`);
+      if (others.length) failed.push(`${page.fr} : ${others.join(" ; ")}`);
       if (!r.shots) continue;
       made.push(...await saveCodeShots(ctx, p.id, a.direction, key, r));
       report.push(`${page.fr} : ${r.problems.length ? `RATÉE au contrôle automatique (${r.problems.join(" ; ")})` : "contrôle automatique : textes exacts, rien d'ajouté, téléphone conforme"}${r.fixed ? " (une correction automatique faite)" : ""}${r.toVerify.length ? ` ; à vérifier : ${r.toVerify.join(" ; ")}` : ""}`);
@@ -390,7 +405,7 @@ async function runCodeBuild(ctx: ToolContext, a: GenArgs) {
   const defects = report.some((x) => x.includes("RATÉE"));
   return {
     ok: made.length > 0 && !failed.length && !defects,
-    summary: L(`Maquette ${a.direction} en code : ${new Set(made.map((m) => m.page)).size} page(s) construite(s)${photos ? `, ${photos} photo(s) nouvelle(s) créée(s) (gardées pour les autres maquettes et le site)` : ", aucune photo nouvelle"}.${report.length ? ` ${report.join(". ")}.` : ""}${failed.length ? ` Non construite(s) : ${failed.join(" | ")}.` : ""} Coût réel : ${spentText}. ${cov.complete ? "La maquette couvre toutes les pages principales." : `Pages principales encore à construire : ${[...new Set(cov.missing.map((m) => m.label))].join(", ")}.`}`, "Code mockup built."),
+    summary: L(`Maquette ${a.direction} en code : ${new Set(made.map((m) => m.page)).size} page(s) construite(s)${photos ? `, ${photos} photo(s) nouvelle(s) créée(s) (gardées pour les autres maquettes et le site)` : ", aucune photo nouvelle"}.${report.length ? ` ${report.join(". ")}.` : ""}${failed.length ? ` Problèmes : ${failed.join(" | ")}.` : ""} Coût réel : ${spentText}. ${cov.complete ? "La maquette couvre toutes les pages principales." : `Pages principales encore à construire : ${[...new Set(cov.missing.map((m) => m.label))].join(", ")}.`}`, "Code mockup built."),
     ...(made.length ? { hint: (defects ? "Le contrôle automatique a relevé des défauts : dis au client que la page est RATÉE sur ces points, cite chacun, propose la correction (mockup.edit, son accord d'abord) et ne relance RIEN sans son accord écrit. " : "") + "Les captures (ordinateur et téléphone) te sont JOINTES à ta prochaine étape : regarde-les avant de répondre et dis au client, honnêtement et en deux ou trois phrases, ce que tu vois vraiment (style, photos, lisibilité, téléphone). Une photo ratée (texte ou logo dans la photo, objet coupé) est dite ratée. Ne dis JAMAIS que tu ne peux pas voir le rendu." } : {}),
     data: { mockups: made.map((m, i) => ({ n: i + 1, direction: `${a.direction} · ${m.id}`, name: d.name, label: `${pageByKey(read.pages, m.page)?.fr ?? m.page} — ${m.viewport === "desktop" ? "ordinateur" : "téléphone"}`, assetId: m.assetId, href: m.href })), failed, complete: cov.complete },
     changes: made.map((m) => ({ module: "fichiers", object: `maquette ${a.direction} › ${m.page} (${m.viewport === "desktop" ? "ordinateur" : "téléphone"})`, summary: L("page construite en code, capture rangée", "page built in code"), after: { assetId: m.assetId }, verified: true })),

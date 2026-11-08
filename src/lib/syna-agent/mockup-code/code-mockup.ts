@@ -90,6 +90,7 @@ export function codeMockupPrompt(i: CodeMockupInput): string {
     ...i.phoneLines.filter((l) => /en-t[êe]te|deux par rang|l'un sous l'autre/i.test(l)).map((l) => `- ${l}`),
     "- En-tête du téléphone : le logo et le bouton du menu (icône, avec aria-label) SEULEMENT ; AUCUN bouton d'action ni lien visible dans l'en-tête. Les liens du menu s'ouvrent dans un panneau au toucher de l'icône.",
     "- Produits : deux par rangée au plus. Tout le reste : l'un sous l'autre. Jamais trois éléments côte à côte.",
+    "- Seule exception : les vignettes de la galerie d'une fiche produit, en une rangée de petites images sous la grande photo (conteneur marqué data-gallery), jamais empilées en grand.",
     "",
     "PHOTOS :",
     `Photos disponibles (à utiliser en priorité, par leur identifiant) :\n${photoList}`,
@@ -99,6 +100,10 @@ export function codeMockupPrompt(i: CodeMockupInput): string {
     "Chaque photo : <img data-photo=\"IDENTIFIANT\" src=\"photos/IDENTIFIANT.jpg\" alt=\"description courte\">, en object-fit: cover, jamais déformée. Aucune autre image matricielle ; décor (feuilles, vagues, formes, icônes) uniquement en SVG en ligne, dans les couleurs de la marque.",
     "",
     "RÈGLES DE MISE EN PAGE :",
+    ...(i.page.key === "home" ? ["- OUVERTURE (consigne du propriétaire) : une GRANDE PHOTO PLEINE, bord à bord sur toute la largeur et presque toute la hauteur de l'écran, le titre, la phrase et le bouton posés DESSUS (voile dégradé pour la lisibilité) ; jamais une photo posée en carte à côté du titre, jamais une ouverture sans photo. Sur téléphone aussi : la photo remplit l'écran derrière le texte."] : []),
+    "- JAMAIS deux parties de même disposition à la suite (deux grilles de cartes, deux bandes de questions, deux écrans partagés identiques) : alterne les mises en page d'une partie à l'autre (photo pleine largeur, écran partagé photo et texte, grille, carrousel, bandeau, citation en grand, cartes qui se chevauchent).",
+    "- AUCUN VIDE : chaque partie est remplie et vivante ; marge verticale entre parties de 64 à 96 px sur ordinateur, 48 à 64 px sur téléphone ; jamais une colonne vide à côté d'un titre (sinon une photo ou une illustration y prend place, ou le bloc est centré) ; jamais une bande colorée sans contenu.",
+    "- UN THÈME VIVANT : photos en grand et bord à bord dans plusieurs parties, éléments qui débordent d'une bande sur l'autre, bandeau défilant avec le slogan, formes et motifs de la marque en décor, effets au survol des cartes et des boutons, apparition douce (sans jamais cacher le contenu sans JavaScript).",
     "- Une seule page responsive, parfaite à 1440 px ET à 390 px de large, sans aucun débordement horizontal.",
     "- Chaque partie dans sa balise : <header data-part=\"en-tête\">, puis une <section data-part=\"NOM DE LA PARTIE\"> par partie de la liste des textes (nom repris de la liste), puis <footer data-part=\"pied de page\">.",
     "- Textes d'accessibilité seulement en attributs aria-label ou alt, jamais en texte caché dans la page.",
@@ -321,6 +326,61 @@ function pageChecks(a: { texts: string[]; allowed: string[]; phone: boolean; wid
   // Logo dans l'en-tête.
   const header = document.querySelector("header[data-part], header");
   if (!header || !header.querySelector("img[data-logo]")) problems.push("logo absent de l'en-tête");
+  // Grands vides (consigne du propriétaire du 8 novembre : « trop d'espace où il n'y a rien, ça fait vide »).
+  const maxGap = a.phone ? 90 : 130;
+  for (const part of Array.from(document.querySelectorAll("section[data-part]"))) {
+    if (!shown(part)) continue;
+    const pr = part.getBoundingClientRect();
+    let top = Infinity, bottom = -Infinity;
+    for (const el of Array.from(part.querySelectorAll("h1,h2,h3,h4,p,li,a,button,img,svg,input,summary,figure,blockquote,span"))) {
+      if (!shown(el)) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 4 || r.height < 4) continue;
+      top = Math.min(top, r.top); bottom = Math.max(bottom, r.bottom);
+    }
+    if (top === Infinity) { problems.push(`partie vide : « ${part.getAttribute("data-part")} »`); continue; }
+    const gap = Math.max(top - pr.top, pr.bottom - bottom);
+    if (gap > maxGap) problems.push(`trop d'espace vide dans la partie « ${part.getAttribute("data-part")} » (${Math.round(gap)} px sans rien)`);
+  }
+  // Colonne vide à côté d'une autre (ordinateur) : un titre seul face à une longue liste (essai réel : « Tes questions »).
+  if (!a.phone) {
+    const contentHeight = (el: Element) => {
+      let t = Infinity, b = -Infinity;
+      for (const x of [el, ...Array.from(el.querySelectorAll("h1,h2,h3,h4,p,li,a,button,img,svg,summary,figure,blockquote"))]) {
+        if (!shown(x)) continue;
+        const r = x.getBoundingClientRect();
+        if (r.width < 4 || r.height < 4 || x === el) continue;
+        t = Math.min(t, r.top); b = Math.max(b, r.bottom);
+      }
+      return t === Infinity ? 0 : b - t;
+    };
+    const flagged = new Set<string>();
+    for (const box of Array.from(document.querySelectorAll("section[data-part] *"))) {
+      const kids = Array.from(box.children).filter(shown);
+      if (kids.length !== 2) continue;
+      const [r1, r2] = kids.map((k) => k.getBoundingClientRect());
+      if (Math.abs(r1.top - r2.top) > 40 || r1.width < 200 || r2.width < 200) continue;
+      const [h1, h2] = kids.map(contentHeight);
+      const part = box.closest("[data-part]")!.getAttribute("data-part")!;
+      if (Math.max(h1, h2) - Math.min(h1, h2) > 280 && Math.min(h1, h2) < 0.4 * Math.max(h1, h2) && !flagged.has(part)) {
+        flagged.add(part);
+        problems.push(`colonne presque vide dans la partie « ${part} » (${Math.round(Math.min(h1, h2))} px de contenu face à ${Math.round(Math.max(h1, h2))} px)`);
+      }
+    }
+  }
+  // Logo jamais déformé (essai réel du 8 novembre : logo du pied de page étiré en largeur, non relevé).
+  const logos = Array.from(document.querySelectorAll("img[data-logo]")) as HTMLImageElement[];
+  for (const img of logos) {
+    if (!img.naturalWidth || !img.naturalHeight || !shown(img)) continue;
+    const r = img.getBoundingClientRect();
+    const fit = getComputedStyle(img).objectFit;
+    if (fit === "contain" || fit === "scale-down") continue;
+    const ratio = (r.width / r.height) / (img.naturalWidth / img.naturalHeight);
+    if (ratio > 1.06 || ratio < 0.94) {
+      const part = img.closest("[data-part]")?.getAttribute("data-part") ?? "page";
+      problems.push(`logo déformé dans la partie « ${part} » (${Math.round(r.width)}×${Math.round(r.height)} px pour des proportions de ${img.naturalWidth}×${img.naturalHeight})`);
+    }
+  }
   // Photos et logo chargés.
   for (const img of Array.from(document.images)) {
     if (!img.complete || img.naturalWidth === 0) problems.push(`image non chargée : ${(img.getAttribute("data-photo") ?? img.getAttribute("src") ?? "").slice(0, 60)}`);
@@ -334,7 +394,9 @@ function pageChecks(a: { texts: string[]; allowed: string[]; phone: boolean; wid
     // Jamais trois éléments côte à côte (cartes, photos, blocs d'au moins 60 px).
     const seen = new Set<string>();
     for (const box of Array.from(document.querySelectorAll("body *"))) {
-      if (box.children.length < 3 || box.closest("[aria-hidden='true']") || !shown(box)) continue;
+      // Vignettes de la galerie d'une fiche produit : une rangée permise (essai réel du 8 novembre : quatre grandes photos
+      // empilées avant le nom et le prix).
+      if (box.children.length < 3 || box.closest("[aria-hidden='true'], [data-gallery]") || !shown(box)) continue;
       const rows = new Map<number, number>();
       for (const c of Array.from(box.children)) {
         if (!shown(c)) continue;

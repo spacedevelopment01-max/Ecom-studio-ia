@@ -19,7 +19,7 @@ import { FONT_FILES } from "../../theme/render";
 import { chromiumPath } from "../../theme/snapshot";
 import fs from "node:fs";
 import path from "node:path";
-import { callCostBoundMicro, estimateCallMicro, llmJson, llmText, routeLlm } from "../../ai/llm";
+import { callCostBoundMicro, estimateCallMicro, jsonCallMaxMicro, llmJson, llmText, routeLlm } from "../../ai/llm";
 import { withTrace } from "../../ai/trace";
 import { copyLines, type PageCopy } from "./copy";
 import type { MockupDirection } from "./mockup-set";
@@ -43,7 +43,11 @@ export const MAX_NEW = { firstHome: 14, home: 4, page: 6 };
 /** Photos nouvelles habituelles (coût probable). */
 const TYPICAL_NEW = { firstHome: 10, home: 2, page: 3 };
 
-export type DirectionCode = { base: string | null; shell: string | null; pages: Record<string, { html: string; previous?: string | null; at: number }> };
+export type DirectionCode = {
+  base: string | null; shell: string | null; pages: Record<string, { html: string; previous?: string | null; at: number }>;
+  /** Photos demandées par une page mais pas encore créées (fournisseur indisponible…) : créées plus tard, sans réécrire la page. */
+  pending?: Record<string, CodePhoto[]>;
+};
 export const codeKey = (direction: string) => `syna.mockup_code.${direction}`;
 
 export function loadDirectionCode(projectId: string, direction: string): DirectionCode {
@@ -128,7 +132,8 @@ export function codeCallCosts(userId: string): { html: { max: number; first: num
   const r = routeLlm({ task: "theme_custom", userId, routing: { difficulty: "complex", prefer: CODE_MODEL } });
   if (r.mode !== "llm") return null;
   const max = callCostBoundMicro(r.provider, r.model, TYPICAL.next.input + 12000, CODE_MAX_TOKENS, r.effort ?? null);
-  const fixMax = callCostBoundMicro(r.provider, r.model, TYPICAL.fix.input + 12000, FIX_MAX_TOKENS, "low");
+  // Correction en JSON validé : son pire cas compte les relances possibles (comme la réservation faite à l'envoi).
+  const fixMax = jsonCallMaxMicro(r.provider, r.model, TYPICAL.fix.input + 12000, FIX_MAX_TOKENS, FIX_MAX_TOKENS * 2, "low")?.maxMicro ?? null;
   const first = estimateCallMicro(r.provider, r.model, TYPICAL.first.input, TYPICAL.first.output);
   const next = estimateCallMicro(r.provider, r.model, TYPICAL.next.input, TYPICAL.next.output);
   const fix = estimateCallMicro(r.provider, r.model, TYPICAL.fix.input, TYPICAL.fix.output);
@@ -224,6 +229,7 @@ export async function buildCodePage(p: Project, d: Pick<MockupDirection, "key" |
       res.newPhotos.push(a.id);
     } catch (e) { res.failed.push(`photo ${ph.id} non créée : ${(e as Error).message.slice(0, 160)}`); }
   }
+  const pending = parsed.newPhotos.filter((ph) => !ids[ph.id]);
   let full = resolvePhotos(parsed.html, ids);
   // 3) Captures et contrôle gratuits ; 4) une correction ciblée au plus.
   const expect = { texts: expectedTexts(copy), allowed: [brand.name] };
@@ -253,7 +259,56 @@ export async function buildCodePage(p: Project, d: Pick<MockupDirection, "key" |
     full = s.html;
   }
   next.pages[page.key] = { html: full, previous: code.pages[page.key]?.html ?? null, at: Date.now() };
+  next.pending = { ...(code.pending ?? {}), [page.key]: pending };
+  if (!pending.length) delete next.pending[page.key];
   saveDirectionCode(p.id, d.key, next);
+  res.ok = !!res.shots && !res.problems.length && !res.failed.length;
+  return res;
+}
+
+/**
+ * Photos restées en attente d'une page déjà construite : créées maintenant, posées dans la page (sans la réécrire),
+ * puis captures, contrôle et au plus une correction ciblée.
+ */
+export async function completeCodePhotos(p: Project, direction: string, page: MockupPage, copy: PageCopy, deps: BuildDeps, o: { usageKey: string; photoBrief: (photo: CodePhoto) => { prompt: string } }): Promise<BuildResult> {
+  const code = loadDirectionCode(p.id, direction);
+  const res: BuildResult = { ok: false, page: page.key, shots: null, problems: [], toVerify: [], newPhotos: [], failed: [], fixed: false };
+  const cur = code.pages[page.key], todo = code.pending?.[page.key] ?? [];
+  if (!cur || !todo.length) { res.failed.push("aucune photo en attente sur cette page"); return res; }
+  const ids: Record<string, string> = {};
+  for (const ph of todo) {
+    try {
+      const data = await deps.makePhoto(ph, `${o.usageKey}:photo:${direction}:${page.key}:${ph.id}`);
+      const jpeg = data[0] === 0xff && data[1] === 0xd8;
+      const a = await saveAsset({ projectId: p.id, userId: p.userId, data, name: `photo-${page.key.replace(/[^a-z0-9]+/gi, "-")}-${ph.id}.${jpeg ? "jpg" : "png"}`, mime: jpeg ? "image/jpeg" : "image/png", role: "site", origin: "generated", meta: { synaPhoto: { page: page.key, direction, description: ph.description, ratio: ph.ratio, background: ph.background ?? null, product: ph.product, packaging: ph.packaging, prompt: o.photoBrief(ph).prompt.slice(0, 4000) } } });
+      ids[ph.id] = a.id;
+      res.newPhotos.push(a.id);
+    } catch (e) { res.failed.push(`photo ${ph.id} non créée : ${(e as Error).message.slice(0, 160)}`); }
+  }
+  const source = pageSource(p.id, direction, page.key)!;
+  let full = resolvePhotos(source, ids);
+  const expect = { texts: expectedTexts(copy), allowed: [p.brand?.name ?? p.name] };
+  const base = page.key === "home" ? null : code.base;
+  let r = await deps.inspect(mockupFiles(p, full, base), expect);
+  const fixable = r.problems.filter((x) => !/image non chargée/.test(x));
+  if (fixable.length) {
+    try {
+      const applied = applyEdits(full, await deps.fixEdits(fixPrompt(full, fixable, copyLines(copy)), `${o.usageKey}:fix:${direction}:${page.key}`));
+      if (!applied.failed.length && applied.html !== full) {
+        const again = await deps.inspect(mockupFiles(p, applied.html, base), expect);
+        if (again.problems.length < r.problems.length) { full = applied.html; r = again; res.fixed = true; }
+      }
+    } catch (e) { res.toVerify.push(`correction automatique impossible : ${(e as Error).message.slice(0, 120)}`); }
+  }
+  res.shots = r.shots;
+  res.problems = r.problems;
+  res.toVerify.push(...r.toVerify);
+  const next: DirectionCode = { ...code, pages: { ...code.pages }, pending: { ...(code.pending ?? {}) } };
+  if (page.key === "home") { const s2 = splitBaseCss(full); next.base = s2.css ?? next.base; next.shell = shellOf(s2.html) ?? next.shell; full = s2.html; }
+  next.pages[page.key] = { html: full, previous: cur.html, at: Date.now() };
+  const left = todo.filter((ph) => !ids[ph.id]);
+  if (left.length) next.pending![page.key] = left; else delete next.pending![page.key];
+  saveDirectionCode(p.id, direction, next);
   res.ok = !!res.shots && !res.problems.length && !res.failed.length;
   return res;
 }
@@ -304,8 +359,9 @@ Fais UNIQUEMENT ces retouches, sans rien changer d'autre (consigne du client : �
 export function codeEditEstimate(userId: string, sourceChars: number): { maxMicro: number; probableMicro: number } | null {
   const r = routeLlm({ task: "theme_custom", userId, routing: { difficulty: "complex", prefer: FIX_MODEL } });
   if (r.mode !== "llm") return null;
-  const input = Math.ceil(sourceChars / 3) + 3000;
-  const max = callCostBoundMicro(r.provider, r.model, input, FIX_MAX_TOKENS, "low");
+  // Essai réel du 8 novembre : plafond trop bas (appel unique sans relances, 3 caractères par jeton), retouche bloquée.
+  const input = Math.ceil(sourceChars / 2.5) + 4000;
+  const max = jsonCallMaxMicro(r.provider, r.model, input, FIX_MAX_TOKENS, FIX_MAX_TOKENS * 2, "low")?.maxMicro ?? null;
   const probable = estimateCallMicro(r.provider, r.model, input, 2500);
   return max == null || probable == null ? null : { maxMicro: max, probableMicro: probable };
 }
