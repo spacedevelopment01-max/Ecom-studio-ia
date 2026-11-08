@@ -559,4 +559,19 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     expect(copy.sections.map((x) => x.section)).toEqual(page.sections);
     expect(copy.sections[2].title).toBe("T3");
   });
+
+  it("correction mot pour mot des textes (gratuite) et informations non confirmées jamais affirmées (essai réel du 8 novembre)", async () => {
+    const { editPageCopy, copyPrompt } = await import("@/lib/syna-agent/mockup-code/copy");
+    const c = { seo: { title: "Brindi", description: "d" }, sections: [{ section: "questions fréquentes", title: "Tes questions", text: null, button: null, items: [{ title: "Le vrac, c'est plus long à préparer ?", text: "Une cuillère, un filtre, et l'infusion devient ta pause. Conseils sur chaque fiche." }] }] };
+    const r = editPageCopy(c, "Conseils sur chaque fiche.", "");
+    expect(r.count).toBe(1);
+    expect(r.copy.sections[0].items[0].text).toBe("Une cuillère, un filtre, et l'infusion devient ta pause.");
+    expect(editPageCopy(c, "introuvable", "x").count).toBe(0);
+    const { mockupPages: pagesFor } = await import("@/lib/syna-agent/mockup-code/pages");
+    const page = pagesFor("products", "multi").find((x) => x.key === "home")!;
+    const plan: any = { angle: null, keyMessages: [], objections: [], products: [], offer: { facts: [] }, company: { email: "contact@brindi.fr", address: "14 rue Notre-Dame, 33000 Bordeaux" } };
+    const prompt = copyPrompt(page, { brand: { name: "Brindi" }, plan, toConfirm: ["Dosage, température et temps d'infusion de chaque mélange"] });
+    expect(prompt).toContain("NON confirmés, à ne JAMAIS affirmer ni promettre");
+    expect(prompt).toContain("Coordonnées : contact@brindi.fr · 14 rue Notre-Dame, 33000 Bordeaux.");
+  });
 });

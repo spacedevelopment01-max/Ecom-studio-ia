@@ -77,7 +77,7 @@ export const SECTION_NEEDS: { match: RegExp; need: string; minItems?: number }[]
 export const needOf = (section: string) => SECTION_NEEDS.find((n) => n.match.test(section));
 
 /** Consigne de rédaction d'une page, avec les seuls faits du client et l'angle choisi. */
-export function copyPrompt(page: MockupPage, input: { brand: { name: string; tagline?: string | null }; plan: ActivityPlan; emotion?: string; story?: string; show?: string }): string {
+export function copyPrompt(page: MockupPage, input: { brand: { name: string; tagline?: string | null }; plan: ActivityPlan; emotion?: string; story?: string; show?: string; toConfirm?: string[] }): string {
   const a = input.plan.angle;
   return [
     `Marque : « ${input.brand.name} »${input.brand.tagline ? `, slogan (mot pour mot) « ${input.brand.tagline} »` : ""}.`,
@@ -90,6 +90,8 @@ export function copyPrompt(page: MockupPage, input: { brand: { name: string; tag
     input.plan.objections.length ? `Objections et réponses : ${input.plan.objections.map((o) => `« ${o.objection} » → ${o.answer}`).join(" ; ")}.` : "",
     input.plan.products.length ? `Produits (noms et prix exacts) : ${input.plan.products.map((x) => `${x.title}${x.price != null ? ` (${x.price.toFixed(2).replace(".", ",")} €)` : ""}`).join(" ; ")}.` : "",
     input.plan.offer.facts.length ? `Faits confirmés par le client : ${input.plan.offer.facts.join(" ; ")}.` : "",
+    // Essai réel du 8 novembre : « Conseils sur chaque fiche » écrit alors que ces conseils restaient à confirmer.
+    input.toConfirm?.length ? `NON confirmés, à ne JAMAIS affirmer ni promettre (même dans une réponse aux objections) : ${input.toConfirm.join(" ; ")}.` : "",
     input.plan.company.shipping ? `Livraison : ${input.plan.company.shipping}.` : "",
     input.plan.company.returns ? `Retours : ${input.plan.company.returns}.` : "",
     ((c) => (c.length ? `Coordonnées : ${c.join(" · ")}.` : ""))([input.plan.company.legalName, input.plan.company.email, input.plan.company.address, input.plan.company.phone].filter((x): x is string => !!x)),
@@ -155,10 +157,10 @@ export function fixAndCheckCopy(c: PageCopy, page: MockupPage, fixed: { headline
 }
 
 /** Angle tel que lu à l'étape 4 (émotion, récit, scènes) pour la rédaction. */
-export function angleDetails(j: Journey): { emotion?: string; story?: string; show?: string } {
+export function angleDetails(j: Journey): { emotion?: string; story?: string; show?: string; toConfirm?: string[] } {
   const id = j.angleChoice?.id;
   const a = id ? j.angles?.list.find((x) => x.id === id) : undefined;
-  return a ? { emotion: a.emotion || undefined, story: a.story || undefined, show: a.show || undefined } : {};
+  return a ? { emotion: a.emotion || undefined, story: a.story || undefined, show: a.show || undefined, toConfirm: a.proofsToConfirm?.length ? a.proofsToConfirm : undefined } : {};
 }
 
 /** Textes d'une page, tels qu'écrits sur la maquette : une ligne par section, textes entre guillemets. */
@@ -173,4 +175,20 @@ export function copyLines(c: PageCopy): string[] {
     // Nom de la section sans guillemets : une indication de place, jamais un texte à écrire.
     return parts.length ? `Dans la partie ${s.section} : ${parts.join(" ; ")}.` : "";
   }).filter(Boolean);
+}
+
+/**
+ * Correction mot pour mot d'un texte de page (gratuit, sans IA) : remplace un passage EXACT par les mots du client, ou
+ * le retire (replace vide). Renvoie le nombre de remplacements (0 = passage introuvable, rien n'est changé).
+ */
+export function editPageCopy(c: PageCopy, find: string, replace: string): { copy: PageCopy; count: number } {
+  let count = 0;
+  const fix = (t: string | null) => {
+    if (t == null || !t.includes(find)) return t;
+    count += t.split(find).length - 1;
+    const out = t.split(find).join(replace).replace(/\s{2,}/g, " ").replace(/\s+([.,;:!?])/g, "$1").trim();
+    return out || null;
+  };
+  const sections = c.sections.map((s) => ({ ...s, title: fix(s.title), text: fix(s.text), button: fix(s.button), items: s.items.map((i) => ({ title: fix(i.title) ?? i.title, text: fix(i.text) })) }));
+  return { copy: { seo: { title: fix(c.seo.title) ?? c.seo.title, description: fix(c.seo.description) ?? c.seo.description }, sections }, count };
 }

@@ -345,6 +345,8 @@ export function withoutRepeatedQuestion(out: StepOutput): StepOutput {
   {
     let parts = sentencesOf(msg);
     while (parts.length > 1 && overlap(parts[parts.length - 1], out.question.text) >= 0.5) parts = sentencesOf(withoutLast(parts));
+    // Une phrase d'annonce restée seule à la fin (« Une correction à faire : ») : retirée aussi (essai réel du 8 novembre).
+    while (parts.length > 1 && /[:：]\s*$/.test(parts[parts.length - 1]) && parts.join("").trim() !== out.message.trim()) parts = sentencesOf(withoutLast(parts));
     msg = parts.join("").trim();
   }
   if (msg !== out.message.trim() && !msg.includes("?")) return { ...out, message: msg };

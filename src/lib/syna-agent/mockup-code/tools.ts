@@ -20,7 +20,7 @@ import { getJsonSetting } from "../../settings";
 import { getStrategyState } from "../../marketing-strategy";
 import { assertSectionGeneration } from "../../theme/custom-access";
 import { journeyOf, setStep, updateJourney } from "../journey";
-import { angleDetails, COPY_CAP_MICRO, COPY_MODEL, COPY_SYSTEM, copyPrompt, fixAndCheckCopy, loadSiteCopy, saveSiteCopy, writePageCopy, type PageCopy } from "./copy";
+import { angleDetails, COPY_CAP_MICRO, COPY_MODEL, COPY_SYSTEM, copyPrompt, editPageCopy, fixAndCheckCopy, loadSiteCopy, saveSiteCopy, writePageCopy, type PageCopy } from "./copy";
 import { pageByKey } from "./pages";
 import { getRun } from "../store";
 import { jobSpentMicro } from "../budget";
@@ -136,6 +136,21 @@ const copyTool: AgentTool<{ pages?: string[] }> = {
       data: { pages: Object.fromEntries(done.map((k) => [k, out[k]])), ...(home ? { titreSeo: home.seo.title } : {}) },
       changes: done.map((k) => ({ module: "site", object: L(`textes › ${pageByKey(pages, k)!.fr}`, `copy › ${k}`), summary: out[k].sections.map((x) => x.title).filter(Boolean).slice(0, 4).join(" · "), after: out[k], verified: true })),
     };
+  },
+};
+
+const copyEditTool: AgentTool<{ page?: string; find: string; replace: string }> = {
+  name: "mockup.copy_edit", module: "site", kind: "write", needsProject: true,
+  description: "Étape 6 (gratuit, sans IA) : corrige un texte de page écrit par mockup.copy, mot pour mot : remplace le passage EXACT find par les mots du client replace (replace vide = retirer le passage). page : clé de mockup.pages (accueil par défaut). Ce que le client corrige une fois vaut pour toujours.",
+  args: z.object({ page: z.string().max(60).optional(), find: z.string().min(2).max(400), replace: z.string().max(400) }).strict(),
+  run: (ctx, a) => {
+    const p = project(ctx), key = a.page ?? "home", sc = loadSiteCopy(p.id);
+    const c = sc?.pages[key];
+    if (!sc || !c) return { ok: false, summary: L("Aucun texte écrit pour cette page : mockup.copy d'abord.", "No copy for this page yet.") };
+    const r = editPageCopy(c, a.find, a.replace);
+    if (!r.count) return { ok: false, summary: L(`Passage introuvable dans les textes : « ${a.find} ».`, "Passage not found."), hint: "Recopie le passage exactement tel qu'il est écrit (lis la carte des textes)." };
+    saveSiteCopy(p.id, { ...sc, pages: { ...sc.pages, [key]: r.copy } });
+    return { ok: true, summary: a.replace ? L(`Texte corrigé : « ${a.find} » → « ${a.replace} ».`, "Copy corrected.") : L(`Passage retiré : « ${a.find} ».`, "Passage removed."), hint: "Rappelle mockup.prepare pour que la maquette reprenne les textes corrigés.", changes: [{ module: "site", object: L("textes de la page", "page copy"), summary: a.replace ? `« ${a.find} » → « ${a.replace} »` : `« ${a.find} » retiré`, before: a.find, after: a.replace, verified: JSON.stringify(loadSiteCopy(p.id)?.pages[key]).includes(a.replace) }] };
   },
 };
 
@@ -314,4 +329,4 @@ const reportTool: AgentTool<{}> = {
 };
 
 /** Outils à ajouter au registre (src/lib/syna-agent/tools/index.ts). */
-export const mockupCodeTools: AgentTool[] = [pagesTool, copyTool, prepareTool, generateTool, attachTool, chooseTool, codeTool, reportTool];
+export const mockupCodeTools: AgentTool[] = [pagesTool, copyTool, copyEditTool, prepareTool, generateTool, attachTool, chooseTool, codeTool, reportTool];
