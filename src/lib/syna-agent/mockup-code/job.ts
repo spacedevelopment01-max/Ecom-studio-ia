@@ -77,11 +77,14 @@ export async function runMockupCodeJob(ctx: JobContext) {
   const base0 = themeVersion(p.id, baseId)?.spec;
   if (!base0) throw new UserFacingError(L("Thème de départ introuvable.", "Base theme not found."));
   const base = withBrand(base0, p);
-  const options = { project: p, jobId: ctx.job.id, usageKey: ctx.job.id, step: <T,>(k: string, fn: () => Promise<T>) => ctx.step(k, fn), callMaxMicro: units };
+  const options = { project: p, jobId: ctx.job.id, usageKey: ctx.job.id, step: <T,>(k: string, fn: () => Promise<T>) => ctx.step(k, fn), done: (k: string) => k in ctx.checkpoint, callMaxMicro: units };
   const deps = { ...(mockupCodeJobDeps.deps ?? realStep7Deps)(options), progress: (f: number, m: string) => ctx.progress(0.05 + f * 0.9, m) };
   try {
     const { spec, report } = await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "mockup-code", costCapMicro: a.capMicro }, () =>
       runStep7({ direction: a.pages?.length ? { ...d, images: d.images.filter((i) => i.pages.some((k) => a.pages!.includes(k))) } : d, pages: a.pages?.length ? set.pages.filter((x) => a.pages!.includes(x.key)) : set.pages, base, options: { costCapMicro: a.capMicro, maxRounds: a.maxRounds }, copy: loadSiteCopy(p.id)?.pages ?? null }, deps));
+    // Rien d'écrit du tout (plafond atteint avant la première écriture) : aucune version vide n'est enregistrée
+    // (essai réel du 8 novembre : une reprise sans budget a produit une version 5 vide).
+    if (report.pages.every((x) => !x.written.length && !x.library.length) && report.stoppedBy === "budget") throw new UserFacingError(L("Plafond atteint avant d'écrire la moindre section : rien n'a été enregistré, le site précédent reste tel quel.", "Cost cap reached before writing anything: nothing was saved."));
     const problems = validateSpec(spec);
     if (problems.length) throw new UserFacingError(L(`Le thème codé ne passe pas la validation : ${problems.slice(0, 3).join(" ; ")}. Le site courant n'a pas changé.`, `The coded theme fails validation. The current site hasn't changed.`));
     const v = saveThemeVersion(p.id, spec, L(`${a.pages?.length ? `Pages ${a.pages.join(", ")} codées` : "Site codé"} d'après la maquette ${d.key} « ${d.name} » (SINA, étape 7)`, `Site coded from mockup ${d.key} (SINA, step 7)`), "ai", { syna: { step: 7, direction: d.key, ok: report.ok, summary: report.summary } }, undefined, { activate: false });

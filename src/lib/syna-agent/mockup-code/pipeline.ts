@@ -36,6 +36,8 @@ export type CallKind = "analyze" | "write" | "compare" | "fix";
 export type Step7Deps = {
   /** Point de reprise (tâche) : une étape déjà faite n'est ni refaite ni repayée. */
   step<T>(key: string, fn: () => Promise<T>): Promise<T>;
+  /** Étape déjà faite et mémorisée (reprise) : relue gratuitement, elle ne demande aucun budget. */
+  done?(key: string): boolean;
   image(assetId: string): Promise<Buffer>;
   analyzeMockup(i: { imageId: string; image: Buffer; pages: MockupPage[]; viewport: Viewport }): Promise<AnalyzedPage[]>;
   writeSections(i: { spec: ThemeSpec; page: MockupPage; template: string; plan: PlannedSection[]; mockup: Buffer | null; tag?: string }): Promise<WriteResult>;
@@ -326,7 +328,7 @@ export async function runStep7(input: { direction: MockupDirection; pages: Mocku
     const data = await deps.image(img.assetId!);
     mockups.set(img.id, data);
     const list = img.pages.map((k) => pageByKey(pages, k)).filter((x): x is MockupPage => !!x);
-    if (!canPay("analyze")) break;
+    if (!deps.done?.(`analyze:${img.id}`) && !canPay("analyze")) break;
     const read = await capped(() => deps.step(`analyze:${img.id}`, () => deps.analyzeMockup({ imageId: img.id, image: data, pages: list, viewport: img.viewport })));
     if (!read) break;
     for (const a of read) analyses.set(a.page, { ...analyses.get(a.page), [img.viewport]: { ...a, viewport: img.viewport, imageId: img.id } });
@@ -359,7 +361,8 @@ export async function runStep7(input: { direction: MockupDirection; pages: Mocku
     plans.set(page.key, { template: t.template, path: t.path, plan });
     if (page.variantOf && plans.has(page.variantOf)) { r.note = `même gabarit que « ${pageByKey(pages, page.variantOf)?.fr} »`; if (derived) r.status = "derivee"; continue; }
     if (page.template.startsWith("customers/")) { r.status = "non_verifiable"; r.note = "gabarit des comptes clients de la plateforme, au style du thème ; non rendu par l'aperçu du Studio"; continue; }
-    if (!canPay("write")) { r.status = "budget_atteint"; continue; }
+    // Essai réel du 8 novembre : la reprise sautait la page entière, déjà écrite et mémorisée, faute de « budget ».
+    if (!deps.done?.(`write:${page.key}`) && !canPay("write")) { r.status = "budget_atteint"; continue; }
     const res = await deps.step(`write:${page.key}`, async () => deps.writeSections({ spec, page, template: t.template, plan, mockup: await crop(page.key, "desktop") }));
     // Le gabarit n'est vidé que si la page a bien été écrite (sinon il reste tel quel, et le rapport le dit).
     if (res.written.length) spec = clearTemplate(spec, t.template, plan.filter((s) => s.target.kind === "library").map((s) => (s.target as { type: string }).type));
@@ -369,7 +372,7 @@ export async function runStep7(input: { direction: MockupDirection; pages: Mocku
     // écrit à 6 sections sur 10) : seules les sections pas encore écrites sont écrites, les autres restent telles quelles.
     // Les suites déjà faites sont relues (point de reprise) ; une section qui reste à écrire passe à la suite suivante.
     let left = res.budget ? plan.filter((x) => x.target.kind !== "library" && !res.written.includes(x.name)) : [];
-    for (let k = 1; left.length && k <= 3 && canPay("write"); k++) {
+    for (let k = 1; left.length && k <= 3 && (deps.done?.(`write:${page.key}:suite${k}`) || canPay("write")); k++) {
       // Clé d'appel propre à la suite (essai réel : la section refusée au premier passage gardait sa clé, la reprise était
       // bloquée comme « demande changée »).
       const more = await deps.step(`write:${page.key}:suite${k}`, async () => deps.writeSections({ spec, page, template: t.template, plan: left, mockup: await crop(page.key, "desktop"), tag: `s${k}` }));

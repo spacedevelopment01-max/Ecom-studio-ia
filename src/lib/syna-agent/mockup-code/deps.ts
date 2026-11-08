@@ -234,12 +234,13 @@ function screenshotter() {
 }
 
 /** Dépendances réelles d'une tâche ; `close()` ferme le navigateur de captures. */
-export function realStep7Deps(o: { project: Project; jobId: string | null; usageKey: string; step: Step7Deps["step"]; callMaxMicro: Record<CallKind, number> }): Step7Deps & { close(): Promise<void> } {
+export function realStep7Deps(o: { project: Project; jobId: string | null; usageKey: string; step: Step7Deps["step"]; done?: Step7Deps["done"]; callMaxMicro: Record<CallKind, number> }): Step7Deps & { close(): Promise<void> } {
   const p = o.project;
   const b: Base = { userId: p.userId, projectId: p.id, jobId: o.jobId, usageKey: o.usageKey };
   const shots = screenshotter();
   return {
     step: o.step,
+    ...(o.done ? { done: o.done } : {}),
     callMaxMicro: o.callMaxMicro,
     async image(assetId) {
       const a = getAsset(assetId);

@@ -371,6 +371,19 @@ describe("SINA — étape 7 : déroulé simulé (boucle, corrections, plafond, h
     expect(report.stoppedBy).toBeNull();
   });
 
+  it("reprise : une étape déjà payée et mémorisée est relue même au plafond (essai réel : page sautée, version vide)", async () => {
+    const s = sim({});
+    const memo = new Map<string, unknown>();
+    const deps = { ...s.deps, step: async (k: string, fn: () => Promise<any>) => (memo.has(k) ? memo.get(k) : (memo.set(k, await fn()), memo.get(k))), done: (k: string) => memo.has(k) };
+    const home = pages.filter((p) => p.key === "home");
+    await P.runStep7({ direction: direction(), pages: home, base: sampleSpec(), options: { costCapMicro: 10_000, maxRounds: 1 } }, deps);
+    const writes = s.calls.filter((c) => c === "write:home").length;
+    // Reprise avec un plafond trop bas pour une nouvelle écriture : la page déjà écrite est relue, pas sautée.
+    const { report } = await P.runStep7({ direction: direction(), pages: home, base: sampleSpec(), options: { costCapMicro: s.spent(), maxRounds: 1 } }, deps);
+    expect(s.calls.filter((c) => c === "write:home").length).toBe(writes);
+    expect(report.pages[0].written.length).toBeGreaterThan(0);
+  });
+
   it("maquette incomplète : version téléphone absente signalée ; page simple sans image dérivée de la maquette", async () => {
     const s = sim({});
     const withCart = [...pages, all.find((p) => p.key === "shipping")!];
