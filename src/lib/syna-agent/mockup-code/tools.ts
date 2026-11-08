@@ -36,9 +36,11 @@ import { attachImage, coverageOf, loadMockupSet, plannedDirection, saveMockupSet
 import { inventoryOptionsOf, mockupPages } from "./pages";
 import { mockupFacts, mockupImagePrompt, mockupImagesMaxMicro } from "./prompts";
 import { step7MaxMicro } from "./pipeline";
+import { CHECK_CAP_MICRO, mockupCheckCall, MockupCheckSchema, mockupCheckVerdict, type MockupCheck } from "./check";
+import { llmJson } from "../../ai/llm";
 
 /** Remplaçables par les tests : coût d'une image de maquette et coût maximal des appels de l'étape 7. */
-export const mockupToolDeps: { imageMaxMicro?: (references: number) => number | null; callMaxMicro?: typeof step7CallMaxMicro; generateImage?: (prompt: string, refs: { logo: Buffer | null; product: Buffer | null }) => Promise<Buffer> } = {};
+export const mockupToolDeps: { imageMaxMicro?: (references: number) => number | null; callMaxMicro?: typeof step7CallMaxMicro; generateImage?: (prompt: string, refs: { logo: Buffer | null; product: Buffer | null }) => Promise<Buffer>; checkImage?: (data: Buffer, img: { viewport: "desktop" | "phone"; pages: string[] }) => Promise<MockupCheck> } = {};
 /**
  * Modèle des images de maquette : OpenAI GPT Image 2.5 Flare (choix du propriétaire du 8 novembre, après comparaison
  * réelle sur l'accueil Brindi : Qwen abîmait les textes, OpenAI les écrivait juste ; même modèle que les logos),
@@ -228,6 +230,18 @@ function imageReferences(p: ReturnType<typeof project>): { logo: Buffer | null; 
 const todo = (d: MockupSet["directions"][number], only: { pages?: string[]; viewport?: "desktop" | "phone"; redo?: boolean } = {}) =>
   d.images.filter((i) => (only.redo ? !!only.pages?.length : i.status !== "ready") && !!i.prompt && (!only.pages?.length || i.pages.some((k) => only.pages!.includes(k))) && (!only.viewport || i.viewport === only.viewport));
 
+/** Contrôle automatique d'une image créée ; null si le contrôle n'a pas pu se faire (jamais bloquant, toujours dit). */
+async function checkMockupImage(ctx: ToolContext, projectId: string, direction: string, img: { id: string; viewport: "desktop" | "phone"; pages: string[] }, data: Buffer, pages: MockupSet["pages"]): Promise<{ ok: boolean; problems: string[]; toVerify: string[] } | null> {
+  try {
+    const usageKey = `syna:${ctx.runId}:mockup-check:${direction}:${img.id}`;
+    const jobId = getRun(ctx.runId)?.job_id ?? null;
+    const call = mockupCheckCall({ userId: ctx.user.id, projectId, jobId, usageKey }, data, img, img.pages.map((k) => pageByKey(pages, k)?.fr ?? k));
+    const raw = mockupToolDeps.checkImage ? await mockupToolDeps.checkImage(data, img)
+      : await withTrace({ jobId, projectId, step: "mockup-check", costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + CHECK_CAP_MICRO }, () => llmJson(call, MockupCheckSchema, { strict: true }));
+    return mockupCheckVerdict(MockupCheckSchema.parse(raw), img.viewport);
+  } catch { return null; }
+}
+
 const generateTool: AgentTool<{ direction: "A" | "B" | "C"; pages?: string[]; viewport?: "desktop" | "phone"; redo?: boolean }> = {
   name: "mockup.generate", module: "site", kind: "generate", needsProject: true,
   description: "Étape 6 : crée avec l'IA d'images les images encore manquantes d'une maquette préparée (mockup.prepare), d'après leurs consignes, avec le logo et la photo du produit en références, puis les range dans la maquette. Payant, jamais au-delà du devis (annonce le prix au client et attends son accord avant). pages (clés de mockup.pages, ex. [\"home\"]) et viewport limitent aux images de ces pages, dans cette version : pour voir d'abord le rendu de l'accueil. Une image ratée est signalée comme ratée, jamais présentée comme bonne ; elle peut être relancée. redo: true (avec pages et viewport) REFAIT une image déjà créée que le client juge ratée, avec la consigne actuelle (payant, son accord d'abord).",
@@ -239,8 +253,10 @@ const generateTool: AgentTool<{ direction: "A" | "B" | "C"; pages?: string[]; vi
     if (refs.problem) throw new HttpError(409, refs.problem);
     const n = todo(d, a).length;
     if (!n) throw new HttpError(409, L("Aucune image à créer pour ces pages dans cette maquette.", "No image to create for these pages."));
-    const max = mockupImagesMaxMicro(n, refs.product ? 2 : 1, imageUnit);
-    if (max == null) throw new HttpError(409, L("Aucun modèle d'images utilisable pour les maquettes (administration › Médias).", "No usable image model for mockups."));
+    const images = mockupImagesMaxMicro(n, refs.product ? 2 : 1, imageUnit);
+    if (images == null) throw new HttpError(409, L("Aucun modèle d'images utilisable pour les maquettes (administration › Médias).", "No usable image model for mockups."));
+    // Contrôle automatique de chaque image créée, compris dans le prix annoncé.
+    const max = images + n * CHECK_CAP_MICRO;
     return { maxMicro: max, label: L(`images de la maquette ${a.direction}`, `mockup ${a.direction} images`) };
   },
   run: async (ctx, a) => {
@@ -256,7 +272,7 @@ const generateTool: AgentTool<{ direction: "A" | "B" | "C"; pages?: string[]; vi
       refreshMockupPrompts(ctx);
       set = loadMockupSet(p.id)!;
     }
-    const made: { id: string; assetId: string; href: string }[] = [], failed: string[] = [];
+    const made: { id: string; assetId: string; href: string }[] = [], failed: string[] = [], unchecked: string[] = [];
     for (const img of todo(set.directions.find((x) => x.key === a.direction)!, a)) {
       try {
         const data = mockupToolDeps.generateImage ? await mockupToolDeps.generateImage(img.prompt!, refs)
@@ -266,21 +282,37 @@ const generateTool: AgentTool<{ direction: "A" | "B" | "C"; pages?: string[]; vi
         set = attachImage(set!, a.direction, { id: img.id, viewport: img.viewport, pages: img.pages, assetId: asset.id }).set;
         saveMockupSet(p.id, set);
         made.push({ id: img.id, assetId: asset.id, href: assetUrl({ id: asset.id }) });
+        // Contrôle automatique (demande du propriétaire du 8 novembre : les erreurs vues ne doivent pas se reproduire).
+        const check = await checkMockupImage(ctx, p.id, a.direction, img, data, set.pages);
+        if (check) {
+          set = { ...set, directions: set.directions.map((x) => (x.key === a.direction ? { ...x, images: x.images.map((i) => (i.id === img.id ? { ...i, check } : i)) } : x)) };
+          saveMockupSet(p.id, set);
+        } else unchecked.push(img.id);
       } catch (e) { failed.push(`${img.id} : ${(e as Error).message.slice(0, 160)}`); }
     }
     const read = loadMockupSet(p.id)!, cov = coverageOf(read.directions.find((x) => x.key === a.direction)!, read.pages);
     // Coût RÉEL des images de cet appel (appels enregistrés), dit au client (essai réel : « le Studio ne me l'a pas transmis »).
     // Seulement les images de CET appel (essai réel : deux images d'une même demande additionnées, « 0,4 % » au lieu de 0,2 %).
-    const keys = [...made.map((m) => m.id), ...failed.map((f) => f.split(" ")[0])].map((id) => `syna:${ctx.runId}:mockup-image:${a.direction}:${id}`);
+    const ids = [...made.map((m) => m.id), ...failed.map((f) => f.split(" ")[0])];
+    const keys = ids.flatMap((id) => [`syna:${ctx.runId}:mockup-image:${a.direction}:${id}`, `syna:${ctx.runId}:mockup-check:${a.direction}:${id}`]);
+    const checked = made.map((m) => ({ id: m.id, check: read.directions.find((x) => x.key === a.direction)!.images.find((x) => x.id === m.id)?.check }));
+    const defects = checked.filter((c) => c.check && !c.check.ok);
+    const toVerify = checked.filter((c) => c.check?.toVerify.length);
+    const checkText = [
+      ...defects.map((c) => `${c.id} RATÉE au contrôle automatique : ${c.check!.problems.join(" ; ")}`),
+      ...toVerify.map((c) => `${c.id}, textes à vérifier : ${c.check!.toVerify.join(" ; ")}`),
+      ...(unchecked.length ? [`${unchecked.join(", ")} : contrôle automatique impossible, à regarder`] : []),
+      ...(made.length && !defects.length && !unchecked.length ? ["contrôle automatique de la mise en page : rien à signaler"] : []),
+    ].join(". ");
     const spent = keys.length ? all<{ c: number | null }>(`SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key IN (${keys.map(() => "?").join(",")})`, p.id, ...keys)[0]?.c ?? 0 : 0;
     // Tutoiement du fil SINA (le texte commun du Studio vouvoie : « de votre budget IA »).
     const spentText = budgetPctText(ctx.user.id, spent, p.id).replace(/de votre budget/, "de ton budget");
     return {
-      ok: made.length > 0 && !failed.length,
-      summary: L(`${made.length} image(s) créée(s) pour la maquette ${a.direction}${failed.length ? ` ; ${failed.length} ratée(s) : ${failed.join(" | ")}` : ""}. Coût réel : ${spentText}. ${cov.complete ? "La maquette couvre toutes les pages." : `Il manque encore ${cov.missing.length} page(s) ou version(s).`}`, `${made.length} mockup image(s) created.`),
+      ok: made.length > 0 && !failed.length && !defects.length,
+      summary: L(`${made.length} image(s) créée(s) pour la maquette ${a.direction}${failed.length ? ` ; ${failed.length} ratée(s) : ${failed.join(" | ")}` : ""}.${checkText ? ` ${checkText}.` : ""} Coût réel : ${spentText}. ${cov.complete ? "La maquette couvre toutes les pages." : `Il manque encore ${cov.missing.length} page(s) ou version(s).`}`, `${made.length} mockup image(s) created.`),
       // Essai réel du 8 novembre : « Je ne peux pas vérifier le rendu ici » alors que l'image lui est jointe, et
       // « refait avec la mise en page de téléphone » affirmé sans l'avoir regardée.
-      ...(made.length ? { hint: "Les images créées te sont JOINTES à ta prochaine étape (libellé « image <id> … créée il y a quelques minutes ») : regarde-les avant de répondre et dis au client, honnêtement et en deux ou trois phrases, ce que tu vois vraiment (mise en page, textes lisibles et exacts ou abîmés, logo, et pour le téléphone : une seule colonne et menu replié, ou non ; passe CHAQUE partie en revue, de haut en bas : toute rangée de trois éléments ou plus côte à côte est un défaut à signaler, même si le point demandé par le client est corrigé). Ne dis JAMAIS que tu ne peux pas voir le rendu ; n'affirme rien que l'image ne montre pas ; une image ratée est dite ratée." } : {}),
+      ...(made.length ? { hint: (defects.length ? "Le contrôle automatique a relevé des défauts : dis au client que l'image est RATÉE, cite chaque défaut, propose de la refaire avec son prix (mockup.generate redo) et ne relance RIEN sans son accord écrit. " : "") + "Les images créées te sont JOINTES à ta prochaine étape (libellé « image <id> … créée il y a quelques minutes ») : regarde-les avant de répondre et dis au client, honnêtement et en deux ou trois phrases, ce que tu vois vraiment (mise en page, textes lisibles et exacts ou abîmés, logo, et pour le téléphone : une seule colonne et menu replié, ou non ; passe CHAQUE partie en revue, de haut en bas : toute rangée de trois éléments ou plus côte à côte est un défaut à signaler, même si le point demandé par le client est corrigé). Ne dis JAMAIS que tu ne peux pas voir le rendu ; n'affirme rien que l'image ne montre pas ; une image ratée est dite ratée." } : {}),
       // Libellés du client (essai réel : « 1. A · A01 » affiché) : nom de la maquette, pages, version.
       data: { mockups: made.map((m, i) => { const img = read.directions.find((x) => x.key === a.direction)!.images.find((x) => x.id === m.id)!; return { n: i + 1, direction: `${a.direction} · ${m.id}`, name: d!.name, label: `${img.pages.map((k) => pageByKey(read.pages, k)?.fr ?? k).join(", ")} — ${img.viewport === "desktop" ? "ordinateur" : "téléphone"}`, assetId: m.assetId, href: m.href }; }), failed, complete: cov.complete },
       changes: made.map((m) => ({ module: "fichiers", object: `maquette ${a.direction} › image ${m.id}`, summary: L("créée par l'IA d'images", "created by the image AI"), after: m, verified: true })),

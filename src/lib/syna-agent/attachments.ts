@@ -172,7 +172,7 @@ export async function journeyImages(j: { steps: Record<number, { status: string 
       if (out.length >= 6) break;
       const data = await small(img.assetId!, n === 0 ? 1536 : 1024).catch(() => null);
       const fresh = Date.now() - at < 15 * 60_000;
-      if (data) out.push({ data, label: `Maquette ${d.key} « ${d.name} », image ${img.id} — ${img.pages.join(", ")} (${img.viewport === "desktop" ? "ordinateur" : "téléphone"})${fresh ? ", créée il y a quelques minutes" : ""}, montrée au client` });
+      if (data) out.push({ data, label: `Maquette ${d.key} « ${d.name} », image ${img.id} — ${img.pages.join(", ")} (${img.viewport === "desktop" ? "ordinateur" : "téléphone"})${fresh ? ", créée il y a quelques minutes" : ""}, montrée au client${img.check ? (img.check.ok ? " ; contrôle automatique de la mise en page : rien à signaler" : ` ; RATÉE au contrôle automatique : ${img.check.problems.join(" ; ")}`) : ""}` });
     }
   }
   return out;

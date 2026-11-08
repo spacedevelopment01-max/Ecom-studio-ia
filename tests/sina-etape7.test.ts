@@ -433,12 +433,16 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     await call("mockup.prepare", ctx, { directions: [{ name: "Lumière", style: "grandes photos plein cadre" }] });
     const planned = loadMockupSet(pid)!.directions[0].images;
     const est = await fr(() => tool("mockup.generate").estimate!(ctx, { direction: "A" }));
-    expect(est.maxMicro).toBe(planned.length * 150_000);
+    // Image + contrôle automatique de l'image (0,04 $ au plus), compris dans le prix annoncé.
+    expect(est.maxMicro).toBe(planned.length * 190_000);
     // Pour voir le rendu d'abord : seulement l'accueil, en version ordinateur (une image).
     const homeOnly = await fr(() => tool("mockup.generate").estimate!(ctx, { direction: "A", pages: ["home"], viewport: "desktop" }));
-    expect(homeOnly.maxMicro).toBe(150_000);
+    expect(homeOnly.maxMicro).toBe(190_000);
     let n = 0;
     mockupToolDeps.generateImage = async (prompt, refs) => { n++; expect(prompt).toContain("« Braise Douce »"); expect(refs.logo).toBeTruthy(); if (n === 2) throw new Error("rendu refusé"); return png("#F5EEDC"); };
+    // Contrôle automatique simulé : tout va bien, sauf l'accueil téléphone refait (trois articles côte à côte).
+    let badPhone = false;
+    mockupToolDeps.checkImage = async (_d, img) => ({ deviceFrame: false, menuLinksAtTop: false, people: false, textProblems: [], sections: [{ name: "Le journal", maxSideBySide: badPhone && img.viewport === "phone" ? 3 : 1 }] });
     try {
       const r = await call("mockup.generate", ctx, { direction: "A" });
       expect(r.ok).toBe(false); // une image ratée : jamais présentée comme une réussite complète
@@ -454,9 +458,21 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       // Refaire une image jugée ratée par le client (redo) : payante, une seule image, nouvelle image rangée.
       const homeImg = loadMockupSet(pid)!.directions[0].images.find((i) => i.viewport === "phone" && i.pages.includes("home"))!;
       const est2 = await fr(() => tool("mockup.generate").estimate!(ctx, { direction: "A", pages: ["home"], viewport: "phone", redo: true }));
-      expect(est2.maxMicro).toBe(150_000);
+      expect(est2.maxMicro).toBe(190_000);
       const redo = await call("mockup.generate", ctx, { direction: "A", pages: ["home"], viewport: "phone", redo: true });
       expect(redo.ok, redo.summary).toBe(true);
+      expect(redo.summary).toContain("rien à signaler");
+      // Défaut relevé par le contrôle : image dite RATÉE, défaut cité, rien relancé.
+      badPhone = true; const before = n;
+      const bad = await call("mockup.generate", ctx, { direction: "A", pages: ["home"], viewport: "phone", redo: true });
+      expect(bad.ok).toBe(false);
+      expect(bad.summary).toMatch(/RATÉE au contrôle automatique : « Le journal » : 3 éléments côte à côte/);
+      expect(bad.hint).toMatch(/ne relance RIEN sans son accord/);
+      expect(n).toBe(before + 1);
+      expect(loadMockupSet(pid)!.directions[0].images.find((i) => i.id === homeImg.id)!.check?.ok).toBe(false);
+      badPhone = false;
+      await call("mockup.generate", ctx, { direction: "A", pages: ["home"], viewport: "phone", redo: true });
+      expect(loadMockupSet(pid)!.directions[0].images.find((i) => i.id === homeImg.id)!.check?.ok).toBe(true);
       const redone = loadMockupSet(pid)!.directions[0].images.find((i) => i.id === homeImg.id)!;
       expect(redone.status).toBe("ready");
       expect(redone.assetId).not.toBe(homeImg.assetId);
@@ -480,7 +496,7 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       expect(snap).toMatch(/Maquettes sur mesure : A « Lumière » \(\d+\/\d+ images prêtes\) ; B « Atelier »/);
       expect(snap.length).toBeLessThan(6000);
       expect(snap).not.toContain("Planche de maquette");
-    } finally { mockupToolDeps.generateImage = undefined; }
+    } finally { mockupToolDeps.generateImage = undefined; mockupToolDeps.checkImage = undefined; }
   });
 
   it("préparation gratuite, images rangées, choix refusé tant que la maquette est incomplète, devis de l'étape 7", async () => {
@@ -672,5 +688,20 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     expect(prod).toContain("deux par rangée au plus");
     expect(det).toContain("l'un sous l'autre");
     expect(copyLines(c2)[1]).not.toContain("l'un sous l'autre");
+  });
+
+  it("contrôle automatique des maquettes : appareil dessiné, menu en haut, trois éléments côte à côte, personnes (essais réels du 8 novembre)", async () => {
+    const { mockupCheckVerdict, mockupCheckPrompt } = await import("@/lib/syna-agent/mockup-code/check");
+    const base = { deviceFrame: false, menuLinksAtTop: false, people: false, textProblems: [], sections: [{ name: "Produits", maxSideBySide: 2 }] };
+    expect(mockupCheckVerdict(base, "phone").ok).toBe(true);
+    expect(mockupCheckVerdict({ ...base, deviceFrame: true }, "phone").problems).toEqual(["un appareil est dessiné autour de la page"]);
+    expect(mockupCheckVerdict({ ...base, menuLinksAtTop: true }, "phone").ok).toBe(false);
+    expect(mockupCheckVerdict({ ...base, menuLinksAtTop: true, sections: [{ name: "Gros plans", maxSideBySide: 4 }] }, "desktop").ok).toBe(true); // normal en ordinateur
+    expect(mockupCheckVerdict({ ...base, sections: [{ name: "Gros plans", maxSideBySide: 4 }] }, "phone").problems[0]).toContain("« Gros plans » : 4 éléments côte à côte");
+    expect(mockupCheckVerdict({ ...base, people: true }, "desktop").ok).toBe(false);
+    const v = mockupCheckVerdict({ ...base, textProblems: ["« melange » sans accent"] }, "phone");
+    expect(v.ok).toBe(true); expect(v.toVerify).toHaveLength(1);
+    // Les bandes d'une même page en téléphone ne comptent pas comme une rangée d'éléments.
+    expect(mockupCheckPrompt({ viewport: "phone", pages: ["home"] }, ["Accueil"])).toContain("ce n'est pas une rangée d'éléments");
   });
 });

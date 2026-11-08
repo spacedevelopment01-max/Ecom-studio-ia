@@ -19,6 +19,8 @@ export type MockupImage = {
   /** Consigne envoyée à l'IA d'images (étape 6), gardée pour la reprise et le contrôle. */
   prompt?: string;
   note?: string;
+  /** Contrôle automatique de l'image créée (mise en page, appareil dessiné, personnes, textes) ; absent = non contrôlée. */
+  check?: { ok: boolean; problems: string[]; toVerify: string[] };
 };
 export type MockupDirection = { key: "A" | "B" | "C"; name: string; style: string; images: MockupImage[]; /** Fond : clair, sombre ou grands aplats de la couleur de marque. */ ground?: "clair" | "sombre" | "marque" };
 export type MockupSet = {
@@ -122,7 +124,7 @@ export function attachImage(set: MockupSet, key: MockupDirection["key"], img: { 
   const bad = img.pages.filter((k) => !pageByKey(set.pages, k));
   if (bad.length) throw new Error(`pages inconnues : ${bad.join(", ")}`);
   const existing = img.id ? d.images.find((i) => i.id === img.id) : null;
-  const image: MockupImage = { ...(existing ?? {}), id: existing?.id ?? `${key}${String(d.images.length + 1).padStart(2, "0")}`, viewport: img.viewport, pages: img.pages, assetId: img.assetId, status: "ready", ...(img.note ? { note: img.note } : {}) };
+  const image: MockupImage = { ...(existing ?? {}), id: existing?.id ?? `${key}${String(d.images.length + 1).padStart(2, "0")}`, viewport: img.viewport, pages: img.pages, assetId: img.assetId, status: "ready", check: undefined, ...(img.note ? { note: img.note } : {}) };
   const images = existing ? d.images.map((i) => (i.id === image.id ? image : i)) : [...d.images, image];
   return { set: { ...set, directions: set.directions.map((x) => (x.key === key ? { ...x, images } : x)) }, image };
 }
