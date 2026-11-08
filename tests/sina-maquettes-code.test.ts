@@ -43,6 +43,7 @@ describe("SINA — maquettes en code : fichier, photos, retouches", async () => 
     expect(s.html).toContain('<link rel="stylesheet" href="base.css">');
     expect(C.shellOf(s.html)).toMatch(/^<header[\s\S]*<\/footer>$/);
     expect(C.isComplete("<html></html>\n")).toBe(true);
+    expect(C.continuationPrompt("<html>\n<body>", "CONSIGNE D'ORIGINE avec les textes")).toMatch(/^CONSIGNE D'ORIGINE avec les textes[\s\S]*<fin_du_fichier>\n<html>\n<body>\n<\/fin_du_fichier>/);
     expect(C.joinContinuation("<html>\n<body>\n<p>coup", "```html\n<p>coupé</p>\n</body></html>```")).toBe("<html>\n<body>\n<p>coupé</p>\n</body></html>");
   });
 

@@ -135,9 +135,11 @@ export function codeMockupPrompt(i: CodeMockupInput): string {
 }
 
 /** Consigne de suite quand la réponse s'est arrêtée avant la fin du fichier (limite de longueur). */
-export function continuationPrompt(sofar: string): string {
+export function continuationPrompt(sofar: string, original: string): string {
   const lines = sofar.split("\n");
-  return `Le fichier HTML que tu écrivais s'est arrêté avant la fin. Voici ses dernières lignes :\n<fin_du_fichier>\n${lines.slice(-40).join("\n")}\n</fin_du_fichier>\nÉcris UNIQUEMENT la suite, en commençant exactement à la ligne qui suit la dernière ligne ci-dessus, jusqu'à </html>. Ne répète rien.`;
+  // Consigne d'origine redonnée (essai réel du 8 novembre : la suite écrite sans les textes ni les photos avait inventé
+  // un accueil entier, avec des « [À compléter] »).
+  return `${original}\n\n---\nTu as déjà écrit le début de ce fichier, mais il s'est arrêté avant la fin. Voici ses dernières lignes :\n<fin_du_fichier>\n${lines.slice(-40).join("\n")}\n</fin_du_fichier>\nÉcris UNIQUEMENT la suite, en commençant exactement à la ligne qui suit la dernière ligne ci-dessus, jusqu'à </html>. Ne répète rien.`;
 }
 
 /** Retire les clôtures de code éventuelles d'une réponse. */

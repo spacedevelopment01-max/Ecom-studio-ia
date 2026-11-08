@@ -33,10 +33,12 @@ import {
 /** Modèle des maquettes en code : Claude Opus, réflexion moyenne (essai réel du 8 novembre : réflexion haute coupée avant la fin). */
 export const CODE_MODEL = { provider: "anthropic" as const, model: "claude-opus-5-5", effort: "medium" };
 const FIX_MODEL = { provider: "anthropic" as const, model: "claude-opus-5-5", effort: "low" };
-/** Longueur maximale d'une réponse ; deux suites au plus si le fichier s'arrête avant la fin. */
-export const CODE_MAX_TOKENS = 32000;
+/** Longueur maximale d'une réponse (essai réel du 8 novembre : 32 000 coupait l'accueil animé) ; deux suites au plus. */
+export const CODE_MAX_TOKENS = 64000;
 const CONTINUATIONS = 2;
 const FIX_MAX_TOKENS = 8000;
+/** Au-delà de ce nombre de textes manquants ou ajoutés, la page est ratée : pas de correction ciblée. */
+const MAX_FIXABLE_TEXTS = 6;
 /** Jetons habituels (entrée, sortie) : essai réel du 8 novembre (accueil complet ≈ 30 000 jetons de sortie en réflexion haute). */
 const TYPICAL = { first: { input: 7000, output: 20000 }, next: { input: 16000, output: 11000 }, fix: { input: 26000, output: 2500 } };
 /** Photos nouvelles au plus : accueil de la première maquette, accueil des suivantes (photos partagées), autres pages. */
@@ -124,7 +126,7 @@ export function realBuildDeps(b: { userId: string; projectId: string; jobId: str
     writeHtml: (prompt, usageKey) => withTrace({ jobId: b.jobId, projectId: b.projectId, step: "mockup-code", costCapMicro: b.spentMicro() + b.capMicro("html") }, () =>
       llmText({ task: "theme_custom", userId: b.userId, projectId: b.projectId, jobId: b.jobId, usageKey, promptKey: "syna-mockup-code-1", system: CODE_SYSTEM_TEXT, prompt, maxTokens: CODE_MAX_TOKENS, routing: { difficulty: "complex", prefer: CODE_MODEL } })),
     fixEdits: async (prompt, usageKey) => (await withTrace({ jobId: b.jobId, projectId: b.projectId, step: "mockup-code-fix", costCapMicro: b.spentMicro() + b.capMicro("fix") }, () =>
-      llmJson({ task: "theme_custom", userId: b.userId, projectId: b.projectId, jobId: b.jobId, usageKey, promptKey: "syna-mockup-code-fix-1", system: CODE_SYSTEM_TEXT, prompt, maxTokens: FIX_MAX_TOKENS, routing: { difficulty: "complex", prefer: FIX_MODEL } }, FixSchema))).edits,
+      llmJson({ task: "theme_custom", userId: b.userId, projectId: b.projectId, jobId: b.jobId, usageKey, promptKey: "syna-mockup-code-fix-1", system: CODE_SYSTEM_TEXT, prompt, maxTokens: FIX_MAX_TOKENS, maxOutputTokens: FIX_MAX_TOKENS, routing: { difficulty: "complex", prefer: FIX_MODEL } }, FixSchema))).edits,
     makePhoto,
     inspect: (files, expect) => inspectCodeMockup(files, expect, chromiumPath()),
   };
@@ -235,7 +237,7 @@ export async function buildCodePage(p: Project, d: Pick<MockupDirection, "key" |
   });
   // 1) Écriture (et suites si le fichier s'arrête avant la fin).
   let html = stripFences(await deps.writeHtml(prompt, `${o.usageKey}:html:${d.key}:${page.key}:1`));
-  for (let n = 2; !isComplete(html) && n <= 1 + CONTINUATIONS; n++) html = joinContinuation(html, await deps.writeHtml(continuationPrompt(html), `${o.usageKey}:html:${d.key}:${page.key}:${n}`));
+  for (let n = 2; !isComplete(html) && n <= 1 + CONTINUATIONS; n++) html = joinContinuation(html, await deps.writeHtml(continuationPrompt(html, prompt), `${o.usageKey}:html:${d.key}:${page.key}:${n}`));
   const parsed = parseCodeMockup(html, new Set(library.map((x) => x.id)), maxNew);
   if (!isComplete(parsed.html)) { res.failed.push("la page écrite s'arrête avant la fin, même après deux suites : rien n'est gardé (aucune photo créée)"); return res; }
   res.problems.push(...parsed.problems.filter((x) => !/incomplet/.test(x)));
@@ -261,7 +263,11 @@ export async function buildCodePage(p: Project, d: Pick<MockupDirection, "key" |
   const spare = () => library.filter((x) => !photoUses(full).some((u) => u.id === x.id) && !elsewhere.used.some((u) => u.id === x.id) && !elsewhere.products.some((u) => u.id === x.id) && !x.real).map((x) => `- ${x.id} : ${x.description}`);
   let r = await inspect(full);
   const fixable = r.problems.filter((x) => !/image non chargée/.test(x));
-  if (fixable.length) {
+  // Page ratée dans l'ensemble (textes manquants ou inventés en nombre) : aucune correction payée pour rien (essai réel
+  // du 8 novembre : trois corrections à 0,82 € sur un accueil inventé). Elle est dite ratée, à refaire.
+  const broken = r.problems.filter((x) => /^texte (manquant|ajouté)/.test(x)).length >= MAX_FIXABLE_TEXTS;
+  if (broken) res.toVerify.push("page ratée dans l'ensemble (textes manquants ou inventés) : aucune correction automatique tentée, elle est à refaire");
+  if (fixable.length && !broken) {
     try {
       const edits = await deps.fixEdits(fixPrompt(full, fixable, lines, spare()), `${o.usageKey}:fix:${d.key}:${page.key}`);
       const applied = applyEdits(full, edits);
