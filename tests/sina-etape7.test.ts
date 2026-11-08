@@ -305,6 +305,11 @@ describe("SINA — étape 7 : déroulé simulé (boucle, corrections, plafond, h
     expect(spec.store.pages.filter((p) => p.template_suffix === "faq")).toHaveLength(1);
     expect(spec.templates["page.faq"].order.map((sid) => spec.templates["page.faq"].sections[sid].type)).toEqual(["es-custom-faq-2"]);
     expect(report.imageSlots.some((x) => x.page === "home" && /bougie allumée/.test(x.prompt))).toBe(true);
+    // Chaque emplacement sait où il est dans le thème (gabarit, section, rang) pour y poser la photo recréée.
+    const hs = report.imageSlots.find((x) => x.page === "home" && /bougie allumée/.test(x.prompt))!;
+    expect(hs.template).toBe("index");
+    expect(hs.type).toMatch(/^es-custom-home-/);
+    expect(hs.index).toBe(0);
     expect(report.spentMicro).toBe(s.spent());
   });
 
@@ -642,6 +647,42 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     const report = await call("mockup.report", ctx, {});
     expect((report.data as any).versionId).toBe(res.versionId);
     mockupCodeJobDeps.deps = undefined;
+
+    // Photos du site recréées en haute définition (demande du propriétaire du 8 novembre) : chaque emplacement de la
+    // maquette, d'après sa zone sur l'image, posé dans le réglage image de sa section ; nouvelle version, toujours inactive.
+    const { remember } = await import("@/lib/projects");
+    const { STEP7_REPORT_KEY } = await import("@/lib/syna-agent/mockup-code/job");
+    const { assetData, getAsset } = await import("@/lib/library");
+    const spec0 = themeVersion(pid, res.versionId)!.spec;
+    const type = "es-custom-home-2";
+    spec0.customSections[type] = { name: "Ouverture", liquid: `<section>{% render 'es-image', image: section.settings.image, asset: section.settings.image_asset %}</section>{% schema %}{"name":"Ouverture","tag":"div","settings":[{"type":"image_picker","id":"image","label":"Image"},{"type":"text","id":"image_asset","label":"Fichier"}]}{% endschema %}` };
+    const sid = "ouverture";
+    spec0.templates.index.sections[sid] = { type, settings: {} } as any;
+    spec0.templates.index.order.push(sid);
+    const v2 = saveThemeVersion(pid, spec0, "site codé", "ai", undefined, undefined, { activate: false });
+    const home = loadMockupSet(pid)!.directions[0].images.find((i) => i.viewport === "desktop" && i.pages.includes("home"))!;
+    const slot = { page: "home", section: "Ouverture", template: "index", type, index: 0, imageId: home.id, box: { x: 0.1, y: 0.1, w: 0.5, h: 0.3 }, ratio: "16:9", description: "tasse fumante sur un bureau", prompt: "x" };
+    remember(pid, { kind: "artifact", key: STEP7_REPORT_KEY, value: JSON.stringify({ versionId: v2.id, number: v2.number, direction: "A", report: { ...(report.data as any).report, imageSlots: [slot, { ...slot, index: 1, box: undefined }] } }), source: "local", origin: "system" });
+    mockupToolDeps.imageMaxMicro = () => 150_000;
+    let prompt = "";
+    mockupToolDeps.generateImage = async (pr) => { prompt = pr; return png("#AA5500", 300, 170); };
+    try {
+      const est = await fr(() => tool("site.images").estimate!(ctx, {}));
+      expect(est.maxMicro).toBe(150_000); // une seule photo avec sa zone repérée sur la maquette
+      const r = await call("site.images", ctx, {});
+      expect(r.ok, r.summary).toBe(true);
+      expect(prompt).toMatch(/reproduis-la À L'IDENTIQUE en haute définition/);
+      expect(prompt).toContain("tasse fumante sur un bureau");
+      expect(prompt).toMatch(/aucune main/);
+      const v3 = themeVersion(pid, (r.data as any).version.id)!;
+      expect(currentTheme(pid)!.version.id).toBe(cur.id); // le site courant ne change pas
+      const set3 = v3.spec.templates.index.sections[sid].settings as any;
+      expect(set3.image_asset).toBeTruthy();
+      const placed = (r.data as any).photos[0].assetId;
+      expect(v3.spec.files[set3.image_asset]).toBe(placed);
+      expect(assetData(getAsset(placed)!).length).toBeGreaterThan(0);
+      expect(((await call("mockup.report", ctx, {})).data as any).versionId).toBe(v3.version.id);
+    } finally { mockupToolDeps.generateImage = undefined; mockupToolDeps.imageMaxMicro = undefined; }
   });
 
   it("étape 6 : mockup.generate crée seulement les images manquantes, les range et ne présente jamais une image ratée comme bonne", async () => {
@@ -649,7 +690,7 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     const tools = Object.fromEntries(mockupCodeTools.map((t) => [t.name, t]));
     expect(tools["mockup.generate"]).toBeTruthy();
     const { getTool } = await import("@/lib/syna-agent/registry");
-    for (const name of ["mockup.pages", "mockup.prepare", "mockup.generate", "mockup.attach", "mockup.choose", "site.code_from_mockup", "mockup.report", "calendar.plan", "calendar.read", "calendar.mark_done", "calendar.move"]) expect(getTool(name), name).toBeTruthy();
+    for (const name of ["mockup.pages", "mockup.prepare", "mockup.generate", "mockup.attach", "mockup.choose", "site.code_from_mockup", "mockup.report", "site.images", "calendar.plan", "calendar.read", "calendar.mark_done", "calendar.move"]) expect(getTool(name), name).toBeTruthy();
     expect(mockupToolDeps).toHaveProperty("imageMaxMicro");
   });
 

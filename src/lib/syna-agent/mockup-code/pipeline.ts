@@ -98,12 +98,24 @@ export type PageReport = {
   differences: string[]; written: string[]; library: string[]; failed: { name: string; reason: string }[];
   overflow: number[]; seo: string[]; brokenLinks: string[]; note?: string;
 };
+const slug = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+/** Type stable d'une section sur mesure (même type à la correction : la section est réécrite, pas dupliquée). */
+export const customType = (page: Pick<MockupPage, "key">, s: Pick<PlannedSection, "index" | "target">) =>
+  s.target.kind === "group" ? `es-custom-${s.target.group}-maquette` : `es-custom-${slug(page.key).slice(0, 24) || "page"}-${s.index + 1}`;
+
+/**
+ * Emplacement d'image du site codé (demande du propriétaire du 8 novembre : « OpenAI devra refaire toutes les images du
+ * thème en haute résolution pour les inclure, et que ce soit comme les maquettes ») : où il est dans le thème (gabarit,
+ * type de section, rang de l'image dans la section) et où le voir sur la maquette (image, zone), pour le recréer.
+ */
+export type ImageSlot = { page: string; section: string; template: string; type: string; index: number; imageId?: string; box?: { x: number; y: number; w: number; h: number }; ratio?: string; description: string; prompt: string };
+
 export type Step7Report = {
   ok: boolean;
   pages: PageReport[];
   themeCheck: { available: boolean; errors: string[] };
   duplicates: { titles: string[]; descriptions: string[] };
-  imageSlots: { page: string; section: string; prompt: string }[];
+  imageSlots: ImageSlot[];
   stoppedBy: "budget" | null;
   spentMicro: number;
   summary: string;
@@ -408,7 +420,14 @@ export async function runStep7(input: { direction: MockupDirection; pages: Mocku
   const tcErrors = tc.errors.map((e) => `${e.file}${e.line ? ` (ligne ${e.line})` : ""} : ${e.check} — ${e.message}`);
   const dup = (m: Map<string, string[]>) => [...m.entries()].filter(([, v]) => v.length > 1).map(([k, v]) => `« ${k} » (${v.join(", ")})`);
 
-  const imageSlots = [...plans.entries()].flatMap(([key, x]) => x.plan.flatMap((s) => s.images.map((img) => ({ page: key, section: s.name, prompt: siteImagePrompt(img, { name: input.base.store.shopName, business: input.base.store.business ?? "products" }) }))));
+  const imageSlots: ImageSlot[] = [...plans.entries()].flatMap(([key, x]) => {
+    const page = pageByKey(pages, key)!, read = analyses.get(key)?.desktop ?? analyses.get(key)?.phone;
+    return x.plan.filter((s) => s.target.kind !== "library").flatMap((s) => s.images.map((img, index) => ({
+      page: key, section: s.name, template: s.target.kind === "group" ? `group:${s.target.group}` : x.template, type: customType(page, s), index,
+      ...(read?.imageId ? { imageId: read.imageId } : {}), ...(img.box ? { box: img.box } : {}), ...(img.ratio ? { ratio: img.ratio } : {}),
+      description: img.description, prompt: siteImagePrompt(img, { name: input.base.store.shopName, business: input.base.store.business ?? "products" }),
+    })));
+  });
   const list = pages.map((p) => rep(p.key));
   const blocking = list.filter((r) => !["ok", "derivee", "non_verifiable"].includes(r.status) || r.brokenLinks.length || r.seo.length);
   const ok = !blocking.length && tc.available && !tcErrors.length && !dup(titles).length && !dup(descriptions).length && !stoppedBy;

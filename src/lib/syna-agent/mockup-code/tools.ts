@@ -15,7 +15,7 @@ import { all } from "../../db";
 import { enqueue } from "../../jobs";
 import { L } from "../../i18n-server";
 import { assetData, assetUrl, getAsset, saveAsset } from "../../library";
-import { aiSiteMockup, mockupMaskEdit, mockupMaskEditMaxMicro, photoRequestMaxMicro, PUBLICATION_PROMPT_MAX_BYTES, withQuotedImageRoute } from "../../ai/media-providers";
+import { aiSiteImageHd, aiSiteMockup, mockupMaskEdit, mockupMaskEditMaxMicro, photoRequestMaxMicro, PUBLICATION_PROMPT_MAX_BYTES, withQuotedImageRoute } from "../../ai/media-providers";
 import { getJsonSetting } from "../../settings";
 import { budgetPctText } from "../../ai/budget-pct";
 
@@ -35,8 +35,11 @@ import { step7CallMaxMicro } from "./deps";
 import { MOCKUP_CODE_JOB, STEP7_REPORT_KEY } from "./job";
 import { attachImage, coverageOf, loadMockupSet, plannedDirection, replanDirection, saveMockupSet, type MockupSet } from "./mockup-set";
 import { inventoryOptionsOf, mockupPages } from "./pages";
-import { mockupFacts, mockupImagePrompt, mockupImagesMaxMicro } from "./prompts";
-import { step7MaxMicro } from "./pipeline";
+import { hdAspect, mockupFacts, mockupImagePrompt, mockupImagesMaxMicro, siteImageHdPrompt } from "./prompts";
+import { step7MaxMicro, type Step7Report } from "./pipeline";
+import { remember, saveThemeVersion, themeVersion } from "../../projects";
+import { applyOps, validateSpec } from "../../theme/ops";
+import { sectionSchema } from "../../theme/spec";
 import { checkMaxMicro, mockupCheckCall, MockupCheckSchema, mockupCheckVerdict, type MockupCheck } from "./check";
 import { llmJson } from "../../ai/llm";
 import { blackShare, boxesOf, composeEdit, exactTexts, isRemoval, missingTexts, removeBand, locateCall, locateMaxMicro, LocateSchema, mockupEditPrompt, type Box, type EditChange, type Locate } from "./edit";
@@ -555,5 +558,100 @@ const reportTool: AgentTool<{}> = {
   },
 };
 
+/** Rapport du dernier site codé d'après la maquette (version, rapport) ; null sinon. */
+function step7Report(projectId: string): { versionId: string; number: number; direction: "A" | "B" | "C"; report: Step7Report } | null {
+  const row = all<{ value: string }>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key=? AND state='active' ORDER BY updated_at DESC LIMIT 1", projectId, STEP7_REPORT_KEY)[0];
+  try { return row ? JSON.parse(row.value) : null; } catch { return null; }
+}
+const hdUnit = (refs: number) => { try { return photoRequestMaxMicro(mockupImageRoute(), { prompt: "x".repeat(PUBLICATION_PROMPT_MAX_BYTES), references: refs, aspect: "16:9", quality: "high" }); } catch { return null; } };
+const slotsOf = (r: Step7Report, pages?: string[]) => (r.imageSlots ?? []).filter((s) => s.imageId && s.box && (!pages?.length || pages.includes(s.page)));
+
+/**
+ * Étape 7 (demande du propriétaire du 8 novembre) : chaque photo du site codé est recréée en haute définition par l'IA
+ * d'images des maquettes (OpenAI), d'après sa zone sur la maquette choisie (même cadrage, mêmes objets), puis posée à
+ * sa place dans le thème (réglage image de la section). Une nouvelle version du site est enregistrée.
+ */
+const siteImagesTool: AgentTool<{ pages?: string[] }> = {
+  name: "site.images", module: "site", kind: "generate", needsProject: true,
+  description: "Étape 7, APRÈS le codage du site (site.code_from_mockup) : recrée en haute définition, avec l'IA d'images des maquettes (OpenAI), chaque photo du site codé à l'identique de la maquette choisie (même cadrage, mêmes objets, mêmes couleurs), puis la pose à sa place dans le thème. pages : seulement ces pages (clés de mockup.pages), sinon toutes. Payant (une image par photo) : annonce le prix et attends l'accord écrit.",
+  args: z.object({ pages: z.array(z.string().max(60)).max(30).optional() }).strict(),
+  estimate: (ctx, a) => {
+    const p = project(ctx), r = step7Report(p.id);
+    if (!r) throw new HttpError(409, L("Le site n'est pas encore codé d'après la maquette (site.code_from_mockup d'abord).", "Code the site from the mockup first."));
+    const n = slotsOf(r.report, a.pages).length;
+    if (!n) throw new HttpError(409, L("Aucune photo à recréer sur ces pages.", "No photo to recreate on these pages."));
+    const unit = (mockupToolDeps.imageMaxMicro ?? hdUnit)(3);
+    if (unit == null) throw new HttpError(409, L("Aucun modèle d'images utilisable pour les photos du site.", "No usable image model."));
+    return { maxMicro: n * unit, label: L(`${n} photo(s) du site en haute définition`, `${n} site photo(s) in high definition`) };
+  },
+  run: async (ctx, a) => {
+    const p = project(ctx), r = step7Report(p.id), set = loadMockupSet(p.id);
+    if (!r || !set) return { ok: false, summary: L("Le site n'est pas encore codé d'après la maquette.", "Site not coded yet.") };
+    const { themeFileName } = await import("../../engine/shop");
+    const cur = themeVersion(p.id, r.versionId);
+    if (!cur) return { ok: false, summary: L("Version du site codé introuvable.", "Coded site version not found.") };
+    const d = set.directions.find((x) => x.key === r.direction);
+    const refs = imageReferences(p);
+    const jobId = getRun(ctx.runId)?.job_id ?? null;
+    const mockups = new Map<string, Buffer>();
+    const done: { slot: string; assetId: string }[] = [], failed: string[] = [], unplaced: string[] = [];
+    let spec = cur.spec;
+    for (const slot of slotsOf(r.report, a.pages)) {
+      const label = `${pageByKey(set.pages, slot.page)?.fr ?? slot.page} › ${slot.section} › photo ${slot.index + 1}`;
+      try {
+        const img = d?.images.find((i) => i.id === slot.imageId);
+        const asset0 = img?.assetId ? getAsset(img.assetId) : undefined;
+        if (!asset0) { failed.push(`${label} : image de maquette introuvable`); continue; }
+        if (!mockups.has(slot.imageId!)) mockups.set(slot.imageId!, assetData(asset0));
+        const full = mockups.get(slot.imageId!)!;
+        const meta = await sharp(full).metadata();
+        const W = meta.width ?? 1024, H = meta.height ?? 1536, b = slot.box!;
+        const region = { left: Math.max(0, Math.floor(b.x * W)), top: Math.max(0, Math.floor(b.y * H)), width: Math.max(8, Math.min(W - Math.floor(b.x * W), Math.ceil(b.w * W))), height: Math.max(8, Math.min(H - Math.floor(b.y * H), Math.ceil(b.h * H))) };
+        const scene = await sharp(full).extract(region).resize({ width: 1024, height: 1024, fit: "inside" }).png().toBuffer();
+        const prompt = siteImageHdPrompt(slot, { name: p.brand?.name ?? p.name, logo: !!refs.logo, product: !!refs.product });
+        const aspect = hdAspect(slot.ratio ?? `${region.width}:${region.height}`);
+        const data = mockupToolDeps.generateImage ? await mockupToolDeps.generateImage(prompt, refs)
+          : await withQuotedImageRoute(mockupImageRoute(), () => aiSiteImageHd({ userId: ctx.user.id, projectId: p.id, jobId, usageKey: `syna:${ctx.runId}:site-image:${slot.page}:${slot.type}:${slot.index}` }, { prompt, scene, logo: refs.logo, product: refs.product, aspect }));
+        const jpeg = data[0] === 0xff && data[1] === 0xd8;
+        const asset = await saveAsset({ projectId: p.id, userId: ctx.user.id, data, name: `site-${slot.page}-${slot.type.replace(/^es-custom-/, "")}-${slot.index + 1}.${jpeg ? "jpg" : "png"}`, mime: jpeg ? "image/jpeg" : "image/png", role: "site", origin: "generated", meta: { synaSiteImage: { ...slot, prompt: undefined } } });
+        // Pose : le n-ième réglage image de la section (section d'abord, puis ses blocs dans l'ordre).
+        const where = slot.template.startsWith("group:") ? spec.groups[slot.template.slice(6) as "header" | "footer"] : spec.templates[slot.template];
+        const sid = where ? Object.keys(where.sections).find((k) => where.sections[k].type === slot.type) : undefined;
+        const schema = sid ? sectionSchema(spec, slot.type) : null;
+        const targets: { block?: string; key: string }[] = [];
+        if (sid && schema) {
+          for (const st of schema.settings ?? []) if ((st as { type?: string }).type === "image_picker") targets.push({ key: (st as { id: string }).id });
+          const sec = where!.sections[sid];
+          for (const bid of sec.block_order ?? Object.keys(sec.blocks ?? {})) {
+            const bt = sec.blocks?.[bid]?.type;
+            const bs = (schema.blocks ?? []).find((x: { type: string }) => x.type === bt) as { settings?: { type?: string; id: string }[] } | undefined;
+            for (const st of bs?.settings ?? []) if (st.type === "image_picker") targets.push({ block: bid, key: st.id });
+          }
+        }
+        const t = targets[slot.index];
+        if (!sid || !t) { unplaced.push(label); done.push({ slot: label, assetId: asset.id }); continue; }
+        const res = applyOps(spec, [{ op: "use_media", template: slot.template, section: sid, ...(t.block ? { block: t.block } : {}), key: t.key, assetId: asset.id }], { overrideLocks: true, mediaFile: (id) => { const x = getAsset(id); return x && x.project_id === p.id ? { filename: themeFileName(x, x.role ?? "media") } : null; } });
+        if (res.rejected.length) unplaced.push(`${label} (${res.rejected[0].reason})`); else spec = res.spec;
+        done.push({ slot: label, assetId: asset.id });
+      } catch (e) { failed.push(`${label} : ${(e as Error).message.slice(0, 160)}`); }
+    }
+    let version: { id: string; number: number } | null = null;
+    if (done.length && !validateSpec(spec).length) {
+      const v = saveThemeVersion(p.id, spec, L(`Photos du site recréées en haute définition d'après la maquette ${r.direction} (SINA, étape 7)`, `Site photos recreated in high definition (SINA, step 7)`), "ai", { syna: { step: 7, images: done.length } }, undefined, { activate: false });
+      version = { id: v.id, number: v.number };
+      remember(p.id, { kind: "artifact", key: STEP7_REPORT_KEY, value: JSON.stringify({ ...r, versionId: v.id, number: v.number }), source: "local", origin: "system" });
+    }
+    const keys = all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key LIKE ?", p.id, `syna:${ctx.runId}:site-image:%`)[0]?.c ?? 0;
+    const spentText = budgetPctText(ctx.user.id, keys, p.id).replace(/de votre budget/, "de ton budget");
+    return {
+      ok: done.length > 0 && !failed.length && !unplaced.length,
+      summary: L(`${done.length} photo(s) du site recréée(s) en haute définition${version ? `, posée(s) dans la version ${version.number} du site` : ""}.${unplaced.length ? ` Non posée(s) (emplacement introuvable) : ${unplaced.join(" ; ")}.` : ""}${failed.length ? ` Ratée(s) : ${failed.join(" | ")}.` : ""} Coût réel : ${spentText}.`, `${done.length} site photo(s) recreated.`),
+      hint: "Les photos sont créées par l'IA d'images : regarde-les dans l'aperçu du site avant d'en parler ; une photo ratée est dite ratée ; rien n'est relancé sans accord écrit.",
+      data: { version, photos: done.slice(0, 40), nonPosees: unplaced, ratees: failed },
+      changes: done.map((x) => ({ module: "fichiers", object: x.slot, summary: L("photo du site en haute définition", "site photo in high definition"), after: { assetId: x.assetId }, verified: true })),
+    };
+  },
+};
+
 /** Outils à ajouter au registre (src/lib/syna-agent/tools/index.ts). */
-export const mockupCodeTools: AgentTool[] = [pagesTool, copyTool, copyEditTool, prepareTool, generateTool, editTool, attachTool, chooseTool, codeTool, reportTool];
+export const mockupCodeTools: AgentTool[] = [pagesTool, copyTool, copyEditTool, prepareTool, generateTool, editTool, attachTool, chooseTool, codeTool, reportTool, siteImagesTool];

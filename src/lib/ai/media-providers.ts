@@ -682,6 +682,17 @@ export async function aiSiteMockup(ctx: Ctx, input: { prompt: string; logo?: Buf
   return generateImage(ctx, { text: input.prompt, aspect: "2:3", reference: null, refMax: 1024, references, quality: "high", strictQuality: true, usage: "text_layout", need: { text: true, references: references.length } });
 }
 
+/**
+ * Photo du site recréée en haute définition d'après la maquette choisie (demande du propriétaire du 8 novembre :
+ * « OpenAI devra refaire toutes les images du thème en haute résolution pour les inclure, et que ce soit comme les
+ * maquettes »). Références : la photo découpée sur la maquette (à reproduire), le logo (s'il figure sur un emballage),
+ * la photo du produit (s'il figure sur la photo). Route des maquettes, sans relais (withQuotedImageRoute).
+ */
+export async function aiSiteImageHd(ctx: Ctx, input: { prompt: string; scene: Buffer; logo?: Buffer | null; product?: Buffer | null; aspect: "1:1" | "4:5" | "9:16" | "16:9" | "2:3" }) {
+  const references = [{ role: "scene" as const, data: input.scene, essential: true }, ...(input.product ? [{ role: "product" as const, data: input.product, essential: true }] : []), ...(input.logo ? [{ role: "logo" as const, data: input.logo, essential: true }] : [])];
+  return generateImage(ctx, { text: input.prompt, aspect: input.aspect, reference: null, refMax: 1024, references, quality: "high", strictQuality: true, usage: "scene", need: { references: references.length } });
+}
+
 /** Coût maximal d'une maquette de site (une planche), null si aucun modèle n'est utilisable. */
 export function siteMockupMaxMicro(references = 2): number | null {
   const r = mediaRouteFor("text_layout", { text: true, references });

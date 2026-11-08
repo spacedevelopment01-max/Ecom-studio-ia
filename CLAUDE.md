@@ -35,6 +35,10 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   **Exception : maquettes de site de SINA** (étape 6) avec **OpenAI GPT Image 2.5 Flare** (décision du 8 novembre 2026, après
   comparaison réelle : Qwen abîmait les textes de la page, OpenAI les écrivait juste). Les textes du site sont écrits
   AVANT la maquette (`mockup.copy`, sur l'angle choisi et son émotion) et posés lettre pour lettre sur l'image.
+  Seules les pages principales ont une maquette (accueil, pages clés, menu, panier) ; les pages simples sont codées à
+  l'étape 7 dans le style de la maquette, sans image à elles. **Photos du site codé** (étape 7, `site.images`) : toutes
+  recréées en haute définition par le même modèle OpenAI, à l'identique de la maquette (décision du 8 novembre 2026).
+  Corriger un détail d'une maquette = retouche localisée (`mockup.edit`), jamais une image refaite en entier.
   Consignes à Qwen **en français**, concrètes (scène, objets, lumière), seuls les textes voulus entre guillemets.
 - **Écrire une consigne d'image comme le propriétaire** (modèle réussi du 16/10, `docs/guide-images-ia.md`) : décrire
   UNE photo, en phrases complètes et logiques, dans cet ordre : 1) type de photo, format, point de vue, cadrage ;

@@ -21,7 +21,7 @@ import type { ThemeSpec } from "../../theme/spec";
 import { jobSpentMicro } from "../budget";
 import { analyzeMockupImage } from "./analyze";
 import type { MockupPage } from "./pages";
-import { SECTION_CORRECTIONS, type CallKind, type PlannedSection, type Shot, type Step7Deps, type WriteResult } from "./pipeline";
+import { customType, SECTION_CORRECTIONS, type CallKind, type PlannedSection, type Shot, type Step7Deps, type WriteResult } from "./pipeline";
 
 /** Hypothèses de taille des appels (jetons d'entrée, sortie maximale) : base du devis, vérifiée avant chaque appel. */
 export const STEP7_CALLS: Record<CallKind, { input: number; output: number }> = {
@@ -52,10 +52,7 @@ const ScoreSchema = z.object({
 /** Image envoyée à l'IA : largeur raisonnable, hauteur bornée (pages longues), JPEG. */
 const forAi = (b: Buffer) => sharp(b).resize({ width: 900, height: 7000, fit: "inside", withoutEnlargement: true }).jpeg({ quality: 82 }).toBuffer();
 
-const slug = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-/** Type stable d'une section sur mesure (même type à la correction : la section est réécrite, pas dupliquée). */
-export const customType = (page: MockupPage, s: Pick<PlannedSection, "index" | "target">) =>
-  s.target.kind === "group" ? `es-custom-${s.target.group}-maquette` : `es-custom-${slug(page.key).slice(0, 24) || "page"}-${s.index + 1}`;
+export { customType } from "./pipeline";
 
 /** Consigne d'écriture d'une section d'après la maquette (textes lus mot pour mot, mise en page, couleurs). */
 export function sectionBrief(page: MockupPage, s: PlannedSection, plan: PlannedSection[], fix?: string[], hasMockup = true): string {

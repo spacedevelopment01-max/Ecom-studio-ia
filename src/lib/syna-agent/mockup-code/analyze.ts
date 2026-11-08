@@ -27,7 +27,9 @@ export const AnalyzedSectionSchema = z.object({
   /** Mise en page sur téléphone, si une image téléphone la montre. */
   phone: z.string().max(1200).optional(),
   texts: z.array(z.object({ kind: z.enum(["surtitre", "titre", "sous-titre", "paragraphe", "bouton", "lien", "legende", "prix", "autre"]).catch("autre"), text: z.string().max(600) })).max(40).default([]),
-  images: z.array(z.object({ description: z.string().max(500), ratio: z.string().max(12).optional(), objects: z.array(z.string().max(160)).max(8).optional() })).max(16).default([]),
+  images: z.array(z.object({ description: z.string().max(500), ratio: z.string().max(12).optional(), objects: z.array(z.string().max(160)).max(8).optional(),
+    /** Zone de la photo sur l'image de maquette (fractions) : référence pour la recréer en haute définition. */
+    box: z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1), w: z.number().min(0).max(1), h: z.number().min(0).max(1) }).optional() })).max(16).default([]),
   colors: z.object({ background: optHex, text: optHex, accent: optHex }).default({}),
   typography: z.string().max(300).optional(),
   spacing: z.string().max(300).optional(),
@@ -58,7 +60,7 @@ export function analysisPrompt(pages: MockupPage[], viewport: Viewport): string 
   return `Cette image est une maquette de site web (version ${viewport === "desktop" ? "ordinateur, 1440 px" : "téléphone, 390 px"}). Elle montre exactement ces pages, dans l'ordre de lecture : ${pages.map((p) => `${p.key} (« ${p.fr} »)`).join(", ")}.
 Pour CHAQUE page, décris fidèlement ce que tu VOIS, sans rien inventer ni améliorer :
 - page : sa clé exacte ci-dessus ; region : sa zone sur l'image (x, y, w, h en fractions de 0 à 1) ;
-- sections : toutes, de haut en bas, en-tête (role header) et pied de page (role footer) compris. Pour chacune : role (${SECTION_ROLES.join(", ")}), name (25 caractères au plus), layout (grille, colonnes, alignements, proportions, position des images et des textes, fond plein ou non), ${viewport === "phone" ? "phone (mise en page téléphone), " : ""}texts (chaque texte lu MOT POUR MOT, avec sa nature ; un texte illisible s'écrit « [illisible] »), images (chaque emplacement : ce qu'il montre, format approximatif, objets visibles), colors (fond, texte, accent en hexadécimal), typography (famille, graisse, casse, taille relative), spacing (marges et espacements approximatifs en px), effects (seulement s'ils sont visibles).
+- sections : toutes, de haut en bas, en-tête (role header) et pied de page (role footer) compris. Pour chacune : role (${SECTION_ROLES.join(", ")}), name (25 caractères au plus), layout (grille, colonnes, alignements, proportions, position des images et des textes, fond plein ou non), ${viewport === "phone" ? "phone (mise en page téléphone), " : ""}texts (chaque texte lu MOT POUR MOT, avec sa nature ; un texte illisible s'écrit « [illisible] »), images (chaque emplacement de photo : ce qu'il montre, format approximatif, objets visibles, et box : sa zone exacte sur l'image entière, x, y, w, h en fractions de 0 à 1), colors (fond, texte, accent en hexadécimal), typography (famille, graisse, casse, taille relative), spacing (marges et espacements approximatifs en px), effects (seulement s'ils sont visibles).
 Ajoute la palette lue (palette), les polices reconnues (fonts) et tes remarques (notes : ce qui est ambigu ou illisible).`;
 }
 

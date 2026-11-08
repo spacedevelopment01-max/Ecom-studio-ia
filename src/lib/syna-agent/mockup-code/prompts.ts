@@ -182,3 +182,30 @@ export function siteImagePrompt(slot: { description: string; ratio?: string; obj
     "Aucun texte, aucune lettre, aucun chiffre, aucune gravure, aucun logo, aucun filigrane, aucune personne. Aucun objet supplémentaire.",
   ].filter(Boolean).join("\n");
 }
+
+/**
+ * Consigne d'une photo du site recréée en haute définition d'après la maquette (demande du propriétaire du 8 novembre :
+ * « que ce soit comme les maquettes »). L'image 1 est la photo découpée sur la maquette : elle est reproduite, pas
+ * réinventée. Ordre du guide des images : type et format, ce qu'on reproduit, compte, coupes, lumière, interdits.
+ */
+export function siteImageHdPrompt(slot: { description: string; ratio?: string }, f: { name: string; logo: boolean; product: boolean }): string {
+  return [
+    `Photographie en haute définition pour le site « ${f.name} », au format ${slot.ratio ?? "de la photo de référence"}, nette et détaillée.`,
+    "L'image 1 est la photo de la maquette du site, en petite taille : reproduis-la À L'IDENTIQUE en haute définition, même cadrage, même point de vue, mêmes objets à la même place, mêmes formes, mêmes matières, mêmes couleurs, même lumière et même ambiance. Ne change pas la composition, n'ajoute rien, ne retire rien.",
+    `Ce qu'elle montre : ${slot.description.replace(/[.\s]+$/, "")}.`,
+    f.product ? "La photo du produit réel est jointe : le produit est reproduit exactement (forme, couleurs, étiquette), entier, rien n'est coupé." : "",
+    f.logo ? "Le logo de la marque est joint : s'il apparaît sur un emballage de la photo, il est reproduit exactement, sans autre mot ; sinon il n'apparaît pas." : "",
+    "Aucun autre texte, aucune lettre, aucun chiffre, aucun filigrane, aucune personne, aucun visage, aucune main. Aucun objet supplémentaire.",
+  ].filter(Boolean).join("\n");
+}
+
+/** Format d'une photo du site (« 16:9 », « 3:2 », « carré »…) vers les formats des modèles d'images. */
+export function hdAspect(ratio?: string): "1:1" | "4:5" | "9:16" | "16:9" | "2:3" {
+  const m = ratio?.match(/(\d+(?:[.,]\d+)?)\s*[:/x×]\s*(\d+(?:[.,]\d+)?)/);
+  const r = m ? Number(m[1].replace(",", ".")) / Number(m[2].replace(",", ".")) : /carr/i.test(ratio ?? "") ? 1 : 1.5;
+  if (r >= 1.25) return "16:9";
+  if (r >= 0.9) return "1:1";
+  if (r >= 0.72) return "4:5";
+  if (r >= 0.6) return "2:3";
+  return "9:16";
+}
