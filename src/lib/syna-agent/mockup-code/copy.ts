@@ -14,7 +14,7 @@ import { llmJson } from "../../ai/llm";
 import { remember } from "../../projects";
 import type { Journey } from "../journey";
 import type { ActivityPlan } from "../activity";
-import type { MockupPage } from "./pages";
+import { pageLayout, type MockupPage } from "./pages";
 
 /** Plafond d'un appel de rédaction (une page). */
 export const COPY_CAP_MICRO = 400_000;
@@ -100,6 +100,7 @@ export function copyPrompt(page: MockupPage, input: { brand: { name: string; tag
     input.plan.company.shipping ? `Livraison : ${input.plan.company.shipping}.` : "",
     input.plan.company.returns ? `Retours : ${input.plan.company.returns}.` : "",
     ((c) => (c.length ? `Coordonnées : ${c.join(" · ")}.` : ""))([input.plan.company.legalName, input.plan.company.email, input.plan.company.address, input.plan.company.phone].filter((x): x is string => !!x)),
+    ((lay) => (lay ? `Mise en page de cette page : ${lay}. Les textes servent cette structure (titres courts et clairs, libellés de boutique), sans accroche de présentation.` : ""))(pageLayout(page)),
     `Page à écrire : « ${page.fr} ». Écris EXACTEMENT ${page.sections.length} sections, une par ligne ci-dessous, dans cet ordre, chacune avec ce qu'elle doit contenir :`,
     ...page.sections.map((s, i) => `${i + 1}. « ${s} » : ${needOf(s)?.need ?? "les textes qui lui conviennent"}.`),
   ].filter(Boolean).join("\n");

@@ -838,4 +838,21 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     expect(copyPrompt(cart, { brand: { name: "Brindi" }, plan })).toMatch(/titre de l'ACCUEIL seulement/);
     expect(copyPrompt(pages.find((x) => x.key === "home")!, { brand: { name: "Brindi" }, plan })).toMatch(/Accroche \(titre d'ouverture, mot pour mot\)/);
   });
+
+  it("structure de vraie boutique imposée : panier, fiche produit, catalogue ; l'accueil reste libre (retour du propriétaire du 8 novembre)", async () => {
+    const { mockupImagePrompt } = await import("@/lib/syna-agent/mockup-code/prompts");
+    const { mockupPages, pageLayout } = await import("@/lib/syna-agent/mockup-code/pages");
+    const pages = mockupPages("products", "multi");
+    const facts: any = { business: "products", name: "Brindi", offers: [], productPhoto: false, angle: "angle « La vraie pause », accroche « Pose ton écran. »" };
+    const cart = mockupImagePrompt(facts, { name: "B", style: "très grand titre d'ouverture" }, { viewport: "desktop", pages: ["cart"] }, pages);
+    expect(cart).toContain("Structure imposée : une vraie page panier");
+    expect(cart).toContain("jamais à cette structure");
+    expect(cart).not.toContain("accroche « Pose ton écran. »");
+    expect(mockupImagePrompt(facts, { name: "B", style: "x" }, { viewport: "desktop", pages: ["product"] }, pages)).toContain("NOM DU PRODUIT en titre principal");
+    const home = mockupImagePrompt(facts, { name: "B", style: "x" }, { viewport: "desktop", pages: ["home"] }, pages);
+    expect(home).not.toContain("Structure imposée");
+    expect(home).toContain("accroche « Pose ton écran. »");
+    expect(pageLayout({ key: "about", group: "contenu" })).toBeNull();
+    expect(pageLayout({ key: "terms", group: "legal" })).toMatch(/texte légal/);
+  });
 });

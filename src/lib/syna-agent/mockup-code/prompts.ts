@@ -7,7 +7,7 @@
  */
 import type { Brand } from "../../project-types";
 import { FONT_FILES } from "../../theme/render";
-import { pageByKey, VIEWPORT_WIDTH, type MockupPage } from "./pages";
+import { pageByKey, pageLayout, VIEWPORT_WIDTH, type MockupPage } from "./pages";
 import type { MockupDirection, MockupImage } from "./mockup-set";
 import { copyLines, type PageCopy } from "./copy";
 
@@ -116,7 +116,7 @@ export function mockupImagePrompt(f: MockupFacts, d: Pick<MockupDirection, "name
     // 2) surface et fond
     "Autour des pages : un fond uni gris très clair et neutre, sans texture ni ombre portée marquée.",
     // 3) chaque page à sa place
-    ...list.map((p, i) => `${n > 1 ? `Page ${POS[i] ?? `n° ${i + 1}`}` : "La page"}, avec son nom écrit en petit au-dessus : « ${p.fr} ». Elle montre dans cet ordre : ${p.sections.join(" ; ")}.`),
+    ...list.map((p, i) => { const lay = pageLayout(p); return `${n > 1 ? `Page ${POS[i] ?? `n° ${i + 1}`}` : "La page"}, avec son nom écrit en petit au-dessus : « ${p.fr} ». Elle montre dans cet ordre : ${p.sections.join(" ; ")}.${lay ? ` Structure imposée : ${lay}. La direction graphique s'applique aux couleurs, aux polices, aux cartes et aux détails, jamais à cette structure.` : ""}`; }),
     // Textes complets de la page écrits avant la maquette (consigne du propriétaire : le copywriting est SUR la maquette).
     ...list.flatMap((p) => (f.copy?.[p.key] ? [`Textes de la page « ${p.fr} », écrits lettre pour lettre, chacun à sa place, sans en ajouter, sans en retirer :`, ...copyLines(f.copy[p.key], { phone: !desktop })] : [])),
     // Sans textes écrits : textes exacts de la marque pour l'accueil, mot pour mot (jamais réécrits par le modèle d'images).
