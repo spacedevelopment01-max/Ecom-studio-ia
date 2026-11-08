@@ -204,3 +204,13 @@ export function pageLayout(p: Pick<MockupPage, "key" | "group">): string | null 
   if (k === "contact" || k === "faq" || k === "shipping") return "un petit bandeau de titre propre à la page, puis son contenu ; aucune grande ouverture d'accroche";
   return null;
 }
+
+/**
+ * Page qui DOIT avoir son image de maquette (ordinateur et téléphone) : l'accueil, les pages clés (fiche produit ou
+ * prestation), les pages du menu et le panier. Les autres pages (variantes, compte, pages légales, recherche, 404…)
+ * sont « dérivées » : codées à l'étape 7 dans le style de la maquette, avec leur structure de boutique, sans image à
+ * elles (décision du propriétaire du 8 novembre : ne pas payer des maquettes de pages simples).
+ */
+export function requiredPage(p: Pick<MockupPage, "key" | "key_page" | "nav" | "variantOf">): boolean {
+  return !p.variantOf && (!!p.key_page || !!p.nav || p.key === "home" || p.key === "cart");
+}

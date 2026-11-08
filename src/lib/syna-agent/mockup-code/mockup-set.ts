@@ -6,7 +6,7 @@
  */
 import { all, now } from "../../db";
 import { remember } from "../../projects";
-import { pageByKey, type MockupPage, type Viewport, VIEWPORTS } from "./pages";
+import { pageByKey, requiredPage, type MockupPage, type Viewport, VIEWPORTS } from "./pages";
 
 export type MockupImage = {
   id: string;
@@ -61,6 +61,8 @@ export type Coverage = {
   covered: { page: string; viewport: Viewport; image: string }[];
   /** Pages citées par une image mais absentes de l'inventaire (erreur de préparation). */
   unknown: string[];
+  /** Pages simples sans image : codées dans le style de la maquette à l'étape 7 (requiredPage). */
+  derived: { page: string; label: string; viewport: Viewport }[];
 };
 
 /**
@@ -71,14 +73,14 @@ export type Coverage = {
 export function coverageOf(direction: Pick<MockupDirection, "images">, pages: MockupPage[], opts: { ready?: boolean } = {}): Coverage {
   const ready = opts.ready !== false;
   const usable = direction.images.filter((i) => (ready ? i.status === "ready" && !!i.assetId : i.status !== "failed"));
-  const covered: Coverage["covered"] = [], missing: Coverage["missing"] = [];
+  const covered: Coverage["covered"] = [], missing: Coverage["missing"] = [], derived: Coverage["derived"] = [];
   for (const p of pages) for (const v of p.viewports) {
     const img = usable.find((i) => i.viewport === v && i.pages.includes(p.key));
     if (img) covered.push({ page: p.key, viewport: v, image: img.id });
-    else missing.push({ page: p.key, label: p.fr, viewport: v });
+    else (requiredPage(p) ? missing : derived).push({ page: p.key, label: p.fr, viewport: v });
   }
   const unknown = [...new Set(direction.images.flatMap((i) => i.pages).filter((k) => !pageByKey(pages, k)))];
-  return { complete: missing.length === 0 && unknown.length === 0, missing, covered, unknown };
+  return { complete: missing.length === 0 && unknown.length === 0, missing, covered, unknown, derived };
 }
 
 /**
@@ -119,7 +121,8 @@ export function planImages(pages: MockupPage[], opts: { desktopPerImage?: number
 export function plannedDirection(key: MockupDirection["key"], name: string, style: string, pages: MockupPage[], prompts?: (img: Omit<MockupImage, "id" | "status" | "assetId">, index: number) => string, ground?: MockupDirection["ground"]): MockupDirection {
   return {
     key, name, style, ...(ground ? { ground } : {}),
-    images: planImages(pages).map((img, i) => ({ ...img, id: `${key}${String(i + 1).padStart(2, "0")}`, assetId: null, status: "planned", ...(prompts ? { prompt: prompts(img, i) } : {}) })),
+    // Seules les pages principales ont une image prévue ; les pages simples sont dérivées à l'étape 7.
+    images: planImages(pages.filter(requiredPage)).map((img, i) => ({ ...img, id: `${key}${String(i + 1).padStart(2, "0")}`, assetId: null, status: "planned", ...(prompts ? { prompt: prompts(img, i) } : {}) })),
   };
 }
 
@@ -143,7 +146,7 @@ export function attachImage(set: MockupSet, key: MockupDirection["key"], img: { 
 export function replanDirection(d: MockupDirection, pages: MockupPage[], alone: string[]): MockupDirection {
   const ready = d.images.filter((i) => i.status === "ready" && i.assetId);
   const covered = (v: Viewport) => new Set(ready.filter((i) => i.viewport === v).flatMap((i) => i.pages));
-  const plan = VIEWPORTS.flatMap((v) => planImages(pages.map((p) => (covered(v).has(p.key) ? { ...p, viewports: p.viewports.filter((x) => x !== v) } : p)), { alone }).filter((img) => img.viewport === v));
+  const plan = VIEWPORTS.flatMap((v) => planImages(pages.filter(requiredPage).map((p) => (covered(v).has(p.key) ? { ...p, viewports: p.viewports.filter((x) => x !== v) } : p)), { alone }).filter((img) => img.viewport === v));
   const same = (a: { viewport: Viewport; pages: string[] }, b: { viewport: Viewport; pages: string[] }) => a.viewport === b.viewport && a.pages.join() === b.pages.join();
   let n = Math.max(0, ...d.images.map((i) => Number(i.id.slice(1)) || 0));
   const planned = plan.map((img) => d.images.find((i) => i.status !== "ready" && same(i, img)) ?? { ...img, id: `${d.key}${String(++n).padStart(2, "0")}`, assetId: null, status: "planned" as const });

@@ -14,6 +14,7 @@ import { realStep7Deps, step7CallMaxMicro } from "./deps";
 import { loadMockupSet } from "./mockup-set";
 import { runStep7, type Step7Deps, type Step7Report } from "./pipeline";
 
+import { loadSiteCopy } from "./copy";
 export const MOCKUP_CODE_JOB = "syna.mockup.code";
 export const STEP7_REPORT_KEY = "syna.step7.report";
 
@@ -50,7 +51,7 @@ export async function runMockupCodeJob(ctx: JobContext) {
   const deps = { ...(mockupCodeJobDeps.deps ?? realStep7Deps)(options), progress: (f: number, m: string) => ctx.progress(0.05 + f * 0.9, m) };
   try {
     const { spec, report } = await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "mockup-code", costCapMicro: a.capMicro }, () =>
-      runStep7({ direction: d, pages: set.pages, base, options: { costCapMicro: a.capMicro, maxRounds: a.maxRounds } }, deps));
+      runStep7({ direction: d, pages: set.pages, base, options: { costCapMicro: a.capMicro, maxRounds: a.maxRounds }, copy: loadSiteCopy(p.id)?.pages ?? null }, deps));
     const problems = validateSpec(spec);
     if (problems.length) throw new UserFacingError(L(`Le thème codé ne passe pas la validation : ${problems.slice(0, 3).join(" ; ")}. Le site courant n'a pas changé.`, `The coded theme fails validation. The current site hasn't changed.`));
     const v = saveThemeVersion(p.id, spec, L(`Site codé d'après la maquette ${d.key} « ${d.name} » (SINA, étape 7)`, `Site coded from mockup ${d.key} (SINA, step 7)`), "ai", { syna: { step: 7, direction: d.key, ok: report.ok, summary: report.summary } }, undefined, { activate: false });

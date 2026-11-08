@@ -16,9 +16,10 @@ import { routeFor } from "../../theme/render";
 import { cloneSpec, storeProducts, type ThemeSpec } from "../../theme/spec";
 import type { ThemeCheckResult } from "../../theme/theme-check";
 import { SEO_DESCRIPTION_MAX, SEO_TITLE_MAX } from "../../seo-limits";
-import { mapSection, mergeViewports, type AnalyzedPage, type AnalyzedSection, type SectionTarget } from "./analyze";
+import { mapSection, mergeViewports, type AnalyzedPage, type AnalyzedSection, type SectionRole, type SectionTarget } from "./analyze";
 import { coverageOf, type MockupDirection } from "./mockup-set";
-import { CHECK_WIDTHS, VIEWPORT_WIDTH, pageByKey, type MockupPage, type Viewport } from "./pages";
+import { CHECK_WIDTHS, VIEWPORT_WIDTH, pageByKey, pageLayout, requiredPage, type MockupPage, type Viewport } from "./pages";
+import type { PageCopy } from "./copy";
 import { siteImagePrompt } from "./prompts";
 
 export type PlannedSection = AnalyzedSection & { index: number; target: SectionTarget };
@@ -87,9 +88,10 @@ export type Step7Options = {
  * ok : conforme à la maquette (note et ressemblance suffisantes, sans débordement) · a_corriger : écarts restants ·
  * maquette_manquante : page ou version sans image · non_verifiable : page que l'aperçu ne rend pas (comptes clients de
  * la plateforme…), à vérifier sur la plateforme · non_verifie : captures impossibles, rien n'a été comparé ·
- * budget_atteint : arrêtée par le plafond · echec : page illisible sur la maquette.
+ * budget_atteint : arrêtée par le plafond · echec : page illisible sur la maquette · derivee : page simple sans image à
+ * elle, codée dans le style de la maquette (structure de boutique, textes écrits), contrôlée sans comparaison.
  */
-export type PageStatus = "ok" | "a_corriger" | "maquette_manquante" | "non_verifiable" | "non_verifie" | "budget_atteint" | "echec";
+export type PageStatus = "ok" | "a_corriger" | "maquette_manquante" | "derivee" | "non_verifiable" | "non_verifie" | "budget_atteint" | "echec";
 export type PageReport = {
   key: string; label: string; status: PageStatus; path: string | null;
   scores: { viewport: Viewport; round: number; score: number; local: number }[];
@@ -245,7 +247,23 @@ const DEFAULTS = { maxRounds: 3, passScore: 8, minLocal: 0.55 };
  * Étape 7 complète sur une maquette choisie. `base` : thème de départ (pages, produits reliés à l'onglet Produits,
  * menus) ; il n'est jamais modifié, le résultat est un nouveau spec.
  */
-export async function runStep7(input: { direction: MockupDirection; pages: MockupPage[]; base: ThemeSpec; options: Step7Options }, deps: Step7Deps): Promise<{ spec: ThemeSpec; report: Step7Report }> {
+/** Lecture « dérivée » d'une page simple sans image : sections de l'inventaire, structure de boutique, textes écrits. */
+export function derivedAnalysis(page: MockupPage, copy?: PageCopy | null): AnalyzedPage {
+  const lay = pageLayout(page) ?? "dans le style des pages de la maquette";
+  const roleOf = (name: string): SectionRole => /en-t[êe]te/i.test(name) ? "header" : /pied de page/i.test(name) ? "footer" : page.group === "legal" ? "legal" : page.group === "compte" ? "compte"
+    : /panier|lignes/i.test(name) ? "panier" : /recherche|résultats/i.test(name) ? "recherche" : /formulaire/i.test(name) ? "formulaire" : /questions|accordéon/i.test(name) ? "questions" : /message/i.test(name) ? "message" : /grille/i.test(name) ? "grille" : "texte";
+  return {
+    page: page.key, region: { x: 0, y: 0, w: 1, h: 1 },
+    sections: page.sections.map((name, i) => {
+      const c = copy?.sections[i];
+      const texts = c ? [...(c.title ? [{ kind: "titre" as const, text: c.title }] : []), ...(c.text ? [{ kind: "paragraphe" as const, text: c.text }] : []), ...c.items.flatMap((x) => [{ kind: "sous-titre" as const, text: x.title }, ...(x.text ? [{ kind: "paragraphe" as const, text: x.text }] : [])]), ...(c.button ? [{ kind: "bouton" as const, text: c.button }] : [])] : [];
+      return { role: roleOf(name), name: name.slice(0, 25), layout: `structure : ${lay} ; partie : ${name}`, texts: texts.slice(0, 40), images: [], colors: {} };
+    }),
+    notes: "page dérivée : aucune image de maquette",
+  };
+}
+
+export async function runStep7(input: { direction: MockupDirection; pages: MockupPage[]; base: ThemeSpec; options: Step7Options; copy?: Record<string, PageCopy> | null }, deps: Step7Deps): Promise<{ spec: ThemeSpec; report: Step7Report }> {
   const o = { ...DEFAULTS, overflowWidths: CHECK_WIDTHS, ...input.options };
   const pages = input.pages;
   const reports = new Map<string, PageReport>(pages.map((p) => [p.key, { key: p.key, label: p.fr, status: "echec" as PageStatus, path: null, scores: [], differences: [], written: [], library: [], failed: [], overflow: [], seo: [], brokenLinks: [] }]));
@@ -308,14 +326,15 @@ export async function runStep7(input: { direction: MockupDirection; pages: Mocku
     const t = resolveTarget(spec, page);
     spec = t.spec;
     r.path = t.path;
-    const analysis = mergeViewports(analyses.get(page.key)?.desktop, analyses.get(page.key)?.phone);
+    const derived = !requiredPage(page) && !analyses.has(page.key) && !input.direction.images.some((i) => i.status === "ready" && i.pages.includes(page.key));
+    const analysis = mergeViewports(analyses.get(page.key)?.desktop, analyses.get(page.key)?.phone) ?? (derived ? derivedAnalysis(page, input.copy?.[page.key]) : undefined);
     if (!analysis) continue;
     const available = deps.available(spec);
     const plan = analysis.sections
       .map((s, index) => ({ ...s, index, target: mapSection(s, page, available) }))
       .filter((s) => s.target.kind !== "group" || !groupsWritten);
     plans.set(page.key, { template: t.template, path: t.path, plan });
-    if (page.variantOf && plans.has(page.variantOf)) { r.note = `même gabarit que « ${pageByKey(pages, page.variantOf)?.fr} »`; continue; }
+    if (page.variantOf && plans.has(page.variantOf)) { r.note = `même gabarit que « ${pageByKey(pages, page.variantOf)?.fr} »`; if (derived) r.status = "derivee"; continue; }
     if (page.template.startsWith("customers/")) { r.status = "non_verifiable"; r.note = "gabarit des comptes clients de la plateforme, au style du thème ; non rendu par l'aperçu du Studio"; continue; }
     if (!canPay("write")) { r.status = "budget_atteint"; continue; }
     const res = await deps.step(`write:${page.key}`, async () => deps.writeSections({ spec, page, template: t.template, plan, mockup: await crop(page.key, "desktop") }));
@@ -324,13 +343,14 @@ export async function runStep7(input: { direction: MockupDirection; pages: Mocku
     spec = applyWrite(spec, res, r, budget);
     if (plan.some((s) => s.target.kind === "group")) groupsWritten = true;
     if (res.order?.length) spec = orderLike(spec, t.template, res.order);
+    if (derived && (res.written.length || res.library.length)) { r.status = "derivee"; r.note = `codée dans le style de la maquette, sans image à elle${input.copy?.[page.key] ? "" : " (textes à écrire : « [À compléter] »)"}`; }
   }
 
   // (c, d, e) Boucle de contrôle par page : captures à la largeur de la maquette, comparaison, corrections.
   say(0.6, "Comparaison du site à la maquette");
   for (const page of ordered) {
     const r = rep(page.key), info = plans.get(page.key);
-    if (r.status === "maquette_manquante" || r.status === "non_verifiable" || r.status === "budget_atteint") continue;
+    if (r.status === "maquette_manquante" || r.status === "derivee" || r.status === "non_verifiable" || r.status === "budget_atteint") continue;
     if (!info) { r.status = stoppedBy ? "budget_atteint" : "echec"; r.note = stoppedBy ? "lecture de la maquette non faite : budget atteint" : "maquette illisible : la page n'a pas pu être lue sur l'image"; continue; }
     if (!info.path) { r.status = "non_verifiable"; r.note ??= "page non rendue par l'aperçu du Studio (à vérifier sur la plateforme)"; continue; }
     const views = page.viewports.filter((v) => analyses.get(page.key)?.[v]);
@@ -390,13 +410,14 @@ export async function runStep7(input: { direction: MockupDirection; pages: Mocku
 
   const imageSlots = [...plans.entries()].flatMap(([key, x]) => x.plan.flatMap((s) => s.images.map((img) => ({ page: key, section: s.name, prompt: siteImagePrompt(img, { name: input.base.store.shopName, business: input.base.store.business ?? "products" }) }))));
   const list = pages.map((p) => rep(p.key));
-  const blocking = list.filter((r) => !["ok", "non_verifiable"].includes(r.status) || r.brokenLinks.length || r.seo.length);
+  const blocking = list.filter((r) => !["ok", "derivee", "non_verifiable"].includes(r.status) || r.brokenLinks.length || r.seo.length);
   const ok = !blocking.length && tc.available && !tcErrors.length && !dup(titles).length && !dup(descriptions).length && !stoppedBy;
   const count = (s: PageStatus) => list.filter((r) => r.status === s).length;
   const summary = [
     `${count("ok")} page(s) conforme(s) à la maquette sur ${list.length}`,
     count("a_corriger") ? `${count("a_corriger")} à corriger` : "",
     count("maquette_manquante") ? `${count("maquette_manquante")} sans maquette` : "",
+    count("derivee") ? `${count("derivee")} page(s) simple(s) codée(s) dans le style de la maquette (sans image à elles)` : "",
     count("non_verifiable") ? `${count("non_verifiable")} à vérifier sur la plateforme` : "",
     count("non_verifie") ? `${count("non_verifie")} non vérifiée(s) (captures impossibles)` : "",
     count("budget_atteint") ? `${count("budget_atteint")} non faite(s) : budget atteint` : "",

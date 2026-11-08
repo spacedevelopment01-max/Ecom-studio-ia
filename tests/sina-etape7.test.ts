@@ -70,27 +70,33 @@ describe("SINA — étape 6 : maquettes en plusieurs images et couverture", asyn
   const M = await import("@/lib/syna-agent/mockup-code/mockup-set");
   const pages = mockupPages("products", "multi");
 
-  it("découpage : pages clés seules en ordinateur, variantes avec leur page, toutes les pages prévues", () => {
+  it("découpage : pages clés seules en ordinateur, pages principales seules prévues, les autres dérivées", async () => {
     const d = M.plannedDirection("A", "Lumière", "grandes photos", pages);
     const desktop = d.images.filter((i) => i.viewport === "desktop");
     expect(desktop.find((i) => i.pages.includes("home"))!.pages).toEqual(["home"]);
     expect(desktop.find((i) => i.pages.includes("product"))!.pages).toEqual(["product"]);
-    const cart = d.images.find((i) => i.viewport === "phone" && i.pages.includes("cart"))!;
-    expect(cart.pages).toEqual(expect.arrayContaining(["cart", "cart-drawer", "cart-empty"]));
+    // Décision du propriétaire (8 novembre) : seules les pages principales ont une image prévue ; les pages simples
+    // (variantes, compte, pages légales…) sont dérivées à l'étape 7.
+    const { requiredPage } = await import("@/lib/syna-agent/mockup-code/pages");
+    const req = pages.filter(requiredPage);
+    expect(req.map((p) => p.key)).toEqual(expect.arrayContaining(["home", "product", "catalog", "cart", "about", "contact"]));
+    expect(d.images.flatMap((i) => i.pages).every((k) => req.some((p) => p.key === k))).toBe(true);
     expect(M.coverageOf(d, pages, { ready: false }).complete).toBe(true);
-    // Rien n'est prêt tant qu'aucune image n'est créée : tout manque, en ordinateur et en téléphone.
+    // Rien n'est prêt tant qu'aucune image n'est créée : les pages principales manquent, les autres sont dérivées.
     const cov = M.coverageOf(d, pages);
     expect(cov.complete).toBe(false);
-    expect(cov.missing).toHaveLength(pages.length * 2);
+    expect(cov.missing).toHaveLength(req.length * 2);
+    expect(cov.derived.length).toBe((pages.length - req.length) * 2);
   });
 
-  it("couverture : une version oubliée reste un manque ; page inconnue refusée", () => {
+  it("couverture : une version oubliée reste un manque ; page inconnue refusée", async () => {
     let set: any = { version: 1, business: "products", pages, directions: [M.plannedDirection("A", "Lumière", "x", pages)], at: 0 };
     for (const img of set.directions[0].images.filter((i: any) => i.viewport === "desktop")) set = M.attachImage(set, "A", { id: img.id, viewport: "desktop", pages: img.pages, assetId: "asset-" + img.id }).set;
     const cov = M.coverageOf(set.directions[0], pages);
     expect(cov.complete).toBe(false);
     expect(cov.missing.every((m) => m.viewport === "phone")).toBe(true);
-    expect(cov.missing).toHaveLength(pages.length);
+    const { requiredPage } = await import("@/lib/syna-agent/mockup-code/pages");
+    expect(cov.missing).toHaveLength(pages.filter(requiredPage).length);
     expect(() => M.attachImage(set, "A", { viewport: "phone", pages: ["paiement"], assetId: "x" })).toThrow(/inconnues/);
     expect(() => M.attachImage(set, "B", { viewport: "phone", pages: ["home"], assetId: "x" })).toThrow(/inconnue/);
   });
@@ -343,14 +349,18 @@ describe("SINA — étape 7 : déroulé simulé (boucle, corrections, plafond, h
     expect(hard.report.pages.some((x) => x.status === "ok")).toBe(false);
   });
 
-  it("maquette incomplète : page sans image et version téléphone absente signalées, jamais inventées", async () => {
+  it("maquette incomplète : version téléphone absente signalée ; page simple sans image dérivée de la maquette", async () => {
     const s = sim({});
     const withCart = [...pages, all.find((p) => p.key === "shipping")!];
     const { report } = await P.runStep7({ direction: direction({ phone: false }), pages: withCart, base: sampleSpec(), options: { costCapMicro: 10_000 } }, s.deps);
-    expect(report.pages.find((x) => x.key === "shipping")!.status).toBe("maquette_manquante");
+    // Page simple sans image (livraison) : codée dans le style de la maquette, jamais comparée (décision du 8 novembre).
+    expect(report.pages.find((x) => x.key === "shipping")!.status).toBe("derivee");
+    expect(report.pages.find((x) => x.key === "shipping")!.note).toMatch(/style de la maquette/);
+    expect(s.calls).toContain("write:shipping");
+    expect(s.calls.some((c) => c.startsWith("compare:shipping"))).toBe(false);
+    // Page principale sans sa version téléphone : toujours signalée.
     expect(report.pages.find((x) => x.key === "home")!.status).toBe("maquette_manquante");
     expect(report.pages.find((x) => x.key === "home")!.note).toMatch(/téléphone absente/);
-    expect(s.calls).not.toContain("write:shipping");
     expect(report.ok).toBe(false);
   });
 
@@ -811,10 +821,10 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     for (const k of ["catalog", "cart", "contact", "about"]) expect(desk.some((i) => i.pages.join() === k), k).toBe(true);
     expect(d.images.find((i) => i.id === homeD.id)!.assetId).toBe("a1"); // image payée gardée, même identifiant
     expect(desk.filter((i) => i.pages.includes("home"))).toHaveLength(1);
-    // Les variantes (catégorie, tiroir du panier, panier vide) restent prévues, regroupées à part.
-    expect(desk.some((i) => i.pages.includes("category") && !i.pages.includes("catalog"))).toBe(true);
-    // Toutes les pages restent couvertes, en ordinateur comme en téléphone.
-    for (const v of ["desktop", "phone"] as const) for (const p of pages.filter((x) => x.viewports.includes(v))) expect(d.images.some((i) => i.viewport === v && i.pages.includes(p.key)), `${v} ${p.key}`).toBe(true);
+    // Les pages principales restent couvertes, en ordinateur comme en téléphone ; les pages simples ne sont pas prévues.
+    const { requiredPage } = await import("@/lib/syna-agent/mockup-code/pages");
+    for (const v of ["desktop", "phone"] as const) for (const p of pages.filter((x) => x.viewports.includes(v) && requiredPage(x))) expect(d.images.some((i) => i.viewport === v && i.pages.includes(p.key)), `${v} ${p.key}`).toBe(true);
+    expect(d.images.some((i) => i.pages.includes("terms"))).toBe(false);
     // Identifiants uniques.
     expect(new Set(d.images.map((i) => i.id)).size).toBe(d.images.length);
   });

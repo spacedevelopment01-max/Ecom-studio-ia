@@ -87,7 +87,7 @@ function brandTextsOf(ctx: ToolContext, projectId: string): { headline?: string;
 const hasProductPhoto = (pid: string) => all<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND deleted_at IS NULL AND kind='image' AND role IN ('original','product') LIMIT 1", pid).length > 0;
 const coverageView = (set: MockupSet) => set.directions.map((d) => {
   const c = coverageOf(d, set.pages);
-  return { maquette: d.key, nom: d.name, style: d.style, fond: d.ground ?? "clair", images: d.images.length, pretes: d.images.filter((i) => i.status === "ready").length, complete: c.complete, manquantes: c.missing.slice(0, 40).map((m) => `${m.label} (${m.viewport === "desktop" ? "ordinateur" : "téléphone"})`) };
+  return { maquette: d.key, nom: d.name, style: d.style, fond: d.ground ?? "clair", images: d.images.length, pretes: d.images.filter((i) => i.status === "ready").length, complete: c.complete, manquantes: c.missing.slice(0, 40).map((m) => `${m.label} (${m.viewport === "desktop" ? "ordinateur" : "téléphone"})`), derivees: [...new Set(c.derived.map((m) => m.label))] };
 });
 
 const pagesTool: AgentTool<{}> = {
@@ -326,7 +326,7 @@ const generateTool: AgentTool<{ direction: "A" | "B" | "C"; pages?: string[]; vi
     const spentText = budgetPctText(ctx.user.id, spent, p.id).replace(/de votre budget/, "de ton budget");
     return {
       ok: made.length > 0 && !failed.length && !defects.length,
-      summary: L(`${made.length} image(s) créée(s) pour la maquette ${a.direction}${failed.length ? ` ; ${failed.length} ratée(s) : ${failed.join(" | ")}` : ""}.${checkText ? ` ${checkText}.` : ""} Coût réel : ${spentText}. ${cov.complete ? "La maquette couvre toutes les pages." : `Il manque encore ${cov.missing.length} page(s) ou version(s).`}`, `${made.length} mockup image(s) created.`),
+      summary: L(`${made.length} image(s) créée(s) pour la maquette ${a.direction}${failed.length ? ` ; ${failed.length} ratée(s) : ${failed.join(" | ")}` : ""}.${checkText ? ` ${checkText}.` : ""} Coût réel : ${spentText}. ${cov.complete ? `La maquette couvre toutes les pages principales ; ${new Set(cov.derived.map((x) => x.page)).size} page(s) simple(s) seront codées dans son style à l'étape 7, sans image à elles.` : `Il manque encore ${cov.missing.length} page(s) ou version(s).`}`, `${made.length} mockup image(s) created.`),
       // Essai réel du 8 novembre : « Je ne peux pas vérifier le rendu ici » alors que l'image lui est jointe, et
       // « refait avec la mise en page de téléphone » affirmé sans l'avoir regardée.
       ...(made.length ? { hint: (defects.length ? "Le contrôle automatique a relevé des défauts : dis au client que l'image est RATÉE, cite chaque défaut, propose de la refaire avec son prix (mockup.generate redo) et ne relance RIEN sans son accord écrit. " : "") + "Les images créées te sont JOINTES à ta prochaine étape (libellé « image <id> … créée il y a quelques minutes ») : regarde-les avant de répondre et dis au client, honnêtement et en deux ou trois phrases, ce que tu vois vraiment (mise en page, textes lisibles et exacts ou abîmés, logo, et pour le téléphone : une seule colonne et menu replié, ou non ; passe CHAQUE partie en revue, de haut en bas : toute rangée de trois éléments ou plus côte à côte est un défaut à signaler, même si le point demandé par le client est corrigé). Ne dis JAMAIS que tu ne peux pas voir le rendu ; n'affirme rien que l'image ne montre pas ; une image ratée est dite ratée." } : {}),
@@ -486,7 +486,7 @@ const attachTool: AgentTool<AttachArgs> = {
     const cov = coverageOf(read.directions.find((d) => d.key === a.direction)!, read.pages);
     return {
       ok: !!img && img.assetId === a.assetId,
-      summary: L(`Image ${next.image.id} rangée dans la maquette ${a.direction}. ${cov.complete ? "La maquette couvre toutes les pages." : `Il manque encore ${cov.missing.length} page(s) ou version(s).`}`, `Image stored in mockup ${a.direction}.`),
+      summary: L(`Image ${next.image.id} rangée dans la maquette ${a.direction}. ${cov.complete ? `La maquette couvre toutes les pages principales ; ${new Set(cov.derived.map((x) => x.page)).size} page(s) simple(s) seront codées dans son style à l'étape 7, sans image à elles.` : `Il manque encore ${cov.missing.length} page(s) ou version(s).`}`, `Image stored in mockup ${a.direction}.`),
       data: { image: next.image, complete: cov.complete, manquantes: cov.missing.slice(0, 40) },
       changes: [{ module: "site", object: `maquette ${a.direction} › image ${next.image.id}`, summary: `${a.viewport} : ${a.pages.join(", ")}`, after: img ?? null, verified: !!img && img.assetId === a.assetId }],
     };

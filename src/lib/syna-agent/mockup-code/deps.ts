@@ -58,13 +58,18 @@ export const customType = (page: MockupPage, s: Pick<PlannedSection, "index" | "
   s.target.kind === "group" ? `es-custom-${s.target.group}-maquette` : `es-custom-${slug(page.key).slice(0, 24) || "page"}-${s.index + 1}`;
 
 /** Consigne d'écriture d'une section d'après la maquette (textes lus mot pour mot, mise en page, couleurs). */
-export function sectionBrief(page: MockupPage, s: PlannedSection, plan: PlannedSection[], fix?: string[]): string {
+export function sectionBrief(page: MockupPage, s: PlannedSection, plan: PlannedSection[], fix?: string[], hasMockup = true): string {
   const others = plan.map((x) => `${x.index === s.index ? "→" : " "} ${x.name} (${x.role})`).join("\n");
-  return `Page « ${page.fr} » du site, codée À L'IDENTIQUE de la maquette jointe (image de la page entière).
+  // Page simple sans image à elle (décision du propriétaire du 8 novembre) : codée dans le style des pages déjà codées
+  // d'après la maquette (mêmes réglages, classes, couleurs, polices, boutons, cartes), avec sa structure de boutique.
+  const head = hasMockup
+    ? `Page « ${page.fr} » du site, codée À L'IDENTIQUE de la maquette jointe (image de la page entière).`
+    : `Page « ${page.fr} » du site. Elle n'a PAS d'image de maquette à elle : code-la dans le style exact des pages déjà codées d'après la maquette (mêmes variables et classes du thème, mêmes couleurs, polices, boutons, cartes, champs, espacements et détails graphiques), avec la structure d'une vraie boutique pour cette page. N'invente aucun texte : seulement ceux donnés ci-dessous, sinon « [À compléter : …] ».`;
+  return `${head}
 Sections de la page, dans l'ordre :
 ${others}
 
-Écris la section « ${s.name} » (rôle ${s.role}). Reproduis exactement ce que montre la maquette pour cette section :
+Écris la section « ${s.name} » (rôle ${s.role}). ${hasMockup ? "Reproduis exactement ce que montre la maquette pour cette section :" : "Ce qu'elle contient :"}
 - mise en page ordinateur : ${s.layout}
 - mise en page téléphone : ${s.phone ?? "à composer pour le téléphone dans le même esprit (rien ne déborde)"}
 - textes, mot pour mot (textes par défaut du schéma, tous modifiables) : ${s.texts.map((t) => `${t.kind} « ${t.text} »`).join(" ; ") || "aucun"}
@@ -105,7 +110,7 @@ async function writePlan(b: Base, p: Project, i: { spec: ThemeSpec; page: Mockup
         const candidate = await llmJson({
           task: "theme_custom", userId: b.userId, projectId: b.projectId, jobId: b.jobId, usageKey: `${b.usageKey}:${type}:${fix ? "fix" : "w"}${attempt}`,
           system: systemPrompt(), context: brainContext(p, "theme"), reference: sectionGuide(i.spec), images: image,
-          prompt: sectionBrief(i.page, s, i.plan, issues.length ? issues : undefined) + (previous && attempt ? `\n\nVersion précédente :\n<section_precedente>\n${previous.slice(0, 40000)}\n</section_precedente>` : ""),
+          prompt: sectionBrief(i.page, s, i.plan, issues.length ? issues : undefined, !!i.mockup) + (previous && attempt ? `\n\nVersion précédente :\n<section_precedente>\n${previous.slice(0, 40000)}\n</section_precedente>` : ""),
           maxTokens: STEP7_CALLS.write.output, routing: { difficulty: "complex" },
         }, CustomSectionSchema);
         issues = await checkCustomSection(p, i.spec, item, candidate);
