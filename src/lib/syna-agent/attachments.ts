@@ -163,14 +163,14 @@ export async function journeyImages(j: { steps: Record<number, { status: string 
     // La plus RÉCENTE de chaque maquette (date de création de l'image, pas l'ordre du plan : essai réel du 8 novembre,
     // l'accueil téléphone refait n'était pas celle que SINA regardait), la plus récente de toutes en premier et en
     // pleine définition (1536 px) pour en lire les textes.
-    const latest = (set?.directions ?? []).map((d) => {
-      const ready = d.images.filter((i) => i.status === "ready" && i.assetId).map((i) => ({ i, at: getAsset(i.assetId!)?.created_at ?? 0 }));
-      const best = ready.sort((x, y) => y.at - x.at)[0];
-      return best ? { d, img: best.i, at: best.at } : null;
-    }).filter((x): x is NonNullable<typeof x> => !!x).sort((x, y) => y.at - x.at);
+    // Toutes les images créées ces 20 dernières minutes (essai réel : deux paniers refaits, SINA n'en voyait qu'un), sinon
+    // la plus récente de chaque maquette.
+    const all = (set?.directions ?? []).flatMap((d) => d.images.filter((i) => i.status === "ready" && i.assetId).map((img) => ({ d, img, at: getAsset(img.assetId!)?.created_at ?? 0 }))).sort((x, y) => y.at - x.at);
+    const recent = all.filter((x) => Date.now() - x.at < 20 * 60_000).slice(0, 4);
+    const latest = recent.length ? recent : (set?.directions ?? []).map((d) => all.find((x) => x.d.key === d.key)).filter((x): x is NonNullable<typeof x> => !!x);
     for (const [n, { d, img, at }] of latest.entries()) {
       if (out.length >= 6) break;
-      const data = await small(img.assetId!, n === 0 ? 1536 : 1024).catch(() => null);
+      const data = await small(img.assetId!, n === 0 || recent.length ? 1536 : 1024).catch(() => null);
       const fresh = Date.now() - at < 15 * 60_000;
       if (data) out.push({ data, label: `Maquette ${d.key} « ${d.name} », image ${img.id} — ${img.pages.join(", ")} (${img.viewport === "desktop" ? "ordinateur" : "téléphone"})${fresh ? ", créée il y a quelques minutes" : ""}, montrée au client${img.check ? (img.check.ok ? " ; contrôle automatique de la mise en page : rien à signaler" : ` ; RATÉE au contrôle automatique : ${img.check.problems.join(" ; ")}`) : ""}` });
     }

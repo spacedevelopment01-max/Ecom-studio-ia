@@ -36,7 +36,7 @@ export async function projectSnapshot(ctx: ToolContext): Promise<string> {
     `Parcours Pilote : ${s ? Object.entries(s.stages).map(([k, v]: any) => `${k}=${v?.status}`).join(", ") : "non démarré"}.`,
     `Médias : ${counts.images} images, ${counts.videos} vidéos, ${counts.ads} visuels pub, ${counts.posts} publications.`,
     mockups ? `Dernières maquettes préparées : ${json<any[]>(mockups.value, []).map((m) => `${m.n}. ${m.name ?? m.direction} [${m.versionId ?? "échec"}]`).join(" ; ")}.` : "",
-    set ? `Maquettes sur mesure : ${set.directions.map((d) => `${d.key} « ${d.name} » (${d.images.filter((i) => i.status === "ready").length}/${d.images.length} images prêtes${versionsLine(ctx.projectId!, d)})`).join(" ; ")}${set.chosen ? ` ; choisie : ${set.chosen}` : ""}.` : "",
+    set ? `Maquettes sur mesure : ${set.directions.map((d) => `${d.key} « ${d.name} » (${d.images.filter((i) => i.status === "ready").length}/${d.images.length} images prêtes${readyLine(d, set.pages)}${versionsLine(ctx.projectId!, d)})`).join(" ; ")}${set.chosen ? ` ; choisie : ${set.chosen}` : ""}.` : "",
     copy ? `Textes du site écrits pour : ${Object.keys(copy.pages).join(", ")}.` : "",
     decisions.length ? `Décisions mémorisées : ${decisions.map((d) => `${d.key.slice(5)} = ${d.value.length > 300 ? `${d.value.slice(0, 300)}…` : d.value}`).join(" ; ")}.` : "",
     pending.length ? `Tâches en cours : ${pending.map((j) => `${j.type} ${j.status} [${j.id}]`).join(", ")}.` : "",
@@ -54,4 +54,15 @@ function versionsLine(projectId: string, d: { key: string; images: { id: string;
   for (const r of rows) { try { const m = JSON.parse(r.meta || "{}").synaMockup; if (m?.direction === d.key) byImage.set(m.image, [...(byImage.get(m.image) ?? []), r.id]); } catch { /* méta illisible */ } }
   const parts = d.images.flatMap((i) => { const v = byImage.get(i.id) ?? []; return v.length > 1 ? [`${i.id} : ${v.length} versions, actuelle n° ${v.indexOf(i.assetId ?? "") + 1 || "?"}`] : []; });
   return parts.length ? ` ; ${parts.join(" ; ")}` : "";
+}
+
+/**
+ * Images prêtes d'une maquette, avec leur identifiant (essai réel du 8 novembre : SINA ne savait pas quelle image était
+ * le contact en ordinateur pour la retoucher) : « ; prêtes : B01 accueil (ordinateur), B30 contact (téléphone) ».
+ */
+function readyLine(d: { images: { id: string; status: string; viewport: string; pages: string[] }[] }, pages: { key: string; fr: string }[]): string {
+  const ready = d.images.filter((i) => i.status === "ready");
+  if (!ready.length) return "";
+  const name = (k: string) => pages.find((p) => p.key === k)?.fr.toLocaleLowerCase("fr-FR") ?? k;
+  return ` ; prêtes : ${ready.map((i) => `${i.id} ${i.pages.map(name).join(" + ")} (${i.viewport === "desktop" ? "ordinateur" : "téléphone"})`).join(", ")}`;
 }

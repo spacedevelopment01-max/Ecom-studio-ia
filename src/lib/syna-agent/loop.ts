@@ -331,7 +331,7 @@ export function withoutComposedClaim(message: string): string {
  * retirée (elle est fausse) ; la consigne lui demande de décrire ce qu'elle voit.
  */
 export function withoutBlindClaim(message: string): string {
-  const blind = /\bje ne (?:peux|pourrai|suis) pas (?:en mesure de )?(?:voir|vérifier|confirmer|contrôler|décrire|regarder)\b[^.!?\n]*(?:rendu|image|maquette|à l'œil|visuel|changements|modifications|retouche|résultat)/i;
+  const blind = /\bje ne (?:peux|pourrai|suis) pas (?:en mesure de )?(?:l[ea]s? |l'|les )?(?:voir|vérifier|confirmer|contrôler|décrire|regarder)\b[^.!?\n]*(?:rendu|image|maquette|à l'œil|visuel|changements|modifications|retouche|résultat)/i;
   return message.split(/(?<=[.!?])\s+/).filter((sentence) => !blind.test(sentence)).join(" ").replace(/ {2,}/g, " ").trim() || message;
 }
 
