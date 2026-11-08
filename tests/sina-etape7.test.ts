@@ -445,7 +445,7 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     mockupToolDeps.generateImage = async (prompt, refs) => { n++; expect(prompt).toContain("« Braise Douce »"); expect(refs.logo).toBeTruthy(); if (n === 2) throw new Error("rendu refusé"); return png("#F5EEDC"); };
     // Contrôle automatique simulé : tout va bien, sauf l'accueil téléphone refait (trois articles côte à côte).
     let badPhone = false;
-    mockupToolDeps.checkImage = async (_d, img) => ({ deviceFrame: false, menuLinksAtTop: false, people: false, textProblems: [], sections: [{ name: "Le journal", maxSideBySide: badPhone && img.viewport === "phone" ? 3 : 1 }] });
+    mockupToolDeps.checkImage = async (_d, img) => ({ deviceFrame: false, menuLinksAtTop: false, people: false, brokenAreas: false, textProblems: [], sections: [{ name: "Le journal", maxSideBySide: badPhone && img.viewport === "phone" ? 3 : 1 }] });
     try {
       const r = await call("mockup.generate", ctx, { direction: "A" });
       expect(r.ok).toBe(false); // une image ratée : jamais présentée comme une réussite complète
@@ -482,7 +482,7 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       const { assetData, getAsset } = await import("@/lib/library");
       const versions = imageVersions(pid, "A", homeImg.id);
       expect(versions.length).toBeGreaterThanOrEqual(3);
-      let painted = 0, maskSeen: Buffer | null = null, promptSeen = "";
+      let painted = 0, maskSeen: Buffer | null | undefined = undefined, promptSeen = "";
       mockupToolDeps.locate = async (_img, changes) => ({ zones: changes.map((_, i) => ({ n: i + 1, found: i === 0, left: 0, top: 0, right: 50, bottom: 25, texts: ["Allume l'instant.", "texte mal lu"] })) });
       mockupToolDeps.maskEdit = async (img, mask, prompt) => { painted++; maskSeen = mask; promptSeen = prompt; const m = await sharp(img).metadata(); return png("#FF0000", m.width, m.height); };
       // Une zone introuvable : rien n'est retouché ni payé.
@@ -497,11 +497,11 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       expect(ed.ok, ed.summary).toBe(true);
       expect(painted).toBe(1);
       expect(ed.summary).toMatch(/le reste est identique/);
-      expect(promptSeen).toContain("Zone 1 (le bouton du haut) : le retirer.");
+      expect(promptSeen).toMatch(/Modification 1, dans le bouton du haut \(zone située .*\) : le retirer\./);
       expect(promptSeen).not.toContain("texte mal lu"); // un texte lu n'est repris que s'il est dans les textes de la page
-      const mk = await sharp(maskSeen!).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-      expect(mk.data[3]).toBe(0); // coin haut gauche : à repeindre
-      expect(mk.data[(mk.info.width * mk.info.height - 1) * 4 + 3]).toBe(255); // coin bas droit : protégé
+      // Sans masque (essai réel : le modèle voyait les zones masquées comme des rectangles noirs) ; zone située en %.
+      expect(maskSeen).toBeNull();
+      expect(promptSeen).toMatch(/zone située de 0 % à 5\d % de la largeur de l'image et de 0 % à 2\d % de sa hauteur/);
       const now = loadMockupSet(pid)!.directions[0].images.find((i) => i.id === homeImg.id)!;
       const pix = await sharp(assetData(getAsset(now.assetId!)!)).removeAlpha().raw().toBuffer({ resolveWithObject: true });
       const at = (x: number, y: number) => Array.from(pix.data.subarray((y * pix.info.width + x) * 3, (y * pix.info.width + x) * 3 + 3));
@@ -510,6 +510,13 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       expect(imageVersions(pid, "A", homeImg.id)).toHaveLength(versions.length + 1);
       const { projectSnapshot: snap2 } = await import("@/lib/syna-agent/snapshot");
       expect(await fr(() => snap2(ctx))).toMatch(new RegExp(`${homeImg.id} : ${versions.length + 1} versions, actuelle n° ${versions.length + 1}`));
+      // Zone rendue noire : retouche ratée, l'image d'avant reste en place.
+      const before2 = loadMockupSet(pid)!.directions[0].images.find((i) => i.id === homeImg.id)!.assetId;
+      mockupToolDeps.maskEdit = async (img) => { const m = await sharp(img).metadata(); return png("#000000", m.width, m.height); };
+      const black = await call("mockup.edit", ctx, { direction: "A", imageId: homeImg.id, changes: [{ zone: "le bouton du haut", change: "le retirer" }] });
+      expect(black.ok).toBe(false);
+      expect(black.summary).toMatch(/RATÉE, rien n'a été remplacé.*rendue en noir/);
+      expect(loadMockupSet(pid)!.directions[0].images.find((i) => i.id === homeImg.id)!.assetId).toBe(before2);
       // Une version qui n'existe pas : refusée.
       expect((await call("mockup.edit", ctx, { direction: "A", imageId: homeImg.id, fromVersion: 40, changes: [{ zone: "x x", change: "y y y" }] })).ok).toBe(false);
       const redone = loadMockupSet(pid)!.directions[0].images.find((i) => i.id === homeImg.id)!;
@@ -731,13 +738,14 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
 
   it("contrôle automatique des maquettes : appareil dessiné, menu en haut, trois éléments côte à côte, personnes (essais réels du 8 novembre)", async () => {
     const { mockupCheckVerdict, mockupCheckPrompt } = await import("@/lib/syna-agent/mockup-code/check");
-    const base = { deviceFrame: false, menuLinksAtTop: false, people: false, textProblems: [], sections: [{ name: "Produits", maxSideBySide: 2 }] };
+    const base = { deviceFrame: false, menuLinksAtTop: false, people: false, brokenAreas: false, textProblems: [], sections: [{ name: "Produits", maxSideBySide: 2 }] };
     expect(mockupCheckVerdict(base, "phone").ok).toBe(true);
     expect(mockupCheckVerdict({ ...base, deviceFrame: true }, "phone").problems).toEqual(["un appareil est dessiné autour de la page"]);
     expect(mockupCheckVerdict({ ...base, menuLinksAtTop: true }, "phone").ok).toBe(false);
     expect(mockupCheckVerdict({ ...base, menuLinksAtTop: true, sections: [{ name: "Gros plans", maxSideBySide: 4 }] }, "desktop").ok).toBe(true); // normal en ordinateur
     expect(mockupCheckVerdict({ ...base, sections: [{ name: "Gros plans", maxSideBySide: 4 }] }, "phone").problems[0]).toContain("« Gros plans » : 4 éléments côte à côte");
     expect(mockupCheckVerdict({ ...base, people: true }, "desktop").ok).toBe(false);
+    expect(mockupCheckVerdict({ ...base, brokenAreas: true }, "desktop").problems).toEqual(["une zone noire, vide ou cassée apparaît dans la page"]);
     const v = mockupCheckVerdict({ ...base, textProblems: ["« melange » sans accent"] }, "phone");
     expect(v.ok).toBe(true); expect(v.toVerify).toHaveLength(1);
     // Le plafond du contrôle couvre le pire cas de SON appel (essai réel : plafond fixe de 0,04 $ refusé par le Studio).

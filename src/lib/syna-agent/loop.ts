@@ -199,7 +199,7 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       // « Oui, sous [À compléter : délai] et à [À compléter : conditions] »).
       if (!local && out.question?.choices?.length) out = { ...out, question: { ...out.question, choices: out.question.choices.filter((c) => !/\[[^\]]*\]|…\s*$|\.\.\.\s*$/.test(c)) } };
       // Étape 6 : les thèmes sont montrés tels qu'ils sont ; jamais « ton site déjà composé dans chacun » (essai réel).
-      if (!local && currentStep(journeyOf(r.conversation_id)) === 6) out = { ...out, message: withoutComposedClaim(out.message) };
+      if (!local && currentStep(journeyOf(r.conversation_id)) === 6) out = { ...out, message: withoutBlindClaim(withoutComposedClaim(out.message)) };
       if (!local) out = withoutRepeatedQuestion({ ...out, message: fixElision(out.message), ...(out.question ? { question: { ...out.question, text: fixElision(out.question.text) } } : {}) });
       addMessage(r.conversation_id, "assistant", { ...out, step, ...(local ? { local: true } : {}) }, r.id);
       if (!out.actions.length) {
@@ -323,6 +323,16 @@ export function withoutComposedClaim(message: string): string {
   return message
     .replace(/,?\s*(?:avec|et)\s+ton site\s+(?:déjà\s+)?(?:composé|intégré|mis en page|décliné)\s+dans\s+(?:chacun|chaque thème|chacun d'eux|ces thèmes)/gi, "")
     .replace(/\s+([.,;!?])/g, "$1").replace(/ {2,}/g, " ").trim();
+}
+
+/**
+ * Étape 6 : les maquettes créées sont JOINTES à SINA. Essais réels du 8 novembre : « Je ne peux pas vérifier le rendu
+ * ici : ouvre-le dans Fichiers », répété d'un message à l'autre alors que l'image lui était jointe. La phrase est
+ * retirée (elle est fausse) ; la consigne lui demande de décrire ce qu'elle voit.
+ */
+export function withoutBlindClaim(message: string): string {
+  const blind = /\bje ne (?:peux|pourrai|suis) pas (?:en mesure de )?(?:voir|vérifier|confirmer|contrôler|décrire|regarder)\b[^.!?\n]*(?:rendu|image|maquette|à l'œil|visuel)/i;
+  return message.split(/(?<=[.!?])\s+/).filter((sentence) => !blind.test(sentence)).join(" ").replace(/ {2,}/g, " ").trim() || message;
 }
 
 export function withoutRepeatedQuestion(out: StepOutput): StepOutput {

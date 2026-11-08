@@ -4,8 +4,9 @@
  * en haut ; on ne doit pas refaire les maquettes autant de fois, attention à modifier que les détails demandés »).
  *
  * 1) Un modèle de lecture rapide repère chaque zone demandée sur l'image (en % de la largeur et de la hauteur) et lit
- *    ses textes ; 2) seules ces zones sont repeintes par le modèle des maquettes (masque) ; 3) le Studio recolle ces
- *    seules zones sur l'image d'origine : tout le reste reste identique au pixel près.
+ *    ses textes ; 2) le modèle des maquettes reçoit l'image et la demande, zones situées (sans masque : essai réel, il
+ *    voyait les zones masquées comme des rectangles noirs) ; 3) le Studio recolle ces seules zones sur l'image
+ *    d'origine : tout le reste reste identique au pixel près. Une zone rendue noire ou vide est refusée.
  */
 import sharp from "sharp";
 import { z } from "zod";
@@ -82,12 +83,21 @@ export function exactTexts(read: string[], pageTexts: string[]): string[] {
   return read.map((t) => pageTexts[all.indexOf(norm(t))]).filter((t, i, a): t is string => !!t && a.indexOf(t) === i);
 }
 
-export function mockupEditPrompt(changes: EditChange[], keep: string[][], viewport: "desktop" | "phone"): string {
+const pct = (v: number, max: number) => Math.round((v / max) * 100);
+export function mockupEditPrompt(changes: EditChange[], keep: string[][], viewport: "desktop" | "phone", boxes: Box[] = [], size = { w: 1024, h: 1536 }): string {
   return [
-    `Retouche localisée d'une maquette de site web (version ${viewport === "phone" ? "téléphone" : "ordinateur"}). Seules les zones transparentes du masque sont repeintes ; tout le reste de l'image reste exactement identique.`,
-    ...changes.map((c, i) => `Zone ${i + 1} (${c.zone}) : ${c.change}.${keep[i]?.length ? ` Textes de cette zone, écrits lettre pour lettre (sauf ceux que la modification retire) : ${keep[i].map((t) => `« ${t} »`).join(" ; ")}.` : ""}`),
-    "Dans chaque zone repeinte, le même style que le reste de la page : mêmes couleurs, mêmes polices, mêmes tailles de texte, mêmes arrondis et ombres, mêmes photos quand elles restent. La zone se raccorde sans couture à ce qui l'entoure.",
+    `Retouche d'une maquette de site web (version ${viewport === "phone" ? "téléphone" : "ordinateur"}) : l'image jointe est la maquette à reproduire À L'IDENTIQUE, même cadrage, mêmes bandes, mêmes positions, mêmes textes, mêmes photos, avec SEULEMENT les modifications ci-dessous, chacune à sa place exacte. Chaque partie modifiée garde exactement la même position et la même hauteur ; rien ne se décale, aucune autre partie ne change.`,
+    ...changes.map((c, i) => { const b = boxes[i]; return `Modification ${i + 1}, dans ${c.zone}${b ? ` (zone située de ${pct(b.left, size.w)} % à ${pct(b.right, size.w)} % de la largeur de l'image et de ${pct(b.top, size.h)} % à ${pct(b.bottom, size.h)} % de sa hauteur)` : ""} : ${c.change}.${keep[i]?.length ? ` Textes de cette zone, écrits lettre pour lettre (sauf ceux que la modification retire) : ${keep[i].map((t) => `« ${t} »`).join(" ; ")}.` : ""}`; }),
+    "Dans chaque partie modifiée, le même style que le reste de la page : mêmes couleurs, mêmes polices, mêmes tailles de texte, mêmes arrondis et ombres, mêmes photos quand elles restent. La zone se raccorde sans couture à ce qui l'entoure.",
     viewport === "phone" ? "Mise en page de téléphone : jamais trois éléments côte à côte ; boutons sur toute la largeur." : "",
     "Aucun autre texte, aucune lettre inventée, aucun logo en plus, aucune personne, aucune main.",
   ].filter(Boolean).join("\n");
+}
+
+/** Part de pixels presque noirs d'une zone (essai réel : zones rendues en rectangles noirs, jugées « sans défaut »). */
+export async function blackShare(image: Buffer, b: Box): Promise<number> {
+  const { data, info } = await sharp(image).extract({ left: b.left, top: b.top, width: b.right - b.left, height: b.bottom - b.top }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  let n = 0;
+  for (let i = 0; i < info.width * info.height; i++) if (data[i * 3] < 10 && data[i * 3 + 1] < 10 && data[i * 3 + 2] < 10) n++;
+  return n / (info.width * info.height);
 }

@@ -39,10 +39,10 @@ import { mockupFacts, mockupImagePrompt, mockupImagesMaxMicro } from "./prompts"
 import { step7MaxMicro } from "./pipeline";
 import { checkMaxMicro, mockupCheckCall, MockupCheckSchema, mockupCheckVerdict, type MockupCheck } from "./check";
 import { llmJson } from "../../ai/llm";
-import { boxesOf, editMask, exactTexts, locateCall, locateMaxMicro, LocateSchema, mockupEditPrompt, pasteZones, type Box, type EditChange, type Locate } from "./edit";
+import { blackShare, boxesOf, exactTexts, locateCall, locateMaxMicro, LocateSchema, mockupEditPrompt, pasteZones, type Box, type EditChange, type Locate } from "./edit";
 
 /** Remplaçables par les tests : coût d'une image de maquette et coût maximal des appels de l'étape 7. */
-export const mockupToolDeps: { imageMaxMicro?: (references: number) => number | null; callMaxMicro?: typeof step7CallMaxMicro; generateImage?: (prompt: string, refs: { logo: Buffer | null; product: Buffer | null }) => Promise<Buffer>; checkImage?: (data: Buffer, img: { viewport: "desktop" | "phone"; pages: string[] }) => Promise<MockupCheck>; locate?: (image: Buffer, changes: EditChange[]) => Promise<Locate>; maskEdit?: (image: Buffer, mask: Buffer, prompt: string) => Promise<Buffer> } = {};
+export const mockupToolDeps: { imageMaxMicro?: (references: number) => number | null; callMaxMicro?: typeof step7CallMaxMicro; generateImage?: (prompt: string, refs: { logo: Buffer | null; product: Buffer | null }) => Promise<Buffer>; checkImage?: (data: Buffer, img: { viewport: "desktop" | "phone"; pages: string[] }) => Promise<MockupCheck>; locate?: (image: Buffer, changes: EditChange[]) => Promise<Locate>; maskEdit?: (image: Buffer, mask: Buffer | null, prompt: string) => Promise<Buffer> } = {};
 /**
  * Modèle des images de maquette : OpenAI GPT Image 2.5 Flare (choix du propriétaire du 8 novembre, après comparaison
  * réelle sur l'accueil Brindi : Qwen abîmait les textes, OpenAI les écrivait juste ; même modèle que les logos),
@@ -381,16 +381,23 @@ const editTool: AgentTool<EditArgs> = {
     const page = loadSiteCopy(p.id)?.pages[img.pages[0]];
     const pageTexts = page ? page.sections.flatMap((x) => [x.title, x.text, x.button, ...x.items.flatMap((i) => [i.title, i.text])]).filter((t): t is string => !!t) : [];
     const keep = a.changes.map((_, i) => exactTexts(located.zones.find((z) => z.n === i + 1)?.texts ?? [], pageTexts));
-    const prompt = mockupEditPrompt(a.changes, keep, img.viewport);
     const okBoxes = boxes as Box[];
+    const prompt = mockupEditPrompt(a.changes, keep, img.viewport, okBoxes, { w, h });
     let edited: Buffer;
     try {
-      const mask = await editMask(w, h, okBoxes);
       const route = mockupImageRoute();
       const size = w > h ? "1536x1024" as const : w === h ? "1024x1024" as const : "1024x1536" as const;
-      edited = mockupToolDeps.maskEdit ? await mockupToolDeps.maskEdit(original, mask, prompt)
-        : await withQuotedImageRoute(route, () => mockupMaskEdit({ userId: ctx.user.id, projectId: p.id, jobId, usageKey: key("paint") }, { image: original, mask, prompt, model: route.model, size }));
+      edited = mockupToolDeps.maskEdit ? await mockupToolDeps.maskEdit(original, null, prompt)
+        : await withQuotedImageRoute(route, () => mockupMaskEdit({ userId: ctx.user.id, projectId: p.id, jobId, usageKey: key("paint") }, { image: original, prompt, model: route.model, size }));
+      edited = await sharp(edited).resize(w, h, { fit: "fill" }).png().toBuffer();
     } catch (e) { return { ok: false, summary: L(`Retouche impossible : ${(e as Error).message.slice(0, 200)}`, "Edit failed."), hint: "Dis-le au client avec le coût réel ; ne relance rien sans son accord écrit." }; }
+    // Zone rendue noire (essai réel du 8 novembre) : la retouche est ratée, l'image d'avant reste en place.
+    const black: string[] = [];
+    for (const [i, b] of okBoxes.entries()) if ((await blackShare(edited, b)) > 0.2) black.push(a.changes[i].zone);
+    if (black.length) {
+      const spentBad = all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key IN (?,?)", p.id, key("locate"), key("paint"))[0]?.c ?? 0;
+      return { ok: false, summary: L(`Retouche RATÉE, rien n'a été remplacé (l'image d'avant reste en place) : zone rendue en noir — ${black.join(" ; ")}. Coût réel : ${budgetPctText(ctx.user.id, spentBad, p.id).replace(/de votre budget/, "de ton budget")}.`, "Edit failed: black area."), hint: "Dis au client que la retouche est ratée et son coût réel ; ne relance rien sans son accord écrit." };
+    }
     // 3) Seules les zones sont recollées sur l'image d'origine : rien d'autre ne bouge.
     const data = await pasteZones(original, edited, okBoxes);
     const asset = await saveAsset({ projectId: p.id, userId: ctx.user.id, data, name: `maquette-${a.direction}-${a.imageId}-${img.viewport}-retouche.png`, mime: "image/png", role: "mockup", origin: "generated", meta: { synaMockup: { direction: a.direction, image: a.imageId, pages: img.pages, viewport: img.viewport, editedFrom: src.id, changes: a.changes } } });

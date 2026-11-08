@@ -579,19 +579,20 @@ async function openaiSceneImpl(ctx: Ctx, input: { composite: Buffer; productMask
 }
 
 /**
- * Retouche LOCALISÉE d'une maquette de site (demande du propriétaire du 8 novembre : « on ne doit pas refaire les
- * maquettes autant de fois, attention à modifier que les détails demandés ») : OpenAI repeint seulement les zones
- * transparentes du masque ; le Studio recolle ensuite ces seules zones sur l'image d'origine (rien d'autre ne bouge).
+ * Retouche d'une maquette de site (demande du propriétaire du 8 novembre : « on ne doit pas refaire les maquettes
+ * autant de fois, attention à modifier que les détails demandés ») : l'image est envoyée avec la demande ; le Studio
+ * recolle ensuite les seules zones demandées sur l'image d'origine (rien d'autre ne bouge). Sans masque : essai réel du
+ * 8 novembre, GPT Image 2.5 Flare voyait les zones masquées comme des rectangles noirs et redessinait le reste.
  * `model` : le modèle des maquettes (même route que leur devis, aucun relais).
  */
-async function mockupMaskEditImpl(ctx: Ctx, input: { image: Buffer; mask: Buffer; prompt: string; model: string; size: "1024x1024" | "1024x1536" | "1536x1024" }) {
+async function mockupMaskEditImpl(ctx: Ctx, input: { image: Buffer; mask?: Buffer | null; prompt: string; model: string; size: "1024x1024" | "1024x1536" | "1536x1024" }) {
   const key = activeProviderKey("openai");
   if (!key) throw new UserFacingError(L("Aucune clé OpenAI configurée pour la génération d'images.", "No OpenAI key configured for image generation."));
-  gate(ctx, openaiImageMax(input.model, { prompt: input.prompt, images: 2, size: input.size, quality: "high" }), "image", "openai", input.model);
+  gate(ctx, openaiImageMax(input.model, { prompt: input.prompt, images: input.mask ? 2 : 1, size: input.size, quality: "high" }), "image", "openai", input.model);
   const client = openaiClient(key);
   let res: Awaited<ReturnType<typeof openaiImage>>;
   try {
-    res = await openaiImage(client, "edit", { model: input.model, image: await toFile(input.image, "maquette.png", { type: "image/png" }), mask: await toFile(input.mask, "mask.png", { type: "image/png" }), prompt: input.prompt, size: input.size, quality: "high", n: 1 }, sent);
+    res = await openaiImage(client, "edit", { model: input.model, image: await toFile(input.image, "maquette.png", { type: "image/png" }), ...(input.mask ? { mask: await toFile(input.mask, "mask.png", { type: "image/png" }) } : {}), prompt: input.prompt, size: input.size, quality: "high", n: 1 }, sent);
   } catch (e: any) {
     if (e?.status === 401) throw refusal(new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel.")));
     if (e?.status === 400) throw refusal(new PermanentError(L(`Retouche refusée par OpenAI : ${e.message}`, `Edit rejected by OpenAI: ${e.message}`)));

@@ -30,6 +30,8 @@ export const MockupCheckSchema = z.object({
   sections: z.array(z.object({ name: z.string().max(80), maxSideBySide: z.number().int().min(0).max(12) })).max(24),
   /** Personne, visage, main ou autre partie du corps visible. */
   people: z.boolean(),
+  /** Rectangle noir, zone vide ou cassée au milieu de la page (essai réel : deux rectangles noirs jugés « sans défaut »). */
+  brokenAreas: z.boolean(),
   /** Mots clairement abîmés, fausses lettres, textes visiblement en trop (vide si rien de net). */
   textProblems: z.array(z.string().max(200)).max(12),
 }).strict();
@@ -44,6 +46,7 @@ export function mockupCheckPrompt(img: Pick<MockupImage, "viewport" | "pages">, 
     "deviceFrame : true si un téléphone, une tablette, un écran ou tout appareil est dessiné autour de la page (coque, encoche, barre d'état).",
     `menuLinksAtTop : true si plusieurs liens de menu sont écrits dans l'en-tête en haut de la page${phone ? "" : " (normal en ordinateur, réponds quand même)"}.`,
     "sections : chaque partie de la page de haut en bas (nom court d'après son titre) et maxSideBySide, le plus grand nombre de cartes, photos ou blocs posés côte à côte sur une même rangée DANS cette partie (1 si tout est l'un sous l'autre).",
+    "brokenAreas : true si un rectangle noir, une zone vide ou cassée apparaît au milieu de la page.",
     "people : true si une personne, un visage, une main ou une autre partie du corps est visible.",
     "textProblems : seulement les mots NETTEMENT abîmés ou mal orthographiés, les fausses lettres, les textes en double ; vide si rien de net (un texte trop petit pour être lu n'est pas un problème).",
   ].join("\n");
@@ -58,6 +61,7 @@ export function mockupCheckVerdict(c: MockupCheck, viewport: MockupImage["viewpo
   const problems: string[] = [];
   if (c.deviceFrame) problems.push("un appareil est dessiné autour de la page");
   if (c.people) problems.push("une personne ou une partie du corps est visible");
+  if (c.brokenAreas) problems.push("une zone noire, vide ou cassée apparaît dans la page");
   if (viewport === "phone") {
     if (c.menuLinksAtTop) problems.push("les liens du menu sont écrits en haut au lieu de l'icône de menu");
     for (const s of c.sections) if (s.maxSideBySide >= 3) problems.push(`« ${s.name} » : ${s.maxSideBySide} éléments côte à côte (deux au plus en téléphone)`);
