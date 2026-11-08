@@ -38,9 +38,11 @@ export const STEP7_CALLS: Record<CallKind, { input: number; output: number }> = 
  */
 export const STEP7_TYPICAL: Record<CallKind, { input: number; output: number }> = {
   analyze: { input: 6_000, output: 12_000 }, // essai réel du 8 novembre : 12 268 jetons de sortie pour l'accueil
-  write: { input: 14_000, output: 5_000 },
+  // Essai réel du 8 novembre (accueil de Brindi) : 9 000 à 21 000 jetons de sortie par section (code et styles),
+  // une réponse sur deux reprise ; d'où 15 000 en moyenne.
+  write: { input: 15_000, output: 15_000 },
   compare: { input: 5_000, output: 1_000 },
-  fix: { input: 16_000, output: 5_000 },
+  fix: { input: 16_000, output: 12_000 },
 };
 /** Coût habituel d'un appel de chaque nature (même modèle que le plafond) ; null si tarif inconnu. */
 export function step7CallTypicalMicro(userId: string): Record<CallKind, number> | null {
@@ -86,7 +88,11 @@ export function sectionBrief(page: MockupPage, s: PlannedSection, plan: PlannedS
   const head = hasMockup
     ? `Page « ${page.fr} » du site, codée À L'IDENTIQUE de la maquette jointe (image de la page entière).`
     : `Page « ${page.fr} » du site. Elle n'a PAS d'image de maquette à elle : code-la dans le style exact des pages déjà codées d'après la maquette (mêmes variables et classes du thème, mêmes couleurs, polices, boutons, cartes, champs, espacements et détails graphiques), avec la structure d'une vraie boutique pour cette page. N'invente aucun texte : seulement ceux donnés ci-dessous, sinon « [À compléter : …] ».`;
-  return `${head}
+  // Essai réel du 8 novembre : en-tête codé sans logo (réglage image vide, nom absent).
+  const logo = s.role === "header" || s.role === "footer"
+    ? `\nLogo : celui du thème, toujours affiché : {%- if settings.logo_asset != blank -%}<img src="{{ settings.logo_asset | asset_url }}" alt="{{ shop.name | escape }}" width="{{ settings.logo_width }}" loading="eager">{%- else -%}{{ shop.name }}{%- endif -%} (jamais un réglage image vide à la place). Tous les liens du menu lus sur la maquette, aucun en moins.`
+    : "";
+  return `${head}${logo}
 Sections de la page, dans l'ordre :
 ${others}
 
@@ -101,6 +107,22 @@ Chaque texte, image, lien et bouton est un réglage ou un bloc modifiable (Studi
 }
 
 type Base = { userId: string; projectId: string; jobId: string | null; usageKey: string };
+
+/**
+ * Textes de la maquette absents de la section écrite (essai réel du 8 novembre : « Assemblé à la main » et « Tout est
+ * bio » remplacés par « La recette, en clair » et « La menthe poivrée », inventés). Chaque texte lu (titres, textes,
+ * boutons, liens, prix) doit se retrouver mot pour mot dans le code, les réglages ou les blocs ; sinon c'est un écart
+ * à corriger (la correction automatique le reçoit).
+ */
+export function missingTexts(s: Pick<PlannedSection, "texts">, out: unknown): string[] {
+  const norm = (t: string) => t.toLowerCase().replace(/&#39;|&rsquo;|’/g, "'").replace(/&nbsp;|\u00a0/g, " ").replace(/<[^>]+>/g, " ").replace(/\\n|\s+/g, " ").trim();
+  const hay = norm(JSON.stringify(out).replace(/\\"/g, '"'));
+  // « 8,50 € · thé vert Sencha… » : chaque partie compte à part ; un prix seul vient des produits (onglet Produits).
+  const isPrice = (x: string) => /^\s*\d+(?:[,.]\d{1,2})?\s*€\s*$/.test(x);
+  const lost = s.texts.filter((t) => t.text && !/\[illisible\]/i.test(t.text) && t.text.length <= 300 && t.kind !== "prix"
+    && t.text.split(/\s+·\s+/).some((part) => !isPrice(part) && !hay.includes(norm(part)))).map((t) => `« ${t.text} »`);
+  return lost.length ? [`textes de la maquette absents ou modifiés (à écrire mot pour mot, sans en inventer d'autres) : ${lost.slice(0, 12).join(" ; ")}`] : [];
+}
 
 /** Écrit (ou réécrit) les sections sur mesure du plan ; les sections fonctionnelles de la bibliothèque sont ajoutées si besoin. */
 async function writePlan(b: Base, p: Project, i: { spec: ThemeSpec; page: MockupPage; template: string; plan: PlannedSection[]; mockup: Buffer | null }, fix?: string[]): Promise<WriteResult> {
@@ -134,7 +156,9 @@ async function writePlan(b: Base, p: Project, i: { spec: ThemeSpec; page: Mockup
           prompt: sectionBrief(i.page, s, i.plan, issues.length ? issues : undefined, !!i.mockup) + (previous && attempt ? `\n\nVersion précédente :\n<section_precedente>\n${previous.slice(0, 40000)}\n</section_precedente>` : ""),
           maxTokens: STEP7_CALLS.write.output, routing: { difficulty: "complex" },
         }, CustomSectionSchema);
-        issues = await checkCustomSection(p, i.spec, item, candidate);
+        // Le nom de la marque est porté par le logo (pas un texte à écrire).
+        const brandName = (p.brand?.name ?? p.name).toLowerCase();
+        issues = [...await checkCustomSection(p, i.spec, item, candidate), ...missingTexts({ texts: s.texts.filter((t) => t.text.trim().toLowerCase() !== brandName) }, candidate)];
         if (!issues.length) { out = candidate; break; }
         previous = candidate.liquid;
       }
@@ -189,12 +213,14 @@ function screenshotter() {
       const { context, url, assertResources } = await themeContext(browser, i.spec, { width: i.width, height: phone ? 844 : 900 }, phone);
       try {
         const page = await context.newPage();
+        // Effets d'apparition au défilement (essai réel du 8 novembre : sections vides sur une capture trop rapide).
+        await page.emulateMedia({ reducedMotion: "reduce" });
         await page.goto(url(i.path), { waitUntil: "load", timeout: 60_000 });
         await page.evaluate(async () => {
           for (let y = 0; y < Math.min(document.documentElement.scrollHeight, 20000); y += Math.round(innerHeight * 0.8)) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); }
           scrollTo(0, 0);
         });
-        await page.waitForTimeout(250);
+        await page.waitForTimeout(1200);
         assertResources();
         const scrollWidth = await page.evaluate(() => Math.max(document.body.scrollWidth, document.documentElement.scrollWidth));
         const image = await page.screenshot({ fullPage: true, type: "jpeg", quality: 85 });

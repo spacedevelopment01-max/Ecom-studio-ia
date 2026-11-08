@@ -974,4 +974,28 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     expect(sec.images[0].box).toEqual({ x: 0.5, y: 0.1, w: 0.3, h: 0.1 });
     expect(r.pages[0].notes).toBe("a ; b");
   });
+
+  it("premier essai réel de l'étape 7 : textes de la maquette vérifiés mot pour mot, charte posée sur le squelette", async () => {
+    const { missingTexts, sectionBrief } = await import("@/lib/syna-agent/mockup-code/deps");
+    const { withBrand } = await import("@/lib/syna-agent/mockup-code/job");
+    const { mockupPages } = await import("@/lib/syna-agent/mockup-code/pages");
+    const sec: any = { texts: [{ kind: "sous-titre", text: "Assemblé à la main" }, { kind: "paragraphe", text: "Thés, plantes, fleurs et fruits : tous les ingrédients sont bio." }, { kind: "titre", text: "[illisible]" }] };
+    const written = { liquid: "<h3>{{ block.settings.title }}</h3>", blocks: [{ type: "card", settings: { title: "La recette, en clair", text: "<p>Thés, plantes, fleurs et fruits&nbsp;: tous les ingrédients sont bio.</p>" } }] };
+    const issues = missingTexts(sec, written);
+    expect(issues).toHaveLength(1);
+    expect(issues[0]).toContain("« Assemblé à la main »");
+    expect(issues[0]).not.toContain("tous les ingrédients sont bio");
+    expect(missingTexts(sec, { blocks: [{ settings: { title: "Assemblé à la main", text: "Thés, plantes, fleurs et fruits : tous les ingrédients sont bio." } }] })).toEqual([]);
+    // En-tête : le logo du thème, toujours affiché (essai réel : en-tête sans logo).
+    const home = mockupPages("products", "multi").find((x) => x.key === "home")!;
+    const brief = sectionBrief(home, { index: 0, role: "header", name: "En-tête", layout: "x", texts: [], images: [], colors: {}, target: { kind: "group", group: "header" } } as any, [], undefined, true);
+    expect(brief).toContain("settings.logo_asset");
+    // Charte posée sur le thème de départ (essai réel : accueil codé en bleu, couleurs du squelette).
+    const spec: any = { settings: { color_schemes: { "scheme-1": { settings: { background: "#D0E4F5" } } }, type_heading_font: "x", type_body_font: "y" } };
+    const out: any = withBrand(spec, { brand: { palette: { dark: "#233A2E", primary: "#3F6B4E", secondary: "#E3EDDF", accent: "#C9A04E", light: "#FFFFFF" }, fonts: { heading: "cormorant_garamond_n5", body: "karla_n4" } } } as any);
+    expect(out.settings.color_schemes["scheme-3"].settings.background).toBe("#233A2E");
+    expect(out.settings.color_schemes["scheme-1"].settings.background).toBe("#FFFFFF");
+    expect(out.settings.type_heading_font).toBe("cormorant_garamond_n5");
+    expect(spec.settings.type_heading_font).toBe("x"); // le thème de départ n'est pas modifié
+  });
 });

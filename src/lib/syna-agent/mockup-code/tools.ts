@@ -561,7 +561,9 @@ const codeTool: AgentTool<CodeArgs> = {
     const est = await codeTool.estimate!(ctx, a);
     const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: MOCKUP_CODE_JOB, label: L("Site codé d'après la maquette (SINA)", "Site coded from the mockup (SINA)"), payload: { projectId: p.id, direction: d.key, capMicro: est.maxMicro, maxRounds: a.maxRounds, conversationId: ctx.conversationId, ...(a.pages?.length ? { pages: a.pages } : {}) }, maxAttempts: 2, idempotencyKey: `syna:${ctx.runId}:mockup-code:${d.key}:${(a.pages ?? []).join(",")}` });
     try { updateJourney(ctx.conversationId, (j) => setStep(j, 7, "doing")); } catch { /* fil sans parcours */ }
-    return { ok: true, summary: L(`Codage du site d'après la maquette ${d.key} lancé ; SINA relira le rapport page par page.`, `Coding the site from mockup ${d.key} started.`), jobs: [job.id], data: { maquette: d.key, plafondMicro: est.maxMicro, probableMicro: est.probableMicro ?? null } };
+    // Prix exacts dans le résultat (essai réel du 8 novembre : SINA a annoncé « au plus 0,4 % » au lieu de ~9 %).
+    const pct = (m: number) => budgetPctText(ctx.user.id, m, p.id).replace(/de votre budget/, "de ton budget");
+    return { ok: true, summary: L(`Codage ${a.pages?.length ? `des pages ${a.pages.join(", ")}` : "du site"} d'après la maquette ${d.key} lancé${est.probableMicro ? ` (coût probable ${pct(est.probableMicro)}, plafond ${pct(est.maxMicro)})` : ` (plafond ${pct(est.maxMicro)})`} ; SINA relira le rapport page par page.`, `Coding the site from mockup ${d.key} started.`), jobs: [job.id], data: { maquette: d.key, plafondMicro: est.maxMicro, probableMicro: est.probableMicro ?? null } };
   },
 };
 
