@@ -260,13 +260,13 @@ export async function removeBand(image: Buffer, b: Box): Promise<Buffer | null> 
   while (left > 0 && !isPage(left - 1)) left--;
   while (right < W && !isPage(right)) right++;
   // Hors de la zone, sur ces lignes, la colonne ne doit contenir que du fond uni (celui des pixels juste au-dessus).
-  // (bords de colonne adoucis tolérés : au plus 4 % de pixels écartés de la couleur médiane de la ligne).
+  // (bords de colonne adoucis tolérés : 4 pixels ou 6 % de pixels écartés de la couleur médiane de la ligne).
   for (let y = b.top; y < b.bottom; y++) {
     const outside: number[][] = [];
     for (let x = left; x < right; x++) if (x < b.left || x >= b.right) outside.push(px(x, y));
     if (!outside.length) continue;
     const med = [0, 1, 2].map((c) => outside.map((p) => p[c]).sort((u, v) => u - v)[outside.length >> 1]);
-    if (outside.filter((p) => !same(p, med)).length > Math.max(1, outside.length * 0.04)) return null;
+    if (outside.filter((p) => !same(p, med)).length > Math.max(4, outside.length * 0.06)) return null;
   }
   const h = b.bottom - b.top, out = Buffer.from(data);
   for (let y = b.top; y < H; y++) for (let x = left; x < right; x++) {
