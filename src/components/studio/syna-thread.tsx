@@ -19,7 +19,7 @@ type View = {
   run: { id: string; status: string; step: number; pending: any; error: string | null } | null;
   budget: { authorizedPct: number | null; spentPct: number | null };
   attachments: { id: string; kind: string; name: string; analysis: any }[];
-  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; logos?: Logos | null; brandKit?: Kit | null; angles?: Angles | null; activity?: Activity | null; themes?: Themes | null };
+  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; logos?: Logos | null; brandKit?: Kit | null; angles?: Angles | null; activity?: Activity | null; themes?: Themes | null; siteCopy?: { pages: Record<string, CopyPage> } | null };
 };
 type Face = { family: string; file: string; weight: number } | null;
 type IdentityCard = { nameWhy?: string;
@@ -285,6 +285,33 @@ function ThemeCards({ themes, busy, onChoose, onAll, onMockup }: { themes: Theme
   );
 }
 
+type CopyPage = { seo: { title: string; description: string }; sections: { section: string; title: string | null; text: string | null; button: string | null; items: { title: string; text: string | null }[] }[] };
+const COPY_PAGE_LABELS: Record<string, string> = { home: "Accueil" };
+
+/** Étape 6, maquettes : les textes de la page, en entier, avant toute image (le client les lit et les valide). */
+function CopyCard({ pages }: { pages: Record<string, CopyPage> }) {
+  const t = useT();
+  return (
+    <div className="mt-2 space-y-3 rounded-xl border border-line bg-card px-4 py-3 text-xs" data-syna-copy>
+      {Object.entries(pages).map(([key, c]) => (
+        <section key={key} className="space-y-2">
+          <h4 className="text-sm font-bold">{t("Textes de la page", "Page copy")} « {COPY_PAGE_LABELS[key] ?? key} »</h4>
+          <p className="text-muted">{t("Référencement", "SEO")} : <b className="text-ink">{c.seo.title}</b> — {c.seo.description}</p>
+          {c.sections.map((s, i) => (
+            <div key={i} className="border-t border-line pt-2">
+              <p className="text-[10px] uppercase tracking-wide text-muted">{s.section}</p>
+              {s.title && <p className="font-semibold">{s.title}</p>}
+              {s.text && <p>{s.text}</p>}
+              {!!s.items.length && <ul className="list-disc space-y-0.5 pl-4">{s.items.map((x, k) => <li key={k}><b className="font-medium">{x.title}</b>{x.text ? ` — ${x.text}` : ""}</li>)}</ul>}
+              {s.button && <p className="mt-1 inline-block rounded-full border border-line px-2 py-0.5">{s.button}</p>}
+            </div>
+          ))}
+        </section>
+      ))}
+    </div>
+  );
+}
+
 type Activity = {
   company: Record<string, string | undefined>; none?: string[]; missing: { key: string; question: string; required: boolean }[];
   angle: { title: string; goal: string; message: string; story: string; cta: string; others: string[] } | null;
@@ -482,6 +509,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
   const lastCalendar = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && String(m.content?.tool ?? "").startsWith("calendar.") && m.content?.ok)?.id, [v?.messages]);
   const lastAngles = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "angles.propose" && m.content?.ok && m.content?.data?.angles)?.id, [v?.messages]);
   const lastActivity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "activity.plan" && m.content?.ok)?.id, [v?.messages]);
+  const lastCopy = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "mockup.copy" && m.content?.ok)?.id, [v?.messages]);
   const lastThemes = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "theme.propose" && m.content?.ok)?.id, [v?.messages]);
   const lastKit = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "brand.kit" && m.content?.ok)?.id, [v?.messages]);
   const lastLogos = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && (m.content?.tool === "logo.propose" || (m.content?.tool === "jobs.wait" && JSON.stringify(m.content?.data ?? "").includes("syna.logos"))) && m.content?.ok)?.id, [v?.messages]);
@@ -520,6 +548,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
                 {tm.id === lastLogos && v.journey?.logos && <LogoCards logos={v.journey.logos} brandBg={brandBackground(v.journey.identities)} busy={busy || working} onChoose={(k) => send(t(`Je choisis le logo ${k}.`, `I choose logo ${k}.`))} />}
                 {tm.id === lastActivity && v.journey?.activity && <ActivityCard a={v.journey.activity} busy={busy || working} onValidate={() => send(t("Je valide mon activité.", "I validate my business."))} />}
                 {tm.id === lastAngles && v.journey?.angles && <AngleCards angles={v.journey.angles} busy={busy || working} onChoose={(titles) => send(titles.length > 1 ? t(`Je choisis ces angles : ${titles.map((x, i) => `« ${x} »${i === 0 ? " (principal)" : ""}`).join(", ")}.`, `I choose these angles: ${titles.join(", ")}.`) : t(`Je choisis l'angle « ${titles[0]} ».`, `I choose the angle "${titles[0]}".`))} />}
+                {tm.id === lastCopy && v.journey?.siteCopy && <CopyCard pages={v.journey.siteCopy.pages} />}
                 {tm.id === lastThemes && v.journey?.themes && v.projectId && <ThemeCards themes={v.journey.themes} busy={busy || working} onChoose={(name) => send(t(`Je choisis le thème ${name}.`, `I choose the ${name} theme.`))} onAll={() => send(t("Je veux voir tous les thèmes.", "I want to see all themes."))} onMockup={() => send(t("Je préfère une maquette sur mesure.", "I'd rather have a custom mockup."))} />}
                 {tm.id === lastKit && v.journey?.brandKit && <BrandKitCard kit={v.journey.brandKit} darkBg={v.journey.identities?.final?.palette.dark ?? "#16161A"} busy={busy || working} onValidate={() => send(t("Je valide mon image de marque.", "I validate my brand kit."))} />}
                 {tm.id === lastCalendar && v.projectId && <CalendarCard projectId={v.projectId} refreshKey={tm.id} />}

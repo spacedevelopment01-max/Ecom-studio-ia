@@ -58,6 +58,24 @@ Règles absolues :
 - seo.title (60 caractères au plus) et seo.description (155 au plus) contiennent le nom de la marque et ce qu'elle vend, avec les mots qu'un client chercherait.
 Réponds selon le schéma JSON demandé.`;
 
+/**
+ * Ce que chaque section doit contenir (essai réel du 8 novembre : ouverture, univers et inscription absents ; détails,
+ * produits et questions sans contenu). Reconnu aux mots de la section de l'inventaire.
+ */
+export const SECTION_NEEDS: { match: RegExp; need: string; minItems?: number }[] = [
+  { match: /en-tête/, need: "items = 3 à 5 liens courts du menu (title seul) ; button = l'appel à l'action" },
+  { match: /ouverture|promesse/, need: "title = l'accroche mot pour mot ; text = le slogan mot pour mot ; button = l'appel à l'action mot pour mot" },
+  { match: /produit|offre|prestations/, need: "title et text courts ; items = CHAQUE produit ou prestation (title = son nom exact, text = son prix exact puis sa composition en quelques mots)", minItems: 1 },
+  { match: /détails/, need: "title ; items = 3 ou 4 gros plans (title court + text d'une phrase, d'après les faits)", minItems: 3 },
+  { match: /scènes|usage/, need: "title ; text (la situation vécue, l'émotion) ; items = 2 ou 3 moments de la journée (title court + text d'une phrase)", minItems: 2 },
+  { match: /univers|histoire|méthode/, need: "title ; text (ce que la marque fait et pourquoi, d'après les faits)" },
+  { match: /journal/, need: "title ; items = 2 ou 3 idées d'articles (title seul, sans fait inventé) ; button", minItems: 2 },
+  { match: /questions/, need: "title ; items = 3 à 5 questions (title = la question, text = la réponse, d'après les objections et les faits)", minItems: 3 },
+  { match: /inscription|contact/, need: "title ; text (une phrase) ; button" },
+  { match: /pied de page/, need: "items = liens courts (title seul) ; text = coordonnées fournies (e-mail, adresse) et mentions, sans trou à compléter" },
+];
+export const needOf = (section: string) => SECTION_NEEDS.find((n) => n.match.test(section));
+
 /** Consigne de rédaction d'une page, avec les seuls faits du client et l'angle choisi. */
 export function copyPrompt(page: MockupPage, input: { brand: { name: string; tagline?: string | null }; plan: ActivityPlan; emotion?: string; story?: string; show?: string }): string {
   const a = input.plan.angle;
@@ -74,13 +92,49 @@ export function copyPrompt(page: MockupPage, input: { brand: { name: string; tag
     input.plan.offer.facts.length ? `Faits confirmés par le client : ${input.plan.offer.facts.join(" ; ")}.` : "",
     input.plan.company.shipping ? `Livraison : ${input.plan.company.shipping}.` : "",
     input.plan.company.returns ? `Retours : ${input.plan.company.returns}.` : "",
-    `Page à écrire : « ${page.fr} ». Sections, dans l'ordre : ${page.sections.map((s) => `« ${s} »`).join(" ; ")}.`,
+    ((c) => (c.length ? `Coordonnées : ${c.join(" · ")}.` : ""))([input.plan.company.legalName, input.plan.company.email, input.plan.company.address, input.plan.company.phone].filter((x): x is string => !!x)),
+    `Page à écrire : « ${page.fr} ». Écris EXACTEMENT ${page.sections.length} sections, une par ligne ci-dessous, dans cet ordre, chacune avec ce qu'elle doit contenir :`,
+    ...page.sections.map((s, i) => `${i + 1}. « ${s} » : ${needOf(s)?.need ?? "les textes qui lui conviennent"}.`),
   ].filter(Boolean).join("\n");
 }
 
 /** Écrit les textes d'une page (un appel, plafonné). `generate` : remplaçable par les tests. */
 export async function writePageCopy(call: Parameters<typeof llmJson>[0], generate?: (c: Parameters<typeof llmJson>[0]) => Promise<unknown>): Promise<PageCopy> {
   return generate ? PageCopySchema.parse(await generate(call)) : llmJson(call, PageCopySchema);
+}
+
+/**
+ * Textes imposés posés par le Studio, mot pour mot (jamais confiés au modèle) : accroche, slogan et appel à l'action
+ * dans l'ouverture, noms et prix exacts des produits. Puis contrôle : chaque section présente, dans l'ordre, avec son
+ * contenu ; aucun trou « [À compléter] ». Renvoie les problèmes (vide = textes complets).
+ */
+export function fixAndCheckCopy(c: PageCopy, page: MockupPage, fixed: { headline?: string; tagline?: string | null; cta?: string; products: { title: string; price: number | null }[] }): { copy: PageCopy; problems: string[] } {
+  const problems: string[] = [];
+  if (c.sections.length !== page.sections.length) problems.push(`${c.sections.length} sections écrites pour ${page.sections.length} attendues`);
+  const euros = (n: number) => `${(n / 100).toFixed(2).replace(".", ",").replace(",00", "")} €`;
+  const sections = page.sections.map((name, i) => {
+    const s = { ...(c.sections[i] ?? { section: name, title: null, text: null, button: null, items: [] }), section: name };
+    if (/ouverture|promesse/.test(name)) {
+      if (fixed.headline) s.title = fixed.headline;
+      if (fixed.tagline) s.text = fixed.tagline;
+      if (fixed.cta) s.button = fixed.cta;
+    }
+    if (/produit|offre/.test(name) && fixed.products.length) {
+      const byName = new Map(s.items.map((x) => [x.title.toLocaleLowerCase("fr-FR"), x.text]));
+      s.items = fixed.products.map((p) => {
+        const said = byName.get(p.title.toLocaleLowerCase("fr-FR")) ?? "";
+        const rest = said.replace(/^\s*\d+[,.]?\d*\s*€\s*[—–:,·-]?\s*/, "");
+        return { title: p.title, text: [p.price != null ? euros(p.price) : "", rest].filter(Boolean).join(" · ") || null };
+      });
+    }
+    const need = needOf(name);
+    if (need?.minItems && s.items.length < need.minItems) problems.push(`« ${name} » : ${s.items.length} élément(s) pour ${need.minItems} au moins`);
+    if (!s.title && !s.text && !s.items.length && !s.button) problems.push(`« ${name} » vide`);
+    return s;
+  });
+  const holes = JSON.stringify(sections).match(/\[À compléter[^\]]*\]/g);
+  if (holes) problems.push(`trous à compléter : ${[...new Set(holes)].join(", ")}`);
+  return { copy: { ...c, sections }, problems };
 }
 
 /** Angle tel que lu à l'étape 4 (émotion, récit, scènes) pour la rédaction. */

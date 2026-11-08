@@ -13,6 +13,7 @@ import { HttpError, type User } from "../auth";
 import { one, all, json, run as sql, id as newId } from "../db";
 import { budgetPctText } from "../ai/budget-pct";
 import { activityGaps, COMPANY_FIELDS } from "./activity";
+import { loadSiteCopy } from "./mockup-code/copy";
 import { enqueue, getJob, type JobContext } from "../jobs";
 import { llmJson, type LlmCall, type LlmImage } from "../ai/llm";
 import { withTrace, CostCapReached } from "../ai/trace";
@@ -501,6 +502,8 @@ export function threadView(user: User, cid: string) {
         activity: j.activity ? { ...j.activity, gaps: activityGaps(j.activity), validated: j.steps[5]?.status === "done" } : null,
         // Étape 6 : cartes des thèmes (site du client composé dans chacun) et thème choisi.
         themes: j.themes ? { ...j.themes, chosen: j.themeChoice?.id ?? null } : null,
+        // Étape 6, maquettes : textes écrits avant la maquette (montrés en entier au client).
+        siteCopy: c.project_id ? (() => { const sc = loadSiteCopy(c.project_id!); return sc ? { pages: Object.fromEntries(Object.entries(sc.pages).map(([k, v]) => [k, v])) } : null; })() : null,
         // Étape 4 : les 5 angles marketing et l'angle choisi.
         angles: j.angles ? { list: j.angles.list, recommendedId: j.angles.recommendedId, sourceCount: j.angles.sourceCount, chosen: j.angleChoice?.ids ?? (j.angleChoice ? [j.angleChoice.id] : null) } : null,
         // Étape 3 : l'image de marque (déclinaisons, planche, charte PDF), servie par la bibliothèque du projet.

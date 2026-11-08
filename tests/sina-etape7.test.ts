@@ -382,19 +382,33 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     ctx.conversationId = threadFor(user, pid);
     J.updateJourney(ctx.conversationId, (x) => { x.angleChoice = { id: "usage", ids: ["usage"], at: 1 }; });
     let prompt = "";
-    copyDeps.generate = async (call: any) => { prompt = call.prompt; return { seo: { title: "Braise Douce, bougies", description: "Des bougies pour trouver le calme." }, sections: [{ section: "ouverture (titre, photo, bouton)", title: "Fais le noir, trouve le calme.", text: "Une flamme, et la journée se pose.", button: "Choisis ta bougie", items: [] }, { section: "produit ou offre", title: "Nos bougies", text: null, button: null, items: [{ title: "Bougie Cèdre", text: "25 €" }] }] }; };
+    const { mockupPages: pagesFor } = await import("@/lib/syna-agent/mockup-code/pages");
+    const homePage = pagesFor("products", "multi").find((x) => x.key === "home")!;
+    // Réponse simulée complète : une section par ligne de l'inventaire, avec le contenu attendu.
+    copyDeps.generate = async (call: any) => { prompt = call.prompt; return { seo: { title: "Braise Douce, bougies", description: "Des bougies pour trouver le calme." }, sections: homePage.sections.map((name) => ({ section: name, title: /ouverture/.test(name) ? "Titre inventé par le modèle" : "Une flamme, et la journée se pose.", text: /pied/.test(name) ? "contact@braise.fr" : "Une phrase.", button: "Choisis ta bougie", items: /produit/.test(name) ? [{ title: "Bougie Cèdre", text: "25 € · cèdre" }] : /détails|questions/.test(name) ? [{ title: "a", text: "b" }, { title: "c", text: "d" }, { title: "e", text: "f" }] : /scènes|journal/.test(name) ? [{ title: "a", text: null }, { title: "b", text: null }] : [] })) }; };
     try {
       expect((await tool("mockup.copy").estimate!(ctx, {})).maxMicro).toBeGreaterThan(0); // payant : devis avant
       const r = await call("mockup.copy", ctx, {});
       expect(r.ok, r.summary).toBe(true);
       expect(prompt).toMatch(/Page à écrire : « Accueil »/);
-      expect(loadSiteCopy(pid)!.pages.home.sections[0].title).toBe("Fais le noir, trouve le calme.");
+      const saved = loadSiteCopy(pid)!.pages.home;
+      expect(saved.sections).toHaveLength(homePage.sections.length);
+      // Ouverture : le slogan posé par le Studio, mot pour mot (accroche et appel à l'action aussi quand l'angle est connu).
+      const opening = saved.sections.find((x) => /ouverture/.test(x.section))!;
+      expect(opening.text).toBe("Allume l'instant.");
+      expect(prompt).toMatch(/Écris EXACTEMENT \d+ sections/);
       await call("mockup.prepare", ctx, { directions: [{ name: "Lumière", style: "grandes photos plein cadre" }] });
       const home = loadMockupSet(pid)!.directions[0].images.find((i) => i.viewport === "desktop" && i.pages.includes("home"))!;
-      expect(home.prompt).toContain("Dans la partie ouverture (titre, photo, bouton) : titre « Fais le noir, trouve le calme. » ; texte « Une flamme, et la journée se pose. » ; bouton « Choisis ta bougie ».");
-      expect(home.prompt).toContain("élément « Bougie Cèdre » avec « 25 € »");
+      expect(home.prompt).toContain("Dans la partie ouverture (titre, photo, bouton) :");
+      expect(home.prompt).toContain("texte « Allume l'instant. »");
       expect(home.prompt).not.toContain("faux texte"); // le texte est SUR la maquette (consigne du propriétaire)
       expect(home.prompt).not.toContain("« ouverture"); // un nom de section n'est jamais un texte à écrire
+      // Textes incomplets (section vide, trou à compléter) : jamais posés sur une maquette.
+      copyDeps.generate = async () => ({ seo: { title: "t", description: "d" }, sections: [{ section: "x", title: "Seul", text: "[À compléter : e-mail]", button: null, items: [] }] });
+      const bad = await call("mockup.copy", ctx, {});
+      expect(bad.ok).toBe(false);
+      expect(bad.summary).toMatch(/textes incomplets/);
+      expect(loadSiteCopy(pid)!.pages.home.sections).toHaveLength(homePage.sections.length); // les bons textes restent
     } finally { copyDeps.generate = undefined; }
   });
 
@@ -516,5 +530,19 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     setJsonSetting("syna.mockup.image_route", "openai:gpt-image-2.5-flare");
     try { expect(mockupImageRoute()).toEqual({ provider: "openai", model: "gpt-image-2.5-flare" }); }
     finally { setJsonSetting("syna.mockup.image_route", "alibaba:qwen-image-3.0-pro"); }
+  });
+
+  it("textes imposés posés mot pour mot par le Studio : accroche, slogan, appel à l'action, noms et prix des produits", async () => {
+    const { fixAndCheckCopy } = await import("@/lib/syna-agent/mockup-code/copy");
+    const { mockupPages: pagesFor } = await import("@/lib/syna-agent/mockup-code/pages");
+    const page = pagesFor("products", "multi").find((x) => x.key === "home")!;
+    const raw = { seo: { title: "t", description: "d" }, sections: page.sections.map((name) => ({ section: name, title: "Autre titre", text: "Autre texte", button: "Autre bouton", items: /produit/.test(name) ? [{ title: "thé vert jasmin", text: "9 € · Sencha et jasmin" }] : /détails|questions/.test(name) ? [1, 2, 3].map((n) => ({ title: `q${n}`, text: "r" })) : /scènes|journal/.test(name) ? [1, 2].map((n) => ({ title: `s${n}`, text: null })) : [] })) };
+    const { copy, problems } = fixAndCheckCopy(raw, page, { headline: "Pose ton écran. Ces quelques minutes sont à toi.", tagline: "Chaque brin choisi, chaque mélange goûté.", cta: "Choisis ton mélange de pause.", products: [{ title: "Thé vert jasmin", price: 850 }, { title: "Verveine-menthe", price: 750 }] });
+    expect(problems).toEqual([]);
+    const opening = copy.sections.find((x) => /ouverture/.test(x.section))!;
+    expect([opening.title, opening.text, opening.button]).toEqual(["Pose ton écran. Ces quelques minutes sont à toi.", "Chaque brin choisi, chaque mélange goûté.", "Choisis ton mélange de pause."]);
+    const offer = copy.sections.find((x) => /produit/.test(x.section))!;
+    expect(offer.items).toEqual([{ title: "Thé vert jasmin", text: "8,50 € · Sencha et jasmin" }, { title: "Verveine-menthe", text: "7,50 €" }]); // prix réel, jamais celui du modèle
+    expect(fixAndCheckCopy({ ...raw, sections: raw.sections.slice(0, 3) }, page, { products: [] }).problems[0]).toMatch(/sections écrites pour/);
   });
 });
