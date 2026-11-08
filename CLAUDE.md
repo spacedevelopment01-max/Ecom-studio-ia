@@ -46,6 +46,10 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   **jamais une photo en doublon** (ni deux fois dans une page, ni d'une page à l'autre ; seule la photo d'un produit
   revient sur la carte ou la fiche de ce même produit) ; photos ratées (texte ou logo dedans, bandes blanches) écartées.
   Consignes à Qwen **en français**, concrètes (scène, objets, lumière), seuls les textes voulus entre guillemets.
+- **Sections « Produit vedette »** (décision du 8 novembre 2026) : elles ne vont qu'**en haut de la fiche produit**, ou au plus
+  **une seule fois sur l'accueil** ; **jamais deux sections « Produit vedette » dans une même page**. Leurs réglages (couleurs,
+  formats, lots, offres, abonnement) s'affichent ou se masquent **selon les données réelles du produit** (variantes, offres
+  saisies par le client) : rien d'affiché pour une option que le produit n'a pas.
 - **Écrire une consigne d'image comme le propriétaire** (modèle réussi du 16/10, `docs/guide-images-ia.md`) : décrire
   UNE photo, en phrases complètes et logiques, dans cet ordre : 1) type de photo, format, point de vue, cadrage ;
   2) surface et fond ; 3) chaque objet dans son paragraphe : place exacte dans l'image, forme, matière, couleur, état,
