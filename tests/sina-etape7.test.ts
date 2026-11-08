@@ -788,4 +788,24 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     // Les bandes d'une même page en téléphone ne comptent pas comme une rangée d'éléments.
     expect(mockupCheckPrompt({ viewport: "phone", pages: ["home"] }, ["Accueil"])).toContain("ce n'est pas une rangée d'éléments");
   });
+
+  it("pages aux textes écrits : chacune seule sur son image, images déjà créées gardées (option 3 du propriétaire, 8 novembre)", async () => {
+    const { plannedDirection, replanDirection } = await import("@/lib/syna-agent/mockup-code/mockup-set");
+    const { mockupPages } = await import("@/lib/syna-agent/mockup-code/pages");
+    const pages = mockupPages("products", "multi");
+    const d0 = plannedDirection("B", "Bandes vertes", "x", pages);
+    const homeD = d0.images.find((i) => i.viewport === "desktop" && i.pages.includes("home"))!;
+    const d1 = { ...d0, images: d0.images.map((i) => (i.id === homeD.id ? { ...i, status: "ready" as const, assetId: "a1" } : i)) };
+    const d = replanDirection(d1, pages, ["home", "product", "catalog", "cart", "contact", "about"]);
+    const desk = d.images.filter((i) => i.viewport === "desktop");
+    for (const k of ["catalog", "cart", "contact", "about"]) expect(desk.some((i) => i.pages.join() === k), k).toBe(true);
+    expect(d.images.find((i) => i.id === homeD.id)!.assetId).toBe("a1"); // image payée gardée, même identifiant
+    expect(desk.filter((i) => i.pages.includes("home"))).toHaveLength(1);
+    // Les variantes (catégorie, tiroir du panier, panier vide) restent prévues, regroupées à part.
+    expect(desk.some((i) => i.pages.includes("category") && !i.pages.includes("catalog"))).toBe(true);
+    // Toutes les pages restent couvertes, en ordinateur comme en téléphone.
+    for (const v of ["desktop", "phone"] as const) for (const p of pages.filter((x) => x.viewports.includes(v))) expect(d.images.some((i) => i.viewport === v && i.pages.includes(p.key)), `${v} ${p.key}`).toBe(true);
+    // Identifiants uniques.
+    expect(new Set(d.images.map((i) => i.id)).size).toBe(d.images.length);
+  });
 });

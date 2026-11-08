@@ -33,7 +33,7 @@ import type { AgentTool, ToolContext } from "../types";
 import { project } from "../tools/common";
 import { step7CallMaxMicro } from "./deps";
 import { MOCKUP_CODE_JOB, STEP7_REPORT_KEY } from "./job";
-import { attachImage, coverageOf, loadMockupSet, plannedDirection, saveMockupSet, type MockupSet } from "./mockup-set";
+import { attachImage, coverageOf, loadMockupSet, plannedDirection, replanDirection, saveMockupSet, type MockupSet } from "./mockup-set";
 import { inventoryOptionsOf, mockupPages } from "./pages";
 import { mockupFacts, mockupImagePrompt, mockupImagesMaxMicro } from "./prompts";
 import { step7MaxMicro } from "./pipeline";
@@ -156,7 +156,9 @@ export function refreshMockupPrompts(ctx: ToolContext): void {
   const p = project(ctx), set = loadMockupSet(p.id), copy = loadSiteCopy(p.id);
   if (!set) return;
   const facts = mockupFacts(p, angleOf(p.id), hasProductPhoto(p.id), { products: productsOf(p.id), texts: brandTextsOf(ctx, p.id), ...(copy ? { copy: copy.pages } : {}) });
-  saveMockupSet(p.id, { ...set, directions: set.directions.map((d) => ({ ...d, images: d.images.map((img) => (img.status === "ready" ? img : { ...img, prompt: mockupImagePrompt(facts, d, img, set.pages) })) })) });
+  // Une page dont les textes sont écrits a sa propre image (plan refait, images déjà créées gardées).
+  const alone = Object.keys(copy?.pages ?? {});
+  saveMockupSet(p.id, { ...set, directions: set.directions.map((d0) => { const d = alone.length ? replanDirection(d0, set.pages, alone) : d0; return { ...d, images: d.images.map((img) => (img.status === "ready" ? img : { ...img, prompt: mockupImagePrompt(facts, d, img, set.pages) })) }; }) });
 }
 
 const copyEditTool: AgentTool<{ page?: string; find: string; replace: string }> = {
@@ -190,7 +192,7 @@ const prepareTool: AgentTool<PrepareArgs> = {
     // Une maquette déjà commencée (même lettre, même nom, même style) garde ses images réussies dont la consigne n'a pas
     // changé (essai réel du 8 novembre : ajouter les maquettes B et C effaçait l'accueil de A déjà créé et payé).
     const before = loadMockupSet(p.id);
-    const directions = a.directions.map((d, i) => {
+    const planned0 = a.directions.map((d, i) => {
       const fresh = plannedDirection(d.key ?? keys[i], d.name, d.style, pages, (img) => mockupImagePrompt(facts, d, img, pages), d.ground);
       // Même maquette = même lettre, nom, style et fond (sans fond = clair). Une évolution de la consigne du Studio
       // n'efface jamais une image payée (essai réel : l'accueil de A détaché après un réglage de la consigne).
@@ -201,12 +203,16 @@ const prepareTool: AgentTool<PrepareArgs> = {
         return prev ? { ...img, status: "ready" as const, assetId: prev.assetId } : img;
       }) };
     });
-    const saved = saveMockupSet(p.id, { version: 1, business: p.business, pages, directions, at: 0 });
+    const saved0 = saveMockupSet(p.id, { version: 1, business: p.business, pages, directions: planned0, at: 0 });
+    // Pages aux textes déjà écrits : chacune seule sur son image (plan refait, images payées gardées).
+    refreshMockupPrompts(ctx);
     const read = loadMockupSet(p.id);
+    const saved = read ?? saved0;
+    const directions = read?.directions ?? planned0;
     const images = directions.reduce((n, d) => n + d.images.filter((i) => i.status !== "ready").length, 0);
     const refs = 1 + (photo && p.business !== "services" ? 1 : 0);
     const maxMicro = mockupImagesMaxMicro(images, refs, imageUnit);
-    const verified = !!read && read.directions.length === directions.length && read.directions.every((d, i) => d.images.length === directions[i].images.length);
+    const verified = !!read && read.directions.length === planned0.length;
     return {
       ok: verified,
       summary: L(`${directions.length} maquette(s) préparée(s) : ${images} image(s) à créer au total, aucune créée.${maxMicro == null ? " Aucun modèle d'images utilisable pour l'instant : rien ne peut être créé." : ""}`, `${directions.length} mockup(s) prepared: ${images} image(s) to create.`),

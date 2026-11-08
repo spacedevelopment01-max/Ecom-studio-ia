@@ -86,19 +86,25 @@ export function coverageOf(direction: Pick<MockupDirection, "images">, pages: Mo
  * fiche produit ou prestation) sur sa propre image, puis les autres pages par groupes ; en version téléphone, des
  * écrans côte à côte par groupes. Les variantes suivent leur page d'origine (même image).
  */
-export function planImages(pages: MockupPage[], opts: { desktopPerImage?: number; phonePerImage?: number } = {}): Omit<MockupImage, "id" | "status" | "assetId">[] {
+export function planImages(pages: MockupPage[], opts: { desktopPerImage?: number; phonePerImage?: number; alone?: string[] } = {}): Omit<MockupImage, "id" | "status" | "assetId">[] {
   const per: Record<Viewport, number> = { desktop: opts.desktopPerImage ?? 4, phone: opts.phonePerImage ?? 5 };
   const out: Omit<MockupImage, "id" | "status" | "assetId">[] = [];
   for (const v of VIEWPORTS) {
     const list = pages.filter((p) => p.viewports.includes(v));
     const groups: string[][] = [];
     // Une page et ses variantes restent ensemble.
-    const units = list.filter((p) => !p.variantOf || !pageByKey(list, p.variantOf)).map((p) => [p.key, ...list.filter((x) => x.variantOf === p.key).map((x) => x.key)]);
+    // Page aux textes écrits (opts.alone) : seule sur son image, ses variantes à part (demande du propriétaire du 8
+    // novembre : les textes complets sur la maquette, lisibles ; quatre pages par image les rendaient illisibles).
+    const alone = new Set(opts.alone ?? []);
+    const units = list.filter((p) => !p.variantOf || !pageByKey(list, p.variantOf)).flatMap((p) => {
+      const variants = list.filter((x) => x.variantOf === p.key).map((x) => x.key);
+      return alone.has(p.key) && variants.length ? [[p.key], variants] : [[p.key, ...variants]];
+    });
     let cur: string[] = [];
     for (const u of units) {
       // Pages clés seules aussi en téléphone (essai réel du 8 novembre : l'accueil serré avec trois autres écrans, textes
       // trop petits pour être écrits juste).
-      const isKey = !!pageByKey(list, u[0])?.key_page;
+      const isKey = !!pageByKey(list, u[0])?.key_page || (u.length === 1 && alone.has(u[0]));
       if (isKey) { groups.push(u); continue; }
       if (cur.length && cur.length + u.length > per[v]) { groups.push(cur); cur = []; }
       cur.push(...u);
@@ -127,4 +133,19 @@ export function attachImage(set: MockupSet, key: MockupDirection["key"], img: { 
   const image: MockupImage = { ...(existing ?? {}), id: existing?.id ?? `${key}${String(d.images.length + 1).padStart(2, "0")}`, viewport: img.viewport, pages: img.pages, assetId: img.assetId, status: "ready", check: undefined, ...(img.note ? { note: img.note } : {}) };
   const images = existing ? d.images.map((i) => (i.id === image.id ? image : i)) : [...d.images, image];
   return { set: { ...set, directions: set.directions.map((x) => (x.key === key ? { ...x, images } : x)) }, image };
+}
+
+/**
+ * Plan des images d'une maquette refait d'après les pages aux textes écrits (gratuit) : les images déjà créées restent
+ * telles quelles (mêmes identifiants), les pages qu'elles montrent ne sont pas reprises ; le reste est re-planifié
+ * (une page aux textes écrits seule sur son image), avec de nouveaux identifiants à la suite.
+ */
+export function replanDirection(d: MockupDirection, pages: MockupPage[], alone: string[]): MockupDirection {
+  const ready = d.images.filter((i) => i.status === "ready" && i.assetId);
+  const covered = (v: Viewport) => new Set(ready.filter((i) => i.viewport === v).flatMap((i) => i.pages));
+  const plan = VIEWPORTS.flatMap((v) => planImages(pages.map((p) => (covered(v).has(p.key) ? { ...p, viewports: p.viewports.filter((x) => x !== v) } : p)), { alone }).filter((img) => img.viewport === v));
+  const same = (a: { viewport: Viewport; pages: string[] }, b: { viewport: Viewport; pages: string[] }) => a.viewport === b.viewport && a.pages.join() === b.pages.join();
+  let n = Math.max(0, ...d.images.map((i) => Number(i.id.slice(1)) || 0));
+  const planned = plan.map((img) => d.images.find((i) => i.status !== "ready" && same(i, img)) ?? { ...img, id: `${d.key}${String(++n).padStart(2, "0")}`, assetId: null, status: "planned" as const });
+  return { ...d, images: [...ready, ...planned].sort((x, y) => (x.viewport === y.viewport ? 0 : x.viewport === "desktop" ? -1 : 1)) };
 }
