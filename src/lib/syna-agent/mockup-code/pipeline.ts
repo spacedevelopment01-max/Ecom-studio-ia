@@ -367,6 +367,7 @@ export async function runStep7(input: { direction: MockupDirection; pages: Mocku
     if (plan.some((s) => s.target.kind === "group")) groupsWritten = true;
     // Page arrêtée par le plafond puis reprise avec un plafond plus haut (essai réel du 8 novembre : accueil de Brindi
     // écrit à 6 sections sur 10) : seules les sections pas encore écrites sont écrites, les autres restent telles quelles.
+    // Les suites déjà faites sont relues (point de reprise) ; une section qui reste à écrire passe à la suite suivante.
     let left = res.budget ? plan.filter((x) => x.target.kind !== "library" && !res.written.includes(x.name)) : [];
     for (let k = 1; left.length && k <= 3 && canPay("write"); k++) {
       // Clé d'appel propre à la suite (essai réel : la section refusée au premier passage gardait sa clé, la reprise était
@@ -374,7 +375,7 @@ export async function runStep7(input: { direction: MockupDirection; pages: Mocku
       const more = await deps.step(`write:${page.key}:suite${k}`, async () => deps.writeSections({ spec, page, template: t.template, plan: left, mockup: await crop(page.key, "desktop"), tag: `s${k}` }));
       spec = applyWrite(spec, { ...more, failed: more.failed }, r, budget);
       r.failed = r.failed.filter((f) => !more.written.includes(f.name));
-      left = more.budget ? left.filter((x) => !more.written.includes(x.name)) : [];
+      left = left.filter((x) => !more.written.includes(x.name));
       if (!more.budget) stoppedBy = null;
     }
     if (res.order?.length) spec = orderLike(spec, t.template, res.order);
