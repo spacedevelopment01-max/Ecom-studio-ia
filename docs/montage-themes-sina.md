@@ -20,11 +20,13 @@ section que si elle sert son rôle.
 
 **Fiche produit**
 
-1. **Acheter** : une seule section « Produit vedette », tout en haut, bloc d'achat adapté au produit.
+1. **Acheter** : une seule section « Produit vedette », tout en haut, bloc d'achat adapté au produit. La livraison
+   estimée, les points de fidélité, les offres (lots, « 2 achetés, 1 offert », cadeaux par paliers) et le choix entre
+   plusieurs produits de la gamme sont des **fonctions de ce bloc**, jamais des sections à part.
 2. **Comprendre** : la description racontée.
 3. **Ressentir** : le moment, l'usage, l'émotion.
 4. **Se convaincre** : points forts, composition, comparatif.
-5. **Lever les doutes** : questions, livraison (un seul style), préparation.
+5. **Lever les doutes** : questions, préparation (la date de livraison est déjà dans le bloc d'achat).
 6. **Rassurer** : engagements réels.
 7. **Compléter** : lot, produits qui vont avec — seulement si le client en a.
 

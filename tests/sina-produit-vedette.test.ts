@@ -62,6 +62,27 @@ describe("SINA — bloc d'achat des sections « Produit vedette » adapté au pr
     expect(F.freeShippingFrom(undefined)).toBeNull();
   });
 
+  it("gamme, livraison estimée et fidélité sont des fonctions du bloc : actives seulement avec de vraies données", () => {
+    // Un seul produit, aucun délai connu, aucun programme : rien.
+    const none = F.decideBuyFeatures(prod({}), F.NO_OFFERS, { now: NOW, catalog: ["Thé vert jasmin"] });
+    expect(none).toMatchObject({ range: [], delivery: null, loyalty: null });
+    expect(none.hidden).toEqual(expect.arrayContaining(["choix dans la gamme : un seul produit au catalogue", "livraison estimée : délai de livraison inconnu", "points de fidélité : aucun programme de fidélité"]));
+    // Délai lu dans la réponse « Livraison » du client.
+    expect(F.deliveryFrom("Colissimo 48 à 72 h, offerte dès 35 €")).toEqual({ minDays: 2, maxDays: 3 });
+    expect(F.deliveryFrom("Expédié en 2-4 jours ouvrés")).toEqual({ minDays: 2, maxDays: 4 });
+    expect(F.deliveryFrom("Livré sous 24 h")).toEqual({ minDays: 1, maxDays: 1 });
+    expect(F.deliveryFrom("Retrait en boutique")).toBeNull();
+    const offers = F.shopOffersSchema.parse({ loyalty: { pointsPerEuro: 1, rewardPoints: 100, rewardLabel: "5 € offerts" }, delivery: { minDays: 1, maxDays: 2, cutoffHour: 14 } });
+    const f = F.decideBuyFeatures(prod({}), offers, { now: NOW, catalog: ["Thé vert jasmin", "Rooibos vanille", "Verveine-menthe"], shippingDelay: { minDays: 2, maxDays: 3 } });
+    expect(f.range).toEqual(["Rooibos vanille", "Verveine-menthe"]); // jamais le produit lui-même
+    expect(f.delivery).toEqual({ minDays: 1, maxDays: 2, cutoffHour: 14 }); // le délai saisi l'emporte sur la réponse lue
+    const text = F.buyBlockBrief(f).lines.join("\n");
+    for (const t of ["Choix dans la gamme", "Rooibos vanille, Verveine-menthe", "1 à 2 jours ouvrés, commande avant 14 h", "Tu gagnes N points", "100 points = 5 € offerts", "jamais une section à part"]) expect(text).toContain(t);
+    // Le client peut refuser le choix entre ses produits.
+    expect(F.decideBuyFeatures(prod({}), { ...offers, range: false }, { now: NOW, catalog: ["Thé vert jasmin", "Rooibos vanille"] }).range).toEqual([]);
+    expect(F.shopOffersSchema.safeParse({ delivery: { minDays: 4, maxDays: 2 } }).success).toBe(false);
+  });
+
   it("offres refusées si mal formées (pas de pourcentage inventé hors bornes, pas de lot vide)", () => {
     expect(F.shopOffersSchema.safeParse({ quantity: { kind: "lots", tiers: [] } }).success).toBe(false);
     expect(F.shopOffersSchema.safeParse({ subscription: { pct: 95, weeks: [4] } }).success).toBe(false);

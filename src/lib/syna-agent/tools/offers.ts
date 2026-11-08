@@ -2,7 +2,8 @@
  * Offres de la boutique et bloc d'achat des sections « Produit vedette » (consigne du propriétaire du 8 novembre 2026) :
  * SINA enregistre les offres QUE LE CLIENT DONNE (jamais devinées), puis décide d'elle-même, produit par produit, les
  * fonctions à afficher (couleurs, formats, promotion, lots ou « N achetés, M offerts », abonnement, lot à compléter,
- * cadeaux par paliers). Gratuits, sans IA.
+ * cadeaux par paliers, choix dans la gamme, livraison estimée, points de fidélité) : des fonctions du bloc d'achat,
+ * jamais des sections à part. Gratuits, sans IA.
  */
 import { z } from "zod";
 import { L } from "../../i18n-server";
@@ -21,6 +22,9 @@ function describe(f: BuyFeatures): string {
   if (f.subscription) on.push(`abonnement −${f.subscription.pct} %`);
   if (f.bundle) on.push(`lot à compléter (${f.bundle.products.join(", ")}, −${f.bundle.pct} %)`);
   if (f.gifts.length) on.push(`cadeaux par paliers (${f.gifts.map((g) => `${g.label} dès ${g.at} €`).join(", ")})`);
+  if (f.range.length) on.push(`choix dans la gamme (${f.range.join(", ")})`);
+  if (f.delivery) on.push(`livraison estimée (${f.delivery.minDays} à ${f.delivery.maxDays} jours ouvrés)`);
+  if (f.loyalty) on.push(`points de fidélité (${f.loyalty.pointsPerEuro} par euro)`);
   return on.length ? on.join(" ; ") : "aucune option : nom, prix, quantité et bouton d'ajout seulement";
 }
 
@@ -38,7 +42,7 @@ const featuresTool: AgentTool<Record<string, never>> = {
 
 const offersTool: AgentTool<Partial<ShopOffers>> = {
   name: "shop.offers", module: "commerce", kind: "write", needsProject: true,
-  description: "Enregistre les offres de la boutique QUE LE CLIENT A DONNÉES (gratuit) : quantity (lots { kind: \"lots\", tiers: [{ qty, pct }] } ou { kind: \"bogo\", buy, free }), subscription { pct, weeks }, bundle { products (titres exacts de l'onglet Produits), pct }, gifts [{ at (euros), label }], promo { pct, endsAt (horodatage de fin réelle, ms) }. Mettre null pour retirer une offre. N'invente JAMAIS une offre, un pourcentage ou une date : demande-les au client. La livraison offerte (réponse « Livraison » de l'activité) s'ajoute d'elle-même aux paliers.",
+  description: "Enregistre les offres de la boutique QUE LE CLIENT A DONNÉES (gratuit) : quantity (lots { kind: \"lots\", tiers: [{ qty, pct }] } ou { kind: \"bogo\", buy, free }), subscription { pct, weeks }, bundle { products (titres exacts de l'onglet Produits), pct }, gifts [{ at (euros), label }], promo { pct, endsAt (horodatage de fin réelle, ms) }. delivery { minDays, maxDays (jours ouvrés), cutoffHour (heure limite du jour ou null) } si le délai n'est pas déjà dans la réponse « Livraison », loyalty { pointsPerEuro, rewardPoints, rewardLabel } seulement si le client a un vrai programme de fidélité, range (false si le client ne veut pas du choix entre ses produits dans le bloc). Mettre null pour retirer une offre. N'invente JAMAIS une offre, un pourcentage ou une date : demande-les au client. La livraison offerte (réponse « Livraison » de l'activité) s'ajoute d'elle-même aux paliers.",
   args: shopOffersSchema.partial().strict(),
   preview: (ctx, a) => `Offres enregistrées : ${Object.keys(a).join(", ") || "aucune modification"}.`,
   run: (ctx, a) => {

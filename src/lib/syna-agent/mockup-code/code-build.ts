@@ -23,7 +23,7 @@ import path from "node:path";
 import { callCostBoundMicro, estimateCallMicro, jsonCallMaxMicro, llmJson, llmText, routeLlm } from "../../ai/llm";
 import { withTrace } from "../../ai/trace";
 import { listProducts } from "../../products/catalog";
-import { buyBlockBrief, decideBuyFeatures, freeShippingFrom, loadShopOffers } from "../product-features";
+import { buyBlockBrief, decideBuyFeatures, deliveryFrom, freeShippingFrom, loadShopOffers } from "../product-features";
 import { companyOf } from "../activity";
 import { copyLines, type PageCopy } from "./copy";
 import type { MockupDirection } from "./mockup-set";
@@ -71,7 +71,7 @@ export function productBuyBlock(projectId: string, page: Pick<MockupPage, "key" 
     if (!products.length) return { lines: [], allowed: [] };
     const name = page.fr.replace(/^Fiche produit\s*—\s*/i, "").trim().toLowerCase();
     const target = products.find((x) => x.data.title.trim().toLowerCase() === name) ?? products[0];
-    const f = decideBuyFeatures(target, loadShopOffers(projectId), { catalog: products.map((x) => x.data.title), freeShippingFrom: freeShippingFrom(companyOf(projectId).shipping) });
+    const f = decideBuyFeatures(target, loadShopOffers(projectId), { catalog: products.map((x) => x.data.title), freeShippingFrom: freeShippingFrom(companyOf(projectId).shipping), shippingDelay: deliveryFrom(companyOf(projectId).shipping) });
     return buyBlockBrief(f);
   } catch { return { lines: [], allowed: [] }; }
 }
