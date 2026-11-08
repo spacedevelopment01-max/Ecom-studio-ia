@@ -65,6 +65,8 @@ describe("SINA — maquettes en code : fichier, photos, retouches", async () => 
     const home = C.codeMockupPrompt({ ...base, page: pages.find((p) => p.key === "home")! });
     // Consignes du propriétaire (8 novembre) : photo pleine en ouverture, jamais deux parties pareilles, aucun vide, thème vivant.
     for (const t of ["GRANDE PHOTO PLEINE", "JAMAIS deux parties de même disposition à la suite", "AUCUN VIDE", "UN THÈME VIVANT"]) expect(home).toContain(t);
+    // Animations (8 novembre) : apparition au défilement, bouton vivant, contenu toujours visible sans JavaScript.
+    for (const t of ["apparition au défilement", "halo doux qui pulse", "TOUJOURS visible sans JavaScript", "prefers-reduced-motion"]) expect(home).toContain(t);
     for (const t of ["« Bandes vertes »", "#C9A04E", "« Cormorant Garamond » (500)", "titre « Pose ton écran. »", "AUCUN bouton d'action", "Jamais trois éléments côte à côte", "- p1 (4:3) : tasse", "nouvelle-1", "<style id=\"base\">", "aucun lien vers Internet", "data-part"]) expect(home).toContain(t);
     const cart = C.codeMockupPrompt({ ...base, page: pages.find((p) => p.key === "cart")!, baseCss: ":root{--x:1}", shell: "<header>h</header>", maxNew: 0 });
     expect(cart).toContain("STRUCTURE IMPOSÉE DE CETTE PAGE : une vraie page panier");
