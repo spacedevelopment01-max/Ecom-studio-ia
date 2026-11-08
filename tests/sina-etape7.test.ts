@@ -384,7 +384,7 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     let prompt = "";
     copyDeps.generate = async (call: any) => { prompt = call.prompt; return { seo: { title: "Braise Douce, bougies", description: "Des bougies pour trouver le calme." }, sections: [{ section: "ouverture (titre, photo, bouton)", title: "Fais le noir, trouve le calme.", text: "Une flamme, et la journée se pose.", button: "Choisis ta bougie", items: [] }, { section: "produit ou offre", title: "Nos bougies", text: null, button: null, items: [{ title: "Bougie Cèdre", text: "25 €" }] }] }; };
     try {
-      expect(tool("mockup.copy").estimate!(ctx, {}).maxMicro).toBeGreaterThan(0); // payant : devis avant
+      expect((await tool("mockup.copy").estimate!(ctx, {})).maxMicro).toBeGreaterThan(0); // payant : devis avant
       const r = await call("mockup.copy", ctx, {});
       expect(r.ok, r.summary).toBe(true);
       expect(prompt).toMatch(/Page à écrire : « Accueil »/);
