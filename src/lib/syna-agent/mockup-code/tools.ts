@@ -82,7 +82,7 @@ function brandTextsOf(ctx: ToolContext, projectId: string): { headline?: string;
 const hasProductPhoto = (pid: string) => all<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND deleted_at IS NULL AND kind='image' AND role IN ('original','product') LIMIT 1", pid).length > 0;
 const coverageView = (set: MockupSet) => set.directions.map((d) => {
   const c = coverageOf(d, set.pages);
-  return { maquette: d.key, nom: d.name, images: d.images.length, pretes: d.images.filter((i) => i.status === "ready").length, complete: c.complete, manquantes: c.missing.slice(0, 40).map((m) => `${m.label} (${m.viewport === "desktop" ? "ordinateur" : "téléphone"})`) };
+  return { maquette: d.key, nom: d.name, style: d.style, fond: d.ground ?? "clair", images: d.images.length, pretes: d.images.filter((i) => i.status === "ready").length, complete: c.complete, manquantes: c.missing.slice(0, 40).map((m) => `${m.label} (${m.viewport === "desktop" ? "ordinateur" : "téléphone"})`) };
 });
 
 const pagesTool: AgentTool<{}> = {
@@ -130,6 +130,9 @@ const copyTool: AgentTool<{ pages?: string[] }> = {
     const done = keys.filter((k) => out[k]);
     if (!done.length) return { ok: false, summary: L(`Textes non écrits : ${failed.join(" | ")}`, "Copy not written."), hint: "Dis-le au client avec le coût réel ; ne relance JAMAIS une écriture payante sans son accord écrit." };
     saveSiteCopy(p.id, { version: 1, angleId: j.angleChoice.id ?? null, pages: out, at: 0 });
+    // Les maquettes déjà préparées reprennent ces textes tout de suite (images encore à créer seulement) : pas besoin de
+    // refaire la préparation (essai réel : SINA la refaisait et réécrivait le style, l'image payée était détachée).
+    refreshMockupPrompts(ctx);
     const home = out.home;
     return {
       ok: !failed.length,
@@ -140,6 +143,17 @@ const copyTool: AgentTool<{ pages?: string[] }> = {
     };
   },
 };
+
+/**
+ * Les maquettes déjà préparées reprennent les textes actuels du site (images encore à créer seulement ; une image
+ * créée n'est jamais modifiée). Appelé après l'écriture ou la correction des textes.
+ */
+export function refreshMockupPrompts(ctx: ToolContext): void {
+  const p = project(ctx), set = loadMockupSet(p.id), copy = loadSiteCopy(p.id);
+  if (!set) return;
+  const facts = mockupFacts(p, angleOf(p.id), hasProductPhoto(p.id), { products: productsOf(p.id), texts: brandTextsOf(ctx, p.id), ...(copy ? { copy: copy.pages } : {}) });
+  saveMockupSet(p.id, { ...set, directions: set.directions.map((d) => ({ ...d, images: d.images.map((img) => (img.status === "ready" ? img : { ...img, prompt: mockupImagePrompt(facts, d, img, set.pages) })) })) });
+}
 
 const copyEditTool: AgentTool<{ page?: string; find: string; replace: string }> = {
   name: "mockup.copy_edit", module: "site", kind: "write", needsProject: true,
@@ -152,14 +166,15 @@ const copyEditTool: AgentTool<{ page?: string; find: string; replace: string }> 
     const r = editPageCopy(c, a.find, a.replace);
     if (!r.count) return { ok: false, summary: L(`Passage introuvable dans les textes : « ${a.find} ».`, "Passage not found."), hint: "Recopie le passage exactement tel qu'il est écrit (lis la carte des textes)." };
     saveSiteCopy(p.id, { ...sc, pages: { ...sc.pages, [key]: r.copy } });
-    return { ok: true, summary: a.replace ? L(`Texte corrigé : « ${a.find} » → « ${a.replace} ».`, "Copy corrected.") : L(`Passage retiré : « ${a.find} ».`, "Passage removed."), hint: "Rappelle mockup.prepare pour que la maquette reprenne les textes corrigés.", changes: [{ module: "site", object: L("textes de la page", "page copy"), summary: a.replace ? `« ${a.find} » → « ${a.replace} »` : `« ${a.find} » retiré`, before: a.find, after: a.replace, verified: JSON.stringify(loadSiteCopy(p.id)?.pages[key]).includes(a.replace) }] };
+    refreshMockupPrompts(ctx);
+    return { ok: true, summary: a.replace ? L(`Texte corrigé : « ${a.find} » → « ${a.replace} ».`, "Copy corrected.") : L(`Passage retiré : « ${a.find} ».`, "Passage removed."), hint: "La maquette reprend déjà les textes corrigés (images encore à créer).", changes: [{ module: "site", object: L("textes de la page", "page copy"), summary: a.replace ? `« ${a.find} » → « ${a.replace} »` : `« ${a.find} » retiré`, before: a.find, after: a.replace, verified: JSON.stringify(loadSiteCopy(p.id)?.pages[key]).includes(a.replace) }] };
   },
 };
 
 type PrepareArgs = { directions: { key?: "A" | "B" | "C"; name: string; style: string; ground?: "clair" | "sombre" | "marque" }[] };
 const prepareTool: AgentTool<PrepareArgs> = {
   name: "mockup.prepare", module: "site", kind: "write", needsProject: true,
-  description: "Étape 6 (préparation, GRATUITE, aucune image créée) : pour 1 à 3 directions graphiques FRANCHEMENT différentes (demande du propriétaire : des variantes proches ne conviennent pas), chacune avec name, style et ground (clair, sombre = ancrage sombre de la marque, marque = grands aplats de la couleur de marque ; trois maquettes = trois fonds différents). Le style décrit, sans nom de police ni code couleur : l'ouverture (photo pleine page avec le titre dessus, ou écran partagé, ou très grand titre typographique), la grille et le rythme, et des éléments vivants à piocher, à la façon d'une boutique gourmande : séparateurs en vague, pastilles et tampons ronds, bandeau défilant avec le slogan, cartes arrondies avec ombre douce, produits détourés qui débordent des cadres, grands chiffres ou mots en contour, motif du symbole en fond. Deux directions ne partagent ni la même ouverture, ni le même fond, ni les mêmes formes. Pour chacune, découpe chaque maquette en images (pages clés seules, autres pages groupées, version ordinateur et version téléphone) et écrit la consigne de chaque image d'après l'identité choisie, les vrais produits ou prestations et l'angle marketing. Donne le coût maximal de la création des images (à annoncer au client avant toute génération). Remplace une préparation précédente.",
+  description: "Étape 6 (préparation, GRATUITE, aucune image créée) : pour 1 à 3 directions graphiques FRANCHEMENT différentes (demande du propriétaire : des variantes proches ne conviennent pas), chacune avec name, style et ground (clair, sombre = ancrage sombre de la marque, marque = grands aplats de la couleur de marque ; trois maquettes = trois fonds différents). Le style décrit, sans nom de police ni code couleur : l'ouverture (photo pleine page avec le titre dessus, ou écran partagé, ou très grand titre typographique), la grille et le rythme, et des éléments vivants à piocher, à la façon d'une boutique gourmande : séparateurs en vague, pastilles et tampons ronds, bandeau défilant avec le slogan, cartes arrondies avec ombre douce, produits détourés qui débordent des cadres, grands chiffres ou mots en contour, motif du symbole en fond. Deux directions ne partagent ni la même ouverture, ni le même fond, ni les mêmes formes. Pour chacune, découpe chaque maquette en images (pages clés seules, autres pages groupées, version ordinateur et version téléphone) et écrit la consigne de chaque image d'après l'identité choisie, les vrais produits ou prestations et l'angle marketing. Donne le coût maximal de la création des images (à annoncer au client avant toute génération). Remplace une préparation précédente : les maquettes non citées sont retirées ; pour GARDER une maquette et ses images, reprends exactement son nom, son style et son fond (mockup.pages). Inutile de la refaire après mockup.copy : les textes sont repris tout seuls.",
   args: z.object({ directions: z.array(z.object({ key: KEY.optional(), name: z.string().min(1).max(60), style: z.string().min(1).max(700), ground: z.enum(["clair", "sombre", "marque"]).optional() }).strict()).min(1).max(3) }).strict(),
   run: (ctx, a) => {
     const p = project(ctx);

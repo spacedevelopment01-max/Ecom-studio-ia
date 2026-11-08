@@ -127,24 +127,37 @@ export async function writePageCopy(call: Parameters<typeof llmJson>[0], page: M
  * dans l'ouverture, noms et prix exacts des produits. Puis contrôle : chaque section présente, dans l'ordre, avec son
  * contenu ; aucun trou « [À compléter] ». Renvoie les problèmes (vide = textes complets).
  */
+/** Produit affiché sur une fiche : le titre de la section « prix » (sinon rien). */
+function sections_title(c: PageCopy, page: MockupPage): string | null {
+  const i = page.sections.findIndex((x) => /prix/.test(x));
+  const t = i >= 0 ? c.sections[i]?.title : null;
+  return t ? t.toLocaleLowerCase("fr-FR") : null;
+}
+
 export function fixAndCheckCopy(c: PageCopy, page: MockupPage, fixed: { headline?: string; tagline?: string | null; cta?: string; products: { title: string; price: number | null }[] }): { copy: PageCopy; problems: string[] } {
   const problems: string[] = [];
   if (c.sections.length !== page.sections.length) problems.push(`${c.sections.length} sections écrites pour ${page.sections.length} attendues`);
   const euros = (n: number) => `${(n / 100).toFixed(2).replace(".", ",").replace(",00", "")} €`;
   const sections = page.sections.map((name, i) => {
     const s = { ...(c.sections[i] ?? { section: name, title: null, text: null, button: null, items: [] }), section: name };
-    if (/ouverture|promesse/.test(name)) {
+    if (page.key === "home" && /ouverture|promesse/.test(name)) {
       if (fixed.headline) s.title = fixed.headline;
       if (fixed.tagline) s.text = fixed.tagline;
       if (fixed.cta) s.button = fixed.cta;
     }
-    if (/produit|offre/.test(name) && fixed.products.length) {
+    // Section des produits de l'ACCUEIL seulement (essai réel du 8 novembre : les « produits complémentaires » de la
+    // fiche produit remplacés par les six, produit affiché compris).
+    if (page.key === "home" && /^(produit ou offre|offre)/.test(name) && fixed.products.length) {
       const byName = new Map(s.items.map((x) => [x.title.toLocaleLowerCase("fr-FR"), x.text]));
       s.items = fixed.products.map((p) => {
         const said = byName.get(p.title.toLocaleLowerCase("fr-FR")) ?? "";
         const rest = said.replace(/^\s*\d+[,.]?\d*\s*€\s*[—–:,·-]?\s*/, "");
         return { title: p.title, text: [p.price != null ? euros(p.price) : "", rest].filter(Boolean).join(" · ") || null };
       });
+    }
+    if (/complémentaires/.test(name) && page.key !== "home") {
+      const shown = sections_title(c, page);
+      if (shown) s.items = s.items.filter((x) => x.title.toLocaleLowerCase("fr-FR") !== shown);
     }
     const need = needOf(name);
     if (need?.minItems && s.items.length < need.minItems) problems.push(`« ${name} » : ${s.items.length} élément(s) pour ${need.minItems} au moins`);

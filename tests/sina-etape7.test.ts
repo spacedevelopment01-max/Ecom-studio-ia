@@ -614,4 +614,14 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       expect(plan.some((i) => i.viewport === v && i.pages.join() === "product")).toBe(true);
     }
   });
+
+  it("fiche produit : l'accroche n'est pas imposée, les produits complémentaires excluent le produit affiché (essai réel du 8 novembre)", async () => {
+    const { fixAndCheckCopy } = await import("@/lib/syna-agent/mockup-code/copy");
+    const { mockupPages: pagesFor } = await import("@/lib/syna-agent/mockup-code/pages");
+    const page = pagesFor("products", "multi").find((x) => x.key === "product")!;
+    const raw = { seo: { title: "t", description: "d" }, sections: page.sections.map((name) => ({ section: name, title: /prix/.test(name) ? "Thé vert jasmin" : "Titre", text: "x", button: null, items: /complémentaires/.test(name) ? [{ title: "Thé vert jasmin", text: null }, { title: "Rooibos vanille", text: null }] : /gros plans|questions|galerie|accordéons|usages/.test(name) ? [1, 2, 3].map((n) => ({ title: `i${n}`, text: null })) : [] })) };
+    const { copy } = fixAndCheckCopy(raw as any, page, { headline: "Pose ton écran.", tagline: "Slogan", cta: "Choisis.", products: [{ title: "Thé vert jasmin", price: 850 }, { title: "Rooibos vanille", price: 850 }] });
+    expect(copy.sections.find((x) => /complémentaires/.test(x.section))!.items.map((i) => i.title)).toEqual(["Rooibos vanille"]);
+    expect(copy.sections.some((x) => x.title === "Pose ton écran.")).toBe(false);
+  });
 });
