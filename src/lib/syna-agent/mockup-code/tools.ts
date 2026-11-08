@@ -34,7 +34,7 @@ import { project } from "../tools/common";
 import { step7CallMaxMicro, step7CallTypicalMicro } from "./deps";
 import { MOCKUP_CODE_JOB, STEP7_REPORT_KEY } from "./job";
 import { attachImage, coverageOf, loadMockupSet, plannedCodeDirection, plannedDirection, replanDirection, saveMockupSet, type MockupSet } from "./mockup-set";
-import { buildCodePage, codeBuildEstimate, completeCodePhotos, codeCallCosts, codeEditEstimate, editCodePrompt, loadDirectionCode, mockupFiles, pageSource, patchCodeText, photoLibrary, realBuildDeps, retouchCodePage, type BuildDeps } from "./code-build";
+import { buildCodePage, codeBuildEstimate, completeCodePhotos, codeCallCosts, codeEditEstimate, editCodePrompt, loadDirectionCode, mockupFiles, pageSource, patchCodeText, photoLibrary, realBuildDeps, rejectPhotos, retouchCodePage, type BuildDeps } from "./code-build";
 import { expectedTexts, inspectCodeMockup } from "./code-mockup";
 import { chromiumPath } from "../../theme/snapshot";
 import { copyLines } from "./copy";
@@ -903,4 +903,15 @@ const siteImagesTool: AgentTool<{ pages?: string[]; sections?: string[]; redo?: 
 };
 
 /** Outils à ajouter au registre (src/lib/syna-agent/tools/index.ts). */
-export const mockupCodeTools: AgentTool[] = [pagesTool, copyTool, copyEditTool, prepareTool, generateTool, editTool, attachTool, chooseTool, codeTool, reportTool, siteImagesTool];
+const photoRejectTool: AgentTool<{ assetIds: string[]; reason: string }> = {
+  name: "site.photo_reject", module: "site", kind: "write", needsProject: true,
+  description: "Étapes 6 et 7 (gratuit) : écarte POUR TOUJOURS des photos du site jugées ratées (mot ou logo écrit dans la photo hors emballage, objet coupé, personne…) : elles ne sont plus proposées aux maquettes ni au site. Les fichiers restent dans les Fichiers. Les pages qui les montrent gardent la photo jusqu'à leur reconstruction (dis-le au client).",
+  args: z.object({ assetIds: z.array(z.string().max(60)).min(1).max(30), reason: z.string().min(3).max(200) }).strict(),
+  run: (ctx, a) => {
+    const p = project(ctx);
+    const done = rejectPhotos(p.id, a.assetIds, a.reason);
+    return { ok: done.length === a.assetIds.length, summary: L(`${done.length} photo(s) écartée(s) pour toujours (${a.reason}).${done.length < a.assetIds.length ? ` Introuvable(s) : ${a.assetIds.filter((x) => !done.includes(x)).join(", ")}.` : ""}`, `${done.length} photo(s) rejected.`), changes: done.map((id) => ({ module: "fichiers", object: `photo ${id}`, summary: L("écartée (ratée)", "rejected"), after: { rejected: true }, verified: !photoLibrary(p.id).some((x) => x.id === id) })) };
+  },
+};
+
+export const mockupCodeTools: AgentTool[] = [pagesTool, copyTool, copyEditTool, prepareTool, generateTool, editTool, attachTool, chooseTool, codeTool, reportTool, siteImagesTool, photoRejectTool];

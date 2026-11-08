@@ -227,6 +227,10 @@ ${photo.startsWith("nouvelle") ? `<script type="application/json" id="photos-nou
     const { saveAsset } = await import("@/lib/library");
     await saveAsset({ projectId: pid, userId: ctx.user.id, data: await png("#C9A04E", 300, 200), name: "site-home-1.png", mime: "image/png", role: "site", origin: "generated", meta: { synaSiteImage: { page: "home", type: "es-custom-x", index: 0, description: "Tasse en verre d'infusion dorée" } } } as any);
     expect(photoLibrary(pid).map((x) => x.description)).toEqual(["Tasse en verre d'infusion dorée"]);
+    // Photo ratée écartée pour toujours (gratuit) : plus jamais proposée.
+    const rej = await call("site.photo_reject", ctx, { assetIds: [photoLibrary(pid)[0].id], reason: "« Brindi » écrit sur la tasse" });
+    expect(rej.ok, rej.summary).toBe(true);
+    expect(photoLibrary(pid)).toEqual([]);
     setJsonSetting("syna.mockup.mode", "image");
     await call("mockup.prepare", ctx, { directions: [{ name: "Bandes vertes", style: "fond vert profond" }] });
     const old = loadMockupSet(pid)!;

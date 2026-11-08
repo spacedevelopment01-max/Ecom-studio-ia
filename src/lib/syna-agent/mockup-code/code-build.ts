@@ -12,7 +12,7 @@
  * (base.css, écrite avec l'accueil), en-tête et pied de page, et le fichier de chaque page (avec sa version précédente).
  */
 import { z } from "zod";
-import { all } from "../../db";
+import { all, run } from "../../db";
 import { remember, type Project } from "../../projects";
 import { assetData, getAsset, saveAsset } from "../../library";
 import { FONT_FILES } from "../../theme/render";
@@ -68,6 +68,8 @@ export function photoLibrary(projectId: string): LibraryPhoto[] {
   for (const r of rows) {
     let meta: any = null;
     try { meta = r.meta ? JSON.parse(r.meta) : null; } catch { meta = null; }
+    // Photo jugée ratée (texte ou logo dans la photo, objet coupé…) : jamais reproposée.
+    if (meta?.rejected) continue;
     const ratio = r.width && r.height ? `${r.width}:${r.height}` : "4:3";
     if (r.role === "site" && meta?.synaPhoto) out.push({ id: r.id, description: String(meta.synaPhoto.description).slice(0, 400), ratio: meta.synaPhoto.ratio ?? ratio });
     // Photos du site déjà recréées en haute définition (étape 7, ancienne méthode) : déjà payées, réutilisables.
@@ -381,4 +383,21 @@ export function patchCodeText(projectId: string, direction: string, pageKey: str
   if (!n) return false;
   saveDirectionCode(projectId, direction, { ...code, pages: { ...code.pages, [pageKey]: { html, previous: cur.html, at: Date.now() } } });
   return true;
+}
+
+/**
+ * Écarte des photos ratées pour toujours (essai réel du 8 novembre : « Brindi » écrit sur des tasses et une photo de
+ * menthe, réutilisées sur les maquettes en code). Les fichiers restent dans les Fichiers ; ils ne sont plus proposés.
+ */
+export function rejectPhotos(projectId: string, ids: string[], reason: string): string[] {
+  const done: string[] = [];
+  for (const id of ids) {
+    const r = all<{ meta: string | null }>("SELECT meta FROM assets WHERE id=? AND project_id=? AND role='site' AND deleted_at IS NULL", id, projectId)[0];
+    if (!r) continue;
+    let meta: any = {};
+    try { meta = r.meta ? JSON.parse(r.meta) : {}; } catch { meta = {}; }
+    run("UPDATE assets SET meta=? WHERE id=?", JSON.stringify({ ...meta, rejected: { reason: reason.slice(0, 200), at: Date.now() } }), id);
+    done.push(id);
+  }
+  return done;
 }
