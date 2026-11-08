@@ -173,10 +173,12 @@ const prepareTool: AgentTool<PrepareArgs> = {
     const before = loadMockupSet(p.id);
     const directions = a.directions.map((d, i) => {
       const fresh = plannedDirection(d.key ?? keys[i], d.name, d.style, pages, (img) => mockupImagePrompt(facts, d, img, pages), d.ground);
-      const old = before?.directions.find((x) => x.key === fresh.key && x.name === fresh.name && x.style === fresh.style && x.ground === fresh.ground);
+      // Même maquette = même lettre, nom, style et fond (sans fond = clair). Une évolution de la consigne du Studio
+      // n'efface jamais une image payée (essai réel : l'accueil de A détaché après un réglage de la consigne).
+      const old = before?.directions.find((x) => x.key === fresh.key && x.name === fresh.name && x.style === fresh.style && (x.ground ?? "clair") === (fresh.ground ?? "clair"));
       if (!old) return fresh;
       return { ...fresh, images: fresh.images.map((img) => {
-        const prev = old.images.find((x) => x.status === "ready" && x.assetId && x.viewport === img.viewport && x.pages.join() === img.pages.join() && x.prompt === img.prompt);
+        const prev = old.images.find((x) => x.status === "ready" && x.assetId && x.viewport === img.viewport && x.pages.join() === img.pages.join());
         return prev ? { ...img, status: "ready" as const, assetId: prev.assetId } : img;
       }) };
     });
