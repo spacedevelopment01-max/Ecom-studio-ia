@@ -239,7 +239,8 @@ const generateTool: AgentTool<{ direction: "A" | "B" | "C"; pages?: string[]; vi
     return {
       ok: made.length > 0 && !failed.length,
       summary: L(`${made.length} image(s) créée(s) pour la maquette ${a.direction}${failed.length ? ` ; ${failed.length} ratée(s) : ${failed.join(" | ")}` : ""}. Coût réel : ${spentText}. ${cov.complete ? "La maquette couvre toutes les pages." : `Il manque encore ${cov.missing.length} page(s) ou version(s).`}`, `${made.length} mockup image(s) created.`),
-      data: { mockups: made.map((m, i) => ({ n: i + 1, direction: `${a.direction} · ${m.id}`, assetId: m.assetId, href: m.href })), failed, complete: cov.complete },
+      // Libellés du client (essai réel : « 1. A · A01 » affiché) : nom de la maquette, pages, version.
+      data: { mockups: made.map((m, i) => { const img = read.directions.find((x) => x.key === a.direction)!.images.find((x) => x.id === m.id)!; return { n: i + 1, direction: `${a.direction} · ${m.id}`, name: d!.name, label: `${img.pages.map((k) => pageByKey(read.pages, k)?.fr ?? k).join(", ")} — ${img.viewport === "desktop" ? "ordinateur" : "téléphone"}`, assetId: m.assetId, href: m.href }; }), failed, complete: cov.complete },
       changes: made.map((m) => ({ module: "fichiers", object: `maquette ${a.direction} › image ${m.id}`, summary: L("créée par l'IA d'images", "created by the image AI"), after: m, verified: true })),
     };
   },
