@@ -52,7 +52,10 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   saisies par le client) : rien d'affiché pour une option que le produit n'a pas.
 - **Montage d'un thème avec la bibliothèque de sections** (retour du propriétaire du 8 novembre 2026, option B de Brindi) :
   **une seule section de cartes (produits ou familles) par page** ; une section qui montre plusieurs styles au choix dans la
-  bibliothèque (ex. « Livraison estimée » en 3 styles) n'en garde **qu'un seul** sur une vraie page.
+  bibliothèque (ex. « Livraison estimée » en 3 styles) n'en garde **qu'un seul** sur une vraie page. **Jamais une section
+  « pour prendre une section »** : chaque section a un rôle dans l'histoire de la page, est choisie selon la personnalité
+  de la marque, l'angle et son émotion, le métier et le contenu réel, et le tout reste harmonieux (méthode complète :
+  `docs/montage-themes-sina.md`).
 - **Écrire une consigne d'image comme le propriétaire** (modèle réussi du 16/10, `docs/guide-images-ia.md`) : décrire
   UNE photo, en phrases complètes et logiques, dans cet ordre : 1) type de photo, format, point de vue, cadrage ;
   2) surface et fond ; 3) chaque objet dans son paragraphe : place exacte dans l'image, forme, matière, couleur, état,
