@@ -34,7 +34,7 @@ import { project } from "../tools/common";
 import { step7CallMaxMicro, step7CallTypicalMicro } from "./deps";
 import { MOCKUP_CODE_JOB, STEP7_REPORT_KEY } from "./job";
 import { attachImage, coverageOf, loadMockupSet, plannedCodeDirection, plannedDirection, replanDirection, saveMockupSet, type MockupSet } from "./mockup-set";
-import { buildCodePage, codeBuildEstimate, completeCodePhotos, codeCallCosts, codeEditEstimate, editCodePrompt, loadDirectionCode, mockupFiles, pageSource, patchCodeText, photoLibrary, realBuildDeps, rejectPhotos, repairPhotoBands, retouchCodePage, type BuildDeps } from "./code-build";
+import { baseFor, buildCodePage, codeBuildEstimate, completeCodePhotos, codeCallCosts, staleStylePages, codeEditEstimate, editCodePrompt, loadDirectionCode, mockupFiles, pageSource, patchCodeText, photoLibrary, realBuildDeps, rejectPhotos, repairPhotoBands, retouchCodePage, type BuildDeps } from "./code-build";
 import { expectedTexts, inspectCodeMockup } from "./code-mockup";
 import { chromiumPath } from "../../theme/snapshot";
 import { copyLines } from "./copy";
@@ -199,7 +199,7 @@ const copyEditTool: AgentTool<{ page?: string; find: string; replace: string }> 
       if (!patchCodeText(p.id, d.key, key, a.find, a.replace)) continue;
       const code = loadDirectionCode(p.id, d.key);
       const html = code.pages[key].html;
-      const insp = await (codeBuildDeps.deps?.inspect ?? ((f, e) => inspectCodeMockup(f, e, chromiumPath())))(mockupFiles(p, html, code.base), { texts: expectedTexts(r.copy), allowed: [p.brand?.name ?? p.name] });
+      const insp = await (codeBuildDeps.deps?.inspect ?? ((f, e) => inspectCodeMockup(f, e, chromiumPath())))(mockupFiles(p, html, baseFor(code, key)), { texts: expectedTexts(r.copy), allowed: [p.brand?.name ?? p.name] });
       await saveCodeShots(ctx, p.id, d.key, key, insp);
       patched.push(d.key);
     }
@@ -380,7 +380,7 @@ async function repairAndRecapture(ctx: ToolContext): Promise<{ replaced: number;
     const c = copy?.pages[x.page];
     if (!c || !set?.directions.some((d) => d.key === x.direction && d.mode === "code")) continue;
     const code = loadDirectionCode(p.id, x.direction);
-    const insp = await (codeBuildDeps.deps?.inspect ?? ((f, e) => inspectCodeMockup(f, e, chromiumPath())))(mockupFiles(p, code.pages[x.page].html, x.page === "home" ? code.base : code.base), { texts: expectedTexts(c), allowed: [p.brand?.name ?? p.name] });
+    const insp = await (codeBuildDeps.deps?.inspect ?? ((f, e) => inspectCodeMockup(f, e, chromiumPath())))(mockupFiles(p, code.pages[x.page].html, baseFor(code, x.page)), { texts: expectedTexts(c), allowed: [p.brand?.name ?? p.name] });
     await saveCodeShots(ctx, p.id, x.direction as "A" | "B" | "C", x.page, insp);
     done.push(`${x.direction} › ${pageByKey(set.pages, x.page)?.fr ?? x.page}`);
   }
@@ -436,6 +436,8 @@ async function runCodeBuild(ctx: ToolContext, a: GenArgs) {
     } catch (e) { failed.push(`${page.fr} : ${(e as Error).message.slice(0, 200)}`); }
   }
   const read = loadMockupSet(p.id)!, cov = coverageOf(read.directions.find((x) => x.key === a.direction)!, read.pages);
+  const stale = staleStylePages(loadDirectionCode(p.id, a.direction)).map((k) => pageByKey(read.pages, k)?.fr ?? k);
+  if (stale.length) report.push(`Page(s) restée(s) dans le style d'avant le nouvel accueil (intactes, à reconstruire pour prendre le nouveau style) : ${stale.join(", ")}`);
   const spent = all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key LIKE ?", p.id, `${base}:%`)[0]?.c ?? 0;
   const spentText = budgetPctText(ctx.user.id, spent, p.id).replace(/de votre budget/, "de ton budget");
   const defects = report.some((x) => x.includes("RATÉE"));

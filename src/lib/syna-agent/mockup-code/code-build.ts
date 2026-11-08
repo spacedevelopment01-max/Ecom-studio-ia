@@ -40,18 +40,36 @@ const FIX_MAX_TOKENS = 8000;
 /** Au-delà de ce nombre de textes manquants ou ajoutés, la page est ratée : pas de correction ciblée. */
 const MAX_FIXABLE_TEXTS = 6;
 /** Jetons habituels (entrée, sortie) : essai réel du 8 novembre (accueil complet ≈ 30 000 jetons de sortie en réflexion haute). */
-const TYPICAL = { first: { input: 7000, output: 20000 }, next: { input: 16000, output: 11000 }, fix: { input: 26000, output: 2500 } };
+// Mis à jour d'après les essais réels du 8 novembre avec les animations : accueil ≈ 45 000 jetons de sortie (0,90 €),
+// fiche produit ≈ 28 000 (0,59 €).
+const TYPICAL = { first: { input: 8000, output: 45000 }, next: { input: 18000, output: 28000 }, fix: { input: 26000, output: 2500 } };
 /** Photos nouvelles au plus : accueil de la première maquette, accueil des suivantes (photos partagées), autres pages. */
 export const MAX_NEW = { firstHome: 16, home: 6, page: 10 };
 /** Photos nouvelles habituelles (coût probable). */
 const TYPICAL_NEW = { firstHome: 12, home: 3, page: 5 };
 
 export type DirectionCode = {
-  base: string | null; shell: string | null; pages: Record<string, { html: string; previous?: string | null; at: number }>;
+  base: string | null; shell: string | null;
+  /** base : feuille commune avec laquelle la page a été construite (l'accueil refait ne casse jamais les autres pages). */
+  pages: Record<string, { html: string; previous?: string | null; at: number; base?: string | null }>;
   /** Photos demandées par une page mais pas encore créées (fournisseur indisponible…) : créées plus tard, sans réécrire la page. */
   pending?: Record<string, CodePhoto[]>;
 };
 export const codeKey = (direction: string) => `syna.mockup_code.${direction}`;
+
+/**
+ * Feuille commune d'une page : celle de l'accueil pour l'accueil, sinon celle avec laquelle la page a été construite
+ * (essai réel du 8 novembre : l'accueil refait avait changé la feuille, la fiche produit et le panier s'affichaient de
+ * travers, menu visible sur téléphone et logo étiré).
+ */
+export function baseFor(code: DirectionCode, pageKey: string): string | null {
+  return pageKey === "home" ? code.base : code.pages[pageKey]?.base ?? code.base;
+}
+
+/** Pages restées dans l'ancien style après un nouvel accueil : à reconstruire pour prendre le nouveau. */
+export function staleStylePages(code: DirectionCode): string[] {
+  return Object.entries(code.pages).filter(([k, v]) => k !== "home" && v.base != null && v.base !== code.base).map(([k]) => k);
+}
 
 export function loadDirectionCode(projectId: string, direction: string): DirectionCode {
   const row = all<{ value: string }>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key=? AND state='active' LIMIT 1", projectId, codeKey(direction))[0];
@@ -284,12 +302,14 @@ export async function buildCodePage(p: Project, d: Pick<MockupDirection, "key" |
   // 5) Enregistrement : l'accueil fixe la feuille commune, l'en-tête et le pied de page.
   const next: DirectionCode = { ...code, pages: { ...code.pages } };
   if (page.key === "home") {
+    // Les autres pages gardent la feuille avec laquelle elles ont été construites.
+    for (const [k, v] of Object.entries(next.pages)) if (k !== "home" && v.base == null) next.pages[k] = { ...v, base: code.base };
     const s = splitBaseCss(full);
     next.base = s.css ?? next.base;
     next.shell = shellOf(s.html) ?? next.shell;
     full = s.html;
   }
-  next.pages[page.key] = { html: full, previous: code.pages[page.key]?.html ?? null, at: Date.now() };
+  next.pages[page.key] = { html: full, previous: code.pages[page.key]?.html ?? null, at: Date.now(), ...(page.key === "home" ? {} : { base: code.base }) };
   next.pending = { ...(code.pending ?? {}), [page.key]: pending };
   if (!pending.length) delete next.pending[page.key];
   saveDirectionCode(p.id, d.key, next);
@@ -319,7 +339,7 @@ export async function completeCodePhotos(p: Project, direction: string, page: Mo
   const source = pageSource(p.id, direction, page.key)!;
   let full = resolvePhotos(source, ids);
   const expect = { texts: expectedTexts(copy), allowed: [p.brand?.name ?? p.name] };
-  const base = page.key === "home" ? null : code.base;
+  const base = page.key === "home" ? null : baseFor(code, page.key);
   let r = await deps.inspect(mockupFiles(p, full, base), expect);
   const fixable = r.problems.filter((x) => !/image non chargée/.test(x));
   if (fixable.length) {
@@ -336,7 +356,7 @@ export async function completeCodePhotos(p: Project, direction: string, page: Mo
   res.toVerify.push(...r.toVerify);
   const next: DirectionCode = { ...code, pages: { ...code.pages }, pending: { ...(code.pending ?? {}) } };
   if (page.key === "home") { const s2 = splitBaseCss(full); next.base = s2.css ?? next.base; next.shell = shellOf(s2.html) ?? next.shell; full = s2.html; }
-  next.pages[page.key] = { html: full, previous: cur.html, at: Date.now() };
+  next.pages[page.key] = { ...cur, html: full, previous: cur.html, at: Date.now() };
   const left = todo.filter((ph) => !ids[ph.id]);
   if (left.length) next.pending![page.key] = left; else delete next.pending![page.key];
   saveDirectionCode(p.id, direction, next);
@@ -353,15 +373,15 @@ export async function retouchCodePage(p: Project, direction: string, page: Mocku
   const joined = page.key === "home" && code.base ? cur.html.replace('<link rel="stylesheet" href="base.css">', `<style id="base">\n${code.base}\n</style>`) : cur.html;
   const applied = applyEdits(joined, edits);
   if (applied.failed.length) return { ok: false, failed: applied.failed, shots: null, problems: [], toVerify: [] };
-  const base = page.key === "home" ? null : code.base;
+  const base = page.key === "home" ? null : baseFor(code, page.key);
   const r0 = await inspect(mockupFiles(p, applied.html, base), { texts: expectedTexts(copy), allowed: [p.brand?.name ?? p.name] });
   const r = { ...r0, problems: [...r0.problems, ...duplicatePhotos(applied.html, otherPages(p.id, direction, page.key))] };
   // Retouche qui ajoute des défauts : jamais gardée (la page d'avant reste en place).
   if (accept && !accept(r.problems)) return { ok: false, failed: [], shots: r.shots, problems: r.problems, toVerify: r.toVerify, rejected: true };
   const next: DirectionCode = { ...code, pages: { ...code.pages } };
   let html = applied.html;
-  if (page.key === "home") { const s = splitBaseCss(html); next.base = s.css ?? next.base; next.shell = shellOf(s.html) ?? next.shell; html = s.html; }
-  next.pages[page.key] = { html, previous: cur.html, at: Date.now() };
+  if (page.key === "home") { for (const [k, v] of Object.entries(next.pages)) if (k !== "home" && v.base == null) next.pages[k] = { ...v, base: code.base }; const s = splitBaseCss(html); next.base = s.css ?? next.base; next.shell = shellOf(s.html) ?? next.shell; html = s.html; }
+  next.pages[page.key] = { ...cur, html, previous: cur.html, at: Date.now() };
   saveDirectionCode(p.id, direction, next);
   return { ok: !!r.shots && !r.problems.length, failed: [], shots: r.shots, problems: r.problems, toVerify: r.toVerify };
 }
@@ -411,7 +431,7 @@ export function patchCodeText(projectId: string, direction: string, pageKey: str
   let html = cur.html, n = 0;
   for (const v of variants) if (html.includes(v)) { n += html.split(v).length - 1; html = html.split(v).join(v === find || v === find.replace(/'/g, "’") ? replace : esc(replace)); }
   if (!n) return false;
-  saveDirectionCode(projectId, direction, { ...code, pages: { ...code.pages, [pageKey]: { html, previous: cur.html, at: Date.now() } } });
+  saveDirectionCode(projectId, direction, { ...code, pages: { ...code.pages, [pageKey]: { ...cur, html, previous: cur.html, at: Date.now() } } });
   return true;
 }
 
@@ -505,7 +525,7 @@ export async function repairPhotoBands(p: Project): Promise<{ replaced: Record<s
     for (const [page, cur] of Object.entries(code.pages)) {
       let html = cur.html;
       for (const [from, to] of Object.entries(replaced)) html = html.split(from).join(to);
-      if (html !== cur.html) { next.pages[page] = { html, previous: cur.html, at: Date.now() }; pages.push({ direction: key, page }); changed = true; }
+      if (html !== cur.html) { next.pages[page] = { ...cur, html, previous: cur.html, at: Date.now() }; pages.push({ direction: key, page }); changed = true; }
     }
     if (changed) saveDirectionCode(p.id, key, next);
   }

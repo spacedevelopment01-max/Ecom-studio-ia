@@ -324,6 +324,32 @@ ${photo.startsWith("nouvelle") ? `<script type="application/json" id="photos-nou
     expect((await call("mockup.photos_check", ctx, {})).summary).toMatch(/Aucune photo à bandes blanches/);
   });
 
+  it("accueil refait : les autres pages gardent la feuille avec laquelle elles ont été construites, signalées à refaire", async () => {
+    const { pid, ctx } = await ready();
+    codeBuildDeps.photoUnit = () => 100_000;
+    await call("mockup.prepare", ctx, { directions: [{ name: "Bandes vertes", style: "fond vert profond" }] });
+    saveSiteCopy(pid, { version: 1, angleId: null, pages: { home: homeCopy, cart: homeCopy }, at: 0 });
+    const { saveDirectionCode, baseFor, staleStylePages } = await import("@/lib/syna-agent/mockup-code/code-build");
+    saveDirectionCode(pid, "A", { base: ":root{--ancien:1}", shell: "<header>h</header>", pages: { home: { html: "<html></html>", at: 1 }, cart: { html: "<p>panier</p>", at: 1 } } });
+    let seenBase: string | null | undefined;
+    codeBuildDeps.deps = {
+      writeHtml: async () => page("x").replace('<img data-photo="x" src="photos/x.jpg">', "").replace(":root{--dark:#233A2E}", ":root{--nouveau:1}"),
+      fixEdits: async () => [], makePhoto: async () => png("#000"),
+      inspect: async (files) => { seenBase = files.baseCss; return { shots: { desktop: await png("#FFF", 144, 300), phone: await png("#FFF", 39, 300) }, problems: [], toVerify: [] }; },
+    };
+    try {
+      const r = await call("mockup.generate", ctx, { direction: "A", pages: ["home"], redo: true });
+      expect(r.summary).toMatch(/restée\(s\) dans le style d'avant le nouvel accueil[^.]*Panier/);
+      const code = loadDirectionCode(pid, "A");
+      expect(code.base).toBe(":root{--nouveau:1}");
+      expect(baseFor(code, "cart")).toBe(":root{--ancien:1}");
+      expect(staleStylePages(code)).toEqual(["cart"]);
+      // Une correction de texte reprend la page avec SA feuille.
+      await call("mockup.copy_edit", ctx, { page: "cart", find: "Pose ton écran.", replace: "Pose ton téléphone." });
+      void seenBase;
+    } finally { codeBuildDeps.deps = undefined; codeBuildDeps.photoUnit = undefined; }
+  });
+
   it("page coupée même après deux suites : rien n'est gardé, aucune photo créée", async () => {
     const { pid, ctx } = await ready();
     codeBuildDeps.photoUnit = () => 100_000;
