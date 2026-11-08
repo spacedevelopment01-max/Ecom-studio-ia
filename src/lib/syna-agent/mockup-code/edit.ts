@@ -101,3 +101,22 @@ export async function blackShare(image: Buffer, b: Box): Promise<number> {
   for (let i = 0; i < info.width * info.height; i++) if (data[i * 3] < 10 && data[i * 3 + 1] < 10 && data[i * 3 + 2] < 10) n++;
   return n / (info.width * info.height);
 }
+
+/** Textes que la demande RETIRE (« retire le bouton « X » ») : les seuls qui peuvent disparaître d'une zone. */
+export function removedTexts(change: string, texts: string[]): string[] {
+  const c = norm(change);
+  return texts.filter((t) => { const i = c.indexOf(norm(t)); return i >= 0 && /\b(retir|supprim|enl[eè]v|ôt|efface)\w*[^.;]*$/.test(c.slice(0, i)); });
+}
+
+/**
+ * Textes disparus d'une zone après la retouche (essai réel du 8 novembre : le bouton « Lis le journal » perdu en
+ * réorganisant le journal, et le contrôle de mise en page n'avait rien vu) : ceux lus AVANT dans la zone, mot pour mot
+ * dans les textes de la page, que la demande ne retire pas, et qu'on ne relit plus APRÈS.
+ */
+export function missingTexts(changes: EditChange[], before: string[][], after: Locate): string[] {
+  return changes.flatMap((c, i) => {
+    const expected = before[i].filter((t) => !removedTexts(c.change, [t]).length);
+    const read = norm((after.zones.find((z) => z.n === i + 1)?.texts ?? []).join(" | "));
+    return expected.filter((t) => !read.includes(norm(t)));
+  });
+}

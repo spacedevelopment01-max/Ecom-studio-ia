@@ -759,6 +759,14 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     expect(exactTexts(["Lis le  journal", "Lis le journa", "Le journal de la pause"], ["Le journal de la pause", "Lis le journal"])).toEqual(["Lis le journal", "Le journal de la pause"]);
     // Marges des zones : fines en hauteur (essai réel : la marge mordait sur le logo et la partie suivante).
     expect(boxesOf({ zones: [{ n: 1, found: true, left: 52.5, top: 46.4, right: 86.4, bottom: 60.7, texts: [] }] }, 1, 1024, 1536)[0]).toEqual({ left: 527, right: 895, top: 703, bottom: 942 });
+    // Textes disparus d'une zone retouchée (essai réel : « Lis le journal » perdu) ; un texte retiré exprès ne compte pas.
+    const { missingTexts, removedTexts } = await import("@/lib/syna-agent/mockup-code/edit");
+    const changes = [{ zone: "le bouton du haut", change: "retire le bouton doré « Choisis ton mélange de pause. »" }, { zone: "le journal", change: "les 3 articles l'un sous l'autre, puis le bouton « Lis le journal » sur toute la largeur" }];
+    expect(removedTexts(changes[0].change, ["Choisis ton mélange de pause."])).toEqual(["Choisis ton mélange de pause."]);
+    expect(removedTexts(changes[1].change, ["Lis le journal"])).toEqual([]);
+    const before = [["Choisis ton mélange de pause."], ["Le journal de la pause", "Regarder les feuilles infuser", "Lis le journal"]];
+    const after = { zones: [{ n: 1, found: false, left: 0, top: 0, right: 0, bottom: 0, texts: [] }, { n: 2, found: true, left: 0, top: 0, right: 1, bottom: 1, texts: ["Le journal de la pause", "Regarder les feuilles infuser"] }] };
+    expect(missingTexts(changes, before, after)).toEqual(["Lis le journal"]);
     // Les bandes d'une même page en téléphone ne comptent pas comme une rangée d'éléments.
     expect(mockupCheckPrompt({ viewport: "phone", pages: ["home"] }, ["Accueil"])).toContain("ce n'est pas une rangée d'éléments");
   });

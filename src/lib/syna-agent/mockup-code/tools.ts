@@ -39,7 +39,7 @@ import { mockupFacts, mockupImagePrompt, mockupImagesMaxMicro } from "./prompts"
 import { step7MaxMicro } from "./pipeline";
 import { checkMaxMicro, mockupCheckCall, MockupCheckSchema, mockupCheckVerdict, type MockupCheck } from "./check";
 import { llmJson } from "../../ai/llm";
-import { blackShare, boxesOf, exactTexts, locateCall, locateMaxMicro, LocateSchema, mockupEditPrompt, pasteZones, type Box, type EditChange, type Locate } from "./edit";
+import { blackShare, boxesOf, exactTexts, missingTexts, locateCall, locateMaxMicro, LocateSchema, mockupEditPrompt, pasteZones, type Box, type EditChange, type Locate } from "./edit";
 
 /** Remplaçables par les tests : coût d'une image de maquette et coût maximal des appels de l'étape 7. */
 export const mockupToolDeps: { imageMaxMicro?: (references: number) => number | null; callMaxMicro?: typeof step7CallMaxMicro; generateImage?: (prompt: string, refs: { logo: Buffer | null; product: Buffer | null }) => Promise<Buffer>; checkImage?: (data: Buffer, img: { viewport: "desktop" | "phone"; pages: string[] }) => Promise<MockupCheck>; locate?: (image: Buffer, changes: EditChange[]) => Promise<Locate>; maskEdit?: (image: Buffer, mask: Buffer | null, prompt: string) => Promise<Buffer> } = {};
@@ -336,7 +336,7 @@ function editMaxMicro(): number | null {
   if (r.provider !== "openai") return null;
   try {
     const paint = mockupToolDeps.imageMaxMicro ? mockupToolDeps.imageMaxMicro(2) : mockupMaskEditMaxMicro(r.model);
-    return paint == null ? null : paint + locateMaxMicro() + checkMaxMicro();
+    return paint == null ? null : paint + 2 * locateMaxMicro() + checkMaxMicro();
   } catch { return null; }
 }
 const editTool: AgentTool<EditArgs> = {
@@ -403,9 +403,16 @@ const editTool: AgentTool<EditArgs> = {
     const asset = await saveAsset({ projectId: p.id, userId: ctx.user.id, data, name: `maquette-${a.direction}-${a.imageId}-${img.viewport}-retouche.png`, mime: "image/png", role: "mockup", origin: "generated", meta: { synaMockup: { direction: a.direction, image: a.imageId, pages: img.pages, viewport: img.viewport, editedFrom: src.id, changes: a.changes } } });
     set = attachImage(set, a.direction, { id: img.id, viewport: img.viewport, pages: img.pages, assetId: asset.id }).set;
     saveMockupSet(p.id, set);
-    const check = await checkMockupImage(ctx, p.id, a.direction, img, data, set.pages);
-    if (check) { set = { ...set, directions: set.directions.map((x) => (x.key === a.direction ? { ...x, images: x.images.map((i) => (i.id === img.id ? { ...i, check } : i)) } : x)) }; saveMockupSet(p.id, set); }
-    const keys = [key("locate"), key("paint"), `syna:${ctx.runId}:mockup-check:${a.direction}:${a.imageId}`];
+    let check = await checkMockupImage(ctx, p.id, a.direction, img, data, set.pages);
+    // Relecture des zones retouchées : un texte qui y était et que la demande ne retire pas doit y être encore.
+    try {
+      const after = mockupToolDeps.locate ? await mockupToolDeps.locate(data, a.changes)
+        : LocateSchema.parse(await withTrace({ jobId, projectId: p.id, step: "mockup-locate", costCapMicro: capOf(locateMaxMicro()) }, () => llmJson(locateCall({ userId: ctx.user.id, projectId: p.id, jobId, usageKey: key("verify") }, data, a.changes), LocateSchema, { strict: true })));
+      const lost = missingTexts(a.changes, keep, after);
+      if (lost.length) check = { ok: false, problems: [...(check?.problems ?? []), `texte disparu : ${lost.map((t) => `« ${t} »`).join(", ")}`], toVerify: check?.toVerify ?? [] };
+    } catch { check = check ? { ...check, toVerify: [...check.toVerify, "textes des zones retouchées non relus"] } : null; }
+    if (check) { set = { ...set, directions: set.directions.map((x) => (x.key === a.direction ? { ...x, images: x.images.map((i) => (i.id === img.id ? { ...i, check: check! } : i)) } : x)) }; saveMockupSet(p.id, set); }
+    const keys = [key("locate"), key("paint"), key("verify"), `syna:${ctx.runId}:mockup-check:${a.direction}:${a.imageId}`];
     const spent = all<{ c: number | null }>(`SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key IN (${keys.map(() => "?").join(",")})`, p.id, ...keys)[0]?.c ?? 0;
     const spentText = budgetPctText(ctx.user.id, spent, p.id).replace(/de votre budget/, "de ton budget");
     const checkText = !check ? "contrôle automatique impossible, à regarder" : check.ok ? "contrôle automatique de la mise en page : rien à signaler" : `RATÉE au contrôle automatique : ${check.problems.join(" ; ")}`;
