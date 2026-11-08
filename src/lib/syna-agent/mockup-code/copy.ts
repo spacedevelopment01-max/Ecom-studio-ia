@@ -190,8 +190,13 @@ export function copyLines(c: PageCopy, opts: { phone?: boolean } = {}): string[]
       ...(header ? [] : s.items.map((i) => `élément « ${i.title} »${i.text ? ` avec « ${i.text} »` : ""}`)),
       s.button ? `bouton « ${s.button} »` : "",
     ].filter(Boolean);
+    // Téléphone : la disposition est dite DANS chaque partie (essai réel du 8 novembre : avec une seule règle générale,
+    // le journal était bien empilé mais les gros plans passaient à quatre de front et les moments à trois).
+    const layout = opts.phone && s.items.length >= 3 && !header
+      ? /produit|offre|collection|catalogue/i.test(s.section) ? " (en cartes, deux par rangée au plus)" : " (disposés l'un sous l'autre, chacun sur toute la largeur, jamais côte à côte)"
+      : "";
     // Nom de la section sans guillemets : une indication de place, jamais un texte à écrire.
-    return parts.length ? `Dans la partie ${s.section} : ${parts.join(" ; ")}.` : "";
+    return parts.length ? `Dans la partie ${s.section}${layout} : ${parts.join(" ; ")}.` : "";
   }).filter(Boolean);
 }
 

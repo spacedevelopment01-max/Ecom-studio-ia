@@ -662,5 +662,15 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     expect(phone[0]).toContain("bouton « Choisis. »");
     expect(phone[1]).toContain("Nos mélanges");
     expect(copyLines(c)[0]).toContain("Nos mélanges");
+    // Disposition dite dans chaque partie (essai réel : gros plans à quatre de front, moments à trois).
+    const three = [{ title: "a", text: null }, { title: "b", text: null }, { title: "c", text: null }];
+    const c2: any = { sections: [
+      { section: "produit ou offre", title: null, text: null, button: null, items: three },
+      { section: "détails (3 ou 4 gros plans)", title: null, text: null, button: null, items: three },
+    ] };
+    const [prod, det] = copyLines(c2, { phone: true });
+    expect(prod).toContain("deux par rangée au plus");
+    expect(det).toContain("l'un sous l'autre");
+    expect(copyLines(c2)[1]).not.toContain("l'un sous l'autre");
   });
 });
