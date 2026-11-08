@@ -438,6 +438,12 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       expect(again.ok).toBe(true);
       expect(n).toBe(11);
       expect(loadMockupSet(pid)!.directions[0].images.every((i) => i.status === "ready")).toBe(true);
+      // Ajouter des maquettes B et C garde les images réussies de A (essai réel du 8 novembre : l'accueil de A était effacé).
+      const readyA = loadMockupSet(pid)!.directions[0].images.filter((i) => i.status === "ready").length;
+      await call("mockup.prepare", ctx, { directions: [{ key: "A", name: "Lumière", style: "grandes photos plein cadre" }, { key: "B", name: "Atelier", style: "grille éditoriale serrée" }] });
+      const after2 = loadMockupSet(pid)!;
+      expect(after2.directions[0].images.filter((i) => i.status === "ready")).toHaveLength(readyA);
+      expect(after2.directions[1].images.every((i) => i.status === "planned")).toBe(true);
     } finally { mockupToolDeps.generateImage = undefined; }
   });
 

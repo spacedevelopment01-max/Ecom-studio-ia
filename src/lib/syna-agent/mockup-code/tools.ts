@@ -168,10 +168,21 @@ const prepareTool: AgentTool<PrepareArgs> = {
     const copy = loadSiteCopy(p.id);
     const facts = mockupFacts(p, angleOf(p.id), photo, { products: productsOf(p.id), texts: brandTextsOf(ctx, p.id), ...(copy ? { copy: copy.pages } : {}) });
     const keys = ["A", "B", "C"] as const;
-    const directions = a.directions.map((d, i) => plannedDirection(d.key ?? keys[i], d.name, d.style, pages, (img) => mockupImagePrompt(facts, d, img, pages)));
+    // Une maquette déjà commencée (même lettre, même nom, même style) garde ses images réussies dont la consigne n'a pas
+    // changé (essai réel du 8 novembre : ajouter les maquettes B et C effaçait l'accueil de A déjà créé et payé).
+    const before = loadMockupSet(p.id);
+    const directions = a.directions.map((d, i) => {
+      const fresh = plannedDirection(d.key ?? keys[i], d.name, d.style, pages, (img) => mockupImagePrompt(facts, d, img, pages));
+      const old = before?.directions.find((x) => x.key === fresh.key && x.name === fresh.name && x.style === fresh.style);
+      if (!old) return fresh;
+      return { ...fresh, images: fresh.images.map((img) => {
+        const prev = old.images.find((x) => x.status === "ready" && x.assetId && x.viewport === img.viewport && x.pages.join() === img.pages.join() && x.prompt === img.prompt);
+        return prev ? { ...img, status: "ready" as const, assetId: prev.assetId } : img;
+      }) };
+    });
     const saved = saveMockupSet(p.id, { version: 1, business: p.business, pages, directions, at: 0 });
     const read = loadMockupSet(p.id);
-    const images = directions.reduce((n, d) => n + d.images.length, 0);
+    const images = directions.reduce((n, d) => n + d.images.filter((i) => i.status !== "ready").length, 0);
     const refs = 1 + (photo && p.business !== "services" ? 1 : 0);
     const maxMicro = mockupImagesMaxMicro(images, refs, imageUnit);
     const verified = !!read && read.directions.length === directions.length && read.directions.every((d, i) => d.images.length === directions[i].images.length);
