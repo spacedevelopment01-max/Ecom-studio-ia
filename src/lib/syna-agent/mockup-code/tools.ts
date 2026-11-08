@@ -38,7 +38,7 @@ import { buildCodePage, codeBuildEstimate, completeCodePhotos, codeCallCosts, co
 import { expectedTexts, inspectCodeMockup } from "./code-mockup";
 import { chromiumPath } from "../../theme/snapshot";
 import { copyLines } from "./copy";
-import { codePhotoPrompt, type CodePhoto } from "./code-mockup";
+import { codePhotoPrompt, photoUses, type CodePhoto } from "./code-mockup";
 import { inventoryOptionsOf, mockupPages } from "./pages";
 import { hdAspect, mockupFacts, mockupImagePrompt, mockupImagesMaxMicro, siteImageHdPrompt } from "./prompts";
 import { STEP7_CAP_FACTOR, step7MaxMicro, step7ProbableMicro, type ImageSlot, type Step7Report } from "./pipeline";
@@ -334,7 +334,10 @@ function codeEstimate(ctx: ToolContext, a: GenArgs) {
   const only = t.pages.filter((k) => photosOnly(p.id, a.direction, k, a.redo));
   const extra = unit == null || !costs ? null : only.reduce((acc, k) => { const n = code.pending![k].length; return { maxMicro: acc.maxMicro + n * unit + costs.fix.max, probableMicro: acc.probableMicro + Math.round(n * unit * 0.75) }; }, { maxMicro: 0, probableMicro: 0 });
   const full = t.pages.filter((k) => !only.includes(k));
-  const e0 = unit == null ? null : full.length ? codeBuildEstimate(ctx.user.id, full, photoLibrary(p.id).length, unit) : { maxMicro: 0, probableMicro: 0 };
+  // Photos encore libres (jamais une photo en doublon) : celles des autres pages de la maquette ne comptent pas.
+  const usedHere = new Set(Object.entries(code.pages).filter(([k]) => !full.includes(k)).flatMap(([, v]) => photoUses(v.html).filter((u) => !u.product).map((u) => u.id)));
+  const freeCount = photoLibrary(p.id).filter((x) => !usedHere.has(x.id)).length;
+  const e0 = unit == null ? null : full.length ? codeBuildEstimate(ctx.user.id, full, freeCount, unit) : { maxMicro: 0, probableMicro: 0 };
   const e = e0 && extra ? { maxMicro: e0.maxMicro + extra.maxMicro, probableMicro: e0.probableMicro + extra.probableMicro } : null;
   if (!e) throw new HttpError(409, L("Aucun modèle utilisable pour construire les maquettes (administration › Fournisseurs IA et Médias).", "No usable model."));
   return { maxMicro: e.maxMicro, probableMicro: e.probableMicro, label: L(`maquette ${a.direction} en code : ${t.pages.map((k) => pageByKey(set.pages, k)?.fr ?? k).join(", ")}`, `code mockup ${a.direction}`) };
