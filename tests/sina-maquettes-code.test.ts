@@ -87,6 +87,15 @@ describe("SINA — maquettes en code : fichier, photos, retouches", async () => 
     expect(photo).toContain("aucune personne");
   });
 
+  it("doublons de photos : deux fois dans la page ou déjà montrée ailleurs ; la carte du même produit est permise", () => {
+    const home = `<img data-photo="a" data-product="Thé vert jasmin"><img data-photo="b"><img data-photo="c">`;
+    expect(C.photoUses(home)).toEqual([{ id: "a", product: "Thé vert jasmin" }, { id: "b", product: null }, { id: "c", product: null }]);
+    expect(C.duplicatePhotos(`<img src="x" data-photo="d"><img data-photo="d">`, [])).toEqual(["photo en double dans la page : d (2 fois)"]);
+    expect(C.duplicatePhotos(`<img data-product="Thé vert jasmin" data-photo="a"><img data-photo="e">`, [{ page: "home", html: home }])).toEqual([]);
+    expect(C.duplicatePhotos(`<img data-photo="a">`, [{ page: "home", html: home }])).toEqual(["photo déjà montrée sur la page « home » : a"]);
+    expect(C.duplicatePhotos(`<img data-photo="b" data-product="Rooibos">`, [{ page: "home", html: home }])).toEqual(["photo déjà montrée sur la page « home » : b"]);
+  });
+
   it("textes attendus : titres, textes, boutons et éléments de toutes les parties", () => {
     const t = C.expectedTexts({ seo: { title: "x", description: "y" }, sections: [{ section: "a", title: "T", text: null, button: "B", items: [{ title: "I", text: "J" }] }] });
     expect(t).toEqual(["T", "B", "I", "J"]);
@@ -187,10 +196,21 @@ ${photo.startsWith("nouvelle") ? `<script type="application/json" id="photos-nou
       expect(photos).toBe(1);
       expect(rb.summary).toMatch(/aucune photo nouvelle/);
       // Page suivante de A : la feuille commune et l'en-tête de l'accueil sont fournis.
+      // Consigne du propriétaire : jamais une photo en double ; la photo de l'accueil n'est plus proposée au panier, et
+      // le panier qui la reprend quand même est RATÉ (la correction automatique ne trouve aucune photo libre ici).
+      codeBuildDeps.deps!.fixEdits = async (prompt) => { expect(prompt).toContain(`photo déjà montrée sur la page « home » : ${lib[0].id}`); return []; };
       const rc = await call("mockup.generate", ctx, { direction: "A", pages: ["cart"] });
-      expect(rc.ok, rc.summary).toBe(true);
+      expect(rc.ok).toBe(false);
+      expect(rc.summary).toMatch(/RATÉE au contrôle automatique \(photo déjà montrée sur la page « home »/);
       expect(prompts[2]).toContain("<base_css>\n:root{--dark:#233A2E}\n</base_css>");
       expect(prompts[2]).toContain("<entete_et_pied_de_l_accueil>");
+      expect(prompts[2]).toContain("JAMAIS UNE PHOTO EN DOUBLE");
+      expect(prompts[2].split("Photos disponibles")[1].split("\n")[1]).toBe("(aucune pour l'instant)");
+      // Panier raté retiré pour la suite de l'essai (sinon l'accueil aurait lui aussi une photo déjà montrée ailleurs).
+      const { saveDirectionCode } = await import("@/lib/syna-agent/mockup-code/code-build");
+      const cA = loadDirectionCode(pid, "A");
+      delete cA.pages.cart;
+      saveDirectionCode(pid, "A", cA);
       expect(one<any>("SELECT COUNT(*) n FROM assets WHERE project_id=? AND role='mockup'", pid).n).toBe(6);
       const deps0 = codeBuildDeps.deps!;
       codeBuildDeps.deps = { ...deps0 };

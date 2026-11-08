@@ -42,7 +42,9 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   **Maquettes en code** (décision du 8 novembre 2026, méthode par défaut de l'étape 6, `src/lib/syna-agent/mockup-code/code-*.ts`) :
   Claude construit chaque page en HTML/CSS, photos créées une fois et partagées, contrôle automatique gratuit. Règles
   du propriétaire : ouverture de l'accueil = **grande photo pleine** avec le titre dessus ; **jamais deux parties de même
-  disposition à la suite** ; **aucun vide** (pas de grandes marges, pas de colonne vide) ; **un thème vivant**.
+  disposition à la suite** ; **aucun vide** (pas de grandes marges, pas de colonne vide) ; **un thème vivant** ;
+  **jamais une photo en doublon** (ni deux fois dans une page, ni d'une page à l'autre ; seule la photo d'un produit
+  revient sur la carte ou la fiche de ce même produit) ; photos ratées (texte ou logo dedans, bandes blanches) écartées.
   Consignes à Qwen **en français**, concrètes (scène, objets, lumière), seuls les textes voulus entre guillemets.
 - **Écrire une consigne d'image comme le propriétaire** (modèle réussi du 16/10, `docs/guide-images-ia.md`) : décrire
   UNE photo, en phrases complètes et logiques, dans cet ordre : 1) type de photo, format, point de vue, cadrage ;

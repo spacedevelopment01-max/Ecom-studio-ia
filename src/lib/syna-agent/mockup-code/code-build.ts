@@ -26,7 +26,7 @@ import { copyLines, type PageCopy } from "./copy";
 import type { MockupDirection } from "./mockup-set";
 import type { MockupPage, Viewport } from "./pages";
 import {
-  applyEdits, CODE_MOCKUP_SYSTEM as CODE_SYSTEM_TEXT, codeMockupPrompt, continuationPrompt, expectedTexts, fontOf, fontsCss, inspectCodeMockup, isComplete, joinContinuation,
+  applyEdits, CODE_MOCKUP_SYSTEM as CODE_SYSTEM_TEXT, codeMockupPrompt, duplicatePhotos, photoUses, continuationPrompt, expectedTexts, fontOf, fontsCss, inspectCodeMockup, isComplete, joinContinuation,
   parseCodeMockup, resolvePhotos, shellOf, splitBaseCss, stripFences, type CodeEdit, type CodePhoto, type InspectResult, type LibraryPhoto, type MockupFiles,
 } from "./code-mockup";
 
@@ -40,9 +40,9 @@ const FIX_MAX_TOKENS = 8000;
 /** Jetons habituels (entrée, sortie) : essai réel du 8 novembre (accueil complet ≈ 30 000 jetons de sortie en réflexion haute). */
 const TYPICAL = { first: { input: 7000, output: 20000 }, next: { input: 16000, output: 11000 }, fix: { input: 26000, output: 2500 } };
 /** Photos nouvelles au plus : accueil de la première maquette, accueil des suivantes (photos partagées), autres pages. */
-export const MAX_NEW = { firstHome: 14, home: 4, page: 6 };
+export const MAX_NEW = { firstHome: 16, home: 6, page: 10 };
 /** Photos nouvelles habituelles (coût probable). */
-const TYPICAL_NEW = { firstHome: 10, home: 2, page: 3 };
+const TYPICAL_NEW = { firstHome: 12, home: 3, page: 5 };
 
 export type DirectionCode = {
   base: string | null; shell: string | null; pages: Record<string, { html: string; previous?: string | null; at: number }>;
@@ -178,8 +178,25 @@ export type BuildResult = {
   fixed: boolean;
 };
 
+/** Autres pages déjà construites de la maquette (pour les doublons de photos). */
+export function otherPages(projectId: string, direction: string, pageKey: string): { page: string; html: string }[] {
+  const code = loadDirectionCode(projectId, direction);
+  return Object.entries(code.pages).filter(([k]) => k !== pageKey).map(([k, v]) => ({ page: k, html: v.html }));
+}
+
+/** Photos montrées ailleurs dans la maquette : interdites (hors carte du même produit). */
+function photosElsewhere(others: { page: string; html: string }[]): { used: { id: string; page: string }[]; products: { id: string; product: string }[] } {
+  const used: { id: string; page: string }[] = [], products: { id: string; product: string }[] = [];
+  for (const o of others) for (const u of photoUses(o.html)) {
+    if (u.product) { if (!products.some((x) => x.id === u.id)) products.push({ id: u.id, product: u.product }); }
+    else if (!used.some((x) => x.id === u.id)) used.push({ id: u.id, page: o.page });
+  }
+  // Une photo montrée hors carte quelque part n'est jamais reprise, même pour un produit.
+  return { used, products: products.filter((x) => !used.some((y) => y.id === x.id)) };
+}
+
 /** Consigne de correction ciblée (défauts relevés par le contrôle automatique). */
-export function fixPrompt(html: string, problems: string[], lines: string[]): string {
+export function fixPrompt(html: string, problems: string[], lines: string[], spare: string[] = []): string {
   return `Voici le fichier HTML d'une maquette de page et les défauts relevés par le contrôle automatique.
 <fichier>
 ${html}
@@ -188,7 +205,7 @@ Défauts à corriger :
 ${problems.map((p) => `- ${p}`).join("\n")}
 Textes de la page (seuls textes permis, mot pour mot) :
 ${lines.join("\n")}
-Corrige UNIQUEMENT ces défauts, sans rien changer d'autre, par des remplacements exacts : find = un passage copié EXACTEMENT du fichier, assez long pour n'y figurer qu'une fois ; replace = le passage corrigé. Un texte ajouté est retiré (ou remplacé par le texte exact de la liste) ; un texte manquant est ajouté à sa place ; sur téléphone, l'en-tête ne garde que le logo et l'icône du menu, et jamais trois éléments côte à côte (deux par rangée pour les produits, sinon l'un sous l'autre, dans la règle CSS du téléphone).`;
+${spare.length ? `Photos libres (jamais montrées ailleurs), pour remplacer une photo en double (data-photo et src) :\n${spare.join("\n")}\n` : ""}Corrige UNIQUEMENT ces défauts, sans rien changer d'autre, par des remplacements exacts : find = un passage copié EXACTEMENT du fichier, assez long pour n'y figurer qu'une fois ; replace = le passage corrigé. Un texte ajouté est retiré (ou remplacé par le texte exact de la liste) ; un texte manquant est ajouté à sa place ; sur téléphone, l'en-tête ne garde que le logo et l'icône du menu, et jamais trois éléments côte à côte (deux par rangée pour les produits, sinon l'un sous l'autre, dans la règle CSS du téléphone).`;
 }
 
 /**
@@ -204,14 +221,16 @@ export async function buildCodePage(p: Project, d: Pick<MockupDirection, "key" |
   const logo = logoOf(p);
   if (!logo) { res.failed.push("logo de la marque absent des Fichiers"); return res; }
   const library = photoLibrary(p.id);
-  const maxNew = maxNewPhotos(page.key, library.length);
+  const others = otherPages(p.id, d.key, page.key);
+  const elsewhere = photosElsewhere(others);
+  const maxNew = maxNewPhotos(page.key, library.length - elsewhere.used.length);
   const f = fontsOf(p);
   const lines = copyLines(copy), phoneLines = copyLines(copy, { phone: true });
   const prompt = codeMockupPrompt({
     brand: { name: brand.name, palette: brand.palette as any, personality: brand.personality },
     fonts: { heading: f.heading, body: f.body },
     logo: { file: logo.name, width: logo.width, height: logo.height },
-    direction: d, page, copy, lines, phoneLines, photos: library, maxNew,
+    direction: d, page, copy, lines, phoneLines, photos: library, usedElsewhere: elsewhere.used, productPhotos: elsewhere.products, maxNew,
     baseCss: page.key === "home" ? null : code.base, shell: page.key === "home" ? null : code.shell,
   });
   // 1) Écriture (et suites si le fichier s'arrête avant la fin).
@@ -237,14 +256,17 @@ export async function buildCodePage(p: Project, d: Pick<MockupDirection, "key" |
   // 3) Captures et contrôle gratuits ; 4) une correction ciblée au plus.
   const expect = { texts: expectedTexts(copy), allowed: [brand.name] };
   const base = page.key === "home" ? null : code.base;
-  let r = await deps.inspect(mockupFiles(p, full, base), expect);
+  // Contrôle des captures et des doublons de photos (gratuits).
+  const inspect = async (h: string) => { const x = await deps.inspect(mockupFiles(p, h, base), expect); return { ...x, problems: [...x.problems, ...duplicatePhotos(h, others)] }; };
+  const spare = () => library.filter((x) => !photoUses(full).some((u) => u.id === x.id) && !elsewhere.used.some((u) => u.id === x.id) && !elsewhere.products.some((u) => u.id === x.id) && !x.real).map((x) => `- ${x.id} : ${x.description}`);
+  let r = await inspect(full);
   const fixable = r.problems.filter((x) => !/image non chargée/.test(x));
   if (fixable.length) {
     try {
-      const edits = await deps.fixEdits(fixPrompt(full, fixable, lines), `${o.usageKey}:fix:${d.key}:${page.key}`);
+      const edits = await deps.fixEdits(fixPrompt(full, fixable, lines, spare()), `${o.usageKey}:fix:${d.key}:${page.key}`);
       const applied = applyEdits(full, edits);
       if (!applied.failed.length && applied.html !== full) {
-        const again = await deps.inspect(mockupFiles(p, applied.html, base), expect);
+        const again = await inspect(applied.html);
         // La correction n'est gardée que si elle réduit les défauts (jamais une page pire que la première).
         if (again.problems.length < r.problems.length) { full = applied.html; r = again; res.fixed = true; }
       } else if (applied.failed.length) res.toVerify.push(`correction automatique non appliquée (${applied.failed[0]})`);
@@ -326,7 +348,8 @@ export async function retouchCodePage(p: Project, direction: string, page: Mocku
   const applied = applyEdits(joined, edits);
   if (applied.failed.length) return { ok: false, failed: applied.failed, shots: null, problems: [], toVerify: [] };
   const base = page.key === "home" ? null : code.base;
-  const r = await inspect(mockupFiles(p, applied.html, base), { texts: expectedTexts(copy), allowed: [p.brand?.name ?? p.name] });
+  const r0 = await inspect(mockupFiles(p, applied.html, base), { texts: expectedTexts(copy), allowed: [p.brand?.name ?? p.name] });
+  const r = { ...r0, problems: [...r0.problems, ...duplicatePhotos(applied.html, otherPages(p.id, direction, page.key))] };
   // Retouche qui ajoute des défauts : jamais gardée (la page d'avant reste en place).
   if (accept && !accept(r.problems)) return { ok: false, failed: [], shots: r.shots, problems: r.problems, toVerify: r.toVerify, rejected: true };
   const next: DirectionCode = { ...code, pages: { ...code.pages } };

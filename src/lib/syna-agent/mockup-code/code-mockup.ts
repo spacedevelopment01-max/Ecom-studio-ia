@@ -58,6 +58,10 @@ export type CodeMockupInput = {
   lines: string[];
   phoneLines: string[];
   photos: LibraryPhoto[];
+  /** Photos déjà montrées par les autres pages de la maquette : jamais reprises (consigne du propriétaire). */
+  usedElsewhere?: { id: string; page: string }[];
+  /** Photos de produit déjà sur une carte produit ailleurs : reprises seulement sur la carte de CE produit. */
+  productPhotos?: { id: string; product: string }[];
   maxNew: number;
   /** Feuille commune déjà écrite pour l'accueil de cette maquette (pages suivantes : réutilisée, jamais réécrite). */
   baseCss?: string | null;
@@ -70,9 +74,13 @@ export function codeMockupPrompt(i: CodeMockupInput): string {
   const p = i.brand.palette;
   const layout = pageLayout(i.page);
   const first = !i.baseCss;
-  const photoList = i.photos.length
-    ? i.photos.map((x) => `- ${x.id} (${x.ratio})${x.real ? " — PHOTO RÉELLE du client" : ""} : ${x.description}`).join("\n")
+  const taken = new Set((i.usedElsewhere ?? []).map((x) => x.id));
+  const forProduct = new Map((i.productPhotos ?? []).map((x) => [x.id, x.product]));
+  const free = i.photos.filter((x) => !taken.has(x.id) && !forProduct.has(x.id));
+  const photoList = free.length
+    ? free.map((x) => `- ${x.id} (${x.ratio})${x.real ? " — PHOTO RÉELLE du client" : ""} : ${x.description}`).join("\n")
     : "(aucune pour l'instant)";
+  const productList = [...forProduct].map(([id, product]) => `- ${id} : photo du produit « ${product} », seulement sur la carte ou la fiche de ce produit (data-product="${product}")`).join("\n");
   return [
     `Construis la page « ${i.page.fr} » du site de la marque « ${i.brand.name} », directement en HTML et CSS, comme une maquette de grande agence prête à être montrée au client.`,
     "",
@@ -94,6 +102,8 @@ export function codeMockupPrompt(i: CodeMockupInput): string {
     "",
     "PHOTOS :",
     `Photos disponibles (à utiliser en priorité, par leur identifiant) :\n${photoList}`,
+    productList ? `Photos de produit (déjà sur les cartes de produit d'une autre page) :\n${productList}` : "",
+    "JAMAIS UNE PHOTO EN DOUBLE (consigne du propriétaire) : chaque photo apparaît UNE seule fois dans la page et n'est jamais une photo déjà montrée par une autre page du site. Seule exception : la photo d'un produit sur la carte ou la fiche de CE produit (attribut data-product=\"Nom du produit\" sur l'image), jamais deux fois dans la même page. Un bandeau ou un carrousel décoratif n'est pas une carte de produit : il prend d'autres photos. Jamais de bandeau de photos qui défile en boucle (il répète les photos) : le bandeau défilant ne porte que du texte (le slogan).",
     i.maxNew > 0
       ? `Si une photo manque vraiment, demande-la : identifiant nouvelle-1, nouvelle-2… (${i.maxNew} au plus), déclarée à la fin du <body> dans <script type="application/json" id="photos-nouvelles">[{"id":"nouvelle-1","ratio":"4:3","background":null,"product":false,"packaging":false,"description":"…"}]</script>. La description d'une photo nouvelle décrit UNE photo en phrases complètes, dans cet ordre : 1) type de photo, point de vue, cadrage ; 2) surface et fond ; 3) chaque objet dans sa phrase : place exacte, forme, matière, couleur, état, et ce qu'il ne contient pas ; 4) « La scène contient exactement N objets : … » ; 5) ce qui est coupé par le cadre ou laissé dégagé ; 6) lumière, ombres, mise au point, ambiance. Jamais de personne, de main, de texte ni de logo dans une photo ; product: true si le vrai produit du client y figure, packaging: true si c'est son emballage. background : la couleur exacte du fond de la section quand la photo doit s'y fondre (sinon null).`
       : "Aucune photo nouvelle : utilise seulement les photos disponibles.",
@@ -103,7 +113,7 @@ export function codeMockupPrompt(i: CodeMockupInput): string {
     ...(i.page.key === "home" ? ["- OUVERTURE (consigne du propriétaire) : une GRANDE PHOTO PLEINE, bord à bord sur toute la largeur et presque toute la hauteur de l'écran, le titre, la phrase et le bouton posés DESSUS (voile dégradé pour la lisibilité) ; jamais une photo posée en carte à côté du titre, jamais une ouverture sans photo. Sur téléphone aussi : la photo remplit l'écran derrière le texte."] : []),
     "- JAMAIS deux parties de même disposition à la suite (deux grilles de cartes, deux bandes de questions, deux écrans partagés identiques) : alterne les mises en page d'une partie à l'autre (photo pleine largeur, écran partagé photo et texte, grille, carrousel, bandeau, citation en grand, cartes qui se chevauchent).",
     "- AUCUN VIDE : chaque partie est remplie et vivante ; marge verticale entre parties de 64 à 96 px sur ordinateur, 48 à 64 px sur téléphone ; jamais une colonne vide à côté d'un titre (sinon une photo ou une illustration y prend place, ou le bloc est centré) ; jamais une bande colorée sans contenu.",
-    "- UN THÈME VIVANT : photos en grand et bord à bord dans plusieurs parties, éléments qui débordent d'une bande sur l'autre, bandeau défilant avec le slogan, formes et motifs de la marque en décor, effets au survol des cartes et des boutons, apparition douce (sans jamais cacher le contenu sans JavaScript).",
+    "- UN THÈME VIVANT : photos en grand et bord à bord dans plusieurs parties, éléments qui débordent d'une bande sur l'autre, bandeau défilant avec le slogan (texte seulement), formes et motifs de la marque en décor, effets au survol des cartes et des boutons, apparition douce (sans jamais cacher le contenu sans JavaScript).",
     "- Une seule page responsive, parfaite à 1440 px ET à 390 px de large, sans aucun débordement horizontal.",
     "- Chaque partie dans sa balise : <header data-part=\"en-tête\">, puis une <section data-part=\"NOM DE LA PARTIE\"> par partie de la liste des textes (nom repris de la liste), puis <footer data-part=\"pied de page\">.",
     "- Textes d'accessibilité seulement en attributs aria-label ou alt, jamais en texte caché dans la page.",
@@ -413,4 +423,36 @@ function pageChecks(a: { texts: string[]; allowed: string[]; phone: boolean; wid
     }
   }
   return { problems: [...new Set(problems)], toVerify: [...new Set(toVerify)] };
+}
+
+/** Photos d'une page : identifiant et produit de la carte qui la porte (data-product), dans l'ordre de la page. */
+export function photoUses(html: string): { id: string; product: string | null }[] {
+  return [...html.matchAll(/<img\b[^>]*>/gi)].flatMap((m) => {
+    const id = m[0].match(/data-photo=["']([^"']+)["']/)?.[1];
+    if (!id) return [];
+    return [{ id, product: m[0].match(/data-product=["']([^"']+)["']/)?.[1]?.trim() || null }];
+  });
+}
+
+/**
+ * Doublons de photos (consigne du propriétaire du 8 novembre : « jamais une photo en doublon ») : une photo deux fois
+ * dans la page, ou déjà montrée par une autre page de la maquette. Seule exception : la photo d'un produit sur la
+ * carte ou la fiche de ce même produit, une fois par page.
+ */
+export function duplicatePhotos(html: string, others: { page: string; html: string }[]): string[] {
+  const problems: string[] = [];
+  const uses = photoUses(html);
+  const seen = new Map<string, number>();
+  for (const u of uses) seen.set(u.id, (seen.get(u.id) ?? 0) + 1);
+  for (const [id, n] of seen) if (n > 1) problems.push(`photo en double dans la page : ${id} (${n} fois)`);
+  for (const o of others) {
+    const there = photoUses(o.html);
+    for (const u of uses) {
+      const t = there.find((x) => x.id === u.id);
+      if (!t) continue;
+      if (u.product && t.product && u.product.toLowerCase() === t.product.toLowerCase()) continue;
+      problems.push(`photo déjà montrée sur la page « ${o.page} » : ${u.id}`);
+    }
+  }
+  return [...new Set(problems)];
 }
