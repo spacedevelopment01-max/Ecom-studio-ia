@@ -365,6 +365,16 @@ export async function runStep7(input: { direction: MockupDirection; pages: Mocku
     if (res.written.length) spec = clearTemplate(spec, t.template, plan.filter((s) => s.target.kind === "library").map((s) => (s.target as { type: string }).type));
     spec = applyWrite(spec, res, r, budget);
     if (plan.some((s) => s.target.kind === "group")) groupsWritten = true;
+    // Page arrêtée par le plafond puis reprise avec un plafond plus haut (essai réel du 8 novembre : accueil de Brindi
+    // écrit à 6 sections sur 10) : seules les sections pas encore écrites sont écrites, les autres restent telles quelles.
+    let left = res.budget ? plan.filter((x) => x.target.kind !== "library" && !res.written.includes(x.name)) : [];
+    for (let k = 1; left.length && k <= 3 && canPay("write"); k++) {
+      const more = await deps.step(`write:${page.key}:suite${k}`, async () => deps.writeSections({ spec, page, template: t.template, plan: left, mockup: await crop(page.key, "desktop") }));
+      spec = applyWrite(spec, { ...more, failed: more.failed }, r, budget);
+      r.failed = r.failed.filter((f) => !more.written.includes(f.name));
+      left = more.budget ? left.filter((x) => !more.written.includes(x.name)) : [];
+      if (!more.budget) stoppedBy = null;
+    }
     if (res.order?.length) spec = orderLike(spec, t.template, res.order);
     if (derived && (res.written.length || res.library.length)) { r.status = "derivee"; r.note = `codée dans le style de la maquette, sans image à elle${input.copy?.[page.key] ? "" : " (textes à écrire : « [À compléter] »)"}`; }
   }

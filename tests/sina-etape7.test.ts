@@ -354,6 +354,23 @@ describe("SINA — étape 7 : déroulé simulé (boucle, corrections, plafond, h
     expect(hard.report.pages.some((x) => x.status === "ok")).toBe(false);
   });
 
+  it("reprise après plafond : seules les sections pas encore écrites sont écrites (essai réel : accueil à 6 sections sur 10)", async () => {
+    const s = sim({});
+    const base = s.deps.writeSections;
+    let first = true;
+    const deps = { ...s.deps, writeSections: async (i: any) => {
+      const r = await base(i);
+      if (first && i.page.key === "home") { first = false; const keep = r.written.slice(0, 2); return { ...r, ops: r.ops.filter((o: any) => o.op !== "custom_section" || keep.includes(o.name)), written: keep, budget: true, failed: r.written.slice(2).map((n: string) => ({ name: n, reason: "budget atteint" })) }; }
+      return r;
+    } };
+    const home = pages.filter((p) => p.key === "home");
+    const { report } = await P.runStep7({ direction: direction(), pages: home, base: sampleSpec(), options: { costCapMicro: 10_000, maxRounds: 1 } }, deps);
+    expect(s.calls.filter((c) => c === "write:home")).toHaveLength(2); // première écriture, puis la suite
+    const r = report.pages.find((x) => x.key === "home")!;
+    expect(r.failed.filter((f) => f.reason === "budget atteint")).toEqual([]);
+    expect(report.stoppedBy).toBeNull();
+  });
+
   it("maquette incomplète : version téléphone absente signalée ; page simple sans image dérivée de la maquette", async () => {
     const s = sim({});
     const withCart = [...pages, all.find((p) => p.key === "shipping")!];
