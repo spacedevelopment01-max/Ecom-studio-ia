@@ -133,6 +133,10 @@ describe("SINA — étape 6 : consignes des images de maquette", async () => {
     expect(onePhone).toContain("Aucun cadre d'appareil, aucun téléphone dessiné");
     expect(onePhone).toContain("une seule colonne");
     expect(onePhone).toContain("exactement 2 bandes étroites");
+    // Retour du propriétaire : les trois articles du journal côte à côte ne vont pas sur téléphone.
+    expect(onePhone).toContain("articles du journal l'un sous l'autre");
+    expect(onePhone).toContain("jamais trois éléments côte à côte");
+    expect(phone).toContain("jamais trois");
     // Aucune phrase contradictoire (« une page entière ») : le modèle en concluait à la page d'ordinateur (essai réel).
     expect(onePhone).not.toContain("chaque page est entière");
     expect(onePhone).not.toMatch(/exactement 1 page/);
