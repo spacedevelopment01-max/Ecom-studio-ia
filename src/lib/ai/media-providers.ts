@@ -688,8 +688,9 @@ export async function aiSiteMockup(ctx: Ctx, input: { prompt: string; logo?: Buf
  * maquettes »). Références : la photo découpée sur la maquette (à reproduire), le logo (s'il figure sur un emballage),
  * la photo du produit (s'il figure sur la photo). Route des maquettes, sans relais (withQuotedImageRoute).
  */
-export async function aiSiteImageHd(ctx: Ctx, input: { prompt: string; scene: Buffer; logo?: Buffer | null; product?: Buffer | null; aspect: "1:1" | "4:5" | "9:16" | "16:9" | "2:3" }) {
-  const references = [{ role: "scene" as const, data: input.scene, essential: true }, ...(input.product ? [{ role: "product" as const, data: input.product, essential: true }] : []), ...(input.logo ? [{ role: "logo" as const, data: input.logo, essential: true }] : [])];
+export async function aiSiteImageHd(ctx: Ctx, input: { prompt: string; scene?: Buffer | null; logo?: Buffer | null; product?: Buffer | null; aspect: "1:1" | "4:5" | "9:16" | "16:9" | "2:3" }) {
+  // Sans photo de maquette (maquettes en code, 8 novembre) : la photo est créée d'après sa seule description.
+  const references = [...(input.scene ? [{ role: "scene" as const, data: input.scene, essential: true }] : []), ...(input.product ? [{ role: "product" as const, data: input.product, essential: true }] : []), ...(input.logo ? [{ role: "logo" as const, data: input.logo, essential: true }] : [])];
   return generateImage(ctx, { text: input.prompt, aspect: input.aspect, reference: null, refMax: 1024, references, quality: "high", strictQuality: true, usage: "scene", need: { references: references.length } });
 }
 

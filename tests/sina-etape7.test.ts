@@ -424,6 +424,9 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
   mockupCodeJobDeps.callMaxMicro = () => UNIT;
 
   async function ready() {
+    // Ces essais couvrent l'ancienne méthode (maquettes en images), toujours possible par réglage ; les maquettes en
+    // code (méthode par défaut depuis le 8 novembre) ont leurs propres essais (sina-maquettes-code.test.ts).
+    (await import("@/lib/settings")).setJsonSetting("syna.mockup.mode", "image");
     const user = await account();
     const pid = project(user);
     run("UPDATE projects SET brand_json=? WHERE id=?", JSON.stringify({ name: "Braise Douce", nameStatus: "validated", tagline: "Allume l'instant.", palette: { dark: "#1F1A14", primary: "#B91C1C", secondary: "#FDE68A", accent: "#16A34A", light: "#F5EEDC" }, fonts: { heading: "playfair_display_n7", body: "inter_n4" }, ground: "blanc", paletteRoles: "sina-2026", logo: { concept: "", status: "validated" }, alternatives: [], positioning: "", audience: "", personality: [], tone: { voice: "", do: [], dont: [] }, story: "", values: [], direction: "atelier", validated: [], generatedBy: "ai" }), pid);

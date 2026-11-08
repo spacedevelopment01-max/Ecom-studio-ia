@@ -22,7 +22,15 @@ export type MockupImage = {
   /** Contrôle automatique de l'image créée (mise en page, appareil dessiné, personnes, textes) ; absent = non contrôlée. */
   check?: { ok: boolean; problems: string[]; toVerify: string[] };
 };
-export type MockupDirection = { key: "A" | "B" | "C"; name: string; style: string; images: MockupImage[]; /** Fond : clair, sombre ou grands aplats de la couleur de marque. */ ground?: "clair" | "sombre" | "marque" };
+export type MockupDirection = {
+  key: "A" | "B" | "C"; name: string; style: string; images: MockupImage[];
+  /** Fond : clair, sombre ou grands aplats de la couleur de marque. */ ground?: "clair" | "sombre" | "marque";
+  /**
+   * « code » : maquette construite en HTML et CSS par Claude (décision du propriétaire du 8 novembre 2026) ; ses images
+   * sont les captures de chaque page (ordinateur et téléphone). Absent : ancienne maquette en images (IA d'images).
+   */
+  mode?: "code";
+};
 export type MockupSet = {
   version: 1;
   business: "products" | "services";
@@ -124,6 +132,16 @@ export function plannedDirection(key: MockupDirection["key"], name: string, styl
     // Seules les pages principales ont une image prévue ; les pages simples sont dérivées à l'étape 7.
     images: planImages(pages.filter(requiredPage)).map((img, i) => ({ ...img, id: `${key}${String(i + 1).padStart(2, "0")}`, assetId: null, status: "planned", ...(prompts ? { prompt: prompts(img, i) } : {}) })),
   };
+}
+
+/**
+ * Maquette en code : une image par page principale et par version (captures de la page construite), identifiants
+ * stables par position. Aucune consigne d'image : la page est écrite par Claude à la construction.
+ */
+export function plannedCodeDirection(key: MockupDirection["key"], name: string, style: string, pages: MockupPage[], ground?: MockupDirection["ground"]): MockupDirection {
+  const images: MockupImage[] = [];
+  for (const p of pages.filter(requiredPage)) for (const v of VIEWPORTS) if (p.viewports.includes(v)) images.push({ id: `${key}${String(images.length + 1).padStart(2, "0")}`, viewport: v, pages: [p.key], assetId: null, status: "planned" });
+  return { key, name, style, mode: "code", ...(ground ? { ground } : {}), images };
 }
 
 /** Enregistre une image créée (ou fournie) pour une maquette ; refuse une page inconnue. */
