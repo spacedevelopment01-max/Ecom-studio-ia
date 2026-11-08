@@ -49,12 +49,13 @@ export function locateCall(base: Pick<LlmCall, "userId" | "projectId" | "jobId" 
 }
 
 /** Rectangles en pixels, élargis d'une petite marge (les bords repérés ne sont jamais exacts), dans l'image. */
-export function boxesOf(l: Locate, count: number, w: number, h: number, margin = { x: 1, y: 0.6 }): (Box | null)[] {
+export function boxesOf(l: Locate, count: number, w: number, h: number, margin = { x: 1, y: 0 }): (Box | null)[] {
   return Array.from({ length: count }, (_, i) => {
     const z = l.zones.find((x) => x.n === i + 1);
     if (!z || !z.found || z.right <= z.left || z.bottom <= z.top) return null;
     const px = (v: number, max: number) => Math.round(Math.min(max, Math.max(0, (v / 100) * max)));
-    // Marge plus fine en hauteur (essai réel : 1,2 % mordait sur le logo au-dessus et sur le titre de la partie suivante).
+    // Aucune marge en hauteur (essais réels : 1,2 % puis 0,6 % mordaient sur le logo au-dessus et sur le titre de la
+    // partie suivante) ; en largeur, la marge tombe sur le fond autour des bandes.
     return { left: px(z.left - margin.x, w), right: px(z.right + margin.x, w), top: px(z.top - margin.y, h), bottom: px(z.bottom + margin.y, h) };
   });
 }
@@ -88,7 +89,7 @@ export function mockupEditPrompt(changes: EditChange[], keep: string[][], viewpo
   return [
     `Retouche d'une maquette de site web (version ${viewport === "phone" ? "téléphone" : "ordinateur"}) : l'image jointe est la maquette à reproduire À L'IDENTIQUE, même cadrage, mêmes bandes, mêmes positions, mêmes textes, mêmes photos, avec SEULEMENT les modifications ci-dessous, chacune à sa place exacte. Chaque partie modifiée garde exactement la même position et la même hauteur ; rien ne se décale, aucune autre partie ne change.`,
     ...changes.map((c, i) => { const b = boxes[i]; return `Modification ${i + 1}, dans ${c.zone}${b ? ` (zone située de ${pct(b.left, size.w)} % à ${pct(b.right, size.w)} % de la largeur de l'image et de ${pct(b.top, size.h)} % à ${pct(b.bottom, size.h)} % de sa hauteur)` : ""} : ${c.change}.${keep[i]?.length ? ` Textes de cette zone, écrits lettre pour lettre (sauf ceux que la modification retire) : ${keep[i].map((t) => `« ${t} »`).join(" ; ")}.` : ""}`; }),
-    "Tout le contenu d'une partie modifiée tient DANS sa zone, à la même hauteur qu'avant : rien ne déborde au-dessus ni en dessous ; si un élément est ajouté, les autres éléments de la partie sont resserrés (rangées plus basses, marges réduites) pour lui faire de la place.",
+    "Une partie modifiée garde sa hauteur si possible, avec la même marge intérieure qu'avant en haut et en bas ; si un élément ajouté ne tient pas, la partie s'allonge vers le bas et TOUTE la suite de la page descend d'autant, inchangée. Rien ne recouvre la partie voisine.",
     "Dans chaque partie modifiée, le même style que le reste de la page : mêmes couleurs, mêmes polices, mêmes tailles de texte, mêmes arrondis et ombres, mêmes photos quand elles restent. La zone se raccorde sans couture à ce qui l'entoure.",
     viewport === "phone" ? "Mise en page de téléphone : jamais trois éléments côte à côte ; boutons sur toute la largeur." : "",
     "Aucun autre texte, aucune lettre inventée, aucun logo en plus, aucune personne, aucune main.",
@@ -120,4 +121,119 @@ export function missingTexts(changes: EditChange[], before: string[][], after: L
     const read = norm((after.zones.find((z) => z.n === i + 1)?.texts ?? []).join(" | "));
     return expected.filter((t) => !read.includes(norm(t)));
   });
+}
+
+/**
+ * Bords de zone où le contenu retouché touche le bord (essai réel du 8 novembre : le bouton « Lis le journal » collé
+ * au bas de la zone recouvrait le haut du titre « Tes questions »). Pour chaque bord, l'écart moyen entre la
+ * retouche et l'original sur la ligne (ou la colonne) du bord : un raccord propre reste faible (≈ 6 mesuré), un
+ * élément coupé est fort (≈ 109 mesuré). Renvoie les bords en défaut.
+ */
+export async function cutEdges(original: Buffer, edited: Buffer, b: Box, threshold = 30): Promise<("haut" | "bas" | "gauche" | "droite")[]> {
+  const raw = async (img: Buffer) => sharp(img).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const [o, e] = await Promise.all([raw(original), raw(edited)]);
+  const w = o.info.width;
+  const diff = (pts: [number, number][]) => pts.reduce((s, [x, y]) => { const i = (y * w + x) * 3; return s + Math.abs(o.data[i] - e.data[i]) + Math.abs(o.data[i + 1] - e.data[i + 1]) + Math.abs(o.data[i + 2] - e.data[i + 2]); }, 0) / (pts.length * 3);
+  const row = (y: number) => Array.from({ length: b.right - b.left }, (_, k) => [b.left + k, y] as [number, number]);
+  const col = (x: number) => Array.from({ length: b.bottom - b.top }, (_, k) => [x, b.top + k] as [number, number]);
+  const out: ("haut" | "bas" | "gauche" | "droite")[] = [];
+  if (diff(row(b.top)) > threshold) out.push("haut");
+  if (diff(row(b.bottom - 1)) > threshold) out.push("bas");
+  if (diff(col(b.left)) > threshold) out.push("gauche");
+  if (diff(col(b.right - 1)) > threshold) out.push("droite");
+  return out;
+}
+
+type Side = "haut" | "bas" | "gauche" | "droite";
+/**
+ * Ajuste une zone à la retouche : le repérage s'arrête souvent quelques pixels avant le vrai bord de la partie (essai
+ * réel : bas repéré à 932 px, partie finie à 940). Chaque bord où la retouche diffère encore de l'original avance
+ * (24 px au plus) tant qu'il ne recouvre que du FOND uni de l'original, jusqu'à un raccord propre (mêmes pixels, ou fond
+ * uni des deux côtés) ; s'il bute sur du contenu de l'original (le titre de la partie voisine), le bord est en défaut :
+ * recollée, la retouche recouvrirait ou couperait quelque chose.
+ */
+export async function fitBox(original: Buffer, edited: Buffer, b: Box, opts = { max: 24, threshold: 30, flat: 14 }): Promise<{ box: Box; cut: Side[] }> {
+  const raw = async (img: Buffer) => sharp(img).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const [o, e] = await Promise.all([raw(original), raw(edited)]);
+  const W = o.info.width, H = o.info.height;
+  const line = (horizontal: boolean, at: number, from: number, to: number) => Array.from({ length: Math.max(0, to - from) }, (_, k) => (horizontal ? [from + k, at] : [at, from + k]) as [number, number]);
+  const diff = (pts: [number, number][]) => pts.reduce((s, [x, y]) => { const i = (y * W + x) * 3; return s + Math.abs(o.data[i] - e.data[i]) + Math.abs(o.data[i + 1] - e.data[i + 1]) + Math.abs(o.data[i + 2] - e.data[i + 2]); }, 0) / Math.max(1, pts.length * 3);
+  const flat = (pts: [number, number][], img = o) => {
+    const lum = pts.map(([x, y]) => { const i = (y * W + x) * 3; return (img.data[i] + img.data[i + 1] + img.data[i + 2]) / 3; });
+    const m = lum.reduce((s, v) => s + v, 0) / Math.max(1, lum.length);
+    return Math.sqrt(lum.reduce((s, v) => s + (v - m) ** 2, 0) / Math.max(1, lum.length)) < opts.flat;
+  };
+  const box = { ...b };
+  const cut: Side[] = [];
+  const grow = (side: Side) => {
+    for (let k = 0; ; k++) {
+      const edge = side === "haut" ? line(true, box.top, box.left, box.right) : side === "bas" ? line(true, box.bottom - 1, box.left, box.right) : side === "gauche" ? line(false, box.left, box.top, box.bottom) : line(false, box.right - 1, box.top, box.bottom);
+      // Raccord propre : même pixels, ou fond uni des deux côtés (une limite nette entre deux fonds, comme entre deux parties).
+      if (diff(edge) <= opts.threshold || (flat(edge, e) && flat(edge, o))) return;
+      const next = side === "haut" ? box.top - 1 : side === "bas" ? box.bottom : side === "gauche" ? box.left - 1 : box.right;
+      const inside = side === "haut" || side === "bas" ? next >= 0 && next < H : next >= 0 && next < W;
+      const nextLine = side === "haut" || side === "bas" ? line(true, next, box.left, box.right) : line(false, next, box.top, box.bottom);
+      if (k >= opts.max || !inside || !flat(nextLine)) { cut.push(side); return; }
+      if (side === "haut") box.top--; else if (side === "bas") box.bottom++; else if (side === "gauche") box.left--; else box.right++;
+    }
+  };
+  (["haut", "bas", "gauche", "droite"] as Side[]).forEach(grow);
+  return { box, cut };
+}
+
+/**
+ * Recolle les zones retouchées sur l'original (essai réel du 8 novembre : en empilant les trois articles du journal,
+ * le modèle a dessiné le bouton « Lis le journal » SOUS la zone, coupé au recollage). Pour une zone dont la retouche
+ * dépasse en bas : on cherche, plus bas dans la retouche, où reprend la partie suivante de l'original (mêmes pixels sur
+ * 24 lignes) ; la partie retouchée prend la hauteur qu'il lui faut et la suite de SA bande descend d'autant, recopiée
+ * de l'original au pixel près (l'image s'allonge). Une zone qui dépasse ailleurs, ou dont la suite n'est pas
+ * retrouvée, est en défaut (rien n'est recollé pour elle).
+ */
+export async function composeEdit(original: Buffer, edited: Buffer, boxes: Box[]): Promise<{ image: Buffer; failed: { index: number; sides: string[] }[]; grown: number }> {
+  const raw = async (img: Buffer) => sharp(img).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const e = await raw(edited);
+  let c = await raw(original);
+  const W = c.info.width;
+  const failed: { index: number; sides: string[] }[] = [];
+  let grown = 0;
+  // Du bas vers le haut : allonger une bande ne déplace jamais une zone située plus haut.
+  const order = boxes.map((b, i) => ({ b, i })).sort((x, y) => y.b.top - x.b.top);
+  for (const { b, i } of order) {
+    const cur = await sharp(c.data, { raw: c.info }).png().toBuffer();
+    const fit = await fitBox(cur, edited, b);
+    const box = fit.box;
+    let shift = 0;
+    if (fit.cut.length) {
+      if (fit.cut.some((s) => s !== "bas")) { failed.push({ index: i, sides: fit.cut }); continue; }
+      // Où reprend la suite de l'original dans la retouche ?
+      const H = c.info.height, rows = 24, w = box.right - box.left;
+      const blockDiff = (d: number) => {
+        let s = 0;
+        for (let y = 0; y < rows; y++) for (let x = 0; x < w; x++) {
+          const io = ((box.bottom + y) * W + box.left + x) * 3, ie = ((box.bottom + d + y) * W + box.left + x) * 3;
+          s += Math.abs(c.data[io] - e.data[ie]) + Math.abs(c.data[io + 1] - e.data[ie + 1]) + Math.abs(c.data[io + 2] - e.data[ie + 2]);
+        }
+        return s / (rows * w * 3);
+      };
+      let best: { d: number; m: number } | null = null;
+      for (let d = 1; d <= 300 && box.bottom + d + rows <= e.info.height && box.bottom + rows <= H; d++) {
+        const m = blockDiff(d);
+        if (!best || m < best.m) best = { d, m };
+        if (m < 12) break;
+      }
+      if (!best || best.m >= 20) { failed.push({ index: i, sides: ["bas"] }); continue; }
+      shift = best.d;
+    }
+    const H = c.info.height, NH = H + shift;
+    const out = Buffer.alloc(W * NH * 3);
+    // Fond de la planche (coin bas gauche) pour la hauteur ajoutée hors de la bande.
+    const bg = ((H - 2) * W + 2) * 3;
+    for (let k = 0; k < W * NH; k++) { out[k * 3] = c.data[bg]; out[k * 3 + 1] = c.data[bg + 1]; out[k * 3 + 2] = c.data[bg + 2]; }
+    c.data.copy(out, 0, 0, W * H * 3);
+    for (let y = box.top; y < box.bottom + shift; y++) e.data.copy(out, (y * W + box.left) * 3, (y * W + box.left) * 3, (y * W + box.right) * 3);
+    if (shift) for (let y = box.bottom; y < H; y++) c.data.copy(out, ((y + shift) * W + box.left) * 3, (y * W + box.left) * 3, (y * W + box.right) * 3);
+    c = { data: out, info: { ...c.info, height: NH } };
+    grown += shift;
+  }
+  return { image: await sharp(c.data, { raw: { width: W, height: c.info.height, channels: 3 } }).png().toBuffer(), failed, grown };
 }

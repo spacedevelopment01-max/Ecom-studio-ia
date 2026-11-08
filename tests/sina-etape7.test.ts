@@ -484,7 +484,8 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       expect(versions.length).toBeGreaterThanOrEqual(3);
       let painted = 0, maskSeen: Buffer | null | undefined = undefined, promptSeen = "";
       mockupToolDeps.locate = async (_img, changes) => ({ zones: changes.map((_, i) => ({ n: i + 1, found: i === 0, left: 0, top: 0, right: 50, bottom: 25, texts: ["Allume l'instant.", "texte mal lu"] })) });
-      mockupToolDeps.maskEdit = async (img, mask, prompt) => { painted++; maskSeen = mask; promptSeen = prompt; const m = await sharp(img).metadata(); return png("#FF0000", m.width, m.height); };
+      // Retouche simulée : un carré rouge au milieu de la zone, les bords de la zone intacts (raccord propre).
+      mockupToolDeps.maskEdit = async (img, mask, prompt) => { painted++; maskSeen = mask; promptSeen = prompt; return sharp(img).composite([{ input: await png("#FF0000", 30, 30), left: 10, top: 10 }]).png().toBuffer(); };
       // Une zone introuvable : rien n'est retouché ni payé.
       const lost = await call("mockup.edit", ctx, { direction: "A", imageId: homeImg.id, changes: [{ zone: "le bouton du haut", change: "le retirer" }, { zone: "une partie absente", change: "x x x" }] });
       expect(lost.ok).toBe(false);
@@ -505,7 +506,7 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       const now = loadMockupSet(pid)!.directions[0].images.find((i) => i.id === homeImg.id)!;
       const pix = await sharp(assetData(getAsset(now.assetId!)!)).removeAlpha().raw().toBuffer({ resolveWithObject: true });
       const at = (x: number, y: number) => Array.from(pix.data.subarray((y * pix.info.width + x) * 3, (y * pix.info.width + x) * 3 + 3));
-      expect(at(5, 5)).toEqual([255, 0, 0]); // dans la zone : retouché
+      expect(at(20, 20)).toEqual([255, 0, 0]); // dans la zone : retouché
       expect(at(pix.info.width - 5, pix.info.height - 5)).toEqual([245, 238, 220]); // hors zone : identique (#F5EEDC)
       expect(imageVersions(pid, "A", homeImg.id)).toHaveLength(versions.length + 1);
       const { projectSnapshot: snap2 } = await import("@/lib/syna-agent/snapshot");
@@ -518,7 +519,7 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       expect(black.summary).toMatch(/RATÉE, rien n'a été remplacé.*rendue en noir/);
       expect(loadMockupSet(pid)!.directions[0].images.find((i) => i.id === homeImg.id)!.assetId).toBe(before2);
       // Retouche ratée au contrôle (essai réel : bouton coupé) : l'image d'avant reste en place, la ratée est une version.
-      mockupToolDeps.maskEdit = async (img) => { const m = await sharp(img).metadata(); return png("#00FF00", m.width, m.height); };
+      mockupToolDeps.maskEdit = async (img) => sharp(img).composite([{ input: await png("#00FF00", 30, 30), left: 10, top: 10 }]).png().toBuffer();
       mockupToolDeps.checkImage = async () => ({ deviceFrame: false, menuLinksAtTop: false, people: false, brokenAreas: true, textProblems: [], sections: [] });
       const nv = imageVersions(pid, "A", homeImg.id).length;
       const broken = await call("mockup.edit", ctx, { direction: "A", imageId: homeImg.id, changes: [{ zone: "le bouton du haut", change: "le retirer" }] });
@@ -767,7 +768,15 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     const { exactTexts, boxesOf } = await import("@/lib/syna-agent/mockup-code/edit");
     expect(exactTexts(["Lis le  journal", "Lis le journa", "Le journal de la pause"], ["Le journal de la pause", "Lis le journal"])).toEqual(["Lis le journal", "Le journal de la pause"]);
     // Marges des zones : fines en hauteur (essai réel : la marge mordait sur le logo et la partie suivante).
-    expect(boxesOf({ zones: [{ n: 1, found: true, left: 52.5, top: 46.4, right: 86.4, bottom: 60.7, texts: [] }] }, 1, 1024, 1536)[0]).toEqual({ left: 527, right: 895, top: 703, bottom: 942 });
+    expect(boxesOf({ zones: [{ n: 1, found: true, left: 52.5, top: 46.4, right: 86.4, bottom: 60.7, texts: [] }] }, 1, 1024, 1536)[0]).toEqual({ left: 527, right: 895, top: 713, bottom: 932 });
+    // Contenu qui touche le bord d'une zone (essai réel : bouton collé au bas, sur le titre suivant) ; raccord propre accepté.
+    const { cutEdges } = await import("@/lib/syna-agent/mockup-code/edit");
+    const base0 = await sharp({ create: { width: 100, height: 100, channels: 3, background: "#233A2E" } }).png().toBuffer();
+    const clean = await sharp(base0).composite([{ input: await png("#C9A04E", 40, 20), left: 30, top: 40 }]).png().toBuffer();
+    const touching = await sharp(base0).composite([{ input: await png("#C9A04E", 60, 20), left: 20, top: 70 }]).png().toBuffer();
+    const zone = { left: 10, top: 10, right: 90, bottom: 90 };
+    expect(await cutEdges(base0, clean, zone)).toEqual([]);
+    expect(await cutEdges(base0, touching, zone)).toEqual(["bas"]);
     // Textes disparus d'une zone retouchée (essai réel : « Lis le journal » perdu) ; un texte retiré exprès ne compte pas.
     const { missingTexts, removedTexts } = await import("@/lib/syna-agent/mockup-code/edit");
     const changes = [{ zone: "le bouton du haut", change: "retire le bouton doré « Choisis ton mélange de pause. »" }, { zone: "le journal", change: "les 3 articles l'un sous l'autre, puis le bouton « Lis le journal » sur toute la largeur" }];

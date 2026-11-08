@@ -39,7 +39,7 @@ import { mockupFacts, mockupImagePrompt, mockupImagesMaxMicro } from "./prompts"
 import { step7MaxMicro } from "./pipeline";
 import { checkMaxMicro, mockupCheckCall, MockupCheckSchema, mockupCheckVerdict, type MockupCheck } from "./check";
 import { llmJson } from "../../ai/llm";
-import { blackShare, boxesOf, exactTexts, missingTexts, locateCall, locateMaxMicro, LocateSchema, mockupEditPrompt, pasteZones, type Box, type EditChange, type Locate } from "./edit";
+import { blackShare, boxesOf, composeEdit, exactTexts, missingTexts, locateCall, locateMaxMicro, LocateSchema, mockupEditPrompt, type Box, type EditChange, type Locate } from "./edit";
 
 /** Remplaçables par les tests : coût d'une image de maquette et coût maximal des appels de l'étape 7. */
 export const mockupToolDeps: { imageMaxMicro?: (references: number) => number | null; callMaxMicro?: typeof step7CallMaxMicro; generateImage?: (prompt: string, refs: { logo: Buffer | null; product: Buffer | null }) => Promise<Buffer>; checkImage?: (data: Buffer, img: { viewport: "desktop" | "phone"; pages: string[] }) => Promise<MockupCheck>; locate?: (image: Buffer, changes: EditChange[]) => Promise<Locate>; maskEdit?: (image: Buffer, mask: Buffer | null, prompt: string) => Promise<Buffer> } = {};
@@ -394,12 +394,18 @@ const editTool: AgentTool<EditArgs> = {
     // Zone rendue noire (essai réel du 8 novembre) : la retouche est ratée, l'image d'avant reste en place.
     const black: string[] = [];
     for (const [i, b] of okBoxes.entries()) if ((await blackShare(edited, b)) > 0.2) black.push(a.changes[i].zone);
-    if (black.length) {
+    // Recollage des zones (une partie qui a besoin de plus de hauteur s'allonge, la suite de sa bande descend) ;
+    // une zone qui déborde sur du contenu voisin est en défaut.
+    const composed = black.length ? null : await composeEdit(original, edited, okBoxes);
+    const cut = (composed?.failed ?? []).map((f) => `${a.changes[f.index].zone} (bord ${f.sides.join(", ")})`);
+    if (black.length || cut.length) {
       const spentBad = all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key IN (?,?)", p.id, key("locate"), key("paint"))[0]?.c ?? 0;
-      return { ok: false, summary: L(`Retouche RATÉE, rien n'a été remplacé (l'image d'avant reste en place) : zone rendue en noir — ${black.join(" ; ")}. Coût réel : ${budgetPctText(ctx.user.id, spentBad, p.id).replace(/de votre budget/, "de ton budget")}.`, "Edit failed: black area."), hint: "Dis au client que la retouche est ratée et son coût réel ; ne relance rien sans son accord écrit." };
+      const why = [...(black.length ? [`zone rendue en noir — ${black.join(" ; ")}`] : []), ...(cut.length ? [`contenu qui touche le bord de la zone, il serait coupé ou recouvrirait la partie voisine — ${cut.join(" ; ")}`] : [])].join(" ; ");
+      return { ok: false, summary: L(`Retouche RATÉE, rien n'a été remplacé (l'image d'avant reste en place) : ${why}. Coût réel : ${budgetPctText(ctx.user.id, spentBad, p.id).replace(/de votre budget/, "de ton budget")}.`, "Edit failed: black area."), hint: "Dis au client que la retouche est ratée et son coût réel ; ne relance rien sans son accord écrit." };
     }
-    // 3) Seules les zones sont recollées sur l'image d'origine : rien d'autre ne bouge.
-    const data = await pasteZones(original, edited, okBoxes);
+    // 3) Seules les zones sont recollées sur l'image d'origine : rien d'autre ne change (la suite d'une bande peut
+    // seulement descendre, recopiée au pixel près, quand une partie retouchée a besoin de plus de hauteur).
+    const data = composed!.image;
     const asset = await saveAsset({ projectId: p.id, userId: ctx.user.id, data, name: `maquette-${a.direction}-${a.imageId}-${img.viewport}-retouche.png`, mime: "image/png", role: "mockup", origin: "generated", meta: { synaMockup: { direction: a.direction, image: a.imageId, pages: img.pages, viewport: img.viewport, editedFrom: src.id, changes: a.changes } } });
     set = attachImage(set, a.direction, { id: img.id, viewport: img.viewport, pages: img.pages, assetId: asset.id }).set;
     saveMockupSet(p.id, set);
@@ -423,7 +429,7 @@ const editTool: AgentTool<EditArgs> = {
     const label = `${img.pages.map((k) => pageByKey(set!.pages, k)?.fr ?? k).join(", ")} — ${img.viewport === "desktop" ? "ordinateur" : "téléphone"}${failedEdit ? " (retouche ratée, non retenue)" : ""}`;
     return {
       ok: !!check?.ok,
-      summary: L(`Image ${a.imageId} retouchée (seulement : ${a.changes.map((c) => c.zone).join(" ; ")} ; le reste est identique). ${checkText}. Coût réel : ${spentText}.`, `Image ${a.imageId} edited.`),
+      summary: L(`Image ${a.imageId} retouchée (seulement : ${a.changes.map((c) => c.zone).join(" ; ")} ; le reste est identique${composed!.grown ? ` ; la partie retouchée a pris ${composed!.grown} px de plus en hauteur, la suite de sa colonne est descendue d'autant, sans changement` : ""}). ${checkText}. Coût réel : ${spentText}.`, `Image ${a.imageId} edited.`),
       hint: "L'image retouchée t'est JOINTE à ta prochaine étape : regarde les zones retouchées et dis au client, honnêtement, si chaque demande est faite et si les textes sont justes. Ne dis jamais que tu ne peux pas la voir. Une retouche ratée est dite ratée ; rien n'est relancé sans son accord.",
       data: { mockups: [{ n: 1, direction: `${a.direction} · ${a.imageId}`, name: d.name, label, assetId: asset.id, href: assetUrl({ id: asset.id }) }], editedFrom: src.id },
       changes: [{ module: "fichiers", object: `maquette ${a.direction} › image ${a.imageId}`, summary: L(`retouchée : ${a.changes.map((c) => c.zone).join(" ; ")}`, "edited"), before: { assetId: src.id }, after: { assetId: asset.id }, verified: true }],

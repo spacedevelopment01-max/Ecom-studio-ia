@@ -268,6 +268,7 @@ describe("SINA agent — un fil, des outils natifs, des changements vérifiés",
     const { withoutBlindClaim } = await import("@/lib/syna-agent/loop");
     expect(withoutBlindClaim("La retouche est faite. Je ne peux pas confirmer à l'œil la nouvelle image : ouvre-la dans Fichiers. Le coût est de 0,2 %."))
       .toBe("La retouche est faite. Le coût est de 0,2 %.");
+    expect(withoutBlindClaim("La retouche est faite. Donc je ne peux pas confirmer les changements.")).toBe("La retouche est faite.");
     expect(withoutBlindClaim("Je ne peux pas vérifier le rendu ici.")).toBe("Je ne peux pas vérifier le rendu ici."); // jamais un message vide
     expect(withoutBlindClaim("Le journal est empilé. Les petits caractères du pied de page sont difficiles à lire.")).toBe("Le journal est empilé. Les petits caractères du pied de page sont difficiles à lire.");
   });
