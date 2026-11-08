@@ -270,6 +270,7 @@ describe("SINA agent — un fil, des outils natifs, des changements vérifiés",
       .toBe("La retouche est faite. Le coût est de 0,2 %.");
     expect(withoutBlindClaim("La retouche est faite. Donc je ne peux pas confirmer les changements.")).toBe("La retouche est faite.");
     expect(withoutBlindClaim("Le panier est refait. Je ne peux pas le vérifier à l'œil.")).toBe("Le panier est refait.");
+    expect(withoutBlindClaim("C'est fait. Je ne vois pas les rendus ici : ouvre B02 dans Fichiers.")).toBe("C'est fait.");
     expect(withoutBlindClaim("Je ne peux pas vérifier le rendu ici.")).toBe("Je ne peux pas vérifier le rendu ici."); // jamais un message vide
     expect(withoutBlindClaim("Le journal est empilé. Les petits caractères du pied de page sont difficiles à lire.")).toBe("Le journal est empilé. Les petits caractères du pied de page sont difficiles à lire.");
   });

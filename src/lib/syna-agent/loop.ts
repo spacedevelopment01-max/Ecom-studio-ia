@@ -332,7 +332,8 @@ export function withoutComposedClaim(message: string): string {
  */
 export function withoutBlindClaim(message: string): string {
   const blind = /\bje ne (?:peux|pourrai|suis) pas (?:en mesure de )?(?:l[ea]s? |l'|les )?(?:voir|vérifier|confirmer|contrôler|décrire|regarder)\b[^.!?\n]*(?:rendu|image|maquette|à l'œil|visuel|changements|modifications|retouche|résultat)/i;
-  return message.split(/(?<=[.!?])\s+/).filter((sentence) => !blind.test(sentence)).join(" ").replace(/ {2,}/g, " ").trim() || message;
+  const blind2 = /\bje ne (?:vois|lis|regarde) pas\b[^.!?\n]*(?:rendu|image|maquette|visuel)/i;
+  return message.split(/(?<=[.!?])\s+/).filter((sentence) => !blind.test(sentence) && !blind2.test(sentence)).join(" ").replace(/ {2,}/g, " ").trim() || message;
 }
 
 export function withoutRepeatedQuestion(out: StepOutput): StepOutput {

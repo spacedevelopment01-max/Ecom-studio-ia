@@ -445,7 +445,7 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     mockupToolDeps.generateImage = async (prompt, refs) => { n++; expect(prompt).toContain("« Braise Douce »"); expect(refs.logo).toBeTruthy(); if (n === 2) throw new Error("rendu refusé"); return png("#F5EEDC"); };
     // Contrôle automatique simulé : tout va bien, sauf l'accueil téléphone refait (trois articles côte à côte).
     let badPhone = false;
-    mockupToolDeps.checkImage = async (_d, img) => ({ deviceFrame: false, menuLinksAtTop: false, people: false, brokenAreas: false, textProblems: [], sections: [{ name: "Le journal", maxSideBySide: badPhone && img.viewport === "phone" ? 3 : 1 }] });
+    mockupToolDeps.checkImage = async (_d, img) => ({ deviceFrame: false, menuLinksAtTop: false, buttonInHeader: false, people: false, brokenAreas: false, textProblems: [], sections: [{ name: "Le journal", maxSideBySide: badPhone && img.viewport === "phone" ? 3 : 1 }] });
     try {
       const r = await call("mockup.generate", ctx, { direction: "A" });
       expect(r.ok).toBe(false); // une image ratée : jamais présentée comme une réussite complète
@@ -520,7 +520,7 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       expect(loadMockupSet(pid)!.directions[0].images.find((i) => i.id === homeImg.id)!.assetId).toBe(before2);
       // Retouche ratée au contrôle (essai réel : bouton coupé) : l'image d'avant reste en place, la ratée est une version.
       mockupToolDeps.maskEdit = async (img) => sharp(img).composite([{ input: await png("#00FF00", 30, 30), left: 10, top: 10 }]).png().toBuffer();
-      mockupToolDeps.checkImage = async () => ({ deviceFrame: false, menuLinksAtTop: false, people: false, brokenAreas: true, textProblems: [], sections: [] });
+      mockupToolDeps.checkImage = async () => ({ deviceFrame: false, menuLinksAtTop: false, buttonInHeader: false, people: false, brokenAreas: true, textProblems: [], sections: [] });
       const nv = imageVersions(pid, "A", homeImg.id).length;
       const broken = await call("mockup.edit", ctx, { direction: "A", imageId: homeImg.id, changes: [{ zone: "le bouton du haut", change: "le retirer" }] });
       expect(broken.ok).toBe(false);
@@ -756,13 +756,15 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
 
   it("contrôle automatique des maquettes : appareil dessiné, menu en haut, trois éléments côte à côte, personnes (essais réels du 8 novembre)", async () => {
     const { mockupCheckVerdict, mockupCheckPrompt } = await import("@/lib/syna-agent/mockup-code/check");
-    const base = { deviceFrame: false, menuLinksAtTop: false, people: false, brokenAreas: false, textProblems: [], sections: [{ name: "Produits", maxSideBySide: 2 }] };
+    const base = { deviceFrame: false, menuLinksAtTop: false, buttonInHeader: false, people: false, brokenAreas: false, textProblems: [], sections: [{ name: "Produits", maxSideBySide: 2 }] };
     expect(mockupCheckVerdict(base, "phone").ok).toBe(true);
     expect(mockupCheckVerdict({ ...base, deviceFrame: true }, "phone").problems).toEqual(["un appareil est dessiné autour de la page"]);
     expect(mockupCheckVerdict({ ...base, menuLinksAtTop: true }, "phone").ok).toBe(false);
     expect(mockupCheckVerdict({ ...base, menuLinksAtTop: true, sections: [{ name: "Gros plans", maxSideBySide: 4 }] }, "desktop").ok).toBe(true); // normal en ordinateur
     expect(mockupCheckVerdict({ ...base, sections: [{ name: "Gros plans", maxSideBySide: 4 }] }, "phone").problems[0]).toContain("« Gros plans » : 4 éléments côte à côte");
     expect(mockupCheckVerdict({ ...base, people: true }, "desktop").ok).toBe(false);
+    expect(mockupCheckVerdict({ ...base, buttonInHeader: true }, "phone").ok).toBe(false);
+    expect(mockupCheckVerdict({ ...base, buttonInHeader: true }, "desktop").ok).toBe(true); // en ordinateur, le bouton reste
     expect(mockupCheckVerdict({ ...base, brokenAreas: true }, "desktop").problems).toEqual(["une zone noire, vide ou cassée apparaît dans la page"]);
     const v = mockupCheckVerdict({ ...base, textProblems: ["« melange » sans accent"] }, "phone");
     expect(v.ok).toBe(true); expect(v.toVerify).toHaveLength(1);

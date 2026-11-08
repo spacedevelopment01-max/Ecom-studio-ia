@@ -26,6 +26,8 @@ export const MockupCheckSchema = z.object({
   deviceFrame: z.boolean(),
   /** Des liens de menu sont écrits en haut de la page (au lieu d'une icône de menu à trois traits). */
   menuLinksAtTop: z.boolean(),
+  /** Un bouton (autre que l'icône du menu) est dans l'en-tête tout en haut de la page. */
+  buttonInHeader: z.boolean(),
   /** Chaque partie de la page, de haut en bas, avec le plus grand nombre d'éléments posés côte à côte sur une rangée. */
   sections: z.array(z.object({ name: z.string().max(80), maxSideBySide: z.number().int().min(0).max(12) })).max(24),
   /** Personne, visage, main ou autre partie du corps visible. */
@@ -45,6 +47,7 @@ export function mockupCheckPrompt(img: Pick<MockupImage, "viewport" | "pages">, 
     `Image : maquette ${phone ? "en version téléphone (la page peut être montrée en plusieurs bandes étroites posées côte à côte : chaque bande est une suite de la même page, ce n'est pas une rangée d'éléments)" : "en version ordinateur"}, page(s) : ${pageNames.join(", ")}.`,
     "deviceFrame : true si un téléphone, une tablette, un écran ou tout appareil est dessiné autour de la page (coque, encoche, barre d'état).",
     `menuLinksAtTop : true si plusieurs liens de menu sont écrits dans l'en-tête en haut de la page${phone ? "" : " (normal en ordinateur, réponds quand même)"}.`,
+    "buttonInHeader : true si un bouton (rectangle ou pilule avec un texte, autre que l'icône du menu à trois traits) est dans l'en-tête tout en haut de la page, avec le logo.",
     "sections : chaque partie de la page de haut en bas (nom court d'après son titre) et maxSideBySide, le plus grand nombre de cartes, photos ou blocs posés côte à côte sur une même rangée DANS cette partie (1 si tout est l'un sous l'autre). Une seule photo qui montre plusieurs objets compte pour 1 (essai réel : trois bols sur une même photo comptés comme trois éléments).",
     "brokenAreas : true si un rectangle noir, une zone vide ou cassée apparaît au milieu de la page.",
     "people : true si une personne, un visage, une main ou une autre partie du corps est visible.",
@@ -64,6 +67,8 @@ export function mockupCheckVerdict(c: MockupCheck, viewport: MockupImage["viewpo
   if (c.brokenAreas) problems.push("une zone noire, vide ou cassée apparaît dans la page");
   if (viewport === "phone") {
     if (c.menuLinksAtTop) problems.push("les liens du menu sont écrits en haut au lieu de l'icône de menu");
+    // Règle du propriétaire (8 novembre) : en téléphone, l'en-tête n'a que le logo et le menu.
+    if (c.buttonInHeader) problems.push("un bouton est dans l'en-tête en haut (règle : logo et menu seulement en téléphone)");
     for (const s of c.sections) if (s.maxSideBySide >= 3) problems.push(`« ${s.name} » : ${s.maxSideBySide} éléments côte à côte (deux au plus en téléphone)`);
   }
   return { ok: problems.length === 0, problems, toVerify: c.textProblems };
