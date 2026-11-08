@@ -19,7 +19,9 @@ import { getJsonSetting } from "../../settings";
 
 import { getStrategyState } from "../../marketing-strategy";
 import { assertSectionGeneration } from "../../theme/custom-access";
-import { setStep, updateJourney } from "../journey";
+import { journeyOf, setStep, updateJourney } from "../journey";
+import { activityPlan } from "../activity";
+import { listProducts } from "../../products/catalog";
 import type { AgentTool, ToolContext } from "../types";
 import { project } from "../tools/common";
 import { step7CallMaxMicro } from "./deps";
@@ -55,6 +57,21 @@ function angleOf(projectId: string): string | undefined {
   } catch { return undefined; }
 }
 
+/** Produits de l'onglet Produits (titre, prix en centimes) : la source unique du site. */
+function productsOf(projectId: string): { title: string; price: number | null }[] {
+  try { return listProducts(projectId).map((x) => ({ title: x.data.title, price: x.data.price ?? null })); } catch { return []; }
+}
+/** Textes exacts de la marque (angle choisi à l'étape 4 : accroche, appel à l'action ; messages clés de la recherche). */
+function brandTextsOf(ctx: ToolContext, projectId: string): { headline?: string; cta?: string; messages?: string[] } | undefined {
+  try {
+    const j = journeyOf(ctx.conversationId);
+    if (!j.angleChoice) return undefined;
+    const plan = activityPlan(projectId, j);
+    if (!plan.angle) return undefined;
+    return { headline: plan.angle.message || undefined, cta: plan.angle.cta || undefined, messages: plan.keyMessages.slice(0, 3) };
+  } catch { return undefined; }
+}
+
 const hasProductPhoto = (pid: string) => all<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND deleted_at IS NULL AND kind='image' AND role IN ('original','product') LIMIT 1", pid).length > 0;
 const coverageView = (set: MockupSet) => set.directions.map((d) => {
   const c = coverageOf(d, set.pages);
@@ -80,7 +97,7 @@ const prepareTool: AgentTool<PrepareArgs> = {
     const p = project(ctx);
     if (!p.brand) return { ok: false, summary: L("L'identité de marque (nom, couleurs, polices) doit être choisie avant les maquettes (étape 1).", "Choose the brand identity first (step 1).") };
     const pages = pagesOf(p), photo = hasProductPhoto(p.id);
-    const facts = mockupFacts(p, angleOf(p.id), photo);
+    const facts = mockupFacts(p, angleOf(p.id), photo, { products: productsOf(p.id), texts: brandTextsOf(ctx, p.id) });
     const keys = ["A", "B", "C"] as const;
     const directions = a.directions.map((d, i) => plannedDirection(d.key ?? keys[i], d.name, d.style, pages, (img) => mockupImagePrompt(facts, d, img, pages)));
     const saved = saveMockupSet(p.id, { version: 1, business: p.business, pages, directions, at: 0 });
@@ -107,18 +124,22 @@ function imageReferences(p: ReturnType<typeof project>): { logo: Buffer | null; 
   const pa = photo ? getAsset(photo.id) : undefined;
   return { logo: assetData(la), product: pa ? assetData(pa) : null, problem: null };
 }
-const todo = (d: MockupSet["directions"][number]) => d.images.filter((i) => i.status !== "ready" && !!i.prompt);
+/** Images encore à créer ; `only` limite à certaines pages et à une version (ex. l'accueil en ordinateur pour voir le rendu). */
+const todo = (d: MockupSet["directions"][number], only: { pages?: string[]; viewport?: "desktop" | "phone" } = {}) =>
+  d.images.filter((i) => i.status !== "ready" && !!i.prompt && (!only.pages?.length || i.pages.some((k) => only.pages!.includes(k))) && (!only.viewport || i.viewport === only.viewport));
 
-const generateTool: AgentTool<{ direction: "A" | "B" | "C" }> = {
+const generateTool: AgentTool<{ direction: "A" | "B" | "C"; pages?: string[]; viewport?: "desktop" | "phone" }> = {
   name: "mockup.generate", module: "site", kind: "generate", needsProject: true,
-  description: "Étape 6 : crée avec l'IA d'images les images encore manquantes d'une maquette préparée (mockup.prepare), d'après leurs consignes, avec le logo et la photo du produit en références, puis les range dans la maquette. Payant, jamais au-delà du devis (annonce le prix au client et attends son accord avant). Une image ratée est signalée comme ratée, jamais présentée comme bonne ; elle peut être relancée.",
-  args: z.object({ direction: KEY }).strict(),
+  description: "Étape 6 : crée avec l'IA d'images les images encore manquantes d'une maquette préparée (mockup.prepare), d'après leurs consignes, avec le logo et la photo du produit en références, puis les range dans la maquette. Payant, jamais au-delà du devis (annonce le prix au client et attends son accord avant). pages (clés de mockup.pages, ex. [\"home\"]) et viewport limitent aux images de ces pages, dans cette version : pour voir d'abord le rendu de l'accueil. Une image ratée est signalée comme ratée, jamais présentée comme bonne ; elle peut être relancée.",
+  args: z.object({ direction: KEY, pages: z.array(z.string().max(60)).max(12).optional(), viewport: z.enum(["desktop", "phone"]).optional() }).strict(),
   estimate: (ctx, a) => {
     const p = project(ctx), set = loadMockupSet(p.id), d = set?.directions.find((x) => x.key === a.direction);
     if (!set || !d) throw new HttpError(409, L("Aucune maquette préparée : mockup.prepare d'abord.", "No mockup prepared yet."));
     const refs = imageReferences(p);
     if (refs.problem) throw new HttpError(409, refs.problem);
-    const max = mockupImagesMaxMicro(todo(d).length, refs.product ? 2 : 1, imageUnit);
+    const n = todo(d, a).length;
+    if (!n) throw new HttpError(409, L("Aucune image à créer pour ces pages dans cette maquette.", "No image to create for these pages."));
+    const max = mockupImagesMaxMicro(n, refs.product ? 2 : 1, imageUnit);
     if (max == null) throw new HttpError(409, L("Aucun modèle d'images utilisable pour les maquettes (administration › Médias).", "No usable image model for mockups."));
     return { maxMicro: max, label: L(`images de la maquette ${a.direction}`, `mockup ${a.direction} images`) };
   },
@@ -129,7 +150,7 @@ const generateTool: AgentTool<{ direction: "A" | "B" | "C" }> = {
     const d = set?.directions.find((x) => x.key === a.direction);
     if (!set || !d) return { ok: false, summary: L("Aucune maquette préparée : mockup.prepare d'abord.", "No mockup prepared yet.") };
     const made: { id: string; assetId: string; href: string }[] = [], failed: string[] = [];
-    for (const img of todo(d)) {
+    for (const img of todo(d!, a)) {
       try {
         const data = mockupToolDeps.generateImage ? await mockupToolDeps.generateImage(img.prompt!, refs)
           : await withQuotedImageRoute(mockupImageRoute(), () => aiSiteMockup({ userId: ctx.user.id, projectId: p.id, usageKey: `syna:${ctx.runId}:mockup-image:${a.direction}:${img.id}` }, { prompt: img.prompt!, logo: refs.logo, product: refs.product }));

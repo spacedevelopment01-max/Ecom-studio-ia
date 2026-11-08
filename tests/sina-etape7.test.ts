@@ -126,6 +126,21 @@ describe("SINA — étape 6 : consignes des images de maquette", async () => {
     expect(colourRoles({ ...brand, ground: "sombre" })).toContain("fond des pages le sombre #1F1A14 ; textes ET titres #F5EEDC");
   });
 
+  it("accueil : textes EXACTS de la marque (accroche, slogan, bouton, messages) et produits de l'onglet Produits (essai réel du 8 novembre)", async () => {
+    const { mockupFacts } = await import("@/lib/syna-agent/mockup-code/prompts");
+    const proj: any = { business: "products", name: "x", brand, product: { name: "6 mélanges vendus en vrac dans des", price: { amount: null, status: "unknown" } }, catalog: [], services: { services: [] } };
+    const f = mockupFacts(proj, undefined, false, { products: [{ title: "Thé vert jasmin", price: 850 }, { title: "Verveine-menthe", price: 750 }], texts: { headline: "Pose ton écran. Ces quelques minutes sont à toi.", cta: "Choisis ton mélange de pause.", messages: ["Six mélanges, trois thés et trois infusions."] } });
+    expect(f.offers).toEqual([{ name: "Thé vert jasmin", price: "8,50 €" }, { name: "Verveine-menthe", price: "7,50 €" }]); // jamais le nom tronqué de la fiche
+    const home = mockupImagePrompt(f, { name: "Lumière", style: "x" }, { viewport: "desktop", pages: ["home"] }, pages);
+    expect(home).toContain("grand titre d'ouverture « Pose ton écran. Ces quelques minutes sont à toi. »");
+    expect(home).toContain("le slogan « Allume l'instant. »");
+    expect(home).toContain("bouton principal « Choisis ton mélange de pause. »");
+    expect(home).toContain("« Six mélanges, trois thés et trois infusions. »");
+    expect(home).not.toContain("6 mélanges vendus en vrac dans des");
+    // Les textes de l'accueil ne vont que sur l'image de l'accueil.
+    expect(mockupImagePrompt(f, { name: "Lumière", style: "x" }, { viewport: "desktop", pages: ["cart"] }, pages)).not.toContain("grand titre d'ouverture");
+  });
+
   it("services : jamais de personne ; image du site écrite comme une photo décrite", () => {
     const t = mockupImagePrompt({ ...facts, business: "services", offers: [{ name: "Coupe femme" }], productPhoto: false }, { name: "Atelier", style: "x" }, { viewport: "desktop", pages: ["home"] }, mockupPages("services"));
     expect(t).toContain("jamais de personne");
@@ -359,6 +374,9 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     const planned = loadMockupSet(pid)!.directions[0].images;
     const est = await fr(() => tool("mockup.generate").estimate!(ctx, { direction: "A" }));
     expect(est.maxMicro).toBe(planned.length * 150_000);
+    // Pour voir le rendu d'abord : seulement l'accueil, en version ordinateur (une image).
+    const homeOnly = await fr(() => tool("mockup.generate").estimate!(ctx, { direction: "A", pages: ["home"], viewport: "desktop" }));
+    expect(homeOnly.maxMicro).toBe(150_000);
     let n = 0;
     mockupToolDeps.generateImage = async (prompt, refs) => { n++; expect(prompt).toContain("« Braise Douce »"); expect(refs.logo).toBeTruthy(); if (n === 2) throw new Error("rendu refusé"); return png("#F5EEDC"); };
     try {
