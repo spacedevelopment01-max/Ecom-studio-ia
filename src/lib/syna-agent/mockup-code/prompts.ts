@@ -195,6 +195,7 @@ export function siteImageHdPrompt(slot: { description: string; ratio?: string },
     `Ce qu'elle montre : ${slot.description.replace(/[.\s]+$/, "")}.`,
     f.product ? "La photo du produit réel est jointe : le produit est reproduit exactement (forme, couleurs, étiquette), entier, rien n'est coupé." : "",
     f.logo ? "Le logo de la marque est joint : s'il apparaît sur un emballage de la photo, il est reproduit exactement, sans autre mot ; sinon il n'apparaît pas." : "",
+    f.logo ? "" : "Aucun logo, aucun nom de marque : ni sur un objet, ni sur une tasse, ni posé sur le fond.",
     "Aucun autre texte, aucune lettre, aucun chiffre, aucun filigrane, aucune personne, aucun visage, aucune main. Aucun objet supplémentaire.",
   ].filter(Boolean).join("\n");
 }

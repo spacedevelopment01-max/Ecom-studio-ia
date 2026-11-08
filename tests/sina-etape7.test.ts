@@ -721,6 +721,9 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       expect(prompt).toMatch(/reproduis-la À L'IDENTIQUE en haute définition/);
       expect(prompt).toContain("tasse fumante sur un bureau");
       expect(prompt).toMatch(/aucune main/);
+      // Photo sans emballage : pas de logo envoyé, et la consigne l'interdit (essai réel : « Brindi » sur des tasses).
+      expect(prompt).toMatch(/Aucun logo, aucun nom de marque/);
+      expect(prompt).not.toMatch(/Le logo de la marque est joint/);
       const v3 = themeVersion(pid, (r.data as any).version.id)!;
       expect(currentTheme(pid)!.version.id).toBe(cur.id); // le site courant ne change pas
       const set3 = v3.spec.templates.index.sections[sid].settings as any;

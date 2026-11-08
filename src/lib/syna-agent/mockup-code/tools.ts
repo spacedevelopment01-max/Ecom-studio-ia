@@ -634,10 +634,14 @@ const siteImagesTool: AgentTool<{ pages?: string[] }> = {
         const W = meta.width ?? 1024, H = meta.height ?? 1536, b = slot.box!;
         const region = { left: Math.max(0, Math.floor(b.x * W)), top: Math.max(0, Math.floor(b.y * H)), width: Math.max(8, Math.min(W - Math.floor(b.x * W), Math.ceil(b.w * W))), height: Math.max(8, Math.min(H - Math.floor(b.y * H), Math.ceil(b.h * H))) };
         const scene = await sharp(full).extract(region).resize({ width: 1024, height: 1024, fit: "inside" }).png().toBuffer();
-        const prompt = siteImageHdPrompt(slot, { name: p.brand?.name ?? p.name, logo: !!refs.logo, product: !!refs.product });
+        // Logo seulement pour une photo d'emballage (essai réel du 8 novembre : « Brindi » ajouté sur des tasses, en coin
+        // d'une photo de menthe et dans le vide à côté de la tasse de l'ouverture, avec le logo envoyé pour chaque photo).
+        const pack = /sachet|emballage|paquet|étiquette|etiquette|boîte|boite|logo|pochette|bocal|flacon/i.test(slot.description);
+        const logo = pack ? refs.logo : null;
+        const prompt = siteImageHdPrompt(slot, { name: p.brand?.name ?? p.name, logo: !!logo, product: !!refs.product });
         const aspect = hdAspect(slot.ratio ?? `${region.width}:${region.height}`);
-        const data = mockupToolDeps.generateImage ? await mockupToolDeps.generateImage(prompt, refs)
-          : await withQuotedImageRoute(mockupImageRoute(), () => aiSiteImageHd({ userId: ctx.user.id, projectId: p.id, jobId, usageKey: `syna:${ctx.runId}:site-image:${slot.page}:${slot.type}:${slot.index}` }, { prompt, scene, logo: refs.logo, product: refs.product, aspect }));
+        const data = mockupToolDeps.generateImage ? await mockupToolDeps.generateImage(prompt, { logo, product: refs.product })
+          : await withQuotedImageRoute(mockupImageRoute(), () => aiSiteImageHd({ userId: ctx.user.id, projectId: p.id, jobId, usageKey: `syna:${ctx.runId}:site-image:${slot.page}:${slot.type}:${slot.index}` }, { prompt, scene, logo, product: refs.product, aspect }));
         const jpeg = data[0] === 0xff && data[1] === 0xd8;
         const asset = await saveAsset({ projectId: p.id, userId: ctx.user.id, data, name: `site-${slot.page}-${slot.type.replace(/^es-custom-/, "")}-${slot.index + 1}.${jpeg ? "jpg" : "png"}`, mime: jpeg ? "image/jpeg" : "image/png", role: "site", origin: "generated", meta: { synaSiteImage: { ...slot, prompt: undefined } } });
         // Pose : le n-ième réglage image de la section (section d'abord, puis ses blocs dans l'ordre).
