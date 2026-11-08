@@ -579,6 +579,36 @@ async function openaiSceneImpl(ctx: Ctx, input: { composite: Buffer; productMask
 }
 
 /**
+ * Retouche LOCALISÉE d'une maquette de site (demande du propriétaire du 8 novembre : « on ne doit pas refaire les
+ * maquettes autant de fois, attention à modifier que les détails demandés ») : OpenAI repeint seulement les zones
+ * transparentes du masque ; le Studio recolle ensuite ces seules zones sur l'image d'origine (rien d'autre ne bouge).
+ * `model` : le modèle des maquettes (même route que leur devis, aucun relais).
+ */
+async function mockupMaskEditImpl(ctx: Ctx, input: { image: Buffer; mask: Buffer; prompt: string; model: string; size: "1024x1024" | "1024x1536" | "1536x1024" }) {
+  const key = activeProviderKey("openai");
+  if (!key) throw new UserFacingError(L("Aucune clé OpenAI configurée pour la génération d'images.", "No OpenAI key configured for image generation."));
+  gate(ctx, openaiImageMax(input.model, { prompt: input.prompt, images: 2, size: input.size, quality: "high" }), "image", "openai", input.model);
+  const client = openaiClient(key);
+  let res: Awaited<ReturnType<typeof openaiImage>>;
+  try {
+    res = await openaiImage(client, "edit", { model: input.model, image: await toFile(input.image, "maquette.png", { type: "image/png" }), mask: await toFile(input.mask, "mask.png", { type: "image/png" }), prompt: input.prompt, size: input.size, quality: "high", n: 1 }, sent);
+  } catch (e: any) {
+    if (e?.status === 401) throw refusal(new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel.")));
+    if (e?.status === 400) throw refusal(new PermanentError(L(`Retouche refusée par OpenAI : ${e.message}`, `Edit rejected by OpenAI: ${e.message}`)));
+    throw e;
+  }
+  if (!res.b64) throw new Error(L("Réponse d'image vide.", "Empty image response."));
+  const u = res.usage ?? {};
+  const c = cost("openai", input.model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model: input.model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: c.micro, estimated: !res.usage || requirePrice("openai", input.model).unit !== "tokens", idempotencyKey: ctx.usageKey });
+  return Buffer.from(res.b64, "base64");
+}
+/** Borne d'une retouche localisée de maquette (image + masque), mêmes formules que sa réservation. */
+export function mockupMaskEditMaxMicro(model: string): number {
+  return mediaReservationMaxMicro(openaiImageMax(model, { prompt: "x".repeat(PUBLICATION_PROMPT_MAX_BYTES), images: 2, size: "1024x1536", quality: "high" }));
+}
+
+/**
  * Décor vide généré par le modèle de l'usage (images produit, publicités), quel que soit le fournisseur ; le produit
  * réel est composé ensuite par le studio. Aucune image du produit n'est envoyée : les modèles d'image la redessinent
  * presque toujours dans le décor, ce qui donnerait un second produit (réinventé) à côté du vrai.
@@ -1360,6 +1390,7 @@ export function falRefusal(status: number, body: string): string {
   return L(`Clé fal.ai refusée (${status}${detail ? ` : ${detail}` : ""}). Vérifiez qu'elle est copiée en entier et qu'elle n'a pas été supprimée sur fal.ai.`, `fal.ai key rejected (${status}${detail ? `: ${detail}` : ""}). Check it is copied in full and has not been deleted on fal.ai.`);
 }
 
+export const mockupMaskEdit = traced("image_generation", mockupMaskEditImpl);
 export const openaiScene = withMediaBackup("image", traced("image_generation", openaiSceneImpl), { usage: (_c, i) => i.usage ?? "product_edit", providers: ["openai"] });
 export const productPlate = withMediaBackup("image", traced("image_generation", productPlateImpl), { usage: (_c, i) => i.usage ?? "product_image" });
 export const productScene = withMediaBackup("image", traced("image_generation", productSceneImpl), { usage: (_c, i) => i.usage ?? "product_image" });

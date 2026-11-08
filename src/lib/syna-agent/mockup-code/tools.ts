@@ -8,13 +8,14 @@
  *  - site.code_from_mockup : lance l'étape 7 (payante, plafonnée au devis) ;
  *  - mockup.report     : rapport de la dernière étape 7 (page par page).
  */
+import sharp from "sharp";
 import { z } from "zod";
 import { HttpError } from "../../auth";
 import { all } from "../../db";
 import { enqueue } from "../../jobs";
 import { L } from "../../i18n-server";
 import { assetData, assetUrl, getAsset, saveAsset } from "../../library";
-import { aiSiteMockup, photoRequestMaxMicro, PUBLICATION_PROMPT_MAX_BYTES, withQuotedImageRoute } from "../../ai/media-providers";
+import { aiSiteMockup, mockupMaskEdit, mockupMaskEditMaxMicro, photoRequestMaxMicro, PUBLICATION_PROMPT_MAX_BYTES, withQuotedImageRoute } from "../../ai/media-providers";
 import { getJsonSetting } from "../../settings";
 import { budgetPctText } from "../../ai/budget-pct";
 
@@ -38,9 +39,10 @@ import { mockupFacts, mockupImagePrompt, mockupImagesMaxMicro } from "./prompts"
 import { step7MaxMicro } from "./pipeline";
 import { checkMaxMicro, mockupCheckCall, MockupCheckSchema, mockupCheckVerdict, type MockupCheck } from "./check";
 import { llmJson } from "../../ai/llm";
+import { boxesOf, editMask, exactTexts, locateCall, locateMaxMicro, LocateSchema, mockupEditPrompt, pasteZones, type Box, type EditChange, type Locate } from "./edit";
 
 /** Remplaçables par les tests : coût d'une image de maquette et coût maximal des appels de l'étape 7. */
-export const mockupToolDeps: { imageMaxMicro?: (references: number) => number | null; callMaxMicro?: typeof step7CallMaxMicro; generateImage?: (prompt: string, refs: { logo: Buffer | null; product: Buffer | null }) => Promise<Buffer>; checkImage?: (data: Buffer, img: { viewport: "desktop" | "phone"; pages: string[] }) => Promise<MockupCheck> } = {};
+export const mockupToolDeps: { imageMaxMicro?: (references: number) => number | null; callMaxMicro?: typeof step7CallMaxMicro; generateImage?: (prompt: string, refs: { logo: Buffer | null; product: Buffer | null }) => Promise<Buffer>; checkImage?: (data: Buffer, img: { viewport: "desktop" | "phone"; pages: string[] }) => Promise<MockupCheck>; locate?: (image: Buffer, changes: EditChange[]) => Promise<Locate>; maskEdit?: (image: Buffer, mask: Buffer, prompt: string) => Promise<Buffer> } = {};
 /**
  * Modèle des images de maquette : OpenAI GPT Image 2.5 Flare (choix du propriétaire du 8 novembre, après comparaison
  * réelle sur l'accueil Brindi : Qwen abîmait les textes, OpenAI les écrivait juste ; même modèle que les logos),
@@ -244,7 +246,7 @@ async function checkMockupImage(ctx: ToolContext, projectId: string, direction: 
 
 const generateTool: AgentTool<{ direction: "A" | "B" | "C"; pages?: string[]; viewport?: "desktop" | "phone"; redo?: boolean }> = {
   name: "mockup.generate", module: "site", kind: "generate", needsProject: true,
-  description: "Étape 6 : crée avec l'IA d'images les images encore manquantes d'une maquette préparée (mockup.prepare), d'après leurs consignes, avec le logo et la photo du produit en références, puis les range dans la maquette. Payant, jamais au-delà du devis (annonce le prix au client et attends son accord avant). pages (clés de mockup.pages, ex. [\"home\"]) et viewport limitent aux images de ces pages, dans cette version : pour voir d'abord le rendu de l'accueil. Une image ratée est signalée comme ratée, jamais présentée comme bonne ; elle peut être relancée. redo: true (avec pages et viewport) REFAIT une image déjà créée que le client juge ratée, avec la consigne actuelle (payant, son accord d'abord).",
+  description: "Étape 6 : crée avec l'IA d'images les images encore manquantes d'une maquette préparée (mockup.prepare), d'après leurs consignes, avec le logo et la photo du produit en références, puis les range dans la maquette. Payant, jamais au-delà du devis (annonce le prix au client et attends son accord avant). pages (clés de mockup.pages, ex. [\"home\"]) et viewport limitent aux images de ces pages, dans cette version : pour voir d'abord le rendu de l'accueil. Une image ratée est signalée comme ratée, jamais présentée comme bonne ; elle peut être relancée. redo: true (avec pages et viewport) REFAIT ENTIÈREMENT une image déjà créée, avec la consigne actuelle : tout change (mise en page, photos). Seulement si le client veut une image toute nouvelle ; pour corriger des détails, mockup.edit (payant, son accord d'abord).",
   args: z.object({ direction: KEY, pages: z.array(z.string().max(60)).max(12).optional(), viewport: z.enum(["desktop", "phone"]).optional(), redo: z.boolean().optional() }).strict(),
   estimate: (ctx, a) => {
     const p = project(ctx), set = loadMockupSet(p.id), d = set?.directions.find((x) => x.key === a.direction);
@@ -316,6 +318,97 @@ const generateTool: AgentTool<{ direction: "A" | "B" | "C"; pages?: string[]; vi
       // Libellés du client (essai réel : « 1. A · A01 » affiché) : nom de la maquette, pages, version.
       data: { mockups: made.map((m, i) => { const img = read.directions.find((x) => x.key === a.direction)!.images.find((x) => x.id === m.id)!; return { n: i + 1, direction: `${a.direction} · ${m.id}`, name: d!.name, label: `${img.pages.map((k) => pageByKey(read.pages, k)?.fr ?? k).join(", ")} — ${img.viewport === "desktop" ? "ordinateur" : "téléphone"}`, assetId: m.assetId, href: m.href }; }), failed, complete: cov.complete },
       changes: made.map((m) => ({ module: "fichiers", object: `maquette ${a.direction} › image ${m.id}`, summary: L("créée par l'IA d'images", "created by the image AI"), after: m, verified: true })),
+    };
+  },
+};
+
+type EditArgs = { direction: "A" | "B" | "C"; imageId: string; fromVersion?: number; fromAssetId?: string; changes: EditChange[] };
+/** Versions successives d'une image de maquette (fichiers rangés, de la première à la plus récente). */
+export function imageVersions(projectId: string, direction: string, imageId: string): string[] {
+  // Même ordre que l'état du projet relu par SINA (« B10 : 5 versions, actuelle n° 5 »).
+  return all<{ id: string; meta: string }>("SELECT id, meta FROM assets WHERE project_id=? AND deleted_at IS NULL AND role='mockup' ORDER BY created_at ASC, rowid ASC", projectId)
+    .filter((r) => { try { const m = JSON.parse(r.meta || "{}").synaMockup; return m?.direction === direction && m?.image === imageId; } catch { return false; } })
+    .map((r) => r.id);
+}
+/** Coût maximal d'une retouche localisée : repérage des zones + retouche + contrôle ; null si le modèle des maquettes ne sait pas retoucher par masque. */
+function editMaxMicro(): number | null {
+  const r = mockupImageRoute();
+  if (r.provider !== "openai") return null;
+  try {
+    const paint = mockupToolDeps.imageMaxMicro ? mockupToolDeps.imageMaxMicro(2) : mockupMaskEditMaxMicro(r.model);
+    return paint == null ? null : paint + locateMaxMicro() + checkMaxMicro();
+  } catch { return null; }
+}
+const editTool: AgentTool<EditArgs> = {
+  name: "mockup.edit", module: "site", kind: "generate", needsProject: true,
+  description: "Étape 6 : RETOUCHE LOCALISÉE d'une image de maquette déjà créée : seules les zones demandées par le client changent, tout le reste reste identique au pixel près. À utiliser dès que le client demande de corriger des détails (retirer un bouton, réorganiser une partie, changer un texte sur l'image) : JAMAIS mockup.generate redo, qui refait toute l'image et change tout. imageId : l'image (ex. B10) ; fromVersion : le numéro de la version de cette image que le client préfère (1 = la première créée ; voir « versions » dans l'état du projet), sinon la version actuelle ; changes : 1 à 4 zones, chacune { zone : où, décrite clairement (ex. « la partie Le journal de la pause, son titre, ses cartes et son bouton »), change : ce qui doit changer, précisément }. Payant (une retouche), annonce le prix et attends l'accord.",
+  args: z.object({ direction: KEY, imageId: z.string().max(8), fromVersion: z.number().int().min(1).max(50).optional(), fromAssetId: z.string().max(60).optional(), changes: z.array(z.object({ zone: z.string().min(3).max(300), change: z.string().min(3).max(600) }).strict()).min(1).max(4) }).strict(),
+  estimate: (ctx, a) => {
+    const p = project(ctx), d = loadMockupSet(p.id)?.directions.find((x) => x.key === a.direction);
+    if (!d?.images.some((i) => i.id === a.imageId && (i.assetId || a.fromAssetId))) throw new HttpError(409, L(`Aucune image ${a.imageId} créée dans la maquette ${a.direction}.`, "No such mockup image."));
+    const max = editMaxMicro();
+    if (max == null) throw new HttpError(409, L("Le modèle des maquettes ne sait pas retoucher une zone précise.", "The mockup model cannot edit a precise area."));
+    return { maxMicro: max, label: L(`retouche de l'image ${a.imageId}`, `edit of image ${a.imageId}`) };
+  },
+  run: async (ctx, a) => {
+    const p = project(ctx);
+    let set = loadMockupSet(p.id);
+    const d = set?.directions.find((x) => x.key === a.direction), img = d?.images.find((i) => i.id === a.imageId);
+    if (!set || !d || !img) return { ok: false, summary: L(`Aucune image ${a.imageId} dans la maquette ${a.direction}.`, "No such mockup image.") };
+    // Version de départ : celle que le client préfère (une version précédente de CETTE image), sinon l'actuelle.
+    const versions = imageVersions(p.id, a.direction, a.imageId);
+    if (a.fromVersion && !versions[a.fromVersion - 1]) return { ok: false, summary: L(`L'image ${a.imageId} n'a que ${versions.length} version(s).`, "No such version."), internal: true };
+    const fromId = (a.fromVersion ? versions[a.fromVersion - 1] : undefined) ?? a.fromAssetId ?? img.assetId;
+    const src = fromId ? getAsset(fromId) : undefined;
+    const meta = src ? (() => { try { return JSON.parse(src.meta || "{}"); } catch { return {}; } })() : {};
+    if (!src || src.project_id !== p.id || src.deleted_at || (fromId !== img.assetId && (meta?.synaMockup?.image !== a.imageId || meta?.synaMockup?.direction !== a.direction)))
+      return { ok: false, summary: L(`Le fichier ${fromId ?? "?"} n'est pas une version de l'image ${a.imageId} de la maquette ${a.direction}.`, "Not a version of this image."), internal: true };
+    const original = await sharp(assetData(src)).png().toBuffer();
+    const { width: w = 1024, height: h = 1536 } = await sharp(original).metadata();
+    const jobId = getRun(ctx.runId)?.job_id ?? null;
+    const key = (k: string) => `syna:${ctx.runId}:mockup-edit-${k}:${a.direction}:${a.imageId}`;
+    const capOf = (micro: number) => (jobId ? jobSpentMicro(jobId) : 0) + micro;
+    // 1) Repérer les zones (et lire leurs textes).
+    let located: Locate;
+    try {
+      located = mockupToolDeps.locate ? await mockupToolDeps.locate(original, a.changes)
+        : LocateSchema.parse(await withTrace({ jobId, projectId: p.id, step: "mockup-locate", costCapMicro: capOf(locateMaxMicro()) }, () => llmJson(locateCall({ userId: ctx.user.id, projectId: p.id, jobId, usageKey: key("locate") }, original, a.changes), LocateSchema, { strict: true })));
+    } catch (e) { return { ok: false, summary: L(`Zones non repérées, rien n'a été retouché : ${(e as Error).message.slice(0, 160)}`, "Areas not located.") }; }
+    const boxes = boxesOf(located, a.changes.length, w, h);
+    const missing = a.changes.filter((_, i) => !boxes[i]).map((c) => c.zone);
+    if (missing.length) return { ok: false, summary: L(`Zone introuvable sur l'image, rien n'a été retouché : ${missing.join(" ; ")}.`, "Area not found."), hint: "Demande au client de préciser où se trouve cette zone ; aucune retouche n'a été payée." };
+    // 2) Retouche des seules zones (textes de la zone vérifiés mot pour mot dans les textes de la page).
+    const page = loadSiteCopy(p.id)?.pages[img.pages[0]];
+    const pageTexts = page ? page.sections.flatMap((x) => [x.title, x.text, x.button, ...x.items.flatMap((i) => [i.title, i.text])]).filter((t): t is string => !!t) : [];
+    const keep = a.changes.map((_, i) => exactTexts(located.zones.find((z) => z.n === i + 1)?.texts ?? [], pageTexts));
+    const prompt = mockupEditPrompt(a.changes, keep, img.viewport);
+    const okBoxes = boxes as Box[];
+    let edited: Buffer;
+    try {
+      const mask = await editMask(w, h, okBoxes);
+      const route = mockupImageRoute();
+      const size = w > h ? "1536x1024" as const : w === h ? "1024x1024" as const : "1024x1536" as const;
+      edited = mockupToolDeps.maskEdit ? await mockupToolDeps.maskEdit(original, mask, prompt)
+        : await withQuotedImageRoute(route, () => mockupMaskEdit({ userId: ctx.user.id, projectId: p.id, jobId, usageKey: key("paint") }, { image: original, mask, prompt, model: route.model, size }));
+    } catch (e) { return { ok: false, summary: L(`Retouche impossible : ${(e as Error).message.slice(0, 200)}`, "Edit failed."), hint: "Dis-le au client avec le coût réel ; ne relance rien sans son accord écrit." }; }
+    // 3) Seules les zones sont recollées sur l'image d'origine : rien d'autre ne bouge.
+    const data = await pasteZones(original, edited, okBoxes);
+    const asset = await saveAsset({ projectId: p.id, userId: ctx.user.id, data, name: `maquette-${a.direction}-${a.imageId}-${img.viewport}-retouche.png`, mime: "image/png", role: "mockup", origin: "generated", meta: { synaMockup: { direction: a.direction, image: a.imageId, pages: img.pages, viewport: img.viewport, editedFrom: src.id, changes: a.changes } } });
+    set = attachImage(set, a.direction, { id: img.id, viewport: img.viewport, pages: img.pages, assetId: asset.id }).set;
+    saveMockupSet(p.id, set);
+    const check = await checkMockupImage(ctx, p.id, a.direction, img, data, set.pages);
+    if (check) { set = { ...set, directions: set.directions.map((x) => (x.key === a.direction ? { ...x, images: x.images.map((i) => (i.id === img.id ? { ...i, check } : i)) } : x)) }; saveMockupSet(p.id, set); }
+    const keys = [key("locate"), key("paint"), `syna:${ctx.runId}:mockup-check:${a.direction}:${a.imageId}`];
+    const spent = all<{ c: number | null }>(`SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key IN (${keys.map(() => "?").join(",")})`, p.id, ...keys)[0]?.c ?? 0;
+    const spentText = budgetPctText(ctx.user.id, spent, p.id).replace(/de votre budget/, "de ton budget");
+    const checkText = !check ? "contrôle automatique impossible, à regarder" : check.ok ? "contrôle automatique de la mise en page : rien à signaler" : `RATÉE au contrôle automatique : ${check.problems.join(" ; ")}`;
+    const label = `${img.pages.map((k) => pageByKey(set!.pages, k)?.fr ?? k).join(", ")} — ${img.viewport === "desktop" ? "ordinateur" : "téléphone"}`;
+    return {
+      ok: !!check?.ok,
+      summary: L(`Image ${a.imageId} retouchée (seulement : ${a.changes.map((c) => c.zone).join(" ; ")} ; le reste est identique). ${checkText}. Coût réel : ${spentText}.`, `Image ${a.imageId} edited.`),
+      hint: "L'image retouchée t'est JOINTE à ta prochaine étape : regarde les zones retouchées et dis au client, honnêtement, si chaque demande est faite et si les textes sont justes. Ne dis jamais que tu ne peux pas la voir. Une retouche ratée est dite ratée ; rien n'est relancé sans son accord.",
+      data: { mockups: [{ n: 1, direction: `${a.direction} · ${a.imageId}`, name: d.name, label, assetId: asset.id, href: assetUrl({ id: asset.id }) }], editedFrom: src.id },
+      changes: [{ module: "fichiers", object: `maquette ${a.direction} › image ${a.imageId}`, summary: L(`retouchée : ${a.changes.map((c) => c.zone).join(" ; ")}`, "edited"), before: { assetId: src.id }, after: { assetId: asset.id }, verified: true }],
     };
   },
 };
@@ -408,4 +501,4 @@ const reportTool: AgentTool<{}> = {
 };
 
 /** Outils à ajouter au registre (src/lib/syna-agent/tools/index.ts). */
-export const mockupCodeTools: AgentTool[] = [pagesTool, copyTool, copyEditTool, prepareTool, generateTool, attachTool, chooseTool, codeTool, reportTool];
+export const mockupCodeTools: AgentTool[] = [pagesTool, copyTool, copyEditTool, prepareTool, generateTool, editTool, attachTool, chooseTool, codeTool, reportTool];

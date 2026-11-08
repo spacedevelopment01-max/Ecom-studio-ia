@@ -476,6 +476,42 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       badPhone = false;
       await call("mockup.generate", ctx, { direction: "A", pages: ["home"], viewport: "phone", redo: true });
       expect(loadMockupSet(pid)!.directions[0].images.find((i) => i.id === homeImg.id)!.check?.ok).toBe(true);
+      // Retouche LOCALISÉE (consigne du propriétaire : « modifier que les détails demandés ») : seules les zones
+      // repérées changent, le reste reste identique au pixel près ; on peut partir d'une version précédente.
+      const { imageVersions } = await import("@/lib/syna-agent/mockup-code/tools");
+      const { assetData, getAsset } = await import("@/lib/library");
+      const versions = imageVersions(pid, "A", homeImg.id);
+      expect(versions.length).toBeGreaterThanOrEqual(3);
+      let painted = 0, maskSeen: Buffer | null = null, promptSeen = "";
+      mockupToolDeps.locate = async (_img, changes) => ({ zones: changes.map((_, i) => ({ n: i + 1, found: i === 0, left: 0, top: 0, right: 50, bottom: 25, texts: ["Allume l'instant.", "texte mal lu"] })) });
+      mockupToolDeps.maskEdit = async (img, mask, prompt) => { painted++; maskSeen = mask; promptSeen = prompt; const m = await sharp(img).metadata(); return png("#FF0000", m.width, m.height); };
+      // Une zone introuvable : rien n'est retouché ni payé.
+      const lost = await call("mockup.edit", ctx, { direction: "A", imageId: homeImg.id, changes: [{ zone: "le bouton du haut", change: "le retirer" }, { zone: "une partie absente", change: "x x x" }] });
+      expect(lost.ok).toBe(false);
+      expect(lost.summary).toMatch(/Zone introuvable.*une partie absente/);
+      expect(painted).toBe(0);
+      mockupToolDeps.locate = async () => ({ zones: [{ n: 1, found: true, left: 0, top: 0, right: 50, bottom: 25, texts: ["Allume l'instant.", "texte mal lu"] }] });
+      const est3 = await fr(() => tool("mockup.edit").estimate!(ctx, { direction: "A", imageId: homeImg.id, changes: [{ zone: "le bouton du haut", change: "le retirer" }] }));
+      expect(est3.maxMicro).toBeGreaterThan(0);
+      const ed = await call("mockup.edit", ctx, { direction: "A", imageId: homeImg.id, fromVersion: 1, changes: [{ zone: "le bouton du haut", change: "le retirer" }] });
+      expect(ed.ok, ed.summary).toBe(true);
+      expect(painted).toBe(1);
+      expect(ed.summary).toMatch(/le reste est identique/);
+      expect(promptSeen).toContain("Zone 1 (le bouton du haut) : le retirer.");
+      expect(promptSeen).not.toContain("texte mal lu"); // un texte lu n'est repris que s'il est dans les textes de la page
+      const mk = await sharp(maskSeen!).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+      expect(mk.data[3]).toBe(0); // coin haut gauche : à repeindre
+      expect(mk.data[(mk.info.width * mk.info.height - 1) * 4 + 3]).toBe(255); // coin bas droit : protégé
+      const now = loadMockupSet(pid)!.directions[0].images.find((i) => i.id === homeImg.id)!;
+      const pix = await sharp(assetData(getAsset(now.assetId!)!)).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+      const at = (x: number, y: number) => Array.from(pix.data.subarray((y * pix.info.width + x) * 3, (y * pix.info.width + x) * 3 + 3));
+      expect(at(5, 5)).toEqual([255, 0, 0]); // dans la zone : retouché
+      expect(at(pix.info.width - 5, pix.info.height - 5)).toEqual([245, 238, 220]); // hors zone : identique (#F5EEDC)
+      expect(imageVersions(pid, "A", homeImg.id)).toHaveLength(versions.length + 1);
+      const { projectSnapshot: snap2 } = await import("@/lib/syna-agent/snapshot");
+      expect(await fr(() => snap2(ctx))).toMatch(new RegExp(`${homeImg.id} : ${versions.length + 1} versions, actuelle n° ${versions.length + 1}`));
+      // Une version qui n'existe pas : refusée.
+      expect((await call("mockup.edit", ctx, { direction: "A", imageId: homeImg.id, fromVersion: 40, changes: [{ zone: "x x", change: "y y y" }] })).ok).toBe(false);
       const redone = loadMockupSet(pid)!.directions[0].images.find((i) => i.id === homeImg.id)!;
       expect(redone.status).toBe("ready");
       expect(redone.assetId).not.toBe(homeImg.assetId);
@@ -496,10 +532,10 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       // Le résumé du projet relu par SINA ne recopie jamais les maquettes (essai réel : 224 000 caractères à chaque pas).
       const { projectSnapshot } = await import("@/lib/syna-agent/snapshot");
       const snap = await fr(() => projectSnapshot(ctx));
-      expect(snap).toMatch(/Maquettes sur mesure : A « Lumière » \(\d+\/\d+ images prêtes\) ; B « Atelier »/);
+      expect(snap).toMatch(/Maquettes sur mesure : A « Lumière » \(\d+\/\d+ images prêtes[^)]*\) ; B « Atelier »/);
       expect(snap.length).toBeLessThan(6000);
       expect(snap).not.toContain("Planche de maquette");
-    } finally { mockupToolDeps.generateImage = undefined; mockupToolDeps.checkImage = undefined; }
+    } finally { mockupToolDeps.generateImage = undefined; mockupToolDeps.checkImage = undefined; mockupToolDeps.locate = undefined; mockupToolDeps.maskEdit = undefined; }
   });
 
   it("préparation gratuite, images rangées, choix refusé tant que la maquette est incomplète, devis de l'étape 7", async () => {
@@ -710,6 +746,11 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     const c = mockupCheckCall({ userId: "u", projectId: "p", jobId: null, usageKey: "k" }, Buffer.from("x"), { viewport: "phone", pages: ["home"] }, ["Accueil"]);
     expect(c.prompt.length + JSON.stringify(MockupCheckSchema.shape).length).toBeLessThan(6000);
     expect(jsonCallMaxMicro("anthropic", CHECK_MODEL.model, 6000, c.maxTokens!, c.maxOutputTokens!, "low")!.maxMicro).toBeLessThanOrEqual(checkMaxMicro());
+    // Retouche : seuls les textes lus ET présents mot pour mot dans les textes de la page sont imposés.
+    const { exactTexts, boxesOf } = await import("@/lib/syna-agent/mockup-code/edit");
+    expect(exactTexts(["Lis le  journal", "Lis le journa", "Le journal de la pause"], ["Le journal de la pause", "Lis le journal"])).toEqual(["Lis le journal", "Le journal de la pause"]);
+    // Marges des zones : fines en hauteur (essai réel : la marge mordait sur le logo et la partie suivante).
+    expect(boxesOf({ zones: [{ n: 1, found: true, left: 52.5, top: 46.4, right: 86.4, bottom: 60.7, texts: [] }] }, 1, 1024, 1536)[0]).toEqual({ left: 527, right: 895, top: 703, bottom: 942 });
     // Les bandes d'une même page en téléphone ne comptent pas comme une rangée d'éléments.
     expect(mockupCheckPrompt({ viewport: "phone", pages: ["home"] }, ["Accueil"])).toContain("ce n'est pas une rangée d'éléments");
   });
