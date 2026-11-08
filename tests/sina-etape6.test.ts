@@ -62,6 +62,8 @@ describe("SINA — étape 6 : un de nos thèmes", async () => {
     // Identifiants pour SINA seule, jamais montrés au client.
     for (const t of j.themes!.list) expect(r.summary).toContain(`« ${t.name} »`);
     expect(r.hint).toMatch(/Identifiants pour theme\.choose/);
+    expect(r.summary).toMatch(/tels qu'ils sont \(démonstrations d'origine\)/);
+    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/Ce ne sont PAS son site : ne dis jamais « ton site composé dans chacun »/);
     // Montrer ne change rien au projet : aucune tâche de composition.
     expect(all("SELECT id FROM jobs WHERE project_id=? AND type='shop.direction'", pid)).toHaveLength(0);
     const everything = await call("theme.propose", ctx, { all: true });

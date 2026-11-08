@@ -12,7 +12,7 @@ const TRACKED: Record<string, string> = {
   sillon: "tests/sillon-fixtures.ts", noctil: "tests/noctil-fixtures.ts", traverse: "tests/traverse-fixtures.ts",
   heuren: "tests/heuren-alcove-fixtures.ts", rive: "tests/rive-fixtures.ts", alcove: "tests/heuren-alcove-fixtures.ts", "museau-club": "tests/museau-fixtures.ts", souple: "tests/souple-fixtures.ts",
   // Kits versionnés (décision du 6 novembre) : vignettes suivies comme les autres (étape 6 de SINA, thèmes tels qu'ils sont).
-  fraise: "tests/fraise-fixtures.ts", onde: "tests/onde-fixtures.ts",
+  fraise: "tests/fraise-fixtures.ts", onde: "tests/onde-fixtures.ts", phase: "tests/phase-fixtures.ts", "maison-horizon": "tests/maison-horizon-fixtures.ts", aplat: "tests/aplat-fixtures.ts",
 };
 // Texte des démos sans balises ni retours à la ligne, pour retrouver un titre composé de plusieurs réglages.
 const flat = (s: string) => s.replace(/\\n|<br\s*\/?>/g, " ").replace(/\s+/g, " ").toLowerCase();

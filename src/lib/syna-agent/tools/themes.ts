@@ -46,7 +46,7 @@ const proposeTool: AgentTool<{ all?: boolean }> = {
     updateJourney(ctx.conversationId, (x) => { x.themes = themes; if (x.steps[6]?.status !== "done") setStep(x, 6, "review"); });
     return {
       ok: true,
-      summary: L(`${themes.list.length} thème(s) affiché(s) : ${themes.list.map((t) => `« ${t.name} »`).join(", ")}.`, "Themes shown."),
+      summary: L(`${themes.list.length} thème(s) affiché(s), tels qu'ils sont (démonstrations d'origine) : ${themes.list.map((t) => `« ${t.name} »`).join(", ")}.`, "Themes shown as they are."),
       hint: `Identifiants pour theme.choose : ${themes.list.map((t) => `${t.id} = « ${t.name} »${t.allowed ? "" : " (NON inclus dans son forfait)"}`).join(" ; ")}. Catalogue complet : ${ACTIVE_THEMES.length} thèmes (theme.propose all: true).`,
       data: { themes: themes.list.map((t) => ({ id: t.id, nom: t.name, style: t.tagline, pourquoi: t.why, inclus: t.allowed, demo: t.demo })), recommande: themes.recommendedId },
     };
