@@ -103,6 +103,11 @@ ${others}
 - images (réglages image_picker, l'IA d'images créera ensuite les photos ; texte alternatif factuel) : ${s.images.map((i) => i.description).join(" ; ") || "aucune"}
 - couleurs lues : ${Object.entries(s.colors).filter(([, v]) => v).map(([k, v]) => `${k} ${v}`).join(", ") || "celles du thème"} (passe par les variables du thème quand elles correspondent)
 - typographie : ${s.typography ?? "celle du thème"} ; espacements : ${s.spacing ?? "ceux de la maquette"}${s.effects ? ` ; effets : ${s.effects}` : ""}
+Fidélité exigée par le propriétaire (« je veux à l'identique ») ; essai réel du 8 novembre : titre trop gras et trop serré, boutons verts au lieu de dorés, photo encadrée au lieu de détourée, vague noire au lieu de dorée :
+- tailles, graisses, interlignes et largeurs de colonne des titres comme sur la maquette (un titre sur 3 lignes reste sur 3 lignes) ;
+- couleurs EXACTES lues sur la maquette pour chaque fond, texte, bouton, filet et décor ; une variable du thème seulement si elle a exactement la même couleur ;
+- une photo détourée ou fondue dans le fond sur la maquette s'affiche sans cadre, sans bordure, sans arrondi, sans ombre (image posée sur le fond de la section) ;
+- vagues, filets, feuilles et motifs en SVG, avec leurs couleurs écrites (fill/stroke explicites), jamais noirs par défaut ; un bandeau ou une vague portant un texte garde ce texte, mot pour mot.
 Chaque texte, image, lien et bouton est un réglage ou un bloc modifiable (Studio, SINA et éditeur Shopify). Liens vers des pages qui existent seulement.${fix?.length ? `\n\nCORRECTION demandée (écarts constatés entre la maquette et le site) :\n${fix.map((x) => `- ${x}`).join("\n")}` : ""}`;
 }
 

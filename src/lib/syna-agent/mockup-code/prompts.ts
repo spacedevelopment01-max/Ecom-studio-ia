@@ -188,9 +188,11 @@ export function siteImagePrompt(slot: { description: string; ratio?: string; obj
  * « que ce soit comme les maquettes »). L'image 1 est la photo découpée sur la maquette : elle est reproduite, pas
  * réinventée. Ordre du guide des images : type et format, ce qu'on reproduit, compte, coupes, lumière, interdits.
  */
-export function siteImageHdPrompt(slot: { description: string; ratio?: string }, f: { name: string; logo: boolean; product: boolean }): string {
+export function siteImageHdPrompt(slot: { description: string; ratio?: string; background?: string }, f: { name: string; logo: boolean; product: boolean }): string {
   return [
     `Photographie en haute définition pour le site « ${f.name} », au format ${slot.ratio ?? "de la photo de référence"}, nette et détaillée.`,
+    // Photo fondue dans le site (essai réel du 8 novembre : tasse de l'ouverture recréée en rectangle, posée en cadre).
+    slot.background ? `Le fond de la photo est la couleur unie exacte ${slot.background} sur tout le pourtour (aucun dégradé, aucun cadre, aucune vignette), pour que la photo se fonde dans la section du site qui a ce fond.` : "",
     "L'image 1 est la photo de la maquette du site, en petite taille : reproduis-la À L'IDENTIQUE en haute définition, même cadrage, même point de vue, mêmes objets à la même place, mêmes formes, mêmes matières, mêmes couleurs, même lumière et même ambiance. Ne change pas la composition, n'ajoute rien, ne retire rien.",
     `Ce qu'elle montre : ${slot.description.replace(/[.\s]+$/, "")}.`,
     f.product ? "La photo du produit réel est jointe : le produit est reproduit exactement (forme, couleurs, étiquette), entier, rien n'est coupé." : "",

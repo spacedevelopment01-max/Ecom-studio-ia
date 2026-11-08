@@ -121,7 +121,7 @@ export const customType = (page: Pick<MockupPage, "key">, s: Pick<PlannedSection
  * thème en haute résolution pour les inclure, et que ce soit comme les maquettes ») : où il est dans le thème (gabarit,
  * type de section, rang de l'image dans la section) et où le voir sur la maquette (image, zone), pour le recréer.
  */
-export type ImageSlot = { page: string; section: string; template: string; type: string; index: number; imageId?: string; box?: { x: number; y: number; w: number; h: number }; ratio?: string; description: string; prompt: string };
+export type ImageSlot = { page: string; section: string; template: string; type: string; index: number; imageId?: string; box?: { x: number; y: number; w: number; h: number }; ratio?: string; description: string; prompt: string; background?: string };
 
 export type Step7Report = {
   ok: boolean;
@@ -453,6 +453,7 @@ export async function runStep7(input: { direction: MockupDirection; pages: Mocku
       page: key, section: s.name, template: s.target.kind === "group" ? `group:${s.target.group}` : x.template, type: customType(page, s), index,
       ...(read?.imageId ? { imageId: read.imageId } : {}), ...(img.box ? { box: img.box } : {}), ...(img.ratio ? { ratio: img.ratio } : {}),
       description: img.description, prompt: siteImagePrompt(img, { name: input.base.store.shopName, business: input.base.store.business ?? "products" }),
+      ...(s.colors?.background ? { background: s.colors.background } : {}),
     })));
   });
   const list = pages.map((p) => rep(p.key));

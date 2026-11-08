@@ -587,7 +587,7 @@ function step7Report(projectId: string): { versionId: string; number: number; di
 }
 const hdUnit = (refs: number) => { try { return photoRequestMaxMicro(mockupImageRoute(), { prompt: "x".repeat(PUBLICATION_PROMPT_MAX_BYTES), references: refs, aspect: "16:9", quality: "high" }); } catch { return null; } };
 /** Photos à recréer : celles dont la section existe dans le site codé (essai réel : le journal, non codé faute de budget, aurait eu 3 photos payées sans place). */
-const slotsOf = (r: Step7Report, pages?: string[], spec?: ThemeSpec | null) => (r.imageSlots ?? []).filter((s) => s.imageId && s.box && (!pages?.length || pages.includes(s.page))
+const slotsOf = (r: Step7Report, pages?: string[], spec?: ThemeSpec | null, sections?: string[]) => (r.imageSlots ?? []).filter((s) => s.imageId && s.box && (!pages?.length || pages.includes(s.page)) && (!sections?.length || sections.some((n) => n.toLowerCase() === s.section.toLowerCase()))
   && (!spec || Object.values((s.template.startsWith("group:") ? spec.groups[s.template.slice(6) as "header" | "footer"] : spec.templates[s.template])?.sections ?? {}).some((x) => x.type === s.type)));
 
 /**
@@ -595,14 +595,14 @@ const slotsOf = (r: Step7Report, pages?: string[], spec?: ThemeSpec | null) => (
  * d'images des maquettes (OpenAI), d'après sa zone sur la maquette choisie (même cadrage, mêmes objets), puis posée à
  * sa place dans le thème (réglage image de la section). Une nouvelle version du site est enregistrée.
  */
-const siteImagesTool: AgentTool<{ pages?: string[] }> = {
+const siteImagesTool: AgentTool<{ pages?: string[]; sections?: string[] }> = {
   name: "site.images", module: "site", kind: "generate", needsProject: true,
-  description: "Étape 7, APRÈS le codage du site (site.code_from_mockup) : recrée en haute définition, avec l'IA d'images des maquettes (OpenAI), chaque photo du site codé à l'identique de la maquette choisie (même cadrage, mêmes objets, mêmes couleurs), puis la pose à sa place dans le thème. pages : seulement ces pages (clés de mockup.pages), sinon toutes. Payant (une image par photo) : annonce le prix et attends l'accord écrit.",
-  args: z.object({ pages: z.array(z.string().max(60)).max(30).optional() }).strict(),
+  description: "Étape 7, APRÈS le codage du site (site.code_from_mockup) : recrée en haute définition, avec l'IA d'images des maquettes (OpenAI), chaque photo du site codé à l'identique de la maquette choisie (même cadrage, mêmes objets, mêmes couleurs), puis la pose à sa place dans le thème. pages : seulement ces pages (clés de mockup.pages), sinon toutes ; sections : seulement les photos de ces sections (noms du rapport, ex. pour refaire des photos ratées). Payant (une image par photo) : annonce le prix et attends l'accord écrit.",
+  args: z.object({ pages: z.array(z.string().max(60)).max(30).optional(), sections: z.array(z.string().max(80)).max(20).optional() }).strict(),
   estimate: (ctx, a) => {
     const p = project(ctx), r = step7Report(p.id);
     if (!r) throw new HttpError(409, L("Le site n'est pas encore codé d'après la maquette (site.code_from_mockup d'abord).", "Code the site from the mockup first."));
-    const n = slotsOf(r.report, a.pages, themeVersion(p.id, r.versionId)?.spec).length;
+    const n = slotsOf(r.report, a.pages, themeVersion(p.id, r.versionId)?.spec, a.sections).length;
     if (!n) throw new HttpError(409, L("Aucune photo à recréer sur ces pages.", "No photo to recreate on these pages."));
     const unit = (mockupToolDeps.imageMaxMicro ?? hdUnit)(3);
     if (unit == null) throw new HttpError(409, L("Aucun modèle d'images utilisable pour les photos du site.", "No usable image model."));
@@ -622,7 +622,7 @@ const siteImagesTool: AgentTool<{ pages?: string[] }> = {
     const mockups = new Map<string, Buffer>();
     const done: { slot: string; assetId: string }[] = [], failed: string[] = [], unplaced: string[] = [];
     let spec = cur.spec;
-    for (const slot of slotsOf(r.report, a.pages, cur.spec)) {
+    for (const slot of slotsOf(r.report, a.pages, cur.spec, a.sections)) {
       const label = `${pageByKey(set.pages, slot.page)?.fr ?? slot.page} › ${slot.section} › photo ${slot.index + 1}`;
       try {
         const img = d?.images.find((i) => i.id === slot.imageId);

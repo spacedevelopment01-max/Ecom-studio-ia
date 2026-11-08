@@ -1042,4 +1042,17 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     expect(lintClaims({ a: "Livraison à 2,90 €." }, p).map((x) => x.term)).toContain("2,90 €"); // montant inventé
     expect(lintClaims(text, { ...p, settings: {} }).map((x) => x.term.toLowerCase())).toContain("livraison offerte");
   });
+
+  it("fidélité à l'identique (retour du propriétaire) : consigne de section et photo fondue dans le fond", async () => {
+    const { sectionBrief } = await import("@/lib/syna-agent/mockup-code/deps");
+    const { siteImageHdPrompt } = await import("@/lib/syna-agent/mockup-code/prompts");
+    const { mockupPages } = await import("@/lib/syna-agent/mockup-code/pages");
+    const home = mockupPages("products", "multi").find((x) => x.key === "home")!;
+    const brief = sectionBrief(home, { index: 1, role: "ouverture", name: "Ouverture", layout: "x", texts: [], images: [], colors: {}, target: { kind: "custom" } } as any, [], undefined, true);
+    expect(brief).toMatch(/couleurs EXACTES lues sur la maquette/);
+    expect(brief).toMatch(/sans cadre, sans bordure/);
+    expect(brief).toMatch(/jamais noirs par défaut/);
+    const pr = siteImageHdPrompt({ description: "tasse", background: "#233A2E" }, { name: "Brindi", logo: false, product: false });
+    expect(pr).toContain("couleur unie exacte #233A2E");
+  });
 });
