@@ -848,6 +848,8 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     expect(cart).toContain("Structure imposée : une vraie page panier");
     expect(cart).toContain("jamais à cette structure");
     expect(cart).not.toContain("accroche « Pose ton écran. »");
+    const withCopy = mockupImagePrompt({ ...facts, copy: { cart: { seo: { title: "t", description: "d" }, sections: [{ section: "lignes du panier (photo, quantité, prix)", title: "Ton panier", text: null, button: null, items: [{ title: "A", text: "1" }, { title: "B", text: "1" }] }] } } }, { name: "B", style: "x" }, { viewport: "desktop", pages: ["cart"] }, pages);
+    expect(withCopy).toContain("montre EXACTEMENT les 2 lignes citées");
     expect(mockupImagePrompt(facts, { name: "B", style: "x" }, { viewport: "desktop", pages: ["product"] }, pages)).toContain("NOM DU PRODUIT en titre principal");
     const home = mockupImagePrompt(facts, { name: "B", style: "x" }, { viewport: "desktop", pages: ["home"] }, pages);
     expect(home).not.toContain("Structure imposée");

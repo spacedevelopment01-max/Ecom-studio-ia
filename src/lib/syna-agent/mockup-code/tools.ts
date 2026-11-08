@@ -64,7 +64,8 @@ function angleOf(projectId: string): string | undefined {
   try {
     const st: any = getStrategyState(projectId);
     const a = st.active ? st.angles?.find((x: any) => x.id === st.active.angleId) ?? st.active.angle : null;
-    return a ? [`angle « ${a.title ?? ""} »`, a.message || a.promise ? `accroche « ${a.message ?? a.promise} »` : "", a.emotion ? `émotion ${a.emotion}` : ""].filter(Boolean).join(", ") : undefined;
+    // Nom d'angle sans guillemets (essai réel du 8 novembre : « La vraie pause » écrit en bandeau sur la page contact).
+    return a ? [`angle ${a.title ?? ""} (nom interne, jamais écrit sur la page)`, a.message || a.promise ? `accroche « ${a.message ?? a.promise} »` : "", a.emotion ? `émotion ${a.emotion}` : ""].filter(Boolean).join(", ") : undefined;
   } catch { return undefined; }
 }
 

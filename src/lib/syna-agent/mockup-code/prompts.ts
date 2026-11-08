@@ -138,13 +138,18 @@ export function mockupImagePrompt(f: MockupFacts, d: Pick<MockupDirection, "name
     "Mise en page rythmée selon la direction graphique (elle prime sur tout réglage par défaut), un motif graphique propre à la marque (son symbole), boutons d'au moins 44 px.",
     f.business === "services"
       ? `Activité : prestations ${offers || "du client"}. Photos de lieux, d'outils et de réalisations, jamais de personne.`
-      : `Produits : ${offers || `« ${f.name} »`}.${f.productPhoto ? " La photo du produit fournie en référence est utilisée telle quelle (même produit, mêmes couleurs, entier, rien de redessiné)." : ""}`,
+      : `Produits : ${offers || `« ${f.name} »`}.${f.productPhoto ? " La photo du produit fournie en référence est utilisée telle quelle (même produit, mêmes couleurs, entier, rien de redessiné)." : ""}${list.some((p) => p.key === "cart") ? ` Le panier d'exemple montre EXACTEMENT les ${cartLines(f) || "deux"} lignes citées dans ses textes, pas une de plus (essai réel : six lignes dessinées pour un sous-total de deux).` : ""}`,
     // Accroche citée seulement pour l'accueil (essai réel du 8 novembre : reprise en grand titre sur le contact, qui
     // n'en avait pas dans ses textes).
     f.angle ? `Ton des textes : ${list.some((p) => p.key === "home") ? f.angle : f.angle.replace(/,?\s*accroche « [^»]*»/, "")}. Titres courts et émotionnels, boutons courts qui commencent par un verbe.${list.some((p) => p.key === "home") ? "" : " Aucun titre ni texte de l'accueil n'est repris sur cette page."}` : "Titres courts et émotionnels, boutons courts qui commencent par un verbe.",
     // 7) interdits
     "Textes en français, exacts et lisibles. Aucun avis, note, étoile, chiffre, garantie, label, promotion, compte à rebours ou prix barré inventé. Aucune personne, aucun visage, aucune main ni aucune autre partie du corps (même pour « assemblé à la main » : montrer les ingrédients, les outils, le résultat), aucun filigrane, aucun autre logo. Aucun objet supplémentaire.",
   ].filter(Boolean).join("\n");
+}
+
+/** Nombre de lignes du panier d'exemple (textes de la page panier). */
+function cartLines(f: MockupFacts): number {
+  return f.copy?.cart?.sections.find((x) => /lignes du panier/.test(x.section))?.items.length ?? 0;
 }
 
 /** Consignes de toutes les images d'une maquette (même style pour toutes : même direction, mêmes règles). */
