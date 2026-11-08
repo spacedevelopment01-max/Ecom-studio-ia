@@ -16,6 +16,7 @@ import { L } from "../../i18n-server";
 import { assetData, assetUrl, getAsset, saveAsset } from "../../library";
 import { aiSiteMockup, photoRequestMaxMicro, PUBLICATION_PROMPT_MAX_BYTES, withQuotedImageRoute } from "../../ai/media-providers";
 import { getJsonSetting } from "../../settings";
+import { budgetPctText } from "../../ai/budget-pct";
 
 import { getStrategyState } from "../../marketing-strategy";
 import { assertSectionGeneration } from "../../theme/custom-access";
@@ -232,9 +233,12 @@ const generateTool: AgentTool<{ direction: "A" | "B" | "C"; pages?: string[]; vi
       } catch (e) { failed.push(`${img.id} : ${(e as Error).message.slice(0, 160)}`); }
     }
     const read = loadMockupSet(p.id)!, cov = coverageOf(read.directions.find((x) => x.key === a.direction)!, read.pages);
+    // Coût RÉEL des images de cet appel (appels enregistrés), dit au client (essai réel : « le Studio ne me l'a pas transmis »).
+    const spent = all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key LIKE ?", p.id, `syna:${ctx.runId}:mockup-image:${a.direction}:%`)[0]?.c ?? 0;
+    const spentText = budgetPctText(ctx.user.id, spent, p.id);
     return {
       ok: made.length > 0 && !failed.length,
-      summary: L(`${made.length} image(s) créée(s) pour la maquette ${a.direction}${failed.length ? ` ; ${failed.length} ratée(s) : ${failed.join(" | ")}` : ""}. ${cov.complete ? "La maquette couvre toutes les pages." : `Il manque encore ${cov.missing.length} page(s) ou version(s).`}`, `${made.length} mockup image(s) created.`),
+      summary: L(`${made.length} image(s) créée(s) pour la maquette ${a.direction}${failed.length ? ` ; ${failed.length} ratée(s) : ${failed.join(" | ")}` : ""}. Coût réel : ${spentText}. ${cov.complete ? "La maquette couvre toutes les pages." : `Il manque encore ${cov.missing.length} page(s) ou version(s).`}`, `${made.length} mockup image(s) created.`),
       data: { mockups: made.map((m, i) => ({ n: i + 1, direction: `${a.direction} · ${m.id}`, assetId: m.assetId, href: m.href })), failed, complete: cov.complete },
       changes: made.map((m) => ({ module: "fichiers", object: `maquette ${a.direction} › image ${m.id}`, summary: L("créée par l'IA d'images", "created by the image AI"), after: m, verified: true })),
     };

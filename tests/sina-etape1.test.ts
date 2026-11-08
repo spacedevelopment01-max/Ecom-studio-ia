@@ -175,6 +175,8 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     const { fixElision } = await import("@/lib/syna-agent/loop");
     expect(fixElision("Activité : boutique en ligne. - Produits : 6 mélanges. - Prix : 8,50 € les thés.")).toBe("Activité : boutique en ligne.\n- Produits : 6 mélanges.\n- Prix : 8,50 € les thés.");
     expect(fixElision("Le thé vert - au jasmin - est doux.")).toBe("Le thé vert - au jasmin - est doux.");
+    expect(fixElision("Je relance avec le modèle OpenAI.")).toBe("Je relance avec le modèle OpenAI."); // jamais « modèl'OpenAI »
+    expect(fixElision("Je vois le ensemble.")).toBe("Je vois l'ensemble.");
     const out = (message: string) => withoutRepeatedQuestion({ message, actions: [], question: { text: "Laquelle préfères-tu ?" }, done: false }).message;
     // Essai réel du 8 novembre : « Une correction à faire : » laissé seul à la fin du message.
     expect(withoutRepeatedQuestion({ message: "Voici l'accueil complet. Une correction à faire : la correction des frais de retour.", actions: [], question: { text: "Ces textes te conviennent-ils, avec la correction des frais de retour ?" }, done: false }).message).toBe("Voici l'accueil complet.");
