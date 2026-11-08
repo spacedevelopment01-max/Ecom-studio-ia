@@ -45,7 +45,7 @@ describe("SINA — étape 6 : un de nos thèmes", async () => {
     expect(modelFor(6)?.model).toMatch(/haiku/); // gratuit, fil léger
     // Consigne du propriétaire : les cartes des thèmes d'abord, puis le client choisit un thème ou une maquette.
     const ctx0 = J.journeyContext(J.journeyOf(cid));
-    expect(ctx0).toMatch(/commence par appeler theme\.propose[^]*TELS QU'ILS SONT[^]*choisir un de ces thèmes[^]*maquette sur mesure[^]*PAYANTES[^]*ne pose PAS de question à boutons en plus[^]*Ne choisis jamais à sa place/);
+    expect(ctx0).toMatch(/commence par appeler theme\.propose[^]*TELS QU'ILS SONT[^]*choisir un de ces thèmes[^]*maquette sur mesure[^]*PAYANTE[^]*ne pose PAS de question à boutons en plus[^]*Ne choisis jamais à sa place/);
     expect(ctx0).not.toMatch(/mockup\.pages/); // consigne des maquettes seulement après ce choix
     const r = await call("theme.propose", ctx, {});
     expect(r.ok).toBe(true);
