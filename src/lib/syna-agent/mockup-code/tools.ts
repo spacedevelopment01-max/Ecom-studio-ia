@@ -31,12 +31,12 @@ import { activityPlan } from "../activity";
 import { listProducts } from "../../products/catalog";
 import type { AgentTool, ToolContext } from "../types";
 import { project } from "../tools/common";
-import { step7CallMaxMicro } from "./deps";
+import { step7CallMaxMicro, step7CallTypicalMicro } from "./deps";
 import { MOCKUP_CODE_JOB, STEP7_REPORT_KEY } from "./job";
 import { attachImage, coverageOf, loadMockupSet, plannedDirection, replanDirection, saveMockupSet, type MockupSet } from "./mockup-set";
 import { inventoryOptionsOf, mockupPages } from "./pages";
 import { hdAspect, mockupFacts, mockupImagePrompt, mockupImagesMaxMicro, siteImageHdPrompt } from "./prompts";
-import { step7MaxMicro, type Step7Report } from "./pipeline";
+import { STEP7_CAP_FACTOR, step7MaxMicro, step7ProbableMicro, type Step7Report } from "./pipeline";
 import { remember, saveThemeVersion, themeVersion } from "../../projects";
 import { applyOps, validateSpec } from "../../theme/ops";
 import { sectionSchema } from "../../theme/spec";
@@ -45,7 +45,7 @@ import { llmJson } from "../../ai/llm";
 import { blackShare, boxesOf, composeEdit, exactTexts, isRemoval, missingTexts, removeBand, locateCall, locateMaxMicro, LocateSchema, mockupEditPrompt, type Box, type EditChange, type Locate } from "./edit";
 
 /** Remplaçables par les tests : coût d'une image de maquette et coût maximal des appels de l'étape 7. */
-export const mockupToolDeps: { imageMaxMicro?: (references: number) => number | null; callMaxMicro?: typeof step7CallMaxMicro; generateImage?: (prompt: string, refs: { logo: Buffer | null; product: Buffer | null }) => Promise<Buffer>; checkImage?: (data: Buffer, img: { viewport: "desktop" | "phone"; pages: string[] }) => Promise<MockupCheck>; locate?: (image: Buffer, changes: EditChange[]) => Promise<Locate>; maskEdit?: (image: Buffer, mask: Buffer | null, prompt: string) => Promise<Buffer> } = {};
+export const mockupToolDeps: { imageMaxMicro?: (references: number) => number | null; callMaxMicro?: typeof step7CallMaxMicro; callTypicalMicro?: typeof step7CallTypicalMicro; generateImage?: (prompt: string, refs: { logo: Buffer | null; product: Buffer | null }) => Promise<Buffer>; checkImage?: (data: Buffer, img: { viewport: "desktop" | "phone"; pages: string[] }) => Promise<MockupCheck>; locate?: (image: Buffer, changes: EditChange[]) => Promise<Locate>; maskEdit?: (image: Buffer, mask: Buffer | null, prompt: string) => Promise<Buffer> } = {};
 /**
  * Modèle des images de maquette : OpenAI GPT Image 2.5 Flare (choix du propriétaire du 8 novembre, après comparaison
  * réelle sur l'accueil Brindi : Qwen abîmait les textes, OpenAI les écrivait juste ; même modèle que les logos),
@@ -531,9 +531,17 @@ const codeTool: AgentTool<CodeArgs> = {
     const units = callUnits(p.userId);
     if (!units) throw new HttpError(409, L("Coût impossible à encadrer (modèle ou tarif inconnu) : aucun appel ne sera fait.", "Cost cannot be bounded: no call will be made."));
     const ready = d.images.filter((i) => i.status === "ready");
-    const written = set.pages.filter((x) => !x.variantOf && !x.template.startsWith("customers/")).length;
+    const writtenPages = set.pages.filter((x) => !x.variantOf && !x.template.startsWith("customers/"));
+    const written = writtenPages.length;
     const views = set.pages.reduce((n, x) => n + x.viewports.length, 0);
-    return { maxMicro: step7MaxMicro({ images: ready.length, pages: written, views, maxRounds: a.maxRounds }, units), label: L("site codé d'après la maquette", "site coded from the mockup") };
+    const worst = step7MaxMicro({ images: ready.length, pages: written, views, maxRounds: a.maxRounds }, units);
+    // Coût probable annoncé et plafond raisonnable (essai réel du 8 novembre : plafond au pire ≈ 1 350 € pour Brindi).
+    const typical = (mockupToolDeps.callTypicalMicro ?? step7CallTypicalMicro)(p.userId);
+    if (!typical) return { maxMicro: worst, label: L("site codé d'après la maquette", "site coded from the mockup") };
+    const sections = writtenPages.reduce((n, x) => n + Math.max(1, x.sections.length - 2), 0) + 2; // en-tête et pied une fois
+    const mockupViews = coverageOf(d, set.pages).covered.length;
+    const probable = step7ProbableMicro({ images: ready.length, sections, views: mockupViews }, typical);
+    return { maxMicro: Math.min(worst, Math.ceil(probable * STEP7_CAP_FACTOR)), probableMicro: probable, label: L("site codé d'après la maquette", "site coded from the mockup") };
   },
   run: async (ctx, a) => {
     const { p, d } = codePlan(ctx);
@@ -541,7 +549,7 @@ const codeTool: AgentTool<CodeArgs> = {
     const est = await codeTool.estimate!(ctx, a);
     const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: MOCKUP_CODE_JOB, label: L("Site codé d'après la maquette (SINA)", "Site coded from the mockup (SINA)"), payload: { projectId: p.id, direction: d.key, capMicro: est.maxMicro, maxRounds: a.maxRounds, conversationId: ctx.conversationId }, maxAttempts: 2, idempotencyKey: `syna:${ctx.runId}:mockup-code:${d.key}` });
     try { updateJourney(ctx.conversationId, (j) => setStep(j, 7, "doing")); } catch { /* fil sans parcours */ }
-    return { ok: true, summary: L(`Codage du site d'après la maquette ${d.key} lancé ; SINA relira le rapport page par page.`, `Coding the site from mockup ${d.key} started.`), jobs: [job.id], data: { maquette: d.key, plafondMicro: est.maxMicro } };
+    return { ok: true, summary: L(`Codage du site d'après la maquette ${d.key} lancé ; SINA relira le rapport page par page.`, `Coding the site from mockup ${d.key} started.`), jobs: [job.id], data: { maquette: d.key, plafondMicro: est.maxMicro, probableMicro: est.probableMicro ?? null } };
   },
 };
 
@@ -582,7 +590,9 @@ const siteImagesTool: AgentTool<{ pages?: string[] }> = {
     if (!n) throw new HttpError(409, L("Aucune photo à recréer sur ces pages.", "No photo to recreate on these pages."));
     const unit = (mockupToolDeps.imageMaxMicro ?? hdUnit)(3);
     if (unit == null) throw new HttpError(409, L("Aucun modèle d'images utilisable pour les photos du site.", "No usable image model."));
-    return { maxMicro: n * unit, label: L(`${n} photo(s) du site en haute définition`, `${n} site photo(s) in high definition`) };
+    // Coût probable : une image OpenAI coûte en pratique environ 0,75 fois son plafond (essais réels du 8 novembre :
+    // 0,081 $ payés pour 0,112 $ au plus).
+    return { maxMicro: n * unit, probableMicro: Math.round(n * unit * 0.75), label: L(`${n} photo(s) du site en haute définition`, `${n} site photo(s) in high definition`) };
   },
   run: async (ctx, a) => {
     const p = project(ctx), r = step7Report(p.id), set = loadMockupSet(p.id);

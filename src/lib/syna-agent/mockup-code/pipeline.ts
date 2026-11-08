@@ -73,6 +73,17 @@ export function step7MaxMicro(c: { images: number; pages: number; views: number;
     + c.pages * (rounds - 1) * ESTIMATE.sectionsPerFix * (1 + SECTION_CORRECTIONS) * unit.fix;
 }
 
+/**
+ * Coût PROBABLE de l'étape 7 (annoncé au client) : lecture de chaque image, écriture de chaque section (pages de la
+ * maquette et pages dérivées ; une section sur trois corrigée une fois), deux tours de comparaison par version
+ * maquettée, une correction de deux sections pour la moitié des versions. `unit` : coût habituel d'un appel.
+ */
+export function step7ProbableMicro(c: { images: number; sections: number; views: number }, unit: Record<CallKind, number>): number {
+  return c.images * unit.analyze + Math.ceil(c.sections * 1.3) * unit.write + c.views * 2 * unit.compare + Math.ceil(c.views / 2) * 2 * unit.fix;
+}
+/** Plafond de la tâche : 1,6 fois le coût probable (au-delà, elle s'arrête proprement et le dit, rien de plus n'est payé). */
+export const STEP7_CAP_FACTOR = 1.6;
+
 export type Step7Options = {
   maxRounds?: number;
   /** Note de l'IA (sur 10) exigée pour dire une page conforme : 8 (niveau FINAL de la charte). */

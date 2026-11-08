@@ -412,6 +412,8 @@ export async function stepQuote(user: User, r: SynaRun): Promise<string> {
   try {
     const est = await t.estimate(toolContext(user, r), {} as never);
     if (!est.maxMicro) return "";
+    // Coût probable annoncé quand l'outil le donne (étape 7 : le plafond au pire n'a pas de sens pour le client).
+    if (est.probableMicro) return `\n\n# Prix de la prochaine action payante de l'étape\n${name} (${est.label}) : coût probable ${budgetPctText(user.id, est.probableMicro, r.project_id)} ; plafond ${budgetPctText(user.id, est.maxMicro, r.project_id)} (la tâche s'arrête et le dit si elle l'atteint). Dis le coût probable et le plafond au client AVANT de lancer, dans le message où tu lui proposes de lancer.`;
     return `\n\n# Prix de la prochaine action payante de l'étape\n${name} (${est.label}) : au plus ${budgetPctText(user.id, est.maxMicro, r.project_id)}. Dis ce prix au client AVANT de lancer, dans le message où tu lui proposes de lancer.`;
   } catch { return ""; }
 }

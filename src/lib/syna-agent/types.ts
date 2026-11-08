@@ -45,7 +45,8 @@ export type ToolContext = {
   attachment: (id: string) => { id: string; kind: string; name: string; path: string; assetId: string | null; analysis: unknown } | null;
 };
 
-export type CostEstimate = { maxMicro: number; label: string };
+/** maxMicro : plafond (jamais dépassé) ; probableMicro : coût probable d'un essai, annoncé au client (règle du propriétaire). */
+export type CostEstimate = { maxMicro: number; label: string; probableMicro?: number };
 
 export type AgentTool<A = any> = {
   name: string;

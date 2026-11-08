@@ -610,6 +610,15 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     const s = loadMockupSet(pid)!;
     const written = s.pages.filter((x) => !x.variantOf && !x.template.startsWith("customers/")).length;
     expect(est.maxMicro).toBe(step7MaxMicro({ images: s.directions[0].images.length, pages: written, views: s.pages.length * 2 }, UNIT));
+    // Coût probable annoncé et plafond raisonnable (essai réel : plafond au pire ≈ 1 350 € pour Brindi).
+    const { step7ProbableMicro, STEP7_CAP_FACTOR } = await import("@/lib/syna-agent/mockup-code/pipeline");
+    const TYP = { analyze: 1, write: 2, compare: 1, fix: 2 };
+    mockupToolDeps.callTypicalMicro = () => TYP;
+    const est2 = await fr(() => tool("site.code_from_mockup").estimate!(ctx, {}));
+    mockupToolDeps.callTypicalMicro = undefined;
+    expect(est2.probableMicro).toBeGreaterThan(0);
+    expect(est2.probableMicro).toBe(step7ProbableMicro({ images: s.directions[0].images.length, sections: s.pages.filter((x) => !x.variantOf && !x.template.startsWith("customers/")).reduce((n, x) => n + Math.max(1, x.sections.length - 2), 0) + 2, views: s.directions[0].images.reduce((n, i) => n + i.pages.length, 0) }, TYP));
+    expect(est2.maxMicro).toBe(Math.min(est.maxMicro, Math.ceil(est2.probableMicro! * STEP7_CAP_FACTOR)));
     const launched = await call("site.code_from_mockup", ctx, {});
     expect(launched.ok).toBe(true);
     const job = one<any>("SELECT * FROM jobs WHERE id=?", launched.jobs![0]);

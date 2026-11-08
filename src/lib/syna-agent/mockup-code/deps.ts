@@ -7,7 +7,7 @@
 import sharp from "sharp";
 import { z } from "zod";
 import { brainContext } from "../../ai/context";
-import { jsonCallMaxMicro, llmJson, routeLlm, type LlmImage } from "../../ai/llm";
+import { estimateCallMicro, jsonCallMaxMicro, llmJson, routeLlm, type LlmImage } from "../../ai/llm";
 import { CostCapReached } from "../../ai/trace";
 import { checkCustomSection, CustomSectionSchema, sectionGuide, systemPrompt, type CustomSectionOut, type PlanItem } from "../../engine/custom-theme";
 import { assetData, getAsset } from "../../library";
@@ -30,6 +30,30 @@ export const STEP7_CALLS: Record<CallKind, { input: number; output: number }> = 
   compare: { input: 18_000, output: 3_000 },
   fix: { input: 34_000, output: 24_000 },
 };
+
+/**
+ * Jetons d'un appel au déroulé habituel (pas le pire cas) : sert au coût PROBABLE de l'étape 7 annoncé au client
+ * (règle du propriétaire : devis = coût probable). Essai réel du 8 novembre : le plafond au pire de Brindi valait
+ * environ 1 350 €, chiffre absurde pour le client.
+ */
+export const STEP7_TYPICAL: Record<CallKind, { input: number; output: number }> = {
+  analyze: { input: 6_000, output: 6_000 },
+  write: { input: 14_000, output: 5_000 },
+  compare: { input: 5_000, output: 1_000 },
+  fix: { input: 16_000, output: 5_000 },
+};
+/** Coût habituel d'un appel de chaque nature (même modèle que le plafond) ; null si tarif inconnu. */
+export function step7CallTypicalMicro(userId: string): Record<CallKind, number> | null {
+  const r = routeLlm({ task: "theme_custom", userId, images: [{ data: Buffer.alloc(1), label: "devis" }], routing: { difficulty: "complex" } });
+  if (r.mode !== "llm") return null;
+  const out = {} as Record<CallKind, number>;
+  for (const k of Object.keys(STEP7_TYPICAL) as CallKind[]) {
+    const m = estimateCallMicro(r.provider, r.model, STEP7_TYPICAL[k].input, STEP7_TYPICAL[k].output);
+    if (m == null) return null;
+    out[k] = m;
+  }
+  return out;
+}
 
 /** Coût maximal d'un appel de chaque nature (null : tarif ou modèle inconnu, aucun appel autorisé). */
 export function step7CallMaxMicro(userId: string): Record<CallKind, number> | null {
