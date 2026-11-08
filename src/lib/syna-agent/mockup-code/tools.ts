@@ -20,6 +20,11 @@ import { getJsonSetting } from "../../settings";
 import { getStrategyState } from "../../marketing-strategy";
 import { assertSectionGeneration } from "../../theme/custom-access";
 import { journeyOf, setStep, updateJourney } from "../journey";
+import { angleDetails, COPY_CAP_MICRO, COPY_MODEL, COPY_SYSTEM, copyPrompt, loadSiteCopy, saveSiteCopy, writePageCopy, type PageCopy } from "./copy";
+import { pageByKey } from "./pages";
+import { getRun } from "../store";
+import { jobSpentMicro } from "../budget";
+import { withTrace } from "../../ai/trace";
 import { activityPlan } from "../activity";
 import { listProducts } from "../../products/catalog";
 import type { AgentTool, ToolContext } from "../types";
@@ -88,6 +93,48 @@ const pagesTool: AgentTool<{}> = {
   },
 };
 
+/** Dépendance remplaçable par les tests (aucun appel réel) : rédaction d'une page. */
+export const copyDeps: { generate?: (call: any) => Promise<unknown> } = {};
+
+const copyTool: AgentTool<{ pages?: string[] }> = {
+  name: "mockup.copy", module: "site", kind: "generate", needsProject: true,
+  description: "Étape 6, AVANT la maquette (payant, un petit appel par page) : écrit les textes COMPLETS des pages (titres, paragraphes, produits, questions fréquentes, inscription, pied de page ; titre et description pour le référencement) à partir de l'angle marketing choisi, travaillés sur son émotion, avec les seuls faits du client ; accroche, slogan et appel à l'action repris mot pour mot. pages : clés de mockup.pages (par défaut [\"home\"]). La maquette (mockup.prepare) écrit ensuite ces textes lettre pour lettre.",
+  args: z.object({ pages: z.array(z.string().max(60)).min(1).max(6).optional() }).strict(),
+  estimate: (_ctx, a) => ({ maxMicro: COPY_CAP_MICRO * (a.pages?.length ?? 1), label: L("textes de la page", "page copy") }),
+  run: async (ctx, a) => {
+    const p = project(ctx);
+    const j = journeyOf(ctx.conversationId);
+    if (!p.brand) return { ok: false, summary: L("L'identité de marque doit être choisie avant les textes du site.", "Choose the brand first.") };
+    if (!j.angleChoice) return { ok: false, summary: L("L'angle marketing (étape 4) doit être choisi avant les textes du site.", "Choose the angle first.") };
+    const pages = pagesOf(p), keys = a.pages?.length ? a.pages : ["home"];
+    const plan = activityPlan(p.id, j), details = angleDetails(j);
+    const jobId = getRun(ctx.runId)?.job_id ?? null;
+    const prev = loadSiteCopy(p.id);
+    const out: Record<string, PageCopy> = { ...(prev && prev.angleId === (j.angleChoice.id ?? null) ? prev.pages : {}) };
+    const failed: string[] = [];
+    for (const key of keys) {
+      const page = pageByKey(pages, key);
+      if (!page) { failed.push(`${key} : page inconnue`); continue; }
+      const call = { task: "strategy" as const, userId: ctx.user.id, projectId: p.id, jobId, system: COPY_SYSTEM, promptKey: "syna-site-copy-1", prompt: copyPrompt(page, { brand: { name: p.brand.name, tagline: p.brand.tagline }, plan, ...details }), maxTokens: 6000, maxOutputTokens: 8000, usageKey: `syna-copy:${ctx.runId}:${key}`, routing: { difficulty: "complex" as const, prefer: COPY_MODEL } };
+      try {
+        const cap = (jobId ? jobSpentMicro(jobId) : 0) + COPY_CAP_MICRO;
+        out[key] = copyDeps.generate ? await writePageCopy(call, copyDeps.generate) : await withTrace({ jobId, projectId: p.id, step: "site-copy", costCapMicro: cap }, () => writePageCopy(call));
+      } catch (e) { failed.push(`${page.fr} : ${(e as Error).message.slice(0, 160)}`); }
+    }
+    const done = keys.filter((k) => out[k]);
+    if (!done.length) return { ok: false, summary: L(`Textes non écrits : ${failed.join(" | ")}`, "Copy not written.") };
+    saveSiteCopy(p.id, { version: 1, angleId: j.angleChoice.id ?? null, pages: out, at: 0 });
+    const home = out.home;
+    return {
+      ok: !failed.length,
+      summary: L(`Textes écrits pour ${done.map((k) => `« ${pageByKey(pages, k)!.fr} »`).join(", ")}${failed.length ? ` ; non écrits : ${failed.join(" | ")}` : ""}.`, "Page copy written."),
+      hint: "Prépare maintenant la maquette (mockup.prepare) : elle écrira ces textes lettre pour lettre. Annonce ensuite le prix des images avant toute création.",
+      data: { pages: Object.fromEntries(done.map((k) => [k, out[k]])), ...(home ? { titreSeo: home.seo.title } : {}) },
+      changes: done.map((k) => ({ module: "site", object: L(`textes › ${pageByKey(pages, k)!.fr}`, `copy › ${k}`), summary: out[k].sections.map((x) => x.title).filter(Boolean).slice(0, 4).join(" · "), after: out[k], verified: true })),
+    };
+  },
+};
+
 type PrepareArgs = { directions: { key?: "A" | "B" | "C"; name: string; style: string }[] };
 const prepareTool: AgentTool<PrepareArgs> = {
   name: "mockup.prepare", module: "site", kind: "write", needsProject: true,
@@ -97,7 +144,8 @@ const prepareTool: AgentTool<PrepareArgs> = {
     const p = project(ctx);
     if (!p.brand) return { ok: false, summary: L("L'identité de marque (nom, couleurs, polices) doit être choisie avant les maquettes (étape 1).", "Choose the brand identity first (step 1).") };
     const pages = pagesOf(p), photo = hasProductPhoto(p.id);
-    const facts = mockupFacts(p, angleOf(p.id), photo, { products: productsOf(p.id), texts: brandTextsOf(ctx, p.id) });
+    const copy = loadSiteCopy(p.id);
+    const facts = mockupFacts(p, angleOf(p.id), photo, { products: productsOf(p.id), texts: brandTextsOf(ctx, p.id), ...(copy ? { copy: copy.pages } : {}) });
     const keys = ["A", "B", "C"] as const;
     const directions = a.directions.map((d, i) => plannedDirection(d.key ?? keys[i], d.name, d.style, pages, (img) => mockupImagePrompt(facts, d, img, pages)));
     const saved = saveMockupSet(p.id, { version: 1, business: p.business, pages, directions, at: 0 });
@@ -262,4 +310,4 @@ const reportTool: AgentTool<{}> = {
 };
 
 /** Outils à ajouter au registre (src/lib/syna-agent/tools/index.ts). */
-export const mockupCodeTools: AgentTool[] = [pagesTool, prepareTool, generateTool, attachTool, chooseTool, codeTool, reportTool];
+export const mockupCodeTools: AgentTool[] = [pagesTool, copyTool, prepareTool, generateTool, attachTool, chooseTool, codeTool, reportTool];

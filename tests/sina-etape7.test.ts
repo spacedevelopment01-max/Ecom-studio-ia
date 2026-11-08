@@ -373,6 +373,31 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     return { user, pid, ctx };
   }
 
+  it("étape 6 : mockup.copy écrit les textes de l'accueil sur l'angle choisi ; la maquette les écrit lettre pour lettre", async () => {
+    const { copyDeps } = await import("@/lib/syna-agent/mockup-code/tools");
+    const { loadSiteCopy } = await import("@/lib/syna-agent/mockup-code/copy");
+    const { user, pid, ctx } = await ready();
+    const J = await import("@/lib/syna-agent/journey");
+    const { threadFor } = await import("@/lib/syna-agent/thread");
+    ctx.conversationId = threadFor(user, pid);
+    J.updateJourney(ctx.conversationId, (x) => { x.angleChoice = { id: "usage", ids: ["usage"], at: 1 }; });
+    let prompt = "";
+    copyDeps.generate = async (call: any) => { prompt = call.prompt; return { seo: { title: "Braise Douce, bougies", description: "Des bougies pour trouver le calme." }, sections: [{ section: "ouverture (titre, photo, bouton)", title: "Fais le noir, trouve le calme.", text: "Une flamme, et la journée se pose.", button: "Choisis ta bougie", items: [] }, { section: "produit ou offre", title: "Nos bougies", text: null, button: null, items: [{ title: "Bougie Cèdre", text: "25 €" }] }] }; };
+    try {
+      expect(tool("mockup.copy").estimate!(ctx, {}).maxMicro).toBeGreaterThan(0); // payant : devis avant
+      const r = await call("mockup.copy", ctx, {});
+      expect(r.ok, r.summary).toBe(true);
+      expect(prompt).toMatch(/Page à écrire : « Accueil »/);
+      expect(loadSiteCopy(pid)!.pages.home.sections[0].title).toBe("Fais le noir, trouve le calme.");
+      await call("mockup.prepare", ctx, { directions: [{ name: "Lumière", style: "grandes photos plein cadre" }] });
+      const home = loadMockupSet(pid)!.directions[0].images.find((i) => i.viewport === "desktop" && i.pages.includes("home"))!;
+      expect(home.prompt).toContain("Dans la partie ouverture (titre, photo, bouton) : titre « Fais le noir, trouve le calme. » ; texte « Une flamme, et la journée se pose. » ; bouton « Choisis ta bougie ».");
+      expect(home.prompt).toContain("élément « Bougie Cèdre » avec « 25 € »");
+      expect(home.prompt).not.toContain("faux texte"); // le texte est SUR la maquette (consigne du propriétaire)
+      expect(home.prompt).not.toContain("« ouverture"); // un nom de section n'est jamais un texte à écrire
+    } finally { copyDeps.generate = undefined; }
+  });
+
   it("étape 6 : mockup.generate crée les images manquantes (IA simulée), les range, et signale une image ratée", async () => {
     const { user, pid, ctx } = await ready();
     const logo = await saveAsset({ projectId: pid, userId: user.id, data: await png("#B91C1C"), name: "logo.png", mime: "image/png", role: "logo", origin: "generated" } as any);

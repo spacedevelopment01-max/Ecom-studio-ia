@@ -9,6 +9,7 @@ import type { Brand } from "../../project-types";
 import { FONT_FILES } from "../../theme/render";
 import { pageByKey, VIEWPORT_WIDTH, type MockupPage } from "./pages";
 import type { MockupDirection, MockupImage } from "./mockup-set";
+import { copyLines, type PageCopy } from "./copy";
 
 export type MockupFacts = {
   business: "products" | "services";
@@ -25,6 +26,8 @@ export type MockupFacts = {
    * marque gardés) : accroche et appel à l'action de l'angle choisi, messages clés de la recherche.
    */
   texts?: { headline?: string; cta?: string; messages?: string[] };
+  /** Textes complets écrits avant la maquette (mockup.copy), par page : écrits lettre pour lettre sur l'image. */
+  copy?: Record<string, PageCopy>;
 };
 
 const family = (handle: string) => FONT_FILES[handle.replace(/_[ni]\d$/, "")]?.family ?? handle;
@@ -52,7 +55,7 @@ const headlineLines = (h: string) => { const parts = h.match(/[^.!?…]+[.!?…]
 const euros = (cents: number) => `${(cents / 100).toFixed(2).replace(".", ",").replace(",00", "")} €`;
 
 /** Faits utiles à la maquette, lus dans le projet (rien d'inventé : prix confirmés seulement). */
-export function mockupFacts(p: { business: "products" | "services"; name: string; brand: Brand | null; product: { name: string; price: { amount: number | null; status: string } }; catalog: { name: string; price: number | null }[]; services: { services: { name: string; price?: string }[] } }, angle?: string, productPhoto = false, extra: { products?: { title: string; price: number | null }[]; texts?: MockupFacts["texts"] } = {}): MockupFacts {
+export function mockupFacts(p: { business: "products" | "services"; name: string; brand: Brand | null; product: { name: string; price: { amount: number | null; status: string } }; catalog: { name: string; price: number | null }[]; services: { services: { name: string; price?: string }[] } }, angle?: string, productPhoto = false, extra: { products?: { title: string; price: number | null }[]; texts?: MockupFacts["texts"]; copy?: MockupFacts["copy"] } = {}): MockupFacts {
   // Produits de l'onglet Produits d'abord (essai réel du 8 novembre : le nom de la fiche de départ, tronqué, « 6 mélanges
   // vendus en vrac dans des », aurait été écrit comme un produit).
   const offers = p.business === "services"
@@ -63,7 +66,7 @@ export function mockupFacts(p: { business: "products" | "services"; name: string
         ...(p.product.name ? [{ name: p.product.name, ...(p.product.price.status === "confirmed" && p.product.price.amount != null ? { price: euros(p.product.price.amount) } : {}) }] : []),
         ...p.catalog.slice(0, 8).map((c) => ({ name: c.name, ...(c.price != null ? { price: euros(c.price) } : {}) })),
       ];
-  return { business: p.business, name: p.brand?.name ?? p.name, brand: p.brand, offers, angle, productPhoto, ...(extra.texts ? { texts: extra.texts } : {}) };
+  return { business: p.business, name: p.brand?.name ?? p.name, brand: p.brand, offers, angle, productPhoto, ...(extra.texts ? { texts: extra.texts } : {}), ...(extra.copy ? { copy: extra.copy } : {}) };
 }
 
 /** Rôles des couleurs (palettes du propriétaire du 7 novembre : bouton, détails, texte, fond, surface). */
@@ -98,10 +101,14 @@ export function mockupImagePrompt(f: MockupFacts, d: Pick<MockupDirection, "name
     "Autour des pages : un fond uni gris très clair et neutre, sans texture ni ombre portée marquée.",
     // 3) chaque page à sa place
     ...list.map((p, i) => `${n > 1 ? `Page ${POS[i] ?? `n° ${i + 1}`}` : "La page"}, avec son nom écrit en petit au-dessus : « ${p.fr} ». Elle montre dans cet ordre : ${p.sections.join(" ; ")}.`),
-    // Textes exacts de la marque pour l'accueil, mot pour mot (jamais réécrits par le modèle d'images).
-    ...(list.some((p) => p.key === "home") && f.texts?.headline ? [`Textes de la page « Accueil », recopiés mot pour mot, lettre pour lettre : grand titre d'ouverture ${headlineLines(f.texts.headline)}${brand?.tagline ? ` ; sous le titre, le slogan « ${brand.tagline} »` : ""}${f.texts.cta ? ` ; bouton principal « ${f.texts.cta} »` : ""}${f.texts.messages?.length ? ` ; plus bas, ces messages, un par bloc : ${f.texts.messages.map((m) => `« ${m} »`).join(", ")}` : ""}. Les autres textes sont de simples libellés courts (menu, noms et prix des produits).`] : []),
+    // Textes complets de la page écrits avant la maquette (consigne du propriétaire : le copywriting est SUR la maquette).
+    ...list.flatMap((p) => (f.copy?.[p.key] ? [`Textes de la page « ${p.fr} », écrits lettre pour lettre, chacun à sa place, sans en ajouter, sans en retirer :`, ...copyLines(f.copy[p.key])] : [])),
+    // Sans textes écrits : textes exacts de la marque pour l'accueil, mot pour mot (jamais réécrits par le modèle d'images).
+    ...(list.some((p) => p.key === "home") && !f.copy?.home && f.texts?.headline ? [`Textes de la page « Accueil », recopiés mot pour mot, lettre pour lettre : grand titre d'ouverture ${headlineLines(f.texts.headline)}${brand?.tagline ? ` ; sous le titre, le slogan « ${brand.tagline} »` : ""}${f.texts.cta ? ` ; bouton principal « ${f.texts.cta} »` : ""}${f.texts.messages?.length ? ` ; plus bas, ces messages, un par bloc : ${f.texts.messages.map((m) => `« ${m} »`).join(", ")}` : ""}. Les autres textes sont de simples libellés courts (menu, noms et prix des produits).`] : []),
     // Moins de texte = moins de lettres abîmées (essai réel du 8 novembre) : seuls les textes cités sont écrits.
-    "Les paragraphes et les textes secondaires (descriptions, journal, inscription, pied de page) sont figurés par de fines lignes grises de faux texte, sans aucune lettre lisible ; seuls les textes cités entre guillemets dans cette consigne sont écrits en lettres. Les codes couleur et les noms de police de cette consigne sont des indications : ils ne sont jamais écrits sur la page.",
+    list.every((p) => f.copy?.[p.key])
+      ? "Les seuls textes de la page sont ceux cités entre guillemets dans cette consigne, plus les liens courts du menu et du pied de page. Les codes couleur, les noms de police et les noms de sections de cette consigne sont des indications : ils ne sont jamais écrits sur la page."
+      : "Les paragraphes et les textes secondaires (descriptions, journal, inscription, pied de page) sont figurés par de fines lignes grises de faux texte, sans aucune lettre lisible ; seuls les textes cités entre guillemets dans cette consigne sont écrits en lettres. Les codes couleur et les noms de police de cette consigne sont des indications : ils ne sont jamais écrits sur la page.",
     // 4) compte exact
     `La planche contient exactement ${n} page${n > 1 ? "s" : ""} : ${list.map((p) => `« ${p.fr} »`).join(", ")}. Aucune autre page, aucun écran supplémentaire.`,
     // 5) cadrage
