@@ -131,4 +131,12 @@ describe("SINA — étape 6 : un de nos thèmes", async () => {
       expect(fs.existsSync(`public${t.preview}`), `${t.id} : ${t.preview}`).toBe(true);
     }
   });
+
+  it("SINA ne dit jamais que le site du client est composé dans les thèmes montrés (essai réel du 7 novembre)", async () => {
+    const { withoutComposedClaim } = await import("@/lib/syna-agent/loop");
+    expect(withoutComposedClaim("Voici à nouveau les trois thèmes du Studio, avec ton site déjà composé dans chacun. Tu peux en choisir un."))
+      .toBe("Voici à nouveau les trois thèmes du Studio. Tu peux en choisir un.");
+    expect(withoutComposedClaim("Les trois thèmes sont sous tes yeux, chacun avec ton site composé dans chacun.")).not.toMatch(/ton site composé/);
+    expect(withoutComposedClaim("Choisir un thème est gratuit : ton site s'y compose ensuite.")).toBe("Choisir un thème est gratuit : ton site s'y compose ensuite.");
+  });
 });

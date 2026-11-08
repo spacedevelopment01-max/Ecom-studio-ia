@@ -197,6 +197,8 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       // Un bouton est une réponse complète, cliquable telle quelle : jamais un gabarit à trous (essai réel du 7 novembre :
       // « Oui, sous [À compléter : délai] et à [À compléter : conditions] »).
       if (!local && out.question?.choices?.length) out = { ...out, question: { ...out.question, choices: out.question.choices.filter((c) => !/\[[^\]]*\]|…\s*$|\.\.\.\s*$/.test(c)) } };
+      // Étape 6 : les thèmes sont montrés tels qu'ils sont ; jamais « ton site déjà composé dans chacun » (essai réel).
+      if (!local && currentStep(journeyOf(r.conversation_id)) === 6) out = { ...out, message: withoutComposedClaim(out.message) };
       if (!local) out = withoutRepeatedQuestion({ ...out, message: fixElision(out.message), ...(out.question ? { question: { ...out.question, text: fixElision(out.question.text) } } : {}) });
       addMessage(r.conversation_id, "assistant", { ...out, step, ...(local ? { local: true } : {}) }, r.id);
       if (!out.actions.length) {
@@ -310,6 +312,16 @@ export function withoutLaterForRequired<Q extends { text: string; choices?: stri
   if (!field || field.o < 0.5 || !field.f.required) return q;
   const choices = (q.choices ?? []).filter((c) => !/^\s*(plus tard|later)\b/i.test(c));
   return { ...q, choices };
+}
+
+/**
+ * Étape 6 (consigne du propriétaire) : les cartes montrent les démonstrations d'origine des thèmes, pas le site du
+ * client. Une incise qui prétend le contraire (« avec ton site déjà composé dans chacun ») est retirée du message.
+ */
+export function withoutComposedClaim(message: string): string {
+  return message
+    .replace(/,?\s*(?:avec|et)\s+ton site\s+(?:déjà\s+)?(?:composé|intégré|mis en page|décliné)\s+dans\s+(?:chacun|chaque thème|chacun d'eux|ces thèmes)/gi, "")
+    .replace(/\s+([.,;!?])/g, "$1").replace(/ {2,}/g, " ").trim();
 }
 
 export function withoutRepeatedQuestion(out: StepOutput): StepOutput {
