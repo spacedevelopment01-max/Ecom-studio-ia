@@ -189,6 +189,27 @@ ${photo.startsWith("nouvelle") ? `<script type="application/json" id="photos-nou
       expect(prompts[2]).toContain("<base_css>\n:root{--dark:#233A2E}\n</base_css>");
       expect(prompts[2]).toContain("<entete_et_pied_de_l_accueil>");
       expect(one<any>("SELECT COUNT(*) n FROM assets WHERE project_id=? AND role='mockup'", pid).n).toBe(6);
+      const deps0 = codeBuildDeps.deps!;
+      codeBuildDeps.deps = { ...deps0 };
+      // Retouche d'un détail : seulement le passage demandé change ; une retouche qui ajoute un défaut n'est pas gardée.
+      const homeA = loadMockupSet(pid)!.directions.find((x) => x.key === "A")!.images.find((i) => i.pages[0] === "home" && i.viewport === "phone")!;
+      const est2 = await fr(() => tool("mockup.edit").estimate!(ctx, { direction: "A", imageId: homeA.id, changes: [{ zone: "ouverture", change: "titre plus grand" }] }));
+      expect(est2.probableMicro).toBeGreaterThan(0);
+      codeBuildDeps.deps!.fixEdits = async (prompt) => { expect(prompt).toContain("Quoi : titre plus grand"); expect(prompt).toContain(":root{--dark:#233A2E}"); return [{ find: ":root{--dark:#233A2E}", replace: ":root{--dark:#233A2E}h1{font-size:4rem}" }]; };
+      const ed = await call("mockup.edit", ctx, { direction: "A", imageId: homeA.id, changes: [{ zone: "ouverture", change: "titre plus grand" }] });
+      expect(ed.ok, ed.summary).toBe(true);
+      expect(loadDirectionCode(pid, "A").base).toBe(":root{--dark:#233A2E}h1{font-size:4rem}");
+      codeBuildDeps.deps!.fixEdits = async () => [{ find: "<h1>Pose ton écran.</h1>", replace: "<h1>Pose ton écran.</h1><p>Livraison offerte</p>" }];
+      const bad = await call("mockup.edit", ctx, { direction: "A", imageId: homeA.id, changes: [{ zone: "ouverture", change: "ajoute la livraison" }] });
+      expect(bad.ok).toBe(false);
+      expect(bad.summary).toMatch(/RATÉE au contrôle automatique, non gardée/);
+      expect(loadDirectionCode(pid, "A").pages.home.html).not.toContain("Livraison offerte");
+      // Texte corrigé par le client (gratuit) : reporté dans les pages construites, sans IA.
+      const ce = await call("mockup.copy_edit", ctx, { page: "home", find: "Pose ton écran.", replace: "Pose ton téléphone." });
+      expect(ce.ok, ce.summary).toBe(true);
+      expect(loadDirectionCode(pid, "A").pages.home.html).toContain("<h1>Pose ton téléphone.</h1>");
+      expect(loadDirectionCode(pid, "B").pages.home.html).toContain("<h1>Pose ton téléphone.</h1>");
+      expect(ce.hint).toMatch(/maquettes en code A, B/);
       // Choix sur l'accueil construit (les autres pages ensuite, pour la seule maquette choisie).
       const ch = await call("mockup.choose", ctx, { direction: "B" });
       expect(ch.ok, ch.summary).toBe(true);
@@ -196,6 +217,24 @@ ${photo.startsWith("nouvelle") ? `<script type="application/json" id="photos-nou
       expect(loadMockupSet(pid)!.chosen).toBe("B");
       void user; void all;
     } finally { codeBuildDeps.deps = undefined; codeBuildDeps.photoUnit = undefined; }
+  });
+
+  it("photos déjà payées de l'ancienne méthode réutilisables ; une maquette en code ne reprend pas les images d'une maquette en images", async () => {
+    const { pid, ctx } = await ready();
+    const { saveAsset } = await import("@/lib/library");
+    await saveAsset({ projectId: pid, userId: ctx.user.id, data: await png("#C9A04E", 300, 200), name: "site-home-1.png", mime: "image/png", role: "site", origin: "generated", meta: { synaSiteImage: { page: "home", type: "es-custom-x", index: 0, description: "Tasse en verre d'infusion dorée" } } } as any);
+    expect(photoLibrary(pid).map((x) => x.description)).toEqual(["Tasse en verre d'infusion dorée"]);
+    setJsonSetting("syna.mockup.mode", "image");
+    await call("mockup.prepare", ctx, { directions: [{ name: "Bandes vertes", style: "fond vert profond" }] });
+    const old = loadMockupSet(pid)!;
+    const img = old.directions[0].images.find((i) => i.viewport === "desktop" && i.pages.includes("home"))!;
+    const { saveMockupSet } = await import("@/lib/syna-agent/mockup-code/mockup-set");
+    saveMockupSet(pid, { ...old, directions: old.directions.map((d) => ({ ...d, images: d.images.map((i) => (i.id === img.id ? { ...i, status: "ready" as const, assetId: "ancienne-image" } : i)) })) });
+    setJsonSetting("syna.mockup.mode", "code");
+    await call("mockup.prepare", ctx, { directions: [{ name: "Bandes vertes", style: "fond vert profond" }] });
+    const d = loadMockupSet(pid)!.directions[0];
+    expect(d.mode).toBe("code");
+    expect(d.images.every((i) => i.status === "planned")).toBe(true);
   });
 
   it("page coupée même après deux suites : rien n'est gardé, aucune photo créée", async () => {

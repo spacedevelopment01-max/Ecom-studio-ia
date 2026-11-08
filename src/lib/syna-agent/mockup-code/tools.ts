@@ -34,7 +34,10 @@ import { project } from "../tools/common";
 import { step7CallMaxMicro, step7CallTypicalMicro } from "./deps";
 import { MOCKUP_CODE_JOB, STEP7_REPORT_KEY } from "./job";
 import { attachImage, coverageOf, loadMockupSet, plannedCodeDirection, plannedDirection, replanDirection, saveMockupSet, type MockupSet } from "./mockup-set";
-import { buildCodePage, codeBuildEstimate, loadDirectionCode, photoLibrary, realBuildDeps, type BuildDeps } from "./code-build";
+import { buildCodePage, codeBuildEstimate, codeEditEstimate, editCodePrompt, loadDirectionCode, mockupFiles, pageSource, patchCodeText, photoLibrary, realBuildDeps, retouchCodePage, type BuildDeps } from "./code-build";
+import { expectedTexts, inspectCodeMockup } from "./code-mockup";
+import { chromiumPath } from "../../theme/snapshot";
+import { copyLines } from "./copy";
 import { codePhotoPrompt, type CodePhoto } from "./code-mockup";
 import { inventoryOptionsOf, mockupPages } from "./pages";
 import { hdAspect, mockupFacts, mockupImagePrompt, mockupImagesMaxMicro, siteImageHdPrompt } from "./prompts";
@@ -182,7 +185,7 @@ const copyEditTool: AgentTool<{ page?: string; find: string; replace: string }> 
   name: "mockup.copy_edit", module: "site", kind: "write", needsProject: true,
   description: "Étape 6 (gratuit, sans IA) : corrige un texte de page écrit par mockup.copy, mot pour mot : remplace le passage EXACT find par les mots du client replace (replace vide = retirer le passage). page : clé de mockup.pages (accueil par défaut). Ce que le client corrige une fois vaut pour toujours.",
   args: z.object({ page: z.string().max(60).optional(), find: z.string().min(2).max(400), replace: z.string().max(400) }).strict(),
-  run: (ctx, a) => {
+  run: async (ctx, a) => {
     const p = project(ctx), key = a.page ?? "home", sc = loadSiteCopy(p.id);
     const c = sc?.pages[key];
     if (!sc || !c) return { ok: false, summary: L("Aucun texte écrit pour cette page : mockup.copy d'abord.", "No copy for this page yet.") };
@@ -190,7 +193,17 @@ const copyEditTool: AgentTool<{ page?: string; find: string; replace: string }> 
     if (!r.count) return { ok: false, summary: L(`Passage introuvable dans les textes : « ${a.find} ».`, "Passage not found."), hint: "Recopie le passage exactement tel qu'il est écrit (lis la carte des textes)." };
     saveSiteCopy(p.id, { ...sc, pages: { ...sc.pages, [key]: r.copy } });
     refreshMockupPrompts(ctx);
-    return { ok: true, summary: a.replace ? L(`Texte corrigé : « ${a.find} » → « ${a.replace} ».`, "Copy corrected.") : L(`Passage retiré : « ${a.find} ».`, "Passage removed."), hint: "La maquette reprend déjà les textes corrigés (images encore à créer).", changes: [{ module: "site", object: L("textes de la page", "page copy"), summary: a.replace ? `« ${a.find} » → « ${a.replace} »` : `« ${a.find} » retiré`, before: a.find, after: a.replace, verified: JSON.stringify(loadSiteCopy(p.id)?.pages[key]).includes(a.replace) }] };
+    // Maquettes en code déjà construites : le texte est corrigé dans la page, sans IA, puis nouvelles captures.
+    const patched: string[] = [];
+    for (const d of loadMockupSet(p.id)?.directions.filter((x) => x.mode === "code") ?? []) {
+      if (!patchCodeText(p.id, d.key, key, a.find, a.replace)) continue;
+      const code = loadDirectionCode(p.id, d.key);
+      const html = code.pages[key].html;
+      const insp = await (codeBuildDeps.deps?.inspect ?? ((f, e) => inspectCodeMockup(f, e, chromiumPath())))(mockupFiles(p, html, code.base), { texts: expectedTexts(r.copy), allowed: [p.brand?.name ?? p.name] });
+      await saveCodeShots(ctx, p.id, d.key, key, insp);
+      patched.push(d.key);
+    }
+    return { ok: true, summary: a.replace ? L(`Texte corrigé : « ${a.find} » → « ${a.replace} ».`, "Copy corrected.") : L(`Passage retiré : « ${a.find} ».`, "Passage removed."), hint: patched.length ? `Texte corrigé aussi dans les maquettes en code ${patched.join(", ")} (sans IA) : leurs nouvelles captures te sont jointes.` : "La maquette reprend déjà les textes corrigés (images encore à créer).", changes: [{ module: "site", object: L("textes de la page", "page copy"), summary: a.replace ? `« ${a.find} » → « ${a.replace} »` : `« ${a.find} » retiré`, before: a.find, after: a.replace, verified: JSON.stringify(loadSiteCopy(p.id)?.pages[key]).includes(a.replace) }] };
   },
 };
 
@@ -215,7 +228,8 @@ const prepareTool: AgentTool<PrepareArgs> = {
       // n'efface jamais une image payée (essai réel : l'accueil de A détaché après un réglage de la consigne).
       // Même maquette = même lettre et même nom (essai réel du 8 novembre : SINA a reformulé le style de B en la
       // re-préparant après l'écriture des textes ; les trois images payées de B, dont l'accueil retouché, étaient lâchées).
-      const old = before?.directions.find((x) => x.key === fresh.key && x.name.trim().toLowerCase() === fresh.name.trim().toLowerCase());
+      // Même méthode aussi : une maquette en code ne reprend jamais les images d'une ancienne maquette en images.
+      const old = before?.directions.find((x) => x.key === fresh.key && x.name.trim().toLowerCase() === fresh.name.trim().toLowerCase() && (x.mode ?? "image") === (fresh.mode ?? "image"));
       if (!old) return fresh;
       return { ...fresh, images: fresh.images.map((img) => {
         const prev = old.images.find((x) => x.status === "ready" && x.assetId && x.viewport === img.viewport && x.pages.join() === img.pages.join());
@@ -317,9 +331,32 @@ function codeEstimate(ctx: ToolContext, a: GenArgs) {
   return { maxMicro: e.maxMicro, probableMicro: e.probableMicro, label: L(`maquette ${a.direction} en code : ${t.pages.map((k) => pageByKey(set.pages, k)?.fr ?? k).join(", ")}`, `code mockup ${a.direction}`) };
 }
 
+/**
+ * Captures d'une page en code rangées dans les Fichiers et posées sur les images de la maquette (une par version),
+ * avec le résultat du contrôle automatique de chaque version.
+ */
+async function saveCodeShots(ctx: ToolContext, pid: string, direction: "A" | "B" | "C", key: string, r: { shots: Record<"desktop" | "phone", Buffer> | null; problems: string[]; toVerify: string[]; failed?: string[] }): Promise<{ id: string; assetId: string; href: string; page: string; viewport: "desktop" | "phone" }[]> {
+  if (!r.shots) return [];
+  let set = loadMockupSet(pid)!;
+  const d = set.directions.find((x) => x.key === direction)!;
+  const made: { id: string; assetId: string; href: string; page: string; viewport: "desktop" | "phone" }[] = [];
+  for (const v of ["desktop", "phone"] as const) {
+    const img = d.images.find((i) => i.viewport === v && i.pages.includes(key));
+    const asset = await saveAsset({ projectId: pid, userId: ctx.user.id, data: r.shots[v], name: `maquette-${direction}-${key.replace(/[^a-z0-9]+/gi, "-")}-${v}.jpg`, mime: "image/jpeg", role: "mockup", origin: "generated", meta: { synaMockup: { direction, image: img?.id ?? null, pages: [key], viewport: v, code: true } } });
+    const label = v === "phone" ? "téléphone" : "ordinateur";
+    const mine = (x: string) => !/^(ordinateur|téléphone) : /.test(x) || x.startsWith(`${label} : `);
+    const check = { ok: !r.problems.filter(mine).length && !r.failed?.length, problems: r.problems.filter(mine), toVerify: r.toVerify.filter(mine) };
+    const at = attachImage(set, direction, { ...(img ? { id: img.id } : {}), viewport: v, pages: [key], assetId: asset.id });
+    set = { ...at.set, directions: at.set.directions.map((x) => (x.key === direction ? { ...x, images: x.images.map((i) => (i.id === at.image.id ? { ...i, check } : i)) } : x)) };
+    saveMockupSet(pid, set);
+    made.push({ id: at.image.id, assetId: asset.id, href: assetUrl({ id: asset.id }), page: key, viewport: v });
+  }
+  return made;
+}
+
 async function runCodeBuild(ctx: ToolContext, a: GenArgs) {
   const p = project(ctx);
-  let set = loadMockupSet(p.id)!;
+  const set = loadMockupSet(p.id)!;
   const d = set.directions.find((x) => x.key === a.direction)!;
   const t = codePagesTodo(p, set, d, a);
   if (t.problem) return { ok: false, summary: t.problem };
@@ -343,17 +380,7 @@ async function runCodeBuild(ctx: ToolContext, a: GenArgs) {
       photos += r.newPhotos.length;
       if (r.failed.length) failed.push(`${page.fr} : ${r.failed.join(" ; ")}`);
       if (!r.shots) continue;
-      for (const v of ["desktop", "phone"] as const) {
-        const img = d.images.find((i) => i.viewport === v && i.pages.includes(key));
-        const asset = await saveAsset({ projectId: p.id, userId: ctx.user.id, data: r.shots[v], name: `maquette-${a.direction}-${key.replace(/[^a-z0-9]+/gi, "-")}-${v}.jpg`, mime: "image/jpeg", role: "mockup", origin: "generated", meta: { synaMockup: { direction: a.direction, image: img?.id ?? null, pages: [key], viewport: v, code: true } } });
-        const label = v === "phone" ? "téléphone" : "ordinateur";
-        const mine = (x: string) => !/^(ordinateur|téléphone) : /.test(x) || x.startsWith(`${label} : `);
-        const check = { ok: !r.problems.filter(mine).length && !r.failed.length, problems: r.problems.filter(mine), toVerify: r.toVerify.filter(mine) };
-        const at = attachImage(set, a.direction, { ...(img ? { id: img.id } : {}), viewport: v, pages: [key], assetId: asset.id });
-        set = { ...at.set, directions: at.set.directions.map((x) => (x.key === a.direction ? { ...x, images: x.images.map((i) => (i.id === at.image.id ? { ...i, check } : i)) } : x)) };
-        saveMockupSet(p.id, set);
-        made.push({ id: at.image.id, assetId: asset.id, href: assetUrl({ id: asset.id }), page: key, viewport: v });
-      }
+      made.push(...await saveCodeShots(ctx, p.id, a.direction, key, r));
       report.push(`${page.fr} : ${r.problems.length ? `RATÉE au contrôle automatique (${r.problems.join(" ; ")})` : "contrôle automatique : textes exacts, rien d'ajouté, téléphone conforme"}${r.fixed ? " (une correction automatique faite)" : ""}${r.toVerify.length ? ` ; à vérifier : ${r.toVerify.join(" ; ")}` : ""}`);
     } catch (e) { failed.push(`${page.fr} : ${(e as Error).message.slice(0, 200)}`); }
   }
@@ -467,13 +494,50 @@ function editMaxMicro(): number | null {
     return paint == null ? null : paint + 2 * locateMaxMicro() + checkMaxMicro();
   } catch { return null; }
 }
+/**
+ * Retouche d'une page de maquette en code : Claude renvoie seulement des remplacements exacts (le reste de la page ne
+ * bouge pas), puis captures et contrôle gratuits. Une retouche qui ajoute des défauts n'est pas gardée.
+ */
+async function runCodeEdit(ctx: ToolContext, a: EditArgs, pageKey: string) {
+  const p = project(ctx), set = loadMockupSet(p.id)!, d = set.directions.find((x) => x.key === a.direction)!;
+  const page = pageByKey(set.pages, pageKey), copy = loadSiteCopy(p.id)?.pages[pageKey], src = pageSource(p.id, a.direction, pageKey);
+  if (!page || !copy || !src) return { ok: false, summary: L("Cette page de la maquette n'est pas encore construite.", "Page not built yet.") };
+  const jobId = getRun(ctx.runId)?.job_id ?? null;
+  const usageKey = `syna:${ctx.runId}:code-edit:${a.direction}:${pageKey}`;
+  const cap = codeEditEstimate(ctx.user.id, src.length)?.maxMicro ?? 0;
+  const deps = codeBuildDeps.deps ?? realBuildDeps({ userId: ctx.user.id, projectId: p.id, jobId, capMicro: () => cap, spentMicro: () => (jobId ? jobSpentMicro(jobId) : 0) }, async () => { throw new Error("aucune photo nouvelle dans une retouche"); });
+  const spent = () => budgetPctText(ctx.user.id, all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key LIKE ?", p.id, `${usageKey}%`)[0]?.c ?? 0, p.id).replace(/de votre budget/, "de ton budget");
+  let edits;
+  try { edits = await deps.fixEdits(editCodePrompt(src, a.changes, copyLines(copy)), usageKey); } catch (e) { return { ok: false, summary: L(`Retouche impossible, rien n'a changé : ${(e as Error).message.slice(0, 160)}. Coût réel : ${spent()}.`, "Edit failed.") }; }
+  const before = d.images.filter((i) => i.pages.includes(pageKey)).flatMap((i) => i.check?.problems ?? []).length;
+  const r = await retouchCodePage(p, a.direction, page, copy, edits, deps.inspect, (problems) => problems.length <= before);
+  if (r.failed.length) return { ok: false, summary: L(`Retouche non appliquée, la page reste comme avant (${r.failed[0]}). Coût réel : ${spent()}.`, "Edit not applied."), hint: "Dis-le au client honnêtement ; ne relance rien sans son accord écrit." };
+  if (r.rejected) return { ok: false, summary: L(`Retouche RATÉE au contrôle automatique, non gardée (la page d'avant reste en place) : ${r.problems.join(" ; ")}. Coût réel : ${spent()}.`, "Edit rejected."), hint: "Dis au client que la retouche a raté et pourquoi ; ne relance rien sans son accord écrit." };
+  const made = await saveCodeShots(ctx, p.id, a.direction, pageKey, r);
+  return {
+    ok: r.ok,
+    summary: L(`Retouche faite sur la page « ${page.fr} » de la maquette ${a.direction} (${edits.length} passage(s) changé(s), le reste n'a pas bougé).${r.problems.length ? ` Contrôle automatique : ${r.problems.join(" ; ")}.` : " Contrôle automatique : rien à signaler."} Coût réel : ${spent()}.`, "Code mockup edited."),
+    hint: "Les nouvelles captures te sont JOINTES à ta prochaine étape : regarde-les et dis au client ce que tu vois vraiment, en particulier le point qu'il a demandé.",
+    data: { mockups: made.map((m, i) => ({ n: i + 1, direction: `${a.direction} · ${m.id}`, name: d.name, label: `${page.fr} — ${m.viewport === "desktop" ? "ordinateur" : "téléphone"}`, assetId: m.assetId, href: m.href })) },
+    changes: made.map((m) => ({ module: "fichiers", object: `maquette ${a.direction} › ${page.fr} (${m.viewport === "desktop" ? "ordinateur" : "téléphone"})`, summary: L("retouche localisée", "local edit"), after: { assetId: m.assetId }, verified: true })),
+  };
+}
+
 const editTool: AgentTool<EditArgs> = {
   name: "mockup.edit", module: "site", kind: "generate", needsProject: true,
-  description: "Étape 6 : RETOUCHE LOCALISÉE d'une image de maquette déjà créée : seules les zones demandées par le client changent, tout le reste reste identique au pixel près. À utiliser dès que le client demande de corriger des détails (retirer un bouton, réorganiser une partie, changer un texte sur l'image) : JAMAIS mockup.generate redo, qui refait toute l'image et change tout. imageId : l'image (ex. B10, voir « prêtes » dans l'état du projet) ; fromVersion : SEULEMENT si le client demande de repartir d'une ancienne version de cette image (1 = la première créée ; voir « versions »), sinon ne le mets pas (la version actuelle est retouchée) ; changes : 1 à 4 zones, chacune { zone : où, décrite clairement, et pour réorganiser ou AJOUTER un élément, TOUTE la partie (ex. « toute la partie Le journal de la pause, de son titre à son bouton »), jamais un morceau ; change : ce qui doit changer, précisément }. Un retrait pur (« retire le bandeau … ») est fait sans IA quand l'élément occupe seul sa bande : la suite remonte, gratuit. Une retouche ratée au contrôle n'est pas retenue : l'image d'avant reste en place. Payant (une retouche), annonce le prix et attends l'accord.",
+  description: "Étape 6 : RETOUCHE LOCALISÉE. MAQUETTE EN CODE : imageId = une image de la page à retoucher (ordinateur ou téléphone, la page est la même) ; Claude change seulement les passages demandés du code de la page, le reste ne bouge pas ; nouvelles captures et contrôle gratuits ; une retouche qui ajoute des défauts n'est pas gardée ; peu coûteuse (coût probable donné par le Studio, accord du client d'abord) ; fromVersion ne s'applique pas. Pour un simple TEXTE à corriger, mockup.copy_edit (gratuit) le corrige aussi dans la page. ANCIENNE MAQUETTE EN IMAGES : retouche d'une image déjà créée : seules les zones demandées par le client changent, tout le reste reste identique au pixel près. À utiliser dès que le client demande de corriger des détails (retirer un bouton, réorganiser une partie, changer un texte sur l'image) : JAMAIS mockup.generate redo, qui refait toute l'image et change tout. imageId : l'image (ex. B10, voir « prêtes » dans l'état du projet) ; fromVersion : SEULEMENT si le client demande de repartir d'une ancienne version de cette image (1 = la première créée ; voir « versions »), sinon ne le mets pas (la version actuelle est retouchée) ; changes : 1 à 4 zones, chacune { zone : où, décrite clairement, et pour réorganiser ou AJOUTER un élément, TOUTE la partie (ex. « toute la partie Le journal de la pause, de son titre à son bouton »), jamais un morceau ; change : ce qui doit changer, précisément }. Un retrait pur (« retire le bandeau … ») est fait sans IA quand l'élément occupe seul sa bande : la suite remonte, gratuit. Une retouche ratée au contrôle n'est pas retenue : l'image d'avant reste en place. Payant (une retouche), annonce le prix et attends l'accord.",
   args: z.object({ direction: KEY, imageId: z.string().max(8), fromVersion: z.number().int().min(1).max(50).optional(), fromAssetId: z.string().max(60).optional(), changes: z.array(z.object({ zone: z.string().min(3).max(300), change: z.string().min(3).max(600) }).strict()).min(1).max(4) }).strict(),
   estimate: (ctx, a) => {
     const p = project(ctx), d = loadMockupSet(p.id)?.directions.find((x) => x.key === a.direction);
     if (!d?.images.some((i) => i.id === a.imageId && (i.assetId || a.fromAssetId))) throw new HttpError(409, L(`Aucune image ${a.imageId} créée dans la maquette ${a.direction}.`, "No such mockup image."));
+    if (d.mode === "code") {
+      const page = d.images.find((i) => i.id === a.imageId)!.pages[0];
+      const src = pageSource(p.id, a.direction, page);
+      if (!src) throw new HttpError(409, L("Cette page de la maquette n'est pas encore construite.", "Page not built yet."));
+      const e = codeEditEstimate(ctx.user.id, src.length);
+      if (!e) throw new HttpError(409, L("Aucun modèle utilisable pour retoucher la maquette.", "No usable model."));
+      return { ...e, label: L(`retouche de la page « ${page} » de la maquette ${a.direction}`, "code mockup edit") };
+    }
     // Retrait pur : sans IA (seulement le repérage et le contrôle) ; jamais de bascule vers une retouche payante sans
     // nouvel accord (voir run).
     if (a.changes.every((c) => isRemoval(c.change))) return { maxMicro: 2 * locateMaxMicro() + checkMaxMicro(), label: L(`retrait sur l'image ${a.imageId} (sans IA d'images)`, `removal on image ${a.imageId}`) };
@@ -486,6 +550,7 @@ const editTool: AgentTool<EditArgs> = {
     let set = loadMockupSet(p.id);
     const d = set?.directions.find((x) => x.key === a.direction), img = d?.images.find((i) => i.id === a.imageId);
     if (!set || !d || !img) return { ok: false, summary: L(`Aucune image ${a.imageId} dans la maquette ${a.direction}.`, "No such mockup image.") };
+    if (d.mode === "code") return runCodeEdit(ctx, a, img.pages[0]);
     // Version de départ : celle que le client préfère (une version précédente de CETTE image), sinon l'actuelle.
     const versions = imageVersions(p.id, a.direction, a.imageId);
     if (a.fromVersion && !versions[a.fromVersion - 1]) return { ok: false, summary: L(`L'image ${a.imageId} n'a que ${versions.length} version(s).`, "No such version."), internal: true };

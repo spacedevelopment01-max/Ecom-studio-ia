@@ -66,6 +66,8 @@ export function photoLibrary(projectId: string): LibraryPhoto[] {
     try { meta = r.meta ? JSON.parse(r.meta) : null; } catch { meta = null; }
     const ratio = r.width && r.height ? `${r.width}:${r.height}` : "4:3";
     if (r.role === "site" && meta?.synaPhoto) out.push({ id: r.id, description: String(meta.synaPhoto.description).slice(0, 400), ratio: meta.synaPhoto.ratio ?? ratio });
+    // Photos du site déjà recréées en haute définition (étape 7, ancienne méthode) : déjà payées, réutilisables.
+    else if (r.role === "site" && meta?.synaSiteImage?.description) out.push({ id: r.id, description: String(meta.synaSiteImage.description).slice(0, 400), ratio });
     else if (r.role !== "site") out.push({ id: r.id, description: `photo réelle du produit (${r.name.replace(/\.[a-z0-9]+$/i, "")})`, ratio, real: true });
   }
   return out;
@@ -257,7 +259,7 @@ export async function buildCodePage(p: Project, d: Pick<MockupDirection, "key" |
 }
 
 /** Retouche d'une page déjà construite par remplacements exacts (gratuite ou par Claude), puis captures et contrôle. */
-export async function retouchCodePage(p: Project, direction: string, page: MockupPage, copy: PageCopy, edits: CodeEdit[], inspect: BuildDeps["inspect"]): Promise<{ ok: boolean; failed: string[]; shots: Record<Viewport, Buffer> | null; problems: string[]; toVerify: string[] }> {
+export async function retouchCodePage(p: Project, direction: string, page: MockupPage, copy: PageCopy, edits: CodeEdit[], inspect: BuildDeps["inspect"], accept?: (problems: string[]) => boolean): Promise<{ ok: boolean; failed: string[]; shots: Record<Viewport, Buffer> | null; problems: string[]; toVerify: string[]; rejected?: boolean }> {
   const code = loadDirectionCode(p.id, direction);
   const cur = code.pages[page.key];
   if (!cur) return { ok: false, failed: ["page pas encore construite"], shots: null, problems: [], toVerify: [] };
@@ -267,6 +269,8 @@ export async function retouchCodePage(p: Project, direction: string, page: Mocku
   if (applied.failed.length) return { ok: false, failed: applied.failed, shots: null, problems: [], toVerify: [] };
   const base = page.key === "home" ? null : code.base;
   const r = await inspect(mockupFiles(p, applied.html, base), { texts: expectedTexts(copy), allowed: [p.brand?.name ?? p.name] });
+  // Retouche qui ajoute des défauts : jamais gardée (la page d'avant reste en place).
+  if (accept && !accept(r.problems)) return { ok: false, failed: [], shots: r.shots, problems: r.problems, toVerify: r.toVerify, rejected: true };
   const next: DirectionCode = { ...code, pages: { ...code.pages } };
   let html = applied.html;
   if (page.key === "home") { const s = splitBaseCss(html); next.base = s.css ?? next.base; next.shell = shellOf(s.html) ?? next.shell; html = s.html; }
@@ -281,4 +285,44 @@ export function pageSource(projectId: string, direction: string, pageKey: string
   const cur = code.pages[pageKey];
   if (!cur) return null;
   return pageKey === "home" && code.base ? cur.html.replace('<link rel="stylesheet" href="base.css">', `<style id="base">\n${code.base}\n</style>`) : cur.html;
+}
+
+/** Consigne de retouche d'une page en code : seuls les détails demandés changent, par remplacements exacts. */
+export function editCodePrompt(source: string, changes: { zone: string; change: string }[], lines: string[]): string {
+  return `Voici le fichier HTML d'une page de maquette déjà validée dans son ensemble par le client.
+<fichier>
+${source}
+</fichier>
+Le client demande SEULEMENT ces retouches :
+${changes.map((c, i) => `${i + 1}. Où : ${c.zone}. Quoi : ${c.change}`).join("\n")}
+Textes de la page (seuls textes permis, mot pour mot ; un texte nouveau demandé par le client est permis) :
+${lines.join("\n")}
+Fais UNIQUEMENT ces retouches, sans rien changer d'autre (consigne du client : « modifier que les détails demandés »), par des remplacements exacts : find = un passage copié EXACTEMENT du fichier, assez long pour n'y figurer qu'une fois ; replace = le passage retouché. Garde les règles du téléphone (en-tête avec le logo et l'icône du menu seulement, jamais trois éléments côte à côte) et aucun débordement.`;
+}
+
+/** Devis d'une retouche de page en code (un appel, réflexion légère). */
+export function codeEditEstimate(userId: string, sourceChars: number): { maxMicro: number; probableMicro: number } | null {
+  const r = routeLlm({ task: "theme_custom", userId, routing: { difficulty: "complex", prefer: FIX_MODEL } });
+  if (r.mode !== "llm") return null;
+  const input = Math.ceil(sourceChars / 3) + 3000;
+  const max = callCostBoundMicro(r.provider, r.model, input, FIX_MAX_TOKENS, "low");
+  const probable = estimateCallMicro(r.provider, r.model, input, 2500);
+  return max == null || probable == null ? null : { maxMicro: max, probableMicro: probable };
+}
+
+/**
+ * Correction d'un texte par le client (mockup.copy_edit, gratuite) reportée sur les pages déjà construites : le texte
+ * exact est remplacé dans le fichier, sans IA. Renvoie les pages changées.
+ */
+export function patchCodeText(projectId: string, direction: string, pageKey: string, find: string, replace: string): boolean {
+  const code = loadDirectionCode(projectId, direction);
+  const cur = code.pages[pageKey];
+  const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  if (!cur) return false;
+  const variants = [find, esc(find), find.replace(/'/g, "’"), esc(find).replace(/'/g, "’")].filter((v, i, a) => a.indexOf(v) === i);
+  let html = cur.html, n = 0;
+  for (const v of variants) if (html.includes(v)) { n += html.split(v).length - 1; html = html.split(v).join(v === find || v === find.replace(/'/g, "’") ? replace : esc(replace)); }
+  if (!n) return false;
+  saveDirectionCode(projectId, direction, { ...code, pages: { ...code.pages, [pageKey]: { html, previous: cur.html, at: Date.now() } } });
+  return true;
 }
