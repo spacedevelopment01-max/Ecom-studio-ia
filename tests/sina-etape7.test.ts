@@ -1016,4 +1016,12 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     expect(out.settings.type_heading_font).toBe("cormorant_garamond_n5");
     expect(spec.settings.type_heading_font).toBe("x"); // le thème de départ n'est pas modifié
   });
+
+  it("allégations : la livraison offerte écrite par le client est permise (essai réel : « Tes questions » refusé)", async () => {
+    const { lintClaims } = await import("@/lib/ai/tasks");
+    const p: any = { business: "products", product: { facts: [], questions: [], price: { amount: 8.5, status: "confirmed" } }, catalog: [], settings: { company: { shipping: "Colissimo en 48 à 72 h, 4,90 €. Offerte dès 35 € d'achat." } } };
+    const text = { a: "La livraison offerte dès 35 € d'achat." };
+    expect(lintClaims(text, p).map((x) => x.term.toLowerCase())).not.toContain("livraison offerte");
+    expect(lintClaims(text, { ...p, settings: {} }).map((x) => x.term.toLowerCase())).toContain("livraison offerte");
+  });
 });

@@ -90,7 +90,7 @@ export function sectionBrief(page: MockupPage, s: PlannedSection, plan: PlannedS
     : `Page « ${page.fr} » du site. Elle n'a PAS d'image de maquette à elle : code-la dans le style exact des pages déjà codées d'après la maquette (mêmes variables et classes du thème, mêmes couleurs, polices, boutons, cartes, champs, espacements et détails graphiques), avec la structure d'une vraie boutique pour cette page. N'invente aucun texte : seulement ceux donnés ci-dessous, sinon « [À compléter : …] ».`;
   // Essai réel du 8 novembre : en-tête codé sans logo (réglage image vide, nom absent).
   const logo = s.role === "header" || s.role === "footer"
-    ? `\nLogo : celui du thème, toujours affiché : {%- if settings.logo_asset != blank -%}<img src="{{ settings.logo_asset | asset_url }}" alt="{{ shop.name | escape }}" width="{{ settings.logo_width }}" loading="eager">{%- else -%}{{ shop.name }}{%- endif -%} (jamais un réglage image vide à la place). Tous les liens du menu lus sur la maquette, aucun en moins.`
+    ? `\nLogo : celui du thème, toujours affiché : {%- if settings.logo_asset != blank -%}<img src="{{ settings.logo_asset | asset_url }}" alt="{{ shop.name | escape }}" width="{{ settings.logo_width }}" height="{{ settings.logo_width | divided_by: 3 | round }}" loading="eager">{%- else -%}{{ shop.name }}{%- endif -%} (jamais un réglage image vide à la place). Tous les liens du menu lus sur la maquette, aucun en moins.`
     : "";
   return `${head}${logo}
 Sections de la page, dans l'ordre :
@@ -125,7 +125,7 @@ export function missingTexts(s: Pick<PlannedSection, "texts">, out: unknown): st
 }
 
 /** Écrit (ou réécrit) les sections sur mesure du plan ; les sections fonctionnelles de la bibliothèque sont ajoutées si besoin. */
-async function writePlan(b: Base, p: Project, i: { spec: ThemeSpec; page: MockupPage; template: string; plan: PlannedSection[]; mockup: Buffer | null }, fix?: string[]): Promise<WriteResult> {
+async function writePlan(b: Base, p: Project, i: { spec: ThemeSpec; page: MockupPage; template: string; plan: PlannedSection[]; mockup: Buffer | null; tag?: string }, fix?: string[]): Promise<WriteResult> {
   const res: WriteResult = { ops: [], written: [], library: [], failed: [], order: [] };
   const image: LlmImage[] = i.mockup ? [{ data: await forAi(i.mockup), label: `maquette — ${i.page.fr}` }] : [];
   // Correction : seulement les sections citées dans les écarts (sinon toutes les sections sur mesure de la page).
@@ -151,7 +151,7 @@ async function writePlan(b: Base, p: Project, i: { spec: ThemeSpec; page: Mockup
     try {
       for (let attempt = 0; attempt <= SECTION_CORRECTIONS; attempt++) {
         const candidate = await llmJson({
-          task: "theme_custom", userId: b.userId, projectId: b.projectId, jobId: b.jobId, usageKey: `${b.usageKey}:${type}:${fix ? "fix" : "w"}${attempt}`,
+          task: "theme_custom", userId: b.userId, projectId: b.projectId, jobId: b.jobId, usageKey: `${b.usageKey}:${type}:${fix ? "fix" : `${i.tag ?? ""}w`}${attempt}`,
           system: systemPrompt(), context: brainContext(p, "theme"), reference: sectionGuide(i.spec), images: image,
           prompt: sectionBrief(i.page, s, i.plan, issues.length ? issues : undefined, !!i.mockup) + (previous && attempt ? `\n\nVersion précédente :\n<section_precedente>\n${previous.slice(0, 40000)}\n</section_precedente>` : ""),
           maxTokens: STEP7_CALLS.write.output, routing: { difficulty: "complex" },

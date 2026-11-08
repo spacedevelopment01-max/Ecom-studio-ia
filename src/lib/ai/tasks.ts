@@ -389,6 +389,9 @@ export function lintClaims(content: unknown, p: Project): { path: string; term: 
     .concat(p.product.questions.filter((q) => q.answer).map((q) => q.answer!))
     // Entreprise de services : prestations, tarifs, durées, zone et horaires saisis par le client.
     .concat(p.business === "services" ? [...(p.services?.services ?? []).map((x) => `${x.name} ${x.description ?? ""} ${x.price ?? ""} ${x.duration ?? ""}`), p.services?.area ?? "", p.services?.hours ?? "", p.services?.address ?? ""] : [])
+    // Livraison et retours donnés par le client (essai réel du 8 novembre : « livraison offerte » refusé alors que le
+    // client avait écrit « offerte dès 35 € d'achat »).
+    .concat(((c) => [c?.shipping ?? "", c?.returns ?? "", /offert|gratuit/i.test(c?.shipping ?? "") ? "livraison offerte livraison gratuite frais de port offerts" : ""])((p.settings as { company?: { shipping?: string; returns?: string } } | undefined)?.company))
     .join(" ")
     .toLowerCase();
   const issues: { path: string; term: string; label: string }[] = [];
