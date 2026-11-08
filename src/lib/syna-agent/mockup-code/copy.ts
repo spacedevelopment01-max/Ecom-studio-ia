@@ -63,6 +63,8 @@ Réponds selon le schéma JSON demandé.`;
  * produits et questions sans contenu). Reconnu aux mots de la section de l'inventaire.
  */
 export const SECTION_NEEDS: { match: RegExp; need: string; minItems?: number }[] = [
+  // Fiche produit (essai réel du 8 novembre : l'accroche du site en grand titre, le nom du produit relégué plus bas).
+  { match: /galerie/, need: "title = le nom exact du produit (le grand titre de la fiche, pour le référencement) ; items = 3 ou 4 légendes de photos courtes" },
   { match: /en-tête/, need: "items = 3 à 5 liens courts du menu (title seul) ; button = l'appel à l'action" },
   { match: /ouverture|promesse/, need: "title = l'accroche mot pour mot ; text = le slogan mot pour mot ; button = l'appel à l'action mot pour mot" },
   { match: /produit|offre|prestations/, need: "title et text courts ; items = CHAQUE produit ou prestation (title = son nom exact, text = son prix exact puis sa composition en quelques mots)", minItems: 1 },

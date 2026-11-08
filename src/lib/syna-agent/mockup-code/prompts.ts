@@ -104,7 +104,11 @@ export function mockupImagePrompt(f: MockupFacts, d: Pick<MockupDirection, "name
     `Planche de maquette de site web (design d'interface professionnel de 2026, rendu net et lisible), format portrait, vue de face, à plat, sans perspective, sans écran ni appareil autour. Direction graphique « ${d.name} » : ${withoutTechnicalWords(d.style, f).replace(/[.\s]+$/, "")}.`,
     desktop
       ? n === 1 ? `Une seule page en version ordinateur (${w} px de large), montrée entière, de l'en-tête au pied de page, en une longue colonne centrée.` : `${n} pages en version ordinateur (${w} px de large), posées côte à côte en colonnes de même largeur, chacune entière de l'en-tête au pied de page.`
-      : `${n} écran${n > 1 ? "s" : ""} de téléphone (${w} px de large) posé${n > 1 ? "s côte à côte" : ""}, chacun montrant la page entière en longueur, composée pour le téléphone (titres et coupes de lignes propres au téléphone, menu replié en icône).`,
+      // Téléphone (essai réel du 8 novembre : la page d'ordinateur rétrécie dans un cadre de téléphone) : une page
+      // longue est montrée en tronçons côte à côte, chacun de la largeur d'un téléphone, vraiment composée pour lui.
+      : n === 1
+        ? `Une seule page en version téléphone (${w} px de large), sans cadre d'appareil : la page étant longue, elle est montrée découpée en 3 tronçons de même largeur posés côte à côte, lus de gauche à droite (haut de page, milieu, bas de page avec le pied de page). Mise en page VRAIMENT pour téléphone : une seule colonne, tout empilé verticalement, menu replié en une icône à trois traits (aucun lien de menu visible en haut), cartes l'une sous l'autre ou par deux au plus, boutons sur toute la largeur, textes d'au moins 16 px.`
+        : `${n} pages en version téléphone (${w} px de large), sans cadre d'appareil, posées côte à côte en colonnes étroites, chacune montrant le haut de sa page. Mise en page VRAIMENT pour téléphone : une seule colonne, tout empilé, menu replié en une icône à trois traits, boutons sur toute la largeur, textes d'au moins 16 px.`,
     // 2) surface et fond
     "Autour des pages : un fond uni gris très clair et neutre, sans texture ni ombre portée marquée.",
     // 3) chaque page à sa place

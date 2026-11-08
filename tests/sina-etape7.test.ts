@@ -127,6 +127,11 @@ describe("SINA — étape 6 : consignes des images de maquette", async () => {
     const phone = mockupImagePrompt(facts, { name: "Lumière", style: "x" }, { viewport: "phone", pages: ["home", "product"] }, pages);
     expect(phone).toContain("390 px");
     expect(phone).toContain("menu replié");
+    // Une seule page en téléphone : vraie mise en page de téléphone, en tronçons, sans cadre d'appareil (essai réel).
+    const onePhone = mockupImagePrompt(facts, { name: "Lumière", style: "x" }, { viewport: "phone", pages: ["home"] }, pages);
+    expect(onePhone).toContain("découpée en 3 tronçons de même largeur");
+    expect(onePhone).toContain("sans cadre d'appareil");
+    expect(onePhone).toContain("une seule colonne");
     expect(colourRoles({ ...brand, ground: "sombre" })).toContain("fond des pages le sombre #1F1A14 ; textes ET titres #F5EEDC");
   });
 
