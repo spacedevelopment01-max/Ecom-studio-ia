@@ -22,11 +22,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { callCostBoundMicro, estimateCallMicro, jsonCallMaxMicro, llmJson, llmText, routeLlm } from "../../ai/llm";
 import { withTrace } from "../../ai/trace";
+import { listProducts } from "../../products/catalog";
 import { copyLines, type PageCopy } from "./copy";
 import type { MockupDirection } from "./mockup-set";
 import type { MockupPage, Viewport } from "./pages";
 import {
-  applyEdits, CODE_MOCKUP_SYSTEM as CODE_SYSTEM_TEXT, codeMockupPrompt, duplicatePhotos, photoUses, continuationPrompt, expectedTexts, fontOf, fontsCss, inspectCodeMockup, isComplete, joinContinuation,
+  applyEdits, autoTagProducts, CODE_MOCKUP_SYSTEM as CODE_SYSTEM_TEXT, codeMockupPrompt, duplicatePhotos, photoUses, continuationPrompt, expectedTexts, fontOf, fontsCss, inspectCodeMockup, isComplete, joinContinuation,
   parseCodeMockup, resolvePhotos, shellOf, splitBaseCss, stripFences, type CodeEdit, type CodePhoto, type InspectResult, type LibraryPhoto, type MockupFiles,
 } from "./code-mockup";
 
@@ -56,6 +57,11 @@ export type DirectionCode = {
   pending?: Record<string, CodePhoto[]>;
 };
 export const codeKey = (direction: string) => `syna.mockup_code.${direction}`;
+
+/** Noms des produits de l'onglet Produits (étiquetage des photos de cartes). */
+export function productNames(projectId: string): string[] {
+  try { return listProducts(projectId).map((x) => x.data.title).filter(Boolean); } catch { return []; }
+}
 
 /**
  * Feuille commune d'une page : celle de l'accueil pour l'accueil, sinon celle avec laquelle la page a été construite
@@ -272,7 +278,7 @@ export async function buildCodePage(p: Project, d: Pick<MockupDirection, "key" |
     } catch (e) { res.failed.push(`photo ${ph.id} non créée : ${(e as Error).message.slice(0, 160)}`); }
   }
   const pending = parsed.newPhotos.filter((ph) => !ids[ph.id]);
-  let full = resolvePhotos(parsed.html, ids);
+  let full = autoTagProducts(resolvePhotos(parsed.html, ids), productNames(p.id));
   // 3) Captures et contrôle gratuits ; 4) une correction ciblée au plus.
   const expect = { texts: expectedTexts(copy), allowed: [brand.name] };
   const base = page.key === "home" ? null : code.base;
@@ -337,7 +343,7 @@ export async function completeCodePhotos(p: Project, direction: string, page: Mo
     } catch (e) { res.failed.push(`photo ${ph.id} non créée : ${(e as Error).message.slice(0, 160)}`); }
   }
   const source = pageSource(p.id, direction, page.key)!;
-  let full = resolvePhotos(source, ids);
+  let full = autoTagProducts(resolvePhotos(source, ids), productNames(p.id));
   const expect = { texts: expectedTexts(copy), allowed: [p.brand?.name ?? p.name] };
   const base = page.key === "home" ? null : baseFor(code, page.key);
   let r = await deps.inspect(mockupFiles(p, full, base), expect);
@@ -371,8 +377,9 @@ export async function retouchCodePage(p: Project, direction: string, page: Mocku
   if (!cur) return { ok: false, failed: ["page pas encore construite"], shots: null, problems: [], toVerify: [] };
   // L'accueil garde sa feuille commune à part : la retouche porte sur le fichier ET sur base.css réunis.
   const joined = page.key === "home" && code.base ? cur.html.replace('<link rel="stylesheet" href="base.css">', `<style id="base">\n${code.base}\n</style>`) : cur.html;
-  const applied = applyEdits(joined, edits);
-  if (applied.failed.length) return { ok: false, failed: applied.failed, shots: null, problems: [], toVerify: [] };
+  const applied0 = applyEdits(joined, edits);
+  if (applied0.failed.length) return { ok: false, failed: applied0.failed, shots: null, problems: [], toVerify: [] };
+  const applied = { ...applied0, html: autoTagProducts(applied0.html, productNames(p.id)) };
   const base = page.key === "home" ? null : baseFor(code, page.key);
   const r0 = await inspect(mockupFiles(p, applied.html, base), { texts: expectedTexts(copy), allowed: [p.brand?.name ?? p.name] });
   const r = { ...r0, problems: [...r0.problems, ...duplicatePhotos(applied.html, otherPages(p.id, direction, page.key))] };
@@ -395,7 +402,21 @@ export function pageSource(projectId: string, direction: string, pageKey: string
 }
 
 /** Consigne de retouche d'une page en code : seuls les détails demandés changent, par remplacements exacts. */
-export function editCodePrompt(source: string, changes: { zone: string; change: string }[], lines: string[]): string {
+/**
+ * Photos utilisables par une retouche de la page : libres (jamais montrées ailleurs dans la maquette, ni déjà sur la
+ * page) et photos de produit (seulement sur la carte de ce produit).
+ */
+export function photoChoices(p: Project, direction: string, pageKey: string, html: string): string[] {
+  const others = otherPages(p.id, direction, pageKey), elsewhere = photosElsewhere(others);
+  const here = new Set(photoUses(html).map((u) => u.id));
+  const free = photoLibrary(p.id).filter((x) => !here.has(x.id) && !elsewhere.used.some((u) => u.id === x.id) && !elsewhere.products.some((u) => u.id === x.id));
+  return [
+    ...free.map((x) => `- ${x.id} : ${x.description}`),
+    ...elsewhere.products.filter((x) => !here.has(x.id)).map((x) => `- ${x.id} : photo du produit « ${x.product} », seulement sur la carte de ce produit (data-product="${x.product}")`),
+  ];
+}
+
+export function editCodePrompt(source: string, changes: { zone: string; change: string }[], lines: string[], photos: string[] = []): string {
   return `Voici le fichier HTML d'une page de maquette déjà validée dans son ensemble par le client.
 <fichier>
 ${source}
@@ -404,7 +425,7 @@ Le client demande SEULEMENT ces retouches :
 ${changes.map((c, i) => `${i + 1}. Où : ${c.zone}. Quoi : ${c.change}`).join("\n")}
 Textes de la page (seuls textes permis, mot pour mot ; un texte nouveau demandé par le client est permis) :
 ${lines.join("\n")}
-Fais UNIQUEMENT ces retouches, sans rien changer d'autre (consigne du client : « modifier que les détails demandés »), par des remplacements exacts : find = un passage copié EXACTEMENT du fichier, assez long pour n'y figurer qu'une fois ; replace = le passage retouché. Garde les règles du téléphone (en-tête avec le logo et l'icône du menu seulement, jamais trois éléments côte à côte) et aucun débordement.`;
+${photos.length ? `Photos utilisables (data-photo="ID" src="photos/ID.jpg" ; jamais une photo deux fois) :\n${photos.join("\n")}\n` : ""}Fais UNIQUEMENT ces retouches, sans rien changer d'autre (consigne du client : « modifier que les détails demandés »), par des remplacements exacts : find = un passage copié EXACTEMENT du fichier, assez long pour n'y figurer qu'une fois ; replace = le passage retouché. Garde les règles du téléphone (en-tête avec le logo et l'icône du menu seulement, jamais trois éléments côte à côte) et aucun débordement.`;
 }
 
 /** Devis d'une retouche de page en code (un appel, réflexion légère). */

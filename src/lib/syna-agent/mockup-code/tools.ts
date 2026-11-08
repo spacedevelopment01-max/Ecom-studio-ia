@@ -34,7 +34,7 @@ import { project } from "../tools/common";
 import { step7CallMaxMicro, step7CallTypicalMicro } from "./deps";
 import { MOCKUP_CODE_JOB, STEP7_REPORT_KEY } from "./job";
 import { attachImage, coverageOf, loadMockupSet, plannedCodeDirection, plannedDirection, replanDirection, saveMockupSet, type MockupSet } from "./mockup-set";
-import { baseFor, buildCodePage, codeBuildEstimate, completeCodePhotos, codeCallCosts, staleStylePages, codeEditEstimate, editCodePrompt, loadDirectionCode, mockupFiles, pageSource, patchCodeText, photoLibrary, realBuildDeps, rejectPhotos, repairPhotoBands, retouchCodePage, type BuildDeps } from "./code-build";
+import { baseFor, photoChoices, buildCodePage, codeBuildEstimate, completeCodePhotos, codeCallCosts, staleStylePages, codeEditEstimate, editCodePrompt, loadDirectionCode, mockupFiles, pageSource, patchCodeText, photoLibrary, realBuildDeps, rejectPhotos, repairPhotoBands, retouchCodePage, type BuildDeps } from "./code-build";
 import { expectedTexts, inspectCodeMockup } from "./code-mockup";
 import { chromiumPath } from "../../theme/snapshot";
 import { copyLines } from "./copy";
@@ -561,7 +561,7 @@ async function runCodeEdit(ctx: ToolContext, a: EditArgs, pageKey: string) {
   const deps = codeBuildDeps.deps ?? realBuildDeps({ userId: ctx.user.id, projectId: p.id, jobId, capMicro: () => cap, spentMicro: () => (jobId ? jobSpentMicro(jobId) : 0) }, async () => { throw new Error("aucune photo nouvelle dans une retouche"); });
   const spent = () => budgetPctText(ctx.user.id, all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key LIKE ?", p.id, `${usageKey}%`)[0]?.c ?? 0, p.id).replace(/de votre budget/, "de ton budget");
   let edits;
-  try { edits = await deps.fixEdits(editCodePrompt(src, a.changes, copyLines(copy)), usageKey); } catch (e) { return { ok: false, summary: L(`Retouche impossible, rien n'a changé : ${(e as Error).message.slice(0, 160)}. Coût réel : ${spent()}.`, "Edit failed.") }; }
+  try { edits = await deps.fixEdits(editCodePrompt(src, a.changes, copyLines(copy), photoChoices(p, a.direction, pageKey, src)), usageKey); } catch (e) { return { ok: false, summary: L(`Retouche impossible, rien n'a changé : ${(e as Error).message.slice(0, 160)}. Coût réel : ${spent()}.`, "Edit failed.") }; }
   const before = d.images.filter((i) => i.pages.includes(pageKey)).flatMap((i) => i.check?.problems ?? []).length;
   const r = await retouchCodePage(p, a.direction, page, copy, edits, deps.inspect, (problems) => problems.length <= before);
   if (r.failed.length) return { ok: false, summary: L(`Retouche non appliquée, la page reste comme avant (${r.failed[0]}). Coût réel : ${spent()}.`, "Edit not applied."), hint: "Dis-le au client honnêtement ; ne relance rien sans son accord écrit." };

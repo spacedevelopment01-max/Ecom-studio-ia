@@ -99,6 +99,14 @@ describe("SINA — maquettes en code : fichier, photos, retouches", async () => 
     expect(C.duplicatePhotos(`<img data-photo="b" data-product="Rooibos">`, [{ page: "home", html: home }])).toEqual(["photo déjà montrée sur la page « home » : b"]);
   });
 
+  it("photos de cartes produit étiquetées toutes seules (nom exact du produit en titre de la carte)", () => {
+    const html = `<div class="card"><img data-photo="a" src="photos/a.jpg"><h3>Rooibos vanille</h3><p>8,50 €</p></div>
+<div class="scene"><img data-photo="b" src="photos/b.jpg"><p>Un thé noir aux agrumes, avant d'ouvrir ta boîte mail.</p></div>
+<div class="card"><img data-photo="c" data-product="Hibiscus-fruits rouges"><h3>Hibiscus-fruits rouges</h3></div>`;
+    const out = C.autoTagProducts(html, ["Rooibos vanille", "Thé noir aux agrumes", "Hibiscus-fruits rouges"]);
+    expect(C.photoUses(out)).toEqual([{ id: "a", product: "Rooibos vanille" }, { id: "b", product: null }, { id: "c", product: "Hibiscus-fruits rouges" }]);
+  });
+
   it("textes attendus : titres, textes, boutons et éléments de toutes les parties", () => {
     const t = C.expectedTexts({ seo: { title: "x", description: "y" }, sections: [{ section: "a", title: "T", text: null, button: "B", items: [{ title: "I", text: "J" }] }] });
     expect(t).toEqual(["T", "B", "I", "J"]);

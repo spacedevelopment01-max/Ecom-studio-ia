@@ -103,7 +103,7 @@ export function codeMockupPrompt(i: CodeMockupInput): string {
     "PHOTOS :",
     `Photos disponibles (à utiliser en priorité, par leur identifiant) :\n${photoList}`,
     productList ? `Photos de produit (déjà sur les cartes de produit d'une autre page) :\n${productList}` : "",
-    "JAMAIS UNE PHOTO EN DOUBLE (consigne du propriétaire) : chaque photo apparaît UNE seule fois dans la page et n'est jamais une photo déjà montrée par une autre page du site. Seule exception : la photo d'un produit sur la carte ou la fiche de CE produit (attribut data-product=\"Nom du produit\" sur l'image), jamais deux fois dans la même page. Un bandeau ou un carrousel décoratif n'est pas une carte de produit : il prend d'autres photos. Jamais de bandeau de photos qui défile en boucle (il répète les photos) : le bandeau défilant ne porte que du texte (le slogan).",
+    "JAMAIS UNE PHOTO EN DOUBLE (consigne du propriétaire) : chaque photo apparaît UNE seule fois dans la page et n'est jamais une photo déjà montrée par une autre page du site. Seule exception : la photo d'un produit sur la carte ou la fiche de CE produit (attribut data-product=\"Nom du produit\" sur l'image), jamais deux fois dans la même page. CHAQUE photo d'une carte de produit porte data-product avec le nom exact du produit. Un bandeau ou un carrousel décoratif n'est pas une carte de produit : il prend d'autres photos. Jamais de bandeau de photos qui défile en boucle (il répète les photos) : le bandeau défilant ne porte que du texte (le slogan).",
     i.maxNew > 0
       ? `Si une photo manque vraiment, demande-la : identifiant nouvelle-1, nouvelle-2… (${i.maxNew} au plus), déclarée à la fin du <body> dans <script type="application/json" id="photos-nouvelles">[{"id":"nouvelle-1","ratio":"4:3","background":null,"product":false,"packaging":false,"description":"…"}]</script>. La description d'une photo nouvelle décrit UNE photo en phrases complètes, dans cet ordre : 1) type de photo, point de vue, cadrage ; 2) surface et fond ; 3) chaque objet dans sa phrase : place exacte, forme, matière, couleur, état, et ce qu'il ne contient pas ; 4) « La scène contient exactement N objets : … » ; 5) ce qui est coupé par le cadre ou laissé dégagé ; 6) lumière, ombres, mise au point, ambiance. Jamais de personne, de main, de texte ni de logo dans une photo ; product: true si le vrai produit du client y figure, packaging: true si c'est son emballage. background : la couleur exacte du fond de la section quand la photo doit s'y fondre (sinon null).`
       : "Aucune photo nouvelle : utilise seulement les photos disponibles.",
@@ -464,4 +464,29 @@ export function duplicatePhotos(html: string, others: { page: string; html: stri
     }
   }
   return [...new Set(problems)];
+}
+
+const normName = (t: string) => t.replace(/[\u2019\u2018]/g, "'").replace(/\s+/g, " ").trim().toLowerCase();
+
+/**
+ * Étiquette les photos de cartes de produit oubliées (essai réel du 8 novembre : 4 cartes sur 6 sans data-product, leurs
+ * photos interdites ensuite sur la fiche produit, remplacées par des icônes). Une photo est celle d'un produit quand,
+ * avant l'image suivante, un élément porte EXACTEMENT le nom de ce produit (titre de la carte) et aucun autre.
+ */
+export function autoTagProducts(html: string, names: string[]): string {
+  if (!names.length) return html;
+  const wanted = new Map(names.map((n) => [normName(n), n]));
+  const tags = [...html.matchAll(/<img\b[^>]*>/gi)];
+  let out = "", last = 0;
+  tags.forEach((m, i) => {
+    const tag = m[0], start = m.index!, end = start + tag.length;
+    out += html.slice(last, start);
+    last = end;
+    if (!/data-photo=/.test(tag) || /data-product=/.test(tag)) { out += tag; return; }
+    const until = i + 1 < tags.length ? tags[i + 1].index! : html.length;
+    const after = html.slice(end, Math.min(until, end + 1500));
+    const found = new Set([...after.matchAll(/>([^<>]{2,80})</g)].map((x) => wanted.get(normName(x[1]))).filter((x): x is string => !!x));
+    out += found.size === 1 ? tag.replace(/<img\b/i, `<img data-product="${[...found][0].replace(/"/g, "&quot;")}"`) : tag;
+  });
+  return out + html.slice(last);
 }
