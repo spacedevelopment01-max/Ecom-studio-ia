@@ -15,6 +15,8 @@ import { loadMockupSet } from "./mockup-set";
 import { runStep7, type Step7Deps, type Step7Report } from "./pipeline";
 
 import { loadSiteCopy } from "./copy";
+import { getJsonSetting } from "../../settings";
+import type { DirectionId } from "../../theme/directions";
 export const MOCKUP_CODE_JOB = "syna.mockup.code";
 export const STEP7_REPORT_KEY = "syna.step7.report";
 
@@ -26,12 +28,20 @@ export const mockupCodeJobDeps: {
   callMaxMicro?: typeof step7CallMaxMicro;
 } = {};
 
-/** Thème de départ : le site courant, sinon le site natif préparé gratuitement (pages, produits, menus, sans IA). */
+/**
+ * Thème de départ : le site courant, sinon le site natif préparé gratuitement (pages, produits, menus, sans IA). Un
+ * projet parti d'une maquette n'a pas de thème (essai réel du 8 novembre : « choisissez un thème de la galerie avant de
+ * composer ce projet ») : le squelette est pris dans le thème de la galerie qui met le mieux en scène son offre
+ * (réglage « syna.step7.base_direction » pour l'imposer) ; seule sa structure sert, le design vient de la maquette.
+ */
 async function baseVersionId(projectId: string): Promise<string> {
   const cur = currentTheme(projectId);
   if (cur) return cur.version.id;
   const { buildShop } = await import("../../engine/shop");
-  const r = await buildShop(null, projectId, { useAi: false, prepareOnly: true });
+  const { themeChoices } = await import("../themes");
+  const forced = getJsonSetting<string>("syna.step7.base_direction", "");
+  const direction = (forced || themeChoices(projectId).list[0]?.id || undefined) as DirectionId | undefined;
+  const r = await buildShop(null, projectId, { useAi: false, prepareOnly: true, ...(direction ? { direction } : {}) });
   return r.versionId;
 }
 
