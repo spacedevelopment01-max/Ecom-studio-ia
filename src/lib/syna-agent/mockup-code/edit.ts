@@ -259,6 +259,17 @@ export async function removeBand(image: Buffer, b: Box): Promise<Buffer | null> 
   let left = b.left, right = b.right;
   while (left > 0 && !isPage(left - 1)) left--;
   while (right < W && !isPage(right)) right++;
+  // Restes de l'élément juste au-dessus ou au-dessous de la zone repérée (essai réel : le bas du bouton laissé en
+  // filet doré sous le logo) : la zone s'étend de 12 lignes au plus tant que la ligne contient autre chose que le fond.
+  const rowBusy = (y: number) => {
+    const bg = px(left, y);
+    let n = 0;
+    for (let x = b.left; x < b.right; x++) if (!same(px(x, y), bg)) n++;
+    return n > Math.max(4, (b.right - b.left) * 0.02);
+  };
+  b = { ...b };
+  for (let k = 0; k < 12 && b.bottom < H && rowBusy(b.bottom); k++) b.bottom++;
+  for (let k = 0; k < 12 && b.top > 0 && rowBusy(b.top - 1); k++) b.top--;
   // Hors de la zone, sur ces lignes, la colonne ne doit contenir que du fond uni (celui des pixels juste au-dessus).
   // (bords de colonne adoucis tolérés : 4 pixels ou 6 % de pixels écartés de la couleur médiane de la ligne).
   for (let y = b.top; y < b.bottom; y++) {

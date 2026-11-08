@@ -879,6 +879,11 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     expect(px(50, 55)).toEqual([255, 255, 255]); // bandeau retiré
     expect(px(50, 70)).toEqual([0, 0, 0]); // titre remonté de 14 px
     expect(px(5, 125)).toEqual([201, 160, 78]); // l'autre colonne ne bouge pas
+    // Zone repérée trop courte (essai réel : bas du bouton laissé en filet) : les restes collés à la zone partent aussi.
+    const short = await removeBand(img, { left: 28, right: 72, top: 48, bottom: 57 });
+    const r2 = await sharp(short!).raw().toBuffer({ resolveWithObject: true });
+    expect(Array.from(r2.data.subarray((50 * 100 + 50) * 3, (50 * 100 + 50) * 3 + 3))).toEqual([255, 255, 255]);
+    expect(Array.from(r2.data.subarray((70 * 100 + 50) * 3, (70 * 100 + 50) * 3 + 3))).toEqual([0, 0, 0]);
     // Autre contenu sur les mêmes lignes de la colonne : refusé (rien ne doit disparaître en plus).
     const busy = await mk([{ c: "#FFFFFF", x: 20, y: 10, w: 60, h: 180 }, { c: "#2F6B4E", x: 30, y: 50, w: 20, h: 10 }, { c: "#000000", x: 60, y: 50, w: 10, h: 10 }]);
     expect(await removeBand(busy, { left: 28, right: 52, top: 48, bottom: 62 })).toBeNull();
