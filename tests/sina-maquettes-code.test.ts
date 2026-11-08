@@ -274,6 +274,33 @@ ${photo.startsWith("nouvelle") ? `<script type="application/json" id="photos-nou
     } finally { codeBuildDeps.deps = undefined; codeBuildDeps.photoUnit = undefined; }
   });
 
+  it("photos à bandes blanches : repérées, recadrées sans IA, l'ancienne écartée, les pages reprises", async () => {
+    const { pid, ctx } = await ready();
+    const { saveAsset } = await import("@/lib/library");
+    const { trimPhotoBands, photoBands } = await import("@/lib/syna-agent/mockup-code/code-build");
+    // Photo 300×200 : bandes blanches de 40 px en haut et en bas autour d'un fond vert d'eau avec un objet sombre.
+    const inner = await sharp({ create: { width: 300, height: 120, channels: 3, background: "#E3EDDF" } }).composite([{ input: await png("#233A2E", 60, 60), left: 120, top: 30 }]).png().toBuffer();
+    const banded = await sharp({ create: { width: 300, height: 200, channels: 3, background: "#FFFFFF" } }).composite([{ input: inner, left: 0, top: 40 }]).png().toBuffer();
+    expect(await photoBands(banded)).toMatchObject({ top: 40, bottom: 40, left: 0, right: 0 });
+    const t = await sharp(await trimPhotoBands(banded)).metadata();
+    expect([t.width, t.height]).toEqual([300, 116]);
+    // Fond clair teinté (packshot) ou objet sur fond blanc : jamais recadré.
+    const packshot = await sharp({ create: { width: 200, height: 200, channels: 3, background: "#FFFFFF" } }).composite([{ input: await png("#233A2E", 80, 80), left: 60, top: 60 }]).png().toBuffer();
+    expect(await photoBands(packshot)).toMatchObject({ top: 0, bottom: 0, left: 0, right: 0 });
+    expect(await trimPhotoBands(packshot)).toBe(packshot);
+    expect(await trimPhotoBands(inner)).toBe(inner);
+    const a = await saveAsset({ projectId: pid, userId: ctx.user.id, data: banded, name: "journal.png", mime: "image/png", role: "site", origin: "generated", meta: { synaSiteImage: { page: "home", type: "x", index: 0, description: "Tas de thé" } } } as any);
+    const { saveDirectionCode } = await import("@/lib/syna-agent/mockup-code/code-build");
+    saveDirectionCode(pid, "A", { base: null, shell: null, pages: { home: { html: `<img data-photo="${a.id}" src="photos/${a.id}.jpg">`, at: 1 } } });
+    const r = await call("mockup.photos_check", ctx, {});
+    expect(r.summary).toMatch(/1 photo\(s\) à bandes blanches recadrée\(s\)/);
+    const lib = photoLibrary(pid);
+    expect(lib.map((x) => x.id)).not.toContain(a.id);
+    expect(lib).toHaveLength(1);
+    expect(loadDirectionCode(pid, "A").pages.home.html).toContain(lib[0].id);
+    expect((await call("mockup.photos_check", ctx, {})).summary).toMatch(/Aucune photo à bandes blanches/);
+  });
+
   it("page coupée même après deux suites : rien n'est gardé, aucune photo créée", async () => {
     const { pid, ctx } = await ready();
     codeBuildDeps.photoUnit = () => 100_000;

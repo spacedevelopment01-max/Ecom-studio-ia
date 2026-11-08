@@ -34,7 +34,7 @@ import { project } from "../tools/common";
 import { step7CallMaxMicro, step7CallTypicalMicro } from "./deps";
 import { MOCKUP_CODE_JOB, STEP7_REPORT_KEY } from "./job";
 import { attachImage, coverageOf, loadMockupSet, plannedCodeDirection, plannedDirection, replanDirection, saveMockupSet, type MockupSet } from "./mockup-set";
-import { buildCodePage, codeBuildEstimate, completeCodePhotos, codeCallCosts, codeEditEstimate, editCodePrompt, loadDirectionCode, mockupFiles, pageSource, patchCodeText, photoLibrary, realBuildDeps, rejectPhotos, retouchCodePage, type BuildDeps } from "./code-build";
+import { buildCodePage, codeBuildEstimate, completeCodePhotos, codeCallCosts, codeEditEstimate, editCodePrompt, loadDirectionCode, mockupFiles, pageSource, patchCodeText, photoLibrary, realBuildDeps, rejectPhotos, repairPhotoBands, retouchCodePage, type BuildDeps } from "./code-build";
 import { expectedTexts, inspectCodeMockup } from "./code-mockup";
 import { chromiumPath } from "../../theme/snapshot";
 import { copyLines } from "./copy";
@@ -363,6 +363,37 @@ async function saveCodeShots(ctx: ToolContext, pid: string, direction: "A" | "B"
   return made;
 }
 
+/**
+ * Contrôle gratuit des photos (bandes blanches) et nouvelles captures des pages qui les montraient. Fait avant chaque
+ * construction et par l'outil mockup.photos_check.
+ */
+async function repairAndRecapture(ctx: ToolContext): Promise<{ replaced: number; pages: string[] }> {
+  const p = project(ctx);
+  const r = await repairPhotoBands(p);
+  const copy = loadSiteCopy(p.id);
+  const set = loadMockupSet(p.id);
+  const done: string[] = [];
+  for (const x of r.pages) {
+    const c = copy?.pages[x.page];
+    if (!c || !set?.directions.some((d) => d.key === x.direction && d.mode === "code")) continue;
+    const code = loadDirectionCode(p.id, x.direction);
+    const insp = await (codeBuildDeps.deps?.inspect ?? ((f, e) => inspectCodeMockup(f, e, chromiumPath())))(mockupFiles(p, code.pages[x.page].html, x.page === "home" ? code.base : code.base), { texts: expectedTexts(c), allowed: [p.brand?.name ?? p.name] });
+    await saveCodeShots(ctx, p.id, x.direction as "A" | "B" | "C", x.page, insp);
+    done.push(`${x.direction} › ${pageByKey(set.pages, x.page)?.fr ?? x.page}`);
+  }
+  return { replaced: Object.keys(r.replaced).length, pages: done };
+}
+
+const photosCheckTool: AgentTool<{}> = {
+  name: "mockup.photos_check", module: "site", kind: "write", needsProject: true,
+  description: "Étapes 6 et 7 (gratuit, sans IA) : contrôle les photos du site (bandes blanches sur les bords, « contours blancs ») ; une photo à bandes est remplacée par sa version recadrée (l'ancienne écartée), et les pages des maquettes en code qui la montraient sont reprises avec de nouvelles captures. Fait aussi tout seul avant chaque construction.",
+  args: z.object({}).strict(),
+  run: async (ctx) => {
+    const r = await repairAndRecapture(ctx);
+    return { ok: true, summary: r.replaced ? L(`${r.replaced} photo(s) à bandes blanches recadrée(s), sans IA ; page(s) reprise(s) : ${r.pages.join(", ") || "aucune"}.`, "Photos repaired.") : L("Aucune photo à bandes blanches.", "No photo to repair."), ...(r.pages.length ? { hint: "Les nouvelles captures te sont jointes : regarde-les et dis au client ce que tu vois vraiment." } : {}) };
+  },
+};
+
 async function runCodeBuild(ctx: ToolContext, a: GenArgs) {
   const p = project(ctx);
   const set = loadMockupSet(p.id)!;
@@ -371,6 +402,8 @@ async function runCodeBuild(ctx: ToolContext, a: GenArgs) {
   if (t.problem) return { ok: false, summary: t.problem };
   const refs = imageReferences(p);
   if (refs.problem) return { ok: false, summary: refs.problem };
+  // Photos à bandes blanches réparées d'abord (gratuit) : jamais reproposées telles quelles.
+  const repaired = await repairAndRecapture(ctx).catch(() => ({ replaced: 0, pages: [] as string[] }));
   const jobId = getRun(ctx.runId)?.job_id ?? null;
   const base = `syna:${ctx.runId}:code`;
   const name = p.brand?.name ?? p.name;
@@ -405,7 +438,7 @@ async function runCodeBuild(ctx: ToolContext, a: GenArgs) {
   const defects = report.some((x) => x.includes("RATÉE"));
   return {
     ok: made.length > 0 && !failed.length && !defects,
-    summary: L(`Maquette ${a.direction} en code : ${new Set(made.map((m) => m.page)).size} page(s) construite(s)${photos ? `, ${photos} photo(s) nouvelle(s) créée(s) (gardées pour les autres maquettes et le site)` : ", aucune photo nouvelle"}.${report.length ? ` ${report.join(". ")}.` : ""}${failed.length ? ` Problèmes : ${failed.join(" | ")}.` : ""} Coût réel : ${spentText}. ${cov.complete ? "La maquette couvre toutes les pages principales." : `Pages principales encore à construire : ${[...new Set(cov.missing.map((m) => m.label))].join(", ")}.`}`, "Code mockup built."),
+    summary: L(`${repaired.replaced ? `${repaired.replaced} photo(s) à bandes blanches recadrée(s) d'abord (gratuit). ` : ""}Maquette ${a.direction} en code : ${new Set(made.map((m) => m.page)).size} page(s) construite(s)${photos ? `, ${photos} photo(s) nouvelle(s) créée(s) (gardées pour les autres maquettes et le site)` : ", aucune photo nouvelle"}.${report.length ? ` ${report.join(". ")}.` : ""}${failed.length ? ` Problèmes : ${failed.join(" | ")}.` : ""} Coût réel : ${spentText}. ${cov.complete ? "La maquette couvre toutes les pages principales." : `Pages principales encore à construire : ${[...new Set(cov.missing.map((m) => m.label))].join(", ")}.`}`, "Code mockup built."),
     ...(made.length ? { hint: (defects ? "Le contrôle automatique a relevé des défauts : dis au client que la page est RATÉE sur ces points, cite chacun, propose la correction (mockup.edit, son accord d'abord) et ne relance RIEN sans son accord écrit. " : "") + "Les captures (ordinateur et téléphone) te sont JOINTES à ta prochaine étape : regarde-les avant de répondre et dis au client, honnêtement et en deux ou trois phrases, ce que tu vois vraiment (style, photos, lisibilité, téléphone). Une photo ratée (texte ou logo dans la photo, objet coupé) est dite ratée. Ne dis JAMAIS que tu ne peux pas voir le rendu." } : {}),
     data: { mockups: made.map((m, i) => ({ n: i + 1, direction: `${a.direction} · ${m.id}`, name: d.name, label: `${pageByKey(read.pages, m.page)?.fr ?? m.page} — ${m.viewport === "desktop" ? "ordinateur" : "téléphone"}`, assetId: m.assetId, href: m.href })), failed, complete: cov.complete },
     changes: made.map((m) => ({ module: "fichiers", object: `maquette ${a.direction} › ${m.page} (${m.viewport === "desktop" ? "ordinateur" : "téléphone"})`, summary: L("page construite en code, capture rangée", "page built in code"), after: { assetId: m.assetId }, verified: true })),
@@ -914,4 +947,4 @@ const photoRejectTool: AgentTool<{ assetIds: string[]; reason: string }> = {
   },
 };
 
-export const mockupCodeTools: AgentTool[] = [pagesTool, copyTool, copyEditTool, prepareTool, generateTool, editTool, attachTool, chooseTool, codeTool, reportTool, siteImagesTool, photoRejectTool];
+export const mockupCodeTools: AgentTool[] = [pagesTool, copyTool, copyEditTool, prepareTool, generateTool, editTool, attachTool, chooseTool, codeTool, reportTool, siteImagesTool, photoRejectTool, photosCheckTool];

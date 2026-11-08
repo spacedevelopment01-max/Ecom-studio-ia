@@ -11,6 +11,7 @@
  * Le code de chaque maquette vit dans la mémoire du projet (artefact `syna.mockup_code.<lettre>`) : feuille commune
  * (base.css, écrite avec l'accueil), en-tête et pied de page, et le fichier de chaque page (avec sa version précédente).
  */
+import sharp from "sharp";
 import { z } from "zod";
 import { all, run } from "../../db";
 import { remember, type Project } from "../../projects";
@@ -223,7 +224,7 @@ export async function buildCodePage(p: Project, d: Pick<MockupDirection, "key" |
   const ids: Record<string, string> = {};
   for (const ph of parsed.newPhotos) {
     try {
-      const data = await deps.makePhoto(ph, `${o.usageKey}:photo:${d.key}:${page.key}:${ph.id}`);
+      const data = await trimPhotoBands(await deps.makePhoto(ph, `${o.usageKey}:photo:${d.key}:${page.key}:${ph.id}`));
       const jpeg = data[0] === 0xff && data[1] === 0xd8;
       const meta: PhotoMeta = { page: page.key, direction: d.key, description: ph.description, ratio: ph.ratio, background: ph.background ?? null, product: ph.product, packaging: ph.packaging };
       const a = await saveAsset({ projectId: p.id, userId: p.userId, data, name: `photo-${page.key.replace(/[^a-z0-9]+/gi, "-")}-${ph.id}.${jpeg ? "jpg" : "png"}`, mime: jpeg ? "image/jpeg" : "image/png", role: "site", origin: "generated", meta: { synaPhoto: { ...meta, prompt: o.photoBrief(ph).prompt.slice(0, 4000) } } });
@@ -280,7 +281,7 @@ export async function completeCodePhotos(p: Project, direction: string, page: Mo
   const ids: Record<string, string> = {};
   for (const ph of todo) {
     try {
-      const data = await deps.makePhoto(ph, `${o.usageKey}:photo:${direction}:${page.key}:${ph.id}`);
+      const data = await trimPhotoBands(await deps.makePhoto(ph, `${o.usageKey}:photo:${direction}:${page.key}:${ph.id}`));
       const jpeg = data[0] === 0xff && data[1] === 0xd8;
       const a = await saveAsset({ projectId: p.id, userId: p.userId, data, name: `photo-${page.key.replace(/[^a-z0-9]+/gi, "-")}-${ph.id}.${jpeg ? "jpg" : "png"}`, mime: jpeg ? "image/jpeg" : "image/png", role: "site", origin: "generated", meta: { synaPhoto: { page: page.key, direction, description: ph.description, ratio: ph.ratio, background: ph.background ?? null, product: ph.product, packaging: ph.packaging, prompt: o.photoBrief(ph).prompt.slice(0, 4000) } } });
       ids[ph.id] = a.id;
@@ -400,4 +401,84 @@ export function rejectPhotos(projectId: string, ids: string[], reason: string): 
     done.push(id);
   }
   return done;
+}
+
+/**
+ * Bandes blanches unies sur les bords d'une photo (essai réel du 8 novembre : trois photos du journal avec 15 à 21 % de
+ * blanc en haut et en bas, « images mal cadrées avec des contours blancs »). Une rangée compte comme bande si 97 % de
+ * ses points sont presque blancs ; un fond clair teinté (vert d'eau, crème) n'est jamais pris pour une bande.
+ */
+export async function photoBands(data: Buffer): Promise<{ top: number; bottom: number; left: number; right: number; width: number; height: number }> {
+  const { data: px, info } = await sharp(data).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const W = info.width, H = info.height, C = info.channels;
+  const white = (x: number, y: number) => { const i = (y * W + x) * C; return px[i] >= 242 && px[i + 1] >= 242 && px[i + 2] >= 242; };
+  const row = (y: number) => { let n = 0; for (let x = 0; x < W; x++) if (white(x, y)) n++; return n / W >= 0.97; };
+  const col = (x: number) => { let n = 0; for (let y = 0; y < H; y++) if (white(x, y)) n++; return n / H >= 0.97; };
+  let top = 0, bottom = 0, left = 0, right = 0;
+  while (top < H / 2 && row(top)) top++;
+  while (bottom < H / 2 && row(H - 1 - bottom)) bottom++;
+  while (left < W / 2 && col(left)) left++;
+  while (right < W / 2 && col(W - 1 - right)) right++;
+  // Vraie bande seulement si elle s'arrête net sur un autre fond (photo collée dans un cadre blanc) ; un objet posé sur
+  // un fond blanc garde son fond (sinon la photo serait recadrée au ras de l'objet).
+  const share = (n: number, at: (k: number) => boolean) => { let w = 0; for (let k = 0; k < n; k++) if (at(k)) w++; return w / n; };
+  top = top && share(W, (x) => white(x, Math.min(H - 1, top + 3))) < 0.5 ? top : 0;
+  bottom = bottom && share(W, (x) => white(x, Math.max(0, H - 1 - bottom - 3))) < 0.5 ? bottom : 0;
+  left = left && share(H, (y) => white(Math.min(W - 1, left + 3), y)) < 0.5 ? left : 0;
+  right = right && share(H, (y) => white(Math.max(0, W - 1 - right - 3), y)) < 0.5 ? right : 0;
+  return { top, bottom, left, right, width: W, height: H };
+}
+
+/** Coupe les bandes blanches d'au moins 2 % (sans IA, gratuit) ; la photo reste telle quelle sinon. */
+export async function trimPhotoBands(data: Buffer): Promise<Buffer> {
+  try {
+    const b = await photoBands(data);
+    const min = (n: number, size: number) => n >= Math.max(4, size * 0.02);
+    if (![min(b.top, b.height), min(b.bottom, b.height), min(b.left, b.width), min(b.right, b.width)].some(Boolean)) return data;
+    const cut = (n: number, size: number) => (min(n, size) ? n + 2 : 0);
+    const top = cut(b.top, b.height), bottom = cut(b.bottom, b.height), left = cut(b.left, b.width), right = cut(b.right, b.width);
+    const width = b.width - left - right, height = b.height - top - bottom;
+    if (width < b.width * 0.4 || height < b.height * 0.3) return data; // presque tout blanc : rien à sauver
+    const jpeg = data[0] === 0xff && data[1] === 0xd8;
+    const out = sharp(data).extract({ left, top, width, height });
+    return jpeg ? out.jpeg({ quality: 92 }).toBuffer() : out.png().toBuffer();
+  } catch { return data; }
+}
+
+/**
+ * Contrôle gratuit des photos proposées : une photo à bandes blanches est remplacée par sa version recadrée (nouveau
+ * fichier, l'ancien écarté), et les pages des maquettes en code qui l'utilisaient la reprennent. Une photo déjà
+ * contrôlée n'est pas relue. Renvoie les remplacements faits (ancien → nouveau) et les pages changées.
+ */
+export async function repairPhotoBands(p: Project): Promise<{ replaced: Record<string, string>; pages: { direction: string; page: string }[] }> {
+  const replaced: Record<string, string> = {};
+  for (const ph of photoLibrary(p.id)) {
+    if (ph.real) continue;
+    const a = getAsset(ph.id);
+    if (!a) continue;
+    let meta: any = {};
+    try { meta = a.meta ? JSON.parse(a.meta) : {}; } catch { meta = {}; }
+    if (meta.bandsChecked) continue;
+    const data = assetData(a);
+    const trimmed = await trimPhotoBands(data);
+    if (trimmed === data) { run("UPDATE assets SET meta=? WHERE id=?", JSON.stringify({ ...meta, bandsChecked: true }), a.id); continue; }
+    const jpeg = trimmed[0] === 0xff && trimmed[1] === 0xd8;
+    const copy = await saveAsset({ projectId: p.id, userId: p.userId, data: trimmed, name: a.name.replace(/(\.[a-z0-9]+)?$/i, "-recadree$1").replace(/\.png$/i, jpeg ? ".jpg" : ".png"), mime: jpeg ? "image/jpeg" : "image/png", role: "site", origin: "generated", meta: { ...meta, bandsChecked: true, trimmedFrom: a.id } });
+    rejectPhotos(p.id, [a.id], "bandes blanches sur les bords (remplacée par sa version recadrée)");
+    replaced[a.id] = copy.id;
+  }
+  const pages: { direction: string; page: string }[] = [];
+  if (!Object.keys(replaced).length) return { replaced, pages };
+  for (const key of ["A", "B", "C"]) {
+    const code = loadDirectionCode(p.id, key);
+    let changed = false;
+    const next: DirectionCode = { ...code, pages: { ...code.pages } };
+    for (const [page, cur] of Object.entries(code.pages)) {
+      let html = cur.html;
+      for (const [from, to] of Object.entries(replaced)) html = html.split(from).join(to);
+      if (html !== cur.html) { next.pages[page] = { html, previous: cur.html, at: Date.now() }; pages.push({ direction: key, page }); changed = true; }
+    }
+    if (changed) saveDirectionCode(p.id, key, next);
+  }
+  return { replaced, pages };
 }
