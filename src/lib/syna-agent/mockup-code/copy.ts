@@ -22,14 +22,14 @@ export const COPY_MODEL = { provider: "anthropic" as const, model: "claude-opus-
 
 const line = (max: number) => z.string().min(1).max(max);
 export const PageCopySchema = z.object({
-  seo: z.object({ title: line(70), description: line(170) }),
+  seo: z.object({ title: line(120), description: line(260) }),
   sections: z.array(z.object({
     /** Section de la page, dans l'ordre de l'inventaire (« ouverture (titre, photo, bouton) »…). */
     section: line(80),
-    title: z.string().max(90).nullable(),
-    text: z.string().max(260).nullable(),
-    button: z.string().max(40).nullable(),
-    items: z.array(z.object({ title: line(70), text: z.string().max(160).nullable() })).max(8),
+    title: z.string().max(140).nullable(),
+    text: z.string().max(500).nullable(),
+    button: z.string().max(60).nullable(),
+    items: z.array(z.object({ title: line(140), text: z.string().max(300).nullable() })).max(10),
   })).min(1).max(14),
 });
 export type PageCopy = z.infer<typeof PageCopySchema>;
@@ -98,9 +98,26 @@ export function copyPrompt(page: MockupPage, input: { brand: { name: string; tag
   ].filter(Boolean).join("\n");
 }
 
-/** Écrit les textes d'une page (un appel, plafonné). `generate` : remplaçable par les tests. */
-export async function writePageCopy(call: Parameters<typeof llmJson>[0], generate?: (c: Parameters<typeof llmJson>[0]) => Promise<unknown>): Promise<PageCopy> {
-  return generate ? PageCopySchema.parse(await generate(call)) : llmJson(call, PageCopySchema);
+/**
+ * Réponse imposée au modèle (sortie structurée stricte) : UNE clé obligatoire par section de la page (essai réel du
+ * 8 novembre : 7 sections écrites sur 10 malgré la consigne, deux fois). Les longueurs sont dites dans la consigne et
+ * contrôlées après.
+ */
+const StrictSection = z.object({ title: z.string().nullable(), text: z.string().nullable(), button: z.string().nullable(), items: z.array(z.object({ title: z.string(), text: z.string().nullable() })) });
+export const strictPageSchema = (page: MockupPage) => z.object({
+  seo: z.object({ title: z.string(), description: z.string() }),
+  sections: z.object(Object.fromEntries(page.sections.map((_, i) => [`section_${i + 1}`, StrictSection])) as Record<string, typeof StrictSection>),
+});
+
+/** Réponse (clés par section, ou liste) → textes de la page, dans l'ordre de l'inventaire. */
+export function toPageCopy(raw: any, page: MockupPage): PageCopy {
+  const list = Array.isArray(raw?.sections) ? raw.sections : page.sections.map((_, i) => raw?.sections?.[`section_${i + 1}`]).filter(Boolean);
+  return PageCopySchema.parse({ seo: raw?.seo, sections: list.map((x: any, i: number) => ({ section: x.section ?? page.sections[i] ?? "", title: x.title ?? null, text: x.text ?? null, button: x.button ?? null, items: x.items ?? [] })) });
+}
+
+/** Écrit les textes d'une page (un appel, plafonné, sortie stricte). `generate` : remplaçable par les tests. */
+export async function writePageCopy(call: Parameters<typeof llmJson>[0], page: MockupPage, generate?: (c: Parameters<typeof llmJson>[0]) => Promise<unknown>): Promise<PageCopy> {
+  return toPageCopy(generate ? await generate(call) : await llmJson(call, strictPageSchema(page), { strict: true }), page);
 }
 
 /**

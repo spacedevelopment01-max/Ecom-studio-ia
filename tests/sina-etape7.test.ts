@@ -545,4 +545,18 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     expect(offer.items).toEqual([{ title: "Thé vert jasmin", text: "8,50 € · Sencha et jasmin" }, { title: "Verveine-menthe", text: "7,50 €" }]); // prix réel, jamais celui du modèle
     expect(fixAndCheckCopy({ ...raw, sections: raw.sections.slice(0, 3) }, page, { products: [] }).problems[0]).toMatch(/sections écrites pour/);
   });
+
+  it("réponse imposée : une clé obligatoire par section (essai réel : 7 sections sur 10), remise dans l'ordre", async () => {
+    const { strictPageSchema, toPageCopy } = await import("@/lib/syna-agent/mockup-code/copy");
+    const { mockupPages: pagesFor } = await import("@/lib/syna-agent/mockup-code/pages");
+    const page = pagesFor("products", "multi").find((x) => x.key === "home")!;
+    const schema = strictPageSchema(page);
+    const sections = Object.fromEntries(page.sections.map((_, i) => [`section_${i + 1}`, { title: `T${i + 1}`, text: null, button: null, items: [] }]));
+    expect(schema.safeParse({ seo: { title: "t", description: "d" }, sections }).success).toBe(true);
+    const { section_3: _omis, ...missing } = sections;
+    expect(schema.safeParse({ seo: { title: "t", description: "d" }, sections: missing }).success).toBe(false); // une section sautée est refusée
+    const copy = toPageCopy({ seo: { title: "t", description: "d" }, sections }, page);
+    expect(copy.sections.map((x) => x.section)).toEqual(page.sections);
+    expect(copy.sections[2].title).toBe("T3");
+  });
 });

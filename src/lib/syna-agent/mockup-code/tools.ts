@@ -115,10 +115,10 @@ const copyTool: AgentTool<{ pages?: string[] }> = {
     for (const key of keys) {
       const page = pageByKey(pages, key);
       if (!page) { failed.push(`${key} : page inconnue`); continue; }
-      const call = { task: "strategy" as const, userId: ctx.user.id, projectId: p.id, jobId, system: COPY_SYSTEM, promptKey: "syna-site-copy-1", prompt: copyPrompt(page, { brand: { name: p.brand.name, tagline: p.brand.tagline }, plan, ...details }), maxTokens: 6000, maxOutputTokens: 8000, usageKey: `syna-copy:${ctx.runId}:${key}`, routing: { difficulty: "complex" as const, prefer: COPY_MODEL } };
+      const call = { task: "strategy" as const, userId: ctx.user.id, projectId: p.id, jobId, system: COPY_SYSTEM, promptKey: "syna-site-copy-1", prompt: copyPrompt(page, { brand: { name: p.brand.name, tagline: p.brand.tagline }, plan, ...details }), maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna-copy:${ctx.runId}:${key}`, routing: { difficulty: "complex" as const, prefer: COPY_MODEL } };
       try {
         const cap = (jobId ? jobSpentMicro(jobId) : 0) + COPY_CAP_MICRO;
-        const raw = copyDeps.generate ? await writePageCopy(call, copyDeps.generate) : await withTrace({ jobId, projectId: p.id, step: "site-copy", costCapMicro: cap }, () => writePageCopy(call));
+        const raw = copyDeps.generate ? await writePageCopy(call, page, copyDeps.generate) : await withTrace({ jobId, projectId: p.id, step: "site-copy", costCapMicro: cap }, () => writePageCopy(call, page));
         const checked = fixAndCheckCopy(raw, page, { headline: plan.angle?.message, tagline: p.brand.tagline, cta: plan.angle?.cta, products: productsOf(p.id) });
         // Textes incomplets : jamais posés sur une maquette (pas de relance payante sans accord du client).
         if (checked.problems.length) failed.push(`${page.fr} : textes incomplets (${checked.problems.join(" ; ")})`);
@@ -126,7 +126,7 @@ const copyTool: AgentTool<{ pages?: string[] }> = {
       } catch (e) { failed.push(`${page.fr} : ${(e as Error).message.slice(0, 160)}`); }
     }
     const done = keys.filter((k) => out[k]);
-    if (!done.length) return { ok: false, summary: L(`Textes non écrits : ${failed.join(" | ")}`, "Copy not written.") };
+    if (!done.length) return { ok: false, summary: L(`Textes non écrits : ${failed.join(" | ")}`, "Copy not written."), hint: "Dis-le au client avec le coût réel ; ne relance JAMAIS une écriture payante sans son accord écrit." };
     saveSiteCopy(p.id, { version: 1, angleId: j.angleChoice.id ?? null, pages: out, at: 0 });
     const home = out.home;
     return {
