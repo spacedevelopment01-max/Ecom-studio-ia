@@ -538,6 +538,10 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       const after2 = loadMockupSet(pid)!;
       expect(after2.directions[0].images.filter((i) => i.status === "ready")).toHaveLength(readyA);
       expect(after2.directions[1].images.every((i) => i.status === "planned")).toBe(true);
+      // Re-préparer A avec un style reformulé (essai réel : images payées lâchées) : A garde ses images.
+      await call("mockup.prepare", ctx, { directions: [{ key: "A", name: "Lumière", style: "grandes photos plein cadre, reformulé autrement" }, { key: "B", name: "Atelier", style: "grille éditoriale serrée" }] });
+      const after3 = loadMockupSet(pid)!;
+      expect(after3.directions.find((x) => x.key === "A")!.images.filter((i) => i.status === "ready")).toHaveLength(readyA);
       // SINA voit les maquettes créées (consigne du propriétaire : « SINA doit lire les images »).
       const { journeyImages } = await import("@/lib/syna-agent/attachments");
       const seen = await journeyImages({ steps: {} } as any, pid);

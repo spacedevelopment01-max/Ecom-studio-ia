@@ -141,7 +141,7 @@ const copyTool: AgentTool<{ pages?: string[] }> = {
     return {
       ok: !failed.length,
       summary: L(`Textes écrits pour ${done.map((k) => `« ${pageByKey(pages, k)!.fr} »`).join(", ")}${failed.length ? ` ; non écrits : ${failed.join(" | ")}` : ""}.`, "Page copy written."),
-      hint: "Prépare maintenant la maquette (mockup.prepare) : elle écrira ces textes lettre pour lettre. Annonce ensuite le prix des images avant toute création.",
+      hint: loadMockupSet(p.id) ? "La maquette déjà préparée reprend ces textes : son plan est mis à jour tout seul (chaque page aux textes écrits a sa propre image). N'appelle PAS mockup.prepare (elle referait la maquette) ; annonce le prix des images à créer (mockup.generate, pages et viewport) avant toute création." : "Prépare maintenant la maquette (mockup.prepare) : elle écrira ces textes lettre pour lettre. Annonce ensuite le prix des images avant toute création.",
       data: { pages: Object.fromEntries(done.map((k) => [k, out[k]])), ...(home ? { titreSeo: home.seo.title } : {}) },
       changes: done.map((k) => ({ module: "site", object: L(`textes › ${pageByKey(pages, k)!.fr}`, `copy › ${k}`), summary: out[k].sections.map((x) => x.title).filter(Boolean).slice(0, 4).join(" · "), after: out[k], verified: true })),
     };
@@ -196,23 +196,27 @@ const prepareTool: AgentTool<PrepareArgs> = {
       const fresh = plannedDirection(d.key ?? keys[i], d.name, d.style, pages, (img) => mockupImagePrompt(facts, d, img, pages), d.ground);
       // Même maquette = même lettre, nom, style et fond (sans fond = clair). Une évolution de la consigne du Studio
       // n'efface jamais une image payée (essai réel : l'accueil de A détaché après un réglage de la consigne).
-      const old = before?.directions.find((x) => x.key === fresh.key && x.name === fresh.name && x.style === fresh.style && (x.ground ?? "clair") === (fresh.ground ?? "clair"));
+      // Même maquette = même lettre et même nom (essai réel du 8 novembre : SINA a reformulé le style de B en la
+      // re-préparant après l'écriture des textes ; les trois images payées de B, dont l'accueil retouché, étaient lâchées).
+      const old = before?.directions.find((x) => x.key === fresh.key && x.name.trim().toLowerCase() === fresh.name.trim().toLowerCase());
       if (!old) return fresh;
       return { ...fresh, images: fresh.images.map((img) => {
         const prev = old.images.find((x) => x.status === "ready" && x.assetId && x.viewport === img.viewport && x.pages.join() === img.pages.join());
         return prev ? { ...img, status: "ready" as const, assetId: prev.assetId } : img;
       }) };
     });
-    const saved0 = saveMockupSet(p.id, { version: 1, business: p.business, pages, directions: planned0, at: 0 });
+    // Une maquette déjà commencée et non citée reste telle quelle (jamais effacée en silence).
+    const untouched = (before?.directions ?? []).filter((x) => !planned0.some((d) => d.key === x.key) && x.images.some((i) => i.status === "ready"));
+    const saved0 = saveMockupSet(p.id, { version: 1, business: p.business, pages, directions: [...planned0, ...untouched].sort((x, y) => x.key.localeCompare(y.key)), at: 0 });
     // Pages aux textes déjà écrits : chacune seule sur son image (plan refait, images payées gardées).
     refreshMockupPrompts(ctx);
     const read = loadMockupSet(p.id);
     const saved = read ?? saved0;
-    const directions = read?.directions ?? planned0;
+    const directions = (read?.directions ?? planned0).filter((d) => planned0.some((x) => x.key === d.key));
     const images = directions.reduce((n, d) => n + d.images.filter((i) => i.status !== "ready").length, 0);
     const refs = 1 + (photo && p.business !== "services" ? 1 : 0);
     const maxMicro = mockupImagesMaxMicro(images, refs, imageUnit);
-    const verified = !!read && read.directions.length === planned0.length;
+    const verified = !!read && planned0.every((d) => read.directions.some((x) => x.key === d.key));
     return {
       ok: verified,
       summary: L(`${directions.length} maquette(s) préparée(s) : ${images} image(s) à créer au total, aucune créée.${maxMicro == null ? " Aucun modèle d'images utilisable pour l'instant : rien ne peut être créé." : ""}`, `${directions.length} mockup(s) prepared: ${images} image(s) to create.`),
