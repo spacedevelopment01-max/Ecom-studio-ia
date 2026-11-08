@@ -443,6 +443,15 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       expect(again.ok).toBe(true);
       expect(n).toBe(11);
       expect(loadMockupSet(pid)!.directions[0].images.every((i) => i.status === "ready")).toBe(true);
+      // Refaire une image jugée ratée par le client (redo) : payante, une seule image, nouvelle image rangée.
+      const homeImg = loadMockupSet(pid)!.directions[0].images.find((i) => i.viewport === "phone" && i.pages.includes("home"))!;
+      const est2 = await fr(() => tool("mockup.generate").estimate!(ctx, { direction: "A", pages: ["home"], viewport: "phone", redo: true }));
+      expect(est2.maxMicro).toBe(150_000);
+      const redo = await call("mockup.generate", ctx, { direction: "A", pages: ["home"], viewport: "phone", redo: true });
+      expect(redo.ok, redo.summary).toBe(true);
+      const redone = loadMockupSet(pid)!.directions[0].images.find((i) => i.id === homeImg.id)!;
+      expect(redone.status).toBe("ready");
+      expect(redone.assetId).not.toBe(homeImg.assetId);
       // Ajouter des maquettes B et C garde les images réussies de A (essai réel du 8 novembre : l'accueil de A était effacé).
       const readyA = loadMockupSet(pid)!.directions[0].images.filter((i) => i.status === "ready").length;
       await call("mockup.prepare", ctx, { directions: [{ key: "A", name: "Lumière", style: "grandes photos plein cadre" }, { key: "B", name: "Atelier", style: "grille éditoriale serrée" }] });

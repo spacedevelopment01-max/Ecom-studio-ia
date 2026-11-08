@@ -225,13 +225,13 @@ function imageReferences(p: ReturnType<typeof project>): { logo: Buffer | null; 
   return { logo: assetData(la), product: pa ? assetData(pa) : null, problem: null };
 }
 /** Images encore à créer ; `only` limite à certaines pages et à une version (ex. l'accueil en ordinateur pour voir le rendu). */
-const todo = (d: MockupSet["directions"][number], only: { pages?: string[]; viewport?: "desktop" | "phone" } = {}) =>
-  d.images.filter((i) => i.status !== "ready" && !!i.prompt && (!only.pages?.length || i.pages.some((k) => only.pages!.includes(k))) && (!only.viewport || i.viewport === only.viewport));
+const todo = (d: MockupSet["directions"][number], only: { pages?: string[]; viewport?: "desktop" | "phone"; redo?: boolean } = {}) =>
+  d.images.filter((i) => (only.redo ? !!only.pages?.length : i.status !== "ready") && !!i.prompt && (!only.pages?.length || i.pages.some((k) => only.pages!.includes(k))) && (!only.viewport || i.viewport === only.viewport));
 
-const generateTool: AgentTool<{ direction: "A" | "B" | "C"; pages?: string[]; viewport?: "desktop" | "phone" }> = {
+const generateTool: AgentTool<{ direction: "A" | "B" | "C"; pages?: string[]; viewport?: "desktop" | "phone"; redo?: boolean }> = {
   name: "mockup.generate", module: "site", kind: "generate", needsProject: true,
-  description: "Étape 6 : crée avec l'IA d'images les images encore manquantes d'une maquette préparée (mockup.prepare), d'après leurs consignes, avec le logo et la photo du produit en références, puis les range dans la maquette. Payant, jamais au-delà du devis (annonce le prix au client et attends son accord avant). pages (clés de mockup.pages, ex. [\"home\"]) et viewport limitent aux images de ces pages, dans cette version : pour voir d'abord le rendu de l'accueil. Une image ratée est signalée comme ratée, jamais présentée comme bonne ; elle peut être relancée.",
-  args: z.object({ direction: KEY, pages: z.array(z.string().max(60)).max(12).optional(), viewport: z.enum(["desktop", "phone"]).optional() }).strict(),
+  description: "Étape 6 : crée avec l'IA d'images les images encore manquantes d'une maquette préparée (mockup.prepare), d'après leurs consignes, avec le logo et la photo du produit en références, puis les range dans la maquette. Payant, jamais au-delà du devis (annonce le prix au client et attends son accord avant). pages (clés de mockup.pages, ex. [\"home\"]) et viewport limitent aux images de ces pages, dans cette version : pour voir d'abord le rendu de l'accueil. Une image ratée est signalée comme ratée, jamais présentée comme bonne ; elle peut être relancée. redo: true (avec pages et viewport) REFAIT une image déjà créée que le client juge ratée, avec la consigne actuelle (payant, son accord d'abord).",
+  args: z.object({ direction: KEY, pages: z.array(z.string().max(60)).max(12).optional(), viewport: z.enum(["desktop", "phone"]).optional(), redo: z.boolean().optional() }).strict(),
   estimate: (ctx, a) => {
     const p = project(ctx), set = loadMockupSet(p.id), d = set?.directions.find((x) => x.key === a.direction);
     if (!set || !d) throw new HttpError(409, L("Aucune maquette préparée : mockup.prepare d'abord.", "No mockup prepared yet."));
@@ -249,8 +249,15 @@ const generateTool: AgentTool<{ direction: "A" | "B" | "C"; pages?: string[]; vi
     let set = loadMockupSet(p.id);
     const d = set?.directions.find((x) => x.key === a.direction);
     if (!set || !d) return { ok: false, summary: L("Aucune maquette préparée : mockup.prepare d'abord.", "No mockup prepared yet.") };
+    // Image à refaire (jugée ratée par le client) : remise « à créer » et consigne actuelle, avant la création.
+    if (a.redo && a.pages?.length) {
+      set = { ...set, directions: set.directions.map((x) => (x.key === a.direction ? { ...x, images: x.images.map((i) => (todo(x, a).some((t) => t.id === i.id) ? { ...i, status: "planned" as const, assetId: null } : i)) } : x)) };
+      saveMockupSet(p.id, set);
+      refreshMockupPrompts(ctx);
+      set = loadMockupSet(p.id)!;
+    }
     const made: { id: string; assetId: string; href: string }[] = [], failed: string[] = [];
-    for (const img of todo(d!, a)) {
+    for (const img of todo(set.directions.find((x) => x.key === a.direction)!, a)) {
       try {
         const data = mockupToolDeps.generateImage ? await mockupToolDeps.generateImage(img.prompt!, refs)
           : await withQuotedImageRoute(mockupImageRoute(), () => aiSiteMockup({ userId: ctx.user.id, projectId: p.id, usageKey: `syna:${ctx.runId}:mockup-image:${a.direction}:${img.id}` }, { prompt: img.prompt!, logo: refs.logo, product: refs.product }));
