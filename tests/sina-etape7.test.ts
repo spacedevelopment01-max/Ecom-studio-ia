@@ -619,6 +619,13 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     expect(est2.probableMicro).toBeGreaterThan(0);
     expect(est2.probableMicro).toBe(step7ProbableMicro({ images: s.directions[0].images.length, sections: s.pages.filter((x) => !x.variantOf && !x.template.startsWith("customers/")).reduce((n, x) => n + Math.max(1, x.sections.length - 2), 0) + 2, views: s.directions[0].images.reduce((n, i) => n + i.pages.length, 0) }, TYP));
     expect(est2.maxMicro).toBe(Math.min(est.maxMicro, Math.ceil(est2.probableMicro! * STEP7_CAP_FACTOR)));
+    // Accueil seul d'abord (demande du propriétaire du 8 novembre) : seules ses images sont lues, devis plus petit.
+    const homeOnly = await fr(() => tool("site.code_from_mockup").estimate!(ctx, { pages: ["home"] }));
+    const homeImgs = s.directions[0].images.filter((i) => i.pages.includes("home")).length;
+    expect(homeOnly.maxMicro).toBe(step7MaxMicro({ images: homeImgs, pages: 1, views: 2 }, UNIT));
+    expect(homeOnly.maxMicro).toBeLessThan(est.maxMicro);
+    const one1 = await call("site.code_from_mockup", ctx, { pages: ["home"] });
+    expect(JSON.parse(one<any>("SELECT payload FROM jobs WHERE id=?", one1.jobs![0]).payload).pages).toEqual(["home"]);
     const launched = await call("site.code_from_mockup", ctx, {});
     expect(launched.ok).toBe(true);
     const job = one<any>("SELECT * FROM jobs WHERE id=?", launched.jobs![0]);

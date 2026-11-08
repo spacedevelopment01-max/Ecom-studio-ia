@@ -18,7 +18,7 @@ import { loadSiteCopy } from "./copy";
 export const MOCKUP_CODE_JOB = "syna.mockup.code";
 export const STEP7_REPORT_KEY = "syna.step7.report";
 
-export type MockupCodePayload = { projectId: string; direction: "A" | "B" | "C"; capMicro: number; maxRounds?: number; conversationId?: string | null };
+export type MockupCodePayload = { projectId: string; direction: "A" | "B" | "C"; capMicro: number; maxRounds?: number; conversationId?: string | null; pages?: string[] };
 
 /** Remplaçables par les tests (aucun appel réel) : dépendances du déroulé et thème de départ. */
 export const mockupCodeJobDeps: {
@@ -51,10 +51,10 @@ export async function runMockupCodeJob(ctx: JobContext) {
   const deps = { ...(mockupCodeJobDeps.deps ?? realStep7Deps)(options), progress: (f: number, m: string) => ctx.progress(0.05 + f * 0.9, m) };
   try {
     const { spec, report } = await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "mockup-code", costCapMicro: a.capMicro }, () =>
-      runStep7({ direction: d, pages: set.pages, base, options: { costCapMicro: a.capMicro, maxRounds: a.maxRounds }, copy: loadSiteCopy(p.id)?.pages ?? null }, deps));
+      runStep7({ direction: a.pages?.length ? { ...d, images: d.images.filter((i) => i.pages.some((k) => a.pages!.includes(k))) } : d, pages: a.pages?.length ? set.pages.filter((x) => a.pages!.includes(x.key)) : set.pages, base, options: { costCapMicro: a.capMicro, maxRounds: a.maxRounds }, copy: loadSiteCopy(p.id)?.pages ?? null }, deps));
     const problems = validateSpec(spec);
     if (problems.length) throw new UserFacingError(L(`Le thème codé ne passe pas la validation : ${problems.slice(0, 3).join(" ; ")}. Le site courant n'a pas changé.`, `The coded theme fails validation. The current site hasn't changed.`));
-    const v = saveThemeVersion(p.id, spec, L(`Site codé d'après la maquette ${d.key} « ${d.name} » (SINA, étape 7)`, `Site coded from mockup ${d.key} (SINA, step 7)`), "ai", { syna: { step: 7, direction: d.key, ok: report.ok, summary: report.summary } }, undefined, { activate: false });
+    const v = saveThemeVersion(p.id, spec, L(`${a.pages?.length ? `Pages ${a.pages.join(", ")} codées` : "Site codé"} d'après la maquette ${d.key} « ${d.name} » (SINA, étape 7)`, `Site coded from mockup ${d.key} (SINA, step 7)`), "ai", { syna: { step: 7, direction: d.key, ok: report.ok, summary: report.summary } }, undefined, { activate: false });
     remember(p.id, { kind: "artifact", key: STEP7_REPORT_KEY, value: JSON.stringify({ versionId: v.id, number: v.number, direction: d.key, report }), source: "local", origin: "system" });
     if (a.conversationId) {
       try { updateJourney(a.conversationId, (j) => setStep(j, 7, "review", report.summary.slice(0, 300))); } catch { /* fil supprimé : le rapport reste dans le projet */ }

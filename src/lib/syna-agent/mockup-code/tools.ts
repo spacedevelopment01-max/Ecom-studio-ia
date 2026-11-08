@@ -513,7 +513,17 @@ const chooseTool: AgentTool<{ direction: "A" | "B" | "C" }> = {
   },
 };
 
-type CodeArgs = { maxRounds?: number };
+type CodeArgs = { maxRounds?: number; pages?: string[] };
+/**
+ * Pages codées : toutes, ou seulement celles demandées (demande du propriétaire du 8 novembre : « commence par coder
+ * juste la page d'accueil et on voit ce que ça donne ») ; seules les images de maquette de ces pages sont lues.
+ */
+function codeScope(set: MockupSet, d: MockupSet["directions"][number], pages?: string[]) {
+  const keys = pages?.length ? pages.filter((k) => pageByKey(set.pages, k)) : null;
+  const scoped = keys ? set.pages.filter((x) => keys.includes(x.key)) : set.pages;
+  const images = d.images.filter((i) => i.status === "ready" && (!keys || i.pages.some((k) => keys.includes(k))));
+  return { pages: scoped, images, keys };
+}
 function codePlan(ctx: ToolContext) {
   const p = project(ctx), set = loadMockupSet(p.id);
   const d = set?.chosen ? set.directions.find((x) => x.key === set.chosen) : null;
@@ -524,22 +534,24 @@ function codePlan(ctx: ToolContext) {
 }
 const codeTool: AgentTool<CodeArgs> = {
   name: "site.code_from_mockup", module: "site", kind: "generate", needsProject: true,
-  description: "Étape 7 : code le site À L'IDENTIQUE de la maquette choisie (en-tête, pied, toutes les pages, sections modifiables dans le Studio, par SINA et dans Shopify, produits reliés à l'onglet Produits), puis boucle de contrôle : captures comparées à la maquette, corrections (maxRounds tours au plus, 3 par défaut), débordements à 5 largeurs, liens, Theme Check, SEO. Payant, jamais au-delà du devis. Le résultat est une nouvelle version INACTIVE du site avec un rapport page par page (les pages ratées sont dites ratées) ; le client décide ensuite (site.use_version). Tâche de fond.",
-  args: z.object({ maxRounds: z.number().int().min(1).max(4).optional() }).strict(),
+  description: "Étape 7 : code le site À L'IDENTIQUE de la maquette choisie (en-tête, pied, toutes les pages, sections modifiables dans le Studio, par SINA et dans Shopify, produits reliés à l'onglet Produits), puis boucle de contrôle : captures comparées à la maquette, corrections (maxRounds tours au plus, 3 par défaut). pages : seulement ces pages (ex. [\"home\"] pour voir d'abord le rendu de l'accueil, avec l'en-tête et le pied), sinon toutes ; débordements à 5 largeurs, liens, Theme Check, SEO. Payant, jamais au-delà du devis. Le résultat est une nouvelle version INACTIVE du site avec un rapport page par page (les pages ratées sont dites ratées) ; le client décide ensuite (site.use_version). Tâche de fond.",
+  args: z.object({ maxRounds: z.number().int().min(1).max(4).optional(), pages: z.array(z.string().max(60)).max(40).optional() }).strict(),
   estimate: (ctx, a) => {
     const { p, set, d } = codePlan(ctx);
     const units = callUnits(p.userId);
     if (!units) throw new HttpError(409, L("Coût impossible à encadrer (modèle ou tarif inconnu) : aucun appel ne sera fait.", "Cost cannot be bounded: no call will be made."));
-    const ready = d.images.filter((i) => i.status === "ready");
-    const writtenPages = set.pages.filter((x) => !x.variantOf && !x.template.startsWith("customers/"));
+    const scope = codeScope(set, d, a.pages);
+    if (a.pages?.length && !scope.pages.length) throw new HttpError(409, L("Aucune de ces pages n'existe (clés de mockup.pages).", "No such page."));
+    const ready = scope.images;
+    const writtenPages = scope.pages.filter((x) => !x.variantOf && !x.template.startsWith("customers/"));
     const written = writtenPages.length;
-    const views = set.pages.reduce((n, x) => n + x.viewports.length, 0);
+    const views = scope.pages.reduce((n, x) => n + x.viewports.length, 0);
     const worst = step7MaxMicro({ images: ready.length, pages: written, views, maxRounds: a.maxRounds }, units);
     // Coût probable annoncé et plafond raisonnable (essai réel du 8 novembre : plafond au pire ≈ 1 350 € pour Brindi).
     const typical = (mockupToolDeps.callTypicalMicro ?? step7CallTypicalMicro)(p.userId);
     if (!typical) return { maxMicro: worst, label: L("site codé d'après la maquette", "site coded from the mockup") };
     const sections = writtenPages.reduce((n, x) => n + Math.max(1, x.sections.length - 2), 0) + 2; // en-tête et pied une fois
-    const mockupViews = coverageOf(d, set.pages).covered.length;
+    const mockupViews = coverageOf(d, scope.pages).covered.length;
     const probable = step7ProbableMicro({ images: ready.length, sections, views: mockupViews }, typical);
     return { maxMicro: Math.min(worst, Math.ceil(probable * STEP7_CAP_FACTOR)), probableMicro: probable, label: L("site codé d'après la maquette", "site coded from the mockup") };
   },
@@ -547,7 +559,7 @@ const codeTool: AgentTool<CodeArgs> = {
     const { p, d } = codePlan(ctx);
     assertSectionGeneration(ctx.user, p.id);
     const est = await codeTool.estimate!(ctx, a);
-    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: MOCKUP_CODE_JOB, label: L("Site codé d'après la maquette (SINA)", "Site coded from the mockup (SINA)"), payload: { projectId: p.id, direction: d.key, capMicro: est.maxMicro, maxRounds: a.maxRounds, conversationId: ctx.conversationId }, maxAttempts: 2, idempotencyKey: `syna:${ctx.runId}:mockup-code:${d.key}` });
+    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: MOCKUP_CODE_JOB, label: L("Site codé d'après la maquette (SINA)", "Site coded from the mockup (SINA)"), payload: { projectId: p.id, direction: d.key, capMicro: est.maxMicro, maxRounds: a.maxRounds, conversationId: ctx.conversationId, ...(a.pages?.length ? { pages: a.pages } : {}) }, maxAttempts: 2, idempotencyKey: `syna:${ctx.runId}:mockup-code:${d.key}:${(a.pages ?? []).join(",")}` });
     try { updateJourney(ctx.conversationId, (j) => setStep(j, 7, "doing")); } catch { /* fil sans parcours */ }
     return { ok: true, summary: L(`Codage du site d'après la maquette ${d.key} lancé ; SINA relira le rapport page par page.`, `Coding the site from mockup ${d.key} started.`), jobs: [job.id], data: { maquette: d.key, plafondMicro: est.maxMicro, probableMicro: est.probableMicro ?? null } };
   },
