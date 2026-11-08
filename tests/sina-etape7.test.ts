@@ -732,6 +732,17 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       expect(v3.spec.files[set3.image_asset]).toBe(placed);
       expect(assetData(getAsset(placed)!).length).toBeGreaterThan(0);
       expect(((await call("mockup.report", ctx, {})).data as any).versionId).toBe(v3.version.id);
+      // Site recodé : la photo déjà recréée est reposée sans frais (essai réel : 17 photos payées perdues au recodage).
+      let calls = 0;
+      mockupToolDeps.generateImage = async () => { calls++; return png("#123456", 300, 170); };
+      const est3 = await fr(() => tool("site.images").estimate!(ctx, {}));
+      expect(est3.maxMicro).toBe(0);
+      const again = await call("site.images", ctx, {});
+      expect(calls).toBe(0);
+      expect(again.summary).toMatch(/reposée\(s\) sans frais/);
+      // redo : refaite (payante).
+      await call("site.images", ctx, { redo: true });
+      expect(calls).toBe(1);
     } finally { mockupToolDeps.generateImage = undefined; mockupToolDeps.imageMaxMicro = undefined; }
   });
 

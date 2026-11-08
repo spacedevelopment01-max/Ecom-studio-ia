@@ -36,7 +36,7 @@ import { MOCKUP_CODE_JOB, STEP7_REPORT_KEY } from "./job";
 import { attachImage, coverageOf, loadMockupSet, plannedDirection, replanDirection, saveMockupSet, type MockupSet } from "./mockup-set";
 import { inventoryOptionsOf, mockupPages } from "./pages";
 import { hdAspect, mockupFacts, mockupImagePrompt, mockupImagesMaxMicro, siteImageHdPrompt } from "./prompts";
-import { STEP7_CAP_FACTOR, step7MaxMicro, step7ProbableMicro, type Step7Report } from "./pipeline";
+import { STEP7_CAP_FACTOR, step7MaxMicro, step7ProbableMicro, type ImageSlot, type Step7Report } from "./pipeline";
 import { remember, saveThemeVersion, themeVersion } from "../../projects";
 import { applyOps, validateSpec } from "../../theme/ops";
 import { sectionSchema, type ThemeSpec } from "../../theme/spec";
@@ -590,20 +590,50 @@ const hdUnit = (refs: number) => { try { return photoRequestMaxMicro(mockupImage
 const slotsOf = (r: Step7Report, pages?: string[], spec?: ThemeSpec | null, sections?: string[]) => (r.imageSlots ?? []).filter((s) => s.imageId && s.box && (!pages?.length || pages.includes(s.page)) && (!sections?.length || sections.some((n) => n.toLowerCase() === s.section.toLowerCase()))
   && (!spec || Object.values((s.template.startsWith("group:") ? spec.groups[s.template.slice(6) as "header" | "footer"] : spec.templates[s.template])?.sections ?? {}).some((x) => x.type === s.type)));
 
+/** Dernière photo recréée pour cet emplacement (page, section, rang), si elle existe encore dans les Fichiers. */
+function reusablePhoto(projectId: string, slot: ImageSlot): string | null {
+  const rows = all<{ id: string; meta: string }>("SELECT id, meta FROM assets WHERE project_id=? AND deleted_at IS NULL AND role='site' ORDER BY created_at DESC", projectId);
+  for (const r of rows) { try { const m = JSON.parse(r.meta || "{}").synaSiteImage; if (m && m.page === slot.page && m.type === slot.type && m.index === slot.index) return r.id; } catch { /* méta illisible */ } }
+  return null;
+}
+/** Pose une photo dans le n-ième réglage image de sa section (section d'abord, puis ses blocs dans l'ordre). */
+function placePhoto(spec: ThemeSpec, slot: ImageSlot, assetId: string, projectId: string, themeFileName: (a: NonNullable<ReturnType<typeof getAsset>>, hint?: string) => string): { spec: ThemeSpec | null; reason?: string } {
+  const where = slot.template.startsWith("group:") ? spec.groups[slot.template.slice(6) as "header" | "footer"] : spec.templates[slot.template];
+  const sid = where ? Object.keys(where.sections).find((k) => where.sections[k].type === slot.type) : undefined;
+  const schema = sid ? sectionSchema(spec, slot.type) : null;
+  const targets: { block?: string; key: string }[] = [];
+  if (sid && schema) {
+    for (const st of schema.settings ?? []) if ((st as { type?: string }).type === "image_picker") targets.push({ key: (st as { id: string }).id });
+    const sec = where!.sections[sid];
+    for (const bid of sec.block_order ?? Object.keys(sec.blocks ?? {})) {
+      const bt = sec.blocks?.[bid]?.type;
+      const bs = (schema.blocks ?? []).find((x: { type: string }) => x.type === bt) as { settings?: { type?: string; id: string }[] } | undefined;
+      for (const st of bs?.settings ?? []) if (st.type === "image_picker") targets.push({ block: bid, key: st.id });
+    }
+  }
+  const t = targets[slot.index];
+  if (!sid || !t) return { spec: null, reason: "emplacement introuvable" };
+  const res = applyOps(spec, [{ op: "use_media", template: slot.template, section: sid, ...(t.block ? { block: t.block } : {}), key: t.key, assetId }], { overrideLocks: true, mediaFile: (id) => { const x = getAsset(id); return x && x.project_id === projectId ? { filename: themeFileName(x, x.role ?? "media") } : null; } });
+  return res.rejected.length ? { spec: null, reason: res.rejected[0].reason } : { spec: res.spec };
+}
+
 /**
  * Étape 7 (demande du propriétaire du 8 novembre) : chaque photo du site codé est recréée en haute définition par l'IA
  * d'images des maquettes (OpenAI), d'après sa zone sur la maquette choisie (même cadrage, mêmes objets), puis posée à
  * sa place dans le thème (réglage image de la section). Une nouvelle version du site est enregistrée.
  */
-const siteImagesTool: AgentTool<{ pages?: string[]; sections?: string[] }> = {
+const siteImagesTool: AgentTool<{ pages?: string[]; sections?: string[]; redo?: boolean }> = {
   name: "site.images", module: "site", kind: "generate", needsProject: true,
-  description: "Étape 7, APRÈS le codage du site (site.code_from_mockup) : recrée en haute définition, avec l'IA d'images des maquettes (OpenAI), chaque photo du site codé à l'identique de la maquette choisie (même cadrage, mêmes objets, mêmes couleurs), puis la pose à sa place dans le thème. pages : seulement ces pages (clés de mockup.pages), sinon toutes ; sections : seulement les photos de ces sections (noms du rapport, ex. pour refaire des photos ratées). Payant (une image par photo) : annonce le prix et attends l'accord écrit.",
-  args: z.object({ pages: z.array(z.string().max(60)).max(30).optional(), sections: z.array(z.string().max(80)).max(20).optional() }).strict(),
+  description: "Étape 7, APRÈS le codage du site (site.code_from_mockup) : recrée en haute définition, avec l'IA d'images des maquettes (OpenAI), chaque photo du site codé à l'identique de la maquette choisie (même cadrage, mêmes objets, mêmes couleurs), puis la pose à sa place dans le thème. pages : seulement ces pages (clés de mockup.pages), sinon toutes ; sections : seulement les photos de ces sections (noms du rapport) ; une photo déjà recréée pour le même emplacement est reposée gratuitement, sauf redo: true (refaire des photos ratées). Payant (une image par photo nouvelle) : annonce le prix et attends l'accord écrit.",
+  args: z.object({ pages: z.array(z.string().max(60)).max(30).optional(), sections: z.array(z.string().max(80)).max(20).optional(), redo: z.boolean().optional() }).strict(),
   estimate: (ctx, a) => {
     const p = project(ctx), r = step7Report(p.id);
     if (!r) throw new HttpError(409, L("Le site n'est pas encore codé d'après la maquette (site.code_from_mockup d'abord).", "Code the site from the mockup first."));
-    const n = slotsOf(r.report, a.pages, themeVersion(p.id, r.versionId)?.spec, a.sections).length;
-    if (!n) throw new HttpError(409, L("Aucune photo à recréer sur ces pages.", "No photo to recreate on these pages."));
+    const all0 = slotsOf(r.report, a.pages, themeVersion(p.id, r.versionId)?.spec, a.sections);
+    const n = all0.filter((s) => a.redo || !reusablePhoto(p.id, s)).length;
+    if (!all0.length) throw new HttpError(409, L("Aucune photo à recréer sur ces pages.", "No photo to recreate on these pages."));
+    // Toutes déjà recréées : reposées gratuitement.
+    if (!n) return { maxMicro: 0, probableMicro: 0, label: L(`${all0.length} photo(s) déjà recréée(s), reposée(s) sans frais`, "photos reused") };
     const unit = (mockupToolDeps.imageMaxMicro ?? hdUnit)(3);
     if (unit == null) throw new HttpError(409, L("Aucun modèle d'images utilisable pour les photos du site.", "No usable image model."));
     // Coût probable : une image OpenAI coûte en pratique environ 0,75 fois son plafond (essais réels du 8 novembre :
@@ -620,11 +650,20 @@ const siteImagesTool: AgentTool<{ pages?: string[]; sections?: string[] }> = {
     const refs = imageReferences(p);
     const jobId = getRun(ctx.runId)?.job_id ?? null;
     const mockups = new Map<string, Buffer>();
-    const done: { slot: string; assetId: string }[] = [], failed: string[] = [], unplaced: string[] = [];
+    const done: { slot: string; assetId: string }[] = [], failed: string[] = [], unplaced: string[] = [], reused: string[] = [];
     let spec = cur.spec;
     for (const slot of slotsOf(r.report, a.pages, cur.spec, a.sections)) {
       const label = `${pageByKey(set.pages, slot.page)?.fr ?? slot.page} › ${slot.section} › photo ${slot.index + 1}`;
       try {
+        // Photo déjà recréée pour cet emplacement (même page, même section, même rang) : réutilisée gratuitement, sauf si
+        // le client demande de la refaire (essai réel du 8 novembre : le site recodé avait perdu ses 17 photos payées).
+        const prev = a.redo ? null : reusablePhoto(p.id, slot);
+        if (prev) {
+          const placedPrev = placePhoto(spec, slot, prev, p.id, themeFileName);
+          if (placedPrev.spec) { spec = placedPrev.spec; reused.push(label); } else unplaced.push(`${label}${placedPrev.reason ? ` (${placedPrev.reason})` : ""}`);
+          done.push({ slot: label, assetId: prev });
+          continue;
+        }
         const img = d?.images.find((i) => i.id === slot.imageId);
         const asset0 = img?.assetId ? getAsset(img.assetId) : undefined;
         if (!asset0) { failed.push(`${label} : image de maquette introuvable`); continue; }
@@ -644,24 +683,8 @@ const siteImagesTool: AgentTool<{ pages?: string[]; sections?: string[] }> = {
           : await withQuotedImageRoute(mockupImageRoute(), () => aiSiteImageHd({ userId: ctx.user.id, projectId: p.id, jobId, usageKey: `syna:${ctx.runId}:site-image:${slot.page}:${slot.type}:${slot.index}` }, { prompt, scene, logo, product: refs.product, aspect }));
         const jpeg = data[0] === 0xff && data[1] === 0xd8;
         const asset = await saveAsset({ projectId: p.id, userId: ctx.user.id, data, name: `site-${slot.page}-${slot.type.replace(/^es-custom-/, "")}-${slot.index + 1}.${jpeg ? "jpg" : "png"}`, mime: jpeg ? "image/jpeg" : "image/png", role: "site", origin: "generated", meta: { synaSiteImage: { ...slot, prompt: undefined } } });
-        // Pose : le n-ième réglage image de la section (section d'abord, puis ses blocs dans l'ordre).
-        const where = slot.template.startsWith("group:") ? spec.groups[slot.template.slice(6) as "header" | "footer"] : spec.templates[slot.template];
-        const sid = where ? Object.keys(where.sections).find((k) => where.sections[k].type === slot.type) : undefined;
-        const schema = sid ? sectionSchema(spec, slot.type) : null;
-        const targets: { block?: string; key: string }[] = [];
-        if (sid && schema) {
-          for (const st of schema.settings ?? []) if ((st as { type?: string }).type === "image_picker") targets.push({ key: (st as { id: string }).id });
-          const sec = where!.sections[sid];
-          for (const bid of sec.block_order ?? Object.keys(sec.blocks ?? {})) {
-            const bt = sec.blocks?.[bid]?.type;
-            const bs = (schema.blocks ?? []).find((x: { type: string }) => x.type === bt) as { settings?: { type?: string; id: string }[] } | undefined;
-            for (const st of bs?.settings ?? []) if (st.type === "image_picker") targets.push({ block: bid, key: st.id });
-          }
-        }
-        const t = targets[slot.index];
-        if (!sid || !t) { unplaced.push(label); done.push({ slot: label, assetId: asset.id }); continue; }
-        const res = applyOps(spec, [{ op: "use_media", template: slot.template, section: sid, ...(t.block ? { block: t.block } : {}), key: t.key, assetId: asset.id }], { overrideLocks: true, mediaFile: (id) => { const x = getAsset(id); return x && x.project_id === p.id ? { filename: themeFileName(x, x.role ?? "media") } : null; } });
-        if (res.rejected.length) unplaced.push(`${label} (${res.rejected[0].reason})`); else spec = res.spec;
+        const placed = placePhoto(spec, slot, asset.id, p.id, themeFileName);
+        if (placed.spec) spec = placed.spec; else unplaced.push(`${label}${placed.reason ? ` (${placed.reason})` : ""}`);
         done.push({ slot: label, assetId: asset.id });
       } catch (e) { failed.push(`${label} : ${(e as Error).message.slice(0, 160)}`); }
     }
@@ -675,7 +698,7 @@ const siteImagesTool: AgentTool<{ pages?: string[]; sections?: string[] }> = {
     const spentText = budgetPctText(ctx.user.id, keys, p.id).replace(/de votre budget/, "de ton budget");
     return {
       ok: done.length > 0 && !failed.length && !unplaced.length,
-      summary: L(`${done.length} photo(s) du site recréée(s) en haute définition${version ? `, posée(s) dans la version ${version.number} du site` : ""}.${unplaced.length ? ` Non posée(s) (emplacement introuvable) : ${unplaced.join(" ; ")}.` : ""}${failed.length ? ` Ratée(s) : ${failed.join(" | ")}.` : ""} Coût réel : ${spentText}.`, `${done.length} site photo(s) recreated.`),
+      summary: L(`${done.length - reused.length} photo(s) du site recréée(s) en haute définition${reused.length ? `, ${reused.length} déjà faite(s) reposée(s) sans frais` : ""}${version ? `, posée(s) dans la version ${version.number} du site` : ""}.${unplaced.length ? ` Non posée(s) (emplacement introuvable) : ${unplaced.join(" ; ")}.` : ""}${failed.length ? ` Ratée(s) : ${failed.join(" | ")}.` : ""} Coût réel : ${spentText}.`, `${done.length} site photo(s) recreated.`),
       hint: "Les photos sont créées par l'IA d'images : regarde-les dans l'aperçu du site avant d'en parler ; une photo ratée est dite ratée ; rien n'est relancé sans accord écrit.",
       data: { version, photos: done.slice(0, 40), nonPosees: unplaced, ratees: failed },
       changes: done.map((x) => ({ module: "fichiers", object: x.slot, summary: L("photo du site en haute définition", "site photo in high definition"), after: { assetId: x.assetId }, verified: true })),
