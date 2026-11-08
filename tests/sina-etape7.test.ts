@@ -129,9 +129,13 @@ describe("SINA — étape 6 : consignes des images de maquette", async () => {
     expect(phone).toContain("menu replié");
     // Une seule page en téléphone : vraie mise en page de téléphone, en tronçons, sans cadre d'appareil (essai réel).
     const onePhone = mockupImagePrompt(facts, { name: "Lumière", style: "x" }, { viewport: "phone", pages: ["home"] }, pages);
-    expect(onePhone).toContain("découpée en 3 tronçons de même largeur");
-    expect(onePhone).toContain("sans cadre d'appareil");
+    expect(onePhone).toContain("2 longues bandes verticales étroites");
+    expect(onePhone).toContain("Aucun cadre d'appareil, aucun téléphone dessiné");
     expect(onePhone).toContain("une seule colonne");
+    expect(onePhone).toContain("exactement 2 bandes étroites");
+    // Aucune phrase contradictoire (« une page entière ») : le modèle en concluait à la page d'ordinateur (essai réel).
+    expect(onePhone).not.toContain("chaque page est entière");
+    expect(onePhone).not.toMatch(/exactement 1 page/);
     expect(colourRoles({ ...brand, ground: "sombre" })).toContain("fond des pages le sombre #1F1A14 ; textes ET titres #F5EEDC");
   });
 
@@ -462,6 +466,10 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       const { journeyImages } = await import("@/lib/syna-agent/attachments");
       const seen = await journeyImages({ steps: {} } as any, pid);
       expect(seen.some((x) => /^Maquette A/.test(x.label ?? ""))).toBe(true);
+      // La plus récente (l'image refaite), signalée comme toute nouvelle (essai réel : SINA regardait une autre image).
+      expect(seen[0].label).toContain(`image ${homeImg.id}`);
+      expect(seen[0].label).toContain("créée il y a quelques minutes");
+      expect(redo.hint).toMatch(/Ne dis JAMAIS que tu ne peux pas voir/);
       // Le résumé du projet relu par SINA ne recopie jamais les maquettes (essai réel : 224 000 caractères à chaque pas).
       const { projectSnapshot } = await import("@/lib/syna-agent/snapshot");
       const snap = await fr(() => projectSnapshot(ctx));
@@ -637,5 +645,18 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     const { copy } = fixAndCheckCopy(raw as any, page, { headline: "Pose ton écran.", tagline: "Slogan", cta: "Choisis.", products: [{ title: "Thé vert jasmin", price: 850 }, { title: "Rooibos vanille", price: 850 }] });
     expect(copy.sections.find((x) => /complémentaires/.test(x.section))!.items.map((i) => i.title)).toEqual(["Rooibos vanille"]);
     expect(copy.sections.some((x) => x.title === "Pose ton écran.")).toBe(false);
+  });
+
+  it("téléphone : l'en-tête n'énumère pas les liens du menu (essai réel : menu d'ordinateur dessiné)", async () => {
+    const { copyLines } = await import("@/lib/syna-agent/mockup-code/copy");
+    const c: any = { sections: [
+      { section: "en-tête (logo, menu, bouton principal)", title: null, text: null, button: "Choisis.", items: [{ title: "Nos mélanges", text: null }, { title: "Contact", text: null }] },
+      { section: "pied de page complet", title: null, text: null, button: null, items: [{ title: "Nos mélanges", text: null }] },
+    ] };
+    const phone = copyLines(c, { phone: true });
+    expect(phone[0]).not.toContain("Nos mélanges");
+    expect(phone[0]).toContain("bouton « Choisis. »");
+    expect(phone[1]).toContain("Nos mélanges");
+    expect(copyLines(c)[0]).toContain("Nos mélanges");
   });
 });

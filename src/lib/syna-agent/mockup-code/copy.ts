@@ -179,12 +179,15 @@ export function angleDetails(j: Journey): { emotion?: string; story?: string; sh
 }
 
 /** Textes d'une page, tels qu'écrits sur la maquette : une ligne par section, textes entre guillemets. */
-export function copyLines(c: PageCopy): string[] {
+export function copyLines(c: PageCopy, opts: { phone?: boolean } = {}): string[] {
   return c.sections.map((s) => {
+    // Téléphone (essai réel du 8 novembre) : les liens du menu cités dans l'en-tête faisaient dessiner un menu
+    // d'ordinateur ; en téléphone, l'en-tête n'a que le logo et l'icône du menu (les liens restent au pied de page).
+    const header = opts.phone && /en-t[êe]te/i.test(s.section);
     const parts = [
       s.title ? `titre « ${s.title} »` : "",
       s.text ? `texte « ${s.text} »` : "",
-      ...s.items.map((i) => `élément « ${i.title} »${i.text ? ` avec « ${i.text} »` : ""}`),
+      ...(header ? [] : s.items.map((i) => `élément « ${i.title} »${i.text ? ` avec « ${i.text} »` : ""}`)),
       s.button ? `bouton « ${s.button} »` : "",
     ].filter(Boolean);
     // Nom de la section sans guillemets : une indication de place, jamais un texte à écrire.

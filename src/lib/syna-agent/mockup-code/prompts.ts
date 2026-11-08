@@ -98,23 +98,26 @@ export function mockupImagePrompt(f: MockupFacts, d: Pick<MockupDirection, "name
   const w = VIEWPORT_WIDTH[img.viewport];
   const n = list.length;
   const brand = f.brand;
+  const onePhone = !desktop && n === 1;
   const offers = f.offers.length ? f.offers.map((o) => `« ${o.name} »${o.price ? ` (${o.price})` : ""}`).join(", ") : "";
   return [
     // 1) type d'image, format, point de vue, cadrage
     `Planche de maquette de site web (design d'interface professionnel de 2026, rendu net et lisible), format portrait, vue de face, à plat, sans perspective, sans écran ni appareil autour. Direction graphique « ${d.name} » : ${withoutTechnicalWords(d.style, f).replace(/[.\s]+$/, "")}.`,
     desktop
       ? n === 1 ? `Une seule page en version ordinateur (${w} px de large), montrée entière, de l'en-tête au pied de page, en une longue colonne centrée.` : `${n} pages en version ordinateur (${w} px de large), posées côte à côte en colonnes de même largeur, chacune entière de l'en-tête au pied de page.`
-      // Téléphone (essai réel du 8 novembre : la page d'ordinateur rétrécie dans un cadre de téléphone) : une page
-      // longue est montrée en tronçons côte à côte, chacun de la largeur d'un téléphone, vraiment composée pour lui.
-      : n === 1
-        ? `Une seule page en version téléphone (${w} px de large), sans cadre d'appareil : la page étant longue, elle est montrée découpée en 3 tronçons de même largeur posés côte à côte, lus de gauche à droite (haut de page, milieu, bas de page avec le pied de page). Mise en page VRAIMENT pour téléphone : une seule colonne, tout empilé verticalement, menu replié en une icône à trois traits (aucun lien de menu visible en haut), cartes l'une sous l'autre ou par deux au plus, boutons sur toute la largeur, textes d'au moins 16 px.`
+      // Téléphone (deux essais réels du 8 novembre : la page d'ordinateur rétrécie dans un cadre de téléphone) : la
+      // page est montrée en DEUX tronçons côte à côte, chacun de la largeur d'un téléphone, vraiment composée pour lui ;
+      // aucune phrase de la consigne ne parle plus d'« une page entière » (contradiction que le modèle résolvait en
+      // dessinant la page d'ordinateur).
+      : onePhone
+        ? `Ce n'est PAS la page d'ordinateur rétrécie : c'est la version téléphone (${w} px de large) d'une seule page, montrée en 2 longues bandes verticales étroites de même largeur, posées côte à côte avec un espace entre elles, lues de gauche à droite : à gauche le haut de la page, à droite la suite jusqu'au pied de page. Aucun cadre d'appareil, aucun téléphone dessiné, aucune encoche, aucune barre d'état. Mise en page de téléphone : une seule colonne, tout est empilé verticalement ; en-tête avec seulement le logo à gauche et une icône de menu à trois traits à droite (aucun lien de menu en haut) ; produits en cartes deux par rangée ; gros plans, scènes et articles l'un sous l'autre ; questions l'une sous l'autre ; boutons sur toute la largeur de la bande ; textes d'au moins 16 px.`
         : `${n} pages en version téléphone (${w} px de large), sans cadre d'appareil, posées côte à côte en colonnes étroites, chacune montrant le haut de sa page. Mise en page VRAIMENT pour téléphone : une seule colonne, tout empilé, menu replié en une icône à trois traits, boutons sur toute la largeur, textes d'au moins 16 px.`,
     // 2) surface et fond
     "Autour des pages : un fond uni gris très clair et neutre, sans texture ni ombre portée marquée.",
     // 3) chaque page à sa place
     ...list.map((p, i) => `${n > 1 ? `Page ${POS[i] ?? `n° ${i + 1}`}` : "La page"}, avec son nom écrit en petit au-dessus : « ${p.fr} ». Elle montre dans cet ordre : ${p.sections.join(" ; ")}.`),
     // Textes complets de la page écrits avant la maquette (consigne du propriétaire : le copywriting est SUR la maquette).
-    ...list.flatMap((p) => (f.copy?.[p.key] ? [`Textes de la page « ${p.fr} », écrits lettre pour lettre, chacun à sa place, sans en ajouter, sans en retirer :`, ...copyLines(f.copy[p.key])] : [])),
+    ...list.flatMap((p) => (f.copy?.[p.key] ? [`Textes de la page « ${p.fr} », écrits lettre pour lettre, chacun à sa place, sans en ajouter, sans en retirer :`, ...copyLines(f.copy[p.key], { phone: !desktop })] : [])),
     // Sans textes écrits : textes exacts de la marque pour l'accueil, mot pour mot (jamais réécrits par le modèle d'images).
     ...(list.some((p) => p.key === "home") && !f.copy?.home && f.texts?.headline ? [`Textes de la page « Accueil », recopiés mot pour mot, lettre pour lettre : grand titre d'ouverture ${headlineLines(f.texts.headline)}${brand?.tagline ? ` ; sous le titre, le slogan « ${brand.tagline} »` : ""}${f.texts.cta ? ` ; bouton principal « ${f.texts.cta} »` : ""}${f.texts.messages?.length ? ` ; plus bas, ces messages, un par bloc : ${f.texts.messages.map((m) => `« ${m} »`).join(", ")}` : ""}. Les autres textes sont de simples libellés courts (menu, noms et prix des produits).`] : []),
     // Moins de texte = moins de lettres abîmées (essai réel du 8 novembre) : seuls les textes cités sont écrits.
@@ -122,11 +125,13 @@ export function mockupImagePrompt(f: MockupFacts, d: Pick<MockupDirection, "name
       ? "Les seuls textes de la page sont ceux cités entre guillemets dans cette consigne, plus les liens courts du menu et du pied de page. Les codes couleur, les noms de police et les noms de sections de cette consigne sont des indications : ils ne sont jamais écrits sur la page."
       : "Les paragraphes et les textes secondaires (descriptions, journal, inscription, pied de page) sont figurés par de fines lignes grises de faux texte, sans aucune lettre lisible ; seuls les textes cités entre guillemets dans cette consigne sont écrits en lettres. Les codes couleur et les noms de police de cette consigne sont des indications : ils ne sont jamais écrits sur la page.",
     // 4) compte exact
-    `La planche contient exactement ${n} page${n > 1 ? "s" : ""} : ${list.map((p) => `« ${p.fr} »`).join(", ")}. Aucune autre page, aucun écran supplémentaire.`,
+    onePhone
+      ? `La planche contient exactement 2 bandes étroites, qui forment ensemble la seule page « ${list[0].fr} » en version téléphone. Aucune autre page, aucun écran supplémentaire.`
+      : `La planche contient exactement ${n} page${n > 1 ? "s" : ""} : ${list.map((p) => `« ${p.fr} »`).join(", ")}. Aucune autre page, aucun écran supplémentaire.`,
     // 5) cadrage
-    "Rien n'est coupé par le cadre : chaque page est entière, avec de l'air autour.",
+    onePhone ? "Rien n'est coupé par le cadre : les deux bandes sont entières, avec de l'air autour." : "Rien n'est coupé par le cadre : chaque page est entière, avec de l'air autour.",
     // 6) style, lumière, typographie
-    `Marque : « ${f.name} »${brand?.tagline ? `, slogan « ${brand.tagline} »` : ""}. Le logo fourni en référence est reproduit à l'identique dans l'en-tête de chaque page ; aucun autre logo.`,
+    `Marque : « ${f.name} »${brand?.tagline ? `, slogan « ${brand.tagline} »` : ""}. Le logo fourni en référence est reproduit à l'identique dans l'en-tête de ${onePhone ? "la page" : "chaque page"} ; aucun autre logo.`,
     colourRoles(brand, d.ground),
     brand?.fonts ? `Deux polices seulement : titres en ${fontLook(brand.fonts.heading, "heading")}, textes en ${fontLook(brand.fonts.body, "body")} (15 à 17 px), tailles fluides et hiérarchie nette.` : "",
     "Mise en page rythmée selon la direction graphique (elle prime sur tout réglage par défaut), un motif graphique propre à la marque (son symbole), boutons d'au moins 44 px.",
