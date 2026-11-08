@@ -145,7 +145,7 @@ export function describeAttachment(a: Attachment): string {
  * images ») : les 3 logos tant que le client n'a pas choisi (étape 2), la planche de marque tant que l'image de marque
  * n'est pas validée (étape 3). Réduites (512 px, planche 1024 px) : quelques millièmes d'euro par réponse.
  */
-export async function journeyImages(j: { steps: Record<number, { status: string } | undefined>; logos?: { list: { source: string; name: string; assetId: string | null; verdict: string; score: number | null }[] }; logoChoice?: unknown; brandKit?: { boardId: string | null } }): Promise<LlmImage[]> {
+export async function journeyImages(j: { steps: Record<number, { status: string } | undefined>; logos?: { list: { source: string; name: string; assetId: string | null; verdict: string; score: number | null }[] }; logoChoice?: unknown; brandKit?: { boardId: string | null } }, projectId?: string | null): Promise<LlmImage[]> {
   const { getAsset, assetData } = await import("../library");
   const sharp = (await import("sharp")).default;
   const small = async (id: string, size: number) => { const a = getAsset(id); return a && !a.deleted_at ? sharp(assetData(a)).resize(size, size, { fit: "inside", withoutEnlargement: true }).png().toBuffer() : null; };
@@ -154,5 +154,18 @@ export async function journeyImages(j: { steps: Record<number, { status: string 
     for (const l of j.logos.list) if (l.assetId) { const data = await small(l.assetId, 512).catch(() => null); if (data) out.push({ data, label: `Logo ${l.source} — ${l.name} (${l.verdict === "FINAL" ? `validé ${l.score ?? "?"}/10` : "non validé"})` }); }
   }
   if (j.brandKit?.boardId && j.steps[3]?.status !== "done") { const data = await small(j.brandKit.boardId, 1024).catch(() => null); if (data) out.push({ data, label: "Planche de marque montrée au client" }); }
+  // Étape 6 : les images de maquette déjà créées (consigne du propriétaire : « SINA doit lire les images » ; essai réel
+  // du 8 novembre : « je n'ai pas de rendu à te décrire, je ne le vois pas ici »). Trois au plus, la plus récente de
+  // chaque maquette.
+  if (projectId && j.steps[6]?.status !== "done") {
+    const { loadMockupSet } = await import("./mockup-code/mockup-set");
+    const set = loadMockupSet(projectId);
+    for (const d of set?.directions ?? []) {
+      const img = [...d.images].reverse().find((i) => i.status === "ready" && i.assetId);
+      if (!img || out.length >= 6) continue;
+      const data = await small(img.assetId!, 1024).catch(() => null);
+      if (data) out.push({ data, label: `Maquette ${d.key} « ${d.name} » — ${img.pages.join(", ")} (${img.viewport === "desktop" ? "ordinateur" : "téléphone"}), montrée au client` });
+    }
+  }
   return out;
 }

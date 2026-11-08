@@ -444,6 +444,10 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       const after2 = loadMockupSet(pid)!;
       expect(after2.directions[0].images.filter((i) => i.status === "ready")).toHaveLength(readyA);
       expect(after2.directions[1].images.every((i) => i.status === "planned")).toBe(true);
+      // SINA voit les maquettes créées (consigne du propriétaire : « SINA doit lire les images »).
+      const { journeyImages } = await import("@/lib/syna-agent/attachments");
+      const seen = await journeyImages({ steps: {} } as any, pid);
+      expect(seen.some((x) => /^Maquette A/.test(x.label ?? ""))).toBe(true);
       // Le résumé du projet relu par SINA ne recopie jamais les maquettes (essai réel : 224 000 caractères à chaque pas).
       const { projectSnapshot } = await import("@/lib/syna-agent/snapshot");
       const snap = await fr(() => projectSnapshot(ctx));

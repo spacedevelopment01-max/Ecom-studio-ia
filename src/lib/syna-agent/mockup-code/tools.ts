@@ -249,7 +249,8 @@ const generateTool: AgentTool<{ direction: "A" | "B" | "C"; pages?: string[]; vi
     const read = loadMockupSet(p.id)!, cov = coverageOf(read.directions.find((x) => x.key === a.direction)!, read.pages);
     // Coût RÉEL des images de cet appel (appels enregistrés), dit au client (essai réel : « le Studio ne me l'a pas transmis »).
     const spent = all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key LIKE ?", p.id, `syna:${ctx.runId}:mockup-image:${a.direction}:%`)[0]?.c ?? 0;
-    const spentText = budgetPctText(ctx.user.id, spent, p.id);
+    // Tutoiement du fil SINA (le texte commun du Studio vouvoie : « de votre budget IA »).
+    const spentText = budgetPctText(ctx.user.id, spent, p.id).replace(/de votre budget/, "de ton budget");
     return {
       ok: made.length > 0 && !failed.length,
       summary: L(`${made.length} image(s) créée(s) pour la maquette ${a.direction}${failed.length ? ` ; ${failed.length} ratée(s) : ${failed.join(" | ")}` : ""}. Coût réel : ${spentText}. ${cov.complete ? "La maquette couvre toutes les pages." : `Il manque encore ${cov.missing.length} page(s) ou version(s).`}`, `${made.length} mockup image(s) created.`),
