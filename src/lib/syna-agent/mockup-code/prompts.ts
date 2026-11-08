@@ -70,9 +70,17 @@ export function mockupFacts(p: { business: "products" | "services"; name: string
 }
 
 /** Rôles des couleurs (palettes du propriétaire du 7 novembre : bouton, détails, texte, fond, surface). */
-export function colourRoles(b: MockupFacts["brand"]): string {
+/**
+ * Fond d'une maquette, au choix de la direction (demande du propriétaire du 8 novembre : trois maquettes qui jouent
+ * franchement sur la palette de la marque) : clair (fond de l'identité), sombre (ancrage sombre de la marque), ou
+ * grandes bandes pleines dans la couleur de marque. Toujours les seules couleurs de l'identité.
+ */
+export type MockupGround = "clair" | "sombre" | "marque";
+export function colourRoles(b: MockupFacts["brand"], ground?: MockupGround): string {
   if (!b?.palette) return "";
   const p = b.palette;
+  if (ground === "sombre") return `Couleurs de l'identité, strictement, en version sombre : l'ouverture, la plupart des bandes et le pied de page sont sur le sombre ${p.dark}, avec titres et textes clairs ${p.light} ; une ou deux sections claires ${p.light} (textes ${p.dark}) pour respirer ; boutons ${p.accent} avec texte ${p.dark} sur le sombre, ${p.primary} sur le clair ; surfaces des cartes ${p.secondary} ; détails graphiques ${p.accent}.`;
+  if (ground === "marque") return `Couleurs de l'identité, strictement, en grands aplats : alternance franche de bandes pleine largeur en couleur de marque ${p.primary} (titres et textes ${p.light}), en surface ${p.secondary} (textes ${p.dark}) et en clair ${p.light} ; l'accent ${p.accent} pour un bandeau, des pastilles et des détails ; boutons ${p.accent} sur la couleur de marque, ${p.primary} ailleurs ; le sombre ${p.dark} pour le pied de page.`;
   if (b.paletteRoles === "sina-2026") {
     const dark = b.ground === "sombre";
     const bg = b.ground === "degrade" && b.gradient ? `un dégradé à 135° de ${b.gradient.from} à ${b.gradient.to}` : dark ? `le sombre ${p.dark}` : `le clair ${p.light}`;
@@ -84,7 +92,7 @@ export function colourRoles(b: MockupFacts["brand"]): string {
 const POS = ["à gauche", "en deuxième position", "en troisième position", "en quatrième position", "en cinquième position", "en sixième position"];
 
 /** Consigne d'UNE image de maquette. */
-export function mockupImagePrompt(f: MockupFacts, d: Pick<MockupDirection, "name" | "style">, img: Pick<MockupImage, "viewport" | "pages">, pages: MockupPage[]): string {
+export function mockupImagePrompt(f: MockupFacts, d: Pick<MockupDirection, "name" | "style"> & { ground?: MockupGround }, img: Pick<MockupImage, "viewport" | "pages">, pages: MockupPage[]): string {
   const list = img.pages.map((k) => pageByKey(pages, k)).filter((x): x is MockupPage => !!x);
   const desktop = img.viewport === "desktop";
   const w = VIEWPORT_WIDTH[img.viewport];
@@ -115,15 +123,15 @@ export function mockupImagePrompt(f: MockupFacts, d: Pick<MockupDirection, "name
     "Rien n'est coupé par le cadre : chaque page est entière, avec de l'air autour.",
     // 6) style, lumière, typographie
     `Marque : « ${f.name} »${brand?.tagline ? `, slogan « ${brand.tagline} »` : ""}. Le logo fourni en référence est reproduit à l'identique dans l'en-tête de chaque page ; aucun autre logo.`,
-    colourRoles(brand),
+    colourRoles(brand, d.ground),
     brand?.fonts ? `Deux polices seulement : titres en ${fontLook(brand.fonts.heading, "heading")}, textes en ${fontLook(brand.fonts.body, "body")} (15 à 17 px), tailles fluides et hiérarchie nette.` : "",
-    "Mise en page aérée et rythmée (bandes pleine largeur, sections aérées, grandes photos), un motif graphique propre à la marque, boutons d'au moins 44 px, effets sobres.",
+    "Mise en page rythmée selon la direction graphique (elle prime sur tout réglage par défaut), un motif graphique propre à la marque (son symbole), boutons d'au moins 44 px.",
     f.business === "services"
       ? `Activité : prestations ${offers || "du client"}. Photos de lieux, d'outils et de réalisations, jamais de personne.`
       : `Produits : ${offers || `« ${f.name} »`}.${f.productPhoto ? " La photo du produit fournie en référence est utilisée telle quelle (même produit, mêmes couleurs, entier, rien de redessiné)." : ""}`,
     f.angle ? `Ton des textes : ${f.angle}. Titres courts et émotionnels, boutons courts qui commencent par un verbe.` : "Titres courts et émotionnels, boutons courts qui commencent par un verbe.",
     // 7) interdits
-    "Textes en français, exacts et lisibles. Aucun avis, note, étoile, chiffre, garantie, label, promotion, compte à rebours ou prix barré inventé. Aucune personne, aucun visage, aucun filigrane, aucun autre logo. Aucun objet supplémentaire.",
+    "Textes en français, exacts et lisibles. Aucun avis, note, étoile, chiffre, garantie, label, promotion, compte à rebours ou prix barré inventé. Aucune personne, aucun visage, aucune main ni aucune autre partie du corps (même pour « assemblé à la main » : montrer les ingrédients, les outils, le résultat), aucun filigrane, aucun autre logo. Aucun objet supplémentaire.",
   ].filter(Boolean).join("\n");
 }
 

@@ -20,7 +20,7 @@ export type MockupImage = {
   prompt?: string;
   note?: string;
 };
-export type MockupDirection = { key: "A" | "B" | "C"; name: string; style: string; images: MockupImage[] };
+export type MockupDirection = { key: "A" | "B" | "C"; name: string; style: string; images: MockupImage[]; /** Fond : clair, sombre ou grands aplats de la couleur de marque. */ ground?: "clair" | "sombre" | "marque" };
 export type MockupSet = {
   version: 1;
   business: "products" | "services";
@@ -106,9 +106,9 @@ export function planImages(pages: MockupPage[], opts: { desktopPerImage?: number
 }
 
 /** Nouvelle maquette (direction) avec ses images prévues, identifiants stables par position. */
-export function plannedDirection(key: MockupDirection["key"], name: string, style: string, pages: MockupPage[], prompts?: (img: Omit<MockupImage, "id" | "status" | "assetId">, index: number) => string): MockupDirection {
+export function plannedDirection(key: MockupDirection["key"], name: string, style: string, pages: MockupPage[], prompts?: (img: Omit<MockupImage, "id" | "status" | "assetId">, index: number) => string, ground?: MockupDirection["ground"]): MockupDirection {
   return {
-    key, name, style,
+    key, name, style, ...(ground ? { ground } : {}),
     images: planImages(pages).map((img, i) => ({ ...img, id: `${key}${String(i + 1).padStart(2, "0")}`, assetId: null, status: "planned", ...(prompts ? { prompt: prompts(img, i) } : {}) })),
   };
 }

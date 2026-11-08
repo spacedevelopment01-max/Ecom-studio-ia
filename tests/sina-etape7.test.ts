@@ -586,4 +586,18 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     expect(prompt).toContain("NON confirmés, à ne JAMAIS affirmer ni promettre");
     expect(prompt).toContain("Coordonnées : contact@brindi.fr · 14 rue Notre-Dame, 33000 Bordeaux.");
   });
+
+  it("trois maquettes franchement différentes : fond clair, sombre ou aplats de marque ; jamais de main (essai réel du 8 novembre)", async () => {
+    const { colourRoles, mockupImagePrompt } = await import("@/lib/syna-agent/mockup-code/prompts");
+    const { mockupPages: pagesFor } = await import("@/lib/syna-agent/mockup-code/pages");
+    const brand: any = { name: "Brindi", palette: { dark: "#233A2E", primary: "#3F6B4E", secondary: "#E3EDDF", accent: "#C9A04E", light: "#FFFFFF" }, paletteRoles: "sina-2026", ground: "blanc", fonts: { heading: "cormorant_garamond_n5", body: "karla_n4" } };
+    expect(colourRoles(brand, "sombre")).toMatch(/version sombre : l'ouverture, la plupart des bandes et le pied de page sont sur le sombre #233A2E/);
+    expect(colourRoles(brand, "marque")).toMatch(/grands aplats : alternance franche de bandes pleine largeur en couleur de marque #3F6B4E/);
+    expect(colourRoles(brand)).toMatch(/fond des pages le clair #FFFFFF/);
+    const f: any = { business: "products", name: "Brindi", brand, offers: [], productPhoto: false };
+    const t = mockupImagePrompt(f, { name: "Nuit verte", style: "Grand titre sur photo pleine page, vagues", ground: "sombre" }, { viewport: "desktop", pages: ["home"] }, pagesFor("products", "multi"));
+    expect(t).toContain("version sombre");
+    expect(t).toContain("aucune main ni aucune autre partie du corps");
+    expect(t).not.toContain("effets sobres");
+  });
 });

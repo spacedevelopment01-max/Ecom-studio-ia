@@ -156,11 +156,11 @@ const copyEditTool: AgentTool<{ page?: string; find: string; replace: string }> 
   },
 };
 
-type PrepareArgs = { directions: { key?: "A" | "B" | "C"; name: string; style: string }[] };
+type PrepareArgs = { directions: { key?: "A" | "B" | "C"; name: string; style: string; ground?: "clair" | "sombre" | "marque" }[] };
 const prepareTool: AgentTool<PrepareArgs> = {
   name: "mockup.prepare", module: "site", kind: "write", needsProject: true,
-  description: "Étape 6 (préparation, GRATUITE, aucune image créée) : pour 1 à 3 directions graphiques VRAIMENT différentes (name + style : structure de l'accueil, grille, traitement des photos, typographie de titre), découpe chaque maquette en images (pages clés seules, autres pages groupées, version ordinateur et version téléphone) et écrit la consigne de chaque image d'après l'identité choisie, les vrais produits ou prestations et l'angle marketing. Donne le coût maximal de la création des images (à annoncer au client avant toute génération). Remplace une préparation précédente.",
-  args: z.object({ directions: z.array(z.object({ key: KEY.optional(), name: z.string().min(1).max(60), style: z.string().min(1).max(700) }).strict()).min(1).max(3) }).strict(),
+  description: "Étape 6 (préparation, GRATUITE, aucune image créée) : pour 1 à 3 directions graphiques FRANCHEMENT différentes (demande du propriétaire : des variantes proches ne conviennent pas), chacune avec name, style et ground (clair, sombre = ancrage sombre de la marque, marque = grands aplats de la couleur de marque ; trois maquettes = trois fonds différents). Le style décrit, sans nom de police ni code couleur : l'ouverture (photo pleine page avec le titre dessus, ou écran partagé, ou très grand titre typographique), la grille et le rythme, et des éléments vivants à piocher, à la façon d'une boutique gourmande : séparateurs en vague, pastilles et tampons ronds, bandeau défilant avec le slogan, cartes arrondies avec ombre douce, produits détourés qui débordent des cadres, grands chiffres ou mots en contour, motif du symbole en fond. Deux directions ne partagent ni la même ouverture, ni le même fond, ni les mêmes formes. Pour chacune, découpe chaque maquette en images (pages clés seules, autres pages groupées, version ordinateur et version téléphone) et écrit la consigne de chaque image d'après l'identité choisie, les vrais produits ou prestations et l'angle marketing. Donne le coût maximal de la création des images (à annoncer au client avant toute génération). Remplace une préparation précédente.",
+  args: z.object({ directions: z.array(z.object({ key: KEY.optional(), name: z.string().min(1).max(60), style: z.string().min(1).max(700), ground: z.enum(["clair", "sombre", "marque"]).optional() }).strict()).min(1).max(3) }).strict(),
   run: (ctx, a) => {
     const p = project(ctx);
     if (!p.brand) return { ok: false, summary: L("L'identité de marque (nom, couleurs, polices) doit être choisie avant les maquettes (étape 1).", "Choose the brand identity first (step 1).") };
@@ -172,8 +172,8 @@ const prepareTool: AgentTool<PrepareArgs> = {
     // changé (essai réel du 8 novembre : ajouter les maquettes B et C effaçait l'accueil de A déjà créé et payé).
     const before = loadMockupSet(p.id);
     const directions = a.directions.map((d, i) => {
-      const fresh = plannedDirection(d.key ?? keys[i], d.name, d.style, pages, (img) => mockupImagePrompt(facts, d, img, pages));
-      const old = before?.directions.find((x) => x.key === fresh.key && x.name === fresh.name && x.style === fresh.style);
+      const fresh = plannedDirection(d.key ?? keys[i], d.name, d.style, pages, (img) => mockupImagePrompt(facts, d, img, pages), d.ground);
+      const old = before?.directions.find((x) => x.key === fresh.key && x.name === fresh.name && x.style === fresh.style && x.ground === fresh.ground);
       if (!old) return fresh;
       return { ...fresh, images: fresh.images.map((img) => {
         const prev = old.images.find((x) => x.status === "ready" && x.assetId && x.viewport === img.viewport && x.pages.join() === img.pages.join() && x.prompt === img.prompt);
