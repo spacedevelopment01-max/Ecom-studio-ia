@@ -444,6 +444,12 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       const after2 = loadMockupSet(pid)!;
       expect(after2.directions[0].images.filter((i) => i.status === "ready")).toHaveLength(readyA);
       expect(after2.directions[1].images.every((i) => i.status === "planned")).toBe(true);
+      // Le résumé du projet relu par SINA ne recopie jamais les maquettes (essai réel : 224 000 caractères à chaque pas).
+      const { projectSnapshot } = await import("@/lib/syna-agent/snapshot");
+      const snap = await fr(() => projectSnapshot(ctx));
+      expect(snap).toMatch(/Maquettes sur mesure : A « Lumière » \(\d+\/\d+ images prêtes\) ; B « Atelier »/);
+      expect(snap.length).toBeLessThan(6000);
+      expect(snap).not.toContain("Planche de maquette");
     } finally { mockupToolDeps.generateImage = undefined; }
   });
 

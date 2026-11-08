@@ -160,7 +160,7 @@ type PrepareArgs = { directions: { key?: "A" | "B" | "C"; name: string; style: s
 const prepareTool: AgentTool<PrepareArgs> = {
   name: "mockup.prepare", module: "site", kind: "write", needsProject: true,
   description: "Étape 6 (préparation, GRATUITE, aucune image créée) : pour 1 à 3 directions graphiques VRAIMENT différentes (name + style : structure de l'accueil, grille, traitement des photos, typographie de titre), découpe chaque maquette en images (pages clés seules, autres pages groupées, version ordinateur et version téléphone) et écrit la consigne de chaque image d'après l'identité choisie, les vrais produits ou prestations et l'angle marketing. Donne le coût maximal de la création des images (à annoncer au client avant toute génération). Remplace une préparation précédente.",
-  args: z.object({ directions: z.array(z.object({ key: KEY.optional(), name: z.string().min(1).max(60), style: z.string().min(1).max(400) }).strict()).min(1).max(3) }).strict(),
+  args: z.object({ directions: z.array(z.object({ key: KEY.optional(), name: z.string().min(1).max(60), style: z.string().min(1).max(700) }).strict()).min(1).max(3) }).strict(),
   run: (ctx, a) => {
     const p = project(ctx);
     if (!p.brand) return { ok: false, summary: L("L'identité de marque (nom, couleurs, polices) doit être choisie avant les maquettes (étape 1).", "Choose the brand identity first (step 1).") };
