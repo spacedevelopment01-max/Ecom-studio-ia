@@ -734,10 +734,12 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       { section: "pied de page complet", title: null, text: null, button: null, items: [{ title: "Nos mélanges", text: null }] },
     ] };
     const phone = copyLines(c, { phone: true });
-    expect(phone[0]).not.toContain("Nos mélanges");
-    expect(phone[0]).toContain("bouton « Choisis. »");
-    expect(phone[1]).toContain("Nos mélanges");
+    // Règle du propriétaire : en téléphone, ni liens ni bouton dans l'en-tête (rien à écrire en haut) ; liens au pied.
+    expect(phone).toHaveLength(1);
+    expect(phone.join()).not.toContain("bouton « Choisis. »");
+    expect(phone[0]).toMatch(/pied de page.*Nos mélanges/);
     expect(copyLines(c)[0]).toContain("Nos mélanges");
+    expect(copyLines(c)[0]).toContain("bouton « Choisis. »"); // en ordinateur, le bouton reste
     // Disposition dite dans chaque partie (essai réel : gros plans à quatre de front, moments à trois).
     const three = [{ title: "a", text: null }, { title: "b", text: null }, { title: "c", text: null }];
     const c2: any = { sections: [

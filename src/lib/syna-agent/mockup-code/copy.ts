@@ -223,7 +223,8 @@ export function copyLines(c: PageCopy, opts: { phone?: boolean } = {}): string[]
       s.title ? `titre « ${s.title} »` : "",
       s.text ? `texte « ${s.text} »` : "",
       ...(header ? [] : s.items.map((i) => `élément « ${i.title} »${i.text ? ` avec « ${i.text} »` : ""}`)),
-      s.button ? `bouton « ${s.button} »` : "",
+      // Règle du propriétaire (8 novembre) : en téléphone, l'en-tête n'a que le logo et l'icône du menu, aucun bouton.
+      s.button && !header ? `bouton « ${s.button} »` : "",
     ].filter(Boolean);
     // Téléphone : la disposition est dite DANS chaque partie (essai réel du 8 novembre : avec une seule règle générale,
     // le journal était bien empilé mais les gros plans passaient à quatre de front et les moments à trois).
