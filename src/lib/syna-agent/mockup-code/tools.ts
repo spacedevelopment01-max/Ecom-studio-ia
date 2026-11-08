@@ -125,7 +125,11 @@ const copyTool: AgentTool<{ pages?: string[] }> = {
       try {
         const cap = (jobId ? jobSpentMicro(jobId) : 0) + COPY_CAP_MICRO;
         const raw = copyDeps.generate ? await writePageCopy(call, page, copyDeps.generate) : await withTrace({ jobId, projectId: p.id, step: "site-copy", costCapMicro: cap }, () => writePageCopy(call, page));
-        const checked = fixAndCheckCopy(raw, page, { headline: plan.angle?.message, tagline: p.brand.tagline, cta: plan.angle?.cta, products: productsOf(p.id) });
+        const home = out.home ?? prev?.pages.home;
+        const headerOf = (c?: PageCopy) => c?.sections.find((x) => /en-t[êe]te/i.test(x.section));
+        const footerOf = (c?: PageCopy) => c?.sections.find((x) => /pied de page/i.test(x.section));
+        const nav = home && key !== "home" ? { header: headerOf(home)?.items ?? [], button: headerOf(home)?.button ?? null, footer: footerOf(home)?.items ?? [] } : undefined;
+        const checked = fixAndCheckCopy(raw, page, { headline: plan.angle?.message, tagline: p.brand.tagline, cta: plan.angle?.cta, products: productsOf(p.id), ...(nav ? { nav } : {}), shipping: plan.company.shipping });
         // Textes incomplets : jamais posés sur une maquette (pas de relance payante sans accord du client).
         if (checked.problems.length) failed.push(`${page.fr} : textes incomplets (${checked.problems.join(" ; ")})`);
         else out[key] = checked.copy;

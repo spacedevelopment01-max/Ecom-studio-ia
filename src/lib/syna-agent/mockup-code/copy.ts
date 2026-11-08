@@ -84,7 +84,9 @@ export function copyPrompt(page: MockupPage, input: { brand: { name: string; tag
   return [
     `Marque : « ${input.brand.name} »${input.brand.tagline ? `, slogan (mot pour mot) « ${input.brand.tagline} »` : ""}.`,
     a ? `Angle marketing choisi : « ${a.title} »${a.goal ? ` (objectif : ${a.goal})` : ""}${input.emotion ? `, émotion visée : ${input.emotion}` : ""}.` : "",
-    a?.message ? `Accroche (titre d'ouverture, mot pour mot) : « ${a.message} ».` : "",
+    // Essai réel du 8 novembre : l'accroche reprise comme titre du catalogue, du panier et de « Notre histoire » (même
+    // titre principal sur toutes les pages, mauvais pour le référencement).
+    a?.message ? (page.key === "home" ? `Accroche (titre d'ouverture, mot pour mot) : « ${a.message} ».` : `L'accroche « ${a.message} » est le titre de l'ACCUEIL seulement : ne la reprends sur cette page ni comme titre ni comme texte. Le titre principal de cette page lui est propre (son rôle, dans l'émotion de l'angle), unique sur le site pour le référencement.`) : "",
     a?.cta ? `Appel à l'action (bouton principal, mot pour mot) : « ${a.cta} ».` : "",
     input.story ? `Ce qu'on raconte : ${input.story}` : "",
     input.show ? `Ce qu'on montre : ${input.show}` : "",
@@ -93,7 +95,8 @@ export function copyPrompt(page: MockupPage, input: { brand: { name: string; tag
     input.plan.products.length ? `Produits (noms et prix exacts) : ${input.plan.products.map((x) => `${x.title}${x.price != null ? ` (${x.price.toFixed(2).replace(".", ",")} €)` : ""}`).join(" ; ")}.` : "",
     input.plan.offer.facts.length ? `Faits confirmés par le client : ${input.plan.offer.facts.join(" ; ")}.` : "",
     // Essai réel du 8 novembre : « Conseils sur chaque fiche » écrit alors que ces conseils restaient à confirmer.
-    input.toConfirm?.length ? `NON confirmés, à ne JAMAIS affirmer ni promettre (même dans une réponse aux objections) : ${input.toConfirm.join(" ; ")}.` : "",
+    input.toConfirm?.length ? `NON confirmés, à ne JAMAIS affirmer ni promettre (même dans une réponse aux objections), ni dire qu'ils figurent quelque part (essai réel : « les conseils sont sur chaque fiche ») : ${input.toConfirm.join(" ; ")}.` : "",
+    page.key === "cart" ? "Le panier d'exemple (lignes, quantités et montants) et le menu sont posés par le Studio : n'écris aucun montant ni aucune ligne de produit." : page.key !== "home" ? "Le menu de l'en-tête et les liens du pied de page sont ceux de l'accueil, posés par le Studio." : "",
     input.plan.company.shipping ? `Livraison : ${input.plan.company.shipping}.` : "",
     input.plan.company.returns ? `Retours : ${input.plan.company.returns}.` : "",
     ((c) => (c.length ? `Coordonnées : ${c.join(" · ")}.` : ""))([input.plan.company.legalName, input.plan.company.email, input.plan.company.address, input.plan.company.phone].filter((x): x is string => !!x)),
@@ -136,7 +139,18 @@ function sections_title(c: PageCopy, page: MockupPage): string | null {
   return t ? t.toLocaleLowerCase("fr-FR") : null;
 }
 
-export function fixAndCheckCopy(c: PageCopy, page: MockupPage, fixed: { headline?: string; tagline?: string | null; cta?: string; products: { title: string; price: number | null }[] }): { copy: PageCopy; problems: string[] } {
+/** Frais de livraison et seuil de gratuité lus dans la phrase du client (« 4,90 € … offerte dès 35 € »), en centimes. */
+export function shippingRule(text?: string | null): { fee: number; freeFrom: number | null } | null {
+  if (!text) return null;
+  const cents = (v: string) => Math.round(Number(v.replace(",", ".")) * 100);
+  const fee = text.match(/(\d+(?:[,.]\d{1,2})?)\s*€/);
+  if (!fee) return null;
+  const free = text.match(/(?:offerte?|gratuite?)\s+(?:dès|à partir de|au-delà de)\s+(\d+(?:[,.]\d{1,2})?)\s*€/i);
+  return { fee: cents(fee[1]), freeFrom: free ? cents(free[1]) : null };
+}
+
+type Item = { title: string; text: string | null };
+export function fixAndCheckCopy(c: PageCopy, page: MockupPage, fixed: { headline?: string; tagline?: string | null; cta?: string; products: { title: string; price: number | null }[]; nav?: { header: Item[]; button?: string | null; footer: Item[] }; shipping?: string | null }): { copy: PageCopy; problems: string[] } {
   const problems: string[] = [];
   if (c.sections.length !== page.sections.length) problems.push(`${c.sections.length} sections écrites pour ${page.sections.length} attendues`);
   const euros = (n: number) => `${(n / 100).toFixed(2).replace(".", ",").replace(",00", "")} €`;
@@ -161,6 +175,24 @@ export function fixAndCheckCopy(c: PageCopy, page: MockupPage, fixed: { headline
       const shown = sections_title(c, page);
       if (shown) s.items = s.items.filter((x) => x.title.toLocaleLowerCase("fr-FR") !== shown);
     }
+    // Même menu et mêmes liens de pied de page que l'accueil sur toutes les pages (essai réel : menu différent sur
+    // chaque page, avec des « Thés » et « Infusions » qui ne sont pas des pages du site).
+    if (page.key !== "home" && fixed.nav) {
+      if (/en-t[êe]te/i.test(name)) { s.items = fixed.nav.header; s.title = null; if (fixed.nav.button) s.button = fixed.nav.button; }
+      if (/pied de page/i.test(name) && fixed.nav.footer.length) s.items = fixed.nav.footer;
+    }
+    // Panier d'exemple posé par le Studio, montants calculés (essai réel : sous-total faux et livraison facturée
+    // au-delà du seuil de gratuité).
+    if (page.key === "cart" && fixed.products.some((x) => x.price != null)) {
+      const lines = fixed.products.filter((x) => x.price != null).slice(0, 2);
+      if (/lignes du panier/.test(name)) s.items = lines.map((x) => ({ title: x.title, text: `1 sachet · ${euros(x.price!)}` }));
+      if (/^sous-total/.test(name)) {
+        const sub = lines.reduce((n, x) => n + x.price!, 0), rule = shippingRule(fixed.shipping);
+        const ship = rule ? (rule.freeFrom != null && sub >= rule.freeFrom ? 0 : rule.fee) : null;
+        s.items = [{ title: "Sous-total", text: euros(sub) }, ...(ship != null ? [{ title: "Livraison", text: ship ? euros(ship) : "offerte" }, { title: "Total", text: euros(sub + ship) }] : [])];
+      }
+    }
+    if (page.key !== "home" && fixed.headline && s.title && norm2(s.title) === norm2(fixed.headline)) problems.push(`« ${name} » : l'accroche de l'accueil reprise comme titre (titre propre à la page attendu)`);
     const need = needOf(name);
     if (need?.minItems && s.items.length < need.minItems) problems.push(`« ${name} » : ${s.items.length} élément(s) pour ${need.minItems} au moins`);
     if (!s.title && !s.text && !s.items.length && !s.button) problems.push(`« ${name} » vide`);
@@ -170,6 +202,8 @@ export function fixAndCheckCopy(c: PageCopy, page: MockupPage, fixed: { headline
   if (holes) problems.push(`trous à compléter : ${[...new Set(holes)].join(", ")}`);
   return { copy: { ...c, sections }, problems };
 }
+
+const norm2 = (t: string) => t.toLocaleLowerCase("fr-FR").replace(/[’']/g, "'").replace(/\s+/g, " ").trim();
 
 /** Angle tel que lu à l'étape 4 (émotion, récit, scènes) pour la rédaction. */
 export function angleDetails(j: Journey): { emotion?: string; story?: string; show?: string; toConfirm?: string[] } {

@@ -139,7 +139,9 @@ export function mockupImagePrompt(f: MockupFacts, d: Pick<MockupDirection, "name
     f.business === "services"
       ? `Activité : prestations ${offers || "du client"}. Photos de lieux, d'outils et de réalisations, jamais de personne.`
       : `Produits : ${offers || `« ${f.name} »`}.${f.productPhoto ? " La photo du produit fournie en référence est utilisée telle quelle (même produit, mêmes couleurs, entier, rien de redessiné)." : ""}`,
-    f.angle ? `Ton des textes : ${f.angle}. Titres courts et émotionnels, boutons courts qui commencent par un verbe.` : "Titres courts et émotionnels, boutons courts qui commencent par un verbe.",
+    // Accroche citée seulement pour l'accueil (essai réel du 8 novembre : reprise en grand titre sur le contact, qui
+    // n'en avait pas dans ses textes).
+    f.angle ? `Ton des textes : ${list.some((p) => p.key === "home") ? f.angle : f.angle.replace(/,?\s*accroche « [^»]*»/, "")}. Titres courts et émotionnels, boutons courts qui commencent par un verbe.${list.some((p) => p.key === "home") ? "" : " Aucun titre ni texte de l'accueil n'est repris sur cette page."}` : "Titres courts et émotionnels, boutons courts qui commencent par un verbe.",
     // 7) interdits
     "Textes en français, exacts et lisibles. Aucun avis, note, étoile, chiffre, garantie, label, promotion, compte à rebours ou prix barré inventé. Aucune personne, aucun visage, aucune main ni aucune autre partie du corps (même pour « assemblé à la main » : montrer les ingrédients, les outils, le résultat), aucun filigrane, aucun autre logo. Aucun objet supplémentaire.",
   ].filter(Boolean).join("\n");

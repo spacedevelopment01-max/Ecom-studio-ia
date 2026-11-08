@@ -812,4 +812,30 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     // Identifiants uniques.
     expect(new Set(d.images.map((i) => i.id)).size).toBe(d.images.length);
   });
+
+  it("pages autres que l'accueil : titre propre, menu de l'accueil, panier d'exemple calculé (essai réel du 8 novembre)", async () => {
+    const { fixAndCheckCopy, shippingRule, copyPrompt } = await import("@/lib/syna-agent/mockup-code/copy");
+    const { mockupPages } = await import("@/lib/syna-agent/mockup-code/pages");
+    const pages = mockupPages("products", "multi");
+    const cart = pages.find((x) => x.key === "cart")!;
+    expect(shippingRule("Colissimo en 48 à 72 h, 4,90 €. Offerte dès 35 € d'achat.")).toEqual({ fee: 490, freeFrom: 3500 });
+    const raw: any = { seo: { title: "t", description: "d" }, sections: cart.sections.map((name) => ({ section: name, title: /lignes/.test(name) ? "Pose ton écran." : "Titre", text: "Texte", button: null, items: [{ title: "Thés", text: null }] })) };
+    const nav = { header: [{ title: "Nos mélanges", text: null }, { title: "Le journal", text: null }], button: "Choisis ton mélange de pause.", footer: [{ title: "Mentions légales", text: null }] };
+    const products = [{ title: "Thé vert jasmin", price: 850 }, { title: "Rooibos vanille", price: 850 }, { title: "Verveine-menthe", price: 750 }];
+    const { copy, problems } = fixAndCheckCopy(raw, cart, { headline: "Pose ton écran.", products, nav, shipping: "4,90 €, offerte dès 35 €" });
+    expect(problems.join()).toMatch(/l'accroche de l'accueil reprise comme titre/);
+    const sec = (re: RegExp) => copy.sections.find((x) => re.test(x.section))!;
+    expect(sec(/lignes/).items).toEqual([{ title: "Thé vert jasmin", text: "1 sachet · 8,50 €" }, { title: "Rooibos vanille", text: "1 sachet · 8,50 €" }]);
+    expect(sec(/^sous-total/).items).toEqual([{ title: "Sous-total", text: "17 €" }, { title: "Livraison", text: "4,90 €" }, { title: "Total", text: "21,90 €" }]);
+    // Au-delà du seuil, la livraison est offerte.
+    const big = fixAndCheckCopy(raw, cart, { products: [{ title: "A", price: 2000 }, { title: "B", price: 1600 }], nav, shipping: "4,90 €, offerte dès 35 €" }).copy;
+    expect(big.sections.find((x) => /^sous-total/.test(x.section))!.items).toEqual([{ title: "Sous-total", text: "36 €" }, { title: "Livraison", text: "offerte" }, { title: "Total", text: "36 €" }]);
+    // Menu de l'accueil sur toutes les pages.
+    const head = copy.sections.find((x) => /en-t[êe]te/.test(x.section));
+    if (head) expect(head.items.map((i) => i.title)).toEqual(["Nos mélanges", "Le journal"]);
+    // La consigne d'écriture d'une autre page interdit l'accroche comme titre.
+    const plan: any = { angle: { title: "La vraie pause", message: "Pose ton écran.", cta: "Choisis." }, keyMessages: [], objections: [], products: [], offer: { facts: [] }, company: {} };
+    expect(copyPrompt(cart, { brand: { name: "Brindi" }, plan })).toMatch(/titre de l'ACCUEIL seulement/);
+    expect(copyPrompt(pages.find((x) => x.key === "home")!, { brand: { name: "Brindi" }, plan })).toMatch(/Accroche \(titre d'ouverture, mot pour mot\)/);
+  });
 });
