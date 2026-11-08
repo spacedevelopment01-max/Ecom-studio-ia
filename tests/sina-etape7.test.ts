@@ -861,4 +861,24 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     expect(pageLayout({ key: "about", group: "contenu" })).toBeNull();
     expect(pageLayout({ key: "terms", group: "legal" })).toMatch(/texte légal/);
   });
+
+  it("retrait d'un élément sans IA : la bande est enlevée, la suite de la colonne remonte ; refus si autre chose sur ces lignes", async () => {
+    const { removeBand, isRemoval } = await import("@/lib/syna-agent/mockup-code/edit");
+    expect(isRemoval("Retirer ce bandeau entièrement")).toBe(true);
+    expect(isRemoval("retire le bouton doré")).toBe(true);
+    expect(isRemoval("Remplacer le texte « A » par « B »")).toBe(false);
+    const mk = (parts: { c: string; x: number; y: number; w: number; h: number }[]) => sharp({ create: { width: 100, height: 200, channels: 3, background: "#EEEEEE" } }).composite(parts.map((p) => ({ input: { create: { width: p.w, height: p.h, channels: 3, background: p.c } } as any, left: p.x, top: p.y }))).png().toBuffer();
+    // Colonne blanche (x 20-80) ; bandeau vert (y 50-60, x 30-70) ; titre noir plus bas (y 80-90) ; autre colonne dorée à gauche.
+    const img = await mk([{ c: "#FFFFFF", x: 20, y: 10, w: 60, h: 180 }, { c: "#2F6B4E", x: 30, y: 50, w: 40, h: 10 }, { c: "#000000", x: 30, y: 80, w: 40, h: 10 }, { c: "#C9A04E", x: 2, y: 120, w: 10, h: 10 }]);
+    const out = await removeBand(img, { left: 28, right: 72, top: 48, bottom: 62 });
+    expect(out).not.toBeNull();
+    const r = await sharp(out!).raw().toBuffer({ resolveWithObject: true });
+    const px = (x: number, y: number) => Array.from(r.data.subarray((y * 100 + x) * 3, (y * 100 + x) * 3 + 3));
+    expect(px(50, 55)).toEqual([255, 255, 255]); // bandeau retiré
+    expect(px(50, 70)).toEqual([0, 0, 0]); // titre remonté de 14 px
+    expect(px(5, 125)).toEqual([201, 160, 78]); // l'autre colonne ne bouge pas
+    // Autre contenu sur les mêmes lignes de la colonne : refusé (rien ne doit disparaître en plus).
+    const busy = await mk([{ c: "#FFFFFF", x: 20, y: 10, w: 60, h: 180 }, { c: "#2F6B4E", x: 30, y: 50, w: 20, h: 10 }, { c: "#000000", x: 60, y: 50, w: 10, h: 10 }]);
+    expect(await removeBand(busy, { left: 28, right: 52, top: 48, bottom: 62 })).toBeNull();
+  });
 });

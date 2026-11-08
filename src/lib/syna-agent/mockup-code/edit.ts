@@ -237,3 +237,41 @@ export async function composeEdit(original: Buffer, edited: Buffer, boxes: Box[]
   }
   return { image: await sharp(c.data, { raw: { width: W, height: c.info.height, channels: 3 } }).png().toBuffer(), failed, grown };
 }
+
+/** Demande de RETRAIT pur (« retire / supprime / enlève … ») : faite sans IA quand c'est possible (removeBand). */
+export const isRemoval = (change: string) => /^\s*(?:retir|supprim|enl[eè]v|efface|ôte)\w*\b/i.test(change) || /\b(?:retirer|supprimer|enlever|effacer|ôter)\s+(?:ce|cette|ces|le|la|les|l')\b/i.test(change);
+
+/**
+ * Retrait d'un élément SANS IA (essai réel du 8 novembre : retirer le bandeau « La vraie pause » du contact ; la
+ * retouche par l'IA remontait toute la page et a été refusée, payée pour rien). L'élément occupe une bande horizontale
+ * de sa colonne : si, sur ces lignes, la colonne ne contient rien d'autre que du fond uni, ces lignes sont retirées et
+ * la suite de la colonne remonte d'autant (recopiée au pixel près) ; le bas de la colonne est complété par le fond de
+ * la planche. null si ce n'est pas possible proprement (autre contenu sur ces lignes).
+ */
+export async function removeBand(image: Buffer, b: Box): Promise<Buffer | null> {
+  const { data, info } = await sharp(image).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const W = info.width, H = info.height;
+  const px = (x: number, y: number) => { const i = (y * W + x) * 3; return [data[i], data[i + 1], data[i + 2]]; };
+  const same = (a: number[], c: number[], tol = 14) => Math.abs(a[0] - c[0]) <= tol && Math.abs(a[1] - c[1]) <= tol && Math.abs(a[2] - c[2]) <= tol;
+  const page = px(2, H - 2);
+  // Bords de la colonne : on s'écarte de la zone tant qu'on n'atteint pas le fond de la planche sur toutes ses lignes.
+  const isPage = (x: number) => { for (let y = b.top; y < b.bottom; y++) if (!same(px(x, y), page)) return false; return true; };
+  let left = b.left, right = b.right;
+  while (left > 0 && !isPage(left - 1)) left--;
+  while (right < W && !isPage(right)) right++;
+  // Hors de la zone, sur ces lignes, la colonne ne doit contenir que du fond uni (celui des pixels juste au-dessus).
+  // (bords de colonne adoucis tolérés : au plus 4 % de pixels écartés de la couleur médiane de la ligne).
+  for (let y = b.top; y < b.bottom; y++) {
+    const outside: number[][] = [];
+    for (let x = left; x < right; x++) if (x < b.left || x >= b.right) outside.push(px(x, y));
+    if (!outside.length) continue;
+    const med = [0, 1, 2].map((c) => outside.map((p) => p[c]).sort((u, v) => u - v)[outside.length >> 1]);
+    if (outside.filter((p) => !same(p, med)).length > Math.max(1, outside.length * 0.04)) return null;
+  }
+  const h = b.bottom - b.top, out = Buffer.from(data);
+  for (let y = b.top; y < H; y++) for (let x = left; x < right; x++) {
+    const o = (y * W + x) * 3, src = y + h < H ? ((y + h) * W + x) * 3 : -1;
+    if (src >= 0) { out[o] = data[src]; out[o + 1] = data[src + 1]; out[o + 2] = data[src + 2]; } else { out[o] = page[0]; out[o + 1] = page[1]; out[o + 2] = page[2]; }
+  }
+  return sharp(out, { raw: { width: W, height: H, channels: 3 } }).png().toBuffer();
+}
