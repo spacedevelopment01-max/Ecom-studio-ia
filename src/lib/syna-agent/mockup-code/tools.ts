@@ -53,7 +53,7 @@ function angleOf(projectId: string): string | undefined {
   try {
     const st: any = getStrategyState(projectId);
     const a = st.active ? st.angles?.find((x: any) => x.id === st.active.angleId) ?? st.active.angle : null;
-    return a ? `angle « ${a.title ?? ""} », accroche « ${a.message ?? a.promise ?? ""} », émotion ${a.emotion ?? ""}` : undefined;
+    return a ? [`angle « ${a.title ?? ""} »`, a.message || a.promise ? `accroche « ${a.message ?? a.promise} »` : "", a.emotion ? `émotion ${a.emotion}` : ""].filter(Boolean).join(", ") : undefined;
   } catch { return undefined; }
 }
 
@@ -109,7 +109,10 @@ const prepareTool: AgentTool<PrepareArgs> = {
     return {
       ok: verified,
       summary: L(`${directions.length} maquette(s) préparée(s) : ${images} image(s) à créer au total, aucune créée.${maxMicro == null ? " Aucun modèle d'images utilisable pour l'instant : rien ne peut être créé." : ""}`, `${directions.length} mockup(s) prepared: ${images} image(s) to create.`),
-      data: { maquettes: directions.map((d) => ({ maquette: d.key, nom: d.name, images: d.images.map((i) => ({ id: i.id, version: i.viewport, pages: i.pages })) })), coutMaxMicro: maxMicro, pages: pages.length, at: saved.at },
+      // Prix d'UNE image aussi : le client peut commencer par une seule page (essai réel : le prix des 15 images annoncé
+      // pour créer seulement l'accueil).
+      data: { maquettes: directions.map((d) => ({ maquette: d.key, nom: d.name, images: d.images.map((i) => ({ id: i.id, version: i.viewport, pages: i.pages })) })), coutMaxMicro: maxMicro, coutParImageMicro: imageUnit(refs), pages: pages.length, at: saved.at },
+      hint: "Si le client veut d'abord une seule page (ex. l'accueil en ordinateur), annonce le prix de CES images seulement (coutParImageMicro × nombre d'images), jamais celui de toute la maquette, puis mockup.generate avec pages et viewport.",
       changes: [{ module: "site", object: "maquettes (préparation)", summary: `${directions.length} maquette(s), ${images} image(s) prévues`, after: { directions: directions.map((d) => d.key), images }, verified }],
     };
   },

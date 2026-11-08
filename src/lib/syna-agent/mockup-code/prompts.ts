@@ -69,7 +69,7 @@ export function mockupImagePrompt(f: MockupFacts, d: Pick<MockupDirection, "name
   const offers = f.offers.length ? f.offers.map((o) => `« ${o.name} »${o.price ? ` (${o.price})` : ""}`).join(", ") : "";
   return [
     // 1) type d'image, format, point de vue, cadrage
-    `Planche de maquette de site web (design d'interface professionnel de 2026, rendu net et lisible), format portrait, vue de face, à plat, sans perspective, sans écran ni appareil autour. Direction graphique « ${d.name} » : ${d.style}.`,
+    `Planche de maquette de site web (design d'interface professionnel de 2026, rendu net et lisible), format portrait, vue de face, à plat, sans perspective, sans écran ni appareil autour. Direction graphique « ${d.name} » : ${d.style.trim().replace(/[.\s]+$/, "")}.`,
     desktop
       ? n === 1 ? `Une seule page en version ordinateur (${w} px de large), montrée entière, de l'en-tête au pied de page, en une longue colonne centrée.` : `${n} pages en version ordinateur (${w} px de large), posées côte à côte en colonnes de même largeur, chacune entière de l'en-tête au pied de page.`
       : `${n} écran${n > 1 ? "s" : ""} de téléphone (${w} px de large) posé${n > 1 ? "s côte à côte" : ""}, chacun montrant la page entière en longueur, composée pour le téléphone (titres et coupes de lignes propres au téléphone, menu replié en icône).`,
