@@ -604,4 +604,14 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     expect(t).toContain("aucune main ni aucune autre partie du corps");
     expect(t).not.toContain("effets sobres");
   });
+
+  it("pages clés seules sur leur image, en ordinateur ET en téléphone (essai réel : accueil serré avec trois écrans)", async () => {
+    const { planImages } = await import("@/lib/syna-agent/mockup-code/mockup-set");
+    const { mockupPages: pagesFor } = await import("@/lib/syna-agent/mockup-code/pages");
+    const plan = planImages(pagesFor("products", "multi"));
+    for (const v of ["desktop", "phone"] as const) {
+      expect(plan.some((i) => i.viewport === v && i.pages.join() === "home")).toBe(true);
+      expect(plan.some((i) => i.viewport === v && i.pages.join() === "product")).toBe(true);
+    }
+  });
 });

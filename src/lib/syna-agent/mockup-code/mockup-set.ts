@@ -94,7 +94,9 @@ export function planImages(pages: MockupPage[], opts: { desktopPerImage?: number
     const units = list.filter((p) => !p.variantOf || !pageByKey(list, p.variantOf)).map((p) => [p.key, ...list.filter((x) => x.variantOf === p.key).map((x) => x.key)]);
     let cur: string[] = [];
     for (const u of units) {
-      const isKey = v === "desktop" && pageByKey(list, u[0])?.key_page;
+      // Pages clés seules aussi en téléphone (essai réel du 8 novembre : l'accueil serré avec trois autres écrans, textes
+      // trop petits pour être écrits juste).
+      const isKey = !!pageByKey(list, u[0])?.key_page;
       if (isKey) { groups.push(u); continue; }
       if (cur.length && cur.length + u.length > per[v]) { groups.push(cur); cur = []; }
       cur.push(...u);
