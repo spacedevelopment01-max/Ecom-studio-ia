@@ -39,7 +39,7 @@ import { hdAspect, mockupFacts, mockupImagePrompt, mockupImagesMaxMicro, siteIma
 import { STEP7_CAP_FACTOR, step7MaxMicro, step7ProbableMicro, type Step7Report } from "./pipeline";
 import { remember, saveThemeVersion, themeVersion } from "../../projects";
 import { applyOps, validateSpec } from "../../theme/ops";
-import { sectionSchema } from "../../theme/spec";
+import { sectionSchema, type ThemeSpec } from "../../theme/spec";
 import { checkMaxMicro, mockupCheckCall, MockupCheckSchema, mockupCheckVerdict, type MockupCheck } from "./check";
 import { llmJson } from "../../ai/llm";
 import { blackShare, boxesOf, composeEdit, exactTexts, isRemoval, missingTexts, removeBand, locateCall, locateMaxMicro, LocateSchema, mockupEditPrompt, type Box, type EditChange, type Locate } from "./edit";
@@ -586,7 +586,9 @@ function step7Report(projectId: string): { versionId: string; number: number; di
   try { return row ? JSON.parse(row.value) : null; } catch { return null; }
 }
 const hdUnit = (refs: number) => { try { return photoRequestMaxMicro(mockupImageRoute(), { prompt: "x".repeat(PUBLICATION_PROMPT_MAX_BYTES), references: refs, aspect: "16:9", quality: "high" }); } catch { return null; } };
-const slotsOf = (r: Step7Report, pages?: string[]) => (r.imageSlots ?? []).filter((s) => s.imageId && s.box && (!pages?.length || pages.includes(s.page)));
+/** Photos à recréer : celles dont la section existe dans le site codé (essai réel : le journal, non codé faute de budget, aurait eu 3 photos payées sans place). */
+const slotsOf = (r: Step7Report, pages?: string[], spec?: ThemeSpec | null) => (r.imageSlots ?? []).filter((s) => s.imageId && s.box && (!pages?.length || pages.includes(s.page))
+  && (!spec || Object.values((s.template.startsWith("group:") ? spec.groups[s.template.slice(6) as "header" | "footer"] : spec.templates[s.template])?.sections ?? {}).some((x) => x.type === s.type)));
 
 /**
  * Étape 7 (demande du propriétaire du 8 novembre) : chaque photo du site codé est recréée en haute définition par l'IA
@@ -600,7 +602,7 @@ const siteImagesTool: AgentTool<{ pages?: string[] }> = {
   estimate: (ctx, a) => {
     const p = project(ctx), r = step7Report(p.id);
     if (!r) throw new HttpError(409, L("Le site n'est pas encore codé d'après la maquette (site.code_from_mockup d'abord).", "Code the site from the mockup first."));
-    const n = slotsOf(r.report, a.pages).length;
+    const n = slotsOf(r.report, a.pages, themeVersion(p.id, r.versionId)?.spec).length;
     if (!n) throw new HttpError(409, L("Aucune photo à recréer sur ces pages.", "No photo to recreate on these pages."));
     const unit = (mockupToolDeps.imageMaxMicro ?? hdUnit)(3);
     if (unit == null) throw new HttpError(409, L("Aucun modèle d'images utilisable pour les photos du site.", "No usable image model."));
@@ -620,7 +622,7 @@ const siteImagesTool: AgentTool<{ pages?: string[] }> = {
     const mockups = new Map<string, Buffer>();
     const done: { slot: string; assetId: string }[] = [], failed: string[] = [], unplaced: string[] = [];
     let spec = cur.spec;
-    for (const slot of slotsOf(r.report, a.pages)) {
+    for (const slot of slotsOf(r.report, a.pages, cur.spec)) {
       const label = `${pageByKey(set.pages, slot.page)?.fr ?? slot.page} › ${slot.section} › photo ${slot.index + 1}`;
       try {
         const img = d?.images.find((i) => i.id === slot.imageId);

@@ -678,13 +678,14 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     const v2 = saveThemeVersion(pid, spec0, "site codé", "ai", undefined, undefined, { activate: false });
     const home = loadMockupSet(pid)!.directions[0].images.find((i) => i.viewport === "desktop" && i.pages.includes("home"))!;
     const slot = { page: "home", section: "Ouverture", template: "index", type, index: 0, imageId: home.id, box: { x: 0.1, y: 0.1, w: 0.5, h: 0.3 }, ratio: "16:9", description: "tasse fumante sur un bureau", prompt: "x" };
-    remember(pid, { kind: "artifact", key: STEP7_REPORT_KEY, value: JSON.stringify({ versionId: v2.id, number: v2.number, direction: "A", report: { ...(report.data as any).report, imageSlots: [slot, { ...slot, index: 1, box: undefined }] } }), source: "local", origin: "system" });
+    // Une photo sans zone, et une photo d'une section non codée (essai réel : le journal, faute de budget) : ni l'une ni l'autre.
+    remember(pid, { kind: "artifact", key: STEP7_REPORT_KEY, value: JSON.stringify({ versionId: v2.id, number: v2.number, direction: "A", report: { ...(report.data as any).report, imageSlots: [slot, { ...slot, index: 1, box: undefined }, { ...slot, type: "es-custom-home-9", section: "Journal" }] } }), source: "local", origin: "system" });
     mockupToolDeps.imageMaxMicro = () => 150_000;
     let prompt = "";
     mockupToolDeps.generateImage = async (pr) => { prompt = pr; return png("#AA5500", 300, 170); };
     try {
       const est = await fr(() => tool("site.images").estimate!(ctx, {}));
-      expect(est.maxMicro).toBe(150_000); // une seule photo avec sa zone repérée sur la maquette
+      expect(est.maxMicro).toBe(150_000); // une seule photo avec sa zone repérée sur la maquette, dans une section codée
       const r = await call("site.images", ctx, {});
       expect(r.ok, r.summary).toBe(true);
       expect(prompt).toMatch(/reproduis-la À L'IDENTIQUE en haute définition/);
