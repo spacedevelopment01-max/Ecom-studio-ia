@@ -36,7 +36,7 @@ import { attachImage, coverageOf, loadMockupSet, plannedDirection, saveMockupSet
 import { inventoryOptionsOf, mockupPages } from "./pages";
 import { mockupFacts, mockupImagePrompt, mockupImagesMaxMicro } from "./prompts";
 import { step7MaxMicro } from "./pipeline";
-import { CHECK_CAP_MICRO, mockupCheckCall, MockupCheckSchema, mockupCheckVerdict, type MockupCheck } from "./check";
+import { checkMaxMicro, mockupCheckCall, MockupCheckSchema, mockupCheckVerdict, type MockupCheck } from "./check";
 import { llmJson } from "../../ai/llm";
 
 /** Remplaçables par les tests : coût d'une image de maquette et coût maximal des appels de l'étape 7. */
@@ -237,9 +237,9 @@ async function checkMockupImage(ctx: ToolContext, projectId: string, direction: 
     const jobId = getRun(ctx.runId)?.job_id ?? null;
     const call = mockupCheckCall({ userId: ctx.user.id, projectId, jobId, usageKey }, data, img, img.pages.map((k) => pageByKey(pages, k)?.fr ?? k));
     const raw = mockupToolDeps.checkImage ? await mockupToolDeps.checkImage(data, img)
-      : await withTrace({ jobId, projectId, step: "mockup-check", costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + CHECK_CAP_MICRO }, () => llmJson(call, MockupCheckSchema, { strict: true }));
+      : await withTrace({ jobId, projectId, step: "mockup-check", costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + checkMaxMicro() }, () => llmJson(call, MockupCheckSchema, { strict: true }));
     return mockupCheckVerdict(MockupCheckSchema.parse(raw), img.viewport);
-  } catch { return null; }
+  } catch (e) { console.warn(`[maquettes] contrôle automatique impossible (${img.id}) : ${(e as Error).message.slice(0, 300)}`); return null; }
 }
 
 const generateTool: AgentTool<{ direction: "A" | "B" | "C"; pages?: string[]; viewport?: "desktop" | "phone"; redo?: boolean }> = {
@@ -256,7 +256,7 @@ const generateTool: AgentTool<{ direction: "A" | "B" | "C"; pages?: string[]; vi
     const images = mockupImagesMaxMicro(n, refs.product ? 2 : 1, imageUnit);
     if (images == null) throw new HttpError(409, L("Aucun modèle d'images utilisable pour les maquettes (administration › Médias).", "No usable image model for mockups."));
     // Contrôle automatique de chaque image créée, compris dans le prix annoncé.
-    const max = images + n * CHECK_CAP_MICRO;
+    const max = images + n * checkMaxMicro();
     return { maxMicro: max, label: L(`images de la maquette ${a.direction}`, `mockup ${a.direction} images`) };
   },
   run: async (ctx, a) => {

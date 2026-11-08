@@ -433,11 +433,14 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     await call("mockup.prepare", ctx, { directions: [{ name: "Lumière", style: "grandes photos plein cadre" }] });
     const planned = loadMockupSet(pid)!.directions[0].images;
     const est = await fr(() => tool("mockup.generate").estimate!(ctx, { direction: "A" }));
-    // Image + contrôle automatique de l'image (0,04 $ au plus), compris dans le prix annoncé.
-    expect(est.maxMicro).toBe(planned.length * 190_000);
+    // Image + contrôle automatique de l'image (son pire cas, tel que le Studio le vérifie), compris dans le prix annoncé.
+    const { checkMaxMicro } = await import("@/lib/syna-agent/mockup-code/check");
+    const one1 = 150_000 + checkMaxMicro();
+    expect(checkMaxMicro()).toBeGreaterThan(0);
+    expect(est.maxMicro).toBe(planned.length * one1);
     // Pour voir le rendu d'abord : seulement l'accueil, en version ordinateur (une image).
     const homeOnly = await fr(() => tool("mockup.generate").estimate!(ctx, { direction: "A", pages: ["home"], viewport: "desktop" }));
-    expect(homeOnly.maxMicro).toBe(190_000);
+    expect(homeOnly.maxMicro).toBe(one1);
     let n = 0;
     mockupToolDeps.generateImage = async (prompt, refs) => { n++; expect(prompt).toContain("« Braise Douce »"); expect(refs.logo).toBeTruthy(); if (n === 2) throw new Error("rendu refusé"); return png("#F5EEDC"); };
     // Contrôle automatique simulé : tout va bien, sauf l'accueil téléphone refait (trois articles côte à côte).
@@ -458,7 +461,7 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       // Refaire une image jugée ratée par le client (redo) : payante, une seule image, nouvelle image rangée.
       const homeImg = loadMockupSet(pid)!.directions[0].images.find((i) => i.viewport === "phone" && i.pages.includes("home"))!;
       const est2 = await fr(() => tool("mockup.generate").estimate!(ctx, { direction: "A", pages: ["home"], viewport: "phone", redo: true }));
-      expect(est2.maxMicro).toBe(190_000);
+      expect(est2.maxMicro).toBe(one1);
       const redo = await call("mockup.generate", ctx, { direction: "A", pages: ["home"], viewport: "phone", redo: true });
       expect(redo.ok, redo.summary).toBe(true);
       expect(redo.summary).toContain("rien à signaler");
@@ -701,6 +704,12 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     expect(mockupCheckVerdict({ ...base, people: true }, "desktop").ok).toBe(false);
     const v = mockupCheckVerdict({ ...base, textProblems: ["« melange » sans accent"] }, "phone");
     expect(v.ok).toBe(true); expect(v.toVerify).toHaveLength(1);
+    // Le plafond du contrôle couvre le pire cas de SON appel (essai réel : plafond fixe de 0,04 $ refusé par le Studio).
+    const { mockupCheckCall, checkMaxMicro, MockupCheckSchema, CHECK_MODEL } = await import("@/lib/syna-agent/mockup-code/check");
+    const { jsonCallMaxMicro } = await import("@/lib/ai/llm");
+    const c = mockupCheckCall({ userId: "u", projectId: "p", jobId: null, usageKey: "k" }, Buffer.from("x"), { viewport: "phone", pages: ["home"] }, ["Accueil"]);
+    expect(c.prompt.length + JSON.stringify(MockupCheckSchema.shape).length).toBeLessThan(6000);
+    expect(jsonCallMaxMicro("anthropic", CHECK_MODEL.model, 6000, c.maxTokens!, c.maxOutputTokens!, "low")!.maxMicro).toBeLessThanOrEqual(checkMaxMicro());
     // Les bandes d'une même page en téléphone ne comptent pas comme une rangée d'éléments.
     expect(mockupCheckPrompt({ viewport: "phone", pages: ["home"] }, ["Accueil"])).toContain("ce n'est pas une rangée d'éléments");
   });

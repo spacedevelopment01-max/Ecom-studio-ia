@@ -6,12 +6,20 @@
  * relancer de création payante : une image en défaut est dite ratée, le client décide.
  */
 import { z } from "zod";
-import type { LlmCall } from "../../ai/llm";
+import { jsonCallMaxMicro, type LlmCall } from "../../ai/llm";
 import type { MockupImage } from "./mockup-set";
 
-export const CHECK_MODEL = { provider: "anthropic" as const, model: "claude-sonnet-5-5", effort: "low" };
-/** Plafond d'un contrôle (une image lue, réponse courte) : 0,04 $. */
-export const CHECK_CAP_MICRO = 40_000;
+/**
+ * Modèle de lecture rapide (essai réel du 8 novembre : avec un plafond fixe de 0,04 $, le Studio refusait l'appel, son
+ * pire cas comptant 8 000 jetons de sortie et une reprise ; ce pire cas vaut environ 0,18 € avec un modèle moyen,
+ * environ 0,01 € avec celui-ci).
+ */
+export const CHECK_MODEL = { provider: "anthropic" as const, model: "claude-haiku-5-5", effort: "low" };
+const CHECK_INPUT_TOKENS = 6000, CHECK_OUTPUT_TOKENS = 1500;
+/** Plafond d'un contrôle, calculé comme le Studio le vérifie (pire cas, reprise comprise). */
+export function checkMaxMicro(): number {
+  return jsonCallMaxMicro(CHECK_MODEL.provider, CHECK_MODEL.model, CHECK_INPUT_TOKENS, CHECK_OUTPUT_TOKENS, CHECK_OUTPUT_TOKENS, CHECK_MODEL.effort)?.maxMicro ?? 20_000;
+}
 
 export const MockupCheckSchema = z.object({
   /** Un téléphone, un écran ou un appareil est dessiné autour de la page. */
@@ -42,7 +50,7 @@ export function mockupCheckPrompt(img: Pick<MockupImage, "viewport" | "pages">, 
 }
 
 export function mockupCheckCall(base: Pick<LlmCall, "userId" | "projectId" | "jobId" | "usageKey">, image: Buffer, img: Pick<MockupImage, "viewport" | "pages">, pageNames: string[]): LlmCall {
-  return { ...base, task: "quality_control", system: CHECK_SYSTEM, promptKey: "syna-mockup-check-1", prompt: mockupCheckPrompt(img, pageNames), images: [{ data: image, label: "maquette à contrôler" }], maxTokens: 6000, maxOutputTokens: 1500, routing: { difficulty: "standard", prefer: CHECK_MODEL } } as LlmCall;
+  return { ...base, task: "quality_control", system: CHECK_SYSTEM, promptKey: "syna-mockup-check-1", prompt: mockupCheckPrompt(img, pageNames), images: [{ data: image, label: "maquette à contrôler" }], maxTokens: CHECK_OUTPUT_TOKENS, maxOutputTokens: CHECK_OUTPUT_TOKENS, routing: { difficulty: "standard", prefer: CHECK_MODEL } } as LlmCall;
 }
 
 /** Défauts (image ratée) et points à vérifier, en mots simples, d'après la lecture de l'image. */
