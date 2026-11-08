@@ -28,6 +28,27 @@ export type MockupFacts = {
 };
 
 const family = (handle: string) => FONT_FILES[handle.replace(/_[ni]\d$/, "")]?.family ?? handle;
+/**
+ * Police décrite par son style, jamais par son nom (essai réel du 8 novembre : « Cormorant Garamond » et « Karla »
+ * écrits sur la maquette comme titre et comme lien du menu).
+ */
+const fontLook = (handle: string, role: "heading" | "body") => {
+  const fb = FONT_FILES[handle.replace(/_[ni]\d$/, "")]?.fallback ?? "";
+  if (/serif/.test(fb) && !/sans/.test(fb)) return role === "heading" ? "une police à empattements, fine et élégante" : "une police à empattements lisible";
+  if (/cursive|script/.test(fb)) return "une écriture manuscrite soignée";
+  if (/mono/.test(fb)) return "une police à chasse fixe";
+  return role === "heading" ? "une police sans empattements, nette" : "une police sans empattements simple et lisible";
+};
+/** Retire d'un texte libre (style de la direction) les noms de polices et les codes couleur, qui seraient recopiés. */
+const withoutTechnicalWords = (t: string, f: MockupFacts) => {
+  const names = [f.brand?.fonts?.heading, f.brand?.fonts?.body].filter(Boolean).map((h) => family(h as string));
+  // Une phrase qui nomme une police (« Titres en …, textes en … ») est retirée entière ; les codes couleur aussi.
+  let out = (t.match(/[^.!?]+[.!?]*/g) ?? [t]).filter((x) => !names.some((n) => x.includes(n))).join(" ");
+  out = out.replace(/#[0-9a-f]{3,8}\b/gi, "").replace(/\(\s*\)/g, "");
+  return out.replace(/\b(en|et)\s*([,.;])/g, "$2").replace(/\s+([,.;])/g, "$1").replace(/[,;]\s*[,;.]/g, ".").replace(/\s{2,}/g, " ").trim();
+};
+/** Titre de plusieurs phrases : une phrase par ligne (le modèle d'images tient mieux les mots courts). */
+const headlineLines = (h: string) => { const parts = h.match(/[^.!?…]+[.!?…]+/g)?.map((x) => x.trim()) ?? [h]; return parts.length > 1 ? `sur ${parts.length} lignes : ${parts.map((x) => `« ${x} »`).join(" puis ")}` : `« ${h} »`; };
 const euros = (cents: number) => `${(cents / 100).toFixed(2).replace(".", ",").replace(",00", "")} €`;
 
 /** Faits utiles à la maquette, lus dans le projet (rien d'inventé : prix confirmés seulement). */
@@ -69,7 +90,7 @@ export function mockupImagePrompt(f: MockupFacts, d: Pick<MockupDirection, "name
   const offers = f.offers.length ? f.offers.map((o) => `« ${o.name} »${o.price ? ` (${o.price})` : ""}`).join(", ") : "";
   return [
     // 1) type d'image, format, point de vue, cadrage
-    `Planche de maquette de site web (design d'interface professionnel de 2026, rendu net et lisible), format portrait, vue de face, à plat, sans perspective, sans écran ni appareil autour. Direction graphique « ${d.name} » : ${d.style.trim().replace(/[.\s]+$/, "")}.`,
+    `Planche de maquette de site web (design d'interface professionnel de 2026, rendu net et lisible), format portrait, vue de face, à plat, sans perspective, sans écran ni appareil autour. Direction graphique « ${d.name} » : ${withoutTechnicalWords(d.style, f).replace(/[.\s]+$/, "")}.`,
     desktop
       ? n === 1 ? `Une seule page en version ordinateur (${w} px de large), montrée entière, de l'en-tête au pied de page, en une longue colonne centrée.` : `${n} pages en version ordinateur (${w} px de large), posées côte à côte en colonnes de même largeur, chacune entière de l'en-tête au pied de page.`
       : `${n} écran${n > 1 ? "s" : ""} de téléphone (${w} px de large) posé${n > 1 ? "s côte à côte" : ""}, chacun montrant la page entière en longueur, composée pour le téléphone (titres et coupes de lignes propres au téléphone, menu replié en icône).`,
@@ -78,7 +99,9 @@ export function mockupImagePrompt(f: MockupFacts, d: Pick<MockupDirection, "name
     // 3) chaque page à sa place
     ...list.map((p, i) => `${n > 1 ? `Page ${POS[i] ?? `n° ${i + 1}`}` : "La page"}, avec son nom écrit en petit au-dessus : « ${p.fr} ». Elle montre dans cet ordre : ${p.sections.join(" ; ")}.`),
     // Textes exacts de la marque pour l'accueil, mot pour mot (jamais réécrits par le modèle d'images).
-    ...(list.some((p) => p.key === "home") && f.texts?.headline ? [`Textes de la page « Accueil », recopiés mot pour mot, lettre pour lettre : grand titre d'ouverture « ${f.texts.headline} »${brand?.tagline ? ` ; sous le titre, le slogan « ${brand.tagline} »` : ""}${f.texts.cta ? ` ; bouton principal « ${f.texts.cta} »` : ""}${f.texts.messages?.length ? ` ; plus bas, ces messages, un par bloc : ${f.texts.messages.map((m) => `« ${m} »`).join(", ")}` : ""}. Les autres textes sont de simples libellés courts (menu, noms et prix des produits).`] : []),
+    ...(list.some((p) => p.key === "home") && f.texts?.headline ? [`Textes de la page « Accueil », recopiés mot pour mot, lettre pour lettre : grand titre d'ouverture ${headlineLines(f.texts.headline)}${brand?.tagline ? ` ; sous le titre, le slogan « ${brand.tagline} »` : ""}${f.texts.cta ? ` ; bouton principal « ${f.texts.cta} »` : ""}${f.texts.messages?.length ? ` ; plus bas, ces messages, un par bloc : ${f.texts.messages.map((m) => `« ${m} »`).join(", ")}` : ""}. Les autres textes sont de simples libellés courts (menu, noms et prix des produits).`] : []),
+    // Moins de texte = moins de lettres abîmées (essai réel du 8 novembre) : seuls les textes cités sont écrits.
+    "Les paragraphes et les textes secondaires (descriptions, journal, inscription, pied de page) sont figurés par de fines lignes grises de faux texte, sans aucune lettre lisible ; seuls les textes cités entre guillemets dans cette consigne sont écrits en lettres. Les codes couleur et les noms de police de cette consigne sont des indications : ils ne sont jamais écrits sur la page.",
     // 4) compte exact
     `La planche contient exactement ${n} page${n > 1 ? "s" : ""} : ${list.map((p) => `« ${p.fr} »`).join(", ")}. Aucune autre page, aucun écran supplémentaire.`,
     // 5) cadrage
@@ -86,14 +109,14 @@ export function mockupImagePrompt(f: MockupFacts, d: Pick<MockupDirection, "name
     // 6) style, lumière, typographie
     `Marque : « ${f.name} »${brand?.tagline ? `, slogan « ${brand.tagline} »` : ""}. Le logo fourni en référence est reproduit à l'identique dans l'en-tête de chaque page ; aucun autre logo.`,
     colourRoles(brand),
-    brand?.fonts ? `Deux polices seulement : titres en ${family(brand.fonts.heading)}, textes en ${family(brand.fonts.body)} (15 à 17 px), tailles fluides et hiérarchie nette.` : "",
+    brand?.fonts ? `Deux polices seulement : titres en ${fontLook(brand.fonts.heading, "heading")}, textes en ${fontLook(brand.fonts.body, "body")} (15 à 17 px), tailles fluides et hiérarchie nette.` : "",
     "Mise en page aérée et rythmée (bandes pleine largeur, sections aérées, grandes photos), un motif graphique propre à la marque, boutons d'au moins 44 px, effets sobres.",
     f.business === "services"
       ? `Activité : prestations ${offers || "du client"}. Photos de lieux, d'outils et de réalisations, jamais de personne.`
       : `Produits : ${offers || `« ${f.name} »`}.${f.productPhoto ? " La photo du produit fournie en référence est utilisée telle quelle (même produit, mêmes couleurs, entier, rien de redessiné)." : ""}`,
-    f.angle ? `Ton des textes : ${f.angle}. Titres courts et émotionnels (2 à 8 mots), boutons « verbe + objet ».` : "Titres courts et émotionnels (2 à 8 mots), boutons « verbe + objet ».",
+    f.angle ? `Ton des textes : ${f.angle}. Titres courts et émotionnels, boutons courts qui commencent par un verbe.` : "Titres courts et émotionnels, boutons courts qui commencent par un verbe.",
     // 7) interdits
-    "Textes en français, exacts et lisibles. Aucun avis, note, étoile, chiffre, garantie, label, promotion, compte à rebours ou prix barré inventé ; une information inconnue s'écrit « [À compléter] ». Aucune personne, aucun visage, aucun filigrane, aucun autre logo. Aucun objet supplémentaire.",
+    "Textes en français, exacts et lisibles. Aucun avis, note, étoile, chiffre, garantie, label, promotion, compte à rebours ou prix barré inventé. Aucune personne, aucun visage, aucun filigrane, aucun autre logo. Aucun objet supplémentaire.",
   ].filter(Boolean).join("\n");
 }
 

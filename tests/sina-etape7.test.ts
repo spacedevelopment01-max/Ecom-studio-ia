@@ -111,7 +111,11 @@ describe("SINA — étape 6 : consignes des images de maquette", async () => {
     expect(t).toContain("La planche contient exactement 3 pages");
     expect(t).toContain("« Panier vide »");
     expect(t).toContain("Rien n'est coupé par le cadre");
-    expect(t).toContain("Playfair Display");
+    // Polices décrites par leur style, jamais par leur nom (essai réel : « Cormorant Garamond » écrit sur la maquette).
+    expect(t).not.toContain("Playfair Display");
+    expect(t).toContain("titres en une police à empattements, fine et élégante");
+    expect(t).toContain("jamais écrits sur la page");
+    expect(t).not.toContain("verbe + objet");
     expect(t).toContain("boutons et liens d'action #B91C1C");
     expect(t).toContain("dégradé à 135° de #FFD6A5 à #C8B6FF");
     expect(t).toContain("textes ET titres #1F1A14");
@@ -132,7 +136,11 @@ describe("SINA — étape 6 : consignes des images de maquette", async () => {
     const f = mockupFacts(proj, undefined, false, { products: [{ title: "Thé vert jasmin", price: 850 }, { title: "Verveine-menthe", price: 750 }], texts: { headline: "Pose ton écran. Ces quelques minutes sont à toi.", cta: "Choisis ton mélange de pause.", messages: ["Six mélanges, trois thés et trois infusions."] } });
     expect(f.offers).toEqual([{ name: "Thé vert jasmin", price: "8,50 €" }, { name: "Verveine-menthe", price: "7,50 €" }]); // jamais le nom tronqué de la fiche
     const home = mockupImagePrompt(f, { name: "Lumière", style: "x" }, { viewport: "desktop", pages: ["home"] }, pages);
-    expect(home).toContain("grand titre d'ouverture « Pose ton écran. Ces quelques minutes sont à toi. »");
+    expect(home).toContain("grand titre d'ouverture sur 2 lignes : « Pose ton écran. » puis « Ces quelques minutes sont à toi. »");
+    expect(home).toContain("fines lignes grises de faux texte");
+    expect(home).not.toContain("[À compléter]");
+    const styled = mockupImagePrompt(f, { name: "Herbier", style: "Fond blanc lumineux. Titres en Playfair Display, textes en Inter. Touches de vert #3F6B4E et #E3EDDF, accents dorés #C9A04E. Brins au trait." }, { viewport: "desktop", pages: ["home"] }, pages);
+    expect(styled).toContain("Direction graphique « Herbier » : Fond blanc lumineux. Touches de vert, accents dorés. Brins au trait.");
     expect(home).toContain("le slogan « Allume l'instant. »");
     expect(home).toContain("bouton principal « Choisis ton mélange de pause. »");
     expect(home).toContain("« Six mélanges, trois thés et trois infusions. »");
