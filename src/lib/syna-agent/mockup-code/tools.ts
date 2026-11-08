@@ -361,6 +361,9 @@ const editTool: AgentTool<EditArgs> = {
   estimate: (ctx, a) => {
     const p = project(ctx), d = loadMockupSet(p.id)?.directions.find((x) => x.key === a.direction);
     if (!d?.images.some((i) => i.id === a.imageId && (i.assetId || a.fromAssetId))) throw new HttpError(409, L(`Aucune image ${a.imageId} créée dans la maquette ${a.direction}.`, "No such mockup image."));
+    // Retrait pur : sans IA (seulement le repérage et le contrôle) ; jamais de bascule vers une retouche payante sans
+    // nouvel accord (voir run).
+    if (a.changes.every((c) => isRemoval(c.change))) return { maxMicro: 2 * locateMaxMicro() + checkMaxMicro(), label: L(`retrait sur l'image ${a.imageId} (sans IA d'images)`, `removal on image ${a.imageId}`) };
     const max = editMaxMicro();
     if (max == null) throw new HttpError(409, L("Le modèle des maquettes ne sait pas retoucher une zone précise.", "The mockup model cannot edit a precise area."));
     return { maxMicro: max, label: L(`retouche de l'image ${a.imageId}`, `edit of image ${a.imageId}`) };
@@ -407,6 +410,10 @@ const editTool: AgentTool<EditArgs> = {
       for (const b of [...okBoxes].sort((x, y) => y.top - x.top)) { removed = removed ? await removeBand(removed, b) : null; if (!removed) break; }
     }
     const prompt = mockupEditPrompt(a.changes, keep, img.viewport, okBoxes, { w, h });
+    // Retrait annoncé sans IA mais impossible proprement : rien n'est payé de plus, le client décide.
+    if (a.changes.every((c) => isRemoval(c.change)) && !removed) {
+      return { ok: false, summary: L("Retrait impossible sans IA : d'autres éléments partagent ces lignes. Rien n'a été retouché ; une retouche par l'IA d'images serait payante.", "Removal not possible without AI."), hint: "Propose au client une retouche par l'IA d'images (mockup.edit avec une consigne qui n'est pas un simple retrait, ou dis-lui le prix d'une image) et attends son accord écrit." };
+    }
     let edited: Buffer = removed ?? original;
     if (!removed) try {
       const route = mockupImageRoute();
