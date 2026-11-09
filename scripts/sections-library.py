@@ -66,7 +66,14 @@ def frame_inner(a):
     return None
 
 
-CLASSIC_ROLE = {'Menu plein écran': 'navigation', 'Recherche guidée': 'recherche', 'Mini-panier déroulant': 'panier',
+# Sections réservées à un genre de produit : SINA ne les pose jamais ailleurs (ex. tailles et tenues pour de la confiture).
+ONLY_FOR = {**{t: 'pour-mode' for t in ['Tenue à points', 'Compose ta tenue', 'Carnet de looks', 'Entre deux tailles ?', 'Vus dans la rue']},
+            **{t: 'pour-the' for t in ["Guide d'infusion en tiroir", 'Profil du mélange', 'Produit vedette · calculateur de tasses']}}
+CLASSIC_ROLE = {'Commande pas à pas': 'commande', 'Merci pour ta commande': 'commande', 'Connexion et création de compte': 'compte',
+                'Suivi de commande et aide': 'aide', 'Mentions et conditions': 'légal', 'Le journal (liste des articles)': 'journal',
+                'Article avec barre de lecture': 'journal', "L'atelier et la personne derrière": 'à propos', 'Histoire en frise': 'à propos',
+                'Catalogue avec filtres et tri': 'produits', 'Fiche produit à onglets': 'produit', 'Page introuvable (404)': '404',
+                'Menu plein écran': 'navigation', 'Recherche guidée': 'recherche', 'Mini-panier déroulant': 'panier',
                 'Photo à points cliquables': 'mise en avant', 'Scène achetable': 'mise en avant', 'Grille bento': 'mise en avant',
                 'Comparateur de produits': 'comparatif', 'Choisir selon le moment': "guide d'achat", 'Mosaïque de collections': 'rayons'}
 
@@ -121,7 +128,7 @@ for a in arts:
         'family': 'moderne' if moderne else 'classique',
         'style': ('sport-chic' if 'aud1' in tags else 'streetwear-neon') if moderne else None,
         'role': ROLE_OF.get(title) if moderne else classic_role(kind, title),
-        'tags': [t for t in tags if t not in ('new', 'aud', 'aud1', 'aud2')],
+        'tags': [t for t in tags if t not in ('new', 'aud', 'aud1', 'aud2', 'classique')] + ([ONLY_FOR[title]] if title in ONLY_FOR else []),
         # Démonstration dans une fausse fenêtre qui défile (catalogue seulement) : jamais posée telle quelle dans un thème.
         'demoFrame': 'data-vp' in html[:400],
         'html': html,

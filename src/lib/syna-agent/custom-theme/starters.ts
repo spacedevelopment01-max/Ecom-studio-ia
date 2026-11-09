@@ -1,7 +1,7 @@
 /**
- * Points de départ des thèmes sur mesure : les compositions déjà validées par le propriétaire (SOLSTICE pour Moderne ·
- * Sport chic, RUPTURE pour Moderne · Streetwear néon, Brindi pour Classique). SINA part de l'une d'elles puis l'adapte
- * au client (pages de son projet, sections au choix par rôle) ; rien n'est imposé.
+ * Compositions d'exemple des familles (SOLSTICE pour Moderne · Sport chic, RUPTURE pour Moderne · Streetwear néon, Brindi
+ * pour Classique) : contrôles et démonstrations seulement. Un client n'en reçoit jamais une (décision du propriétaire du
+ * 9 novembre 2026) : SINA monte son thème sur mesure de A à Z avec les meilleures sections pour son produit ou son service.
  */
 import type { FamilyId } from "../section-families";
 import { sectionByRef } from "./library";

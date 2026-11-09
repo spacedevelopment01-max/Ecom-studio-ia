@@ -14,6 +14,27 @@ import { SECTION_FAMILIES } from "@/lib/syna-agent/section-families";
 const brand = { name: "Ardent", nameStatus: "validated", alternatives: [], tagline: "", positioning: "", audience: "", personality: [], tone: { voice: "", do: [], dont: [] }, palette: { primary: "#C2410C", secondary: "#E7E5E4", accent: "#0F766E", light: "#FAFAF9", dark: "#1C1917" }, fonts: { heading: "", body: "" }, logo: { concept: "", status: "proposed" } } as any;
 const proj = { id: "p-test", name: "Ardent", brand };
 const blocking = (t: CustomTheme) => checkCustomTheme(t).filter((p) => p.level === "bloquant").map((p) => p.text);
+/** Montage de A à Z (sans thème de départ), toutes les pages obligatoires d'une boutique, avec les sections de la famille. */
+function fullSite(family: "classique" | "moderne") {
+  if (family === "moderne") { const st = STARTERS["sport-chic"]; return { header: st.header, footer: st.footer, search: st.search, pages: st.pages.map(([key, label, sections]) => ({ key, label, sections })) }; }
+  return {
+    header: "En-tête classique", footer: "Pied de page complet",
+    pages: [
+      { key: "home", label: "Accueil", sections: ["Ouverture photo pleine", "Collection en vedette", "Avis clients"] },
+      { key: "shop", label: "Boutique", sections: ["Catalogue avec filtres et tri"] },
+      { key: "product", label: "Fiche produit", sections: ["Produit vedette", "Points forts du produit"] },
+      { key: "cart", label: "Panier", sections: ["Page panier complète"] },
+      { key: "commande", label: "Commande", sections: ["Commande pas à pas"] },
+      { key: "merci", label: "Commande confirmée", sections: ["Merci pour ta commande"] },
+      { key: "compte", label: "Mon compte", sections: ["Connexion et création de compte"] },
+      { key: "about", label: "Notre histoire", sections: ["L'atelier et la personne derrière"] },
+      { key: "contact", label: "Contact", sections: ["Contact"] },
+      { key: "aide", label: "Aide", sections: ["Suivi de commande et aide"] },
+      { key: "legal", label: "Informations légales", sections: ["Mentions et conditions"] },
+      { key: "404", label: "Page 404", sections: ["Page introuvable (404)"] },
+    ],
+  };
+}
 
 describe("thème sur mesure : bibliothèque", () => {
   it("toutes les sections du catalogue (sans les e-mails), deux familles, rôles de la famille Moderne complets", () => {
@@ -159,13 +180,19 @@ describe("thème sur mesure : outils de SINA", async () => {
     const lib = await call("custom.sections", ctx, { role: "produit vedette" });
     expect(Object.keys(lib.data.roles)).toEqual(["produit vedette"]);
     expect(lib.data.roles["produit vedette"]).toHaveLength(3);
-    const made = await call("custom.compose", ctx, { start: true });
-    expect(made.ok).toBe(true);
+    // Aucun thème de départ : une page obligatoire absente est refusée, rien n'est enregistré.
+    const site = fullSite("moderne");
+    const partial = await call("custom.compose", ctx, { ...site, pages: site.pages.filter((p) => p.key !== "legal") });
+    expect(partial.ok).toBe(false);
+    expect(partial.summary).toMatch(/page « Informations légales[^»]*» absente/);
+    expect(loadCustomTheme(pid)).toBeNull();
+    const made = await call("custom.compose", ctx, site);
+    expect(made.ok, made.summary).toBe(true);
     const card = made.data.customTheme;
     expect(card.href).toBe(`/api/projects/${pid}/custom-theme?studio=1&embed=1&rev=1`);
     expect(card.pages.map((p: any) => p.key)).toEqual(["home", "shop", "product", "cart", "commande", "merci", "compte", "aide", "journal", "article", "contact", "legal", "404"]);
     // Mélange de familles refusé : rien n'est enregistré.
-    const mixed = await call("custom.compose", ctx, { pages: [{ key: "home", label: "Accueil", sections: ["Ouverture photo pleine"] }] });
+    const mixed = await call("custom.compose", ctx, { ...site, pages: [{ key: "home", label: "Accueil", sections: ["Ouverture photo pleine"] }, ...site.pages.slice(1)] });
     expect(mixed.ok).toBe(false);
     expect(mixed.summary).toMatch(/Rien n'est enregistré[^]*mélange de familles/);
     expect(loadCustomTheme(pid)!.rev).toBe(1);
@@ -205,7 +232,7 @@ describe("thème sur mesure : outils de SINA", async () => {
   it("photo : prix d'abord, puis créée (fausse génération, aucun appel réel) et posée à la place de la photo d'exemple", async () => {
     const { ctx, pid } = await project();
     await call("theme.family", ctx, { family: "moderne", style: "streetwear-neon" });
-    await call("custom.compose", ctx, { start: true });
+    expect((await call("custom.compose", ctx, fullSite("moderne"))).ok).toBe(true);
     T.customPhotoDeps.unit = () => 47_000;
     const sharp = (await import("sharp")).default;
     T.customPhotoDeps.make = async () => sharp({ create: { width: 64, height: 80, channels: 3, background: "#222" } }).png().toBuffer();
@@ -260,8 +287,11 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
     ] });
     await call("start.confirm", ctx, {});
     const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
-    expect((await call("custom.build", ctx, {})).summary).toMatch(/style|famille/i); // le style d'abord
+    expect((await call("custom.build", ctx, {})).summary).toMatch(/style|famille/i); // la famille d'abord
     await call("theme.family", ctx, { family: "classique" });
+    expect((await call("custom.build", ctx, {})).summary).toMatch(/compose d'abord toutes les pages/); // puis tout le site, monté de A à Z
+    const composed = await call("custom.compose", ctx, fullSite("classique"));
+    expect(composed.ok, composed.summary).toBe(true);
     T.customPhotoDeps.unit = () => 50_000;
     try {
       ctx.projectId = pid;
@@ -310,6 +340,7 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
     await call("start.confirm", ctx, {});
     const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
     await call("theme.family", ctx, { family: "classique" });
+    expect((await call("custom.compose", ctx, fullSite("classique"))).ok).toBe(true);
     const need = await call("custom.images", ctx, {});
     expect(need.ok).toBe(true);
     const n = need.data.imagesNecessaires as number;

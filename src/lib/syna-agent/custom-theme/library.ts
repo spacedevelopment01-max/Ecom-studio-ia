@@ -45,6 +45,9 @@ export const SHELL_ROLES = { header: "en-tête", footer: "pied de page", search:
 /** Sections de cartes produits ou familles : une seule par page (consigne du propriétaire du 8 novembre). */
 const CARD_FAMILIES = new Set(["Choisis ton terrain", "Mosaïque de collections", "Familles en cartes défilantes", "Familles en éventail"]);
 /** Section de cartes : cartes produits, ou cartes de familles avec photos (une liste de rayons en texte n'en est pas une). */
+/** Sections réservées à un genre de produit (étiquettes de la bibliothèque) : jamais posées ailleurs. */
+const ONLY_FOR: Record<string, string> = { "pour-mode": "vêtements et accessoires de mode (tailles, tenues, looks)", "pour-the": "thés et infusions" };
+export const onlyFor = (tags: string[] | undefined) => (tags ?? []).map((t) => ONLY_FOR[t]).find(Boolean) ?? null;
 export const isCardSection = (l: Pick<LibSection, "role" | "title">) => l.role === "produits" || CARD_FAMILIES.has(l.title);
 export const FEATURED_ROLE = "produit vedette";
 

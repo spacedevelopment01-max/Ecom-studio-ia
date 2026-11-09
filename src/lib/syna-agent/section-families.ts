@@ -120,15 +120,20 @@ export function missingRoles(family: FamilyId, wanted: string[]): string[] {
   return wanted.filter((r) => !(f.roles[r]?.length));
 }
 
-/** Les cartes du choix, telles que le client les voit (une par style). */
-export function familyCards(): { family: FamilyId; style: string; title: string; titleEn: string; pitch: string; pitchEn: string; mood: string; preview: string; demo: string; sections: number }[] {
-  return SECTION_FAMILIES.flatMap((f) => f.styles.map((s) => ({
-    family: f.id, style: s.id,
-    title: f.id === "classique" ? f.fr : `${f.fr} · ${s.fr}`, titleEn: f.id === "classique" ? f.en : `${f.en} · ${s.en}`,
-    pitch: f.pitch.fr, pitchEn: f.pitch.en, mood: s.mood, preview: s.preview, demo: s.demo,
+/**
+ * Les cartes du choix, telles que le client les voit : UNE PAR FAMILLE (décision du propriétaire du 9 novembre 2026 : le
+ * client choisit seulement Classique ou Moderne ; SINA prend ensuite les meilleures sections pour son produit ou son
+ * service). Les styles d'une famille (Sport chic, Streetwear néon) ne sont que des exemples à ouvrir en vrai.
+ */
+export function familyCards(): { family: FamilyId; style: string; title: string; titleEn: string; pitch: string; pitchEn: string; mood: string; preview: string; demo: string; examples: { label: string; labelEn: string; demo: string }[]; sections: number }[] {
+  return SECTION_FAMILIES.map((f) => ({
+    family: f.id, style: f.id === "classique" ? "classique" : "",
+    title: f.fr, titleEn: f.en,
+    pitch: f.pitch.fr, pitchEn: f.pitch.en, mood: f.styles.map((s) => s.mood).join(" ; "), preview: f.styles[0].preview, demo: f.styles[0].demo,
+    examples: f.styles.map((s) => ({ label: f.id === "classique" ? "Voir un exemple en vrai" : `Exemple ${s.fr}`, labelEn: f.id === "classique" ? "See a live example" : `${s.en} example`, demo: s.demo })),
     // Nombre réel de sections de la bibliothèque (essai réel du 9 novembre : « 12 sections au choix » pour Classique, qui en a 133).
     sections: (() => { try { return familySections(f.id).length; } catch { return Object.values(f.roles).reduce((n, l) => n + l.length, 0); } })(),
-  })));
+  }));
 }
 
 /**

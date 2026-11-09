@@ -11,9 +11,10 @@ process.env.STUDIO_SYNA_AGENT = "1";
 describe("SINA — familles de sections Classique et Moderne", async () => {
   const F = await import("@/lib/syna-agent/section-families");
 
-  it("trois cartes en image (Classique ; Moderne · Sport chic ; Moderne · Streetwear néon), aperçus présents dans le dépôt", () => {
+  it("deux cartes en image : le client choisit seulement Classique ou Moderne (les styles ne sont que des exemples à ouvrir)", () => {
     const cards = F.familyCards();
-    expect(cards.map((c) => c.title)).toEqual(["Classique", "Moderne · Sport chic", "Moderne · Streetwear néon"]);
+    expect(cards.map((c) => c.title)).toEqual(["Classique", "Moderne"]);
+    expect(cards[1].examples.map((x) => x.label)).toEqual(["Exemple Sport chic", "Exemple Streetwear néon"]);
     for (const c of cards) expect(fs.existsSync(path.join(process.cwd(), "public", c.preview))).toBe(true);
     expect(cards.find((c) => c.family === "moderne")!.sections).toBe(55);
   });
@@ -77,9 +78,9 @@ describe("SINA — familles de sections Classique et Moderne", async () => {
 
   it("chaque style a sa démonstration complète à ouvrir en vrai (pages, panier, téléphone), photos présentes", async () => {
     const fs = await import("node:fs"), path = await import("node:path");
-    const cards = F.familyCards();
-    expect(cards).toHaveLength(3);
-    for (const c of cards) {
+    const demos = F.familyCards().flatMap((c) => c.examples);
+    expect(demos).toHaveLength(3);
+    for (const c of demos) {
       expect(c.demo).toMatch(/^\/demo\/familles\/[a-z-]+\/index\.html$/);
       const dir = path.join(process.cwd(), "public", path.dirname(c.demo));
       const html = fs.readFileSync(path.join(dir, "index.html"), "utf8");

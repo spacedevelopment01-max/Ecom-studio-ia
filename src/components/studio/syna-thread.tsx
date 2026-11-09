@@ -285,10 +285,10 @@ function ThemeCards({ themes, busy, onChoose, onAll, onMockup }: { themes: Theme
   );
 }
 
-type Families = { cards: { family: string; style: string; title: string; titleEn: string; pitch: string; pitchEn: string; mood: string; preview: string; demo?: string; sections: number }[]; chosen: string | null };
+type Families = { cards: { family: string; style: string; title: string; titleEn: string; pitch: string; pitchEn: string; mood: string; preview: string; demo?: string; examples?: { label: string; labelEn: string; demo: string }[]; sections: number }[]; chosen: string | null };
 
 /**
- * Étape 6 : les familles de sections EN IMAGE (Classique ; Moderne · Sport chic ; Moderne · Streetwear néon). Le client
+ * Étape 6 : les deux familles de sections EN IMAGE (Classique, Moderne, avec leurs exemples à ouvrir en vrai). Le client
  * choisit le style qu'il préfère ; le thème n'est ensuite monté qu'avec les sections de cette famille (jamais de mélange).
  */
 function FamilyCards({ families, busy, onChoose }: { families: Families; busy: boolean; onChoose: (title: string) => void }) {
@@ -296,9 +296,9 @@ function FamilyCards({ families, busy, onChoose }: { families: Families; busy: b
   return (
     <div className="@container mt-2 space-y-2" data-syna-families>
       <p className="text-xs text-muted">{t("Deux familles de styles pour ton site, qui ne se mélangent jamais. Ouvre chaque thème en vrai (pages, panier, téléphone), puis choisis celui qui te ressemble : il sera repris à tes couleurs, avec ta marque et tes produits. C'est gratuit.", "Two style families for your site, never mixed. Open each theme live (pages, cart, phone), then pick the one that feels like you: it will use your colours, brand and products. It's free.")}</p>
-      <div className="grid grid-cols-1 gap-3 @2xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 @2xl:grid-cols-2">
         {families.cards.map((c) => {
-          const key = `${c.family}:${c.style}`, chosen = families.chosen === key;
+          const key = c.family, chosen = (families.chosen ?? "").split(":")[0] === c.family;
           return (
             <article key={key} className={cx("overflow-hidden rounded-xl border bg-card text-xs", chosen ? "border-accent ring-2 ring-accent" : "border-line", families.chosen && !chosen && "opacity-60")} data-family={key}>
               <img src={c.preview} alt={t(`Aperçu du style ${c.title}`, `${c.titleEn} style preview`)} className="block aspect-[16/10] w-full object-cover object-top" loading="lazy" />
@@ -308,10 +308,10 @@ function FamilyCards({ families, busy, onChoose }: { families: Families; busy: b
                 <p className="text-muted">{c.mood} · {t(`${c.sections} sections au choix`, `${c.sections} sections to choose from`)}</p>
               </div>
               <div className="flex flex-wrap items-center gap-2 border-t border-line px-3 py-2">
-                {c.demo && <a className="underline" href={c.demo} target="_blank" rel="noreferrer" data-family-demo={key}>{t("Voir le thème en vrai", "See the live theme")}</a>}
+                {(c.examples?.length ? c.examples : c.demo ? [{ label: "Voir le thème en vrai", labelEn: "See the live theme", demo: c.demo }] : []).map((x) => <a key={x.demo} className="underline" href={x.demo} target="_blank" rel="noreferrer" data-family-demo={key}>{t(x.label, x.labelEn)}</a>)}
                 {families.chosen
-                  ? chosen && <p className="font-semibold">✓ {t("Style choisi", "Style chosen")}</p>
-                  : <Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(c.title)} data-family-pick={key}>{t("Je préfère ce style", "I prefer this style")}</Button>}
+                  ? chosen && <p className="font-semibold">✓ {t("Famille choisie", "Family chosen")}</p>
+                  : <Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(c.title)} data-family-pick={key}>{t("Je préfère cette famille", "I prefer this family")}</Button>}
               </div>
             </article>
           );
@@ -616,7 +616,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
                 {tm.id === lastAngles && v.journey?.angles && <AngleCards angles={v.journey.angles} busy={busy || working} onChoose={(titles) => send(titles.length > 1 ? t(`Je choisis ces angles : ${titles.map((x, i) => `« ${x} »${i === 0 ? " (principal)" : ""}`).join(", ")}.`, `I choose these angles: ${titles.join(", ")}.`) : t(`Je choisis l'angle « ${titles[0]} ».`, `I choose the angle "${titles[0]}".`))} />}
                 {tm.id === lastCopy && v.journey?.siteCopy && <CopyCard pages={v.journey.siteCopy.pages} />}
                 {tm.id === lastCustom && v.projectId && <CustomThemeCard card={tm.content.data.customTheme} busy={busy || working} onSend={(text) => send(text)} />}
-                {tm.id === lastFamilies && v.journey?.families && v.projectId && <FamilyCards families={v.journey.families} busy={busy || working} onChoose={(title) => send(t(`Je préfère le style ${title}.`, `I prefer the ${title} style.`))} />}
+                {tm.id === lastFamilies && v.journey?.families && v.projectId && <FamilyCards families={v.journey.families} busy={busy || working} onChoose={(title) => send(t(`Je préfère la famille ${title}.`, `I prefer the ${title} family.`))} />}
                 {tm.id === lastThemes && v.journey?.themes && v.projectId && <ThemeCards themes={v.journey.themes} busy={busy || working} onChoose={(name) => send(t(`Je choisis le thème ${name}.`, `I choose the ${name} theme.`))} onAll={() => send(t("Je veux voir tous les thèmes.", "I want to see all themes."))} onMockup={() => send(t("Je préfère un thème sur mesure.", "I'd rather have a custom theme."))} />}
                 {tm.id === lastKit && v.journey?.brandKit && <BrandKitCard kit={v.journey.brandKit} darkBg={v.journey.identities?.final?.palette.dark ?? "#16161A"} busy={busy || working} onValidate={() => send(t("Je valide mon image de marque.", "I validate my brand kit."))} />}
                 {tm.id === lastCalendar && v.projectId && <CalendarCard projectId={v.projectId} refreshKey={tm.id} />}

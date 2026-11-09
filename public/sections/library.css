@@ -4107,6 +4107,24 @@ html[data-po-promo="1"] [data-poshow="promo"]{display:inline-flex!important}
   .cm4-d p{padding-left:16px}.cm4-d .dq-out{margin-left:16px}
 }
 @media (prefers-reduced-motion:reduce){.cm2-tl li,.cm3-me,.cm5-p{animation:none;opacity:1}.cm2-ok svg{animation:none;stroke-dashoffset:0}.cm6-ph img{transform:none}}
+/* ===== FAMILLE CLASSIQUE · mêmes pages de parcours, allure calme et éditoriale (couleurs et polices de la marque) ===== */
+.clq{--q-bk:var(--b-soft,#F6F1E8);--q-gr:#fff;--q-ln:rgba(29,29,31,.12);--q-lm:var(--b-primary,#3F6B4E);--q-rd:#B42318;--q-tx:var(--b-ink,#1d2a23);--q-mu:rgba(29,29,31,.62);--q-t:var(--f-title,"Cormorant Garamond",Georgia,serif);--q-u:var(--f-ui,"Karla",system-ui,sans-serif);
+  font-family:var(--q-u);background:var(--q-bk);color:var(--q-tx);position:relative;overflow:hidden}
+.clq .lm{color:var(--q-lm);font-style:italic}
+.clq :is(h2,h3,legend,.cm1-rt,.cm3-hi,.cm4-d summary b,.cm6-n b,.cm1-r .t,.cm1-o i){text-transform:none!important;letter-spacing:-.01em;font-weight:500}
+.clq :is(.cm1,.cm2,.cm3,.cm4,.cm5,.cm6) h2,.clq h2{font-family:var(--q-t)}
+.clq .cm1-f legend b{font-style:italic}
+.clq .dq-btn{border-radius:999px;text-transform:none;letter-spacing:.01em;font-size:.95rem;background:var(--q-lm);color:#fff;padding:14px 26px}
+.clq .dq-btn:hover{box-shadow:0 10px 26px -12px var(--q-lm)}
+.clq .dq-out{border-radius:999px;text-transform:none;letter-spacing:.01em;font-size:.9rem;border-color:var(--q-ln);color:var(--q-tx)}
+.clq .dq-eb{color:var(--q-lm);letter-spacing:.16em}
+.clq :is(.cm1-r,.cm3-bx,.cm4-d,.cm1-o,.cm6-n,.cm3-o){border-radius:16px}
+.clq .cm1 input:not([type=radio]),.clq .cm3 input,.clq .cm4 input{border-radius:12px;background:#fff}
+.clq .cm1-st li{border-radius:999px;text-transform:none;letter-spacing:.02em}
+.clq .cm1-st li.on,.clq .cm2-ok,.clq .cm2-tl li.on span{color:#fff}
+.clq .cm2-tl span,.clq .cm1-it img{border-radius:12px}
+.clq .cm5-tb button{text-transform:none;letter-spacing:0;font-size:.95rem}
+.clq .cm4-st li{text-transform:none}
 /* CM:CSS:FIN */
 
 /* ===== En-tête classique (thèmes sur mesure, famille Classique) ===== */

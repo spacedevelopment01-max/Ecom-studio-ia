@@ -87,11 +87,43 @@ export function allSections(t: CustomTheme): { place: string; page?: CtPage; ind
 export const findSection = (t: CustomTheme, uid: string) => allSections(t).find((x) => x.s.uid === uid) ?? null;
 
 export type ThemeProblem = { level: "bloquant" | "à revoir"; text: string };
+
+/**
+ * Pages d'un thème sur mesure (décision du propriétaire du 9 novembre 2026 : « pour les thèmes sur mesure il faut créer
+ * toutes les pages » ; aucun thème de départ, SINA monte le site de A à Z avec les meilleures sections pour le produit
+ * ou le service). Chaque entrée : clés de page acceptées (la première est celle à employer) et ce que la page contient.
+ */
+export type SiteKind = { business: "products" | "services"; products: number };
+export function requiredPages(k: SiteKind): { keys: string[]; label: string }[] {
+  const common = [
+    { keys: ["home"], label: "Accueil" },
+    { keys: ["about", "journal"], label: "À propos (l'histoire, la personne derrière)" },
+    { keys: ["contact"], label: "Contact" },
+    { keys: ["aide", "faq"], label: "Aide (questions, livraison, retours, suivi)" },
+    { keys: ["legal"], label: "Informations légales (mentions, conditions, confidentialité, cookies)" },
+    { keys: ["404"], label: "Page introuvable (404)" },
+  ];
+  if (k.business === "services") return [...common.slice(0, 1), { keys: ["prestations"], label: "Prestations (et leurs tarifs)" }, { keys: ["reservation", "devis"], label: "Prise de rendez-vous ou demande de devis" }, ...common.slice(1)];
+  return [
+    common[0],
+    ...(k.products > 1 ? [{ keys: ["shop"], label: "Boutique (tous les produits)" }] : []),
+    { keys: ["product"], label: "Fiche produit" },
+    { keys: ["cart"], label: "Panier" },
+    { keys: ["commande"], label: "Commande" },
+    { keys: ["merci"], label: "Commande confirmée" },
+    { keys: ["compte"], label: "Mon compte" },
+    ...common.slice(1),
+  ];
+}
+export const missingPages = (t: CustomTheme, k: SiteKind) => requiredPages(k).filter((r) => !t.pages.some((p) => r.keys.includes(p.key) || r.keys.some((x) => p.key.startsWith(`${x}-`))));
+
 /**
  * Contrôle des règles de montage du propriétaire (gratuit, sans IA). « bloquant » : le thème n'est pas enregistré.
+ * Avec le genre de site (produits ou services), une page obligatoire absente est bloquante.
  */
-export function checkCustomTheme(t: CustomTheme): ThemeProblem[] {
+export function checkCustomTheme(t: CustomTheme, site?: SiteKind): ThemeProblem[] {
   const out: ThemeProblem[] = [];
+  if (site) for (const m of missingPages(t, site)) out.push({ level: "bloquant", text: `page « ${m.label} » absente (clé ${m.keys[0]}) : un thème sur mesure a toutes ses pages` });
   const bad = (text: string) => out.push({ level: "bloquant", text });
   const warn = (text: string) => out.push({ level: "à revoir", text });
   const lib = (s: CtSection): LibSection | null => libSection(s.id);

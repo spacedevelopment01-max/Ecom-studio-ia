@@ -48,10 +48,13 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   Consignes à Qwen **en français**, concrètes (scène, objets, lumière), seuls les textes voulus entre guillemets.
 - **Thème sur mesure** (décision du propriétaire du 9 novembre 2026 : « on ne va plus appeler ça maquette mais thème sur
   mesure » ; le client ne lit plus jamais le mot « maquette ») : à l'étape 6, SINA **monte** le thème avec la
-  bibliothèque de sections (`public/sections/`, 188 sections préparées par `scripts/sections-library.py` depuis le
+  bibliothèque de sections (`public/sections/`, 191 sections préparées par `scripts/sections-library.py` depuis le
   catalogue ; familles Classique et Moderne, jamais mélangées ; Moderne avec ses pages de parcours : commande sans champ de carte, commande confirmée, compte, aide et suivi, informations légales « [À compléter] », article ; chaque lien mène à sa page et chaque « Ajouter » met à jour le compteur du panier, demande du 9 novembre 2026), aux couleurs, polices, nom et logo du client, et le
   **modifie sur demande** : outils `custom.*` (`src/lib/syna-agent/custom-theme/`) : bibliothèque, montage
-  (`custom.compose`, points de départ SOLSTICE, RUPTURE et Brindi), lecture et modification d'une section
+  (`custom.compose` : **aucun thème de départ**, décision du 9 novembre 2026 : le client choisit seulement Classique ou
+  Moderne, SINA prend les meilleures sections pour SON produit ou SON service et monte TOUTES les pages, contrôlées par
+  `requiredPages` ; les thèmes construits ne servent qu'à la voie « thème du Studio » ; sections « seulement pour » un genre
+  de produit, ex. tailles et tenues, jamais ailleurs), lecture et modification d'une section
   (`custom.section`, `custom.edit` : textes, mise en forme limitée à la section, élément masqué, photo du client),
   structure (`custom.structure`), photo créée (`custom.photo`, seul outil payant), annulation (`custom.undo`), choix
   (`custom.choose`). Le thème vivant s'affiche dans le fil (`/api/projects/<id>/custom-theme`, pages, téléphone) avec
@@ -62,9 +65,9 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   **Ordre de l'étape 6 et montage à la marque** (décisions du propriétaire du 9 novembre 2026) : SINA demande d'abord
   « thème du Studio » ou « thème sur mesure ». Studio : TOUS nos thèmes montrés, le client choisit (`theme.choose`), puis
   étape 8 : `theme.images` et `theme.brand` (textes de toute la boutique réécrits dans l'angle choisi et son émotion par le
-  rédacteur du Studio, images créées par le moteur d'images du Studio ; tâche `syna.studio.brand`). Sur mesure : le style
-  d'abord, puis `custom.images` et `custom.build` (toutes les sections du style, textes et photos ; tâche
-  `syna.custom.brand`). Dans les deux cas, SINA demande **« tes images ou je les crée ? »**, donne le **nombre exact**
+  rédacteur du Studio, images créées par le moteur d'images du Studio ; tâche `syna.studio.brand`). Sur mesure : la famille
+  d'abord, puis le montage de A à Z (`custom.sections`, `custom.compose`), `custom.images` et `custom.build` (textes et photos ;
+  tâche `syna.custom.brand`). Dans les deux cas, SINA demande **« tes images ou je les crée ? »**, donne le **nombre exact**
   d'images, propose de créer celles qui manquent ou toutes, et donne le prix avant. Le site est ensuite en place dans
   l'**onglet Boutique** (aperçu en grand, « Désigner un élément », demande envoyée à SINA). Les 11 thèmes à plan d'emplacements
   (`reference-shapes.json`) et les 6 thèmes de services (TABLE SAISON, ATELIER NUANCE, PARENTHÈSE, PHASE, MAISON & HORIZON,

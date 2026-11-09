@@ -26,9 +26,9 @@ import { familyArtUniverse, loadFamilyChoice } from "../section-families";
 import { codePhotoPrompt } from "../mockup-code/code-mockup";
 import { hdAspect } from "../mockup-code/prompts";
 import { imageReferences, mockupImageRoute } from "../mockup-code/tools";
-import { familySections, libSection, sectionByRef, isCardSection } from "./library";
-import { applyStructure, checkCustomTheme, findSection, loadCustomTheme, replaceOnce, saveCustomTheme, scopedCss, sectionHtml, undoCustomTheme, type CustomTheme, type StructureOp } from "./theme";
-import { starterTheme } from "./starters";
+import { familySections, libSection, onlyFor, sectionByRef, isCardSection } from "./library";
+import { applyStructure, checkCustomTheme, findSection, loadCustomTheme, missingPages, replaceOnce, requiredPages, saveCustomTheme, scopedCss, sectionHtml, undoCustomTheme, type CustomTheme, type SiteKind, type StructureOp } from "./theme";
+import { listProducts } from "../../products/catalog";
 import { enqueue } from "../../jobs";
 import { setStep as setJourneyStep, updateJourney as updateJourneyConv } from "../journey";
 import { clientImages, CUSTOM_BRAND_JOB, examplePhotoCount, photoSlots, photosToCreate, SECTION_TEXT_CAP_MICRO, type ImagesMode } from "./brand";
@@ -51,6 +51,13 @@ const ref = (r: string) => {
   if (!l) throw new Error(`section « ${r} » absente de la bibliothèque (custom.sections pour la liste)`);
   return l.id;
 };
+/** Genre de site du projet : produits ou services, et nombre de produits (une page Boutique dès qu'il y en a plusieurs). */
+export function siteKind(ctx: ToolContext): SiteKind {
+  const p = project(ctx);
+  let n = 1;
+  try { n = listProducts(p.id).length || 1; } catch { /* catalogue absent */ }
+  return { business: p.business === "services" ? "services" : "products", products: n };
+}
 const familyOrError = (projectId: string) => {
   const f = loadFamilyChoice(projectId);
   if (!f) throw new Error("famille de sections pas encore choisie par le client : theme.families puis theme.family d'abord");
@@ -58,7 +65,7 @@ const familyOrError = (projectId: string) => {
 };
 function saved(ctx: ToolContext, t: CustomTheme, what: string) {
   const p = project(ctx);
-  const problems = checkCustomTheme(t);
+  const problems = checkCustomTheme(t, siteKind(ctx));
   const blocking = problems.filter((x) => x.level === "bloquant");
   if (blocking.length) return { ok: false, internal: false, summary: L(`Rien n'est enregistré : ${blocking.map((x) => x.text).join(" ; ")}.`, "Not saved: rule broken."), hint: "Corrige la composition (règles du propriétaire) puis relance ; ne dis jamais au client que c'est fait." };
   const next = saveCustomTheme(p.id, t);
@@ -84,68 +91,61 @@ const sectionsTool: AgentTool<{ role?: string; query?: string }> = {
     try { f = familyOrError(p.id); } catch (e) { return { ok: false, summary: (e as Error).message, hint: "Montre d'abord les familles au client (theme.families)." }; }
     const q = a.query?.toLowerCase();
     const list = familySections(f.family).filter((s) => (!a.role || s.role === a.role.toLowerCase()) && (!q || `${s.title} ${s.does} ${s.kind}`.toLowerCase().includes(q)));
-    const byRole: Record<string, { id: string; titre: string; place: string; fait: string; cartes?: true; style?: string }[]> = {};
-    for (const s of list) (byRole[s.role] ??= []).push({ id: s.id, titre: s.title, place: s.kind, fait: s.does.slice(0, 260), ...(isCardSection(s) ? { cartes: true as const } : {}), ...(s.style ? { style: s.style } : {}) });
+    const byRole: Record<string, { id: string; titre: string; place: string; fait: string; cartes?: true; seulementPour?: string }[]> = {};
+    for (const s of list) (byRole[s.role] ??= []).push({ id: s.id, titre: s.title, place: s.kind, fait: s.does.slice(0, 260), ...(isCardSection(s) ? { cartes: true as const } : {}), ...(onlyFor(s.tags) ? { seulementPour: onlyFor(s.tags)! } : {}) });
     return {
       ok: true,
       summary: L(`${list.length} section(s) de la famille ${f.family}${a.role ? ` (rôle ${a.role})` : ""}.`, `${list.length} sections.`),
-      hint: "Règles : une seule section de cartes (cartes:true) par page ; « Produit vedette » seulement en haut de la fiche produit ou une fois sur l'accueil ; jamais la même section deux fois de suite ; chaque section a un rôle dans l'histoire de la page ; ouverture de l'accueil = grande photo pleine avec le titre dessus.",
+      hint: "Monte le site de A à Z avec les MEILLEURES sections pour SON produit ou SON service (jamais une section pour prendre une section ; « seulementPour » : jamais ailleurs, ex. tailles, tenues et looks seulement pour des vêtements). Pages obligatoires (clés) : " + requiredPages(siteKind(ctx)).map((r) => `${r.keys[0]} (${r.label})`).join(", ") + ". Règles : une seule section de cartes (cartes:true) par page ; « Produit vedette » seulement en haut de la fiche produit ou une fois sur l'accueil ; jamais la même section deux fois de suite ; chaque section a un rôle dans l'histoire de la page ; ouverture de l'accueil = grande photo pleine avec le titre dessus.",
       data: { famille: f.family, style: f.style, roles: byRole },
     };
   },
 };
 
 type PageArg = { key: string; label: string; sections: string[] };
-const composeTool: AgentTool<{ start?: boolean; header?: string; footer?: string; search?: string | null; pages?: PageArg[] }> = {
+const composeTool: AgentTool<{ header: string; footer: string; search?: string | null; pages: PageArg[] }> = {
   name: "custom.compose", module: "site", kind: "write", needsProject: true,
-  description: "Étape 6 (gratuit) : MONTE le thème sur mesure du client avec les sections de SA famille, à ses couleurs, polices, nom et logo. start:true part de la composition validée par le propriétaire pour sa famille et son style (Sport chic, Streetwear néon ou Classique) ; sinon pages : [{ key (home, shop, product, cart, about, contact, journal, 404… ou product-<nom>), label, sections : identifiants ou titres de custom.sections, dans l'ordre }] avec header, footer (et search pour la famille Moderne). Les règles du propriétaire sont contrôlées : un point bloquant n'enregistre rien. Remplace le thème en cours (l'ancien reste dans l'historique : custom.undo).",
+  description: "Étape 6 (gratuit) : MONTE de A à Z le thème sur mesure du client, avec les MEILLEURES sections de SA famille pour SON produit ou SON service (lis custom.sections d'abord ; aucun thème de départ : les thèmes construits sont pour la voie « thème du Studio »), à ses couleurs, polices, nom et logo. header, footer (search : recherche plein écran, famille Moderne) et pages : [{ key, label, sections : identifiants ou titres de custom.sections, dans l'ordre de l'histoire de la page }], TOUTES les pages obligatoires (clés données par custom.sections : home, shop si plusieurs produits, product, cart, commande, merci, compte, about, contact, aide, legal, 404 ; services : home, prestations, reservation ou devis, about, contact, aide, legal, 404). Les règles du propriétaire sont contrôlées : un point bloquant (page manquante comprise) n'enregistre rien. Remplace le thème en cours (l'ancien reste dans l'historique : custom.undo).",
   args: z.object({
-    start: z.boolean().optional(), header: z.string().max(80).optional(), footer: z.string().max(80).optional(), search: z.string().max(80).nullable().optional(),
-    pages: z.array(z.object({ key: z.string().regex(/^[a-z0-9-]{1,40}$/), label: z.string().min(1).max(40), sections: z.array(z.string().max(80)).min(1).max(16) }).strict()).min(1).max(12).optional(),
+    header: z.string().max(80), footer: z.string().max(80), search: z.string().max(80).nullable().optional(),
+    pages: z.array(z.object({ key: z.string().regex(/^[a-z0-9-]{1,40}$/), label: z.string().min(1).max(40), sections: z.array(z.string().max(80)).min(1).max(16) }).strict()).min(1).max(16),
   }).strict(),
   run: (ctx, a) => {
     const p = project(ctx);
     try {
       const f = familyOrError(p.id);
-      const base = starterTheme(f.family, f.style);
-      if (!a.start && !a.pages) return { ok: false, summary: L("Indique start:true ou les pages du thème.", "start or pages required."), internal: true };
-      let t: CustomTheme = base;
-      if (a.pages) {
-        t = { ...base, pages: [] };
-        t = applyStructure(t, a.pages.flatMap((pg) => [{ op: "page", key: pg.key, label: pg.label } as StructureOp, ...pg.sections.map((s) => ({ op: "add", page: pg.key, section: ref(s) }) as StructureOp)]));
-      }
-      if (a.header) t = applyStructure(t, [{ op: "shell", slot: "header", section: ref(a.header) }]);
-      if (a.footer) t = applyStructure(t, [{ op: "shell", slot: "footer", section: ref(a.footer) }]);
-      if (a.search !== undefined) t = applyStructure(t, [{ op: "shell", slot: "search", section: a.search ? ref(a.search) : null }]);
-      return saved(ctx, { ...t, chosen: false }, a.pages ? `monté : ${t.pages.map((x) => x.label).join(", ")}` : `monté d'après la composition validée (${f.family === "classique" ? "Classique" : f.style})`);
+      let t: CustomTheme = { version: 1, family: f.family, style: f.style, header: null, footer: null, search: null, pages: [], rev: 0, at: Date.now() };
+      t = applyStructure(t, a.pages.flatMap((pg) => [{ op: "page", key: pg.key, label: pg.label } as StructureOp, ...pg.sections.map((s) => ({ op: "add", page: pg.key, section: ref(s) }) as StructureOp)]));
+      t = applyStructure(t, [{ op: "shell", slot: "header", section: ref(a.header) }, { op: "shell", slot: "footer", section: ref(a.footer) }]);
+      if (a.search) t = applyStructure(t, [{ op: "shell", slot: "search", section: ref(a.search) }]);
+      return saved(ctx, { ...t, chosen: false }, `monté de A à Z : ${t.pages.map((x) => x.label).join(", ")}`);
     } catch (e) { return { ok: false, summary: (e as Error).message, internal: true }; }
   },
 };
 
 /** Coût probable d'une écriture de section (mesuré sur les textes du site : environ 0,06 € avec le modèle des textes). */
 export const SECTION_TEXT_TYPICAL_MICRO = 60_000;
-type BuildArgs = { pages?: PageArg[]; photos?: boolean; images?: ImagesMode; clientAssets?: string[] };
-/** Thème à monter : celui en cours, sinon la composition validée du style choisi (ou les pages données). */
-function buildPlan(ctx: ToolContext, a: BuildArgs): CustomTheme {
+type BuildArgs = { photos?: boolean; images?: ImagesMode; clientAssets?: string[] };
+/** Thème à monter à la marque : celui que SINA a composé de A à Z (custom.compose), toutes ses pages comprises. */
+function buildPlan(ctx: ToolContext): CustomTheme {
   const p = project(ctx);
-  const f = familyOrError(p.id);
+  familyOrError(p.id);
   const cur = loadCustomTheme(p.id);
-  if (cur && !a.pages) return cur;
-  const base = starterTheme(f.family, f.style);
-  if (!a.pages) return base;
-  return applyStructure({ ...base, pages: [] }, a.pages.flatMap((pg) => [{ op: "page", key: pg.key, label: pg.label } as StructureOp, ...pg.sections.map((s) => ({ op: "add", page: pg.key, section: ref(s) }) as StructureOp)]));
+  if (!cur) throw new Error(L("Aucun thème sur mesure monté : compose d'abord toutes les pages avec les meilleures sections pour ce produit ou ce service (custom.sections puis custom.compose).", "No custom theme composed yet."));
+  const miss = missingPages(cur, siteKind(ctx));
+  if (miss.length) throw new Error(L(`Il manque des pages : ${miss.map((m) => m.label).join(", ")} (custom.structure pour les ajouter).`, "Missing pages."));
+  return cur;
 }
 const buildTool: AgentTool<BuildArgs> = {
   name: "custom.build", module: "site", kind: "generate", needsProject: true,
-  description: "Étape 6, THÈME SUR MESURE (PAYANT : devis du Studio annoncé en % du budget, accord écrit du client d'abord) : une fois le style CHOISI PAR LE CLIENT (theme.family) et sa réponse sur les images (custom.images : ses images, les tiennes, ou les deux), images : « client » (ses images seulement, autant que d'emplacements), « mix » (ses images d'abord, tu crées les autres) ou « sina » (tu crées tout) ; clientAssets : ses images (identifiants de custom.images), dans l'ordre des emplacements. monte son thème avec TOUTES les sections prévues pour ce style, à sa marque : tous les textes écrits pour lui (ses faits seulement, jamais ceux d'un modèle) et toutes les photos (vraies photos de ses produits, sinon photos créées dans la direction artistique de son style). Sans pages : la composition validée du style (ou le thème déjà en cours) ; pages : composition adaptée à son projet (mêmes règles que custom.compose). photos:false = textes seulement. Tâche de fond ; le thème est ensuite EN PLACE dans l'onglet Boutique, où le client demande ses changements et désigne les éléments.",
+  description: "Étape 6, THÈME SUR MESURE (PAYANT : devis du Studio annoncé en % du budget, accord écrit du client d'abord) : APRÈS custom.compose (le thème monté de A à Z, toutes ses pages) et sa réponse sur les images (custom.images : ses images, les tiennes, ou les deux), images : « client » (ses images seulement, autant que d'emplacements), « mix » (ses images d'abord, tu crées les autres) ou « sina » (tu crées tout) ; clientAssets : ses images (identifiants de custom.images), dans l'ordre des emplacements. Met le thème À SA MARQUE : tous les textes écrits pour lui (ses faits seulement, jamais ceux d'un modèle) et toutes les photos (vraies photos de ses produits, sinon photos créées dans la direction artistique de sa famille). photos:false = textes seulement. Tâche de fond ; le thème est ensuite EN PLACE dans l'onglet Boutique, où le client demande ses changements et désigne les éléments.",
   args: z.object({
-    pages: z.array(z.object({ key: z.string().regex(/^[a-z0-9-]{1,40}$/), label: z.string().min(1).max(40), sections: z.array(z.string().max(80)).min(1).max(16) }).strict()).min(1).max(12).optional(),
     photos: z.boolean().optional(),
     images: z.enum(["sina", "client", "mix"]).optional(),
     clientAssets: z.array(z.string().max(60)).max(80).optional(),
   }).strict(),
   estimate: (ctx, a) => {
-    const t = buildPlan(ctx, a);
+    const t = buildPlan(ctx);
     const sections = allSectionsCount(t), photos = a.photos === false ? 0 : photosToCreate(examplePhotoCount(t), a.images ?? "sina", a.clientAssets?.length ?? 0);
     const unit = (customPhotoDeps.unit ?? photoUnit)();
     if (photos && unit == null) throw new Error(L("Aucun modèle d'images utilisable pour les photos du site.", "No usable image model."));
@@ -154,8 +154,8 @@ const buildTool: AgentTool<BuildArgs> = {
   run: async (ctx, a) => {
     const p = project(ctx);
     let t: CustomTheme;
-    try { t = buildPlan(ctx, a); } catch (e) { return { ok: false, summary: (e as Error).message, hint: "Le client choisit d'abord son style (theme.families puis theme.family)." }; }
-    const blocking = checkCustomTheme(t).filter((x) => x.level === "bloquant");
+    try { t = buildPlan(ctx); } catch (e) { return { ok: false, summary: (e as Error).message, hint: "Le client choisit d'abord sa famille (theme.families puis theme.family), puis tu montes toutes les pages (custom.sections, custom.compose)." }; }
+    const blocking = checkCustomTheme(t, siteKind(ctx)).filter((x) => x.level === "bloquant");
     if (blocking.length) return { ok: false, internal: true, summary: `Composition refusée : ${blocking.map((x) => x.text).join(" ; ")}.` };
     // Images du client : seulement les siennes (Fichiers du projet), et le bon nombre quand il veut n'utiliser que les siennes.
     const mode = a.images ?? "sina", own = new Set(clientImages(p.id).map((x) => x.id));
@@ -164,7 +164,6 @@ const buildTool: AgentTool<BuildArgs> = {
     if (mode !== "sina" && !a.clientAssets?.length) return { ok: false, summary: L("Aucune image du client à poser : demande-lui d'abord ses images (custom.images dit combien il en faut).", "No client images yet.") };
     const needed = examplePhotoCount(t);
     if (mode === "client" && (a.clientAssets?.length ?? 0) < needed) return { ok: false, summary: L(`Il faut ${needed} images et le client en a donné ${a.clientAssets!.length} : rien n'est lancé.`, "Not enough client images."), hint: `Dis-le au client simplement et propose-lui : m'envoyer les ${needed - a.clientAssets!.length} qui manquent, que tu crées les autres (images:\"mix\", prix annoncé), ou que tu crées toutes les images (images:\"sina\").` };
-    if (!loadCustomTheme(p.id) || a.pages) t = saveCustomTheme(p.id, { ...t, chosen: false });
     const est = await buildTool.estimate!(ctx, a);
     const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: CUSTOM_BRAND_JOB, label: L("Thème sur mesure monté à ta marque (SINA)", "Custom theme built for your brand (SINA)"), payload: { projectId: p.id, capMicro: est.maxMicro, conversationId: ctx.conversationId, photos: a.photos !== false, images: mode, clientAssets: a.clientAssets ?? [] }, maxAttempts: 2, idempotencyKey: `syna:${ctx.runId}:custom-brand:${t.rev}` });
     try { updateJourneyConv(ctx.conversationId, (x) => setJourneyStep(x, 6, "doing")); } catch { /* fil sans parcours */ }
@@ -180,12 +179,12 @@ const allSectionsCount = (t: CustomTheme) => (t.header ? 1 : 0) + (t.footer ? 1 
 
 const imagesTool: AgentTool<Record<string, never>> = {
   name: "custom.images", module: "site", kind: "read", needsProject: true,
-  description: "Étape 6 (gratuit), AVANT custom.build : combien d'images il faut pour le thème sur mesure du style choisi (un emplacement par photo, page par page) et quelles images le client a déjà envoyées (identifiants pour clientAssets). Sert à lui demander s'il veut monter son site avec SES images ou si tu les crées, et à lui dire le nombre exact d'images à envoyer.",
+  description: "Étape 6 (gratuit), APRÈS custom.compose et AVANT custom.build : combien d'images il faut pour le thème sur mesure monté (un emplacement par photo, page par page) et quelles images le client a déjà envoyées (identifiants pour clientAssets). Sert à lui demander s'il veut monter son site avec SES images ou si tu les crées, et à lui dire le nombre exact d'images à envoyer.",
   args: z.object({}).strict(),
   run: (ctx) => {
     const p = project(ctx);
     let t: CustomTheme;
-    try { t = buildPlan(ctx, {}); } catch (e) { return { ok: false, summary: (e as Error).message, hint: "Le client choisit d'abord son style (theme.families puis theme.family)." }; }
+    try { t = buildPlan(ctx); } catch (e) { return { ok: false, summary: (e as Error).message, hint: "Monte d'abord toutes les pages avec les meilleures sections pour ce produit ou ce service (custom.sections puis custom.compose), puis compte les images." }; }
     const slots = photoSlots(t), mine = clientImages(p.id);
     const byPage: Record<string, number> = {};
     for (const s of slots) byPage[s.place] = (byPage[s.place] ?? 0) + 1;
