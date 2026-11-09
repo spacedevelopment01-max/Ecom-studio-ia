@@ -37,10 +37,12 @@ export const CUSTOM_BRAND_JOB = "syna.custom.brand";
  * autres. Les vraies photos de ses produits servent toujours aux photos de ses produits.
  */
 export type ImagesMode = "sina" | "client" | "mix";
-export type CustomBrandPayload = { projectId: string; capMicro: number; conversationId?: string | null; photos?: boolean; images?: ImagesMode; clientAssets?: string[] };
+export type CustomBrandPayload = { projectId: string; capMicro: number; conversationId?: string | null; photos?: boolean; images?: ImagesMode; clientAssets?: string[]; rewrite?: boolean };
 
 /** Plafond d'un appel d'écriture d'une section (même modèle que les textes du site). */
 export const SECTION_TEXT_CAP_MICRO = 150_000;
+/** Plafond du plan des textes de tout le site (un appel par montage). */
+export const SITE_PLAN_CAP_MICRO = 250_000;
 const RATIOS = ["1:1", "4:5", "2:3", "16:9", "9:16"] as const;
 
 export const SectionWriteSchema = z.object({
@@ -49,11 +51,27 @@ export const SectionWriteSchema = z.object({
 });
 export type SectionWrite = z.infer<typeof SectionWriteSchema>;
 
+/**
+ * Règles d'écriture du site (retour du propriétaire du 9 novembre 2026 sur l'essai Heure Dorée : « Lis les étiquettes :
+ * c'est quoi ce copywriting, ça doit être bien mieux ». L'accroche de l'angle était reprise mot pour mot puis déclinée
+ * partout, menus compris, et chaque section, écrite seule, répétait les mêmes faits).
+ */
+export const COPY_CRAFT = `Écriture (comme le meilleur concepteur-rédacteur d'une vraie marque française) :
+- L'angle choisi est l'ÉMOTION à faire ressentir sur tout le site, jamais une formule à répéter. Son accroche est une piste : elle ne sert, au plus, qu'une fois (l'ouverture de l'accueil), et seulement si elle donne vraiment envie ; sinon tu écris mieux. Ses mots ne vont jamais dans les menus, les liens ni les boutons.
+- Un titre donne envie : une image concrète, un goût, une texture, un moment, un bénéfice. Jamais un ordre au lecteur (« Lis… », « Découvre… », « Plonge… »), jamais un slogan creux ni un jeu de mots forcé.
+- Un bouton : un verbe d'action et ce qu'on obtient, 2 à 4 mots (ex. « Choisir mon parfum », « Voir le coffret », « Ajouter au panier »).
+- Menus, pied de page, liens : les mots simples que le visiteur cherche (ex. « Nos confitures », « Coffret cadeau », « Notre histoire », « Livraison et retours », « Contact »).
+- Chaque fait fort (pourcentage, savoir-faire, livraison, retours) apparaît au plus UNE fois par page : on prouve une fois, on ne martèle pas.
+- Phrases courtes et vivantes (15 mots au plus), des mots qui se goûtent, se touchent, se voient, des détails précis du client plutôt que des adjectifs vagues.
+- Jamais de tics d'écriture automatique : pas de « ce n'est pas X, c'est Y », pas de listes de négations, pas de tiret cadratin, pas de deux-points dramatiques en série.`;
+
 export const SECTION_WRITE_SYSTEM = `Tu es concepteur-rédacteur web senior et directeur artistique. Tu adaptes UNE section de site (son HTML) à une petite marque, en français.
 Règles absolues :
 - Tu remplaces TOUS les textes visibles de la section (titres, paragraphes, boutons, libellés, listes, textes alternatifs des images, questions et réponses) par des textes pour CETTE marque, dans sa voix (tutoiement si elle tutoie), de longueur proche de l'original pour garder la mise en page.
 - RIEN d'inventé : aucun avis, note, nombre d'avis, chiffre, label, certification, promesse de santé, délai, prix, ingrédient ou matière qui ne soit pas dans les faits fournis. Ne remplace jamais un fait du client par un autre (s'il dit « tout est bio », tu gardes le bio). Un fait inconnu s'écrit « [À compléter : …] » ou n'est pas écrit.
 - Les textes de la section d'origine viennent d'une démonstration : tu n'en reprends JAMAIS une phrase, même traduite ou retouchée.
+${COPY_CRAFT}
+- Le PLAN DES TEXTES DU SITE fourni s'impose : le titre et le bouton de CETTE section tels quels (ajuste-les seulement s'ils ne tiennent pas dans la mise en page), son message, et seulement SES faits chiffrés. Tu ne reprends ni ne paraphrases le titre d'une autre section.
 - Noms et prix de produits : seulement ceux de la liste fournie, écrits exactement.
 - Le vocabulaire imposé par le client est respecté.
 - Tu ne touches ni aux balises, ni aux classes, ni aux attributs (sauf alt et les textes) : chaque modification est un remplacement { find, replace } où find est un passage EXACT du HTML fourni, présent une seule fois (prends assez de contexte pour qu'il soit unique), et replace le même passage avec les nouveaux textes.
@@ -74,7 +92,7 @@ export function brandBrief(p: Project, j: Journey | null): string {
     b?.audience ? `Clientèle : ${b.audience}.` : "",
     b?.personality?.length ? `Personnalité : ${b.personality.join(", ")}.` : "",
     b?.tone?.voice ? `Voix : ${b.tone.voice}.` : "",
-    plan?.angle ? `Angle marketing choisi : « ${plan.angle.title} »${d.emotion ? `, émotion : ${d.emotion}` : ""}${plan.angle.message ? `, accroche (titre d'ouverture de l'accueil, mot pour mot) « ${plan.angle.message} »` : ""}${plan.angle.cta ? `, appel à l'action « ${plan.angle.cta} »` : ""}.` : "",
+    plan?.angle ? `Angle marketing choisi : « ${plan.angle.title} »${d.emotion ? `, émotion : ${d.emotion}` : ""}${plan.angle.message ? `, accroche proposée à l'étape des angles (une piste, pas un texte imposé) « ${plan.angle.message} »` : ""}${plan.angle.cta ? `, idée d'appel à l'action « ${plan.angle.cta} »` : ""}.` : "",
     d.story ? `Ce qu'on raconte : ${d.story}` : "",
     plan?.keyMessages.length ? `Messages clés : ${plan.keyMessages.map((m) => `« ${m} »`).join(" ; ")}.` : "",
     products.length ? `Produits (noms et prix exacts) : ${products.join(" ; ")}.` : "",
@@ -87,8 +105,46 @@ export function brandBrief(p: Project, j: Journey | null): string {
   ].filter(Boolean).join("\n");
 }
 
-export function sectionWritePrompt(brief: string, place: string, title: string, does: string, html: string): string {
-  return [brief, "", `Section à adapter : « ${title} » (${place}). Ce qu'elle fait : ${does}`, "HTML actuel de la section (textes de démonstration à remplacer) :", html].join("\n");
+export const SitePlanSchema = z.object({
+  promesse: z.string().min(5).max(240),
+  voix: z.string().min(5).max(400),
+  menu: z.array(z.string().min(1).max(40)).max(8),
+  sections: z.array(z.object({
+    uid: z.string().max(12), message: z.string().min(3).max(320), titre: z.string().max(110).nullable(),
+    bouton: z.string().max(40).nullable(), faits: z.array(z.string().max(160)).max(4),
+  })).max(40),
+});
+export type SitePlan = z.infer<typeof SitePlanSchema>;
+
+export const SITE_PLAN_SYSTEM = `Tu es le concepteur-rédacteur en chef d'une petite marque. AVANT que chaque section de son site soit écrite, tu fais le PLAN DES TEXTES de tout le site, en français : la promesse, la voix, les libellés du menu principal, et pour CHAQUE section son message (différent de toutes les autres), son titre, son bouton (null si elle n'en a pas) et les faits qu'elle seule utilise.
+${COPY_CRAFT}
+- Rôle des pages : accueil = donner envie puis choisir ; boutique = choisir vite ; fiche produit = décider et rassurer ; panier = finir sans hésiter ; à propos = l'histoire vraie de la marque ; aide, contact, légal = répondre clairement, sans effet de style.
+- Les faits forts sont RÉPARTIS entre les sections : jamais deux sections d'une même page avec le même fait. Aucun titre ne se répète sur le site.
+- RIEN d'inventé : seulement les faits fournis ; un fait inconnu n'est pas écrit.
+- Titre null pour une section sans titre (en-tête, bandeau, pied de page) ; dans l'en-tête, le menu suit tes libellés.
+Réponse : uniquement le JSON demandé.`;
+
+export function sitePlanPrompt(brief: string, sections: { uid: string; page: string; title: string; does: string; texts: string }[]): string {
+  return [brief, "", "Sections du site, dans l'ordre (uid · page · section · ce qu'elle fait · ses textes de démonstration, à NE PAS reprendre) :",
+    ...sections.map((x) => `- ${x.uid} · ${x.page} · « ${x.title} » · ${x.does} · démo : ${x.texts}`)].join("\n");
+}
+
+/** Textes visibles d'une section (titres, boutons, liens), pour montrer sa forme au plan sans tout son HTML. */
+export function sectionSkeleton(html: string): string {
+  const bits = [...html.matchAll(/<(h[1-4]|button|a|summary)\b[^>]*>([\s\S]*?)<\/\1>/g)].map((m) => `${m[1]}:${m[2].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()}`).filter((x) => x.length > 3 && x.length < 90);
+  return [...new Set(bits)].slice(0, 14).join(" | ") || "(aucun titre)";
+}
+
+export function sectionWritePrompt(brief: string, place: string, title: string, does: string, html: string, plan?: { site: SitePlan; uid: string }): string {
+  const mine = plan?.site.sections.find((x) => x.uid === plan.uid);
+  const others = plan ? plan.site.sections.filter((x) => x.uid !== plan.uid && x.titre).map((x) => `« ${x.titre} »`) : [];
+  const planText = plan ? [
+    "PLAN DES TEXTES DU SITE (à suivre) :",
+    `Promesse : ${plan.site.promesse}`, `Voix : ${plan.site.voix}`, plan.site.menu.length ? `Menu principal : ${plan.site.menu.join(" · ")}` : "",
+    mine ? `CETTE section : message : ${mine.message}${mine.titre ? ` ; titre : « ${mine.titre} »` : ""}${mine.bouton ? ` ; bouton : « ${mine.bouton} »` : ""} ; faits à utiliser ici (et aucun autre chiffre) : ${mine.faits.length ? mine.faits.join(" ; ") : "aucun"}.` : "",
+    others.length ? `Titres des autres sections (ne les répète pas) : ${others.join(", ")}.` : "",
+  ].filter(Boolean).join("\n") : "";
+  return [brief, "", ...(planText ? [planText, ""] : []), `Section à adapter : « ${title} » (${place}). Ce qu'elle fait : ${does}`, "HTML actuel de la section (textes de démonstration à remplacer) :", html].join("\n");
 }
 
 /** Applique les remplacements d'une écriture : ceux qui ne s'appliquent pas sont comptés, jamais devinés. */
@@ -132,6 +188,7 @@ export function photosToCreate(needed: number, mode: ImagesMode, clientCount: nu
 
 /** Remplaçables par les tests (aucun appel réel). */
 export const customBrandDeps: {
+  plan?: (prompt: string, usageKey: string) => Promise<SitePlan>;
   write?: (prompt: string, usageKey: string) => Promise<SectionWrite>;
   photo?: (prompt: string, product: Buffer | null, aspect: string, usageKey: string) => Promise<Buffer>;
 } = {};
@@ -147,9 +204,25 @@ export async function runCustomBrandJob(ctx: JobContext) {
   const products = (() => { try { return listProducts(p.id); } catch { return []; } })();
   const fam = loadFamilyChoice(p.id), people = peopleAllowed(p.id), fu = familyArtUniverse(fam, { people });
   const direction = fu ? `${fu.style} ; ${fu.idea} ; lumière : ${fu.light} ; décors : ${fu.setting} ; couleurs de la marque : ${[p.brand?.palette?.dark, p.brand?.palette?.primary, p.brand?.palette?.accent].filter(Boolean).join(", ")}.` : null;
-  const sections = allSections(t).filter((x) => !x.s.clientTexts);
+  // rewrite : le client n'aime pas les textes, tout le site est réécrit (sinon seules les sections encore d'exemple).
+  const sections = allSections(t).filter((x) => a.rewrite || !x.s.clientTexts);
   const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, problems: [] as string[] };
   const briefs: Record<string, SectionWrite["photos"]> = {};
+
+  // 0) Plan des textes de tout le site (un appel) : chaque section reçoit SON message, son titre et ses faits.
+  let sitePlan: SitePlan | null = null;
+  if (sections.length) {
+    ctx.progress(0.03, L("Plan des textes du site", "Site copy plan"));
+    try {
+      sitePlan = await ctx.step("text-plan", async () => {
+        const prompt = sitePlanPrompt(brief, sections.map((x) => { const l = libSection(x.s.id); return { uid: x.s.uid, page: x.page?.label ?? x.place, title: l?.title ?? x.s.id, does: l?.does ?? "", texts: sectionSkeleton(withBrandName(sectionHtml(x.s), name)) }; }));
+        const usageKey = `${ctx.job.id}:text-plan`;
+        return customBrandDeps.plan ? customBrandDeps.plan(prompt, usageKey)
+          : SitePlanSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-plan", costCapMicro: a.capMicro }, () =>
+              llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: SITE_PLAN_SYSTEM, promptKey: "syna-custom-plan-1", prompt, maxTokens: 8000, maxOutputTokens: 8000, usageKey, routing: { difficulty: "complex", prefer: COPY_MODEL } }, SitePlanSchema, { strict: true })));
+      });
+    } catch (e) { report.problems.push(`plan des textes non fait (${(e as Error).message.slice(0, 120)}) : sections écrites sans plan`); }
+  }
 
   // 1) Textes, section par section (un point de reprise chacune).
   for (const [i, x] of sections.entries()) {
@@ -158,7 +231,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
     try {
       const w = await ctx.step(`text:${x.s.uid}`, async () => {
         const html = withBrandName(sectionHtml(x.s), name);
-        const prompt = sectionWritePrompt(brief, x.place, l?.title ?? x.s.id, l?.does ?? "", html);
+        const prompt = sectionWritePrompt(brief, x.page?.label ?? x.place, l?.title ?? x.s.id, l?.does ?? "", html, sitePlan ? { site: sitePlan, uid: x.s.uid } : undefined);
         const usageKey = `${ctx.job.id}:text:${x.s.uid}`;
         return customBrandDeps.write ? customBrandDeps.write(prompt, usageKey)
           : SectionWriteSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text", costCapMicro: a.capMicro }, () =>

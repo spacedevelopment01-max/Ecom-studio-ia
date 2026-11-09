@@ -341,9 +341,21 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       // Exécution de la tâche avec une fausse écriture et une fausse photo (aucun appel réel).
       const sharp = (await import("sharp")).default;
       let writes = 0, photos = 0, expected = 0;
+      // Plan des textes de tout le site d'abord (un seul appel) : chaque section reçoit SON titre et SES faits.
+      let plans = 0;
+      B.customBrandDeps.plan = async (prompt) => {
+        plans++;
+        const uids = [...prompt.matchAll(/^- (s[0-9a-f]{8}) · /gm)].map((m) => m[1]);
+        expect(uids.length).toBeGreaterThan(5);
+        expect(prompt).not.toMatch(/mot pour mot/);
+        return { promesse: "La bougie qui sent le jardin après la pluie.", voix: "Tutoiement, phrases courtes.", menu: ["Nos bougies", "Notre atelier", "Contact"],
+          sections: uids.map((uid, i) => ({ uid, message: `Message ${i}`, titre: `Titre unique ${i}`, bouton: i ? null : "Choisir ma bougie", faits: i === 1 ? ["Cire de colza"] : [] })) };
+      };
       B.customBrandDeps.write = async (prompt) => {
         writes++;
         expect(prompt).toContain("Marque : «");
+        expect(prompt).toMatch(/PLAN DES TEXTES DU SITE[^]*CETTE section : message : Message \d+ ; titre : « Titre unique \d+ »/);
+        expect(prompt).toContain("Menu principal : Nos bougies · Notre atelier · Contact");
         const html = prompt.slice(prompt.indexOf("HTML actuel"));
         const h = html.match(/<(h[1-4])[^>]*>([^<]{3,80})</);
         const imgs = [...new Set([...html.matchAll(/photos\/[\w-]+\.(?:webp|png|jpg)/g)].map((m) => m[0]))];
@@ -356,6 +368,18 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       const out: any = await fr(() => B.runCustomBrandJob(fake));
       const t = loadCustomTheme(pid)!;
       expect(writes).toBe(allSections(t).length);
+      expect(plans).toBe(1);
+      // Le client n'aime pas les textes : rewrite réécrit TOUT le site (même les sections déjà écrites), textes seulement.
+      const re = await fr(() => getTool("custom.build")!.estimate!(ctx, { photos: false, rewrite: true }));
+      expect(re.label).toMatch(/textes de tout ton site réécrits/);
+      writes = 0; plans = 0;
+      const again: any = await fr(() => B.runCustomBrandJob({ ...fake, job: { id: `${job.id}-re` }, payload: { ...fake.payload, photos: false, rewrite: true } }));
+      expect(plans).toBe(1);
+      expect(writes).toBe(allSections(t).length);
+      expect(again.sections).toBe(writes);
+      writes = allSections(t).length;
+      expect(B.SECTION_WRITE_SYSTEM).toMatch(/Jamais un ordre au lecteur/);
+      expect(B.SECTION_WRITE_SYSTEM).not.toContain("${COPY_CRAFT}");
       expect(out.sections).toBe(writes);
       expect(photos).toBeGreaterThan(0);
       expect(out.photosMade).toBe(photos);
@@ -367,7 +391,7 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       // la carte n'est jamais une photo : la vraie carte s'ouvre à l'adresse du client (realMap)
       for (const x of allSections(t)) expect(sectionHtml(x.s).replace(/photos\/(carte|map|plan)-[\w-]*\.(webp|jpg|png)/g, ""), x.place).not.toMatch(/photos\/[a-z]+-?[a-z0-9]*\.(webp|jpg|png)/);
       expect(allSections(t).filter((x) => x.s.clientTexts).length).toBeGreaterThan(0);
-    } finally { delete T.customPhotoDeps.unit; delete B.customBrandDeps.write; delete B.customBrandDeps.photo; }
+    } finally { delete T.customPhotoDeps.unit; delete B.customBrandDeps.plan; delete B.customBrandDeps.write; delete B.customBrandDeps.photo; }
   });
 
   it("images : SINA dit combien il en faut ; celles du client d'abord ; jamais assez → refus et choix au client ; « mix » : SINA crée seulement les autres", async () => {
@@ -411,6 +435,7 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       const job = one<any>("SELECT * FROM jobs WHERE id=?", r.jobs[0]);
       expect(JSON.parse(job.payload)).toMatchObject({ images: "mix", clientAssets: mine });
       let made = 0;
+      B.customBrandDeps.plan = async () => ({ promesse: "Le savon doux.", voix: "Simple.", menu: [], sections: [] });
       B.customBrandDeps.write = async (prompt) => ({ edits: [], photos: [...new Set([...prompt.slice(prompt.indexOf("HTML actuel")).matchAll(/photos\/[\w-]+\.(?:webp|png|jpg)/g)].map((m) => m[0]))].map((f) => ({ find: f, description: "Photo d'un savon blanc sur une pierre grise, lumière douce du matin.", ratio: "1:1" as const, product: null })) });
       B.customBrandDeps.photo = async () => { made++; return sharp({ create: { width: 20, height: 20, channels: 3, background: "#999" } }).png().toBuffer(); };
       const out: any = await fr(() => B.runCustomBrandJob({ job: { id: job.id }, payload: JSON.parse(job.payload), checkpoint: {}, progress: () => undefined, step: async (_k: string, fn: () => Promise<unknown>) => fn() } as any));
@@ -419,7 +444,7 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       expect(out.photosClient + out.photosMade).toBe(n);
       const html = allSections(loadCustomTheme(pid)!).map((x) => sectionHtml(x.s)).join("");
       for (const id of mine) expect(html).toContain(id);
-    } finally { delete T.customPhotoDeps.unit; delete B.customBrandDeps.write; delete B.customBrandDeps.photo; }
+    } finally { delete T.customPhotoDeps.unit; delete B.customBrandDeps.plan; delete B.customBrandDeps.write; delete B.customBrandDeps.photo; }
   });
 
   it("un remplacement qui ne s'applique pas est compté, jamais deviné ; aucun script n'entre", () => {
