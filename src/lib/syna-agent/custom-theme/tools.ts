@@ -31,7 +31,7 @@ import { allSections, applyStructure, checkCustomTheme, findSection, loadCustomT
 import { listProducts } from "../../products/catalog";
 import { activityPlan, companyOf } from "../activity";
 import { brandBrief, siteCopyModel } from "./brand";
-import { DESIGN_CALLS_MAX, DESIGN_CAP_MICRO, DESIGN_REVIEW_SYSTEM, DESIGN_SYSTEM, DESIGN_TYPICAL_MICRO, DesignSchema, designGaps, designPrompt, intentText, type Design } from "./design";
+import { type Ambiance, DESIGN_CALLS_MAX, DESIGN_CAP_MICRO, DESIGN_REVIEW_SYSTEM, DESIGN_SYSTEM, DESIGN_TYPICAL_MICRO, DesignSchema, designGaps, designPrompt, intentText, type Design } from "./design";
 import { llmJson } from "../../ai/llm";
 import { withTrace } from "../../ai/trace";
 import { jobSpentMicro } from "../budget";
@@ -178,11 +178,11 @@ function brandAssets(projectId: string): { has: string[]; lacks: string[] } {
   return { has, lacks };
 }
 
-type DesignArgs = { consigne?: string };
+type DesignArgs = { consigne?: string; ambiance?: Ambiance };
 const designTool: AgentTool<DesignArgs> = {
   name: "custom.design", module: "site", kind: "generate", needsProject: true,
-  description: "Étape 6, THÈME SUR MESURE (PAYANT : prix annoncé, accord écrit du client d'abord) : CONÇOIT et monte tout le site comme un directeur de création, après le choix de la famille : le visiteur de CETTE marque (cible, émotion de l'angle, objections de la recherche et leurs réponses, ce qui le fait acheter), son parcours sur chaque page, et pour chaque moment la section de la bibliothèque qui y répond (pourquoi, et ce qu'elle dira). Pages riches, jamais le minimum, jamais une section pour remplir. C'est LA façon de monter ou de remonter un thème sur mesure (custom.compose ne sert qu'à appliquer une composition dictée par le client lui-même). consigne : ce que le client a dit vouloir (ses mots). Les sections déjà écrites et gardées gardent leurs textes et photos ; les nouvelles se font ensuite écrire avec custom.build (devis à part).",
-  args: z.object({ consigne: z.string().max(1500).optional() }).strict(),
+  description: "Étape 6, THÈME SUR MESURE (PAYANT : prix annoncé, accord écrit du client d'abord) : CONÇOIT et monte tout le site comme un directeur de création, après le choix de la famille : le visiteur de CETTE marque (cible, émotion de l'angle, objections de la recherche et leurs réponses, ce qui le fait acheter), son parcours sur chaque page, et pour chaque moment la section de la bibliothèque qui y répond (pourquoi, et ce qu'elle dira). Pages riches, jamais le minimum, jamais une section pour remplir. C'est LA façon de monter ou de remonter un thème sur mesure (custom.compose ne sert qu'à appliquer une composition dictée par le client lui-même). consigne : ce que le client a dit vouloir (ses mots). ambiance : demande-la au client AVANT (« ton site plutôt clair, plutôt sombre, ou qui alterne ? ») et passe sa réponse. Les sections déjà écrites et gardées gardent leurs textes et photos ; les nouvelles se font ensuite écrire avec custom.build (devis à part).",
+  args: z.object({ consigne: z.string().max(1500).optional(), ambiance: z.enum(["clair", "sombre", "alterne"]).optional() }).strict(),
   estimate: () => ({ maxMicro: DESIGN_CAP_MICRO * DESIGN_CALLS_MAX, probableMicro: DESIGN_TYPICAL_MICRO, label: L("conception de tout ton site sur mesure (stratégie, parcours de chaque page, choix de chaque section) et sa relecture", "full custom site design and review") }),
   run: async (ctx, a) => {
     const p = project(ctx);
@@ -190,7 +190,8 @@ const designTool: AgentTool<DesignArgs> = {
     try { f = familyOrError(p.id); } catch (e) { return { ok: false, summary: (e as Error).message, hint: "Montre d'abord les familles au client (theme.families) et enregistre SON choix (theme.family)." }; }
     const j = (() => { try { return journeyOf(ctx.conversationId); } catch { return null; } })();
     const site = siteKind(ctx), assets = brandAssets(p.id);
-    const prompt = designPrompt({ brief: brandBrief(p, j), family: f.family, site, has: assets.has, lacks: assets.lacks, consigne: a.consigne });
+    const products = (() => { try { return listProducts(p.id).map((x) => `- ${x.data.title}${x.data.price != null ? ` · ${(x.data.price / 100).toFixed(2).replace(".", ",")} €` : ""}${x.data.options.length ? ` · options : ${x.data.options.map((o) => `${o.name} (${o.values.join(", ")})`).join(" ; ")}` : ""}${x.data.description_html ? ` · ${x.data.description_html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 500)}` : ""}`); } catch { return []; } })();
+    const prompt = designPrompt({ brief: brandBrief(p, j), family: f.family, site, has: assets.has, lacks: assets.lacks, consigne: a.consigne, ambiance: a.ambiance ?? null, products });
     const jobId = getRun(ctx.runId)?.job_id ?? null;
     const call = async (text: string, key: string, system = DESIGN_SYSTEM): Promise<Design> => customDesignDeps.call ? customDesignDeps.call(system, text, key)
       : DesignSchema.parse(await withTrace({ jobId, projectId: p.id, step: "custom-design", costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + DESIGN_CAP_MICRO * DESIGN_CALLS_MAX }, () =>
@@ -208,7 +209,7 @@ const designTool: AgentTool<DesignArgs> = {
         const src = d.pages.find((x) => x.key === pg.key);
         if (!src) continue;
         pg.journey = src.journey;
-        pg.sections.forEach((s, i) => { if (src.sections[i]) s.intent = intentText(src.sections[i].why, src.sections[i].says); });
+        pg.sections.forEach((s, i) => { if (src.sections[i]) s.intent = intentText(src.sections[i].why, src.sections[i].says, src.sections[i].photos); });
       }
     };
     const blocking = (t: CustomTheme) => checkCustomTheme(t, site).filter((x) => x.level === "bloquant").map((x) => x.text);

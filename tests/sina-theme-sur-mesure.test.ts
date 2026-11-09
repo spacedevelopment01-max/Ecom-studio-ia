@@ -210,21 +210,24 @@ describe("thème sur mesure : outils de SINA", async () => {
     const good = {
       visitor: "Une personne de 35 ans qui trouve les confitures du commerce trop sucrées et veut retrouver le goût du fruit.", levers: ["la promesse dès l'arrivée", "la transparence de la recette"], objections: [], corrections: [] as string[],
       concept: "Le matin d'hiver où l'on ouvre le pot et où l'été revient.", header: "en-tete-classique", footer: "pied-de-page-complet", search: null,
-      pages: site.pages.map((pg) => ({ key: pg.key, label: pg.label, journey: `Le visiteur arrive sur ${pg.label} et se demande ce qu'il va trouver.`, sections: pg.sections.map((t) => ({ section: sectionByRef(t)!.id, why: `Répond au moment ${t}.`, says: `Dit ce que ${t} doit dire avec les faits.` })) })),
+      pages: site.pages.map((pg) => ({ key: pg.key, label: pg.label, journey: `Le visiteur arrive sur ${pg.label} et se demande ce qu'il va trouver.`, sections: pg.sections.map((t) => ({ section: sectionByRef(t)!.id, why: `Répond au moment ${t}.`, says: `Dit ce que ${t} doit dire avec les faits.`, photos: t === "Ouverture photo pleine" ? "Une table de cuisine un matin d'hiver, le pot ouvert à droite." : "aucune" })) })),
     };
     // 1re conception : une offre en section à part (refusée), puis la conception corrigée.
-    const bad = { ...good, pages: good.pages.map((pg) => (pg.key === "product" ? { ...pg, sections: [...pg.sections, { section: "offre-par-quantite", why: "Pour vendre plus.", says: "Trois pots moins chers." }] } : pg)) };
+    const bad = { ...good, pages: good.pages.map((pg) => (pg.key === "product" ? { ...pg, sections: [...pg.sections, { section: "offre-par-quantite", why: "Pour vendre plus.", says: "Trois pots moins chers.", photos: "aucune" }] } : pg)) };
     const prompts: string[] = [];
     const systems: string[] = [];
     // 1) conception, 2) relecture qui rend une version encore fautive, 3) correction demandée par le contrôle du Studio.
     T.customDesignDeps.call = async (system, prompt) => { prompts.push(prompt); systems.push(system); return prompts.length === 3 ? { ...good, corrections: ["Offre par quantité retirée : les offres sont dans le bloc d'achat."] } : bad; };
     try {
-      const r = await call("custom.design", ctx, { consigne: "Un matin d'hiver gris, j'ouvre le pot et l'été revient." });
+      const r = await call("custom.design", ctx, { consigne: "Un matin d'hiver gris, j'ouvre le pot et l'été revient.", ambiance: "sombre" });
       expect(r.ok, r.summary).toBe(true);
       expect(prompts).toHaveLength(3);
       expect(systems[0]).toMatch(/directeur de création[^]*STRATÉGIE[^]*PARCOURS[^]*RYTHME[^]*EXEMPLE DU NIVEAU ATTENDU/);
       expect(systems[1]).toMatch(/directeur commercial[^]*sans complaisance/);
       expect(prompts[0]).toMatch(/DEMANDE DU CLIENT[^]*matin d'hiver gris/);
+      expect(prompts[0]).toMatch(/AMBIANCE VOULUE PAR LE CLIENT : site sombre/);
+      expect(systems[0]).toMatch(/AMBIANCE voulue par le client[^]*site sombre = surtout des sections à fond sombre/);
+      expect(systems[0]).toMatch(/COHÉRENCE DU SITE/);
       expect(prompts[0]).toMatch(/BIBLIOTHÈQUE DE LA FAMILLE[^]*ouverture-photo-pleine · ouverture · fond photo · moyenne · 1 photo\(s\)/);
       expect(prompts[0]).not.toContain("questions-en-bulles-de-discussion"); // contenu de démonstration exclu
       expect(prompts[0]).toMatch(/Ce qu'elle n'a PAS[^]*avis clients/);
@@ -235,7 +238,8 @@ describe("thème sur mesure : outils de SINA", async () => {
       const t = loadCustomTheme(pid)!;
       expect(t.concept).toMatch(/l'été revient/);
       expect(t.pages[0].journey).toMatch(/Le visiteur arrive sur Accueil/);
-      expect(t.pages[0].sections[0].intent).toMatch(/^Pourquoi ici : Répond au moment Ouverture photo pleine\. Ce qu'elle dit :/);
+      expect(t.pages[0].sections[0].intent).toMatch(/^Pourquoi ici : Répond au moment Ouverture photo pleine\. Ce qu'elle dit :[^]* Photos : Une table de cuisine un matin d'hiver/);
+      expect(t.pages[0].sections[1].intent).not.toMatch(/Photos :/);
       expect(r.data.parcours[0].sections[0]).toMatch(/Ouverture photo pleine — Répond/);
       // Le rédacteur reçoit la conception de la section et le parcours de la page.
       const B = await import("@/lib/syna-agent/custom-theme/brand");
@@ -247,12 +251,12 @@ describe("thème sur mesure : outils de SINA", async () => {
   it("conception : chaque objection de la recherche doit trouver sa réponse dans une section posée ; rythme des fonds et densités", async () => {
     const D = await import("@/lib/syna-agent/custom-theme/design");
     const base = { visitor: "x".repeat(30), levers: ["a", "b"], concept: "x".repeat(30), header: "en-tete-classique", footer: "pied-de-page-complet", search: null, corrections: [],
-      pages: [{ key: "product", label: "Fiche produit", journey: "x".repeat(30), sections: [{ section: "produit-vedette", why: "x".repeat(12), says: "x".repeat(12) }, { section: "histoire-du-produit-au-defilement", why: "x".repeat(12), says: "x".repeat(12) }, { section: "chiffres-cles", why: "x".repeat(12), says: "x".repeat(12) }] }] };
+      pages: [{ key: "product", label: "Fiche produit", journey: "x".repeat(30), sections: [{ section: "produit-vedette", why: "x".repeat(12), says: "x".repeat(12), photos: "aucune" }, { section: "histoire-du-produit-au-defilement", why: "x".repeat(12), says: "x".repeat(12), photos: "aucune" }, { section: "chiffres-cles", why: "x".repeat(12), says: "x".repeat(12), photos: "aucune" }] }] };
     const research = ["Une confiture artisanale, c'est trop sucré", "C'est trop cher pour un pot"];
     const g = D.designGaps({ ...base, objections: [{ objection: "C'est trop cher pour un pot de confiture", answer: "Le prix au petit-déjeuner…", page: "product", section: "comparatif-nous-les-autres" }] } as any, research);
     expect(g.blocking).toEqual(["objection de la recherche sans réponse dans la conception : « Une confiture artisanale, c'est trop sucré »", "l'objection « C'est trop cher pour un pot » doit trouver sa réponse dans « comparatif-nous-les-autres » sur la page « product », qui n'y est pas"]);
-    // histoire au défilement (fond sombre) puis chiffres clés (fond sombre) : rythme à revoir
-    expect(g.rhythm).toEqual(["deux sections à fond sombre à la suite sur « Fiche produit » (histoire-du-produit-au-defilement, chiffres-cles)"]);
+    // Les fonds suivent l'ambiance voulue par le client : deux fonds sombres à la suite ne sont pas un défaut en soi.
+    expect(g.rhythm).toEqual([]);
   });
 
   it("une retouche n'est refusée que si elle CRÉE un point bloquant (un défaut ancien n'empêche pas de le corriger)", async () => {

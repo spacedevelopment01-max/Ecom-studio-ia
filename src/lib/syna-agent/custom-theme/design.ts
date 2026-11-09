@@ -21,7 +21,7 @@ import { familySections, isCardSection, LIBRARY_DIR, onlyFor } from "./library";
 import { requiredPages, platformOwnedPages, MIN_SECTIONS, type SiteKind } from "./theme";
 import type { FamilyId } from "../section-families";
 
-const SectionPick = z.object({ section: z.string().max(80), why: z.string().min(10).max(600), says: z.string().min(10).max(900) });
+const SectionPick = z.object({ section: z.string().max(80), why: z.string().min(10).max(600), says: z.string().min(10).max(900), photos: z.string().max(600) });
 export const DesignSchema = z.object({
   visitor: z.string().min(20).max(900),
   levers: z.array(z.string().min(3).max(240)).min(2).max(10),
@@ -48,17 +48,18 @@ export const DESIGN_CALLS_MAX = 3;
 export const DESIGN_TYPICAL_MICRO = 360_000;
 
 /** Exemple de niveau attendu (une autre marque, à ne jamais recopier). */
-const EXAMPLE = `EXEMPLE DU NIVEAU ATTENDU (une autre marque : des bougies coulées à la main, cible « personnes qui veulent une maison qui sent bon sans produits chimiques », objections « ça coûte cher pour une bougie », « elles fument et noircissent les murs », « l'odeur ne tient pas »). Fiche produit :
+const EXAMPLE = `EXEMPLE DU NIVEAU ATTENDU (les « photos » de chaque section sont à écrire de la même façon : la scène précise) (une autre marque : des bougies coulées à la main, cible « personnes qui veulent une maison qui sent bon sans produits chimiques », objections « ça coûte cher pour une bougie », « elles fument et noircissent les murs », « l'odeur ne tient pas »). Fiche produit :
 - produit-vedette · why : le visiteur arrive d'une publicité ; il veut voir la bougie, son prix et l'acheter sans chercher · says : « Figuier & bois blond », 32 €, 50 heures de combustion, cire de colza ; la promesse en une phrase (« La maison qui sent l'été dans un jardin, même en janvier ») ; bouton d'achat.
 - fiche-produit-a-onglets · why : juste après le prix, il veut comprendre ce qu'il achète ; la description racontée le fait entrer dans l'odeur · says : description en scène (le premier soir où on l'allume), composition exacte, conseils de première combustion.
-- comparatif-nous-les-autres · why : objection « ça coûte cher » : il compare avec la bougie de supermarché · says : cire de colza contre paraffine, mèche en coton contre mèche métallique, 50 h contre 20 h, prix à l'heure de combustion.
+- comparatif-nous-les-autres · why : objection « ça coûte cher » : il compare avec la bougie de supermarché · says : cire de colza contre paraffine, mèche en coton contre mèche métallique, 50 h contre 20 h, prix à l'heure de combustion · photos : aucune.
 - avant-apres · why : objection « elles fument » : on le montre au lieu de le promettre · says : le pot après 10 h, verre propre, contre une bougie de paraffine au verre noirci.
 - photo-a-points-cliquables · why : après les preuves, l'émotion revient : il se projette chez lui · says : un salon le soir, la bougie allumée, les points sur la bougie, le plaid, le livre.
 - points-forts-du-produit · why : objection « l'odeur ne tient pas » et récapitulatif avant la décision · says : parfum dosé à 10 %, diffusion à froid et à chaud, fabriquée à Lyon, recyclable.
 - questions-sur-le-produit · why : derniers doutes juste avant l'achat · says : 5 questions vraies (première combustion, durée, entretien de la mèche, livraison, retours).
 - badges-de-confiance · why : inverser le risque au moment de payer · says : retours 30 jours, livraison 48 h, paiement sécurisé.
 - complete-ta-commande · why : il est décidé ; on propose ce qui va avec · says : le coupe-mèche et la recharge, cochés ou non.
-- bouton-d-achat-toujours-visible · why : la page est longue ; sur téléphone, l'achat reste à portée de pouce · says : nom, prix, « Ajouter ».`;
+- bouton-d-achat-toujours-visible · why : la page est longue ; sur téléphone, l'achat reste à portée de pouce · says : nom, prix, « Ajouter ».
+EXEMPLE POUR UN SITE DE SERVICES (un électricien, cible « propriétaires qui rénovent », objections « il ne viendra pas pour un petit chantier », « le devis va exploser ») : accueil = ouverture avec la promesse et le délai réel d'intervention → prestations en cartes → déroulé d'une intervention (pour l'objection « je ne sais pas comment ça se passe ») → estimation de devis (pour « le devis va exploser ») → réalisations réelles (seulement si le client en a) → zone d'intervention → garanties et assurances réelles → « on vous rappelle ».`;
 
 export const DESIGN_SYSTEM = `Tu es le directeur de création d'une agence qui conçoit des sites de vente haut de gamme. Tu CONÇOIS le site d'une marque avec une bibliothèque de sections (la liste complète, avec les caractéristiques de chaque section, t'est donnée), en français.
 MÉTHODE, dans cet ordre :
@@ -67,8 +68,9 @@ A. STRATÉGIE (avant tout choix de section) :
  - objections : TOUTES les objections de la recherche (et celles, évidentes, du métier), chacune avec sa réponse VRAIE (faits de la marque) et la section précise (page, identifiant) où elle trouve sa réponse : comparatif, avant / après, preuve, démonstration, question, garantie.
  - levers : les leviers qui décident CE visiteur (ex. la promesse visible dès l'arrivée, l'émotion du moment de consommation, la transparence de la recette, l'inversion du risque par les retours, la preuve par le savoir-faire quand il n'y a pas d'avis, le prix rapporté à l'usage, le cadeau…).
 B. PARCOURS de chaque page (journey) : la suite des questions et des émotions du visiteur, du premier regard à l'action. Une page de vente alterne : promesse → compréhension → émotion → preuve / objection levée → émotion → décision.
-C. SECTIONS : pour CHAQUE moment du parcours, LA section de la bibliothèque qui y répond le mieux ; why = le moment, la question ou l'objection du visiteur, et pourquoi cette section plutôt qu'une autre ; says = ce qu'elle dira concrètement avec les vrais faits (le message, les éléments précis : questions, lignes de comparatif, étapes, avant et après, scène photographiée).
-D. RYTHME : alterne les fonds (jamais deux sections sombres à la suite) et les densités (une section dense est suivie d'une section qui respire), un moment fort d'émotion toutes les deux ou trois sections ; sur une longue page, une raison et un moyen d'agir reviennent régulièrement (bouton vers l'achat, barre d'achat collée sur téléphone si la bibliothèque l'a), et la page finit par un appel à agir.
+C. SECTIONS : pour CHAQUE moment du parcours, LA section de la bibliothèque qui y répond le mieux ; why = le moment, la question ou l'objection du visiteur, et pourquoi cette section plutôt qu'une autre ; says = ce qu'elle dira concrètement avec les vrais faits (le message, les éléments précis : questions, lignes de comparatif, étapes, avant et après) ; photos = les scènes à photographier pour cette section (lieu, moment, lumière, ce qu'on voit, le vrai produit quand il apparaît), ou « aucune ». Les photos du site forment une histoire visuelle : les scènes « à montrer » de l'angle, jamais deux fois la même scène, le texte posé sur la partie calme de chaque photo.
+E. COHÉRENCE DU SITE : l'accueil donne envie et oriente, la fiche produit décide, « à propos » fait confiance à la personne et au savoir-faire, l'aide rassure ; un même fait ou une même scène ne se répète pas d'une page à l'autre, chaque page apporte du neuf.
+D. RYTHME : l'AMBIANCE voulue par le client (claire, sombre ou alternée, donnée plus bas) décide des fonds : site clair = surtout des sections à fond clair, une bande sombre ou de couleur pour les moments forts ; site sombre = surtout des sections à fond sombre, une section claire seulement pour respirer ; alterné = les fonds changent d'une section à l'autre. Dans tous les cas, varie les densités (une section dense est suivie d'une section qui respire) et les dispositions, avec un moment fort d'émotion toutes les deux ou trois sections ; sur une longue page, une raison et un moyen d'agir reviennent régulièrement (bouton vers l'achat, barre d'achat collée sur téléphone si la bibliothèque l'a), et la page finit par un appel à agir.
 EXIGENCES :
 - Des pages RICHES : une vraie page de vente utilise beaucoup de sections, autant que le parcours en demande, jamais le minimum. L'accueil et la fiche produit sont les plus riches (plancher : accueil ${MIN_SECTIONS.home}, fiche produit ${MIN_SECTIONS.product} ; une bonne fiche produit en a souvent 9 à 12). Les pages pratiques (panier, compte, aide, légal, 404) restent simples et claires.
 - La description racontée vient tout de suite après le bloc d'achat sur la fiche produit, jamais en bas.
@@ -103,13 +105,18 @@ export function designCatalogue(family: FamilyId): string {
   }).join("\n");
 }
 
-export function designPrompt(o: { brief: string; family: FamilyId; site: SiteKind; has: string[]; lacks: string[]; consigne?: string | null }): string {
+export type Ambiance = "clair" | "sombre" | "alterne";
+export const AMBIANCE_LABEL: Record<Ambiance, string> = { clair: "site clair (fonds clairs, quelques bandes sombres ou de couleur pour les moments forts)", sombre: "site sombre (fonds sombres, quelques sections claires pour respirer)", alterne: "fonds qui alternent d'une section à l'autre" };
+
+export function designPrompt(o: { brief: string; family: FamilyId; site: SiteKind; has: string[]; lacks: string[]; consigne?: string | null; ambiance?: Ambiance | null; products?: string[] }): string {
   const req = requiredPages(o.site).map((r) => `${r.keys[0]} (${r.label})`).join(", ");
   const owned = platformOwnedPages(o.site).map((r) => r.label).join(", ");
   return [
     o.brief,
     o.consigne ? `DEMANDE DU CLIENT (prioritaire, ses mots) : « ${o.consigne} »` : "",
     `Site : ${o.site.business === "services" ? "entreprise de services" : `boutique de ${o.site.products} produit(s)`}${o.site.platform ? `, plateforme ${o.site.platform}` : ""}.`,
+    o.ambiance ? `AMBIANCE VOULUE PAR LE CLIENT : ${AMBIANCE_LABEL[o.ambiance]}.` : "AMBIANCE : non précisée par le client ; suis la personnalité de la marque.",
+    o.products?.length ? `FICHES PRODUITS (vraies) :\n${o.products.join("\n")}` : "",
     `Ce que la marque a réellement : ${o.has.length ? o.has.join(" ; ") : "rien de plus que les faits ci-dessus"}.`,
     `Ce qu'elle n'a PAS (aucune section qui en dépend) : ${o.lacks.join(" ; ")}.`,
     `Pages obligatoires (clés) : ${req}.${owned ? ` Jamais de page : ${owned} (la plateforme les tient).` : ""}`,
@@ -120,7 +127,8 @@ export function designPrompt(o: { brief: string; family: FamilyId; site: SiteKin
 }
 
 /** Points que le Studio vérifie lui-même sur une conception (en plus des règles du thème) : réponse à CHAQUE
- *  objection de la recherche dans une section réellement posée, et rythme des fonds et des densités. */
+ *  objection de la recherche dans une section réellement posée, et densités (deux sections denses jamais à la suite).
+ *  Les fonds ne sont pas contrôlés : ils suivent l'ambiance voulue par le client (clair, sombre ou alterné). */
 export function designGaps(d: Design, researchObjections: string[]): { blocking: string[]; rhythm: string[] } {
   const placed = new Set(d.pages.flatMap((pg) => pg.sections.map((s) => `${pg.key}:${s.section}`)));
   const blocking: string[] = [];
@@ -134,11 +142,10 @@ export function designGaps(d: Design, researchObjections: string[]): { blocking:
   const tr = sectionTraits(), rhythm: string[] = [];
   for (const pg of d.pages) for (let i = 1; i < pg.sections.length; i++) {
     const a = tr[pg.sections[i - 1].section], b = tr[pg.sections[i].section];
-    if (a && b && a.fond === "sombre" && b.fond === "sombre") rhythm.push(`deux sections à fond sombre à la suite sur « ${pg.label} » (${pg.sections[i - 1].section}, ${pg.sections[i].section})`);
     if (a && b && a.densite === "dense" && b.densite === "dense") rhythm.push(`deux sections denses à la suite sur « ${pg.label} » (${pg.sections[i - 1].section}, ${pg.sections[i].section})`);
   }
   return { blocking, rhythm };
 }
 
 /** Texte d'intention gardé dans la section (relu par le plan des textes et le rédacteur). */
-export const intentText = (why: string, says: string) => `Pourquoi ici : ${why.trim()} Ce qu'elle dit : ${says.trim()}`;
+export const intentText = (why: string, says: string, photos?: string) => `Pourquoi ici : ${why.trim()} Ce qu'elle dit : ${says.trim()}${photos && !/^aucune\.?$/i.test(photos.trim()) ? ` Photos : ${photos.trim()}` : ""}`;
