@@ -69,6 +69,8 @@ export type CodeMockupInput = {
   shell?: string | null;
   /** Fiche produit : fonctions du bloc d'achat décidées d'après la fiche du produit et les offres du client (buyBlockBrief). */
   buyBlock?: string[];
+  /** Famille de sections choisie par le client (Classique ou Moderne) : style imposé, jamais de mélange. */
+  family?: string[];
 };
 
 /** Consigne de construction d'une page en code (une seule par page : ordinateur ET téléphone dans le même fichier). */
@@ -91,6 +93,7 @@ export function codeMockupPrompt(i: CodeMockupInput): string {
     `Polices, déjà chargées par fonts.css (n'en charge aucune autre, aucun lien vers Internet) : titres « ${i.fonts.heading.family} » (${i.fonts.heading.weight}), textes « ${i.fonts.body.family} » (${i.fonts.body.weights.join(", ")}).`,
     `Logo : ${i.logo.file}${i.logo.width ? ` (${i.logo.width}×${i.logo.height})` : ""}, balise <img data-logo src="${i.logo.file}" alt="${i.brand.name}">, dans l'en-tête et le pied de page ; sur fond sombre, rends-le lisible par un filtre CSS (jamais redessiné, jamais remplacé par du texte).`,
     i.brand.personality?.length ? `Personnalité : ${i.brand.personality.join(", ")}. Ligne de marque : de l'air, ombres douces, icônes d'un seul style au trait, le symbole de la marque comme signature.` : "",
+    i.family?.length ? `\n${i.family.join("\n")}` : "",
     layout ? `\nSTRUCTURE IMPOSÉE DE CETTE PAGE : ${layout}.` : "",
     i.buyBlock?.length ? `\n${i.buyBlock.join("\n")}` : "",
     "",

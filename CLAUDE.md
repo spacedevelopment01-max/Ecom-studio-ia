@@ -58,6 +58,12 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   « pour prendre une section »** : chaque section a un rôle dans l'histoire de la page, est choisie selon la personnalité
   de la marque, l'angle et son émotion, le métier et le contenu réel, et le tout reste harmonieux (méthode complète :
   `docs/montage-themes-sina.md`).
+- **Familles de sections** (décision du propriétaire du 9 novembre 2026, `src/lib/syna-agent/section-families.ts`) :
+  « Classique » (calme, éditoriale) et « Moderne » (d'après ses modèles Instagram : titres énormes, mannequin détouré
+  qui déborde de l'ouverture, couleurs franches ; styles d'exemple Sport chic et Streetwear néon, plusieurs sections au
+  choix par rôle). **Jamais de mélange de familles dans un thème.** SINA montre les familles au client **en image**
+  (`theme.families`) et enregistre **son** choix (`theme.family`) avant tout thème ou maquette. Les textes des sections
+  ne reprennent jamais ceux des modèles montrés (même traduits).
 - **Écrire une consigne d'image comme le propriétaire** (modèle réussi du 16/10, `docs/guide-images-ia.md`) : décrire
   UNE photo, en phrases complètes et logiques, dans cet ordre : 1) type de photo, format, point de vue, cadrage ;
   2) surface et fond ; 3) chaque objet dans son paragraphe : place exacte dans l'image, forme, matière, couleur, état,

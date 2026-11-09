@@ -34,7 +34,16 @@ section que si elle sert son rôle.
 déroulé → les preuves (réalisations, chantiers, avis réels) → la zone ou les infos pratiques → l'appel final (devis,
 réservation, rappel).
 
-## 2. Les sections choisies selon la marque
+## 2. D'abord la famille, choisie par le client
+
+La bibliothèque est rangée en **familles qui ne se mélangent jamais** (`src/lib/syna-agent/section-families.ts`) :
+**Classique** (calme, éditoriale, beaucoup d'air) et **Moderne** (titres énormes en capitales serrées, nom de la marque
+en lettres immenses derrière le mannequin détouré qui déborde de l'ouverture, couleurs franches, animations vives ;
+styles d'exemple « Sport chic » et « Streetwear néon »). SINA montre les familles **en image** (`theme.families`),
+recommande d'après la marque sans choisir à sa place, enregistre le choix du client (`theme.family`) ; ensuite toutes
+les sections viennent de cette famille, réglées aux couleurs et polices de la marque.
+
+## 2 bis. Les sections choisies selon la marque
 
 Chaque section porte des repères : **rôle**, **ton** (calme, chaleureux, vif, luxueux, ludique, technique),
 **densité** (aérée ou dense), **disposition** (photo pleine, écran partagé, grille, carrousel, texte seul, bande),

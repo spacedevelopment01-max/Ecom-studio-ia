@@ -520,6 +520,7 @@ export function threadView(user: User, cid: string) {
         activity: j.activity ? { ...j.activity, gaps: activityGaps(j.activity), validated: j.steps[5]?.status === "done" } : null,
         // Étape 6 : cartes des thèmes (site du client composé dans chacun) et thème choisi.
         themes: j.themes ? { ...j.themes, chosen: j.themeChoice?.id ?? null } : null,
+        families: j.families ?? null,
         // Étape 6, maquettes : textes écrits avant la maquette (montrés en entier au client).
         siteCopy: c.project_id ? (() => { const sc = loadSiteCopy(c.project_id!); return sc ? { pages: Object.fromEntries(Object.entries(sc.pages).map(([k, v]) => [k, v])) } : null; })() : null,
         // Étape 4 : les 5 angles marketing et l'angle choisi.

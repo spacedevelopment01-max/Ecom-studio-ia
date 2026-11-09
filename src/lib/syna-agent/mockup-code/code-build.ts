@@ -24,6 +24,7 @@ import { callCostBoundMicro, estimateCallMicro, jsonCallMaxMicro, llmJson, llmTe
 import { withTrace } from "../../ai/trace";
 import { listProducts } from "../../products/catalog";
 import { buyBlockBrief, decideBuyFeatures, deliveryFrom, freeShippingFrom, loadShopOffers } from "../product-features";
+import { familyBrief, loadFamilyChoice } from "../section-families";
 import { companyOf } from "../activity";
 import { copyLines, type PageCopy } from "./copy";
 import type { MockupDirection } from "./mockup-set";
@@ -275,7 +276,7 @@ export async function buildCodePage(p: Project, d: Pick<MockupDirection, "key" |
     fonts: { heading: f.heading, body: f.body },
     logo: { file: logo.name, width: logo.width, height: logo.height },
     direction: d, page, copy, lines, phoneLines, photos: library, usedElsewhere: elsewhere.used, productPhotos: elsewhere.products, maxNew,
-    baseCss: page.key === "home" ? null : code.base, shell: page.key === "home" ? null : code.shell, buyBlock: buy.lines,
+    baseCss: page.key === "home" ? null : code.base, shell: page.key === "home" ? null : code.shell, buyBlock: buy.lines, family: familyBrief(loadFamilyChoice(p.id)),
   });
   // 1) Écriture (et suites si le fichier s'arrête avant la fin).
   let html = stripFences(await deps.writeHtml(prompt, `${o.usageKey}:html:${d.key}:${page.key}:1`));
