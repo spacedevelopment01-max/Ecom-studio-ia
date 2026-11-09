@@ -200,6 +200,42 @@ describe("thème sur mesure : outils de SINA", async () => {
     return { ctx, pid: one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string };
   }
 
+  it("conception : le Studio conçoit tout le site (parcours, objections, pourquoi chaque section), une correction si une règle est enfreinte", async () => {
+    const { ctx, pid } = await project();
+    await call("theme.family", ctx, { family: "classique" });
+    const T = await import("@/lib/syna-agent/custom-theme/tools");
+    expect(getTool("custom.design")!.kind).toBe("generate");
+    expect(getTool("custom.design")!.estimate!(ctx, {})).toMatchObject({ label: expect.stringMatching(/conception de tout ton site/) });
+    const site = fullSite("classique");
+    const good = {
+      concept: "Le matin d'hiver où l'on ouvre le pot et où l'été revient.", header: "en-tete-classique", footer: "pied-de-page-complet", search: null,
+      pages: site.pages.map((pg) => ({ key: pg.key, label: pg.label, journey: `Le visiteur arrive sur ${pg.label} et se demande ce qu'il va trouver.`, sections: pg.sections.map((t) => ({ section: sectionByRef(t)!.id, why: `Répond au moment ${t}.`, says: `Dit ce que ${t} doit dire avec les faits.` })) })),
+    };
+    // 1re conception : une offre en section à part (refusée), puis la conception corrigée.
+    const bad = { ...good, pages: good.pages.map((pg) => (pg.key === "product" ? { ...pg, sections: [...pg.sections, { section: "offre-par-quantite", why: "Pour vendre plus.", says: "Trois pots moins chers." }] } : pg)) };
+    const prompts: string[] = [];
+    T.customDesignDeps.call = async (system, prompt) => { prompts.push(prompt); expect(system).toMatch(/directeur de création[^]*parcours/); return prompts.length === 1 ? bad : good; };
+    try {
+      const r = await call("custom.design", ctx, { consigne: "Un matin d'hiver gris, j'ouvre le pot et l'été revient." });
+      expect(r.ok, r.summary).toBe(true);
+      expect(prompts).toHaveLength(2);
+      expect(prompts[0]).toMatch(/DEMANDE DU CLIENT[^]*matin d'hiver gris/);
+      expect(prompts[0]).toMatch(/BIBLIOTHÈQUE DE LA FAMILLE[^]*ouverture-photo-pleine · ouverture/);
+      expect(prompts[0]).not.toContain("questions-en-bulles-de-discussion"); // contenu de démonstration exclu
+      expect(prompts[0]).toMatch(/Ce qu'elle n'a PAS[^]*avis clients/);
+      expect(prompts[1]).toMatch(/POINTS REFUSÉS PAR LE CONTRÔLE[^]*Offre par quantité/);
+      const t = loadCustomTheme(pid)!;
+      expect(t.concept).toMatch(/l'été revient/);
+      expect(t.pages[0].journey).toMatch(/Le visiteur arrive sur Accueil/);
+      expect(t.pages[0].sections[0].intent).toMatch(/^Pourquoi ici : Répond au moment Ouverture photo pleine\. Ce qu'elle dit :/);
+      expect(r.data.parcours[0].sections[0]).toMatch(/Ouverture photo pleine — Répond/);
+      // Le rédacteur reçoit la conception de la section et le parcours de la page.
+      const B = await import("@/lib/syna-agent/custom-theme/brand");
+      const w = B.sectionWritePrompt("Marque", "Accueil", "Ouverture photo pleine", "fait", "<h2>x</h2>", undefined, { intent: t.pages[0].sections[0].intent, journey: t.pages[0].journey });
+      expect(w).toMatch(/PARCOURS DU VISITEUR SUR CETTE PAGE : Le visiteur arrive[^]*CONCEPTION DE CETTE SECTION : Pourquoi ici/);
+    } finally { delete T.customDesignDeps.call; }
+  });
+
   it("une retouche n'est refusée que si elle CRÉE un point bloquant (un défaut ancien n'empêche pas de le corriger)", async () => {
     const { ctx, pid } = await project();
     await call("theme.family", ctx, { family: "classique" });

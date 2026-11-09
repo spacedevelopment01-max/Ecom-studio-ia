@@ -20,8 +20,10 @@ export type CtSection = {
   css?: string;
   /** Textes déjà écrits pour le client (sinon : textes d'exemple de la bibliothèque, annoncés comme tels). */
   clientTexts?: boolean;
+  /** Conception (custom.design) : pourquoi cette section est là, à ce moment du parcours, et ce qu'elle doit dire. */
+  intent?: string;
 };
-export type CtPage = { key: string; label: string; sections: CtSection[] };
+export type CtPage = { key: string; label: string; sections: CtSection[]; /** Le parcours du visiteur sur la page (conception). */ journey?: string };
 export type CustomTheme = {
   version: 1;
   family: FamilyId;
@@ -31,6 +33,8 @@ export type CustomTheme = {
   /** Recherche plein écran, ouverte par la loupe de l'en-tête sur toutes les pages (jamais une section de page). */
   search: CtSection | null;
   pages: CtPage[];
+  /** Idée directrice du site (conception). */
+  concept?: string;
   /** Choisi par le client (jamais à sa place). */
   chosen?: boolean;
   rev: number;

@@ -30,6 +30,12 @@ import { familySections, libSection, onlyFor, sectionByRef, isCardSection } from
 import { allSections, applyStructure, checkCustomTheme, findSection, loadCustomTheme, replaceOnce, requiredPages, saveCustomTheme, scopedCss, sectionHtml, undoCustomTheme, type CustomTheme, type SiteKind, type StructureOp } from "./theme";
 import { listProducts } from "../../products/catalog";
 import { companyOf } from "../activity";
+import { brandBrief, siteCopyModel } from "./brand";
+import { DESIGN_CAP_MICRO, DESIGN_SYSTEM, DESIGN_TYPICAL_MICRO, DesignSchema, designPrompt, intentText, type Design } from "./design";
+import { llmJson } from "../../ai/llm";
+import { withTrace } from "../../ai/trace";
+import { jobSpentMicro } from "../budget";
+import { loadShopOffers } from "../product-features";
 import { enqueue } from "../../jobs";
 import { journeyOf, setStep as setJourneyStep, updateJourney as updateJourneyConv } from "../journey";
 import { clientImages, CUSTOM_BRAND_JOB, examplePhotoCount, photoSlots, photosToCreate, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, siteArtDirection, sitePhotoName, textPlacementLine, type ImagesMode } from "./brand";
@@ -111,7 +117,7 @@ const sectionsTool: AgentTool<{ role?: string; query?: string }> = {
     return {
       ok: true,
       summary: L(`${list.length} section(s) de la famille ${f.family}${a.role ? ` (rôle ${a.role})` : ""}.`, `${list.length} sections.`),
-      hint: "Monte le site de A à Z avec les MEILLEURES sections pour SON produit ou SON service (jamais une section pour prendre une section ; « seulementPour » : jamais ailleurs, ex. tailles, tenues et looks seulement pour des vêtements). Pages obligatoires (clés) : " + requiredPages(siteKind(ctx)).map((r) => `${r.keys[0]} (${r.label})`).join(", ") + ". Règles : l'accueil a AU MOINS 8 sections et la fiche produit AU MOINS 7 (hors en-tête et pied de page), chacune avec son rôle dans l'histoire de la page, jamais une section pour en ajouter une : pas d'offre en section à part (les offres sont dans « Produit vedette »), jamais la même section sur deux pages, et une section de preuves (presse, photos de clients, avis, chiffres) seulement si le client a ces preuves (sinon elle ne montrerait que du faux ou des « [À compléter] ») ; une seule section de cartes (cartes:true) par page ; « Produit vedette » seulement en haut de la fiche produit ou une fois sur l'accueil ; jamais la même section deux fois de suite ; chaque section a un rôle dans l'histoire de la page ; ouverture de l'accueil = grande photo pleine avec le titre dessus.",
+      hint: "Pour monter le site, utilise custom.design (conception complète par le Studio, payante, prix annoncé). Cette liste sert à comprendre la bibliothèque et à choisir une section précise pour une retouche (custom.structure). Monte le site de A à Z avec les MEILLEURES sections pour SON produit ou SON service (jamais une section pour prendre une section ; « seulementPour » : jamais ailleurs, ex. tailles, tenues et looks seulement pour des vêtements). Pages obligatoires (clés) : " + requiredPages(siteKind(ctx)).map((r) => `${r.keys[0]} (${r.label})`).join(", ") + ". Règles : l'accueil a AU MOINS 8 sections et la fiche produit AU MOINS 7 (hors en-tête et pied de page), chacune avec son rôle dans l'histoire de la page, jamais une section pour en ajouter une : pas d'offre en section à part (les offres sont dans « Produit vedette »), jamais la même section sur deux pages, et une section de preuves (presse, photos de clients, avis, chiffres) seulement si le client a ces preuves (sinon elle ne montrerait que du faux ou des « [À compléter] ») ; une seule section de cartes (cartes:true) par page ; « Produit vedette » seulement en haut de la fiche produit ou une fois sur l'accueil ; jamais la même section deux fois de suite ; chaque section a un rôle dans l'histoire de la page ; ouverture de l'accueil = grande photo pleine avec le titre dessus.",
       data: { famille: f.family, style: f.style, roles: byRole },
     };
   },
@@ -155,6 +161,79 @@ const composeTool: AgentTool<{ header: string; footer: string; search?: string |
       const kept = keepWork(t, loadCustomTheme(p.id));
       return saved(ctx, { ...t, chosen: false }, `monté de A à Z : ${t.pages.map((x) => x.label).join(", ")}${kept ? ` (${kept} section(s) gardée(s) avec leurs textes et photos)` : ""}`, { strict: true });
     } catch (e) { return { ok: false, summary: (e as Error).message, internal: true }; }
+  },
+};
+
+/** Remplaçable par les tests (aucun appel réel). */
+export const customDesignDeps: { call?: (system: string, prompt: string, usageKey: string) => Promise<Design> } = {};
+
+/** Ce que la marque a réellement, et ce qu'elle n'a pas (aucune section qui en dépend). */
+function brandAssets(projectId: string): { has: string[]; lacks: string[] } {
+  const has: string[] = [], lacks: string[] = ["avis clients et note", "parutions dans la presse", "photos publiées par des clients", "vidéo"];
+  try { const n = listProducts(projectId).length; if (n) has.push(`${n} produit(s) avec leurs vraies photos`); } catch { /* catalogue absent */ }
+  try { const c = companyOf(projectId) as Record<string, string | undefined>; if (c.shipping) has.push(`livraison : ${c.shipping}`); if (c.returns) has.push(`retours : ${c.returns}`); if (c.address) has.push(`adresse : ${c.address}`); } catch { /* fiche absente */ }
+  const o = loadShopOffers(projectId);
+  const offers = [o.quantity ? "offre sur la quantité" : "", o.subscription ? "abonnement" : "", o.bundle ? "lot à compléter" : "", (o as { gifts?: unknown[] }).gifts?.length ? "cadeaux par paliers" : ""].filter(Boolean);
+  if (offers.length) has.push(`offres : ${offers.join(", ")} (fonctions du bloc d'achat)`); else lacks.push("offres (lots, quantités, abonnement, promotions)");
+  return { has, lacks };
+}
+
+type DesignArgs = { consigne?: string };
+const designTool: AgentTool<DesignArgs> = {
+  name: "custom.design", module: "site", kind: "generate", needsProject: true,
+  description: "Étape 6, THÈME SUR MESURE (PAYANT : prix annoncé, accord écrit du client d'abord) : CONÇOIT et monte tout le site comme un directeur de création, après le choix de la famille : le visiteur de CETTE marque (cible, émotion de l'angle, objections de la recherche et leurs réponses, ce qui le fait acheter), son parcours sur chaque page, et pour chaque moment la section de la bibliothèque qui y répond (pourquoi, et ce qu'elle dira). Pages riches, jamais le minimum, jamais une section pour remplir. C'est LA façon de monter ou de remonter un thème sur mesure (custom.compose ne sert qu'à appliquer une composition dictée par le client lui-même). consigne : ce que le client a dit vouloir (ses mots). Les sections déjà écrites et gardées gardent leurs textes et photos ; les nouvelles se font ensuite écrire avec custom.build (devis à part).",
+  args: z.object({ consigne: z.string().max(1500).optional() }).strict(),
+  estimate: () => ({ maxMicro: DESIGN_CAP_MICRO * 2, probableMicro: DESIGN_TYPICAL_MICRO, label: L("conception de tout ton site sur mesure (parcours de chaque page et choix de chaque section)", "full custom site design") }),
+  run: async (ctx, a) => {
+    const p = project(ctx);
+    let f;
+    try { f = familyOrError(p.id); } catch (e) { return { ok: false, summary: (e as Error).message, hint: "Montre d'abord les familles au client (theme.families) et enregistre SON choix (theme.family)." }; }
+    const j = (() => { try { return journeyOf(ctx.conversationId); } catch { return null; } })();
+    const site = siteKind(ctx), assets = brandAssets(p.id);
+    const prompt = designPrompt({ brief: brandBrief(p, j), family: f.family, site, has: assets.has, lacks: assets.lacks, consigne: a.consigne });
+    const jobId = getRun(ctx.runId)?.job_id ?? null;
+    const call = async (text: string, key: string): Promise<Design> => customDesignDeps.call ? customDesignDeps.call(DESIGN_SYSTEM, text, key)
+      : DesignSchema.parse(await withTrace({ jobId, projectId: p.id, step: "custom-design", costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + DESIGN_CAP_MICRO * 2 }, () =>
+          llmJson({ task: "strategy", userId: ctx.user.id, projectId: p.id, jobId, system: DESIGN_SYSTEM, promptKey: "syna-custom-design-1", prompt: text, maxTokens: 14000, maxOutputTokens: 14000, usageKey: key, routing: { difficulty: "complex", prefer: siteCopyModel() } }, DesignSchema, { strict: true })));
+    const build = (d: Design): CustomTheme => {
+      let t: CustomTheme = { version: 1, family: f.family, style: f.style, header: null, footer: null, search: null, pages: [], rev: 0, at: Date.now(), concept: d.concept };
+      t = applyStructure(t, d.pages.flatMap((pg) => [{ op: "page", key: pg.key, label: pg.label } as StructureOp, ...pg.sections.map((s) => ({ op: "add", page: pg.key, section: ref(s.section) }) as StructureOp)]));
+      t = applyStructure(t, [{ op: "shell", slot: "header", section: ref(d.header) }, { op: "shell", slot: "footer", section: ref(d.footer) }]);
+      if (d.search) t = applyStructure(t, [{ op: "shell", slot: "search", section: ref(d.search) }]);
+      return t;
+    };
+    // Conception gardée dans le thème (après la reprise du travail des sections gardées, qui remplace leurs objets).
+    const annotate = (t: CustomTheme, d: Design) => {
+      for (const pg of t.pages) {
+        const src = d.pages.find((x) => x.key === pg.key);
+        if (!src) continue;
+        pg.journey = src.journey;
+        pg.sections.forEach((s, i) => { if (src.sections[i]) s.intent = intentText(src.sections[i].why, src.sections[i].says); });
+      }
+    };
+    const blocking = (t: CustomTheme) => checkCustomTheme(t, site).filter((x) => x.level === "bloquant").map((x) => x.text);
+    let d: Design, t: CustomTheme, problems: string[];
+    try {
+      d = await call(prompt, `syna:${ctx.runId}:custom-design`);
+      try { t = build(d); problems = blocking(t); } catch (e) { t = null as unknown as CustomTheme; problems = [(e as Error).message]; }
+      // Une seule correction : les points refusés sont rendus au concepteur, qui corrige sa conception.
+      if (problems.length) {
+        d = await call(`${prompt}
+
+TA CONCEPTION PRÉCÉDENTE (JSON) :
+${JSON.stringify(d)}
+
+POINTS REFUSÉS PAR LE CONTRÔLE (à corriger, en gardant ta logique) :
+- ${problems.join("\n- ")}`, `syna:${ctx.runId}:custom-design-fix`);
+        try { t = build(d); problems = blocking(t); } catch (e) { problems = [(e as Error).message]; }
+      }
+    } catch (e) { return { ok: false, summary: L(`Conception non faite : ${(e as Error).message.slice(0, 200)}.`, "Design failed."), hint: "Dis-le au client avec le coût réel ; ne relance rien sans son accord écrit (jamais après une erreur 5xx)." }; }
+    if (problems.length) return { ok: false, summary: L(`Conception refusée par le contrôle : ${problems.join(" ; ")}. Rien n'est enregistré.`, "Design refused."), hint: "Dis-le honnêtement au client avec le coût réel ; propose de corriger avec custom.structure (gratuit) à partir de la conception, sans rien relancer de payant sans son accord." };
+    const kept = keepWork(t, loadCustomTheme(p.id));
+    annotate(t, d);
+    const r = saved(ctx, { ...t, chosen: false }, `conçu de A à Z : ${t.pages.map((x) => `${x.label} (${x.sections.length})`).join(", ")}${kept ? ` ; ${kept} section(s) gardée(s) avec leurs textes et photos` : ""}`, { strict: true });
+    return { ...r, data: { ...(r as { data?: object }).data, concept: d.concept, parcours: d.pages.map((pg) => ({ page: pg.label, parcours: pg.journey, sections: pg.sections.map((s) => `${libSection(s.section)?.title ?? s.section} — ${s.why}`) })) },
+      hint: "Montre au client l'idée du site et, page par page, le parcours et pourquoi chaque section est là (court). Puis custom.images et le devis de custom.build pour écrire les textes et créer les photos (jamais sans son accord)." };
   },
 };
 
@@ -422,4 +501,4 @@ const chooseTool: AgentTool<Record<string, never>> = {
   },
 };
 
-export const customThemeTools: AgentTool[] = [sectionsTool, imagesTool, buildTool, composeTool, showTool, readTool, structureTool, editTool, photoTool, undoTool, chooseTool];
+export const customThemeTools: AgentTool[] = [sectionsTool, imagesTool, buildTool, designTool, composeTool, showTool, readTool, structureTool, editTool, photoTool, undoTool, chooseTool];
