@@ -809,14 +809,14 @@
   // la gamme du client (fiche de chaque produit dans le Studio ; prix d'exemple)
   var GAMME=[["jasmin","Thé vert jasmin",8.5,"Thé vert","Un Sencha bio parfumé par de vraies fleurs de jasmin, sans arôme ajouté."],["agrumes","Thé noir aux agrumes",8.5,"Thé noir","Un Assam relevé d'orange et de bergamote."],["rooibos","Rooibos vanille",8.5,"Rooibos","Un rooibos rond et une vraie gousse de vanille. Sans théine : il se boit aussi le soir."],["verveine","Verveine-menthe",7.5,"Infusion","La verveine et la menthe poivrée, pour finir le repas en douceur."],["camomille","Camomille-tilleul",7.5,"Infusion","Camomille et tilleul à parts égales, pour le soir."],["hibiscus","Hibiscus-fruits rouges",7.5,"Infusion","Hibiscus, pomme, fraise et framboise. Chaud ou glacé."]];
   // délai réel du client (ici 2 à 3 jours ouvrés d'exemple, commande avant 14 h)
-  var SHIP={min:2,max:3,cut:14};
+  var SHIP=(function(d){var m=/^(\d+)-(\d+)-(\d*)$/.exec(d.poShip||"");return m?{min:+m[1],max:+m[2],cut:m[3]===""?null:+m[3],real:1}:{min:2,max:3,cut:14}})(document.documentElement.dataset);
   var JOURS=["dim.","lun.","mar.","mer.","jeu.","ven.","sam."],MOIS=["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
   function addBiz(d,n){d=new Date(d);while(n>0){d.setDate(d.getDate()+1);if(d.getDay()!==0&&d.getDay()!==6)n--}return d}
   function fmtD(d){return JOURS[d.getDay()]+" "+d.getDate()+" "+MOIS[d.getMonth()]}
-  function shipLine(){var n=new Date(),late=n.getHours()>=SHIP.cut||n.getDay()===0||n.getDay()===6,start=new Date(n);if(late){start=addBiz(n,1)}
-    var a=addBiz(start,SHIP.min),b=addBiz(start,SHIP.max),cut=new Date(n);cut.setHours(SHIP.cut,0,0,0);var left=cut-n,lead;
-    if(!late&&left>0){var h=Math.floor(left/36e5),m=Math.floor(left/6e4)%60;lead="Commande dans les <b>"+(h?h+" h ":"")+String(m).padStart(2,"0")+" min</b>, reçois-le "}else lead="Reçois-le ";
-    return lead+"entre le <b>"+fmtD(a)+"</b> et le <b>"+fmtD(b)+"</b><br><small>délai d'exemple : 2 à 3 jours ouvrés</small>"}
+  function shipLine(){var n=new Date(),late=(SHIP.cut!=null&&n.getHours()>=SHIP.cut)||n.getDay()===0||n.getDay()===6,start=new Date(n);if(late){start=addBiz(n,1)}
+    var a=addBiz(start,SHIP.min),b=addBiz(start,SHIP.max),cut=new Date(n);cut.setHours(SHIP.cut==null?0:SHIP.cut,0,0,0);var left=cut-n,lead;
+    if(SHIP.cut!=null&&!late&&left>0){var h=Math.floor(left/36e5),m=Math.floor(left/6e4)%60;lead="Commande dans les <b>"+(h?h+" h ":"")+String(m).padStart(2,"0")+" min</b>, reçois-le "}else lead="Reçois-le ";
+    return lead+(+a===+b?"le <b>"+fmtD(a)+"</b>":"entre le <b>"+fmtD(a)+"</b> et le <b>"+fmtD(b)+"</b>")+(SHIP.real?"":"<br><small>délai d'exemple : 2 à 3 jours ouvrés</small>")}
   function Po(el){
     var st={base:+el.dataset.base,name:el.dataset.name,unit:el.dataset.unit||"sachet",q:1,sub:false,w:4,color:0,rit:[false,false],pts:-1},got={},sec0=el.closest("section");
     var cfg=null;try{cfg=JSON.parse(el.dataset.cfg||"null")}catch(e){}

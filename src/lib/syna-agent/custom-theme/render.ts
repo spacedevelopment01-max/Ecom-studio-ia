@@ -75,6 +75,8 @@ export function buyFlags(f: BuyFeatures | null): Record<string, string> {
     poInit: "1", poCouleur: f.colors ? "1" : "0", poTaille: f.formats.length ? "1" : "0", poPromo: f.promo ? "1" : "0",
     poAbo: f.subscription ? "1" : "0", poOffre: f.quantity ? f.quantity.kind : "none", poPaliers: f.gifts.length ? "1" : "0",
     poRituel: f.bundle ? "1" : "0", poGamme: f.range.length ? "1" : "0", poLivraison: f.delivery ? "1" : "0", poFidelite: f.loyalty ? "1" : "0",
+    // Vrai délai du client (« min-max-heure limite ») : la date estimée n'est plus « 2 à 3 jours d'exemple ».
+    poShip: f.delivery ? `${f.delivery.minDays}-${f.delivery.maxDays}-${f.delivery.cutoffHour ?? ""}` : "",
   };
 }
 function featuresOf(projectId: string): BuyFeatures | null {

@@ -162,6 +162,12 @@ describe("thème sur mesure : rendu", () => {
     expect(buyFlags(null)).toEqual({ poInit: "1" });
     const f = { colors: null, formats: [{ option: "Taille", values: ["S", "M"] }], promo: null, quantity: { kind: "bogo", buy: 2, free: 1 }, subscription: null, bundle: null, gifts: [], range: ["A", "B"], delivery: { minDays: 2, maxDays: 4, cutoffHour: null }, loyalty: null, hidden: [] } as any;
     expect(buyFlags(f)).toMatchObject({ poCouleur: "0", poTaille: "1", poOffre: "bogo", poGamme: "1", poLivraison: "1", poAbo: "0", poFidelite: "0" });
+    // Vrai délai du client (essai Heure Dorée : « délai d'exemple : 2 à 3 jours ouvrés » montré aux visiteurs).
+    expect(buyFlags(f).poShip).toBe("2-4-");
+    const js = fs.readFileSync(path.join(process.cwd(), "public/sections/library.js"), "utf8");
+    expect(js).toContain("d.poShip");
+    expect(js).toContain(`(SHIP.real?"":"<br><small>délai d'exemple`);
+    expect(js).not.toContain("var SHIP={min:2,max:3,cut:14};");
     expect(brandCss({ brand: null })).toBe("");
   });
 });
@@ -379,6 +385,8 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       expect(again.sections).toBe(writes);
       writes = allSections(t).length;
       expect(B.SECTION_WRITE_SYSTEM).toMatch(/Jamais un ordre au lecteur/);
+      expect(B.SECTION_WRITE_SYSTEM).toMatch(/coordonnées de la marque[^]*restent TOUJOURS/);
+      expect(B.SITE_PLAN_SYSTEM).toMatch(/n'apparaît qu'UNE fois sur tout le site/);
       expect(B.SECTION_WRITE_SYSTEM).not.toContain("${COPY_CRAFT}");
       expect(out.sections).toBe(writes);
       expect(photos).toBeGreaterThan(0);

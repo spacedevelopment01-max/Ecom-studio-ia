@@ -201,7 +201,14 @@ scripts = [x for x in re.findall(r'<script>(.*?)</script>', src, re.S)]
 templates = re.findall(r'<template id="tpl-[^"]+">.*?</template>', src, re.S)
 fonts = re.findall(r'<link rel="stylesheet" href="(https://fonts\.googleapis\.com/[^"]+)"', src)
 open(os.path.join(OUT, 'library.css'), 'w', encoding='utf-8').write(css + EXTRA_CSS)
-open(os.path.join(OUT, 'library.js'), 'w', encoding='utf-8').write('\n;\n'.join(scripts) + '\n;' + EXTRA_JS)
+# Délai de livraison du bloc d'achat : le VRAI délai du client (drapeau poShip posé par le Studio, « min-max-heure »),
+# jamais « 2 à 3 jours ouvrés » ni une heure limite inventée ; la mention « délai d'exemple » ne reste qu'en démonstration.
+SHIP_FIX = [('var SHIP={min:2,max:3,cut:14};', 'var SHIP=(function(d){var m=/^(\\d+)-(\\d+)-(\\d*)$/.exec(d.poShip||"");return m?{min:+m[1],max:+m[2],cut:m[3]===""?null:+m[3],real:1}:{min:2,max:3,cut:14}})(document.documentElement.dataset);'), ('function shipLine(){var n=new Date(),late=n.getHours()>=SHIP.cut||n.getDay()===0||n.getDay()===6,start=new Date(n);if(late){start=addBiz(n,1)}', 'function shipLine(){var n=new Date(),late=(SHIP.cut!=null&&n.getHours()>=SHIP.cut)||n.getDay()===0||n.getDay()===6,start=new Date(n);if(late){start=addBiz(n,1)}'), ('var a=addBiz(start,SHIP.min),b=addBiz(start,SHIP.max),cut=new Date(n);cut.setHours(SHIP.cut,0,0,0);var left=cut-n,lead;\n    if(!late&&left>0){', 'var a=addBiz(start,SHIP.min),b=addBiz(start,SHIP.max),cut=new Date(n);cut.setHours(SHIP.cut==null?0:SHIP.cut,0,0,0);var left=cut-n,lead;\n    if(SHIP.cut!=null&&!late&&left>0){'), ('return lead+"entre le <b>"+fmtD(a)+"</b> et le <b>"+fmtD(b)+"</b><br><small>délai d\'exemple : 2 à 3 jours ouvrés</small>"}', 'return lead+(+a===+b?"le <b>"+fmtD(a)+"</b>":"entre le <b>"+fmtD(a)+"</b> et le <b>"+fmtD(b)+"</b>")+(SHIP.real?"":"<br><small>délai d\'exemple : 2 à 3 jours ouvrés</small>")}')]
+js = '\n;\n'.join(scripts)
+for a, b in SHIP_FIX:
+    assert js.count(a) == 1, a[:70]
+    js = js.replace(a, b)
+open(os.path.join(OUT, 'library.js'), 'w', encoding='utf-8').write(js + '\n;' + EXTRA_JS)
 open(os.path.join(OUT, 'templates.html'), 'w', encoding='utf-8').write('\n'.join(templates))
 json.dump({'version': 1, 'fonts': fonts, 'sections': sections}, open(os.path.join(OUT, 'library.json'), 'w', encoding='utf-8'), ensure_ascii=False)
 

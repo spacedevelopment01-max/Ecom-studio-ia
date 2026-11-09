@@ -62,6 +62,7 @@ export const COPY_CRAFT = `Écriture (comme le meilleur concepteur-rédacteur d'
 - Un bouton : un verbe d'action et ce qu'on obtient, 2 à 4 mots (ex. « Choisir mon parfum », « Voir le coffret », « Ajouter au panier »).
 - Menus, pied de page, liens : les mots simples que le visiteur cherche (ex. « Nos confitures », « Coffret cadeau », « Notre histoire », « Livraison et retours », « Contact »).
 - Chaque fait fort (pourcentage, savoir-faire, livraison, retours) apparaît au plus UNE fois par page : on prouve une fois, on ne martèle pas.
+- Une même formule n'apparaît qu'UNE fois sur tout le site (hors noms de produits et libellés du menu) ; la promesse du site est une idée à faire sentir, jamais une phrase à recopier.
 - Phrases courtes et vivantes (15 mots au plus), des mots qui se goûtent, se touchent, se voient, des détails précis du client plutôt que des adjectifs vagues.
 - Jamais de tics d'écriture automatique : pas de « ce n'est pas X, c'est Y », pas de listes de négations, pas de tiret cadratin, pas de deux-points dramatiques en série.`;
 
@@ -72,6 +73,7 @@ Règles absolues :
 - Les textes de la section d'origine viennent d'une démonstration : tu n'en reprends JAMAIS une phrase, même traduite ou retouchée.
 ${COPY_CRAFT}
 - Le PLAN DES TEXTES DU SITE fourni s'impose : le titre et le bouton de CETTE section tels quels (ajuste-les seulement s'ils ne tiennent pas dans la mise en page), son message, et seulement SES faits chiffrés. Tu ne reprends ni ne paraphrases le titre d'une autre section.
+- Les coordonnées de la marque (raison sociale, adresse, e-mail, téléphone) et les mentions légales présentes dans la section restent TOUJOURS, écrites exactement, même si le plan ne les cite pas.
 - Noms et prix de produits : seulement ceux de la liste fournie, écrits exactement.
 - Le vocabulaire imposé par le client est respecté.
 - Tu ne touches ni aux balises, ni aux classes, ni aux attributs (sauf alt et les textes) : chaque modification est un remplacement { find, replace } où find est un passage EXACT du HTML fourni, présent une seule fois (prends assez de contexte pour qu'il soit unique), et replace le même passage avec les nouveaux textes.
@@ -122,6 +124,7 @@ ${COPY_CRAFT}
 - Les faits forts sont RÉPARTIS entre les sections : jamais deux sections d'une même page avec le même fait. Aucun titre ne se répète sur le site.
 - RIEN d'inventé : seulement les faits fournis ; un fait inconnu n'est pas écrit.
 - Titre null pour une section sans titre (en-tête, bandeau, pied de page) ; dans l'en-tête, le menu suit tes libellés.
+- Le pied de page garde les coordonnées complètes de la marque (ses faits les citent).
 Réponse : uniquement le JSON demandé.`;
 
 export function sitePlanPrompt(brief: string, sections: { uid: string; page: string; title: string; does: string; texts: string }[]): string {
