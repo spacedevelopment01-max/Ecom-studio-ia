@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYNA — personnaliser l'interface</title>
+<link rel="stylesheet" href="encre.css">
+<link rel="stylesheet" href="plein.css">
+<script src="mode.js"></script>
+<style>
+.main { grid-template-columns: var(--convo-w, 440px) minmax(0, 1fr); }
+[data-mode="plein"] .convo { width: var(--convo-w, 420px); }
+[data-density="compacte"] .thread { gap: 12px; } [data-density="compacte"] .step { padding: 7px 14px; } [data-density="compacte"] .top { height: 48px; }
+[data-text="grand"] body { font-size: 15.5px; } [data-text="grand"] .msg-syna { font-size: 18.5px; } [data-text="grand"] .step .t { font-size: 15px; }
+.custom { position: fixed; z-index: 80; right: 20px; top: 68px; width: 380px; max-height: calc(100vh - 88px); overflow: auto; background: var(--sheet); border: 1px solid var(--rule); border-radius: 16px; box-shadow: 0 40px 90px -30px rgba(0,0,0,.55); }
+.custom header { display: flex; justify-content: space-between; align-items: center; padding: 16px 18px 8px; }
+.custom header h2 { margin: 0; font: 500 21px var(--f-voice); }
+.custom section { padding: 12px 18px; border-top: 1px solid var(--rule); display: grid; gap: 10px; }
+.custom .label { display: block; }
+.modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.modes button { border: 1px solid var(--rule-2); background: var(--paper); border-radius: 12px; padding: 8px; display: grid; gap: 6px; text-align: left; font-size: 12.5px; }
+.modes button[aria-pressed="true"] { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft); }
+.modes .mini-shot { height: 64px; border-radius: 8px; background: var(--wash); position: relative; overflow: hidden; }
+.mini-shot.e::before { content: ""; position: absolute; left: 6px; top: 6px; bottom: 6px; width: 34%; background: var(--sheet); border-radius: 4px; border-left: 2px solid var(--blue); }
+.mini-shot.e::after { content: ""; position: absolute; left: 42%; right: 6px; top: 6px; bottom: 6px; background: url(img/sillon-hero.jpg) center/cover; border-radius: 4px; }
+.mini-shot.p { background: url(img/sillon-hero.jpg) center/cover; }
+.mini-shot.p::before { content: ""; position: absolute; right: 6px; top: 8px; bottom: 18px; width: 34%; background: #fff; border-radius: 6px; }
+.mini-shot.p::after { content: ""; position: absolute; left: 22%; right: 22%; bottom: 5px; height: 9px; background: #101114; border-radius: 6px; }
+.seg2 { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.seg2 button { border: 1px solid var(--rule-2); background: var(--sheet); border-radius: 999px; height: 30px; padding: 0 12px; font-size: 12.5px; }
+.seg2 button[aria-pressed="true"] { border-color: var(--blue); background: var(--blue-soft); color: var(--blue); font-weight: 600; }
+.swatch { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--sheet); box-shadow: 0 0 0 1px var(--rule-2); padding: 0; }
+.swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--ink); }
+.custom input[type=range] { width: 100%; accent-color: var(--blue); }
+.custom .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 13px; }
+.custom .guard { font-size: 12px; color: var(--muted); }
+.custom footer { display: flex; justify-content: space-between; gap: 8px; padding: 12px 18px 16px; border-top: 1px solid var(--rule); background: var(--paper); border-radius: 0 0 16px 16px; }
+kbd { font: 500 11px var(--f-mono); border: 1px solid var(--rule-2); border-radius: 4px; padding: 1px 5px; }
+@media (max-width: 760px) { .main { grid-template-columns: minmax(0, 1fr); } .custom { left: 0; right: 0; top: auto; bottom: 0; width: auto; max-height: 78vh; border-radius: 18px 18px 0 0; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><span class="studio">E-com Studio</span><span class="project">SILLON <em>· boutique</em></span></div>
+    <nav class="spaces" aria-label="Espaces de travail">
+      <a href="#" aria-current="page">Site</a><a href="#">Catalogue</a><a href="#">Marque</a><a href="#">Images</a><a href="#">Vidéos</a><a href="#">Diffusion</a><a href="#">Projet</a>
+    </nav>
+    <div class="meter">
+      <div class="budget" title="Budget IA du mois, forfait Développer"><span>Budget IA du mois · <b>62 %</b> restant</span><div class="gauge"><i style="width:62%"></i></div></div>
+      <div class="avatar" aria-label="Compte">TL</div>
+    </div>
+  </header>
+
+  <div class="main">
+    <!-- Conversation unique -->
+    <section class="convo" aria-label="Conversation avec SYNA">
+      <div class="convo-head">
+        <div class="syna-mark"><span class="name">Syna</span><span class="mem">mémoire du projet · à jour</span></div>
+        <div class="head-actions">
+          <button class="icon-btn" aria-label="Historique et tâches"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4M12 7v5l3 2"/></svg></button>
+          <button class="icon-btn" aria-label="Réduire la conversation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button>
+        </div>
+      </div>
+
+      <div class="thread">
+        <div class="day">Aujourd'hui · 14:02</div>
+        <a class="m-only m-peek" href="#"><img src="img/sillon-hero.jpg" alt=""><span><b>Image d'en-tête · Accueil</b><br>Sélectionnée dans l'aperçu · ouvrir</span></a>
+        <div class="msg-user">Mets la photo du lac en haut de l'accueil et ajoute une finition Cuivre à 139 €.</div>
+        <div class="msg-syna">
+          <span class="who">Syna</span>
+          <p>Je propose deux étapes. La première remplace l'image d'en-tête par la photo du lac, déjà dans votre bibliothèque : aucune création, donc rien sur votre budget IA.</p>
+          <p>La seconde ajoute la finition <strong>Cuivre</strong> en brouillon dans le catalogue. Le stock reste à zéro tant que vous ne l'avez pas saisi.</p>
+        </div>
+        <article class="card" aria-label="Plan proposé">
+          <div class="card-h"><h4>Plan en 2 étapes</h4><span class="state s-proposal">Proposition</span></div>
+          <ol class="steps">
+            <li class="step"><span class="n">01</span><div><div class="t">Image d'en-tête de l'accueil</div><div class="d">Retouche exacte · photo « machine, tasse, lac » · version 13 créée, annulable</div></div><span class="cost">0 %</span></li>
+            <li class="step"><span class="n">02</span><div><div class="t">Catalogue · finition Cuivre, 139 €</div><div class="d">Brouillon de variante · référence SIL-CUI · stock à saisir</div></div><span class="cost">0 %</span></li>
+          </ol>
+          <div class="card-f"><span class="note">Aucun appel IA payant. Rien n'est publié.</span><div class="actions"><button class="btn ghost small">Modifier</button><button class="btn primary small">Appliquer les 2 étapes</button></div></div>
+        </article>
+      </div>
+
+      <div class="composer">
+        <div class="ctx"><span class="chip sel">Sélection : image d'en-tête · Accueil <button aria-label="Retirer la sélection">×</button></span><span class="chip">Page : Accueil</span></div>
+        <div class="field">
+          <button class="icon-btn" aria-label="Joindre un fichier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 11.5 12.4 19a5 5 0 0 1-7-7l8-8a3.3 3.3 0 0 1 4.7 4.7l-8 8a1.7 1.7 0 0 1-2.4-2.4L15 7"/></svg></button>
+          <label class="sr" for="m">Message à Syna</label>
+          <textarea id="m" rows="1" placeholder="Demandez à Syna…"></textarea>
+          <button class="send" aria-label="Envoyer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>
+        </div>
+        <div class="hint"><span>Syna demande toujours avant de dépenser</span><span>Entrée ↵</span></div>
+      </div>
+    </section>
+
+    <!-- Espace de travail -->
+    <section class="work" aria-label="Espace de travail : site">
+      <div class="work-bar">
+        <div class="left"><span class="crumb">Accueil<small>/</small></span>
+          <div class="seg" role="group" aria-label="Appareil"><button aria-pressed="true">Ordinateur</button><button aria-pressed="false">Tablette</button><button aria-pressed="false">Téléphone</button></div>
+        </div>
+        <div class="right"><span class="version">Version <b>12</b> · enregistrée à 13:58</span><button class="btn small">Historique</button><button class="btn small">Exporter</button><button class="btn small">Publier…</button></div>
+      </div>
+      <div class="stage">
+        <div class="frame">
+          <div class="frame-bar"><i></i><i></i><i></i><span>Aperçu · sillon — accueil</span></div>
+          <div class="site-nav"><span>Machine · Rituel · Journal</span><b>SILLON</b><span>Panier (0)</span></div>
+          <div class="site-hero">
+            <img src="img/sillon-hero.jpg" alt="Machine SILLON sur une table, face à une route de montagne">
+            <div class="copy"><h2>L'espresso suit la route.</h2><p>Une machine nomade, pensée pour les haltes.</p><span>Découvrir la machine</span></div>
+            <div class="sel-outline"></div>
+            <div class="sel-tag">Image d'en-tête <button>Demander à Syna</button><button>Modifier à la main</button></div>
+          </div>
+          <div class="site-row">
+            <div><h3>Un rituel, partout.</h3><p>Quatre gestes, vingt-cinq secondes d'extraction, une tasse qui tient la route.</p></div>
+            <img src="img/sillon-lac.jpg" alt="Machine SILLON et une tasse sur un rocher au bord d'un lac">
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <nav class="tabbar" aria-label="Navigation mobile">
+    <a href="#" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5h16v10H8l-4 4z"/></svg>Syna</a>
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 9h18"/></svg>Aperçu</a>
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Espaces</a>
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4M12 7v5l3 2"/></svg>Suivi</a>
+  </nav>
+</div>
+<aside class="custom" role="dialog" aria-modal="false" aria-labelledby="ct">
+  <header><h2 id="ct">Personnaliser l'interface</h2><button class="icon-btn" aria-label="Fermer">✕</button></header>
+  <section><span class="label">Mode de travail</span>
+    <div class="modes" role="group" aria-label="Mode">
+      <button data-set-mode="encre"><span class="mini-shot e"></span><b>Encre</b><span class="mini">Conversation à côté du travail</span></button>
+      <button data-set-mode="plein"><span class="mini-shot p"></span><b>Plein cadre</b><span class="mini">Le résultat en grand, SYNA en barre</span></button>
+    </div>
+    <span class="mini">Bascule instantanée : <kbd>Ctrl</kbd> <kbd>Maj</kbd> <kbd>M</kbd>, ou demandez à Syna « passe en plein cadre » (sans IA, sans coût).</span>
+  </section>
+  <section><span class="label">Apparence</span>
+    <div class="seg2" role="group" aria-label="Clair ou sombre"><button data-theme-set="system" aria-pressed="true">Comme l'appareil</button><button data-theme-set="light">Clair</button><button data-theme-set="dark">Sombre</button></div>
+    <div class="row"><span>Bleu d'accent</span><span class="seg2" role="group" aria-label="Bleu d'accent"><button class="swatch" style="background:#1F3C99" data-accent="#1F3C99" aria-label="Bleu d'encre" aria-pressed="true"></button><button class="swatch" style="background:#2443D6" data-accent="#2443D6" aria-label="Cobalt"></button><button class="swatch" style="background:#1E4E8C" data-accent="#1E4E8C" aria-label="Bleu de Prusse"></button></span></div>
+    <span class="guard">Trois bleus prévus, tous contrôlés à 4,5:1 au moins sur clair et sombre. Aucune couleur libre.</span>
+  </section>
+  <section><span class="label">Disposition</span>
+    <label class="row" for="w"><span>Largeur de la conversation</span><output id="wo">440 px</output></label>
+    <input id="w" type="range" min="360" max="560" step="20" value="440">
+    <div class="row"><span>Densité</span><span class="seg2" role="group" aria-label="Densité"><button data-density-set="confortable" aria-pressed="true">Confortable</button><button data-density-set="compacte">Compacte</button></span></div>
+    <div class="row"><span>Taille du texte</span><span class="seg2" role="group" aria-label="Taille du texte"><button data-text-set="normal" aria-pressed="true">Normale</button><button data-text-set="grand">Grande</button></span></div>
+    <div class="row"><span>Panneau Syna</span><span class="seg2" role="group" aria-label="Panneau"><button aria-pressed="true">Épinglé</button><button>Replié par défaut</button></span></div>
+  </section>
+  <section><span class="label">Portée</span>
+    <div class="seg2" role="group" aria-label="Portée"><button aria-pressed="true">Mon compte · tous mes appareils</button><button>Ce projet seulement</button></div>
+    <span class="guard">Ces réglages changent seulement le Studio. Ni le site de vos clients, ni son thème, ni ses exports. Les boutons de validation et de devis restent toujours visibles.</span>
+  </section>
+  <footer><button class="btn small ghost" id="reset">Rétablir les réglages par défaut</button><button class="btn small primary">Terminé</button></footer>
+</aside>
+<script>
+(function(){var r=document.documentElement;
+function press(sel,el){document.querySelectorAll(sel).forEach(function(b){b.setAttribute('aria-pressed',String(b===el));});}
+document.addEventListener('click',function(e){var b=e.target.closest('[data-theme-set],[data-accent],[data-density-set],[data-text-set]');if(!b)return;
+ if(b.dataset.themeSet){if(b.dataset.themeSet==='system')r.removeAttribute('data-theme');else r.setAttribute('data-theme',b.dataset.themeSet);press('[data-theme-set]',b);}
+ if(b.dataset.accent){r.style.setProperty('--blue',b.dataset.accent);r.style.setProperty('--blue-deep',b.dataset.accent);press('[data-accent]',b);}
+ if(b.dataset.densitySet){r.setAttribute('data-density',b.dataset.densitySet);press('[data-density-set]',b);}
+ if(b.dataset.textSet){r.setAttribute('data-text',b.dataset.textSet);press('[data-text-set]',b);}});
+var w=document.getElementById('w');w.addEventListener('input',function(){r.style.setProperty('--convo-w',w.value+'px');document.getElementById('wo').textContent=w.value+' px';});
+document.addEventListener('keydown',function(e){if(e.ctrlKey&&e.shiftKey&&(e.key==='M'||e.key==='m')){window.synaSetMode(r.dataset.mode==='plein'?'encre':'plein');e.preventDefault();}});
+document.getElementById('reset').addEventListener('click',function(){r.removeAttribute('data-theme');r.removeAttribute('data-density');r.removeAttribute('data-text');r.style.cssText='';w.value=440;document.getElementById('wo').textContent='440 px';window.synaSetMode('encre');});
+})();
+</script>
+<script>document.querySelectorAll(".thread").forEach(t=>t.scrollTop=t.scrollHeight)</script>
+</body>
+</html>
