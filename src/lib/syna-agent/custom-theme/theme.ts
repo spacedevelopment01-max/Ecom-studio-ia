@@ -7,7 +7,7 @@ import crypto from "node:crypto";
 import { all } from "../../db";
 import { remember } from "../../projects";
 import type { FamilyId } from "../section-families";
-import { inlineBackgrounds, isCardSection, FEATURED_ROLE, libSection, SCRIPT_DEMO_SECTIONS, SHELL_ROLES, sectionPhotos, type LibSection } from "./library";
+import { canInvert, inlineBackgrounds, isCardSection, FEATURED_ROLE, libSection, SCRIPT_DEMO_SECTIONS, SHELL_ROLES, sectionPhotos, sectionTraits, type LibSection } from "./library";
 
 export type CtSection = {
   /** Identifiant de CETTE section dans le thème (une même section de la bibliothèque peut servir sur deux pages). */
@@ -25,6 +25,9 @@ export type CtSection = {
   /** Où mène chaque bouton ou lien écrit pour la marque (texte → clé de page, « legal:cgv », « shop:Famille ») : un texte
    *  émotionnel (« Retrouver l'été ») ne correspond à aucun mot connu du Studio et laissait le bouton mort. */
   links?: Record<string, string>;
+  /** Fond voulu (« clair » ou « sombre ») quand il diffère du fond d'origine de la section : la section est alors inversée
+   *  (seulement si elle est « inversable », contrôle de lisibilité de scripts/section-invert-check.cjs). */
+  ground?: "clair" | "sombre";
 };
 export type CtPage = { key: string; label: string; sections: CtSection[]; /** Le parcours du visiteur sur la page (conception). */ journey?: string };
 export type CustomTheme = {
@@ -150,6 +153,7 @@ export function checkCustomTheme(t: CustomTheme, site?: SiteKind): ThemeProblem[
     const l = lib(x.s);
     if (!l) { bad(`section inconnue « ${x.s.id} » (${x.place})`); continue; }
     if (l.demoFrame) bad(`« ${l.title} » est une démonstration du catalogue (fausse fenêtre) : elle ne se pose pas dans un thème`);
+    if (x.s.ground && !canInvert(l.id) && sectionTraits()[l.id]?.fond !== x.s.ground) bad(`« ${l.title} » ne peut pas passer en fond ${x.s.ground} (lisibilité non garantie une fois inversée) : garde son fond d'origine ou choisis une autre section`);
     if (SCRIPT_DEMO_SECTIONS.has(l.id)) bad(`« ${l.title} » affiche des contenus fabriqués par le script de démonstration (produits ou questions de la démo), impossibles à réécrire pour la marque : choisis une autre section`);
     if (l.family !== t.family) bad(`« ${l.title} » est de la famille ${l.family} : jamais de mélange de familles dans un thème (famille du thème : ${t.family})`);
   }

@@ -26,7 +26,7 @@ import { loadFamilyChoice, siteArtUniverse } from "../section-families";
 import { codePhotoPrompt } from "../mockup-code/code-mockup";
 import { hdAspect } from "../mockup-code/prompts";
 import { imageReferences, mockupImageRoute } from "../mockup-code/tools";
-import { familySections, libSection, onlyFor, sectionByRef, isCardSection } from "./library";
+import { canInvert, familySections, libSection, onlyFor, sectionByRef, sectionTraits, isCardSection } from "./library";
 import { allSections, applyStructure, checkCustomTheme, findSection, loadCustomTheme, replaceOnce, requiredPages, saveCustomTheme, scopedCss, sectionHtml, undoCustomTheme, type CustomTheme, type SiteKind, type StructureOp } from "./theme";
 import { listProducts } from "../../products/catalog";
 import { activityPlan, companyOf } from "../activity";
@@ -201,6 +201,8 @@ const designTool: AgentTool<DesignArgs> = {
       t = applyStructure(t, d.pages.flatMap((pg) => [{ op: "page", key: pg.key, label: pg.label } as StructureOp, ...pg.sections.map((s) => ({ op: "add", page: pg.key, section: ref(s.section) }) as StructureOp)]));
       t = applyStructure(t, [{ op: "shell", slot: "header", section: ref(d.header) }, { op: "shell", slot: "footer", section: ref(d.footer) }]);
       if (d.search) t = applyStructure(t, [{ op: "shell", slot: "search", section: ref(d.search) }]);
+      // fond voulu par la conception (contrôlé : seulement les sections inversables)
+      for (const pg of t.pages) { const src = d.pages.find((x) => x.key === pg.key); pg.sections.forEach((s, i) => { const g = src?.sections[i]?.ground; if (g && g !== "origine" && g !== sectionTraits()[s.id]?.fond) s.ground = g; }); }
       return t;
     };
     // Conception gardée dans le thème (après la reprise du travail des sections gardées, qui remplace leurs objets).
@@ -209,7 +211,7 @@ const designTool: AgentTool<DesignArgs> = {
         const src = d.pages.find((x) => x.key === pg.key);
         if (!src) continue;
         pg.journey = src.journey;
-        pg.sections.forEach((s, i) => { if (src.sections[i]) s.intent = intentText(src.sections[i].why, src.sections[i].says, src.sections[i].photos); });
+        pg.sections.forEach((s, i) => { const pick = src.sections[i]; if (!pick) return; s.intent = intentText(pick.why, pick.says, pick.photos); if (pick.ground !== "origine" && pick.ground !== sectionTraits()[s.id]?.fond) s.ground = pick.ground; else delete s.ground; });
       }
     };
     const blocking = (t: CustomTheme) => checkCustomTheme(t, site).filter((x) => x.level === "bloquant").map((x) => x.text);
@@ -388,15 +390,16 @@ export function assertSafeHtml(html: string): void {
 }
 const PATH = /^[a-z0-9]+:nth-child\(\d{1,3}\)(?: > [a-z0-9]+:nth-child\(\d{1,3}\)){0,24}$/;
 
-type EditArgs = { uid: string; edits?: { find: string; replace: string }[]; css?: string; hide?: string[]; show?: string[]; image?: { find: string; assetId: string }; clientTexts?: boolean };
+type EditArgs = { uid: string; edits?: { find: string; replace: string }[]; css?: string; hide?: string[]; show?: string[]; image?: { find: string; assetId: string }; clientTexts?: boolean; ground?: "clair" | "sombre" | "origine" };
 const editTool: AgentTool<EditArgs> = {
   name: "custom.edit", module: "site", kind: "write", needsProject: true,
-  description: "Étape 6 (gratuit) : MODIFIE une section du thème sur mesure sur demande du client, le reste ne bouge pas. Lis-la d'abord (custom.section). edits : remplacements exacts dans son HTML [{ find : passage recopié tel quel, présent une seule fois ; replace : nouveau passage }] pour les textes (ceux du client mot pour mot, jamais ceux d'un modèle, jamais d'avis, chiffre, délai ou certification inventés : « [À compléter : …] »), l'ordre des éléments, un élément ajouté ou retiré ; css : règles propres à la section, chaque sélecteur commence par :scope (couleurs, tailles, espacements, disposition) ; hide / show : adresses d'éléments désignés (ex. « div:nth-child(2) > a:nth-child(1) ») à masquer ou réafficher ; image : { find : photo actuelle (ex. photos/sl-h1.webp ou /api/files/…), assetId : image du client dans ses Fichiers, ou photo déjà créée pour son site (custom.images › photosDejaCreees, gratuit) }. Le client veut une autre photo et n'en a pas : propose-lui, en une question à choix, de reprendre une photo déjà créée pour son site (gratuit, dis laquelle) ou d'en créer une nouvelle (custom.photo, prix annoncé). clientTexts:true quand TOUS les textes de la section sont ceux du client. Aucun script, aucun lien extérieur.",
+  description: "Étape 6 (gratuit) : MODIFIE une section du thème sur mesure sur demande du client, le reste ne bouge pas. Lis-la d'abord (custom.section). edits : remplacements exacts dans son HTML [{ find : passage recopié tel quel, présent une seule fois ; replace : nouveau passage }] pour les textes (ceux du client mot pour mot, jamais ceux d'un modèle, jamais d'avis, chiffre, délai ou certification inventés : « [À compléter : …] »), l'ordre des éléments, un élément ajouté ou retiré ; css : règles propres à la section, chaque sélecteur commence par :scope (couleurs, tailles, espacements, disposition) ; hide / show : adresses d'éléments désignés (ex. « div:nth-child(2) > a:nth-child(1) ») à masquer ou réafficher ; image : { find : photo actuelle (ex. photos/sl-h1.webp ou /api/files/…), assetId : image du client dans ses Fichiers, ou photo déjà créée pour son site (custom.images › photosDejaCreees, gratuit) }. Le client veut une autre photo et n'en a pas : propose-lui, en une question à choix, de reprendre une photo déjà créée pour son site (gratuit, dis laquelle) ou d'en créer une nouvelle (custom.photo, prix annoncé). clientTexts:true quand TOUS les textes de la section sont ceux du client. ground : passer la section en fond « clair » ou « sombre » aux couleurs de la marque (seulement les sections inversables, lisibilité contrôlée), ou revenir à son fond d'« origine ». Aucun script, aucun lien extérieur.",
   args: z.object({
     uid: z.string().regex(/^s[0-9a-f]{8}$/),
     edits: z.array(z.object({ find: z.string().min(1).max(8000), replace: z.string().max(16000) }).strict()).max(40).optional(),
     css: z.string().max(12000).optional(), hide: z.array(z.string().max(400)).max(10).optional(), show: z.array(z.string().max(400)).max(10).optional(),
     image: z.object({ find: z.string().min(3).max(300), assetId: z.string().max(60) }).strict().optional(), clientTexts: z.boolean().optional(),
+    ground: z.enum(["clair", "sombre", "origine"]).optional(),
   }).strict(),
   run: (ctx, a) => {
     const p = project(ctx), t = loadCustomTheme(p.id);
@@ -427,6 +430,12 @@ const editTool: AgentTool<EditArgs> = {
       }
       if (html !== sectionHtml(x.s)) x.s.html = html;
       let css = x.s.css ?? "";
+      if (a.ground) {
+        const nat = sectionTraits()[x.s.id]?.fond;
+        if (a.ground === "origine" || a.ground === nat) { delete x.s.ground; done.push("fond d'origine"); }
+        else if (!canInvert(x.s.id)) throw new Error(`cette section ne peut pas passer en fond ${a.ground} : la lisibilité n'est pas garantie une fois inversée (propose une autre section de même rôle)`);
+        else { x.s.ground = a.ground; done.push(`fond ${a.ground}`); }
+      }
       for (const h of a.hide ?? []) { if (!PATH.test(h)) throw new Error(`adresse d'élément invalide : ${h}`); css += `\n[data-ct="${a.uid}"] > ${h}{display:none!important}`; done.push(`élément masqué (${h})`); }
       for (const h of a.show ?? []) { const rule = `[data-ct="${a.uid}"] > ${h}{display:none!important}`; if (!css.includes(rule)) throw new Error(`élément ${h} n'est pas masqué`); css = css.split(rule).join("").replace(/\n{2,}/g, "\n"); done.push(`élément réaffiché (${h})`); }
       if (a.css) { css += "\n" + scopedCss(a.uid, a.css); done.push("mise en forme de la section"); }

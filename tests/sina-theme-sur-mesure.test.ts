@@ -210,10 +210,10 @@ describe("thème sur mesure : outils de SINA", async () => {
     const good = {
       visitor: "Une personne de 35 ans qui trouve les confitures du commerce trop sucrées et veut retrouver le goût du fruit.", levers: ["la promesse dès l'arrivée", "la transparence de la recette"], objections: [], corrections: [] as string[],
       concept: "Le matin d'hiver où l'on ouvre le pot et où l'été revient.", header: "en-tete-classique", footer: "pied-de-page-complet", search: null,
-      pages: site.pages.map((pg) => ({ key: pg.key, label: pg.label, journey: `Le visiteur arrive sur ${pg.label} et se demande ce qu'il va trouver.`, sections: pg.sections.map((t) => ({ section: sectionByRef(t)!.id, why: `Répond au moment ${t}.`, says: `Dit ce que ${t} doit dire avec les faits.`, photos: t === "Ouverture photo pleine" ? "Une table de cuisine un matin d'hiver, le pot ouvert à droite." : "aucune" })) })),
+      pages: site.pages.map((pg) => ({ key: pg.key, label: pg.label, journey: `Le visiteur arrive sur ${pg.label} et se demande ce qu'il va trouver.`, sections: pg.sections.map((t) => ({ section: sectionByRef(t)!.id, why: `Répond au moment ${t}.`, says: `Dit ce que ${t} doit dire avec les faits.`, photos: t === "Ouverture photo pleine" ? "Une table de cuisine un matin d'hiver, le pot ouvert à droite." : "aucune", ground: (t === "Nos engagements" ? "sombre" : "origine") as "sombre" | "origine" })) })),
     };
     // 1re conception : une offre en section à part (refusée), puis la conception corrigée.
-    const bad = { ...good, pages: good.pages.map((pg) => (pg.key === "product" ? { ...pg, sections: [...pg.sections, { section: "offre-par-quantite", why: "Pour vendre plus.", says: "Trois pots moins chers.", photos: "aucune" }] } : pg)) };
+    const bad = { ...good, pages: good.pages.map((pg) => (pg.key === "product" ? { ...pg, sections: [...pg.sections, { section: "offre-par-quantite", why: "Pour vendre plus.", says: "Trois pots moins chers.", photos: "aucune", ground: "origine" as const }] } : pg)) };
     const prompts: string[] = [];
     const systems: string[] = [];
     // 1) conception, 2) relecture qui rend une version encore fautive, 3) correction demandée par le contrôle du Studio.
@@ -241,6 +241,20 @@ describe("thème sur mesure : outils de SINA", async () => {
       expect(t.pages[0].sections[0].intent).toMatch(/^Pourquoi ici : Répond au moment Ouverture photo pleine\. Ce qu'elle dit :[^]* Photos : Une table de cuisine un matin d'hiver/);
       expect(t.pages[0].sections[1].intent).not.toMatch(/Photos :/);
       expect(r.data.parcours[0].sections[0]).toMatch(/Ouverture photo pleine — Répond/);
+      // Fond voulu par la conception : « Nos engagements » (fond clair d'origine, inversable) passe en sombre.
+      const eng = t.pages[0].sections.find((x) => x.id === "nos-engagements")!;
+      expect(eng.ground).toBe("sombre");
+      expect(prompts[0]).toMatch(/nos-engagements · confiance · fond clair \(inversable\)/);
+      const { renderCustomTheme } = await import("@/lib/syna-agent/custom-theme/render");
+      const { loadProject } = await import("@/lib/projects");
+      expect(renderCustomTheme(loadProject(pid), t, { nonce: "n" })).toContain(`<div class="ct-inv ct-dark"><section data-ct="${eng.uid}"`);
+      // Le client demande de revenir au fond d'origine, puis un fond impossible sur une section non inversable.
+      expect((await call("custom.edit", ctx, { uid: eng.uid, ground: "origine" })).ok).toBe(true);
+      expect(loadCustomTheme(pid)!.pages[0].sections.find((x) => x.uid === eng.uid)!.ground).toBeUndefined();
+      const story = loadCustomTheme(pid)!.pages[0].sections.find((x) => x.id === "histoire-du-produit-au-defilement")!;
+      const no = await call("custom.edit", ctx, { uid: story.uid, ground: "clair" });
+      expect(no.ok).toBe(false);
+      expect(no.summary).toMatch(/ne peut pas passer en fond clair/);
       // Le rédacteur reçoit la conception de la section et le parcours de la page.
       const B = await import("@/lib/syna-agent/custom-theme/brand");
       const w = B.sectionWritePrompt("Marque", "Accueil", "Ouverture photo pleine", "fait", "<h2>x</h2>", undefined, { intent: t.pages[0].sections[0].intent, journey: t.pages[0].journey });
@@ -251,7 +265,7 @@ describe("thème sur mesure : outils de SINA", async () => {
   it("conception : chaque objection de la recherche doit trouver sa réponse dans une section posée ; rythme des fonds et densités", async () => {
     const D = await import("@/lib/syna-agent/custom-theme/design");
     const base = { visitor: "x".repeat(30), levers: ["a", "b"], concept: "x".repeat(30), header: "en-tete-classique", footer: "pied-de-page-complet", search: null, corrections: [],
-      pages: [{ key: "product", label: "Fiche produit", journey: "x".repeat(30), sections: [{ section: "produit-vedette", why: "x".repeat(12), says: "x".repeat(12), photos: "aucune" }, { section: "histoire-du-produit-au-defilement", why: "x".repeat(12), says: "x".repeat(12), photos: "aucune" }, { section: "chiffres-cles", why: "x".repeat(12), says: "x".repeat(12), photos: "aucune" }] }] };
+      pages: [{ key: "product", label: "Fiche produit", journey: "x".repeat(30), sections: [{ section: "produit-vedette", why: "x".repeat(12), says: "x".repeat(12), photos: "aucune", ground: "origine" }, { section: "histoire-du-produit-au-defilement", why: "x".repeat(12), says: "x".repeat(12), photos: "aucune", ground: "origine" }, { section: "chiffres-cles", why: "x".repeat(12), says: "x".repeat(12), photos: "aucune", ground: "origine" }] }] };
     const research = ["Une confiture artisanale, c'est trop sucré", "C'est trop cher pour un pot"];
     const g = D.designGaps({ ...base, objections: [{ objection: "C'est trop cher pour un pot de confiture", answer: "Le prix au petit-déjeuner…", page: "product", section: "comparatif-nous-les-autres" }] } as any, research);
     expect(g.blocking).toEqual(["objection de la recherche sans réponse dans la conception : « Une confiture artisanale, c'est trop sucré »", "l'objection « C'est trop cher pour un pot » doit trouver sa réponse dans « comparatif-nous-les-autres » sur la page « product », qui n'y est pas"]);
@@ -679,5 +693,23 @@ describe("thème sur mesure : sections dont le contenu vient du script de démon
     const T = { family: "classique", style: "classique", rev: 1, header: null, footer: null, search: null, pages: [{ key: "home", label: "Accueil", sections: [{ uid: "s00000001", id: "questions-en-bulles-de-discussion" }] }] } as unknown as CustomTheme;
     void base;
     expect(checkCustomTheme(T).some((x) => x.level === "bloquant" && /Questions en bulles de discussion[^]*script de démonstration/.test(x.text))).toBe(true);
+  });
+});
+
+describe("bibliothèque : fond inversé (clair ↔ sombre) selon l'ambiance voulue par le client", () => {
+  it("règles inversées présentes, une section inversable sur trois au moins, la lisibilité contrôlée", async () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "public/sections/library.css"), "utf8");
+    expect(css).toMatch(/\.ct-inv \.steps\{\s*background:color-mix\(in oklab, var\(--b-soft, #fff\) 0%, var\(--b-dark, #141414\)\)/);
+    expect(css).toMatch(/\.ct-dark>\*\{\s*background-color:var\(--b-dark, #141414\);\s*color:var\(--b-soft, #fff\)/);
+    expect(css).toMatch(/\.ct-light>\*\{\s*background-color:var\(--b-soft, #fff\);\s*color:var\(--b-dark, #141414\)/);
+    const L = await import("@/lib/syna-agent/custom-theme/library");
+    const tr = L.sectionTraits();
+    const n = Object.values(tr).filter((x) => x?.inversable).length;
+    expect(n).toBeGreaterThanOrEqual(60);
+    expect(L.inversionClass("nos-engagements", "sombre")).toBe("ct-dark");
+    expect(L.inversionClass("nos-engagements", "clair")).toBeNull(); // déjà clair
+    expect(L.inversionClass("histoire-du-produit-au-defilement", "clair")).toBeNull(); // non inversable
+    const T = { family: "classique", style: "classique", rev: 1, header: null, footer: null, search: null, pages: [{ key: "home", label: "Accueil", sections: [{ uid: "s00000001", id: "histoire-du-produit-au-defilement", ground: "clair" }] }] } as unknown as CustomTheme;
+    expect(checkCustomTheme(T).some((x) => x.level === "bloquant" && /ne peut pas passer en fond clair/.test(x.text))).toBe(true);
   });
 });

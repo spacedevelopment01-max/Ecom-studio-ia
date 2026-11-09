@@ -14,14 +14,12 @@
  * de la recherche et le rythme ; ce qui est refusé revient une fois au concepteur. La conception est gardée dans le
  * thème (`concept`, `journey` de chaque page, `intent` de chaque section) et sert au plan des textes et au rédacteur.
  */
-import fs from "node:fs";
-import path from "node:path";
 import { z } from "zod";
-import { familySections, isCardSection, LIBRARY_DIR, onlyFor } from "./library";
+import { familySections, isCardSection, onlyFor, sectionTraits } from "./library";
 import { requiredPages, platformOwnedPages, MIN_SECTIONS, type SiteKind } from "./theme";
 import type { FamilyId } from "../section-families";
 
-const SectionPick = z.object({ section: z.string().max(80), why: z.string().min(10).max(600), says: z.string().min(10).max(900), photos: z.string().max(600) });
+const SectionPick = z.object({ section: z.string().max(80), why: z.string().min(10).max(600), says: z.string().min(10).max(900), photos: z.string().max(600), ground: z.enum(["origine", "clair", "sombre"]) });
 export const DesignSchema = z.object({
   visitor: z.string().min(20).max(900),
   levers: z.array(z.string().min(3).max(240)).min(2).max(10),
@@ -69,7 +67,7 @@ A. STRATÉGIE (avant tout choix de section) :
  - levers : les leviers qui décident CE visiteur (ex. la promesse visible dès l'arrivée, l'émotion du moment de consommation, la transparence de la recette, l'inversion du risque par les retours, la preuve par le savoir-faire quand il n'y a pas d'avis, le prix rapporté à l'usage, le cadeau…).
 B. PARCOURS de chaque page (journey) : la suite des questions et des émotions du visiteur, du premier regard à l'action. Une page de vente alterne : promesse → compréhension → émotion → preuve / objection levée → émotion → décision.
 C. SECTIONS : pour CHAQUE moment du parcours, LA section de la bibliothèque qui y répond le mieux ; why = le moment, la question ou l'objection du visiteur, et pourquoi cette section plutôt qu'une autre ; says = ce qu'elle dira concrètement avec les vrais faits, sans en inventer aucun (le message, les éléments précis : questions, lignes de comparatif, étapes, avant et après, et pour chaque bouton son intention et la page où il mène) ; photos = les scènes à photographier pour cette section (lieu, moment, lumière, ce qu'on voit, le vrai produit quand il apparaît), ou « aucune ». Les photos du site forment une histoire visuelle : les scènes « à montrer » de l'angle, jamais deux fois la même scène, le texte posé sur la partie calme de chaque photo.
-D. RYTHME : l'AMBIANCE voulue par le client (claire, sombre ou alternée, donnée plus bas) décide des fonds : site clair = surtout des sections à fond clair, une bande sombre ou de couleur pour les moments forts ; site sombre = surtout des sections à fond sombre, une section claire seulement pour respirer ; alterné = les fonds changent d'une section à l'autre. Dans tous les cas, varie les densités (une section dense est suivie d'une section qui respire) et les dispositions, avec un moment fort d'émotion toutes les deux ou trois sections ; sur une longue page, une raison et un moyen d'agir reviennent régulièrement (bouton vers l'achat, barre d'achat collée sur téléphone si la bibliothèque l'a), et la page finit par un appel à agir.
+D. RYTHME : chaque section a son fond d'origine (dans la liste) ; une section marquée « inversable » peut passer en clair ou en sombre (ground) aux couleurs de la marque, les autres gardent leur fond (ground : « origine »). L'AMBIANCE voulue par le client (claire, sombre ou alternée, donnée plus bas) décide des fonds : site clair = surtout des sections à fond clair, une bande sombre ou de couleur pour les moments forts ; site sombre = surtout des sections à fond sombre, une section claire seulement pour respirer ; alterné = les fonds changent d'une section à l'autre. Dans tous les cas, varie les densités (une section dense est suivie d'une section qui respire) et les dispositions, avec un moment fort d'émotion toutes les deux ou trois sections ; sur une longue page, une raison et un moyen d'agir reviennent régulièrement (bouton vers l'achat, barre d'achat collée sur téléphone si la bibliothèque l'a), et la page finit par un appel à agir.
 E. COHÉRENCE DU SITE : l'accueil donne envie et oriente, la fiche produit décide, « à propos » fait confiance à la personne et au savoir-faire, l'aide rassure ; un même fait ou une même scène ne se répète pas d'une page à l'autre, chaque page apporte du neuf.
 EXIGENCES :
 - Des pages RICHES : une vraie page de vente utilise beaucoup de sections, autant que le parcours en demande, jamais le minimum. L'accueil et la fiche produit sont les plus riches (plancher : accueil ${MIN_SECTIONS.home}, fiche produit ${MIN_SECTIONS.product} ; une bonne fiche produit en a souvent 9 à 12). Les pages pratiques (panier, compte, aide, légal, 404) restent simples et claires.
@@ -87,20 +85,12 @@ Puis rends la conception CORRIGÉE et complète (même format, toutes les pages)
 Mêmes exigences que le concepteur (pages riches, aucune section sans contenu réel, une section de cartes par page, « Produit vedette » en haut de la fiche, jamais la même section deux fois, jamais deux sections de même rôle à la suite, pages obligatoires, identifiants de la liste uniquement).
 Réponse : uniquement le JSON demandé.`;
 
-/** Caractéristiques mesurées des sections (scripts/section-traits.cjs). */
-type Trait = { fond: "clair" | "sombre" | "couleur" | "photo"; densite: "dense" | "moyenne" | "aérée"; photos: number; hauteur: number };
-let traitsCache: Record<string, Trait | null> | null = null;
-export function sectionTraits(): Record<string, Trait | null> {
-  if (!traitsCache) { try { traitsCache = JSON.parse(fs.readFileSync(path.join(LIBRARY_DIR(), "section-traits.json"), "utf8")); } catch { traitsCache = {}; } }
-  return traitsCache!;
-}
-
 /** Catalogue de la famille donné au concepteur : identifiant, rôle, caractéristiques, titre, ce qu'elle fait. */
 export function designCatalogue(family: FamilyId): string {
   const tr = sectionTraits();
   return familySections(family).map((s) => {
     const t = tr[s.id];
-    const traits = t ? ` · fond ${t.fond} · ${t.densite} · ${t.photos} photo(s)` : "";
+    const traits = t ? ` · fond ${t.fond}${t.inversable ? " (inversable)" : ""} · ${t.densite} · ${t.photos} photo(s)` : "";
     return `- ${s.id} · ${s.role}${isCardSection(s) ? " · cartes" : ""}${onlyFor(s.tags) ? ` · seulement pour ${onlyFor(s.tags)}` : ""}${traits} · ${s.title} : ${s.does.slice(0, 260)}`;
   }).join("\n");
 }

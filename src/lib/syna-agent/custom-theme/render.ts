@@ -13,7 +13,7 @@ import { assetUrl } from "../../library";
 import { fontOf, fontsCss } from "../mockup-code/code-mockup";
 import { decideBuyFeatures, deliveryFrom, freeShippingFrom, loadShopOffers, type BuyFeatures } from "../product-features";
 import { companyOf } from "../activity";
-import { DEMO_BRANDS, LIBRARY_DIR, sectionLibrary, withBrandName } from "./library";
+import { DEMO_BRANDS, inversionClass, LIBRARY_DIR, sectionLibrary, withBrandName } from "./library";
 import { allSections, sectionHtml, type CtSection, type CustomTheme } from "./theme";
 import { all } from "../../db";
 
@@ -121,7 +121,10 @@ function linkMap(t: CustomTheme): Record<string, string> {
 /** HTML d'une section du thème, marqué de son identifiant (désignation, règles propres). */
 export function sectionMarkup(s: CtSection, brandName: string, role: string): string {
   const html = withBrandName(sectionHtml(s), brandName);
-  return html.replace(/^\s*<(section|footer)\b/, `<$1 data-ct="${s.uid}" data-ct-role="${role}"`);
+  const marked = html.replace(/^\s*<(section|footer)\b/, `<$1 data-ct="${s.uid}" data-ct-role="${role}"`);
+  // Fond voulu différent du fond d'origine (section inversable) : enveloppe sans effet sur la mise en page.
+  const inv = inversionClass(s.id, s.ground);
+  return inv ? `<div class="ct-inv ${inv}">${marked}</div>` : marked;
 }
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
