@@ -113,6 +113,8 @@ function linkMap(t: CustomTheme): Record<string, string> {
   if (product) for (const w of ["Livraison", "Retours", "Guide des tailles", "Questions"]) out[w] ??= product;
   if (keys.has("legal")) for (const [w, tab] of Object.entries(LEGAL_WORDS)) out[w] = `legal:${tab}`;
   for (const p of t.pages) out[p.label] = p.key;
+  // Liens écrits pour la marque (rédacteur) : chaque bouton mène à la page prévue, quel que soit son texte.
+  for (const x of allSections(t)) for (const [text, to] of Object.entries(x.s.links ?? {})) if (keys.has(to.split(":")[0])) out[text.replace(/[→↗]/g, "").replace(/\s+/g, " ").trim()] = to;
   return out;
 }
 

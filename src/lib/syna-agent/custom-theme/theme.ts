@@ -22,6 +22,9 @@ export type CtSection = {
   clientTexts?: boolean;
   /** Conception (custom.design) : pourquoi cette section est là, à ce moment du parcours, et ce qu'elle doit dire. */
   intent?: string;
+  /** Où mène chaque bouton ou lien écrit pour la marque (texte → clé de page, « legal:cgv », « shop:Famille ») : un texte
+   *  émotionnel (« Retrouver l'été ») ne correspond à aucun mot connu du Studio et laissait le bouton mort. */
+  links?: Record<string, string>;
 };
 export type CtPage = { key: string; label: string; sections: CtSection[]; /** Le parcours du visiteur sur la page (conception). */ journey?: string };
 export type CustomTheme = {

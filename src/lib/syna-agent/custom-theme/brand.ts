@@ -59,6 +59,7 @@ const RATIOS = ["1:1", "4:5", "2:3", "16:9", "9:16"] as const;
 
 export const SectionWriteSchema = z.object({
   edits: z.array(z.object({ find: z.string().min(1).max(4000), replace: z.string().max(8000) })).max(80),
+  links: z.array(z.object({ text: z.string().min(1).max(120), to: z.string().min(1).max(60) })).max(20),
   photos: z.array(z.object({ find: z.string().min(3).max(200), description: z.string().min(20).max(2500), ratio: z.enum(RATIOS), product: z.string().max(160).nullable() })).max(14),
 });
 export type SectionWrite = z.infer<typeof SectionWriteSchema>;
@@ -77,7 +78,7 @@ export const COPY_CRAFT = `Écriture (comme le meilleur concepteur-rédacteur d'
 - Menus, pied de page, liens : les mots simples que le visiteur cherche (ex. « Nos confitures », « Coffret cadeau », « Notre histoire », « Livraison et retours », « Contact »).
 - Chaque fait fort (pourcentage, savoir-faire, livraison, retours) apparaît au plus UNE fois par page : on prouve une fois, on ne martèle pas.
 - Une même formule n'apparaît qu'UNE fois sur tout le site (hors noms de produits et libellés du menu) ; la promesse du site est une idée à faire sentir, jamais une phrase à recopier.
-- Phrases courtes et vivantes (15 mots au plus), des mots qui se goûtent, se touchent, se voient, des détails précis du client plutôt que des adjectifs vagues.
+- Phrases courtes et vivantes (15 mots au plus), des mots qui se goûtent, se touchent, se voient, des détails précis du client plutôt que des adjectifs vagues. Court ne veut pas dire pauvre : une description, une réponse à une objection, un comparatif ou une histoire développe plusieurs idées en plusieurs phrases.
 - Jamais de tics d'écriture automatique : pas de « ce n'est pas X, c'est Y », pas de listes de négations, pas de tiret cadratin, pas de deux-points dramatiques en série.`;
 
 export const SECTION_WRITE_SYSTEM = `Tu es concepteur-rédacteur web senior et directeur artistique. Tu adaptes UNE section de site (son HTML) à une petite marque, en français.
@@ -88,6 +89,7 @@ Règles absolues :
 ${COPY_CRAFT}
 - La CONCEPTION de la section (pourquoi elle est là dans le parcours du visiteur, ce qu'elle doit dire) et le parcours de la page s'imposent : la section répond exactement au moment du visiteur et prolonge la section d'avant.
 - Le PLAN DES TEXTES DU SITE fourni s'impose : le titre et le bouton de CETTE section tels quels (ajuste-les seulement s'ils ne tiennent pas dans la mise en page), son message, et seulement SES faits chiffrés. Tu ne reprends ni ne paraphrases le titre d'une autre section.
+- LIENS : pour CHAQUE bouton ou lien de la section dont tu écris le texte (sauf « Ajouter au panier », les flèches et les onglets), dis où il mène dans links : text = son texte exact tel que tu l'écris, to = la clé d'une page du site (liste fournie), « legal:mentions », « legal:cgv » ou « shop:Nom de famille ». Un bouton ne mène jamais nulle part : s'il n'a pas de destination logique, ce n'est pas un bouton.
 - Les coordonnées de la marque (raison sociale, adresse, e-mail, téléphone) et les mentions légales présentes dans la section restent TOUJOURS, écrites exactement, même si le plan ne les cite pas.
 - Noms et prix de produits : seulement ceux de la liste fournie, écrits exactement.
 - Le vocabulaire imposé par le client est respecté.
@@ -156,7 +158,7 @@ export function sectionSkeleton(html: string): string {
   return [...new Set(bits)].slice(0, 14).join(" | ") || "(aucun titre)";
 }
 
-export function sectionWritePrompt(brief: string, place: string, title: string, does: string, html: string, plan?: { site: SitePlan; uid: string }, design?: { intent?: string; journey?: string }): string {
+export function sectionWritePrompt(brief: string, place: string, title: string, does: string, html: string, plan?: { site: SitePlan; uid: string }, design?: { intent?: string; journey?: string; pages?: string }): string {
   const mine = plan?.site.sections.find((x) => x.uid === plan.uid);
   const others = plan ? plan.site.sections.filter((x) => x.uid !== plan.uid && x.titre).map((x) => `« ${x.titre} »`) : [];
   const planText = plan ? [
@@ -165,7 +167,7 @@ export function sectionWritePrompt(brief: string, place: string, title: string, 
     mine ? `CETTE section : message : ${mine.message}${mine.titre ? ` ; titre : « ${mine.titre} »` : ""}${mine.bouton ? ` ; bouton : « ${mine.bouton} »` : ""} ; faits à utiliser ici (et aucun autre chiffre) : ${mine.faits.length ? mine.faits.join(" ; ") : "aucun"}.` : "",
     others.length ? `Titres des autres sections (ne les répète pas) : ${others.join(", ")}.` : "",
   ].filter(Boolean).join("\n") : "";
-  const designText = [design?.journey ? `PARCOURS DU VISITEUR SUR CETTE PAGE : ${design.journey}` : "", design?.intent ? `CONCEPTION DE CETTE SECTION : ${design.intent}` : ""].filter(Boolean).join("\n");
+  const designText = [design?.pages ? `PAGES DU SITE (clé : nom) : ${design.pages}` : "", design?.journey ? `PARCOURS DU VISITEUR SUR CETTE PAGE : ${design.journey}` : "", design?.intent ? `CONCEPTION DE CETTE SECTION : ${design.intent}` : ""].filter(Boolean).join("\n");
   return [brief, "", ...(planText ? [planText, ""] : []), ...(designText ? [designText, ""] : []), `Section à adapter : « ${title} » (${place}). Ce qu'elle fait : ${does}`, "HTML actuel de la section (textes de démonstration à remplacer) :", html].join("\n");
 }
 
@@ -278,7 +280,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
     try {
       const w = await ctx.step(`text:${x.s.uid}`, async () => {
         const html = withBrandName(sectionHtml(x.s), name);
-        const prompt = sectionWritePrompt(brief, x.page?.label ?? x.place, l?.title ?? x.s.id, l?.does ?? "", html, sitePlan ? { site: sitePlan, uid: x.s.uid } : undefined, { intent: x.s.intent, journey: x.page?.journey });
+        const prompt = sectionWritePrompt(brief, x.page?.label ?? x.place, l?.title ?? x.s.id, l?.does ?? "", html, sitePlan ? { site: sitePlan, uid: x.s.uid } : undefined, { intent: x.s.intent, journey: x.page?.journey, pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · ") });
         const usageKey = `${ctx.job.id}:text:${x.s.uid}`;
         return customBrandDeps.write ? customBrandDeps.write(prompt, usageKey)
           : SectionWriteSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text", costCapMicro: a.capMicro }, () =>
@@ -289,6 +291,12 @@ export async function runCustomBrandJob(ctx: JobContext) {
       if (!cur) continue;
       const r = applyWrite(withBrandName(sectionHtml(cur.s), name), w);
       cur.s.html = r.html; cur.s.clientTexts = r.failed === 0;
+      // Liens : seulement vers une page du site, et seulement pour un texte réellement écrit dans la section.
+      const keys = new Set(t.pages.map((pg) => pg.key)), text = r.html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+      const links = Object.fromEntries(w.links.filter((l) => keys.has(l.to.split(":")[0]) && text.includes(l.text.replace(/[→↗]/g, "").trim())).map((l) => [l.text.replace(/[→↗]/g, "").replace(/\s+/g, " ").trim(), l.to]));
+      const dead = w.links.filter((l) => !keys.has(l.to.split(":")[0])).map((l) => `« ${l.text} » → ${l.to}`);
+      if (Object.keys(links).length) cur.s.links = links;
+      if (dead.length) report.problems.push(`${l?.title} : bouton(s) vers une page qui n'existe pas (${dead.join(", ")})`);
       t = saveCustomTheme(p.id, t);
       briefs[x.s.uid] = w.photos;
       report.sections++; report.failedEdits += r.failed;

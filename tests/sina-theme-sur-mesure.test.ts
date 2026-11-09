@@ -455,7 +455,9 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
         const imgs = [...new Set([...html.matchAll(/photos\/[\w-]+\.(?:webp|png|jpg)/g)].map((m) => m[0]))];
         expected += imgs.filter((f) => !/photos\/(carte|map|plan)-/.test(f)).length;
         // + une photo d'une carte que le rédacteur a retirée : jamais créée, jamais payée.
-        return { edits: h ? [{ find: `>${h[2]}<`, replace: `>Texte de la marque ${writes}<` }] : [], photos: [...imgs, "photos/carte-produit-retiree.webp", "photos/sixieme-produit.webp"].map((f) => ({ find: f, description: "Photo de bougie en verre ambré sur une table en chêne, lumière douce du soir.", ratio: "4:5" as const, product: null })) };
+        // Liens : vers une vraie page (gardé), vers une page qui n'existe pas (signalé, jamais posé).
+        const links = h ? [{ text: `Texte de la marque ${writes}`, to: "shop" }, { text: `Texte de la marque ${writes}`, to: "nulle-part" }] : [];
+        return { edits: h ? [{ find: `>${h[2]}<`, replace: `>Texte de la marque ${writes}<` }] : [], links, photos: [...imgs, "photos/carte-produit-retiree.webp", "photos/sixieme-produit.webp"].map((f) => ({ find: f, description: "Photo de bougie en verre ambré sur une table en chêne, lumière douce du soir.", ratio: "4:5" as const, product: null })) };
       };
       B.customBrandDeps.photo = async () => { photos++; return sharp({ create: { width: 40, height: 50, channels: 3, background: "#a86" } }).png().toBuffer(); };
       const fake: any = { job: { id: job.id }, payload: JSON.parse(job.payload), checkpoint: {}, progress: () => undefined, step: async (_k: string, fn: () => Promise<unknown>) => fn() };
@@ -488,6 +490,15 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       expect(photos).toBeGreaterThan(0);
       expect(out.photosMade).toBe(photos);
       expect(photos).toBe(expected);
+      // Chaque bouton écrit mène à une vraie page ; une destination inexistante est signalée et jamais posée.
+      const linked = allSections(loadCustomTheme(pid)!).filter((x) => x.s.links);
+      expect(linked.length).toBeGreaterThan(0);
+      for (const x of linked) for (const to of Object.values(x.s.links!)) expect(to).toBe("shop");
+      expect(out.problems.some((x: string) => /bouton\(s\) vers une page qui n'existe pas/.test(x))).toBe(true);
+      const { renderCustomTheme } = await import("@/lib/syna-agent/custom-theme/render");
+      const { loadProject } = await import("@/lib/projects");
+      const page = renderCustomTheme(loadProject(pid), loadCustomTheme(pid)!, { nonce: "n" });
+      expect(page).toMatch(/"Texte de la marque \d+":"shop"/);
       // Nom des photos : la page et ce qu'elles montrent, jamais le nom de la photo d'exemple remplacée.
       const names = (await import("@/lib/db")).all<{ name: string }>("SELECT name FROM assets WHERE project_id=? AND origin='generated' AND role='site'", pid).map((x) => x.name);
       expect(names.length).toBe(photos);
@@ -540,7 +551,7 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       expect(JSON.parse(job.payload)).toMatchObject({ images: "mix", clientAssets: mine });
       let made = 0;
       B.customBrandDeps.plan = async () => ({ promesse: "Le savon doux.", voix: "Simple.", menu: [], sections: [] });
-      B.customBrandDeps.write = async (prompt) => ({ edits: [], photos: [...new Set([...prompt.slice(prompt.indexOf("HTML actuel")).matchAll(/photos\/[\w-]+\.(?:webp|png|jpg)/g)].map((m) => m[0]))].map((f) => ({ find: f, description: "Photo d'un savon blanc sur une pierre grise, lumière douce du matin.", ratio: "1:1" as const, product: null })) });
+      B.customBrandDeps.write = async (prompt) => ({ edits: [], links: [], photos: [...new Set([...prompt.slice(prompt.indexOf("HTML actuel")).matchAll(/photos\/[\w-]+\.(?:webp|png|jpg)/g)].map((m) => m[0]))].map((f) => ({ find: f, description: "Photo d'un savon blanc sur une pierre grise, lumière douce du matin.", ratio: "1:1" as const, product: null })) });
       B.customBrandDeps.photo = async () => { made++; return sharp({ create: { width: 20, height: 20, channels: 3, background: "#999" } }).png().toBuffer(); };
       const out: any = await fr(() => B.runCustomBrandJob({ job: { id: job.id }, payload: JSON.parse(job.payload), checkpoint: {}, progress: () => undefined, step: async (_k: string, fn: () => Promise<unknown>) => fn() } as any));
       expect(out.photosClient).toBe(2);
@@ -553,7 +564,7 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
 
   it("un remplacement qui ne s'applique pas est compté, jamais deviné ; aucun script n'entre", () => {
     const w = { edits: [{ find: "<h2>Bonjour</h2>", replace: "<h2>Salut</h2>" }, { find: "absent", replace: "x" }, { find: "<p>a</p>", replace: "<script>x</script>" }], photos: [] };
-    expect(B.applyWrite("<h2>Bonjour</h2><p>a</p>", w)).toEqual({ html: "<h2>Salut</h2><p>a</p>", failed: 2 });
+    expect(B.applyWrite("<h2>Bonjour</h2><p>a</p>", { ...w, links: [] })).toEqual({ html: "<h2>Salut</h2><p>a</p>", failed: 2 });
   });
 });
 
