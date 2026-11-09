@@ -89,7 +89,7 @@ export type Journey = {
   /** Étape 6 : thèmes montrés au client (site composé dans chacun) et thème qu'il a choisi. */
   themes?: SinaThemes;
   /** Étape 6 : familles de sections montrées en image (Classique, Moderne) et celle que le client a choisie. */
-  families?: { cards: { family: string; style: string; title: string; titleEn: string; pitch: string; pitchEn: string; mood: string; preview: string; sections: number }[]; chosen: string | null };
+  families?: { cards: { family: string; style: string; title: string; titleEn: string; pitch: string; pitchEn: string; mood: string; preview: string; demo?: string; sections: number }[]; chosen: string | null };
   /** Étape 6 : le choix DU CLIENT entre un thème du Studio et une maquette sur mesure (jamais fait à sa place). */
   siteMode?: { mode: "theme" | "mockup"; at: number };
   themeChoice?: { id: string; jobId: string; at: number };

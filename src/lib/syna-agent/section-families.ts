@@ -23,7 +23,7 @@ export type SectionFamily = {
   pitch: { fr: string; en: string };
   /** Pour quelles marques elle convient (aide SINA à recommander, jamais à décider). */
   fits: string;
-  styles: { id: StyleId | "classique"; fr: string; en: string; preview: string; mood: string }[];
+  styles: { id: StyleId | "classique"; fr: string; en: string; preview: string; /** Démonstration complète, à ouvrir en vrai (pages, panier, téléphone). */ demo: string; mood: string }[];
   /** Rôles de la page et nombre de sections au choix dans la famille. */
   roles: Record<string, string[]>;
   /** Consigne de style pour les maquettes en code. */
@@ -35,7 +35,7 @@ export const SECTION_FAMILIES: SectionFamily[] = [
     id: "classique", fr: "Classique", en: "Classic",
     pitch: { fr: "Calme et chaleureux : grandes photos, titres élégants, beaucoup d'air, animations douces.", en: "Calm and warm: large photos, elegant titles, lots of air, gentle animations." },
     fits: "marques douces, sensorielles, artisanales, bien-être, services de proximité",
-    styles: [{ id: "classique", fr: "Classique", en: "Classic", preview: "/section-families/classique.jpg", mood: "calme, éditorial, chaleureux" }],
+    styles: [{ id: "classique", fr: "Classique", en: "Classic", preview: "/section-families/classique.jpg", demo: "/demo/familles/classique/index.html", mood: "calme, éditorial, chaleureux" }],
     roles: {
       ouverture: ["Ouverture photo pleine", "Ouverture vidéo", "Ouverture qui s'agrandit au défilement"],
       produits: ["Collection en vedette", "Collection en grand nom"],
@@ -49,8 +49,8 @@ export const SECTION_FAMILIES: SectionFamily[] = [
     pitch: { fr: "Audacieux et vivant : titres énormes, mannequin détouré qui sort du cadre, couleurs franches, animations vives.", en: "Bold and lively: huge titles, cut-out model breaking out of the frame, strong colours, lively animations." },
     fits: "mode, chaussures, accessoires, sport, streetwear, lancements en série limitée, marques jeunes et affirmées",
     styles: [
-      { id: "sport-chic", fr: "Sport chic", en: "Sport chic", preview: "/section-families/moderne-sport-chic.jpg", mood: "solaire, sportif, élégant (bleu nuit, terre battue, orange)" },
-      { id: "streetwear-neon", fr: "Streetwear néon", en: "Neon streetwear", preview: "/section-families/moderne-streetwear.jpg", mood: "urbain, nocturne, percutant (noir, jaune fluo, néon)" },
+      { id: "sport-chic", fr: "Sport chic", en: "Sport chic", preview: "/section-families/moderne-sport-chic.jpg", demo: "/demo/familles/moderne-sport-chic/index.html", mood: "solaire, sportif, élégant (bleu nuit, terre battue, orange)" },
+      { id: "streetwear-neon", fr: "Streetwear néon", en: "Neon streetwear", preview: "/section-families/moderne-streetwear.jpg", demo: "/demo/familles/moderne-streetwear/index.html", mood: "urbain, nocturne, percutant (noir, jaune fluo, néon)" },
     ],
     roles: {
       "en-tête": ["En-tête à annonces et grand menu", "En-tête pilule"],
@@ -117,11 +117,11 @@ export function missingRoles(family: FamilyId, wanted: string[]): string[] {
 }
 
 /** Les cartes du choix, telles que le client les voit (une par style). */
-export function familyCards(): { family: FamilyId; style: string; title: string; titleEn: string; pitch: string; pitchEn: string; mood: string; preview: string; sections: number }[] {
+export function familyCards(): { family: FamilyId; style: string; title: string; titleEn: string; pitch: string; pitchEn: string; mood: string; preview: string; demo: string; sections: number }[] {
   return SECTION_FAMILIES.flatMap((f) => f.styles.map((s) => ({
     family: f.id, style: s.id,
     title: f.id === "classique" ? f.fr : `${f.fr} · ${s.fr}`, titleEn: f.id === "classique" ? f.en : `${f.en} · ${s.en}`,
-    pitch: f.pitch.fr, pitchEn: f.pitch.en, mood: s.mood, preview: s.preview,
+    pitch: f.pitch.fr, pitchEn: f.pitch.en, mood: s.mood, preview: s.preview, demo: s.demo,
     sections: Object.values(f.roles).reduce((n, l) => n + l.length, 0),
   })));
 }

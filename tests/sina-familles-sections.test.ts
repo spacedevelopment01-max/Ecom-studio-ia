@@ -74,4 +74,20 @@ describe("SINA — familles de sections Classique et Moderne", async () => {
     for (const n of ["theme.families", "theme.family"]) { const t = getTool(n)!; expect(t).toBeTruthy(); expect(t.estimate).toBeUndefined(); }
     expect(getTool("theme.family")!.args.safeParse({ family: "moderne", style: "streetwear-neon" }).success).toBe(true);
   });
+
+  it("chaque style a sa démonstration complète à ouvrir en vrai (pages, panier, téléphone), photos présentes", async () => {
+    const fs = await import("node:fs"), path = await import("node:path");
+    const cards = F.familyCards();
+    expect(cards).toHaveLength(3);
+    for (const c of cards) {
+      expect(c.demo).toMatch(/^\/demo\/familles\/[a-z-]+\/index\.html$/);
+      const dir = path.join(process.cwd(), "public", path.dirname(c.demo));
+      const html = fs.readFileSync(path.join(dir, "index.html"), "utf8");
+      expect(html).toContain('name="robots" content="noindex"');
+      // toutes les photos citées, même sans le dossier (couleurs et gamme du bloc d'achat)
+      const photos = [...new Set([...html.matchAll(/\b([a-z]{2}-[a-z0-9]+\.(?:webp|png|jpg))\b/g)].map((m) => m[1]))];
+      expect(photos.length).toBeGreaterThan(10);
+      for (const ph of photos) expect(fs.existsSync(path.join(dir, "photos", ph)), `${c.demo} → photos/${ph}`).toBe(true);
+    }
+  });
 });

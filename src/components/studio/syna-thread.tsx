@@ -285,7 +285,7 @@ function ThemeCards({ themes, busy, onChoose, onAll, onMockup }: { themes: Theme
   );
 }
 
-type Families = { cards: { family: string; style: string; title: string; titleEn: string; pitch: string; pitchEn: string; mood: string; preview: string; sections: number }[]; chosen: string | null };
+type Families = { cards: { family: string; style: string; title: string; titleEn: string; pitch: string; pitchEn: string; mood: string; preview: string; demo?: string; sections: number }[]; chosen: string | null };
 
 /**
  * Étape 6 : les familles de sections EN IMAGE (Classique ; Moderne · Sport chic ; Moderne · Streetwear néon). Le client
@@ -295,7 +295,7 @@ function FamilyCards({ families, busy, onChoose }: { families: Families; busy: b
   const t = useT();
   return (
     <div className="@container mt-2 space-y-2" data-syna-families>
-      <p className="text-xs text-muted">{t("Deux familles de styles pour ton site, qui ne se mélangent jamais. Choisis celle qui te ressemble : elle sera reprise à tes couleurs, avec ta marque et tes produits. C'est gratuit.", "Two style families for your site, never mixed. Pick the one that feels like you: it will use your colours, brand and products. It's free.")}</p>
+      <p className="text-xs text-muted">{t("Deux familles de styles pour ton site, qui ne se mélangent jamais. Ouvre chaque thème en vrai (pages, panier, téléphone), puis choisis celui qui te ressemble : il sera repris à tes couleurs, avec ta marque et tes produits. C'est gratuit.", "Two style families for your site, never mixed. Open each theme live (pages, cart, phone), then pick the one that feels like you: it will use your colours, brand and products. It's free.")}</p>
       <div className="grid grid-cols-1 gap-3 @2xl:grid-cols-3">
         {families.cards.map((c) => {
           const key = `${c.family}:${c.style}`, chosen = families.chosen === key;
@@ -307,7 +307,8 @@ function FamilyCards({ families, busy, onChoose }: { families: Families; busy: b
                 <p>{t(c.pitch, c.pitchEn)}</p>
                 <p className="text-muted">{c.mood} · {t(`${c.sections} sections au choix`, `${c.sections} sections to choose from`)}</p>
               </div>
-              <div className="border-t border-line px-3 py-2">
+              <div className="flex flex-wrap items-center gap-2 border-t border-line px-3 py-2">
+                {c.demo && <a className="underline" href={c.demo} target="_blank" rel="noreferrer" data-family-demo={key}>{t("Voir le thème en vrai", "See the live theme")}</a>}
                 {families.chosen
                   ? chosen && <p className="font-semibold">✓ {t("Style choisi", "Style chosen")}</p>
                   : <Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(c.title)} data-family-pick={key}>{t("Je préfère ce style", "I prefer this style")}</Button>}
