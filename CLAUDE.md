@@ -66,8 +66,11 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   d'abord, puis `custom.images` et `custom.build` (toutes les sections du style, textes et photos ; tâche
   `syna.custom.brand`). Dans les deux cas, SINA demande **« tes images ou je les crée ? »**, donne le **nombre exact**
   d'images, propose de créer celles qui manquent ou toutes, et donne le prix avant. Le site est ensuite en place dans
-  l'**onglet Boutique** (aperçu en grand, « Désigner un élément », demande envoyée à SINA). Seuls 11 thèmes du Studio ont un
-  plan d'emplacements d'images (`reference-shapes.json`) ; pour les autres, SINA réécrit les textes et le dit.
+  l'**onglet Boutique** (aperçu en grand, « Désigner un élément », demande envoyée à SINA). Les 11 thèmes à plan d'emplacements
+  (`reference-shapes.json`) et les 6 thèmes de services (TABLE SAISON, ATELIER NUANCE, PARENTHÈSE, PHASE, MAISON & HORIZON,
+  APLAT : liste de photos tirée de leur démonstration, `src/lib/theme/service-media-plans.json`, préparée par
+  `BUILD_SERVICE_PLANS=1 npx vitest run tests/build-service-media-plans.test.ts`) : SINA compte, pose et crée les images ;
+  une section masquée faute de photo réapparaît quand ses photos sont posées.
 - **Sections « Produit vedette »** (décision du 8 novembre 2026) : elles ne vont qu'**en haut de la fiche produit**, ou au plus
   **une seule fois sur l'accueil** ; **jamais deux sections « Produit vedette » dans une même page**. Leurs réglages (couleurs,
   formats, lots, offres, abonnement) s'affichent ou se masquent **selon les données réelles du produit** (variantes, offres

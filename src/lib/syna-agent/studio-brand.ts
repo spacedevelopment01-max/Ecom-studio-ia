@@ -19,6 +19,9 @@ import { angleDetails } from "./mockup-code/copy";
 import type { ImageRequestV2 } from "../image-v2/engine";
 import type { AspectId } from "../image-v2/types";
 import type { ImagesMode } from "./custom-theme/brand";
+import { clientImages } from "./custom-theme/brand";
+import { hasServicePlan, placeServiceImage, revealFilledSections, serviceMediaSlots, type ServiceSlot } from "../theme/service-media-plan";
+import { saveThemeVersion } from "../projects";
 
 export const STUDIO_BRAND_JOB = "syna.studio.brand";
 export type StudioBrandPayload = { projectId: string; capMicro: number; conversationId?: string | null; images: ImagesMode; copy?: boolean };
@@ -43,8 +46,14 @@ export function angleBrief(p: Project, j: Journey | null): string {
 }
 
 /** Emplacements d'images du thème du Studio en place : total, déjà remplis, encore vides (à créer). */
-export function studioImageNeeds(projectId: string): { total: number; filled: number; missing: number; requests: NonNullable<ReturnType<typeof adaptationOf>>["generationRequests"] } | null {
+export function studioImageNeeds(projectId: string): { total: number; filled: number; missing: number; requests: NonNullable<ReturnType<typeof adaptationOf>>["generationRequests"]; service?: ServiceSlot[] } | null {
   const plan = adaptationOf(projectId);
+  // Thèmes de services sans plan d'emplacements : leur liste de photos (d'après leur démonstration).
+  const cur = currentTheme(projectId);
+  if (!plan && cur && hasServicePlan(cur.spec.direction)) {
+    const slots = serviceMediaSlots(cur.spec);
+    return { total: slots.length, filled: slots.filter((x) => x.filled).length, missing: slots.filter((x) => !x.filled).length, requests: [], service: slots };
+  }
   if (!plan) return null;
   const slots = plan.slots.filter((s) => s.role !== "logo" && s.role !== "video");
   const requests = plan.generationRequests.filter((r) => r.kind === "image");
@@ -68,6 +77,19 @@ export function studioImageRequests(p: Project): ImageRequestV2[] {
     themePlacement: { versionId: cur.version.id, slotKey: r.key, contextHash: plan.contextHash },
     noStock: true, allowGenerate: true, count: 1, peopleAllowed: false,
     name: `theme-${r.role}-${r.key}`.slice(0, 60),
+  }));
+}
+
+/** Demandes d'images pour les emplacements vides d'un thème de services (photo du métier du client, sans personne). */
+export function serviceImageRequests(p: Project, slots: ServiceSlot[]): (ImageRequestV2 & { slotKey: string })[] {
+  const what = p.business === "services" ? p.services.services.map((x) => x.name).join(", ") : p.product.name;
+  return slots.filter((x) => !x.filled).map((x) => ({
+    slotKey: x.key,
+    kind: p.business === "services" ? "trade_photo" : "usage_scene",
+    support: "site", aspect: x.aspect,
+    topic: [`Photo pour la page « ${x.template} » du site de ${p.brand?.name ?? p.name}${what ? ` (${what})` : ""}.`, x.shows ? `Même rôle que la photo de démonstration du thème (« ${x.shows} »), adaptée à ce métier et à cette marque.` : ""].filter(Boolean).join(" "),
+    slot: `site:${x.key}`, noStock: true, allowGenerate: true, count: 1, peopleAllowed: false,
+    name: `site-${x.key.replace(/[^a-z0-9]+/gi, "-")}`.slice(0, 60),
   }));
 }
 
@@ -102,8 +124,34 @@ export async function runStudioBrandJob(ctx: JobContext) {
   // 2) Boutique recomposée avec les textes et les images du client déjà envoyées.
   ctx.progress(0.4, L("Mise en place dans ton thème", "Placing everything in your theme"));
   await compose();
+  // 3bis) Thèmes de services (liste de photos d'après la démonstration) : ses images d'abord, puis celles créées.
+  const svcCur = currentTheme(p.id);
+  if (svcCur && !svcCur.spec.meta?.adaptation && hasServicePlan(svcCur.spec.direction)) {
+    const spec = JSON.parse(JSON.stringify(svcCur.spec));
+    const empty = serviceMediaSlots(spec).filter((x) => !x.filled);
+    const used = new Set(Object.values<string>(spec.files ?? {}));
+    const own = a.images === "sina" ? [] : clientImages(p.id).map((x) => x.id).filter((id) => !used.has(id));
+    let placed = 0, i = 0;
+    for (const slot of empty) {
+      if (i < own.length) { placeServiceImage(spec, slot, own[i++]); placed++; continue; }
+      if (a.images === "client") { report.problems.push(`photo ${slot.key} : aucune image du client pour cet emplacement`); continue; }
+      const req = serviceImageRequests(loadProject(p.id), [slot])[0];
+      ctx.progress(0.45 + (0.45 * placed) / Math.max(1, empty.length), L(`Images : ${placed + 1} sur ${empty.length}`, `Images: ${placed + 1} of ${empty.length}`));
+      try {
+        const id = await ctx.step(`svc:${slot.key}`, async () => {
+          if (studioBrandDeps.image) return studioBrandDeps.image(req);
+          const { runImageEngineV2 } = await import("../image-v2/engine");
+          const out = await runImageEngineV2(ctx, p.id, { ...req, maxCostEur: Math.max(0.05, a.capMicro / 1e6 / Math.max(1, empty.length)) });
+          return out.outcomes.find((o) => o.assetId && o.verdict === "FINAL")?.assetId ?? null;
+        });
+        if (id) { placeServiceImage(spec, slot, id); placed++; report.imagesMade++; } else { report.imagesFailed++; report.problems.push(`image ${slot.key} : aucun visuel validé`); }
+      } catch (e) { report.imagesFailed++; report.problems.push(`image ${slot.key} : ${(e as Error).message.slice(0, 140)}`); }
+    }
+    if (placed) revealFilledSections(spec);
+    if (placed) saveThemeVersion(p.id, spec, L(`Photos posées dans le thème (${placed}) — SINA, étape 8`, `Photos placed (${placed}) — SINA, step 8`), "ai", { syna: { step: 8, photos: placed } }, undefined, { activate: true });
+  }
   // 3) Images créées pour les emplacements encore vides (choix du client : « sina » ou « mix »).
-  if (a.images !== "client") {
+  else if (a.images !== "client") {
     const fresh = loadProject(p.id);
     const reqs = studioImageRequests(fresh);
     for (const [i, req] of reqs.entries()) {

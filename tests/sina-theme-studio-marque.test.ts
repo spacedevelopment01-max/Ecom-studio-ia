@@ -76,7 +76,7 @@ describe("SINA — thème du Studio monté à la marque", async () => {
     } finally { delete T.studioBrandDeps2.images; delete SB.studioBrandDeps.copy; delete SB.studioBrandDeps.image; delete SB.studioBrandDeps.compose; }
   });
 
-  it("thème sans plan d'emplacements (APLAT) : SINA le dit, et propose de réécrire les textes seulement", async () => {
+  it("thèmes de services (APLAT…) : leur liste de photos d'après la démonstration ; images du client posées, les autres créées", async () => {
     const user = await account();
     const cid = threadFor(user, null), ctx: any = { user, conversationId: cid, runId: `run-${Date.now()}`, projectId: null, attachment: () => null };
     await call("start.answer", ctx, { answers: [{ field: "business", value: "services" }, { field: "offer", value: "Plâtrerie et peinture." }] });
@@ -92,9 +92,32 @@ describe("SINA — thème du Studio monté à la marque", async () => {
     saveBrand(pid, localBrand(loadProject(pid).product, "Enduit", loadProject(pid)).brand);
     await fr(async () => (await import("@/lib/engine/shop")).switchDirection(null, pid, "aplat" as never));
     const r = await call("theme.images", ctx, {});
-    expect(r.ok).toBe(true);
-    expect(r.data.planDesImages).toBe(false);
-    expect(r.summary).toMatch(/pas encore de plan d'emplacements[^]*réécrire tous ses textes/);
+    expect(r.ok, r.summary).toBe(true);
+    expect(r.data.total).toBeGreaterThan(5);
+    expect(r.data.vides).toBe(r.data.total); // nouveau client : aucune photo encore
+    console.log(`APLAT : ${r.data.total} photos pour ce client`);
+    // Deux images du client, puis montage « mix » : ses deux images posées, les autres créées (fausses ici).
+    const sharp = (await import("sharp")).default;
+    const { saveAsset } = await import("@/lib/library");
+    for (const c of ["#123", "#456"]) await saveAsset({ projectId: pid, userId: user.id, data: await sharp({ create: { width: 40, height: 30, channels: 3, background: c } }).png().toBuffer(), name: `chantier-${c}.png`, mime: "image/png", role: "original", origin: "upload" });
+    expect((await call("theme.images", ctx, {})).data.imagesEnvoyeesNonPosees).toBe(2);
+    T.studioBrandDeps2.images = (_p, n) => ({ capMicro: n * 100_000, estimateMicro: n * 60_000 });
+    let made = 0;
+    SB.studioBrandDeps.copy = async () => ({ copy: {}, qc: { verdict: "FINAL", remaining: [] } });
+    SB.studioBrandDeps.compose = async () => undefined;
+    SB.studioBrandDeps.image = async () => { made++; return (await saveAsset({ projectId: pid, userId: user.id, data: await sharp({ create: { width: 30, height: 30, channels: 3, background: "#777" } }).png().toBuffer(), name: "cree.png", mime: "image/png", role: "site", origin: "generated" })).id; };
+    try {
+      ctx.projectId = pid;
+      const res = await call("theme.brand", ctx, { images: "mix" });
+      expect(res.ok, res.summary).toBe(true);
+      const job = one<any>("SELECT * FROM jobs WHERE id=?", res.jobs[0]);
+      const out: any = await fr(() => SB.runStudioBrandJob({ job: { id: job.id }, payload: JSON.parse(job.payload), checkpoint: {}, progress: () => undefined, step: async (_k: string, fn: () => Promise<unknown>) => fn() } as any));
+      expect(made).toBe(r.data.total - 2);
+      expect(out.imagesMade).toBe(made);
+      const after = await call("theme.images", ctx, {});
+      expect(after.data.vides).toBe(0);
+      expect(after.data.remplies).toBe(r.data.total);
+    } finally { delete T.studioBrandDeps2.images; delete SB.studioBrandDeps.copy; delete SB.studioBrandDeps.compose; delete SB.studioBrandDeps.image; }
   });
 
   it("direction de rédaction : l'angle choisi, son émotion, l'accroche mot pour mot, rien d'inventé, aucun jargon visible", () => {

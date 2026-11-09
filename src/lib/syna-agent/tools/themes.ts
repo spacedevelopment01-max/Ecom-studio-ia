@@ -18,7 +18,7 @@ import { ACTIVE_THEMES } from "../../theme/theme-fit";
 import { DIRECTIONS } from "../../theme/directions";
 import { callCostBoundMicro, estimateCallMicro, routeLlm } from "../../ai/llm";
 import { clientImages, type ImagesMode } from "../custom-theme/brand";
-import { STUDIO_BRAND_JOB, studioImageNeeds, studioImageRequests } from "../studio-brand";
+import { serviceImageRequests, STUDIO_BRAND_JOB, studioImageNeeds, studioImageRequests } from "../studio-brand";
 import { boundedImageRequestsQuote } from "../../image-v2/creation-quote";
 
 const modeTool: AgentTool<{ mode: "theme" | "mockup" }> = {
@@ -96,7 +96,8 @@ const chooseTool: AgentTool<{ id: string }> = {
 
 /** Images du client envoyées mais pas encore posées dans le thème en place. */
 function freshClientImages(projectId: string): number {
-  const used = new Set((currentTheme(projectId)?.spec.meta?.adaptation?.slots ?? []).map((s) => s.assetId).filter(Boolean));
+  const spec = currentTheme(projectId)?.spec;
+  const used = new Set([...(spec?.meta?.adaptation?.slots ?? []).map((s) => s.assetId), ...Object.values(spec?.files ?? {})].filter(Boolean));
   return clientImages(projectId).filter((x) => !used.has(x.id)).length;
 }
 
@@ -144,7 +145,8 @@ const studioBrandTool: AgentTool<BrandArgs> = {
     if (n) {
       if (studioBrandDeps2.images) img = studioBrandDeps2.images(p, n);
       else {
-        const q = boundedImageRequestsQuote(p, studioImageRequests(p).slice(0, n), {}) as { capMicro: number; estimateMicro: number };
+        const reqs = needs.service ? serviceImageRequests(p, needs.service).map(({ slotKey: _k, ...r }) => r) : studioImageRequests(p);
+        const q = boundedImageRequestsQuote(p, reqs.slice(0, n), {}) as { capMicro: number; estimateMicro: number };
         img = { capMicro: q.capMicro, estimateMicro: q.estimateMicro };
       }
     }
