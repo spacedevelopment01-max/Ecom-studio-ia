@@ -7,7 +7,7 @@ import crypto from "node:crypto";
 import { all } from "../../db";
 import { remember } from "../../projects";
 import type { FamilyId } from "../section-families";
-import { isCardSection, FEATURED_ROLE, libSection, SHELL_ROLES, sectionPhotos, type LibSection } from "./library";
+import { inlineBackgrounds, isCardSection, FEATURED_ROLE, libSection, SHELL_ROLES, sectionPhotos, type LibSection } from "./library";
 
 export type CtSection = {
   /** Identifiant de CETTE section dans le thème (une même section de la bibliothèque peut servir sur deux pages). */
@@ -42,7 +42,7 @@ const HISTORY_KEY = "syna.custom_theme.history";
 const HISTORY_MAX = 15;
 
 export const newUid = () => "s" + crypto.randomBytes(4).toString("hex");
-export const sectionHtml = (s: CtSection): string => s.html ?? libSection(s.id)?.html ?? "";
+export const sectionHtml = (s: CtSection): string => inlineBackgrounds(s.html ?? libSection(s.id)?.html ?? "");
 
 function readArtifact<T>(projectId: string, key: string): T | null {
   const row = all<{ value: string }>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key=? AND state='active' LIMIT 1", projectId, key)[0];

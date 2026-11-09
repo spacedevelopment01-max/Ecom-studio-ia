@@ -34,6 +34,41 @@ export function sectionLibrary(): Library {
   if (!cache) cache = JSON.parse(fs.readFileSync(path.join(LIBRARY_DIR(), "library.json"), "utf8")) as Library;
   return cache;
 }
+/**
+ * Photos de fond posées par la feuille commune (ex. « .hero .bg{background:url(photos/hero.jpg)} ») : écrites dans la
+ * section elle-même (style en ligne), pour que SINA les voie, les compte et les remplace comme les autres photos (essai
+ * réel du 9 novembre 2026 : la théière d'exemple restait en ouverture d'un site de confitures).
+ */
+let bgRules: { classes: string[]; file: string }[] | null = null;
+function backgroundRules() {
+  if (bgRules) return bgRules;
+  bgRules = [];
+  let css = "";
+  try { css = fs.readFileSync(path.join(LIBRARY_DIR(), "library.css"), "utf8"); } catch { return bgRules; }
+  for (const m of css.matchAll(/([^{}]+)\{[^{}]*?background(?:-image)?\s*:[^;{}]*url\(\s*["']?photos\/([\w.-]+\.(?:webp|png|jpe?g))["']?\s*\)/g)) {
+    for (const sel of m[1].split(",")) {
+      if (/[:\[>+~*]/.test(sel)) continue; // pseudo-éléments, attributs : jamais en ligne
+      const classes = sel.trim().split(/\s+/).map((x) => x.match(/^\.([\w-]+)$/)?.[1] ?? null);
+      if (!classes.length || classes.some((c) => !c)) continue;
+      bgRules.push({ classes: classes as string[], file: m[2] });
+    }
+  }
+  return bgRules;
+}
+export function inlineBackgrounds(html: string): string {
+  let out = html;
+  for (const r of backgroundRules()) {
+    const last = r.classes[r.classes.length - 1];
+    const has = (c: string) => new RegExp(`class="[^"]*\\b${c}\\b[^"]*"`).test(out);
+    if (!r.classes.every(has)) continue;
+    const tag = new RegExp(`<([a-z][a-z0-9]*)\\b([^>]*\\bclass="[^"]*\\b${last}\\b[^"]*"[^>]*)>`);
+    const m = tag.exec(out);
+    if (!m || /background-image|photos\//.test(m[2])) continue;
+    const attrs = /\bstyle="/.test(m[2]) ? m[2].replace(/\bstyle="/, `style="background-image:url(photos/${r.file});`) : `${m[2]} style="background-image:url(photos/${r.file})"`;
+    out = out.slice(0, m.index) + `<${m[1]}${attrs}>` + out.slice(m.index + m[0].length);
+  }
+  return out;
+}
 export const libSection = (id: string): LibSection | null => sectionLibrary().sections.find((s) => s.id === id) ?? null;
 /** Sections qu'un thème de cette famille peut recevoir (les démonstrations en fausse fenêtre sont écartées). */
 export const familySections = (family: FamilyId): LibSection[] => sectionLibrary().sections.filter((s) => s.family === family && !s.demoFrame);

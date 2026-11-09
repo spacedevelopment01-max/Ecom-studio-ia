@@ -87,6 +87,17 @@ describe("thème sur mesure : montage et règles du propriétaire", () => {
     expect(blocking(noHeader).join(" ")).toMatch(/il manque un en-tête/);
   });
 
+  it("photo de fond posée par la feuille commune : écrite dans la section, comptée et remplaçable (essai réel du 9 novembre)", async () => {
+    const { inlineBackgrounds } = await import("@/lib/syna-agent/custom-theme/library");
+    const { photoSlots } = await import("@/lib/syna-agent/custom-theme/brand");
+    const hero = sectionByRef("Ouverture photo pleine")!;
+    expect(hero.html).not.toContain("photos/hero.jpg");
+    expect(inlineBackgrounds(hero.html)).toMatch(/style="background-image:url\(photos\/hero\.jpg\)"/);
+    expect(inlineBackgrounds(inlineBackgrounds(hero.html))).toBe(inlineBackgrounds(hero.html)); // jamais deux fois
+    const t: CustomTheme = { version: 1, family: "classique", style: "classique", header: null, footer: null, search: null, pages: [{ key: "home", label: "Accueil", sections: [{ uid: "s00000001", id: hero.id }] }], rev: 0, at: 0 };
+    expect(photoSlots(t).map((x) => x.file)).toContain("hero.jpg");
+  });
+
   it("opérations de structure : ajouter, retirer, déplacer, remplacer, pages", () => {
     const t = starterTheme("moderne", "streetwear-neon");
     const uid = t.pages[0].sections[1].uid;
