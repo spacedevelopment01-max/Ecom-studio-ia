@@ -321,64 +321,27 @@ function FamilyCards({ families, busy, onChoose }: { families: Families; busy: b
   );
 }
 
-type CustomThemeView = { href: string; open: string; rev: number; choisi: boolean; pages: { key: string; label: string; sections: { uid: string; titre: string; textesClient: boolean }[] }[] };
-type Picked = { uid: string; page: string | null; kind: string; path: string | null; text: string | null; src: string | null; role: string | null };
+type CustomThemeView = { href: string; boutique?: string; open: string; rev: number; choisi: boolean; pages: { key: string; label: string }[] };
 
 /**
- * Thème sur mesure (étape 6, décision du propriétaire du 9 novembre 2026) : le thème EN VRAI dans le fil (pages,
- * ordinateur ou téléphone) ; le client DÉSIGNE un élément (titre, texte, bouton, image, section) et dit ce qu'il veut
- * changer : SINA reçoit sa désignation et ne modifie que lui.
+ * Thème sur mesure dans le fil : un aperçu et le lien vers l'onglet Boutique, où le thème est EN PLACE en grand et où le
+ * client désigne les éléments à changer (consigne du propriétaire du 9 novembre 2026).
  */
 function CustomThemeCard({ card, busy, onSend }: { card: CustomThemeView; busy: boolean; onSend: (text: string) => void }) {
-  const t = useT();
-  const frame = useRef<HTMLIFrameElement>(null);
-  const [page, setPage] = useState(card.pages[0]?.key ?? "home"), [phone, setPhone] = useState(false), [picking, setPicking] = useState(false);
-  const [picked, setPicked] = useState<Picked | null>(null), [ask, setAsk] = useState("");
-  const post = useCallback((m: object) => frame.current?.contentWindow?.postMessage({ source: "ct-studio", ...m }, "*"), []);
-  useEffect(() => {
-    const on = (e: MessageEvent) => {
-      const d = e.data;
-      if (!d || d.source !== "ct-preview" || e.source !== frame.current?.contentWindow) return;
-      if (d.type === "ready") { post({ type: "go", page }); post({ type: "view", view: phone ? "phone" : "desk" }); if (picking) post({ type: "pick", on: true }); }
-      if (d.type === "page" && typeof d.page === "string") setPage(d.page);
-      if (d.type === "picked") { setPicked({ uid: String(d.uid), page: d.page ?? null, kind: String(d.kind), path: d.path ?? null, text: d.text ?? null, src: d.src ?? null, role: d.role ?? null }); setPicking(false); post({ type: "pick", on: false }); }
-    };
-    addEventListener("message", on);
-    return () => removeEventListener("message", on);
-  }, [page, phone, picking, post]);
-  const label = (k: string | null) => card.pages.find((p) => p.key === k)?.label ?? k ?? "";
-  const section = picked ? card.pages.flatMap((p) => p.sections).find((s) => s.uid === picked.uid)?.titre ?? (picked.role === "header" ? t("En-tête", "Header") : picked.role === "footer" ? t("Pied de page", "Footer") : "") : "";
-  function submit() {
-    if (!picked || !ask.trim()) return;
-    const where = [`section ${picked.uid}${section ? ` « ${section} »` : ""}`, picked.page ? `page ${label(picked.page)}` : "", picked.kind, picked.path ? `adresse ${picked.path}` : "", picked.src ? `photo ${picked.src}` : "", picked.text ? `« ${picked.text.slice(0, 160)} »` : ""].filter(Boolean).join(" · ");
-    onSend(`[Élément désigné · ${where}] ${ask.trim()}`);
-    setAsk(""); setPicked(null); post({ type: "unpick" });
-  }
+  const t = useT(), router = useRouter();
   return (
     <div className="mt-2 overflow-hidden rounded-xl border border-line bg-card text-xs" data-syna-custom-theme>
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-3 py-2">
-        <b className="text-sm">{t("Ton thème sur mesure", "Your custom theme")}{card.choisi ? ` · ✓ ${t("choisi", "chosen")}` : ""}</b>
-        <span className="flex flex-wrap items-center gap-1">
-          <Button size="sm" variant={phone ? "ghost" : "secondary"} onClick={() => { setPhone(false); post({ type: "view", view: "desk" }); }}>{t("Ordinateur", "Desktop")}</Button>
-          <Button size="sm" variant={phone ? "secondary" : "ghost"} onClick={() => { setPhone(true); post({ type: "view", view: "phone" }); }}>{t("Téléphone", "Phone")}</Button>
-          <a className="underline" href={card.open} target="_blank" rel="noreferrer">{t("Ouvrir en grand", "Open full size")}</a>
-        </span>
+      <div className="relative h-56 overflow-hidden border-b border-line bg-white">
+        <iframe key={card.rev} title={t("Thème sur mesure", "Custom theme")} src={card.href} className="pointer-events-none absolute left-0 top-0 h-[1120px] w-[1280px] origin-top-left scale-[0.33]" loading="lazy" tabIndex={-1} />
       </div>
-      <div className="flex flex-wrap gap-1 px-3 py-2">{card.pages.map((p) => <button key={p.key} type="button" className={cx("rounded-full border px-2 py-0.5", p.key === page ? "border-accent bg-accent text-paper" : "border-line")} onClick={() => { setPage(p.key); post({ type: "go", page: p.key }); }}>{p.label}</button>)}</div>
-      <iframe ref={frame} key={card.rev} title={t("Thème sur mesure", "Custom theme")} src={card.href} className="block h-[560px] w-full border-y border-line bg-white" />
       <div className="space-y-2 px-3 py-2">
-        <Button size="sm" variant={picking ? "secondary" : "ghost"} disabled={busy} onClick={() => { const on = !picking; setPicking(on); post({ type: "pick", on }); }} data-ct-pick>
-          {picking ? t("Clique sur l'élément à changer dans le thème…", "Click the element to change…") : t("🎯 Désigner un élément", "🎯 Point at an element")}
-        </Button>
-        {picked && <div className="rounded-lg border border-accent/50 bg-paper-2 p-2" data-ct-picked>
-          <p><b>{t("Élément désigné", "Selected element")}</b> : {picked.kind}{section ? ` — ${section}` : ""}{picked.page ? ` (${label(picked.page)})` : ""}{picked.text ? ` · « ${picked.text.slice(0, 90)} »` : ""}</p>
-          <div className="mt-1 flex gap-2">
-            <input className="min-w-0 flex-1 rounded border border-line bg-card px-2 py-1" value={ask} onChange={(e) => setAsk(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") submit(); }} placeholder={t("Que veux-tu changer ? (texte, photo, couleur, retirer…)", "What should change?")} aria-label={t("Ce que tu veux changer", "What to change")} />
-            <Button size="sm" disabled={busy || !ask.trim()} onClick={submit}>{t("Envoyer à SINA", "Send to SINA")}</Button>
-            <Button size="sm" variant="ghost" onClick={() => { setPicked(null); post({ type: "unpick" }); }} aria-label={t("Retirer la désignation", "Clear selection")}>×</Button>
-          </div>
-        </div>}
-        {!card.choisi && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onSend(t("Je choisis ce thème sur mesure.", "I choose this custom theme."))}>{t("Je choisis ce thème", "I choose this theme")}</Button>}
+        <p><b className="text-sm">{t("Ton thème sur mesure", "Your custom theme")}{card.choisi ? ` · ✓ ${t("choisi", "chosen")}` : ""}</b> · {card.pages.map((p) => p.label).join(" · ")}</p>
+        <p className="text-muted">{t("Il est en place dans l'onglet Boutique : regarde-le en grand et désigne un élément pour demander un changement.", "It's in the Boutique tab: view it full size and point at an element to request a change.")}</p>
+        <div className="flex flex-wrap gap-2">
+          {card.boutique && <Button size="sm" onClick={() => router.push(card.boutique!)} data-ct-boutique>{t("Ouvrir la Boutique", "Open the Boutique")}</Button>}
+          <a className="inline-flex items-center underline" href={card.open} target="_blank" rel="noreferrer">{t("Ouvrir en grand", "Open full size")}</a>
+          {!card.choisi && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onSend(t("Je choisis ce thème sur mesure.", "I choose this custom theme."))}>{t("Je choisis ce thème", "I choose this theme")}</Button>}
+        </div>
       </div>
     </div>
   );
@@ -551,6 +514,8 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
     setV(view);
   }, [projectId, subscriptionKey]);
   useEffect(() => { load().catch((e) => setError(e.message)); }, [load]);
+  // Demande envoyée depuis un autre onglet (désignation dans la Boutique) : le fil se relit et suit SINA en direct.
+  useEffect(() => { const on = () => { load().catch(() => undefined); }; addEventListener("syna:refresh", on); return () => removeEventListener("syna:refresh", on); }, [load]);
 
   // Suivi de l'exécution : relecture régulière tant que SINA travaille, puis rafraîchissement des onglets du Studio.
   const working = !!v?.run && WORKING.includes(v.run.status);

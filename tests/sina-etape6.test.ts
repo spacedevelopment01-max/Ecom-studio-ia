@@ -38,16 +38,17 @@ describe("SINA — étape 6 : un de nos thèmes", async () => {
     return { user, cid, ctx, pid: one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string };
   }
 
-  it("cartes des thèmes : recommandé d'abord, trois par défaut, tout le catalogue sur demande ; rien n'est appliqué", async () => {
+  it("cartes des thèmes : recommandé d'abord, tout le catalogue par défaut (trois sur demande) ; rien n'est appliqué", async () => {
     const { user, cid, ctx, pid } = await stepSix();
     expect(J.READY_STEPS).toContain(6);
     expect(J.currentStep(J.journeyOf(cid))).toBe(6);
     expect(modelFor(6)?.model).toMatch(/haiku/); // gratuit, fil léger
-    // Consigne du propriétaire : les cartes des thèmes d'abord, puis le client choisit un thème ou une maquette.
+    // Consigne du propriétaire (9 novembre 2026) : d'abord la question « thème du Studio ou thème sur mesure » ; Studio =
+    // TOUS nos thèmes, puis son site monté dedans ; sur mesure = le style d'abord.
     const ctx0 = J.journeyContext(J.journeyOf(cid));
-    expect(ctx0).toMatch(/commence par appeler theme\.propose[^]*TELS QU'ILS SONT[^]*choisir un de ces thèmes[^]*thème sur mesure[^]*PAYANTES[^]*ne pose PAS de question à boutons en plus[^]*Ne choisis jamais à sa place/);
+    expect(ctx0).toMatch(/demande D'ABORD au client[^]*« Un thème du Studio » \/ « Un thème sur mesure »[^]*Ne choisis jamais à sa place[^]*site\.mode mode theme, puis theme\.propose[^]*TOUS nos thèmes[^]*theme\.choose[^]*site\.mode mode mockup[^]*le style d'abord[^]*onglet Boutique/);
     expect(ctx0).not.toMatch(/mockup\.pages/); // consigne des maquettes seulement après ce choix
-    const r = await call("theme.propose", ctx, {});
+    const r = await call("theme.propose", ctx, { all: false });
     expect(r.ok).toBe(true);
     const j = J.journeyOf(cid);
     expect(j.themes!.list).toHaveLength(3);
@@ -63,10 +64,10 @@ describe("SINA — étape 6 : un de nos thèmes", async () => {
     for (const t of j.themes!.list) expect(r.summary).toContain(`« ${t.name} »`);
     expect(r.hint).toMatch(/Identifiants pour theme\.choose/);
     expect(r.summary).toMatch(/tels qu'ils sont \(démonstrations d'origine\)/);
-    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/Ce ne sont PAS son site : ne dis jamais « ton site composé dans chacun »/);
+    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/ce ne sont PAS son site : ne dis jamais « ton site composé dans chacun »/);
     // Montrer ne change rien au projet : aucune tâche de composition.
     expect(all("SELECT id FROM jobs WHERE project_id=? AND type='shop.direction'", pid)).toHaveLength(0);
-    const everything = await call("theme.propose", ctx, { all: true });
+    const everything = await call("theme.propose", ctx, {}); // par défaut : tous nos thèmes
     expect(everything.ok).toBe(true);
     expect(J.journeyOf(cid).themes!.list).toHaveLength(ACTIVE_THEMES.length);
     const view = await fr(() => threadView(user, cid));
@@ -115,7 +116,7 @@ describe("SINA — étape 6 : un de nos thèmes", async () => {
     const { ctx, cid } = await stepSix();
     expect((await call("theme.propose", ctx, {})).ok).toBe(true);
     expect((await call("site.mode", ctx, { mode: "mockup" })).summary).toBe("Choix noté : un thème sur mesure.");
-    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/a vu les thèmes et choisi un THÈME SUR MESURE[^]*Étape 6, THÈME SUR MESURE[^]*PLUS JAMAIS « maquette »[^]*theme\.families[^]*custom\.compose[^]*Élément désigné[^]*custom\.edit[^]*custom\.photo[^]*custom\.choose/);
+    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/a vu les thèmes et choisi un THÈME SUR MESURE[^]*Étape 6, THÈME SUR MESURE[^]*PLUS JAMAIS « maquette »[^]*theme\.families[^]*custom\.build[^]*TOUTES les sections[^]*onglet Boutique[^]*Élément désigné[^]*custom\.edit[^]*custom\.photo[^]*custom\.choose/);
     expect(J.journeyOf(cid).steps[6].status).toBe("doing");
   });
 

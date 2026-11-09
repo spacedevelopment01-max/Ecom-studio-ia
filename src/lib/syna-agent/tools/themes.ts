@@ -36,13 +36,13 @@ const modeTool: AgentTool<{ mode: "theme" | "mockup" }> = {
 
 const proposeTool: AgentTool<{ all?: boolean }> = {
   name: "theme.propose", module: "site", kind: "read", needsProject: true,
-  description: "Étape 6 (gratuit) : AFFICHE au client les thèmes du Studio TELS QU'ILS SONT (capture d'origine, lien vers la démonstration complète, ce que son forfait inclut), jamais recomposés avec son projet. Trois thèmes (ceux qui mettent en scène ce qu'il vend d'abord) ; all: true pour tout le catalogue quand le client veut tout voir.",
+  description: "Étape 6 (gratuit) : AFFICHE au client les thèmes du Studio TELS QU'ILS SONT (capture d'origine, lien vers la démonstration complète, ce que son forfait inclut), jamais recomposés avec son projet. TOUS nos thèmes (consigne du propriétaire du 9 novembre 2026), ceux qui mettent en scène ce qu'il vend d'abord ; all: false pour seulement les trois premiers.",
   args: z.object({ all: z.boolean().optional() }).strict(),
   run: (ctx, a) => {
     const p = project(ctx);
     const j = journeyOf(ctx.conversationId);
     if (j.steps[5]?.status !== "done") return { ok: false, summary: L("L'activité complète (étape 5) doit être validée avant le choix du thème.", "Validate step 5 first.") };
-    const themes = themeChoices(p.id, !!a.all);
+    const themes = themeChoices(p.id, a.all !== false);
     updateJourney(ctx.conversationId, (x) => { x.themes = themes; if (x.steps[6]?.status !== "done") setStep(x, 6, "review"); });
     return {
       ok: true,

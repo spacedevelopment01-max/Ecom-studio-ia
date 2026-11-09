@@ -29,12 +29,16 @@ import { imageReferences, mockupImageRoute } from "../mockup-code/tools";
 import { familySections, libSection, sectionByRef, isCardSection } from "./library";
 import { applyStructure, checkCustomTheme, findSection, loadCustomTheme, replaceOnce, saveCustomTheme, scopedCss, sectionHtml, undoCustomTheme, type CustomTheme, type StructureOp } from "./theme";
 import { starterTheme } from "./starters";
+import { enqueue } from "../../jobs";
+import { setStep as setJourneyStep, updateJourney as updateJourneyConv } from "../journey";
+import { CUSTOM_BRAND_JOB, examplePhotoCount, SECTION_TEXT_CAP_MICRO } from "./brand";
 
 /** Ce que le client voit dans le fil : l'aperçu vivant de son thème et sa composition. */
 export function themeCard(projectId: string, t: CustomTheme) {
   const desc = (uid: string, id: string) => { const l = libSection(id); return { uid, titre: l?.title ?? id, role: l?.role ?? "?" }; };
   return {
-    href: `/api/projects/${projectId}/custom-theme?studio=1&rev=${t.rev}`,
+    href: `/api/projects/${projectId}/custom-theme?studio=1&embed=1&rev=${t.rev}`,
+    boutique: `/studio/${projectId}/boutique`,
     open: `/api/projects/${projectId}/custom-theme?rev=${t.rev}`,
     rev: t.rev, famille: t.family, style: t.style, choisi: !!t.chosen,
     enTete: t.header ? desc(t.header.uid, t.header.id) : null, piedDePage: t.footer ? desc(t.footer.uid, t.footer.id) : null, recherche: t.search ? desc(t.search.uid, t.search.id) : null,
@@ -64,7 +68,7 @@ function saved(ctx: ToolContext, t: CustomTheme, what: string) {
   return {
     ok: verified,
     summary: L(`Thème sur mesure ${what} (version ${next.rev}).${review.length ? ` À revoir : ${review.join(" ; ")}.` : ""}`, "Custom theme saved."),
-    hint: "Le thème vivant s'affiche dans le fil (pages, téléphone, bouton « Désigner un élément »). Dis au client ce qui a changé, en deux phrases, et qu'il peut désigner un élément pour le faire modifier. Textes et photos d'exemple : dis-le tant qu'ils ne sont pas remplacés (textesClient).",
+    hint: "Le thème est en place dans l'onglet Boutique (aperçu en grand, « Désigner un élément ») ; un aperçu et le lien « Ouvrir la Boutique » s'affichent dans le fil. Dis au client ce qui a changé, en deux phrases. Textes et photos d'exemple : dis-le tant qu'ils ne sont pas remplacés (textesClient).",
     data: { customTheme: card },
     changes: [{ module: "site", object: "thème sur mesure", summary: L(what, what), after: { rev: next.rev }, verified }],
   };
@@ -117,6 +121,53 @@ const composeTool: AgentTool<{ start?: boolean; header?: string; footer?: string
     } catch (e) { return { ok: false, summary: (e as Error).message, internal: true }; }
   },
 };
+
+/** Coût probable d'une écriture de section (mesuré sur les textes du site : environ 0,06 € avec le modèle des textes). */
+export const SECTION_TEXT_TYPICAL_MICRO = 60_000;
+type BuildArgs = { pages?: PageArg[]; photos?: boolean };
+/** Thème à monter : celui en cours, sinon la composition validée du style choisi (ou les pages données). */
+function buildPlan(ctx: ToolContext, a: BuildArgs): CustomTheme {
+  const p = project(ctx);
+  const f = familyOrError(p.id);
+  const cur = loadCustomTheme(p.id);
+  if (cur && !a.pages) return cur;
+  const base = starterTheme(f.family, f.style);
+  if (!a.pages) return base;
+  return applyStructure({ ...base, pages: [] }, a.pages.flatMap((pg) => [{ op: "page", key: pg.key, label: pg.label } as StructureOp, ...pg.sections.map((s) => ({ op: "add", page: pg.key, section: ref(s) }) as StructureOp)]));
+}
+const buildTool: AgentTool<BuildArgs> = {
+  name: "custom.build", module: "site", kind: "generate", needsProject: true,
+  description: "Étape 6, THÈME SUR MESURE (PAYANT : devis du Studio annoncé en % du budget, accord écrit du client d'abord) : une fois le style CHOISI PAR LE CLIENT (theme.family), monte son thème avec TOUTES les sections prévues pour ce style, à sa marque : tous les textes écrits pour lui (ses faits seulement, jamais ceux d'un modèle) et toutes les photos (vraies photos de ses produits, sinon photos créées dans la direction artistique de son style). Sans pages : la composition validée du style (ou le thème déjà en cours) ; pages : composition adaptée à son projet (mêmes règles que custom.compose). photos:false = textes seulement. Tâche de fond ; le thème est ensuite EN PLACE dans l'onglet Boutique, où le client demande ses changements et désigne les éléments.",
+  args: z.object({
+    pages: z.array(z.object({ key: z.string().regex(/^[a-z0-9-]{1,40}$/), label: z.string().min(1).max(40), sections: z.array(z.string().max(80)).min(1).max(16) }).strict()).min(1).max(12).optional(),
+    photos: z.boolean().optional(),
+  }).strict(),
+  estimate: (ctx, a) => {
+    const t = buildPlan(ctx, a);
+    const sections = allSectionsCount(t), photos = a.photos === false ? 0 : examplePhotoCount(t);
+    const unit = (customPhotoDeps.unit ?? photoUnit)();
+    if (photos && unit == null) throw new Error(L("Aucun modèle d'images utilisable pour les photos du site.", "No usable image model."));
+    return { maxMicro: sections * SECTION_TEXT_CAP_MICRO + photos * (unit ?? 0), probableMicro: sections * SECTION_TEXT_TYPICAL_MICRO + Math.round(photos * (unit ?? 0) * 0.8), label: L(`thème sur mesure monté à ta marque : ${sections} sections écrites${photos ? `, ${photos} photos` : ""}`, "custom theme built for the brand") };
+  },
+  run: async (ctx, a) => {
+    const p = project(ctx);
+    let t: CustomTheme;
+    try { t = buildPlan(ctx, a); } catch (e) { return { ok: false, summary: (e as Error).message, hint: "Le client choisit d'abord son style (theme.families puis theme.family)." }; }
+    const blocking = checkCustomTheme(t).filter((x) => x.level === "bloquant");
+    if (blocking.length) return { ok: false, internal: true, summary: `Composition refusée : ${blocking.map((x) => x.text).join(" ; ")}.` };
+    if (!loadCustomTheme(p.id) || a.pages) t = saveCustomTheme(p.id, { ...t, chosen: false });
+    const est = await buildTool.estimate!(ctx, a);
+    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: CUSTOM_BRAND_JOB, label: L("Thème sur mesure monté à ta marque (SINA)", "Custom theme built for your brand (SINA)"), payload: { projectId: p.id, capMicro: est.maxMicro, conversationId: ctx.conversationId, photos: a.photos !== false }, maxAttempts: 2, idempotencyKey: `syna:${ctx.runId}:custom-brand:${t.rev}` });
+    try { updateJourneyConv(ctx.conversationId, (x) => setJourneyStep(x, 6, "doing")); } catch { /* fil sans parcours */ }
+    return {
+      ok: true, jobs: [job.id],
+      summary: L(`Montage du thème sur mesure à ta marque lancé (${allSectionsCount(t)} sections, ${a.photos === false ? "textes seulement" : `${examplePhotoCount(t)} photos`}).`, "Custom theme build started."),
+      hint: "Quand la tâche est finie, dis au client que son thème est en place dans l'onglet Boutique (lien « Ouvrir la Boutique » de la carte), qu'il peut le regarder en grand et désigner un élément pour demander un changement. Dis honnêtement ce que le rapport signale (textes non remplacés, photos non créées).",
+      data: { customTheme: themeCard(p.id, t) },
+    };
+  },
+};
+const allSectionsCount = (t: CustomTheme) => (t.header ? 1 : 0) + (t.footer ? 1 : 0) + (t.search ? 1 : 0) + t.pages.reduce((n, pg) => n + pg.sections.length, 0);
 
 const showTool: AgentTool<Record<string, never>> = {
   name: "custom.show", module: "site", kind: "read", needsProject: true,
@@ -284,9 +335,11 @@ const chooseTool: AgentTool<Record<string, never>> = {
     const p = project(ctx), t = loadCustomTheme(p.id);
     if (!t) return { ok: false, summary: L("Aucun thème sur mesure : custom.compose d'abord.", "No custom theme yet.") };
     const r = saved(ctx, { ...t, chosen: true }, "choisi par le client");
+    // Essai réel du 9 novembre : le choix ne fermait pas l'étape 6 dans le parcours.
+    if (r.ok) { try { updateJourneyConv(ctx.conversationId, (x) => setJourneyStep(x, 6, "done", L("thème sur mesure choisi", "custom theme chosen"))); } catch { /* fil sans parcours */ } }
     const sample = t.pages.flatMap((pg) => pg.sections).some((s) => !s.clientTexts);
     return { ...r, hint: `${sample ? "Des textes ou photos d'exemple restent : dis-le au client et propose de les remplacer avant la mise en boutique. " : ""}La mise en boutique Shopify du thème sur mesure (étape 7) se prépare ensuite ; ne dis pas qu'elle est faite.` };
   },
 };
 
-export const customThemeTools: AgentTool[] = [sectionsTool, composeTool, showTool, readTool, structureTool, editTool, photoTool, undoTool, chooseTool];
+export const customThemeTools: AgentTool[] = [sectionsTool, buildTool, composeTool, showTool, readTool, structureTool, editTool, photoTool, undoTool, chooseTool];

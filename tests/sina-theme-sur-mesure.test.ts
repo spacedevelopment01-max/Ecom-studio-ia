@@ -155,7 +155,7 @@ describe("thème sur mesure : outils de SINA", async () => {
     const made = await call("custom.compose", ctx, { start: true });
     expect(made.ok).toBe(true);
     const card = made.data.customTheme;
-    expect(card.href).toBe(`/api/projects/${pid}/custom-theme?studio=1&rev=1`);
+    expect(card.href).toBe(`/api/projects/${pid}/custom-theme?studio=1&embed=1&rev=1`);
     expect(card.pages.map((p: any) => p.key)).toEqual(["home", "shop", "product", "cart", "journal", "404"]);
     // Mélange de familles refusé : rien n'est enregistré.
     const mixed = await call("custom.compose", ctx, { pages: [{ key: "home", label: "Accueil", sections: ["Ouverture photo pleine"] }] });
@@ -215,5 +215,76 @@ describe("thème sur mesure : outils de SINA", async () => {
       expect(after).not.toContain(file);
       expect(after).toContain(r.data.href);
     } finally { delete T.customPhotoDeps.unit; delete T.customPhotoDeps.make; }
+  });
+});
+
+describe("thème sur mesure : montage à la marque (textes et photos), sans aucun appel réel", async () => {
+  process.env.STUDIO_SYNA_AGENT = "1";
+  const { one } = await import("@/lib/db");
+  const { runWithLang } = await import("@/lib/i18n-server");
+  const { account } = await import("./conversation209-fixtures");
+  const { threadFor } = await import("@/lib/syna-agent/thread");
+  const { getTool } = await import("@/lib/syna-agent/registry");
+  const B = await import("@/lib/syna-agent/custom-theme/brand");
+  const T = await import("@/lib/syna-agent/custom-theme/tools");
+  const { loadCustomTheme, allSections, sectionHtml } = await import("@/lib/syna-agent/custom-theme/theme");
+  const fr = <R,>(fn: () => Promise<R> | R) => runWithLang({ ui: "fr", content: "fr" }, async () => fn());
+  const call = async (name: string, ctx: any, args: unknown): Promise<any> => {
+    ctx.projectId = one<{ project_id: string | null }>("SELECT project_id FROM agent_conversations WHERE id=?", ctx.conversationId)?.project_id ?? null;
+    return fr(() => getTool(name)!.run(ctx, getTool(name)!.args.parse(args)));
+  };
+
+  it("devis d'abord, puis chaque section réécrite pour la marque et chaque photo d'exemple remplacée ; le thème est en place pour la Boutique", async () => {
+    const user = await account();
+    const cid = threadFor(user, null), ctx: any = { user, conversationId: cid, runId: `run-${Date.now()}`, projectId: null, attachment: () => null };
+    await call("start.answer", ctx, { answers: [{ field: "business", value: "products" }, { field: "offer", value: "Des bougies parfumées coulées à la main." }] });
+    await call("start.answer", ctx, { answers: [
+      { field: "existing", value: "Rien." }, { field: "audience", value: "Adultes." }, { field: "image", value: "Doux." }, { field: "setup", value: "3 bougies" }, { field: "market", value: "France." },
+      { field: "price", value: "25 €" }, { field: "difference", value: "Cire de colza." }, { field: "taste", status: "none" }, { field: "photos", value: "Non." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
+    ] });
+    await call("start.confirm", ctx, {});
+    const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
+    expect((await call("custom.build", ctx, {})).summary).toMatch(/style|famille/i); // le style d'abord
+    await call("theme.family", ctx, { family: "classique" });
+    T.customPhotoDeps.unit = () => 50_000;
+    try {
+      ctx.projectId = pid;
+      const est = await fr(() => getTool("custom.build")!.estimate!(ctx, {}));
+      expect(est.maxMicro).toBeGreaterThan(est.probableMicro!);
+      expect(est.label).toMatch(/sections écrites, \d+ photos/);
+      const r = await call("custom.build", ctx, {});
+      expect(r.ok).toBe(true);
+      expect(r.jobs).toHaveLength(1);
+      const job = one<any>("SELECT * FROM jobs WHERE id=?", r.jobs[0]);
+      expect(job.type).toBe("syna.custom.brand");
+      expect(JSON.parse(job.payload)).toMatchObject({ projectId: pid, photos: true });
+      expect(r.data.customTheme.boutique).toBe(`/studio/${pid}/boutique`);
+      // Exécution de la tâche avec une fausse écriture et une fausse photo (aucun appel réel).
+      const sharp = (await import("sharp")).default;
+      let writes = 0, photos = 0;
+      B.customBrandDeps.write = async (prompt) => {
+        writes++;
+        expect(prompt).toContain("Marque : «");
+        const html = prompt.slice(prompt.indexOf("HTML actuel"));
+        const h = html.match(/<(h[1-4])[^>]*>([^<]{3,80})</);
+        const imgs = [...new Set([...html.matchAll(/photos\/[\w-]+\.(?:webp|png|jpg)/g)].map((m) => m[0]))];
+        return { edits: h ? [{ find: `>${h[2]}<`, replace: `>Texte de la marque ${writes}<` }] : [], photos: imgs.map((f) => ({ find: f, description: "Photo de bougie en verre ambré sur une table en chêne, lumière douce du soir.", ratio: "4:5" as const, product: null })) };
+      };
+      B.customBrandDeps.photo = async () => { photos++; return sharp({ create: { width: 40, height: 50, channels: 3, background: "#a86" } }).png().toBuffer(); };
+      const fake: any = { job: { id: job.id }, payload: JSON.parse(job.payload), checkpoint: {}, progress: () => undefined, step: async (_k: string, fn: () => Promise<unknown>) => fn() };
+      const out: any = await fr(() => B.runCustomBrandJob(fake));
+      const t = loadCustomTheme(pid)!;
+      expect(writes).toBe(allSections(t).length);
+      expect(out.sections).toBe(writes);
+      expect(photos).toBeGreaterThan(0);
+      expect(out.photosMade).toBe(photos);
+      for (const x of allSections(t)) expect(sectionHtml(x.s), x.place).not.toMatch(/photos\/[a-z]+-?[a-z0-9]*\.(webp|jpg|png)/);
+      expect(allSections(t).filter((x) => x.s.clientTexts).length).toBeGreaterThan(0);
+    } finally { delete T.customPhotoDeps.unit; delete B.customBrandDeps.write; delete B.customBrandDeps.photo; }
+  });
+
+  it("un remplacement qui ne s'applique pas est compté, jamais deviné ; aucun script n'entre", () => {
+    const w = { edits: [{ find: "<h2>Bonjour</h2>", replace: "<h2>Salut</h2>" }, { find: "absent", replace: "x" }, { find: "<p>a</p>", replace: "<script>x</script>" }], photos: [] };
+    expect(B.applyWrite("<h2>Bonjour</h2><p>a</p>", w)).toEqual({ html: "<h2>Salut</h2><p>a</p>", failed: 2 });
   });
 });

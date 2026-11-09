@@ -59,6 +59,8 @@ export const handlers: Record<string, Handler> = {
   "syna.logos": async (ctx) => (await import("../src/lib/syna-agent/logos")).runSinaLogosJob(ctx),
   // SINA (#492), étape 7 : site codé d'après la maquette choisie (payant, plafonné au devis).
   "syna.mockup.code": async (ctx) => (await import("../src/lib/syna-agent/mockup-code/job")).runMockupCodeJob(ctx),
+  // SINA (#492), étape 6 : thème sur mesure monté à la marque du client (textes et photos, payant, plafonné au devis).
+  "syna.custom.brand": async (ctx) => (await import("../src/lib/syna-agent/custom-theme/brand")).runCustomBrandJob(ctx),
   "agent.theme.capture": async ctx => (await import('../src/lib/orchestrator/conversation/render-tool-execution')).runRenderCapture(ctx),
   "agent.ad-document.local": async ctx => (await import('../src/lib/orchestrator/conversation/ad-document-tool-execution')).runAdDocument(ctx),
   "agent.theme.export": async ctx => (await import('../src/lib/orchestrator/conversation/export-tool-execution')).runNativeExport(ctx),

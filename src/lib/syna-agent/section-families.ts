@@ -12,6 +12,7 @@
  */
 import { z } from "zod";
 import { all, json, run } from "../db";
+import { familySections } from "./custom-theme/library";
 
 export type FamilyId = "classique" | "moderne";
 export type StyleId = "sport-chic" | "streetwear-neon";
@@ -122,7 +123,8 @@ export function familyCards(): { family: FamilyId; style: string; title: string;
     family: f.id, style: s.id,
     title: f.id === "classique" ? f.fr : `${f.fr} · ${s.fr}`, titleEn: f.id === "classique" ? f.en : `${f.en} · ${s.en}`,
     pitch: f.pitch.fr, pitchEn: f.pitch.en, mood: s.mood, preview: s.preview, demo: s.demo,
-    sections: Object.values(f.roles).reduce((n, l) => n + l.length, 0),
+    // Nombre réel de sections de la bibliothèque (essai réel du 9 novembre : « 12 sections au choix » pour Classique, qui en a 133).
+    sections: (() => { try { return familySections(f.id).length; } catch { return Object.values(f.roles).reduce((n, l) => n + l.length, 0); } })(),
   })));
 }
 
