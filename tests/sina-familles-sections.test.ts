@@ -15,7 +15,7 @@ describe("SINA — familles de sections Classique et Moderne", async () => {
     const cards = F.familyCards();
     expect(cards.map((c) => c.title)).toEqual(["Classique", "Moderne · Sport chic", "Moderne · Streetwear néon"]);
     for (const c of cards) expect(fs.existsSync(path.join(process.cwd(), "public", c.preview))).toBe(true);
-    expect(cards.find((c) => c.family === "moderne")!.sections).toBe(26);
+    expect(cards.find((c) => c.family === "moderne")!.sections).toBe(29);
   });
 
   it("aucune section n'appartient aux deux familles, et la famille Moderne propose plusieurs choix par rôle", () => {
@@ -24,7 +24,7 @@ describe("SINA — familles de sections Classique et Moderne", async () => {
     for (const s of Object.values(moderne.roles).flat()) expect(a.has(s)).toBe(false);
     expect(F.sectionInFamily("Ouverture « mot géant »", "moderne")).toBe(true);
     expect(F.sectionInFamily("Ouverture « mot géant »", "classique")).toBe(false);
-    for (const role of ["ouverture", "produit vedette", "pied de page"]) expect(moderne.roles[role].length).toBeGreaterThanOrEqual(3);
+    for (const role of ["ouverture", "produit vedette", "panier", "pied de page"]) expect(moderne.roles[role].length).toBeGreaterThanOrEqual(3);
     expect(F.missingRoles("classique", ["en-tête", "ouverture"])).toEqual(["en-tête"]);
   });
 

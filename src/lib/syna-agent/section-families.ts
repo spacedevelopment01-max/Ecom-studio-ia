@@ -60,6 +60,7 @@ export const SECTION_FAMILIES: SectionFamily[] = [
       "produit vedette": ["Produit vedette · grand nom", "Produit vedette · galerie défilante", "Produit vedette · drop limité"],
       "mise en avant": ["L'édition de saison", "Carnet de looks", "Offre en deux tuiles", "Bandeaux croisés fluo"],
       confiance: ["Vus dans la rue", "Bande fluo des engagements"],
+      panier: ["Panier tiroir néon", "Page panier éditoriale", "Mini-panier qui surgit"],
       aide: ["Entre deux tailles ?", "Questions numérotées"],
       inscription: ["Sois là avant les autres", "Bande code de bienvenue"],
       "pied de page": ["Pied de page en bande", "Pied de page streetwear", "Pied de page mot géant"],
