@@ -81,7 +81,7 @@ export type LlmCall = {
   routing?: {
     difficulty?: Difficulty; deliverable?: Deliverable; history?: RoutingHistory;
     /** Modèle choisi par l'appelant pour cet appel (ex. SINA : Haiku pour un échange simple), s'il est utilisable. */
-    prefer?: { provider: "anthropic"; model: string; effort?: string };
+    prefer?: { provider: "anthropic" | "openai" | "google"; model: string; effort?: string };
   };
 };
 
@@ -95,6 +95,14 @@ export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing"> & { 
     const info = modelInfo(pref.provider, pref.model);
     if (info && (!call.images?.length || info.capabilities.includes("vision"))) {
       return { mode: "llm", provider: pref.provider, model: pref.model, effort: (pref.effort ?? undefined) as RouteDecision["effort"], tier: info.tier, reason: "modèle choisi par l'appelant (échange simple)", fallback: false, escalation: false, qualityTarget: null };
+    }
+  }
+  // Autre fournisseur choisi par l'appelant (ex. rédacteur des textes du site réglé dans l'administration) : seulement
+  // si le modèle est utilisable (clé active, tarif enregistré, informations confirmées) ; sinon le routage habituel.
+  if (pref && pref.provider !== "anthropic") {
+    const m = textModel(pref.provider, pref.model);
+    if (m && modelStatus(m).usable && (!call.images?.length || m.vision)) {
+      return { mode: "llm", provider: pref.provider, model: pref.model, effort: (pref.effort ?? m.effort.default ?? undefined) as RouteDecision["effort"], tier: m.tier, reason: "modèle choisi dans l'administration pour cet usage", fallback: false, escalation: false, qualityTarget: null };
     }
   }
   const custom = getJsonSetting<Partial<Record<TaskId, unknown>>>("ai.routes", {});

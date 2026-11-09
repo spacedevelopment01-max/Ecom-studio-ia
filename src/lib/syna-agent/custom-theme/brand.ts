@@ -13,6 +13,7 @@ import { L } from "../../i18n-server";
 import { UserFacingError, type JobContext } from "../../jobs";
 import { loadProject, notify, type Project } from "../../projects";
 import { all } from "../../db";
+import { getSetting } from "../../settings";
 import { assetData, assetUrl, getAsset, saveAsset } from "../../library";
 import { llmJson } from "../../ai/llm";
 import { withTrace } from "../../ai/trace";
@@ -41,6 +42,17 @@ export type CustomBrandPayload = { projectId: string; capMicro: number; conversa
 
 /** Plafond d'un appel d'écriture d'une section (même modèle que les textes du site). */
 export const SECTION_TEXT_CAP_MICRO = 150_000;
+/**
+ * Rédacteur des textes du site (réglage d'administration « site.copy_model », ex. « openai:gpt-5.6-sol ») : demande du
+ * propriétaire du 9 novembre 2026 d'essayer OpenAI. Par défaut le modèle des textes du Studio (Claude). Un modèle
+ * choisi mais inutilisable (tarif ou confirmation manquants) n'est jamais appelé : le routage habituel reprend.
+ */
+export function siteCopyModel(): { provider: "anthropic" | "openai" | "google"; model: string; effort?: string } {
+  const v = (getSetting("site.copy_model") ?? "").trim();
+  const m = /^(anthropic|openai|google):([\w.-]+)$/.exec(v);
+  return m ? { provider: m[1] as "anthropic" | "openai" | "google", model: m[2] } : COPY_MODEL;
+}
+
 /** Plafond du plan des textes de tout le site (un appel par montage). */
 export const SITE_PLAN_CAP_MICRO = 250_000;
 const RATIOS = ["1:1", "4:5", "2:3", "16:9", "9:16"] as const;
@@ -234,7 +246,8 @@ export async function runCustomBrandJob(ctx: JobContext) {
   const direction = siteArtDirection(p, fu, j);
   // rewrite : le client n'aime pas les textes, tout le site est réécrit (sinon seules les sections encore d'exemple).
   const sections = allSections(t).filter((x) => a.rewrite || !x.s.clientTexts);
-  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, problems: [] as string[] };
+  const writer = siteCopyModel();
+  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, problems: [] as string[], redacteur: `${writer.provider}:${writer.model}` };
   const briefs: Record<string, SectionWrite["photos"]> = {};
 
   // 0) Plan des textes de tout le site (un appel) : chaque section reçoit SON message, son titre et ses faits.
@@ -247,7 +260,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         const usageKey = `${ctx.job.id}:text-plan`;
         return customBrandDeps.plan ? customBrandDeps.plan(prompt, usageKey)
           : SitePlanSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-plan", costCapMicro: a.capMicro }, () =>
-              llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: SITE_PLAN_SYSTEM, promptKey: "syna-custom-plan-1", prompt, maxTokens: 8000, maxOutputTokens: 8000, usageKey, routing: { difficulty: "complex", prefer: COPY_MODEL } }, SitePlanSchema, { strict: true })));
+              llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: SITE_PLAN_SYSTEM, promptKey: "syna-custom-plan-1", prompt, maxTokens: 8000, maxOutputTokens: 8000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SitePlanSchema, { strict: true })));
       });
     } catch (e) { report.problems.push(`plan des textes non fait (${(e as Error).message.slice(0, 120)}) : sections écrites sans plan`); }
   }
@@ -263,7 +276,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         const usageKey = `${ctx.job.id}:text:${x.s.uid}`;
         return customBrandDeps.write ? customBrandDeps.write(prompt, usageKey)
           : SectionWriteSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text", costCapMicro: a.capMicro }, () =>
-              llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: SECTION_WRITE_SYSTEM, promptKey: "syna-custom-section-1", prompt, maxTokens: 12000, maxOutputTokens: 12000, usageKey, routing: { difficulty: "complex", prefer: COPY_MODEL } }, SectionWriteSchema, { strict: true })));
+              llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: SECTION_WRITE_SYSTEM, promptKey: "syna-custom-section-1", prompt, maxTokens: 12000, maxOutputTokens: 12000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SectionWriteSchema, { strict: true })));
       });
       t = loadCustomTheme(p.id)!;
       const cur = allSections(t).find((y) => y.s.uid === x.s.uid);
