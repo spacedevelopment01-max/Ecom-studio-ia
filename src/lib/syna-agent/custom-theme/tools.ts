@@ -29,9 +29,9 @@ import { imageReferences, mockupImageRoute } from "../mockup-code/tools";
 import { familySections, libSection, onlyFor, sectionByRef, isCardSection } from "./library";
 import { allSections, applyStructure, checkCustomTheme, findSection, loadCustomTheme, replaceOnce, requiredPages, saveCustomTheme, scopedCss, sectionHtml, undoCustomTheme, type CustomTheme, type SiteKind, type StructureOp } from "./theme";
 import { listProducts } from "../../products/catalog";
-import { companyOf } from "../activity";
+import { activityPlan, companyOf } from "../activity";
 import { brandBrief, siteCopyModel } from "./brand";
-import { DESIGN_CAP_MICRO, DESIGN_SYSTEM, DESIGN_TYPICAL_MICRO, DesignSchema, designPrompt, intentText, type Design } from "./design";
+import { DESIGN_CALLS_MAX, DESIGN_CAP_MICRO, DESIGN_REVIEW_SYSTEM, DESIGN_SYSTEM, DESIGN_TYPICAL_MICRO, DesignSchema, designGaps, designPrompt, intentText, type Design } from "./design";
 import { llmJson } from "../../ai/llm";
 import { withTrace } from "../../ai/trace";
 import { jobSpentMicro } from "../budget";
@@ -183,7 +183,7 @@ const designTool: AgentTool<DesignArgs> = {
   name: "custom.design", module: "site", kind: "generate", needsProject: true,
   description: "Étape 6, THÈME SUR MESURE (PAYANT : prix annoncé, accord écrit du client d'abord) : CONÇOIT et monte tout le site comme un directeur de création, après le choix de la famille : le visiteur de CETTE marque (cible, émotion de l'angle, objections de la recherche et leurs réponses, ce qui le fait acheter), son parcours sur chaque page, et pour chaque moment la section de la bibliothèque qui y répond (pourquoi, et ce qu'elle dira). Pages riches, jamais le minimum, jamais une section pour remplir. C'est LA façon de monter ou de remonter un thème sur mesure (custom.compose ne sert qu'à appliquer une composition dictée par le client lui-même). consigne : ce que le client a dit vouloir (ses mots). Les sections déjà écrites et gardées gardent leurs textes et photos ; les nouvelles se font ensuite écrire avec custom.build (devis à part).",
   args: z.object({ consigne: z.string().max(1500).optional() }).strict(),
-  estimate: () => ({ maxMicro: DESIGN_CAP_MICRO * 2, probableMicro: DESIGN_TYPICAL_MICRO, label: L("conception de tout ton site sur mesure (parcours de chaque page et choix de chaque section)", "full custom site design") }),
+  estimate: () => ({ maxMicro: DESIGN_CAP_MICRO * DESIGN_CALLS_MAX, probableMicro: DESIGN_TYPICAL_MICRO, label: L("conception de tout ton site sur mesure (stratégie, parcours de chaque page, choix de chaque section) et sa relecture", "full custom site design and review") }),
   run: async (ctx, a) => {
     const p = project(ctx);
     let f;
@@ -192,9 +192,9 @@ const designTool: AgentTool<DesignArgs> = {
     const site = siteKind(ctx), assets = brandAssets(p.id);
     const prompt = designPrompt({ brief: brandBrief(p, j), family: f.family, site, has: assets.has, lacks: assets.lacks, consigne: a.consigne });
     const jobId = getRun(ctx.runId)?.job_id ?? null;
-    const call = async (text: string, key: string): Promise<Design> => customDesignDeps.call ? customDesignDeps.call(DESIGN_SYSTEM, text, key)
-      : DesignSchema.parse(await withTrace({ jobId, projectId: p.id, step: "custom-design", costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + DESIGN_CAP_MICRO * 2 }, () =>
-          llmJson({ task: "strategy", userId: ctx.user.id, projectId: p.id, jobId, system: DESIGN_SYSTEM, promptKey: "syna-custom-design-1", prompt: text, maxTokens: 14000, maxOutputTokens: 14000, usageKey: key, routing: { difficulty: "complex", prefer: siteCopyModel() } }, DesignSchema, { strict: true })));
+    const call = async (text: string, key: string, system = DESIGN_SYSTEM): Promise<Design> => customDesignDeps.call ? customDesignDeps.call(system, text, key)
+      : DesignSchema.parse(await withTrace({ jobId, projectId: p.id, step: "custom-design", costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + DESIGN_CAP_MICRO * DESIGN_CALLS_MAX }, () =>
+          llmJson({ task: "strategy", userId: ctx.user.id, projectId: p.id, jobId, system, promptKey: system === DESIGN_SYSTEM ? "syna-custom-design-2" : "syna-custom-design-review-1", prompt: text, maxTokens: 14000, maxOutputTokens: 14000, usageKey: key, routing: { difficulty: "complex", prefer: siteCopyModel() } }, DesignSchema, { strict: true })));
     const build = (d: Design): CustomTheme => {
       let t: CustomTheme = { version: 1, family: f.family, style: f.style, header: null, footer: null, search: null, pages: [], rev: 0, at: Date.now(), concept: d.concept };
       t = applyStructure(t, d.pages.flatMap((pg) => [{ op: "page", key: pg.key, label: pg.label } as StructureOp, ...pg.sections.map((s) => ({ op: "add", page: pg.key, section: ref(s.section) }) as StructureOp)]));
@@ -212,27 +212,33 @@ const designTool: AgentTool<DesignArgs> = {
       }
     };
     const blocking = (t: CustomTheme) => checkCustomTheme(t, site).filter((x) => x.level === "bloquant").map((x) => x.text);
-    let d: Design, t: CustomTheme, problems: string[];
+    const research = (() => { try { return j ? activityPlan(p.id, j).objections.map((o) => o.objection) : []; } catch { return []; } })();
+    const check = (d: Design) => {
+      let t: CustomTheme | null = null, rules: string[];
+      try { t = build(d); rules = blocking(t); } catch (e) { rules = [(e as Error).message]; }
+      const g = designGaps(d, research);
+      return { t, rules, objections: g.blocking, rhythm: g.rhythm };
+    };
+    let d: Design, c: ReturnType<typeof check>, calls = 0;
     try {
-      d = await call(prompt, `syna:${ctx.runId}:custom-design`);
-      try { t = build(d); problems = blocking(t); } catch (e) { t = null as unknown as CustomTheme; problems = [(e as Error).message]; }
-      // Une seule correction : les points refusés sont rendus au concepteur, qui corrige sa conception.
-      if (problems.length) {
-        d = await call(`${prompt}
-
-TA CONCEPTION PRÉCÉDENTE (JSON) :
-${JSON.stringify(d)}
-
-POINTS REFUSÉS PAR LE CONTRÔLE (à corriger, en gardant ta logique) :
-- ${problems.join("\n- ")}`, `syna:${ctx.runId}:custom-design-fix`);
-        try { t = build(d); problems = blocking(t); } catch (e) { problems = [(e as Error).message]; }
+      // 1) conception (stratégie, parcours, sections), 2) relecture du directeur commercial qui rend la version corrigée.
+      d = await call(prompt, `syna:${ctx.runId}:custom-design`); calls++;
+      d = await call(`${prompt}\n\nCONCEPTION À RELIRE (JSON) :\n${JSON.stringify(d)}`, `syna:${ctx.runId}:custom-design-review`, DESIGN_REVIEW_SYSTEM); calls++;
+      c = check(d);
+      // 3) une seule correction si le contrôle du Studio refuse quelque chose (règles, objection sans réponse, rythme).
+      const todo = [...c.rules, ...c.objections, ...c.rhythm];
+      if (todo.length) {
+        d = await call(`${prompt}\n\nTA CONCEPTION (JSON) :\n${JSON.stringify(d)}\n\nPOINTS REFUSÉS PAR LE CONTRÔLE DU STUDIO (à corriger, en gardant ta logique ; liste dans corrections ce que tu changes) :\n- ${todo.join("\n- ")}`, `syna:${ctx.runId}:custom-design-fix`, DESIGN_REVIEW_SYSTEM); calls++;
+        c = check(d);
       }
-    } catch (e) { return { ok: false, summary: L(`Conception non faite : ${(e as Error).message.slice(0, 200)}.`, "Design failed."), hint: "Dis-le au client avec le coût réel ; ne relance rien sans son accord écrit (jamais après une erreur 5xx)." }; }
-    if (problems.length) return { ok: false, summary: L(`Conception refusée par le contrôle : ${problems.join(" ; ")}. Rien n'est enregistré.`, "Design refused."), hint: "Dis-le honnêtement au client avec le coût réel ; propose de corriger avec custom.structure (gratuit) à partir de la conception, sans rien relancer de payant sans son accord." };
+    } catch (e) { return { ok: false, summary: L(`Conception non faite (${calls} passage(s) payé(s)) : ${(e as Error).message.slice(0, 200)}.`, "Design failed."), hint: "Dis-le au client avec le coût réel ; ne relance rien sans son accord écrit (jamais après une erreur 5xx)." }; }
+    if (c.rules.length || !c.t) return { ok: false, summary: L(`Conception refusée par le contrôle : ${c.rules.join(" ; ")}. Rien n'est enregistré.`, "Design refused."), hint: "Dis-le honnêtement au client avec le coût réel ; propose de corriger avec custom.structure (gratuit) à partir de la conception, sans rien relancer de payant sans son accord." };
+    const t = c.t;
     const kept = keepWork(t, loadCustomTheme(p.id));
     annotate(t, d);
-    const r = saved(ctx, { ...t, chosen: false }, `conçu de A à Z : ${t.pages.map((x) => `${x.label} (${x.sections.length})`).join(", ")}${kept ? ` ; ${kept} section(s) gardée(s) avec leurs textes et photos` : ""}`, { strict: true });
-    return { ...r, data: { ...(r as { data?: object }).data, concept: d.concept, parcours: d.pages.map((pg) => ({ page: pg.label, parcours: pg.journey, sections: pg.sections.map((s) => `${libSection(s.section)?.title ?? s.section} — ${s.why}`) })) },
+    const left = [...c.objections, ...c.rhythm];
+    const r = saved(ctx, { ...t, chosen: false }, `conçu de A à Z : ${t.pages.map((x) => `${x.label} (${x.sections.length})`).join(", ")}${kept ? ` ; ${kept} section(s) gardée(s) avec leurs textes et photos` : ""}${left.length ? `. À revoir : ${left.join(" ; ")}` : ""}`, { strict: true });
+    return { ...r, data: { ...(r as { data?: object }).data, visiteur: d.visitor, leviers: d.levers, objections: d.objections.map((o) => `« ${o.objection} » → ${o.answer} (${o.page} › ${libSection(o.section)?.title ?? o.section})`), relecture: d.corrections, concept: d.concept, parcours: d.pages.map((pg) => ({ page: pg.label, parcours: pg.journey, sections: pg.sections.map((s) => `${libSection(s.section)?.title ?? s.section} — ${s.why}`) })), passages: calls },
       hint: "Montre au client l'idée du site et, page par page, le parcours et pourquoi chaque section est là (court). Puis custom.images et le devis de custom.build pour écrire les textes et créer les photos (jamais sans son accord)." };
   },
 };

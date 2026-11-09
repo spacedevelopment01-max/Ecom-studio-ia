@@ -208,22 +208,30 @@ describe("thème sur mesure : outils de SINA", async () => {
     expect(getTool("custom.design")!.estimate!(ctx, {})).toMatchObject({ label: expect.stringMatching(/conception de tout ton site/) });
     const site = fullSite("classique");
     const good = {
+      visitor: "Une personne de 35 ans qui trouve les confitures du commerce trop sucrées et veut retrouver le goût du fruit.", levers: ["la promesse dès l'arrivée", "la transparence de la recette"], objections: [], corrections: [] as string[],
       concept: "Le matin d'hiver où l'on ouvre le pot et où l'été revient.", header: "en-tete-classique", footer: "pied-de-page-complet", search: null,
       pages: site.pages.map((pg) => ({ key: pg.key, label: pg.label, journey: `Le visiteur arrive sur ${pg.label} et se demande ce qu'il va trouver.`, sections: pg.sections.map((t) => ({ section: sectionByRef(t)!.id, why: `Répond au moment ${t}.`, says: `Dit ce que ${t} doit dire avec les faits.` })) })),
     };
     // 1re conception : une offre en section à part (refusée), puis la conception corrigée.
     const bad = { ...good, pages: good.pages.map((pg) => (pg.key === "product" ? { ...pg, sections: [...pg.sections, { section: "offre-par-quantite", why: "Pour vendre plus.", says: "Trois pots moins chers." }] } : pg)) };
     const prompts: string[] = [];
-    T.customDesignDeps.call = async (system, prompt) => { prompts.push(prompt); expect(system).toMatch(/directeur de création[^]*parcours/); return prompts.length === 1 ? bad : good; };
+    const systems: string[] = [];
+    // 1) conception, 2) relecture qui rend une version encore fautive, 3) correction demandée par le contrôle du Studio.
+    T.customDesignDeps.call = async (system, prompt) => { prompts.push(prompt); systems.push(system); return prompts.length === 3 ? { ...good, corrections: ["Offre par quantité retirée : les offres sont dans le bloc d'achat."] } : bad; };
     try {
       const r = await call("custom.design", ctx, { consigne: "Un matin d'hiver gris, j'ouvre le pot et l'été revient." });
       expect(r.ok, r.summary).toBe(true);
-      expect(prompts).toHaveLength(2);
+      expect(prompts).toHaveLength(3);
+      expect(systems[0]).toMatch(/directeur de création[^]*STRATÉGIE[^]*PARCOURS[^]*RYTHME[^]*EXEMPLE DU NIVEAU ATTENDU/);
+      expect(systems[1]).toMatch(/directeur commercial[^]*sans complaisance/);
       expect(prompts[0]).toMatch(/DEMANDE DU CLIENT[^]*matin d'hiver gris/);
-      expect(prompts[0]).toMatch(/BIBLIOTHÈQUE DE LA FAMILLE[^]*ouverture-photo-pleine · ouverture/);
+      expect(prompts[0]).toMatch(/BIBLIOTHÈQUE DE LA FAMILLE[^]*ouverture-photo-pleine · ouverture · fond photo · moyenne · 1 photo\(s\)/);
       expect(prompts[0]).not.toContain("questions-en-bulles-de-discussion"); // contenu de démonstration exclu
       expect(prompts[0]).toMatch(/Ce qu'elle n'a PAS[^]*avis clients/);
-      expect(prompts[1]).toMatch(/POINTS REFUSÉS PAR LE CONTRÔLE[^]*Offre par quantité/);
+      expect(prompts[1]).toMatch(/CONCEPTION À RELIRE/);
+      expect(prompts[2]).toMatch(/POINTS REFUSÉS PAR LE CONTRÔLE DU STUDIO[^]*Offre par quantité/);
+      expect(r.data.relecture).toEqual(["Offre par quantité retirée : les offres sont dans le bloc d'achat."]);
+      expect(r.data.visiteur).toMatch(/trop sucrées/);
       const t = loadCustomTheme(pid)!;
       expect(t.concept).toMatch(/l'été revient/);
       expect(t.pages[0].journey).toMatch(/Le visiteur arrive sur Accueil/);
@@ -234,6 +242,17 @@ describe("thème sur mesure : outils de SINA", async () => {
       const w = B.sectionWritePrompt("Marque", "Accueil", "Ouverture photo pleine", "fait", "<h2>x</h2>", undefined, { intent: t.pages[0].sections[0].intent, journey: t.pages[0].journey });
       expect(w).toMatch(/PARCOURS DU VISITEUR SUR CETTE PAGE : Le visiteur arrive[^]*CONCEPTION DE CETTE SECTION : Pourquoi ici/);
     } finally { delete T.customDesignDeps.call; }
+  });
+
+  it("conception : chaque objection de la recherche doit trouver sa réponse dans une section posée ; rythme des fonds et densités", async () => {
+    const D = await import("@/lib/syna-agent/custom-theme/design");
+    const base = { visitor: "x".repeat(30), levers: ["a", "b"], concept: "x".repeat(30), header: "en-tete-classique", footer: "pied-de-page-complet", search: null, corrections: [],
+      pages: [{ key: "product", label: "Fiche produit", journey: "x".repeat(30), sections: [{ section: "produit-vedette", why: "x".repeat(12), says: "x".repeat(12) }, { section: "histoire-du-produit-au-defilement", why: "x".repeat(12), says: "x".repeat(12) }, { section: "chiffres-cles", why: "x".repeat(12), says: "x".repeat(12) }] }] };
+    const research = ["Une confiture artisanale, c'est trop sucré", "C'est trop cher pour un pot"];
+    const g = D.designGaps({ ...base, objections: [{ objection: "C'est trop cher pour un pot de confiture", answer: "Le prix au petit-déjeuner…", page: "product", section: "comparatif-nous-les-autres" }] } as any, research);
+    expect(g.blocking).toEqual(["objection de la recherche sans réponse dans la conception : « Une confiture artisanale, c'est trop sucré »", "l'objection « C'est trop cher pour un pot » doit trouver sa réponse dans « comparatif-nous-les-autres » sur la page « product », qui n'y est pas"]);
+    // histoire au défilement (fond sombre) puis chiffres clés (fond sombre) : rythme à revoir
+    expect(g.rhythm).toEqual(["deux sections à fond sombre à la suite sur « Fiche produit » (histoire-du-produit-au-defilement, chiffres-cles)"]);
   });
 
   it("une retouche n'est refusée que si elle CRÉE un point bloquant (un défaut ancien n'empêche pas de le corriger)", async () => {
