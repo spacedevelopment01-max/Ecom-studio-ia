@@ -250,7 +250,7 @@ describe("thème sur mesure : outils de SINA", async () => {
     expect((await call("custom.edit", ctx, { uid: hero, hide: ["body"] })).ok).toBe(false);
     // Structure : remplacer, retirer, ajouter une page ; annuler revient en arrière.
     const shop = loadCustomTheme(pid)!.pages[1];
-    const st = await call("custom.structure", ctx, { ops: [{ op: "replace", uid: shop.sections[1].uid, section: "Questions numérotées" }, { op: "page", key: "boutiques", label: "Nos boutiques" }, { op: "add", page: "boutiques", section: "Boutique et contact" }] });
+    const st = await call("custom.structure", ctx, { ops: [{ op: "replace", uid: shop.sections[1].uid, section: "Vus dans la rue" }, { op: "page", key: "boutiques", label: "Nos boutiques" }, { op: "add", page: "boutiques", section: "Tournée des boutiques éphémères" }] });
     expect(st.ok).toBe(true);
     expect(loadCustomTheme(pid)!.pages.map((p) => p.key)).toContain("boutiques");
     const revBefore = loadCustomTheme(pid)!.rev;
@@ -523,6 +523,19 @@ describe("thème sur mesure : pages pleines", () => {
     const problems = checkCustomTheme(T(short), site).filter((x) => x.level === "bloquant").map((x) => x.text);
     expect(problems).toContain("« Accueil » n'a que 4 section(s) : au moins 8 (accueil)");
     expect(problems).toContain("« Fiche produit » n'a que 3 section(s) : au moins 7 (fiche produit)");
+  });
+
+  it("jamais une section pour en ajouter une : pas d'offre en section à part, jamais la même section sur deux pages", () => {
+    const site = { business: "products" as const, products: 5, platform: "shopify" };
+    const base = fullSite("classique");
+    const T = (pages: typeof base.pages) => ({ family: "classique", style: "classique", rev: 1, header: { uid: "s00000001", id: sectionByRef(base.header)!.id }, footer: { uid: "s00000002", id: sectionByRef(base.footer)!.id }, search: null, pages: pages.map((pg, i) => ({ key: pg.key, label: pg.label, sections: pg.sections.map((t, j) => ({ uid: `s${String(i).padStart(4, "0")}${String(j).padStart(4, "0")}`, id: sectionByRef(t)!.id })) })) }) as unknown as CustomTheme;
+    // Essai Heure Dorée : « Offre par quantité » (aucune offre chez le client) et la même histoire sur deux pages.
+    const pages = base.pages.map((pg) => (pg.key === "home" ? { ...pg, sections: [...pg.sections.slice(0, 7), "Offre par quantité"] } : pg.key === "product" ? { ...pg, sections: [...pg.sections.slice(0, 6), "Histoire du produit au défilement"] } : pg));
+    const problems = checkCustomTheme(T(pages), site).filter((x) => x.level === "bloquant").map((x) => x.text);
+    expect(problems.some((x) => /« Offre par quantité » sur « Accueil » : les offres[^]*bloc d'achat/.test(x))).toBe(true);
+    expect(problems).toContain("« Histoire du produit au défilement » sur « Accueil » et « Fiche produit » : une même section sur deux pages répète ses textes et ses photos");
+    // « Complète ta commande » (suggestions) reste permise.
+    expect(problems.some((x) => x.includes("Complète ta commande"))).toBe(false);
   });
 });
 

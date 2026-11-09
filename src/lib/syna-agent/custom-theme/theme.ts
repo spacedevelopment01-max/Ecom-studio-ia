@@ -183,6 +183,17 @@ export function checkCustomTheme(t: CustomTheme, site?: SiteKind): ThemeProblem[
     if (page.key === "home" && first && first.role !== "ouverture") warn(`l'accueil commence par « ${first.title} » : l'ouverture de l'accueil est une grande photo pleine avec le titre dessus`);
   }
   if (featuredHome > 1) bad("plus d'une section « Produit vedette » sur l'accueil");
+  // Essai Heure Dorée (9 novembre 2026) : pour atteindre 8 et 7 sections, SINA avait ajouté des sections « pour en
+  // ajouter » : une offre par quantité (le client n'en a pas) et la même histoire du produit sur deux pages.
+  const where = new Map<string, string>();
+  for (const page of t.pages) for (const sec of page.sections) {
+    const l = lib(sec);
+    if (!l) continue;
+    // Offres (lots, quantités, coffret) : fonctions du bloc d'achat « Produit vedette », jamais une section à part.
+    if (l.role === "lot" && l.title !== "Complète ta commande") bad(`« ${l.title} » sur « ${page.label} » : les offres (lots, quantités, coffret) sont des fonctions du bloc d'achat « Produit vedette », jamais une section à part`);
+    if (where.has(l.id) && where.get(l.id) !== page.label) bad(`« ${l.title} » sur « ${where.get(l.id)} » et « ${page.label} » : une même section sur deux pages répète ses textes et ses photos`);
+    else where.set(l.id, page.label);
+  }
   // Photos : jamais deux fois la même d'une page à l'autre (sauf la photo d'un produit, sur sa carte ou sa fiche).
   const seen = new Map<string, string>();
   for (const page of t.pages) {

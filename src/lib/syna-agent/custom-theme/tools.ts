@@ -99,7 +99,7 @@ const sectionsTool: AgentTool<{ role?: string; query?: string }> = {
     return {
       ok: true,
       summary: L(`${list.length} section(s) de la famille ${f.family}${a.role ? ` (rôle ${a.role})` : ""}.`, `${list.length} sections.`),
-      hint: "Monte le site de A à Z avec les MEILLEURES sections pour SON produit ou SON service (jamais une section pour prendre une section ; « seulementPour » : jamais ailleurs, ex. tailles, tenues et looks seulement pour des vêtements). Pages obligatoires (clés) : " + requiredPages(siteKind(ctx)).map((r) => `${r.keys[0]} (${r.label})`).join(", ") + ". Règles : l'accueil a AU MOINS 8 sections et la fiche produit AU MOINS 7 (hors en-tête et pied de page), chacune avec son rôle dans l'histoire de la page ; une seule section de cartes (cartes:true) par page ; « Produit vedette » seulement en haut de la fiche produit ou une fois sur l'accueil ; jamais la même section deux fois de suite ; chaque section a un rôle dans l'histoire de la page ; ouverture de l'accueil = grande photo pleine avec le titre dessus.",
+      hint: "Monte le site de A à Z avec les MEILLEURES sections pour SON produit ou SON service (jamais une section pour prendre une section ; « seulementPour » : jamais ailleurs, ex. tailles, tenues et looks seulement pour des vêtements). Pages obligatoires (clés) : " + requiredPages(siteKind(ctx)).map((r) => `${r.keys[0]} (${r.label})`).join(", ") + ". Règles : l'accueil a AU MOINS 8 sections et la fiche produit AU MOINS 7 (hors en-tête et pied de page), chacune avec son rôle dans l'histoire de la page, jamais une section pour en ajouter une : pas d'offre en section à part (les offres sont dans « Produit vedette »), jamais la même section sur deux pages, et une section de preuves (presse, photos de clients, avis, chiffres) seulement si le client a ces preuves (sinon elle ne montrerait que du faux ou des « [À compléter] ») ; une seule section de cartes (cartes:true) par page ; « Produit vedette » seulement en haut de la fiche produit ou une fois sur l'accueil ; jamais la même section deux fois de suite ; chaque section a un rôle dans l'histoire de la page ; ouverture de l'accueil = grande photo pleine avec le titre dessus.",
       data: { famille: f.family, style: f.style, roles: byRole },
     };
   },
@@ -173,7 +173,8 @@ const buildTool: AgentTool<BuildArgs> = {
   }).strict(),
   estimate: (ctx, a) => {
     const t = buildPlan(ctx);
-    const sections = allSectionsCount(t), photos = a.photos === false ? 0 : photosToCreate(examplePhotoCount(t), a.images ?? "sina", a.clientAssets?.length ?? 0);
+    // Sections à écrire : toutes avec rewrite, sinon seulement celles encore en texte d'exemple (le devis comptait tout le site).
+    const sections = a.rewrite ? allSectionsCount(t) : allSections(t).filter((x) => !x.s.clientTexts).length, photos = a.photos === false ? 0 : photosToCreate(examplePhotoCount(t), a.images ?? "sina", a.clientAssets?.length ?? 0);
     const unit = (customPhotoDeps.unit ?? photoUnit)();
     if (photos && unit == null) throw new Error(L("Aucun modèle d'images utilisable pour les photos du site.", "No usable image model."));
     // + le plan des textes de tout le site (un appel, avant les sections)
