@@ -15,6 +15,7 @@ import { decideBuyFeatures, deliveryFrom, freeShippingFrom, loadShopOffers, type
 import { companyOf } from "../activity";
 import { DEMO_BRANDS, LIBRARY_DIR, sectionLibrary, withBrandName } from "./library";
 import { allSections, sectionHtml, type CtSection, type CustomTheme } from "./theme";
+import { all } from "../../db";
 
 const read = (f: string) => { try { return fs.readFileSync(path.join(LIBRARY_DIR(), f), "utf8"); } catch { return ""; } };
 let templates: string | null = null;
@@ -160,6 +161,9 @@ body{margin:0;background:#E7E3DC}
 .ctw .el1-hd,.ctw .dq1-hd{display:none}
 .ctw .el1{padding-top:14px}
 .ctw .zm9-tx img:nth-of-type(3){display:none}
+.ctw .map--real{display:grid;place-items:center;align-content:center;gap:10px;min-height:220px;padding:24px;text-align:center;text-decoration:none;color:inherit;background:repeating-linear-gradient(45deg,rgba(0,0,0,.035) 0 12px,transparent 12px 24px),color-mix(in srgb,var(--b-soft,#F3EFE7) 70%,#fff)}
+.ctw .map--real .map-real{display:flex;align-items:center;gap:10px;font-weight:600}
+.ctw .map--real .map-real b{color:var(--b-primary,#8B5E34)}
 .ctw-logo{display:block;max-height:44px;width:auto;max-width:180px;object-fit:contain}
 .ctw-note{position:fixed;left:12px;bottom:12px;z-index:2147483000;max-width:min(560px,calc(100% - 24px));font:500 12px/1.35 system-ui,sans-serif;background:rgba(20,18,16,.88);color:#fff;padding:8px 12px;border-radius:12px;pointer-events:none}
 `;
@@ -263,6 +267,25 @@ const PICK_JS = `(function(){
 /** nonce : jeton des scripts du rendu (feuille de sécurité de la réponse : aucun autre script ne s'exécute). */
 export type RenderOptions = { studio?: boolean; title?: string; nonce?: string; /** Aperçu posé dans le Studio (onglet Boutique, fil de SINA) : la barre de pages du thème est celle du Studio. */ embed?: boolean };
 
+/**
+ * Carte de l'adresse : jamais une image (essai réel du 9 novembre 2026 : un plan de quartier DESSINÉ par l'IA, avec un
+ * repère, montré comme la vraie carte). Le cadre ouvre la vraie carte OpenStreetMap à l'adresse du client ; sans adresse,
+ * « [À compléter : adresse] ».
+ */
+export function realMap(html: string, address: string | null): string {
+  if (!/<a class="map"/.test(html)) return html;
+  const q = encodeURIComponent(address ?? "");
+  const label = address ? esc(address) : "[À compléter : adresse]";
+  let out = html.replace(/<a class="map"[^>]*>[\s\S]*?<\/a>/, address
+    ? `<a class="map map--real" href="https://www.openstreetmap.org/search?query=${q}" target="_blank" rel="noopener" aria-label="Ouvrir la carte de l'adresse"><span class="map-real"><b aria-hidden="true">◉</b>${label}</span><span class="go">Voir l'adresse sur la carte</span><span class="osm">© contributeurs OpenStreetMap</span></a>`
+    : `<div class="map map--real"><span class="map-real">${label}</span></div>`);
+  if (address) out = out.replace(/href="https:\/\/www\.openstreetmap\.org\/directions[^"]*"/g, `href="https://www.openstreetmap.org/directions?to=${q}"`).replace(/href="https:\/\/www\.google\.[a-z.]+\/maps[^"]*"/g, `href="https://www.google.com/maps/search/?api=1&amp;query=${q}"`);
+  return out;
+}
+function projectAddress(projectId: string): string | null {
+  try { const row = all<{ settings_json: string }>("SELECT settings_json FROM projects WHERE id=?", projectId)[0]; const a = row ? (JSON.parse(row.settings_json || "{}").company?.address ?? "") : ""; return typeof a === "string" && a.trim() ? a.trim() : null; } catch { return null; }
+}
+
 export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand">, t: CustomTheme, o: RenderOptions = {}): string {
   const lib = sectionLibrary();
   templates ??= read("templates.html");
@@ -273,7 +296,8 @@ export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand">, t: 
   const flags = buyFlags(featuresOf(p.id));
   const pre = `window.TB_MAP=${JSON.stringify(linkMap(t))};window.CT_NAME=${JSON.stringify(name)};window.CT_DEMO=${JSON.stringify(DEMO_BRANDS.map((d) => d.replace(/\s+/g, "\\s+")))};window.CT_LOGO=${JSON.stringify(p.brand?.logo?.assetId ? assetUrl({ id: p.brand.logo.assetId }) : null)};(function(D){var F=${JSON.stringify(flags)};for(var k in F)D[k]=F[k]})(document.documentElement.dataset);`;
   const bar = t.pages.map((pg, i) => `<button type="button" data-pgb="${esc(pg.key)}" aria-pressed="${i === 0}">${esc(pg.label)}</button>`).join("");
-  const body = t.pages.map((pg, i) => `<main class="tb-pg" data-pg="${esc(pg.key)}"${i ? " hidden" : ""}>${pg.sections.map((s) => sectionMarkup(s, name, "page")).join("\n")}</main>`).join("\n");
+  const address = projectAddress(p.id);
+  const body = t.pages.map((pg, i) => `<main class="tb-pg" data-pg="${esc(pg.key)}"${i ? " hidden" : ""}>${pg.sections.map((s) => realMap(sectionMarkup(s, name, "page"), address)).join("\n")}</main>`).join("\n");
   const shell = (s: CtSection | null, place: string) => (s ? sectionMarkup(s, name, roleOf(place)) : "");
   const title = o.title ?? `${name} — thème sur mesure`;
   const n = o.nonce ? ` nonce="${esc(o.nonce)}"` : "";

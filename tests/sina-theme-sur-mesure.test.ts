@@ -146,6 +146,18 @@ describe("thème sur mesure : rendu", () => {
     if (process.env.CT_DUMP) for (const [f, s] of [["moderne", "sport-chic"], ["moderne", "streetwear-neon"], ["classique", "classique"]] as const) fs.writeFileSync(path.join(process.env.CT_DUMP, `ct-${s}.html`), renderCustomTheme(proj, starterTheme(f, s), { studio: true, nonce: "n0nce" }));
   });
 
+  it("carte de l'adresse : jamais une image (encore moins dessinée par l'IA), la vraie carte s'ouvre à l'adresse du client", async () => {
+    const { realMap } = await import("@/lib/syna-agent/custom-theme/render");
+    const { photoSlots } = await import("@/lib/syna-agent/custom-theme/brand");
+    const html = sectionByRef("Contact")!.html.replace('src="photos/carte-contact.jpg"', 'src="/api/files/plan-dessine"');
+    const out = realMap(html, "12 rue des Vergers, 26000 Valence");
+    expect(out).not.toMatch(/plan-dessine|carte-contact|mlat=44\.84985/);
+    expect(out).toContain("https://www.openstreetmap.org/search?query=12%20rue%20des%20Vergers%2C%2026000%20Valence");
+    expect(realMap(html, null)).toContain("[À compléter : adresse]");
+    const t: CustomTheme = { version: 1, family: "classique", style: "classique", header: null, footer: null, search: null, pages: [{ key: "contact", label: "Contact", sections: [{ uid: "s00000002", id: sectionByRef("Contact")!.id }] }], rev: 0, at: 0 };
+    expect(photoSlots(t).map((x) => x.file)).not.toContain("carte-contact.jpg");
+  });
+
   it("bloc d'achat : seules les fonctions que le produit a vraiment", () => {
     expect(buyFlags(null)).toEqual({ poInit: "1" });
     const f = { colors: null, formats: [{ option: "Taille", values: ["S", "M"] }], promo: null, quantity: { kind: "bogo", buy: 2, free: 1 }, subscription: null, bundle: null, gifts: [], range: ["A", "B"], delivery: { minDays: 2, maxDays: 4, cutoffHour: null }, loyalty: null, hidden: [] } as any;
@@ -345,7 +357,8 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       expect(out.sections).toBe(writes);
       expect(photos).toBeGreaterThan(0);
       expect(out.photosMade).toBe(photos);
-      for (const x of allSections(t)) expect(sectionHtml(x.s), x.place).not.toMatch(/photos\/[a-z]+-?[a-z0-9]*\.(webp|jpg|png)/);
+      // la carte n'est jamais une photo : la vraie carte s'ouvre à l'adresse du client (realMap)
+      for (const x of allSections(t)) expect(sectionHtml(x.s).replace(/photos\/(carte|map|plan)-[\w-]*\.(webp|jpg|png)/g, ""), x.place).not.toMatch(/photos\/[a-z]+-?[a-z0-9]*\.(webp|jpg|png)/);
       expect(allSections(t).filter((x) => x.s.clientTexts).length).toBeGreaterThan(0);
     } finally { delete T.customPhotoDeps.unit; delete B.customBrandDeps.write; delete B.customBrandDeps.photo; }
   });

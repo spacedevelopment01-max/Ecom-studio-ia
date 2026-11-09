@@ -102,7 +102,8 @@ export function applyWrite(html: string, w: SectionWrite): { html: string; faile
 
 /** Emplacements de photos encore d'exemple dans le thème (une photo par emplacement, dédoublonnés par section). */
 export function photoSlots(t: CustomTheme): { uid: string; place: string; section: string; file: string }[] {
-  return allSections(t).flatMap((x) => [...new Set([...sectionHtml(x.s).matchAll(/photos\/([\w-]+\.(?:webp|png|jpg))/g)].map((m) => m[1]))]
+  // Les cartes (plan d'adresse) ne sont jamais des photos à créer : la vraie carte s'ouvre à l'adresse du client.
+  return allSections(t).flatMap((x) => [...new Set([...sectionHtml(x.s).matchAll(/photos\/([\w-]+\.(?:webp|png|jpg))/g)].map((m) => m[1]).filter((f) => !/^(carte|map|plan)-/.test(f)))]
     .map((file) => ({ uid: x.s.uid, place: x.page?.label ?? x.place, section: libSection(x.s.id)?.title ?? x.s.id, file })));
 }
 export const examplePhotoCount = (t: CustomTheme): number => photoSlots(t).length;
@@ -165,7 +166,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
 
   // 2) Photos : vraie photo du produit, sinon photo créée dans la direction artistique de la marque.
   if (a.photos !== false) {
-    const todo = Object.entries(briefs).flatMap(([uid, list]) => list.map((ph) => ({ uid, ph })));
+    const todo = Object.entries(briefs).flatMap(([uid, list]) => list.map((ph) => ({ uid, ph }))).filter((x) => !/(^|\/)(carte|map|plan)-[\w-]*\.(?:webp|png|jpe?g)/.test(x.ph.find));
     const mode: ImagesMode = a.images ?? "sina";
     // Images du client d'abord (« client » ou « mix »), dans l'ordre ; jamais une même image sur deux emplacements.
     const own = mode === "sina" ? [] : (a.clientAssets ?? []).filter((id) => { const x = getAsset(id); return !!x && x.project_id === p.id && !x.deleted_at && x.kind === "image"; });
