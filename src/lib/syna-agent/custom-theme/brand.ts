@@ -37,7 +37,7 @@ export const CUSTOM_BRAND_JOB = "syna.custom.brand";
  * autres. Les vraies photos de ses produits servent toujours aux photos de ses produits.
  */
 export type ImagesMode = "sina" | "client" | "mix";
-export type CustomBrandPayload = { projectId: string; capMicro: number; conversationId?: string | null; photos?: boolean; images?: ImagesMode; clientAssets?: string[]; rewrite?: boolean };
+export type CustomBrandPayload = { projectId: string; capMicro: number; conversationId?: string | null; photos?: boolean; images?: ImagesMode; clientAssets?: string[]; rewrite?: boolean; consigne?: string | null };
 
 /** Plafond d'un appel d'écriture d'une section (même modèle que les textes du site). */
 export const SECTION_TEXT_CAP_MICRO = 150_000;
@@ -226,7 +226,8 @@ export async function runCustomBrandJob(ctx: JobContext) {
   let t = loadCustomTheme(p.id);
   if (!t) throw new UserFacingError(L("Aucun thème sur mesure à monter : choisis d'abord ton style.", "No custom theme yet."));
   const j = a.conversationId ? (() => { try { return journeyOf(a.conversationId!); } catch { return null; } })() : null;
-  const brief = brandBrief(p, j);
+  // Demande du client pour ses textes (essai Heure Dorée : « le matin d'hiver où l'été revient » n'arrivait pas au rédacteur).
+  const brief = [brandBrief(p, j), a.consigne ? `DEMANDE DU CLIENT POUR SES TEXTES (prioritaire, à suivre dans tout le site, ses mots) : « ${a.consigne} »` : ""].filter(Boolean).join("\n");
   const name = p.brand?.name ?? p.name;
   const products = (() => { try { return listProducts(p.id); } catch { return []; } })();
   const fam = loadFamilyChoice(p.id), people = peopleAllowed(p.id), fu = siteArtUniverse(fam, { people });

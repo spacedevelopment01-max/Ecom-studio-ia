@@ -382,7 +382,15 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       const re = await fr(() => getTool("custom.build")!.estimate!(ctx, { photos: false, rewrite: true }));
       expect(re.label).toMatch(/textes de tout ton site réécrits/);
       writes = 0; plans = 0;
-      const again: any = await fr(() => B.runCustomBrandJob({ ...fake, job: { id: `${job.id}-re` }, payload: { ...fake.payload, photos: false, rewrite: true } }));
+      // La demande du client (ses mots) arrive au plan et à chaque section.
+      const seen: string[] = [];
+      const plan0 = B.customBrandDeps.plan!, write0 = B.customBrandDeps.write!;
+      B.customBrandDeps.plan = async (prompt, k) => { seen.push(prompt); return plan0(prompt, k); };
+      B.customBrandDeps.write = async (prompt, k) => { seen.push(prompt); return write0(prompt, k); };
+      const again: any = await fr(() => B.runCustomBrandJob({ ...fake, job: { id: `${job.id}-re` }, payload: { ...fake.payload, photos: false, rewrite: true, consigne: "Un soir d'hiver, la bougie rallume l'été." } }));
+      expect(seen.length).toBe(allSections(t).length + 1);
+      for (const x of seen) expect(x).toContain("DEMANDE DU CLIENT POUR SES TEXTES (prioritaire, à suivre dans tout le site, ses mots) : « Un soir d'hiver, la bougie rallume l'été. »");
+      B.customBrandDeps.plan = plan0; B.customBrandDeps.write = write0;
       expect(plans).toBe(1);
       expect(writes).toBe(allSections(t).length);
       expect(again.sections).toBe(writes);
