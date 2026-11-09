@@ -27,9 +27,9 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
   };
 
   const good = (): any[] => [
-    { key: "A", name: "Ocrea", nameKind: "invente", nameStyle: "mot français évocateur", nameWhy: "", nameCandidates: ["a","b","c","d","e","f","g","h","i","j","k","l"], nameExpression: "expression existante", nameAnchor: "la flamme de la bougie", slogan: "La chaleur du fait main", sloganTone: "poétique", promise: "Des bougies coulées à la main qui réchauffent ton intérieur.", territory: "fierté artisanale", ground: "blanc", palette: { dark: "#111111", primary: "#1D4ED8", secondary: "#DBEAFE", accent: "#F97316", light: "#FFFFFF" }, paletteFamily: "tons chauds ton sur ton", fonts: { heading: "cormorant_n6", body: "inter_n4" }, fontStyle: "serif fine contrastée", tone: { adjectives: ["chaleureux", "précis", "sincère"], avoid: ["superlatifs", "jargon", "promesses"] }, logoStyle: "embleme", logoIdea: "Une flamme dans un sceau rond.", why: "Ta clientèle aime l'artisanat." },
+    { key: "A", name: "Ocrea", nameKind: "mot", nameStyle: "mot français évocateur", nameWhy: "", nameCandidates: ["a","b","c","d","e","f","g","h","i","j","k","l"], nameExpression: "expression existante", nameAnchor: "la flamme de la bougie", slogan: "La chaleur du fait main", sloganTone: "poétique", promise: "Des bougies coulées à la main qui réchauffent ton intérieur.", territory: "fierté artisanale", ground: "blanc", palette: { dark: "#111111", primary: "#1D4ED8", secondary: "#DBEAFE", accent: "#F97316", light: "#FFFFFF" }, paletteFamily: "tons chauds ton sur ton", fonts: { heading: "cormorant_n6", body: "inter_n4" }, fontStyle: "serif fine contrastée", tone: { adjectives: ["chaleureux", "précis", "sincère"], avoid: ["superlatifs", "jargon", "promesses"] }, logoStyle: "embleme", logoIdea: "Une flamme dans un sceau rond.", why: "Ta clientèle aime l'artisanat." },
     { key: "B", name: "Lumo", nameKind: "invente", nameStyle: "mot inventé court", nameWhy: "", nameCandidates: ["a","b","c","d","e","f","g","h","i","j","k","l"], nameExpression: "expression existante", nameAnchor: "la flamme de la bougie", slogan: "Allume l'instant", sloganTone: "direct", promise: "Une lumière douce pour chaque moment calme.", territory: "évasion", ground: "degrade", gradient: { from: "#FFD6A5", to: "#C8B6FF" }, palette: { dark: "#1F1A14", primary: "#B91C1C", secondary: "#FDE68A", accent: "#16A34A", light: "#F5EEDC" }, paletteFamily: "sombre et un accent vif", fonts: { heading: "archivo_n8", body: "dm_sans_n4" }, fontStyle: "grotesque grasse", tone: { adjectives: ["direct", "lumineux", "moderne"], avoid: ["mièvrerie", "jargon", "promesses"] }, logoStyle: "lettrage", logoIdea: "Le O de Lumo devient une flamme.", why: "Tu veux une image moderne." },
-    { key: "C", name: "Brindille", nameKind: "invente", nameStyle: "nom composé", nameWhy: "", nameCandidates: ["a","b","c","d","e","f","g","h","i","j","k","l"], nameExpression: "expression existante", nameAnchor: "la flamme de la bougie", slogan: "Complice de tes soirées", sloganTone: "complice et léger", promise: "Des bougies joyeuses à offrir et à s'offrir.", territory: "complicité joyeuse", ground: "sombre", palette: { dark: "#0B0B12", primary: "#FACC15", secondary: "#312E81", accent: "#C084FC", light: "#F5F5F7" }, paletteFamily: "clair et frais", fonts: { heading: "nunito_n8", body: "karla_n4" }, fontStyle: "ronde épaisse", tone: { adjectives: ["complice", "léger", "joyeux"], avoid: ["froideur", "jargon", "promesses"] }, logoStyle: "mascotte", logoIdea: "Une petite bougie souriante.", why: "Tu vends beaucoup en cadeau." },
+    { key: "C", name: "Brindille", nameKind: "mot", nameStyle: "nom composé", nameWhy: "", nameCandidates: ["a","b","c","d","e","f","g","h","i","j","k","l"], nameExpression: "expression existante", nameAnchor: "la flamme de la bougie", slogan: "Complice de tes soirées", sloganTone: "complice et léger", promise: "Des bougies joyeuses à offrir et à s'offrir.", territory: "complicité joyeuse", ground: "sombre", palette: { dark: "#0B0B12", primary: "#FACC15", secondary: "#312E81", accent: "#C084FC", light: "#F5F5F7" }, paletteFamily: "clair et frais", fonts: { heading: "nunito_n8", body: "karla_n4" }, fontStyle: "ronde épaisse", tone: { adjectives: ["complice", "léger", "joyeux"], avoid: ["froideur", "jargon", "promesses"] }, logoStyle: "mascotte", logoIdea: "Une petite bougie souriante.", why: "Tu vends beaucoup en cadeau." },
   ];
 
   /** Fil avec l'étape 0 validée (création complète ou refonte), comme après un vrai parcours. */
@@ -108,7 +108,8 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
 
   it("références du propriétaire (7 novembre) : ses 49 palettes passent le contrôle, ses 50 noms et slogans aussi, et Claude les reçoit comme exemples à ne pas recopier", async () => {
     const R = await import("@/lib/syna-agent/brand-references");
-    expect(R.NAME_EXAMPLES).toHaveLength(50);
+    expect(R.NAME_EXAMPLES).toHaveLength(52); // ses 50 exemples + SOLSTICE et RUPTURE (genre préféré du 9 novembre)
+    expect(R.NAME_EXAMPLES.map((n) => n.name)).toEqual(expect.arrayContaining(["Solstice", "Rupture"]));
     expect(R.PALETTE_EXAMPLES).toHaveLength(49);
     for (const p of R.PALETTE_EXAMPLES) {
       const sombre = p.ground === "sombre";
@@ -357,11 +358,15 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     expect(fi).toMatch(/Identité C : nameExpression vide/);
     // « Ça doit faire plus marque » : trois genres de noms, jamais une phrase.
     expect(I.IDENTITY_SYSTEM).toMatch(/Le nom FAIT MARQUE[^]*« Bien Roulé », « Ça Roule », « Dans le Sac » ont été refusés/);
-    // Produits : trois mots inventés (choix du 7 novembre) ; services : trois genres différents.
+    // Produits : deux mots forts (genre SOLSTICE / RUPTURE, choix du 9 novembre) et un mot inventé ; services : trois genres différents.
     const prod = J.emptyJourney(); prod.start.business = { value: "products", status: "answered", source: "client", at: 1 } as any;
-    expect(I.nameKindRule(prod)).toMatch(/MARQUE DE PRODUITS → les TROIS noms sont des MOTS INVENTÉS/);
-    const real = good(); real[0].nameKind = "mot";
-    expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: real }).identities, prod).join()).toMatch(/Identité A : marque de produits → le nom doit être un mot inventé/);
+    expect(I.nameKindRule(prod)).toMatch(/MARQUE DE PRODUITS → DEUX noms sont des MOTS FORTS[^]*SOLSTICE[^]*RUPTURE[^]*TROISIÈME nom est un MOT INVENTÉ/);
+    expect(refs).toMatch(/GENRE PRÉFÉRÉ DU PROPRIÉTAIRE[^]*SOLSTICE/);
+    const allInvented = good().map((x) => ({ ...x, nameKind: "invente" }));
+    expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: allInvented }).identities, prod).join()).toMatch(/deux noms « mot fort »/);
+    const noInvented = good().map((x) => ({ ...x, nameKind: "mot" }));
+    expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: noInvented }).identities, prod).join()).toMatch(/un mot inventé/);
+    expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: good() }).identities, prod).join()).not.toMatch(/mot fort/);
     expect(I.identityPrompt(prod)).toMatch(/# Genre des noms : MARQUE DE PRODUITS/);
     // « C'est un peu mieux » : repères de vrais noms inventés et de leur fabrication ; fusion invisible, pas de terminaison plaquée.
     expect(refs).toMatch(/Velcro \(« velours » \+ « crochet »/);
@@ -370,7 +375,7 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     const serv = J.emptyJourney(); serv.start.business = { value: "services", status: "answered", source: "client", at: 1 } as any;
     expect(I.nameKindRule(serv)).toMatch(/ENTREPRISE DE SERVICES → trois genres différents/);
     expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: good() }).identities, serv).join()).toMatch(/trois genres différents/);
-    const mixed = good(); mixed[1].nameKind = "mot"; mixed[2].nameKind = "deux_mots";
+    const mixed = good(); mixed[2].nameKind = "deux_mots";
     expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: mixed }).identities, serv).join()).not.toMatch(/genres|mot inventé/);
     const long = good(); long[1].name = "Lumo Clair"; // un mot inventé tient en un seul mot
     expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: long }).identities, J.emptyJourney()).join()).toMatch(/« Lumo Clair » doit tenir en un seul mot/);

@@ -119,10 +119,27 @@ export function familyCards(): { family: FamilyId; style: string; title: string;
   })));
 }
 
+/**
+ * Direction artistique des IMAGES pour la famille Moderne (consigne du propriétaire du 9 novembre 2026 : « des images
+ * dignes des thèmes, avec la même charte graphique ; ce n'est pas le même style que les autres »). Elle remplace
+ * l'univers d'images du projet pour TOUTES ses images (site, publications, publicités), aux couleurs de SA marque.
+ * Sans autorisation de personnes (règle du propriétaire), le même style est tenu avec les produits seuls.
+ */
+export type FamilyUniverse = { id: string; idea: string; light: string; setting: string; style: string; emotion: string; composition: string[]; density: "sparse" | "balanced" | "rich" };
+export function familyArtUniverse(c: FamilyChoice | null, o: { people: boolean }): FamilyUniverse | null {
+  if (!c || c.family !== "moderne") return null;
+  const who = o.people ? "mannequins inventés en tenue de la marque, poses assurées, plein pied ou mi-corps" : "produits seuls mis en scène comme des pièces de mode, sans aucune personne";
+  return c.style === "streetwear-neon"
+    ? { id: "moderne-streetwear-neon", idea: `Photographie de mode urbaine éditoriale, de nuit : ${who}`, light: "nuit, contraste fort, reflets de néon de la couleur d'accent de la marque, sols mouillés", setting: "rues, béton brut, rideaux métalliques, parkings, toits de ville", style: "photographie de mode streetwear éditoriale, rendu réaliste et net, grain léger", emotion: "audace, énergie, appartenance", composition: ["plein pied", "contre-plongée légère", "sujet sur un tiers, l'autre côté dégagé pour le titre"], density: "sparse" }
+    : { id: "moderne-sport-chic", idea: `Photographie de mode d'été éditoriale, en plein soleil : ${who}`, light: "soleil chaud, ombres nettes de feuillage ou de palmier", setting: "murs de terre cuite, courts de tennis en terre battue, escaliers de pierre blanche, plages, pergolas", style: "photographie de catalogue de prêt-à-porter haut de gamme, rendu réaliste", emotion: "élan, assurance, été", composition: ["plein pied", "sujet sur un tiers, l'autre côté dégagé pour le titre", "nature morte graphique pour les produits"], density: "sparse" };
+}
+
 /** Consigne de la famille pour les maquettes en code (vide tant que le client n'a pas choisi). */
-export function familyBrief(c: FamilyChoice | null): string[] {
+export function familyBrief(c: FamilyChoice | null, o: { people?: boolean } = {}): string[] {
   if (!c) return [];
   const f = familyOf(c.family);
   const s = f.styles.find((x) => x.id === c.style) ?? f.styles[0];
-  return [`FAMILLE DE SECTIONS CHOISIE PAR LE CLIENT : ${f.fr}${c.family === "moderne" ? ` · ${s.fr}` : ""} (ambiance ${s.mood}, couleurs remplacées par celles de SA marque).`, ...f.brief];
+  const u = familyArtUniverse(c, { people: !!o.people });
+  return [`FAMILLE DE SECTIONS CHOISIE PAR LE CLIENT : ${f.fr}${c.family === "moderne" ? ` · ${s.fr}` : ""} (ambiance ${s.mood}, couleurs remplacées par celles de SA marque).`, ...f.brief,
+    ...(u ? [`PHOTOS NOUVELLES (même charte que la famille) : ${u.style} ; ${u.idea} ; lumière : ${u.light} ; décors : ${u.setting}. Pour l'ouverture, la photo du ${o.people ? "mannequin" : "produit"} est sur un fond uni de la couleur exacte de la section (effet détouré qui déborde du cadre) ; ${o.people ? "le mannequin est entier, de la tête aux pieds" : "le produit est entier"}, avec de l'espace autour, rien de coupé.`] : [])];
 }

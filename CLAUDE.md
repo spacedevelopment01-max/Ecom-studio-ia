@@ -64,6 +64,12 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   choix par rôle). **Jamais de mélange de familles dans un thème.** SINA montre les familles au client **en image**
   (`theme.families`) et enregistre **son** choix (`theme.family`) avant tout thème ou maquette. Les textes des sections
   ne reprennent jamais ceux des modèles montrés (même traduits).
+  **Images de la famille Moderne** : quand le client la choisit, TOUTES ses images (site, publications, publicités)
+  suivent sa charte (`familyArtUniverse`, direction artistique du projet) : photo de mode éditoriale, mannequins inventés
+  seulement si les personnes sont autorisées (sinon produits seuls dans le même style), sujet entier, rien de coupé.
+- **Noms de marque** (décision du 9 novembre 2026) : genre préféré = le **mot fort** comme SOLSTICE ou RUPTURE (un seul
+  mot qui existe, 2 ou 3 syllabes, qui évoque l'univers ou l'attitude) ; marques de produits : deux mots forts + un mot
+  inventé (`nameKindRule`, `src/lib/syna-agent/identities.ts`).
 - **Écrire une consigne d'image comme le propriétaire** (modèle réussi du 16/10, `docs/guide-images-ia.md`) : décrire
   UNE photo, en phrases complètes et logiques, dans cet ordre : 1) type de photo, format, point de vue, cadrage ;
   2) surface et fond ; 3) chaque objet dans son paragraphe : place exacte dans l'image, forme, matière, couleur, état,

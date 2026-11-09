@@ -45,6 +45,23 @@ describe("SINA — familles de sections Classique et Moderne", async () => {
     expect(brief).toContain("Aucune section de la famille Classique");
   });
 
+  it("images de la famille Moderne : même charte pour toutes les images, personnes seulement si autorisées", async () => {
+    expect(F.familyArtUniverse(null, { people: true })).toBeNull();
+    expect(F.familyArtUniverse({ family: "classique", style: "classique", chosenAt: 1 }, { people: true })).toBeNull();
+    const night = F.familyArtUniverse({ family: "moderne", style: "streetwear-neon", chosenAt: 1 }, { people: true })!;
+    expect(night.id).toBe("moderne-streetwear-neon");
+    expect(night.idea).toContain("mannequins inventés");
+    expect(F.familyArtUniverse({ family: "moderne", style: "sport-chic", chosenAt: 1 }, { people: false })!.idea).toContain("sans aucune personne");
+    const C = await import("@/lib/syna-agent/mockup-code/code-mockup");
+    const ph = { id: "nouvelle-1", description: "Une photo.", ratio: "4:5" };
+    expect(C.codePhotoPrompt(ph, { name: "Rupture", logo: false, product: false })).toContain("aucune personne");
+    const withPeople = C.codePhotoPrompt(ph, { name: "Rupture", logo: false, product: false, direction: night.style, people: true });
+    expect(withPeople).toContain("mannequins inventés");
+    expect(withPeople).toContain("Direction artistique de la marque");
+    expect(withPeople).not.toContain("aucune personne");
+    expect(F.familyBrief({ family: "moderne", style: "sport-chic", chosenAt: 1 }, { people: false }).join("\n")).toMatch(/PHOTOS NOUVELLES[^]*produit est entier/);
+  });
+
   it("la consigne de la famille entre dans la maquette en code ; outils SINA gratuits au registre", async () => {
     const C = await import("@/lib/syna-agent/mockup-code/code-mockup");
     const { mockupPages } = await import("@/lib/syna-agent/mockup-code/pages");

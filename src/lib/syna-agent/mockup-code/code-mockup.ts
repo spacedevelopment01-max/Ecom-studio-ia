@@ -233,14 +233,15 @@ export function applyEdits(html: string, edits: CodeEdit[]): { html: string; fai
 }
 
 /** Consigne d'une photo nouvelle pour l'IA d'images (photo du site en haute définition, sans maquette en référence). */
-export function codePhotoPrompt(photo: CodePhoto, f: { name: string; logo: boolean; product: boolean }): string {
+export function codePhotoPrompt(photo: CodePhoto, f: { name: string; logo: boolean; product: boolean; direction?: string | null; people?: boolean }): string {
   return [
     `Photographie en haute définition pour le site « ${f.name} », au format ${photo.ratio}, nette et détaillée, de qualité professionnelle.`,
     photo.background ? `Le fond de la photo est la couleur unie exacte ${photo.background} sur tout le pourtour (aucun dégradé, aucun cadre, aucune vignette), pour que la photo se fonde dans la section du site qui a ce fond.` : "",
     photo.description.replace(/\s+$/, ""),
+    f.direction ? `Direction artistique de la marque (à tenir) : ${f.direction}` : "",
     f.product ? "La photo du produit réel est jointe : le produit est reproduit exactement (forme, couleurs, étiquette), entier, rien n'est coupé." : "",
     f.logo ? "Le logo de la marque est joint : il est reproduit exactement sur l'emballage, sans autre mot." : "Aucun logo, aucun nom de marque : ni sur un objet, ni sur une tasse, ni posé sur le fond.",
-    "Aucun autre texte, aucune lettre, aucun chiffre, aucun filigrane, aucune personne, aucun visage, aucune main. Aucun objet supplémentaire.",
+    f.people ? "Les personnes éventuelles sont des mannequins inventés (jamais une personne réelle ni connue), entiers dans le cadre, avec de l'espace au-dessus de la tête et sous les pieds, mains et visages naturels. Aucun autre texte, aucune lettre, aucun chiffre, aucun filigrane, aucun logo sur les vêtements. Aucun objet supplémentaire." : "Aucun autre texte, aucune lettre, aucun chiffre, aucun filigrane, aucune personne, aucun visage, aucune main. Aucun objet supplémentaire.",
   ].filter(Boolean).join("\n");
 }
 
