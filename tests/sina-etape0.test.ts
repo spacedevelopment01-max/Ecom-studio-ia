@@ -54,10 +54,10 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
 
   it("une étape pas encore construite est annoncée, sans outil payant", () => {
     const j = J.emptyJourney();
-    for (let n = 0; n <= 7; n++) J.setStep(j, n, "done");
-    J.setStep(j, 8, "doing");
-    expect(J.currentStep(j)).toBe(8);
-    expect(J.READY_STEPS).not.toContain(8);
+    for (let n = 0; n <= 8; n++) J.setStep(j, n, "done");
+    J.setStep(j, 9, "doing");
+    expect(J.currentStep(j)).toBe(9);
+    expect(J.READY_STEPS).not.toContain(9);
     expect(J.journeyContext(j)).toMatch(/n'est pas encore disponible .*AUCUN outil payant/);
   });
 
@@ -336,8 +336,9 @@ describe("SINA — niveaux de coût : gratuit (moteur local), Haiku, Opus", asyn
     expect(modelFor(5)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 5 : outils gratuits
     expect(modelFor(6)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 6 : thèmes par outils gratuits
     expect(modelFor(7)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 7 : codage et photos dans leurs tâches
-    expect(modelFor(8)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 8 pas encore ouverte : simple annonce
-    J.READY_STEPS.push(8);
-    try { expect(modelFor(8)).toBeUndefined(); } finally { J.READY_STEPS.pop(); }
+    expect(modelFor(8)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 8 : rédaction et images dans la tâche theme.brand
+    expect(modelFor(9)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 9 pas encore ouverte : simple annonce
+    J.READY_STEPS.push(9);
+    try { expect(modelFor(9)).toBeUndefined(); } finally { J.READY_STEPS.pop(); }
   });
 });

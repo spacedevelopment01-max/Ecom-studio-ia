@@ -290,7 +290,12 @@ function fullCopyJson(value: unknown, space?: number): string {
   return encoded;
 }
 
-export async function aiShopCopy(b: Base, p: Project, feedback?: string, previous?: ShopCopy): Promise<ShopCopy> {
+/**
+ * brief : direction de rédaction donnée par SINA (angle marketing choisi par le client, son émotion, son accroche,
+ * ce qu'on raconte) : chaque texte la fait ressentir (consigne du propriétaire du 9 novembre 2026 : « du bon copywriting
+ * de l'émotion, dans l'angle marketing choisi »). Absent : comportement inchangé.
+ */
+export async function aiShopCopy(b: Base, p: Project, feedback?: string, previous?: ShopCopy, brief?: string): Promise<ShopCopy> {
   return llmJson(
     {
       task: "copywriting",
@@ -304,7 +309,7 @@ export async function aiShopCopy(b: Base, p: Project, feedback?: string, previou
       reference: skillReference("site_copy"),
       prompt: `Rédige l'ensemble des textes de la boutique au format JSON suivant (toutes les clés obligatoires) :
 seo{title,description}, announcement[0-3 annonces factuelles, vide si rien de confirmé], hero{eyebrow,heading,line1,line2 (titre en deux lignes très courtes pour le héros éditorial),text,cta}, statement{eyebrow,heading,text}, features{heading,items[2-6]{title,text,icon parmi sparkle|leaf|drop|hand|shield|truck|return|check}}, story{heading,steps[2-5]{title,text}}, detail{eyebrow,heading,text}, specs{heading,items[]{label,value}}, faq{heading,items[2-12]{q,a}}, marquee[2-6 expressions courtes], gallery{heading,captions[]}, cta{heading,text,button}, newsletter{heading,text}, product{title,short,description_html,highlights[],tabs[]{heading,content_html},reassurance[0-3, seulement engagements confirmés]}, about{heading,intro,blocks[1-4]{heading,text},values[]{title,text}}, shipping{heading,body_html}, contact{heading,text}, footer{about,newsletter}.
-${previous ? `\nVersion précédente à reprendre (garde ce qui est juste et fort, réécris ce qui est signalé, renvoie l'ensemble complet) :\n<version_precedente>\n${fullCopyJson(previous)}\n</version_precedente>` : ""}${feedback ? `\nCorrections exigées par le contrôle qualité et le directeur de création (à appliquer impérativement) :\n${feedback}` : ""}`,
+${brief ? `\nDirection de rédaction (à faire ressentir dans CHAQUE texte, jamais citée telle quelle comme un jargon de marketing) :\n${brief}` : ""}${previous ? `\nVersion précédente à reprendre (garde ce qui est juste et fort, réécris ce qui est signalé, renvoie l'ensemble complet) :\n<version_precedente>\n${fullCopyJson(previous)}\n</version_precedente>` : ""}${feedback ? `\nCorrections exigées par le contrôle qualité et le directeur de création (à appliquer impérativement) :\n${feedback}` : ""}`,
       maxTokens: 24000,
     },
     ShopCopySchema,
@@ -572,7 +577,7 @@ const betterRound = (a: CopyRound, b: CopyRound) => a.blocking.length < b.blocki
  * `run` : point de reprise de chaque tour (rédaction, relecture) — une tâche reprise après une interruption ne
  * repaie pas les tours déjà faits. Par défaut, exécution directe (tests, appels hors tâche de fond).
  */
-export async function aiShopCopyChecked(b: Base, p: Project, onStep?: (m: string) => void, run: <T>(key: string, fn: () => Promise<T>) => Promise<T> = (_k, fn) => fn()): Promise<{ copy: ShopCopy; qc: { rounds: number; remaining: string[]; score: number; verdict: string } }> {
+export async function aiShopCopyChecked(b: Base, p: Project, onStep?: (m: string) => void, run: <T>(key: string, fn: () => Promise<T>) => Promise<T> = (_k, fn) => fn(), brief?: string): Promise<{ copy: ShopCopy; qc: { rounds: number; remaining: string[]; score: number; verdict: string } }> {
   let feedback = "";
   let best: CopyRound | null = null;
   let last: CopyRound | null = null;
@@ -586,7 +591,7 @@ export async function aiShopCopyChecked(b: Base, p: Project, onStep?: (m: string
     try {
       const prev = last?.copy;
       const fb = feedback;
-      copy = tidyCopy(await run(`copy:r${round}:write`, () => aiShopCopy({ ...b, usageKey: `${b.usageKey}:copy${round}` }, p, fb || undefined, prev)));
+      copy = tidyCopy(await run(`copy:r${round}:write`, () => aiShopCopy({ ...b, usageKey: `${b.usageKey}:copy${round}` }, p, fb || undefined, prev, brief)));
     } catch (e) {
       // Reprise en échec : la meilleure version déjà payée est gardée (seule la première rédaction est indispensable).
       if (!best || e instanceof JobCancelled || e instanceof JobPaused) throw e;

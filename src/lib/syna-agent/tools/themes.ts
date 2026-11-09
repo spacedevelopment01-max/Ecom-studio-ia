@@ -16,6 +16,10 @@ import { assertThemeAllowed } from "../../plan-gates";
 import { blockers, stateOf } from "../../preparation/engine";
 import { ACTIVE_THEMES } from "../../theme/theme-fit";
 import { DIRECTIONS } from "../../theme/directions";
+import { callCostBoundMicro, estimateCallMicro, routeLlm } from "../../ai/llm";
+import { clientImages, type ImagesMode } from "../custom-theme/brand";
+import { STUDIO_BRAND_JOB, studioImageNeeds, studioImageRequests } from "../studio-brand";
+import { boundedImageRequestsQuote } from "../../image-v2/creation-quote";
 
 const modeTool: AgentTool<{ mode: "theme" | "mockup" }> = {
   name: "site.mode", module: "site", kind: "write", needsProject: true,
@@ -84,9 +88,82 @@ const chooseTool: AgentTool<{ id: string }> = {
     return {
       ok: true, jobs: [job.id],
       summary: L(`Thème « ${name} » choisi : ta boutique se compose avec ta marque, tes produits et tes textes. L'ancienne version reste restaurable.`, `${name} theme chosen.`),
+      hint: "Quand la composition est finie, passe à l'étape 8 : theme.images (combien d'images), la question « tes images ou je les crée ? », puis le devis de theme.brand (textes dans son angle et images) et son accord écrit.",
       changes: [{ module: "site", object: L("thème de la boutique", "store theme"), summary: name, after: a.id, verified: true }],
     };
   },
 };
 
-export const themeTools: AgentTool[] = [modeTool, proposeTool, chooseTool];
+/** Images du client envoyées mais pas encore posées dans le thème en place. */
+function freshClientImages(projectId: string): number {
+  const used = new Set((currentTheme(projectId)?.spec.meta?.adaptation?.slots ?? []).map((s) => s.assetId).filter(Boolean));
+  return clientImages(projectId).filter((x) => !used.has(x.id)).length;
+}
+
+const studioImagesTool: AgentTool<Record<string, never>> = {
+  name: "theme.images", module: "site", kind: "read", needsProject: true,
+  description: "Étape 6, THÈME DU STUDIO (gratuit), après theme.choose (composition finie) et AVANT theme.brand : combien d'images demande son thème (emplacements), combien sont déjà remplies par ses photos, combien restent vides, et ses images envoyées pas encore posées. Sert à lui demander s'il monte son site avec SES images ou si tu les crées, et à lui dire le nombre exact.",
+  args: z.object({}).strict(),
+  run: (ctx) => {
+    const p = project(ctx);
+    const needs = studioImageNeeds(p.id);
+    if (!needs && currentTheme(p.id)) return { ok: true, summary: L("Ce thème n'a pas encore de plan d'emplacements d'images : je ne peux pas compter ni créer ses images d'un coup. Je peux réécrire tous ses textes (theme.brand, copy) ; ses images se posent ensuite dans la Boutique, une par une.", "This theme has no image placement plan yet."), hint: "Dis-le honnêtement au client ; propose theme.brand avec images:\"client\" (textes seulement) et la pose de ses images une par une dans la Boutique.", data: { planDesImages: false } };
+    if (!needs) return { ok: false, summary: L("Aucun thème du Studio en place : le client choisit d'abord son thème (theme.choose), puis la composition doit être finie.", "No Studio theme in place yet.") };
+    const fresh = freshClientImages(p.id);
+    return {
+      ok: true,
+      summary: L(`Son thème demande ${needs.total} images : ${needs.filled} déjà remplie(s) par ses photos, ${needs.missing} encore vide(s). Images envoyées pas encore posées : ${fresh}.`, `${needs.total} images, ${needs.missing} missing.`),
+      hint: needs.missing ? `Demande-lui, en une question à choix : « Tu montes ton site avec tes images, ou je les crée ? ». Il en manque ${needs.missing}. S'il prend les siennes, dis-lui d'en envoyer ${needs.missing} avec le trombone (📎) ; s'il en a moins, propose de créer celles qui manquent (images:\"mix\") ou toutes (images:\"sina\"). Puis devis de theme.brand et son accord écrit.` : "Toutes les images sont déjà là : theme.brand écrira seulement les textes (images:\"client\").",
+      data: { total: needs.total, remplies: needs.filled, vides: needs.missing, imagesEnvoyeesNonPosees: fresh, emplacements: needs.requests.map((r) => r.role) },
+    };
+  },
+};
+
+/** Coût d'un tour d'écriture (rédaction + relecture) de toute la boutique : plafond et probable. */
+function copyRoundMicro(userId: string): { max: number; typical: number } | null {
+  const w = routeLlm({ task: "copywriting", userId }), r = routeLlm({ task: "quality_control", userId });
+  if (w.mode !== "llm" || r.mode !== "llm") return null;
+  const wMax = callCostBoundMicro(w.provider, w.model, 22000, 24000, w.effort ?? null), rMax = callCostBoundMicro(r.provider, r.model, 18000, 8000, r.effort ?? null);
+  const wTyp = estimateCallMicro(w.provider, w.model, 18000, 9000), rTyp = estimateCallMicro(r.provider, r.model, 15000, 2500);
+  return wMax == null || rMax == null || wTyp == null || rTyp == null ? null : { max: wMax + rMax, typical: wTyp + rTyp };
+}
+export const studioBrandDeps2: { images?: (p: ReturnType<typeof project>, n: number) => { capMicro: number; estimateMicro: number } } = {};
+type BrandArgs = { images: ImagesMode; copy?: boolean };
+const studioBrandTool: AgentTool<BrandArgs> = {
+  name: "theme.brand", module: "site", kind: "generate", needsProject: true,
+  description: "Étape 6, THÈME DU STUDIO (PAYANT : devis du Studio en % du budget annoncé, accord écrit du client d'abord), après theme.choose et sa réponse sur les images (theme.images) : monte son site dans le thème choisi À SA MARQUE : TOUS les textes réécrits par le rédacteur du Studio dans l'angle marketing choisi et son émotion (copywriting, relecture du directeur de création, rien d'inventé), ses images posées dans les emplacements, et les emplacements vides remplis par des images créées (moteur d'images du Studio, chaque image contrôlée). images : « client » (ses images seulement), « mix » (ses images d'abord, tu crées les autres) ou « sina » (tu crées toutes les images vides). copy:false = images seulement. Tâche de fond ; le site est ensuite EN PLACE dans l'onglet Boutique.",
+  args: z.object({ images: z.enum(["sina", "client", "mix"]), copy: z.boolean().optional() }).strict(),
+  estimate: (ctx, a) => {
+    const p = project(ctx);
+    const needs = studioImageNeeds(p.id) ?? (currentTheme(p.id) ? { total: 0, filled: 0, missing: 0, requests: [] } : null);
+    if (!needs) throw new Error(L("Aucun thème du Studio en place : choisis d'abord ton thème.", "No Studio theme yet."));
+    const copy = a.copy === false ? { max: 0, typical: 0 } : copyRoundMicro(ctx.user.id);
+    if (!copy) throw new Error(L("Coût de la rédaction impossible à encadrer (modèle ou tarif inconnu).", "Copy cost cannot be bounded."));
+    const n = a.images === "client" ? 0 : a.images === "mix" ? Math.max(0, needs.missing - freshClientImages(p.id)) : needs.missing;
+    let img = { capMicro: 0, estimateMicro: 0 };
+    if (n) {
+      if (studioBrandDeps2.images) img = studioBrandDeps2.images(p, n);
+      else {
+        const q = boundedImageRequestsQuote(p, studioImageRequests(p).slice(0, n), {}) as { capMicro: number; estimateMicro: number };
+        img = { capMicro: q.capMicro, estimateMicro: q.estimateMicro };
+      }
+    }
+    return { maxMicro: copy.max * 3 + img.capMicro, probableMicro: Math.round(copy.typical * 1.5) + img.estimateMicro, label: L(`site monté à ta marque : ${a.copy === false ? "" : "textes de toute la boutique"}${n ? `${a.copy === false ? "" : ", "}${n} image(s) créée(s)` : ""}`, "site built for the brand") };
+  },
+  run: async (ctx, a) => {
+    const p = project(ctx);
+    const needs = studioImageNeeds(p.id) ?? (currentTheme(p.id) ? { total: 0, filled: 0, missing: 0, requests: [] } : null);
+    if (!needs) return { ok: false, summary: L("Aucun thème du Studio en place : le client choisit d'abord son thème, et la composition doit être finie.", "No Studio theme in place yet.") };
+    if (a.images === "client" && needs.missing > freshClientImages(p.id)) return { ok: false, summary: L(`Il manque ${needs.missing} images et le client en a envoyé ${freshClientImages(p.id)} : rien n'est lancé.`, "Not enough client images."), hint: `Propose-lui : m'envoyer les ${needs.missing - freshClientImages(p.id)} qui manquent, que tu crées les autres (images:\"mix\", prix annoncé), ou toutes (images:\"sina\").` };
+    let est;
+    try { est = await studioBrandTool.estimate!(ctx, a); } catch (e) { return { ok: false, summary: (e as Error).message }; }
+    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: STUDIO_BRAND_JOB, label: L("Site monté à ta marque dans ton thème (SINA)", "Site built for your brand (SINA)"), payload: { projectId: p.id, capMicro: est.maxMicro, conversationId: ctx.conversationId, images: a.images, copy: a.copy !== false }, maxAttempts: 2, idempotencyKey: `syna:${ctx.runId}:studio-brand:${currentTheme(p.id)?.version.id}:${a.images}` });
+    return {
+      ok: true, jobs: [job.id],
+      summary: L(`Montage de ton site à ta marque lancé dans ton thème (${a.copy === false ? "images seulement" : "textes de toute la boutique dans ton angle"}${a.images === "client" ? ", tes images" : ", images vides créées"}).`, "Store build started."),
+      hint: "Quand la tâche est finie, dis au client que son site est en place dans l'onglet Boutique, qu'il peut le regarder en grand et désigner un élément pour demander un changement ; dis honnêtement ce que le rapport signale (textes encore à revoir, images non créées, emplacements encore vides).",
+    };
+  },
+};
+
+export const themeTools: AgentTool[] = [modeTool, proposeTool, chooseTool, studioImagesTool, studioBrandTool];

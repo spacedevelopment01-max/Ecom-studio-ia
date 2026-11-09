@@ -59,6 +59,15 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   veut, et SINA ne change que lui. Règles de montage contrôlées sans IA (`checkCustomTheme`) ; aucun script dans une
   section retouchée. Les anciennes maquettes (`mockup.*`) ne servent plus qu'aux projets déjà commencés avec elles. La mise
   en boutique Shopify d'un thème sur mesure (étape 7) reste à brancher.
+  **Ordre de l'étape 6 et montage à la marque** (décisions du propriétaire du 9 novembre 2026) : SINA demande d'abord
+  « thème du Studio » ou « thème sur mesure ». Studio : TOUS nos thèmes montrés, le client choisit (`theme.choose`), puis
+  étape 8 : `theme.images` et `theme.brand` (textes de toute la boutique réécrits dans l'angle choisi et son émotion par le
+  rédacteur du Studio, images créées par le moteur d'images du Studio ; tâche `syna.studio.brand`). Sur mesure : le style
+  d'abord, puis `custom.images` et `custom.build` (toutes les sections du style, textes et photos ; tâche
+  `syna.custom.brand`). Dans les deux cas, SINA demande **« tes images ou je les crée ? »**, donne le **nombre exact**
+  d'images, propose de créer celles qui manquent ou toutes, et donne le prix avant. Le site est ensuite en place dans
+  l'**onglet Boutique** (aperçu en grand, « Désigner un élément », demande envoyée à SINA). Seuls 11 thèmes du Studio ont un
+  plan d'emplacements d'images (`reference-shapes.json`) ; pour les autres, SINA réécrit les textes et le dit.
 - **Sections « Produit vedette »** (décision du 8 novembre 2026) : elles ne vont qu'**en haut de la fiche produit**, ou au plus
   **une seule fois sur l'accueil** ; **jamais deux sections « Produit vedette » dans une même page**. Leurs réglages (couleurs,
   formats, lots, offres, abonnement) s'affichent ou se masquent **selon les données réelles du produit** (variantes, offres

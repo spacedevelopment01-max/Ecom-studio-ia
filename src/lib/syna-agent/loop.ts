@@ -395,7 +395,8 @@ export function modelFor(currentStepNumber: number): { provider: "anthropic"; mo
   // Étape 5 : l'activité est rassemblée par des outils gratuits ; le fil reste sur le modèle léger.
   // Étape 6 : les thèmes sont montrés et appliqués par des outils gratuits (maquettes payantes : dans leurs tâches).
   // Étape 7 : le codage et les photos se font dans leurs tâches (site.code_from_mockup, site.images) ; le fil reste léger.
-  const simple = currentStepNumber <= 7 || !READY_STEPS.includes(currentStepNumber);
+  // Étape 8 : la rédaction et les images se font dans la tâche theme.brand ; le fil reste léger.
+  const simple = currentStepNumber <= 8 || !READY_STEPS.includes(currentStepNumber);
   return simple ? { provider: "anthropic", model: "claude-haiku-5-5", effort: "low" } : undefined;
 }
 
