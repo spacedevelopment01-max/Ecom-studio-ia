@@ -22,7 +22,7 @@ import { peopleAllowed } from "../../people-policy";
 import { getRun } from "../store";
 import type { AgentTool, ToolContext } from "../types";
 import { project } from "../tools/common";
-import { familyArtUniverse, loadFamilyChoice } from "../section-families";
+import { loadFamilyChoice, siteArtUniverse } from "../section-families";
 import { codePhotoPrompt } from "../mockup-code/code-mockup";
 import { hdAspect } from "../mockup-code/prompts";
 import { imageReferences, mockupImageRoute } from "../mockup-code/tools";
@@ -31,8 +31,8 @@ import { applyStructure, checkCustomTheme, findSection, loadCustomTheme, replace
 import { listProducts } from "../../products/catalog";
 import { companyOf } from "../activity";
 import { enqueue } from "../../jobs";
-import { setStep as setJourneyStep, updateJourney as updateJourneyConv } from "../journey";
-import { clientImages, CUSTOM_BRAND_JOB, examplePhotoCount, photoSlots, photosToCreate, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, sitePhotoName, type ImagesMode } from "./brand";
+import { journeyOf, setStep as setJourneyStep, updateJourney as updateJourneyConv } from "../journey";
+import { clientImages, CUSTOM_BRAND_JOB, examplePhotoCount, photoSlots, photosToCreate, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, siteArtDirection, sitePhotoName, textPlacementLine, type ImagesMode } from "./brand";
 
 /** Ce que le client voit dans le fil : l'aperçu vivant de son thème et sa composition. */
 export function themeCard(projectId: string, t: CustomTheme) {
@@ -324,7 +324,7 @@ const photoUnit = () => { try { return photoRequestMaxMicro(mockupImageRoute(), 
 export const customPhotoDeps: { make?: (prompt: string, refs: { product: Buffer | null }, aspect: string) => Promise<Buffer>; unit?: () => number | null } = {};
 const photoTool: AgentTool<PhotoArgs> = {
   name: "custom.photo", module: "site", kind: "generate", needsProject: true,
-  description: "Étape 6 (PAYANT : une photo, prix annoncé et accord écrit du client d'abord) : crée UNE photo pour une section du thème sur mesure, dans la direction artistique de la marque (famille Moderne : charte de la famille ; personnes seulement si autorisées), et la pose à la place d'une photo d'exemple. find : photo actuelle dans le HTML de la section (ex. photos/sl-b4.webp) ; description : UNE photo décrite comme le propriétaire (type et cadrage ; surface et fond ; chaque objet à sa place, forme, matière, couleur ; « La scène contient exactement N objets » ; ce qui est dégagé ; lumière ; aucun texte, logo ni personne non voulue) ; ratio ; product:true si c'est le produit du client (sa vraie photo sert de référence) ; background : couleur unie du fond si la photo doit se fondre dans la section. Les photos détourées (fond transparent) ne sont pas encore possibles : choisis une photo pleine. Vérifie toi-même la photo créée avant de la montrer.",
+  description: "Étape 6 (PAYANT : une photo, prix annoncé et accord écrit du client d'abord) : crée UNE photo pour une section du thème sur mesure, dans la direction artistique de la marque (famille Moderne : charte de la famille ; personnes seulement si autorisées), et la pose à la place d'une photo d'exemple. find : photo actuelle dans le HTML de la section (ex. photos/sl-b4.webp) ; description : UNE photo décrite comme le propriétaire (type et cadrage ; surface et fond ; chaque objet à sa place, forme, matière, couleur ; « La scène contient exactement N objets » ; ce qui est dégagé ; lumière ; aucun texte, logo ni personne non voulue) ; ratio ; product:true dès que le produit du client est dans la photo (sa vraie photo sert de référence : jamais de pots, flacons ou emballages génériques aux étiquettes vides) ; background : couleur unie du fond seulement pour un produit seul qui doit se fondre dans une section unie, JAMAIS pour une photo d'ouverture ou d'ambiance (une scène de vie magnifique qui remplit tout le cadre, où l'on ressent l'émotion de l'angle). Les photos détourées (fond transparent) ne sont pas encore possibles : choisis une photo pleine. Vérifie toi-même la photo créée avant de la montrer.",
   args: z.object({ uid: z.string().regex(/^s[0-9a-f]{8}$/), find: z.string().min(3).max(300), description: z.string().min(40).max(3000), ratio: RATIO, product: z.boolean().optional(), background: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional() }).strict(),
   estimate: (ctx) => {
     const u = (customPhotoDeps.unit ?? photoUnit)();
@@ -337,9 +337,10 @@ const photoTool: AgentTool<PhotoArgs> = {
     const file = a.find.replace(/^.*\//, "");
     if (!sectionHtml(x.s).includes(file)) return { ok: false, summary: L(`Photo « ${a.find} » absente de la section : rien n'est créé ni payé.`, "Photo not in section."), internal: true };
     const refs = a.product ? imageReferences(p) : { product: null, logo: null, problem: null };
-    const fam = loadFamilyChoice(p.id), people = peopleAllowed(p.id), fu = familyArtUniverse(fam, { people });
-    const direction = fu ? `${fu.style} ; ${fu.idea} ; lumière : ${fu.light} ; décors : ${fu.setting} ; couleurs de la marque : ${[p.brand?.palette?.dark, p.brand?.palette?.primary, p.brand?.palette?.accent].filter(Boolean).join(", ")}.` : null;
-    const prompt = codePhotoPrompt({ id: `ct-${a.uid}`, description: a.description, ratio: a.ratio, background: a.background ?? null, product: !!a.product }, { name: p.brand?.name ?? p.name, logo: false, product: !!(a.product && refs.product), direction, people: !!fu && people });
+    const fam = loadFamilyChoice(p.id), people = peopleAllowed(p.id), fu = siteArtUniverse(fam, { people });
+    const direction = siteArtDirection(p, fu, (() => { try { return journeyOf(ctx.conversationId); } catch { return null; } })());
+    const place = textPlacementLine(sectionHtml(x.s), a.find, libSection(x.s.id)?.does ?? "");
+    const prompt = codePhotoPrompt({ id: `ct-${a.uid}`, description: [a.description, place].filter(Boolean).join("\n"), ratio: a.ratio, background: a.background ?? null, product: !!a.product }, { name: p.brand?.name ?? p.name, logo: false, product: !!(a.product && refs.product), direction, people: !!fu && people });
     const jobId = getRun(ctx.runId)?.job_id ?? null;
     const usageKey = `syna:${ctx.runId}:custom-photo:${a.uid}:${file}`;
     let data: Buffer;

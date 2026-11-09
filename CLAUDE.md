@@ -107,6 +107,16 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   ambiance ; 7) « Aucun texte, aucune lettre, aucun chiffre, aucune gravure, aucun logo, aucun filigrane, aucune
   personne. Aucun objet supplémentaire. » Jamais de contradiction (ne pas citer le produit ni ses matières s'il ne doit
   pas apparaître), jamais d'objet vague (« quelques accessoires »).
+- **L'émotion, l'émotion, l'émotion, et des images magnifiques** (retour du 9 novembre 2026, à ne plus jamais lui faire
+  répéter) : tout texte de site, de publication ou de publicité fait RESSENTIR l'émotion de l'angle (scène, moment,
+  sensation), jamais une simple description ; les boutons qui vendent portent le désir (« Retrouver l'été », pas
+  « Choisir mon parfum ») ; aucune accroche répétée, aucun ordre au lecteur (« Lis l'étiquette »). Toute image est
+  magnifique, digne d'une campagne haut de gamme : vraie scène de vie, lumière travaillée, profondeur, vrai produit
+  du client (jamais de pot ou d'emballage générique aux étiquettes vides), jamais un packshot plat sur fond uni pour
+  une ouverture ou une ambiance. **Le texte se pose sur la partie calme de la photo, le sujet de l'autre côté**
+  (jamais le titre sur le produit et le vide à côté). Règles branchées : `COPY_CRAFT` et plan des textes
+  (`src/lib/syna-agent/custom-theme/brand.ts`), `siteArtUniverse` (famille Classique comprise), `textPlacementLine`,
+  niveau visé dans `codePhotoPrompt`.
 - **Réponses courtes et claires**, sans jargon ; ne pas reposer une question à laquelle il a déjà répondu.
 - **Ne pas décider à sa place** : un retrait de contenu ou un changement visible important se propose, il ne s'applique
   qu'après son accord. Retirer un visuel raté sans rien mettre à la place n'est pas une correction.

@@ -153,6 +153,26 @@ export function familyArtUniverse(c: FamilyChoice | null, o: { people: boolean }
     : { id: "moderne-sport-chic", idea: `Photographie de mode d'été éditoriale, en plein soleil : ${who}`, light: "soleil chaud, ombres nettes de feuillage ou de palmier", setting: "murs de terre cuite, courts de tennis en terre battue, escaliers de pierre blanche, plages, pergolas", style: "photographie de catalogue de prêt-à-porter haut de gamme, rendu réaliste", emotion: "élan, assurance, été", composition: ["plein pied", "sujet sur un tiers, l'autre côté dégagé pour le titre", "nature morte graphique pour les produits"], density: "sparse" };
 }
 
+/**
+ * Direction artistique des PHOTOS DU SITE (thème sur mesure) : celle de la famille Moderne, sinon l'art de vivre
+ * éditorial de la famille Classique (retour du propriétaire du 9 novembre 2026 sur l'essai Heure Dorée : « l'émotion,
+ * l'émotion, l'émotion et des images magnifiques » ; sans direction, la photo d'ouverture sortait en packshot de
+ * catalogue sur fond beige uni). N'agit ni sur les publications ni sur les publicités (`familyArtUniverse`).
+ */
+export function siteArtUniverse(c: FamilyChoice | null, o: { people: boolean }): FamilyUniverse | null {
+  if (!c) return null;
+  return familyArtUniverse(c, o) ?? {
+    id: "classique-art-de-vivre",
+    idea: `Photographie éditoriale d'art de vivre, comme dans un grand magazine : une vraie scène de vie autour du produit, ${o.people ? "avec des personnes inventées dans des gestes naturels" : "sans aucune personne mais avec la trace d'un moment vécu (une tasse fumante, une serviette froissée, une tartine entamée, une chaise tirée)"}`,
+    light: "lumière naturelle rasante et dorée, ombres longues et douces, reflets chauds, un vrai moment de la journée",
+    setting: "vrais lieux chaleureux liés au produit et à son origine (cuisine de maison de famille, table en bois patiné, rebord de fenêtre, jardin, verger, atelier)",
+    style: "photographie éditoriale haut de gamme, rendu réaliste, profondeur de champ, matières riches (lin, bois, céramique, métal, verre), couleurs chaudes et denses",
+    emotion: "chaleur, désir, émotion",
+    composition: ["la scène remplit tout le cadre, en plans successifs, l'arrière-plan flou mais présent (jamais un fond uni ni un mur vide)", "sujet principal sur un tiers, l'autre côté plus calme pour le titre, jamais vide"],
+    density: "rich",
+  };
+}
+
 /** Consigne de la famille pour les maquettes en code (vide tant que le client n'a pas choisi). */
 export function familyBrief(c: FamilyChoice | null, o: { people?: boolean } = {}): string[] {
   if (!c) return [];

@@ -20,7 +20,7 @@ import { aiSiteImageHd, withQuotedImageRoute } from "../../ai/media-providers";
 import { loadWordingRules, wordingPromptLine } from "../../client-wording";
 import { listProducts } from "../../products/catalog";
 import { peopleAllowed } from "../../people-policy";
-import { familyArtUniverse, loadFamilyChoice } from "../section-families";
+import { loadFamilyChoice, siteArtUniverse, type FamilyUniverse } from "../section-families";
 import { activityPlan } from "../activity";
 import { journeyOf, setStep, updateJourney, type Journey } from "../journey";
 import { angleDetails, COPY_MODEL } from "../mockup-code/copy";
@@ -57,9 +57,11 @@ export type SectionWrite = z.infer<typeof SectionWriteSchema>;
  * partout, menus compris, et chaque section, écrite seule, répétait les mêmes faits).
  */
 export const COPY_CRAFT = `Écriture (comme le meilleur concepteur-rédacteur d'une vraie marque française) :
+- L'ÉMOTION D'ABORD, partout : chaque titre, chaque texte et chaque bouton qui vend fait RESSENTIR l'émotion de l'angle par une scène, un moment, une sensation (ce qu'on voit, goûte, touche, ressent), jamais par une simple description du produit. Un texte qui informe sans émouvoir est raté.
+- Les boutons qui vendent portent le désir et l'émotion (ex. « Retrouver l'été », « Goûter le soleil », « Offrir un matin doré ») ; seuls les boutons purement pratiques (panier, commande, compte, formulaire, aide, légal) restent simples et clairs.
 - L'angle choisi est l'ÉMOTION à faire ressentir sur tout le site, jamais une formule à répéter. Son accroche est une piste : elle ne sert, au plus, qu'une fois (l'ouverture de l'accueil), et seulement si elle donne vraiment envie ; sinon tu écris mieux. Ses mots ne vont jamais dans les menus, les liens ni les boutons.
 - Un titre donne envie : une image concrète, un goût, une texture, un moment, un bénéfice. Jamais un ordre au lecteur (« Lis… », « Découvre… », « Plonge… »), jamais un slogan creux ni un jeu de mots forcé.
-- Un bouton : un verbe d'action et ce qu'on obtient, 2 à 4 mots (ex. « Choisir mon parfum », « Voir le coffret », « Ajouter au panier »).
+- Un bouton : 2 à 5 mots, un verbe qui donne envie (ex. « Retrouver l'été en pot ») ; « Ajouter au panier » seulement sur le bouton d'achat lui-même.
 - Menus, pied de page, liens : les mots simples que le visiteur cherche (ex. « Nos confitures », « Coffret cadeau », « Notre histoire », « Livraison et retours », « Contact »).
 - Chaque fait fort (pourcentage, savoir-faire, livraison, retours) apparaît au plus UNE fois par page : on prouve une fois, on ne martèle pas.
 - Une même formule n'apparaît qu'UNE fois sur tout le site (hors noms de produits et libellés du menu) ; la promesse du site est une idée à faire sentir, jamais une phrase à recopier.
@@ -78,7 +80,7 @@ ${COPY_CRAFT}
 - Le vocabulaire imposé par le client est respecté.
 - Tu ne touches ni aux balises, ni aux classes, ni aux attributs (sauf alt et les textes) : chaque modification est un remplacement { find, replace } où find est un passage EXACT du HTML fourni, présent une seule fois (prends assez de contexte pour qu'il soit unique), et replace le même passage avec les nouveaux textes.
 - Cartes de produits : une carte par produit de la liste, jamais de carte « [À compléter : produit] ». S'il y a plus de cartes que de produits, retire les cartes en trop : find = la carte entière (de sa balise ouvrante à sa balise fermante), replace = "" ; et ne décris pas leurs photos.
-- Pour CHAQUE image de la section dont la source commence par « photos/ », décris la photo à créer pour la marque : find = la source exacte (ex. « photos/sl-b1.webp »), description = UNE photo décrite en phrases complètes, dans l'ordre : type de photo, format, point de vue, cadrage ; surface et fond ; chaque objet à sa place (forme, matière, couleur, état) ; « La scène contient exactement N objets : … » ; ce qui est dégagé ; lumière, ombres, ambiance ; « Aucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. » ; ratio = format de la photo ; product = le nom exact d'un produit de la liste si la photo doit le montrer (sa vraie photo sera utilisée), sinon null.
+- Pour CHAQUE image de la section dont la source commence par « photos/ », décris la photo à créer pour la marque : find = la source exacte (ex. « photos/sl-b1.webp »), description = UNE photo décrite en phrases complètes, dans l'ordre : type de photo, format, point de vue, cadrage ; surface et fond ; chaque objet à sa place (forme, matière, couleur, état) ; « La scène contient exactement N objets : … » ; ce qui est dégagé ; lumière, ombres, ambiance ; « Aucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. » ; ratio = format de la photo ; product = le nom exact d'un produit de la liste dès que la photo le montre (sa vraie photo sera utilisée : jamais de pot, flacon ou emballage générique), sinon null. Une photo d'ouverture ou d'ambiance est une scène de vie MAGNIFIQUE qui remplit tout le cadre et fait ressentir l'émotion de l'angle (un lieu vrai, un moment de la journée, une lumière), jamais un produit posé sur un fond uni.
 Réponse : uniquement le JSON demandé.`;
 
 /** Faits de la marque donnés à chaque écriture (les mêmes pour toutes les sections). */
@@ -179,6 +181,28 @@ export function sitePhotoName(place: string, description: string): string {
   return `site-${slug(place) || "page"}-${words.join("-") || "photo"}.png`;
 }
 
+/**
+ * Photo posée DERRIÈRE le texte d'une section (ouverture, bandeau) : le sujet va du côté opposé au texte, le texte se
+ * pose sur la partie calme (consigne du propriétaire du 9 novembre 2026 : « on met le texte où c'est vide, c'est
+ * logique » ; la photo d'ouverture d'Heure Dorée avait ses pots sous le titre et le vide de l'autre côté).
+ * Le côté du texte vient de la description de la section (« À gauche : le titre… »).
+ */
+export function textPlacementLine(html: string, find: string, does: string): string {
+  const esc = find.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  if (!new RegExp(`background-image:\\s*url\\(['"]?${esc}`).test(html)) return "";
+  const side = /(^|[.;:]\s*)à gauche\s*:/i.test(does) ? "gauche" : /(^|[.;:]\s*)à droite\s*:/i.test(does) ? "droite" : null;
+  if (!side) return "Le texte de la section est posé PAR-DESSUS cette photo : garde une zone calme (flou, ombre douce, mur, ciel, nappe) là où il se pose, le sujet principal autour, jamais sous le texte.";
+  const other = side === "gauche" ? "droite" : "gauche";
+  return `Le texte de la section est posé PAR-DESSUS la partie ${side} de cette photo : le sujet principal, et tout ce qui attire l'œil, est dans le tiers ${other} de l'image, entier ; la partie ${side} reste calme (flou, ombre douce, mur, ciel, nappe) pour que le texte se lise, tout en appartenant à la scène. Jamais de sujet sous le texte, jamais un côté ${other} vide.`;
+}
+
+/** Direction artistique d'une photo du site : l'univers de la famille + l'émotion de l'angle choisi + les couleurs. */
+export function siteArtDirection(p: Project, fu: FamilyUniverse | null, j: Journey | null): string | null {
+  if (!fu) return null;
+  const d = j ? angleDetails(j) : {};
+  return `${fu.style} ; ${fu.idea} ; lumière : ${fu.light} ; décors : ${fu.setting} ; composition : ${fu.composition.join(" ; ")} ; émotion à faire ressentir : ${d.emotion ?? fu.emotion}${d.story ? ` (l'histoire de la marque : ${d.story})` : ""} ; couleurs de la marque : ${[p.brand?.palette?.dark, p.brand?.palette?.primary, p.brand?.palette?.accent].filter(Boolean).join(", ")}.`;
+}
+
 /** Images envoyées par le client (Fichiers du projet), dans l'ordre d'arrivée. */
 export function clientImages(projectId: string): { id: string; name: string }[] {
   return all<{ id: string; name: string }>("SELECT id, name FROM assets WHERE project_id=? AND deleted_at IS NULL AND kind='image' AND origin='upload' ORDER BY created_at", projectId);
@@ -205,8 +229,8 @@ export async function runCustomBrandJob(ctx: JobContext) {
   const brief = brandBrief(p, j);
   const name = p.brand?.name ?? p.name;
   const products = (() => { try { return listProducts(p.id); } catch { return []; } })();
-  const fam = loadFamilyChoice(p.id), people = peopleAllowed(p.id), fu = familyArtUniverse(fam, { people });
-  const direction = fu ? `${fu.style} ; ${fu.idea} ; lumière : ${fu.light} ; décors : ${fu.setting} ; couleurs de la marque : ${[p.brand?.palette?.dark, p.brand?.palette?.primary, p.brand?.palette?.accent].filter(Boolean).join(", ")}.` : null;
+  const fam = loadFamilyChoice(p.id), people = peopleAllowed(p.id), fu = siteArtUniverse(fam, { people });
+  const direction = siteArtDirection(p, fu, j);
   // rewrite : le client n'aime pas les textes, tout le site est réécrit (sinon seules les sections encore d'exemple).
   const sections = allSections(t).filter((x) => a.rewrite || !x.s.clientTexts);
   const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, problems: [] as string[] };
@@ -272,7 +296,8 @@ export async function runCustomBrandJob(ctx: JobContext) {
         const assetId = real && getAsset(real) ? real : mine ? mine : await ctx.step(`photo:${uid}:${file}`, async () => {
           const prodRef = ph.product ? products.find((x) => x.data.title.trim().toLowerCase() === ph.product!.trim().toLowerCase())?.data.images[0]?.assetId : undefined;
           const ref = prodRef ? getAsset(prodRef) : undefined;
-          const prompt = codePhotoPrompt({ id: `ct-${uid}-${file}`, description: ph.description, ratio: ph.ratio, product: !!ph.product }, { name, logo: false, product: !!ref, direction, people: !!fu && people });
+          const place = textPlacementLine(sectionHtml(here.s), ph.find, libSection(here.s.id)?.does ?? "");
+          const prompt = codePhotoPrompt({ id: `ct-${uid}-${file}`, description: [ph.description, place].filter(Boolean).join("\n"), ratio: ph.ratio, product: !!ph.product }, { name, logo: false, product: !!ref, direction, people: !!fu && people });
           const usageKey = `${ctx.job.id}:photo:${uid}:${file}`;
           const data = customBrandDeps.photo ? await customBrandDeps.photo(prompt, ref ? assetData(ref) : null, ph.ratio, usageKey)
             : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-photo", costCapMicro: a.capMicro }, () => withQuotedImageRoute(mockupImageRoute(), () => aiSiteImageHd({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey }, { prompt, product: ref ? assetData(ref) : null, aspect: hdAspect(ph.ratio) })));

@@ -473,3 +473,33 @@ describe("thème sur mesure : nom des photos créées", () => {
     expect(sitePhotoName("", "")).toBe("site-page-photo.png");
   });
 });
+
+describe("thème sur mesure : émotion et images magnifiques (retour du propriétaire du 9 novembre)", () => {
+  it("photo derrière un texte : le sujet va du côté opposé au texte, le texte se pose sur la partie calme", async () => {
+    const B = await import("@/lib/syna-agent/custom-theme/brand");
+    const hero = sectionByRef("ouverture-photo-pleine")!;
+    const { inlineBackgrounds } = await import("@/lib/syna-agent/custom-theme/library");
+    const html = inlineBackgrounds(hero.html);
+    const line = B.textPlacementLine(html, "photos/hero.jpg", hero.does);
+    expect(line).toMatch(/PAR-DESSUS la partie gauche[^]*tiers droite/);
+    expect(B.textPlacementLine('<div style="background-image:url(/api/files/abc)"></div>', "/api/files/abc", "Grande photo. À droite : le titre.")).toMatch(/partie droite[^]*tiers gauche/);
+    // Photo qui n'est pas derrière un texte (carte produit) : aucune consigne de placement.
+    expect(B.textPlacementLine('<img src="photos/a.jpg">', "photos/a.jpg", "À gauche : le titre.")).toBe("");
+  });
+
+  it("Classique a aussi sa direction artistique (art de vivre, scène qui remplit le cadre) ; écriture : l'émotion d'abord", async () => {
+    const F = await import("@/lib/syna-agent/section-families");
+    const u = F.siteArtUniverse({ family: "classique", style: "classique" } as any, { people: false })!;
+    expect(u.id).toBe("classique-art-de-vivre");
+    expect(u.composition.join(" ")).toMatch(/jamais un fond uni/);
+    expect(u.idea).toMatch(/sans aucune personne/);
+    // Les publications et publicités ne changent pas (familyArtUniverse reste propre à Moderne).
+    expect(F.familyArtUniverse({ family: "classique", style: "classique" } as any, { people: false })).toBeNull();
+    const B = await import("@/lib/syna-agent/custom-theme/brand");
+    expect(B.COPY_CRAFT).toMatch(/L'ÉMOTION D'ABORD/);
+    expect(B.COPY_CRAFT).toMatch(/boutons qui vendent portent le désir/);
+    const C = await import("@/lib/syna-agent/mockup-code/code-mockup");
+    expect(C.codePhotoPrompt({ id: "x", description: "Une scène.", ratio: "16:9" } as any, { name: "M", logo: false, product: false })).toMatch(/photo magnifique[^]*jamais un fond uni/);
+    expect(C.codePhotoPrompt({ id: "x", description: "Un pot.", ratio: "1:1", background: "#ffffff" } as any, { name: "M", logo: false, product: false })).not.toMatch(/photo magnifique/);
+  });
+});
