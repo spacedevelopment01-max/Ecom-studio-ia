@@ -390,6 +390,8 @@ a { color: inherit; }
   .es-product__thumbs::-webkit-scrollbar { display: none; }
   /* téléphone : cinq vignettes tiennent pile dans la largeur (jamais une vignette coupée) ; au-delà, la rangée glisse */
   .es-product__thumb { width: calc((100% - 32px) / 5); max-width: 72px; }
+  /* plus de cinq vignettes : la suivante dépasse à moitié, pour montrer que la rangée glisse */
+  .es-product .es-product__thumbs:has(> :nth-child(6)) .es-product__thumb { width: calc((100% - 40px) / 5.5); }
 }
 @media (min-width: 990px) {
   .es-product--carousel .es-product__track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }

@@ -1178,7 +1178,8 @@ body.ph-menu-open { overflow: hidden; }
   .ph-hero.m-crumb-upper .ph-crumb li + li::before { margin-right: calc(6 * var(--u)); }
   .ph-hero--split .ph-hero__copy { padding: calc(27 * var(--u)) 0 0 calc(23 * var(--u)) !important; }
   .ph-hero--split .ph-hero__title { line-height: 1.07 !important; letter-spacing: -.035em; }
-  .ph-hero .ph-hero__title .ph-ln { white-space: nowrap; }
+  /* chaque ligne du titre garde sa coupure de la maquette ; une ligne plus longue que l'écran passe à la ligne au lieu de sortir */
+  .ph-hero .ph-hero__title .ph-ln { white-space: normal; text-wrap: balance; }
   .ph-hero--split .ph-hero__text { margin-top: calc(13 * var(--u)) !important; font-size: calc(18.4 * var(--u)) !important; line-height: calc(26 * var(--u)) !important; color: #2E3446; }
   .ph-hero--split .ph-hero__media { margin-top: calc(20 * var(--u)) !important; }
   .ph-hero--split .ph-hero__cap { left: calc(23 * var(--u)); bottom: calc(13 * var(--u)); }
