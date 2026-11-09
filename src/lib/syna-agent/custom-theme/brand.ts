@@ -57,6 +57,7 @@ Règles absolues :
 - Noms et prix de produits : seulement ceux de la liste fournie, écrits exactement.
 - Le vocabulaire imposé par le client est respecté.
 - Tu ne touches ni aux balises, ni aux classes, ni aux attributs (sauf alt et les textes) : chaque modification est un remplacement { find, replace } où find est un passage EXACT du HTML fourni, présent une seule fois (prends assez de contexte pour qu'il soit unique), et replace le même passage avec les nouveaux textes.
+- Cartes de produits : une carte par produit de la liste, jamais de carte « [À compléter : produit] ». S'il y a plus de cartes que de produits, retire les cartes en trop : find = la carte entière (de sa balise ouvrante à sa balise fermante), replace = "" ; et ne décris pas leurs photos.
 - Pour CHAQUE image de la section dont la source commence par « photos/ », décris la photo à créer pour la marque : find = la source exacte (ex. « photos/sl-b1.webp »), description = UNE photo décrite en phrases complètes, dans l'ordre : type de photo, format, point de vue, cadrage ; surface et fond ; chaque objet à sa place (forme, matière, couleur, état) ; « La scène contient exactement N objets : … » ; ce qui est dégagé ; lumière, ombres, ambiance ; « Aucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. » ; ratio = format de la photo ; product = le nom exact d'un produit de la liste si la photo doit le montrer (sa vraie photo sera utilisée), sinon null.
 Réponse : uniquement le JSON demandé.`;
 
@@ -107,6 +108,17 @@ export function photoSlots(t: CustomTheme): { uid: string; place: string; sectio
     .map((file) => ({ uid: x.s.uid, place: x.page?.label ?? x.place, section: libSection(x.s.id)?.title ?? x.s.id, file })));
 }
 export const examplePhotoCount = (t: CustomTheme): number => photoSlots(t).length;
+
+/**
+ * Nom d'une photo créée pour le site : la page et ce qu'elle montre (essai réel du 9 novembre : nommées d'après la photo
+ * d'exemple remplacée, « theme-sur-mesure-rooibos.png », elles passaient pour des photos de thé aux yeux de SINA).
+ */
+export function sitePhotoName(place: string, description: string): string {
+  const STOP = /^(photo|grande|petite|une|un|des|de|du|la|le|les|en|et|au|aux|pour|sur|avec|d|l|plan|vue|format|cadrage|carree|carre|horizontale|verticale|ambiance|bord|a)$/;
+  const words = description.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 1 && !STOP.test(w)).slice(0, 5);
+  const slug = (x: string) => x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return `site-${slug(place) || "page"}-${words.join("-") || "photo"}.png`;
+}
 
 /** Images envoyées par le client (Fichiers du projet), dans l'ordre d'arrivée. */
 export function clientImages(projectId: string): { id: string; name: string }[] {
@@ -174,6 +186,9 @@ export async function runCustomBrandJob(ctx: JobContext) {
     for (const [i, { uid, ph }] of todo.entries()) {
       ctx.progress(0.5 + (0.48 * i) / Math.max(1, todo.length), L(`Photos : ${i + 1} sur ${todo.length}`, `Photos: ${i + 1} of ${todo.length}`));
       const file = ph.find.replace(/^.*\//, "");
+      // Photo d'un élément retiré par le rédacteur (carte en trop) : rien à créer, rien à payer.
+      const here = allSections(loadCustomTheme(p.id)!).find((y) => y.s.uid === uid);
+      if (!here || !sectionHtml(here.s).includes(ph.find)) continue;
       try {
         const real = ph.product ? products.find((x) => x.data.title.trim().toLowerCase() === ph.product!.trim().toLowerCase())?.data.images[0]?.assetId : undefined;
         const mine = !(real && getAsset(real)) && next < own.length ? own[next++] : undefined;
@@ -185,7 +200,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
           const usageKey = `${ctx.job.id}:photo:${uid}:${file}`;
           const data = customBrandDeps.photo ? await customBrandDeps.photo(prompt, ref ? assetData(ref) : null, ph.ratio, usageKey)
             : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-photo", costCapMicro: a.capMicro }, () => withQuotedImageRoute(mockupImageRoute(), () => aiSiteImageHd({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey }, { prompt, product: ref ? assetData(ref) : null, aspect: hdAspect(ph.ratio) })));
-          const asset = await saveAsset({ projectId: p.id, userId: p.userId, data, name: `theme-sur-mesure-${file.replace(/\.[a-z]+$/, "")}.png`, mime: "image/png", role: "site", origin: "generated", meta: { synaPhoto: { description: ph.description, ratio: ph.ratio, direction: "custom", product: !!ph.product } } });
+          const asset = await saveAsset({ projectId: p.id, userId: p.userId, data, name: sitePhotoName(here.page?.label ?? here.place, ph.description), mime: "image/png", role: "site", origin: "generated", meta: { synaPhoto: { description: ph.description, ratio: ph.ratio, direction: "custom", product: !!ph.product, replaced: file } } });
           return asset.id;
         });
         if (real) report.photosReal++; else if (mine) report.photosClient++; else report.photosMade++;

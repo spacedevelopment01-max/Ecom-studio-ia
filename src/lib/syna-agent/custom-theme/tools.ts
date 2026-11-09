@@ -31,7 +31,7 @@ import { applyStructure, checkCustomTheme, findSection, loadCustomTheme, replace
 import { listProducts } from "../../products/catalog";
 import { enqueue } from "../../jobs";
 import { setStep as setJourneyStep, updateJourney as updateJourneyConv } from "../journey";
-import { clientImages, CUSTOM_BRAND_JOB, examplePhotoCount, photoSlots, photosToCreate, SECTION_TEXT_CAP_MICRO, type ImagesMode } from "./brand";
+import { clientImages, CUSTOM_BRAND_JOB, examplePhotoCount, photoSlots, photosToCreate, SECTION_TEXT_CAP_MICRO, sitePhotoName, type ImagesMode } from "./brand";
 
 /** Ce que le client voit dans le fil : l'aperçu vivant de son thème et sa composition. */
 export function themeCard(projectId: string, t: CustomTheme) {
@@ -44,6 +44,8 @@ export function themeCard(projectId: string, t: CustomTheme) {
     enTete: t.header ? desc(t.header.uid, t.header.id) : null, piedDePage: t.footer ? desc(t.footer.uid, t.footer.id) : null, recherche: t.search ? desc(t.search.uid, t.search.id) : null,
     pages: t.pages.map((p) => ({ key: p.key, label: p.label, sections: p.sections.map((s) => ({ ...desc(s.uid, s.id), textesClient: !!s.clientTexts, retouchee: !!(s.html || s.css) })) })),
     aRevoir: checkCustomTheme(t).map((x) => `${x.level} : ${x.text}`),
+    // Photos d'exemple encore à remplacer (essai du 9 novembre : SINA les devinait au nom des fichiers, à tort).
+    photosExemple: photoSlots(t).slice(0, 60).map((x) => `${x.place} › ${x.section} › ${x.file}`),
   };
 }
 const ref = (r: string) => {
@@ -178,6 +180,12 @@ const buildTool: AgentTool<BuildArgs> = {
 };
 const allSectionsCount = (t: CustomTheme) => (t.header ? 1 : 0) + (t.footer ? 1 : 0) + (t.search ? 1 : 0) + t.pages.reduce((n, pg) => n + pg.sections.length, 0);
 
+/** Photos déjà créées pour le site du projet (réutilisables gratuitement à un autre emplacement, avec custom.edit image). */
+export function sitePhotos(projectId: string): { id: string; description: string }[] {
+  return all<{ id: string; name: string; meta: string | null }>("SELECT id, name, meta FROM assets WHERE project_id=? AND deleted_at IS NULL AND kind='image' AND origin='generated' AND role='site' ORDER BY created_at DESC LIMIT 40", projectId)
+    .map((x) => { let d = x.name; try { d = (JSON.parse(x.meta ?? "{}") as { synaPhoto?: { description?: string } }).synaPhoto?.description?.slice(0, 160) || x.name; } catch { /* méta illisible */ } return { id: x.id, description: d }; });
+}
+
 const imagesTool: AgentTool<Record<string, never>> = {
   name: "custom.images", module: "site", kind: "read", needsProject: true,
   description: "Étape 6 (gratuit), APRÈS custom.compose et AVANT custom.build : combien d'images il faut pour le thème sur mesure monté (un emplacement par photo, page par page) et quelles images le client a déjà envoyées (identifiants pour clientAssets). Sert à lui demander s'il veut monter son site avec SES images ou si tu les crées, et à lui dire le nombre exact d'images à envoyer.",
@@ -193,7 +201,7 @@ const imagesTool: AgentTool<Record<string, never>> = {
       ok: true,
       summary: L(`Il faut ${slots.length} images pour ce thème (${Object.entries(byPage).map(([k, n]) => `${k} : ${n}`).join(", ")}). Images déjà envoyées par le client : ${mine.length}.`, `${slots.length} images needed.`),
       hint: `Demande au client, en une question à choix : « Tu montes ton site avec tes images, ou je les crée ? ». S'il prend les siennes : dis-lui qu'il en faut ${slots.length} (par page : ${Object.entries(byPage).map(([k, n]) => `${k} ${n}`).join(", ")}) et qu'il les envoie avec le trombone (📎) ; s'il en a moins, propose de créer celles qui manquent (images:"mix", prix annoncé) ou de toutes les créer (images:"sina"). Les vraies photos de ses produits servent toujours aux photos de ses produits. Puis custom.build avec images et clientAssets (identifiants ci-dessous), après son accord sur le prix.`,
-      data: { imagesNecessaires: slots.length, parPage: byPage, emplacements: slots.map((s) => `${s.place} › ${s.section}`), imagesDuClient: mine.map((x) => ({ id: x.id, nom: x.name })) },
+      data: { imagesNecessaires: slots.length, parPage: byPage, emplacements: slots.map((s) => `${s.place} › ${s.section}`), imagesDuClient: mine.map((x) => ({ id: x.id, nom: x.name })), photosDejaCreees: sitePhotos(p.id) },
     };
   },
 };
@@ -256,7 +264,7 @@ const PATH = /^[a-z0-9]+:nth-child\(\d{1,3}\)(?: > [a-z0-9]+:nth-child\(\d{1,3}\
 type EditArgs = { uid: string; edits?: { find: string; replace: string }[]; css?: string; hide?: string[]; show?: string[]; image?: { find: string; assetId: string }; clientTexts?: boolean };
 const editTool: AgentTool<EditArgs> = {
   name: "custom.edit", module: "site", kind: "write", needsProject: true,
-  description: "Étape 6 (gratuit) : MODIFIE une section du thème sur mesure sur demande du client, le reste ne bouge pas. Lis-la d'abord (custom.section). edits : remplacements exacts dans son HTML [{ find : passage recopié tel quel, présent une seule fois ; replace : nouveau passage }] pour les textes (ceux du client mot pour mot, jamais ceux d'un modèle, jamais d'avis, chiffre, délai ou certification inventés : « [À compléter : …] »), l'ordre des éléments, un élément ajouté ou retiré ; css : règles propres à la section, chaque sélecteur commence par :scope (couleurs, tailles, espacements, disposition) ; hide / show : adresses d'éléments désignés (ex. « div:nth-child(2) > a:nth-child(1) ») à masquer ou réafficher ; image : { find : photo actuelle (ex. photos/sl-h1.webp), assetId : image du client dans ses Fichiers }. clientTexts:true quand TOUS les textes de la section sont ceux du client. Aucun script, aucun lien extérieur.",
+  description: "Étape 6 (gratuit) : MODIFIE une section du thème sur mesure sur demande du client, le reste ne bouge pas. Lis-la d'abord (custom.section). edits : remplacements exacts dans son HTML [{ find : passage recopié tel quel, présent une seule fois ; replace : nouveau passage }] pour les textes (ceux du client mot pour mot, jamais ceux d'un modèle, jamais d'avis, chiffre, délai ou certification inventés : « [À compléter : …] »), l'ordre des éléments, un élément ajouté ou retiré ; css : règles propres à la section, chaque sélecteur commence par :scope (couleurs, tailles, espacements, disposition) ; hide / show : adresses d'éléments désignés (ex. « div:nth-child(2) > a:nth-child(1) ») à masquer ou réafficher ; image : { find : photo actuelle (ex. photos/sl-h1.webp ou /api/files/…), assetId : image du client dans ses Fichiers, ou photo déjà créée pour son site (custom.images › photosDejaCreees, gratuit) }. Le client veut une autre photo et n'en a pas : propose-lui, en une question à choix, de reprendre une photo déjà créée pour son site (gratuit, dis laquelle) ou d'en créer une nouvelle (custom.photo, prix annoncé). clientTexts:true quand TOUS les textes de la section sont ceux du client. Aucun script, aucun lien extérieur.",
   args: z.object({
     uid: z.string().regex(/^s[0-9a-f]{8}$/),
     edits: z.array(z.object({ find: z.string().min(1).max(8000), replace: z.string().max(16000) }).strict()).max(40).optional(),
@@ -284,7 +292,8 @@ const editTool: AgentTool<EditArgs> = {
         const asset = getAsset(a.image.assetId);
         if (!asset || asset.project_id !== p.id || asset.deleted_at || asset.kind !== "image") throw new Error("image introuvable dans les Fichiers de ce projet");
         const file = a.image.find.replace(/^.*\//, "");
-        const m = html.match(new RegExp(`(?:photos/)?${file.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
+        // Photo déjà posée (adresse complète /api/files/…) : remplacée telle quelle, jamais coupée au milieu de l'adresse.
+        const m = a.image.find.includes("/") && html.includes(a.image.find) ? [a.image.find] : html.match(new RegExp(`(?:photos/)?${file.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
         if (!m) throw new Error(`photo « ${a.image.find} » absente du HTML de la section (photo posée par un script : modifie la donnée du script avec edits)`);
         html = html.split(m[0]).join(assetUrl({ id: asset.id }));
         done.push(`photo ${file} remplacée par ${asset.name}`);
@@ -331,7 +340,7 @@ const photoTool: AgentTool<PhotoArgs> = {
       data = customPhotoDeps.make ? await customPhotoDeps.make(prompt, { product: refs.product }, a.ratio)
         : await withQuotedImageRoute(mockupImageRoute(), () => aiSiteImageHd({ userId: ctx.user.id, projectId: p.id, jobId, usageKey }, { prompt, product: a.product ? refs.product : null, aspect: hdAspect(a.ratio) }));
     } catch (e) { return { ok: false, summary: L(`Photo non créée : ${(e as Error).message.slice(0, 200)}.`, "Photo not created."), hint: "Dis-le au client avec le coût réel ; ne relance rien sans son accord écrit (jamais après une erreur 5xx)." }; }
-    const asset = await saveAsset({ projectId: p.id, userId: ctx.user.id, data, name: `theme-sur-mesure-${file.replace(/\.[a-z]+$/, "")}.png`, mime: "image/png", role: "site", origin: "generated", meta: { synaPhoto: { description: a.description, ratio: a.ratio, page: x.place, direction: "custom", background: a.background ?? null, product: !!a.product } } });
+    const asset = await saveAsset({ projectId: p.id, userId: ctx.user.id, data, name: sitePhotoName(x.page?.label ?? x.place, a.description), mime: "image/png", role: "site", origin: "generated", meta: { synaPhoto: { description: a.description, ratio: a.ratio, page: x.place, direction: "custom", background: a.background ?? null, product: !!a.product } } });
     const res = editTool.run(ctx, { uid: a.uid, image: { find: a.find, assetId: asset.id } }) as Awaited<ReturnType<typeof editTool.run>>;
     const spent = all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key LIKE ?", p.id, `${usageKey}%`)[0]?.c ?? 0;
     const spentText = budgetPctText(ctx.user.id, spent, p.id).replace(/de votre budget/, "de ton budget");

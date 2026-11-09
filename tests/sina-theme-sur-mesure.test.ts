@@ -340,14 +340,16 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       expect(r.data.customTheme.boutique).toBe(`/studio/${pid}/boutique`);
       // Exécution de la tâche avec une fausse écriture et une fausse photo (aucun appel réel).
       const sharp = (await import("sharp")).default;
-      let writes = 0, photos = 0;
+      let writes = 0, photos = 0, expected = 0;
       B.customBrandDeps.write = async (prompt) => {
         writes++;
         expect(prompt).toContain("Marque : «");
         const html = prompt.slice(prompt.indexOf("HTML actuel"));
         const h = html.match(/<(h[1-4])[^>]*>([^<]{3,80})</);
         const imgs = [...new Set([...html.matchAll(/photos\/[\w-]+\.(?:webp|png|jpg)/g)].map((m) => m[0]))];
-        return { edits: h ? [{ find: `>${h[2]}<`, replace: `>Texte de la marque ${writes}<` }] : [], photos: imgs.map((f) => ({ find: f, description: "Photo de bougie en verre ambré sur une table en chêne, lumière douce du soir.", ratio: "4:5" as const, product: null })) };
+        expected += imgs.filter((f) => !/photos\/(carte|map|plan)-/.test(f)).length;
+        // + une photo d'une carte que le rédacteur a retirée : jamais créée, jamais payée.
+        return { edits: h ? [{ find: `>${h[2]}<`, replace: `>Texte de la marque ${writes}<` }] : [], photos: [...imgs, "photos/carte-produit-retiree.webp", "photos/sixieme-produit.webp"].map((f) => ({ find: f, description: "Photo de bougie en verre ambré sur une table en chêne, lumière douce du soir.", ratio: "4:5" as const, product: null })) };
       };
       B.customBrandDeps.photo = async () => { photos++; return sharp({ create: { width: 40, height: 50, channels: 3, background: "#a86" } }).png().toBuffer(); };
       const fake: any = { job: { id: job.id }, payload: JSON.parse(job.payload), checkpoint: {}, progress: () => undefined, step: async (_k: string, fn: () => Promise<unknown>) => fn() };
@@ -357,6 +359,11 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       expect(out.sections).toBe(writes);
       expect(photos).toBeGreaterThan(0);
       expect(out.photosMade).toBe(photos);
+      expect(photos).toBe(expected);
+      // Nom des photos : la page et ce qu'elles montrent, jamais le nom de la photo d'exemple remplacée.
+      const names = (await import("@/lib/db")).all<{ name: string }>("SELECT name FROM assets WHERE project_id=? AND origin='generated' AND role='site'", pid).map((x) => x.name);
+      expect(names.length).toBe(photos);
+      for (const n of names) expect(n).toMatch(/^site-[a-z0-9-]+-bougie-verre-ambre-table-chene\.png$/);
       // la carte n'est jamais une photo : la vraie carte s'ouvre à l'adresse du client (realMap)
       for (const x of allSections(t)) expect(sectionHtml(x.s).replace(/photos\/(carte|map|plan)-[\w-]*\.(webp|jpg|png)/g, ""), x.place).not.toMatch(/photos\/[a-z]+-?[a-z0-9]*\.(webp|jpg|png)/);
       expect(allSections(t).filter((x) => x.s.clientTexts).length).toBeGreaterThan(0);
@@ -418,5 +425,15 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
   it("un remplacement qui ne s'applique pas est compté, jamais deviné ; aucun script n'entre", () => {
     const w = { edits: [{ find: "<h2>Bonjour</h2>", replace: "<h2>Salut</h2>" }, { find: "absent", replace: "x" }, { find: "<p>a</p>", replace: "<script>x</script>" }], photos: [] };
     expect(B.applyWrite("<h2>Bonjour</h2><p>a</p>", w)).toEqual({ html: "<h2>Salut</h2><p>a</p>", failed: 2 });
+  });
+});
+
+describe("thème sur mesure : nom des photos créées", () => {
+  it("une photo créée porte la page et ce qu'elle montre, jamais le nom de la photo d'exemple remplacée", async () => {
+    const { sitePhotoName } = await import("@/lib/syna-agent/custom-theme/brand");
+    const n = sitePhotoName("Accueil", "Grande photo d'ambiance bord à bord pour une marque de confiture artisanale. Au premier plan, trois pots.");
+    expect(n).toMatch(/^site-accueil-marque-confiture-artisanale-[a-z-]+\.png$/);
+    expect(n).not.toMatch(/rooibos|jasmin|theme-sur-mesure/);
+    expect(sitePhotoName("", "")).toBe("site-page-photo.png");
   });
 });
