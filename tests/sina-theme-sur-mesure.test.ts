@@ -283,6 +283,57 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
     } finally { delete T.customPhotoDeps.unit; delete B.customBrandDeps.write; delete B.customBrandDeps.photo; }
   });
 
+  it("images : SINA dit combien il en faut ; celles du client d'abord ; jamais assez → refus et choix au client ; « mix » : SINA crée seulement les autres", async () => {
+    const user = await account();
+    const cid = threadFor(user, null), ctx: any = { user, conversationId: cid, runId: `run-${Date.now()}`, projectId: null, attachment: () => null };
+    await call("start.answer", ctx, { answers: [{ field: "business", value: "products" }, { field: "offer", value: "Des savons artisanaux." }] });
+    await call("start.answer", ctx, { answers: [
+      { field: "existing", value: "Rien." }, { field: "audience", value: "Adultes." }, { field: "image", value: "Doux." }, { field: "setup", value: "3 savons" }, { field: "market", value: "France." },
+      { field: "price", value: "8 €" }, { field: "difference", value: "Saponification à froid." }, { field: "taste", status: "none" }, { field: "photos", value: "Oui." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
+    ] });
+    await call("start.confirm", ctx, {});
+    const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
+    await call("theme.family", ctx, { family: "classique" });
+    const need = await call("custom.images", ctx, {});
+    expect(need.ok).toBe(true);
+    const n = need.data.imagesNecessaires as number;
+    expect(n).toBeGreaterThan(3);
+    expect(need.hint).toMatch(/tes images, ou je les crée[^]*qu'il en faut \d+[^]*mix[^]*sina/);
+    // Deux images envoyées par le client.
+    const sharp = (await import("sharp")).default;
+    const { saveAsset } = await import("@/lib/library");
+    const mine: string[] = [];
+    for (const c of ["#335", "#553"]) mine.push((await saveAsset({ projectId: pid, userId: user.id, data: await sharp({ create: { width: 30, height: 30, channels: 3, background: c } }).png().toBuffer(), name: `client-${c}.png`, mime: "image/png", role: "original", origin: "upload" })).id);
+    expect((await call("custom.images", ctx, {})).data.imagesDuClient.map((x: any) => x.id)).toEqual(mine);
+    // « Seulement mes images » sans en avoir assez : rien n'est lancé, SINA propose les autres choix.
+    const short = await call("custom.build", ctx, { images: "client", clientAssets: mine });
+    expect(short.ok).toBe(false);
+    expect(short.summary).toMatch(new RegExp(`Il faut ${n} images et le client en a donné 2`));
+    expect(short.hint).toMatch(/mix[^]*sina/);
+    expect((await call("custom.build", ctx, { images: "mix", clientAssets: ["inconnue"] })).summary).toMatch(/Images inconnues/);
+    T.customPhotoDeps.unit = () => 50_000;
+    try {
+      ctx.projectId = pid;
+      const mix = await fr(() => getTool("custom.build")!.estimate!(ctx, { images: "mix", clientAssets: mine }));
+      const all = await fr(() => getTool("custom.build")!.estimate!(ctx, { images: "sina" }));
+      expect(all.maxMicro - mix.maxMicro).toBe(2 * 50_000); // deux photos de moins à créer
+      expect(mix.label).toMatch(new RegExp(`${n - 2} photos créées, 2 de tes images posées`));
+      const r = await call("custom.build", ctx, { images: "mix", clientAssets: mine });
+      expect(r.ok).toBe(true);
+      const job = one<any>("SELECT * FROM jobs WHERE id=?", r.jobs[0]);
+      expect(JSON.parse(job.payload)).toMatchObject({ images: "mix", clientAssets: mine });
+      let made = 0;
+      B.customBrandDeps.write = async (prompt) => ({ edits: [], photos: [...new Set([...prompt.slice(prompt.indexOf("HTML actuel")).matchAll(/photos\/[\w-]+\.(?:webp|png|jpg)/g)].map((m) => m[0]))].map((f) => ({ find: f, description: "Photo d'un savon blanc sur une pierre grise, lumière douce du matin.", ratio: "1:1" as const, product: null })) });
+      B.customBrandDeps.photo = async () => { made++; return sharp({ create: { width: 20, height: 20, channels: 3, background: "#999" } }).png().toBuffer(); };
+      const out: any = await fr(() => B.runCustomBrandJob({ job: { id: job.id }, payload: JSON.parse(job.payload), checkpoint: {}, progress: () => undefined, step: async (_k: string, fn: () => Promise<unknown>) => fn() } as any));
+      expect(out.photosClient).toBe(2);
+      expect(made).toBe(out.photosMade);
+      expect(out.photosClient + out.photosMade).toBe(n);
+      const html = allSections(loadCustomTheme(pid)!).map((x) => sectionHtml(x.s)).join("");
+      for (const id of mine) expect(html).toContain(id);
+    } finally { delete T.customPhotoDeps.unit; delete B.customBrandDeps.write; delete B.customBrandDeps.photo; }
+  });
+
   it("un remplacement qui ne s'applique pas est compté, jamais deviné ; aucun script n'entre", () => {
     const w = { edits: [{ find: "<h2>Bonjour</h2>", replace: "<h2>Salut</h2>" }, { find: "absent", replace: "x" }, { find: "<p>a</p>", replace: "<script>x</script>" }], photos: [] };
     expect(B.applyWrite("<h2>Bonjour</h2><p>a</p>", w)).toEqual({ html: "<h2>Salut</h2><p>a</p>", failed: 2 });

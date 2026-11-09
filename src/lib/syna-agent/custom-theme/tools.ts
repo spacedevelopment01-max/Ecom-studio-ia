@@ -31,7 +31,7 @@ import { applyStructure, checkCustomTheme, findSection, loadCustomTheme, replace
 import { starterTheme } from "./starters";
 import { enqueue } from "../../jobs";
 import { setStep as setJourneyStep, updateJourney as updateJourneyConv } from "../journey";
-import { CUSTOM_BRAND_JOB, examplePhotoCount, SECTION_TEXT_CAP_MICRO } from "./brand";
+import { clientImages, CUSTOM_BRAND_JOB, examplePhotoCount, photoSlots, photosToCreate, SECTION_TEXT_CAP_MICRO, type ImagesMode } from "./brand";
 
 /** Ce que le client voit dans le fil : l'aperçu vivant de son thème et sa composition. */
 export function themeCard(projectId: string, t: CustomTheme) {
@@ -124,7 +124,7 @@ const composeTool: AgentTool<{ start?: boolean; header?: string; footer?: string
 
 /** Coût probable d'une écriture de section (mesuré sur les textes du site : environ 0,06 € avec le modèle des textes). */
 export const SECTION_TEXT_TYPICAL_MICRO = 60_000;
-type BuildArgs = { pages?: PageArg[]; photos?: boolean };
+type BuildArgs = { pages?: PageArg[]; photos?: boolean; images?: ImagesMode; clientAssets?: string[] };
 /** Thème à monter : celui en cours, sinon la composition validée du style choisi (ou les pages données). */
 function buildPlan(ctx: ToolContext, a: BuildArgs): CustomTheme {
   const p = project(ctx);
@@ -137,17 +137,19 @@ function buildPlan(ctx: ToolContext, a: BuildArgs): CustomTheme {
 }
 const buildTool: AgentTool<BuildArgs> = {
   name: "custom.build", module: "site", kind: "generate", needsProject: true,
-  description: "Étape 6, THÈME SUR MESURE (PAYANT : devis du Studio annoncé en % du budget, accord écrit du client d'abord) : une fois le style CHOISI PAR LE CLIENT (theme.family), monte son thème avec TOUTES les sections prévues pour ce style, à sa marque : tous les textes écrits pour lui (ses faits seulement, jamais ceux d'un modèle) et toutes les photos (vraies photos de ses produits, sinon photos créées dans la direction artistique de son style). Sans pages : la composition validée du style (ou le thème déjà en cours) ; pages : composition adaptée à son projet (mêmes règles que custom.compose). photos:false = textes seulement. Tâche de fond ; le thème est ensuite EN PLACE dans l'onglet Boutique, où le client demande ses changements et désigne les éléments.",
+  description: "Étape 6, THÈME SUR MESURE (PAYANT : devis du Studio annoncé en % du budget, accord écrit du client d'abord) : une fois le style CHOISI PAR LE CLIENT (theme.family) et sa réponse sur les images (custom.images : ses images, les tiennes, ou les deux), images : « client » (ses images seulement, autant que d'emplacements), « mix » (ses images d'abord, tu crées les autres) ou « sina » (tu crées tout) ; clientAssets : ses images (identifiants de custom.images), dans l'ordre des emplacements. monte son thème avec TOUTES les sections prévues pour ce style, à sa marque : tous les textes écrits pour lui (ses faits seulement, jamais ceux d'un modèle) et toutes les photos (vraies photos de ses produits, sinon photos créées dans la direction artistique de son style). Sans pages : la composition validée du style (ou le thème déjà en cours) ; pages : composition adaptée à son projet (mêmes règles que custom.compose). photos:false = textes seulement. Tâche de fond ; le thème est ensuite EN PLACE dans l'onglet Boutique, où le client demande ses changements et désigne les éléments.",
   args: z.object({
     pages: z.array(z.object({ key: z.string().regex(/^[a-z0-9-]{1,40}$/), label: z.string().min(1).max(40), sections: z.array(z.string().max(80)).min(1).max(16) }).strict()).min(1).max(12).optional(),
     photos: z.boolean().optional(),
+    images: z.enum(["sina", "client", "mix"]).optional(),
+    clientAssets: z.array(z.string().max(60)).max(80).optional(),
   }).strict(),
   estimate: (ctx, a) => {
     const t = buildPlan(ctx, a);
-    const sections = allSectionsCount(t), photos = a.photos === false ? 0 : examplePhotoCount(t);
+    const sections = allSectionsCount(t), photos = a.photos === false ? 0 : photosToCreate(examplePhotoCount(t), a.images ?? "sina", a.clientAssets?.length ?? 0);
     const unit = (customPhotoDeps.unit ?? photoUnit)();
     if (photos && unit == null) throw new Error(L("Aucun modèle d'images utilisable pour les photos du site.", "No usable image model."));
-    return { maxMicro: sections * SECTION_TEXT_CAP_MICRO + photos * (unit ?? 0), probableMicro: sections * SECTION_TEXT_TYPICAL_MICRO + Math.round(photos * (unit ?? 0) * 0.8), label: L(`thème sur mesure monté à ta marque : ${sections} sections écrites${photos ? `, ${photos} photos` : ""}`, "custom theme built for the brand") };
+    return { maxMicro: sections * SECTION_TEXT_CAP_MICRO + photos * (unit ?? 0), probableMicro: sections * SECTION_TEXT_TYPICAL_MICRO + Math.round(photos * (unit ?? 0) * 0.8), label: L(`thème sur mesure monté à ta marque : ${sections} sections écrites${photos ? `, ${photos} photos créées` : ""}${a.clientAssets?.length ? `, ${a.clientAssets.length} de tes images posées` : ""}`, "custom theme built for the brand") };
   },
   run: async (ctx, a) => {
     const p = project(ctx);
@@ -155,19 +157,46 @@ const buildTool: AgentTool<BuildArgs> = {
     try { t = buildPlan(ctx, a); } catch (e) { return { ok: false, summary: (e as Error).message, hint: "Le client choisit d'abord son style (theme.families puis theme.family)." }; }
     const blocking = checkCustomTheme(t).filter((x) => x.level === "bloquant");
     if (blocking.length) return { ok: false, internal: true, summary: `Composition refusée : ${blocking.map((x) => x.text).join(" ; ")}.` };
+    // Images du client : seulement les siennes (Fichiers du projet), et le bon nombre quand il veut n'utiliser que les siennes.
+    const mode = a.images ?? "sina", own = new Set(clientImages(p.id).map((x) => x.id));
+    const foreign = (a.clientAssets ?? []).filter((id) => !own.has(id));
+    if (foreign.length) return { ok: false, internal: true, summary: `Images inconnues ou qui ne viennent pas du client : ${foreign.join(", ")} (custom.images donne ses images).` };
+    if (mode !== "sina" && !a.clientAssets?.length) return { ok: false, summary: L("Aucune image du client à poser : demande-lui d'abord ses images (custom.images dit combien il en faut).", "No client images yet.") };
+    const needed = examplePhotoCount(t);
+    if (mode === "client" && (a.clientAssets?.length ?? 0) < needed) return { ok: false, summary: L(`Il faut ${needed} images et le client en a donné ${a.clientAssets!.length} : rien n'est lancé.`, "Not enough client images."), hint: `Dis-le au client simplement et propose-lui : m'envoyer les ${needed - a.clientAssets!.length} qui manquent, que tu crées les autres (images:\"mix\", prix annoncé), ou que tu crées toutes les images (images:\"sina\").` };
     if (!loadCustomTheme(p.id) || a.pages) t = saveCustomTheme(p.id, { ...t, chosen: false });
     const est = await buildTool.estimate!(ctx, a);
-    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: CUSTOM_BRAND_JOB, label: L("Thème sur mesure monté à ta marque (SINA)", "Custom theme built for your brand (SINA)"), payload: { projectId: p.id, capMicro: est.maxMicro, conversationId: ctx.conversationId, photos: a.photos !== false }, maxAttempts: 2, idempotencyKey: `syna:${ctx.runId}:custom-brand:${t.rev}` });
+    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: CUSTOM_BRAND_JOB, label: L("Thème sur mesure monté à ta marque (SINA)", "Custom theme built for your brand (SINA)"), payload: { projectId: p.id, capMicro: est.maxMicro, conversationId: ctx.conversationId, photos: a.photos !== false, images: mode, clientAssets: a.clientAssets ?? [] }, maxAttempts: 2, idempotencyKey: `syna:${ctx.runId}:custom-brand:${t.rev}` });
     try { updateJourneyConv(ctx.conversationId, (x) => setJourneyStep(x, 6, "doing")); } catch { /* fil sans parcours */ }
     return {
       ok: true, jobs: [job.id],
-      summary: L(`Montage du thème sur mesure à ta marque lancé (${allSectionsCount(t)} sections, ${a.photos === false ? "textes seulement" : `${examplePhotoCount(t)} photos`}).`, "Custom theme build started."),
+      summary: L(`Montage du thème sur mesure à ta marque lancé (${allSectionsCount(t)} sections, ${a.photos === false ? "textes seulement" : `${needed} photos : ${a.clientAssets?.length ? `${Math.min(needed, a.clientAssets.length)} de ses images, ` : ""}${photosToCreate(needed, mode, a.clientAssets?.length ?? 0)} créées`}).`, "Custom theme build started."),
       hint: "Quand la tâche est finie, dis au client que son thème est en place dans l'onglet Boutique (lien « Ouvrir la Boutique » de la carte), qu'il peut le regarder en grand et désigner un élément pour demander un changement. Dis honnêtement ce que le rapport signale (textes non remplacés, photos non créées).",
       data: { customTheme: themeCard(p.id, t) },
     };
   },
 };
 const allSectionsCount = (t: CustomTheme) => (t.header ? 1 : 0) + (t.footer ? 1 : 0) + (t.search ? 1 : 0) + t.pages.reduce((n, pg) => n + pg.sections.length, 0);
+
+const imagesTool: AgentTool<Record<string, never>> = {
+  name: "custom.images", module: "site", kind: "read", needsProject: true,
+  description: "Étape 6 (gratuit), AVANT custom.build : combien d'images il faut pour le thème sur mesure du style choisi (un emplacement par photo, page par page) et quelles images le client a déjà envoyées (identifiants pour clientAssets). Sert à lui demander s'il veut monter son site avec SES images ou si tu les crées, et à lui dire le nombre exact d'images à envoyer.",
+  args: z.object({}).strict(),
+  run: (ctx) => {
+    const p = project(ctx);
+    let t: CustomTheme;
+    try { t = buildPlan(ctx, {}); } catch (e) { return { ok: false, summary: (e as Error).message, hint: "Le client choisit d'abord son style (theme.families puis theme.family)." }; }
+    const slots = photoSlots(t), mine = clientImages(p.id);
+    const byPage: Record<string, number> = {};
+    for (const s of slots) byPage[s.place] = (byPage[s.place] ?? 0) + 1;
+    return {
+      ok: true,
+      summary: L(`Il faut ${slots.length} images pour ce thème (${Object.entries(byPage).map(([k, n]) => `${k} : ${n}`).join(", ")}). Images déjà envoyées par le client : ${mine.length}.`, `${slots.length} images needed.`),
+      hint: `Demande au client, en une question à choix : « Tu montes ton site avec tes images, ou je les crée ? ». S'il prend les siennes : dis-lui qu'il en faut ${slots.length} (par page : ${Object.entries(byPage).map(([k, n]) => `${k} ${n}`).join(", ")}) et qu'il les envoie avec le trombone (📎) ; s'il en a moins, propose de créer celles qui manquent (images:"mix", prix annoncé) ou de toutes les créer (images:"sina"). Les vraies photos de ses produits servent toujours aux photos de ses produits. Puis custom.build avec images et clientAssets (identifiants ci-dessous), après son accord sur le prix.`,
+      data: { imagesNecessaires: slots.length, parPage: byPage, emplacements: slots.map((s) => `${s.place} › ${s.section}`), imagesDuClient: mine.map((x) => ({ id: x.id, nom: x.name })) },
+    };
+  },
+};
 
 const showTool: AgentTool<Record<string, never>> = {
   name: "custom.show", module: "site", kind: "read", needsProject: true,
@@ -342,4 +371,4 @@ const chooseTool: AgentTool<Record<string, never>> = {
   },
 };
 
-export const customThemeTools: AgentTool[] = [sectionsTool, buildTool, composeTool, showTool, readTool, structureTool, editTool, photoTool, undoTool, chooseTool];
+export const customThemeTools: AgentTool[] = [sectionsTool, imagesTool, buildTool, composeTool, showTool, readTool, structureTool, editTool, photoTool, undoTool, chooseTool];

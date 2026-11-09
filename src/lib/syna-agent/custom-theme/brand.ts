@@ -12,6 +12,7 @@ import { z } from "zod";
 import { L } from "../../i18n-server";
 import { UserFacingError, type JobContext } from "../../jobs";
 import { loadProject, notify, type Project } from "../../projects";
+import { all } from "../../db";
 import { assetData, assetUrl, getAsset, saveAsset } from "../../library";
 import { llmJson } from "../../ai/llm";
 import { withTrace } from "../../ai/trace";
@@ -30,7 +31,13 @@ import { libSection, withBrandName } from "./library";
 import { allSections, loadCustomTheme, replaceOnce, saveCustomTheme, sectionHtml, type CustomTheme } from "./theme";
 
 export const CUSTOM_BRAND_JOB = "syna.custom.brand";
-export type CustomBrandPayload = { projectId: string; capMicro: number; conversationId?: string | null; photos?: boolean };
+/**
+ * Images du thème (consigne du propriétaire du 9 novembre 2026) : « sina » = SINA crée toutes les photos ; « client » =
+ * les images du client seulement (il en faut autant que d'emplacements) ; « mix » = ses images d'abord, SINA crée les
+ * autres. Les vraies photos de ses produits servent toujours aux photos de ses produits.
+ */
+export type ImagesMode = "sina" | "client" | "mix";
+export type CustomBrandPayload = { projectId: string; capMicro: number; conversationId?: string | null; photos?: boolean; images?: ImagesMode; clientAssets?: string[] };
 
 /** Plafond d'un appel d'écriture d'une section (même modèle que les textes du site). */
 export const SECTION_TEXT_CAP_MICRO = 150_000;
@@ -93,9 +100,21 @@ export function applyWrite(html: string, w: SectionWrite): { html: string; faile
   return { html: out, failed };
 }
 
-/** Photos encore d'exemple dans le thème (à créer ou à remplacer), dédoublonnées par section. */
-export function examplePhotoCount(t: CustomTheme): number {
-  return allSections(t).reduce((n, x) => n + new Set([...sectionHtml(x.s).matchAll(/photos\/([\w-]+\.(?:webp|png|jpg))/g)].map((m) => m[1])).size, 0);
+/** Emplacements de photos encore d'exemple dans le thème (une photo par emplacement, dédoublonnés par section). */
+export function photoSlots(t: CustomTheme): { uid: string; place: string; section: string; file: string }[] {
+  return allSections(t).flatMap((x) => [...new Set([...sectionHtml(x.s).matchAll(/photos\/([\w-]+\.(?:webp|png|jpg))/g)].map((m) => m[1]))]
+    .map((file) => ({ uid: x.s.uid, place: x.page?.label ?? x.place, section: libSection(x.s.id)?.title ?? x.s.id, file })));
+}
+export const examplePhotoCount = (t: CustomTheme): number => photoSlots(t).length;
+
+/** Images envoyées par le client (Fichiers du projet), dans l'ordre d'arrivée. */
+export function clientImages(projectId: string): { id: string; name: string }[] {
+  return all<{ id: string; name: string }>("SELECT id, name FROM assets WHERE project_id=? AND deleted_at IS NULL AND kind='image' AND origin='upload' ORDER BY created_at", projectId);
+}
+
+/** Photos que SINA créera, selon le choix du client. */
+export function photosToCreate(needed: number, mode: ImagesMode, clientCount: number): number {
+  return mode === "client" ? 0 : mode === "mix" ? Math.max(0, needed - clientCount) : needed;
 }
 
 /** Remplaçables par les tests (aucun appel réel). */
@@ -116,7 +135,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
   const fam = loadFamilyChoice(p.id), people = peopleAllowed(p.id), fu = familyArtUniverse(fam, { people });
   const direction = fu ? `${fu.style} ; ${fu.idea} ; lumière : ${fu.light} ; décors : ${fu.setting} ; couleurs de la marque : ${[p.brand?.palette?.dark, p.brand?.palette?.primary, p.brand?.palette?.accent].filter(Boolean).join(", ")}.` : null;
   const sections = allSections(t).filter((x) => !x.s.clientTexts);
-  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, problems: [] as string[] };
+  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, problems: [] as string[] };
   const briefs: Record<string, SectionWrite["photos"]> = {};
 
   // 1) Textes, section par section (un point de reprise chacune).
@@ -147,12 +166,18 @@ export async function runCustomBrandJob(ctx: JobContext) {
   // 2) Photos : vraie photo du produit, sinon photo créée dans la direction artistique de la marque.
   if (a.photos !== false) {
     const todo = Object.entries(briefs).flatMap(([uid, list]) => list.map((ph) => ({ uid, ph })));
+    const mode: ImagesMode = a.images ?? "sina";
+    // Images du client d'abord (« client » ou « mix »), dans l'ordre ; jamais une même image sur deux emplacements.
+    const own = mode === "sina" ? [] : (a.clientAssets ?? []).filter((id) => { const x = getAsset(id); return !!x && x.project_id === p.id && !x.deleted_at && x.kind === "image"; });
+    let next = 0;
     for (const [i, { uid, ph }] of todo.entries()) {
       ctx.progress(0.5 + (0.48 * i) / Math.max(1, todo.length), L(`Photos : ${i + 1} sur ${todo.length}`, `Photos: ${i + 1} of ${todo.length}`));
       const file = ph.find.replace(/^.*\//, "");
       try {
         const real = ph.product ? products.find((x) => x.data.title.trim().toLowerCase() === ph.product!.trim().toLowerCase())?.data.images[0]?.assetId : undefined;
-        const assetId = real && getAsset(real) ? real : await ctx.step(`photo:${uid}:${file}`, async () => {
+        const mine = !(real && getAsset(real)) && next < own.length ? own[next++] : undefined;
+        if (!(real && getAsset(real)) && !mine && mode === "client") { report.problems.push(`photo ${file} : aucune image du client pour cet emplacement`); continue; }
+        const assetId = real && getAsset(real) ? real : mine ? mine : await ctx.step(`photo:${uid}:${file}`, async () => {
           const prodRef = ph.product ? products.find((x) => x.data.title.trim().toLowerCase() === ph.product!.trim().toLowerCase())?.data.images[0]?.assetId : undefined;
           const ref = prodRef ? getAsset(prodRef) : undefined;
           const prompt = codePhotoPrompt({ id: `ct-${uid}-${file}`, description: ph.description, ratio: ph.ratio, product: !!ph.product }, { name, logo: false, product: !!ref, direction, people: !!fu && people });
@@ -162,7 +187,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
           const asset = await saveAsset({ projectId: p.id, userId: p.userId, data, name: `theme-sur-mesure-${file.replace(/\.[a-z]+$/, "")}.png`, mime: "image/png", role: "site", origin: "generated", meta: { synaPhoto: { description: ph.description, ratio: ph.ratio, direction: "custom", product: !!ph.product } } });
           return asset.id;
         });
-        if (real) report.photosReal++; else report.photosMade++;
+        if (real) report.photosReal++; else if (mine) report.photosClient++; else report.photosMade++;
         t = loadCustomTheme(p.id)!;
         const cur = allSections(t).find((y) => y.s.uid === uid);
         if (cur) { cur.s.html = sectionHtml(cur.s).split(ph.find).join(assetUrl({ id: assetId })); t = saveCustomTheme(p.id, t); }
