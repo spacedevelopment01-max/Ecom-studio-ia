@@ -21,9 +21,10 @@ function fullSite(family: "classique" | "moderne") {
   return {
     header: "En-tête classique", footer: "Pied de page complet",
     pages: [
-      { key: "home", label: "Accueil", sections: ["Ouverture photo pleine", "Collection en vedette", "Avis clients"] },
+      // Accueil : au moins 8 sections ; fiche produit : au moins 7 (méthode de montage, rappel du propriétaire du 9 novembre).
+      { key: "home", label: "Accueil", sections: ["Ouverture photo pleine", "Collection en vedette", "Histoire du produit au défilement", "Citation en grand", "Avis clients", "Choisir selon le moment", "Nos engagements", "Chiffres clés"] },
       { key: "shop", label: "Boutique", sections: ["Catalogue avec filtres et tri"] },
-      { key: "product", label: "Fiche produit", sections: ["Produit vedette", "Points forts du produit"] },
+      { key: "product", label: "Fiche produit", sections: ["Produit vedette", "Points forts du produit", "Mode d'emploi en étapes", "Résumé des avis", "Questions sur le produit", "Complète ta commande", "Badges de confiance"] },
       { key: "cart", label: "Panier", sections: ["Page panier complète"] },
       { key: "compte", label: "Mon compte", sections: ["Connexion et création de compte"] },
       { key: "about", label: "Notre histoire", sections: ["L'atelier et la personne derrière"] },
@@ -509,5 +510,18 @@ describe("thème sur mesure : émotion et images magnifiques (retour du proprié
     const C = await import("@/lib/syna-agent/mockup-code/code-mockup");
     expect(C.codePhotoPrompt({ id: "x", description: "Une scène.", ratio: "16:9" } as any, { name: "M", logo: false, product: false })).toMatch(/photo magnifique[^]*jamais un fond uni/);
     expect(C.codePhotoPrompt({ id: "x", description: "Un pot.", ratio: "1:1", background: "#ffffff" } as any, { name: "M", logo: false, product: false })).not.toMatch(/photo magnifique/);
+  });
+});
+
+describe("thème sur mesure : pages pleines", () => {
+  it("accueil au moins 8 sections, fiche produit au moins 7 : sinon bloquant (Heure Dorée était passé avec 4 et 3)", () => {
+    const site = { business: "products" as const, products: 5, platform: "shopify" };
+    const base = fullSite("classique");
+    const T = (pages: typeof base.pages) => ({ family: "classique", style: "classique", rev: 1, header: { uid: "s00000001", id: sectionByRef(base.header)!.id }, footer: { uid: "s00000002", id: sectionByRef(base.footer)!.id }, search: null, pages: pages.map((pg, i) => ({ key: pg.key, label: pg.label, sections: pg.sections.map((t, j) => ({ uid: `s${String(i).padStart(4, "0")}${String(j).padStart(4, "0")}`, id: sectionByRef(t)!.id })) })) }) as unknown as CustomTheme;
+    expect(checkCustomTheme(T(base.pages), site).filter((x) => x.level === "bloquant")).toEqual([]);
+    const short = base.pages.map((pg) => (pg.key === "home" ? { ...pg, sections: pg.sections.slice(0, 4) } : pg.key === "product" ? { ...pg, sections: pg.sections.slice(0, 3) } : pg));
+    const problems = checkCustomTheme(T(short), site).filter((x) => x.level === "bloquant").map((x) => x.text);
+    expect(problems).toContain("« Accueil » n'a que 4 section(s) : au moins 8 (accueil)");
+    expect(problems).toContain("« Fiche produit » n'a que 3 section(s) : au moins 7 (fiche produit)");
   });
 });

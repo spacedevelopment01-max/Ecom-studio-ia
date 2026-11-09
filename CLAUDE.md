@@ -82,7 +82,8 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   N achetés M offerts, cadeaux) et choix entre plusieurs produits de la gamme sont des fonctions de ce bloc d'achat,
   jamais des sections à part** (retour du propriétaire du 8 novembre 2026).
 - **Montage d'un thème avec la bibliothèque de sections** (retour du propriétaire du 8 novembre 2026, option B de Brindi) :
-  **une seule section de cartes (produits ou familles) par page** ; une section qui montre plusieurs styles au choix dans la
+  **accueil : au moins 8 sections, fiche produit : au moins 7** (contrôle bloquant `MIN_SECTIONS` du thème sur mesure,
+  rappel du 9 novembre 2026) ; **une seule section de cartes (produits ou familles) par page** ; une section qui montre plusieurs styles au choix dans la
   bibliothèque (ex. « Livraison estimée » en 3 styles) n'en garde **qu'un seul** sur une vraie page. **Jamais une section
   « pour prendre une section »** : chaque section a un rôle dans l'histoire de la page, est choisie selon la personnalité
   de la marque, l'angle et son émotion, le métier et le contenu réel, et le tout reste harmonieux (méthode complète :

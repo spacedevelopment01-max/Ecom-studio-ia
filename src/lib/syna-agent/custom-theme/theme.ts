@@ -123,12 +123,21 @@ export const missingPages = (t: CustomTheme, k: SiteKind) => requiredPages(k).fi
  * Contrôle des règles de montage du propriétaire (gratuit, sans IA). « bloquant » : le thème n'est pas enregistré.
  * Avec le genre de site (produits ou services), une page obligatoire absente est bloquante.
  */
+/** Nombre minimal de sections (hors en-tête et pied de page) : accueil 8, fiche produit 7 (docs/montage-themes-sina.md). */
+export const MIN_SECTIONS = { home: 8, product: 7 } as const;
+
 export function checkCustomTheme(t: CustomTheme, site?: SiteKind): ThemeProblem[] {
   const out: ThemeProblem[] = [];
   if (site) for (const m of missingPages(t, site)) out.push({ level: "bloquant", text: `page « ${m.label} » absente (clé ${m.keys[0]}) : un thème sur mesure a toutes ses pages` });
   if (site) for (const o of platformOwnedPages(site)) if (t.pages.some((p) => o.keys.includes(p.key))) out.push({ level: "bloquant", text: `page « ${o.label} » en trop : sur Shopify, le paiement et la confirmation de commande sont des pages de Shopify (le bouton du panier y mène), jamais des pages du thème` });
   const bad = (text: string) => out.push({ level: "bloquant", text });
   const warn = (text: string) => out.push({ level: "à revoir", text });
+  // Pages pleines (méthode de montage, rappel du propriétaire du 9 novembre 2026 : « 8 sections sur la page d'accueil et
+  // minimum 7 sur la page produit » ; Heure Dorée était passé avec 4 et 3).
+  if (site) for (const pg of t.pages) {
+    const min = pg.key === "home" ? MIN_SECTIONS.home : site.business === "products" && /^product/.test(pg.key) ? MIN_SECTIONS.product : 0;
+    if (pg.sections.length < min) bad(`« ${pg.label} » n'a que ${pg.sections.length} section(s) : au moins ${min} (${pg.key === "home" ? "accueil" : "fiche produit"})`);
+  }
   const lib = (s: CtSection): LibSection | null => libSection(s.id);
   for (const x of allSections(t)) {
     const l = lib(x.s);
