@@ -14,10 +14,17 @@ import { realStep7Deps, step7CallMaxMicro } from "./deps";
 import { loadMockupSet } from "./mockup-set";
 import { runStep7, type Step7Deps, type Step7Report } from "./pipeline";
 
+import { loadSiteCopy } from "./copy";
+import { siteSchemes } from "../../engine/site-reproduce";
+import { cloneSpec, type ThemeSpec } from "../../theme/spec";
+import type { Project } from "../../projects";
+import { saveAsset } from "../../library";
+import { getJsonSetting } from "../../settings";
+import type { DirectionId } from "../../theme/directions";
 export const MOCKUP_CODE_JOB = "syna.mockup.code";
 export const STEP7_REPORT_KEY = "syna.step7.report";
 
-export type MockupCodePayload = { projectId: string; direction: "A" | "B" | "C"; capMicro: number; maxRounds?: number; conversationId?: string | null };
+export type MockupCodePayload = { projectId: string; direction: "A" | "B" | "C"; capMicro: number; maxRounds?: number; conversationId?: string | null; pages?: string[] };
 
 /** Remplaçables par les tests (aucun appel réel) : dépendances du déroulé et thème de départ. */
 export const mockupCodeJobDeps: {
@@ -25,13 +32,36 @@ export const mockupCodeJobDeps: {
   callMaxMicro?: typeof step7CallMaxMicro;
 } = {};
 
-/** Thème de départ : le site courant, sinon le site natif préparé gratuitement (pages, produits, menus, sans IA). */
+/**
+ * Thème de départ : le site courant, sinon le site natif préparé gratuitement (pages, produits, menus, sans IA). Un
+ * projet parti d'une maquette n'a pas de thème (essai réel du 8 novembre : « choisissez un thème de la galerie avant de
+ * composer ce projet ») : le squelette est pris dans le thème de la galerie qui met le mieux en scène son offre
+ * (réglage « syna.step7.base_direction » pour l'imposer) ; seule sa structure sert, le design vient de la maquette.
+ */
 async function baseVersionId(projectId: string): Promise<string> {
   const cur = currentTheme(projectId);
   if (cur) return cur.version.id;
   const { buildShop } = await import("../../engine/shop");
-  const r = await buildShop(null, projectId, { useAi: false, prepareOnly: true });
+  const { themeChoices } = await import("../themes");
+  const forced = getJsonSetting<string>("syna.step7.base_direction", "");
+  const direction = (forced || themeChoices(projectId).list[0]?.id || undefined) as DirectionId | undefined;
+  const r = await buildShop(null, projectId, { useAi: false, prepareOnly: true, ...(direction ? { direction } : {}) });
   return r.versionId;
+}
+
+/**
+ * Couleurs, polices et logo de la charte posés sur le thème de départ (essai réel du 8 novembre : l'accueil de Brindi
+ * codé en bleu, couleurs du thème qui sert de squelette, logo absent). Les sections codées passent par ces variables.
+ */
+export function withBrand(spec: ThemeSpec, p: Project): ThemeSpec {
+  const out = cloneSpec(spec);
+  const b = p.brand;
+  if (!b) return out;
+  const settings = out.settings as Record<string, unknown>;
+  if (b.palette) settings.color_schemes = siteSchemes(b.palette);
+  if (b.fonts?.heading) settings.type_heading_font = b.fonts.heading;
+  if (b.fonts?.body) settings.type_body_font = b.fonts.body;
+  return out;
 }
 
 export async function runMockupCodeJob(ctx: JobContext) {
@@ -44,17 +74,34 @@ export async function runMockupCodeJob(ctx: JobContext) {
   if (!units) throw new UserFacingError(L("Le coût des appels n'a pas pu être encadré (modèle ou tarif inconnu) : aucun appel n'a été fait.", "The call cost could not be bounded: no call was made."));
   ctx.progress(0.02, L("Préparation du thème de départ", "Preparing the base theme"));
   const baseId = await ctx.step("base", () => baseVersionId(p.id));
-  const base = themeVersion(p.id, baseId)?.spec;
-  if (!base) throw new UserFacingError(L("Thème de départ introuvable.", "Base theme not found."));
-  const options = { project: p, jobId: ctx.job.id, usageKey: ctx.job.id, step: <T,>(k: string, fn: () => Promise<T>) => ctx.step(k, fn), callMaxMicro: units };
+  const base0 = themeVersion(p.id, baseId)?.spec;
+  if (!base0) throw new UserFacingError(L("Thème de départ introuvable.", "Base theme not found."));
+  const base = withBrand(base0, p);
+  const options = { project: p, jobId: ctx.job.id, usageKey: ctx.job.id, step: <T,>(k: string, fn: () => Promise<T>) => ctx.step(k, fn), done: (k: string) => k in ctx.checkpoint, callMaxMicro: units };
   const deps = { ...(mockupCodeJobDeps.deps ?? realStep7Deps)(options), progress: (f: number, m: string) => ctx.progress(0.05 + f * 0.9, m) };
   try {
     const { spec, report } = await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "mockup-code", costCapMicro: a.capMicro }, () =>
-      runStep7({ direction: d, pages: set.pages, base, options: { costCapMicro: a.capMicro, maxRounds: a.maxRounds } }, deps));
+      runStep7({ direction: a.pages?.length ? { ...d, images: d.images.filter((i) => i.pages.some((k) => a.pages!.includes(k))) } : d, pages: a.pages?.length ? set.pages.filter((x) => a.pages!.includes(x.key)) : set.pages, base, options: { costCapMicro: a.capMicro, maxRounds: a.maxRounds }, copy: loadSiteCopy(p.id)?.pages ?? null }, deps));
+    // Rien d'écrit du tout (plafond atteint avant la première écriture) : aucune version vide n'est enregistrée
+    // (essai réel du 8 novembre : une reprise sans budget a produit une version 5 vide).
+    if (report.pages.every((x) => !x.written.length && !x.library.length) && report.stoppedBy === "budget") throw new UserFacingError(L("Plafond atteint avant d'écrire la moindre section : rien n'a été enregistré, le site précédent reste tel quel.", "Cost cap reached before writing anything: nothing was saved."));
     const problems = validateSpec(spec);
     if (problems.length) throw new UserFacingError(L(`Le thème codé ne passe pas la validation : ${problems.slice(0, 3).join(" ; ")}. Le site courant n'a pas changé.`, `The coded theme fails validation. The current site hasn't changed.`));
-    const v = saveThemeVersion(p.id, spec, L(`Site codé d'après la maquette ${d.key} « ${d.name} » (SINA, étape 7)`, `Site coded from mockup ${d.key} (SINA, step 7)`), "ai", { syna: { step: 7, direction: d.key, ok: report.ok, summary: report.summary } }, undefined, { activate: false });
-    remember(p.id, { kind: "artifact", key: STEP7_REPORT_KEY, value: JSON.stringify({ versionId: v.id, number: v.number, direction: d.key, report }), source: "local", origin: "system" });
+    const v = saveThemeVersion(p.id, spec, L(`${a.pages?.length ? `Pages ${a.pages.join(", ")} codées` : "Site codé"} d'après la maquette ${d.key} « ${d.name} » (SINA, étape 7)`, `Site coded from mockup ${d.key} (SINA, step 7)`), "ai", { syna: { step: 7, direction: d.key, ok: report.ok, summary: report.summary } }, undefined, { activate: false });
+    // Captures du site codé (gratuites) : montrées à SINA à côté de la maquette (essai réel du 8 novembre : « je n'ai pas
+    // pu voir le rendu du site codé »), rangées dans les Fichiers.
+    const captures: { page: string; viewport: "desktop" | "phone"; assetId: string }[] = [];
+    for (const pr of report.pages.filter((x) => x.path).slice(0, 4)) {
+      for (const [vp, w] of [["desktop", 1440], ["phone", 390]] as const) {
+        try {
+          const shot = await deps.screenshot({ spec, path: pr.path!, width: w });
+          if (!shot) continue;
+          const asset = await saveAsset({ projectId: p.id, userId: p.userId, data: shot.image, name: `site-code-${pr.key}-${vp}.jpg`, mime: "image/jpeg", role: "site-capture", origin: "generated", meta: { synaStep7: { versionId: v.id, page: pr.key, viewport: vp } } });
+          captures.push({ page: pr.key, viewport: vp, assetId: asset.id });
+        } catch { /* capture impossible : le rapport le dit déjà (non vérifiée) */ }
+      }
+    }
+    remember(p.id, { kind: "artifact", key: STEP7_REPORT_KEY, value: JSON.stringify({ versionId: v.id, number: v.number, direction: d.key, report, captures }), source: "local", origin: "system" });
     if (a.conversationId) {
       try { updateJourney(a.conversationId, (j) => setStep(j, 7, "review", report.summary.slice(0, 300))); } catch { /* fil supprimé : le rapport reste dans le projet */ }
     }

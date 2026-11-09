@@ -13,6 +13,7 @@ import { HttpError, type User } from "../auth";
 import { one, all, json, run as sql, id as newId } from "../db";
 import { budgetPctText } from "../ai/budget-pct";
 import { activityGaps, COMPANY_FIELDS } from "./activity";
+import { loadSiteCopy } from "./mockup-code/copy";
 import { enqueue, getJob, type JobContext } from "../jobs";
 import { llmJson, type LlmCall, type LlmImage } from "../ai/llm";
 import { withTrace, CostCapReached } from "../ai/trace";
@@ -197,6 +198,8 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       // Un bouton est une réponse complète, cliquable telle quelle : jamais un gabarit à trous (essai réel du 7 novembre :
       // « Oui, sous [À compléter : délai] et à [À compléter : conditions] »).
       if (!local && out.question?.choices?.length) out = { ...out, question: { ...out.question, choices: out.question.choices.filter((c) => !/\[[^\]]*\]|…\s*$|\.\.\.\s*$/.test(c)) } };
+      // Étape 6 : les thèmes sont montrés tels qu'ils sont ; jamais « ton site déjà composé dans chacun » (essai réel).
+      if (!local && currentStep(journeyOf(r.conversation_id)) === 6) out = { ...out, message: withoutBlindClaim(withoutComposedClaim(out.message)) };
       if (!local) out = withoutRepeatedQuestion({ ...out, message: fixElision(out.message), ...(out.question ? { question: { ...out.question, text: fixElision(out.question.text) } } : {}) });
       addMessage(r.conversation_id, "assistant", { ...out, step, ...(local ? { local: true } : {}) }, r.id);
       if (!out.actions.length) {
@@ -312,6 +315,27 @@ export function withoutLaterForRequired<Q extends { text: string; choices?: stri
   return { ...q, choices };
 }
 
+/**
+ * Étape 6 (consigne du propriétaire) : les cartes montrent les démonstrations d'origine des thèmes, pas le site du
+ * client. Une incise qui prétend le contraire (« avec ton site déjà composé dans chacun ») est retirée du message.
+ */
+export function withoutComposedClaim(message: string): string {
+  return message
+    .replace(/,?\s*(?:avec|et)\s+ton site\s+(?:déjà\s+)?(?:composé|intégré|mis en page|décliné)\s+dans\s+(?:chacun|chaque thème|chacun d'eux|ces thèmes)/gi, "")
+    .replace(/\s+([.,;!?])/g, "$1").replace(/ {2,}/g, " ").trim();
+}
+
+/**
+ * Étape 6 : les maquettes créées sont JOINTES à SINA. Essais réels du 8 novembre : « Je ne peux pas vérifier le rendu
+ * ici : ouvre-le dans Fichiers », répété d'un message à l'autre alors que l'image lui était jointe. La phrase est
+ * retirée (elle est fausse) ; la consigne lui demande de décrire ce qu'elle voit.
+ */
+export function withoutBlindClaim(message: string): string {
+  const blind = /\bje ne (?:peux|pourrai|suis) pas (?:en mesure de )?(?:l[ea]s? |l'|les )?(?:voir|vérifier|confirmer|contrôler|décrire|regarder)\b[^.!?\n]*(?:rendu|image|maquette|à l'œil|visuel|changements|modifications|retouche|résultat)/i;
+  const blind2 = /\bje ne (?:vois|lis|regarde) pas\b[^.!?\n]*(?:rendu|image|maquette|visuel)/i;
+  return message.split(/(?<=[.!?])\s+/).filter((sentence) => !blind.test(sentence) && !blind2.test(sentence)).join(" ").replace(/ {2,}/g, " ").trim() || message;
+}
+
 export function withoutRepeatedQuestion(out: StepOutput): StepOutput {
   if (!out.question || !out.message) return out;
   // Le message s'arrête avant sa première phrase interrogative (et ce qui la suit), s'il reste quelque chose avant.
@@ -332,6 +356,8 @@ export function withoutRepeatedQuestion(out: StepOutput): StepOutput {
   {
     let parts = sentencesOf(msg);
     while (parts.length > 1 && overlap(parts[parts.length - 1], out.question.text) >= 0.5) parts = sentencesOf(withoutLast(parts));
+    // Une phrase d'annonce restée seule à la fin (« Une correction à faire : ») : retirée aussi (essai réel du 8 novembre).
+    while (parts.length > 1 && /[:：]\s*$/.test(parts[parts.length - 1]) && parts.join("").trim() !== out.message.trim()) parts = sentencesOf(withoutLast(parts));
     msg = parts.join("").trim();
   }
   if (msg !== out.message.trim() && !msg.includes("?")) return { ...out, message: msg };
@@ -367,7 +393,9 @@ export function modelFor(currentStepNumber: number): { provider: "anthropic"; mo
   // Étape 3 : l'image de marque est rendue par le Studio (brand.kit), sans IA.
   // Étape 4 : la recherche et les angles sont faits par les tâches du Pilote (angles.propose).
   // Étape 5 : l'activité est rassemblée par des outils gratuits ; le fil reste sur le modèle léger.
-  const simple = currentStepNumber <= 5 || !READY_STEPS.includes(currentStepNumber);
+  // Étape 6 : les thèmes sont montrés et appliqués par des outils gratuits (maquettes payantes : dans leurs tâches).
+  // Étape 7 : le codage et les photos se font dans leurs tâches (site.code_from_mockup, site.images) ; le fil reste léger.
+  const simple = currentStepNumber <= 7 || !READY_STEPS.includes(currentStepNumber);
   return simple ? { provider: "anthropic", model: "claude-haiku-5-5", effort: "low" } : undefined;
 }
 
@@ -385,6 +413,8 @@ export async function stepQuote(user: User, r: SynaRun): Promise<string> {
   try {
     const est = await t.estimate(toolContext(user, r), {} as never);
     if (!est.maxMicro) return "";
+    // Coût probable annoncé quand l'outil le donne (étape 7 : le plafond au pire n'a pas de sens pour le client).
+    if (est.probableMicro) return `\n\n# Prix de la prochaine action payante de l'étape\n${name} (${est.label}) : coût probable ${budgetPctText(user.id, est.probableMicro, r.project_id)} ; plafond ${budgetPctText(user.id, est.maxMicro, r.project_id)} (la tâche s'arrête et le dit si elle l'atteint). Dis le coût probable et le plafond au client AVANT de lancer, dans le message où tu lui proposes de lancer.`;
     return `\n\n# Prix de la prochaine action payante de l'étape\n${name} (${est.label}) : au plus ${budgetPctText(user.id, est.maxMicro, r.project_id)}. Dis ce prix au client AVANT de lancer, dans le message où tu lui proposes de lancer.`;
   } catch { return ""; }
 }
@@ -394,7 +424,7 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
   const history = lastMessages(r.conversation_id, 120);
   // Variété des réponses : les débuts de tes derniers messages, à ne pas reprendre.
   const openings = history.filter((m) => m.role === "assistant" && m.content?.message).slice(-4).map((m) => String(m.content.message).split(/\s+/).slice(0, 5).join(" "));
-  const images: LlmImage[] = [...(step === 0 || newAttachmentSinceLastAssistant(history) ? attachmentImages(r.conversation_id, history) : []), ...(await journeyImages(journeyOf(r.conversation_id)).catch(() => []))].slice(0, 12);
+  const images: LlmImage[] = [...(step === 0 || newAttachmentSinceLastAssistant(history) ? attachmentImages(r.conversation_id, history) : []), ...(await journeyImages(journeyOf(r.conversation_id), r.project_id).catch(() => []))].slice(0, 12);
   const b = budgetState(user.id, r.project_id, r.conversation_id);
   const snapshot = r.project_id ? await projectSnapshot(toolContext(user, r)) : L("Aucun projet rattaché (brouillon). Pour agir sur un site ou une boutique, créez d'abord le projet avec project.create.", "No project linked yet (draft). Create it with project.create before acting.");
   const call: LlmCall = {
@@ -456,7 +486,9 @@ export function fixElision(s: string): string {
   // Liste écrite sur une seule ligne (« … uniquement. - Produits : … - Prix : … », essai réel) : une ligne par élément.
   s = s.replace(/([.!?…])\s+-\s+(?=[A-ZÀ-Ý][^:\n]{0,40}\s?:)/g, "$1\n- ").replace(/ :\s+-\s+(?=[A-ZÀ-Ý][^:\n]{0,40}\s?:)/g, " :\n- ");
   // Seulement « je », « le », « ne », « que » (jamais « me » ou « se » : SINA répond aussi en anglais, « me and… »).
-  return s.replace(/\b([JjLlNn]e|[Qq]ue) ([aeiouyéèêàâîôûAEIOUYÉÈÊÀÂÎÔÛ])/g, (_m, w: string, v: string) => `${w.slice(0, -1)}'${v}`);
+  // Un mot entier seulement (essai réel du 8 novembre : « le modèle OpenAI » devenu « modèl'OpenAI », la fin de
+  // « modèle » prise pour l'article « le »).
+  return s.replace(/(?<![\p{L}'’-])([JjLlNn]e|[Qq]ue) ([aeiouyéèêàâîôûAEIOUYÉÈÊÀÂÎÔÛ])/gu, (_m, w: string, v: string) => `${w.slice(0, -1)}'${v}`);
 }
 
 export function threadView(user: User, cid: string) {
@@ -486,6 +518,11 @@ export function threadView(user: User, cid: string) {
         logos: j.logos ? { round: j.logos.round, chosen: j.logoChoice?.source ?? null, list: j.logos.list.map((x) => ({ ...x, href: x.assetId ? assetUrl({ id: x.assetId }) : null })) } : null,
         // Étape 5 : le plan de l'activité.
         activity: j.activity ? { ...j.activity, gaps: activityGaps(j.activity), validated: j.steps[5]?.status === "done" } : null,
+        // Étape 6 : cartes des thèmes (site du client composé dans chacun) et thème choisi.
+        themes: j.themes ? { ...j.themes, chosen: j.themeChoice?.id ?? null } : null,
+        families: j.families ?? null,
+        // Étape 6, maquettes : textes écrits avant la maquette (montrés en entier au client).
+        siteCopy: c.project_id ? (() => { const sc = loadSiteCopy(c.project_id!); return sc ? { pages: Object.fromEntries(Object.entries(sc.pages).map(([k, v]) => [k, v])) } : null; })() : null,
         // Étape 4 : les 5 angles marketing et l'angle choisi.
         angles: j.angles ? { list: j.angles.list, recommendedId: j.angles.recommendedId, sourceCount: j.angles.sourceCount, chosen: j.angleChoice?.ids ?? (j.angleChoice ? [j.angleChoice.id] : null) } : null,
         // Étape 3 : l'image de marque (déclinaisons, planche, charte PDF), servie par la bibliothèque du projet.

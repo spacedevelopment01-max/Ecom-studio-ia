@@ -16,6 +16,7 @@ import type { SinaLogo } from "./logos";
 import type { BrandKit } from "./brand-kit";
 import type { SinaAngles } from "./angles";
 import type { ActivityPlan } from "./activity";
+import type { SinaThemes } from "./themes";
 
 export const JOURNEY_STEPS = [
   { n: 0, fr: "Questions de départ", en: "Getting started" },
@@ -24,8 +25,8 @@ export const JOURNEY_STEPS = [
   { n: 3, fr: "Image de marque complète", en: "Full brand kit" },
   { n: 4, fr: "5 angles marketing", en: "5 marketing angles" },
   { n: 5, fr: "L'activité complète", en: "The full business" },
-  { n: 6, fr: "Thème ou maquettes", en: "Theme or mockups" },
-  { n: 7, fr: "Site codé d'après la maquette", en: "Site coded from the mockup" },
+  { n: 6, fr: "Thème du Studio ou thème sur mesure", en: "Studio theme or custom theme" },
+  { n: 7, fr: "Site codé d'après le thème sur mesure", en: "Site coded from the custom theme" },
   { n: 8, fr: "Un de nos thèmes, adapté", en: "One of our themes, adapted" },
   { n: 9, fr: "Publications", en: "Social posts" },
   { n: 10, fr: "Publicités", en: "Ads" },
@@ -38,7 +39,7 @@ export type StepNumber = (typeof JOURNEY_STEPS)[number]["n"];
  * Étapes déjà construites dans le parcours SINA. Les autres sont annoncées au client mais SINA n'y lance rien
  * (aucun outil payant) : elle ne doit jamais partir seule sur une étape que le parcours ne sait pas encore mener.
  */
-export const READY_STEPS: number[] = [0, 1, 2, 3, 4, 5];
+export const READY_STEPS: number[] = [0, 1, 2, 3, 4, 5, 6, 7];
 /** à faire · en cours · à valider par le client · validée · sans objet (ex. étape 7 quand le client choisit un de nos thèmes). */
 export type StepStatus = "todo" | "doing" | "review" | "done" | "skipped";
 
@@ -85,6 +86,13 @@ export type Journey = {
   angleChoice?: { id: string; ids?: string[]; at: number };
   /** Étape 5 : le plan de l'activité tel qu'affiché au client (coordonnées, stratégie, offre, produits). */
   activity?: ActivityPlan;
+  /** Étape 6 : thèmes montrés au client (site composé dans chacun) et thème qu'il a choisi. */
+  themes?: SinaThemes;
+  /** Étape 6 : familles de sections montrées en image (Classique, Moderne) et celle que le client a choisie. */
+  families?: { cards: { family: string; style: string; title: string; titleEn: string; pitch: string; pitchEn: string; mood: string; preview: string; demo?: string; sections: number }[]; chosen: string | null };
+  /** Étape 6 : le choix DU CLIENT entre un thème du Studio et un thème sur mesure (jamais fait à sa place). */
+  siteMode?: { mode: "theme" | "mockup"; at: number };
+  themeChoice?: { id: string; jobId: string; at: number };
 };
 
 export const emptyJourney = (): Journey => ({
@@ -201,7 +209,9 @@ export function journeyContext(j: Journey): string {
   if (cur === 3) lines.push(...brandKitStepContext(j));
   if (cur === 4) lines.push(...anglesStepContext(j));
   if (cur === 5) lines.push(...activityStepContext(j));
-  if (READY_STEPS.includes(cur) && STEP_GUIDES[cur]) lines.push(STEP_GUIDES[cur]);
+  if (cur === 6) lines.push(...themeStepContext(j));
+  // Étape 6 : la consigne du thème sur mesure ne vaut qu'après le choix « thème sur mesure » du client.
+  if (READY_STEPS.includes(cur) && STEP_GUIDES[cur] && !(cur === 6 && j.siteMode?.mode !== "mockup")) lines.push(STEP_GUIDES[cur]);
   return lines.join("\n");
 }
 
@@ -210,8 +220,8 @@ export function journeyContext(j: Journey): string {
  * l'étape est ouverte, après ses essais réels.
  */
 export const STEP_GUIDES: Partial<Record<number, string>> = {
-  6: "Étape 6 (thème ou maquettes) : demande au client s'il préfère un de nos thèmes (étape 8) ou des maquettes sur mesure. Pour des maquettes : mockup.pages (liste exacte des pages, ordinateur et téléphone), puis mockup.prepare avec 1 à 3 directions graphiques vraiment différentes (gratuit) ; annonce le coût des images (coutMaxMicro, en % du budget) et attends son accord écrit avant mockup.generate ; une image ratée est dite ratée. Le client peut aussi fournir ses propres images (mockup.attach). Il choisit une maquette COMPLÈTE (mockup.choose), jamais à sa place.",
-  7: "Étape 7 (site codé d'après la maquette) : annonce le devis de site.code_from_mockup et attends l'accord du client ; à la fin, lis mockup.report et dis honnêtement, page par page, ce qui est conforme et ce qui ne l'est pas. Le site codé est une version inactive : le client décide de l'appliquer (site.use_version).",
+  6: "Étape 6, THÈME SUR MESURE (décision du propriétaire du 9 novembre 2026 : on ne dit PLUS JAMAIS « maquette » au client, on dit « thème sur mesure ») : le thème est MONTÉ pour lui avec les sections de la bibliothèque du Studio, dans la famille qu'il choisit, à ses couleurs, polices, nom et logo, puis modifié sur demande, sans devis à part ; seules les photos nouvelles sont payantes (custom.photo : prix annoncé, accord écrit d'abord). 1) FAMILLE : montre-lui les familles EN IMAGE (theme.families : Classique, Moderne · Sport chic, Moderne · Streetwear néon, avec le lien « Voir le thème en vrai »), recommande d'après sa marque sans choisir à sa place, enregistre SON choix (theme.family) ; jamais de mélange de familles. 2) MONTAGE : lis custom.sections, puis custom.compose (start:true = composition validée par le propriétaire pour sa famille, ou tes pages, adaptées à SES pages et SON contenu) ; chaque section a un rôle dans l'histoire de la page, choisie selon la personnalité de la marque, l'angle et son émotion, le métier et le contenu réel ; une seule section de cartes par page ; « Produit vedette » seulement en haut de la fiche produit (ou une fois sur l'accueil) ; ouverture de l'accueil = grande photo pleine avec le titre dessus ; jamais la même section deux fois de suite. Le thème vivant s'affiche dans le fil (pages, téléphone, bouton « Désigner un élément »). 3) TEXTES : les sections arrivent avec des textes d'EXEMPLE (un bandeau le dit) : remplace-les section par section avec custom.section puis custom.edit (clientTexts:true quand tous sont à lui) : ses vrais textes, son vocabulaire, l'angle choisi et son émotion, ses produits et prix de l'onglet Produits, jamais les textes d'un modèle (même traduits), jamais d'avis, de chiffre, de délai ou de certification inventés (« [À compléter : …] »). 4) MODIFICATIONS SUR DEMANDE : un message qui commence par « [Élément désigné · section sXXXXXXXX … » vient du bouton « Désigner un élément » : lis CETTE section (custom.section), change SEULEMENT cet élément (custom.edit : edits pour un texte ou une partie, image pour une photo de ses Fichiers, hide pour retirer l'élément, css avec :scope pour couleurs, tailles, espacements, disposition), puis dis en une phrase ce qui a changé. Une demande sur toute une section (« plus aérée », « les cartes en deux colonnes », « ajoute un bouton ») se fait aussi avec custom.edit ; changer de section, en ajouter, retirer ou déplacer : custom.structure (un retrait visible se propose d'abord). « Annule » : custom.undo. 5) PHOTOS : les photos d'exemple se remplacent par les siennes (custom.edit image) ou par une photo créée (custom.photo, payante, consigne écrite comme le propriétaire, personnes seulement si autorisées) ; vérifie chaque photo créée avant de la montrer. 6) CHOIX : il choisit son thème (custom.choose), jamais à sa place. AVANT la fiche produit : demande au client ses offres (lots ou « 2 achetés, 1 offert », abonnement, lot à compléter, cadeaux par paliers, promotion avec sa date de fin), enregistre SEULEMENT ce qu'il donne (shop.offers, jamais inventé), puis montre-lui avec shop.buy_features les fonctions que chaque produit affichera : la section « Produit vedette » (une seule, en haut de la fiche) s'adapte d'elle-même au produit. Les anciennes maquettes (mockup.*) ne servent plus qu'aux projets déjà commencés avec elles.",
+  7: "Étape 7 (site codé d'après la maquette) : annonce le devis de site.code_from_mockup (pour une partie des pages, avec pages : celui que le Studio donne pour CES pages ; n'invente jamais un pourcentage) et attends l'accord du client ; les captures du site codé te sont jointes à côté de la maquette : compare-les vraiment (couleurs, logo, sections présentes ou absentes, textes, photos) ; à la fin, lis mockup.report et dis honnêtement, page par page, ce qui est conforme et ce qui ne l'est pas (les pages « dérivées » n'avaient pas d'image de maquette : elles sont codées dans son style). Puis propose site.images (consigne du propriétaire : toutes les photos du site recréées en haute définition par l'IA d'images des maquettes, à l'identique de la maquette) avec son prix, et attends l'accord écrit. Le site codé est une version inactive : le client décide de l'appliquer (site.use_version).",
   11: "Étape 11 (calendrier de publication, MANUEL pour l'instant : le client publie lui-même, la publication automatique viendra après les accords des plateformes) : demande d'abord au client, UNE question à la fois et seulement si l'information manque : sur combien de jours (7, 15 ou 30), combien de publications par jour, à quelles heures, sur quels réseaux, avec ou sans émojis, avec ou sans les publicités. Puis appelle calendar.plan ; montre-lui le calendrier (calendar.read) jour par jour et dis-lui qu'il peut l'ajouter à son agenda (fichier .ics) et cocher chaque publication une fois postée (calendar.mark_done). S'il manque des publications pour remplir les jours, dis-le simplement et propose d'en créer (payant, devis d'abord).",
 };
 
@@ -230,6 +240,17 @@ export function activityStepContext(j: Journey): string[] {
   const base = "Étape 5 (activité complète, GRATUITE) : on réunit tout ce que le site va dire. 1) appelle activity.plan : il AFFICHE la carte « Ton activité » et renvoie ce qui manque ; 2) pose les questions manquantes UNE par UNE, y compris les facultatives (téléphone, SIRET), une fois chacune ; « Plus tard » se propose SEULEMENT pour le téléphone et le SIRET, JAMAIS pour le nom, l'e-mail, l'adresse, la livraison ou les retours (obligatoires pour le site) (coordonnées : activity.company avec ses mots ; « plus tard » → activity.company later ; « je n'en veux pas sur le site » (pas de téléphone…) → activity.company none, jamais later) ; 3) PRODUITS : s'il n'y en a aucun dans l'onglet Produits, propose la liste tirée de SA fiche (un produit par parfum, modèle ou formule, et les coffrets ou lots qu'il a cités) avec SES prix, sans en inventer aucun ; demande son accord, puis crée chaque produit avec catalogue.create (titre, prix confirmé, description courte avec les faits du client, ses mots : ingrédients, poids ou contenance qu'il a cités dans sa fiche de départ, composition ; rien d'autre) ; un prix manquant se demande, jamais il ne se devine ; 4) rappelle activity.plan pour mettre la carte à jour ; 5) quand rien ne manque, demande s'il valide (activity.validate).";
   if (!a) return [base];
   return [base, `État : ${a.products.length} produit(s) dans l'onglet Produits${a.products.length ? ` (${a.products.map((x) => `${x.title} ${x.price == null ? "sans prix" : `${x.price} €`}`).join(", ")})` : ""} ; coordonnées manquantes : ${a.missing.map((m) => `${m.key}${m.required ? "" : " (facultative, à poser aussi)"}`).join(", ") || "aucune"} ; angle principal : ${a.angle?.title ?? "aucun"}.`];
+}
+
+/** Étape 6 : un de nos thèmes ou des maquettes sur mesure. */
+export function themeStepContext(j: Journey): string[] {
+  const t = j.themes;
+  if (j.siteMode?.mode === "mockup") return ["Étape 6 — le client a vu les thèmes et choisi un THÈME SUR MESURE (site.mode). Suis la consigne du thème sur mesure ci-dessous ; s'il revient à un thème du Studio, theme.choose avec la carte qu'il désigne."];
+  // Consigne du propriétaire (7 novembre) : les cartes des thèmes d'abord ; une fois qu'il les a vues, le client choisit
+  // un thème du Studio ou un thème sur mesure — lui, jamais SINA.
+  const base = "Étape 6 (thème du Studio ou thème sur mesure) : commence par appeler theme.propose (gratuit) : il AFFICHE les thèmes du Studio TELS QU'ILS SONT (images et textes d'origine de leur démonstration) avec la démonstration complète, en ordinateur ou en téléphone ; ne recopie pas les cartes. Ce ne sont PAS son site : ne dis jamais « ton site composé dans chacun » (essai réel du 7 novembre) ; son site s'y composera seulement après son choix. Dans UN seul message, explique en deux phrases ses deux possibilités : choisir un de ces thèmes (gratuit : son site s'y compose ensuite avec sa marque et ses produits, puis on l'adapte) ou demander un thème sur mesure (monté pour lui avec les sections du Studio dans le style qu'il choisit, à ses couleurs, modifiable sur demande ; seules les photos nouvelles sont PAYANTES, prix annoncé avant). Les cartes ont déjà leurs boutons (« Choisir ce thème », « Voir tous les thèmes », « Je préfère un thème sur mesure ») : ne pose PAS de question à boutons en plus. Ne choisis jamais à sa place et ne pousse ni l'un ni l'autre. Un thème choisi → theme.choose avec l'identifiant de SA carte ; « voir tous les thèmes » → theme.propose all: true ; un thème sur mesure → site.mode mode mockup. Un thème non inclus dans son forfait : dis-le, ne le choisis pas.";
+  if (!t?.list.length) return [base];
+  return [base, `Thèmes affichés : ${t.list.map((x) => `${x.id} « ${x.name} »${x.recommended ? " (recommandé)" : ""}${x.allowed ? "" : " (non inclus dans son forfait)"}`).join(" ; ")}.`];
 }
 
 /** Étape 4 : les 5 angles marketing. */

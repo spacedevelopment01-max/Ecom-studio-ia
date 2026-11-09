@@ -5,7 +5,10 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { api, Button, cx, Textarea } from "../ui";
+import { api, Button, cx, Textarea, useApi } from "../ui";
+import { ThemeDemoViewer } from "./theme-demo-viewer";
+import type { ThemeDemoStatus } from "@/lib/theme/theme-demos";
+import type { DirectionCard } from "@/lib/theme/directions";
 import { useT } from "../i18n";
 import { useOptionalProject } from "./project-context";
 import { stepLabel } from "./journey-labels";
@@ -16,7 +19,7 @@ type View = {
   run: { id: string; status: string; step: number; pending: any; error: string | null } | null;
   budget: { authorizedPct: number | null; spentPct: number | null };
   attachments: { id: string; kind: string; name: string; analysis: any }[];
-  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; logos?: Logos | null; brandKit?: Kit | null; angles?: Angles | null; activity?: Activity | null };
+  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; logos?: Logos | null; brandKit?: Kit | null; angles?: Angles | null; activity?: Activity | null; themes?: Themes | null; families?: Families | null; siteCopy?: { pages: Record<string, CopyPage> } | null };
 };
 type Face = { family: string; file: string; weight: number } | null;
 type IdentityCard = { nameWhy?: string;
@@ -228,6 +231,186 @@ function AngleCards({ angles, busy, onChoose }: { angles: Angles; busy: boolean;
   );
 }
 
+type Themes = { list: { id: string; name: string; tagline: string; preview: string; why: string; recommended: boolean; allowed: boolean; blocked?: string; demo: boolean }[]; recommendedId: string | null; all: boolean; chosen: string | null };
+
+/**
+ * Étape 6 : les thèmes du Studio TELS QU'ILS SONT (consigne du propriétaire : images et textes d'origine de leur
+ * démonstration, jamais recomposés avec le projet du client), la démonstration complète, puis le choix du client :
+ * un thème ou un thème sur mesure, jamais fait à sa place.
+ */
+function ThemeCards({ themes, busy, onChoose, onAll, onMockup }: { themes: Themes; busy: boolean; onChoose: (name: string) => void; onAll: () => void; onMockup: () => void }) {
+  const t = useT();
+  // Démo complète de chaque thème (ordinateur ou téléphone, toutes ses pages) : la visionneuse de la galerie du Studio.
+  const { data: demoData } = useApi<{ demos: ThemeDemoStatus[] }>("/api/theme-demos");
+  const demos = Object.fromEntries((demoData?.demos ?? []).map((x) => [x.id, x]));
+  const [viewing, setViewing] = useState<string | null>(null);
+  const shown = viewing ? themes.list.find((x) => x.id === viewing) : null;
+  const shownDemo = viewing ? demos[viewing] : null;
+  return (
+    <div className="@container mt-2 space-y-2" data-syna-themes>
+      <p className="text-xs text-muted">{t("Voici les thèmes du Studio tels qu'ils sont, avec les images et les textes de leur démonstration. Choisir un thème est gratuit : ton site s'y compose ensuite avec ta marque et tes produits. Tu peux aussi préférer un thème sur mesure : monté pour toi dans le style que tu choisis, modifiable sur demande (seules les photos nouvelles sont payantes, prix annoncé avant).", "Here are the Studio themes as they are, with their demo images and copy. Choosing a theme is free; you can also prefer a custom mockup (paid, price shown first).")}</p>
+      <div className="grid grid-cols-1 gap-3 @2xl:grid-cols-3">
+        {themes.list.map((th) => {
+          const chosen = themes.chosen === th.id;
+          return (
+            <article key={th.id} className={cx("overflow-hidden rounded-xl border bg-card text-xs", chosen ? "border-accent ring-2 ring-accent" : "border-line", themes.chosen && !chosen && "opacity-60")} data-theme={th.id}>
+              <button type="button" className="relative block aspect-[4/3] w-full overflow-hidden bg-paper-2 disabled:cursor-default" disabled={!demos[th.id]?.ready} onClick={() => setViewing(th.id)} title={t("Voir la démo complète (ordinateur ou téléphone)", "See the full demo (desktop or phone)")} data-theme-open={th.id}>
+                <img src={th.preview} alt={t(`Démonstration du thème ${th.name}`, `${th.name} theme demo`)} className="h-full w-full object-cover object-top" loading="lazy" />
+                {th.recommended && <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-0.5 text-[10px] font-semibold text-paper">{t("Recommandé", "Recommended")}</span>}
+              </button>
+              <div className="space-y-1 px-3 py-2">
+                <h4 className="text-sm font-bold">{th.name} <span className="font-normal text-muted">· {th.tagline}</span></h4>
+                <p>{th.why}</p>
+                {!th.allowed && <p className="text-amber-700">{th.blocked ?? t("Non inclus dans ton forfait.", "Not included in your plan.")}</p>}
+              </div>
+              <div className="flex flex-wrap items-center gap-2 border-t border-line px-3 py-2">
+                {demos[th.id]?.ready
+                  ? <Button size="sm" variant="ghost" onClick={() => setViewing(th.id)} data-theme-demo={th.id}>{t("Voir la démo (ordinateur / téléphone)", "See the demo (desktop / phone)")}</Button>
+                  : demoData && <span className="text-muted">{demos[th.id]?.preparing ? t("Démo en préparation…", "Demo being prepared…") : t("Démo pas encore disponible", "Demo not available yet")}</span>}
+                {themes.chosen
+                  ? chosen && <p className="font-semibold">✓ {t("Thème choisi", "Theme chosen")}</p>
+                  : th.allowed && <Button size="sm" variant={th.recommended ? "primary" : "secondary"} disabled={busy} onClick={() => onChoose(th.name)} data-theme-pick={th.id}>{t("Choisir ce thème", "Choose this theme")}</Button>}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+      {shown && shownDemo && <ThemeDemoViewer theme={{ id: shown.id, name: shown.name } as DirectionCard} status={shownDemo} onClose={() => setViewing(null)} current={themes.chosen === shown.id} blocked={shown.allowed ? null : shown.blocked ?? null} onChoose={themes.chosen || !shown.allowed ? undefined : () => { setViewing(null); onChoose(shown.name); }} choosing={busy} />}
+      {!themes.chosen && <div className="flex flex-wrap items-center gap-2">
+        {!themes.all && <Button size="sm" variant="ghost" disabled={busy} onClick={onAll} data-themes-all>{t("Voir tous les thèmes", "See all themes")}</Button>}
+        {/* Après avoir vu les thèmes, le client peut préférer un thème sur mesure. */}
+        <Button size="sm" variant="secondary" disabled={busy} onClick={onMockup} data-themes-mockup>{t("Je préfère un thème sur mesure", "I'd rather have a custom theme")}</Button>
+      </div>}
+    </div>
+  );
+}
+
+type Families = { cards: { family: string; style: string; title: string; titleEn: string; pitch: string; pitchEn: string; mood: string; preview: string; demo?: string; sections: number }[]; chosen: string | null };
+
+/**
+ * Étape 6 : les familles de sections EN IMAGE (Classique ; Moderne · Sport chic ; Moderne · Streetwear néon). Le client
+ * choisit le style qu'il préfère ; le thème n'est ensuite monté qu'avec les sections de cette famille (jamais de mélange).
+ */
+function FamilyCards({ families, busy, onChoose }: { families: Families; busy: boolean; onChoose: (title: string) => void }) {
+  const t = useT();
+  return (
+    <div className="@container mt-2 space-y-2" data-syna-families>
+      <p className="text-xs text-muted">{t("Deux familles de styles pour ton site, qui ne se mélangent jamais. Ouvre chaque thème en vrai (pages, panier, téléphone), puis choisis celui qui te ressemble : il sera repris à tes couleurs, avec ta marque et tes produits. C'est gratuit.", "Two style families for your site, never mixed. Open each theme live (pages, cart, phone), then pick the one that feels like you: it will use your colours, brand and products. It's free.")}</p>
+      <div className="grid grid-cols-1 gap-3 @2xl:grid-cols-3">
+        {families.cards.map((c) => {
+          const key = `${c.family}:${c.style}`, chosen = families.chosen === key;
+          return (
+            <article key={key} className={cx("overflow-hidden rounded-xl border bg-card text-xs", chosen ? "border-accent ring-2 ring-accent" : "border-line", families.chosen && !chosen && "opacity-60")} data-family={key}>
+              <img src={c.preview} alt={t(`Aperçu du style ${c.title}`, `${c.titleEn} style preview`)} className="block aspect-[16/10] w-full object-cover object-top" loading="lazy" />
+              <div className="space-y-1 px-3 py-2">
+                <h4 className="text-sm font-bold">{t(c.title, c.titleEn)}</h4>
+                <p>{t(c.pitch, c.pitchEn)}</p>
+                <p className="text-muted">{c.mood} · {t(`${c.sections} sections au choix`, `${c.sections} sections to choose from`)}</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 border-t border-line px-3 py-2">
+                {c.demo && <a className="underline" href={c.demo} target="_blank" rel="noreferrer" data-family-demo={key}>{t("Voir le thème en vrai", "See the live theme")}</a>}
+                {families.chosen
+                  ? chosen && <p className="font-semibold">✓ {t("Style choisi", "Style chosen")}</p>
+                  : <Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(c.title)} data-family-pick={key}>{t("Je préfère ce style", "I prefer this style")}</Button>}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+type CustomThemeView = { href: string; open: string; rev: number; choisi: boolean; pages: { key: string; label: string; sections: { uid: string; titre: string; textesClient: boolean }[] }[] };
+type Picked = { uid: string; page: string | null; kind: string; path: string | null; text: string | null; src: string | null; role: string | null };
+
+/**
+ * Thème sur mesure (étape 6, décision du propriétaire du 9 novembre 2026) : le thème EN VRAI dans le fil (pages,
+ * ordinateur ou téléphone) ; le client DÉSIGNE un élément (titre, texte, bouton, image, section) et dit ce qu'il veut
+ * changer : SINA reçoit sa désignation et ne modifie que lui.
+ */
+function CustomThemeCard({ card, busy, onSend }: { card: CustomThemeView; busy: boolean; onSend: (text: string) => void }) {
+  const t = useT();
+  const frame = useRef<HTMLIFrameElement>(null);
+  const [page, setPage] = useState(card.pages[0]?.key ?? "home"), [phone, setPhone] = useState(false), [picking, setPicking] = useState(false);
+  const [picked, setPicked] = useState<Picked | null>(null), [ask, setAsk] = useState("");
+  const post = useCallback((m: object) => frame.current?.contentWindow?.postMessage({ source: "ct-studio", ...m }, "*"), []);
+  useEffect(() => {
+    const on = (e: MessageEvent) => {
+      const d = e.data;
+      if (!d || d.source !== "ct-preview" || e.source !== frame.current?.contentWindow) return;
+      if (d.type === "ready") { post({ type: "go", page }); post({ type: "view", view: phone ? "phone" : "desk" }); if (picking) post({ type: "pick", on: true }); }
+      if (d.type === "page" && typeof d.page === "string") setPage(d.page);
+      if (d.type === "picked") { setPicked({ uid: String(d.uid), page: d.page ?? null, kind: String(d.kind), path: d.path ?? null, text: d.text ?? null, src: d.src ?? null, role: d.role ?? null }); setPicking(false); post({ type: "pick", on: false }); }
+    };
+    addEventListener("message", on);
+    return () => removeEventListener("message", on);
+  }, [page, phone, picking, post]);
+  const label = (k: string | null) => card.pages.find((p) => p.key === k)?.label ?? k ?? "";
+  const section = picked ? card.pages.flatMap((p) => p.sections).find((s) => s.uid === picked.uid)?.titre ?? (picked.role === "header" ? t("En-tête", "Header") : picked.role === "footer" ? t("Pied de page", "Footer") : "") : "";
+  function submit() {
+    if (!picked || !ask.trim()) return;
+    const where = [`section ${picked.uid}${section ? ` « ${section} »` : ""}`, picked.page ? `page ${label(picked.page)}` : "", picked.kind, picked.path ? `adresse ${picked.path}` : "", picked.src ? `photo ${picked.src}` : "", picked.text ? `« ${picked.text.slice(0, 160)} »` : ""].filter(Boolean).join(" · ");
+    onSend(`[Élément désigné · ${where}] ${ask.trim()}`);
+    setAsk(""); setPicked(null); post({ type: "unpick" });
+  }
+  return (
+    <div className="mt-2 overflow-hidden rounded-xl border border-line bg-card text-xs" data-syna-custom-theme>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-3 py-2">
+        <b className="text-sm">{t("Ton thème sur mesure", "Your custom theme")}{card.choisi ? ` · ✓ ${t("choisi", "chosen")}` : ""}</b>
+        <span className="flex flex-wrap items-center gap-1">
+          <Button size="sm" variant={phone ? "ghost" : "secondary"} onClick={() => { setPhone(false); post({ type: "view", view: "desk" }); }}>{t("Ordinateur", "Desktop")}</Button>
+          <Button size="sm" variant={phone ? "secondary" : "ghost"} onClick={() => { setPhone(true); post({ type: "view", view: "phone" }); }}>{t("Téléphone", "Phone")}</Button>
+          <a className="underline" href={card.open} target="_blank" rel="noreferrer">{t("Ouvrir en grand", "Open full size")}</a>
+        </span>
+      </div>
+      <div className="flex flex-wrap gap-1 px-3 py-2">{card.pages.map((p) => <button key={p.key} type="button" className={cx("rounded-full border px-2 py-0.5", p.key === page ? "border-accent bg-accent text-paper" : "border-line")} onClick={() => { setPage(p.key); post({ type: "go", page: p.key }); }}>{p.label}</button>)}</div>
+      <iframe ref={frame} key={card.rev} title={t("Thème sur mesure", "Custom theme")} src={card.href} className="block h-[560px] w-full border-y border-line bg-white" />
+      <div className="space-y-2 px-3 py-2">
+        <Button size="sm" variant={picking ? "secondary" : "ghost"} disabled={busy} onClick={() => { const on = !picking; setPicking(on); post({ type: "pick", on }); }} data-ct-pick>
+          {picking ? t("Clique sur l'élément à changer dans le thème…", "Click the element to change…") : t("🎯 Désigner un élément", "🎯 Point at an element")}
+        </Button>
+        {picked && <div className="rounded-lg border border-accent/50 bg-paper-2 p-2" data-ct-picked>
+          <p><b>{t("Élément désigné", "Selected element")}</b> : {picked.kind}{section ? ` — ${section}` : ""}{picked.page ? ` (${label(picked.page)})` : ""}{picked.text ? ` · « ${picked.text.slice(0, 90)} »` : ""}</p>
+          <div className="mt-1 flex gap-2">
+            <input className="min-w-0 flex-1 rounded border border-line bg-card px-2 py-1" value={ask} onChange={(e) => setAsk(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") submit(); }} placeholder={t("Que veux-tu changer ? (texte, photo, couleur, retirer…)", "What should change?")} aria-label={t("Ce que tu veux changer", "What to change")} />
+            <Button size="sm" disabled={busy || !ask.trim()} onClick={submit}>{t("Envoyer à SINA", "Send to SINA")}</Button>
+            <Button size="sm" variant="ghost" onClick={() => { setPicked(null); post({ type: "unpick" }); }} aria-label={t("Retirer la désignation", "Clear selection")}>×</Button>
+          </div>
+        </div>}
+        {!card.choisi && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onSend(t("Je choisis ce thème sur mesure.", "I choose this custom theme."))}>{t("Je choisis ce thème", "I choose this theme")}</Button>}
+      </div>
+    </div>
+  );
+}
+
+type CopyPage = { seo: { title: string; description: string }; sections: { section: string; title: string | null; text: string | null; button: string | null; items: { title: string; text: string | null }[] }[] };
+const COPY_PAGE_LABELS: Record<string, string> = { home: "Accueil" };
+
+/** Étape 6, maquettes : les textes de la page, en entier, avant toute image (le client les lit et les valide). */
+function CopyCard({ pages }: { pages: Record<string, CopyPage> }) {
+  const t = useT();
+  return (
+    <div className="mt-2 space-y-3 rounded-xl border border-line bg-card px-4 py-3 text-xs" data-syna-copy>
+      {Object.entries(pages).map(([key, c]) => (
+        <section key={key} className="space-y-2">
+          <h4 className="text-sm font-bold">{t("Textes de la page", "Page copy")} « {COPY_PAGE_LABELS[key] ?? key} »</h4>
+          <p className="text-muted">{t("Référencement", "SEO")} : <b className="text-ink">{c.seo.title}</b> — {c.seo.description}</p>
+          {c.sections.map((s, i) => (
+            <div key={i} className="border-t border-line pt-2">
+              <p className="text-[10px] uppercase tracking-wide text-muted">{s.section}</p>
+              {s.title && <p className="font-semibold">{s.title}</p>}
+              {s.text && <p>{s.text}</p>}
+              {!!s.items.length && <ul className="list-disc space-y-0.5 pl-4">{s.items.map((x, k) => <li key={k}><b className="font-medium">{x.title}</b>{x.text ? ` — ${x.text}` : ""}</li>)}</ul>}
+              {s.button && <p className="mt-1 inline-block rounded-full border border-line px-2 py-0.5">{s.button}</p>}
+            </div>
+          ))}
+        </section>
+      ))}
+    </div>
+  );
+}
+
 type Activity = {
   company: Record<string, string | undefined>; none?: string[]; missing: { key: string; question: string; required: boolean }[];
   angle: { title: string; goal: string; message: string; story: string; cta: string; others: string[] } | null;
@@ -425,6 +608,10 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
   const lastCalendar = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && String(m.content?.tool ?? "").startsWith("calendar.") && m.content?.ok)?.id, [v?.messages]);
   const lastAngles = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "angles.propose" && m.content?.ok && m.content?.data?.angles)?.id, [v?.messages]);
   const lastActivity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "activity.plan" && m.content?.ok)?.id, [v?.messages]);
+  const lastCopy = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "mockup.copy" && m.content?.ok)?.id, [v?.messages]);
+  const lastCustom = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && String(m.content?.tool ?? "").startsWith("custom.") && m.content?.ok && m.content?.data?.customTheme)?.id, [v?.messages]);
+  const lastFamilies = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "theme.families" && m.content?.ok)?.id, [v?.messages]);
+  const lastThemes = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "theme.propose" && m.content?.ok)?.id, [v?.messages]);
   const lastKit = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "brand.kit" && m.content?.ok)?.id, [v?.messages]);
   const lastLogos = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && (m.content?.tool === "logo.propose" || (m.content?.tool === "jobs.wait" && JSON.stringify(m.content?.data ?? "").includes("syna.logos"))) && m.content?.ok)?.id, [v?.messages]);
   const lastIdentity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "identity.propose" && m.content?.ok)?.id, [v?.messages]);
@@ -458,10 +645,14 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
                 {!!it.m.content.question.choices?.length && <div className="mt-2 flex flex-wrap gap-2">{it.m.content.question.choices.map((c: string) => <Button key={c} size="sm" variant="secondary" disabled={busy || working} onClick={() => send(c)}>{c}</Button>)}</div>}
               </div>}
               {it.tools.map((tm) => <div key={tm.id}>
-                <ToolResult m={tm} projectId={v.projectId} onChoose={(n) => send(t(`Je choisis la maquette ${n}.`, `I choose mockup ${n}.`))} busy={busy || working} />
+                <ToolResult m={tm} projectId={v.projectId} onChoose={(n) => send(t(`Je choisis le thème sur mesure ${n}.`, `I choose custom theme ${n}.`))} busy={busy || working} />
                 {tm.id === lastLogos && v.journey?.logos && <LogoCards logos={v.journey.logos} brandBg={brandBackground(v.journey.identities)} busy={busy || working} onChoose={(k) => send(t(`Je choisis le logo ${k}.`, `I choose logo ${k}.`))} />}
                 {tm.id === lastActivity && v.journey?.activity && <ActivityCard a={v.journey.activity} busy={busy || working} onValidate={() => send(t("Je valide mon activité.", "I validate my business."))} />}
                 {tm.id === lastAngles && v.journey?.angles && <AngleCards angles={v.journey.angles} busy={busy || working} onChoose={(titles) => send(titles.length > 1 ? t(`Je choisis ces angles : ${titles.map((x, i) => `« ${x} »${i === 0 ? " (principal)" : ""}`).join(", ")}.`, `I choose these angles: ${titles.join(", ")}.`) : t(`Je choisis l'angle « ${titles[0]} ».`, `I choose the angle "${titles[0]}".`))} />}
+                {tm.id === lastCopy && v.journey?.siteCopy && <CopyCard pages={v.journey.siteCopy.pages} />}
+                {tm.id === lastCustom && v.projectId && <CustomThemeCard card={tm.content.data.customTheme} busy={busy || working} onSend={(text) => send(text)} />}
+                {tm.id === lastFamilies && v.journey?.families && v.projectId && <FamilyCards families={v.journey.families} busy={busy || working} onChoose={(title) => send(t(`Je préfère le style ${title}.`, `I prefer the ${title} style.`))} />}
+                {tm.id === lastThemes && v.journey?.themes && v.projectId && <ThemeCards themes={v.journey.themes} busy={busy || working} onChoose={(name) => send(t(`Je choisis le thème ${name}.`, `I choose the ${name} theme.`))} onAll={() => send(t("Je veux voir tous les thèmes.", "I want to see all themes."))} onMockup={() => send(t("Je préfère un thème sur mesure.", "I'd rather have a custom theme."))} />}
                 {tm.id === lastKit && v.journey?.brandKit && <BrandKitCard kit={v.journey.brandKit} darkBg={v.journey.identities?.final?.palette.dark ?? "#16161A"} busy={busy || working} onValidate={() => send(t("Je valide mon image de marque.", "I validate my brand kit."))} />}
                 {tm.id === lastCalendar && v.projectId && <CalendarCard projectId={v.projectId} refreshKey={tm.id} />}
                 {tm.id === lastIdentity && v.journey?.identities && <IdentityCards ids={v.journey.identities} busy={busy || working} onChoose={(k) => send(t(`Je choisis l'identité ${k}.`, `I choose identity ${k}.`))} />}
@@ -527,11 +718,16 @@ function ToolResult({ m, projectId, onChoose, busy }: { m: Msg; projectId: strin
           <div className="relative h-40 overflow-hidden"><iframe title={x.name} src={x.preview} className="pointer-events-none absolute left-0 top-0 h-[640px] w-[1280px] origin-top-left scale-[0.25]" loading="lazy" /></div>
           <div className="flex items-center justify-between gap-2 px-2 py-1 text-xs"><span>{x.n}. {x.name}</span><span className="flex gap-1"><a className="underline" href={x.preview} target="_blank" rel="noreferrer">{t("Voir", "View")}</a><Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(x.n)}>{t("Choisir", "Choose")}</Button></span></div>
         </div>))}</div>}
-      {mockups && mockups.some((x) => x.href && !x.versionId) && <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3" data-syna-mockup-images>{mockups.filter((x) => x.href && !x.versionId).map((x) => (
-        <div key={x.assetId} className="overflow-hidden rounded-lg border border-line bg-card">
-          <a href={x.href} target="_blank" rel="noreferrer"><img src={x.href} alt={`${t("Maquette", "Mockup")} ${x.n} — ${x.direction}`} className="h-56 w-full object-cover object-top" loading="lazy" /></a>
-          <div className="flex items-center justify-between gap-2 px-2 py-1 text-xs"><span>{x.n}. {x.direction}</span><span className="flex gap-1"><a className="underline" href={x.href} target="_blank" rel="noreferrer">{t("Agrandir", "Enlarge")}</a><Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(x.n)}>{t("Choisir", "Choose")}</Button></span></div>
-        </div>))}</div>}
+      {/* Images de maquette : en grand (le client doit voir sa page), libellées avec ses mots ; « Choisir » seulement
+          quand la maquette est complète (sinon le choix serait refusé). */}
+      {mockups && mockups.some((x) => x.href && !x.versionId) && <div className="mt-2 grid grid-cols-1 gap-3" data-syna-mockup-images>{mockups.filter((x) => x.href && !x.versionId).map((x) => (
+        <figure key={x.assetId} className="overflow-hidden rounded-xl border border-line bg-card">
+          <a href={x.href} target="_blank" rel="noreferrer" title={t("Ouvrir en grand", "Open full size")}><img src={x.href} alt={`${t("Thème sur mesure", "Custom theme")} ${x.name ?? x.direction} — ${x.label ?? ""}`} className="w-full" loading="lazy" /></a>
+          <figcaption className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-xs">
+            <span><b className="font-semibold">{x.name ? t(`Thème sur mesure « ${x.name} »`, `Custom theme “${x.name}”`) : x.direction}</b>{x.label ? ` · ${x.label}` : ""}</span>
+            <span className="flex items-center gap-2"><a className="underline" href={x.href} target="_blank" rel="noreferrer">{t("Ouvrir en grand", "Open full size")}</a>{c.data?.complete !== false && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(x.n)}>{t("Choisir", "Choose")}</Button>}</span>
+          </figcaption>
+        </figure>))}</div>}
       {c.data?.preview && !mockups && <a className="mt-1 inline-block text-xs underline" href={c.data.preview} target="_blank" rel="noreferrer">{t("Voir l'aperçu", "Open preview")}</a>}
       {c.data?.href && <a className="mt-1 inline-block text-xs underline" href={c.data.href} data-syna-download>{t("Télécharger", "Download")} {c.data.name ?? ""}</a>}
     </div>

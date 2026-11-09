@@ -92,7 +92,10 @@ describe("ONDE : thème actif de la famille E-commerce (mono-produit)", () => {
   // Décision du propriétaire du 6 novembre 2026 : les visuels du kit ONDE sont versionnés (publics), au même endroit,
   // pour que le Studio les ait partout ; ils ne sont pas dupliqués dans public/theme-assets.
   it("visuels du kit ONDE versionnés dans public/demo/onde, sans doublon dans theme-assets", () => {
-    expect(fs.existsSync(path.join(process.cwd(), "public", "theme-assets", ID))).toBe(false);
+    // Seules les vignettes de la carte du thème (étape 6 de SINA, thèmes tels qu'ils sont) y vivent : aucune photo du kit.
+    const thumbs = path.join(process.cwd(), "public", "theme-assets", ID);
+    const allowed = new Set(["apercu-theme.jpg", "apercu-theme.json", "boutique-bureau.jpg", "boutique-mobile.jpg", "fiche-produit.jpg"]);
+    if (fs.existsSync(thumbs)) expect(fs.readdirSync(thumbs).filter((f) => !allowed.has(f))).toEqual([]);
     const ignore = fs.readFileSync(path.join(process.cwd(), ".gitignore"), "utf8").split("\n").map((l) => l.trim());
     for (const id of ["onde", "fraise", "phase", "aplat", "maison-horizon"]) expect(ignore).not.toContain(`public/demo/${id}/`);
   });

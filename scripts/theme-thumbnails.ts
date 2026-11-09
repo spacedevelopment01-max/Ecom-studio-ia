@@ -17,6 +17,8 @@ import sharp from "sharp";
 import { chromium } from "playwright";
 import { DEMO_THEMES, KIT_THEMES, themeDemosDir } from "../src/lib/theme/theme-demos";
 
+const VERSIONED_KITS = ["fraise", "onde", "phase", "aplat", "maison-horizon"] as const;
+
 const ids = process.argv.slice(2).length ? process.argv.slice(2) : [...DEMO_THEMES];
 const MIME: Record<string, string> = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".jpg": "image/jpeg", ".webp": "image/webp", ".png": "image/png", ".svg": "image/svg+xml", ".woff2": "font/woff2", ".ttf": "font/ttf", ".json": "application/json", ".webm": "video/webm" };
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
@@ -40,6 +42,11 @@ try {
       // Bandeau de cookies (MUSEAU CLUB, NOCTIL) : déjà répondu, la vignette montre la boutique et non le bandeau.
       await p.addInitScript(() => { try { localStorage.setItem("es-cookie-consent", '{"analytics":false,"marketing":false}'); } catch { /* stockage indisponible */ } });
       await p.goto(`${origin}/${page}`, { waitUntil: "networkidle" });
+      // Bandeau propre à un thème (ex. FRAISE, clé « fg-cookies ») : refusé par son propre bouton, comme un visiteur.
+      for (const name of ["Tout refuser", "Refuser"]) {
+        const b = p.getByRole("button", { name, exact: true }).first();
+        if (await b.count() && await b.isVisible().catch(() => false)) { await b.click(); await p.waitForTimeout(300); break; }
+      }
       await p.evaluate(() => document.querySelectorAll("img[loading=lazy]").forEach((i) => ((i as HTMLImageElement).loading = "eager")));
       await p.waitForLoadState("networkidle");
       await p.waitForTimeout(400);
@@ -48,7 +55,9 @@ try {
       await p.close();
       return { png, h1 };
     };
-    const kit = (KIT_THEMES as readonly string[]).includes(id);
+    // Kits versionnés depuis la décision du 6 novembre (FRAISE, ONDE, PHASE, APLAT, MAISON & HORIZON) : vignettes suivies
+    // comme les autres thèmes, dans public/theme-assets/<id>/ ; seuls les kits restés privés gardent l'ancien dossier.
+    const kit = (KIT_THEMES as readonly string[]).includes(id) && !(VERSIONED_KITS as readonly string[]).includes(id);
     const assets = kit ? path.join("public", "demo", id) : path.join("public", "theme-assets", id);
     const thumb = kit ? path.join("public", "demo", "directions", `${id}.jpg`) : path.join(assets, "apercu-theme.jpg");
     fs.mkdirSync(path.dirname(thumb), { recursive: true });

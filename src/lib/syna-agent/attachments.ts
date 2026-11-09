@@ -145,7 +145,7 @@ export function describeAttachment(a: Attachment): string {
  * images ») : les 3 logos tant que le client n'a pas choisi (étape 2), la planche de marque tant que l'image de marque
  * n'est pas validée (étape 3). Réduites (512 px, planche 1024 px) : quelques millièmes d'euro par réponse.
  */
-export async function journeyImages(j: { steps: Record<number, { status: string } | undefined>; logos?: { list: { source: string; name: string; assetId: string | null; verdict: string; score: number | null }[] }; logoChoice?: unknown; brandKit?: { boardId: string | null } }): Promise<LlmImage[]> {
+export async function journeyImages(j: { steps: Record<number, { status: string } | undefined>; logos?: { list: { source: string; name: string; assetId: string | null; verdict: string; score: number | null }[] }; logoChoice?: unknown; brandKit?: { boardId: string | null } }, projectId?: string | null): Promise<LlmImage[]> {
   const { getAsset, assetData } = await import("../library");
   const sharp = (await import("sharp")).default;
   const small = async (id: string, size: number) => { const a = getAsset(id); return a && !a.deleted_at ? sharp(assetData(a)).resize(size, size, { fit: "inside", withoutEnlargement: true }).png().toBuffer() : null; };
@@ -154,5 +154,44 @@ export async function journeyImages(j: { steps: Record<number, { status: string 
     for (const l of j.logos.list) if (l.assetId) { const data = await small(l.assetId, 512).catch(() => null); if (data) out.push({ data, label: `Logo ${l.source} — ${l.name} (${l.verdict === "FINAL" ? `validé ${l.score ?? "?"}/10` : "non validé"})` }); }
   }
   if (j.brandKit?.boardId && j.steps[3]?.status !== "done") { const data = await small(j.brandKit.boardId, 1024).catch(() => null); if (data) out.push({ data, label: "Planche de marque montrée au client" }); }
+  // Étape 6 : les images de maquette déjà créées (consigne du propriétaire : « SINA doit lire les images » ; essai réel
+  // du 8 novembre : « je n'ai pas de rendu à te décrire, je ne le vois pas ici »). Trois au plus, la plus récente de
+  // chaque maquette.
+  if (projectId && j.steps[6]?.status !== "done") {
+    const { loadMockupSet } = await import("./mockup-code/mockup-set");
+    const set = loadMockupSet(projectId);
+    // La plus RÉCENTE de chaque maquette (date de création de l'image, pas l'ordre du plan : essai réel du 8 novembre,
+    // l'accueil téléphone refait n'était pas celle que SINA regardait), la plus récente de toutes en premier et en
+    // pleine définition (1536 px) pour en lire les textes.
+    // Toutes les images créées ces 20 dernières minutes (essai réel : deux paniers refaits, SINA n'en voyait qu'un), sinon
+    // la plus récente de chaque maquette.
+    const all = (set?.directions ?? []).flatMap((d) => d.images.filter((i) => i.status === "ready" && i.assetId).map((img) => ({ d, img, at: getAsset(img.assetId!)?.created_at ?? 0 }))).sort((x, y) => y.at - x.at);
+    const recent = all.filter((x) => Date.now() - x.at < 20 * 60_000).slice(0, 4);
+    const latest = recent.length ? recent : (set?.directions ?? []).map((d) => all.find((x) => x.d.key === d.key)).filter((x): x is NonNullable<typeof x> => !!x);
+    for (const [n, { d, img, at }] of latest.entries()) {
+      if (out.length >= 6) break;
+      const data = await small(img.assetId!, n === 0 || recent.length ? 1536 : 1024).catch(() => null);
+      const fresh = Date.now() - at < 15 * 60_000;
+      if (data) out.push({ data, label: `Maquette ${d.key} « ${d.name} », image ${img.id} — ${img.pages.join(", ")} (${img.viewport === "desktop" ? "ordinateur" : "téléphone"})${fresh ? ", créée il y a quelques minutes" : ""}, montrée au client${img.check ? (img.check.ok ? " ; contrôle automatique de la mise en page : rien à signaler" : ` ; RATÉE au contrôle automatique : ${img.check.problems.join(" ; ")}`) : ""}` });
+    }
+  }
+  // Étape 7 : captures du site codé, chacune à côté de l'image de maquette de la même page (essai réel du 8 novembre :
+  // SINA ne voyait pas le rendu et ne parlait ni des couleurs ni des sections manquantes).
+  if (projectId && j.steps[7]?.status !== "done" && j.steps[6]?.status === "done") {
+    const { all } = await import("../db");
+    const row = all<{ value: string }>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key='syna.step7.report' AND state='active' ORDER BY updated_at DESC LIMIT 1", projectId)[0];
+    let r: { captures?: { page: string; viewport: string; assetId: string }[]; direction?: string } | null = null;
+    try { r = row ? JSON.parse(row.value) : null; } catch { r = null; }
+    const { loadMockupSet } = await import("./mockup-code/mockup-set");
+    const d = loadMockupSet(projectId)?.directions.find((x) => x.key === r?.direction);
+    for (const c of (r?.captures ?? []).slice(0, 4)) {
+      if (out.length >= 8) break;
+      const mock = d?.images.find((i) => i.status === "ready" && i.assetId && i.viewport === c.viewport && i.pages.includes(c.page));
+      const m = mock ? await small(mock.assetId!, 1024).catch(() => null) : null;
+      if (m) out.push({ data: m, label: `Maquette ${d!.key} — ${c.page} (${c.viewport === "desktop" ? "ordinateur" : "téléphone"}), la référence` });
+      const data = await small(c.assetId, 1536).catch(() => null);
+      if (data) out.push({ data, label: `Site codé (étape 7) — ${c.page} (${c.viewport === "desktop" ? "ordinateur" : "téléphone"}), capture de l'aperçu : compare-la à la maquette` });
+    }
+  }
   return out;
 }

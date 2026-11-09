@@ -11,7 +11,11 @@ import { logoTools } from "./logo";
 import { brandKitTools } from "./brand-kit";
 import { angleTools } from "./angles";
 import { activityTools } from "./activity";
+import { themeTools } from "./themes";
 import { calendarTools } from "./calendar";
 import { mockupCodeTools } from "../mockup-code/tools";
+import { offersTools } from "./offers";
+import { familyTools } from "./families";
+import { customThemeTools } from "../custom-theme/tools";
 
-export const TOOL_LIST: AgentTool[] = [...startTools, ...identityTools, ...logoTools, ...brandKitTools, ...angleTools, ...activityTools, ...projectTools, ...siteTools, ...catalogueTools, ...commerceTools, ...mediaTools, ...calendarTools, ...mockupCodeTools];
+export const TOOL_LIST: AgentTool[] = [...startTools, ...identityTools, ...logoTools, ...brandKitTools, ...angleTools, ...activityTools, ...themeTools, ...projectTools, ...siteTools, ...catalogueTools, ...commerceTools, ...mediaTools, ...calendarTools, ...mockupCodeTools, ...offersTools, ...familyTools, ...customThemeTools];

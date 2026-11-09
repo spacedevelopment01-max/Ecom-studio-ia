@@ -306,7 +306,10 @@ export function identityIssues(list: Identity[], j: Journey): string[] {
   }
   if (!keptName) {
     const kinds = list.map((x) => x.nameKind);
-    if (nameKindsFor(j) === "produits") { for (const x of list) if (x.nameKind !== "invente") issues.push(`Identité ${x.key} : marque de produits → le nom doit être un mot inventé (nameKind « invente »), pas « ${x.name} ».`); }
+    if (nameKindsFor(j) === "produits") {
+      const fort = list.filter((x) => x.nameKind === "mot").length, inv = list.filter((x) => x.nameKind === "invente").length;
+      if (fort < 2 || inv < 1 || fort + inv < list.length) issues.push(`Marque de produits → deux noms « mot fort » (nameKind « mot », comme SOLSTICE ou RUPTURE) et un mot inventé (nameKind « invente ») ; reçu : ${list.map((x) => `${x.name} (${x.nameKind ?? "?"})`).join(", ")}.`);
+    }
     else if (kinds.some((k) => !k) || new Set(kinds).size < list.length) issues.push("Les trois noms doivent être de trois genres différents (nameKind : mot, invente, deux_mots).");
     for (const x of list) if ((x.nameKind === "mot" || x.nameKind === "invente") && words(x.name) > 1) issues.push(`Identité ${x.key} : « ${x.name} » doit tenir en un seul mot (genre ${x.nameKind === "mot" ? "mot" : "mot inventé"}).`);
     const names = list.map((x) => norm(x.name));
@@ -337,8 +340,8 @@ export function nameKindsFor(j: Journey): "produits" | "services" {
 
 export function nameKindRule(j: Journey): string {
   return nameKindsFor(j) === "produits"
-    ? "# Genre des noms : MARQUE DE PRODUITS → les TROIS noms sont des MOTS INVENTÉS (nameKind « invente », choix du propriétaire), chacun tiré d'un élément différent du produit et construit d'une façon différente : un mot du produit raccourci avec une terminaison qui sonne marque (comme « Reflo », de reflet) ; deux mots du produit fondus en un seul ; une racine du produit avec une sonorité vive. Un seul mot de 2 ou 3 syllabes, qui se prononce comme il s'écrit en français, sans sens négatif à l'oral, jamais une marque connue. Dans nameCandidates, écris au moins 15 mots inventés, puis dis-les à voix haute dans ta tête et garde celui qui sonne le plus comme une vraie marque (fusion invisible, rythme, aucune terminaison plaquée), jamais le premier venu. Lu seul, on devine le produit ou sa matière ; nameWhy dit de quel mot il vient."
-    : "# Genre des noms : ENTREPRISE DE SERVICES → trois genres différents (nameKind) : un « mot » qui existe, un mot « invente », un nom en « deux_mots » ; pour un service, les vrais mots et les expressions du métier sont souvent les plus parlants.";
+    ? "# Genre des noms : MARQUE DE PRODUITS → DEUX noms sont des MOTS FORTS (nameKind « mot », genre préféré du propriétaire depuis le 9 novembre 2026 : comme SOLSTICE pour une mode d'été ou RUPTURE pour du streetwear) : un seul mot qui existe, de 2 ou 3 syllabes, puissant et élégant, qui évoque l'univers, la saison, le moment ou l'attitude de la marque (nameAnchor = cet univers ou cette attitude), qui se comprend aussi hors de France et sonne comme une marque écrit en capitales ; deux mots forts tirés de deux idées différentes. Le TROISIÈME nom est un MOT INVENTÉ (nameKind « invente »), tiré d'un élément du produit : un mot du produit raccourci avec une terminaison qui sonne marque (comme « Reflo », de reflet), deux mots du produit fondus en un seul, ou une racine du produit avec une sonorité vive. Un seul mot de 2 ou 3 syllabes, qui se prononce comme il s'écrit en français, sans sens négatif à l'oral, jamais une marque connue. Dans nameCandidates, écris au moins 15 mots inventés, puis dis-les à voix haute dans ta tête et garde celui qui sonne le plus comme une vraie marque (fusion invisible, rythme, aucune terminaison plaquée), jamais le premier venu. Lu seul, on devine le produit ou sa matière ; nameWhy dit de quel mot il vient."
+    : "# Genre des noms : ENTREPRISE DE SERVICES → trois genres différents (nameKind) : un « mot » fort qui existe (genre préféré du propriétaire, comme SOLSTICE ou RUPTURE : un seul mot puissant qui évoque l'univers ou l'attitude), un mot « invente », un nom en « deux_mots » ; pour un service, les vrais mots et les expressions du métier sont souvent les plus parlants.";
 }
 
 export function identityPrompt(j: Journey, opts: { guidance?: string; feedback?: string[]; previous?: Identity[]; redo?: string[]; namesOnly?: boolean } = {}): string {

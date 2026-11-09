@@ -184,3 +184,33 @@ export function inventoryOptionsOf(p: { business: "products" | "services"; produ
 
 /** Pages à dessiner (une variante sans dessin propre est couverte par sa page d'origine si l'image le précise). */
 export const pageByKey = (pages: MockupPage[], key: string) => pages.find((p) => p.key === key) ?? null;
+
+/**
+ * Mise en page imposée d'une page (retour du propriétaire du 8 novembre : « la page panier ne fait pas panier », et la
+ * fiche produit qui s'ouvrait sur l'accroche) : la direction graphique donne les couleurs, les polices, les cartes et
+ * les détails ; la STRUCTURE de chaque page reste celle d'une vraie boutique. null : page libre (accueil, histoire).
+ */
+export function pageLayout(p: Pick<MockupPage, "key" | "group">): string | null {
+  const k = p.key;
+  if (k === "home") return null;
+  if (k === "product" || k.startsWith("product:")) return "une vraie fiche produit de boutique en ligne : tout en haut (sous l'en-tête), la galerie du produit (grande photo et vignettes) à gauche et, à droite, le NOM DU PRODUIT en titre principal, le prix, la mention, le choix de quantité et le bouton d'ajout au panier ; en téléphone, la galerie puis ce bloc d'achat l'un sous l'autre. Aucune accroche ni bandeau de présentation avant la galerie";
+  if (k === "cart") return "une vraie page panier : un titre simple (« Ton panier » ou équivalent) ; à gauche, la liste des lignes du panier (vignette du produit, nom, sélecteur de quantité − 1 +, prix, lien pour retirer) ; à droite, un encadré récapitulatif (sous-total, livraison, total, bouton de paiement sur toute la largeur de l'encadré, mention courte sur les retours) ; en téléphone, les lignes empilées puis le récapitulatif et le bouton sur toute la largeur. Aucune grande ouverture, aucune grande photo, aucun bandeau de présentation";
+  if (k === "cart-drawer") return "un tiroir de panier ouvert sur le côté droit de la page (page assombrie derrière) : lignes, sous-total et bouton de paiement";
+  if (k === "cart-empty") return "une page panier vide : un message court au centre et un bouton vers les produits ; rien d'autre";
+  if (k === "catalog" || k === "category") return "une vraie page de catalogue : un petit bandeau de titre (titre de la page et une phrase), la barre de filtres et de tri, puis la grille de produits (photo, nom, prix, bouton) ; aucune grande ouverture d'accroche";
+  if (k === "search" || k === "search-empty") return "une page de recherche : le champ de recherche en haut, puis les résultats (ou le message sans résultat et des suggestions) ; aucune grande ouverture";
+  if (p.group === "compte") return "une page de compte client : un titre simple et le formulaire ou les informations, dans un encadré centré ; aucune grande ouverture ni photo";
+  if (p.group === "legal") return "une page de texte légal : un titre simple puis le texte structuré en titres et paragraphes sur une colonne lisible ; aucune photo";
+  if (k === "contact" || k === "faq" || k === "shipping") return "un petit bandeau de titre propre à la page, puis son contenu ; aucune grande ouverture d'accroche";
+  return null;
+}
+
+/**
+ * Page qui DOIT avoir son image de maquette (ordinateur et téléphone) : l'accueil, les pages clés (fiche produit ou
+ * prestation), les pages du menu et le panier. Les autres pages (variantes, compte, pages légales, recherche, 404…)
+ * sont « dérivées » : codées à l'étape 7 dans le style de la maquette, avec leur structure de boutique, sans image à
+ * elles (décision du propriétaire du 8 novembre : ne pas payer des maquettes de pages simples).
+ */
+export function requiredPage(p: Pick<MockupPage, "key" | "key_page" | "nav" | "variantOf">): boolean {
+  return !p.variantOf && (!!p.key_page || !!p.nav || p.key === "home" || p.key === "cart");
+}

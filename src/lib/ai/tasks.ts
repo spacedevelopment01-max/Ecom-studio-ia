@@ -389,11 +389,17 @@ export function lintClaims(content: unknown, p: Project): { path: string; term: 
     .concat(p.product.questions.filter((q) => q.answer).map((q) => q.answer!))
     // Entreprise de services : prestations, tarifs, durées, zone et horaires saisis par le client.
     .concat(p.business === "services" ? [...(p.services?.services ?? []).map((x) => `${x.name} ${x.description ?? ""} ${x.price ?? ""} ${x.duration ?? ""}`), p.services?.area ?? "", p.services?.hours ?? "", p.services?.address ?? ""] : [])
+    // Livraison et retours donnés par le client (essai réel du 8 novembre : « livraison offerte » refusé alors que le
+    // client avait écrit « offerte dès 35 € d'achat »).
+    .concat(((c) => [c?.shipping ?? "", c?.returns ?? "", /offert|gratuit/i.test(c?.shipping ?? "") ? "livraison offerte livraison gratuite frais de port offerts" : ""])((p.settings as { company?: { shipping?: string; returns?: string } } | undefined)?.company))
     .join(" ")
     .toLowerCase();
   const issues: { path: string; term: string; label: string }[] = [];
   // Prix connus (produit et catalogue) : tout autre montant écrit dans un texte de vente est inventé.
-  const prices = p.business === "services" ? null : knownPrices(p);
+  // Montants de livraison écrits par le client (« 4,90 €, offerte dès 35 € ») : confirmés eux aussi (essai réel du 8 novembre).
+  const company = (p.settings as { company?: { shipping?: string; returns?: string } } | undefined)?.company;
+  const clientAmounts = [...`${company?.shipping ?? ""} ${company?.returns ?? ""}`.matchAll(/(\d+(?:[,.]\d{1,2})?)\s*€/g)].map((m) => Number(m[1].replace(",", ".")));
+  const prices = p.business === "services" ? null : [...knownPrices(p), ...clientAmounts];
   const walk = (v: unknown, path: string) => {
     if (typeof v === "string") {
       for (const [re, label] of p.business === "services" ? [...RISKY, ...RISKY_SERVICES] : RISKY) {

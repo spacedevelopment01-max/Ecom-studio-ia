@@ -8,36 +8,59 @@
  *  - site.code_from_mockup : lance l'étape 7 (payante, plafonnée au devis) ;
  *  - mockup.report     : rapport de la dernière étape 7 (page par page).
  */
+import sharp from "sharp";
 import { z } from "zod";
 import { HttpError } from "../../auth";
 import { all } from "../../db";
 import { enqueue } from "../../jobs";
 import { L } from "../../i18n-server";
 import { assetData, assetUrl, getAsset, saveAsset } from "../../library";
-import { aiSiteMockup, photoRequestMaxMicro, PUBLICATION_PROMPT_MAX_BYTES, withQuotedImageRoute } from "../../ai/media-providers";
+import { aiSiteImageHd, aiSiteMockup, mockupMaskEdit, mockupMaskEditMaxMicro, photoRequestMaxMicro, PUBLICATION_PROMPT_MAX_BYTES, withQuotedImageRoute } from "../../ai/media-providers";
 import { getJsonSetting } from "../../settings";
+import { budgetPctText } from "../../ai/budget-pct";
 
 import { getStrategyState } from "../../marketing-strategy";
 import { assertSectionGeneration } from "../../theme/custom-access";
-import { setStep, updateJourney } from "../journey";
+import { journeyOf, setStep, updateJourney } from "../journey";
+import { angleDetails, COPY_CAP_MICRO, COPY_MODEL, COPY_SYSTEM, copyPrompt, editPageCopy, fixAndCheckCopy, loadSiteCopy, saveSiteCopy, writePageCopy, type PageCopy } from "./copy";
+import { pageByKey } from "./pages";
+import { getRun } from "../store";
+import { jobSpentMicro } from "../budget";
+import { withTrace } from "../../ai/trace";
+import { activityPlan } from "../activity";
+import { listProducts } from "../../products/catalog";
 import type { AgentTool, ToolContext } from "../types";
 import { project } from "../tools/common";
-import { step7CallMaxMicro } from "./deps";
+import { step7CallMaxMicro, step7CallTypicalMicro } from "./deps";
 import { MOCKUP_CODE_JOB, STEP7_REPORT_KEY } from "./job";
-import { attachImage, coverageOf, loadMockupSet, plannedDirection, saveMockupSet, type MockupSet } from "./mockup-set";
+import { attachImage, coverageOf, loadMockupSet, plannedCodeDirection, plannedDirection, replanDirection, saveMockupSet, type MockupSet } from "./mockup-set";
+import { baseFor, photoChoices, buildCodePage, codeBuildEstimate, completeCodePhotos, codeCallCosts, staleStylePages, codeEditEstimate, editCodePrompt, loadDirectionCode, mockupFiles, pageSource, patchCodeText, photoLibrary, realBuildDeps, rejectPhotos, repairPhotoBands, retouchCodePage, type BuildDeps } from "./code-build";
+import { expectedTexts, inspectCodeMockup } from "./code-mockup";
+import { chromiumPath } from "../../theme/snapshot";
+import { copyLines } from "./copy";
+import { codePhotoPrompt, photoUses, type CodePhoto } from "./code-mockup";
+import { familyArtUniverse, loadFamilyChoice } from "../section-families";
+import { peopleAllowed } from "../../people-policy";
 import { inventoryOptionsOf, mockupPages } from "./pages";
-import { mockupFacts, mockupImagePrompt, mockupImagesMaxMicro } from "./prompts";
-import { step7MaxMicro } from "./pipeline";
+import { hdAspect, mockupFacts, mockupImagePrompt, mockupImagesMaxMicro, siteImageHdPrompt } from "./prompts";
+import { STEP7_CAP_FACTOR, step7MaxMicro, step7ProbableMicro, type ImageSlot, type Step7Report } from "./pipeline";
+import { remember, saveThemeVersion, themeVersion } from "../../projects";
+import { applyOps, validateSpec } from "../../theme/ops";
+import { sectionSchema, type ThemeSpec } from "../../theme/spec";
+import { checkMaxMicro, mockupCheckCall, MockupCheckSchema, mockupCheckVerdict, type MockupCheck } from "./check";
+import { llmJson } from "../../ai/llm";
+import { blackShare, boxesOf, composeEdit, exactTexts, isRemoval, missingTexts, removeBand, locateCall, locateMaxMicro, LocateSchema, mockupEditPrompt, type Box, type EditChange, type Locate } from "./edit";
 
 /** Remplaçables par les tests : coût d'une image de maquette et coût maximal des appels de l'étape 7. */
-export const mockupToolDeps: { imageMaxMicro?: (references: number) => number | null; callMaxMicro?: typeof step7CallMaxMicro; generateImage?: (prompt: string, refs: { logo: Buffer | null; product: Buffer | null }) => Promise<Buffer> } = {};
+export const mockupToolDeps: { imageMaxMicro?: (references: number) => number | null; callMaxMicro?: typeof step7CallMaxMicro; callTypicalMicro?: typeof step7CallTypicalMicro; generateImage?: (prompt: string, refs: { logo: Buffer | null; product: Buffer | null }) => Promise<Buffer>; checkImage?: (data: Buffer, img: { viewport: "desktop" | "phone"; pages: string[] }) => Promise<MockupCheck>; locate?: (image: Buffer, changes: EditChange[]) => Promise<Locate>; maskEdit?: (image: Buffer, mask: Buffer | null, prompt: string) => Promise<Buffer> } = {};
 /**
- * Modèle des images de maquette : Qwen-Image 3.0 Pro (choix du propriétaire du 7 novembre, « pour voir le rendu »),
+ * Modèle des images de maquette : OpenAI GPT Image 2.5 Flare (choix du propriétaire du 8 novembre, après comparaison
+ * réelle sur l'accueil Brindi : Qwen abîmait les textes, OpenAI les écrivait juste ; même modèle que les logos),
  * modifiable sans code par le réglage « syna.mockup.image_route » (« fournisseur:modèle »). Aucun relais vers un autre
  * modèle : la route du devis est la seule permise pendant la création.
  */
 export function mockupImageRoute(): { provider: string; model: string } {
-  const [provider, model] = getJsonSetting<string>("syna.mockup.image_route", "alibaba:qwen-image-3.0-pro").split(":");
+  const [provider, model] = getJsonSetting<string>("syna.mockup.image_route", "openai:gpt-image-2.5-flare").split(":");
   return { provider, model };
 }
 const routeUnit = (refs: number) => { try { return photoRequestMaxMicro(mockupImageRoute(), { prompt: "x".repeat(PUBLICATION_PROMPT_MAX_BYTES), references: refs, aspect: "2:3", quality: "high" }); } catch { return null; } };
@@ -45,20 +68,43 @@ const imageUnit = (refs: number) => (mockupToolDeps.imageMaxMicro ?? routeUnit)(
 const callUnits = (userId: string) => (mockupToolDeps.callMaxMicro ?? step7CallMaxMicro)(userId);
 
 const KEY = z.enum(["A", "B", "C"]);
+/**
+ * Maquettes en code (décision du propriétaire du 8 novembre 2026) : méthode par défaut des nouvelles maquettes ;
+ * « image » (réglage syna.mockup.mode) revient aux maquettes dessinées par l'IA d'images.
+ */
+export const codeMode = () => getJsonSetting<string>("syna.mockup.mode", "code") !== "image";
+/** Remplaçables par les tests : construction d'une page de maquette en code (aucun appel réel). */
+export const codeBuildDeps: { deps?: BuildDeps; photoUnit?: () => number | null } = {};
 const pagesOf = (p: ReturnType<typeof project>) => mockupPages(p.business, p.storeType, inventoryOptionsOf(p));
 
 function angleOf(projectId: string): string | undefined {
   try {
     const st: any = getStrategyState(projectId);
     const a = st.active ? st.angles?.find((x: any) => x.id === st.active.angleId) ?? st.active.angle : null;
-    return a ? `angle « ${a.title ?? ""} », accroche « ${a.message ?? a.promise ?? ""} », émotion ${a.emotion ?? ""}` : undefined;
+    // Nom d'angle sans guillemets (essai réel du 8 novembre : « La vraie pause » écrit en bandeau sur la page contact).
+    return a ? [`angle ${a.title ?? ""} (nom interne, jamais écrit sur la page)`, a.message || a.promise ? `accroche « ${a.message ?? a.promise} »` : "", a.emotion ? `émotion ${a.emotion}` : ""].filter(Boolean).join(", ") : undefined;
+  } catch { return undefined; }
+}
+
+/** Produits de l'onglet Produits (titre, prix en centimes) : la source unique du site. */
+function productsOf(projectId: string): { title: string; price: number | null }[] {
+  try { return listProducts(projectId).map((x) => ({ title: x.data.title, price: x.data.price ?? null })); } catch { return []; }
+}
+/** Textes exacts de la marque (angle choisi à l'étape 4 : accroche, appel à l'action ; messages clés de la recherche). */
+function brandTextsOf(ctx: ToolContext, projectId: string): { headline?: string; cta?: string; messages?: string[] } | undefined {
+  try {
+    const j = journeyOf(ctx.conversationId);
+    if (!j.angleChoice) return undefined;
+    const plan = activityPlan(projectId, j);
+    if (!plan.angle) return undefined;
+    return { headline: plan.angle.message || undefined, cta: plan.angle.cta || undefined, messages: plan.keyMessages.slice(0, 3) };
   } catch { return undefined; }
 }
 
 const hasProductPhoto = (pid: string) => all<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND deleted_at IS NULL AND kind='image' AND role IN ('original','product') LIMIT 1", pid).length > 0;
 const coverageView = (set: MockupSet) => set.directions.map((d) => {
   const c = coverageOf(d, set.pages);
-  return { maquette: d.key, nom: d.name, images: d.images.length, pretes: d.images.filter((i) => i.status === "ready").length, complete: c.complete, manquantes: c.missing.slice(0, 40).map((m) => `${m.label} (${m.viewport === "desktop" ? "ordinateur" : "téléphone"})`) };
+  return { maquette: d.key, nom: d.name, style: d.style, fond: d.ground ?? "clair", images: d.images.length, pretes: d.images.filter((i) => i.status === "ready").length, complete: c.complete, manquantes: c.missing.slice(0, 40).map((m) => `${m.label} (${m.viewport === "desktop" ? "ordinateur" : "téléphone"})`), derivees: [...new Set(c.derived.map((m) => m.label))] };
 });
 
 const pagesTool: AgentTool<{}> = {
@@ -71,35 +117,166 @@ const pagesTool: AgentTool<{}> = {
   },
 };
 
-type PrepareArgs = { directions: { key?: "A" | "B" | "C"; name: string; style: string }[] };
+/** Dépendance remplaçable par les tests (aucun appel réel) : rédaction d'une page. */
+export const copyDeps: { generate?: (call: any) => Promise<unknown> } = {};
+
+const copyTool: AgentTool<{ pages?: string[] }> = {
+  name: "mockup.copy", module: "site", kind: "generate", needsProject: true,
+  description: "Étape 6, AVANT la maquette (payant, un petit appel par page) : écrit les textes COMPLETS des pages (titres, paragraphes, produits, questions fréquentes, inscription, pied de page ; titre et description pour le référencement) à partir de l'angle marketing choisi, travaillés sur son émotion, avec les seuls faits du client ; accroche, slogan et appel à l'action repris mot pour mot. pages : clés de mockup.pages (par défaut [\"home\"]). La maquette (mockup.prepare) écrit ensuite ces textes lettre pour lettre.",
+  args: z.object({ pages: z.array(z.string().max(60)).min(1).max(6).optional() }).strict(),
+  estimate: (_ctx, a) => ({ maxMicro: COPY_CAP_MICRO * (a.pages?.length ?? 1), label: L("textes de la page", "page copy") }),
+  run: async (ctx, a) => {
+    const p = project(ctx);
+    const j = journeyOf(ctx.conversationId);
+    if (!p.brand) return { ok: false, summary: L("L'identité de marque doit être choisie avant les textes du site.", "Choose the brand first.") };
+    if (!j.angleChoice) return { ok: false, summary: L("L'angle marketing (étape 4) doit être choisi avant les textes du site.", "Choose the angle first.") };
+    const pages = pagesOf(p), keys = a.pages?.length ? a.pages : ["home"];
+    const plan = activityPlan(p.id, j), details = angleDetails(j);
+    const jobId = getRun(ctx.runId)?.job_id ?? null;
+    const prev = loadSiteCopy(p.id);
+    const out: Record<string, PageCopy> = { ...(prev && prev.angleId === (j.angleChoice.id ?? null) ? prev.pages : {}) };
+    const failed: string[] = [];
+    for (const key of keys) {
+      const page = pageByKey(pages, key);
+      if (!page) { failed.push(`${key} : page inconnue`); continue; }
+      const call = { task: "strategy" as const, userId: ctx.user.id, projectId: p.id, jobId, system: COPY_SYSTEM, promptKey: "syna-site-copy-1", prompt: copyPrompt(page, { brand: { name: p.brand.name, tagline: p.brand.tagline }, plan, ...details }), maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna-copy:${ctx.runId}:${key}`, routing: { difficulty: "complex" as const, prefer: COPY_MODEL } };
+      try {
+        const cap = (jobId ? jobSpentMicro(jobId) : 0) + COPY_CAP_MICRO;
+        const raw = copyDeps.generate ? await writePageCopy(call, page, copyDeps.generate) : await withTrace({ jobId, projectId: p.id, step: "site-copy", costCapMicro: cap }, () => writePageCopy(call, page));
+        const home = out.home ?? prev?.pages.home;
+        const headerOf = (c?: PageCopy) => c?.sections.find((x) => /en-t[êe]te/i.test(x.section));
+        const footerOf = (c?: PageCopy) => c?.sections.find((x) => /pied de page/i.test(x.section));
+        const nav = home && key !== "home" ? { header: headerOf(home)?.items ?? [], button: headerOf(home)?.button ?? null, footer: footerOf(home)?.items ?? [] } : undefined;
+        const checked = fixAndCheckCopy(raw, page, { headline: plan.angle?.message, tagline: p.brand.tagline, cta: plan.angle?.cta, products: productsOf(p.id), ...(nav ? { nav } : {}), shipping: plan.company.shipping });
+        // Textes incomplets : jamais posés sur une maquette (pas de relance payante sans accord du client).
+        if (checked.problems.length) failed.push(`${page.fr} : textes incomplets (${checked.problems.join(" ; ")})`);
+        else out[key] = checked.copy;
+      } catch (e) { failed.push(`${page.fr} : ${(e as Error).message.slice(0, 160)}`); }
+    }
+    const done = keys.filter((k) => out[k]);
+    if (!done.length) return { ok: false, summary: L(`Textes non écrits : ${failed.join(" | ")}`, "Copy not written."), hint: "Dis-le au client avec le coût réel ; ne relance JAMAIS une écriture payante sans son accord écrit." };
+    saveSiteCopy(p.id, { version: 1, angleId: j.angleChoice.id ?? null, pages: out, at: 0 });
+    // Les maquettes déjà préparées reprennent ces textes tout de suite (images encore à créer seulement) : pas besoin de
+    // refaire la préparation (essai réel : SINA la refaisait et réécrivait le style, l'image payée était détachée).
+    refreshMockupPrompts(ctx);
+    const home = out.home;
+    return {
+      ok: !failed.length,
+      summary: L(`Textes écrits pour ${done.map((k) => `« ${pageByKey(pages, k)!.fr} »`).join(", ")}${failed.length ? ` ; non écrits : ${failed.join(" | ")}` : ""}.`, "Page copy written."),
+      hint: loadMockupSet(p.id) ? "La maquette déjà préparée reprend ces textes : son plan est mis à jour tout seul (chaque page aux textes écrits a sa propre image). N'appelle PAS mockup.prepare (elle referait la maquette) ; annonce le prix des images à créer (mockup.generate, pages et viewport) avant toute création." : "Prépare maintenant la maquette (mockup.prepare) : elle écrira ces textes lettre pour lettre. Annonce ensuite le prix des images avant toute création.",
+      data: { pages: Object.fromEntries(done.map((k) => [k, out[k]])), ...(home ? { titreSeo: home.seo.title } : {}) },
+      changes: done.map((k) => ({ module: "site", object: L(`textes › ${pageByKey(pages, k)!.fr}`, `copy › ${k}`), summary: out[k].sections.map((x) => x.title).filter(Boolean).slice(0, 4).join(" · "), after: out[k], verified: true })),
+    };
+  },
+};
+
+/**
+ * Les maquettes déjà préparées reprennent les textes actuels du site (images encore à créer seulement ; une image
+ * créée n'est jamais modifiée). Appelé après l'écriture ou la correction des textes.
+ */
+export function refreshMockupPrompts(ctx: ToolContext): void {
+  const p = project(ctx), set = loadMockupSet(p.id), copy = loadSiteCopy(p.id);
+  if (!set) return;
+  const facts = mockupFacts(p, angleOf(p.id), hasProductPhoto(p.id), { products: productsOf(p.id), texts: brandTextsOf(ctx, p.id), ...(copy ? { copy: copy.pages } : {}) });
+  // Une page dont les textes sont écrits a sa propre image (plan refait, images déjà créées gardées).
+  const alone = Object.keys(copy?.pages ?? {});
+  saveMockupSet(p.id, { ...set, directions: set.directions.map((d0) => { if (d0.mode === "code") return d0; const d = alone.length ? replanDirection(d0, set.pages, alone) : d0; return { ...d, images: d.images.map((img) => (img.status === "ready" ? img : { ...img, prompt: mockupImagePrompt(facts, d, img, set.pages) })) }; }) });
+}
+
+const copyEditTool: AgentTool<{ page?: string; find: string; replace: string }> = {
+  name: "mockup.copy_edit", module: "site", kind: "write", needsProject: true,
+  description: "Étape 6 (gratuit, sans IA) : corrige un texte de page écrit par mockup.copy, mot pour mot : remplace le passage EXACT find par les mots du client replace (replace vide = retirer le passage). page : clé de mockup.pages (accueil par défaut). Ce que le client corrige une fois vaut pour toujours.",
+  args: z.object({ page: z.string().max(60).optional(), find: z.string().min(2).max(400), replace: z.string().max(400) }).strict(),
+  run: async (ctx, a) => {
+    const p = project(ctx), key = a.page ?? "home", sc = loadSiteCopy(p.id);
+    const c = sc?.pages[key];
+    if (!sc || !c) return { ok: false, summary: L("Aucun texte écrit pour cette page : mockup.copy d'abord.", "No copy for this page yet.") };
+    const r = editPageCopy(c, a.find, a.replace);
+    if (!r.count) return { ok: false, summary: L(`Passage introuvable dans les textes : « ${a.find} ».`, "Passage not found."), hint: "Recopie le passage exactement tel qu'il est écrit (lis la carte des textes)." };
+    saveSiteCopy(p.id, { ...sc, pages: { ...sc.pages, [key]: r.copy } });
+    refreshMockupPrompts(ctx);
+    // Maquettes en code déjà construites : le texte est corrigé dans la page, sans IA, puis nouvelles captures.
+    const patched: string[] = [];
+    for (const d of loadMockupSet(p.id)?.directions.filter((x) => x.mode === "code") ?? []) {
+      if (!patchCodeText(p.id, d.key, key, a.find, a.replace)) continue;
+      const code = loadDirectionCode(p.id, d.key);
+      const html = code.pages[key].html;
+      const insp = await (codeBuildDeps.deps?.inspect ?? ((f, e) => inspectCodeMockup(f, e, chromiumPath())))(mockupFiles(p, html, baseFor(code, key)), { texts: expectedTexts(r.copy), allowed: [p.brand?.name ?? p.name] });
+      await saveCodeShots(ctx, p.id, d.key, key, insp);
+      patched.push(d.key);
+    }
+    return { ok: true, summary: a.replace ? L(`Texte corrigé : « ${a.find} » → « ${a.replace} ».`, "Copy corrected.") : L(`Passage retiré : « ${a.find} ».`, "Passage removed."), hint: patched.length ? `Texte corrigé aussi dans les maquettes en code ${patched.join(", ")} (sans IA) : leurs nouvelles captures te sont jointes.` : "La maquette reprend déjà les textes corrigés (images encore à créer).", changes: [{ module: "site", object: L("textes de la page", "page copy"), summary: a.replace ? `« ${a.find} » → « ${a.replace} »` : `« ${a.find} » retiré`, before: a.find, after: a.replace, verified: JSON.stringify(loadSiteCopy(p.id)?.pages[key]).includes(a.replace) }] };
+  },
+};
+
+type PrepareArgs = { directions: { key?: "A" | "B" | "C"; name: string; style: string; ground?: "clair" | "sombre" | "marque" }[] };
 const prepareTool: AgentTool<PrepareArgs> = {
   name: "mockup.prepare", module: "site", kind: "write", needsProject: true,
-  description: "Étape 6 (préparation, GRATUITE, aucune image créée) : pour 1 à 3 directions graphiques VRAIMENT différentes (name + style : structure de l'accueil, grille, traitement des photos, typographie de titre), découpe chaque maquette en images (pages clés seules, autres pages groupées, version ordinateur et version téléphone) et écrit la consigne de chaque image d'après l'identité choisie, les vrais produits ou prestations et l'angle marketing. Donne le coût maximal de la création des images (à annoncer au client avant toute génération). Remplace une préparation précédente.",
-  args: z.object({ directions: z.array(z.object({ key: KEY.optional(), name: z.string().min(1).max(60), style: z.string().min(1).max(400) }).strict()).min(1).max(3) }).strict(),
+  description: "Étape 6 (préparation, GRATUITE, aucune image créée) : pour 1 à 3 directions graphiques FRANCHEMENT différentes (demande du propriétaire : des variantes proches ne conviennent pas), chacune avec name, style et ground (clair, sombre = ancrage sombre de la marque, marque = grands aplats de la couleur de marque ; trois maquettes = trois fonds différents). Le style décrit, sans nom de police ni code couleur : l'ouverture (TOUJOURS une grande photo pleine avec le titre dessus, consigne du propriétaire du 8 novembre ; ce qui varie : place et taille du titre, cadrage, voile, formes), la grille et le rythme (jamais deux parties pareilles à la suite, aucun vide), et des éléments vivants à piocher, à la façon d'une boutique gourmande : séparateurs en vague, pastilles et tampons ronds, bandeau défilant avec le slogan, cartes arrondies avec ombre douce, produits détourés qui débordent des cadres, grands chiffres ou mots en contour, motif du symbole en fond. Deux directions ne partagent ni la même mise en scène de l'ouverture, ni le même fond, ni les mêmes formes. Pour chacune, découpe chaque maquette en images (pages clés seules, autres pages groupées, version ordinateur et version téléphone) et écrit la consigne de chaque image d'après l'identité choisie, les vrais produits ou prestations et l'angle marketing. Donne le coût maximal de la création des images (à annoncer au client avant toute génération). Remplace une préparation précédente : les maquettes non citées sont retirées ; pour GARDER une maquette et ses images, reprends exactement son nom, son style et son fond (mockup.pages). Inutile de la refaire après mockup.copy : les textes sont repris tout seuls.",
+  args: z.object({ directions: z.array(z.object({ key: KEY.optional(), name: z.string().min(1).max(60), style: z.string().min(1).max(700), ground: z.enum(["clair", "sombre", "marque"]).optional() }).strict()).min(1).max(3) }).strict(),
   run: (ctx, a) => {
     const p = project(ctx);
     if (!p.brand) return { ok: false, summary: L("L'identité de marque (nom, couleurs, polices) doit être choisie avant les maquettes (étape 1).", "Choose the brand identity first (step 1).") };
     const pages = pagesOf(p), photo = hasProductPhoto(p.id);
-    const facts = mockupFacts(p, angleOf(p.id), photo);
+    const copy = loadSiteCopy(p.id);
+    const facts = mockupFacts(p, angleOf(p.id), photo, { products: productsOf(p.id), texts: brandTextsOf(ctx, p.id), ...(copy ? { copy: copy.pages } : {}) });
     const keys = ["A", "B", "C"] as const;
-    const directions = a.directions.map((d, i) => plannedDirection(d.key ?? keys[i], d.name, d.style, pages, (img) => mockupImagePrompt(facts, d, img, pages)));
-    const saved = saveMockupSet(p.id, { version: 1, business: p.business, pages, directions, at: 0 });
+    // Une maquette déjà commencée (même lettre, même nom, même style) garde ses images réussies dont la consigne n'a pas
+    // changé (essai réel du 8 novembre : ajouter les maquettes B et C effaçait l'accueil de A déjà créé et payé).
+    const before = loadMockupSet(p.id);
+    const planned0 = a.directions.map((d, i) => {
+      const fresh = codeMode() ? plannedCodeDirection(d.key ?? keys[i], d.name, d.style, pages, d.ground) : plannedDirection(d.key ?? keys[i], d.name, d.style, pages, (img) => mockupImagePrompt(facts, d, img, pages), d.ground);
+      // Même maquette = même lettre, nom, style et fond (sans fond = clair). Une évolution de la consigne du Studio
+      // n'efface jamais une image payée (essai réel : l'accueil de A détaché après un réglage de la consigne).
+      // Même maquette = même lettre et même nom (essai réel du 8 novembre : SINA a reformulé le style de B en la
+      // re-préparant après l'écriture des textes ; les trois images payées de B, dont l'accueil retouché, étaient lâchées).
+      // Même méthode aussi : une maquette en code ne reprend jamais les images d'une ancienne maquette en images.
+      const old = before?.directions.find((x) => x.key === fresh.key && x.name.trim().toLowerCase() === fresh.name.trim().toLowerCase() && (x.mode ?? "image") === (fresh.mode ?? "image"));
+      if (!old) return fresh;
+      return { ...fresh, images: fresh.images.map((img) => {
+        const prev = old.images.find((x) => x.status === "ready" && x.assetId && x.viewport === img.viewport && x.pages.join() === img.pages.join());
+        return prev ? { ...img, status: "ready" as const, assetId: prev.assetId } : img;
+      }) };
+    });
+    // Une maquette déjà commencée et non citée reste telle quelle (jamais effacée en silence).
+    const untouched = (before?.directions ?? []).filter((x) => !planned0.some((d) => d.key === x.key) && x.images.some((i) => i.status === "ready"));
+    const saved0 = saveMockupSet(p.id, { version: 1, business: p.business, pages, directions: [...planned0, ...untouched].sort((x, y) => x.key.localeCompare(y.key)), at: 0 });
+    // Pages aux textes déjà écrits : chacune seule sur son image (plan refait, images payées gardées).
+    refreshMockupPrompts(ctx);
     const read = loadMockupSet(p.id);
-    const images = directions.reduce((n, d) => n + d.images.length, 0);
+    const saved = read ?? saved0;
+    const directions = (read?.directions ?? planned0).filter((d) => planned0.some((x) => x.key === d.key));
+    const images = directions.reduce((n, d) => n + d.images.filter((i) => i.status !== "ready").length, 0);
     const refs = 1 + (photo && p.business !== "services" ? 1 : 0);
     const maxMicro = mockupImagesMaxMicro(images, refs, imageUnit);
-    const verified = !!read && read.directions.length === directions.length && read.directions.every((d, i) => d.images.length === directions[i].images.length);
+    const verified = !!read && planned0.every((d) => read.directions.some((x) => x.key === d.key));
+    if (directions.every((d) => d.mode === "code")) {
+      // Maquettes en code : chaque accueil est construit et montré d'abord ; les autres pages, pour la maquette choisie.
+      const lib = photoLibrary(p.id).length, unit = photoUnitMicro();
+      const one = unit == null ? null : codeBuildEstimate(ctx.user.id, ["home"], lib, unit);
+      const homes = unit == null ? null : codeBuildEstimate(ctx.user.id, directions.map(() => "home"), lib, unit);
+      return {
+        ok: verified,
+        summary: L(`${directions.length} maquette(s) préparée(s), en code : chacune sera une vraie page construite par Claude (ordinateur et téléphone dans le même fichier), rien n'est encore construit.${one ? "" : " Aucun modèle utilisable pour l'instant : rien ne peut être construit."}`, `${directions.length} code mockup(s) prepared.`),
+        data: { maquettes: directions.map((d) => ({ maquette: d.key, nom: d.name, pages: [...new Set(d.images.flatMap((i) => i.pages))] })), accueilProbableMicro: one?.probableMicro ?? null, accueilMaxMicro: one?.maxMicro ?? null, accueilsProbableMicro: homes?.probableMicro ?? null, accueilsMaxMicro: homes?.maxMicro ?? null, pages: pages.length, at: saved.at },
+        hint: "Annonce au client le coût PROBABLE de la construction de l'accueil de chaque maquette (accueilProbableMicro, en % de son budget ; les photos créées pour la première servent aux suivantes, d'où accueilsProbableMicro pour les trois) et attends son accord écrit avant mockup.generate (direction, pages [\"home\"]). Les autres pages se construisent ensuite pour la maquette choisie.",
+        changes: [{ module: "site", object: "maquettes (préparation)", summary: `${directions.length} maquette(s) en code`, after: { directions: directions.map((d) => d.key) }, verified }],
+      };
+    }
     return {
       ok: verified,
       summary: L(`${directions.length} maquette(s) préparée(s) : ${images} image(s) à créer au total, aucune créée.${maxMicro == null ? " Aucun modèle d'images utilisable pour l'instant : rien ne peut être créé." : ""}`, `${directions.length} mockup(s) prepared: ${images} image(s) to create.`),
-      data: { maquettes: directions.map((d) => ({ maquette: d.key, nom: d.name, images: d.images.map((i) => ({ id: i.id, version: i.viewport, pages: i.pages })) })), coutMaxMicro: maxMicro, pages: pages.length, at: saved.at },
+      // Prix d'UNE image aussi : le client peut commencer par une seule page (essai réel : le prix des 15 images annoncé
+      // pour créer seulement l'accueil).
+      data: { maquettes: directions.map((d) => ({ maquette: d.key, nom: d.name, images: d.images.map((i) => ({ id: i.id, version: i.viewport, pages: i.pages })) })), coutMaxMicro: maxMicro, coutParImageMicro: imageUnit(refs), pages: pages.length, at: saved.at },
+      hint: "Si le client veut d'abord une seule page (ex. l'accueil en ordinateur), annonce le prix de CES images seulement (coutParImageMicro × nombre d'images), jamais celui de toute la maquette, puis mockup.generate avec pages et viewport.",
       changes: [{ module: "site", object: "maquettes (préparation)", summary: `${directions.length} maquette(s), ${images} image(s) prévues`, after: { directions: directions.map((d) => d.key), images }, verified }],
     };
   },
 };
 
 /** Références envoyées à l'IA d'images : logo de la marque (obligatoire) et photo du produit (boutique). */
-function imageReferences(p: ReturnType<typeof project>): { logo: Buffer | null; product: Buffer | null; problem: string | null } {
+export function imageReferences(p: ReturnType<typeof project>): { logo: Buffer | null; product: Buffer | null; problem: string | null } {
   const logoId = p.brand?.logo?.assetId;
   const la = logoId ? getAsset(logoId) : undefined;
   if (!la || la.project_id !== p.id || la.deleted_at) return { logo: null, product: null, problem: L("Le logo de la marque doit être créé et rangé avant les maquettes (étapes 2 et 3).", "Create the brand logo before the mockups (steps 2 and 3).") };
@@ -107,29 +284,210 @@ function imageReferences(p: ReturnType<typeof project>): { logo: Buffer | null; 
   const pa = photo ? getAsset(photo.id) : undefined;
   return { logo: assetData(la), product: pa ? assetData(pa) : null, problem: null };
 }
-const todo = (d: MockupSet["directions"][number]) => d.images.filter((i) => i.status !== "ready" && !!i.prompt);
+/** Images encore à créer ; `only` limite à certaines pages et à une version (ex. l'accueil en ordinateur pour voir le rendu). */
+const todo = (d: MockupSet["directions"][number], only: { pages?: string[]; viewport?: "desktop" | "phone"; redo?: boolean } = {}) =>
+  d.images.filter((i) => (only.redo ? !!only.pages?.length : i.status !== "ready") && !!i.prompt && (!only.pages?.length || i.pages.some((k) => only.pages!.includes(k))) && (!only.viewport || i.viewport === only.viewport));
 
-const generateTool: AgentTool<{ direction: "A" | "B" | "C" }> = {
+/** Contrôle automatique d'une image créée ; null si le contrôle n'a pas pu se faire (jamais bloquant, toujours dit). */
+async function checkMockupImage(ctx: ToolContext, projectId: string, direction: string, img: { id: string; viewport: "desktop" | "phone"; pages: string[] }, data: Buffer, pages: MockupSet["pages"]): Promise<{ ok: boolean; problems: string[]; toVerify: string[] } | null> {
+  try {
+    const usageKey = `syna:${ctx.runId}:mockup-check:${direction}:${img.id}`;
+    const jobId = getRun(ctx.runId)?.job_id ?? null;
+    const call = mockupCheckCall({ userId: ctx.user.id, projectId, jobId, usageKey }, data, img, img.pages.map((k) => pageByKey(pages, k)?.fr ?? k));
+    const raw = mockupToolDeps.checkImage ? await mockupToolDeps.checkImage(data, img)
+      : await withTrace({ jobId, projectId, step: "mockup-check", costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + checkMaxMicro() }, () => llmJson(call, MockupCheckSchema, { strict: true }));
+    return mockupCheckVerdict(MockupCheckSchema.parse(raw), img.viewport);
+  } catch (e) { console.warn(`[maquettes] contrôle automatique impossible (${img.id}) : ${(e as Error).message.slice(0, 300)}`); return null; }
+}
+
+type GenArgs = { direction: "A" | "B" | "C"; pages?: string[]; viewport?: "desktop" | "phone"; redo?: boolean };
+/**
+ * Pages à construire d'une maquette en code : celles demandées, sinon l'accueil s'il manque, sinon les pages
+ * principales encore sans capture. L'accueil passe toujours en premier (il fixe la feuille commune).
+ */
+function codePagesTodo(p: ReturnType<typeof project>, set: MockupSet, d: MockupSet["directions"][number], a: GenArgs): { pages: string[]; problem?: string } {
+  const code = loadDirectionCode(p.id, d.key);
+  const required = [...new Set(d.images.flatMap((i) => i.pages))];
+  const built = (k: string) => !!code.pages[k] && d.images.some((i) => i.pages.includes(k) && i.status === "ready") && !code.pending?.[k]?.length;
+  let keys = a.pages?.length ? [...new Set(a.pages)] : !built("home") ? ["home"] : required.filter((k) => !built(k));
+  const unknown = keys.filter((k) => !pageByKey(set.pages, k));
+  if (unknown.length) return { pages: [], problem: L(`Pages inconnues : ${unknown.join(", ")} (clés de mockup.pages).`, "Unknown pages.") };
+  if (!a.redo) keys = keys.filter((k) => !built(k));
+  if (!keys.length) return { pages: [], problem: L("Ces pages sont déjà construites dans cette maquette (redo: true pour en refaire une ; pour un détail, mockup.edit).", "Already built.") };
+  keys.sort((x, y) => (x === "home" ? -1 : y === "home" ? 1 : 0));
+  if (!keys.includes("home") && !code.pages.home) return { pages: [], problem: L("L'accueil de cette maquette doit être construit d'abord : il fixe la feuille commune, l'en-tête et le pied de page.", "Build the home page first.") };
+  const copy = loadSiteCopy(p.id);
+  const noCopy = keys.filter((k) => !copy?.pages[k]);
+  if (noCopy.length) return { pages: [], problem: L(`Textes à écrire d'abord pour : ${noCopy.map((k) => pageByKey(set.pages, k)?.fr ?? k).join(", ")} (mockup.copy, payant, avec l'accord du client).`, "Write the page copy first.") };
+  return { pages: keys };
+}
+
+/** Page déjà construite dont seules des photos restent à créer (sans réécrire la page). */
+const photosOnly = (pid: string, direction: string, key: string, redo?: boolean) => { const c = loadDirectionCode(pid, direction); return !redo && !!c.pages[key] && !!c.pending?.[key]?.length; };
+
+function codeEstimate(ctx: ToolContext, a: GenArgs) {
+  const p = project(ctx), set = loadMockupSet(p.id)!, d = set.directions.find((x) => x.key === a.direction)!;
+  if (!p.brand?.logo?.assetId) throw new HttpError(409, L("Le logo de la marque doit être créé avant les maquettes (étapes 2 et 3).", "Create the logo first."));
+  const t = codePagesTodo(p, set, d, a);
+  if (t.problem) throw new HttpError(409, t.problem);
+  const unit = photoUnitMicro();
+  const code = loadDirectionCode(p.id, a.direction), costs = codeCallCosts(ctx.user.id);
+  // Pages dont seules les photos manquent : les photos et une correction possible, rien d'autre.
+  const only = t.pages.filter((k) => photosOnly(p.id, a.direction, k, a.redo));
+  const extra = unit == null || !costs ? null : only.reduce((acc, k) => { const n = code.pending![k].length; return { maxMicro: acc.maxMicro + n * unit + costs.fix.max, probableMicro: acc.probableMicro + Math.round(n * unit * 0.75) }; }, { maxMicro: 0, probableMicro: 0 });
+  const full = t.pages.filter((k) => !only.includes(k));
+  // Photos encore libres (jamais une photo en doublon) : celles des autres pages de la maquette ne comptent pas.
+  const usedHere = new Set(Object.entries(code.pages).filter(([k]) => !full.includes(k)).flatMap(([, v]) => photoUses(v.html).filter((u) => !u.product).map((u) => u.id)));
+  const freeCount = photoLibrary(p.id).filter((x) => !usedHere.has(x.id)).length;
+  const e0 = unit == null ? null : full.length ? codeBuildEstimate(ctx.user.id, full, freeCount, unit) : { maxMicro: 0, probableMicro: 0 };
+  const e = e0 && extra ? { maxMicro: e0.maxMicro + extra.maxMicro, probableMicro: e0.probableMicro + extra.probableMicro } : null;
+  if (!e) throw new HttpError(409, L("Aucun modèle utilisable pour construire les maquettes (administration › Fournisseurs IA et Médias).", "No usable model."));
+  return { maxMicro: e.maxMicro, probableMicro: e.probableMicro, label: L(`maquette ${a.direction} en code : ${t.pages.map((k) => pageByKey(set.pages, k)?.fr ?? k).join(", ")}`, `code mockup ${a.direction}`) };
+}
+
+/**
+ * Captures d'une page en code rangées dans les Fichiers et posées sur les images de la maquette (une par version),
+ * avec le résultat du contrôle automatique de chaque version.
+ */
+async function saveCodeShots(ctx: ToolContext, pid: string, direction: "A" | "B" | "C", key: string, r: { shots: Record<"desktop" | "phone", Buffer> | null; problems: string[]; toVerify: string[]; failed?: string[] }): Promise<{ id: string; assetId: string; href: string; page: string; viewport: "desktop" | "phone" }[]> {
+  if (!r.shots) return [];
+  let set = loadMockupSet(pid)!;
+  const d = set.directions.find((x) => x.key === direction)!;
+  const made: { id: string; assetId: string; href: string; page: string; viewport: "desktop" | "phone" }[] = [];
+  for (const v of ["desktop", "phone"] as const) {
+    const img = d.images.find((i) => i.viewport === v && i.pages.includes(key));
+    const asset = await saveAsset({ projectId: pid, userId: ctx.user.id, data: r.shots[v], name: `maquette-${direction}-${key.replace(/[^a-z0-9]+/gi, "-")}-${v}.jpg`, mime: "image/jpeg", role: "mockup", origin: "generated", meta: { synaMockup: { direction, image: img?.id ?? null, pages: [key], viewport: v, code: true } } });
+    const label = v === "phone" ? "téléphone" : "ordinateur";
+    const mine = (x: string) => !/^(ordinateur|téléphone) : /.test(x) || x.startsWith(`${label} : `);
+    const check = { ok: !r.problems.filter(mine).length && !r.failed?.length, problems: r.problems.filter(mine), toVerify: r.toVerify.filter(mine) };
+    const at = attachImage(set, direction, { ...(img ? { id: img.id } : {}), viewport: v, pages: [key], assetId: asset.id });
+    set = { ...at.set, directions: at.set.directions.map((x) => (x.key === direction ? { ...x, images: x.images.map((i) => (i.id === at.image.id ? { ...i, check } : i)) } : x)) };
+    saveMockupSet(pid, set);
+    made.push({ id: at.image.id, assetId: asset.id, href: assetUrl({ id: asset.id }), page: key, viewport: v });
+  }
+  return made;
+}
+
+/**
+ * Contrôle gratuit des photos (bandes blanches) et nouvelles captures des pages qui les montraient. Fait avant chaque
+ * construction et par l'outil mockup.photos_check.
+ */
+async function repairAndRecapture(ctx: ToolContext): Promise<{ replaced: number; pages: string[] }> {
+  const p = project(ctx);
+  const r = await repairPhotoBands(p);
+  const copy = loadSiteCopy(p.id);
+  const set = loadMockupSet(p.id);
+  const done: string[] = [];
+  for (const x of r.pages) {
+    const c = copy?.pages[x.page];
+    if (!c || !set?.directions.some((d) => d.key === x.direction && d.mode === "code")) continue;
+    const code = loadDirectionCode(p.id, x.direction);
+    const insp = await (codeBuildDeps.deps?.inspect ?? ((f, e) => inspectCodeMockup(f, e, chromiumPath())))(mockupFiles(p, code.pages[x.page].html, baseFor(code, x.page)), { texts: expectedTexts(c), allowed: [p.brand?.name ?? p.name] });
+    await saveCodeShots(ctx, p.id, x.direction as "A" | "B" | "C", x.page, insp);
+    done.push(`${x.direction} › ${pageByKey(set.pages, x.page)?.fr ?? x.page}`);
+  }
+  return { replaced: Object.keys(r.replaced).length, pages: done };
+}
+
+const photosCheckTool: AgentTool<{}> = {
+  name: "mockup.photos_check", module: "site", kind: "write", needsProject: true,
+  description: "Étapes 6 et 7 (gratuit, sans IA) : contrôle les photos du site (bandes blanches sur les bords, « contours blancs ») ; une photo à bandes est remplacée par sa version recadrée (l'ancienne écartée), et les pages des maquettes en code qui la montraient sont reprises avec de nouvelles captures. Fait aussi tout seul avant chaque construction.",
+  args: z.object({}).strict(),
+  run: async (ctx) => {
+    const r = await repairAndRecapture(ctx);
+    return { ok: true, summary: r.replaced ? L(`${r.replaced} photo(s) à bandes blanches recadrée(s), sans IA ; page(s) reprise(s) : ${r.pages.join(", ") || "aucune"}.`, "Photos repaired.") : L("Aucune photo à bandes blanches.", "No photo to repair."), ...(r.pages.length ? { hint: "Les nouvelles captures te sont jointes : regarde-les et dis au client ce que tu vois vraiment." } : {}) };
+  },
+};
+
+async function runCodeBuild(ctx: ToolContext, a: GenArgs) {
+  const p = project(ctx);
+  const set = loadMockupSet(p.id)!;
+  const d = set.directions.find((x) => x.key === a.direction)!;
+  const t = codePagesTodo(p, set, d, a);
+  if (t.problem) return { ok: false, summary: t.problem };
+  const refs = imageReferences(p);
+  if (refs.problem) return { ok: false, summary: refs.problem };
+  // Photos à bandes blanches réparées d'abord (gratuit) : jamais reproposées telles quelles.
+  const repaired = await repairAndRecapture(ctx).catch(() => ({ replaced: 0, pages: [] as string[] }));
+  const jobId = getRun(ctx.runId)?.job_id ?? null;
+  const base = `syna:${ctx.runId}:code`;
+  const name = p.brand?.name ?? p.name;
+  const fam = loadFamilyChoice(p.id), people = peopleAllowed(p.id), fu = familyArtUniverse(fam, { people });
+  const direction = fu ? `${fu.style} ; ${fu.idea} ; lumière : ${fu.light} ; décors : ${fu.setting} ; couleurs de la marque : ${[p.brand?.palette?.dark, p.brand?.palette?.primary, p.brand?.palette?.accent].filter(Boolean).join(", ")}.` : null;
+  const brief = (ph: CodePhoto) => ({ prompt: codePhotoPrompt(ph, { name, logo: !!(ph.packaging && refs.logo), product: !!(ph.product && refs.product), direction, people: !!fu && people }) });
+  const makePhoto: BuildDeps["makePhoto"] = (ph, usageKey) => withQuotedImageRoute(mockupImageRoute(), () => aiSiteImageHd({ userId: ctx.user.id, projectId: p.id, jobId, usageKey }, { prompt: brief(ph).prompt, logo: ph.packaging ? refs.logo : null, product: ph.product ? refs.product : null, aspect: hdAspect(ph.ratio) }));
+  const costs = codeBuildEstimate(ctx.user.id, ["home"], 0, 0);
+  const deps = codeBuildDeps.deps ?? realBuildDeps({ userId: ctx.user.id, projectId: p.id, jobId, capMicro: () => costs?.maxMicro ?? 0, spentMicro: () => (jobId ? jobSpentMicro(jobId) : 0) }, makePhoto);
+  const copy = loadSiteCopy(p.id)!;
+  const made: { id: string; assetId: string; href: string; page: string; viewport: "desktop" | "phone" }[] = [];
+  const report: string[] = [], failed: string[] = [];
+  let photos = 0;
+  for (const key of t.pages) {
+    const page = pageByKey(set.pages, key)!;
+    try {
+      const r = photosOnly(p.id, a.direction, key, a.redo)
+        ? await completeCodePhotos(p, a.direction, page, copy.pages[key], deps, { usageKey: base, photoBrief: brief })
+        : await buildCodePage(p, d, page, copy.pages[key], deps, { usageKey: base, photoBrief: brief });
+      photos += r.newPhotos.length;
+      // Photos non créées sur une page construite : gardées en attente, créées plus tard sans réécrire la page.
+      const photoFails = r.shots ? r.failed.filter((x) => x.startsWith("photo ")) : [];
+      const others = r.failed.filter((x) => !photoFails.includes(x));
+      if (photoFails.length) failed.push(`${page.fr} : ${photoFails.length} photo(s) non créée(s) (${photoFails[0].replace(/^photo \S+ non créée : /, "").slice(0, 120)}), gardées en attente : un nouveau mockup.generate de cette page les crée sans réécrire la page`);
+      if (others.length) failed.push(`${page.fr} : ${others.join(" ; ")}`);
+      if (!r.shots) continue;
+      made.push(...await saveCodeShots(ctx, p.id, a.direction, key, r));
+      report.push(`${page.fr} : ${r.problems.length ? `RATÉE au contrôle automatique (${r.problems.join(" ; ")})` : "contrôle automatique : textes exacts, rien d'ajouté, téléphone conforme"}${r.fixed ? " (une correction automatique faite)" : ""}${r.toVerify.length ? ` ; à vérifier : ${r.toVerify.join(" ; ")}` : ""}`);
+    } catch (e) { failed.push(`${page.fr} : ${(e as Error).message.slice(0, 200)}`); }
+  }
+  const read = loadMockupSet(p.id)!, cov = coverageOf(read.directions.find((x) => x.key === a.direction)!, read.pages);
+  const stale = staleStylePages(loadDirectionCode(p.id, a.direction)).map((k) => pageByKey(read.pages, k)?.fr ?? k);
+  if (stale.length) report.push(`Page(s) restée(s) dans le style d'avant le nouvel accueil (intactes, à reconstruire pour prendre le nouveau style) : ${stale.join(", ")}`);
+  const spent = all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key LIKE ?", p.id, `${base}:%`)[0]?.c ?? 0;
+  const spentText = budgetPctText(ctx.user.id, spent, p.id).replace(/de votre budget/, "de ton budget");
+  const defects = report.some((x) => x.includes("RATÉE"));
+  return {
+    ok: made.length > 0 && !failed.length && !defects,
+    summary: L(`${repaired.replaced ? `${repaired.replaced} photo(s) à bandes blanches recadrée(s) d'abord (gratuit). ` : ""}Maquette ${a.direction} en code : ${new Set(made.map((m) => m.page)).size} page(s) construite(s)${photos ? `, ${photos} photo(s) nouvelle(s) créée(s) (gardées pour les autres maquettes et le site)` : ", aucune photo nouvelle"}.${report.length ? ` ${report.join(". ")}.` : ""}${failed.length ? ` Problèmes : ${failed.join(" | ")}.` : ""} Coût réel : ${spentText}. ${cov.complete ? "La maquette couvre toutes les pages principales." : `Pages principales encore à construire : ${[...new Set(cov.missing.map((m) => m.label))].join(", ")}.`}`, "Code mockup built."),
+    ...(made.length ? { hint: (defects ? "Le contrôle automatique a relevé des défauts : dis au client que la page est RATÉE sur ces points, cite chacun, propose la correction (mockup.edit, son accord d'abord) et ne relance RIEN sans son accord écrit. " : "") + "Les captures (ordinateur et téléphone) te sont JOINTES à ta prochaine étape : regarde-les avant de répondre et dis au client, honnêtement et en deux ou trois phrases, ce que tu vois vraiment (style, photos, lisibilité, téléphone). Une photo ratée (texte ou logo dans la photo, objet coupé) est dite ratée. Ne dis JAMAIS que tu ne peux pas voir le rendu." } : {}),
+    data: { mockups: made.map((m, i) => ({ n: i + 1, direction: `${a.direction} · ${m.id}`, name: d.name, label: `${pageByKey(read.pages, m.page)?.fr ?? m.page} — ${m.viewport === "desktop" ? "ordinateur" : "téléphone"}`, assetId: m.assetId, href: m.href })), failed, complete: cov.complete },
+    changes: made.map((m) => ({ module: "fichiers", object: `maquette ${a.direction} › ${m.page} (${m.viewport === "desktop" ? "ordinateur" : "téléphone"})`, summary: L("page construite en code, capture rangée", "page built in code"), after: { assetId: m.assetId }, verified: true })),
+  };
+}
+
+const generateTool: AgentTool<GenArgs> = {
   name: "mockup.generate", module: "site", kind: "generate", needsProject: true,
-  description: "Étape 6 : crée avec l'IA d'images les images encore manquantes d'une maquette préparée (mockup.prepare), d'après leurs consignes, avec le logo et la photo du produit en références, puis les range dans la maquette. Payant, jamais au-delà du devis (annonce le prix au client et attends son accord avant). Une image ratée est signalée comme ratée, jamais présentée comme bonne ; elle peut être relancée.",
-  args: z.object({ direction: KEY }).strict(),
+  description: "Étape 6. MAQUETTE EN CODE (méthode actuelle) : construit les pages de la maquette en HTML et CSS (Claude), ordinateur et téléphone dans le même fichier, avec les textes écrits par mockup.copy ; crée UNE fois les photos nouvelles qu'elles demandent (gardées pour les autres maquettes et pour le site) ; captures et contrôle automatique gratuits (textes exacts, rien d'ajouté, en-tête du téléphone, jamais trois éléments côte à côte) ; les captures deviennent les images de la maquette. Sans pages : l'accueil s'il manque, sinon les pages principales restantes ; l'accueil d'abord (il fixe le style commun). viewport est ignoré (les deux versions sont construites ensemble). Payant : annonce le coût PROBABLE en % du budget et attends l'accord écrit. redo: true refait entièrement une page déjà construite. ANCIENNE MAQUETTE EN IMAGES : crée avec l'IA d'images les images encore manquantes d'une maquette préparée (mockup.prepare), d'après leurs consignes, avec le logo et la photo du produit en références, puis les range dans la maquette. Payant, jamais au-delà du devis (annonce le prix au client et attends son accord avant). pages (clés de mockup.pages, ex. [\"home\"]) et viewport limitent aux images de ces pages, dans cette version : pour voir d'abord le rendu de l'accueil. Une image ratée est signalée comme ratée, jamais présentée comme bonne ; elle peut être relancée. redo: true (avec pages et viewport) REFAIT ENTIÈREMENT une image déjà créée, avec la consigne actuelle : tout change (mise en page, photos). Seulement si le client veut une image toute nouvelle ; pour corriger des détails, mockup.edit (payant, son accord d'abord).",
+  args: z.object({ direction: KEY, pages: z.array(z.string().max(60)).max(12).optional(), viewport: z.enum(["desktop", "phone"]).optional(), redo: z.boolean().optional() }).strict(),
   estimate: (ctx, a) => {
     const p = project(ctx), set = loadMockupSet(p.id), d = set?.directions.find((x) => x.key === a.direction);
     if (!set || !d) throw new HttpError(409, L("Aucune maquette préparée : mockup.prepare d'abord.", "No mockup prepared yet."));
+    if (d.mode === "code") return codeEstimate(ctx, a);
     const refs = imageReferences(p);
     if (refs.problem) throw new HttpError(409, refs.problem);
-    const max = mockupImagesMaxMicro(todo(d).length, refs.product ? 2 : 1, imageUnit);
-    if (max == null) throw new HttpError(409, L("Aucun modèle d'images utilisable pour les maquettes (administration › Médias).", "No usable image model for mockups."));
+    const n = todo(d, a).length;
+    if (!n) throw new HttpError(409, L("Aucune image à créer pour ces pages dans cette maquette.", "No image to create for these pages."));
+    const images = mockupImagesMaxMicro(n, refs.product ? 2 : 1, imageUnit);
+    if (images == null) throw new HttpError(409, L("Aucun modèle d'images utilisable pour les maquettes (administration › Médias).", "No usable image model for mockups."));
+    // Contrôle automatique de chaque image créée, compris dans le prix annoncé.
+    const max = images + n * checkMaxMicro();
     return { maxMicro: max, label: L(`images de la maquette ${a.direction}`, `mockup ${a.direction} images`) };
   },
   run: async (ctx, a) => {
+    if (loadMockupSet(project(ctx).id)?.directions.find((x) => x.key === a.direction)?.mode === "code") return runCodeBuild(ctx, a);
     const p = project(ctx), refs = imageReferences(p);
     if (refs.problem) return { ok: false, summary: refs.problem };
     let set = loadMockupSet(p.id);
     const d = set?.directions.find((x) => x.key === a.direction);
     if (!set || !d) return { ok: false, summary: L("Aucune maquette préparée : mockup.prepare d'abord.", "No mockup prepared yet.") };
-    const made: { id: string; assetId: string; href: string }[] = [], failed: string[] = [];
-    for (const img of todo(d)) {
+    // Image à refaire (jugée ratée par le client) : remise « à créer » et consigne actuelle, avant la création.
+    if (a.redo && a.pages?.length) {
+      set = { ...set, directions: set.directions.map((x) => (x.key === a.direction ? { ...x, images: x.images.map((i) => (todo(x, a).some((t) => t.id === i.id) ? { ...i, status: "planned" as const, assetId: null } : i)) } : x)) };
+      saveMockupSet(p.id, set);
+      refreshMockupPrompts(ctx);
+      set = loadMockupSet(p.id)!;
+    }
+    const made: { id: string; assetId: string; href: string }[] = [], failed: string[] = [], unchecked: string[] = [];
+    for (const img of todo(set.directions.find((x) => x.key === a.direction)!, a)) {
       try {
         const data = mockupToolDeps.generateImage ? await mockupToolDeps.generateImage(img.prompt!, refs)
           : await withQuotedImageRoute(mockupImageRoute(), () => aiSiteMockup({ userId: ctx.user.id, projectId: p.id, usageKey: `syna:${ctx.runId}:mockup-image:${a.direction}:${img.id}` }, { prompt: img.prompt!, logo: refs.logo, product: refs.product }));
@@ -138,14 +496,209 @@ const generateTool: AgentTool<{ direction: "A" | "B" | "C" }> = {
         set = attachImage(set!, a.direction, { id: img.id, viewport: img.viewport, pages: img.pages, assetId: asset.id }).set;
         saveMockupSet(p.id, set);
         made.push({ id: img.id, assetId: asset.id, href: assetUrl({ id: asset.id }) });
+        // Contrôle automatique (demande du propriétaire du 8 novembre : les erreurs vues ne doivent pas se reproduire).
+        const check = await checkMockupImage(ctx, p.id, a.direction, img, data, set.pages);
+        if (check) {
+          set = { ...set, directions: set.directions.map((x) => (x.key === a.direction ? { ...x, images: x.images.map((i) => (i.id === img.id ? { ...i, check } : i)) } : x)) };
+          saveMockupSet(p.id, set);
+        } else unchecked.push(img.id);
       } catch (e) { failed.push(`${img.id} : ${(e as Error).message.slice(0, 160)}`); }
     }
     const read = loadMockupSet(p.id)!, cov = coverageOf(read.directions.find((x) => x.key === a.direction)!, read.pages);
+    // Coût RÉEL des images de cet appel (appels enregistrés), dit au client (essai réel : « le Studio ne me l'a pas transmis »).
+    // Seulement les images de CET appel (essai réel : deux images d'une même demande additionnées, « 0,4 % » au lieu de 0,2 %).
+    const ids = [...made.map((m) => m.id), ...failed.map((f) => f.split(" ")[0])];
+    const keys = ids.flatMap((id) => [`syna:${ctx.runId}:mockup-image:${a.direction}:${id}`, `syna:${ctx.runId}:mockup-check:${a.direction}:${id}`]);
+    const checked = made.map((m) => ({ id: m.id, check: read.directions.find((x) => x.key === a.direction)!.images.find((x) => x.id === m.id)?.check }));
+    const defects = checked.filter((c) => c.check && !c.check.ok);
+    const toVerify = checked.filter((c) => c.check?.toVerify.length);
+    const checkText = [
+      ...defects.map((c) => `${c.id} RATÉE au contrôle automatique : ${c.check!.problems.join(" ; ")}`),
+      ...toVerify.map((c) => `${c.id}, textes à vérifier : ${c.check!.toVerify.join(" ; ")}`),
+      ...(unchecked.length ? [`${unchecked.join(", ")} : contrôle automatique impossible, à regarder`] : []),
+      ...(made.length && !defects.length && !unchecked.length ? ["contrôle automatique de la mise en page : rien à signaler"] : []),
+    ].join(". ");
+    const spent = keys.length ? all<{ c: number | null }>(`SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key IN (${keys.map(() => "?").join(",")})`, p.id, ...keys)[0]?.c ?? 0 : 0;
+    // Tutoiement du fil SINA (le texte commun du Studio vouvoie : « de votre budget IA »).
+    const spentText = budgetPctText(ctx.user.id, spent, p.id).replace(/de votre budget/, "de ton budget");
     return {
-      ok: made.length > 0 && !failed.length,
-      summary: L(`${made.length} image(s) créée(s) pour la maquette ${a.direction}${failed.length ? ` ; ${failed.length} ratée(s) : ${failed.join(" | ")}` : ""}. ${cov.complete ? "La maquette couvre toutes les pages." : `Il manque encore ${cov.missing.length} page(s) ou version(s).`}`, `${made.length} mockup image(s) created.`),
-      data: { mockups: made.map((m, i) => ({ n: i + 1, direction: `${a.direction} · ${m.id}`, assetId: m.assetId, href: m.href })), failed, complete: cov.complete },
+      ok: made.length > 0 && !failed.length && !defects.length,
+      summary: L(`${made.length} image(s) créée(s) pour la maquette ${a.direction}${failed.length ? ` ; ${failed.length} ratée(s) : ${failed.join(" | ")}` : ""}.${checkText ? ` ${checkText}.` : ""} Coût réel : ${spentText}. ${cov.complete ? `La maquette couvre toutes les pages principales ; ${new Set(cov.derived.map((x) => x.page)).size} page(s) simple(s) seront codées dans son style à l'étape 7, sans image à elles.` : `Il manque encore ${cov.missing.length} page(s) ou version(s).`}`, `${made.length} mockup image(s) created.`),
+      // Essai réel du 8 novembre : « Je ne peux pas vérifier le rendu ici » alors que l'image lui est jointe, et
+      // « refait avec la mise en page de téléphone » affirmé sans l'avoir regardée.
+      ...(made.length ? { hint: (defects.length ? "Le contrôle automatique a relevé des défauts : dis au client que l'image est RATÉE, cite chaque défaut, propose de la refaire avec son prix (mockup.generate redo) et ne relance RIEN sans son accord écrit. " : "") + "Les images créées te sont JOINTES à ta prochaine étape (libellé « image <id> … créée il y a quelques minutes ») : regarde-les avant de répondre et dis au client, honnêtement et en deux ou trois phrases, ce que tu vois vraiment (mise en page, textes lisibles et exacts ou abîmés, logo, et pour le téléphone : une seule colonne et menu replié, ou non ; passe CHAQUE partie en revue, de haut en bas : toute rangée de trois éléments ou plus côte à côte est un défaut à signaler, même si le point demandé par le client est corrigé). Ne dis JAMAIS que tu ne peux pas voir le rendu ; n'affirme rien que l'image ne montre pas ; une image ratée est dite ratée." } : {}),
+      // Libellés du client (essai réel : « 1. A · A01 » affiché) : nom de la maquette, pages, version.
+      data: { mockups: made.map((m, i) => { const img = read.directions.find((x) => x.key === a.direction)!.images.find((x) => x.id === m.id)!; return { n: i + 1, direction: `${a.direction} · ${m.id}`, name: d!.name, label: `${img.pages.map((k) => pageByKey(read.pages, k)?.fr ?? k).join(", ")} — ${img.viewport === "desktop" ? "ordinateur" : "téléphone"}`, assetId: m.assetId, href: m.href }; }), failed, complete: cov.complete },
       changes: made.map((m) => ({ module: "fichiers", object: `maquette ${a.direction} › image ${m.id}`, summary: L("créée par l'IA d'images", "created by the image AI"), after: m, verified: true })),
+    };
+  },
+};
+
+type EditArgs = { direction: "A" | "B" | "C"; imageId: string; fromVersion?: number; fromAssetId?: string; changes: EditChange[] };
+/** Versions successives d'une image de maquette (fichiers rangés, de la première à la plus récente). */
+export function imageVersions(projectId: string, direction: string, imageId: string): string[] {
+  // Même ordre que l'état du projet relu par SINA (« B10 : 5 versions, actuelle n° 5 »).
+  return all<{ id: string; meta: string }>("SELECT id, meta FROM assets WHERE project_id=? AND deleted_at IS NULL AND role='mockup' ORDER BY created_at ASC, rowid ASC", projectId)
+    .filter((r) => { try { const m = JSON.parse(r.meta || "{}").synaMockup; return m?.direction === direction && m?.image === imageId; } catch { return false; } })
+    .map((r) => r.id);
+}
+/** Coût maximal d'une retouche localisée : repérage des zones + retouche + contrôle ; null si le modèle des maquettes ne sait pas retoucher par masque. */
+function editMaxMicro(): number | null {
+  const r = mockupImageRoute();
+  if (r.provider !== "openai") return null;
+  try {
+    const paint = mockupToolDeps.imageMaxMicro ? mockupToolDeps.imageMaxMicro(2) : mockupMaskEditMaxMicro(r.model);
+    return paint == null ? null : paint + 2 * locateMaxMicro() + checkMaxMicro();
+  } catch { return null; }
+}
+/**
+ * Retouche d'une page de maquette en code : Claude renvoie seulement des remplacements exacts (le reste de la page ne
+ * bouge pas), puis captures et contrôle gratuits. Une retouche qui ajoute des défauts n'est pas gardée.
+ */
+async function runCodeEdit(ctx: ToolContext, a: EditArgs, pageKey: string) {
+  const p = project(ctx), set = loadMockupSet(p.id)!, d = set.directions.find((x) => x.key === a.direction)!;
+  const page = pageByKey(set.pages, pageKey), copy = loadSiteCopy(p.id)?.pages[pageKey], src = pageSource(p.id, a.direction, pageKey);
+  if (!page || !copy || !src) return { ok: false, summary: L("Cette page de la maquette n'est pas encore construite.", "Page not built yet.") };
+  const jobId = getRun(ctx.runId)?.job_id ?? null;
+  const usageKey = `syna:${ctx.runId}:code-edit:${a.direction}:${pageKey}`;
+  const cap = codeEditEstimate(ctx.user.id, src.length)?.maxMicro ?? 0;
+  const deps = codeBuildDeps.deps ?? realBuildDeps({ userId: ctx.user.id, projectId: p.id, jobId, capMicro: () => cap, spentMicro: () => (jobId ? jobSpentMicro(jobId) : 0) }, async () => { throw new Error("aucune photo nouvelle dans une retouche"); });
+  const spent = () => budgetPctText(ctx.user.id, all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key LIKE ?", p.id, `${usageKey}%`)[0]?.c ?? 0, p.id).replace(/de votre budget/, "de ton budget");
+  let edits;
+  try { edits = await deps.fixEdits(editCodePrompt(src, a.changes, copyLines(copy), photoChoices(p, a.direction, pageKey, src)), usageKey); } catch (e) { return { ok: false, summary: L(`Retouche impossible, rien n'a changé : ${(e as Error).message.slice(0, 160)}. Coût réel : ${spent()}.`, "Edit failed.") }; }
+  const before = d.images.filter((i) => i.pages.includes(pageKey)).flatMap((i) => i.check?.problems ?? []).length;
+  const r = await retouchCodePage(p, a.direction, page, copy, edits, deps.inspect, (problems) => problems.length <= before);
+  if (r.failed.length) return { ok: false, summary: L(`Retouche non appliquée, la page reste comme avant (${r.failed[0]}). Coût réel : ${spent()}.`, "Edit not applied."), hint: "Dis-le au client honnêtement ; ne relance rien sans son accord écrit." };
+  if (r.rejected) return { ok: false, summary: L(`Retouche RATÉE au contrôle automatique, non gardée (la page d'avant reste en place) : ${r.problems.join(" ; ")}. Coût réel : ${spent()}.`, "Edit rejected."), hint: "Dis au client que la retouche a raté et pourquoi ; ne relance rien sans son accord écrit." };
+  const made = await saveCodeShots(ctx, p.id, a.direction, pageKey, r);
+  return {
+    ok: r.ok,
+    summary: L(`Retouche faite sur la page « ${page.fr} » de la maquette ${a.direction} (${edits.length} passage(s) changé(s), le reste n'a pas bougé).${r.problems.length ? ` Contrôle automatique : ${r.problems.join(" ; ")}.` : " Contrôle automatique : rien à signaler."} Coût réel : ${spent()}.`, "Code mockup edited."),
+    hint: "Les nouvelles captures te sont JOINTES à ta prochaine étape : regarde-les et dis au client ce que tu vois vraiment, en particulier le point qu'il a demandé.",
+    data: { mockups: made.map((m, i) => ({ n: i + 1, direction: `${a.direction} · ${m.id}`, name: d.name, label: `${page.fr} — ${m.viewport === "desktop" ? "ordinateur" : "téléphone"}`, assetId: m.assetId, href: m.href })) },
+    changes: made.map((m) => ({ module: "fichiers", object: `maquette ${a.direction} › ${page.fr} (${m.viewport === "desktop" ? "ordinateur" : "téléphone"})`, summary: L("retouche localisée", "local edit"), after: { assetId: m.assetId }, verified: true })),
+  };
+}
+
+const editTool: AgentTool<EditArgs> = {
+  name: "mockup.edit", module: "site", kind: "generate", needsProject: true,
+  description: "Étape 6 : RETOUCHE LOCALISÉE. MAQUETTE EN CODE : imageId = une image de la page à retoucher (ordinateur ou téléphone, la page est la même) ; Claude change seulement les passages demandés du code de la page, le reste ne bouge pas ; nouvelles captures et contrôle gratuits ; une retouche qui ajoute des défauts n'est pas gardée ; peu coûteuse (coût probable donné par le Studio, accord du client d'abord) ; fromVersion ne s'applique pas. Pour un simple TEXTE à corriger, mockup.copy_edit (gratuit) le corrige aussi dans la page. ANCIENNE MAQUETTE EN IMAGES : retouche d'une image déjà créée : seules les zones demandées par le client changent, tout le reste reste identique au pixel près. À utiliser dès que le client demande de corriger des détails (retirer un bouton, réorganiser une partie, changer un texte sur l'image) : JAMAIS mockup.generate redo, qui refait toute l'image et change tout. imageId : l'image (ex. B10, voir « prêtes » dans l'état du projet) ; fromVersion : SEULEMENT si le client demande de repartir d'une ancienne version de cette image (1 = la première créée ; voir « versions »), sinon ne le mets pas (la version actuelle est retouchée) ; changes : 1 à 4 zones, chacune { zone : où, décrite clairement, et pour réorganiser ou AJOUTER un élément, TOUTE la partie (ex. « toute la partie Le journal de la pause, de son titre à son bouton »), jamais un morceau ; change : ce qui doit changer, précisément }. Un retrait pur (« retire le bandeau … ») est fait sans IA quand l'élément occupe seul sa bande : la suite remonte, gratuit. Une retouche ratée au contrôle n'est pas retenue : l'image d'avant reste en place. Payant (une retouche), annonce le prix et attends l'accord.",
+  args: z.object({ direction: KEY, imageId: z.string().max(8), fromVersion: z.number().int().min(1).max(50).optional(), fromAssetId: z.string().max(60).optional(), changes: z.array(z.object({ zone: z.string().min(3).max(300), change: z.string().min(3).max(600) }).strict()).min(1).max(4) }).strict(),
+  estimate: (ctx, a) => {
+    const p = project(ctx), d = loadMockupSet(p.id)?.directions.find((x) => x.key === a.direction);
+    if (!d?.images.some((i) => i.id === a.imageId && (i.assetId || a.fromAssetId))) throw new HttpError(409, L(`Aucune image ${a.imageId} créée dans la maquette ${a.direction}.`, "No such mockup image."));
+    if (d.mode === "code") {
+      const page = d.images.find((i) => i.id === a.imageId)!.pages[0];
+      const src = pageSource(p.id, a.direction, page);
+      if (!src) throw new HttpError(409, L("Cette page de la maquette n'est pas encore construite.", "Page not built yet."));
+      const e = codeEditEstimate(ctx.user.id, src.length);
+      if (!e) throw new HttpError(409, L("Aucun modèle utilisable pour retoucher la maquette.", "No usable model."));
+      return { ...e, label: L(`retouche de la page « ${page} » de la maquette ${a.direction}`, "code mockup edit") };
+    }
+    // Retrait pur : sans IA (seulement le repérage et le contrôle) ; jamais de bascule vers une retouche payante sans
+    // nouvel accord (voir run).
+    if (a.changes.every((c) => isRemoval(c.change))) return { maxMicro: 2 * locateMaxMicro() + checkMaxMicro(), label: L(`retrait sur l'image ${a.imageId} (sans IA d'images)`, `removal on image ${a.imageId}`) };
+    const max = editMaxMicro();
+    if (max == null) throw new HttpError(409, L("Le modèle des maquettes ne sait pas retoucher une zone précise.", "The mockup model cannot edit a precise area."));
+    return { maxMicro: max, label: L(`retouche de l'image ${a.imageId}`, `edit of image ${a.imageId}`) };
+  },
+  run: async (ctx, a) => {
+    const p = project(ctx);
+    let set = loadMockupSet(p.id);
+    const d = set?.directions.find((x) => x.key === a.direction), img = d?.images.find((i) => i.id === a.imageId);
+    if (!set || !d || !img) return { ok: false, summary: L(`Aucune image ${a.imageId} dans la maquette ${a.direction}.`, "No such mockup image.") };
+    if (d.mode === "code") return runCodeEdit(ctx, a, img.pages[0]);
+    // Version de départ : celle que le client préfère (une version précédente de CETTE image), sinon l'actuelle.
+    const versions = imageVersions(p.id, a.direction, a.imageId);
+    if (a.fromVersion && !versions[a.fromVersion - 1]) return { ok: false, summary: L(`L'image ${a.imageId} n'a que ${versions.length} version(s).`, "No such version."), internal: true };
+    const fromId = (a.fromVersion ? versions[a.fromVersion - 1] : undefined) ?? a.fromAssetId ?? img.assetId;
+    const src = fromId ? getAsset(fromId) : undefined;
+    const meta = src ? (() => { try { return JSON.parse(src.meta || "{}"); } catch { return {}; } })() : {};
+    if (!src || src.project_id !== p.id || src.deleted_at || (fromId !== img.assetId && (meta?.synaMockup?.image !== a.imageId || meta?.synaMockup?.direction !== a.direction)))
+      return { ok: false, summary: L(`Le fichier ${fromId ?? "?"} n'est pas une version de l'image ${a.imageId} de la maquette ${a.direction}.`, "Not a version of this image."), internal: true };
+    const original = await sharp(assetData(src)).png().toBuffer();
+    const { width: w = 1024, height: h = 1536 } = await sharp(original).metadata();
+    const jobId = getRun(ctx.runId)?.job_id ?? null;
+    const key = (k: string) => `syna:${ctx.runId}:mockup-edit-${k}:${a.direction}:${a.imageId}`;
+    const capOf = (micro: number) => (jobId ? jobSpentMicro(jobId) : 0) + micro;
+    // 1) Repérer les zones (et lire leurs textes).
+    const locate = async (img: Buffer, k: string) => (mockupToolDeps.locate ? mockupToolDeps.locate(img, a.changes)
+      : LocateSchema.parse(await withTrace({ jobId, projectId: p.id, step: "mockup-locate", costCapMicro: capOf(locateMaxMicro()) }, () => llmJson(locateCall({ userId: ctx.user.id, projectId: p.id, jobId, usageKey: key(k) }, img, a.changes), LocateSchema, { strict: true }))));
+    let located: Locate;
+    try {
+      located = await locate(original, "locate");
+      // Repérage manqué par hasard (essai réel : carte introuvable puis trouvée au second repérage) : un second essai.
+      if (boxesOf(located, a.changes.length, w, h).some((b) => !b)) located = await locate(original, "locate2");
+    } catch (e) { return { ok: false, summary: L(`Zones non repérées, rien n'a été retouché : ${(e as Error).message.slice(0, 160)}`, "Areas not located.") }; }
+    const boxes = boxesOf(located, a.changes.length, w, h);
+    const missing = a.changes.filter((_, i) => !boxes[i]).map((c) => c.zone);
+    if (missing.length) return { ok: false, summary: L(`Zone introuvable sur l'image, rien n'a été retouché : ${missing.join(" ; ")}.`, "Area not found."), hint: "Demande au client de préciser où se trouve cette zone ; aucune retouche n'a été payée." };
+    // 2) Retouche des seules zones (textes de la zone vérifiés mot pour mot dans les textes de la page).
+    const page = loadSiteCopy(p.id)?.pages[img.pages[0]];
+    const pageTexts = page ? page.sections.flatMap((x) => [x.title, x.text, x.button, ...x.items.flatMap((i) => [i.title, i.text])]).filter((t): t is string => !!t) : [];
+    const keep = a.changes.map((_, i) => exactTexts(located.zones.find((z) => z.n === i + 1)?.texts ?? [], pageTexts));
+    const okBoxes = boxes as Box[];
+    // Retrait pur : fait sans IA quand l'élément occupe seul sa bande (gratuit, rien d'autre ne bouge).
+    let removed: Buffer | null = null;
+    if (a.changes.every((c) => isRemoval(c.change))) {
+      removed = original;
+      for (const b of [...okBoxes].sort((x, y) => y.top - x.top)) { removed = removed ? await removeBand(removed, b) : null; if (!removed) break; }
+    }
+    const prompt = mockupEditPrompt(a.changes, keep, img.viewport, okBoxes, { w, h });
+    // Retrait annoncé sans IA mais impossible proprement : rien n'est payé de plus, le client décide.
+    if (a.changes.every((c) => isRemoval(c.change)) && !removed) {
+      return { ok: false, summary: L("Retrait impossible sans IA : d'autres éléments partagent ces lignes. Rien n'a été retouché ; une retouche par l'IA d'images serait payante.", "Removal not possible without AI."), hint: "Propose au client une retouche par l'IA d'images (mockup.edit avec une consigne qui n'est pas un simple retrait, ou dis-lui le prix d'une image) et attends son accord écrit." };
+    }
+    let edited: Buffer = removed ?? original;
+    if (!removed) try {
+      const route = mockupImageRoute();
+      const size = w > h ? "1536x1024" as const : w === h ? "1024x1024" as const : "1024x1536" as const;
+      edited = mockupToolDeps.maskEdit ? await mockupToolDeps.maskEdit(original, null, prompt)
+        : await withQuotedImageRoute(route, () => mockupMaskEdit({ userId: ctx.user.id, projectId: p.id, jobId, usageKey: key("paint") }, { image: original, prompt, model: route.model, size }));
+      edited = await sharp(edited).resize(w, h, { fit: "fill" }).png().toBuffer();
+    } catch (e) { return { ok: false, summary: L(`Retouche impossible : ${(e as Error).message.slice(0, 200)}`, "Edit failed."), hint: "Dis-le au client avec le coût réel ; ne relance rien sans son accord écrit." }; }
+    // Zone rendue noire (essai réel du 8 novembre) : la retouche est ratée, l'image d'avant reste en place.
+    const black: string[] = [];
+    if (!removed) for (const [i, b] of okBoxes.entries()) if ((await blackShare(edited, b)) > 0.2) black.push(a.changes[i].zone);
+    // Recollage des zones (une partie qui a besoin de plus de hauteur s'allonge, la suite de sa bande descend) ;
+    // une zone qui déborde sur du contenu voisin est en défaut.
+    const composed = removed ? { image: removed, failed: [], grown: 0 } : black.length ? null : await composeEdit(original, edited, okBoxes);
+    const cut = (composed?.failed ?? []).map((f) => `${a.changes[f.index].zone} (bord ${f.sides.join(", ")})`);
+    if (black.length || cut.length) {
+      const spentBad = all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key IN (?,?)", p.id, key("locate"), key("paint"))[0]?.c ?? 0;
+      const why = [...(black.length ? [`zone rendue en noir — ${black.join(" ; ")}`] : []), ...(cut.length ? [`contenu qui touche le bord de la zone, il serait coupé ou recouvrirait la partie voisine — ${cut.join(" ; ")}`] : [])].join(" ; ");
+      return { ok: false, summary: L(`Retouche RATÉE, rien n'a été remplacé (l'image d'avant reste en place) : ${why}. Coût réel : ${budgetPctText(ctx.user.id, spentBad, p.id).replace(/de votre budget/, "de ton budget")}.`, "Edit failed: black area."), hint: "Dis au client que la retouche est ratée et son coût réel ; ne relance rien sans son accord écrit." };
+    }
+    // 3) Seules les zones sont recollées sur l'image d'origine : rien d'autre ne change (la suite d'une bande peut
+    // seulement descendre, recopiée au pixel près, quand une partie retouchée a besoin de plus de hauteur).
+    const data = composed!.image;
+    const asset = await saveAsset({ projectId: p.id, userId: ctx.user.id, data, name: `maquette-${a.direction}-${a.imageId}-${img.viewport}-retouche.png`, mime: "image/png", role: "mockup", origin: "generated", meta: { synaMockup: { direction: a.direction, image: a.imageId, pages: img.pages, viewport: img.viewport, editedFrom: src.id, changes: a.changes } } });
+    set = attachImage(set, a.direction, { id: img.id, viewport: img.viewport, pages: img.pages, assetId: asset.id }).set;
+    saveMockupSet(p.id, set);
+    let check = await checkMockupImage(ctx, p.id, a.direction, img, data, set.pages);
+    // Relecture des zones retouchées : un texte qui y était et que la demande ne retire pas doit y être encore.
+    try {
+      const after = mockupToolDeps.locate ? await mockupToolDeps.locate(data, a.changes)
+        : LocateSchema.parse(await withTrace({ jobId, projectId: p.id, step: "mockup-locate", costCapMicro: capOf(locateMaxMicro()) }, () => llmJson(locateCall({ userId: ctx.user.id, projectId: p.id, jobId, usageKey: key("verify") }, data, a.changes), LocateSchema, { strict: true })));
+      const lost = missingTexts(a.changes, keep, after);
+      if (lost.length) check = { ok: false, problems: [...(check?.problems ?? []), `texte disparu : ${lost.map((t) => `« ${t} »`).join(", ")}`], toVerify: check?.toVerify ?? [] };
+    } catch { check = check ? { ...check, toVerify: [...check.toVerify, "textes des zones retouchées non relus"] } : null; }
+    // Retouche ratée (essai réel du 8 novembre : bouton coupé en un liseré sur la partie suivante) : l'image d'avant
+    // reste l'image de la maquette ; la retouche ratée reste rangée comme version, jamais imposée.
+    const failedEdit = !!check && !check.ok;
+    if (failedEdit) { set = { ...set, directions: set.directions.map((x) => (x.key === a.direction ? { ...x, images: x.images.map((i) => (i.id === img.id ? { ...i, assetId: img.assetId, check: img.check } : i)) } : x)) }; saveMockupSet(p.id, set); }
+    else if (check) { set = { ...set, directions: set.directions.map((x) => (x.key === a.direction ? { ...x, images: x.images.map((i) => (i.id === img.id ? { ...i, check: check! } : i)) } : x)) }; saveMockupSet(p.id, set); }
+    const keys = [key("locate"), key("locate2"), key("paint"), key("verify"), `syna:${ctx.runId}:mockup-check:${a.direction}:${a.imageId}`];
+    const spent = all<{ c: number | null }>(`SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key IN (${keys.map(() => "?").join(",")})`, p.id, ...keys)[0]?.c ?? 0;
+    const spentText = budgetPctText(ctx.user.id, spent, p.id).replace(/de votre budget/, "de ton budget");
+    const checkText = !check ? "contrôle automatique impossible, à regarder" : check.ok ? "contrôle automatique de la mise en page : rien à signaler" : `RATÉE au contrôle automatique : ${check.problems.join(" ; ")} ; l'image d'avant reste en place`;
+    const label = `${img.pages.map((k) => pageByKey(set!.pages, k)?.fr ?? k).join(", ")} — ${img.viewport === "desktop" ? "ordinateur" : "téléphone"}${failedEdit ? " (retouche ratée, non retenue)" : ""}`;
+    return {
+      ok: !!check?.ok,
+      summary: L(`Image ${a.imageId} retouchée (seulement : ${a.changes.map((c) => c.zone).join(" ; ")} ; le reste est identique${removed ? ` ; retrait fait sans IA : l'élément a été enlevé et la suite de sa colonne est remontée, sans changement` : ""}${composed!.grown ? ` ; la partie retouchée a pris ${composed!.grown} px de plus en hauteur, la suite de sa colonne est descendue d'autant, sans changement` : ""}). ${checkText}. Coût réel : ${spentText}.`, `Image ${a.imageId} edited.`),
+      hint: "L'image retouchée t'est JOINTE à ta prochaine étape : regarde les zones retouchées et dis au client, honnêtement, si chaque demande est faite et si les textes sont justes. Ne dis jamais que tu ne peux pas la voir. Une retouche ratée est dite ratée ; rien n'est relancé sans son accord.",
+      data: { mockups: [{ n: 1, direction: `${a.direction} · ${a.imageId}`, name: d.name, label, assetId: asset.id, href: assetUrl({ id: asset.id }) }], editedFrom: src.id },
+      changes: [{ module: "fichiers", object: `maquette ${a.direction} › image ${a.imageId}`, summary: L(`retouchée : ${a.changes.map((c) => c.zone).join(" ; ")}`, "edited"), before: { assetId: src.id }, after: { assetId: asset.id }, verified: true }],
     };
   },
 };
@@ -168,7 +721,7 @@ const attachTool: AgentTool<AttachArgs> = {
     const cov = coverageOf(read.directions.find((d) => d.key === a.direction)!, read.pages);
     return {
       ok: !!img && img.assetId === a.assetId,
-      summary: L(`Image ${next.image.id} rangée dans la maquette ${a.direction}. ${cov.complete ? "La maquette couvre toutes les pages." : `Il manque encore ${cov.missing.length} page(s) ou version(s).`}`, `Image stored in mockup ${a.direction}.`),
+      summary: L(`Image ${next.image.id} rangée dans la maquette ${a.direction}. ${cov.complete ? `La maquette couvre toutes les pages principales ; ${new Set(cov.derived.map((x) => x.page)).size} page(s) simple(s) seront codées dans son style à l'étape 7, sans image à elles.` : `Il manque encore ${cov.missing.length} page(s) ou version(s).`}`, `Image stored in mockup ${a.direction}.`),
       data: { image: next.image, complete: cov.complete, manquantes: cov.missing.slice(0, 40) },
       changes: [{ module: "site", object: `maquette ${a.direction} › image ${next.image.id}`, summary: `${a.viewport} : ${a.pages.join(", ")}`, after: img ?? null, verified: !!img && img.assetId === a.assetId }],
     };
@@ -177,22 +730,36 @@ const attachTool: AgentTool<AttachArgs> = {
 
 const chooseTool: AgentTool<{ direction: "A" | "B" | "C" }> = {
   name: "mockup.choose", module: "site", kind: "write", needsProject: true,
-  description: "Étape 6 : enregistre la maquette choisie PAR LE CLIENT (jamais à sa place). Refusé tant que la maquette ne couvre pas toutes les pages en version ordinateur et téléphone (la liste des manques est renvoyée). Gratuit.",
+  description: "Étape 6 : enregistre la maquette choisie PAR LE CLIENT (jamais à sa place). Maquette en code : possible dès que son accueil est construit (les autres pages se construisent ensuite pour elle seule). Ancienne maquette en images : refusé tant qu'elle ne couvre pas toutes les pages principales (la liste des manques est renvoyée). Gratuit.",
   args: z.object({ direction: KEY }).strict(),
   run: (ctx, a) => {
     const p = project(ctx), set = loadMockupSet(p.id);
     const d = set?.directions.find((x) => x.key === a.direction);
     if (!set || !d) return { ok: false, summary: L("Maquette introuvable.", "Mockup not found.") };
     const cov = coverageOf(d, set.pages);
-    if (!cov.complete) return { ok: false, summary: L(`La maquette ${a.direction} n'est pas complète : ${cov.missing.length} page(s) ou version(s) sans image.`, `Mockup ${a.direction} is incomplete.`), data: { manquantes: cov.missing.slice(0, 40), inconnues: cov.unknown } };
+    // Maquette en code : le client choisit sur l'accueil construit (ordinateur et téléphone) ; les autres pages
+    // principales sont construites ensuite pour la seule maquette choisie (on ne paie pas trois sites complets).
+    const homeReady = d.mode === "code" && (["desktop", "phone"] as const).every((v) => d.images.some((i) => i.viewport === v && i.pages.includes("home") && i.status === "ready"));
+    if (!cov.complete && !homeReady) return { ok: false, summary: d.mode === "code" ? L(`L'accueil de la maquette ${a.direction} n'est pas encore construit (mockup.generate pages ["home"]).`, "Build the home page first.") : L(`La maquette ${a.direction} n'est pas complète : ${cov.missing.length} page(s) ou version(s) sans image.`, `Mockup ${a.direction} is incomplete.`), data: { manquantes: cov.missing.slice(0, 40), inconnues: cov.unknown } };
     saveMockupSet(p.id, { ...set, chosen: a.direction });
     const ok = loadMockupSet(p.id)?.chosen === a.direction;
-    try { updateJourney(ctx.conversationId, (j) => setStep(j, 6, "done", `maquette ${a.direction} « ${d.name} »`)); } catch { /* fil sans parcours */ }
-    return { ok, summary: L(`Maquette ${a.direction} « ${d.name} » choisie par le client.`, `Mockup ${a.direction} chosen.`), changes: [{ module: "site", object: "maquette choisie", summary: `${set.chosen ?? "aucune"} → ${a.direction}`, before: set.chosen ?? null, after: a.direction, verified: ok }] };
+    const rest = [...new Set(cov.missing.map((m) => m.label))];
+    try { updateJourney(ctx.conversationId, (j) => setStep(j, 6, cov.complete ? "done" : "doing", `maquette ${a.direction} « ${d.name} »${cov.complete ? "" : ", autres pages à construire"}`)); } catch { /* fil sans parcours */ }
+    return { ok, summary: L(`Maquette ${a.direction} « ${d.name} » choisie par le client.${cov.complete ? "" : ` Pages principales encore à construire dans ce style : ${rest.join(", ")}.`}`, `Mockup ${a.direction} chosen.`), ...(cov.complete ? {} : { hint: "Propose maintenant de construire ces pages (mockup.copy pour leurs textes s'ils manquent, puis mockup.generate de cette maquette) : annonce le coût probable donné par le Studio et attends l'accord écrit." }), changes: [{ module: "site", object: "maquette choisie", summary: `${set.chosen ?? "aucune"} → ${a.direction}`, before: set.chosen ?? null, after: a.direction, verified: ok }] };
   },
 };
 
-type CodeArgs = { maxRounds?: number };
+type CodeArgs = { maxRounds?: number; pages?: string[] };
+/**
+ * Pages codées : toutes, ou seulement celles demandées (demande du propriétaire du 8 novembre : « commence par coder
+ * juste la page d'accueil et on voit ce que ça donne ») ; seules les images de maquette de ces pages sont lues.
+ */
+function codeScope(set: MockupSet, d: MockupSet["directions"][number], pages?: string[]) {
+  const keys = pages?.length ? pages.filter((k) => pageByKey(set.pages, k)) : null;
+  const scoped = keys ? set.pages.filter((x) => keys.includes(x.key)) : set.pages;
+  const images = d.images.filter((i) => i.status === "ready" && (!keys || i.pages.some((k) => keys.includes(k))));
+  return { pages: scoped, images, keys };
+}
 function codePlan(ctx: ToolContext) {
   const p = project(ctx), set = loadMockupSet(p.id);
   const d = set?.chosen ? set.directions.find((x) => x.key === set.chosen) : null;
@@ -203,24 +770,36 @@ function codePlan(ctx: ToolContext) {
 }
 const codeTool: AgentTool<CodeArgs> = {
   name: "site.code_from_mockup", module: "site", kind: "generate", needsProject: true,
-  description: "Étape 7 : code le site À L'IDENTIQUE de la maquette choisie (en-tête, pied, toutes les pages, sections modifiables dans le Studio, par SINA et dans Shopify, produits reliés à l'onglet Produits), puis boucle de contrôle : captures comparées à la maquette, corrections (maxRounds tours au plus, 3 par défaut), débordements à 5 largeurs, liens, Theme Check, SEO. Payant, jamais au-delà du devis. Le résultat est une nouvelle version INACTIVE du site avec un rapport page par page (les pages ratées sont dites ratées) ; le client décide ensuite (site.use_version). Tâche de fond.",
-  args: z.object({ maxRounds: z.number().int().min(1).max(4).optional() }).strict(),
+  description: "Étape 7 : code le site À L'IDENTIQUE de la maquette choisie (en-tête, pied, toutes les pages, sections modifiables dans le Studio, par SINA et dans Shopify, produits reliés à l'onglet Produits), puis boucle de contrôle : captures comparées à la maquette, corrections (maxRounds tours au plus, 3 par défaut). pages : seulement ces pages (ex. [\"home\"] pour voir d'abord le rendu de l'accueil, avec l'en-tête et le pied), sinon toutes ; débordements à 5 largeurs, liens, Theme Check, SEO. Payant, jamais au-delà du devis. Le résultat est une nouvelle version INACTIVE du site avec un rapport page par page (les pages ratées sont dites ratées) ; le client décide ensuite (site.use_version). Tâche de fond.",
+  args: z.object({ maxRounds: z.number().int().min(1).max(4).optional(), pages: z.array(z.string().max(60)).max(40).optional() }).strict(),
   estimate: (ctx, a) => {
     const { p, set, d } = codePlan(ctx);
     const units = callUnits(p.userId);
     if (!units) throw new HttpError(409, L("Coût impossible à encadrer (modèle ou tarif inconnu) : aucun appel ne sera fait.", "Cost cannot be bounded: no call will be made."));
-    const ready = d.images.filter((i) => i.status === "ready");
-    const written = set.pages.filter((x) => !x.variantOf && !x.template.startsWith("customers/")).length;
-    const views = set.pages.reduce((n, x) => n + x.viewports.length, 0);
-    return { maxMicro: step7MaxMicro({ images: ready.length, pages: written, views, maxRounds: a.maxRounds }, units), label: L("site codé d'après la maquette", "site coded from the mockup") };
+    const scope = codeScope(set, d, a.pages);
+    if (a.pages?.length && !scope.pages.length) throw new HttpError(409, L("Aucune de ces pages n'existe (clés de mockup.pages).", "No such page."));
+    const ready = scope.images;
+    const writtenPages = scope.pages.filter((x) => !x.variantOf && !x.template.startsWith("customers/"));
+    const written = writtenPages.length;
+    const views = scope.pages.reduce((n, x) => n + x.viewports.length, 0);
+    const worst = step7MaxMicro({ images: ready.length, pages: written, views, maxRounds: a.maxRounds }, units);
+    // Coût probable annoncé et plafond raisonnable (essai réel du 8 novembre : plafond au pire ≈ 1 350 € pour Brindi).
+    const typical = (mockupToolDeps.callTypicalMicro ?? step7CallTypicalMicro)(p.userId);
+    if (!typical) return { maxMicro: worst, label: L("site codé d'après la maquette", "site coded from the mockup") };
+    const sections = writtenPages.reduce((n, x) => n + Math.max(1, x.sections.length - 2), 0) + 2; // en-tête et pied une fois
+    const mockupViews = coverageOf(d, scope.pages).covered.length;
+    const probable = step7ProbableMicro({ images: ready.length, sections, views: mockupViews }, typical);
+    return { maxMicro: Math.min(worst, Math.ceil(probable * STEP7_CAP_FACTOR)), probableMicro: probable, label: L("site codé d'après la maquette", "site coded from the mockup") };
   },
   run: async (ctx, a) => {
     const { p, d } = codePlan(ctx);
     assertSectionGeneration(ctx.user, p.id);
     const est = await codeTool.estimate!(ctx, a);
-    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: MOCKUP_CODE_JOB, label: L("Site codé d'après la maquette (SINA)", "Site coded from the mockup (SINA)"), payload: { projectId: p.id, direction: d.key, capMicro: est.maxMicro, maxRounds: a.maxRounds, conversationId: ctx.conversationId }, maxAttempts: 2, idempotencyKey: `syna:${ctx.runId}:mockup-code:${d.key}` });
+    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: MOCKUP_CODE_JOB, label: L("Site codé d'après la maquette (SINA)", "Site coded from the mockup (SINA)"), payload: { projectId: p.id, direction: d.key, capMicro: est.maxMicro, maxRounds: a.maxRounds, conversationId: ctx.conversationId, ...(a.pages?.length ? { pages: a.pages } : {}) }, maxAttempts: 2, idempotencyKey: `syna:${ctx.runId}:mockup-code:${d.key}:${(a.pages ?? []).join(",")}` });
     try { updateJourney(ctx.conversationId, (j) => setStep(j, 7, "doing")); } catch { /* fil sans parcours */ }
-    return { ok: true, summary: L(`Codage du site d'après la maquette ${d.key} lancé ; SINA relira le rapport page par page.`, `Coding the site from mockup ${d.key} started.`), jobs: [job.id], data: { maquette: d.key, plafondMicro: est.maxMicro } };
+    // Prix exacts dans le résultat (essai réel du 8 novembre : SINA a annoncé « au plus 0,4 % » au lieu de ~9 %).
+    const pct = (m: number) => budgetPctText(ctx.user.id, m, p.id).replace(/de votre budget/, "de ton budget");
+    return { ok: true, summary: L(`Codage ${a.pages?.length ? `des pages ${a.pages.join(", ")}` : "du site"} d'après la maquette ${d.key} lancé${est.probableMicro ? ` (coût probable ${pct(est.probableMicro)}, plafond ${pct(est.maxMicro)})` : ` (plafond ${pct(est.maxMicro)})`} ; SINA relira le rapport page par page.`, `Coding the site from mockup ${d.key} started.`), jobs: [job.id], data: { maquette: d.key, plafondMicro: est.maxMicro, probableMicro: est.probableMicro ?? null } };
   },
 };
 
@@ -237,5 +816,144 @@ const reportTool: AgentTool<{}> = {
   },
 };
 
+/** Rapport du dernier site codé d'après la maquette (version, rapport) ; null sinon. */
+function step7Report(projectId: string): { versionId: string; number: number; direction: "A" | "B" | "C"; report: Step7Report } | null {
+  const row = all<{ value: string }>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key=? AND state='active' ORDER BY updated_at DESC LIMIT 1", projectId, STEP7_REPORT_KEY)[0];
+  try { return row ? JSON.parse(row.value) : null; } catch { return null; }
+}
+/** Coût maximal d'une photo nouvelle des maquettes en code (photo du site en haute définition, sans référence). */
+const photoUnitMicro = () => (codeBuildDeps.photoUnit ? codeBuildDeps.photoUnit() : hdUnit(1));
+const hdUnit = (refs: number) => { try { return photoRequestMaxMicro(mockupImageRoute(), { prompt: "x".repeat(PUBLICATION_PROMPT_MAX_BYTES), references: refs, aspect: "16:9", quality: "high" }); } catch { return null; } };
+/** Photos à recréer : celles dont la section existe dans le site codé (essai réel : le journal, non codé faute de budget, aurait eu 3 photos payées sans place). */
+const slotsOf = (r: Step7Report, pages?: string[], spec?: ThemeSpec | null, sections?: string[]) => (r.imageSlots ?? []).filter((s) => s.imageId && s.box && (!pages?.length || pages.includes(s.page)) && (!sections?.length || sections.some((n) => n.toLowerCase() === s.section.toLowerCase()))
+  && (!spec || Object.values((s.template.startsWith("group:") ? spec.groups[s.template.slice(6) as "header" | "footer"] : spec.templates[s.template])?.sections ?? {}).some((x) => x.type === s.type)));
+
+/** Dernière photo recréée pour cet emplacement (page, section, rang), si elle existe encore dans les Fichiers. */
+function reusablePhoto(projectId: string, slot: ImageSlot): string | null {
+  const rows = all<{ id: string; meta: string }>("SELECT id, meta FROM assets WHERE project_id=? AND deleted_at IS NULL AND role='site' ORDER BY created_at DESC", projectId);
+  for (const r of rows) { try { const m = JSON.parse(r.meta || "{}").synaSiteImage; if (m && m.page === slot.page && m.type === slot.type && m.index === slot.index) return r.id; } catch { /* méta illisible */ } }
+  return null;
+}
+/** Pose une photo dans le n-ième réglage image de sa section (section d'abord, puis ses blocs dans l'ordre). */
+function placePhoto(spec: ThemeSpec, slot: ImageSlot, assetId: string, projectId: string, themeFileName: (a: NonNullable<ReturnType<typeof getAsset>>, hint?: string) => string): { spec: ThemeSpec | null; reason?: string } {
+  const where = slot.template.startsWith("group:") ? spec.groups[slot.template.slice(6) as "header" | "footer"] : spec.templates[slot.template];
+  const sid = where ? Object.keys(where.sections).find((k) => where.sections[k].type === slot.type) : undefined;
+  const schema = sid ? sectionSchema(spec, slot.type) : null;
+  const targets: { block?: string; key: string }[] = [];
+  if (sid && schema) {
+    for (const st of schema.settings ?? []) if ((st as { type?: string }).type === "image_picker") targets.push({ key: (st as { id: string }).id });
+    const sec = where!.sections[sid];
+    for (const bid of sec.block_order ?? Object.keys(sec.blocks ?? {})) {
+      const bt = sec.blocks?.[bid]?.type;
+      const bs = (schema.blocks ?? []).find((x: { type: string }) => x.type === bt) as { settings?: { type?: string; id: string }[] } | undefined;
+      for (const st of bs?.settings ?? []) if (st.type === "image_picker") targets.push({ block: bid, key: st.id });
+    }
+  }
+  const t = targets[slot.index];
+  if (!sid || !t) return { spec: null, reason: "emplacement introuvable" };
+  const res = applyOps(spec, [{ op: "use_media", template: slot.template, section: sid, ...(t.block ? { block: t.block } : {}), key: t.key, assetId }], { overrideLocks: true, mediaFile: (id) => { const x = getAsset(id); return x && x.project_id === projectId ? { filename: themeFileName(x, x.role ?? "media") } : null; } });
+  return res.rejected.length ? { spec: null, reason: res.rejected[0].reason } : { spec: res.spec };
+}
+
+/**
+ * Étape 7 (demande du propriétaire du 8 novembre) : chaque photo du site codé est recréée en haute définition par l'IA
+ * d'images des maquettes (OpenAI), d'après sa zone sur la maquette choisie (même cadrage, mêmes objets), puis posée à
+ * sa place dans le thème (réglage image de la section). Une nouvelle version du site est enregistrée.
+ */
+const siteImagesTool: AgentTool<{ pages?: string[]; sections?: string[]; redo?: boolean }> = {
+  name: "site.images", module: "site", kind: "generate", needsProject: true,
+  description: "Étape 7, APRÈS le codage du site (site.code_from_mockup) : recrée en haute définition, avec l'IA d'images des maquettes (OpenAI), chaque photo du site codé à l'identique de la maquette choisie (même cadrage, mêmes objets, mêmes couleurs), puis la pose à sa place dans le thème. pages : seulement ces pages (clés de mockup.pages), sinon toutes ; sections : seulement les photos de ces sections (noms du rapport) ; une photo déjà recréée pour le même emplacement est reposée gratuitement, sauf redo: true (refaire des photos ratées). Payant (une image par photo nouvelle) : annonce le prix et attends l'accord écrit.",
+  args: z.object({ pages: z.array(z.string().max(60)).max(30).optional(), sections: z.array(z.string().max(80)).max(20).optional(), redo: z.boolean().optional() }).strict(),
+  estimate: (ctx, a) => {
+    const p = project(ctx), r = step7Report(p.id);
+    if (!r) throw new HttpError(409, L("Le site n'est pas encore codé d'après la maquette (site.code_from_mockup d'abord).", "Code the site from the mockup first."));
+    const all0 = slotsOf(r.report, a.pages, themeVersion(p.id, r.versionId)?.spec, a.sections);
+    const n = all0.filter((s) => a.redo || !reusablePhoto(p.id, s)).length;
+    if (!all0.length) throw new HttpError(409, L("Aucune photo à recréer sur ces pages.", "No photo to recreate on these pages."));
+    // Toutes déjà recréées : reposées gratuitement.
+    if (!n) return { maxMicro: 0, probableMicro: 0, label: L(`${all0.length} photo(s) déjà recréée(s), reposée(s) sans frais`, "photos reused") };
+    const unit = (mockupToolDeps.imageMaxMicro ?? hdUnit)(3);
+    if (unit == null) throw new HttpError(409, L("Aucun modèle d'images utilisable pour les photos du site.", "No usable image model."));
+    // Coût probable : une image OpenAI coûte en pratique environ 0,75 fois son plafond (essais réels du 8 novembre :
+    // 0,081 $ payés pour 0,112 $ au plus).
+    return { maxMicro: n * unit, probableMicro: Math.round(n * unit * 0.75), label: L(`${n} photo(s) du site en haute définition`, `${n} site photo(s) in high definition`) };
+  },
+  run: async (ctx, a) => {
+    const p = project(ctx), r = step7Report(p.id), set = loadMockupSet(p.id);
+    if (!r || !set) return { ok: false, summary: L("Le site n'est pas encore codé d'après la maquette.", "Site not coded yet.") };
+    const { themeFileName } = await import("../../engine/shop");
+    const cur = themeVersion(p.id, r.versionId);
+    if (!cur) return { ok: false, summary: L("Version du site codé introuvable.", "Coded site version not found.") };
+    const d = set.directions.find((x) => x.key === r.direction);
+    const refs = imageReferences(p);
+    const jobId = getRun(ctx.runId)?.job_id ?? null;
+    const mockups = new Map<string, Buffer>();
+    const done: { slot: string; assetId: string }[] = [], failed: string[] = [], unplaced: string[] = [], reused: string[] = [];
+    let spec = cur.spec;
+    for (const slot of slotsOf(r.report, a.pages, cur.spec, a.sections)) {
+      const label = `${pageByKey(set.pages, slot.page)?.fr ?? slot.page} › ${slot.section} › photo ${slot.index + 1}`;
+      try {
+        // Photo déjà recréée pour cet emplacement (même page, même section, même rang) : réutilisée gratuitement, sauf si
+        // le client demande de la refaire (essai réel du 8 novembre : le site recodé avait perdu ses 17 photos payées).
+        const prev = a.redo ? null : reusablePhoto(p.id, slot);
+        if (prev) {
+          const placedPrev = placePhoto(spec, slot, prev, p.id, themeFileName);
+          if (placedPrev.spec) { spec = placedPrev.spec; reused.push(label); } else unplaced.push(`${label}${placedPrev.reason ? ` (${placedPrev.reason})` : ""}`);
+          done.push({ slot: label, assetId: prev });
+          continue;
+        }
+        const img = d?.images.find((i) => i.id === slot.imageId);
+        const asset0 = img?.assetId ? getAsset(img.assetId) : undefined;
+        if (!asset0) { failed.push(`${label} : image de maquette introuvable`); continue; }
+        if (!mockups.has(slot.imageId!)) mockups.set(slot.imageId!, assetData(asset0));
+        const full = mockups.get(slot.imageId!)!;
+        const meta = await sharp(full).metadata();
+        const W = meta.width ?? 1024, H = meta.height ?? 1536, b = slot.box!;
+        const region = { left: Math.max(0, Math.floor(b.x * W)), top: Math.max(0, Math.floor(b.y * H)), width: Math.max(8, Math.min(W - Math.floor(b.x * W), Math.ceil(b.w * W))), height: Math.max(8, Math.min(H - Math.floor(b.y * H), Math.ceil(b.h * H))) };
+        const scene = await sharp(full).extract(region).resize({ width: 1024, height: 1024, fit: "inside" }).png().toBuffer();
+        // Logo seulement pour une photo d'emballage (essai réel du 8 novembre : « Brindi » ajouté sur des tasses, en coin
+        // d'une photo de menthe et dans le vide à côté de la tasse de l'ouverture, avec le logo envoyé pour chaque photo).
+        const pack = /sachet|emballage|paquet|étiquette|etiquette|boîte|boite|logo|pochette|bocal|flacon/i.test(slot.description);
+        const logo = pack ? refs.logo : null;
+        const prompt = siteImageHdPrompt(slot, { name: p.brand?.name ?? p.name, logo: !!logo, product: !!refs.product });
+        const aspect = hdAspect(slot.ratio ?? `${region.width}:${region.height}`);
+        const data = mockupToolDeps.generateImage ? await mockupToolDeps.generateImage(prompt, { logo, product: refs.product })
+          : await withQuotedImageRoute(mockupImageRoute(), () => aiSiteImageHd({ userId: ctx.user.id, projectId: p.id, jobId, usageKey: `syna:${ctx.runId}:site-image:${slot.page}:${slot.type}:${slot.index}` }, { prompt, scene, logo, product: refs.product, aspect }));
+        const jpeg = data[0] === 0xff && data[1] === 0xd8;
+        const asset = await saveAsset({ projectId: p.id, userId: ctx.user.id, data, name: `site-${slot.page}-${slot.type.replace(/^es-custom-/, "")}-${slot.index + 1}.${jpeg ? "jpg" : "png"}`, mime: jpeg ? "image/jpeg" : "image/png", role: "site", origin: "generated", meta: { synaSiteImage: { ...slot, prompt: undefined } } });
+        const placed = placePhoto(spec, slot, asset.id, p.id, themeFileName);
+        if (placed.spec) spec = placed.spec; else unplaced.push(`${label}${placed.reason ? ` (${placed.reason})` : ""}`);
+        done.push({ slot: label, assetId: asset.id });
+      } catch (e) { failed.push(`${label} : ${(e as Error).message.slice(0, 160)}`); }
+    }
+    let version: { id: string; number: number } | null = null;
+    if (done.length && !validateSpec(spec).length) {
+      const v = saveThemeVersion(p.id, spec, L(`Photos du site recréées en haute définition d'après la maquette ${r.direction} (SINA, étape 7)`, `Site photos recreated in high definition (SINA, step 7)`), "ai", { syna: { step: 7, images: done.length } }, undefined, { activate: false });
+      version = { id: v.id, number: v.number };
+      remember(p.id, { kind: "artifact", key: STEP7_REPORT_KEY, value: JSON.stringify({ ...r, versionId: v.id, number: v.number }), source: "local", origin: "system" });
+    }
+    const keys = all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key LIKE ?", p.id, `syna:${ctx.runId}:site-image:%`)[0]?.c ?? 0;
+    const spentText = budgetPctText(ctx.user.id, keys, p.id).replace(/de votre budget/, "de ton budget");
+    return {
+      ok: done.length > 0 && !failed.length && !unplaced.length,
+      summary: L(`${done.length - reused.length} photo(s) du site recréée(s) en haute définition${reused.length ? `, ${reused.length} déjà faite(s) reposée(s) sans frais` : ""}${version ? `, posée(s) dans la version ${version.number} du site` : ""}.${unplaced.length ? ` Non posée(s) (emplacement introuvable) : ${unplaced.join(" ; ")}.` : ""}${failed.length ? ` Ratée(s) : ${failed.join(" | ")}.` : ""} Coût réel : ${spentText}.`, `${done.length} site photo(s) recreated.`),
+      hint: "Les photos sont créées par l'IA d'images : regarde-les dans l'aperçu du site avant d'en parler ; une photo ratée est dite ratée ; rien n'est relancé sans accord écrit.",
+      data: { version, photos: done.slice(0, 40), nonPosees: unplaced, ratees: failed },
+      changes: done.map((x) => ({ module: "fichiers", object: x.slot, summary: L("photo du site en haute définition", "site photo in high definition"), after: { assetId: x.assetId }, verified: true })),
+    };
+  },
+};
+
 /** Outils à ajouter au registre (src/lib/syna-agent/tools/index.ts). */
-export const mockupCodeTools: AgentTool[] = [pagesTool, prepareTool, generateTool, attachTool, chooseTool, codeTool, reportTool];
+const photoRejectTool: AgentTool<{ assetIds: string[]; reason: string }> = {
+  name: "site.photo_reject", module: "site", kind: "write", needsProject: true,
+  description: "Étapes 6 et 7 (gratuit) : écarte POUR TOUJOURS des photos du site jugées ratées (mot ou logo écrit dans la photo hors emballage, objet coupé, personne…) : elles ne sont plus proposées aux maquettes ni au site. Les fichiers restent dans les Fichiers. Les pages qui les montrent gardent la photo jusqu'à leur reconstruction (dis-le au client).",
+  args: z.object({ assetIds: z.array(z.string().max(60)).min(1).max(30), reason: z.string().min(3).max(200) }).strict(),
+  run: (ctx, a) => {
+    const p = project(ctx);
+    const done = rejectPhotos(p.id, a.assetIds, a.reason);
+    return { ok: done.length === a.assetIds.length, summary: L(`${done.length} photo(s) écartée(s) pour toujours (${a.reason}).${done.length < a.assetIds.length ? ` Introuvable(s) : ${a.assetIds.filter((x) => !done.includes(x)).join(", ")}.` : ""}`, `${done.length} photo(s) rejected.`), changes: done.map((id) => ({ module: "fichiers", object: `photo ${id}`, summary: L("écartée (ratée)", "rejected"), after: { rejected: true }, verified: !photoLibrary(p.id).some((x) => x.id === id) })) };
+  },
+};
+
+export const mockupCodeTools: AgentTool[] = [pagesTool, copyTool, copyEditTool, prepareTool, generateTool, editTool, attachTool, chooseTool, codeTool, reportTool, siteImagesTool, photoRejectTool, photosCheckTool];

@@ -15,6 +15,7 @@ import { peopleAllowedFor } from "../people-policy";
  * Brief de génération structuré en 16 points (objectif → critères de validation), jamais « une belle pub ».
  */
 import { all, id, now, one, run } from "../db";
+import { familyArtUniverse, loadFamilyChoice } from "../syna-agent/section-families";
 import type { Project } from "../projects";
 import { palette, brandTypo } from "../engine/images";
 import { loadImageGuide, share, type ImageCreativeGuide, type ImagePurpose } from "./image-guide";
@@ -134,14 +135,16 @@ export function saveArtDirection(projectId: string, ad: ArtDirection, source: "u
 /** Direction artistique du projet : celle enregistrée, sinon définie à partir du projet puis enregistrée. */
 export function artDirectionFor(p: Project, o: { refresh?: boolean } = {}): ArtDirection {
   const saved = !o.refresh ? loadArtDirection(p.id) : null;
-  const inputHash = stableHash("image-art", { identity: p.brand, strategy: p.strategy, product: p.product, services: p.services, people: peopleAllowedFor(p) });
+  const fam = loadFamilyChoice(p.id);
+  const inputHash = stableHash("image-art", { identity: p.brand, strategy: p.strategy, product: p.product, services: p.services, people: peopleAllowedFor(p), family: fam ? `${fam.family}:${fam.style}` : null });
   if (saved?.inputHash === inputHash) return saved;
   const t = subjectText(p);
   const list = UNIVERSES.find((u) => u.when.test(t))?.list ?? GENERIC;
   const used = universesUsedElsewhere(p);
   // Univers le moins utilisé ailleurs dans le même secteur ; à égalité, choix stable propre au projet.
   const seed = [...p.id].reduce((s, c) => s + c.charCodeAt(0), 0);
-  const u = [...list].sort((a, b) => (used.get(a.id) ?? 0) - (used.get(b.id) ?? 0) || ((seed + list.indexOf(a)) % list.length) - ((seed + list.indexOf(b)) % list.length))[0];
+  // Famille « Moderne » choisie par le client : ses images suivent la charte de la famille (consigne du 9 novembre 2026).
+  const u = familyArtUniverse(fam, { people: peopleAllowedFor(p) }) ?? [...list].sort((a, b) => (used.get(a.id) ?? 0) - (used.get(b.id) ?? 0) || ((seed + list.indexOf(a)) % list.length) - ((seed + list.indexOf(b)) % list.length))[0];
   const pal = palette(p);
   const typo = brandTypo(p);
   const guide = loadImageGuide();

@@ -32,7 +32,57 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 - **Logos : jamais aucune direction.** Qwen-Image 3.0 Pro dessine ; si le contrôle juge le rendu insuffisant, OpenAI
   (ChatGPT) prend le relais ; le client finit toujours avec au moins un logo (le meilleur, signalé s'il n'est pas validé).
 - **Images 100 % IA, avec Qwen-Image 3.0 Pro** (pas ChatGPT, jugé trop cher ; pas de texte posé en local à la place).
+  **Exception : maquettes de site de SINA** (étape 6) avec **OpenAI GPT Image 2.5 Flare** (décision du 8 novembre 2026, après
+  comparaison réelle : Qwen abîmait les textes de la page, OpenAI les écrivait juste). Les textes du site sont écrits
+  AVANT la maquette (`mockup.copy`, sur l'angle choisi et son émotion) et posés lettre pour lettre sur l'image.
+  Seules les pages principales ont une maquette (accueil, pages clés, menu, panier) ; les pages simples sont codées à
+  l'étape 7 dans le style de la maquette, sans image à elles. **Photos du site codé** (étape 7, `site.images`) : toutes
+  recréées en haute définition par le même modèle OpenAI, à l'identique de la maquette (décision du 8 novembre 2026).
+  Corriger un détail d'une maquette = retouche localisée (`mockup.edit`), jamais une image refaite en entier.
+  **Maquettes en code** (décision du 8 novembre 2026, remplacée le 9 novembre par le thème sur mesure ci-dessous ; gardée pour les projets déjà commencés, `src/lib/syna-agent/mockup-code/code-*.ts`) :
+  Claude construit chaque page en HTML/CSS, photos créées une fois et partagées, contrôle automatique gratuit. Règles
+  du propriétaire : ouverture de l'accueil = **grande photo pleine** avec le titre dessus ; **jamais deux parties de même
+  disposition à la suite** ; **aucun vide** (pas de grandes marges, pas de colonne vide) ; **un thème vivant** ;
+  **jamais une photo en doublon** (ni deux fois dans une page, ni d'une page à l'autre ; seule la photo d'un produit
+  revient sur la carte ou la fiche de ce même produit) ; photos ratées (texte ou logo dedans, bandes blanches) écartées.
   Consignes à Qwen **en français**, concrètes (scène, objets, lumière), seuls les textes voulus entre guillemets.
+- **Thème sur mesure** (décision du propriétaire du 9 novembre 2026 : « on ne va plus appeler ça maquette mais thème sur
+  mesure » ; le client ne lit plus jamais le mot « maquette ») : à l'étape 6, SINA **monte** le thème avec la
+  bibliothèque de sections (`public/sections/`, 182 sections préparées par `scripts/sections-library.py` depuis le
+  catalogue ; familles Classique et Moderne, jamais mélangées), aux couleurs, polices, nom et logo du client, et le
+  **modifie sur demande** : outils `custom.*` (`src/lib/syna-agent/custom-theme/`) : bibliothèque, montage
+  (`custom.compose`, points de départ SOLSTICE, RUPTURE et Brindi), lecture et modification d'une section
+  (`custom.section`, `custom.edit` : textes, mise en forme limitée à la section, élément masqué, photo du client),
+  structure (`custom.structure`), photo créée (`custom.photo`, seul outil payant), annulation (`custom.undo`), choix
+  (`custom.choose`). Le thème vivant s'affiche dans le fil (`/api/projects/<id>/custom-theme`, pages, téléphone) avec
+  **« Désigner un élément »** : le client pointe un titre, un texte, un bouton, une image ou une section, dit ce qu'il
+  veut, et SINA ne change que lui. Règles de montage contrôlées sans IA (`checkCustomTheme`) ; aucun script dans une
+  section retouchée. Les anciennes maquettes (`mockup.*`) ne servent plus qu'aux projets déjà commencés avec elles. La mise
+  en boutique Shopify d'un thème sur mesure (étape 7) reste à brancher.
+- **Sections « Produit vedette »** (décision du 8 novembre 2026) : elles ne vont qu'**en haut de la fiche produit**, ou au plus
+  **une seule fois sur l'accueil** ; **jamais deux sections « Produit vedette » dans une même page**. Leurs réglages (couleurs,
+  formats, lots, offres, abonnement) s'affichent ou se masquent **selon les données réelles du produit** (variantes, offres
+  saisies par le client) : rien d'affiché pour une option que le produit n'a pas. **Livraison estimée, points de fidélité, offres (lots,
+  N achetés M offerts, cadeaux) et choix entre plusieurs produits de la gamme sont des fonctions de ce bloc d'achat,
+  jamais des sections à part** (retour du propriétaire du 8 novembre 2026).
+- **Montage d'un thème avec la bibliothèque de sections** (retour du propriétaire du 8 novembre 2026, option B de Brindi) :
+  **une seule section de cartes (produits ou familles) par page** ; une section qui montre plusieurs styles au choix dans la
+  bibliothèque (ex. « Livraison estimée » en 3 styles) n'en garde **qu'un seul** sur une vraie page. **Jamais une section
+  « pour prendre une section »** : chaque section a un rôle dans l'histoire de la page, est choisie selon la personnalité
+  de la marque, l'angle et son émotion, le métier et le contenu réel, et le tout reste harmonieux (méthode complète :
+  `docs/montage-themes-sina.md`).
+- **Familles de sections** (décision du propriétaire du 9 novembre 2026, `src/lib/syna-agent/section-families.ts`) :
+  « Classique » (calme, éditoriale) et « Moderne » (d'après ses modèles Instagram : titres énormes, mannequin détouré
+  qui déborde de l'ouverture, couleurs franches ; styles d'exemple Sport chic et Streetwear néon, plusieurs sections au
+  choix par rôle). **Jamais de mélange de familles dans un thème.** SINA montre les familles au client **en image**
+  (`theme.families`) et enregistre **son** choix (`theme.family`) avant tout thème ou maquette. Les textes des sections
+  ne reprennent jamais ceux des modèles montrés (même traduits).
+  **Images de la famille Moderne** : quand le client la choisit, TOUTES ses images (site, publications, publicités)
+  suivent sa charte (`familyArtUniverse`, direction artistique du projet) : photo de mode éditoriale, mannequins inventés
+  seulement si les personnes sont autorisées (sinon produits seuls dans le même style), sujet entier, rien de coupé.
+- **Noms de marque** (décision du 9 novembre 2026) : genre préféré = le **mot fort** comme SOLSTICE ou RUPTURE (un seul
+  mot qui existe, 2 ou 3 syllabes, qui évoque l'univers ou l'attitude) ; marques de produits : deux mots forts + un mot
+  inventé (`nameKindRule`, `src/lib/syna-agent/identities.ts`).
 - **Écrire une consigne d'image comme le propriétaire** (modèle réussi du 16/10, `docs/guide-images-ia.md`) : décrire
   UNE photo, en phrases complètes et logiques, dans cet ordre : 1) type de photo, format, point de vue, cadrage ;
   2) surface et fond ; 3) chaque objet dans son paragraphe : place exacte dans l'image, forme, matière, couleur, état,

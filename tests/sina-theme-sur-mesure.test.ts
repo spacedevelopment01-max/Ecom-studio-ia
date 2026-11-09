@@ -1,0 +1,219 @@
+/**
+ * Thèmes sur mesure (SINA, étape 6) : bibliothèque de sections, montage selon les règles du propriétaire, retouches,
+ * rendu aux couleurs de la marque du client. Sans IA, sans réseau.
+ */
+import fs from "node:fs";
+import path from "node:path";
+import { describe, expect, it } from "vitest";
+import { DEMO_BRANDS, familySections, libSection, sectionByRef, sectionLibrary, withBrandName } from "@/lib/syna-agent/custom-theme/library";
+import { applyStructure, checkCustomTheme, replaceOnce, scopedCss, type CustomTheme } from "@/lib/syna-agent/custom-theme/theme";
+import { starterTheme, STARTERS } from "@/lib/syna-agent/custom-theme/starters";
+import { brandCss, buyFlags, renderCustomTheme } from "@/lib/syna-agent/custom-theme/render";
+import { SECTION_FAMILIES } from "@/lib/syna-agent/section-families";
+
+const brand = { name: "Ardent", nameStatus: "validated", alternatives: [], tagline: "", positioning: "", audience: "", personality: [], tone: { voice: "", do: [], dont: [] }, palette: { primary: "#C2410C", secondary: "#E7E5E4", accent: "#0F766E", light: "#FAFAF9", dark: "#1C1917" }, fonts: { heading: "", body: "" }, logo: { concept: "", status: "proposed" } } as any;
+const proj = { id: "p-test", name: "Ardent", brand };
+const blocking = (t: CustomTheme) => checkCustomTheme(t).filter((p) => p.level === "bloquant").map((p) => p.text);
+
+describe("thème sur mesure : bibliothèque", () => {
+  it("toutes les sections du catalogue (sans les e-mails), deux familles, rôles de la famille Moderne complets", () => {
+    const lib = sectionLibrary();
+    expect(lib.sections.length).toBeGreaterThanOrEqual(180);
+    expect(new Set(lib.sections.map((s) => s.id)).size).toBe(lib.sections.length);
+    const moderne = familySections("moderne");
+    expect(moderne).toHaveLength(49);
+    // Chaque section nommée dans les familles du Studio existe dans la bibliothèque.
+    for (const f of SECTION_FAMILIES.filter((x) => x.id === "moderne")) for (const titles of Object.values(f.roles)) for (const t of titles) expect(sectionByRef(t), t).toBeTruthy();
+    // Les démonstrations en fausse fenêtre ne sont jamais proposées.
+    expect(familySections("classique").some((s) => s.demoFrame)).toBe(false);
+    for (const f of ["library.css", "library.js", "templates.html"]) expect(fs.existsSync(path.join(process.cwd(), "public", "sections", f)), f).toBe(true);
+    const photos = new Set(fs.readdirSync(path.join(process.cwd(), "public", "sections", "photos")));
+    for (const s of moderne) for (const ph of [...s.html.matchAll(/photos\/([\w-]+\.(?:webp|png|jpg))/g)].map((m) => m[1])) expect(photos.has(ph), `${s.title} → ${ph}`).toBe(true);
+  });
+
+  it("le nom d'une marque de démonstration est remplacé par celui du client, casse comprise", () => {
+    expect(withBrandName("RUPTURE · Rupture · rupture. #RUPTURE Brindi", "Le Fil Rouge")).toBe("LE FIL ROUGE · Le Fil Rouge · le fil rouge. #LEFILROUGE Le Fil Rouge");
+    expect(DEMO_BRANDS).toContain("Solstice");
+    expect(withBrandName('<div><span style="--i:0">S</span><span style="--i:1">O</span><span style="--i:2">L</span><span style="--i:3">S</span><span style="--i:4">T</span><span style="--i:5">I</span><span style="--i:6">C</span><span style="--i:7">E</span></div>', "Le Fil")).toBe('<div><span style="--i:0">L</span><span style="--i:1">E</span><span style="--i:2">&nbsp;</span><span style="--i:3">F</span><span style="--i:4">I</span><span style="--i:5">L</span></div>');
+    expect(withBrandName("Brindi", "A<b>")).toBe("A&lt;b&gt;");
+  });
+});
+
+describe("thème sur mesure : montage et règles du propriétaire", () => {
+  it("les trois points de départ respectent les règles (aucun point bloquant)", () => {
+    for (const [fam, style] of [["moderne", "sport-chic"], ["moderne", "streetwear-neon"], ["classique", "classique"]] as const) {
+      const t = starterTheme(fam, style);
+      expect(blocking(t), `${fam}/${style}`).toEqual([]);
+      expect(t.pages[0].key).toBe("home");
+    }
+    expect(Object.keys(STARTERS)).toEqual(["sport-chic", "streetwear-neon", "classique"]);
+  });
+
+  it("refuse le mélange de familles, deux « Produit vedette », deux sections de cartes, la même section à la suite", () => {
+    const t = starterTheme("moderne", "sport-chic");
+    const mix = applyStructure(t, [{ op: "add", page: "home", section: sectionByRef("Ouverture photo pleine")!.id }]);
+    expect(blocking(mix).join(" ")).toMatch(/jamais de mélange de familles/);
+    const twoPv = applyStructure(t, [{ op: "add", page: "product", section: sectionByRef("Produit vedette · drop limité")!.id }]);
+    expect(blocking(twoPv).join(" ")).toMatch(/deux sections « Produit vedette »/);
+    const notTop = applyStructure(t, [{ op: "move", uid: t.pages[2].sections[0].uid, at: 3 }]);
+    expect(blocking(notTop).join(" ")).toMatch(/doit ouvrir la fiche produit/);
+    const twoCards = applyStructure(t, [{ op: "add", page: "home", section: sectionByRef("Grille à filtres animés")!.id }]);
+    expect(blocking(twoCards).join(" ")).toMatch(/une seule par page/);
+    const sameRole = applyStructure(t, [{ op: "add", page: "home", section: sectionByRef("Avis et ajustement")!.id, at: 7 }]);
+    expect(checkCustomTheme(sameRole).filter((p) => p.level === "à revoir").map((p) => p.text).join(" ")).toMatch(/deux sections « confiance » à la suite/);
+    const twice = applyStructure(t, [{ op: "add", page: "home", section: t.pages[0].sections[0].id, at: 1 }]);
+    expect(blocking(twice).join(" ")).toMatch(/deux fois à la suite/);
+    const noHeader = { ...t, header: null };
+    expect(blocking(noHeader).join(" ")).toMatch(/il manque un en-tête/);
+  });
+
+  it("opérations de structure : ajouter, retirer, déplacer, remplacer, pages", () => {
+    const t = starterTheme("moderne", "streetwear-neon");
+    const uid = t.pages[0].sections[1].uid;
+    const a = applyStructure(t, [{ op: "remove", uid }]);
+    expect(a.pages[0].sections.some((s) => s.uid === uid)).toBe(false);
+    expect(t.pages[0].sections.some((s) => s.uid === uid)).toBe(true); // l'original ne bouge pas
+    const b = applyStructure(t, [{ op: "replace", uid, section: sectionByRef("Offre en deux tuiles")!.id }]);
+    expect(libSection(b.pages[0].sections[1].id)!.title).toBe("Offre en deux tuiles");
+    const c = applyStructure(t, [{ op: "page", key: "faq", label: "Questions" }, { op: "add", page: "faq", section: sectionByRef("Questions numérotées")!.id }, { op: "rename_page", key: "faq", label: "Vos questions" }]);
+    expect(c.pages.at(-1)).toMatchObject({ key: "faq", label: "Vos questions" });
+    expect(() => applyStructure(t, [{ op: "add", page: "nulle-part", section: "x" }])).toThrow(/introuvable/);
+  });
+
+  it("retouche d'un passage exact et règles CSS limitées à la section", () => {
+    expect(replaceOnce("<h2>Bonjour</h2><p>Salut</p>", "Bonjour", "Hello")).toBe("<h2>Hello</h2><p>Salut</p>");
+    expect(() => replaceOnce("<p>a</p><p>a</p>", "a", "b")).toThrow(/plusieurs fois/);
+    expect(() => replaceOnce("<p>a</p>", "z", "b")).toThrow(/introuvable/);
+    expect(scopedCss("s1", ":scope h2{color:red} :scope > p{margin:0}")).toBe('[data-ct="s1"] h2{color:red} [data-ct="s1"] > p{margin:0}');
+    expect(() => scopedCss("s1", "h2{color:red}")).toThrow(/hors de la section/);
+    expect(() => scopedCss("s1", ':scope{background:url("https://x.y/a.png")}')).toThrow(/extérieure/);
+  });
+});
+
+describe("thème sur mesure : rendu", () => {
+  it("aux couleurs, au nom et aux polices de la marque ; sections marquées ; désignation dans le Studio seulement", () => {
+    const t = starterTheme("moderne", "streetwear-neon");
+    const html = renderCustomTheme(proj, t, { nonce: "abc" });
+    expect(html).toContain("ARDENT");
+    const visible = html.replace(/window\.CT_DEMO=\[[^\]]*\];/, "");
+    for (const d of ["RUPTURE", "Rupture", "Brindi", "SOLSTICE"]) expect(visible.includes(d), d).toBe(false);
+    expect(html).toContain('<base href="/sections/">');
+    expect(html).toContain("--q-lm:#C2410C");
+    expect((html.match(/data-ct="s[0-9a-f]{8}"/g) ?? []).length).toBe(t.pages.reduce((n, p) => n + p.sections.length, 0) + 3);
+    expect((html.match(/<script(?! nonce="abc")[ >]/g) ?? []).length).toBe(0);
+    expect(html).not.toContain("ct-preview\",type:\"picked\"");
+    const studio = renderCustomTheme(proj, t, { studio: true, nonce: "abc" });
+    expect(studio).toContain('type:"picked"');
+    expect(studio).toContain("textes et photos d'exemple");
+    if (process.env.CT_DUMP) for (const [f, s] of [["moderne", "sport-chic"], ["moderne", "streetwear-neon"], ["classique", "classique"]] as const) fs.writeFileSync(path.join(process.env.CT_DUMP, `ct-${s}.html`), renderCustomTheme(proj, starterTheme(f, s), { studio: true, nonce: "n0nce" }));
+  });
+
+  it("bloc d'achat : seules les fonctions que le produit a vraiment", () => {
+    expect(buyFlags(null)).toEqual({ poInit: "1" });
+    const f = { colors: null, formats: [{ option: "Taille", values: ["S", "M"] }], promo: null, quantity: { kind: "bogo", buy: 2, free: 1 }, subscription: null, bundle: null, gifts: [], range: ["A", "B"], delivery: { minDays: 2, maxDays: 4, cutoffHour: null }, loyalty: null, hidden: [] } as any;
+    expect(buyFlags(f)).toMatchObject({ poCouleur: "0", poTaille: "1", poOffre: "bogo", poGamme: "1", poLivraison: "1", poAbo: "0", poFidelite: "0" });
+    expect(brandCss({ brand: null })).toBe("");
+  });
+});
+
+describe("thème sur mesure : outils de SINA", async () => {
+  process.env.STUDIO_SYNA_AGENT = "1";
+  const { one } = await import("@/lib/db");
+  const { runWithLang } = await import("@/lib/i18n-server");
+  const { account } = await import("./conversation209-fixtures");
+  const { threadFor } = await import("@/lib/syna-agent/thread");
+  const { getTool } = await import("@/lib/syna-agent/registry");
+  const T = await import("@/lib/syna-agent/custom-theme/tools");
+  const { loadCustomTheme } = await import("@/lib/syna-agent/custom-theme/theme");
+  const fr = <R,>(fn: () => Promise<R> | R) => runWithLang({ ui: "fr", content: "fr" }, async () => fn());
+  const call = async (name: string, ctx: any, args: unknown): Promise<any> => {
+    ctx.projectId = one<{ project_id: string | null }>("SELECT project_id FROM agent_conversations WHERE id=?", ctx.conversationId)?.project_id ?? null;
+    return fr(() => getTool(name)!.run(ctx, getTool(name)!.args.parse(args)));
+  };
+  async function project() {
+    const user = await account();
+    const cid = threadFor(user, null), ctx: any = { user, conversationId: cid, runId: `run-${Date.now()}`, projectId: null, attachment: () => null };
+    await call("start.answer", ctx, { answers: [{ field: "business", value: "products" }, { field: "offer", value: "Des sacs et accessoires en cuir faits main." }] });
+    await call("start.answer", ctx, { answers: [
+      { field: "existing", value: "Rien." }, { field: "audience", value: "Femmes de 25 à 45 ans." }, { field: "image", value: "Solaire et sportif." },
+      { field: "setup", value: "4 produits" }, { field: "market", value: "En ligne, France." }, { field: "price", value: "50 à 130 €" }, { field: "difference", value: "Faits main." },
+      { field: "taste", status: "none" }, { field: "photos", value: "Pas encore." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
+    ] });
+    await call("start.confirm", ctx, {});
+    return { ctx, pid: one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string };
+  }
+
+  it("famille d'abord, puis montage, lecture, modification, désignation, structure, annulation et choix (gratuits)", async () => {
+    const { ctx, pid } = await project();
+    for (const n of ["custom.sections", "custom.compose", "custom.show", "custom.section", "custom.structure", "custom.edit", "custom.undo", "custom.choose"]) expect(getTool(n)!.estimate, n).toBeUndefined();
+    expect(getTool("custom.photo")!.kind).toBe("generate");
+    expect((await call("custom.sections", ctx, {})).summary).toMatch(/famille de sections pas encore choisie/);
+    await call("theme.family", ctx, { family: "moderne", style: "sport-chic" });
+    const lib = await call("custom.sections", ctx, { role: "produit vedette" });
+    expect(Object.keys(lib.data.roles)).toEqual(["produit vedette"]);
+    expect(lib.data.roles["produit vedette"]).toHaveLength(3);
+    const made = await call("custom.compose", ctx, { start: true });
+    expect(made.ok).toBe(true);
+    const card = made.data.customTheme;
+    expect(card.href).toBe(`/api/projects/${pid}/custom-theme?studio=1&rev=1`);
+    expect(card.pages.map((p: any) => p.key)).toEqual(["home", "shop", "product", "cart", "journal", "404"]);
+    // Mélange de familles refusé : rien n'est enregistré.
+    const mixed = await call("custom.compose", ctx, { pages: [{ key: "home", label: "Accueil", sections: ["Ouverture photo pleine"] }] });
+    expect(mixed.ok).toBe(false);
+    expect(mixed.summary).toMatch(/Rien n'est enregistré[^]*mélange de familles/);
+    expect(loadCustomTheme(pid)!.rev).toBe(1);
+    // Lire puis modifier un texte désigné par le client.
+    const hero = card.pages[0].sections[0].uid;
+    const read = await call("custom.section", ctx, { uid: hero });
+    expect(read.data.html).toContain("L'été prend");
+    const ed = await call("custom.edit", ctx, { uid: hero, edits: [{ find: "L'été prend", replace: "La saison s'ouvre" }] });
+    expect(ed.ok).toBe(true);
+    expect(loadCustomTheme(pid)!.pages[0].sections[0].html).toContain("La saison s'ouvre");
+    // Passage absent, script, règle hors section : refusés, rien ne change.
+    expect((await call("custom.edit", ctx, { uid: hero, edits: [{ find: "texte qui n'existe pas", replace: "x" }] })).summary).toMatch(/Rien n'est modifié[^]*introuvable/);
+    expect((await call("custom.edit", ctx, { uid: hero, edits: [{ find: "La saison s'ouvre", replace: "<script>alert(1)</script>" }] })).summary).toMatch(/balise refusée/);
+    expect((await call("custom.edit", ctx, { uid: hero, css: "body{display:none}" })).summary).toMatch(/hors de la section/);
+    // Élément désigné masqué puis réaffiché, mise en forme propre à la section.
+    expect((await call("custom.edit", ctx, { uid: hero, hide: ["div:nth-child(1) > a:nth-child(2)"], css: ":scope h1{letter-spacing:.02em}" })).ok).toBe(true);
+    expect(loadCustomTheme(pid)!.pages[0].sections[0].css).toMatch(/\[data-ct="s[0-9a-f]{8}"\] > div:nth-child\(1\) > a:nth-child\(2\)\{display:none!important\}[^]*letter-spacing/);
+    expect((await call("custom.edit", ctx, { uid: hero, show: ["div:nth-child(1) > a:nth-child(2)"] })).ok).toBe(true);
+    expect((await call("custom.edit", ctx, { uid: hero, hide: ["body"] })).ok).toBe(false);
+    // Structure : remplacer, retirer, ajouter une page ; annuler revient en arrière.
+    const shop = loadCustomTheme(pid)!.pages[1];
+    const st = await call("custom.structure", ctx, { ops: [{ op: "replace", uid: shop.sections[1].uid, section: "Questions numérotées" }, { op: "page", key: "contact", label: "Contact" }, { op: "add", page: "contact", section: "Boutique et contact" }] });
+    expect(st.ok).toBe(true);
+    expect(loadCustomTheme(pid)!.pages.map((p) => p.key)).toContain("contact");
+    const revBefore = loadCustomTheme(pid)!.rev;
+    expect((await call("custom.undo", ctx, {})).ok).toBe(true);
+    const back = loadCustomTheme(pid)!;
+    expect(back.pages.map((p) => p.key)).not.toContain("contact");
+    expect(back.rev).toBe(revBefore + 1);
+    // Choix du client.
+    const ch = await call("custom.choose", ctx, {});
+    expect(ch.ok).toBe(true);
+    expect(loadCustomTheme(pid)!.chosen).toBe(true);
+    expect(ch.hint).toMatch(/textes ou photos d'exemple/);
+  });
+
+  it("photo : prix d'abord, puis créée (fausse génération, aucun appel réel) et posée à la place de la photo d'exemple", async () => {
+    const { ctx, pid } = await project();
+    await call("theme.family", ctx, { family: "moderne", style: "streetwear-neon" });
+    await call("custom.compose", ctx, { start: true });
+    T.customPhotoDeps.unit = () => 47_000;
+    const sharp = (await import("sharp")).default;
+    T.customPhotoDeps.make = async () => sharp({ create: { width: 64, height: 80, channels: 3, background: "#222" } }).png().toBuffer();
+    try {
+      const t = loadCustomTheme(pid)!;
+      const { sectionHtml } = await import("@/lib/syna-agent/custom-theme/theme");
+      const target = t.pages.flatMap((p) => p.sections).find((s) => /photos\/[a-z]{2}-[a-z0-9]+\.webp/.test(sectionHtml(s)))!;
+      const file = sectionHtml(target).match(/photos\/[a-z]{2}-[a-z0-9]+\.webp/)![0];
+      const est = await getTool("custom.photo")!.estimate!(ctx, { uid: target.uid, find: file, description: "Photo de mode éditoriale, cadrage en pied, fond béton gris, une veste noire portée.", ratio: "4:5" } as any);
+      expect(est.maxMicro).toBe(47_000);
+      const r = await call("custom.photo", ctx, { uid: target.uid, find: file, description: "Photo de mode éditoriale, cadrage en pied, fond béton gris, une veste noire portée.", ratio: "4:5" });
+      expect(r.ok).toBe(true);
+      const after = sectionHtml(loadCustomTheme(pid)!.pages.flatMap((p) => p.sections).find((s) => s.uid === target.uid)!);
+      expect(after).not.toContain(file);
+      expect(after).toContain(r.data.href);
+    } finally { delete T.customPhotoDeps.unit; delete T.customPhotoDeps.make; }
+  });
+});

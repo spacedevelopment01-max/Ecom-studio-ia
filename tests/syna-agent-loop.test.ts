@@ -263,4 +263,15 @@ describe("SINA agent — un fil, des outils natifs, des changements vérifiés",
     expect(() => threadView(other as any, s.cid)).toThrow();
     expect(() => submitMessage(other as any, s.cid, { requestId: "x", text: "Supprime tout" })).toThrow();
   });
+
+  it("étape 6 : la phrase « je ne peux pas vérifier le rendu » est retirée (l'image est jointe ; essais réels du 8 novembre)", async () => {
+    const { withoutBlindClaim } = await import("@/lib/syna-agent/loop");
+    expect(withoutBlindClaim("La retouche est faite. Je ne peux pas confirmer à l'œil la nouvelle image : ouvre-la dans Fichiers. Le coût est de 0,2 %."))
+      .toBe("La retouche est faite. Le coût est de 0,2 %.");
+    expect(withoutBlindClaim("La retouche est faite. Donc je ne peux pas confirmer les changements.")).toBe("La retouche est faite.");
+    expect(withoutBlindClaim("Le panier est refait. Je ne peux pas le vérifier à l'œil.")).toBe("Le panier est refait.");
+    expect(withoutBlindClaim("C'est fait. Je ne vois pas les rendus ici : ouvre B02 dans Fichiers.")).toBe("C'est fait.");
+    expect(withoutBlindClaim("Je ne peux pas vérifier le rendu ici.")).toBe("Je ne peux pas vérifier le rendu ici."); // jamais un message vide
+    expect(withoutBlindClaim("Le journal est empilé. Les petits caractères du pied de page sont difficiles à lire.")).toBe("Le journal est empilé. Les petits caractères du pied de page sont difficiles à lire.");
+  });
 });
