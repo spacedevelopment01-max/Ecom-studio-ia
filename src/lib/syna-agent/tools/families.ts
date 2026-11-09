@@ -13,7 +13,7 @@ import { project } from "./common";
 
 const showTool: AgentTool<Record<string, never>> = {
   name: "theme.families", module: "site", kind: "read", needsProject: true,
-  description: "Étape 6, THÈME SUR MESURE (gratuit) : AFFICHE au client les deux familles de sections EN IMAGE (Classique, Moderne ; chacune avec ses exemples à ouvrir en vrai) et lui demande laquelle il préfère. C'est son seul choix : tu montes ensuite le thème de A à Z avec les meilleures sections de cette famille pour son produit ou son service. Les familles ne se mélangent jamais. Recommande d'après son produit, sa marque et son angle, sans choisir à sa place.",
+  description: "Étape 6, THÈME SUR MESURE (gratuit) : AFFICHE au client les deux familles de sections EN IMAGE (aperçu de chacune, Classique et Moderne, avec leurs exemples à ouvrir en vrai) et lui demande laquelle il préfère ; à appeler AVANT chaque question sur la famille, même s'il revient sur son choix. C'est son seul choix : tu montes ensuite le thème de A à Z avec les meilleures sections de cette famille pour son produit ou son service. Les familles ne se mélangent jamais. Recommande d'après son produit, sa marque et son angle, sans choisir à sa place.",
   args: z.object({}).strict(),
   run: (ctx) => {
     const p = project(ctx);

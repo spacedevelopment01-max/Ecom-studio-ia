@@ -15,6 +15,9 @@ describe("SINA — familles de sections Classique et Moderne", async () => {
     const cards = F.familyCards();
     expect(cards.map((c) => c.title)).toEqual(["Classique", "Moderne"]);
     expect(cards[1].examples.map((x) => x.label)).toEqual(["Exemple Sport chic", "Exemple Streetwear néon"]);
+    // aperçu en image de chaque famille entière (la carte Moderne montre ses deux exemples)
+    expect(cards.map((c) => c.previews.length)).toEqual([1, 2]);
+    for (const c of cards) for (const p of c.previews) expect(fs.existsSync(path.join(process.cwd(), "public", p))).toBe(true);
     for (const c of cards) expect(fs.existsSync(path.join(process.cwd(), "public", c.preview))).toBe(true);
     expect(cards.find((c) => c.family === "moderne")!.sections).toBe(55);
   });

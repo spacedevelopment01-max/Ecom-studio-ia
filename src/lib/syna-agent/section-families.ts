@@ -125,11 +125,13 @@ export function missingRoles(family: FamilyId, wanted: string[]): string[] {
  * client choisit seulement Classique ou Moderne ; SINA prend ensuite les meilleures sections pour son produit ou son
  * service). Les styles d'une famille (Sport chic, Streetwear néon) ne sont que des exemples à ouvrir en vrai.
  */
-export function familyCards(): { family: FamilyId; style: string; title: string; titleEn: string; pitch: string; pitchEn: string; mood: string; preview: string; demo: string; examples: { label: string; labelEn: string; demo: string }[]; sections: number }[] {
+export function familyCards(): { family: FamilyId; style: string; title: string; titleEn: string; pitch: string; pitchEn: string; mood: string; preview: string; previews: string[]; demo: string; examples: { label: string; labelEn: string; demo: string }[]; sections: number }[] {
   return SECTION_FAMILIES.map((f) => ({
     family: f.id, style: f.id === "classique" ? "classique" : "",
     title: f.fr, titleEn: f.en,
     pitch: f.pitch.fr, pitchEn: f.pitch.en, mood: f.styles.map((s) => s.mood).join(" ; "), preview: f.styles[0].preview, demo: f.styles[0].demo,
+    // Aperçu en image de TOUTE la famille (remarque du propriétaire : « il faut donner un aperçu des deux familles »).
+    previews: f.styles.map((s) => s.preview),
     examples: f.styles.map((s) => ({ label: f.id === "classique" ? "Voir un exemple en vrai" : `Exemple ${s.fr}`, labelEn: f.id === "classique" ? "See a live example" : `${s.en} example`, demo: s.demo })),
     // Nombre réel de sections de la bibliothèque (essai réel du 9 novembre : « 12 sections au choix » pour Classique, qui en a 133).
     sections: (() => { try { return familySections(f.id).length; } catch { return Object.values(f.roles).reduce((n, l) => n + l.length, 0); } })(),

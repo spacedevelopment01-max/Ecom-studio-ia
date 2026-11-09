@@ -285,7 +285,7 @@ function ThemeCards({ themes, busy, onChoose, onAll, onMockup }: { themes: Theme
   );
 }
 
-type Families = { cards: { family: string; style: string; title: string; titleEn: string; pitch: string; pitchEn: string; mood: string; preview: string; demo?: string; examples?: { label: string; labelEn: string; demo: string }[]; sections: number }[]; chosen: string | null };
+type Families = { cards: { family: string; style: string; title: string; titleEn: string; pitch: string; pitchEn: string; mood: string; preview: string; demo?: string; previews?: string[]; examples?: { label: string; labelEn: string; demo: string }[]; sections: number }[]; chosen: string | null };
 
 /**
  * Étape 6 : les deux familles de sections EN IMAGE (Classique, Moderne, avec leurs exemples à ouvrir en vrai). Le client
@@ -301,7 +301,9 @@ function FamilyCards({ families, busy, onChoose }: { families: Families; busy: b
           const key = c.family, chosen = (families.chosen ?? "").split(":")[0] === c.family;
           return (
             <article key={key} className={cx("overflow-hidden rounded-xl border bg-card text-xs", chosen ? "border-accent ring-2 ring-accent" : "border-line", families.chosen && !chosen && "opacity-60")} data-family={key}>
-              <img src={c.preview} alt={t(`Aperçu du style ${c.title}`, `${c.titleEn} style preview`)} className="block aspect-[16/10] w-full object-cover object-top" loading="lazy" />
+              <div className={cx("grid gap-px bg-line", (c.previews?.length ?? 1) > 1 && "grid-cols-2")}>
+                {(c.previews?.length ? c.previews : [c.preview]).map((src, i) => <img key={src} src={src} alt={t(`Aperçu de la famille ${c.title}${(c.previews?.length ?? 1) > 1 ? ` (exemple ${i + 1})` : ""}`, `${c.titleEn} family preview`)} className={cx("block w-full object-cover object-top", (c.previews?.length ?? 1) > 1 ? "aspect-[4/5]" : "aspect-[16/10]")} loading="lazy" />)}
+              </div>
               <div className="space-y-1 px-3 py-2">
                 <h4 className="text-sm font-bold">{t(c.title, c.titleEn)}</h4>
                 <p>{t(c.pitch, c.pitchEn)}</p>
