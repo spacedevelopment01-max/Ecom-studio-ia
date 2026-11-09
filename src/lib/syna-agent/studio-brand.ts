@@ -46,13 +46,13 @@ export function angleBrief(p: Project, j: Journey | null): string {
 }
 
 /** Emplacements d'images du thème du Studio en place : total, déjà remplis, encore vides (à créer). */
-export function studioImageNeeds(projectId: string): { total: number; filled: number; missing: number; requests: NonNullable<ReturnType<typeof adaptationOf>>["generationRequests"]; service?: ServiceSlot[] } | null {
+export function studioImageNeeds(projectId: string): { total: number; filled: number; missing: number; requests: NonNullable<ReturnType<typeof adaptationOf>>["generationRequests"]; service?: ServiceSlot[]; /** Vides que SINA ne peut pas inventer (vraie photo du client seulement). */ toProvide?: number } | null {
   const plan = adaptationOf(projectId);
   // Thèmes de services sans plan d'emplacements : leur liste de photos (d'après leur démonstration).
   const cur = currentTheme(projectId);
   if (!plan && cur && hasServicePlan(cur.spec.direction)) {
     const slots = serviceMediaSlots(cur.spec);
-    return { total: slots.length, filled: slots.filter((x) => x.filled).length, missing: slots.filter((x) => !x.filled).length, requests: [], service: slots };
+    return { total: slots.length, filled: slots.filter((x) => x.filled).length, missing: slots.filter((x) => !x.filled).length, requests: [], service: slots, toProvide: slots.filter((x) => !x.filled && x.authentic).length };
   }
   if (!plan) return null;
   const slots = plan.slots.filter((s) => s.role !== "logo" && s.role !== "video");
@@ -80,10 +80,13 @@ export function studioImageRequests(p: Project): ImageRequestV2[] {
   }));
 }
 
-/** Demandes d'images pour les emplacements vides d'un thème de services (photo du métier du client, sans personne). */
+/**
+ * Demandes d'images pour les emplacements vides d'un thème de services (photo du métier du client, sans personne).
+ * Jamais pour une photo que SINA ne peut pas inventer (réalisations, lieu, équipe, villes) : seule la vraie va là.
+ */
 export function serviceImageRequests(p: Project, slots: ServiceSlot[]): (ImageRequestV2 & { slotKey: string })[] {
   const what = p.business === "services" ? p.services.services.map((x) => x.name).join(", ") : p.product.name;
-  return slots.filter((x) => !x.filled).map((x) => ({
+  return slots.filter((x) => !x.filled && !x.authentic).map((x) => ({
     slotKey: x.key,
     kind: p.business === "services" ? "trade_photo" : "usage_scene",
     support: "site", aspect: x.aspect,
@@ -128,12 +131,14 @@ export async function runStudioBrandJob(ctx: JobContext) {
   const svcCur = currentTheme(p.id);
   if (svcCur && !svcCur.spec.meta?.adaptation && hasServicePlan(svcCur.spec.direction)) {
     const spec = JSON.parse(JSON.stringify(svcCur.spec));
-    const empty = serviceMediaSlots(spec).filter((x) => !x.filled);
+    // Ses images vont d'abord aux photos que SINA ne peut pas inventer (seules les vraies y ont leur place).
+    const empty = serviceMediaSlots(spec).filter((x) => !x.filled).sort((x, y) => Number(!!y.authentic) - Number(!!x.authentic));
     const used = new Set(Object.values<string>(spec.files ?? {}));
     const own = a.images === "sina" ? [] : clientImages(p.id).map((x) => x.id).filter((id) => !used.has(id));
-    let placed = 0, i = 0;
+    let placed = 0, i = 0, toProvide = 0;
     for (const slot of empty) {
       if (i < own.length) { placeServiceImage(spec, slot, own[i++]); placed++; continue; }
+      if (slot.authentic) { toProvide++; continue; }
       if (a.images === "client") { report.problems.push(`photo ${slot.key} : aucune image du client pour cet emplacement`); continue; }
       const req = serviceImageRequests(loadProject(p.id), [slot])[0];
       ctx.progress(0.45 + (0.45 * placed) / Math.max(1, empty.length), L(`Images : ${placed + 1} sur ${empty.length}`, `Images: ${placed + 1} of ${empty.length}`));
@@ -147,6 +152,7 @@ export async function runStudioBrandJob(ctx: JobContext) {
         if (id) { placeServiceImage(spec, slot, id); placed++; report.imagesMade++; } else { report.imagesFailed++; report.problems.push(`image ${slot.key} : aucun visuel validé`); }
       } catch (e) { report.imagesFailed++; report.problems.push(`image ${slot.key} : ${(e as Error).message.slice(0, 140)}`); }
     }
+    if (toProvide) report.problems.push(`${toProvide} photo(s) à fournir par toi : SINA ne peut pas inventer tes réalisations, ton lieu, ton équipe ni tes villes (un cadre l'explique à leur place dans l'aperçu)`);
     if (placed) revealFilledSections(spec);
     if (placed) saveThemeVersion(p.id, spec, L(`Photos posées dans le thème (${placed}) — SINA, étape 8`, `Photos placed (${placed}) — SINA, step 8`), "ai", { syna: { step: 8, photos: placed } }, undefined, { activate: true });
   }

@@ -30,6 +30,8 @@ import { withContenus } from "@/lib/contenus";
 import { withStudioProducts } from "@/lib/products/catalog";
 import {cataloguePreviewSnapshot} from '@/lib/orchestrator/conversation/catalogue-tool-execution';
 import {escHtml} from '@/lib/blog-html';
+// Photos que SINA ne peut pas inventer : un cadre l'explique à leur place, dans l'aperçu du Studio seulement.
+import { authenticPlaceholderSvg, inlineAuthenticPlaceholders, placeholderSlot, withAuthenticPlaceholders } from "@/lib/theme/service-media-plan";
 
 export const runtime = "nodejs";
 
@@ -78,7 +80,7 @@ async function load(req: Request, ctx: P):Promise<LoadedPreview> {
   }
   const v = vid === "current" ? currentTheme(id) : themeVersion(id, vid);
   if (!v) throw new HttpError(404, L("Version de boutique introuvable.", "Store version not found."));
-  return { id, vid, spec: withStudioProducts(withContenus(v.spec as ThemeSpec, id, { bien: new URL(req.url).searchParams.get("es_bien"), plat: new URL(req.url).searchParams.get("es_plat"), realisation: new URL(req.url).searchParams.get("es_realisation") }), id), segs: path ?? [], base: `/preview/${id}/v/${seg}`, redirect };
+  return { id, vid, spec: withStudioProducts(withContenus(withAuthenticPlaceholders(v.spec as ThemeSpec), id, { bien: new URL(req.url).searchParams.get("es_bien"), plat: new URL(req.url).searchParams.get("es_plat"), realisation: new URL(req.url).searchParams.get("es_realisation") }), id), segs: path ?? [], base: `/preview/${id}/v/${seg}`, redirect };
 }
 
 /**
@@ -162,6 +164,8 @@ async function get(req: Request, ctx: P): Promise<Response> {
   const path = "/" + segs.join("/");
   if (segs[0] === "assets") {
     const name = segs.slice(1).join("/");
+    const phSlot = spec.files[name] ? undefined : placeholderSlot(spec, name);
+    if (phSlot) return new Response(authenticPlaceholderSvg(phSlot, uiLang()), { headers: { "Content-Type": "image/svg+xml; charset=utf-8", "Cache-Control": "private, max-age=600" } });
     const bin = spec.files[name] ? await themeAssetBinary(spec, name, libraryLoader) : importedBinary(spec, name);
     if (bin) {
       let data = bin.data;
@@ -191,7 +195,7 @@ async function get(req: Request, ctx: P): Promise<Response> {
   const r = await renderPage({ spec, base, cart }, path, url.searchParams);
   const htmlWithNotice=catalogueLabel?r.html.replace(/<body\b[^>]*>/i,tag=>`${tag}<aside data-catalogue-private-preview role="status" style="padding:12px;background:#fff4df;color:#171717;font:14px/1.5 sans-serif">${escHtml(catalogueLabel)} ${escHtml(L('Panier d’exemple, sans commande. Prix et quantités non renseignés restent à compléter ; stock non suivi ne prouve pas la disponibilité.','Example cart, without orders. Missing prices and quantities remain to be completed; untracked stock does not prove availability.'))}</aside>`):r.html;
   const tools = url.searchParams.get("es_raw") === "1" ? htmlWithNotice : htmlWithNotice.replace("</body>", `${previewTools(uiLang(), spec.store.business, spec.meta?.demo?.contactTest === true && spec.meta.demo.isDemo === true)}${stockBadgeTool(stockPhotosInTheme(spec, getAsset, uiLang()).map((x) => ({ file: x.file, label: stockPhotoLabel(x.source, uiLang()) })))}</body>`);
-  const html = await portablePreview(tools, spec, base, url.origin);
+  const html = await portablePreview(inlineAuthenticPlaceholders(tools, spec, base, uiLang()), spec, base, url.origin);
   return new Response(html, { status: r.status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Frame-Options": "SAMEORIGIN", "Content-Security-Policy": previewCsp(), "Referrer-Policy": "no-referrer" } });
 }
 

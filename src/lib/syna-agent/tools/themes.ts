@@ -111,11 +111,12 @@ const studioImagesTool: AgentTool<Record<string, never>> = {
     if (!needs && currentTheme(p.id)) return { ok: true, summary: L("Ce thème n'a pas encore de plan d'emplacements d'images : je ne peux pas compter ni créer ses images d'un coup. Je peux réécrire tous ses textes (theme.brand, copy) ; ses images se posent ensuite dans la Boutique, une par une.", "This theme has no image placement plan yet."), hint: "Dis-le honnêtement au client ; propose theme.brand avec images:\"client\" (textes seulement) et la pose de ses images une par une dans la Boutique.", data: { planDesImages: false } };
     if (!needs) return { ok: false, summary: L("Aucun thème du Studio en place : le client choisit d'abord son thème (theme.choose), puis la composition doit être finie.", "No Studio theme in place yet.") };
     const fresh = freshClientImages(p.id);
+    const own = needs.toProvide ?? 0;
     return {
       ok: true,
-      summary: L(`Son thème demande ${needs.total} images : ${needs.filled} déjà remplie(s) par ses photos, ${needs.missing} encore vide(s). Images envoyées pas encore posées : ${fresh}.`, `${needs.total} images, ${needs.missing} missing.`),
-      hint: needs.missing ? `Demande-lui, en une question à choix : « Tu montes ton site avec tes images, ou je les crée ? ». Il en manque ${needs.missing}. S'il prend les siennes, dis-lui d'en envoyer ${needs.missing} avec le trombone (📎) ; s'il en a moins, propose de créer celles qui manquent (images:\"mix\") ou toutes (images:\"sina\"). Puis devis de theme.brand et son accord écrit.` : "Toutes les images sont déjà là : theme.brand écrira seulement les textes (images:\"client\").",
-      data: { total: needs.total, remplies: needs.filled, vides: needs.missing, imagesEnvoyeesNonPosees: fresh, emplacements: needs.requests.map((r) => r.role) },
+      summary: L(`Son thème demande ${needs.total} images : ${needs.filled} déjà remplie(s) par ses photos, ${needs.missing} encore vide(s)${own ? `, dont ${own} que je ne peux PAS inventer (ses réalisations, son lieu, son équipe, ses villes : seules ses vraies photos vont là ; en attendant, un cadre l'explique à leur place dans l'aperçu, jamais sur le site publié)` : ""}. Images envoyées pas encore posées : ${fresh}.`, `${needs.total} images, ${needs.missing} missing.`),
+      hint: needs.missing ? `Demande-lui, en une question à choix : « Tu montes ton site avec tes images, ou je les crée ? ». Il en manque ${needs.missing}. S'il prend les siennes, dis-lui d'en envoyer ${needs.missing} avec le trombone (📎) ; s'il en a moins, propose de créer celles qui manquent (images:\"mix\") ou toutes (images:\"sina\"). Puis devis de theme.brand et son accord écrit.${own ? ` Dis-lui clairement que ${own} de ces photos doivent être les siennes (ses réalisations, son lieu, son équipe, ses villes) : tu ne les crées jamais, même avec images:\"sina\" ; ses images envoyées y vont en premier.` : ""}` : "Toutes les images sont déjà là : theme.brand écrira seulement les textes (images:\"client\").",
+      data: { total: needs.total, remplies: needs.filled, vides: needs.missing, aFournirParLeClient: own, imagesEnvoyeesNonPosees: fresh, emplacements: needs.requests.map((r) => r.role) },
     };
   },
 };
@@ -140,7 +141,9 @@ const studioBrandTool: AgentTool<BrandArgs> = {
     if (!needs) throw new Error(L("Aucun thème du Studio en place : choisis d'abord ton thème.", "No Studio theme yet."));
     const copy = a.copy === false ? { max: 0, typical: 0 } : copyRoundMicro(ctx.user.id);
     if (!copy) throw new Error(L("Coût de la rédaction impossible à encadrer (modèle ou tarif inconnu).", "Copy cost cannot be bounded."));
-    const n = a.images === "client" ? 0 : a.images === "mix" ? Math.max(0, needs.missing - freshClientImages(p.id)) : needs.missing;
+    // Jamais créées : les photos que SINA ne peut pas inventer (ses images y vont en premier).
+    const own = needs.toProvide ?? 0, creatable = needs.missing - own;
+    const n = a.images === "client" ? 0 : a.images === "mix" ? Math.max(0, creatable - Math.max(0, freshClientImages(p.id) - own)) : creatable;
     let img = { capMicro: 0, estimateMicro: 0 };
     if (n) {
       if (studioBrandDeps2.images) img = studioBrandDeps2.images(p, n);
