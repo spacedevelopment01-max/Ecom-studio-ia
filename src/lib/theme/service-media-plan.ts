@@ -15,7 +15,7 @@ export type ServiceSlot = { key: string; template: string; sectionId: string; bl
 /**
  * Photos que SINA ne peut pas inventer (décision du propriétaire du 9 novembre 2026) : l'équipe elle-même et les biens
  * mis en vente ou en location (ceux-ci viennent de l'espace Biens, jamais d'un emplacement du thème) ; les réalisations
- * d'un artisan restent à fournir en attendant sa réponse. Lieu, villes, ambiances : SINA peut les créer.
+ * et avant/après d'un artisan sont à fournir par le client (sa réponse du même jour). Lieu, villes, ambiances : SINA peut les créer.
  */
 export type AuthenticKind = "realisation" | "equipe";
 
