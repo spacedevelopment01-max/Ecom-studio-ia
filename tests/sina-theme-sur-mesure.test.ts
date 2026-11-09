@@ -584,3 +584,13 @@ describe("thème sur mesure : remonter le thème ne jette jamais le travail fait
     expect(keepWork(next, null)).toBe(0);
   });
 });
+
+describe("bibliothèque : « Histoire du produit au défilement » sur téléphone (retour du propriétaire du 9 novembre)", () => {
+  it("la page défile (plus de boîte qui défile seule), le rond photo reste sous les barres du haut", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "public/sections/library.css"), "utf8");
+    const js = fs.readFileSync(path.join(process.cwd(), "public/sections/library.js"), "utf8");
+    expect(css).toMatch(/@container \(max-width:560px\)\{\.ts\.p2\{overflow:clip\}\.p2-vp\{height:auto;overflow:visible\}\.p2-st\{position:sticky;top:var\(--p2-top,0px\)/);
+    expect(js).toContain('s.style.setProperty("--p2-top",t+"px")');
+    expect(js).toContain("function inner(){return vp.scrollHeight>vp.clientHeight+4}");
+  });
+});

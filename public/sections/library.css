@@ -4158,3 +4158,6 @@ html[data-po-promo="1"] [data-poshow="promo"]{display:inline-flex!important}
 .bd-ft{margin-top:auto;display:grid;gap:4px;font-size:.84rem;opacity:.85;border-top:1px solid rgba(255,255,255,.15);padding-top:16px}
 .bd-ft b{color:var(--b-gold)}
 @container (max-width:760px){.bh{padding:12px 16px;grid-template-columns:auto 1fr auto}.bh-nv{display:none}.bh-lg{font-size:1.5rem}.bh-bg{display:flex}}
+
+/* Histoire du produit au défilement, téléphone : la page défile (plus de boîte qui défile seule), étapes lisibles */
+@container (max-width:560px){.ts.p2{overflow:clip}.p2-vp{height:auto;overflow:visible}.p2-st{position:sticky;top:var(--p2-top,0px);height:auto;padding:22px 0 18px;z-index:2;background:var(--c1)}.p2-im{width:min(190px,52vw)}.p2-ring{width:min(226px,62vw)}.p2-sp{min-height:50vh;align-content:start;padding-top:24px}.p2-sp:last-child{min-height:40vh;padding-bottom:40px}.p2-sp:not(.on){opacity:.35}.p2-hint{display:none}}

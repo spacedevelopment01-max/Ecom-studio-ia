@@ -596,9 +596,18 @@
     dots.forEach(function(d,i){d.addEventListener("click",function(){show(i,true)})});li.forEach(function(b,i){b.addEventListener("click",function(){show(i,true)})});setTimeout(function(){show(0)},400)});
   // P2 défilement narratif
   qa("[data-p2]").forEach(function(s){var vp=q("[data-p2v]",s),sp=qa(".p2-sp",s),im=qa("[data-p2i] img",s),ring=q(".p2-ring",s);
-    function u(){var mid=vp.scrollTop+vp.clientHeight/2,k=0;sp.forEach(function(e,i){if(e.offsetTop<=mid)k=i});sp.forEach(function(e,i){e.classList.toggle("on",i===k)});im.forEach(function(e,i){e.classList.toggle("on",i===k)});
-      var r=vp.scrollTop/(vp.scrollHeight-vp.clientHeight||1);q("[data-p2i]",s).style.transform="rotate("+(r*40)+"deg) scale("+(1+r*.06)+")";ring.style.transform="rotate("+(-r*120)+"deg)"}
-    vp.addEventListener("scroll",u,{passive:true});u()});
+    // Téléphone (retour du propriétaire du 9 novembre 2026 : « l'animation arrive beaucoup trop vite ») : plus de boîte qui
+    // défile toute seule, c'est la page qui défile ; le rond photo reste sous l'en-tête et chaque étape a le temps d'être lue.
+    function inner(){return vp.scrollHeight>vp.clientHeight+4}
+    function u(){var k=0,r;if(inner()){var mid=vp.scrollTop+vp.clientHeight/2;sp.forEach(function(e,i){if(e.offsetTop<=mid)k=i});r=vp.scrollTop/(vp.scrollHeight-vp.clientHeight||1)}
+      else{var pb=q(".p2-st",s).getBoundingClientRect().bottom,line=pb+(innerHeight-pb)*.4;sp.forEach(function(e,i){if(e.getBoundingClientRect().top<=line)k=i});var b=s.getBoundingClientRect();r=Math.min(1,Math.max(0,-b.top/((b.height-innerHeight)||1)))}
+      sp.forEach(function(e,i){e.classList.toggle("on",i===k)});im.forEach(function(e,i){e.classList.toggle("on",i===k)});
+      q("[data-p2i]",s).style.transform="rotate("+(r*40)+"deg) scale("+(1+r*.06)+")";ring.style.transform="rotate("+(-r*120)+"deg)"}
+    // le rond photo reste juste sous les barres collées en haut (barre du Studio, en-tête du site s'il reste visible)
+    function top(){var t=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--tb-h"))||0,hd=document.querySelector('[data-ct-role="header"]');
+      if(hd){var st=[hd].concat([].slice.call(hd.querySelectorAll("*"))).filter(function(e){var p=getComputedStyle(e).position;return p==="sticky"||p==="fixed"})[0];if(st)t+=st.getBoundingClientRect().height}
+      s.style.setProperty("--p2-top",t+"px")}
+    vp.addEventListener("scroll",u,{passive:true});addEventListener("scroll",u,{passive:true});addEventListener("resize",function(){top();u()});top();u()});
   // P4 stories
   qa("[data-p4]").forEach(function(s){var S=[["video","film-brindi.mp4"],["img","tasse.jpg"],["img","sachet-bois.jpg"],["img","tasse-fruits.jpg"],["img","fenetre.jpg"]],vw=q("[data-p4v]",s),bars=q("[data-p4b]",s),md=q("[data-p4m]",s),i=0,t=null,raf=null;
     bars.innerHTML=S.map(function(){return "<i><b></b></i>"}).join("");
