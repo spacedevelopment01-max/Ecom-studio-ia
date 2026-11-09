@@ -71,7 +71,20 @@ export function inlineBackgrounds(html: string): string {
 }
 export const libSection = (id: string): LibSection | null => sectionLibrary().sections.find((s) => s.id === id) ?? null;
 /** Sections qu'un thème de cette famille peut recevoir (les démonstrations en fausse fenêtre sont écartées). */
-export const familySections = (family: FamilyId): LibSection[] => sectionLibrary().sections.filter((s) => s.family === family && !s.demoFrame);
+/**
+ * Sections dont le contenu AFFICHÉ est fabriqué par le script de démonstration (produits, questions ou prestations de
+ * la démo : thés, électricien, restaurant) : le rédacteur ne voit pas ces textes et ne peut pas les réécrire pour la
+ * marque. Relevé automatique du 9 novembre 2026 (rendu de chaque section comparé à son HTML) après l'essai Heure Dorée
+ * (« Comment conserver mon thé ? » sur un site de confitures). Interdites aux thèmes sur mesure tant qu'elles ne sont
+ * pas rendues réécrivables. Les paniers restent permis (le vrai panier est un chantier à part).
+ */
+export const SCRIPT_DEMO_SECTIONS = new Set([
+  "comparateur-de-produits", "composition-interactive", "choisir-selon-le-moment", "recherche-guidee", "quiz-quel-produit-pour-toi",
+  "questions-en-bulles-de-discussion", "produit-vedette-lots-degressifs", "produit-vedette-loupe-et-onglets", "produit-vedette-abonnement",
+  "produit-vedette-toute-la-gamme", "produit-vedette-calculateur-de-tasses", "panier-tiroir-a-paliers", "prise-de-rendez-vous",
+  "demande-de-devis-en-etapes", "la-carte-du-restaurant",
+]);
+export const familySections = (family: FamilyId): LibSection[] => sectionLibrary().sections.filter((s) => s.family === family && !s.demoFrame && !SCRIPT_DEMO_SECTIONS.has(s.id));
 /** Retrouve une section par son identifiant ou par son titre exact. */
 export const sectionByRef = (ref: string): LibSection | null => libSection(ref) ?? sectionLibrary().sections.find((s) => s.title === ref) ?? null;
 

@@ -48,8 +48,8 @@ export const STARTERS: Record<string, Starter> = {
   classique: {
     header: "En-tête classique", footer: "Pied de page géant", search: null,
     pages: [
-      ["home", "Accueil", ["Ouverture photo pleine", "Collection en vedette", "Grille bento", "Questions en bulles de discussion", "Grand texte défilant", "Comparatif « nous / les autres »"]],
-      ["product", "Fiche produit", ["Produit vedette", "Points forts du produit", "Code promo à copier", "Comparateur de produits", "Questions sur le produit"]],
+      ["home", "Accueil", ["Ouverture photo pleine", "Collection en vedette", "Grille bento", "Mur d'avis", "Grand texte défilant", "Comparatif « nous / les autres »"]],
+      ["product", "Fiche produit", ["Produit vedette", "Points forts du produit", "Code promo à copier", "Fiche produit à onglets", "Questions sur le produit"]],
       ["cart", "Panier", ["Page panier complète"]],
       ["404", "Page 404", ["Page introuvable (404)"]],
     ],

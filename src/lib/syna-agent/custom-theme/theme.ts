@@ -7,7 +7,7 @@ import crypto from "node:crypto";
 import { all } from "../../db";
 import { remember } from "../../projects";
 import type { FamilyId } from "../section-families";
-import { inlineBackgrounds, isCardSection, FEATURED_ROLE, libSection, SHELL_ROLES, sectionPhotos, type LibSection } from "./library";
+import { inlineBackgrounds, isCardSection, FEATURED_ROLE, libSection, SCRIPT_DEMO_SECTIONS, SHELL_ROLES, sectionPhotos, type LibSection } from "./library";
 
 export type CtSection = {
   /** Identifiant de CETTE section dans le thème (une même section de la bibliothèque peut servir sur deux pages). */
@@ -143,6 +143,7 @@ export function checkCustomTheme(t: CustomTheme, site?: SiteKind): ThemeProblem[
     const l = lib(x.s);
     if (!l) { bad(`section inconnue « ${x.s.id} » (${x.place})`); continue; }
     if (l.demoFrame) bad(`« ${l.title} » est une démonstration du catalogue (fausse fenêtre) : elle ne se pose pas dans un thème`);
+    if (SCRIPT_DEMO_SECTIONS.has(l.id)) bad(`« ${l.title} » affiche des contenus fabriqués par le script de démonstration (produits ou questions de la démo), impossibles à réécrire pour la marque : choisis une autre section`);
     if (l.family !== t.family) bad(`« ${l.title} » est de la famille ${l.family} : jamais de mélange de familles dans un thème (famille du thème : ${t.family})`);
   }
   const shell = (s: CtSection | null, role: string, label: string, required: boolean) => {

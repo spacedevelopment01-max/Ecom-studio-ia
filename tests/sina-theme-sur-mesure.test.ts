@@ -22,7 +22,7 @@ function fullSite(family: "classique" | "moderne") {
     header: "En-tête classique", footer: "Pied de page complet",
     pages: [
       // Accueil : au moins 8 sections ; fiche produit : au moins 7 (méthode de montage, rappel du propriétaire du 9 novembre).
-      { key: "home", label: "Accueil", sections: ["Ouverture photo pleine", "Collection en vedette", "Histoire du produit au défilement", "Citation en grand", "Avis clients", "Choisir selon le moment", "Nos engagements", "Chiffres clés"] },
+      { key: "home", label: "Accueil", sections: ["Ouverture photo pleine", "Collection en vedette", "Histoire du produit au défilement", "Citation en grand", "Avis clients", "Grille bento", "Nos engagements", "Chiffres clés"] },
       { key: "shop", label: "Boutique", sections: ["Catalogue avec filtres et tri"] },
       { key: "product", label: "Fiche produit", sections: ["Produit vedette", "Points forts du produit", "Mode d'emploi en étapes", "Résumé des avis", "Questions sur le produit", "Complète ta commande", "Badges de confiance"] },
       { key: "cart", label: "Panier", sections: ["Page panier complète"] },
@@ -215,7 +215,7 @@ describe("thème sur mesure : outils de SINA", async () => {
     expect(moved.ok, moved.summary).toBe(true);
     expect(moved.summary).toMatch(/Encore à corriger avant le montage à la marque : « Offre par quantité »/);
     // Le corriger en un seul appel (remplacer) : permis, plus rien à corriger.
-    const fixed = await call("custom.structure", ctx, { ops: [{ op: "replace", uid: offer, section: "Grille bento" }] });
+    const fixed = await call("custom.structure", ctx, { ops: [{ op: "replace", uid: offer, section: "Galerie avec visionneuse" }] });
     expect(fixed.ok, fixed.summary).toBe(true);
     expect(fixed.summary).not.toMatch(/Encore à corriger/);
     // Une retouche qui crée un défaut (accueil sous 8 sections) est refusée, avec la façon de faire.
@@ -597,5 +597,17 @@ describe("bibliothèque : « Histoire du produit au défilement » sur télépho
   it("en-tête classique sur téléphone : logo au centre (menu à gauche, recherche et panier à droite)", () => {
     const css = fs.readFileSync(path.join(process.cwd(), "public/sections/library.css"), "utf8");
     expect(css).toContain("@container (max-width:760px){.bh{grid-template-columns:1fr auto 1fr}.bh-bg{justify-self:start}.bh-lg{justify-self:center;text-align:center}.bh-ic{justify-self:end}}");
+  });
+});
+
+describe("thème sur mesure : sections dont le contenu vient du script de démonstration", () => {
+  it("jamais proposées ni acceptées (essai Heure Dorée : « Comment conserver mon thé ? » sur un site de confitures)", async () => {
+    const L = await import("@/lib/syna-agent/custom-theme/library");
+    for (const id of L.SCRIPT_DEMO_SECTIONS) expect(L.libSection(id), id).toBeTruthy();
+    for (const fam of ["classique", "moderne"] as const) for (const s of L.familySections(fam)) expect(L.SCRIPT_DEMO_SECTIONS.has(s.id), s.title).toBe(false);
+    const base = fullSite("classique");
+    const T = { family: "classique", style: "classique", rev: 1, header: null, footer: null, search: null, pages: [{ key: "home", label: "Accueil", sections: [{ uid: "s00000001", id: "questions-en-bulles-de-discussion" }] }] } as unknown as CustomTheme;
+    void base;
+    expect(checkCustomTheme(T).some((x) => x.level === "bloquant" && /Questions en bulles de discussion[^]*script de démonstration/.test(x.text))).toBe(true);
   });
 });
