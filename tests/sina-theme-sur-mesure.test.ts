@@ -223,6 +223,15 @@ describe("thème sur mesure : outils de SINA", async () => {
       expect(after).toContain(r.data.href);
     } finally { delete T.customPhotoDeps.unit; delete T.customPhotoDeps.make; }
   });
+
+  it("carte d'accord d'une dépense : l'action en clair et son prix en % du budget, jamais le nom de l'outil (essai réel du 9 novembre)", async () => {
+    const { ctx, pid } = await project();
+    const { confirmationText } = await import("@/lib/syna-agent/loop");
+    const text = await fr(() => confirmationText(getTool("custom.build")!, { photos: true, images: "sina" }, ctx, ctx.user.id, pid, { label: "thème sur mesure monté à ta marque : 34 sections écrites, 48 photos créées", probableMicro: 6_330_000, maxMicro: 10_460_000 }));
+    expect(text).toMatch(/^Thème sur mesure monté à ta marque : 34 sections écrites, 48 photos créées\./);
+    expect(text).toMatch(/Coût probable : .*%.* ; au plus .*%/);
+    expect(text).not.toMatch(/custom\.build|\{|€/);
+  });
 });
 
 describe("thème sur mesure : montage à la marque (textes et photos), sans aucun appel réel", async () => {

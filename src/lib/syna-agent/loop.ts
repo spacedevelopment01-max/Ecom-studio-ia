@@ -224,7 +224,7 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
           catch (e) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, args: parsed.data, ok: false, summary: L("Refus avant exécution : ", "Refused before running: ") + String(clip(e instanceof Error ? e.message : String(e), 600)) }, r.id); continue; }
           const b = budgetState(user.id, r.project_id, r.conversation_id);
           // Une action gratuite (devis à 0, ex. lire des angles prêts) ne demande jamais d'accord de dépense.
-          if (est.maxMicro > 0 && est.maxMicro > b.remainingMicro) return askConfirmation(r, t, parsed.data, tctx, "budget", est.maxMicro);
+          if (est.maxMicro > 0 && est.maxMicro > b.remainingMicro) return askConfirmation(r, t, parsed.data, tctx, "budget", est.maxMicro, est);
         }
         const res = await execute(t, parsed.data, tctx, key, r);
         // Un projet créé pendant l'exécution devient le projet de la suite (droits relus à chaque outil).
@@ -278,8 +278,20 @@ async function execute(t: AgentTool, args: unknown, ctx: ToolContext, key: strin
   return res;
 }
 
-async function askConfirmation(r: SynaRun, t: AgentTool, args: unknown, ctx: ToolContext, reason: "sensitive" | "budget", costMaxMicro?: number) {
-  const preview = t.preview ? await t.preview(ctx, args) : `${t.name} ${JSON.stringify(args).slice(0, 600)}`;
+/**
+ * Texte de la carte d'accord (essai réel du 9 novembre 2026 : elle montrait « custom.build {…} » au client). Une action
+ * se présente toujours en clair : ce qui sera fait, puis pour une dépense le coût probable et le plafond, en % du budget
+ * IA du mois (jamais en euros, jamais le nom technique de l'outil).
+ */
+export async function confirmationText(t: AgentTool, args: unknown, ctx: ToolContext, userId: string, projectId: string | null, est?: { label: string; probableMicro?: number; maxMicro: number }): Promise<string> {
+  const pct = (m: number) => budgetPctText(userId, m, projectId);
+  const price = est && est.maxMicro > 0 ? (est.probableMicro ? L(`Coût probable : ${pct(est.probableMicro)} ; au plus ${pct(est.maxMicro)}.`, `Likely cost: ${pct(est.probableMicro)}; at most ${pct(est.maxMicro)}.`) : L(`Au plus ${pct(est.maxMicro)}.`, `At most ${pct(est.maxMicro)}.`)) : "";
+  const what = t.preview ? await t.preview(ctx, args) : est?.label ? est.label.charAt(0).toUpperCase() + est.label.slice(1) + "." : t.description.split(/(?<=[.:])\s/)[0];
+  return [what, price].filter(Boolean).join("\n");
+}
+
+async function askConfirmation(r: SynaRun, t: AgentTool, args: unknown, ctx: ToolContext, reason: "sensitive" | "budget", costMaxMicro?: number, est?: { label: string; probableMicro?: number; maxMicro: number }) {
+  const preview = await confirmationText(t, args, ctx, r.user_id, r.project_id, est);
   const p: PendingAction = { id: newId(), tool: t.name, args, reason, preview, costMaxMicro, createdAt: Date.now() };
   updateRun(r.id, { status: "waiting_confirmation", pending_json: JSON.stringify(p) });
   addMessage(r.conversation_id, "event", { kind: "confirmation", pending: p, budget: budgetState(r.user_id, r.project_id, r.conversation_id) }, r.id);
