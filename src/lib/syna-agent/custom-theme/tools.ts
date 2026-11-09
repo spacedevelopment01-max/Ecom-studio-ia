@@ -27,7 +27,7 @@ import { codePhotoPrompt } from "../mockup-code/code-mockup";
 import { hdAspect } from "../mockup-code/prompts";
 import { imageReferences, mockupImageRoute } from "../mockup-code/tools";
 import { familySections, libSection, onlyFor, sectionByRef, isCardSection } from "./library";
-import { applyStructure, checkCustomTheme, findSection, loadCustomTheme, replaceOnce, requiredPages, saveCustomTheme, scopedCss, sectionHtml, undoCustomTheme, type CustomTheme, type SiteKind, type StructureOp } from "./theme";
+import { allSections, applyStructure, checkCustomTheme, findSection, loadCustomTheme, replaceOnce, requiredPages, saveCustomTheme, scopedCss, sectionHtml, undoCustomTheme, type CustomTheme, type SiteKind, type StructureOp } from "./theme";
 import { listProducts } from "../../products/catalog";
 import { companyOf } from "../activity";
 import { enqueue } from "../../jobs";
@@ -105,10 +105,27 @@ const sectionsTool: AgentTool<{ role?: string; query?: string }> = {
   },
 };
 
+/** Reprend dans le nouveau montage le travail des sections déjà présentes (même section, de préférence sur la même page). */
+export function keepWork(t: CustomTheme, cur: CustomTheme | null): number {
+  if (!cur) return 0;
+  const pool = allSections(cur).filter((x) => x.s.html || x.s.css || x.s.clientTexts).map((x) => ({ key: x.page?.key ?? x.place, s: x.s }));
+  let n = 0;
+  const take = (id: string, key: string) => {
+    let i = pool.findIndex((x) => x.s.id === id && x.key === key);
+    if (i < 0) i = pool.findIndex((x) => x.s.id === id);
+    if (i < 0) return null;
+    n++;
+    return pool.splice(i, 1)[0].s;
+  };
+  for (const pg of t.pages) pg.sections = pg.sections.map((s) => take(s.id, pg.key) ?? s);
+  for (const [k, place] of [["header", "en-tête"], ["footer", "pied de page"], ["search", "recherche"]] as const) { const s = t[k]; if (s) t[k] = take(s.id, place) ?? s; }
+  return n;
+}
+
 type PageArg = { key: string; label: string; sections: string[] };
 const composeTool: AgentTool<{ header: string; footer: string; search?: string | null; pages: PageArg[] }> = {
   name: "custom.compose", module: "site", kind: "write", needsProject: true,
-  description: "Étape 6 (gratuit) : MONTE de A à Z le thème sur mesure du client, avec les MEILLEURES sections de SA famille pour SON produit ou SON service (lis custom.sections d'abord ; aucun thème de départ : les thèmes construits sont pour la voie « thème du Studio »), à ses couleurs, polices, nom et logo. header, footer (search : recherche plein écran, famille Moderne) et pages : [{ key, label, sections : identifiants ou titres de custom.sections, dans l'ordre de l'histoire de la page }], TOUTES les pages obligatoires (clés données par custom.sections : home, shop si plusieurs produits, product, cart, compte, about, contact, aide, legal, 404 ; jamais de page commande ni de confirmation pour Shopify, qui les tient lui-même ; services : home, prestations, reservation ou devis, about, contact, aide, legal, 404). Les règles du propriétaire sont contrôlées : un point bloquant (page manquante comprise) n'enregistre rien. Remplace le thème en cours (l'ancien reste dans l'historique : custom.undo).",
+  description: "Étape 6 (gratuit) : MONTE de A à Z le thème sur mesure du client, avec les MEILLEURES sections de SA famille pour SON produit ou SON service (lis custom.sections d'abord ; aucun thème de départ : les thèmes construits sont pour la voie « thème du Studio »), à ses couleurs, polices, nom et logo. header, footer (search : recherche plein écran, famille Moderne) et pages : [{ key, label, sections : identifiants ou titres de custom.sections, dans l'ordre de l'histoire de la page }], TOUTES les pages obligatoires (clés données par custom.sections : home, shop si plusieurs produits, product, cart, compte, about, contact, aide, legal, 404 ; jamais de page commande ni de confirmation pour Shopify, qui les tient lui-même ; services : home, prestations, reservation ou devis, about, contact, aide, legal, 404). Les règles du propriétaire sont contrôlées : un point bloquant (page manquante comprise) n'enregistre rien. Remplace le thème en cours (l'ancien reste dans l'historique : custom.undo) ; les sections gardées gardent leurs textes et photos. Sur un thème DÉJÀ MONTÉ, pour ajouter, retirer ou déplacer des sections, utilise custom.structure (jamais un nouveau montage pour ajouter une section).",
   args: z.object({
     header: z.string().max(80), footer: z.string().max(80), search: z.string().max(80).nullable().optional(),
     pages: z.array(z.object({ key: z.string().regex(/^[a-z0-9-]{1,40}$/), label: z.string().min(1).max(40), sections: z.array(z.string().max(80)).min(1).max(16) }).strict()).min(1).max(16),
@@ -121,7 +138,10 @@ const composeTool: AgentTool<{ header: string; footer: string; search?: string |
       t = applyStructure(t, a.pages.flatMap((pg) => [{ op: "page", key: pg.key, label: pg.label } as StructureOp, ...pg.sections.map((s) => ({ op: "add", page: pg.key, section: ref(s) }) as StructureOp)]));
       t = applyStructure(t, [{ op: "shell", slot: "header", section: ref(a.header) }, { op: "shell", slot: "footer", section: ref(a.footer) }]);
       if (a.search) t = applyStructure(t, [{ op: "shell", slot: "search", section: ref(a.search) }]);
-      return saved(ctx, { ...t, chosen: false }, `monté de A à Z : ${t.pages.map((x) => x.label).join(", ")}`);
+      // Thème déjà monté : chaque section gardée garde son travail (textes, photos, retouches). Essai Heure Dorée du
+      // 9 novembre : pour ajouter des sections, SINA a tout remonté et jeté les textes et les photos déjà faits.
+      const kept = keepWork(t, loadCustomTheme(p.id));
+      return saved(ctx, { ...t, chosen: false }, `monté de A à Z : ${t.pages.map((x) => x.label).join(", ")}${kept ? ` (${kept} section(s) gardée(s) avec leurs textes et photos)` : ""}`);
     } catch (e) { return { ok: false, summary: (e as Error).message, internal: true }; }
   },
 };

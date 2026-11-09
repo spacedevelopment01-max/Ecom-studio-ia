@@ -525,3 +525,24 @@ describe("thème sur mesure : pages pleines", () => {
     expect(problems).toContain("« Fiche produit » n'a que 3 section(s) : au moins 7 (fiche produit)");
   });
 });
+
+describe("thème sur mesure : remonter le thème ne jette jamais le travail fait", () => {
+  it("les sections gardées gardent leurs textes, photos et retouches ; les nouvelles partent de la bibliothèque", async () => {
+    const { keepWork } = await import("@/lib/syna-agent/custom-theme/tools");
+    const id = (t: string) => sectionByRef(t)!.id;
+    const cur = { version: 1, family: "classique", style: "classique", rev: 5, at: 0,
+      header: { uid: "s00000001", id: id("En-tête classique"), html: "<header>Heure Dorée</header>", clientTexts: true }, footer: null, search: null,
+      pages: [{ key: "home", label: "Accueil", sections: [{ uid: "s00000010", id: id("Ouverture photo pleine"), html: "<section>Ouvre le pot</section>", clientTexts: true }, { uid: "s00000011", id: id("Avis clients") }] },
+        { key: "product", label: "Fiche produit", sections: [{ uid: "s00000020", id: id("Produit vedette"), html: "<section>Abricot</section>", css: "[data-ct=\"s00000020\"] h2{color:red}", clientTexts: true }] }] } as any;
+    const next = { ...cur, rev: 0, header: { uid: "s0000a001", id: id("En-tête classique") },
+      pages: [{ key: "home", label: "Accueil", sections: [{ uid: "s0000a010", id: id("Ouverture photo pleine") }, { uid: "s0000a011", id: id("Citation en grand") }] },
+        { key: "product", label: "Fiche produit", sections: [{ uid: "s0000a020", id: id("Produit vedette") }, { uid: "s0000a021", id: id("Badges de confiance") }] }] } as any;
+    expect(keepWork(next, cur)).toBe(3);
+    expect(next.header).toMatchObject({ uid: "s00000001", html: "<header>Heure Dorée</header>" });
+    expect(next.pages[0].sections[0]).toMatchObject({ uid: "s00000010", html: "<section>Ouvre le pot</section>", clientTexts: true });
+    expect(next.pages[0].sections[1].html).toBeUndefined();
+    expect(next.pages[1].sections[0]).toMatchObject({ uid: "s00000020", clientTexts: true });
+    expect(next.pages[1].sections[0].css).toContain("color:red");
+    expect(keepWork(next, null)).toBe(0);
+  });
+});
