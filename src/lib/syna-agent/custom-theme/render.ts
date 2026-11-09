@@ -180,7 +180,10 @@ const PICK_JS = `(function(){
   var st=document.createElement("style");st.textContent='.ctw-hov{outline:2px dashed #2F5BEA!important;outline-offset:-2px!important;cursor:crosshair!important}.ctw-picked{outline:3px solid #2F5BEA!important;outline-offset:-3px!important}.ctw-lab{position:fixed;z-index:2147483001;background:#2F5BEA;color:#fff;font:600 11px system-ui,sans-serif;padding:3px 8px;border-radius:6px;pointer-events:none}';document.head.appendChild(st);
   function kind(el){var t=el.tagName.toLowerCase();if(el.hasAttribute("data-ct"))return"Section";if(/^(img|video)$/.test(t))return"Image";if(/^(a|button|summary)$/.test(t))return"Bouton";if(/^h[1-6]$/.test(t))return"Titre";return"Texte"}
   function pathOf(el,sec){var segs=[],n=el;while(n&&n!==sec){var p=n.parentElement;if(!p)return"";segs.unshift(n.tagName.toLowerCase()+":nth-child("+([].indexOf.call(p.children,n)+1)+")");n=p}return n===sec?segs.join(" > "):""}
-  function target(e){var t=e.target.closest&&e.target.closest(SEL);if(!t)return null;if(!t.closest("[data-ct]"))return null;return t}
+  /* Un mot isolé (titre découpé pour son animation, mot en couleur) désigne le titre, le texte ou le bouton entier. */
+  function target(e){var t=e.target.closest&&e.target.closest(SEL);if(!t)return null;if(!t.closest("[data-ct]"))return null;
+    if(/^(span|b|strong|em|small|i)$/i.test(t.tagName)){var up=t.parentElement&&t.parentElement.closest("h1,h2,h3,h4,h5,h6,p,a,button,li,blockquote,label,summary");if(up&&t.closest("[data-ct]").contains(up))t=up}
+    return t}
   function clear(){if(hov){hov.classList.remove("ctw-hov");hov=null}if(lab){lab.remove();lab=null}}
   document.addEventListener("mouseover",function(e){if(!window.ctPicking)return;var t=target(e);clear();if(!t)return;hov=t;t.classList.add("ctw-hov");lab=document.createElement("div");lab.className="ctw-lab";lab.textContent=kind(t);var r=t.getBoundingClientRect();lab.style.left=Math.max(4,r.left)+"px";lab.style.top=Math.max(4,r.top-22)+"px";document.body.appendChild(lab)},true);
   document.addEventListener("click",function(e){if(!window.ctPicking)return;var t=target(e);if(!t)return;e.preventDefault();e.stopPropagation();
@@ -193,7 +196,7 @@ const PICK_JS = `(function(){
 })();`;
 
 /** nonce : jeton des scripts du rendu (feuille de sécurité de la réponse : aucun autre script ne s'exécute). */
-export type RenderOptions = { studio?: boolean; title?: string; nonce?: string };
+export type RenderOptions = { studio?: boolean; title?: string; nonce?: string; /** Aperçu posé dans le Studio (onglet Boutique, fil de SINA) : la barre de pages du thème est celle du Studio. */ embed?: boolean };
 
 export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand">, t: CustomTheme, o: RenderOptions = {}): string {
   const lib = sectionLibrary();
@@ -223,6 +226,7 @@ ${shell(t.footer, "pied de page")}</div></div>
 ${withBrandName(templates, name)}
 <script${n} src="/sections/library.js"></script>
 <script${n}>${NAV_JS}</script>
+${o.embed ? `<style>.tb-bar{display:none}.tb-wrap .zm18,.bh,.mz1,.mz2{top:0!important}.ctw-note{top:10px;bottom:auto;left:auto;right:10px;max-width:300px;font-size:11px}</style>` : ""}
 ${o.studio ? `${sampleTexts ? `<div class="ctw-note" aria-hidden="true">Thème sur mesure · textes et photos d'exemple encore présents : SINA les remplace par les tiens</div>` : ""}<script${n}>${PICK_JS}</script>` : ""}
 </body></html>`;
 }

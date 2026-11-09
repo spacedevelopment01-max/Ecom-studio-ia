@@ -22,7 +22,8 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   const t = loadCustomTheme(id);
   if (!t) throw new HttpError(404, L("Aucun thème sur mesure pour ce projet.", "No custom theme for this project."));
   const nonce = crypto.randomBytes(12).toString("base64");
-  const html = renderCustomTheme(p, t, { studio: new URL(req.url).searchParams.get("studio") === "1", nonce });
+  const q = new URL(req.url).searchParams;
+  const html = renderCustomTheme(p, t, { studio: q.get("studio") === "1", embed: q.get("embed") === "1", nonce });
   // Seuls les scripts du rendu (bibliothèque du Studio) s'exécutent : aucun script venu d'une section retouchée.
   const csp = [
     "default-src 'self'", `script-src 'self' 'nonce-${nonce}'`, "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",

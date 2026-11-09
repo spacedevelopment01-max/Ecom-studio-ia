@@ -31,6 +31,7 @@ import type { BusinessType } from "@/lib/project-types";
 import { KeptSiteCard, ReproductionBanner, SiteReading } from "./existing-site";
 import { useBilling } from "../billing-client";
 import { CustomThemeButton, useCustomThemeStatus } from "./custom-theme";
+import { CustomThemeBoutique, type CustomThemeInfo } from "./custom-theme-boutique";
 import { ExportDownload, ExportSteps, PlatformExportDetails } from "./export-platform";
 
 import { ThemeAdaptationPanel } from "./theme-adaptation";
@@ -421,6 +422,11 @@ export default function TabBoutique() {
     }
   }
 
+  // Thème sur mesure monté par SINA (étape 6) : montré ici en grand, avec la désignation d'un élément (consigne du
+  // propriétaire du 9 novembre 2026) ; la boutique actuelle reste à un clic.
+  const { data: ctInfo } = useApi<CustomThemeInfo>(`/api/projects/${id}/custom-theme/info`);
+  const [storeView, setStoreView] = useState(false);
+  if (ctInfo && !storeView) return <CustomThemeBoutique projectId={id} onShowStore={theme?.current ? () => setStoreView(true) : undefined} />;
   if (!theme) return <div className="grid place-items-center py-24"><Spinner /></div>;
   // « J'ai déjà mon site et mon logo » : site en cours de lecture, conservé tel quel, ou reproduit.
   const site = data?.settings.existingSite;
@@ -706,6 +712,7 @@ export default function TabBoutique() {
             {pages.map((p) => <option key={p.path} value={p.path}>{p.label}</option>)}
           </Select>
         </div>
+        {ctInfo && <button onClick={() => setStoreView(false)} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-ink bg-ink px-3 text-xs text-paper" data-show-custom-theme><Sparkles className="size-3.5" /> {t("Thème sur mesure", "Custom theme")}</button>}
         {!cur.imported && <button onClick={() => setPagesOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs hover:border-ink" data-pages-manager><FileStack className="size-3.5" /> {t("Pages", "Pages")}</button>}
         <div className="flex rounded-full border border-line bg-card p-0.5" role="group" aria-label={t("Appareil", "Device")}>
           {(Object.keys(DEVICES) as (keyof typeof DEVICES)[]).map((d) => {
