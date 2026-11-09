@@ -170,6 +170,8 @@ const CART_JS = `(function(){
   var wrap=document.querySelector(".tb-wrap");if(!wrap)return;
   function badges(){return [].slice.call(wrap.querySelectorAll('button[aria-label="Panier"]')).map(function(b){return [].slice.call(b.querySelectorAll("*")).filter(function(x){return !x.children.length&&/^\\d+$/.test(x.textContent.trim())})[0]}).filter(Boolean)}
   var n=null,tm,CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
+  // le compteur part du contenu réel de la page Panier du thème (jamais 0 avec un panier rempli)
+  if(window.TB_CART_N!=null){n=+window.TB_CART_N;badges().forEach(function(b){b.textContent=n})}
   function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
   function add(k,img){if(!(k>0))return;var bs=badges();if(n===null)n=bs.length?+bs[0].textContent.trim():0;n+=k;
     bs.forEach(function(b){b.textContent=n;b.classList.remove("tb-bump");void b.offsetWidth;b.classList.add("tb-bump")});
@@ -177,10 +179,15 @@ const CART_JS = `(function(){
     var src=img&&img.getAttribute("src");
     t.innerHTML=(src?'<img src="'+esc(src)+'" alt="">':'<i>'+CHECK+'</i>')+'<span><b>'+(k>1?k+" articles ajoutés":"Ajouté au panier")+'</b><small>Panier : '+n+(n>1?" articles":" article")+'</small></span><button type="button" data-tbcart>Voir le panier</button>';
     t.classList.remove("on");void t.offsetWidth;t.classList.add("on");clearTimeout(tm);tm=setTimeout(function(){t.classList.remove("on")},3800)}
+  // Réseaux sociaux : le lien du compte de la marque se renseigne dans les réglages (jamais un faux compte)
+  function note(msg){var t=wrap.querySelector(".tb-toast");if(!t){t=document.createElement("div");t.className="tb-toast";t.setAttribute("role","status");wrap.appendChild(t)}
+    t.innerHTML='<i>'+CHECK.replace('<path d="M5 12.5l4.5 4.5L19 7"/>','<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>')+'</i><span><b>'+esc(msg)+'</b><small>Lien à ajouter par la marque</small></span>';
+    t.classList.remove("on");void t.offsetWidth;t.classList.add("on");clearTimeout(tm);tm=setTimeout(function(){t.classList.remove("on")},3200)}
   function pic(el){var s=el&&el.closest("article,figure,li,label,section");var i=s&&s.querySelector("img");return i}
   document.addEventListener("click",function(e){var t=e.target;
     if(t.closest&&t.closest("[data-tbcart]")){t.closest(".tb-toast").classList.remove("on");if(window.TB_GO)window.TB_GO("cart");return}
     if(!t.closest||!wrap.contains(t)||window.ctPicking)return;
+    var so=t.closest("a");if(so){var nm=(so.getAttribute("aria-label")||so.textContent).trim();if(/^(Instagram|TikTok|Pinterest|Facebook|YouTube|LinkedIn|X)$/i.test(nm)){e.preventDefault();note("Compte "+nm+" de la marque");return}}
     var po=t.closest("[data-pogo]");if(po){var s=po.closest("section")||wrap,q=1;[].forEach.call(s.querySelectorAll('[aria-pressed="true"],[aria-checked="true"],input[type=radio]:checked'),function(x){var m=/^\\s*(\\d+)\\s*(paires?|pièces?|flacons?|lots?|boîtes?|sachets?|x\\b)/i.exec((x.closest("label")||x).textContent);if(m)q=+m[1]});
       q+=s.querySelectorAll('input[type=checkbox]:checked').length;add(q,s.querySelector("[data-pomain] img, .po img, img"));return}
     var d=t.closest(".dq3-ad");if(d){var tile=d.closest("article");if(tile&&tile.querySelector('.dq3-sz [aria-pressed="true"]'))add(1,pic(d));return}

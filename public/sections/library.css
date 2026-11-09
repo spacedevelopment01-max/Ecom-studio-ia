@@ -3971,6 +3971,7 @@ html[data-po-promo="1"] [data-poshow="promo"]{display:inline-flex!important}
 /* CM:CSS */
 /* grille à filtres : la rangée de filtres qui défile ne doit jamais élargir la section (téléphone) */
 .zm5{grid-template-columns:minmax(0,1fr)}
+.zm5>*,.zm5-bar>*{min-width:0;max-width:100%}
 .zm5-t{padding-top:26px;background:linear-gradient(0deg,color-mix(in srgb,var(--q-bk) 94%,transparent) 55%,transparent)}
 .zm5-t i{white-space:nowrap}
 .aud-st.c{background:linear-gradient(90deg,#E8622C 50%,#0B0C0B 50%);color:#fff}
