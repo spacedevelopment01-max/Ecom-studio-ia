@@ -21,7 +21,7 @@ describe("thème sur mesure : bibliothèque", () => {
     expect(lib.sections.length).toBeGreaterThanOrEqual(180);
     expect(new Set(lib.sections.map((s) => s.id)).size).toBe(lib.sections.length);
     const moderne = familySections("moderne");
-    expect(moderne).toHaveLength(49);
+    expect(moderne).toHaveLength(55);
     // Chaque section nommée dans les familles du Studio existe dans la bibliothèque.
     for (const f of SECTION_FAMILIES.filter((x) => x.id === "moderne")) for (const titles of Object.values(f.roles)) for (const t of titles) expect(sectionByRef(t), t).toBeTruthy();
     // Les démonstrations en fausse fenêtre ne sont jamais proposées.
@@ -105,6 +105,13 @@ describe("thème sur mesure : rendu", () => {
     const studio = renderCustomTheme(proj, t, { studio: true, nonce: "abc" });
     expect(studio).toContain('type:"picked"');
     expect(studio).toContain("textes et photos d'exemple");
+    // Pages complètes et liens reliés (demande du propriétaire du 9 novembre 2026) ; compteur du panier commun.
+    expect(t.pages.map((p) => p.key)).toEqual(expect.arrayContaining(["commande", "merci", "compte", "aide", "contact", "legal"]));
+    const map = JSON.parse(/window\.TB_MAP=(\{[^<]*?\});/.exec(html)![1]);
+    expect(map).toMatchObject({ "Passer commande": "commande", "Mon compte": "compte", "Suivi de commande": "aide", "Conditions générales": "legal:cgv", "Confidentialité": "legal:confidentialite" });
+    expect(html).toContain("window.TB_GO=go");
+    expect(html).toContain("tb-toast");
+    expect(html).toContain("Aucune donnée de carte n'est demandée ici");
     if (process.env.CT_DUMP) for (const [f, s] of [["moderne", "sport-chic"], ["moderne", "streetwear-neon"], ["classique", "classique"]] as const) fs.writeFileSync(path.join(process.env.CT_DUMP, `ct-${s}.html`), renderCustomTheme(proj, starterTheme(f, s), { studio: true, nonce: "n0nce" }));
   });
 
@@ -156,7 +163,7 @@ describe("thème sur mesure : outils de SINA", async () => {
     expect(made.ok).toBe(true);
     const card = made.data.customTheme;
     expect(card.href).toBe(`/api/projects/${pid}/custom-theme?studio=1&embed=1&rev=1`);
-    expect(card.pages.map((p: any) => p.key)).toEqual(["home", "shop", "product", "cart", "journal", "404"]);
+    expect(card.pages.map((p: any) => p.key)).toEqual(["home", "shop", "product", "cart", "commande", "merci", "compte", "aide", "journal", "article", "contact", "legal", "404"]);
     // Mélange de familles refusé : rien n'est enregistré.
     const mixed = await call("custom.compose", ctx, { pages: [{ key: "home", label: "Accueil", sections: ["Ouverture photo pleine"] }] });
     expect(mixed.ok).toBe(false);
@@ -180,13 +187,13 @@ describe("thème sur mesure : outils de SINA", async () => {
     expect((await call("custom.edit", ctx, { uid: hero, hide: ["body"] })).ok).toBe(false);
     // Structure : remplacer, retirer, ajouter une page ; annuler revient en arrière.
     const shop = loadCustomTheme(pid)!.pages[1];
-    const st = await call("custom.structure", ctx, { ops: [{ op: "replace", uid: shop.sections[1].uid, section: "Questions numérotées" }, { op: "page", key: "contact", label: "Contact" }, { op: "add", page: "contact", section: "Boutique et contact" }] });
+    const st = await call("custom.structure", ctx, { ops: [{ op: "replace", uid: shop.sections[1].uid, section: "Questions numérotées" }, { op: "page", key: "boutiques", label: "Nos boutiques" }, { op: "add", page: "boutiques", section: "Boutique et contact" }] });
     expect(st.ok).toBe(true);
-    expect(loadCustomTheme(pid)!.pages.map((p) => p.key)).toContain("contact");
+    expect(loadCustomTheme(pid)!.pages.map((p) => p.key)).toContain("boutiques");
     const revBefore = loadCustomTheme(pid)!.rev;
     expect((await call("custom.undo", ctx, {})).ok).toBe(true);
     const back = loadCustomTheme(pid)!;
-    expect(back.pages.map((p) => p.key)).not.toContain("contact");
+    expect(back.pages.map((p) => p.key)).not.toContain("boutiques");
     expect(back.rev).toBe(revBefore + 1);
     // Choix du client.
     const ch = await call("custom.choose", ctx, {});

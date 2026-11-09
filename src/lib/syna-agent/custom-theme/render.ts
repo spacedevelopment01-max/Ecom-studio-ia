@@ -87,22 +87,28 @@ function featuresOf(projectId: string): BuyFeatures | null {
 
 /** Liens du site : le texte d'un lien mène à la page qui lui correspond (si elle existe dans le thème). */
 const LINK_WORDS: Record<string, string[]> = {
-  shop: ["Boutique", "Nouveautés", "Collections", "Collection", "Tout voir", "Tout le catalogue", "Découvrir", "Voir la collection", "Explorer la collection", "Femme", "Homme", "Le drop", "Soldes", "Nos produits", "Nos mélanges", "Coffrets", "Accessoires", "Chaussures"],
+  shop: ["Boutique", "Boutique en ligne", "Nouveautés", "Collections", "Collection", "Tout voir", "Tout le catalogue", "Découvrir", "Voir la collection", "Explorer la collection", "Femme", "Homme", "Le drop", "Soldes", "Nos produits", "Nos mélanges", "Coffrets", "Accessoires", "Chaussures", "Continuer mes achats"],
   cart: ["Panier", "Voir le panier"],
-  contact: ["Contact", "Écris-nous", "Nous écrire", "Suivi de commande"],
+  commande: ["Passer commande", "Valider mon panier", "Commander"],
+  compte: ["Mon compte", "Favoris", "Se connecter"],
+  aide: ["Aide", "Livraison", "Retours", "Retours et échanges", "Questions", "Suivi de commande", "Suivre ma commande"],
+  contact: ["Contact", "Écris-nous", "Nous écrire"],
   about: ["À propos", "Notre histoire", "La marque", "Tous les looks"],
   journal: ["Journal", "Le journal", "Tous les articles", "Blog"],
   home: ["Accueil", "Retour à l'accueil"],
 };
+/** Pages légales : un seul onglet ouvert selon le lien (« legal:cgv »). */
+const LEGAL_WORDS: Record<string, string> = { "Mentions légales": "mentions", "Conditions générales": "cgv", "Conditions générales de vente": "cgv", "Confidentialité": "confidentialite", "Remboursements": "retours", "Cookies": "cookies" };
 function linkMap(t: CustomTheme): Record<string, string> {
   const keys = new Set(t.pages.map((p) => p.key));
   const out: Record<string, string> = {};
   for (const [k, words] of Object.entries(LINK_WORDS)) {
-    const target = keys.has(k) ? k : k === "about" && keys.has("journal") ? "journal" : k === "journal" && keys.has("about") ? "about" : null;
+    const target = keys.has(k) ? k : k === "about" && keys.has("journal") ? "journal" : k === "journal" && keys.has("about") ? "about" : k === "aide" && keys.has("contact") ? "contact" : null;
     if (target) for (const w of words) out[w] = target;
   }
   const product = t.pages.find((p) => /^product/.test(p.key))?.key;
   if (product) for (const w of ["Livraison", "Retours", "Guide des tailles", "Questions"]) out[w] ??= product;
+  if (keys.has("legal")) for (const [w, tab] of Object.entries(LEGAL_WORDS)) out[w] = `legal:${tab}`;
   for (const p of t.pages) out[p.label] = p.key;
   return out;
 }
@@ -125,12 +131,23 @@ body{margin:0;background:#E7E3DC}
 .tb-wrap>.frame{position:relative;margin:0 auto;transition:width .4s}
 .tb-wrap.phone>.frame{width:390px;max-width:100%;border:10px solid #111;border-radius:34px;overflow:clip;margin-top:18px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
 .tb-pg[hidden]{display:none}
+.tb-bump{animation:tbBump .5s}
+@keyframes tbBump{40%{transform:scale(1.6)}}
+.tb-toast{position:fixed;left:50%;bottom:18px;z-index:9500;transform:translate(-50%,140%);display:flex;align-items:center;gap:12px;max-width:calc(100% - 24px);box-sizing:border-box;padding:10px 10px 10px 16px;border-radius:14px;background:#111;color:#fff;font:600 .86rem var(--f-ui,system-ui);box-shadow:0 12px 30px rgba(0,0,0,.3);transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.tb-toast.on{transform:translate(-50%,0)}
+.tb-toast button{flex:none;border:0;border-radius:999px;padding:8px 14px;background:var(--tb-ac,#E8622C);color:#111;font:700 .78rem var(--f-ui,system-ui);cursor:pointer}
 .tb-pg>section,.tb-pg>footer{border-radius:0}
 .tb-wrap .zm18{position:fixed;inset:0;z-index:9000;min-height:0;padding:0;background:none;pointer-events:none;visibility:hidden;transition:visibility 0s .55s}
 .tb-wrap .zm18.op{pointer-events:auto;visibility:visible;transition:none}
 .tb-wrap .zm18-bg,.tb-wrap .zm18-op{display:none}
 .tb-wrap .zm18-ov{overflow-y:auto;background:var(--q-bk,#0B0C0B)}
-.ctw .mz1,.ctw .mz2{position:sticky;top:43px;z-index:60}
+.ctw .mz1,.ctw .mz2{position:sticky;top:var(--tb-h,43px);z-index:60}
+@media (max-width:700px){
+  .tb-bar{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;padding:8px 10px}
+  .tb-bar::-webkit-scrollbar{display:none}
+  .tb-bar button{flex:none}.tb-bar>span{white-space:nowrap}.tb-bar .tb-vw{display:none}
+  .tb-wrap{padding:0}.tb-wrap.phone>.frame{width:100%;border:0;border-radius:0;margin-top:0;box-shadow:none}
+}
 .ctw .mz2{box-shadow:0 6px 20px rgba(30,42,50,.06)}
 /* en-tête du site posé à part : celui intégré à une ouverture est masqué (jamais deux en-têtes) */
 .ctw .el1-hd,.ctw .dq1-hd{display:none}
@@ -140,11 +157,41 @@ body{margin:0;background:#E7E3DC}
 .ctw-note{position:fixed;left:12px;bottom:12px;z-index:2147483000;max-width:min(560px,calc(100% - 24px));font:500 12px/1.35 system-ui,sans-serif;background:rgba(20,18,16,.88);color:#fff;padding:8px 12px;border-radius:12px;pointer-events:none}
 `;
 
+/** Panier du site : chaque « Ajouter » d'une section met à jour le compteur de l'en-tête (aperçu). */
+const CART_JS = `(function(){
+  // Panier du site : chaque « Ajouter » de n'importe quelle section met à jour le compteur de l'en-tête (démonstration)
+  var wrap=document.querySelector(".tb-wrap");if(!wrap)return;
+  function badges(){return [].slice.call(wrap.querySelectorAll('button[aria-label="Panier"]')).map(function(b){return [].slice.call(b.querySelectorAll("*")).filter(function(x){return !x.children.length&&/^\\d+$/.test(x.textContent.trim())})[0]}).filter(Boolean)}
+  var n=null,tm;
+  function add(k){if(!(k>0))return;var bs=badges();if(n===null)n=bs.length?+bs[0].textContent.trim():0;n+=k;
+    bs.forEach(function(b){b.textContent=n;b.classList.remove("tb-bump");void b.offsetWidth;b.classList.add("tb-bump")});
+    var t=document.querySelector(".tb-toast");if(!t){t=document.createElement("div");t.className="tb-toast";t.setAttribute("role","status");document.body.appendChild(t)}
+    t.innerHTML='<span>'+(k>1?k+" articles ajoutés":"Ajouté au panier")+' · '+n+' dans le panier</span><button type="button" data-tbcart>Voir le panier</button>';t.classList.add("on");clearTimeout(tm);tm=setTimeout(function(){t.classList.remove("on")},3600)}
+  document.addEventListener("click",function(e){var t=e.target;
+    if(t.closest("[data-tbcart]")){t.closest(".tb-toast").classList.remove("on");if(window.TB_GO)window.TB_GO("cart");return}
+    if(!t.closest||!wrap.contains(t)||window.ctPicking)return;
+    var po=t.closest("[data-pogo]");if(po){var s=po.closest("section")||wrap,q=1;[].forEach.call(s.querySelectorAll('[aria-pressed="true"],[aria-checked="true"],input[type=radio]:checked'),function(x){var m=/^\\s*(\\d+)\\s*(paires?|pièces?|flacons?|lots?|boîtes?|sachets?|x\\b)/i.exec((x.closest("label")||x).textContent);if(m)q=+m[1]});
+      q+=s.querySelectorAll('input[type=checkbox]:checked').length;add(q);return}
+    var d=t.closest(".dq3-ad");if(d){var tile=d.closest("article");if(tile&&tile.querySelector('.dq3-sz [aria-pressed="true"]'))add(1);return}
+    if(t.closest(".el3-ad,.el3-qa,.zm6-c button")){add(1);return}
+    var b=t.closest("button");if(!b)return;var tx=b.textContent.replace(/\\s+/g," ").trim();
+    if(/^Ajouter la tenue/.test(tx)){var sc=b.closest("section");add(Math.max(1,sc?sc.querySelectorAll('[aria-pressed="true"]').length:1));return}
+    if(/^Ajouter le look/.test(tx)){var sl=b.closest("section");add(Math.max(1,sl?sl.querySelectorAll(".zm3-pt").length:1));return}
+  });
+})();`;
+
 /** Navigation entre les pages, vue téléphone, recherche par la loupe, carte produit qui ouvre SA fiche. */
 const NAV_JS = `(function(){
   var wrap=document.querySelector(".tb-wrap"),pages=[].slice.call(document.querySelectorAll(".tb-pg"));
-  function go(p){if(!document.querySelector('.tb-pg[data-pg="'+p+'"]'))return;pages.forEach(function(x){x.hidden=x.dataset.pg!==p});
-    document.querySelectorAll("[data-pgb]").forEach(function(b){b.setAttribute("aria-pressed",String(b.dataset.pgb===p))});window.scrollTo(0,0);try{parent.postMessage({source:"ct-preview",type:"page",page:p},"*")}catch(e){}setTimeout(function(){window.dispatchEvent(new Event("resize"));window.dispatchEvent(new Event("scroll"))},60)}
+  var bar=document.querySelector(".tb-bar");function barH(){if(bar)document.documentElement.style.setProperty("--tb-h",bar.offsetHeight+"px")}barH();addEventListener("resize",barH);
+  // « shop:Femme » filtre la grille, « legal:cgv » ouvre l'onglet, « article:lin » montre cet article
+  function go(p){var a=String(p).split(":"),k=a[0],arg=a.slice(1).join(":");var pg=document.querySelector('.tb-pg[data-pg="'+k+'"]');if(!pg)return;pages.forEach(function(x){x.hidden=x.dataset.pg!==k});
+    document.querySelectorAll("[data-pgb]").forEach(function(b){b.setAttribute("aria-pressed",String(b.dataset.pgb===k))});
+    var arts=pg.querySelectorAll("[data-tbart]");if(arts.length){var want=arg||arts[0].dataset.tbart;[].forEach.call(arts,function(x){x.hidden=x.dataset.tbart!==want})}
+    window.scrollTo(0,0);try{parent.postMessage({source:"ct-preview",type:"page",page:k},"*")}catch(e){}
+    if(arg){var tab=pg.querySelector('[data-cm5t="'+arg+'"]');if(tab)tab.click();var chip=pg.querySelector('.zm5-ch [data-c="'+arg+'"]');if(chip)chip.click()}
+    setTimeout(function(){window.dispatchEvent(new Event("resize"));window.dispatchEvent(new Event("scroll"))},60)}
+  window.TB_GO=go;
   window.ctGo=go;
   var prod=pages.map(function(x){return x.dataset.pg}).filter(function(k){return /^product/.test(k)})[0];
   document.addEventListener("click",function(e){
@@ -160,13 +207,13 @@ const NAV_JS = `(function(){
   function openProduct(c){var im=c.querySelector("img")||c.closest("article,li,div").querySelector("img");var f=im&&(im.getAttribute("src")||"").split("/").pop();
     var pg=document.querySelector('.tb-pg[data-pg="'+prod+'"]');if(!pg)return;var s=[].slice.call(pg.querySelectorAll("section")).find(function(x){return x._po&&x._po.gam});if(!s)return;
     var k=s._po.gam.findIndex(function(g){return String(g[0]).split("/").pop()===f});s._po.pick(k>-1?k:s._po.g0)}
-  var MAP=window.TB_MAP||{};document.querySelectorAll(".tb-wrap a:not([data-go])").forEach(function(x){var t=x.textContent.replace(/[→↗]/g,"").trim();if(MAP[t])x.dataset.go=MAP[t]});
+  var MAP=window.TB_MAP||{};document.querySelectorAll(".tb-wrap a:not([data-go]), .tb-wrap button[aria-label]:not([data-go])").forEach(function(x){var t=(x.tagName==="BUTTON"?x.getAttribute("aria-label"):x.textContent).replace(/[→↗]/g,"").replace(/\\s+/g," ").trim(),u=t.replace(/\\s*\\d+\\s*pièces?$/,"").trim();var to=MAP[t]||MAP[u];if(to)x.dataset.go=to});
   var lg=window.CT_LOGO;if(lg)document.querySelectorAll('[data-ct-role="header"] [class$="-lg"],[data-ct-role="header"] .lg,[data-ct-role="footer"] [class$="-lg"]').forEach(function(x){x.innerHTML='<img class="ctw-logo" src="'+lg+'" alt="'+(window.CT_NAME||"")+'">'});
   // Textes écrits par les scripts des sections : jamais le nom d'une marque de démonstration (remplacé par celle du client).
   var NM=window.CT_NAME||"",RX=new RegExp("\\b("+(window.CT_DEMO||[]).join("|")+")\\b","gi");
   function brand(root){if(!NM||!RX.source||RX.source==="\\b()\\b")return;var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),n;while((n=w.nextNode())){if(RX.test(n.nodeValue)){RX.lastIndex=0;n.nodeValue=n.nodeValue.replace(RX,function(m){return m===m.toUpperCase()?NM.toUpperCase():m===m.toLowerCase()?NM.toLowerCase():NM})}RX.lastIndex=0}}
   if(wrap){brand(wrap);new MutationObserver(function(ms){ms.forEach(function(m){m.addedNodes.forEach(function(x){if(x.nodeType===1||x.nodeType===3)brand(x.nodeType===1?x:x.parentNode||wrap)})})}).observe(wrap,{childList:true,subtree:true})}
-  var first=(location.hash||"").replace("#","");go(first&&document.querySelector('.tb-pg[data-pg="'+first+'"]')?first:pages[0]&&pages[0].dataset.pg);
+  var first=(location.hash||"").replace("#","");go(first&&document.querySelector('.tb-pg[data-pg="'+first.split(":")[0]+'"]')?first:pages[0]&&pages[0].dataset.pg);
 })();`;
 
 /**
@@ -219,13 +266,13 @@ ${lib.fonts.map((f) => `<link rel="stylesheet" href="${esc(f)}">`).join("")}
 ${brandCss(p)}
 ${own}</style></head><body>
 <script${n}>${pre}</script>
-<div class="tb-bar"><span>${esc(name)} ·</span>${bar}<span>Voir en</span><button type="button" data-vw="desk" aria-pressed="true">Ordinateur</button><button type="button" data-vw="phone" aria-pressed="false">Téléphone</button></div>
+<div class="tb-bar"><span>${esc(name)} ·</span>${bar}<span class="tb-vw">Voir en</span><button class="tb-vw" type="button" data-vw="desk" aria-pressed="true">Ordinateur</button><button class="tb-vw" type="button" data-vw="phone" aria-pressed="false">Téléphone</button></div>
 <div class="tb-wrap ctw ctw-${t.family} ctw-${t.style}"><div class="frame">${shell(t.header, "en-tête")}${shell(t.search, "recherche")}
 ${body}
 ${shell(t.footer, "pied de page")}</div></div>
 ${withBrandName(templates, name)}
 <script${n} src="/sections/library.js"></script>
-<script${n}>${NAV_JS}</script>
+<script${n}>${NAV_JS}</script><script${n}>${CART_JS}</script>
 ${o.embed ? `<style>.tb-bar{display:none}.tb-wrap .zm18,.bh,.mz1,.mz2{top:0!important}.ctw-note{top:10px;bottom:auto;left:auto;right:10px;max-width:300px;font-size:11px}</style>` : ""}
 ${o.studio ? `${sampleTexts ? `<div class="ctw-note" aria-hidden="true">Thème sur mesure · textes et photos d'exemple encore présents : SINA les remplace par les tiens</div>` : ""}<script${n}>${PICK_JS}</script>` : ""}
 </body></html>`;

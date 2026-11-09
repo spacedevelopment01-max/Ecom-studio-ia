@@ -48,8 +48,8 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   Consignes à Qwen **en français**, concrètes (scène, objets, lumière), seuls les textes voulus entre guillemets.
 - **Thème sur mesure** (décision du propriétaire du 9 novembre 2026 : « on ne va plus appeler ça maquette mais thème sur
   mesure » ; le client ne lit plus jamais le mot « maquette ») : à l'étape 6, SINA **monte** le thème avec la
-  bibliothèque de sections (`public/sections/`, 182 sections préparées par `scripts/sections-library.py` depuis le
-  catalogue ; familles Classique et Moderne, jamais mélangées), aux couleurs, polices, nom et logo du client, et le
+  bibliothèque de sections (`public/sections/`, 188 sections préparées par `scripts/sections-library.py` depuis le
+  catalogue ; familles Classique et Moderne, jamais mélangées ; Moderne avec ses pages de parcours : commande sans champ de carte, commande confirmée, compte, aide et suivi, informations légales « [À compléter] », article ; chaque lien mène à sa page et chaque « Ajouter » met à jour le compteur du panier, demande du 9 novembre 2026), aux couleurs, polices, nom et logo du client, et le
   **modifie sur demande** : outils `custom.*` (`src/lib/syna-agent/custom-theme/`) : bibliothèque, montage
   (`custom.compose`, points de départ SOLSTICE, RUPTURE et Brindi), lecture et modification d'une section
   (`custom.section`, `custom.edit` : textes, mise en forme limitée à la section, élément masqué, photo du client),

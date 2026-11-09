@@ -15,7 +15,7 @@ describe("SINA — familles de sections Classique et Moderne", async () => {
     const cards = F.familyCards();
     expect(cards.map((c) => c.title)).toEqual(["Classique", "Moderne · Sport chic", "Moderne · Streetwear néon"]);
     for (const c of cards) expect(fs.existsSync(path.join(process.cwd(), "public", c.preview))).toBe(true);
-    expect(cards.find((c) => c.family === "moderne")!.sections).toBe(49);
+    expect(cards.find((c) => c.family === "moderne")!.sections).toBe(55);
   });
 
   it("aucune section n'appartient aux deux familles, et la famille Moderne propose plusieurs choix par rôle", () => {
