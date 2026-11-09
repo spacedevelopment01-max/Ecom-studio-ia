@@ -295,6 +295,13 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
     expect((await call("custom.build", ctx, {})).summary).toMatch(/compose d'abord toutes les pages/); // puis tout le site, monté de A à Z
     const composed = await call("custom.compose", ctx, fullSite("classique"));
     expect(composed.ok, composed.summary).toBe(true);
+    // Un thème qui enfreint une règle (page de paiement Shopify ajoutée) n'a jamais de devis : SINA le corrige d'abord.
+    const S = await import("@/lib/syna-agent/custom-theme/theme");
+    const cur = S.loadCustomTheme(pid)!;
+    S.saveCustomTheme(pid, S.applyStructure(cur, [{ op: "page", key: "commande", label: "Commande" }, { op: "add", page: "commande", section: "commande-pas-a-pas" }]));
+    ctx.projectId = pid;
+    await expect(fr(() => getTool("custom.build")!.estimate!(ctx, {}))).rejects.toThrow(/Thème à corriger avant le devis : page « Commande » en trop/);
+    S.saveCustomTheme(pid, cur);
     T.customPhotoDeps.unit = () => 50_000;
     try {
       ctx.projectId = pid;

@@ -27,7 +27,7 @@ import { codePhotoPrompt } from "../mockup-code/code-mockup";
 import { hdAspect } from "../mockup-code/prompts";
 import { imageReferences, mockupImageRoute } from "../mockup-code/tools";
 import { familySections, libSection, onlyFor, sectionByRef, isCardSection } from "./library";
-import { applyStructure, checkCustomTheme, findSection, loadCustomTheme, missingPages, replaceOnce, requiredPages, saveCustomTheme, scopedCss, sectionHtml, undoCustomTheme, type CustomTheme, type SiteKind, type StructureOp } from "./theme";
+import { applyStructure, checkCustomTheme, findSection, loadCustomTheme, replaceOnce, requiredPages, saveCustomTheme, scopedCss, sectionHtml, undoCustomTheme, type CustomTheme, type SiteKind, type StructureOp } from "./theme";
 import { listProducts } from "../../products/catalog";
 import { enqueue } from "../../jobs";
 import { setStep as setJourneyStep, updateJourney as updateJourneyConv } from "../journey";
@@ -132,8 +132,9 @@ function buildPlan(ctx: ToolContext): CustomTheme {
   familyOrError(p.id);
   const cur = loadCustomTheme(p.id);
   if (!cur) throw new Error(L("Aucun thème sur mesure monté : compose d'abord toutes les pages avec les meilleures sections pour ce produit ou ce service (custom.sections puis custom.compose).", "No custom theme composed yet."));
-  const miss = missingPages(cur, siteKind(ctx));
-  if (miss.length) throw new Error(L(`Il manque des pages : ${miss.map((m) => m.label).join(", ")} (custom.structure pour les ajouter).`, "Missing pages."));
+  // Toutes les règles AVANT le devis (essai réel du 9 novembre : un devis affiché pour un thème que le lancement refusait).
+  const blocking = checkCustomTheme(cur, siteKind(ctx)).filter((x) => x.level === "bloquant");
+  if (blocking.length) throw new Error(L(`Thème à corriger avant le devis : ${blocking.map((x) => x.text).join(" ; ")} (custom.structure).`, "Theme to fix before the quote."));
   return cur;
 }
 const buildTool: AgentTool<BuildArgs> = {
