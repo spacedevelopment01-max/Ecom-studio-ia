@@ -386,7 +386,10 @@ a { color: inherit; }
   .es-product__track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 8px; scrollbar-width: none; margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); }
   .es-product__track::-webkit-scrollbar { display: none; }
   .es-product__slide { flex: none; width: 86%; scroll-snap-align: center; }
-  .es-product__thumbs { display: flex; }
+  .es-product__thumbs { display: flex; overscroll-behavior-x: contain; scrollbar-width: none; }
+  .es-product__thumbs::-webkit-scrollbar { display: none; }
+  /* téléphone : cinq vignettes tiennent pile dans la largeur (jamais une vignette coupée) ; au-delà, la rangée glisse */
+  .es-product__thumb { width: calc((100% - 32px) / 5); max-width: 72px; }
 }
 @media (min-width: 990px) {
   .es-product--carousel .es-product__track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
