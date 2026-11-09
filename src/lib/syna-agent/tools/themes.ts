@@ -19,7 +19,7 @@ import { DIRECTIONS } from "../../theme/directions";
 
 const modeTool: AgentTool<{ mode: "theme" | "mockup" }> = {
   name: "site.mode", module: "site", kind: "write", needsProject: true,
-  description: "Étape 6 : enregistre le choix DU CLIENT, après avoir vu les cartes des thèmes, d'une maquette sur mesure (mode mockup, payante) plutôt qu'un thème du Studio — seulement après sa réponse, jamais à sa place (un thème choisi passe par theme.choose). Gratuit.",
+  description: "Étape 6 : enregistre le choix DU CLIENT, après avoir vu les cartes des thèmes, d'un thème sur mesure (mode mockup : monté avec les sections du Studio, seules les photos nouvelles sont payantes) plutôt qu'un thème du Studio — seulement après sa réponse, jamais à sa place (un thème choisi passe par theme.choose). Gratuit.",
   args: z.object({ mode: z.enum(["theme", "mockup"]) }).strict(),
   run: (ctx, a) => {
     const j = journeyOf(ctx.conversationId);
@@ -28,8 +28,8 @@ const modeTool: AgentTool<{ mode: "theme" | "mockup" }> = {
     updateJourney(ctx.conversationId, (x) => { x.siteMode = { mode: a.mode, at: Date.now() }; setStep(x, 6, "doing"); });
     return {
       ok: true,
-      summary: a.mode === "theme" ? L("Choix noté : un thème du Studio.", "Choice saved: a Studio theme.") : L("Choix noté : une maquette sur mesure.", "Choice saved: a custom mockup."),
-      hint: a.mode === "theme" ? "Il choisit sa carte : theme.choose avec son identifiant." : "Suis maintenant la consigne des maquettes (pages, directions, devis avant toute image).",
+      summary: a.mode === "theme" ? L("Choix noté : un thème du Studio.", "Choice saved: a Studio theme.") : L("Choix noté : un thème sur mesure.", "Choice saved: a custom theme."),
+      hint: a.mode === "theme" ? "Il choisit sa carte : theme.choose avec son identifiant." : "Suis maintenant la consigne du thème sur mesure : famille (theme.families), montage (custom.compose), textes et modifications (custom.edit), photos (custom.photo, devis d'abord).",
     };
   },
 };

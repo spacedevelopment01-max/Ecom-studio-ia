@@ -45,7 +45,7 @@ describe("SINA — étape 6 : un de nos thèmes", async () => {
     expect(modelFor(6)?.model).toMatch(/haiku/); // gratuit, fil léger
     // Consigne du propriétaire : les cartes des thèmes d'abord, puis le client choisit un thème ou une maquette.
     const ctx0 = J.journeyContext(J.journeyOf(cid));
-    expect(ctx0).toMatch(/commence par appeler theme\.propose[^]*TELS QU'ILS SONT[^]*choisir un de ces thèmes[^]*maquette sur mesure[^]*PAYANTE[^]*ne pose PAS de question à boutons en plus[^]*Ne choisis jamais à sa place/);
+    expect(ctx0).toMatch(/commence par appeler theme\.propose[^]*TELS QU'ILS SONT[^]*choisir un de ces thèmes[^]*thème sur mesure[^]*PAYANTES[^]*ne pose PAS de question à boutons en plus[^]*Ne choisis jamais à sa place/);
     expect(ctx0).not.toMatch(/mockup\.pages/); // consigne des maquettes seulement après ce choix
     const r = await call("theme.propose", ctx, {});
     expect(r.ok).toBe(true);
@@ -111,11 +111,11 @@ describe("SINA — étape 6 : un de nos thèmes", async () => {
     expect(J.currentStep(j)).toBe(8);
   });
 
-  it("après avoir vu les thèmes, choix « maquette sur mesure » : la consigne des maquettes s'applique", async () => {
+  it("après avoir vu les thèmes, choix « thème sur mesure » : la consigne du thème sur mesure s'applique", async () => {
     const { ctx, cid } = await stepSix();
     expect((await call("theme.propose", ctx, {})).ok).toBe(true);
-    expect((await call("site.mode", ctx, { mode: "mockup" })).summary).toBe("Choix noté : une maquette sur mesure.");
-    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/a vu les thèmes et choisi une MAQUETTE SUR MESURE[^]*Étape 6, maquettes sur mesure : mockup\.pages/);
+    expect((await call("site.mode", ctx, { mode: "mockup" })).summary).toBe("Choix noté : un thème sur mesure.");
+    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/a vu les thèmes et choisi un THÈME SUR MESURE[^]*Étape 6, THÈME SUR MESURE[^]*PLUS JAMAIS « maquette »[^]*theme\.families[^]*custom\.compose[^]*Élément désigné[^]*custom\.edit[^]*custom\.photo[^]*custom\.choose/);
     expect(J.journeyOf(cid).steps[6].status).toBe("doing");
   });
 

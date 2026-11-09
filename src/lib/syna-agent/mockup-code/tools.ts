@@ -276,7 +276,7 @@ const prepareTool: AgentTool<PrepareArgs> = {
 };
 
 /** Références envoyées à l'IA d'images : logo de la marque (obligatoire) et photo du produit (boutique). */
-function imageReferences(p: ReturnType<typeof project>): { logo: Buffer | null; product: Buffer | null; problem: string | null } {
+export function imageReferences(p: ReturnType<typeof project>): { logo: Buffer | null; product: Buffer | null; problem: string | null } {
   const logoId = p.brand?.logo?.assetId;
   const la = logoId ? getAsset(logoId) : undefined;
   if (!la || la.project_id !== p.id || la.deleted_at) return { logo: null, product: null, problem: L("Le logo de la marque doit être créé et rangé avant les maquettes (étapes 2 et 3).", "Create the brand logo before the mockups (steps 2 and 3).") };

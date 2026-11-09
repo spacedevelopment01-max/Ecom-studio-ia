@@ -16,5 +16,6 @@ import { calendarTools } from "./calendar";
 import { mockupCodeTools } from "../mockup-code/tools";
 import { offersTools } from "./offers";
 import { familyTools } from "./families";
+import { customThemeTools } from "../custom-theme/tools";
 
-export const TOOL_LIST: AgentTool[] = [...startTools, ...identityTools, ...logoTools, ...brandKitTools, ...angleTools, ...activityTools, ...themeTools, ...projectTools, ...siteTools, ...catalogueTools, ...commerceTools, ...mediaTools, ...calendarTools, ...mockupCodeTools, ...offersTools, ...familyTools];
+export const TOOL_LIST: AgentTool[] = [...startTools, ...identityTools, ...logoTools, ...brandKitTools, ...angleTools, ...activityTools, ...themeTools, ...projectTools, ...siteTools, ...catalogueTools, ...commerceTools, ...mediaTools, ...calendarTools, ...mockupCodeTools, ...offersTools, ...familyTools, ...customThemeTools];

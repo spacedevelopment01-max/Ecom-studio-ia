@@ -39,13 +39,26 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   l'étape 7 dans le style de la maquette, sans image à elles. **Photos du site codé** (étape 7, `site.images`) : toutes
   recréées en haute définition par le même modèle OpenAI, à l'identique de la maquette (décision du 8 novembre 2026).
   Corriger un détail d'une maquette = retouche localisée (`mockup.edit`), jamais une image refaite en entier.
-  **Maquettes en code** (décision du 8 novembre 2026, méthode par défaut de l'étape 6, `src/lib/syna-agent/mockup-code/code-*.ts`) :
+  **Maquettes en code** (décision du 8 novembre 2026, remplacée le 9 novembre par le thème sur mesure ci-dessous ; gardée pour les projets déjà commencés, `src/lib/syna-agent/mockup-code/code-*.ts`) :
   Claude construit chaque page en HTML/CSS, photos créées une fois et partagées, contrôle automatique gratuit. Règles
   du propriétaire : ouverture de l'accueil = **grande photo pleine** avec le titre dessus ; **jamais deux parties de même
   disposition à la suite** ; **aucun vide** (pas de grandes marges, pas de colonne vide) ; **un thème vivant** ;
   **jamais une photo en doublon** (ni deux fois dans une page, ni d'une page à l'autre ; seule la photo d'un produit
   revient sur la carte ou la fiche de ce même produit) ; photos ratées (texte ou logo dedans, bandes blanches) écartées.
   Consignes à Qwen **en français**, concrètes (scène, objets, lumière), seuls les textes voulus entre guillemets.
+- **Thème sur mesure** (décision du propriétaire du 9 novembre 2026 : « on ne va plus appeler ça maquette mais thème sur
+  mesure » ; le client ne lit plus jamais le mot « maquette ») : à l'étape 6, SINA **monte** le thème avec la
+  bibliothèque de sections (`public/sections/`, 182 sections préparées par `scripts/sections-library.py` depuis le
+  catalogue ; familles Classique et Moderne, jamais mélangées), aux couleurs, polices, nom et logo du client, et le
+  **modifie sur demande** : outils `custom.*` (`src/lib/syna-agent/custom-theme/`) : bibliothèque, montage
+  (`custom.compose`, points de départ SOLSTICE, RUPTURE et Brindi), lecture et modification d'une section
+  (`custom.section`, `custom.edit` : textes, mise en forme limitée à la section, élément masqué, photo du client),
+  structure (`custom.structure`), photo créée (`custom.photo`, seul outil payant), annulation (`custom.undo`), choix
+  (`custom.choose`). Le thème vivant s'affiche dans le fil (`/api/projects/<id>/custom-theme`, pages, téléphone) avec
+  **« Désigner un élément »** : le client pointe un titre, un texte, un bouton, une image ou une section, dit ce qu'il
+  veut, et SINA ne change que lui. Règles de montage contrôlées sans IA (`checkCustomTheme`) ; aucun script dans une
+  section retouchée. Les anciennes maquettes (`mockup.*`) ne servent plus qu'aux projets déjà commencés avec elles. La mise
+  en boutique Shopify d'un thème sur mesure (étape 7) reste à brancher.
 - **Sections « Produit vedette »** (décision du 8 novembre 2026) : elles ne vont qu'**en haut de la fiche produit**, ou au plus
   **une seule fois sur l'accueil** ; **jamais deux sections « Produit vedette » dans une même page**. Leurs réglages (couleurs,
   formats, lots, offres, abonnement) s'affichent ou se masquent **selon les données réelles du produit** (variantes, offres

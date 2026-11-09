@@ -86,3 +86,21 @@ Avant de montrer un thème, SINA vérifie (gratuit) : ordre des rôles respecté
 aucune section vide, aucune option absente du produit, rendu ordinateur et téléphone sans erreur. Elle explique en une
 phrase **pourquoi chaque section est là** (« la citation de Camille rassure sur le fait main »). Un écart est corrigé
 avant d'être montré, jamais caché.
+
+## 7. Dans le Studio : le thème sur mesure (9 novembre 2026)
+
+Ces règles sont appliquées par les outils `custom.*` de SINA (`src/lib/syna-agent/custom-theme/`) :
+
+- **Bibliothèque** : `public/sections/library.json` (préparée par `scripts/sections-library.py` depuis le catalogue),
+  chaque section avec sa famille, son rôle, ce qu'elle fait et son HTML ; feuille, scripts et photos communs à côté. Les
+  démonstrations en fausse fenêtre du catalogue ne sont jamais posées dans un thème.
+- **Montage** (`custom.compose`) : départ possible depuis une composition validée (SOLSTICE, RUPTURE, Brindi), puis
+  adaptation aux pages et au contenu du client. Contrôle sans IA (`checkCustomTheme`) : famille unique, en-tête et pied de
+  page, une seule section de cartes par page, « Produit vedette » en haut de la fiche ou une fois sur l'accueil, jamais la
+  même section deux fois de suite (bloquant) ; deux sections du même rôle à la suite, photo en double d'une page à l'autre,
+  accueil qui ne commence pas par une ouverture (à revoir).
+- **Marque du client** au rendu : nom (y compris un mot géant écrit lettre par lettre), couleurs, polices, logo, bloc
+  d'achat réglé sur les vraies données du produit. Les textes et photos d'exemple sont annoncés comme tels tant que SINA ne
+  les a pas remplacés.
+- **Modifications sur demande** : le client désigne un élément dans le thème vivant ; SINA lit la section, change ce seul
+  élément (texte, mise en forme limitée à la section, élément masqué, photo) ; tout se défait avec `custom.undo`.

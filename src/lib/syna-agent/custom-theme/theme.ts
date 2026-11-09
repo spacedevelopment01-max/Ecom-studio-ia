@@ -1,0 +1,215 @@
+/**
+ * Thème sur mesure d'un projet (SINA, étape 6) : les pages et leurs sections, prises dans la bibliothèque de la
+ * famille choisie par le client, avec les retouches de chaque section. Données pures + enregistrement (mémoire du
+ * projet, avec l'historique pour annuler). Règles de montage du propriétaire : docs/montage-themes-sina.md.
+ */
+import crypto from "node:crypto";
+import { all } from "../../db";
+import { remember } from "../../projects";
+import type { FamilyId } from "../section-families";
+import { isCardSection, FEATURED_ROLE, libSection, SHELL_ROLES, sectionPhotos, type LibSection } from "./library";
+
+export type CtSection = {
+  /** Identifiant de CETTE section dans le thème (une même section de la bibliothèque peut servir sur deux pages). */
+  uid: string;
+  /** Section de la bibliothèque. */
+  id: string;
+  /** HTML retouché (textes du client, photos, mise en page) ; absent : celui de la bibliothèque. */
+  html?: string;
+  /** Règles CSS propres à cette section (toutes préfixées par [data-ct="uid"]). */
+  css?: string;
+  /** Textes déjà écrits pour le client (sinon : textes d'exemple de la bibliothèque, annoncés comme tels). */
+  clientTexts?: boolean;
+};
+export type CtPage = { key: string; label: string; sections: CtSection[] };
+export type CustomTheme = {
+  version: 1;
+  family: FamilyId;
+  style: string;
+  header: CtSection | null;
+  footer: CtSection | null;
+  /** Recherche plein écran, ouverte par la loupe de l'en-tête sur toutes les pages (jamais une section de page). */
+  search: CtSection | null;
+  pages: CtPage[];
+  /** Choisi par le client (jamais à sa place). */
+  chosen?: boolean;
+  rev: number;
+  at: number;
+};
+
+export const THEME_KEY = "syna.custom_theme";
+const HISTORY_KEY = "syna.custom_theme.history";
+const HISTORY_MAX = 15;
+
+export const newUid = () => "s" + crypto.randomBytes(4).toString("hex");
+export const sectionHtml = (s: CtSection): string => s.html ?? libSection(s.id)?.html ?? "";
+
+function readArtifact<T>(projectId: string, key: string): T | null {
+  const row = all<{ value: string }>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key=? AND state='active' LIMIT 1", projectId, key)[0];
+  try { return row ? JSON.parse(row.value) as T : null; } catch { return null; }
+}
+export function loadCustomTheme(projectId: string): CustomTheme | null {
+  const t = readArtifact<CustomTheme>(projectId, THEME_KEY);
+  return t && t.version === 1 && Array.isArray(t.pages) ? t : null;
+}
+/** Enregistre le thème ; la version d'avant part dans l'historique (annuler une modification). */
+export function saveCustomTheme(projectId: string, theme: CustomTheme): CustomTheme {
+  const before = loadCustomTheme(projectId);
+  if (before) {
+    const hist = (readArtifact<CustomTheme[]>(projectId, HISTORY_KEY) ?? []).slice(-(HISTORY_MAX - 1));
+    remember(projectId, { kind: "artifact", key: HISTORY_KEY, value: JSON.stringify([...hist, before]), source: "local", origin: "system" });
+  }
+  const next = { ...theme, rev: (before?.rev ?? 0) + 1, at: Date.now() };
+  remember(projectId, { kind: "artifact", key: THEME_KEY, value: JSON.stringify(next), source: "local", origin: "system" });
+  return next;
+}
+/** Revient à la version d'avant (la dernière modification est annulée). */
+export function undoCustomTheme(projectId: string): CustomTheme | null {
+  const hist = readArtifact<CustomTheme[]>(projectId, HISTORY_KEY) ?? [];
+  const prev = hist.pop();
+  if (!prev) return null;
+  remember(projectId, { kind: "artifact", key: HISTORY_KEY, value: JSON.stringify(hist), source: "local", origin: "system" });
+  const cur = loadCustomTheme(projectId);
+  const back = { ...prev, rev: (cur?.rev ?? prev.rev) + 1, at: Date.now() };
+  remember(projectId, { kind: "artifact", key: THEME_KEY, value: JSON.stringify(back), source: "local", origin: "system" });
+  return back;
+}
+
+/** Toutes les sections du thème, avec leur place (page ou structure). */
+export function allSections(t: CustomTheme): { place: string; page?: CtPage; index: number; s: CtSection }[] {
+  const out: { place: string; page?: CtPage; index: number; s: CtSection }[] = [];
+  if (t.header) out.push({ place: "en-tête", index: 0, s: t.header });
+  for (const page of t.pages) page.sections.forEach((s, index) => out.push({ place: page.key, page, index, s }));
+  if (t.footer) out.push({ place: "pied de page", index: 0, s: t.footer });
+  if (t.search) out.push({ place: "recherche", index: 0, s: t.search });
+  return out;
+}
+export const findSection = (t: CustomTheme, uid: string) => allSections(t).find((x) => x.s.uid === uid) ?? null;
+
+export type ThemeProblem = { level: "bloquant" | "à revoir"; text: string };
+/**
+ * Contrôle des règles de montage du propriétaire (gratuit, sans IA). « bloquant » : le thème n'est pas enregistré.
+ */
+export function checkCustomTheme(t: CustomTheme): ThemeProblem[] {
+  const out: ThemeProblem[] = [];
+  const bad = (text: string) => out.push({ level: "bloquant", text });
+  const warn = (text: string) => out.push({ level: "à revoir", text });
+  const lib = (s: CtSection): LibSection | null => libSection(s.id);
+  for (const x of allSections(t)) {
+    const l = lib(x.s);
+    if (!l) { bad(`section inconnue « ${x.s.id} » (${x.place})`); continue; }
+    if (l.demoFrame) bad(`« ${l.title} » est une démonstration du catalogue (fausse fenêtre) : elle ne se pose pas dans un thème`);
+    if (l.family !== t.family) bad(`« ${l.title} » est de la famille ${l.family} : jamais de mélange de familles dans un thème (famille du thème : ${t.family})`);
+  }
+  const shell = (s: CtSection | null, role: string, label: string, required: boolean) => {
+    if (!s) { if (required) bad(`il manque ${label}`); return; }
+    const l = lib(s);
+    if (l && l.role !== role) bad(`« ${l.title} » n'est pas ${label}`);
+  };
+  shell(t.header, SHELL_ROLES.header, "un en-tête", true);
+  shell(t.footer, SHELL_ROLES.footer, "un pied de page", true);
+  shell(t.search, SHELL_ROLES.search, "une recherche plein écran", false);
+  if (!t.pages.length) bad("aucune page");
+  const keys = new Set<string>();
+  let featuredHome = 0;
+  for (const page of t.pages) {
+    if (keys.has(page.key)) bad(`page « ${page.label} » en double`);
+    keys.add(page.key);
+    if (!page.sections.length) bad(`la page « ${page.label} » est vide`);
+    const libs = page.sections.map(lib);
+    libs.forEach((l, i) => {
+      if (!l) return;
+      if (([SHELL_ROLES.header, SHELL_ROLES.footer] as string[]).includes(l.role)) bad(`« ${l.title} » (${l.role}) ne se pose pas dans une page : il sert à tout le site`);
+      const prev = libs[i - 1];
+      if (prev && prev.id === l.id) bad(`« ${l.title} » deux fois à la suite sur « ${page.label} »`);
+      else if (prev && prev.role === l.role && l.role !== "mise en avant") warn(`deux sections « ${l.role} » à la suite sur « ${page.label} » (${prev.title}, ${l.title}) : jamais deux parties de même disposition à la suite`);
+    });
+    const ids = libs.filter(Boolean).map((l) => l!.id);
+    for (const id of new Set(ids)) if (ids.filter((x) => x === id).length > 1) bad(`« ${libSection(id)?.title} » deux fois sur « ${page.label} »`);
+    const cards = libs.filter((l) => l && isCardSection(l));
+    if (cards.length > 1) bad(`${cards.length} sections de cartes sur « ${page.label} » (${cards.map((l) => l!.title).join(", ")}) : une seule par page`);
+    const featured = libs.map((l, i) => (l?.role === FEATURED_ROLE ? i : -1)).filter((i) => i >= 0);
+    if (featured.length > 1) bad(`deux sections « Produit vedette » sur « ${page.label} »`);
+    if (featured.length) {
+      if (page.key === "home") featuredHome++;
+      else if (/^product/.test(page.key)) { if (featured[0] !== 0) bad(`« Produit vedette » doit ouvrir la fiche produit « ${page.label} » (tout en haut)`); }
+      else bad(`« Produit vedette » seulement en haut de la fiche produit, ou une fois sur l'accueil (pas sur « ${page.label} »)`);
+    }
+    const first = libs[0];
+    if (page.key === "home" && first && first.role !== "ouverture") warn(`l'accueil commence par « ${first.title} » : l'ouverture de l'accueil est une grande photo pleine avec le titre dessus`);
+  }
+  if (featuredHome > 1) bad("plus d'une section « Produit vedette » sur l'accueil");
+  // Photos : jamais deux fois la même d'une page à l'autre (sauf la photo d'un produit, sur sa carte ou sa fiche).
+  const seen = new Map<string, string>();
+  for (const page of t.pages) {
+    const here = new Set(page.sections.flatMap((s) => sectionPhotos(sectionHtml(s))));
+    for (const ph of here) {
+      if (seen.has(ph) && seen.get(ph) !== page.key) warn(`photo ${ph} sur « ${seen.get(ph)} » et « ${page.label} » : à remplacer, sauf si c'est la photo d'un produit sur sa carte et sa fiche`);
+      else seen.set(ph, page.key);
+    }
+  }
+  return out;
+}
+
+/** Ajoute, retire, déplace ou remplace une section (opérations de structure, sans IA). */
+export type StructureOp =
+  | { op: "add"; page: string; section: string; at?: number }
+  | { op: "remove"; uid: string }
+  | { op: "move"; uid: string; page?: string; at: number }
+  | { op: "replace"; uid: string; section: string }
+  | { op: "shell"; slot: "header" | "footer" | "search"; section: string | null }
+  | { op: "page"; key: string; label: string; at?: number }
+  | { op: "drop_page"; key: string }
+  | { op: "rename_page"; key: string; label: string };
+
+export function applyStructure(t: CustomTheme, ops: StructureOp[]): CustomTheme {
+  const next: CustomTheme = JSON.parse(JSON.stringify(t));
+  const pageOf = (key: string) => {
+    const p = next.pages.find((x) => x.key === key);
+    if (!p) throw new Error(`page « ${key} » introuvable (pages : ${next.pages.map((x) => x.key).join(", ")})`);
+    return p;
+  };
+  const known = (id: string) => { if (!libSection(id)) throw new Error(`section « ${id} » absente de la bibliothèque`); return id; };
+  const locate = (uid: string) => {
+    for (const p of next.pages) { const i = p.sections.findIndex((s) => s.uid === uid); if (i >= 0) return { p, i }; }
+    throw new Error(`section ${uid} introuvable dans les pages`);
+  };
+  for (const o of ops) {
+    if (o.op === "add") { const p = pageOf(o.page); p.sections.splice(o.at ?? p.sections.length, 0, { uid: newUid(), id: known(o.section) }); }
+    else if (o.op === "remove") { const { p, i } = locate(o.uid); p.sections.splice(i, 1); }
+    else if (o.op === "move") { const { p, i } = locate(o.uid); const [s] = p.sections.splice(i, 1); const to = o.page ? pageOf(o.page) : p; to.sections.splice(Math.min(o.at, to.sections.length), 0, s); }
+    else if (o.op === "replace") {
+      const shell = (["header", "footer", "search"] as const).find((k) => next[k]?.uid === o.uid);
+      if (shell) next[shell] = { uid: newUid(), id: known(o.section) };
+      else { const { p, i } = locate(o.uid); p.sections[i] = { uid: newUid(), id: known(o.section) }; }
+    }
+    else if (o.op === "shell") next[o.slot] = o.section ? { uid: newUid(), id: known(o.section) } : null;
+    else if (o.op === "page") { if (next.pages.some((p) => p.key === o.key)) throw new Error(`la page « ${o.key} » existe déjà`); next.pages.splice(o.at ?? next.pages.length, 0, { key: o.key, label: o.label, sections: [] }); }
+    else if (o.op === "drop_page") { pageOf(o.key); next.pages = next.pages.filter((p) => p.key !== o.key); }
+    else if (o.op === "rename_page") pageOf(o.key).label = o.label;
+  }
+  return next;
+}
+
+/** Remplace UN passage exact du HTML d'une section (texte désigné, photo) : il doit y être une seule fois. */
+export function replaceOnce(html: string, find: string, replace: string): string {
+  const i = html.indexOf(find);
+  if (i < 0) throw new Error(`passage introuvable dans la section : « ${find.slice(0, 80)} »`);
+  if (html.indexOf(find, i + find.length) >= 0) throw new Error(`passage présent plusieurs fois dans la section : « ${find.slice(0, 80)} » (préciser l'élément)`);
+  return html.slice(0, i) + replace + html.slice(i + find.length);
+}
+
+/** Règles CSS d'une section : chaque sélecteur doit commencer par [data-ct="uid"] (rien ne déborde sur le reste). */
+export function scopedCss(uid: string, css: string): string {
+  const scope = `[data-ct="${uid}"]`;
+  const clean = css.replace(/:scope\b/g, scope).replace(/<\/?style[^>]*>/gi, "");
+  if (/@import|url\(\s*["']?(?:https?:|\/\/|javascript:)/i.test(clean)) throw new Error("feuille refusée : aucune ressource extérieure");
+  if (/</.test(clean)) throw new Error("feuille refusée : balise dans le CSS");
+  const rules = clean.match(/[^{}]+\{[^{}]*\}/g) ?? [];
+  for (const r of rules) {
+    const sel = r.slice(0, r.indexOf("{")).trim();
+    if (sel.startsWith("@")) continue;
+    for (const part of sel.split(",")) if (!part.trim().startsWith(scope)) throw new Error(`règle hors de la section : « ${part.trim().slice(0, 80)} » (chaque sélecteur commence par ${scope} ou :scope)`);
+  }
+  return clean.trim();
+}
