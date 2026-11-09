@@ -56,7 +56,7 @@ export function siteKind(ctx: ToolContext): SiteKind {
   const p = project(ctx);
   let n = 1;
   try { n = listProducts(p.id).length || 1; } catch { /* catalogue absent */ }
-  return { business: p.business === "services" ? "services" : "products", products: n };
+  return { business: p.business === "services" ? "services" : "products", products: n, platform: p.platform || "shopify" };
 }
 const familyOrError = (projectId: string) => {
   const f = loadFamilyChoice(projectId);
@@ -105,7 +105,7 @@ const sectionsTool: AgentTool<{ role?: string; query?: string }> = {
 type PageArg = { key: string; label: string; sections: string[] };
 const composeTool: AgentTool<{ header: string; footer: string; search?: string | null; pages: PageArg[] }> = {
   name: "custom.compose", module: "site", kind: "write", needsProject: true,
-  description: "Étape 6 (gratuit) : MONTE de A à Z le thème sur mesure du client, avec les MEILLEURES sections de SA famille pour SON produit ou SON service (lis custom.sections d'abord ; aucun thème de départ : les thèmes construits sont pour la voie « thème du Studio »), à ses couleurs, polices, nom et logo. header, footer (search : recherche plein écran, famille Moderne) et pages : [{ key, label, sections : identifiants ou titres de custom.sections, dans l'ordre de l'histoire de la page }], TOUTES les pages obligatoires (clés données par custom.sections : home, shop si plusieurs produits, product, cart, commande, merci, compte, about, contact, aide, legal, 404 ; services : home, prestations, reservation ou devis, about, contact, aide, legal, 404). Les règles du propriétaire sont contrôlées : un point bloquant (page manquante comprise) n'enregistre rien. Remplace le thème en cours (l'ancien reste dans l'historique : custom.undo).",
+  description: "Étape 6 (gratuit) : MONTE de A à Z le thème sur mesure du client, avec les MEILLEURES sections de SA famille pour SON produit ou SON service (lis custom.sections d'abord ; aucun thème de départ : les thèmes construits sont pour la voie « thème du Studio »), à ses couleurs, polices, nom et logo. header, footer (search : recherche plein écran, famille Moderne) et pages : [{ key, label, sections : identifiants ou titres de custom.sections, dans l'ordre de l'histoire de la page }], TOUTES les pages obligatoires (clés données par custom.sections : home, shop si plusieurs produits, product, cart, compte, about, contact, aide, legal, 404 ; jamais de page commande ni de confirmation pour Shopify, qui les tient lui-même ; services : home, prestations, reservation ou devis, about, contact, aide, legal, 404). Les règles du propriétaire sont contrôlées : un point bloquant (page manquante comprise) n'enregistre rien. Remplace le thème en cours (l'ancien reste dans l'historique : custom.undo).",
   args: z.object({
     header: z.string().max(80), footer: z.string().max(80), search: z.string().max(80).nullable().optional(),
     pages: z.array(z.object({ key: z.string().regex(/^[a-z0-9-]{1,40}$/), label: z.string().min(1).max(40), sections: z.array(z.string().max(80)).min(1).max(16) }).strict()).min(1).max(16),

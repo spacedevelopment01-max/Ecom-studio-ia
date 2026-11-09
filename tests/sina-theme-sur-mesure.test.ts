@@ -16,7 +16,8 @@ const proj = { id: "p-test", name: "Ardent", brand };
 const blocking = (t: CustomTheme) => checkCustomTheme(t).filter((p) => p.level === "bloquant").map((p) => p.text);
 /** Montage de A à Z (sans thème de départ), toutes les pages obligatoires d'une boutique, avec les sections de la famille. */
 function fullSite(family: "classique" | "moderne") {
-  if (family === "moderne") { const st = STARTERS["sport-chic"]; return { header: st.header, footer: st.footer, search: st.search, pages: st.pages.map(([key, label, sections]) => ({ key, label, sections })) }; }
+  // Projets de test sur Shopify : pas de page commande ni de confirmation (pages de Shopify).
+  if (family === "moderne") { const st = STARTERS["sport-chic"]; return { header: st.header, footer: st.footer, search: st.search, pages: st.pages.filter(([key]) => key !== "commande" && key !== "merci").map(([key, label, sections]) => ({ key, label, sections })) }; }
   return {
     header: "En-tête classique", footer: "Pied de page complet",
     pages: [
@@ -24,8 +25,6 @@ function fullSite(family: "classique" | "moderne") {
       { key: "shop", label: "Boutique", sections: ["Catalogue avec filtres et tri"] },
       { key: "product", label: "Fiche produit", sections: ["Produit vedette", "Points forts du produit"] },
       { key: "cart", label: "Panier", sections: ["Page panier complète"] },
-      { key: "commande", label: "Commande", sections: ["Commande pas à pas"] },
-      { key: "merci", label: "Commande confirmée", sections: ["Merci pour ta commande"] },
       { key: "compte", label: "Mon compte", sections: ["Connexion et création de compte"] },
       { key: "about", label: "Notre histoire", sections: ["L'atelier et la personne derrière"] },
       { key: "contact", label: "Contact", sections: ["Contact"] },
@@ -186,11 +185,15 @@ describe("thème sur mesure : outils de SINA", async () => {
     expect(partial.ok).toBe(false);
     expect(partial.summary).toMatch(/page « Informations légales[^»]*» absente/);
     expect(loadCustomTheme(pid)).toBeNull();
+    // Shopify tient lui-même le paiement et la confirmation : une page « commande » dans le thème est refusée.
+    const withCheckout = await call("custom.compose", ctx, { ...site, pages: [...site.pages, { key: "commande", label: "Commande", sections: ["Commande en une page"] }] });
+    expect(withCheckout.ok).toBe(false);
+    expect(withCheckout.summary).toMatch(/page « Commande » en trop : sur Shopify/);
     const made = await call("custom.compose", ctx, site);
     expect(made.ok, made.summary).toBe(true);
     const card = made.data.customTheme;
     expect(card.href).toBe(`/api/projects/${pid}/custom-theme?studio=1&embed=1&rev=1`);
-    expect(card.pages.map((p: any) => p.key)).toEqual(["home", "shop", "product", "cart", "commande", "merci", "compte", "aide", "journal", "article", "contact", "legal", "404"]);
+    expect(card.pages.map((p: any) => p.key)).toEqual(["home", "shop", "product", "cart", "compte", "aide", "journal", "article", "contact", "legal", "404"]);
     // Mélange de familles refusé : rien n'est enregistré.
     const mixed = await call("custom.compose", ctx, { ...site, pages: [{ key: "home", label: "Accueil", sections: ["Ouverture photo pleine"] }, ...site.pages.slice(1)] });
     expect(mixed.ok).toBe(false);

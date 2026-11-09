@@ -53,7 +53,8 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   **modifie sur demande** : outils `custom.*` (`src/lib/syna-agent/custom-theme/`) : bibliothèque, montage
   (`custom.compose` : **aucun thème de départ**, décision du 9 novembre 2026 : le client choisit seulement Classique ou
   Moderne, SINA prend les meilleures sections pour SON produit ou SON service et monte TOUTES les pages, contrôlées par
-  `requiredPages` ; les thèmes construits ne servent qu'à la voie « thème du Studio » ; sections « seulement pour » un genre
+  `requiredPages` ; **Shopify : jamais de page commande ni de commande confirmée dans le thème** (le bouton du panier mène au
+  paiement de Shopify, remarque du propriétaire du 9 novembre 2026) ; les thèmes construits ne servent qu'à la voie « thème du Studio » ; sections « seulement pour » un genre
   de produit, ex. tailles et tenues, jamais ailleurs), lecture et modification d'une section
   (`custom.section`, `custom.edit` : textes, mise en forme limitée à la section, élément masqué, photo du client),
   structure (`custom.structure`), photo créée (`custom.photo`, seul outil payant), annulation (`custom.undo`), choix

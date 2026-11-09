@@ -93,7 +93,9 @@ export type ThemeProblem = { level: "bloquant" | "à revoir"; text: string };
  * toutes les pages » ; aucun thème de départ, SINA monte le site de A à Z avec les meilleures sections pour le produit
  * ou le service). Chaque entrée : clés de page acceptées (la première est celle à employer) et ce que la page contient.
  */
-export type SiteKind = { business: "products" | "services"; products: number };
+export type SiteKind = { business: "products" | "services"; products: number; platform?: string };
+/** Pages que la plateforme tient elle-même (Shopify : paiement et confirmation de commande), jamais dans le thème. */
+export const platformOwnedPages = (k: SiteKind) => (k.platform ?? "shopify") === "shopify" ? [{ keys: ["commande", "checkout"], label: "Commande" }, { keys: ["merci", "confirmation"], label: "Commande confirmée" }] : [];
 export function requiredPages(k: SiteKind): { keys: string[]; label: string }[] {
   const common = [
     { keys: ["home"], label: "Accueil" },
@@ -109,8 +111,8 @@ export function requiredPages(k: SiteKind): { keys: string[]; label: string }[] 
     ...(k.products > 1 ? [{ keys: ["shop"], label: "Boutique (tous les produits)" }] : []),
     { keys: ["product"], label: "Fiche produit" },
     { keys: ["cart"], label: "Panier" },
-    { keys: ["commande"], label: "Commande" },
-    { keys: ["merci"], label: "Commande confirmée" },
+    // Shopify : le bouton du panier mène au paiement de Shopify, qui tient aussi la confirmation (remarque du propriétaire).
+    ...(platformOwnedPages(k).length ? [] : [{ keys: ["commande"], label: "Commande" }, { keys: ["merci"], label: "Commande confirmée" }]),
     { keys: ["compte"], label: "Mon compte" },
     ...common.slice(1),
   ];
@@ -124,6 +126,7 @@ export const missingPages = (t: CustomTheme, k: SiteKind) => requiredPages(k).fi
 export function checkCustomTheme(t: CustomTheme, site?: SiteKind): ThemeProblem[] {
   const out: ThemeProblem[] = [];
   if (site) for (const m of missingPages(t, site)) out.push({ level: "bloquant", text: `page « ${m.label} » absente (clé ${m.keys[0]}) : un thème sur mesure a toutes ses pages` });
+  if (site) for (const o of platformOwnedPages(site)) if (t.pages.some((p) => o.keys.includes(p.key))) out.push({ level: "bloquant", text: `page « ${o.label} » en trop : sur Shopify, le paiement et la confirmation de commande sont des pages de Shopify (le bouton du panier y mène), jamais des pages du thème` });
   const bad = (text: string) => out.push({ level: "bloquant", text });
   const warn = (text: string) => out.push({ level: "à revoir", text });
   const lib = (s: CtSection): LibSection | null => libSection(s.id);
