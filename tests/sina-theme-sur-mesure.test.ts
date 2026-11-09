@@ -593,4 +593,9 @@ describe("bibliothèque : « Histoire du produit au défilement » sur télépho
     expect(js).toContain('s.style.setProperty("--p2-top",t+"px")');
     expect(js).toContain("function inner(){return vp.scrollHeight>vp.clientHeight+4}");
   });
+
+  it("en-tête classique sur téléphone : logo au centre (menu à gauche, recherche et panier à droite)", () => {
+    const css = fs.readFileSync(path.join(process.cwd(), "public/sections/library.css"), "utf8");
+    expect(css).toContain("@container (max-width:760px){.bh{grid-template-columns:1fr auto 1fr}.bh-bg{justify-self:start}.bh-lg{justify-self:center;text-align:center}.bh-ic{justify-self:end}}");
+  });
 });
