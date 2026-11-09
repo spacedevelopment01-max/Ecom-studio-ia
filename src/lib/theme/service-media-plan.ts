@@ -10,10 +10,14 @@ import { sectionSchema, type ThemeSpec } from "./spec";
 import { getAsset } from "../library";
 
 type PlanSlot = { template: string; section: string; occurrence: number; block?: string; blockOccurrence?: number; field: string; shows: string; aspect: string | null };
-export type ServiceSlot = { key: string; template: string; sectionId: string; blockId?: string; field: string; /** Champ « fichier du thème » qui affiche vraiment la photo (asset_url : aperçu et boutique Shopify). */ assetField?: string; shows: string; aspect: "1:1" | "4:5" | "16:9" | "9:16"; filled: boolean; /** Section masquée faute de photo : elle réapparaît quand ses photos sont posées. */ hidden?: boolean; /** Photo que SINA ne peut pas inventer (réalisation, lieu, équipe, villes) : seule la vraie photo du client va ici. */ authentic?: AuthenticKind };
+export type ServiceSlot = { key: string; template: string; sectionId: string; blockId?: string; field: string; /** Champ « fichier du thème » qui affiche vraiment la photo (asset_url : aperçu et boutique Shopify). */ assetField?: string; shows: string; aspect: "1:1" | "4:5" | "16:9" | "9:16"; filled: boolean; /** Section masquée faute de photo : elle réapparaît quand ses photos sont posées. */ hidden?: boolean; /** Photo que SINA ne peut pas inventer (équipe, réalisations) : seule la vraie photo du client va ici. */ authentic?: AuthenticKind };
 
-/** Photos qui doivent montrer le vrai travail, le vrai lieu, la vraie équipe ou les vraies villes du client. */
-export type AuthenticKind = "realisation" | "lieu" | "equipe" | "ville";
+/**
+ * Photos que SINA ne peut pas inventer (décision du propriétaire du 9 novembre 2026) : l'équipe elle-même et les biens
+ * mis en vente ou en location (ceux-ci viennent de l'espace Biens, jamais d'un emplacement du thème) ; les réalisations
+ * d'un artisan restent à fournir en attendant sa réponse. Lieu, villes, ambiances : SINA peut les créer.
+ */
+export type AuthenticKind = "realisation" | "equipe";
 
 /**
  * Classement sans IA d'après la page, la section, le champ et la photo de démonstration (demande du propriétaire du
@@ -23,10 +27,6 @@ export function authenticKind(s: { template: string; section: string; block?: st
   const t = `${s.template} ${s.section} ${s.block ?? ""} ${s.field} ${s.shows}`.toLowerCase().replace(/_/g, " ");
   if (/realisation|page\.ph-projet-|detail-chantier|compare|\b(before|after|avant|apres)\b|project image|\bprojet (avant|ambiance)\b/.test(t)) return "realisation";
   if (/equipe|portrait|fondat|\bteam\b/.test(t) || (s.template === "page.about" && s.section === "about")) return "equipe";
-  if (/\b(aix|marseille|paris|luberon|lyon|village|ville|quartier)\b/.test(t)) return "ville";
-  // Le lieu : pages dédiées, sinon d'après la seule photo de démonstration (jamais le nom de page, ex. « article-lieu »).
-  const shown = s.shows.toLowerCase().replace(/_/g, " ");
-  if (/^page\.(an-salon|ts-lieu|pa-cabinet|agence)$/.test(s.template) || s.section === "an-details" || /\b(lieu|facade|salle|cabinet|agence|plaque|jardin entree|devanture|vitrine)\b|accueil salon|contact terrasse|salon (hero|cadre|details|approche)/.test(shown)) return "lieu";
   return null;
 }
 
@@ -171,9 +171,7 @@ export function withAuthenticPlaceholders(spec: ThemeSpec): ThemeSpec {
 
 const KIND_TEXT: Record<AuthenticKind, [string, string]> = {
   realisation: ["tes réalisations", "your own work"],
-  lieu: ["ton lieu", "your own place"],
   equipe: ["ton équipe", "your team"],
-  ville: ["les villes où tu travailles", "the places you work in"],
 };
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 function wrap(text: string, max: number): string[] {
@@ -189,7 +187,7 @@ function wrap(text: string, max: number): string[] {
 /** Cadre « photo à fournir » : explique que SINA ne peut pas inventer cette photo (texte centré, lisible même petit). */
 export function authenticPlaceholderSvg(slot: ServiceSlot, lang: "fr" | "en" = "fr"): string {
   const [w, h] = slot.aspect === "16:9" ? [1600, 900] : slot.aspect === "9:16" ? [900, 1600] : slot.aspect === "1:1" ? [1200, 1200] : [1200, 1500];
-  const fr = lang !== "en", kind = KIND_TEXT[slot.authentic ?? "lieu"][fr ? 0 : 1];
+  const fr = lang !== "en", kind = KIND_TEXT[slot.authentic ?? "equipe"][fr ? 0 : 1];
   const raw = showsLabel(slot.shows), what = raw ? raw[0].toUpperCase() + raw.slice(1) : "";
   // Tailles proportionnelles au cadre : le texte reste lisible dans une petite vignette.
   const u = Math.min(w, h * 1.4) / 100;

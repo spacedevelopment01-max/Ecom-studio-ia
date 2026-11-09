@@ -82,7 +82,7 @@ export function studioImageRequests(p: Project): ImageRequestV2[] {
 
 /**
  * Demandes d'images pour les emplacements vides d'un thème de services (photo du métier du client, sans personne).
- * Jamais pour une photo que SINA ne peut pas inventer (réalisations, lieu, équipe, villes) : seule la vraie va là.
+ * Jamais pour une photo que SINA ne peut pas inventer (équipe, réalisations) : seule la vraie va là.
  */
 export function serviceImageRequests(p: Project, slots: ServiceSlot[]): (ImageRequestV2 & { slotKey: string })[] {
   const what = p.business === "services" ? p.services.services.map((x) => x.name).join(", ") : p.product.name;
@@ -152,7 +152,7 @@ export async function runStudioBrandJob(ctx: JobContext) {
         if (id) { placeServiceImage(spec, slot, id); placed++; report.imagesMade++; } else { report.imagesFailed++; report.problems.push(`image ${slot.key} : aucun visuel validé`); }
       } catch (e) { report.imagesFailed++; report.problems.push(`image ${slot.key} : ${(e as Error).message.slice(0, 140)}`); }
     }
-    if (toProvide) report.problems.push(`${toProvide} photo(s) à fournir par toi : SINA ne peut pas inventer tes réalisations, ton lieu, ton équipe ni tes villes (un cadre l'explique à leur place dans l'aperçu)`);
+    if (toProvide) report.problems.push(`${toProvide} photo(s) à fournir par toi : SINA ne peut pas inventer ton équipe ni tes réalisations (un cadre l'explique à leur place dans l'aperçu)`);
     if (placed) revealFilledSections(spec);
     if (placed) saveThemeVersion(p.id, spec, L(`Photos posées dans le thème (${placed}) — SINA, étape 8`, `Photos placed (${placed}) — SINA, step 8`), "ai", { syna: { step: 8, photos: placed } }, undefined, { activate: true });
   }
