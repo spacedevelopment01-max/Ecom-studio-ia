@@ -117,6 +117,9 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   (jamais le titre sur le produit et le vide à côté). Règles branchées : `COPY_CRAFT` et plan des textes
   (`src/lib/syna-agent/custom-theme/brand.ts`), `siteArtUniverse` (famille Classique comprise), `textPlacementLine`,
   niveau visé dans `codePhotoPrompt`.
+- **Textes du site écrits par Claude** (décision du 9 novembre 2026, après comparaison réelle sur Heure Dorée avec
+  GPT-5.6 Sol : meilleur accueil chez OpenAI mais fiche produit plate, une garantie perdue et 1,45 € contre 0,92 €).
+  Le réglage `site.copy_model` reste vide (Claude) ; ne pas le changer sans sa demande.
 - **Réponses courtes et claires**, sans jargon ; ne pas reposer une question à laquelle il a déjà répondu.
 - **Ne pas décider à sa place** : un retrait de contenu ou un changement visible important se propose, il ne s'applique
   qu'après son accord. Retirer un visuel raté sans rien mettre à la place n'est pas une correction.
