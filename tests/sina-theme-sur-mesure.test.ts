@@ -200,6 +200,31 @@ describe("thème sur mesure : outils de SINA", async () => {
     return { ctx, pid: one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string };
   }
 
+  it("une retouche n'est refusée que si elle CRÉE un point bloquant (un défaut ancien n'empêche pas de le corriger)", async () => {
+    const { ctx, pid } = await project();
+    await call("theme.family", ctx, { family: "classique" });
+    expect((await call("custom.compose", ctx, fullSite("classique"))).ok).toBe(true);
+    const S = await import("@/lib/syna-agent/custom-theme/theme");
+    // Défaut ancien (montage d'avant la règle) : une offre en section à part sur l'accueil.
+    const cur = S.loadCustomTheme(pid)!;
+    const home = cur.pages[0];
+    S.saveCustomTheme(pid, S.applyStructure(cur, [{ op: "add", page: "home", section: sectionByRef("Offre par quantité")!.id }]));
+    const offer = S.loadCustomTheme(pid)!.pages[0].sections.at(-1)!.uid;
+    // Déplacer une autre section : permis, et le défaut restant est dit.
+    const moved = await call("custom.structure", ctx, { ops: [{ op: "move", uid: home.sections[3].uid, at: 4 }] });
+    expect(moved.ok, moved.summary).toBe(true);
+    expect(moved.summary).toMatch(/Encore à corriger avant le montage à la marque : « Offre par quantité »/);
+    // Le corriger en un seul appel (remplacer) : permis, plus rien à corriger.
+    const fixed = await call("custom.structure", ctx, { ops: [{ op: "replace", uid: offer, section: "Grille bento" }] });
+    expect(fixed.ok, fixed.summary).toBe(true);
+    expect(fixed.summary).not.toMatch(/Encore à corriger/);
+    // Une retouche qui crée un défaut (accueil sous 8 sections) est refusée, avec la façon de faire.
+    const short = await call("custom.structure", ctx, { ops: [{ op: "remove", uid: home.sections[1].uid }, { op: "remove", uid: home.sections[2].uid }] });
+    expect(short.ok).toBe(false);
+    expect(short.summary).toMatch(/au moins 8/);
+    expect(short.hint).toMatch(/UN SEUL appel/);
+  });
+
   it("famille d'abord, puis montage, lecture, modification, désignation, structure, annulation et choix (gratuits)", async () => {
     const { ctx, pid } = await project();
     for (const n of ["custom.sections", "custom.compose", "custom.show", "custom.section", "custom.structure", "custom.edit", "custom.undo", "custom.choose"]) expect(getTool(n)!.estimate, n).toBeUndefined();

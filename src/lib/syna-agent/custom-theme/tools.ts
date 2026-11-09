@@ -66,18 +66,30 @@ const familyOrError = (projectId: string) => {
   if (!f) throw new Error("famille de sections pas encore choisie par le client : theme.families puis theme.family d'abord");
   return f;
 };
-function saved(ctx: ToolContext, t: CustomTheme, what: string) {
+/**
+ * Enregistre une modification. Un montage complet (`strict`) doit tout respecter ; une retouche n'est refusée que si
+ * elle CRÉE un point bloquant (essai Heure Dorée du 9 novembre : un thème qui avait déjà un défaut refusait toute
+ * modification, même celle qui le corrigeait). Les points bloquants restants sont dits, et le devis reste refusé
+ * tant qu'il en reste (buildPlan).
+ */
+function saved(ctx: ToolContext, t: CustomTheme, what: string, o: { strict?: boolean } = {}) {
   const p = project(ctx);
-  const problems = checkCustomTheme(t, siteKind(ctx));
-  const blocking = problems.filter((x) => x.level === "bloquant");
-  if (blocking.length) return { ok: false, internal: false, summary: L(`Rien n'est enregistré : ${blocking.map((x) => x.text).join(" ; ")}.`, "Not saved: rule broken."), hint: "Corrige la composition (règles du propriétaire) puis relance ; ne dis jamais au client que c'est fait." };
+  const site = siteKind(ctx);
+  const problems = checkCustomTheme(t, site);
+  const key = (x: string) => x.replace(/\d+/g, "#");
+  const before = o.strict ? null : loadCustomTheme(p.id);
+  const known = new Set(before ? checkCustomTheme(before, site).filter((x) => x.level === "bloquant").map((x) => key(x.text)) : []);
+  const all = problems.filter((x) => x.level === "bloquant");
+  const blocking = all.filter((x) => !known.has(key(x.text)));
+  if (blocking.length) return { ok: false, internal: false, summary: L(`Rien n'est enregistré : ${blocking.map((x) => x.text).join(" ; ")}.`, "Not saved: rule broken."), hint: "Corrige la composition (règles du propriétaire) puis relance, en UN SEUL appel (op « replace », ou retirer et ajouter dans les mêmes ops) ; ne dis jamais au client que c'est fait." };
+  const still = all.filter((x) => known.has(key(x.text))).map((x) => x.text);
   const next = saveCustomTheme(p.id, t);
   const verified = loadCustomTheme(p.id)?.rev === next.rev;
   const card = themeCard(p.id, next);
   const review = problems.filter((x) => x.level === "à revoir").map((x) => x.text);
   return {
     ok: verified,
-    summary: L(`Thème sur mesure ${what} (version ${next.rev}).${review.length ? ` À revoir : ${review.join(" ; ")}.` : ""}`, "Custom theme saved."),
+    summary: L(`Thème sur mesure ${what} (version ${next.rev}).${still.length ? ` Encore à corriger avant le montage à la marque : ${still.join(" ; ")}.` : ""}${review.length ? ` À revoir : ${review.join(" ; ")}.` : ""}`, "Custom theme saved."),
     hint: "Le thème est en place dans l'onglet Boutique (aperçu en grand, « Désigner un élément ») ; un aperçu et le lien « Ouvrir la Boutique » s'affichent dans le fil. Dis au client ce qui a changé, en deux phrases. Textes et photos d'exemple : dis-le tant qu'ils ne sont pas remplacés (textesClient).",
     data: { customTheme: card },
     changes: [{ module: "site", object: "thème sur mesure", summary: L(what, what), after: { rev: next.rev }, verified }],
@@ -141,7 +153,7 @@ const composeTool: AgentTool<{ header: string; footer: string; search?: string |
       // Thème déjà monté : chaque section gardée garde son travail (textes, photos, retouches). Essai Heure Dorée du
       // 9 novembre : pour ajouter des sections, SINA a tout remonté et jeté les textes et les photos déjà faits.
       const kept = keepWork(t, loadCustomTheme(p.id));
-      return saved(ctx, { ...t, chosen: false }, `monté de A à Z : ${t.pages.map((x) => x.label).join(", ")}${kept ? ` (${kept} section(s) gardée(s) avec leurs textes et photos)` : ""}`);
+      return saved(ctx, { ...t, chosen: false }, `monté de A à Z : ${t.pages.map((x) => x.label).join(", ")}${kept ? ` (${kept} section(s) gardée(s) avec leurs textes et photos)` : ""}`, { strict: true });
     } catch (e) { return { ok: false, summary: (e as Error).message, internal: true }; }
   },
 };
@@ -402,7 +414,7 @@ const chooseTool: AgentTool<Record<string, never>> = {
   run: (ctx) => {
     const p = project(ctx), t = loadCustomTheme(p.id);
     if (!t) return { ok: false, summary: L("Aucun thème sur mesure : custom.compose d'abord.", "No custom theme yet.") };
-    const r = saved(ctx, { ...t, chosen: true }, "choisi par le client");
+    const r = saved(ctx, { ...t, chosen: true }, "choisi par le client", { strict: true });
     // Essai réel du 9 novembre : le choix ne fermait pas l'étape 6 dans le parcours.
     if (r.ok) { try { updateJourneyConv(ctx.conversationId, (x) => setJourneyStep(x, 6, "done", L("thème sur mesure choisi", "custom theme chosen"))); } catch { /* fil sans parcours */ } }
     const sample = t.pages.flatMap((pg) => pg.sections).some((s) => !s.clientTexts);
