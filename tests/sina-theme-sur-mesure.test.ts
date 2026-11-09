@@ -230,8 +230,11 @@ describe("thème sur mesure : outils de SINA", async () => {
     expect(loadCustomTheme(pid)!.rev).toBe(1);
     // Lire puis modifier un texte désigné par le client.
     const hero = card.pages[0].sections[0].uid;
+    // Coordonnées déjà enregistrées : données à SINA avec la section, jamais redemandées au client.
+    (await import("@/lib/syna-agent/activity")).saveCompany(pid, { legalName: "Atelier Test SAS", address: "3 rue du Port, 13002 Marseille" });
     const read = await call("custom.section", ctx, { uid: hero });
     expect(read.data.html).toContain("L'été prend");
+    expect(read.data.coordonneesEnregistrees).toMatchObject({ legalName: "Atelier Test SAS", address: "3 rue du Port, 13002 Marseille" });
     const ed = await call("custom.edit", ctx, { uid: hero, edits: [{ find: "L'été prend", replace: "La saison s'ouvre" }] });
     expect(ed.ok).toBe(true);
     expect(loadCustomTheme(pid)!.pages[0].sections[0].html).toContain("La saison s'ouvre");

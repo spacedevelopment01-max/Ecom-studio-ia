@@ -29,6 +29,7 @@ import { imageReferences, mockupImageRoute } from "../mockup-code/tools";
 import { familySections, libSection, onlyFor, sectionByRef, isCardSection } from "./library";
 import { applyStructure, checkCustomTheme, findSection, loadCustomTheme, replaceOnce, requiredPages, saveCustomTheme, scopedCss, sectionHtml, undoCustomTheme, type CustomTheme, type SiteKind, type StructureOp } from "./theme";
 import { listProducts } from "../../products/catalog";
+import { companyOf } from "../activity";
 import { enqueue } from "../../jobs";
 import { setStep as setJourneyStep, updateJourney as updateJourneyConv } from "../journey";
 import { clientImages, CUSTOM_BRAND_JOB, examplePhotoCount, photoSlots, photosToCreate, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, sitePhotoName, type ImagesMode } from "./brand";
@@ -222,14 +223,17 @@ const showTool: AgentTool<Record<string, never>> = {
 
 const readTool: AgentTool<{ uid: string }> = {
   name: "custom.section", module: "site", kind: "read", needsProject: true,
-  description: "Étape 6 (gratuit) : lit une section du thème (uid de custom.show ou de l'élément désigné par le client) : son HTML actuel et ses règles CSS propres, à lire AVANT custom.edit pour recopier les passages exacts à changer.",
+  description: "Étape 6 (gratuit) : lit une section du thème (uid de custom.show ou de l'élément désigné par le client) : son HTML actuel, ses règles CSS propres et les coordonnées déjà enregistrées de la marque (raison sociale, adresse, e-mail, téléphone : jamais redemandées au client), à lire AVANT custom.edit pour recopier les passages exacts à changer.",
   args: z.object({ uid: z.string().regex(/^s[0-9a-f]{8}$/) }).strict(),
   run: (ctx, a) => {
     const p = project(ctx), t = loadCustomTheme(p.id), x = t ? findSection(t, a.uid) : null;
     if (!t || !x) return { ok: false, summary: L(`Section ${a.uid} introuvable dans le thème.`, "Section not found."), internal: true };
     const l = libSection(x.s.id);
     const html = sectionHtml(x.s);
-    return { ok: true, summary: L(`Section « ${l?.title} » (${x.place}) lue.`, "Section read."), data: { uid: a.uid, titre: l?.title, role: l?.role, place: x.place, fait: l?.does, textesClient: !!x.s.clientTexts, css: x.s.css ?? "", html: html.length > 30000 ? html.slice(0, 30000) + "…[coupé]" : html } };
+    // Coordonnées déjà enregistrées : jamais redemandées au client (essai Heure Dorée : l'adresse était redemandée).
+    const co = (() => { try { return companyOf(p.id); } catch { return {}; } })() as Record<string, string | undefined>;
+    const coordonnees = Object.fromEntries(["legalName", "address", "email", "phone"].filter((k) => co[k]).map((k) => [k, co[k]]));
+    return { ok: true, summary: L(`Section « ${l?.title} » (${x.place}) lue.`, "Section read."), data: { uid: a.uid, titre: l?.title, role: l?.role, place: x.place, fait: l?.does, textesClient: !!x.s.clientTexts, ...(Object.keys(coordonnees).length ? { coordonneesEnregistrees: coordonnees } : {}), css: x.s.css ?? "", html: html.length > 30000 ? html.slice(0, 30000) + "…[coupé]" : html } };
   },
 };
 
