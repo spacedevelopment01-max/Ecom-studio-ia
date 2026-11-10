@@ -6,6 +6,8 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 ## Avec le propriétaire
 
 - **Répondre en français simple** : il n'est pas développeur. Expliquer ce qui change pour lui, pas le code.
+  **Jamais un mot d'anglais avec lui** (demande du 10 novembre 2026), y compris les petits messages d'avancement
+  pendant le travail, les légendes de captures et les comptes rendus.
 - **Ne jamais demander ni accepter de clé d'API dans la conversation.** Les clés se saisissent dans
   Administration › Fournisseurs IA (chiffrées) ou dans les secrets Codespaces / de l'hébergeur.
 - **Honnêteté** : ne rien inventer (avis, chiffres, délais, certifications, résultats). Un manque se signale par
