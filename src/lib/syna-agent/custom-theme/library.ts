@@ -113,13 +113,14 @@ export const isCardSection = (l: Pick<LibSection, "role" | "title">) => l.role =
 export const FEATURED_ROLE = "produit vedette";
 
 /**
- * Photos que SINA ne peut pas inventer (décision du propriétaire du 9 novembre 2026, exigence 6.8) : les réalisations et
- * l'avant/après d'un artisan, les photos publiées par ses clients, les biens mis en vente. Seules les vraies photos du
- * client y vont ; tant qu'elles manquent, un cadre « Photo à fournir » les remplace dans l'aperçu.
+ * Photos que SINA ne peut pas inventer honnêtement : les photos publiées par ses clients (un faux témoignage) et les
+ * biens mis en vente ou en location (de vraies annonces). Seules les vraies photos du client y vont ; sans elles, la
+ * section n'est jamais posée (contrôle bloquant). Décision du propriétaire du 10 novembre 2026 : les réalisations, les
+ * chantiers et l'avant / après d'un artisan sont créés par SINA quand le client n'en a pas assez (sans personne
+ * reconnaissable sauf son accord) ; elles ne sont plus dans cette liste.
  */
 const AUTHENTIC_SECTIONS: Record<string, { kind: string; services?: boolean }> = {
-  "realisations-filtrables": { kind: "tes réalisations" }, "projet-en-detail": { kind: "tes réalisations" },
-  "avant-apres": { kind: "ton avant / après", services: true }, "vus-dans-la-rue": { kind: "les photos de tes clients" },
+  "vus-dans-la-rue": { kind: "les photos de tes clients" },
   "recherche-de-biens": { kind: "tes biens" }, "fiche-d-un-bien": { kind: "tes biens" },
 };
 /** Nature d'une photo impossible à inventer dans cette section, ou null (photo que SINA peut créer). */

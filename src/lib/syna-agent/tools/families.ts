@@ -7,7 +7,7 @@
 import { z } from "zod";
 import { L } from "../../i18n-server";
 import type { AgentTool } from "../types";
-import { familyCards, loadFamilyChoice, saveFamilyChoice, SECTION_FAMILIES, type FamilyId, type StyleId } from "../section-families";
+import { familyCards, loadFamilyChoice, saveAmbiance, saveFamilyChoice, SECTION_FAMILIES, type FamilyId, type SiteAmbiance, type StyleId } from "../section-families";
 import { journeyOf, updateJourney } from "../journey";
 import { project } from "./common";
 
@@ -45,10 +45,29 @@ const chooseTool: AgentTool<{ family: FamilyId; style?: StyleId | "classique" }>
     return {
       ok: true,
       summary: L(`Famille « ${name} » enregistrée : le thème sera monté uniquement avec ses sections, aux couleurs de la marque.`, `Family “${name}” saved.`),
-      hint: "Continue l'étape 6 : demande-lui l'ambiance de son site (clair, sombre ou qui alterne), puis custom.design conçoit TOUTES les pages avec les meilleures sections pour son produit ou son service (payant : carte d'accord), montre-le (le thème s'affiche), puis custom.images.",
+      hint: "Continue l'étape 6 : demande-lui l'ambiance de son site, en une question à deux choix (« Ton site plutôt sombre ou plutôt clair ? »), puis theme.ambiance avec SA réponse ; ensuite custom.concepts (deux concepts d'accueil et de fiche produit complètement différents, payant : carte d'accord).",
       changes: [{ module: "site", object: "famille de sections", summary: L(`famille ${name}`, `family ${name}`), before, after, verified }],
     };
   },
 };
 
-export const familyTools: AgentTool[] = [showTool, chooseTool];
+const ambianceTool: AgentTool<{ ambiance: SiteAmbiance }> = {
+  name: "theme.ambiance", module: "site", kind: "write", needsProject: true,
+  description: "Étape 6, THÈME SUR MESURE (gratuit) : enregistre l'AMBIANCE choisie par le client, après sa famille : « sombre » ou « clair » (demande-la-lui en une question à deux choix, jamais à sa place). Gardée pour toute la conception : SINA choisit des sections dont le fond d'origine convient (aucune section n'est inversée).",
+  args: z.object({ ambiance: z.enum(["clair", "sombre"]) }).strict(),
+  preview: (_ctx, a) => `Ambiance choisie : ${a.ambiance}.`,
+  run: (ctx, a) => {
+    const p = project(ctx);
+    const before = loadFamilyChoice(p.id);
+    let after;
+    try { after = saveAmbiance(p.id, a.ambiance); } catch (e) { return { ok: false, summary: (e as Error).message, hint: "Montre d'abord les familles (theme.families) et enregistre SON choix (theme.family)." }; }
+    return {
+      ok: true,
+      summary: L(`Ambiance « ${a.ambiance === "clair" ? "claire" : "sombre"} » enregistrée pour tout le site.`, `Ambiance “${a.ambiance}” saved.`),
+      hint: "Continue : custom.concepts conçoit DEUX concepts complètement différents (accueil et fiche produit), payant avec carte d'accord ; le client choisit, puis custom.concept monte tout le site sur le concept choisi.",
+      changes: [{ module: "site", object: "ambiance du site", summary: a.ambiance, before: before?.ambiance ?? null, after: after.ambiance, verified: loadFamilyChoice(p.id)?.ambiance === a.ambiance }],
+    };
+  },
+};
+
+export const familyTools: AgentTool[] = [showTool, chooseTool, ambianceTool];

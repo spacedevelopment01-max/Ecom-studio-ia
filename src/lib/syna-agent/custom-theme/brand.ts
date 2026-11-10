@@ -86,6 +86,7 @@ export const COPY_CRAFT = `Écriture (comme le meilleur concepteur-rédacteur d'
 export const SECTION_WRITE_SYSTEM = `Tu es concepteur-rédacteur web senior et directeur artistique. Tu adaptes UNE section de site (son HTML) à une petite marque, en français.
 Règles absolues :
 - Tu remplaces TOUS les textes visibles de la section (titres, paragraphes, boutons, libellés, listes, textes alternatifs des images, questions et réponses) par des textes pour CETTE marque, dans sa voix (tutoiement si elle tutoie), au moins aussi riches que l'original et plus riches quand la conception de la section le demande (description racontée, réponses aux objections, comparatif, questions, avant / après) : jamais trois phrases creuses là où le visiteur attend du contenu. Pour ajouter un élément du même modèle (une question, une ligne de comparatif, un point fort, une étape), recopie exactement la structure HTML d'un élément existant dans le replace.
+- Chaque texte alternatif (alt) décrit précisément l'image pour une personne qui ne la voit pas (ce qu'on voit, et le nom exact du produit quand il apparaît) : il sert aussi au référencement ; jamais de bourrage de mots, jamais vide sur une image qui montre quelque chose.
 - RIEN d'inventé : aucun avis, note, nombre d'avis, chiffre, label, certification, promesse de santé, délai, prix, ingrédient ou matière qui ne soit pas dans les faits fournis. Ne remplace jamais un fait du client par un autre (s'il dit « tout est bio », tu gardes le bio). Un fait inconnu s'écrit « [À compléter : …] » ou n'est pas écrit.
 - Les textes de la section d'origine viennent d'une démonstration : tu n'en reprends JAMAIS une phrase, même traduite ou retouchée.
 ${COPY_CRAFT}
@@ -137,6 +138,8 @@ export const SitePlanSchema = z.object({
     uid: z.string().max(12), message: z.string().min(3).max(320), titre: z.string().max(110).nullable(),
     bouton: z.string().max(40).nullable(), faits: z.array(z.string().max(160)).max(4),
   })).max(40),
+  /** Référencement de chaque page (décision du propriétaire du 10 novembre 2026) : titre et description pour Google. */
+  seo: z.array(z.object({ page: z.string().max(40), titre: z.string().min(5).max(80), description: z.string().min(20).max(200) })).max(20).default([]),
 });
 export type SitePlan = z.infer<typeof SitePlanSchema>;
 
@@ -147,10 +150,11 @@ ${COPY_CRAFT}
 - RIEN d'inventé : seulement les faits fournis ; un fait inconnu n'est pas écrit.
 - Titre null pour une section sans titre (en-tête, bandeau, pied de page) ; dans l'en-tête, le menu suit tes libellés.
 - Le pied de page garde les coordonnées complètes de la marque (ses faits les citent).
+- RÉFÉRENCEMENT (seo) : pour CHAQUE page (sa clé), un titre de 50 à 60 signes (ce que la page propose, avec les mots que ses clients tapent dans Google : le produit, sa matière ou sa saveur, et la ville pour un service local, puis le nom de la marque) et une description de 140 à 155 signes qui donne envie de cliquer (la promesse et un fait vrai), sans bourrage de mots, sans rien d'inventé ; jamais deux pages avec le même titre.
 Réponse : uniquement le JSON demandé.`;
 
-export function sitePlanPrompt(brief: string, sections: { uid: string; page: string; title: string; does: string; texts: string; intent?: string }[], o: { concept?: string; journeys?: { page: string; journey: string }[] } = {}): string {
-  return [brief, "", o.concept ? `IDÉE DU SITE (conception) : ${o.concept}` : "", ...(o.journeys ?? []).map((x) => `PARCOURS DU VISITEUR · ${x.page} : ${x.journey}`), "", "Sections du site, dans l'ordre (uid · page · section · ce qu'elle fait · conception · ses textes de démonstration, à NE PAS reprendre) :",
+export function sitePlanPrompt(brief: string, sections: { uid: string; page: string; title: string; does: string; texts: string; intent?: string }[], o: { concept?: string; journeys?: { page: string; journey: string }[]; pages?: { key: string; label: string }[] } = {}): string {
+  return [brief, "", o.concept ? `IDÉE DU SITE (conception) : ${o.concept}` : "", o.pages?.length ? `PAGES DU SITE (clé · nom), une entrée seo pour chacune : ${o.pages.map((x) => `${x.key} · ${x.label}`).join(" ; ")}` : "", ...(o.journeys ?? []).map((x) => `PARCOURS DU VISITEUR · ${x.page} : ${x.journey}`), "", "Sections du site, dans l'ordre (uid · page · section · ce qu'elle fait · conception · ses textes de démonstration, à NE PAS reprendre) :",
     ...sections.map((x) => `- ${x.uid} · ${x.page} · « ${x.title} » · ${x.does}${x.intent ? ` · CONCEPTION : ${x.intent}` : ""} · démo : ${x.texts}`)].filter((x, i) => x !== "" || i === 1).join("\n");
 }
 
@@ -286,7 +290,7 @@ export function exampleHeadlines(libHtml: string, html: string): string[] {
 
 /** Remplaçables par les tests (aucun appel réel). */
 export const customBrandDeps: {
-  plan?: (prompt: string, usageKey: string) => Promise<SitePlan>;
+  plan?: (prompt: string, usageKey: string) => Promise<z.input<typeof SitePlanSchema>>;
   write?: (prompt: string, usageKey: string) => Promise<SectionWrite>;
   photo?: (prompt: string, product: Buffer | null, aspect: string, usageKey: string) => Promise<Buffer>;
 } = {};
@@ -319,13 +323,21 @@ export async function runCustomBrandJob(ctx: JobContext) {
     try {
       sitePlan = await ctx.step("text-plan", async () => {
         const prompt = sitePlanPrompt(brief, sections.map((x) => { const l = libSection(x.s.id); return { uid: x.s.uid, page: x.page?.label ?? x.place, title: l?.title ?? x.s.id, does: l?.does ?? "", texts: sectionSkeleton(withBrandName(sectionHtml(x.s), name)), intent: x.s.intent }; }),
-          { concept: t!.concept, journeys: t!.pages.filter((pg) => pg.journey).map((pg) => ({ page: pg.label, journey: pg.journey! })) });
+          { concept: t!.concept, journeys: t!.pages.filter((pg) => pg.journey).map((pg) => ({ page: pg.label, journey: pg.journey! })), pages: t!.pages.map((pg) => ({ key: pg.key, label: pg.label })) });
         const usageKey = `${ctx.job.id}:text-plan`;
-        return customBrandDeps.plan ? customBrandDeps.plan(prompt, usageKey)
+        return customBrandDeps.plan ? SitePlanSchema.parse(await customBrandDeps.plan(prompt, usageKey))
           : SitePlanSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-plan", costCapMicro: a.capMicro }, () =>
               llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: SITE_PLAN_SYSTEM, promptKey: "syna-custom-plan-1", prompt, maxTokens: 10000, maxOutputTokens: 20000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SitePlanSchema, { strict: true })));
       });
     } catch (e) { report.problems.push(`plan des textes non fait (${(e as Error).message.slice(0, 120)}) : sections écrites sans plan`); }
+    // Référencement de chaque page, gardé dans le thème (titre de l'onglet et description pour Google).
+    if (sitePlan?.seo?.length) {
+      t = loadCustomTheme(p.id)!;
+      for (const pg of t.pages) { const s = sitePlan.seo.find((x) => x.page === pg.key); if (s) pg.seo = { title: s.titre, description: s.description }; }
+      t = saveCustomTheme(p.id, t, { history: false });
+      const missing = t.pages.filter((pg) => !pg.seo).map((pg) => pg.label);
+      if (missing.length) report.problems.push(`référencement non écrit pour : ${missing.join(", ")}`);
+    }
   }
 
   // 1) Textes, section par section (un point de reprise chacune).

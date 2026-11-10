@@ -7,7 +7,7 @@ import crypto from "node:crypto";
 import { all } from "../../db";
 import { remember } from "../../projects";
 import type { FamilyId } from "../section-families";
-import { FAKE_OFFER_SECTIONS, inlineBackgrounds, isCardSection, FEATURED_ROLE, libSection, SCRIPT_DEMO_SECTIONS, SHELL_ROLES, sectionPhotos, type LibSection } from "./library";
+import { authenticSection, FAKE_OFFER_SECTIONS, inlineBackgrounds, isCardSection, FEATURED_ROLE, libSection, SCRIPT_DEMO_SECTIONS, SHELL_ROLES, sectionPhotos, type LibSection } from "./library";
 
 export type CtSection = {
   /** Identifiant de CETTE section dans le thème (une même section de la bibliothèque peut servir sur deux pages). */
@@ -29,7 +29,7 @@ export type CtSection = {
    *  créer les photos plus tard, quand le montage se fait en deux fois (textes d'abord, photos ensuite). */
   photoBriefs?: { find: string; description: string; ratio: string; product: string | null }[];
 };
-export type CtPage = { key: string; label: string; sections: CtSection[]; /** Le parcours du visiteur sur la page (conception). */ journey?: string };
+export type CtPage = { key: string; label: string; sections: CtSection[]; /** Le parcours du visiteur sur la page (conception). */ journey?: string; /** Référencement : titre et description de la page pour Google. */ seo?: { title: string; description: string } };
 export type CustomTheme = {
   version: 1;
   family: FamilyId;
@@ -87,6 +87,18 @@ export function replaceInCustomTheme(projectId: string, pairs: [string, string][
   return n;
 }
 
+/** Les deux concepts proposés au client (thème sur mesure) et son choix. */
+export const CONCEPTS_KEY = "syna.custom_concepts";
+export type ConceptSet = { A: { design: unknown; theme: CustomTheme }; B: { design: unknown; theme: CustomTheme }; at: number; chosen?: "A" | "B" };
+export function loadConcepts(projectId: string): (ConceptSet & { A: { design: import("./design").Design }; B: { design: import("./design").Design } }) | null {
+  const c = readArtifact<ConceptSet>(projectId, CONCEPTS_KEY);
+  return c && c.A?.theme && c.B?.theme ? c as never : null;
+}
+export function saveConcepts<T extends ConceptSet>(projectId: string, c: T): T {
+  remember(projectId, { kind: "artifact", key: CONCEPTS_KEY, value: JSON.stringify(c), source: "local", origin: "system" });
+  return c;
+}
+
 export function saveCustomTheme(projectId: string, theme: CustomTheme, opts: { history?: boolean } = {}): CustomTheme {
   const before = loadCustomTheme(projectId);
   if (before && opts.history !== false) pushHistory(projectId, before);
@@ -139,6 +151,9 @@ export type SiteKind = {
   genre?: "mode" | "the" | null;
   /** Photos des produits (Fichiers) : seules à pouvoir revenir, sur la carte et la fiche de leur produit. */
   productPhotos?: string[];
+  /** Images envoyées par le client (hors photos des fiches produits) : seules à pouvoir remplir une section de photos
+   *  impossibles à inventer (photos de ses clients, ses biens). */
+  clientImages?: number;
 };
 /** Pages que la plateforme tient elle-même (Shopify : paiement et confirmation de commande), jamais dans le thème. */
 export const platformOwnedPages = (k: SiteKind) => (k.platform ?? "shopify") === "shopify" ? [{ keys: ["commande", "checkout"], label: "Commande" }, { keys: ["merci", "confirmation"], label: "Commande confirmée" }] : [];
@@ -200,6 +215,10 @@ export function checkCustomTheme(t: CustomTheme, site?: SiteKind): ThemeProblem[
     // Sections « seulement pour » un genre de produit : jamais ailleurs (CLAUDE.md).
     const only = (l.tags ?? []).find((g) => g === "pour-mode" || g === "pour-the");
     if (site && only && (site.business === "services" || site.genre !== (only === "pour-mode" ? "mode" : "the"))) bad(`« ${l.title} » est réservée ${only === "pour-mode" ? "aux vêtements et accessoires de mode" : "aux thés et infusions"} : jamais sur un autre site`);
+    // Photos impossibles à inventer honnêtement (photos de ses clients, ses biens) : jamais posée sans ses vraies photos
+    // (décision du 10 novembre 2026 : aucune image ne reste vide ni avec la photo de démonstration).
+    const authentic = site ? authenticSection(l.id, site.business) : null;
+    if (site && authentic && (site.clientImages ?? 0) < sectionPhotos(l.html).length) bad(`« ${l.title} » demande ${authentic} (photos impossibles à inventer) : jamais posée sans ses vraies photos`);
   }
   const shell = (s: CtSection | null, role: string, label: string, required: boolean) => {
     if (!s) { if (required) bad(`il manque ${label}`); return; }

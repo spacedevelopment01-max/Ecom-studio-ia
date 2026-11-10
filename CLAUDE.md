@@ -18,7 +18,8 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 
 - **Dépenses** : aucune API ou fournisseur payant ajouté sans son accord ; aucun appel IA payant ni publication réelle
   sans son autorisation. Toujours donner le prix avant une génération payante et attendre son accord écrit. Un appel
-  au résultat incertain (erreur 5xx) n'est jamais relancé tout seul : le dire, puis demander. Plafond d'essais : 10 $.
+  au résultat incertain (erreur 5xx) n'est jamais relancé tout seul : le dire, puis demander. Plafond d'essais : 10 $. Plafond
+  relevé à 15 € pour l'essai final du thème sur mesure Éclat de thé (accord écrit du 10 novembre 2026).
 - **Prix** : jamais d'euros montrés au client pour l'IA ; tout coût est un % du budget IA du mois de son compte ;
   devis = coût probable (un essai), une reprise n'est débitée que si elle a lieu et elle est annoncée.
 - **Ne jamais générer de personne** sans photo fournie par le client ou autorisation explicite.

@@ -9,7 +9,7 @@ import { handle } from "@/lib/http";
 import { L } from "@/lib/i18n-server";
 import { loadProject } from "@/lib/projects";
 import type { Ctx } from "@/lib/route-helpers";
-import { loadCustomTheme } from "@/lib/syna-agent/custom-theme/theme";
+import { loadConcepts, loadCustomTheme } from "@/lib/syna-agent/custom-theme/theme";
 import { renderCustomTheme } from "@/lib/syna-agent/custom-theme/render";
 
 export const runtime = "nodejs";
@@ -19,11 +19,13 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   const { id } = await ctx.params;
   ownedProject(user, id);
   const p = loadProject(id);
-  const t = loadCustomTheme(id);
+  const q = new URL(req.url).searchParams;
+  // Concept proposé (A ou B) : l'accueil et la page qui vend, avant le choix du client (lecture seule).
+  const concept = q.get("concept");
+  const t = concept === "A" || concept === "B" ? loadConcepts(id)?.[concept]?.theme ?? null : loadCustomTheme(id);
   if (!t) throw new HttpError(404, L("Aucun thème sur mesure pour ce projet.", "No custom theme for this project."));
   const nonce = crypto.randomBytes(12).toString("base64");
-  const q = new URL(req.url).searchParams;
-  const html = renderCustomTheme(p, t, { studio: q.get("studio") === "1", embed: q.get("embed") === "1", nonce });
+  const html = renderCustomTheme(p, t, { studio: q.get("studio") === "1" && !concept, embed: q.get("embed") === "1", nonce });
   // Seuls les scripts du rendu (bibliothèque du Studio) s'exécutent : aucun script venu d'une section retouchée.
   const csp = [
     "default-src 'self'", `script-src 'self' 'nonce-${nonce}'`, "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",

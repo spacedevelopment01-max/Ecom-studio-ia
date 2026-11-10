@@ -109,12 +109,13 @@ describe("thème sur mesure : montage et règles du propriétaire", () => {
     expect(k(twice, { ...shop, productPhotos: ["abc123def"] })).not.toMatch(/même photo/);
   });
 
-  it("photos impossibles à inventer : comptées à part, jamais créées, cadre « Photo à fournir » à leur place", async () => {
+  it("décision du 10 novembre 2026 : réalisations et avant / après créés par SINA ; photos de ses clients et biens jamais inventés", async () => {
     const B2 = await import("@/lib/syna-agent/custom-theme/brand");
-    const t = applyStructure(starterTheme("classique", "classique"), [{ op: "add", page: "home", section: sectionByRef("Réalisations filtrables")!.id }, { op: "add", page: "home", section: sectionByRef("Avant / après")!.id }]);
+    const t = applyStructure(starterTheme("classique", "classique"), [{ op: "add", page: "home", section: sectionByRef("Réalisations filtrables")!.id }, { op: "add", page: "home", section: sectionByRef("Avant / après")!.id }, { op: "add", page: "home", section: sectionByRef("Vus dans la rue")!.id }]);
     const svc = B2.photoSlots(t, { business: "services" }), prod = B2.photoSlots(t, { business: "products", productPhotos: true });
-    expect(svc.filter((x) => x.section === "Réalisations filtrables").every((x) => x.kind === "a-fournir")).toBe(true);
-    expect(svc.filter((x) => x.section === "Avant / après").every((x) => x.kind === "a-fournir")).toBe(true); // avant/après d'un artisan
+    expect(svc.filter((x) => x.section === "Réalisations filtrables").every((x) => x.kind === "ambiance")).toBe(true); // chantiers créés si le client n'en a pas
+    expect(svc.filter((x) => x.section === "Avant / après").every((x) => x.kind === "ambiance")).toBe(true);
+    expect(svc.filter((x) => x.section === "Vus dans la rue").every((x) => x.kind === "a-fournir")).toBe(true); // un faux témoignage, jamais
     expect(prod.filter((x) => x.section === "Avant / après").every((x) => x.kind === "ambiance")).toBe(true); // feuilles de thé sèches puis infusées
     expect(prod.filter((x) => x.section === "Produit vedette").every((x) => x.kind === "produit")).toBe(true); // sa vraie photo de produit
     // Le nombre annoncé au client ne compte que les photos d'ambiance (ni produits, ni photos à fournir).
@@ -122,11 +123,15 @@ describe("thème sur mesure : montage et règles du propriétaire", () => {
     expect(B2.examplePhotoCount(t, { business: "services" })).toBeLessThan(svc.length);
     // Aperçu : la photo d'exemple d'une réalisation n'apparaît jamais comme celle du client.
     const html = renderCustomTheme({ ...proj, business: "services" } as any, t, { nonce: "n" });
-    const real = t.pages[0].sections.find((x) => libSection(x.id)!.title === "Réalisations filtrables")!;
+    const real = t.pages[0].sections.find((x) => libSection(x.id)!.title === "Vus dans la rue")!;
     const sec = html.slice(html.indexOf(`data-ct="${real.uid}"`), html.indexOf("</section>", html.indexOf(`data-ct="${real.uid}"`)));
     expect(sec).not.toMatch(/photos\/[\w-]+\.(webp|png|jpg)/);
     const frame = /data:image\/svg\+xml;base64,([A-Za-z0-9+/=]+)/.exec(sec)![1];
-    expect(Buffer.from(frame, "base64").toString()).toMatch(/Photo à fournir[^]*SINA ne peut pas inventer tes réalisations/);
+    expect(Buffer.from(frame, "base64").toString()).toMatch(/Photo à fournir[^]*SINA ne peut pas inventer les photos de tes clients/);
+    // Sans ses vraies photos, la section n'est jamais posée (aucune image ne reste vide ni de démonstration).
+    const check = (n: number) => checkCustomTheme(t, { business: "products", products: 1, clientImages: n }).filter((x) => x.level === "bloquant").map((x) => x.text).join(" ");
+    expect(check(0)).toMatch(/« Vus dans la rue » demande les photos de tes clients/);
+    expect(check(99)).not.toMatch(/Vus dans la rue » demande/);
   });
 
   it("refuse le mélange de familles, deux « Produit vedette », deux sections de cartes, la même section à la suite", () => {
@@ -462,8 +467,8 @@ describe("thème sur mesure : outils de SINA", async () => {
     expect((await call("custom.edit", ctx, { uid: hero, hide: ["body"] })).ok).toBe(false);
     // Structure : remplacer, retirer, ajouter une page ; annuler revient en arrière.
     const shop = loadCustomTheme(pid)!.pages[1];
-    const st = await call("custom.structure", ctx, { ops: [{ op: "replace", uid: shop.sections[1].uid, section: "Vus dans la rue" }, { op: "page", key: "boutiques", label: "Nos boutiques" }, { op: "add", page: "boutiques", section: "Tournée des boutiques éphémères" }] });
-    expect(st.ok).toBe(true);
+    const st = await call("custom.structure", ctx, { ops: [{ op: "replace", uid: shop.sections[1].uid, section: "Fenêtre de bienvenue" }, { op: "page", key: "boutiques", label: "Nos boutiques" }, { op: "add", page: "boutiques", section: "Tournée des boutiques éphémères" }] });
+    expect(st.ok, st.summary).toBe(true);
     expect(loadCustomTheme(pid)!.pages.map((p) => p.key)).toContain("boutiques");
     const revBefore = loadCustomTheme(pid)!.rev;
     expect((await call("custom.undo", ctx, {})).ok).toBe(true);

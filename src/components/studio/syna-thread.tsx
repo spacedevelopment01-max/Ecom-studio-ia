@@ -348,6 +348,37 @@ function CustomThemeCard({ card, busy, onSend }: { card: CustomThemeView; busy: 
   );
 }
 
+type ConceptView = { href: string; open: string; idee: string; pages: { key: string; label: string; sections: string[] }[] };
+
+/**
+ * Deux concepts de thème sur mesure côte à côte (décision du propriétaire du 10 novembre 2026) : l'accueil de chacun,
+ * l'idée en une phrase, ses pages, et le choix du client (SINA monte ensuite tout le site sur ce concept).
+ */
+function ConceptCards({ concepts, busy, onChoose }: { concepts: Record<"A" | "B", ConceptView>; busy: boolean; onChoose: (k: "A" | "B") => void }) {
+  const t = useT();
+  return (
+    <div className="mt-2 grid gap-3 sm:grid-cols-2" data-syna-concepts>
+      {(["A", "B"] as const).map((k) => { const c = concepts[k]; return (
+        <div key={k} className="overflow-hidden rounded-xl border border-line bg-card text-xs" data-syna-concept={k}>
+          <div className="relative h-56 overflow-hidden border-b border-line bg-white">
+            <iframe title={t(`Concept ${k}`, `Concept ${k}`)} src={c.href} className="pointer-events-none absolute left-0 top-0 h-[1120px] w-[1280px] origin-top-left scale-[0.33]" loading="lazy" tabIndex={-1} />
+          </div>
+          <div className="space-y-2 px-3 py-2">
+            <p><b className="text-sm">{t("Concept", "Concept")} {k}</b></p>
+            <p>{c.idee}</p>
+            {c.pages.map((pg) => <p key={pg.key} className="text-muted"><b className="text-ink">{pg.label}</b> · {pg.sections.length} {t("sections", "sections")}</p>)}
+            <p className="text-[11px] text-muted">{t("Photos d'exemple : tes vraies images viendront sur le concept choisi.", "Sample photos: your real images come with the chosen concept.")}</p>
+            <div className="flex flex-wrap gap-2">
+              <a className="inline-flex items-center underline" href={c.open} target="_blank" rel="noreferrer">{t("Ouvrir en grand", "Open full size")}</a>
+              <Button size="sm" disabled={busy} onClick={() => onChoose(k)} data-syna-concept-choose={k}>{t(`Je choisis le concept ${k}`, `I choose concept ${k}`)}</Button>
+            </div>
+          </div>
+        </div>
+      ); })}
+    </div>
+  );
+}
+
 type CopyPage = { seo: { title: string; description: string }; sections: { section: string; title: string | null; text: string | null; button: string | null; items: { title: string; text: string | null }[] }[] };
 const COPY_PAGE_LABELS: Record<string, string> = { home: "Accueil" };
 
@@ -577,6 +608,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
   const lastActivity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "activity.plan" && m.content?.ok)?.id, [v?.messages]);
   const lastCopy = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "mockup.copy" && m.content?.ok)?.id, [v?.messages]);
   const lastCustom = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && String(m.content?.tool ?? "").startsWith("custom.") && m.content?.ok && m.content?.data?.customTheme)?.id, [v?.messages]);
+  const lastConcepts = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "custom.concepts" && m.content?.ok && m.content?.data?.concepts)?.id, [v?.messages]);
   const lastFamilies = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "theme.families" && m.content?.ok)?.id, [v?.messages]);
   const lastThemes = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "theme.propose" && m.content?.ok)?.id, [v?.messages]);
   const lastKit = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "brand.kit" && m.content?.ok)?.id, [v?.messages]);
@@ -618,6 +650,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
                 {tm.id === lastAngles && v.journey?.angles && <AngleCards angles={v.journey.angles} busy={busy || working} onChoose={(titles) => send(titles.length > 1 ? t(`Je choisis ces angles : ${titles.map((x, i) => `« ${x} »${i === 0 ? " (principal)" : ""}`).join(", ")}.`, `I choose these angles: ${titles.join(", ")}.`) : t(`Je choisis l'angle « ${titles[0]} ».`, `I choose the angle "${titles[0]}".`))} />}
                 {tm.id === lastCopy && v.journey?.siteCopy && <CopyCard pages={v.journey.siteCopy.pages} />}
                 {tm.id === lastCustom && v.projectId && <CustomThemeCard card={tm.content.data.customTheme} busy={busy || working} onSend={(text) => send(text)} />}
+                {tm.id === lastConcepts && v.projectId && <ConceptCards concepts={tm.content.data.concepts} busy={busy || working} onChoose={(k) => send(t(`Je choisis le concept ${k}.`, `I choose concept ${k}.`))} />}
                 {tm.id === lastFamilies && v.journey?.families && v.projectId && <FamilyCards families={v.journey.families} busy={busy || working} onChoose={(title) => send(t(`Je préfère la famille ${title}.`, `I prefer the ${title} family.`))} />}
                 {tm.id === lastThemes && v.journey?.themes && v.projectId && <ThemeCards themes={v.journey.themes} busy={busy || working} onChoose={(name) => send(t(`Je choisis le thème ${name}.`, `I choose the ${name} theme.`))} onAll={() => send(t("Je veux voir tous les thèmes.", "I want to see all themes."))} onMockup={() => send(t("Je préfère un thème sur mesure.", "I'd rather have a custom theme."))} />}
                 {tm.id === lastKit && v.journey?.brandKit && <BrandKitCard kit={v.journey.brandKit} darkBg={v.journey.identities?.final?.palette.dark ?? "#16161A"} busy={busy || working} onValidate={() => send(t("Je valide mon image de marque.", "I validate my brand kit."))} />}

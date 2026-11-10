@@ -31,7 +31,7 @@ import { hdAspect } from "../mockup-code/prompts";
 import { imageReferences, mockupImageRoute } from "../mockup-code/tools";
 import { cutoutPhoto, FOND_A_DETOURER } from "./cutout-photo";
 import { authenticSection, isCutoutPhoto, familySections, libSection, onlyFor, sectionByRef, isCardSection } from "./library";
-import { allSections, applyStructure, checkCustomTheme, findSection, loadCustomTheme, replaceOnce, requiredPages, saveCustomTheme, scopedCss, sectionHtml, undoCustomTheme, type CustomTheme, type SiteKind, type StructureOp } from "./theme";
+import { allSections, applyStructure, checkCustomTheme, findSection, loadConcepts, loadCustomTheme, replaceOnce, requiredPages, saveConcepts, saveCustomTheme, scopedCss, sectionHtml, undoCustomTheme, type CustomTheme, type SiteKind, type StructureOp } from "./theme";
 import { listProducts } from "../../products/catalog";
 import { activityPlan, companyOf } from "../activity";
 import { brandBrief, siteCopyModel } from "./brand";
@@ -81,6 +81,7 @@ export function siteKind(ctx: ToolContext): SiteKind {
   return {
     business: p.business === "services" ? "services" : "products", products: list.length || 1, platform: p.platform || "shopify", genre,
     productPhotos: list.flatMap((x) => (x.data.images ?? []).map((im) => im.assetId).filter((id): id is string => !!id)),
+    clientImages: (() => { try { return clientImages(p.id).length; } catch { return 0; } })(),
   };
 }
 /** Genre de site pour le classement des photos (produits ou services, vraies photos de produits ou non). */
@@ -197,73 +198,152 @@ function brandAssets(projectId: string): { has: string[]; lacks: string[] } {
 }
 
 type DesignArgs = { consigne?: string; ambiance?: Ambiance };
+/**
+ * Conception d'un site sur mesure, en trois façons (décision du propriétaire du 10 novembre 2026 : « tu peux lui proposer
+ * page d'accueil et page produit sur 2 concepts complètement différents, le client choisit et après SINA finit de monter
+ * le thème ») : « concept » (accueil et page principale seulement, l'un des deux concepts montrés au client),
+ * « complete » (tout le site à partir du concept choisi, ses deux pages gardées telles quelles), « full » (tout le site
+ * d'un coup, pour un client qui veut tout refaire).
+ */
+type DesignMode = { kind: "full" } | { kind: "concept"; label: "A" | "B"; other?: Design } | { kind: "complete"; fixed: Design };
+/** Pages d'un concept : l'accueil et la page qui vend (fiche produit, ou prestations pour un service). */
+const conceptKeys = (site: SiteKind) => (site.business === "services" ? ["home", "prestations"] : ["home", "product"]);
+type DesignRun = { ok: true; d: Design; t: CustomTheme; left: string[]; calls: number } | { ok: false; result: { ok: false; summary: string; hint?: string; internal?: boolean } };
+async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMode): Promise<DesignRun> {
+  const p = project(ctx);
+  let f;
+  try { f = familyOrError(p.id); } catch (e) { return { ok: false, result: { ok: false, summary: (e as Error).message, hint: "Montre d'abord les familles au client (theme.families) et enregistre SON choix (theme.family)." } }; }
+  const j = (() => { try { return journeyOf(ctx.conversationId); } catch { return null; } })();
+  const site = siteKind(ctx), assets = brandAssets(p.id), keys = conceptKeys(site);
+  const products = (() => { try { return listProducts(p.id).map((x) => `- ${x.data.title}${x.data.price != null ? ` · ${(x.data.price / 100).toFixed(2).replace(".", ",")} €` : ""}${x.data.options.length ? ` · options : ${x.data.options.map((o) => `${o.name} (${o.values.join(", ")})`).join(" ; ")}` : ""}${x.data.description_html ? ` · ${x.data.description_html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 500)}` : ""}`); } catch { return []; } })();
+  const ambiance = a.ambiance ?? f.ambiance ?? null;
+  const summary = (d: Design) => JSON.stringify({ concept: d.concept, header: d.header, footer: d.footer, pages: d.pages.map((pg) => ({ key: pg.key, label: pg.label, sections: pg.sections.map((x) => x.section) })) });
+  const modeText = mode.kind === "concept"
+    ? `\n\nCETTE FOIS, UN CONCEPT SEULEMENT : conçois uniquement ces deux pages : ${keys.map((k) => `« ${k} »`).join(" et ")} (mêmes exigences de richesse : accueil ${MIN_SECTIONS_TEXT}). Ignore les autres pages obligatoires : elles seront conçues après le choix du client. Ce concept sera montré au client à côté d'un second concept : il doit avoir une idée forte, lisible au premier regard.${mode.other ? `\nUN PREMIER CONCEPT EXISTE DÉJÀ (ci-dessous). Le tien doit être COMPLÈTEMENT DIFFÉRENT : une autre idée de site, une autre émotion de l'angle mise en avant, une autre ouverture, un autre parcours, d'autres sections (au plus 3 sections en commun par page avec lui), un autre en-tête si la bibliothèque en propose un autre. PREMIER CONCEPT : ${summary(mode.other)}` : ""}`
+    : mode.kind === "complete"
+      ? `\n\nLE CLIENT A CHOISI CE CONCEPT : ses pages ${keys.map((k) => `« ${k} »`).join(" et ")}, son en-tête, son pied de page et sa recherche sont GARDÉS EXACTEMENT (mêmes sections, même ordre). Conçois toutes les AUTRES pages obligatoires (et une page utile en plus seulement si le parcours le demande), dans le MÊME concept et la même émotion, sans reprendre une section déjà posée. Rends la conception complète : toutes les pages, les siennes inchangées. CONCEPT CHOISI (JSON) : ${JSON.stringify(mode.fixed)}`
+      : "";
+  const prompt = designPrompt({ brief: brandBrief(p, j), family: f.family, site, has: assets.has, lacks: assets.lacks, consigne: a.consigne, ambiance, products }) + modeText;
+  const jobId = getRun(ctx.runId)?.job_id ?? null;
+  const tag = mode.kind === "concept" ? `custom-concept-${mode.label}` : mode.kind === "complete" ? "custom-design-complete" : "custom-design";
+  const call = async (text: string, key: string, system = DESIGN_SYSTEM): Promise<Design> => customDesignDeps.call ? customDesignDeps.call(system, text, key)
+    : DesignSchema.parse(await withTrace({ jobId, projectId: p.id, step: tag, costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + DESIGN_CAP_MICRO * DESIGN_CALLS_MAX * (mode.kind === "concept" ? 2 : 1) }, () =>
+        llmJson({ task: "strategy", userId: ctx.user.id, projectId: p.id, jobId, system, promptKey: system === DESIGN_SYSTEM ? "syna-custom-design-2" : "syna-custom-design-review-1", prompt: text, maxTokens: DESIGN_OUTPUT_TOKENS, maxOutputTokens: DESIGN_OUTPUT_TOKENS * 1.5, usageKey: key, routing: { difficulty: "complex", prefer: siteCopyModel() } }, DesignSchema, { strict: true })));
+  // Concept choisi : ses pages et sa coque restent celles que le client a vues, quoi que rende le concepteur.
+  const pin = (d: Design): Design => mode.kind !== "complete" ? d : { ...d, concept: mode.fixed.concept, header: mode.fixed.header, footer: mode.fixed.footer, search: mode.fixed.search,
+    pages: [...mode.fixed.pages.filter((pg) => keys.includes(pg.key)), ...d.pages.filter((pg) => !keys.includes(pg.key))] };
+  const only = (d: Design): Design => mode.kind !== "concept" ? d : { ...d, pages: d.pages.filter((pg) => keys.includes(pg.key)), objections: d.objections.filter((o) => keys.includes(o.page)) };
+  const build = (d: Design): CustomTheme => {
+    let t: CustomTheme = { version: 1, family: f.family, style: f.style, header: null, footer: null, search: null, pages: [], rev: 0, at: Date.now(), concept: d.concept };
+    t = applyStructure(t, d.pages.flatMap((pg) => [{ op: "page", key: pg.key, label: pg.label } as StructureOp, ...pg.sections.map((s) => ({ op: "add", page: pg.key, section: ref(s.section) }) as StructureOp)]));
+    t = applyStructure(t, [{ op: "shell", slot: "header", section: ref(d.header) }, { op: "shell", slot: "footer", section: ref(d.footer) }]);
+    if (d.search) t = applyStructure(t, [{ op: "shell", slot: "search", section: ref(d.search) }]);
+    return t;
+  };
+  const blocking = (t: CustomTheme) => checkCustomTheme(t, site).filter((x) => x.level === "bloquant").map((x) => x.text)
+    // Un concept n'a que deux pages : les autres pages obligatoires viennent après le choix du client.
+    .filter((x) => mode.kind !== "concept" || !/^page « .* » absente/.test(x));
+  const research = (() => { try { return j ? activityPlan(p.id, j).objections.map((o) => o.objection) : []; } catch { return []; } })();
+  const check = (d: Design) => {
+    let t: CustomTheme | null = null, rules: string[];
+    try { t = build(d); rules = blocking(t); } catch (e) { rules = [(e as Error).message]; }
+    // Concept : seules les objections dont la réponse est sur l'une de ses deux pages sont contrôlées.
+    const g = designGaps(d, research);
+    const objections = mode.kind === "concept" ? g.blocking.filter((x) => keys.some((k) => x.includes(`page « ${k} »`))) : g.blocking;
+    return { t, rules, objections, rhythm: g.rhythm };
+  };
+  const base = `syna:${ctx.runId}:${tag}`;
+  let d: Design, c: ReturnType<typeof check>, calls = 0;
+  try {
+    // 1) conception (stratégie, parcours, sections), 2) relecture du directeur commercial qui rend la version corrigée.
+    d = only(pin(await call(prompt, base))); calls++;
+    d = only(pin(await call(`${prompt}\n\nCONCEPTION À RELIRE (JSON) :\n${JSON.stringify(d)}`, `${base}-review`, DESIGN_REVIEW_SYSTEM))); calls++;
+    c = check(d);
+    // 3) une seule correction si le contrôle du Studio refuse quelque chose (règles, objection sans réponse, rythme).
+    const todo = [...c.rules, ...c.objections, ...c.rhythm];
+    if (todo.length) {
+      d = only(pin(await call(`${prompt}\n\nTA CONCEPTION (JSON) :\n${JSON.stringify(d)}\n\nPOINTS REFUSÉS PAR LE CONTRÔLE DU STUDIO (à corriger, en gardant ta logique ; liste dans corrections ce que tu changes) :\n- ${todo.join("\n- ")}`, `${base}-fix`, DESIGN_REVIEW_SYSTEM))); calls++;
+      c = check(d);
+    }
+  } catch (e) {
+    // Coût réel, même d'un passage raté (essai du 10 novembre 2026 : « 0 passage payé » alors que 0,34 € l'avaient été).
+    const spent = all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key LIKE ?", p.id, `${base}%`)[0]?.c ?? 0;
+    return { ok: false, result: { ok: false, summary: L(`Conception non faite (${calls} passage(s) réussi(s) ; coût réel : ${budgetPctText(ctx.user.id, spent, p.id).replace(/de votre budget/, "de ton budget")}) : ${(e as Error).message.slice(0, 200)}.`, "Design failed."), hint: "Dis-le au client avec le coût réel ; ne relance rien sans son accord écrit (jamais après une erreur 5xx)." } };
+  }
+  if (c.rules.length || !c.t) return { ok: false, result: { ok: false, summary: L(`Conception refusée par le contrôle : ${c.rules.join(" ; ")}. Rien n'est enregistré.`, "Design refused."), hint: "Dis-le honnêtement au client avec le coût réel ; propose de corriger avec custom.structure (gratuit) à partir de la conception, sans rien relancer de payant sans son accord." } };
+  // Conception gardée dans le thème : parcours de chaque page et intention de chaque section.
+  for (const pg of c.t.pages) {
+    const src = d.pages.find((x) => x.key === pg.key);
+    if (!src) continue;
+    pg.journey = src.journey;
+    pg.sections.forEach((s, i) => { const pick = src.sections[i]; if (pick) s.intent = intentText(pick.why, pick.says, pick.photos); });
+  }
+  return { ok: true, d, t: c.t, left: [...c.objections, ...c.rhythm], calls };
+}
+const MIN_SECTIONS_TEXT = "au moins 8 sections, fiche produit au moins 7, plus si le parcours le demande";
+const designData = (d: Design, calls: number) => ({ visiteur: d.visitor, leviers: d.levers, objections: d.objections.map((o) => `« ${o.objection} » → ${o.answer} (${o.page} › ${libSection(o.section)?.title ?? o.section})`), relecture: d.corrections, concept: d.concept, parcours: d.pages.map((pg) => ({ page: pg.label, parcours: pg.journey, sections: pg.sections.map((s) => `${libSection(s.section)?.title ?? s.section} — ${s.why}`) })), passages: calls });
+
 const designTool: AgentTool<DesignArgs> = {
   name: "custom.design", module: "site", kind: "generate", needsProject: true,
-  description: "Étape 6, THÈME SUR MESURE (PAYANT : prix annoncé, accord écrit du client d'abord) : CONÇOIT et monte tout le site comme un directeur de création, après le choix de la famille : le visiteur de CETTE marque (cible, émotion de l'angle, objections de la recherche et leurs réponses, ce qui le fait acheter), son parcours sur chaque page, et pour chaque moment la section de la bibliothèque qui y répond (pourquoi, et ce qu'elle dira). Pages riches, jamais le minimum, jamais une section pour remplir. C'est LA façon de monter ou de remonter un thème sur mesure (custom.compose ne sert qu'à appliquer une composition dictée par le client lui-même). consigne : ce que le client a dit vouloir (ses mots). ambiance : demande-la au client AVANT (« ton site plutôt clair, plutôt sombre, ou qui alterne ? ») et passe sa réponse. Les sections déjà écrites et gardées gardent leurs textes et photos ; les nouvelles se font ensuite écrire avec custom.build (devis à part).",
+  description: "Étape 6, THÈME SUR MESURE (PAYANT : prix annoncé, accord écrit du client d'abord) : CONÇOIT et monte TOUT le site d'un coup. À n'utiliser QUE si le client veut refaire tout son site sur mesure sans passer par les deux concepts ; le parcours normal est custom.concepts (deux concepts au choix) puis custom.concept (tout le site sur le concept choisi). consigne : ce que le client a dit vouloir (ses mots). Les sections déjà écrites et gardées gardent leurs textes et photos ; les nouvelles se font ensuite écrire avec custom.build (devis à part).",
   args: z.object({ consigne: z.string().max(1500).optional(), ambiance: z.enum(["clair", "sombre", "alterne"]).optional() }).strict(),
   estimate: () => ({ maxMicro: DESIGN_CAP_MICRO * DESIGN_CALLS_MAX, probableMicro: DESIGN_TYPICAL_MICRO, label: L("conception de tout ton site sur mesure (stratégie, parcours de chaque page, choix de chaque section) et sa relecture", "full custom site design and review") }),
   run: async (ctx, a) => {
     const p = project(ctx);
-    let f;
-    try { f = familyOrError(p.id); } catch (e) { return { ok: false, summary: (e as Error).message, hint: "Montre d'abord les familles au client (theme.families) et enregistre SON choix (theme.family)." }; }
-    const j = (() => { try { return journeyOf(ctx.conversationId); } catch { return null; } })();
-    const site = siteKind(ctx), assets = brandAssets(p.id);
-    const products = (() => { try { return listProducts(p.id).map((x) => `- ${x.data.title}${x.data.price != null ? ` · ${(x.data.price / 100).toFixed(2).replace(".", ",")} €` : ""}${x.data.options.length ? ` · options : ${x.data.options.map((o) => `${o.name} (${o.values.join(", ")})`).join(" ; ")}` : ""}${x.data.description_html ? ` · ${x.data.description_html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 500)}` : ""}`); } catch { return []; } })();
-    const prompt = designPrompt({ brief: brandBrief(p, j), family: f.family, site, has: assets.has, lacks: assets.lacks, consigne: a.consigne, ambiance: a.ambiance ?? null, products });
-    const jobId = getRun(ctx.runId)?.job_id ?? null;
-    const call = async (text: string, key: string, system = DESIGN_SYSTEM): Promise<Design> => customDesignDeps.call ? customDesignDeps.call(system, text, key)
-      : DesignSchema.parse(await withTrace({ jobId, projectId: p.id, step: "custom-design", costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + DESIGN_CAP_MICRO * DESIGN_CALLS_MAX }, () =>
-          llmJson({ task: "strategy", userId: ctx.user.id, projectId: p.id, jobId, system, promptKey: system === DESIGN_SYSTEM ? "syna-custom-design-2" : "syna-custom-design-review-1", prompt: text, maxTokens: DESIGN_OUTPUT_TOKENS, maxOutputTokens: DESIGN_OUTPUT_TOKENS * 1.5, usageKey: key, routing: { difficulty: "complex", prefer: siteCopyModel() } }, DesignSchema, { strict: true })));
-    const build = (d: Design): CustomTheme => {
-      let t: CustomTheme = { version: 1, family: f.family, style: f.style, header: null, footer: null, search: null, pages: [], rev: 0, at: Date.now(), concept: d.concept };
-      t = applyStructure(t, d.pages.flatMap((pg) => [{ op: "page", key: pg.key, label: pg.label } as StructureOp, ...pg.sections.map((s) => ({ op: "add", page: pg.key, section: ref(s.section) }) as StructureOp)]));
-      t = applyStructure(t, [{ op: "shell", slot: "header", section: ref(d.header) }, { op: "shell", slot: "footer", section: ref(d.footer) }]);
-      if (d.search) t = applyStructure(t, [{ op: "shell", slot: "search", section: ref(d.search) }]);
-      return t;
-    };
-    // Conception gardée dans le thème (après la reprise du travail des sections gardées, qui remplace leurs objets).
-    const annotate = (t: CustomTheme, d: Design) => {
-      for (const pg of t.pages) {
-        const src = d.pages.find((x) => x.key === pg.key);
-        if (!src) continue;
-        pg.journey = src.journey;
-        pg.sections.forEach((s, i) => { const pick = src.sections[i]; if (pick) s.intent = intentText(pick.why, pick.says, pick.photos); });
-      }
-    };
-    const blocking = (t: CustomTheme) => checkCustomTheme(t, site).filter((x) => x.level === "bloquant").map((x) => x.text);
-    const research = (() => { try { return j ? activityPlan(p.id, j).objections.map((o) => o.objection) : []; } catch { return []; } })();
-    const check = (d: Design) => {
-      let t: CustomTheme | null = null, rules: string[];
-      try { t = build(d); rules = blocking(t); } catch (e) { rules = [(e as Error).message]; }
-      const g = designGaps(d, research);
-      return { t, rules, objections: g.blocking, rhythm: g.rhythm };
-    };
-    let d: Design, c: ReturnType<typeof check>, calls = 0;
-    try {
-      // 1) conception (stratégie, parcours, sections), 2) relecture du directeur commercial qui rend la version corrigée.
-      d = await call(prompt, `syna:${ctx.runId}:custom-design`); calls++;
-      d = await call(`${prompt}\n\nCONCEPTION À RELIRE (JSON) :\n${JSON.stringify(d)}`, `syna:${ctx.runId}:custom-design-review`, DESIGN_REVIEW_SYSTEM); calls++;
-      c = check(d);
-      // 3) une seule correction si le contrôle du Studio refuse quelque chose (règles, objection sans réponse, rythme).
-      const todo = [...c.rules, ...c.objections, ...c.rhythm];
-      if (todo.length) {
-        d = await call(`${prompt}\n\nTA CONCEPTION (JSON) :\n${JSON.stringify(d)}\n\nPOINTS REFUSÉS PAR LE CONTRÔLE DU STUDIO (à corriger, en gardant ta logique ; liste dans corrections ce que tu changes) :\n- ${todo.join("\n- ")}`, `syna:${ctx.runId}:custom-design-fix`, DESIGN_REVIEW_SYSTEM); calls++;
-        c = check(d);
-      }
-    } catch (e) {
-      // Coût réel, même d'un passage raté (essai du 10 novembre 2026 : « 0 passage payé » alors que 0,34 € l'avaient été).
-      const spent = all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key LIKE ?", p.id, `syna:${ctx.runId}:custom-design%`)[0]?.c ?? 0;
-      return { ok: false, summary: L(`Conception non faite (${calls} passage(s) réussi(s) ; coût réel : ${budgetPctText(ctx.user.id, spent, p.id).replace(/de votre budget/, "de ton budget")}) : ${(e as Error).message.slice(0, 200)}.`, "Design failed."), hint: "Dis-le au client avec le coût réel ; ne relance rien sans son accord écrit (jamais après une erreur 5xx)." }; }
-    if (c.rules.length || !c.t) return { ok: false, summary: L(`Conception refusée par le contrôle : ${c.rules.join(" ; ")}. Rien n'est enregistré.`, "Design refused."), hint: "Dis-le honnêtement au client avec le coût réel ; propose de corriger avec custom.structure (gratuit) à partir de la conception, sans rien relancer de payant sans son accord." };
-    const t = c.t;
-    const kept = keepWork(t, loadCustomTheme(p.id));
-    annotate(t, d);
-    const left = [...c.objections, ...c.rhythm];
-    const r = saved(ctx, { ...t, chosen: false }, `conçu de A à Z : ${t.pages.map((x) => `${x.label} (${x.sections.length})`).join(", ")}${kept ? ` ; ${kept} section(s) gardée(s) avec leurs textes et photos` : ""}${left.length ? `. À revoir : ${left.join(" ; ")}` : ""}`, { strict: true });
-    return { ...r, data: { ...(r as { data?: object }).data, visiteur: d.visitor, leviers: d.levers, objections: d.objections.map((o) => `« ${o.objection} » → ${o.answer} (${o.page} › ${libSection(o.section)?.title ?? o.section})`), relecture: d.corrections, concept: d.concept, parcours: d.pages.map((pg) => ({ page: pg.label, parcours: pg.journey, sections: pg.sections.map((s) => `${libSection(s.section)?.title ?? s.section} — ${s.why}`) })), passages: calls },
-      hint: "Montre au client l'idée du site et, page par page, le parcours et pourquoi chaque section est là (court). Puis custom.images et le devis de custom.build pour écrire les textes et créer les photos (jamais sans son accord)." };
+    const r = await runDesign(ctx, a, { kind: "full" });
+    if (!r.ok) return r.result;
+    const kept = keepWork(r.t, loadCustomTheme(p.id));
+    const out = saved(ctx, { ...r.t, chosen: false }, `conçu de A à Z : ${r.t.pages.map((x) => `${x.label} (${x.sections.length})`).join(", ")}${kept ? ` ; ${kept} section(s) gardée(s) avec leurs textes et photos` : ""}${r.left.length ? `. À revoir : ${r.left.join(" ; ")}` : ""}`, { strict: true });
+    return { ...out, data: { ...(out as { data?: object }).data, ...designData(r.d, r.calls) },
+      hint: "Montre au client l'idée du site et, page par page, le parcours et pourquoi chaque section est là (court). Puis custom.images, la galerie de chaque produit (gallery.plan) et le devis de custom.build pour écrire les textes et créer les photos (jamais sans son accord)." };
   },
 };
+
+/** Deux concepts complètement différents (accueil et page qui vend), montrés au client avant tout le reste. */
+const conceptsTool: AgentTool<{ consigne?: string }> = {
+  name: "custom.concepts", module: "site", kind: "generate", needsProject: true,
+  description: "Étape 6, THÈME SUR MESURE (PAYANT : prix annoncé, accord écrit du client d'abord), APRÈS la famille (theme.family) et l'ambiance (theme.ambiance) : conçoit DEUX CONCEPTS COMPLÈTEMENT DIFFÉRENTS (autre idée, autre émotion mise en avant, autres sections), chacun avec sa page d'accueil et sa fiche produit (ou sa page de prestations pour un service), comme un directeur de création. Les deux s'affichent dans le fil (avec les photos d'exemple de la bibliothèque, annoncées comme telles) ; le client choisit, puis custom.concept monte tout le site sur SON choix. consigne : ce que le client a dit vouloir (ses mots).",
+  args: z.object({ consigne: z.string().max(1500).optional() }).strict(),
+  estimate: () => ({ maxMicro: DESIGN_CAP_MICRO * DESIGN_CALLS_MAX * 2, probableMicro: CONCEPTS_TYPICAL_MICRO, label: L("deux concepts complètement différents de ton site sur mesure (page d'accueil et page produit), à comparer avant de choisir", "two different custom-site concepts") }),
+  run: async (ctx, a) => {
+    const p = project(ctx);
+    const f = loadFamilyChoice(p.id);
+    if (!f?.ambiance) return { ok: false, summary: L("Ambiance pas encore choisie par le client : demande-lui « sombre ou clair ? », puis theme.ambiance.", "Ambiance not chosen yet."), hint: "Pose la question au client, en deux choix ; ne choisis jamais à sa place." };
+    const A = await runDesign(ctx, a, { kind: "concept", label: "A" });
+    if (!A.ok) return A.result;
+    const B = await runDesign(ctx, a, { kind: "concept", label: "B", other: A.d });
+    if (!B.ok) return { ...B.result, summary: `${B.result.summary} (le concept A, lui, est prêt.)` };
+    const saved2 = saveConcepts(p.id, { A: { design: A.d, theme: A.t }, B: { design: B.d, theme: B.t }, at: Date.now() });
+    const view = (k: "A" | "B") => ({ href: `/api/projects/${p.id}/custom-theme?concept=${k}&embed=1&at=${saved2.at}`, open: `/api/projects/${p.id}/custom-theme?concept=${k}&at=${saved2.at}`, idee: saved2[k].design.concept, pages: saved2[k].theme.pages.map((pg) => ({ key: pg.key, label: pg.label, sections: pg.sections.map((s) => libSection(s.id)?.title ?? s.id) })) });
+    return {
+      ok: true,
+      summary: L(`Deux concepts conçus : A (${A.t.pages.map((x) => `${x.label} ${x.sections.length}`).join(", ")}) et B (${B.t.pages.map((x) => `${x.label} ${x.sections.length}`).join(", ")}).`, "Two concepts designed."),
+      hint: "Présente au client les DEUX concepts côte à côte (ils s'affichent dans le fil) : pour chacun, l'idée en une phrase, l'émotion mise en avant, et en quoi ils diffèrent. Dis-lui que les photos sont encore celles de la bibliothèque (exemples) : ses vraies images viendront sur le concept choisi. Demande-lui lequel il préfère (A ou B), puis custom.concept avec SON choix (payant : la suite du site). Ne choisis jamais à sa place.",
+      data: { concepts: { A: view("A"), B: view("B") }, A: designData(A.d, A.calls), B: designData(B.d, B.calls) },
+    };
+  },
+};
+
+/** Tout le site sur le concept choisi par le client (ses deux pages gardées telles quelles). */
+const conceptTool: AgentTool<{ choice: "A" | "B"; consigne?: string }> = {
+  name: "custom.concept", module: "site", kind: "generate", needsProject: true,
+  description: "Étape 6, THÈME SUR MESURE (PAYANT : prix annoncé, accord écrit du client d'abord), APRÈS custom.concepts : enregistre le concept CHOISI PAR LE CLIENT (choice A ou B) et monte TOUT le site dans ce concept : ses deux pages gardées telles quelles, toutes les autres pages conçues dans la même idée. Ensuite : custom.images, la galerie de chaque produit (gallery.plan) et custom.build (textes, SEO et photos).",
+  args: z.object({ choice: z.enum(["A", "B"]), consigne: z.string().max(1500).optional() }).strict(),
+  estimate: () => ({ maxMicro: DESIGN_CAP_MICRO * DESIGN_CALLS_MAX, probableMicro: DESIGN_TYPICAL_MICRO, label: L("la suite de ton site sur le concept choisi (toutes les autres pages)", "the rest of the site on the chosen concept") }),
+  run: async (ctx, a) => {
+    const p = project(ctx);
+    const all2 = loadConcepts(p.id);
+    const chosen = all2?.[a.choice];
+    if (!chosen) return { ok: false, summary: L("Aucun concept à choisir : conçois d'abord les deux concepts (custom.concepts).", "No concepts yet.") };
+    const r = await runDesign(ctx, { consigne: a.consigne }, { kind: "complete", fixed: chosen.design });
+    if (!r.ok) return r.result;
+    const out = saved(ctx, { ...r.t, chosen: false }, `concept ${a.choice} choisi, tout le site monté : ${r.t.pages.map((x) => `${x.label} (${x.sections.length})`).join(", ")}${r.left.length ? `. À revoir : ${r.left.join(" ; ")}` : ""}`, { strict: true });
+    if (out.ok) saveConcepts(p.id, { ...all2!, chosen: a.choice });
+    return { ...out, data: { ...(out as { data?: object }).data, ...designData(r.d, r.calls) },
+      hint: "Montre au client tout le site (le thème s'affiche) : les pages ajoutées et pourquoi. Puis custom.images (« tes images ou je les crée ? », le nombre exact), la galerie de chaque produit (gallery.plan : ses questions) et le devis de custom.build (textes, SEO et photos ; jamais sans son accord)." };
+  },
+};
+const CONCEPTS_TYPICAL_MICRO = 900_000;
 
 /** Coût probable d'une écriture de section (mesuré sur les textes du site : environ 0,06 € avec le modèle des textes). */
 export const SECTION_TEXT_TYPICAL_MICRO = 60_000;
@@ -554,4 +634,4 @@ const chooseTool: AgentTool<Record<string, never>> = {
   },
 };
 
-export const customThemeTools: AgentTool[] = [sectionsTool, imagesTool, buildTool, designTool, composeTool, showTool, readTool, structureTool, editTool, photoTool, undoTool, chooseTool];
+export const customThemeTools: AgentTool[] = [sectionsTool, imagesTool, buildTool, designTool, conceptsTool, conceptTool, composeTool, showTool, readTool, structureTool, editTool, photoTool, undoTool, chooseTool];

@@ -88,7 +88,9 @@ export const familyChoiceSchema = z.object({
   family: z.enum(["classique", "moderne"]),
   style: z.enum(["classique", "sport-chic", "streetwear-neon"]).optional(),
 }).strict().refine((c) => c.family === "classique" ? (c.style ?? "classique") === "classique" : c.style !== "classique", "Le style doit appartenir à la famille choisie.");
-export type FamilyChoice = { family: FamilyId; style: StyleId | "classique"; chosenAt: number };
+/** Ambiance du site voulue par le client (thème sur mesure, décision du propriétaire du 10 novembre 2026 : « sombre ou clair »). */
+export type SiteAmbiance = "clair" | "sombre";
+export type FamilyChoice = { family: FamilyId; style: StyleId | "classique"; chosenAt: number; ambiance?: SiteAmbiance };
 
 export function familyOf(id: FamilyId): SectionFamily {
   return SECTION_FAMILIES.find((f) => f.id === id)!;
@@ -106,6 +108,16 @@ export function saveFamilyChoice(projectId: string, c: { family: FamilyId; style
   const row = all<{ settings_json: string }>("SELECT settings_json FROM projects WHERE id=?", projectId)[0];
   if (!row) throw new Error("Projet introuvable.");
   const next: FamilyChoice = { family: ok.family, style, chosenAt: Date.now() };
+  run("UPDATE projects SET settings_json=?, updated_at=? WHERE id=?", JSON.stringify({ ...json<Record<string, unknown>>(row.settings_json, {}), sectionFamily: next }), Date.now(), projectId);
+  return next;
+}
+
+/** Enregistre l'ambiance (sombre ou claire) choisie par le client, après la famille ; gardée pour toute la conception. */
+export function saveAmbiance(projectId: string, ambiance: SiteAmbiance): FamilyChoice {
+  const cur = loadFamilyChoice(projectId);
+  if (!cur) throw new Error("famille de sections pas encore choisie par le client : theme.families puis theme.family d'abord");
+  const row = all<{ settings_json: string }>("SELECT settings_json FROM projects WHERE id=?", projectId)[0];
+  const next: FamilyChoice = { ...cur, ambiance };
   run("UPDATE projects SET settings_json=?, updated_at=? WHERE id=?", JSON.stringify({ ...json<Record<string, unknown>>(row.settings_json, {}), sectionFamily: next }), Date.now(), projectId);
   return next;
 }

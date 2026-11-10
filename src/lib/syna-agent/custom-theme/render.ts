@@ -230,7 +230,7 @@ const NAV_JS = `(function(){
   var wrap=document.querySelector(".tb-wrap"),pages=[].slice.call(document.querySelectorAll(".tb-pg"));
   var bar=document.querySelector(".tb-bar");function barH(){if(bar)document.documentElement.style.setProperty("--tb-h",bar.offsetHeight+"px")}barH();addEventListener("resize",barH);
   // « shop:Femme » filtre la grille, « legal:cgv » ouvre l'onglet, « article:lin » montre cet article
-  function go(p){var a=String(p).split(":"),k=a[0],arg=a.slice(1).join(":");var pg=document.querySelector('.tb-pg[data-pg="'+k+'"]');if(!pg)return;pages.forEach(function(x){x.hidden=x.dataset.pg!==k});
+  function go(p){var a=String(p).split(":"),k=a[0],arg=a.slice(1).join(":");var pg=document.querySelector('.tb-pg[data-pg="'+k+'"]');if(!pg)return;pages.forEach(function(x){x.hidden=x.dataset.pg!==k});if(pg.dataset.seoTitle){document.title=pg.dataset.seoTitle;var md=document.querySelector('meta[name="description"]');if(!md){md=document.createElement("meta");md.name="description";document.head.appendChild(md)}md.content=pg.dataset.seoDesc||""}
     document.querySelectorAll("[data-pgb]").forEach(function(b){b.setAttribute("aria-pressed",String(b.dataset.pgb===k))});
     var arts=pg.querySelectorAll("[data-tbart]");if(arts.length){var want=arg||arts[0].dataset.tbart;[].forEach.call(arts,function(x){x.hidden=x.dataset.tbart!==want})}
     window.scrollTo(0,0);try{parent.postMessage({source:"ct-preview",type:"page",page:k},"*")}catch(e){}
@@ -325,7 +325,7 @@ export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand"> & { 
   const pre = `window.CT_PAY=${JSON.stringify(pay).replace(/</g, "\\u003c")};window.TB_MAP=${JSON.stringify(linkMap(t))};window.CT_NAME=${JSON.stringify(name)};window.CT_DEMO=${JSON.stringify(DEMO_BRANDS.flatMap((d) => [d, d.toUpperCase()]).map((d) => d.replace(/\s+/g, "\\s+")))};window.CT_LOGO=${JSON.stringify(p.brand?.logo?.assetId ? assetUrl({ id: p.brand.logo.assetId }) : null)};(function(D){var F=${JSON.stringify(flags)};for(var k in F)D[k]=F[k]})(document.documentElement.dataset);`;
   const bar = t.pages.map((pg, i) => `<button type="button" data-pgb="${esc(pg.key)}" aria-pressed="${i === 0}">${esc(pg.label)}</button>`).join("");
   const address = projectAddress(p.id);
-  const body = t.pages.map((pg, i) => `<main class="tb-pg" data-pg="${esc(pg.key)}"${i ? " hidden" : ""}>${pg.sections.map((s) => realMap(withRealBuyBlock(sectionMarkup(s, name, "page", p.business === "services" ? "services" : "products"), buy), address)).join("\n")}</main>`).join("\n");
+  const body = t.pages.map((pg, i) => `<main class="tb-pg" data-pg="${esc(pg.key)}"${pg.seo ? ` data-seo-title="${esc(pg.seo.title)}" data-seo-desc="${esc(pg.seo.description)}"` : ""}${i ? " hidden" : ""}>${pg.sections.map((s) => realMap(withRealBuyBlock(sectionMarkup(s, name, "page", p.business === "services" ? "services" : "products"), buy), address)).join("\n")}</main>`).join("\n");
   const shell = (s: CtSection | null, place: string) => (s ? sectionMarkup(s, name, roleOf(place)) : "");
   const title = o.title ?? `${name} — thème sur mesure`;
   const n = o.nonce ? ` nonce="${esc(o.nonce)}"` : "";
