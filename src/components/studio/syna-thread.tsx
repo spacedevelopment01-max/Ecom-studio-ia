@@ -381,6 +381,7 @@ type Activity = {
   angle: { title: string; goal: string; message: string; story: string; cta: string; others: string[] } | null;
   keyMessages: string[]; objections: { objection: string; answer: string }[]; offer: { price: string | null; facts: string[] };
   products: { id: string; title: string; price: number | null; status: string }[]; gaps: string[]; validated: boolean;
+  services?: { name: string; price: string | null; duration: string | null }[];
 };
 const COMPANY_LABELS: [string, string][] = [["legalName", "Entreprise"], ["email", "E-mail"], ["phone", "Téléphone"], ["address", "Adresse"], ["siret", "SIRET"], ["shipping", "Livraison"], ["returns", "Retours"]];
 
@@ -396,7 +397,7 @@ function ActivityCard({ a, busy, onValidate }: { a: Activity; busy: boolean; onV
       {!!a.keyMessages.length && block(t("Messages clés", "Key messages"), <ul className="list-disc pl-4">{a.keyMessages.map((m) => <li key={m}>{m}</li>)}</ul>)}
       {!!a.objections.length && block(t("Objections et réponses", "Objections and answers"), <ul className="space-y-1">{a.objections.map((o) => <li key={o.objection}><span className="font-semibold">« {o.objection} »</span> — {o.answer}</li>)}</ul>)}
       {block(t("L'offre", "The offer"), <div>{a.offer.price && <p>{t("Prix confirmé", "Confirmed price")} : {a.offer.price}</p>}{!!a.offer.facts.length && <ul className="list-disc pl-4">{a.offer.facts.map((f) => <li key={f}>{f}</li>)}</ul>}</div>)}
-      {block(t("Produits (onglet Produits)", "Products"), a.products.length ? <ul className="space-y-0.5">{a.products.map((x) => <li key={x.id} className="flex justify-between gap-2"><span>{x.title}</span><span className={x.price == null ? "text-amber-700" : ""}>{x.price == null ? t("prix à compléter", "price missing") : `${String(x.price.toFixed(2)).replace(".", ",")} €`}</span></li>)}</ul> : <p className="text-amber-700">{t("Aucun produit pour l'instant.", "No product yet.")}</p>)}
+      {a.services ? block(t("Prestations", "Services"), a.services.length ? <ul className="space-y-0.5">{a.services.map((x, i) => <li key={i} className="flex justify-between gap-2"><span>{x.name}{x.duration ? ` · ${x.duration}` : ""}</span><span className={x.price ? "" : "text-amber-700"}>{x.price ?? t("prix à compléter", "price missing")}</span></li>)}</ul> : <p className="text-amber-700">{t("Aucune prestation pour l'instant.", "No service yet.")}</p>) : block(t("Produits (onglet Produits)", "Products"), a.products.length ? <ul className="space-y-0.5">{a.products.map((x) => <li key={x.id} className="flex justify-between gap-2"><span>{x.title}</span><span className={x.price == null ? "text-amber-700" : ""}>{x.price == null ? t("prix à compléter", "price missing") : `${String(x.price.toFixed(2)).replace(".", ",")} €`}</span></li>)}</ul> : <p className="text-amber-700">{t("Aucun produit pour l'instant.", "No product yet.")}</p>)}
       {a.validated ? <p className="font-semibold">✓ {t("Activité validée", "Business validated")}</p> : a.gaps.length ? <p className="text-amber-700" data-activity-gaps>{t("Encore à compléter", "Still to complete")} : {a.gaps.join(" ; ")}</p> : <Button size="sm" disabled={busy} onClick={onValidate}>{t("Je valide mon activité", "I validate my business")}</Button>}
     </div>
   );

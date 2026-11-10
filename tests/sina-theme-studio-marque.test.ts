@@ -32,13 +32,15 @@ describe("SINA — thème du Studio monté à la marque", async () => {
     ] });
     await call("start.confirm", ctx, {});
     const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
-    expect((await call("theme.images", ctx, {})).summary).toMatch(/Aucun thème du Studio en place/);
+    // Garde de l'étape 8 (audit du 10 novembre 2026) : rien tant que le client n'a pas choisi un thème du Studio.
+    expect((await call("theme.images", ctx, {})).summary).toMatch(/n'a pas choisi de thème du Studio/);
     const { loadProject, saveBrand } = await import("@/lib/projects");
     const { localBrand } = await import("@/lib/engine/local");
     run("UPDATE projects SET business_type='services' WHERE id=?", pid);
     saveBrand(pid, localBrand(loadProject(pid).product, "Argile", loadProject(pid)).brand);
     const { switchDirection } = await import("@/lib/engine/shop");
     await fr(() => switchDirection(null, pid, "rive" as never));
+    J.updateJourney(cid, (x) => { x.siteMode = { mode: "theme", at: Date.now() }; x.themeChoice = { id: "rive", jobId: "composition-terminee", at: Date.now() }; });
     const needs = await call("theme.images", ctx, {});
     expect(needs.ok, needs.summary).toBe(true);
     expect(needs.summary).toMatch(/Son thème demande \d+ images/);
@@ -91,6 +93,7 @@ describe("SINA — thème du Studio monté à la marque", async () => {
     run("UPDATE projects SET business_type='services' WHERE id=?", pid);
     saveBrand(pid, localBrand(loadProject(pid).product, "Enduit", loadProject(pid)).brand);
     await fr(async () => (await import("@/lib/engine/shop")).switchDirection(null, pid, "aplat" as never));
+    J.updateJourney(cid, (x) => { x.siteMode = { mode: "theme", at: Date.now() }; x.themeChoice = { id: "aplat", jobId: "composition-terminee", at: Date.now() }; });
     const r = await call("theme.images", ctx, {});
     expect(r.ok, r.summary).toBe(true);
     expect(r.data.total).toBeGreaterThan(5);

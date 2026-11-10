@@ -93,6 +93,13 @@ export type Journey = {
   /** Étape 6 : le choix DU CLIENT entre un thème du Studio et un thème sur mesure (jamais fait à sa place). */
   siteMode?: { mode: "theme" | "mockup"; at: number };
   themeChoice?: { id: string; jobId: string; at: number };
+  /** Thème sur mesure choisi par le client (custom.choose) : l'étape 7 est alors sa mise en boutique, pas encore prête. */
+  customChosenAt?: number;
+  /**
+   * Fil ouvert sur un projet qui existait AVANT lui (créé hors de SINA) : aucun parcours de création, aucun mode chantier
+   * (audit du 10 novembre 2026 : un ancien projet repartait aux questions de départ et se verrouillait).
+   */
+  outside?: boolean;
 };
 
 export const emptyJourney = (): Journey => ({
@@ -101,12 +108,26 @@ export const emptyJourney = (): Journey => ({
   start: {}, keep: [], mode: "creation", imported: [],
 });
 
-const stateOf = (cid: string) => one<{ state_json: string | null }>("SELECT state_json FROM agent_conversations WHERE id=?", cid);
+const stateOf = (cid: string) => one<{ state_json: string | null; created_at: number; project_created: number | null }>("SELECT c.state_json, c.created_at, p.created_at AS project_created FROM agent_conversations c LEFT JOIN projects p ON p.id=c.project_id WHERE c.id=?", cid);
+
+/**
+ * Un fil de création commence en brouillon, AVANT son projet (créé par SINA pendant l'étape 0). Un fil ouvert plus d'une
+ * minute après la création de son projet est celui d'un projet existant : hors parcours.
+ */
+function outsideJourney(row: { state_json: string | null; created_at: number; project_created: number | null }, st: any): boolean {
+  if (st.parcours) return false; // parcours déjà commencé : il continue
+  return !!st.horsParcours || (row.project_created != null && row.created_at > row.project_created + 60_000);
+}
 
 export function journeyOf(cid: string): Journey {
   const row = stateOf(cid);
   if (!row) throw new HttpError(404, L("Conversation introuvable.", "Conversation not found."));
   const st = json<any>(row.state_json ?? "{}", {});
+  if (outsideJourney(row, st)) {
+    const j = emptyJourney();
+    for (const s of JOURNEY_STEPS) j.steps[s.n] = { status: "skipped" };
+    return { ...j, outside: true };
+  }
   const j = st.parcours as Journey | undefined;
   if (!j || j.version !== 1) return emptyJourney();
   return { ...emptyJourney(), ...j, steps: { ...emptyJourney().steps, ...j.steps } };
@@ -119,6 +140,7 @@ export function updateJourney(cid: string, change: (j: Journey) => void): Journe
     if (!row) throw new HttpError(404, L("Conversation introuvable.", "Conversation not found."));
     const st = json<any>(row.state_json ?? "{}", {});
     const j = journeyOf(cid);
+    if (j.outside) return j; // projet existant : aucun parcours à écrire
     change(j);
     run("UPDATE agent_conversations SET state_json=?, updated_at=? WHERE id=?", JSON.stringify({ ...st, parcours: j }), now(), cid);
     return j;
@@ -127,6 +149,16 @@ export function updateJourney(cid: string, change: (j: Journey) => void): Journe
 
 export function setStep(j: Journey, n: number, status: StepStatus, note?: string) {
   j.steps[n] = { status, at: now(), ...(note ? { note } : {}) };
+}
+
+/**
+ * L'étape peut-elle être menée par SINA aujourd'hui ? Étape 7 : seulement pour un projet commencé avec les anciennes
+ * maquettes ; après un thème sur mesure, c'est sa mise en boutique Shopify, pas encore branchée.
+ */
+export function stepAvailable(j: Journey, n: number): boolean {
+  if (!READY_STEPS.includes(n)) return false;
+  if (n === 7 && j.customChosenAt) return false;
+  return true;
 }
 
 /** Étape en cours : la première qui n'est ni validée ni sans objet. */
@@ -189,7 +221,13 @@ export const FIELD_LABEL: Record<StartField, { fr: string; en: string }> = {
 export function journeyContext(j: Journey): string {
   const cur = currentStep(j);
   const steps = JOURNEY_STEPS.map((s) => `${s.n}. ${s.fr} = ${j.steps[s.n]?.status ?? "todo"}`).join(" ; ");
+  if (j.outside) return "Projet existant (créé avant ce fil) : il n'y a PAS de parcours de création. Ne pose pas les questions de départ et ne lance aucune étape du parcours : aide le client sur ce qu'il demande, avec les outils du catalogue.";
   const lines = [`Parcours de création (étapes 0 à 13) : ${steps}. Étape en cours : ${cur}.`];
+  if (cur === 7 && j.customChosenAt) {
+    lines.push("Étape 7 (mise en boutique du thème sur mesure) : pas encore disponible. Son thème sur mesure est choisi et en place dans l'onglet Boutique : dis-le simplement s'il demande la suite (la mise en boutique arrive très bientôt), et continue de faire les changements qu'il demande sur son thème (consigne de l'étape 6, points 4 et 5). N'utilise AUCUN outil des anciennes maquettes (mockup.*, site.code_from_mockup, site.images).");
+    if (STEP_GUIDES[6]) lines.push(STEP_GUIDES[6]);
+    return lines.join("\n");
+  }
   if (!READY_STEPS.includes(cur)) {
     const s = JOURNEY_STEPS.find((x) => x.n === cur)!;
     lines.push(`L'étape ${cur} (« ${s.fr} ») n'est pas encore disponible dans le parcours. Dis-le simplement au client (la suite arrive très bientôt), réponds à ses questions, mais n'utilise AUCUN outil payant et ne lance aucune autre étape (ni recherche, ni angles, ni marque, ni site).`);
@@ -215,14 +253,11 @@ export function journeyContext(j: Journey): string {
   return lines.join("\n");
 }
 
-/**
- * Consignes des étapes préparées dans le code mais pas encore ouvertes (READY_STEPS) : elles s'appliquent dès que
- * l'étape est ouverte, après ses essais réels.
- */
+/** Consignes détaillées des étapes ouvertes (READY_STEPS), relues par SINA à chaque pas de l'étape en cours. */
 export const STEP_GUIDES: Partial<Record<number, string>> = {
   6: "Étape 6, THÈME SUR MESURE (décision du propriétaire du 9 novembre 2026 : on ne dit PLUS JAMAIS « maquette » au client, on dit « thème sur mesure ») : 1) FAMILLE : c'est SON SEUL choix (décision du propriétaire du 9 novembre 2026) : montre-lui TOUJOURS les deux familles EN IMAGE avant de lui poser la question, même s'il revient sur son choix (theme.families : aperçu de chaque famille, Classique et Moderne, avec leurs exemples à ouvrir en vrai), recommande d'après son produit et sa marque sans choisir à sa place, enregistre SA famille (theme.family) ; jamais de mélange de familles, jamais de question de « style ». 2) CONCEPTION DE A À Z (payante : le Studio montre le devis au client sur une carte d'accord et ne lance qu'après son accord) : AUCUN thème de départ (les thèmes construits sont pour la voie « thème du Studio ») : AVANT, demande-lui en une question à choix l'AMBIANCE de son site (plutôt clair, plutôt sombre, ou qui alterne : c'est lui qui décide) ; puis custom.design (avec son ambiance) conçoit tout le site comme un directeur de création (parcours du visiteur de SA marque sur chaque page, ses objections et ses émotions, la section qui répond à chaque moment, pages riches) ; passe-lui les mots du client (consigne). Tu ne choisis jamais toi-même les sections une à une pour monter un site (custom.compose : seulement une composition dictée par le client). Montre ensuite au client l'idée du site et, page par page, le parcours et pourquoi chaque section est là. Règles contrôlées : choisir pour CHAQUE page les MEILLEURES sections pour SON produit ou SON service (jamais une section pour prendre une section ; jamais une section « seulementPour » un autre genre de produit, ex. tailles, tenues et looks pour de la confiture), l'accueil a AU MOINS 8 sections et la fiche produit AU MOINS 7 (hors en-tête et pied de page), puis custom.compose avec TOUTES les pages obligatoires (produits : accueil, boutique si plusieurs produits, fiche produit, panier, compte, à propos, contact, aide, légal, 404 ; JAMAIS de page commande ni de commande confirmée pour Shopify : le bouton du panier mène au paiement de Shopify, qui tient aussi la confirmation ; services : accueil, prestations, rendez-vous ou devis, à propos, contact, aide, légal, 404) ; le thème s'affiche dans le fil et dans la Boutique. 2bis) IMAGES : appelle custom.images et demande-lui, en une question à choix, s'il monte son site avec SES images ou si tu les crées ; s'il prend les siennes, dis-lui le nombre EXACT d'images à envoyer (par page) avec le trombone ; s'il en a moins, propose de créer celles qui manquent ou de toutes les créer (jamais à sa place). 3) À SA MARQUE : appelle custom.build (avec images et clientAssets selon sa réponse) : le Studio lui montre le devis (coût probable et plafond, en % de son budget) sur une carte d'accord et ne lance qu'après son accord ; custom.build met le thème monté à sa marque (règles du montage : une seule section de cartes par page, « Produit vedette » en haut de la fiche produit ou une fois sur l'accueil, ouverture de l'accueil = grande photo pleine avec le titre dessus, jamais la même section deux fois de suite), avec TOUS ses textes (ses faits seulement, jamais ceux d'un modèle, « [À compléter : …] » pour un fait inconnu) et TOUTES ses photos (vraies photos de ses produits, sinon photos créées dans la direction artistique de sa famille ; personnes seulement si autorisées). Tâche de fond : attends-la, lis son rapport et dis honnêtement ce qui manque. 4) BOUTIQUE : le thème est alors EN PLACE dans l'onglet Boutique : dis-lui de l'ouvrir, de le regarder en grand (ordinateur, téléphone) et d'utiliser « Désigner un élément » pour demander un changement. 5) CHANGEMENTS : un message qui commence par « [Élément désigné · section sXXXXXXXX … » vient de la Boutique : lis CETTE section (custom.section), change SEULEMENT cet élément (custom.edit : edits pour un texte ou une partie, image pour une photo de ses Fichiers, hide pour retirer l'élément, css avec :scope pour couleurs, tailles, espacements, disposition), puis dis en une phrase ce qui a changé. Avant de changer une couleur de texte, vérifie qu'il reste LISIBLE sur son fond (essai réel du 9 novembre : titre mis en vert foncé, illisible sur la photo sombre de l'ouverture) : sinon, dis-le en une phrase et propose une teinte lisible de sa palette avant de l'appliquer ; ne donne jamais de code couleur au client, nomme la couleur. Une demande sur toute une section se fait aussi avec custom.edit ; changer de section, en ajouter, retirer ou déplacer : custom.structure. « Annule » : custom.undo. Une nouvelle photo : custom.photo (payante : carte d'accord avec le prix). Ne remplace JAMAIS un fait du client par une affirmation qu'il n'a pas donnée (essai réel du 9 novembre : « Tout est bio » remplacé par « Sans arôme ajouté », inventé). 6) CHOIX : il choisit son thème (custom.choose), jamais à sa place. AVANT la fiche produit : demande au client ses offres (lots ou « 2 achetés, 1 offert », abonnement, lot à compléter, cadeaux par paliers, promotion avec sa date de fin), enregistre SEULEMENT ce qu'il donne (shop.offers, jamais inventé) : la section « Produit vedette » (une seule, en haut de la fiche) s'adapte d'elle-même au produit. Les anciennes maquettes (mockup.*) ne servent plus qu'aux projets déjà commencés avec elles.",
   7: "Étape 7 (site codé d'après une ANCIENNE maquette, projets commencés avec elles seulement) : appelle site.code_from_mockup (pour une partie des pages, avec pages) : le Studio montre le devis au client sur une carte d'accord ; les captures du site codé te sont jointes à côté de la maquette : compare-les vraiment (couleurs, logo, sections présentes ou absentes, textes, photos) ; à la fin, lis mockup.report et dis honnêtement, page par page, ce qui est conforme et ce qui ne l'est pas (les pages « dérivées » n'avaient pas d'image de maquette : elles sont codées dans son style). Puis propose site.images (consigne du propriétaire : toutes les photos du site recréées en haute définition par l'IA d'images des maquettes, à l'identique de la maquette) : la carte d'accord montre son prix. Le site codé est une version inactive : le client décide de l'appliquer (site.use_version).",
-  8: "Étape 8 (un de nos thèmes, monté à sa marque ; consigne du propriétaire du 9 novembre 2026) : le client a choisi un thème du Studio (theme.choose) ; attends la fin de la composition (tâche de fond), puis : 1) IMAGES : theme.images (gratuit) et demande-lui, en une question à choix, s'il monte son site avec SES images ou si tu les crées ; s'il prend les siennes, dis-lui le nombre EXACT d'images à envoyer avec le trombone ; s'il en a moins, propose de créer celles qui manquent ou toutes (jamais à sa place). 2) MONTAGE À SA MARQUE : appelle theme.brand (avec ses choix d'images) : le Studio lui montre le devis (coût probable et plafond, en % de son budget) sur une carte d'accord et ne lance qu'après son accord ; theme.brand réécrit TOUS les textes de sa boutique avec du vrai copywriting : l'angle marketing qu'il a choisi et son émotion dans chaque texte (situation vécue, désir, soulagement), ses faits comme seules preuves, rien d'inventé ; puis pose ses images et crée celles qui manquent. Tâche de fond : attends-la, lis son rapport, dis honnêtement ce qui reste (textes à revoir, images non créées). 3) BOUTIQUE : son site est alors EN PLACE dans l'onglet Boutique : dis-lui de l'ouvrir, de le regarder en grand et de désigner un élément pour demander un changement ; fais ses changements un par un, et vérifie qu'un texte reste lisible sur son fond.",
+  8: "Étape 8 (un de nos thèmes, monté à sa marque ; consigne du propriétaire du 9 novembre 2026) : le client a choisi un thème du Studio (theme.choose) ; attends la fin de la composition (tâche de fond), puis : 1) IMAGES : theme.images (gratuit) et demande-lui, en une question à choix, s'il monte son site avec SES images ou si tu les crées ; s'il prend les siennes, dis-lui le nombre EXACT d'images à envoyer avec le trombone ; s'il en a moins, propose de créer celles qui manquent ou toutes (jamais à sa place). 2) MONTAGE À SA MARQUE : appelle theme.brand (avec ses choix d'images) : le Studio lui montre le devis (coût probable et plafond, en % de son budget) sur une carte d'accord et ne lance qu'après son accord ; theme.brand réécrit TOUS les textes de sa boutique avec du vrai copywriting : l'angle marketing qu'il a choisi et son émotion dans chaque texte (situation vécue, désir, soulagement), ses faits comme seules preuves, rien d'inventé ; puis pose ses images et crée celles qui manquent. Tâche de fond : attends-la, lis son rapport, dis honnêtement ce qui reste (textes à revoir, images non créées). 3) BOUTIQUE : son site est alors EN PLACE dans l'onglet Boutique : dis-lui de l'ouvrir, de le regarder en grand et de désigner un élément pour demander un changement ; fais ses changements un par un, et vérifie qu'un texte reste lisible sur son fond. 4) VALIDATION : quand il dit que son site lui plaît, theme.validate (jamais à sa place).",
   11: "Étape 11 (calendrier de publication, MANUEL pour l'instant : le client publie lui-même, la publication automatique viendra après les accords des plateformes) : demande d'abord au client, UNE question à la fois et seulement si l'information manque : sur combien de jours (7, 15 ou 30), combien de publications par jour, à quelles heures, sur quels réseaux, avec ou sans émojis, avec ou sans les publicités. Puis appelle calendar.plan ; montre-lui le calendrier (calendar.read) jour par jour et dis-lui qu'il peut l'ajouter à son agenda (fichier .ics) et cocher chaque publication une fois postée (calendar.mark_done). S'il manque des publications pour remplir les jours, dis-le simplement et propose d'en créer (payant, devis d'abord).",
 };
 
@@ -239,8 +274,16 @@ export function logoStepContext(j: Journey): string[] {
 export function activityStepContext(j: Journey): string[] {
   const a = j.activity;
   const base = "Étape 5 (activité complète, GRATUITE) : on réunit tout ce que le site va dire. 1) appelle activity.plan : il AFFICHE la carte « Ton activité » et renvoie ce qui manque ; 2) pose les questions manquantes UNE par UNE, y compris les facultatives (téléphone, SIRET), une fois chacune ; « Plus tard » se propose SEULEMENT pour le téléphone et le SIRET, JAMAIS pour le nom, l'e-mail, l'adresse, la livraison ou les retours (obligatoires pour le site) (coordonnées : activity.company avec ses mots ; « plus tard » → activity.company later ; « je n'en veux pas sur le site » (pas de téléphone…) → activity.company none, jamais later) ; 3) PRODUITS : s'il n'y en a aucun dans l'onglet Produits, propose la liste tirée de SA fiche (un produit par parfum, modèle ou formule, et les coffrets ou lots qu'il a cités) avec SES prix, sans en inventer aucun ; demande son accord, puis crée chaque produit avec catalogue.create (titre, prix confirmé, description courte avec les faits du client, ses mots : ingrédients, poids ou contenance qu'il a cités dans sa fiche de départ, composition ; rien d'autre) ; un prix manquant se demande, jamais il ne se devine ; 4) rappelle activity.plan pour mettre la carte à jour ; 5) quand rien ne manque, demande s'il valide (activity.validate).";
-  if (!a) return [base];
-  return [base, `État : ${a.products.length} produit(s) dans l'onglet Produits${a.products.length ? ` (${a.products.map((x) => `${x.title} ${x.price == null ? "sans prix" : `${x.price} €`}`).join(", ")})` : ""} ; coordonnées manquantes : ${a.missing.map((m) => `${m.key}${m.required ? "" : " (facultative, à poser aussi)"}`).join(", ") || "aucune"} ; angle principal : ${a.angle?.title ?? "aucun"}.`];
+  // Réponses de l'étape 0 : déjà données par le client, jamais redemandées (audit du 10 novembre 2026).
+  const said = (["contact", "market", "price", "offer"] as StartField[]).filter((f) => j.start[f]?.status === "answered").map((f) => `${FIELD_LABEL[f].fr} : « ${j.start[f]!.value.slice(0, 600)} »`);
+  const known = said.length ? [`Déjà dit par le client à l'étape 0 (NE LE REDEMANDE PAS : enregistre ce qui s'y trouve avec activity.company ou catalogue.create, puis ne pose que ce qui manque vraiment) : ${said.join(" ; ")}.`] : [];
+  const services = "Entreprise de SERVICES : pas de produits ni de livraison ni de retours ; ses PRESTATIONS (nom, prix et durée s'il les donne) s'enregistrent avec services.profile, jamais inventées.";
+  if (!a) return [base, ...known];
+  const euros = (n: number) => `${n.toFixed(2).replace(".", ",").replace(/,00$/, "")} €`;
+  const offer = a.services
+    ? `${a.services.length} prestation(s)${a.services.length ? ` (${a.services.map((x) => `${x.name}${x.price ? ` ${x.price}` : " sans prix"}`).join(", ")})` : ""}`
+    : `${a.products.length} produit(s) dans l'onglet Produits${a.products.length ? ` (${a.products.map((x) => `${x.title} ${x.price == null ? "sans prix" : euros(x.price)}`).join(", ")})` : ""}`;
+  return [base, ...(a.services ? [services] : []), ...known, `État : ${offer} ; coordonnées manquantes : ${a.missing.map((m) => `${m.key}${m.required ? "" : " (facultative, à poser aussi)"}`).join(", ") || "aucune"} ; angle principal : ${a.angle?.title ?? "aucun"}.`];
 }
 
 /** Étape 6 : un de nos thèmes ou des maquettes sur mesure. */

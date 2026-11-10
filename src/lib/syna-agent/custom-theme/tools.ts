@@ -511,7 +511,9 @@ const chooseTool: AgentTool<Record<string, never>> = {
     if (!t) return { ok: false, summary: L("Aucun thème sur mesure : custom.compose d'abord.", "No custom theme yet.") };
     const r = saved(ctx, { ...t, chosen: true }, "choisi par le client", { strict: true });
     // Essai réel du 9 novembre : le choix ne fermait pas l'étape 6 dans le parcours.
-    if (r.ok) { try { updateJourneyConv(ctx.conversationId, (x) => setJourneyStep(x, 6, "done", L("thème sur mesure choisi", "custom theme chosen"))); } catch { /* fil sans parcours */ } }
+    // Audit du 10 novembre : l'étape 7 renvoyait ensuite vers les anciennes maquettes. Elle devient la mise en boutique du
+    // thème sur mesure (pas encore disponible) ; l'étape 8 (un thème du Studio) est sans objet.
+    if (r.ok) { try { updateJourneyConv(ctx.conversationId, (x) => { setJourneyStep(x, 6, "done", L("thème sur mesure choisi", "custom theme chosen")); x.customChosenAt = Date.now(); setJourneyStep(x, 8, "skipped", L("Thème sur mesure choisi : pas de thème du Studio à monter.", "Custom theme chosen.")); }); } catch { /* fil sans parcours */ } }
     const sample = t.pages.flatMap((pg) => pg.sections).some((s) => !s.clientTexts);
     return { ...r, hint: `${sample ? "Des textes ou photos d'exemple restent : dis-le au client et propose de les remplacer avant la mise en boutique. " : ""}La mise en boutique Shopify du thème sur mesure (étape 7) se prépare ensuite ; ne dis pas qu'elle est faite.` };
   },

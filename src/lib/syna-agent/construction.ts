@@ -2,14 +2,14 @@
  * Mode chantier (#492, décision du propriétaire du 6 novembre 2026) : pendant que SINA construit le projet (étapes 0 à
  * 13 du parcours), le client voit tout en direct (conversation, frise, marque, aperçu du site…) mais ne modifie rien
  * lui-même dans le Studio : il demande les changements à SINA, qui les fait au bon moment sans casser l'ordre du
- * parcours. Tout s'ouvre quand l'étape 13 est terminée. Seuls les projets créés avec le parcours SINA sont concernés.
+ * parcours. Tout s'ouvre quand SINA arrive à une étape qu'elle ne sait pas encore mener, ou à la fin. Seuls les projets créés avec le parcours SINA sont concernés.
  * Les actions de SINA (tâches de fond) ne passent pas par ce verrou : il ne vise que les requêtes HTTP du client.
  */
 import { HttpError } from "../auth";
 import { all, json } from "../db";
 import { L } from "../i18n-server";
 import { accessScope } from "../access-scope";
-import { journeyOf, type Journey } from "./journey";
+import { currentStep, journeyOf, stepAvailable, type Journey } from "./journey";
 
 /**
  * Requêtes toujours permises pendant le chantier : lecture, abonnement, mise en pause, suivi des tâches, et la case
@@ -23,12 +23,18 @@ export function journeyOfProject(projectId: string): Journey | null {
   return row ? journeyOf(row.id) : null;
 }
 
-/** Le projet est-il en construction avec SINA ? (parcours commencé, étape 13 pas encore terminée). */
+/**
+ * Le projet est-il en construction avec SINA ? Parcours commencé, et SINA sait mener l'étape en cours. Dès qu'elle
+ * arrive à une étape pas encore disponible (ou à la fin), le Studio s'ouvre : il ne reste jamais verrouillé pour
+ * toujours (audit du 10 novembre 2026). Un projet existant ouvert dans SINA n'est jamais verrouillé.
+ */
 export function underConstruction(projectId: string): boolean {
   const j = journeyOfProject(projectId);
-  if (!j) return false;
+  if (!j || j.outside) return false;
+  const cur = currentStep(j);
   const last = j.steps[13]?.status;
-  return last !== "done" && last !== "skipped";
+  if (last === "done" || last === "skipped") return false;
+  return stepAvailable(j, cur);
 }
 
 export function assertNotUnderConstruction(projectId: string) {

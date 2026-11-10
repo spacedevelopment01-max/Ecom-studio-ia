@@ -39,6 +39,22 @@ export function saveCompany(projectId: string, fields: Company): Company {
   return company;
 }
 
+/**
+ * Coordonnées reconnues sans IA dans la réponse « coordonnées » de l'étape 0 (e-mail, téléphone, SIRET) : reportées
+ * dans le projet pour ne jamais les redemander (audit du 10 novembre 2026). Le reste (raison sociale, adresse) est relu
+ * par SINA à l'étape 5 dans les mots du client, puis enregistré sans nouvelle question.
+ */
+export function companyFromText(text: string): Company {
+  const out: Company = {};
+  const email = /[\w.+-]+@[\w-]+(?:\.[\w-]+)+/.exec(text);
+  if (email) out.email = email[0];
+  const siret = /\b(\d{3}\s?\d{3}\s?\d{3}\s?\d{5})\b/.exec(text);
+  if (siret) out.siret = siret[1].replace(/\s/g, "");
+  const phone = /(?:\+33\s?|\b0)[1-9](?:[\s.-]?\d{2}){4}\b/.exec(text.replace(siret?.[0] ?? "\u0000", " "));
+  if (phone) out.phone = phone[0].trim();
+  return out;
+}
+
 export type ActivityPlan = {
   company: Company;
   /** Coordonnées facultatives que le client ne veut PAS sur le site (« pas de téléphone »), à ne plus demander. */
@@ -49,8 +65,13 @@ export type ActivityPlan = {
   objections: { objection: string; answer: string }[];
   offer: { price: string | null; facts: string[] };
   products: { id: string; title: string; price: number | null; status: string }[];
+  /** Entreprise de services : ses prestations (profil des services) remplacent les produits ; ni livraison ni retours. */
+  services?: { name: string; price: string | null; duration: string | null }[];
   at: number;
 };
+
+/** Coordonnées sans objet pour une entreprise de services (rien n'est livré ni retourné). */
+const NOT_FOR_SERVICES: (keyof Company)[] = ["shipping", "returns"];
 
 /**
  * Un fait de l'offre en une ligne lisible : son libellé court, ou la réponse seule quand le libellé est la question posée
@@ -78,7 +99,8 @@ export function activityPlan(projectId: string, j: Journey): ActivityPlan {
   const company = companyOf(projectId);
   const later = new Set<string>(((p.settings as any).companyLater ?? []) as string[]);
   const none = (((p.settings as any).companyNone ?? []) as (keyof Company)[]).filter((k) => !company[k]);
-  const missing = COMPANY_FIELDS.filter((f) => !company[f.key] && !later.has(f.key) && !none.includes(f.key)).map(({ key, question, required }) => ({ key, question, required }));
+  const services = p.business === "services";
+  const missing = COMPANY_FIELDS.filter((f) => !company[f.key] && !later.has(f.key) && !none.includes(f.key) && !(services && NOT_FOR_SERVICES.includes(f.key))).map(({ key, question, required }) => ({ key, question, required }));
   const ids = j.angleChoice?.ids ?? (j.angleChoice ? [j.angleChoice.id] : []);
   const a = j.angles?.list.find((x) => x.id === ids[0]);
   // Messages clés et objections : ceux de la recherche pour CET angle (jamais réinventés).
@@ -93,6 +115,7 @@ export function activityPlan(projectId: string, j: Journey): ActivityPlan {
     objections: (raw?.objections ?? []).slice(0, 5).map((o: any) => ({ objection: String(o.objection).slice(0, 300), answer: String(o.answer).slice(0, 400) })),
     offer: { price, facts: p.product.facts.filter((f) => f.status === "confirmed" && !(price && /^prix$/i.test(f.label.trim()))).map(factLine).flatMap(factItems).slice(0, 16) },
     products: listProducts(projectId).map((x) => ({ id: x.id, title: x.data.title, price: x.data.price == null ? null : x.data.price / 100, status: x.status })),
+    ...(services ? { services: (p.services?.services ?? []).map((x) => ({ name: x.name, price: x.price?.trim() || null, duration: x.duration?.trim() || null })) } : {}),
     at: Date.now(),
   };
 }
@@ -101,7 +124,8 @@ export function activityPlan(projectId: string, j: Journey): ActivityPlan {
 export function activityGaps(plan: ActivityPlan): string[] {
   const gaps: string[] = [];
   for (const m of plan.missing.filter((x) => x.required)) gaps.push(L(COMPANY_FIELDS.find((f) => f.key === m.key)!.label.replace(/^(\p{Lu})(?!\p{Lu})/u, (c) => c.toLocaleLowerCase("fr-FR")), `missing: ${m.key}`));
-  if (!plan.products.length) gaps.push(L("aucun produit créé dans l'onglet Produits", "no product created"));
+  if (plan.services) { if (!plan.services.length) gaps.push(L("aucune prestation enregistrée", "no service recorded")); }
+  else if (!plan.products.length) gaps.push(L("aucun produit créé dans l'onglet Produits", "no product created"));
   for (const x of plan.products.filter((x) => x.price == null)) gaps.push(L(`prix manquant pour « ${x.title} »`, `missing price for ${x.title}`));
   if (!plan.angle) gaps.push(L("aucun angle choisi (étape 4)", "no angle chosen"));
   return gaps;

@@ -19,6 +19,7 @@ import {
   QUESTIONS, setStep, updateJourney, type FieldAnswer, type Journey, type StartField,
 } from "../journey";
 import { short } from "./common";
+import { companyFromText, saveCompany } from "../activity";
 
 /** Lecteur de site remplaçable par les tests (aucun réseau). */
 export const startDeps: { fetchImpl?: SiteFetcher } = {};
@@ -187,6 +188,13 @@ async function keepLogo(ctx: ToolContext, j: Journey): Promise<string | null> {
   return a.id;
 }
 
+/** Langue des contenus du projet (réglage « language » du projet), choisie à l'étape 0. */
+function setProjectLanguage(pid: string, lang: "fr" | "en") {
+  const row = one<{ settings_json: string | null }>("SELECT settings_json FROM projects WHERE id=?", pid);
+  const st = JSON.parse(row?.settings_json ?? "{}");
+  run("UPDATE projects SET settings_json=?, updated_at=? WHERE id=?", JSON.stringify({ ...st, language: lang }), Date.now(), pid);
+}
+
 /** Modes de contact reconnus dans les mots du client (services). */
 export function contactModesFrom(text: string): ContactMode[] {
   const m: ContactMode[] = [];
@@ -227,7 +235,7 @@ const confirmTool: AgentTool<{}> = {
     const missing = REQUIRED_FIELDS.filter((f) => j0.start[f]?.status !== "answered");
     if (missing.length) return { ok: false, summary: L(`Il manque encore : ${missing.map((f) => FIELD_LABEL[f].fr).join(", ")}.`, `Still missing: ${missing.join(", ")}.`) };
     const open = missingFields(j0);
-    if (open.length) return { ok: false, summary: L(`Questions pas encore posées : ${open.map((f) => FIELD_LABEL[f].fr).join(", ")}. Posez-les (le client peut répondre « plus tard »).`, "Some questions were not asked yet.") };
+    if (open.length) return { ok: false, summary: L(`Questions pas encore posées : ${open.map((f) => FIELD_LABEL[f].fr).join(", ")}. Pose-les (le client peut répondre « plus tard »).`, "Some questions were not asked yet.") };
     const pid = await ensureProject(ctx, j0);
     if (!pid) return { ok: false, summary: L("Le projet n'a pas pu être créé (aucun abonnement libre ?).", "Project could not be created.") };
     const p = loadProject(pid);
@@ -260,6 +268,15 @@ const confirmTool: AgentTool<{}> = {
       });
     }
     applySetup(pid, v("business") || p.business, v("setup"));
+    // Ce que le client a dit à l'étape 0 sert tout le projet, jamais redemandé (audit du 10 novembre 2026) :
+    // coordonnées reconnues, plateforme de vente et langue du site.
+    const fromContact = companyFromText([v("contact"), ...j0.imported.map((x) => Object.values(x.contact ?? {}).join(" "))].join("\n"));
+    if (Object.keys(fromContact).length) saveCompany(pid, fromContact);
+    const plat = /presta/i.test(v("platform")) ? "prestashop" : /woo|wordpress/i.test(v("platform")) ? "woocommerce" : /shopify/i.test(v("platform")) ? "shopify" : null;
+    if (plat && (v("business") || p.business) !== "services") run("UPDATE projects SET platform=? WHERE id=?", plat, pid);
+    const lang = v("language");
+    if (/anglais|english/i.test(lang) && !/fran[çc]ais|french/i.test(lang)) setProjectLanguage(pid, "en");
+    if (/anglais|english/i.test(lang) && /fran[çc]ais|french/i.test(lang)) remember(pid, { kind: "decision", key: "syna.langues", value: "Site voulu en français ET en anglais (étape 0).", source: "user" } as any);
     // Nom gardé : le projet prend le vrai nom de la marque (au lieu du nom provisoire) ; slogan gardé mot pour mot.
     const keptName = j0.keep.includes("nom") ? (j0.keptValues?.name || j0.imported[0]?.name) : undefined;
     if (keptName) run("UPDATE projects SET name=? WHERE id=?", keptName, pid);
