@@ -277,6 +277,13 @@ export function photosToCreate(needed: number, mode: ImagesMode, clientCount: nu
   return mode === "client" ? 0 : mode === "mix" ? Math.max(0, needed - clientCount) : needed;
 }
 
+/** Titres d'accroche de la bibliothèque (30 signes ou plus) restés mot pour mot dans la section écrite pour le client. */
+export function exampleHeadlines(libHtml: string, html: string): string[] {
+  const heads = (h: string) => [...h.matchAll(/<h[1-3][^>]*>([\s\S]*?)<\/h[1-3]>/g)].map((m) => decodeEntities(m[1].replace(/<[^>]+>/g, "")).replace(/\s+/g, " ").trim()).filter((x) => x.length >= 30);
+  const lib = new Set(heads(libHtml));
+  return heads(html).filter((h) => lib.has(h));
+}
+
 /** Remplaçables par les tests (aucun appel réel). */
 export const customBrandDeps: {
   plan?: (prompt: string, usageKey: string) => Promise<SitePlan>;
@@ -356,6 +363,10 @@ export async function runCustomBrandJob(ctx: JobContext) {
         return { failed: out.failed, applied: out.applied, dead, lost };
       });
       if (!r) continue;
+      // Accroche d'exemple gardée mot pour mot (essai Éclat de thé : « Pose ton écran. Ces quelques minutes sont à toi. »
+      // restait le titre de l'ouverture) : signalée, jamais laissée en silence. Les titres pratiques courts restent permis.
+      const kept = exampleHeadlines(l?.html ?? "", sectionHtml(allSections(loadCustomTheme(p.id)!).find((y) => y.s.uid === x.s.uid)?.s ?? x.s));
+      if (kept.length) report.problems.push(`${l?.title} : titre d'exemple gardé tel quel (« ${kept.join(" », « ")} ») : à réécrire pour la marque`);
       if (r.dead.length) report.problems.push(`${l?.title} : bouton(s) vers une page qui n'existe pas (${r.dead.join(", ")})`);
       if (r.lost.length) report.problems.push(`${l?.title} : lien(s) non posé(s), texte introuvable dans la section (${r.lost.join(", ")})`);
       briefs[x.s.uid] = w.photos;
