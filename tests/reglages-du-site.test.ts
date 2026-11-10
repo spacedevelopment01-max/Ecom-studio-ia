@@ -37,3 +37,23 @@ describe("réglages du site cochés par le client", () => {
     expect(t.settings).toEqual({ buy: { barre: true }, header: { search: false }, cart: "drawer" });
   });
 });
+
+describe("disposition d'une section (point 27) et section retirée (point 25)", () => {
+  it("SINA enregistre la disposition choisie par le client ; la section porte ses repères de disposition", async () => {
+    const { sectionMarkup } = await import("../src/lib/syna-agent/custom-theme/render");
+    const t = { ...theme(), pages: [{ key: "home", label: "Accueil", sections: [{ uid: "s00000001", id: "inscription-avec-photo" }] }] } as unknown as CustomTheme;
+    const next = applyStructure(t, [{ op: "layout", uid: "s00000001", flip: true, bg: "dark" }, { op: "layout", uid: "s00000001", align: "center" }]);
+    const sec = next.pages[0].sections[0];
+    expect(sec.layout).toEqual({ flip: true, bg: "dark", align: "center" });
+    const html = sectionMarkup(sec, "Éclat de thé", "page");
+    expect(html).toContain('data-lay-flip="1"');
+    expect(html).toContain('data-lay-bg="dark"');
+    expect(html).toContain('data-lay-align="center"');
+  });
+  it("le bouton « Disposition » est dans l'outil de construction ; « photos qui défilent » est retirée de la banque", async () => {
+    const { builderAssets } = await import("../src/lib/syna-agent/custom-theme/builder");
+    const { RETIRED_SECTIONS } = await import("../src/lib/syna-agent/custom-theme/library");
+    expect(builderAssets([]).js).toContain("Disposition");
+    expect(RETIRED_SECTIONS["fiche-produit-photos-qui-defilent"]).toBeTruthy();
+  });
+});

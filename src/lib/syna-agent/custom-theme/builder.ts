@@ -53,6 +53,8 @@ export function builderAssets(slots: BuilderSlot[]): { css: string; js: string }
 .bd-note{position:fixed;left:12px;bottom:12px;z-index:300;max-width:340px;padding:10px 12px;border-radius:12px;background:#fff8e6;color:#3a2f12;font:500 12px/1.35 system-ui,sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.18)}
 .bd-list{position:fixed;inset:10% 10% auto;z-index:400;max-height:80vh;overflow:auto;padding:18px;border-radius:16px;background:#fff;color:#1d2b24;font:500 14px/1.5 system-ui,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,.35)}
 .bd-list ol{margin:8px 0 12px 20px}
+.bd-lay-p{display:flex;flex-wrap:wrap;gap:6px;width:100%;justify-content:center;padding-top:6px;border-top:1px solid rgba(255,255,255,.2)}
+.bd-lay-p label{display:flex;gap:4px;align-items:center}
 `;
   const js = `(function(){var D=${data};
 var main=document.querySelector('.tb-pg[data-pg="home"]');if(!main)return;
@@ -81,10 +83,17 @@ function draw(){D.slots.forEach(function(s){var e=el[s.uid];if(e){e.hidden=true;
   bar.innerHTML='<b>'+(i+1)+'. '+D.labels[s.group]+'</b><small>'+meta.title+' · '+n+' au choix</small>'+
    '<button type="button" class="bd-spin">Changer cette section</button><button type="button" class="bd-back"'+(s.hist.length?"":" disabled")+'>Précédente</button>'+
    '<button type="button" class="bd-lock" aria-pressed="'+s.locked+'">'+(s.locked?"Gardée":"Garder")+'</button>'+
+   '<button type="button" class="bd-lay">Disposition</button>'+
    (s.group!=="en-tete"&&s.group!=="pied-de-page"?'<select class="bd-grp" aria-label="Famille de section">'+opts+'</select>':"");
   bar.querySelector(".bd-spin").onclick=function(){var u=pick(s.group,i,s.uid);if(u&&u!==s.uid){s.hist.push(s.uid);s.uid=u;s.locked=false;save();draw();el[u].scrollIntoView({block:"start"})}};
   bar.querySelector(".bd-back").onclick=function(){if(!s.hist.length)return;s.uid=s.hist.pop();save();draw();el[s.uid].scrollIntoView({block:"start"})};
   bar.querySelector(".bd-lock").onclick=function(){s.locked=!s.locked;save();draw()};
+  // Disposition (point 27 de la revue) : inverser texte et image, alignement, cadre, fond.
+  s.lay=s.lay||{};var LAY=[["flip","Texte et image",[["","Comme prévu"],["1","Inversés"]]],["align","Alignement",[["","Comme prévu"],["left","À gauche"],["center","Centré"]]],["frame","Largeur",[["","Comme prévu"],["frame","Dans un cadre"],["full","Pleine largeur"]]],["bg","Fond",[["","Comme prévu"],["light","Clair"],["soft","Doux"],["dark","Foncé"]]]];
+  function lay(){LAY.forEach(function(L){var v=s.lay[L[0]];if(v)e.setAttribute("data-lay-"+L[0],v);else e.removeAttribute("data-lay-"+L[0])});if(window.ctLayout)window.ctLayout(e)}lay();
+  bar.querySelector(".bd-lay").onclick=function(){var p=bar.querySelector(".bd-lay-p");if(p){p.remove();return}p=document.createElement("div");p.className="bd-lay-p";
+   p.innerHTML=LAY.map(function(L){return '<label>'+L[1]+' <select data-k="'+L[0]+'">'+L[2].map(function(o){return '<option value="'+o[0]+'"'+((s.lay[L[0]]||"")===o[0]?" selected":"")+'>'+o[1]+'</option>'}).join("")+'</select></label>'}).join("");
+   p.onchange=function(ev){var k=ev.target.dataset.k;if(!k)return;s.lay[k]=ev.target.value;save();lay()};bar.appendChild(p)};
   var sel=bar.querySelector(".bd-grp");if(sel)sel.onchange=function(){var u=pick(sel.value,i);if(u){s.hist.push(s.uid);s.group=sel.value;s.uid=u;save();draw();el[u].scrollIntoView({block:"start"})}};
   e.insertBefore(bar,e.firstChild)});
  var c=document.querySelector(".bd-count");if(c)c.value=String(state.n)}

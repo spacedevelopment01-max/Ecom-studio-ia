@@ -112,6 +112,7 @@ export const RETIRED_SECTIONS: Record<string, string> = {
   "panier-coulissant": "devenue un réglage du site (panier sur le côté ou page panier)",
   "recherche-instantanee": "devenue un réglage de l'en-tête (bouton Rechercher, recherche par-dessus la page)",
   "emballage-cadeau-en-option": "devenue une ligne à cocher du panier (emballage cadeau, seulement si le client le propose)",
+  "fiche-produit-photos-qui-defilent": "retirée par le propriétaire (revue du 10 novembre 2026, point 25)",
 };
 /**
  * Sections qu'un thème de cette famille peut recevoir : jamais les démonstrations en fausse fenêtre, les contenus

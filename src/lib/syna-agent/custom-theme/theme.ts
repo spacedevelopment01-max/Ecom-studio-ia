@@ -28,7 +28,11 @@ export type CtSection = {
   /** Photos décrites par le rédacteur au montage (repère de la photo d'exemple, scène, format, produit) : gardées pour
    *  créer les photos plus tard, quand le montage se fait en deux fois (textes d'abord, photos ensuite). */
   photoBriefs?: { find: string; description: string; ratio: string; product: string | null }[];
+  /** Disposition choisie par le client (bouton « Disposition », revue du 10 novembre 2026, point 27). */
+  layout?: SectionLayout;
 };
+/** Disposition d'une section : inverser texte et image, alignement du texte, cadre ou pleine largeur, fond. */
+export type SectionLayout = { flip?: boolean; align?: "left" | "center"; frame?: "frame" | "full"; bg?: "light" | "soft" | "dark" };
 /**
  * Réglages du site cochés par le client (revue du propriétaire du 10 novembre 2026, points 30, 37 et 38) : les options du
  * bloc d'achat « Produit vedette », les boutons de l'en-tête, le panier sur le côté ou en page. Une option cochée ne
@@ -336,6 +340,7 @@ export type StructureOp =
   | { op: "page"; key: string; label: string; at?: number }
   | { op: "drop_page"; key: string }
   | { op: "rename_page"; key: string; label: string }
+  | { op: "layout"; uid: string; flip?: boolean; align?: "left" | "center"; frame?: "frame" | "full"; bg?: "light" | "soft" | "dark" }
   | { op: "settings"; buy?: Partial<Record<BuyOption, boolean>>; header?: { search?: boolean; account?: boolean; cart?: boolean }; cart?: "page" | "drawer" };
 
 export function applyStructure(t: CustomTheme, ops: StructureOp[]): CustomTheme {
@@ -363,6 +368,12 @@ export function applyStructure(t: CustomTheme, ops: StructureOp[]): CustomTheme 
     else if (o.op === "page") { if (next.pages.some((p) => p.key === o.key)) throw new Error(`la page « ${o.key} » existe déjà`); next.pages.splice(o.at ?? next.pages.length, 0, { key: o.key, label: o.label, sections: [] }); }
     else if (o.op === "drop_page") { pageOf(o.key); next.pages = next.pages.filter((p) => p.key !== o.key); }
     else if (o.op === "rename_page") pageOf(o.key).label = o.label;
+    else if (o.op === "layout") {
+      const shell = (["header", "footer", "search"] as const).find((k) => next[k]?.uid === o.uid);
+      const sec = shell ? next[shell]! : (() => { const { p, i } = locate(o.uid); return p.sections[i]; })();
+      const { op: _op, uid: _uid, ...lay } = o;
+      sec.layout = { ...sec.layout, ...lay };
+    }
     else if (o.op === "settings") {
       const cur = next.settings ?? {};
       next.settings = { ...cur, ...(o.buy ? { buy: { ...cur.buy, ...o.buy } } : {}), ...(o.header ? { header: { ...cur.header, ...o.header } } : {}), ...(o.cart ? { cart: o.cart } : {}) };

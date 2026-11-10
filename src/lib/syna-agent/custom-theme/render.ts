@@ -157,7 +157,9 @@ export function sectionMarkup(s: CtSection, brandName: string, role: string, bus
   let html = s.clientTexts ? sectionHtml(s) : withBrandName(sectionHtml(s), brandName);
   const authentic = authenticSection(s.id, business);
   if (authentic) { const frame = provideFrame(authentic); html = html.replace(/(?:\.\/)?photos\/[\w-]+\.(?:webp|png|jpe?g)/g, frame); }
-  const marked = html.replace(/^\s*<(section|footer)\b/, `<$1 data-ct="${s.uid}" data-ct-role="${role}"${s.clientTexts ? " data-ct-own" : ""}`);
+  const lay = s.layout ?? {};
+  const layAttr = `${lay.flip ? ' data-lay-flip="1"' : ""}${lay.align ? ` data-lay-align="${lay.align}"` : ""}${lay.frame ? ` data-lay-frame="${lay.frame}"` : ""}${lay.bg ? ` data-lay-bg="${lay.bg}"` : ""}`;
+  const marked = html.replace(/^\s*<(section|footer)\b/, `<$1 data-ct="${s.uid}" data-ct-role="${role}"${s.clientTexts ? " data-ct-own" : ""}${layAttr}`);
   return marked;
 }
 
@@ -256,15 +258,34 @@ html[data-hd-search="0"] [data-ct-role="header"] [aria-label="Rechercher"],html[
 .ct-drw-x{position:sticky;top:10px;float:right;margin:10px;z-index:2;width:38px;height:38px;border-radius:50%;border:0;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.15);font-size:1.4rem;cursor:pointer}
 html.ct-drw-on .ct-drw{transform:none}html.ct-drw-on .ct-drw-bg{opacity:1;pointer-events:auto}
 .ct-drw .rv-cart-g{grid-template-columns:1fr}.ct-drw .rv-sum{position:static}
+[data-lay-align="center"] :is(h1,h2,h3,h4,h5,p,small,li,figcaption,blockquote,.rv-eb,.eb,.z-eb,.dq-eb){text-align:center}
+[data-lay-align="left"] :is(h1,h2,h3,h4,h5,p,small,li,figcaption,blockquote,.rv-eb,.eb,.z-eb,.dq-eb){text-align:left}
+[data-lay-align="left"] :is(.rv-hd,.rv-hd>*){justify-items:start;text-align:left}
+[data-lay-frame="frame"]{margin:28px max(16px,3vw)!important;border-radius:28px!important;overflow:hidden}
+[data-lay-frame="full"]{margin-left:0!important;margin-right:0!important;border-radius:0!important}
+[data-lay-bg="dark"] :is(h1,h2,h3,h4) :is(em,i){color:var(--b-gold,#C9A04E)!important}
+[data-lay-bg="dark"] .rv-chips button{border-color:rgba(255,255,255,.4)!important;color:#fff!important;background:transparent!important}
+[data-lay-bg="dark"] .rv-chips button[aria-pressed="true"],[data-lay-bg="dark"] .rv-nl button{background:var(--b-gold,#C9A04E)!important;color:var(--b-dark)!important}
+[data-lay-bg="light"]{background:#fff!important}[data-lay-bg="soft"]{background:var(--c4,var(--b-soft,#f2f5f2))!important}[data-lay-bg="dark"]{background:var(--b-dark)!important}
 `;
 const SETTINGS_JS = `(function(){var D=document.documentElement.dataset;
+  // Disposition (point 27) : inverser texte et image, et textes lisibles sur le fond choisi.
+  function painted(e){var b=getComputedStyle(e).backgroundColor;return b&&b!=="transparent"&&!/rgba\\(\\s*0,\\s*0,\\s*0,\\s*0\\s*\\)/.test(b)}
+  function ctLayout(sec){
+    var fl=sec.getAttribute("data-lay-flip")==="1";[].forEach.call(sec.querySelectorAll("[data-lay-flipped]"),function(x){x.style.direction="";[].forEach.call(x.children,function(c){c.style.direction=""});x.removeAttribute("data-lay-flipped")});
+    if(fl){var q=[sec],box=null;while(q.length&&!box){var e=q.shift();var d=getComputedStyle(e).display,kids=[].filter.call(e.children,function(c){return c.offsetParent!==null||getComputedStyle(c).position==="fixed"});
+      if((d.indexOf("grid")>=0||d.indexOf("flex")>=0)&&kids.length>=2&&kids.length<=3&&kids.some(function(c){return c.querySelector("img,video")||c.tagName==="IMG"})&&kids.some(function(c){return c.querySelector("h1,h2,h3,p")}))box=e;else q=q.concat([].slice.call(e.children))}
+      if(box){box.style.direction="rtl";box.setAttribute("data-lay-flipped","");[].forEach.call(box.children,function(c){c.style.direction="ltr"})}}
+    var bg=sec.getAttribute("data-lay-bg");[].forEach.call(sec.querySelectorAll("[data-lay-ink]"),function(x){x.style.color="";x.removeAttribute("data-lay-ink")});
+    if(bg){var ink=bg==="dark"?"#fff":"var(--b-ink,#1d2a23)";[].forEach.call(sec.querySelectorAll("h1,h2,h3,h4,h5,p,small,li,blockquote,figcaption,b,strong,span,label,summary"),function(x){var e=x.parentElement,own=painted(x);while(!own&&e&&e!==sec){if(painted(e))break;e=e.parentElement}if(!own&&e===sec){x.style.color=ink;x.setAttribute("data-lay-ink","")}})}}
+  window.ctLayout=ctLayout;[].forEach.call(document.querySelectorAll("[data-lay-flip],[data-lay-bg]"),ctLayout);
   // Barre d'achat fixe : seulement si le client l'a cochée ; elle apparaît quand le bouton d'achat sort de l'écran.
   if(D.poBarre==="1")document.querySelectorAll(".po [data-pogo]").forEach(function(go){var po=go.closest(".po"),bar=document.createElement("div");bar.className="ct-bar";
     bar.innerHTML='<span><b></b><small></small></span><button type="button">Ajouter au panier</button>';bar.querySelector("b").textContent=po.dataset.name||"";
     function price(){var pr=po.querySelector("[data-pon]");bar.querySelector("small").textContent=pr?pr.textContent:""}price();
     bar.querySelector("button").onclick=function(){go.click()};document.body.appendChild(bar);
     // À chaque défilement (un saut d'un coup au-delà du bouton ne doit pas être manqué).
-    function upd(){var pg=go.closest(".tb-pg"),r=go.getBoundingClientRect(),on=!(pg&&pg.hidden)&&r.height>0&&r.bottom<0;if(on)price();bar.classList.toggle("on",on)}
+    function upd(){var pg=go.closest(".tb-pg"),r=go.getBoundingClientRect(),on=!(pg&&pg.hidden)&&r.height>0&&r.bottom<0&&!document.querySelector(".cg-lab,.bd-main");if(on)price();bar.classList.toggle("on",on)}
     addEventListener("scroll",upd,{passive:true});addEventListener("resize",upd);upd()});
   // Livraison offerte : le vrai seuil du client, sous le bouton d'achat.
   if(D.poFree)document.querySelectorAll(".po [data-pogo]").forEach(function(go){var p=document.createElement("p");p.className="ct-free";p.textContent="Livraison offerte dès "+String(D.poFree).replace(".",",")+" € d'achat";go.insertAdjacentElement("afterend",p)});
