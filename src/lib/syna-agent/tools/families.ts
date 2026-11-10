@@ -23,7 +23,7 @@ const showTool: AgentTool<Record<string, never>> = {
     return {
       ok: true,
       summary: L(`Familles affichées en image : ${cards.map((c) => `« ${c.title} »`).join(", ")}.`, "Section families shown."),
-      hint: `Demande au client, en une question à deux choix (Classique, Moderne), laquelle il préfère, puis theme.family avec SA famille. Pour recommander : Classique convient aux ${SECTION_FAMILIES[0].fits} ; Moderne aux ${SECTION_FAMILIES[1].fits}. Ne choisis jamais à sa place ; ne lui demande pas de style (Sport chic et Streetwear néon ne sont que des exemples).`,
+      hint: `${p.business === "services" ? "ENTREPRISE DE SERVICES : dis-lui honnêtement que la famille Moderne n'a pas encore de sections de prestations, de prise de rendez-vous ni de demande de devis (elles existent dans la Classique) ; s'il la choisit quand même, ces pages seront montées avec des sections plus générales. " : ""}Demande au client, en une question à deux choix (Classique, Moderne), laquelle il préfère, puis theme.family avec SA famille. Pour recommander : Classique convient aux ${SECTION_FAMILIES[0].fits} ; Moderne aux ${SECTION_FAMILIES[1].fits}. Ne choisis jamais à sa place ; ne lui demande pas de style (Sport chic et Streetwear néon ne sont que des exemples).`,
       data: { familles: cards.map((c) => ({ famille: c.family, style: c.style, titre: c.title, ambiance: c.mood, sections: c.sections })), choisi: current },
     };
   },
