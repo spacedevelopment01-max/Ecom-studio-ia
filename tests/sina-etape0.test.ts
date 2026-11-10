@@ -342,3 +342,33 @@ describe("SINA — niveaux de coût : gratuit (moteur local), Haiku, Opus", asyn
     try { expect(modelFor(9)).toBeUndefined(); } finally { J.READY_STEPS.pop(); }
   });
 });
+
+describe("SINA — étape 0, moteur local fiable (audit du 10 novembre 2026)", async () => {
+  const { parseSimpleAnswer, isPlainYes } = await import("@/lib/syna-agent/local-step");
+  const { productCountFrom, contactModesFrom } = await import("@/lib/syna-agent/tools/start");
+
+  it("« oui » seulement s'il est franc : une réserve ou une correction passe la main à Claude", () => {
+    for (const t of ["Oui", "ok merci", "Oui, tout est juste, on continue", "oui c'est bon"]) expect(isPlainYes(t), t).toBe(true);
+    for (const t of ["Oui mais change le prix : 25 €", "Ok sauf la langue", "Valide pas encore, attends", "Oui, 30 € au lieu de 25"]) expect(isPlainYes(t), t).toBe(false);
+  });
+
+  it("« rien » seulement s'il est complet : « Non, juste un nom… » n'est jamais « je pars de zéro »", () => {
+    for (const t of ["Non", "Rien, je pars de zéro", "rien du tout"]) expect(parseSimpleAnswer("existing", t)?.value, t).toBe("Rien : je pars de zéro.");
+    for (const t of ["Non, juste un nom : Maison Lune", "Pas encore de site mais un compte Instagram", "Aucun site, mais j'ai un logo"]) expect(parseSimpleAnswer("existing", t), t).toBeNull();
+  });
+
+  it("une correction n'est jamais enregistrée comme réponse par le moteur local", () => {
+    expect(parseSimpleAnswer("price", "Je veux d'abord corriger mon offre : 12 €")).toBeNull();
+    expect(parseSimpleAnswer("price", "En fait plutôt 14 €")).toBeNull();
+    expect(parseSimpleAnswer("price", "12 € le pot")?.value).toBe("12 € le pot");
+    expect(parseSimpleAnswer("difference", "Un service d'échange gratuit")?.status).toBe("answered"); // « échange » n'est pas « change »
+  });
+
+  it("nombre de produits et façons de contacter lus dans l'ordre du client", () => {
+    expect(productCountFrom("Une dizaine")).toBe(10);
+    expect(productCountFrom("une vingtaine de bougies")).toBe(20);
+    expect(productCountFrom("Un seul au début, 5 ensuite")).toBe(1);
+    expect(contactModesFrom("devis en ligne")).toEqual(["quote"]);
+    expect(contactModesFrom("Par téléphone, ou un devis")).toEqual(["call", "quote"]);
+  });
+});

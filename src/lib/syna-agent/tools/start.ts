@@ -197,20 +197,26 @@ function setProjectLanguage(pid: string, lang: "fr" | "en") {
 
 /** Modes de contact reconnus dans les mots du client (services). */
 export function contactModesFrom(text: string): ContactMode[] {
-  const m: ContactMode[] = [];
-  if (/r[ée]serv|rendez-vous|en ligne|cr[ée]neau/i.test(text)) m.push("booking");
-  if (/devis/i.test(text)) m.push("quote");
-  if (/appel|t[ée]l[ée]phone/i.test(text)) m.push("call");
-  if (/formulaire|e-?mail|message/i.test(text)) m.push("form");
-  return m;
+  // Dans l'ordre où le client les cite : le premier est le bouton principal (audit du 10 novembre 2026 : « devis en
+  // ligne » donnait la réservation en premier ; « en ligne » seul n'est pas une réservation).
+  const found: { mode: ContactMode; at: number }[] = [];
+  const add = (mode: ContactMode, re: RegExp) => { const m = re.exec(text); if (m) found.push({ mode, at: m.index }); };
+  add("booking", /r[ée]serv|rendez-vous|cr[ée]neau/i);
+  add("quote", /devis/i);
+  add("call", /appel|t[ée]l[ée]phone/i);
+  add("form", /formulaire|e-?mail|message/i);
+  return found.sort((a, b) => a.at - b.at).map((x) => x.mode);
 }
-/** Nombre de produits au lancement (boutique), s'il est donné en chiffres ou en toutes lettres simples. */
+/** Nombre de produits au lancement (boutique) : le premier nombre cité, en chiffres ou en lettres (« une dizaine »). */
 export function productCountFrom(text: string): number | null {
-  const d = /\d+/.exec(text);
-  if (d) return Number(d[0]);
-  const words: Record<string, number> = { un: 1, une: 1, seul: 1, deux: 2, trois: 3, quatre: 4, cinq: 5, six: 6, dix: 10 };
-  const w = /\b(un|une|seul|deux|trois|quatre|cinq|six|dix)\b/i.exec(text);
-  return w ? words[w[1].toLowerCase()] : null;
+  const words: Record<string, number> = { un: 1, une: 1, seul: 1, deux: 2, trois: 3, quatre: 4, cinq: 5, six: 6, sept: 7, huit: 8, neuf: 9, dix: 10, douzaine: 12, quinzaine: 15, vingtaine: 20, trentaine: 30, cinquantaine: 50, centaine: 100 };
+  const m = /\d+|\b(dizaine|douzaine|quinzaine|vingtaine|trentaine|cinquantaine|centaine|un|une|seul|deux|trois|quatre|cinq|six|sept|huit|neuf|dix)\b/i.exec(text);
+  if (!m) return null;
+  if (/^\d+$/.test(m[0])) return Number(m[0]);
+  // « une dizaine » : le nom de quantité qui suit l'article l'emporte.
+  const after = /^\s*(dizaine|douzaine|quinzaine|vingtaine|trentaine|cinquantaine|centaine)\b/i.exec(text.slice(m.index + m[0].length));
+  if (after) return after[1].toLowerCase() === "dizaine" ? 10 : words[after[1].toLowerCase()];
+  return m[1].toLowerCase() === "dizaine" ? 10 : words[m[1].toLowerCase()];
 }
 /** Organisation choisie : type de boutique (un produit ou plusieurs) ou bouton principal du site de services. */
 function applySetup(pid: string, business: string, setup: string) {

@@ -5,6 +5,7 @@
  * du client, plusieurs informations, correction, réponse ambiguë), il ne devine jamais : il passe la main à Claude.
  */
 import type { StepOutput } from "./loop";
+import { L } from "../i18n-server";
 import { FIELD_LABEL, QUESTIONS, START_FIELDS, missingFields, currentStep, type Journey, type StartField } from "./journey";
 
 /** Choix proposés en boutons pour certaines questions (réponses reconnues sans IA). */
@@ -19,8 +20,20 @@ export const LOCAL_CHOICES: Partial<Record<StartField, string[]>> = {
 export const CONFIRM_CHOICES = ["Oui, tout est juste, on continue", "Je veux corriger quelque chose"];
 
 const LATER = /^(plus tard|je (ne sais|sais) pas( encore)?|pas encore|aucune id[ée]e|later|not sure|je verrai)\b/i;
-const NOTHING = /^(non|rien|aucun|aucune|pas encore|je pars de z[ée]ro|rien,? je pars de z[ée]ro|nothing|no)\b/i;
-const YES = /^(oui|ok|d'accord|daccord|c'est (bon|juste|parfait|ça)|parfait|valid|on continue|yes|go|ça me va|tout est juste)/i;
+/**
+ * Réponses reconnues EN ENTIER seulement (audit du 10 novembre 2026 : « Non, juste un nom : Maison Lune » devenait « je
+ * pars de zéro », « Oui mais change le prix » validait le résumé). Au moindre complément, Claude reprend la main.
+ */
+const NOTHING = /^(?:non|rien|aucun|aucune|pas encore|nothing|no)?[\s,.!]*(?:rien,?\s*)?(?:je pars de z[ée]ro|rien du tout|rien|non|aucun|aucune|pas encore|nothing|no)?[\s.!]*$/i;
+const YES = /^(?:oui|ok|okay|d'accord|daccord|c'est (?:bon|juste|parfait|ça)|parfait|valide|je valide|on continue|yes|go|ça me va|tout est juste)(?:[\s,!.]+(?:oui|ok|merci|parfait|c'est (?:bon|juste|parfait)|tout est juste|on continue|vas-y|go|super|top))*[\s!.]*$/i;
+/** Marqueurs d'une correction ou d'une réserve : jamais enregistrés tels quels par le moteur local. */
+const CORRECTION = /(?<!\p{L})(mais|sauf|corrig\p{L}*|modifi\p{L}*|chang\p{L}*|en fait|plut[ôo]t|je me suis tromp\p{L}*|attends?|pas encore valid\p{L}*|non pas|erreur)(?!\p{L})/iu;
+/** Réponse simple d'accord au résumé : le bouton exact, ou un oui court sans réserve. */
+export function isPlainYes(text: string): boolean {
+  const t = text.trim();
+  if (t === CONFIRM_CHOICES[0]) return true;
+  return t.length <= 60 && YES.test(t) && !CORRECTION.test(t) && !/\d/.test(t);
+}
 const ACKS = ["C'est noté.", "Parfait, c'est enregistré.", "Merci, je note.", "Bien reçu.", "Noté !"];
 
 /** Valeur reconnue sans IA pour le champ demandé, ou null (→ Claude). */
@@ -28,12 +41,14 @@ export function parseSimpleAnswer(field: StartField, raw: string): { value: stri
   const text = raw.trim();
   if (!text || text.length > 400 || /\?\s*$/.test(text) || /https?:\/\//i.test(text) && field !== "taste") return null;
   const later = LATER.test(text);
+  // Correction, réserve ou plusieurs phrases : Claude comprend, le moteur local ne devine jamais.
+  if (CORRECTION.test(text) || (text.match(/[.!?;](\s|$)/g)?.length ?? 0) > 2) return null;
   switch (field) {
     case "business": {
       const p = /\bproduits?\b/i.test(text), s = /\b(services?|prestations?)\b/i.test(text);
       return p !== s ? { value: p ? "products" : "services", status: "answered" } : null;
     }
-    case "existing": return NOTHING.test(text) ? { value: "Rien : je pars de zéro.", status: "answered" } : null;
+    case "existing": return text.length <= 40 && NOTHING.test(text) && /\p{L}/u.test(text) ? { value: "Rien : je pars de zéro.", status: "answered" } : null;
     case "platform": {
       const m = /shopify|woo ?commerce|prestashop/i.exec(text);
       if (m) return { value: /shopify/i.test(m[0]) ? "shopify" : /presta/i.test(m[0]) ? "prestashop" : "woocommerce", status: "answered" };
@@ -70,11 +85,13 @@ export type LocalDecision = { out: StepOutput; answer?: { field: StartField; val
 export function localDecision(c: LocalContext): LocalDecision | null {
   const j = c.journey;
   if (currentStep(j) !== 0 || c.hasAttachments || !c.askField) return null;
+  // Le moteur local écrit en français : un client anglophone est servi par Claude, dans sa langue.
+  if (L("fr", "en") === "en") return null;
   const missing = missingFields(j);
   const ack = ACKS[c.seq % ACKS.length];
   // Validation du résumé.
   if (c.askField === "confirm") {
-    if (missing.length || !YES.test(c.userText.trim()) || c.userText.length > 120) return null; // start.confirm crée le projet s'il manque
+    if (missing.length || !isPlainYes(c.userText)) return null; // start.confirm crée le projet s'il manque
     return {
       confirm: true,
       out: { message: "Parfait, l'étape 0 est validée. Je garde toutes tes réponses pour la suite. La prochaine étape : tes 3 identités de marque.", actions: [{ tool: "start.confirm", args: {}, why: "validation du résumé par le client (moteur local)" }], question: null, done: true },
