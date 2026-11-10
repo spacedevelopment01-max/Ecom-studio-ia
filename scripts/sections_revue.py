@@ -37,6 +37,9 @@ HTML_FIX = [
     ('avant-apres',
      '<span class="lb l">Feuilles sèches</span><span class="lb r">Dans l\'eau chaude</span>',
      '<span class="lb l"><b>Avant</b> Feuilles sèches</span><span class="lb r"><b>Après</b> Dans l\'eau chaude</span>'),
+    # 22 et contrôle général : page panier complète sans prénom d'exemple ni moyens de paiement non confirmés.
+    ('page-panier-complete', 'placeholder="Une précision pour Camille ?"', 'placeholder="Une précision pour la commande ?"'),
+    ('page-panier-complete', '<div class="pa2-py"><span>Carte bancaire</span><span>PayPal</span><span>Apple Pay</span></div>', ''),
 ]
 
 JS_FIX = [

@@ -99,7 +99,7 @@ const LINK_WORDS: Record<string, string[]> = {
   cart: ["Panier", "Voir le panier"],
   commande: ["Passer commande", "Valider mon panier", "Commander"],
   compte: ["Mon compte", "Favoris", "Se connecter"],
-  aide: ["Aide", "Livraison", "Retours", "Retours et échanges", "Questions", "Suivi de commande", "Suivre ma commande"],
+  aide: ["Aide", "Livraison", "Retours", "Retours et échanges", "Livraison et retours", "Questions", "Questions fréquentes", "Suivi de commande", "Suivre ma commande"],
   contact: ["Contact", "Écris-nous", "Nous écrire"],
   about: ["À propos", "Notre histoire", "La marque", "Tous les looks"],
   journal: ["Journal", "Le journal", "Tous les articles", "Blog"],
@@ -255,6 +255,9 @@ const NAV_JS = `(function(){
     var pg=document.querySelector('.tb-pg[data-pg="'+prod+'"]');if(!pg)return;var s=[].slice.call(pg.querySelectorAll("section")).find(function(x){return x._po&&x._po.gam});if(!s)return;
     var k=s._po.gam.findIndex(function(g){return String(g[0]).split("/").pop()===f});s._po.pick(k>-1?k:s._po.g0)}
   var MAP=window.TB_MAP||{};document.querySelectorAll(".tb-wrap a:not([data-go]), .tb-wrap button[aria-label]:not([data-go])").forEach(function(x){var t=(x.tagName==="BUTTON"?x.getAttribute("aria-label"):x.textContent).replace(/[→↗]/g,"").replace(/\\s+/g," ").trim(),u=t.replace(/\\s*\\d+\\s*pièces?$/,"").trim();var to=MAP[t]||MAP[u];if(to)x.dataset.go=to});
+  // Pieds de page (revue du 10 novembre 2026) : seulement les pages qui existent ; une colonne sans lien disparaît.
+  function rvFoot(){if(/[?&](catalog|builder)=/.test(location.search)||document.querySelector(".cg-lab,.bd-main,.bd-show"))return;document.querySelectorAll(".rv-ft").forEach(function(f){f.querySelectorAll("a:not([data-go]):not([aria-label])").forEach(function(a){if(a.closest(".cta,.strip")||a.querySelector("img"))return;var li=a.closest("li");(li||a).hidden=true});f.querySelectorAll(".fcol,.facc details,.nx5-top>div,.lg2,.f3>nav").forEach(function(c){if(c.querySelector("a")&&!c.querySelector("a:not([hidden])"))c.setAttribute("data-rv-empty","")})})}
+  if(document.readyState==="complete")rvFoot();else addEventListener("load",rvFoot);
   var lg=window.CT_LOGO;if(lg)document.querySelectorAll('[data-ct-role="header"] [class$="-lg"],[data-ct-role="header"] .lg,[data-ct-role="footer"] [class$="-lg"]').forEach(function(x){x.innerHTML='<img class="ctw-logo" src="'+lg+'" alt="'+String(window.CT_NAME||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;")+'">'});
   // Textes écrits par les scripts des sections : jamais le nom d'une marque de démonstration (remplacé par celle du client).
   var NM=window.CT_NAME||"",RX=new RegExp("\\\\b("+(window.CT_DEMO||[]).join("|")+")\\\\b","g");

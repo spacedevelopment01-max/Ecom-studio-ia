@@ -1251,6 +1251,19 @@
 ;
 ;
 ;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
 ;/* ===== sections refaites (revue du 10 novembre 2026) ===== */
 /* Sections refaites (revue du 10 novembre 2026) */
 (function(){
@@ -1287,5 +1300,90 @@
       grs.forEach(function(g){var n=0;qa(".rv-q",g).forEach(function(q){var ok=!v||norm(q.textContent).indexOf(v)>=0;q.classList.toggle("rv-hid",!ok);if(ok)n++;if(v&&ok)q.open=true;if(!v)q.open=false});g.hidden=!n;if(n)any=true});
       if(no)no.hidden=any});
     qa("[data-rv-go]",s).forEach(function(a){a.addEventListener("click",function(e){var g=s.querySelector("#rv-fq-"+a.dataset.rvGo);if(!g)return;e.preventDefault();g.hidden=false;g.scrollIntoView({behavior:"smooth",block:"start"});var f=g.querySelector(".rv-q");if(f)f.open=true})})});
+  // Fenêtre d'inscription : dans la banque et l'outil de construction, visible telle quelle ; sur un vrai site, une seule
+  // fois, quelques secondes après l'arrivée (mémoire du navigateur protégée).
+  qa("[data-rv-pop]").forEach(function(s){
+    function preview(){return /[?&](catalog|builder)=/.test(location.search)||!!document.querySelector(".cg-lab,.bd-main,.bd-show,[data-ct-catalog]")}
+    function close(){s.classList.remove("open");try{localStorage.setItem("rv-pop-vu","1")}catch(e){}}
+    qa("[data-rv-popx]",s).forEach(function(b){b.addEventListener("click",function(){if(s.classList.contains("rv-live"))close()})});
+    if(preview())return;
+    var seen=false;try{seen=localStorage.getItem("rv-pop-vu")==="1"}catch(e){}
+    s.classList.add("rv-live");
+    // La banque ajoute ses repères après ce script : on revérifie, et la fenêtre reste alors dans la page.
+    function recheck(){if(preview()){s.classList.remove("rv-live","open");clearTimeout(t)}}
+    var t=seen?null:setTimeout(function(){if(!preview())s.classList.add("open")},8000);
+    setTimeout(recheck,0);addEventListener("DOMContentLoaded",recheck);addEventListener("load",recheck);
+    addEventListener("keydown",function(e){if(e.key==="Escape"&&s.classList.contains("open"))close()});
+  });
+  // Panier : quantités, retrait, livraison offerte, emballage cadeau, totaux (montants lus dans la section).
+  qa("[data-rv-cart]").forEach(function(s){
+    var free=parseFloat(s.dataset.free)||0,g=s.querySelector("[data-rv-gift]"),gl=s.querySelector("[data-rv-opt]"),gp=gl?parseFloat(gl.dataset.price)||0:0;
+    function eu(n){return n.toFixed(2).replace(".",",").replace(",00","")+" €"}
+    function put(sel,t){var e=s.querySelector(sel);if(e)e.textContent=t}
+    function draw(){var sub=0,items=qa("[data-rv-ci]",s);
+      items.forEach(function(it){var n=+it.querySelector("[data-rv-qn]").textContent,l=n*parseFloat(it.dataset.price);sub+=l;it.querySelector("[data-rv-lt]").textContent=eu(l)});
+      var gift=g&&g.checked?gp:0,rest=Math.max(0,free-sub);
+      put("[data-rv-sub]",eu(sub));put("[data-rv-tot]",eu(sub+gift));
+      put("[data-rv-ship]",free&&sub>=free?"Offerte":"Calculée au paiement");
+      put("[data-rv-fsm]",!free?"":rest>0?"Plus que "+eu(rest)+" pour la livraison offerte":"La livraison est offerte !");
+      var b=s.querySelector("[data-rv-fsb]");if(b)b.style.width=(free?Math.min(100,sub/free*100):0)+"%";
+      var gr=s.querySelector("[data-rv-giftrow]");if(gr)gr.hidden=!gift;
+      var e=s.querySelector("[data-rv-empty]");if(e)e.hidden=items.length>0}
+    s.addEventListener("click",function(e){var b=e.target.closest("[data-rv-q],[data-rv-rm]");if(!b)return;var it=b.closest("[data-rv-ci]");
+      if(b.hasAttribute("data-rv-rm")){it.classList.add("out");setTimeout(function(){it.remove();draw()},300);return}
+      var n=it.querySelector("[data-rv-qn]"),v=Math.max(1,Math.min(20,+n.textContent+(+b.dataset.rvQ)));n.textContent=v;draw()});
+    if(g)g.addEventListener("change",draw);draw();
+  });
+  // Onglets de la fiche : trait ou pastille qui suit l'onglet choisi.
+  qa("[data-rv-tabs]").forEach(function(s){var bs=qa("[data-rv-t]",s),ps=qa("[data-rv-p]",s),ind=s.querySelector(".rv-ind"),side=s.classList.contains("v-cote");if(!bs.length)return;
+    function place(b){if(!ind||!b)return;if(side){ind.style.top=b.offsetTop+"px";ind.style.height=b.offsetHeight+"px"}else{ind.style.left=b.offsetLeft+"px";ind.style.width=b.offsetWidth+"px"}}
+    function show(i){bs.forEach(function(b,k){b.setAttribute("aria-selected",String(k===i))});ps.forEach(function(p,k){p.hidden=k!==i});place(bs[i])}
+    bs.forEach(function(b,i){b.addEventListener("click",function(){show(i)})});addEventListener("resize",function(){place(bs.filter(function(b){return b.getAttribute("aria-selected")==="true"})[0])});setTimeout(function(){show(0)},50)});
+  // Guide d'infusion : repères selon la famille, tiroir du guide complet.
+  qa("[data-rv-guide]").forEach(function(s){var bs=qa(".rv-chips button",s),ps=qa("[data-rv-g]",s);
+    bs.forEach(function(b){b.addEventListener("click",function(){bs.forEach(function(x){x.setAttribute("aria-pressed",String(x===b))});ps.forEach(function(p){p.hidden=p.dataset.rvG!==b.dataset.k})})});
+    var o=s.querySelector("[data-rv-gdo]");if(o)o.addEventListener("click",function(){s.classList.add("dro")});
+    qa("[data-rv-gdx]",s).forEach(function(x){x.addEventListener("click",function(){s.classList.remove("dro")})});
+    addEventListener("keydown",function(e){if(e.key==="Escape")s.classList.remove("dro")})});
+  // Journal : filtres par thème.
+  qa("[data-rv-jr]").forEach(function(s){var bs=qa(".rv-chips button",s),as=qa(".rv-ac",s);
+    bs.forEach(function(b){b.addEventListener("click",function(){var k=b.dataset.k;bs.forEach(function(x){x.setAttribute("aria-pressed",String(x===b))});as.forEach(function(a){a.hidden=k!=="all"&&a.dataset.tag!==k})})})});
+  // Article : barre de lecture et sommaire qui suit la lecture.
+  qa("[data-rv-art]").forEach(function(s){var bar=s.querySelector("[data-rv-artp]"),art=s.querySelector(".rv-art-b"),ls=qa("[data-rv-to]",s);
+    function upd(){var r=art.getBoundingClientRect(),h=r.height-innerHeight*.5,p=Math.max(0,Math.min(1,(innerHeight*.5-r.top)/Math.max(1,h)));if(bar)bar.style.width=(p*100)+"%";
+      var cur=null;ls.forEach(function(a){var t=s.querySelector(a.getAttribute("href"));if(t&&t.getBoundingClientRect().top<innerHeight*.5)cur=a});ls.forEach(function(a){a.classList.toggle("on",a===cur)})}
+    ls.forEach(function(a){a.addEventListener("click",function(e){var t=s.querySelector(a.getAttribute("href"));if(!t)return;e.preventDefault();t.scrollIntoView({behavior:"smooth",block:"start"})})});
+    addEventListener("scroll",upd,{passive:true});addEventListener("resize",upd);upd()});
+  // 9. Texte qui s'allume : les mots s'allument selon l'avancée dans la section (texte fixe au centre).
+  qa("[data-rv-glow]").forEach(function(s){var ws=qa(".rv-glow-t span",s);
+    function upd(){var r=s.getBoundingClientRect(),run=Math.max(1,r.height-innerHeight),p=Math.max(0,Math.min(1,-r.top/run*1.15));var n=Math.round(p*ws.length);ws.forEach(function(w,i){w.classList.toggle("on",i<n)})}
+    addEventListener("scroll",upd,{passive:true});addEventListener("resize",upd);upd()});
+  // 10. Frise : l'étape au centre de l'écran s'allume et change la photo.
+  qa("[data-rv-frise]").forEach(function(s){var ls=qa("[data-rv-fs]",s),im=qa("[data-rv-fi]",s);
+    function upd(){var k=0;ls.forEach(function(l,i){if(l.getBoundingClientRect().top<innerHeight*.55)k=i});ls.forEach(function(l,i){l.classList.toggle("on",i<=k)});im.forEach(function(x,i){x.classList.toggle("on",i===k)})}
+    addEventListener("scroll",upd,{passive:true});upd()});
+  // 15. Stories : lecture automatique dans le téléphone, ronds qui sautent à une histoire.
+  qa("[data-rv-sto]").forEach(function(s){var bs=qa("[data-rv-si]",s),im=qa("[data-rv-sm]",s),bars=qa(".rv-sto-bars b",s),i=0,t0=Date.now(),D=4000;
+    function go(k){i=(k+im.length)%im.length;t0=Date.now();im.forEach(function(x,j){x.classList.toggle("on",j===i)});bs.forEach(function(b,j){b.classList.toggle("on",j===i)})}
+    function tick(){var p=Math.min(1,(Date.now()-t0)/D);bars.forEach(function(b,j){b.style.width=(j<i?100:j===i?p*100:0)+"%"});if(p>=1)go(i+1);requestAnimationFrame(tick)}
+    bs.forEach(function(b){b.addEventListener("click",function(){go(+b.dataset.rvSi)})});s.querySelector(".rv-sto-sc").addEventListener("click",function(e){if(!e.target.closest("a"))go(i+1)});go(0);requestAnimationFrame(tick)});
+  // 17. Cartes qui s'empilent : la carte recouverte recule légèrement.
+  qa("[data-rv-stk]").forEach(function(s){var cs=qa(".rv-stk-c",s);
+    function upd(){cs.forEach(function(c,i){var n=cs[i+1];if(!n){c.style.transform="";return}var d=c.getBoundingClientRect().top,e=n.getBoundingClientRect().top,ov=Math.max(0,Math.min(1,1-(e-d)/Math.max(1,c.offsetHeight)));c.style.transform="scale("+(1-ov*.06)+")"})}
+    addEventListener("scroll",upd,{passive:true});upd()});
+  // 19. Coffret : trois mélanges, total, bouton actif quand le coffret est complet.
+  qa("[data-rv-box]").forEach(function(s){var N=+s.dataset.n||3,pick=[],sl=s.querySelector("[data-rv-bs]"),bs=qa("[data-rv-b]",s);
+    function eu(n){return n.toFixed(2).replace(".",",").replace(",00","")+" €"}
+    function draw(){var tot=0;sl.innerHTML="";for(var k=0;k<N;k++){var b=pick[k];if(b){tot+=parseFloat(b.dataset.price);var d=document.createElement("span");d.className="rv-box-it";d.dataset.k=k;d.innerHTML='<img src="'+b.querySelector("img").getAttribute("src")+'" alt=""><span></span><em>×</em>';d.querySelector("span").textContent=b.dataset.name;sl.appendChild(d)}else{var e=document.createElement("span");e.className="rv-box-e";e.textContent="Mélange à choisir";sl.appendChild(e)}}
+      bs.forEach(function(b){b.classList.toggle("on",pick.indexOf(b)>=0)});
+      s.querySelector("[data-rv-bt]").textContent=eu(tot);s.querySelector("[data-rv-bb]").style.width=(pick.length/N*100)+"%";
+      s.querySelector("[data-rv-bm]").textContent=pick.length<N?"Encore "+(N-pick.length)+" mélange"+(N-pick.length>1?"s":"")+" à choisir":"Ton coffret est complet";s.querySelector("[data-rv-bgo]").disabled=pick.length<N}
+    bs.forEach(function(b){b.addEventListener("click",function(){var j=pick.indexOf(b);if(j>=0)pick.splice(j,1);else if(pick.length<N)pick.push(b);draw()})});
+    sl.addEventListener("click",function(e){var it=e.target.closest(".rv-box-it");if(!it)return;pick.splice(+it.dataset.k,1);draw()});draw()});
+  // 20. Compte à rebours : jusqu'à la vraie date de fin (data-end) ; passée ou absente, la section se retire.
+  qa("[data-rv-cd]").forEach(function(s){var end=Date.parse(s.dataset.end||"");if(!end){s.hidden=true;return}
+    function pad(n){return (n<10?"0":"")+n}
+    function tick(){var ms=end-Date.now();if(ms<=0){s.hidden=true;return}var x=Math.floor(ms/1000);
+      var v={d:Math.floor(x/86400),h:Math.floor(x%86400/3600),m:Math.floor(x%3600/60),s:x%60};qa("[data-rv-c]",s).forEach(function(b){b.textContent=b.dataset.rvC==="d"?v.d:pad(v[b.dataset.rvC])});setTimeout(tick,1000)}tick()});
 })();
 /* ===== fin des sections refaites ===== */

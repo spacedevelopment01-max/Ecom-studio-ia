@@ -94,3 +94,47 @@ describe("sections refaites de la revue (lot 3, famille Questions)", () => {
     expect(sectionGroup(libSection("questions-avec-recherche")!)).toBe("pages");
   });
 });
+
+describe("sections refaites de la revue (lot 3 : inscription, pieds de page, panier, fiche, journal, effets)", () => {
+  it("chaque section refaite ou ajoutée est dans la banque, sur sa famille", async () => {
+    const { libSection, RETIRED_SECTIONS } = await import("../src/lib/syna-agent/custom-theme/library");
+    const want: Record<string, string> = {
+      "fenetre-d-inscription": "inscription", "inscription-avec-photo": "inscription", "inscription-centree": "inscription", "inscription-avec-avantages": "inscription",
+      "pied-de-page-complet": "pied-de-page", "pied-de-page-geant": "pied-de-page", "pied-de-page-avec-grand-appel": "pied-de-page",
+      "pied-de-page-minimal-centre": "pied-de-page", "pied-de-page-a-bandeau-de-photos": "pied-de-page",
+      "panier-en-etapes": "panier", "fiche-produit-a-onglets": "fiche-produit", "fiche-produit-onglets-en-pastilles": "fiche-produit",
+      "fiche-produit-en-accordeon": "fiche-produit", "fiche-produit-onglets-sur-le-cote": "fiche-produit", "guide-d-infusion-en-tiroir": "fiche-produit",
+      "le-journal-liste-des-articles": "pages", "journal-en-magazine": "pages", "journal-en-liste": "pages", "article-avec-barre-de-lecture": "pages",
+      "texte-qui-s-allume-en-lisant": "histoire", "histoire-en-frise": "histoire", "histoires-facon-stories": "contenus", "cartes-qui-s-empilent": "contenus",
+      "compose-ton-coffret": "offres", "compte-a-rebours-en-bloc": "offres",
+    };
+    for (const [id, g] of Object.entries(want)) {
+      const s = libSection(id)!;
+      expect(s.html, id).toMatch(/class="[^"]*\brv-/);
+      expect(s.demoFrame, id).toBe(false);
+      expect(sectionGroup(s), id).toBe(g);
+    }
+    // Emballage cadeau : seulement une ligne à cocher du panier (point 23).
+    expect(RETIRED_SECTIONS["emballage-cadeau-en-option"]).toBeTruthy();
+    expect(libSection("panier-en-etapes")!.html).toContain('data-rv-opt="emballage"');
+  });
+  it("aucune identité d'exemple ni moyen de paiement non confirmé dans les pieds de page et le panier", async () => {
+    const { libSection } = await import("../src/lib/syna-agent/custom-theme/library");
+    for (const id of ["pied-de-page-complet", "pied-de-page-geant", "pied-de-page-avec-grand-appel", "pied-de-page-minimal-centre", "pied-de-page-a-bandeau-de-photos", "page-panier-complete", "panier-en-etapes"]) {
+      const h = libSection(id)!.html;
+      expect(h, id).not.toMatch(/Camille|Notre-Dame|Bordeaux|PayPal|Apple Pay/);
+    }
+    // Les quatre colonnes de liens (Boutique, Aide, La maison, Informations).
+    for (const col of ["La boutique", "Aide", "La maison", "Informations"]) expect(libSection("pied-de-page-complet")!.html).toContain(`<h5>${col}</h5>`);
+  });
+  it("sur un vrai site, un lien du pied de page sans page est retiré ; la fenêtre d'inscription ne s'ouvre jamais dans la banque", async () => {
+    const fs = await import("node:fs");
+    const render = fs.readFileSync("src/lib/syna-agent/custom-theme/render.ts", "utf8");
+    expect(render).toContain("function rvFoot()");
+    expect(render).toContain('"Questions fréquentes"');
+    const js = fs.readFileSync("public/sections/library.js", "utf8");
+    expect(js).toContain('/[?&](catalog|builder)=/.test(location.search)');
+    expect(js).toContain('localStorage.setItem("rv-pop-vu","1")');
+    expect(() => new Function(js)).not.toThrow();
+  });
+});
