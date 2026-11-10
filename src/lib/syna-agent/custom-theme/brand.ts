@@ -243,7 +243,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
   const a = ctx.payload as CustomBrandPayload;
   const p = loadProject(a.projectId);
   let t = loadCustomTheme(p.id);
-  if (!t) throw new UserFacingError(L("Aucun thème sur mesure à monter : choisis d'abord ton style.", "No custom theme yet."));
+  if (!t) throw new UserFacingError(L("Aucun thème sur mesure à monter : choisis d'abord ta famille (Classique ou Moderne), puis SINA monte les pages.", "No custom theme yet."));
   const j = a.conversationId ? (() => { try { return journeyOf(a.conversationId!); } catch { return null; } })() : null;
   // Demande du client pour ses textes (essai Heure Dorée : « le matin d'hiver où l'été revient » n'arrivait pas au rédacteur).
   const brief = [brandBrief(p, j), a.consigne ? `DEMANDE DU CLIENT POUR SES TEXTES (prioritaire, à suivre dans tout le site, ses mots) : « ${a.consigne} »` : ""].filter(Boolean).join("\n");

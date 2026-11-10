@@ -14,13 +14,14 @@ import { one, all, json, run as sql, id as newId, tx } from "../db";
 import { budgetPctText } from "../ai/budget-pct";
 import { activityGaps, COMPANY_FIELDS } from "./activity";
 import { loadSiteCopy } from "./mockup-code/copy";
+import { loadMockupSet } from "./mockup-code/mockup-set";
 import { enqueue, getJob, type JobContext } from "../jobs";
 import { llmJson, type LlmCall, type LlmImage } from "../ai/llm";
 import { withTrace, CostCapReached } from "../ai/trace";
 import { requirePlan } from "../plan-gates";
 import { L } from "../i18n-server";
 import { getJsonSetting } from "../settings";
-import { allTools, getTool, isSensitive, toolCatalog } from "./registry";
+import { allTools, getTool, isSensitive, toolCatalog, toolVisible, type ToolScope } from "./registry";
 import type { AgentTool, ToolContext, ToolResult } from "./types";
 import { authorizedBudget, addMessage, createRun, getRun, lastMessages, pendingOf, recordChanges, runByRequest, activeRun, updateRun, type PendingAction, type SynaRun, type SynaMessage } from "./store";
 import { budgetState, jobSpentMicro, trackJob, authorizeBudgetPct, DEFAULT_BUDGET_PCT } from "./budget";
@@ -211,7 +212,8 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       // « Oui, sous [À compléter : délai] et à [À compléter : conditions] »).
       if (!local && out.question?.choices?.length) out = { ...out, question: { ...out.question, choices: out.question.choices.filter((c) => !/\[[^\]]*\]|…\s*$|\.\.\.\s*$/.test(c)) } };
       // Étape 6 : les thèmes sont montrés tels qu'ils sont ; jamais « ton site déjà composé dans chacun » (essai réel).
-      if (!local && currentStep(journeyOf(r.conversation_id)) === 6) out = { ...out, message: withoutBlindClaim(withoutComposedClaim(out.message)) };
+      // « Je ne peux pas voir… » n'est retiré QUE si des images lui étaient jointes (sinon c'est honnête).
+      if (!local && currentStep(journeyOf(r.conversation_id)) === 6) out = { ...out, message: sawImages.get(r.id) ? withoutBlindClaim(withoutComposedClaim(out.message)) : withoutComposedClaim(out.message) };
       if (!local) out = withoutRepeatedQuestion({ ...out, message: fixElision(out.message), ...(out.question ? { question: { ...out.question, text: fixElision(out.question.text) } } : {}) });
       addMessage(r.conversation_id, "assistant", { ...out, step, ...(local ? { local: true } : {}) }, r.id);
       if (!out.actions.length) {
@@ -223,7 +225,7 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
         // Arrêtée pendant la réflexion de SINA : aucune action ne part après « Arrêter ».
         if (getRun(runId)?.status === "cancelled") return { runId, cancelled: true };
         const key = `${step}:${i}`;
-        const t = getTool(a.tool);
+        const t = toolVisible(a.tool, toolScope(r)) ? getTool(a.tool) : undefined;
         if (!t) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, ok: false, internal: true, summary: L("Outil inconnu : choisis un outil du catalogue.", "Unknown tool: choose a tool from the catalogue.") }, r.id); continue; }
         const parsed = t.args.safeParse(a.args);
         if (!parsed.success) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, ok: false, internal: true, summary: L("Arguments invalides : ", "Invalid arguments: ") + parsed.error.issues.slice(0, 4).map((x) => `${x.path.join(".")}: ${x.message}`).join(" ; ") }, r.id); continue; }
@@ -396,6 +398,13 @@ export function withoutRepeatedQuestion(out: StepOutput): StepOutput {
   return kept ? { ...out, message: kept } : out;
 }
 
+/** Outils proposés à ce fil : parcours de création en cours, anciennes maquettes du projet (voir toolVisible). */
+function toolScope(r: SynaRun): ToolScope {
+  const j = journeyOf(r.conversation_id);
+  const legacy = r.project_id ? (() => { try { return !!loadMockupSet(r.project_id!); } catch { return false; } })() : false;
+  return { inJourney: !j.outside, legacyMockups: legacy };
+}
+
 /** Décision du moteur local pour le message du client de cette demande, ou null (→ Claude). */
 function localStepFor(r: SynaRun): StepOutput | null {
   const msgs = lastMessages(r.conversation_id, 60);
@@ -411,18 +420,22 @@ function localStepFor(r: SynaRun): StepOutput | null {
 }
 
 /**
- * Modèle de chaque réponse (économie à qualité égale) : Claude Haiku 5.5, le moins cher, pour les échanges simples
- * (questions de départ, suivi, étape pas encore disponible) ; Claude Opus pour créer ou réfléchir (étapes créatives).
+ * Modèle des réponses de SINA (économie à qualité égale) : Claude Haiku, le moins cher, pour les échanges simples
+ * (questions de départ, suivi, étape pas encore disponible) ; Claude Sonnet à l'étape 6. Les créations elles-mêmes
+ * (identités, logos, angles, conception du site, textes, photos) se font dans leurs outils, avec leurs propres modèles.
  */
-export function modelFor(currentStepNumber: number): { provider: "anthropic"; model: string; effort?: string } | undefined {
+export function modelFor(currentStepNumber: number, opts: { customTheme?: boolean } = {}): { provider: "anthropic"; model: string; effort?: string } | undefined {
   // Étape 1 : la création des identités se fait dans l'outil identity.propose (modèle fort) ; le fil reste léger.
   // Étape 2 de même : le dessin et le contrôle des logos se font dans la tâche logo.propose.
   // Étape 3 : l'image de marque est rendue par le Studio (brand.kit), sans IA.
   // Étape 4 : la recherche et les angles sont faits par les tâches du Pilote (angles.propose).
   // Étape 5 : l'activité est rassemblée par des outils gratuits ; le fil reste sur le modèle léger.
-  // Étape 6 : les thèmes sont montrés et appliqués par des outils gratuits (maquettes payantes : dans leurs tâches).
   // Étape 7 : le codage et les photos se font dans leurs tâches (site.code_from_mockup, site.images) ; le fil reste léger.
   // Étape 8 : la rédaction et les images se font dans la tâche theme.brand ; le fil reste léger.
+  // Étape 6 (thème) et ses retouches après le choix d'un thème sur mesure : modèle plus fort (choix du propriétaire du
+  // 10 novembre 2026) : il comprend l'élément désigné, écrit les retouches de texte et de mise en forme, juge la
+  // lisibilité ; un peu plus cher par message, moins d'erreurs et de reprises payantes.
+  if (currentStepNumber === 6 || (currentStepNumber === 7 && opts.customTheme)) return { provider: "anthropic", model: "claude-sonnet-5-5", effort: "medium" };
   const simple = currentStepNumber <= 8 || !READY_STEPS.includes(currentStepNumber);
   return simple ? { provider: "anthropic", model: "claude-haiku-5-5", effort: "low" } : undefined;
 }
@@ -447,6 +460,9 @@ export async function stepQuote(user: User, r: SynaRun): Promise<string> {
   } catch { return ""; }
 }
 
+/** Demandes dont la dernière réflexion avait des images du parcours jointes (logos, planche, thème…). */
+const sawImages = new Map<string, boolean>();
+
 /** Un pas de raisonnement : fil complet + état du projet + pièces jointes (vision) → JSON d'actions. */
 async function reason(user: User, r: SynaRun, jobId: string, step: number, deps: AgentDeps): Promise<StepOutput> {
   const history = lastMessages(r.conversation_id, 120);
@@ -458,12 +474,13 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
   const call: LlmCall = {
     task: "agent_conversation", userId: user.id, projectId: r.project_id, jobId,
     system: SYNA_SYSTEM, promptKey: "syna-agent-1",
-    reference: `# Outils disponibles (registre commun)\n\n${toolCatalog(!!r.project_id)}`,
+    reference: `# Outils disponibles (registre commun)\n\n${toolCatalog(!!r.project_id, toolScope(r))}`,
     context: `# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id))}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}`,
     prompt: `# Fil de la conversation (le plus ancien d'abord ; tes propres réponses incluses)\n${serialize(history)}\n\nÉtape ${step + 1} de cette demande. Réponds avec l'objet JSON {message, actions, question, done}.`,
     images: images.length ? images : undefined,
-    maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}`, routing: { difficulty: "complex", prefer: modelFor(currentStep(journeyOf(r.conversation_id))) },
+    maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}`, routing: { difficulty: "complex", prefer: (() => { const j = journeyOf(r.conversation_id); return modelFor(currentStep(j), { customTheme: !!j.customChosenAt }); })() },
   };
+  sawImages.set(r.id, images.some((im) => /^(Logo|Planche|Maquette|Site codé|Thème sur mesure)/.test(im.label ?? "")));
   if (deps.reason) return StepSchema.parse(await deps.reason(call));
   const cap = b.remainingMicro + jobSpentMicro(jobId);
   return withTrace({ jobId, projectId: r.project_id, step: "syna", costCapMicro: cap }, () => llmJson(call, StepSchema));

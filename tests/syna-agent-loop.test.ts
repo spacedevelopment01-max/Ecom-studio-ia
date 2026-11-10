@@ -26,7 +26,7 @@ process.env.STUDIO_SYNA_AGENT = "1";
 
 describe("SINA agent — un fil, des outils natifs, des changements vérifiés", async () => {
   const { createUser } = await import("@/lib/auth");
-  const { json, one, all } = await import("@/lib/db");
+  const { json, one, all, run } = await import("@/lib/db");
   const { loadProject, currentTheme } = await import("@/lib/projects");
   const { runWithLang } = await import("@/lib/i18n-server");
   const { getAsset, assetData, saveAsset } = await import("@/lib/library");
@@ -61,6 +61,8 @@ describe("SINA agent — un fil, des outils natifs, des changements vérifiés",
     await fr(() => buildShop(null, p.id, { useAi: false }));
     const product = createProduct(p.id, { title: "Sérum Éclat", price: 3500, options: [{ name: "Couleur", values: ["Noir", "Sable"] }], variants: [{ options: ["Noir"], price: 3500 }, { options: ["Sable"], price: 3500 }] } as any);
     const user = one<any>("SELECT * FROM users WHERE id=?", u.id);
+    // Boutique déjà construite dans le Studio (créée avant ce fil) : projet existant, hors parcours de création.
+    run("UPDATE projects SET created_at=? WHERE id=?", Date.now() - 3_600_000, p.id);
     const cid = threadFor(user, p.id);
     return { user, p, docKey, product, cid, logoAsset: loadProject(p.id).brand?.logo.assetId ?? null };
   }

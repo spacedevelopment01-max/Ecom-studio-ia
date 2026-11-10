@@ -2,7 +2,9 @@
  * Outils SINA des THÈMES SUR MESURE (étape 6 ; décision du propriétaire du 9 novembre 2026 : « on ne va plus appeler
  * ça maquette mais thème sur mesure » ; « elle doit pouvoir tout faire sur ses thèmes et sections »).
  *  - custom.sections  : sections de la bibliothèque de la famille choisie, par rôle (gratuit) ;
- *  - custom.compose   : monte le thème (point de départ validé ou pages choisies), règles du propriétaire contrôlées ;
+ *  - custom.design    : conçoit le thème de A à Z par le Studio (payant, prix annoncé et accord d'abord) ;
+ *  - custom.compose   : monte le thème (pages choisies), règles du propriétaire contrôlées ;
+ *  - custom.build     : textes et photos du thème à la marque, en tâche de fond (payant, prix annoncé et accord d'abord) ;
  *  - custom.show      : montre le thème en vrai (pages, téléphone, désignation d'un élément) ;
  *  - custom.section   : lit le HTML d'une section avant de la modifier ;
  *  - custom.structure : ajoute, retire, déplace, remplace des sections ou des pages ;
@@ -10,7 +12,7 @@
  *  - custom.photo     : crée une photo pour une section (payant, prix annoncé et accord d'abord) ;
  *  - custom.undo      : annule la dernière modification ;
  *  - custom.choose    : enregistre le thème choisi PAR LE CLIENT.
- * Tout est gratuit sauf custom.photo ; rien n'est publié.
+ * Payants (carte d'accord avant) : custom.design, custom.build et custom.photo ; tout le reste est gratuit ; rien n'est publié.
  */
 import { z } from "zod";
 import { L } from "../../i18n-server";

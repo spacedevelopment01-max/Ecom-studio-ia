@@ -82,7 +82,7 @@ const versionsTool: AgentTool<{}> = {
 
 const applyVersionTool: AgentTool<{ versionId: string; reason?: string }> = {
   name: "site.use_version", module: "site", kind: "write", needsProject: true,
-  description: "Fait d'une version existante (ancienne version ou maquette préparée par site.mockups) le site de travail. Une nouvelle version est créée, rien n'est effacé.",
+  description: "Fait d'une version existante (ancienne version ou prototype de thème déjà préparé) le site de travail. Une nouvelle version est créée, rien n'est effacé.",
   args: z.object({ versionId: z.string().max(40), reason: z.string().max(200).optional() }).strict(),
   run: (ctx, a) => {
     const p = project(ctx), cur = currentTheme(p.id), target = themeVersion(p.id, a.versionId);
@@ -102,7 +102,7 @@ const mockupsTool: AgentTool<{ directions?: string[]; count?: number }> = {
   args: z.object({ directions: z.array(z.string().max(60)).max(3).optional(), count: z.number().int().min(1).max(3).default(3) }).strict(),
   run: async (ctx, a) => {
     const p = project(ctx);
-    if (!p.brand) return { ok: false, summary: L("Une marque (nom, couleurs, polices) est nécessaire avant de composer des maquettes : utilisez brand.save ou brand.create.", "A brand is needed first (brand.save or brand.create).") };
+    if (!p.brand) return { ok: false, summary: L("Une marque (nom, couleurs, polices) est nécessaire avant de composer des maquettes : crée-la d'abord.", "A brand is needed first."), hint: "Marque à enregistrer d'abord (brand.save)." };
     const rec = themeRecommendation(p, "fr");
     const pool = [rec.recommended, ...rec.alternatives.map((x) => x.id), ...rec.eligible].filter((x): x is string => !!x);
     const chosen = (a.directions?.length ? a.directions : [...new Set(pool)]).filter((d) => rec.eligible.includes(d)).slice(0, a.count);
@@ -182,7 +182,7 @@ const MOCKUP_PAGES = {
 /** Logo validé et photo du produit (références envoyées à l'IA d'images). */
 function mockupReferences(p: any): { logo: Buffer | null; product: Buffer | null; problem: string | null } {
   const logoId = p.brand?.logo?.assetId as string | undefined;
-  if (!p.brand || !logoId) return { logo: null, product: null, problem: L("L'identité visuelle (logo, couleurs, polices) doit être créée et validée avant les maquettes : lancez brand.create.", "Create the visual identity (logo, colours, fonts) before mockups: run brand.create.") };
+  if (!p.brand || !logoId) return { logo: null, product: null, problem: L("L'identité visuelle (logo, couleurs, polices) doit être créée et validée avant les maquettes.", "Create and validate the visual identity (logo, colours, fonts) before the mockups.") };
   const la = getAsset(logoId);
   if (!la || la.project_id !== p.id || la.deleted_at) return { logo: null, product: null, problem: L("Logo introuvable dans les Fichiers : refaites ou validez l'identité visuelle.", "Logo not found.") };
   const photo = one<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND deleted_at IS NULL AND kind='image' AND role IN ('original','product') ORDER BY created_at ASC LIMIT 1", p.id);

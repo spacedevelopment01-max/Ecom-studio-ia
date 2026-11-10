@@ -27,10 +27,27 @@ export function isSensitive(t: AgentTool, args: unknown, ctx: ToolContext): bool
   return typeof t.sensitive === "function" ? t.sensitive(args, ctx) : !!t.sensitive;
 }
 
+/**
+ * Outils proposés selon le fil (audit du 10 novembre 2026) : pendant le parcours de création, les anciens chemins qui le
+ * court-circuitent (marque et logos d'un coup, prototypes de thèmes, maquettes images, site construit sur un thème
+ * choisi à la place du client, angle choisi hors parcours, préparation du Pilote, projet créé à la main) ne sont ni
+ * proposés ni exécutés ; les outils des ANCIENNES maquettes ne servent qu'aux projets déjà commencés avec elles.
+ */
+export type ToolScope = { inJourney: boolean; legacyMockups: boolean };
+const JOURNEY_HIDDEN = new Set(["brand.create", "site.mockups", "site.mockup_images", "site.build", "strategy.choose", "pilot.run", "project.create"]);
+const LEGACY_MOCKUP = /^(mockup\.|site\.code_from_mockup$|site\.images$|site\.photo_reject$)/;
+export function toolVisible(name: string, scope?: ToolScope): boolean {
+  if (!scope) return true;
+  if (scope.inJourney && JOURNEY_HIDDEN.has(name)) return false;
+  if (!scope.legacyMockups && LEGACY_MOCKUP.test(name)) return false;
+  return true;
+}
+
 /** Catalogue envoyé au modèle : nom, module, nature, accord requis et schéma JSON exact des arguments. */
-export function toolCatalog(hasProject: boolean): string {
+export function toolCatalog(hasProject: boolean, scope?: ToolScope): string {
   return allTools()
     .filter((t) => hasProject || !t.needsProject)
+    .filter((t) => toolVisible(t.name, scope))
     .map((t) => {
       let schema: unknown;
       try { schema = z.toJSONSchema(t.args, { unrepresentable: "any" }); } catch { schema = { type: "object" }; }

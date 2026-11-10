@@ -2821,7 +2821,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible,[
 }
 
 @media (max-width:860px){.card{grid-template-columns:minmax(0,1fr)}.card.wide .info{grid-template-columns:minmax(0,1fr)}.stage{padding:16px 10px}.card.phone .frame{border-width:6px;border-radius:26px}}
-@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.reveal,.hero h3 .wd,.hero .ctas,.hero .facts,.steps .n{opacity:1!important;transform:none!important}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important}.reveal,.hero h3 .wd,.hero .ctas,.hero .facts,.steps .n{opacity:1!important;transform:none!important}}
 .mine-b{display:inline-block;margin-left:8px;background:var(--b-primary,#3F6B4E);color:#fff;border-radius:999px;padding:2px 9px;font:700 .7rem var(--f-ui);vertical-align:middle;letter-spacing:.02em}
 :where(.ct-inv) .mine-b{
   --ct-flip:0;

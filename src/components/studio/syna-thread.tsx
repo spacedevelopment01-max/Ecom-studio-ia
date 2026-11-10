@@ -247,7 +247,7 @@ function ThemeCards({ themes, busy, onChoose, onAll, onMockup }: { themes: Theme
   const shownDemo = viewing ? demos[viewing] : null;
   return (
     <div className="@container mt-2 space-y-2" data-syna-themes>
-      <p className="text-xs text-muted">{t("Voici les thèmes du Studio tels qu'ils sont, avec les images et les textes de leur démonstration. Choisir un thème est gratuit : ton site s'y compose ensuite avec ta marque et tes produits. Tu peux aussi préférer un thème sur mesure : monté pour toi dans le style que tu choisis, modifiable sur demande (seules les photos nouvelles sont payantes, prix annoncé avant).", "Here are the Studio themes as they are, with their demo images and copy. Choosing a theme is free; you can also prefer a custom mockup (paid, price shown first).")}</p>
+      <p className="text-xs text-muted">{t("Voici les thèmes du Studio tels qu'ils sont, avec les images et les textes de leur démonstration. Choisir un thème est gratuit : ton site s'y compose ensuite avec ta marque et tes produits. Tu peux aussi préférer un thème sur mesure : conçu pour toi dans la famille que tu choisis (Classique ou Moderne), modifiable sur demande (la conception, les textes et les photos nouvelles sont payants, prix montré avant).", "Here are the Studio themes as they are, with their demo images and copy. Choosing a theme is free; you can also prefer a custom theme (design, copy and new photos are paid, price shown first).")}</p>
       <div className="grid grid-cols-1 gap-3 @2xl:grid-cols-3">
         {themes.list.map((th) => {
           const chosen = themes.chosen === th.id;
@@ -294,7 +294,7 @@ function FamilyCards({ families, busy, onChoose }: { families: Families; busy: b
   const t = useT();
   return (
     <div className="@container mt-2 space-y-2" data-syna-families>
-      <p className="text-xs text-muted">{t("Deux familles de styles pour ton site, qui ne se mélangent jamais. Ouvre chaque thème en vrai (pages, panier, téléphone), puis choisis celui qui te ressemble : il sera repris à tes couleurs, avec ta marque et tes produits. C'est gratuit.", "Two style families for your site, never mixed. Open each theme live (pages, cart, phone), then pick the one that feels like you: it will use your colours, brand and products. It's free.")}</p>
+      <p className="text-xs text-muted">{t("Deux familles de styles pour ton site, qui ne se mélangent jamais. Ouvre chaque exemple en vrai (pages, panier, téléphone), puis choisis la famille qui te ressemble : ton site sera conçu dans cette famille, de A à Z, avec ta marque et tes produits. Choisir la famille est gratuit.", "Two style families for your site, never mixed. Open each theme live (pages, cart, phone), then pick the one that feels like you: it will use your colours, brand and products. It's free.")}</p>
       <div className="grid grid-cols-1 gap-3 @2xl:grid-cols-2">
         {families.cards.map((c) => {
           const key = c.family, chosen = (families.chosen ?? "").split(":")[0] === c.family;

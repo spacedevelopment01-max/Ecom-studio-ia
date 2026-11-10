@@ -23,7 +23,7 @@ import { boundedImageRequestsQuote } from "../../image-v2/creation-quote";
 
 const modeTool: AgentTool<{ mode: "theme" | "mockup" }> = {
   name: "site.mode", module: "site", kind: "write", needsProject: true,
-  description: "Étape 6 : enregistre le choix DU CLIENT, après avoir vu les cartes des thèmes, d'un thème sur mesure (mode mockup : monté avec les sections du Studio, seules les photos nouvelles sont payantes) plutôt qu'un thème du Studio — seulement après sa réponse, jamais à sa place (un thème choisi passe par theme.choose). Gratuit.",
+  description: "Étape 6 : enregistre la réponse DU CLIENT à la question « thème du Studio ou thème sur mesure » : mode theme (il choisira ensuite parmi tous nos thèmes : theme.propose puis theme.choose) ou mode mockup (thème sur mesure : il choisit sa famille Classique ou Moderne, puis le site est conçu de A à Z ; la conception, les textes et les photos nouvelles sont payants, devis sur la carte d'accord). Seulement après sa réponse, jamais à sa place. Gratuit.",
   args: z.object({ mode: z.enum(["theme", "mockup"]) }).strict(),
   run: (ctx, a) => {
     const j = journeyOf(ctx.conversationId);
@@ -33,7 +33,7 @@ const modeTool: AgentTool<{ mode: "theme" | "mockup" }> = {
     return {
       ok: true,
       summary: a.mode === "theme" ? L("Choix noté : un thème du Studio.", "Choice saved: a Studio theme.") : L("Choix noté : un thème sur mesure.", "Choice saved: a custom theme."),
-      hint: a.mode === "theme" ? "Il choisit sa carte : theme.choose avec son identifiant." : "Suis maintenant la consigne du thème sur mesure : famille (theme.families), montage (custom.compose), textes et modifications (custom.edit), photos (custom.photo, devis d'abord).",
+      hint: a.mode === "theme" ? "Montre-lui tous nos thèmes (theme.propose), puis il choisit sa carte : theme.choose avec son identifiant." : "Suis maintenant la consigne du thème sur mesure : famille d'abord (theme.families, puis theme.family), ambiance, conception (custom.design), images (custom.images), montage à sa marque (custom.build), changements (custom.edit).",
     };
   },
 };

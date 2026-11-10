@@ -145,7 +145,7 @@ export function describeAttachment(a: Attachment): string {
  * images ») : les 3 logos tant que le client n'a pas choisi (étape 2), la planche de marque tant que l'image de marque
  * n'est pas validée (étape 3). Réduites (512 px, planche 1024 px) : quelques millièmes d'euro par réponse.
  */
-export async function journeyImages(j: { steps: Record<number, { status: string } | undefined>; logos?: { list: { source: string; name: string; assetId: string | null; verdict: string; score: number | null }[] }; logoChoice?: unknown; brandKit?: { boardId: string | null } }, projectId?: string | null): Promise<LlmImage[]> {
+export async function journeyImages(j: { steps: Record<number, { status: string } | undefined>; logos?: { list: { source: string; name: string; assetId: string | null; verdict: string; score: number | null }[] }; logoChoice?: unknown; brandKit?: { boardId: string | null }; siteMode?: { mode: string }; customChosenAt?: number }, projectId?: string | null): Promise<LlmImage[]> {
   const { getAsset, assetData } = await import("../library");
   const sharp = (await import("sharp")).default;
   const small = async (id: string, size: number) => { const a = getAsset(id); return a && !a.deleted_at ? sharp(assetData(a)).resize(size, size, { fit: "inside", withoutEnlargement: true }).png().toBuffer() : null; };
@@ -173,6 +173,24 @@ export async function journeyImages(j: { steps: Record<number, { status: string 
       const data = await small(img.assetId!, n === 0 || recent.length ? 1536 : 1024).catch(() => null);
       const fresh = Date.now() - at < 15 * 60_000;
       if (data) out.push({ data, label: `Maquette ${d.key} « ${d.name} », image ${img.id} — ${img.pages.join(", ")} (${img.viewport === "desktop" ? "ordinateur" : "téléphone"})${fresh ? ", créée il y a quelques minutes" : ""}, montrée au client${img.check ? (img.check.ok ? " ; contrôle automatique de la mise en page : rien à signaler" : ` ; RATÉE au contrôle automatique : ${img.check.problems.join(" ; ")}`) : ""}` });
+    }
+  }
+  // Étape 6, thème sur mesure (audit du 10 novembre 2026 : SINA ne voyait rien du thème qu'elle retouche) : l'accueil
+  // sur ordinateur et sur téléphone, capturés par le Studio (gratuit, une fois par version du thème).
+  // Découpées en bandes (ordinateur : 1 600 px de haut, téléphone : 1 200 px) : une capture entière serait réduite par le
+  // modèle au point de rendre les textes illisibles.
+  if (projectId && (j.siteMode?.mode === "mockup" || j.customChosenAt) && j.steps[7]?.status !== "done") {
+    const { customThemeShots } = await import("./custom-theme/shots");
+    for (const shot of await customThemeShots(projectId).catch(() => [])) {
+      const meta = await sharp(shot.data).metadata().catch(() => null);
+      if (!meta?.width || !meta.height) continue;
+      const band = shot.view === "ordinateur" ? 1600 : 1200, parts = Math.ceil(meta.height / band);
+      for (let i = 0; i < parts && out.length < 10; i++) {
+        const top = i * band, height = Math.min(band, meta.height - top);
+        if (height < 120) break;
+        const data = await sharp(shot.data).extract({ left: 0, top, width: meta.width, height }).jpeg({ quality: 72 }).toBuffer().catch(() => null);
+        if (data) out.push({ data, label: `Thème sur mesure du client — accueil (${shot.view}), partie ${i + 1}/${parts} de haut en bas, tel qu'il le voit dans l'onglet Boutique` });
+      }
     }
   }
   // Étape 7 : captures du site codé, chacune à côté de l'image de maquette de la même page (essai réel du 8 novembre :

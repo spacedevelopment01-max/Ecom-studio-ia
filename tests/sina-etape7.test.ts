@@ -601,7 +601,7 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
       // Le résumé du projet relu par SINA ne recopie jamais les maquettes (essai réel : 224 000 caractères à chaque pas).
       const { projectSnapshot } = await import("@/lib/syna-agent/snapshot");
       const snap = await fr(() => projectSnapshot(ctx));
-      expect(snap).toMatch(/Maquettes sur mesure : A « Lumière » \(\d+\/\d+ images prêtes.* ; B « Atelier »/);
+      expect(snap).toMatch(/Anciennes maquettes \(projet commencé avec elles\) : A « Lumière » \(\d+\/\d+ images prêtes.* ; B « Atelier »/);
       // Identifiant de chaque image prête (essai réel : SINA ne trouvait pas l'image du contact à retoucher).
       expect(snap).toMatch(/prêtes : A01 accueil \(ordinateur\)/);
       expect(snap.length).toBeLessThan(6000);

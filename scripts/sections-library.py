@@ -199,6 +199,9 @@ head = src[:src.index('</style>')]
 css = '\n'.join(re.findall(r'<style[^>]*>(.*?)(?:</style>|$)', head + '</style>', re.S))
 scripts = [x for x in re.findall(r'<script>(.*?)</script>', src, re.S)]
 templates = re.findall(r'<template id="tpl-[^"]+">.*?</template>', src, re.S)
+# Mouvement réduit (réglage du visiteur) : les animations finissent tout de suite au lieu d'être coupées ; coupées, les textes
+# qui apparaissent en fondu (titre de l'ouverture…) restaient invisibles (vu sur les captures du 10 novembre 2026).
+css = css.replace('@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}', '@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important}')
 fonts = re.findall(r'<link rel="stylesheet" href="(https://fonts\.googleapis\.com/[^"]+)"', src)
 P2_CSS = '\n/* Histoire du produit au défilement, téléphone : la page défile (plus de boîte qui défile seule), étapes lisibles */\n@container (max-width:560px){.ts.p2{overflow:clip}.p2-vp{height:auto;overflow:visible}.p2-st{position:sticky;top:var(--p2-top,0px);height:auto;padding:22px 0 18px;z-index:2;background:var(--c1)}.p2-im{width:min(190px,52vw)}.p2-ring{width:min(226px,62vw)}.p2-sp{min-height:50vh;align-content:start;padding-top:24px}.p2-sp:last-child{min-height:40vh;padding-bottom:40px}.p2-sp:not(.on){opacity:.35}.p2-hint{display:none}}\n'
 P2_CSS += '/* En-tête classique, téléphone : logo au centre, menu à gauche, recherche et panier à droite (retour du propriétaire du 9 novembre 2026) */\n@container (max-width:760px){.bh{grid-template-columns:1fr auto 1fr}.bh-bg{justify-self:start}.bh-lg{justify-self:center;text-align:center}.bh-ic{justify-self:end}}\n'

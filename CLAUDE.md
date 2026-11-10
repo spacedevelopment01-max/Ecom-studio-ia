@@ -60,7 +60,7 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   paiement de Shopify, remarque du propriétaire du 9 novembre 2026) ; les thèmes construits ne servent qu'à la voie « thème du Studio » ; sections « seulement pour » un genre
   de produit, ex. tailles et tenues, jamais ailleurs), lecture et modification d'une section
   (`custom.section`, `custom.edit` : textes, mise en forme limitée à la section, élément masqué, photo du client),
-  structure (`custom.structure`), photo créée (`custom.photo`, seul outil payant), annulation (`custom.undo`), choix
+  structure (`custom.structure`), photo créée (`custom.photo` ; payants avec carte d'accord : `custom.design`, `custom.build`, `custom.photo`), annulation (`custom.undo`), choix
   (`custom.choose`). Le thème vivant s'affiche dans le fil (`/api/projects/<id>/custom-theme`, pages, téléphone) avec
   **« Désigner un élément »** : le client pointe un titre, un texte, un bouton, une image ou une section, dit ce qu'il
   veut, et SINA ne change que lui. Règles de montage contrôlées sans IA (`checkCustomTheme`) ; aucun script dans une

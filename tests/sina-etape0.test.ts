@@ -334,7 +334,8 @@ describe("SINA — niveaux de coût : gratuit (moteur local), Haiku, Opus", asyn
     expect(modelFor(3)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 3 : l'image de marque est rendue par le Studio (brand.kit)
     expect(modelFor(4)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 4 : recherche et angles dans les tâches du Pilote
     expect(modelFor(5)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 5 : outils gratuits
-    expect(modelFor(6)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 6 : thèmes par outils gratuits
+    expect(modelFor(6)).toMatchObject({ model: "claude-sonnet-5-5" }); // étape 6 : modèle plus fort (choix du propriétaire du 10 novembre)
+    expect(modelFor(7, { customTheme: true })).toMatchObject({ model: "claude-sonnet-5-5" }); // retouches du thème sur mesure
     expect(modelFor(7)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 7 : codage et photos dans leurs tâches
     expect(modelFor(8)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 8 : rédaction et images dans la tâche theme.brand
     expect(modelFor(9)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 9 pas encore ouverte : simple annonce

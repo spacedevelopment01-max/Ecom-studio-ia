@@ -103,4 +103,39 @@ describe("SINA — déroulement du parcours (audit du 10 novembre 2026)", async 
     const v = await call("theme.validate", ctx, {});
     expect(v.ok).toBe(false); // rien à valider avant le montage
   });
+
+  it("pendant le parcours, les anciens raccourcis ne sont ni proposés ni exécutables ; anciennes maquettes réservées aux projets commencés avec elles", async () => {
+    const { toolVisible, toolCatalog } = await import("@/lib/syna-agent/registry");
+    const scope = { inJourney: true, legacyMockups: false };
+    for (const n of ["brand.create", "site.mockups", "site.mockup_images", "site.build", "strategy.choose", "pilot.run", "project.create", "mockup.copy", "site.code_from_mockup"]) expect(toolVisible(n, scope), n).toBe(false);
+    for (const n of ["identity.propose", "logo.propose", "custom.compose", "custom.edit", "theme.choose", "theme.brand"]) expect(toolVisible(n, scope), n).toBe(true);
+    expect(toolVisible("mockup.copy", { inJourney: false, legacyMockups: true })).toBe(true);
+    expect(toolVisible("brand.create", { inJourney: false, legacyMockups: false })).toBe(true); // hors parcours : outils habituels
+    const cat = toolCatalog(true, scope);
+    expect(cat).not.toMatch(/\b(brand\.create|site\.mockups|site\.build|strategy\.choose|pilot\.run|mockup\.copy)\b/); // ni proposés ni cités
+    expect(cat).toMatch(/custom\.compose/);
+  });
+
+  it("thème sur mesure : SINA reçoit l'accueil capturé (ordinateur et téléphone), en bandes lisibles, une seule capture par version", async () => {
+    const { cid, pid } = await confirmedStart("products");
+    const { starterTheme } = await import("@/lib/syna-agent/custom-theme/starters");
+    const { saveCustomTheme } = await import("@/lib/syna-agent/custom-theme/theme");
+    const { shotDeps, customThemeShots } = await import("@/lib/syna-agent/custom-theme/shots");
+    const { journeyImages } = await import("@/lib/syna-agent/attachments");
+    const sharp = (await import("sharp")).default;
+    expect(await customThemeShots(pid)).toEqual([]); // aucun thème : rien de joint
+    saveCustomTheme(pid, starterTheme("classique", "classique"));
+    let shots = 0;
+    shotDeps.shoot = async (html, v) => { shots++; expect(html).toMatch(/<section/); return sharp({ create: { width: v.width, height: v.maxHeight, channels: 3, background: "#fff" } }).jpeg().toBuffer(); };
+    try {
+      J.updateJourney(cid, (x) => { for (const n of [1, 2, 3, 4, 5]) J.setStep(x, n, "done"); J.setStep(x, 6, "doing"); x.siteMode = { mode: "mockup", at: Date.now() } as any; });
+      const imgs = await journeyImages(J.journeyOf(cid) as any, pid);
+      const labels = imgs.map((i) => i.label ?? "");
+      expect(labels.filter((l) => /accueil \(ordinateur\)/.test(l))).toHaveLength(2); // 3 200 px en 2 bandes
+      expect(labels.filter((l) => /accueil \(téléphone\)/.test(l))).toHaveLength(3); // 3 600 px en 3 bandes
+      for (const i of imgs) expect((await sharp(i.data).metadata()).height!).toBeLessThanOrEqual(1600);
+      await journeyImages(J.journeyOf(cid) as any, pid);
+      expect(shots).toBe(2); // version en cache : aucune nouvelle capture
+    } finally { shotDeps.shoot = undefined; }
+  });
 });
