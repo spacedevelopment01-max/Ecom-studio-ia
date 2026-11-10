@@ -138,3 +138,15 @@ describe("sections refaites de la revue (lot 3 : inscription, pieds de page, pan
     expect(() => new Function(js)).not.toThrow();
   });
 });
+
+describe("couleurs : jamais le mode sombre du téléphone (retour du propriétaire du 10 novembre 2026)", () => {
+  it("la feuille des sections remet les couleurs claires et des champs lisibles quand le téléphone est en mode sombre", async () => {
+    const fs = await import("node:fs");
+    const css = fs.readFileSync("public/sections/library.css", "utf8");
+    const i = css.indexOf("jamais le mode sombre du téléphone");
+    expect(i).toBeGreaterThan(css.indexOf('@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#121815')); // après l'ancien bloc, donc il l'emporte
+    expect(css.slice(i)).toContain("color-scheme:light");
+    expect(css.slice(i)).toContain("section textarea");
+    expect(css.slice(i)).toMatch(/\.nx-hint\{position:static/);
+  });
+});

@@ -1264,6 +1264,8 @@
 ;
 ;
 ;
+;
+;
 ;/* ===== sections refaites (revue du 10 novembre 2026) ===== */
 /* Sections refaites (revue du 10 novembre 2026) */
 (function(){
