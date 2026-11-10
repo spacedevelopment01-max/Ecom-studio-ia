@@ -35,7 +35,7 @@ import { allSections, applyStructure, checkCustomTheme, findSection, loadCustomT
 import { listProducts } from "../../products/catalog";
 import { activityPlan, companyOf } from "../activity";
 import { brandBrief, siteCopyModel } from "./brand";
-import { type Ambiance, DESIGN_CALLS_MAX, DESIGN_CAP_MICRO, DESIGN_REVIEW_SYSTEM, DESIGN_SYSTEM, DESIGN_TYPICAL_MICRO, DesignSchema, designGaps, designPrompt, intentText, type Design } from "./design";
+import { type Ambiance, DESIGN_CALLS_MAX, DESIGN_CAP_MICRO, DESIGN_OUTPUT_TOKENS, DESIGN_REVIEW_SYSTEM, DESIGN_SYSTEM, DESIGN_TYPICAL_MICRO, DesignSchema, designGaps, designPrompt, intentText, type Design } from "./design";
 import { llmJson } from "../../ai/llm";
 import { withTrace } from "../../ai/trace";
 import { jobSpentMicro } from "../budget";
@@ -213,7 +213,7 @@ const designTool: AgentTool<DesignArgs> = {
     const jobId = getRun(ctx.runId)?.job_id ?? null;
     const call = async (text: string, key: string, system = DESIGN_SYSTEM): Promise<Design> => customDesignDeps.call ? customDesignDeps.call(system, text, key)
       : DesignSchema.parse(await withTrace({ jobId, projectId: p.id, step: "custom-design", costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + DESIGN_CAP_MICRO * DESIGN_CALLS_MAX }, () =>
-          llmJson({ task: "strategy", userId: ctx.user.id, projectId: p.id, jobId, system, promptKey: system === DESIGN_SYSTEM ? "syna-custom-design-2" : "syna-custom-design-review-1", prompt: text, maxTokens: 14000, maxOutputTokens: 14000, usageKey: key, routing: { difficulty: "complex", prefer: siteCopyModel() } }, DesignSchema, { strict: true })));
+          llmJson({ task: "strategy", userId: ctx.user.id, projectId: p.id, jobId, system, promptKey: system === DESIGN_SYSTEM ? "syna-custom-design-2" : "syna-custom-design-review-1", prompt: text, maxTokens: DESIGN_OUTPUT_TOKENS, maxOutputTokens: DESIGN_OUTPUT_TOKENS, usageKey: key, routing: { difficulty: "complex", prefer: siteCopyModel() } }, DesignSchema, { strict: true })));
     const build = (d: Design): CustomTheme => {
       let t: CustomTheme = { version: 1, family: f.family, style: f.style, header: null, footer: null, search: null, pages: [], rev: 0, at: Date.now(), concept: d.concept };
       t = applyStructure(t, d.pages.flatMap((pg) => [{ op: "page", key: pg.key, label: pg.label } as StructureOp, ...pg.sections.map((s) => ({ op: "add", page: pg.key, section: ref(s.section) }) as StructureOp)]));
@@ -250,7 +250,10 @@ const designTool: AgentTool<DesignArgs> = {
         d = await call(`${prompt}\n\nTA CONCEPTION (JSON) :\n${JSON.stringify(d)}\n\nPOINTS REFUSÉS PAR LE CONTRÔLE DU STUDIO (à corriger, en gardant ta logique ; liste dans corrections ce que tu changes) :\n- ${todo.join("\n- ")}`, `syna:${ctx.runId}:custom-design-fix`, DESIGN_REVIEW_SYSTEM); calls++;
         c = check(d);
       }
-    } catch (e) { return { ok: false, summary: L(`Conception non faite (${calls} passage(s) payé(s)) : ${(e as Error).message.slice(0, 200)}.`, "Design failed."), hint: "Dis-le au client avec le coût réel ; ne relance rien sans son accord écrit (jamais après une erreur 5xx)." }; }
+    } catch (e) {
+      // Coût réel, même d'un passage raté (essai du 10 novembre 2026 : « 0 passage payé » alors que 0,34 € l'avaient été).
+      const spent = all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key LIKE ?", p.id, `syna:${ctx.runId}:custom-design%`)[0]?.c ?? 0;
+      return { ok: false, summary: L(`Conception non faite (${calls} passage(s) réussi(s) ; coût réel : ${budgetPctText(ctx.user.id, spent, p.id).replace(/de votre budget/, "de ton budget")}) : ${(e as Error).message.slice(0, 200)}.`, "Design failed."), hint: "Dis-le au client avec le coût réel ; ne relance rien sans son accord écrit (jamais après une erreur 5xx)." }; }
     if (c.rules.length || !c.t) return { ok: false, summary: L(`Conception refusée par le contrôle : ${c.rules.join(" ; ")}. Rien n'est enregistré.`, "Design refused."), hint: "Dis-le honnêtement au client avec le coût réel ; propose de corriger avec custom.structure (gratuit) à partir de la conception, sans rien relancer de payant sans son accord." };
     const t = c.t;
     const kept = keepWork(t, loadCustomTheme(p.id));

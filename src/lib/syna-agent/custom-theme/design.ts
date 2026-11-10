@@ -39,11 +39,16 @@ export const DesignSchema = z.object({
 });
 export type Design = z.infer<typeof DesignSchema>;
 
-/** Plafond d'un appel de conception (entrée : toute la bibliothèque de la famille ; sortie : tout le site). */
-export const DESIGN_CAP_MICRO = 500_000;
+/**
+ * Plafond d'un appel de conception (entrée : toute la bibliothèque de la famille ; sortie : tout le site). Essai réel du
+ * 10 novembre 2026 (Éclat de thé) : la réflexion du modèle compte dans la sortie ; à 14 000 jetons, la réponse d'un site
+ * complet a été coupée (0,34 € payés pour rien). Sortie portée à 32 000 jetons, plafond et coût probable relevés.
+ */
+export const DESIGN_OUTPUT_TOKENS = 32_000;
+export const DESIGN_CAP_MICRO = 1_000_000;
 /** Conception + relecture (deux appels) ; une troisième seulement si le contrôle refuse quelque chose. */
 export const DESIGN_CALLS_MAX = 3;
-export const DESIGN_TYPICAL_MICRO = 360_000;
+export const DESIGN_TYPICAL_MICRO = 800_000;
 
 /** Exemple de niveau attendu (une autre marque, à ne jamais recopier). */
 const EXAMPLE = `EXEMPLE DU NIVEAU ATTENDU (les « photos » de chaque section sont à écrire de la même façon : la scène précise) (une autre marque : des bougies coulées à la main, cible « personnes qui veulent une maison qui sent bon sans produits chimiques », objections « ça coûte cher pour une bougie », « elles fument et noircissent les murs », « l'odeur ne tient pas »). Fiche produit :
