@@ -122,11 +122,18 @@ export const GalleryCheckSchema = z.object({
 export type GalleryCheck = z.infer<typeof GalleryCheckSchema>;
 const CHECK_IN = 7000, CHECK_OUT = 1200;
 export const galleryCheckMaxMicro = () => jsonCallMaxMicro(CHECK_MODEL.provider, CHECK_MODEL.model, CHECK_IN, CHECK_OUT, CHECK_OUT, CHECK_MODEL.effort)?.maxMicro ?? 20_000;
-export function galleryVerdict(c: GalleryCheck, o: { person: boolean }): string[] {
+export function galleryVerdict(c: GalleryCheck, o: { person: boolean; texts?: string[] }): string[] {
   const p: string[] = [];
   if (!c.productMatches) p.push("le produit n'est pas fidèle à sa vraie photo");
   if (!c.productWhole) p.push("le produit est coupé ou déformé");
-  for (const t of c.texts) if (!t.exact) p.push(`texte ${q(t.expected)} écrit ${q(t.written || "absent")}`);
+  // Le contrôle doit rendre chaque texte attendu (essai réel : entrées vides, rien de vérifié) : un texte sans réponse
+  // claire n'est jamais compté comme juste.
+  const expected = o.texts ?? c.texts.map((t) => t.expected);
+  expected.forEach((e, i) => {
+    const t = c.texts.find((x) => x.expected.trim() === e.trim()) ?? c.texts[i];
+    if (!t || !t.written.trim()) p.push(`texte ${q(e)} non retrouvé sur l'image`);
+    else if (!t.exact) p.push(`texte ${q(e)} écrit ${q(t.written)}`);
+  });
   if (c.extraText.length) p.push(`texte en trop : ${c.extraText.map(q).join(", ")}`);
   if (c.people && !o.person) p.push("une personne ou une main apparaît sans accord");
   return p;
@@ -144,13 +151,13 @@ export async function checkCreatedImage(o: { jobId: string; projectId: string; u
         prompt: [product ? `Première image : l'image créée. Seconde image : la vraie photo du produit${productName ? ` « ${productName} »` : ""}.` : "Image créée (aucun produit à reconnaître).",
           product ? "productMatches : true si le produit de l'image créée est bien le même que sur la vraie photo (forme, couleurs, étiquette, textes imprimés)." : "productMatches : true.",
           product ? "productWhole : true si le produit est entier (rien de coupé par le cadre) et non déformé." : "productWhole : true.",
-          `texts : pour chacun de ces textes attendus, ce qui est réellement écrit et s'il est exact (sans faute ni lettre en trop) : ${texts.length ? texts.map(q).join(", ") : "(aucun texte attendu)"}.`,
+          `texts : UNE entrée par texte attendu, dans cet ordre, avec expected (le texte attendu recopié), written (ce qui est réellement écrit, mot pour mot, vide s'il est absent) et exact (true seulement s'il est écrit sans faute ni lettre en trop), par exemple [{"expected":"Thé vert bio","written":"Thé vert bio","exact":true}]. Textes attendus : ${texts.length ? texts.map(q).join(", ") : "(aucun : liste vide)"}.`,
           "extraText : tout autre texte, lettre ou chiffre écrit sur l'image, en dehors des textes attendus et de ceux imprimés sur le produit (vide sinon).",
           "people : true si une personne, un visage ou une main est visible.", "notes : autre défaut net (bande blanche, zone cassée ; vide sinon)."].join("\n"),
         images: [{ data: image, label: "image créée" }, ...(product ? [{ data: product, label: "vraie photo du produit" }] : [])],
         maxTokens: CHECK_OUT, maxOutputTokens: CHECK_OUT, routing: { difficulty: "standard", prefer: CHECK_MODEL },
       } as LlmCall, GalleryCheckSchema)));
-  return [...galleryVerdict(c, { person }), ...c.notes];
+  return [...galleryVerdict(c, { person, texts }), ...c.notes];
 }
 
 /** Remplaçables par les tests (aucun appel réel). */
@@ -205,14 +212,14 @@ export async function runGalleryJob(ctx: JobContext) {
               prompt: [`Première image : l'image créée. Seconde image : la vraie photo du produit « ${prod.data.title} ».`,
                 "productMatches : true si le produit de l'image créée est bien le même que sur la vraie photo (forme, couleurs, étiquette, textes imprimés).",
                 "productWhole : true si le produit est entier (rien de coupé par le cadre) et non déformé.",
-                `texts : pour chacun de ces textes attendus, ce qui est réellement écrit sur l'image et s'il est écrit exactement (sans faute ni lettre en trop) : ${texts.length ? texts.map(q).join(", ") : "(aucun texte attendu)"}.`,
+                `texts : UNE entrée par texte attendu, dans cet ordre, avec expected (le texte attendu recopié), written (ce qui est réellement écrit sur l'image, mot pour mot, vide s'il est absent) et exact (true seulement s'il est écrit sans faute ni lettre en trop), par exemple [{"expected":"Thé vert bio","written":"Thé vert bio","exact":true}]. Textes attendus : ${texts.length ? texts.map(q).join(", ") : "(aucun : liste vide)"}.`,
                 "extraText : tout autre texte écrit sur l'image, en dehors des textes attendus et de ceux imprimés sur le produit (vide sinon).",
                 "people : true si une personne, un visage ou une main est visible.", "notes : autre défaut net (vide sinon)."].join("\n"),
               images: [{ data, label: "image créée" }, { data: refData, label: "vraie photo du produit" }],
               maxTokens: CHECK_OUT, maxOutputTokens: CHECK_OUT, routing: { difficulty: "standard", prefer: CHECK_MODEL },
             } as LlmCall, GalleryCheckSchema)));
       });
-      const problems = galleryVerdict(check, { person });
+      const problems = galleryVerdict(check, { person, texts });
       done.push({ assetId: img, kind: spec.kind, ok: !problems.length, problems });
     } catch (e) { done.push({ assetId: "", kind: spec.kind, ok: false, problems: [`image non créée (${(e as Error).message.slice(0, 120)})`] }); }
   }

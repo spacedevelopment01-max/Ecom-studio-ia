@@ -744,8 +744,15 @@ export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opt
   if (opts.strict) {
     // Même schéma envoyé au fournisseur. Le SDK garde le texte brut : son parseur local ne doit pas lever
     // avant l'enregistrement de la réponse et de l'usage. La validation stricte reste obligatoire juste après.
-    const r = await rawCall(call, messages, {...zodOutputFormat(schema as any),parse:(text:string)=>text});
-    return schema.parse(JSON.parse(r.text));
+    // Réponse coupée faute de place : même demande avec plus de place, jusqu'à maxOutputTokens (essai réel du
+    // 10 novembre 2026 : le plan des textes, coupé à 10 000 jetons, n'était jamais relancé en sortie structurée).
+    const cap = Math.min(MAX_OUTPUT_TOKENS, call.maxOutputTokens ?? MAX_OUTPUT_TOKENS);
+    let budget = call.maxTokens ?? 32000, attempt = 0;
+    for (;;) {
+      const r = await rawCall({ ...call, maxTokens: budget }, messages, {...zodOutputFormat(schema as any),parse:(text:string)=>text}, attempt ? `:fix${attempt}` : "", attempt);
+      if (r.stop === "max_tokens" && budget < cap) { budget = Math.min(cap, budget * 2); attempt++; continue; }
+      return schema.parse(JSON.parse(r.text));
+    }
   }
   messages[0].content = [
     ...(content as any[]),

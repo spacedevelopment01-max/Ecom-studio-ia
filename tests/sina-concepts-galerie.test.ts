@@ -172,3 +172,18 @@ describe("galerie produit : format carré et refus avant la carte", async () => 
     expect(() => getTool("gallery.create")!.estimate!({} as any, { product: "X", images: [{ kind: "fleches", scene: "Une table en bois clair près d'une fenêtre." }], keepOwn: true, people: false } as any)).toThrow(/Galerie incomplète[^]*il manque un titre/);
   });
 });
+
+describe("réponses coupées et référencement manquant (essai Éclat de thé du 10 novembre 2026)", () => {
+  it("la sortie structurée relance une réponse coupée avec plus de place ; le plan des textes a de la place", async () => {
+    const fs = await import("node:fs");
+    const llm = fs.readFileSync("src/lib/ai/llm.ts", "utf8");
+    expect(llm).toMatch(/if \(opts\.strict\) \{[^]*r\.stop === "max_tokens" && budget < cap[^]*budget \* 2/);
+    expect(fs.readFileSync("src/lib/syna-agent/custom-theme/brand.ts", "utf8")).toMatch(/syna-custom-plan-1", prompt, maxTokens: 18000, maxOutputTokens: 32000/);
+  });
+  it("un texte attendu que le contrôle n'a pas lu n'est jamais compté comme juste", async () => {
+    const G = await import("@/lib/syna-agent/custom-theme/gallery");
+    const ok = { productMatches: true, productWhole: true, extraText: [], people: false, notes: [] };
+    expect(G.galleryVerdict({ ...ok, texts: [{ expected: "", written: "", exact: true }] }, { person: false, texts: ["Thé vert bio"] })).toEqual(["texte « Thé vert bio » non retrouvé sur l'image"]);
+    expect(G.galleryVerdict({ ...ok, texts: [{ expected: "Thé vert bio", written: "Thé vert bio", exact: true }] }, { person: false, texts: ["Thé vert bio"] })).toEqual([]);
+  });
+});

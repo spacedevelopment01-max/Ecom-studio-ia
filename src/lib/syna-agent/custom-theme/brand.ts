@@ -154,6 +154,10 @@ ${COPY_CRAFT}
 - RÉFÉRENCEMENT (seo) : pour CHAQUE page (sa clé), un titre de 50 à 60 signes (ce que la page propose, avec les mots que ses clients tapent dans Google : le produit, sa matière ou sa saveur, et la ville pour un service local, puis le nom de la marque) et une description de 140 à 155 signes qui donne envie de cliquer (la promesse et un fait vrai), sans bourrage de mots, sans rien d'inventé ; jamais deux pages avec le même titre.
 Réponse : uniquement le JSON demandé.`;
 
+/** Référencement seul (pages déjà écrites) : titre et description de chaque page. */
+export const SeoSchema = z.object({ seo: SitePlanSchema.shape.seo });
+export const SEO_SYSTEM = `Tu es le rédacteur web d'une petite marque. Tu écris le RÉFÉRENCEMENT de pages de son site, en français : pour CHAQUE page (sa clé), un titre de 50 à 60 signes (ce que la page propose, avec les mots que ses clients tapent dans Google : le produit, sa matière ou sa saveur, la ville pour un service local, puis le nom de la marque) et une description de 140 à 155 signes qui donne envie de cliquer (la promesse et un fait vrai), sans bourrage de mots, sans rien d'inventé ; jamais deux pages avec le même titre. Réponse : uniquement le JSON demandé.`;
+
 export function sitePlanPrompt(brief: string, sections: { uid: string; page: string; title: string; does: string; texts: string; intent?: string }[], o: { concept?: string; journeys?: { page: string; journey: string }[]; pages?: { key: string; label: string }[] } = {}): string {
   return [brief, "", o.concept ? `IDÉE DU SITE (conception) : ${o.concept}` : "", o.pages?.length ? `PAGES DU SITE (clé · nom), une entrée seo pour chacune : ${o.pages.map((x) => `${x.key} · ${x.label}`).join(" ; ")}` : "", ...(o.journeys ?? []).map((x) => `PARCOURS DU VISITEUR · ${x.page} : ${x.journey}`), "", "Sections du site, dans l'ordre (uid · page · section · ce qu'elle fait · conception · ses textes de démonstration, à NE PAS reprendre) :",
     ...sections.map((x) => `- ${x.uid} · ${x.page} · « ${x.title} » · ${x.does}${x.intent ? ` · CONCEPTION : ${x.intent}` : ""} · démo : ${x.texts}`)].filter((x, i) => x !== "" || i === 1).join("\n");
@@ -292,6 +296,7 @@ export function exampleHeadlines(libHtml: string, html: string): string[] {
 /** Remplaçables par les tests (aucun appel réel). */
 export const customBrandDeps: {
   plan?: (prompt: string, usageKey: string) => Promise<z.input<typeof SitePlanSchema>>;
+  seo?: (prompt: string, usageKey: string) => Promise<z.infer<typeof SeoSchema>>;
   write?: (prompt: string, usageKey: string) => Promise<SectionWrite>;
   photo?: (prompt: string, product: Buffer | null, aspect: string, usageKey: string) => Promise<Buffer>;
 } = {};
@@ -328,7 +333,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         const usageKey = `${ctx.job.id}:text-plan`;
         return customBrandDeps.plan ? SitePlanSchema.parse(await customBrandDeps.plan(prompt, usageKey))
           : SitePlanSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-plan", costCapMicro: a.capMicro }, () =>
-              llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: SITE_PLAN_SYSTEM, promptKey: "syna-custom-plan-1", prompt, maxTokens: 10000, maxOutputTokens: 20000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SitePlanSchema, { strict: true })));
+              llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: SITE_PLAN_SYSTEM, promptKey: "syna-custom-plan-1", prompt, maxTokens: 18000, maxOutputTokens: 32000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SitePlanSchema, { strict: true })));
       });
     } catch (e) { report.problems.push(`plan des textes non fait (${(e as Error).message.slice(0, 120)}) : sections écrites sans plan`); }
     // Référencement de chaque page, gardé dans le thème (titre de l'onglet et description pour Google).
@@ -338,6 +343,27 @@ export async function runCustomBrandJob(ctx: JobContext) {
       t = saveCustomTheme(p.id, t, { history: false });
       const missing = t.pages.filter((pg) => !pg.seo).map((pg) => pg.label);
       if (missing.length) report.problems.push(`référencement non écrit pour : ${missing.join(", ")}`);
+    }
+  }
+  // Pages encore sans référencement (plan déjà fait ou coupé, montage en deux fois) : écrit à part, un petit appel.
+  {
+    const cur = loadCustomTheme(p.id)!;
+    const without = cur.pages.filter((pg) => !pg.seo);
+    // (Essais sans IA : seulement si le test fournit aussi le référencement.)
+    if (without.length && (!customBrandDeps.plan || customBrandDeps.seo)) {
+      try {
+        const seo = await ctx.step("seo", async () => {
+          const prompt = [brief, "", cur.concept ? `IDÉE DU SITE : ${cur.concept}` : "", "Pages à référencer (clé · nom · ce qu'elle propose) :",
+            ...without.map((pg) => `- ${pg.key} · ${pg.label} · ${(pg.journey ?? pg.sections.map((s) => libSection(s.id)?.title ?? s.id).join(", ")).slice(0, 400)}`)].join("\n");
+          const usageKey = `${ctx.job.id}:seo`;
+          return customBrandDeps.seo ? customBrandDeps.seo(prompt, usageKey)
+            : SeoSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-seo", costCapMicro: a.capMicro }, () =>
+                llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: SEO_SYSTEM, promptKey: "syna-custom-seo-1", prompt, maxTokens: 4000, maxOutputTokens: 8000, usageKey, routing: { difficulty: "standard", prefer: siteCopyModel() } }, SeoSchema, { strict: true })));
+        });
+        const t2 = loadCustomTheme(p.id)!;
+        for (const pg of t2.pages) { const s = seo.seo.find((x) => x.page === pg.key); if (!pg.seo && s) pg.seo = { title: s.titre, description: s.description }; }
+        saveCustomTheme(p.id, t2, { history: false });
+      } catch (e) { report.problems.push(`référencement non écrit (${(e as Error).message.slice(0, 120)})`); }
     }
   }
 
