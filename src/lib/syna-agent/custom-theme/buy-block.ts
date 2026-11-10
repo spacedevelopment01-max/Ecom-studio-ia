@@ -90,7 +90,7 @@ export function buyBlockData(projectId: string, productTitle?: string): BuyData 
   const days = /(\d{1,3})\s*jours?/.exec(company.returns ?? "")?.[1];
   const reassurance = [free ? `Livraison offerte dès ${eurText(free)}` : "", days ? `Retours sous ${days} jours` : ""].filter(Boolean);
   return {
-    base, name: p.data.title, unit: unitOf(p.data.title), cfg, features: f, promo,
+    base, name: p.data.title, unit: unitOf(p.data.title) !== "article" ? unitOf(p.data.title) : unitOf(plain(p.data.description_html)), cfg, features: f, promo,
     subscription: f.subscription ? { pct: f.subscription.pct, weeks: f.subscription.weeks } : null,
     bundlePct: f.bundle ? f.bundle.pct : null, gifts: f.gifts.slice(0, 3), reassurance,
   };
@@ -124,6 +124,13 @@ export function withRealBuyBlock(html: string, d: BuyData | null): string {
     const max = d.gifts[d.gifts.length - 1].at;
     return head + d.gifts.map((g) => `<span data-at="${g.at}" style="left:${Math.max(8, Math.min(96, Math.round((g.at / max) * 96)))}%" title="${escAttr(g.label)}">${icon}</span>`).join("");
   });
+  // Sélecteur de mélanges du « Produit vedette » (`data-xflavs`) : la vraie gamme du client (nom, prix, photo), jamais les
+  // six thés de la démonstration ; sans gamme, le sélecteur est retiré.
+  const gamme = Array.isArray(d.cfg.gamme) ? (d.cfg.gamme as [string, string, number][]) : [];
+  out = out.replace(/<div class="pnl p">\s*<div><div class="lab">([^<]*)<b data-xflav>[^<]*<\/b><\/div><div class="pl" data-xflavs>[\s\S]*?<\/div><\/div>\s*<\/div>/, (_m, lab: string) => gamme.length > 1
+    ? `<div class="pnl p"><div><div class="lab">${lab}<b data-xflav>${escText(gamme[0][1])}</b></div><div class="pl" data-xflavs>${gamme.map(([img, title, price], i) =>
+      `<button type="button" aria-pressed="${i === 0}" data-n="${escAttr(title)}" data-t="|${escAttr(title)}" data-p="${price}" data-img="${escAttr(img || "")}">${escText(title)}</button>`).join("")}</div></div></div>`
+    : "");
   // Repères sous le bouton : seulement les vrais (livraison offerte, retours) ; sinon rien.
   out = out.replace(/<div class="po-tr">[\s\S]*?<\/div>/, d.reassurance.length ? `<div class="po-tr">${d.reassurance.map((x) => `<span>${escText(x)}</span>`).join("")}</div>` : "");
   return out;

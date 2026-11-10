@@ -254,7 +254,7 @@
   });
   // Produit vedette
   qa("[data-xp]").forEach(function(p){
-    var main=q("[data-xmain]",p),imgs=qa("img",main),th=q("[data-xth]",p),cur=0,price=8.5,mult=1,qty=1;
+    var main=q("[data-xmain]",p),imgs=qa("img",main),th=q("[data-xth]",p),cur=0,price=8.5,mult=1,qty=1,xb=q("[data-pvb]",p);if(xb&&xb.dataset.cfg&&+xb.dataset.base)price=+xb.dataset.base;
     imgs.forEach(function(im,i){var b=document.createElement("button");b.type="button";b.setAttribute("aria-label","Photo "+(i+1));b.innerHTML='<img src="'+im.getAttribute("src")+'" alt="">';b.addEventListener("click",function(){show(i)});th.insertBefore(b,q(".ar",th))});
     function show(i){cur=(i+imgs.length)%imgs.length;imgs.forEach(function(im,k){im.classList.toggle("on",k===cur)});qa("button[aria-label^='Photo ']",th).forEach(function(b,k){b.setAttribute("aria-current",k===cur?"true":"false")})}
     show(0);
@@ -265,7 +265,7 @@
       qa("[data-xflavs] button",p).forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});
       price=+b.dataset.p;q("[data-xflav]",p).textContent=b.dataset.n;
       var t=b.dataset.t.split("|");q(".xp h3",p).firstChild.textContent=t[0]+" ";q("[data-xname]",p).innerHTML=t[1]+"<i>.</i>";
-      imgs[1].src=b.dataset.img;imgs[1].alt=b.dataset.n;var tb=qa("button[aria-label^='Photo ']",th)[1];if(tb)q("img",tb).src=b.dataset.img;show(1);upd()})});
+      if(b.dataset.img&&imgs[1]){imgs[1].src=b.dataset.img;imgs[1].alt=b.dataset.n;var tb=qa("button[aria-label^='Photo ']",th)[1];if(tb)q("img",tb).src=b.dataset.img;show(1)}upd()})});
     upd();
   });
   // Collection en vedette : carrousel 3D

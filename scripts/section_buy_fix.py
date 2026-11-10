@@ -51,8 +51,19 @@ EL1_FIX = [
 ]
 
 
+# Produit vedette à sélecteur de mélanges : le prix de départ est celui du client (data-base posé par le Studio avec
+# data-cfg), jamais les 8,50 € de la démonstration, qui écrasaient le vrai prix du bloc d'achat.
+XP_FIX = [
+    ('var main=q("[data-xmain]",p),imgs=qa("img",main),th=q("[data-xth]",p),cur=0,price=8.5,mult=1,qty=1;',
+     'var main=q("[data-xmain]",p),imgs=qa("img",main),th=q("[data-xth]",p),cur=0,price=8.5,mult=1,qty=1,xb=q("[data-pvb]",p);if(xb&&xb.dataset.cfg&&+xb.dataset.base)price=+xb.dataset.base;'),
+    # Produit de la gamme sans photo : la galerie garde sa photo au lieu d'une image cassée.
+    ('imgs[1].src=b.dataset.img;imgs[1].alt=b.dataset.n;var tb=qa("button[aria-label^=\'Photo \']",th)[1];if(tb)q("img",tb).src=b.dataset.img;show(1);upd()',
+     'if(b.dataset.img&&imgs[1]){imgs[1].src=b.dataset.img;imgs[1].alt=b.dataset.n;var tb=qa("button[aria-label^=\'Photo \']",th)[1];if(tb)q("img",tb).src=b.dataset.img;show(1)}upd()'),
+]
+
+
 def apply(js: str) -> str:
-    for a, b in BUY_FIX + EL1_FIX:
+    for a, b in BUY_FIX + EL1_FIX + XP_FIX:
         assert js.count(a) == 1, a[:80]
         js = js.replace(a, b)
     return js
@@ -61,7 +72,7 @@ def apply(js: str) -> str:
 if __name__ == '__main__':
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public', 'sections', 'library.js')
     js = open(path, encoding='utf-8').read()
-    todo = [(a, b) for a, b in BUY_FIX + EL1_FIX if b not in js]
+    todo = [(a, b) for a, b in BUY_FIX + EL1_FIX + XP_FIX if b not in js]
     for a, b in todo:
         assert js.count(a) == 1, a[:80]
         js = js.replace(a, b)
