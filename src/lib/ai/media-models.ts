@@ -181,6 +181,33 @@ export const MEDIA_MODELS: MediaModel[] = [
     source: "https://developers.openai.com/api/docs/models/gpt-image-2.5-sunburst",
     use: { fr: "Dessin obligatoire des nouveaux logos ; sans fournisseur ou coût borné, reste en attente.", en: "Required for new logo artwork; pending if provider or bounded cost is unavailable." },
   },
+  // GPT Image 2.6 (demande du propriétaire du 10 novembre 2026) : identifiants relevés dans la liste des modèles du compte
+  // OpenAI le 10/11/2026. Ni par défaut, ni comparés en réel ; tarif à relever sur openai.com/api/pricing et à saisir
+  // dans l'administration avant tout appel (sans tarif, la génération reste bloquée : coût maximal non borné).
+  {
+    provider: "openai", model: "gpt-image-2.6-flare", label: "OpenAI GPT Image 2.6 Flare",
+    kind: "image", adapter: "openai_image", quality: 3,
+    caps: { maskEdit: true, references: 16, transparent: true, textInImage: true, people: true, stream: true },
+    aspects: ["1:1", "2:3", "3:2"],
+    resolution: "supposée identique au 2.5 Flare (1024–1536 px demandés) ; non vérifiée",
+    typical: {},
+    priceNote: "NON VÉRIFIÉ — à relever sur openai.com/api/pricing (saisir un tarif par image)",
+    status: "stable", verified: { id: true, price: false }, paramsVerified: false,
+    source: "https://api.openai.com/v1/models",
+    use: { fr: "Nouvelle génération OpenAI (suite du 2.5 Flare) : à comparer avant de l'utiliser.", en: "New OpenAI generation (after 2.5 Flare): compare before use." },
+  },
+  {
+    provider: "openai", model: "gpt-image-2.6-sunburst", label: "OpenAI GPT Image 2.6 Sunburst",
+    kind: "image", adapter: "openai_image", quality: 3,
+    caps: { maskEdit: true, references: 16, textInImage: true, people: true, stream: true },
+    aspects: ["1:1", "16:9", "9:16", "2:3", "3:2"],
+    resolution: "supposée identique au 2.5 Sunburst ; non vérifiée",
+    typical: {},
+    priceNote: "NON VÉRIFIÉ — à relever sur openai.com/api/pricing (saisir un tarif par image)",
+    status: "stable", verified: { id: true, price: false }, paramsVerified: false,
+    source: "https://api.openai.com/v1/models",
+    use: { fr: "Nouvelle génération OpenAI (suite du 2.5 Sunburst) : à comparer avant de l'utiliser.", en: "New OpenAI generation (after 2.5 Sunburst): compare before use." },
+  },
   // Google : identifiants du guide officiel « Nano Banana » (google-gemini/cookbook). Tarifs : page Vertex AI
   // (indicative pour l'API Gemini) → à confirmer dans l'administration.
   {
