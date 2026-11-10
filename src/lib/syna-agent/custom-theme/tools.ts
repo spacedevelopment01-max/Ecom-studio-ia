@@ -392,7 +392,9 @@ const buildTool: AgentTool<BuildArgs> = {
     const undescribed = (x: ReturnType<typeof allSections>[number]) => { const l = libSection(x.s.id); if (!l || productSlotSection(l)) return 0; return [...new Set([...sectionHtml(x.s).matchAll(/photos\/[\w-]+\.(?:webp|png|jpg)/g)].map((m) => m[0]))].filter((f) => !(x.s.photoBriefs ?? []).some((b) => b.find === f)).length; };
     const known = written ? allSections(t).filter((x) => inPages(x.place, x.page?.key)).reduce((n, x) => { const l = libSection(x.s.id), h = sectionHtml(x.s); return n + (x.s.photoBriefs ?? []).filter((b) => h.includes(b.find) && !(l && showsProductAlone(l, b.description))).length + undescribed(x); }, 0) : null;
     const briefCalls = written ? allSections(t).filter((x) => inPages(x.place, x.page?.key) && undescribed(x) > 0).length : 0;
-    const photosMax = none ? 0 : known ?? photos + slots.filter((x) => x.kind === "produit").length;
+    // Photos de produits mal placées (remplacées par une scène au montage) : comptées par photoSlots, pas par les
+    // descriptions (essai du 10 novembre 2026 : devis de 4 photos pour 13 à créer, montage arrêté au plafond).
+    const photosMax = none ? 0 : known != null ? Math.max(known, photos) : photos + slots.filter((x) => x.kind === "produit").length;
     const unit = (customPhotoDeps.unit ?? photoUnit)();
     if (photos && unit == null) throw new Error(L("Aucun modèle d'images utilisable pour les photos du site.", "No usable image model."));
     // + le plan des textes de tout le site (un appel, avant les sections)
