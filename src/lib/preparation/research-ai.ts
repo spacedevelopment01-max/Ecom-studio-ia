@@ -130,7 +130,10 @@ export async function analyzeResearch(
           recommendationSourceIds: ["identifiant"],
         },
       }),
-      maxTokens: 12000,
+      // Réponses réelles de 15 000 à 21 000 jetons (essais du 7 novembre 2026) : à 12 000, la première était toujours
+      // coupée puis refaite, payée deux fois. Place suffisante d'emblée, et marge pour une relance si besoin.
+      maxTokens: 24000,
+      maxOutputTokens: 48000,
     },
     schema,
   );

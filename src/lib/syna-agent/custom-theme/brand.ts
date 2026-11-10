@@ -296,7 +296,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         const usageKey = `${ctx.job.id}:text-plan`;
         return customBrandDeps.plan ? customBrandDeps.plan(prompt, usageKey)
           : SitePlanSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-plan", costCapMicro: a.capMicro }, () =>
-              llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: SITE_PLAN_SYSTEM, promptKey: "syna-custom-plan-1", prompt, maxTokens: 8000, maxOutputTokens: 8000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SitePlanSchema, { strict: true })));
+              llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: SITE_PLAN_SYSTEM, promptKey: "syna-custom-plan-1", prompt, maxTokens: 10000, maxOutputTokens: 20000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SitePlanSchema, { strict: true })));
       });
     } catch (e) { report.problems.push(`plan des textes non fait (${(e as Error).message.slice(0, 120)}) : sections écrites sans plan`); }
   }
@@ -312,7 +312,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         const usageKey = `${ctx.job.id}:text:${x.s.uid}`;
         return customBrandDeps.write ? customBrandDeps.write(prompt, usageKey)
           : SectionWriteSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text", costCapMicro: a.capMicro }, () =>
-              llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: SECTION_WRITE_SYSTEM, promptKey: "syna-custom-section-1", prompt, maxTokens: 12000, maxOutputTokens: 12000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SectionWriteSchema, { strict: true })));
+              llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: SECTION_WRITE_SYSTEM, promptKey: "syna-custom-section-1", prompt, maxTokens: 14000, maxOutputTokens: 28000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SectionWriteSchema, { strict: true })));
       });
       // Écriture posée une seule fois : à la reprise d'une tâche, une section déjà enregistrée n'est pas réappliquée
       // (sinon tous ses remplacements échouaient sur un texte déjà réécrit, audit du 10 novembre 2026).

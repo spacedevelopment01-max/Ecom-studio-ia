@@ -213,7 +213,7 @@ const designTool: AgentTool<DesignArgs> = {
     const jobId = getRun(ctx.runId)?.job_id ?? null;
     const call = async (text: string, key: string, system = DESIGN_SYSTEM): Promise<Design> => customDesignDeps.call ? customDesignDeps.call(system, text, key)
       : DesignSchema.parse(await withTrace({ jobId, projectId: p.id, step: "custom-design", costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + DESIGN_CAP_MICRO * DESIGN_CALLS_MAX }, () =>
-          llmJson({ task: "strategy", userId: ctx.user.id, projectId: p.id, jobId, system, promptKey: system === DESIGN_SYSTEM ? "syna-custom-design-2" : "syna-custom-design-review-1", prompt: text, maxTokens: DESIGN_OUTPUT_TOKENS, maxOutputTokens: DESIGN_OUTPUT_TOKENS, usageKey: key, routing: { difficulty: "complex", prefer: siteCopyModel() } }, DesignSchema, { strict: true })));
+          llmJson({ task: "strategy", userId: ctx.user.id, projectId: p.id, jobId, system, promptKey: system === DESIGN_SYSTEM ? "syna-custom-design-2" : "syna-custom-design-review-1", prompt: text, maxTokens: DESIGN_OUTPUT_TOKENS, maxOutputTokens: DESIGN_OUTPUT_TOKENS * 1.5, usageKey: key, routing: { difficulty: "complex", prefer: siteCopyModel() } }, DesignSchema, { strict: true })));
     const build = (d: Design): CustomTheme => {
       let t: CustomTheme = { version: 1, family: f.family, style: f.style, header: null, footer: null, search: null, pages: [], rev: 0, at: Date.now(), concept: d.concept };
       t = applyStructure(t, d.pages.flatMap((pg) => [{ op: "page", key: pg.key, label: pg.label } as StructureOp, ...pg.sections.map((s) => ({ op: "add", page: pg.key, section: ref(s.section) }) as StructureOp)]));
