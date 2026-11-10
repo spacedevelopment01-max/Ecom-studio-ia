@@ -23,13 +23,15 @@ paragraphe et `CLAUDE.md` l'emportent**. Les exigences du propriétaire, numéro
   qu'elle vient de créer. **Bloc d'achat** rempli avec les vraies données du produit (`custom-theme/buy-block.ts`,
   `scripts/section_buy_fix.py`). Photos impossibles à inventer (réalisations, avant/après d'artisan, photos de
   clients, biens) : jamais créées, cadre « Photo à fournir ».
+- **Fonds des sections** : chaque section garde son fond d'origine (l'inversion clair ↔ sombre a été retirée le
+  10 novembre, à la demande du propriétaire) ; les couleurs de la marque s'appliquent à toutes les sections.
 - **Étape 8** (thème du Studio) : textes réécrits avec les mêmes règles d'écriture que le sur mesure ; jamais de
   fausses réalisations ni de fausse carte.
 - **Anciennes maquettes** (`mockup.*`) : seulement pour les projets déjà commencés avec elles ; leurs outils sont
   cachés aux nouveaux parcours, comme les anciens raccourcis (`brand.create`, `site.build`, `pilot.run`…).
 - **Restent ouverts** (à décider avec le propriétaire) : modèle d'images des photos du thème sur mesure (aujourd'hui
   celui des anciennes maquettes, OpenAI ; CLAUDE.md dit Qwen pour les images) ; détourage des photos d'ouverture de la
-  famille Moderne ; ambiance claire / sombre gardée dans le thème ; 11 sections pas encore inversables ; mise en
+  famille Moderne ; ambiance claire / sombre gardée dans le thème ; mise en
   boutique Shopify du thème sur mesure (étape 7).
 
 ## 1. Comment travailler avec l'utilisateur

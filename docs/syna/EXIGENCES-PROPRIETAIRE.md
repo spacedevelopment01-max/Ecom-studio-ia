@@ -83,8 +83,9 @@ Chaque exigence porte un numéro : l'audit et les tests s'y réfèrent.
   avant/après, émotion, contenu riche) ; jamais une section « pour prendre une section » ; harmonieux et fidèle à la
   marque (8 et 9 nov.).
 - **6.5** Accueil : au moins 8 sections ; fiche produit : au moins 7 (9 nov.).
-- **6.6** Fond clair ou sombre selon l'ambiance voulue par le client ; une section claire peut devenir sombre et
-  l'inverse, toujours lisible ; toutes les sections prennent les couleurs de la marque (9 et 10 nov.).
+- **6.6** Fond clair ou sombre selon l'ambiance voulue par le client, en choisissant des sections dont le fond
+  d'origine convient ; **aucune section n'est inversée** (marche arrière demandée le 10 nov. : chaque section garde son
+  fond d'origine) ; toutes les sections prennent les couleurs de la marque (9 et 10 nov.).
 - **6.7** Shopify : jamais de page commande ni de commande confirmée ; le panier mène au paiement de la plateforme
   (6 et 9 nov.).
 - **6.8** Images : SINA demande « tes images ou je les crée ? », donne le nombre exact, propose de créer celles qui

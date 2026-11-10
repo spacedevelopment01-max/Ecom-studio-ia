@@ -14,7 +14,7 @@ import { fontOf, fontsCss } from "../mockup-code/code-mockup";
 import { decideBuyFeatures, deliveryFrom, freeShippingFrom, loadShopOffers, type BuyFeatures } from "../product-features";
 import { companyOf } from "../activity";
 import { buyBlockData, withRealBuyBlock } from "./buy-block";
-import { authenticSection, DEMO_BRANDS, inversionClass, LIBRARY_DIR, sectionLibrary, withBrandName } from "./library";
+import { authenticSection, DEMO_BRANDS, LIBRARY_DIR, sectionLibrary, withBrandName } from "./library";
 import { allSections, sectionHtml, type CtSection, type CustomTheme } from "./theme";
 import { all } from "../../db";
 
@@ -32,8 +32,6 @@ export function brandCss(p: Pick<Project, "brand">): string {
     const body = Object.entries(vars).filter(([, x]) => x).map(([k, x]) => `${k}:${x}`).join(";");
     if (body) v.push(`${sel}{${body}}`);
   };
-  // Couleurs de la marque posées avec la même force que celles de la bibliothèque (:where ne compte pas) : elles les
-  // remplacent, et les règles du fond inversé (.ct-inv …) gardent la main sur elles.
   if (pal) {
     const mix = (a: string, c: string, pct: number) => `color-mix(in srgb,${a} ${pct}%,${c})`;
     set(":root", { "--b-dark": pal.dark, "--b-ink": pal.dark, "--b-primary": pal.primary, "--b-gold": pal.accent, "--b-soft": pal.light });
@@ -41,24 +39,24 @@ export function brandCss(p: Pick<Project, "brand">): string {
     // rôle pour chaque couleur que dans l'exemple : 1 encre sombre, 2 couleur de la marque, 3 teinte claire de la marque,
     // 4 fond clair, 5 accent.
     set(":root,.tA,.tB,.tN", { "--c1": pal.dark, "--c2": pal.primary, "--c3": mix(pal.light, pal.primary, 86), "--c4": mix(pal.light, pal.dark, 95), "--c5": pal.accent });
-    set(":where(.ctw) .el", { "--e-nv": pal.dark, "--e-nv2": mix(pal.dark, pal.light, 88), "--e-or": pal.primary, "--e-tl": pal.accent, "--e-cr": pal.light, "--e-gr": pal.secondary, "--e-ink": pal.dark });
-    set(":where(.ctw) .dq", { "--q-bk": pal.dark, "--q-gr": mix(pal.dark, pal.light, 90), "--q-lm": pal.primary, "--q-rd": pal.accent, "--q-tx": pal.light, "--q-mu": mix(pal.light, pal.dark, 62), "--q-ln": mix(pal.light, pal.dark, 14) });
+    set(".ctw .el", { "--e-nv": pal.dark, "--e-nv2": mix(pal.dark, pal.light, 88), "--e-or": pal.primary, "--e-tl": pal.accent, "--e-cr": pal.light, "--e-gr": pal.secondary, "--e-ink": pal.dark });
+    set(".ctw .dq", { "--q-bk": pal.dark, "--q-gr": mix(pal.dark, pal.light, 90), "--q-lm": pal.primary, "--q-rd": pal.accent, "--q-tx": pal.light, "--q-mu": mix(pal.light, pal.dark, 62), "--q-ln": mix(pal.light, pal.dark, 14) });
     set(".ctw", { "--tb-ac": pal.primary, "--tb-tbg": pal.dark, "--tb-tfg": pal.light });
     // Fond du site : sombre pour le style Streetwear néon, clair sinon ; deux sombres qui alternent (jamais deux bandes
     // de la même couleur collées).
     set(".ctw>.frame", { background: pal.light });
     set(".ctw-streetwear-neon>.frame", { background: pal.dark });
-    set(".dq:where(.ctw-streetwear-neon .tb-pg>:nth-of-type(even):not(.dq2,.dq5,.dq7))", { "--q-bk": mix(pal.dark, pal.light, 93) });
-    set(":where(.ctw) .dq5", { color: pal.dark });
+    set(".ctw-streetwear-neon .tb-pg>.dq:nth-of-type(even):not(.dq2):not(.dq5):not(.dq7)", { "--q-bk": mix(pal.dark, pal.light, 93) });
+    set(".ctw .dq5", { color: pal.dark });
     // Bloc d'achat : bouton et prix à la couleur de la marque, texte du bouton lisible dessus.
     const on = readableOn(pal.primary, pal.dark, pal.light);
-    set(":where(.ctw) .po.mo-dk", { "--po-ac": pal.primary, "--po-on": on, "--po-bg": mix(pal.light, pal.dark, 6), "--po-ln": mix(pal.light, pal.dark, 14), "--po-mu": mix(pal.light, pal.dark, 62) });
-    set(":where(.ctw) .po.mo-lt", { "--po-ac": pal.dark, "--po-on": pal.light, "--po-ln": mix(pal.dark, pal.light, 16) });
+    set(".ctw .po.mo-dk", { "--po-ac": pal.primary, "--po-on": on, "--po-bg": mix(pal.light, pal.dark, 6), "--po-ln": mix(pal.light, pal.dark, 14), "--po-mu": mix(pal.light, pal.dark, 62) });
+    set(".ctw .po.mo-lt", { "--po-ac": pal.dark, "--po-on": pal.light, "--po-ln": mix(pal.dark, pal.light, 16) });
   }
   if (H || B) {
     set(":root", { "--f-title": H, "--f-ui": B });
-    set(":where(.ctw) .el", { "--e-t": H, "--e-s": H, "--e-u": B });
-    set(":where(.ctw) .dq", { "--q-t": H, "--q-u": B });
+    set(".ctw .el", { "--e-t": H, "--e-s": H, "--e-u": B });
+    set(".ctw .dq", { "--q-t": H, "--q-u": B });
   }
   return [fc, ...v].join("\n");
 }
@@ -141,9 +139,7 @@ export function sectionMarkup(s: CtSection, brandName: string, role: string, bus
   const authentic = authenticSection(s.id, business);
   if (authentic) { const frame = provideFrame(authentic); html = html.replace(/(?:\.\/)?photos\/[\w-]+\.(?:webp|png|jpe?g)/g, frame); }
   const marked = html.replace(/^\s*<(section|footer)\b/, `<$1 data-ct="${s.uid}" data-ct-role="${role}"${s.clientTexts ? " data-ct-own" : ""}`);
-  // Fond voulu différent du fond d'origine (section inversable) : enveloppe sans effet sur la mise en page.
-  const inv = inversionClass(s.id, s.ground);
-  return inv ? `<div class="ct-inv ${inv}">${marked}</div>` : marked;
+  return marked;
 }
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));

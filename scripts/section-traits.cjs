@@ -36,8 +36,6 @@ const lib = JSON.parse(fs.readFileSync(path.join(DIR, "library.json"), "utf8"));
     });
   }
   await b.close();
-  // le drapeau « inversable » vient de scripts/section-invert-check.cjs : gardé
-  try { const prev = JSON.parse(fs.readFileSync(path.join(DIR, "section-traits.json"), "utf8")); for (const [k, v] of Object.entries(out)) if (v && prev[k] && "inversable" in prev[k]) v.inversable = prev[k].inversable; } catch { /* premier passage */ }
   fs.writeFileSync(path.join(DIR, "section-traits.json"), JSON.stringify(out));
   const vals = Object.values(out).filter(Boolean);
   console.log(vals.length, "sections ;", ["clair", "sombre", "couleur", "photo"].map((f) => `${f} ${vals.filter((v) => v.fond === f).length}`).join(", "), ";", ["dense", "moyenne", "aérée"].map((d) => `${d} ${vals.filter((v) => v.densite === d).length}`).join(", "));

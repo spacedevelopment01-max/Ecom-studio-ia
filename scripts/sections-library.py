@@ -223,10 +223,6 @@ js = buy_fix(js)
 open(os.path.join(OUT, 'library.js'), 'w', encoding='utf-8').write(js + '\n;' + EXTRA_JS)
 open(os.path.join(OUT, 'templates.html'), 'w', encoding='utf-8').write('\n'.join(templates))
 json.dump({'version': 1, 'fonts': fonts, 'sections': sections}, open(os.path.join(OUT, 'library.json'), 'w', encoding='utf-8'), ensure_ascii=False)
-# Fond inversé des sections (clair ↔ sombre) : règles .ct-inv ajoutées à library.css ; puis, pour mettre à jour les
-# sections inversables : node scripts/section-traits.cjs && node scripts/section-invert-check.cjs
-import subprocess
-subprocess.run(['node', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'section-invert.cjs')], check=True)
 
 # Photos utilisées (citées dans le HTML, les scripts ou la feuille), avec ou sans le dossier.
 have = set(os.listdir(PHOTOS))

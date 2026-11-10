@@ -174,20 +174,10 @@ export function withBrandName(html: string, name: string): string {
 }
 
 /** Caractéristiques mesurées des sections (scripts/section-traits.cjs). */
-export type Trait = { fond: "clair" | "sombre" | "couleur" | "photo"; densite: "dense" | "moyenne" | "aérée"; photos: number; hauteur: number; inversable?: boolean };
+export type Trait = { fond: "clair" | "sombre" | "couleur" | "photo"; densite: "dense" | "moyenne" | "aérée"; photos: number; hauteur: number };
 let traitsCache: Record<string, Trait | null> | null = null;
 export function sectionTraits(): Record<string, Trait | null> {
   if (!traitsCache) { try { traitsCache = JSON.parse(fs.readFileSync(path.join(LIBRARY_DIR(), "section-traits.json"), "utf8")); } catch { traitsCache = {}; } }
   return traitsCache!;
 }
 
-/** La section passe-t-elle le contrôle de lisibilité une fois inversée (scripts/section-invert-check.cjs) ? */
-export const canInvert = (id: string): boolean => sectionTraits()[id]?.inversable === true;
-/** Classe d'inversion d'une section selon le fond voulu et son fond d'origine (null : rien à inverser). */
-export function inversionClass(id: string, ground?: "clair" | "sombre"): "ct-dark" | "ct-light" | null {
-  if (!ground || !canInvert(id)) return null;
-  const nat = sectionTraits()[id]?.fond;
-  if (ground === "sombre" && nat === "clair") return "ct-dark";
-  if (ground === "clair" && nat === "sombre") return "ct-light";
-  return null;
-}

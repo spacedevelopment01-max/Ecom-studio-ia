@@ -46,8 +46,8 @@ les sections viennent de cette famille, réglées aux couleurs et polices de la 
 ## 2 bis. Les sections choisies selon la marque
 
 Chaque section porte des repères. **Mesurés aujourd'hui** (`public/sections/section-traits.json`) : **rôle**, **fond**
-(clair, sombre, couleur ou photo), **densité** (aérée, moyenne, dense), nombre de photos, hauteur, et si la section peut
-changer de fond (`inversable`). **Pas encore mesurés** (SINA les juge à la lecture de la section, `does`) : le **ton**
+(clair, sombre, couleur ou photo ; une section garde toujours son fond d'origine), **densité** (aérée, moyenne, dense),
+nombre de photos et hauteur. **Pas encore mesurés** (SINA les juge à la lecture de la section, `does`) : le **ton**
 (calme, chaleureux, vif, luxueux, ludique, technique), la **disposition** (photo pleine, écran partagé, grille,
 carrousel, texte seul, bande) et le **contenu réel requis** (avis, vidéo, photos de clients, offres…).
 

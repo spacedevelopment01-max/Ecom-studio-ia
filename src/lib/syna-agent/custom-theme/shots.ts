@@ -32,7 +32,9 @@ export async function customThemeShots(projectId: string): Promise<ThemeShot[]> 
   const t = loadCustomTheme(projectId);
   if (!t) return [];
   const dir = cacheDir();
-  const key = (v: string) => path.join(dir, `${projectId}-${t.rev}-${v === "ordinateur" ? "desk" : "phone"}.jpg`);
+  // Version de la bibliothèque (feuille et scripts communs) : une correction des sections refait aussi les captures.
+  const lib = ["library.css", "library.js"].map((f) => { try { return Math.round(fs.statSync(path.join(LIBRARY_DIR(), f)).mtimeMs).toString(36); } catch { return "0"; } }).join("");
+  const key = (v: string) => path.join(dir, `${projectId}-${t.rev}-${lib}-${v === "ordinateur" ? "desk" : "phone"}.jpg`);
   const cached = VIEWS.map((v) => ({ view: v.key, file: key(v.key) })).filter((x) => fs.existsSync(x.file));
   if (cached.length === VIEWS.length) return cached.map((x) => ({ view: x.view, data: fs.readFileSync(x.file) }));
   const html = renderCustomTheme(loadProject(projectId), t, { embed: true });
