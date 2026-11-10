@@ -217,7 +217,9 @@ css = css.replace('@media (prefers-reduced-motion:reduce){*,*::before,*::after{a
 fonts = re.findall(r'<link rel="stylesheet" href="(https://fonts\.googleapis\.com/[^"]+)"', src)
 P2_CSS = '\n/* Histoire du produit au défilement, téléphone : la page défile (plus de boîte qui défile seule), étapes lisibles */\n@container (max-width:560px){.ts.p2{overflow:clip}.p2-vp{height:auto;overflow:visible}.p2-st{position:sticky;top:var(--p2-top,0px);height:auto;padding:22px 0 18px;z-index:2;background:var(--c1)}.p2-im{width:min(190px,52vw)}.p2-ring{width:min(226px,62vw)}.p2-sp{min-height:50vh;align-content:start;padding-top:24px}.p2-sp:last-child{min-height:40vh;padding-bottom:40px}.p2-sp:not(.on){opacity:.35}.p2-hint{display:none}}\n'
 P2_CSS += '/* En-tête classique, téléphone : logo au centre, menu à gauche, recherche et panier à droite (retour du propriétaire du 9 novembre 2026) */\n@container (max-width:760px){.bh{grid-template-columns:1fr auto 1fr}.bh-bg{justify-self:start}.bh-lg{justify-self:center;text-align:center}.bh-ic{justify-self:end}}\n'
-open(os.path.join(OUT, 'library.css'), 'w', encoding='utf-8').write(css + EXTRA_CSS + P2_CSS)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from sections_revue import apply_css as _revue_css  # noqa: E402  (revue du 10 novembre 2026)
+open(os.path.join(OUT, 'library.css'), 'w', encoding='utf-8').write(_revue_css(css + EXTRA_CSS + P2_CSS))
 # Délai de livraison du bloc d'achat : le VRAI délai du client (drapeau poShip posé par le Studio, « min-max-heure »),
 # jamais « 2 à 3 jours ouvrés » ni une heure limite inventée ; la mention « délai d'exemple » ne reste qu'en démonstration.
 SHIP_FIX = [('var SHIP={min:2,max:3,cut:14};', 'var SHIP=(function(d){var m=/^(\\d+)-(\\d+)-(\\d*)$/.exec(d.poShip||"");return m?{min:+m[1],max:+m[2],cut:m[3]===""?null:+m[3],real:1}:{min:2,max:3,cut:14}})(document.documentElement.dataset);'), ('function shipLine(){var n=new Date(),late=n.getHours()>=SHIP.cut||n.getDay()===0||n.getDay()===6,start=new Date(n);if(late){start=addBiz(n,1)}', 'function shipLine(){var n=new Date(),late=(SHIP.cut!=null&&n.getHours()>=SHIP.cut)||n.getDay()===0||n.getDay()===6,start=new Date(n);if(late){start=addBiz(n,1)}'), ('var a=addBiz(start,SHIP.min),b=addBiz(start,SHIP.max),cut=new Date(n);cut.setHours(SHIP.cut,0,0,0);var left=cut-n,lead;\n    if(!late&&left>0){', 'var a=addBiz(start,SHIP.min),b=addBiz(start,SHIP.max),cut=new Date(n);cut.setHours(SHIP.cut==null?0:SHIP.cut,0,0,0);var left=cut-n,lead;\n    if(SHIP.cut!=null&&!late&&left>0){'), ('return lead+"entre le <b>"+fmtD(a)+"</b> et le <b>"+fmtD(b)+"</b><br><small>délai d\'exemple : 2 à 3 jours ouvrés</small>"}', 'return lead+(+a===+b?"le <b>"+fmtD(a)+"</b>":"entre le <b>"+fmtD(a)+"</b> et le <b>"+fmtD(b)+"</b>")+(SHIP.real?"":"<br><small>délai d\'exemple : 2 à 3 jours ouvrés</small>")}')]
@@ -232,6 +234,10 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from section_buy_fix import apply as buy_fix
 js = buy_fix(js)
+# Revue du propriétaire du 10 novembre 2026 (scripts/sections_revue.py) : HTML, scripts et feuille corrigés.
+from sections_revue import apply_sections as revue_sections, apply_js as revue_js, apply_css as revue_css
+js = revue_js(js)
+revue_sections(sections)
 open(os.path.join(OUT, 'library.js'), 'w', encoding='utf-8').write(js + '\n;' + EXTRA_JS)
 open(os.path.join(OUT, 'templates.html'), 'w', encoding='utf-8').write('\n'.join(templates))
 json.dump({'version': 1, 'fonts': fonts, 'sections': sections}, open(os.path.join(OUT, 'library.json'), 'w', encoding='utf-8'), ensure_ascii=False)

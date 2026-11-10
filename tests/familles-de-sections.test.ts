@@ -41,3 +41,17 @@ describe("sections retirées par le propriétaire (revue du 10 novembre 2026)", 
     expect(items.some((x) => x.id === "note-et-avis-en-bandeau" && x.group === "preuves")).toBe(true);
   });
 });
+
+describe("corrections de la revue du propriétaire (lot 2)", () => {
+  it("sont présentes dans la banque (HTML, feuille et script)", async () => {
+    const fs = await import("node:fs");
+    const { libSection } = await import("../src/lib/syna-agent/custom-theme/library");
+    expect(libSection("ils-parlent-de-nous")!.html).not.toContain("data-pq");
+    expect(libSection("avant-apres")!.html).toContain("ba-sec");
+    expect(libSection("avant-apres")!.html).toContain("<b>Avant</b>");
+    expect(libSection("histoire-du-produit-au-defilement")!.html).toContain("p2-cta");
+    const css = fs.readFileSync("public/sections/library.css", "utf8");
+    expect(css.split("revue du propriétaire (10 novembre 2026)").length).toBe(2); // une seule fois
+    expect(fs.readFileSync("public/sections/library.js", "utf8")).toContain('if(!$(".pqf",p))return;');
+  });
+});

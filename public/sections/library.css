@@ -4175,3 +4175,24 @@ html[data-po-promo="1"] [data-poshow="promo"]{display:inline-flex!important}
 .p8-grid>img[hidden]{display:none}
 .p8-grid[data-n="1"]>img{width:100%}
 .p8-grid[data-n="2"]{flex-direction:column;flex-wrap:nowrap;align-items:center}
+/* ===== revue du propriétaire (10 novembre 2026) ===== */
+/* Contrôle général : de l'air autour des sections qui n'en avaient pas (rien ne touche le bord ni la section voisine). */
+.ctw-blk:has(>.bento),.ctw-blk:has(>.ba),.ctw-blk.ba-sec,.ctw-blk:has(>.w){padding:72px max(24px,5vw)}
+@container (max-width:760px){.ctw-blk:has(>.bento),.ctw-blk:has(>.ba),.ctw-blk.ba-sec,.ctw-blk:has(>.w){padding:44px 16px}}
+.cat{padding:48px max(24px,5vw)!important}
+@container (max-width:760px){.cat{padding:32px 16px!important}}
+/* 1. En-tête flottant en pilule : le menu ne passe jamais sur deux lignes ; la pilule rétrécit moins. */
+.h5 nav a,.h5 nav .lnk{white-space:nowrap}
+.h5w.small .h5{max-width:820px}
+@container (max-width:980px){.h5 nav{gap:16px}.h5 nav a,.h5 nav .lnk{font-size:.9rem}}
+/* 8. Histoire du produit au défilement : bouton sous le texte, avec de l'air. */
+.p2 .p2-cta{display:inline-flex;margin-top:22px}
+/* 18. Avant / après : titre, cadre arrondi centré, fond de la section visible autour. */
+.ba-sec{display:grid;gap:28px;justify-items:center}
+.ba-sec .ba-hd{text-align:center;max-width:620px;display:grid;gap:10px}
+.ba-sec .ba-hd .ti{margin:0;font:500 clamp(1.8rem,3.4vw,2.6rem)/1.1 var(--f-title);color:var(--b-dark)}
+.ba-sec .ba-hd p{margin:0;color:var(--b-ink);opacity:.8}
+.ba-sec .ba{width:min(100%,980px);aspect-ratio:16/9;border-radius:22px;box-shadow:0 22px 50px rgba(23,38,30,.18);border:6px solid #fff}
+@container (max-width:760px){.ba-sec .ba{aspect-ratio:4/5;border-radius:16px;border-width:4px}}
+.ba .lb b{display:block;font-size:.62rem;letter-spacing:.14em;opacity:.8}
+/* ===== fin de la revue ===== */
