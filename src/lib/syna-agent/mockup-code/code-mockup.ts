@@ -240,7 +240,7 @@ export function codePhotoPrompt(photo: CodePhoto, f: { name: string; logo: boole
     // Produit en scène : son étiquette garde ses mots et son logo (essai du 10 novembre 2026 : « aucun texte » dans la
     // description donnait des sachets vierges, refusés au contrôle). Toute phrase qui décrit l'étiquette est retirée : la photo
     // jointe la donne (« étiquette vert pâle, unie », « sans étiquette lisible » contredisaient la vraie photo).
-    (f.product ? photo.description.replace(/[^.\n]*(?<!\p{L})[ée]tiquettes?(?!\p{L})[^.\n]*\.\s*/giu, "").replace(/Aucun texte[^.]*\./gi, "Aucun texte ajouté : seule l'étiquette du produit garde ses mots et son logo, exactement comme sur la photo jointe.") : photo.description).replace(/\s+$/, ""),
+    (f.product ? photo.description.replace(/[^.\n]*(?<!\p{L})[ée]tiquettes?(?!\p{L})[^.\n]*\.\s*/giu, " ").replace(/ {2,}/g, " ").replace(/Aucun texte[^.]*\./gi, "Aucun texte ajouté : seule l'étiquette du produit garde ses mots et son logo, exactement comme sur la photo jointe.") : photo.description).replace(/\s+$/, ""),
     f.direction ? `Direction artistique de la marque (à tenir) : ${f.direction}` : "",
     // Exigence du propriétaire (9 novembre 2026) : « des images magnifiques », jamais une photo de catalogue plate.
     photo.background ? "" : "Niveau visé : une photo magnifique, digne d'une campagne de marque haut de gamme ou d'un grand magazine : lumière travaillée, profondeur, matières réelles, couleurs riches, composition soignée, une émotion qu'on ressent. Jamais une photo de catalogue plate, jamais un fond uni ni un mur vide.",
