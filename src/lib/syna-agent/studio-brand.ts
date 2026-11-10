@@ -20,7 +20,7 @@ import { angleDetails } from "./mockup-code/copy";
 import type { ImageRequestV2 } from "../image-v2/engine";
 import type { AspectId } from "../image-v2/types";
 import type { ImagesMode } from "./custom-theme/brand";
-import { clientImages } from "./custom-theme/brand";
+import { clientImages, COPY_CRAFT } from "./custom-theme/brand";
 import { hasServicePlan, placeServiceImage, revealFilledSections, serviceMediaSlots, type ServiceSlot } from "../theme/service-media-plan";
 import { saveThemeVersion } from "../projects";
 
@@ -36,13 +36,16 @@ export function angleBrief(p: Project, j: Journey | null): string {
   return [
     `Angle marketing choisi par le client : « ${a.title} »${a.goal ? ` (objectif : ${a.goal})` : ""}.`,
     d.emotion ? `Émotion à faire ressentir : ${d.emotion}. Chaque titre et chaque texte part d'une situation vécue, d'un désir ou d'un soulagement de la cliente ou du client ; les faits ne servent que de preuves.` : "",
-    a.message ? `Accroche (titre d'ouverture de l'accueil, mot pour mot) : « ${a.message} ».` : "",
-    a.cta ? `Appel à l'action (bouton principal, mot pour mot) : « ${a.cta} ».` : "",
+    // Mêmes règles d'écriture que le thème sur mesure (retour du propriétaire du 9 novembre 2026) : l'accroche de l'angle
+    // est une piste, jamais une formule recopiée partout ; un bouton porte le désir, jamais un ordre.
+    a.message ? `Piste d'accroche de l'angle (au plus UNE fois, pour l'ouverture de l'accueil, et seulement si elle donne vraiment envie ; sinon écris mieux) : « ${a.message} ».` : "",
+    a.cta ? `Piste pour le bouton principal (à garder seulement s'il porte le désir, sans ordre au lecteur) : « ${a.cta} ».` : "",
     d.story ? `Ce qu'on raconte : ${d.story}` : "",
     d.show ? `Ce qu'on montre : ${d.show}` : "",
     plan?.keyMessages.length ? `Messages clés : ${plan.keyMessages.map((m) => `« ${m} »`).join(" ; ")}.` : "",
     d.toConfirm?.length ? `NON confirmés, à ne JAMAIS affirmer : ${d.toConfirm.join(" ; ")}.` : "",
-    "Phrases courtes et concrètes, même voix partout, aucun superlatif creux, aucun jargon de marketing visible (jamais « angle », « émotion », « preuve »).",
+    COPY_CRAFT,
+    "Même voix partout, aucun superlatif creux, aucun jargon de marketing visible (jamais « angle », « émotion », « preuve »).",
   ].filter(Boolean).join("\n");
 }
 
@@ -57,18 +60,23 @@ export function studioImageNeeds(projectId: string): { total: number; filled: nu
   }
   if (!plan) return null;
   const slots = plan.slots.filter((s) => s.role !== "logo" && s.role !== "video");
-  const requests = plan.generationRequests.filter((r) => r.kind === "image");
-  return { total: slots.length, filled: slots.filter((s) => !!s.assetId).length, missing: requests.length, requests };
+  const images = plan.generationRequests.filter((r) => r.kind === "image");
+  const requests = images.filter((r) => !AUTHENTIC_ROLES.has(r.role));
+  // Comme pour les thèmes de services : « missing » compte tous les vides, « toProvide » ceux que seul le client peut remplir.
+  return { total: slots.length, filled: slots.filter((s) => !!s.assetId).length, missing: images.length, requests, toProvide: images.length - requests.length };
 }
 function adaptationOf(projectId: string) {
   return currentTheme(projectId)?.spec.meta?.adaptation ?? null;
 }
 
+/** Emplacements des thèmes à plan que SINA ne peut pas inventer : les réalisations du client (ex. ATELIER RIVE). */
+const AUTHENTIC_ROLES = new Set(["realization"]);
+
 /** Demandes d'images pour les emplacements vides (même moteur et mêmes contrôles que « Préparer ce visuel »). */
 export function studioImageRequests(p: Project): ImageRequestV2[] {
   const cur = currentTheme(p.id), plan = cur?.spec.meta?.adaptation;
   if (!cur || !plan) return [];
-  return plan.generationRequests.filter((r) => r.kind === "image").map((r) => ({
+  return plan.generationRequests.filter((r) => r.kind === "image" && !AUTHENTIC_ROLES.has(r.role)).map((r) => ({
     kind: r.role === "packshot" ? "packshot" : r.role === "detail" ? "product_image" : p.business === "services" ? "trade_photo" : "usage_scene",
     support: "site",
     aspect: (["1:1", "4:5", "2:3", "3:2", "9:16", "16:9"].includes(r.aspect) ? r.aspect : "16:9") as AspectId,
@@ -141,10 +149,12 @@ export async function runStudioBrandJob(ctx: JobContext) {
     // Ses images vont d'abord aux photos que SINA ne peut pas inventer (seules les vraies y ont leur place).
     const empty = serviceMediaSlots(spec).filter((x) => !x.filled).sort((x, y) => Number(!!y.authentic) - Number(!!x.authentic));
     const used = new Set(Object.values<string>(spec.files ?? {}));
-    const own = a.images === "sina" ? [] : clientImages(p.id).map((x) => x.id).filter((id) => !used.has(id));
+    // Même quand le client laisse SINA créer les images, ses vraies photos vont aux emplacements qu'elle ne peut pas
+    // inventer (équipe, biens, réalisations) : sinon ils resteraient vides alors qu'il les a envoyées.
+    const own = clientImages(p.id).map((x) => x.id).filter((id) => !used.has(id));
     let placed = 0, i = 0, toProvide = 0;
     for (const slot of empty) {
-      if (i < own.length) { placeServiceImage(spec, slot, own[i++]); placed++; continue; }
+      if (i < own.length && (slot.authentic || a.images !== "sina")) { placeServiceImage(spec, slot, own[i++]); placed++; continue; }
       if (slot.authentic) { toProvide++; continue; }
       if (a.images === "client") { report.problems.push(`photo ${slot.key} : aucune image du client pour cet emplacement`); continue; }
       const remainingSlots = empty.length - empty.indexOf(slot);
@@ -186,6 +196,7 @@ export async function runStudioBrandJob(ctx: JobContext) {
   }
   const needs = studioImageNeeds(p.id);
   if (needs?.missing) report.problems.push(`${needs.missing} emplacement(s) d'image encore vide(s)`);
+  if (needs?.toProvide && !needs.service) report.problems.push(`${needs.toProvide} photo(s) de tes réalisations à fournir par toi : SINA ne peut pas les inventer`);
   if (a.conversationId) { try { updateJourney(a.conversationId, (x) => setStep(x, 8, "review", L("thème du Studio monté à la marque, à voir dans la Boutique", "Studio theme built"))); } catch { /* fil supprimé */ } }
   notify(p.userId, p.id, report.problems.length ? L("Ton site est monté dans ton thème : des points restent à voir", "Your site is built: some points remain") : L("Ton site est monté dans ton thème, à ta marque", "Your site is built for your brand"), L("Il est en place dans l'onglet Boutique.", "It is in the Boutique tab."), report.problems.length ? "warning" : "success");
   return { ...report, images: needs };

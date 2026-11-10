@@ -222,9 +222,17 @@ export function siteArtDirection(p: Project, fu: FamilyUniverse | null, j: Journ
   return `${fu.style} ; ${fu.idea} ; lumière : ${fu.light} ; décors : ${fu.setting} ; composition : ${fu.composition.join(" ; ")} ; émotion à faire ressentir : ${d.emotion ?? fu.emotion}${d.story ? ` (l'histoire de la marque : ${d.story})` : ""} ; couleurs de la marque : ${[p.brand?.palette?.dark, p.brand?.palette?.primary, p.brand?.palette?.accent].filter(Boolean).join(", ")}.`;
 }
 
-/** Images envoyées par le client (Fichiers du projet), dans l'ordre d'arrivée. */
+/**
+ * Photos envoyées par le client (Fichiers du projet), dans l'ordre d'arrivée, utilisables sur son site : jamais son logo
+ * (ni ses déclinaisons), jamais une image marquée comme inspiration, jamais une image trop petite pour une section
+ * (moins de 500 px de côté : icône, capture réduite). Audit du 10 novembre 2026 : le logo envoyé à l'étape 0 comptait
+ * comme une photo du site.
+ */
 export function clientImages(projectId: string): { id: string; name: string }[] {
-  return all<{ id: string; name: string }>("SELECT id, name FROM assets WHERE project_id=? AND deleted_at IS NULL AND kind='image' AND origin='upload' ORDER BY created_at", projectId);
+  return all<{ id: string; name: string; meta: string | null }>(
+    "SELECT id, name, meta FROM assets WHERE project_id=? AND deleted_at IS NULL AND kind='image' AND origin='upload' AND COALESCE(role,'') NOT LIKE 'logo%' AND (width IS NULL OR width>=500) AND (height IS NULL OR height>=500) ORDER BY created_at",
+    projectId,
+  ).filter((a) => { try { return !JSON.parse(a.meta ?? "{}").inspiration; } catch { return true; } }).map(({ id, name }) => ({ id, name }));
 }
 
 /** Photos que SINA créera, selon le choix du client. */

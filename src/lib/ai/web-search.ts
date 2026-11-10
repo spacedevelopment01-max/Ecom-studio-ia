@@ -8,7 +8,7 @@
  * facturation exacte de l'usage constaté (jetons + recherches), aucune relance automatique.
  *
  * Le modèle ne fournit que des pistes : seuls les liens réellement renvoyés par l'outil (résultats ou citations) sont
- * gardés, les places de marché (AliExpress, Alibaba, Temu…) sont exclues, et chaque extrait reste marqué « rapporté par
+ * gardés, les places de marché (AliExpress, Alibaba, Temu, Amazon, eBay, Cdiscount, Etsy…) sont exclues (consigne du propriétaire : « places de marché exclues »), et chaque extrait reste marqué « rapporté par
  * la recherche web » tant que le Studio n'a pas lu la page lui-même.
  */
 import Anthropic from "@anthropic-ai/sdk";
@@ -39,7 +39,7 @@ const MAX_OUTPUT = 12000;
 /** Hypothèse prudente de contenu de recherche facturé en entrée, par recherche (réglable dans l'administration). */
 const contentTokensPerSearch = () => Math.max(1000, getJsonSetting<number>("ai.webSearch.contentTokensPerSearch", 20000));
 
-const MARKETPLACES = /(^|\.)(aliexpress\.[a-z.]+|alibaba\.com|alicdn\.com|1688\.com|temu\.com|dhgate\.com|wish\.com|banggood\.com|made-in-china\.com|globalsources\.com|lightinthebox\.com|shein\.[a-z.]+)$/i;
+const MARKETPLACES = /(^|\.)(aliexpress\.[a-z.]+|alibaba\.com|alicdn\.com|1688\.com|temu\.com|dhgate\.com|wish\.com|banggood\.com|made-in-china\.com|globalsources\.com|lightinthebox\.com|shein\.[a-z.]+|amazon\.[a-z.]+|ebay\.[a-z.]+|cdiscount\.com|rakuten\.[a-z.]+|etsy\.com|manomano\.[a-z.]+|leboncoin\.fr|vinted\.[a-z.]+|wallapop\.com|joom\.com|fruugo\.[a-z.]+)$/i;
 export const isMarketplace = (url: string) => { try { return MARKETPLACES.test(new URL(url).hostname); } catch { return true; } };
 
 const canonical = (raw: string) => {
@@ -100,7 +100,7 @@ export const webSearchDeps = {
 };
 
 /** Places de marché exclues dès la recherche chez Claude (liste de domaines de l'outil). */
-const BLOCKED_DOMAINS = ["aliexpress.com", "alibaba.com", "1688.com", "temu.com", "dhgate.com", "wish.com", "banggood.com", "made-in-china.com", "shein.com"];
+const BLOCKED_DOMAINS = ["aliexpress.com", "alibaba.com", "1688.com", "temu.com", "dhgate.com", "wish.com", "banggood.com", "made-in-china.com", "shein.com", "amazon.fr", "amazon.com", "ebay.fr", "ebay.com", "cdiscount.com", "fr.shopping.rakuten.com", "etsy.com", "manomano.fr", "leboncoin.fr", "vinted.fr"];
 
 type Normalized = { model: string; searches: number; usage: { input: number; cached: number; output: number }; urls: unknown[]; text: string; stop: string; refused: boolean };
 

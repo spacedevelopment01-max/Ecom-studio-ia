@@ -7,7 +7,7 @@ import { one } from "../../db";
 import { L } from "../../i18n-server";
 import type { AgentTool } from "../types";
 import { journeyOf, setStep, updateJourney } from "../journey";
-import { advanceAngles, angleLimit, anglesMaxMicro, anglesPhase, chooseAngles, pct, researchFailure } from "../angles";
+import { advanceAngles, angleLimit, anglesMaxMicro, anglesPhase, chooseAngles, pct, researchFailure, usedAngles } from "../angles";
 import { budgetPctOf as pctOfUser } from "../../ai/budget-pct";
 import { loadProject } from "../../projects";
 const budgetPctOf = (pid: string, micro: number) => pctOfUser(loadProject(pid).userId, micro, pid);
@@ -73,6 +73,12 @@ const chooseTool: AgentTool<{ angleIds: string[] }> = {
     if (unknown.length) return { ok: false, summary: L(`Angle inconnu : ${unknown.join(", ")} ; choisis parmi ${j.angles?.list.map((x) => x.id).join(", ") || "(aucun angle encore)"}.`, "Unknown angle.") };
     const limit = angleLimit(p.id);
     if (ids.length > limit) return { ok: false, summary: L(`Le forfait du client permet ${limit} angle${limit > 1 ? "s" : ""} ; il en a choisi ${ids.length}. Dis-le-lui simplement et demande lequel ou lesquels garder (le premier sera l'angle principal).`, "Too many angles for the plan.") };
+    // Un angle déjà utilisé compte pour toujours dans le forfait : le total (anciens + nouveaux) ne doit pas le dépasser.
+    const used = usedAngles(p.id), fresh = ids.filter((id) => !used.includes(id));
+    if (used.length + fresh.length > limit) {
+      const name = (id: string) => j.angles?.list.find((x) => x.id === id)?.title ?? id;
+      return { ok: false, summary: L(`Le forfait du client permet ${limit} angle${limit > 1 ? "s" : ""} en tout, et ${used.length} ${used.length > 1 ? "sont déjà utilisés" : "est déjà utilisé"} (${used.map((id) => `« ${name(id)} »`).join(", ")}). Il peut garder ${used.length > 1 ? "ceux-là" : "celui-là"} ou en ajouter ${Math.max(0, limit - used.length)} au plus.`, "Plan angle limit reached.") };
+    }
     const r = chooseAngles(p.id, ids, `syna-${ctx.runId}-angles`);
     const titles = ids.map((id) => j.angles!.list.find((x) => x.id === id)!.title);
     if (r.ok) updateJourney(ctx.conversationId, (x) => { x.angleChoice = { id: ids[0], ids, at: Date.now() }; setStep(x, 4, "done"); setStep(x, 5, "todo"); });
@@ -80,7 +86,7 @@ const chooseTool: AgentTool<{ angleIds: string[] }> = {
       ok: r.ok,
       summary: r.ok
         ? L(`Angle principal : « ${titles[0]} »${titles.length > 1 ? ` ; aussi retenus pour les publications et publicités : ${titles.slice(1).map((t) => `« ${t} »`).join(", ")}` : ""}. Étape 4 validée. Prochaine étape : l'activité complète.`, "Angles chosen.")
-        : L(`Les angles n'ont pas pu être enregistrés (actif : ${r.active ?? "aucun"}, recherche validée : ${r.approved ? "oui" : "non"}).`, "Angles not saved."),
+        : L(`Les angles n'ont pas pu être enregistrés, rien n'a été compté dans le forfait${r.error ? ` (${r.error})` : ""}.`, "Angles not saved."),
       changes: [{ module: "stratégie", object: L("angles marketing", "marketing angles"), summary: titles.join(" + "), after: ids, verified: r.ok }],
     };
   },

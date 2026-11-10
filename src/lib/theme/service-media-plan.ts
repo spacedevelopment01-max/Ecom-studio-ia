@@ -68,6 +68,8 @@ export function serviceMediaSlots(spec: ThemeSpec): ServiceSlot[] {
       const take = (field: string, values: Record<string, unknown> | undefined, defs: { id: string; type: string }[], blockId?: string, block?: string, bocc?: number) => {
         const p = index.get([template, sec.type, occurrence, block ?? "", bocc ?? "", field].join("|"));
         if (!p) return;
+        // Une carte n'est pas une photo : la vraie vient de l'adresse du client, jamais d'une image créée (exigence 6.16).
+        if (/(^|_)map(_|$)/.test(field)) return;
         const assetField = assetFieldOf(defs, field);
         const v = values?.[field], va = assetField ? values?.[assetField] : undefined;
         const filled = (typeof va === "string" && !!va && !placeholderSlotName(va)) || (typeof v === "string" && !!v && (!spec.files || !!spec.files[v]));

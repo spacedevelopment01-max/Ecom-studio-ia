@@ -102,7 +102,10 @@ describe("SINA — thème du Studio monté à la marque", async () => {
     // Deux images du client, puis montage « mix » : ses deux images posées, les autres créées (fausses ici).
     const sharp = (await import("sharp")).default;
     const { saveAsset } = await import("@/lib/library");
-    for (const c of ["#123", "#456"]) await saveAsset({ projectId: pid, userId: user.id, data: await sharp({ create: { width: 40, height: 30, channels: 3, background: c } }).png().toBuffer(), name: `chantier-${c}.png`, mime: "image/png", role: "original", origin: "upload" });
+    for (const c of ["#123", "#456"]) await saveAsset({ projectId: pid, userId: user.id, data: await sharp({ create: { width: 800, height: 600, channels: 3, background: c } }).png().toBuffer(), name: `chantier-${c}.png`, mime: "image/png", role: "original", origin: "upload" });
+    // Jamais comptés comme photos du site : son logo envoyé, une vignette trop petite (audit du 10 novembre 2026).
+    await saveAsset({ projectId: pid, userId: user.id, data: await sharp({ create: { width: 800, height: 600, channels: 4, background: "#000" } }).png().toBuffer(), name: "logo-client.png", mime: "image/png", role: "logo", origin: "upload" });
+    await saveAsset({ projectId: pid, userId: user.id, data: await sharp({ create: { width: 40, height: 30, channels: 3, background: "#789" } }).png().toBuffer(), name: "vignette.png", mime: "image/png", role: "original", origin: "upload" });
     expect((await call("theme.images", ctx, {})).data.imagesEnvoyeesNonPosees).toBe(2);
     T.studioBrandDeps2.images = (_p, n) => ({ capMicro: n * 100_000, estimateMicro: n * 60_000 });
     let made = 0;
@@ -156,6 +159,28 @@ describe("SINA — thème du Studio monté à la marque", async () => {
       expect(placed.length).toBe(2);
       for (const x of placed) { const sec: any = saved.templates[x.template].sections[x.sectionId]; expect((x.blockId ? sec.blocks[x.blockId] : sec).settings[x.assetField!]).toMatch(/^es-client-/); }
     } finally { delete T.studioBrandDeps2.images; delete SB.studioBrandDeps.copy; delete SB.studioBrandDeps.compose; delete SB.studioBrandDeps.image; }
+  });
+
+  it("MAISON & HORIZON : la carte n'est jamais une image créée (la vraie vient de l'adresse du client)", async () => {
+    const user = await account();
+    const cid = threadFor(user, null), ctx: any = { user, conversationId: cid, runId: `run-${Date.now()}`, projectId: null, attachment: () => null };
+    await call("start.answer", ctx, { answers: [{ field: "business", value: "services" }, { field: "offer", value: "Agence immobilière : achat, vente, location." }] });
+    await call("start.answer", ctx, { answers: [
+      { field: "existing", value: "Rien." }, { field: "audience", value: "Familles." }, { field: "image", value: "Sobre." }, { field: "setup", value: "Demande de visite" }, { field: "market", value: "Aix." },
+      { field: "price", value: "Selon le bien" }, { field: "difference", value: "Réponse en 24 h." }, { field: "taste", status: "none" }, { field: "photos", value: "Non." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
+    ] });
+    await call("start.confirm", ctx, {});
+    const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
+    const { loadProject, saveBrand, currentTheme } = await import("@/lib/projects");
+    const { localBrand } = await import("@/lib/engine/local");
+    run("UPDATE projects SET business_type='services' WHERE id=?", pid);
+    saveBrand(pid, localBrand(loadProject(pid).product, "Horizon", loadProject(pid)).brand);
+    await fr(async () => (await import("@/lib/engine/shop")).switchDirection(null, pid, "maison-horizon" as never));
+    const SP = await import("@/lib/theme/service-media-plan");
+    const slots = SP.serviceMediaSlots(currentTheme(pid)!.spec);
+    expect(slots.length).toBeGreaterThan(5);
+    expect(slots.filter((x) => /map/.test(x.field))).toEqual([]);
+    expect(SB.serviceImageRequests(loadProject(pid), slots).some((r) => /map/.test(r.slotKey))).toBe(false);
   });
 
   it("direction de rédaction : l'angle choisi, son émotion, l'accroche mot pour mot, rien d'inventé, aucun jargon visible", () => {

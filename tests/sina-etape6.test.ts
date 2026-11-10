@@ -104,6 +104,14 @@ describe("SINA — étape 6 : un de nos thèmes", async () => {
     const again = await call("theme.choose", ctx, { id });
     expect(again.jobs).toEqual(r.jobs); // jamais une seconde tâche
     expect(all("SELECT id FROM jobs WHERE project_id=? AND type='shop.direction'", pid)).toHaveLength(1);
+    // Mise en place échouée : jamais relancée d'elle-même ; relancée (gratuite) quand le client le demande.
+    run("UPDATE jobs SET status='failed', error='essai' WHERE id=?", r.jobs![0]);
+    const failed = await call("theme.choose", ctx, { id });
+    expect(failed.ok).toBe(false);
+    expect(failed.hint).toMatch(/retry:true/);
+    const retried = await call("theme.choose", ctx, { id, retry: true });
+    expect(retried.ok, retried.summary).toBe(true);
+    expect(one<{ status: string }>("SELECT status FROM jobs WHERE id=?", r.jobs![0])!.status).toBe("queued");
     const j = J.journeyOf(cid);
     expect(j.themeChoice?.id).toBe(id);
     expect(j.siteMode?.mode).toBe("theme");

@@ -7,7 +7,7 @@
  * fiche à analyser → questions éventuelles au client → fiche validée (le client a confirmé son résumé à l'étape 0) →
  * recherche → angles affichés → choix du client. Aucune étape n'est payée deux fois : chaque appel reprend où on en est.
  */
-import { all } from "../db";
+import { all, tx } from "../db";
 import { L } from "../i18n-server";
 import { loadProject } from "../projects";
 import { approve, editBrief, queuePreparation } from "../preparation/engine";
@@ -157,24 +157,30 @@ function activate(projectId: string, angleId: string, idempotencyKey: string) {
 export function chooseAngles(projectId: string, angleIds: string[], idempotencyKey: string) {
   try { proposeStrategies(projectId); } catch { /* état déjà à jour */ }
   const [principal, ...others] = angleIds;
-  // Les angles retenus en plus sont activés d'abord (ils comptent dans le forfait), l'angle principal en dernier : il
-  // reste l'angle actif.
-  for (const id of others) activate(projectId, id, `${idempotencyKey}-${id}`);
-  activate(projectId, principal, `${idempotencyKey}-${principal}`);
-  const s0 = stateOf(projectId)!;
-  if ((s0.stages as any).research?.status !== "approved") approve(projectId, s0.revision, "research", { choiceId: principal } as any);
-  const active = getStrategyState(projectId).active?.angleId ?? null;
-  const approved = (stateOf(projectId)!.stages as any).research?.status === "approved";
-  return { active, approved, ok: active === principal && approved };
+  // Tout ou rien (audit du 10 novembre 2026) : un angle activé compte pour toujours dans le forfait ; si un des angles
+  // ne peut pas l'être, aucun ne l'est et le quota du client reste intact.
+  try {
+    return tx(() => {
+      // Les angles retenus en plus sont activés d'abord (ils comptent dans le forfait), l'angle principal en dernier : il
+      // reste l'angle actif.
+      for (const id of others) activate(projectId, id, `${idempotencyKey}-${id}`);
+      activate(projectId, principal, `${idempotencyKey}-${principal}`);
+      const s0 = stateOf(projectId)!;
+      if ((s0.stages as any).research?.status !== "approved") approve(projectId, s0.revision, "research", { choiceId: principal } as any);
+      const active = getStrategyState(projectId).active?.angleId ?? null;
+      const approved = (stateOf(projectId)!.stages as any).research?.status === "approved";
+      if (active !== principal || !approved) throw new AnglesNotSaved(active, approved);
+      return { active, approved, ok: true as boolean, error: undefined as string | undefined };
+    });
+  } catch (e) {
+    if (e instanceof AnglesNotSaved) return { active: e.active, approved: e.approved, ok: false, error: undefined };
+    return { active: getStrategyState(projectId).active?.angleId ?? null, approved: false, ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+class AnglesNotSaved extends Error { constructor(readonly active: string | null, readonly approved: boolean) { super("angles non enregistrés"); } }
+
+/** Angles déjà utilisés par le projet (ils comptent pour toujours dans le forfait). */
+export function usedAngles(projectId: string): string[] {
+  try { return getStrategyState(projectId).usedAngleIds as string[]; } catch { return []; }
 }
 
-/** Choix d'un seul angle (compatibilité). */
-export function chooseAngle(projectId: string, angleId: string, idempotencyKey: string) {
-  try { proposeStrategies(projectId); } catch { /* état déjà à jour */ }
-  activate(projectId, angleId, idempotencyKey);
-  const s0 = stateOf(projectId)!;
-  if ((s0.stages as any).research?.status !== "approved") approve(projectId, s0.revision, "research", { choiceId: angleId } as any);
-  const active = getStrategyState(projectId).active?.angleId ?? null;
-  const approved = (stateOf(projectId)!.stages as any).research?.status === "approved";
-  return { active, approved, ok: active === angleId && approved, message: L("Angle choisi.", "Angle chosen.") };
-}

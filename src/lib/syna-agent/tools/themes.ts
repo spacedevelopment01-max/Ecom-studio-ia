@@ -9,7 +9,7 @@ import type { AgentTool } from "../types";
 import { journeyOf, setStep, updateJourney } from "../journey";
 import { themeChoices } from "../themes";
 import { project } from "./common";
-import { enqueue, getJob, pendingJob } from "../../jobs";
+import { enqueue, getJob, pendingJob, retryJob } from "../../jobs";
 import { currentTheme } from "../../projects";
 import { assertStrategyChosen, defaultStrategy } from "../../marketing-strategy";
 import { assertThemeAllowed } from "../../plan-gates";
@@ -57,10 +57,10 @@ const proposeTool: AgentTool<{ all?: boolean }> = {
   },
 };
 
-const chooseTool: AgentTool<{ id: string }> = {
+const chooseTool: AgentTool<{ id: string; retry?: boolean }> = {
   name: "theme.choose", module: "site", kind: "write", needsProject: true,
   description: "Étape 6 : applique le thème CHOISI PAR LE CLIENT (jamais à sa place ; identifiant d'une carte de theme.propose) : la boutique se compose dans ce thème avec sa marque, ses produits et ses textes (gratuit, sans IA ; l'ancienne version reste restaurable). Ouvre l'étape 8 (le thème adapté). Tâche de fond : relis son résultat.",
-  args: z.object({ id: z.string().min(1).max(60) }).strict(),
+  args: z.object({ id: z.string().min(1).max(60), retry: z.boolean().optional() }).strict(),
   run: (ctx, a) => {
     const p = project(ctx);
     const j = journeyOf(ctx.conversationId);
@@ -77,7 +77,9 @@ const chooseTool: AgentTool<{ id: string }> = {
     // Même tâche que « Choisir ce thème » de la galerie : jamais une seconde en cas de double demande.
     const job = pendingJob(p.id, "shop.direction", { direction: a.id, strategyVersion })
       ?? enqueue({ userId: ctx.user.id, projectId: p.id, type: "shop.direction", idempotencyKey: `theme:${currentTheme(p.id)?.version.id ?? "initial"}:${strategyVersion}:${a.id}`, label: L(`Direction ${name}`, `${name} direction`), payload: { projectId: p.id, direction: a.id, strategyVersion } });
-    if (["failed", "cancelled"].includes(job.status)) return { ok: false, summary: L("La composition précédente dans ce thème a échoué : elle est gardée dans le suivi des tâches pour en voir la cause.", "The previous attempt failed."), hint: "Dis-le au client simplement ; ne relance rien sans sa demande." };
+    // Composition gratuite (sans IA) : relancée seulement si le client le demande (retry), jamais d'elle-même.
+    if (["failed", "cancelled"].includes(job.status) && a.retry) retryJob(job.id);
+    else if (["failed", "cancelled"].includes(job.status)) return { ok: false, summary: L("La composition précédente dans ce thème a échoué : elle est gardée dans le suivi des tâches pour en voir la cause.", "The previous attempt failed."), hint: "Dis-le au client simplement et demande-lui s'il veut relancer la mise en place (gratuite) : s'il le veut, theme.choose avec le même id et retry:true." };
     updateJourney(ctx.conversationId, (x) => {
       x.siteMode = { mode: "theme", at: Date.now() };
       x.themeChoice = { id: a.id, jobId: job.id, at: Date.now() };

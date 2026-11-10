@@ -553,7 +553,7 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
     const sharp = (await import("sharp")).default;
     const { saveAsset } = await import("@/lib/library");
     const mine: string[] = [];
-    for (const c of ["#335", "#553"]) mine.push((await saveAsset({ projectId: pid, userId: user.id, data: await sharp({ create: { width: 30, height: 30, channels: 3, background: c } }).png().toBuffer(), name: `client-${c}.png`, mime: "image/png", role: "original", origin: "upload" })).id);
+    for (const c of ["#335", "#553"]) mine.push((await saveAsset({ projectId: pid, userId: user.id, data: await sharp({ create: { width: 900, height: 900, channels: 3, background: c } }).png().toBuffer(), name: `client-${c}.png`, mime: "image/png", role: "original", origin: "upload" })).id);
     expect((await call("custom.images", ctx, {})).data.imagesDuClient.map((x: any) => x.id)).toEqual(mine);
     // « Seulement mes images » sans en avoir assez : rien n'est lancé, SINA propose les autres choix.
     const short = await call("custom.build", ctx, { images: "client", clientAssets: mine });

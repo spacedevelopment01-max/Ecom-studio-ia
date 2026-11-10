@@ -142,6 +142,26 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     expect(J.journeyOf(cid).steps[4].status).toBe("done");
     expect(J.currentStep(J.journeyOf(cid))).toBe(5);
     expect((await call("angles.propose", ctx, {})).ok).toBe(false); // déjà choisi
+    // Nouveau choix plus tard : les angles déjà utilisés comptent pour toujours dans le forfait (audit du 10 novembre).
+    expect(A.usedAngles(pid)).toEqual(expect.arrayContaining(limit >= 5 ? ids.slice(0, 5) : pickIds));
+    {
+      // Le client passe au forfait à 2 angles : ceux déjà utilisés occupent déjà ses places.
+      const { grantProjectPlan } = await import("@/lib/project-subscriptions");
+      grantProjectPlan(pid, "vendre");
+      expect(A.angleLimit(pid)).toBe(2);
+      J.updateJourney(cid, (x) => J.setStep(x, 4, "review"));
+      const before = A.usedAngles(pid), others = [ids[0]];
+      const over = await call("angles.choose", ctx, { angleIds: others });
+      expect(over.ok).toBe(false);
+      expect(over.summary).toMatch(/en tout, et \d+ (?:est|sont) déjà utilisé/);
+      expect(A.usedAngles(pid)).toEqual(before); // rien de compté pour rien
+    }
+  });
+
+  it("sources : les places de marché (AliExpress, Amazon, eBay, Cdiscount, Etsy…) sont exclues, consigne du propriétaire", async () => {
+    const { isMarketplace } = await import("@/lib/ai/web-search");
+    for (const u of ["https://fr.aliexpress.com/item/1", "https://www.amazon.fr/dp/B0", "https://www.ebay.fr/itm/1", "https://www.cdiscount.com/x", "https://www.etsy.com/fr/listing/1", "https://fr.shopping.rakuten.com/x", "https://www.manomano.fr/p", "https://www.leboncoin.fr/x", "https://www.temu.com/x"]) expect(isMarketplace(u), u).toBe(true);
+    for (const u of ["https://www.marmiton.org/recettes", "https://www.60millions-mag.com/x", "https://www.reddit.com/r/cuisine", "https://confiturerie-exemple.fr/"]) expect(isMarketplace(u), u).toBe(false);
   });
 
   it("refusé avant l'image de marque validée", async () => {
