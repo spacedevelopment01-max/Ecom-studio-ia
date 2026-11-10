@@ -82,9 +82,19 @@ export const SCRIPT_DEMO_SECTIONS = new Set([
   "comparateur-de-produits", "composition-interactive", "choisir-selon-le-moment", "recherche-guidee", "quiz-quel-produit-pour-toi",
   "questions-en-bulles-de-discussion", "produit-vedette-lots-degressifs", "produit-vedette-loupe-et-onglets", "produit-vedette-abonnement",
   "produit-vedette-toute-la-gamme", "produit-vedette-calculateur-de-tasses", "panier-tiroir-a-paliers", "prise-de-rendez-vous",
-  "demande-de-devis-en-etapes", "la-carte-du-restaurant",
+  "demande-de-devis-en-etapes", "la-carte-du-restaurant", "panier-tiroir-neon",
 ]);
-export const familySections = (family: FamilyId): LibSection[] => sectionLibrary().sections.filter((s) => s.family === family && !s.demoFrame && !SCRIPT_DEMO_SECTIONS.has(s.id));
+/**
+ * Sections qui fabriquent une urgence ou une offre d'exemple (audit du 10 novembre 2026) : comptes à rebours calculés
+ * depuis l'heure du visiteur (« dans 3 j 5 h »), remises, codes promo et cadeaux d'exemple. Jamais posées : les offres
+ * réelles du client sont des fonctions du bloc d'achat « Produit vedette », lues dans ses vraies données.
+ */
+export const FAKE_OFFER_SECTIONS: Record<string, "compte à rebours" | "offre"> = {
+  "ouverture-drop": "compte à rebours", "produit-vedette-drop-limite": "compte à rebours", "lancement-facon-drop": "compte à rebours",
+  "barre-compte-a-rebours": "compte à rebours", "compte-a-rebours-en-bloc": "compte à rebours",
+  "offre-en-deux-tuiles": "offre", "abonnement-ou-achat-unique": "offre", "code-promo-a-copier": "offre", "cadeau-offert-des-un-montant": "offre",
+};
+export const familySections = (family: FamilyId): LibSection[] => sectionLibrary().sections.filter((s) => s.family === family && !s.demoFrame && !SCRIPT_DEMO_SECTIONS.has(s.id) && !FAKE_OFFER_SECTIONS[s.id]);
 /** Retrouve une section par son identifiant ou par son titre exact. */
 export const sectionByRef = (ref: string): LibSection | null => libSection(ref) ?? sectionLibrary().sections.find((s) => s.title === ref) ?? null;
 
@@ -101,7 +111,18 @@ export const FEATURED_ROLE = "produit vedette";
 
 /** Photos de démonstration citées par une section (avec ou sans dossier). */
 export function sectionPhotos(html: string): string[] {
-  return [...new Set([...html.matchAll(/\b([a-z]{2,}-[a-z0-9]+\.(?:webp|png|jpg)|[a-z]+\.jpg)\b/g)].map((m) => m[1]))];
+  return [...new Set([...html.matchAll(/\/api\/files\/([\w-]+)|\b([a-z]{2,}-[a-z0-9]+\.(?:webp|png|jpg)|[a-z]+\.jpg)\b/g)].map((m) => m[1] ? `fichier:${m[1]}` : m[2]))];
+}
+/** Photos d'une section, une entrée par emplacement (une même photo deux fois dans la section compte deux fois). */
+export function sectionPhotoUses(html: string): string[] {
+  const out: string[] = [];
+  for (const m of html.matchAll(/(?:src|data-src)="([^"]+)"|url\(['"]?([^'")]+)['"]?\)/g)) {
+    const v = m[1] ?? m[2] ?? "";
+    const f = /\/api\/files\/([\w-]+)/.exec(v)?.[1];
+    if (f) out.push(`fichier:${f}`);
+    else { const ph = /(?:^|\/)([a-z]{2,}-[a-z0-9]+\.(?:webp|png|jpg)|[a-z]+\.jpg)$/.exec(v.split("?")[0])?.[1]; if (ph) out.push(ph); }
+  }
+  return out;
 }
 
 /**

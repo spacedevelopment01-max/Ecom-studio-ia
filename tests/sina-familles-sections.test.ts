@@ -19,7 +19,7 @@ describe("SINA — familles de sections Classique et Moderne", async () => {
     expect(cards.map((c) => c.previews.length)).toEqual([1, 2]);
     for (const c of cards) for (const p of c.previews) expect(fs.existsSync(path.join(process.cwd(), "public", p))).toBe(true);
     for (const c of cards) expect(fs.existsSync(path.join(process.cwd(), "public", c.preview))).toBe(true);
-    expect(cards.find((c) => c.family === "moderne")!.sections).toBe(55);
+    expect(cards.find((c) => c.family === "moderne")!.sections).toBe(51); // sans fausses urgences ni offres d'exemple (audit du 10 novembre 2026)
   });
 
   it("aucune section n'appartient aux deux familles, et la famille Moderne propose plusieurs choix par rôle", () => {

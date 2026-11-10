@@ -29,7 +29,7 @@ import { codePhotoPrompt } from "../mockup-code/code-mockup";
 import { hdAspect } from "../mockup-code/prompts";
 import { mockupImageRoute } from "../mockup-code/tools";
 import { libSection, withBrandName } from "./library";
-import { allSections, loadCustomTheme, replaceOnce, saveCustomTheme, sectionHtml, type CustomTheme } from "./theme";
+import { allSections, loadCustomTheme, pushCustomThemeHistory, replaceOnce, saveCustomTheme, sectionHtml, type CustomTheme } from "./theme";
 
 export const CUSTOM_BRAND_JOB = "syna.custom.brand";
 /**
@@ -172,13 +172,16 @@ export function sectionWritePrompt(brief: string, place: string, title: string, 
 }
 
 /** Applique les remplacements d'une écriture : ceux qui ne s'appliquent pas sont comptés, jamais devinés. */
-export function applyWrite(html: string, w: SectionWrite): { html: string; failed: number } {
-  let out = html, failed = 0;
+/** Entités HTML courantes décodées (comparaison du texte d'un lien avec la section). */
+const decodeEntities = (v: string) => v.replace(/&(?:#(\d+)|#x([0-9a-f]+)|(amp|lt|gt|quot|apos|nbsp|rsquo|lsquo|laquo|raquo|eacute|egrave|agrave|ccedil));/gi, (_m, d, h, n) => d ? String.fromCodePoint(+d) : h ? String.fromCodePoint(parseInt(h, 16)) : ({ amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", rsquo: "’", lsquo: "‘", laquo: "«", raquo: "»", eacute: "é", egrave: "è", agrave: "à", ccedil: "ç" } as Record<string, string>)[n.toLowerCase()]);
+
+export function applyWrite(html: string, w: SectionWrite): { html: string; failed: number; applied: number } {
+  let out = html, failed = 0, applied = 0;
   for (const e of w.edits) {
     if (/<\s*script\b|\son[a-z]+\s*=(?!"return false")/i.test(e.replace)) { failed++; continue; }
-    try { out = replaceOnce(out, e.find, e.replace); } catch { failed++; }
+    try { out = replaceOnce(out, e.find, e.replace); applied++; } catch { failed++; }
   }
-  return { html: out, failed };
+  return { html: out, failed, applied };
 }
 
 /** Emplacements de photos encore d'exemple dans le thème (une photo par emplacement, dédoublonnés par section). */
@@ -265,6 +268,9 @@ export async function runCustomBrandJob(ctx: JobContext) {
   const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, problems: [] as string[], redacteur: `${writer.provider}:${writer.model}` };
   const briefs: Record<string, SectionWrite["photos"]> = {};
 
+  // Un seul point d'annulation pour tout le montage : « Annuler » revient au thème d'avant le montage.
+  await ctx.step("undo-point", async () => { pushCustomThemeHistory(p.id); return true; });
+
   // 0) Plan des textes de tout le site (un appel) : chaque section reçoit SON message, son titre et ses faits.
   let sitePlan: SitePlan | null = null;
   if (sections.length) {
@@ -294,21 +300,33 @@ export async function runCustomBrandJob(ctx: JobContext) {
           : SectionWriteSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text", costCapMicro: a.capMicro }, () =>
               llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: SECTION_WRITE_SYSTEM, promptKey: "syna-custom-section-1", prompt, maxTokens: 12000, maxOutputTokens: 12000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SectionWriteSchema, { strict: true })));
       });
-      t = loadCustomTheme(p.id)!;
-      const cur = allSections(t).find((y) => y.s.uid === x.s.uid);
-      if (!cur) continue;
-      const r = applyWrite(withBrandName(sectionHtml(cur.s), name), w);
-      cur.s.html = r.html; cur.s.clientTexts = r.failed === 0;
-      // Liens : seulement vers une page du site, et seulement pour un texte réellement écrit dans la section.
-      const keys = new Set(t.pages.map((pg) => pg.key)), text = r.html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
-      const links = Object.fromEntries(w.links.filter((l) => keys.has(l.to.split(":")[0]) && text.includes(l.text.replace(/[→↗]/g, "").trim())).map((l) => [l.text.replace(/[→↗]/g, "").replace(/\s+/g, " ").trim(), l.to]));
-      const dead = w.links.filter((l) => !keys.has(l.to.split(":")[0])).map((l) => `« ${l.text} » → ${l.to}`);
-      if (Object.keys(links).length) cur.s.links = links;
-      if (dead.length) report.problems.push(`${l?.title} : bouton(s) vers une page qui n'existe pas (${dead.join(", ")})`);
-      t = saveCustomTheme(p.id, t);
+      // Écriture posée une seule fois : à la reprise d'une tâche, une section déjà enregistrée n'est pas réappliquée
+      // (sinon tous ses remplacements échouaient sur un texte déjà réécrit, audit du 10 novembre 2026).
+      const r = await ctx.step(`text-saved:${x.s.uid}`, async () => {
+        t = loadCustomTheme(p.id)!;
+        const cur = allSections(t).find((y) => y.s.uid === x.s.uid);
+        if (!cur) return null;
+        const out = applyWrite(withBrandName(sectionHtml(cur.s), name), w);
+        // « Textes du client » seulement si la section a VRAIMENT été réécrite (une réponse vide ne compte pas).
+        cur.s.html = out.html; cur.s.clientTexts = out.failed === 0 && out.applied > 0;
+        // Liens : seulement vers une page du site, et seulement pour un texte réellement écrit dans la section.
+        const keys = new Set(t.pages.map((pg) => pg.key)), text = decodeEntities(out.html.replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ");
+        const clean = (v: string) => v.replace(/[→↗]/g, "").replace(/\s+/g, " ").trim();
+        const kept = w.links.filter((k) => keys.has(k.to.split(":")[0]) && text.includes(clean(k.text)));
+        const links = Object.fromEntries(kept.map((k) => [clean(k.text), k.to]));
+        const dead = w.links.filter((k) => !keys.has(k.to.split(":")[0])).map((k) => `« ${k.text} » → ${k.to}`);
+        const lost = w.links.filter((k) => keys.has(k.to.split(":")[0]) && !kept.includes(k)).map((k) => `« ${k.text} »`);
+        if (Object.keys(links).length) cur.s.links = links;
+        t = saveCustomTheme(p.id, t, { history: false });
+        return { failed: out.failed, applied: out.applied, dead, lost };
+      });
+      if (!r) continue;
+      if (r.dead.length) report.problems.push(`${l?.title} : bouton(s) vers une page qui n'existe pas (${r.dead.join(", ")})`);
+      if (r.lost.length) report.problems.push(`${l?.title} : lien(s) non posé(s), texte introuvable dans la section (${r.lost.join(", ")})`);
       briefs[x.s.uid] = w.photos;
       report.sections++; report.failedEdits += r.failed;
       if (r.failed) report.problems.push(`${l?.title} : ${r.failed} texte(s) non remplacé(s)`);
+      if (!r.applied) report.problems.push(`${l?.title} : aucun texte réécrit, les textes d'exemple restent`);
     } catch (e) { report.problems.push(`${l?.title ?? x.s.id} : textes non écrits (${(e as Error).message.slice(0, 120)})`); }
   }
 
@@ -343,7 +361,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         if (real) report.photosReal++; else if (mine) report.photosClient++; else report.photosMade++;
         t = loadCustomTheme(p.id)!;
         const cur = allSections(t).find((y) => y.s.uid === uid);
-        if (cur) { cur.s.html = sectionHtml(cur.s).split(ph.find).join(assetUrl({ id: assetId })); t = saveCustomTheme(p.id, t); }
+        if (cur) { cur.s.html = sectionHtml(cur.s).split(ph.find).join(assetUrl({ id: assetId })); t = saveCustomTheme(p.id, t, { history: false }); }
       } catch (e) { report.problems.push(`photo ${file} non créée (${(e as Error).message.slice(0, 120)})`); }
     }
   }

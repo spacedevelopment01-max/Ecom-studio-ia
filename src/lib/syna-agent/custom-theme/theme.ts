@@ -7,7 +7,7 @@ import crypto from "node:crypto";
 import { all } from "../../db";
 import { remember } from "../../projects";
 import type { FamilyId } from "../section-families";
-import { canInvert, inlineBackgrounds, isCardSection, FEATURED_ROLE, libSection, SCRIPT_DEMO_SECTIONS, SHELL_ROLES, sectionPhotos, sectionTraits, type LibSection } from "./library";
+import { canInvert, FAKE_OFFER_SECTIONS, inlineBackgrounds, isCardSection, FEATURED_ROLE, libSection, SCRIPT_DEMO_SECTIONS, SHELL_ROLES, sectionPhotos, sectionTraits, type LibSection } from "./library";
 
 export type CtSection = {
   /** Identifiant de CETTE section dans le thème (une même section de la bibliothèque peut servir sur deux pages). */
@@ -62,16 +62,26 @@ export function loadCustomTheme(projectId: string): CustomTheme | null {
   const t = readArtifact<CustomTheme>(projectId, THEME_KEY);
   return t && t.version === 1 && Array.isArray(t.pages) ? t : null;
 }
-/** Enregistre le thème ; la version d'avant part dans l'historique (annuler une modification). */
-export function saveCustomTheme(projectId: string, theme: CustomTheme): CustomTheme {
+/**
+ * Enregistre le thème ; la version d'avant part dans l'historique (annuler une modification). history:false pour les
+ * étapes intermédiaires d'un montage : un seul point d'annulation par montage (pushCustomThemeHistory au début),
+ * sinon « Annuler » ne défaisait que la dernière photo (audit du 10 novembre 2026).
+ */
+export function saveCustomTheme(projectId: string, theme: CustomTheme, opts: { history?: boolean } = {}): CustomTheme {
   const before = loadCustomTheme(projectId);
-  if (before) {
-    const hist = (readArtifact<CustomTheme[]>(projectId, HISTORY_KEY) ?? []).slice(-(HISTORY_MAX - 1));
-    remember(projectId, { kind: "artifact", key: HISTORY_KEY, value: JSON.stringify([...hist, before]), source: "local", origin: "system" });
-  }
+  if (before && opts.history !== false) pushHistory(projectId, before);
   const next = { ...theme, rev: (before?.rev ?? 0) + 1, at: Date.now() };
   remember(projectId, { kind: "artifact", key: THEME_KEY, value: JSON.stringify(next), source: "local", origin: "system" });
   return next;
+}
+function pushHistory(projectId: string, version: CustomTheme) {
+  const hist = (readArtifact<CustomTheme[]>(projectId, HISTORY_KEY) ?? []).slice(-(HISTORY_MAX - 1));
+  remember(projectId, { kind: "artifact", key: HISTORY_KEY, value: JSON.stringify([...hist, version]), source: "local", origin: "system" });
+}
+/** Point d'annulation : la version actuelle part dans l'historique (début d'un montage). */
+export function pushCustomThemeHistory(projectId: string): void {
+  const cur = loadCustomTheme(projectId);
+  if (cur) pushHistory(projectId, cur);
 }
 /** Revient à la version d'avant (la dernière modification est annulée). */
 export function undoCustomTheme(projectId: string): CustomTheme | null {
@@ -103,7 +113,13 @@ export type ThemeProblem = { level: "bloquant" | "à revoir"; text: string };
  * toutes les pages » ; aucun thème de départ, SINA monte le site de A à Z avec les meilleures sections pour le produit
  * ou le service). Chaque entrée : clés de page acceptées (la première est celle à employer) et ce que la page contient.
  */
-export type SiteKind = { business: "products" | "services"; products: number; platform?: string };
+export type SiteKind = {
+  business: "products" | "services"; products: number; platform?: string;
+  /** Genre de produit (sections « seulement pour ») : mode, thé, ou autre ; inconnu = aucune section réservée. */
+  genre?: "mode" | "the" | null;
+  /** Photos des produits (Fichiers) : seules à pouvoir revenir, sur la carte et la fiche de leur produit. */
+  productPhotos?: string[];
+};
 /** Pages que la plateforme tient elle-même (Shopify : paiement et confirmation de commande), jamais dans le thème. */
 export const platformOwnedPages = (k: SiteKind) => (k.platform ?? "shopify") === "shopify" ? [{ keys: ["commande", "checkout"], label: "Commande" }, { keys: ["merci", "confirmation"], label: "Commande confirmée" }] : [];
 export function requiredPages(k: SiteKind): { keys: string[]; label: string }[] {
@@ -156,6 +172,15 @@ export function checkCustomTheme(t: CustomTheme, site?: SiteKind): ThemeProblem[
     if (x.s.ground && !canInvert(l.id) && sectionTraits()[l.id]?.fond !== x.s.ground) bad(`« ${l.title} » ne peut pas passer en fond ${x.s.ground} (lisibilité non garantie une fois inversée) : garde son fond d'origine ou choisis une autre section`);
     if (SCRIPT_DEMO_SECTIONS.has(l.id)) bad(`« ${l.title} » affiche des contenus fabriqués par le script de démonstration (produits ou questions de la démo), impossibles à réécrire pour la marque : choisis une autre section`);
     if (l.family !== t.family) bad(`« ${l.title} » est de la famille ${l.family} : jamais de mélange de familles dans un thème (famille du thème : ${t.family})`);
+    const fake = FAKE_OFFER_SECTIONS[l.id];
+    if (fake) bad(fake === "compte à rebours"
+      ? `« ${l.title} » affiche un compte à rebours d'exemple (calculé depuis l'heure du visiteur) : jamais de fausse urgence, choisis une autre section`
+      : `« ${l.title} » est une offre d'exemple en section à part : les vraies offres du client sont des fonctions du bloc d'achat « Produit vedette »`);
+    // Shopify : le panier mène au paiement de Shopify ; aucune section de commande ni de confirmation dans le thème.
+    if (site && platformOwnedPages(site).length && l.role === "commande") bad(`« ${l.title} » (${x.place}) : sur Shopify, la commande et sa confirmation sont des pages de Shopify, jamais des sections du thème`);
+    // Sections « seulement pour » un genre de produit : jamais ailleurs (CLAUDE.md).
+    const only = (l.tags ?? []).find((g) => g === "pour-mode" || g === "pour-the");
+    if (site && only && (site.business === "services" || site.genre !== (only === "pour-mode" ? "mode" : "the"))) bad(`« ${l.title} » est réservée ${only === "pour-mode" ? "aux vêtements et accessoires de mode" : "aux thés et infusions"} : jamais sur un autre site`);
   }
   const shell = (s: CtSection | null, role: string, label: string, required: boolean) => {
     if (!s) { if (required) bad(`il manque ${label}`); return; }
@@ -206,13 +231,19 @@ export function checkCustomTheme(t: CustomTheme, site?: SiteKind): ThemeProblem[
     if (where.has(l.id) && where.get(l.id) !== page.label) bad(`« ${l.title} » sur « ${where.get(l.id)} » et « ${page.label} » : une même section sur deux pages répète ses textes et ses photos`);
     else where.set(l.id, page.label);
   }
-  // Photos : jamais deux fois la même d'une page à l'autre (sauf la photo d'un produit, sur sa carte ou sa fiche).
-  const seen = new Map<string, string>();
-  for (const page of t.pages) {
-    const here = new Set(page.sections.flatMap((s) => sectionPhotos(sectionHtml(s))));
-    for (const ph of here) {
-      if (seen.has(ph) && seen.get(ph) !== page.key) warn(`photo ${ph} sur « ${seen.get(ph)} » et « ${page.label} » : à remplacer, sauf si c'est la photo d'un produit sur sa carte et sa fiche`);
-      else seen.set(ph, page.key);
+  // Photos (exigence 6.13) : jamais deux fois la même, ni dans une page (deux sections) ni d'une page à l'autre ; seule
+  // la photo d'un produit revient, sur sa carte et sa fiche. Une vraie photo (Fichiers) en double est bloquante ; une
+  // photo d'exemple en double est à revoir (chaque emplacement reçoit sa propre photo au montage).
+  const products = new Set((site?.productPhotos ?? []).map((id) => `fichier:${id}`));
+  const seen = new Map<string, { page: string; uid: string }>();
+  for (const page of t.pages) for (const sec of page.sections) {
+    for (const ph of sectionPhotos(sectionHtml(sec))) {
+      const before = seen.get(ph);
+      if (!before) { seen.set(ph, { page: page.label, uid: sec.uid }); continue; }
+      if (products.has(ph)) continue;
+      const where = before.page === page.label ? `deux fois sur « ${page.label} »` : `sur « ${before.page} » et « ${page.label} »`;
+      if (ph.startsWith("fichier:")) bad(`la même photo ${where} : jamais une photo en double (sauf la photo d'un produit sur sa carte et sa fiche)`);
+      else warn(`photo d'exemple ${ph} ${where} : chaque emplacement doit recevoir sa propre photo`);
     }
   }
   return out;

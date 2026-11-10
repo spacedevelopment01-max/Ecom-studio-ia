@@ -14,7 +14,7 @@ export const STARTERS: Record<string, Starter> = {
     header: "En-tête pilule", footer: "Pied de page mot géant", search: "Recherche plein écran",
     pages: [
       ["home", "Accueil", ["Ouverture « mot géant »", "Les pièces du moment", "Carnet de looks", "L'édition de saison", "Ouverture à volets", "Grille éditoriale", "Garanties à retourner", "Bande code de bienvenue"]],
-      ["shop", "Boutique", ["Ouverture éditoriale", "Offre en deux tuiles", "Choisis ton terrain", "Compose ta tenue"]],
+      ["shop", "Boutique", ["Ouverture éditoriale", "Bandeaux croisés fluo", "Choisis ton terrain", "Compose ta tenue"]],
       ["product", "Fiche produit", ["Produit vedette · grand nom", "Avis et ajustement", "Matière à la loupe", "Bande fluo des engagements", "Tenue à points", "Questions numérotées", "Vidéos verticales"]],
       ["cart", "Panier", ["Page panier éditoriale"]],
       ["commande", "Commande", ["Commande en une page"]],
@@ -31,10 +31,10 @@ export const STARTERS: Record<string, Starter> = {
   "streetwear-neon": {
     header: "En-tête à annonces et grand menu", footer: "Pied de page streetwear", search: "Recherche plein écran",
     pages: [
-      ["home", "Accueil", ["Ouverture « drop »", "Bandeaux croisés fluo", "Fraîchement sorti", "Manifeste en images", "Bande fluo des engagements", "Capsule numérotée", "Vus dans la rue", "Sois là avant les autres"]],
+      ["home", "Accueil", ["Ouverture « mot géant »", "Bandeaux croisés fluo", "Fraîchement sorti", "Manifeste en images", "Bande fluo des engagements", "Capsule numérotée", "Vus dans la rue", "Sois là avant les autres"]],
       ["shop", "Boutique", ["Ouverture en diaporama", "Rayons en liste géante", "Grille à filtres animés"]],
       ["product", "Fiche produit", ["Produit vedette · galerie défilante", "Garanties à retourner", "Entre deux tailles ?", "Avis et ajustement", "Matière à la loupe", "Questions numérotées", "Vestiaire en double défilement"]],
-      ["cart", "Panier", ["Panier tiroir néon"]],
+      ["cart", "Panier", ["Page panier éditoriale"]],
       ["commande", "Commande", ["Commande en une page"]],
       ["merci", "Commande confirmée", ["Commande confirmée"]],
       ["compte", "Mon compte", ["Connexion au compte"]],
@@ -49,7 +49,7 @@ export const STARTERS: Record<string, Starter> = {
     header: "En-tête classique", footer: "Pied de page géant", search: null,
     pages: [
       ["home", "Accueil", ["Ouverture photo pleine", "Collection en vedette", "Grille bento", "Mur d'avis", "Grand texte défilant", "Comparatif « nous / les autres »"]],
-      ["product", "Fiche produit", ["Produit vedette", "Points forts du produit", "Code promo à copier", "Fiche produit à onglets", "Questions sur le produit"]],
+      ["product", "Fiche produit", ["Produit vedette", "Points forts du produit", "Mode d'emploi en étapes", "Fiche produit à onglets", "Questions sur le produit"]],
       ["cart", "Panier", ["Page panier complète"]],
       ["404", "Page 404", ["Page introuvable (404)"]],
     ],

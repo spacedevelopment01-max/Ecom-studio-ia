@@ -180,6 +180,16 @@ export async function journeyImages(j: { steps: Record<number, { status: string 
   // Découpées en bandes (ordinateur : 1 600 px de haut, téléphone : 1 200 px) : une capture entière serait réduite par le
   // modèle au point de rendre les textes illisibles.
   if (projectId && (j.siteMode?.mode === "mockup" || j.customChosenAt) && j.steps[7]?.status !== "done") {
+    // Photos du thème sur mesure créées ces 20 dernières minutes (custom.photo, montage) : SINA les vérifie elle-même
+    // avant d'en parler (sujet entier, aucun texte, fidèle au produit), en pleine définition, les plus récentes d'abord.
+    const { all } = await import("../db");
+    const recent = all<{ id: string; name: string; meta: string | null }>("SELECT id, name, meta FROM assets WHERE project_id=? AND deleted_at IS NULL AND role='site' AND origin='generated' AND created_at>? AND meta LIKE '%\"direction\":\"custom\"%' ORDER BY created_at DESC LIMIT 3", projectId, Date.now() - 20 * 60_000);
+    for (const a of recent) {
+      const data = await small(a.id, 1024).catch(() => null);
+      let what = "";
+      try { what = String(JSON.parse(a.meta ?? "{}").synaPhoto?.description ?? "").slice(0, 160); } catch { what = ""; }
+      if (data) out.push({ data, label: `Thème sur mesure du client — photo créée il y a quelques minutes (${a.name}${what ? ` : ${what}` : ""}), à vérifier toi-même` });
+    }
     const { customThemeShots } = await import("./custom-theme/shots");
     for (const shot of await customThemeShots(projectId).catch(() => [])) {
       const meta = await sharp(shot.data).metadata().catch(() => null);

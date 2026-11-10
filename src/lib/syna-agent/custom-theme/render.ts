@@ -126,8 +126,9 @@ function linkMap(t: CustomTheme): Record<string, string> {
 
 /** HTML d'une section du thème, marqué de son identifiant (désignation, règles propres). */
 export function sectionMarkup(s: CtSection, brandName: string, role: string): string {
-  const html = withBrandName(sectionHtml(s), brandName);
-  const marked = html.replace(/^\s*<(section|footer)\b/, `<$1 data-ct="${s.uid}" data-ct-role="${role}"`);
+  // Textes du client : jamais touchés (« Au solstice d'été, rupture de stock » restait abîmé, audit du 10 novembre 2026).
+  const html = s.clientTexts ? sectionHtml(s) : withBrandName(sectionHtml(s), brandName);
+  const marked = html.replace(/^\s*<(section|footer)\b/, `<$1 data-ct="${s.uid}" data-ct-role="${role}"${s.clientTexts ? " data-ct-own" : ""}`);
   // Fond voulu différent du fond d'origine (section inversable) : enveloppe sans effet sur la mise en page.
   const inv = inversionClass(s.id, s.ground);
   return inv ? `<div class="ct-inv ${inv}">${marked}</div>` : marked;
@@ -245,9 +246,9 @@ const NAV_JS = `(function(){
   var MAP=window.TB_MAP||{};document.querySelectorAll(".tb-wrap a:not([data-go]), .tb-wrap button[aria-label]:not([data-go])").forEach(function(x){var t=(x.tagName==="BUTTON"?x.getAttribute("aria-label"):x.textContent).replace(/[→↗]/g,"").replace(/\\s+/g," ").trim(),u=t.replace(/\\s*\\d+\\s*pièces?$/,"").trim();var to=MAP[t]||MAP[u];if(to)x.dataset.go=to});
   var lg=window.CT_LOGO;if(lg)document.querySelectorAll('[data-ct-role="header"] [class$="-lg"],[data-ct-role="header"] .lg,[data-ct-role="footer"] [class$="-lg"]').forEach(function(x){x.innerHTML='<img class="ctw-logo" src="'+lg+'" alt="'+(window.CT_NAME||"")+'">'});
   // Textes écrits par les scripts des sections : jamais le nom d'une marque de démonstration (remplacé par celle du client).
-  var NM=window.CT_NAME||"",RX=new RegExp("\\b("+(window.CT_DEMO||[]).join("|")+")\\b","gi");
-  function brand(root){if(!NM||!RX.source||RX.source==="\\b()\\b")return;var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),n;while((n=w.nextNode())){if(RX.test(n.nodeValue)){RX.lastIndex=0;n.nodeValue=n.nodeValue.replace(RX,function(m){return m===m.toUpperCase()?NM.toUpperCase():m===m.toLowerCase()?NM.toLowerCase():NM})}RX.lastIndex=0}}
-  if(wrap){brand(wrap);new MutationObserver(function(ms){ms.forEach(function(m){m.addedNodes.forEach(function(x){if(x.nodeType===1||x.nodeType===3)brand(x.nodeType===1?x:x.parentNode||wrap)})})}).observe(wrap,{childList:true,subtree:true})}
+  var NM=window.CT_NAME||"",RX=new RegExp("\\\\b("+(window.CT_DEMO||[]).join("|")+")\\\\b","g");
+  function brand(root,all){if(!NM||!RX.source||RX.source==="\\\\b()\\\\b")return;var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),n;while((n=w.nextNode())){if(!all&&n.parentNode&&n.parentNode.closest&&n.parentNode.closest("[data-ct-own]"))continue;if(RX.test(n.nodeValue)){RX.lastIndex=0;n.nodeValue=n.nodeValue.replace(RX,function(m){return m===m.toUpperCase()?NM.toUpperCase():m===m.toLowerCase()?NM.toLowerCase():NM})}RX.lastIndex=0}}
+  if(wrap){brand(wrap);new MutationObserver(function(ms){ms.forEach(function(m){m.addedNodes.forEach(function(x){if(x.nodeType===1||x.nodeType===3)brand(x.nodeType===1?x:x.parentNode||wrap,true)})})}).observe(wrap,{childList:true,subtree:true})}
   var first=(location.hash||"").replace("#","");go(first&&document.querySelector('.tb-pg[data-pg="'+first.split(":")[0]+'"]')?first:pages[0]&&pages[0].dataset.pg);
 })();`;
 
@@ -272,7 +273,7 @@ const PICK_JS = `(function(){
     document.querySelectorAll(".ctw-picked").forEach(function(x){x.classList.remove("ctw-picked")});t.classList.add("ctw-picked");clear();
     var sec=t.closest("[data-ct]"),pg=t.closest(".tb-pg"),whole=t===sec,tag=t.tagName.toLowerCase();
     var src=/^(img|video)$/.test(tag)?(t.getAttribute("src")||""):"";
-    parent.postMessage({source:"ct-preview",type:"picked",uid:sec.getAttribute("data-ct"),role:sec.getAttribute("data-ct-role"),page:pg?pg.dataset.pg:null,kind:kind(t),tag:whole?null:tag,path:whole?null:pathOf(t,sec),text:whole?null:(t.textContent||t.alt||"").replace(/\s+/g," ").trim().slice(0,300),src:src.slice(0,300)},"*")},true);
+    parent.postMessage({source:"ct-preview",type:"picked",uid:sec.getAttribute("data-ct"),role:sec.getAttribute("data-ct-role"),page:pg?pg.dataset.pg:null,kind:kind(t),tag:whole?null:tag,path:whole?null:pathOf(t,sec),text:whole?null:(t.textContent||t.alt||"").replace(/\\s+/g," ").trim().slice(0,300),src:src.slice(0,300)},"*")},true);
   addEventListener("message",function(e){var d=e.data||{};if(d.source!=="ct-studio")return;if(d.type==="pick"){window.ctPicking=!!d.on;if(!d.on)clear()}if(d.type==="unpick")document.querySelectorAll(".ctw-picked").forEach(function(x){x.classList.remove("ctw-picked")});if(d.type==="go"&&window.ctGo)window.ctGo(d.page);if(d.type==="view"){var b=document.querySelector('[data-vw="'+d.view+'"]');if(b)b.click()}});
   try{parent.postMessage({source:"ct-preview",type:"ready"},"*")}catch(e){}
 })();`;
@@ -307,7 +308,7 @@ export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand">, t: 
   const own = allSections(t).filter((x) => x.s.css).map((x) => x.s.css!).join("\n");
   const sampleTexts = allSections(t).some((x) => !x.s.clientTexts);
   const flags = buyFlags(featuresOf(p.id));
-  const pre = `window.TB_MAP=${JSON.stringify(linkMap(t))};window.CT_NAME=${JSON.stringify(name)};window.CT_DEMO=${JSON.stringify(DEMO_BRANDS.map((d) => d.replace(/\s+/g, "\\s+")))};window.CT_LOGO=${JSON.stringify(p.brand?.logo?.assetId ? assetUrl({ id: p.brand.logo.assetId }) : null)};(function(D){var F=${JSON.stringify(flags)};for(var k in F)D[k]=F[k]})(document.documentElement.dataset);`;
+  const pre = `window.TB_MAP=${JSON.stringify(linkMap(t))};window.CT_NAME=${JSON.stringify(name)};window.CT_DEMO=${JSON.stringify(DEMO_BRANDS.flatMap((d) => [d, d.toUpperCase()]).map((d) => d.replace(/\s+/g, "\\s+")))};window.CT_LOGO=${JSON.stringify(p.brand?.logo?.assetId ? assetUrl({ id: p.brand.logo.assetId }) : null)};(function(D){var F=${JSON.stringify(flags)};for(var k in F)D[k]=F[k]})(document.documentElement.dataset);`;
   const bar = t.pages.map((pg, i) => `<button type="button" data-pgb="${esc(pg.key)}" aria-pressed="${i === 0}">${esc(pg.label)}</button>`).join("");
   const address = projectAddress(p.id);
   const body = t.pages.map((pg, i) => `<main class="tb-pg" data-pg="${esc(pg.key)}"${i ? " hidden" : ""}>${pg.sections.map((s) => realMap(sectionMarkup(s, name, "page"), address)).join("\n")}</main>`).join("\n");

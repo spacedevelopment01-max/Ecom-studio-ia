@@ -38,7 +38,8 @@ import { llmJson } from "../../ai/llm";
 import { withTrace } from "../../ai/trace";
 import { jobSpentMicro } from "../budget";
 import { loadShopOffers } from "../product-features";
-import { enqueue } from "../../jobs";
+import { enqueue, pendingJob } from "../../jobs";
+import { stateOf } from "../../preparation/store";
 import { journeyOf, setStep as setJourneyStep, updateJourney as updateJourneyConv } from "../journey";
 import { clientImages, CUSTOM_BRAND_JOB, examplePhotoCount, photoSlots, photosToCreate, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, siteArtDirection, sitePhotoName, textPlacementLine, type ImagesMode } from "./brand";
 
@@ -65,9 +66,20 @@ const ref = (r: string) => {
 /** Genre de site du projet : produits ou services, et nombre de produits (une page Boutique dès qu'il y en a plusieurs). */
 export function siteKind(ctx: ToolContext): SiteKind {
   const p = project(ctx);
-  let n = 1;
-  try { n = listProducts(p.id).length || 1; } catch { /* catalogue absent */ }
-  return { business: p.business === "services" ? "services" : "products", products: n, platform: p.platform || "shopify" };
+  let list: ReturnType<typeof listProducts> = [];
+  try { list = listProducts(p.id); } catch { /* catalogue absent */ }
+  // Ce que vend le client : sa description de départ (ses mots), son produit, ses fiches produits.
+  let said = "";
+  try { said = String(journeyOf(ctx.conversationId).start.offer?.value ?? ""); } catch { said = ""; }
+  try { said += " " + String((stateOf(p.id)?.stages as { brief?: { data?: { description?: string } } } | undefined)?.brief?.data?.description ?? ""); } catch { /* fiche absente */ }
+  const text = [said, p.product?.name, p.product?.category, p.product?.summary, ...list.map((x) => x.data.title)].filter(Boolean).join(" ").toLowerCase();
+  const word = (list: string) => new RegExp(`(?<!\\p{L})(?:${list})(?!\\p{L})`, "u");
+  const genre = word("vêtements?|mode|prêt-à-porter|maroquinerie|sacs?|bijoux|ceintures?|casquettes?|bonnets?|robes?|t-shirts?|tee-shirts?|sweats?|hoodies?|pantalons?|jeans?|vestes?|chemises?|jupes?|chaussures?|baskets?|sneakers?|streetwear|lingerie|maillots?").test(text) ? "mode"
+    : word("thés?|infusions?|tisanes?|rooibos|matcha|earl grey").test(text) ? "the" : null;
+  return {
+    business: p.business === "services" ? "services" : "products", products: list.length || 1, platform: p.platform || "shopify", genre,
+    productPhotos: list.flatMap((x) => (x.data.images ?? []).map((im) => im.assetId).filter((id): id is string => !!id)),
+  };
 }
 const familyOrError = (projectId: string) => {
   const f = loadFamilyChoice(projectId);
@@ -255,9 +267,13 @@ type BuildArgs = { photos?: boolean; images?: ImagesMode; clientAssets?: string[
 /** Thème à monter à la marque : celui que SINA a composé de A à Z (custom.compose), toutes ses pages comprises. */
 function buildPlan(ctx: ToolContext): CustomTheme {
   const p = project(ctx);
-  familyOrError(p.id);
+  const fam = familyOrError(p.id).family;
   const cur = loadCustomTheme(p.id);
-  if (!cur) throw new Error(L("Aucun thème sur mesure monté : compose d'abord toutes les pages avec les meilleures sections pour ce produit ou ce service (custom.sections puis custom.compose).", "No custom theme composed yet."));
+  if (!cur) throw new Error(L("Aucun thème sur mesure monté : conçois d'abord toutes les pages avec les meilleures sections pour ce produit ou ce service.", "No custom theme composed yet."));
+  // Famille changée après le montage (audit du 10 novembre 2026) : jamais un thème d'une famille avec les images de l'autre.
+  if (cur.family !== fam) throw new Error(L(`Le client a choisi la famille ${fam === "moderne" ? "Moderne" : "Classique"}, mais le thème monté est de la famille ${cur.family === "moderne" ? "Moderne" : "Classique"} : il faut d'abord concevoir un nouveau thème dans sa famille.`, "Family changed: design a new theme first."));
+  // Un seul montage payant à la fois (deux tâches écrivaient les mêmes sections et payaient deux fois).
+  if (pendingJob(p.id, CUSTOM_BRAND_JOB)) throw new Error(L("Un montage de ton thème est déjà en cours : attends-le.", "A build is already running."));
   // Toutes les règles AVANT le devis (essai réel du 9 novembre : un devis affiché pour un thème que le lancement refusait).
   const blocking = checkCustomTheme(cur, siteKind(ctx)).filter((x) => x.level === "bloquant");
   if (blocking.length) throw new Error(L(`Thème à corriger avant le devis : ${blocking.map((x) => x.text).join(" ; ")} (custom.structure).`, "Theme to fix before the quote."));
@@ -469,6 +485,7 @@ const photoTool: AgentTool<PhotoArgs> = {
     if (!sectionHtml(x.s).includes(file)) return { ok: false, summary: L(`Photo « ${a.find} » absente de la section : rien n'est créé ni payé.`, "Photo not in section."), internal: true };
     const refs = a.product ? imageReferences(p) : { product: null, logo: null, problem: null };
     const fam = loadFamilyChoice(p.id), people = peopleAllowed(p.id), fu = siteArtUniverse(fam, { people });
+    if (fam && fam.family !== t.family) return { ok: false, summary: L("Le thème monté n'est pas de la famille choisie par le client : rien n'est créé ni payé. Il faut d'abord concevoir un thème dans sa famille.", "Theme family differs from the client's choice.") };
     const direction = siteArtDirection(p, fu, (() => { try { return journeyOf(ctx.conversationId); } catch { return null; } })());
     const place = textPlacementLine(sectionHtml(x.s), a.find, libSection(x.s.id)?.does ?? "");
     const prompt = codePhotoPrompt({ id: `ct-${a.uid}`, description: [a.description, place].filter(Boolean).join("\n"), ratio: a.ratio, background: a.background ?? null, product: !!a.product }, { name: p.brand?.name ?? p.name, logo: false, product: !!(a.product && refs.product), direction, people: !!fu && people });
@@ -486,7 +503,7 @@ const photoTool: AgentTool<PhotoArgs> = {
     return {
       ...res,
       summary: L(`Photo créée et posée dans la section (${res.ok ? "enregistré" : "NON posée : " + res.summary}). Coût réel : ${spentText}.`, "Photo created."),
-      hint: "La photo t'est JOINTE : vérifie-la toi-même (sujet entier, rien de coupé, aucun texte ni logo, fidèle au produit) et dis honnêtement au client si elle est réussie ou ratée.",
+      hint: "La photo t'est jointe à ta prochaine réponse : vérifie-la toi-même (sujet entier, rien de coupé, aucun texte ni logo, fidèle au produit) et dis honnêtement au client si elle est réussie ou ratée.",
       data: { ...(res.data as object), assetId: asset.id, href: assetUrl({ id: asset.id }) },
     };
   },

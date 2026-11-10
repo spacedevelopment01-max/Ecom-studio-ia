@@ -42,7 +42,7 @@ describe("thème sur mesure : bibliothèque", () => {
     expect(lib.sections.length).toBeGreaterThanOrEqual(180);
     expect(new Set(lib.sections.map((s) => s.id)).size).toBe(lib.sections.length);
     const moderne = familySections("moderne");
-    expect(moderne).toHaveLength(55);
+    expect(moderne).toHaveLength(51); // sans les fausses urgences ni les offres d'exemple (audit du 10 novembre 2026)
     // Chaque section nommée dans les familles du Studio existe dans la bibliothèque.
     for (const f of SECTION_FAMILIES.filter((x) => x.id === "moderne")) for (const titles of Object.values(f.roles)) for (const t of titles) expect(sectionByRef(t), t).toBeTruthy();
     // Les démonstrations en fausse fenêtre ne sont jamais proposées.
@@ -68,6 +68,31 @@ describe("thème sur mesure : montage et règles du propriétaire", () => {
       expect(t.pages[0].key).toBe("home");
     }
     expect(Object.keys(STARTERS)).toEqual(["sport-chic", "streetwear-neon", "classique"]);
+  });
+
+  it("audit du 10 novembre 2026 : commande sur Shopify, fausse urgence, offre d'exemple, sections réservées, vraie photo en double", () => {
+    const shop = { business: "products" as const, products: 3, platform: "shopify", genre: null };
+    const t = starterTheme("classique", "classique");
+    const k = (x: CustomTheme, site?: any) => checkCustomTheme(x, site).filter((p) => p.level === "bloquant").map((p) => p.text).join(" ; ");
+    // Section de commande sur une page qui n'a pas la clé interdite : refusée sur Shopify, permise ailleurs.
+    const order = applyStructure(t, [{ op: "add", page: "cart", section: sectionByRef("Commande pas à pas")!.id }]);
+    expect(k(order, shop)).toMatch(/« Commande pas à pas » \(cart\) : sur Shopify/);
+    expect(k(order, { ...shop, platform: "woocommerce" })).not.toMatch(/Commande pas à pas/);
+    // Faux compte à rebours et offre d'exemple : toujours refusés, et jamais proposés.
+    for (const [title, why] of [["Compte à rebours en bloc", /compte à rebours d'exemple/], ["Code promo à copier", /offre d'exemple/], ["Cadeau offert dès un montant", /offre d'exemple/]] as const) {
+      expect(k(applyStructure(t, [{ op: "add", page: "home", section: sectionByRef(title)!.id }])), title).toMatch(why);
+      expect(familySections("classique").some((x) => x.title === title), title).toBe(false);
+    }
+    // « Seulement pour » : un guide d'infusion sur un site de confitures est refusé, permis pour du thé.
+    const tea = applyStructure(t, [{ op: "add", page: "product", section: sectionByRef("Guide d'infusion en tiroir")!.id }]);
+    expect(k(tea, shop)).toMatch(/réservée aux thés et infusions/);
+    expect(k(tea, { ...shop, genre: "the" })).not.toMatch(/réservée/);
+    // Une vraie photo (Fichiers) deux fois : refusée, même dans une seule page ; la photo d'un produit peut revenir.
+    const twice = JSON.parse(JSON.stringify(t)) as CustomTheme;
+    twice.pages[0].sections[1].html = '<section><img src="/api/files/abc123def"></section>';
+    twice.pages[0].sections[2].html = '<section><img src="/api/files/abc123def"></section>';
+    expect(k(twice, shop)).toMatch(/la même photo deux fois sur « Accueil »/);
+    expect(k(twice, { ...shop, productPhotos: ["abc123def"] })).not.toMatch(/même photo/);
   });
 
   it("refuse le mélange de familles, deux « Produit vedette », deux sections de cartes, la même section à la suite", () => {
@@ -136,6 +161,24 @@ describe("thème sur mesure : rendu", () => {
     expect(html).not.toContain("ct-preview\",type:\"picked\"");
     const studio = renderCustomTheme(proj, t, { studio: true, nonce: "abc" });
     expect(studio).toContain('type:"picked"');
+    // Scripts réellement produits (audit du 10 novembre 2026) : le texte désigné garde ses « s », et les noms des
+    // marques de démonstration écrits par les scripts des sections sont bien trouvés et remplacés.
+    expect(studio).toContain('.replace(/\\s+/g," ").trim().slice(0,300)');
+    expect(studio).not.toMatch(/replace\(\/s\+\/g/);
+    const rxSrc = /RX=(new RegExp\("[^;]*?"g"\));/.exec(studio)![1];
+    const demo = JSON.parse(/window\.CT_DEMO=(\[[^\]]*\]);/.exec(studio)![1]);
+    const RX = new Function("window", `return ${rxSrc}`)({ CT_DEMO: demo }) as RegExp;
+    expect("Le drop RUPTURE arrive".replace(RX, "ARDENT")).toBe("Le drop ARDENT arrive");
+    expect(RX.test("ruptures")).toBe(false); // un mot entier seulement
+    expect("Au solstice d'été, rupture de stock".replace(RX, "ARDENT")).toBe("Au solstice d'été, rupture de stock"); // mots courants intacts
+    // Section dont les textes sont ceux du client : jamais réécrite au rendu.
+    const own = JSON.parse(JSON.stringify(t)) as typeof t;
+    const sec = own.pages[0].sections[1];
+    sec.html = '<section class="x"><p>Au Solstice d\'été, la Rupture de stock guette.</p></section>';
+    sec.clientTexts = true;
+    const ownHtml = renderCustomTheme(proj, own, { nonce: "abc" });
+    expect(ownHtml).toContain("Au Solstice d'été, la Rupture de stock guette.");
+    expect(ownHtml).toMatch(new RegExp(`data-ct="${sec.uid}" data-ct-role="[a-z]+" data-ct-own`));
     expect(studio).toContain("textes et photos d'exemple");
     // Pages complètes et liens reliés (demande du propriétaire du 9 novembre 2026) ; compteur du panier commun.
     expect(t.pages.map((p) => p.key)).toEqual(expect.arrayContaining(["commande", "merci", "compte", "aide", "contact", "legal"]));
@@ -315,7 +358,7 @@ describe("thème sur mesure : outils de SINA", async () => {
     await call("theme.family", ctx, { family: "moderne", style: "sport-chic" });
     const lib = await call("custom.sections", ctx, { role: "produit vedette" });
     expect(Object.keys(lib.data.roles)).toEqual(["produit vedette"]);
-    expect(lib.data.roles["produit vedette"]).toHaveLength(3);
+    expect(lib.data.roles["produit vedette"]).toHaveLength(2); // « drop limité » (faux compte à rebours) écarté
     // Aucun thème de départ : une page obligatoire absente est refusée, rien n'est enregistré.
     const site = fullSite("moderne");
     const partial = await call("custom.compose", ctx, { ...site, pages: site.pages.filter((p) => p.key !== "legal") });
@@ -432,7 +475,7 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
     const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
     expect((await call("custom.build", ctx, {})).summary).toMatch(/style|famille/i); // la famille d'abord
     await call("theme.family", ctx, { family: "classique" });
-    expect((await call("custom.build", ctx, {})).summary).toMatch(/compose d'abord toutes les pages/); // puis tout le site, monté de A à Z
+    expect((await call("custom.build", ctx, {})).summary).toMatch(/conçois d'abord toutes les pages/); // puis tout le site, monté de A à Z
     const composed = await call("custom.compose", ctx, fullSite("classique"));
     expect(composed.ok, composed.summary).toBe(true);
     // Un thème qui enfreint une règle (page de paiement Shopify ajoutée) n'a jamais de devis : SINA le corrige d'abord.
@@ -484,7 +527,12 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       };
       B.customBrandDeps.photo = async () => { photos++; return sharp({ create: { width: 40, height: 50, channels: 3, background: "#a86" } }).png().toBuffer(); };
       const fake: any = { job: { id: job.id }, payload: JSON.parse(job.payload), checkpoint: {}, progress: () => undefined, step: async (_k: string, fn: () => Promise<unknown>) => fn() };
+      // Pendant qu'un montage attend ou tourne, une seconde demande est refusée (jamais deux montages payés).
+      expect((await call("custom.build", ctx, {})).summary).toMatch(/montage de ton thème est déjà en cours/);
+      const beforeBuild = allSections(loadCustomTheme(pid)!).map((x) => sectionHtml(x.s));
       const out: any = await fr(() => B.runCustomBrandJob(fake));
+      (await import("@/lib/db")).run("UPDATE jobs SET status='done' WHERE id=?", job.id); // tâche finie (exécutée ici à la main)
+      // Une seconde demande pendant qu'un montage tourne est refusée (jamais deux montages payés) : vérifié plus bas.
       const t = loadCustomTheme(pid)!;
       expect(writes).toBe(allSections(t).length);
       expect(plans).toBe(1);
@@ -529,6 +577,20 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       // la carte n'est jamais une photo : la vraie carte s'ouvre à l'adresse du client (realMap)
       for (const x of allSections(t)) expect(sectionHtml(x.s).replace(/photos\/(carte|map|plan)-[\w-]*\.(webp|jpg|png)/g, ""), x.place).not.toMatch(/photos\/[a-z]+-?[a-z0-9]*\.(webp|jpg|png)/);
       expect(allSections(t).filter((x) => x.s.clientTexts).length).toBeGreaterThan(0);
+      // Annuler : un seul point par montage (ici deux montages : la réécriture, puis le premier), jamais photo par photo.
+      expect((await call("custom.undo", ctx, {})).ok).toBe(true);
+      expect((await call("custom.undo", ctx, {})).ok).toBe(true);
+      expect(allSections(loadCustomTheme(pid)!).map((x) => sectionHtml(x.s))).toEqual(beforeBuild);
+      // Reprise d'une tâche interrompue : une section déjà enregistrée n'est pas réappliquée (aucun « non remplacé »).
+      const done = new Map<string, unknown>();
+      const resumable = { ...fake, job: { id: `${job.id}-resume` }, payload: { ...fake.payload, photos: false, rewrite: true }, step: async (k: string, fn: () => Promise<unknown>) => done.has(k) ? done.get(k) : (done.set(k, await fn()), done.get(k)) };
+      await fr(() => B.runCustomBrandJob(resumable));
+      const resumed: any = await fr(() => B.runCustomBrandJob(resumable));
+      expect(resumed.failedEdits).toBe(0);
+      expect(resumed.problems.filter((x: string) => /non remplacé/.test(x))).toEqual([]);
+      // Famille changée après le montage : plus de montage ni de photo tant qu'un thème n'est pas conçu dans sa famille.
+      await call("theme.family", ctx, { family: "moderne", style: "sport-chic" });
+      expect((await call("custom.build", ctx, {})).summary).toMatch(/il faut d'abord concevoir un nouveau thème dans sa famille/);
     } finally { delete T.customPhotoDeps.unit; delete B.customBrandDeps.plan; delete B.customBrandDeps.write; delete B.customBrandDeps.photo; }
   });
 
@@ -587,7 +649,7 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
 
   it("un remplacement qui ne s'applique pas est compté, jamais deviné ; aucun script n'entre", () => {
     const w = { edits: [{ find: "<h2>Bonjour</h2>", replace: "<h2>Salut</h2>" }, { find: "absent", replace: "x" }, { find: "<p>a</p>", replace: "<script>x</script>" }], photos: [] };
-    expect(B.applyWrite("<h2>Bonjour</h2><p>a</p>", { ...w, links: [] })).toEqual({ html: "<h2>Salut</h2><p>a</p>", failed: 2 });
+    expect(B.applyWrite("<h2>Bonjour</h2><p>a</p>", { ...w, links: [] })).toEqual({ html: "<h2>Salut</h2><p>a</p>", failed: 2, applied: 1 });
   });
 });
 
