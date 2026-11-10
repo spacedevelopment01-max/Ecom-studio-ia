@@ -827,6 +827,31 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
     } finally { delete T.customPhotoDeps.unit; delete B.customBrandDeps.photo; }
   });
 
+  it("coordonnées changées après le montage : l'ancien e-mail écrit dans le site est remplacé partout (essai Éclat de thé)", async () => {
+    const user = await account();
+    const cid = threadFor(user, null), ctx: any = { user, conversationId: cid, runId: `run-${Date.now()}`, projectId: null, attachment: () => null };
+    await call("start.answer", ctx, { answers: [{ field: "business", value: "products" }, { field: "offer", value: "Des thés en sachet." }] });
+    await call("start.answer", ctx, { answers: [
+      { field: "existing", value: "Rien." }, { field: "audience", value: "Adultes." }, { field: "image", value: "Doux." }, { field: "setup", value: "1 thé" }, { field: "market", value: "France." },
+      { field: "price", value: "8 €" }, { field: "difference", value: "Bio." }, { field: "taste", status: "none" }, { field: "photos", value: "Oui." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
+    ] });
+    await call("start.confirm", ctx, {});
+    const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
+    await call("theme.family", ctx, { family: "classique" });
+    expect((await call("custom.compose", ctx, fullSite("classique"))).ok).toBe(true);
+    const { saveCompany } = await import("@/lib/syna-agent/activity");
+    const S = await import("@/lib/syna-agent/custom-theme/theme");
+    saveCompany(pid, { email: "contact@ancien-nom.fr" });
+    const t = loadCustomTheme(pid)!;
+    const foot = allSections(t).find((x) => x.place === "pied de page") ?? allSections(t)[0];
+    foot.s.html = `${sectionHtml(foot.s)}<p>Écris à contact@ancien-nom.fr</p>`;
+    S.saveCustomTheme(pid, t, { history: false });
+    saveCompany(pid, { email: "bonjour@eclat-de-the.example" });
+    const html = allSections(loadCustomTheme(pid)!).map((x) => sectionHtml(x.s)).join("");
+    expect(html).not.toContain("contact@ancien-nom.fr");
+    expect(html).toContain("Écris à bonjour@eclat-de-the.example");
+  });
+
   it("un remplacement qui ne s'applique pas est compté, jamais deviné ; aucun script n'entre", () => {
     const w = { edits: [{ find: "<h2>Bonjour</h2>", replace: "<h2>Salut</h2>" }, { find: "absent", replace: "x" }, { find: "<p>a</p>", replace: "<script>x</script>" }], photos: [] };
     expect(B.applyWrite("<h2>Bonjour</h2><p>a</p>", { ...w, links: [] })).toEqual({ html: "<h2>Salut</h2><p>a</p>", failed: 2, applied: 1 });

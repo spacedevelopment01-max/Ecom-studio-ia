@@ -67,6 +67,26 @@ export function loadCustomTheme(projectId: string): CustomTheme | null {
  * étapes intermédiaires d'un montage : un seul point d'annulation par montage (pushCustomThemeHistory au début),
  * sinon « Annuler » ne défaisait que la dernière photo (audit du 10 novembre 2026).
  */
+/**
+ * Coordonnées changées après le montage (essai Éclat de thé du 10 novembre 2026 : l'ancienne adresse e-mail restait dans
+ * le pied de page, l'aide et les mentions) : chaque ancienne valeur écrite dans le thème est remplacée par la nouvelle.
+ */
+export function replaceInCustomTheme(projectId: string, pairs: [string, string][]): number {
+  const t = loadCustomTheme(projectId);
+  const esc = (v: string) => v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const todo = pairs.filter(([a, b]) => a.trim().length >= 5 && a !== b);
+  if (!t || !todo.length) return 0;
+  let n = 0;
+  for (const x of allSections(t)) {
+    if (!x.s.html) continue;
+    let h = x.s.html;
+    for (const [a, b] of todo) for (const v of new Set([a, esc(a)])) if (h.includes(v)) { n += h.split(v).length - 1; h = h.split(v).join(esc(b)); }
+    x.s.html = h;
+  }
+  if (n) saveCustomTheme(projectId, t, { history: false });
+  return n;
+}
+
 export function saveCustomTheme(projectId: string, theme: CustomTheme, opts: { history?: boolean } = {}): CustomTheme {
   const before = loadCustomTheme(projectId);
   if (before && opts.history !== false) pushHistory(projectId, before);

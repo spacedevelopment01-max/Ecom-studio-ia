@@ -12,6 +12,7 @@ import { loadProject } from "../projects";
 import { listProducts } from "../products/catalog";
 import { stateOf } from "../preparation/store";
 import type { Journey } from "./journey";
+import { replaceInCustomTheme } from "./custom-theme/theme";
 
 /** Fiche de l'entreprise (coordonnées du site et de ses pages légales), avec les mots du client. */
 export type Company = { legalName?: string; email?: string; phone?: string; address?: string; siret?: string; shipping?: string; returns?: string };
@@ -34,8 +35,12 @@ export function companyOf(projectId: string): Company {
 export function saveCompany(projectId: string, fields: Company): Company {
   const p = loadProject(projectId);
   const clean = Object.fromEntries(Object.entries(fields).filter(([, v]) => typeof v === "string" && v.trim()).map(([k, v]) => [k, (v as string).trim().slice(0, 600)]));
-  const company = { ...companyOf(projectId), ...clean };
+  const before = companyOf(projectId);
+  const company = { ...before, ...clean };
   run("UPDATE projects SET settings_json=?, updated_at=? WHERE id=?", JSON.stringify({ ...json<Record<string, unknown>>(p.row.settings_json, {}), company }), Date.now(), projectId);
+  // Site déjà écrit : l'ancien e-mail, téléphone ou adresse y est remplacé par le nouveau (jamais deux coordonnées).
+  const changed = (["email", "phone", "address"] as const).filter((k) => before[k] && company[k] && before[k] !== company[k]).map((k) => [before[k]!, company[k]!] as [string, string]);
+  if (changed.length) { try { replaceInCustomTheme(projectId, changed); } catch { /* pas de thème sur mesure */ } }
   return company;
 }
 
