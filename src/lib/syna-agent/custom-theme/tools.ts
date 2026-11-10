@@ -31,7 +31,7 @@ import { hdAspect } from "../mockup-code/prompts";
 import { imageReferences, mockupImageRoute } from "../mockup-code/tools";
 import { cutoutPhoto, FOND_A_DETOURER } from "./cutout-photo";
 import { authenticSection, isCutoutPhoto, familySections, libSection, onlyFor, sectionByRef, isCardSection } from "./library";
-import { allSections, applyStructure, checkCustomTheme, findSection, loadConcepts, loadCustomTheme, replaceOnce, requiredPages, saveConcepts, saveCustomTheme, scopedCss, sectionHtml, undoCustomTheme, type CustomTheme, type SiteKind, type StructureOp } from "./theme";
+import { allSections, applyStructure, BUY_OPTIONS, checkCustomTheme, findSection, loadConcepts, loadCustomTheme, replaceOnce, requiredPages, saveConcepts, saveCustomTheme, scopedCss, sectionHtml, undoCustomTheme, type CustomTheme, type SiteKind, type StructureOp } from "./theme";
 import { listProducts } from "../../products/catalog";
 import { activityPlan, companyOf } from "../activity";
 import { brandBrief, siteCopyModel } from "./brand";
@@ -491,7 +491,7 @@ const readTool: AgentTool<{ uid: string }> = {
 
 const structureTool: AgentTool<{ ops: StructureOp[] }> = {
   name: "custom.structure", module: "site", kind: "write", needsProject: true,
-  description: "Étape 6 (gratuit) : change la COMPOSITION du thème sur mesure. ops, dans l'ordre : { op:\"add\", page, section, at? } ajoute une section (id ou titre de custom.sections) ; { op:\"remove\", uid } ; { op:\"move\", uid, page?, at } ; { op:\"replace\", uid, section } (autre section au même rôle, ou en-tête/pied de page) ; { op:\"shell\", slot:\"header\"|\"footer\"|\"search\", section|null } ; { op:\"page\", key, label, at? } ; { op:\"drop_page\", key } ; { op:\"rename_page\", key, label }. Retirer une section ou une page visible se PROPOSE au client d'abord (jamais à sa place). Règles du propriétaire contrôlées.",
+  description: "Étape 6 (gratuit) : change la COMPOSITION du thème sur mesure. ops, dans l'ordre : { op:\"add\", page, section, at? } ajoute une section (id ou titre de custom.sections) ; { op:\"remove\", uid } ; { op:\"move\", uid, page?, at } ; { op:\"replace\", uid, section } (autre section au même rôle, ou en-tête/pied de page) ; { op:\"shell\", slot:\"header\"|\"footer\"|\"search\", section|null } ; { op:\"page\", key, label, at? } ; { op:\"drop_page\", key } ; { op:\"rename_page\", key, label } ; { op:\"settings\", buy?, header?, cart? } : réglages COCHÉS PAR LE CLIENT (jamais à sa place) : buy = options du bloc « Produit vedette » (quantite, abonnement, gamme, ajouts, barre (barre d'achat fixe), livraison, livraisonOfferte, fidelite, cadeaux, promotion, couleur, format ; une option cochée ne s'affiche que si le produit l'a vraiment), header = boutons Rechercher / Mon compte / Panier de l'en-tête, cart = \"drawer\" (panier sur le côté) ou \"page\". Retirer une section ou une page visible se PROPOSE au client d'abord (jamais à sa place). Règles du propriétaire contrôlées.",
   args: z.object({ ops: z.array(z.union([
     z.object({ op: z.literal("add"), page: z.string().max(40), section: z.string().max(80), at: z.number().int().min(0).max(30).optional() }).strict(),
     z.object({ op: z.literal("remove"), uid: z.string().max(12) }).strict(),
@@ -501,6 +501,10 @@ const structureTool: AgentTool<{ ops: StructureOp[] }> = {
     z.object({ op: z.literal("page"), key: z.string().regex(/^[a-z0-9-]{1,40}$/), label: z.string().min(1).max(40), at: z.number().int().min(0).max(12).optional() }).strict(),
     z.object({ op: z.literal("drop_page"), key: z.string().max(40) }).strict(),
     z.object({ op: z.literal("rename_page"), key: z.string().max(40), label: z.string().min(1).max(40) }).strict(),
+    z.object({ op: z.literal("settings"),
+      buy: z.object(Object.fromEntries(Object.keys(BUY_OPTIONS).map((k) => [k, z.boolean().optional()])) as Record<keyof typeof BUY_OPTIONS, z.ZodOptional<z.ZodBoolean>>).strict().optional(),
+      header: z.object({ search: z.boolean().optional(), account: z.boolean().optional(), cart: z.boolean().optional() }).strict().optional(),
+      cart: z.enum(["page", "drawer"]).optional() }).strict(),
   ])).min(1).max(20) }).strict(),
   run: (ctx, a) => {
     const p = project(ctx), t = loadCustomTheme(p.id);

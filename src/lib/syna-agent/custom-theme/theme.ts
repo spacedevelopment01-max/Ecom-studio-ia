@@ -29,6 +29,23 @@ export type CtSection = {
    *  créer les photos plus tard, quand le montage se fait en deux fois (textes d'abord, photos ensuite). */
   photoBriefs?: { find: string; description: string; ratio: string; product: string | null }[];
 };
+/**
+ * Réglages du site cochés par le client (revue du propriétaire du 10 novembre 2026, points 30, 37 et 38) : les options du
+ * bloc d'achat « Produit vedette », les boutons de l'en-tête, le panier sur le côté ou en page. Une option cochée ne
+ * s'affiche que si le produit l'a vraiment (vraies données du client) ; décochée, elle ne s'affiche jamais.
+ */
+export const BUY_OPTIONS = {
+  quantite: "Offre par quantité", abonnement: "Abonnement", gamme: "Choix dans la gamme", ajouts: "Produits à ajouter",
+  barre: "Barre d'achat fixe", livraison: "Livraison estimée", livraisonOfferte: "Livraison offerte", fidelite: "Points de fidélité",
+  cadeaux: "Cadeaux", promotion: "Promotion", couleur: "Couleurs", format: "Formats",
+} as const;
+export type BuyOption = keyof typeof BUY_OPTIONS;
+export type SiteSettings = {
+  buy?: Partial<Record<BuyOption, boolean>>;
+  header?: { search?: boolean; account?: boolean; cart?: boolean };
+  /** « drawer » : le panier s'ouvre sur le côté ; « page » (par défaut) : la page panier. */
+  cart?: "page" | "drawer";
+};
 export type CtPage = { key: string; label: string; sections: CtSection[]; /** Le parcours du visiteur sur la page (conception). */ journey?: string; /** Référencement : titre et description de la page pour Google. */ seo?: { title: string; description: string } };
 export type CustomTheme = {
   version: 1;
@@ -43,6 +60,8 @@ export type CustomTheme = {
   concept?: string;
   /** Choisi par le client (jamais à sa place). */
   chosen?: boolean;
+  /** Réglages du site cochés par le client (bloc d'achat, en-tête, panier). */
+  settings?: SiteSettings;
   rev: number;
   at: number;
 };
@@ -316,7 +335,8 @@ export type StructureOp =
   | { op: "shell"; slot: "header" | "footer" | "search"; section: string | null }
   | { op: "page"; key: string; label: string; at?: number }
   | { op: "drop_page"; key: string }
-  | { op: "rename_page"; key: string; label: string };
+  | { op: "rename_page"; key: string; label: string }
+  | { op: "settings"; buy?: Partial<Record<BuyOption, boolean>>; header?: { search?: boolean; account?: boolean; cart?: boolean }; cart?: "page" | "drawer" };
 
 export function applyStructure(t: CustomTheme, ops: StructureOp[]): CustomTheme {
   const next: CustomTheme = JSON.parse(JSON.stringify(t));
@@ -343,6 +363,10 @@ export function applyStructure(t: CustomTheme, ops: StructureOp[]): CustomTheme 
     else if (o.op === "page") { if (next.pages.some((p) => p.key === o.key)) throw new Error(`la page « ${o.key} » existe déjà`); next.pages.splice(o.at ?? next.pages.length, 0, { key: o.key, label: o.label, sections: [] }); }
     else if (o.op === "drop_page") { pageOf(o.key); next.pages = next.pages.filter((p) => p.key !== o.key); }
     else if (o.op === "rename_page") pageOf(o.key).label = o.label;
+    else if (o.op === "settings") {
+      const cur = next.settings ?? {};
+      next.settings = { ...cur, ...(o.buy ? { buy: { ...cur.buy, ...o.buy } } : {}), ...(o.header ? { header: { ...cur.header, ...o.header } } : {}), ...(o.cart ? { cart: o.cart } : {}) };
+    }
   }
   return next;
 }

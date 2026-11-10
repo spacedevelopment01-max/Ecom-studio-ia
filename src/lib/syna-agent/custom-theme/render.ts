@@ -15,7 +15,7 @@ import { decideBuyFeatures, deliveryFrom, freeShippingFrom, loadShopOffers, type
 import { companyOf } from "../activity";
 import { buyBlockData, withRealBuyBlock } from "./buy-block";
 import { authenticSection, DEMO_BRANDS, LIBRARY_DIR, sectionLibrary, withBrandName } from "./library";
-import { allSections, sectionHtml, type CtSection, type CustomTheme } from "./theme";
+import { allSections, sectionHtml, type CtSection, type CustomTheme, type SiteSettings } from "./theme";
 import { all } from "../../db";
 
 const read = (f: string) => { try { return fs.readFileSync(path.join(LIBRARY_DIR(), f), "utf8"); } catch { return ""; } };
@@ -71,6 +71,25 @@ export function readableOn(bg: string, dark: string, light: string): string {
   };
   const ratio = (a: string, b: string) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
   return ratio(bg, dark) >= ratio(bg, light) ? dark : light;
+}
+
+/**
+ * Réglages cochés par le client (revue du 10 novembre 2026) : une option décochée ne s'affiche jamais ; cochée, seulement
+ * si le produit l'a vraiment. Barre d'achat fixe : seulement si le client la coche. Livraison offerte : son vrai seuil.
+ */
+export function siteFlags(flags: Record<string, string>, st: SiteSettings | undefined, freeFrom: number | null): Record<string, string> {
+  const f = { ...flags }, b = st?.buy ?? {};
+  const off: [keyof NonNullable<SiteSettings["buy"]>, string, string][] = [
+    ["quantite", "poOffre", "none"], ["abonnement", "poAbo", "0"], ["gamme", "poGamme", "0"], ["ajouts", "poRituel", "0"], ["livraison", "poLivraison", "0"],
+    ["fidelite", "poFidelite", "0"], ["cadeaux", "poPaliers", "0"], ["promotion", "poPromo", "0"], ["couleur", "poCouleur", "0"], ["format", "poTaille", "0"],
+  ];
+  for (const [k, flag, none] of off) if (b[k] === false) f[flag] = none;
+  f.poBarre = b.barre ? "1" : "0";
+  f.poFree = b.livraisonOfferte !== false && freeFrom ? String(freeFrom) : "";
+  const h = st?.header ?? {};
+  f.hdSearch = h.search === false ? "0" : "1"; f.hdAccount = h.account === false ? "0" : "1"; f.hdCart = h.cart === false ? "0" : "1";
+  f.ctCart = st?.cart === "drawer" ? "drawer" : "page";
+  return f;
 }
 
 /** Bloc d'achat (« Produit vedette ») : seules les fonctions que le produit a vraiment (consigne du 8 novembre). */
@@ -225,6 +244,41 @@ const CART_JS = `(function(){
   });
 })();`;
 
+/** Réglages du site (revue du 10 novembre 2026) : boutons de l'en-tête, barre d'achat fixe, livraison offerte, panier sur le côté. */
+const SETTINGS_CSS = `
+html[data-hd-search="0"] [data-ct-role="header"] [aria-label="Rechercher"],html[data-hd-account="0"] [data-ct-role="header"] [aria-label="Mon compte"],html[data-hd-cart="0"] [data-ct-role="header"] [aria-label="Panier"]{display:none!important}
+.ct-bar{position:fixed;left:0;right:0;bottom:0;z-index:8000;display:flex;gap:14px;align-items:center;justify-content:space-between;padding:10px max(16px,4vw);background:#fff;box-shadow:0 -10px 30px rgba(0,0,0,.12);transform:translateY(110%);transition:transform .4s cubic-bezier(.2,.8,.2,1);font-family:var(--f-ui)}
+.ct-bar.on{transform:none}.ct-bar b{display:block;font:600 1rem var(--f-title);color:var(--b-dark)}.ct-bar small{color:var(--b-ink);opacity:.75}
+.ct-bar button{border:0;border-radius:999px;background:var(--b-dark);color:#fff;font:700 .9rem var(--f-ui);padding:13px 22px;cursor:pointer;white-space:nowrap}
+.ct-free{margin:10px 0 0;font:600 .86rem var(--f-ui);color:var(--b-dark);display:flex;gap:8px;align-items:center}
+.ct-drw-bg{position:fixed;inset:0;z-index:8500;background:rgba(15,25,20,.45);opacity:0;pointer-events:none;transition:opacity .35s}
+.ct-drw{position:fixed;top:0;right:0;bottom:0;z-index:8600;width:min(560px,94vw);overflow:auto;background:#fff;transform:translateX(105%);transition:transform .45s cubic-bezier(.2,.8,.2,1);box-shadow:-20px 0 50px rgba(0,0,0,.18)}
+.ct-drw-x{position:sticky;top:10px;float:right;margin:10px;z-index:2;width:38px;height:38px;border-radius:50%;border:0;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.15);font-size:1.4rem;cursor:pointer}
+html.ct-drw-on .ct-drw{transform:none}html.ct-drw-on .ct-drw-bg{opacity:1;pointer-events:auto}
+.ct-drw .rv-cart-g{grid-template-columns:1fr}.ct-drw .rv-sum{position:static}
+`;
+const SETTINGS_JS = `(function(){var D=document.documentElement.dataset;
+  // Barre d'achat fixe : seulement si le client l'a cochée ; elle apparaît quand le bouton d'achat sort de l'écran.
+  if(D.poBarre==="1")document.querySelectorAll(".po [data-pogo]").forEach(function(go){var po=go.closest(".po"),bar=document.createElement("div");bar.className="ct-bar";
+    bar.innerHTML='<span><b></b><small></small></span><button type="button">Ajouter au panier</button>';bar.querySelector("b").textContent=po.dataset.name||"";
+    function price(){var pr=po.querySelector("[data-pon]");bar.querySelector("small").textContent=pr?pr.textContent:""}price();
+    bar.querySelector("button").onclick=function(){go.click()};document.body.appendChild(bar);
+    // À chaque défilement (un saut d'un coup au-delà du bouton ne doit pas être manqué).
+    function upd(){var pg=go.closest(".tb-pg"),r=go.getBoundingClientRect(),on=!(pg&&pg.hidden)&&r.height>0&&r.bottom<0;if(on)price();bar.classList.toggle("on",on)}
+    addEventListener("scroll",upd,{passive:true});addEventListener("resize",upd);upd()});
+  // Livraison offerte : le vrai seuil du client, sous le bouton d'achat.
+  if(D.poFree)document.querySelectorAll(".po [data-pogo]").forEach(function(go){var p=document.createElement("p");p.className="ct-free";p.textContent="Livraison offerte dès "+String(D.poFree).replace(".",",")+" € d'achat";go.insertAdjacentElement("afterend",p)});
+  // Panier sur le côté : la page panier s'ouvre dans un tiroir, sans quitter la page.
+  if(D.ctCart==="drawer"){var pg=document.querySelector('.tb-pg[data-pg="cart"]');if(!pg)return;var bg=document.createElement("div"),dr=document.createElement("aside"),x=document.createElement("button");
+    bg.className="ct-drw-bg";dr.className="ct-drw";dr.setAttribute("aria-label","Panier");x.className="ct-drw-x";x.type="button";x.setAttribute("aria-label","Fermer le panier");x.textContent="×";dr.appendChild(x);document.body.appendChild(bg);document.body.appendChild(dr);
+    var kids=[];function open(){kids=[].slice.call(pg.children);kids.forEach(function(k){dr.appendChild(k)});document.documentElement.classList.add("ct-drw-on")}
+    function close(){kids.forEach(function(k){pg.appendChild(k)});kids=[];document.documentElement.classList.remove("ct-drw-on")}
+    x.onclick=close;bg.onclick=close;addEventListener("keydown",function(e){if(e.key==="Escape")close()});
+    var go0=window.TB_GO;window.TB_GO=window.ctGo=function(p){if(String(p)==="cart"){open();return}close();go0(p)};
+    // Sur la fenêtre, avant tous les autres gestionnaires du document (sinon la page panier s'ouvrait derrière le tiroir).
+    window.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest('[data-go="cart"]');if(!a)return;e.preventDefault();e.stopImmediatePropagation();open()},true)}
+})();`;
+
 /** Navigation entre les pages, vue téléphone, recherche par la loupe, carte produit qui ouvre SA fiche. */
 const NAV_JS = `(function(){
   var wrap=document.querySelector(".tb-wrap"),pages=[].slice.call(document.querySelectorAll(".tb-pg"));
@@ -321,7 +375,7 @@ export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand"> & { 
   const roleOf = (place: string) => (place === "en-tête" ? "header" : place === "pied de page" ? "footer" : place === "recherche" ? "search" : "page");
   const own = allSections(t).filter((x) => x.s.css).map((x) => x.s.css!).join("\n");
   const sampleTexts = allSections(t).some((x) => !x.s.clientTexts);
-  const flags = buyFlags(featuresOf(p.id));
+  const flags = siteFlags(buyFlags(featuresOf(p.id)), t.settings, (() => { try { return freeShippingFrom(companyOf(p.id).shipping); } catch { return null; } })());
   // Bloc d'achat : les vraies données du produit du client (jamais les prix et remises d'exemple de la bibliothèque).
   const buy = (() => { try { return buyBlockData(p.id); } catch { return null; } })();
   const pay = (p.platform ?? "shopify") === "shopify" && !t.pages.some((pg) => pg.key === "commande") ? "Sur ta boutique Shopify, ce bouton ouvre le paiement sécurisé de Shopify." : null;
@@ -336,6 +390,7 @@ export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand"> & { 
 ${lib.fonts.map((f) => `<link rel="stylesheet" href="${esc(f)}">`).join("")}
 <link rel="stylesheet" href="/sections/library.css">
 <style>${BASE_CSS}
+${SETTINGS_CSS}
 ${brandCss(p)}
 ${own}</style></head><body>
 <script${n}>${pre}</script>
@@ -345,7 +400,7 @@ ${body}
 ${shell(t.footer, "pied de page")}</div></div>
 ${withBrandName(templates, name)}
 <script${n} src="/sections/library.js"></script>
-<script${n}>${NAV_JS}</script><script${n}>${CART_JS}</script>
+<script${n}>${NAV_JS}</script><script${n}>${CART_JS}</script><script${n}>${SETTINGS_JS}</script>
 ${o.embed ? `<style>.tb-bar{display:none}.tb-wrap .zm18,.bh,.mz1,.mz2{top:0!important}.ctw-note{top:10px;bottom:auto;left:auto;right:10px;max-width:300px;font-size:11px}</style>` : ""}
 ${o.studio ? `${sampleTexts ? `<div class="ctw-note" aria-hidden="true">Thème sur mesure · textes et photos d'exemple encore présents : SINA les remplace par les tiens</div>` : ""}<script${n}>${PICK_JS}</script>` : ""}
 </body></html>`;
