@@ -43,7 +43,7 @@ import { loadShopOffers } from "../product-features";
 import { enqueue, pendingJob } from "../../jobs";
 import { stateOf } from "../../preparation/store";
 import { journeyOf, setStep as setJourneyStep, updateJourney as updateJourneyConv } from "../journey";
-import { clientImages, CUSTOM_BRAND_JOB, examplePhotoCount, photoSlots, photosToCreate, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, siteArtDirection, sitePhotoName, textPlacementLine, type ImagesMode } from "./brand";
+import { clientImages, CUSTOM_BRAND_JOB, examplePhotoCount, productImageIds, photoSlots, photosToCreate, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, siteArtDirection, sitePhotoName, textPlacementLine, type ImagesMode } from "./brand";
 
 /** Ce que le client voit dans le fil : l'aperçu vivant de son thème et sa composition. */
 export function themeCard(projectId: string, t: CustomTheme) {
@@ -84,7 +84,7 @@ export function siteKind(ctx: ToolContext): SiteKind {
   };
 }
 /** Genre de site pour le classement des photos (produits ou services, vraies photos de produits ou non). */
-const photoSite = (ctx: ToolContext) => { const k = siteKind(ctx); return { business: k.business, productPhotos: (k.productPhotos?.length ?? 0) > 0 }; };
+const photoSite = (ctx: ToolContext) => { const k = siteKind(ctx); return { business: k.business, productPhotos: (k.productPhotos?.length ?? 0) > 0, productIds: productImageIds(project(ctx).id) }; };
 const familyOrError = (projectId: string) => {
   const f = loadFamilyChoice(projectId);
   if (!f) throw new Error("famille de sections pas encore choisie par le client : theme.families puis theme.family d'abord");

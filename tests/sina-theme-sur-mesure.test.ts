@@ -814,6 +814,8 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
     hero.html = sectionHtml(hero).split(f).join(`/api/files/${pouch}`);
     hero.photoBriefs = [{ find: f, description: "Photographie d'ambiance, format paysage : une théière fumante sur un bureau au matin, le sachet Jasmin délicat posé à côté.", ratio: "1:1", product: "Jasmin délicat" }];
     (await import("@/lib/syna-agent/custom-theme/theme")).saveCustomTheme(pid, t, { history: false });
+    // Compté au devis comme une photo d'ambiance à créer.
+    expect(B.photoSlots(loadCustomTheme(pid)!, { productPhotos: true, productIds: new Set([pouch]) }).filter((x) => x.uid === hero.uid && x.file.startsWith(`fichier:${pouch}`) && x.kind === "ambiance")).toHaveLength(1);
     T.customPhotoDeps.unit = () => 50_000;
     const refs: (Buffer | null)[] = [];
     try {

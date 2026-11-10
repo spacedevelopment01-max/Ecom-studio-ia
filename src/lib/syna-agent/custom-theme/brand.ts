@@ -206,18 +206,22 @@ export function productImageIds(projectId: string): Set<string> {
 }
 
 export type PhotoSlot = { uid: string; place: string; section: string; file: string; kind: "produit" | "a-fournir" | "ambiance"; authentic?: string };
-export function photoSlots(t: CustomTheme, site: { business?: "products" | "services"; productPhotos?: boolean } = {}): PhotoSlot[] {
+export function photoSlots(t: CustomTheme, site: { business?: "products" | "services"; productPhotos?: boolean; productIds?: Set<string> } = {}): PhotoSlot[] {
   const business = site.business ?? "products";
   // Les cartes (plan d'adresse) ne sont jamais des photos à créer : la vraie carte s'ouvre à l'adresse du client.
   return allSections(t).flatMap((x) => {
     const l = libSection(x.s.id), authentic = authenticSection(x.s.id, business);
     const kind: PhotoSlot["kind"] = authentic ? "a-fournir" : l && site.productPhotos && productSlotSection(l) ? "produit" : "ambiance";
-    return [...new Set([...sectionHtml(x.s).matchAll(/photos\/([\w-]+\.(?:webp|png|jpg))/g)].map((m) => m[1]).filter((f) => !/^(carte|map|plan)-/.test(f)))]
-      .map((file) => ({ uid: x.s.uid, place: x.page?.label ?? x.place, section: l?.title ?? x.s.id, file, kind, ...(authentic ? { authentic } : {}) }));
+    // Photo d'une fiche produit posée par erreur dans une section de scènes : à recréer en scène (comptée au devis).
+    const misplaced = site.productIds && l && x.s.photoBriefs?.length && !x.s.photoBriefs.some((b) => showsProductAlone(l, b.description))
+      ? [...sectionHtml(x.s).matchAll(/\/api\/files\/([\w-]+)/g)].filter((m) => site.productIds!.has(m[1])).map((m, i) => `fichier:${m[1]}:${i}`) : [];
+    return [...[...new Set([...sectionHtml(x.s).matchAll(/photos\/([\w-]+\.(?:webp|png|jpg))/g)].map((m) => m[1]).filter((f) => !/^(carte|map|plan)-/.test(f)))].map((file) => ({ file, kind })),
+      ...misplaced.map((file) => ({ file, kind: "ambiance" as const }))]
+      .map(({ file, kind: k }) => ({ uid: x.s.uid, place: x.page?.label ?? x.place, section: l?.title ?? x.s.id, file, kind: k, ...(authentic ? { authentic } : {}) }));
   });
 }
 /** Photos que le client peut envoyer ou que SINA peut créer : les photos d'ambiance (le reste a sa propre source). */
-export const examplePhotoCount = (t: CustomTheme, site: { business?: "products" | "services"; productPhotos?: boolean } = {}): number => photoSlots(t, site).filter((x) => x.kind === "ambiance").length;
+export const examplePhotoCount = (t: CustomTheme, site: { business?: "products" | "services"; productPhotos?: boolean; productIds?: Set<string> } = {}): number => photoSlots(t, site).filter((x) => x.kind === "ambiance").length;
 
 /**
  * Nom d'une photo créée pour le site : la page et ce qu'elle montre (essai réel du 9 novembre : nommées d'après la photo
