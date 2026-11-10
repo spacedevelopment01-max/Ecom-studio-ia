@@ -738,6 +738,51 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
     } finally { delete T.customPhotoDeps.unit; delete B.customBrandDeps.plan; delete B.customBrandDeps.write; delete B.customBrandDeps.photo; }
   });
 
+  it("montage en deux fois sous un budget serré (essai Éclat de thé) : textes d'abord sans aucune photo créée, puis les photos décrites", async () => {
+    const user = await account();
+    const cid = threadFor(user, null), ctx: any = { user, conversationId: cid, runId: `run-${Date.now()}`, projectId: null, attachment: () => null };
+    await call("start.answer", ctx, { answers: [{ field: "business", value: "products" }, { field: "offer", value: "Des thés en sachet." }] });
+    await call("start.answer", ctx, { answers: [
+      { field: "existing", value: "Rien." }, { field: "audience", value: "Adultes." }, { field: "image", value: "Doux." }, { field: "setup", value: "6 thés" }, { field: "market", value: "France." },
+      { field: "price", value: "8 €" }, { field: "difference", value: "Bio." }, { field: "taste", status: "none" }, { field: "photos", value: "Oui." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
+    ] });
+    await call("start.confirm", ctx, {});
+    const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
+    await call("theme.family", ctx, { family: "classique" });
+    expect((await call("custom.compose", ctx, fullSite("classique"))).ok).toBe(true);
+    T.customPhotoDeps.unit = () => 50_000;
+    const sharp = (await import("sharp")).default;
+    try {
+      ctx.projectId = pid;
+      // Devis : aucune photo comptée, ni au plafond ni au probable ; « tes images seulement » n'exige plus une image par emplacement.
+      const est = await fr(() => getTool("custom.build")!.estimate!(ctx, { images: "client", newPhotos: false }));
+      const txt = await fr(() => getTool("custom.build")!.estimate!(ctx, { photos: false }));
+      expect(est.maxMicro).toBe(txt.maxMicro);
+      expect(est.label).toMatch(/aucune photo créée/);
+      const r = await call("custom.build", ctx, { images: "client", newPhotos: false });
+      expect(r.ok).toBe(true);
+      const job = one<any>("SELECT * FROM jobs WHERE id=?", r.jobs[0]);
+      expect(JSON.parse(job.payload)).toMatchObject({ photos: true, newPhotos: false });
+      let made = 0;
+      B.customBrandDeps.plan = async () => ({ promesse: "Le thé doux.", voix: "Simple.", menu: [], sections: [] });
+      B.customBrandDeps.write = async (prompt) => ({ edits: [], links: [], photos: [...new Set([...prompt.slice(prompt.indexOf("HTML actuel")).matchAll(/photos\/[\w-]+\.(?:webp|png|jpg)/g)].map((m) => m[0]))].map((f) => ({ find: f, description: "Photo d'une tasse de thé fumante sur une table en bois, lumière douce du matin.", ratio: "1:1" as const, product: null })) });
+      B.customBrandDeps.photo = async () => { made++; return sharp({ create: { width: 20, height: 20, channels: 3, background: "#999" } }).png().toBuffer(); };
+      const run = (id: string, payload: object) => fr(() => B.runCustomBrandJob({ job: { id }, payload, checkpoint: {}, progress: () => undefined, step: async (_k: string, fn: () => Promise<unknown>) => fn() } as any));
+      const first: any = await run(job.id, JSON.parse(job.payload));
+      expect(made).toBe(0);
+      expect(first.photosMade).toBe(0);
+      expect(first.photosLeft).toBeGreaterThan(0);
+      expect(first.problems.join(" ")).toMatch(/photo\(s\) d'exemple encore à remplacer/);
+      const briefs = allSections(loadCustomTheme(pid)!).filter((x) => x.s.photoBriefs?.length);
+      expect(briefs.length).toBeGreaterThan(0);
+      // Second montage : même si le rédacteur ne répond pas, les photos décrites au premier montage sont créées.
+      B.customBrandDeps.write = async () => { throw new Error("rédacteur indisponible"); };
+      const second: any = await run(`${job.id}-photos`, { ...JSON.parse(job.payload), images: "sina", newPhotos: true });
+      expect(second.photosMade).toBe(first.photosLeft);
+      expect(made).toBe(first.photosLeft);
+    } finally { delete T.customPhotoDeps.unit; delete B.customBrandDeps.plan; delete B.customBrandDeps.write; delete B.customBrandDeps.photo; }
+  });
+
   it("un remplacement qui ne s'applique pas est compté, jamais deviné ; aucun script n'entre", () => {
     const w = { edits: [{ find: "<h2>Bonjour</h2>", replace: "<h2>Salut</h2>" }, { find: "absent", replace: "x" }, { find: "<p>a</p>", replace: "<script>x</script>" }], photos: [] };
     expect(B.applyWrite("<h2>Bonjour</h2><p>a</p>", { ...w, links: [] })).toEqual({ html: "<h2>Salut</h2><p>a</p>", failed: 2, applied: 1 });

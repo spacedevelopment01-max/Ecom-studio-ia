@@ -268,7 +268,7 @@ const designTool: AgentTool<DesignArgs> = {
 /** Coût probable d'une écriture de section (mesuré sur les textes du site : environ 0,06 € avec le modèle des textes). */
 export const SECTION_TEXT_TYPICAL_MICRO = 60_000;
 export const SITE_PLAN_TYPICAL_MICRO = 90_000;
-type BuildArgs = { photos?: boolean; images?: ImagesMode; clientAssets?: string[]; rewrite?: boolean; consigne?: string };
+type BuildArgs = { photos?: boolean; newPhotos?: boolean; images?: ImagesMode; clientAssets?: string[]; rewrite?: boolean; consigne?: string };
 /** Thème à monter à la marque : celui que le Studio a conçu de A à Z (custom.design), toutes ses pages comprises. */
 function buildPlan(ctx: ToolContext): CustomTheme {
   const p = project(ctx);
@@ -286,9 +286,10 @@ function buildPlan(ctx: ToolContext): CustomTheme {
 }
 const buildTool: AgentTool<BuildArgs> = {
   name: "custom.build", module: "site", kind: "generate", needsProject: true,
-  description: "Étape 6, THÈME SUR MESURE (PAYANT : devis du Studio annoncé en % du budget, accord écrit du client d'abord) : APRÈS custom.design (le thème conçu de A à Z, toutes ses pages) et sa réponse sur les images (custom.images : ses images, les tiennes, ou les deux), images : « client » (ses images seulement, autant que d'emplacements), « mix » (ses images d'abord, tu crées les autres) ou « sina » (tu crées tout) ; clientAssets : ses images (identifiants de custom.images), dans l'ordre des emplacements. Met le thème À SA MARQUE : tous les textes écrits pour lui (ses faits seulement, jamais ceux d'un modèle) et toutes les photos (vraies photos de ses produits, sinon photos créées dans la direction artistique de sa famille). photos:false = textes seulement. rewrite:true (avec photos:false) = le client n'aime pas les textes : TOUS les textes du site sont réécrits avec un nouveau plan des textes, même ceux déjà écrits (devis d'abord). consigne : ce que le client a dit vouloir pour ses textes (émotion, scène, mots), recopié MOT POUR MOT ; toujours la passer quand il en a dit quelque chose, sinon le rédacteur ne le sait pas. Tâche de fond ; le thème est ensuite EN PLACE dans l'onglet Boutique, où le client demande ses changements et désigne les éléments.",
+  description: "Étape 6, THÈME SUR MESURE (PAYANT : devis du Studio annoncé en % du budget, accord écrit du client d'abord) : APRÈS custom.design (le thème conçu de A à Z, toutes ses pages) et sa réponse sur les images (custom.images : ses images, les tiennes, ou les deux), images : « client » (ses images seulement, autant que d'emplacements), « mix » (ses images d'abord, tu crées les autres) ou « sina » (tu crées tout) ; clientAssets : ses images (identifiants de custom.images), dans l'ordre des emplacements. Met le thème À SA MARQUE : tous les textes écrits pour lui (ses faits seulement, jamais ceux d'un modèle) et toutes les photos (vraies photos de ses produits, sinon photos créées dans la direction artistique de sa famille). photos:false = textes seulement. newPhotos:false = montage en deux fois, sous un budget serré : textes écrits, vraies photos de ses produits (et ses images, clientAssets) posées, AUCUNE photo créée ; les autres emplacements gardent leur photo d'exemple jusqu'au second montage (custom.build sans newPhotos, qui ne réécrit pas les textes déjà écrits). rewrite:true (avec photos:false) = le client n'aime pas les textes : TOUS les textes du site sont réécrits avec un nouveau plan des textes, même ceux déjà écrits (devis d'abord). consigne : ce que le client a dit vouloir pour ses textes (émotion, scène, mots), recopié MOT POUR MOT ; toujours la passer quand il en a dit quelque chose, sinon le rédacteur ne le sait pas. Tâche de fond ; le thème est ensuite EN PLACE dans l'onglet Boutique, où le client demande ses changements et désigne les éléments.",
   args: z.object({
     photos: z.boolean().optional(),
+    newPhotos: z.boolean().optional(),
     images: z.enum(["sina", "client", "mix"]).optional(),
     clientAssets: z.array(z.string().max(60)).max(80).optional(),
     rewrite: z.boolean().optional(),
@@ -297,13 +298,13 @@ const buildTool: AgentTool<BuildArgs> = {
   estimate: (ctx, a) => {
     const t = buildPlan(ctx);
     // Sections à écrire : toutes avec rewrite, sinon seulement celles encore en texte d'exemple (le devis comptait tout le site).
-    const sections = a.rewrite ? allSectionsCount(t) : allSections(t).filter((x) => !x.s.clientTexts).length, slots = photoSlots(t, photoSite(ctx)), photos = a.photos === false ? 0 : photosToCreate(slots.filter((x) => x.kind === "ambiance").length, a.images ?? "sina", a.clientAssets?.length ?? 0);
+    const sections = a.rewrite ? allSectionsCount(t) : allSections(t).filter((x) => !x.s.clientTexts).length, slots = photoSlots(t, photoSite(ctx)), none = a.photos === false || a.newPhotos === false, photos = none ? 0 : photosToCreate(slots.filter((x) => x.kind === "ambiance").length, a.images ?? "sina", a.clientAssets?.length ?? 0);
     // Plafond : les photos de produits aussi, au cas où une scène doive être créée avec le produit en référence.
-    const photosMax = a.photos === false ? 0 : photos + slots.filter((x) => x.kind === "produit").length;
+    const photosMax = none ? 0 : photos + slots.filter((x) => x.kind === "produit").length;
     const unit = (customPhotoDeps.unit ?? photoUnit)();
     if (photos && unit == null) throw new Error(L("Aucun modèle d'images utilisable pour les photos du site.", "No usable image model."));
     // + le plan des textes de tout le site (un appel, avant les sections)
-    return { maxMicro: SITE_PLAN_CAP_MICRO + sections * SECTION_TEXT_CAP_MICRO + photosMax * (unit ?? 0), probableMicro: SITE_PLAN_TYPICAL_MICRO + sections * SECTION_TEXT_TYPICAL_MICRO + Math.round(photos * (unit ?? 0) * 0.8), label: a.rewrite && !photos ? L(`textes de tout ton site réécrits : plan des textes puis ${sections} sections`, "all site copy rewritten") : L(`thème sur mesure monté à ta marque : ${sections} sections écrites${photos ? `, ${photos} photos créées` : ""}${a.clientAssets?.length ? `, ${a.clientAssets.length} de tes images posées` : ""}`, "custom theme built for the brand") };
+    return { maxMicro: SITE_PLAN_CAP_MICRO + sections * SECTION_TEXT_CAP_MICRO + photosMax * (unit ?? 0), probableMicro: SITE_PLAN_TYPICAL_MICRO + sections * SECTION_TEXT_TYPICAL_MICRO + Math.round(photos * (unit ?? 0) * 0.8), label: a.newPhotos === false && a.photos !== false ? L(`thème sur mesure monté à ta marque en deux fois : ${sections} sections écrites et les vraies photos de tes produits posées, aucune photo créée pour l'instant`, "custom theme built, no new photos yet") : a.rewrite && !photos ? L(`textes de tout ton site réécrits : plan des textes puis ${sections} sections`, "all site copy rewritten") : L(`thème sur mesure monté à ta marque : ${sections} sections écrites${photos ? `, ${photos} photos créées` : ""}${a.clientAssets?.length ? `, ${a.clientAssets.length} de tes images posées` : ""}`, "custom theme built for the brand") };
   },
   run: async (ctx, a) => {
     const p = project(ctx);
@@ -315,15 +316,15 @@ const buildTool: AgentTool<BuildArgs> = {
     const mode = a.images ?? "sina", own = new Set(clientImages(p.id).map((x) => x.id));
     const foreign = (a.clientAssets ?? []).filter((id) => !own.has(id));
     if (foreign.length) return { ok: false, internal: true, summary: `Images inconnues ou qui ne viennent pas du client : ${foreign.join(", ")} (custom.images donne ses images).` };
-    if (mode !== "sina" && !a.clientAssets?.length) return { ok: false, summary: L("Aucune image du client à poser : demande-lui d'abord ses images (custom.images dit combien il en faut).", "No client images yet.") };
+    if (mode !== "sina" && a.newPhotos !== false && !a.clientAssets?.length) return { ok: false, summary: L("Aucune image du client à poser : demande-lui d'abord ses images (custom.images dit combien il en faut).", "No client images yet.") };
     const needed = examplePhotoCount(t, photoSite(ctx));
-    if (mode === "client" && (a.clientAssets?.length ?? 0) < needed) return { ok: false, summary: L(`Il faut ${needed} images et le client en a donné ${a.clientAssets!.length} : rien n'est lancé.`, "Not enough client images."), hint: `Dis-le au client simplement et propose-lui : m'envoyer les ${needed - a.clientAssets!.length} qui manquent, que tu crées les autres (images:\"mix\", prix annoncé), ou que tu crées toutes les images (images:\"sina\").` };
+    if (mode === "client" && a.newPhotos !== false && (a.clientAssets?.length ?? 0) < needed) return { ok: false, summary: L(`Il faut ${needed} images et le client en a donné ${a.clientAssets!.length} : rien n'est lancé.`, "Not enough client images."), hint: `Dis-le au client simplement et propose-lui : m'envoyer les ${needed - a.clientAssets!.length} qui manquent, que tu crées les autres (images:\"mix\", prix annoncé), ou que tu crées toutes les images (images:\"sina\").` };
     const est = await buildTool.estimate!(ctx, a);
-    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: CUSTOM_BRAND_JOB, label: L("Thème sur mesure monté à ta marque (SINA)", "Custom theme built for your brand (SINA)"), payload: { projectId: p.id, capMicro: est.maxMicro, conversationId: ctx.conversationId, photos: a.photos !== false, images: mode, clientAssets: a.clientAssets ?? [], rewrite: !!a.rewrite, consigne: a.consigne?.trim() || null }, maxAttempts: 2, idempotencyKey: `syna:${ctx.runId}:custom-brand${a.rewrite ? "-rewrite" : ""}:${t.rev}` });
+    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: CUSTOM_BRAND_JOB, label: L("Thème sur mesure monté à ta marque (SINA)", "Custom theme built for your brand (SINA)"), payload: { projectId: p.id, capMicro: est.maxMicro, conversationId: ctx.conversationId, photos: a.photos !== false, newPhotos: a.newPhotos !== false, images: mode, clientAssets: a.clientAssets ?? [], rewrite: !!a.rewrite, consigne: a.consigne?.trim() || null }, maxAttempts: 2, idempotencyKey: `syna:${ctx.runId}:custom-brand${a.rewrite ? "-rewrite" : ""}:${t.rev}` });
     try { updateJourneyConv(ctx.conversationId, (x) => setJourneyStep(x, 6, "doing")); } catch { /* fil sans parcours */ }
     return {
       ok: true, jobs: [job.id],
-      summary: L(`Montage du thème sur mesure à ta marque lancé (${allSectionsCount(t)} sections, ${a.photos === false ? "textes seulement" : `${needed} photos : ${a.clientAssets?.length ? `${Math.min(needed, a.clientAssets.length)} de ses images, ` : ""}${photosToCreate(needed, mode, a.clientAssets?.length ?? 0)} créées`}).`, "Custom theme build started."),
+      summary: L(`Montage du thème sur mesure à ta marque lancé (${allSectionsCount(t)} sections, ${a.photos === false ? "textes seulement" : a.newPhotos === false ? "textes et vraies photos des produits, aucune photo créée" : `${needed} photos : ${a.clientAssets?.length ? `${Math.min(needed, a.clientAssets.length)} de ses images, ` : ""}${photosToCreate(needed, mode, a.clientAssets?.length ?? 0)} créées`}).`, "Custom theme build started."),
       hint: "Quand la tâche est finie, dis au client que son thème est en place dans l'onglet Boutique (lien « Ouvrir la Boutique » de la carte), qu'il peut le regarder en grand et désigner un élément pour demander un changement. Dis honnêtement ce que le rapport signale (textes non remplacés, photos non créées).",
       data: { customTheme: themeCard(p.id, t) },
     };

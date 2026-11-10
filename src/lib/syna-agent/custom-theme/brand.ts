@@ -40,7 +40,7 @@ export const CUSTOM_BRAND_JOB = "syna.custom.brand";
  * autres. Les vraies photos de ses produits servent toujours aux photos de ses produits.
  */
 export type ImagesMode = "sina" | "client" | "mix";
-export type CustomBrandPayload = { projectId: string; capMicro: number; conversationId?: string | null; photos?: boolean; images?: ImagesMode; clientAssets?: string[]; rewrite?: boolean; consigne?: string | null };
+export type CustomBrandPayload = { projectId: string; capMicro: number; conversationId?: string | null; photos?: boolean; newPhotos?: boolean; images?: ImagesMode; clientAssets?: string[]; rewrite?: boolean; consigne?: string | null };
 
 /** Plafond d'un appel d'écriture d'une section (même modèle que les textes du site). */
 export const SECTION_TEXT_CAP_MICRO = 150_000;
@@ -279,7 +279,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
   // rewrite : le client n'aime pas les textes, tout le site est réécrit (sinon seules les sections encore d'exemple).
   const sections = allSections(t).filter((x) => a.rewrite || !x.s.clientTexts);
   const writer = siteCopyModel();
-  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, photosToProvide: 0, problems: [] as string[], redacteur: `${writer.provider}:${writer.model}` };
+  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, photosToProvide: 0, photosLeft: 0, problems: [] as string[], redacteur: `${writer.provider}:${writer.model}` };
   const briefs: Record<string, SectionWrite["photos"]> = {};
 
   // Un seul point d'annulation pour tout le montage : « Annuler » revient au thème d'avant le montage.
@@ -331,6 +331,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         const dead = w.links.filter((k) => !keys.has(k.to.split(":")[0])).map((k) => `« ${k.text} » → ${k.to}`);
         const lost = w.links.filter((k) => keys.has(k.to.split(":")[0]) && !kept.includes(k)).map((k) => `« ${k.text} »`);
         if (Object.keys(links).length) cur.s.links = links;
+        cur.s.photoBriefs = w.photos.length ? w.photos : undefined;
         t = saveCustomTheme(p.id, t, { history: false });
         return { failed: out.failed, applied: out.applied, dead, lost };
       });
@@ -346,6 +347,8 @@ export async function runCustomBrandJob(ctx: JobContext) {
 
   // 2) Photos : vraie photo du produit, sinon photo créée dans la direction artistique de la marque.
   if (a.photos !== false) {
+    // Photos décrites lors d'un montage précédent (montage en deux fois) : créées maintenant, dans le même ordre.
+    for (const y of allSections(loadCustomTheme(p.id)!)) if (!briefs[y.s.uid] && y.s.photoBriefs?.length) briefs[y.s.uid] = y.s.photoBriefs as SectionWrite["photos"];
     const todo = Object.entries(briefs).flatMap(([uid, list]) => list.map((ph) => ({ uid, ph }))).filter((x) => !/(^|\/)(carte|map|plan)-[\w-]*\.(?:webp|png|jpe?g)/.test(x.ph.find));
     const mode: ImagesMode = a.images ?? "sina";
     // Images du client d'abord (« client » ou « mix »), dans l'ordre ; jamais une même image sur deux emplacements.
@@ -380,6 +383,8 @@ export async function runCustomBrandJob(ctx: JobContext) {
         const realId = ph.product ? products.find((x) => x.data.title.trim().toLowerCase() === ph.product!.trim().toLowerCase())?.data.images[0]?.assetId : undefined;
         const real = realId && lib && isProductPhotoSection(lib) && getAsset(realId) ? realId : undefined;
         const mine = !real && next < own.length ? own[next++] : undefined;
+        // Montage en deux fois (newPhotos:false) : rien de créé, la photo d'exemple attend le second montage.
+        if (!real && !mine && a.newPhotos === false) { report.photosLeft++; continue; }
         if (!real && !mine && mode === "client") { report.problems.push(`photo ${file} : aucune image du client pour cet emplacement`); continue; }
         const assetId = real ? real : mine ? mine : await ctx.step(`photo:${uid}:${file}`, async () => {
           const prodRef = ph.product ? products.find((x) => x.data.title.trim().toLowerCase() === ph.product!.trim().toLowerCase())?.data.images[0]?.assetId : undefined;
@@ -405,6 +410,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
     }
   }
 
+  if (report.photosLeft) report.problems.push(`${report.photosLeft} photo(s) d'exemple encore à remplacer : aucune photo créée à ta demande, elles le seront au second montage`);
   ctx.progress(1, L("Thème monté à ta marque", "Theme built for your brand"));
   if (a.conversationId) { try { updateJourney(a.conversationId, (x) => setStep(x, 6, "review", L("thème sur mesure monté à la marque, à voir dans la Boutique", "custom theme built"))); } catch { /* fil supprimé */ } }
   notify(p.userId, p.id, report.problems.length ? L("Ton thème sur mesure est monté : des points restent à voir", "Your custom theme is built: some points remain") : L("Ton thème sur mesure est monté à ta marque", "Your custom theme is built"), L("Il est en place dans l'onglet Boutique.", "It is in the Boutique tab."), report.problems.length ? "warning" : "success");

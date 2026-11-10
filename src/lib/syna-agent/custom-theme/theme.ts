@@ -25,6 +25,9 @@ export type CtSection = {
   /** Où mène chaque bouton ou lien écrit pour la marque (texte → clé de page, « legal:cgv », « shop:Famille ») : un texte
    *  émotionnel (« Retrouver l'été ») ne correspond à aucun mot connu du Studio et laissait le bouton mort. */
   links?: Record<string, string>;
+  /** Photos décrites par le rédacteur au montage (repère de la photo d'exemple, scène, format, produit) : gardées pour
+   *  créer les photos plus tard, quand le montage se fait en deux fois (textes d'abord, photos ensuite). */
+  photoBriefs?: { find: string; description: string; ratio: string; product: string | null }[];
 };
 export type CtPage = { key: string; label: string; sections: CtSection[]; /** Le parcours du visiteur sur la page (conception). */ journey?: string };
 export type CustomTheme = {
