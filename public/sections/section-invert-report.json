@@ -55,12 +55,12 @@
  {
   "id": "ouverture-photo-pleine",
   "family": "classique",
-  "ok": true,
+  "ok": false,
   "widths": {
    "390": {
     "normal": "0/0",
     "inverse": "0/0",
-    "fond": "sombre→clair",
+    "fond": "sombre→sombre",
     "ok": true,
     "illisibles": [],
     "illisiblesNormal": []
@@ -68,13 +68,14 @@
    "1280": {
     "normal": "0/0",
     "inverse": "0/0",
-    "fond": "sombre→clair",
-    "ok": true,
+    "fond": "sombre→sombre",
+    "ok": false,
     "illisibles": [],
     "illisiblesNormal": []
    }
   },
-  "photo": 1
+  "photo": 1,
+  "fondPhoto": true
  },
  {
   "id": "produit-vedette",
@@ -83,10 +84,12 @@
   "widths": {
    "390": {
     "normal": "4/58",
-    "inverse": "1/58",
+    "inverse": "3/58",
     "fond": "clair→sombre",
     "ok": true,
     "illisibles": [
+     "small. « −10 % » 1.41",
+     "small. « −15 % » 1.41",
      "button. « Achat unique » 1.13"
     ],
     "illisiblesNormal": [
@@ -98,10 +101,12 @@
    },
    "1280": {
     "normal": "4/56",
-    "inverse": "1/56",
+    "inverse": "3/56",
     "fond": "clair→sombre",
     "ok": true,
     "illisibles": [
+     "small. « −10 % » 1.41",
+     "small. « −15 % » 1.41",
      "button. « Achat unique » 1.13"
     ],
     "illisiblesNormal": [
@@ -345,7 +350,7 @@
     "illisibles": [
      "b. « 0 » 3.75",
      "span.dq-stk « Drop 07 » 3.75",
-     "span. « du rang » 2.28",
+     "span. « du rang » 2.23",
      "p. « Sept pièces noires, une seul » 3",
      "p. « Sept pièces noires, une seul » 4.29",
      "a.dq-btn « Entrer dans le drop » 3.75",
@@ -373,12 +378,14 @@
   "widths": {
    "390": {
     "normal": "2/9",
-    "inverse": "4/9",
-    "fond": "sombre→clair",
+    "inverse": "6/9",
+    "fond": "sombre→sombre",
     "ok": false,
     "illisibles": [
-     "span.mz3-ns « Collection été 26 » 4.11",
-     "em. « & terre cuite » 1.83",
+     "span.mz3-ns « Collection été 26 » 2.28",
+     "span. « Lin, soleil » 2.01",
+     "p. « Des matières qui respirent e » 1.48",
+     "p. « Des matières qui respirent e » 1.43",
      "i. « → » 4.09",
      "i. « → » 4.09"
     ],
@@ -389,15 +396,14 @@
    },
    "1280": {
     "normal": "2/10",
-    "inverse": "7/10",
-    "fond": "sombre→clair",
+    "inverse": "6/10",
+    "fond": "sombre→sombre",
     "ok": false,
     "illisibles": [
-     "span.mz3-ns « Collection été 26 » 4.49",
-     "em. « & terre cuite » 2.02",
-     "em. « & terre cuite » 2.14",
-     "p. « Des matières qui respirent e » 4.48",
-     "p. « Des matières qui respirent e » 4.23",
+     "span.mz3-ns « Collection été 26 » 1.35",
+     "span. « Lin, soleil » 1.8",
+     "p. « Des matières qui respirent e » 1.4",
+     "p. « Des matières qui respirent e » 1.29",
      "i. « → » 4.09",
      "i. « → » 4.09"
     ],
@@ -417,15 +423,19 @@
   "widths": {
    "390": {
     "normal": "2/9",
-    "inverse": "5/9",
+    "inverse": "9/9",
     "fond": "sombre→sombre",
     "ok": false,
     "illisibles": [
-     "h1. « La ville » 1.77",
-     "h1. « après minuit » 2.43",
-     "p. « Sweats lourds et cargos ampl » 4.19",
+     "h1. « La ville » 1.31",
+     "h1. « après minuit » 1.32",
+     "h1. « après minuit » 1.34",
+     "p. « Sweats lourds et cargos ampl » 1.39",
+     "p. « Sweats lourds et cargos ampl » 1.41",
      "a.dq-btn « Découvrir » 3.75",
-     "i. « → » 3.75"
+     "i. « → » 3.75",
+     "span. « 01 » 1.05",
+     "span. « 02 » 1.41"
     ],
     "illisiblesNormal": [
      "a.dq-btn « Découvrir » 3.62",
@@ -434,13 +444,19 @@
    },
    "1280": {
     "normal": "2/9",
-    "inverse": "3/9",
+    "inverse": "9/9",
     "fond": "sombre→sombre",
     "ok": false,
     "illisibles": [
+     "h1. « La ville » 1.4",
+     "h1. « après minuit » 1.4",
+     "h1. « après minuit » 1.39",
+     "p. « Sweats lourds et cargos ampl » 1.41",
+     "p. « Sweats lourds et cargos ampl » 1.43",
      "a.dq-btn « Découvrir » 3.75",
      "i. « → » 3.75",
-     "span. « 02 » 4.49"
+     "span. « 01 » 1.08",
+     "span. « 02 » 1.4"
     ],
     "illisiblesNormal": [
      "a.dq-btn « Découvrir » 3.62",
@@ -523,38 +539,24 @@
  {
   "id": "choisis-ton-terrain",
   "family": "moderne",
-  "ok": false,
+  "ok": true,
   "widths": {
    "390": {
     "normal": "1/11",
-    "inverse": "4/11",
+    "inverse": "0/11",
     "fond": "clair→sombre",
-    "ok": false,
-    "illisibles": [
-     "b. « Femme » 2.71",
-     "small. « Robes, lin et chapeaux » 2.09",
-     "b. « Homme » 2.8",
-     "small. « Chemises et pantalons » 2.01"
-    ],
+    "ok": true,
+    "illisibles": [],
     "illisiblesNormal": [
      "span.el-eb « Explorer » 3.63"
     ]
    },
    "1280": {
     "normal": "1/15",
-    "inverse": "8/15",
+    "inverse": "0/15",
     "fond": "clair→sombre",
-    "ok": false,
-    "illisibles": [
-     "b. « Femme » 2.6",
-     "small. « Robes, lin et chapeaux » 2.08",
-     "b. « Homme » 2.27",
-     "small. « Chemises et pantalons » 1.94",
-     "b. « Accessoires » 1.75",
-     "small. « Sacs et lunettes » 1.3",
-     "b. « Chaussures » 2.08",
-     "small. « Baskets et sandales » 1.82"
-    ],
+    "ok": true,
+    "illisibles": [],
     "illisiblesNormal": [
      "span.el-eb « Explorer » 3.63"
     ]
@@ -950,11 +952,14 @@
   "widths": {
    "390": {
     "normal": "1/12",
-    "inverse": "2/12",
-    "fond": "sombre→clair",
+    "inverse": "5/12",
+    "fond": "sombre→sombre",
     "ok": false,
     "illisibles": [
-     "small. « Carnet de » 4.07",
+     "small. « Carnet de » 1.36",
+     "h2. « vacances » 1.03",
+     "p. « Du lin, du soleil et des cou » 1.06",
+     "p. « Du lin, du soleil et des cou » 1.05",
      "i. « → » 4.09"
     ],
     "illisiblesNormal": [
@@ -963,10 +968,14 @@
    },
    "1280": {
     "normal": "1/12",
-    "inverse": "1/12",
-    "fond": "sombre→clair",
-    "ok": true,
+    "inverse": "5/12",
+    "fond": "sombre→sombre",
+    "ok": false,
     "illisibles": [
+     "small. « Carnet de » 1.05",
+     "h2. « vacances » 1.15",
+     "p. « Du lin, du soleil et des cou » 1.15",
+     "p. « Du lin, du soleil et des cou » 1.18",
      "i. « → » 4.09"
     ],
     "illisiblesNormal": [
@@ -1014,17 +1023,15 @@
  {
   "id": "offre-en-deux-tuiles",
   "family": "moderne",
-  "ok": false,
+  "ok": true,
   "widths": {
    "390": {
     "normal": "7/11",
-    "inverse": "7/11",
+    "inverse": "5/11",
     "fond": "clair→clair",
     "ok": true,
     "illisibles": [
-     "small. « Sélection plage » 3",
-     "b. « La pause plage » 2.8",
-     "i. « Serviettes, lunettes, chapea » 3.17",
+     "i. « Serviettes, lunettes, chapea » 4.39",
      "small. « Offre de l'été » 4.09",
      "p. « sur la deuxième pièce de la  » 4.09",
      "p. « sur la deuxième pièce de la  » 4.09",
@@ -1041,12 +1048,10 @@
    },
    "1280": {
     "normal": "6/11",
-    "inverse": "6/11",
-    "fond": "clair→clair",
-    "ok": false,
+    "inverse": "4/11",
+    "fond": "clair→sombre",
+    "ok": true,
     "illisibles": [
-     "small. « Sélection plage » 2.68",
-     "i. « Serviettes, lunettes, chapea » 3.25",
      "small. « Offre de l'été » 4.09",
      "p. « sur la deuxième pièce de la  » 4.09",
      "p. « sur la deuxième pièce de la  » 4.09",
@@ -1115,17 +1120,14 @@
  {
   "id": "grille-editoriale",
   "family": "moderne",
-  "ok": false,
+  "ok": true,
   "widths": {
    "390": {
     "normal": "4/17",
-    "inverse": "6/17",
+    "inverse": "3/17",
     "fond": "clair→sombre",
-    "ok": false,
+    "ok": true,
     "illisibles": [
-     "b. « L'heure dorée » 2.31",
-     "i. « Lire → » 2.13",
-     "b. « Lin lavé » 3.15",
      "small. « Collection été » 4.09",
      "a.el-lk « Tout voir » 4.09",
      "i. « → » 4.09"
@@ -1139,13 +1141,10 @@
    },
    "1280": {
     "normal": "4/15",
-    "inverse": "6/15",
+    "inverse": "3/15",
     "fond": "clair→sombre",
-    "ok": false,
+    "ok": true,
     "illisibles": [
-     "b. « L'heure dorée » 2.36",
-     "i. « Lire → » 2.82",
-     "b. « Lin lavé » 3.76",
      "small. « Collection été » 4.09",
      "a.el-lk « Tout voir » 4.09",
      "i. « → » 4.09"
@@ -1742,15 +1741,12 @@
   "widths": {
    "390": {
     "normal": "6/14",
-    "inverse": "5/14",
-    "fond": "clair→clair",
+    "inverse": "2/14",
+    "fond": "clair→sombre",
     "ok": true,
     "illisibles": [
-     "span.zm16-mh « Le Journal » 1.93",
-     "span.zm16-is « N°07 — Été 2026 » 3.77",
-     "small. « Voyage » 1.37",
-     "b. « Dix jours au bord de l'eau » 1.98",
-     "i. « 8 min de lecture » 1.58"
+     "span.zm16-is « N°07 — Été 2026 » 3.97",
+     "small. « Voyage » 4.35"
     ],
     "illisiblesNormal": [
      "span.zm16-is « N°07 — Été 2026 » 3.97",
@@ -1763,15 +1759,10 @@
    },
    "1280": {
     "normal": "4/13",
-    "inverse": "4/13",
+    "inverse": "0/13",
     "fond": "clair→sombre",
     "ok": true,
-    "illisibles": [
-     "span.zm16-mh « Le Journal » 1.93",
-     "small. « Voyage » 1.49",
-     "b. « Dix jours au bord de l'eau » 1.91",
-     "i. « 8 min de lecture » 1.63"
-    ],
+    "illisibles": [],
     "illisiblesNormal": [
      "small. « Conseils » 4.09",
      "i. « 5 min de lecture » 3.23",
@@ -2351,10 +2342,12 @@
   "widths": {
    "390": {
     "normal": "5/43",
-    "inverse": "1/43",
+    "inverse": "3/43",
     "fond": "clair→sombre",
     "ok": true,
     "illisibles": [
+     "small. « −10 % » 1.45",
+     "small. « −15 % » 1.45",
      "button. « Achat unique » 1.13"
     ],
     "illisiblesNormal": [
@@ -2367,10 +2360,12 @@
    },
    "1280": {
     "normal": "5/41",
-    "inverse": "1/41",
+    "inverse": "3/41",
     "fond": "clair→sombre",
     "ok": true,
     "illisibles": [
+     "small. « −10 % » 1.45",
+     "small. « −15 % » 1.45",
      "button. « Achat unique » 1.13"
     ],
     "illisiblesNormal": [
@@ -2391,10 +2386,12 @@
   "widths": {
    "390": {
     "normal": "13/44",
-    "inverse": "1/44",
+    "inverse": "3/44",
     "fond": "clair→sombre",
     "ok": true,
     "illisibles": [
+     "small. « −10 % » 1.39",
+     "small. « −15 % » 1.41",
      "button. « Achat unique » 1.13"
     ],
     "illisiblesNormal": [
@@ -2408,10 +2405,12 @@
    },
    "1280": {
     "normal": "11/45",
-    "inverse": "1/45",
+    "inverse": "3/45",
     "fond": "clair→sombre",
     "ok": true,
     "illisibles": [
+     "small. « −10 % » 1.41",
+     "small. « −15 % » 1.41",
      "button. « Achat unique » 1.13"
     ],
     "illisiblesNormal": [
@@ -2433,10 +2432,12 @@
   "widths": {
    "390": {
     "normal": "12/53",
-    "inverse": "1/53",
+    "inverse": "3/53",
     "fond": "clair→sombre",
     "ok": true,
     "illisibles": [
+     "small. « −10 % » 1.45",
+     "small. « −15 % » 1.45",
      "button. « Achat unique » 1.13"
     ],
     "illisiblesNormal": [
@@ -2450,10 +2451,12 @@
    },
    "1280": {
     "normal": "12/57",
-    "inverse": "1/57",
+    "inverse": "3/57",
     "fond": "clair→sombre",
     "ok": true,
     "illisibles": [
+     "small. « −10 % » 1.45",
+     "small. « −15 % » 1.45",
      "button. « Achat unique » 1.13"
     ],
     "illisiblesNormal": [
@@ -2475,10 +2478,12 @@
   "widths": {
    "390": {
     "normal": "9/55",
-    "inverse": "1/55",
+    "inverse": "3/55",
     "fond": "clair→sombre",
     "ok": true,
     "illisibles": [
+     "small. « −10 % » 1.45",
+     "small. « −15 % » 1.45",
      "button. « Achat unique » 1.13"
     ],
     "illisiblesNormal": [
@@ -2492,10 +2497,12 @@
    },
    "1280": {
     "normal": "8/54",
-    "inverse": "1/54",
+    "inverse": "3/54",
     "fond": "clair→sombre",
     "ok": true,
     "illisibles": [
+     "small. « −10 % » 1.45",
+     "small. « −15 % » 1.45",
      "button. « Achat unique » 1.13"
     ],
     "illisiblesNormal": [
@@ -2517,43 +2524,27 @@
   "widths": {
    "390": {
     "normal": "0/33",
-    "inverse": "23/33",
-    "fond": "sombre→clair",
+    "inverse": "4/33",
+    "fond": "sombre→sombre",
     "ok": false,
     "illisibles": [
-     "span.eb « Atelier Nuance · coiffure » 2.29",
-     "span. « moment, » 2.6",
-     "span. « à » 1.6",
-     "span. « votre » 1.63",
-     "span. « heure. » 1.14",
-     "p.tx « Choisissez votre prestation  » 1.59",
-     "p.tx « Choisissez votre prestation  » 1.64",
-     "button. « Couleur · 1 h 30 » 2.17",
-     "button. « Soin · 30 min » 2",
-     "button. « mer. » 1.9",
-     "b. « 11 » 1.9",
-     "button. « jeu. » 1.92"
+     "h4. « Réserver » 1.14",
+     "div.s1-l « Prestation » 1.11",
+     "div.s1-l « Jour » 1.02",
+     "div.s1-l « Créneau » 1.05"
     ],
     "illisiblesNormal": []
    },
    "1280": {
     "normal": "5/33",
-    "inverse": "13/33",
-    "fond": "sombre→clair",
+    "inverse": "4/33",
+    "fond": "sombre→sombre",
     "ok": false,
     "illisibles": [
-     "span.eb « Atelier Nuance · coiffure » 1.18",
-     "span. « Votre » 1.91",
-     "span. « moment, » 2.1",
-     "span. « à » 2.41",
-     "span. « votre » 2.72",
-     "p.tx « Choisissez votre prestation  » 2.82",
-     "p.tx « Choisissez votre prestation  » 1.72",
-     "h4. « Réserver » 3.57",
-     "button. « Soin · 30 min » 4.18",
-     "div.s1-l « Jour » 2.05",
-     "div.s1-l « Créneau » 2.91",
-     "button. « 11 h 00 » 4.49"
+     "h4. « Réserver » 1.67",
+     "div.s1-l « Prestation » 2.78",
+     "div.s1-l « Jour » 1.07",
+     "div.s1-l « Créneau » 1.57"
     ],
     "illisiblesNormal": [
      "div.s1-l « Prestation » 2.37",
@@ -2680,40 +2671,30 @@
  {
   "id": "prestations-en-accordeon-horizontal",
   "family": "classique",
-  "ok": false,
+  "ok": true,
   "widths": {
    "390": {
     "normal": "1/11",
-    "inverse": "2/11",
+    "inverse": "0/11",
     "fond": "sombre→sombre",
-    "ok": false,
-    "illisibles": [
-     "small. « Coupe, shampoing, coiffage · » 3.3",
-     "small. « dès [À compléter] € » 2.6"
-    ],
+    "ok": true,
+    "illisibles": [],
     "illisiblesNormal": [
      "span.eb « Atelier Nuance » 3.31"
     ]
    },
    "1280": {
     "normal": "1/11",
-    "inverse": "5/11",
+    "inverse": "0/11",
     "fond": "clair→sombre",
-    "ok": false,
-    "illisibles": [
-     "small. « Coupe, shampoing, coiffage · » 2.56",
-     "small. « dès [À compléter] € » 2.55",
-     "span.s5-v « Couleur » 1.53",
-     "span.s5-v « Soins » 2.07",
-     "span.s5-v « Conseil » 1.77"
-    ],
+    "ok": true,
+    "illisibles": [],
     "illisiblesNormal": [
      "span.eb « Atelier Nuance » 3.31"
     ]
    }
   },
-  "photo": 0.6,
-  "fondPhoto": true
+  "photo": 0.6
  },
  {
   "id": "carte-des-chantiers",
@@ -3230,14 +3211,19 @@
  {
   "id": "defilement-horizontal",
   "family": "classique",
-  "ok": true,
+  "ok": false,
   "widths": {
    "390": {
     "normal": "2/15",
-    "inverse": "0/15",
+    "inverse": "4/15",
     "fond": "sombre→clair",
-    "ok": true,
-    "illisibles": [],
+    "ok": false,
+    "illisibles": [
+     "b. « Thé vert jasmin » 2.98",
+     "span. « 8,50 € » 3.57",
+     "span. « 8,50 € » 2.75",
+     "b. « Thé noir aux agrumes » 2.94"
+    ],
     "illisiblesNormal": [
      "i. « 01 » 1.12",
      "i. « 02 » 1.15"
@@ -3245,10 +3231,20 @@
    },
    "1280": {
     "normal": "4/21",
-    "inverse": "0/21",
+    "inverse": "9/21",
     "fond": "sombre→clair",
-    "ok": true,
-    "illisibles": [],
+    "ok": false,
+    "illisibles": [
+     "b. « Thé vert jasmin » 2.76",
+     "span. « 8,50 € » 2.59",
+     "b. « Thé noir aux agrumes » 2.73",
+     "span. « 8,50 € » 3.23",
+     "span. « 8,50 € » 2.56",
+     "b. « Rooibos vanille » 2.77",
+     "span. « 8,50 € » 2.6",
+     "b. « Verveine-menthe » 2.77",
+     "span. « 7,50 € » 2.6"
+    ],
     "illisiblesNormal": [
      "i. « 01 » 1.12",
      "i. « 02 » 1.15",
@@ -3257,7 +3253,8 @@
     ]
    }
   },
-  "photo": 0.6
+  "photo": 0.6,
+  "fondPhoto": true
  },
  {
   "id": "cartes-qui-s-empilent",
@@ -3373,21 +3370,6 @@
   "ok": false,
   "widths": {
    "390": {
-    "normal": "2/3",
-    "inverse": "3/14",
-    "fond": "sombre→clair",
-    "ok": false,
-    "illisibles": [
-     "b. « Pose ton écran. » 1.23",
-     "span.lg « Brindi » 1.23",
-     "span. « Fermer » 1.23"
-    ],
-    "illisiblesNormal": [
-     "span.lg « Brindi » 1",
-     "span. « Menu » 1"
-    ]
-   },
-   "1280": {
     "normal": "0/14",
     "inverse": "3/14",
     "fond": "sombre→clair",
@@ -3398,6 +3380,19 @@
      "span. « Fermer » 1.23"
     ],
     "illisiblesNormal": []
+   },
+   "1280": {
+    "normal": "2/3",
+    "inverse": "1/3",
+    "fond": "sombre→clair",
+    "ok": true,
+    "illisibles": [
+     "b. « Pose ton écran. » 1.23"
+    ],
+    "illisiblesNormal": [
+     "span.lg « Brindi » 1",
+     "span. « Menu » 1"
+    ]
    }
   },
   "photo": 1,
@@ -3845,26 +3840,14 @@
  {
   "id": "familles-en-eventail",
   "family": "classique",
-  "ok": false,
+  "ok": true,
   "widths": {
    "390": {
     "normal": "3/21",
-    "inverse": "11/21",
+    "inverse": "0/21",
     "fond": "clair→sombre",
-    "ok": false,
-    "illisibles": [
-     "b. « Thés verts » 1.33",
-     "small. « Sencha, jasmin » 1.28",
-     "b. « Mélanges fruités » 1.4",
-     "b. « Mélanges fruités » 1.38",
-     "small. « Fruits et fleurs » 1.3",
-     "b. « Accessoires » 2.67",
-     "small. « Infuseurs » 2.04",
-     "span. « Voir » 2.1",
-     "b. « Fleurs » 2.27",
-     "small. « Jasmin » 1.87",
-     "span. « Voir » 1.18"
-    ],
+    "ok": true,
+    "illisibles": [],
     "illisiblesNormal": [
      "span.z-eb « Explorer » 4.09",
      "span. « Voir » 1.62",
@@ -3873,22 +3856,10 @@
    },
    "1280": {
     "normal": "3/21",
-    "inverse": "11/21",
+    "inverse": "0/21",
     "fond": "clair→sombre",
-    "ok": false,
-    "illisibles": [
-     "b. « Thés verts » 1.32",
-     "small. « Sencha, jasmin » 1.28",
-     "b. « Mélanges fruités » 4.04",
-     "b. « Infusions » 2.53",
-     "small. « Sans théine » 2.22",
-     "b. « Accessoires » 2.32",
-     "small. « Infuseurs » 1.95",
-     "span. « Voir » 1.81",
-     "b. « Fleurs » 2.07",
-     "small. « Jasmin » 1.85",
-     "span. « Voir » 1.18"
-    ],
+    "ok": true,
+    "illisibles": [],
     "illisiblesNormal": [
      "span.z-eb « Explorer » 4.09",
      "span. « Voir » 2.04",
@@ -4166,7 +4137,7 @@
   "ok": true,
   "widths": {
    "390": {
-    "normal": "7/32",
+    "normal": "6/32",
     "inverse": "4/32",
     "fond": "clair→sombre",
     "ok": true,
@@ -4186,7 +4157,7 @@
     ]
    },
    "1280": {
-    "normal": "5/29",
+    "normal": "4/29",
     "inverse": "1/29",
     "fond": "clair→sombre",
     "ok": true,
@@ -4197,8 +4168,7 @@
      "small. « 8,50 € » 4.36",
      "small. « 8,50 € » 4.36",
      "small. « 7,50 € » 4.36",
-     "div.pa3-ok « Ajouté au panier » 4.09",
-     "small. « Quantité : 1 » 4.42"
+     "div.pa3-ok « Ajouté au panier » 4.09"
     ]
    }
   },
@@ -4479,26 +4449,18 @@
  {
   "id": "commande-pas-a-pas",
   "family": "classique",
-  "ok": false,
+  "ok": true,
   "widths": {
    "390": {
     "normal": "7/49",
-    "inverse": "36/49",
+    "inverse": "4/49",
     "fond": "clair→sombre",
-    "ok": false,
+    "ok": true,
     "illisibles": [
-     "span.dq-eb « Commande » 1.5",
-     "span.lm « commande » 1.5",
      "li.on « Coordonnées » 4.09",
-     "li. « Livraison » 1.11",
-     "li. « Paiement » 1.11",
-     "b. « 01 » 1.5",
-     "span. « E-mail » 1.11",
-     "b. « 02 » 1.5",
-     "span. « Prénom » 1.11",
-     "span. « Nom » 1.11",
-     "span. « Adresse » 1.11",
-     "span. « Code postal » 1.11"
+     "button.dq-btn « Payer » 4.09",
+     "b. « 52,70 € » 4.09",
+     "i. « → » 4.09"
     ],
     "illisiblesNormal": [
      "span.dq-eb « Commande » 3.63",
@@ -4511,22 +4473,14 @@
    },
    "1280": {
     "normal": "7/47",
-    "inverse": "34/47",
+    "inverse": "4/47",
     "fond": "clair→sombre",
-    "ok": false,
+    "ok": true,
     "illisibles": [
-     "span.dq-eb « Commande » 1.5",
-     "span.lm « commande » 1.5",
      "li.on « Coordonnées » 4.09",
-     "li. « Livraison » 1.11",
-     "li. « Paiement » 1.11",
-     "b. « 01 » 1.5",
-     "span. « E-mail » 1.11",
-     "b. « 02 » 1.5",
-     "span. « Prénom » 1.11",
-     "span. « Nom » 1.11",
-     "span. « Adresse » 1.11",
-     "span. « Code postal » 1.11"
+     "button.dq-btn « Payer » 4.09",
+     "b. « 52,70 € » 4.09",
+     "i. « → » 4.09"
     ],
     "illisiblesNormal": [
      "span.dq-eb « Commande » 3.63",
@@ -4543,26 +4497,16 @@
  {
   "id": "suivi-de-commande-et-aide",
   "family": "classique",
-  "ok": false,
+  "ok": true,
   "widths": {
    "390": {
     "normal": "3/23",
-    "inverse": "18/23",
+    "inverse": "2/23",
     "fond": "clair→sombre",
-    "ok": false,
+    "ok": true,
     "illisibles": [
-     "span.dq-eb « Aide · suivi de commande » 1.5",
-     "span.lm « ma commande ? » 1.5",
-     "span.lm « ma commande ? » 1.5",
-     "span. « N° de commande » 1.11",
-     "span. « E-mail de la commande » 1.11",
      "button.dq-btn « Suivre » 4.09",
-     "i. « → » 4.09",
-     "small.cm4-m « Démonstration : aucune comma » 1.11",
-     "p. « Modes, délais et prix : [À c » 1.11",
-     "p. « Modes, délais et prix : [À c » 1.11",
-     "p. « Délai pour changer d'avis et » 1.11",
-     "p. « Délai pour changer d'avis et » 1.11"
+     "i. « → » 4.09"
     ],
     "illisiblesNormal": [
      "span.dq-eb « Aide · suivi de commande » 3.63",
@@ -4572,22 +4516,12 @@
    },
    "1280": {
     "normal": "3/22",
-    "inverse": "17/22",
+    "inverse": "2/22",
     "fond": "clair→sombre",
-    "ok": false,
+    "ok": true,
     "illisibles": [
-     "span.dq-eb « Aide · suivi de commande » 1.5",
-     "span.lm « ma commande ? » 1.5",
-     "span.lm « ma commande ? » 1.5",
-     "span. « N° de commande » 1.11",
-     "span. « E-mail de la commande » 1.11",
      "button.dq-btn « Suivre » 4.09",
-     "i. « → » 4.09",
-     "small.cm4-m « Démonstration : aucune comma » 1.11",
-     "p. « Modes, délais et prix : [À c » 1.11",
-     "p. « Délai pour changer d'avis et » 1.11",
-     "p. « Délai pour changer d'avis et » 1.11",
-     "p. « Les mesures de chaque pièce  » 1.11"
+     "i. « → » 4.09"
     ],
     "illisiblesNormal": [
      "span.dq-eb « Aide · suivi de commande » 3.63",
@@ -4601,27 +4535,14 @@
  {
   "id": "mentions-et-conditions",
   "family": "classique",
-  "ok": false,
+  "ok": true,
   "widths": {
    "390": {
     "normal": "5/20",
-    "inverse": "18/20",
+    "inverse": "0/20",
     "fond": "clair→sombre",
-    "ok": false,
-    "illisibles": [
-     "span.dq-eb « Légal » 1.5",
-     "span.lm « légales » 1.5",
-     "p. « Textes à faire valider par l » 1.11",
-     "p. « Textes à faire valider par l » 1.11",
-     "p. « Textes à faire valider par l » 1.11",
-     "button. « Mentions légales » 1",
-     "button. « Conditions générales de vent » 1.11",
-     "h4. « Éditeur du site » 1.5",
-     "p. « [À compléter : raison social » 1",
-     "p. « [À compléter : raison social » 1",
-     "p. « [À compléter : raison social » 1",
-     "h4. « Directeur de la publication » 1.5"
-    ],
+    "ok": true,
+    "illisibles": [],
     "illisiblesNormal": [
      "span.dq-eb « Légal » 3.63",
      "h4. « Éditeur du site » 3.63",
@@ -4632,23 +4553,10 @@
    },
    "1280": {
     "normal": "5/21",
-    "inverse": "19/21",
+    "inverse": "0/21",
     "fond": "clair→sombre",
-    "ok": false,
-    "illisibles": [
-     "span.dq-eb « Légal » 1.5",
-     "span.lm « légales » 1.5",
-     "p. « Textes à faire valider par l » 1.11",
-     "p. « Textes à faire valider par l » 1.11",
-     "button. « Mentions légales » 1",
-     "button. « Conditions générales de vent » 1.11",
-     "button. « Conditions générales de vent » 1.11",
-     "button. « Confidentialité » 1.11",
-     "button. « Retours et remboursements » 1.11",
-     "button. « Cookies » 1.11",
-     "h4. « Éditeur du site » 1.5",
-     "p. « [À compléter : raison social » 1"
-    ],
+    "ok": true,
+    "illisibles": [],
     "illisiblesNormal": [
      "span.dq-eb « Légal » 3.63",
      "h4. « Éditeur du site » 3.63",
@@ -4988,28 +4896,25 @@
   "ok": true,
   "widths": {
    "390": {
-    "normal": "1/8",
-    "inverse": "0/8",
+    "normal": "0/1",
+    "inverse": "0/1",
     "fond": "clair→sombre",
     "ok": true,
     "illisibles": [],
-    "illisiblesNormal": [
-     "span. « La lettre de Brindi » 4.09"
-    ]
+    "illisiblesNormal": []
    },
    "1280": {
-    "normal": "2/8",
-    "inverse": "0/8",
+    "normal": "1/1",
+    "inverse": "0/1",
     "fond": "clair→clair",
     "ok": true,
     "illisibles": [],
     "illisiblesNormal": [
-     "button.btn « Revoir la fenêtre » 2.88",
-     "span. « La lettre de Brindi » 4.09"
+     "button.btn « Revoir la fenêtre » 2.88"
     ]
    }
   },
-  "photo": 0.18
+  "photo": 0
  },
  {
   "id": "ils-parlent-de-nous",
@@ -5051,27 +4956,14 @@
  {
   "id": "prestations-en-cartes",
   "family": "classique",
-  "ok": false,
+  "ok": true,
   "widths": {
    "390": {
     "normal": "0/25",
-    "inverse": "24/25",
-    "fond": "sombre→clair",
-    "ok": false,
-    "illisibles": [
-     "h4. « Rénovation électrique » 2.61",
-     "h4. « Rénovation électrique » 2.53",
-     "p. « Mise aux normes, tableau, pr » 2.23",
-     "p. « Mise aux normes, tableau, pr » 2.19",
-     "p. « Mise aux normes, tableau, pr » 1.74",
-     "span.go « À partir de [prix] » 1.82",
-     "span. « → » 1.78",
-     "h4. « Dépannage » 1.49",
-     "p. « Panne, coupure, disjoncteur  » 1.42",
-     "p. « Panne, coupure, disjoncteur  » 1.64",
-     "span.go « À partir de [prix] » 1.49",
-     "span. « → » 1.68"
-    ],
+    "inverse": "0/25",
+    "fond": "sombre→sombre",
+    "ok": true,
+    "illisibles": [],
     "illisiblesNormal": []
    },
    "1280": {
@@ -5083,8 +4975,7 @@
     "illisiblesNormal": []
    }
   },
-  "photo": 0.7,
-  "fondPhoto": true
+  "photo": 0.7
  },
  {
   "id": "tarifs-en-formules",
@@ -5147,26 +5038,14 @@
  {
   "id": "realisations-filtrables",
   "family": "classique",
-  "ok": false,
+  "ok": true,
   "widths": {
    "390": {
     "normal": "0/20",
-    "inverse": "11/20",
+    "inverse": "0/20",
     "fond": "clair→sombre",
-    "ok": false,
-    "illisibles": [
-     "b. « Cuisine contemporaine » 3.99",
-     "b. « Cuisine contemporaine » 3.03",
-     "span.cap2 « Éclairage et plaques » 3.71",
-     "span.cap2 « Éclairage et plaques » 2.45",
-     "b. « Salle de bain » 3.88",
-     "span.cap2 « Mise en sécurité » 2.72",
-     "span.cap2 « Spots et bornes » 2.73",
-     "span.cap2 « Rénovation » 2.35",
-     "span.cap2 « Tableau et circuits » 2.88",
-     "b. « Pièce de vie » 4.31",
-     "span.cap2 « Finitions » 2.72"
-    ],
+    "ok": true,
+    "illisibles": [],
     "illisiblesNormal": []
    },
    "1280": {
@@ -5178,8 +5057,7 @@
     "illisiblesNormal": []
    }
   },
-  "photo": 0.8,
-  "fondPhoto": true
+  "photo": 0.8
  },
  {
   "id": "projet-en-detail",
@@ -5290,26 +5168,37 @@
  {
   "id": "bandeau-d-urgence",
   "family": "classique",
-  "ok": true,
+  "ok": false,
   "widths": {
    "390": {
     "normal": "0/8",
-    "inverse": "0/8",
-    "fond": "sombre→clair",
-    "ok": true,
-    "illisibles": [],
+    "inverse": "5/8",
+    "fond": "sombre→sombre",
+    "ok": false,
+    "illisibles": [
+     "span. « Dépannage » 1.52",
+     "h3. « Une panne ? On intervient vi » 1.55",
+     "h3. « Une panne ? On intervient vi » 1.68",
+     "p. « [À compléter : délai d'inter » 1.68",
+     "p. « [À compléter : délai d'inter » 1.41"
+    ],
     "illisiblesNormal": []
    },
    "1280": {
     "normal": "0/6",
-    "inverse": "0/6",
-    "fond": "sombre→clair",
-    "ok": true,
-    "illisibles": [],
+    "inverse": "3/6",
+    "fond": "sombre→sombre",
+    "ok": false,
+    "illisibles": [
+     "span. « Dépannage » 1.3",
+     "h3. « Une panne ? On intervient vi » 1.17",
+     "p. « [À compléter : délai d'inter » 1.15"
+    ],
     "illisiblesNormal": []
    }
   },
-  "photo": 1
+  "photo": 1,
+  "fondPhoto": true
  },
  {
   "id": "equipe-et-qualifications",
@@ -5679,7 +5568,7 @@
  {
   "id": "en-tete-transparent-sur-photo",
   "family": "classique",
-  "ok": false,
+  "ok": true,
   "widths": {
    "390": {
     "normal": "1/6",
@@ -5687,7 +5576,7 @@
     "fond": "clair→clair",
     "ok": true,
     "illisibles": [
-     "a.lg « Brindi » 1.14"
+     "a.lg « Brindi » 2.21"
     ],
     "illisiblesNormal": [
      "a.lg « Brindi » 2.21"
@@ -5695,15 +5584,14 @@
    },
    "1280": {
     "normal": "4/8",
-    "inverse": "5/8",
+    "inverse": "4/8",
     "fond": "clair→clair",
-    "ok": false,
+    "ok": true,
     "illisibles": [
-     "a.lg « Brindi » 1.63",
-     "a.lnk « Nos mélanges » 1.17",
-     "a.lnk « Coffrets » 1.26",
-     "a.lnk « Le journal » 1.19",
-     "a.lnk « Notre histoire » 1.21"
+     "a.lnk « Nos mélanges » 2.27",
+     "a.lnk « Coffrets » 2.49",
+     "a.lnk « Le journal » 2.31",
+     "a.lnk « Notre histoire » 2.36"
     ],
     "illisiblesNormal": [
      "a.lnk « Nos mélanges » 2.27",
@@ -5713,13 +5601,12 @@
     ]
    }
   },
-  "photo": 0.7,
-  "fondPhoto": true
+  "photo": 0.7
  },
  {
   "id": "en-tete-au-logo-centre",
   "family": "classique",
-  "ok": true,
+  "ok": false,
   "widths": {
    "390": {
     "normal": "0/7",
@@ -5733,12 +5620,13 @@
     "normal": "0/10",
     "inverse": "0/10",
     "fond": "clair→clair",
-    "ok": true,
+    "ok": false,
     "illisibles": [],
     "illisiblesNormal": []
    }
   },
-  "photo": 0.7
+  "photo": 0.7,
+  "fondPhoto": true
  },
  {
   "id": "en-tete-a-mega-menu-illustre",
@@ -5929,17 +5817,14 @@
  {
   "id": "ouverture-video",
   "family": "classique",
-  "ok": true,
+  "ok": false,
   "widths": {
    "390": {
     "normal": "3/7",
-    "inverse": "2/7",
+    "inverse": "0/7",
     "fond": "clair→clair",
     "ok": true,
-    "illisibles": [
-     "h3. « Pose ton écran. » 1.23",
-     "p. « Chaque brin choisi, chaque m » 1.32"
-    ],
+    "illisibles": [],
     "illisiblesNormal": [
      "span. « Thés et infusions bio » 1.18",
      "em. « Regarde l'eau changer. » 1.79",
@@ -5948,13 +5833,10 @@
    },
    "1280": {
     "normal": "3/7",
-    "inverse": "2/7",
+    "inverse": "0/7",
     "fond": "clair→clair",
-    "ok": true,
-    "illisibles": [
-     "h3. « Pose ton écran. » 1.63",
-     "p. « Chaque brin choisi, chaque m » 1.32"
-    ],
+    "ok": false,
+    "illisibles": [],
     "illisiblesNormal": [
      "span. « Thés et infusions bio » 1.34",
      "em. « Regarde l'eau changer. » 1.63",
@@ -5962,7 +5844,8 @@
     ]
    }
   },
-  "photo": 1
+  "photo": 1,
+  "fondPhoto": true
  },
  {
   "id": "ouverture-en-ecran-partage",
@@ -5999,14 +5882,12 @@
   "widths": {
    "390": {
     "normal": "2/5",
-    "inverse": "4/5",
+    "inverse": "2/5",
     "fond": "clair→clair",
-    "ok": false,
+    "ok": true,
     "illisibles": [
-     "h3. « Pose ton écran. » 1.34",
-     "p. « Ces quelques minutes sont à  » 1.33",
-     "button. « ← » 1.34",
-     "button. « → » 1.26"
+     "button. « ← » 1.73",
+     "button. « → » 1.62"
     ],
     "illisiblesNormal": [
      "button. « ← » 1.45",
@@ -6015,14 +5896,13 @@
    },
    "1280": {
     "normal": "2/5",
-    "inverse": "4/5",
+    "inverse": "3/5",
     "fond": "clair→clair",
     "ok": false,
     "illisibles": [
-     "h3. « Pose ton écran. » 1.37",
-     "p. « Ces quelques minutes sont à  » 1.34",
-     "button. « ← » 2.12",
-     "button. « → » 2.14"
+     "p. « Ces quelques minutes sont à  » 4.11",
+     "button. « ← » 2.86",
+     "button. « → » 2.89"
     ],
     "illisiblesNormal": [
      "button. « ← » 2.33",
@@ -6124,21 +6004,11 @@
   "widths": {
    "390": {
     "normal": "1/13",
-    "inverse": "11/13",
-    "fond": "clair→clair",
-    "ok": false,
+    "inverse": "1/13",
+    "fond": "clair→sombre",
+    "ok": true,
     "illisibles": [
-     "h4. « Les thés » 2.72",
-     "span. « Découvrir » 1.34",
-     "i. « → » 1.31",
-     "h4. « Les infusions » 2.94",
-     "span. « Découvrir » 1.81",
-     "i. « → » 2.08",
-     "span. « Découvrir » 1.45",
-     "i. « → » 3.61",
-     "h4. « La pause au bureau » 2.39",
-     "span. « Découvrir » 2.26",
-     "i. « → » 2.03"
+     "span. « Découvrir » 4.29"
     ],
     "illisiblesNormal": [
      "span. « Découvrir » 4.29"
@@ -6146,21 +6016,11 @@
    },
    "1280": {
     "normal": "1/12",
-    "inverse": "11/12",
+    "inverse": "1/12",
     "fond": "clair→clair",
     "ok": false,
     "illisibles": [
-     "h4. « Les thés » 1.31",
-     "span. « Découvrir » 1.32",
-     "i. « → » 1.32",
-     "h4. « Les infusions » 2.77",
-     "span. « Découvrir » 1.46",
-     "i. « → » 2.39",
-     "span. « Découvrir » 1.58",
-     "i. « → » 1.29",
-     "h4. « La pause au bureau » 2.17",
-     "span. « Découvrir » 1.82",
-     "i. « → » 2.29"
+     "i. « → » 4.5"
     ],
     "illisiblesNormal": [
      "i. « → » 4.5"
