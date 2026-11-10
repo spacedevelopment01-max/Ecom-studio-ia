@@ -783,6 +783,50 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
     } finally { delete T.customPhotoDeps.unit; delete B.customBrandDeps.plan; delete B.customBrandDeps.write; delete B.customBrandDeps.photo; }
   });
 
+  it("photos produit sur les emplacements produit seulement ; sachet posé par erreur en ouverture → scène créée avec lui en modèle", async () => {
+    const user = await account();
+    const cid = threadFor(user, null), ctx: any = { user, conversationId: cid, runId: `run-${Date.now()}`, projectId: null, attachment: () => null };
+    await call("start.answer", ctx, { answers: [{ field: "business", value: "products" }, { field: "offer", value: "Des thés en sachet." }] });
+    await call("start.answer", ctx, { answers: [
+      { field: "existing", value: "Rien." }, { field: "audience", value: "Adultes." }, { field: "image", value: "Doux." }, { field: "setup", value: "1 thé" }, { field: "market", value: "France." },
+      { field: "price", value: "8 €" }, { field: "difference", value: "Bio." }, { field: "taste", status: "none" }, { field: "photos", value: "Oui." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
+    ] });
+    await call("start.confirm", ctx, {});
+    const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
+    await call("theme.family", ctx, { family: "classique" });
+    expect((await call("custom.compose", ctx, fullSite("classique"))).ok).toBe(true);
+    const sharp = (await import("sharp")).default;
+    const { saveAsset } = await import("@/lib/library");
+    const { createProduct } = await import("@/lib/products/catalog");
+    const pouch = (await saveAsset({ projectId: pid, userId: user.id, data: await sharp({ create: { width: 900, height: 900, channels: 3, background: "#cba" } }).png().toBuffer(), name: "sachet.png", mime: "image/png", role: "original", origin: "upload" })).id;
+    createProduct(pid, { title: "Jasmin délicat", price: 850, images: [{ assetId: pouch }] } as any);
+    // Une photo de fiche produit n'est jamais proposée comme « image du client » pour l'ambiance.
+    expect(B.clientImages(pid).map((x) => x.id)).not.toContain(pouch);
+    // Vignettes (lot, panier, recherche, bouton d'achat) et « Photo produit » : la vraie photo ; une scène : créée.
+    expect(B.showsProductAlone({ role: "lot", title: "Complète ta commande" }, "Photo d'ambiance")).toBe(true);
+    expect(B.showsProductAlone({ role: "mise en avant", title: "Scène achetable" }, "Photo produit au format carré, sachet seul.")).toBe(true);
+    expect(B.showsProductAlone({ role: "mise en avant", title: "Scène achetable" }, "Photo d'ambiance lifestyle, cuisine au matin.")).toBe(false);
+    // Le sachet posé par erreur sur la photo d'ouverture (essai Éclat de thé).
+    let t = loadCustomTheme(pid)!;
+    const hero = t.pages[0].sections.find((x) => /photos\/[\w-]+\.(?:webp|png|jpg)/.test(sectionHtml(x)) && !B.showsProductAlone(libSection(x.id)!, ""))!;
+    const f = /photos\/[\w-]+\.(?:webp|png|jpg)/.exec(sectionHtml(hero))![0];
+    for (const x of allSections(t)) x.s.clientTexts = true;
+    hero.html = sectionHtml(hero).split(f).join(`/api/files/${pouch}`);
+    hero.photoBriefs = [{ find: f, description: "Photographie d'ambiance, format paysage : une théière fumante sur un bureau au matin, le sachet Jasmin délicat posé à côté.", ratio: "1:1", product: "Jasmin délicat" }];
+    (await import("@/lib/syna-agent/custom-theme/theme")).saveCustomTheme(pid, t, { history: false });
+    T.customPhotoDeps.unit = () => 50_000;
+    const refs: (Buffer | null)[] = [];
+    try {
+      B.customBrandDeps.photo = async (_p, ref) => { refs.push(ref); return sharp({ create: { width: 20, height: 20, channels: 3, background: "#999" } }).png().toBuffer(); };
+      const out: any = await fr(() => B.runCustomBrandJob({ job: { id: `job-heal-${Date.now()}` }, payload: { projectId: pid, capMicro: 10_000_000, photos: true, images: "sina", clientAssets: [pouch] }, checkpoint: {}, progress: () => undefined, step: async (_k: string, fn: () => Promise<unknown>) => fn() } as any));
+      expect(out.problems.join(" ")).toMatch(/1 photo\(s\) de produit retirée\(s\) d'un emplacement d'ambiance/);
+      expect(out.photosClient).toBe(0); // le sachet n'est jamais reposé en ambiance, même passé dans clientAssets
+      expect(refs.some((r) => r !== null)).toBe(true); // la scène est créée avec le vrai sachet en modèle
+      t = loadCustomTheme(pid)!;
+      expect(sectionHtml(t.pages[0].sections.find((x) => x.uid === hero.uid)!)).not.toContain(pouch);
+    } finally { delete T.customPhotoDeps.unit; delete B.customBrandDeps.photo; }
+  });
+
   it("un remplacement qui ne s'applique pas est compté, jamais deviné ; aucun script n'entre", () => {
     const w = { edits: [{ find: "<h2>Bonjour</h2>", replace: "<h2>Salut</h2>" }, { find: "absent", replace: "x" }, { find: "<p>a</p>", replace: "<script>x</script>" }], photos: [] };
     expect(B.applyWrite("<h2>Bonjour</h2><p>a</p>", { ...w, links: [] })).toEqual({ html: "<h2>Salut</h2><p>a</p>", failed: 2, applied: 1 });

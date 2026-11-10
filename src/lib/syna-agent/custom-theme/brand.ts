@@ -28,7 +28,7 @@ import { angleDetails, COPY_MODEL } from "../mockup-code/copy";
 import { codePhotoPrompt } from "../mockup-code/code-mockup";
 import { hdAspect } from "../mockup-code/prompts";
 import { mockupImageRoute } from "../mockup-code/tools";
-import { authenticSection, isCutoutPhoto, isProductPhotoSection, libSection, withBrandName } from "./library";
+import { authenticSection, isCutoutPhoto, isProductPhotoSection, libSection, withBrandName, type LibSection } from "./library";
 import { cutoutPhoto, FOND_A_DETOURER } from "./cutout-photo";
 import { riskCount } from "./risk";
 import { allSections, loadCustomTheme, pushCustomThemeHistory, replaceOnce, saveCustomTheme, sectionHtml, type CustomTheme } from "./theme";
@@ -97,7 +97,7 @@ ${COPY_CRAFT}
 - Le vocabulaire imposé par le client est respecté.
 - Tu ne touches ni aux balises, ni aux classes, ni aux attributs (sauf alt et les textes) : chaque modification est un remplacement { find, replace } où find est un passage EXACT du HTML fourni, présent une seule fois (prends assez de contexte pour qu'il soit unique), et replace le même passage avec les nouveaux textes.
 - Cartes de produits : une carte par produit de la liste, jamais de carte « [À compléter : produit] ». S'il y a plus de cartes que de produits, retire les cartes en trop : find = la carte entière (de sa balise ouvrante à sa balise fermante), replace = "" ; et ne décris pas leurs photos.
-- Pour CHAQUE image de la section dont la source commence par « photos/ », décris la photo à créer pour la marque : find = la source exacte (ex. « photos/sl-b1.webp »), description = UNE photo décrite en phrases complètes, dans l'ordre : type de photo, format, point de vue, cadrage ; surface et fond ; chaque objet à sa place (forme, matière, couleur, état) ; « La scène contient exactement N objets : … » ; ce qui est dégagé ; lumière, ombres, ambiance ; « Aucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. » ; ratio = format de la photo ; product = le nom exact d'un produit de la liste dès que la photo le montre (sa vraie photo sera utilisée : jamais de pot, flacon ou emballage générique), sinon null. Une photo d'ouverture ou d'ambiance est une scène de vie MAGNIFIQUE qui remplit tout le cadre et fait ressentir l'émotion de l'angle (un lieu vrai, un moment de la journée, une lumière), jamais un produit posé sur un fond uni.
+- Pour CHAQUE image de la section dont la source commence par « photos/ », décris la photo à créer pour la marque : find = la source exacte (ex. « photos/sl-b1.webp »), description = UNE photo décrite en phrases complètes, dans l'ordre : type de photo, format, point de vue, cadrage ; surface et fond ; chaque objet à sa place (forme, matière, couleur, état) ; « La scène contient exactement N objets : … » ; ce qui est dégagé ; lumière, ombres, ambiance ; « Aucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. » ; ratio = format de la photo ; product = le nom exact d'un produit de la liste dès que la photo le montre (sa vraie photo sera utilisée : jamais de pot, flacon ou emballage générique), sinon null. Une carte ou une vignette (produit seul) commence par « Photo produit » : sa vraie photo y est posée telle quelle. Une scène peut montrer le produit (sa vraie photo sert de modèle), mais pas toutes : les autres photos d'ambiance montrent l'univers de la marque SANS le produit (pour du thé : théière, tasse fumante, feuilles, fleurs, fruits, plantes), toujours en accord avec le texte d'en face ; jamais deux fois la même scène. Une photo d'ouverture ou d'ambiance est une scène de vie MAGNIFIQUE qui remplit tout le cadre et fait ressentir l'émotion de l'angle (un lieu vrai, un moment de la journée, une lumière), jamais un produit posé sur un fond uni.
 Réponse : uniquement le JSON demandé.`;
 
 /** Faits de la marque donnés à chaque écriture (les mêmes pour toutes les sections). */
@@ -192,13 +192,26 @@ export function applyWrite(html: string, w: SectionWrite): { html: string; faile
  * quand il en a une), « a-fournir » (impossible à inventer : seule une vraie photo du client va là), « ambiance » (photo
  * que SINA peut créer).
  */
+/**
+ * Photo qui montre le produit SEUL (carte, bloc d'achat, vignette d'un lot, d'un panier, de la recherche, du bouton
+ * d'achat) : sa vraie photo y est posée telle quelle, jamais recréée (essai Éclat de thé du 10 novembre 2026 : des
+ * vignettes de « Complète ta commande » ou de la recherche allaient être recréées en photos payantes).
+ */
+const THUMB_ROLES = new Set(["lot", "panier", "recherche", "conversion"]);
+export const productSlotSection = (l: Pick<LibSection, "role" | "title">) => isProductPhotoSection(l) || THUMB_ROLES.has(l.role);
+export const showsProductAlone = (l: Pick<LibSection, "role" | "title">, description: string) => productSlotSection(l) || /^\s*photo(?:graphie)? (?:de )?produit\b/i.test(description);
+/** Photos des fiches produits du projet : elles restent sur les emplacements produit, jamais posées en photo d'ambiance. */
+export function productImageIds(projectId: string): Set<string> {
+  try { return new Set(listProducts(projectId).flatMap((x) => x.data.images.map((i) => i.assetId).filter((id): id is string => !!id))); } catch { return new Set(); }
+}
+
 export type PhotoSlot = { uid: string; place: string; section: string; file: string; kind: "produit" | "a-fournir" | "ambiance"; authentic?: string };
 export function photoSlots(t: CustomTheme, site: { business?: "products" | "services"; productPhotos?: boolean } = {}): PhotoSlot[] {
   const business = site.business ?? "products";
   // Les cartes (plan d'adresse) ne sont jamais des photos à créer : la vraie carte s'ouvre à l'adresse du client.
   return allSections(t).flatMap((x) => {
     const l = libSection(x.s.id), authentic = authenticSection(x.s.id, business);
-    const kind: PhotoSlot["kind"] = authentic ? "a-fournir" : l && site.productPhotos && isProductPhotoSection(l) ? "produit" : "ambiance";
+    const kind: PhotoSlot["kind"] = authentic ? "a-fournir" : l && site.productPhotos && productSlotSection(l) ? "produit" : "ambiance";
     return [...new Set([...sectionHtml(x.s).matchAll(/photos\/([\w-]+\.(?:webp|png|jpg))/g)].map((m) => m[1]).filter((f) => !/^(carte|map|plan)-/.test(f)))]
       .map((file) => ({ uid: x.s.uid, place: x.page?.label ?? x.place, section: l?.title ?? x.s.id, file, kind, ...(authentic ? { authentic } : {}) }));
   });
@@ -246,10 +259,13 @@ export function siteArtDirection(p: Project, fu: FamilyUniverse | null, j: Journ
  * comme une photo du site.
  */
 export function clientImages(projectId: string): { id: string; name: string }[] {
+  const productIds = productImageIds(projectId);
   return all<{ id: string; name: string; meta: string | null }>(
     "SELECT id, name, meta FROM assets WHERE project_id=? AND deleted_at IS NULL AND kind='image' AND origin='upload' AND COALESCE(role,'') NOT LIKE 'logo%' AND (width IS NULL OR width>=500) AND (height IS NULL OR height>=500) ORDER BY created_at",
     projectId,
-  ).filter((a) => { try { return !JSON.parse(a.meta ?? "{}").inspiration; } catch { return true; } }).map(({ id, name }) => ({ id, name }));
+  ).filter((a) => { try { return !JSON.parse(a.meta ?? "{}").inspiration; } catch { return true; } })
+    // Photos de ses fiches produits : elles vont aux emplacements produit et servent de modèle aux scènes, jamais en ambiance.
+    .filter((a) => !productIds.has(a.id)).map(({ id, name }) => ({ id, name }));
 }
 
 /** Photos que SINA créera, selon le choix du client. */
@@ -347,12 +363,32 @@ export async function runCustomBrandJob(ctx: JobContext) {
 
   // 2) Photos : vraie photo du produit, sinon photo créée dans la direction artistique de la marque.
   if (a.photos !== false) {
+    // Photo d'une fiche produit posée par erreur en photo d'ambiance (essai Éclat de thé : le sachet en ouverture, titre
+    // illisible dessus) : dans une section qui n'a que des scènes, l'emplacement redevient une photo à créer.
+    const productIds = productImageIds(p.id);
+    {
+      let fixed = 0;
+      t = loadCustomTheme(p.id)!;
+      for (const y of allSections(t)) {
+        const ly = libSection(y.s.id), briefs0 = y.s.photoBriefs ?? [];
+        if (!ly || !briefs0.length || briefs0.some((b) => showsProductAlone(ly, b.description))) continue;
+        let html = sectionHtml(y.s);
+        for (const b of briefs0) {
+          if (html.includes(b.find)) continue;
+          const m = [...html.matchAll(/\/api\/files\/([\w-]+)/g)].find((x) => productIds.has(x[1]));
+          if (!m) break;
+          html = html.replace(m[0], b.find); fixed++;
+        }
+        if (html !== sectionHtml(y.s)) y.s.html = html;
+      }
+      if (fixed) { t = saveCustomTheme(p.id, t, { history: false }); report.problems.push(`${fixed} photo(s) de produit retirée(s) d'un emplacement d'ambiance : une scène est créée à leur place`); }
+    }
     // Photos décrites lors d'un montage précédent (montage en deux fois) : créées maintenant, dans le même ordre.
     for (const y of allSections(loadCustomTheme(p.id)!)) if (!briefs[y.s.uid] && y.s.photoBriefs?.length) briefs[y.s.uid] = y.s.photoBriefs as SectionWrite["photos"];
     const todo = Object.entries(briefs).flatMap(([uid, list]) => list.map((ph) => ({ uid, ph }))).filter((x) => !/(^|\/)(carte|map|plan)-[\w-]*\.(?:webp|png|jpe?g)/.test(x.ph.find));
     const mode: ImagesMode = a.images ?? "sina";
     // Images du client d'abord (« client » ou « mix »), dans l'ordre ; jamais une même image sur deux emplacements.
-    const allOwn = (a.clientAssets ?? []).filter((id) => { const x = getAsset(id); return !!x && x.project_id === p.id && !x.deleted_at && x.kind === "image"; });
+    const allOwn = (a.clientAssets ?? []).filter((id) => { const x = getAsset(id); return !!x && x.project_id === p.id && !x.deleted_at && x.kind === "image" && !productIds.has(id); });
     const own = mode === "sina" ? [] : allOwn;
     // Ses images vont d'abord aux photos impossibles à inventer, les suivantes aux photos d'ambiance.
     const isAuthentic = (uid: string) => { const y = allSections(loadCustomTheme(p.id)!).find((z) => z.s.uid === uid); return !!y && !!authenticSection(y.s.id, p.business === "services" ? "services" : "products"); };
@@ -381,7 +417,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         // La vraie photo du produit telle quelle seulement sur sa carte ou dans le bloc d'achat ; ailleurs (ouverture,
         // ambiance), une scène est créée avec elle en référence (audit du 10 novembre 2026 : le même packshot partout).
         const realId = ph.product ? products.find((x) => x.data.title.trim().toLowerCase() === ph.product!.trim().toLowerCase())?.data.images[0]?.assetId : undefined;
-        const real = realId && lib && isProductPhotoSection(lib) && getAsset(realId) ? realId : undefined;
+        const real = realId && lib && showsProductAlone(lib, ph.description) && getAsset(realId) ? realId : undefined;
         const mine = !real && next < own.length ? own[next++] : undefined;
         // Montage en deux fois (newPhotos:false) : rien de créé, la photo d'exemple attend le second montage.
         if (!real && !mine && a.newPhotos === false) { report.photosLeft++; continue; }
