@@ -11,7 +11,7 @@ import { loadProject } from "@/lib/projects";
 import type { Ctx } from "@/lib/route-helpers";
 import { loadConcepts, loadCustomTheme } from "@/lib/syna-agent/custom-theme/theme";
 import { renderCustomTheme } from "@/lib/syna-agent/custom-theme/render";
-import { builderAssets, builderTheme } from "@/lib/syna-agent/custom-theme/builder";
+import { builderAssets, builderTheme, catalogAssets, catalogTheme } from "@/lib/syna-agent/custom-theme/builder";
 
 export const runtime = "nodejs";
 
@@ -30,6 +30,13 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   const builder = q.get("builder") === "1" && !concept ? builderTheme(t, { fashion: /mode|v[êe]tement|chaussure|bijou/i.test(`${p.product?.category ?? ""} ${p.product?.name ?? ""}`) }) : null;
   let html = renderCustomTheme(p, builder ? builder.theme : t, { studio: q.get("studio") === "1" && !concept && !builder, embed: q.get("embed") === "1", nonce, ...(builder ? { title: `${p.brand?.name || p.name} — construis ton accueil` } : {}) });
   if (builder) { const a = builderAssets(builder.slots); html = html.replace("</body>", `<style>${a.css}</style><script nonce="${nonce}">${a.js}</script></body>`); }
+  // ?catalog=classique|moderne : la banque complète des sections de ce style, rangées par famille (lecture seule).
+  const cat = q.get("catalog");
+  if ((cat === "classique" || cat === "moderne") && !concept) {
+    const c = catalogTheme(t, cat);
+    const a = catalogAssets(c.items, cat, { label: cat === "classique" ? "le style Moderne" : "le style Classique", href: `?catalog=${cat === "classique" ? "moderne" : "classique"}` });
+    html = renderCustomTheme(p, c.theme, { nonce, title: `Banque des sections — ${cat}` }).replace("</body>", `<style>${a.css}</style><script nonce="${nonce}">${a.js}</script></body>`);
+  }
   // Seuls les scripts du rendu (bibliothèque du Studio) s'exécutent : aucun script venu d'une section retouchée.
   const csp = [
     "default-src 'self'", `script-src 'self' 'nonce-${nonce}'`, "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",

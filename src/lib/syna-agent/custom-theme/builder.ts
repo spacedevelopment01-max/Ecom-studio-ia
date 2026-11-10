@@ -6,7 +6,7 @@
  * section », « Précédente » et « Garder », et en haut le nombre de sections et « Changer toute la page ».
  * Gratuit, sans IA, rien n'est enregistré dans le thème.
  */
-import { FAKE_OFFER_SECTIONS, familySections, onlyFor, type LibSection } from "./library";
+import { FAKE_OFFER_SECTIONS, familySections, onlyFor, SCRIPT_DEMO_SECTIONS, sectionLibrary, type LibSection } from "./library";
 import { SECTION_GROUPS, sectionGroup, type SectionGroupId } from "./section-groups";
 import type { CustomTheme, CtSection } from "./theme";
 
@@ -96,6 +96,46 @@ panel.querySelector(".bd-all").onclick=function(){compose(state.n,true);window.s
 panel.querySelector(".bd-show").onclick=function(){var d=document.createElement("div");d.className="bd-list";d.innerHTML='<b>Ta composition</b><ol>'+state.slots.map(function(s){var m=D.slots.filter(function(x){return x.uid===s.uid})[0];return '<li>'+D.labels[s.group]+' : '+m.title+'</li>'}).join("")+'</ol><button type="button">Fermer</button>';d.querySelector("button").onclick=function(){d.remove()};document.body.appendChild(d)};
 var note=document.createElement("div");note.className="bd-note";note.textContent="Les sections que SINA n'a pas encore écrites pour toi montrent des textes et photos d'exemple : elle les remplace par les tiens à la fin.";document.body.appendChild(note);setTimeout(function(){note.remove()},9000);
 if(state&&state.slots&&state.slots.every(function(s){return el[s.uid]}))draw();else compose(7,false);
+})();`;
+  return { css, js };
+}
+
+/**
+ * Banque complète des sections (demande du propriétaire du 10 novembre 2026 : « donne-moi la banque complète des
+ * sections ») : toutes les sections d'une famille de style, rangées par famille de sections, chacune avec son nom, ce
+ * qu'elle fait et ce qui l'empêche d'être posée (démonstration seulement, fausse offre, réservée à un genre de produit).
+ */
+export function catalogTheme(t: CustomTheme, family: CustomTheme["family"]): { theme: CustomTheme; items: (BuilderSlot & { does: string; note: string | null })[] } {
+  const items: (BuilderSlot & { does: string; note: string | null })[] = [];
+  const sections: CtSection[] = [];
+  for (const g of SECTION_GROUPS) for (const l of sectionLibrary().sections.filter((x) => x.family === family && sectionGroup(x) === g.id)) {
+    const uid = `c${items.length}`;
+    const note = l.demoFrame ? "démonstration seulement : jamais posée telle quelle dans un thème" : FAKE_OFFER_SECTIONS[l.id] ? "jamais posée : fausse offre ou faux compte à rebours" : SCRIPT_DEMO_SECTIONS.has(l.id) ? "jamais posée : contenu fabriqué par un script de démonstration" : onlyFor(l.tags) ? `seulement pour ${onlyFor(l.tags)}` : null;
+    sections.push({ uid, id: l.id });
+    items.push({ uid, id: l.id, group: g.id, title: l.title, does: l.does, note });
+  }
+  return { theme: { ...t, family, header: null, footer: null, pages: [{ key: "home", label: "Banque", sections }] }, items };
+}
+
+export function catalogAssets(items: ReturnType<typeof catalogTheme>["items"], family: string, other: { label: string; href: string } | null): { css: string; js: string } {
+  const data = JSON.stringify({ items, groups: SECTION_GROUPS.map((g) => ({ id: g.id, label: g.label, does: g.does })), family, other }).replace(/</g, "\\u003c");
+  const css = `
+.cg-panel{position:sticky;top:0;z-index:300;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;padding:10px 12px;background:#1d2b24;color:#fff;font:600 13px/1.2 system-ui,sans-serif}
+.cg-panel select,.cg-panel a{font:600 13px system-ui,sans-serif;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:#fff;color:#1d2b24;padding:7px 12px;text-decoration:none}
+.cg-head{padding:56px 24px 18px;background:#1d2b24;color:#fff;font:400 15px/1.45 system-ui,sans-serif;text-align:center}
+.cg-head h2{margin:0 0 6px;font:700 30px/1.15 system-ui,sans-serif}
+.cg-head p{margin:0 auto;max-width:640px;opacity:.8}
+.cg-lab{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;padding:14px 24px;background:#f1efe9;color:#1d2b24;font:500 13px/1.4 system-ui,sans-serif;border-top:1px solid #d9d4c8}
+.cg-lab b{font:700 15px system-ui,sans-serif}
+.cg-lab span{flex:1 1 320px;min-width:0;opacity:.8}
+.cg-lab em{font-style:normal;font-weight:700;color:#9a3412;background:#ffedd5;border-radius:999px;padding:3px 10px}
+`;
+  const js = `(function(){var D=${data};var main=document.querySelector('.tb-pg[data-pg="home"]');if(!main)return;
+var seen={};D.items.forEach(function(it,i){var e=main.querySelector('[data-ct="'+it.uid+'"]');if(!e)return;
+ if(!seen[it.group]){seen[it.group]=1;var g=D.groups.filter(function(x){return x.id===it.group})[0];var n=D.items.filter(function(x){return x.group===it.group}).length;var h=document.createElement("div");h.className="cg-head";h.id="g-"+it.group;h.innerHTML='<h2>'+g.label+' <small style="font-size:16px;opacity:.7">('+n+')</small></h2><p>'+g.does+'</p>';main.insertBefore(h,e)}
+ var l=document.createElement("div");l.className="cg-lab";l.innerHTML='<b>'+it.title+'</b><span>'+it.does+'</span>'+(it.note?'<em>'+it.note+'</em>':'');main.insertBefore(l,e)});
+var p=document.createElement("div");p.className="cg-panel";p.innerHTML='<span>Banque des sections · '+(D.family==="moderne"?"Moderne":"Classique")+' · '+D.items.length+' sections</span><select aria-label="Aller à une famille"><option value="">Aller à une famille…</option>'+D.groups.filter(function(g){return seen[g.id]}).map(function(g){return '<option value="'+g.id+'">'+g.label+' ('+D.items.filter(function(x){return x.group===g.id}).length+')</option>'}).join("")+'</select>'+(D.other?'<a href="'+D.other.href+'">Voir '+D.other.label+'</a>':'');
+var w=document.querySelector(".tb-wrap");w.parentNode.insertBefore(p,w);p.querySelector("select").onchange=function(){var x=document.getElementById("g-"+this.value);if(x)x.scrollIntoView({block:"start"})};
 })();`;
   return { css, js };
 }
