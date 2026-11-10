@@ -99,7 +99,7 @@ ${COPY_CRAFT}
 - Le vocabulaire imposé par le client est respecté.
 - Tu ne touches ni aux balises, ni aux classes, ni aux attributs (sauf alt et les textes) : chaque modification est un remplacement { find, replace } où find est un passage EXACT du HTML fourni, présent une seule fois (prends assez de contexte pour qu'il soit unique), et replace le même passage avec les nouveaux textes.
 - Cartes de produits : une carte par produit de la liste, jamais de carte « [À compléter : produit] ». S'il y a plus de cartes que de produits, retire les cartes en trop : find = la carte entière (de sa balise ouvrante à sa balise fermante), replace = "" ; et ne décris pas leurs photos.
-- Pour CHAQUE image de la section dont la source commence par « photos/ », décris la photo à créer pour la marque : find = la source exacte (ex. « photos/sl-b1.webp »), description = UNE photo décrite en phrases complètes, dans l'ordre : type de photo, format, point de vue, cadrage ; surface et fond ; chaque objet à sa place (forme, matière, couleur, état) ; « La scène contient exactement N objets : … » ; ce qui est dégagé ; lumière, ombres, ambiance ; « Aucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. » ; ratio = format de la photo ; product = le nom exact d'un produit de la liste dès que la photo le montre (sa vraie photo sera utilisée : jamais de pot, flacon ou emballage générique), sinon null. Une carte ou une vignette (produit seul) commence par « Photo produit » : sa vraie photo y est posée telle quelle. Une scène peut montrer le produit (sa vraie photo sert de modèle), mais pas toutes : les autres photos d'ambiance montrent l'univers de la marque SANS le produit (pour du thé : théière, tasse fumante, feuilles, fleurs, fruits, plantes), toujours en accord avec le texte d'en face ; jamais deux fois la même scène. Une photo d'ouverture ou d'ambiance est une scène de vie MAGNIFIQUE qui remplit tout le cadre et fait ressentir l'émotion de l'angle (un lieu vrai, un moment de la journée, une lumière), jamais un produit posé sur un fond uni.
+- Pour CHAQUE image de la section dont la source commence par « photos/ », décris TOUJOURS la photo à créer pour la marque (même si le client a dit de ne pas créer de photo maintenant : la description sert au montage des photos, plus tard) : find = la source exacte (ex. « photos/sl-b1.webp »), description = UNE photo décrite en phrases complètes, dans l'ordre : type de photo, format, point de vue, cadrage ; surface et fond ; chaque objet à sa place (forme, matière, couleur, état) ; « La scène contient exactement N objets : … » ; ce qui est dégagé ; lumière, ombres, ambiance ; « Aucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. » ; ratio = format de la photo ; product = le nom exact d'un produit de la liste dès que la photo le montre (sa vraie photo sera utilisée : jamais de pot, flacon ou emballage générique), sinon null. Une carte ou une vignette (produit seul) commence par « Photo produit » : sa vraie photo y est posée telle quelle. Une scène peut montrer le produit (sa vraie photo sert de modèle), mais pas toutes : les autres photos d'ambiance montrent l'univers de la marque SANS le produit (pour du thé : théière, tasse fumante, feuilles, fleurs, fruits, plantes), toujours en accord avec le texte d'en face ; jamais deux fois la même scène. Une photo d'ouverture ou d'ambiance est une scène de vie MAGNIFIQUE qui remplit tout le cadre et fait ressentir l'émotion de l'angle (un lieu vrai, un moment de la journée, une lumière), jamais un produit posé sur un fond uni.
 Réponse : uniquement le JSON demandé.`;
 
 /** Faits de la marque donnés à chaque écriture (les mêmes pour toutes les sections). */
@@ -153,6 +153,10 @@ ${COPY_CRAFT}
 - Le pied de page garde les coordonnées complètes de la marque (ses faits les citent).
 - RÉFÉRENCEMENT (seo) : pour CHAQUE page (sa clé), un titre de 50 à 60 signes (ce que la page propose, avec les mots que ses clients tapent dans Google : le produit, sa matière ou sa saveur, et la ville pour un service local, puis le nom de la marque) et une description de 140 à 155 signes qui donne envie de cliquer (la promesse et un fait vrai), sans bourrage de mots, sans rien d'inventé ; jamais deux pages avec le même titre.
 Réponse : uniquement le JSON demandé.`;
+
+/** Descriptions des photos d'une section déjà écrite (montage en deux fois sans descriptions). */
+export const PhotoBriefSchema = z.object({ photos: SectionWriteSchema.shape.photos });
+export const PHOTO_BRIEF_SYSTEM = `Tu es le directeur artistique d'une petite marque. Pour une section de son site dont les textes sont déjà écrits, tu décris chaque photo à créer, en français, en accord avec le texte d'en face et l'émotion de l'angle : find = la source exacte donnée ; description = UNE photo décrite en phrases complètes, dans l'ordre : type de photo, format, point de vue, cadrage ; surface et fond ; chaque objet à sa place (forme, matière, couleur, état) ; « La scène contient exactement N objets : … » ; ce qui est dégagé (le texte se pose sur la partie calme) ; lumière, ombres, ambiance ; « Aucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. » ; ratio = format ; product = le nom exact d'un produit dès que la photo le montre, sinon null. Une carte ou une vignette (produit seul) commence par « Photo produit ». Une partie des scènes montre le vrai produit, les autres l'univers de la marque SANS lui ; jamais deux fois la même scène ; jamais une personne sauf si le texte en parle et que c'est autorisé. Réponse : uniquement le JSON demandé.`;
 
 /** Référencement seul (pages déjà écrites) : titre et description de chaque page. */
 export const SeoSchema = z.object({ seo: SitePlanSchema.shape.seo });
@@ -297,6 +301,7 @@ export function exampleHeadlines(libHtml: string, html: string): string[] {
 export const customBrandDeps: {
   plan?: (prompt: string, usageKey: string) => Promise<z.input<typeof SitePlanSchema>>;
   seo?: (prompt: string, usageKey: string) => Promise<z.infer<typeof SeoSchema>>;
+  photoBrief?: (prompt: string, usageKey: string) => Promise<z.infer<typeof PhotoBriefSchema>>;
   write?: (prompt: string, usageKey: string) => Promise<SectionWrite>;
   photo?: (prompt: string, product: Buffer | null, aspect: string, usageKey: string) => Promise<Buffer>;
 } = {};
@@ -439,6 +444,29 @@ export async function runCustomBrandJob(ctx: JobContext) {
     }
     // Photos décrites lors d'un montage précédent (montage en deux fois) : créées maintenant, dans le même ordre.
     for (const y of allSections(loadCustomTheme(p.id)!)) if (!briefs[y.s.uid] && y.s.photoBriefs?.length) briefs[y.s.uid] = y.s.photoBriefs as SectionWrite["photos"];
+    // Sections aux photos d'exemple encore SANS description (essai réel du 10 novembre 2026 : le rédacteur, lisant « sans
+    // créer de photo », n'en avait décrit aucune ; le montage des photos n'avait rien à créer et ne l'a pas dit) : la
+    // description est écrite maintenant, d'après le texte déjà écrit de la section (un petit appel par section).
+    if (a.newPhotos !== false && (!customBrandDeps.photo || customBrandDeps.photoBrief)) for (const y of allSections(loadCustomTheme(p.id)!)) {
+      const ly = libSection(y.s.id), html = sectionHtml(y.s);
+      const left = [...new Set([...html.matchAll(/photos\/[\w-]+\.(?:webp|png|jpg)/g)].map((m) => m[0]))].filter((f) => !(briefs[y.s.uid] ?? []).some((b) => b.find === f) && !/(^|\/)(carte|map|plan)-/.test(f));
+      if (!ly || !left.length || authenticSection(y.s.id, p.business === "services" ? "services" : "products")) continue;
+      try {
+        const got = await ctx.step(`photo-brief:${y.s.uid}`, async () => {
+          const prompt = `${brief}\n\nSECTION « ${ly.title} » (${y.page?.label ?? y.place}) : ${ly.does}${y.s.intent ? `\nCONCEPTION : ${y.s.intent}` : ""}\n\nHTML actuel (textes déjà écrits pour la marque) :\n${html.slice(0, 12000)}\n\nPHOTOS À DÉCRIRE (source exacte) : ${left.join(", ")}`;
+          const usageKey = `${ctx.job.id}:photo-brief:${y.s.uid}`;
+          return customBrandDeps.photoBrief ? customBrandDeps.photoBrief(prompt, usageKey)
+            : PhotoBriefSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-photo-brief", costCapMicro: a.capMicro }, () =>
+                llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: PHOTO_BRIEF_SYSTEM, promptKey: "syna-custom-photo-brief-1", prompt, maxTokens: 6000, maxOutputTokens: 12000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, PhotoBriefSchema, { strict: true })));
+        });
+        const ok = got.photos.filter((x) => left.includes(x.find));
+        if (ok.length) {
+          briefs[y.s.uid] = [...(briefs[y.s.uid] ?? []), ...ok];
+          const t3 = loadCustomTheme(p.id)!, z = allSections(t3).find((w) => w.s.uid === y.s.uid);
+          if (z) { z.s.photoBriefs = briefs[y.s.uid]; saveCustomTheme(p.id, t3, { history: false }); }
+        }
+      } catch (e) { report.problems.push(`${ly.title} : photos non décrites (${(e as Error).message.slice(0, 100)})`); }
+    }
     const todo = Object.entries(briefs).flatMap(([uid, list]) => list.map((ph) => ({ uid, ph }))).filter((x) => !/(^|\/)(carte|map|plan)-[\w-]*\.(?:webp|png|jpe?g)/.test(x.ph.find));
     const mode: ImagesMode = a.images ?? "sina";
     // Images du client d'abord (« client » ou « mix »), dans l'ordre ; jamais une même image sur deux emplacements.
@@ -507,6 +535,11 @@ export async function runCustomBrandJob(ctx: JobContext) {
     }
   }
 
+  // Aucune photo d'exemple ne reste en silence (décision du 10 novembre 2026).
+  if (a.photos !== false && a.newPhotos !== false) {
+    const stay = photoSlots(loadCustomTheme(p.id)!, { business: p.business === "services" ? "services" : "products", productPhotos: true }).filter((x) => x.kind !== "produit").length;
+    if (stay) report.problems.push(`${stay} photo(s) d'exemple encore en place : à créer (custom.build) ou à remplacer par tes images`);
+  }
   if (report.photosLeft) report.problems.push(`${report.photosLeft} photo(s) d'exemple encore à remplacer : aucune photo créée à ta demande, elles le seront au second montage`);
   ctx.progress(1, L("Thème monté à ta marque", "Theme built for your brand"));
   if (a.conversationId) { try { updateJourney(a.conversationId, (x) => setStep(x, 6, "review", L("thème sur mesure monté à la marque, à voir dans la Boutique", "custom theme built"))); } catch { /* fil supprimé */ } }

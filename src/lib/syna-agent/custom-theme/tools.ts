@@ -44,7 +44,7 @@ import { enqueue, pendingJob } from "../../jobs";
 import { stateOf } from "../../preparation/store";
 import { journeyOf, setStep as setJourneyStep, updateJourney as updateJourneyConv } from "../journey";
 import { galleryCheckMaxMicro } from "./gallery";
-import { showsProductAlone } from "./brand";
+import { productSlotSection, showsProductAlone } from "./brand";
 import { clientImages, CUSTOM_BRAND_JOB, examplePhotoCount, productImageIds, photoSlots, photosToCreate, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, siteArtDirection, sitePhotoName, textPlacementLine, type ImagesMode } from "./brand";
 
 /** Ce que le client voit dans le fil : l'aperçu vivant de son thème et sa composition. */
@@ -384,14 +384,17 @@ const buildTool: AgentTool<BuildArgs> = {
     // Plafond : les photos de produits aussi, au cas où une scène doive être créée avec le produit en référence. Textes
     // déjà écrits (montage en deux fois) : chaque photo à créer est connue par sa description, le devis est exact.
     const written = allSections(t).every((x) => x.s.clientTexts) && allSections(t).some((x) => x.s.photoBriefs?.length);
-    const known = written ? allSections(t).reduce((n, x) => { const l = libSection(x.s.id), h = sectionHtml(x.s); return n + (x.s.photoBriefs ?? []).filter((b) => h.includes(b.find) && !(l && showsProductAlone(l, b.description))).length; }, 0) : null;
+    // Photos d'exemple sans description (rédacteur qui n'en a pas écrit) : décrites puis créées au montage, comptées aussi.
+    const undescribed = (x: ReturnType<typeof allSections>[number]) => { const l = libSection(x.s.id); if (!l || productSlotSection(l)) return 0; return [...new Set([...sectionHtml(x.s).matchAll(/photos\/[\w-]+\.(?:webp|png|jpg)/g)].map((m) => m[0]))].filter((f) => !(x.s.photoBriefs ?? []).some((b) => b.find === f)).length; };
+    const known = written ? allSections(t).reduce((n, x) => { const l = libSection(x.s.id), h = sectionHtml(x.s); return n + (x.s.photoBriefs ?? []).filter((b) => h.includes(b.find) && !(l && showsProductAlone(l, b.description))).length + undescribed(x); }, 0) : null;
+    const briefCalls = written ? allSections(t).filter((x) => undescribed(x) > 0).length : 0;
     const photosMax = none ? 0 : known ?? photos + slots.filter((x) => x.kind === "produit").length;
     const unit = (customPhotoDeps.unit ?? photoUnit)();
     if (photos && unit == null) throw new Error(L("Aucun modèle d'images utilisable pour les photos du site.", "No usable image model."));
     // + le plan des textes de tout le site (un appel, avant les sections)
     // + le contrôle de chaque photo créée (décision du 10 novembre 2026).
     const check = galleryCheckMaxMicro();
-    return { maxMicro: SITE_PLAN_CAP_MICRO + sections * SECTION_TEXT_CAP_MICRO + photosMax * ((unit ?? 0) + check), probableMicro: SITE_PLAN_TYPICAL_MICRO + sections * SECTION_TEXT_TYPICAL_MICRO + Math.round(Math.min(photos, photosMax) * ((unit ?? 0) * 0.8 + check * 0.5)), label: a.newPhotos === false && a.photos !== false ? L(`thème sur mesure monté à ta marque en deux fois : ${sections} sections écrites et les vraies photos de tes produits posées, aucune photo créée pour l'instant`, "custom theme built, no new photos yet") : a.rewrite && !photos ? L(`textes de tout ton site réécrits : plan des textes puis ${sections} sections`, "all site copy rewritten") : L(`thème sur mesure monté à ta marque : ${sections} sections écrites${photos ? `, ${photos} photos créées` : ""}${a.clientAssets?.length ? `, ${a.clientAssets.length} de tes images posées` : ""}`, "custom theme built for the brand") };
+    return { maxMicro: SITE_PLAN_CAP_MICRO + sections * SECTION_TEXT_CAP_MICRO + briefCalls * SECTION_TEXT_CAP_MICRO + photosMax * ((unit ?? 0) + check), probableMicro: SITE_PLAN_TYPICAL_MICRO + sections * SECTION_TEXT_TYPICAL_MICRO + Math.round(Math.min(photos, photosMax) * ((unit ?? 0) * 0.8 + check * 0.5)), label: a.newPhotos === false && a.photos !== false ? L(`thème sur mesure monté à ta marque en deux fois : ${sections} sections écrites et les vraies photos de tes produits posées, aucune photo créée pour l'instant`, "custom theme built, no new photos yet") : a.rewrite && !photos ? L(`textes de tout ton site réécrits : plan des textes puis ${sections} sections`, "all site copy rewritten") : L(`thème sur mesure monté à ta marque : ${sections} sections écrites${photos ? `, ${photos} photos créées` : ""}${a.clientAssets?.length ? `, ${a.clientAssets.length} de tes images posées` : ""}`, "custom theme built for the brand") };
   },
   run: async (ctx, a) => {
     const p = project(ctx);

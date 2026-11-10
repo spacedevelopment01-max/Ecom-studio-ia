@@ -799,6 +799,48 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
     } finally { delete T.customPhotoDeps.unit; delete B.customBrandDeps.plan; delete B.customBrandDeps.write; delete B.customBrandDeps.photo; }
   });
 
+  it("montage en deux fois où le rédacteur n'a décrit aucune photo (essai Éclat de thé) : descriptions écrites puis photos créées, devis compris", async () => {
+    const user = await account();
+    const cid = threadFor(user, null), ctx: any = { user, conversationId: cid, runId: `run-${Date.now()}`, projectId: null, attachment: () => null };
+    await call("start.answer", ctx, { answers: [{ field: "business", value: "products" }, { field: "offer", value: "Des thés en sachet." }] });
+    await call("start.answer", ctx, { answers: [
+      { field: "existing", value: "Rien." }, { field: "audience", value: "Adultes." }, { field: "image", value: "Doux." }, { field: "setup", value: "1 thé" }, { field: "market", value: "France." },
+      { field: "price", value: "8 €" }, { field: "difference", value: "Bio." }, { field: "taste", status: "none" }, { field: "photos", value: "Oui." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
+    ] });
+    await call("start.confirm", ctx, {});
+    const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
+    await call("theme.family", ctx, { family: "classique" });
+    expect((await call("custom.compose", ctx, fullSite("classique"))).ok).toBe(true);
+    const sharp = (await import("sharp")).default;
+    T.customPhotoDeps.unit = () => 50_000;
+    const run = (id: string, payload: object) => fr(() => B.runCustomBrandJob({ job: { id }, payload, checkpoint: {}, progress: () => undefined, step: async (_k: string, fn: () => Promise<unknown>) => fn() } as any));
+    try {
+      // Textes seuls, et le rédacteur ne décrit AUCUNE photo (il a lu « sans créer de photo »).
+      B.customBrandDeps.plan = async () => ({ promesse: "Le thé doux.", voix: "Simple.", menu: [], sections: [] });
+      B.customBrandDeps.seo = async () => ({ seo: [] });
+      B.customBrandDeps.write = async (prompt) => { const m = /<h[1-4][^>]*>([^<]{4,})</.exec(prompt.slice(prompt.indexOf("HTML actuel"))); return { edits: m ? [{ find: m[1], replace: `${m[1]} (marque)` }] : [], links: [], photos: [] }; };
+      await run(`txt-${Date.now()}`, { projectId: pid, capMicro: 10_000_000, photos: false });
+      const t = loadCustomTheme(pid)!;
+      for (const x of allSections(t)) x.s.clientTexts = true; // toutes écrites
+      (await import("@/lib/syna-agent/custom-theme/theme")).saveCustomTheme(pid, t, { history: false });
+      // Devis du second temps : les photos sans description sont comptées (jamais un plafond à zéro).
+      ctx.projectId = pid;
+      const est = await fr(() => getTool("custom.build")!.estimate!(ctx, { images: "sina" }));
+      const left = B.photoSlots(loadCustomTheme(pid)!, { productPhotos: true }).filter((x) => x.kind === "ambiance").length;
+      expect(left).toBeGreaterThan(3);
+      expect(est.maxMicro).toBeGreaterThan(left * 50_000);
+      // Second temps : les descriptions manquantes sont écrites, puis les photos créées.
+      let briefs = 0, made = 0;
+      B.customBrandDeps.photoBrief = async (prompt) => { briefs++; const files = /PHOTOS À DÉCRIRE \(source exacte\) : (.*)$/m.exec(prompt)![1].split(", "); return { photos: files.map((f) => ({ find: f, description: "Photographie d'ambiance : une théière en verre sur une table en bois, lumière du matin.", ratio: "1:1" as const, product: null })) }; };
+      B.customBrandDeps.photo = async () => { made++; return sharp({ create: { width: 20, height: 20, channels: 3, background: "#999" } }).png().toBuffer(); };
+      const out: any = await run(`ph-${Date.now()}`, { projectId: pid, capMicro: est.maxMicro, photos: true, images: "sina" });
+      expect(briefs).toBeGreaterThan(0);
+      expect(out.photosMade).toBe(made);
+      expect(made).toBeGreaterThanOrEqual(left);
+      expect(out.problems.join(" ")).not.toMatch(/photo\(s\) d'exemple encore en place/);
+    } finally { delete T.customPhotoDeps.unit; for (const k of ["plan", "seo", "write", "photo", "photoBrief"] as const) delete (B.customBrandDeps as any)[k]; }
+  });
+
   it("photos produit sur les emplacements produit seulement ; sachet posé par erreur en ouverture → scène créée avec lui en modèle", async () => {
     const user = await account();
     const cid = threadFor(user, null), ctx: any = { user, conversationId: cid, runId: `run-${Date.now()}`, projectId: null, attachment: () => null };
