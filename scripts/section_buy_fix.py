@@ -67,7 +67,8 @@ XP_FIX = [
 P8_FIX = [
     ('its.forEach(function(it,i){it.addEventListener("mouseenter",function(){mk[i].classList.add("on");it.classList.add("on")});it.addEventListener("mouseleave",function(){mk[i].classList.remove("on");it.classList.remove("on")})});qa("input",s).forEach(function(i){i.addEventListener("change",tot)});tot()});',
      'var gr=q("[data-p8g]",s);function grid(){if(!gr)return;var n=0,ins=qa("input",s);ins.forEach(function(x,k){var g=q(\'[data-gi="\'+k+\'"]\',gr);if(g){g.hidden=!x.checked;if(x.checked)n++}});if(!n)qa("[data-gi]",gr).forEach(function(g){g.hidden=false;n++});gr.dataset.n=n}'
-     'its.forEach(function(it,i){it.addEventListener("mouseenter",function(){if(mk[i])mk[i].classList.add("on");it.classList.add("on")});it.addEventListener("mouseleave",function(){if(mk[i])mk[i].classList.remove("on");it.classList.remove("on")})});qa("input",s).forEach(function(i){i.addEventListener("change",function(){tot();grid()})});tot();grid()});'),
+     'var sp=qa("p",s).filter(function(x){return /livraison/i.test(x.textContent)&&/\\d\\s?€/.test(x.textContent)})[0],sum=function(){var t=0;qa("input",s).forEach(function(i){if(i.checked)t+=+i.dataset.p});return t},thr=0,pre="";if(sp){var m0=sp.textContent.match(/(\\d+(?:[.,]\\d+)?)\\s?€/);thr=sum()+parseFloat(m0[1].replace(",","."));pre=sp.textContent.split(/\\s:\\s/)[0]}function ship(){if(!sp||!thr)return;var r=Math.round((thr-sum())*100)/100;sp.textContent=r>0?pre.replace(/\\d+(?:[.,]\\d+)?\\s?€/,eur(r))+".":"La livraison t\u2019est offerte."}'
+     'its.forEach(function(it,i){it.addEventListener("mouseenter",function(){if(mk[i])mk[i].classList.add("on");it.classList.add("on")});it.addEventListener("mouseleave",function(){if(mk[i])mk[i].classList.remove("on");it.classList.remove("on")})});qa("input",s).forEach(function(i){i.addEventListener("change",function(){tot();grid();ship()})});tot();grid()});'),
 ]
 
 

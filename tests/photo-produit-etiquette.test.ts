@@ -75,3 +75,12 @@ describe("scène achetable en grille de vraies photos (décision du 10 novembre 
     expect(sceneGrid(out)).toBe(out); // relu sans changement
   });
 });
+
+describe("script de la scène achetable", () => {
+  it("la grille et la phrase de livraison offerte suivent les cases cochées", async () => {
+    const js = (await import("node:fs")).readFileSync("public/sections/library.js", "utf8");
+    expect(js).toContain('var gr=q("[data-p8g]",s);function grid()');
+    expect(js).toContain("La livraison t’est offerte.");
+    expect(js).toContain('i.addEventListener("change",function(){tot();grid();ship()})');
+  });
+});
