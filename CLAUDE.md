@@ -85,6 +85,17 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   APLAT : liste de photos tirée de leur démonstration, `src/lib/theme/service-media-plans.json`, préparée par
   `BUILD_SERVICE_PLANS=1 npx vitest run tests/build-service-media-plans.test.ts`) : SINA compte, pose et crée les images ;
   une section masquée faute de photo réapparaît quand ses photos sont posées. **Photos que SINA ne peut pas inventer** (décision du 9 novembre 2026, `authenticKind`) : l'équipe elle-même et les biens mis en vente ou en location (espace Biens) ; réalisations et avant/après des artisans (PHASE, APLAT), à fournir par le client (sa réponse du 9 novembre) ; le lieu, les villes et les ambiances, SINA les crée : SINA ne les crée jamais et les compte à part ; les images du client y vont en premier ; tant qu'elles manquent, l'aperçu du Studio montre à leur place un cadre « Photo à fournir — SINA ne peut pas inventer… » (`withAuthenticPlaceholders`), jamais sur le site publié ni dans l'export. Les photos posées vont dans le champ « fichier du thème » (`x_asset`) que la page affiche.
+- **Images d'un thème, Studio ou sur mesure** (décision du propriétaire du 10 novembre 2026, la plus récente, elle prime sur
+  les règles d'images plus anciennes de ce fichier) : les photos produit du client vont dans le « Produit vedette » et les
+  sections qui mettent les produits en avant (cartes, collections, catalogue, lots, panier) ; **toutes les autres images
+  sont créées par OpenAI** : une partie met en scène le vrai produit du client (sa photo en modèle), les autres sont en
+  rapport avec le produit sans lui (pour du thé : théière, feuilles, fruits, plantes), sans jamais recopier ses photos
+  produit ; **aucune image ne reste vide ni avec la photo de démonstration du thème**. **Services** : les photos de
+  chantier du client d'abord ; s'il n'en a pas ou pas assez, SINA les crée avec OpenAI (même si ce ne sont pas de vrais
+  chantiers), sans personne reconnaissable sauf photo ou accord du client. **Sur mesure** : le client choisit Moderne
+  ou Classique, puis sombre ou clair ; SINA lui propose **2 thèmes montés** avec nos sections (accueil 8 sections au moins,
+  fiche produit 7 au moins, plus si c'est mieux), textes professionnels dans l'émotion de l'angle et SEO ; textes, SEO et
+  photos complets sur le thème choisi.
 - **Sections « Produit vedette »** (décision du 8 novembre 2026) : elles ne vont qu'**en haut de la fiche produit**, ou au plus
   **une seule fois sur l'accueil** ; **jamais deux sections « Produit vedette » dans une même page**. Leurs réglages (couleurs,
   formats, lots, offres, abonnement) s'affichent ou se masquent **selon les données réelles du produit** (variantes, offres
