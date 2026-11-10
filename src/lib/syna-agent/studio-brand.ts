@@ -33,7 +33,7 @@ export type StudioBrandPayload = { projectId: string; capMicro: number; conversa
 export function angleBrief(p: Project, j: Journey | null): string {
   if (!j) return "";
   const plan = (() => { try { return activityPlan(p.id, j); } catch { return null; } })();
-  const a = plan?.angle, d = angleDetails(j);
+  const a = plan?.angle, d = angleDetails(j, plan?.company);
   if (!a) return "";
   return [
     `Angle marketing choisi par le client : « ${a.title} »${a.goal ? ` (objectif : ${a.goal})` : ""}.`,

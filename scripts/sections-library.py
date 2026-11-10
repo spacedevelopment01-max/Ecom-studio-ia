@@ -151,6 +151,10 @@ sections.append({
              '<div class="bd-ft"><b>Livraison offerte dès 35 €</b><span>Expédition sous 48 h</span></div></div></div></section>'),
 })
 EXTRA_CSS = '''
+/* Familles en éventail : texte toujours lisible, même sur une vraie photo de produit claire (essai « Éclat de thé » du
+   10 novembre 2026 : titre posé sur le sachet, bouton coupé) */
+.ze-it::after{background:linear-gradient(0deg,rgba(20,34,27,.9),rgba(20,34,27,.6) 45%,rgba(20,34,27,0) 80%)}
+.ze-c{flex-wrap:wrap;align-items:flex-end}.ze-c>div{min-width:0;flex:1 1 100%}.ze-c b{font-size:1.12rem;text-shadow:0 1px 8px rgba(0,0,0,.35);overflow-wrap:anywhere}
 /* ===== En-tête classique (thèmes sur mesure, famille Classique) ===== */
 .bhs{display:contents}
 .xb.s2{border-radius:0}

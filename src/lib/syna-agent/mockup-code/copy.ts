@@ -207,10 +207,20 @@ export function fixAndCheckCopy(c: PageCopy, page: MockupPage, fixed: { headline
 const norm2 = (t: string) => t.toLocaleLowerCase("fr-FR").replace(/[’']/g, "'").replace(/\s+/g, " ").trim();
 
 /** Angle tel que lu à l'étape 4 (émotion, récit, scènes) pour la rédaction. */
-export function angleDetails(j: Journey): { emotion?: string; story?: string; show?: string; toConfirm?: string[] } {
+export function angleDetails(j: Journey, company?: { shipping?: string; returns?: string } | null): { emotion?: string; story?: string; show?: string; toConfirm?: string[] } {
   const id = j.angleChoice?.id;
   const a = id ? j.angles?.list.find((x) => x.id === id) : undefined;
-  return a ? { emotion: a.emotion || undefined, story: a.story || undefined, show: a.show || undefined, toConfirm: a.proofsToConfirm?.length ? a.proofsToConfirm : undefined } : {};
+  const toConfirm = stillToConfirm(a?.proofsToConfirm ?? [], company);
+  return a ? { emotion: a.emotion || undefined, story: a.story || undefined, show: a.show || undefined, toConfirm: toConfirm.length ? toConfirm : undefined } : {};
+}
+
+/**
+ * Preuves « à confirmer » de l'angle (étape 4) encore inconnues : celles sur la livraison ou les retours tombent quand le
+ * client les a données à l'étape 5 (essai « Éclat de thé » du 10 novembre 2026 : « Colissimo 48 à 72 h », donné par le
+ * client, était à la fois dans ses faits et dans « NON confirmés »).
+ */
+export function stillToConfirm(list: string[], company?: { shipping?: string; returns?: string } | null): string[] {
+  return list.filter((x) => !((company?.shipping && /livr|exp[ée]di|transporteur|colissimo|frais de port|envoi/i.test(x)) || (company?.returns && /retour|rembours|r[ée]tractation/i.test(x))));
 }
 
 /** Textes d'une page, tels qu'écrits sur la maquette : une ligne par section, textes entre guillemets. */

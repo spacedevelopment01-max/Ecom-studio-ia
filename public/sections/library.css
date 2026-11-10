@@ -4163,3 +4163,7 @@ html[data-po-promo="1"] [data-poshow="promo"]{display:inline-flex!important}
 @container (max-width:560px){.ts.p2{overflow:clip}.p2-vp{height:auto;overflow:visible}.p2-st{position:sticky;top:var(--p2-top,0px);height:auto;padding:22px 0 18px;z-index:2;background:var(--c1)}.p2-im{width:min(190px,52vw)}.p2-ring{width:min(226px,62vw)}.p2-sp{min-height:50vh;align-content:start;padding-top:24px}.p2-sp:last-child{min-height:40vh;padding-bottom:40px}.p2-sp:not(.on){opacity:.35}.p2-hint{display:none}}
 /* En-tête classique, téléphone : logo au centre, menu à gauche, recherche et panier à droite (retour du propriétaire du 9 novembre 2026) */
 @container (max-width:760px){.bh{grid-template-columns:1fr auto 1fr}.bh-bg{justify-self:start}.bh-lg{justify-self:center;text-align:center}.bh-ic{justify-self:end}}
+/* Familles en éventail : texte toujours lisible, même sur une vraie photo de produit claire (essai « Éclat de thé » du
+   10 novembre 2026 : titre posé sur le sachet, bouton coupé) */
+.ze-it::after{background:linear-gradient(0deg,rgba(20,34,27,.9),rgba(20,34,27,.6) 45%,rgba(20,34,27,0) 80%)}
+.ze-c{flex-wrap:wrap;align-items:flex-end}.ze-c>div{min-width:0;flex:1 1 100%}.ze-c b{font-size:1.12rem;text-shadow:0 1px 8px rgba(0,0,0,.35);overflow-wrap:anywhere}

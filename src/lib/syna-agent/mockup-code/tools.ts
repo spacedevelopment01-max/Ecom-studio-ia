@@ -133,7 +133,7 @@ const copyTool: AgentTool<{ pages?: string[] }> = {
     if (!p.brand) return { ok: false, summary: L("L'identité de marque doit être choisie avant les textes du site.", "Choose the brand first.") };
     if (!j.angleChoice) return { ok: false, summary: L("L'angle marketing (étape 4) doit être choisi avant les textes du site.", "Choose the angle first.") };
     const pages = pagesOf(p), keys = a.pages?.length ? a.pages : ["home"];
-    const plan = activityPlan(p.id, j), details = angleDetails(j);
+    const plan = activityPlan(p.id, j), details = angleDetails(j, plan.company);
     const jobId = getRun(ctx.runId)?.job_id ?? null;
     const prev = loadSiteCopy(p.id);
     const out: Record<string, PageCopy> = { ...(prev && prev.angleId === (j.angleChoice.id ?? null) ? prev.pages : {}) };

@@ -25,3 +25,13 @@ describe("faits du client à l'étape 6", () => {
     expect(STEP_GUIDES[6]).toMatch(/livraison \(transporteur, délai, prix, livraison offerte\)/);
   });
 });
+
+describe("preuves « à confirmer » de l'angle", () => {
+  it("la livraison et les retours donnés à l'étape 5 ne sont plus « non confirmés »", async () => {
+    const { stillToConfirm } = await import("../src/lib/syna-agent/mockup-code/copy");
+    const list = ["Délais et frais de livraison", "Conditions de retour", "Origine des plantes"];
+    expect(stillToConfirm(list, { shipping: "Colissimo, 48 à 72 h, 4,90 €" })).toEqual(["Conditions de retour", "Origine des plantes"]);
+    expect(stillToConfirm(list, { shipping: "Colissimo", returns: "14 jours" })).toEqual(["Origine des plantes"]);
+    expect(stillToConfirm(list, null)).toEqual(list);
+  });
+});

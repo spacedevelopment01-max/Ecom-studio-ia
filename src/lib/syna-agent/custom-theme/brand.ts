@@ -105,7 +105,7 @@ Réponse : uniquement le JSON demandé.`;
 /** Faits de la marque donnés à chaque écriture (les mêmes pour toutes les sections). */
 export function brandBrief(p: Project, j: Journey | null): string {
   const plan = j ? activityPlan(p.id, j) : null;
-  const d = j ? angleDetails(j) : {};
+  const d = j ? angleDetails(j, plan?.company) : {};
   const products = (() => { try { return listProducts(p.id).map((x) => `${x.data.title}${x.data.price != null ? ` (${(x.data.price / 100).toFixed(2).replace(".", ",")} €)` : ""}`); } catch { return []; } })();
   const wording = wordingPromptLine(loadWordingRules(p.id));
   const b = p.brand;
