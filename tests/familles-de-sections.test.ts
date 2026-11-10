@@ -75,3 +75,22 @@ describe("sections refaites de la revue (lot 3, famille Confiance)", () => {
     expect(() => new Function(js)).not.toThrow();
   });
 });
+
+describe("sections refaites de la revue (lot 3, famille Questions)", () => {
+  it("quatre présentations des questions, la fiche et la page des questions, textes dans la section", async () => {
+    const { libSection, SCRIPT_DEMO_SECTIONS } = await import("../src/lib/syna-agent/custom-theme/library");
+    for (const id of ["questions-deux-colonnes", "questions-en-cartes", "questions-avec-photo", "questions-sur-le-produit"]) {
+      expect(libSection(id)!.html.match(/class="rv-q"/g)!.length).toBeGreaterThanOrEqual(4);
+      expect(sectionGroup(libSection(id)!)).toBe(id === "questions-sur-le-produit" ? "fiche-produit" : "questions");
+    }
+    // Bulles : questions ET réponses écrites dans la section (le rédacteur peut les réécrire), plus de nom d'exemple en initiale.
+    const bulles = libSection("questions-en-bulles-de-discussion")!.html;
+    expect(bulles).toContain("data-rv-bub");
+    expect(bulles.match(/<p hidden>/g)!.length).toBe(5);
+    expect(SCRIPT_DEMO_SECTIONS.has("questions-en-bulles-de-discussion")).toBe(false);
+    // Page des questions : grande recherche, thèmes en cartes, questions groupées, encart contact.
+    const page = libSection("questions-avec-recherche")!.html;
+    for (const m of ["data-rv-fqs", "data-rv-go", "data-rv-gr", "rv-ct dk", "rv-acc lp"]) expect(page).toContain(m);
+    expect(sectionGroup(libSection("questions-avec-recherche")!)).toBe("pages");
+  });
+});

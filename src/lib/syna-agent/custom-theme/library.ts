@@ -79,7 +79,7 @@ export const libSection = (id: string): LibSection | null => sectionLibrary().se
  */
 export const SCRIPT_DEMO_SECTIONS = new Set([
   "comparateur-de-produits", "composition-interactive", "choisir-selon-le-moment", "recherche-guidee", "quiz-quel-produit-pour-toi",
-  "questions-en-bulles-de-discussion", "produit-vedette-lots-degressifs", "produit-vedette-loupe-et-onglets", "produit-vedette-abonnement",
+  "produit-vedette-lots-degressifs", "produit-vedette-loupe-et-onglets", "produit-vedette-abonnement",
   "produit-vedette-toute-la-gamme", "produit-vedette-calculateur-de-tasses", "panier-tiroir-a-paliers", "prise-de-rendez-vous",
   "demande-de-devis-en-etapes", "la-carte-du-restaurant", "panier-tiroir-neon",
 ]);

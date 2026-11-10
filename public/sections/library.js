@@ -1247,6 +1247,10 @@
 ;
 ;
 ;
+;
+;
+;
+;
 ;/* ===== sections refaites (revue du 10 novembre 2026) ===== */
 /* Sections refaites (revue du 10 novembre 2026) */
 (function(){
@@ -1265,5 +1269,23 @@
     c.addEventListener("mouseenter",function(){clearInterval(t)});c.addEventListener("mouseleave",auto);
     addEventListener("resize",function(){go(i)});go(0);auto();
   });
+  // Questions : thèmes qui filtrent (questions avec photo).
+  qa("[data-rv-filter]").forEach(function(s){var bs=qa(".rv-chips button",s),qs=qa(".rv-q[data-k]",s);
+    function show(k){bs.forEach(function(b){b.setAttribute("aria-pressed",String(b.dataset.k===k))});qs.forEach(function(q){q.classList.toggle("rv-hid",q.dataset.k!==k)})}
+    bs.forEach(function(b){b.addEventListener("click",function(){show(b.dataset.k)})});if(bs[0])show(bs[0].dataset.k)});
+  // Questions en bulles : la question part dans la discussion, la réponse s'écrit (textes lus dans la section).
+  qa("[data-rv-bub]").forEach(function(s){var m=s.querySelector("[data-rv-bubm]"),busy=false;
+    function add(c,t){var d=document.createElement("div");d.className="rv-bb "+c;d.textContent=t;m.appendChild(d);m.scrollTop=m.scrollHeight;return d}
+    qa(".rv-bub-q",s).forEach(function(w){var b=w.querySelector("button"),a=(w.querySelector("p")||{}).textContent||"";
+      b.addEventListener("click",function(){if(busy)return;busy=true;b.classList.add("dn");add("me",b.textContent);
+        var ty=document.createElement("div");ty.className="rv-bb it ty";ty.innerHTML="<i></i><i></i><i></i>";setTimeout(function(){m.appendChild(ty);m.scrollTop=m.scrollHeight},250);
+        setTimeout(function(){ty.remove();var d=add("it",""),k=0;(function tp(){d.textContent=a.slice(0,k);m.scrollTop=m.scrollHeight;if(k<a.length){k+=3;setTimeout(tp,16)}else busy=false})()},1100)})})});
+  // Page des questions : recherche en direct, cartes de thème qui mènent aux questions.
+  qa("[data-rv-faq]").forEach(function(s){var i=s.querySelector("[data-rv-fqs]"),no=s.querySelector("[data-rv-fqn]"),grs=qa("[data-rv-gr]",s);
+    function norm(t){return (t||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")}
+    if(i)i.addEventListener("input",function(){var v=norm(i.value.trim()),any=false;
+      grs.forEach(function(g){var n=0;qa(".rv-q",g).forEach(function(q){var ok=!v||norm(q.textContent).indexOf(v)>=0;q.classList.toggle("rv-hid",!ok);if(ok)n++;if(v&&ok)q.open=true;if(!v)q.open=false});g.hidden=!n;if(n)any=true});
+      if(no)no.hidden=any});
+    qa("[data-rv-go]",s).forEach(function(a){a.addEventListener("click",function(e){var g=s.querySelector("#rv-fq-"+a.dataset.rvGo);if(!g)return;e.preventDefault();g.hidden=false;g.scrollIntoView({behavior:"smooth",block:"start"});var f=g.querySelector(".rv-q");if(f)f.open=true})})});
 })();
 /* ===== fin des sections refaites ===== */

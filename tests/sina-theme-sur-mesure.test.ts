@@ -354,7 +354,7 @@ describe("thème sur mesure : outils de SINA", async () => {
       expect(systems[0]).toMatch(/AMBIANCE voulue par le client[^]*site sombre = surtout des sections à fond sombre/);
       expect(systems[0]).toMatch(/COHÉRENCE DU SITE/);
       expect(prompts[0]).toMatch(/BIBLIOTHÈQUE DE LA FAMILLE[^]*ouverture-photo-pleine · ouverture · fond photo · moyenne · 1 photo\(s\)/);
-      expect(prompts[0]).not.toContain("questions-en-bulles-de-discussion"); // contenu de démonstration exclu
+      expect(prompts[0]).not.toContain("recherche-guidee"); // contenu de démonstration exclu
       expect(prompts[0]).toMatch(/Ce qu'elle n'a PAS[^]*avis clients/);
       expect(prompts[1]).toMatch(/CONCEPTION À RELIRE/);
       expect(prompts[2]).toMatch(/POINTS REFUSÉS PAR LE CONTRÔLE DU STUDIO[^]*Offre par quantité/);
@@ -1041,9 +1041,9 @@ describe("thème sur mesure : sections dont le contenu vient du script de démon
     for (const id of L.SCRIPT_DEMO_SECTIONS) expect(L.libSection(id), id).toBeTruthy();
     for (const fam of ["classique", "moderne"] as const) for (const s of L.familySections(fam)) expect(L.SCRIPT_DEMO_SECTIONS.has(s.id), s.title).toBe(false);
     const base = fullSite("classique");
-    const T = { family: "classique", style: "classique", rev: 1, header: null, footer: null, search: null, pages: [{ key: "home", label: "Accueil", sections: [{ uid: "s00000001", id: "questions-en-bulles-de-discussion" }] }] } as unknown as CustomTheme;
+    const T = { family: "classique", style: "classique", rev: 1, header: null, footer: null, search: null, pages: [{ key: "home", label: "Accueil", sections: [{ uid: "s00000001", id: "recherche-guidee" }] }] } as unknown as CustomTheme;
     void base;
-    expect(checkCustomTheme(T).some((x) => x.level === "bloquant" && /Questions en bulles de discussion[^]*script de démonstration/.test(x.text))).toBe(true);
+    expect(checkCustomTheme(T).some((x) => x.level === "bloquant" && /Recherche guidée[^]*script de démonstration/.test(x.text))).toBe(true);
   });
 });
 
