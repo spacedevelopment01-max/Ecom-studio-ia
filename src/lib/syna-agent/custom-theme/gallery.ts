@@ -18,7 +18,7 @@ import { loadProject, notify } from "../../projects";
 import { assetData, getAsset, saveAsset } from "../../library";
 import { jsonCallMaxMicro, llmJson, type LlmCall } from "../../ai/llm";
 import { withTrace } from "../../ai/trace";
-import { aiSiteMockup, photoRequestMaxMicro, PUBLICATION_PROMPT_MAX_BYTES, withQuotedImageRoute } from "../../ai/media-providers";
+import { aiSiteImageHd, photoRequestMaxMicro, PUBLICATION_PROMPT_MAX_BYTES, withQuotedImageRoute } from "../../ai/media-providers";
 import { listProducts, type StudioProduct } from "../../products/catalog";
 import { loadGalleries, saveGallery, type GalleryImage } from "../../products/gallery-store";
 import { mockupImageRoute } from "../mockup-code/tools";
@@ -40,6 +40,8 @@ export const GALLERY_KINDS = {
 export type GalleryKind = keyof typeof GALLERY_KINDS;
 export const GALLERY_ORDER = Object.keys(GALLERY_KINDS) as GalleryKind[];
 export const GALLERY_ADVISED = 7;
+/** Format des images de la galerie produit : carré (consigne du propriétaire du 10 novembre 2026, « format 1:1 »). */
+export const GALLERY_ASPECT = "1:1" as const;
 
 const short = (n: number) => z.string().trim().min(1).max(n);
 export const GalleryImageSchema = z.object({
@@ -88,19 +90,19 @@ export function galleryPrompt(i: GalleryImageSpec, o: { product: string; colors:
   const person = i.person && o.people;
   const texts = galleryTexts(i);
   const kind: Record<GalleryKind, string> = {
-    seul: `Photographie produit éditoriale, format vertical 2:3, vue de face à hauteur du produit, cadrage centré avec de l'air autour. Décor : ${i.scene}. Au centre, ${PRODUCT}. Le produit est le seul sujet de l'image.`,
-    fleches: `Photographie produit pour une fiche produit, format vertical 2:3, vue légèrement plongeante de trois quarts, cadrage centré. Décor : ${i.scene}. Au centre, ${PRODUCT}.
+    seul: `Photographie produit éditoriale, format carré 1:1, vue de face à hauteur du produit, cadrage centré avec de l'air autour. Décor : ${i.scene}. Au centre, ${PRODUCT}. Le produit est le seul sujet de l'image.`,
+    fleches: `Photographie produit pour une fiche produit, format carré 1:1, vue légèrement plongeante de trois quarts, cadrage centré. Décor : ${i.scene}. Au centre, ${PRODUCT}.
 Textes écrits sur l'image, police sans empattement nette : en haut, centré, le titre ${q(i.title ?? "")}${i.subtitle ? ` et juste dessous, plus petit, ${q(i.subtitle)}` : ""} ; autour du produit, chaque mention reliée par un trait fin au détail du produit qu'elle désigne : ${(i.labels ?? []).map(q).join(", ")}.`,
-    promesse: `Photographie de détail, format vertical 2:3, cadrage serré. Décor : ${i.scene}. Dans une moitié de l'image, ${PRODUCT}, en gros plan sur un détail. L'autre moitié reste calme pour le texte.
+    promesse: `Photographie de détail, format carré 1:1, cadrage serré. Décor : ${i.scene}. Dans une moitié de l'image, ${PRODUCT}, en gros plan sur un détail. L'autre moitié reste calme pour le texte.
 Textes écrits dans la partie calme, police sans empattement : en très grand ${q(i.promise ?? "")}${i.subtitle ? `, dessous en plus petit ${q(i.subtitle)}` : ""}.`,
-    moment: `Photographie d'ambiance, format vertical 2:3, cadrage moyen, un vrai moment de vie. Décor et moment : ${i.scene}. ${PRODUCT.replace(/^le produit/, "Le produit")}, bien visible dans la scène. ${person ? "Une personne utilise le produit, naturellement, de façon élégante." : "Aucune personne : le moment se devine aux objets et à la lumière."} Un tiers de l'image reste calme pour le texte.
+    moment: `Photographie d'ambiance, format carré 1:1, cadrage moyen, un vrai moment de vie. Décor et moment : ${i.scene}. ${PRODUCT.replace(/^le produit/, "Le produit")}, bien visible dans la scène. ${person ? "Une personne utilise le produit, naturellement, de façon élégante." : "Aucune personne : le moment se devine aux objets et à la lumière."} Un tiers de l'image reste calme pour le texte.
 Textes écrits dans la partie calme, police sans empattement : le titre ${q(i.title ?? "")}, puis chaque ligne précédée d'un petit point : ${(i.bullets ?? []).map(q).join(", ")}.`,
-    contenu: `Photographie à plat, vue de dessus à la verticale, format vertical 2:3, cadrage plein. Décor : ${i.scene}. ${PRODUCT.replace(/^le produit/, "Le produit")}, et à côté ce qu'il contient ou ce qui l'accompagne, tel que décrit, bien espacé ; rien ne touche les bords.`,
-    explique: `Image explicative en trois temps, format vertical 2:3, vue de trois quarts. Décor : ${i.scene}. ${PRODUCT.replace(/^le produit/, "Le produit")} apparaît dans l'image.
+    contenu: `Photographie à plat, vue de dessus à la verticale, format carré 1:1, cadrage plein. Décor : ${i.scene}. ${PRODUCT.replace(/^le produit/, "Le produit")}, et à côté ce qu'il contient ou ce qui l'accompagne, tel que décrit, bien espacé ; rien ne touche les bords.`,
+    explique: `Image explicative en trois temps, format carré 1:1, vue de trois quarts. Décor : ${i.scene}. ${PRODUCT.replace(/^le produit/, "Le produit")} apparaît dans l'image.
 Textes écrits sur l'image, police sans empattement : en haut le titre ${q(i.title ?? "")} ; trois temps de gauche à droite, chacun sous son image avec son numéro : ${(i.steps ?? []).map((s, k) => q(`${k + 1}. ${s}`)).join(", ")}.`,
-    liste: `Photographie produit avec liste, format vertical 2:3, vue de trois quarts légèrement plongeante. Décor : ${i.scene}. Dans une moitié de l'image, ${PRODUCT}. L'autre moitié, sur un fond uni de la couleur de la marque, porte le texte.
+    liste: `Photographie produit avec liste, format carré 1:1, vue de trois quarts légèrement plongeante. Décor : ${i.scene}. Dans une moitié de l'image, ${PRODUCT}. L'autre moitié, sur un fond uni de la couleur de la marque, porte le texte.
 Textes écrits dans cette moitié, police sans empattement : en haut le titre ${q(i.title ?? "")} ; dessous, des blocs bien espacés, chacun avec un petit intitulé en capitales et une ligne : ${(i.features ?? []).map((f) => `${q(f.label)} / ${q(f.text)}`).join(" ; ")}.`,
-    "chez-soi": `Photographie d'intérieur, format vertical 2:3, prise à hauteur d'yeux, cadrage moyen. Le produit chez le client, dans son vrai décor d'usage : ${i.scene}. ${PRODUCT.replace(/^le produit/, "Le produit")}, posé naturellement à sa place.`,
+    "chez-soi": `Photographie d'intérieur, format carré 1:1, prise à hauteur d'yeux, cadrage moyen. Le produit chez le client, dans son vrai décor d'usage : ${i.scene}. ${PRODUCT.replace(/^le produit/, "Le produit")}, posé naturellement à sa place.`,
   };
   return [
     kind[i.kind],
@@ -154,7 +156,7 @@ export async function checkCreatedImage(o: { jobId: string; projectId: string; u
 /** Remplaçables par les tests (aucun appel réel). */
 export const galleryDeps: { image?: (prompt: string, product: Buffer, usageKey: string) => Promise<Buffer>; check?: (image: Buffer, product: Buffer, texts: string[], usageKey: string) => Promise<GalleryCheck>; unit?: () => number | null } = {};
 
-const unitCost = () => (galleryDeps.unit ?? (() => { try { return photoRequestMaxMicro(mockupImageRoute(), { prompt: "x".repeat(PUBLICATION_PROMPT_MAX_BYTES), references: 1, aspect: "2:3", quality: "high" }); } catch { return null; } }))();
+const unitCost = () => (galleryDeps.unit ?? (() => { try { return photoRequestMaxMicro(mockupImageRoute(), { prompt: "x".repeat(PUBLICATION_PROMPT_MAX_BYTES), references: 1, aspect: GALLERY_ASPECT, quality: "high" }); } catch { return null; } }))();
 /** Coût maximal et probable d'une galerie de n images (image + contrôle). */
 export function galleryEstimate(n: number): { maxMicro: number; probableMicro: number } | null {
   const u = unitCost();
@@ -189,7 +191,7 @@ export async function runGalleryJob(ctx: JobContext) {
       const img = await ctx.step(`gallery:${n}`, async () => {
         const usageKey = `${ctx.job.id}:gallery:${n}`;
         const data = galleryDeps.image ? await galleryDeps.image(prompt, refData, usageKey)
-          : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "gallery-image", costCapMicro: a.capMicro }, () => withQuotedImageRoute(mockupImageRoute(), () => aiSiteMockup({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey }, { prompt, product: refData })));
+          : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "gallery-image", costCapMicro: a.capMicro }, () => withQuotedImageRoute(mockupImageRoute(), () => aiSiteImageHd({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey }, { prompt, product: refData, aspect: GALLERY_ASPECT })));
         const asset = await saveAsset({ projectId: p.id, userId: p.userId, data, name: `galerie-${prod.handle}-${n + 1}-${spec.kind}.png`, mime: "image/png", role: "site", origin: "generated", meta: { synaGallery: { productId: prod.id, kind: spec.kind, texts } } });
         return asset.id;
       });

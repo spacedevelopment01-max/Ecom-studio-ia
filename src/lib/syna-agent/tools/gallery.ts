@@ -49,6 +49,9 @@ const createTool: AgentTool<CreateArgs> = {
   description: "Étape 6 (PAYANT : prix annoncé par la carte d'accord, accord écrit du client d'abord), APRÈS gallery.plan et les réponses du client : crée la galerie d'UN produit (product = son titre exact) : images = une entrée par image voulue (kind parmi les genres de gallery.plan ; scene = le décor ou le moment, d'après la marque, l'angle et le produit ; les textes de l'image : title, subtitle, labels, promise, bullets, steps, features, UNIQUEMENT avec les faits donnés par le client ; person: true seulement sur l'image où le client veut une personne). keepOwn : sa photo garde-t-elle la première place dans la galerie. people : le client a dit oui à une personne. add: true pour ajouter des images à sa galerie (une image ratée refaite), sinon la galerie est remplacée. Chaque image est contrôlée ; une image ratée n'est pas posée et elle est signalée.",
   args: z.object({ product: z.string().min(1).max(160), images: z.array(GalleryImageSchema).min(1).max(9), keepOwn: z.boolean(), people: z.boolean(), add: z.boolean().optional() }).strict(),
   estimate: (_ctx, a) => {
+    // Galerie incomplète refusée AVANT la carte d'accord (essai réel du 10 novembre 2026 : refusée après le clic).
+    const gaps = a.images.flatMap((i, n) => galleryGaps(i).map((g) => `image ${n + 1} (${i.kind}) : il manque ${g}`));
+    if (gaps.length) throw new Error(`Galerie incomplète : ${gaps.join(" ; ")}. Complète avec les réponses du client (jamais un fait inventé), ou change le genre de l'image.`);
     const e = galleryEstimate(a.images.length);
     if (!e) throw new Error(L("Aucun modèle d'images utilisable pour la galerie.", "No usable image model."));
     return { ...e, label: L(`galerie de « ${a.product} » : ${a.images.length} image(s) créée(s) d'après sa vraie photo, chacune contrôlée`, `gallery of ${a.product}`) };

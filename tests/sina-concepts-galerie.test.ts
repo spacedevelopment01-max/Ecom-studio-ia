@@ -160,3 +160,15 @@ describe("contrôle de chaque photo créée au montage du thème sur mesure", as
     } finally { delete G.galleryDeps.check; }
   });
 });
+
+describe("galerie produit : format carré et refus avant la carte", async () => {
+  it("images carrées 1:1 (consigne du propriétaire) ; galerie incomplète refusée dès le devis", async () => {
+    const G = await import("@/lib/syna-agent/custom-theme/gallery");
+    expect(G.GALLERY_ASPECT).toBe("1:1");
+    const p = G.galleryPrompt(G.GalleryImageSchema.parse({ kind: "seul", scene: "Une table en bois clair, lumière du matin." }), { product: "Jasmin délicat", colors: "", people: false });
+    expect(p).toMatch(/format carré 1:1/);
+    expect(p).not.toMatch(/2:3/);
+    const { getTool } = await import("@/lib/syna-agent/registry");
+    expect(() => getTool("gallery.create")!.estimate!({} as any, { product: "X", images: [{ kind: "fleches", scene: "Une table en bois clair près d'une fenêtre." }], keepOwn: true, people: false } as any)).toThrow(/Galerie incomplète[^]*il manque un titre/);
+  });
+});
