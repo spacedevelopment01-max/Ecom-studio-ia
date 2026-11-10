@@ -482,8 +482,12 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
     for (const slot of plan.slots.filter(s => s.alignment === 'missing')) {
         const key = slot.key;
         const reference = pool.filter(a => a.kind === 'image' && (slot.role === 'video' ? ['packshot', 'opening', 'use'].includes(a.role) : a.role === 'packshot')).slice(0, 3).map(a => a.id);
-        if (slot.role === 'realization')
-            continue; // An authentic portfolio cannot be synthesized.
+        // Réalisations (chantiers, avant / après) : créées quand le client n'en a pas (décision du propriétaire du
+        // 10 novembre 2026), sans personne et sans rien de reconnaissable ; ses vraies photos y vont d'abord.
+        if (slot.role === 'realization') {
+            plan.generationRequests.push({ key, role: slot.role, kind: 'image', aspect: slot.aspect ?? '16:9', request: selectedStrategyContext(p.id) + "\n" + t(`Créer une photo de chantier terminé, crédible et soignée, représentative du travail de ${p.brand?.name ?? p.name} (${p.product.name}). Aucune personne, aucun visage, aucun texte, aucune adresse ni plaque reconnaissable. Emplacement : ${slot.page} / ${slot.section}.`, `Create a finished-work photo representative of ${p.brand?.name ?? p.name} (${p.product.name}). No people, faces, text, address or recognisable plates. Placement: ${slot.page} / ${slot.section}.`), referenceAssetIds: [], people: false, requiresQuote: true, requiresConsent: true });
+            continue;
+        }
         plan.generationRequests.push({ key, role: slot.role, kind: slot.role === 'video' ? 'video' : 'image', aspect: slot.aspect ?? (slot.role === 'packshot' || slot.role === 'detail' ? '1:1' : '16:9'), request: selectedStrategyContext(p.id) + "\n" + t(`Créer une ${roleNames[slot.role][0].toLowerCase()} de ${p.product.name}. ${p.product.summary}. Respecter le produit des références et l'identité ${p.brand?.name ?? p.name}. Aucun fait ajouté, aucune personne. Emplacement : ${slot.page} / ${slot.section}.`, `Create a ${roleNames[slot.role][1].toLowerCase()} of ${p.product.name}. ${p.product.summary}. Preserve the reference product and ${p.brand?.name ?? p.name} identity. No invented facts or people. Placement: ${slot.page} / ${slot.section}.`), referenceAssetIds: reference, people: false, requiresQuote: true, requiresConsent: true });
     }
     if (!logo)

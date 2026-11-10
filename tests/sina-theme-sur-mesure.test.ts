@@ -475,11 +475,21 @@ describe("thème sur mesure : outils de SINA", async () => {
     const back = loadCustomTheme(pid)!;
     expect(back.pages.map((p) => p.key)).not.toContain("boutiques");
     expect(back.rev).toBe(revBefore + 1);
-    // Choix du client.
+    // Choix du client : refusé tant qu'une photo d'exemple reste (décision du 10 novembre 2026).
     const ch = await call("custom.choose", ctx, {});
-    expect(ch.ok).toBe(true);
+    expect(ch.ok).toBe(false);
+    expect(ch.summary).toMatch(/photo\(s\) d'exemple restent/);
+    expect(loadCustomTheme(pid)!.chosen).toBeFalsy();
+    // Toutes les photos remplacées (ici par une vraie image du projet) : le choix passe.
+    const S = await import("@/lib/syna-agent/custom-theme/theme");
+    const t = loadCustomTheme(pid)!;
+    let n = 0;
+    for (const x of S.allSections(t)) x.s.html = S.sectionHtml(x.s).replace(/(?:\.\/)?photos\/[\w-]+\.(?:webp|png|jpg)/g, () => `/api/files/photo-cree-${n++}`);
+    S.saveCustomTheme(pid, t);
+    const ok = await call("custom.choose", ctx, {});
+    expect(ok.ok, ok.summary).toBe(true);
     expect(loadCustomTheme(pid)!.chosen).toBe(true);
-    expect(ch.hint).toMatch(/textes ou photos d'exemple/);
+    expect(ok.hint).toMatch(/textes ou photos d'exemple/);
   });
 
   it("photo : prix d'abord, puis créée (fausse génération, aucun appel réel) et posée à la place de la photo d'exemple", async () => {

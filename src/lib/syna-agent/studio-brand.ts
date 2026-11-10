@@ -23,6 +23,8 @@ import type { ImagesMode } from "./custom-theme/brand";
 import { clientImages, COPY_CRAFT } from "./custom-theme/brand";
 import { hasServicePlan, placeServiceImage, revealFilledSections, serviceMediaSlots, type ServiceSlot } from "../theme/service-media-plan";
 import { saveThemeVersion } from "../projects";
+import { withQuotedImageRoute } from "../ai/media-providers";
+import { mockupImageRoute } from "./mockup-code/tools";
 
 export const STUDIO_BRAND_JOB = "syna.studio.brand";
 export type StudioBrandPayload = { projectId: string; capMicro: number; conversationId?: string | null; images: ImagesMode; copy?: boolean };
@@ -69,24 +71,34 @@ function adaptationOf(projectId: string) {
   return currentTheme(projectId)?.spec.meta?.adaptation ?? null;
 }
 
-/** Emplacements des thèmes à plan que SINA ne peut pas inventer : les réalisations du client (ex. ATELIER RIVE). */
-const AUTHENTIC_ROLES = new Set(["realization"]);
+/**
+ * Emplacements des thèmes à plan que SINA ne peut pas inventer : aucun depuis la décision du propriétaire du 10 novembre
+ * 2026 (les réalisations sont créées quand le client n'en a pas assez ; l'équipe est traitée par les thèmes de services).
+ */
+const AUTHENTIC_ROLES = new Set<string>();
 
 /** Demandes d'images pour les emplacements vides (même moteur et mêmes contrôles que « Préparer ce visuel »). */
 export function studioImageRequests(p: Project): ImageRequestV2[] {
   const cur = currentTheme(p.id), plan = cur?.spec.meta?.adaptation;
   if (!cur || !plan) return [];
-  return plan.generationRequests.filter((r) => r.kind === "image" && !AUTHENTIC_ROLES.has(r.role)).map((r) => ({
-    kind: r.role === "packshot" ? "packshot" : r.role === "detail" ? "product_image" : p.business === "services" ? "trade_photo" : "usage_scene",
-    support: "site",
+  let scene = 0;
+  return plan.generationRequests.filter((r) => r.kind === "image" && !AUTHENTIC_ROLES.has(r.role)).map((r) => {
+    const kind: ImageRequestV2["kind"] = r.role === "packshot" ? "packshot" : r.role === "detail" ? "product_image" : p.business === "services" ? "trade_photo" : "usage_scene";
+    // Décision du propriétaire du 10 novembre 2026 : une scène sur deux met en scène le vrai produit, l'autre montre
+    // l'univers lié au produit SANS lui (jamais une copie de ses photos produit).
+    const without = kind === "usage_scene" && scene++ % 2 === 1;
+    const topic = r.request.length <= 600 ? r.request : r.request.slice(0, 600);
+    return {
+    kind: without ? "ambiance" as const : kind,
+    support: "site" as const,
     aspect: (["1:1", "4:5", "2:3", "3:2", "9:16", "16:9"].includes(r.aspect) ? r.aspect : "16:9") as AspectId,
-    topic: r.request.length <= 600 ? r.request : r.request.slice(0, 600),
-    references: r.referenceAssetIds,
+    topic: without ? `${topic.slice(0, 420)}\nCette image ne montre PAS le produit : l'univers qui l'entoure (objets, matières, lieu, moment liés à ${p.product.name}), jamais une copie des photos du produit.` : topic,
+    references: without ? [] : r.referenceAssetIds,
     slot: `theme:${r.role}:${r.key}`,
     themePlacement: { versionId: cur.version.id, slotKey: r.key, contextHash: plan.contextHash },
     noStock: true, allowGenerate: true, count: 1, peopleAllowed: false,
     name: `theme-${r.role}-${r.key}`.slice(0, 60),
-  }));
+  }; });
 }
 
 /**
@@ -165,7 +177,8 @@ export async function runStudioBrandJob(ctx: JobContext) {
         const id = await ctx.step(`svc:${slot.key}`, async () => {
           if (studioBrandDeps.image) return studioBrandDeps.image(req);
           const { runImageEngineV2 } = await import("../image-v2/engine");
-          const out = await runImageEngineV2(ctx, p.id, { ...req, maxCostEur: imageBudgetEur(remainingSlots) });
+          // Images des thèmes : OpenAI (décision du propriétaire du 10 novembre 2026), la même route qu'au devis.
+          const out = await withQuotedImageRoute(mockupImageRoute(), () => runImageEngineV2(ctx, p.id, { ...req, maxCostEur: imageBudgetEur(remainingSlots) }));
           return out.outcomes.find((o) => o.assetId && o.verdict === "FINAL")?.assetId ?? null;
         });
         if (id) { placeServiceImage(spec, slot, id); placed++; report.imagesMade++; } else { report.imagesFailed++; report.problems.push(`image ${slot.key} : aucun visuel validé`); }
@@ -186,7 +199,7 @@ export async function runStudioBrandJob(ctx: JobContext) {
         const id = await ctx.step(`img:${req.themePlacement!.slotKey}`, async () => {
           if (studioBrandDeps.image) return studioBrandDeps.image(req);
           const { runImageEngineV2 } = await import("../image-v2/engine");
-          const out = await runImageEngineV2(ctx, p.id, { ...req, maxCostEur: imageBudgetEur(reqs.length - i) });
+          const out = await withQuotedImageRoute(mockupImageRoute(), () => runImageEngineV2(ctx, p.id, { ...req, maxCostEur: imageBudgetEur(reqs.length - i) }));
           return out.outcomes.find((o) => o.assetId && o.verdict === "FINAL")?.assetId ?? null;
         });
         if (id) report.imagesMade++; else { report.imagesFailed++; report.problems.push(`image ${req.themePlacement!.slotKey} : aucun visuel validé`); }

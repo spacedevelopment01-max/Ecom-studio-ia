@@ -10,6 +10,7 @@ import { listProducts, type StudioProduct } from "../../products/catalog";
 import { assetUrl } from "../../library";
 import { companyOf } from "../activity";
 import { decideBuyFeatures, deliveryFrom, freeShippingFrom, loadShopOffers, type BuyFeatures } from "../product-features";
+import { galleryAssets } from "../../products/gallery-store";
 
 export type BuyData = {
   base: number;
@@ -24,6 +25,8 @@ export type BuyData = {
   gifts: { at: number; label: string }[];
   /** Repères sous le bouton (livraison offerte, retours) : seulement ceux que le client a donnés. */
   reassurance: string[];
+  /** Galerie de la fiche produit créée par SINA (adresses, dans l'ordre ; sa photo d'abord s'il la garde), ou null. */
+  gallery?: string[] | null;
 };
 
 const COLOR_HEX: Record<string, string> = {
@@ -93,6 +96,7 @@ export function buyBlockData(projectId: string, productTitle?: string): BuyData 
     base, name: p.data.title, unit: unitOf(p.data.title) !== "article" ? unitOf(p.data.title) : unitOf(plain(p.data.description_html)), cfg, features: f, promo,
     subscription: f.subscription ? { pct: f.subscription.pct, weeks: f.subscription.weeks } : null,
     bundlePct: f.bundle ? f.bundle.pct : null, gifts: f.gifts.slice(0, 3), reassurance,
+    gallery: (() => { const g = galleryAssets(projectId, p.id); if (!g) return null; const own = imageOf(p); return [...(g.keepOwn && own ? [own] : []), ...g.assets.map((id) => assetUrl({ id }))]; })(),
   };
 }
 
@@ -131,6 +135,18 @@ export function withRealBuyBlock(html: string, d: BuyData | null): string {
     ? `<div class="pnl p"><div><div class="lab">${lab}<b data-xflav>${escText(gamme[0][1])}</b></div><div class="pl" data-xflavs>${gamme.map(([img, title, price], i) =>
       `<button type="button" aria-pressed="${i === 0}" data-n="${escAttr(title)}" data-t="|${escAttr(title)}" data-p="${price}" data-img="${escAttr(img || "")}">${escText(title)}</button>`).join("")}</div></div></div>`
     : "");
+  // Galerie de la fiche produit (décision du 10 novembre 2026) : chaque photo de la section reçoit, dans l'ordre, une
+  // image de la galerie (une même photo répétée, grande vue et vignette, reçoit la même) ; dans la galerie principale
+  // (data-xmain), les images en plus sont ajoutées. Les cartes de produits, ailleurs, gardent la photo du client.
+  if (d.gallery?.length) {
+    const g = d.gallery, map = new Map<string, string>();
+    const pick = (src: string) => { if (!map.has(src)) map.set(src, g[map.size % g.length]); return map.get(src)!; };
+    out = out.replace(/(\s(?:src|data-src)=")((?:\.\/)?photos\/[^"]+|\/api\/files\/[\w-]+)"/g, (_m, attr: string, src: string) => `${attr}${escAttr(pick(src))}"`);
+    out = out.replace(/(<div[^>]*\sdata-xmain[^>]*>[\s\S]*?)(<\/div>)/, (_m, inner: string, end: string) => {
+      const extra = g.slice(map.size).map((u) => `<img src="${escAttr(u)}" alt="${escAttr(d.name)}">`).join("");
+      return inner + extra + end;
+    });
+  }
   // Repères sous le bouton : seulement les vrais (livraison offerte, retours) ; sinon rien.
   out = out.replace(/<div class="po-tr">[\s\S]*?<\/div>/, d.reassurance.length ? `<div class="po-tr">${d.reassurance.map((x) => `<span>${escText(x)}</span>`).join("")}</div>` : "");
   return out;

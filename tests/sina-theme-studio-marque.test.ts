@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
 process.env.STUDIO_SYNA_AGENT = "1";
 
 describe("SINA — thème du Studio monté à la marque", async () => {
-  const { one, run } = await import("@/lib/db");
+  const { all, one, run } = await import("@/lib/db");
   const { runWithLang } = await import("@/lib/i18n-server");
   const { account } = await import("./conversation209-fixtures");
   const { threadFor } = await import("@/lib/syna-agent/thread");
@@ -118,46 +118,23 @@ describe("SINA — thème du Studio monté à la marque", async () => {
       expect(res.ok, res.summary).toBe(true);
       const job = one<any>("SELECT * FROM jobs WHERE id=?", res.jobs[0]);
       const out: any = await fr(() => SB.runStudioBrandJob({ job: { id: job.id }, payload: JSON.parse(job.payload), checkpoint: {}, progress: () => undefined, step: async (_k: string, fn: () => Promise<unknown>) => fn() } as any));
-      // Ses deux images vont d'abord aux photos de chantier que SINA ne peut pas inventer ; SINA ne crée que les autres.
-      const own = r.data.aFournirParLeClient as number;
-      expect(own).toBeGreaterThan(2);
-      expect(r.summary).toMatch(/je ne peux PAS inventer/);
-      expect(made).toBe(r.data.total - own);
+      // Décision du propriétaire du 10 novembre 2026 : chantiers, réalisations et avant / après sont créés quand le client
+      // n'en a pas assez ; ses deux images sont posées d'abord, SINA crée toutes les autres ; aucune photo ne reste vide.
+      expect(r.data.aFournirParLeClient ?? 0).toBe(0);
+      expect(made).toBe(r.data.total - 2);
       expect(out.imagesMade).toBe(made);
-      expect(out.problems.join(" ")).toMatch(new RegExp(`${own - 2} photo\\(s\\) à fournir par toi`));
+      expect(out.problems.join(" ")).not.toMatch(/à fournir par toi/);
       const after = await call("theme.images", ctx, {});
-      expect(after.data.vides).toBe(own - 2);
-      expect(after.data.remplies).toBe(r.data.total - own + 2);
-      // Aperçu du Studio : un cadre « Photo à fournir » à la place de chacune ; la version enregistrée n'en a aucun.
+      expect(after.data.vides).toBe(0);
+      expect(after.data.remplies).toBe(r.data.total);
       const { currentTheme } = await import("@/lib/projects");
       const SP = await import("@/lib/theme/service-media-plan");
       const saved = currentTheme(pid)!.spec;
-      const preview = SP.withAuthenticPlaceholders(saved);
-      const slots = SP.serviceMediaSlots(saved).filter((x) => x.authentic && !x.filled);
-      expect(slots.length).toBe(own - 2);
-      for (const x of slots) {
-        const sec: any = preview.templates[x.template].sections[x.sectionId];
-        const v = (x.blockId ? sec.blocks[x.blockId] : sec).settings[x.assetField ?? x.field];
-        expect(x.assetField).toBeTruthy();
-        expect(v).toBe(SP.placeholderFile(x));
-        expect(SP.placeholderSlot(preview, v)?.key).toBe(x.key);
-        expect(sec.disabled).not.toBe(true);
-      }
-      expect(JSON.stringify(saved)).not.toMatch(/es-ph-/);
-      const svg = SP.authenticPlaceholderSvg(slots[0], "fr").replace(/<\/text><text[^>]*>/g, " ");
-      expect(svg).toMatch(/Photo à fournir/);
-      expect(svg).toMatch(/SINA ne peut pas inventer tes réalisations\./);
-      expect(svg).toMatch(/Ce cadre n'apparaît jamais sur ton site publié/);
-      expect(svg).toMatch(/Ici : Pièce/);
-      // Dans la page de l'aperçu, le cadre est inclus directement (aucun fichier manquant) ; ses photos posées vont dans
-      // le champ « fichier du thème » que la page affiche vraiment.
-      const name = SP.placeholderFile(slots[0]);
-      const page = SP.inlineAuthenticPlaceholders(`<img src="/preview/x/v/1/assets/${name}?width=2400"><img src="${name}">`, preview, "/preview/x/v/1", "fr");
-      expect(page).not.toMatch(/es-ph-/);
-      expect(page.match(/data:image\/svg\+xml;base64,/g)?.length).toBe(2);
-      const placed = SP.serviceMediaSlots(saved).filter((x) => x.filled && x.authentic);
-      expect(placed.length).toBe(2);
-      for (const x of placed) { const sec: any = saved.templates[x.template].sections[x.sectionId]; expect((x.blockId ? sec.blocks[x.blockId] : sec).settings[x.assetField!]).toMatch(/^es-client-/); }
+      expect(SP.serviceMediaSlots(saved).filter((x) => !x.filled)).toHaveLength(0);
+      // Ses deux photos sont bien posées dans le thème.
+      const sent = all<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND name LIKE 'chantier-%'", pid).map((x) => x.id);
+      expect(sent).toHaveLength(2);
+      expect(Object.values(saved.files ?? {})).toEqual(expect.arrayContaining(sent));
     } finally { delete T.studioBrandDeps2.images; delete SB.studioBrandDeps.copy; delete SB.studioBrandDeps.compose; delete SB.studioBrandDeps.image; }
   });
 

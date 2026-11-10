@@ -13,9 +13,10 @@ type PlanSlot = { template: string; section: string; occurrence: number; block?:
 export type ServiceSlot = { key: string; template: string; sectionId: string; blockId?: string; field: string; /** Champ « fichier du thème » qui affiche vraiment la photo (asset_url : aperçu et boutique Shopify). */ assetField?: string; shows: string; aspect: "1:1" | "4:5" | "16:9" | "9:16"; filled: boolean; /** Section masquée faute de photo : elle réapparaît quand ses photos sont posées. */ hidden?: boolean; /** Photo que SINA ne peut pas inventer (équipe, réalisations) : seule la vraie photo du client va ici. */ authentic?: AuthenticKind };
 
 /**
- * Photos que SINA ne peut pas inventer (décision du propriétaire du 9 novembre 2026) : l'équipe elle-même et les biens
- * mis en vente ou en location (ceux-ci viennent de l'espace Biens, jamais d'un emplacement du thème) ; les réalisations
- * et avant/après d'un artisan sont à fournir par le client (sa réponse du même jour). Lieu, villes, ambiances : SINA peut les créer.
+ * Photos que SINA ne peut pas inventer : l'équipe elle-même (portraits) et les biens mis en vente ou en location (ceux-ci
+ * viennent de l'espace Biens, jamais d'un emplacement du thème). Décision du propriétaire du 10 novembre 2026 : les
+ * réalisations, chantiers et avant / après d'un artisan sont créés par SINA (OpenAI) quand le client n'en a pas assez,
+ * sans personne reconnaissable ; ses vraies photos y vont d'abord. Lieu, villes, ambiances : SINA les crée aussi.
  */
 export type AuthenticKind = "realisation" | "equipe";
 
@@ -25,7 +26,6 @@ export type AuthenticKind = "realisation" | "equipe";
  */
 export function authenticKind(s: { template: string; section: string; block?: string; field: string; shows: string }): AuthenticKind | null {
   const t = `${s.template} ${s.section} ${s.block ?? ""} ${s.field} ${s.shows}`.toLowerCase().replace(/_/g, " ");
-  if (/realisation|page\.ph-projet-|detail-chantier|compare|\b(before|after|avant|apres)\b|project image|\bprojet (avant|ambiance)\b/.test(t)) return "realisation";
   if (/equipe|portrait|fondat|\bteam\b/.test(t) || (s.template === "page.about" && s.section === "about")) return "equipe";
   return null;
 }

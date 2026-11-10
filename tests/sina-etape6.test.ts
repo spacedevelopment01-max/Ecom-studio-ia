@@ -124,7 +124,7 @@ describe("SINA — étape 6 : un de nos thèmes", async () => {
     const { ctx, cid } = await stepSix();
     expect((await call("theme.propose", ctx, {})).ok).toBe(true);
     expect((await call("site.mode", ctx, { mode: "mockup" })).summary).toBe("Choix noté : un thème sur mesure.");
-    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/le client a choisi un THÈME SUR MESURE[^]*Étape 6, THÈME SUR MESURE[^]*PLUS JAMAIS « maquette »[^]*SON SEUL choix[^]*theme\.families[^]*AUCUN thème de départ[^]*custom\.design[^]*SEULE façon de monter un site[^]*TOUTES les pages obligatoires[^]*custom\.build[^]*onglet Boutique[^]*Élément désigné[^]*custom\.edit[^]*custom\.photo[^]*custom\.choose/);
+    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/le client a choisi un THÈME SUR MESURE[^]*Étape 6, THÈME SUR MESURE[^]*JAMAIS « maquette »[^]*theme\.families[^]*theme\.family[^]*sombre ou plutôt clair[^]*theme\.ambiance[^]*custom\.concepts[^]*COMPLÈTEMENT différents[^]*custom\.concept[^]*toutes les pages obligatoires[^]*custom\.images[^]*gallery\.plan[^]*7 au moins[^]*SA photo[^]*personne[^]*gallery\.create[^]*custom\.build[^]*référencement[^]*onglet Boutique[^]*Élément désigné[^]*custom\.edit[^]*custom\.photo[^]*custom\.choose[^]*photo d'exemple/);
     expect(J.journeyOf(cid).steps[6].status).toBe("doing");
   });
 

@@ -20,6 +20,8 @@ import { callCostBoundMicro, estimateCallMicro, routeLlm } from "../../ai/llm";
 import { clientImages, type ImagesMode } from "../custom-theme/brand";
 import { serviceImageRequests, STUDIO_BRAND_JOB, studioImageNeeds, studioImageRequests } from "../studio-brand";
 import { boundedImageRequestsQuote } from "../../image-v2/creation-quote";
+import { withQuotedImageRoute } from "../../ai/media-providers";
+import { mockupImageRoute } from "../mockup-code/tools";
 
 const modeTool: AgentTool<{ mode: "theme" | "mockup" }> = {
   name: "site.mode", module: "site", kind: "write", needsProject: true,
@@ -173,7 +175,8 @@ const studioBrandTool: AgentTool<BrandArgs> = {
       if (studioBrandDeps2.images) img = studioBrandDeps2.images(p, n);
       else {
         const reqs = needs.service ? serviceImageRequests(p, needs.service).map(({ slotKey: _k, ...r }) => r) : studioImageRequests(p);
-        const q = boundedImageRequestsQuote(p, reqs.slice(0, n), {}) as { capMicro: number; estimateMicro: number };
+        // Même route que la création : OpenAI, modèle des images des thèmes (décision du 10 novembre 2026).
+        const q = withQuotedImageRoute(mockupImageRoute(), () => boundedImageRequestsQuote(p, reqs.slice(0, n), {})) as { capMicro: number; estimateMicro: number };
         img = { capMicro: q.capMicro, estimateMicro: q.estimateMicro };
       }
     }

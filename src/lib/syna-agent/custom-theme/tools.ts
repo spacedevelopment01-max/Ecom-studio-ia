@@ -623,7 +623,10 @@ const chooseTool: AgentTool<Record<string, never>> = {
   preview: () => "Thème sur mesure choisi par le client.",
   run: (ctx) => {
     const p = project(ctx), t = loadCustomTheme(p.id);
-    if (!t) return { ok: false, summary: L("Aucun thème sur mesure : il faut d'abord le concevoir (custom.design).", "No custom theme yet.") };
+    if (!t) return { ok: false, summary: L("Aucun thème sur mesure : il faut d'abord le concevoir (custom.concepts).", "No custom theme yet.") };
+    // Décision du propriétaire du 10 novembre 2026 : aucune image ne reste vide ni avec la photo de démonstration.
+    const left = photoSlots(t, photoSite(ctx)).filter((x) => x.kind !== "produit");
+    if (left.length) return { ok: false, summary: L(`Thème pas encore prêt à être choisi : ${left.length} photo(s) d'exemple restent (${[...new Set(left.map((x) => x.place))].join(", ")}).`, "Sample photos remain."), hint: "Dis-le au client simplement et propose de les créer (custom.build, devis d'abord) ou de mettre ses images ; rien n'est validé tant qu'une photo d'exemple reste." };
     const r = saved(ctx, { ...t, chosen: true }, "choisi par le client", { strict: true });
     // Essai réel du 9 novembre : le choix ne fermait pas l'étape 6 dans le parcours.
     // Audit du 10 novembre : l'étape 7 renvoyait ensuite vers les anciennes maquettes. Elle devient la mise en boutique du

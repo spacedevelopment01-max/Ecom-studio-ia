@@ -36,7 +36,7 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   moins un logo (la version du Studio prend la place d'un dessin refusé, signalée s'il n'est pas validé) ; fond clair
   retiré depuis les bords, jamais de carré autour du logo.
 - **Images 100 % IA, avec Qwen-Image 3.0 Pro** (pas ChatGPT, jugé trop cher ; pas de texte posé en local à la place).
-  **Exception : maquettes de site de SINA** (étape 6) avec **OpenAI GPT Image 2.5 Flare** (décision du 8 novembre 2026, après
+  **Exception : maquettes de site de SINA** (étape 6) avec **OpenAI GPT Image 2.6 Flare** (2.5 Flare jusqu'au 10 novembre 2026 ; décision du 8 novembre 2026, après
   comparaison réelle : Qwen abîmait les textes de la page, OpenAI les écrivait juste). Les textes du site sont écrits
   AVANT la maquette (`mockup.copy`, sur l'angle choisi et son émotion) et posés lettre pour lettre sur l'image.
   Seules les pages principales ont une maquette (accueil, pages clés, menu, panier) ; les pages simples sont codées à
@@ -68,8 +68,11 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   structure (`custom.structure`), photo créée (`custom.photo` ; payants avec carte d'accord : `custom.design`, `custom.build`, `custom.photo`), annulation (`custom.undo`), choix
   (`custom.choose`). **Photos des produits** (règle du propriétaire du 10 novembre 2026) : elles restent sur les emplacements produit (cartes, bloc d'achat, vignettes de lot, panier, recherche), jamais posées en photo d'ambiance ; elles servent de modèle à OpenAI pour une partie des scènes, les autres photos d'ambiance montrent l'univers sans le produit (pour du thé : théière, feuilles, fruits, plantes), en accord avec le texte d'en face ; montage possible en deux fois (`newPhotos:false` : textes et vraies photos d'abord). **Bloc d'achat** rempli avec les vraies données du produit (`custom-theme/buy-block.ts`, script corrigé par
   `scripts/section_buy_fix.py`) ; jamais de faux compte à rebours ni d'offre d'exemple en section à part (`FAKE_OFFER_SECTIONS`) ;
-  photos impossibles à inventer (réalisations, avant/après d'artisan, photos de clients, biens : `authenticSection`) jamais
-  créées ; l'ouverture Moderne « mot géant » ne montre que la photo du client (jamais les mannequins d'exemple de son script), cadre « Photo à fournir » ; SINA voit l'accueil capturé (`custom-theme/shots.ts`). Le thème vivant s'affiche dans le fil (`/api/projects/<id>/custom-theme`, pages, téléphone) avec
+  photos impossibles à inventer (photos de ses clients, biens : `authenticSection`) jamais créées ni posées sans ses vraies
+  photos ; réalisations, chantiers et avant / après créés par SINA s'il n'en a pas assez (10 novembre 2026) ; deux concepts
+  (`custom.concepts`, `custom.concept`), ambiance enregistrée (`theme.ambiance`), SEO par page dans le plan des textes,
+  galerie produit (`gallery.plan`, `gallery.create`, `custom-theme/gallery.ts`) ; `custom.choose` refusé tant qu'une photo
+  d'exemple reste ; l'ouverture Moderne « mot géant » ne montre que la photo du client (jamais les mannequins d'exemple de son script), cadre « Photo à fournir » ; SINA voit l'accueil capturé (`custom-theme/shots.ts`). Le thème vivant s'affiche dans le fil (`/api/projects/<id>/custom-theme`, pages, téléphone) avec
   **« Désigner un élément »** : le client pointe un titre, un texte, un bouton, une image ou une section, dit ce qu'il
   veut, et SINA ne change que lui. Règles de montage contrôlées sans IA (`checkCustomTheme`) ; aucun script dans une
   section retouchée. Les anciennes maquettes (`mockup.*`) ne servent plus qu'aux projets déjà commencés avec elles. La mise
@@ -85,7 +88,7 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   (`reference-shapes.json`) et les 6 thèmes de services (TABLE SAISON, ATELIER NUANCE, PARENTHÈSE, PHASE, MAISON & HORIZON,
   APLAT : liste de photos tirée de leur démonstration, `src/lib/theme/service-media-plans.json`, préparée par
   `BUILD_SERVICE_PLANS=1 npx vitest run tests/build-service-media-plans.test.ts`) : SINA compte, pose et crée les images ;
-  une section masquée faute de photo réapparaît quand ses photos sont posées. **Photos que SINA ne peut pas inventer** (décision du 9 novembre 2026, `authenticKind`) : l'équipe elle-même et les biens mis en vente ou en location (espace Biens) ; réalisations et avant/après des artisans (PHASE, APLAT), à fournir par le client (sa réponse du 9 novembre) ; le lieu, les villes et les ambiances, SINA les crée : SINA ne les crée jamais et les compte à part ; les images du client y vont en premier ; tant qu'elles manquent, l'aperçu du Studio montre à leur place un cadre « Photo à fournir — SINA ne peut pas inventer… » (`withAuthenticPlaceholders`), jamais sur le site publié ni dans l'export. Les photos posées vont dans le champ « fichier du thème » (`x_asset`) que la page affiche.
+  une section masquée faute de photo réapparaît quand ses photos sont posées. **Photos que SINA ne peut pas inventer** (`authenticKind`) : l'équipe elle-même et les biens mis en vente ou en location (espace Biens) ; depuis le 10 novembre 2026, les réalisations et avant/après des artisans (PHASE, APLAT) sont créés par SINA quand le client n'en a pas assez (sans personne reconnaissable) ; le lieu, les villes et les ambiances, SINA les crée aussi : les photos impossibles à inventer, SINA ne les crée jamais et les compte à part ; les images du client y vont en premier ; tant qu'elles manquent, l'aperçu du Studio montre à leur place un cadre « Photo à fournir — SINA ne peut pas inventer… » (`withAuthenticPlaceholders`), jamais sur le site publié ni dans l'export. Les photos posées vont dans le champ « fichier du thème » (`x_asset`) que la page affiche.
 - **Images d'un thème, Studio ou sur mesure** (décision du propriétaire du 10 novembre 2026, la plus récente, elle prime sur
   les règles d'images plus anciennes de ce fichier) : les photos produit du client vont dans le « Produit vedette » et les
   sections qui mettent les produits en avant (cartes, collections, catalogue, lots, panier) ; **toutes les autres images
