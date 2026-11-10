@@ -171,6 +171,15 @@ describe("thème sur mesure : rendu", () => {
     expect(js).not.toContain("var SHIP={min:2,max:3,cut:14};");
     expect(brandCss({ brand: null })).toBe("");
   });
+
+  it("couleurs de la marque : les sections Classique à palette d'exemple (tA, tB, tN) prennent celles du client", () => {
+    const css = brandCss({ brand: { palette: { dark: "#1F2A3A", primary: "#24508C", secondary: "#F6E7D3", accent: "#C2652B", light: "#FFFFFF" } } } as any);
+    // même rôle que dans l'exemple : 1 encre sombre, 2 couleur de la marque, 3 teinte claire, 4 fond clair, 5 accent
+    expect(css).toContain(":root,.tA,.tB,.tN{--c1:#1F2A3A;--c2:#24508C;--c3:color-mix(in srgb,#FFFFFF 86%,#24508C);--c4:color-mix(in srgb,#FFFFFF 95%,#1F2A3A);--c5:#C2652B}");
+    // la feuille des sections déclare ces palettes avant : la règle de la marque, posée après, l'emporte
+    const lib = fs.readFileSync(path.join(process.cwd(), "public/sections/library.css"), "utf8");
+    expect(lib).toMatch(/\.tB\{--c1:#233A2E/);
+  });
 });
 
 describe("thème sur mesure : outils de SINA", async () => {
@@ -699,7 +708,17 @@ describe("thème sur mesure : sections dont le contenu vient du script de démon
 describe("bibliothèque : fond inversé (clair ↔ sombre) selon l'ambiance voulue par le client", () => {
   it("règles inversées présentes, une section inversable sur trois au moins, la lisibilité contrôlée", async () => {
     const css = fs.readFileSync(path.join(process.cwd(), "public/sections/library.css"), "utf8");
-    expect(css).toMatch(/\.ct-inv \.steps\{\s*background:color-mix\(in oklab, var\(--b-soft, #fff\) 0%, var\(--b-dark, #141414\)\)/);
+    expect(css).toMatch(/:where\(\.ct-inv\) \.steps\{[^}]*background:color-mix\(in oklab, var\(--b-soft, #fff\) 0%, var\(--b-dark, #141414\)\)/);
+    // texte : clarté retournée par rapport à SA couleur, plage lisible garantie, teinte gardée
+    expect(css).toMatch(/:where\(\.ct-inv\) \.fv1 \.eb\{[^}]*color:oklch\(from #E9C9A8 calc\(var\(--ct-flip, 1\)/);
+    // chaque fond dit s'il s'inverse (--ct-flip) et s'il est devenu clair (--ct-gl) : le texte suit SON fond
+    expect(css).toMatch(/\.ct-inv\.ct-light\{\s*--ct-gl:1/);
+    expect(css).toMatch(/:where\(\.ct-inv\) \.zq-tk\{[^}]*--ct-flip:1;\s*--ct-gl:0/);
+    // couleurs écrites dans le code HTML d'une section (attribut style) : remplacées aussi
+    expect(css).toMatch(/:where\(\.ct-inv\) \[style\^="background:var\(--b-dark\)"\]/);
+    expect(css).toMatch(/:where\(\.ct-inv :is\(input,textarea,select\)\)\{\s*background-color:transparent/);
+    // palettes d'exemple tA / tB / tN : jamais recopiées en version inversée (la marque les remplace)
+    expect(css).not.toMatch(/\.ct-inv\)? \.t[ABN]\{/);
     expect(css).toMatch(/\.ct-dark>\*\{\s*background-color:var\(--b-dark, #141414\);\s*color:var\(--b-soft, #fff\)/);
     expect(css).toMatch(/\.ct-light>\*\{\s*background-color:var\(--b-soft, #fff\);\s*color:var\(--b-dark, #141414\)/);
     const L = await import("@/lib/syna-agent/custom-theme/library");
