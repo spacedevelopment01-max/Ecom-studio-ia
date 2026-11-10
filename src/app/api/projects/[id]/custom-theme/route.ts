@@ -11,6 +11,7 @@ import { loadProject } from "@/lib/projects";
 import type { Ctx } from "@/lib/route-helpers";
 import { loadConcepts, loadCustomTheme } from "@/lib/syna-agent/custom-theme/theme";
 import { renderCustomTheme } from "@/lib/syna-agent/custom-theme/render";
+import { builderAssets, builderTheme } from "@/lib/syna-agent/custom-theme/builder";
 
 export const runtime = "nodejs";
 
@@ -25,7 +26,10 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   const t = concept === "A" || concept === "B" ? loadConcepts(id)?.[concept]?.theme ?? null : loadCustomTheme(id);
   if (!t) throw new HttpError(404, L("Aucun thème sur mesure pour ce projet.", "No custom theme for this project."));
   const nonce = crypto.randomBytes(12).toString("base64");
-  const html = renderCustomTheme(p, t, { studio: q.get("studio") === "1" && !concept, embed: q.get("embed") === "1", nonce });
+  // ?builder=1 : le client monte lui-même son accueil, section par section (essai du propriétaire, gratuit, rien d'enregistré).
+  const builder = q.get("builder") === "1" && !concept ? builderTheme(t, { fashion: /mode|v[êe]tement|chaussure|bijou/i.test(`${p.product?.category ?? ""} ${p.product?.name ?? ""}`) }) : null;
+  let html = renderCustomTheme(p, builder ? builder.theme : t, { studio: q.get("studio") === "1" && !concept && !builder, embed: q.get("embed") === "1", nonce, ...(builder ? { title: `${p.brand?.name || p.name} — construis ton accueil` } : {}) });
+  if (builder) { const a = builderAssets(builder.slots); html = html.replace("</body>", `<style>${a.css}</style><script nonce="${nonce}">${a.js}</script></body>`); }
   // Seuls les scripts du rendu (bibliothèque du Studio) s'exécutent : aucun script venu d'une section retouchée.
   const csp = [
     "default-src 'self'", `script-src 'self' 'nonce-${nonce}'`, "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
