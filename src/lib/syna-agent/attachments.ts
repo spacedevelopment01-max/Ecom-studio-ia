@@ -190,6 +190,18 @@ export async function journeyImages(j: { steps: Record<number, { status: string 
       try { what = String(JSON.parse(a.meta ?? "{}").synaPhoto?.description ?? "").slice(0, 160); } catch { what = ""; }
       if (data) out.push({ data, label: `Thème sur mesure du client — photo créée il y a quelques minutes (${a.name}${what ? ` : ${what}` : ""}), à vérifier toi-même` });
     }
+    // Galerie produit créée ces 20 dernières minutes (essai du 10 novembre 2026 : SINA disait ne pas la voir) : réduite
+    // en planche de vignettes carrées, pour qu'elle vérifie elle-même chaque image (produit, textes, format).
+    const gal = all<{ id: string; meta: string | null }>("SELECT id, meta FROM assets WHERE project_id=? AND deleted_at IS NULL AND origin='generated' AND created_at>? AND meta LIKE '%synaGallery%' ORDER BY created_at ASC LIMIT 9", projectId, Date.now() - 20 * 60_000);
+    if (gal.length) {
+      const tiles = (await Promise.all(gal.map((g) => small(g.id, 512).catch(() => null)))).filter((x) => !!x).map((x) => x!);
+      if (tiles.length) {
+        const cols = Math.min(3, tiles.length), rows = Math.ceil(tiles.length / cols);
+        const sheet = await sharp({ create: { width: cols * 512, height: rows * 512, channels: 3, background: "#ffffff" } })
+          .composite(await Promise.all(tiles.map(async (t, i) => ({ input: await sharp(t).resize(512, 512, { fit: "contain", background: "#ffffff" }).toBuffer(), left: (i % cols) * 512, top: Math.floor(i / cols) * 512 })))).jpeg({ quality: 82 }).toBuffer();
+        out.push({ data: sheet, label: `Galerie produit créée il y a quelques minutes (${tiles.length} image(s), dans l'ordre), à vérifier toi-même : produit fidèle et entier, textes exacts, format carré` });
+      }
+    }
     const { customThemeShots } = await import("./custom-theme/shots");
     for (const shot of await customThemeShots(projectId).catch(() => [])) {
       const meta = await sharp(shot.data).metadata().catch(() => null);

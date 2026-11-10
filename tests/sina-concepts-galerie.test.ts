@@ -187,3 +187,12 @@ describe("réponses coupées et référencement manquant (essai Éclat de thé d
     expect(G.galleryVerdict({ ...ok, texts: [{ expected: "Thé vert bio", written: "Thé vert bio", exact: true }] }, { person: false, texts: ["Thé vert bio"] })).toEqual([]);
   });
 });
+
+describe("SINA voit la galerie qu'elle vient de créer", () => {
+  it("planche des images de la galerie jointe à SINA (essai : « elles ne me sont pas jointes »)", async () => {
+    const fs = await import("node:fs");
+    const src = fs.readFileSync("src/lib/syna-agent/attachments.ts", "utf8");
+    expect(src).toMatch(/synaGallery[^]*Galerie produit créée il y a quelques minutes[^]*format carré/);
+    expect(fs.readFileSync("src/lib/syna-agent/tools/gallery.ts", "utf8")).toMatch(/images toujours CARRÉES, format 1:1/);
+  });
+});
