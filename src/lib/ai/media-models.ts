@@ -182,8 +182,7 @@ export const MEDIA_MODELS: MediaModel[] = [
     use: { fr: "Dessin obligatoire des nouveaux logos ; sans fournisseur ou coût borné, reste en attente.", en: "Required for new logo artwork; pending if provider or bounded cost is unavailable." },
   },
   // GPT Image 2.6 (demande du propriétaire du 10 novembre 2026) : identifiants relevés dans la liste des modèles du compte
-  // OpenAI le 10/11/2026. Ni par défaut, ni comparés en réel ; tarif à relever sur openai.com/api/pricing et à saisir
-  // dans l'administration avant tout appel (sans tarif, la génération reste bloquée : coût maximal non borné).
+  // OpenAI le 10/11/2026, tarif officiel inscrit (DEFAULT_PRICES, borne par image). Ni par défaut, ni comparés en réel.
   {
     provider: "openai", model: "gpt-image-2.6-flare", label: "OpenAI GPT Image 2.6 Flare",
     kind: "image", adapter: "openai_image", quality: 3,
@@ -191,9 +190,9 @@ export const MEDIA_MODELS: MediaModel[] = [
     aspects: ["1:1", "2:3", "3:2"],
     resolution: "supposée identique au 2.5 Flare (1024–1536 px demandés) ; non vérifiée",
     typical: {},
-    priceNote: "NON VÉRIFIÉ — à relever sur openai.com/api/pricing (saisir un tarif par image)",
-    status: "stable", verified: { id: true, price: false }, paramsVerified: false,
-    source: "https://api.openai.com/v1/models",
+    priceNote: "Officiel (pages des modèles, relevé du 10/11/2026) : texte entrée $5/M (en cache $1,25), image entrée $8/M (en cache $2), sortie $30/M, comme le 2.5 ; « high » consomme comme le 2.5, « low »/« medium » ≈ 4 fois plus ; pas de lot (Batch). Borne du Studio : 0,12 $ par image.",
+    status: "stable", verified: { id: true, price: true }, paramsVerified: false,
+    source: "https://developers.openai.com/api/docs/models/gpt-image-2.6-flare",
     use: { fr: "Nouvelle génération OpenAI (suite du 2.5 Flare) : à comparer avant de l'utiliser.", en: "New OpenAI generation (after 2.5 Flare): compare before use." },
   },
   {
@@ -203,9 +202,9 @@ export const MEDIA_MODELS: MediaModel[] = [
     aspects: ["1:1", "16:9", "9:16", "2:3", "3:2"],
     resolution: "supposée identique au 2.5 Sunburst ; non vérifiée",
     typical: {},
-    priceNote: "NON VÉRIFIÉ — à relever sur openai.com/api/pricing (saisir un tarif par image)",
-    status: "stable", verified: { id: true, price: false }, paramsVerified: false,
-    source: "https://api.openai.com/v1/models",
+    priceNote: "Officiel (pages des modèles, relevé du 10/11/2026) : texte entrée $5/M (en cache $1,25), image entrée $8/M (en cache $2), sortie $30/M, comme le 2.5 ; « high » consomme comme le 2.5, « low »/« medium » ≈ 4 fois plus ; pas de lot (Batch). Borne du Studio : 0,12 $ par image.",
+    status: "stable", verified: { id: true, price: true }, paramsVerified: false,
+    source: "https://developers.openai.com/api/docs/models/gpt-image-2.6-sunburst",
     use: { fr: "Nouvelle génération OpenAI (suite du 2.5 Sunburst) : à comparer avant de l'utiliser.", en: "New OpenAI generation (after 2.5 Sunburst): compare before use." },
   },
   // Google : identifiants du guide officiel « Nano Banana » (google-gemini/cookbook). Tarifs : page Vertex AI
