@@ -7,6 +7,7 @@
  * Gratuit, sans IA, rien n'est enregistré dans le thème.
  */
 import { FAKE_OFFER_SECTIONS, familySections, onlyFor, RETIRED_SECTIONS, SCRIPT_DEMO_SECTIONS, sectionLibrary, type LibSection } from "./library";
+import { BLANK_CSS, BLANK_JS } from "./blank";
 import { SECTION_GROUPS, sectionGroup, type SectionGroupId } from "./section-groups";
 import type { CustomTheme, CtSection } from "./theme";
 
@@ -97,7 +98,7 @@ panel.querySelector(".bd-show").onclick=function(){var d=document.createElement(
 var note=document.createElement("div");note.className="bd-note";note.textContent="Les sections que SINA n'a pas encore écrites pour toi montrent des textes et photos d'exemple : elle les remplace par les tiens à la fin.";document.body.appendChild(note);setTimeout(function(){note.remove()},9000);
 if(state&&state.slots&&state.slots.every(function(s){return el[s.uid]}))draw();else compose(7,false);
 })();`;
-  return { css, js };
+  return { css: css + BLANK_CSS, js: js + "\n" + BLANK_JS };
 }
 
 /**
@@ -141,5 +142,5 @@ var seen={};D.items.forEach(function(it,i){var e=main.querySelector('[data-ct="'
 var p=document.createElement("div");p.className="cg-panel";p.innerHTML='<span>Banque des sections · '+(D.family==="moderne"?"Moderne":"Classique")+' · '+D.items.length+' sections</span><select aria-label="Aller à une famille"><option value="">Aller à une famille…</option>'+D.groups.filter(function(g){return seen[g.id]}).map(function(g){return '<option value="'+g.id+'">'+g.label+' ('+D.items.filter(function(x){return x.group===g.id}).length+')</option>'}).join("")+'</select>'+(D.other?'<a href="'+D.other.href+'">Voir '+D.other.label+'</a>':'');
 var w=document.querySelector(".tb-wrap");w.parentNode.insertBefore(p,w);p.querySelector("select").onchange=function(){var x=document.getElementById("g-"+this.value);if(x)x.scrollIntoView({block:"start"})};
 })();`;
-  return { css, js };
+  return { css: css + BLANK_CSS, js: js + "\n" + BLANK_JS };
 }
