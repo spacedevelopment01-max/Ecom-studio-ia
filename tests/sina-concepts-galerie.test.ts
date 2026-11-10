@@ -196,3 +196,16 @@ describe("SINA voit la galerie qu'elle vient de créer", () => {
     expect(fs.readFileSync("src/lib/syna-agent/tools/gallery.ts", "utf8")).toMatch(/images toujours CARRÉES, format 1:1/);
   });
 });
+
+describe("effort de SINA à l'étape 6 (décision du propriétaire du 10 novembre 2026)", () => {
+  it("élevé pour concevoir et juger un thème, moyen pour une question ou une confirmation", async () => {
+    const { modelFor, needsJudgement } = await import("@/lib/syna-agent/loop");
+    expect(modelFor(6, { judge: true })).toMatchObject({ model: "claude-sonnet-5-5", effort: "high" });
+    expect(modelFor(6, { judge: false })).toMatchObject({ model: "claude-sonnet-5-5", effort: "medium" });
+    expect(needsJudgement([{ role: "user", content: { text: "Non, aucune personne." } }])).toBe(false);
+    expect(needsJudgement([{ role: "user", content: { text: "x" } }, { role: "tool", content: { tool: "gallery.plan" } }])).toBe(false);
+    expect(needsJudgement([{ role: "user", content: { text: "x" } }, { role: "tool", content: { tool: "custom.concepts" } }])).toBe(true);
+    expect(needsJudgement([{ role: "user", content: { text: "x" } }, { role: "tool", content: { tool: "jobs.wait" } }])).toBe(true);
+    expect(needsJudgement([{ role: "user", content: { text: "[Élément désigné · section s1234abcd] Mets ce titre en plus grand." } }])).toBe(true);
+  });
+});

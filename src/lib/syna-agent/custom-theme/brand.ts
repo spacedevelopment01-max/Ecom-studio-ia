@@ -41,7 +41,7 @@ export const CUSTOM_BRAND_JOB = "syna.custom.brand";
  * autres. Les vraies photos de ses produits servent toujours aux photos de ses produits.
  */
 export type ImagesMode = "sina" | "client" | "mix";
-export type CustomBrandPayload = { projectId: string; capMicro: number; conversationId?: string | null; photos?: boolean; newPhotos?: boolean; images?: ImagesMode; clientAssets?: string[]; rewrite?: boolean; consigne?: string | null };
+export type CustomBrandPayload = { projectId: string; capMicro: number; conversationId?: string | null; photos?: boolean; newPhotos?: boolean; /** Pages dont les photos sont créées maintenant (null : toutes). */ pages?: string[] | null; images?: ImagesMode; clientAssets?: string[]; rewrite?: boolean; consigne?: string | null };
 
 /** Plafond d'un appel d'écriture d'une section (même modèle que les textes du site). */
 export const SECTION_TEXT_CAP_MICRO = 150_000;
@@ -447,7 +447,8 @@ export async function runCustomBrandJob(ctx: JobContext) {
     // Sections aux photos d'exemple encore SANS description (essai réel du 10 novembre 2026 : le rédacteur, lisant « sans
     // créer de photo », n'en avait décrit aucune ; le montage des photos n'avait rien à créer et ne l'a pas dit) : la
     // description est écrite maintenant, d'après le texte déjà écrit de la section (un petit appel par section).
-    if (a.newPhotos !== false && (!customBrandDeps.photo || customBrandDeps.photoBrief)) for (const y of allSections(loadCustomTheme(p.id)!)) {
+    const onPage = (y: { page?: { key: string } | null }) => !a.pages?.length || (!!y.page && a.pages.includes(y.page.key));
+    if (a.newPhotos !== false && (!customBrandDeps.photo || customBrandDeps.photoBrief)) for (const y of allSections(loadCustomTheme(p.id)!).filter(onPage)) {
       const ly = libSection(y.s.id), html = sectionHtml(y.s);
       const left = [...new Set([...html.matchAll(/photos\/[\w-]+\.(?:webp|png|jpg)/g)].map((m) => m[0]))].filter((f) => !(briefs[y.s.uid] ?? []).some((b) => b.find === f) && !/(^|\/)(carte|map|plan)-/.test(f));
       if (!ly || !left.length || authenticSection(y.s.id, p.business === "services" ? "services" : "products")) continue;
@@ -467,7 +468,8 @@ export async function runCustomBrandJob(ctx: JobContext) {
         }
       } catch (e) { report.problems.push(`${ly.title} : photos non décrites (${(e as Error).message.slice(0, 100)})`); }
     }
-    const todo = Object.entries(briefs).flatMap(([uid, list]) => list.map((ph) => ({ uid, ph }))).filter((x) => !/(^|\/)(carte|map|plan)-[\w-]*\.(?:webp|png|jpe?g)/.test(x.ph.find));
+    const pageOfUid = new Map(allSections(loadCustomTheme(p.id)!).map((y) => [y.s.uid, y] as const));
+    const todo = Object.entries(briefs).flatMap(([uid, list]) => list.map((ph) => ({ uid, ph }))).filter((x) => !/(^|\/)(carte|map|plan)-[\w-]*\.(?:webp|png|jpe?g)/.test(x.ph.find) && (!a.pages?.length || onPage(pageOfUid.get(x.uid) ?? {})));
     const mode: ImagesMode = a.images ?? "sina";
     // Images du client d'abord (« client » ou « mix »), dans l'ordre ; jamais une même image sur deux emplacements.
     const allOwn = (a.clientAssets ?? []).filter((id) => { const x = getAsset(id); return !!x && x.project_id === p.id && !x.deleted_at && x.kind === "image" && !productIds.has(id); });

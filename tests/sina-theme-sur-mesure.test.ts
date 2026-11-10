@@ -833,9 +833,21 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       let briefs = 0, made = 0;
       B.customBrandDeps.photoBrief = async (prompt) => { briefs++; const files = /PHOTOS À DÉCRIRE \(source exacte\) : (.*)$/m.exec(prompt)![1].split(", "); return { photos: files.map((f) => ({ find: f, description: "Photographie d'ambiance : une théière en verre sur une table en bois, lumière du matin.", ratio: "1:1" as const, product: null })) }; };
       B.customBrandDeps.photo = async () => { made++; return sharp({ create: { width: 20, height: 20, channels: 3, background: "#999" } }).png().toBuffer(); };
+      // D'abord l'accueil seulement (décision du propriétaire : photos de l'accueil et de la fiche produit pour tenir le budget).
+      const homeSlots = B.photoSlots(loadCustomTheme(pid)!, { productPhotos: true }).filter((x) => x.kind === "ambiance" && x.place === "Accueil").length;
+      const estHome = await fr(() => getTool("custom.build")!.estimate!(ctx, { images: "sina", pages: ["home"] }));
+      expect(estHome.maxMicro).toBeLessThan(est.maxMicro);
+      const first: any = await run(`ph-home-${Date.now()}`, { projectId: pid, capMicro: estHome.maxMicro, photos: true, images: "sina", pages: ["home"] });
+      expect(first.photosMade).toBeGreaterThanOrEqual(homeSlots);
+      // Seul l'accueil a reçu ses photos ; la fiche produit garde les siennes d'exemple (signalées).
+      const after = loadCustomTheme(pid)!;
+      const sample = (key: string) => after.pages.find((pg) => pg.key === key)!.sections.map((x) => sectionHtml(x)).join("").match(/photos\/[\w-]+\.(?:webp|png|jpg)/g)?.length ?? 0;
+      expect(sample("home")).toBe(0);
+      expect(sample("product")).toBeGreaterThan(0);
+      expect(first.problems.join(" ")).toMatch(/photo\(s\) d'exemple encore en place/);
       const out: any = await run(`ph-${Date.now()}`, { projectId: pid, capMicro: est.maxMicro, photos: true, images: "sina" });
       expect(briefs).toBeGreaterThan(0);
-      expect(out.photosMade).toBe(made);
+      expect(first.photosMade + out.photosMade).toBe(made);
       expect(made).toBeGreaterThanOrEqual(left);
       expect(out.problems.join(" ")).not.toMatch(/photo\(s\) d'exemple encore en place/);
     } finally { delete T.customPhotoDeps.unit; for (const k of ["plan", "seo", "write", "photo", "photoBrief"] as const) delete (B.customBrandDeps as any)[k]; }

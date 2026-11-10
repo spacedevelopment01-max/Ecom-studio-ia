@@ -424,7 +424,7 @@ function localStepFor(r: SynaRun): StepOutput | null {
  * (questions de départ, suivi, étape pas encore disponible) ; Claude Sonnet à l'étape 6. Les créations elles-mêmes
  * (identités, logos, angles, conception du site, textes, photos) se font dans leurs outils, avec leurs propres modèles.
  */
-export function modelFor(currentStepNumber: number, opts: { customTheme?: boolean } = {}): { provider: "anthropic"; model: string; effort?: string } | undefined {
+export function modelFor(currentStepNumber: number, opts: { customTheme?: boolean; judge?: boolean } = {}): { provider: "anthropic"; model: string; effort?: string } | undefined {
   // Étape 1 : la création des identités se fait dans l'outil identity.propose (modèle fort) ; le fil reste léger.
   // Étape 2 de même : le dessin et le contrôle des logos se font dans la tâche logo.propose.
   // Étape 3 : l'image de marque est rendue par le Studio (brand.kit), sans IA.
@@ -436,7 +436,10 @@ export function modelFor(currentStepNumber: number, opts: { customTheme?: boolea
   // 10 novembre 2026) : il comprend l'élément désigné, écrit les retouches de texte et de mise en forme, juge la
   // lisibilité ; un peu plus cher par message, moins d'erreurs et de reprises payantes. Effort ÉLEVÉ (choix du
   // propriétaire du 10 novembre 2026, environ 2 à 4 centimes de plus par message : la lecture du projet pèse le plus).
-  if (currentStepNumber === 6 || (currentStepNumber === 7 && opts.customTheme)) return { provider: "anthropic", model: "claude-sonnet-5-5", effort: "high" };
+  // Effort ÉLEVÉ seulement pour concevoir et juger un thème (résultat d'une conception, d'un montage, d'une galerie ou
+  // d'une retouche à relire, élément désigné à changer) ; MOYEN pour poser une question ou confirmer un choix (décision
+  // du propriétaire du 10 novembre 2026, après l'essai Éclat de thé : 27 réponses à 0,13 € en moyenne).
+  if (currentStepNumber === 6 || (currentStepNumber === 7 && opts.customTheme)) return { provider: "anthropic", model: "claude-sonnet-5-5", effort: opts.judge === false ? "medium" : "high" };
   const simple = currentStepNumber <= 8 || !READY_STEPS.includes(currentStepNumber);
   return simple ? { provider: "anthropic", model: "claude-haiku-5-5", effort: "low" } : undefined;
 }
@@ -461,6 +464,16 @@ export async function stepQuote(user: User, r: SynaRun): Promise<string> {
   } catch { return ""; }
 }
 
+/** Outils dont le résultat se juge (thème conçu, monté, retouché, galerie, tâche finie) : effort élevé à l'étape 6. */
+const JUDGE_TOOLS = /^(custom\.(concepts|concept|design|build|compose|edit|structure|photo|show|section)|gallery\.create|theme\.(brand|choose)|jobs\.wait)$/;
+/** La réflexion en cours doit-elle concevoir ou juger (effort élevé), ou seulement poser une question / confirmer ? */
+export function needsJudgement(history: { role: string; content?: any }[]): boolean {
+  const last = history[history.length - 1];
+  if (last?.role === "tool") return JUDGE_TOOLS.test(String(last.content?.tool ?? ""));
+  const user = [...history].reverse().find((m) => m.role === "user");
+  return /\[Élément désigné/.test(String(user?.content?.text ?? ""));
+}
+
 /** Demandes dont la dernière réflexion avait des images du parcours jointes (logos, planche, thème…). */
 const sawImages = new Map<string, boolean>();
 
@@ -479,7 +492,7 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
     context: `# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id))}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}`,
     prompt: `# Fil de la conversation (le plus ancien d'abord ; tes propres réponses incluses)\n${serialize(history)}\n\nÉtape ${step + 1} de cette demande. Réponds avec l'objet JSON {message, actions, question, done}.`,
     images: images.length ? images : undefined,
-    maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}`, routing: { difficulty: "complex", prefer: (() => { const j = journeyOf(r.conversation_id); return modelFor(currentStep(j), { customTheme: !!j.customChosenAt }); })() },
+    maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}`, routing: { difficulty: "complex", prefer: (() => { const j = journeyOf(r.conversation_id); return modelFor(currentStep(j), { customTheme: !!j.customChosenAt, judge: needsJudgement(history) }); })() },
   };
   sawImages.set(r.id, images.some((im) => /^(Logo|Planche|Maquette|Site codé|Thème sur mesure)/.test(im.label ?? "")));
   if (deps.reason) return StepSchema.parse(await deps.reason(call));
