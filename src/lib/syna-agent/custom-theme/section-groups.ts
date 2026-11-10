@@ -64,7 +64,8 @@ const BY_ID: Record<string, SectionGroupId> = {
   // Preuves
   "ils-parlent-de-nous": "preuves", "vos-photos-photos-de-clients": "preuves", "videos-verticales": "preuves",
   "resume-des-avis": "fiche-produit", "avis-et-ajustement": "fiche-produit",
-  "garanties-et-assurances": "metiers", "note-et-avis-en-bandeau": "metiers",
+  // Modèle des avis choisi par le propriétaire (revue du 10 novembre 2026) : sert aussi aux boutiques de produits.
+  "garanties-et-assurances": "metiers", "note-et-avis-en-bandeau": "preuves",
   // Contenus à vivre
   "histoires-facon-stories": "contenus", "avant-apres": "contenus", "galerie-avec-visionneuse": "contenus",
   "mode-d-emploi-en-etapes": "contenus", "cartes-qui-s-empilent": "contenus", "quiz-quel-produit-pour-toi": "contenus",
@@ -74,7 +75,8 @@ const BY_ID: Record<string, SectionGroupId> = {
   "carte-a-gratter": "offres", "compte-a-rebours-en-bloc": "offres", "bon-cadeau": "offres",
   // Fiche produit
   "complete-ta-commande": "fiche-produit", "offre-par-quantite": "fiche-produit", "questions-sur-le-produit": "fiche-produit",
-  "entre-deux-tailles": "fiche-produit", "emballage-cadeau-en-option": "fiche-produit", "souvent-achetes-ensemble": "fiche-produit",
+  // Emballage cadeau : seulement dans le panier (revue du 10 novembre 2026).
+  "entre-deux-tailles": "fiche-produit", "emballage-cadeau-en-option": "panier", "souvent-achetes-ensemble": "fiche-produit",
   // Questions
   "questions-en-bulles-de-discussion": "questions", "questions-numerotees": "questions",
   "questions-avec-recherche": "pages", "recherche-guidee": "questions",

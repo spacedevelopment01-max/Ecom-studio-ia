@@ -28,3 +28,16 @@ describe("mode construction de l'accueil", () => {
     expect(slots.filter((s) => FAKE_OFFER_SECTIONS[s.id])).toEqual([]);
   });
 });
+
+describe("sections retirées par le propriétaire (revue du 10 novembre 2026)", () => {
+  it("ne sont plus proposées ni dans la banque, mais restent lisibles", async () => {
+    const { familySections, RETIRED_SECTIONS, libSection } = await import("../src/lib/syna-agent/custom-theme/library");
+    const { catalogTheme } = await import("../src/lib/syna-agent/custom-theme/builder");
+    for (const f of ["classique", "moderne"] as const) expect(familySections(f).filter((s) => RETIRED_SECTIONS[s.id])).toEqual([]);
+    const t: any = { version: 1, family: "classique", style: "", header: null, footer: null, search: null, pages: [] };
+    const { items } = catalogTheme(t, "classique");
+    expect(items.filter((x) => RETIRED_SECTIONS[x.id] || x.group === "metiers")).toEqual([]);
+    expect(libSection("ouverture-en-mosaique")).toBeTruthy();
+    expect(items.some((x) => x.id === "note-et-avis-en-bandeau" && x.group === "preuves")).toBe(true);
+  });
+});

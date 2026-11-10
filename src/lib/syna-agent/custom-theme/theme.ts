@@ -7,7 +7,7 @@ import crypto from "node:crypto";
 import { all } from "../../db";
 import { remember } from "../../projects";
 import type { FamilyId } from "../section-families";
-import { authenticSection, FAKE_OFFER_SECTIONS, inlineBackgrounds, isCardSection, FEATURED_ROLE, libSection, SCRIPT_DEMO_SECTIONS, SHELL_ROLES, sectionPhotos, type LibSection } from "./library";
+import { authenticSection, FAKE_OFFER_SECTIONS, RETIRED_SECTIONS, inlineBackgrounds, isCardSection, FEATURED_ROLE, libSection, SCRIPT_DEMO_SECTIONS, SHELL_ROLES, sectionPhotos, type LibSection } from "./library";
 
 export type CtSection = {
   /** Identifiant de CETTE section dans le thème (une même section de la bibliothèque peut servir sur deux pages). */
@@ -284,6 +284,8 @@ export function checkCustomTheme(t: CustomTheme, site?: SiteKind): ThemeProblem[
     if (!l) continue;
     // Offres (lots, quantités, coffret) : fonctions du bloc d'achat « Produit vedette », jamais une section à part.
     if (l.role === "lot" && l.title !== "Complète ta commande") bad(`« ${l.title} » sur « ${page.label} » : les offres (lots, quantités, coffret) sont des fonctions du bloc d'achat « Produit vedette », jamais une section à part`);
+    // Sections retirées de la banque par le propriétaire (revue du 10 novembre 2026) : à remplacer avant le montage.
+    else if (RETIRED_SECTIONS[l.id]) bad(`« ${l.title} » sur « ${page.label} » : retirée de la banque, ${RETIRED_SECTIONS[l.id]}`);
     if (where.has(l.id) && where.get(l.id) !== page.label) bad(`« ${l.title} » sur « ${where.get(l.id)} » et « ${page.label} » : une même section sur deux pages répète ses textes et ses photos`);
     else where.set(l.id, page.label);
   }

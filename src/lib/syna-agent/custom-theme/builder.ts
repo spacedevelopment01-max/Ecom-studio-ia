@@ -6,7 +6,7 @@
  * section », « Précédente » et « Garder », et en haut le nombre de sections et « Changer toute la page ».
  * Gratuit, sans IA, rien n'est enregistré dans le thème.
  */
-import { FAKE_OFFER_SECTIONS, familySections, onlyFor, SCRIPT_DEMO_SECTIONS, sectionLibrary, type LibSection } from "./library";
+import { FAKE_OFFER_SECTIONS, familySections, onlyFor, RETIRED_SECTIONS, SCRIPT_DEMO_SECTIONS, sectionLibrary, type LibSection } from "./library";
 import { SECTION_GROUPS, sectionGroup, type SectionGroupId } from "./section-groups";
 import type { CustomTheme, CtSection } from "./theme";
 
@@ -108,7 +108,9 @@ if(state&&state.slots&&state.slots.every(function(s){return el[s.uid]}))draw();e
 export function catalogTheme(t: CustomTheme, family: CustomTheme["family"]): { theme: CustomTheme; items: (BuilderSlot & { does: string; note: string | null })[] } {
   const items: (BuilderSlot & { does: string; note: string | null })[] = [];
   const sections: CtSection[] = [];
-  for (const g of SECTION_GROUPS) for (const l of sectionLibrary().sections.filter((x) => x.family === family && sectionGroup(x) === g.id)) {
+  // Banque du propriétaire : sans les sections retirées ni la famille « Métiers et services » (thèmes du Studio, revue du
+  // 10 novembre 2026).
+  for (const g of SECTION_GROUPS.filter((x) => x.id !== "metiers")) for (const l of sectionLibrary().sections.filter((x) => x.family === family && sectionGroup(x) === g.id && !RETIRED_SECTIONS[x.id])) {
     const uid = `c${items.length}`;
     const note = l.demoFrame ? "démonstration seulement : jamais posée telle quelle dans un thème" : FAKE_OFFER_SECTIONS[l.id] ? "jamais posée : fausse offre ou faux compte à rebours" : SCRIPT_DEMO_SECTIONS.has(l.id) ? "jamais posée : contenu fabriqué par un script de démonstration" : onlyFor(l.tags) ? `seulement pour ${onlyFor(l.tags)}` : null;
     sections.push({ uid, id: l.id });

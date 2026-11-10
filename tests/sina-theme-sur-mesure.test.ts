@@ -24,7 +24,7 @@ function fullSite(family: "classique" | "moderne") {
       // Accueil : au moins 8 sections ; fiche produit : au moins 7 (méthode de montage, rappel du propriétaire du 9 novembre).
       { key: "home", label: "Accueil", sections: ["Ouverture photo pleine", "Collection en vedette", "Histoire du produit au défilement", "Citation en grand", "Avis clients", "Grille bento", "Nos engagements", "Chiffres clés"] },
       { key: "shop", label: "Boutique", sections: ["Catalogue avec filtres et tri"] },
-      { key: "product", label: "Fiche produit", sections: ["Produit vedette", "Points forts du produit", "Mode d'emploi en étapes", "Résumé des avis", "Questions sur le produit", "Complète ta commande", "Badges de confiance"] },
+      { key: "product", label: "Fiche produit", sections: ["Produit vedette", "Points forts du produit", "Mode d'emploi en étapes", "Résumé des avis", "Questions sur le produit", "Fiche produit à onglets", "Badges de confiance"] },
       { key: "cart", label: "Panier", sections: ["Page panier complète"] },
       { key: "compte", label: "Mon compte", sections: ["Connexion et création de compte"] },
       { key: "about", label: "Notre histoire", sections: ["L'atelier et la personne derrière"] },
@@ -994,7 +994,7 @@ describe("thème sur mesure : pages pleines", () => {
     const problems = checkCustomTheme(T(pages), site).filter((x) => x.level === "bloquant").map((x) => x.text);
     expect(problems.some((x) => /« Offre par quantité » sur « Accueil » : les offres[^]*bloc d'achat/.test(x))).toBe(true);
     expect(problems).toContain("« Histoire du produit au défilement » sur « Accueil » et « Fiche produit » : une même section sur deux pages répète ses textes et ses photos");
-    // « Complète ta commande » (suggestions) reste permise.
+    // « Complète ta commande » : retirée de la banque (option du bloc d'achat, revue du 10 novembre 2026).
     expect(problems.some((x) => x.includes("Complète ta commande"))).toBe(false);
   });
 });

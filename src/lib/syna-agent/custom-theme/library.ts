@@ -94,10 +94,29 @@ export const FAKE_OFFER_SECTIONS: Record<string, "compte à rebours" | "offre"> 
   "offre-en-deux-tuiles": "offre", "abonnement-ou-achat-unique": "offre", "code-promo-a-copier": "offre", "cadeau-offert-des-un-montant": "offre",
 };
 /**
- * Sections qu'un thème de cette famille peut recevoir : jamais les démonstrations en fausse fenêtre, les contenus
- * fabriqués par un script de démonstration, les faux comptes à rebours ni les offres d'exemple.
+ * Sections retirées de la banque par le propriétaire (revue du 10 novembre 2026, docs/revue-banque-sections.md) : jamais
+ * proposées ni posées dans un nouveau thème. Un thème qui en contient déjà une la garde et l'affiche toujours (aucune
+ * suppression silencieuse) ; la raison dit ce qui la remplace.
  */
-export const familySections = (family: FamilyId): LibSection[] => sectionLibrary().sections.filter((s) => s.family === family && !s.demoFrame && !SCRIPT_DEMO_SECTIONS.has(s.id) && !FAKE_OFFER_SECTIONS[s.id]);
+export const RETIRED_SECTIONS: Record<string, string> = {
+  "ouverture-en-mosaique": "supprimée par le propriétaire (ne fait pas une ouverture)",
+  "ouverture-qui-s-agrandit-au-defilement": "supprimée par le propriétaire",
+  "comparateur-de-produits": "supprimée par le propriétaire",
+  "panier-en-feuille-du-bas": "supprimée par le propriétaire",
+  "une-prestation-en-detail": "supprimée par le propriétaire",
+  "abonnement-ou-achat-unique": "devenue une option du bloc « Produit vedette » (abonnement)",
+  "offre-par-quantite": "devenue une option du bloc « Produit vedette » (offre par quantité)",
+  "complete-ta-commande": "devenue une option du bloc « Produit vedette » (produits à ajouter)",
+  "souvent-achetes-ensemble": "devenue une option du bloc « Produit vedette » (produits à ajouter)",
+  "bouton-d-achat-toujours-visible": "devenue une option du bloc « Produit vedette » (barre d'achat fixe)",
+  "panier-coulissant": "devenue un réglage du site (panier sur le côté ou page panier)",
+  "recherche-instantanee": "devenue un réglage de l'en-tête (bouton Rechercher, recherche par-dessus la page)",
+};
+/**
+ * Sections qu'un thème de cette famille peut recevoir : jamais les démonstrations en fausse fenêtre, les contenus
+ * fabriqués par un script de démonstration, les faux comptes à rebours, les offres d'exemple ni les sections retirées.
+ */
+export const familySections = (family: FamilyId): LibSection[] => sectionLibrary().sections.filter((s) => s.family === family && !s.demoFrame && !SCRIPT_DEMO_SECTIONS.has(s.id) && !FAKE_OFFER_SECTIONS[s.id] && !RETIRED_SECTIONS[s.id]);
 /** Retrouve une section par son identifiant ou par son titre exact. */
 export const sectionByRef = (ref: string): LibSection | null => libSection(ref) ?? sectionLibrary().sections.find((s) => s.title === ref) ?? null;
 
