@@ -1,7 +1,7 @@
 /**
  * Bibliothèque des sections des THÈMES SUR MESURE (SINA, étape 6 ; décision du propriétaire du 9 novembre 2026 :
  * « on ne va plus appeler ça maquette mais thème sur mesure »). Les sections viennent du catalogue montré au
- * propriétaire (public/sections/, préparé par scripts/sections-library.py) : 181 sections, familles « Classique » et
+ * propriétaire (public/sections/, préparé par scripts/sections-library.py) : 191 sections, familles « Classique » et
  * « Moderne », jamais mélangées dans un thème. Gratuit, sans IA.
  */
 import fs from "node:fs";
@@ -70,7 +70,6 @@ export function inlineBackgrounds(html: string): string {
   return out;
 }
 export const libSection = (id: string): LibSection | null => sectionLibrary().sections.find((s) => s.id === id) ?? null;
-/** Sections qu'un thème de cette famille peut recevoir (les démonstrations en fausse fenêtre sont écartées). */
 /**
  * Sections dont le contenu AFFICHÉ est fabriqué par le script de démonstration (produits, questions ou prestations de
  * la démo : thés, électricien, restaurant) : le rédacteur ne voit pas ces textes et ne peut pas les réécrire pour la
@@ -94,6 +93,10 @@ export const FAKE_OFFER_SECTIONS: Record<string, "compte à rebours" | "offre"> 
   "barre-compte-a-rebours": "compte à rebours", "compte-a-rebours-en-bloc": "compte à rebours",
   "offre-en-deux-tuiles": "offre", "abonnement-ou-achat-unique": "offre", "code-promo-a-copier": "offre", "cadeau-offert-des-un-montant": "offre",
 };
+/**
+ * Sections qu'un thème de cette famille peut recevoir : jamais les démonstrations en fausse fenêtre, les contenus
+ * fabriqués par un script de démonstration, les faux comptes à rebours ni les offres d'exemple.
+ */
 export const familySections = (family: FamilyId): LibSection[] => sectionLibrary().sections.filter((s) => s.family === family && !s.demoFrame && !SCRIPT_DEMO_SECTIONS.has(s.id) && !FAKE_OFFER_SECTIONS[s.id]);
 /** Retrouve une section par son identifiant ou par son titre exact. */
 export const sectionByRef = (ref: string): LibSection | null => libSection(ref) ?? sectionLibrary().sections.find((s) => s.title === ref) ?? null;
@@ -102,10 +105,10 @@ export const sectionByRef = (ref: string): LibSection | null => libSection(ref) 
 export const SHELL_ROLES = { header: "en-tête", footer: "pied de page", search: "recherche" } as const;
 /** Sections de cartes produits ou familles : une seule par page (consigne du propriétaire du 8 novembre). */
 const CARD_FAMILIES = new Set(["Choisis ton terrain", "Mosaïque de collections", "Familles en cartes défilantes", "Familles en éventail"]);
-/** Section de cartes : cartes produits, ou cartes de familles avec photos (une liste de rayons en texte n'en est pas une). */
-/** Sections réservées à un genre de produit (étiquettes de la bibliothèque) : jamais posées ailleurs. */
+/** Sections réservées à un genre de produit (étiquettes de la bibliothèque) : jamais posées ailleurs (contrôle bloquant). */
 const ONLY_FOR: Record<string, string> = { "pour-mode": "vêtements et accessoires de mode (tailles, tenues, looks)", "pour-the": "thés et infusions" };
 export const onlyFor = (tags: string[] | undefined) => (tags ?? []).map((t) => ONLY_FOR[t]).find(Boolean) ?? null;
+/** Section de cartes : cartes produits, ou cartes de familles avec photos (une liste de rayons en texte n'en est pas une). */
 export const isCardSection = (l: Pick<LibSection, "role" | "title">) => l.role === "produits" || CARD_FAMILIES.has(l.title);
 export const FEATURED_ROLE = "produit vedette";
 

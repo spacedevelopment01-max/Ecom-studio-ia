@@ -37,10 +37,12 @@ export const SECTION_FAMILIES: SectionFamily[] = [
     pitch: { fr: "Calme et chaleureux : grandes photos, titres élégants, beaucoup d'air, animations douces.", en: "Calm and warm: large photos, elegant titles, lots of air, gentle animations." },
     fits: "marques douces, sensorielles, artisanales, bien-être, services de proximité",
     styles: [{ id: "classique", fr: "Classique", en: "Classic", preview: "/section-families/classique.jpg", demo: "/demo/familles/classique/index.html", mood: "calme, éditorial, chaleureux" }],
+    // Rôles : exemples parlants de chaque famille, seulement des sections qu'un thème peut recevoir (sans faux compte à
+    // rebours, offre d'exemple ni contenu fabriqué par un script de démonstration ; audit du 10 novembre 2026).
     roles: {
       ouverture: ["Ouverture photo pleine", "Ouverture vidéo", "Ouverture qui s'agrandit au défilement"],
       produits: ["Collection en vedette", "Collection en grand nom"],
-      "produit vedette": ["Produit vedette · lots dégressifs", "Produit vedette · loupe et onglets", "Produit vedette · abonnement", "Produit vedette · toute la gamme", "Produit vedette · calculateur"],
+      "produit vedette": ["Produit vedette"],
       "pied de page": ["Pied de page géant", "Pied de page avec grand appel"],
     },
     brief: ["FAMILLE CLASSIQUE : titres à empattements élégants, beaucoup d'air, photos pleines et douces, animations lentes (fondus, textes qui s'allument). Aucune section de la famille Moderne (pas de titres énormes en capitales serrées, pas de néon, pas de mannequin détouré qui déborde)."],
@@ -55,12 +57,12 @@ export const SECTION_FAMILIES: SectionFamily[] = [
     ],
     roles: {
       "en-tête": ["En-tête à annonces et grand menu", "En-tête pilule"],
-      ouverture: ["Ouverture « mot géant »", "Ouverture « drop »", "Ouverture éditoriale", "Ouverture en diaporama", "Ouverture à volets", "Ouverture mot-fenêtre"],
+      ouverture: ["Ouverture « mot géant »", "Ouverture éditoriale", "Ouverture en diaporama", "Ouverture à volets", "Ouverture mot-fenêtre"],
       looks: ["Tenue à points", "Compose ta tenue"],
       rayons: ["Choisis ton terrain", "Rayons en liste géante"],
       produits: ["Les pièces du moment", "Fraîchement sorti", "Grille à filtres animés", "Vestiaire en double défilement"],
-      "produit vedette": ["Produit vedette · grand nom", "Produit vedette · galerie défilante", "Produit vedette · drop limité"],
-      "mise en avant": ["L'édition de saison", "Carnet de looks", "Offre en deux tuiles", "Bandeaux croisés fluo", "Grille éditoriale", "Capsule numérotée", "Manifeste en images", "Matière à la loupe", "Tournée des boutiques éphémères", "Vidéos verticales"],
+      "produit vedette": ["Produit vedette · grand nom", "Produit vedette · galerie défilante"],
+      "mise en avant": ["L'édition de saison", "Carnet de looks", "Bandeaux croisés fluo", "Grille éditoriale", "Capsule numérotée", "Manifeste en images", "Matière à la loupe", "Tournée des boutiques éphémères", "Vidéos verticales"],
       confiance: ["Vus dans la rue", "Bande fluo des engagements", "Avis et ajustement", "Garanties à retourner"],
       "à propos": ["À propos éditorial"],
       journal: ["Journal façon magazine", "Article du journal"],
@@ -69,7 +71,7 @@ export const SECTION_FAMILIES: SectionFamily[] = [
       compte: ["Connexion au compte"],
       "légal": ["Informations légales"],
       recherche: ["Recherche plein écran"],
-      panier: ["Panier tiroir néon", "Page panier éditoriale", "Mini-panier qui surgit"],
+      panier: ["Page panier éditoriale", "Mini-panier qui surgit"],
       aide: ["Entre deux tailles ?", "Questions numérotées", "Aide et suivi de commande"],
       inscription: ["Sois là avant les autres", "Bande code de bienvenue", "Fenêtre de bienvenue"],
       "page 404": ["Page 404"],

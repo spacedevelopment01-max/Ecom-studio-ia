@@ -45,9 +45,11 @@ les sections viennent de cette famille, réglées aux couleurs et polices de la 
 
 ## 2 bis. Les sections choisies selon la marque
 
-Chaque section porte des repères : **rôle**, **ton** (calme, chaleureux, vif, luxueux, ludique, technique),
-**densité** (aérée ou dense), **disposition** (photo pleine, écran partagé, grille, carrousel, texte seul, bande),
-**fond** (clair ou sombre), **contenu réel requis** (avis, vidéo, photos de clients, offres…).
+Chaque section porte des repères. **Mesurés aujourd'hui** (`public/sections/section-traits.json`) : **rôle**, **fond**
+(clair, sombre, couleur ou photo), **densité** (aérée, moyenne, dense), nombre de photos, hauteur, et si la section peut
+changer de fond (`inversable`). **Pas encore mesurés** (SINA les juge à la lecture de la section, `does`) : le **ton**
+(calme, chaleureux, vif, luxueux, ludique, technique), la **disposition** (photo pleine, écran partagé, grille,
+carrousel, texte seul, bande) et le **contenu réel requis** (avis, vidéo, photos de clients, offres…).
 
 SINA compare ces repères à ce qu'elle sait déjà du projet :
 
@@ -82,8 +84,10 @@ l'en-tête et le pied de page — jamais la même page repeinte. Les deux suiven
 
 ## 6. Contrôle avant de montrer, et explication au client
 
-Avant de montrer un thème, SINA vérifie (gratuit) : ordre des rôles respecté, règles de rythme, photos sans doublon,
-aucune section vide, aucune option absente du produit, rendu ordinateur et téléphone sans erreur. Elle explique en une
+Avant de montrer un thème, le Studio vérifie (gratuit, `checkCustomTheme`) : pages obligatoires, 8 et 7 sections, ordre
+des rôles, photos sans doublon, aucune section de commande sur Shopify, aucun faux compte à rebours ni offre d'exemple,
+aucune section réservée à un autre genre de produit ; SINA voit l'accueil capturé sur ordinateur et sur téléphone
+(`custom-theme/shots.ts`) avant d'en parler. Elle explique en une
 phrase **pourquoi chaque section est là** (« la citation de Camille rassure sur le fait main »). Un écart est corrigé
 avant d'être montré, jamais caché.
 
@@ -94,11 +98,15 @@ Ces règles sont appliquées par les outils `custom.*` de SINA (`src/lib/syna-ag
 - **Bibliothèque** : `public/sections/library.json` (préparée par `scripts/sections-library.py` depuis le catalogue),
   chaque section avec sa famille, son rôle, ce qu'elle fait et son HTML ; feuille, scripts et photos communs à côté. Les
   démonstrations en fausse fenêtre du catalogue ne sont jamais posées dans un thème.
-- **Montage** (`custom.compose`) : départ possible depuis une composition validée (SOLSTICE, RUPTURE, Brindi), puis
-  adaptation aux pages et au contenu du client. Contrôle sans IA (`checkCustomTheme`) : famille unique, en-tête et pied de
-  page, une seule section de cartes par page, « Produit vedette » en haut de la fiche ou une fois sur l'accueil, jamais la
-  même section deux fois de suite (bloquant) ; deux sections du même rôle à la suite, photo en double d'une page à l'autre,
-  accueil qui ne commence pas par une ouverture (à revoir).
+- **Conception** (`custom.design`, payante, carte d'accord) : **aucun thème de départ** (décision du 9 novembre 2026 ; les
+  compositions SOLSTICE, RUPTURE et Brindi ne servent qu'aux démonstrations et aux tests) ; le Studio conçoit toutes les
+  pages pour le produit ou le service du client ; `custom.compose` ne sert qu'à une composition dictée par le client.
+  Contrôle sans IA (`checkCustomTheme`), **bloquant** : famille unique, en-tête et pied de page, pages obligatoires,
+  minimums de sections, une seule section de cartes par page, « Produit vedette » en haut de la fiche ou une fois sur
+  l'accueil, jamais la même section deux fois de suite ni sur deux pages, offres en section à part et faux comptes à
+  rebours refusés, Shopify sans section de commande, sections « seulement pour » un genre jamais ailleurs, **vraie photo en
+  double refusée** (une photo d'exemple en double est à revoir : chaque emplacement reçoit la sienne au montage).
+  À revoir seulement : deux sections du même rôle à la suite, accueil qui ne commence pas par une ouverture.
 - **Marque du client** au rendu : nom (y compris un mot géant écrit lettre par lettre), couleurs, polices, logo, bloc
   d'achat réglé sur les vraies données du produit. Les textes et photos d'exemple sont annoncés comme tels tant que SINA ne
   les a pas remplacés.

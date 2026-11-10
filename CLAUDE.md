@@ -61,7 +61,10 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   de produit, ex. tailles et tenues, jamais ailleurs), lecture et modification d'une section
   (`custom.section`, `custom.edit` : textes, mise en forme limitée à la section, élément masqué, photo du client),
   structure (`custom.structure`), photo créée (`custom.photo` ; payants avec carte d'accord : `custom.design`, `custom.build`, `custom.photo`), annulation (`custom.undo`), choix
-  (`custom.choose`). Le thème vivant s'affiche dans le fil (`/api/projects/<id>/custom-theme`, pages, téléphone) avec
+  (`custom.choose`). **Bloc d'achat** rempli avec les vraies données du produit (`custom-theme/buy-block.ts`, script corrigé par
+  `scripts/section_buy_fix.py`) ; jamais de faux compte à rebours ni d'offre d'exemple en section à part (`FAKE_OFFER_SECTIONS`) ;
+  photos impossibles à inventer (réalisations, avant/après d'artisan, photos de clients, biens : `authenticSection`) jamais
+  créées, cadre « Photo à fournir » ; SINA voit l'accueil capturé (`custom-theme/shots.ts`). Le thème vivant s'affiche dans le fil (`/api/projects/<id>/custom-theme`, pages, téléphone) avec
   **« Désigner un élément »** : le client pointe un titre, un texte, un bouton, une image ou une section, dit ce qu'il
   veut, et SINA ne change que lui. Règles de montage contrôlées sans IA (`checkCustomTheme`) ; aucun script dans une
   section retouchée. Les anciennes maquettes (`mockup.*`) ne servent plus qu'aux projets déjà commencés avec elles. La mise

@@ -8,7 +8,8 @@
  * sa clarté est retournée entre la couleur sombre (--b-dark) et la couleur claire (--b-soft) de la marque. Les couleurs
  * vives (accent, bouton, couleur principale) ne bougent pas ; les états (survol, onglet actif…) et les règles propres au
  * téléphone sont gardés puisque chaque règle est reprise avec ses sélecteurs et son bloc @container / @media.
- * Une section inversée est posée dans `<div class="ct-inv" style="display:contents">` (aucun effet sur la mise en page).
+ * Une section inversée est posée dans `<div class="ct-inv ct-dark">` ou `<div class="ct-inv ct-light">` ; la règle `.ct-inv{display:contents}` de
+ * library.css la rend sans effet sur la mise en page.
  * Usage : node scripts/section-invert.cjs (gratuit, aucune IA ; à relancer après chaque génération de la bibliothèque).
  */
 const fs = require("fs"), path = require("path");

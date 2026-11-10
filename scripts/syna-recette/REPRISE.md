@@ -2,6 +2,36 @@
 
 Ce document transmet à une nouvelle session les décisions prises avec l'utilisateur. **À lire en entier avant toute action.** Le dépôt est public : aucun secret, aucune donnée privée ici.
 
+## 0. ÉTAT ACTUEL (10 novembre 2026) — à lire d'abord ; les sections 2 à 10 sont l'historique
+
+Les sections suivantes racontent les décisions du 6 au 8 novembre ; **là où elles contredisent ce paragraphe, ce
+paragraphe et `CLAUDE.md` l'emportent**. Les exigences du propriétaire, numérotées, sont dans
+`docs/syna/EXIGENCES-PROPRIETAIRE.md` (référence des audits et des tests).
+
+- **Parcours** : étapes 0 à 8 ouvertes (`READY_STEPS`), dans l'ordre ; 9 à 13 pas encore ouvertes. Un projet créé
+  dans le Studio avant son fil est « hors parcours » (jamais remis aux questions de départ ni verrouillé).
+- **Dépenses** : tout outil payant passe par la **carte d'accord** du fil (prix probable et plafond en % du budget IA,
+  jamais en euros) ; rien n'est lancé sans le clic du client ; « Arrêter » annule aussi les tâches en attente.
+- **Modèles** : réponses simples par le moteur local gratuit, puis Haiku ; **Sonnet aux étapes 6 et 7 (thème sur
+  mesure)**, choix du propriétaire du 10 novembre ; identités par Claude ; **logos : OpenAI seul, 3 logos pour
+  l'identité choisie** (10 novembre) ; images du site : voir `CLAUDE.md`.
+- **Étape 6** : le client choisit « thème du Studio » ou « thème sur mesure ». Sur mesure : famille (Classique ou
+  Moderne), ambiance, puis **le Studio conçoit tout le site** (`custom.design`) avec la bibliothèque de sections ;
+  contrôle bloquant `checkCustomTheme` (pages obligatoires, 8 et 7 sections, Shopify sans commande, aucun faux compte à
+  rebours ni offre d'exemple, sections « seulement pour » un genre, photos en double) ; montage à la marque
+  (`custom.build`) ; **SINA voit l'accueil capturé** (ordinateur et téléphone, `custom-theme/shots.ts`) et les photos
+  qu'elle vient de créer. **Bloc d'achat** rempli avec les vraies données du produit (`custom-theme/buy-block.ts`,
+  `scripts/section_buy_fix.py`). Photos impossibles à inventer (réalisations, avant/après d'artisan, photos de
+  clients, biens) : jamais créées, cadre « Photo à fournir ».
+- **Étape 8** (thème du Studio) : textes réécrits avec les mêmes règles d'écriture que le sur mesure ; jamais de
+  fausses réalisations ni de fausse carte.
+- **Anciennes maquettes** (`mockup.*`) : seulement pour les projets déjà commencés avec elles ; leurs outils sont
+  cachés aux nouveaux parcours, comme les anciens raccourcis (`brand.create`, `site.build`, `pilot.run`…).
+- **Restent ouverts** (à décider avec le propriétaire) : modèle d'images des photos du thème sur mesure (aujourd'hui
+  celui des anciennes maquettes, OpenAI ; CLAUDE.md dit Qwen pour les images) ; détourage des photos d'ouverture de la
+  famille Moderne ; ambiance claire / sombre gardée dans le thème ; 11 sections pas encore inversables ; mise en
+  boutique Shopify du thème sur mesure (étape 7).
+
 ## 1. Comment travailler avec l'utilisateur
 
 - Réponds en français, de façon courte et claire. L'utilisateur est débutant : explique simplement chaque étape où il doit agir, une à la fois.

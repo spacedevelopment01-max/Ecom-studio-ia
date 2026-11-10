@@ -28,7 +28,10 @@ describe("SINA — familles de sections Classique et Moderne", async () => {
     for (const s of Object.values(moderne.roles).flat()) expect(a.has(s)).toBe(false);
     expect(F.sectionInFamily("Ouverture « mot géant »", "moderne")).toBe(true);
     expect(F.sectionInFamily("Ouverture « mot géant »", "classique")).toBe(false);
-    for (const role of ["ouverture", "produits", "produit vedette", "mise en avant", "confiance", "panier", "inscription", "pied de page"]) expect(moderne.roles[role].length).toBeGreaterThanOrEqual(3);
+    // Plusieurs choix par rôle ; « produit vedette » et « panier » en ont deux depuis le retrait du drop limité (faux
+    // compte à rebours) et du panier néon (produits d'exemple écrits par son script), audit du 10 novembre 2026.
+    for (const role of ["ouverture", "produits", "mise en avant", "confiance", "inscription", "pied de page"]) expect(moderne.roles[role].length).toBeGreaterThanOrEqual(3);
+    for (const role of ["produit vedette", "panier"]) expect(moderne.roles[role].length).toBeGreaterThanOrEqual(2);
     expect(F.missingRoles("classique", ["en-tête", "ouverture"])).toEqual(["en-tête"]);
   });
 
