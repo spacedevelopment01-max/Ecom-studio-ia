@@ -111,9 +111,11 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   **Images de la famille Moderne** : quand le client la choisit, TOUTES ses images (site, publications, publicités)
   suivent sa charte (`familyArtUniverse`, direction artistique du projet) : photo de mode éditoriale, mannequins inventés
   seulement si les personnes sont autorisées (sinon produits seuls dans le même style), sujet entier, rien de coupé.
-- **Noms de marque** (décision du 9 novembre 2026) : genre préféré = le **mot fort** comme SOLSTICE ou RUPTURE (un seul
-  mot qui existe, 2 ou 3 syllabes, qui évoque l'univers ou l'attitude) ; marques de produits : deux mots forts + un mot
-  inventé (`nameKindRule`, `src/lib/syna-agent/identities.ts`).
+- **Noms de marque** (décision du 10 novembre 2026, la plus récente : « c'est ce genre de nom de marque que je veux que
+  SINA trouve » devant **« Éclat de thé »**) : marques de produits = **trois noms du genre « Éclat de thé »** (un mot qui
+  fait ressentir une sensation ou un moment, puis « de », puis ce que la marque vend ou sa matière ; trois idées
+  différentes, contrôle `EXPRESSION_NAME`) ; entreprises de services : trois genres différents, dont le **mot fort** comme
+  SOLSTICE ou RUPTURE (décision du 9 novembre) (`nameKindRule`, `src/lib/syna-agent/identities.ts`).
 - **Écrire une consigne d'image comme le propriétaire** (modèle réussi du 16/10, `docs/guide-images-ia.md`) : décrire
   UNE photo, en phrases complètes et logiques, dans cet ordre : 1) type de photo, format, point de vue, cadrage ;
   2) surface et fond ; 3) chaque objet dans son paragraphe : place exacte dans l'image, forme, matière, couleur, état,

@@ -42,9 +42,9 @@ Chaque exigence porte un numéro : l'audit et les tests s'y réfèrent.
 - **1.1** Trois identités **vraiment différentes** : nom, slogan, palette, typographies, fond (6 nov.).
 - **1.2** Fonds : un blanc, un dégradé de couleurs vives, un sombre ; couleurs vives, actuelles, familles de teintes
   différentes (décisions des 6 et 7 nov.).
-- **1.3** Noms : logiques par rapport au produit ou au service, qui « font marque » ; pour un produit, le mot inventé
-  est préféré ; genre préféré le **mot fort** (SOLSTICE, RUPTURE) ; produits : deux mots forts + un mot inventé
-  (7 et 9 nov.).
+- **1.3** Noms : logiques par rapport au produit ou au service, qui « font marque » ; **produits : trois noms du genre
+  « Éclat de thé »** (un mot qui fait ressentir + « de » + ce que la marque vend ; 10 nov., remplace « deux mots forts
+  + un mot inventé ») ; services : trois genres différents dont le mot fort (SOLSTICE, RUPTURE) (7, 9 et 10 nov.).
 - **1.4** Le client peut choisir, mélanger deux propositions, retoucher, redemander.
 
 ## Étape 2 — 3 logos
