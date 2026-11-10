@@ -434,8 +434,9 @@ export function modelFor(currentStepNumber: number, opts: { customTheme?: boolea
   // Étape 8 : la rédaction et les images se font dans la tâche theme.brand ; le fil reste léger.
   // Étape 6 (thème) et ses retouches après le choix d'un thème sur mesure : modèle plus fort (choix du propriétaire du
   // 10 novembre 2026) : il comprend l'élément désigné, écrit les retouches de texte et de mise en forme, juge la
-  // lisibilité ; un peu plus cher par message, moins d'erreurs et de reprises payantes.
-  if (currentStepNumber === 6 || (currentStepNumber === 7 && opts.customTheme)) return { provider: "anthropic", model: "claude-sonnet-5-5", effort: "medium" };
+  // lisibilité ; un peu plus cher par message, moins d'erreurs et de reprises payantes. Effort ÉLEVÉ (choix du
+  // propriétaire du 10 novembre 2026, environ 2 à 4 centimes de plus par message : la lecture du projet pèse le plus).
+  if (currentStepNumber === 6 || (currentStepNumber === 7 && opts.customTheme)) return { provider: "anthropic", model: "claude-sonnet-5-5", effort: "high" };
   const simple = currentStepNumber <= 8 || !READY_STEPS.includes(currentStepNumber);
   return simple ? { provider: "anthropic", model: "claude-haiku-5-5", effort: "low" } : undefined;
 }
