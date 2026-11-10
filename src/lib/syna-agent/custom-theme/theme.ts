@@ -307,7 +307,13 @@ export function scopedCss(uid: string, css: string): string {
   for (const r of rules) {
     const sel = r.slice(0, r.indexOf("{")).trim();
     if (sel.startsWith("@")) continue;
-    for (const part of sel.split(",")) if (!part.trim().startsWith(scope)) throw new Error(`règle hors de la section : « ${part.trim().slice(0, 80)} » (chaque sélecteur commence par ${scope} ou :scope)`);
+    for (const part of sel.split(",")) {
+      if (!part.trim().startsWith(scope)) throw new Error(`règle hors de la section : « ${part.trim().slice(0, 80)} » (chaque sélecteur commence par ${scope} ou :scope)`);
+      // Jamais vers les sections voisines (« :scope ~ section », « :scope + section ») ni par :has (audit du 10 novembre 2026).
+      const rest = part.trim().slice(scope.length);
+      if (/^\s*[~+]/.test(rest) || /:has\(/i.test(rest)) throw new Error(`règle hors de la section : « ${part.trim().slice(0, 80)} » (une section ne touche jamais ses voisines)`);
+    }
+    if (/position\s*:\s*fixed/i.test(r)) throw new Error("feuille refusée : position:fixed sortirait l'élément de sa section");
   }
   return clean.trim();
 }

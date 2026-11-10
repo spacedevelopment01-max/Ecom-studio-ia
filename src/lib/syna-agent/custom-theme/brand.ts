@@ -29,6 +29,7 @@ import { codePhotoPrompt } from "../mockup-code/code-mockup";
 import { hdAspect } from "../mockup-code/prompts";
 import { mockupImageRoute } from "../mockup-code/tools";
 import { authenticSection, isProductPhotoSection, libSection, withBrandName } from "./library";
+import { riskCount } from "./risk";
 import { allSections, loadCustomTheme, pushCustomThemeHistory, replaceOnce, saveCustomTheme, sectionHtml, type CustomTheme } from "./theme";
 
 export const CUSTOM_BRAND_JOB = "syna.custom.brand";
@@ -178,8 +179,8 @@ const decodeEntities = (v: string) => v.replace(/&(?:#(\d+)|#x([0-9a-f]+)|(amp|l
 export function applyWrite(html: string, w: SectionWrite): { html: string; failed: number; applied: number } {
   let out = html, failed = 0, applied = 0;
   for (const e of w.edits) {
-    if (/<\s*script\b|\son[a-z]+\s*=(?!"return false")/i.test(e.replace)) { failed++; continue; }
-    try { out = replaceOnce(out, e.find, e.replace); applied++; } catch { failed++; }
+    // Même filtre que custom.edit, et sur le résultat : aucun code ajouté à la section, même en deux remplacements.
+    try { const next = replaceOnce(out, e.find, e.replace); if (riskCount(next) > riskCount(out)) { failed++; continue; } out = next; applied++; } catch { failed++; }
   }
   return { html: out, failed, applied };
 }

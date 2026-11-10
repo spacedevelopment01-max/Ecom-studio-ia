@@ -70,6 +70,20 @@ describe("thème sur mesure : montage et règles du propriétaire", () => {
     expect(Object.keys(STARTERS)).toEqual(["sport-chic", "streetwear-neon", "classique"]);
   });
 
+  it("sécurité des retouches : jamais de règle vers les sections voisines, jamais de code ajouté (même en deux remplacements)", async () => {
+    expect(() => scopedCss("s12345678", ":scope ~ section{display:none}")).toThrow(/voisines/);
+    expect(() => scopedCss("s12345678", ":scope + section{display:none}")).toThrow(/voisines/);
+    expect(() => scopedCss("s12345678", ":scope:has(.x){color:red}")).toThrow(/voisines/);
+    expect(() => scopedCss("s12345678", ":scope .b{position:fixed;top:0}")).toThrow(/position:fixed/);
+    expect(scopedCss("s12345678", ":scope .b{color:red}")).toContain('[data-ct="s12345678"] .b');
+    const { riskCount } = await import("@/lib/syna-agent/custom-theme/risk");
+    expect(riskCount('<form onsubmit="return false"><input></form>')).toBe(1); // formulaire de la bibliothèque : connu
+    expect(riskCount("<svg/onload=alert(1)>")).toBe(1);
+    const B3 = await import("@/lib/syna-agent/custom-theme/brand");
+    const split = B3.applyWrite("<p>a</p><p>b</p>", { edits: [{ find: "<p>a</p>", replace: "<scr" }, { find: "<p>b</p>", replace: "ipt>x</script>" }], links: [], photos: [] });
+    expect(split.html).not.toMatch(/<script/);
+  });
+
   it("audit du 10 novembre 2026 : commande sur Shopify, fausse urgence, offre d'exemple, sections réservées, vraie photo en double", () => {
     const shop = { business: "products" as const, products: 3, platform: "shopify", genre: null };
     const t = starterTheme("classique", "classique");
@@ -190,6 +204,12 @@ describe("thème sur mesure : rendu", () => {
     const RX = new Function("window", `return ${rxSrc}`)({ CT_DEMO: demo }) as RegExp;
     expect("Le drop RUPTURE arrive".replace(RX, "ARDENT")).toBe("Le drop ARDENT arrive");
     expect(RX.test("ruptures")).toBe(false); // un mot entier seulement
+    // Chaque script produit est du JavaScript valide ; la vraie carte et les liens externes s'ouvrent ; sur Shopify, le
+    // bouton de commande du panier explique le paiement de la plateforme.
+    for (const m of studio.matchAll(/<script[^>]*>([^]*?)<\/script>/g)) expect(() => new Function(m[1]), m[1].slice(0, 60)).not.toThrow();
+    expect(studio).toContain('an.target==="_blank"&&/^https:\\/\\//.test(');
+    expect(renderCustomTheme({ ...proj, platform: "shopify" } as any, { ...t, pages: t.pages.filter((p) => p.key !== "commande") }, { nonce: "n" })).toMatch(/window\.CT_PAY="Sur ta boutique Shopify/);
+    expect(studio).toContain("window.CT_PAY=null"); // une page de commande existe dans ce thème : le bouton y mène
     expect("Au solstice d'été, rupture de stock".replace(RX, "ARDENT")).toBe("Au solstice d'été, rupture de stock"); // mots courants intacts
     // Section dont les textes sont ceux du client : jamais réécrite au rendu.
     const own = JSON.parse(JSON.stringify(t)) as typeof t;

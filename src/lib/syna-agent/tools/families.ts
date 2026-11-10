@@ -45,7 +45,7 @@ const chooseTool: AgentTool<{ family: FamilyId; style?: StyleId | "classique" }>
     return {
       ok: true,
       summary: L(`Famille « ${name} » enregistrée : le thème sera monté uniquement avec ses sections, aux couleurs de la marque.`, `Family “${name}” saved.`),
-      hint: "Continue l'étape 6 : lis custom.sections (pages obligatoires et sections de la famille), puis monte TOUTES les pages avec les meilleures sections pour son produit ou son service (custom.compose), montre-le (le thème s'affiche), puis custom.images.",
+      hint: "Continue l'étape 6 : demande-lui l'ambiance de son site (clair, sombre ou qui alterne), puis custom.design conçoit TOUTES les pages avec les meilleures sections pour son produit ou son service (payant : carte d'accord), montre-le (le thème s'affiche), puis custom.images.",
       changes: [{ module: "site", object: "famille de sections", summary: L(`famille ${name}`, `family ${name}`), before, after, verified }],
     };
   },

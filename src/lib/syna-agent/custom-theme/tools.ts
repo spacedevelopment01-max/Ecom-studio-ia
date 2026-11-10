@@ -3,7 +3,7 @@
  * ça maquette mais thème sur mesure » ; « elle doit pouvoir tout faire sur ses thèmes et sections »).
  *  - custom.sections  : sections de la bibliothèque de la famille choisie, par rôle (gratuit) ;
  *  - custom.design    : conçoit le thème de A à Z par le Studio (payant, prix annoncé et accord d'abord) ;
- *  - custom.compose   : monte le thème (pages choisies), règles du propriétaire contrôlées ;
+ *  - custom.compose   : monte une composition DICTÉE par le client (sections choisies par lui), règles contrôlées ;
  *  - custom.build     : textes et photos du thème à la marque, en tâche de fond (payant, prix annoncé et accord d'abord) ;
  *  - custom.show      : montre le thème en vrai (pages, téléphone, désignation d'un élément) ;
  *  - custom.section   : lit le HTML d'une section avant de la modifier ;
@@ -15,6 +15,7 @@
  * Payants (carte d'accord avant) : custom.design, custom.build et custom.photo ; tout le reste est gratuit ; rien n'est publié.
  */
 import { z } from "zod";
+import { riskCount } from "./risk";
 import { L } from "../../i18n-server";
 import { all } from "../../db";
 import { assetUrl, getAsset, saveAsset } from "../../library";
@@ -159,7 +160,7 @@ export function keepWork(t: CustomTheme, cur: CustomTheme | null): number {
 type PageArg = { key: string; label: string; sections: string[] };
 const composeTool: AgentTool<{ header: string; footer: string; search?: string | null; pages: PageArg[] }> = {
   name: "custom.compose", module: "site", kind: "write", needsProject: true,
-  description: "Étape 6 (gratuit) : MONTE de A à Z le thème sur mesure du client, avec les MEILLEURES sections de SA famille pour SON produit ou SON service (lis custom.sections d'abord ; aucun thème de départ : les thèmes construits sont pour la voie « thème du Studio »), à ses couleurs, polices, nom et logo. header, footer (search : recherche plein écran, famille Moderne) et pages : [{ key, label, sections : identifiants ou titres de custom.sections, dans l'ordre de l'histoire de la page }], TOUTES les pages obligatoires (clés données par custom.sections : home, shop si plusieurs produits, product, cart, compte, about, contact, aide, legal, 404 ; jamais de page commande ni de confirmation pour Shopify, qui les tient lui-même ; services : home, prestations, reservation ou devis, about, contact, aide, legal, 404). Les règles du propriétaire sont contrôlées : un point bloquant (page manquante comprise) n'enregistre rien. Remplace le thème en cours (l'ancien reste dans l'historique : custom.undo) ; les sections gardées gardent leurs textes et photos. Sur un thème DÉJÀ MONTÉ, pour ajouter, retirer ou déplacer des sections, utilise custom.structure (jamais un nouveau montage pour ajouter une section).",
+  description: "Étape 6 (gratuit), SEULEMENT pour une composition dictée par le client section par section (sinon custom.design) : MONTE le thème sur mesure du client, avec les MEILLEURES sections de SA famille pour SON produit ou SON service (lis custom.sections d'abord ; aucun thème de départ : les thèmes construits sont pour la voie « thème du Studio »), à ses couleurs, polices, nom et logo. header, footer (search : recherche plein écran, famille Moderne) et pages : [{ key, label, sections : identifiants ou titres de custom.sections, dans l'ordre de l'histoire de la page }], TOUTES les pages obligatoires (clés données par custom.sections : home, shop si plusieurs produits, product, cart, compte, about, contact, aide, legal, 404 ; jamais de page commande ni de confirmation pour Shopify, qui les tient lui-même ; services : home, prestations, reservation ou devis, about, contact, aide, legal, 404). Les règles du propriétaire sont contrôlées : un point bloquant (page manquante comprise) n'enregistre rien. Remplace le thème en cours (l'ancien reste dans l'historique : custom.undo) ; les sections gardées gardent leurs textes et photos. Sur un thème DÉJÀ MONTÉ, pour ajouter, retirer ou déplacer des sections, utilise custom.structure (jamais un nouveau montage pour ajouter une section).",
   args: z.object({
     header: z.string().max(80), footer: z.string().max(80), search: z.string().max(80).nullable().optional(),
     pages: z.array(z.object({ key: z.string().regex(/^[a-z0-9-]{1,40}$/), label: z.string().min(1).max(40), sections: z.array(z.string().max(80)).min(1).max(16) }).strict()).min(1).max(16),
@@ -266,7 +267,7 @@ const designTool: AgentTool<DesignArgs> = {
 export const SECTION_TEXT_TYPICAL_MICRO = 60_000;
 export const SITE_PLAN_TYPICAL_MICRO = 90_000;
 type BuildArgs = { photos?: boolean; images?: ImagesMode; clientAssets?: string[]; rewrite?: boolean; consigne?: string };
-/** Thème à monter à la marque : celui que SINA a composé de A à Z (custom.compose), toutes ses pages comprises. */
+/** Thème à monter à la marque : celui que le Studio a conçu de A à Z (custom.design), toutes ses pages comprises. */
 function buildPlan(ctx: ToolContext): CustomTheme {
   const p = project(ctx);
   const fam = familyOrError(p.id).family;
@@ -283,7 +284,7 @@ function buildPlan(ctx: ToolContext): CustomTheme {
 }
 const buildTool: AgentTool<BuildArgs> = {
   name: "custom.build", module: "site", kind: "generate", needsProject: true,
-  description: "Étape 6, THÈME SUR MESURE (PAYANT : devis du Studio annoncé en % du budget, accord écrit du client d'abord) : APRÈS custom.compose (le thème monté de A à Z, toutes ses pages) et sa réponse sur les images (custom.images : ses images, les tiennes, ou les deux), images : « client » (ses images seulement, autant que d'emplacements), « mix » (ses images d'abord, tu crées les autres) ou « sina » (tu crées tout) ; clientAssets : ses images (identifiants de custom.images), dans l'ordre des emplacements. Met le thème À SA MARQUE : tous les textes écrits pour lui (ses faits seulement, jamais ceux d'un modèle) et toutes les photos (vraies photos de ses produits, sinon photos créées dans la direction artistique de sa famille). photos:false = textes seulement. rewrite:true (avec photos:false) = le client n'aime pas les textes : TOUS les textes du site sont réécrits avec un nouveau plan des textes, même ceux déjà écrits (devis d'abord). consigne : ce que le client a dit vouloir pour ses textes (émotion, scène, mots), recopié MOT POUR MOT ; toujours la passer quand il en a dit quelque chose, sinon le rédacteur ne le sait pas. Tâche de fond ; le thème est ensuite EN PLACE dans l'onglet Boutique, où le client demande ses changements et désigne les éléments.",
+  description: "Étape 6, THÈME SUR MESURE (PAYANT : devis du Studio annoncé en % du budget, accord écrit du client d'abord) : APRÈS custom.design (le thème conçu de A à Z, toutes ses pages) et sa réponse sur les images (custom.images : ses images, les tiennes, ou les deux), images : « client » (ses images seulement, autant que d'emplacements), « mix » (ses images d'abord, tu crées les autres) ou « sina » (tu crées tout) ; clientAssets : ses images (identifiants de custom.images), dans l'ordre des emplacements. Met le thème À SA MARQUE : tous les textes écrits pour lui (ses faits seulement, jamais ceux d'un modèle) et toutes les photos (vraies photos de ses produits, sinon photos créées dans la direction artistique de sa famille). photos:false = textes seulement. rewrite:true (avec photos:false) = le client n'aime pas les textes : TOUS les textes du site sont réécrits avec un nouveau plan des textes, même ceux déjà écrits (devis d'abord). consigne : ce que le client a dit vouloir pour ses textes (émotion, scène, mots), recopié MOT POUR MOT ; toujours la passer quand il en a dit quelque chose, sinon le rédacteur ne le sait pas. Tâche de fond ; le thème est ensuite EN PLACE dans l'onglet Boutique, où le client demande ses changements et désigne les éléments.",
   args: z.object({
     photos: z.boolean().optional(),
     images: z.enum(["sina", "client", "mix"]).optional(),
@@ -305,7 +306,7 @@ const buildTool: AgentTool<BuildArgs> = {
   run: async (ctx, a) => {
     const p = project(ctx);
     let t: CustomTheme;
-    try { t = buildPlan(ctx); } catch (e) { return { ok: false, summary: (e as Error).message, hint: "Le client choisit d'abord sa famille (theme.families puis theme.family), puis tu montes toutes les pages (custom.sections, custom.compose)." }; }
+    try { t = buildPlan(ctx); } catch (e) { return { ok: false, summary: (e as Error).message, hint: "Le client choisit d'abord sa famille (theme.families puis theme.family) et son ambiance, puis le Studio conçoit toutes les pages (custom.design, carte d'accord)." }; }
     const blocking = checkCustomTheme(t, siteKind(ctx)).filter((x) => x.level === "bloquant");
     if (blocking.length) return { ok: false, internal: true, summary: `Composition refusée : ${blocking.map((x) => x.text).join(" ; ")}.` };
     // Images du client : seulement les siennes (Fichiers du projet), et le bon nombre quand il veut n'utiliser que les siennes.
@@ -336,12 +337,12 @@ export function sitePhotos(projectId: string): { id: string; description: string
 
 const imagesTool: AgentTool<Record<string, never>> = {
   name: "custom.images", module: "site", kind: "read", needsProject: true,
-  description: "Étape 6 (gratuit), APRÈS custom.compose et AVANT custom.build : combien d'images il faut pour le thème sur mesure monté (un emplacement par photo, page par page) et quelles images le client a déjà envoyées (identifiants pour clientAssets). Sert à lui demander s'il veut monter son site avec SES images ou si tu les crées, et à lui dire le nombre exact d'images à envoyer.",
+  description: "Étape 6 (gratuit), APRÈS custom.design et AVANT custom.build : combien d'images il faut pour le thème sur mesure monté (un emplacement par photo, page par page) et quelles images le client a déjà envoyées (identifiants pour clientAssets). Sert à lui demander s'il veut monter son site avec SES images ou si tu les crées, et à lui dire le nombre exact d'images à envoyer.",
   args: z.object({}).strict(),
   run: (ctx) => {
     const p = project(ctx);
     let t: CustomTheme;
-    try { t = buildPlan(ctx); } catch (e) { return { ok: false, summary: (e as Error).message, hint: "Monte d'abord toutes les pages avec les meilleures sections pour ce produit ou ce service (custom.sections puis custom.compose), puis compte les images." }; }
+    try { t = buildPlan(ctx); } catch (e) { return { ok: false, summary: (e as Error).message, hint: "Fais d'abord concevoir toutes les pages par le Studio (custom.design, carte d'accord), puis compte les images." }; }
     const all = photoSlots(t, photoSite(ctx)), mine = clientImages(p.id);
     // Le nombre exact (audit du 10 novembre 2026) : seules les photos d'ambiance sont à envoyer ou à créer ; les photos
     // de produits sont ses vraies photos de produits ; les photos impossibles à inventer, seulement les siennes.
@@ -364,7 +365,7 @@ const showTool: AgentTool<Record<string, never>> = {
   args: z.object({}).strict(),
   run: (ctx) => {
     const p = project(ctx), t = loadCustomTheme(p.id);
-    if (!t) return { ok: false, summary: L("Aucun thème sur mesure : custom.compose d'abord.", "No custom theme yet.") };
+    if (!t) return { ok: false, summary: L("Aucun thème sur mesure : il faut d'abord le concevoir (custom.design).", "No custom theme yet.") };
     return { ok: true, summary: L(`Thème sur mesure affiché (version ${t.rev}, ${t.pages.length} pages).`, "Custom theme shown."), data: { customTheme: themeCard(p.id, t) } };
   },
 };
@@ -400,7 +401,7 @@ const structureTool: AgentTool<{ ops: StructureOp[] }> = {
   ])).min(1).max(20) }).strict(),
   run: (ctx, a) => {
     const p = project(ctx), t = loadCustomTheme(p.id);
-    if (!t) return { ok: false, summary: L("Aucun thème sur mesure : custom.compose d'abord.", "No custom theme yet.") };
+    if (!t) return { ok: false, summary: L("Aucun thème sur mesure : il faut d'abord le concevoir (custom.design).", "No custom theme yet.") };
     try {
       const ops = a.ops.map((o) => ("section" in o && o.section ? { ...o, section: ref(o.section) } : o)) as StructureOp[];
       return saved(ctx, applyStructure(t, ops), `modifié (${a.ops.map((o) => o.op).join(", ")})`);
@@ -409,10 +410,15 @@ const structureTool: AgentTool<{ ops: StructureOp[] }> = {
 };
 
 /** Contenu permis dans une section retouchée : aucun script ni ressource extérieure (lot 9 : aucun script dans les sections d'un projet). */
+/**
+ * HTML d'une section refusé s'il pourrait exécuter du code ou sortir de la section. Contrôlé sur le HTML FINAL (deux
+ * remplacements pouvaient reformer « <script> » ensemble ; « <svg/onload=… » passait : audit du 10 novembre 2026).
+ * Commun à custom.edit et à l'écriture du montage (applyWrite).
+ */
 export function assertSafeHtml(html: string): void {
-  if (/<\s*(script|iframe|object|embed|link|meta|base|style|form)\b/i.test(html)) throw new Error("balise refusée dans la section (script, cadre, feuille ou formulaire) : le style passe par css");
-  if (/\son[a-z]+\s*=/i.test(html.replace(/onclick="return false"/g, ""))) throw new Error("attribut d'événement refusé (onclick…) dans la section");
-  if (/(?:href|src|action)\s*=\s*["']?\s*(?:javascript:|data:text)/i.test(html)) throw new Error("lien refusé (javascript:) dans la section");
+  if (/<\s*(script|iframe|frame|object|embed|link|meta|base|style|form)\b/i.test(html)) throw new Error("balise refusée dans la section (script, cadre, feuille ou formulaire) : le style passe par css");
+  if (/[\s/"']on[a-z]+\s*=/i.test(html.replace(/onclick="return false"/g, ""))) throw new Error("attribut d'événement refusé (onclick…) dans la section");
+  if (/(?:href|src|action|formaction|xlink:href)\s*=\s*["']?\s*(?:javascript:|vbscript:|data:text)/i.test(html)) throw new Error("lien refusé (javascript:) dans la section");
 }
 const PATH = /^[a-z0-9]+:nth-child\(\d{1,3}\)(?: > [a-z0-9]+:nth-child\(\d{1,3}\)){0,24}$/;
 
@@ -429,7 +435,7 @@ const editTool: AgentTool<EditArgs> = {
   }).strict(),
   run: (ctx, a) => {
     const p = project(ctx), t = loadCustomTheme(p.id);
-    if (!t) return { ok: false, summary: L("Aucun thème sur mesure : custom.compose d'abord.", "No custom theme yet.") };
+    if (!t) return { ok: false, summary: L("Aucun thème sur mesure : il faut d'abord le concevoir (custom.design).", "No custom theme yet.") };
     const next: CustomTheme = JSON.parse(JSON.stringify(t));
     const x = findSection(next, a.uid);
     if (!x) return { ok: false, summary: L(`Section ${a.uid} introuvable.`, "Section not found."), internal: true };
@@ -454,7 +460,7 @@ const editTool: AgentTool<EditArgs> = {
         html = html.split(m[0]).join(assetUrl({ id: asset.id }));
         done.push(`photo ${file} remplacée par ${asset.name}`);
       }
-      if (html !== sectionHtml(x.s)) x.s.html = html;
+      if (html !== sectionHtml(x.s)) { if (riskCount(html) > riskCount(sectionHtml(x.s))) throw new Error("modification refusée : elle ajouterait du code à la section (script, attribut d'événement ou lien javascript:)"); x.s.html = html; }
       let css = x.s.css ?? "";
       if (a.ground) {
         const nat = sectionTraits()[x.s.id]?.fond;
@@ -537,7 +543,7 @@ const chooseTool: AgentTool<Record<string, never>> = {
   preview: () => "Thème sur mesure choisi par le client.",
   run: (ctx) => {
     const p = project(ctx), t = loadCustomTheme(p.id);
-    if (!t) return { ok: false, summary: L("Aucun thème sur mesure : custom.compose d'abord.", "No custom theme yet.") };
+    if (!t) return { ok: false, summary: L("Aucun thème sur mesure : il faut d'abord le concevoir (custom.design).", "No custom theme yet.") };
     const r = saved(ctx, { ...t, chosen: true }, "choisi par le client", { strict: true });
     // Essai réel du 9 novembre : le choix ne fermait pas l'étape 6 dans le parcours.
     // Audit du 10 novembre : l'étape 7 renvoyait ensuite vers les anciennes maquettes. Elle devient la mise en boutique du

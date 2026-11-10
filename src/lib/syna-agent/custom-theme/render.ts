@@ -246,9 +246,10 @@ const NAV_JS = `(function(){
     if(window.ctPicking)return;
     var b=e.target.closest("[data-pgb]");if(b){go(b.dataset.pgb);return}
     var v=e.target.closest("[data-vw]");if(v){wrap.classList.toggle("phone",v.dataset.vw==="phone");document.querySelectorAll("[data-vw]").forEach(function(x){x.setAttribute("aria-pressed",String(x===v))});setTimeout(function(){window.dispatchEvent(new Event("resize"))},450);return}
+    var pay=e.target.closest("a,button");if(pay&&window.CT_PAY&&!pay.dataset.go&&/^(Passer commande|Valider mon panier|Commander|Paiement sécurisé|Payer)/i.test((pay.textContent||"").trim())){e.preventDefault();note(window.CT_PAY);return}
     var a=e.target.closest("[data-go]");if(a){e.preventDefault();go(a.dataset.go);var mo=document.querySelector(".mz2.op,.mz1.is-mob");if(mo){mo.classList.remove("op","is-mob")}return}
     var sb=e.target.closest('button[aria-label="Rechercher"]');var zs=document.querySelector(".tb-wrap .zm18");if(sb&&zs&&!sb.closest(".zm18")){e.preventDefault();var mo2=document.querySelector(".mz2.op,.mz1.is-mob");if(mo2)mo2.classList.remove("op","is-mob");var o=zs.querySelector("[data-zm18o]");if(o)o.click();return}
-    var an=e.target.closest("a[href]");if(an)e.preventDefault();
+    var an=e.target.closest("a[href]");if(an&&!(an.target==="_blank"&&/^https:\\/\\//.test(an.getAttribute("href")||"")))e.preventDefault();
     if(e.target.closest("button,input,select,label,form,textarea"))return;
     var c=e.target.closest(".el3-im,.dq3-im,.zm5-c,.zm6-c,.zm18-rs a,.mz5-l a");if(c&&prod){e.preventDefault();if(zs)zs.classList.remove("op");if(c.closest(".mz5-l")&&document.querySelector('.tb-pg[data-pg="shop"]')){go("shop");return}go(prod);openProduct(c)}
   },true);
@@ -256,7 +257,7 @@ const NAV_JS = `(function(){
     var pg=document.querySelector('.tb-pg[data-pg="'+prod+'"]');if(!pg)return;var s=[].slice.call(pg.querySelectorAll("section")).find(function(x){return x._po&&x._po.gam});if(!s)return;
     var k=s._po.gam.findIndex(function(g){return String(g[0]).split("/").pop()===f});s._po.pick(k>-1?k:s._po.g0)}
   var MAP=window.TB_MAP||{};document.querySelectorAll(".tb-wrap a:not([data-go]), .tb-wrap button[aria-label]:not([data-go])").forEach(function(x){var t=(x.tagName==="BUTTON"?x.getAttribute("aria-label"):x.textContent).replace(/[→↗]/g,"").replace(/\\s+/g," ").trim(),u=t.replace(/\\s*\\d+\\s*pièces?$/,"").trim();var to=MAP[t]||MAP[u];if(to)x.dataset.go=to});
-  var lg=window.CT_LOGO;if(lg)document.querySelectorAll('[data-ct-role="header"] [class$="-lg"],[data-ct-role="header"] .lg,[data-ct-role="footer"] [class$="-lg"]').forEach(function(x){x.innerHTML='<img class="ctw-logo" src="'+lg+'" alt="'+(window.CT_NAME||"")+'">'});
+  var lg=window.CT_LOGO;if(lg)document.querySelectorAll('[data-ct-role="header"] [class$="-lg"],[data-ct-role="header"] .lg,[data-ct-role="footer"] [class$="-lg"]').forEach(function(x){x.innerHTML='<img class="ctw-logo" src="'+lg+'" alt="'+String(window.CT_NAME||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;")+'">'});
   // Textes écrits par les scripts des sections : jamais le nom d'une marque de démonstration (remplacé par celle du client).
   var NM=window.CT_NAME||"",RX=new RegExp("\\\\b("+(window.CT_DEMO||[]).join("|")+")\\\\b","g");
   function brand(root,all){if(!NM||!RX.source||RX.source==="\\\\b()\\\\b")return;var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),n;while((n=w.nextNode())){if(!all&&n.parentNode&&n.parentNode.closest&&n.parentNode.closest("[data-ct-own]"))continue;if(RX.test(n.nodeValue)){RX.lastIndex=0;n.nodeValue=n.nodeValue.replace(RX,function(m){return m===m.toUpperCase()?NM.toUpperCase():m===m.toLowerCase()?NM.toLowerCase():NM})}RX.lastIndex=0}}
@@ -312,7 +313,7 @@ function projectAddress(projectId: string): string | null {
   try { const row = all<{ settings_json: string }>("SELECT settings_json FROM projects WHERE id=?", projectId)[0]; const a = row ? (JSON.parse(row.settings_json || "{}").company?.address ?? "") : ""; return typeof a === "string" && a.trim() ? a.trim() : null; } catch { return null; }
 }
 
-export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand"> & { business?: Project["business"] }, t: CustomTheme, o: RenderOptions = {}): string {
+export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand"> & { business?: Project["business"]; platform?: Project["platform"] }, t: CustomTheme, o: RenderOptions = {}): string {
   const lib = sectionLibrary();
   templates ??= read("templates.html");
   const name = p.brand?.name || p.name || "";
@@ -322,7 +323,8 @@ export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand"> & { 
   const flags = buyFlags(featuresOf(p.id));
   // Bloc d'achat : les vraies données du produit du client (jamais les prix et remises d'exemple de la bibliothèque).
   const buy = (() => { try { return buyBlockData(p.id); } catch { return null; } })();
-  const pre = `window.TB_MAP=${JSON.stringify(linkMap(t))};window.CT_NAME=${JSON.stringify(name)};window.CT_DEMO=${JSON.stringify(DEMO_BRANDS.flatMap((d) => [d, d.toUpperCase()]).map((d) => d.replace(/\s+/g, "\\s+")))};window.CT_LOGO=${JSON.stringify(p.brand?.logo?.assetId ? assetUrl({ id: p.brand.logo.assetId }) : null)};(function(D){var F=${JSON.stringify(flags)};for(var k in F)D[k]=F[k]})(document.documentElement.dataset);`;
+  const pay = (p.platform ?? "shopify") === "shopify" && !t.pages.some((pg) => pg.key === "commande") ? "Sur ta boutique Shopify, ce bouton ouvre le paiement sécurisé de Shopify." : null;
+  const pre = `window.CT_PAY=${JSON.stringify(pay).replace(/</g, "\\u003c")};window.TB_MAP=${JSON.stringify(linkMap(t))};window.CT_NAME=${JSON.stringify(name)};window.CT_DEMO=${JSON.stringify(DEMO_BRANDS.flatMap((d) => [d, d.toUpperCase()]).map((d) => d.replace(/\s+/g, "\\s+")))};window.CT_LOGO=${JSON.stringify(p.brand?.logo?.assetId ? assetUrl({ id: p.brand.logo.assetId }) : null)};(function(D){var F=${JSON.stringify(flags)};for(var k in F)D[k]=F[k]})(document.documentElement.dataset);`;
   const bar = t.pages.map((pg, i) => `<button type="button" data-pgb="${esc(pg.key)}" aria-pressed="${i === 0}">${esc(pg.label)}</button>`).join("");
   const address = projectAddress(p.id);
   const body = t.pages.map((pg, i) => `<main class="tb-pg" data-pg="${esc(pg.key)}"${i ? " hidden" : ""}>${pg.sections.map((s) => realMap(withRealBuyBlock(sectionMarkup(s, name, "page", p.business === "services" ? "services" : "products"), buy), address)).join("\n")}</main>`).join("\n");
