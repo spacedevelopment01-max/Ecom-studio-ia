@@ -10,6 +10,10 @@ Utilisé par scripts/sections-library.py ; lancé seul, applique les corrections
 """
 import json
 import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from sections_neuves import NEW_CSS, NEW_JS, SECTIONS as NEW_SECTIONS  # noqa: E402
 
 HTML_FIX = [
     # 8. Histoire du produit au défilement : le bouton sur sa propre ligne, sous le texte ; un vrai paragraphe par étape.
@@ -62,10 +66,18 @@ REVUE_CSS = BEGIN + '''
 .ba-sec .ba{width:min(100%,980px);aspect-ratio:16/9;border-radius:22px;box-shadow:0 22px 50px rgba(23,38,30,.18);border:6px solid #fff}
 @container (max-width:760px){.ba-sec .ba{aspect-ratio:4/5;border-radius:16px;border-width:4px}}
 .ba .lb b{display:block;font-size:.62rem;letter-spacing:.14em;opacity:.8}
-''' + END
+''' + NEW_CSS + END
+JS_BEGIN, JS_END = '/* ===== sections refaites (revue du 10 novembre 2026) ===== */', '/* ===== fin des sections refaites ===== */'
 
 
 def apply_sections(sections):
+    # Sections refaites (même identifiant : le HTML est remplacé) ou ajoutées (scripts/sections_neuves.py).
+    by_id = {s['id']: s for s in sections}
+    for n in NEW_SECTIONS:
+        if n['id'] in by_id:
+            by_id[n['id']].update({k: v for k, v in n.items() if k != 'id'})
+        else:
+            sections.append(dict(n))
     by = {s['id']: s for s in sections}
     for sid, a, b in HTML_FIX:
         s = by.get(sid)
@@ -77,6 +89,9 @@ def apply_sections(sections):
 
 
 def apply_js(js):
+    if JS_BEGIN in js:
+        js = js[:js.index(JS_BEGIN)] + js[js.index(JS_END) + len(JS_END):]
+    js = js.rstrip('\n') + '\n;' + JS_BEGIN + NEW_JS + JS_END + '\n'
     for a, b in JS_FIX:
         if b in js:
             continue

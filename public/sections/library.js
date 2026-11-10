@@ -1244,3 +1244,26 @@
   if(e.target.closest("[data-bdo]"))bd.classList.add("on");else if(e.target.closest("[data-bdx]")||e.target===bd||e.target.closest(".bd-nv a"))bd.classList.remove("on")});
   document.querySelectorAll(".bd-nv a").forEach(function(x,i){x.style.transitionDelay=(.15+i*.06)+"s"});
   document.addEventListener("keydown",function(e){var bd=document.querySelector("[data-bd]");if(bd&&e.key==="Escape")bd.classList.remove("on")})})();
+;
+;
+;
+;/* ===== sections refaites (revue du 10 novembre 2026) ===== */
+/* Sections refaites (revue du 10 novembre 2026) */
+(function(){
+  function qa(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  // Apparition quand la section arrive au centre de l'écran (contrôle général du propriétaire).
+  var io=("IntersectionObserver" in window)?new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("rv-on");io.unobserve(e.target)}})},{rootMargin:"-35% 0px -35% 0px"}):null;
+  qa("[data-rv-in]").forEach(function(s){if(io)io.observe(s);else s.classList.add("rv-on")});
+  // Rangée qui défile d'une carte à la fois (avis, produits…), en pause au survol, flèches.
+  qa("[data-rv-car]").forEach(function(c){
+    var tr=c.querySelector(".rv-tr"),i=0,t=null;if(!tr)return;
+    function n(){return parseFloat(getComputedStyle(c).getPropertyValue("--rv-n"))||1}
+    function go(k){var items=tr.children,max=Math.max(0,items.length-Math.floor(n()));i=k<0?max:(k>max?0:k);var it=items[i];tr.style.transform="translateX("+(-(it?it.offsetLeft:0))+"px)"}
+    function auto(){clearInterval(t);t=setInterval(function(){go(i+1)},4500)}
+    var p=c.querySelector("[data-rv-prev]"),x=c.querySelector("[data-rv-next]");
+    if(p)p.addEventListener("click",function(){go(i-1);auto()});if(x)x.addEventListener("click",function(){go(i+1);auto()});
+    c.addEventListener("mouseenter",function(){clearInterval(t)});c.addEventListener("mouseleave",auto);
+    addEventListener("resize",function(){go(i)});go(0);auto();
+  });
+})();
+/* ===== fin des sections refaites ===== */

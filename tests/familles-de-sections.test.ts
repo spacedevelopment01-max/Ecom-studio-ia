@@ -55,3 +55,23 @@ describe("corrections de la revue du propriétaire (lot 2)", () => {
     expect(fs.readFileSync("public/sections/library.js", "utf8")).toContain('if(!$(".pqf",p))return;');
   });
 });
+
+describe("sections refaites de la revue (lot 3, famille Confiance)", () => {
+  it("badges en cartes douces, avis en bandeau qui défile, engagements avec photo par promesse", async () => {
+    const fs = await import("node:fs");
+    const { libSection } = await import("../src/lib/syna-agent/custom-theme/library");
+    const badges = libSection("badges-de-confiance")!.html;
+    expect(badges).toContain("rv-bdg");
+    expect(badges.match(/class="rv-bdg-c"/g)!.length).toBe(4);
+    const avis = libSection("avis-clients")!.html;
+    expect(avis).toContain("data-rv-car");
+    expect(avis).toContain("Lire tous les avis");
+    expect(avis.match(/<article class="rv-rc">/g)!.length).toBeGreaterThanOrEqual(6); // 5 ou 6 visibles sur ordinateur, puis défilement
+    expect(libSection("nos-engagements")!.html).toContain("rv-eng");
+    const css = fs.readFileSync("public/sections/library.css", "utf8");
+    expect(css).toContain(".rv-rev-note>span{"); // les étoiles restent en ligne
+    const js = fs.readFileSync("public/sections/library.js", "utf8");
+    expect(js.split("sections refaites (revue du 10 novembre 2026)").length).toBe(2); // une seule fois
+    expect(() => new Function(js)).not.toThrow();
+  });
+});
