@@ -44,7 +44,7 @@ import { enqueue, pendingJob } from "../../jobs";
 import { stateOf } from "../../preparation/store";
 import { journeyOf, setStep as setJourneyStep, updateJourney as updateJourneyConv } from "../journey";
 import { galleryCheckMaxMicro } from "./gallery";
-import { productSlotSection, showsProductAlone } from "./brand";
+import { briefUsable, productSlotSection, showsProductAlone } from "./brand";
 import { clientImages, CUSTOM_BRAND_JOB, examplePhotoCount, productImageIds, photoSlots, photosToCreate, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, siteArtDirection, sitePhotoName, textPlacementLine, type ImagesMode } from "./brand";
 
 /** Ce que le client voit dans le fil : l'aperçu vivant de son thème et sa composition. */
@@ -389,8 +389,8 @@ const buildTool: AgentTool<BuildArgs> = {
     // déjà écrits (montage en deux fois) : chaque photo à créer est connue par sa description, le devis est exact.
     const written = allSections(t).every((x) => x.s.clientTexts) && allSections(t).some((x) => x.s.photoBriefs?.length);
     // Photos d'exemple sans description (rédacteur qui n'en a pas écrit) : décrites puis créées au montage, comptées aussi.
-    const undescribed = (x: ReturnType<typeof allSections>[number]) => { const l = libSection(x.s.id); if (!l || productSlotSection(l)) return 0; return [...new Set([...sectionHtml(x.s).matchAll(/photos\/[\w-]+\.(?:webp|png|jpg)/g)].map((m) => m[0]))].filter((f) => !(x.s.photoBriefs ?? []).some((b) => b.find === f)).length; };
-    const known = written ? allSections(t).filter((x) => inPages(x.place, x.page?.key)).reduce((n, x) => { const l = libSection(x.s.id), h = sectionHtml(x.s); return n + (x.s.photoBriefs ?? []).filter((b) => h.includes(b.find) && !(l && showsProductAlone(l, b.description))).length + undescribed(x); }, 0) : null;
+    const undescribed = (x: ReturnType<typeof allSections>[number]) => { const l = libSection(x.s.id); if (!l || productSlotSection(l)) return 0; return [...new Set([...sectionHtml(x.s).matchAll(/photos\/[\w-]+\.(?:webp|png|jpg)/g)].map((m) => m[0]))].filter((f) => !(x.s.photoBriefs ?? []).some((b) => b.find === f && briefUsable(b.description))).length; };
+    const known = written ? allSections(t).filter((x) => inPages(x.place, x.page?.key)).reduce((n, x) => { const l = libSection(x.s.id), h = sectionHtml(x.s); return n + (x.s.photoBriefs ?? []).filter((b) => h.includes(b.find) && briefUsable(b.description) && !(l && showsProductAlone(l, b.description))).length + undescribed(x); }, 0) : null;
     const briefCalls = written ? allSections(t).filter((x) => inPages(x.place, x.page?.key) && undescribed(x) > 0).length : 0;
     // Photos de produits mal placées (remplacées par une scène au montage) : comptées par photoSlots, pas par les
     // descriptions (essai du 10 novembre 2026 : devis de 4 photos pour 13 à créer, montage arrêté au plafond).

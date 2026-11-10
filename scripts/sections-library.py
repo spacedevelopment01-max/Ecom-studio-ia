@@ -151,6 +151,14 @@ sections.append({
              '<div class="bd-ft"><b>Livraison offerte dès 35 €</b><span>Expédition sous 48 h</span></div></div></div></section>'),
 })
 EXTRA_CSS = '''
+/* Scène achetable en grille : les vraies photos des produits cochés, en carré (4 = 2 + 2, 3 = 2 + 1, 2 = l'un
+   au-dessus de l'autre, 1 = seul ; décision du propriétaire du 10 novembre 2026) */
+.p8-grid{aspect-ratio:1;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;background:#fff}
+.p8-grid>img{width:50%;aspect-ratio:1;height:auto;object-fit:contain;box-sizing:border-box;padding:8px;background:#fff;transition:none}
+.p8-grid:hover img{transform:none}
+.p8-grid>img[hidden]{display:none}
+.p8-grid[data-n="1"]>img{width:100%}
+.p8-grid[data-n="2"]{flex-direction:column;flex-wrap:nowrap;align-items:center}
 /* Familles en éventail : texte toujours lisible, même sur une vraie photo de produit claire (essai « Éclat de thé » du
    10 novembre 2026 : titre posé sur le sachet, bouton coupé) */
 .ze-it::after{background:linear-gradient(0deg,rgba(20,34,27,.9),rgba(20,34,27,.6) 45%,rgba(20,34,27,0) 80%)}

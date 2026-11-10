@@ -238,8 +238,9 @@ export function codePhotoPrompt(photo: CodePhoto, f: { name: string; logo: boole
     `Photographie en haute définition pour le site « ${f.name} », au format ${photo.ratio}, nette et détaillée, de qualité professionnelle.`,
     photo.background ? `Le fond de la photo est la couleur unie exacte ${photo.background} sur tout le pourtour (aucun dégradé, aucun cadre, aucune vignette), pour que la photo se fonde dans la section du site qui a ce fond.` : "",
     // Produit en scène : son étiquette garde ses mots et son logo (essai du 10 novembre 2026 : « aucun texte » dans la
-    // description donnait des sachets vierges, refusés au contrôle).
-    (f.product ? photo.description.replace(/Aucun texte[^.]*\./gi, "Aucun texte ajouté : seule l'étiquette du produit garde ses mots et son logo, exactement comme sur la photo jointe.") : photo.description).replace(/\s+$/, ""),
+    // description donnait des sachets vierges, refusés au contrôle). Toute phrase qui décrit l'étiquette est retirée : la photo
+    // jointe la donne (« étiquette vert pâle, unie », « sans étiquette lisible » contredisaient la vraie photo).
+    (f.product ? photo.description.replace(/[^.\n]*(?<!\p{L})[ée]tiquettes?(?!\p{L})[^.\n]*\.\s*/giu, "").replace(/Aucun texte[^.]*\./gi, "Aucun texte ajouté : seule l'étiquette du produit garde ses mots et son logo, exactement comme sur la photo jointe.") : photo.description).replace(/\s+$/, ""),
     f.direction ? `Direction artistique de la marque (à tenir) : ${f.direction}` : "",
     // Exigence du propriétaire (9 novembre 2026) : « des images magnifiques », jamais une photo de catalogue plate.
     photo.background ? "" : "Niveau visé : une photo magnifique, digne d'une campagne de marque haut de gamme ou d'un grand magazine : lumière travaillée, profondeur, matières réelles, couleurs riches, composition soignée, une émotion qu'on ressent. Jamais une photo de catalogue plate, jamais un fond uni ni un mur vide.",

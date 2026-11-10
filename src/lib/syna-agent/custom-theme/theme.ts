@@ -52,7 +52,25 @@ const HISTORY_KEY = "syna.custom_theme.history";
 const HISTORY_MAX = 15;
 
 export const newUid = () => "s" + crypto.randomBytes(4).toString("hex");
-export const sectionHtml = (s: CtSection): string => inlineBackgrounds(s.html ?? libSection(s.id)?.html ?? "");
+export const sectionHtml = (s: CtSection): string => { const h = inlineBackgrounds(s.html ?? libSection(s.id)?.html ?? ""); return s.id === "scene-achetable" ? sceneGrid(h) : h; };
+
+/**
+ * Scène achetable : la grande photo laisse la place à la grille des vraies photos des produits de la liste (décision du
+ * propriétaire du 10 novembre 2026, après une scène qui demandait quatre sachets à l'IA d'images : 4 cochés = 2 + 2,
+ * 3 = 2 + 1, 2 = l'un au-dessus de l'autre, 1 = seul, en carré ; le script de la section suit les cases cochées).
+ * Aucune photo à créer, toujours fidèle ; refaite à chaque lecture depuis la liste, donc à jour si la liste change.
+ */
+export function sceneGrid(html: string): string {
+  const items = [...html.matchAll(/<label class="p8-it"[^>]*>([\s\S]*?)<\/label>/g)].map((m) => {
+    const img = m[1].match(/<img\b[^>]*\bsrc="([^"]+)"/), name = m[1].match(/<b>([\s\S]*?)<\/b>/);
+    return { src: img?.[1] ?? null, name: (name?.[1] ?? "").replace(/<[^>]+>/g, "").replace(/"/g, "&quot;") };
+  });
+  const tiles = items.map((x, i) => (x.src ? `<img data-gi="${i}" src="${x.src}" alt="${x.name}">` : "")).join("");
+  if (!tiles) return html;
+  const grid = `<div class="p8-ph p8-grid" data-p8g data-n="${items.filter((x) => x.src).length}">${tiles}</div>`;
+  if (/<div class="p8-ph p8-grid" data-p8g[^>]*>[\s\S]*?<\/div>/.test(html)) return html.replace(/<div class="p8-ph p8-grid" data-p8g[^>]*>[\s\S]*?<\/div>/, grid);
+  return html.replace(/<div class="p8-ph">[\s\S]*?<\/div>/, grid);
+}
 
 function readArtifact<T>(projectId: string, key: string): T | null {
   const row = all<{ value: string }>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key=? AND state='active' LIMIT 1", projectId, key)[0];

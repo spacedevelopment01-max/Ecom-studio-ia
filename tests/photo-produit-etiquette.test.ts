@@ -35,3 +35,43 @@ describe("preuves « à confirmer » de l'angle", () => {
     expect(stillToConfirm(list, null)).toEqual(list);
   });
 });
+
+describe("relecture des descriptions de photos avant création", () => {
+  it("retire les phrases qui décrivent l'étiquette quand la vraie photo est jointe", () => {
+    const d = "Un sachet kraft debout. Une étiquette rectangulaire vert pâle, unie, est collée au milieu. Une tasse fumante à côté.";
+    const p = codePhotoPrompt({ id: "x", description: d, ratio: "4:5", product: true }, { name: "Éclat de thé", logo: false, product: true });
+    expect(p).not.toMatch(/vert pâle, unie/);
+    expect(p).toMatch(/Une tasse fumante/);
+  });
+  it("photo de l'emballage ou non (feuilles en gros plan : aucune photo du produit jointe)", async () => {
+    const { showsPackaging } = await import("../src/lib/syna-agent/custom-theme/brand");
+    expect(showsPackaging("Le sachet kraft Jasmin délicat posé sur le bureau.")).toBe(true);
+    expect(showsPackaging("Une cuillère remplie de feuilles sèches de thé vert.")).toBe(false);
+  });
+  it("une description à plusieurs paquets est réécrite (une seule photo du produit peut être jointe)", async () => {
+    const { briefUsable } = await import("../src/lib/syna-agent/custom-theme/brand");
+    expect(briefUsable("Un pot contient trois sachets kraft. Un quatrième sachet devant.")).toBe(false);
+    expect(briefUsable("Le sachet Jasmin délicat près d'une tasse.")).toBe(true);
+  });
+  it("les « stories » (un rond par produit) reçoivent la vraie photo du produit", async () => {
+    const { showsProductAlone } = await import("../src/lib/syna-agent/custom-theme/brand");
+    expect(showsProductAlone({ role: "contenu", title: "Histoires façon « stories »" }, "Photo produit, au format vertical 9:16")).toBe(true);
+    expect(showsProductAlone({ role: "contenu", title: "Avant / après" }, "Photo produit en gros plan macro")).toBe(false);
+  });
+});
+
+describe("scène achetable en grille de vraies photos (décision du 10 novembre 2026)", () => {
+  it("remplace la grande photo par une tuile par produit de la liste, sans photo à créer", async () => {
+    const { sceneGrid } = await import("../src/lib/syna-agent/custom-theme/theme");
+    const html = `<section class="p8" data-p8><div class="p8-ph"><img src="photos/sachet-bois.jpg" alt=""><span class="p8-mk" data-mk="0"></span></div><div><div class="p8-ls">`
+      + `<label class="p8-it" data-it="0"><input type="checkbox" checked data-p="8.5"><img src="/api/files/a1" alt=""><span><b>Jasmin délicat</b></span></label>`
+      + `<label class="p8-it" data-it="1"><input type="checkbox" checked data-p="7.5"><img src="/api/files/b2" alt=""><span><b>Menthe fraîche</b></span></label>`
+      + `<label class="p8-it" data-it="2"><input type="checkbox" checked data-p="7.5"><img src="/api/files/c3" alt=""><span><b>Vanille douce</b></span></label></div></div></section>`;
+    const out = sceneGrid(html);
+    expect(out).not.toContain("photos/sachet-bois.jpg");
+    expect(out).not.toContain("p8-mk");
+    expect(out).toContain('data-p8g data-n="3"');
+    expect(out).toContain('<img data-gi="2" src="/api/files/c3" alt="Vanille douce">');
+    expect(sceneGrid(out)).toBe(out); // relu sans changement
+  });
+});

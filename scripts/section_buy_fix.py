@@ -62,8 +62,17 @@ XP_FIX = [
 ]
 
 
+# Scène achetable : la photo d'ambiance remplacée par la grille des vraies photos des produits cochés (décision du
+# propriétaire du 10 novembre 2026 : 4 cochés = 2 + 2, 3 = 2 + 1, 2 = l'un au-dessus de l'autre, 1 = seul, en carré).
+P8_FIX = [
+    ('its.forEach(function(it,i){it.addEventListener("mouseenter",function(){mk[i].classList.add("on");it.classList.add("on")});it.addEventListener("mouseleave",function(){mk[i].classList.remove("on");it.classList.remove("on")})});qa("input",s).forEach(function(i){i.addEventListener("change",tot)});tot()});',
+     'var gr=q("[data-p8g]",s);function grid(){if(!gr)return;var n=0,ins=qa("input",s);ins.forEach(function(x,k){var g=q(\'[data-gi="\'+k+\'"]\',gr);if(g){g.hidden=!x.checked;if(x.checked)n++}});if(!n)qa("[data-gi]",gr).forEach(function(g){g.hidden=false;n++});gr.dataset.n=n}'
+     'its.forEach(function(it,i){it.addEventListener("mouseenter",function(){if(mk[i])mk[i].classList.add("on");it.classList.add("on")});it.addEventListener("mouseleave",function(){if(mk[i])mk[i].classList.remove("on");it.classList.remove("on")})});qa("input",s).forEach(function(i){i.addEventListener("change",function(){tot();grid()})});tot();grid()});'),
+]
+
+
 def apply(js: str) -> str:
-    for a, b in BUY_FIX + EL1_FIX + XP_FIX:
+    for a, b in BUY_FIX + EL1_FIX + XP_FIX + P8_FIX:
         assert js.count(a) == 1, a[:80]
         js = js.replace(a, b)
     return js
@@ -72,7 +81,7 @@ def apply(js: str) -> str:
 if __name__ == '__main__':
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public', 'sections', 'library.js')
     js = open(path, encoding='utf-8').read()
-    todo = [(a, b) for a, b in BUY_FIX + EL1_FIX + XP_FIX if b not in js]
+    todo = [(a, b) for a, b in BUY_FIX + EL1_FIX + XP_FIX + P8_FIX if b not in js]
     for a, b in todo:
         assert js.count(a) == 1, a[:80]
         js = js.replace(a, b)
