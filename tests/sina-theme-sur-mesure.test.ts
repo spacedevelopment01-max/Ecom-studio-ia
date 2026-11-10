@@ -876,6 +876,9 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
     expect(B.showsProductAlone({ role: "lot", title: "Complète ta commande" }, "Photo d'ambiance")).toBe(true);
     expect(B.showsProductAlone({ role: "mise en avant", title: "Scène achetable" }, "Photo produit au format carré, sachet seul.")).toBe(true);
     expect(B.showsProductAlone({ role: "mise en avant", title: "Scène achetable" }, "Photo d'ambiance lifestyle, cuisine au matin.")).toBe(false);
+    // Essai réel : l'ouverture et l'avant / après décrits « Photo produit » recevaient le sachet seul, en très grand.
+    expect(B.showsProductAlone({ role: "ouverture", title: "Ouverture en diaporama" }, "Photo produit au format paysage 16:9, vue de dessus.")).toBe(false);
+    expect(B.showsProductAlone({ role: "contenu", title: "Avant / après" }, "Photo produit en gros plan macro, au format paysage.")).toBe(false);
     // Le sachet posé par erreur sur la photo d'ouverture (essai Éclat de thé).
     let t = loadCustomTheme(pid)!;
     const hero = t.pages[0].sections.find((x) => /photos\/[\w-]+\.(?:webp|png|jpg)/.test(sectionHtml(x)) && !B.showsProductAlone(libSection(x.id)!, ""))!;

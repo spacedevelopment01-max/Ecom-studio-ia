@@ -212,7 +212,11 @@ export function applyWrite(html: string, w: SectionWrite): { html: string; faile
  */
 const THUMB_ROLES = new Set(["lot", "panier", "recherche", "conversion"]);
 export const productSlotSection = (l: Pick<LibSection, "role" | "title">) => isProductPhotoSection(l) || THUMB_ROLES.has(l.role);
-export const showsProductAlone = (l: Pick<LibSection, "role" | "title">, description: string) => productSlotSection(l) || /^\s*photo(?:graphie)? (?:de )?produit\b/i.test(description);
+// Vignettes de produits dans une section de scène (la liste de la « Scène achetable ») : la vraie photo, si la description
+// le dit. Partout ailleurs (ouverture, avant / après, inscription…), jamais la photo du produit telle quelle : une scène
+// est créée avec elle en modèle (essai réel du 10 novembre 2026 : ouverture et avant / après remplis par le sachet seul).
+const THUMB_TITLES = new Set(["Scène achetable"]);
+export const showsProductAlone = (l: Pick<LibSection, "role" | "title">, description: string) => productSlotSection(l) || (THUMB_TITLES.has(l.title) && /^\s*photo(?:graphie)? (?:de )?produit\b/i.test(description));
 /** Photos des fiches produits du projet : elles restent sur les emplacements produit, jamais posées en photo d'ambiance. */
 export function productImageIds(projectId: string): Set<string> {
   try { return new Set(listProducts(projectId).flatMap((x) => x.data.images.map((i) => i.assetId).filter((id): id is string => !!id))); } catch { return new Set(); }
