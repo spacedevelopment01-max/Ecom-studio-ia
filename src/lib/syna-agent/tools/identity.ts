@@ -74,7 +74,7 @@ async function generate(ctx: ToolContext, j: Journey, opts: { guidance?: string;
 export const identityView = (x: Identity) => ({
   cle: x.key, nom: x.name, slogan: x.slogan, promesse: x.promise, territoire: x.territory,
   fond: x.ground, ...(x.gradient ? { degrade: x.gradient } : {}), couleurs: x.palette, polices: { titres: fontFamily(x.fonts.heading), textes: fontFamily(x.fonts.body) },
-  ton: x.tone.adjectives.join(", "), logo: `${LOGO_STYLE_LABEL[x.logoStyle]} — ${x.logoIdea}`, pourquoi: x.why,
+  ton: x.tone.adjectives.join(", "), pourquoi: x.why,
 });
 
 /** « Seulement les noms » : tout le reste des identités est remis tel quel (jamais changé en silence). */
@@ -87,14 +87,15 @@ export function keepAllButNames(fresh: Identity[], previous: Identity[]): Identi
 
 const proposeTool: AgentTool<{ guidance?: string; redo?: Key[]; only?: "noms" }> = {
   name: "identity.propose", module: "marque", kind: "generate", needsProject: true,
-  description: "Étape 1 : crée 3 identités de marque VRAIMENT différentes (nom, slogan, promesse, territoire, palette, polices, ton, idée de logo) à partir de la fiche de départ, avec Claude (modèle fort), puis les contrôle. Payant : le Studio montre le devis au client (carte d'accord) avant de lancer. À appeler quand le client est prêt, ou quand il demande une nouvelle proposition : guidance = ce qu'il veut de différent (ses mots) ; redo = les identités à refaire (les autres restent identiques) ; only « noms » = refaire seulement les noms et les slogans (couleurs, polices et le reste gardés). Les cartes des identités s'affichent dans le fil.",
+  description: "Étape 1 : crée 3 identités de marque VRAIMENT différentes (nom, slogan, promesse, territoire, palette, polices, ton ; le logo est dessiné à l'étape 2, en carte blanche) à partir de la fiche de départ, avec Claude (modèle fort), puis les contrôle. Payant : le Studio montre le devis au client (carte d'accord) avant de lancer. À appeler quand le client est prêt, ou quand il demande une nouvelle proposition : guidance = ce qu'il veut de différent (ses mots) ; redo = les identités à refaire (les autres restent identiques) ; only « noms » = refaire seulement les noms et les slogans (couleurs, polices et le reste gardés). Les cartes des identités s'affichent dans le fil.",
   args: z.object({ guidance: z.string().max(1500).optional(), redo: z.array(z.enum(KEYS)).min(1).max(3).optional(), only: z.enum(["noms"]).optional() }).strict(),
   estimate: () => ({ maxMicro: IDENTITY_CAP_MICRO, probableMicro: identityProbableMicro(), label: "3 identités de marque" }),
   run: async (ctx, a) => {
     project(ctx);
     const j = journeyOf(ctx.conversationId);
     if (j.steps[0]?.status !== "done") return { ok: false, summary: L("L'étape 0 (questions de départ) n'est pas encore validée : termine-la d'abord.", "Step 0 is not validated yet.") };
-    if (j.steps[1]?.status === "done") return { ok: false, summary: L("L'identité est déjà choisie.", "The identity is already chosen."), hint: "Pour la changer, le client doit le demander clairement (identity.choose avec une autre identité)." };
+    // Après le choix, une nouvelle proposition seulement si le client la demande avec ses mots (guidance).
+    if (j.steps[1]?.status === "done" && !a.guidance) return { ok: false, summary: L("L'identité est déjà choisie.", "The identity is already chosen."), hint: "Pour en changer, le client choisit une autre identité (identity.choose), ou demande avec ses mots une nouvelle proposition (identity.propose avec guidance = ses mots)." };
     const previous = j.identities?.list;
     if ((a.redo?.length || a.only) && !previous?.length) return { ok: false, summary: L("Aucune proposition à refaire pour l'instant.", "Nothing to redo yet."), hint: "Lance d'abord une proposition complète." };
     updateJourney(ctx.conversationId, (x) => setStep(x, 1, "doing"));
@@ -169,7 +170,8 @@ export function brandFromIdentity(p: ReturnType<typeof loadProject>, x: Identity
     nameStatus: keptName ? "provided" : "validated",
     alternatives: keptName ? [] : others.map((o) => o.name).filter((n) => n !== x.name),
     tagline: x.slogan,
-    taglineAlternatives: others.map((o) => o.slogan).filter((s) => s !== x.slogan),
+    // Jamais les slogans des AUTRES identités dans la charte (écrits pour un autre nom, un autre territoire).
+    taglineAlternatives: [],
     positioning: x.promise,
     audience: j.start.audience?.status === "answered" ? j.start.audience.value : base.audience,
     personality: x.tone.adjectives,
@@ -184,8 +186,10 @@ export function brandFromIdentity(p: ReturnType<typeof loadProject>, x: Identity
     fonts: x.fonts,
     logo: logoAssetId
       ? { ...base.logo, assetId: logoAssetId, status: "provided", concept: x.logoIdea }
-      : { concept: `${LOGO_STYLE_LABEL[x.logoStyle]} — ${x.logoIdea}`, status: "proposed" },
-    story: base.story || x.why,
+      : { concept: "", status: "proposed" }, // le logo est dessiné à l'étape 2, en carte blanche
+    // Le « pourquoi » s'adresse au client (tutoiement) : ce n'est pas l'histoire de la marque (la charte affiche « [À
+    // écrire à partir de faits réels…] » tant qu'elle n'est pas donnée).
+    story: base.story,
     // Choix du client : nom, palette et polices verrouillés (aucun traitement automatique ne les change, ex. couleurs
     // tirées d'un logo) ; le slogan n'est pas verrouillé ici pour ne pas l'écrire dans les logos.
     validated: [...new Set([...(base.validated ?? []), "identity", "name", "palette", "fonts"])],
@@ -216,13 +220,23 @@ const chooseTool: AgentTool<{ key: Key; mix?: Partial<Record<Part, Key>>; name?:
     const mixed = Object.entries(a.mix ?? {}).filter(([, k]) => k !== a.key).map(([part, k]) => `${part} de ${k}`);
     remember(p.id, { kind: "decision", key: "syna.identite", value: JSON.stringify({ base: a.key, mix: a.mix ?? {}, retouches: { name: a.name, slogan: a.slogan }, identite: chosen }), source: "user" } as any);
     const logoKept = j.keep.includes("logo");
+    // Identité réellement changée après les logos ou l'image de marque (audit du 10 novembre 2026) : les logos dessinés
+    // avec l'ancien nom, le logo choisi et l'image de marque ne valent plus ; tout repart de l'étape 2.
+    const prev = j.identityChoice ? mixIdentity(list, j.identityChoice.key, j.identityChoice.mix as any, j.identityChoice.edits ?? {}) : null;
+    const changed = !!prev && (prev.name !== chosen.name || prev.slogan !== chosen.slogan || prev.palette.primary !== chosen.palette.primary || prev.fonts.heading !== chosen.fonts.heading);
     updateJourney(ctx.conversationId, (x) => {
-      x.identityChoice = { key: a.key, mix: a.mix ?? {}, at: Date.now() };
+      x.identityChoice = { key: a.key, mix: a.mix ?? {}, ...(a.name || a.slogan ? { edits: { ...(a.name ? { name: a.name } : {}), ...(a.slogan ? { slogan: a.slogan } : {}) } } : {}), at: Date.now() };
+      if (!verified) return; // étape validée seulement si la marque est bien relue
       setStep(x, 1, "done");
+      if (changed) { x.logos = undefined; x.logoChoice = undefined; x.brandKit = undefined; }
       // Logo gardé tel quel : pas de nouveaux logos (étape 2 sans objet).
       setStep(x, 2, logoKept ? "skipped" : "todo", logoKept ? "logo gardé par le client" : undefined);
-      if (logoKept) setStep(x, 3, "todo");
+      setStep(x, 3, "todo");
     });
+    if (verified && changed && !logoKept) {
+      const b2 = loadProject(p.id).brand;
+      if (b2) saveBrand(p.id, { ...b2, validated: (b2.validated ?? []).filter((v) => v !== "logo") });
+    }
     return {
       ok: verified,
       summary: verified

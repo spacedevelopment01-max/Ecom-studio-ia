@@ -4,7 +4,7 @@
  */
 import { z } from "zod";
 import { HttpError } from "../../auth";
-import { enqueue } from "../../jobs";
+import { enqueue, pendingJob } from "../../jobs";
 import { L } from "../../i18n-server";
 import { getAsset } from "../../library";
 import { all } from "../../db";
@@ -34,6 +34,8 @@ const BUTTONS = /^(je veux préciser une idée d'abord|je veux une nouvelle prop
 export function clientLogoWishes(conversationId: string, since: number): string | undefined {
   const texts = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND role='user' AND created_at>? ORDER BY seq", conversationId, since)
     .map((m) => String((JSON.parse(m.content_json) as { text?: string }).text ?? "").trim())
+    // Les questions du client (« c'est combien ? ») ne sont pas des souhaits de dessin.
+    .map((t) => t.split(/(?<=[.!?])\s+/).filter((x) => !/\?\s*$/.test(x)).join(" ").trim())
     .filter((t) => t && !BARE.test(t) && !BUTTONS.test(t));
   const out = texts.join(" ; ").slice(0, 1500).trim();
   return out || undefined;
@@ -50,6 +52,8 @@ const proposeTool: AgentTool<{ guidance?: string }> = {
     if (j.steps[1]?.status !== "done" || !j.identityChoice || !p.brand) return { ok: false, summary: L("L'identité de marque doit être choisie avant les logos (étape 1).", "Choose the brand identity first (step 1).") };
     if (j.steps[2]?.status === "done") return { ok: false, summary: L("Le logo est déjà choisi. Pour le changer, le client doit le demander clairement.", "The logo is already chosen.") };
     if (j.steps[2]?.status === "skipped") return { ok: false, summary: L("Le client garde son logo : pas de nouveaux logos.", "The client keeps their logo.") };
+    // Une seule série à la fois (jamais deux séries payées en parallèle).
+    if (pendingJob(p.id, SINA_LOGOS_JOB)) return { ok: false, summary: L("Les logos sont déjà en cours de dessin : attends-les.", "Logos are already being drawn.") };
     const cap = maxMicro();
     const wishes = clientLogoWishes(ctx.conversationId, Math.max(j.identityChoice.at ?? 0, j.logos?.at ?? 0));
     const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: SINA_LOGOS_JOB, label: L("3 logos (SINA)", "3 logos (SINA)"), payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: cap, ...(wishes ? { guidance: wishes } : {}) }, maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:logos:${(j.logos?.round ?? 0) + 1}` });
@@ -75,8 +79,10 @@ const chooseTool: AgentTool<{ source: "A" | "B" | "C" }> = {
     const verified = !!after?.logo?.assetId && after.logo.status === "validated";
     updateJourney(ctx.conversationId, (x) => {
       x.logoChoice = { source: a.source, assetId: logo.assetId!, at: Date.now() };
-      setStep(x, 2, "done");
-      setStep(x, 3, "todo");
+      // Étape validée seulement si le logo est bien relu comme logo de la marque.
+      if (verified) { setStep(x, 2, "done"); setStep(x, 3, "todo"); }
+      // Nouveau logo : l'ancienne image de marque (faite avec l'autre logo) ne vaut plus.
+      if (x.brandKit && x.brandKit.at < Date.now()) x.brandKit = undefined;
     });
     return {
       ok: verified,

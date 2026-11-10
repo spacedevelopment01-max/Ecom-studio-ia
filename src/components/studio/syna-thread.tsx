@@ -56,7 +56,6 @@ function IdentityCards({ ids, busy, onChoose }: { ids: Identities; busy: boolean
           <div><dt className="inline font-semibold">{t("Couleurs", "Colours")} : </dt><dd className="inline">{x.paletteFamily} — {x.ground === "degrade" && x.gradient ? `${t("dégradé", "gradient")} ${x.gradient.from} → ${x.gradient.to}` : `${t("fond", "background")} ${x.ground === "sombre" ? x.palette.dark : x.palette.light}`}, {t("texte", "text")} {x.ground === "sombre" ? x.palette.light : x.palette.dark}, {t("bouton", "button")} {x.palette.primary}, {t("surface", "surface")} {x.palette.secondary}, {t("accent", "accent")} {x.palette.accent}</dd></div>
           <div><dt className="inline font-semibold">{t("Polices", "Fonts")} : </dt><dd className="inline">{x.faces.heading?.family ?? "?"} / {x.faces.body?.family ?? "?"}{x.fontStyle ? ` — ${x.fontStyle}` : ""}</dd></div>
           <div><dt className="inline font-semibold">{t("Ton", "Tone")} : </dt><dd className="inline">{x.tone.adjectives.join(", ")} · {t("jamais", "never")} : {x.tone.avoid.join(", ")}</dd></div>
-          <div><dt className="inline font-semibold">{t("Idée de logo", "Logo idea")} : </dt><dd className="inline">{x.logoStyleLabel} — {x.logoIdea}</dd></div>
           {!!x.why && <div><dt className="inline font-semibold">{t("Pourquoi pour toi", "Why it fits you")} : </dt><dd className="inline">{x.why}</dd></div>}
         </dl>
         <div className="border-t border-line bg-card px-4 py-2">
@@ -141,7 +140,7 @@ function CalendarCard({ projectId, refreshKey }: { projectId: string; refreshKey
   );
 }
 
-type Logos = { round: number; chosen: string | null; list: { source: "A" | "B" | "C"; name: string; style: string; assetId: string | null; href: string | null; verdict: string; score: number | null; reason: string; best?: boolean }[] };
+type Logos = { round: number; chosen: string | null; list: { source: "A" | "B" | "C"; name: string; style: string; assetId: string | null; href: string | null; verdict: string; score: number | null; reason: string; best?: boolean; choosable?: boolean }[] };
 
 /** Étape 2 : les 3 logos, chacun sur fond blanc et sur le fond de la marque, avec le verdict honnête du contrôle. */
 function LogoCards({ logos, brandBg, busy, onChoose }: { logos: Logos; brandBg: string | null; busy: boolean; onChoose: (source: string) => void }) {
@@ -163,7 +162,7 @@ function LogoCards({ logos, brandBg, busy, onChoose }: { logos: Logos; brandBg: 
                 <p className={ok ? "text-emerald-700" : "text-amber-700"} data-logo-verdict>{ok ? `✓ ${t("Validé par le contrôle", "Passed the check")}${x.score != null ? ` (${String(x.score).replace(".", ",")}/10)` : ""}` : x.assetId ? `${t("Non validé par le contrôle", "Did not pass the check")} : ${x.reason}` : `${t("Pas de dessin", "No drawing")} : ${x.reason}`}</p>
               </div>
               <div className="border-t border-line px-3 py-2">
-                {chosen ? <p className="text-xs font-semibold">✓ {t("Logo de ta marque", "Your brand logo")}</p> : !logos.chosen && x.assetId && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(x.source)}>{t(`Je choisis le logo ${x.source}`, `I choose logo ${x.source}`)}</Button>}
+                {chosen ? <p className="text-xs font-semibold">✓ {t("Logo de ta marque", "Your brand logo")}</p> : !logos.chosen && x.assetId && x.choosable !== false && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(x.source)}>{t(`Je choisis le logo ${x.source}`, `I choose logo ${x.source}`)}</Button>}
               </div>
             </article>
           );

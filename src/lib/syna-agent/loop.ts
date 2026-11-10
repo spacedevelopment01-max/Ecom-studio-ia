@@ -540,7 +540,7 @@ export function threadView(user: User, cid: string) {
           round: j.identities.round, issues: j.identities.issues, chosen: j.identityChoice ?? null,
           list: j.identities.list.map(cardOf),
           // Identité retenue telle qu'enregistrée (mélange compris) : la carte « Ton identité » montre le vrai résultat.
-          final: j.identityChoice ? { ...cardOf(mixIdentity(j.identities.list, j.identityChoice.key, j.identityChoice.mix as any)), mixLabel: mixLabel(j.identities.list, j.identityChoice) } : null,
+          final: j.identityChoice ? { ...cardOf(mixIdentity(j.identities.list, j.identityChoice.key, j.identityChoice.mix as any, j.identityChoice.edits ?? {})), mixLabel: mixLabel(j.identities.list, j.identityChoice) } : null,
         } : null,
         // Étape 2 : les 3 logos (images servies par la bibliothèque du projet) et le logo choisi.
         logos: j.logos ? { round: j.logos.round, chosen: j.logoChoice?.source ?? null, list: j.logos.list.map((x) => ({ ...x, href: x.assetId ? assetUrl({ id: x.assetId }) : null })) } : null,

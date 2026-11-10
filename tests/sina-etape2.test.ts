@@ -275,6 +275,39 @@ describe("SINA — étape 2 : 3 logos", async () => {
     expect(px(60, 540)).toBe(255); // bord : fond blanc, le symbole tient dans le cercle visible
   });
 
+  it("audit du 10 novembre : changer d'identité après les logos remet tout à zéro ; changer de logo écarte l'ancienne image de marque ; rien d'une autre identité dans la marque", async () => {
+    const { user, cid, ctx, pid } = await stepTwo();
+    // Marque enregistrée : aucun slogan d'une autre identité, aucune « histoire » écrite d'après le « pourquoi ».
+    expect(loadProject(pid).brand!.taglineAlternatives).toEqual([]);
+    logoToolDeps.maxMicro = () => 900_000;
+    try { expect((await call("logo.propose", ctx, {})).ok).toBe(true); } finally { logoToolDeps.maxMicro = undefined; }
+    G.logoDeps.ai = fakeEngine({ calls: [], prompts: [] });
+    G.logoDeps.draw = async (_p, tid) => artFixture(Number(tid.slice(1)) || 0);
+    try { await fr(() => G.runSinaLogosJob(jobCtx(user, pid, { projectId: pid, conversationId: cid, capMicro: 900_000 }))); } finally { G.logoDeps.ai = undefined; G.logoDeps.draw = undefined; }
+    // Chaque logo dit s'il peut être choisi (le bouton n'apparaît que pour lui).
+    expect(J.journeyOf(cid).logos!.list.every((x) => typeof x.choosable === "boolean")).toBe(true);
+    const pick = J.journeyOf(cid).logos!.list.find((x) => x.verdict === "FINAL")!;
+    expect((await call("logo.choose", ctx, { source: pick.source })).ok).toBe(true);
+    expect((await call("brand.kit", ctx, {})).ok).toBe(true);
+    // Le client change de logo : l'image de marque faite avec l'ancien ne vaut plus.
+    const other = J.journeyOf(cid).logos!.list.find((x) => x.source !== pick.source && x.verdict === "FINAL");
+    if (other) {
+      expect((await call("logo.choose", ctx, { source: other.source })).ok).toBe(true);
+      expect(J.journeyOf(cid).brandKit).toBeUndefined();
+    }
+    // Le client change d'identité : logos, choix et image de marque repartent de zéro (étape 2).
+    expect((await call("identity.choose", ctx, { key: "A" })).ok).toBe(true);
+    const j = J.journeyOf(cid);
+    expect(j.logos).toBeUndefined();
+    expect(j.logoChoice).toBeUndefined();
+    expect(j.brandKit).toBeUndefined();
+    expect(J.currentStep(j)).toBe(2);
+    expect(loadProject(pid).brand!.validated ?? []).not.toContain("logo");
+    // Retouche du nom : la carte « Ton identité » montre le nom retouché.
+    expect((await call("identity.choose", ctx, { key: "A", name: "Tour de Main Atelier" })).ok).toBe(true);
+    expect((await fr(() => threadView(user, cid))).journey.identities!.final!.name).toBe("Tour de Main Atelier");
+  });
+
   it("refusé avant l'identité choisie", async () => {
     const user = await account();
     const cid = threadFor(user, null), ctx = ctxOf(user, cid);
@@ -309,10 +342,11 @@ describe("SINA — étape 2 : 3 logos", async () => {
     expect(A.artworkPrompt(t, brief)).toMatch(/jamais une tache floue, jamais une lettre seule avec une simple forme géométrique/);
     // Étapes 1 et 2 : l'aquarelle n'est plus proposée, et les consignes citent les interdits.
     expect(I.PROPOSED_LOGO_STYLES).not.toContain("aquarelle");
-    expect(I.IDENTITY_SYSTEM).toMatch(/Rendus INTERDITS par le propriétaire/);
+    expect(I.IDENTITY_SYSTEM).toMatch(/Rendus de logo interdits par le propriétaire/);
     expect(G.freeLogoPrompt({ name: "X", activity: "y", feeling: "", audience: null, colors: ["#000000"] }, 0)).toContain(A.FORBIDDEN_LOGO_RENDERS[0]);
+    // Étape 1 : le style de logo n'est plus décidé (carte blanche à l'étape 2), il n'est donc plus contrôlé ici.
     const ids = identities(); ids[1].logoStyle = "aquarelle";
-    expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: ids }).identities, J.emptyJourney()).join(" ")).toMatch(/style de logo « tache d'aquarelle » interdit/);
+    expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: ids }).identities, J.emptyJourney()).join(" ")).not.toMatch(/style de logo/);
   });
   it("notation des logos libres (retour du 7 novembre : « vraiment sévère ») : le logo original au premier regard, pas les versions du studio", async () => {
     const A = await import("@/lib/logo-v2/artwork");

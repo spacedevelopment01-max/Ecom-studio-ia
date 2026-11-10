@@ -22,6 +22,9 @@ import { realLogoV2Ai, type LogoV2Ai } from "../logo-v2/ai";
 import { runLogoEngineV2 } from "../logo-v2/engine";
 import { logoSeriesQuote } from "../logo-v2/quote";
 import { logoArtworkImage } from "../ai/media-providers";
+import { artworkChoosable } from "../logo-v2/choose";
+import { getAsset } from "../library";
+import { json } from "../db";
 import { jobSpentMicro } from "./budget";
 import { journeyOf, setStep, updateJourney, type Journey } from "./journey";
 
@@ -119,7 +122,7 @@ export function freeTerritories(f: FreeLogoFacts): TerritoryDraft[] {
 /** Dépendances remplaçables par les tests (aucun appel réel). */
 export const logoDeps: { ai?: (ctx: JobContext, userId: string, projectId: string) => LogoV2Ai; draw?: (prompt: string, territoryId: string) => Promise<Buffer> } = {};
 
-export type SinaLogo = { source: "A" | "B" | "C"; name: string; style: LogoStyle; assetId: string | null; verdict: string; score: number | null; reason: string; best?: boolean };
+export type SinaLogo = { source: "A" | "B" | "C"; name: string; style: LogoStyle; assetId: string | null; verdict: string; score: number | null; reason: string; best?: boolean; choosable?: boolean };
 
 /**
  * Motif du contrôle dit au client (tutoiement, sans renvoyer vers un bouton d'un autre écran) : « note 7,4/10, il
@@ -156,10 +159,29 @@ export function clientReason(reason: string): string {
 export function logosOfRun(run: EngineRun): SinaLogo[] {
   const all: ProposalResult[] = [...run.shown, ...run.studio, ...run.discarded];
   const rank = (r: ProposalResult) => (r.verdict === "FINAL" ? 300 : r.verdict === "PROVISIONAL" ? 200 : 0) + (r.score ?? 0) + (r.assetId === run.best ? 100 : 0);
-  return run.territories.map((t, i) => {
+  const used = new Set<string>();
+  const out = run.territories.map((t, i) => {
     const mine = all.filter((r) => r.territory.id === t.id || r.territory.id === `${t.id}-relais` || r.territory.name === t.name).sort((a, b) => rank(b) - rank(a))[0];
-    return { source: (["A", "B", "C"] as const)[i] ?? "A", name: t.name, style: t.style, assetId: mine?.assetId ?? null, verdict: mine?.verdict ?? "ECHEC", score: mine?.score ?? null, reason: mine?.reason ? clientReason(mine.reason) : L("aucun dessin obtenu", "no drawing obtained"), ...(mine?.assetId && mine.assetId === run.best ? { best: true } : {}) };
+    if (mine?.assetId) used.add(mine.assetId);
+    return { source: (["A", "B", "C"] as const)[i] ?? "A", name: t.name, style: t.style, assetId: mine?.assetId ?? null, verdict: mine?.verdict ?? "ECHEC", score: mine?.score ?? null, reason: mine?.reason ? clientReason(mine.reason) : L("aucun dessin obtenu", "no drawing obtained"), ...(mine?.assetId && mine.assetId === run.best ? { best: true } : {}) } as SinaLogo;
   });
+  // Règle du propriétaire : le client finit toujours avec au moins un logo. Une carte sans dessin présentable reçoit la
+  // version de secours du Studio (audit du 10 novembre 2026 : elles n'étaient jamais montrées).
+  const spares = run.studio.filter((r) => r.assetId && !used.has(r.assetId)).sort((a, b) => rank(b) - rank(a));
+  for (const x of out) {
+    if (x.assetId && x.verdict !== "ECHEC") continue;
+    const spare = spares.shift();
+    if (!spare?.assetId) continue;
+    Object.assign(x, { assetId: spare.assetId, verdict: spare.verdict, score: spare.score ?? null, reason: L("version du Studio, faute de dessin validé", "Studio version") });
+  }
+  return out;
+}
+
+/** Le client peut-il choisir ce logo ? (validé, version du Studio, ou dessin complet sans défaut grave). */
+export function logoChoosable(x: SinaLogo): boolean {
+  if (!x.assetId) return false;
+  if (x.verdict === "FINAL" || x.verdict === "PROVISIONAL") return true;
+  try { const a = getAsset(x.assetId); return !!a && artworkChoosable(json<any>(a.meta as any, {})); } catch { return false; }
 }
 
 /** Coût maximal d'une proposition de 3 logos : la série du moteur (images, relectures). */
@@ -194,7 +216,7 @@ export async function runSinaLogosJob(ctx: JobContext) {
     },
   };
   const run = await runLogoEngineV2(ctx, projectId, { ai, territories: 3, capMicro: Math.max(1, capMicro - jobSpentMicro(ctx.job.id)), instructions: guidance });
-  const logos = logosOfRun(run);
+  const logos = logosOfRun(run).map((x) => ({ ...x, choosable: logoChoosable(x) }));
   // Notes internes du moteur (modèle, relais, clé, tarif) : jamais montrées au client (essai réel : « dessiné par le
   // modèle principal faute de relais de secours »).
   const notes = run.notes.filter((n) => !/relais|cl[ée] |tarif|mod[eè]le principal|provider|fournisseur/i.test(n)).slice(0, 8);

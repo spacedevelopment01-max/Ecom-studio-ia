@@ -49,7 +49,8 @@ Chaque exigence porte un numéro : l'audit et les tests s'y réfèrent.
 
 ## Étape 2 — 3 logos
 
-- **2.1** Un logo par identité, direction artistique différente pour chacun (jamais le même logo réarrangé) (7 nov.).
+- **2.1** 3 logos pour l'identité choisie, chacun dans une direction artistique différente (jamais le même logo
+  réarrangé) (7 nov. ; confirmé le 10 nov. : « 3 logos pour l'identité choisie »). Dessinés par OpenAI (10 nov.).
 - **2.2** Carte blanche au dessinateur : pas d'aquarelle, de cachet ni de monogramme imposés (7 nov.).
 - **2.3** Notation juste (le contrôle ne doit pas être injustement sévère : logo libre ≈ 9, ancien ≈ 3) (7 nov.).
 - **2.4** Le client finit toujours avec au moins un logo ; jamais de fond carré noir autour du logo sur le site (9 nov.).

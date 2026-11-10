@@ -29,8 +29,11 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 - **Vérifier soi-même chaque image avant de la montrer** : produit entier (rien de coupé, ex. bracelet complet avec
   la boucle), fidèle à la photo d'origine, orthographe exacte, aucun mot ni fausse lettre en trop, logo exact.
   Une image ratée est signalée comme ratée, jamais présentée comme bonne.
-- **Logos : jamais aucune direction.** Qwen-Image 3.0 Pro dessine ; si le contrôle juge le rendu insuffisant, OpenAI
-  (ChatGPT) prend le relais ; le client finit toujours avec au moins un logo (le meilleur, signalé s'il n'est pas validé).
+- **Logos : carte blanche au dessinateur** (jamais d'aquarelle, de cachet ni de monogramme imposés) : **OpenAI (GPT Image)
+  dessine les 3 logos** de l'identité choisie, chacun dans une direction artistique différente (décision du propriétaire du
+  10 novembre 2026, après les essais du 7 novembre : « je préfère les logos d'OpenAI ») ; le client finit toujours avec au
+  moins un logo (la version du Studio prend la place d'un dessin refusé, signalée s'il n'est pas validé) ; fond clair
+  retiré depuis les bords, jamais de carré autour du logo.
 - **Images 100 % IA, avec Qwen-Image 3.0 Pro** (pas ChatGPT, jugé trop cher ; pas de texte posé en local à la place).
   **Exception : maquettes de site de SINA** (étape 6) avec **OpenAI GPT Image 2.5 Flare** (décision du 8 novembre 2026, après
   comparaison réelle : Qwen abîmait les textes de la page, OpenAI les écrivait juste). Les textes du site sont écrits

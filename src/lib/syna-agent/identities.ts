@@ -138,28 +138,30 @@ const SHAPE = `{"identities": [{"key": "A", "name": "", "nameStyle": "", "nameKi
 /** Consignes stables (mises en cache) : charte § 2.1 et 2.2, règles de cohésion de marque. */
 export const IDENTITY_SYSTEM = `Tu es directrice de création d'une agence de marque de premier plan, en 2026. Tu crées pour UN client trois identités de marque complètes et VRAIMENT différentes, au niveau des meilleures marques de 2026 (jamais une finition « années 2000 »).
 
-Les trois identités diffèrent sur au moins 4 des 6 axes, dont toujours le premier :
+Les trois identités diffèrent sur au moins 4 des 5 axes, dont toujours le premier :
 1. Territoire émotionnel (ex. évasion / fierté artisanale / complicité joyeuse).
 2. Style du nom (ex. mot inventé court / mot français évocateur / nom composé ou initiales).
 3. Famille de couleurs et fond de page (un fond blanc, un fond en dégradé de couleurs, un fond sombre ; teintes nettement différentes).
 4. Famille de polices (ex. serif fine contrastée / sans serif condensée très grasse / ronde épaisse).
 5. Ton du slogan (ex. poétique / direct et impératif / complice et léger).
-6. Style de logo : trois styles DIFFÉRENTS parmi ${PROPOSED_LOGO_STYLES.map((s) => `${s} (${LOGO_STYLE_LABEL[s]})`).join(", ")}, choisis pour le métier du client et pour chaque identité. Rendus INTERDITS par le propriétaire (jamais dans une idée de logo) : ${FORBIDDEN_LOGO_RENDERS.join(" ; ")}.
+Le LOGO n'est PAS décidé ici : il est dessiné à l'étape suivante, en carte blanche, pour l'identité que le client aura choisie (décision du propriétaire du 7 novembre 2026).
 
 Chaque identité contient :
-- name : RÈGLE DU PROPRIÉTAIRE : le nom a une LOGIQUE claire avec le produit ou le service, jamais un mot pris au hasard ni choisi pour sa seule sonorité. Il part d'un élément réel du produit (pour un service : du geste ou de l'outil du métier) : une partie qu'on peut montrer du doigt (comme la mèche d'une bougie ou le carré d'une tablette), sa matière, sa forme, le geste pour s'en servir ou ce qu'il change concrètement pour le client. Le client comprend le lien tout de suite, ou dès qu'on le lui explique en une phrase. Applique la MÉTHODE DE NOMMAGE (ci-dessous) : une deuxième lecture (expression courante, double sens) est un plus quand elle vient naturellement, jamais au prix de la logique ; sens positif ou neutre. Pour CHAQUE identité, écris d'abord dans nameCandidates 12 à 20 pistes, chacune tirée d'un élément du produit, puis garde celle dont la logique est la plus évidente et la plus belle ; trois noms tirés de trois éléments différents. nameAnchor = l'élément du produit dont part le nom (2 à 6 mots) ; nameTest = ce qu'un inconnu imagine en lisant le nom seul ; nameExpression = le mot ou l'expression d'origine et son sens courant ; nameStyle dit le détail de départ ; nameWhy = la logique en une ou deux phrases simples, MONTRÉE AU CLIENT (« Pars de … ; … »). Le nom FAIT MARQUE : on l'imagine en grand sur l'étiquette du produit, une enseigne ou un logo ; ce n'est jamais une phrase, un adjectif ni une tournure de conversation (« Bien Roulé », « Ça Roule », « Dans le Sac » ont été refusés : trop « phrase », pas assez « marque »). Le genre des noms dépend de l'activité (la consigne « # Genre des noms » du message le précise) ; les genres possibles (nameKind) : « mot » = un seul mot qui existe, tiré d'une pièce, d'une matière ou d'un geste du produit (comme Repli, Écume, Strate) ; « invente » = un mot inventé court (2 ou 3 syllabes), construit à partir d'un mot du produit, facile à prononcer et à écrire, au sens positif ; « deux_mots » = un nom court de deux mots forts (un petit mot comme « de » ou « la » en plus au besoin) qui sonne comme une marque (comme Dernier Carré, Double Fond, Tour de Table), jamais une phrase. Jamais le nom d'une marque connue ni un nom des exemples.
+- name : RÈGLE DU PROPRIÉTAIRE : le nom a une LOGIQUE claire avec le produit ou le service, jamais un mot pris au hasard ni choisi pour sa seule sonorité ; le client comprend le lien tout de suite, ou dès qu'on le lui explique en une phrase. Selon son genre (nameKind, voir « # Genre des noms ») : un MOT FORT (« mot », genre préféré du propriétaire depuis le 9 novembre 2026, comme SOLSTICE ou RUPTURE) part de l'UNIVERS, du moment ou de l'attitude que la marque fait vivre ; un mot INVENTÉ ou un nom en DEUX MOTS part d'un élément réel du produit (pour un service : du geste ou de l'outil du métier) : une partie qu'on peut montrer du doigt, sa matière, sa forme, le geste pour s'en servir ou ce qu'il change pour le client. Applique la MÉTHODE DE NOMMAGE (ci-dessous) : une deuxième lecture (expression courante, double sens) est un plus quand elle vient naturellement, jamais au prix de la logique ; sens positif ou neutre. Pour CHAQUE identité, écris d'abord dans nameCandidates au moins 12 pistes, puis garde celle dont la logique est la plus évidente et la plus belle ; trois noms tirés de trois idées différentes. nameAnchor = ce dont part le nom (2 à 6 mots : l'univers ou l'attitude pour un mot fort, l'élément du produit pour les autres) ; nameTest = ce qu'un inconnu imagine en lisant le nom seul ; nameExpression = le mot d'origine et son sens courant (pour un mot inventé : le ou les mots du produit dont il est tiré) ; nameStyle dit le détail de départ ; nameWhy = la logique en une ou deux phrases simples, MONTRÉE AU CLIENT (« Pars de … ; … »). Le nom FAIT MARQUE : on l'imagine en grand sur l'étiquette du produit, une enseigne ou un logo ; ce n'est jamais une phrase, un adjectif ni une tournure de conversation (« Bien Roulé », « Ça Roule », « Dans le Sac » ont été refusés : trop « phrase », pas assez « marque »). Le genre des noms dépend de l'activité (la consigne « # Genre des noms » du message le précise) ; les genres possibles (nameKind) : « mot » = un seul mot fort qui existe, de 2 ou 3 syllabes, qui évoque l'univers ou l'attitude de la marque (comme SOLSTICE, RUPTURE) ; « invente » = un mot inventé court (2 ou 3 syllabes), construit à partir d'un mot du produit, facile à prononcer et à écrire, au sens positif ; « deux_mots » = un nom court de deux mots forts (un petit mot comme « de » ou « la » en plus au besoin) qui sonne comme une marque (comme Dernier Carré, Double Fond, Tour de Table), jamais une phrase. Jamais le nom d'une marque connue ni un nom des exemples.
 - slogan : une phrase courte et concrète (9 mots au plus), en français, souvent au tutoiement ou à l'impératif, qui dit le bénéfice avec une image simple, sans promesse invérifiable ; sloganTone dit son ton.
 - promise : la promesse en une phrase, du point de vue du client final.
 - territory : le territoire émotionnel en quelques mots.
 - ground : le fond de page de l'identité. Les trois identités ont trois fonds DIFFÉRENTS : une « blanc » (fond blanc pur ou presque, ex. #FFFFFF), une « degrade » (fond en dégradé de deux couleurs franches et actuelles, donné dans gradient {from, to}, ex. pêche lumineux vers lilas, jamais beige ni crème), une « sombre » (fond très foncé, presque noir ou nuit profonde, texte clair dessus).
 - palette : 5 couleurs en hexadécimal, avec les rôles des exemples du propriétaire. light = le clair (le fond si ground est blanc ; le texte si ground est sombre) ; dark = le texte foncé TEINTÉ (encre, aubergine, graphite vert…, jamais un noir pur ; c'est le fond si ground est sombre) ; primary = le BOUTON, couleur de marque et d'action ; secondary = la SURFACE (cartes, bandeaux : version très claire et douce, ou foncée sur fond sombre) ; accent = les détails graphiques. Les titres prennent la couleur du texte. Contraste d'au moins 4,5:1 pour texte/fond (sur un dégradé : sur ses deux couleurs), texte/surface et texte du bouton/bouton. paletteFamily = le nom d'ambiance en 2 à 4 mots (ex. « Verger électrique », « Cacao et lavande »).
-- Couleurs de 2026 : accordées entre elles et actuelles, dans l'esprit des palettes du propriétaire : parfois franches (dégradés lumineux, boutons vifs), parfois fines et sourdes, jamais ternes au hasard, boueuses ou criardes. D'une identité à l'autre, la couleur du bouton appartient à des familles de teintes NETTEMENT différentes (jamais trois orangés, jamais trois verts).
+- Couleurs de 2026 : vives, accordées entre elles et actuelles, dans l'esprit des palettes du propriétaire (« plus vives, plus à l'air du temps ») : boutons francs, dégradé LUMINEUX de deux couleurs vives (jamais un dégradé sombre, sourd ou terne), jamais boueuses ou criardes. D'une identité à l'autre, la couleur du bouton appartient à des familles de teintes NETTEMENT différentes (jamais trois orangés, jamais trois verts).
 - fonts : deux poignées « clé_nN » de la liste autorisée (titres expressifs et manuscrites : seulement pour les titres, toujours associés à une police de texte lisible ; jamais une manuscrite ni une chasse fixe pour les textes) (N = graisse / 100 disponible pour cette police) ; heading = titres, body = textes (graisse 4). Trois polices de titres différentes d'une identité à l'autre. fontStyle nomme la famille de polices.
 - tone : 3 adjectifs du ton de voix et 3 choses à ne jamais dire ou faire.
-- logoStyle et logoIdea : l'idée du logo, simple et astucieuse, où le concept du projet et le nom se rejoignent dans le dessin, poussée plus loin qu'une simple illustration du produit (ex. un éclair qui forme le V d'un électricien, une goutte qui contient une gourde), décrite en une ou deux phrases ; aucun WordArt, aucun dégradé gratuit.
+- logoStyle et logoIdea : champs techniques, jamais montrés au client : logoStyle = « lettrage », logoIdea = "" (le logo est dessiné ensuite, en carte blanche).
 - why : en une ou deux phrases, pourquoi cette identité convient à CE client (cible, image voulue, différence).
 
 Règles de cohésion de toute création : ${BRAND_RULES.join(" ")}
+
+Rendus de logo interdits par le propriétaire (à ne jamais évoquer) : ${FORBIDDEN_LOGO_RENDERS.join(" ; ")}.
 
 Interdits : inventer un chiffre, un avis, une note, une certification, une garantie, un délai, un prix ; reprendre une couleur que le client refuse ; utiliser une police hors liste ; copier une marque existante. Le vocabulaire du client est repris tel quel. Tout est rédigé en français et en tutoyant le client quand tu t'adresses à lui (why, nameWhy).
 
@@ -191,7 +193,7 @@ export function keepConstraints(j: Journey): string {
   if (j.keep.includes("slogan")) out.push(`Slogan gardé, mot pour mot dans les 3 identités : « ${j.keptValues?.slogan || site?.tagline || "[À compléter : slogan]"} ».`);
   if (j.keep.includes("couleurs")) out.push(`Couleurs gardées : ${site?.colors?.length ? site.colors.join(", ") : "celles du logo joint"} ; la même palette dans les 3 identités, construite à partir de ces couleurs.`);
   if (j.keep.includes("polices")) out.push(`Polices gardées : ${site?.fonts?.length ? site.fonts.join(", ") : "celles du client"} ; prends la police autorisée la plus proche, la même dans les 3 identités.`);
-  if (j.keep.includes("logo")) out.push("Logo gardé (image jointe s'il y en a une) : les 3 identités s'accordent avec lui (couleurs et polices compatibles) ; logoStyle décrit le style du logo existant, logoIdea dit comment il sera décliné.");
+  if (j.keep.includes("logo")) out.push("Logo gardé (image jointe s'il y en a une) : les 3 identités s'accordent avec lui (couleurs et polices compatibles).");
   return out.join("\n");
 }
 
@@ -262,8 +264,10 @@ export function paletteIssues(p: Identity["palette"], ground: Identity["ground"]
     else {
       const a = L(gradient.from), b = L(gradient.to);
       if (sameColor(gradient.from, gradient.to) || (hueGap(a.h, b.h) < 25 && Math.abs(a.l - b.l) < 0.04 && Math.abs(a.c - b.c) < 0.04)) issues.push(`fond « dégradé » ${gradient.from} → ${gradient.to} : deux couleurs nettement différentes sont attendues.`);
-      // Un vrai dégradé de couleurs : ni gris, ni beige ou crème pâle (un dégradé sombre et sourd, ou pâle de deux teintes, reste permis : n° 26 et 39).
+      // Un vrai dégradé de couleurs : ni gris, ni beige ou crème pâle (un dégradé sombre reste une palette permise, mais
+      // pas dans une série qui a déjà son fond sombre : voir identityIssues).
       if (Math.max(a.c, b.c) < 0.03 || (Math.min(a.l, b.l) > 0.85 && Math.max(a.c, b.c) < 0.06 && hueGap(a.h, b.h) < 40)) issues.push(`fond « dégradé » ${gradient.from} → ${gradient.to} : un dégradé de couleurs est attendu (ni gris, ni beige, ni crème).`);
+
     }
   }
   if (ground === "uni" && luminance(p.light) < 0.6) issues.push(`fond « uni » ${p.light} : un fond clair est attendu.`);
@@ -291,14 +295,13 @@ export function identityIssues(list: Identity[], j: Journey): string[] {
     if (keptSlogan && x.slogan.trim() !== keptSlogan.trim()) issues.push(`${tag} : le slogan gardé « ${keptSlogan} » doit être repris mot pour mot.`);
     if (!keptSlogan && words(x.slogan) > 9) issues.push(`${tag} : slogan de ${words(x.slogan)} mots (9 au plus).`);
     if (!keptName && words(x.name.replace(/&/g, "")) > 3) issues.push(`${tag} : nom trop long (3 mots au plus).`);
-    if (!keptName && x.nameCandidates.length < 10) issues.push(`${tag} : écris au moins 12 pistes dans nameCandidates (mots ou expressions qui existent en français), puis choisis la meilleure.`);
-    if (!keptName && !x.nameExpression.trim()) issues.push(`${tag} : nameExpression vide — donne le mot ou l'expression tel qu'il existe en français et son sens courant ; un assemblage inventé n'est pas un nom.`);
-    if (!keptName && !x.nameAnchor.trim()) issues.push(`${tag} : nameAnchor vide — dis de quel élément concret du produit (partie, matière, forme, geste) part le nom « ${x.name} » ; s'il ne part de rien du produit, change de nom.`);
+    if (!keptName && x.nameCandidates.length < 12) issues.push(`${tag} : écris au moins 12 pistes dans nameCandidates, puis choisis la meilleure.`);
+    if (!keptName && !x.nameExpression.trim()) issues.push(x.nameKind === "invente" ? `${tag} : nameExpression vide — dis de quel(s) mot(s) du produit le nom inventé « ${x.name} » est tiré.` : `${tag} : nameExpression vide — donne le mot tel qu'il existe en français et son sens courant.`);
+    if (!keptName && !x.nameAnchor.trim()) issues.push(x.nameKind === "mot" ? `${tag} : nameAnchor vide — dis quel univers ou quelle attitude de la marque le mot fort « ${x.name} » fait vivre, et son lien avec le produit.` : `${tag} : nameAnchor vide — dis de quel élément concret du produit (partie, matière, forme, geste) part le nom « ${x.name} » ; s'il ne part de rien du produit, change de nom.`);
     if (!FONT_HANDLES.includes(x.fonts.heading)) issues.push(`${tag} : police de titres « ${x.fonts.heading} » hors liste (clé_nN d'une graisse disponible).`);
     if (!FONT_HANDLES.includes(x.fonts.body)) issues.push(`${tag} : police de textes « ${x.fonts.body} » hors liste.`);
     else if (!bodyFontOk(x.fonts.body)) issues.push(`${tag} : « ${fontFamily(x.fonts.body)} » est une police de titres, manuscrite ou à chasse fixe : elle ne sert jamais pour les textes (choisis une police de texte lisible).`);
     for (const p of paletteIssues(x.palette, x.ground, x.gradient)) issues.push(`${tag} — ${p}`);
-    if (!PROPOSED_LOGO_STYLES.includes(x.logoStyle)) issues.push(`${tag} : style de logo « ${LOGO_STYLE_LABEL[x.logoStyle]} » interdit (tache floue) ; choisis un autre style.`);
     const refused = j.start.image?.status === "answered" ? refusedColors(j.start.image.value) : [];
     for (const c of refused) for (const role of ["primary", "secondary", "accent"] as const) {
       if (HUE_RANGE[c]?.(hueSat(x.palette[role]))) issues.push(`${tag} : ${role} ${x.palette[role]} ressemble à une couleur refusée par le client (${c}).`);
@@ -316,11 +319,18 @@ export function identityIssues(list: Identity[], j: Journey): string[] {
     if (new Set(names).size < names.length) issues.push("Deux identités ont le même nom : trois noms différents sont attendus.");
   }
   if (!keptSlogan && new Set(list.map((x) => norm(x.slogan))).size < list.length) issues.push("Deux identités ont le même slogan.");
-  if (!j.keep.includes("logo") && new Set(list.map((x) => x.logoStyle)).size < list.length) issues.push("Deux identités ont le même style de logo : trois styles différents sont attendus.");
   if (!j.keep.includes("polices") && new Set(list.map((x) => fontKey(x.fonts.heading))).size < list.length) issues.push("Deux identités ont la même police de titres : trois familles différentes sont attendues.");
+  // Vraiment différentes (exigence 1.1) : jamais trois territoires identiques.
+  if (new Set(list.map((x) => norm(x.territory))).size < list.length) issues.push("Deux identités ont le même territoire émotionnel : trois territoires différents sont attendus.");
   if (!j.keep.includes("couleurs")) {
     // Trois fonds de page : un blanc, un dégradé de couleurs, un sombre (règles du propriétaire des 6 et 7 novembre).
     if ([...list.map((x) => x.ground)].sort().join() !== "blanc,degrade,sombre") issues.push(`Fonds de page : ${list.map((x) => `${x.key} ${x.ground}`).join(", ")} ; il faut un fond blanc, un fond en dégradé de couleurs et un fond sombre.`);
+    // Trois fonds VRAIMENT différents (exigence 1.2 : « couleurs plus vives ») : le dégradé est lumineux et vif, jamais
+    // un second fond foncé à côté du fond sombre.
+    for (const x of list.filter((y) => y.ground === "degrade" && y.gradient)) {
+      const a = oklch(x.gradient!.from), b = oklch(x.gradient!.to);
+      if (Math.max(a.c, b.c) < 0.08 || (a.l + b.l) / 2 < 0.55) issues.push(`Identité ${x.key} — fond « dégradé » ${x.gradient!.from} → ${x.gradient!.to} : trop sombre ou trop terne à côté du fond sombre de la série ; un dégradé lumineux de deux couleurs vives est attendu.`);
+    }
     for (const [i, a] of list.entries()) for (const b of list.slice(i + 1)) {
       const gap = hueGap(oklch(a.palette.primary).h, oklch(b.palette.primary).h);
       if (gap < COLOR_RULES.hueGap) issues.push(`Identités ${a.key}/${b.key} : boutons (couleur de marque) de la même famille (${a.palette.primary} / ${b.palette.primary}) ; des teintes nettement différentes sont attendues.`);
@@ -331,8 +341,9 @@ export function identityIssues(list: Identity[], j: Journey): string[] {
 
 /** Demande à Claude : fiche de départ, contraintes de refonte, éventuelles consignes du client et corrections du contrôle. */
 /**
- * Genres de noms attendus (choix du propriétaire du 7 novembre 2026 : « le mot inventé est le mieux, surtout pour
- * un produit ; pour un service c'est différent ») : produits = trois mots inventés ; services = trois genres.
+ * Genres de noms attendus (décisions du propriétaire : 7 novembre 2026, « le mot inventé est le mieux, surtout pour un
+ * produit » ; remplacée le 9 novembre par le MOT FORT, comme SOLSTICE ou RUPTURE) : produits = deux mots forts et un mot
+ * inventé ; services = trois genres différents.
  */
 export function nameKindsFor(j: Journey): "produits" | "services" {
   return j.start.business?.status === "answered" && j.start.business.value === "services" ? "services" : "produits";
@@ -357,7 +368,7 @@ export function identityPrompt(j: Journey, opts: { guidance?: string; feedback?:
   if (j.imported.length) parts.push(`Site existant lu : ${j.imported.map((s) => `${s.url} (nom « ${s.name ?? "?"} », slogan « ${s.tagline ?? "?"} », couleurs ${s.colors?.join(" ") || "?"}, polices ${s.fonts?.join(", ") || "?"})`).join(" ; ")}.`);
   if (opts.guidance) parts.push("", "# Ce que le client demande pour cette nouvelle proposition", opts.guidance);
   if (opts.previous?.length && opts.namesOnly) {
-    parts.push("", "# Propositions actuelles : refais SEULEMENT les noms (name, nameStyle, nameWhy), les slogans (slogan, sloganTone) et, si le nouveau nom le demande, l'idée du logo (logoIdea, même logoStyle). Tout le reste (territoire, fond, dégradé, palette, polices, ton, promesse, pourquoi) reste À L'IDENTIQUE.", JSON.stringify(opts.previous));
+    parts.push("", "# Propositions actuelles : refais SEULEMENT les noms (name, nameStyle, nameWhy) et les slogans (slogan, sloganTone). Tout le reste (territoire, fond, dégradé, palette, polices, ton, promesse, pourquoi) reste À L'IDENTIQUE.", JSON.stringify(opts.previous));
   } else if (opts.previous?.length && opts.redo?.length) {
     parts.push("", `# Propositions précédentes : refais seulement ${opts.redo.join(", ")}, garde les autres À L'IDENTIQUE (même contenu, mêmes clés)`, JSON.stringify(opts.previous));
   } else if (opts.previous?.length && opts.feedback?.length) {
