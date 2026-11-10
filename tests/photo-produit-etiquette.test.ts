@@ -84,3 +84,13 @@ describe("script de la scène achetable", () => {
     expect(js).toContain('i.addEventListener("change",function(){tot();grid();ship()})');
   });
 });
+
+describe("photos de produits mal placées comptées au devis", () => {
+  it("seules les photos de produits posées à la place d'une scène sont comptées", async () => {
+    const { misplacedProductPhotos } = await import("../src/lib/syna-agent/custom-theme/brand");
+    const briefs = [{ find: "photos/hero.jpg", description: "Photo d'ambiance d'un bureau" }, { find: "photos/b.jpg", description: "Photo d'ambiance" }];
+    const html = '<img src="/api/files/p1"><img src="photos/b.jpg">';
+    expect(misplacedProductPhotos({ role: "ouverture", title: "Ouverture" }, briefs, html, new Set(["p1"]))).toBe(1);
+    expect(misplacedProductPhotos({ role: "ouverture", title: "Ouverture" }, briefs, html, new Set())).toBe(0);
+  });
+});

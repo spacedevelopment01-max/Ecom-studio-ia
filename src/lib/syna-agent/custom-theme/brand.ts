@@ -226,6 +226,15 @@ export const showsPackaging = (description: string) => /(?<!\p{L})(sachets?|paqu
  */
 export const briefUsable = (description: string) => !/(?<!\p{L})(deux|trois|quatre|cinq|six|sept|huit|plusieurs|\d+)\s+(sachets|paquets|pots|flacons|bo[iî]tes|bocaux|coffrets|tubes|bouteilles)(?!\p{L})|(?<!\p{L})(quatrième|troisième|deuxième|second|seconde|autre)\s+(sachet|paquet|pot|flacon|bo[iî]te)(?!\p{L})/iu.test(description);
 export const showsProductAlone = (l: Pick<LibSection, "role" | "title">, description: string) => productSlotSection(l) || (THUMB_TITLES.has(l.title) && /^\s*photo(?:graphie)? (?:de )?produit\b/i.test(description));
+/** Section où une photo de produit posée à la place d'une scène redevient une photo à créer (toutes ses photos sont des scènes). */
+export const healable = (l: Pick<LibSection, "role" | "title"> | null | undefined, briefs: { description: string }[]) => !!l && briefs.length > 0 && !briefs.some((b) => showsProductAlone(l, b.description));
+/** Nombre de photos de produits mal placées dans une section (remplacées par une scène au prochain montage, comptées au devis). */
+export function misplacedProductPhotos(l: Pick<LibSection, "role" | "title"> | null | undefined, briefs: { find: string; description: string }[], html: string, productIds: Set<string>): number {
+  if (!healable(l, briefs)) return 0;
+  const missing = briefs.filter((b) => !html.includes(b.find)).length;
+  const prod = [...html.matchAll(/\/api\/files\/([\w-]+)/g)].filter((m) => productIds.has(m[1])).length;
+  return Math.min(missing, prod);
+}
 /** Photos des fiches produits du projet : elles restent sur les emplacements produit, jamais posées en photo d'ambiance. */
 export function productImageIds(projectId: string): Set<string> {
   try { return new Set(listProducts(projectId).flatMap((x) => x.data.images.map((i) => i.assetId).filter((id): id is string => !!id))); } catch { return new Set(); }
@@ -443,7 +452,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
       t = loadCustomTheme(p.id)!;
       for (const y of allSections(t)) {
         const ly = libSection(y.s.id), briefs0 = y.s.photoBriefs ?? [];
-        if (!ly || !briefs0.length || briefs0.some((b) => showsProductAlone(ly, b.description))) continue;
+        if (!healable(ly, briefs0)) continue;
         let html = sectionHtml(y.s);
         for (const b of briefs0) {
           if (html.includes(b.find)) continue;

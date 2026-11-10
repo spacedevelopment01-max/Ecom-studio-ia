@@ -44,7 +44,7 @@ import { enqueue, pendingJob } from "../../jobs";
 import { stateOf } from "../../preparation/store";
 import { journeyOf, setStep as setJourneyStep, updateJourney as updateJourneyConv } from "../journey";
 import { galleryCheckMaxMicro } from "./gallery";
-import { briefUsable, productSlotSection, showsProductAlone } from "./brand";
+import { briefUsable, misplacedProductPhotos, productSlotSection, showsProductAlone } from "./brand";
 import { clientImages, CUSTOM_BRAND_JOB, examplePhotoCount, productImageIds, photoSlots, photosToCreate, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, siteArtDirection, sitePhotoName, textPlacementLine, type ImagesMode } from "./brand";
 
 /** Ce que le client voit dans le fil : l'aperçu vivant de son thème et sa composition. */
@@ -394,13 +394,17 @@ const buildTool: AgentTool<BuildArgs> = {
     const briefCalls = written ? allSections(t).filter((x) => inPages(x.place, x.page?.key) && undescribed(x) > 0).length : 0;
     // Photos de produits mal placées (remplacées par une scène au montage) : comptées par photoSlots, pas par les
     // descriptions (essai du 10 novembre 2026 : devis de 4 photos pour 13 à créer, montage arrêté au plafond).
-    const photosMax = none ? 0 : known != null ? Math.max(known, photos) : photos + slots.filter((x) => x.kind === "produit").length;
+    const site = photoSite(ctx);
+    const misplaced = written ? allSections(t).filter((x) => inPages(x.place, x.page?.key)).reduce((n, x) => n + misplacedProductPhotos(libSection(x.s.id), x.s.photoBriefs ?? [], sectionHtml(x.s), site.productIds), 0) : 0;
+    const photosMax = none ? 0 : known != null ? known + misplaced : photos + slots.filter((x) => x.kind === "produit").length;
+    // Photos annoncées : le nombre exact quand les descriptions sont connues, sinon le nombre d'emplacements.
+    const shown = none ? 0 : known != null ? photosMax : photos;
     const unit = (customPhotoDeps.unit ?? photoUnit)();
-    if (photos && unit == null) throw new Error(L("Aucun modèle d'images utilisable pour les photos du site.", "No usable image model."));
+    if (shown && unit == null) throw new Error(L("Aucun modèle d'images utilisable pour les photos du site.", "No usable image model."));
     // + le plan des textes de tout le site (un appel, avant les sections)
     // + le contrôle de chaque photo créée (décision du 10 novembre 2026).
     const check = galleryCheckMaxMicro();
-    return { maxMicro: SITE_PLAN_CAP_MICRO + sections * SECTION_TEXT_CAP_MICRO + briefCalls * SECTION_TEXT_CAP_MICRO + photosMax * ((unit ?? 0) + check), probableMicro: SITE_PLAN_TYPICAL_MICRO + sections * SECTION_TEXT_TYPICAL_MICRO + Math.round(Math.min(photos, photosMax) * ((unit ?? 0) * 0.8 + check * 0.5)), label: a.newPhotos === false && a.photos !== false ? L(`thème sur mesure monté à ta marque en deux fois : ${sections} sections écrites et les vraies photos de tes produits posées, aucune photo créée pour l'instant`, "custom theme built, no new photos yet") : a.rewrite && !photos ? L(`textes de tout ton site réécrits : plan des textes puis ${sections} sections`, "all site copy rewritten") : L(`thème sur mesure monté à ta marque : ${sections} sections écrites${photos ? `, ${photos} photos créées` : ""}${a.clientAssets?.length ? `, ${a.clientAssets.length} de tes images posées` : ""}`, "custom theme built for the brand") };
+    return { maxMicro: SITE_PLAN_CAP_MICRO + sections * SECTION_TEXT_CAP_MICRO + briefCalls * SECTION_TEXT_CAP_MICRO + photosMax * ((unit ?? 0) + check), probableMicro: SITE_PLAN_TYPICAL_MICRO + sections * SECTION_TEXT_TYPICAL_MICRO + Math.round(Math.min(shown, photosMax) * ((unit ?? 0) * 0.8 + check * 0.5)), label: a.newPhotos === false && a.photos !== false ? L(`thème sur mesure monté à ta marque en deux fois : ${sections} sections écrites et les vraies photos de tes produits posées, aucune photo créée pour l'instant`, "custom theme built, no new photos yet") : a.rewrite && !shown ? L(`textes de tout ton site réécrits : plan des textes puis ${sections} sections`, "all site copy rewritten") : L(`thème sur mesure monté à ta marque : ${sections} sections écrites${shown ? `, ${shown} photos créées` : ""}${a.clientAssets?.length ? `, ${a.clientAssets.length} de tes images posées` : ""}`, "custom theme built for the brand") };
   },
   run: async (ctx, a) => {
     const p = project(ctx);
