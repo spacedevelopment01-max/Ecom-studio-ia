@@ -43,6 +43,7 @@ import { loadShopOffers } from "../product-features";
 import { enqueue, pendingJob } from "../../jobs";
 import { stateOf } from "../../preparation/store";
 import { journeyOf, setStep as setJourneyStep, updateJourney as updateJourneyConv } from "../journey";
+import { galleryCheckMaxMicro } from "./gallery";
 import { clientImages, CUSTOM_BRAND_JOB, examplePhotoCount, productImageIds, photoSlots, photosToCreate, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, siteArtDirection, sitePhotoName, textPlacementLine, type ImagesMode } from "./brand";
 
 /** Ce que le client voit dans le fil : l'aperçu vivant de son thème et sa composition. */
@@ -384,7 +385,9 @@ const buildTool: AgentTool<BuildArgs> = {
     const unit = (customPhotoDeps.unit ?? photoUnit)();
     if (photos && unit == null) throw new Error(L("Aucun modèle d'images utilisable pour les photos du site.", "No usable image model."));
     // + le plan des textes de tout le site (un appel, avant les sections)
-    return { maxMicro: SITE_PLAN_CAP_MICRO + sections * SECTION_TEXT_CAP_MICRO + photosMax * (unit ?? 0), probableMicro: SITE_PLAN_TYPICAL_MICRO + sections * SECTION_TEXT_TYPICAL_MICRO + Math.round(photos * (unit ?? 0) * 0.8), label: a.newPhotos === false && a.photos !== false ? L(`thème sur mesure monté à ta marque en deux fois : ${sections} sections écrites et les vraies photos de tes produits posées, aucune photo créée pour l'instant`, "custom theme built, no new photos yet") : a.rewrite && !photos ? L(`textes de tout ton site réécrits : plan des textes puis ${sections} sections`, "all site copy rewritten") : L(`thème sur mesure monté à ta marque : ${sections} sections écrites${photos ? `, ${photos} photos créées` : ""}${a.clientAssets?.length ? `, ${a.clientAssets.length} de tes images posées` : ""}`, "custom theme built for the brand") };
+    // + le contrôle de chaque photo créée (décision du 10 novembre 2026).
+    const check = galleryCheckMaxMicro();
+    return { maxMicro: SITE_PLAN_CAP_MICRO + sections * SECTION_TEXT_CAP_MICRO + photosMax * ((unit ?? 0) + check), probableMicro: SITE_PLAN_TYPICAL_MICRO + sections * SECTION_TEXT_TYPICAL_MICRO + Math.round(photos * ((unit ?? 0) * 0.8 + check * 0.5)), label: a.newPhotos === false && a.photos !== false ? L(`thème sur mesure monté à ta marque en deux fois : ${sections} sections écrites et les vraies photos de tes produits posées, aucune photo créée pour l'instant`, "custom theme built, no new photos yet") : a.rewrite && !photos ? L(`textes de tout ton site réécrits : plan des textes puis ${sections} sections`, "all site copy rewritten") : L(`thème sur mesure monté à ta marque : ${sections} sections écrites${photos ? `, ${photos} photos créées` : ""}${a.clientAssets?.length ? `, ${a.clientAssets.length} de tes images posées` : ""}`, "custom theme built for the brand") };
   },
   run: async (ctx, a) => {
     const p = project(ctx);

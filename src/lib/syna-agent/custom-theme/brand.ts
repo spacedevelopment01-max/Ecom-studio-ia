@@ -30,6 +30,7 @@ import { hdAspect } from "../mockup-code/prompts";
 import { mockupImageRoute } from "../mockup-code/tools";
 import { authenticSection, isCutoutPhoto, isProductPhotoSection, libSection, withBrandName, type LibSection } from "./library";
 import { cutoutPhoto, FOND_A_DETOURER } from "./cutout-photo";
+import { checkCreatedImage, galleryDeps } from "./gallery";
 import { riskCount } from "./risk";
 import { allSections, loadCustomTheme, pushCustomThemeHistory, replaceOnce, saveCustomTheme, sectionHtml, type CustomTheme } from "./theme";
 
@@ -310,7 +311,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
   // rewrite : le client n'aime pas les textes, tout le site est réécrit (sinon seules les sections encore d'exemple).
   const sections = allSections(t).filter((x) => a.rewrite || !x.s.clientTexts);
   const writer = siteCopyModel();
-  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, photosToProvide: 0, photosLeft: 0, problems: [] as string[], redacteur: `${writer.provider}:${writer.model}` };
+  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, photosToProvide: 0, photosLeft: 0, photosFailed: 0, problems: [] as string[], redacteur: `${writer.provider}:${writer.model}` };
   const briefs: Record<string, SectionWrite["photos"]> = {};
 
   // Un seul point d'annulation pour tout le montage : « Annuler » revient au thème d'avant le montage.
@@ -465,6 +466,13 @@ export async function runCustomBrandJob(ctx: JobContext) {
           const asset = await saveAsset({ projectId: p.id, userId: p.userId, data, name: sitePhotoName(here.page?.label ?? here.place, ph.description), mime: "image/png", role: "site", origin: "generated", meta: { synaPhoto: { description: ph.description, ratio: ph.ratio, direction: "custom", product: !!ph.product, replaced: file } } });
           return asset.id;
         });
+        // Chaque photo créée est contrôlée (décision du propriétaire du 10 novembre 2026) : une photo ratée n'est jamais
+        // posée comme bonne ; elle est signalée et ne sera refaite qu'avec l'accord du client.
+        if (!real && !mine && (!customBrandDeps.photo || galleryDeps.check)) {
+          const prodRef = ph.product ? products.find((x) => x.data.title.trim().toLowerCase() === ph.product!.trim().toLowerCase())?.data.images[0]?.assetId : undefined;
+          const problems = await ctx.step(`photo-check:${uid}:${file}`, async () => checkCreatedImage({ jobId: ctx.job.id, projectId: p.id, userId: p.userId, usageKey: `${ctx.job.id}:photo-check:${uid}:${file}`, capMicro: a.capMicro }, assetData(getAsset(assetId)!), prodRef && getAsset(prodRef) ? assetData(getAsset(prodRef)!) : null, [], people, ph.product ?? undefined));
+          if (problems.length) { report.photosFailed++; report.problems.push(`photo ${file} ratée au contrôle (${problems.join(" ; ").slice(0, 200)}) : non posée, à refaire avec ton accord`); continue; }
+        }
         if (real) report.photosReal++; else if (mine) report.photosClient++; else report.photosMade++;
         t = loadCustomTheme(p.id)!;
         const cur = allSections(t).find((y) => y.s.uid === uid);

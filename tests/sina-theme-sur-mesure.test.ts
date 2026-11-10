@@ -734,7 +734,8 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       ctx.projectId = pid;
       const mix = await fr(() => getTool("custom.build")!.estimate!(ctx, { images: "mix", clientAssets: mine }));
       const all = await fr(() => getTool("custom.build")!.estimate!(ctx, { images: "sina" }));
-      expect(all.maxMicro - mix.maxMicro).toBe(2 * 50_000); // deux photos de moins à créer
+      const { galleryCheckMaxMicro } = await import("@/lib/syna-agent/custom-theme/gallery");
+      expect(all.maxMicro - mix.maxMicro).toBe(2 * (50_000 + galleryCheckMaxMicro())); // deux photos (et leurs contrôles) de moins
       expect(mix.label).toMatch(new RegExp(`${n - 2} photos créées, 2 de tes images posées`));
       const r = await call("custom.build", ctx, { images: "mix", clientAssets: mine });
       expect(r.ok).toBe(true);

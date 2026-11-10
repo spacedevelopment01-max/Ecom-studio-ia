@@ -130,6 +130,27 @@ export function galleryVerdict(c: GalleryCheck, o: { person: boolean }): string[
   return p;
 }
 
+/**
+ * Contrôle d'une image créée par l'IA (galerie ou photo du thème) : produit fidèle et entier (s'il apparaît), textes
+ * exacts, aucun texte en trop, aucune personne sans accord. Rend les défauts en mots simples (vide : image bonne).
+ */
+export async function checkCreatedImage(o: { jobId: string; projectId: string; userId: string; usageKey: string; capMicro: number }, image: Buffer, product: Buffer | null, texts: string[], person: boolean, productName?: string): Promise<string[]> {
+  const c = galleryDeps.check ? await galleryDeps.check(image, product ?? Buffer.alloc(0), texts, o.usageKey)
+    : GalleryCheckSchema.parse(await withTrace({ jobId: o.jobId, projectId: o.projectId, step: "image-check", costCapMicro: o.capMicro }, () => llmJson({
+        task: "quality_control", userId: o.userId, projectId: o.projectId, jobId: o.jobId, usageKey: o.usageKey, promptKey: "syna-gallery-check-1",
+        system: "Tu contrôles une image créée par l'IA avant qu'elle soit montrée à un client. Tu décris seulement ce que tu vois réellement. Tu réponds en JSON.",
+        prompt: [product ? `Première image : l'image créée. Seconde image : la vraie photo du produit${productName ? ` « ${productName} »` : ""}.` : "Image créée (aucun produit à reconnaître).",
+          product ? "productMatches : true si le produit de l'image créée est bien le même que sur la vraie photo (forme, couleurs, étiquette, textes imprimés)." : "productMatches : true.",
+          product ? "productWhole : true si le produit est entier (rien de coupé par le cadre) et non déformé." : "productWhole : true.",
+          `texts : pour chacun de ces textes attendus, ce qui est réellement écrit et s'il est exact (sans faute ni lettre en trop) : ${texts.length ? texts.map(q).join(", ") : "(aucun texte attendu)"}.`,
+          "extraText : tout autre texte, lettre ou chiffre écrit sur l'image, en dehors des textes attendus et de ceux imprimés sur le produit (vide sinon).",
+          "people : true si une personne, un visage ou une main est visible.", "notes : autre défaut net (bande blanche, zone cassée ; vide sinon)."].join("\n"),
+        images: [{ data: image, label: "image créée" }, ...(product ? [{ data: product, label: "vraie photo du produit" }] : [])],
+        maxTokens: CHECK_OUT, maxOutputTokens: CHECK_OUT, routing: { difficulty: "standard", prefer: CHECK_MODEL },
+      } as LlmCall, GalleryCheckSchema)));
+  return [...galleryVerdict(c, { person }), ...c.notes];
+}
+
 /** Remplaçables par les tests (aucun appel réel). */
 export const galleryDeps: { image?: (prompt: string, product: Buffer, usageKey: string) => Promise<Buffer>; check?: (image: Buffer, product: Buffer, texts: string[], usageKey: string) => Promise<GalleryCheck>; unit?: () => number | null } = {};
 
