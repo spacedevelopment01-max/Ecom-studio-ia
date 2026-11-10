@@ -28,7 +28,7 @@ import { loadFamilyChoice, siteArtUniverse } from "../section-families";
 import { codePhotoPrompt } from "../mockup-code/code-mockup";
 import { hdAspect } from "../mockup-code/prompts";
 import { imageReferences, mockupImageRoute } from "../mockup-code/tools";
-import { canInvert, familySections, libSection, onlyFor, sectionByRef, sectionTraits, isCardSection } from "./library";
+import { authenticSection, canInvert, familySections, libSection, onlyFor, sectionByRef, sectionTraits, isCardSection } from "./library";
 import { allSections, applyStructure, checkCustomTheme, findSection, loadCustomTheme, replaceOnce, requiredPages, saveCustomTheme, scopedCss, sectionHtml, undoCustomTheme, type CustomTheme, type SiteKind, type StructureOp } from "./theme";
 import { listProducts } from "../../products/catalog";
 import { activityPlan, companyOf } from "../activity";
@@ -81,6 +81,8 @@ export function siteKind(ctx: ToolContext): SiteKind {
     productPhotos: list.flatMap((x) => (x.data.images ?? []).map((im) => im.assetId).filter((id): id is string => !!id)),
   };
 }
+/** Genre de site pour le classement des photos (produits ou services, vraies photos de produits ou non). */
+const photoSite = (ctx: ToolContext) => { const k = siteKind(ctx); return { business: k.business, productPhotos: (k.productPhotos?.length ?? 0) > 0 }; };
 const familyOrError = (projectId: string) => {
   const f = loadFamilyChoice(projectId);
   if (!f) throw new Error("famille de sections pas encore choisie par le client : theme.families puis theme.family d'abord");
@@ -292,11 +294,13 @@ const buildTool: AgentTool<BuildArgs> = {
   estimate: (ctx, a) => {
     const t = buildPlan(ctx);
     // Sections à écrire : toutes avec rewrite, sinon seulement celles encore en texte d'exemple (le devis comptait tout le site).
-    const sections = a.rewrite ? allSectionsCount(t) : allSections(t).filter((x) => !x.s.clientTexts).length, photos = a.photos === false ? 0 : photosToCreate(examplePhotoCount(t), a.images ?? "sina", a.clientAssets?.length ?? 0);
+    const sections = a.rewrite ? allSectionsCount(t) : allSections(t).filter((x) => !x.s.clientTexts).length, slots = photoSlots(t, photoSite(ctx)), photos = a.photos === false ? 0 : photosToCreate(slots.filter((x) => x.kind === "ambiance").length, a.images ?? "sina", a.clientAssets?.length ?? 0);
+    // Plafond : les photos de produits aussi, au cas où une scène doive être créée avec le produit en référence.
+    const photosMax = a.photos === false ? 0 : photos + slots.filter((x) => x.kind === "produit").length;
     const unit = (customPhotoDeps.unit ?? photoUnit)();
     if (photos && unit == null) throw new Error(L("Aucun modèle d'images utilisable pour les photos du site.", "No usable image model."));
     // + le plan des textes de tout le site (un appel, avant les sections)
-    return { maxMicro: SITE_PLAN_CAP_MICRO + sections * SECTION_TEXT_CAP_MICRO + photos * (unit ?? 0), probableMicro: SITE_PLAN_TYPICAL_MICRO + sections * SECTION_TEXT_TYPICAL_MICRO + Math.round(photos * (unit ?? 0) * 0.8), label: a.rewrite && !photos ? L(`textes de tout ton site réécrits : plan des textes puis ${sections} sections`, "all site copy rewritten") : L(`thème sur mesure monté à ta marque : ${sections} sections écrites${photos ? `, ${photos} photos créées` : ""}${a.clientAssets?.length ? `, ${a.clientAssets.length} de tes images posées` : ""}`, "custom theme built for the brand") };
+    return { maxMicro: SITE_PLAN_CAP_MICRO + sections * SECTION_TEXT_CAP_MICRO + photosMax * (unit ?? 0), probableMicro: SITE_PLAN_TYPICAL_MICRO + sections * SECTION_TEXT_TYPICAL_MICRO + Math.round(photos * (unit ?? 0) * 0.8), label: a.rewrite && !photos ? L(`textes de tout ton site réécrits : plan des textes puis ${sections} sections`, "all site copy rewritten") : L(`thème sur mesure monté à ta marque : ${sections} sections écrites${photos ? `, ${photos} photos créées` : ""}${a.clientAssets?.length ? `, ${a.clientAssets.length} de tes images posées` : ""}`, "custom theme built for the brand") };
   },
   run: async (ctx, a) => {
     const p = project(ctx);
@@ -309,7 +313,7 @@ const buildTool: AgentTool<BuildArgs> = {
     const foreign = (a.clientAssets ?? []).filter((id) => !own.has(id));
     if (foreign.length) return { ok: false, internal: true, summary: `Images inconnues ou qui ne viennent pas du client : ${foreign.join(", ")} (custom.images donne ses images).` };
     if (mode !== "sina" && !a.clientAssets?.length) return { ok: false, summary: L("Aucune image du client à poser : demande-lui d'abord ses images (custom.images dit combien il en faut).", "No client images yet.") };
-    const needed = examplePhotoCount(t);
+    const needed = examplePhotoCount(t, photoSite(ctx));
     if (mode === "client" && (a.clientAssets?.length ?? 0) < needed) return { ok: false, summary: L(`Il faut ${needed} images et le client en a donné ${a.clientAssets!.length} : rien n'est lancé.`, "Not enough client images."), hint: `Dis-le au client simplement et propose-lui : m'envoyer les ${needed - a.clientAssets!.length} qui manquent, que tu crées les autres (images:\"mix\", prix annoncé), ou que tu crées toutes les images (images:\"sina\").` };
     const est = await buildTool.estimate!(ctx, a);
     const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: CUSTOM_BRAND_JOB, label: L("Thème sur mesure monté à ta marque (SINA)", "Custom theme built for your brand (SINA)"), payload: { projectId: p.id, capMicro: est.maxMicro, conversationId: ctx.conversationId, photos: a.photos !== false, images: mode, clientAssets: a.clientAssets ?? [], rewrite: !!a.rewrite, consigne: a.consigne?.trim() || null }, maxAttempts: 2, idempotencyKey: `syna:${ctx.runId}:custom-brand${a.rewrite ? "-rewrite" : ""}:${t.rev}` });
@@ -338,14 +342,18 @@ const imagesTool: AgentTool<Record<string, never>> = {
     const p = project(ctx);
     let t: CustomTheme;
     try { t = buildPlan(ctx); } catch (e) { return { ok: false, summary: (e as Error).message, hint: "Monte d'abord toutes les pages avec les meilleures sections pour ce produit ou ce service (custom.sections puis custom.compose), puis compte les images." }; }
-    const slots = photoSlots(t), mine = clientImages(p.id);
+    const all = photoSlots(t, photoSite(ctx)), mine = clientImages(p.id);
+    // Le nombre exact (audit du 10 novembre 2026) : seules les photos d'ambiance sont à envoyer ou à créer ; les photos
+    // de produits sont ses vraies photos de produits ; les photos impossibles à inventer, seulement les siennes.
+    const slots = all.filter((x) => x.kind === "ambiance"), products = all.filter((x) => x.kind === "produit"), toProvide = all.filter((x) => x.kind === "a-fournir");
     const byPage: Record<string, number> = {};
     for (const s of slots) byPage[s.place] = (byPage[s.place] ?? 0) + 1;
+    const provide = toProvide.length ? ` ${toProvide.length} photo(s) ne peuvent venir QUE de lui (${[...new Set(toProvide.map((x) => x.authentic))].join(", ")}) : tu ne les crées jamais ; ses images envoyées y vont en premier, sinon un cadre « Photo à fournir » reste à leur place.` : "";
     return {
       ok: true,
-      summary: L(`Il faut ${slots.length} images pour ce thème (${Object.entries(byPage).map(([k, n]) => `${k} : ${n}`).join(", ")}). Images déjà envoyées par le client : ${mine.length}.`, `${slots.length} images needed.`),
-      hint: `Demande au client, en une question à choix : « Tu montes ton site avec tes images, ou je les crée ? ». S'il prend les siennes : dis-lui qu'il en faut ${slots.length} (par page : ${Object.entries(byPage).map(([k, n]) => `${k} ${n}`).join(", ")}) et qu'il les envoie avec le trombone (📎) ; s'il en a moins, propose de créer celles qui manquent (images:"mix", prix annoncé) ou de toutes les créer (images:"sina"). Les vraies photos de ses produits servent toujours aux photos de ses produits. Puis custom.build avec images et clientAssets (identifiants ci-dessous), après son accord sur le prix.`,
-      data: { imagesNecessaires: slots.length, parPage: byPage, emplacements: slots.map((s) => `${s.place} › ${s.section}`), imagesDuClient: mine.map((x) => ({ id: x.id, nom: x.name })), photosDejaCreees: sitePhotos(p.id) },
+      summary: L(`Il faut ${slots.length} images d'ambiance pour ce thème (${Object.entries(byPage).map(([k, n]) => `${k} : ${n}`).join(", ") || "aucune"})${products.length ? `, plus ${products.length} photo(s) de produits (ses vraies photos de produits)` : ""}${toProvide.length ? `, plus ${toProvide.length} photo(s) à fournir par lui (${[...new Set(toProvide.map((x) => x.authentic))].join(", ")})` : ""}. Images déjà envoyées par le client : ${mine.length}.`, `${slots.length} images needed.`),
+      hint: `Demande au client, en une question à choix : « Tu montes ton site avec tes images, ou je les crée ? ». S'il prend les siennes : dis-lui qu'il en faut ${slots.length} (par page : ${Object.entries(byPage).map(([k, n]) => `${k} ${n}`).join(", ")}) et qu'il les envoie avec le trombone (📎) ; s'il en a moins, propose de créer celles qui manquent (images:"mix", prix annoncé) ou de toutes les créer (images:"sina"). Les vraies photos de ses produits servent toujours aux cartes et au bloc d'achat ; ailleurs, une scène est créée avec elles en référence.${provide}`,
+      data: { imagesNecessaires: slots.length, photosDeProduits: products.length, aFournirParLeClient: toProvide.length, parPage: byPage, emplacements: slots.map((s) => `${s.place} › ${s.section}`), imagesDuClient: mine.map((x) => ({ id: x.id, nom: x.name })), photosDejaCreees: sitePhotos(p.id) },
     };
   },
 };
@@ -483,6 +491,8 @@ const photoTool: AgentTool<PhotoArgs> = {
     if (!t || !x) return { ok: false, summary: L(`Section ${a.uid} introuvable.`, "Section not found."), internal: true };
     const file = a.find.replace(/^.*\//, "");
     if (!sectionHtml(x.s).includes(file)) return { ok: false, summary: L(`Photo « ${a.find} » absente de la section : rien n'est créé ni payé.`, "Photo not in section."), internal: true };
+    const authentic = authenticSection(x.s.id, p.business === "services" ? "services" : "products");
+    if (authentic) return { ok: false, summary: L(`Cette photo montre ${authentic} : je ne peux pas l'inventer. Seule ta vraie photo va là (envoie-la avec le trombone 📎) ; rien n'est créé ni payé.`, "This photo cannot be invented."), hint: "Dis-le au client ; quand il envoie sa photo, pose-la avec custom.edit (image : { find, assetId })." };
     const refs = a.product ? imageReferences(p) : { product: null, logo: null, problem: null };
     const fam = loadFamilyChoice(p.id), people = peopleAllowed(p.id), fu = siteArtUniverse(fam, { people });
     if (fam && fam.family !== t.family) return { ok: false, summary: L("Le thème monté n'est pas de la famille choisie par le client : rien n'est créé ni payé. Il faut d'abord concevoir un thème dans sa famille.", "Theme family differs from the client's choice.") };

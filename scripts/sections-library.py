@@ -215,6 +215,11 @@ js = '\n;\n'.join(scripts)
 for a, b in SHIP_FIX:
     assert js.count(a) == 1, a[:70]
     js = js.replace(a, b)
+# Bloc d'achat : les vraies valeurs du client posées par le Studio (scripts/section_buy_fix.py).
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from section_buy_fix import apply as buy_fix
+js = buy_fix(js)
 open(os.path.join(OUT, 'library.js'), 'w', encoding='utf-8').write(js + '\n;' + EXTRA_JS)
 open(os.path.join(OUT, 'templates.html'), 'w', encoding='utf-8').write('\n'.join(templates))
 json.dump({'version': 1, 'fonts': fonts, 'sections': sections}, open(os.path.join(OUT, 'library.json'), 'w', encoding='utf-8'), ensure_ascii=False)

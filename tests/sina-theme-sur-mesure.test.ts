@@ -95,6 +95,26 @@ describe("thème sur mesure : montage et règles du propriétaire", () => {
     expect(k(twice, { ...shop, productPhotos: ["abc123def"] })).not.toMatch(/même photo/);
   });
 
+  it("photos impossibles à inventer : comptées à part, jamais créées, cadre « Photo à fournir » à leur place", async () => {
+    const B2 = await import("@/lib/syna-agent/custom-theme/brand");
+    const t = applyStructure(starterTheme("classique", "classique"), [{ op: "add", page: "home", section: sectionByRef("Réalisations filtrables")!.id }, { op: "add", page: "home", section: sectionByRef("Avant / après")!.id }]);
+    const svc = B2.photoSlots(t, { business: "services" }), prod = B2.photoSlots(t, { business: "products", productPhotos: true });
+    expect(svc.filter((x) => x.section === "Réalisations filtrables").every((x) => x.kind === "a-fournir")).toBe(true);
+    expect(svc.filter((x) => x.section === "Avant / après").every((x) => x.kind === "a-fournir")).toBe(true); // avant/après d'un artisan
+    expect(prod.filter((x) => x.section === "Avant / après").every((x) => x.kind === "ambiance")).toBe(true); // feuilles de thé sèches puis infusées
+    expect(prod.filter((x) => x.section === "Produit vedette").every((x) => x.kind === "produit")).toBe(true); // sa vraie photo de produit
+    // Le nombre annoncé au client ne compte que les photos d'ambiance (ni produits, ni photos à fournir).
+    expect(B2.examplePhotoCount(t, { business: "services" })).toBe(svc.filter((x) => x.kind === "ambiance").length);
+    expect(B2.examplePhotoCount(t, { business: "services" })).toBeLessThan(svc.length);
+    // Aperçu : la photo d'exemple d'une réalisation n'apparaît jamais comme celle du client.
+    const html = renderCustomTheme({ ...proj, business: "services" } as any, t, { nonce: "n" });
+    const real = t.pages[0].sections.find((x) => libSection(x.id)!.title === "Réalisations filtrables")!;
+    const sec = html.slice(html.indexOf(`data-ct="${real.uid}"`), html.indexOf("</section>", html.indexOf(`data-ct="${real.uid}"`)));
+    expect(sec).not.toMatch(/photos\/[\w-]+\.(webp|png|jpg)/);
+    const frame = /data:image\/svg\+xml;base64,([A-Za-z0-9+/=]+)/.exec(sec)![1];
+    expect(Buffer.from(frame, "base64").toString()).toMatch(/Photo à fournir[^]*SINA ne peut pas inventer tes réalisations/);
+  });
+
   it("refuse le mélange de familles, deux « Produit vedette », deux sections de cartes, la même section à la suite", () => {
     const t = starterTheme("moderne", "sport-chic");
     const mix = applyStructure(t, [{ op: "add", page: "home", section: sectionByRef("Ouverture photo pleine")!.id }]);
@@ -251,6 +271,34 @@ describe("thème sur mesure : outils de SINA", async () => {
     await call("start.confirm", ctx, {});
     return { ctx, pid: one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string };
   }
+
+  it("bloc d'achat : les vraies données du produit (prix, couleurs, remises, livraison), jamais les valeurs d'exemple", async () => {
+    const { ctx, pid } = await project();
+    const { createProduct } = await import("@/lib/products/catalog");
+    const { saveShopOffers } = await import("@/lib/syna-agent/product-features");
+    const { saveCompany } = await import("@/lib/syna-agent/activity");
+    createProduct(pid, { title: "Sac Lune", price: 8900, compareAt: 9900, options: [{ name: "Couleur", values: ["Noir", "Cognac"] }], variants: [{ options: ["Noir"], price: 8900, compareAt: 9900 }, { options: ["Cognac"], price: 8900, compareAt: 9900 }] } as any);
+    saveShopOffers(pid, { quantity: { kind: "lots", tiers: [{ qty: 2, pct: 12 }] }, gifts: [{ at: 120, label: "Pochette offerte" }] } as any);
+    saveCompany(pid, { shipping: "Livraison en 2 à 4 jours, offerte dès 60 €", returns: "Retours acceptés sous 30 jours" } as any);
+    await call("theme.family", ctx, { family: "classique" });
+    expect((await call("custom.compose", ctx, fullSite("classique"))).ok).toBe(true);
+    const { renderCustomTheme } = await import("@/lib/syna-agent/custom-theme/render");
+    const { loadProject } = await import("@/lib/projects");
+    const html = renderCustomTheme(loadProject(pid), loadCustomTheme(pid)!, { nonce: "n" });
+    const tag = /<div[^>]*data-pvb[^>]*>/.exec(html)![0];
+    expect(tag).toContain('data-base="99"'); // prix barré : le bloc part de 99 € et applique la vraie remise (89 € payés)
+    expect(tag).toContain('data-name="Sac Lune"');
+    const cfg = JSON.parse(/data-cfg="([^"]*)"/.exec(tag)![1].replace(/&quot;/g, '"').replace(/&amp;/g, "&"));
+    expect(99 * (1 - cfg.promoPct / 100)).toBeCloseTo(89, 5);
+    expect(cfg.colors.map((c: string[]) => c[0])).toEqual(["Noir", "Cognac"]);
+    expect(cfg.lots).toEqual([[2, 12]]);
+    expect(cfg.tiers.map((x: unknown[]) => x[0])).toEqual([60, 120]); // livraison offerte (sa réponse) + son cadeau
+    expect(cfg.promoEnd).toBeUndefined(); // prix barré : aucun compte à rebours
+    const block = html.slice(html.indexOf(tag), html.indexOf("</section>", html.indexOf(tag)));
+    expect(block).not.toMatch(/couleurs d'exemple|Retours sous 14 jours|Thé vert jasmin|l'offre se termine dans/);
+    expect(block).toMatch(/Livraison offerte dès 60 €[^]*Retours sous 30 jours/);
+    expect(block).toContain("Prix réduit : −10 %");
+  });
 
   it("conception : le Studio conçoit tout le site (parcours, objections, pourquoi chaque section), une correction si une règle est enfreinte", async () => {
     const { ctx, pid } = await project();

@@ -812,7 +812,7 @@
   var H=document.documentElement,D=H.dataset;
   // réglages de départ (ce que la fiche produit de Brindi propose)
   if(!D.poInit){D.poInit="1";D.poCouleur="0";D.poPromo="0";D.poAbo="1";D.poRituel="1";D.poPaliers="1";D.poOffre="lots";D.poGamme="1";D.poLivraison="1";D.poFidelite="0";D.poTaille="1"}
-  var PROMO_END=Date.now()+((2*24+5)*60+14)*60000;
+  var PROMO_END=Date.now()+((2*24+5)*60+14)*60000;document.querySelectorAll("[data-pvb]").forEach(function(e){try{var x=JSON.parse(e.dataset.cfg||"null");if(x&&x.promoEnd)PROMO_END=x.promoEnd}catch(err){}});
   var COLORS=[["Sauge","#A7B9A0"],["Terracotta","#C58463"],["Nuit","#2E3B4E"],["Sable","#D8C4A6"]];
   var all=[];
   // la gamme du client (fiche de chaque produit dans le Studio ; prix d'exemple)
@@ -830,14 +830,14 @@
     var st={base:+el.dataset.base,name:el.dataset.name,unit:el.dataset.unit||"sachet",q:1,sub:false,w:4,color:0,rit:[false,false],pts:-1},got={},sec0=el.closest("section");
     var cfg=null;try{cfg=JSON.parse(el.dataset.cfg||"null")}catch(e){}
     var COL=cfg&&cfg.colors||COLORS,GAM=cfg&&cfg.gamme||GAMME,SZ=cfg&&cfg.sizes||null,TI=cfg&&cfg.tiers||null;st.size=null;
-    function gsrc(g){return "photos/"+g[0]+(/\./.test(g[0])?"":".jpg")}
+    function src(f){return /^(\/|data:|https?:)/.test(f)?f:"photos/"+f}function gsrc(g){return /^(\/|data:|https?:)/.test(g[0])?g[0]:"photos/"+g[0]+(/\./.test(g[0])?"":".jpg")}
     function overlay(src,alt,on){if(!sec0)return;qa("[data-pomain]",sec0).forEach(function(m){var ov=q("img.po-ov",m);if(!on){if(ov)ov.remove();m.classList.remove("po-solo");return}
       if(!ov){ov=document.createElement("img");ov.className="po-ov";m.appendChild(ov)}ov.src=src;ov.alt=alt;ov.classList.remove("po-swap");void ov.offsetWidth;ov.classList.add("po-swap");m.classList.add("po-solo")});qa("[data-pothumbs]",sec0).forEach(function(t){t.hidden=on})}
     var gi=Math.max(0,GAM.findIndex(function(g){return g[1]===st.name}));
     function units(n){return n+" "+st.unit+(n>1?"s":"")}
     function ritItems(){if(cfg&&cfg.bundle)return cfg.bundle;var other=/jasmin/i.test(st.name)?["camomille.jpg","Camomille-tilleul",7.5]:["jasmin.jpg","Thé vert jasmin",8.5];return [["infuseur.jpg","Infuseur inox",12],other]}
     q("[data-posw]",el).innerHTML=COL.map(function(c,i){return '<button type="button" style="--c:'+c[1]+'" aria-label="'+c[0]+'" aria-pressed="'+(i===0)+'" data-i="'+i+'"></button>'}).join("");
-    var gm=q("[data-pogam]",el);if(gm)gm.innerHTML=GAM.map(function(g,i){return '<button type="button" data-g="'+i+'" aria-pressed="'+(i===gi)+'"><img src="'+gsrc(g)+'" alt="">'+g[1]+'</button>'}).join("");
+    var gm=q("[data-pogam]",el);if(gm)gm.innerHTML=GAM.map(function(g,i){return '<button type="button" data-g="'+i+'" aria-pressed="'+(i===gi)+'">'+(g[0]?'<img src="'+gsrc(g)+'" alt="">':"")+g[1]+'</button>'}).join("");
     // change de produit : photo, nom, famille et description du produit choisi (repères data-po* de la section)
     var gi0=gi;
     function nm(n){var k=n.lastIndexOf(" "),h=n.lastIndexOf("-"),c=Math.max(k,h);return c<0?n:n.slice(0,c+1)+"<em>"+n.slice(c+1)+"</em>"}
@@ -852,25 +852,25 @@
         qa("[data-poword]",sec0).forEach(function(e){if(!e.dataset.o)e.dataset.o=e.textContent;e.textContent=solo?(g[5]||String(g[1]).split(" ").pop()):e.dataset.o})}
       qa("[data-pogam] button",el).forEach(function(b){b.setAttribute("aria-pressed",String(+b.dataset.g===i))});st.base=g[2];st.name=g[1];drawRit();draw(true)}
     var zs=q("[data-poszs]",el);if(zs&&SZ)zs.innerHTML=SZ.map(function(z){return '<button type="button" data-z="'+z+'" aria-pressed="false">'+z+'</button>'}).join("");
-    function drawRit(){q("[data-pori]",el).innerHTML=ritItems().map(function(r,i){return '<label class="po-ri"><input type="checkbox" data-r="'+i+'"'+(st.rit[i]?" checked":"")+'><img src="photos/'+r[0]+'" alt=""><span>'+r[1]+'</span><b>'+eur(r[2])+'</b></label>'}).join("")}
-    function priceFor(n,unit){var of=D.poOffre;if(of==="lots"){return unit*n*(n===2?.9:n===3?.85:1)}if(of==="bogo"){return unit*(n===3?2:n)}return unit*n}
-    function calc(){var unit=st.base*(D.poPromo==="1"?.85:1)*(D.poAbo==="1"&&st.sub?.9:1),prod=priceFor(st.q,unit),orig=st.base*st.q,rit=0,ritO=0;
-      if(D.poRituel==="1"){var it=ritItems(),on=0;st.rit.forEach(function(c,i){if(c){rit+=it[i][2];on++}});ritO=rit;if(on===2)rit*=.9}
+    function drawRit(){q("[data-pori]",el).innerHTML=ritItems().map(function(r,i){return '<label class="po-ri"><input type="checkbox" data-r="'+i+'"'+(st.rit[i]?" checked":"")+'><img src="'+src(r[0])+'" alt=""><span>'+r[1]+'</span><b>'+eur(r[2])+'</b></label>'}).join("")}
+    function lotPct(n){if(cfg&&cfg.lots){var t=cfg.lots.filter(function(x){return x[0]<=n}).pop();return t?t[1]/100:0}return n===2?.1:n===3?.15:0}function bogo(){return cfg&&cfg.bogo?cfg.bogo:[2,1]}function priceFor(n,unit){var of=D.poOffre;if(of==="lots"){return unit*n*(1-lotPct(n))}if(of==="bogo"){var b=bogo();return unit*(n-Math.floor(n/(b[0]+b[1]))*b[1])}return unit*n}
+    function calc(){var unit=st.base*(D.poPromo==="1"?1-(cfg&&cfg.promoPct!=null?cfg.promoPct:15)/100:1)*(D.poAbo==="1"&&st.sub?1-(cfg&&cfg.subPct!=null?cfg.subPct:10)/100:1),prod=priceFor(st.q,unit),orig=st.base*st.q,rit=0,ritO=0;
+      if(D.poRituel==="1"){var it=ritItems(),on=0;st.rit.forEach(function(c,i){if(c){rit+=it[i][2];on++}});ritO=rit;if(on&&on===it.length)rit*=1-(cfg&&cfg.bundlePct!=null?cfg.bundlePct:10)/100}
       return {tot:prod+rit,orig:orig+ritO}}
     function draw(pop){var of=D.poOffre;
-      q("[data-poq]",el).innerHTML=[1,2,3].map(function(n){var lab=of==="lots"?(n===2?"−10 %":n===3?"−15 %":eur(st.base)):of==="bogo"?(n===3?"1 offert":eur(st.base*n)):eur(st.base*n),tag=of==="bogo"&&n===3?"<i>2 + 1 offert</i>":of==="lots"&&n===3?"<i>Meilleur prix</i>":"";
+      q("[data-poq]",el).innerHTML=[1,2,3].map(function(n){var lp=Math.round(lotPct(n)*100),bg=bogo(),fr=Math.floor(n/(bg[0]+bg[1]))*bg[1],lab=of==="lots"?(lp?"−"+lp+" %":eur(st.base)):of==="bogo"?(fr?fr+" offert"+(fr>1?"s":""):eur(st.base*n)):eur(st.base*n),tag=of==="bogo"&&fr?"<i>"+bg[0]+" + "+bg[1]+" offert"+(bg[1]>1?"s":"")+"</i>":of==="lots"&&n===3&&lp?"<i>Meilleur prix</i>":"";
         return '<button type="button" data-q="'+n+'" aria-pressed="'+(st.q===n)+'">'+tag+'<b>'+units(n)+'</b><small>'+lab+'</small></button>'}).join("");
       var c=calc();q("[data-pon]",el).textContent=eur(c.tot);var o=q("[data-poo]",el),b=q("[data-pob]",el),save=c.orig-c.tot;o.hidden=save<.01;o.textContent=eur(c.orig);b.hidden=save<.01;b.textContent="Économise "+eur(save);
       var pt=q("[data-pot]",el);if(pt)pt.textContent=eur(c.tot);var gn=q("[data-pogn]",el);if(gn)gn.textContent=st.name;
-      var dl=q("[data-podl]",el);if(dl)dl.innerHTML=shipLine();var fi=q("[data-pofi]",el),pts=Math.floor(c.tot);if(fi){fi.innerHTML="Tu gagnes <b>"+pts+" point"+(pts>1?"s":"")+"</b> de fidélité avec cet achat<br><small>1 point par euro · 100 points = 5 € offerts (programme d'exemple)</small>";if(pts!==st.pts&&st.pts>=0){var bb=q("b",fi);bb.classList.add("pop")}st.pts=pts}q("[data-poc]",el).textContent=COL[st.color][0];
+      var dl=q("[data-podl]",el);if(dl)dl.innerHTML=shipLine();var LY=cfg&&cfg.loyalty,fi=q("[data-pofi]",el),pts=Math.floor(c.tot*(LY?LY.per:1));if(fi){fi.innerHTML="Tu gagnes <b>"+pts+" point"+(pts>1?"s":"")+"</b> de fidélité avec cet achat<br><small>"+(LY?LY.per+" point"+(LY.per>1?"s":"")+" par euro · "+LY.reward+" points = "+LY.label:"1 point par euro · 100 points = 5 € offerts (programme d'exemple)")+"</small>";if(pts!==st.pts&&st.pts>=0){var bb=q("b",fi);bb.classList.add("pop")}st.pts=pts}q("[data-poc]",el).textContent=COL[st.color][0];
       var tg=q("[data-potg]",el);tg.classList.toggle("sub",st.sub);qa("button",tg).forEach(function(x){x.setAttribute("aria-pressed",String(+x.dataset.s===(st.sub?1:0)))});
-      var T2=TI?TI[1][0]:35;q("[data-pogb]",el).style.width=Math.min(100,c.tot/T2*100)+"%";
+      var T2=TI?TI[TI.length-1][0]:35;q("[data-pogb]",el).style.width=Math.min(100,c.tot/T2*100)+"%";
       qa(".po-gl span",el).forEach(function(s){var at=+s.dataset.at,ok=c.tot>=at;s.classList.toggle("ok",ok);if(ok&&!got[at]&&pop){s.classList.remove("pogp");void s.offsetWidth;s.classList.add("pogp")}got[at]=ok});
-      q("[data-pogm]",el).innerHTML=TI?(c.tot<TI[0][0]?"Plus que <b>"+eur(TI[0][0]-c.tot)+"</b> pour "+TI[0][1]+".":c.tot<TI[1][0]?TI[0][2]+" ✓ · plus que <b>"+eur(TI[1][0]-c.tot)+"</b> pour "+TI[1][1]+".":TI[0][2]+" et "+TI[1][2].toLowerCase()+" ✓"):c.tot<20?"Plus que <b>"+eur(20-c.tot)+"</b> pour un échantillon offert.":c.tot<35?"Échantillon offert ✓ · plus que <b>"+eur(35-c.tot)+"</b> pour la livraison offerte.":"Échantillon et livraison offerts ✓"}
+      q("[data-pogm]",el).innerHTML=TI?(function(){var nx=TI.filter(function(x){return c.tot<x[0]})[0],ok=TI.filter(function(x){return c.tot>=x[0]}).map(function(x){return x[2]});return nx?(ok.length?ok.join(" · ")+" ✓ · plus que ":"Plus que ")+"<b>"+eur(nx[0]-c.tot)+"</b> pour "+nx[1]+".":ok.join(" et ")+" ✓"})():c.tot<20?"Plus que <b>"+eur(20-c.tot)+"</b> pour un échantillon offert.":c.tot<35?"Échantillon offert ✓ · plus que <b>"+eur(35-c.tot)+"</b> pour la livraison offerte.":"Échantillon et livraison offerts ✓"}
     el.addEventListener("click",function(e){var t=e.target.closest("button");if(!t||!el.contains(t))return;
       if(t.dataset.q){st.q=+t.dataset.q;draw(true)}
       else if(t.dataset.g!==undefined){pick(+t.dataset.g)}
-      else if(t.parentNode.hasAttribute("data-posw")){st.color=+t.dataset.i;qa("[data-posw] button",el).forEach(function(x){x.setAttribute("aria-pressed",String(x===t))});var cc=COL[st.color];if(cc[2])overlay("photos/"+cc[2],cc[0],st.color!==0);draw()}
+      else if(t.parentNode.hasAttribute("data-posw")){st.color=+t.dataset.i;qa("[data-posw] button",el).forEach(function(x){x.setAttribute("aria-pressed",String(x===t))});var cc=COL[st.color];if(cc[2])overlay(src(cc[2]),cc[0],st.color!==0);draw()}
       else if(t.dataset.z!==undefined){st.size=t.dataset.z;qa("[data-poszs] button",el).forEach(function(x){x.setAttribute("aria-pressed",String(x===t))});q("[data-posz]",el).textContent=st.size;var zm=q("[data-poszm]",el);zm.textContent="";zm.classList.remove("ko")}
       else if(t.parentNode.hasAttribute("data-potg")){st.sub=t.dataset.s==="1";draw(true)}
       else if(t.parentNode.hasAttribute("data-pofq")){st.w=+t.dataset.w;qa("[data-pofq] button",el).forEach(function(x){x.setAttribute("aria-pressed",String(x===t))})}

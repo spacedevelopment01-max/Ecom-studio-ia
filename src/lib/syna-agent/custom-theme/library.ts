@@ -109,6 +109,24 @@ export const onlyFor = (tags: string[] | undefined) => (tags ?? []).map((t) => O
 export const isCardSection = (l: Pick<LibSection, "role" | "title">) => l.role === "produits" || CARD_FAMILIES.has(l.title);
 export const FEATURED_ROLE = "produit vedette";
 
+/**
+ * Photos que SINA ne peut pas inventer (décision du propriétaire du 9 novembre 2026, exigence 6.8) : les réalisations et
+ * l'avant/après d'un artisan, les photos publiées par ses clients, les biens mis en vente. Seules les vraies photos du
+ * client y vont ; tant qu'elles manquent, un cadre « Photo à fournir » les remplace dans l'aperçu.
+ */
+const AUTHENTIC_SECTIONS: Record<string, { kind: string; services?: boolean }> = {
+  "realisations-filtrables": { kind: "tes réalisations" }, "projet-en-detail": { kind: "tes réalisations" },
+  "avant-apres": { kind: "ton avant / après", services: true }, "vus-dans-la-rue": { kind: "les photos de tes clients" },
+  "recherche-de-biens": { kind: "tes biens" }, "fiche-d-un-bien": { kind: "tes biens" },
+};
+/** Nature d'une photo impossible à inventer dans cette section, ou null (photo que SINA peut créer). */
+export function authenticSection(id: string, business: "products" | "services"): string | null {
+  const a = AUTHENTIC_SECTIONS[id];
+  return a && (!a.services || business === "services") ? a.kind : null;
+}
+/** Sections où une photo de produit est la VRAIE photo du produit (cartes, bloc d'achat), jamais une scène créée. */
+export const isProductPhotoSection = (l: Pick<LibSection, "role" | "title">) => isCardSection(l) || l.role === FEATURED_ROLE;
+
 /** Photos de démonstration citées par une section (avec ou sans dossier). */
 export function sectionPhotos(html: string): string[] {
   return [...new Set([...html.matchAll(/\/api\/files\/([\w-]+)|\b([a-z]{2,}-[a-z0-9]+\.(?:webp|png|jpg)|[a-z]+\.jpg)\b/g)].map((m) => m[1] ? `fichier:${m[1]}` : m[2]))];

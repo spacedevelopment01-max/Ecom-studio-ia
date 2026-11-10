@@ -13,7 +13,8 @@ import { assetUrl } from "../../library";
 import { fontOf, fontsCss } from "../mockup-code/code-mockup";
 import { decideBuyFeatures, deliveryFrom, freeShippingFrom, loadShopOffers, type BuyFeatures } from "../product-features";
 import { companyOf } from "../activity";
-import { DEMO_BRANDS, inversionClass, LIBRARY_DIR, sectionLibrary, withBrandName } from "./library";
+import { buyBlockData, withRealBuyBlock } from "./buy-block";
+import { authenticSection, DEMO_BRANDS, inversionClass, LIBRARY_DIR, sectionLibrary, withBrandName } from "./library";
 import { allSections, sectionHtml, type CtSection, type CustomTheme } from "./theme";
 import { all } from "../../db";
 
@@ -124,10 +125,21 @@ function linkMap(t: CustomTheme): Record<string, string> {
   return out;
 }
 
+/**
+ * Cadre « Photo à fournir » (exigence 6.8) : à la place d'une photo d'exemple que SINA ne peut pas inventer
+ * (réalisations, photos de clients, biens), jamais la photo d'une autre marque présentée comme celle du client.
+ */
+export function provideFrame(kind: string): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200"><rect width="1200" height="1200" fill="#EEEAE3"/><rect x="40" y="40" width="1120" height="1120" fill="none" stroke="#9A9184" stroke-width="6" stroke-dasharray="26 18"/><text x="600" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="84" font-weight="700" fill="#2B2722">Photo à fournir</text><text x="600" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-size="46" fill="#4A443C">SINA ne peut pas inventer ${esc(kind)}.</text><text x="600" y="720" text-anchor="middle" font-family="Arial, sans-serif" font-size="40" fill="#6B6359">Envoie ta vraie photo avec le trombone.</text></svg>`;
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+}
+
 /** HTML d'une section du thème, marqué de son identifiant (désignation, règles propres). */
-export function sectionMarkup(s: CtSection, brandName: string, role: string): string {
+export function sectionMarkup(s: CtSection, brandName: string, role: string, business: "products" | "services" = "products"): string {
   // Textes du client : jamais touchés (« Au solstice d'été, rupture de stock » restait abîmé, audit du 10 novembre 2026).
-  const html = s.clientTexts ? sectionHtml(s) : withBrandName(sectionHtml(s), brandName);
+  let html = s.clientTexts ? sectionHtml(s) : withBrandName(sectionHtml(s), brandName);
+  const authentic = authenticSection(s.id, business);
+  if (authentic) { const frame = provideFrame(authentic); html = html.replace(/(?:\.\/)?photos\/[\w-]+\.(?:webp|png|jpe?g)/g, frame); }
   const marked = html.replace(/^\s*<(section|footer)\b/, `<$1 data-ct="${s.uid}" data-ct-role="${role}"${s.clientTexts ? " data-ct-own" : ""}`);
   // Fond voulu différent du fond d'origine (section inversable) : enveloppe sans effet sur la mise en page.
   const inv = inversionClass(s.id, s.ground);
@@ -300,7 +312,7 @@ function projectAddress(projectId: string): string | null {
   try { const row = all<{ settings_json: string }>("SELECT settings_json FROM projects WHERE id=?", projectId)[0]; const a = row ? (JSON.parse(row.settings_json || "{}").company?.address ?? "") : ""; return typeof a === "string" && a.trim() ? a.trim() : null; } catch { return null; }
 }
 
-export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand">, t: CustomTheme, o: RenderOptions = {}): string {
+export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand"> & { business?: Project["business"] }, t: CustomTheme, o: RenderOptions = {}): string {
   const lib = sectionLibrary();
   templates ??= read("templates.html");
   const name = p.brand?.name || p.name || "";
@@ -308,10 +320,12 @@ export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand">, t: 
   const own = allSections(t).filter((x) => x.s.css).map((x) => x.s.css!).join("\n");
   const sampleTexts = allSections(t).some((x) => !x.s.clientTexts);
   const flags = buyFlags(featuresOf(p.id));
+  // Bloc d'achat : les vraies données du produit du client (jamais les prix et remises d'exemple de la bibliothèque).
+  const buy = (() => { try { return buyBlockData(p.id); } catch { return null; } })();
   const pre = `window.TB_MAP=${JSON.stringify(linkMap(t))};window.CT_NAME=${JSON.stringify(name)};window.CT_DEMO=${JSON.stringify(DEMO_BRANDS.flatMap((d) => [d, d.toUpperCase()]).map((d) => d.replace(/\s+/g, "\\s+")))};window.CT_LOGO=${JSON.stringify(p.brand?.logo?.assetId ? assetUrl({ id: p.brand.logo.assetId }) : null)};(function(D){var F=${JSON.stringify(flags)};for(var k in F)D[k]=F[k]})(document.documentElement.dataset);`;
   const bar = t.pages.map((pg, i) => `<button type="button" data-pgb="${esc(pg.key)}" aria-pressed="${i === 0}">${esc(pg.label)}</button>`).join("");
   const address = projectAddress(p.id);
-  const body = t.pages.map((pg, i) => `<main class="tb-pg" data-pg="${esc(pg.key)}"${i ? " hidden" : ""}>${pg.sections.map((s) => realMap(sectionMarkup(s, name, "page"), address)).join("\n")}</main>`).join("\n");
+  const body = t.pages.map((pg, i) => `<main class="tb-pg" data-pg="${esc(pg.key)}"${i ? " hidden" : ""}>${pg.sections.map((s) => realMap(withRealBuyBlock(sectionMarkup(s, name, "page", p.business === "services" ? "services" : "products"), buy), address)).join("\n")}</main>`).join("\n");
   const shell = (s: CtSection | null, place: string) => (s ? sectionMarkup(s, name, roleOf(place)) : "");
   const title = o.title ?? `${name} — thème sur mesure`;
   const n = o.nonce ? ` nonce="${esc(o.nonce)}"` : "";

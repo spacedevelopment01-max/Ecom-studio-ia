@@ -28,7 +28,7 @@ import { angleDetails, COPY_MODEL } from "../mockup-code/copy";
 import { codePhotoPrompt } from "../mockup-code/code-mockup";
 import { hdAspect } from "../mockup-code/prompts";
 import { mockupImageRoute } from "../mockup-code/tools";
-import { libSection, withBrandName } from "./library";
+import { authenticSection, isProductPhotoSection, libSection, withBrandName } from "./library";
 import { allSections, loadCustomTheme, pushCustomThemeHistory, replaceOnce, saveCustomTheme, sectionHtml, type CustomTheme } from "./theme";
 
 export const CUSTOM_BRAND_JOB = "syna.custom.brand";
@@ -184,13 +184,25 @@ export function applyWrite(html: string, w: SectionWrite): { html: string; faile
   return { html: out, failed, applied };
 }
 
-/** Emplacements de photos encore d'exemple dans le thème (une photo par emplacement, dédoublonnés par section). */
-export function photoSlots(t: CustomTheme): { uid: string; place: string; section: string; file: string }[] {
+/**
+ * Emplacements de photos encore d'exemple dans le thème (une photo par emplacement, dédoublonnés par section), classés
+ * (audit du 10 novembre 2026, « le nombre exact ») : « produit » (cartes et bloc d'achat : la vraie photo du produit
+ * quand il en a une), « a-fournir » (impossible à inventer : seule une vraie photo du client va là), « ambiance » (photo
+ * que SINA peut créer).
+ */
+export type PhotoSlot = { uid: string; place: string; section: string; file: string; kind: "produit" | "a-fournir" | "ambiance"; authentic?: string };
+export function photoSlots(t: CustomTheme, site: { business?: "products" | "services"; productPhotos?: boolean } = {}): PhotoSlot[] {
+  const business = site.business ?? "products";
   // Les cartes (plan d'adresse) ne sont jamais des photos à créer : la vraie carte s'ouvre à l'adresse du client.
-  return allSections(t).flatMap((x) => [...new Set([...sectionHtml(x.s).matchAll(/photos\/([\w-]+\.(?:webp|png|jpg))/g)].map((m) => m[1]).filter((f) => !/^(carte|map|plan)-/.test(f)))]
-    .map((file) => ({ uid: x.s.uid, place: x.page?.label ?? x.place, section: libSection(x.s.id)?.title ?? x.s.id, file })));
+  return allSections(t).flatMap((x) => {
+    const l = libSection(x.s.id), authentic = authenticSection(x.s.id, business);
+    const kind: PhotoSlot["kind"] = authentic ? "a-fournir" : l && site.productPhotos && isProductPhotoSection(l) ? "produit" : "ambiance";
+    return [...new Set([...sectionHtml(x.s).matchAll(/photos\/([\w-]+\.(?:webp|png|jpg))/g)].map((m) => m[1]).filter((f) => !/^(carte|map|plan)-/.test(f)))]
+      .map((file) => ({ uid: x.s.uid, place: x.page?.label ?? x.place, section: l?.title ?? x.s.id, file, kind, ...(authentic ? { authentic } : {}) }));
+  });
 }
-export const examplePhotoCount = (t: CustomTheme): number => photoSlots(t).length;
+/** Photos que le client peut envoyer ou que SINA peut créer : les photos d'ambiance (le reste a sa propre source). */
+export const examplePhotoCount = (t: CustomTheme, site: { business?: "products" | "services"; productPhotos?: boolean } = {}): number => photoSlots(t, site).filter((x) => x.kind === "ambiance").length;
 
 /**
  * Nom d'une photo créée pour le site : la page et ce qu'elle montre (essai réel du 9 novembre : nommées d'après la photo
@@ -265,7 +277,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
   // rewrite : le client n'aime pas les textes, tout le site est réécrit (sinon seules les sections encore d'exemple).
   const sections = allSections(t).filter((x) => a.rewrite || !x.s.clientTexts);
   const writer = siteCopyModel();
-  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, problems: [] as string[], redacteur: `${writer.provider}:${writer.model}` };
+  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, photosToProvide: 0, problems: [] as string[], redacteur: `${writer.provider}:${writer.model}` };
   const briefs: Record<string, SectionWrite["photos"]> = {};
 
   // Un seul point d'annulation pour tout le montage : « Annuler » revient au thème d'avant le montage.
@@ -335,8 +347,12 @@ export async function runCustomBrandJob(ctx: JobContext) {
     const todo = Object.entries(briefs).flatMap(([uid, list]) => list.map((ph) => ({ uid, ph }))).filter((x) => !/(^|\/)(carte|map|plan)-[\w-]*\.(?:webp|png|jpe?g)/.test(x.ph.find));
     const mode: ImagesMode = a.images ?? "sina";
     // Images du client d'abord (« client » ou « mix »), dans l'ordre ; jamais une même image sur deux emplacements.
-    const own = mode === "sina" ? [] : (a.clientAssets ?? []).filter((id) => { const x = getAsset(id); return !!x && x.project_id === p.id && !x.deleted_at && x.kind === "image"; });
-    let next = 0;
+    const allOwn = (a.clientAssets ?? []).filter((id) => { const x = getAsset(id); return !!x && x.project_id === p.id && !x.deleted_at && x.kind === "image"; });
+    const own = mode === "sina" ? [] : allOwn;
+    // Ses images vont d'abord aux photos impossibles à inventer, les suivantes aux photos d'ambiance.
+    const isAuthentic = (uid: string) => { const y = allSections(loadCustomTheme(p.id)!).find((z) => z.s.uid === uid); return !!y && !!authenticSection(y.s.id, p.business === "services" ? "services" : "products"); };
+    const reserved = Math.min(allOwn.length, todo.filter((x) => isAuthentic(x.uid)).length);
+    let nextA = 0, next = reserved;
     for (const [i, { uid, ph }] of todo.entries()) {
       ctx.progress(0.5 + (0.48 * i) / Math.max(1, todo.length), L(`Photos : ${i + 1} sur ${todo.length}`, `Photos: ${i + 1} of ${todo.length}`));
       const file = ph.find.replace(/^.*\//, "");
@@ -344,10 +360,26 @@ export async function runCustomBrandJob(ctx: JobContext) {
       const here = allSections(loadCustomTheme(p.id)!).find((y) => y.s.uid === uid);
       if (!here || !sectionHtml(here.s).includes(ph.find)) continue;
       try {
-        const real = ph.product ? products.find((x) => x.data.title.trim().toLowerCase() === ph.product!.trim().toLowerCase())?.data.images[0]?.assetId : undefined;
-        const mine = !(real && getAsset(real)) && next < own.length ? own[next++] : undefined;
-        if (!(real && getAsset(real)) && !mine && mode === "client") { report.problems.push(`photo ${file} : aucune image du client pour cet emplacement`); continue; }
-        const assetId = real && getAsset(real) ? real : mine ? mine : await ctx.step(`photo:${uid}:${file}`, async () => {
+        const lib = libSection(here.s.id);
+        // Photo impossible à inventer (réalisations, photos de clients, biens…) : seule une vraie photo du client va là,
+        // quel que soit son choix d'images ; sinon elle reste à fournir (cadre « Photo à fournir » dans l'aperçu).
+        const authentic = authenticSection(here.s.id, p.business === "services" ? "services" : "products");
+        if (authentic) {
+          const given = nextA < reserved ? allOwn[nextA++] : undefined;
+          if (!given) { report.photosToProvide++; continue; }
+          report.photosClient++;
+          t = loadCustomTheme(p.id)!;
+          const cur0 = allSections(t).find((y) => y.s.uid === uid);
+          if (cur0) { cur0.s.html = sectionHtml(cur0.s).split(ph.find).join(assetUrl({ id: given })); t = saveCustomTheme(p.id, t, { history: false }); }
+          continue;
+        }
+        // La vraie photo du produit telle quelle seulement sur sa carte ou dans le bloc d'achat ; ailleurs (ouverture,
+        // ambiance), une scène est créée avec elle en référence (audit du 10 novembre 2026 : le même packshot partout).
+        const realId = ph.product ? products.find((x) => x.data.title.trim().toLowerCase() === ph.product!.trim().toLowerCase())?.data.images[0]?.assetId : undefined;
+        const real = realId && lib && isProductPhotoSection(lib) && getAsset(realId) ? realId : undefined;
+        const mine = !real && next < own.length ? own[next++] : undefined;
+        if (!real && !mine && mode === "client") { report.problems.push(`photo ${file} : aucune image du client pour cet emplacement`); continue; }
+        const assetId = real ? real : mine ? mine : await ctx.step(`photo:${uid}:${file}`, async () => {
           const prodRef = ph.product ? products.find((x) => x.data.title.trim().toLowerCase() === ph.product!.trim().toLowerCase())?.data.images[0]?.assetId : undefined;
           const ref = prodRef ? getAsset(prodRef) : undefined;
           const place = textPlacementLine(sectionHtml(here.s), ph.find, libSection(here.s.id)?.does ?? "");
