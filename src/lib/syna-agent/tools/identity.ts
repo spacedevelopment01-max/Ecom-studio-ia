@@ -10,7 +10,7 @@ import { L } from "../../i18n-server";
 import { loadProject, remember, saveBrand } from "../../projects";
 import { assetData, getAsset } from "../../library";
 import { localBrand } from "../../engine/local";
-import { llmJson, type LlmImage } from "../../ai/llm";
+import { estimateCallMicro, llmJson, type LlmImage } from "../../ai/llm";
 import { withTrace } from "../../ai/trace";
 import type { Brand } from "../../project-types";
 import type { AgentTool, ToolContext } from "../types";
@@ -23,8 +23,15 @@ import {
 } from "../identities";
 import { project, short } from "./common";
 
-/** Plafond d'une proposition (micro-euros) : création + une reprise au plus. Un essai coûte en général bien moins. */
+/** Plafond d'une proposition (micro-euros), création ET reprise éventuelle comprises (jamais dépassé au total). */
 export const IDENTITY_CAP_MICRO = 600_000;
+/**
+ * Coût probable d'une proposition (un essai, sans reprise) : tarif du modèle sur le déroulé habituel (consigne et fiche
+ * d'environ 14 000 jetons, réponse d'environ 12 000 avec la réflexion). C'est le devis montré au client.
+ */
+export function identityProbableMicro(): number | undefined {
+  try { return estimateCallMicro(IDENTITY_MODEL.provider, IDENTITY_MODEL.model, 14_000, 12_000) ?? undefined; } catch { return undefined; }
+}
 /** Modèle de la création des identités : le plus fort (consigne n° 1 du propriétaire : niveau 2026). */
 export const IDENTITY_MODEL = { provider: "anthropic" as const, model: "claude-opus-5-5", effort: "medium" };
 
@@ -46,7 +53,7 @@ function keptLogoImage(ctx: ToolContext, j: Journey): LlmImage[] {
   return [];
 }
 
-async function generate(ctx: ToolContext, j: Journey, opts: { guidance?: string; redo?: Key[]; previous?: Identity[]; namesOnly?: boolean }, attempt: number, feedback?: string[]) {
+async function generate(ctx: ToolContext, j: Journey, opts: { guidance?: string; redo?: Key[]; previous?: Identity[]; namesOnly?: boolean }, attempt: number, capMicro: number, feedback?: string[]) {
   const jobId = getRun(ctx.runId)?.job_id ?? null;
   const call = {
     task: "strategy" as const, userId: ctx.user.id, projectId: ctx.projectId, jobId,
@@ -60,8 +67,7 @@ async function generate(ctx: ToolContext, j: Journey, opts: { guidance?: string;
     routing: { difficulty: "complex" as const, prefer: IDENTITY_MODEL },
   };
   if (identityDeps.generate) return IdentitiesSchema.parse(prepareIdentities(await identityDeps.generate(call)));
-  const cap = (jobId ? jobSpentMicro(jobId) : 0) + IDENTITY_CAP_MICRO;
-  return withTrace({ jobId, projectId: ctx.projectId, step: "identity", costCapMicro: cap }, () => llmJson(call, IdentitiesSchema));
+  return withTrace({ jobId, projectId: ctx.projectId, step: "identity", costCapMicro: capMicro }, () => llmJson(call, IdentitiesSchema));
 }
 
 /** Vue courte d'une identité (lue par SINA et montrée dans le fil). */
@@ -81,9 +87,9 @@ export function keepAllButNames(fresh: Identity[], previous: Identity[]): Identi
 
 const proposeTool: AgentTool<{ guidance?: string; redo?: Key[]; only?: "noms" }> = {
   name: "identity.propose", module: "marque", kind: "generate", needsProject: true,
-  description: "Étape 1 : crée 3 identités de marque VRAIMENT différentes (nom, slogan, promesse, territoire, palette, polices, ton, idée de logo) à partir de la fiche de départ, avec Claude (modèle fort), puis les contrôle. Payant (une proposition coûte en général moins de 1 % du budget IA). À appeler quand le client est prêt, ou quand il demande une nouvelle proposition : guidance = ce qu'il veut de différent (ses mots) ; redo = les identités à refaire (les autres restent identiques) ; only « noms » = refaire seulement les noms et les slogans (couleurs, polices et le reste gardés). Les cartes des identités s'affichent dans le fil.",
+  description: "Étape 1 : crée 3 identités de marque VRAIMENT différentes (nom, slogan, promesse, territoire, palette, polices, ton, idée de logo) à partir de la fiche de départ, avec Claude (modèle fort), puis les contrôle. Payant : le Studio montre le devis au client (carte d'accord) avant de lancer. À appeler quand le client est prêt, ou quand il demande une nouvelle proposition : guidance = ce qu'il veut de différent (ses mots) ; redo = les identités à refaire (les autres restent identiques) ; only « noms » = refaire seulement les noms et les slogans (couleurs, polices et le reste gardés). Les cartes des identités s'affichent dans le fil.",
   args: z.object({ guidance: z.string().max(1500).optional(), redo: z.array(z.enum(KEYS)).min(1).max(3).optional(), only: z.enum(["noms"]).optional() }).strict(),
-  estimate: () => ({ maxMicro: IDENTITY_CAP_MICRO, label: "3 identités de marque" }),
+  estimate: () => ({ maxMicro: IDENTITY_CAP_MICRO, probableMicro: identityProbableMicro(), label: "3 identités de marque" }),
   run: async (ctx, a) => {
     project(ctx);
     const j = journeyOf(ctx.conversationId);
@@ -94,9 +100,12 @@ const proposeTool: AgentTool<{ guidance?: string; redo?: Key[]; only?: "noms" }>
     updateJourney(ctx.conversationId, (x) => setStep(x, 1, "doing"));
     let out: { identities: Identity[]; comparison: string };
     let issues: string[] = [], firstIssues: string[] = [];
+    // Plafond commun aux deux essais (audit du 10 novembre 2026 : chacun recevait le plafond entier, jusqu'à 2 fois le devis).
+    const runJob = getRun(ctx.runId)?.job_id ?? null;
+    const capTotal = (runJob ? jobSpentMicro(runJob) : 0) + IDENTITY_CAP_MICRO;
     try {
       const namesOnly = a.only === "noms";
-      out = await generate(ctx, j, { guidance: a.guidance, redo: a.redo, previous, namesOnly }, 1);
+      out = await generate(ctx, j, { guidance: a.guidance, redo: a.redo, previous, namesOnly }, 1, capTotal);
       if (namesOnly && previous) out.identities = keepAllButNames(out.identities, previous);
       // Identités qu'on ne devait pas refaire : remises telles quelles (jamais modifiées en silence).
       if (a.redo?.length && previous) out.identities = out.identities.map((x) => (a.redo!.includes(x.key) ? x : previous.find((p) => p.key === x.key) ?? x));
@@ -104,7 +113,7 @@ const proposeTool: AgentTool<{ guidance?: string; redo?: Key[]; only?: "noms" }>
       firstIssues = issues;
       if (issues.length) {
         // Une seule reprise, avec les corrections exactes ; au-delà, les points restants sont dits au client.
-        const retry = await generate(ctx, j, { guidance: a.guidance, redo: a.redo, previous: out.identities, namesOnly }, 2, issues);
+        const retry = await generate(ctx, j, { guidance: a.guidance, redo: a.redo, previous: out.identities, namesOnly }, 2, capTotal, issues);
         if (namesOnly && previous) retry.identities = keepAllButNames(retry.identities, previous);
         if (a.redo?.length && previous) retry.identities = retry.identities.map((x) => (a.redo!.includes(x.key) ? x : previous.find((p) => p.key === x.key) ?? x));
         const again = identityIssues(retry.identities, j);

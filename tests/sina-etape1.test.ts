@@ -51,11 +51,11 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     return { user, cid, ctx, pid: one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string };
   }
 
-  it("règle du propriétaire : le prix de l'action payante de l'étape est donné à SINA, qui l'annonce avant de lancer", async () => {
+  it("règle du propriétaire : le prix de l'action payante de l'étape est donné à SINA, le même que sur la carte d'accord", async () => {
     const { stepQuote } = await import("@/lib/syna-agent/loop");
     const { user, cid, pid } = await stepOneThread();
     const q = await stepQuote(user, { id: "run-test", conversation_id: cid, project_id: pid, user_id: user.id } as any);
-    expect(q).toMatch(/# Prix de la prochaine action payante de l'étape\nidentity\.propose \(3 identités de marque\) : au plus .*% de votre budget IA\. Dis ce prix au client AVANT de lancer/);
+    expect(q).toMatch(/# Prix de la prochaine action payante de l'étape\nidentity\.propose \(3 identités de marque\) : (?:coût probable .*% de votre budget IA ; plafond )?.*% de votre budget IA.*Le Studio montre ce prix au client sur la carte d'accord/);
   });
 
   it("contrôle gratuit : une série correcte passe", () => {
@@ -213,7 +213,10 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     const first = good(); first[2].logoStyle = "embleme"; // défaut : même style que A
     identityDeps.generate = async (c) => { calls.push(c); return { identities: calls.length === 1 ? first : good(), comparison: "4 axes différents par paire." }; };
     try {
-      expect(await getTool("identity.propose")!.estimate!(ctx, {})).toEqual({ maxMicro: IDENTITY_CAP_MICRO, label: "3 identités de marque" });
+      const est = await getTool("identity.propose")!.estimate!(ctx, {});
+      expect(est).toMatchObject({ maxMicro: IDENTITY_CAP_MICRO, label: "3 identités de marque" });
+      // devis = coût probable d'un essai (règle du propriétaire), toujours sous le plafond
+      if (est.probableMicro != null) expect(est.probableMicro).toBeLessThan(IDENTITY_CAP_MICRO);
       const r = await call("identity.propose", ctx, {});
       expect(r.ok).toBe(true);
       expect(calls).toHaveLength(2); // une reprise, avec les corrections exactes

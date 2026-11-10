@@ -12,7 +12,7 @@ import { loadProject } from "../../projects";
 import { chooseLogoV2 } from "../../logo-v2/choose";
 import type { AgentTool } from "../types";
 import { journeyOf, setStep, updateJourney } from "../journey";
-import { SINA_LOGOS_JOB, logosMaxMicro } from "../logos";
+import { SINA_LOGOS_JOB, logosMaxMicro, logosProbableMicro } from "../logos";
 import { project } from "./common";
 
 const KEY = z.enum(["A", "B", "C"]);
@@ -43,7 +43,7 @@ const proposeTool: AgentTool<{ guidance?: string }> = {
   name: "logo.propose", module: "marque", kind: "generate", needsProject: true,
   description: "Étape 2 : dessine 3 logos LIBRES pour l'identité CHOISIE (son nom exact, ses couleurs) : le modèle d'images a carte blanche sur l'idée, le symbole et la typographie (décision du propriétaire), seuls le nom exact et les rendus interdits sont fixés. Chaque logo est relu et contrôlé par Claude ; un nom mal écrit est réécrit sans repayer. Payant (devis avant, en % du budget) ; tâche de fond de quelques minutes. guidance : laisse vide ; le Studio transmet lui-même au dessinateur les souhaits écrits par le client (ses mots exacts), jamais l'identité, le slogan ni un style que le client n'a pas demandé.",
   args: z.object({ guidance: z.string().max(1500).optional() }).strict(),
-  estimate: () => ({ maxMicro: maxMicro(), label: L("3 logos", "3 logos") }),
+  estimate: () => ({ maxMicro: maxMicro(), ...(logoToolDeps.maxMicro ? {} : { probableMicro: logosProbableMicro() }), label: L("3 logos", "3 logos") }),
   run: (ctx, a) => {
     const p = project(ctx);
     const j = journeyOf(ctx.conversationId);

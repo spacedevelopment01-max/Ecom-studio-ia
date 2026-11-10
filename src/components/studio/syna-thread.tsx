@@ -627,7 +627,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
             </div>
           : <EventLine key={it.m.id} m={it.m} />)}
         {pending && <div className="rounded-xl border border-amber-400 bg-amber-50 px-3 py-2 text-ink dark:bg-amber-950/30" data-syna-confirmation>
-          <p className="font-medium">{pending.reason === "budget" ? t("Dépense au-delà du budget autorisé", "Spending beyond the authorised budget") : t("Action à confirmer", "Action to confirm")}</p>
+          <p className="font-medium">{pending.reason === "cost" ? t("Dépense à confirmer", "Spending to confirm") : pending.reason === "budget" ? t("Budget des réponses de SINA atteint", "SINA's reply budget is used up") : t("Action à confirmer", "Action to confirm")}</p>
           <p className="mt-1 whitespace-pre-wrap text-sm">{pending.preview}</p>
           {pending.tool === "budget.raise"
             ? <p className="mt-2 text-xs">{t("Augmente le budget autorisé ci-dessus, puis demande à SINA de continuer.", "Raise the budget above, then ask SINA to continue.")}</p>
@@ -704,7 +704,7 @@ function ToolResult({ m, projectId, onChoose, busy }: { m: Msg; projectId: strin
 function EventLine({ m }: { m: Msg }) {
   const t = useT(), c = m.content;
   if (c.kind === "error") return <p className="text-xs text-red-600">{t("Erreur : ", "Error: ")}{c.message}</p>;
-  if (c.kind === "stopped") return <p className="text-xs text-muted">{t("Arrêté à ta demande.", "Stopped.")}</p>;
+  if (c.kind === "stopped") return <p className="text-xs text-muted">{t("Arrêté à ta demande.", "Stopped.")}{c.running ? ` ${t("Une création déjà commencée se termine (son coût est engagé) ; SINA ne reprendra pas seule.", "A creation already started will finish (its cost is committed); SINA won't resume on her own.")}` : ""}</p>;
   if (c.kind === "waiting_jobs") return <p className="text-xs text-muted">⏳ {t("Tâche lancée en arrière-plan ; je reprends dès qu'elle est finie.", "Task running in the background; I'll resume when it's done.")}</p>;
   return null;
 }

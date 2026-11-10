@@ -76,10 +76,10 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     expect(serialize([{ seq: 1, role: "tool", content: { tool: "research.read", ok: false, summary: guard.summary, hint: guard.hint } } as any])).toMatch(/consigne \(pour toi seule\) : Pendant l'étape 4/);
     expect((await call("strategy.read", ctx, {})).ok).toBe(false);
     const { SYNA_SYSTEM } = await import("@/lib/syna-agent/prompt");
-    expect(SYNA_SYSTEM).toMatch(/ne promets JAMAIS un devis ou une demande d'accord que tu ne montres pas/);
+    expect(SYNA_SYSTEM).toMatch(/TOUTE action payante passe par une carte d'accord[^]*rien ne part avant qu'il clique « Confirmer »/);
     expect(SYNA_SYSTEM).toMatch(/Accusé de réception : il porte SEULEMENT sur la dernière réponse du client/);
     expect(SYNA_SYSTEM).toMatch(/Le message ne l'annonce pas et ne la paraphrase pas \(« il me reste à savoir… »/);
-    expect(SYNA_SYSTEM).toMatch(/les logos proposés, la planche de marque et les images des thèmes sur mesure déjà créées \(étape 6\) te sont JOINTS \(tu les vois\)[^]*Une image qui ne t'est pas jointe, ne la décris jamais/);
+    expect(SYNA_SYSTEM).toMatch(/les logos proposés, la planche de marque et, à l'étape 6, des captures du thème sur mesure[^]*te sont JOINTS quand ils existent \(tu les vois\)[^]*Une image qui ne t'est pas jointe, ne la décris jamais/);
     expect(SYNA_SYSTEM).toMatch(/Tu parles de toi à la PREMIÈRE personne/); // jamais « SINA va chercher… » (essai réel du 7 novembre)
     expect(fs.readFileSync("src/lib/syna-agent/journey.ts", "utf8")).not.toMatch(/que SINA va chercher/);
     // 1) La fiche doit être comprise : tâche d'analyse (payante, devis du Pilote).

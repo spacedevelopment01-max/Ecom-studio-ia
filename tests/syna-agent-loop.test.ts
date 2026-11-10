@@ -39,7 +39,7 @@ describe("SINA agent — un fil, des outils natifs, des changements vérifiés",
   const { grantProjectPlan } = await import("./communication-choice-fixture");
   const { chooseGeneralistForTest } = await import("./strategy-choice-fixture");
   const { threadFor } = await import("@/lib/syna-agent/thread");
-  const { submitMessage, runAgent, decidePending, threadView } = await import("@/lib/syna-agent/loop");
+  const { submitMessage, runAgent, decidePending, threadView, stopRun } = await import("@/lib/syna-agent/loop");
   const { saveAttachment } = await import("@/lib/syna-agent/attachments");
   const { getRun } = await import("@/lib/syna-agent/store");
   const { latestVideo } = await import("@/lib/video-v2/store");
@@ -142,14 +142,32 @@ describe("SINA agent — un fil, des outils natifs, des changements vérifiés",
     expect(getRun(run.id)!.status).toBe("done");
   });
 
-  it("dépense hors budget autorisé : SINA s'arrête et demande l'accord, sans rien lancer", async () => {
+  it("toute dépense, même dans le budget de ses réponses : SINA s'arrête et demande l'accord avec le prix, sans rien lancer", async () => {
     const s = await shop("budget");
-    one("UPDATE syna_budgets SET authorized_micro=0 WHERE conversation_id=? RETURNING 1", s.cid);
     const jobsBefore = one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE type='brand.build'")!.n;
     const run = await send(s.user, s.cid, "Refais toute ma marque.", () => ({ actions: [{ tool: "brand.create", args: {} }], message: "", done: false }));
     expect(run.status).toBe("waiting_confirmation");
-    expect(JSON.parse(run.pending_json!).reason).toBe("budget");
+    expect(JSON.parse(run.pending_json!).reason).toBe("cost");
+    expect(JSON.parse(run.pending_json!).preview).toMatch(/%/); // le prix, en % du budget IA
     expect(one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE type='brand.build'")!.n).toBe(jobsBefore);
+  });
+
+  it("« Arrêter » pendant la réflexion de SINA : aucune action ne part, et la demande n'est jamais relancée", async () => {
+    const s = await shop("arret");
+    const r = submitMessage(s.user, s.cid, { requestId: "stop-1", text: "Passe le sable à 41 €." });
+    await fr(() => runAgent(r.id, r.job_id!, { reason: async () => { stopRun(s.user, s.cid); return { message: "", actions: [{ tool: "catalogue.update", args: { productId: s.product.id, variants: [{ options: ["Sable"], price: 41 }] } }], done: false }; } }));
+    expect(getRun(r.id)!.status).toBe("cancelled");
+    const tools = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE run_id=? AND role='tool'", r.id);
+    expect(tools.length).toBe(0); // rien d'exécuté
+    expect(one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE type='syna.agent' AND status IN ('queued','running') AND payload LIKE ?", `%${r.id}%`)!.n).toBe(0);
+  });
+
+  it("le budget des réponses de SINA atteint ne s'« approuve » pas comme une action (il se relève par le réglage)", async () => {
+    const s = await shop("relevement");
+    const { run: dbRun } = await import("@/lib/db");
+    const r = submitMessage(s.user, s.cid, { requestId: "raise-1", text: "Bonjour" });
+    dbRun("UPDATE syna_runs SET status='waiting_confirmation', pending_json=? WHERE id=?", JSON.stringify({ id: "pb", tool: "budget.raise", args: {}, reason: "budget", preview: "", createdAt: Date.now() }), r.id);
+    expect(() => decidePending(s.user, s.cid, { pendingId: "pb", approve: true })).toThrow(/Augmente le budget/);
   });
 
   it("reprise après coupure : une écriture acquise n'est jamais rejouée", async () => {
@@ -244,7 +262,13 @@ describe("SINA agent — un fil, des outils natifs, des changements vérifiés",
     const logoId = one<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND role='logo' ORDER BY created_at LIMIT 1", s.p.id)!.id;
     dbRun("UPDATE projects SET brand_json=? WHERE id=?", JSON.stringify({ ...brand, logo: { ...(brand?.logo ?? {}), assetId: logoId } }), s.p.id);
     const before = all<any>("SELECT id FROM assets WHERE project_id=? AND role='mockup'", s.p.id).length;
-    const done = await send(s.user, s.cid, "Maintenant les maquettes.", (step) => step === 0 ? { message: "", actions: [{ tool: "site.mockup_images", args: { directions: [{ name: "Urbain", style: "sobre et contrasté" }, { name: "Voyage", style: "chaleureux" }] } }], done: false } : { message: "Voici les deux maquettes.", actions: [], done: true });
+    const asked = await send(s.user, s.cid, "Maintenant les maquettes.", (step) => step === 0 ? { message: "", actions: [{ tool: "site.mockup_images", args: { directions: [{ name: "Urbain", style: "sobre et contrasté" }, { name: "Voyage", style: "chaleureux" }] } }], done: false } : { message: "Voici les deux maquettes.", actions: [], done: true });
+    // Création payante : rien ne part avant l'accord du client sur la carte de prix.
+    expect(asked.status).toBe("waiting_confirmation");
+    expect(mockupCalls.n).toBe(0);
+    decidePending(s.user, s.cid, { pendingId: JSON.parse(asked.pending_json!).id, approve: true });
+    await fr(() => runAgent(asked.id, getRun(asked.id)!.job_id!, { reason: async () => ({ message: "Voici les deux maquettes.", actions: [], done: true }) }));
+    const done = getRun(asked.id)!;
     const toolMsgs = all<any>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND role='tool'", s.cid).map((r) => JSON.parse(r.content_json)).filter((c) => c.tool === "site.mockup_images");
     expect(toolMsgs.at(-1).ok).toBe(true);
     expect(done.status).toBe("done");

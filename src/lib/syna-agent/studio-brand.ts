@@ -8,6 +8,7 @@
  *     reçoivent une image créée par le moteur d'images du Studio (devis exact, contrôle de chaque image), selon son choix.
  *  3) La boutique est recomposée dans le thème choisi avec ces textes et ces images : elle est en place dans la Boutique.
  */
+import { jobSpentMicro } from "./budget";
 import { L } from "../i18n-server";
 import { UserFacingError, type JobContext } from "../jobs";
 import { currentTheme, loadProject, notify, remember, type Project } from "../projects";
@@ -112,6 +113,12 @@ export async function runStudioBrandJob(ctx: JobContext) {
   const j = a.conversationId ? (() => { try { return journeyOf(a.conversationId!); } catch { return null; } })() : null;
   const brief = angleBrief(p, j);
   const report = { copy: "non réécrits", imagesMade: 0, imagesFailed: 0, problems: [] as string[] };
+  // Plafond annoncé au client = plafond de TOUTE la tâche (textes puis images) : chaque image reçoit une part de ce qui
+  // reste, jamais plus (audit du 10 novembre 2026 : les images recevaient chacune une part du plafond entier, en plus
+  // de la rédaction, soit jusqu'à deux fois le devis).
+  const left = () => Math.max(0, a.capMicro - jobSpentMicro(ctx.job.id));
+  const imageBudgetEur = (remaining: number) => left() / 1e6 / Math.max(1, remaining);
+  const MIN_IMAGE_EUR = 0.05;
   const compose = async () => studioBrandDeps.compose ? studioBrandDeps.compose(p.id, direction) : void await (await import("../engine/shop")).switchDirection(ctx, p.id, direction as never);
 
   // 1) Textes de toute la boutique, dans l'angle choisi.
@@ -140,13 +147,15 @@ export async function runStudioBrandJob(ctx: JobContext) {
       if (i < own.length) { placeServiceImage(spec, slot, own[i++]); placed++; continue; }
       if (slot.authentic) { toProvide++; continue; }
       if (a.images === "client") { report.problems.push(`photo ${slot.key} : aucune image du client pour cet emplacement`); continue; }
+      const remainingSlots = empty.length - empty.indexOf(slot);
+      if (!studioBrandDeps.image && imageBudgetEur(remainingSlots) < MIN_IMAGE_EUR) { report.problems.push(`image ${slot.key} : plafond annoncé atteint, image non créée`); continue; }
       const req = serviceImageRequests(loadProject(p.id), [slot])[0];
       ctx.progress(0.45 + (0.45 * placed) / Math.max(1, empty.length), L(`Images : ${placed + 1} sur ${empty.length}`, `Images: ${placed + 1} of ${empty.length}`));
       try {
         const id = await ctx.step(`svc:${slot.key}`, async () => {
           if (studioBrandDeps.image) return studioBrandDeps.image(req);
           const { runImageEngineV2 } = await import("../image-v2/engine");
-          const out = await runImageEngineV2(ctx, p.id, { ...req, maxCostEur: Math.max(0.05, a.capMicro / 1e6 / Math.max(1, empty.length)) });
+          const out = await runImageEngineV2(ctx, p.id, { ...req, maxCostEur: imageBudgetEur(remainingSlots) });
           return out.outcomes.find((o) => o.assetId && o.verdict === "FINAL")?.assetId ?? null;
         });
         if (id) { placeServiceImage(spec, slot, id); placed++; report.imagesMade++; } else { report.imagesFailed++; report.problems.push(`image ${slot.key} : aucun visuel validé`); }
@@ -161,12 +170,13 @@ export async function runStudioBrandJob(ctx: JobContext) {
     const fresh = loadProject(p.id);
     const reqs = studioImageRequests(fresh);
     for (const [i, req] of reqs.entries()) {
+      if (!studioBrandDeps.image && imageBudgetEur(reqs.length - i) < MIN_IMAGE_EUR) { report.imagesFailed++; report.problems.push(`image ${req.themePlacement!.slotKey} : plafond annoncé atteint, image non créée`); continue; }
       ctx.progress(0.45 + (0.45 * i) / Math.max(1, reqs.length), L(`Images : ${i + 1} sur ${reqs.length}`, `Images: ${i + 1} of ${reqs.length}`));
       try {
         const id = await ctx.step(`img:${req.themePlacement!.slotKey}`, async () => {
           if (studioBrandDeps.image) return studioBrandDeps.image(req);
           const { runImageEngineV2 } = await import("../image-v2/engine");
-          const out = await runImageEngineV2(ctx, p.id, { ...req, maxCostEur: Math.max(0.05, a.capMicro / 1e6 / Math.max(1, reqs.length)) });
+          const out = await runImageEngineV2(ctx, p.id, { ...req, maxCostEur: imageBudgetEur(reqs.length - i) });
           return out.outcomes.find((o) => o.assetId && o.verdict === "FINAL")?.assetId ?? null;
         });
         if (id) report.imagesMade++; else { report.imagesFailed++; report.problems.push(`image ${req.themePlacement!.slotKey} : aucun visuel validé`); }

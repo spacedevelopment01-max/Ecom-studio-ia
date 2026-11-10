@@ -10,7 +10,7 @@ export type SynaRun = {
   step: number; pending_json: string | null; waiting_jobs: string; job_id: string | null; error: string | null; created_at: number; updated_at: number;
 };
 /** Action en attente d'accord : exactement les arguments validés, jamais réinterprétés. */
-export type PendingAction = { id: string; tool: string; args: unknown; reason: "sensitive" | "budget"; preview: string; costMaxMicro?: number; createdAt: number };
+export type PendingAction = { id: string; tool: string; args: unknown; reason: "sensitive" | "cost" | "budget"; preview: string; costMaxMicro?: number; createdAt: number };
 
 export function addMessage(conversationId: string, role: SynaRole, content: unknown, runId: string | null = null): SynaMessage {
   return tx(() => {

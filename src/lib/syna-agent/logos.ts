@@ -166,6 +166,10 @@ export function logosOfRun(run: EngineRun): SinaLogo[] {
 export function logosMaxMicro(): number {
   return logoSeriesQuote().maxMicro;
 }
+/** Coût probable d'une série (un essai, sans reprise) : c'est le devis montré au client, le plafond en plus. */
+export function logosProbableMicro(): number | undefined {
+  try { return logoSeriesQuote().probableMicro; } catch { return undefined; }
+}
 
 export const SINA_LOGOS_JOB = "syna.logos";
 
