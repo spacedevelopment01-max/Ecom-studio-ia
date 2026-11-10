@@ -40,8 +40,19 @@ BUY_FIX = [
 ]
 
 
+# Ouverture « mot géant » (Moderne) : les trois tenues d'exemple sont écrites par le script ; sur le site d'un client, seule
+# SA photo (celle de la section) est montrée, jamais les mannequins d'une autre marque (audit du 10 novembre 2026).
+EL1_FIX = [
+    ('var S1=[["sl-h1.webp"', 'var S1d=[["sl-h1.webp"'),
+    ('qa("[data-el1]").forEach(function(s){var md=q("[data-el1p]",s),th=q("[data-el1t]",s),cur=0;',
+     'qa("[data-el1]").forEach(function(s){var md=q("[data-el1p]",s),th=q("[data-el1t]",s),cur=0,m0=q("img",md),S1=(m0&&!/(^|\\/)photos\\/sl-h\\d\\.webp$/.test(m0.getAttribute("src")||""))?[[m0.getAttribute("src"),m0.alt,1,"transparent"]]:S1d;function ps(f){return /^(\\/|data:|https?:)/.test(f)?f:"photos/"+f}'),
+    ('aria-current="\'+(i===0)+\'"><img src="photos/\'+x[0]+\'" alt=""><i></i></button>\'', 'aria-current="\'+(i===0)+\'"><img src="\'+ps(x[0])+\'" alt=""><i></i></button>\''),
+    ('im=document.createElement("img");im.src="photos/"+x[0];', 'im=document.createElement("img");im.src=ps(x[0]);'),
+]
+
+
 def apply(js: str) -> str:
-    for a, b in BUY_FIX:
+    for a, b in BUY_FIX + EL1_FIX:
         assert js.count(a) == 1, a[:80]
         js = js.replace(a, b)
     return js
@@ -50,8 +61,9 @@ def apply(js: str) -> str:
 if __name__ == '__main__':
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public', 'sections', 'library.js')
     js = open(path, encoding='utf-8').read()
-    if 'function lotPct(n)' in js:
-        print('library.js : bloc d\'achat déjà corrigé')
-    else:
-        open(path, 'w', encoding='utf-8').write(apply(js))
-        print(f'library.js : {len(BUY_FIX)} corrections du bloc d\'achat appliquées')
+    todo = [(a, b) for a, b in BUY_FIX + EL1_FIX if b not in js]
+    for a, b in todo:
+        assert js.count(a) == 1, a[:80]
+        js = js.replace(a, b)
+    open(path, 'w', encoding='utf-8').write(js)
+    print(f'library.js : {len(todo)} correction(s) appliquée(s)')

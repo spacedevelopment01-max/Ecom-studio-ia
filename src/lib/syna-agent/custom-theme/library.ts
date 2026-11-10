@@ -127,6 +127,14 @@ export function authenticSection(id: string, business: "products" | "services"):
   const a = AUTHENTIC_SECTIONS[id];
   return a && (!a.services || business === "services") ? a.kind : null;
 }
+/**
+ * Photos d'exemple DÉTOURÉES (fond transparent : le mannequin ou le produit qui déborde de l'ouverture Moderne), relevées
+ * sur la transparence réelle des fichiers de public/sections/photos le 10 novembre 2026. La photo créée à leur place est
+ * faite sur un fond uni puis détourée par le Studio (gratuit, sur la machine), pour garder la signature de la famille.
+ */
+export const CUTOUT_PHOTOS = new Set(["sl-h1.webp", "sl-h2.webp", "sl-h3.webp", "rp-d1.webp"]);
+export const isCutoutPhoto = (find: string) => CUTOUT_PHOTOS.has(find.replace(/^.*\//, ""));
+
 /** Sections où une photo de produit est la VRAIE photo du produit (cartes, bloc d'achat), jamais une scène créée. */
 export const isProductPhotoSection = (l: Pick<LibSection, "role" | "title">) => isCardSection(l) || l.role === FEATURED_ROLE;
 

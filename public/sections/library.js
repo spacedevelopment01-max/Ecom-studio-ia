@@ -894,10 +894,10 @@
   var reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches,hover=window.matchMedia&&matchMedia("(hover:hover)").matches;
   function io(els,cb,th){if(!window.IntersectionObserver||reduce){els.forEach(cb);return}var o=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){cb(e.target);o.unobserve(e.target)}})},{threshold:th||.2});els.forEach(function(e){o.observe(e)})}
   // EL1 : trois tenues (mannequin détouré, assis ou debout), fond de la miniature
-  var S1=[["sl-h1.webp","Mannequin en robe à motifs géométriques orange et bleu sarcelle",1,"#F5F1EB"],["sl-h2.webp","Mannequin en haut orange et pantalon large crème",0,"#E8622C"],["sl-h3.webp","Mannequin en chemise vert olive et pantalon beige",0,"#1F7A78"]];
-  qa("[data-el1]").forEach(function(s){var md=q("[data-el1p]",s),th=q("[data-el1t]",s),cur=0;
-    th.innerHTML=S1.map(function(x,i){return '<button type="button" style="--b:'+x[3]+'" aria-label="Voir la tenue '+(i+1)+'" aria-current="'+(i===0)+'"><img src="photos/'+x[0]+'" alt=""><i></i></button>'}).join("");
-    function show(i){if(i===cur)return;cur=i;var x=S1[i],old=q("img:not(.out)",md),im=document.createElement("img");im.src="photos/"+x[0];im.alt=x[1];im.className="nw";
+  var S1d=[["sl-h1.webp","Mannequin en robe à motifs géométriques orange et bleu sarcelle",1,"#F5F1EB"],["sl-h2.webp","Mannequin en haut orange et pantalon large crème",0,"#E8622C"],["sl-h3.webp","Mannequin en chemise vert olive et pantalon beige",0,"#1F7A78"]];
+  qa("[data-el1]").forEach(function(s){var md=q("[data-el1p]",s),th=q("[data-el1t]",s),cur=0,m0=q("img",md),S1=(m0&&!/(^|\/)photos\/sl-h\d\.webp$/.test(m0.getAttribute("src")||""))?[[m0.getAttribute("src"),m0.alt,1,"transparent"]]:S1d;function ps(f){return /^(\/|data:|https?:)/.test(f)?f:"photos/"+f}
+    th.innerHTML=S1.map(function(x,i){return '<button type="button" style="--b:'+x[3]+'" aria-label="Voir la tenue '+(i+1)+'" aria-current="'+(i===0)+'"><img src="'+ps(x[0])+'" alt=""><i></i></button>'}).join("");
+    function show(i){if(i===cur)return;cur=i;var x=S1[i],old=q("img:not(.out)",md),im=document.createElement("img");im.src=ps(x[0]);im.alt=x[1];im.className="nw";
       if(old){old.classList.add("out");setTimeout(function(){old.remove()},650)}md.appendChild(im);md.classList.toggle("st",!x[2]);
       qa("button",th).forEach(function(b,k){b.setAttribute("aria-current",String(k===i))})}
     th.addEventListener("click",function(e){var b=e.target.closest("button");if(b)show(qa("button",th).indexOf(b))});

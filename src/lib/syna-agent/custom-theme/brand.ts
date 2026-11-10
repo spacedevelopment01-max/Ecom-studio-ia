@@ -28,7 +28,8 @@ import { angleDetails, COPY_MODEL } from "../mockup-code/copy";
 import { codePhotoPrompt } from "../mockup-code/code-mockup";
 import { hdAspect } from "../mockup-code/prompts";
 import { mockupImageRoute } from "../mockup-code/tools";
-import { authenticSection, isProductPhotoSection, libSection, withBrandName } from "./library";
+import { authenticSection, isCutoutPhoto, isProductPhotoSection, libSection, withBrandName } from "./library";
+import { cutoutPhoto, FOND_A_DETOURER } from "./cutout-photo";
 import { riskCount } from "./risk";
 import { allSections, loadCustomTheme, pushCustomThemeHistory, replaceOnce, saveCustomTheme, sectionHtml, type CustomTheme } from "./theme";
 
@@ -384,10 +385,15 @@ export async function runCustomBrandJob(ctx: JobContext) {
           const prodRef = ph.product ? products.find((x) => x.data.title.trim().toLowerCase() === ph.product!.trim().toLowerCase())?.data.images[0]?.assetId : undefined;
           const ref = prodRef ? getAsset(prodRef) : undefined;
           const place = textPlacementLine(sectionHtml(here.s), ph.find, libSection(here.s.id)?.does ?? "");
-          const prompt = codePhotoPrompt({ id: `ct-${uid}-${file}`, description: [ph.description, place].filter(Boolean).join("\n"), ratio: ph.ratio, product: !!ph.product }, { name, logo: false, product: !!ref, direction, people: !!fu && people });
+          // Photo d'exemple détourée (ouverture Moderne) : créée sur fond uni, puis détourée (gratuit).
+          const cut = isCutoutPhoto(file);
+          const prompt = codePhotoPrompt({ id: `ct-${uid}-${file}`, description: [ph.description, place].filter(Boolean).join("\n"), ratio: ph.ratio, product: !!ph.product, ...(cut ? { background: FOND_A_DETOURER } : {}) }, { name, logo: false, product: !!ref, direction, people: !!fu && people });
           const usageKey = `${ctx.job.id}:photo:${uid}:${file}`;
-          const data = customBrandDeps.photo ? await customBrandDeps.photo(prompt, ref ? assetData(ref) : null, ph.ratio, usageKey)
+          const made = customBrandDeps.photo ? await customBrandDeps.photo(prompt, ref ? assetData(ref) : null, ph.ratio, usageKey)
             : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-photo", costCapMicro: a.capMicro }, () => withQuotedImageRoute(mockupImageRoute(), () => aiSiteImageHd({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey }, { prompt, product: ref ? assetData(ref) : null, aspect: hdAspect(ph.ratio) })));
+          const done = cut ? await cutoutPhoto(made) : { data: made, cut: false };
+          if (done.problem) report.problems.push(`photo ${file} : ${done.problem}`);
+          const data = done.data;
           const asset = await saveAsset({ projectId: p.id, userId: p.userId, data, name: sitePhotoName(here.page?.label ?? here.place, ph.description), mime: "image/png", role: "site", origin: "generated", meta: { synaPhoto: { description: ph.description, ratio: ph.ratio, direction: "custom", product: !!ph.product, replaced: file } } });
           return asset.id;
         });

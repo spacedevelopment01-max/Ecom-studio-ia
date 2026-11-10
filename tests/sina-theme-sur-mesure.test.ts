@@ -487,8 +487,9 @@ describe("thème sur mesure : outils de SINA", async () => {
     try {
       const t = loadCustomTheme(pid)!;
       const { sectionHtml } = await import("@/lib/syna-agent/custom-theme/theme");
-      const target = t.pages.flatMap((p) => p.sections).find((s) => /photos\/[a-z]{2}-[a-z0-9]+\.webp/.test(sectionHtml(s)))!;
-      const file = sectionHtml(target).match(/photos\/[a-z]{2}-[a-z0-9]+\.webp/)![0];
+      const plain = /photos\/(?!sl-h\d)[a-z]{2}-[a-z0-9]+\.webp/; // photo pleine (le détourage est vérifié plus bas)
+      const target = t.pages.flatMap((p) => p.sections).find((s) => plain.test(sectionHtml(s)))!;
+      const file = sectionHtml(target).match(plain)![0];
       const est = await getTool("custom.photo")!.estimate!(ctx, { uid: target.uid, find: file, description: "Photo de mode éditoriale, cadrage en pied, fond béton gris, une veste noire portée.", ratio: "4:5" } as any);
       expect(est.maxMicro).toBe(47_000);
       const r = await call("custom.photo", ctx, { uid: target.uid, find: file, description: "Photo de mode éditoriale, cadrage en pied, fond béton gris, une veste noire portée.", ratio: "4:5" });
@@ -496,7 +497,35 @@ describe("thème sur mesure : outils de SINA", async () => {
       const after = sectionHtml(loadCustomTheme(pid)!.pages.flatMap((p) => p.sections).find((s) => s.uid === target.uid)!);
       expect(after).not.toContain(file);
       expect(after).toContain(r.data.href);
+      // Ouverture Moderne : le mannequin d'exemple est détouré ; la photo créée l'est aussi (fond uni demandé, puis
+      // détourage du Studio, gratuit) ; si le détourage échoue, la photo pleine est posée et c'est dit (10 novembre 2026).
+      const CP = await import("@/lib/syna-agent/custom-theme/cutout-photo");
+      const hero = loadCustomTheme(pid)!.pages[0].sections.find((s) => sectionHtml(s).includes("photos/sl-h1.webp"))!;
+      let prompt = "";
+      T.customPhotoDeps.make = async (pr) => { prompt = pr; return sharp({ create: { width: 64, height: 80, channels: 3, background: "#E6E8EB" } }).png().toBuffer(); };
+      CP.cutoutDeps.cut = async () => sharp({ create: { width: 64, height: 80, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).png().toBuffer();
+      const cutDone = await call("custom.photo", ctx, { uid: hero.uid, find: "photos/sl-h1.webp", description: "Photo de mode éditoriale en pied, un sweat orange porté, sujet entier, sans décor.", ratio: "4:5" });
+      expect(cutDone.ok, cutDone.summary).toBe(true);
+      expect(cutDone.summary).toMatch(/Photo créée et détourée/);
+      expect(prompt).toContain(CP.FOND_A_DETOURER);
+      const { getAsset, assetData } = await import("@/lib/library");
+      expect((await sharp(assetData(getAsset(cutDone.data.assetId)!)).stats()).channels[3].mean).toBeLessThan(10); // fond transparent
+      CP.cutoutDeps.cut = async () => { throw new Error("modèle indisponible"); };
+      const hero2 = loadCustomTheme(pid)!.pages.flatMap((p) => p.sections).find((s) => /photos\/sl-h\d\.webp/.test(sectionHtml(s)));
+      if (hero2) {
+        const failed = await call("custom.photo", ctx, { uid: hero2.uid, find: sectionHtml(hero2).match(/photos\/sl-h\d\.webp/)![0], description: "Photo de mode éditoriale en pied, un sweat orange porté, sujet entier.", ratio: "4:5" });
+        expect(failed.summary).toMatch(/détourage impossible : photo pleine posée/);
+      }
+      expect((await CP.cutoutPhoto(Buffer.from("x"))).problem).toMatch(/détourage impossible/);
+      delete CP.cutoutDeps.cut;
     } finally { delete T.customPhotoDeps.unit; delete T.customPhotoDeps.make; }
+  });
+
+  it("ouverture Moderne « mot géant » : sur le site d'un client, jamais les mannequins d'exemple écrits par le script", () => {
+    const js = fs.readFileSync(path.join(process.cwd(), "public/sections/library.js"), "utf8");
+    expect(js).toContain('var S1d=[["sl-h1.webp"');
+    expect(js).toMatch(/S1=\(m0&&!\/\(\^\|\\\/\)photos\\\/sl-h\\d\\\.webp\$\/\.test/);
+    expect(js).toContain("im.src=ps(x[0]);");
   });
 
   it("carte d'accord d'une dépense : l'action en clair et son prix en % du budget, jamais le nom de l'outil (essai réel du 9 novembre)", async () => {

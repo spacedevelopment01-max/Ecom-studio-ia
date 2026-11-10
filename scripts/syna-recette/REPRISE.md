@@ -29,9 +29,9 @@ paragraphe et `CLAUDE.md` l'emportent**. Les exigences du propriétaire, numéro
   fausses réalisations ni de fausse carte.
 - **Anciennes maquettes** (`mockup.*`) : seulement pour les projets déjà commencés avec elles ; leurs outils sont
   cachés aux nouveaux parcours, comme les anciens raccourcis (`brand.create`, `site.build`, `pilot.run`…).
-- **Restent ouverts** (à décider avec le propriétaire) : modèle d'images des photos du thème sur mesure (aujourd'hui
-  celui des anciennes maquettes, OpenAI ; CLAUDE.md dit Qwen pour les images) ; détourage des photos d'ouverture de la
-  famille Moderne ; ambiance claire / sombre gardée dans le thème ; mise en
+- **Décidé le 10 novembre** : photos du thème sur mesure par OpenAI ; photos de l'ouverture Moderne détourées par le
+  Studio (gratuit).
+- **Restent ouverts** : ambiance claire / sombre gardée dans le thème ; mise en
   boutique Shopify du thème sur mesure (étape 7).
 
 ## 1. Comment travailler avec l'utilisateur

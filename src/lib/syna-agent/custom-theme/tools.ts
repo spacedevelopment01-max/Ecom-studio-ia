@@ -29,7 +29,8 @@ import { loadFamilyChoice, siteArtUniverse } from "../section-families";
 import { codePhotoPrompt } from "../mockup-code/code-mockup";
 import { hdAspect } from "../mockup-code/prompts";
 import { imageReferences, mockupImageRoute } from "../mockup-code/tools";
-import { authenticSection, familySections, libSection, onlyFor, sectionByRef, isCardSection } from "./library";
+import { cutoutPhoto, FOND_A_DETOURER } from "./cutout-photo";
+import { authenticSection, isCutoutPhoto, familySections, libSection, onlyFor, sectionByRef, isCardSection } from "./library";
 import { allSections, applyStructure, checkCustomTheme, findSection, loadCustomTheme, replaceOnce, requiredPages, saveCustomTheme, scopedCss, sectionHtml, undoCustomTheme, type CustomTheme, type SiteKind, type StructureOp } from "./theme";
 import { listProducts } from "../../products/catalog";
 import { activityPlan, companyOf } from "../activity";
@@ -476,7 +477,7 @@ const photoUnit = () => { try { return photoRequestMaxMicro(mockupImageRoute(), 
 export const customPhotoDeps: { make?: (prompt: string, refs: { product: Buffer | null }, aspect: string) => Promise<Buffer>; unit?: () => number | null } = {};
 const photoTool: AgentTool<PhotoArgs> = {
   name: "custom.photo", module: "site", kind: "generate", needsProject: true,
-  description: "Étape 6 (PAYANT : une photo, prix annoncé et accord écrit du client d'abord) : crée UNE photo pour une section du thème sur mesure, dans la direction artistique de la marque (famille Moderne : charte de la famille ; personnes seulement si autorisées), et la pose à la place d'une photo d'exemple. find : photo actuelle dans le HTML de la section (ex. photos/sl-b4.webp) ; description : UNE photo décrite comme le propriétaire (type et cadrage ; surface et fond ; chaque objet à sa place, forme, matière, couleur ; « La scène contient exactement N objets » ; ce qui est dégagé ; lumière ; aucun texte, logo ni personne non voulue) ; ratio ; product:true dès que le produit du client est dans la photo (sa vraie photo sert de référence : jamais de pots, flacons ou emballages génériques aux étiquettes vides) ; background : couleur unie du fond seulement pour un produit seul qui doit se fondre dans une section unie, JAMAIS pour une photo d'ouverture ou d'ambiance (une scène de vie magnifique qui remplit tout le cadre, où l'on ressent l'émotion de l'angle). Les photos détourées (fond transparent) ne sont pas encore possibles : choisis une photo pleine. Vérifie toi-même la photo créée avant de la montrer.",
+  description: "Étape 6 (PAYANT : une photo, prix annoncé et accord écrit du client d'abord) : crée UNE photo pour une section du thème sur mesure, dans la direction artistique de la marque (famille Moderne : charte de la famille ; personnes seulement si autorisées), et la pose à la place d'une photo d'exemple. find : photo actuelle dans le HTML de la section (ex. photos/sl-b4.webp) ; description : UNE photo décrite comme le propriétaire (type et cadrage ; surface et fond ; chaque objet à sa place, forme, matière, couleur ; « La scène contient exactement N objets » ; ce qui est dégagé ; lumière ; aucun texte, logo ni personne non voulue) ; ratio ; product:true dès que le produit du client est dans la photo (sa vraie photo sert de référence : jamais de pots, flacons ou emballages génériques aux étiquettes vides) ; background : couleur unie du fond seulement pour un produit seul qui doit se fondre dans une section unie, JAMAIS pour une photo d'ouverture ou d'ambiance (une scène de vie magnifique qui remplit tout le cadre, où l'on ressent l'émotion de l'angle). Une photo d'exemple détourée (fond transparent, ex. le mannequin de l'ouverture Moderne) est remplacée par une photo créée sur fond uni puis détourée par le Studio (gratuit) : décris le sujet entier, sans décor. Vérifie toi-même la photo créée avant de la montrer.",
   args: z.object({ uid: z.string().regex(/^s[0-9a-f]{8}$/), find: z.string().min(3).max(300), description: z.string().min(40).max(3000), ratio: RATIO, product: z.boolean().optional(), background: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional() }).strict(),
   estimate: (ctx) => {
     const u = (customPhotoDeps.unit ?? photoUnit)();
@@ -495,7 +496,9 @@ const photoTool: AgentTool<PhotoArgs> = {
     if (fam && fam.family !== t.family) return { ok: false, summary: L("Le thème monté n'est pas de la famille choisie par le client : rien n'est créé ni payé. Il faut d'abord concevoir un thème dans sa famille.", "Theme family differs from the client's choice.") };
     const direction = siteArtDirection(p, fu, (() => { try { return journeyOf(ctx.conversationId); } catch { return null; } })());
     const place = textPlacementLine(sectionHtml(x.s), a.find, libSection(x.s.id)?.does ?? "");
-    const prompt = codePhotoPrompt({ id: `ct-${a.uid}`, description: [a.description, place].filter(Boolean).join("\n"), ratio: a.ratio, background: a.background ?? null, product: !!a.product }, { name: p.brand?.name ?? p.name, logo: false, product: !!(a.product && refs.product), direction, people: !!fu && people });
+    // Photo d'exemple détourée (ouverture Moderne) : créée sur fond uni, puis détourée par le Studio (gratuit).
+    const cut = isCutoutPhoto(a.find);
+    const prompt = codePhotoPrompt({ id: `ct-${a.uid}`, description: [a.description, place].filter(Boolean).join("\n"), ratio: a.ratio, background: cut ? FOND_A_DETOURER : a.background ?? null, product: !!a.product }, { name: p.brand?.name ?? p.name, logo: false, product: !!(a.product && refs.product), direction, people: !!fu && people });
     const jobId = getRun(ctx.runId)?.job_id ?? null;
     const usageKey = `syna:${ctx.runId}:custom-photo:${a.uid}:${file}`;
     let data: Buffer;
@@ -503,13 +506,15 @@ const photoTool: AgentTool<PhotoArgs> = {
       data = customPhotoDeps.make ? await customPhotoDeps.make(prompt, { product: refs.product }, a.ratio)
         : await withQuotedImageRoute(mockupImageRoute(), () => aiSiteImageHd({ userId: ctx.user.id, projectId: p.id, jobId, usageKey }, { prompt, product: a.product ? refs.product : null, aspect: hdAspect(a.ratio) }));
     } catch (e) { return { ok: false, summary: L(`Photo non créée : ${(e as Error).message.slice(0, 200)}.`, "Photo not created."), hint: "Dis-le au client avec le coût réel ; ne relance rien sans son accord écrit (jamais après une erreur 5xx)." }; }
+    let cutProblem: string | undefined;
+    if (cut) { const done = await cutoutPhoto(data); data = done.data; cutProblem = done.problem; }
     const asset = await saveAsset({ projectId: p.id, userId: ctx.user.id, data, name: sitePhotoName(x.page?.label ?? x.place, a.description), mime: "image/png", role: "site", origin: "generated", meta: { synaPhoto: { description: a.description, ratio: a.ratio, page: x.place, direction: "custom", background: a.background ?? null, product: !!a.product } } });
     const res = editTool.run(ctx, { uid: a.uid, image: { find: a.find, assetId: asset.id } }) as Awaited<ReturnType<typeof editTool.run>>;
     const spent = all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key LIKE ?", p.id, `${usageKey}%`)[0]?.c ?? 0;
     const spentText = budgetPctText(ctx.user.id, spent, p.id).replace(/de votre budget/, "de ton budget");
     return {
       ...res,
-      summary: L(`Photo créée et posée dans la section (${res.ok ? "enregistré" : "NON posée : " + res.summary}). Coût réel : ${spentText}.`, "Photo created."),
+      summary: L(`Photo créée${cut ? (cutProblem ? " (détourage impossible : photo pleine posée)" : " et détourée") : ""} et posée dans la section (${res.ok ? "enregistré" : "NON posée : " + res.summary}). Coût réel : ${spentText}.`, "Photo created."),
       hint: "La photo t'est jointe à ta prochaine réponse : vérifie-la toi-même (sujet entier, rien de coupé, aucun texte ni logo, fidèle au produit) et dis honnêtement au client si elle est réussie ou ratée.",
       data: { ...(res.data as object), assetId: asset.id, href: assetUrl({ id: asset.id }) },
     };

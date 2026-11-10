@@ -41,6 +41,10 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   Seules les pages principales ont une maquette (accueil, pages clés, menu, panier) ; les pages simples sont codées à
   l'étape 7 dans le style de la maquette, sans image à elles. **Photos du site codé** (étape 7, `site.images`) : toutes
   recréées en haute définition par le même modèle OpenAI, à l'identique de la maquette (décision du 8 novembre 2026).
+  **Photos du thème sur mesure** (`custom.build`, `custom.photo`) : même modèle OpenAI (choix du propriétaire du 10 novembre
+  2026). Une photo d'exemple détourée (mannequin ou produit qui déborde de l'ouverture Moderne, `CUTOUT_PHOTOS`) est
+  remplacée par une photo créée sur fond uni puis **détourée par le Studio** (gratuit, `custom-theme/cutout-photo.ts`) ;
+  si le détourage échoue, la photo pleine est posée et c'est dit.
   Corriger un détail d'une maquette = retouche localisée (`mockup.edit`), jamais une image refaite en entier.
   **Maquettes en code** (décision du 8 novembre 2026, remplacée le 9 novembre par le thème sur mesure ci-dessous ; gardée pour les projets déjà commencés, `src/lib/syna-agent/mockup-code/code-*.ts`) :
   Claude construit chaque page en HTML/CSS, photos créées une fois et partagées, contrôle automatique gratuit. Règles
@@ -64,7 +68,7 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   (`custom.choose`). **Bloc d'achat** rempli avec les vraies données du produit (`custom-theme/buy-block.ts`, script corrigé par
   `scripts/section_buy_fix.py`) ; jamais de faux compte à rebours ni d'offre d'exemple en section à part (`FAKE_OFFER_SECTIONS`) ;
   photos impossibles à inventer (réalisations, avant/après d'artisan, photos de clients, biens : `authenticSection`) jamais
-  créées, cadre « Photo à fournir » ; SINA voit l'accueil capturé (`custom-theme/shots.ts`). Le thème vivant s'affiche dans le fil (`/api/projects/<id>/custom-theme`, pages, téléphone) avec
+  créées ; l'ouverture Moderne « mot géant » ne montre que la photo du client (jamais les mannequins d'exemple de son script), cadre « Photo à fournir » ; SINA voit l'accueil capturé (`custom-theme/shots.ts`). Le thème vivant s'affiche dans le fil (`/api/projects/<id>/custom-theme`, pages, téléphone) avec
   **« Désigner un élément »** : le client pointe un titre, un texte, un bouton, une image ou une section, dit ce qu'il
   veut, et SINA ne change que lui. Règles de montage contrôlées sans IA (`checkCustomTheme`) ; aucun script dans une
   section retouchée. Les anciennes maquettes (`mockup.*`) ne servent plus qu'aux projets déjà commencés avec elles. La mise
