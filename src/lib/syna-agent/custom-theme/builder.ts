@@ -99,6 +99,10 @@ const GROUP_LABELS = Object.fromEntries(SECTION_GROUPS.map((g) => [g.id, g.label
 
 /** Script et style de l'atelier (posés par la route, avec le nonce de la page). */
 export function builderAssets(slots: BuilderSlot[], start: BuilderStart = { header: null, footer: null, pages: [{ key: "home", label: "Accueil", uids: [] }] }, key = "atelier"): { css: string; js: string } {
+  // La composition retenue dans le navigateur dépend de la banque (numéros des sections) : une banque changée (sections
+  // ajoutées le 11 novembre 2026) repart du thème au lieu de pointer vers de mauvaises sections.
+  let h = 0; for (const c of slots.map((x) => `${x.uid}:${x.id}`).join("|")) h = (h * 31 + c.charCodeAt(0)) | 0;
+  key = `${key}-${(h >>> 0).toString(36)}`;
   const data = JSON.stringify({ slots, start, key, groups: SECTION_GROUPS.filter((g) => g.id !== "metiers").map((g) => ({ id: g.id, label: g.label })), labels: GROUP_LABELS }).replace(/</g, "\\u003c");
   // En-têtes présentés dans une fausse fenêtre (démonstration) : seule leur barre se montre dans l'atelier, sans la fausse
   // page d'exemple (grande photo, bouton, blocs) ; l'en-tête transparent garde une bande de photo pour se lire.

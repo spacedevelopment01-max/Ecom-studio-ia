@@ -1367,5 +1367,9 @@
     function pad(n){return (n<10?"0":"")+n}
     function tick(){var ms=end-Date.now();if(ms<=0){s.hidden=true;return}var x=Math.floor(ms/1000);
       var v={d:Math.floor(x/86400),h:Math.floor(x%86400/3600),m:Math.floor(x%3600/60),s:x%60};qa("[data-rv-c]",s).forEach(function(b){b.textContent=b.dataset.rvC==="d"?v.d:pad(v[b.dataset.rvC])});setTimeout(tick,1000)}tick()});
+  // Produits en onglets : un onglet montre sa sélection.
+  qa("[data-rv-pt]").forEach(function(s){var bs=qa("[data-rv-ptb]",s),ps=qa("[data-rv-ptp]",s);bs.forEach(function(b){b.addEventListener("click",function(){bs.forEach(function(x){x.setAttribute("aria-pressed",String(x===b))});ps.forEach(function(p){p.hidden=p.dataset.rvPtp!==b.dataset.rvPtb})})})});
+  // Vidéo en bande : la vraie vidéo de la marque (data-src) s'ouvre au clic ; sans vidéo, rien ne s'ouvre.
+  qa("[data-rv-vb]").forEach(function(s){var b=s.querySelector("[data-rv-vbp]");if(!b)return;b.addEventListener("click",function(){var src=s.dataset.src;if(!src)return;var v=document.createElement("video");v.src=src;v.controls=true;v.autoplay=true;v.playsInline=true;v.style.cssText="width:100%;height:100%;object-fit:cover";b.replaceWith(v)})});
 })();
 /* ===== fin des sections refaites ===== */

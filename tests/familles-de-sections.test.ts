@@ -295,3 +295,46 @@ describe("atelier : panier, alignement, menu burger, espace de la galerie", () =
     expect(css).toContain(".ctw-blk:has(>[data-gallery2])"); // galerie avec de l'air en haut et en bas
   });
 });
+
+// Étude de 65 thèmes ThemeForest (11 novembre 2026, docs/etude-themes-themeforest.md).
+describe("conception de SINA d'après les thèmes qui se vendent", () => {
+  it("la consigne donne l'ordre des pages ; l'exemple n'utilise que des sections actuelles et passe les contrôles", async () => {
+    const D = await import("../src/lib/syna-agent/custom-theme/design");
+    const { libSection, RETIRED_SECTIONS } = await import("../src/lib/syna-agent/custom-theme/library");
+    expect(D.DESIGN_SYSTEM).toContain("CE QUE FONT LES THÈMES QUI SE VENDENT");
+    expect(D.DESIGN_REVIEW_SYSTEM).toContain("CE QUE FONT LES THÈMES QUI SE VENDENT");
+    const ex = D.DESIGN_SYSTEM.slice(D.DESIGN_SYSTEM.indexOf("ACCUEIL (10 sections)"), D.DESIGN_SYSTEM.indexOf("POUR UN SITE DE SERVICES"));
+    const pick = (txt: string) => [...txt.matchAll(/\n\d+\. ([a-z0-9-]+) ·/g)].map((x) => ({ section: x[1], why: "x", says: "x", photos: "aucune" }));
+    const home = pick(ex.slice(0, ex.indexOf("FICHE PRODUIT"))), prod = pick(ex.slice(ex.indexOf("FICHE PRODUIT"), ex.indexOf("COLLECTION")));
+    expect(home.length).toBe(10);
+    expect(prod.length).toBe(8);
+    for (const s of [...home, ...prod]) { expect(libSection(s.section)).toBeTruthy(); expect(RETIRED_SECTIONS[s.section]).toBeFalsy(); }
+    expect(new Set([...home, ...prod].map((s) => s.section)).size).toBe(18); // jamais la même section deux fois
+    expect(D.pageOrderGaps({ pages: [{ key: "home", label: "Accueil", journey: "", sections: home }, { key: "product", label: "Fiche produit", journey: "", sections: prod }] } as any)).toEqual([]);
+  });
+  it("le contrôle refuse un accueil sans produits, des produits trop tard, des preuves avant les produits, une fin sur des produits", async () => {
+    const D = await import("../src/lib/syna-agent/custom-theme/design");
+    const pg = (key: string, ids: string[]) => ({ key, label: key, journey: "", sections: ids.map((section) => ({ section })) });
+    const sans = D.pageOrderGaps({ pages: [pg("home", ["ouverture-photo-pleine", "image-et-texte", "avis-clients"]), pg("product", ["produit-vedette"])] } as any);
+    expect(sans.join(" ")).toContain("aucun produit");
+    const tard = D.pageOrderGaps({ pages: [pg("home", ["ouverture-photo-pleine", "image-et-texte", "citation-en-grand", "grande-photo-de-respiration", "avis-clients", "collection-en-vedette"])] } as any).join(" ");
+    expect(tard).toContain("trop tard");
+    expect(tard).toContain("passe avant les produits");
+    expect(tard).toContain("finit sur des produits");
+    const fiche = D.pageOrderGaps({ pages: [pg("product", ["fiche-produit-a-onglets", "vous-aimerez-aussi", "mode-d-emploi-en-etapes"])] } as any).join(" ");
+    expect(fiche).toContain("commence par le bloc d'achat");
+    expect(fiche).toContain("viennent en dernier");
+    expect(D.pageOrderGaps({ pages: [pg("aide", ["suivi-de-commande-et-aide", "questions-avec-recherche"])] } as any)).toEqual([]); // pages pratiques
+  });
+  it("six sections des thèmes vendus ajoutées à la banque Classique", async () => {
+    const { libSection, isCardSection } = await import("../src/lib/syna-agent/custom-theme/library");
+    const { sectionGroup } = await import("../src/lib/syna-agent/custom-theme/section-groups");
+    for (const id of ["image-et-texte", "bannieres-de-gamme", "grande-photo-de-respiration", "produits-en-onglets", "vous-aimerez-aussi", "video-en-bande"]) {
+      const l = libSection(id)!;
+      expect(l.family).toBe("classique");
+      expect(sectionGroup(l)).toBeTruthy();
+    }
+    expect(isCardSection(libSection("produits-en-onglets")!)).toBe(true);
+    expect(isCardSection(libSection("bannieres-de-gamme")!)).toBe(false); // des bannières, pas une grille de cartes
+  });
+});

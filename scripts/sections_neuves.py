@@ -261,6 +261,18 @@ def eur(x):
     return (f'{float(x):.2f}'.replace('.', ',').replace(',00', '')) + ' €'
 
 
+
+# ----- Sections ajoutées après l'étude de 65 thèmes ThemeForest (11 novembre 2026, docs/etude-themes-themeforest.md) -----
+I_PLAY = ico('<path d="M8 5.5v13l11-6.5z"/>', 1.6)
+PRODS = [('jasmin', 'Thé vert jasmin', '8,50 €'), ('agrumes', 'Thé noir aux agrumes', '8,50 €'), ('rooibos', 'Rooibos vanille', '8,50 €'),
+         ('verveine', 'Verveine-menthe', '7,50 €'), ('camomille', 'Camomille-tilleul', '7,50 €'), ('hibiscus', 'Hibiscus-fruits rouges', '7,50 €')]
+
+
+def prod_card(img, name, price):
+    return (f'<a class="rv-pc" href="#" onclick="return false"><div class="rv-pc-im"><img src="photos/{img}.jpg" alt=""></div>'
+            f'<b>{name}</b><small>{price}</small><span class="rv-pc-add">Ajouter</span></a>')
+
+
 SECTIONS = [
     # 12. Badges de confiance : proposition A « Cartes douces » choisie par le propriétaire.
     {'id': 'badges-de-confiance', 'html': (
@@ -589,6 +601,50 @@ SECTIONS = [
               '<p>Ce que comprend l\'offre réelle de la marque, et jusqu\'à quand : [à compléter avec la vraie offre].</p>'
               '<div class="rv-cd-n">' + ''.join(f'<div><b data-rv-c="{k}">00</b><small>{l}</small></div>' for k, l in (('d', 'jours'), ('h', 'heures'), ('m', 'minutes'), ('s', 'secondes')))
               + '</div><a class="rv-btn" href="#" onclick="return false">Voir l\'offre</a></div></div></section>')},
+    # Étude de 65 thèmes : image et texte simple (15 thèmes sur 27 en alimentaire), côté de l'image inversable (Disposition).
+    {'id': 'image-et-texte', 'title': 'Image et texte', 'kind': 'Contenu · toutes les pages',
+     'does': "Une grande photo d'un côté, un titre, un texte court et un bouton de l'autre : la section de base des thèmes qui se vendent pour raconter un moment, une gamme ou une fabrication. Deux à la suite : inverser le côté de l'image.",
+     'anim': "La photo glisse doucement à l'arrivée.", 'family': 'classique', 'style': None, 'role': 'contenu', 'tags': ['content'], 'demoFrame': False,
+     'html': ('<section class="rv-s rv-it" data-rv-in><div class="rv-in rv-it-g"><div class="rv-it-ph"><img src="photos/bol-verre.jpg" alt=""></div>'
+              '<div class="rv-it-t"><span class="rv-eb">De la feuille à la tasse</span><h3 class="rv-h">Les feuilles <em>s\'ouvrent</em> lentement</h3>'
+              '<p>Un texte court qui fait ressentir le moment : ce que le client vit, voit et sent, en deux ou trois phrases vraies.</p>'
+              '<a class="rv-btn" href="#" onclick="return false">Découvrir les mélanges</a></div></div></section>')},
+    # Bannières de gamme (16 thèmes sur 27 juste après l'ouverture) : 2 ou 3 grandes photos qui mènent à une famille.
+    {'id': 'bannieres-de-gamme', 'title': 'Bannières de gamme', 'kind': 'Orientation · accueil',
+     'does': "Deux ou trois grandes photos côte à côte, chacune avec le nom d'une gamme et un bouton vers elle : on oriente le visiteur juste après l'ouverture, comme dans la plupart des thèmes vendus.",
+     'anim': "La photo s'agrandit un peu au survol.", 'family': 'classique', 'style': None, 'role': 'navigation', 'tags': ['content'], 'demoFrame': False,
+     'html': ('<section class="rv-s rv-bg3" data-rv-in><div class="rv-in"><div class="rv-bg3-g">'
+              + ''.join(f'<a class="rv-bg3-c" href="#" onclick="return false"><img src="photos/{im}.jpg" alt=""><span class="rv-bg3-t"><small>{eb}</small><b>{t}</b><span class="rv-bg3-go">{b} {I_ARROW}</span></span></a>'
+                        for im, eb, t, b in (('jasmin', 'Thés', 'Les thés verts et noirs', 'Voir les thés'), ('verveine', 'Infusions', 'Les infusions du soir', 'Voir les infusions'), ('trio-tasses', 'Coffrets', 'Les coffrets à offrir', 'Voir les coffrets')))
+              + '</div></div></section>')},
+    # Grande photo de respiration (thèmes récents : une image pleine largeur entre deux blocs de produits).
+    {'id': 'grande-photo-de-respiration', 'title': 'Grande photo de respiration', 'kind': 'Image · milieu de page',
+     'does': "Une photo pleine largeur au milieu de la page, avec une phrase courte et un bouton posés sur sa partie calme : la respiration que les thèmes vendus placent entre deux moments d'information.",
+     'anim': "La photo bouge un peu plus lentement que la page au défilement.", 'family': 'classique', 'style': None, 'role': 'mise en avant', 'tags': ['content'], 'demoFrame': False,
+     'html': ('<section class="rv-gp" data-rv-in><img src="photos/fenetre.jpg" alt=""><div class="rv-gp-t"><span class="rv-eb">Le moment</span>'
+              '<h3 class="rv-h">Quelques minutes <em>rien qu\'à toi</em></h3><a class="rv-btn" href="#" onclick="return false">Choisir sa pause</a></div></section>')},
+    # Produits en onglets (12 accueils sur 22 en mode, 9 sur 18 polyvalents) : une seule section de cartes, plusieurs sélections.
+    {'id': 'produits-en-onglets', 'title': 'Produits en onglets', 'kind': 'Produits · accueil',
+     'does': "Les produits en une seule rangée de cartes, avec des onglets pour passer d'une sélection à l'autre (meilleures ventes, nouveautés, coffrets) : remplace plusieurs grilles de produits.",
+     'anim': "Les cartes changent en fondu quand on touche un onglet.", 'family': 'classique', 'style': None, 'role': 'produits', 'tags': ['content'], 'demoFrame': False,
+     'html': ('<section class="rv-s rv-pt" data-rv-in data-rv-pt><div class="rv-in"><div class="rv-hd"><span class="rv-eb">La boutique</span><h3 class="rv-h">Trouve <em>ta pause</em></h3>'
+              '<div class="rv-chips" role="tablist">' + ''.join(f'<button type="button" role="tab" aria-pressed="{"true" if i == 0 else "false"}" data-rv-ptb="{i}">{t}</button>' for i, t in enumerate(('Les plus aimés', 'Nouveautés', 'Pour le soir'))) + '</div></div>'
+              + ''.join(f'<div class="rv-pt-g" data-rv-ptp="{i}"{" hidden" if i else ""}>' + ''.join(prod_card(*PRODS[k]) for k in ks) + '</div>' for i, ks in enumerate(((0, 1, 2, 3), (2, 4, 5, 0), (3, 4, 5, 2))))
+              + '<a class="rv-lk" href="#" onclick="return false">Voir toute la boutique ' + I_ARROW + '</a></div></section>')},
+    # Produits liés compacts (fiche : 14 sur 22, panier : suggestions dans un tiers des thèmes).
+    {'id': 'vous-aimerez-aussi', 'title': 'Vous aimerez aussi', 'kind': 'Produits · fiche produit ou panier',
+     'does': "Une rangée compacte de quatre produits à la fin de la fiche produit ou sous le panier, chacun avec son prix et un bouton pour l'ajouter : la fin de page des thèmes vendus.",
+     'anim': "Les cartes montent à l'arrivée.", 'family': 'classique', 'style': None, 'role': 'produits', 'tags': ['content'], 'demoFrame': False,
+     'html': ('<section class="rv-s rv-ya" data-rv-in><div class="rv-in"><div class="rv-ya-hd"><h3 class="rv-h">Vous aimerez <em>aussi</em></h3>'
+              '<a class="rv-lk" href="#" onclick="return false">Tout voir ' + I_ARROW + '</a></div><div class="rv-ya-g">'
+              + ''.join(prod_card(*PRODS[k]) for k in (1, 2, 4, 5)) + '</div></div></section>')},
+    # Vidéo en bande (milieu de page, sur fond sombre : Moocha, Mixture, Orgafe, Veloza).
+    {'id': 'video-en-bande', 'title': 'Vidéo en bande', 'kind': 'Vidéo · milieu de page',
+     'does': "Une bande sombre au milieu de la page avec une grande image de la vidéo et un bouton de lecture ; la vidéo s'ouvre au clic. Seulement si la marque a une vraie vidéo.",
+     'anim': "Le bouton de lecture respire doucement.", 'family': 'classique', 'style': None, 'role': 'contenu', 'tags': ['content'], 'demoFrame': False,
+     'html': ('<section class="rv-s rv-vb" data-rv-in data-rv-vb><div class="rv-in rv-vb-g"><div class="rv-vb-t"><span class="rv-eb">En images</span><h3 class="rv-h">Le geste, <em>du début à la fin</em></h3>'
+              '<p>Ce que montre la vraie vidéo de la marque, en une phrase.</p></div>'
+              '<button type="button" class="rv-vb-ph" data-rv-vbp aria-label="Lire la vidéo"><img src="photos/film-affiche.jpg" alt=""><span class="rv-vb-pl">' + I_PLAY + '</span></button></div></section>')},
 ]
 
 NEW_CSS = '''
@@ -1040,6 +1096,40 @@ NEW_CSS = '''
 .rv-cd-n b{font:500 clamp(2rem,4vw,3rem)/1 var(--f-title);font-variant-numeric:tabular-nums}.rv-cd-n small{font-size:.78rem;opacity:.75}
 @container (max-width:900px){.rv-fr-g,.rv-sto-g,.rv-box-hd,.rv-box-g,.rv-cd-g{grid-template-columns:1fr;gap:32px}.rv-fr-ph{display:none}.rv-fr-ol li{min-height:0}.rv-stk-c{grid-template-columns:1fr;height:auto;min-height:0}.rv-stk-ph{aspect-ratio:16/9}.rv-stk-t{padding:26px}.rv-box-s{position:static}}
 @container (max-width:560px){.rv-box-ch{grid-template-columns:repeat(2,minmax(0,1fr))}.rv-sto-r span{width:72px;height:72px}.rv-sto-r{gap:12px}.rv-cd-n{gap:6px}.rv-cd-n div{padding:12px 4px}.rv-stk-t small{font-size:2.2rem}}
+/* Sections ajoutées après l'étude de 65 thèmes (11 novembre 2026) */
+.rv-it-g{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(32px,6vw,80px);align-items:center}
+.rv-it-ph{aspect-ratio:4/5;border-radius:24px;overflow:hidden}.rv-it-ph img{width:100%;height:100%;object-fit:cover;transform:scale(1.04);transition:transform 1.4s cubic-bezier(.2,.8,.2,1)}
+.rv-it.rv-on .rv-it-ph img{transform:none}
+.rv-it-t{display:grid;gap:18px;justify-items:start;max-width:520px}.rv-it-t p{margin:0;line-height:1.7;opacity:.85}
+.rv-bg3-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.rv-bg3-c{position:relative;display:block;aspect-ratio:3/4;border-radius:22px;overflow:hidden;color:#fff;text-decoration:none}
+.rv-bg3-c img{width:100%;height:100%;object-fit:cover;transition:transform .9s cubic-bezier(.2,.8,.2,1)}.rv-bg3-c:hover img{transform:scale(1.05)}
+.rv-bg3-c::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 45%,rgba(0,0,0,.55))}
+.rv-bg3-t{position:absolute;z-index:1;left:22px;right:22px;bottom:22px;display:grid;gap:6px}
+.rv-bg3-t small{font:700 .72rem var(--f-ui);letter-spacing:.14em;text-transform:uppercase;opacity:.85}.rv-bg3-t b{font:500 1.6rem/1.1 var(--f-title)}
+.rv-bg3-go{display:inline-flex;gap:8px;align-items:center;font:700 .86rem var(--f-ui)}.rv-bg3-go svg{width:16px;height:16px}
+.rv-gp{position:relative;min-height:clamp(420px,62vh,640px);display:grid;align-items:center;overflow:hidden;color:#fff;font-family:var(--f-ui)}
+.rv-gp>img{position:absolute;inset:0;width:100%;height:115%;object-fit:cover;top:-7%}
+.rv-gp::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.5),rgba(0,0,0,.08) 60%)}
+.rv-gp-t{position:relative;z-index:1;display:grid;gap:16px;justify-items:start;padding:0 max(24px,6vw);max-width:620px}.rv-gp-t .rv-h{color:#fff}
+.rv-pt .rv-hd{gap:16px}.rv-pt>.rv-in{justify-items:center}
+.rv-pt-g,.rv-ya-g{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;width:100%}
+.rv-pc{display:grid;gap:8px;text-decoration:none;color:var(--b-dark)}
+.rv-pc-im{aspect-ratio:1;border-radius:18px;overflow:hidden;background:var(--c4,#f2f5f2)}.rv-pc-im img{width:100%;height:100%;object-fit:cover;transition:transform .7s}.rv-pc:hover img{transform:scale(1.05)}
+.rv-pc b{font:600 1rem var(--f-ui)}.rv-pc small{opacity:.75}
+.rv-pc-add{justify-self:start;border:1.5px solid var(--b-dark);border-radius:999px;padding:8px 16px;font:700 .82rem var(--f-ui)}
+.rv-pt-g{animation:rvFade .45s both}@keyframes rvFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.rv-ya-hd{display:flex;justify-content:space-between;align-items:end;gap:16px}
+.rv-vb{background:var(--b-dark);color:#fff}.rv-vb .rv-h{color:#fff}
+.rv-vb .rv-h em,.rv-gp .rv-h em{color:var(--b-gold,var(--c5,#C9A04E))}
+.rv-vb-g{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(28px,5vw,64px);align-items:center}
+.rv-vb-t{display:grid;gap:16px}.rv-vb-t p{margin:0;opacity:.8;line-height:1.65}
+.rv-vb-ph{position:relative;border:0;padding:0;border-radius:24px;overflow:hidden;aspect-ratio:16/10;cursor:pointer;background:#000}
+.rv-vb-ph img{width:100%;height:100%;object-fit:cover;opacity:.85}
+.rv-vb-pl{position:absolute;left:50%;top:50%;width:84px;height:84px;margin:-42px 0 0 -42px;border-radius:50%;background:var(--b-gold,var(--c5,#C9A04E));color:var(--b-dark);display:grid;place-items:center;animation:rvPulse 2.4s ease-in-out infinite}
+.rv-vb-pl svg{width:30px;height:30px;margin-left:4px}@keyframes rvPulse{50%{transform:scale(1.08)}}
+@container (max-width:900px){.rv-it-g,.rv-vb-g{grid-template-columns:1fr}.rv-pt-g,.rv-ya-g{grid-template-columns:repeat(2,minmax(0,1fr))}.rv-bg3-g{grid-template-columns:1fr 1fr}.rv-bg3-c:nth-child(3){grid-column:1/-1;aspect-ratio:16/9}}
+@container (max-width:560px){.rv-bg3-g{grid-template-columns:1fr}.rv-bg3-c,.rv-bg3-c:nth-child(3){aspect-ratio:4/3}.rv-ya-hd{flex-direction:column;align-items:start}}
 '''
 
 NEW_JS = r'''
@@ -1165,5 +1255,9 @@ NEW_JS = r'''
     function pad(n){return (n<10?"0":"")+n}
     function tick(){var ms=end-Date.now();if(ms<=0){s.hidden=true;return}var x=Math.floor(ms/1000);
       var v={d:Math.floor(x/86400),h:Math.floor(x%86400/3600),m:Math.floor(x%3600/60),s:x%60};qa("[data-rv-c]",s).forEach(function(b){b.textContent=b.dataset.rvC==="d"?v.d:pad(v[b.dataset.rvC])});setTimeout(tick,1000)}tick()});
+  // Produits en onglets : un onglet montre sa sélection.
+  qa("[data-rv-pt]").forEach(function(s){var bs=qa("[data-rv-ptb]",s),ps=qa("[data-rv-ptp]",s);bs.forEach(function(b){b.addEventListener("click",function(){bs.forEach(function(x){x.setAttribute("aria-pressed",String(x===b))});ps.forEach(function(p){p.hidden=p.dataset.rvPtp!==b.dataset.rvPtb})})})});
+  // Vidéo en bande : la vraie vidéo de la marque (data-src) s'ouvre au clic ; sans vidéo, rien ne s'ouvre.
+  qa("[data-rv-vb]").forEach(function(s){var b=s.querySelector("[data-rv-vbp]");if(!b)return;b.addEventListener("click",function(){var src=s.dataset.src;if(!src)return;var v=document.createElement("video");v.src=src;v.controls=true;v.autoplay=true;v.playsInline=true;v.style.cssText="width:100%;height:100%;object-fit:cover";b.replaceWith(v)})});
 })();
 '''

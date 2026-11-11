@@ -252,7 +252,7 @@ async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMode): Pro
     // Concept : seules les objections dont la réponse est sur l'une de ses deux pages sont contrôlées.
     const g = designGaps(d, research);
     const objections = mode.kind === "concept" ? g.blocking.filter((x) => keys.some((k) => x.includes(`page « ${k} »`))) : g.blocking;
-    return { t, rules, objections, rhythm: g.rhythm };
+    return { t, rules, objections, rhythm: g.rhythm, pages: g.pages };
   };
   const base = `syna:${ctx.runId}:${tag}`;
   let d: Design, c: ReturnType<typeof check>, calls = 0;
@@ -262,7 +262,7 @@ async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMode): Pro
     d = only(pin(await call(`${prompt}\n\nCONCEPTION À RELIRE (JSON) :\n${JSON.stringify(d)}`, `${base}-review`, DESIGN_REVIEW_SYSTEM))); calls++;
     c = check(d);
     // 3) une seule correction si le contrôle du Studio refuse quelque chose (règles, objection sans réponse, rythme).
-    const todo = [...c.rules, ...c.objections, ...c.rhythm];
+    const todo = [...c.rules, ...c.objections, ...c.rhythm, ...c.pages];
     if (todo.length) {
       d = only(pin(await call(`${prompt}\n\nTA CONCEPTION (JSON) :\n${JSON.stringify(d)}\n\nPOINTS REFUSÉS PAR LE CONTRÔLE DU STUDIO (à corriger, en gardant ta logique ; liste dans corrections ce que tu changes) :\n- ${todo.join("\n- ")}`, `${base}-fix`, DESIGN_REVIEW_SYSTEM))); calls++;
       c = check(d);
@@ -280,7 +280,7 @@ async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMode): Pro
     pg.journey = src.journey;
     pg.sections.forEach((s, i) => { const pick = src.sections[i]; if (pick) s.intent = intentText(pick.why, pick.says, pick.photos); });
   }
-  return { ok: true, d, t: c.t, left: [...c.objections, ...c.rhythm], calls };
+  return { ok: true, d, t: c.t, left: [...c.objections, ...c.rhythm, ...c.pages], calls };
 }
 const MIN_SECTIONS_TEXT = "au moins 8 sections, fiche produit au moins 7, plus si le parcours le demande";
 const designData = (d: Design, calls: number) => ({ visiteur: d.visitor, leviers: d.levers, objections: d.objections.map((o) => `« ${o.objection} » → ${o.answer} (${o.page} › ${libSection(o.section)?.title ?? o.section})`), relecture: d.corrections, concept: d.concept, parcours: d.pages.map((pg) => ({ page: pg.label, parcours: pg.journey, sections: pg.sections.map((s) => `${libSection(s.section)?.title ?? s.section} — ${s.why}`) })), passages: calls });
