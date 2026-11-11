@@ -183,11 +183,22 @@ describe("atelier : en-têtes à la marque et sections sans vide", () => {
     expect(pilule.clientTexts).toBe(true);
     expect(pilule.html).toContain("Éclat de thé");
     expect(pilule.html).not.toContain("Brindi");
+    const mega = theme.pages[0].sections.find((s) => s.id === "en-tete-a-mega-menu-illustre")!;
+    expect(mega.html).toContain('class="mega" data-ct-ex'); // panneau d'exemple affiché vierge
+    const { BLANK_JS, BLANK_CSS } = await import("../src/lib/syna-agent/custom-theme/blank");
+    expect(BLANK_JS).toContain('p.closest("[data-ct-ex]")');
+    expect(BLANK_CSS).toContain("[data-ct-own] [data-ct-ex] img");
     const nav = pilule.html!.match(/<nav\b[\s\S]*?<\/nav>/)![0];
     expect([...nav.matchAll(/<a\b[^>]*>([^<]+)<\/a>/g)].map((m) => m[1])).toEqual(["Nos mélanges", "Notre histoire", "Contact"]);
     const uid = slots.find((s) => s.id === "en-tete-flottant-en-pilule")!.uid;
     expect(builderAssets(slots).css).toContain(`[data-ct="${uid}"] .vp .page>*{display:none}`);
     expect(brandHeader("<a>Brindi</a><nav><a>Un</a><a>Deux</a></nav>", "Marque", ["A"])).toBe("<a>Marque</a><nav><a>A</a></nav>");
+    // Menu déroulant : le bouton prend le premier lien et garde sa flèche ; les liens qui manquent s'ajoutent.
+    expect(brandHeader('<nav><button type="button">Boutique ▾</button><a href="#">Journal</a></nav>', "", ["Nos mélanges", "Notre histoire", "Contact"]))
+      .toBe('<nav><button type="button">Nos mélanges ▾</button><a href="#">Notre histoire</a><a href="#">Contact</a></nav>');
+    // L'en-tête transparent se pose sur l'ouverture, sans bande de photo à lui.
+    const tr = slots.find((s) => s.id === "en-tete-transparent-sur-photo")!.uid;
+    expect(builderAssets(slots).css).toContain(`[data-ct="${tr}"]{height:0;overflow:visible`);
   });
   it("quatre engagements tiennent sur quatre colonnes, sans photo ils deviennent des cartes ; les histoires changent de produit", async () => {
     const fs = await import("node:fs");

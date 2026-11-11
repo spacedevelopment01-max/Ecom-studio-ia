@@ -32,10 +32,20 @@ function noteOf(id: string, demoFrame: boolean, tags: string[]): string | null {
  */
 export function brandHeader(html: string, brand: string, menu: string[]): string {
   const esc = (v: string) => v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  let h = brand ? html.replace(/Brindi/g, esc(brand)) : html;
+  // Le panneau d'un méga-menu reste un exemple (produits et photos d'exemple) : marqué pour s'afficher vierge.
+  let h = (brand ? html.replace(/Brindi/g, esc(brand)) : html).replace(/class="mega"/g, 'class="mega" data-ct-ex');
+  // Chaque entrée du premier menu (lien, ou bouton d'un menu déroulant qui garde sa flèche) prend un lien du vrai menu,
+  // dans l'ordre ; les entrées en trop disparaissent, les liens qui manquent s'ajoutent à la fin.
   if (menu.length) h = h.replace(/<nav\b[^>]*>[\s\S]*?<\/nav>/, (nav) => {
-    let i = 0;
-    return nav.replace(/<a\b([^>]*)>([^<]+)<\/a>/g, (m, attrs: string) => (i < menu.length ? `<a${attrs}>${esc(menu[i++])}</a>` : ""));
+    let i = 0, last = "";
+    const out = nav.replace(/<(a|button)\b([^>]*)>([^<]+)<\/\1>/g, (_m, tag: string, attrs: string, txt: string) => {
+      if (tag === "a") last = attrs;
+      if (i >= menu.length) return "";
+      const arrow = / ?▾\s*$/.test(txt) ? " ▾" : "";
+      return `<${tag}${attrs}>${esc(menu[i++])}${arrow}</${tag}>`;
+    });
+    const more = menu.slice(i).map((m) => `<a${last || ' href="#"'}>${esc(m)}</a>`).join("");
+    return more ? out.replace(/<\/nav>$/, `${more}</nav>`) : out;
   });
   return h;
 }
@@ -84,14 +94,18 @@ export function builderAssets(slots: BuilderSlot[], start: BuilderStart = { head
   const frames = slots.filter((s) => s.group === "en-tete" && s.note === "démonstration seulement").map((s) => `[data-ct="${s.uid}"]`);
   const sel = (tail: string) => frames.map((f) => `${f} ${tail}`).join(",");
   const frameCss = frames.length ? `
-${frames.join(",")}{padding:0 !important}
+${frames.join(",")}{padding:0 !important;position:relative;z-index:45}
 ${sel(".vp")}{height:auto;overflow:visible;border-radius:0;isolation:auto}
 ${sel(".vp .sc")}{position:relative;inset:auto;overflow:visible}
 ${sel(".vp .page")}{padding:0;gap:0}
 ${sel(".vp .page>*")}{display:none}
-${sel(".h5w")}{margin-bottom:0}
-${sel(".vp .h1~.page>.ph:first-child")}{display:block;height:150px}` : "";
-  const css = `${frameCss}
+${sel(".h5w")}{margin-bottom:0}` : "";
+  // L'en-tête transparent se pose sur la section qui le suit (l'ouverture en photo), comme sur un vrai site : aucune bande à lui.
+  const over = slots.filter((s) => s.id === "en-tete-transparent-sur-photo").map((s) => `[data-ct="${s.uid}"]`);
+  const overCss = over.length ? `
+${over.join(",")}{height:0;overflow:visible;position:relative;z-index:40}
+${over.map((o) => `${o} .h1`).join(",")}{position:absolute;top:0;left:0;right:0;margin:0}` : "";
+  const css = `${frameCss}${overCss}
 html.at-on .tb-bar [data-pgb]{display:none}
 html.at-on .tb-wrap,html.at-on .tb-bar{margin-left:380px}
 .at-side{position:fixed;left:0;top:0;bottom:0;z-index:9000;width:380px;display:flex;flex-direction:column;background:#fbfaf7;color:#1d2b24;font:500 14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:1px 0 0 #e7e2d8,8px 0 30px rgba(0,0,0,.06)}
