@@ -12,6 +12,7 @@ import type { Ctx } from "@/lib/route-helpers";
 import { loadConcepts, loadCustomTheme } from "@/lib/syna-agent/custom-theme/theme";
 import { renderCustomTheme } from "@/lib/syna-agent/custom-theme/render";
 import { builderAssets, builderTheme, catalogAssets, catalogTheme } from "@/lib/syna-agent/custom-theme/builder";
+import { listProducts } from "@/lib/products/catalog";
 
 export const runtime = "nodejs";
 
@@ -27,7 +28,7 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   if (!t) throw new HttpError(404, L("Aucun thème sur mesure pour ce projet.", "No custom theme for this project."));
   const nonce = crypto.randomBytes(12).toString("base64");
   // ?builder=1 : atelier du thème, le client monte lui-même toutes ses pages avec toutes les sections (gratuit, rien d'enregistré).
-  const builder = q.get("builder") === "1" && !concept ? builderTheme(t, { fashion: /mode|v[êe]tement|chaussure|bijou/i.test(`${p.product?.category ?? ""} ${p.product?.name ?? ""}`) }) : null;
+  const builder = q.get("builder") === "1" && !concept ? builderTheme(t, { fashion: /mode|v[êe]tement|chaussure|bijou/i.test(`${p.product?.category ?? ""} ${p.product?.name ?? ""}`), productPhotos: listProducts(id).flatMap((pr) => (pr.data.images ?? []).slice(0, 1).map((im) => `/api/files/${im.assetId}`)) }) : null;
   let html = renderCustomTheme(p, builder ? builder.theme : t, { studio: q.get("studio") === "1" && !concept && !builder, embed: q.get("embed") === "1", nonce, ...(builder ? { title: `${p.brand?.name || p.name} — atelier du thème` } : {}) });
   if (builder) { const a = builderAssets(builder.slots, builder.start, p.id); html = html.replace("</body>", `<style>${a.css}</style><script nonce="${nonce}">${a.js}</script></body>`); }
   // ?catalog=classique|moderne : la banque complète des sections de ce style, rangées par famille (lecture seule).

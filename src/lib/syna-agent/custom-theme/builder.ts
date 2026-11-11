@@ -60,7 +60,10 @@ function headerMenu(h: CtSection | null): { brand: string; menu: string[] } {
   return { brand: logo ? text(logo) : "", menu: [...nav.matchAll(/<a\b[^>]*>([\s\S]*?)<\/a>/g)].map((m) => text(m[1])).filter(Boolean) };
 }
 
-export function builderTheme(t: CustomTheme, _o: { fashion?: boolean } = {}): { theme: CustomTheme; slots: BuilderSlot[]; start: BuilderStart } {
+/** Photos de sachet d'exemple de la banque (elles portent le nom de l'ancienne marque d'exemple). */
+const EXAMPLE_PACKS = /photos\/sachet(?:-bois|-ouvert)?\.jpg/g;
+
+export function builderTheme(t: CustomTheme, o: { fashion?: boolean; productPhotos?: string[] } = {}): { theme: CustomTheme; slots: BuilderSlot[]; start: BuilderStart } {
   const written = new Map<string, CtSection>();
   for (const s of [t.header, t.footer, ...t.pages.flatMap((pg) => pg.sections)]) if (s && !written.has(s.id)) written.set(s.id, s);
   const hm = headerMenu(t.header);
@@ -71,7 +74,11 @@ export function builderTheme(t: CustomTheme, _o: { fashion?: boolean } = {}): { 
     const uid = `b${slots.length}`;
     const mine = written.get(l.id);
     const head = !mine && g.id === "en-tete" && (hm.brand || hm.menu.length) ? { html: brandHeader(l.html, hm.brand, hm.menu), clientTexts: true } : {};
-    sections.push({ ...(mine ?? head), uid, id: l.id });
+    // Exemple rempli : la photo de sachet d'exemple devient la vraie photo d'un produit du client (jamais un autre nom de marque).
+    const pics = o.productPhotos ?? [];
+    let n = 0;
+    const pack = !mine && !("html" in head) && pics.length && l.html.match(EXAMPLE_PACKS) ? { html: l.html.replace(EXAMPLE_PACKS, () => pics[n++ % pics.length]) } : {};
+    sections.push({ ...(mine ?? { ...head, ...pack }), uid, id: l.id });
     slots.push({ uid, id: l.id, group: g.id, title: l.title, does: l.does, note: noteOf(l.id, !!l.demoFrame, l.tags ?? []) });
     uidOf.set(l.id, uid);
   }
@@ -108,7 +115,8 @@ ${sel(".h5w")}{margin-bottom:0}` : "";
   const overCss = over.length ? `
 ${over.join(",")}{height:0;overflow:visible;position:relative;z-index:45}
 ${over.map((o) => `${o} .h1,${o} .h5w`).join(",")}{position:absolute;top:0;left:0;right:0;margin:0}
-${over.map((o) => `html:has(${o}:not([hidden])) .sl .nav`).join(",")}{top:112px}` : "";
+${over.map((o) => `html:has(${o}:not([hidden])) .sl .nav`).join(",")}{top:112px}
+${over.map((o) => `html:has(${o}:not([hidden])) .ps`).join(",")}{padding-top:96px}` : "";
   const css = `${frameCss}${overCss}
 html.at-on .tb-bar [data-pgb]{display:none}
 html.at-on .tb-wrap,html.at-on .tb-bar{margin-left:380px}
@@ -144,6 +152,7 @@ html.at-on .tb-wrap,html.at-on .tb-bar{margin-left:380px}
 .at-alt:hover{border-color:#c9a04e;background:#fff}.at-alt[aria-current="true"]{border-color:#1d2b24;background:#fff}
 .at-alt b{font:600 13px system-ui,sans-serif}.at-alt span{font-size:11.5px;opacity:.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .at-alt em{justify-self:start;font-style:normal;font-size:10.5px;font-weight:700;color:#9a3412;background:#ffedd5;border-radius:999px;padding:2px 8px;margin-top:2px}
+.at-alt em.at-here{color:#1e3a5f;background:#e0ecf7}
 .at-lay{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:center;font-size:12.5px}
 .at-seg{display:flex;flex-wrap:wrap;gap:4px}
 .at-seg button{border:1px solid #e2dccf;background:#fff;border-radius:8px;padding:5px 8px;font:600 11.5px system-ui,sans-serif;color:#1d2b24;cursor:pointer}
@@ -182,17 +191,24 @@ function all(){var a=[];if(state.header.uid)a.push({k:"header",it:state.header})
 function itemAt(k){return k==="header"?state.header:k==="footer"?state.footer:list()[k]}
 var LAY=[["flip","Texte et image",[["","Comme prévu"],["1","Inversés"]]],["align","Alignement",[["","Comme prévu"],["left","À gauche"],["center","Centré"]]],["frame","Largeur",[["","Comme prévu"],["frame","Cadre"],["full","Pleine"]]],["bg","Fond",[["","Comme prévu"],["light","Clair"],["soft","Doux"],["dark","Foncé"]]]];
 function applyLay(e,lay){LAY.forEach(function(L){var v=lay&&lay[L[0]];if(v)e.setAttribute("data-lay-"+L[0],v);else e.removeAttribute("data-lay-"+L[0])});if(window.ctLayout)window.ctLayout(e)}
-function paint(){Object.keys(el).forEach(function(u){el[u].hidden=true;el[u].classList.remove("at-cur")});
- all().forEach(function(x){var e=el[x.it.uid];if(!e)return;main.appendChild(e);e.hidden=false;applyLay(e,x.it.lay)});
+// Retour du propriétaire du 11 novembre 2026 (« dès que je clique ça remonte ») : la page et le panneau gardent leur
+// position à chaque clic ; une section n'est déplacée dans la page que si l'ordre change vraiment.
+function paint(){var y=window.scrollY,want=all().map(function(x){return el[x.it.uid]}).filter(Boolean),now=[].filter.call(main.children,function(c){return c.classList&&c.classList.contains("at-slot")&&!c.hidden});
+ var same=want.length===now.length&&want.every(function(e,i){return e===now[i]});
+ Object.keys(el).forEach(function(u){if(want.indexOf(el[u])<0)el[u].hidden=true;el[u].classList.remove("at-cur")});
+ all().forEach(function(x){var e=el[x.it.uid];if(!e)return;if(!same)main.appendChild(e);e.hidden=false;applyLay(e,x.it.lay)});
+ window.scrollTo(0,y);
  if(sel!==null){var it=itemAt(sel);if(it&&el[it.uid])el[it.uid].classList.add("at-cur")}
  setTimeout(function(){dispatchEvent(new Event("resize"));dispatchEvent(new Event("scroll"))},50)}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 var side=document.createElement("aside");side.className="at-side";side.setAttribute("aria-label","Atelier du thème");document.body.appendChild(side);
-function alts(group,cur){return D.slots.filter(function(s){return s.group===group&&el[s.uid]}).map(function(s){return '<button type="button" class="at-alt" data-pick="'+s.uid+'"'+(s.uid===cur?' aria-current="true"':"")+'><b>'+esc(s.title)+'</b><span>'+esc(s.does||"")+'</span>'+(s.note?'<em>'+esc(s.note)+'</em>':"")+'</button>'}).join("")}
+function alts(group,cur){var on=list().map(function(o){return o.uid});return D.slots.filter(function(s){return s.group===group&&el[s.uid]}).map(function(s){var here=s.uid!==cur&&on.indexOf(s.uid)>=0;return '<button type="button" class="at-alt" data-pick="'+s.uid+'"'+(s.uid===cur?' aria-current="true"':"")+'><b>'+esc(s.title)+'</b><span>'+esc(s.does||"")+'</span>'+(s.note?'<em>'+esc(s.note)+'</em>':"")+(here?'<em class="at-here">déjà sur cette page : elle viendra ici</em>':"")+'</button>'}).join("")}
 function groupChips(g,attr){return '<select class="at-sel" '+attr+' aria-label="Famille de sections">'+D.groups.filter(function(x){return x.id!=="en-tete"&&x.id!=="pied-de-page"}).map(function(x){var n=D.slots.filter(function(s){return s.group===x.id&&el[s.uid]}).length;return n?'<option value="'+x.id+'"'+(x.id===g?" selected":"")+'>'+esc(x.label)+' ('+n+')</option>':""}).join("")+'</select>'}
 function layHtml(lay){return '<div class="at-lay">'+LAY.map(function(L){return '<span>'+L[1]+'</span><div class="at-seg">'+L[2].map(function(o){return '<button type="button" data-lk="'+L[0]+'" data-lv="'+o[0]+'" aria-pressed="'+(((lay||{})[L[0]]||"")===o[0])+'">'+o[1]+'</button>'}).join("")+'</div>'}).join("")+'</div>'}
 var addGroup="ouverture",showGroup=null;
-function draw(){var pgs=D.start.pages.map(function(pg){return '<button type="button" data-page="'+pg.key+'" aria-pressed="'+(pg.key===state.cur)+'">'+esc(pg.label)+'</button>'}).join("");
+function draw(){var L0=side.querySelector(".at-list"),st=L0?L0.scrollTop:0,A0=side.querySelector(".at-it.sel .at-alts"),ak=A0?A0.closest(".at-it").getAttribute("data-k")+"|"+showGroup:null,ast=A0?A0.scrollTop:0;
+ drawNow();var L1=side.querySelector(".at-list");if(L1)L1.scrollTop=st;var A1=side.querySelector(".at-it.sel .at-alts");if(A1&&ak===A1.closest(".at-it").getAttribute("data-k")+"|"+showGroup)A1.scrollTop=ast}
+function drawNow(){var pgs=D.start.pages.map(function(pg){return '<button type="button" data-page="'+pg.key+'" aria-pressed="'+(pg.key===state.cur)+'">'+esc(pg.label)+'</button>'}).join("");
  var rows=all().map(function(x,n){var m=meta[x.it.uid];if(!m)return "";var open=sel===x.k,shell=x.k==="header"||x.k==="footer";
   var g=open&&showGroup&&!shell?showGroup:m.group;
   var body=open?'<div class="at-body"><h4>Remplacer par</h4>'+(shell?"":groupChips(g,"data-sg"))+'<div class="at-alts">'+alts(g,x.it.uid)+'</div><h4>Disposition</h4>'+layHtml(x.it.lay)+'</div>':"";
@@ -213,12 +229,14 @@ side.addEventListener("click",function(e){if(e.target.closest("select"))return;v
   try{navigator.clipboard.writeText(t).then(function(){b.textContent="Copié !";setTimeout(function(){b.textContent="Ma composition"},1500)}).catch(function(){prompt0(t)})}catch(err){prompt0(t)}return}
  if(b.classList.contains("at-add")){addMode=true;sel=null;draw();return}
  if(b.dataset.add){push();var at=sel!==null&&typeof sel==="number"?sel+1:list().length;list().forEach(function(it,i){});
-  if(list().some(function(it){return it.uid===b.dataset.add})){return}
-  list().splice(at,0,{uid:b.dataset.add,lay:{}});addMode=false;sel=at;save();paint();draw();focus(at);return}
+  var was=-1;list().forEach(function(o,i){if(o.uid===b.dataset.add)was=i});var lay={};if(was>=0){lay=list()[was].lay||{};list().splice(was,1);if(was<at)at--}
+  list().splice(at,0,{uid:b.dataset.add,lay:lay});addMode=false;sel=at;save();paint();draw();focus(at);return}
  var row=e.target.closest(".at-it");if(!row)return;var k=row.dataset.k;k=k==="header"||k==="footer"?k:+k;
  if(b.dataset.mv){var i=k,j=i+(+b.dataset.mv);if(j<0||j>=list().length)return;push();var x=list().splice(i,1)[0];list().splice(j,0,x);sel=j;save();paint();draw();focus(j);return}
  if(b.hasAttribute("data-rm")){push();list().splice(k,1);sel=null;save();paint();draw();return}
- if(b.dataset.pick){var it=itemAt(k);if(it.uid===b.dataset.pick)return;if(typeof k==="number"&&list().some(function(o,i){return i!==k&&o.uid===b.dataset.pick}))return;push();it.uid=b.dataset.pick;save();paint();draw();focus(k);return}
+ // Une section déjà sur la page (retour du 11 novembre 2026 : « nous / les autres ne fonctionne pas ») : elle vient à
+ // cette place au lieu d'être ignorée sans rien dire ; jamais deux fois la même section dans une page.
+ if(b.dataset.pick){var it=itemAt(k);if(it.uid===b.dataset.pick)return;push();if(typeof k==="number"){var d=-1;list().forEach(function(o,i){if(i!==k&&o.uid===b.dataset.pick)d=i});if(d>=0){list().splice(d,1);if(d<k)k--;sel=k;it=itemAt(k)}}it.uid=b.dataset.pick;save();paint();draw();focus(k);return}
  if(b.dataset.lk){push();var it2=itemAt(k);it2.lay=it2.lay||{};if(b.dataset.lv)it2.lay[b.dataset.lk]=b.dataset.lv;else delete it2.lay[b.dataset.lk];save();paint();draw();return}
  if(b.classList.contains("at-row")){sel=sel===k?null:k;showGroup=null;addMode=false;paint();draw();if(sel!==null)focus(k)}});
 function prompt0(t){var d=document.createElement("textarea");d.value=t;d.style.cssText="position:fixed;left:400px;top:80px;width:420px;height:240px;z-index:9999";document.body.appendChild(d);d.select();setTimeout(function(){d.remove()},8000)}

@@ -211,3 +211,32 @@ describe("atelier : en-têtes à la marque et sections sans vide", () => {
     expect(js).toContain('qa("[data-rv-st]",s)');
   });
 });
+
+// Retours du propriétaire du 11 novembre 2026 (après-midi) : ouvertures, saut à chaque clic, « nous / les autres ».
+describe("atelier : ouvertures et confort", () => {
+  it("l'ouverture produit mis en scène porte un bouton qui donne envie, jamais « Ajouter au panier »", async () => {
+    const { libSection } = await import("../src/lib/syna-agent/custom-theme/library");
+    const l = libSection("ouverture-produit-mis-en-scene")!;
+    expect(l.html).not.toContain("Ajouter au panier");
+    expect(l.does).toContain("jamais « Ajouter au panier »");
+    expect(libSection("ouverture-en-ecran-partage")!.html).toContain('<div class="hs-fr">');
+  });
+  it("l'exemple rempli montre la photo du produit du client à la place du sachet d'exemple", async () => {
+    const { builderTheme } = await import("../src/lib/syna-agent/custom-theme/builder");
+    const t: any = { version: 1, family: "classique", style: "", header: null, footer: null, search: null, pages: [] };
+    const { theme } = builderTheme(t, { productPhotos: ["/api/files/abc"] });
+    const s = theme.pages[0].sections.find((x) => x.id === "ouverture-produit-mis-en-scene")!;
+    expect(s.html).toContain("/api/files/abc");
+    expect(s.html).not.toMatch(/photos\/sachet/);
+    expect(s.clientTexts).toBeFalsy(); // reste un exemple : affiché vierge par défaut
+  });
+  it("un clic garde la position de la page et du panneau ; une section déjà sur la page vient à la place choisie", async () => {
+    const { builderAssets, builderTheme } = await import("../src/lib/syna-agent/custom-theme/builder");
+    const t: any = { version: 1, family: "classique", style: "", header: null, footer: null, search: null, pages: [] };
+    const js = builderAssets(builderTheme(t).slots).js;
+    expect(js).toContain("window.scrollTo(0,y)");
+    expect(js).toContain("L1.scrollTop=st");
+    expect(js).toContain("déjà sur cette page : elle viendra ici");
+    expect(js).not.toContain("if(typeof k===\"number\"&&list().some(");
+  });
+});

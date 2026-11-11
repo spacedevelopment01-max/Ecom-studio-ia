@@ -40,7 +40,19 @@ HTML_FIX = [
     # 22 et contrôle général : page panier complète sans prénom d'exemple ni moyens de paiement non confirmés.
     ('page-panier-complete', 'placeholder="Une précision pour Camille ?"', 'placeholder="Une précision pour la commande ?"'),
     ('page-panier-complete', '<div class="pa2-py"><span>Carte bancaire</span><span>PayPal</span><span>Apple Pay</span></div>', ''),
+    # Ouverture en écran partagé (retour du propriétaire du 11 novembre 2026 : « il faut améliorer ce hero ») : l'arche et
+    # son encart dans un même cadre, pour poser l'encart au pied de l'arche.
+    ('ouverture-en-ecran-partage', '<div class="pic"><div class="arch">', '<div class="pic"><div class="hs-fr"><div class="arch">'),
+    ('ouverture-en-ecran-partage', 'des ingrédients bio</div></div></section>', 'des ingrédients bio</div></div></div></section>'),
+    # Ouverture produit mis en scène (retour du 11 novembre 2026 : « ça peut pas être Ajouter au panier ici, c'est un CTA
+    # émotionnel ») : le bouton donne envie et mène à la fiche du produit.
+    ('ouverture-produit-mis-en-scene', '>Ajouter au panier</a>', ">M'offrir cette pause</a>"),
 ]
+
+# Ce que fait la section (lu par SINA pour la choisir et l'écrire).
+DOES_FIX = {
+    'ouverture-produit-mis-en-scene': "Pour une marque qui a un produit phare : le produit au centre, son nom, son prix et un bouton qui donne envie (jamais « Ajouter au panier » : il mène à la fiche du produit), avec des photos de ses ingrédients qui flottent autour.",
+}
 
 JS_FIX = [
     # 11. Ils parlent de nous sans citation : le script des citations ne tourne que si elles existent.
@@ -76,6 +88,19 @@ section textarea,section input:not([type=checkbox]):not([type=radio]):not([type=
 .ba-sec .ba{width:min(100%,980px);aspect-ratio:16/9;border-radius:22px;box-shadow:0 22px 50px rgba(23,38,30,.18);border:6px solid #fff}
 @container (max-width:760px){.ba-sec .ba{aspect-ratio:4/5;border-radius:16px;border-width:4px}}
 .ba .lb b{display:block;font-size:.62rem;letter-spacing:.14em;opacity:.8}
+/* Ouverture en écran partagé (11 novembre 2026, « pas beau ») : un seul fond aux couleurs de la marque, la photo en
+   grande arche cadrée d'un fil doré, l'encart au pied de l'arche (jamais sous un en-tête flottant), plus de rond vide. */
+.hs{min-height:clamp(560px,78vh,760px);border-radius:0;background:var(--b-dark);position:relative;isolation:isolate}
+.hs::before{content:"";position:absolute;inset:0 0 0 50%;z-index:-1;background:radial-gradient(70% 60% at 55% 72%,color-mix(in srgb,var(--b-primary) 70%,transparent),transparent 75%)}
+.hs .txt{padding:112px clamp(28px,6cqi,88px) 88px;gap:22px}
+.hs .txt::after{display:none}
+.hs h3{font-size:clamp(2.6rem,6cqi,4.8rem);line-height:1}
+.hs .pic{background:none;padding:112px 40px 0;align-items:flex-end}
+.hs-fr{position:relative;width:min(440px,84%)}
+.hs-fr .arch{width:100%}
+.hs-fr::before{content:"";position:absolute;inset:-16px -16px 0;border:1px solid color-mix(in srgb,var(--b-gold,#C9A04E) 60%,transparent);border-bottom:0;border-radius:999px 999px 0 0;pointer-events:none}
+.hs-fr .badge{left:auto;right:calc(100% - 34px);top:auto;bottom:56px;white-space:nowrap}
+@container (max-width:560px){.hs{min-height:0}.hs::before{inset:45% 0 0 0}.hs .txt{padding:96px 20px 28px}.hs .pic{padding:24px 20px 0}.hs-fr{width:80%}.hs-fr .badge{right:auto;left:-14px;bottom:28px}}
 ''' + NEW_CSS + END
 JS_BEGIN, JS_END = '/* ===== sections refaites (revue du 10 novembre 2026) ===== */', '/* ===== fin des sections refaites ===== */'
 
@@ -89,6 +114,9 @@ def apply_sections(sections):
         else:
             sections.append(dict(n))
     by = {s['id']: s for s in sections}
+    for sid, does in DOES_FIX.items():
+        if sid in by:
+            by[sid]['does'] = does
     for sid, a, b in HTML_FIX:
         s = by.get(sid)
         if not s or (a not in s['html'] and (not b or b in s['html'])):
