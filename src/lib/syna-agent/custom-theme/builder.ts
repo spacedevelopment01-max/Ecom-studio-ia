@@ -120,7 +120,7 @@ ${over.join(",")}{height:0;overflow:visible;position:relative;z-index:45}
 ${over.map((o) => `${o} .h1,${o} .h5w`).join(",")}{position:absolute;top:0;left:0;right:0;margin:0}
 ${over.map((o) => `html:has(${o}:not([hidden])) .sl .nav`).join(",")}{top:112px}
 ${over.map((o) => `html:has(${o}:not([hidden])) .ps`).join(",")}{padding-top:96px}
-${over.map((o) => `html:has(${o}:not([hidden])) [data-at-first]:not([data-at-ouv])`).join(",")}{margin-top:0!important;border-top:112px solid var(--at-band,#fff)!important;border-top-left-radius:0!important;border-top-right-radius:0!important}
+${over.map((o) => `html:has(${o}:not([hidden])) [data-at-first]:not([data-at-ouv])`).join(",")}{margin-top:0!important;border-top:var(--at-bh,112px) solid var(--at-band,#fff)!important;border-top-left-radius:0!important;border-top-right-radius:0!important}
 ${over.map((o) => `html:has([data-at-first]:not([data-at-ouv])) ${o} .h1`).join(",")}{background:var(--b-dark)}` : "";
   const css = `${frameCss}${overCss}
 html.at-on .tb-bar [data-pgb]{display:none}
@@ -213,8 +213,14 @@ function paint(){var y=window.scrollY,want=all().map(function(x){return el[x.it.
  var f1=list().filter(function(it){return el[it.uid]})[0];if(f1){var fe=el[f1.uid];fe.setAttribute("data-at-first","");if((meta[f1.uid]||{}).group==="ouverture")fe.setAttribute("data-at-ouv","");
   // La bande sous l'en-tête prend le fond de la section du dessous (retour du 11 novembre 2026), jamais le blanc de la page.
   var bgOf=function(e){var c=getComputedStyle(e).backgroundColor;return c&&c!=="transparent"&&!/rgba\(\s*0,\s*0,\s*0,\s*0\s*\)/.test(c)?c:null};
-  var band=bgOf(fe);for(var k=fe.firstElementChild;!band&&k;k=k.firstElementChild)band=bgOf(k);if(!band)band=bgOf(main)||bgOf(document.body)||"#fff";fe.style.setProperty("--at-band",band)}
+  var band=bgOf(fe);for(var k=fe.firstElementChild;!band&&k;k=k.firstElementChild)band=bgOf(k);if(!band)band=bgOf(main)||bgOf(document.body)||"#fff";fe.style.setProperty("--at-band",band);setTimeout(gap,30)}
  setTimeout(function(){dispatchEvent(new Event("resize"));dispatchEvent(new Event("scroll"))},50)}
+// Hauteur de la bande sous l'en-tête qui flotte : sa hauteur + un petit écart, moins l'espace que la section a déjà en
+// haut (retour du 11 novembre 2026 : « il y a trop d'écart »). Recalculée sur ordinateur comme sur téléphone.
+function gap(){var fe=main.querySelector("[data-at-first]:not([data-at-ouv])");if(!fe)return;var hd=[].filter.call(document.querySelectorAll(".at-slot .h5w,.at-slot .h1"),function(h){return !h.closest(".at-slot").hidden})[0];if(!hd)return;
+ var c=fe.firstElementChild,pad=parseFloat(getComputedStyle(fe).paddingTop)||0;if(c&&c.offsetTop!=null)pad=Math.max(pad,c.getBoundingClientRect().top-fe.getBoundingClientRect().top-(parseFloat(getComputedStyle(fe).borderTopWidth)||0));
+ fe.style.setProperty("--at-bh",Math.max(0,Math.round(hd.offsetHeight+18-pad))+"px")}
+addEventListener("resize",function(){setTimeout(gap,60)});document.addEventListener("click",function(e){if(e.target.closest&&e.target.closest("[data-vw]"))setTimeout(gap,120)});
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 var side=document.createElement("aside");side.className="at-side";side.setAttribute("aria-label","Atelier du thème");document.body.appendChild(side);
 function alts(group,cur){var on=list().map(function(o){return o.uid});return D.slots.filter(function(s){return s.group===group&&el[s.uid]}).map(function(s){var here=s.uid!==cur&&on.indexOf(s.uid)>=0;return '<button type="button" class="at-alt" data-pick="'+s.uid+'"'+(s.uid===cur?' aria-current="true"':"")+'><b>'+esc(s.title)+'</b><span>'+esc(s.does||"")+'</span>'+(s.note?'<em>'+esc(s.note)+'</em>':"")+(here?'<em class="at-here">déjà sur cette page : elle viendra ici</em>':"")+'</button>'}).join("")}
