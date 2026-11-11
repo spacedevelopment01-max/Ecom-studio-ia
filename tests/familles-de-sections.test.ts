@@ -282,6 +282,8 @@ describe("atelier : panier, alignement, menu burger, espace de la galerie", () =
     expect(a.js).toContain('sl.style.setProperty("--at-dl"');
     expect(a.js).toContain('setAttribute("data-at-first","")'); // espace sous un en-tête qui flotte
     expect(a.css).toContain("[data-at-first]:not([data-at-ouv])");
+    expect(a.css).toContain("border-top:112px solid var(--at-band,#fff)"); // la bande prend le fond de la section du dessous
+    expect(a.js).toContain('fe.style.setProperty("--at-band",band)');
   });
   it("« À gauche » et « Centré » s'appliquent à tous les textes de la section, même ceux que leur cadre centrait", async () => {
     const fs = await import("node:fs");

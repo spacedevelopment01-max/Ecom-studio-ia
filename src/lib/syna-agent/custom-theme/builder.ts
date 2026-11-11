@@ -120,7 +120,7 @@ ${over.join(",")}{height:0;overflow:visible;position:relative;z-index:45}
 ${over.map((o) => `${o} .h1,${o} .h5w`).join(",")}{position:absolute;top:0;left:0;right:0;margin:0}
 ${over.map((o) => `html:has(${o}:not([hidden])) .sl .nav`).join(",")}{top:112px}
 ${over.map((o) => `html:has(${o}:not([hidden])) .ps`).join(",")}{padding-top:96px}
-${over.map((o) => `html:has(${o}:not([hidden])) [data-at-first]:not([data-at-ouv])`).join(",")}{margin-top:112px!important}
+${over.map((o) => `html:has(${o}:not([hidden])) [data-at-first]:not([data-at-ouv])`).join(",")}{margin-top:0!important;border-top:112px solid var(--at-band,#fff)!important;border-top-left-radius:0!important;border-top-right-radius:0!important}
 ${over.map((o) => `html:has([data-at-first]:not([data-at-ouv])) ${o} .h1`).join(",")}{background:var(--b-dark)}` : "";
   const css = `${frameCss}${overCss}
 html.at-on .tb-bar [data-pgb]{display:none}
@@ -210,7 +210,10 @@ function paint(){var y=window.scrollY,want=all().map(function(x){return el[x.it.
  // Première section de la page : sous un en-tête qui flotte, elle laisse de l'espace, sauf une ouverture en photo
  // (retour du 11 novembre 2026 : « il doit y avoir un écart plus important entre le produit vedette et l'en-tête »).
  Object.keys(el).forEach(function(u){el[u].removeAttribute("data-at-first");el[u].removeAttribute("data-at-ouv")});
- var f1=list().filter(function(it){return el[it.uid]})[0];if(f1){el[f1.uid].setAttribute("data-at-first","");if((meta[f1.uid]||{}).group==="ouverture")el[f1.uid].setAttribute("data-at-ouv","")}
+ var f1=list().filter(function(it){return el[it.uid]})[0];if(f1){var fe=el[f1.uid];fe.setAttribute("data-at-first","");if((meta[f1.uid]||{}).group==="ouverture")fe.setAttribute("data-at-ouv","");
+  // La bande sous l'en-tête prend le fond de la section du dessous (retour du 11 novembre 2026), jamais le blanc de la page.
+  var bgOf=function(e){var c=getComputedStyle(e).backgroundColor;return c&&c!=="transparent"&&!/rgba\(\s*0,\s*0,\s*0,\s*0\s*\)/.test(c)?c:null};
+  var band=bgOf(fe);for(var k=fe.firstElementChild;!band&&k;k=k.firstElementChild)band=bgOf(k);if(!band)band=bgOf(main)||bgOf(document.body)||"#fff";fe.style.setProperty("--at-band",band)}
  setTimeout(function(){dispatchEvent(new Event("resize"));dispatchEvent(new Event("scroll"))},50)}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 var side=document.createElement("aside");side.className="at-side";side.setAttribute("aria-label","Atelier du thème");document.body.appendChild(side);
