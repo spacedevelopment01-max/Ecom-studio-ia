@@ -193,6 +193,8 @@ describe("atelier : en-têtes à la marque et sections sans vide", () => {
     const uid = slots.find((s) => s.id === "en-tete-flottant-en-pilule")!.uid;
     expect(builderAssets(slots).css).toContain(`[data-ct="${uid}"] .vp .page>*{display:none}`);
     expect(brandHeader("<a>Brindi</a><nav><a>Un</a><a>Deux</a></nav>", "Marque", ["A"])).toBe("<a>Marque</a><nav><a>A</a></nav>");
+    expect(brandHeader('<nav><a>X</a></nav><div class="lv"><details><summary>Thés</summary></details><a>Coffrets</a></div>', "", ["A", "B"]))
+      .toContain('<div class="lv"><a href="#" onclick="return false">A</a><a href="#" onclick="return false">B</a></div>'); // menu burger
     // Menu déroulant : le bouton prend le premier lien et garde sa flèche ; les liens qui manquent s'ajoutent.
     expect(brandHeader('<nav><button type="button">Boutique ▾</button><a href="#">Journal</a></nav>', "", ["Nos mélanges", "Notre histoire", "Contact"]))
       .toBe('<nav><button type="button">Nos mélanges ▾</button><a href="#">Notre histoire</a><a href="#">Contact</a></nav>');
@@ -255,5 +257,38 @@ describe("atelier : sections qui plantaient au clic", () => {
     const r = fs.readFileSync("src/lib/syna-agent/custom-theme/render.ts", "utf8");
     expect(r).toContain("window.ctNote=note;");
     expect(r).toContain("if(window.ctNote)window.ctNote(window.CT_PAY)");
+  });
+});
+
+// Retours du propriétaire du 11 novembre 2026 (fin d'après-midi).
+describe("atelier : panier, alignement, menu burger, espace de la galerie", () => {
+  it("les sections du panier vont seulement sur la page Panier", async () => {
+    const { checkCustomTheme } = await import("../src/lib/syna-agent/custom-theme/theme");
+    const t: any = { version: 1, family: "classique", style: "", header: null, footer: null, search: null,
+      pages: [{ key: "product", label: "Fiche produit", sections: [{ uid: "a", id: "barre-de-livraison-offerte" }] }, { key: "cart", label: "Panier", sections: [{ uid: "b", id: "barre-de-livraison-offerte" }] }] };
+    const msgs = checkCustomTheme(t).map((p) => p.text).filter((m) => m.includes("seulement dans le panier"));
+    expect(msgs).toHaveLength(1);
+    expect(msgs[0]).toContain("product");
+    const { builderAssets, builderTheme } = await import("../src/lib/syna-agent/custom-theme/builder");
+    const js = builderAssets(builderTheme({ ...t, pages: [] }).slots).js;
+    expect(js).toContain('x.id!=="panier"||state.cur==="cart"');
+    expect(js).toContain("if(k!==\"cart\")state.pages[k]=state.pages[k].filter");
+  });
+  it("le menu burger d'un en-tête d'essai s'ouvre sur toute la hauteur de l'aperçu", async () => {
+    const { builderAssets, builderTheme } = await import("../src/lib/syna-agent/custom-theme/builder");
+    const t: any = { version: 1, family: "classique", style: "", header: null, footer: null, search: null, pages: [] };
+    const a = builderAssets(builderTheme(t).slots);
+    expect(a.css).toContain(".drawer{position:fixed");
+    expect(a.js).toContain('sl.style.setProperty("--at-dl"');
+    expect(a.js).toContain('setAttribute("data-at-first","")'); // espace sous un en-tête qui flotte
+    expect(a.css).toContain("[data-at-first]:not([data-at-ouv])");
+  });
+  it("« À gauche » et « Centré » s'appliquent à tous les textes de la section, même ceux que leur cadre centrait", async () => {
+    const fs = await import("node:fs");
+    const r = fs.readFileSync("src/lib/syna-agent/custom-theme/render.ts", "utf8");
+    expect(r).toContain('var al=sec.getAttribute("data-lay-align")');
+    expect(r).toContain('querySelectorAll("[data-lay-flip],[data-lay-bg],[data-lay-align]")');
+    const css = fs.readFileSync("public/sections/library.css", "utf8");
+    expect(css).toContain(".ctw-blk:has(>[data-gallery2])"); // galerie avec de l'air en haut et en bas
   });
 });

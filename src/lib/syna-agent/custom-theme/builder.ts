@@ -47,6 +47,8 @@ export function brandHeader(html: string, brand: string, menu: string[]): string
     const more = menu.slice(i).map((m) => `<a${last || ' href="#"'}>${esc(m)}</a>`).join("");
     return more ? out.replace(/<\/nav>$/, `${more}</nav>`) : out;
   });
+  // Menu du téléphone (burger) : les mêmes liens que le vrai menu, jamais ceux de l'exemple.
+  if (menu.length) h = h.replace(/(<div class="lv">)[\s\S]*?(<\/div>)/, (_m, a: string, b: string) => `${a}${menu.map((m) => `<a href="#" onclick="return false">${esc(m)}</a>`).join("")}${b}`);
   return h;
 }
 /** En-têtes qui flottent sur la photo d'ouverture au lieu d'occuper leur propre bande. */
@@ -108,7 +110,8 @@ ${sel(".vp")}{height:auto;overflow:visible;border-radius:0;isolation:auto}
 ${sel(".vp .sc")}{position:relative;inset:auto;overflow:visible}
 ${sel(".vp .page")}{padding:0;gap:0}
 ${sel(".vp .page>*")}{display:none}
-${sel(".h5w")}{margin-bottom:0}` : "";
+${sel(".h5w")}{margin-bottom:0}
+${sel(".drawer")}{position:fixed;inset:auto;top:var(--at-dt,0px);bottom:0;left:var(--at-dl,0px);width:var(--at-dw,100%);z-index:9600}` : "";
   // En-têtes qui flottent sur l'ouverture (transparent, pilule : retours du propriétaire du 11 novembre 2026) : ils se posent
   // sur la section qui les suit, comme sur un vrai site, sans bande à eux.
   const over = slots.filter((s) => FLOATING_HEADERS.has(s.id)).map((s) => `[data-ct="${s.uid}"]`);
@@ -116,7 +119,9 @@ ${sel(".h5w")}{margin-bottom:0}` : "";
 ${over.join(",")}{height:0;overflow:visible;position:relative;z-index:45}
 ${over.map((o) => `${o} .h1,${o} .h5w`).join(",")}{position:absolute;top:0;left:0;right:0;margin:0}
 ${over.map((o) => `html:has(${o}:not([hidden])) .sl .nav`).join(",")}{top:112px}
-${over.map((o) => `html:has(${o}:not([hidden])) .ps`).join(",")}{padding-top:96px}` : "";
+${over.map((o) => `html:has(${o}:not([hidden])) .ps`).join(",")}{padding-top:96px}
+${over.map((o) => `html:has(${o}:not([hidden])) [data-at-first]:not([data-at-ouv])`).join(",")}{margin-top:112px!important}
+${over.map((o) => `html:has([data-at-first]:not([data-at-ouv])) ${o} .h1`).join(",")}{background:var(--b-dark)}` : "";
   const css = `${frameCss}${overCss}
 html.at-on .tb-bar [data-pgb]{display:none}
 html.at-on .tb-wrap,html.at-on .tb-bar{margin-left:380px}
@@ -184,6 +189,9 @@ function fresh(){var p={};D.start.pages.forEach(function(pg){p[pg.key]=pg.uids.f
  return {cur:D.start.pages[0].key,header:{uid:D.start.header,lay:{}},footer:{uid:D.start.footer,lay:{}},pages:p}}
 try{state=JSON.parse(localStorage.getItem(KEY)||"null")}catch(e){state=null}
 if(!state||!state.pages||!state.pages[state.cur])state=fresh();
+// Sections du panier (barre de livraison offerte…) : seulement sur la page Panier (retour du propriétaire du 11 novembre 2026).
+function cartOnly(u){var m=meta[u];return !!m&&m.group==="panier"}
+Object.keys(state.pages).forEach(function(k){if(k!=="cart")state.pages[k]=state.pages[k].filter(function(it){return !cartOnly(it.uid)})});
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function push(){hist.push(clone(state));if(hist.length>40)hist.shift()}
 function list(){return state.pages[state.cur]}
@@ -199,11 +207,15 @@ function paint(){var y=window.scrollY,want=all().map(function(x){return el[x.it.
  all().forEach(function(x){var e=el[x.it.uid];if(!e)return;if(!same)main.appendChild(e);e.hidden=false;applyLay(e,x.it.lay)});
  window.scrollTo(0,y);
  if(sel!==null){var it=itemAt(sel);if(it&&el[it.uid])el[it.uid].classList.add("at-cur")}
+ // Première section de la page : sous un en-tête qui flotte, elle laisse de l'espace, sauf une ouverture en photo
+ // (retour du 11 novembre 2026 : « il doit y avoir un écart plus important entre le produit vedette et l'en-tête »).
+ Object.keys(el).forEach(function(u){el[u].removeAttribute("data-at-first");el[u].removeAttribute("data-at-ouv")});
+ var f1=list().filter(function(it){return el[it.uid]})[0];if(f1){el[f1.uid].setAttribute("data-at-first","");if((meta[f1.uid]||{}).group==="ouverture")el[f1.uid].setAttribute("data-at-ouv","")}
  setTimeout(function(){dispatchEvent(new Event("resize"));dispatchEvent(new Event("scroll"))},50)}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 var side=document.createElement("aside");side.className="at-side";side.setAttribute("aria-label","Atelier du thème");document.body.appendChild(side);
 function alts(group,cur){var on=list().map(function(o){return o.uid});return D.slots.filter(function(s){return s.group===group&&el[s.uid]}).map(function(s){var here=s.uid!==cur&&on.indexOf(s.uid)>=0;return '<button type="button" class="at-alt" data-pick="'+s.uid+'"'+(s.uid===cur?' aria-current="true"':"")+'><b>'+esc(s.title)+'</b><span>'+esc(s.does||"")+'</span>'+(s.note?'<em>'+esc(s.note)+'</em>':"")+(here?'<em class="at-here">déjà sur cette page : elle viendra ici</em>':"")+'</button>'}).join("")}
-function groupChips(g,attr){return '<select class="at-sel" '+attr+' aria-label="Famille de sections">'+D.groups.filter(function(x){return x.id!=="en-tete"&&x.id!=="pied-de-page"}).map(function(x){var n=D.slots.filter(function(s){return s.group===x.id&&el[s.uid]}).length;return n?'<option value="'+x.id+'"'+(x.id===g?" selected":"")+'>'+esc(x.label)+' ('+n+')</option>':""}).join("")+'</select>'}
+function groupChips(g,attr){return '<select class="at-sel" '+attr+' aria-label="Famille de sections">'+D.groups.filter(function(x){return x.id!=="en-tete"&&x.id!=="pied-de-page"&&(x.id!=="panier"||state.cur==="cart")}).map(function(x){var n=D.slots.filter(function(s){return s.group===x.id&&el[s.uid]}).length;return n?'<option value="'+x.id+'"'+(x.id===g?" selected":"")+'>'+esc(x.label)+' ('+n+')</option>':""}).join("")+'</select>'}
 function layHtml(lay){return '<div class="at-lay">'+LAY.map(function(L){return '<span>'+L[1]+'</span><div class="at-seg">'+L[2].map(function(o){return '<button type="button" data-lk="'+L[0]+'" data-lv="'+o[0]+'" aria-pressed="'+(((lay||{})[L[0]]||"")===o[0])+'">'+o[1]+'</button>'}).join("")+'</div>'}).join("")+'</div>'}
 var addGroup="ouverture",showGroup=null;
 function draw(){var L0=side.querySelector(".at-list"),st=L0?L0.scrollTop:0,A0=side.querySelector(".at-it.sel .at-alts"),ak=A0?A0.closest(".at-it").getAttribute("data-k")+"|"+showGroup:null,ast=A0?A0.scrollTop:0;
@@ -247,6 +259,9 @@ side.addEventListener("drop",function(e){var r=e.target.closest(".at-it[draggabl
 side.addEventListener("dragend",function(){dragK=null;draw()});
 // Un clic sur une section de la page la choisit dans le panneau.
 main.addEventListener("click",function(e){var s=e.target.closest(".at-slot");if(!s||e.target.closest("a,button,input,select,textarea,label,summary"))return;var u=s.getAttribute("data-ct");var f=all().filter(function(x){return x.it.uid===u})[0];if(!f)return;sel=f.k;showGroup=null;addMode=false;paint();draw();var r=side.querySelector('.at-it[data-k="'+f.k+'"]');if(r)r.scrollIntoView({block:"nearest"})});
+// Menu burger d'un en-tête d'essai (retour du 11 novembre 2026 : « beug quand j'ai cliqué sur le menu burger ») : le menu
+// s'ouvre sur toute la hauteur de l'aperçu (ordinateur ou téléphone), pas dans la fine bande de l'en-tête.
+document.addEventListener("click",function(e){var o=e.target.closest&&e.target.closest(".at-slot [data-open]");if(!o)return;var sl=o.closest(".at-slot"),fr=sl.closest(".frame")||sl,r=fr.getBoundingClientRect();var bar=document.querySelector(".tb-bar"),bt=bar?bar.getBoundingClientRect().bottom:0;sl.style.setProperty("--at-dl",Math.max(0,r.left)+"px");sl.style.setProperty("--at-dw",r.width+"px");sl.style.setProperty("--at-dt",Math.max(0,bt,r.top)+"px")},true);
 paint();draw();
 })();`;
   return { css: css + BLANK_CSS, js: js + "\n" + BLANK_JS };

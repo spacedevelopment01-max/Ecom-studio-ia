@@ -277,9 +277,20 @@ const SETTINGS_JS = `(function(){var D=document.documentElement.dataset;
     if(fl){var q=[sec],box=null;while(q.length&&!box){var e=q.shift();var d=getComputedStyle(e).display,kids=[].filter.call(e.children,function(c){return c.offsetParent!==null||getComputedStyle(c).position==="fixed"});
       if((d.indexOf("grid")>=0||d.indexOf("flex")>=0)&&kids.length>=2&&kids.length<=3&&kids.some(function(c){return c.querySelector("img,video")||c.tagName==="IMG"})&&kids.some(function(c){return c.querySelector("h1,h2,h3,p")}))box=e;else q=q.concat([].slice.call(e.children))}
       if(box){box.style.direction="rtl";box.setAttribute("data-lay-flipped","");[].forEach.call(box.children,function(c){c.style.direction="ltr"})}}
+    // Alignement (retour du propriétaire du 11 novembre 2026 : « il n'y a pas tous les textes qui vont à gauche ») : TOUS les
+    // textes de la section suivent l'alignement choisi, y compris ceux que leur cadre centrait (titre court dans une carte).
+    [sec].concat([].slice.call(sec.querySelectorAll("[data-lay-al]"))).forEach(function(x){if(!x.hasAttribute("data-lay-al"))return;["text-align","justify-items","align-items","margin-left","margin-right"].forEach(function(k){x.style.removeProperty(k)});x.removeAttribute("data-lay-al")});
+    var al=sec.getAttribute("data-lay-align");
+    if(al){var want=al==="left"?"left":"center";[sec].concat([].slice.call(sec.querySelectorAll("*"))).forEach(function(x){if(x.closest("button,select,input,textarea,svg,.at-tag")||/^(BUTTON|IMG|VIDEO|SVG|INPUT|SELECT|OPTION|SCRIPT|STYLE)$/.test(x.tagName))return;
+      var cs=getComputedStyle(x),w=x.getBoundingClientRect().width;if(w<90)return;var done=false;
+      var ta=cs.textAlign;if(want==="left"&&(ta==="center")||want==="center"&&(ta==="left"||ta==="start")){x.style.setProperty("text-align",want,"important");done=true}
+      if(w>=160&&cs.display.indexOf("grid")>=0&&(want==="left"?cs.justifyItems==="center":/start|left/.test(cs.justifyItems))){x.style.setProperty("justify-items",want==="left"?"start":"center","important");done=true}
+      if(w>=160&&cs.display.indexOf("flex")>=0&&cs.flexDirection.indexOf("column")===0&&(want==="left"?cs.alignItems==="center":/start/.test(cs.alignItems))){x.style.setProperty("align-items",want==="left"?"flex-start":"center","important");done=true}
+      if(want==="left"&&x.parentElement&&cs.marginLeft!=="0px"&&cs.marginLeft===cs.marginRight&&parseFloat(cs.marginLeft)>0&&cs.display!=="inline"&&x.parentElement.getBoundingClientRect().width-w>40&&/^(P|H\\d|SMALL|BLOCKQUOTE)$/.test(x.tagName)){x.style.setProperty("margin-left","0","important");x.style.setProperty("margin-right","auto","important");done=true}
+      if(done)x.setAttribute("data-lay-al","")})}
     var bg=sec.getAttribute("data-lay-bg");[].forEach.call(sec.querySelectorAll("[data-lay-ink]"),function(x){x.style.color="";x.removeAttribute("data-lay-ink")});
     if(bg){var ink=bg==="dark"?"#fff":"var(--b-ink,#1d2a23)";[].forEach.call(sec.querySelectorAll("h1,h2,h3,h4,h5,p,small,li,blockquote,figcaption,b,strong,span,label,summary"),function(x){var e=x.parentElement,own=painted(x);while(!own&&e&&e!==sec){if(painted(e))break;e=e.parentElement}if(!own&&e===sec){x.style.color=ink;x.setAttribute("data-lay-ink","")}})}}
-  window.ctLayout=ctLayout;[].forEach.call(document.querySelectorAll("[data-lay-flip],[data-lay-bg]"),ctLayout);
+  window.ctLayout=ctLayout;[].forEach.call(document.querySelectorAll("[data-lay-flip],[data-lay-bg],[data-lay-align]"),ctLayout);
   // Barre d'achat fixe : seulement si le client l'a cochée ; elle apparaît quand le bouton d'achat sort de l'écran.
   if(D.poBarre==="1")document.querySelectorAll(".po [data-pogo]").forEach(function(go){var po=go.closest(".po"),bar=document.createElement("div");bar.className="ct-bar";
     bar.innerHTML='<span><b></b><small></small></span><button type="button">Ajouter au panier</button>';bar.querySelector("b").textContent=po.dataset.name||"";

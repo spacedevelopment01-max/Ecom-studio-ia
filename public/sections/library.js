@@ -253,8 +253,8 @@
     wrap(h);
   });
   // Produit vedette
-  qa("[data-xp]").forEach(function(p){
-    var main=q("[data-xmain]",p),imgs=qa("img",main),th=q("[data-xth]",p),cur=0,price=8.5,mult=1,qty=1,xb=q("[data-pvb]",p);if(xb&&xb.dataset.cfg&&+xb.dataset.base)price=+xb.dataset.base;
+  qa("[data-xp]").forEach(function(p){if(p.__xp)return;p.__xp=1;
+    var main=q("[data-xmain]",p),imgs=(function(){var seen={};return qa("img",main).filter(function(im){var s=im.getAttribute("src");if(seen[s]){im.remove();return false}seen[s]=1;return true})})(),th=q("[data-xth]",p),cur=0,price=8.5,mult=1,qty=1,xb=q("[data-pvb]",p);if(xb&&xb.dataset.cfg&&+xb.dataset.base)price=+xb.dataset.base;
     imgs.forEach(function(im,i){var b=document.createElement("button");b.type="button";b.setAttribute("aria-label","Photo "+(i+1));b.innerHTML='<img src="'+im.getAttribute("src")+'" alt="">';b.addEventListener("click",function(){show(i)});th.insertBefore(b,q(".ar",th))});
     function show(i){cur=(i+imgs.length)%imgs.length;imgs.forEach(function(im,k){im.classList.toggle("on",k===cur)});qa("button[aria-label^='Photo ']",th).forEach(function(b,k){b.setAttribute("aria-current",k===cur?"true":"false")})}
     show(0);

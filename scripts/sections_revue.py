@@ -51,10 +51,15 @@ HTML_FIX = [
 
 # Ce que fait la section (lu par SINA pour la choisir et l'écrire).
 DOES_FIX = {
+    'barre-de-livraison-offerte': "Seulement dans le panier : « Plus que 4,20 € pour la livraison offerte », le client voit ce qui lui manque.",
     'ouverture-produit-mis-en-scene': "Pour une marque qui a un produit phare : le produit au centre, son nom, son prix et un bouton qui donne envie (jamais « Ajouter au panier » : il mène à la fiche du produit), avec des photos de ses ingrédients qui flottent autour.",
 }
 
 JS_FIX = [
+    # Produit vedette (11 novembre 2026 : « il y a 1000 images, c'est débile ») : une photo n'apparaît qu'une fois (les
+    # emplacements remplis par la même photo de sachet sont retirés) et la section ne se prépare qu'une fois.
+    ('qa("[data-xp]").forEach(function(p){\n    var main=q("[data-xmain]",p),imgs=qa("img",main),th=',
+     'qa("[data-xp]").forEach(function(p){if(p.__xp)return;p.__xp=1;\n    var main=q("[data-xmain]",p),imgs=(function(){var seen={};return qa("img",main).filter(function(im){var s=im.getAttribute("src");if(seen[s]){im.remove();return false}seen[s]=1;return true})})(),th='),
     # Photo à points cliquables (contrôle de l'atelier du 11 novembre 2026) : plus de deux points ne fait plus planter
     # la section ; la bulle reprend le nom et le prix de la liste de la section (ceux du client), l'exemple sinon.
     ('d.classList.add("on");li[i].classList.add("on");q("img",pop).src="photos/"+D[i][0];q("b",pop).textContent=D[i][1];q("small",pop).textContent=D[i][2];',
@@ -67,8 +72,8 @@ JS_FIX = [
 BEGIN, END = '/* ===== revue du propriétaire (10 novembre 2026) ===== */', '/* ===== fin de la revue ===== */'
 REVUE_CSS = BEGIN + '''
 /* Contrôle général : de l'air autour des sections qui n'en avaient pas (rien ne touche le bord ni la section voisine). */
-.ctw-blk:has(>.bento),.ctw-blk:has(>.ba),.ctw-blk.ba-sec,.ctw-blk:has(>.w){padding:72px max(24px,5vw)}
-@container (max-width:760px){.ctw-blk:has(>.bento),.ctw-blk:has(>.ba),.ctw-blk.ba-sec,.ctw-blk:has(>.w){padding:44px 16px}}
+.ctw-blk:has(>.bento),.ctw-blk:has(>.ba),.ctw-blk.ba-sec,.ctw-blk:has(>.w),.ctw-blk:has(>[data-gallery2]){padding:72px max(24px,5vw)}
+@container (max-width:760px){.ctw-blk:has(>.bento),.ctw-blk:has(>.ba),.ctw-blk.ba-sec,.ctw-blk:has(>.w),.ctw-blk:has(>[data-gallery2]){padding:44px 16px}}
 .cat{padding:48px max(24px,5vw)!important}
 @container (max-width:760px){.cat{padding:32px 16px!important}}
 /* Couleurs : les sections suivent toujours les couleurs de la marque, jamais le mode sombre du téléphone (champs gris
@@ -92,6 +97,15 @@ section textarea,section input:not([type=checkbox]):not([type=radio]):not([type=
 .ba-sec .ba{width:min(100%,980px);aspect-ratio:16/9;border-radius:22px;box-shadow:0 22px 50px rgba(23,38,30,.18);border:6px solid #fff}
 @container (max-width:760px){.ba-sec .ba{aspect-ratio:4/5;border-radius:16px;border-width:4px}}
 .ba .lb b{display:block;font-size:.62rem;letter-spacing:.14em;opacity:.8}
+/* Produit vedette (11 novembre 2026 : « il y a 1000 images, c'est débile ») : la colonne des miniatures ne dépasse
+   jamais la grande photo ; les miniatures en plus défilent dans la colonne, avec un fondu en bas. */
+@container (min-width:561px){
+.xp .gal{align-items:start}
+.xp .th{height:0;min-height:100%;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;-webkit-mask-image:linear-gradient(#000 82%,transparent);mask-image:linear-gradient(#000 82%,transparent)}
+.xp .th::-webkit-scrollbar{display:none}
+.xp .th button{flex:0 0 auto}
+.xp .th>.ar{display:none}
+}
 /* Ouverture en écran partagé (11 novembre 2026, « pas beau ») : un seul fond aux couleurs de la marque, la photo en
    grande arche cadrée d'un fil doré, l'encart au pied de l'arche (jamais sous un en-tête flottant), plus de rond vide. */
 .hs{min-height:clamp(560px,78vh,760px);border-radius:0;background:var(--b-dark);position:relative;isolation:isolate}

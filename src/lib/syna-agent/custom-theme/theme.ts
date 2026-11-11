@@ -253,6 +253,9 @@ export function checkCustomTheme(t: CustomTheme, site?: SiteKind): ThemeProblem[
       : `« ${l.title} » est une offre d'exemple en section à part : les vraies offres du client sont des fonctions du bloc d'achat « Produit vedette »`);
     // Shopify : le panier mène au paiement de Shopify ; aucune section de commande ni de confirmation dans le thème.
     if (site && platformOwnedPages(site).length && l.role === "commande") bad(`« ${l.title} » (${x.place}) : sur Shopify, la commande et sa confirmation sont des pages de Shopify, jamais des sections du thème`);
+    // Sections du panier (barre de livraison offerte, mini-panier…) : seulement sur la page Panier (retour du propriétaire
+    // du 11 novembre 2026 : « barre de livraison c'est que dans le panier »).
+    if (l.role === "panier" && x.page && x.page.key !== "cart") bad(`« ${l.title} » (${x.place}) va seulement dans le panier : jamais sur une autre page`);
     // Sections « seulement pour » un genre de produit : jamais ailleurs (CLAUDE.md).
     const only = (l.tags ?? []).find((g) => g === "pour-mode" || g === "pour-the");
     if (site && only && (site.business === "services" || site.genre !== (only === "pour-mode" ? "mode" : "the"))) bad(`« ${l.title} » est réservée ${only === "pour-mode" ? "aux vêtements et accessoires de mode" : "aux thés et infusions"} : jamais sur un autre site`);
