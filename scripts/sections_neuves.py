@@ -656,7 +656,14 @@ NEW_CSS = '''
 .rv-eng-g small{font:700 .78rem var(--f-ui);letter-spacing:.14em;color:var(--b-primary)}
 .rv-eng-g b{font:600 1.55rem/1.15 var(--f-title);color:var(--b-dark)}
 .rv-eng-g p{margin:0;font-size:.95rem;line-height:1.6;opacity:.8}
-@container (max-width:900px){.rv-eng-hd{grid-template-columns:1fr;gap:14px}.rv-eng-g{grid-template-columns:1fr;gap:34px}.rv-eng-ph{aspect-ratio:16/10}}
+/* Quatre promesses : quatre colonnes. Sans photo, chaque promesse devient une carte avec son icône (pas de vide). */
+.rv-eng-g:has(>article:nth-child(4)){grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+.rv-eng-g article:not(:has(.rv-eng-ph)){background:rgba(255,255,255,.82);border-radius:22px;padding:30px 26px;gap:12px;box-shadow:0 1px 0 rgba(35,58,46,.06);transition:transform .35s,box-shadow .35s}
+.rv-eng-g article:not(:has(.rv-eng-ph)):hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(35,58,46,.12)}
+.rv-eng-g article>.rv-ic{margin-bottom:8px}
+@container (max-width:900px){.rv-eng-hd{grid-template-columns:1fr;gap:14px}.rv-eng-g{grid-template-columns:1fr;gap:34px}.rv-eng-ph{aspect-ratio:16/10}
+  .rv-eng-g:has(>article:nth-child(4)){grid-template-columns:repeat(2,minmax(0,1fr))}}
+@container (max-width:560px){.rv-eng-g:has(>article:nth-child(4)){grid-template-columns:1fr}}
 /* 33. Questions : accordéon commun (+ qui devient −), quatre présentations */
 .rv-acc{display:grid;gap:12px;align-content:start}
 .rv-q{background:var(--c4,#f2f5f2);border-radius:18px;transition:background .3s,box-shadow .3s}
@@ -984,6 +991,12 @@ NEW_CSS = '''
 .rv-sto-tag{position:absolute;z-index:2;left:12px;right:12px;bottom:14px;display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center;background:rgba(255,255,255,.95);border-radius:16px;padding:8px}
 .rv-sto-tag img{width:44px;height:44px;border-radius:10px;object-fit:cover}.rv-sto-tag b{display:block;font-size:.84rem;color:var(--b-dark)}.rv-sto-tag small{font-size:.76rem}
 .rv-sto-tag a{background:var(--b-dark);color:#fff;border-radius:999px;padding:8px 12px;font:700 .76rem var(--f-ui);text-decoration:none}
+/* Une étiquette produit par histoire (data-rv-st) ; une photo de produit (.pk) se montre entière, jamais coupée. */
+.rv-sto-tag[data-rv-st]{opacity:0;pointer-events:none;transition:opacity .5s}.rv-sto-tag[data-rv-st].on{opacity:1;pointer-events:auto}
+.rv-sto-sc>img.pk{object-fit:contain;background:var(--pk,#efe9df);padding:21% 0 31%;box-sizing:border-box;-webkit-mask-image:linear-gradient(transparent 22%,#000 31%,#000 63%,transparent 73%);mask-image:linear-gradient(transparent 22%,#000 31%,#000 63%,transparent 73%)}
+.rv-sto-sc:has(img.pk){background:var(--pk-on,#efe9df);transition:background .6s}
+.rv-sto-tag[data-rv-st]{transition:none}.rv-sto-tag[data-rv-st].on{transition:opacity .45s}
+.rv-sto-sc:has(img.pk.on) .rv-sto-hd{color:var(--b-dark);text-shadow:none}.rv-sto-sc:has(img.pk.on) .rv-sto-bars i{background:rgba(0,0,0,.14)}.rv-sto-sc:has(img.pk.on) .rv-sto-bars b{background:var(--b-dark)}
 /* 17. Cartes qui s'empilent */
 .rv-stk{background:var(--b-primary);color:#fff}.rv-stk .rv-h{color:#fff}.rv-stk .rv-h em{color:var(--b-gold,var(--c5,#C9A04E))}.rv-stk .rv-eb{color:#fff;opacity:.85}
 .rv-stk-l{display:grid;gap:40px;padding-bottom:20px}
@@ -1129,7 +1142,9 @@ NEW_JS = r'''
     addEventListener("scroll",upd,{passive:true});upd()});
   // 15. Stories : lecture automatique dans le téléphone, ronds qui sautent à une histoire.
   qa("[data-rv-sto]").forEach(function(s){var bs=qa("[data-rv-si]",s),im=qa("[data-rv-sm]",s),bars=qa(".rv-sto-bars b",s),i=0,t0=Date.now(),D=4000;
-    function go(k){i=(k+im.length)%im.length;t0=Date.now();im.forEach(function(x,j){x.classList.toggle("on",j===i)});bs.forEach(function(b,j){b.classList.toggle("on",j===i)})}
+    // Photo de produit : le fond de l'écran prend la couleur du coin de la photo, le sachet se montre entier sans bande.
+    im.forEach(function(x){if(!x.classList.contains("pk"))return;function f(){try{var c=document.createElement("canvas");c.width=c.height=1;var g=c.getContext("2d");g.drawImage(x,0,0,4,4,0,0,1,1);var d=g.getImageData(0,0,1,1).data;x.dataset.pk="rgb("+d[0]+","+d[1]+","+d[2]+")";x.style.setProperty("--pk",x.dataset.pk);if(x.classList.contains("on"))x.parentNode.style.setProperty("--pk-on",x.dataset.pk)}catch(e){}}if(x.complete&&x.naturalWidth)f();else x.addEventListener("load",f)});
+    function go(k){i=(k+im.length)%im.length;t0=Date.now();im.forEach(function(x,j){x.classList.toggle("on",j===i);if(j===i&&x.dataset.pk)x.parentNode.style.setProperty("--pk-on",x.dataset.pk)});bs.forEach(function(b,j){b.classList.toggle("on",j===i)});qa("[data-rv-st]",s).forEach(function(g){g.classList.toggle("on",+g.dataset.rvSt===i)})}
     function tick(){var p=Math.min(1,(Date.now()-t0)/D);bars.forEach(function(b,j){b.style.width=(j<i?100:j===i?p*100:0)+"%"});if(p>=1)go(i+1);requestAnimationFrame(tick)}
     bs.forEach(function(b){b.addEventListener("click",function(){go(+b.dataset.rvSi)})});s.querySelector(".rv-sto-sc").addEventListener("click",function(e){if(!e.target.closest("a"))go(i+1)});go(0);requestAnimationFrame(tick)});
   // 17. Cartes qui s'empilent : la carte recouverte recule légèrement.

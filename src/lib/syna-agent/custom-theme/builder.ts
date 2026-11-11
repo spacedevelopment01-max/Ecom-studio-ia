@@ -25,16 +25,41 @@ function noteOf(id: string, demoFrame: boolean, tags: string[]): string | null {
 }
 
 /** Thème d'essai : une seule page qui contient TOUTES les sections de la banque de la famille (celles déjà écrites pour la marque gardent leurs textes et photos). */
+/**
+ * En-tête d'essai à la marque (retour du propriétaire du 11 novembre 2026 : « au lieu d'être juste un header c'est toute
+ * une section ») : les autres en-têtes de la banque portent le nom de la marque et le vrai menu du thème, au lieu du nom
+ * d'exemple et de repères « Bouton ». Seuls le nom et les liens du premier menu changent.
+ */
+export function brandHeader(html: string, brand: string, menu: string[]): string {
+  const esc = (v: string) => v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  let h = brand ? html.replace(/Brindi/g, esc(brand)) : html;
+  if (menu.length) h = h.replace(/<nav\b[^>]*>[\s\S]*?<\/nav>/, (nav) => {
+    let i = 0;
+    return nav.replace(/<a\b([^>]*)>([^<]+)<\/a>/g, (m, attrs: string) => (i < menu.length ? `<a${attrs}>${esc(menu[i++])}</a>` : ""));
+  });
+  return h;
+}
+/** Le vrai menu et le nom de la marque, lus dans l'en-tête écrit du thème. */
+function headerMenu(h: CtSection | null): { brand: string; menu: string[] } {
+  const html = h?.html ?? "";
+  const text = (v: string) => v.replace(/<span hidden>[\s\S]*?<\/span>/g, "").replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").trim();
+  const nav = html.match(/<nav\b[^>]*>([\s\S]*?)<\/nav>/)?.[1] ?? "";
+  const logo = html.match(/<a\b[^>]*class="[^"]*(?:^|[\s-])lg\b[^"]*"[^>]*>([\s\S]*?)<\/a>/)?.[1];
+  return { brand: logo ? text(logo) : "", menu: [...nav.matchAll(/<a\b[^>]*>([\s\S]*?)<\/a>/g)].map((m) => text(m[1])).filter(Boolean) };
+}
+
 export function builderTheme(t: CustomTheme, _o: { fashion?: boolean } = {}): { theme: CustomTheme; slots: BuilderSlot[]; start: BuilderStart } {
   const written = new Map<string, CtSection>();
   for (const s of [t.header, t.footer, ...t.pages.flatMap((pg) => pg.sections)]) if (s && !written.has(s.id)) written.set(s.id, s);
+  const hm = headerMenu(t.header);
   const slots: BuilderSlot[] = [];
   const sections: CtSection[] = [];
   const uidOf = new Map<string, string>();
   for (const g of SECTION_GROUPS.filter((x) => x.id !== "metiers")) for (const l of sectionLibrary().sections.filter((x) => x.family === t.family && sectionGroup(x) === g.id && !RETIRED_SECTIONS[x.id])) {
     const uid = `b${slots.length}`;
     const mine = written.get(l.id);
-    sections.push({ ...(mine ?? {}), uid, id: l.id });
+    const head = !mine && g.id === "en-tete" && (hm.brand || hm.menu.length) ? { html: brandHeader(l.html, hm.brand, hm.menu), clientTexts: true } : {};
+    sections.push({ ...(mine ?? head), uid, id: l.id });
     slots.push({ uid, id: l.id, group: g.id, title: l.title, does: l.does, note: noteOf(l.id, !!l.demoFrame, l.tags ?? []) });
     uidOf.set(l.id, uid);
   }
@@ -54,7 +79,19 @@ const GROUP_LABELS = Object.fromEntries(SECTION_GROUPS.map((g) => [g.id, g.label
 /** Script et style de l'atelier (posés par la route, avec le nonce de la page). */
 export function builderAssets(slots: BuilderSlot[], start: BuilderStart = { header: null, footer: null, pages: [{ key: "home", label: "Accueil", uids: [] }] }, key = "atelier"): { css: string; js: string } {
   const data = JSON.stringify({ slots, start, key, groups: SECTION_GROUPS.filter((g) => g.id !== "metiers").map((g) => ({ id: g.id, label: g.label })), labels: GROUP_LABELS }).replace(/</g, "\\u003c");
-  const css = `
+  // En-têtes présentés dans une fausse fenêtre (démonstration) : seule leur barre se montre dans l'atelier, sans la fausse
+  // page d'exemple (grande photo, bouton, blocs) ; l'en-tête transparent garde une bande de photo pour se lire.
+  const frames = slots.filter((s) => s.group === "en-tete" && s.note === "démonstration seulement").map((s) => `[data-ct="${s.uid}"]`);
+  const sel = (tail: string) => frames.map((f) => `${f} ${tail}`).join(",");
+  const frameCss = frames.length ? `
+${frames.join(",")}{padding:0 !important}
+${sel(".vp")}{height:auto;overflow:visible;border-radius:0;isolation:auto}
+${sel(".vp .sc")}{position:relative;inset:auto;overflow:visible}
+${sel(".vp .page")}{padding:0;gap:0}
+${sel(".vp .page>*")}{display:none}
+${sel(".h5w")}{margin-bottom:0}
+${sel(".vp .h1~.page>.ph:first-child")}{display:block;height:150px}` : "";
+  const css = `${frameCss}
 html.at-on .tb-bar [data-pgb]{display:none}
 html.at-on .tb-wrap,html.at-on .tb-bar{margin-left:380px}
 .at-side{position:fixed;left:0;top:0;bottom:0;z-index:9000;width:380px;display:flex;flex-direction:column;background:#fbfaf7;color:#1d2b24;font:500 14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:1px 0 0 #e7e2d8,8px 0 30px rgba(0,0,0,.06)}

@@ -1267,6 +1267,9 @@
 ;
 ;
 ;
+;
+;
+;
 ;/* ===== sections refaites (revue du 10 novembre 2026) ===== */
 /* Sections refaites (revue du 10 novembre 2026) */
 (function(){
@@ -1367,7 +1370,9 @@
     addEventListener("scroll",upd,{passive:true});upd()});
   // 15. Stories : lecture automatique dans le téléphone, ronds qui sautent à une histoire.
   qa("[data-rv-sto]").forEach(function(s){var bs=qa("[data-rv-si]",s),im=qa("[data-rv-sm]",s),bars=qa(".rv-sto-bars b",s),i=0,t0=Date.now(),D=4000;
-    function go(k){i=(k+im.length)%im.length;t0=Date.now();im.forEach(function(x,j){x.classList.toggle("on",j===i)});bs.forEach(function(b,j){b.classList.toggle("on",j===i)})}
+    // Photo de produit : le fond de l'écran prend la couleur du coin de la photo, le sachet se montre entier sans bande.
+    im.forEach(function(x){if(!x.classList.contains("pk"))return;function f(){try{var c=document.createElement("canvas");c.width=c.height=1;var g=c.getContext("2d");g.drawImage(x,0,0,4,4,0,0,1,1);var d=g.getImageData(0,0,1,1).data;x.dataset.pk="rgb("+d[0]+","+d[1]+","+d[2]+")";x.style.setProperty("--pk",x.dataset.pk);if(x.classList.contains("on"))x.parentNode.style.setProperty("--pk-on",x.dataset.pk)}catch(e){}}if(x.complete&&x.naturalWidth)f();else x.addEventListener("load",f)});
+    function go(k){i=(k+im.length)%im.length;t0=Date.now();im.forEach(function(x,j){x.classList.toggle("on",j===i);if(j===i&&x.dataset.pk)x.parentNode.style.setProperty("--pk-on",x.dataset.pk)});bs.forEach(function(b,j){b.classList.toggle("on",j===i)});qa("[data-rv-st]",s).forEach(function(g){g.classList.toggle("on",+g.dataset.rvSt===i)})}
     function tick(){var p=Math.min(1,(Date.now()-t0)/D);bars.forEach(function(b,j){b.style.width=(j<i?100:j===i?p*100:0)+"%"});if(p>=1)go(i+1);requestAnimationFrame(tick)}
     bs.forEach(function(b){b.addEventListener("click",function(){go(+b.dataset.rvSi)})});s.querySelector(".rv-sto-sc").addEventListener("click",function(e){if(!e.target.closest("a"))go(i+1)});go(0);requestAnimationFrame(tick)});
   // 17. Cartes qui s'empilent : la carte recouverte recule légèrement.

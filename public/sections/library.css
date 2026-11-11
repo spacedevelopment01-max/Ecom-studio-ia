@@ -4267,7 +4267,14 @@ section textarea,section input:not([type=checkbox]):not([type=radio]):not([type=
 .rv-eng-g small{font:700 .78rem var(--f-ui);letter-spacing:.14em;color:var(--b-primary)}
 .rv-eng-g b{font:600 1.55rem/1.15 var(--f-title);color:var(--b-dark)}
 .rv-eng-g p{margin:0;font-size:.95rem;line-height:1.6;opacity:.8}
-@container (max-width:900px){.rv-eng-hd{grid-template-columns:1fr;gap:14px}.rv-eng-g{grid-template-columns:1fr;gap:34px}.rv-eng-ph{aspect-ratio:16/10}}
+/* Quatre promesses : quatre colonnes. Sans photo, chaque promesse devient une carte avec son icône (pas de vide). */
+.rv-eng-g:has(>article:nth-child(4)){grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+.rv-eng-g article:not(:has(.rv-eng-ph)){background:rgba(255,255,255,.82);border-radius:22px;padding:30px 26px;gap:12px;box-shadow:0 1px 0 rgba(35,58,46,.06);transition:transform .35s,box-shadow .35s}
+.rv-eng-g article:not(:has(.rv-eng-ph)):hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(35,58,46,.12)}
+.rv-eng-g article>.rv-ic{margin-bottom:8px}
+@container (max-width:900px){.rv-eng-hd{grid-template-columns:1fr;gap:14px}.rv-eng-g{grid-template-columns:1fr;gap:34px}.rv-eng-ph{aspect-ratio:16/10}
+  .rv-eng-g:has(>article:nth-child(4)){grid-template-columns:repeat(2,minmax(0,1fr))}}
+@container (max-width:560px){.rv-eng-g:has(>article:nth-child(4)){grid-template-columns:1fr}}
 /* 33. Questions : accordéon commun (+ qui devient −), quatre présentations */
 .rv-acc{display:grid;gap:12px;align-content:start}
 .rv-q{background:var(--c4,#f2f5f2);border-radius:18px;transition:background .3s,box-shadow .3s}
@@ -4595,6 +4602,12 @@ section textarea,section input:not([type=checkbox]):not([type=radio]):not([type=
 .rv-sto-tag{position:absolute;z-index:2;left:12px;right:12px;bottom:14px;display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center;background:rgba(255,255,255,.95);border-radius:16px;padding:8px}
 .rv-sto-tag img{width:44px;height:44px;border-radius:10px;object-fit:cover}.rv-sto-tag b{display:block;font-size:.84rem;color:var(--b-dark)}.rv-sto-tag small{font-size:.76rem}
 .rv-sto-tag a{background:var(--b-dark);color:#fff;border-radius:999px;padding:8px 12px;font:700 .76rem var(--f-ui);text-decoration:none}
+/* Une étiquette produit par histoire (data-rv-st) ; une photo de produit (.pk) se montre entière, jamais coupée. */
+.rv-sto-tag[data-rv-st]{opacity:0;pointer-events:none;transition:opacity .5s}.rv-sto-tag[data-rv-st].on{opacity:1;pointer-events:auto}
+.rv-sto-sc>img.pk{object-fit:contain;background:var(--pk,#efe9df);padding:21% 0 31%;box-sizing:border-box;-webkit-mask-image:linear-gradient(transparent 22%,#000 31%,#000 63%,transparent 73%);mask-image:linear-gradient(transparent 22%,#000 31%,#000 63%,transparent 73%)}
+.rv-sto-sc:has(img.pk){background:var(--pk-on,#efe9df);transition:background .6s}
+.rv-sto-tag[data-rv-st]{transition:none}.rv-sto-tag[data-rv-st].on{transition:opacity .45s}
+.rv-sto-sc:has(img.pk.on) .rv-sto-hd{color:var(--b-dark);text-shadow:none}.rv-sto-sc:has(img.pk.on) .rv-sto-bars i{background:rgba(0,0,0,.14)}.rv-sto-sc:has(img.pk.on) .rv-sto-bars b{background:var(--b-dark)}
 /* 17. Cartes qui s'empilent */
 .rv-stk{background:var(--b-primary);color:#fff}.rv-stk .rv-h{color:#fff}.rv-stk .rv-h em{color:var(--b-gold,var(--c5,#C9A04E))}.rv-stk .rv-eb{color:#fff;opacity:.85}
 .rv-stk-l{display:grid;gap:40px;padding-bottom:20px}

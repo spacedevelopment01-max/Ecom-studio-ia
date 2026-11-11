@@ -170,3 +170,31 @@ describe("couleurs : jamais le mode sombre du téléphone (retour du propriétai
     expect(css.slice(i)).toMatch(/\.nx-hint\{position:static/);
   });
 });
+
+// Retours du propriétaire du 11 novembre 2026 (captures de l'atelier) : « c'est pas beau », « le vide à droite », « au lieu
+// d'être juste un header c'est toute une section ».
+describe("atelier : en-têtes à la marque et sections sans vide", () => {
+  it("un autre en-tête porte le nom de la marque et le vrai menu, et ne montre que sa barre", async () => {
+    const { builderTheme, builderAssets, brandHeader } = await import("../src/lib/syna-agent/custom-theme/builder");
+    const header = { uid: "h", id: "en-tete-classique", clientTexts: true, html: '<section class="bhs"><header class="bh"><a class="bh-lg" href="#">Éclat de thé<span hidden>Accueil</span></a><nav class="bh-nv"><a href="#">Nos mélanges</a><a href="#">Notre histoire</a><a href="#">Contact</a></nav></header></section>' };
+    const t: any = { version: 1, family: "classique", style: "", header, footer: null, search: null, pages: [] };
+    const { theme, slots } = builderTheme(t);
+    const pilule = theme.pages[0].sections.find((s) => s.id === "en-tete-flottant-en-pilule")!;
+    expect(pilule.clientTexts).toBe(true);
+    expect(pilule.html).toContain("Éclat de thé");
+    expect(pilule.html).not.toContain("Brindi");
+    const nav = pilule.html!.match(/<nav\b[\s\S]*?<\/nav>/)![0];
+    expect([...nav.matchAll(/<a\b[^>]*>([^<]+)<\/a>/g)].map((m) => m[1])).toEqual(["Nos mélanges", "Notre histoire", "Contact"]);
+    const uid = slots.find((s) => s.id === "en-tete-flottant-en-pilule")!.uid;
+    expect(builderAssets(slots).css).toContain(`[data-ct="${uid}"] .vp .page>*{display:none}`);
+    expect(brandHeader("<a>Brindi</a><nav><a>Un</a><a>Deux</a></nav>", "Marque", ["A"])).toBe("<a>Marque</a><nav><a>A</a></nav>");
+  });
+  it("quatre engagements tiennent sur quatre colonnes, sans photo ils deviennent des cartes ; les histoires changent de produit", async () => {
+    const fs = await import("node:fs");
+    const css = fs.readFileSync("public/sections/library.css", "utf8"), js = fs.readFileSync("public/sections/library.js", "utf8");
+    expect(css).toContain(".rv-eng-g:has(>article:nth-child(4)){grid-template-columns:repeat(4,minmax(0,1fr))");
+    expect(css).toContain(".rv-eng-g article:not(:has(.rv-eng-ph)){background:rgba(255,255,255,.82)");
+    expect(css).toContain(".rv-sto-sc>img.pk{object-fit:contain");
+    expect(js).toContain('qa("[data-rv-st]",s)');
+  });
+});
