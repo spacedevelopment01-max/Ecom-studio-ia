@@ -101,7 +101,27 @@ function readArtifact<T>(projectId: string, key: string): T | null {
 }
 export function loadCustomTheme(projectId: string): CustomTheme | null {
   const t = readArtifact<CustomTheme>(projectId, THEME_KEY);
-  return t && t.version === 1 && Array.isArray(t.pages) ? t : null;
+  if (!(t && t.version === 1 && Array.isArray(t.pages))) return null;
+  for (const x of allSections(t)) if (staleMarkup(x.s)) dropStaleWork(x.s);
+  return t;
+}
+
+/** Classes de la première balise d'une section (« rv-s rv-bdg »). */
+const rootClasses = (html: string): string[] => (html.match(/^\s*<(?:section|footer|header|div)\b[^>]*\bclass="([^"]*)"/)?.[1] ?? "").split(/\s+/).filter(Boolean);
+/**
+ * Section écrite sur une mise en page de la bibliothèque qui a été refaite depuis (essai Heure Dorée du 11 novembre 2026 :
+ * les « garanties » restaient sur l'ancienne version que le propriétaire avait jugée pas belle, avec des frais de livraison
+ * inventés) : aucune classe de la première balise n'est commune avec la version actuelle de la bibliothèque.
+ */
+export function staleMarkup(s: CtSection): boolean {
+  const lib = s.html ? libSection(s.id) : null;
+  if (!lib?.html || !s.html) return false;
+  const now = rootClasses(lib.html), mine = rootClasses(s.html);
+  return now.length > 0 && !mine.some((c) => now.includes(c));
+}
+/** Retour à la version actuelle de la bibliothèque : ses textes d'exemple seront réécrits pour la marque. */
+function dropStaleWork(s: CtSection): void {
+  delete s.html; delete s.css; delete s.photoBriefs; delete s.links; s.clientTexts = false;
 }
 /**
  * Enregistre le thème ; la version d'avant part dans l'historique (annuler une modification). history:false pour les

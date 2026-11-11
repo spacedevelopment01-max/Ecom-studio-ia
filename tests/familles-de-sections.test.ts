@@ -357,3 +357,14 @@ describe("grande photo de respiration : le voile ne couvre jamais le texte", () 
     expect(css).not.toMatch(/\.rv-gp::after\{/);
   });
 });
+
+describe("textes écrits sur l'ancienne version d'une section refaite (essai Heure Dorée du 11 novembre 2026)", () => {
+  it("une section dont la mise en page a été refaite revient à la version actuelle, ses vieux textes ne sont pas repris", async () => {
+    const { staleMarkup } = await import("../src/lib/syna-agent/custom-theme/theme");
+    const old = { uid: "s1", id: "badges-de-confiance", clientTexts: true, html: '<section class="ctw-blk"><div class="w badges">Colissimo en 48 h, 5,90 €</div></section>' };
+    expect(staleMarkup(old)).toBe(true);
+    const now = { uid: "s2", id: "badges-de-confiance", clientTexts: true, html: '<section class="rv-s rv-bdg" data-rv-in><div class="rv-in">Livraison</div></section>' };
+    expect(staleMarkup(now)).toBe(false);
+    expect(staleMarkup({ uid: "s3", id: "badges-de-confiance" })).toBe(false);
+  });
+});
