@@ -1109,10 +1109,11 @@ NEW_CSS = '''
 .rv-bg3-t small{font:700 .72rem var(--f-ui);letter-spacing:.14em;text-transform:uppercase;opacity:.85}.rv-bg3-t b{font:500 1.6rem/1.1 var(--f-title)}
 .rv-bg3-go{display:inline-flex;gap:8px;align-items:center;font:700 .86rem var(--f-ui)}.rv-bg3-go svg{width:16px;height:16px}
 .rv-gp{position:relative;min-height:clamp(420px,62vh,640px);display:grid;align-items:center;overflow:hidden;color:#fff;font-family:var(--f-ui)}
-.rv-gp>img{position:absolute;inset:0;width:100%;height:115%;object-fit:cover;top:-7%}
-.rv-gp::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.66),rgba(0,0,0,.38) 45%,rgba(0,0,0,.06) 75%)}
+.rv-gp>img{position:absolute;inset:0;z-index:0;width:100%;height:115%;object-fit:cover;top:-7%}
+/* Voile sur ::before (z 0) : ::after sert au contour de l'atelier, posé au-dessus de tout. */
+.rv-gp::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(0,0,0,.66),rgba(0,0,0,.38) 45%,rgba(0,0,0,.06) 75%)}
 .rv-gp-t .rv-h,.rv-gp-t .rv-eb{text-shadow:0 2px 18px rgba(0,0,0,.35)}
-.rv-gp-t{position:relative;z-index:1;display:grid;gap:16px;justify-items:start;padding:0 max(24px,6vw);max-width:620px}.rv-gp-t .rv-h{color:#fff}
+.rv-gp-t{position:relative;z-index:2;display:grid;gap:16px;justify-items:start;padding:0 max(24px,6vw);max-width:620px}.rv-gp-t .rv-h{color:#fff}
 .rv-pt .rv-hd{gap:16px}.rv-pt>.rv-in{justify-items:center}
 .rv-pt-g,.rv-ya-g{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;width:100%}
 .rv-pc{display:grid;gap:8px;text-decoration:none;color:var(--b-dark)}

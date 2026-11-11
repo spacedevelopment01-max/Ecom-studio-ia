@@ -338,3 +338,12 @@ describe("conception de SINA d'après les thèmes qui se vendent", () => {
     expect(isCardSection(libSection("bannieres-de-gamme")!)).toBe(false); // des bannières, pas une grille de cartes
   });
 });
+
+describe("grande photo de respiration : le voile ne couvre jamais le texte", () => {
+  it("le voile est sur ::before (::after sert au contour de l'atelier, au-dessus de tout)", async () => {
+    const fs = await import("node:fs");
+    const css = fs.readFileSync("public/sections/library.css", "utf8");
+    expect(css).toContain(".rv-gp::before{");
+    expect(css).not.toMatch(/\.rv-gp::after\{/);
+  });
+});
