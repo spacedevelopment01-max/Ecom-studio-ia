@@ -198,7 +198,9 @@ describe("atelier : en-têtes à la marque et sections sans vide", () => {
       .toBe('<nav><button type="button">Nos mélanges ▾</button><a href="#">Notre histoire</a><a href="#">Contact</a></nav>');
     // L'en-tête transparent se pose sur l'ouverture, sans bande de photo à lui.
     const tr = slots.find((s) => s.id === "en-tete-transparent-sur-photo")!.uid;
-    expect(builderAssets(slots).css).toContain(`[data-ct="${tr}"]{height:0;overflow:visible`);
+    expect(builderAssets(slots).css).toContain(`[data-ct="${tr}"],`);
+    expect(builderAssets(slots).css).toContain(`[data-ct="${uid}"]{height:0;overflow:visible`); // la pilule flotte aussi
+    expect(builderAssets(slots).css).toContain(`html:has([data-ct="${tr}"]:not([hidden])) .sl .nav`); // flèches du diaporama sous l'en-tête
   });
   it("quatre engagements tiennent sur quatre colonnes, sans photo ils deviennent des cartes ; les histoires changent de produit", async () => {
     const fs = await import("node:fs");

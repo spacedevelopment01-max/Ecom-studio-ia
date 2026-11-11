@@ -49,6 +49,8 @@ export function brandHeader(html: string, brand: string, menu: string[]): string
   });
   return h;
 }
+/** En-têtes qui flottent sur la photo d'ouverture au lieu d'occuper leur propre bande. */
+export const FLOATING_HEADERS = new Set(["en-tete-transparent-sur-photo", "en-tete-flottant-en-pilule"]);
 /** Le vrai menu et le nom de la marque, lus dans l'en-tête écrit du thème. */
 function headerMenu(h: CtSection | null): { brand: string; menu: string[] } {
   const html = h?.html ?? "";
@@ -100,11 +102,13 @@ ${sel(".vp .sc")}{position:relative;inset:auto;overflow:visible}
 ${sel(".vp .page")}{padding:0;gap:0}
 ${sel(".vp .page>*")}{display:none}
 ${sel(".h5w")}{margin-bottom:0}` : "";
-  // L'en-tête transparent se pose sur la section qui le suit (l'ouverture en photo), comme sur un vrai site : aucune bande à lui.
-  const over = slots.filter((s) => s.id === "en-tete-transparent-sur-photo").map((s) => `[data-ct="${s.uid}"]`);
+  // En-têtes qui flottent sur l'ouverture (transparent, pilule : retours du propriétaire du 11 novembre 2026) : ils se posent
+  // sur la section qui les suit, comme sur un vrai site, sans bande à eux.
+  const over = slots.filter((s) => FLOATING_HEADERS.has(s.id)).map((s) => `[data-ct="${s.uid}"]`);
   const overCss = over.length ? `
-${over.join(",")}{height:0;overflow:visible;position:relative;z-index:40}
-${over.map((o) => `${o} .h1`).join(",")}{position:absolute;top:0;left:0;right:0;margin:0}` : "";
+${over.join(",")}{height:0;overflow:visible;position:relative;z-index:45}
+${over.map((o) => `${o} .h1,${o} .h5w`).join(",")}{position:absolute;top:0;left:0;right:0;margin:0}
+${over.map((o) => `html:has(${o}:not([hidden])) .sl .nav`).join(",")}{top:112px}` : "";
   const css = `${frameCss}${overCss}
 html.at-on .tb-bar [data-pgb]{display:none}
 html.at-on .tb-wrap,html.at-on .tb-bar{margin-left:380px}
