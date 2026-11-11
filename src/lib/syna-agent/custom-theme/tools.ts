@@ -31,11 +31,11 @@ import { hdAspect } from "../mockup-code/prompts";
 import { imageReferences, mockupImageRoute } from "../mockup-code/tools";
 import { cutoutPhoto, FOND_A_DETOURER } from "./cutout-photo";
 import { authenticSection, isCutoutPhoto, familySections, libSection, onlyFor, sectionByRef, isCardSection } from "./library";
-import { allSections, applyStructure, BUY_OPTIONS, checkCustomTheme, findSection, loadConcepts, loadCustomTheme, replaceOnce, requiredPages, saveConcepts, saveCustomTheme, scopedCss, sectionHtml, undoCustomTheme, type CustomTheme, type SiteKind, type StructureOp } from "./theme";
+import { allSections, applyStructure, BUY_OPTIONS, checkCustomTheme, findSection, loadConcepts, loadCustomTheme, replaceOnce, requiredPages, saveConcepts, saveCustomTheme, scopedCss, sectionHtml, THEME_KEY, undoCustomTheme, type CustomTheme, type SiteKind, type StructureOp } from "./theme";
 import { listProducts } from "../../products/catalog";
 import { activityPlan, companyOf } from "../activity";
 import { brandBrief, siteCopyModel } from "./brand";
-import { type Ambiance, DESIGN_CALLS_MAX, DESIGN_CAP_MICRO, DESIGN_OUTPUT_TOKENS, DESIGN_REVIEW_SYSTEM, DESIGN_SYSTEM, DESIGN_TYPICAL_MICRO, DesignSchema, designGaps, designPrompt, intentText, type Design } from "./design";
+import { type Ambiance, DESIGN_CALLS_MAX, DESIGN_CAP_MICRO, DESIGN_OUTPUT_TOKENS, DESIGN_REVIEW_SYSTEM, DESIGN_SYSTEM, DESIGN_TYPICAL_MICRO, DesignSchema, designGaps, designPrompt, intentText, varietyGaps, type Design } from "./design";
 import { llmJson } from "../../ai/llm";
 import { withTrace } from "../../ai/trace";
 import { jobSpentMicro } from "../budget";
@@ -225,7 +225,14 @@ async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMode): Pro
     : mode.kind === "complete"
       ? `\n\nLE CLIENT A CHOISI CE CONCEPT : ses pages ${keys.map((k) => `« ${k} »`).join(" et ")}, son en-tête, son pied de page et sa recherche sont GARDÉS EXACTEMENT (mêmes sections, même ordre). Conçois toutes les AUTRES pages obligatoires (et une page utile en plus seulement si le parcours le demande), dans le MÊME concept et la même émotion, sans reprendre une section déjà posée. Rends la conception complète : toutes les pages, les siennes inchangées. CONCEPT CHOISI (JSON) : ${JSON.stringify(mode.fixed)}`
       : "";
-  const prompt = designPrompt({ brief: brandBrief(p, j), family: f.family, site, has: assets.has, lacks: assets.lacks, consigne: a.consigne, ambiance, products }) + modeText;
+  // Variété (retour du propriétaire du 11 novembre 2026) : les sections des derniers thèmes des autres projets, et un ordre
+  // de la bibliothèque propre à ce projet (et à chaque concept, pour que A et B ne partent pas de la même liste).
+  const recent = recentThemeSections(p.id);
+  const counts = new Map<string, number>();
+  for (const r of recent) for (const id of new Set(r)) counts.set(id, (counts.get(id) ?? 0) + 1);
+  const overused = [...counts].filter(([, n]) => n >= 2 || recent.length === 1).sort((x, y) => y[1] - x[1]).slice(0, 20).map(([id]) => id);
+  const seed = `${p.id}:${mode.kind === "concept" ? mode.label : "site"}:${Date.now() >> 22}`;
+  const prompt = designPrompt({ brief: brandBrief(p, j), family: f.family, site, has: assets.has, lacks: assets.lacks, consigne: a.consigne, ambiance, products, seed, overused }) + modeText;
   const jobId = getRun(ctx.runId)?.job_id ?? null;
   const tag = mode.kind === "concept" ? `custom-concept-${mode.label}` : mode.kind === "complete" ? "custom-design-complete" : "custom-design";
   const call = async (text: string, key: string, system = DESIGN_SYSTEM): Promise<Design> => customDesignDeps.call ? customDesignDeps.call(system, text, key)
@@ -251,6 +258,7 @@ async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMode): Pro
     try { t = build(d); rules = blocking(t); } catch (e) { rules = [(e as Error).message]; }
     // Concept : seules les objections dont la réponse est sur l'une de ses deux pages sont contrôlées.
     const g = designGaps(d, research);
+    g.pages.push(...varietyGaps(d, recent));
     const objections = mode.kind === "concept" ? g.blocking.filter((x) => keys.some((k) => x.includes(`page « ${k} »`))) : g.blocking;
     return { t, rules, objections, rhythm: g.rhythm, pages: g.pages };
   };
@@ -346,6 +354,14 @@ const conceptTool: AgentTool<{ choice: "A" | "B"; consigne?: string }> = {
   },
 };
 const CONCEPTS_TYPICAL_MICRO = 900_000;
+
+/** Accueil et fiche des derniers thèmes sur mesure des AUTRES projets (au plus 8), pour la variété des conceptions. */
+export function recentThemeSections(projectId: string): string[][] {
+  const rows = all<{ value: string }>("SELECT value FROM memory WHERE kind='artifact' AND key=? AND state='active' AND project_id<>? ORDER BY rowid DESC LIMIT 8", THEME_KEY, projectId);
+  const out: string[][] = [];
+  for (const r of rows) { try { const t = JSON.parse(r.value) as CustomTheme; out.push(t.pages.filter((pg) => pg.key === "home" || /^product/.test(pg.key)).flatMap((pg) => pg.sections.map((x) => x.id))); } catch { /* thème illisible : ignoré */ } }
+  return out.filter((x) => x.length);
+}
 
 /** Coût probable d'une écriture de section (mesuré sur les textes du site : environ 0,06 € avec le modèle des textes). */
 export const SECTION_TEXT_TYPICAL_MICRO = 60_000;

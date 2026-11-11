@@ -66,3 +66,12 @@ une ; rituel ou culture sur fond sombre ; accessoires et coffrets ; jamais de mi
 - Six sections ajoutées à la banque Classique, présentes dans presque tous les thèmes vendus et absentes jusque-là :
   image et texte, bannières de gamme, grande photo de respiration, produits en onglets, vous aimerez aussi, vidéo en
   bande.
+
+## Variété des conceptions (11 novembre 2026)
+Retour du propriétaire : « elle doit savoir mélanger et pas mettre tout le temps les mêmes sections ». Le premier essai
+sur Éclat de thé reprenait plusieurs sections de l'exemple. Désormais :
+- l'exemple ne nomme aucune section : il montre la logique moment par moment, et SINA compare toutes les sections qui
+  peuvent servir chaque moment ;
+- la bibliothèque lui est donnée dans un ordre propre à chaque projet (et à chaque concept) ;
+- les sections des derniers thèmes des autres projets lui sont signalées, et un accueil et une fiche à 70 % identiques à
+  un thème déjà monté sont refusés (`varietyGaps`), puis corrigés une fois.

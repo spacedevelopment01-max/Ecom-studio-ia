@@ -57,27 +57,20 @@ export const DESIGN_TYPICAL_MICRO = 800_000;
  * et SINA recopiait ce niveau-là.
  */
 const EXAMPLE = `EXEMPLE DU NIVEAU ATTENDU (une autre marque, à ne jamais recopier : des bougies coulées à la main, cible « personnes qui veulent une maison qui sent bon sans produits chimiques », objections « ça coûte cher pour une bougie », « elles fument et noircissent les murs », « l'odeur ne tient pas » ; pas d'avis clients).
-ACCUEIL (10 sections) :
-1. ouverture-photo-pleine · why : il arrive d'une publicité ; il doit ressentir le soir chez lui avant de lire quoi que ce soit · says : « La maison qui sent l'été dans un jardin, même en janvier », bouton « Allumer l'été » vers la boutique · photos : un salon au crépuscule, la bougie allumée au premier plan à droite, la partie gauche calme pour le titre.
-2. bannieres-de-gamme · why : juste sous l'ouverture, on l'oriente (16 thèmes vendus sur 27 le font) : il choisit son univers · says : « Les bougies du soir », « Les parfums d'été », « Les coffrets à offrir », chacun vers sa famille.
-3. produits-en-onglets · why : il veut voir les bougies tout de suite (dans les thèmes vendus, les produits arrivent en 2e à 4e position) ; SEULE section de cartes de la page, ses onglets remplacent plusieurs grilles · says : « Les plus aimées », « Nouveautés », « Pour offrir ».
-4. image-et-texte · why : après le choix, il veut comprendre ce qu'il achète · says : de la cire de colza à la flamme, en trois phrases vraies ; bouton vers l'atelier.
-5. grande-photo-de-respiration · why : respiration pleine largeur entre deux moments d'information ; il se projette chez lui · says : « Le soir où la maison ralentit », bouton vers la boutique.
-6. comparatif-nous-les-autres · why : objection « ça coûte cher » et « elles fument », au moment où il hésite · says : cire de colza contre paraffine, mèche en coton contre métal, 50 h contre 20 h, prix à l'heure de combustion.
-7. citation-en-grand · why : après les faits, l'émotion revient par la voix de la fondatrice · says : sa phrase vraie sur pourquoi elle coule ses bougies elle-même.
-8. nos-engagements · why : sans avis clients, la confiance vient des garanties et du savoir-faire, en fin de page comme dans les thèmes vendus · says : fabriquée à Lyon, retours 30 jours, livraison 48 h.
-9. le-journal-liste-des-articles · why : il n'est pas prêt à acheter ; on lui donne une raison de revenir · says : « Comment faire durer une bougie », « Choisir un parfum par pièce ».
-10. inscription-avec-photo · why : la page finit par un appel à agir, jamais par des produits · says : la lettre des nouveaux parfums.
-FICHE PRODUIT (8 sections) :
-1. produit-vedette · why : il arrive pour acheter : galerie, prix, bouton, livraison, sans chercher · says : « Figuier & bois blond », 32 €, 50 heures, cire de colza ; la promesse en une phrase.
-2. fiche-produit-a-onglets · why : juste après le prix, il veut comprendre ce qu'il achète ; la description racontée le fait entrer dans l'odeur · says : description en scène, composition exacte, entretien, livraison et retours.
-3. points-forts-du-produit · why : objection « l'odeur ne tient pas » et récapitulatif clair · says : parfum dosé à 10 %, diffusion à froid et à chaud, recyclable.
-4. mode-d-emploi-en-etapes · why : la première combustion décide de la durée de vie : on le guide · says : trois gestes vrais.
-5. photo-a-points-cliquables · why : après les faits, une grande photo d'émotion · says : un salon le soir, les points sur la bougie et le plaid.
-6. badges-de-confiance · why : inverser le risque au moment de décider · says : retours 30 jours, livraison 48 h.
-7. questions-sur-le-produit · why : derniers doutes juste avant de repartir · says : 5 vraies questions.
-8. vous-aimerez-aussi · why : les thèmes vendus finissent la fiche par les autres produits ; SEULE section de cartes de la page · says : quatre autres parfums.
-COLLECTION : catalogue-avec-filtres-et-tri, puis au plus une section courte (badges-de-confiance). PANIER : page-panier-complete, barre-de-livraison-offerte, vous-aimerez-aussi seulement si la fiche ne l'utilise pas (jamais la même section deux fois dans le site). À PROPOS : l-atelier-et-la-personne-derriere → histoire-en-frise → chiffres-cles → galerie-avec-visionneuse.
+ACCUEIL (10 moments) :
+1. ouverture en grande photo · why : il arrive d'une publicité ; il doit ressentir le soir chez lui avant de lire quoi que ce soit · says : « La maison qui sent l'été dans un jardin, même en janvier », bouton « Allumer l'été » vers la boutique · photos : un salon au crépuscule, la bougie allumée au premier plan à droite, la partie gauche calme pour le titre.
+2. orientation · why : juste sous l'ouverture, on l'oriente (16 thèmes vendus sur 27 le font) : il choisit son univers · says : « Les bougies du soir », « Les parfums d'été », « Les coffrets à offrir ».
+3. produits · why : il veut voir les bougies tout de suite (dans les thèmes vendus, les produits arrivent en 2e à 4e position) ; SEULE section de cartes de la page · says : les parfums avec leur prix.
+4. fabrication racontée · why : après le choix, il veut comprendre ce qu'il achète · says : de la cire de colza à la flamme, en trois phrases vraies.
+5. respiration en grande image · why : entre deux moments d'information, il se projette chez lui · says : « Le soir où la maison ralentit ».
+6. objection levée · why : « ça coûte cher » et « elles fument », au moment où il hésite · says : cire de colza contre paraffine, mèche en coton contre métal, 50 h contre 20 h.
+7. voix de la marque · why : après les faits, l'émotion revient par la fondatrice · says : sa phrase vraie sur pourquoi elle coule ses bougies elle-même.
+8. confiance · why : sans avis clients, elle vient des garanties et du savoir-faire, en fin de page · says : fabriquée à Lyon, retours 30 jours, livraison 48 h.
+9. raison de revenir · why : il n'est pas prêt à acheter · says : deux articles utiles.
+10. appel final · why : la page finit par un appel à agir, jamais par des produits · says : la lettre des nouveaux parfums.
+FICHE PRODUIT (8 moments) : bloc d'achat (produit vedette) → description racontée en onglets ou accordéon → points forts (objection « l'odeur ne tient pas ») → première combustion en étapes → grande image d'émotion → garanties → vraies questions → les autres produits (seule section de cartes).
+COLLECTION : la grille et ses filtres, au plus une section courte. PANIER : le panier et la livraison offerte. À PROPOS : la personne, son histoire, les chiffres vrais, des images.
+L'EXEMPLE MONTRE UNE LOGIQUE, PAS DES SECTIONS : il ne donne volontairement aucun identifiant. Pour CHAQUE moment, compare TOUTES les sections de la bibliothèque qui peuvent le servir (même rôle, ou autre rôle qui fait le même travail) et prends celle qui sert le mieux CETTE marque (son produit, son émotion, ses photos, son ambiance) ; dis dans why pourquoi celle-là plutôt que ses voisines. Deux marques différentes n'ont presque jamais les mêmes sections : une conception qui reprend les sections des derniers thèmes du Studio par habitude est refusée.
 POUR UN SITE DE SERVICES (un électricien, cible « propriétaires qui rénovent », objections « il ne viendra pas pour un petit chantier », « le devis va exploser ») : accueil = ouverture avec la promesse et le délai réel d'intervention → prestations en cartes → déroulé d'une intervention → estimation de devis → réalisations réelles (seulement si le client en a) → zone d'intervention → garanties et assurances réelles → « on vous rappelle ».`;
 
 /**
@@ -131,19 +124,46 @@ Mêmes exigences que le concepteur (pages riches, aucune section sans contenu r�
 Réponse : uniquement le JSON demandé.`;
 
 /** Catalogue de la famille donné au concepteur : identifiant, rôle, caractéristiques, titre, ce qu'elle fait. */
-export function designCatalogue(family: FamilyId): string {
+export function designCatalogue(family: FamilyId, seed?: string): string {
   const tr = sectionTraits();
-  return familySections(family).map((s) => {
+  return shuffled(familySections(family), seed).map((s) => {
     const t = tr[s.id];
     const traits = t ? ` · fond ${t.fond} · ${t.densite} · ${t.photos} photo(s)` : "";
     return `- ${s.id} · ${s.role}${isCardSection(s) ? " · cartes" : ""}${onlyFor(s.tags) ? ` · seulement pour ${onlyFor(s.tags)}` : ""}${traits} · ${s.title} : ${s.does.slice(0, 260)}`;
   }).join("\n");
 }
 
+/**
+ * Ordre propre à chaque projet (et à chaque concept) : le modèle prend volontiers les premières sections de la liste, et
+ * tous les thèmes se ressemblaient (retour du propriétaire du 11 novembre 2026 : « elle doit savoir mélanger et pas
+ * mettre tout le temps les mêmes sections »). Sans graine : l'ordre de la banque.
+ */
+export function shuffled<T>(list: T[], seed?: string): T[] {
+  if (!seed) return list;
+  let h = 2166136261;
+  for (const c of seed) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
+  const rnd = () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); return ((h ^= h >>> 16) >>> 0) / 4294967296; };
+  const a = [...list];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+
+/** Sections reprises trop souvent : celles des derniers thèmes du Studio (autres projets), hors pages pratiques. */
+export function varietyGaps(d: Pick<Design, "pages">, recent: string[][]): string[] {
+  const mine = d.pages.filter((pg) => pg.key === "home" || /^product/.test(pg.key)).flatMap((pg) => pg.sections.map((x) => x.section));
+  if (mine.length < 6) return [];
+  const out: string[] = [];
+  for (const other of recent) {
+    const o = new Set(other), same = mine.filter((x) => o.has(x));
+    if (same.length / mine.length >= 0.7) { out.push(`accueil et fiche presque identiques à un thème déjà monté pour une autre marque (${same.length} sections sur ${mine.length} en commun) : compare les autres sections de la bibliothèque pour chaque moment et garde seulement celles qui servent vraiment CETTE marque`); break; }
+  }
+  return out;
+}
+
 export type Ambiance = "clair" | "sombre" | "alterne";
 export const AMBIANCE_LABEL: Record<Ambiance, string> = { clair: "site clair (fonds clairs, quelques bandes sombres ou de couleur pour les moments forts)", sombre: "site sombre (fonds sombres, quelques sections claires pour respirer)", alterne: "fonds qui alternent d'une section à l'autre" };
 
-export function designPrompt(o: { brief: string; family: FamilyId; site: SiteKind; has: string[]; lacks: string[]; consigne?: string | null; ambiance?: Ambiance | null; products?: string[] }): string {
+export function designPrompt(o: { brief: string; family: FamilyId; site: SiteKind; has: string[]; lacks: string[]; consigne?: string | null; ambiance?: Ambiance | null; products?: string[]; seed?: string; overused?: string[] }): string {
   const req = requiredPages(o.site).map((r) => `${r.keys[0]} (${r.label})`).join(", ");
   const owned = platformOwnedPages(o.site).map((r) => r.label).join(", ");
   return [
@@ -156,8 +176,9 @@ export function designPrompt(o: { brief: string; family: FamilyId; site: SiteKin
     `Ce qu'elle n'a PAS (aucune section qui en dépend) : ${o.lacks.join(" ; ")}.`,
     `Pages obligatoires (clés) : ${req}.${owned ? ` Jamais de page : ${owned} (la plateforme les tient).` : ""}`,
     "",
-    `BIBLIOTHÈQUE DE LA FAMILLE (identifiant · rôle · fond · densité · photos · titre : ce qu'elle fait) :`,
-    designCatalogue(o.family),
+    o.overused?.length ? `SECTIONS DÉJÀ PRISES DANS LES DERNIERS THÈMES DU STUDIO (pour d'autres marques) : ${o.overused.join(", ")}. Ne les reprends pas par habitude : seulement si, pour CE moment de CETTE marque, aucune autre section ne fait mieux (dis-le dans why).` : "",
+    `BIBLIOTHÈQUE DE LA FAMILLE (dans un ordre propre à ce projet : l'ordre ne dit rien de la qualité ; identifiant · rôle · fond · densité · photos · titre : ce qu'elle fait) :`,
+    designCatalogue(o.family, o.seed),
   ].filter((x) => x !== "").join("\n");
 }
 

@@ -298,19 +298,29 @@ describe("atelier : panier, alignement, menu burger, espace de la galerie", () =
 
 // Étude de 65 thèmes ThemeForest (11 novembre 2026, docs/etude-themes-themeforest.md).
 describe("conception de SINA d'après les thèmes qui se vendent", () => {
-  it("la consigne donne l'ordre des pages ; l'exemple n'utilise que des sections actuelles et passe les contrôles", async () => {
+  it("la consigne donne l'ordre des pages ; l'exemple montre une logique sans aucun identifiant de section", async () => {
     const D = await import("../src/lib/syna-agent/custom-theme/design");
-    const { libSection, RETIRED_SECTIONS } = await import("../src/lib/syna-agent/custom-theme/library");
+    const { sectionLibrary } = await import("../src/lib/syna-agent/custom-theme/library");
     expect(D.DESIGN_SYSTEM).toContain("CE QUE FONT LES THÈMES QUI SE VENDENT");
     expect(D.DESIGN_REVIEW_SYSTEM).toContain("CE QUE FONT LES THÈMES QUI SE VENDENT");
-    const ex = D.DESIGN_SYSTEM.slice(D.DESIGN_SYSTEM.indexOf("ACCUEIL (10 sections)"), D.DESIGN_SYSTEM.indexOf("POUR UN SITE DE SERVICES"));
-    const pick = (txt: string) => [...txt.matchAll(/\n\d+\. ([a-z0-9-]+) ·/g)].map((x) => ({ section: x[1], why: "x", says: "x", photos: "aucune" }));
-    const home = pick(ex.slice(0, ex.indexOf("FICHE PRODUIT"))), prod = pick(ex.slice(ex.indexOf("FICHE PRODUIT"), ex.indexOf("COLLECTION")));
-    expect(home.length).toBe(10);
-    expect(prod.length).toBe(8);
-    for (const s of [...home, ...prod]) { expect(libSection(s.section)).toBeTruthy(); expect(RETIRED_SECTIONS[s.section]).toBeFalsy(); }
-    expect(new Set([...home, ...prod].map((s) => s.section)).size).toBe(18); // jamais la même section deux fois
-    expect(D.pageOrderGaps({ pages: [{ key: "home", label: "Accueil", journey: "", sections: home }, { key: "product", label: "Fiche produit", journey: "", sections: prod }] } as any)).toEqual([]);
+    expect(D.DESIGN_SYSTEM).toContain("L'EXEMPLE MONTRE UNE LOGIQUE, PAS DES SECTIONS");
+    const ex = D.DESIGN_SYSTEM.slice(D.DESIGN_SYSTEM.indexOf("EXEMPLE DU NIVEAU ATTENDU"), D.DESIGN_SYSTEM.indexOf("POUR UN SITE DE SERVICES"));
+    // Retour du propriétaire : « elle doit savoir mélanger et pas mettre tout le temps les mêmes sections » : l'exemple ne
+    // nomme aucune section (SINA recopiait celles de l'exemple).
+    const named = sectionLibrary().sections.map((x) => x.id).filter((id) => id.includes("-") && new RegExp(`\\b${id}\\b`).test(ex));
+    expect(named).toEqual([]);
+  });
+  it("variété : la bibliothèque arrive dans un ordre propre à chaque projet ; les sections des derniers thèmes sont signalées ; un montage copié est refusé", async () => {
+    const D = await import("../src/lib/syna-agent/custom-theme/design");
+    const a = D.designCatalogue("classique", "projet-a"), b = D.designCatalogue("classique", "projet-b");
+    expect(a).not.toBe(b);
+    expect(a.split("\n").sort()).toEqual(b.split("\n").sort()); // les mêmes sections, dans un autre ordre
+    const prompt = D.designPrompt({ brief: "x", family: "classique", site: { business: "products", products: 6 } as any, has: [], lacks: [], seed: "s", overused: ["image-et-texte", "produits-en-onglets"] });
+    expect(prompt).toContain("SECTIONS DÉJÀ PRISES DANS LES DERNIERS THÈMES DU STUDIO (pour d'autres marques) : image-et-texte, produits-en-onglets");
+    const pg = (key: string, ids: string[]) => ({ key, label: key, journey: "", sections: ids.map((section) => ({ section })) });
+    const mine = { pages: [pg("home", ["a", "b", "c", "d", "e", "f"]), pg("product", ["g", "h"])] } as any;
+    expect(D.varietyGaps(mine, [["a", "b", "c", "d", "e", "f", "x"]]).join(" ")).toContain("presque identiques");
+    expect(D.varietyGaps(mine, [["a", "b", "y", "z"]])).toEqual([]);
   });
   it("le contrôle refuse un accueil sans produits, des produits trop tard, des preuves avant les produits, une fin sur des produits", async () => {
     const D = await import("../src/lib/syna-agent/custom-theme/design");
