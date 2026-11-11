@@ -591,7 +591,7 @@
   // P1 points
   qa("[data-p1]").forEach(function(s){var D=[["sachet-bois.jpg","Sachet Thé vert jasmin · 100 g","8,50 €"],["infuseur.jpg","Tasse à infuseur","[À compléter : prix]"]],pop=q("[data-p1p]",s),dots=qa(".p1-dot",s),li=qa("[data-p1l] button",s);
     function show(i,user){var d=dots[i],on=d.classList.contains("on");dots.forEach(function(x){x.classList.remove("on")});li.forEach(function(x){x.classList.remove("on")});if(on){pop.classList.remove("on");d.parentNode.style.marginBottom="";return}
-      d.classList.add("on");li[i].classList.add("on");q("img",pop).src="photos/"+D[i][0];q("b",pop).textContent=D[i][1];q("small",pop).textContent=D[i][2];
+      d.classList.add("on");if(li[i])li[i].classList.add("on");var it=li[i],nb=it&&q("b",it),ns=it&&q("small",it),dd=D[i]||[],im=q("img",pop),src=d.dataset.img||(dd[0]?"photos/"+dd[0]:"");im.hidden=!src;if(src)im.src=src;q("b",pop).textContent=nb?nb.textContent:(dd[1]||"");q("small",pop).textContent=ns?ns.textContent:(dd[2]||"");
       var ph=d.parentNode,W=ph.clientWidth,Hh=ph.clientHeight,pw=pop.offsetWidth||220,ptop=parseFloat(d.style.top)/100*Hh,px=parseFloat(d.style.left)/100*W;if(W<520){pop.style.width=W+"px";pop.style.left="0px";pop.style.top=(Hh+12)+"px";ph.style.marginBottom=(pop.offsetHeight+24)+"px";ph.style.transition="margin .35s"}else{pop.style.width="";ph.style.marginBottom="";pop.style.left=Math.max(8,Math.min(W-pw-8,px-pw/2))+"px";pop.style.top=(ptop+24)+"px"}pop.classList.remove("on");void pop.offsetWidth;pop.classList.add("on");if(user&&pop.getBoundingClientRect().bottom>window.innerHeight)pop.scrollIntoView({block:"nearest",behavior:"smooth"})}
     dots.forEach(function(d,i){d.addEventListener("click",function(){show(i,true)})});li.forEach(function(b,i){b.addEventListener("click",function(){show(i,true)})});setTimeout(function(){show(0)},400)});
   // P2 défilement narratif
@@ -1243,33 +1243,7 @@
 (function(){document.addEventListener("click",function(e){var bd=document.querySelector("[data-bd]");if(!bd)return;
   if(e.target.closest("[data-bdo]"))bd.classList.add("on");else if(e.target.closest("[data-bdx]")||e.target===bd||e.target.closest(".bd-nv a"))bd.classList.remove("on")});
   document.querySelectorAll(".bd-nv a").forEach(function(x,i){x.style.transitionDelay=(.15+i*.06)+"s"});
-  document.addEventListener("keydown",function(e){var bd=document.querySelector("[data-bd]");if(bd&&e.key==="Escape")bd.classList.remove("on")})})();
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
+  document.addEventListener("keydown",function(e){var bd=document.querySelector("[data-bd]");if(bd&&e.key==="Escape")bd.classList.remove("on")})})()
 ;/* ===== sections refaites (revue du 10 novembre 2026) ===== */
 /* Sections refaites (revue du 10 novembre 2026) */
 (function(){

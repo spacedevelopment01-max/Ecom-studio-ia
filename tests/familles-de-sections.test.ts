@@ -240,3 +240,20 @@ describe("atelier : ouvertures et confort", () => {
     expect(js).not.toContain("if(typeof k===\"number\"&&list().some(");
   });
 });
+
+// Contrôle complet de l'atelier (11 novembre 2026, « regarde que tout fonctionne ») : 106 sections posées et cliquées.
+describe("atelier : sections qui plantaient au clic", () => {
+  it("photo à points cliquables : plus de deux points ne plante plus, la bulle reprend la liste de la section", async () => {
+    const fs = await import("node:fs");
+    const js = fs.readFileSync("public/sections/library.js", "utf8");
+    expect(js).toContain("if(li[i])li[i].classList.add(\"on\")");
+    expect(js).toContain("dd=D[i]||[]");
+    expect(js).not.toMatch(/\n;\n;\n/); // plus de « ; » empilés à chaque passage du script de revue
+  });
+  it("« Passer commande » ne plante plus : le message de paiement est partagé entre les scripts", async () => {
+    const fs = await import("node:fs");
+    const r = fs.readFileSync("src/lib/syna-agent/custom-theme/render.ts", "utf8");
+    expect(r).toContain("window.ctNote=note;");
+    expect(r).toContain("if(window.ctNote)window.ctNote(window.CT_PAY)");
+  });
+});

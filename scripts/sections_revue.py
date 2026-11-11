@@ -55,6 +55,10 @@ DOES_FIX = {
 }
 
 JS_FIX = [
+    # Photo à points cliquables (contrôle de l'atelier du 11 novembre 2026) : plus de deux points ne fait plus planter
+    # la section ; la bulle reprend le nom et le prix de la liste de la section (ceux du client), l'exemple sinon.
+    ('d.classList.add("on");li[i].classList.add("on");q("img",pop).src="photos/"+D[i][0];q("b",pop).textContent=D[i][1];q("small",pop).textContent=D[i][2];',
+     'd.classList.add("on");if(li[i])li[i].classList.add("on");var it=li[i],nb=it&&q("b",it),ns=it&&q("small",it),dd=D[i]||[],im=q("img",pop),src=d.dataset.img||(dd[0]?"photos/"+dd[0]:"");im.hidden=!src;if(src)im.src=src;q("b",pop).textContent=nb?nb.textContent:(dd[1]||"");q("small",pop).textContent=ns?ns.textContent:(dd[2]||"");'),
     # 11. Ils parlent de nous sans citation : le script des citations ne tourne que si elles existent.
     ('$$("[data-press]").forEach(function(p){var f=$(".pqf",p),',
      '$$("[data-press]").forEach(function(p){if(!$(".pqf",p))return;var f=$(".pqf",p),'),
@@ -129,7 +133,7 @@ def apply_sections(sections):
 def apply_js(js):
     if JS_BEGIN in js:
         js = js[:js.index(JS_BEGIN)] + js[js.index(JS_END) + len(JS_END):]
-    js = js.rstrip('\n') + '\n;' + JS_BEGIN + NEW_JS + JS_END + '\n'
+    js = js.rstrip('\n;') + '\n;' + JS_BEGIN + NEW_JS + JS_END + '\n'  # sans empiler un « ; » à chaque passage
     for a, b in JS_FIX:
         if b in js:
             continue
