@@ -26,10 +26,10 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   const t = concept === "A" || concept === "B" ? loadConcepts(id)?.[concept]?.theme ?? null : loadCustomTheme(id);
   if (!t) throw new HttpError(404, L("Aucun thème sur mesure pour ce projet.", "No custom theme for this project."));
   const nonce = crypto.randomBytes(12).toString("base64");
-  // ?builder=1 : le client monte lui-même son accueil, section par section (essai du propriétaire, gratuit, rien d'enregistré).
+  // ?builder=1 : atelier du thème, le client monte lui-même toutes ses pages avec toutes les sections (gratuit, rien d'enregistré).
   const builder = q.get("builder") === "1" && !concept ? builderTheme(t, { fashion: /mode|v[êe]tement|chaussure|bijou/i.test(`${p.product?.category ?? ""} ${p.product?.name ?? ""}`) }) : null;
-  let html = renderCustomTheme(p, builder ? builder.theme : t, { studio: q.get("studio") === "1" && !concept && !builder, embed: q.get("embed") === "1", nonce, ...(builder ? { title: `${p.brand?.name || p.name} — construis ton accueil` } : {}) });
-  if (builder) { const a = builderAssets(builder.slots); html = html.replace("</body>", `<style>${a.css}</style><script nonce="${nonce}">${a.js}</script></body>`); }
+  let html = renderCustomTheme(p, builder ? builder.theme : t, { studio: q.get("studio") === "1" && !concept && !builder, embed: q.get("embed") === "1", nonce, ...(builder ? { title: `${p.brand?.name || p.name} — atelier du thème` } : {}) });
+  if (builder) { const a = builderAssets(builder.slots, builder.start, p.id); html = html.replace("</body>", `<style>${a.css}</style><script nonce="${nonce}">${a.js}</script></body>`); }
   // ?catalog=classique|moderne : la banque complète des sections de ce style, rangées par famille (lecture seule).
   const cat = q.get("catalog");
   if ((cat === "classique" || cat === "moderne") && !concept) {

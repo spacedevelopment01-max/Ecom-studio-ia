@@ -6,7 +6,8 @@ import { builderAssets, catalogAssets } from "../src/lib/syna-agent/custom-theme
 // gris au bon format, repères en français, couleurs du client), avec un bouton « Voir un exemple rempli ».
 describe("sections vierges de la banque et de l'outil de construction", () => {
   it("photos en cadres gris avec icône, textes de repère en français, bouton pour voir l'exemple rempli", () => {
-    expect(BLANK_CSS).toContain("html.ct-blank [data-ct] img:not(.ctw-logo)");
+    expect(BLANK_CSS).toContain("html.ct-blank [data-ct]:not([data-ct-own]) img:not(.ctw-logo)");
+    expect(BLANK_JS).toContain('sec.hasAttribute("data-ct-own")'); // les sections déjà écrites pour la marque gardent leurs textes et photos
     expect(BLANK_CSS).toContain("object-position:-99999px");
     for (const t of ["Titre principal qui donne envie", "Titre de la section", "Bouton qui donne envie", "Voir un exemple rempli", "Revenir aux sections vierges", "Lien vers une page"]) expect(BLANK_JS).toContain(t);
     expect(() => new Function(BLANK_JS)).not.toThrow();

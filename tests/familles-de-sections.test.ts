@@ -15,17 +15,37 @@ describe("familles de sections", () => {
   });
 });
 
-describe("mode construction de l'accueil", () => {
-  it("pose toutes les sections permises de la famille, jamais une fausse offre ni une section réservée à la mode", async () => {
+describe("atelier du thème (demande du propriétaire du 11 novembre 2026 : toutes les sections, sans barres de boutons)", () => {
+  it("pose TOUTES les sections de la banque de la famille, avec ce qui empêche certaines d'être posées telles quelles", async () => {
     const { builderTheme } = await import("../src/lib/syna-agent/custom-theme/builder");
-    const { FAKE_OFFER_SECTIONS } = await import("../src/lib/syna-agent/custom-theme/library");
+    const { FAKE_OFFER_SECTIONS, RETIRED_SECTIONS, sectionLibrary } = await import("../src/lib/syna-agent/custom-theme/library");
     const t: any = { version: 1, family: "classique", style: "", header: null, footer: null, search: null, pages: [] };
-    const { theme, slots } = builderTheme(t);
+    const { theme, slots, start } = builderTheme(t);
     expect(theme.pages).toHaveLength(1);
-    expect(slots.some((s) => s.group === "en-tete")).toBe(true);
-    expect(slots.some((s) => s.group === "ouverture")).toBe(true);
-    expect(slots.some((s) => s.group === "pied-de-page")).toBe(true);
-    expect(slots.filter((s) => FAKE_OFFER_SECTIONS[s.id])).toEqual([]);
+    const bank = sectionLibrary().sections.filter((s) => s.family === "classique" && !RETIRED_SECTIONS[s.id] && sectionGroup(s) !== "metiers");
+    expect(slots.map((s) => s.id).sort()).toEqual(bank.map((s) => s.id).sort());
+    for (const s of slots.filter((x) => FAKE_OFFER_SECTIONS[x.id])) expect(s.note).toMatch(/fausse offre/);
+    expect(start.header && slots.find((s) => s.uid === start.header)!.group).toBe("en-tete");
+    expect(start.footer && slots.find((s) => s.uid === start.footer)!.group).toBe("pied-de-page");
+  });
+  it("part de la composition du thème (toutes ses pages, en-tête et pied de page communs)", async () => {
+    const { builderTheme } = await import("../src/lib/syna-agent/custom-theme/builder");
+    const t: any = { version: 1, family: "classique", style: "", header: { uid: "h", id: "en-tete-au-logo-centre" }, footer: { uid: "f", id: "pied-de-page-complet" }, search: null,
+      pages: [{ key: "home", label: "Accueil", sections: [{ uid: "a", id: "badges-de-confiance" }, { uid: "b", id: "avis-clients" }] }, { key: "aide", label: "Aide", sections: [{ uid: "c", id: "questions-avec-recherche" }] }] };
+    const { slots, start } = builderTheme(t);
+    const idOf = (u: string | null) => slots.find((s) => s.uid === u)?.id;
+    expect(start.pages.map((p) => p.key)).toEqual(["home", "aide"]);
+    expect(start.pages[0].uids.map(idOf)).toEqual(["badges-de-confiance", "avis-clients"]);
+    expect(idOf(start.header)).toBe("en-tete-au-logo-centre");
+    expect(idOf(start.footer)).toBe("pied-de-page-complet");
+  });
+  it("un panneau sur le côté remplace les barres de boutons posées sur les sections", async () => {
+    const { builderAssets } = await import("../src/lib/syna-agent/custom-theme/builder");
+    const { js, css } = builderAssets([]);
+    for (const t of ["Atelier du thème", "Remplacer par", "+ Ajouter une section", "Disposition", "Annuler", "Repartir du thème", "draggable"]) expect(js).toContain(t);
+    expect(js).not.toContain("Changer cette section");
+    expect(css).toContain(".at-side");
+    expect(() => new Function(js)).not.toThrow();
   });
 });
 

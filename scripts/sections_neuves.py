@@ -1068,7 +1068,7 @@ NEW_JS = r'''
   // Fenêtre d'inscription : dans la banque et l'outil de construction, visible telle quelle ; sur un vrai site, une seule
   // fois, quelques secondes après l'arrivée (mémoire du navigateur protégée).
   qa("[data-rv-pop]").forEach(function(s){
-    function preview(){return /[?&](catalog|builder)=/.test(location.search)||!!document.querySelector(".cg-lab,.bd-main,.bd-show,[data-ct-catalog]")}
+    function preview(){return /[?&](catalog|builder)=/.test(location.search)||!!document.querySelector(".cg-lab,.bd-main,.bd-show,.at-side,[data-ct-catalog]")}
     function close(){s.classList.remove("open");try{localStorage.setItem("rv-pop-vu","1")}catch(e){}}
     qa("[data-rv-popx]",s).forEach(function(b){b.addEventListener("click",function(){if(s.classList.contains("rv-live"))close()})});
     if(preview())return;

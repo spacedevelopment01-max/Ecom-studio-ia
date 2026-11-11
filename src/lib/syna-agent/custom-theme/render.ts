@@ -285,7 +285,7 @@ const SETTINGS_JS = `(function(){var D=document.documentElement.dataset;
     function price(){var pr=po.querySelector("[data-pon]");bar.querySelector("small").textContent=pr?pr.textContent:""}price();
     bar.querySelector("button").onclick=function(){go.click()};document.body.appendChild(bar);
     // À chaque défilement (un saut d'un coup au-delà du bouton ne doit pas être manqué).
-    function upd(){var pg=go.closest(".tb-pg"),r=go.getBoundingClientRect(),on=!(pg&&pg.hidden)&&r.height>0&&r.bottom<0&&!document.querySelector(".cg-lab,.bd-main");if(on)price();bar.classList.toggle("on",on)}
+    function upd(){var pg=go.closest(".tb-pg"),r=go.getBoundingClientRect(),on=!(pg&&pg.hidden)&&r.height>0&&r.bottom<0&&!document.querySelector(".cg-lab,.bd-main,.at-side");if(on)price();bar.classList.toggle("on",on)}
     addEventListener("scroll",upd,{passive:true});addEventListener("resize",upd);upd()});
   // Livraison offerte : le vrai seuil du client, sous le bouton d'achat.
   if(D.poFree)document.querySelectorAll(".po [data-pogo]").forEach(function(go){var p=document.createElement("p");p.className="ct-free";p.textContent="Livraison offerte dès "+String(D.poFree).replace(".",",")+" € d'achat";go.insertAdjacentElement("afterend",p)});
@@ -331,7 +331,7 @@ const NAV_JS = `(function(){
     var k=s._po.gam.findIndex(function(g){return String(g[0]).split("/").pop()===f});s._po.pick(k>-1?k:s._po.g0)}
   var MAP=window.TB_MAP||{};document.querySelectorAll(".tb-wrap a:not([data-go]), .tb-wrap button[aria-label]:not([data-go])").forEach(function(x){var t=(x.tagName==="BUTTON"?x.getAttribute("aria-label"):x.textContent).replace(/[→↗]/g,"").replace(/\\s+/g," ").trim(),u=t.replace(/\\s*\\d+\\s*pièces?$/,"").trim();var to=MAP[t]||MAP[u];if(to)x.dataset.go=to});
   // Pieds de page (revue du 10 novembre 2026) : seulement les pages qui existent ; une colonne sans lien disparaît.
-  function rvFoot(){if(/[?&](catalog|builder)=/.test(location.search)||document.querySelector(".cg-lab,.bd-main,.bd-show"))return;document.querySelectorAll(".rv-ft").forEach(function(f){f.querySelectorAll("a:not([data-go]):not([aria-label])").forEach(function(a){if(a.closest(".cta,.strip")||a.querySelector("img"))return;var li=a.closest("li");(li||a).hidden=true});f.querySelectorAll(".fcol,.facc details,.nx5-top>div,.lg2,.f3>nav").forEach(function(c){if(c.querySelector("a")&&!c.querySelector("a:not([hidden])"))c.setAttribute("data-rv-empty","")})})}
+  function rvFoot(){if(/[?&](catalog|builder)=/.test(location.search)||document.querySelector(".cg-lab,.bd-main,.bd-show,.at-side"))return;document.querySelectorAll(".rv-ft").forEach(function(f){f.querySelectorAll("a:not([data-go]):not([aria-label])").forEach(function(a){if(a.closest(".cta,.strip")||a.querySelector("img"))return;var li=a.closest("li");(li||a).hidden=true});f.querySelectorAll(".fcol,.facc details,.nx5-top>div,.lg2,.f3>nav").forEach(function(c){if(c.querySelector("a")&&!c.querySelector("a:not([hidden])"))c.setAttribute("data-rv-empty","")})})}
   if(document.readyState==="complete")rvFoot();else addEventListener("load",rvFoot);
   var lg=window.CT_LOGO;if(lg)document.querySelectorAll('[data-ct-role="header"] [class$="-lg"],[data-ct-role="header"] .lg,[data-ct-role="footer"] [class$="-lg"]').forEach(function(x){x.innerHTML='<img class="ctw-logo" src="'+lg+'" alt="'+String(window.CT_NAME||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;")+'">'});
   // Textes écrits par les scripts des sections : jamais le nom d'une marque de démonstration (remplacé par celle du client).
