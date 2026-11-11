@@ -4176,6 +4176,8 @@ html[data-po-promo="1"] [data-poshow="promo"]{display:inline-flex!important}
 .p8-grid[data-n="1"]>img{width:100%}
 .p8-grid[data-n="2"]{flex-direction:column;flex-wrap:nowrap;align-items:center}
 /* ===== revue du propriétaire (10 novembre 2026) ===== */
+/* Diaporama d'ouverture : un texte par photo, seul celui de la photo affichée est visible. */
+.sl .cap .ci{display:none;gap:14px}.sl .cap .ci.on{display:grid}
 /* Contrôle général : de l'air autour des sections qui n'en avaient pas (rien ne touche le bord ni la section voisine). */
 .ctw-blk:has(>.bento),.ctw-blk:has(>.ba),.ctw-blk.ba-sec,.ctw-blk:has(>.w),.ctw-blk:has(>[data-gallery2]){padding:72px max(24px,5vw)}
 @container (max-width:760px){.ctw-blk:has(>.bento),.ctw-blk:has(>.ba),.ctw-blk.ba-sec,.ctw-blk:has(>.w),.ctw-blk:has(>[data-gallery2]){padding:44px 16px}}

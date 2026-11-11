@@ -12,6 +12,15 @@ describe("sections vierges de la banque et de l'outil de construction", () => {
     for (const t of ["Titre principal qui donne envie", "Titre de la section", "Bouton qui donne envie", "Voir un exemple rempli", "Revenir aux sections vierges", "Lien vers une page"]) expect(BLANK_JS).toContain(t);
     expect(() => new Function(BLANK_JS)).not.toThrow();
   });
+  it("les flèches et les croix restent des flèches (diaporama, retour du propriétaire du 11 novembre 2026)", () => {
+    const m = BLANK_JS.match(/function label\(b,txt\)\{[\s\S]*?\n  return len>14\?"Texte court":null\}/);
+    expect(m).not.toBeNull();
+    const label = new Function(`${m![0]}; return label;`)() as (b: unknown, t: string) => string | null;
+    const btn = { tagName: "BUTTON", className: "" };
+    globalThis.getComputedStyle = (() => ({ textTransform: "none" })) as unknown as typeof getComputedStyle;
+    for (const t of ["←", "→", "‹", "›", "×"]) expect(label(btn, t)).toBeNull();
+    expect(label(btn, "Ajouter")).toBe("Bouton");
+  });
   it("branché sur la banque et sur l'outil de construction (jamais sur un vrai site)", () => {
     expect(catalogAssets([], "classique", null).js).toContain("ct-blank-sw");
     expect(builderAssets([]).js).toContain("ct-blank-sw");

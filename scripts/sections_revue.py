@@ -47,6 +47,14 @@ HTML_FIX = [
     # Ouverture produit mis en scène (retour du 11 novembre 2026 : « ça peut pas être Ajouter au panier ici, c'est un CTA
     # émotionnel ») : le bouton donne envie et mène à la fiche du produit.
     ('ouverture-produit-mis-en-scene', '>Ajouter au panier</a>', ">M'offrir cette pause</a>"),
+    # Diaporama d'ouverture (retour du propriétaire du 11 novembre 2026 : textes de l'exemple restés en mode vierge) :
+    # chaque photo a son texte dans la section, le script ne fait plus que montrer celui de la photo affichée (il
+    # remettait les textes du thé sur un site écrit pour la marque).
+    ('ouverture-en-diaporama-2',
+     '<div class="cap" data-cap><h3>Pose ton écran.</h3><p>Ces quelques minutes sont à toi.</p><div><a class="btn live" href="#" onclick="return false">Choisis ton mélange</a></div></div>',
+     '<div class="cap" data-cap><div class="ci on"><h3>Pose ton écran.</h3><p>Ces quelques minutes sont à toi.</p><div><a class="btn live" href="#" onclick="return false">Choisis ton mélange</a></div></div>'
+     '<div class="ci"><h3>Trois moments, trois tasses.</h3><p>Le matin, l\'après-midi, le soir : un mélange pour chacun.</p><div><a class="btn live" href="#" onclick="return false">Voir les mélanges</a></div></div>'
+     '<div class="ci"><h3>La pause au bureau.</h3><p>Un sachet, un infuseur, et ta journée respire.</p><div><a class="btn live" href="#" onclick="return false">Composer mon coffret</a></div></div></div>'),
 ]
 
 # Ce que fait la section (lu par SINA pour la choisir et l'écrire).
@@ -67,10 +75,17 @@ JS_FIX = [
     # 11. Ils parlent de nous sans citation : le script des citations ne tourne que si elles existent.
     ('$$("[data-press]").forEach(function(p){var f=$(".pqf",p),',
      '$$("[data-press]").forEach(function(p){if(!$(".pqf",p))return;var f=$(".pqf",p),'),
+    # Diaporama d'ouverture : le texte de chaque photo est dans la section (plus aucun texte d'exemple dans le script).
+    ('texts=[["Pose ton écran.","Ces quelques minutes sont à toi.","Choisis ton mélange"],["Trois moments, trois tasses.","Le matin, l\\\'après-midi, le soir : un mélange pour chacun.","Voir les mélanges"],["La pause au bureau.","Un sachet, un infuseur, et ta journée respire.","Composer mon coffret"]];',
+     'texts=null;'),
+    ('setTimeout(function(){var t=texts[cur];$("h3",cap).textContent=t[0];$("p",cap).textContent=t[1];$("a",cap).textContent=t[2];cap.classList.remove("swap")},350);',
+     'setTimeout(function(){var ci=$$(".ci",cap);ci.forEach(function(x,j){x.classList.toggle("on",j===Math.min(cur,ci.length-1))});cap.classList.remove("swap")},350);'),
 ]
 
 BEGIN, END = '/* ===== revue du propriétaire (10 novembre 2026) ===== */', '/* ===== fin de la revue ===== */'
 REVUE_CSS = BEGIN + '''
+/* Diaporama d'ouverture : un texte par photo, seul celui de la photo affichée est visible. */
+.sl .cap .ci{display:none;gap:14px}.sl .cap .ci.on{display:grid}
 /* Contrôle général : de l'air autour des sections qui n'en avaient pas (rien ne touche le bord ni la section voisine). */
 .ctw-blk:has(>.bento),.ctw-blk:has(>.ba),.ctw-blk.ba-sec,.ctw-blk:has(>.w),.ctw-blk:has(>[data-gallery2]){padding:72px max(24px,5vw)}
 @container (max-width:760px){.ctw-blk:has(>.bento),.ctw-blk:has(>.ba),.ctw-blk.ba-sec,.ctw-blk:has(>.w),.ctw-blk:has(>[data-gallery2]){padding:44px 16px}}

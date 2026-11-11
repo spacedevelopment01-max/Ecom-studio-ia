@@ -33,6 +33,8 @@ function block(n){var e=n.parentElement;
 function label(b,txt){var t=b.tagName,cs=getComputedStyle(b),len=txt.length;
   if(len<=16&&/\\d[\\d\\s,.]*\\s?€/.test(txt))return "00,00 €";
   if(/^[\\d\\s:.,%+−-]+$/.test(txt))return null;
+  // Une flèche, une croix ou un signe sans lettre (← → × ‹ ›) reste tel quel (diaporama : « Bouton » à la place des flèches).
+  if(!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(txt))return null;
   if(t==="H1"||t==="H2")return "Titre principal qui donne envie";
   if(t==="H3")return "Titre de la section";
   if(/^H[4-6]$/.test(t)||t==="DT"||t==="SUMMARY")return "Titre court";

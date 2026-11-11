@@ -85,9 +85,9 @@
   // Ouvertures : arrivée, diaporama, profondeur, agrandissement
   $$("[data-inview]").forEach(function(el){onShow(el,function(){el.classList.add("in")})});
   $$("[data-slider]").forEach(function(sl){var slides=$$(".slide",sl),cap=$("[data-cap]",sl),bars=$("[data-bars]",sl),cur=0,timer,
-    texts=[["Pose ton écran.","Ces quelques minutes sont à toi.","Choisis ton mélange"],["Trois moments, trois tasses.","Le matin, l\'après-midi, le soir : un mélange pour chacun.","Voir les mélanges"],["La pause au bureau.","Un sachet, un infuseur, et ta journée respire.","Composer mon coffret"]];
+    texts=null;
     slides.forEach(function(_,i){var b=document.createElement("button");b.type="button";b.setAttribute("aria-label","Image "+(i+1));b.innerHTML="<i></i>";b.addEventListener("click",function(){go(i)});bars.appendChild(b)});
-    function go(i){cur=(i+slides.length)%slides.length;slides.forEach(function(x,j){x.classList.toggle("on",j===cur)});cap.classList.add("swap");setTimeout(function(){var t=texts[cur];$("h3",cap).textContent=t[0];$("p",cap).textContent=t[1];$("a",cap).textContent=t[2];cap.classList.remove("swap")},350);
+    function go(i){cur=(i+slides.length)%slides.length;slides.forEach(function(x,j){x.classList.toggle("on",j===cur)});cap.classList.add("swap");setTimeout(function(){var ci=$$(".ci",cap);ci.forEach(function(x,j){x.classList.toggle("on",j===Math.min(cur,ci.length-1))});cap.classList.remove("swap")},350);
       $$("button",bars).forEach(function(b,j){b.classList.remove("run");b.classList.toggle("done",j<cur);void b.offsetWidth;if(j===cur&&!reduce)b.classList.add("run")});clearTimeout(timer);if(!reduce)timer=setTimeout(function(){go(cur+1)},6000)}
     $$("[data-sd]",sl).forEach(function(b){b.addEventListener("click",function(){go(cur+ +b.dataset.sd)})});
     var x0=null;sl.addEventListener("pointerdown",function(e){x0=e.clientX});sl.addEventListener("pointerup",function(e){if(x0!==null&&Math.abs(e.clientX-x0)>40)go(cur+(e.clientX<x0?1:-1));x0=null});go(0)});

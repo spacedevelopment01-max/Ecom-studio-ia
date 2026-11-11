@@ -368,3 +368,14 @@ describe("textes écrits sur l'ancienne version d'une section refaite (essai Heu
     expect(staleMarkup({ uid: "s3", id: "badges-de-confiance" })).toBe(false);
   });
 });
+
+describe("diaporama d'ouverture : les textes sont dans la section, jamais dans le script (11 novembre 2026)", () => {
+  it("un texte par photo dans la section, le script ne remet aucun texte d'exemple", async () => {
+    const fs = await import("node:fs");
+    const html = sectionLibrary().sections.find((s) => s.id === "ouverture-en-diaporama-2")!.html;
+    expect(html.match(/class="ci( on)?"/g)?.length).toBe(3);
+    const js = fs.readFileSync("public/sections/library.js", "utf8");
+    expect(js).not.toContain("Trois moments, trois tasses");
+    expect(js).not.toContain('$("h3",cap).textContent');
+  });
+});
