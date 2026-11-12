@@ -12,7 +12,10 @@ propriétaire.
 Reprendre E-COM STUDIO IA dans son ensemble, le revoir de fond en comble (tu peux tout recoder de A à Z si c'est mieux)
 et livrer **un Studio fini, fonctionnel et beau**, où SINA mène un client de son idée à une marque, une boutique ou un
 site, des publications, des publicités et un calendrier, **au niveau des meilleurs sites de 2026**. Le propriétaire
-attend surtout une **très grosse amélioration du thème sur mesure** (partie 6).
+attend deux grandes améliorations, au même niveau d'exigence :
+- **SINA tout entière** : tout ce qu'elle fait pour construire une marque et un projet doit être nettement meilleur,
+  au point de **dépasser ses espérances** (demande du 12 novembre 2026, partie 4 bis) ;
+- **le thème sur mesure** (partie 6).
 
 Tu as toute latitude technique. En revanche, les règles du propriétaire (parties 2 et 3) ne se négocient pas.
 
@@ -131,6 +134,46 @@ Tout texte fait **ressentir** l'angle choisi (une scène, un moment, une sensati
 Les boutons qui vendent portent le désir (« Retrouver l'été », pas « Choisir mon parfum »). Aucune accroche répétée,
 aucun ordre au lecteur. Toute image est digne d'une campagne haut de gamme, avec le vrai produit du client. Le texte
 se pose sur la partie calme de la photo.
+
+---
+
+## 4 bis. SINA doit dépasser les espérances, partout
+
+Demande du propriétaire du 12 novembre 2026 : « J'attends aussi une vraie amélioration sur tout ce que SINA fait sur la
+construction d'une marque, d'un projet. SINA doit même dépasser mes espérances dans tout ce qu'elle fait. »
+
+Le niveau visé n'est donc pas « correct », mais celui d'**une grande agence de marque et de croissance** : directeur de
+création, stratège de marque, rédacteur, directeur artistique, expert e-commerce et référencement. Chaque étape du
+parcours (0 à 13) est à **revoir entièrement**, pas seulement corrigée. Pour chacune, demande-toi : « qu'est-ce qu'une
+agence à 20 000 € livrerait ici, et comment faire mieux ? »
+
+**Ce que « dépasser les espérances » veut dire, concrètement**
+- **Comprendre avant de créer.** SINA cerne le produit ou le service, son client idéal, son marché, ses concurrents
+  réels et ce qui le rend unique, avant toute proposition. Elle ne se trompe jamais de sujet. Ses questions sont peu
+  nombreuses, intelligentes, et elle ne redemande jamais une réponse déjà donnée.
+- **Des propositions qui font dire « waouh ».** Identités vraiment distinctes et désirables, noms mémorables,
+  logos de niveau professionnel, palettes et polices justes. Une image de marque complète et cohérente : symbole,
+  déclinaisons, charte, ton de voix, mots à employer et à éviter. Des angles marketing qui touchent juste, avec une
+  émotion claire. Une stratégie d'activité concrète : offre, prix, arguments, objections et réponses.
+- **Expliquer ses choix** en une phrase simple, pour que le client comprenne et ait confiance, sans jargon.
+- **Être proactive** : proposer l'idée à laquelle le client n'avait pas pensé, signaler un risque (un nom proche
+  d'une marque connue, une promesse interdite par la loi, une incohérence de prix), anticiper l'étape suivante. Ces
+  idées restent des propositions : le client décide.
+- **Se relire et se contrôler avant de montrer** : orthographe exacte, produit entier et fidèle sur chaque image,
+  aucun mot en trop, cohérence avec la marque, l'angle et les faits du client. Elle regarde ce qu'elle a créé
+  (images, pages capturées) et refait elle-même ce qui n'est pas au niveau, dans le budget accordé, avant de le
+  présenter. Ce qui reste raté est dit.
+- **Une seule voix et une seule mémoire** : tout ce qu'elle crée (site, publications, publicités, blog, calendrier)
+  suit la même marque, le même angle et le même vocabulaire du client. Elle se souvient de chaque décision et de
+  chaque correction.
+- **Économe et transparente** : le meilleur résultat au coût le plus juste, le prix annoncé avant, jamais de dépense
+  surprise.
+- **Agréable** : une conversation claire, chaleureuse et rapide, des cartes lisibles dans le fil, un client qui sait
+  toujours où il en est et ce qui vient ensuite.
+
+**Comment le prouver** : pour chaque étape, définis des critères de qualité vérifiables. Fais un essai réel (avec
+l'accord et le prix annoncé), compare au niveau des meilleures marques et agences, et montre le résultat au
+propriétaire avant de passer à la suite.
 
 ---
 
@@ -295,7 +338,7 @@ sections, si le résultat est meilleur et que tu sais l'expliquer simplement au 
 1. **Lire** : ce document, `CLAUDE.md`, `docs/syna/EXIGENCES-PROPRIETAIRE.md`, `docs/etude-themes-themeforest.md`,
    `docs/montage-themes-sina.md`, `docs/revue-banque-sections.md`, `scripts/syna-recette/REPRISE.md`,
    `docs/guide-images-ia.md`, `README.md`.
-2. **Auditer** le Studio et le thème sur mesure tels qu'ils sont : lance le Studio
+2. **Auditer** le Studio, chaque étape de SINA et le thème sur mesure tels qu'ils sont : lance le Studio
    (`scripts/syna-recette/lancer-agent.mts` pour un Studio d'essai privé, ou `npm run studio`), ouvre chaque page,
    capture, liste ce qui ne va pas. Aucun appel payant pendant l'audit.
 3. **Proposer un plan** au propriétaire : court, en français simple, découpé en lots, chaque lot avec ce qu'il verra
@@ -307,7 +350,7 @@ sections, si le résultat est meilleur et que tu sais l'expliquer simplement au 
    Un projet de produit ET un projet de service.
 
 **Définition de « terminé »** : un client neuf crée son projet, SINA le mène de l'étape 0 à l'étape 13 sans erreur,
-il obtient une marque, un thème sur mesure magnifique (deux propositions, puis le choix, les textes et les photos),
+il obtient une marque qui dépasse ses attentes, un thème sur mesure magnifique (deux propositions, puis le choix, les textes et les photos),
 exporté sur Shopify sans erreur de Theme Check, ses publications, ses publicités et son calendrier. Tout est vérifié
 en réel, sur ordinateur et sur téléphone, et le propriétaire l'a validé.
 
