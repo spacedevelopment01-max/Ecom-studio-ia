@@ -154,6 +154,19 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 - **Textes du site écrits par Claude** (décision du 9 novembre 2026, après comparaison réelle sur Heure Dorée avec
   GPT-5.6 Sol : meilleur accueil chez OpenAI mais fiche produit plate, une garantie perdue et 1,45 € contre 0,92 €).
   Le réglage `site.copy_model` reste vide (Claude) ; ne pas le changer sans sa demande.
+- **Marque créée par SINA : décisions du 12 novembre 2026** (les plus récentes ; **à construire**, le code fait encore
+  trois identités et trois logos ; méthode et cahiers de métier : `docs/sina-savoir/`, retours détaillés :
+  `docs/etat-des-lieux-2026-11-12.md`, partie 6) :
+  - le client n'entend que SINA : ses spécialistes restent en coulisses (« j'ai étudié ton marché », jamais « ma stratège ») ;
+  - **nombre d'identités selon le forfait** : 2 au forfait à 49 €, 3 à 89 €, 4 à 129 € ;
+  - une identité se montre en **planche de marque** (l'idée, le nom, les signes, le sachet ou l'objet, le site sur
+    téléphone, des publications, la voix, ce qui reste à prouver), jamais en simple fiche « nom, couleurs, polices » ;
+  - **un seul logo**, dessiné par OpenAI pour l'identité que le client a choisie, à partir de l'idée de la marque et du
+    nom dessiné de sa planche (remplace « 3 logos ») ; SINA le vérifie avant de le montrer ; le nom dessiné en code de la
+    planche sert de secours, donc le client finit toujours avec un logo ; s'il n'aime pas le logo, SINA en redessine un
+    autre, compté dans son budget et annoncé avant ;
+  - le ton se choisit selon le produit (l'ironie lui a plu « pour ce genre de produit », des infusions aux fruits) ;
+  - les six premières propositions d'essai (noms fabriqués sur la formule « un mot + de + fruits ») : « Je trouve ça nul ».
 - **Réponses courtes et claires**, sans jargon ; ne pas reposer une question à laquelle il a déjà répondu.
 - **Ne pas décider à sa place** : un retrait de contenu ou un changement visible important se propose, il ne s'applique
   qu'après son accord. Retirer un visuel raté sans rien mettre à la place n'est pas une correction.

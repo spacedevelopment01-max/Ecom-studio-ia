@@ -168,6 +168,14 @@ Ses mots sont entre guillemets. Ce qui est une lecture de ma part est marqué «
   marque que le client choisira ». Lecture : le logo part de l'idée de la marque et de son détail propre. La règle du
   10 novembre reste : trois logos dessinés par le modèle d'images choisi, chacun dans une direction différente.
 
+- **Nombre d'identités selon le forfait.** « À 49 € SINA propose que 2 identités, à 89 € 3 identités et 129 € 4
+  identités. » Décision. À régler : le quatrième fond (la règle actuelle en prévoit trois : blanc, dégradé, sombre).
+  L'économie est faible (le gros du travail est commun aux identités) : estimation, environ 10 % par identité.
+- **Un seul logo.** « Si la direction artistique est aussi bien faite […], OpenAI peut créer qu'un seul logo, celui de
+  la direction que le client aura choisie. » Décision, qui remplace « trois logos ». Garde-fous convenus : SINA vérifie
+  le logo avant de le montrer ; le nom dessiné en code de la planche sert de secours ; si le client n'aime pas le logo,
+  SINA en redessine un autre, compté dans son budget et annoncé avant (« Oui »).
+
 Constat technique fait pendant ces essais : le contrôle des noms de produits (`EXPRESSION_NAME`,
 `src/lib/syna-agent/identities.ts`) impose la forme « un mot + de + le produit ». Sur les 27 noms de référence du
 propriétaire pour des produits (`brand-references.ts`), il en refuse 21 et accepte « Bidule de machin ». Question
