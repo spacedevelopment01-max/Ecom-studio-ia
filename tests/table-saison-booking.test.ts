@@ -10,10 +10,14 @@ import { BookingError, availability, bookedCovers, cancelReservation, core, crea
 import { seedHoldout } from "./lot1-holdout-fixtures";
 import { serviceSpec } from "./fixtures";
 import { GET, OPTIONS, POST } from "@/app/api/public/restaurant/[projectId]/[[...path]]/route";
+import { upcomingWeekday } from "./upcoming-dates";
 
 // 23 octobre 2026, 12 h à Paris.
 const AT = Date.UTC(2026, 9, 23, 10, 0);
 const DATE = "2026-11-10";
+// L'API publique lit la vraie heure : sa date d'essai est un jeudi toujours à venir (écrite en dur au 12 novembre 2026,
+// elle faisait échouer le test dès 19 h ce jour-là, puis pour toujours).
+const API_DATE = upcomingWeekday(4);
 const rules = core.normalize({ timezone: "Europe/Paris", openDays: [0, 1, 2, 3, 4, 5, 6], closures: ["2026-12-24..2026-12-26", "2027-01-01"], services: [{ id: "dejeuner", label: "Déjeuner", slots: ["12:00", "12:30", "13:00"] }, { id: "diner", label: "Dîner", slots: ["19:00", "19:30", "20:00", "20:30"] }], capacity: 24, minParty: 1, maxParty: 8, horizonDays: 90, leadMinutes: 60 });
 
 describe("Calcul des disponibilités (même règle pour le site et le serveur)", () => {
@@ -135,7 +139,7 @@ describe("Service réel de réservation (studio)", () => {
     expect((await OPTIONS()).headers.get("Access-Control-Allow-Origin")).toBe("*");
     const refused = await POST(new Request("http://x/api/public/restaurant/d/reservations", { method: "POST", body: JSON.stringify(base) }), ctx(["reservations"], demoPid));
     expect(refused.status).toBe(403);
-    const created = await POST(new Request("http://x/api/public/restaurant/p/reservations", { method: "POST", body: JSON.stringify({ ...base, email: "api@example.com", time: "19:00", date: "2026-11-12", idem: "idem-api-0001" }) }), ctx(["reservations"]));
+    const created = await POST(new Request("http://x/api/public/restaurant/p/reservations", { method: "POST", body: JSON.stringify({ ...base, email: "api@example.com", time: "19:00", date: API_DATE, idem: "idem-api-0001" }) }), ctx(["reservations"]));
     expect(created.status).toBe(201);
     const body = await created.json() as { reservation: { number: string }; token: string; email: string };
     expect(body.email).toBe("not_configured"); // aucun e-mail prétendu envoyé
