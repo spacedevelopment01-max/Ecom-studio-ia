@@ -1,0 +1,12 @@
+/* Image et texte : une colonne sur téléphone (photo d'abord), deux colonnes égales dès 800 px. */
+.es-it__grille { display: grid; gap: var(--es-e6); align-items: center; }
+.es-it__media { border-radius: var(--es-rayon); overflow: hidden; aspect-ratio: 4 / 3; background: var(--es-fond-doux); }
+.es-it__photo { width: 100%; height: 100%; object-fit: cover; }
+.es-it__photo--vide { fill: color-mix(in srgb, var(--es-encre) 22%, transparent); }
+.es-it__riche > p { margin: 0; }
+.es-it__riche > p + p { margin-top: var(--es-e4); }
+@container (min-width: 800px) {
+  .es-it__grille { grid-template-columns: 1fr 1fr; gap: var(--es-e8); }
+  .es-it__media { aspect-ratio: 5 / 6; max-height: 640px; }
+  .es-it--droite .es-it__media { order: 2; }
+}

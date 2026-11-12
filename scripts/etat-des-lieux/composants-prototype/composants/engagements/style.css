@@ -1,0 +1,9 @@
+/* Engagements : une colonne sur téléphone, deux puis trois ou quatre colonnes, toujours remplies (jamais une carte seule sur sa ligne). */
+.es-eng__tete { max-width: 40rem; }
+.es-eng__liste { list-style: none; margin: var(--es-e7) 0 0; padding: 0; display: grid; gap: var(--es-e6) var(--es-e6); }
+.es-eng__item { padding-top: var(--es-e5); border-top: 1.5px solid var(--es-trait); }
+.es-eng__icone { display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; background: var(--es-marque); color: var(--es-sur-marque); margin-bottom: var(--es-e4); }
+.es-eng__phrase { margin: var(--es-e2) 0 0; color: var(--es-encre-douce); font-size: 1rem; }
+@container (min-width: 560px) { .es-eng__liste--4, .es-eng__liste--2 { grid-template-columns: 1fr 1fr; } }
+@container (min-width: 800px) { .es-eng__liste--3 { grid-template-columns: repeat(3, 1fr); } }
+@container (min-width: 1000px) { .es-eng__liste--4 { grid-template-columns: repeat(4, 1fr); } }

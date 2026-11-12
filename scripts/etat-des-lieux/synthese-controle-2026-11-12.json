@@ -1,0 +1,77 @@
+{
+ "classique": {
+  "pages": 4,
+  "sections": 14,
+  "sectionsAvecDefaut": 6,
+  "defauts": 12,
+  "parType": {
+   "lisibilité": 4,
+   "colonne étroite": 1,
+   "texte trop petit": 2,
+   "bouton trop petit": 5
+  },
+  "aRegarder": 9
+ },
+ "moderne-sport-chic": {
+  "pages": 13,
+  "sections": 32,
+  "sectionsAvecDefaut": 29,
+  "defauts": 120,
+  "parType": {
+   "lisibilité": 38,
+   "bouton sans effet": 24,
+   "image en double": 3,
+   "colonne étroite": 1,
+   "texte trop petit": 35,
+   "bouton trop petit": 19
+  },
+  "aRegarder": 97
+ },
+ "moderne-neon": {
+  "pages": 12,
+  "sections": 30,
+  "sectionsAvecDefaut": 25,
+  "defauts": 82,
+  "parType": {
+   "lisibilité": 11,
+   "image en double": 12,
+   "colonne étroite": 1,
+   "texte trop petit": 43,
+   "bouton trop petit": 14,
+   "bouton sans effet": 1
+  },
+  "aRegarder": 24
+ },
+ "banque-classique": {
+  "pages": 1,
+  "sections": 111,
+  "sectionsAvecDefaut": 67,
+  "defauts": 158,
+  "parType": {
+   "lisibilité": 111,
+   "image en double": 4,
+   "vide": 1,
+   "colonne étroite": 4,
+   "image floue": 1,
+   "bouton trop petit": 21,
+   "texte trop petit": 16
+  },
+  "aRegarder": 63
+ },
+ "banque-moderne": {
+  "pages": 1,
+  "sections": 55,
+  "sectionsAvecDefaut": 48,
+  "defauts": 112,
+  "parType": {
+   "lisibilité": 44,
+   "image floue": 1,
+   "image en double": 14,
+   "colonne étroite": 1,
+   "vide": 2,
+   "texte trop petit": 39,
+   "bouton trop petit": 11
+  },
+  "aRegarder": 118
+ }
+}

@@ -1,0 +1,25 @@
+<div class="es-section es-it es-it--{{ section.settings.cote_photo }} es-fond-{{ section.settings.fond }}" data-es="image-et-texte">
+  <div class="es-conteneur es-it__grille">
+    <div class="es-it__media">
+      {%- if section.settings.photo != blank -%}
+        {{ section.settings.photo | image_url: width: 1400 | image_tag: class: 'es-it__photo', loading: 'lazy', sizes: '(min-width: 800px) 50vw, 100vw', widths: '500, 800, 1100, 1400' }}
+      {%- else -%}
+        {{ 'image' | placeholder_svg_tag: 'es-it__photo es-it__photo--vide' }}
+      {%- endif -%}
+    </div>
+    <div class="es-it__texte">
+      {%- if section.settings.surtitre != blank -%}
+        <p class="es-surtitre">{{ section.settings.surtitre | escape }}</p>
+      {%- endif -%}
+      <h2 class="es-t2">{{ section.settings.titre | escape }}</h2>
+      {%- if section.settings.texte != blank -%}
+        <div class="es-paragraphe es-it__riche">{{ section.settings.texte }}</div>
+      {%- endif -%}
+      {%- if section.settings.bouton != blank -%}
+        <div class="es-actions">
+          <a class="es-bouton" href="{{ section.settings.bouton_lien | default: routes.root_url }}">{{ section.settings.bouton | escape }}</a>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>

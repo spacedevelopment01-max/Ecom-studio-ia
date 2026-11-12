@@ -1,0 +1,23 @@
+{
+  "name": "Image et texte",
+  "tag": "section",
+  "class": "es-bloc",
+  "sina": {
+    "role": "histoire",
+    "fait": "Une photo d'un côté, un titre, un texte et un bouton de l'autre. Sert à raconter : la fabrication, l'histoire, le moment.",
+    "fond": "clair, teinté ou sombre (au choix)",
+    "demande": []
+  },
+  "settings": [
+    { "type": "image_picker", "id": "photo", "label": "Photo", "info": "Rôle : ambiance, ou « photo à fournir » quand elle montre une vraie personne ou un vrai lieu du client." },
+    { "type": "select", "id": "cote_photo", "label": "Côté de la photo", "default": "gauche", "options": [ { "value": "gauche", "label": "À gauche" }, { "value": "droite", "label": "À droite" } ] },
+    { "type": "select", "id": "fond", "label": "Fond", "default": "clair", "options": [ { "value": "clair", "label": "Clair" }, { "value": "doux", "label": "Teinté" }, { "value": "sombre", "label": "Sombre" } ] },
+    { "type": "text", "id": "surtitre", "label": "Petit texte au-dessus du titre", "default": "Sur-titre" },
+    { "type": "text", "id": "titre", "label": "Titre", "default": "Un titre qui raconte" },
+    { "type": "richtext", "id": "texte", "label": "Texte", "default": "<p>Deux ou trois phrases vraies, avec les mots du client.</p>" },
+    { "type": "text", "id": "bouton", "label": "Bouton" },
+    { "type": "url", "id": "bouton_lien", "label": "Lien du bouton" }
+  ],
+  "limites": { "titre": [10, 64], "texte": [80, 520], "bouton": [0, 28], "surtitre": [0, 34] },
+  "presets": [ { "name": "Image et texte" } ]
+}

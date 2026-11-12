@@ -1,0 +1,27 @@
+{
+  "name": "Ouverture photo pleine",
+  "tag": "section",
+  "class": "es-bloc",
+  "sina": {
+    "role": "ouverture",
+    "fait": "Grande photo pleine largeur, le titre posé sur sa partie calme, un bouton qui donne envie.",
+    "fond": "photo",
+    "demande": []
+  },
+  "settings": [
+    { "type": "image_picker", "id": "photo", "label": "Photo d'ouverture", "info": "Rôle : ambiance. La partie calme de la photo doit être du côté du texte." },
+    { "type": "select", "id": "cote_texte", "label": "Côté du texte", "default": "gauche", "options": [ { "value": "gauche", "label": "À gauche" }, { "value": "droite", "label": "À droite" } ] },
+    { "type": "text", "id": "surtitre", "label": "Petit texte au-dessus du titre", "default": "Sur-titre" },
+    { "type": "text", "id": "titre", "label": "Titre", "default": "Un titre qui donne envie" },
+    { "type": "textarea", "id": "texte", "label": "Texte", "default": "Une phrase courte qui fait ressentir le moment." },
+    { "type": "text", "id": "bouton", "label": "Bouton principal", "default": "Bouton qui donne envie" },
+    { "type": "url", "id": "bouton_lien", "label": "Lien du bouton principal" },
+    { "type": "text", "id": "bouton_second", "label": "Second bouton" },
+    { "type": "url", "id": "bouton_second_lien", "label": "Lien du second bouton" }
+  ],
+  "blocks": [
+    { "type": "point_fort", "name": "Point fort", "limit": 3, "settings": [ { "type": "text", "id": "texte", "label": "Point fort", "default": "Un point fort en quelques mots" } ] }
+  ],
+  "limites": { "titre": [12, 70], "texte": [0, 180], "bouton": [6, 28], "bouton_second": [0, 28], "surtitre": [0, 34], "point_fort.texte": [4, 34] },
+  "presets": [ { "name": "Ouverture photo pleine", "blocks": [ { "type": "point_fort" }, { "type": "point_fort" }, { "type": "point_fort" } ] } ]
+}

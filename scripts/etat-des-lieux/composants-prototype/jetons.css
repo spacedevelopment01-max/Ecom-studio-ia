@@ -1,0 +1,46 @@
+/*
+ * Jetons de dessin communs à TOUTES les sections (prototype du 12 novembre 2026).
+ * Une seule échelle d'espaces, une seule échelle de titres, une seule largeur de contenu, un seul arrondi :
+ * deux sections voisines sont alignées et espacées de la même façon par construction.
+ * Les couleurs et les polices viennent de la marque du client (variables --es-marque… posées par la mise en page).
+ */
+.es-page {
+  --es-e1: 4px; --es-e2: 8px; --es-e3: 12px; --es-e4: 16px; --es-e5: 24px; --es-e6: 32px; --es-e7: 48px; --es-e8: 72px; --es-e9: 104px;
+  --es-conteneur: 1200px;
+  --es-marge: clamp(20px, 5cqw, 64px);
+  --es-rayon: 14px;
+  --es-rayon-bouton: 999px;
+  --es-t1: clamp(2.35rem, 1.2rem + 5.2cqw, 4.6rem);
+  --es-t2: clamp(1.8rem, 1.1rem + 3cqw, 3rem);
+  --es-t3: clamp(1.1rem, 1rem + .5cqw, 1.3rem);
+  --es-texte: clamp(1rem, .96rem + .25cqw, 1.125rem);
+  --es-petit: .875rem;
+  container-type: inline-size;
+  font-family: var(--es-police-texte);
+  font-size: var(--es-texte);
+  line-height: 1.6;
+  color: var(--es-encre);
+  background: var(--es-fond);
+  -webkit-font-smoothing: antialiased;
+}
+.es-page *, .es-page *::before, .es-page *::after { box-sizing: border-box; }
+.es-page img { display: block; max-width: 100%; }
+.es-conteneur { width: 100%; max-width: calc(var(--es-conteneur) + 2 * var(--es-marge)); margin-inline: auto; padding-inline: var(--es-marge); }
+.es-section { padding-block: var(--es-e8); }
+@container (min-width: 800px) { .es-section { padding-block: var(--es-e9); } }
+.es-fond-doux { background: var(--es-fond-doux); }
+.es-fond-sombre { background: var(--es-sombre); color: var(--es-sur-sombre); --es-encre: var(--es-sur-sombre); --es-encre-douce: color-mix(in srgb, var(--es-sur-sombre) 78%, var(--es-sombre)); --es-trait: color-mix(in srgb, var(--es-sur-sombre) 18%, var(--es-sombre)); }
+.es-surtitre { margin: 0 0 var(--es-e4); font-size: var(--es-petit); font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--es-accent-lisible); }
+.es-fond-sombre .es-surtitre { color: var(--es-accent-sur-sombre); }
+.es-t1, .es-t2 { margin: 0; font-family: var(--es-police-titre); font-weight: var(--es-graisse-titre, 500); line-height: 1.06; letter-spacing: -.015em; text-wrap: balance; }
+.es-t1 { font-size: var(--es-t1); }
+.es-t2 { font-size: var(--es-t2); }
+.es-t3 { margin: 0; font-family: var(--es-police-titre); font-weight: var(--es-graisse-titre, 500); font-size: var(--es-t3); line-height: 1.25; }
+.es-paragraphe { margin: var(--es-e5) 0 0; max-width: 34em; color: var(--es-encre-douce); text-wrap: pretty; }
+.es-actions { display: flex; flex-wrap: wrap; gap: var(--es-e3); margin-top: var(--es-e6); }
+.es-bouton { display: inline-flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 var(--es-e6); border-radius: var(--es-rayon-bouton); font: inherit; font-weight: 600; font-size: 1rem; text-decoration: none; background: var(--es-marque); color: var(--es-sur-marque); border: 1.5px solid var(--es-marque); transition: transform .2s ease, box-shadow .2s ease; }
+.es-bouton:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -12px var(--es-marque); }
+.es-bouton:focus-visible { outline: 3px solid var(--es-accent); outline-offset: 3px; }
+.es-bouton--second { background: transparent; color: var(--es-encre); border-color: currentColor; }
+@container (max-width: 520px) { .es-actions .es-bouton { flex: 1 1 100%; } }
+@media (prefers-reduced-motion: reduce) { .es-bouton { transition: none; } }
