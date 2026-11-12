@@ -47,6 +47,25 @@ Projet d'exemple : des infusions de fruits en vrac à boire froides, forfait à 
   refusé remplacé par une réserve, second tour d'idées, tutoiement, défauts décrits et jamais promis.
 - Pas encore revérifié par un second essai réel.
 
+## Planche illustrée (retour du propriétaire, 12 novembre 2026)
+
+Devant les planches de l'essai réel, le propriétaire a préféré celles faites à la main au troisième essai : « les
+cartes ne sont pas toutes droites », « la base des logos », des couleurs et des dégradés mieux finis, « beaucoup plus
+d'icônes, d'images ». Ce qui a été construit pour que SINA atteigne ce niveau :
+
+- **Une illustratrice** dans la chaîne (un appel par planche, après la relecture) : elle dessine la scène de la
+  marque, le devant de l'objet, l'image du site, les signes et les publications, et reprend les mêmes objets partout.
+- **Un filtre strict** (`src/lib/syna-agent/brand-art.ts`) : un dessin écrit par un modèle n'est jamais affiché tel
+  quel. Il n'a droit qu'à des formes, des dégradés, des découpes et du flou ; au moindre écart (texte, lien, style,
+  script) il est retiré en entier, et la planche garde sa forme avec une scène de secours.
+- **Le nom travaillé** : des gestes de lettrage que le Studio compose lui-même, lettres exactes : une ligne qui penche,
+  un mot en couleur, une ligne qui coupe le nom, une lettre remplacée par un dessin, quelques mots écrits à la main.
+- **La mise en page** des planches faites à la main : objets penchés, publications décalées, colis, autocollant,
+  « Elle est… », la voix en situation, fonds à lueurs.
+
+Vérifié en image, sur téléphone, avec des planches d'exemple. **Pas encore vérifié** : les dessins que SINA produit
+elle-même (aucun essai réel depuis) ; le directeur de création ne relit pas encore les dessins en image.
+
 ## Ce qui n'est pas réglé
 
 - Le coût réel n'est mesuré qu'une fois (2,88 € pour trois identités, réglage économe). L'estimation d'avant l'essai

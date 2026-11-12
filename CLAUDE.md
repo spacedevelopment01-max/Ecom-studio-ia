@@ -188,6 +188,18 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     ne changent jamais pendant une reprise (une reprise qui les change est écartée) ; un nom refusé par le directeur de
     création est remplacé par un nom de réserve déjà vérifié, avec une planche neuve ; un second tour d'idées quand trop
     peu passent les deux épreuves ; tutoiement du client ; ce qui reste à régler est décrit, jamais promis.
+  - **Planche illustrée** (retour du propriétaire du 12 novembre 2026 après l'essai réel : « ce que tu as fait toi était
+    mieux […] les cartes ne sont pas toutes droites […] la base des logos […] beaucoup plus d'icône/image ») : la planche
+    reprend la forme des planches faites à la main : scène dessinée en tête, objets penchés, publications décalées, colis,
+    autocollant, mots écrits à la main, tuiles translucides, fonds à lueurs (`brand-boards.tsx`, feuille de style fixe).
+    Une **illustratrice** (appel `art`, modèle « métier », après la relecture, consigne `artSystem`) dessine en SVG ;
+    chaque dessin passe par la liste blanche de `brand-art.ts` (ni texte, ni lien, ni style, ni script ; refusé en entier
+    au moindre écart : la planche garde alors sa forme, avec une scène de secours). **Gestes de lettrage** du nom
+    (`WordmarkSchema` : taille et inclinaison par ligne, mots en couleur d'accent, ligne qui coupe le nom, lettre remplacée
+    par un dessin, mots à la main, trait), composés par le Studio lettres exactes (`brand-wordmark.ts`, `safeWordmark`).
+    Vérifié en image sur les planches d'exemple (`tests/sina-routes-fixtures.ts`, `tests/sina-dessins-fixtures.ts`) ;
+    **les dessins que SINA produit elle-même n'ont pas encore été vus dans un essai réel**, et le directeur de création
+    ne relit pas encore les dessins en image.
   - **À confirmer par le propriétaire** : le quatrième fond d'une série de quatre identités (aujourd'hui un fond clair
     coloré, « uni ») ; la règle « un fond sombre par série » quand le client demande du joyeux et du coloré (le directeur
     de création l'a contestée pendant l'essai) ; le réglage des modèles.

@@ -108,7 +108,14 @@ export function clientFacts(j: Journey): string {
 /** Textes d'une route que le client lira comme des affirmations de SA marque. */
 export function routeTexts(x: Route): string[] {
   const b = x.board;
-  return [x.slogan, x.promise, ...b.lines, ...b.object.front, ...b.object.back, b.site.headline, b.site.text, b.site.button, ...b.posts.map((p) => p.text), ...b.signs.map((s) => `${s.title} ${s.text}`), b.idea.proof];
+  return [
+    x.slogan, x.promise, ...b.lines, ...b.object.front, ...b.object.back, b.site.headline, b.site.text, b.site.button,
+    ...b.posts.map((p) => p.text), ...b.signs.map((s) => `${s.title} ${s.text}`), b.idea.proof,
+    // Textes ajoutés avec la planche illustrée : métier sous le nom, mots à la main, ruban du colis, voix en situation.
+    ...(b.descriptor ? [b.descriptor] : []), ...(b.wordmark.note ? [b.wordmark.note] : []), ...(b.parcel ? [b.parcel.tape] : []),
+    ...(b.voice.micro ?? []).map((m) => m.text), ...b.signs.flatMap((s) => (s.sample ? [s.sample] : [])), ...b.posts.flatMap((q) => (q.note ? [q.note] : [])),
+    ...(b.object.note ? [b.object.note] : []),
+  ];
 }
 
 const CLAIM_WORDS = /\b(garanti[es]?|certifi[ée]e?s?|labellis[ée]e?s?|prouv[ée]e?s?|cliniquement|test[ée]e?s? (?:par|en|sous)|recommand[ée]e?s? par|[ée]lue?s?\b.{0,24}\bann[ée]e|(?:n[°o] ?1|num[ée]ro (?:1|un))(?= (?:des?|du|de la|en|au|aux|sur|mondial|fran[çc]ais))|meilleure?s? (?:du|de la|des|au)\b|approuv[ée]e?s?|brevet[ée]e?s?|primée?s?|médaill[ée]e?s?)/giu;
@@ -151,12 +158,26 @@ export function withHonestProofs(board: Board, opts: { ownName?: boolean } = {})
 // ---------------------------------------------------------------- nom dessiné : lettres exactes
 
 const letters = (s: string) => s.normalize("NFC").replace(/[\s ]+/g, "").toLocaleLowerCase("fr-FR");
-/** Mise en lignes du nom dessiné : gardée seulement si elle reprend les lettres EXACTES du nom (accents compris). */
+/**
+ * Recette du nom dessiné rendue sûre : la mise en lignes n'est gardée que si elle reprend les lettres EXACTES du nom
+ * (accents compris) ; un geste de lettrage qui vise une ligne, un mot ou une lettre absents du nom est retiré (jamais
+ * deviné), pour que le dessin reste toujours le nom du client, lisible.
+ */
 export function safeWordmark(w: Wordmark, name: string): Wordmark {
-  if (!w.lines) return w;
-  if (letters(w.lines.join("")) === letters(name)) return w;
-  const { lines: _dropped, ...rest } = w;
-  return rest;
+  let out: Wordmark = w;
+  if (out.lines && letters(out.lines.join("")) !== letters(name)) { const { lines: _dropped, ...rest } = out; out = rest; }
+  const lines = out.lines?.length ? out.lines : [name.trim()];
+  const words = lines.reduce((n, l) => n + l.trim().split(/\s+/).filter(Boolean).length, 0), count = letters(name).length;
+  const { scale, tilt, accentWords, swap, ...base } = out;
+  const kept = accentWords?.filter((i, k, all) => i < words && all.indexOf(i) === k);
+  return {
+    ...base,
+    ...(scale?.length ? { scale: scale.slice(0, lines.length) } : {}),
+    ...(tilt?.length ? { tilt: tilt.slice(0, lines.length) } : {}),
+    // Tous les mots en couleur d'accent : plus aucun contraste, le geste ne dit plus rien.
+    ...(kept?.length && kept.length < words ? { accentWords: kept } : {}),
+    ...(swap && swap.letter < count ? { swap } : {}),
+  };
 }
 
 // ---------------------------------------------------------------- contrôle gratuit d'une série de routes

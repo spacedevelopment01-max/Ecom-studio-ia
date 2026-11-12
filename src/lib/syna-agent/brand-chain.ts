@@ -26,10 +26,11 @@ import { sanitizeSymbolSvg } from "../media/logo-symbol";
 import { safeFetch } from "../engine/import-link";
 import { planOfProject } from "../plan-gates";
 import { json as parseJson } from "../db";
-import { BoardSchema, WordmarkSchema, type Board, type BoardSymbol } from "./brand-board";
+import { MAX_ART_CHARS, sanitizeArt } from "./brand-art";
+import { BoardSchema, PALETTE_ROLES, WordmarkSchema, type Board, type BoardSymbol } from "./brand-board";
 import { brandKnowledgeReady } from "./brand-knowledge";
 import * as P from "./brand-prompts";
-import { RouteSchema, clientFacts, isReferenceName, nameIssues, routeCountFor, routeIssues, routeKeys, safeWordmark, withHonestProofs, type Route, type RouteKey } from "./brand-routes";
+import { RouteSchema, clientFacts, isReferenceName, nameIssues, routeCountFor, routeIssues, routeKeys, safeWordmark, unprovenClaims, withHonestProofs, type Route, type RouteKey } from "./brand-routes";
 import { IdentitySchema, briefFromJourney, keepConstraints, nameKindsFor, normText, prepareIdentities } from "./identities";
 import { journeyOf, setStep, updateJourney, type Journey } from "./journey";
 
@@ -67,6 +68,8 @@ const CALLS = {
   review: { tier: "strong", input: 26_000, output: 6_000, max: 10_000 },
   fix: { tier: "strong", input: 22_000, output: 10_000, max: 18_000 },
   recheck: { tier: "strong", input: 30_000, output: 4_000, max: 8_000 },
+  // L'illustratrice : une dizaine de dessins par planche (le gros de sa réponse est du SVG).
+  art: { tier: "craft", input: 9_000, output: 16_000, max: 26_000 },
 } as const satisfies Record<string, { tier: Tier; input: number; output: number; max: number }>;
 type CallId = keyof typeof CALLS;
 const RESEARCHES = 3;
@@ -78,7 +81,7 @@ const MAX_PAGES_REREAD = 16;
 /** Nombre d'appels de chaque sorte selon le travail demandé (série complète, ou reprise de quelques routes). */
 function callCounts(routes: number, teams: number, fresh: boolean): Record<CallId, number> {
   // strategy : un second tour d'idées quand trop peu passent les deux épreuves ; fix : une reprise OU un remplacement par route.
-  return { study: fresh ? 1 : 0, strategy: fresh ? 2 : 0, team: fresh ? teams : 0, shortlist: 1, verify: 1, direction: routes, review: 1, fix: routes, recheck: 1 };
+  return { study: fresh ? 1 : 0, strategy: fresh ? 2 : 0, team: fresh ? teams : 0, shortlist: 1, verify: 1, direction: routes, review: 1, fix: routes, recheck: 1, art: routes };
 }
 
 export type ChainQuote = { maxMicro: number; probableMicro?: number };
@@ -143,10 +146,14 @@ type Pick = z.infer<typeof ShortlistSchema>["routes"][number];
 const VerifySchema = z.object({ checks: z.array(z.object({ name: z.string().max(60), taken: z.boolean().default(false), url: z.string().max(2000).default(""), note: z.string().max(300).default("") })).max(12).default([]) });
 
 /** Route telle que la rend la direction artistique : la planche avec ses pictogrammes encore en SVG brut. */
-const DraftBoard = BoardSchema.omit({ nameCheck: true, signs: true, wordmark: true, idea: true }).extend({
+const DraftBoard = BoardSchema.omit({ nameCheck: true, signs: true, wordmark: true, idea: true, hero: true, object: true, site: true, posts: true }).extend({
   idea: BoardSchema.shape.idea.omit({ confessionSupport: true }),
-  signs: z.array(BoardSchema.shape.signs.element.omit({ symbol: true }).extend({ symbolSvg: z.string().max(6000).default("") })).min(3).max(5),
-  wordmark: WordmarkSchema.omit({ symbol: true }).extend({ symbolSvg: z.string().max(6000).default("") }),
+  signs: z.array(BoardSchema.shape.signs.element.omit({ symbol: true, art: true }).extend({ symbolSvg: z.string().max(6000).default("") })).min(3).max(5),
+  // Les dessins (lettre remplacée comprise) viennent de l'illustratrice, dans un appel à part : jamais de ce brouillon.
+  wordmark: WordmarkSchema.omit({ symbol: true, swap: true }).extend({ symbolSvg: z.string().max(6000).default("") }),
+  object: BoardSchema.shape.object.omit({ art: true }),
+  site: BoardSchema.shape.site.omit({ art: true }),
+  posts: z.array(BoardSchema.shape.posts.element.omit({ art: true })).length(3),
 });
 const DraftSchema = IdentitySchema.pick({ name: true, slogan: true, promise: true, territory: true, ground: true, gradient: true, palette: true, fonts: true, tone: true }).extend({
   nameWhy: z.string().max(400).default(""), nameAnchor: z.string().max(120).default(""), nameExpression: z.string().max(200).default(""),
@@ -287,7 +294,40 @@ export function finishRoute(draft: Draft, key: RouteKey, o: { support: number; n
 }
 
 /** Tolérance de forme : polices données par leur nom de famille, comme pour les anciennes identités. */
-const prepareDraft = (raw: any) => { const one = prepareIdentities({ identities: [raw?.route ?? raw] })?.identities?.[0]; return one ?? raw; };
+const prepareDraft = (raw: any) => { const one = prepareIdentities({ identities: [raw?.route ?? raw] })?.identities?.[0]; return pruneDraft(one ?? raw); };
+
+/**
+ * Champs facultatifs rendus vides par le modèle (« note »: "", « tilt »: []) : retirés, pour qu'un geste non utilisé
+ * ne fasse pas refuser toute la planche. Les dessins éventuels du brouillon sont retirés aussi : ils ne viennent que
+ * de l'illustratrice, après filtrage.
+ */
+export function pruneDraft(raw: any): any {
+  const b = raw?.board;
+  if (!b || typeof b !== "object") return raw;
+  const blank = (v: unknown) => v == null || (typeof v === "string" && !v.trim()) || (Array.isArray(v) && !v.length);
+  const drop = (o: any, keys: string[]) => { if (o && typeof o === "object") for (const k of keys) if (k in o && blank(o[k])) delete o[k]; };
+  const strip = (o: any, keys: string[]) => { if (o && typeof o === "object") for (const k of keys) delete o[k]; };
+  drop(b, ["descriptor"]); strip(b, ["hero"]);
+  if (b.parcel && blank(b.parcel?.tape)) delete b.parcel;
+  if (b.voice && typeof b.voice === "object") {
+    if (Array.isArray(b.voice.is)) b.voice.is = b.voice.is.filter((x: unknown) => !blank(x)).slice(0, 4);
+    if (Array.isArray(b.voice.micro)) b.voice.micro = b.voice.micro.filter((m: any) => m && !blank(m.where) && !blank(m.text)).slice(0, 4);
+    drop(b.voice, ["is", "micro"]);
+  }
+  const w = b.wordmark;
+  if (w && typeof w === "object") {
+    drop(w, ["note", "scale", "tilt", "accentWords", "lines"]); strip(w, ["swap"]);
+    if (w.cut && !(typeof w.cut.at === "number")) delete w.cut;
+    if (w.underline === false) delete w.underline;
+    // Un geste, deux au plus : la ligne qui coupe le nom ne se cumule pas avec le trait sous le nom.
+    if (w.cut && w.underline) delete w.underline;
+  }
+  if (b.object && typeof b.object === "object") { drop(b.object, ["note"]); strip(b.object, ["art"]); }
+  strip(b.site, ["art"]);
+  for (const q of Array.isArray(b.posts) ? b.posts : []) { drop(q, ["note", "ground"]); strip(q, ["art"]); }
+  for (const g of Array.isArray(b.signs) ? b.signs : []) { drop(g, ["sample", "ground"]); strip(g, ["art"]); if (g && g.hand === false) delete g.hand; }
+  return raw;
+}
 
 // ---------------------------------------------------------------- ce que lisent les spécialistes
 
@@ -304,7 +344,57 @@ function studyDigest(st: Study): string {
 }
 const briefBlock = (j: Journey, guidance?: string) => ["# Fiche de départ du client (ses mots)", briefFromJourney(j), "", "# Existant et refonte", keepConstraints(j), ...(guidance ? ["", "# Ce que le client demande pour cette nouvelle proposition (ses mots)", guidance] : [])].join("\n");
 const ideaBlock = (i: Strategy["ideas"][number], s: Strategy) => `Idée ${i.id} : ${i.belief} | aveu : ${s.confessions[i.confession]?.text ?? s.confessions[0].text} | adversaire : ${i.enemy} | preuve dans l'objet : ${i.proof} | ce qu'elle coûte : ${i.cost} | ton : ${i.tone}`;
-const routeText = (x: Route) => JSON.stringify({ ...x, board: { ...x.board, signs: x.board.signs.map(({ symbol: _s, ...s }) => s), wordmark: (({ symbol: _s, ...w }) => w)(x.board.wordmark) } });
+const routeText = (x: Route) => JSON.stringify({ ...x, board: (({ hero: _h, ...b }) => ({
+  ...b, signs: b.signs.map(({ symbol: _s, art: _a, ...s }) => s), wordmark: (({ symbol: _s, swap: _w, ...w }) => w)(b.wordmark),
+  object: (({ art: _a, ...o }) => o)(b.object), site: (({ art: _a, ...o }) => o)(b.site), posts: b.posts.map(({ art: _a, ...q }) => q),
+}))(x.board) });
+
+// ---------------------------------------------------------------- les dessins de la planche
+
+const svgText = z.string().max(MAX_ART_CHARS + 400).default("");
+const ArtDraftSchema = z.object({
+  hero: svgText, object: svgText, site: svgText,
+  signs: z.array(z.object({ index: z.number().int().min(0).max(4), svg: svgText, ground: z.enum(PALETTE_ROLES).optional().catch(undefined), sample: z.string().max(48).optional().catch(undefined), hand: z.boolean().optional().catch(undefined) })).max(5).default([]),
+  posts: z.array(z.object({ index: z.number().int().min(0).max(2), svg: svgText, ground: z.enum(PALETTE_ROLES).optional().catch(undefined) })).max(3).default([]),
+  swap: z.object({ letter: z.number().int().min(0).max(39), svg: svgText }).optional().catch(undefined),
+});
+export type ArtDraft = z.infer<typeof ArtDraftSchema>;
+
+/** Ce que l'illustratrice reçoit d'une route : l'idée, le nom, la palette, et chaque emplacement à dessiner. */
+const artBrief = (x: Route) => [
+  `Nom : ${x.name}`, `Signature : ${x.slogan}`, `Territoire : ${x.territory}`, `Ce que croit la marque : ${x.board.idea.belief}`, `La preuve, dans l'objet : ${x.board.idea.proof}`,
+  `Fond de page : ${x.ground}${x.gradient ? ` (${x.gradient.from} → ${x.gradient.to})` : ""}`,
+  `Palette : dark ${x.palette.dark}, primary ${x.palette.primary}, secondary ${x.palette.secondary}, accent ${x.palette.accent}, light ${x.palette.light}`,
+  `Nom dessiné : ${(x.board.wordmark.lines ?? [x.name]).join(" / ")}${x.board.wordmark.cut ? " (coupé par une ligne ondulée)" : ""}`,
+  `Objet : ${x.board.object.kind} — devant : ${x.board.object.front.join(" · ")}`,
+  `Site : ${x.board.site.headline}`,
+  "Signes :", ...x.board.signs.map((g, i) => `  ${i}. [${g.kind}] ${g.title} — ${g.text}`),
+  "Publications :", ...x.board.posts.map((q, i) => `  ${i}. ${q.text}`),
+].join("\n");
+
+/**
+ * Pose les dessins de l'illustratrice sur une route. Chaque dessin passe par la liste blanche du Studio ; un dessin
+ * refusé est simplement absent (la planche garde sa forme). Rend la route et le nombre de dessins posés et refusés.
+ */
+export function withArt(route: Route, draft: ArtDraft, facts: string): { route: Route; placed: number; refused: number } {
+  let placed = 0, refused = 0;
+  const clean = (svg: string | undefined) => { if (!svg?.trim()) return undefined; const r = sanitizeArt(svg); if (r.ok) { placed++; return r.art; } refused++; return undefined; };
+  const b = route.board, hero = clean(draft.hero), objectArt = clean(draft.object), siteArt = clean(draft.site);
+  const signs = b.signs.map((g, i) => {
+    const d = draft.signs.find((x) => x.index === i);
+    if (!d || g.kind === "lettrage") return g;
+    const art = clean(d.svg), sample = !art && d.sample?.trim() ? d.sample.trim() : undefined;
+    return { ...g, ...(art ? { art } : {}), ...(sample ? { sample, ...(d.hand ? { hand: true } : {}) } : {}), ...(d.ground && (art || sample) ? { ground: d.ground } : {}) };
+  });
+  const posts = b.posts.map((q, i) => { const d = draft.posts.find((x) => x.index === i); if (!d) return q; const art = clean(d.svg); return { ...q, ...(art ? { art } : {}), ...(d.ground ? { ground: d.ground } : {}) }; });
+  const swapArt = draft.swap ? clean(draft.swap.svg) : undefined;
+  const wordmark = safeWordmark({ ...b.wordmark, ...(swapArt && draft.swap ? { swap: { letter: draft.swap.letter, art: swapArt } } : {}) }, route.name);
+  let next: Route = { ...route, board: { ...b, ...(hero ? { hero } : {}), signs, posts, wordmark, object: { ...b.object, ...(objectArt ? { art: objectArt } : {}) }, site: { ...b.site, ...(siteArt ? { art: siteArt } : {}) } } };
+  // Les quelques mots ajoutés par l'illustratrice ne portent ni chiffre ni garantie absents de la fiche du client.
+  if (unprovenClaims(next, facts).length > unprovenClaims(route, facts).length) next = { ...next, board: { ...next.board, signs: next.board.signs.map(({ sample: _s, hand: _h, ...g }) => g) } };
+  const safe = RouteSchema.safeParse(next);
+  return safe.success ? { route: safe.data, placed, refused } : { route, placed: 0, refused: placed + refused };
+}
 
 // ---------------------------------------------------------------- la tâche
 
@@ -518,6 +608,26 @@ export async function runSinaBrandJob(ctx: JobContext) {
     notes.push("plafond de dépense atteint avant la fin de la relecture");
     remaining.push(L("Je n'ai pas pu finir ma relecture : le plafond annoncé était atteint. Regarde ces propositions d'un œil critique.", "I could not finish my review: the announced cap was reached."));
   }
+  // Les dessins : l'illustratrice dessine chaque planche neuve, une fois les textes arrêtés. Un appel qui échoue n'est
+  // jamais relancé seul : la planche reste sans dessins (elle garde sa forme), et c'est noté.
+  const facts = clientFacts(j), fresh = list.filter((x) => todo.includes(x.key));
+  try {
+    for (const [n, x] of fresh.entries()) {
+      ctx.progress(0.95 + (0.04 * n) / fresh.length, L(`Je dessine la planche ${x.key}`, `Drawing board ${x.key}`));
+      let drawn: ArtDraft | null = null;
+      try { drawn = await ctx.step(`brand:art:${round}:${x.key}`, () => ai.ask(`art-${round}-${x.key}`, { kind: "art", system: P.artSystem(kind), schema: ArtDraftSchema, prompt: `${brief}\n\n# La route à dessiner\n${artBrief(x)}` })); }
+      catch (e) { if (e instanceof CostCapReached) throw e; notes.push(`dessins de ${x.key} non faits : ${String((e as Error)?.message ?? e).slice(0, 120)}`); }
+      if (!drawn) continue;
+      const r = withArt(x, drawn, facts);
+      list = list.map((o) => (o.key === x.key ? r.route : o));
+      if (r.refused) notes.push(`${r.refused} dessin(s) de ${x.key} refusé(s) par le contrôle`);
+      if (!r.placed) notes.push(`planche ${x.key} sans dessin`);
+    }
+  } catch (e) {
+    if (!(e instanceof CostCapReached)) throw e;
+    notes.push("plafond de dépense atteint avant la fin des dessins");
+  }
+
   for (const [name, url] of taken) if (list.some((x) => normText(x.name) === name)) remaining.push(L(`Le nom « ${list.find((x) => normText(x.name) === name)!.name} » semble déjà porté par une marque de ton secteur (${url}) : je te déconseille de le choisir.`, "This name seems already used in your sector."));
 
   const issues = [...new Set([...routeIssues(list, j, keys.length), ...remaining])];

@@ -7,6 +7,8 @@ import sharp from "sharp";
 import { FONT_FILES } from "@/lib/theme/render";
 import { HEADING_ONLY } from "@/lib/syna-agent/identities";
 import { drawWordmark, drawableHandle, missingLetters, wordmarkPng, wordmarkSvg } from "@/lib/syna-agent/brand-wordmark";
+import { safeWordmark } from "@/lib/syna-agent/brand-routes";
+import { sanitizeArt } from "@/lib/syna-agent/brand-art";
 import { route, series } from "./sina-routes-fixtures";
 
 const plain = { case: "asis" as const, tracking: 0, align: "gauche" as const, dot: false, symbolPlace: "gauche" as const };
@@ -86,5 +88,62 @@ describe("SINA — le nom dessiné en code", () => {
     expect(dark).toBeGreaterThan(light);
     const clear = await sharp(await wordmarkPng(w, { main: "#000000", accent: "#000000" }, 600)).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
     expect(clear.data[3]).toBe(0); // coin transparent
+  });
+
+  // ------------------------------------------------------------ gestes de lettrage (« la base des logos »)
+
+  it("une ligne qui penche, un mot en couleur, une taille par ligne : des réglages, jamais d'autres lettres", () => {
+    const base = drawWordmark("Lâche le Morceau", { ...plain, case: "upper", lines: ["LÂCHE LE", "MOR", "CEAU"] }, "archivo_black_n4");
+    const w = drawWordmark("Lâche le Morceau", { ...plain, case: "upper", lines: ["LÂCHE LE", "MOR", "CEAU"], tilt: [0, 0, 5], accentWords: [2], scale: [1, 1.4, 1] }, "archivo_black_n4");
+    expect(w.text).toBe(base.text);
+    expect(w.shapes.filter((s) => s.transform).length).toBeGreaterThan(0);
+    expect(w.shapes.find((s) => s.transform)!.transform).toMatch(/^rotate\(5 /);
+    expect(w.shapes.some((s) => s.tone === "accent")).toBe(true);
+    // La ligne penchée descend : le cadre lui fait de la place ; la ligne agrandie élargit le dessin.
+    expect(w.height).toBeGreaterThan(base.height);
+    expect(wordmarkSvg(w, { main: "#111111", accent: "#FF2E63" })).not.toMatch(/NaN|<text/);
+  });
+
+  it("le nom coupé par une ligne : le bas prend la couleur d'accent, par découpe (les lettres ne changent pas)", () => {
+    const x = route("A");
+    const w = drawWordmark(x.name, x.board.wordmark, x.fonts.heading);
+    expect(w.cut!.y).toBeGreaterThan(0);
+    expect(w.cut!.y).toBeLessThan(w.height);
+    expect(w.cut!.wave).toMatch(/^M[\d. ]+Q/);
+    const svg = wordmarkSvg(w, { main: "#F2F0FF", accent: "#FF8A5C" });
+    expect(svg).toMatch(/clip-path="url\(#wm-haut\)"/);
+    expect(svg).toMatch(/clip-path="url\(#wm-bas\)"/);
+    expect(svg).toMatch(/fill="#FF8A5C"/);
+  });
+
+  it("une lettre remplacée par un dessin : elle n'est plus tracée, le dessin prend sa place ; les mots à la main s'enlèvent en petit", async () => {
+    const x = route("B");
+    const w = drawWordmark(x.name, x.board.wordmark, x.fonts.heading);
+    expect(w.arts).toHaveLength(1);
+    expect(w.arts![0].size).toBeGreaterThan(40);
+    const without = drawWordmark(x.name, { ...x.board.wordmark, swap: undefined, note: undefined }, x.fonts.heading);
+    const length = (d: typeof w) => d.shapes.filter((s) => s.part !== "note").reduce((n, s) => n + s.d.length, 0);
+    expect(length(w)).toBeLessThan(length(without)); // le O n'est plus tracé
+    // Mots à la main : des tracés marqués, et un cadre sans eux pour les petites tailles.
+    expect(w.shapes.some((s) => s.part === "note")).toBe(true);
+    expect(w.core!.height).toBeLessThan(w.height);
+    const svg = wordmarkSvg(w, { main: x.palette.dark, accent: x.palette.primary });
+    expect(svg).not.toMatch(/NaN|<text|<script|font-family|href/);
+    const png = await wordmarkPng(w, { main: x.palette.dark, accent: x.palette.primary, background: "#FFE23D" }, 600);
+    expect((await sharp(png).metadata()).width).toBe(600);
+  });
+
+  it("un geste qui vise une ligne, un mot ou une lettre absents du nom est retiré, jamais deviné", () => {
+    const art = sanitizeArt('<svg viewBox="-12 -12 24 24"><circle r="10" fill="#FFE44D"/></svg>');
+    if (!art.ok) throw new Error(art.reason);
+    const w = safeWordmark({ ...plain, lines: ["Bain de", "Minuit"], scale: [1, 1.2, 0.8], tilt: [2, -2, 4], accentWords: [1, 1, 9], swap: { letter: 25, art: art.art } }, "Bain de Minuit");
+    expect(w.scale).toEqual([1, 1.2]);
+    expect(w.tilt).toEqual([2, -2]);
+    expect(w.accentWords).toEqual([1]);
+    expect(w.swap).toBeUndefined();
+    // Tous les mots en couleur d'accent : le geste ne dit plus rien, il est retiré.
+    expect(safeWordmark({ ...plain, accentWords: [0, 1, 2] }, "Bain de Minuit").accentWords).toBeUndefined();
+    // Une mise en lignes fausse emporte les réglages par ligne (ils n'ont plus de ligne à régler).
+    expect(safeWordmark({ ...plain, lines: ["Bain", "Minuit"], tilt: [0, 5] }, "Bain de Minuit")).toMatchObject({ tilt: [0] });
   });
 });

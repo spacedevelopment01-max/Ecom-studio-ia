@@ -85,6 +85,15 @@ describe("SINA — chaîne de création de la marque", async () => {
     /** Idées rendues par la stratégie (par défaut : sept idées fortes sur huit). */
     strong?: (id: string, n: number) => boolean;
     recheck?: any;
+    /** Dessins rendus par l'illustratrice (par défaut : une scène valide, un dessin interdit, des mots à la main). */
+    art?: (id: string) => any;
+  };
+  const DRAWN = {
+    hero: '<svg viewBox="0 0 320 250"><rect width="320" height="250" fill="#0A0F3D"/><circle cx="240" cy="60" r="30" fill="#FFE98A"/></svg>',
+    // Du texte dans un dessin : refusé en entier par le contrôle du Studio.
+    object: '<svg viewBox="0 0 190 130"><text x="0" y="10">Bio</text></svg>', site: "",
+    signs: [{ index: 0, svg: '<svg viewBox="0 0 100 70"><circle cx="50" cy="35" r="20" fill="#FFE44D"/></svg>', ground: "dark" }, { index: 1, svg: '<svg viewBox="0 0 100 70"><circle cx="50" cy="35" r="20" fill="#FFE44D"/></svg>', ground: "dark" }, { index: 2, svg: "", sample: "Voilà, c'est dit.", hand: true, ground: "light" }],
+    posts: [{ index: 0, svg: '<svg viewBox="0 0 100 92"><circle cx="70" cy="24" r="14" fill="#FFE98A"/></svg>', ground: "dark" }],
   };
   const fakeAi = (log: { ids: string[]; prompts: Record<string, string>; systems: Record<string, string> }, s: Script = {}) => () => ({
     research: async (id: string, _query: string) => { log.ids.push(`web:${id}`); return s.web ? s.web(id) : id.startsWith("verify") ? [{ url: "https://annuaire.example/boissons", title: "Marques de boissons", category: "competitors", excerpt: "Annuaire des marques de boissons aux fruits." }] : pages(id); },
@@ -107,6 +116,7 @@ describe("SINA — chaîne de création de la marque", async () => {
         }
         if (c.kind === "review") return s.review ? s.review(c.prompt) : { routes: [{ key: "A", score: 8, verdict: "garder", fixes: [] }, { key: "B", score: 6, verdict: "reprendre", fixes: ["« Si c'est fade, remets-en. » est un ordre donné au lecteur : réécris cette phrase."] }, { key: "C", score: 8, verdict: "garder", fixes: [] }], series: "" };
         if (c.kind === "recheck") return s.recheck ?? { routes: [{ key: "B", better: true, remaining: [], score: 8 }] };
+        if (c.kind === "art") return s.art ? s.art(id) : DRAWN;
         throw new Error(`appel inattendu : ${id}`);
       })();
       return c.schema.parse(c.prepare ? c.prepare(raw) : raw);
@@ -131,7 +141,22 @@ describe("SINA — chaîne de création de la marque", async () => {
   it("chaîne complète : les sept temps dans l'ordre, les équipes séparées, la reprise relue", async () => {
     const t = await thread();
     const { log, job } = await chain(t, {}, { fix: () => FIXED_LINE });
-    expect(log.ids).toEqual(["web:paroles", "web:concurrents", "web:usages", "study", "strategy", "team-langue", "team-mots", "team-univers", "team-verite", "shortlist", "web:verify-1", "verify-1", "direction-1-A", "direction-1-B", "direction-1-C", "review-1", "fix-1-B", "recheck-1"]);
+    expect(log.ids).toEqual(["web:paroles", "web:concurrents", "web:usages", "study", "strategy", "team-langue", "team-mots", "team-univers", "team-verite", "shortlist", "web:verify-1", "verify-1", "direction-1-A", "direction-1-B", "direction-1-C", "review-1", "fix-1-B", "recheck-1", "art-1-A", "art-1-B", "art-1-C"]);
+    // L'illustratrice dessine après la relecture : la scène est posée, le dessin interdit est retiré (et c'est noté),
+    // le signe « lettrage » ne reçoit jamais de dessin, les mots à la main arrivent sur leur signe.
+    const drawn = J.journeyOf(t.cid).identities!.list;
+    for (const x of drawn) {
+      expect(x.board!.hero?.box).toEqual([0, 0, 320, 250]);
+      expect(x.board!.object.art).toBeUndefined();
+      expect(x.board!.posts[0]).toMatchObject({ ground: "dark" });
+      expect(x.board!.posts[0].art).toBeTruthy();
+      for (const g of x.board!.signs.filter((y) => y.kind === "lettrage")) expect(g.art).toBeUndefined();
+      expect(x.board!.signs[2]).toMatchObject({ sample: "Voilà, c'est dit.", hand: true });
+    }
+    expect(log.systems["art-1-A"]).toMatch(/Balises permises/);
+    expect(log.prompts["art-1-A"]).toMatch(/Palette : dark #/);
+    // La relecture ne reçoit jamais les dessins (trop lourds, inutiles à la lecture des textes).
+    expect(log.prompts["review-1"]).not.toMatch(/"nodes"/);
     // Chaque équipe suit UN chemin et ne voit pas les noms des autres.
     expect(log.systems["team-mots"]).toMatch(/sur UN seul chemin : mots forts/);
     expect(log.systems["team-langue"]).toMatch(/sur UN seul chemin : expressions de la langue/);
@@ -230,7 +255,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     const refuse = { routes: [{ key: "A", score: 8, verdict: "garder", fixes: [] }, { key: "B", score: 7, verdict: "garder", fixes: [] }, { key: "C", score: 4, verdict: "reprendre", replaceName: true, nameDoubt: "Il se lit « sans eau », le contraire de ce que la marque montre.", fixes: [] }], series: "" };
     const t = await thread();
     const { log } = await chain(t, {}, { review: () => refuse, recheck: { routes: [{ key: "C", better: true, remaining: ["Le bouton du site reste plat.", "b", "c", "d"], score: 7 }] } });
-    expect(log.ids.slice(-3)).toEqual(["review-1", "replace-1-C", "recheck-1"]);
+    expect(log.ids.slice(-6)).toEqual(["review-1", "replace-1-C", "recheck-1", "art-1-A", "art-1-B", "art-1-C"]);
     expect(log.ids.some((i) => i.startsWith("fix"))).toBe(false); // un nom refusé ne se « corrige » pas
     expect(log.prompts["replace-1-C"]).toMatch(/^Nom : Nage Libre$/m);
     expect(log.prompts["replace-1-C"]).toMatch(/^Fond de page : blanc$/m); // la réserve garde le fond prévu pour la série
@@ -378,7 +403,9 @@ describe("SINA — chaîne de création de la marque", async () => {
     await chain(t, {}, { fix: () => FIXED_LINE });
     const before = J.journeyOf(t.cid).identities!.list;
     const { log } = await chain(t, { redo: ["B"], guidance: "Plus doux pour B." }, { shortlist: () => [pick("B", "Nage Libre"), pick("C", "La Main Lourde", true), pick("A", "Grand Bain", true)], review: () => ({ routes: [], series: "" }) });
-    expect(log.ids).toEqual(["shortlist", "web:verify-2", "verify-2", "direction-2-B", "review-2"]);
+    expect(log.ids).toEqual(["shortlist", "web:verify-2", "verify-2", "direction-2-B", "review-2", "art-2-B"]);
+    // Les routes gardées, déjà dessinées, partent à la relecture SANS leurs dessins.
+    expect(log.prompts["review-2"]).not.toMatch(/"nodes"/);
     expect(log.prompts.shortlist).toMatch(/Routes GARDÉES par le client[\s\S]*A « Bain de Minuit »[\s\S]*C « L'Eau Est Bonne »/);
     expect(log.prompts.shortlist).toMatch(/Noms déjà montrés au client \(jamais reproposés\) : .*Lâche le Morceau/);
     expect(log.prompts.shortlist).toMatch(/Plus doux pour B\./);
@@ -470,7 +497,7 @@ describe("SINA — chaîne de création de la marque", async () => {
       expect(x.drawn.shapes.length).toBeGreaterThan(0); // nom dessiné par le Studio (tracés)
       expect(x.look.button).toBe(x.palette.primary);
       expect(x.board.object.label).toMatch(/^(Le sachet|Le pot)$/);
-      expect(x.board.signs[0].kindLabel).toBe("Le lettrage");
+      expect(x.board.signs[0].kindLabel).toMatch(/^(Le lettrage|La phrase)$/);
       expect(x.faces.heading?.family).toBeTruthy();
     }
     expect(ids.list[1].drawn.text).toBe("LÂCHE LE\nMOR\nCEAU");
