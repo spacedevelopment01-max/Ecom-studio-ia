@@ -78,7 +78,9 @@ Outils et prototypes : `scripts/etat-des-lieux/` (voir son `LISEZMOI.md`).
 - Cinq façons de fabriquer un site, quatre de dessiner un logo, toutes branchées.
 - Pas d'outil de mise en forme ni de contrôle de style ; lignes très longues ; le code sert de journal de bord.
 - Le dépôt pèse 2,3 Go, dont 2 % de code ; 1,6 à 1,7 Go de captures et d'essais peuvent en sortir.
-- Sain : comptage et plafonds des dépenses d'IA, Stripe, isolation par compte et par projet, 5 000 cas de test.
+- Sain : comptage et plafonds des dépenses d'IA, Stripe, isolation par compte et par projet, 6 475 cas de test.
+- À noter : les livraisons récentes portent un nom de modèle d'IA dans leur signature (`Co-Authored-By`), contre la
+  règle du propriétaire.
 
 ### Forfaits et étapes 9 à 13
 - Budget IA mensuel : 16,33 € (forfait à 49 €), 29,67 € (89 €), 43 € (129 €). Le seul thème sur mesure d'un essai avait
@@ -115,6 +117,7 @@ conversation, l'ancien parcours, les anciennes maquettes, l'ancien moteur du sur
 | N7 | Se relire avant de montrer, à chaque étape |
 | N8 | Une conversation qui accueille, six chapitres, le bon modèle au bon moment |
 | N9 | Contenus et lancement : ouvrir les étapes 9 à 13 |
+| N10 | L'offre : une recommandation sourcée (gamme, lots, prix, livraison, objections), plus un simple réaffichage |
 | T1 | Sections « composants » : le contenu dans des données, branchées sur le moteur des thèmes du Studio |
 | T2 | Règles de dessin communes par famille |
 | T3 | Contrôle automatique sur chaque page avant de montrer |
