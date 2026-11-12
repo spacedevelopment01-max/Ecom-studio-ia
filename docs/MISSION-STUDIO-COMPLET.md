@@ -272,6 +272,20 @@ plus vivre. Défauts trouvés :
 C'est une direction, pas un ordre : étudie, puis propose ton plan au propriétaire, en français simple, avant de
 reconstruire.
 
+**Demande du propriétaire (12 novembre 2026) : « Pour la construction des thèmes sur mesure, je veux qu'il me donne son
+avis, comment lui verrait les choses pour arriver au résultat que je souhaite, et être force de proposition, mais de
+vraies propositions. »** Avant de construire, présente-lui donc **ta vision du thème sur mesure** :
+- **Ton avis franc** sur la façon actuelle de faire (banque de sections, conception par SINA, écriture, photos,
+  atelier, export) : ce qui marche, ce qui ne pourra jamais donner le résultat voulu, et pourquoi.
+- **Ta façon de faire, de bout en bout**, pour obtenir des thèmes au niveau des meilleurs thèmes vendus : comment un
+  thème est conçu, construit, écrit, illustré, contrôlé, modifié par le client et mis en boutique.
+- **De vraies propositions**, pas des généralités ni une reformulation de ce document. Pour chacune : ce que le client
+  et le propriétaire verront concrètement (si possible un exemple, un croquis ou un prototype gratuit), ce que ça
+  change par rapport à aujourd'hui, ce que ça coûte (travail et dépense IA par thème), les risques, et ta
+  recommandation. Si une idée sort du cadre de ce document (autre manière de concevoir, autre rôle pour SINA, autre
+  parcours pour le client), propose-la aussi : c'est attendu.
+- Le propriétaire valide, refuse ou ajuste chaque proposition avant que tu construises.
+
 - **Une section = un composant avec un vrai schéma**, comme une section Shopify 2.0 : réglages, blocs, emplacements
   d'images (avec leur rôle : produit, ambiance, photo à fournir), emplacements de produits, liens vers des pages. Le
   contenu du client vit dans des **données**, plus jamais dans du HTML retouché. Aucune donnée d'exemple dans le code
@@ -358,7 +372,8 @@ ta recommandation quand tu en as une.
    (`scripts/syna-recette/lancer-agent.mts` pour un Studio d'essai privé, ou `npm run studio`), ouvre chaque page,
    capture, liste ce qui ne va pas. Aucun appel payant pendant l'audit.
 3. **Lui donner ton avis et proposer un plan** : ton avis franc sur le code (repartir au propre ou non, partie 8)
-   et sur ce qui a été mal pensé dans la conception, avec tes propositions ; puis un plan court, en français simple,
+   et sur ce qui a été mal pensé dans la conception, avec tes propositions ; ta vision du thème sur mesure et tes
+   vraies propositions pour y arriver (partie 6.4) ; puis un plan court, en français simple,
    découpé en lots, chaque lot avec ce qu'il verra à la fin. Attendre son accord sur chaque point.
 4. **Construire lot par lot**, une branche par lot. Pour chaque lot : tests, contrôle visuel automatique, captures
    ordinateur et téléphone vérifiées par toi, page en ligne qu'il peut ouvrir sur son téléphone, puis « Je
