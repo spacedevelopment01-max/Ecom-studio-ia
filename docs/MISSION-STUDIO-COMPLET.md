@@ -324,6 +324,22 @@ Questions encore ouvertes, à poser au propriétaire au bon moment (une à la fo
 **Tu peux** tout revoir et tout recoder, changer l'architecture, remplacer un module entier, réécrire la banque de
 sections, si le résultat est meilleur et que tu sais l'expliquer simplement au propriétaire.
 
+**L'avis du propriétaire sur le code** (12 novembre 2026) : « je pense que le code est un bordel sans nom, donc qu'il
+serait préférable de tout recommencer au propre ; à lui de juger et de me dire ». Le Studio a été construit en
+beaucoup de conversations successives : couches empilées, anciens parcours gardés, règles éparpillées. Après ton état
+des lieux, **donne-lui ton avis franc** : repartir d'une base neuve et propre, reprendre seulement certaines parties,
+ou garder l'existant en le nettoyant. Pour chaque voie, dis ce qu'on garde et ce qu'on jette, les risques, la durée,
+et ce qu'il verra à chaque lot. Puis recommande-lui une voie. **Il valide avant que tu commences.** Une base neuve
+reste soumise aux mêmes limites (ci-dessous) : les projets existants et les 15 thèmes du Studio ne se perdent pas.
+
+**Ce qui a été mal pensé se dit.** Si tu estimes qu'une décision de conception est mauvaise (une étape du parcours,
+une règle, un choix de modèle d'IA, une façon de faire du Studio ou de SINA), **dis-le-lui** : explique simplement
+pourquoi, propose ce que tu ferais à la place, et attends sa réponse. Il valide ou non. Tu n'appliques jamais un
+changement de conception sans son accord.
+
+**Pose-lui toutes les questions que tu veux** : c'est voulu. Une à la fois de préférence, en français simple, avec
+ta recommandation quand tu en as une.
+
 **Tu ne peux pas** :
 - perdre les données des projets existants (marques, produits, thèmes, fichiers) : migration testée sur copie ;
 - casser les 15 thèmes du Studio ni leurs démonstrations figées ;
@@ -341,8 +357,9 @@ sections, si le résultat est meilleur et que tu sais l'expliquer simplement au 
 2. **Auditer** le Studio, chaque étape de SINA et le thème sur mesure tels qu'ils sont : lance le Studio
    (`scripts/syna-recette/lancer-agent.mts` pour un Studio d'essai privé, ou `npm run studio`), ouvre chaque page,
    capture, liste ce qui ne va pas. Aucun appel payant pendant l'audit.
-3. **Proposer un plan** au propriétaire : court, en français simple, découpé en lots, chaque lot avec ce qu'il verra
-   à la fin. Attendre son accord.
+3. **Lui donner ton avis et proposer un plan** : ton avis franc sur le code (repartir au propre ou non, partie 8)
+   et sur ce qui a été mal pensé dans la conception, avec tes propositions ; puis un plan court, en français simple,
+   découpé en lots, chaque lot avec ce qu'il verra à la fin. Attendre son accord sur chaque point.
 4. **Construire lot par lot**, une branche par lot. Pour chaque lot : tests, contrôle visuel automatique, captures
    ordinateur et téléphone vérifiées par toi, page en ligne qu'il peut ouvrir sur son téléphone, puis « Je
    fusionne ? ».
