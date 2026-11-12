@@ -3,7 +3,7 @@
 Demandé par le propriétaire dans `docs/MISSION-STUDIO-COMPLET.md` : état des lieux sans dépense, puis avis, vision et
 plan **avant** de construire. Ce document résume ce qui a été vérifié et ce qui a été proposé.
 
-**Statut : propositions en attente de la validation du propriétaire. Rien n'est construit.** La présentation complète
+**Statut : propositions en attente de la validation du propriétaire. Rien n'est construit.** Ses premiers retours sont en partie 6. La présentation complète
 (captures, croquis, boutons de décision) lui a été remise sur une page privée. Les constats de sécurité détaillés n'y
 figurent que là : le dépôt est public.
 
@@ -144,3 +144,34 @@ suite) ; les cinq en-têtes de démonstration (avis : cinq variantes du composan
 10. Recette finale : un projet de produit et un projet de service, de bout en bout.
 
 Un lot = une branche, ses tests, son contrôle automatique, ses captures vérifiées, puis « Je fusionne ? ».
+
+## 6. Retours et décisions du propriétaire (12 novembre, dans la conversation)
+
+Ses mots sont entre guillemets. Ce qui est une lecture de ma part est marqué « lecture ».
+
+- **L'équipe de SINA reste en coulisses.** « Seulement SINA, l'équipe reste en coulisses » : le client n'entend qu'une
+  voix. Décision.
+- **Budget IA des forfaits.** Il propose 50 % du prix hors taxes au forfait à 89 € et 60 % à 129 €, au lieu de 40 %.
+  Sa priorité : « satisfaire les clients et que SINA ait assez de crédit IA pour faire les projets correctement et en
+  entier ». Noté, pas encore appliqué. Restent à trancher : le forfait à 49 € (pistes proposées : premier mois doublé,
+  ou 50 %) et le paiement à l'année.
+- **Premier essai de marque : refusé.** « Je trouve ça nul », pour les six propositions, « du début à la fin ».
+- **La cause, selon lui.** « Tant que la réflexion n'est pas bien meilleure et que tu ne feras pas le nécessaire pour
+  prendre des informations de partout pour peaufiner l'intelligence de SINA, ça fonctionnera pas. »
+- **Deuxième essai** (avec les cahiers de métier) : « C'est mieux, tu peux faire encore mieux ».
+- **Troisième essai** (voir `docs/sina-savoir/`) : « J'adore la présentation globale ». L'ironie des textes lui convient
+  « pour ce genre de produit ». Lecture : le ton se choisit selon le produit, il ne se généralise pas. Il ajoute : « tu
+  peux encore aller beaucoup plus loin ».
+- **La présentation en planche de marque** (idée, nom, signes, sachet, site, publications, voix, ce qui reste à
+  prouver) doit devenir celle de SINA, « même en mieux ».
+- **Les logos.** Les noms dessinés des planches « donnent une idée de comment SINA devra faire le logo de l'image de
+  marque que le client choisira ». Lecture : le logo part de l'idée de la marque et de son détail propre. La règle du
+  10 novembre reste : trois logos dessinés par le modèle d'images choisi, chacun dans une direction différente.
+
+Constat technique fait pendant ces essais : le contrôle des noms de produits (`EXPRESSION_NAME`,
+`src/lib/syna-agent/identities.ts`) impose la forme « un mot + de + le produit ». Sur les 27 noms de référence du
+propriétaire pour des produits (`brand-references.ts`), il en refuse 21 et accepte « Bidule de machin ». Question
+posée au propriétaire, sans réponse à ce jour : voulait-il cette forme, ou ce niveau-là ?
+
+Coût : la chaîne de réflexion du troisième essai est estimée entre 20 et 30 € par projet au modèle le plus fort, entre
+6 et 10 € avec un réglage économe. Estimation, non mesurée.
