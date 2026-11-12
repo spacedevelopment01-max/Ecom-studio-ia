@@ -23,6 +23,7 @@ import { callCostBoundMicro, estimateCallMicro, llmJson } from "../ai/llm";
 import { CostCapReached, withTrace } from "../ai/trace";
 import { webResearch, webSearchQuoteMicro, type WebFinding } from "../ai/web-search";
 import { sanitizeSymbolSvg } from "../media/logo-symbol";
+import { safeFetch } from "../engine/import-link";
 import { planOfProject } from "../plan-gates";
 import { json as parseJson } from "../db";
 import { BoardSchema, WordmarkSchema, type Board, type BoardSymbol } from "./brand-board";
@@ -71,22 +72,27 @@ type CallId = keyof typeof CALLS;
 const RESEARCHES = 3;
 /** Pages lues par l'étude (les extraits sont raccourcis) : borne l'entrée de l'appel, donc son coût. */
 const MAX_STUDY_PAGES = 45;
+/** Pages relues par le Studio pour vérifier les paroles de clients (lecture gratuite). */
+const MAX_PAGES_REREAD = 16;
 
 /** Nombre d'appels de chaque sorte selon le travail demandé (série complète, ou reprise de quelques routes). */
 function callCounts(routes: number, teams: number, fresh: boolean): Record<CallId, number> {
-  return { study: fresh ? 1 : 0, strategy: fresh ? 1 : 0, team: fresh ? teams : 0, shortlist: 1, verify: 1, direction: routes, review: 1, fix: routes, recheck: 1 };
+  // strategy : un second tour d'idées quand trop peu passent les deux épreuves ; fix : une reprise OU un remplacement par route.
+  return { study: fresh ? 1 : 0, strategy: fresh ? 2 : 0, team: fresh ? teams : 0, shortlist: 1, verify: 1, direction: routes, review: 1, fix: routes, recheck: 1 };
 }
 
 export type ChainQuote = { maxMicro: number; probableMicro?: number };
 /**
  * Devis de la chaîne. Plafond : la somme des coûts MAXIMAUX de tous ses appels (aucun appel ne part au-delà).
- * Coût probable : le déroulé habituel, avec la reprise d'une route sur deux. [Estimation, pas encore mesurée sur un
- * essai réel.]
+ * Coût probable : le déroulé habituel, avec la reprise d'une route sur deux. Mesure du 12 novembre 2026 (essai réel,
+ * 3 identités, 20 appels, 14 minutes) : 2,88 € dépensés pour un plafond de 7,83 €.
  */
 export function chainQuote(o: { routes: number; fresh?: boolean; settings?: ChainSettings }): ChainQuote {
   const s = o.settings ?? chainSettings(), fresh = o.fresh !== false, n = callCounts(o.routes, s.teams, fresh);
-  const search = webSearchQuoteMicro() ?? 0, searches = (fresh ? RESEARCHES : 0) + 1;
-  let max = search * searches, probable: number | null = search * searches;
+  // Recherches sur le web : faites par le modèle « métier » (réglage économe), pas par le modèle le plus fort.
+  const search = webSearchQuoteMicro(s.craft) ?? 0, searches = (fresh ? RESEARCHES : 0) + 1;
+  // Coût probable d'une recherche : la moitié de son maximum (essai réel du 12 novembre 2026 : 0,16 à 0,45 € pour 0,50 € au plus).
+  let max = search * searches, probable: number | null = (search * searches) / 2;
   for (const id of Object.keys(CALLS) as CallId[]) {
     const c = CALLS[id], m = s[c.tier];
     const bound = callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort);
@@ -150,7 +156,11 @@ const DraftSchema = IdentitySchema.pick({ name: true, slogan: true, promise: tru
 type Draft = z.infer<typeof DraftSchema>;
 
 const ReviewSchema = z.object({
-  routes: z.array(z.object({ key: z.string().max(2), score: z.number().min(0).max(10).default(0), verdict: z.enum(["garder", "reprendre"]).catch("reprendre"), fixes: z.array(z.string().max(400)).max(10).default([]) })).max(4).default([]),
+  routes: z.array(z.object({
+    key: z.string().max(2), score: z.number().min(0).max(10).default(0), verdict: z.enum(["garder", "reprendre"]).catch("reprendre"), fixes: z.array(z.string().max(400)).max(10).default([]),
+    /** Le nom lui-même ne tient pas : une réserve déjà vérifiée le remplace (jamais un nom changé pendant une reprise). */
+    replaceName: z.boolean().default(false).catch(false), nameDoubt: z.string().max(400).default(""),
+  })).max(4).default([]),
   series: z.string().max(600).default(""),
 });
 const RecheckSchema = z.object({ routes: z.array(z.object({ key: z.string().max(2), better: z.boolean().default(true), remaining: z.array(z.string().max(400)).max(8).default([]), score: z.number().min(0).max(10).default(0) })).max(4).default([]) });
@@ -168,7 +178,7 @@ export const brandChainDeps: { ai?: (ctx: JobContext) => ChainAi } = {};
 function realAi(ctx: JobContext, who: { userId: string; projectId: string }, s: ChainSettings, capMicro: number): ChainAi {
   const scope = (step: string) => ({ jobId: ctx.job.id, projectId: who.projectId, step, costCapMicro: capMicro });
   return {
-    research: async (id, query) => (await withTrace(scope(`brand-${id}`), () => webResearch({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:web:${id}` }, query))).findings,
+    research: async (id, query) => (await withTrace(scope(`brand-${id}`), () => webResearch({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:web:${id}`, prefer: s.craft }, query))).findings,
     ask: (id, c) => withTrace(scope(`brand-${id}`), () => llmJson({
       task: "strategy", userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, system: c.system, prompt: c.prompt, promptKey: `syna-brand-${c.kind}-1`,
       prepare: c.prepare, maxTokens: CALLS[c.kind].max, maxOutputTokens: CALLS[c.kind].max + 6000, usageKey: `${ctx.job.id}:brand:${id}`,
@@ -179,7 +189,7 @@ function realAi(ctx: JobContext, who: { userId: string; projectId: string }, s: 
 
 // ---------------------------------------------------------------- contrôles gratuits des temps de la chaîne
 
-const loose = (s: string) => s.toLowerCase().replace(/[’‘`´]/g, "'").replace(/[«»“”"]/g, "").replace(/\s+/g, " ").trim();
+const loose = (s: string) => s.toLowerCase().replace(/[’‘`´]/g, "'").replace(/[«»“”"]/g, "").replace(/[–—]/g, "-").replace(/\s+/g, " ").trim();
 const sameUrl = (a: string, b: string) => a.replace(/[#?].*$/, "").replace(/\/+$/, "") === b.replace(/[#?].*$/, "").replace(/\/+$/, "");
 
 /**
@@ -194,6 +204,43 @@ export function verifiedQuotes(quotes: { text: string; url: string }[], findings
     return parts.length > 0 && parts.every((p) => text.includes(p));
   });
   return { kept, dropped: quotes.length - kept.length };
+}
+
+/** Texte lisible d'une page (balises retirées, entités et échappements décodés) : sert à y retrouver une parole citée. */
+export function pageText(html: string): string {
+  return html
+    .replace(/\\u([0-9a-fA-F]{4})/g, (_m, h: string) => String.fromCharCode(parseInt(h, 16))).replace(/\\[nrt]/g, " ").replace(/\\(["'/])/g, "$1")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&#x([0-9a-fA-F]+);/g, (_m, h: string) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (_m, d: string) => String.fromCodePoint(Number(d)))
+    .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&apos;|&rsquo;|&lsquo;/g, "'").replace(/&laquo;|&raquo;|&ldquo;|&rdquo;/g, '"').replace(/&hellip;/g, "…").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ").trim();
+}
+
+/** Téléchargement d'une page citée (gratuit, adresse publique seulement) ; null si elle ne se laisse pas lire. Remplaçable par les tests. */
+export const brandPageDeps: { read?: (url: string) => Promise<string | null> } = {};
+async function readPage(url: string): Promise<string | null> {
+  try {
+    const html = brandPageDeps.read ? await brandPageDeps.read(url) : await (async () => { const r = await safeFetch(url, { maxBytes: 2_500_000, timeoutMs: 12_000 }); return r.status < 400 ? r.body.toString("utf8") : null; })();
+    return html == null ? null : pageText(html);
+  } catch { return null; }
+}
+
+/** La parole se lit-elle vraiment, mot pour mot, dans le texte de la page ? (morceaux séparés par « … » cherchés un par un) */
+export function quoteOnPage(quote: string, text: string): boolean {
+  const page = loose(text), parts = quote.split(/…|\[\.\.\.\]|\.\.\./).map(loose).filter((p) => p.length >= 8);
+  return parts.length > 0 && parts.every((p) => page.includes(p));
+}
+
+/**
+ * Relecture des PAGES elles-mêmes : la recherche rapporte des extraits, qu'un modèle a écrits ; une parole de client
+ * n'est gardée comme « réelle » que si le Studio la retrouve, mot pour mot, en relisant la page citée. Une page qui ne
+ * se laisse pas relire (avis chargés après coup, accès refusé) fait écarter ses paroles : c'est dit, jamais maquillé.
+ */
+export async function quotesReadOnPages(quotes: { text: string; url: string }[]): Promise<{ kept: { text: string; url: string }[]; unread: number }> {
+  const urls = [...new Set(quotes.map((q) => q.url))].slice(0, MAX_PAGES_REREAD);
+  const texts = new Map(await Promise.all(urls.map(async (u) => [u, await readPage(u)] as const)));
+  const kept = quotes.filter((q) => { const t = texts.get(q.url); return !!t && quoteOnPage(q.text, t); });
+  return { kept, unread: quotes.length - kept.length };
 }
 
 /** Réserve de noms : toutes les équipes réunies, sans les noms mal formés, recopiés, déjà montrés ou d'un concurrent. */
@@ -301,18 +348,29 @@ export async function runSinaBrandJob(ctx: JobContext) {
     }
     if (!findings.length) return { quotes: [], competitors: [], mould: "", substitutes: [], facts: [], notFound: [L("La recherche sur le web n'a rien donné : je n'ai lu aucune parole réelle de clients.", "Web research returned nothing.")], sources: 0, dropped: 0 };
     // Lecture bornée (coût maîtrisé) : les pages de paroles de clients d'abord et en plus long, 45 pages au plus.
-    const read = [...findings].sort((x, y) => Number(y.category === "customers") - Number(x.category === "customers")).slice(0, MAX_STUDY_PAGES);
-    const pages = read.map((f, i) => `[page ${i}] ${f.url}\n${f.title}\n${f.excerpt.slice(0, f.category === "customers" ? 2400 : 1000)}`).join("\n\n");
-    const raw = await ai.ask("study", { kind: "study", system: P.STUDY_SYSTEM, schema: StudySchema, prompt: `${brief}\n\n# Pages trouvées (${read.length})\n${pages}` });
+    const shownPages = [...findings].sort((x, y) => Number(y.category === "customers") - Number(x.category === "customers")).slice(0, MAX_STUDY_PAGES);
+    const pages = shownPages.map((f, i) => `[page ${i}] ${f.url}\n${f.title}\n${f.excerpt.slice(0, f.category === "customers" ? 2400 : 1000)}`).join("\n\n");
+    const raw = await ai.ask("study", { kind: "study", system: P.STUDY_SYSTEM, schema: StudySchema, prompt: `${brief}\n\n# Pages trouvées (${shownPages.length})\n${pages}` });
+    // Deux relectures gratuites : la parole est dans l'extrait de la recherche, PUIS dans la page elle-même.
     const q = verifiedQuotes(raw.quotes, findings);
+    const read =2 > 1 ? await quotesReadOnPages(q.kept) : { kept: q.kept, unread: 0 };
     const urls = (u: string) => findings.some((f) => sameUrl(f.url, u));
-    return { ...raw, quotes: q.kept.slice(0, 40), facts: raw.facts.filter((f) => urls(f.url)), competitors: raw.competitors.map((c) => ({ ...c, url: urls(c.url) ? c.url : "" })), sources: new Set(findings.map((f) => f.url)).size, dropped: q.dropped };
+    const notFound = [...raw.notFound, ...(read.unread ? [L(read.unread > 1 ? `${read.unread} paroles rapportées par ma recherche : je n'ai pas pu les relire sur leur page, je ne les ai pas gardées.` : "1 parole rapportée par ma recherche : je n'ai pas pu la relire sur sa page, je ne l'ai pas gardée.", `${read.unread} reported quote(s) could not be re-read on their page and were dropped.`)] : [])].slice(0, 10);
+    return { ...raw, notFound, quotes: read.kept.slice(0, 40), facts: raw.facts.filter((f) => urls(f.url)), competitors: raw.competitors.map((c) => ({ ...c, url: urls(c.url) ? c.url : "" })), sources: new Set(findings.map((f) => f.url)).size, dropped: q.dropped + read.unread };
   });
   if (study.quotes.length < 10) notes.push(`${study.quotes.length} parole(s) réelle(s) de clients trouvée(s) : moins de dix`);
 
   // 2 et 3. L'aveu, l'adversaire, les idées.
   ctx.progress(0.2, L("Je cherche l'idée de ta marque", "Looking for your brand idea"));
-  const strategy = await ctx.step("brand:strategy", () => ai.ask("strategy", { kind: "strategy", system: P.strategySystem(), schema: StrategySchema, prompt: `${brief}\n\n# Étude\n${studyDigest(study)}` }));
+  const first = await ctx.step("brand:strategy", () => ai.ask("strategy", { kind: "strategy", system: P.strategySystem(), schema: StrategySchema, prompt: `${brief}\n\n# Étude\n${studyDigest(study)}` }));
+  // Trop peu d'idées passent les deux épreuves pour composer des routes différentes (essai réel du 12 novembre 2026 : une
+  // seule sur huit) : on en cherche d'AUTRES, une fois. Une idée écartée n'est jamais reformulée pour passer.
+  let strategy: Strategy = first;
+  if (first.ideas.filter((i) => i.strong).length < Math.min(4, keys.length + 1)) {
+    const more = await ctx.step("brand:strategy:2", () => ai.ask("strategy-2", { kind: "strategy", system: P.strategySystem(), schema: StrategySchema, prompt: `${brief}\n\n# Étude\n${studyDigest(study)}\n\n# Idées déjà trouvées (ne les reprends pas, ne les reformule pas)\n${first.ideas.map((i) => `- ${i.belief} (${i.strong ? "forte" : "écartée : elle ne passe pas les deux épreuves"})`).join("\n")}\n\nCherche huit AUTRES idées, par des postures que tu n'as pas encore prises. Numérote-les à partir de i${first.ideas.length + 1}. Rends les aveux auxquels elles répondent (ceux d'avant peuvent resservir : réécris-les alors tels quels).` }));
+    const offset = first.confessions.length, used = new Set(first.ideas.map((i) => i.id));
+    strategy = { job: first.job, confessions: [...first.confessions, ...more.confessions], ideas: [...first.ideas, ...more.ideas.map((i, n) => ({ ...i, id: used.has(i.id) ? `j${n + 1}` : i.id, confession: i.confession + offset }))] };
+  }
   const support = (idea: Strategy["ideas"][number]) => (strategy.confessions[idea.confession]?.quotes ?? []).filter((n) => n < study.quotes.length).length;
   const ideas = strategy.ideas.filter((i) => i.strong).length >= Math.min(todo.length, 2) ? strategy.ideas.filter((i) => i.strong) : strategy.ideas;
 
@@ -375,18 +433,21 @@ export async function runSinaBrandJob(ctx: JobContext) {
 
   // 6 et 7. La voix, les signes, les situations : la planche de chaque route.
   const ideaOf = (r: Pick) => strategy.ideas.find((i) => i.id === r.idea) ?? ideas[0];
+  /** Ce qu'une route doit savoir des autres pour s'en écarter (couleurs, police, phrases, bouton). */
+  const seen = (x: Route) => `- ${x.key} « ${x.name} » : fond ${x.ground}, bouton ${x.palette.primary}, titres ${x.fonts.heading} (police de titres déjà prise), signature « ${x.slogan} », titre du site « ${x.board.site.headline} », bouton du site « ${x.board.site.button} »`;
+  const routePrompt = (r: Pick, idea: Strategy["ideas"][number], others: Route[], old?: Route) => [
+    brief, "", "# Étude", studyDigest(study), "", "# La route à mettre en planche",
+    `Nom : ${r.name}${j.keep.includes("nom") ? " (nom gardé par le client)" : ""}`, `Détail réel : ${r.detail}`, `Deuxième lecture : ${r.second}`, `Logique dite au client : ${r.why}`, `Risques connus : ${r.risks.join(" ; ") || "aucun relevé"}`,
+    ideaBlock(idea, strategy), `Ton de la route : ${r.tone || idea.tone}`, `Fond de page : ${r.ground}`, `Teinte du bouton : ${r.hue}`, `Caractère de la police de titres : ${r.type}`,
+    ...(others.length ? ["", "# Les autres routes de la série (reste nettement différente : autre teinte de bouton, AUTRE police de titres, autres images, autres phrases)", ...others.map(seen)] : []),
+    ...(namesOnly && old ? ["", "# Le client garde TOUT de cette route sauf le nom : reprends à l'identique son fond, son dégradé, sa palette, ses polices, son ton, ses curseurs de voix, ses signes et son objet ; réécris le nom, sa logique, la signature et les phrases qui citaient l'ancien nom.", routeText(old)] : []),
+  ].join("\n");
+  const planOf = new Map(todo.map((k, n) => [k, picks[n]] as const));
   const drafted: Route[] = [];
   for (const [n, key] of todo.entries()) {
     ctx.progress(0.66 + (0.16 * n) / todo.length, L(`Je prépare la planche ${key}`, `Preparing board ${key}`));
     const r = picks[n], idea = ideaOf(r), old = previous.find((x) => x.key === key);
-    const others = [...kept, ...drafted].map((x) => `- ${x.key} « ${x.name} » : fond ${x.ground}, bouton ${x.palette.primary}, titres ${x.fonts.heading}, signature « ${x.slogan} »`);
-    const prompt = [
-      brief, "", "# Étude", studyDigest(study), "", "# La route à mettre en planche",
-      `Nom : ${r.name}${j.keep.includes("nom") ? " (nom gardé par le client)" : ""}`, `Détail réel : ${r.detail}`, `Deuxième lecture : ${r.second}`, `Logique dite au client : ${r.why}`, `Risques connus : ${r.risks.join(" ; ") || "aucun relevé"}`,
-      ideaBlock(idea, strategy), `Ton de la route : ${r.tone || idea.tone}`, `Fond de page : ${r.ground}`, `Teinte du bouton : ${r.hue}`, `Caractère de la police de titres : ${r.type}`,
-      ...(others.length ? ["", "# Les autres routes de la série (reste nettement différente : autre teinte de bouton, autre police de titres, autres images)", ...others] : []),
-      ...(namesOnly && old ? ["", "# Le client garde TOUT de cette route sauf le nom : reprends à l'identique son fond, son dégradé, sa palette, ses polices, son ton, ses curseurs de voix, ses signes et son objet ; réécris le nom, sa logique, la signature et les phrases qui citaient l'ancien nom.", routeText(old)] : []),
-    ].join("\n");
+    const prompt = routePrompt(r, idea, [...kept, ...drafted], old);
     const draft = await ctx.step(`brand:direction:${round}:${key}`, () => ai.ask(`direction-${round}-${key}`, { kind: "direction", system: P.directionSystem(kind), schema: DraftSchema, prepare: prepareDraft, prompt }));
     const forced: Draft = namesOnly && old ? { ...draft, ground: old.ground, gradient: old.gradient, palette: old.palette, paletteFamily: old.paletteFamily, fonts: old.fonts, fontStyle: old.fontStyle, tone: old.tone } : draft;
     drafted.push(finishRoute({ ...forced, name: keptName || r.name, ...(keptSlogan ? { slogan: keptSlogan } : {}) }, key, { support: support(idea), nameCheck: taken.has(normText(r.name)) ? "non_verifie" : nameCheck, ownName: !!keptName }));
@@ -405,23 +466,51 @@ export async function runSinaBrandJob(ctx: JobContext) {
     const mine = (x: Route, f: string) => f.includes(`Identité ${x.key}`) || new RegExp(`Identités [A-D]?/?${x.key}\\b`).test(f) || f.includes(`« ${x.name} »`);
     // Points de série sans identité nommée (« deux identités ont la même signature ») : la première garde, les suivantes s'écartent.
     const shared = firstIssues.filter((f) => !list.some((x) => mine(x, f)));
-    const fixesOf = (x: Route) => [...(review.routes.find((r) => r.key === x.key && r.verdict === "reprendre")?.fixes ?? []), ...firstIssues.filter((f) => mine(x, f)), ...(x.key === drafted[0]?.key ? [] : shared)].filter(Boolean);
-    const toFix = drafted.filter((x) => fixesOf(x).length);
-    if (toFix.length) {
-      const fixed: Route[] = [];
-      for (const [n, x] of toFix.entries()) {
-        ctx.progress(0.88 + (0.06 * n) / toFix.length, L(`Je reprends la planche ${x.key}`, `Reworking board ${x.key}`));
-        const draft = await ctx.step(`brand:fix:${round}:${x.key}`, () => ai.ask(`fix-${round}-${x.key}`, { kind: "fix", system: P.fixSystem(kind), schema: DraftSchema, prepare: prepareDraft, prompt: `${brief}\n\n# Ta route\n${routeText(x)}\n\n# Corrections exigées\n${fixesOf(x).map((f) => `- ${f}`).join("\n")}${series ? `\n\n# Sur l'ensemble de la série\n${series}` : ""}` }));
-        // Le nom ne change jamais pendant une reprise (il a été jugé et vérifié avant).
-        fixed.push(finishRoute({ ...draft, name: x.name, ...(keptSlogan ? { slogan: keptSlogan } : {}) }, x.key, { support: x.board.idea.confessionSupport, nameCheck: x.board.nameCheck, ownName: !!keptName }));
+    const verdictOf = (x: Route) => review.routes.find((r) => r.key === x.key);
+    const fixesOf = (x: Route) => [...(verdictOf(x)?.verdict === "reprendre" ? verdictOf(x)!.fixes : []), ...firstIssues.filter((f) => mine(x, f)), ...(x.key === drafted[0]?.key ? [] : shared)].filter(Boolean);
+    const redone: Route[] = [], asked = new Map<string, string[]>();
+    const current = () => assemble(drafted.map((x) => redone.find((f) => f.key === x.key) ?? x));
+    const tag = (key: string, f: string) => (f.startsWith("Identité") ? f : `Identité ${key} : ${f}`);
+
+    // Nom refusé par le directeur de création : une réserve déjà vérifiée prend sa place, avec une nouvelle planche
+    // (essai réel du 12 novembre 2026 : la reprise avait changé le nom dans les textes seulement, la planche ne tenait plus).
+    const refused = keptName ? [] : drafted.filter((x) => verdictOf(x)?.replaceName);
+    for (const x of refused) {
+      const doubt = (verdictOf(x)?.nameDoubt || L("il ne tient pas à côté des autres", "it does not hold up")).replace(/\.+$/, "");
+      const at = reserves.findIndex((sp) => !taken.has(normText(sp.name)) && !current().some((o) => normText(o.name) === normText(sp.name)));
+      if (at < 0) { remaining.push(tag(x.key, L(`je trouve le nom « ${x.name} » fragile (${doubt}), et je n'avais plus de nom de réserve pour le remplacer.`, `the name "${x.name}" is fragile (${doubt}) and no spare name was left.`))); continue; }
+      const [spare] = reserves.splice(at, 1), plan = planOf.get(x.key);
+      const r: Pick = { ...spare, ground: x.ground, hue: plan?.hue ?? spare.hue, type: plan?.type ?? spare.type, reserve: false };
+      ctx.progress(0.87, L(`Je refais la planche ${x.key} avec un autre nom`, `Redoing board ${x.key} with another name`));
+      const draft = await ctx.step(`brand:replace:${round}:${x.key}`, () => ai.ask(`replace-${round}-${x.key}`, { kind: "direction", system: P.directionSystem(kind), schema: DraftSchema, prepare: prepareDraft, prompt: routePrompt(r, ideaOf(r), current().filter((o) => o.key !== x.key)) }));
+      redone.push(finishRoute({ ...draft, name: r.name, ...(keptSlogan ? { slogan: keptSlogan } : {}) }, x.key, { support: support(ideaOf(r)), nameCheck }));
+      asked.set(x.key, [L(`Nom « ${x.name} » refusé : ${doubt}. Nouvelle route avec le nom de réserve « ${r.name} ».`, `Name "${x.name}" refused: ${doubt}. New route with the spare name "${r.name}".`)]);
+    }
+
+    const toFix = drafted.filter((x) => !asked.has(x.key) && fixesOf(x).length);
+    for (const [n, x] of toFix.entries()) {
+      ctx.progress(0.88 + (0.06 * n) / toFix.length, L(`Je reprends la planche ${x.key}`, `Reworking board ${x.key}`));
+      const others = current().filter((o) => o.key !== x.key);
+      const draft = await ctx.step(`brand:fix:${round}:${x.key}`, () => ai.ask(`fix-${round}-${x.key}`, { kind: "fix", system: P.fixSystem(kind), schema: DraftSchema, prepare: prepareDraft, prompt: `${brief}\n\n# Ta route\n${routeText(x)}\n\n# Ce qui ne change pas\nLe nom « ${x.name} » (déjà jugé et vérifié) et le fond de page « ${x.ground} » (fixé pour la série) restent tels quels.\n\n# Corrections exigées\n${fixesOf(x).map((f) => `- ${f}`).join("\n")}${series ? `\n\n# Sur l'ensemble de la série\n${series}` : ""}${others.length ? `\n\n# Les autres routes de la série (ne reprends ni leurs phrases, ni leur bouton, ni leurs images, ni leur police de titres)\n${others.map(seen).join("\n")}` : ""}` }));
+      // Une reprise qui change le nom ou le fond de la série n'est pas une reprise : la première version reste, et c'est dit.
+      if (normText(draft.name) !== normText(x.name) || (draft.ground !== x.ground && !namesOnly)) {
+        notes.push(`reprise de ${x.key} écartée : elle changeait ${normText(draft.name) !== normText(x.name) ? "le nom" : "le fond de page"}`);
+        remaining.push(...fixesOf(x).slice(0, 3).map((f) => tag(x.key, f)));
+        continue;
       }
-      const recheck = await ctx.step(`brand:recheck:${round}`, () => ai.ask(`recheck-${round}`, { kind: "recheck", system: P.recheckSystem(kind), schema: RecheckSchema, prompt: toFix.map((x) => `# Route ${x.key}\n## Avant\n${routeText(x)}\n## Corrections demandées\n${fixesOf(x).map((f) => `- ${f}`).join("\n")}\n## Après la reprise\n${routeText(fixed.find((f) => f.key === x.key)!)}`).join("\n\n") }));
-      // La reprise n'est gardée que si le directeur de création la juge meilleure ; sinon la première version reste.
-      const better = fixed.filter((f) => recheck.routes.find((r) => r.key === f.key)?.better !== false);
+      redone.push(finishRoute({ ...draft, name: x.name, ...(keptSlogan ? { slogan: keptSlogan } : {}) }, x.key, { support: x.board.idea.confessionSupport, nameCheck: x.board.nameCheck, ownName: !!keptName }));
+      asked.set(x.key, fixesOf(x));
+    }
+
+    if (redone.length) {
+      const before = (key: string) => drafted.find((x) => x.key === key)!;
+      const recheck = await ctx.step(`brand:recheck:${round}`, () => ai.ask(`recheck-${round}`, { kind: "recheck", system: P.recheckSystem(kind), schema: RecheckSchema, prompt: redone.map((f) => `# Route ${f.key}\n## Avant\n${routeText(before(f.key))}\n## Corrections demandées\n${(asked.get(f.key) ?? []).map((l) => `- ${l}`).join("\n")}\n## Après la reprise\n${routeText(f)}`).join("\n\n") }));
+      // La reprise (ou le remplacement) n'est gardée que si le directeur de création la juge meilleure ; sinon la première version reste.
+      const better = redone.filter((f) => recheck.routes.find((r) => r.key === f.key)?.better !== false);
       list = assemble(drafted.map((x) => better.find((f) => f.key === x.key) ?? x));
-      for (const r of recheck.routes) {
-        if (r.better === false) remaining.push(...fixesOf(toFix.find((x) => x.key === r.key)!).map((f) => (f.startsWith("Identité") ? f : `Identité ${r.key} : ${f}`)));
-        else remaining.push(...r.remaining.filter(Boolean).map((f) => `Identité ${r.key} : ${f}`));
+      for (const r of recheck.routes.filter((x) => redone.some((f) => f.key === x.key))) {
+        if (r.better === false) remaining.push(...(asked.get(r.key) ?? []).slice(0, 3).map((f) => tag(r.key, f)));
+        else remaining.push(...r.remaining.filter(Boolean).slice(0, 3).map((f) => tag(r.key, f)));
       }
     }
   } catch (e) {

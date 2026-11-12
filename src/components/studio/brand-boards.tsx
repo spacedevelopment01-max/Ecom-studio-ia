@@ -175,7 +175,7 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
                     <div key={i} className="relative flex flex-col justify-end overflow-hidden rounded-lg p-2 shadow" style={{ ...st, aspectRatio: "4 / 5" }} data-post={p.look}>
                       {p.look === "motif" && firstPicto && <PictoView p={firstPicto} main={k.surfaceText} accent={x.palette.accent} className="absolute -right-3 -top-3 h-20 w-20 opacity-20" />}
                       {p.look === "citation" && <span className="mb-1 block h-1 w-6 rounded-full" style={{ background: x.palette.accent }} aria-hidden />}
-                      <p className="relative text-[12px] leading-[1.1] @2xl:text-sm" style={{ fontFamily: head, fontWeight: x.faces.heading?.weight ?? 700 }}>{p.look === "citation" ? `« ${p.text} »` : p.text}</p>
+                      <p className={cx("relative break-words leading-[1.1]", p.text.length > 80 ? "text-[9.5px] @2xl:text-xs" : p.text.length > 50 ? "text-[11px] @2xl:text-[13px]" : "text-[12px] @2xl:text-sm")} style={{ fontFamily: head, fontWeight: x.faces.heading?.weight ?? 700 }}>{p.look === "citation" ? `« ${p.text} »` : p.text}</p>
                     </div>
                   );
                 })}
@@ -229,10 +229,10 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
 function Study({ s }: { s: StudyCard }) {
   const t = useT();
   return (
-    <section className="rounded-xl border border-line bg-card p-4 text-sm" data-brand-study>
+    <section className="min-w-0 overflow-hidden rounded-xl border border-line bg-card p-4 text-sm" data-brand-study>
       <h3 className="text-sm font-semibold">{t("Ce que j'ai compris de ton marché", "What I understood about your market")}</h3>
       <p className="mt-1 text-xs text-muted">{s.sources > 0 ? t(`J'ai lu ${s.sources} page${s.sources > 1 ? "s" : ""} et gardé ${s.quoteCount} parole${s.quoteCount > 1 ? "s" : ""} de clients, mot pour mot.`, `I read ${s.sources} page(s) and kept ${s.quoteCount} customer quote(s), word for word.`) : t("Ma recherche sur le web n'a rien donné : je n'ai lu aucune parole réelle de clients.", "My web research returned nothing: I read no real customer quotes.")}</p>
-      {s.quotes.length > 0 && <ul className="mt-2 grid gap-2 @2xl:grid-cols-2">{s.quotes.map((q, i) => <li key={i} className="rounded-lg border-l-4 border-ink bg-paper px-3 py-2 text-xs"><span>« {q.text} »</span>{/^https?:\/\//i.test(q.url) && <a className="mt-0.5 block truncate text-[11px] text-muted underline" href={q.url} target="_blank" rel="noreferrer noopener">{q.url.replace(/^https?:\/\/(www\.)?/, "").slice(0, 60)}</a>}</li>)}</ul>}
+      {s.quotes.length > 0 && <ul className="mt-2 grid grid-cols-1 gap-2 @2xl:grid-cols-2">{s.quotes.map((q, i) => <li key={i} className="min-w-0 overflow-hidden rounded-lg border-l-4 border-ink bg-paper px-3 py-2 text-xs"><span className="block break-words">« {q.text} »</span>{/^https?:\/\//i.test(q.url) && <a className="mt-0.5 block truncate text-[11px] text-muted underline" href={q.url} target="_blank" rel="noreferrer noopener">{q.url.replace(/^https?:\/\/(www\.)?/, "").slice(0, 60)}</a>}</li>)}</ul>}
       {!!s.mould && <p className="mt-2 text-xs"><b>{t("Ce que font tous tes concurrents", "What all your competitors do")} :</b> {s.mould}</p>}
       {s.competitors.length > 0 && <p className="mt-1 text-xs"><b>{t("Concurrents regardés", "Competitors looked at")} :</b> {s.competitors.join(", ")}</p>}
       {s.substitutes.length > 0 && <p className="mt-1 text-xs"><b>{t("Ce que font les gens à la place", "What people do instead")} :</b> {s.substitutes.join(" ; ")}</p>}

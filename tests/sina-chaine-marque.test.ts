@@ -80,6 +80,10 @@ describe("SINA — chaîne de création de la marque", async () => {
     taken?: { name: string; url: string }[];
     review?: (prompt: string) => any;
     fix?: (key: string) => Record<string, unknown>;
+    /** Reprise qui change ce qu'elle n'a pas le droit de changer (nom, fond). */
+    fixTop?: (key: string) => Record<string, unknown>;
+    /** Idées rendues par la stratégie (par défaut : sept idées fortes sur huit). */
+    strong?: (id: string, n: number) => boolean;
     recheck?: any;
   };
   const fakeAi = (log: { ids: string[]; prompts: Record<string, string>; systems: Record<string, string> }, s: Script = {}) => () => ({
@@ -88,7 +92,7 @@ describe("SINA — chaîne de création de la marque", async () => {
       log.ids.push(id); log.prompts[id] = c.prompt; log.systems[id] = c.system;
       const raw: any = (() => {
         if (c.kind === "study") return { quotes: [...REAL.map((text) => ({ text, url: PAGE })), { text: "Cette boisson a changé ma vie, je la recommande à tous.", url: PAGE }, { text: REAL[0], url: "https://inconnu.example/page" }], competitors: [{ name: "Fruits Givrés", url: RIVAL, codes: "pastels, fraîcheur" }], mould: "Des noms de fruits et de fraîcheur, des pastels.", substitutes: ["le soda de l'après-midi"], facts: [{ text: "Une infusion à froid demande au moins une heure au frais.", url: USAGE }, { text: "Fait sans page.", url: "https://inconnu.example/fait" }], notFound: [] };
-        if (c.kind === "strategy") return { job: "Le soda était un moment à soi.", confessions: [{ text: "Quand je lis « sans sucre », je cherche ce qu'on me cache.", quotes: [0, 1, 2, 4, 5, 9, 11] }, { text: "Mon soda, c'est mon seul petit plaisir.", quotes: [] }], ideas: ["A", "B", "C", "D", "A", "B", "C", "D"].map((k, i) => ({ id: `i${i + 1}`, belief: i < 4 ? route(k as "A").board.idea.belief : `Idée de réserve ${i}`, confession: k === "D" ? 1 : 0, enemy: route(k as "A").board.idea.enemy, proof: route(k as "A").board.idea.proof, cost: route(k as "A").board.idea.cost, opposite: "les marques pressées", onlyUs: "nos morceaux se voient", tone: "franc", strong: i !== 7 })) };
+        if (c.kind === "strategy") return { job: "Le soda était un moment à soi.", confessions: [{ text: "Quand je lis « sans sucre », je cherche ce qu'on me cache.", quotes: [0, 1, 2, 4, 5, 9, 11] }, { text: "Mon soda, c'est mon seul petit plaisir.", quotes: [] }], ideas: ["A", "B", "C", "D", "A", "B", "C", "D"].map((k, i) => ({ id: `i${i + 1}`, belief: i < 4 ? route(k as "A").board.idea.belief : `Idée de réserve ${i}`, confession: k === "D" ? 1 : 0, enemy: route(k as "A").board.idea.enemy, proof: route(k as "A").board.idea.proof, cost: route(k as "A").board.idea.cost, opposite: "les marques pressées", onlyUs: "nos morceaux se voient", tone: "franc", strong: s.strong ? s.strong(id, i) : i !== 7 })) };
         if (c.kind === "team") {
           const mine: Record<string, string[]> = { "team-langue": ["Bain de Minuit", "Lâche le Morceau", "La Main Lourde", "La Mèche Courte", "Sans Rancune"], "team-mots": ["Trempette", "Fruits Givrés", "Thé 2000", "Lâche le Morceau", "Frisquet"], "team-univers": ["Nage Libre", "L'Eau Est Bonne", "Grand Bain", "Plongeon", "Marée Haute"], "team-verite": ["Minute Papillon", "À Tremper", "Sans Bulles", "Patience", "Morceaux Choisis"] };
           return { names: (mine[id] ?? ["Un", "Deux", "Trois", "Quatre", "Cinq"]).map((name) => ({ name, detail: "détail", second: "lecture", idea: "" })) };
@@ -99,7 +103,7 @@ describe("SINA — chaîne de création de la marque", async () => {
           const ground = /Fond de page : (\w+)/.exec(c.prompt)?.[1] ?? /"ground":"(\w+)"/.exec(c.prompt)?.[1] ?? "blanc";
           const name = /^Nom : (.+?)(?: \(nom gardé|$)/m.exec(c.prompt)?.[1] ?? /"name":"([^"]+)"/.exec(c.prompt)?.[1];
           const base = route(BY_GROUND[ground]);
-          return draftOf(base, name ?? base.name, c.kind === "fix" && s.fix ? s.fix(base.key) : {});
+          return { ...draftOf(base, name ?? base.name, c.kind === "fix" && s.fix ? s.fix(base.key) : {}), ...(c.kind === "fix" && s.fixTop ? s.fixTop(base.key) : {}) };
         }
         if (c.kind === "review") return s.review ? s.review(c.prompt) : { routes: [{ key: "A", score: 8, verdict: "garder", fixes: [] }, { key: "B", score: 6, verdict: "reprendre", fixes: ["« Si c'est fade, remets-en. » est un ordre donné au lecteur : réécris cette phrase."] }, { key: "C", score: 8, verdict: "garder", fixes: [] }], series: "" };
         if (c.kind === "recheck") return s.recheck ?? { routes: [{ key: "B", better: true, remaining: [], score: 8 }] };
@@ -114,6 +118,11 @@ describe("SINA — chaîne de création de la marque", async () => {
     const job = ctx ?? jobCtx(t.user, t.pid, { projectId: t.pid, conversationId: t.cid, capMicro: 9_000_000, count: 3, ...payload });
     C.brandChainDeps.ai = fakeAi(log, s) as any;
     try { return { out: await fr(() => C.runSinaBrandJob(job)), log, job }; } finally { C.brandChainDeps.ai = undefined; }
+  }
+  // Relecture des pages citées : simulée (aucun accès au réseau) ; par défaut la page d'avis contient bien ses paroles.
+  const PAGES: Record<string, string | null> = {};
+  C.brandPageDeps.read = async (url: string) => (url in PAGES ? PAGES[url] : url.startsWith("https://avis.example") || url.startsWith("https://a.example") ? REAL.map((q) => `<p>« ${q} »</p>`).join("") + " J&rsquo;ai respecté le dosage, goût très fade." : null);
+  {
   }
   const FIXED_LINE = { lines: ["Ça ne pétille pas. Voilà, c'est dit.", "Trop fade ? La dose est à toi."] };
 
@@ -217,6 +226,71 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(J.journeyOf(u.cid).identities!.issues).toEqual(["Identité B : La signature reste proche de celle d'un concurrent."]);
   });
 
+  it("nom refusé par le directeur de création : une réserve déjà vérifiée prend sa place, avec une planche neuve", async () => {
+    const refuse = { routes: [{ key: "A", score: 8, verdict: "garder", fixes: [] }, { key: "B", score: 7, verdict: "garder", fixes: [] }, { key: "C", score: 4, verdict: "reprendre", replaceName: true, nameDoubt: "Il se lit « sans eau », le contraire de ce que la marque montre.", fixes: [] }], series: "" };
+    const t = await thread();
+    const { log } = await chain(t, {}, { review: () => refuse, recheck: { routes: [{ key: "C", better: true, remaining: ["Le bouton du site reste plat.", "b", "c", "d"], score: 7 }] } });
+    expect(log.ids.slice(-3)).toEqual(["review-1", "replace-1-C", "recheck-1"]);
+    expect(log.ids.some((i) => i.startsWith("fix"))).toBe(false); // un nom refusé ne se « corrige » pas
+    expect(log.prompts["replace-1-C"]).toMatch(/^Nom : Nage Libre$/m);
+    expect(log.prompts["replace-1-C"]).toMatch(/^Fond de page : blanc$/m); // la réserve garde le fond prévu pour la série
+    expect(log.prompts["replace-1-C"]).toMatch(/A « Bain de Minuit »[\s\S]*police de titres déjà prise/);
+    expect(log.prompts["recheck-1"]).toMatch(/Nom « L'Eau Est Bonne » refusé : Il se lit « sans eau », le contraire de ce que la marque montre\. Nouvelle route avec le nom de réserve « Nage Libre »\./);
+    const j = J.journeyOf(t.cid);
+    expect(j.identities!.list.map((x) => `${x.key} ${x.name} ${x.ground}`)).toEqual(["A Bain de Minuit sombre", "B Lâche le Morceau degrade", "C Nage Libre blanc"]);
+    expect(j.identities!.list[2].board!.nameCheck).toBe("rien_trouve"); // vérifié avec les autres noms
+    // Ce qui reste : trois points au plus par identité.
+    expect(j.identities!.issues).toEqual(["Identité C : Le bouton du site reste plat.", "Identité C : b", "Identité C : c"]);
+
+    // La nouvelle route jugée moins bonne : l'ancienne reste, et le doute sur son nom est dit au client.
+    const u = await thread();
+    await chain(u, {}, { review: () => refuse, recheck: { routes: [{ key: "C", better: false, remaining: [], score: 4 }] } });
+    const k = J.journeyOf(u.cid);
+    expect(k.identities!.list[2].name).toBe("L'Eau Est Bonne");
+    expect(k.identities!.issues.join(" ")).toMatch(/Identité C : Nom « L'Eau Est Bonne » refusé : Il se lit « sans eau »/);
+
+    // Plus aucune réserve libre : le nom reste, et le doute est dit.
+    const v = await thread();
+    await chain(v, {}, { shortlist: () => [pick("A"), pick("B"), pick("C")], review: () => refuse });
+    const m = J.journeyOf(v.cid);
+    expect(m.identities!.list[2].name).toBe("L'Eau Est Bonne");
+    expect(m.identities!.issues.join(" ")).toMatch(/Identité C : je trouve le nom « L'Eau Est Bonne » fragile \(Il se lit « sans eau », le contraire de ce que la marque montre\), et je n'avais plus de nom de réserve/);
+  });
+
+  it("une reprise qui change le nom ou le fond de la série est écartée : la première version reste, et c'est dit", async () => {
+    // Essai réel du 12 novembre 2026 : la reprise avait rebaptisé une route dans ses textes seulement.
+    const t = await thread();
+    const { log, out } = await chain(t, {}, { fixTop: () => ({ name: "Morceaux Choisis" }) });
+    expect(log.ids).toContain("fix-1-B");
+    expect(log.ids).not.toContain("recheck-1"); // rien de valable à relire
+    expect(log.prompts["fix-1-B"]).toMatch(/# Ce qui ne change pas\nLe nom « Lâche le Morceau » \(déjà jugé et vérifié\) et le fond de page « degrade » \(fixé pour la série\) restent tels quels\./);
+    expect(log.prompts["fix-1-B"]).toMatch(/# Les autres routes de la série[\s\S]*A « Bain de Minuit »[\s\S]*C « L'Eau Est Bonne »/);
+    const j = J.journeyOf(t.cid);
+    expect(j.identities!.list[1]).toMatchObject({ name: "Lâche le Morceau", ground: "degrade" });
+    expect(j.identities!.list[1].board!.lines).toEqual(route("B").board.lines);
+    expect(JSON.stringify(j.identities!.list)).not.toMatch(/Morceaux Choisis/);
+    expect(j.identities!.issues.join(" ")).toMatch(/Identité B : « Si c'est fade, remets-en\. » est un ordre donné au lecteur/);
+    expect(out.notes.join(" ")).toMatch(/reprise de B écartée : elle changeait le nom/);
+    const u = await thread();
+    const second = await chain(u, {}, { fixTop: () => ({ ground: "sombre", palette: route("A").palette }) });
+    expect(J.journeyOf(u.cid).identities!.list[1].ground).toBe("degrade");
+    expect(second.out.notes.join(" ")).toMatch(/reprise de B écartée : elle changeait le fond de page/);
+  });
+
+  it("trop peu d'idées fortes : la stratège en cherche d'autres, une fois, sans reformuler les idées écartées", async () => {
+    const t = await thread();
+    // Premier tour : une seule idée passe les deux épreuves (comme dans l'essai réel) ; second tour : toutes passent.
+    const { log } = await chain(t, {}, { strong: (id, n) => (id === "strategy" ? n === 0 : true), review: () => ({ routes: [], series: "" }) });
+    expect(log.ids.slice(4, 6)).toEqual(["strategy", "strategy-2"]);
+    expect(log.prompts["strategy-2"]).toMatch(/# Idées déjà trouvées \(ne les reprends pas, ne les reformule pas\)[\s\S]*\(forte\)[\s\S]*\(écartée : elle ne passe pas les deux épreuves\)[\s\S]*Cherche huit AUTRES idées/);
+    // Les équipes de noms ne reçoivent que les idées fortes des deux tours (1 + 8).
+    expect(log.prompts["team-langue"].split("# Idées de marque")[1].split("# Le moule")[0].match(/^Idée /gm)).toHaveLength(9);
+    expect(J.journeyOf(t.cid).identities!.list).toHaveLength(3);
+    // Assez d'idées fortes dès le premier tour : pas de second appel.
+    const u = await thread();
+    expect((await chain(u, {}, { review: () => ({ routes: [], series: "" }) })).log.ids).not.toContain("strategy-2");
+  });
+
   it("le contrôle gratuit du Studio nourrit la reprise : un chiffre que le client n'a pas donné est corrigé", async () => {
     const t = await thread();
     const withNumber = (prompt: string) => (/Fond de page : sombre/.test(prompt) ? { lines: ["Prête en 4 h au frais.", "La nuit porte fruit."] } : {});
@@ -258,6 +332,30 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(prompt.indexOf(PAGE)).toBeLessThan(prompt.indexOf("https://marques.example/0")); // les paroles d'abord
     expect(prompt.length).toBeLessThan(60_000);
     expect(J.journeyOf(t.cid).identities!.study).toMatchObject({ quoteCount: 12, sources: 61 });
+  });
+
+  it("une parole rapportée par la recherche n'est gardée que si le Studio la relit sur la page elle-même", async () => {
+    // La page ne contient que quatre des douze paroles (les autres sont chargées après coup, ou réécrites par la recherche).
+    PAGES[PAGE] = `<html><body><div class="avis"><p>&laquo; ${REAL[0]} &raquo;</p><p>${REAL[1].replace("'", "&#39;")}</p><span>${REAL[5]}</span></div><script type="application/ld+json">{"reviewBody":"${REAL[7].replace(/'/g, "\\u0027")}"}</script></body></html>`;
+    try {
+      const t = await thread();
+      await chain(t, {}, { review: () => ({ routes: [], series: "" }) });
+      const study = J.journeyOf(t.cid).identities!.study!;
+      expect(study.quoteCount).toBe(4);
+      expect(study.quotes.map((q) => q.text)).toEqual([REAL[0], REAL[1], REAL[5], REAL[7]]);
+      expect(study.notFound.join(" ")).toMatch(/8 paroles rapportées par ma recherche : je n'ai pas pu les relire sur leur page, je ne les ai pas gardées\./);
+      // L'aveu s'appuyait sur les paroles 0, 1, 2, 4, 5, 9, 11 : il n'en reste que trois dans les quatre gardées.
+      expect(J.journeyOf(t.cid).identities!.list[0].board!.idea.confessionSupport).toBeLessThan(7);
+      // Page illisible : toutes ses paroles sont écartées, l'aveu devient une hypothèse.
+      PAGES[PAGE] = null;
+      const u = await thread();
+      await chain(u, {}, { review: () => ({ routes: [], series: "" }) });
+      expect(J.journeyOf(u.cid).identities!.study).toMatchObject({ quoteCount: 0 });
+      expect(J.journeyOf(u.cid).identities!.list[0].board!.toProve.join(" ")).toMatch(/hypothèse/);
+    } finally { delete PAGES[PAGE]; }
+    expect(C.pageText("<p>J&rsquo;aime&nbsp;<b>bien</b></p><script>var a=\"go\\u00fbt\"</script>")).toBe("J'aime bien var a=\"goût\"");
+    expect(C.quoteOnPage("on sens rien … on boit de l'eau", "Avis : on sens rien du tout, on boit de l’eau quoi")).toBe(true);
+    expect(C.quoteOnPage("le goût était fade", "goût très fade")).toBe(false);
   });
 
   it("recherche sur le web en panne : la chaîne continue, sans rien inventer, et le dit", async () => {
@@ -418,7 +516,12 @@ describe("SINA — chaîne de création de la marque", async () => {
     for (const sys of [P.STUDY_SYSTEM, P.strategySystem(), P.teamSystem("services", P.TEAM_PATHS.metier), P.shortlistSystem("produits", 3), P.directionSystem("services"), P.reviewSystem("produits"), P.recheckSystem("produits"), P.VERIFY_SYSTEM]) {
       expect(sys).toMatch(/Rien d'inventé/);
       expect(sys).toMatch(/Le client n'entend que SINA/);
+      expect(sys).toMatch(/le TUTOIE \(« ta fiche », « tes clientes », « je te propose »\) : jamais « vous »/);
     }
+    // Leçons de l'essai réel : le nom et le plan de la série ne se changent pas pendant une reprise ; rien n'est promis après.
+    expect(P.reviewSystem("produits")).toMatch(/Ce que tu ne demandes jamais dans fixes : changer le nom[\s\S]*replaceName à true/);
+    expect(P.fixSystem("produits")).toMatch(/Le NOM et le FOND DE PAGE ne changent jamais pendant une reprise/);
+    expect(P.recheckSystem("produits")).toMatch(/Ne promets JAMAIS de le corriger/);
     // Entreprise de services : les équipes partent des mots du métier, et l'objet n'est jamais un emballage.
     expect(P.teamPathsFor("services", 4).map((p) => p.id)).toEqual(["metier", "langue", "mots", "verite"]);
     expect(P.teamPathsFor("produits", 4).map((p) => p.id)).toEqual(["langue", "mots", "univers", "verite"]);

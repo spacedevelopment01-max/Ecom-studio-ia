@@ -82,6 +82,9 @@ describe("SINA — routes de marque", () => {
     expect(found).toMatch(/4 h/);
     expect(found).toMatch(/Garanti/);
     expect(found).not.toMatch(/100 g/); // donné par le client
+    // Un numéro d'ordre (« Morceau n° 1 ») n'est pas une garantie ; un classement (« n° 1 des infusions ») en est une.
+    expect(unprovenClaims({ ...ok, board: { ...ok.board, object: { ...ok.board.object, front: ["Recette n° 1 : pêche"] }, toProve: ["La recette 1 reste à nommer."] } }, facts)).toEqual([]);
+    expect(unprovenClaims({ ...ok, board: { ...ok.board, lines: ["N° 1 des infusions froides.", "La nuit porte fruit."] } }, facts).join(" ")).toMatch(/N° 1/);
     // Annoncé dans « ce qui reste à prouver » : le chiffre est permis.
     const owned: Route = { ...invented, board: { ...invented.board, lines: ["Prête en 4 h au frais.", "Rien à ajouter. Sauf de l'eau."], object: ok.board.object, toProve: ["Le temps d'infusion (4 h au frais) est à confirmer avec ta recette."] } };
     expect(unprovenClaims(owned, facts)).toEqual([]);

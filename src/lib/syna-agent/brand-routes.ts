@@ -111,7 +111,7 @@ export function routeTexts(x: Route): string[] {
   return [x.slogan, x.promise, ...b.lines, ...b.object.front, ...b.object.back, b.site.headline, b.site.text, b.site.button, ...b.posts.map((p) => p.text), ...b.signs.map((s) => `${s.title} ${s.text}`), b.idea.proof];
 }
 
-const CLAIM_WORDS = /\b(garanti[es]?|certifi[ée]e?s?|labellis[ée]e?s?|prouv[ée]e?s?|cliniquement|test[ée]e?s? (?:par|en|sous)|recommand[ée]e?s? par|[ée]lue?s?\b.{0,24}\bann[ée]e|n[°o] ?1|num[ée]ro (?:1|un)\b|meilleure?s? (?:du|de la|des|au)\b|approuv[ée]e?s?|brevet[ée]e?s?|primée?s?|médaill[ée]e?s?)/giu;
+const CLAIM_WORDS = /\b(garanti[es]?|certifi[ée]e?s?|labellis[ée]e?s?|prouv[ée]e?s?|cliniquement|test[ée]e?s? (?:par|en|sous)|recommand[ée]e?s? par|[ée]lue?s?\b.{0,24}\bann[ée]e|(?:n[°o] ?1|num[ée]ro (?:1|un))(?= (?:des?|du|de la|en|au|aux|sur|mondial|fran[çc]ais))|meilleure?s? (?:du|de la|des|au)\b|approuv[ée]e?s?|brevet[ée]e?s?|primée?s?|médaill[ée]e?s?)/giu;
 const NUMBERS = /\d+(?:[.,]\d+)?(?:\s?(?:%|€|h\b|min\b|g\b|kg\b|ml\b|cl\b|l\b|jours?|heures?|minutes?|ans?|fois|étoiles?))?/giu;
 const digits = (s: string) => s.replace(/[^0-9]/g, "");
 

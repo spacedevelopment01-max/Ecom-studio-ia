@@ -49,10 +49,24 @@ const canonical = (raw: string) => {
   return u.toString().replace(/\/$/, "");
 };
 
-/** Route utilisable pour la recherche web : fournisseur des textes (tâche « strategy »), clé, tarifs (null : aucun appel). */
-export function webSearchRoute(): { provider: WebProvider; model: string; key: string } | null {
+/** Modèle demandé par l'appelant pour SA recherche (ex. la marque de SINA : un modèle moins coûteux que celui des textes). */
+export type WebSearchPrefer = { provider: string; model: string };
+
+/**
+ * Route utilisable pour la recherche web : fournisseur des textes (tâche « strategy »), clé, tarifs (null : aucun appel).
+ * `prefer` : modèle voulu par l'appelant, pris seulement s'il est utilisable (clé, tarifs) ; sinon la route habituelle.
+ */
+export function webSearchRoute(prefer?: WebSearchPrefer): { provider: WebProvider; model: string; key: string } | null {
+  if (prefer) {
+    const wanted = routeWith(prefer.provider, prefer.model);
+    if (wanted) return wanted;
+  }
   const decision = routeLlm({ task: "strategy" });
-  const provider = decision.provider;
+  return routeWith(decision.provider, decision.model);
+}
+
+function routeWith(provider: string, model: string): { provider: WebProvider; model: string; key: string } | null {
+  const decision = { provider, model };
   if (provider !== "openai" && provider !== "anthropic") return null;
   const key = activeProviderKey(provider);
   if (!key) return null;
@@ -73,8 +87,8 @@ export function webSearchMaxMicro(provider: WebProvider, model: string, countedI
 }
 
 /** Plafond prévisionnel (devis) sans comptage : entrée de la consigne bornée à 4 000 jetons. */
-export function webSearchQuoteMicro(): number | null {
-  const r = webSearchRoute();
+export function webSearchQuoteMicro(prefer?: WebSearchPrefer): number | null {
+  const r = webSearchRoute(prefer);
   if (!r) return null;
   try { return webSearchMaxMicro(r.provider, r.model, 4000); } catch { return null; }
 }
@@ -132,8 +146,8 @@ function fromAnthropic(m: any, model: string): Normalized {
  * Lance une recherche web chez le fournisseur des textes et renvoie les pages trouvées (liens vérifiés, places de
  * marché exclues). Erreur : rien n'est remplacé par une étude locale.
  */
-export async function webResearch(call: { userId: string; projectId: string | null; jobId?: string | null; usageKey: string }, query: string): Promise<{ findings: WebFinding[]; searches: number; rejected: { url: string; reason: string }[] }> {
-  const route = webSearchRoute();
+export async function webResearch(call: { userId: string; projectId: string | null; jobId?: string | null; usageKey: string; prefer?: WebSearchPrefer }, query: string): Promise<{ findings: WebFinding[]; searches: number; rejected: { url: string; reason: string }[] }> {
+  const route = webSearchRoute(call.prefer);
   if (!route) throw new UserFacingError(L("Recherche web indisponible (clé du fournisseur des textes, modèle ou tarif de l'outil « web_search » manquant dans l'administration).", "Web search unavailable (text provider key, model or web_search tool price missing in the admin settings)."));
   assertAiAllowed(call.userId, call.projectId);
   const { provider, model, key } = route, effort = mapEffort(provider, model, "low");

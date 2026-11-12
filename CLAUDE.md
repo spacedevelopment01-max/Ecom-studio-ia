@@ -154,9 +154,11 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 - **Textes du site écrits par Claude** (décision du 9 novembre 2026, après comparaison réelle sur Heure Dorée avec
   GPT-5.6 Sol : meilleur accueil chez OpenAI mais fiche produit plate, une garantie perdue et 1,45 € contre 0,92 €).
   Le réglage `site.copy_model` reste vide (Claude) ; ne pas le changer sans sa demande.
-- **Marque créée par SINA : décisions du 12 novembre 2026** (les plus récentes ; **construit le 12 novembre 2026, jamais
-  encore essayé avec de vrais appels** : aucun essai payant n'a été fait, le coût réel n'est pas mesuré ; méthode et
-  cahiers de métier : `docs/sina-savoir/`, retours détaillés : `docs/etat-des-lieux-2026-11-12.md`, partie 6) :
+- **Marque créée par SINA : décisions du 12 novembre 2026** (les plus récentes ; **construit le 12 novembre 2026** ; un
+  seul essai réel ce jour-là, sur l'exemple des infusions de fruits au forfait à 89 € : 3 identités en 14 minutes pour
+  2,88 € (plafond 7,83 €), deux cohérentes (« Tranche », « Froid Devant ») et une ratée (nom et textes en désaccord) ;
+  ses leçons sont corrigées dans le code mais **pas encore revérifiées par un second essai** ; méthode et cahiers de
+  métier : `docs/sina-savoir/`, retours détaillés : `docs/etat-des-lieux-2026-11-12.md`, partie 6) :
   - le client n'entend que SINA : ses spécialistes restent en coulisses (« j'ai étudié ton marché », jamais « ma stratège ») ;
   - **nombre d'identités selon le forfait** : 2 au forfait à 49 €, 3 à 89 €, 4 à 129 € ;
   - une identité se montre en **planche de marque** (l'idée, le nom, les signes, le sachet ou l'objet, le site sur
@@ -180,8 +182,15 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     puis 3 logos, gardée par sécurité tant que la chaîne n'est pas validée sur un essai réel) ; `sina.brand_chain`
     (nombre d'équipes de noms, modèles). Les identités créées avant (sans planche) restent lisibles et choisissables,
     avec leurs 3 logos : aucune migration.
+  - **Leçons de l'essai réel du 12 novembre** (toutes dans le code et testées) : une parole de client n'est gardée que si
+    le Studio la relit sur la page elle-même (`quotesReadOnPages` ; la recherche ne rend que des extraits écrits par un
+    modèle) ; la recherche web de la marque passe par le modèle « métier », moins coûteux ; le nom et le fond d'une route
+    ne changent jamais pendant une reprise (une reprise qui les change est écartée) ; un nom refusé par le directeur de
+    création est remplacé par un nom de réserve déjà vérifié, avec une planche neuve ; un second tour d'idées quand trop
+    peu passent les deux épreuves ; tutoiement du client ; ce qui reste à régler est décrit, jamais promis.
   - **À confirmer par le propriétaire** : le quatrième fond d'une série de quatre identités (aujourd'hui un fond clair
-    coloré, « uni ») ; le réglage des modèles et le coût réel, à mesurer sur un essai payant (prix annoncé avant).
+    coloré, « uni ») ; la règle « un fond sombre par série » quand le client demande du joyeux et du coloré (le directeur
+    de création l'a contestée pendant l'essai) ; le réglage des modèles.
 - **Réponses courtes et claires**, sans jargon ; ne pas reposer une question à laquelle il a déjà répondu.
 - **Ne pas décider à sa place** : un retrait de contenu ou un changement visible important se propose, il ne s'applique
   qu'après son accord. Retirer un visuel raté sans rien mettre à la place n'est pas une correction.

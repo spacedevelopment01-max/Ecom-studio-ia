@@ -6,8 +6,8 @@ fonctionnera pas ».
 
 **Statut : validé par le propriétaire le 12 novembre 2026 (« Ok » au premier lot) et branché dans le Studio le même
 jour. Les quatre cahiers de métier sont lus par les spécialistes de SINA à chaque création de marque
-(`src/lib/syna-agent/brand-knowledge.ts`) : les modifier change ce que SINA sait. Aucun essai avec de vrais appels n'a
-encore été fait : le coût réel et la qualité réelle restent à mesurer, avec l'accord écrit du propriétaire.**
+(`src/lib/syna-agent/brand-knowledge.ts`) : les modifier change ce que SINA sait. Un premier essai réel a eu lieu le
+12 novembre 2026, avec l'accord écrit du propriétaire (voir « Premier essai réel » plus bas).**
 
 ## Ce qu'il contient
 
@@ -33,10 +33,24 @@ De trois essais sur un même projet d'exemple inventé (des infusions aux fruits
    trois tours de jury mesurés sur les noms de référence du propriétaire. Verdict : « J'adore la présentation globale »,
    avec « tu peux encore aller beaucoup plus loin ».
 
+## Premier essai réel (12 novembre 2026)
+
+Projet d'exemple : des infusions de fruits en vrac à boire froides, forfait à 89 € (trois identités), sans logo.
+
+- Coût : 2,88 € pour 20 appels (plafond 7,83 €), en 14 minutes. Quatre recherches sur le web : 0,99 € ; le reste : 1,89 €.
+- Étude : 11 pages lues, 11 paroles rapportées par la recherche, 7 gardées après relecture des pages elles-mêmes.
+- Idées : une seule sur huit passait les deux épreuves ; les routes B et C ont été bâties sur des idées écartées.
+- Noms : 199 pistes par quatre équipes ; routes retenues « Tranche », « Froid Devant », « Pas de Quartier ».
+- Résultat : A et B cohérentes ; C ratée (le directeur de création a refusé son nom, la reprise l'a rebaptisée dans
+  ses textes seulement, et son fond sombre est devenu un second dégradé).
+- Corrigé depuis dans le code, et testé : relecture des vraies pages, nom et fond inchangeables pendant une reprise, nom
+  refusé remplacé par une réserve, second tour d'idées, tutoiement, défauts décrits et jamais promis.
+- Pas encore revérifié par un second essai réel.
+
 ## Ce qui n'est pas réglé
 
-- Le coût réel de cette chaîne n'est pas mesuré. Estimation : 20 à 30 € par projet si tout tourne sur le modèle le plus
-  fort, 6 à 10 € avec un réglage économe. À mesurer par un essai payant, avec l'accord écrit du propriétaire.
+- Le coût réel n'est mesuré qu'une fois (2,88 € pour trois identités, réglage économe). L'estimation d'avant l'essai
+  était de 6 à 10 € : la mesure est plus basse, mais une seule mesure ne fait pas une moyenne.
 - Les planches de marque sont dessinées en code, sans image créée (dans les essais comme dans le Studio). Celles du
   Studio sont composées avec des pièces sûres (textes courts, nom dessiné avec la vraie police, pictogrammes nettoyés) :
   elles sont plus sobres que celles du troisième essai, dessinées à la main pour chaque marque.
