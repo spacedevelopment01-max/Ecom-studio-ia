@@ -94,7 +94,7 @@ export function localDecision(c: LocalContext): LocalDecision | null {
     if (missing.length || !isPlainYes(c.userText)) return null; // start.confirm crée le projet s'il manque
     return {
       confirm: true,
-      out: { message: "Parfait, l'étape 0 est validée. Je garde toutes tes réponses pour la suite. La prochaine étape : tes 3 identités de marque.", actions: [{ tool: "start.confirm", args: {}, why: "validation du résumé par le client (moteur local)" }], question: null, done: true },
+      out: { message: "Parfait, l'étape 0 est validée. Je garde toutes tes réponses pour la suite. La prochaine étape : tes identités de marque.", actions: [{ tool: "start.confirm", args: {}, why: "validation du résumé par le client (moteur local)" }], question: null, done: true },
     };
   }
   const field = c.askField as StartField;

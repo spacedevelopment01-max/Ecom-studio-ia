@@ -12,7 +12,7 @@ import { loadProject } from "../../projects";
 import { chooseLogoV2 } from "../../logo-v2/choose";
 import type { AgentTool } from "../types";
 import { journeyOf, setStep, updateJourney } from "../journey";
-import { SINA_LOGOS_JOB, logosMaxMicro, logosProbableMicro } from "../logos";
+import { SINA_LOGOS_JOB, chosenRoute, logosMaxMicro, logosProbableMicro, singleLogoQuote } from "../logos";
 import { project } from "./common";
 
 const KEY = z.enum(["A", "B", "C"]);
@@ -43,9 +43,13 @@ export function clientLogoWishes(conversationId: string, since: number): string 
 
 const proposeTool: AgentTool<{ guidance?: string }> = {
   name: "logo.propose", module: "marque", kind: "generate", needsProject: true,
-  description: "Étape 2 : dessine 3 logos LIBRES pour l'identité CHOISIE (son nom exact, ses couleurs) : le modèle d'images a carte blanche sur l'idée, le symbole et la typographie (décision du propriétaire), seuls le nom exact et les rendus interdits sont fixés. Chaque logo est relu et contrôlé par Claude ; un nom mal écrit est réécrit sans repayer. Payant (devis avant, en % du budget) ; tâche de fond de quelques minutes. guidance : laisse vide ; le Studio transmet lui-même au dessinateur les souhaits écrits par le client (ses mots exacts), jamais l'identité, le slogan ni un style que le client n'a pas demandé.",
+  description: "Étape 2. Identité choisie sur une PLANCHE de marque : dessine UN logo, à partir de l'idée de la marque et du nom dessiné de sa planche ; il est relu par le contrôle avant d'être montré ; s'il n'est pas validé, le nom dessiné de la planche (exact à la lettre) est proposé en secours ; si le client n'aime pas le logo, rappelle cet outil pour en dessiner un autre (payant, annoncé avant). Identité d'avant les planches : dessine 3 logos LIBRES pour l'identité CHOISIE (son nom exact, ses couleurs) : le modèle d'images a carte blanche sur l'idée, le symbole et la typographie (décision du propriétaire), seuls le nom exact et les rendus interdits sont fixés. Chaque logo est relu et contrôlé par Claude ; un nom mal écrit est réécrit sans repayer. Payant (devis avant, en % du budget) ; tâche de fond de quelques minutes. guidance : laisse vide ; le Studio transmet lui-même au dessinateur les souhaits écrits par le client (ses mots exacts), jamais l'identité, le slogan ni un style que le client n'a pas demandé.",
   args: z.object({ guidance: z.string().max(1500).optional() }).strict(),
-  estimate: () => ({ maxMicro: maxMicro(), ...(logoToolDeps.maxMicro ? {} : { probableMicro: logosProbableMicro() }), label: L("3 logos", "3 logos") }),
+  estimate: (ctx) => {
+    // Identité choisie sur une planche : un seul logo (une image et ses relectures).
+    if (!logoToolDeps.maxMicro && chosenRoute(journeyOf(ctx.conversationId))) return { ...singleLogoQuote(), label: L("ton logo", "your logo") };
+    return { maxMicro: maxMicro(), ...(logoToolDeps.maxMicro ? {} : { probableMicro: logosProbableMicro() }), label: chosenRoute(journeyOf(ctx.conversationId)) ? L("ton logo", "your logo") : L("3 logos", "3 logos") };
+  },
   run: (ctx, a) => {
     const p = project(ctx);
     const j = journeyOf(ctx.conversationId);
@@ -54,11 +58,12 @@ const proposeTool: AgentTool<{ guidance?: string }> = {
     if (j.steps[2]?.status === "skipped") return { ok: false, summary: L("Le client garde son logo : pas de nouveaux logos.", "The client keeps their logo.") };
     // Une seule série à la fois (jamais deux séries payées en parallèle).
     if (pendingJob(p.id, SINA_LOGOS_JOB)) return { ok: false, summary: L("Les logos sont déjà en cours de dessin : attends-les.", "Logos are already being drawn.") };
-    const cap = maxMicro();
+    const single = !!chosenRoute(j);
+    const cap = single && !logoToolDeps.maxMicro ? singleLogoQuote().maxMicro : maxMicro();
     const wishes = clientLogoWishes(ctx.conversationId, Math.max(j.identityChoice.at ?? 0, j.logos?.at ?? 0));
-    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: SINA_LOGOS_JOB, label: L("3 logos (SINA)", "3 logos (SINA)"), payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: cap, ...(wishes ? { guidance: wishes } : {}) }, maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:logos:${(j.logos?.round ?? 0) + 1}` });
+    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: SINA_LOGOS_JOB, label: single ? L("Ton logo (SINA)", "Your logo (SINA)") : L("3 logos (SINA)", "3 logos (SINA)"), payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: cap, ...(wishes ? { guidance: wishes } : {}) }, maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:logos:${(j.logos?.round ?? 0) + 1}` });
     updateJourney(ctx.conversationId, (x) => setStep(x, 2, "doing"));
-    return { ok: true, summary: L("Dessin des 3 logos lancé (quelques minutes) ; SINA reprend quand ils sont prêts.", "Drawing the 3 logos (a few minutes)."), jobs: [job.id], data: { plafondMicro: cap } };
+    return { ok: true, summary: single ? L("Dessin de ton logo lancé (quelques minutes) ; je reprends quand il est prêt.", "Drawing your logo (a few minutes).") : L("Dessin des 3 logos lancé (quelques minutes) ; SINA reprend quand ils sont prêts.", "Drawing the 3 logos (a few minutes)."), jobs: [job.id], data: { plafondMicro: cap, logos: single ? 1 : 3 } };
   },
 };
 
@@ -87,7 +92,7 @@ const chooseTool: AgentTool<{ source: "A" | "B" | "C" }> = {
     return {
       ok: verified,
       summary: verified
-        ? L(`Logo ${a.source} « ${logo.name} » enregistré comme logo de ta marque${logo.verdict === "FINAL" ? "" : " (choisi par toi, non validé par le contrôle)"}. Étape 2 validée. Prochaine étape : l'image de marque complète.`, `Logo ${a.source} saved as your brand logo.`)
+        ? L(`Logo ${a.source} « ${logo.name} » enregistré comme logo de ta marque${logo.verdict === "FINAL" || logo.kind === "planche" ? "" : " (choisi par toi, non validé par le contrôle)"}. Étape 2 validée. Prochaine étape : l'image de marque complète.`, `Logo ${a.source} saved as your brand logo.`)
         : L("Le logo n'a pas pu être relu après l'enregistrement.", "The logo could not be verified."),
       data: { logo: { source: a.source, name: logo.name, verdict: logo.verdict }, principal: applied.main },
       changes: [{ module: "marque", object: "logo", summary: `${logo.name} (${a.source})`, before, after: after?.logo?.assetId ?? null, verified }],

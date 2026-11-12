@@ -8,6 +8,9 @@ import { describe, expect, it } from "vitest";
 process.env.STUDIO_SYNA_AGENT = "1";
 
 describe("SINA — étape 1 : 3 identités de marque", async () => {
+  // Ancienne création en un appel (3 identités), gardée par le réglage « simple » : la chaîne du 12 novembre 2026 a
+  // ses propres tests (sina-chaine-marque, sina-routes-de-marque).
+  (await import("@/lib/settings")).setSetting("sina.brand_method", "simple");
   const { one } = await import("@/lib/db");
   const { runWithLang } = await import("@/lib/i18n-server");
   const { loadProject } = await import("@/lib/projects");

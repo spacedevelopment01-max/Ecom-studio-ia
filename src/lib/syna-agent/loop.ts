@@ -30,7 +30,10 @@ import { projectSnapshot } from "./snapshot";
 import { SYNA_SYSTEM } from "./prompt";
 import { JOURNEY_STEPS, READY_STEPS, currentStep, journeyContext, journeyOf } from "./journey";
 import { localDecision } from "./local-step";
-import { LOGO_STYLE_LABEL, fontFace, type Identity } from "./identities";
+import { LOGO_STYLE_LABEL, fontFace, groundPresentation, type Identity } from "./identities";
+import { BOARD_OBJECT_LABEL, SIGN_KIND_LABEL } from "./brand-board";
+import { safeWordmark } from "./brand-routes";
+import { drawWordmark, type DrawnWordmark } from "./brand-wordmark";
 import { mixIdentity } from "./tools/identity";
 import { assetUrl } from "../library";
 
@@ -528,7 +531,28 @@ function clip(v: unknown, max: number): unknown {
   return typeof v === "string" ? `${s.slice(0, max)}…` : { truncated: true, preview: s.slice(0, max) };
 }
 
-const cardOf = (x: Identity) => ({ ...x, logoStyleLabel: LOGO_STYLE_LABEL[x.logoStyle], faces: { heading: fontFace(x.fonts.heading), body: fontFace(x.fonts.body) } });
+const drawnNames = new Map<string, DrawnWordmark | null>();
+/** Le nom dessiné d'une planche (tracés composés par le Studio), gardé en mémoire : le fil se relit souvent. */
+function drawnName(x: Identity): DrawnWordmark | null {
+  if (!x.board) return null;
+  const key = JSON.stringify([x.name, x.fonts.heading, x.board.wordmark]);
+  if (drawnNames.has(key)) return drawnNames.get(key)!;
+  let drawn: DrawnWordmark | null = null;
+  // Police illisible ou recette impossible : la planche écrit alors le nom dans la police de titres (jamais d'écran vide).
+  try { drawn = drawWordmark(x.name, safeWordmark(x.board.wordmark, x.name), x.fonts.heading); } catch { drawn = null; }
+  if (drawnNames.size > 300) drawnNames.clear();
+  drawnNames.set(key, drawn);
+  return drawn;
+}
+/** Planche de marque d'une identité (routes du 12 novembre 2026) : couleurs d'affichage, nom dessiné, libellés. */
+function boardOf(x: Identity) {
+  if (!x.board) return {};
+  return {
+    look: groundPresentation(x.palette, x.ground, x.gradient), drawn: drawnName(x),
+    board: { ...x.board, signs: x.board.signs.map((s) => ({ ...s, kindLabel: L(SIGN_KIND_LABEL[s.kind].fr, SIGN_KIND_LABEL[s.kind].en) })), object: { ...x.board.object, label: L(BOARD_OBJECT_LABEL[x.board.object.kind].fr, BOARD_OBJECT_LABEL[x.board.object.kind].en) } },
+  };
+}
+const cardOf = (x: Identity) => ({ ...x, logoStyleLabel: LOGO_STYLE_LABEL[x.logoStyle], faces: { heading: fontFace(x.fonts.heading), body: fontFace(x.fonts.body) }, ...boardOf(x) });
 const PART_LABEL: Record<string, string> = { name: "le nom", slogan: "le slogan", palette: "les couleurs", fonts: "les polices", tone: "le ton", logo: "l'idée de logo" };
 /** « Heure Dorée (B) avec les couleurs de Tour de Main (A) » ; vide quand le client a pris une identité telle quelle. */
 export function mixLabel(list: Identity[], c: { key: string; mix: Partial<Record<string, string>> }): string {
@@ -569,7 +593,7 @@ export function threadView(user: User, cid: string) {
         // Étape 1 : la dernière proposition d'identités (cartes du fil), avec les fichiers de leurs vraies polices.
         identities: j.identities ? {
           round: j.identities.round, issues: j.identities.issues, chosen: j.identityChoice ?? null,
-          list: j.identities.list.map(cardOf),
+          list: j.identities.list.map(cardOf), study: j.identities.study ?? null,
           // Identité retenue telle qu'enregistrée (mélange compris) : la carte « Ton identité » montre le vrai résultat.
           final: j.identityChoice ? { ...cardOf(mixIdentity(j.identities.list, j.identityChoice.key, j.identityChoice.mix as any, j.identityChoice.edits ?? {})), mixLabel: mixLabel(j.identities.list, j.identityChoice) } : null,
         } : null,

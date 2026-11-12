@@ -1,11 +1,17 @@
 /**
- * Étape 1 du parcours SINA (#492) : 3 identités de marque (proposer, refaire, choisir, mélanger). La création est
- * payante (Claude, modèle fort, une reprise au plus si le contrôle gratuit du Studio échoue) ; le choix est gratuit et
- * enregistre la marque du projet (nom, slogan, promesse, palette, polices, ton, idée de logo).
+ * Étape 1 du parcours SINA (#492) : les identités de marque (proposer, refaire, choisir, mélanger).
+ *
+ * Depuis les décisions du propriétaire du 12 novembre 2026, la création passe par la CHAÎNE de `brand-chain.ts` (tâche
+ * de fond : étude du marché, idées, noms par équipes, planches, directeur de création) et propose 2, 3 ou 4 identités
+ * selon le forfait. L'ancienne création en un seul appel (3 identités, contrôle gratuit, une reprise au plus) reste
+ * disponible par le réglage `sina.brand_method` = « simple », par sécurité, tant que la chaîne n'a pas été validée sur
+ * un essai réel. Le choix est gratuit et enregistre la marque du projet (nom, slogan, promesse, palette, polices, ton).
  */
 import { z } from "zod";
 import fs from "node:fs";
-import { one } from "../../db";
+import { json as parseJson, one } from "../../db";
+import { enqueue, getJob, pendingJob } from "../../jobs";
+import { getSetting } from "../../settings";
 import { L } from "../../i18n-server";
 import { loadProject, remember, saveBrand } from "../../projects";
 import { assetData, getAsset } from "../../library";
@@ -21,6 +27,8 @@ import { journeyOf, setStep, updateJourney, type Journey } from "../journey";
 import {
   IDENTITY_SYSTEM, IdentitiesSchema, LOGO_STYLE_LABEL, fontFamily, identityIssues, identityPrompt, prepareIdentities, type Identity,
 } from "../identities";
+import { SINA_BRAND_JOB, chainQuote, routeCountOfProject } from "../brand-chain";
+import { ROUTE_KEYS, routeKeys } from "../brand-routes";
 import { project, short } from "./common";
 
 /** Plafond d'une proposition (micro-euros), création ET reprise éventuelle comprises (jamais dépassé au total). */
@@ -38,8 +46,55 @@ export const IDENTITY_MODEL = { provider: "anthropic" as const, model: "claude-o
 /** Dépendance remplaçable par les tests (aucun appel réel). */
 export const identityDeps: { generate?: (call: Parameters<typeof llmJson>[0]) => Promise<unknown> } = {};
 
-const KEYS = ["A", "B", "C"] as const;
+const KEYS = ROUTE_KEYS;
 type Key = (typeof KEYS)[number];
+
+/**
+ * Méthode de création de la marque : « chaine » (sept temps, décisions du 12 novembre 2026) par défaut ; « simple » =
+ * l'ancienne création en un appel (3 identités), gardée par sécurité jusqu'à la validation de la chaîne sur un essai réel.
+ */
+export const brandMethod = (): "chaine" | "simple" => (getSetting("sina.brand_method") === "simple" ? "simple" : "chaine");
+
+/** L'atelier de la proposition précédente (étude, idées, réserve de noms) peut-il resservir sans être repayé ? */
+function workshopReady(j: Journey): boolean {
+  const id = j.identities?.chainJobId;
+  if (!id) return false;
+  try { return !!parseJson<Record<string, unknown>>(getJob(id)?.checkpoint ?? "{}", {})["brand:strategy"]; } catch { return false; }
+}
+
+type ProposeArgs = { guidance?: string; redo?: Key[]; only?: "noms" };
+/** Travail demandé à la chaîne : combien d'identités à faire, et si l'atelier précédent ressert. */
+function chainWork(ctx: ToolContext, a: ProposeArgs | undefined) {
+  const count = ctx.projectId ? routeCountOfProject(ctx.projectId) : 2;
+  const j = journeyOf(ctx.conversationId);
+  const previous = j.identities?.list ?? [];
+  const sameShape = previous.length === count && previous.every((x) => !!x.board);
+  const redo = (a?.redo ?? []).filter((k) => routeKeys(count).includes(k));
+  const partial = sameShape && redo.length > 0 && redo.length < count;
+  const fresh = !((redo.length || a?.only || a?.guidance) && workshopReady(j));
+  return { j, count, previous, sameShape, redo, routes: partial ? redo.length : count, fresh };
+}
+
+/** Création par la chaîne : tâche de fond de plusieurs minutes ; SINA reprend quand les planches sont prêtes. */
+function proposeByChain(ctx: ToolContext, a: ProposeArgs) {
+  const p = project(ctx);
+  const w = chainWork(ctx, a);
+  if ((a.redo?.length || a.only) && !w.sameShape) return { ok: false, summary: L("Aucune proposition à refaire pour l'instant.", "Nothing to redo yet."), hint: "Lance d'abord une proposition complète (identity.propose sans redo ni only)." };
+  // Une seule création à la fois (jamais deux chaînes payées en parallèle).
+  if (pendingJob(p.id, SINA_BRAND_JOB)) return { ok: false, summary: L("Tes identités sont déjà en cours de création : attends-les.", "Your identities are already being created.") };
+  const quote = chainQuote({ routes: w.routes, fresh: w.fresh });
+  const round = (w.j.identities?.round ?? 0) + 1;
+  const job = enqueue({
+    userId: ctx.user.id, projectId: p.id, type: SINA_BRAND_JOB, label: L(`${w.count} identités de marque (SINA)`, `${w.count} brand identities (SINA)`),
+    payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: quote.maxMicro, count: w.count, ...(a.guidance ? { guidance: a.guidance } : {}), ...(w.redo.length ? { redo: w.redo } : {}), ...(a.only === "noms" ? { namesOnly: true } : {}) },
+    maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:brand:${round}`,
+  });
+  updateJourney(ctx.conversationId, (x) => setStep(x, 1, "doing"));
+  return {
+    ok: true, jobs: [job.id], data: { identites: w.count, plafondMicro: quote.maxMicro },
+    summary: L(`Création de ${w.routes === w.count ? `tes ${w.count} identités de marque` : `${w.routes} identité${w.routes > 1 ? "s" : ""}`} lancée (plusieurs minutes : ${w.fresh ? "j'étudie ton marché, je cherche l'idée et les noms, puis " : ""}je prépare les planches et je relis tout). Je reprends quand c'est prêt.`, "Creating your brand identities (several minutes)."),
+  };
+}
 
 /** Logo gardé (refonte) montré à Claude : pièce jointe désignée, sinon logo du client déjà rangé. */
 function keptLogoImage(ctx: ToolContext, j: Journey): LlmImage[] {
@@ -75,6 +130,7 @@ export const identityView = (x: Identity) => ({
   cle: x.key, nom: x.name, slogan: x.slogan, promesse: x.promise, territoire: x.territory,
   fond: x.ground, ...(x.gradient ? { degrade: x.gradient } : {}), couleurs: x.palette, polices: { titres: fontFamily(x.fonts.heading), textes: fontFamily(x.fonts.body) },
   ton: x.tone.adjectives.join(", "), pourquoi: x.why,
+  ...(x.board ? { idee: x.board.idea.belief, resteAProuver: x.board.toProve } : {}),
 });
 
 /** « Seulement les noms » : tout le reste des identités est remis tel quel (jamais changé en silence). */
@@ -85,17 +141,22 @@ export function keepAllButNames(fresh: Identity[], previous: Identity[]): Identi
   });
 }
 
-const proposeTool: AgentTool<{ guidance?: string; redo?: Key[]; only?: "noms" }> = {
+const proposeTool: AgentTool<ProposeArgs> = {
   name: "identity.propose", module: "marque", kind: "generate", needsProject: true,
-  description: "Étape 1 : crée 3 identités de marque VRAIMENT différentes (nom, slogan, promesse, territoire, palette, polices, ton ; le logo est dessiné à l'étape 2, en carte blanche) à partir de la fiche de départ, avec Claude (modèle fort), puis les contrôle. Payant : le Studio montre le devis au client (carte d'accord) avant de lancer. À appeler quand le client est prêt, ou quand il demande une nouvelle proposition : guidance = ce qu'il veut de différent (ses mots) ; redo = les identités à refaire (les autres restent identiques) ; only « noms » = refaire seulement les noms et les slogans (couleurs, polices et le reste gardés). Les cartes des identités s'affichent dans le fil.",
-  args: z.object({ guidance: z.string().max(1500).optional(), redo: z.array(z.enum(KEYS)).min(1).max(3).optional(), only: z.enum(["noms"]).optional() }).strict(),
-  estimate: () => ({ maxMicro: IDENTITY_CAP_MICRO, probableMicro: identityProbableMicro(), label: "3 identités de marque" }),
+  description: "Étape 1 : crée les identités de marque du client, VRAIMENT différentes : 2, 3 ou 4 selon son forfait (le Studio le sait). Chaque identité est une PLANCHE de marque : l'idée, le nom et sa logique, la signature, les signes, l'objet, le site sur téléphone, des publications, la voix, ce qui reste à prouver ; couleurs, polices et ton compris (le logo est dessiné à l'étape 2). Tu étudies d'abord son marché sur le web (paroles réelles de clients avec leur page), tu cherches l'idée et les noms, puis tu relis tout : tâche de fond de plusieurs minutes. Payant : le Studio montre le devis au client (carte d'accord) avant de lancer. À appeler quand le client est prêt, ou quand il demande une nouvelle proposition : guidance = ce qu'il veut de différent (ses mots) ; redo = les identités à refaire (les autres restent identiques) ; only « noms » = refaire seulement les noms et les phrases (couleurs, polices et le reste gardés). Les planches s'affichent dans le fil.",
+  args: z.object({ guidance: z.string().max(1500).optional(), redo: z.array(z.enum(KEYS)).min(1).max(4).optional(), only: z.enum(["noms"]).optional() }).strict(),
+  estimate: (ctx, a) => {
+    if (brandMethod() === "simple") return { maxMicro: IDENTITY_CAP_MICRO, probableMicro: identityProbableMicro(), label: "3 identités de marque" };
+    const w = chainWork(ctx, a);
+    return { ...chainQuote({ routes: w.routes, fresh: w.fresh }), label: w.routes === w.count ? `${w.count} identités de marque` : `${w.routes} identité${w.routes > 1 ? "s" : ""} de marque à refaire` };
+  },
   run: async (ctx, a) => {
     project(ctx);
     const j = journeyOf(ctx.conversationId);
     if (j.steps[0]?.status !== "done") return { ok: false, summary: L("L'étape 0 (questions de départ) n'est pas encore validée : termine-la d'abord.", "Step 0 is not validated yet.") };
     // Après le choix, une nouvelle proposition seulement si le client la demande avec ses mots (guidance).
     if (j.steps[1]?.status === "done" && !a.guidance) return { ok: false, summary: L("L'identité est déjà choisie.", "The identity is already chosen."), hint: "Pour en changer, le client choisit une autre identité (identity.choose), ou demande avec ses mots une nouvelle proposition (identity.propose avec guidance = ses mots)." };
+    if (brandMethod() === "chaine") return proposeByChain(ctx, a);
     const previous = j.identities?.list;
     if ((a.redo?.length || a.only) && !previous?.length) return { ok: false, summary: L("Aucune proposition à refaire pour l'instant.", "Nothing to redo yet."), hint: "Lance d'abord une proposition complète." };
     updateJourney(ctx.conversationId, (x) => setStep(x, 1, "doing"));
@@ -149,6 +210,8 @@ export function mixIdentity(list: Identity[], key: Key, mix: Partial<Record<Part
     ...base,
     name: edits.name?.trim() || pick(mix.name).name,
     nameWhy: edits.name ? "" : pick(mix.name).nameWhy,
+    nameAnchor: edits.name ? "" : pick(mix.name).nameAnchor,
+    nameExpression: edits.name ? "" : pick(mix.name).nameExpression,
     slogan: edits.slogan?.trim() || pick(mix.slogan).slogan,
     palette: pick(mix.palette).palette, paletteFamily: pick(mix.palette).paletteFamily, ground: pick(mix.palette).ground, gradient: pick(mix.palette).gradient,
     fonts: pick(mix.fonts).fonts, fontStyle: pick(mix.fonts).fontStyle,
@@ -200,7 +263,7 @@ export function brandFromIdentity(p: ReturnType<typeof loadProject>, x: Identity
 const choiceKey = z.enum(KEYS);
 const chooseTool: AgentTool<{ key: Key; mix?: Partial<Record<Part, Key>>; name?: string; slogan?: string }> = {
   name: "identity.choose", module: "marque", kind: "write", needsProject: true,
-  description: "Étape 1 : enregistre l'identité choisie PAR LE CLIENT (jamais à sa place) comme marque du projet et valide l'étape 1. key = identité de base (A, B ou C). mix = éléments pris à une autre identité si le client mélange (ex. le nom de A avec les couleurs de C : key « A », mix {palette: « C »}) ; parties : name, slogan, palette, fonts, tone, logo. name / slogan = retouche du client, reprise mot pour mot. Gratuit.",
+  description: "Étape 1 : enregistre l'identité choisie PAR LE CLIENT (jamais à sa place) comme marque du projet et valide l'étape 1. key = identité de base (A, B, C ou D, parmi celles affichées). mix = éléments pris à une autre identité si le client mélange (ex. le nom de A avec les couleurs de C : key « A », mix {palette: « C »}) ; parties : name, slogan, palette, fonts, tone, logo. name / slogan = retouche du client, reprise mot pour mot. Gratuit.",
   args: z.object({ key: choiceKey, mix: z.object({ name: choiceKey, slogan: choiceKey, palette: choiceKey, fonts: choiceKey, tone: choiceKey, logo: choiceKey }).partial().strict().optional(), name: z.string().min(1).max(60).optional(), slogan: z.string().min(1).max(120).optional() }).strict(),
   run: (ctx, a) => {
     const p = project(ctx);
@@ -209,6 +272,8 @@ const chooseTool: AgentTool<{ key: Key; mix?: Partial<Record<Part, Key>>; name?:
     if (!list?.length) return { ok: false, summary: L("Aucune identité proposée pour l'instant.", "No identity proposed yet."), hint: "Lance d'abord identity.propose." };
     if (j.keep.includes("nom") && a.name) return { ok: false, summary: L("Le client garde son nom tel quel : il ne peut pas être changé ici.", "The name is kept as is.") };
     if (j.keep.includes("slogan") && a.slogan) return { ok: false, summary: L("Le client garde son slogan tel quel : il ne peut pas être changé ici.", "The tagline is kept as is.") };
+    const keysShown = list.map((x) => x.key);
+    if (!keysShown.includes(a.key) || Object.values(a.mix ?? {}).some((k) => k && !keysShown.includes(k))) return { ok: false, summary: L(`Cette identité n'est pas dans la proposition affichée (${keysShown.join(", ")}).`, "This identity is not in the displayed proposal.") };
     const chosen = mixIdentity(list, a.key, a.mix, { name: a.name, slogan: a.slogan });
     const others = list.filter((x) => x.key !== a.key);
     const logo = j.keep.includes("logo") ? one<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND role='logo' AND origin='upload' AND deleted_at IS NULL ORDER BY created_at DESC", p.id)?.id : undefined;
@@ -240,7 +305,7 @@ const chooseTool: AgentTool<{ key: Key; mix?: Partial<Record<Part, Key>>; name?:
     return {
       ok: verified,
       summary: verified
-        ? L(`Identité ${a.key}${mixed.length ? ` (avec ${mixed.join(", ")})` : ""} enregistrée comme marque du projet : « ${chosen.name} » — « ${chosen.slogan} ». Étape 1 validée. Prochaine étape : ${logoKept ? "l'image de marque complète (ton logo est gardé)" : "les 3 logos"}.`, "Identity saved.")
+        ? L(`Identité ${a.key}${mixed.length ? ` (avec ${mixed.join(", ")})` : ""} enregistrée comme marque du projet : « ${chosen.name} » — « ${chosen.slogan} ». Étape 1 validée. Prochaine étape : ${logoKept ? "l'image de marque complète (ton logo est gardé)" : chosen.board ? "ton logo" : "les 3 logos"}.`, "Identity saved.")
         : L("La marque n'a pas pu être relue après l'enregistrement.", "Brand could not be verified."),
       data: { identite: identityView(chosen), etapeSuivante: logoKept ? 3 : 2 },
       changes: [{ module: "marque", object: "identité de marque", summary: `${chosen.name} — ${chosen.slogan}`, before, after: after ? { name: after.name, tagline: after.tagline, palette: after.palette, fonts: after.fonts } : null, verified }],

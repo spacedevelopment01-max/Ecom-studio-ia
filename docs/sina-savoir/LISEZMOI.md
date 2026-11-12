@@ -4,7 +4,10 @@ Dossier ouvert le 12 novembre 2026, à la demande du propriétaire : « tant que
 que tu ne feras pas le nécessaire pour prendre des informations de partout pour peaufiner l'intelligence de SINA, ça
 fonctionnera pas ».
 
-**Statut : proposition, à valider par le propriétaire. Rien de ce dossier n'est encore branché dans le Studio.**
+**Statut : validé par le propriétaire le 12 novembre 2026 (« Ok » au premier lot) et branché dans le Studio le même
+jour. Les quatre cahiers de métier sont lus par les spécialistes de SINA à chaque création de marque
+(`src/lib/syna-agent/brand-knowledge.ts`) : les modifier change ce que SINA sait. Aucun essai avec de vrais appels n'a
+encore été fait : le coût réel et la qualité réelle restent à mesurer, avec l'accord écrit du propriétaire.**
 
 ## Ce qu'il contient
 
@@ -34,6 +37,8 @@ De trois essais sur un même projet d'exemple inventé (des infusions aux fruits
 
 - Le coût réel de cette chaîne n'est pas mesuré. Estimation : 20 à 30 € par projet si tout tourne sur le modèle le plus
   fort, 6 à 10 € avec un réglage économe. À mesurer par un essai payant, avec l'accord écrit du propriétaire.
-- Les planches de marque des essais sont dessinées en code, sans image créée.
+- Les planches de marque sont dessinées en code, sans image créée (dans les essais comme dans le Studio). Celles du
+  Studio sont composées avec des pièces sûres (textes courts, nom dessiné avec la vraie police, pictogrammes nettoyés) :
+  elles sont plus sobres que celles du troisième essai, dessinées à la main pour chaque marque.
 - Le chemin « noms d'un seul mot » n'a pas été exploré (travail coupé par une limite d'utilisation).
 - Les noms des essais ne sont vérifiés que sur le web, pas à l'INPI.

@@ -20,8 +20,9 @@ import type { SinaThemes } from "./themes";
 
 export const JOURNEY_STEPS = [
   { n: 0, fr: "Questions de départ", en: "Getting started" },
-  { n: 1, fr: "3 identités de marque", en: "3 brand identities" },
-  { n: 2, fr: "3 logos", en: "3 logos" },
+  // Depuis le 12 novembre 2026 : 2, 3 ou 4 identités selon le forfait, puis UN logo pour l'identité choisie.
+  { n: 1, fr: "Identités de marque", en: "Brand identities" },
+  { n: 2, fr: "Logo", en: "Logo" },
   { n: 3, fr: "Image de marque complète", en: "Full brand kit" },
   { n: 4, fr: "5 angles marketing", en: "5 marketing angles" },
   { n: 5, fr: "L'activité complète", en: "The full business" },
@@ -73,8 +74,16 @@ export type Journey = {
   /** Textes exacts gardés en refonte (nom, slogan), repris mot pour mot ensuite. */
   keptValues?: { name?: string; slogan?: string };
   /** Étape 1 : dernière proposition des 3 identités (contrôlée par le Studio) et choix du client. */
-  identities?: { list: Identity[]; issues: string[]; comparison: string; at: number; round: number; guidance?: string; corrected?: string[] };
-  identityChoice?: { key: "A" | "B" | "C"; mix: Partial<Record<string, "A" | "B" | "C">>; edits?: { name?: string; slogan?: string }; at: number };
+  identities?: {
+    list: Identity[]; issues: string[]; comparison: string; at: number; round: number; guidance?: string; corrected?: string[];
+    /** Chaîne de création de la marque (12 novembre 2026) : tâche qui a fait cette proposition (son atelier se reprend sans repayer). */
+    chainJobId?: string;
+    /** Noms déjà montrés au client, toutes propositions confondues : jamais reproposés. */
+    shownNames?: string[];
+    /** « Ce que j'ai compris de ton marché » : paroles réelles lues sur le web (avec leur page), concurrents, moule de la catégorie. */
+    study?: { quotes: { text: string; url: string }[]; quoteCount: number; sources: number; competitors: string[]; mould: string; substitutes: string[]; notFound: string[] };
+  };
+  identityChoice?: { key: "A" | "B" | "C" | "D"; mix: Partial<Record<string, "A" | "B" | "C" | "D">>; edits?: { name?: string; slogan?: string }; at: number };
   /** Étape 2 : dernière proposition des 3 logos (moteur de logos V2) et logo choisi par le client. */
   logos?: { list: SinaLogo[]; at: number; round: number; notes?: string[] };
   logoChoice?: { source: "A" | "B" | "C"; assetId: string; at: number };
@@ -264,6 +273,13 @@ export const STEP_GUIDES: Partial<Record<number, string>> = {
 /** Étape 2 : que faire selon l'état des logos (contexte relu par SINA). */
 export function logoStepContext(j: Journey): string[] {
   const lg = j.logos;
+  // Identité choisie sur une planche de marque (12 novembre 2026) : UN seul logo, tiré de l'idée de la marque.
+  const single = !!j.identityChoice && !!j.identities?.list.find((x) => x.key === j.identityChoice!.key)?.board;
+  if (!lg?.list.length && single) return ["Étape 2 (logo) : rien n'est encore dessiné. Si le client est prêt, appelle logo.propose : UN logo dessiné pour SON identité, à partir de l'idée de sa marque et du nom dessiné de sa planche ; le Studio lui montre le devis sur une carte d'accord et ne lance qu'après son accord. Le dessin prend quelques minutes. Tu le regarderas avant de le présenter."];
+  if (lg?.list.length && lg.list.length < 3) return [
+    `Étape 2 — proposition n° ${lg.round} (affichée au client dans le fil) : ${lg.list.map((x) => `${x.source} « ${x.name} » : ${x.kind === "planche" ? "le nom dessiné de sa planche, fait par le Studio, exact à la lettre (secours)" : x.verdict === "FINAL" ? `validé par le contrôle, ${x.score ?? "?"}/10` : x.assetId ? `NON validé par le contrôle (${x.reason})` : `pas de dessin (${x.reason})`}`).join(" ; ")}.`,
+    "Tu VOIS ce qui est affiché (images jointes à ta réponse) : regarde le logo avant d'en parler, décris-le en une phrase d'après ce que tu vois vraiment (le nom est-il bien écrit, lettre par lettre ?), et dis honnêtement s'il a un défaut ou s'il n'est pas validé. Si le nom dessiné de sa planche est proposé à côté, explique en une phrase que c'est le secours, toujours exact. Demande-lui ce qu'il choisit (logo.choose). S'il n'aime pas le logo, propose d'en dessiner un autre avec ses mots (logo.propose : payant, le prix s'affiche avant). Ne choisis jamais à sa place.",
+  ];
   if (!lg?.list.length) return ["Étape 2 (3 logos) : rien n'est encore dessiné. Si le client est prêt, appelle logo.propose : 3 logos libres (carte blanche au dessinateur) pour SON identité ; le Studio lui montre le devis sur une carte d'accord et ne lance qu'après son accord. Le dessin prend quelques minutes."];
   const lines = [`Étape 2 — proposition n° ${lg.round} (les logos sont affichés au client dans le fil) : ${lg.list.map((x) => `${x.source} « ${x.name} » (${x.style}) : ${x.verdict === "FINAL" ? `validé par le contrôle, ${x.score ?? "?"}/10` : x.verdict === "PROVISIONAL" ? "version du studio" : x.assetId ? `NON validé par le contrôle (${x.reason})` : `pas de dessin (${x.reason})`}`).join(" ; ")}.`,
     "Présente-les en 2 ou 3 phrases (honnêtement : un logo non validé est dit non validé ; tu VOIS les 3 logos (images jointes à ta réponse) : décris chacun en une phrase d'après ce que tu vois vraiment, sans rien inventer, et dis honnêtement si l'un a un défaut visible), puis demande lequel il choisit (logo.choose). Il peut demander une nouvelle proposition avec ses mots (logo.propose avec guidance, payant). Ne choisis jamais à sa place."];
@@ -322,11 +338,12 @@ export function brandKitStepContext(j: Journey): string[] {
 function identityStepContext(j: Journey): string[] {
   const id = j.identities;
   if (!id?.list.length) return [
-    "Étape 1 (3 identités de marque) : rien n'est encore proposé. Si le client est prêt (il dit oui, on continue, vas-y…), appelle identity.propose (sans guidance) en annonçant que la création prend environ une minute. S'il pose une question, réponds-y d'abord. N'invente aucune identité toi-même : seul identity.propose les crée.",
+    "Étape 1 (identités de marque : 2, 3 ou 4 selon le forfait du client, le Studio le sait) : rien n'est encore proposé. Si le client est prêt (il dit oui, on continue, vas-y…), dis-lui en une phrase ce que tu vas faire (étudier son marché, chercher l'idée et les noms, lui montrer chaque identité en planche de marque), puis appelle identity.propose (sans guidance) : la création prend plusieurs minutes, en arrière-plan. S'il pose une question, réponds-y d'abord. N'invente aucune identité toi-même : seul identity.propose les crée. Tu es la seule à parler au client : dis « j'étudie », « je cherche », jamais « mon équipe » ni « ma stratège ».",
   ];
   const out = [
-    `Étape 1 — proposition n° ${id.round} (les cartes complètes sont affichées au client dans le fil) : ${id.list.map((x) => `${x.key} « ${x.name} » (slogan « ${x.slogan} », territoire ${x.territory}, fond ${x.ground})`).join(" ; ")}.`,
-    "Présente-les en 3 lignes courtes au plus (la différence de chacune), sans recopier les cartes, puis demande laquelle il préfère. Il peut : en choisir une ; MÉLANGER (ex. le nom de A avec les couleurs de C → identity.choose key « A », mix {palette: « C »}) ; retoucher le nom ou le slogan avec ses mots (identity.choose name / slogan) ; ou demander une nouvelle proposition (identity.propose avec guidance = ses mots, et redo = les identités à refaire s'il en garde certaines). Ne choisis jamais à sa place ; en cas de doute sur son choix, pose UNE question.",
+    `Étape 1 — proposition n° ${id.round} (${id.list.some((x) => x.board) ? "les planches de marque complètes" : "les cartes complètes"} sont affichées au client dans le fil) : ${id.list.map((x) => `${x.key} « ${x.name} » (${x.board ? `idée : ${x.board.idea.belief} ; ` : ""}slogan « ${x.slogan} », territoire ${x.territory}, fond ${x.ground})`).join(" ; ")}.`,
+    ...(id.study ? [`Ton étude du marché (affichée au client au-dessus des planches) : ${id.study.sources} page(s) lue(s), ${id.study.quoteCount} parole(s) réelle(s) de clients gardée(s) mot pour mot${id.study.notFound.length ? ` ; non trouvé : ${id.study.notFound.join(" ; ")}` : ""}. Commence par dire en une phrase ce que tu as compris de son marché, à la première personne.`] : []),
+    "Présente-les en une ligne courte chacune (l'idée de chacune et ce qui la distingue), sans recopier les planches, puis demande laquelle il préfère. Chaque planche dit « ce qui reste à prouver » : ne présente jamais ces points comme acquis. Il peut : en choisir une ; MÉLANGER (ex. le nom de A avec les couleurs de C → identity.choose key « A », mix {palette: « C »}) ; retoucher le nom ou le slogan avec ses mots (identity.choose name / slogan) ; ou demander une nouvelle proposition (identity.propose avec guidance = ses mots, et redo = les identités à refaire s'il en garde certaines). Ne choisis jamais à sa place ; en cas de doute sur son choix, pose UNE question.",
   ];
   if (id.issues.length) out.push(`Points que le contrôle du Studio n'a pas pu valider (dis-les honnêtement au client, en mots simples) : ${id.issues.join(" ; ")}.`);
   return out;

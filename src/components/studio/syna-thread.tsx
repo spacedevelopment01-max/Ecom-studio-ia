@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, Button, cx, Textarea, useApi } from "../ui";
 import { ThemeDemoViewer } from "./theme-demo-viewer";
+import { BrandBoards, type BoardSet } from "./brand-boards";
 import type { ThemeDemoStatus } from "@/lib/theme/theme-demos";
 import type { DirectionCard } from "@/lib/theme/directions";
 import { useT } from "../i18n";
@@ -23,7 +24,9 @@ type View = {
 };
 type Face = { family: string; file: string; weight: number } | null;
 type IdentityCard = { nameWhy?: string;
-  key: "A" | "B" | "C"; name: string; nameStyle: string; slogan: string; promise: string; territory: string; ground: "blanc" | "degrade" | "sombre"; gradient?: { from: string; to: string };
+  /** Planche de marque (identités créées depuis le 12 novembre 2026) : affichée par BrandBoards. */
+  board?: unknown;
+  key: "A" | "B" | "C" | "D"; name: string; nameStyle: string; slogan: string; promise: string; territory: string; ground: "blanc" | "degrade" | "sombre" | "uni"; gradient?: { from: string; to: string };
   palette: { dark: string; primary: string; secondary: string; accent: string; light: string }; paletteFamily: string;
   fontStyle: string; tone: { adjectives: string[]; avoid: string[] }; logoStyleLabel: string; logoIdea: string; why: string;
   faces: { heading: Face; body: Face };
@@ -41,7 +44,7 @@ function IdentityCards({ ids, busy, onChoose }: { ids: Identities; busy: boolean
     return (
             <article key={key} className={cx("overflow-hidden rounded-xl border", chosen ? "border-ink ring-2 ring-ink" : "border-line", faded && "opacity-60")} data-identity={key}>
         <div className="px-4 pb-4 pt-3" style={{ background: x.ground === "sombre" ? x.palette.dark : x.ground === "degrade" && x.gradient ? `linear-gradient(135deg, ${x.gradient.from}, ${x.gradient.to})` : x.palette.light, color: x.ground === "sombre" ? x.palette.light : x.ground === "degrade" && x.gradient ? readable(x.palette, [x.gradient.from, x.gradient.to]) : x.palette.dark, fontFamily: fam(x.faces.body, "sans-serif") }}>
-          <p className="text-[11px] uppercase tracking-wider opacity-70">{label ?? `${t("Identité", "Identity")} ${x.key}`} · {t({ blanc: "fond blanc", degrade: "fond en dégradé", sombre: "fond sombre" }[x.ground] ?? "", { blanc: "white background", degrade: "gradient background", sombre: "dark background" }[x.ground] ?? "")} · {x.territory}</p>
+          <p className="text-[11px] uppercase tracking-wider opacity-70">{label ?? `${t("Identité", "Identity")} ${x.key}`} · {t({ blanc: "fond blanc", degrade: "fond en dégradé", sombre: "fond sombre", uni: "fond clair coloré" }[x.ground] ?? "", { blanc: "white background", degrade: "gradient background", sombre: "dark background", uni: "tinted light background" }[x.ground] ?? "")} · {x.territory}</p>
           <h3 className="mt-2 text-3xl leading-tight" style={{ fontFamily: fam(x.faces.heading, "serif"), fontWeight: x.faces.heading?.weight ?? 600 }}>{x.name}</h3>
           <span className="mt-2 block h-1 w-10 rounded-full" style={{ background: x.palette.accent }} aria-hidden />
           <p className="mt-1 text-base">{x.slogan}</p>
@@ -140,9 +143,9 @@ function CalendarCard({ projectId, refreshKey }: { projectId: string; refreshKey
   );
 }
 
-type Logos = { round: number; chosen: string | null; list: { source: "A" | "B" | "C"; name: string; style: string; assetId: string | null; href: string | null; verdict: string; score: number | null; reason: string; best?: boolean; choosable?: boolean }[] };
+type Logos = { round: number; chosen: string | null; list: { source: "A" | "B" | "C"; name: string; style: string; assetId: string | null; href: string | null; verdict: string; score: number | null; reason: string; best?: boolean; choosable?: boolean; kind?: "planche" }[] };
 
-/** Étape 2 : les 3 logos, chacun sur fond blanc et sur le fond de la marque, avec le verdict honnête du contrôle. */
+/** Étape 2 : le logo (ou les 3 logos d'une identité d'avant les planches), sur fond blanc et sur le fond de la marque, avec le verdict honnête du contrôle. */
 function LogoCards({ logos, brandBg, busy, onChoose }: { logos: Logos; brandBg: string | null; busy: boolean; onChoose: (source: string) => void }) {
   const t = useT();
   return (
@@ -158,11 +161,11 @@ function LogoCards({ logos, brandBg, busy, onChoose }: { logos: Logos; brandBg: 
                 <div className="flex h-44 items-center justify-center p-3" style={{ background: brandBg ?? "#F5F5F5" }}>{x.href && <img src={x.href} alt="" className="max-h-full max-w-full object-contain" />}</div>
               </div>
               <div className="space-y-1 px-3 py-2 text-xs">
-                <p className="font-semibold">{t("Logo", "Logo")} {x.source} · {x.name}</p>
-                <p className={ok ? "text-emerald-700" : "text-amber-700"} data-logo-verdict>{ok ? `✓ ${t("Validé par le contrôle", "Passed the check")}${x.score != null ? ` (${String(x.score).replace(".", ",")}/10)` : ""}` : x.assetId ? `${t("Non validé par le contrôle", "Did not pass the check")} : ${x.reason}` : `${t("Pas de dessin", "No drawing")} : ${x.reason}`}</p>
+                <p className="font-semibold">{logos.list.length < 3 ? x.name : `${t("Logo", "Logo")} ${x.source} · ${x.name}`}</p>
+                <p className={ok || x.kind === "planche" ? "text-emerald-700" : "text-amber-700"} data-logo-verdict>{x.kind === "planche" ? `✓ ${t("Dessiné par le Studio : ton nom, exact à la lettre", "Drawn by the Studio: your name, letter-perfect")}` : ok ? `✓ ${t("Validé par le contrôle", "Passed the check")}${x.score != null ? ` (${String(x.score).replace(".", ",")}/10)` : ""}` : x.assetId ? `${t("Non validé par le contrôle", "Did not pass the check")} : ${x.reason}` : `${t("Pas de dessin", "No drawing")} : ${x.reason}`}</p>
               </div>
               <div className="border-t border-line px-3 py-2">
-                {chosen ? <p className="text-xs font-semibold">✓ {t("Logo de ta marque", "Your brand logo")}</p> : !logos.chosen && x.assetId && x.choosable !== false && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(x.source)}>{t(`Je choisis le logo ${x.source}`, `I choose logo ${x.source}`)}</Button>}
+                {chosen ? <p className="text-xs font-semibold">✓ {t("Logo de ta marque", "Your brand logo")}</p> : !logos.chosen && x.assetId && x.choosable !== false && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(x.source)}>{logos.list.length < 3 ? (x.kind === "planche" ? t("Je choisis le nom dessiné", "I choose the drawn name") : t("Je choisis ce logo", "I choose this logo")) : t(`Je choisis le logo ${x.source}`, `I choose logo ${x.source}`)}</Button>}
               </div>
             </article>
           );
@@ -613,7 +616,8 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
   const lastThemes = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "theme.propose" && m.content?.ok)?.id, [v?.messages]);
   const lastKit = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "brand.kit" && m.content?.ok)?.id, [v?.messages]);
   const lastLogos = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && (m.content?.tool === "logo.propose" || (m.content?.tool === "jobs.wait" && JSON.stringify(m.content?.data ?? "").includes("syna.logos"))) && m.content?.ok)?.id, [v?.messages]);
-  const lastIdentity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "identity.propose" && m.content?.ok)?.id, [v?.messages]);
+  // Identités : sous la proposition faite sur-le-champ (ancienne méthode), ou sous la fin de la tâche de fond de la chaîne.
+  const lastIdentity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.ok && ((m.content?.tool === "identity.propose" && !m.content?.jobs?.length) || (m.content?.tool === "jobs.wait" && JSON.stringify(m.content?.data ?? "").includes("syna.brand"))))?.id, [v?.messages]);
   if (!v) return <div className="p-4 text-sm text-muted">{error || t("Ouverture du fil SINA…", "Opening SINA thread…")}</div>;
   const pending = v.run?.status === "waiting_confirmation" ? v.run.pending : null;
 
@@ -655,7 +659,9 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
                 {tm.id === lastThemes && v.journey?.themes && v.projectId && <ThemeCards themes={v.journey.themes} busy={busy || working} onChoose={(name) => send(t(`Je choisis le thème ${name}.`, `I choose the ${name} theme.`))} onAll={() => send(t("Je veux voir tous les thèmes.", "I want to see all themes."))} onMockup={() => send(t("Je préfère un thème sur mesure.", "I'd rather have a custom theme."))} />}
                 {tm.id === lastKit && v.journey?.brandKit && <BrandKitCard kit={v.journey.brandKit} darkBg={v.journey.identities?.final?.palette.dark ?? "#16161A"} busy={busy || working} onValidate={() => send(t("Je valide mon image de marque.", "I validate my brand kit."))} />}
                 {tm.id === lastCalendar && v.projectId && <CalendarCard projectId={v.projectId} refreshKey={tm.id} />}
-                {tm.id === lastIdentity && v.journey?.identities && <IdentityCards ids={v.journey.identities} busy={busy || working} onChoose={(k) => send(t(`Je choisis l'identité ${k}.`, `I choose identity ${k}.`))} />}
+                {tm.id === lastIdentity && v.journey?.identities && (v.journey.identities.list.some((x) => x.board)
+                  ? <BrandBoards ids={v.journey.identities as unknown as BoardSet} busy={busy || working} onChoose={(k) => send(t(`Je choisis l'identité ${k}.`, `I choose identity ${k}.`))} />
+                  : <IdentityCards ids={v.journey.identities} busy={busy || working} onChoose={(k) => send(t(`Je choisis l'identité ${k}.`, `I choose identity ${k}.`))} />)}
               </div>)}
             </div>
           : <EventLine key={it.m.id} m={it.m} />)}

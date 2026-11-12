@@ -11,6 +11,7 @@ import { contrast, hexToRgb, luminance, sameColor } from "../color";
 import { FIELD_LABEL, START_FIELDS, type Journey } from "./journey";
 import { referencesForPrompt } from "./brand-references";
 import { FORBIDDEN_LOGO_RENDERS } from "../logo-v2/artwork";
+import { BoardSchema } from "./brand-board";
 
 /** Styles de logo de la charte (§ 2.2) : les 3 identités en prennent 3 différents. */
 export const LOGO_STYLES = ["lettrage", "symbole", "monogramme", "embleme", "cachet", "mascotte", "trait", "abstrait", "pixel", "brutaliste", "isometrie", "aquarelle", "artdeco", "popart"] as const;
@@ -73,6 +74,8 @@ export const FONT_CHARACTER: Record<string, string> = {
   roboto_mono: "chasse fixe neutre",
 };
 const fontKey = (handle: string) => handle.replace(/_[ni]\d$/, "");
+/** Famille d'une poignée de police (« inter_n7 » → « inter »). */
+export const fontKeyOf = fontKey;
 /**
  * Polices de titres seulement (affiche, une seule graisse), manuscrites et à chasse fixe : jamais pour les textes
  * (document du propriétaire du 7 novembre : « à associer à une police de texte lisible »).
@@ -87,7 +90,8 @@ const FONT_LIST = Object.entries(FONT_FILES).map(([k, f]) => `${k} (${f.family},
 
 const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 export const IdentitySchema = z.object({
-  key: z.enum(["A", "B", "C"]),
+  /** Deux à quatre identités selon le forfait (décision du propriétaire du 12 novembre 2026) : clés A à D. */
+  key: z.enum(["A", "B", "C", "D"]),
   name: z.string().min(1).max(40),
   nameStyle: z.string().max(120).default(""),
   /** Genre du nom (trois genres différents dans la série) : mot qui existe, mot inventé, nom en deux mots. */
@@ -125,6 +129,8 @@ export const IdentitySchema = z.object({
   logoStyle: z.enum(LOGO_STYLES),
   logoIdea: z.string().max(400),
   why: z.string().max(500),
+  /** Planche de marque (routes du 12 novembre 2026, `brand-routes.ts`) ; absente des identités créées avant. */
+  board: BoardSchema.optional(),
 });
 export type Identity = z.infer<typeof IdentitySchema>;
 export const IdentitiesSchema = z.object({
@@ -197,8 +203,12 @@ export function keepConstraints(j: Journey): string {
   return out.join("\n");
 }
 
-const words = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
+/** Mots d'une phrase : la ponctuation isolée du français (« ? », « ! », « : ») ne compte pas comme un mot. */
+const words = (s: string) => s.trim().split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
+export const wordCount = words;
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+/** Texte ramené à ses lettres et chiffres, sans accents ni casse (comparaisons). */
+export const normText = norm;
 /** Couleurs refusées par le client (« pas de rose », « surtout pas le noir »…), repérées dans sa réponse « image ». */
 const REFUSED_COLORS: Record<string, RegExp> = {
   rose: /\bros(e|es)\b|fuchsia|magenta/i, rouge: /\brouges?\b/i, orange: /\boranges?\b/i, jaune: /\bjaunes?\b/i, vert: /\bverts?\b|\bvertes?\b/i,
@@ -236,7 +246,7 @@ export function oklch(hexColor: string): { l: number; c: number; h: number } {
   const A = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s, B = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s;
   return { l: L, c: Math.hypot(A, B), h: (Math.atan2(B, A) * 180 / Math.PI + 360) % 360 };
 }
-const hueGap = (a: number, b: number) => { const d = Math.abs(a - b) % 360; return d > 180 ? 360 - d : d; };
+export const hueGap = (a: number, b: number) => { const d = Math.abs(a - b) % 360; return d > 180 ? 360 - d : d; };
 /** Écart minimal de teinte entre les boutons de deux identités (règle du propriétaire : jamais trois orangés). */
 export const COLOR_RULES = { hueGap: 40 };
 
@@ -283,6 +293,16 @@ export function paletteIssues(p: Identity["palette"], ground: Identity["ground"]
   return issues;
 }
 
+/** Couleurs de l'identité qui ressemblent à une couleur refusée par le client dans sa fiche (« pas de rose »). */
+export function refusedColorIssues(x: Pick<Identity, "palette">, j: Journey): string[] {
+  const refused = j.start.image?.status === "answered" ? refusedColors(j.start.image.value) : [];
+  const out: string[] = [];
+  for (const c of refused) for (const role of ["primary", "secondary", "accent"] as const) {
+    if (HUE_RANGE[c]?.(hueSat(x.palette[role]))) out.push(`${role} ${x.palette[role]} ressemble à une couleur refusée par le client (${c}).`);
+  }
+  return out;
+}
+
 /** Contrôles gratuits (sans IA) de la série : ce qui se mesure ; la comparaison des axes reste à Claude. */
 export function identityIssues(list: Identity[], j: Journey): string[] {
   const issues: string[] = [];
@@ -302,10 +322,7 @@ export function identityIssues(list: Identity[], j: Journey): string[] {
     if (!FONT_HANDLES.includes(x.fonts.body)) issues.push(`${tag} : police de textes « ${x.fonts.body} » hors liste.`);
     else if (!bodyFontOk(x.fonts.body)) issues.push(`${tag} : « ${fontFamily(x.fonts.body)} » est une police de titres, manuscrite ou à chasse fixe : elle ne sert jamais pour les textes (choisis une police de texte lisible).`);
     for (const p of paletteIssues(x.palette, x.ground, x.gradient)) issues.push(`${tag} — ${p}`);
-    const refused = j.start.image?.status === "answered" ? refusedColors(j.start.image.value) : [];
-    for (const c of refused) for (const role of ["primary", "secondary", "accent"] as const) {
-      if (HUE_RANGE[c]?.(hueSat(x.palette[role]))) issues.push(`${tag} : ${role} ${x.palette[role]} ressemble à une couleur refusée par le client (${c}).`);
-    }
+    for (const p of refusedColorIssues(x, j)) issues.push(`${tag} : ${p}`);
   }
   if (!keptName) {
     const kinds = list.map((x) => x.nameKind);
