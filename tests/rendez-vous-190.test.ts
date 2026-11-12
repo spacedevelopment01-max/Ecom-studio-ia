@@ -10,6 +10,7 @@ import { seedHoldout } from "./lot1-holdout-fixtures";
 import { serviceSpec } from "./fixtures";
 import { salonBlocks } from "@/lib/theme/atelier-nuance";
 import { AN_HOURS, AN_SERVICES, AN_STAFF } from "./atelier-nuance-fixtures";
+import { planningAround, upcomingTuesday } from "./upcoming-dates";
 import { setSetting } from "@/lib/settings";
 import type { ThemeSpec } from "@/lib/theme/spec";
 
@@ -21,7 +22,9 @@ const { POST: publicPost } = await import("@/app/api/public/salon/[projectId]/[[
 const rdvRoute = await import("@/app/api/projects/[id]/rendez-vous/route");
 const restaurant = await import("@/lib/restaurant/booking");
 
-const TUE = "2026-11-10";
+// Mardi toujours à venir : une date en dur finit dans le passé, et le moteur refuse alors la réservation.
+const TUE = upcomingTuesday();
+const [FROM, TO] = planningAround(TUE);
 const ctx = (id: string) => ({ params: Promise.resolve({ id }) }) as never;
 const json = (b: unknown) => ({ method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) });
 
@@ -47,7 +50,7 @@ describe("rubrique Rendez-vous (mission #190)", () => {
   });
 
   it("règles lues dans la section du thème ; mode démonstration ; activation impossible sans adresse publique HTTPS", async () => {
-    const v = rdvOverview(pid, "2026-11-01", "2026-11-30");
+    const v = rdvOverview(pid, FROM, TO);
     expect(v.kind).toBe("salon");
     if (!v.kind) return;
     expect(v.mode).toBe("demo");
@@ -64,7 +67,7 @@ describe("rubrique Rendez-vous (mission #190)", () => {
     const sec = rdvSection(currentTheme(pid)!.spec)!;
     expect(sec.section.settings.booking_mode).toBe("live");
     expect(sec.section.settings.service_url).toBe(`https://studio.example.com/api/public/salon/${pid}`);
-    const v = rdvOverview(pid, "2026-11-01", "2026-11-30");
+    const v = rdvOverview(pid, FROM, TO);
     expect(v.kind && v.linked).toBe(true);
   });
 
@@ -74,7 +77,7 @@ describe("rubrique Rendez-vous (mission #190)", () => {
     expect(first.status).toBe(201);
     const second = await book("paul@example.com");
     expect(second.status).toBe(409);
-    const v = rdvOverview(pid, "2026-11-01", "2026-11-30");
+    const v = rdvOverview(pid, FROM, TO);
     expect(v.kind && v.bookings.filter((b) => b.status === "confirmed").map((b) => [b.date, b.start, b.client.email])).toEqual([[TUE, "14:00", "julie@example.com"]]);
   });
 
@@ -83,21 +86,21 @@ describe("rubrique Rendez-vous (mission #190)", () => {
     expect(n).toMatch(/^AN-/);
     // Déplacement vers le créneau de Julie (14 h) : refusé, rien ne change.
     expect(() => proMove(pid, "salon", n, { date: TUE, time: "14:00" })).toThrow(/unavailable/);
-    let v = rdvOverview(pid, "2026-11-01", "2026-11-30");
+    let v = rdvOverview(pid, FROM, TO);
     expect(v.kind && v.bookings.find((b) => b.number === n)?.start).toBe("10:00");
     // Vers un créneau libre : accepté.
     proMove(pid, "salon", n, { date: TUE, time: "16:00" });
-    v = rdvOverview(pid, "2026-11-01", "2026-11-30");
+    v = rdvOverview(pid, FROM, TO);
     expect(v.kind && v.bookings.find((b) => b.number === n)?.start).toBe("16:00");
     // Annulation : libère le créneau, qui se reprend.
     proCancel(pid, "salon", n);
-    v = rdvOverview(pid, "2026-11-01", "2026-11-30");
+    v = rdvOverview(pid, FROM, TO);
     expect(v.kind && v.bookings.find((b) => b.number === n)?.status).toBe("canceled");
     expect(proCreate(pid, "salon", { service: "coupe-brushing", staff: "camille", date: TUE, time: "16:00", firstName: "Hugo", lastName: "Roy", email: "hugo@example.com", phone: "06 11 22 33 44" })).toMatch(/^AN-/);
   });
 
   it("API de la rubrique : planning, déplacement refusé avec un message clair, annulation", async () => {
-    const res = await rdvRoute.GET(new Request(`http://x/api/projects/${pid}/rendez-vous?du=2026-11-01&au=2026-11-30`), ctx(pid));
+    const res = await rdvRoute.GET(new Request(`http://x/api/projects/${pid}/rendez-vous?du=${FROM}&au=${TO}`), ctx(pid));
     expect(res.status).toBe(200);
     const view = await res.json();
     const julie = view.bookings.find((b: { client: { email: string } }) => b.client.email === "julie@example.com");
@@ -115,7 +118,7 @@ describe("rubrique Rendez-vous (mission #190)", () => {
     setRdvLive(r, true);
     const sec = rdvSection(currentTheme(r)!.spec)!;
     expect(sec.kind).toBe("restaurant");
-    const rules = rdvOverview(r, "2026-11-01", "2026-11-30");
+    const rules = rdvOverview(r, FROM, TO);
     if (!rules.kind) throw new Error("restaurant attendu");
     const cap = rules.rules.capacity!;
     const slot = restaurant.availability(r, TUE, 2).services.flatMap((x) => x.slots).find((x) => x.available);
@@ -133,6 +136,6 @@ describe("rubrique Rendez-vous (mission #190)", () => {
   it("thème sans prise de rendez-vous : la rubrique le dit, sans erreur", () => {
     const p = seedHoldout(owner.id, 2, "Électricien");
     saveThemeVersion(p, serviceSpec("phase" as never), "test", "user");
-    expect(rdvOverview(p, "2026-11-01", "2026-11-30")).toEqual({ kind: null, reason: "no_booking_theme" });
+    expect(rdvOverview(p, FROM, TO)).toEqual({ kind: null, reason: "no_booking_theme" });
   });
 });
