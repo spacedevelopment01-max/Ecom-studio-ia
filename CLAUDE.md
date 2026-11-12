@@ -169,6 +169,15 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     autre, compté dans son budget et annoncé avant ;
   - le ton se choisit selon le produit (l'ironie lui a plu « pour ce genre de produit », des infusions aux fruits) ;
   - les six premières propositions d'essai (noms fabriqués sur la formule « un mot + de + fruits ») : « Je trouve ça nul ».
+  - Noms du second essai réel refusés (12 novembre 2026) : « Tintamarre » (« c'est nul comme nom ») et « Morceaux
+    Choisis » (« ça représente rien et c'est moche, tu appellerais ton site comme ça toi ? »). Sa question est devenue
+    l'épreuve du fondateur. **Juge des noms** (`nameJudgeSystem`, étape `brand:judge` de la chaîne) : celle qui compose
+    les routes jugeait aussi ses noms, avec indulgence ; un juge séparé dit oui ou non à chaque finaliste (le fondateur,
+    le nom lu seul, la beauté ; noms refusés et leurs mots dans `NAME_REFUSALS`, jamais reproposés). Aucune planche n'est
+    faite sur un nom refusé tant qu'un nom gardé existe ; si trop peu tiennent, les équipes repartent chercher UNE fois
+    en sachant ce qui a été refusé ; un nom montré faute de mieux l'est avec le doute dit au client. Charge utile
+    `namesPreview` : les noms seuls, sans planche, pour les juger à peu de frais. **Construit et testé avec une IA
+    simulée : pas encore essayé pour de vrai.**
   - **Où c'est dans le code** : chaîne en tâche de fond `syna.brand` (`src/lib/syna-agent/brand-chain.ts` : étude du
     marché sur le web, paroles de clients gardées seulement si elles se retrouvent mot pour mot dans la page citée,
     idées, équipes de noms séparées, routes, vérification des noms sur le web, planches, directeur de création qui relit

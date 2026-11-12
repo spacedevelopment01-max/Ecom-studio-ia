@@ -183,3 +183,24 @@ posée au propriétaire, sans réponse à ce jour : voulait-il cette forme, ou c
 
 Coût : la chaîne de réflexion du troisième essai est estimée entre 20 et 30 € par projet au modèle le plus fort, entre
 6 et 10 € avec un réglage économe. Estimation, non mesurée.
+
+### Retours du propriétaire après les deux essais réels (12 novembre, soir)
+
+- Après le premier essai réel : les planches faites à la main étaient meilleures (« les cartes ne sont pas toutes
+  droites », « la base des logos », couleurs et dégradés mieux finis, « beaucoup plus d'icônes, d'images »).
+- Devant les planches d'exemple remplies avec les dessins de Claude : « C'est facile de copier-coller. »
+- Après le second essai réel (dessins de SINA) : faire intervenir OpenAI pour finir réellement les planches, avec un
+  logo par planche fait à partir du nom dessiné « et aussi de la direction artistique globale » ; en dessin, les
+  publications et le site sur téléphone peuvent faire croire que « le studio n'est pas à la hauteur » ; sur le sachet,
+  c'est le logo qui est posé.
+- **« Tintamarre, c'est nul comme nom d'ailleurs. »** Le nom venait de la réserve du premier essai (les meilleurs noms
+  avaient déjà été montrés). Le propriétaire n'a pas dit pourquoi. Lecture de Claude, à confirmer avec lui avant d'en
+  faire une règle : le lien avec le produit n'existe que dans l'explication (« les couleurs font du bruit ») ; écrit
+  seul sur un sachet, le mot ne fait penser ni aux fruits ni à la boisson, et il veut d'abord dire « vacarme ».
+- **« Même Morceaux Choisis, ça représente rien et c'est moche, tu appellerais ton site comme ça toi ? »** Sa question
+  devient l'épreuve du fondateur. Cause trouvée dans la chaîne : la spécialiste qui compose les routes jugeait aussi
+  ses propres noms, donc avec indulgence. Construit en réponse : un juge des noms séparé et sévère (ses épreuves : le
+  fondateur, le nom lu seul, la beauté), un second tour de recherche quand trop peu de noms tiennent, et le doute dit
+  franchement au client quand un nom est montré faute de mieux. L'essai des images est mis en attente : il ne se fera
+  que sur un nom qui lui plaît.
+

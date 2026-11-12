@@ -141,6 +141,18 @@ export const PALETTE_EXAMPLES: PaletteExample[] = [
  * Noms INVENTÉS célèbres et leur fabrication (repères d'oreille pour les marques de produits, choix du propriétaire du
  * 7 novembre 2026). Ce sont des marques existantes : modèles de construction, jamais à imiter ni à copier.
  */
+/**
+ * Noms que le propriétaire a refusés, avec SES mots (12 novembre 2026, second essai réel) : la mesure de ce qui ne
+ * passe pas. Ils ne sont jamais reproposés, et le juge des noms s'en sert pour régler sa sévérité.
+ */
+export const NAME_REFUSALS: { name: string; activity: string; words: string }[] = [
+  { name: "Tintamarre", activity: "infusions de fruits à boire froides", words: "c'est nul comme nom" },
+  { name: "Morceaux Choisis", activity: "infusions de fruits à boire froides", words: "ça représente rien et c'est moche, tu appellerais ton site comme ça toi ?" },
+  { name: "Bien Roulé", activity: "exemple de travail", words: "tournure de conversation plate, qui ne fait pas marque" },
+  { name: "Ça Roule", activity: "exemple de travail", words: "tournure de conversation plate, qui ne fait pas marque" },
+  { name: "Dans le Sac", activity: "exemple de travail", words: "tournure de conversation plate, qui ne fait pas marque" },
+];
+
 export const INVENTED_NAME_EXAMPLES: { name: string; how: string }[] = [
   { name: "Velcro", how: "« velours » + « crochet » : deux mots du produit fondus sans couture visible" },
   { name: "Vélib'", how: "« vélo » + « liberté » : le produit et ce qu'il apporte, en deux syllabes" },

@@ -97,6 +97,17 @@ de la planche, lettre pour lettre. Le réglage `sina.brand_images` reste sur « 
 **Pas encore essayé pour de vrai** : construit et testé avec un faux modèle d'images. Prix calculé d'un essai :
 1,21 € probable et 1,67 € au plus pour une planche ; 3,64 € et 5,02 € pour trois.
 
+## Le juge des noms (retour du propriétaire, 12 novembre 2026)
+
+Deux noms du second essai ont été refusés par le propriétaire : « Tintamarre » (« c'est nul comme nom ») et « Morceaux
+Choisis » (« ça représente rien et c'est moche, tu appellerais ton site comme ça toi ? »). La cause était dans la
+chaîne : la spécialiste qui compose les propositions jugeait aussi ses propres noms. Un juge séparé, sévère, relit
+maintenant chaque finaliste avec trois épreuves : le fondateur (« tu appellerais ta marque comme ça, toi ? »), le nom lu
+seul (que voit-on, sans l'explication ?) et la beauté. Un nom refusé laisse sa place à un nom gardé ; si trop peu
+tiennent, les équipes repartent chercher une fois ; un nom montré faute de mieux l'est avec le doute dit au client.
+
+**Pas encore essayé pour de vrai.**
+
 ## Ce qui n'est pas réglé
 
 - Le coût réel n'est mesuré qu'une fois (2,88 € pour trois identités, réglage économe). L'estimation d'avant l'essai

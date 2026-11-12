@@ -32,6 +32,7 @@ import { IMAGE_SLOTS, SLOT_ASPECT, SLOT_REFERENCES, boardImageRoute, brandImages
 import { BoardSchema, PALETTE_ROLES, WordmarkSchema, type Board, type BoardSymbol } from "./brand-board";
 import { brandKnowledgeReady } from "./brand-knowledge";
 import * as P from "./brand-prompts";
+import { NAME_REFUSALS } from "./brand-references";
 import { RouteSchema, clientFacts, isReferenceName, nameIssues, routeCountFor, routeIssues, routeKeys, safeWordmark, unprovenClaims, withHonestProofs, type Route, type RouteKey } from "./brand-routes";
 import { IdentitySchema, briefFromJourney, keepConstraints, nameKindsFor, normText, prepareIdentities } from "./identities";
 import { journeyOf, setStep, updateJourney, type Journey } from "./journey";
@@ -65,6 +66,8 @@ const CALLS = {
   strategy: { tier: "strong", input: 22_000, output: 12_000, max: 20_000 },
   team: { tier: "craft", input: 12_000, output: 9_000, max: 16_000 },
   shortlist: { tier: "strong", input: 26_000, output: 9_000, max: 16_000 },
+  // Le juge des noms : il ne fait que dire oui ou non à chaque finaliste, avec les épreuves du propriétaire.
+  judge: { tier: "strong", input: 7_000, output: 2_500, max: 6_000 },
   verify: { tier: "craft", input: 12_000, output: 2_500, max: 6_000 },
   direction: { tier: "strong", input: 18_000, output: 10_000, max: 18_000 },
   review: { tier: "strong", input: 26_000, output: 6_000, max: 10_000 },
@@ -87,7 +90,7 @@ const MAX_PAGES_REREAD = 16;
 /** Nombre d'appels de chaque sorte selon le travail demandé (série complète, ou reprise de quelques routes). */
 function callCounts(routes: number, teams: number, fresh: boolean, images = false): Record<CallId, number> {
   // strategy : un second tour d'idées quand trop peu passent les deux épreuves ; fix : une reprise OU un remplacement par route.
-  return { study: fresh ? 1 : 0, strategy: fresh ? 2 : 0, team: fresh ? teams : 0, shortlist: 1, verify: 1, direction: routes, review: 1, fix: routes, recheck: 1, art: routes, imagery: images ? routes : 0, look: images ? routes : 0 };
+  return { study: fresh ? 1 : 0, strategy: fresh ? 2 : 0, team: fresh ? teams : 0, shortlist: 1, judge: 1, verify: 1, direction: routes, review: 1, fix: routes, recheck: 1, art: routes, imagery: images ? routes : 0, look: images ? routes : 0 };
 }
 
 export type ChainQuote = { maxMicro: number; probableMicro?: number };
@@ -102,14 +105,35 @@ export function chainQuote(o: { routes: number; fresh?: boolean; settings?: Chai
   const search = webSearchQuoteMicro(s.craft) ?? 0, searches = (fresh ? RESEARCHES : 0) + 1;
   // Coût probable d'une recherche : la moitié de son maximum (essai réel du 12 novembre 2026 : 0,16 à 0,45 € pour 0,50 € au plus).
   let max = search * searches, probable: number | null = (search * searches) / 2;
+  const boundOf = {} as Record<CallId, number>;
   for (const id of Object.keys(CALLS) as CallId[]) {
     const c = CALLS[id], m = s[c.tier];
     const bound = callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort);
     const usual = estimateCallMicro(m.provider, m.model, c.input, c.output);
+    boundOf[id] = bound ?? (usual ?? 0) * 4;
     max += (bound ?? (usual ?? 0) * 4) * n[id];
     probable = probable == null || usual == null ? null : probable + usual * (id === "fix" ? Math.ceil(n[id] / 2) : n[id]);
   }
+  // Second tour de noms (une fois au plus, quand trop peu de noms passent le juge) : compté dans le plafond seulement.
+  max += boundOf.team * s.teams + boundOf.shortlist + boundOf.judge;
   if (images) { const q = boardImagesQuote(o.routes, s); max += q.maxMicro; probable = probable == null || q.probableMicro == null ? null : probable + q.probableMicro; }
+  return { maxMicro: Math.ceil(max), ...(probable ? { probableMicro: Math.ceil(probable) } : {}) };
+}
+
+/**
+ * Devis de l'aperçu des noms seuls sur un projet déjà étudié (l'étude, les idées et les noms déjà trouvés ne sont pas
+ * repayés) : le premier jugement et le juge, puis, compté comme probable, le second tour de recherche avec son
+ * jugement et son juge.
+ */
+export function namesPreviewQuote(settings?: ChainSettings): ChainQuote {
+  const s = settings ?? chainSettings();
+  let max = 0, probable: number | null = 0;
+  for (const [id, times] of [["shortlist", 2], ["judge", 2], ["team", s.teams]] as const) {
+    const c = CALLS[id], m = s[c.tier];
+    const bound = callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort), usual = estimateCallMicro(m.provider, m.model, c.input, c.output);
+    max += (bound ?? (usual ?? 0) * 4) * times;
+    probable = probable == null || usual == null ? null : probable + usual * times;
+  }
   return { maxMicro: Math.ceil(max), ...(probable ? { probableMicro: Math.ceil(probable) } : {}) };
 }
 
@@ -168,6 +192,7 @@ const ShortlistSchema = z.object({
   })).min(1).max(8),
 });
 type Pick = z.infer<typeof ShortlistSchema>["routes"][number];
+const JudgeSchema = z.object({ names: z.array(z.object({ name: z.string().min(1).max(60), seen: z.string().max(260).default(""), keep: z.boolean(), why: z.string().max(260).default("") })).max(16).default([]) });
 
 const VerifySchema = z.object({ checks: z.array(z.object({ name: z.string().max(60), taken: z.boolean().default(false), url: z.string().max(2000).default(""), note: z.string().max(300).default("") })).max(12).default([]) });
 
@@ -456,6 +481,8 @@ const Payload = z.object({
   projectId: z.string(), conversationId: z.string(), capMicro: z.number().int().positive(),
   count: z.number().int().min(2).max(4), guidance: z.string().max(1500).optional(),
   redo: z.array(z.enum(["A", "B", "C", "D"])).optional(), namesOnly: z.boolean().optional(),
+  /** Aperçu des noms seuls : la tâche s'arrête après le juge des noms, sans vérification ni planche (rien n'est enregistré dans le parcours). */
+  namesPreview: z.boolean().optional(),
   /** Images de planche créées par le modèle d'images (par défaut : le réglage `sina.brand_images`). */
   images: z.boolean().optional(),
   /** Seulement les images, sur les planches déjà écrites (celles de `redo`, ou toutes) : rien d'autre n'est refait. */
@@ -539,9 +566,10 @@ export async function runSinaBrandJob(ctx: JobContext) {
 
   // 4. Les noms : une équipe par chemin, chacune seule (elle ne voit pas le travail des autres).
   const paths = P.teamPathsFor(kind, settings.teams), teams: { team: string; names: z.infer<typeof TeamSchema>["names"] }[] = [];
+  const teamPrompt = `${brief}\n\n# Idées de marque\n${ideas.map((i) => ideaBlock(i, strategy)).join("\n")}\n\n# Le moule de la catégorie (à ne pas refaire)\n${study.mould || "non trouvé"}\n\n# Noms des concurrents (jamais repris)\n${study.competitors.map((c) => c.name).join(", ") || "non trouvé"}`;
   if (!j.keep.includes("nom")) for (const [i, path] of paths.entries()) {
     ctx.progress(0.3 + (0.2 * i) / paths.length, L(`Je cherche des noms (${i + 1} sur ${paths.length})`, `Looking for names (${i + 1} of ${paths.length})`));
-    const r = await ctx.step(`brand:team:${path.id}`, () => ai.ask(`team-${path.id}`, { kind: "team", system: P.teamSystem(kind, path), schema: TeamSchema, prompt: `${brief}\n\n# Idées de marque\n${ideas.map((i) => ideaBlock(i, strategy)).join("\n")}\n\n# Le moule de la catégorie (à ne pas refaire)\n${study.mould || "non trouvé"}\n\n# Noms des concurrents (jamais repris)\n${study.competitors.map((c) => c.name).join(", ") || "non trouvé"}` }));
+    const r = await ctx.step(`brand:team:${path.id}`, () => ai.ask(`team-${path.id}`, { kind: "team", system: P.teamSystem(kind, path), schema: TeamSchema, prompt: teamPrompt }));
     teams.push({ team: path.id, names: r.names });
   }
   // Noms déjà montrés AVANT cette tâche, fixés une fois : une relance après coup n'écarte pas ses propres noms.
@@ -552,21 +580,68 @@ export async function runSinaBrandJob(ctx: JobContext) {
   ctx.progress(0.55, L("Je compose les routes de ta marque", "Composing your brand routes"));
   // Numéro de la proposition, fixé une fois pour la tâche : une relance après coup retrouve ses points de reprise.
   const round = await ctx.step("brand:round", async () => (j.identities?.round ?? 0) + 1);
-  const shortlistPrompt = [
+  const shortlistPromptFor = (pool: PoolName[]) => [
     brief, "", "# Étude", studyDigest(study), "", "# Idées de marque", ...ideas.map((i) => ideaBlock(i, strategy)), "",
     j.keep.includes("nom") ? "# Nom : le client garde son nom. Chaque route le reprend mot pour mot (name) ; compose des routes aux idées différentes." : `# Noms trouvés par les équipes (${pool.length})\n${pool.map((n) => `- ${n.name} | détail : ${n.detail} | deuxième lecture : ${n.second}${n.idea ? ` | idée ${n.idea}` : ""}`).join("\n")}`,
     ...(kept.length ? ["", `# Routes GARDÉES par le client (ne les refais pas ; les nouvelles doivent en différer : autre idée, autre moule de nom, autre fond, autre teinte, autre police)`, ...kept.map((x) => `- ${x.key} « ${x.name} » : ${x.board.idea.belief} (fond ${x.ground}, bouton ${x.palette.primary}, titres ${x.fonts.heading})`)] : []),
     ...(namesOnly ? ["", "# Le client veut SEULEMENT de nouveaux noms : garde l'idée de chaque route, change le nom.", ...previous.filter((x) => todo.includes(x.key)).map((x) => `- ${x.key} : idée « ${x.board.idea.belief} », fond ${x.ground} ; ancien nom « ${x.name} » (à ne pas reproposer)`)] : []),
     ...(shown.length ? ["", `# Noms déjà montrés au client (jamais reproposés) : ${[...new Set(shown)].join(", ")}`] : []),
-    "", `Compose ${todo.length} route(s) pour ${todo.length > 1 ? "les clés" : "la clé"} ${todo.join(", ")}, dans cet ordre, puis 2 réserves.`,
+    "", `Compose ${todo.length} route(s) pour ${todo.length > 1 ? "les clés" : "la clé"} ${todo.join(", ")}, dans cet ordre, puis 4 réserves.`,
   ].join("\n");
-  const shortlist = await ctx.step(`brand:shortlist:${round}`, () => ai.ask("shortlist", { kind: "shortlist", system: P.shortlistSystem(kind, todo.length), schema: ShortlistSchema, prompt: shortlistPrompt }));
+  const shortlist = await ctx.step(`brand:shortlist:${round}`, () => ai.ask("shortlist", { kind: "shortlist", system: P.shortlistSystem(kind, todo.length), schema: ShortlistSchema, prompt: shortlistPromptFor(pool) }));
   // Un nom que le premier jugement aurait inventé hors de la réserve passe le même contrôle gratuit que les autres.
-  const sound = shortlist.routes.filter((r) => j.keep.includes("nom") || (!nameIssues(r.name).length && !isReferenceName(r.name) && !shown.some((s) => normText(s) === normText(r.name))));
+  // Un nom déjà refusé par le propriétaire n'est jamais reproposé.
+  const refusedBefore = (name: string) => NAME_REFUSALS.some((r) => normText(r.name) === normText(name));
+  const usable = (r: Pick) => j.keep.includes("nom") || (!nameIssues(r.name).length && !isReferenceName(r.name) && !refusedBefore(r.name) && !shown.some((s) => normText(s) === normText(r.name)));
+  const sound = shortlist.routes.filter(usable);
   let picks = sound.filter((r) => !r.reserve).slice(0, todo.length);
-  const reserves = sound.filter((r) => !picks.includes(r));
+  let reserves = sound.filter((r) => !picks.includes(r));
   if (picks.length < todo.length) picks = [...picks, ...reserves.splice(0, todo.length - picks.length)];
   if (picks.length < todo.length) throw new UserFacingError(L("Je n'ai pas trouvé assez de routes solides pour ta marque. Dis-moi ce que tu veux de différent et je recommence.", "Not enough solid routes were found."));
+
+  // 4 bis. Le juge des noms (retour du propriétaire du 12 novembre 2026) : un juge séparé dit oui ou non à chaque
+  // finaliste. Aucune planche n'est faite sur un nom refusé tant qu'un nom gardé existe ; si trop peu tiennent, les
+  // équipes repartent chercher UNE fois ; un nom gardé faute de mieux est montré avec le doute dit franchement.
+  const doubts = new Map<string, string>(), verdicts: z.infer<typeof JudgeSchema>["names"] = [];
+  const verdictOf = (name: string) => verdicts.find((v) => normText(v.name) === normText(name));
+  if (!j.keep.includes("nom")) {
+    const judge = async (tag: string, list: Pick[]) => {
+      const r = await ctx.step(`brand:judge:${round}${tag}`, () => ai.ask(`judge-${round}${tag.replace(":", "-")}`, { kind: "judge", system: P.nameJudgeSystem(kind), schema: JudgeSchema, prompt: `${brief}\n\n# Noms finalistes (${list.length})\n${list.map((n) => `- ${n.name} | détail réel : ${n.detail} | deuxième lecture : ${n.second}`).join("\n")}` }));
+      verdicts.push(...r.names);
+    };
+    const good = (r: Pick) => verdictOf(r.name)?.keep === true;
+    const whyNot = (r: Pick) => (verdictOf(r.name)?.why || L("il n'a pas passé mon dernier contrôle", "it did not pass my last check")).replace(/\.+$/, "");
+    ctx.progress(0.58, L("Je passe les noms à mon contrôle le plus sévère", "Putting the names through my strictest check"));
+    await judge("", [...picks, ...reserves]);
+    let extra: Pick[] = [];
+    if ([...picks, ...reserves].filter(good).length < todo.length && paths.length) {
+      ctx.progress(0.59, L("Les noms ne sont pas au niveau : je repars en chercher", "The names are not good enough: searching again"));
+      const said = [...picks, ...reserves].filter((r) => !good(r)).map((r) => `- ${r.name} : ${whyNot(r)}`).join("\n");
+      const more: typeof teams = [];
+      for (const path of paths) {
+        const r = await ctx.step(`brand:team:${path.id}:${round}:2`, () => ai.ask(`team-${path.id}-2`, { kind: "team", system: P.teamSystem(kind, path), schema: TeamSchema, prompt: `${teamPrompt}\n\n# Second tour\nLes noms du premier tour n'ont pas suffi. Refusés par le juge des noms, avec sa raison (ne redonne ni ces noms, ni des noms du même genre) :\n${said}\n\nNoms déjà trouvés par les équipes (ne les redonne pas) : ${pool.slice(0, 260).map((n) => n.name).join(", ")}` }));
+        more.push({ team: path.id, names: r.names });
+      }
+      const pool2 = namePool(more, { competitors: study.competitors.map((c) => c.name), shown: [...shown, ...pool.map((n) => n.name)] });
+      const second = await ctx.step(`brand:shortlist:${round}:2`, () => ai.ask("shortlist-2", { kind: "shortlist", system: P.shortlistSystem(kind, todo.length), schema: ShortlistSchema, prompt: shortlistPromptFor(pool2) }));
+      extra = second.routes.filter(usable).filter((r) => ![...picks, ...reserves].some((x) => normText(x.name) === normText(r.name)));
+      if (extra.length) await judge(":2", extra);
+    }
+    // Chaque place garde son fond, sa teinte et sa police : un nom refusé laisse sa place à un nom gardé.
+    const spare = [...reserves, ...extra].filter(good);
+    picks = picks.map((r) => {
+      if (good(r)) return r;
+      const s = spare.shift();
+      if (s) return { ...s, ground: r.ground, hue: r.hue, type: r.type, reserve: false, ...(namesOnly ? { idea: r.idea } : {}) };
+      doubts.set(normText(r.name), whyNot(r));
+      return r;
+    });
+    const unsure = [...reserves, ...extra].filter((r) => !good(r) && !picks.some((x) => normText(x.name) === normText(r.name)));
+    for (const r of unsure) doubts.set(normText(r.name), whyNot(r));
+    reserves = [...spare, ...unsure];
+  }
+  // Aperçu des noms seuls : rien n'est vérifié, aucune planche n'est faite, le parcours ne change pas.
+  if (a.namesPreview) return { preview: [...picks, ...reserves].map((r) => ({ name: r.name, detail: r.detail, second: r.second, why: r.why, seen: verdictOf(r.name)?.seen ?? "", kept: !j.keep.includes("nom") && verdictOf(r.name)?.keep === true, doubt: doubts.get(normText(r.name)) ?? "" })), refused: verdicts.filter((v) => !v.keep).map((v) => ({ name: v.name, why: v.why })), notes };
 
   // 5. Vérifier les noms : une marque du même secteur porte-t-elle déjà ce nom ? (web seulement, dit au client)
   ctx.progress(0.62, L("Je vérifie que les noms sont libres", "Checking the names are free"));
@@ -718,6 +793,11 @@ export async function runSinaBrandJob(ctx: JobContext) {
 
   for (const [name, url] of taken) if (list.some((x) => normText(x.name) === name)) remaining.push(L(`Le nom « ${list.find((x) => normText(x.name) === name)!.name} » semble déjà porté par une marque de ton secteur (${url}) : je te déconseille de le choisir.`, "This name seems already used in your sector."));
 
+  // Un nom gardé faute de mieux : le doute du juge est dit franchement au client, jamais caché.
+  for (const x of list.filter((y) => todo.includes(y.key))) {
+    const doubt = doubts.get(normText(x.name));
+    if (doubt) remaining.push(L(`Identité ${x.key} : je ne suis pas convaincue par le nom « ${x.name} » (${doubt}). Je te le montre faute de mieux : dis-moi si tu veux que je reparte en chercher.`, `Identity ${x.key}: I am not convinced by the name "${x.name}" (${doubt}).`));
+  }
   const issues = [...new Set([...routeIssues(list, j, keys.length), ...remaining])];
   updateJourney(a.conversationId, (x) => {
     x.identities = {

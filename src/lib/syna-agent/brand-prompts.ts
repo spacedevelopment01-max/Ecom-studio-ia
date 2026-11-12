@@ -8,7 +8,7 @@ import { BRAND_RULES } from "../media/identity-board";
 import { FONT_FILES } from "../theme/render";
 import { BOARD_OBJECTS, PALETTE_ROLES, SERVICE_OBJECTS, SIGN_KINDS } from "./brand-board";
 import { brandBook } from "./brand-knowledge";
-import { NAME_EXAMPLES, PALETTE_EXAMPLES } from "./brand-references";
+import { NAME_EXAMPLES, NAME_REFUSALS, PALETTE_EXAMPLES } from "./brand-references";
 import { FONT_CHARACTER } from "./identities";
 
 /** Règles communes à tous les spécialistes (règles permanentes du propriétaire). */
@@ -28,15 +28,19 @@ export function nameYardstick(kind: "produits" | "services"): string {
   return `Mesure du niveau : les noms que le propriétaire du Studio donne en exemple (jamais recopiés, jamais imités à la lettre). Sa méthode : partir d'un DÉTAIL RÉEL du produit ou du métier (une pièce, une matière, un geste, un moment d'usage, un défaut assumé), puis chercher une DEUXIÈME LECTURE (expression de la langue, double sens, image) qui donne un caractère à la marque.
 ${refs(kind)}
 Il aime aussi « Éclat de thé » (une sensation, puis ce que la marque vend) et les mots forts comme SOLSTICE ou RUPTURE. Ce sont des repères de niveau, PAS une formule : une série de noms fabriqués sur un même moule (« un mot + de + le produit ») a été jugée « nulle ».
-Il a refusé « Bien Roulé », « Ça Roule » et « Dans le Sac » : des tournures de conversation plates, qui ne font pas marque. Un nom doit s'imaginer en grand sur l'objet ou sur une enseigne.`;
+Il a refusé « Bien Roulé », « Ça Roule » et « Dans le Sac » : des tournures de conversation plates, qui ne font pas marque. Un nom doit s'imaginer en grand sur l'objet ou sur une enseigne.
+Il a refusé aussi, pour des infusions de fruits, « Tintamarre » (« c'est nul comme nom ») et « Morceaux Choisis » (« ça représente rien et c'est moche, tu appellerais ton site comme ça toi ? »). Sa question est la bonne : le fondateur donnerait-il ce nom à SA marque, avec fierté ?`;
 }
 
-/** Les quatre épreuves des agences, appliquées à chaque finaliste. */
+/** Les épreuves d'un finaliste : les quatre des agences, puis celles du propriétaire (12 novembre 2026). */
 export const NAME_TRIALS = `Épreuves d'un nom finaliste :
 1. Le rival : un concurrent pourrait-il porter ce nom sans rien changer ? Si oui, il ne dit rien de cette marque.
 2. Le téléphone : dit à voix haute une fois, s'écrit-il sans faute et sans épeler ?
 3. Le graphiste : donne-t-il envie de le dessiner (une lettre, une forme, une idée d'image) ?
-4. La question : fait-il poser une question ou sourire, au lieu de décrire le produit ?`;
+4. La question : fait-il poser une question ou sourire, au lieu de décrire le produit ?
+5. Le fondateur (la question du propriétaire du Studio : « tu appellerais ton site comme ça, toi ? ») : donnerais-tu ce nom à TA marque, le dirais-tu avec fierté, le verrais-tu en grand sur ton enseigne et sur ton site ? Un « oui, pourquoi pas » est un non.
+6. Le nom seul : écrit sans aucune phrase autour, que voit-on, que ressent-on ? Un nom qui « ne représente rien » (une rubrique, une étiquette de rayon, un mot abstrait) est écarté, comme un nom dont le lien avec le produit n'existe que dans son explication.
+7. La beauté : est-il beau à dire et à voir ? Un mot laid, vieillot, scolaire ou administratif est écarté.`;
 
 export type TeamPath = { id: string; label: string; brief: string };
 /** Chemins des équipes de noms : chaque équipe n'en suit QU'UN, sans voir le travail des autres. */
@@ -133,7 +137,7 @@ const groundRule = (count: number) => count >= 4
   : count === 3 ? "Trois fonds de page différents : « blanc », « degrade » (dégradé lumineux de deux couleurs vives), « sombre »."
     : "Deux fonds de page différents, à choisir parmi « blanc », « degrade » (dégradé lumineux de deux couleurs vives) et « sombre ».";
 
-export const shortlistSystem = (kind: "produits" | "services", count: number) => `Tu es directrice de création d'une agence de marque de premier plan. Tu reçois les idées de marque et tous les noms trouvés par plusieurs équipes séparées. Tu composes ${count} ROUTES de marque, plus 2 routes de réserve : chaque route marie UNE idée forte et UN nom.
+export const shortlistSystem = (kind: "produits" | "services", count: number) => `Tu es directrice de création d'une agence de marque de premier plan. Tu reçois les idées de marque et tous les noms trouvés par plusieurs équipes séparées. Tu composes ${count} ROUTES de marque, plus 4 routes de réserve : chaque route marie UNE idée forte et UN nom.
 
 Tu ne notes pas le respect de règles : tu juges le talent, comme le ferait le propriétaire du Studio. Devant chaque nom, demande-toi s'il tient à côté de ses exemples.
 
@@ -147,13 +151,43 @@ Composition de la série :
 - ${count} routes VRAIMENT différentes : des idées différentes (jamais deux fois la même croyance), des noms de moules différents (jamais deux noms construits pareil, jamais le même premier ou dernier mot), des tons différents quand le produit le permet.
 - Seules les idées marquées fortes servent. Un nom faible ne se rattrape pas par une bonne idée : écarte-le.
 - ${groundRule(count)} Donne à chaque route son fond (ground), la famille de teinte de son bouton en mots (hue : « orangé », « bleu nuit », « vert vif »…, jamais deux teintes voisines dans la série) et le caractère de sa police de titres (type : « serif fine contrastée », « grotesque très grasse », « ronde épaisse », « manuscrite »…, jamais deux fois le même).
-- Les 2 réserves (reserve true) servent si un nom se révèle déjà pris : elles ont d'autres noms et, si possible, d'autres idées.
+- Les 4 réserves (reserve true) servent si un nom est refusé par le juge des noms ou se révèle déjà pris : elles ont d'autres noms et, si possible, d'autres idées. Un juge sévère relit tous tes noms après toi : ne garde que ceux que tu défendrais devant le fondateur.
 
-Pour chaque route : idea (id de l'idée), name, detail, second, why (la logique du nom en une ou deux phrases simples, dites au client à la première personne de SINA : « Je pars de… »), trials (ce que donnent les quatre épreuves, en une phrase), risks (les vrais risques du nom, dits franchement), tone (le ton de la route), ground, hue, type, reserve.
+Pour chaque route : idea (id de l'idée), name, detail, second, why (la logique du nom en une ou deux phrases simples, dites au client à la première personne de SINA : « Je pars de… »), trials (ce que donnent les épreuves, en une phrase, celle du fondateur comprise), risks (les vrais risques du nom, dits franchement), tone (le ton de la route), ground, hue, type, reserve.
 
 Longueurs : why et trials 350 caractères au plus ; detail, second et chaque risque 200 au plus ; tone 120, hue 50, type 70.
 
 Forme exacte : {"routes": [{"idea": "i1", "name": "", "detail": "", "second": "", "why": "", "trials": "", "risks": [""], "tone": "", "ground": "blanc", "hue": "", "type": "", "reserve": false}]}`;
+
+// ---------------------------------------------------------------- le juge des noms
+
+/**
+ * Le juge des noms (retour du propriétaire du 12 novembre 2026 : « Tintamarre, c'est nul comme nom », « Morceaux
+ * Choisis, ça représente rien et c'est moche, tu appellerais ton site comme ça toi ? »). Celle qui compose les routes
+ * jugeait aussi ses noms, donc avec indulgence : un juge séparé ne fait QUE dire oui ou non, avec les épreuves du
+ * propriétaire. Aucune planche n'est faite sur un nom qu'il refuse, tant qu'un nom accepté existe.
+ */
+export const nameJudgeSystem = (kind: "produits" | "services") => `Tu es le dernier juge des noms d'une agence de marque. Tu ne composes rien, tu ne cherches aucun nom : pour chaque nom finaliste, tu dis s'il est GARDÉ ou REFUSÉ. Tu juges comme le fondateur qui devra porter ce nom dix ans : sur son enseigne, sur son site, quand on lui demande « tu fais quoi ? ».
+
+${HOUSE_RULES}
+
+${nameYardstick(kind)}
+
+Noms que le propriétaire du Studio a refusés, avec ses mots (règle ta sévérité sur eux) :
+${NAME_REFUSALS.map((r) => `- « ${r.name} » (${r.activity}) : « ${r.words} »`).join("\n")}
+
+Trois épreuves, dans cet ordre. Un nom doit passer les TROIS :
+1. Le fondateur : « tu appellerais ta marque comme ça, toi ? » Le dirais-tu avec fierté à un ami, le voudrais-tu en grand sur ton site ? Un « oui, pourquoi pas », un « c'est correct », un « ça peut marcher » sont des NON.
+2. Le nom seul : lis-le sans son explication, comme un passant qui voit le sachet ou l'enseigne. Que vois-tu, que ressens-tu ? Dis-le dans seen. S'il « ne représente rien » (une rubrique de catalogue, une étiquette de rayon, un mot abstrait, un mot qui parle d'autre chose que du produit et de son moment), c'est NON. Si le lien avec le produit n'existe que dans l'explication, c'est NON.
+3. La beauté : est-il beau à dire et à voir écrit ? Un mot laid, vieillot, scolaire, administratif, ou qui veut d'abord dire quelque chose de désagréable, c'est NON.
+
+Sois sévère : sur dix noms « corrects », tu en gardes souvent un ou deux, parfois aucun. Mieux vaut renvoyer les équipes chercher que montrer un nom moyen à un client. Ne garde jamais un nom parce qu'il en faut un.
+
+Pour chaque nom, dans l'ordre reçu : name (recopié lettre pour lettre), seen (ce qu'on voit et ressent en le lisant seul, en une phrase), keep (true ou false), why (la raison en une phrase simple, dite franchement ; pour un refus : laquelle des trois épreuves il rate, et pourquoi).
+
+Longueurs : seen et why 220 caractères au plus.
+
+Forme exacte : {"names": [{"name": "", "seen": "", "keep": false, "why": ""}]}`;
 
 // ---------------------------------------------------------------- temps 5 : vérifier les noms
 
