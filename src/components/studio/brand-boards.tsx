@@ -189,6 +189,8 @@ const BOARD_CSS = `
 .bb-signs{display:grid;gap:.6rem;grid-template-columns:repeat(2,1fr)}
 @container (min-width:42rem){.bb-signs{grid-template-columns:repeat(4,1fr)}}
 .bb-signcard{border-radius:16px;padding:.7rem;min-width:0;display:grid;gap:.55rem;align-content:start;background:var(--bb-tile);box-shadow:inset 0 0 0 1px var(--bb-edge)}
+.bb-signs>.bb-signcard:last-child:nth-child(odd){grid-column:1/-1;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);align-items:center}
+@container (min-width:42rem){.bb-signs>.bb-signcard:last-child:nth-child(odd){grid-column:auto;grid-template-columns:none;align-items:normal}.bb-signs:has(>.bb-signcard:nth-child(5):last-child){grid-template-columns:repeat(5,1fr)}}
 .bb-signcard:nth-child(odd) .bb-seen{transform:rotate(-1.4deg)}
 .bb-signcard:nth-child(even) .bb-seen{transform:rotate(1.2deg)}
 .bb-seen{height:7rem;border-radius:12px;display:grid;place-items:center;overflow:hidden;position:relative;box-shadow:0 12px 18px -14px rgba(0,0,0,.55)}
@@ -203,6 +205,9 @@ const BOARD_CSS = `
 .bb-obj.bb-back{transform:rotate(2.5deg)}
 .bb-obj .bb-field{flex:1;min-height:0;position:relative;display:grid;align-content:center;gap:.3rem;padding:.55rem .6rem;overflow:hidden}
 .bb-obj .bb-field>svg[data-art]{position:absolute;inset:0;width:100%;height:100%}
+.bb-obj.bb-back .bb-field{align-content:start;padding-top:.75rem}
+.bb-clamp{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.bb-clamp:first-child{-webkit-line-clamp:5}
 .bb-obj .bb-band{padding:.35rem .55rem .45rem;display:grid;gap:.2rem;font-size:.6rem;line-height:1.2;min-height:0}
 .bb-phone{width:min(100%,13.2rem);aspect-ratio:9/18.5;border-radius:26px;border:6px solid #0B0D18;overflow:hidden;position:relative;box-shadow:0 22px 34px -20px rgba(0,0,0,.62);display:flex;flex-direction:column;transform:rotate(1.5deg);background:var(--bb-bg1)}
 .bb-phone.bb-alt{transform:rotate(-1.8deg)}
@@ -215,13 +220,13 @@ const BOARD_CSS = `
 .bb-phone .bb-pic>svg{display:block;width:100%;height:100%}
 .bb-btn{flex:none;margin:auto .7rem .75rem;font-weight:600;font-size:.68rem;line-height:1.2;padding:.5rem .7rem;border-radius:999px;text-align:center;background:var(--bb-btn);color:var(--bb-btn-ink)}
 .bb-posts{display:grid;grid-template-columns:repeat(3,1fr);gap:.55rem;width:100%;max-width:38rem;padding:.4rem .2rem}
-.bb-post{aspect-ratio:4/5;border-radius:10px;position:relative;overflow:hidden;display:grid;align-content:end;padding:.6rem;box-shadow:0 16px 26px -18px rgba(0,0,0,.62);min-width:0}
+.bb-post{aspect-ratio:4/5;border-radius:10px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;gap:.3rem;padding:.6rem;box-shadow:0 16px 26px -18px rgba(0,0,0,.62);min-width:0}
 .bb-post:nth-child(1){transform:rotate(-2.4deg) translateY(.3rem)}
 .bb-post:nth-child(2){transform:rotate(1.6deg) translateY(-.35rem)}
 .bb-post:nth-child(3){transform:rotate(-1deg) translateY(.2rem)}
-.bb-post>svg[data-art]{position:absolute;inset:0 0 26% 0;width:100%;height:74%}
-.bb-scrim{position:absolute;inset:0;display:block}
-.bb-post p{position:relative;font-family:var(--bb-head);line-height:1.02;overflow-wrap:break-word;text-wrap:balance}
+.bb-post>svg[data-art]{flex:1 1 0;min-height:0;width:100%;margin:-.2rem 0 0}
+.bb-post p{position:relative;flex:none;font-family:var(--bb-head);line-height:1.04;overflow-wrap:break-word;text-wrap:balance}
+.bb-post .bb-hand{flex:none;align-self:flex-start}
 .bb-stack{display:grid;gap:1.4rem;justify-items:center;align-content:center;align-self:center;min-width:0;width:100%}
 .bb-stack figure{width:100%}
 .bb-sticker{width:min(78%,8.4rem);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;padding:17%;transform:rotate(8deg);box-shadow:0 14px 22px -14px rgba(0,0,0,.6);outline:1.5px dashed currentColor;outline-offset:-7px}
@@ -287,7 +292,8 @@ function ObjectFace({ x, back, pop }: { x: BoardCard; back?: boolean; pop: strin
         <div className="bb-field" style={art ? { flex: "none", aspectRatio: "19 / 13" } : undefined}>
           {art && <Vignette art={art} ratio={19 / 13} />}
           {!back && b.object.note && <span className="bb-hand" style={{ color: [p.primary, p.accent].find((c) => contrast(c, body) >= 2.6) ?? ink }}>{b.object.note}</span>}
-          {back ? lines.map((l, i) => <p key={i} className={i === 0 ? "text-[15px] leading-[1.05]" : "text-[9.5px] leading-snug"} style={i === 0 ? { fontFamily: "var(--bb-head)", fontWeight: x.faces.heading?.weight ?? 700 } : { opacity: 0.9 }}>{l}</p>)
+          {/* Le dos : une phrase de la marque, puis trois lignes au plus ; un texte long rétrécit, il ne déborde jamais. */}
+          {back ? lines.slice(0, 4).map((l, i) => <p key={i} className={cx("bb-clamp", i === 0 ? "leading-[1.06]" : "text-[8.5px] leading-snug")} style={i === 0 ? { fontFamily: "var(--bb-head)", fontWeight: x.faces.heading?.weight ?? 700, fontSize: l.length <= 28 ? "15px" : l.length <= 52 ? "12.5px" : "10.5px" } : { opacity: 0.9 }}>{l}</p>)
             : !art && lines.slice(0, 2).map((l, i) => <p key={i} className={i === 0 ? "text-[17px] leading-[1.02]" : "text-[10px] leading-snug"} style={i === 0 ? { fontFamily: "var(--bb-head)", fontWeight: x.faces.heading?.weight ?? 700 } : undefined}>{l}</p>)}
         </div>
         {!back && (
@@ -384,7 +390,7 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
                 <div className="bb-seen" style={{ background: bg, color: on }} data-seen={s.art ? "dessin" : s.sample ? "mots" : s.symbol ? "signe" : "secours"}>
                   {s.art ? <ArtView art={s.art} />
                     : s.sample ? <span className={cx("bb-sample", s.hand && "bb-hand")} style={s.hand ? { color: acc } : { fontWeight: headWeight }} data-sample>{s.sample}</span>
-                    : s.kind === "lettrage" ? <Wordmark x={x} main={on} accent={acc} className="max-h-[70%] max-w-[86%] text-xl" />
+                    : s.kind === "lettrage" ? <Wordmark x={x} main={on} accent={acc} compact className="max-h-[70%] max-w-[86%] text-xl" />
                       : s.kind === "couleur" ? <span className="flex h-full w-full" aria-hidden>{(["dark", "primary", "secondary", "accent", "light"] as const).map((r) => <i key={r} className="block flex-1" style={{ background: safeHex(p[r]) }} />)}</span>
                         : s.kind === "phrase" ? <span className="px-2 text-center text-[15px] leading-[1.05]" style={{ fontFamily: "var(--bb-head)", fontWeight: headWeight }}>{x.slogan}</span>
                           : s.symbol ? <PictoView p={s.symbol} main={on} accent={acc} style={{ width: "62%", height: "62%" }} />
@@ -423,14 +429,13 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
             <div className="bb-posts">
               {b.posts.map((q, i) => {
                 const bg = postBg[i], on = inkOn(bg, p);
-                // Taille du texte : le mot le plus long tient sur une ligne, et tout le texte tient dans le bas de la carte.
+                // Le dessin en haut, le texte en dessous, jamais l'un sur l'autre (essai réel du 12 novembre 2026). Taille du
+                // texte : le mot le plus long tient sur une ligne, et tout le texte tient dans la carte.
                 const longest = Math.max(...q.text.split(/\s+/).map((w) => w.length), 1);
-                const size = Math.min(36 / longest, Math.sqrt(620 / Math.max(q.text.length, 6)), 6.4);
-                const short = q.text.length <= 18;
+                const size = Math.min(36 / longest, Math.sqrt((q.art ? 430 : 620) / Math.max(q.text.length, 6)), 6.4);
                 return (
                   <div key={i} className="bb-post" style={{ background: bg, color: on }} data-post={q.look}>
                     {q.art ? <ArtView art={q.art} /> : q.look === "motif" && firstPicto ? <PictoView p={firstPicto} main={on} accent={[p.accent, p.primary].find((c) => contrast(c, bg) >= 2) ?? on} className="absolute -right-3 -top-3 h-20 w-20 opacity-30" /> : null}
-                    {q.art && <i className="bb-scrim" style={{ background: `linear-gradient(to top, ${bg} ${short ? 14 : 30}%, ${bg}00 ${short ? 38 : 64}%)` }} aria-hidden />}
                     <p style={{ fontWeight: headWeight, fontSize: `clamp(.6rem, ${size.toFixed(2)}cqi, 1.7rem)` }}>{q.look === "citation" ? `« ${q.text} »` : q.text}</p>
                     {q.note && <span className="bb-hand" style={{ color: [p.accent, p.primary, p.secondary].find((c) => contrast(c, bg) >= 2.6) ?? on }}>{q.note}</span>}
                   </div>

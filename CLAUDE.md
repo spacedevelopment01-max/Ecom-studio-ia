@@ -197,9 +197,16 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     au moindre écart : la planche garde alors sa forme, avec une scène de secours). **Gestes de lettrage** du nom
     (`WordmarkSchema` : taille et inclinaison par ligne, mots en couleur d'accent, ligne qui coupe le nom, lettre remplacée
     par un dessin, mots à la main, trait), composés par le Studio lettres exactes (`brand-wordmark.ts`, `safeWordmark`).
-    Vérifié en image sur les planches d'exemple (`tests/sina-routes-fixtures.ts`, `tests/sina-dessins-fixtures.ts`) ;
-    **les dessins que SINA produit elle-même n'ont pas encore été vus dans un essai réel**, et le directeur de création
-    ne relit pas encore les dessins en image.
+    Vérifié en image sur les planches d'exemple (`tests/sina-routes-fixtures.ts`, `tests/sina-dessins-fixtures.ts`).
+    **Second essai réel du 12 novembre 2026** (accord écrit du propriétaire ; les trois planches du même exemple refaites,
+    étude et noms du premier essai repris sans être repayés) : 1,92 € (plafond 5,62 €), 15 appels, 11 minutes ;
+    « Morceaux Choisis », « Tintamarre », « Plein les Yeux » ; l'illustratrice a rendu la scène, le devant de l'objet et
+    l'image du site des trois planches, 3 signes sur 5 et 8 publications sur 9 ; aucun dessin refusé par le filtre.
+    Leçons, corrigées et testées : seul un **O sans accent** se remplace par un dessin (un rond à la place d'un A ou d'un
+    i donnait « Tintomarre » et « Pleon ») ; petits mots en minuscules dans un nom à capitales (« Plein les Yeux ») ;
+    publication = dessin en haut, texte en dessous, 60 caractères au plus ; dos de l'objet en 3 lignes courtes ; réponse
+    mal formée de l'illustratrice réparée détail par détail (`prepareArt`). **Pas encore fait** : la relecture des dessins
+    en image par le directeur de création ; ces dernières corrections n'ont pas été revues par un troisième essai.
   - **À confirmer par le propriétaire** : le quatrième fond d'une série de quatre identités (aujourd'hui un fond clair
     coloré, « uni ») ; la règle « un fond sombre par série » quand le client demande du joyeux et du coloré (le directeur
     de création l'a contestée pendant l'essai) ; le réglage des modèles.

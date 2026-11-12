@@ -351,13 +351,29 @@ const routeText = (x: Route) => JSON.stringify({ ...x, board: (({ hero: _h, ...b
 
 // ---------------------------------------------------------------- les dessins de la planche
 
-const svgText = z.string().max(MAX_ART_CHARS + 400).default("");
+// Forme large : un dessin trop lourd ou mal formé est refusé ensuite, un par un, par le filtre (jamais toute la réponse).
+const svgText = z.string().max(4 * MAX_ART_CHARS).default("");
 const ArtDraftSchema = z.object({
   hero: svgText, object: svgText, site: svgText,
-  signs: z.array(z.object({ index: z.number().int().min(0).max(4), svg: svgText, ground: z.enum(PALETTE_ROLES).optional().catch(undefined), sample: z.string().max(48).optional().catch(undefined), hand: z.boolean().optional().catch(undefined) })).max(5).default([]),
-  posts: z.array(z.object({ index: z.number().int().min(0).max(2), svg: svgText, ground: z.enum(PALETTE_ROLES).optional().catch(undefined) })).max(3).default([]),
-  swap: z.object({ letter: z.number().int().min(0).max(39), svg: svgText }).optional().catch(undefined),
+  signs: z.array(z.object({ index: z.number().int().min(0).max(4), svg: svgText, ground: z.enum(PALETTE_ROLES).optional(), sample: z.string().max(48).optional(), hand: z.boolean().optional() })).max(5).default([]),
+  posts: z.array(z.object({ index: z.number().int().min(0).max(2), svg: svgText, ground: z.enum(PALETTE_ROLES).optional() })).max(3).default([]),
+  swap: z.object({ letter: z.number().int().min(0).max(39), svg: svgText }).optional(),
 });
+/**
+ * Tolérance de forme de la réponse de l'illustratrice : un rang hors liste, une couleur inconnue, un texte vide ou une
+ * lettre mal donnée retirent CE détail, jamais toute la planche (un appel ne se repaie pas pour une virgule).
+ */
+export function prepareArt(raw: any): any {
+  if (!raw || typeof raw !== "object") return raw;
+  const text = (v: unknown) => (typeof v === "string" ? v : "");
+  const role = (v: unknown) => ((PALETTE_ROLES as readonly string[]).includes(v as string) ? { ground: v } : {});
+  const rank = (v: unknown, max: number) => (Number.isInteger(Number(v)) && Number(v) >= 0 && Number(v) <= max ? Number(v) : null);
+  const list = (v: unknown) => (Array.isArray(v) ? v.filter((x) => x && typeof x === "object") : []);
+  const signs = list(raw.signs).map((g: any) => ({ index: rank(g.index, 4), svg: text(g.svg), ...role(g.ground), ...(text(g.sample).trim() ? { sample: text(g.sample).trim().slice(0, 48), ...(g.hand === true ? { hand: true } : {}) } : {}) })).filter((g) => g.index != null).slice(0, 5);
+  const posts = list(raw.posts).map((q: any) => ({ index: rank(q.index, 2), svg: text(q.svg), ...role(q.ground) })).filter((q) => q.index != null).slice(0, 3);
+  const letter = raw.swap && typeof raw.swap === "object" ? rank(raw.swap.letter, 39) : null;
+  return { hero: text(raw.hero), object: text(raw.object), site: text(raw.site), signs, posts, ...(letter != null && text(raw.swap.svg).trim() ? { swap: { letter, svg: text(raw.swap.svg) } } : {}) };
+}
 export type ArtDraft = z.infer<typeof ArtDraftSchema>;
 
 /** Ce que l'illustratrice reçoit d'une route : l'idée, le nom, la palette, et chaque emplacement à dessiner. */
@@ -389,6 +405,8 @@ export function withArt(route: Route, draft: ArtDraft, facts: string): { route: 
   const posts = b.posts.map((q, i) => { const d = draft.posts.find((x) => x.index === i); if (!d) return q; const art = clean(d.svg); return { ...q, ...(art ? { art } : {}), ...(d.ground ? { ground: d.ground } : {}) }; });
   const swapArt = draft.swap ? clean(draft.swap.svg) : undefined;
   const wordmark = safeWordmark({ ...b.wordmark, ...(swapArt && draft.swap ? { swap: { letter: draft.swap.letter, art: swapArt } } : {}) }, route.name);
+  // Lettre que le Studio ne laisse pas remplacer (ce n'est pas un O, ou elle est hors du nom) : le dessin n'est pas posé.
+  if (swapArt && !wordmark.swap) placed--;
   let next: Route = { ...route, board: { ...b, ...(hero ? { hero } : {}), signs, posts, wordmark, object: { ...b.object, ...(objectArt ? { art: objectArt } : {}) }, site: { ...b.site, ...(siteArt ? { art: siteArt } : {}) } } };
   // Les quelques mots ajoutés par l'illustratrice ne portent ni chiffre ni garantie absents de la fiche du client.
   if (unprovenClaims(next, facts).length > unprovenClaims(route, facts).length) next = { ...next, board: { ...next.board, signs: next.board.signs.map(({ sample: _s, hand: _h, ...g }) => g) } };
@@ -615,7 +633,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     for (const [n, x] of fresh.entries()) {
       ctx.progress(0.95 + (0.04 * n) / fresh.length, L(`Je dessine la planche ${x.key}`, `Drawing board ${x.key}`));
       let drawn: ArtDraft | null = null;
-      try { drawn = await ctx.step(`brand:art:${round}:${x.key}`, () => ai.ask(`art-${round}-${x.key}`, { kind: "art", system: P.artSystem(kind), schema: ArtDraftSchema, prompt: `${brief}\n\n# La route à dessiner\n${artBrief(x)}` })); }
+      try { drawn = await ctx.step(`brand:art:${round}:${x.key}`, () => ai.ask(`art-${round}-${x.key}`, { kind: "art", system: P.artSystem(kind), schema: ArtDraftSchema, prepare: prepareArt, prompt: `${brief}\n\n# La route à dessiner\n${artBrief(x)}` })); }
       catch (e) { if (e instanceof CostCapReached) throw e; notes.push(`dessins de ${x.key} non faits : ${String((e as Error)?.message ?? e).slice(0, 120)}`); }
       if (!drawn) continue;
       const r = withArt(x, drawn, facts);

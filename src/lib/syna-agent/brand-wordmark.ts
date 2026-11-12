@@ -49,7 +49,10 @@ function loadFont(file: string) {
   return f;
 }
 
-const applyCase = (s: string, c: Wordmark["case"]) => (c === "upper" ? s.toLocaleUpperCase("fr-FR") : c === "lower" ? s.toLocaleLowerCase("fr-FR") : c === "title" ? s.replace(/(^|[\s'’-])(\p{L})/gu, (_m, a: string, b: string) => a + b.toLocaleUpperCase("fr-FR")) : s);
+/** Petits mots qui restent en minuscules dans un nom écrit « à l'anglaise » (« Plein les Yeux », jamais « Plein Les Yeux »). */
+const SMALL_WORDS = new Set(["le", "la", "les", "de", "du", "des", "et", "à", "au", "aux", "en", "un", "une", "sur", "sous", "pour", "par", "dans", "chez", "ou"]);
+const titleCase = (s: string) => s.replace(/(^|[\s'’-])(\p{L}+)/gu, (_m, a: string, w: string, at: number) => a + (at > 0 && a.trim() === "" && SMALL_WORDS.has(w.toLocaleLowerCase("fr-FR")) ? w.toLocaleLowerCase("fr-FR") : w.charAt(0).toLocaleUpperCase("fr-FR") + w.slice(1)));
+const applyCase = (s: string, c: Wordmark["case"]) => (c === "upper" ? s.toLocaleUpperCase("fr-FR") : c === "lower" ? s.toLocaleLowerCase("fr-FR") : c === "title" ? titleCase(s) : s);
 const round = (n: number) => Math.round(n * 100) / 100;
 
 /** Lettres que la police ne sait pas écrire (le nom serait faux) : la police est alors écartée. */

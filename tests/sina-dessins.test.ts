@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 import sharp from "sharp";
 import { ArtSchema, MAX_ART_NODES, artSvg, isSafeArt, sanitizeArt, type Art } from "@/lib/syna-agent/brand-art";
-import { pruneDraft, withArt } from "@/lib/syna-agent/brand-chain";
+import { prepareArt, pruneDraft, withArt } from "@/lib/syna-agent/brand-chain";
 import { clientFacts, isRoute, routeIssues } from "@/lib/syna-agent/brand-routes";
 import { journey, route, series } from "./sina-routes-fixtures";
 
@@ -111,12 +111,12 @@ describe("SINA — dessins des planches de marque", () => {
   });
 
   it("dessins de l'illustratrice : posés après filtrage, refusés en entier au moindre écart, jamais sur le signe « lettrage »", () => {
-    const base = route("D"), facts = clientFacts(journey());
+    const base = route("C"), facts = clientFacts(journey());
     const r = withArt(base, {
       hero: DOT("0 0 320 250"), object: `<svg viewBox="0 0 190 130"><image href="https://x.example/a.png"/></svg>`, site: "",
       signs: [{ index: 0, svg: DOT("0 0 100 70"), ground: "dark" }, { index: 1, svg: DOT("0 0 100 70"), ground: "accent" }, { index: 2, svg: "", sample: "Trempe, attends.", hand: true }],
       posts: [{ index: 1, svg: DOT("0 0 100 92"), ground: "primary" }, { index: 2, svg: `<svg viewBox="0 0 100 92" onload="x()"><circle r="3"/></svg>` }],
-      swap: { letter: 3, svg: DOT("-12 -12 24 24") },
+      swap: { letter: 8, svg: DOT("-12 -12 24 24") }, // le « o » de « Bonne »
     }, facts);
     expect(r.placed).toBe(4); // scène, un signe, une publication, la lettre
     expect(r.refused).toBe(2); // image extérieure, attribut d'événement
@@ -130,7 +130,7 @@ describe("SINA — dessins des planches de marque", () => {
     expect(b.signs[2]).toMatchObject({ sample: "Trempe, attends.", hand: true });
     expect(b.posts[1]).toMatchObject({ ground: "primary" });
     expect(b.posts[2].art).toBeUndefined();
-    expect(b.wordmark.swap!.letter).toBe(3);
+    expect(b.wordmark.swap!.letter).toBe(9); // rang donné sans compter l'apostrophe : le O le plus proche est pris
     expect(isRoute(r.route)).toBe(true);
     // Rien du dessin brut ne reste : seulement l'arbre filtré.
     expect(JSON.stringify(r.route)).not.toMatch(/onload|href|<svg/);
@@ -140,6 +140,10 @@ describe("SINA — dessins des planches de marque", () => {
     const base = route("D"), facts = clientFacts(journey());
     const far = withArt(base, { hero: "", object: "", site: "", signs: [], posts: [], swap: { letter: 30, svg: DOT("-12 -12 24 24") } }, facts);
     expect(far.route.board.wordmark.swap).toBeUndefined();
+    // Essai réel du 12 novembre 2026 : un rond à la place d'un A donnait « Tintomarre ». Seul un O se remplace.
+    const wrong = withArt(base, { hero: "", object: "", site: "", signs: [], posts: [], swap: { letter: 3, svg: DOT("-12 -12 24 24") } }, facts);
+    expect(wrong.route.board.wordmark.swap).toBeUndefined();
+    expect(wrong.placed).toBe(0);
     const claim = withArt(base, { hero: "", object: "", site: "", signs: [{ index: 1, svg: "", sample: "Garanti 100 % fruits" }], posts: [] }, facts);
     expect(claim.route.board.signs[1].sample).toBeUndefined();
   });
@@ -157,5 +161,18 @@ describe("SINA — dessins des planches de marque", () => {
     expect(b.site).toEqual({});
     expect(b.posts[0]).toEqual({ text: "a" });
     expect(b.signs[0]).toEqual({ kind: "motif" });
+  });
+
+  it("réponse de l'illustratrice : un détail mal formé est retiré seul, les dessins écrits avec des apostrophes sont lus", () => {
+    const raw = { hero: `<svg viewBox='0 0 320 250'><rect width='320' height='250' fill='#0A0F3D'/><circle cx='240' cy='60' r='30' fill='#FFE98A'/></svg>`, object: 12, signs: [{ index: 9, svg: "x" }, { index: "1", svg: DOT("0 0 100 70"), ground: "rose" }, "bruit", { index: 2, sample: "  Trempe.  ", hand: "oui" }], posts: [{ index: 0, svg: null, ground: "dark" }, { index: 5 }], swap: { letter: "a", svg: DOT("-12 -12 24 24") } };
+    const clean = prepareArt(raw);
+    expect(clean.object).toBe("");
+    expect(clean.signs).toEqual([{ index: 1, svg: DOT("0 0 100 70") }, { index: 2, svg: "", sample: "Trempe." }]);
+    expect(clean.posts).toEqual([{ index: 0, svg: "", ground: "dark" }]);
+    expect(clean).not.toHaveProperty("swap");
+    const r = withArt(route("D"), clean, clientFacts(journey()));
+    expect(r.route.board.hero!.nodes).toHaveLength(2);
+    expect(r.route.board.posts[0]).toMatchObject({ ground: "dark" });
+    expect(r.refused).toBe(0);
   });
 });

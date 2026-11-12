@@ -55,7 +55,7 @@ describe("SINA — le nom dessiné en code", () => {
     expect(wide.width).toBeGreaterThan(tight.width * 1.3);
     const dot = drawWordmark("trempette", { ...plain, case: "lower", dot: true }, "fraunces_n8");
     expect(dot.shapes.filter((s) => s.tone === "accent")).toHaveLength(1);
-    expect(drawWordmark("éclat de thé", { ...plain, case: "title" }, "inter_n7").text).toBe("Éclat De Thé");
+    expect(drawWordmark("éclat de thé", { ...plain, case: "title" }, "inter_n7").text).toBe("Éclat de Thé");
     const symbol = { source: "ai" as const, viewBox: [0, 0, 100] as [number, number, number], shapes: [{ d: "M10 10H90V90H10Z", paint: "fill" as const, tone: "accent" as const }] };
     const left = drawWordmark("Solstice", { ...plain, symbol }, "inter_n7"), above = drawWordmark("Solstice", { ...plain, symbol, symbolPlace: "dessus" }, "inter_n7");
     expect(left.symbol!.x).toBeLessThan(left.width / 3);
@@ -141,6 +141,16 @@ describe("SINA — le nom dessiné en code", () => {
     expect(w.tilt).toEqual([2, -2]);
     expect(w.accentWords).toEqual([1]);
     expect(w.swap).toBeUndefined();
+    // Seul un O sans accent se remplace par un dessin (un rond se lit « O ») : jamais un A, un i, un ô.
+    expect(safeWordmark({ ...plain, swap: { letter: 4, art: art.art } }, "Tintamarre").swap).toBeUndefined();
+    expect(safeWordmark({ ...plain, swap: { letter: 3, art: art.art } }, "Plein les Yeux").swap).toBeUndefined();
+    expect(safeWordmark({ ...plain, swap: { letter: 8, art: art.art } }, "L'Eau Est Bonne").swap?.letter).toBe(9);
+    expect(safeWordmark({ ...plain, swap: { letter: 1, art: art.art } }, "Morceaux Choisis").swap?.letter).toBe(1);
+    expect(safeWordmark({ ...plain, swap: { letter: 1, art: art.art } }, "Côté Cour").swap).toBeUndefined();
+    // Un nom écrit avec des capitales aux mots : les petits mots restent en minuscules.
+    expect(drawWordmark("Plein les Yeux", { ...plain, case: "title" }, "nunito_n9").text).toBe("Plein les Yeux");
+    expect(drawWordmark("l'eau est bonne", { ...plain, case: "title" }, "nunito_n9").text).toBe("L'Eau Est Bonne");
+    expect(drawWordmark("lâche le morceau", { ...plain, case: "title" }, "nunito_n9").text).toBe("Lâche le Morceau");
     // Tous les mots en couleur d'accent : le geste ne dit plus rien, il est retiré.
     expect(safeWordmark({ ...plain, accentWords: [0, 1, 2] }, "Bain de Minuit").accentWords).toBeUndefined();
     // Une mise en lignes fausse emporte les réglages par ligne (ils n'ont plus de ligne à régler).

@@ -63,8 +63,23 @@ d'icônes, d'images ». Ce qui a été construit pour que SINA atteigne ce nivea
 - **La mise en page** des planches faites à la main : objets penchés, publications décalées, colis, autocollant,
   « Elle est… », la voix en situation, fonds à lueurs.
 
-Vérifié en image, sur téléphone, avec des planches d'exemple. **Pas encore vérifié** : les dessins que SINA produit
-elle-même (aucun essai réel depuis) ; le directeur de création ne relit pas encore les dessins en image.
+Vérifié en image, sur téléphone, avec des planches d'exemple, puis par un **second essai réel** le même jour (accord
+écrit du propriétaire) : les trois planches du même exemple refaites par SINA, étude et noms du premier essai repris
+sans être repayés. Coût : 1,92 € (plafond 5,62 €), 15 appels, 11 minutes. Noms : « Morceaux Choisis », « Tintamarre »,
+« Plein les Yeux ». L'illustratrice a rendu la scène, le devant de l'objet et l'image du site des trois planches,
+3 signes sur 5 et 8 publications sur 9 ; aucun dessin n'a été refusé par le filtre.
+
+Ce que cet essai a appris (corrigé et testé) :
+
+- un rond à la place d'un A ou d'un i change le nom (« Tintomarre », « Pleon ») : seul un O sans accent peut être
+  remplacé par un dessin ;
+- « Plein Les Yeux » : les petits mots restent en minuscules dans un nom écrit avec des capitales ;
+- le texte des publications passait sur leurs dessins : le dessin est en haut, le texte en dessous, et SINA écrit des
+  publications de 60 caractères au plus ;
+- le dos du sachet débordait : trois lignes courtes.
+
+**Pas encore fait** : le directeur de création ne relit pas les dessins en image ; ces corrections n'ont pas été
+revues par un troisième essai.
 
 ## Ce qui n'est pas réglé
 

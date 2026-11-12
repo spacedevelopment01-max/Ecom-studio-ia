@@ -167,16 +167,21 @@ export function safeWordmark(w: Wordmark, name: string): Wordmark {
   let out: Wordmark = w;
   if (out.lines && letters(out.lines.join("")) !== letters(name)) { const { lines: _dropped, ...rest } = out; out = rest; }
   const lines = out.lines?.length ? out.lines : [name.trim()];
-  const words = lines.reduce((n, l) => n + l.trim().split(/\s+/).filter(Boolean).length, 0), count = letters(name).length;
+  const words = lines.reduce((n, l) => n + l.trim().split(/\s+/).filter(Boolean).length, 0);
   const { scale, tilt, accentWords, swap, ...base } = out;
   const kept = accentWords?.filter((i, k, all) => i < words && all.indexOf(i) === k);
+  // Une lettre n'est remplacée par un dessin que si c'est un O sans accent : un rond se lit « O », rien d'autre
+  // (essai réel du 12 novembre 2026 : un A et un i remplacés par un rond donnaient « Tintomarre » et « Pleon »).
+  // Rang donné à une ou deux places près (apostrophe comptée ou non) : le O le plus proche est pris ; sinon rien.
+  const chars = [...name.normalize("NFC")].filter((c) => c.trim());
+  const round = swap ? chars.map((c, i) => (/^[oO]$/.test(c) ? i : -1)).filter((i) => i >= 0 && Math.abs(i - swap.letter) <= 2).sort((a, b) => Math.abs(a - swap.letter) - Math.abs(b - swap.letter))[0] : undefined;
   return {
     ...base,
     ...(scale?.length ? { scale: scale.slice(0, lines.length) } : {}),
     ...(tilt?.length ? { tilt: tilt.slice(0, lines.length) } : {}),
     // Tous les mots en couleur d'accent : plus aucun contraste, le geste ne dit plus rien.
     ...(kept?.length && kept.length < words ? { accentWords: kept } : {}),
-    ...(swap && swap.letter < count ? { swap } : {}),
+    ...(swap && round != null ? { swap: { ...swap, letter: round } } : {}),
   };
 }
 
