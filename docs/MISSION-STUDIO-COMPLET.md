@@ -19,6 +19,20 @@ attend deux grandes améliorations, au même niveau d'exigence :
 
 Tu as toute latitude technique. En revanche, les règles du propriétaire (parties 2 et 3) ne se négocient pas.
 
+**Ta vision d'abord, sur trois sujets** (demande du propriétaire du 12 novembre 2026) : pour **E-COM STUDIO IA tout
+entier**, pour **SINA tout entière** et pour **le thème sur mesure**, il veut ton avis, ta vision de la façon d'arriver
+au résultat qu'il souhaite, et que tu sois **force de proposition, avec de vraies propositions**. Pour chacun des trois
+sujets, avant de construire, présente-lui :
+- **ton avis franc** sur ce qui existe : ce qui marche, ce qui ne pourra jamais donner le résultat voulu, et pourquoi ;
+- **ta façon de faire, de bout en bout** ;
+- **de vraies propositions**, pas des généralités ni une reformulation de ce document. Pour chacune : ce qu'il verra
+  concrètement (si possible un exemple, un croquis ou un prototype gratuit), ce que ça change par rapport à
+  aujourd'hui, ce que ça coûte (travail et dépense IA), les risques, et ta recommandation. Les idées qui sortent du
+  cadre de ce document sont attendues (autre parcours, autre rôle pour SINA, autre organisation du Studio, fonction
+  nouvelle qui ferait la différence face aux concurrents).
+Il valide, refuse ou ajuste chaque proposition avant que tu construises. Les parties 4 bis, 6.4 et 7 détaillent
+chaque sujet.
+
 ---
 
 ## 2. Le propriétaire, et comment travailler avec lui
@@ -175,6 +189,10 @@ agence à 20 000 € livrerait ici, et comment faire mieux ? »
 l'accord et le prix annoncé), compare au niveau des meilleures marques et agences, et montre le résultat au
 propriétaire avant de passer à la suite.
 
+**Ta vision de SINA** : avant de toucher à SINA, présente au propriétaire ta vision de SINA tout entière (son rôle, sa
+façon de converser, chacune des étapes 0 à 13, les modèles d'IA, la mémoire, les contrôles), avec tes vraies
+propositions pour qu'elle dépasse ses espérances, comme décrit en partie 1. Il valide chaque proposition.
+
 ---
 
 ## 5. Le niveau voulu
@@ -316,6 +334,11 @@ Questions encore ouvertes, à poser au propriétaire au bon moment (une à la fo
 
 ## 7. Le reste du Studio à finir
 
+**Ta vision du Studio** : avant de reconstruire, présente au propriétaire ta vision d'E-COM STUDIO IA tout entier
+(ce qu'il doit être pour le client, l'organisation des écrans et des onglets, le parcours du client, l'offre et les
+forfaits, ce qui le rendrait meilleur que tout ce qui existe), avec tes vraies propositions, comme décrit en partie 1.
+Il valide chaque proposition. Points déjà connus à finir :
+
 - **Étapes 9 à 13 de SINA** : publications, publicités, calendrier, blog, rangement (partie 4). Les briques existent
   en partie (`src/lib/social-v2/`, `src/lib/ads-v2/`, `src/lib/image-v2/`, `src/lib/video-v2/`,
   `src/lib/syna-agent/calendar.ts`) : à relier au parcours, avec les mêmes exigences de qualité et d'accord avant
@@ -372,8 +395,8 @@ ta recommandation quand tu en as une.
    (`scripts/syna-recette/lancer-agent.mts` pour un Studio d'essai privé, ou `npm run studio`), ouvre chaque page,
    capture, liste ce qui ne va pas. Aucun appel payant pendant l'audit.
 3. **Lui donner ton avis et proposer un plan** : ton avis franc sur le code (repartir au propre ou non, partie 8)
-   et sur ce qui a été mal pensé dans la conception, avec tes propositions ; ta vision du thème sur mesure et tes
-   vraies propositions pour y arriver (partie 6.4) ; puis un plan court, en français simple,
+   et sur ce qui a été mal pensé dans la conception, avec tes propositions ; ta vision et tes vraies propositions
+   pour le Studio tout entier, pour SINA tout entière et pour le thème sur mesure (parties 1, 4 bis, 6.4 et 7) ; puis un plan court, en français simple,
    découpé en lots, chaque lot avec ce qu'il verra à la fin. Attendre son accord sur chaque point.
 4. **Construire lot par lot**, une branche par lot. Pour chaque lot : tests, contrôle visuel automatique, captures
    ordinateur et téléphone vérifiées par toi, page en ligne qu'il peut ouvrir sur son téléphone, puis « Je
