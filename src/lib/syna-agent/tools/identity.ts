@@ -220,6 +220,9 @@ export function mixIdentity(list: Identity[], key: Key, mix: Partial<Record<Part
     // Le « pourquoi » d'une identité parle de SES couleurs, polices et ton : il n'est plus vrai après un mélange de ces
     // éléments (essai réel : « fond en dégradé, vert basilic » affiché sur un fond blanc au bouton bleu).
     why: (["palette", "fonts", "tone"] as const).some((part) => mix[part] && mix[part] !== key) ? "" : base.why,
+    // Les images d'une planche (logo, sachet, site) portent SON nom, SES couleurs et SES polices : après un mélange
+    // ou une retouche du nom ou de la signature, elles ne sont plus vraies ; la planche revient aux dessins.
+    ...(base.board?.images && (edits.name || edits.slogan || (["name", "slogan", "palette", "fonts"] as const).some((part) => mix[part] && mix[part] !== key)) ? { board: (({ images: _gone, ...rest }) => rest)(base.board) } : {}),
   };
 }
 

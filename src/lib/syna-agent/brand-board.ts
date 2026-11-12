@@ -81,6 +81,10 @@ export const WordmarkSchema = z.object({
 });
 export type Wordmark = z.infer<typeof WordmarkSchema>;
 
+/** Image créée pour la planche, rangée dans la bibliothèque du projet : une référence, jamais une adresse libre. */
+export const BoardImageSchema = z.object({ id: z.string().regex(/^[A-Za-z0-9_-]{4,80}$/), w: z.number().int().positive().max(8192), h: z.number().int().positive().max(8192) });
+export type BoardImage = z.infer<typeof BoardImageSchema>;
+
 export const BoardSchema = z.object({
   /** L'idée de marque : ce que la marque croit, ce que le client pense sans le dire, ce qu'elle combat. */
   idea: z.object({
@@ -163,5 +167,13 @@ export const BoardSchema = z.object({
   })).length(3),
   /** Ce qui reste à prouver : dit clairement au client, jamais inventé. */
   toProve: z.array(z.string().min(1).max(220)).min(1).max(8),
+  /**
+   * Images créées pour finir la planche (`brand-images.ts`) : seulement celles qui ont passé la relecture. Une image
+   * absente laisse la place au dessin de SINA. `look` : la direction artistique globale qui les tient ensemble.
+   */
+  images: z.object({
+    logo: BoardImageSchema.optional(), hero: BoardImageSchema.optional(), object: BoardImageSchema.optional(), site: BoardImageSchema.optional(),
+    posts: z.array(BoardImageSchema.nullable()).length(3).optional(), look: z.string().max(700).optional(),
+  }).optional(),
 });
 export type Board = z.infer<typeof BoardSchema>;

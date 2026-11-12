@@ -207,6 +207,23 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     publication = dessin en haut, texte en dessous, 60 caractères au plus ; dos de l'objet en 3 lignes courtes ; réponse
     mal formée de l'illustratrice réparée détail par détail (`prepareArt`). **Pas encore fait** : la relecture des dessins
     en image par le directeur de création ; ces dernières corrections n'ont pas été revues par un troisième essai.
+  - **Images de planche par OpenAI** (demande du propriétaire du 12 novembre 2026, après le second essai : « faire
+    intervenir OpenAI pour générer les images qui viendront finir réellement les planches […] chaque logo des planches par
+    OpenAI […] une vraie direction artistique complète » ; en dessin, les publications et le site sur téléphone peuvent
+    faire croire que « le studio n'est pas à la hauteur ») : pour chaque planche, une directrice artistique écrit UNE
+    direction globale et les consignes (`imagerySystem`), puis le modèle d'images de SINA (réglage
+    `syna.mockup.image_route`) crée sept images : le **logo** (à partir du nom composé par le Studio ET de la direction
+    artistique globale), la grande scène, l'objet avec **le logo posé dessus**, le haut du site sur téléphone, les trois
+    publications. Les petits signes restent dessinés par SINA. Les textes d'une image viennent de la planche, lettre pour
+    lettre ; chaque image est relue par un modèle qui voit ; une image refusée laisse le dessin de SINA, c'est dit au
+    client, et elle est marquée refusée dans sa bibliothèque ; une image en échec n'est jamais relancée seule ; un mélange
+    d'identités retire les images qui ne sont plus vraies. Code : `src/lib/syna-agent/brand-images.ts` (`runBoardImages`),
+    devis `boardImagesQuote` ; réglage `sina.brand_images` (« dessins » par défaut tant que le propriétaire n'a pas validé
+    un essai réel, « openai ») ; charge utile `images` et `imagesOnly` de la tâche `syna.brand`. Devis du 12 novembre
+    (tarif officiel revu ce jour-là) : 1 planche, 1,21 € probable et 1,67 € au plus ; 3 planches, 3,64 € et 5,02 €.
+    **Construit et testé avec un faux modèle d'images : aucun essai réel à ce jour.** Reste à brancher : le logo de la
+    planche choisie doit devenir le logo du projet (l'étape 2 en redessine encore un) ; avec ces images, « un logo par
+    planche » remplace « un seul logo après le choix ».
   - **À confirmer par le propriétaire** : le quatrième fond d'une série de quatre identités (aujourd'hui un fond clair
     coloré, « uni ») ; la règle « un fond sombre par série » quand le client demande du joyeux et du coloré (le directeur
     de création l'a contestée pendant l'essai) ; le réglage des modèles.

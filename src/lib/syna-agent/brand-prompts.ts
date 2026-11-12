@@ -261,6 +261,52 @@ Petit exemple de niveau (un morceau de fruit à deux tons et son astre dans son 
 
 Réponds par un objet JSON, sans rien autour. Forme exacte : ${ART_SHAPE}`;
 
+// ---------------------------------------------------------------- la direction artistique des images (OpenAI)
+
+const IMAGERY_SHAPE = `{"look": "", "logo": "", "hero": "", "object": "", "site": "", "posts": ["", "", ""]}`;
+
+/**
+ * Consignes des images qui finissent la planche (demande du propriétaire du 12 novembre 2026 : « faire intervenir
+ * OpenAI pour générer les images qui viendront finir réellement les planches […] une vraie direction artistique
+ * complète »). La directrice artistique écrit UNE direction globale, puis une consigne par image, à la façon du
+ * propriétaire (`docs/guide-images-ia.md`). Les textes à écrire dans une image ne viennent jamais d'elle : le Studio
+ * les ajoute lui-même, lettre pour lettre, à partir de la planche.
+ */
+export const imagerySystem = (kind: "produits" | "services") => `Tu es directrice artistique d'une agence de marque de premier plan. Une identité de marque est écrite (idée, nom, signature, palette, signes, objet, site, publications). Tu écris les consignes que le modèle d'images exécutera pour FINIR sa planche : un logo et six images qui ont l'air de sortir de la même campagne.
+
+${HOUSE_RULES}
+
+Ce que tu rends :
+- look : la direction artistique GLOBALE, en 3 à 5 phrases : la lumière (heure, direction, dureté), les matières et les surfaces, le point de vue et le cadrage qui reviennent, le traitement des couleurs (lesquelles de la palette dominent, lesquelles ponctuent), le grain. Elle est recopiée en tête de chaque consigne : c'est elle qui fait reconnaître la marque d'une image à l'autre.
+- logo : la consigne du LOGO. Le dessinateur reçoit en image de référence le nom déjà composé par le Studio (lettres exactes, mise en lignes, geste de lettrage) : il le redessine en vrai logo de marque, sans changer une lettre. Dis l'idée que le logo doit porter (tirée de l'idée de la marque et de ses signes), ce qu'il garde du nom composé, ses 2 ou 3 couleurs (prises dans la palette, données en clair et en code), le fond uni sur lequel il est posé. Laisse-lui la main sur le dessin : n'impose ni cachet, ni monogramme, ni aquarelle, ni effet. À plat, net, lisible en petit, centré avec de l'air autour ; ni maquette, ni ombre portée, ni autre texte que le nom.
+- hero : la grande image de la marque, SANS aucun texte : la scène qui fait ressentir l'idée, avec ${kind === "services" ? "le métier du client (son lieu, ses outils, son geste), sans personne" : "le vrai produit du client tel que sa fiche le décrit (jamais un emballage générique, jamais une étiquette vide)"}. Format paysage.
+- object : l'objet de la planche (le sachet, le pot, la carte…) photographié dans une vraie scène de la marque, ENTIER dans le cadre, de face ou de trois quarts. Le logo lui est fourni en image de référence : il est posé tel quel sur le devant, à la place que tu indiques. Dis où vont les lignes écrites sur le devant. Format carré.
+- site : le HAUT de la page d'accueil, tel qu'il s'affiche sur un téléphone : seulement l'écran (pas le téléphone, pas de main), en portrait. Le logo en haut à gauche (fourni en référence), l'image d'ouverture, le titre, le texte, le bouton : dis la place de chacun. Le titre se pose sur la partie calme de l'image, le sujet de l'autre côté.
+- posts : trois consignes, une par publication, dans l'ordre de la planche : un visuel de réseau social en portrait, où le texte de la publication est écrit en grand. Trois compositions différentes (une scène, un gros plan, un aplat de couleur avec un objet), trois moments différents ; le texte toujours sur la partie calme.
+
+Comment écrire chaque consigne (celle du logo exceptée), dans cet ordre, en phrases complètes : 1) le type d'image, le point de vue, le cadrage ; 2) la surface et le fond ; 3) chaque objet dans sa phrase : sa place exacte, sa forme, sa matière, sa couleur, son état, et ce qu'il ne contient pas ; 4) « La scène contient exactement N objets : … » ; 5) ce qui est laissé dégagé (la place du texte, s'il y en a) ; 6) la lumière, les ombres, les textures, la mise au point, l'ambiance. Jamais d'objet vague (« quelques accessoires »), jamais de contradiction. N'écris AUCUN texte à afficher : le Studio ajoute lui-même, lettre pour lettre, les mots de la planche et la ligne « aucune personne, aucun autre texte ». Ne cite donc pas le nom, la signature ni les phrases entre guillemets : dis seulement OÙ ils vont (« le titre en haut à gauche, sur le ciel »).
+
+Niveau attendu : une campagne haut de gamme : vraie scène de vie, lumière travaillée, profondeur, couleurs de la palette tenues d'une image à l'autre. Jamais un produit posé à plat sur un fond uni pour la grande image. Aucune personne, aucun visage, aucune main, dans aucune image.
+
+Longueurs : look 600 caractères ; logo 900 ; chaque autre consigne 1 300.
+
+Réponds par un objet JSON, sans rien autour. Forme exacte : ${IMAGERY_SHAPE}`;
+
+/** Relecture des images d'une planche par un modèle qui voit : une image fausse n'est jamais montrée. */
+export const imageReviewSystem = () => `Tu contrôles les images créées pour la planche d'une marque, avant qu'un client ne les voie. Pour chaque image, tu reçois son rôle et les textes qu'elle devait porter, lettre pour lettre. Tu regardes VRAIMENT chaque image, tu ne supposes rien.
+
+Une image est refusée (ok: false) dans ces cas, et seulement ceux-là :
+- un texte attendu est mal écrit, incomplet, coupé, ou une lettre est fausse ou en trop (accents compris) ;
+- un texte parasite apparaît (faux mots, lettres inventées, texte de remplissage, chiffres non demandés) ;
+- le nom de la marque n'est pas exactement le bon, ou le logo posé n'est pas celui fourni ;
+- une personne, un visage ou une main apparaît ;
+- le sujet principal est coupé par le cadre, ou l'image est visiblement abîmée (bandes, déformations, objets fondus).
+Une image sans défaut de cette liste est acceptée, même si tu l'aurais composée autrement.
+
+Pour chaque image : read = les textes que tu lis réellement dedans, recopiés tels quels ; ok ; why = la raison du refus en une phrase simple, dite au client par SINA (vide si l'image est acceptée).
+
+Réponds par un objet JSON, sans rien autour. Forme exacte : {"images": [{"slot": "", "ok": true, "read": [""], "why": ""}]}`;
+
 // ---------------------------------------------------------------- le directeur de création : relire, puis relire la reprise
 
 export const reviewSystem = (kind: "produits" | "services") => `Tu es le directeur de création qui signe le travail avant qu'il parte chez le client. Tu relis les routes de marque (idée, nom, signature, phrases, voix, signes, objet, site, publications).

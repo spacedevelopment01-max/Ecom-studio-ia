@@ -81,6 +81,22 @@ Ce que cet essai a appris (corrigé et testé) :
 **Pas encore fait** : le directeur de création ne relit pas les dessins en image ; ces corrections n'ont pas été
 revues par un troisième essai.
 
+## Images de planche par OpenAI (demande du propriétaire, 12 novembre 2026)
+
+Devant le second essai, le propriétaire a demandé qu'OpenAI finisse réellement les planches : un logo par planche, fait
+à partir du nom composé et de la direction artistique globale ; la grande scène ; le sachet avec le logo posé dessus ;
+le site sur téléphone ; les publications (en dessin, elles pouvaient faire croire que le Studio n'est pas à la hauteur).
+Les petits signes restent dessinés par SINA.
+
+Ce qui est construit (`src/lib/syna-agent/brand-images.ts`) : une direction artistique globale par planche, sept
+images, puis une relecture par un modèle qui voit. Une image fausse (nom mal écrit, texte en trop, personne, sujet
+coupé) n'est pas montrée : la planche garde le dessin de SINA, et SINA le dit. Les textes d'une image viennent toujours
+de la planche, lettre pour lettre. Le réglage `sina.brand_images` reste sur « dessins » tant qu'un essai réel n'a pas
+été validé.
+
+**Pas encore essayé pour de vrai** : construit et testé avec un faux modèle d'images. Prix calculé d'un essai :
+1,21 € probable et 1,67 € au plus pour une planche ; 3,64 € et 5,02 € pour trois.
+
 ## Ce qui n'est pas réglé
 
 - Le coût réel n'est mesuré qu'une fois (2,88 € pour trois identités, réglage économe). L'estimation d'avant l'essai

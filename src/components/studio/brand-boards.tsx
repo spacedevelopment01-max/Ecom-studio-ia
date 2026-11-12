@@ -31,6 +31,9 @@ type Drawn = {
   core?: { width: number; height: number };
 };
 type Look = { backgrounds: string[]; text: string; surface: string; surfaceText: string; button: string; buttonText: string };
+/** Image créée pour la planche : son adresse est fabriquée par le Studio à partir d'un identifiant (jamais une adresse libre). */
+type Shot = { url: string; w: number; h: number };
+type Shots = { logo?: Shot; hero?: Shot; object?: Shot; site?: Shot; posts?: (Shot | null)[] };
 type Board = {
   idea: { belief: string; confession: string; confessionSupport: number; enemy: string; proof: string; cost: string };
   nameCheck: "rien_trouve" | "non_verifie";
@@ -43,6 +46,7 @@ type Board = {
   site: { headline: string; text: string; button: string; menu: string[]; art?: Art };
   posts: { text: string; look: "fond" | "couleur" | "motif" | "citation"; art?: Art; ground?: Role; note?: string }[];
   toProve: string[];
+  images?: Shots;
 };
 export type BoardCard = {
   key: "A" | "B" | "C" | "D"; name: string; nameWhy?: string; nameAnchor?: string; nameExpression?: string; slogan: string; promise: string; territory: string;
@@ -96,6 +100,13 @@ function ArtView({ art, cover, className, style, label }: { art: Art; cover?: bo
  */
 function Vignette({ art, ratio, label }: { art: Art; ratio: number; label?: string }) {
   return <ArtView art={art} cover={Math.abs(art.box[2] / art.box[3] - ratio) / ratio < 0.06} label={label} />;
+}
+
+/** Image créée pour la planche : seulement une adresse interne du Studio. */
+const shotOk = (i?: Shot | null): i is Shot => !!i && typeof i.url === "string" && i.url.startsWith("/api/");
+function Photo({ shot, alt, className, style }: { shot: Shot; alt: string; className?: string; style?: CSSProperties }) {
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={shot.url} alt={alt} width={shot.w} height={shot.h} loading="lazy" decoding="async" className={cx("bb-photo", className)} style={style} data-shot />;
 }
 
 const paint = (s: Shape, main: string, accent: string) => {
@@ -179,6 +190,17 @@ const BOARD_CSS = `
 .bb-promise{margin-top:.5rem;font-size:.88rem;line-height:1.45;opacity:.92;max-width:34rem}
 .bb-scene{border-radius:20px;overflow:hidden;aspect-ratio:32/25;box-shadow:0 30px 50px -30px rgba(0,0,0,.75);transform:rotate(1.2deg)}
 .bb-scene>svg{display:block;width:100%;height:100%}
+.bb-photo{display:block;width:100%;height:100%;object-fit:cover}
+.bb-scene[data-scene="image"]{aspect-ratio:3/2}
+.bb-shot{width:min(100%,19rem);aspect-ratio:1;border-radius:18px;overflow:hidden;box-shadow:0 24px 36px -22px rgba(0,0,0,.65);transform:rotate(-2deg)}
+.bb-logo{width:min(82%,9.6rem);aspect-ratio:1;border-radius:20px;overflow:hidden;box-shadow:0 16px 24px -16px rgba(0,0,0,.6);transform:rotate(4deg);background:#fff}
+.bb-logo .bb-photo{object-fit:contain}
+.bb-phone[data-screen="image"]{aspect-ratio:2/3;border-radius:26px 26px 0 0;border-bottom:0}
+.bb-phone[data-screen="image"] .bb-photo{object-position:top}
+.bb-post[data-post="image"]{padding:0;aspect-ratio:2/3}
+.bb-posts[data-shots]{display:flex;overflow-x:auto;gap:.8rem;padding:.6rem .3rem 1rem;scroll-snap-type:x mandatory;max-width:none;-webkit-overflow-scrolling:touch}
+.bb-posts[data-shots]>.bb-post{flex:0 0 58%;scroll-snap-align:center}
+@container (min-width:42rem){.bb-posts[data-shots]{display:grid;overflow:visible;max-width:46rem}.bb-posts[data-shots]>.bb-post{flex:none}}
 .bb-3{display:grid;gap:.6rem}
 @container (min-width:42rem){.bb-3{grid-template-columns:repeat(3,1fr)}.bb-2{grid-template-columns:1fr 1fr}}
 .bb-2{display:grid;gap:.6rem}
@@ -253,7 +275,7 @@ const BOARD_CSS = `
 .bb-prove{margin-top:1.6rem;font-size:.84rem;line-height:1.45}
 .bb-prove ul{margin:.4rem 0 0;padding-left:1.1em;list-style:disc}
 .bb-prove li+li{margin-top:.3em}
-@media (prefers-reduced-motion:no-preference){.bb-obj,.bb-phone,.bb-post,.bb-parcel,.bb-sticker{transition:transform .25s ease}.bb-obj:hover,.bb-phone:hover,.bb-post:hover,.bb-parcel:hover,.bb-sticker:hover{transform:rotate(0) translateY(-2px)}}
+@media (prefers-reduced-motion:no-preference){.bb-obj,.bb-phone,.bb-post,.bb-parcel,.bb-sticker,.bb-shot,.bb-logo{transition:transform .25s ease}.bb-obj:hover,.bb-phone:hover,.bb-post:hover,.bb-parcel:hover,.bb-sticker:hover,.bb-shot:hover,.bb-logo:hover{transform:rotate(0) translateY(-2px)}}
 `;
 
 // ---------------------------------------------------------------- objets
@@ -341,6 +363,7 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
   const stickerBg = safeHex(p.accent), stickerInk = inkOn(stickerBg, p);
   const tape = b.parcel?.tape ?? x.slogan, tapeBg = safeHex(p.primary), tapeInk = inkOn(tapeBg, p);
   const support = b.idea.confessionSupport;
+  const shots: Shots = b.images ?? {};
   return (
     <article className={cx("overflow-hidden rounded-2xl border", chosen ? "border-ink ring-2 ring-ink" : "border-line", faded && "opacity-60")} data-brand-board={x.key}>
       <div className={cx("bb", `bb-g-${x.ground}`)} data-ink={light ? "clair" : "fonce"} style={vars}>
@@ -352,7 +375,7 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
             <p className="bb-sign" style={{ fontWeight: headWeight }} data-signature>{x.slogan}</p>
             <p className="bb-promise">{x.promise}</p>
           </div>
-          <div className="bb-scene" data-scene={b.hero ? "dessin" : "secours"}>{b.hero ? <Vignette art={b.hero} ratio={32 / 25} label={t("La scène de la marque", "The brand's scene")} /> : <FallbackScene x={x} picto={firstPicto} />}</div>
+          <div className="bb-scene" data-scene={shotOk(shots.hero) ? "image" : b.hero ? "dessin" : "secours"}>{shotOk(shots.hero) ? <Photo shot={shots.hero} alt={t("La scène de la marque", "The brand's scene")} /> : b.hero ? <Vignette art={b.hero} ratio={32 / 25} label={t("La scène de la marque", "The brand's scene")} /> : <FallbackScene x={x} picto={firstPicto} />}</div>
         </div>
 
         <h4 className="bb-h">{t("L'idée", "The idea")}</h4>
@@ -404,35 +427,49 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
 
         <h4 className="bb-h">{t("En situation", "In real life")}</h4>
         <div className="bb-live">
-          <figure data-object={b.object.kind}><ObjectFace x={x} pop={pop} /><figcaption>{b.object.label}</figcaption></figure>
-          {b.object.back.length > 0 && <figure><ObjectFace x={x} back pop={pop} /><figcaption>{t("Le dos", "The back")}</figcaption></figure>}
+          {shotOk(shots.object) ? (
+            <figure className="bb-wide" data-object={b.object.kind} data-object-shot>
+              <div className="bb-shot"><Photo shot={shots.object} alt={b.object.label} /></div>
+              <figcaption>{b.object.label}{b.object.back.length > 0 ? <> · {t("au dos", "on the back")} : {b.object.back[0]}</> : null}</figcaption>
+            </figure>
+          ) : (
+            <>
+              <figure data-object={b.object.kind}><ObjectFace x={x} pop={pop} /><figcaption>{b.object.label}</figcaption></figure>
+              {b.object.back.length > 0 && <figure><ObjectFace x={x} back pop={pop} /><figcaption>{t("Le dos", "The back")}</figcaption></figure>}
+            </>
+          )}
           <figure data-phone>
+            {shotOk(shots.site) ? <div className="bb-phone" data-screen="image"><Photo shot={shots.site} alt={b.site.headline} /></div> : (
             <div className="bb-phone" style={{ color: ink }}>
               <div className="bb-top"><Wordmark x={x} main={ink} accent={pop} start compact className="block h-7 w-[58%] text-xs" /><span className="truncate text-[8px] opacity-75">{b.site.menu.slice(0, 2).join(" · ")}</span></div>
               <div className="grid gap-2 px-[.7rem] pt-3"><p className="bb-big" style={{ fontWeight: headWeight, fontSize: b.site.headline.length <= 26 ? "1.3rem" : b.site.headline.length <= 42 ? "1.08rem" : ".92rem" }}>{b.site.headline}</p><p className="bb-txt">{b.site.text}</p></div>
               <div className="bb-pic">{b.site.art ? <Vignette art={b.site.art} ratio={20 / 13} /> : b.hero ? <Vignette art={b.hero} ratio={20 / 13} /> : <FallbackScene x={x} picto={firstPicto} />}</div>
               <span className="bb-btn">{b.site.button}</span>
             </div>
+            )}
             <figcaption>{t("Le haut de ton site, sur téléphone", "The top of your site, on a phone")}</figcaption>
           </figure>
           <div className="bb-stack">
-            <figure data-sticker>
+            {shotOk(shots.logo) ? <figure data-logo><div className="bb-logo"><Photo shot={shots.logo} alt={`${t("Logo", "Logo")} ${x.name}`} /></div><figcaption>{t("Le logo", "The logo")}</figcaption></figure> : <figure data-sticker>
               <div className="bb-sticker" style={{ background: stickerBg, color: stickerInk }}><Wordmark x={x} main={stickerInk} accent={[p.primary, p.dark, p.light].find((c) => contrast(c, stickerBg) >= 2.2) ?? stickerInk} compact className="block h-full w-full" /></div>
               <figcaption>{t("L'autocollant", "The sticker")}</figcaption>
-            </figure>
+            </figure>}
             <figure data-parcel>
               <div className="bb-parcel"><div className="bb-tape" style={{ background: tapeBg, color: tapeInk, fontWeight: headWeight }} aria-label={tape}>{Array.from({ length: 5 }, (_u, i) => <span key={i} aria-hidden>&nbsp;{tape}&nbsp;·</span>)}</div><div className="bb-label">{t("[Nom de ta cliente]", "[Your customer's name]")}<br />{t("[Adresse]", "[Address]")}</div></div>
               <figcaption>{t("Le colis", "The parcel")}</figcaption>
             </figure>
           </div>
           <figure className="bb-wide" data-posts>
-            <div className="bb-posts">
+            {/* Avec des images créées : des publications assez grandes pour être lues sur téléphone (on les fait défiler). */}
+            <div className="bb-posts" data-shots={shots.posts?.some((q) => shotOk(q)) ? "" : undefined}>
               {b.posts.map((q, i) => {
                 const bg = postBg[i], on = inkOn(bg, p);
                 // Le dessin en haut, le texte en dessous, jamais l'un sur l'autre (essai réel du 12 novembre 2026). Taille du
                 // texte : le mot le plus long tient sur une ligne, et tout le texte tient dans la carte.
                 const longest = Math.max(...q.text.split(/\s+/).map((w) => w.length), 1);
                 const size = Math.min(36 / longest, Math.sqrt((q.art ? 430 : 620) / Math.max(q.text.length, 6)), 6.4);
+                const shot = shots.posts?.[i];
+                if (shotOk(shot)) return <div key={i} className="bb-post" data-post="image"><Photo shot={shot} alt={q.text} /></div>;
                 return (
                   <div key={i} className="bb-post" style={{ background: bg, color: on }} data-post={q.look}>
                     {q.art ? <ArtView art={q.art} /> : q.look === "motif" && firstPicto ? <PictoView p={firstPicto} main={on} accent={[p.accent, p.primary].find((c) => contrast(c, bg) >= 2) ?? on} className="absolute -right-3 -top-3 h-20 w-20 opacity-30" /> : null}

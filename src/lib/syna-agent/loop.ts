@@ -31,7 +31,7 @@ import { SYNA_SYSTEM } from "./prompt";
 import { JOURNEY_STEPS, READY_STEPS, currentStep, journeyContext, journeyOf } from "./journey";
 import { localDecision } from "./local-step";
 import { LOGO_STYLE_LABEL, fontFace, groundPresentation, type Identity } from "./identities";
-import { BOARD_OBJECT_LABEL, SIGN_KIND_LABEL } from "./brand-board";
+import { BOARD_OBJECT_LABEL, SIGN_KIND_LABEL, type Board, type BoardImage } from "./brand-board";
 import { safeWordmark } from "./brand-routes";
 import { drawWordmark, type DrawnWordmark } from "./brand-wordmark";
 import { mixIdentity } from "./tools/identity";
@@ -544,12 +544,20 @@ function drawnName(x: Identity): DrawnWordmark | null {
   drawnNames.set(key, drawn);
   return drawn;
 }
+/** Images d'une planche : l'identifiant rangé devient une adresse interne du Studio (accès contrôlé par projet). */
+function boardShots(i: NonNullable<Board["images"]>) {
+  const shot = (v?: BoardImage | null) => (v ? { url: assetUrl({ id: v.id }), w: v.w, h: v.h } : null);
+  return {
+    ...(i.logo ? { logo: shot(i.logo)! } : {}), ...(i.hero ? { hero: shot(i.hero)! } : {}), ...(i.object ? { object: shot(i.object)! } : {}), ...(i.site ? { site: shot(i.site)! } : {}),
+    ...(i.posts ? { posts: i.posts.map((v) => shot(v)) } : {}),
+  };
+}
 /** Planche de marque d'une identité (routes du 12 novembre 2026) : couleurs d'affichage, nom dessiné, libellés. */
 function boardOf(x: Identity) {
   if (!x.board) return {};
   return {
     look: groundPresentation(x.palette, x.ground, x.gradient), drawn: drawnName(x),
-    board: { ...x.board, signs: x.board.signs.map((s) => ({ ...s, kindLabel: L(SIGN_KIND_LABEL[s.kind].fr, SIGN_KIND_LABEL[s.kind].en) })), object: { ...x.board.object, label: L(BOARD_OBJECT_LABEL[x.board.object.kind].fr, BOARD_OBJECT_LABEL[x.board.object.kind].en) } },
+    board: { ...x.board, ...(x.board.images ? { images: boardShots(x.board.images) } : {}), signs: x.board.signs.map((s) => ({ ...s, kindLabel: L(SIGN_KIND_LABEL[s.kind].fr, SIGN_KIND_LABEL[s.kind].en) })), object: { ...x.board.object, label: L(BOARD_OBJECT_LABEL[x.board.object.kind].fr, BOARD_OBJECT_LABEL[x.board.object.kind].en) } },
   };
 }
 const cardOf = (x: Identity) => ({ ...x, logoStyleLabel: LOGO_STYLE_LABEL[x.logoStyle], faces: { heading: fontFace(x.fonts.heading), body: fontFace(x.fonts.body) }, ...boardOf(x) });
