@@ -57,8 +57,30 @@ export const ImagerySchema = z.object({
 });
 export type Imagery = z.infer<typeof ImagerySchema>;
 export const ImageReviewSchema = z.object({
-  images: z.array(z.object({ slot: z.string().max(12), ok: z.boolean(), read: z.array(z.string().max(400)).max(14).default([]), why: z.string().max(260).default("") })).max(8).default([]),
+  // defect : la nature du défaut d'une image refusée. Seul « texte » peut être contredit par la lecture elle-même ;
+  // un défaut non précisé vaut « autre » (l'image reste refusée : c'est le côté sûr).
+  images: z.array(z.object({ slot: z.string().max(12), ok: z.boolean(), read: z.array(z.string().max(400)).max(14).default([]), why: z.string().max(260).default(""), defect: z.enum(["texte", "personne", "coupe", "abime", "autre"]).default("autre") })).max(8).default([]),
 });
+/** Seconde lecture d'une image dont le jugement contredit la lecture : seulement recopier, sans juger. */
+export const ImageRereadSchema = z.object({ images: z.array(z.object({ slot: z.string().max(12), read: z.array(z.string().max(400)).max(14).default([]) })).max(8).default([]) });
+
+/** Même texte, à la casse, aux espaces, au type d'apostrophe et au point final près ; jamais aux lettres ni aux accents. */
+const plain = (t: string) => t.normalize("NFC").replace(/[’ʼ`´]/g, "'").replace(/[«»“”"]/g, " ").replace(/\s+/g, " ").trim().replace(/[.\s]+$/, "").toLowerCase();
+
+/**
+ * Le Studio compare lui-même ce que le relecteur a LU avec ce que l'image devait porter (essai réel du 13 novembre
+ * 2026 : il avait recopié « Ça a le goût de mordre dedans. » sans une faute, puis refusé l'image pour « dedans mal
+ * écrit » ; deux bonnes publications perdues). missing : texte attendu qu'on ne retrouve pas tel quel dans la lecture ;
+ * extra : texte lu que personne n'avait demandé (le nom de la marque, lui, est toujours permis).
+ */
+export function textCheck(expected: string[], read: string[], name: string): { missing: string[]; extra: string[] } {
+  const want = expected.map(plain).filter(Boolean), got = read.map(plain).filter(Boolean), all = got.join(" ");
+  const missing = expected.filter((t) => { const p = plain(t); return !!p && !got.includes(p) && !all.includes(p); });
+  // Un bloc lu peut réunir plusieurs textes attendus : ce qu'il en reste une fois ces textes retirés est en trop.
+  const known = [...want, plain(name)].filter(Boolean).sort((a, b) => b.length - a.length);
+  const extra = read.filter((t) => { let p = plain(t); if (!p) return false; for (const w of known) p = p.split(w).join(" "); return /[\p{L}\p{N}]/u.test(p); });
+  return { missing, extra };
+}
 
 const same = (a: string, b: string) => normText(a) === normText(b);
 /** Les textes que chaque image doit porter, lettre pour lettre (ils viennent de la planche, jamais du modèle). */
@@ -122,6 +144,11 @@ const ROLE_FOR_REVIEW: Record<ImageSlot, string> = {
 };
 
 type Made = { id: string; w: number; h: number };
+/** Reste-t-il un dessin de SINA à cette place (l'illustratrice l'a rendu, et sa relecture en image ne l'a pas retiré) ? */
+const hasDrawing = (x: Route, slot: ImageSlot): boolean => {
+  const b = x.board as { hero?: unknown; object: { art?: unknown }; site: { art?: unknown }; posts: { art?: unknown }[] };
+  return slot === "hero" ? !!b.hero : slot === "object" ? !!b.object.art : slot === "site" ? !!b.site.art : slot === "logo" ? true : !!b.posts[Number(slot.slice(4))]?.art;
+};
 export type BoardImagesResult = { route: Route; made: number; rejected: number; notes: string[]; issues: string[] };
 
 /**
@@ -175,7 +202,9 @@ export async function runBoardImages(o: { ctx: JobContext; ai: ChainAi; who: { u
   let rejected = 0;
   if (slots.length) {
     const texts = slotTexts(x);
-    const drop = (slot: ImageSlot, why: string) => { mark(made.get(slot)!.id, "rejected", why); made.delete(slot); rejected++; issues.push(tag(L(`je n'ai pas gardé ${SLOT_LABEL[slot].fr} (${why.replace(/\.+$/, "")}) ; tu vois mon dessin à la place.`, `I did not keep ${SLOT_LABEL[slot].en} (${why}); you see my drawing instead.`))); };
+    const drop = (slot: ImageSlot, why: string) => { mark(made.get(slot)!.id, "rejected", why); made.delete(slot); rejected++; issues.push(tag(L(`je n'ai pas gardé ${SLOT_LABEL[slot].fr} (${why.replace(/\.+$/, "")}) ; ${hasDrawing(x, slot) ? "tu vois mon dessin à la place" : "sa place garde la forme simple de la planche"}.`, `I did not keep ${SLOT_LABEL[slot].en} (${why}); ${hasDrawing(x, slot) ? "you see my drawing instead" : "its place keeps the plain shape of the board"}.`))); };
+    // Raison écrite par le Studio d'après la lecture (jamais une phrase confuse du relecteur montrée au client).
+    const textReason = (c: { missing: string[]; extra: string[] }) => c.extra.length ? L(`un texte non demandé y apparaît : « ${c.extra[0].slice(0, 60)} »`, `an unrequested text appears: "${c.extra[0].slice(0, 60)}"`) : L(`le texte « ${c.missing[0].slice(0, 60)} » n'y est pas écrit exactement`, `the text "${c.missing[0].slice(0, 60)}" is not written exactly`);
     // Relecture impossible (plafond, appel en échec) : des images non relues ne sont jamais montrées.
     const unreviewed = () => {
       for (const s of slots) { const m = made.get(s); if (m) mark(m.id, "rejected", "non relue"); made.delete(s); }
@@ -189,12 +218,40 @@ export async function runBoardImages(o: { ctx: JobContext; ai: ChainAi; who: { u
         prompt: [`Marque : « ${x.name} ». Voici ${slots.length} image(s), dans l'ordre.`, ...slots.map((s, i) => `Image ${i + 1} — slot "${s}" : ${ROLE_FOR_REVIEW[s]}. Textes attendus : ${texts[s].length ? texts[s].map((t) => `« ${t} »`).join(" ; ") : "aucun"}.`)].join("\n"),
         images: slots.map((s) => ({ data: bufferOf(s)!, label: s })),
       }));
+      // Le Studio compare la lecture du relecteur aux textes attendus. Quand son jugement et sa propre lecture se
+      // contredisent (refus « texte » alors qu'il a tout recopié sans faute, ou accord alors qu'il a lu un texte en
+      // trop), l'image est RELUE une seconde fois, seulement recopiée, et c'est la comparaison du Studio qui tranche.
+      const doubt: ImageSlot[] = [];
       for (const s of slots) {
         const v = review.images.find((r) => r.slot === s);
         if (!v) { drop(s, L("elle n'a pas pu être relue", "it could not be reviewed")); continue; }
-        if (!v.ok) { drop(s, v.why || L("elle ne passe pas ma relecture", "it does not pass my review")); continue; }
+        const c = textCheck(texts[s], v.read, x.name), exact = !c.missing.length && !c.extra.length;
+        if (!v.ok) {
+          if (v.defect === "texte" && exact) doubt.push(s);
+          else drop(s, v.defect === "texte" && (c.missing.length || c.extra.length) && v.read.length ? textReason(c) : v.why || L("elle ne passe pas ma relecture", "it does not pass my review"));
+          continue;
+        }
         // Contrôle du Studio, en plus du jugement : le logo doit porter le nom, lu tel quel.
-        if (s === "logo" && !normText(v.read.join(" ")).includes(normText(x.name))) drop(s, L("le nom n'y est pas écrit exactement", "the name is not written exactly"));
+        if (s === "logo" && !normText(v.read.join(" ")).includes(normText(x.name))) { drop(s, L("le nom n'y est pas écrit exactement", "the name is not written exactly")); continue; }
+        if (c.extra.length) doubt.push(s);
+      }
+      if (doubt.length) {
+        let second: z.infer<typeof ImageRereadSchema> | null = null;
+        try {
+          second = await ctx.step(`brand:imagereread:${round}:${key}`, () => ai.look(`imagereread-${round}-${key}`, {
+            system: P.imageRereadSystem(), schema: ImageRereadSchema,
+            prompt: [`Voici ${doubt.length} image(s), dans l'ordre.`, ...doubt.map((s, i) => `Image ${i + 1} — slot "${s}".`)].join("\n"),
+            images: doubt.map((s) => ({ data: bufferOf(s)!, label: s })),
+          }));
+        } catch (e) { if (e instanceof CostCapReached) capped = true; else notes.push(`seconde lecture des images de ${key} impossible : ${String((e as Error)?.message ?? e).slice(0, 140)}`); }
+        for (const s of doubt) {
+          const r = second?.images.find((y) => y.slot === s);
+          // Jamais montrée sans vérification : pas de seconde lecture, pas d'image.
+          if (!r) { drop(s, L("je n'ai pas pu la vérifier une seconde fois", "I could not verify it a second time")); continue; }
+          const c = textCheck(texts[s], r.read, x.name);
+          if (c.missing.length || c.extra.length) drop(s, textReason(c));
+          else notes.push(`${SLOT_LABEL[s].fr} de ${key} : jugement et lecture se contredisaient ; gardé(e) après une seconde lecture, texte exact`);
+        }
       }
     } catch (e) {
       if (e instanceof CostCapReached) capped = true;

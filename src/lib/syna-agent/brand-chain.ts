@@ -315,6 +315,21 @@ export async function quotesReadOnPages(quotes: { text: string; url: string }[])
   return { kept, unread: quotes.length - kept.length };
 }
 
+/**
+ * Un nom bâti sur un nom déjà montré n'est pas un autre nom (essai réel du 13 novembre 2026 : « Pulpe Vive » gardé par
+ * le juge alors que « Pulpe » avait déjà sa planche) : il n'est jamais reproposé. Comparaison mot à mot, sans la casse.
+ */
+export function builtOnShown(name: string, shown: string[]): boolean {
+  const words = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+  const n = words(name);
+  return shown.some((s) => {
+    const w = words(s);
+    if (!w.length || w.length > n.length) return false;
+    for (let i = 0; i + w.length <= n.length; i++) if (w.every((x, k) => n[i + k] === x)) return true;
+    return false;
+  });
+}
+
 /** Réserve de noms : toutes les équipes réunies, sans les noms mal formés, recopiés, déjà montrés ou d'un concurrent. */
 export function namePool(teams: { team: string; names: z.infer<typeof TeamSchema>["names"] }[], opts: { competitors?: string[]; shown?: string[] } = {}): PoolName[] {
   const banned = new Set([...(opts.competitors ?? []), ...(opts.shown ?? [])].map(normText));
@@ -325,7 +340,7 @@ export function namePool(teams: { team: string; names: z.infer<typeof TeamSchema
     const n = t.names[i];
     if (!n) continue;
     const key = normText(n.name);
-    if (!key || seen.has(key) || banned.has(key) || nameIssues(n.name).length || isReferenceName(n.name)) continue;
+    if (!key || seen.has(key) || banned.has(key) || builtOnShown(n.name, opts.shown ?? []) || nameIssues(n.name).length || isReferenceName(n.name)) continue;
     seen.add(key);
     out.push({ ...n, name: n.name.trim(), team: t.team });
   }
@@ -601,7 +616,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
   // et de meilleurs noms n'arrivaient jamais devant lui). Les routes ne se composent qu'avec les noms qu'il garde ; si
   // trop peu tiennent, les équipes repartent chercher UNE fois ; un nom pris faute de mieux l'est avec le doute dit.
   const refusedBefore = (name: string) => NAME_REFUSALS.some((r) => normText(r.name) === normText(name));
-  const freeName = (name: string) => !nameIssues(name).length && !isReferenceName(name) && !refusedBefore(name) && !shown.some((s) => normText(s) === normText(name));
+  const freeName = (name: string) => !nameIssues(name).length && !isReferenceName(name) && !refusedBefore(name) && !builtOnShown(name, shown);
   const doubts = new Map<string, string>();
   const judged: { name: string; seen: string; why: string }[] = [], almost: { name: string; why: string }[] = [];
   let allowed: PoolName[] = pool, searched = 0;

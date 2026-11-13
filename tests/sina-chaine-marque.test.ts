@@ -649,7 +649,8 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(rb.board!.images!.hero).toBeTruthy();
     expect(rc.board!.images!.logo).toBeUndefined();
     const issues = J.journeyOf(t.cid).identities!.issues.join("\n");
-    expect(issues).toMatch(/Identité B : je n'ai pas gardé l'image du site \(Le titre est mal écrit\) ; tu vois mon dessin à la place\./);
+    // Le message dit vrai : « mon dessin » seulement s'il reste un dessin à cette place, sinon la forme simple de la planche.
+    expect(issues).toContain(`Identité B : je n'ai pas gardé l'image du site (Le titre est mal écrit) ; ${(rb.board as any).site.art ? "tu vois mon dessin à la place" : "sa place garde la forme simple de la planche"}.`);
     expect(issues).toMatch(/Identité C : je n'ai pas gardé le logo \(le nom n'y est pas écrit exactement\)/);
     expect((out as any).routes).toHaveLength(3);
     // Bibliothèque du client : les images gardées sont prêtes, l'image refusée y est marquée refusée avec sa raison.
@@ -664,6 +665,82 @@ describe("SINA — chaîne de création de la marque", async () => {
     // Reprise de la tâche : rien n'est recréé ni repayé.
     const again = await chain(t, {}, {}, reload(job));
     expect(again.log.ids).toEqual([]);
+  });
+
+  it("un nom bâti sur un nom déjà montré n'est pas un autre nom (essai réel : « Pulpe Vive » après « Pulpe »)", async () => {
+    const C2 = await import("@/lib/syna-agent/brand-chain");
+    expect(C2.builtOnShown("Pulpe Vive", ["Pulpe"])).toBe(true);
+    expect(C2.builtOnShown("pulpe", ["Pulpe"])).toBe(true);
+    expect(C2.builtOnShown("La Pulpe d'Été", ["Pulpe"])).toBe(true);
+    expect(C2.builtOnShown("Plein les Yeux d'Or", ["Plein les Yeux"])).toBe(true);
+    // Un mot qui en contient un autre n'est pas ce mot ; un nom plus court non plus.
+    expect(C2.builtOnShown("Pulpeuse", ["Pulpe"])).toBe(false);
+    expect(C2.builtOnShown("Zeste", ["Pulpe", "Tranche"])).toBe(false);
+    expect(C2.builtOnShown("Plein", ["Plein les Yeux"])).toBe(false);
+    expect(C2.builtOnShown("Zeste", [])).toBe(false);
+    // Dans la réserve : la variante n'arrive jamais devant le juge.
+    const name = (n: string) => ({ name: n, detail: "Le fruit visible dans le sachet.", second: "Une deuxième lecture.", why: "Il dit la matière." });
+    const pool = C2.namePool([{ team: "mots", names: [name("Pulpe Vive"), name("Zeste"), name("Gorgée")] as any }], { shown: ["Pulpe"] });
+    expect(pool.map((n) => n.name)).toEqual(["Zeste", "Gorgée"]);
+  });
+
+  const texts: Record<string, string[]> = {};
+  it("relecture des images : le Studio compare lui-même la lecture au texte attendu (essai réel du 13 novembre : « dedans » lu sans faute puis refusé)", async () => {
+    const I = await import("@/lib/syna-agent/brand-images");
+    // La comparaison, sans IA : casse, espaces, apostrophes et point final ne comptent pas ; lettres et accents, si.
+    expect(I.textCheck(["Ça a le goût de mordre dedans."], ["Ça a le goût de mordre dedans."], "Pulpe")).toEqual({ missing: [], extra: [] });
+    expect(I.textCheck(["L'hibiscus et la fraise rougissent l'eau jusqu'au fond."], ["L’hibiscus et la fraise\nrougissent l’eau jusqu’au fond"], "Pulpe")).toEqual({ missing: [], extra: [] });
+    expect(I.textCheck(["Pulpe", "Pêche-verveine"], ["PULPE", "Pêche-verveine", "250 g"], "Pulpe")).toEqual({ missing: [], extra: ["250 g"] });
+    expect(I.textCheck(["Pêche-verveine"], ["Peche-verveine"], "Pulpe")).toEqual({ missing: ["Pêche-verveine"], extra: ["Peche-verveine"] });
+    expect(I.textCheck(["Goûter les six recettes"], ["PULPE Goûter les six recettes"], "Pulpe")).toEqual({ missing: [], extra: [] }); // un bloc lu d'un trait
+    expect(I.textCheck([], [], "Pulpe")).toEqual({ missing: [], extra: [] });
+    expect(I.textCheck([], ["Offre spéciale"], "Pulpe").extra).toEqual(["Offre spéciale"]);
+
+    const t = await thread();
+    const expected = (prompt: string, slot: string) => [...(new RegExp(`slot "${slot}" : [^\\n]*Textes attendus : ([^\\n]*)`).exec(prompt)?.[1] ?? "").matchAll(/« (.+?) »/g)].map((m) => m[1]);
+    const { log } = await chain(t, { images: true }, {
+      review: () => ({ routes: [], series: "" }),
+      look: (id, c) => {
+        // Seconde lecture (seulement recopier) : post0 est exact ; post2 porte toujours son texte en trop.
+        if (id.startsWith("imagereread")) return { images: c.images.map((i: any) => ({ slot: i.label, read: i.label === "post2" ? [...texts[i.label], "250 g"] : texts[i.label] })) };
+        if (!id.endsWith("-A")) return { images: c.images.map((i: any) => ({ slot: i.label, ok: true, read: expected(c.prompt, i.label), why: "" })) };
+        for (const i of c.images) texts[i.label] = expected(c.prompt, i.label);
+        return { images: c.images.map((i: any) => {
+          const read = texts[i.label];
+          // Le cas réel : le texte est recopié sans une faute, et pourtant refusé « mal écrit ».
+          if (i.label === "post0") return { slot: "post0", ok: false, defect: "texte", read, why: "Le mot « dedans » est mal écrit." };
+          // Accepté alors que la lecture montre un texte que personne n'a demandé.
+          if (i.label === "post2") return { slot: "post2", ok: true, read: [...read, "250 g"], why: "" };
+          // Un défaut qui n'est pas de texte ne se discute pas, même si le texte est exact.
+          if (i.label === "object") return { slot: "object", ok: false, defect: "personne", read, why: "Une main apparaît." };
+          // Refus sans nature précisée : le côté sûr, l'image reste refusée.
+          if (i.label === "post1") return { slot: "post1", ok: false, read, why: "Elle ne va pas." };
+          return { slot: i.label, ok: true, read, why: "" };
+        }) };
+      },
+    });
+    // Une seule seconde lecture, pour les deux images dont le jugement contredit la lecture (pas pour la main).
+    expect(log.ids.filter((x) => x.startsWith("imagereread"))).toEqual(["imagereread-1-A"]);
+    expect(log.prompts["imagereread-1-A"]).toMatch(/Voici 2 image\(s\), dans l'ordre\.\nImage 1 — slot "post0"\.\nImage 2 — slot "post2"\./);
+    expect(log.systems["imagereread-1-A"]).toMatch(/Tu ne juges rien et tu ne corriges rien/);
+    const a = J.journeyOf(t.cid).identities!.list[0];
+    expect(a.board!.images!.posts![0]).toBeTruthy(); // gardée : sa lecture était exacte, deux fois
+    expect(a.board!.images!.posts![1]).toBeNull();
+    expect(a.board!.images!.posts![2]).toBeNull();
+    expect(a.board!.images!.object).toBeUndefined();
+    expect(a.board!.images!.site).toBeTruthy();
+    const issues = J.journeyOf(t.cid).identities!.issues.filter((x) => x.startsWith("Identité A")).join("\n");
+    expect(issues).not.toMatch(/première publication/);
+    expect(issues).toMatch(/je n'ai pas gardé la troisième publication \(un texte non demandé y apparaît : « 250 g »\)/);
+    expect(issues).toMatch(/je n'ai pas gardé l'image de l'objet \(Une main apparaît\)/);
+    expect(issues).toMatch(/je n'ai pas gardé la deuxième publication \(Elle ne va pas\)/);
+    // Le message dit vrai : son dessin s'il en reste un à cette place, sinon la forme simple de la planche.
+    const drawn = (slot: "object" | 1 | 2) => (slot === "object" ? !!(a.board as any).object.art : !!(a.board as any).posts[slot].art);
+    expect(issues).toMatch(new RegExp(`l'image de l'objet \\([^)]*\\) ; ${drawn("object") ? "tu vois mon dessin à la place" : "sa place garde la forme simple de la planche"}\\.`));
+    expect(issues).toMatch(new RegExp(`la troisième publication \\([^)]*\\) ; ${drawn(2) ? "tu vois mon dessin à la place" : "sa place garde la forme simple de la planche"}\\.`));
+    // La consigne du relecteur : recopier sans corriger, nommer la nature du défaut, relire sa lecture avant de refuser.
+    expect(log.systems["imagecheck-1-A"]).toMatch(/recopiés lettre par lettre tels qu'ils sont dessinés, fautes comprises/);
+    expect(log.systems["imagecheck-1-A"]).toMatch(/si tu as recopié le texte attendu sans faute, il n'y a pas de faute/);
   });
 
   it("images seules sur des planches déjà écrites : les textes ne bougent pas ; une image en échec n'est pas relancée", async () => {

@@ -247,6 +247,27 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     proposé à côté du nom dessiné ; `boardLogoReady`, `saveBoardLogo`, `logo.propose` gratuit dans ce cas) ; un autre logo
     n'est dessiné, et payé, que s'il le demande. Avec ces images, « un logo par planche » remplace « un seul logo après
     le choix ».
+  - **Troisième essai réel, 13 novembre 2026 : planche complète « Pulpe »** (accord écrit du propriétaire ; nom choisi
+    par lui, à la place de la planche B ; étude et idées reprises sans être repayées) : 2,13 € (plafond annoncé 3,50 €),
+    18 appels, 8 minutes et demie. Sept images OpenAI créées : le logo (nom à moitié plongé, exact), la grande scène, le
+    site sur téléphone (tous ses textes exacts) et les trois publications sont bons ; le sachet a été refusé à raison
+    (mention « 250 g » que personne n'avait demandée). **Défaut trouvé : le relecteur d'images a refusé à tort deux
+    publications parfaitement écrites** (« dedans mal écrit », alors qu'il avait lui-même recopié le texte sans faute).
+    **Corrigé et testé** (`brand-images.ts`) : le Studio compare lui-même la lecture du relecteur au texte attendu
+    (`textCheck`) ; quand son jugement contredit sa propre lecture, l'image est relue une seconde fois, seulement
+    recopiée (`brand:imagereread`, `imageRereadSystem`), et c'est la comparaison du Studio qui tranche ; un refus sans
+    nature précisée reste un refus ; le message au client dit « mon dessin » seulement s'il reste un dessin à cette
+    place. Correctif pas encore revu par un essai réel. Remarque notée, à voir avec le propriétaire : le nom en tête de
+    planche prend l'accent le plus lisible sur le fond (ici vert), le logo sur blanc prend la couleur de marque (rose).
+    **Essai réel des noms, 13 novembre 2026** (accord écrit du propriétaire : « je veux aussi 2 autres noms pour voir
+    si c'est compris pour SINA » ; 0,54 € pour un plafond de 1,32 €, 6 appels, 4 minutes) : première mise à l'épreuve
+    du juge placé AVANT la composition, avec ses notes comme mesure. Il a lu 326 noms (la réserve déjà payée, puis un
+    second tour des quatre équipes) et en a gardé 4 : « Zeste », « Gorgée », « Fruit Nu » et « Pulpe Vive » ; 12 « presque »,
+    écartés avec des raisons proches des siennes (« Haut en Couleur » : « une expression toute faite, au niveau de Tout
+    Feu Tout Fruit, un 6 sur 10 tout au plus »). Leçon corrigée et testée : « Pulpe Vive » n'est pas un autre nom ; un
+    nom bâti sur un nom déjà montré n'est jamais reproposé (`builtOnShown`, dans la réserve et avant le juge). Notes du
+    propriétaire sur ces noms : [À compléter : ses notes, à ajouter à `NAME_RATINGS` quand il les donne].
+    **Dépensé en essais réels au 13 novembre : 8,13 €** (2,88 + 1,92 + 0,65 + 2,13 + 0,54 ; plafond d'essais 10 $, soit 9 €).
   - **Carte des spécialistes de SINA** (demande du propriétaire du 13 novembre 2026 : « tous les sous agents nécessaires
     pour le fonctionnement parfait de sina […] fais comme tu considères le mieux ») : `docs/sina-savoir/specialistes.md`
     dit, étape par étape, qui fait le travail, ce qui manque et l'ordre des lots. Principes : celui qui fait n'est jamais
