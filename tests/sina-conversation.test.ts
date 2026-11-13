@@ -49,8 +49,9 @@ describe("SINA — la conversation : aiguilleuse, moments qui comptent, relectri
     expect(toolVisible("tools.open", scope)).toBe(false);
     expect(toolVisible("tools.open", { ...scope, routed: true })).toBe(true);
     expect(C.routedStep(6)).toBe(true);
-    expect(C.routedStep(9)).toBe(true); // l'étape 9 (publications) a sa liste d'outils
-    expect(C.routedStep(10)).toBe(false);
+    expect(C.routedStep(9)).toBe(true); // les étapes 9 à 13 ont leur liste d'outils
+    expect(C.routedStep(13)).toBe(true);
+    expect(C.routedStep(14)).toBe(false);
     expect(C.routedStep(null)).toBe(false);
     // Étape 6 : le thème sur mesure en entier, les identités en une ligne.
     const six = C.routedCatalog(true, scope, 6);

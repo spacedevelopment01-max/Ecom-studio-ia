@@ -270,8 +270,14 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     groupes de publications est écrit par une stratège des contenus (charte § 7), contrôlé sans IA, jugé par un juge
     séparé, repris une fois au plus, montré dans le fil AVANT toute image (`posts-plan.ts`, `posts.plan`) ; les images
     passent par le moteur de publications du Studio (`posts.create` → `social.v2.produce`) ; `posts.validate`. Gardien
-    des faits sans IA aussi sur les textes du thème sur mesure (`unconfirmedClaims`). Lots suivants : publicités,
-    calendrier, articles et rangement.
+    des faits sans IA aussi sur les textes du thème sur mesure (`unconfirmedClaims`). **Lots 6 et 7 construits le
+    13 novembre, étapes 10 à 13 FERMÉES par défaut** (`tools/steps-late.ts`) : publicités (`ads.create` → moteur
+    `ads.v2`, forfait sans publicité dit simplement, `ads.validate` avec `skip`), calendrier (`calendar.validate`),
+    articles (`blog.topics` gratuit, `blog.write` → moteur `blog.write`, brouillons, le client publie lui-même),
+    rangement (`files.tidy` → `files.classify` sans IA, `files.validate` clôt le parcours). Ces étapes réutilisent les
+    moteurs du Studio et leurs contrôles ; aucune n'a été essayée pour de vrai. **Ouvrir une étape** : réglage
+    `sina.etapes_ouvertes` (ex. `[9]`), une à une, chacune après un essai réel validé par le propriétaire ; ne jamais
+    en ouvrir une sans sa demande.
   - **À confirmer par le propriétaire** : le quatrième fond d'une série de quatre identités (aujourd'hui un fond clair
     coloré, « uni ») ; la règle « un fond sombre par série » quand le client demande du joyeux et du coloré (le directeur
     de création l'a contestée pendant l'essai) ; le réglage des modèles.

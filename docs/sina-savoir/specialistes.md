@@ -33,10 +33,10 @@ Ce document dit, étape par étape, **qui fait le travail aujourd'hui** (relevé
 | 7. Site codé (anciennes maquettes) | Analyse, écriture, comparaison en image, correction. | Rien (voie ancienne). | Convenable |
 | 8. Thème du Studio adapté | Rédacteur et directeur de création (jusqu'à trois tours) ; images créées puis relues. | Rien d'urgent. | Convenable |
 | 9. Publications | **Construite, fermée** (réglage `sina.etapes_ouvertes`). Le plan d'abord : une **stratège des contenus** écrit les 3 groupes (charte § 7 : sujet utile, titre en deux temps, trois points, appel à l'action, texte, hashtags, photo prévue) ; le Studio contrôle sans IA (angle choisi, hashtags, produit du catalogue, promesses, personnes) ; un **juge des publications** juge le plan entier ; une reprise au plus, relue ; un groupe encore refusé est montré avec le doute de SINA. Les images ensuite : le moteur de publications du Studio (son rédacteur, son modèle d'images, son contrôle en image). | Un essai réel, puis la décision du propriétaire d'ouvrir l'étape. | **Construit, fermé** (lot 5, 13 novembre) |
-| 10. Publicités | **Pas construite.** | Une stratège publicitaire, une rédactrice, des visuels, un juge, un contrôle des promesses. | À faire (lot 6) |
-| 11. Calendrier de publication | **Pas construite.** L'outil de calendrier existe, sans IA. | Brancher l'étape sur l'outil ; une planificatrice. | À faire (lot 5) |
-| 12. Articles de blog | **Pas construite.** | Une rédactrice en chef (sujets), une rédactrice, un relecteur (faits, référencement). | À faire (lot 7) |
-| 13. Rangement des fichiers | **Pas construite.** | Une rangeuse, sans IA si possible. | À faire (lot 7) |
+| 10. Publicités | **Construite, fermée.** `ads.create` lance le moteur de publicités du Studio, qui a déjà ses spécialistes : idées vraiment différentes, rédacteur, contrôle des promesses avant le visuel, barrière de qualité, image créée puis contrôlée en image. Forfait sans publicité : dit simplement, étape passée (`ads.validate` avec `skip`). | Un essai réel. À vérifier pendant cet essai : les publicités créées par l'IA d'images sont rangées dans la bibliothèque, mais `ads.list` et le calendrier lisent les publicités « à calques » ; il se peut qu'elles n'y apparaissent pas (relevé dans le code, pas constaté en vrai). | **Construit, fermé** (lot 6, 13 novembre) |
+| 11. Calendrier de publication | **Construite, fermée.** Le calendrier existe depuis le 7 novembre, sans IA (`calendar.plan`, `calendar.read`, `calendar.mark_done`, `calendar.move`) ; ajout de `calendar.validate`. | Un essai réel, après les étapes 9 et 10. | **Construit, fermé** (lot 6, 13 novembre) |
+| 12. Articles de blog | **Construite, fermée.** `blog.topics` (gratuit, sans IA) donne la matière des sujets : faits du projet, angles choisis, paroles de clients relevées ; SINA propose, le client choisit 2 sujets. `blog.write` lance le moteur de blog du Studio, qui a déjà ses spécialistes : rédaction, contrôles automatiques (référencement, faits), relecture par un directeur de création, jusqu'à trois tours. Les articles restent en brouillon : le client publie lui-même. | Un essai réel. Pas de recherche sur le web pour les sujets, pas d'image de couverture créée, pas de lien automatique au menu : ce que le moteur de blog ne fait pas aujourd'hui. | **Construit, fermé** (lot 7, 13 novembre) |
+| 13. Rangement des fichiers | **Construite, fermée.** `files.tidy` lance le rangement du Studio, gratuit et sans IA (fichiers sans dossier seulement, rien de supprimé) ; `files.validate` clôt le parcours. | Un essai réel. Pas de dossiers « Blog » ni « Site » dans l'arbre d'aujourd'hui. | **Construit, fermé** (lot 7, 13 novembre) |
 
 ## Ce qui vaut pour toutes les étapes (à construire une fois, à brancher partout)
 
@@ -78,8 +78,19 @@ Ce document dit, étape par étape, **qui fait le travail aujourd'hui** (relevé
    réseau). Le propriétaire ouvre l'étape avec `sina.etapes_ouvertes` = `[9]`, après un essai réel (son parcours :
    chaque étape essayée en réel et validée avant la suivante). Le calendrier (étape 11) existe déjà, sans IA ; il
    s'ouvrira après les publicités (étape 10), qui le précèdent dans le parcours.
-6. **Publicités** (étape 10).
+6. **Publicités** (étape 10), et le calendrier (étape 11).
 7. **Articles et rangement** (étapes 12 et 13).
+   **Lots 6 et 7 construits le 13 novembre 2026, étapes FERMÉES par défaut**, testés sans IA (`tools/steps-late.ts` :
+   `ads.create`, `ads.validate`, `calendar.validate`, `blog.topics`, `blog.write`, `blog.validate`, `files.tidy`,
+   `files.validate`). Chaque outil lance le moteur du Studio qui existe déjà, avec son devis ; aucun nouveau modèle,
+   aucun nouveau fournisseur. Les tâches sont mises en file dans les essais, jamais exécutées : aucune de ces étapes
+   n'a été essayée pour de vrai.
+
+## Ouvrir une étape
+
+Les étapes 9 à 13 s'ouvrent une à une avec le réglage `sina.etapes_ouvertes` (liste de numéros, par exemple `[9]`),
+dans l'ordre, chacune après un essai réel validé par le propriétaire. Fermée, une étape est annoncée « bientôt
+disponible » et ses outils n'existent pas pour SINA.
 
 Chaque lot : construit, testé avec une IA simulée, vérifié en entier, envoyé sur la branche de travail. Un essai réel
 ne se fait qu'après le prix annoncé et l'accord écrit du propriétaire.

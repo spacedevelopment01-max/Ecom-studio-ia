@@ -36,6 +36,8 @@ export function isSensitive(t: AgentTool, args: unknown, ctx: ToolContext): bool
  */
 export type ToolScope = { inJourney: boolean; legacyMockups: boolean; /** Conversation aiguillée (voir conversation.ts) : la notice d'un autre outil se demande avec tools.open. */ routed?: boolean };
 const STEP9_TOOLS = new Set(["posts.plan", "posts.create", "posts.validate"]);
+/** Outils des étapes 10 à 13 (tools/steps-late.ts) et l'étape qui les ouvre. */
+const LATE_STEP_TOOLS: Record<string, number> = { "ads.create": 10, "ads.validate": 10, "calendar.validate": 11, "blog.topics": 12, "blog.write": 12, "blog.validate": 12, "files.tidy": 13, "files.validate": 13 };
 const JOURNEY_HIDDEN = new Set(["brand.create", "site.mockups", "site.mockup_images", "site.build", "strategy.choose", "pilot.run", "project.create"]);
 const LEGACY_MOCKUP = /^(mockup\.|site\.code_from_mockup$|site\.images$|site\.photo_reject$)/;
 export function toolVisible(name: string, scope?: ToolScope): boolean {
@@ -43,6 +45,8 @@ export function toolVisible(name: string, scope?: ToolScope): boolean {
   if (name === "tools.open") return !!scope?.routed;
   // Outils d'une étape construite mais pas encore ouverte par le propriétaire : ni proposés ni exécutés.
   if (STEP9_TOOLS.has(name) && !stepReady(9)) return false;
+  const late = LATE_STEP_TOOLS[name];
+  if (late && !stepReady(late)) return false;
   if (!scope) return true;
   if (scope.inJourney && JOURNEY_HIDDEN.has(name)) return false;
   if (!scope.legacyMockups && LEGACY_MOCKUP.test(name)) return false;

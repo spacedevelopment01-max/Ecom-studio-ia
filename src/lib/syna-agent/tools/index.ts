@@ -20,5 +20,6 @@ import { customThemeTools } from "../custom-theme/tools";
 import { galleryTools } from "./gallery";
 import { openTools } from "./open";
 import { postsTools } from "./posts";
+import { lateStepTools } from "./steps-late";
 
-export const TOOL_LIST: AgentTool[] = [...startTools, ...identityTools, ...logoTools, ...brandKitTools, ...angleTools, ...activityTools, ...themeTools, ...projectTools, ...siteTools, ...catalogueTools, ...commerceTools, ...mediaTools, ...calendarTools, ...mockupCodeTools, ...offersTools, ...familyTools, ...customThemeTools, ...galleryTools, ...openTools, ...postsTools];
+export const TOOL_LIST: AgentTool[] = [...startTools, ...identityTools, ...logoTools, ...brandKitTools, ...angleTools, ...activityTools, ...themeTools, ...projectTools, ...siteTools, ...catalogueTools, ...commerceTools, ...mediaTools, ...calendarTools, ...mockupCodeTools, ...offersTools, ...familyTools, ...customThemeTools, ...galleryTools, ...openTools, ...postsTools, ...lateStepTools];

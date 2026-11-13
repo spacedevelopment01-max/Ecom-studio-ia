@@ -63,10 +63,11 @@ describe("SINA — étape 9 : le plan des publications, jugé avant toute image"
     const j = J.emptyJourney();
     for (let n = 0; n <= 8; n++) J.setStep(j, n, "done");
     expect(J.journeyContext(j)).toMatch(/L'étape 9 \(« .* »\) n'est pas encore disponible/);
-    // Ouverte par le propriétaire, et seulement elle : une étape pas encore construite ne s'ouvre pas par le réglage.
-    setJsonSetting("sina.etapes_ouvertes", [9, 10, 12]);
+    // Ouverte par le propriétaire, et seulement elle : les autres restent fermées, un numéro inconnu ne s'ouvre pas.
+    setJsonSetting("sina.etapes_ouvertes", [9, 14]);
     expect(J.stepReady(9)).toBe(true);
     expect(J.stepReady(10)).toBe(false);
+    expect(J.stepReady(14)).toBe(false);
     expect(J.stepAvailable(j, 9)).toBe(true);
     expect(toolVisible("posts.plan", scope)).toBe(true);
     expect(J.journeyContext(j)).toMatch(/Publications : aucun plan encore/);
