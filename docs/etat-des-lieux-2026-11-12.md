@@ -203,4 +203,8 @@ Coût : la chaîne de réflexion du troisième essai est estimée entre 20 et 30
   fondateur, le nom lu seul, la beauté), un second tour de recherche quand trop peu de noms tiennent, et le doute dit
   franchement au client quand un nom est montré faute de mieux. L'essai des images est mis en attente : il ne se fera
   que sur un nom qui lui plaît.
+- **Essai réel des noms seuls** (« Oui », 0,65 €) : 13 noms refusés par le juge, un seul gardé (« Pulpe »). Le juge ne
+  voyait que 7 noms par tour sur 178 trouvés : il passe désormais avant la composition et lit tous les noms. Question
+  posée au propriétaire, en attente : parmi « Pulpe », « Haut les Pêches », « Tout Feu Tout Fruit » et « Cerise sur le
+  Verre », y en a-t-il un qu'il donnerait à sa marque ?
 

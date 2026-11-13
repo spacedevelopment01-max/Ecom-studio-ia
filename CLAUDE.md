@@ -176,8 +176,14 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     le nom lu seul, la beauté ; noms refusés et leurs mots dans `NAME_REFUSALS`, jamais reproposés). Aucune planche n'est
     faite sur un nom refusé tant qu'un nom gardé existe ; si trop peu tiennent, les équipes repartent chercher UNE fois
     en sachant ce qui a été refusé ; un nom montré faute de mieux l'est avec le doute dit au client. Charge utile
-    `namesPreview` : les noms seuls, sans planche, pour les juger à peu de frais. **Construit et testé avec une IA
-    simulée : pas encore essayé pour de vrai.**
+    `namesPreview` : les noms seuls, sans planche, pour les juger à peu de frais. **Essai réel du 12 novembre** (noms
+    seuls, accord écrit, 0,65 € pour un plafond de 2,18 €) : le juge passait alors APRÈS la composition et ne voyait que
+    7 noms par tour sur 178 trouvés ; il en a refusé 13, avec des raisons proches de celles du propriétaire, et gardé un
+    seul (« Pulpe ») ; de meilleurs noms de la réserve (« Haut les Pêches », « Tout Feu Tout Fruit », « Cerise sur le
+    Verre ») n'arrivaient jamais devant lui. **Corrigé** : le juge lit TOUS les noms des équipes AVANT la composition,
+    et les routes ne se composent qu'avec les noms qu'il garde (ou, faute de mieux, ses « presque », avec le doute dit).
+    Cette correction est testée avec une IA simulée, pas encore réessayée pour de vrai. Avis du propriétaire attendu
+    sur ces quatre noms, pour régler le juge sur son goût.
   - **Où c'est dans le code** : chaîne en tâche de fond `syna.brand` (`src/lib/syna-agent/brand-chain.ts` : étude du
     marché sur le web, paroles de clients gardées seulement si elles se retrouvent mot pour mot dans la page citée,
     idées, équipes de noms séparées, routes, vérification des noms sur le web, planches, directeur de création qui relit

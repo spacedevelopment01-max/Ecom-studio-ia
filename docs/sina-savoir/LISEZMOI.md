@@ -106,7 +106,12 @@ maintenant chaque finaliste avec trois épreuves : le fondateur (« tu appellera
 seul (que voit-on, sans l'explication ?) et la beauté. Un nom refusé laisse sa place à un nom gardé ; si trop peu
 tiennent, les équipes repartent chercher une fois ; un nom montré faute de mieux l'est avec le doute dit au client.
 
-**Pas encore essayé pour de vrai.**
+**Essai réel des noms seuls** (12 novembre, accord écrit du propriétaire, 0,65 €) : le juge passait après la
+composition des propositions et ne voyait que 7 noms par tour, sur 178 trouvés. Il en a refusé 13, avec des raisons
+proches de celles du propriétaire (« on dirait une rubrique de site », « il parle de voiture, pas de fruits »), et
+gardé un seul : « Pulpe ». De meilleurs noms de la réserve n'arrivaient jamais devant lui. Corrigé : le juge lit
+maintenant tous les noms avant la composition, et les propositions ne se composent qu'avec les noms qu'il garde. Cette
+correction n'a pas encore été réessayée pour de vrai.
 
 ## Ce qui n'est pas réglé
 

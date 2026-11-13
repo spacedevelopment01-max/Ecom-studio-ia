@@ -87,10 +87,10 @@ describe("SINA — chaîne de création de la marque", async () => {
     recheck?: any;
     /** Dessins rendus par l'illustratrice (par défaut : une scène valide, un dessin interdit, des mots à la main). */
     art?: (id: string) => any;
-    /** Juge des noms (par défaut : tous les finalistes sont gardés). */
+    /** Juge des noms (par défaut : il garde les douze premiers noms qu'il reçoit). */
     judge?: (id: string, names: string[]) => any;
-    /** Routes du second tour de noms (après un juge trop peu satisfait). */
-    shortlist2?: () => any[];
+    /** Noms rendus par une équipe au second tour (quand le juge en a gardé trop peu). */
+    team2?: (id: string) => string[];
     /** Création d'une image (par défaut : un petit carré de couleur ; une erreur simule un appel en échec). */
     draw?: (id: string, call: any) => Promise<Buffer>;
     /** Relecture des images (par défaut : tout est accepté, le nom est lu tel quel). */
@@ -114,10 +114,9 @@ describe("SINA — chaîne de création de la marque", async () => {
         if (c.kind === "strategy") return { job: "Le soda était un moment à soi.", confessions: [{ text: "Quand je lis « sans sucre », je cherche ce qu'on me cache.", quotes: [0, 1, 2, 4, 5, 9, 11] }, { text: "Mon soda, c'est mon seul petit plaisir.", quotes: [] }], ideas: ["A", "B", "C", "D", "A", "B", "C", "D"].map((k, i) => ({ id: `i${i + 1}`, belief: i < 4 ? route(k as "A").board.idea.belief : `Idée de réserve ${i}`, confession: k === "D" ? 1 : 0, enemy: route(k as "A").board.idea.enemy, proof: route(k as "A").board.idea.proof, cost: route(k as "A").board.idea.cost, opposite: "les marques pressées", onlyUs: "nos morceaux se voient", tone: "franc", strong: s.strong ? s.strong(id, i) : i !== 7 })) };
         if (c.kind === "team") {
           const mine: Record<string, string[]> = { "team-langue": ["Bain de Minuit", "Lâche le Morceau", "La Main Lourde", "La Mèche Courte", "Sans Rancune"], "team-mots": ["Trempette", "Fruits Givrés", "Thé 2000", "Lâche le Morceau", "Frisquet"], "team-univers": ["Nage Libre", "L'Eau Est Bonne", "Grand Bain", "Plongeon", "Marée Haute"], "team-verite": ["Minute Papillon", "À Tremper", "Sans Bulles", "Patience", "Morceaux Choisis"] };
-          return { names: (mine[id] ?? ["Un", "Deux", "Trois", "Quatre", "Cinq"]).map((name) => ({ name, detail: "détail", second: "lecture", idea: "" })) };
+          return { names: (id.endsWith("-2") && s.team2 ? s.team2(id) : mine[id] ?? ["Un", "Deux", "Trois", "Quatre", "Cinq"]).map((name) => ({ name, detail: "détail", second: "lecture", idea: "" })) };
         }
-        if (c.kind === "judge") { const names = [...c.prompt.matchAll(/^- (.+?) \| détail réel/gm)].map((m: RegExpMatchArray) => m[1]); return s.judge ? s.judge(id, names) : { names: names.map((name) => ({ name, seen: "Une image nette.", keep: true, why: "" })) }; }
-        if (c.kind === "shortlist" && id === "shortlist-2") return { routes: s.shortlist2 ? s.shortlist2() : [] };
+        if (c.kind === "judge") { const names = [...c.prompt.matchAll(/^- (.+?) \| détail réel/gm)].map((m: RegExpMatchArray) => m[1]); return s.judge ? s.judge(id, names) : { kept: names.slice(0, 12).map((name) => ({ name, seen: "Une image nette.", why: "On le porterait avec fierté." })), almost: [] }; }
         if (c.kind === "shortlist") return { routes: s.shortlist ? s.shortlist(c.prompt) : [...(c.prompt.match(/Compose (\d)/)?.[1] === "2" ? [pick("A"), pick("B")] : c.prompt.match(/Compose (\d)/)?.[1] === "4" ? [pick("A"), pick("B"), pick("C"), pick("D")] : [pick("A"), pick("B"), pick("C")]), pick("B", "Nage Libre", true), pick("C", "La Main Lourde", true)] };
         if (c.kind === "verify") return { checks: [...(s.taken ?? []).map((t) => ({ name: t.name, taken: true, url: t.url, note: "Une marque de boissons porte ce nom." })), { name: "Bain de Minuit", taken: true, url: "https://jamais-lue.example", note: "inventé" }] };
         if (c.kind === "direction" || c.kind === "fix") {
@@ -160,7 +159,7 @@ describe("SINA — chaîne de création de la marque", async () => {
   it("chaîne complète : les sept temps dans l'ordre, les équipes séparées, la reprise relue", async () => {
     const t = await thread();
     const { log, job } = await chain(t, {}, { fix: () => FIXED_LINE });
-    expect(log.ids).toEqual(["web:paroles", "web:concurrents", "web:usages", "study", "strategy", "team-langue", "team-mots", "team-univers", "team-verite", "shortlist", "judge-1", "web:verify-1", "verify-1", "direction-1-A", "direction-1-B", "direction-1-C", "review-1", "fix-1-B", "recheck-1", "art-1-A", "art-1-B", "art-1-C"]);
+    expect(log.ids).toEqual(["web:paroles", "web:concurrents", "web:usages", "study", "strategy", "team-langue", "team-mots", "team-univers", "team-verite", "judge-1", "shortlist", "web:verify-1", "verify-1", "direction-1-A", "direction-1-B", "direction-1-C", "review-1", "fix-1-B", "recheck-1", "art-1-A", "art-1-B", "art-1-C"]);
     // L'illustratrice dessine après la relecture : la scène est posée, le dessin interdit est retiré (et c'est noté),
     // le signe « lettrage » ne reçoit jamais de dessin, les mots à la main arrivent sur leur signe.
     const drawn = J.journeyOf(t.cid).identities!.list;
@@ -184,7 +183,8 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(log.systems.shortlist).toMatch(/La Mèche Courte/);
     expect(log.systems.shortlist).toMatch(/PAS une formule/);
     // La réserve de noms : ni nom d'exemple, ni nom d'un concurrent, ni nom mal formé, ni doublon.
-    const pool = log.prompts.shortlist.split("# Noms trouvés par les équipes")[1];
+    // (Le juge lit toute la réserve ; la composition ne reçoit ensuite que les noms qu'il a gardés.)
+    const pool = log.prompts["judge-1"].split("# Noms trouvés par les équipes")[1];
     expect(pool).toMatch(/- Bain de Minuit/);
     expect(pool).not.toMatch(/- La Mèche Courte|- Fruits Givrés \||- Thé 2000/);
     expect(pool.match(/- Lâche le Morceau/g)).toHaveLength(1);
@@ -422,13 +422,14 @@ describe("SINA — chaîne de création de la marque", async () => {
     await chain(t, {}, { fix: () => FIXED_LINE });
     const before = J.journeyOf(t.cid).identities!.list;
     const { log } = await chain(t, { redo: ["B"], guidance: "Plus doux pour B." }, { shortlist: () => [pick("B", "Nage Libre"), pick("C", "La Main Lourde", true), pick("A", "Grand Bain", true)], review: () => ({ routes: [], series: "" }) });
-    expect(log.ids).toEqual(["shortlist", "judge-2", "web:verify-2", "verify-2", "direction-2-B", "review-2", "art-2-B"]);
+    expect(log.ids).toEqual(["judge-2", "shortlist", "web:verify-2", "verify-2", "direction-2-B", "review-2", "art-2-B"]);
     // Les routes gardées, déjà dessinées, partent à la relecture SANS leurs dessins.
     expect(log.prompts["review-2"]).not.toMatch(/"nodes"/);
     expect(log.prompts.shortlist).toMatch(/Routes GARDÉES par le client[\s\S]*A « Bain de Minuit »[\s\S]*C « L'Eau Est Bonne »/);
     expect(log.prompts.shortlist).toMatch(/Noms déjà montrés au client \(jamais reproposés\) : .*Lâche le Morceau/);
     expect(log.prompts.shortlist).toMatch(/Plus doux pour B\./);
-    expect(log.prompts.shortlist.split("# Noms trouvés par les équipes")[1]).not.toMatch(/- Lâche le Morceau|- Bain de Minuit/);
+    expect(log.prompts["judge-2"].split("# Noms trouvés par les équipes")[1]).not.toMatch(/- Lâche le Morceau|- Bain de Minuit/);
+    expect(log.prompts.shortlist.split("# Noms gardés par le juge des noms")[1]).not.toMatch(/- Lâche le Morceau|- Bain de Minuit/);
     const j = J.journeyOf(t.cid);
     expect(j.identities!.round).toBe(2);
     expect(j.identities!.list.map((x) => x.name)).toEqual(["Bain de Minuit", "Nage Libre", "L'Eau Est Bonne"]);
@@ -711,60 +712,75 @@ describe("SINA — chaîne de création de la marque", async () => {
 
   // ---------------------------------------------------------------- le juge des noms
 
-  const verdict = (keep: (name: string) => boolean) => (_id: string, names: string[]) => ({ names: names.map((name) => ({ name, seen: keep(name) ? "On voit une scène." : "Ça ne représente rien.", keep: keep(name), why: keep(name) ? "" : "Ça ne représente rien, et ce n'est pas beau." })) });
+  const SEEN = { seen: "On voit une scène.", why: "On le porterait avec fierté." };
+  /** Juge simulé : il garde les noms de `keep` qu'il reçoit, et signale les « presque » de `near`. */
+  const judging = (keep: string[], near: Record<string, string> = {}) => (_id: string, names: string[]) => ({ kept: names.filter((n) => keep.includes(n)).map((name) => ({ name, ...SEEN })), almost: names.filter((n) => n in near).map((name) => ({ name, why: near[name] })) });
 
-  it("juge des noms : un nom refusé laisse sa place à un nom gardé, qui prend son fond, sa teinte et sa police", async () => {
+  it("juge des noms : il lit tous les noms avant la composition ; les routes ne se font qu'avec les noms gardés", async () => {
     const t = await thread();
-    const { log } = await chain(t, {}, { review: () => ({ routes: [], series: "" }), judge: verdict((n) => !["Lâche le Morceau", "La Main Lourde"].includes(n)) });
-    // Les cinq finalistes sont jugés ensemble, avant toute vérification et toute planche ; pas de second tour.
-    expect(log.ids.slice(log.ids.indexOf("shortlist"), log.ids.indexOf("web:verify-1"))).toEqual(["shortlist", "judge-1"]);
+    const { log } = await chain(t, {}, { review: () => ({ routes: [], series: "" }), judge: judging(["Bain de Minuit", "Nage Libre", "L'Eau Est Bonne", "Grand Bain"]) });
+    // Le juge passe après les équipes et AVANT la composition des routes ; pas de second tour (assez de noms gardés).
+    expect(log.ids.slice(log.ids.indexOf("team-verite") + 1, log.ids.indexOf("web:verify-1"))).toEqual(["judge-1", "shortlist"]);
     expect(log.systems["judge-1"]).toMatch(/tu appellerais ta marque comme ça, toi/);
     expect(log.systems["judge-1"]).toMatch(/« Morceaux Choisis »[^\n]*ça représente rien et c'est moche/);
-    expect(log.prompts["judge-1"]).toMatch(/^- Bain de Minuit \| détail réel/m);
-    const list = J.journeyOf(t.cid).identities!.list;
-    expect(list.map((x) => x.name)).toEqual(["Bain de Minuit", "Nage Libre", "L'Eau Est Bonne"]);
-    expect(list[1].ground).toBe(route("B").ground); // la place B garde son fond
-    expect(J.journeyOf(t.cid).identities!.issues.join("\n")).not.toMatch(/pas convaincue/);
-  });
-
-  it("trop peu de noms tiennent : les équipes repartent chercher une fois, en sachant ce qui a été refusé", async () => {
-    const t = await thread();
-    const { log } = await chain(t, {}, {
-      review: () => ({ routes: [], series: "" }),
-      judge: verdict((n) => ["Bain de Minuit", "Grand Bain", "Plouf Royal"].includes(n)),
-      shortlist2: () => [pick("B", "Grand Bain"), pick("C", "Plouf Royal"), pick("A", "Tintamarre", true), pick("A", "Eau Vive", true)],
-    });
-    const from = log.ids.indexOf("shortlist");
-    expect(log.ids.slice(from, log.ids.indexOf("web:verify-1"))).toEqual(["shortlist", "judge-1", "team-langue-2", "team-mots-2", "team-univers-2", "team-verite-2", "shortlist-2", "judge-1-2"]);
-    // Le second tour sait ce que le juge a refusé, et pourquoi.
-    expect(log.prompts["team-mots-2"]).toMatch(/# Second tour[\s\S]*- Lâche le Morceau : Ça ne représente rien, et ce n'est pas beau/);
-    // Un nom déjà refusé par le propriétaire n'arrive même pas devant le juge.
-    expect(log.prompts["judge-1-2"]).not.toMatch(/Tintamarre/);
+    // Il reçoit tous les noms libres des équipes ; un nom déjà refusé par le propriétaire n'arrive même pas devant lui.
+    expect(log.prompts["judge-1"]).toMatch(/# Noms trouvés par les équipes \(15\)/);
+    expect(log.prompts["judge-1"]).toMatch(/^- Marée Haute \| détail réel/m);
+    expect(log.prompts["judge-1"]).not.toMatch(/Morceaux Choisis|Thé 2000|La Mèche Courte/);
+    // La composition ne reçoit que les noms gardés ; un nom hors de cette liste est écarté, une réserve prend sa place.
+    expect(log.prompts.shortlist).toMatch(/# Noms gardés par le juge des noms \(4\) : les SEULS noms permis/);
+    expect(log.prompts.shortlist).not.toMatch(/^- Lâche le Morceau \|/m);
     const ids = J.journeyOf(t.cid).identities!;
-    expect(ids.list.map((x) => x.name)).toEqual(["Bain de Minuit", "Grand Bain", "Plouf Royal"]);
-    expect(ids.list.map((x) => x.ground)).toEqual([route("A").ground, route("B").ground, route("C").ground]);
+    expect(ids.list.map((x) => x.name)).toEqual(["Bain de Minuit", "L'Eau Est Bonne", "Nage Libre"]);
     expect(ids.issues.join("\n")).not.toMatch(/pas convaincue/);
   });
 
-  it("aucun nom ne tient, même au second tour : le nom est montré faute de mieux, et le doute est dit franchement", async () => {
+  it("trop peu de noms gardés : les équipes repartent chercher une fois, en sachant le niveau attendu", async () => {
     const t = await thread();
-    await chain(t, {}, { review: () => ({ routes: [], series: "" }), judge: verdict((n) => n === "Bain de Minuit"), shortlist2: () => [pick("B", "Grand Bain"), pick("C", "Plouf Royal")] });
+    const { log } = await chain(t, {}, {
+      review: () => ({ routes: [], series: "" }),
+      judge: judging(["Bain de Minuit", "Haut les Pêches", "Tout Feu Tout Fruit"], { "Nage Libre": "Il rate le nom seul de peu." }),
+      team2: (id) => (id === "team-langue-2" ? ["Haut les Pêches", "Tintamarre", "Bain de Minuit", "Nage Libre", "Grand Bain"] : id === "team-mots-2" ? ["Tout Feu Tout Fruit", "Pulpe 3000", "Trempette", "Frisquet", "Plongeon"] : ["Vitrine", "Patience", "Sans Bulles", "À Tremper", "Marée Haute"]),
+      shortlist: () => [pick("A", "Bain de Minuit"), pick("B", "Haut les Pêches"), pick("C", "Tout Feu Tout Fruit")],
+    });
+    expect(log.ids.slice(log.ids.indexOf("team-verite") + 1, log.ids.indexOf("web:verify-1"))).toEqual(["judge-1", "team-langue-2", "team-mots-2", "team-univers-2", "team-verite-2", "judge-1-2", "shortlist"]);
+    expect(log.prompts["team-mots-2"]).toMatch(/# Second tour[\s\S]*Noms gardés par le juge \(le niveau à atteindre, à ne pas redonner\) : Bain de Minuit/);
+    expect(log.prompts["team-mots-2"]).toMatch(/Presque gardés, avec ce qui leur manque :\n- Nage Libre : Il rate le nom seul de peu\./);
+    // Second passage du juge : seulement les noms NEUFS et libres (ni déjà trouvés, ni refusés par le propriétaire, ni mal formés).
+    expect(log.prompts["judge-1-2"]).toMatch(/# Noms trouvés par les équipes \(3\)/);
+    expect(log.prompts["judge-1-2"]).toMatch(/- Haut les Pêches \|[\s\S]*- Tout Feu Tout Fruit \|[\s\S]*- Vitrine \|/);
+    expect(log.prompts["judge-1-2"]).not.toMatch(/Tintamarre|Bain de Minuit|Pulpe 3000|Nage Libre|Patience/);
     const ids = J.journeyOf(t.cid).identities!;
-    expect(ids.list.map((x) => x.name)).toEqual(["Bain de Minuit", "Lâche le Morceau", "L'Eau Est Bonne"]);
-    expect(ids.issues.join("\n")).toMatch(/Identité B : je ne suis pas convaincue par le nom « Lâche le Morceau » \(Ça ne représente rien, et ce n'est pas beau\)\. Je te le montre faute de mieux/);
-    expect(ids.issues.join("\n")).toMatch(/Identité C : je ne suis pas convaincue par le nom « L'Eau Est Bonne »/);
-    expect(ids.issues.join("\n")).not.toMatch(/Identité A : je ne suis pas convaincue/);
+    expect(ids.list.map((x) => x.name)).toEqual(["Bain de Minuit", "Haut les Pêches", "Tout Feu Tout Fruit"]);
+    expect(ids.issues.join("\n")).not.toMatch(/pas convaincue/);
   });
 
-  it("aperçu des noms seuls : les finalistes et l'avis du juge, sans vérification, sans planche, sans toucher au parcours", async () => {
+  it("aucun nom gardé, même au second tour : les noms sont montrés faute de mieux, et le doute est dit franchement", async () => {
     const t = await thread();
-    const { log, out } = await chain(t, { namesPreview: true }, { judge: verdict((n) => n !== "La Main Lourde") });
-    expect(log.ids.slice(log.ids.indexOf("shortlist"))).toEqual(["shortlist", "judge-1"]);
-    const preview = (out as any).preview as any[];
-    expect(preview.map((n) => n.name)).toEqual(["Bain de Minuit", "Lâche le Morceau", "L'Eau Est Bonne", "Nage Libre", "La Main Lourde"]);
-    expect(preview.find((n) => n.name === "La Main Lourde")).toMatchObject({ kept: false, doubt: "Ça ne représente rien, et ce n'est pas beau" });
-    expect(preview[0]).toMatchObject({ kept: true, seen: "On voit une scène." });
-    expect((out as any).refused).toEqual([{ name: "La Main Lourde", why: "Ça ne représente rien, et ce n'est pas beau." }]);
+    // La composition ne reçoit que trois noms permis : le « presque », puis les premiers trouvés. Pas un de plus.
+    let permitted: string[] = [];
+    const { log } = await chain(t, {}, {
+      review: () => ({ routes: [], series: "" }), judge: judging([], { "Nage Libre": "Il rate la beauté de peu." }),
+      shortlist: (prompt) => { permitted = [...prompt.split("# Noms gardés par le juge des noms")[1].matchAll(/^- (.+?) \| détail :/gm)].map((m) => m[1]); return permitted.map((n, i) => pick("ABC"[i] as "A", n)); },
+    });
+    expect(log.ids.slice(log.ids.indexOf("team-verite") + 1, log.ids.indexOf("web:verify-1"))).toEqual(["judge-1", "team-langue-2", "team-mots-2", "team-univers-2", "team-verite-2", "judge-1-2", "shortlist"]);
+    expect(permitted).toHaveLength(3);
+    expect(permitted[0]).toBe("Nage Libre");
+    const ids = J.journeyOf(t.cid).identities!;
+    expect(ids.list.map((x) => x.name)).toEqual(permitted);
+    const issues = ids.issues.join("\n");
+    expect(issues).toMatch(/Identité A : je ne suis pas convaincue par le nom « Nage Libre » \(Il rate la beauté de peu\)\. Je te le montre faute de mieux/);
+    expect(issues).toMatch(new RegExp(`Identité B : je ne suis pas convaincue par le nom « ${permitted[1]} » \\(il n'a pas passé mon contrôle le plus sévère\\)`));
+    expect(issues.match(/pas convaincue/g)).toHaveLength(3);
+  });
+
+  it("aperçu des noms seuls : les noms gardés et les « presque », sans composition, sans planche, sans toucher au parcours", async () => {
+    const t = await thread();
+    const { log, out } = await chain(t, { namesPreview: true }, { judge: judging(["Bain de Minuit", "Nage Libre", "Grand Bain"], { "La Main Lourde": "Il rate la beauté de peu." }) });
+    expect(log.ids.slice(log.ids.indexOf("team-verite") + 1)).toEqual(["judge-1"]);
+    expect((out as any).preview).toEqual([{ name: "Bain de Minuit", ...SEEN, detail: "détail", second: "lecture" }, { name: "Nage Libre", ...SEEN, detail: "détail", second: "lecture" }, { name: "Grand Bain", ...SEEN, detail: "détail", second: "lecture" }]);
+    expect((out as any).almost).toEqual([{ name: "La Main Lourde", why: "Il rate la beauté de peu." }]);
+    expect((out as any).searched).toBe(15);
     expect(J.journeyOf(t.cid).identities ?? null).toBeNull();
   });
 });
