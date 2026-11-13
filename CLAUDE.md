@@ -18,6 +18,23 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 
 ### Préférences du propriétaire (à retenir, il ne veut pas les répéter)
 
+- **À quoi sert le Studio, après la livraison** (ses mots du 13 novembre 2026, à ne jamais lui faire répéter) : « Après
+  la livraison, c'est sina toujours, elle doit même être intelligente et prendre les devant. Source de proposition,
+  ensuite le client est là pour générer grace au calendrier et l'automatisation les publications total du projet et
+  gérer aussi les publicités sur les réseaux. Et il y aura la partie vidéo mais on reviendra la dessus à la fin. »
+  Donc : la livraison du site n'est pas la fin du travail de SINA ; elle reste l'interlocutrice, propose la suite
+  d'elle-même (publications, publicités, améliorations), et le client fait tourner sa communication avec le calendrier
+  et l'automatisation ; la vidéo se traite en dernier. État relu dans le code ce jour-là : « Ma communication
+  automatique » existe (`src/lib/social-v2/autopilot.ts` : validation par le client, ou pilote automatique avec accord
+  écrit et plafond par semaine ; publication par les accès officiels des réseaux, `src/lib/social/publish.ts`) ; SINA
+  ne la pilote pas encore (étapes 9 à 13 fermées) ; **SINA qui prend les devants n'existe pas** (elle ne parle que
+  quand le client lui parle, son parcours s'arrête à l'étape 13) : à construire, avec la règle du pilote automatique
+  (elle propose, le client décide ; elle n'agit seule que là où il l'a autorisée, dans son plafond) ; pour les
+  publicités, le Studio PRÉPARE les campagnes (angles, audiences, textes, créations aux bons formats) et les exporte
+  pour le gestionnaire de publicités du réseau : il ne se connecte à aucune régie, ne programme rien et ne dépense
+  rien en diffusion (`src/lib/campaigns/manual.ts`, onglet Publicités) ; lancer et suivre une campagne depuis le
+  Studio reste à construire.
+
 - **Dépenses** : aucune API ou fournisseur payant ajouté sans son accord ; aucun appel IA payant ni publication réelle
   sans son autorisation. Toujours donner le prix avant une génération payante et attendre son accord écrit. Un appel
   au résultat incertain (erreur 5xx) n'est jamais relancé tout seul : le dire, puis demander. Plafond d'essais : 10 $. Plafond

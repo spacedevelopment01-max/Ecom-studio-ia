@@ -38,6 +38,28 @@ Ce document dit, étape par étape, **qui fait le travail aujourd'hui** (relevé
 | 12. Articles de blog | **Construite, fermée.** `blog.topics` (gratuit, sans IA) donne la matière des sujets : faits du projet, angles choisis, paroles de clients relevées ; SINA propose, le client choisit 2 sujets. `blog.write` lance le moteur de blog du Studio, qui a déjà ses spécialistes : rédaction, contrôles automatiques (référencement, faits), relecture par un directeur de création, jusqu'à trois tours. Les articles restent en brouillon : le client publie lui-même. | Un essai réel. Pas de recherche sur le web pour les sujets, pas d'image de couverture créée, pas de lien automatique au menu : ce que le moteur de blog ne fait pas aujourd'hui. | **Construit, fermé** (lot 7, 13 novembre) |
 | 13. Rangement des fichiers | **Construite, fermée.** `files.tidy` lance le rangement du Studio, gratuit et sans IA (fichiers sans dossier seulement, rien de supprimé) ; `files.validate` clôt le parcours. | Un essai réel. Pas de dossiers « Blog » ni « Site » dans l'arbre d'aujourd'hui. | **Construit, fermé** (lot 7, 13 novembre) |
 
+## Après la livraison : SINA prend les devants (à construire)
+
+Vision du propriétaire, 13 novembre 2026 : « Après la livraison, c'est sina toujours, elle doit même être intelligente
+et prendre les devant. Source de proposition, ensuite le client est là pour générer grace au calendrier et
+l'automatisation les publications total du projet et gérer aussi les publicités sur les réseaux. » La vidéo viendra à
+la fin.
+
+Aujourd'hui, SINA ne parle que quand le client lui parle, et son parcours s'arrête à l'étape 13. Ce qui manque :
+
+- **une SINA qui revient d'elle-même** : à rythme régulier, elle regarde ce qui a été publié, ce qui est prévu au
+  calendrier, ce qui manque, et propose la suite (prochaines publications, publicités, améliorations du site) ;
+- **la règle** : elle propose, le client décide ; elle n'agit seule que là où il a activé le pilote automatique, dans
+  le plafond qu'il a fixé (c'est déjà la règle de « Ma communication automatique », `social-v2/autopilot.ts`) ;
+- **le lien avec ce qui existe** : le calendrier, la production progressive et la publication sur les réseaux sont
+  dans le Studio ; SINA ne les pilote pas encore (étapes 9 à 13 construites, fermées, jamais essayées pour de vrai) ;
+- **les publicités sur les réseaux** : le Studio prépare les campagnes (angles, audiences, textes, créations aux bons
+  formats) et les exporte pour le gestionnaire de publicités du réseau ; il ne se connecte à aucune régie, ne
+  programme rien et ne dépense rien en diffusion (`src/lib/campaigns/manual.ts`). Lancer et suivre une campagne
+  depuis le Studio reste à construire.
+
+Rien de cela n'est construit. À placer dans l'ordre avec le propriétaire.
+
 ## Ce qui vaut pour toutes les étapes (à construire une fois, à brancher partout)
 
 - **Le gardien des faits** : aucun chiffre, avis, délai, garantie ou certification absent de la fiche du client. Sans
