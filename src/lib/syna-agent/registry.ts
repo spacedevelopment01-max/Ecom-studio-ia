@@ -33,27 +33,32 @@ export function isSensitive(t: AgentTool, args: unknown, ctx: ToolContext): bool
  * choisi à la place du client, angle choisi hors parcours, préparation du Pilote, projet créé à la main) ne sont ni
  * proposés ni exécutés ; les outils des ANCIENNES maquettes ne servent qu'aux projets déjà commencés avec elles.
  */
-export type ToolScope = { inJourney: boolean; legacyMockups: boolean };
+export type ToolScope = { inJourney: boolean; legacyMockups: boolean; /** Conversation aiguillée (voir conversation.ts) : la notice d'un autre outil se demande avec tools.open. */ routed?: boolean };
 const JOURNEY_HIDDEN = new Set(["brand.create", "site.mockups", "site.mockup_images", "site.build", "strategy.choose", "pilot.run", "project.create"]);
 const LEGACY_MOCKUP = /^(mockup\.|site\.code_from_mockup$|site\.images$|site\.photo_reject$)/;
 export function toolVisible(name: string, scope?: ToolScope): boolean {
+  // tools.open n'existe que pour une conversation aiguillée : ailleurs, SINA a déjà toutes les notices.
+  if (name === "tools.open") return !!scope?.routed;
   if (!scope) return true;
   if (scope.inJourney && JOURNEY_HIDDEN.has(name)) return false;
   if (!scope.legacyMockups && LEGACY_MOCKUP.test(name)) return false;
   return true;
 }
 
-/** Catalogue envoyé au modèle : nom, module, nature, accord requis et schéma JSON exact des arguments. */
+/** Notice d'un outil pour le modèle : nom, module, nature, accord requis et schéma JSON exact des arguments. */
+export function toolEntry(t: AgentTool): string {
+  let schema: unknown;
+  try { schema = z.toJSONSchema(t.args, { unrepresentable: "any" }); } catch { schema = { type: "object" }; }
+  const flags = [t.kind, typeof t.sensitive === "function" ? "accord selon les arguments" : t.sensitive ? "accord explicite" : null, t.estimate ? "payant (budget)" : null].filter(Boolean).join(", ");
+  return `### ${t.name} — module ${t.module} (${flags})\n${t.description}\nArguments : ${JSON.stringify(stripMeta(schema))}`;
+}
+
+/** Catalogue envoyé au modèle : la notice de chaque outil proposé à ce fil. */
 export function toolCatalog(hasProject: boolean, scope?: ToolScope): string {
   return allTools()
     .filter((t) => hasProject || !t.needsProject)
     .filter((t) => toolVisible(t.name, scope))
-    .map((t) => {
-      let schema: unknown;
-      try { schema = z.toJSONSchema(t.args, { unrepresentable: "any" }); } catch { schema = { type: "object" }; }
-      const flags = [t.kind, typeof t.sensitive === "function" ? "accord selon les arguments" : t.sensitive ? "accord explicite" : null, t.estimate ? "payant (budget)" : null].filter(Boolean).join(", ");
-      return `### ${t.name} — module ${t.module} (${flags})\n${t.description}\nArguments : ${JSON.stringify(stripMeta(schema))}`;
-    })
+    .map(toolEntry)
     .join("\n\n");
 }
 
