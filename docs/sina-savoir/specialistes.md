@@ -29,7 +29,7 @@ Ce document dit, étape par étape, **qui fait le travail aujourd'hui** (relevé
 | 3. Image de marque complète | Sans IA. | Rien. | Convenable |
 | 4. Cinq angles marketing | Une recherche sur le web, puis **un seul appel** écrit les cinq angles et note lui-même ses sources. Aucune relecture. | Séparer : une **stratège** qui écrit les angles, un **juge des angles** (un concurrent pourrait-il signer cet angle ? l'émotion est-elle vraie ?), une vérification des faits cités. | À faire (lot 4) |
 | 5. L'activité complète | Sans IA. | Rien. | Convenable |
-| 6. Thème sur mesure | Conception : une conceptrice, puis un directeur commercial qui corrige. Montage : un plan des textes, **un appel par section qui écrit en même temps les textes, les liens et les descriptions de photos**, les photos, un contrôle par photo. **Aucune relecture des textes.** Une photo refusée est seulement signalée. | Un **directeur de création des textes** qui relit TOUT le site (émotion, accroches répétées, ordres donnés au lecteur, promesses non prouvées) et fait reprendre ce qui ne va pas ; une **directrice artistique des photos** séparée de la rédactrice ; une direction artistique globale partagée avec la planche. | À faire (lot 2) |
+| 6. Thème sur mesure | Conception : une conceptrice, puis un directeur commercial qui corrige. Montage : un plan des textes, un appel par section qui écrit les textes, les liens et les descriptions de photos ; puis un **directeur de création des textes** relit TOUT le site et fait reprendre les sections refusées (6 au plus, le reste est dit) ; une **directrice artistique des photos** relit TOUTES les photos prévues AVANT qu'une seule soit payée et fait redécrire celles qu'elle refuse (5 sections au plus) ; chaque photo créée est ensuite contrôlée en image. La direction artistique de la planche choisie est reprise par les photos du site. | Un essai réel sur un vrai projet. Une photo ratée au contrôle reste seulement signalée (décision du propriétaire : refaite avec l'accord du client). | **Fait** (lot 2, 13 novembre) |
 | 7. Site codé (anciennes maquettes) | Analyse, écriture, comparaison en image, correction. | Rien (voie ancienne). | Convenable |
 | 8. Thème du Studio adapté | Rédacteur et directeur de création (jusqu'à trois tours) ; images créées puis relues. | Rien d'urgent. | Convenable |
 | 9. Publications | **Pas construite.** Des outils généraux existent, hors parcours. | Une stratège des contenus, une rédactrice, une directrice artistique, un juge, puis le calendrier. | À faire (lot 5) |
@@ -53,6 +53,11 @@ Ce document dit, étape par étape, **qui fait le travail aujourd'hui** (relevé
    **Fait le 13 novembre 2026**, testé avec une IA simulée (`logos.ts` : `boardLogoReady`, `saveBoardLogo` ;
    `brand-art-review.ts` : `reviewBoardArt`). Pas encore essayé pour de vrai.
 2. **Les textes et les photos du thème sur mesure** : directeur de création des textes, directrice artistique des photos.
+   **Fait le 13 novembre 2026**, testé avec une IA simulée (`custom-theme/brand.ts` : `COPY_REVIEW_SYSTEM`, étapes
+   `text-review` et `text-fix:<section>` ; `PHOTO_REVIEW_SYSTEM`, étapes `photo-review` et `photo-fix:<section>` ;
+   `boardLook` pour la direction artistique partagée avec la planche ; devis de `custom.build` augmenté d'autant). Les
+   relectures sont dans le compte rendu du montage (`relecture`, `relecturePhotos`) et SINA les dit au client. Pas
+   encore essayé pour de vrai.
 3. **La conversation** : aiguilleuse, bon modèle au bon moment, relectrice aux moments qui comptent.
 4. **Les cinq angles** : stratège, juge, vérification des faits.
 5. **Publications et calendrier** (étapes 9 et 11).

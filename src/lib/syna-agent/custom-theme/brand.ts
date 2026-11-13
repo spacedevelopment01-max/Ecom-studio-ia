@@ -167,7 +167,115 @@ export function sitePlanPrompt(brief: string, sections: { uid: string; page: str
     ...sections.map((x) => `- ${x.uid} · ${x.page} · « ${x.title} » · ${x.does}${x.intent ? ` · CONCEPTION : ${x.intent}` : ""} · démo : ${x.texts}`)].filter((x, i) => x !== "" || i === 1).join("\n");
 }
 
+// ---------------------------------------------------------------- relecture de tous les textes du site
+
+/**
+ * Le directeur de création des textes (carte des spécialistes de SINA, lot 2, 13 novembre 2026). Jusque-là, chaque
+ * section était écrite par un appel et personne ne relisait le site entier : une accroche pouvait revenir trois fois,
+ * un titre donner un ordre au lecteur, un texte décrire sans rien faire ressentir. Celui qui écrit n'est jamais celui
+ * qui juge : un appel séparé lit TOUS les textes écrits et désigne les sections à reprendre, avec des corrections
+ * précises. Chaque section refusée est réécrite UNE fois ; ce qui reste est dit au client, jamais caché.
+ */
+export const COPY_REVIEW_CAP_MICRO = 250_000;
+/** Sections reprises au plus après la relecture (les pires d'abord) : borne le coût annoncé. */
+export const MAX_COPY_FIXES = 6;
+export const CopyReviewSchema = z.object({
+  sections: z.array(z.object({ uid: z.string().max(12), fixes: z.array(z.string().min(3).max(320)).min(1).max(5) })).max(20).default([]),
+  site: z.string().max(600).default(""),
+});
+export type CopyReview = z.infer<typeof CopyReviewSchema>;
+
+export const COPY_REVIEW_SYSTEM = `Tu es le directeur de création qui signe les textes d'un site avant qu'un client ne les voie. Tu n'écris rien toi-même : tu lis TOUT le site, d'un bout à l'autre, comme un visiteur, puis tu désignes les sections à reprendre et tu dis précisément quoi corriger.
+
+Les règles d'écriture que les textes devaient suivre :
+${COPY_CRAFT}
+
+Ce que tu cherches, et seulement cela :
+1. Un titre, un texte ou un bouton qui vend et qui DÉCRIT sans rien faire ressentir (aucune scène, aucun moment, aucune sensation), alors que l'angle du site est une émotion.
+2. Une même formule, une même accroche ou un même fait fort qui revient dans plusieurs sections (cite les sections) : la première garde, les suivantes changent.
+3. Un ordre donné au lecteur dans un titre (« Lis… », « Découvre… », « Plonge… »), un slogan creux, un jeu de mots forcé.
+4. Un chiffre, un avis, un délai, une garantie, une certification ou un résultat qui ne figure pas dans le dossier du client : il doit disparaître.
+5. Un tic d'écriture automatique (« ce n'est pas X, c'est Y », négations en rafale, deux-points dramatiques en série).
+6. Un texte d'exemple resté en place : il parle d'une autre marque, d'un autre produit ou d'un autre métier que celui du client.
+
+Sois sévère mais juste : une section correcte n'est pas citée, et tu ne cites pas une section pour une préférence de style. Au plus ${MAX_COPY_FIXES} sections, les plus gênantes d'abord.
+
+Pour chaque section à reprendre : uid (recopié), fixes (1 à 5 corrections exécutables, chacune cite entre guillemets le texte fautif et dit ce qui ne va pas et ce qu'il faut à la place, sans écrire le nouveau texte à la place de la rédactrice). site : en une ou deux phrases, ce que le site fait bien et ce qui lui manque, dit simplement.
+
+Réponds par un objet JSON, sans rien autour. Forme exacte : {"sections": [{"uid": "", "fixes": [""]}], "site": ""}`;
+
+/** Les textes qu'un visiteur lit dans une section (titres, paragraphes, boutons, liens), sans le code. */
+export function sectionReadableTexts(html: string): string[] {
+  const bits = [...html.replace(/<(script|style|svg)\b[\s\S]*?<\/\1>/g, " ").matchAll(/<(h[1-6]|p|li|button|a|summary|blockquote|figcaption|span|strong|em|label|td|th)\b[^>]*>([\s\S]*?)<\/\1>/g)]
+    .map((m) => `${/^h[1-6]$/.test(m[1]) ? "TITRE" : m[1] === "button" || m[1] === "a" ? "BOUTON" : "TEXTE"} : ${decodeEntities(m[2].replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim()}`)
+    .filter((x) => x.length > 12 && x.length < 420);
+  return [...new Set(bits)].slice(0, 24);
+}
+
+/** Ce que le directeur de création reçoit : le dossier du client, puis chaque section avec ses textes, page par page. */
+export function copyReviewPrompt(brief: string, sections: { uid: string; place: string; title: string; html: string }[]): string {
+  return [
+    brief, "", `TEXTES DU SITE À RELIRE (${sections.length} sections, dans l'ordre des pages) :`,
+    ...sections.map((x) => [`## ${x.uid} · ${x.place} · ${x.title}`, ...sectionReadableTexts(x.html)].join("\n")),
+  ].join("\n\n");
+}
+
 /** Textes visibles d'une section (titres, boutons, liens), pour montrer sa forme au plan sans tout son HTML. */
+/** Plafond de la relecture des descriptions de photos par la directrice artistique (un appel pour tout le site). */
+export const PHOTO_REVIEW_CAP_MICRO = 200_000;
+/** Sections dont les photos sont redécrites après sa relecture, au plus ; le reste est dit dans le compte rendu. */
+export const MAX_PHOTO_FIXES = 5;
+/** En dessous, pas de relecture : une photo seule ne peut ni se répéter ni déséquilibrer le site. */
+export const MIN_PHOTOS_TO_REVIEW = 2;
+export const PhotoReviewSchema = z.object({
+  photos: z.array(z.object({ uid: z.string().max(40), find: z.string().max(200), fixes: z.array(z.string().min(8).max(400)).min(1).max(4) })).max(30).default([]),
+  site: z.string().max(600).default(""),
+});
+/**
+ * La directrice artistique des photos (carte des spécialistes, lot 2) : le rédacteur décrit les photos section par
+ * section, sans voir les autres ; elle lit TOUTES les descriptions du site, avec le texte d'en face, AVANT qu'une seule
+ * photo soit payée. Elle ne décrit rien elle-même (celle qui juge n'est pas celle qui fait).
+ */
+export const PHOTO_REVIEW_SYSTEM = `Tu es la directrice artistique qui valide les photos d'un site AVANT qu'elles ne soient créées : chaque photo se paie, une description ratée aussi. Tu ne décris rien toi-même : tu lis TOUTES les descriptions de photos du site, chacune avec le texte qu'elle accompagne, comme si tu regardais la planche-contact d'une seule séance photo, puis tu désignes les descriptions à reprendre et tu dis précisément quoi corriger.
+
+Ce que tu cherches, dans cet ordre :
+1. LA MÊME SCÈNE DEUX FOIS, dans une page ou d'une page à l'autre : même décor, mêmes objets, même cadrage, même moment. Tu gardes la meilleure et tu fais changer l'autre (dis vers quelle scène : un autre lieu, un autre moment, un autre point de vue).
+2. UNE PHOTO QUI NE VA PAS AVEC SON TEXTE : elle ne montre pas ce que le texte d'en face raconte, ou elle ne fait pas ressentir l'émotion de l'angle.
+3. UNE PHOTO PLATE : un produit seul sur fond uni pour une ouverture ou une ambiance, un objet posé sans vie, une scène sans lumière ni profondeur, un objet vague (« quelques accessoires », « des éléments de décor »).
+4. L'ÉQUILIBRE DU SITE : une partie des scènes met en scène le vrai produit, les autres montrent l'univers de la marque SANS lui (pour du thé : théière, feuilles, fruits, plantes). Le produit dans toutes les scènes, ou dans aucune, est un défaut : dis lesquelles changer.
+5. UNE DESCRIPTION QUI NE SUIT PAS LA MÉTHODE : elle ne dit pas le type de photo et le cadrage, la place exacte de chaque objet, « La scène contient exactement N objets », la partie calme où le texte se pose, la lumière ; elle se contredit ; elle montre plusieurs paquets du produit ; elle décrit l'emballage ou l'étiquette du produit (la vraie photo jointe les donne).
+6. CE QUI EST INTERDIT : une personne quand la fiche ne l'autorise pas, un texte, un chiffre, un logo ou un nom de marque demandé dans l'image, une photo que seul le client peut fournir (ses clients, son équipe, ses vrais chantiers) inventée à sa place.
+7. UNE SÉANCE QUI SE DISPERSE : lumière, décors, matières et couleurs qui changent d'une photo à l'autre sans raison. La direction artistique donnée se tient d'un bout à l'autre.
+
+Sévère mais juste : une description qui fera une belle photo, à sa place, tu la laisses. Ne désigne que ce qu'un bon directeur artistique refuserait de payer. Aucune correction de goût personnel, aucune qui demande un fait absent de la fiche.
+
+Réponse : uniquement le JSON demandé.
+- photos : la liste des descriptions à reprendre (vide si tout est bon), chacune avec uid (l'identifiant exact de sa section), find (la source exacte de la photo) et fixes (1 à 4 corrections précises, chacune dit ce qui ne va pas et vers quoi aller).
+- site : ton avis sur la séance entière en deux phrases (ce qui tient, ce qui manque).`;
+
+/** Demande de relecture des photos : la direction artistique, puis chaque section avec son texte et ses descriptions. */
+export function photoReviewPrompt(brief: string, direction: string | null, sections: { uid: string; place: string; title: string; html: string; photos: { find: string; description: string; ratio: string; product: string | null }[] }[]): string {
+  const n = sections.reduce((k, x) => k + x.photos.length, 0);
+  return [brief, "", direction ? `DIRECTION ARTISTIQUE DE LA MARQUE (à tenir sur toutes les photos) : ${direction}` : "",
+    `PHOTOS DU SITE À RELIRE (${n} photos dans ${sections.length} sections, dans l'ordre des pages) :`,
+    ...sections.map((x) => [`## ${x.uid} · ${x.place} · ${x.title}`,
+      `TEXTE D'EN FACE : ${sectionReadableTexts(x.html).slice(0, 6).join(" / ").slice(0, 700) || "(aucun texte)"}`,
+      ...x.photos.map((ph) => `- ${ph.find} (format ${ph.ratio}${ph.product ? `, produit « ${ph.product} »` : ", sans produit"}) : ${ph.description}`)].join("\n")),
+  ].filter(Boolean).join("\n\n");
+}
+
+/**
+ * Direction artistique écrite pour la planche de marque que le client a choisie (images de planche) : reprise par les
+ * photos de son site, pour que la planche et le site aient l'air d'une même marque. Identité mélangée ou retouchée :
+ * la direction de la planche n'est plus sûre d'être vraie, elle n'est pas reprise.
+ */
+export function boardLook(j: Journey | null): string | null {
+  const c = j?.identityChoice;
+  if (!c || Object.keys(c.mix ?? {}).length || Object.keys(c.edits ?? {}).length) return null;
+  const look = (j!.identities?.list.find((x) => x.key === c.key) as { board?: { images?: { look?: string } } } | undefined)?.board?.images?.look;
+  return look?.trim() ? look.trim().slice(0, 700) : null;
+}
+
 export function sectionSkeleton(html: string): string {
   const bits = [...html.matchAll(/<(h[1-4]|button|a|summary)\b[^>]*>([\s\S]*?)<\/\1>/g)].map((m) => `${m[1]}:${m[2].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()}`).filter((x) => x.length > 3 && x.length < 90);
   return [...new Set(bits)].slice(0, 14).join(" | ") || "(aucun titre)";
@@ -287,8 +395,8 @@ export function textPlacementLine(html: string, find: string, does: string): str
 /** Direction artistique d'une photo du site : l'univers de la famille + l'émotion de l'angle choisi + les couleurs. */
 export function siteArtDirection(p: Project, fu: FamilyUniverse | null, j: Journey | null): string | null {
   if (!fu) return null;
-  const d = j ? angleDetails(j) : {};
-  return `${fu.style} ; ${fu.idea} ; lumière : ${fu.light} ; décors : ${fu.setting} ; composition : ${fu.composition.join(" ; ")} ; émotion à faire ressentir : ${d.emotion ?? fu.emotion}${d.story ? ` (l'histoire de la marque : ${d.story})` : ""} ; couleurs de la marque : ${[p.brand?.palette?.dark, p.brand?.palette?.primary, p.brand?.palette?.accent].filter(Boolean).join(", ")}.`;
+  const d = j ? angleDetails(j) : {}, look = boardLook(j);
+  return `${fu.style} ; ${fu.idea} ; lumière : ${fu.light} ; décors : ${fu.setting} ; composition : ${fu.composition.join(" ; ")} ; émotion à faire ressentir : ${d.emotion ?? fu.emotion}${d.story ? ` (l'histoire de la marque : ${d.story})` : ""} ; couleurs de la marque : ${[p.brand?.palette?.dark, p.brand?.palette?.primary, p.brand?.palette?.accent].filter(Boolean).join(", ")}.${look ? ` Direction artistique de sa planche de marque (la même marque, la même séance) : ${look}` : ""}`;
 }
 
 /**
@@ -325,6 +433,10 @@ export const customBrandDeps: {
   seo?: (prompt: string, usageKey: string) => Promise<z.infer<typeof SeoSchema>>;
   photoBrief?: (prompt: string, usageKey: string) => Promise<z.infer<typeof PhotoBriefSchema>>;
   write?: (prompt: string, usageKey: string) => Promise<SectionWrite>;
+  /** Relecture de tous les textes par le directeur de création (essais sans IA : seulement si le test la fournit). */
+  review?: (prompt: string, usageKey: string) => Promise<z.input<typeof CopyReviewSchema>>;
+  /** Relecture de toutes les descriptions de photos par la directrice artistique (essais sans IA : seulement si fournie). */
+  photoReview?: (prompt: string, usageKey: string) => Promise<z.input<typeof PhotoReviewSchema>>;
   photo?: (prompt: string, product: Buffer | null, aspect: string, usageKey: string) => Promise<Buffer>;
 } = {};
 
@@ -343,7 +455,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
   // rewrite : le client n'aime pas les textes, tout le site est réécrit (sinon seules les sections encore d'exemple).
   const sections = allSections(t).filter((x) => a.rewrite || !x.s.clientTexts);
   const writer = siteCopyModel();
-  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, photosToProvide: 0, photosLeft: 0, photosFailed: 0, problems: [] as string[], redacteur: `${writer.provider}:${writer.model}` };
+  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, photosToProvide: 0, photosLeft: 0, photosFailed: 0, redacteur: `${writer.provider}:${writer.model}`, relecture: null as null | { reprises: number; refusees: number; avis: string }, relecturePhotos: null as null | { reprises: number; refusees: number; avis: string }, problems: [] as string[] };
   const briefs: Record<string, SectionWrite["photos"]> = {};
 
   // Un seul point d'annulation pour tout le montage : « Annuler » revient au thème d'avant le montage.
@@ -442,6 +554,56 @@ export async function runCustomBrandJob(ctx: JobContext) {
     } catch (e) { report.problems.push(`${l?.title ?? x.s.id} : textes non écrits (${(e as Error).message.slice(0, 120)})`); }
   }
 
+  // 1 bis) Relecture de TOUS les textes par un directeur de création, puis une reprise des sections refusées.
+  // (Essais sans IA : seulement si le test fournit la relecture, comme pour le référencement.)
+  if (report.sections && (!customBrandDeps.write || customBrandDeps.review)) {
+    ctx.progress(0.5, L("Je relis tous les textes du site", "Reviewing all the site copy"));
+    try {
+      const review = await ctx.step("text-review", async () => {
+        const all = allSections(loadCustomTheme(p.id)!).filter((x) => x.s.clientTexts || sections.some((y) => y.s.uid === x.s.uid));
+        const prompt = copyReviewPrompt(brief, all.map((x) => ({ uid: x.s.uid, place: x.page?.label ?? x.place, title: libSection(x.s.id)?.title ?? x.s.id, html: withBrandName(sectionHtml(x.s), name) })));
+        const usageKey = `${ctx.job.id}:text-review`;
+        return CopyReviewSchema.parse(customBrandDeps.review ? await customBrandDeps.review(prompt, usageKey)
+          : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-review", costCapMicro: a.capMicro }, () =>
+              llmJson({ task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: COPY_REVIEW_SYSTEM, promptKey: "syna-custom-copy-review-1", prompt, maxTokens: 8000, maxOutputTokens: 16000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, CopyReviewSchema, { strict: true })));
+      });
+      const known = new Map(allSections(loadCustomTheme(p.id)!).map((x) => [x.s.uid, x] as const));
+      const refused = review.sections.filter((f, i, all) => known.has(f.uid) && all.findIndex((g) => g.uid === f.uid) === i);
+      const todo = refused.slice(0, MAX_COPY_FIXES);
+      let fixed = 0;
+      for (const [i, f] of todo.entries()) {
+        const x = known.get(f.uid)!, l = libSection(x.s.id), label = l?.title ?? x.s.id;
+        ctx.progress(0.5 + (0.08 * i) / todo.length, L(`Je reprends : ${label}`, `Reworking: ${label}`));
+        try {
+          const w = await ctx.step(`text-fix:${f.uid}`, async () => {
+            const cur = allSections(loadCustomTheme(p.id)!).find((y) => y.s.uid === f.uid) ?? x;
+            const prompt = `${sectionWritePrompt(brief, cur.page?.label ?? cur.place, label, l?.does ?? "", withBrandName(sectionHtml(cur.s), name), sitePlan ? { site: sitePlan, uid: f.uid } : undefined, { intent: cur.s.intent, journey: cur.page?.journey, pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · ") })}\n\nCORRECTIONS EXIGÉES PAR LE DIRECTEUR DE CRÉATION (la section est déjà écrite : ne change QUE ce que ces corrections visent ; chaque « find » porte sur le HTML ci-dessus, tel qu'il est maintenant ; garde les liens et les photos, ne les redonne que s'ils changent) :\n${f.fixes.map((c) => `- ${c}`).join("\n")}`;
+            const usageKey = `${ctx.job.id}:text-fix:${f.uid}`;
+            return customBrandDeps.write ? customBrandDeps.write(prompt, usageKey)
+              : SectionWriteSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-fix", costCapMicro: a.capMicro }, () =>
+                  llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: SECTION_WRITE_SYSTEM, promptKey: "syna-custom-section-1", prompt, maxTokens: 14000, maxOutputTokens: 28000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SectionWriteSchema, { strict: true })));
+          });
+          const r = await ctx.step(`text-fix-saved:${f.uid}`, async () => {
+            t = loadCustomTheme(p.id)!;
+            const cur = allSections(t).find((y) => y.s.uid === f.uid);
+            if (!cur) return null;
+            const out = applyWrite(withBrandName(sectionHtml(cur.s), name), w);
+            if (!out.applied) return { applied: 0, failed: out.failed };
+            cur.s.html = out.html;
+            // Photos redécrites par la reprise : elles remplacent les anciennes descriptions ; sinon rien ne bouge.
+            if (w.photos.length) { cur.s.photoBriefs = w.photos; briefs[f.uid] = w.photos; }
+            t = saveCustomTheme(p.id, t, { history: false });
+            return { applied: out.applied, failed: out.failed };
+          });
+          if (r?.applied) fixed++;
+          else report.problems.push(`${label} : ma relecture demandait une reprise (${f.fixes[0].slice(0, 140)}), elle n'a pas pu être posée : à relire`);
+        } catch (e) { report.problems.push(`${label} : reprise demandée par ma relecture non faite (${(e as Error).message.slice(0, 100)})`); }
+      }
+      for (const f of refused.slice(MAX_COPY_FIXES)) report.problems.push(`${libSection(known.get(f.uid)!.s.id)?.title ?? f.uid} : à relire (${f.fixes[0].slice(0, 140)})`);
+      report.relecture = { reprises: fixed, refusees: refused.length, avis: review.site };
+    } catch (e) { report.problems.push(`relecture des textes non faite (${(e as Error).message.slice(0, 120)}) : les textes n'ont pas été relus`); }
+  }
+
   // 2) Photos : vraie photo du produit, sinon photo créée dans la direction artistique de la marque.
   if (a.photos !== false) {
     // Photo d'une fiche produit posée par erreur en photo d'ambiance (essai Éclat de thé : le sachet en ouverture, titre
@@ -492,9 +654,63 @@ export async function runCustomBrandJob(ctx: JobContext) {
         }
       } catch (e) { report.problems.push(`${ly.title} : photos non décrites (${(e as Error).message.slice(0, 100)})`); }
     }
+    const mode: ImagesMode = a.images ?? "sina";
+    // 2 bis) Relecture de TOUTES les descriptions par la directrice artistique, avant de payer la moindre photo, puis
+    // une reprise des descriptions refusées (un appel par section). Jamais pour une photo du produit seul (sa vraie
+    // photo y va), ni pour une photo que seul le client peut fournir. (Essais sans IA : seulement si le test la fournit.)
+    if (a.newPhotos !== false && mode !== "client" && (!customBrandDeps.photo || customBrandDeps.photoReview)) {
+      const reviewable = () => allSections(loadCustomTheme(p.id)!).filter(onPage).map((y) => {
+        const ly = libSection(y.s.id), html = sectionHtml(y.s);
+        if (!ly || authenticSection(y.s.id, p.business === "services" ? "services" : "products")) return null;
+        const photos = (briefs[y.s.uid] ?? []).filter((b) => html.includes(b.find) && !/(^|\/)(carte|map|plan)-/.test(b.find) && !showsProductAlone(ly, b.description));
+        return photos.length ? { y, ly, html, photos } : null;
+      }).filter((x): x is NonNullable<typeof x> => !!x);
+      const seen = reviewable();
+      if (seen.reduce((k, x) => k + x.photos.length, 0) >= MIN_PHOTOS_TO_REVIEW) {
+        ctx.progress(0.5, L("Je relis toutes les photos prévues avant de les créer", "Reviewing every planned photo before creating it"));
+        try {
+          const review = await ctx.step("photo-review", async () => {
+            const prompt = photoReviewPrompt(brief, direction, seen.map((x) => ({ uid: x.y.s.uid, place: x.y.page?.label ?? x.y.place, title: x.ly.title, html: withBrandName(x.html, name), photos: x.photos.map((b) => ({ find: b.find, description: b.description, ratio: b.ratio, product: b.product ?? null })) })));
+            const usageKey = `${ctx.job.id}:photo-review`;
+            return PhotoReviewSchema.parse(customBrandDeps.photoReview ? await customBrandDeps.photoReview(prompt, usageKey)
+              : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-photo-review", costCapMicro: a.capMicro }, () =>
+                  llmJson({ task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: PHOTO_REVIEW_SYSTEM, promptKey: "syna-custom-photo-review-1", prompt, maxTokens: 7000, maxOutputTokens: 14000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, PhotoReviewSchema, { strict: true })));
+          });
+          // Seules les photos réellement relues comptent (une section ou une source inconnue est ignorée).
+          const refused = review.photos.filter((f, i, list) => seen.some((x) => x.y.s.uid === f.uid && x.photos.some((b) => b.find === f.find)) && list.findIndex((g) => g.uid === f.uid && g.find === f.find) === i);
+          const uids = [...new Set(refused.map((f) => f.uid))];
+          let redone = 0;
+          for (const [i, uid] of uids.slice(0, MAX_PHOTO_FIXES).entries()) {
+            const x = seen.find((z) => z.y.s.uid === uid)!, mine = refused.filter((f) => f.uid === uid);
+            ctx.progress(0.5 + (0.04 * i) / Math.max(1, Math.min(uids.length, MAX_PHOTO_FIXES)), L(`Je revois les photos : ${x.ly.title}`, `Reworking photos: ${x.ly.title}`));
+            try {
+              const got = await ctx.step(`photo-fix:${uid}`, async () => {
+                const prompt = `${brief}\n\nSECTION « ${x.ly.title} » (${x.y.page?.label ?? x.y.place}) : ${x.ly.does}${x.y.s.intent ? `\nCONCEPTION : ${x.y.s.intent}` : ""}${direction ? `\nDIRECTION ARTISTIQUE DE LA MARQUE : ${direction}` : ""}\n\nHTML actuel (textes déjà écrits pour la marque) :\n${x.html.slice(0, 12000)}\n\nPHOTOS À REDÉCRIRE (source exacte ; garde le format et la place du texte) :\n${mine.map((f) => { const old = x.photos.find((b) => b.find === f.find)!; return `- ${f.find} (format ${old.ratio}) · description refusée : ${old.description}\n  CORRECTIONS EXIGÉES PAR LA DIRECTRICE ARTISTIQUE :\n${f.fixes.map((c) => `  - ${c}`).join("\n")}`; }).join("\n")}\n\nAUTRES PHOTOS DU SITE (ne refais aucune de ces scènes) :\n${seen.flatMap((z) => z.photos.filter((b) => !(z.y.s.uid === uid && mine.some((f) => f.find === b.find))).map((b) => `- ${b.description.slice(0, 160)}`)).slice(0, 40).join("\n")}`;
+                const usageKey = `${ctx.job.id}:photo-fix:${uid}`;
+                return customBrandDeps.photoBrief ? customBrandDeps.photoBrief(prompt, usageKey)
+                  : PhotoBriefSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-photo-fix", costCapMicro: a.capMicro }, () =>
+                      llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: PHOTO_BRIEF_SYSTEM, promptKey: "syna-custom-photo-brief-1", prompt, maxTokens: 6000, maxOutputTokens: 12000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, PhotoBriefSchema, { strict: true })));
+              });
+              // Une reprise ne change que la description (et le produit montré) : jamais la source ni le format.
+              let here = 0;
+              briefs[uid] = (briefs[uid] ?? []).map((b) => {
+                const next = mine.some((f) => f.find === b.find) ? got.photos.find((g) => g.find === b.find && briefUsable(g.description) && g.description.trim() !== b.description.trim()) : undefined;
+                if (!next) return b;
+                here++;
+                return { ...b, description: next.description, product: next.product ?? null };
+              });
+              redone += here;
+              if (here) { const t3 = loadCustomTheme(p.id)!, z = allSections(t3).find((w) => w.s.uid === uid); if (z) { z.s.photoBriefs = briefs[uid]; saveCustomTheme(p.id, t3, { history: false }); } }
+              if (here < mine.length) report.problems.push(`${x.ly.title} : ${mine.length - here} photo(s) que ma relecture voulait revoir n'ont pas pu être redécrites (${mine[0].fixes[0].slice(0, 120)})`);
+            } catch (e) { report.problems.push(`${x.ly.title} : photos non redécrites après ma relecture (${(e as Error).message.slice(0, 100)})`); }
+          }
+          for (const uid of uids.slice(MAX_PHOTO_FIXES)) report.problems.push(`${seen.find((z) => z.y.s.uid === uid)!.ly.title} : photo à revoir (${refused.find((f) => f.uid === uid)!.fixes[0].slice(0, 140)})`);
+          report.relecturePhotos = { reprises: redone, refusees: refused.length, avis: review.site };
+        } catch (e) { report.problems.push(`relecture des photos non faite (${(e as Error).message.slice(0, 120)}) : les descriptions n'ont pas été relues`); }
+      }
+    }
     const pageOfUid = new Map(allSections(loadCustomTheme(p.id)!).map((y) => [y.s.uid, y] as const));
     const todo = Object.entries(briefs).flatMap(([uid, list]) => list.map((ph) => ({ uid, ph }))).filter((x) => !/(^|\/)(carte|map|plan)-[\w-]*\.(?:webp|png|jpe?g)/.test(x.ph.find) && (!a.pages?.length || onPage(pageOfUid.get(x.uid) ?? {})));
-    const mode: ImagesMode = a.images ?? "sina";
     // Images du client d'abord (« client » ou « mix »), dans l'ordre ; jamais une même image sur deux emplacements.
     const allOwn = (a.clientAssets ?? []).filter((id) => { const x = getAsset(id); return !!x && x.project_id === p.id && !x.deleted_at && x.kind === "image" && !productIds.has(id); });
     const own = mode === "sina" ? [] : allOwn;

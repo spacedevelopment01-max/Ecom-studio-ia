@@ -9,7 +9,7 @@ import { DEMO_BRANDS, familySections, libSection, sectionByRef, sectionLibrary, 
 import { applyStructure, checkCustomTheme, replaceOnce, scopedCss, type CustomTheme } from "@/lib/syna-agent/custom-theme/theme";
 import { starterTheme, STARTERS } from "@/lib/syna-agent/custom-theme/starters";
 import { brandCss, buyFlags, renderCustomTheme } from "@/lib/syna-agent/custom-theme/render";
-import { SECTION_FAMILIES } from "@/lib/syna-agent/section-families";
+import { SECTION_FAMILIES, siteArtUniverse } from "@/lib/syna-agent/section-families";
 
 const brand = { name: "Ardent", nameStatus: "validated", alternatives: [], tagline: "", positioning: "", audience: "", personality: [], tone: { voice: "", do: [], dont: [] }, palette: { primary: "#C2410C", secondary: "#E7E5E4", accent: "#0F766E", light: "#FAFAF9", dark: "#1C1917" }, fonts: { heading: "", body: "" }, logo: { concept: "", status: "proposed" } } as any;
 const proj = { id: "p-test", name: "Ardent", brand };
@@ -694,6 +694,46 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       const resumed: any = await fr(() => B.runCustomBrandJob(resumable));
       expect(resumed.failedEdits).toBe(0);
       expect(resumed.problems.filter((x: string) => /non remplacé/.test(x))).toEqual([]);
+      // Relecture de TOUS les textes (carte des spécialistes, lot 2) : le directeur de création lit le site entier et
+      // désigne des sections ; chacune est reprise UNE fois ; une section inconnue est ignorée ; au-delà de la limite,
+      // ce qui reste est dit dans le rapport. Celui qui écrit n'est jamais celui qui juge.
+      {
+        const savedWrites = writes, savedPlans = plans;
+        const uids = allSections(loadCustomTheme(pid)!).map((x) => x.s.uid);
+        const reviews: string[] = [], fixes: string[] = [];
+        const write1 = B.customBrandDeps.write!;
+        B.customBrandDeps.review = async (prompt) => { reviews.push(prompt); return { sections: [...uids.slice(0, B.MAX_COPY_FIXES + 1).map((uid) => ({ uid, fixes: ["« Texte de la marque » : ce titre décrit, il ne fait rien ressentir."] })), { uid: "sinconnu", fixes: ["Une section qui n'existe pas."] }], site: "Clair, mais trop descriptif." }; };
+        B.customBrandDeps.write = async (prompt, k) => {
+          if (!prompt.includes("CORRECTIONS EXIGÉES PAR LE DIRECTEUR DE CRÉATION")) return write1(prompt, k);
+          fixes.push(prompt);
+          const h = prompt.slice(prompt.indexOf("HTML actuel")).match(/>(Texte de la marque \d+)</);
+          return { edits: h ? [{ find: `>${h[1]}<`, replace: `>Repris : ${h[1]}<` }] : [], links: [], photos: [] };
+        };
+        try {
+          const est2 = await fr(() => getTool("custom.build")!.estimate!(ctx, { photos: false, rewrite: true }));
+          // Le devis compte la relecture et les reprises possibles.
+          expect(est2.maxMicro).toBeGreaterThanOrEqual(B.SITE_PLAN_CAP_MICRO + uids.length * B.SECTION_TEXT_CAP_MICRO + B.COPY_REVIEW_CAP_MICRO + B.MAX_COPY_FIXES * B.SECTION_TEXT_CAP_MICRO);
+          const third: any = await fr(() => B.runCustomBrandJob({ ...fake, job: { id: `${job.id}-relu` }, payload: { ...fake.payload, photos: false, rewrite: true } }));
+          expect(reviews).toHaveLength(1);
+          expect(reviews[0]).toMatch(/TEXTES DU SITE À RELIRE \(\d+ sections, dans l'ordre des pages\)/);
+          expect(reviews[0]).toMatch(/## s[0-9a-f]{8} · /);
+          expect(reviews[0]).toMatch(/TITRE : Texte de la marque \d+/);
+          expect(B.COPY_REVIEW_SYSTEM).toMatch(/Tu n'écris rien toi-même/);
+          expect(B.COPY_REVIEW_SYSTEM).toMatch(/L'ÉMOTION D'ABORD/);
+          expect(fixes).toHaveLength(B.MAX_COPY_FIXES);
+          expect(fixes[0]).toMatch(/ce titre décrit, il ne fait rien ressentir/);
+          expect(third.relecture).toMatchObject({ refusees: B.MAX_COPY_FIXES + 1, avis: "Clair, mais trop descriptif." });
+          expect(third.relecture.reprises).toBeGreaterThan(0);
+          const now = allSections(loadCustomTheme(pid)!);
+          expect(now.filter((x) => sectionHtml(x.s).includes("Repris : Texte de la marque")).length).toBe(third.relecture.reprises);
+          expect(third.problems.filter((x: string) => /: à relire \(/.test(x))).toHaveLength(1); // la septième, au-delà de la limite
+          // Relecture en panne : dit dans le rapport, jamais passé sous silence.
+          B.customBrandDeps.review = async () => { throw new Error("modèle indisponible"); };
+          const fourth: any = await fr(() => B.runCustomBrandJob({ ...fake, job: { id: `${job.id}-panne` }, payload: { ...fake.payload, photos: false, rewrite: true } }));
+          expect(fourth.problems.join("\n")).toMatch(/relecture des textes non faite \(modèle indisponible\) : les textes n'ont pas été relus/);
+          expect(fourth.relecture).toBeNull();
+        } finally { delete B.customBrandDeps.review; B.customBrandDeps.write = write1; writes = savedWrites; plans = savedPlans; }
+      }
       // Famille changée après le montage : plus de montage ni de photo tant qu'un thème n'est pas conçu dans sa famille.
       await call("theme.family", ctx, { family: "moderne", style: "sport-chic" });
       expect((await call("custom.build", ctx, {})).summary).toMatch(/il faut d'abord concevoir un nouveau thème dans sa famille/);
@@ -829,6 +869,13 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       const left = B.photoSlots(loadCustomTheme(pid)!, { productPhotos: true }).filter((x) => x.kind === "ambiance").length;
       expect(left).toBeGreaterThan(3);
       expect(est.maxMicro).toBeGreaterThan(left * 50_000);
+      // La relecture de toutes les photos prévues (directrice artistique) est dans le devis, sauf si SINA n'en crée aucune.
+      const estOwn = await fr(() => getTool("custom.build")!.estimate!(ctx, { images: "client" }));
+      const { galleryCheckMaxMicro: chk } = await import("@/lib/syna-agent/custom-theme/gallery");
+      // Plan des textes + chaque photo et son contrôle + la relecture des photos et ses reprises ; rien de plus.
+      const slotsAll = B.photoSlots(loadCustomTheme(pid)!, { productPhotos: true }).length;
+      expect(est.maxMicro).toBe(B.SITE_PLAN_CAP_MICRO + slotsAll * (50_000 + chk()) + B.PHOTO_REVIEW_CAP_MICRO + B.MAX_PHOTO_FIXES * B.SECTION_TEXT_CAP_MICRO);
+      expect(estOwn.maxMicro).toBe(B.SITE_PLAN_CAP_MICRO); // ses images seulement : aucune photo créée, donc aucune relecture
       // Second temps : les descriptions manquantes sont écrites, puis les photos créées.
       let briefs = 0, made = 0;
       B.customBrandDeps.photoBrief = async (prompt) => { briefs++; const files = /PHOTOS À DÉCRIRE \(source exacte\) : (.*)$/m.exec(prompt)![1].split(", "); return { photos: files.map((f) => ({ find: f, description: "Photographie d'ambiance : une théière en verre sur une table en bois, lumière du matin.", ratio: "1:1" as const, product: null })) }; };
@@ -845,12 +892,58 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       expect(sample("home")).toBe(0);
       expect(sample("product")).toBeGreaterThan(0);
       expect(first.problems.join(" ")).toMatch(/photo\(s\) d'exemple encore en place/);
+      // Relecture de TOUTES les photos prévues avant d'en payer une seule (carte des spécialistes, lot 2) : la directrice
+      // artistique désigne des descriptions ; chacune est redécrite UNE fois, sans changer la source ni le format ; une
+      // photo inconnue est ignorée ; au-delà de la limite, ce qui reste est dit dans le compte rendu.
+      const artPrompts: string[] = [], fixPrompts: string[] = [], photoPrompts: { prompt: string; aspect: string }[] = [];
+      const describe1 = B.customBrandDeps.photoBrief!;
+      B.customBrandDeps.photoBrief = async (prompt, k) => {
+        if (!prompt.includes("CORRECTIONS EXIGÉES PAR LA DIRECTRICE ARTISTIQUE")) return describe1(prompt, k);
+        fixPrompts.push(prompt);
+        const finds = [...prompt.slice(prompt.indexOf("PHOTOS À REDÉCRIRE"), prompt.indexOf("AUTRES PHOTOS DU SITE")).matchAll(/^- (photos\/[\w-]+\.(?:webp|png|jpg)) \(format/gm)].map((m) => m[1]);
+        return { photos: finds.map((f) => ({ find: f, description: `Photographie d'ambiance revue : des feuilles de thé dans une coupelle en grès, près d'une fenêtre (${f}).`, ratio: "16:9" as const, product: null })) };
+      };
+      let reviewed = 0;
+      B.customBrandDeps.photoReview = async (prompt) => {
+        artPrompts.push(prompt);
+        const seen = [...prompt.matchAll(/^## (s[0-9a-f]{8}) · [^\n]*\nTEXTE D'EN FACE : [^\n]*\n((?:- [^\n]*\n?)+)/gm)].map((m) => ({ uid: m[1], finds: [...m[2].matchAll(/^- (photos\/[\w-]+\.(?:webp|png|jpg)) \(format/gm)].map((x) => x[1]) }));
+        reviewed = seen.length;
+        return { photos: [...seen.slice(0, B.MAX_PHOTO_FIXES + 1).map((x) => ({ uid: x.uid, find: x.finds[0], fixes: ["Même scène que la photo d'ouverture : change de lieu et de moment."] })), { uid: "sinconnu", find: "photos/rien.webp", fixes: ["Une photo qui n'existe pas."] }], site: "Une séance qui se répète." };
+      };
+      B.customBrandDeps.photo = async (prompt, _product, aspect) => { made++; photoPrompts.push({ prompt, aspect }); return sharp({ create: { width: 20, height: 20, channels: 3, background: "#999" } }).png().toBuffer(); };
       const out: any = await run(`ph-${Date.now()}`, { projectId: pid, capMicro: est.maxMicro, photos: true, images: "sina" });
+      expect(artPrompts).toHaveLength(1);
+      expect(artPrompts[0]).toMatch(/PHOTOS DU SITE À RELIRE \(\d+ photos dans \d+ sections, dans l'ordre des pages\)/);
+      expect(B.PHOTO_REVIEW_SYSTEM).toMatch(/Tu ne décris rien toi-même/);
+      expect(B.PHOTO_REVIEW_SYSTEM).toMatch(/LA MÊME SCÈNE DEUX FOIS/);
+      expect(reviewed).toBeGreaterThan(1);
+      const refusedN = Math.min(reviewed, B.MAX_PHOTO_FIXES + 1), fixedN = Math.min(reviewed, B.MAX_PHOTO_FIXES);
+      expect(fixPrompts).toHaveLength(fixedN);
+      expect(fixPrompts[0]).toMatch(/Même scène que la photo d'ouverture/);
+      expect(fixPrompts[0]).toMatch(/AUTRES PHOTOS DU SITE \(ne refais aucune de ces scènes\)/);
+      expect(out.relecturePhotos).toEqual({ reprises: fixedN, refusees: refusedN, avis: "Une séance qui se répète." });
+      // Les photos sont créées sur les descriptions revues, au format d'origine (jamais celui redonné par la reprise).
+      expect(photoPrompts.filter((x) => x.prompt.includes("Photographie d'ambiance revue")).length).toBe(fixedN);
+      expect(photoPrompts.every((x) => x.aspect === "1:1")).toBe(true);
+      expect(out.problems.filter((x: string) => /: photo à revoir \(/.test(x))).toHaveLength(refusedN - fixedN);
       expect(briefs).toBeGreaterThan(0);
       expect(first.photosMade + out.photosMade).toBe(made);
       expect(made).toBeGreaterThanOrEqual(left);
       expect(out.problems.join(" ")).not.toMatch(/photo\(s\) d'exemple encore en place/);
-    } finally { delete T.customPhotoDeps.unit; for (const k of ["plan", "seo", "write", "photo", "photoBrief"] as const) delete (B.customBrandDeps as any)[k]; }
+    } finally { delete T.customPhotoDeps.unit; for (const k of ["plan", "seo", "write", "photo", "photoBrief", "photoReview"] as const) delete (B.customBrandDeps as any)[k]; }
+  });
+
+  it("la direction artistique de la planche choisie est reprise par les photos du site, sauf identité mélangée", () => {
+    const j = (mix: object, edits?: object) => ({ identityChoice: { key: "B", mix, ...(edits ? { edits } : {}), at: 1 }, identities: { list: [{ key: "A" }, { key: "B", board: { images: { look: "  Lumière d'été en fin d'après-midi, verre embué, fruits coupés nets.  " } } }] } }) as any;
+    expect(B.boardLook(j({}))).toBe("Lumière d'été en fin d'après-midi, verre embué, fruits coupés nets.");
+    expect(B.boardLook(j({ palette: "A" }))).toBeNull(); // couleurs prises à une autre planche : sa direction n'est plus vraie
+    expect(B.boardLook(j({}, { name: "Autre" }))).toBeNull();
+    expect(B.boardLook(null)).toBeNull();
+    expect(B.boardLook({ identityChoice: { key: "A", mix: {}, at: 1 }, identities: { list: [{ key: "A" }] } } as any)).toBeNull(); // planche sans images
+    const fu = siteArtUniverse({ family: "classique" } as any, { people: false });
+    const d = B.siteArtDirection({ brand: { palette: { dark: "#111111", primary: "#FF8A5C", accent: "#FFE23D" } } } as any, fu, j({}))!;
+    expect(d).toMatch(/Direction artistique de sa planche de marque \(la même marque, la même séance\) : Lumière d'été/);
+    expect(B.siteArtDirection({ brand: { palette: {} } } as any, fu, j({ fonts: "A" }))).not.toMatch(/planche de marque/);
   });
 
   it("photos produit sur les emplacements produit seulement ; sachet posé par erreur en ouverture → scène créée avec lui en modèle", async () => {

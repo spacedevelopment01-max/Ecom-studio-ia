@@ -251,8 +251,14 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     pour le fonctionnement parfait de sina […] fais comme tu considères le mieux ») : `docs/sina-savoir/specialistes.md`
     dit, étape par étape, qui fait le travail, ce qui manque et l'ordre des lots. Principes : celui qui fait n'est jamais
     celui qui juge ; le juge voit tout ; rien n'est montré sans avoir été relu ; devis avant, plafond pendant. Lot 1
-    (finir la marque) fait le 13 novembre ; lots suivants : textes et photos du thème sur mesure, la conversation, les
-    cinq angles, publications et calendrier, publicités, articles et rangement.
+    (finir la marque) fait le 13 novembre. **Lot 2 fait le 13 novembre** (thème sur mesure, `custom-theme/brand.ts`,
+    testé avec une IA simulée, aucun essai réel) : un directeur de création relit TOUS les textes du site monté et fait
+    reprendre les sections refusées (`COPY_REVIEW_SYSTEM`, 6 au plus) ; une directrice artistique relit TOUTES les
+    photos prévues avant qu'une seule soit payée (`PHOTO_REVIEW_SYSTEM`, 5 sections redécrites au plus, jamais la source
+    ni le format) ; la direction artistique de la planche choisie est reprise par les photos du site (`boardLook`) ; le
+    devis de `custom.build` compte ces relectures ; le compte rendu les donne (`relecture`, `relecturePhotos`) et SINA
+    les dit au client. Lots suivants : la conversation, les cinq angles, publications et calendrier, publicités,
+    articles et rangement.
   - **À confirmer par le propriétaire** : le quatrième fond d'une série de quatre identités (aujourd'hui un fond clair
     coloré, « uni ») ; la règle « un fond sombre par série » quand le client demande du joyeux et du coloré (le directeur
     de création l'a contestée pendant l'essai) ; le réglage des modèles.

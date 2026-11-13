@@ -45,7 +45,7 @@ import { stateOf } from "../../preparation/store";
 import { journeyOf, setStep as setJourneyStep, updateJourney as updateJourneyConv } from "../journey";
 import { galleryCheckMaxMicro } from "./gallery";
 import { briefUsable, misplacedProductPhotos, productSlotSection, showsProductAlone } from "./brand";
-import { clientImages, CUSTOM_BRAND_JOB, examplePhotoCount, productImageIds, photoSlots, photosToCreate, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, siteArtDirection, sitePhotoName, textPlacementLine, type ImagesMode } from "./brand";
+import { clientImages, CUSTOM_BRAND_JOB, examplePhotoCount, productImageIds, photoSlots, photosToCreate, COPY_REVIEW_CAP_MICRO, MAX_COPY_FIXES, MAX_PHOTO_FIXES, MIN_PHOTOS_TO_REVIEW, PHOTO_REVIEW_CAP_MICRO, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, siteArtDirection, sitePhotoName, textPlacementLine, type ImagesMode } from "./brand";
 
 /** Ce que le client voit dans le fil : l'aperçu vivant de son thème et sa composition. */
 export function themeCard(projectId: string, t: CustomTheme) {
@@ -366,6 +366,12 @@ export function recentThemeSections(projectId: string): string[][] {
 /** Coût probable d'une écriture de section (mesuré sur les textes du site : environ 0,06 € avec le modèle des textes). */
 export const SECTION_TEXT_TYPICAL_MICRO = 60_000;
 export const SITE_PLAN_TYPICAL_MICRO = 90_000;
+/** Relecture de tous les textes par le directeur de création : son coût habituel, et deux sections reprises en moyenne. */
+export const COPY_REVIEW_TYPICAL_MICRO = 90_000;
+export const COPY_FIXES_TYPICAL = 2;
+/** Relecture de toutes les photos prévues par la directrice artistique : son coût habituel, et une section revue en moyenne. */
+export const PHOTO_REVIEW_TYPICAL_MICRO = 60_000;
+export const PHOTO_FIX_TYPICAL_MICRO = 30_000;
 type BuildArgs = { photos?: boolean; newPhotos?: boolean; images?: ImagesMode; clientAssets?: string[]; rewrite?: boolean; consigne?: string; pages?: string[] };
 /** Thème à monter à la marque : celui que le Studio a conçu de A à Z (custom.design), toutes ses pages comprises. */
 function buildPlan(ctx: ToolContext): CustomTheme {
@@ -420,7 +426,13 @@ const buildTool: AgentTool<BuildArgs> = {
     // + le plan des textes de tout le site (un appel, avant les sections)
     // + le contrôle de chaque photo créée (décision du 10 novembre 2026).
     const check = galleryCheckMaxMicro();
-    return { maxMicro: SITE_PLAN_CAP_MICRO + sections * SECTION_TEXT_CAP_MICRO + briefCalls * SECTION_TEXT_CAP_MICRO + photosMax * ((unit ?? 0) + check), probableMicro: SITE_PLAN_TYPICAL_MICRO + sections * SECTION_TEXT_TYPICAL_MICRO + Math.round(Math.min(shown, photosMax) * ((unit ?? 0) * 0.8 + check * 0.5)), label: a.newPhotos === false && a.photos !== false ? L(`thème sur mesure monté à ta marque en deux fois : ${sections} sections écrites et les vraies photos de tes produits posées, aucune photo créée pour l'instant`, "custom theme built, no new photos yet") : a.rewrite && !shown ? L(`textes de tout ton site réécrits : plan des textes puis ${sections} sections`, "all site copy rewritten") : L(`thème sur mesure monté à ta marque : ${sections} sections écrites${shown ? `, ${shown} photos créées` : ""}${a.clientAssets?.length ? `, ${a.clientAssets.length} de tes images posées` : ""}`, "custom theme built for the brand") };
+    // + la relecture de tous les textes et la reprise des sections refusées (13 novembre 2026), dès qu'un texte est écrit.
+    const reviewMax = sections ? COPY_REVIEW_CAP_MICRO + Math.min(MAX_COPY_FIXES, sections) * SECTION_TEXT_CAP_MICRO : 0, reviewUsual = sections ? COPY_REVIEW_TYPICAL_MICRO + Math.min(COPY_FIXES_TYPICAL, sections) * SECTION_TEXT_TYPICAL_MICRO : 0;
+    // + la relecture de toutes les photos prévues, avant leur création, et la reprise des descriptions refusées
+    //   (13 novembre 2026) : seulement quand SINA crée au moins deux photos.
+    const artReview = photosMax >= MIN_PHOTOS_TO_REVIEW && (a.images ?? "sina") !== "client";
+    const artMax = artReview ? PHOTO_REVIEW_CAP_MICRO + Math.min(MAX_PHOTO_FIXES, photosMax) * SECTION_TEXT_CAP_MICRO : 0, artUsual = artReview && shown >= MIN_PHOTOS_TO_REVIEW ? PHOTO_REVIEW_TYPICAL_MICRO + PHOTO_FIX_TYPICAL_MICRO : 0;
+    return { maxMicro: SITE_PLAN_CAP_MICRO + sections * SECTION_TEXT_CAP_MICRO + reviewMax + briefCalls * SECTION_TEXT_CAP_MICRO + artMax + photosMax * ((unit ?? 0) + check), probableMicro: SITE_PLAN_TYPICAL_MICRO + sections * SECTION_TEXT_TYPICAL_MICRO + reviewUsual + artUsual + Math.round(Math.min(shown, photosMax) * ((unit ?? 0) * 0.8 + check * 0.5)), label: a.newPhotos === false && a.photos !== false ? L(`thème sur mesure monté à ta marque en deux fois : ${sections} sections écrites et les vraies photos de tes produits posées, aucune photo créée pour l'instant`, "custom theme built, no new photos yet") : a.rewrite && !shown ? L(`textes de tout ton site réécrits : plan des textes puis ${sections} sections`, "all site copy rewritten") : L(`thème sur mesure monté à ta marque : ${sections} sections écrites${shown ? `, ${shown} photos créées` : ""}${a.clientAssets?.length ? `, ${a.clientAssets.length} de tes images posées` : ""}`, "custom theme built for the brand") };
   },
   run: async (ctx, a) => {
     const p = project(ctx);
