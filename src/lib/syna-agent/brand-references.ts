@@ -153,6 +153,19 @@ export const NAME_REFUSALS: { name: string; activity: string; words: string }[] 
   { name: "Dans le Sac", activity: "exemple de travail", words: "tournure de conversation plate, qui ne fait pas marque" },
 ];
 
+/**
+ * Notes données par le propriétaire à des noms trouvés par SINA (12 novembre 2026, infusions de fruits à boire
+ * froides) : la mesure chiffrée du juge des noms. Seul un nom qu'il noterait 8 sur 10 ou plus mérite une planche.
+ */
+export const NAME_RATINGS: { name: string; activity: string; score: number }[] = [
+  { name: "Pulpe", activity: "infusions de fruits à boire froides", score: 9 },
+  { name: "Haut les Pêches", activity: "infusions de fruits à boire froides", score: 6 },
+  { name: "Tout Feu Tout Fruit", activity: "infusions de fruits à boire froides", score: 6 },
+  { name: "Cerise sur le Verre", activity: "infusions de fruits à boire froides", score: 4 },
+];
+/** Note à partir de laquelle un nom est gardé par le juge. */
+export const NAME_KEEP_SCORE = 8;
+
 export const INVENTED_NAME_EXAMPLES: { name: string; how: string }[] = [
   { name: "Velcro", how: "« velours » + « crochet » : deux mots du produit fondus sans couture visible" },
   { name: "Vélib'", how: "« vélo » + « liberté » : le produit et ce qu'il apporte, en deux syllabes" },

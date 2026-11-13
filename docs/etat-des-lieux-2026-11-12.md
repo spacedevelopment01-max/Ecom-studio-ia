@@ -207,4 +207,8 @@ Coût : la chaîne de réflexion du troisième essai est estimée entre 20 et 30
   voyait que 7 noms par tour sur 178 trouvés : il passe désormais avant la composition et lit tous les noms. Question
   posée au propriétaire, en attente : parmi « Pulpe », « Haut les Pêches », « Tout Feu Tout Fruit » et « Cerise sur le
   Verre », y en a-t-il un qu'il donnerait à sa marque ?
+- **Ses notes** : « Pulpe » 9/10, « Haut les Pêches » 6/10, « Tout Feu Tout Fruit » 6/10, « Cerise sur le Verre »
+  4/10. Le juge avait donc raison de ne garder que « Pulpe » ; les trois noms repêchés par Claude valaient moins. Ces
+  notes sont données au juge comme mesure chiffrée (il ne garde qu'un nom qui vaudrait 8 sur 10 ou plus). Lecture de
+  Claude, à confirmer : un mot simple qui dit la matière du produit bat un jeu de mots sur une expression.
 

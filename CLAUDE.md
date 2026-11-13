@@ -182,8 +182,12 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     seul (« Pulpe ») ; de meilleurs noms de la réserve (« Haut les Pêches », « Tout Feu Tout Fruit », « Cerise sur le
     Verre ») n'arrivaient jamais devant lui. **Corrigé** : le juge lit TOUS les noms des équipes AVANT la composition,
     et les routes ne se composent qu'avec les noms qu'il garde (ou, faute de mieux, ses « presque », avec le doute dit).
-    Cette correction est testée avec une IA simulée, pas encore réessayée pour de vrai. Avis du propriétaire attendu
-    sur ces quatre noms, pour régler le juge sur son goût.
+    Cette correction est testée avec une IA simulée, pas encore réessayée pour de vrai. **Notes du propriétaire**
+    (12 novembre, même marque d'infusions) : « Pulpe » 9/10, « Haut les Pêches » 6/10, « Tout Feu Tout Fruit » 6/10,
+    « Cerise sur le Verre » 4/10 (`NAME_RATINGS`) : le juge ne garde qu'un nom qu'il noterait 8 sur 10 ou plus
+    (`NAME_KEEP_SCORE`). Lecture de Claude, pas ses mots : un mot simple qui dit la matière du produit bat un jeu de
+    mots sur une expression. Charge utile `names` : une proposition se fait sur un nom CHOISI par le client, lettre pour
+    lettre, sans recherche ni juge (devis `chainQuote({ imposed: true })`).
   - **Où c'est dans le code** : chaîne en tâche de fond `syna.brand` (`src/lib/syna-agent/brand-chain.ts` : étude du
     marché sur le web, paroles de clients gardées seulement si elles se retrouvent mot pour mot dans la page citée,
     idées, équipes de noms séparées, routes, vérification des noms sur le web, planches, directeur de création qui relit

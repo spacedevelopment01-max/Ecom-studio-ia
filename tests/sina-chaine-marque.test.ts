@@ -723,6 +723,9 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(log.ids.slice(log.ids.indexOf("team-verite") + 1, log.ids.indexOf("web:verify-1"))).toEqual(["judge-1", "shortlist"]);
     expect(log.systems["judge-1"]).toMatch(/tu appellerais ta marque comme ça, toi/);
     expect(log.systems["judge-1"]).toMatch(/« Morceaux Choisis »[^\n]*ça représente rien et c'est moche/);
+    // Les notes du propriétaire sont sa mesure chiffrée : il ne garde que ce qui vaudrait 8 sur 10 ou plus.
+    expect(log.systems["judge-1"]).toMatch(/« Pulpe » 9\/10, « Haut les Pêches » 6\/10, « Tout Feu Tout Fruit » 6\/10, « Cerise sur le Verre » 4\/10/);
+    expect(log.systems["judge-1"]).toMatch(/qu'un nom qu'il noterait 8 sur 10 ou plus/);
     // Il reçoit tous les noms libres des équipes ; un nom déjà refusé par le propriétaire n'arrive même pas devant lui.
     expect(log.prompts["judge-1"]).toMatch(/# Noms trouvés par les équipes \(15\)/);
     expect(log.prompts["judge-1"]).toMatch(/^- Marée Haute \| détail réel/m);
@@ -782,5 +785,23 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect((out as any).almost).toEqual([{ name: "La Main Lourde", why: "Il rate la beauté de peu." }]);
     expect((out as any).searched).toBe(15);
     expect(J.journeyOf(t.cid).identities ?? null).toBeNull();
+  });
+
+  it("nom choisi par le client : la proposition se fait sur CE nom, lettre pour lettre, sans recherche ni juge", async () => {
+    const t = await thread();
+    await chain(t, {}, { review: () => ({ routes: [], series: "" }) });
+    const before = J.journeyOf(t.cid).identities!.list;
+    const { log } = await chain(t, { redo: ["B"], names: ["Pulpe"] }, { review: () => ({ routes: [], series: "" }), shortlist: () => [pick("B", "Nage Libre")] });
+    expect(log.ids).toEqual(["shortlist", "web:verify-2", "verify-2", "direction-2-B", "review-2", "art-2-B"]);
+    expect(log.prompts.shortlist).toMatch(/# Noms CHOISIS par le client : compose une route par nom[^\n]*« Pulpe »/);
+    const after = J.journeyOf(t.cid).identities!.list;
+    expect(after.map((x) => x.name)).toEqual([before[0].name, "Pulpe", before[2].name]);
+    expect(after[1].ground).toBe(before[1].ground);
+    expect(after[0]).toEqual(before[0]);
+    // Un nom par proposition à faire, et un nom bien formé : sinon rien ne part.
+    await expect(chain(t, { redo: ["B"], names: ["Pulpe", "Zeste"] })).rejects.toThrow(/un nom par proposition à faire \(1\) ; j'en ai reçu 2/);
+    await expect(chain(t, { redo: ["B"], names: ["Pulpe 3000"] })).rejects.toThrow(/Ce nom ne peut pas servir tel quel/);
+    // Devis : un nom choisi coûte moins qu'une recherche (ni équipes, ni juge, ni second tour).
+    expect(C.chainQuote({ routes: 1, fresh: false, imposed: true }).maxMicro).toBeLessThan(C.chainQuote({ routes: 1, fresh: false }).maxMicro);
   });
 });

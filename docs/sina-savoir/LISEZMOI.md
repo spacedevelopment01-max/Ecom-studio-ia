@@ -113,6 +113,10 @@ gardé un seul : « Pulpe ». De meilleurs noms de la réserve n'arrivaient jama
 maintenant tous les noms avant la composition, et les propositions ne se composent qu'avec les noms qu'il garde. Cette
 correction n'a pas encore été réessayée pour de vrai.
 
+**Les notes du propriétaire** sur quatre noms de cette marque servent de mesure chiffrée au juge : « Pulpe » 9/10,
+« Haut les Pêches » 6/10, « Tout Feu Tout Fruit » 6/10, « Cerise sur le Verre » 4/10. Le juge ne garde qu'un nom qui
+vaudrait 8 sur 10 ou plus. Une proposition peut aussi se faire sur un nom que le client a choisi lui-même.
+
 ## Ce qui n'est pas réglé
 
 - Le coût réel n'est mesuré qu'une fois (2,88 € pour trois identités, réglage économe). L'estimation d'avant l'essai

@@ -8,7 +8,7 @@ import { BRAND_RULES } from "../media/identity-board";
 import { FONT_FILES } from "../theme/render";
 import { BOARD_OBJECTS, PALETTE_ROLES, SERVICE_OBJECTS, SIGN_KINDS } from "./brand-board";
 import { brandBook } from "./brand-knowledge";
-import { NAME_EXAMPLES, NAME_REFUSALS, PALETTE_EXAMPLES } from "./brand-references";
+import { NAME_EXAMPLES, NAME_KEEP_SCORE, NAME_RATINGS, NAME_REFUSALS, PALETTE_EXAMPLES } from "./brand-references";
 import { FONT_CHARACTER } from "./identities";
 
 /** Règles communes à tous les spécialistes (règles permanentes du propriétaire). */
@@ -29,7 +29,8 @@ export function nameYardstick(kind: "produits" | "services"): string {
 ${refs(kind)}
 Il aime aussi « Éclat de thé » (une sensation, puis ce que la marque vend) et les mots forts comme SOLSTICE ou RUPTURE. Ce sont des repères de niveau, PAS une formule : une série de noms fabriqués sur un même moule (« un mot + de + le produit ») a été jugée « nulle ».
 Il a refusé « Bien Roulé », « Ça Roule » et « Dans le Sac » : des tournures de conversation plates, qui ne font pas marque. Un nom doit s'imaginer en grand sur l'objet ou sur une enseigne.
-Il a refusé aussi, pour des infusions de fruits, « Tintamarre » (« c'est nul comme nom ») et « Morceaux Choisis » (« ça représente rien et c'est moche, tu appellerais ton site comme ça toi ? »). Sa question est la bonne : le fondateur donnerait-il ce nom à SA marque, avec fierté ?`;
+Il a refusé aussi, pour des infusions de fruits, « Tintamarre » (« c'est nul comme nom ») et « Morceaux Choisis » (« ça représente rien et c'est moche, tu appellerais ton site comme ça toi ? »). Sa question est la bonne : le fondateur donnerait-il ce nom à SA marque, avec fierté ?
+Ses notes, pour la même marque d'infusions : ${NAME_RATINGS.map((r) => `« ${r.name} » ${r.score}/10`).join(", ")}. Lecture du Studio (pas ses mots) : un mot simple et sensuel, qui dit la matière même du produit, bat un jeu de mots sur une expression, même bien trouvé ; un jeu de mots tiré par les cheveux tombe sous la moyenne.`;
 }
 
 /** Les épreuves d'un finaliste : les quatre des agences, puis celles du propriétaire (12 novembre 2026). */
@@ -181,6 +182,8 @@ Trois épreuves, dans cet ordre. Un nom doit passer les TROIS :
 1. Le fondateur : « tu appellerais ta marque comme ça, toi ? » Le dirais-tu avec fierté à un ami, le voudrais-tu en grand sur ton site ? Un « oui, pourquoi pas », un « c'est correct », un « ça peut marcher » sont des NON.
 2. Le nom seul : lis-le sans son explication, comme un passant qui voit le sachet ou l'enseigne. Que vois-tu, que ressens-tu ? S'il « ne représente rien » (une rubrique de catalogue, une étiquette de rayon, un mot abstrait, un mot qui parle d'autre chose que du produit et de son moment), c'est NON. Si le lien avec le produit n'existe que dans l'explication, c'est NON.
 3. La beauté : est-il beau à dire et à voir écrit ? Un mot laid, vieillot, scolaire, administratif, ou qui veut d'abord dire quelque chose de désagréable, c'est NON.
+
+Ta mesure chiffrée : les notes que le propriétaire a données (ci-dessus). Tu ne gardes qu'un nom qu'il noterait ${NAME_KEEP_SCORE} sur 10 ou plus ; un nom du niveau de « Haut les Pêches » ou de « Tout Feu Tout Fruit » (6 sur 10) est refusé, au mieux « presque ».
 
 Lis toute la liste avant de choisir : les meilleurs noms sont souvent au milieu, pas en tête. Sois sévère : sur deux cents noms, tu en gardes rarement plus de huit, parfois aucun. Mieux vaut renvoyer les équipes chercher que montrer un nom moyen. Ne garde jamais un nom parce qu'il en faut un.
 

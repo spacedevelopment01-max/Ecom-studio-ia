@@ -99,8 +99,9 @@ export type ChainQuote = { maxMicro: number; probableMicro?: number };
  * Coût probable : le déroulé habituel, avec la reprise d'une route sur deux. Mesure du 12 novembre 2026 (essai réel,
  * 3 identités, 20 appels, 14 minutes) : 2,88 € dépensés pour un plafond de 7,83 €.
  */
-export function chainQuote(o: { routes: number; fresh?: boolean; settings?: ChainSettings; images?: boolean }): ChainQuote {
+export function chainQuote(o: { routes: number; fresh?: boolean; settings?: ChainSettings; images?: boolean; /** Noms choisis par le client : ni recherche, ni juge. */ imposed?: boolean }): ChainQuote {
   const s = o.settings ?? chainSettings(), fresh = o.fresh !== false, images = o.images ?? brandImagesOn(), n = callCounts(o.routes, s.teams, fresh, images);
+  if (o.imposed) { n.team = 0; n.judge = 0; }
   // Recherches sur le web : faites par le modèle « métier » (réglage économe), pas par le modèle le plus fort.
   const search = webSearchQuoteMicro(s.craft) ?? 0, searches = (fresh ? RESEARCHES : 0) + 1;
   // Coût probable d'une recherche : la moitié de son maximum (essai réel du 12 novembre 2026 : 0,16 à 0,45 € pour 0,50 € au plus).
@@ -115,20 +116,19 @@ export function chainQuote(o: { routes: number; fresh?: boolean; settings?: Chai
     probable = probable == null || usual == null ? null : probable + usual * (id === "fix" ? Math.ceil(n[id] / 2) : n[id]);
   }
   // Second tour de noms (une fois au plus, quand trop peu de noms passent le juge) : compté dans le plafond seulement.
-  max += boundOf.team * s.teams + boundOf.shortlist + boundOf.judge;
+  if (!o.imposed) max += boundOf.team * s.teams + boundOf.judge;
   if (images) { const q = boardImagesQuote(o.routes, s); max += q.maxMicro; probable = probable == null || q.probableMicro == null ? null : probable + q.probableMicro; }
   return { maxMicro: Math.ceil(max), ...(probable ? { probableMicro: Math.ceil(probable) } : {}) };
 }
 
 /**
  * Devis de l'aperçu des noms seuls sur un projet déjà étudié (l'étude, les idées et les noms déjà trouvés ne sont pas
- * repayés) : le premier jugement et le juge, puis, compté comme probable, le second tour de recherche avec son
- * jugement et son juge.
+ * repayés) : le juge des noms, puis, compté comme probable, le second tour de recherche et son juge.
  */
 export function namesPreviewQuote(settings?: ChainSettings): ChainQuote {
   const s = settings ?? chainSettings();
   let max = 0, probable: number | null = 0;
-  for (const [id, times] of [["shortlist", 2], ["judge", 2], ["team", s.teams]] as const) {
+  for (const [id, times] of [["judge", 2], ["team", s.teams]] as const) {
     const c = CALLS[id], m = s[c.tier];
     const bound = callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort), usual = estimateCallMicro(m.provider, m.model, c.input, c.output);
     max += (bound ?? (usual ?? 0) * 4) * times;
@@ -484,6 +484,11 @@ const Payload = z.object({
   projectId: z.string(), conversationId: z.string(), capMicro: z.number().int().positive(),
   count: z.number().int().min(2).max(4), guidance: z.string().max(1500).optional(),
   redo: z.array(z.enum(["A", "B", "C", "D"])).optional(), namesOnly: z.boolean().optional(),
+  /**
+   * Noms choisis par le client (par exemple dans l'aperçu des noms) : un par route à faire, dans l'ordre. Aucune
+   * recherche ni jugement de noms : chaque route reprend son nom lettre pour lettre.
+   */
+  names: z.array(z.string().min(1).max(40)).min(1).max(4).optional(),
   /** Aperçu des noms seuls : la tâche s'arrête après le juge des noms, sans vérification ni planche (rien n'est enregistré dans le parcours). */
   namesPreview: z.boolean().optional(),
   /** Images de planche créées par le modèle d'images (par défaut : le réglage `sina.brand_images`). */
@@ -511,6 +516,14 @@ export async function runSinaBrandJob(ctx: JobContext) {
   const kept = partial ? previous.filter((x) => !redo.includes(x.key)) : [];
   const todo = partial ? redo : keys;
   const namesOnly = !!a.namesOnly && previous.length === keys.length;
+  // Noms choisis par le client : un par route à faire. Un nom mal formé est refusé avant toute dépense.
+  const imposed = (a.names ?? []).map((n) => n.trim()).filter(Boolean);
+  if (imposed.length) {
+    if (keptName) throw new UserFacingError(L("Tu gardes déjà ton nom : je ne peux pas en imposer un autre. Rien n'a été décompté.", "You are keeping your name already. Nothing was charged."));
+    if (imposed.length !== todo.length) throw new UserFacingError(L(`Il me faut un nom par proposition à faire (${todo.length}) ; j'en ai reçu ${imposed.length}. Rien n'a été décompté.`, `One name per route is needed (${todo.length}); got ${imposed.length}. Nothing was charged.`));
+    const bad = imposed.flatMap((n) => nameIssues(n));
+    if (bad.length) throw new UserFacingError(L(`Ce nom ne peut pas servir tel quel : ${bad[0]} Rien n'a été décompté.`, `This name cannot be used as is: ${bad[0]} Nothing was charged.`));
+  }
   const brief = briefBlock(j, a.guidance);
 
   // Seulement les images : les planches déjà écrites sont gardées telles quelles, chacune reçoit ses images.
@@ -570,7 +583,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
   // 4. Les noms : une équipe par chemin, chacune seule (elle ne voit pas le travail des autres).
   const paths = P.teamPathsFor(kind, settings.teams), teams: { team: string; names: z.infer<typeof TeamSchema>["names"] }[] = [];
   const teamPrompt = `${brief}\n\n# Idées de marque\n${ideas.map((i) => ideaBlock(i, strategy)).join("\n")}\n\n# Le moule de la catégorie (à ne pas refaire)\n${study.mould || "non trouvé"}\n\n# Noms des concurrents (jamais repris)\n${study.competitors.map((c) => c.name).join(", ") || "non trouvé"}`;
-  if (!j.keep.includes("nom")) for (const [i, path] of paths.entries()) {
+  if (!j.keep.includes("nom") && !imposed.length) for (const [i, path] of paths.entries()) {
     ctx.progress(0.3 + (0.2 * i) / paths.length, L(`Je cherche des noms (${i + 1} sur ${paths.length})`, `Looking for names (${i + 1} of ${paths.length})`));
     const r = await ctx.step(`brand:team:${path.id}`, () => ai.ask(`team-${path.id}`, { kind: "team", system: P.teamSystem(kind, path), schema: TeamSchema, prompt: teamPrompt }));
     teams.push({ team: path.id, names: r.names });
@@ -591,7 +604,9 @@ export async function runSinaBrandJob(ctx: JobContext) {
   const doubts = new Map<string, string>();
   const judged: { name: string; seen: string; why: string }[] = [], almost: { name: string; why: string }[] = [];
   let allowed: PoolName[] = pool, searched = 0;
-  if (!j.keep.includes("nom")) {
+  // Noms choisis par le client : ce sont les seuls noms permis, sans passer par le juge (il a déjà choisi).
+  if (imposed.length) allowed = imposed.map((name) => pool.find((n) => normText(n.name) === normText(name)) ?? { name, detail: "", second: "", idea: "", team: "client" });
+  if (!j.keep.includes("nom") && !imposed.length) {
     const judge = async (tag: string, list: PoolName[]) => {
       if (!list.length) return;
       const r = await ctx.step(`brand:judge:${round}${tag}`, () => ai.ask(`judge-${round}${tag.replace(":", "-")}`, { kind: "judge", system: P.nameJudgeSystem(kind), schema: JudgeSchema, prompt: `${brief}\n\n# Noms trouvés par les équipes (${list.length})\n${list.map((n) => `- ${n.name} | détail réel : ${n.detail} | deuxième lecture : ${n.second}`).join("\n")}` }));
@@ -637,7 +652,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     j.keep.includes("nom") ? "# Nom : le client garde son nom. Chaque route le reprend mot pour mot (name) ; compose des routes aux idées différentes." : `# Noms gardés par le juge des noms (${pool.length}) : les SEULS noms permis\n${pool.map((n) => `- ${n.name} | détail : ${n.detail} | deuxième lecture : ${n.second}${n.idea ? ` | idée ${n.idea}` : ""}`).join("\n")}`,
     ...(kept.length ? ["", `# Routes GARDÉES par le client (ne les refais pas ; les nouvelles doivent en différer : autre idée, autre moule de nom, autre fond, autre teinte, autre police)`, ...kept.map((x) => `- ${x.key} « ${x.name} » : ${x.board.idea.belief} (fond ${x.ground}, bouton ${x.palette.primary}, titres ${x.fonts.heading})`)] : []),
     ...(namesOnly ? ["", "# Le client veut SEULEMENT de nouveaux noms : garde l'idée de chaque route, change le nom.", ...previous.filter((x) => todo.includes(x.key)).map((x) => `- ${x.key} : idée « ${x.board.idea.belief} », fond ${x.ground} ; ancien nom « ${x.name} » (à ne pas reproposer)`)] : []),
-    ...(shown.length ? ["", `# Noms déjà montrés au client (jamais reproposés) : ${[...new Set(shown)].join(", ")}`] : []),
+    ...(imposed.length ? ["", `# Noms CHOISIS par le client : compose une route par nom, dans cet ordre, en reprenant chaque nom lettre pour lettre (trouve à chacun son détail réel et sa deuxième lecture) ; aucune réserve : ${imposed.map((n) => `« ${n} »`).join(", ")}`] : shown.length ? ["", `# Noms déjà montrés au client (jamais reproposés) : ${[...new Set(shown)].join(", ")}`] : []),
     "", `Compose ${todo.length} route(s) pour ${todo.length > 1 ? "les clés" : "la clé"} ${todo.join(", ")}, dans cet ordre, puis jusqu'à 4 réserves (autant que les noms permis le permettent).`,
   ].join("\n");
   const shortlist = await ctx.step(`brand:shortlist:${round}`, () => ai.ask("shortlist", { kind: "shortlist", system: P.shortlistSystem(kind, todo.length), schema: ShortlistSchema, prompt: shortlistPromptFor(allowed) }));
@@ -646,6 +661,11 @@ export async function runSinaBrandJob(ctx: JobContext) {
   const sound = shortlist.routes.filter(usable).filter((r, i, all) => all.findIndex((x) => normText(x.name) === normText(r.name)) === i || j.keep.includes("nom"));
   let picks = sound.filter((r) => !r.reserve).slice(0, todo.length);
   const reserves = sound.filter((r) => !picks.includes(r));
+  // Noms choisis par le client : une route par nom, dans son ordre, le nom repris lettre pour lettre ; aucune réserve.
+  if (imposed.length) {
+    picks = imposed.map((name, i) => ({ ...(shortlist.routes.find((r) => normText(r.name) === normText(name)) ?? shortlist.routes[i] ?? shortlist.routes[0]), name, reserve: false }));
+    reserves.length = 0;
+  }
   if (picks.length < todo.length) picks = [...picks, ...reserves.splice(0, todo.length - picks.length)];
   if (picks.length < todo.length) throw new UserFacingError(L("Je n'ai pas trouvé assez de routes solides pour ta marque. Dis-moi ce que tu veux de différent et je recommence.", "Not enough solid routes were found."));
 
