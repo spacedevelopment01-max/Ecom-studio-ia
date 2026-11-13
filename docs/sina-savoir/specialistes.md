@@ -29,7 +29,7 @@ Ce document dit, étape par étape, **qui fait le travail aujourd'hui** (relevé
 | 3. Image de marque complète | Sans IA. | Rien. | Convenable |
 | 4. Cinq angles marketing | Une recherche sur le web, puis une **stratège** écrit les cinq angles ; le Studio contrôle sans IA (sources lues, citations exactes, promesses) ; un **juge des angles** séparé dit « garde » ou « reprendre » pour chacun (un concurrent pourrait-il le signer ? l'émotion vient-elle d'une parole de client ? la personne est-elle précise ?) ; les angles refusés sont réécrits une fois et repassent les contrôles ; un angle refusé qui reste est montré avec le doute de SINA. | Un essai réel. | **Fait** (lot 4, 13 novembre) |
 | 5. L'activité complète | Sans IA. | Rien. | Convenable |
-| 6. Thème sur mesure | Conception : une conceptrice, puis un directeur commercial qui corrige. Montage : un plan des textes, un appel par section qui écrit les textes, les liens et les descriptions de photos ; puis un **directeur de création des textes** relit TOUT le site et fait reprendre les sections refusées (6 au plus, le reste est dit) ; une **directrice artistique des photos** relit TOUTES les photos prévues AVANT qu'une seule soit payée et fait redécrire celles qu'elle refuse (5 sections au plus) ; chaque photo créée est ensuite contrôlée en image. La direction artistique de la planche choisie est reprise par les photos du site. | Un essai réel sur un vrai projet. Une photo ratée au contrôle reste seulement signalée (décision du propriétaire : refaite avec l'accord du client). | **Fait** (lot 2, 13 novembre) |
+| 6. Thème sur mesure | Conception : une conceptrice, puis un directeur commercial qui corrige. Montage : un plan des textes, un appel par section qui écrit les textes, les liens et les descriptions de photos ; puis un **directeur de création des textes** relit TOUT le site et fait reprendre les sections refusées (6 au plus, le reste est dit) ; une **directrice artistique des photos** relit TOUTES les photos prévues AVANT qu'une seule soit payée et fait redécrire celles qu'elle refuse (5 sections au plus) ; chaque photo créée est ensuite contrôlée en image. La direction artistique de la planche choisie est reprise par les photos du site. Depuis le lot 8 : une **documentaliste** (sans IA) donne au concepteur les références du secteur ; une **comparaison contre les doublons** (sans IA) et un **juge de l'originalité** séparé relisent chaque concept ; une fois le site fini, l'accueil et la page qui vend sont **regardés en image** sur téléphone. | Un essai réel sur un vrai projet. Une photo ratée au contrôle reste seulement signalée (décision du propriétaire : refaite avec l'accord du client). | **Fait** (lots 2 et 8, 13 novembre) |
 | 7. Site codé (anciennes maquettes) | Analyse, écriture, comparaison en image, correction. | Rien (voie ancienne). | Convenable |
 | 8. Thème du Studio adapté | Rédacteur et directeur de création (jusqu'à trois tours) ; images créées puis relues. | Rien d'urgent. | Convenable |
 | 9. Publications | **Construite, fermée** (réglage `sina.etapes_ouvertes`). Le plan d'abord : une **stratège des contenus** écrit les 3 groupes (charte § 7 : sujet utile, titre en deux temps, trois points, appel à l'action, texte, hashtags, photo prévue) ; le Studio contrôle sans IA (angle choisi, hashtags, produit du catalogue, promesses, personnes) ; un **juge des publications** juge le plan entier ; une reprise au plus, relue ; un groupe encore refusé est montré avec le doute de SINA. Les images ensuite : le moteur de publications du Studio (son rédacteur, son modèle d'images, son contrôle en image). | Un essai réel, puis la décision du propriétaire d'ouvrir l'étape. | **Construit, fermé** (lot 5, 13 novembre) |
@@ -85,6 +85,25 @@ Ce document dit, étape par étape, **qui fait le travail aujourd'hui** (relevé
    `files.validate`). Chaque outil lance le moteur du Studio qui existe déjà, avec son devis ; aucun nouveau modèle,
    aucun nouveau fournisseur. Les tâches sont mises en file dans les essais, jamais exécutées : aucune de ces étapes
    n'a été essayée pour de vrai.
+8. **Les spécialistes du thème sur mesure qui manquaient** (étape 6 ; rappel du propriétaire du 13 novembre : « Mais
+   je t'avais demander de faire tout les sous agents pour sina hier »).
+   **Fait le 13 novembre 2026**, testé avec une IA simulée (`tests/sina-theme-specialistes.test.ts`,
+   `tests/sina-theme-sur-mesure.test.ts`), aucun essai réel :
+   - la **documentaliste**, sans IA (`custom-theme/references.ts`) : secteur ou métier reconnu, références proches
+     et lointaines de la bibliothèque sans nom de site, constats du secteur, sections propres au secteur ; donnée au
+     concepteur à chaque conception ;
+   - la **comparaison contre les doublons**, sans IA (`custom-theme/identity-card.ts`, `recentThemeCards`) : carte
+     d'identité en huit lignes ; les deux concepts et les thèmes déjà montés pour d'autres marques sont comparés ;
+   - le **juge de l'originalité** (`custom-theme/originality.ts`, `customDesignDeps.judge`) : un avis par concept,
+     deux au plus ; ses refus rejoignent la seule reprise du concepteur, il relit la reprise, un doute qui reste est
+     dit ; un juge en panne ne bloque rien ; compté dans le devis de `custom.concepts` et de `custom.design` ;
+   - les **regards en image** (`custom-theme/looks.ts`, `customThemePageShots`, `customBrandDeps.look`) : sur le
+     montage qui pose les photos, l'accueil et la page qui vend capturés sur téléphone puis regardés (une
+     « cliente », un directeur artistique) ; compte rendu `regards`, problèmes dits au client ; compté dans le devis
+     de `custom.build`. La capture des deux pages a été vérifiée pour de vrai dans un navigateur.
+   Restent pour le thème : le monteur à plusieurs constructions et la tenue tirée de la planche, la liaison avec le
+   catalogue (une page par produit, menus), la mise en boutique. Ce ne sont pas des spécialistes mais le chantier
+   décrit dans `methode-montage-de-theme.md`.
 
 ## Ouvrir une étape
 

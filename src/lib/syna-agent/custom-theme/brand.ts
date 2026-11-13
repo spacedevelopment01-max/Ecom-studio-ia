@@ -15,7 +15,7 @@ import { loadProject, notify, type Project } from "../../projects";
 import { all } from "../../db";
 import { getSetting } from "../../settings";
 import { assetData, assetUrl, getAsset, saveAsset } from "../../library";
-import { llmJson } from "../../ai/llm";
+import { llmJson, type LlmCall } from "../../ai/llm";
 import { lintClaims } from "../../ai/tasks";
 import { withTrace } from "../../ai/trace";
 import { aiSiteImageHd, withQuotedImageRoute } from "../../ai/media-providers";
@@ -32,6 +32,9 @@ import { mockupImageRoute } from "../mockup-code/tools";
 import { authenticSection, isCutoutPhoto, isProductPhotoSection, libSection, withBrandName, type LibSection } from "./library";
 import { cutoutPhoto, FOND_A_DETOURER } from "./cutout-photo";
 import { checkCreatedImage, galleryDeps } from "./gallery";
+import { CHECK_MODEL } from "../mockup-code/check";
+import { customThemePageShots } from "./shots";
+import { LOOK_PAGES_MAX, LOOK_SYSTEM, LookSchema, lookProblems, lookPrompt, type LooksReport } from "./looks";
 import { riskCount } from "./risk";
 import { allSections, loadCustomTheme, pushCustomThemeHistory, replaceOnce, saveCustomTheme, sectionHtml, type CustomTheme } from "./theme";
 
@@ -451,6 +454,8 @@ export const customBrandDeps: {
   /** Relecture de toutes les descriptions de photos par la directrice artistique (essais sans IA : seulement si fournie). */
   photoReview?: (prompt: string, usageKey: string) => Promise<z.input<typeof PhotoReviewSchema>>;
   photo?: (prompt: string, product: Buffer | null, aspect: string, usageKey: string) => Promise<Buffer>;
+  /** Regard en image sur une page montée (essais sans IA : seulement si le test le fournit). */
+  look?: (prompt: string, image: Buffer, usageKey: string) => Promise<z.input<typeof LookSchema>>;
 } = {};
 
 export async function runCustomBrandJob(ctx: JobContext) {
@@ -468,7 +473,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
   // rewrite : le client n'aime pas les textes, tout le site est réécrit (sinon seules les sections encore d'exemple).
   const sections = allSections(t).filter((x) => a.rewrite || !x.s.clientTexts);
   const writer = siteCopyModel();
-  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, photosToProvide: 0, photosLeft: 0, photosFailed: 0, redacteur: `${writer.provider}:${writer.model}`, relecture: null as null | { reprises: number; refusees: number; avis: string }, relecturePhotos: null as null | { reprises: number; refusees: number; avis: string }, problems: [] as string[] };
+  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, photosToProvide: 0, photosLeft: 0, photosFailed: 0, redacteur: `${writer.provider}:${writer.model}`, relecture: null as null | { reprises: number; refusees: number; avis: string }, relecturePhotos: null as null | { reprises: number; refusees: number; avis: string }, regards: null as null | LooksReport, problems: [] as string[] };
   const briefs: Record<string, SectionWrite["photos"]> = {};
 
   // Un seul point d'annulation pour tout le montage : « Annuler » revient au thème d'avant le montage.
@@ -801,6 +806,32 @@ export async function runCustomBrandJob(ctx: JobContext) {
     if (stay) report.problems.push(`${stay} photo(s) d'exemple encore en place : à créer (custom.build) ou à remplacer par tes images`);
   }
   if (report.photosLeft) report.problems.push(`${report.photosLeft} photo(s) d'exemple encore à remplacer : aucune photo créée à ta demande, elles le seront au second montage`);
+
+  // 3) Regards en image (13 novembre 2026) : l'accueil et la page qui vend, capturés sur téléphone puis regardés par un
+  //    modèle qui voit (« est-ce que ça donne envie ? »). Rien n'est corrigé tout seul : c'est dit au client. Seulement sur
+  //    le montage qui pose les photos (le site fini) : un montage de textes seuls, ou sans photo créée, n'est pas regardé.
+  if (a.photos !== false && a.newPhotos !== false && (!customBrandDeps.write || customBrandDeps.look)) {
+    try {
+      const now = loadCustomTheme(p.id)!;
+      const sell = now.pages.find((x) => /^product/.test(x.key))?.key ?? now.pages.find((x) => x.key === "prestations")?.key;
+      const shots = await customThemePageShots(p.id, ["home", ...(sell ? [sell] : [])].slice(0, LOOK_PAGES_MAX));
+      if (!shots.length) report.problems.push("pages non regardées en image (aucun navigateur pour les capturer) : regarde-les sur ton téléphone");
+      const seen: LooksReport = { pages: [], problemes: 0 };
+      const sells = products.length ? products.slice(0, 6).map((x) => x.data.title).join(", ") : (p.product?.name ?? p.product?.category ?? "");
+      for (const s of shots) {
+        const look = await ctx.step(`look:${now.rev}:${s.key}`, async () => {
+          const prompt = lookPrompt({ brand: name, sells, page: s.label, concept: now.concept }), usageKey = `${ctx.job.id}:look:${s.key}`;
+          return LookSchema.parse(customBrandDeps.look ? await customBrandDeps.look(prompt, s.data, usageKey)
+            : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-look", costCapMicro: a.capMicro }, () => llmJson({ task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey, promptKey: "syna-custom-look-1", system: LOOK_SYSTEM, prompt, images: [{ data: s.data, label: `page ${s.label} sur téléphone` }], maxTokens: 1500, maxOutputTokens: 3000, routing: { difficulty: "standard", prefer: CHECK_MODEL } } as LlmCall, LookSchema)));
+        });
+        seen.pages.push({ page: s.label, envie: look.cliente.envie, beau: look.directeurArtistique.note, avis: [look.cliente.avis, look.directeurArtistique.avis].filter(Boolean).join(" ").slice(0, 400) });
+        const found = lookProblems(s.label, look);
+        seen.problemes += found.length;
+        report.problems.push(...found);
+      }
+      if (seen.pages.length) report.regards = seen;
+    } catch (e) { report.problems.push(`pages non regardées en image (${(e as Error).message.slice(0, 120)})`); }
+  }
   ctx.progress(1, L("Thème monté à ta marque", "Theme built for your brand"));
   if (a.conversationId) { try { updateJourney(a.conversationId, (x) => setStep(x, 6, "review", L("thème sur mesure monté à la marque, à voir dans la Boutique", "custom theme built"))); } catch { /* fil supprimé */ } }
   notify(p.userId, p.id, report.problems.length ? L("Ton thème sur mesure est monté : des points restent à voir", "Your custom theme is built: some points remain") : L("Ton thème sur mesure est monté à ta marque", "Your custom theme is built"), L("Il est en place dans l'onglet Boutique.", "It is in the Boutique tab."), report.problems.length ? "warning" : "success");

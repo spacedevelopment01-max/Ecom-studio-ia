@@ -166,8 +166,11 @@ qui n'a pas été vérifié est marqué. Relus à la source par le Studio : les 
 en accessibilité), ses pages obligatoires, ses limites, son interdiction des faux comptes à rebours, trois constats
 d'étude sur la fiche produit, et trois obligations françaises (devis, prix des coiffeurs, agents immobiliers).
 
-**Statut.** Rien de tout cela n'est **lu par SINA** : rien n'est branché dans le code. Rien n'est **validé par le
-propriétaire**. « Copyright », dans sa demande, a été compris comme l'écriture des textes ; le cahier des textes dit
+**Statut.** Depuis le 13 novembre 2026 (lot 8 des spécialistes), la **documentaliste** de SINA lit la bibliothèque de
+références et, dans les cahiers par secteur et par métier, les sections propres au secteur du client ; elle les donne
+au concepteur du thème, sans le nom des sites ni des marques. Les autres cahiers (construction des pages, images,
+textes, typographie, mise en page, originalité, répertoires) ne sont **pas encore lus par SINA**. Rien n'est **validé
+par le propriétaire**. « Copyright », dans sa demande, a été compris comme l'écriture des textes ; le cahier des textes dit
 aussi ce qu'on a le droit de reprendre chez les autres. Chaque cahier tient dans la longueur que les spécialistes de la
 marque lisent déjà (22 000 caractères avant les sources).
 

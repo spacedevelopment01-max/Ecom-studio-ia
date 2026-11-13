@@ -755,6 +755,48 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
           expect(fourth.relecture).toBeNull();
         } finally { delete B.customBrandDeps.review; B.customBrandDeps.write = write1; writes = savedWrites; plans = savedPlans; }
       }
+      // Regards en image (lot 8, 13 novembre 2026) : une fois le thème monté, l'accueil et la page qui vend sont capturés
+      // sur téléphone puis regardés (« est-ce que ça donne envie ? ») ; ce qui ne va pas est dit, rien n'est corrigé seul.
+      {
+        const { shotDeps } = await import("@/lib/syna-agent/custom-theme/shots");
+        const K = await import("@/lib/syna-agent/custom-theme/looks");
+        const looked: { prompt: string; bytes: number }[] = [], shot: (string | undefined)[] = [];
+        shotDeps.shoot = async (_html, _view, key) => { shot.push(key); return Buffer.from(`capture ${key}`); };
+        B.customBrandDeps.look = async (prompt, image) => {
+          looked.push({ prompt, bytes: image.length });
+          return looked.length === 1
+            ? { cliente: { comprend: true, envie: 8, saitOuToucher: true, avis: "On voit tout de suite ce qui est vendu." }, directeurArtistique: { note: 7, avis: "Propre et tenu." }, problemes: [] }
+            : { cliente: { comprend: true, envie: 5, saitOuToucher: false, avis: "Le bouton d'achat est trop bas." }, directeurArtistique: { note: 6, avis: "Deux blocs pareils à la suite." }, problemes: ["bloc d'achat : le bouton est sous le premier écran", "milieu de page : deux parties de même disposition à la suite"] };
+        };
+        try {
+          // Le devis compte les regards sur le montage qui pose les photos, pas sur un montage de textes seuls.
+          const est3 = await fr(() => getTool("custom.build")!.estimate!(ctx, {})), est4 = await fr(() => getTool("custom.build")!.estimate!(ctx, { photos: false, rewrite: true }));
+          expect(est3.maxMicro - est4.maxMicro).toBeGreaterThanOrEqual(K.LOOK_CAP_MICRO * K.LOOK_PAGES_MAX);
+          const noLook: any = await fr(() => B.runCustomBrandJob({ ...fake, job: { id: `${job.id}-textes-seuls` }, payload: { ...fake.payload, photos: false, rewrite: false } }));
+          expect(noLook.regards).toBeNull();
+          expect(looked).toHaveLength(0);
+          const seen: any = await fr(() => B.runCustomBrandJob({ ...fake, job: { id: `${job.id}-regards` }, payload: { ...fake.payload, photos: true, rewrite: false } }));
+          expect(shot[0]).toBe("home");
+          expect(shot.length).toBe(2);
+          expect(/^product|^prestations$/.test(shot[1]!)).toBe(true);
+          expect(looked).toHaveLength(2);
+          expect(looked[0].bytes).toBeGreaterThan(0);
+          expect(looked[0].prompt).toMatch(/Marque : « .+ »[^]*Page regardée : .+, capturée sur téléphone/);
+          expect(K.LOOK_SYSTEM).toMatch(/LA CLIENTE[^]*cinq premières secondes[^]*LE DIRECTEUR ARTISTIQUE/);
+          expect(seen.regards.pages.map((x: any) => x.envie)).toEqual([8, 5]);
+          expect(seen.regards.problemes).toBe(2);
+          expect(seen.problems.join("\n")).toMatch(/vue sur téléphone : bloc d'achat : le bouton est sous le premier écran/);
+          // Une page qu'on ne comprend pas, ou qui ne donne pas envie sans autre défaut, est signalée aussi.
+          expect(K.lookProblems("Accueil", { cliente: { comprend: false, envie: 3, saitOuToucher: false, avis: "" }, directeurArtistique: { note: 4, avis: "" }, problemes: [] })[0]).toMatch(/on ne comprend pas en cinq secondes/);
+          expect(K.lookProblems("Accueil", { cliente: { comprend: true, envie: 4, saitOuToucher: true, avis: "Trop froid." }, directeurArtistique: { note: 6, avis: "" }, problemes: [] })[0]).toMatch(/ne donne pas encore assez envie \(Trop froid\.\)/);
+          expect(K.lookProblems("Accueil", { cliente: { comprend: true, envie: 9, saitOuToucher: true, avis: "" }, directeurArtistique: { note: 8, avis: "" }, problemes: [] })).toEqual([]);
+          // Regard en panne : dit dans le compte rendu, jamais passé sous silence.
+          B.customBrandDeps.look = async () => { throw new Error("modèle indisponible"); };
+          const blind: any = await fr(() => B.runCustomBrandJob({ ...fake, job: { id: `${job.id}-regards-panne` }, payload: { ...fake.payload, photos: true, rewrite: false } }));
+          expect(blind.regards).toBeNull();
+          expect(blind.problems.join("\n")).toMatch(/pages non regardées en image \(modèle indisponible\)/);
+        } finally { delete B.customBrandDeps.look; delete shotDeps.shoot; }
+      }
       // Famille changée après le montage : plus de montage ni de photo tant qu'un thème n'est pas conçu dans sa famille.
       await call("theme.family", ctx, { family: "moderne", style: "sport-chic" });
       expect((await call("custom.build", ctx, {})).summary).toMatch(/il faut d'abord concevoir un nouveau thème dans sa famille/);
@@ -893,10 +935,12 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       // La relecture de toutes les photos prévues (directrice artistique) est dans le devis, sauf si SINA n'en crée aucune.
       const estOwn = await fr(() => getTool("custom.build")!.estimate!(ctx, { images: "client" }));
       const { galleryCheckMaxMicro: chk } = await import("@/lib/syna-agent/custom-theme/gallery");
-      // Plan des textes + chaque photo et son contrôle + la relecture des photos et ses reprises ; rien de plus.
+      // Plan des textes + chaque photo et son contrôle + la relecture des photos et ses reprises + les regards en image
+      // sur le site fini ; rien de plus.
       const slotsAll = B.photoSlots(loadCustomTheme(pid)!, { productPhotos: true }).length;
-      expect(est.maxMicro).toBe(B.SITE_PLAN_CAP_MICRO + slotsAll * (50_000 + chk()) + B.PHOTO_REVIEW_CAP_MICRO + B.MAX_PHOTO_FIXES * B.SECTION_TEXT_CAP_MICRO);
-      expect(estOwn.maxMicro).toBe(B.SITE_PLAN_CAP_MICRO); // ses images seulement : aucune photo créée, donc aucune relecture
+      const { LOOK_CAP_MICRO: lookCap, LOOK_PAGES_MAX: lookPages } = await import("@/lib/syna-agent/custom-theme/looks");
+      expect(est.maxMicro).toBe(B.SITE_PLAN_CAP_MICRO + slotsAll * (50_000 + chk()) + B.PHOTO_REVIEW_CAP_MICRO + B.MAX_PHOTO_FIXES * B.SECTION_TEXT_CAP_MICRO + lookCap * lookPages);
+      expect(estOwn.maxMicro).toBe(B.SITE_PLAN_CAP_MICRO + lookCap * lookPages); // ses images seulement : aucune photo créée, donc aucune relecture de photos
       // Second temps : les descriptions manquantes sont écrites, puis les photos créées.
       let briefs = 0, made = 0;
       B.customBrandDeps.photoBrief = async (prompt) => { briefs++; const files = /PHOTOS À DÉCRIRE \(source exacte\) : (.*)$/m.exec(prompt)![1].split(", "); return { photos: files.map((f) => ({ find: f, description: "Photographie d'ambiance : une théière en verre sur une table en bois, lumière du matin.", ratio: "1:1" as const, product: null })) }; };

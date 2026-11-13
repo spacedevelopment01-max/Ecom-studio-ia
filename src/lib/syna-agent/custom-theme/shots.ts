@@ -24,7 +24,7 @@ const VIEWS = [
 export type ThemeShot = { view: string; data: Buffer };
 
 /** Dépendance remplaçable par les tests (aucun navigateur). */
-export const shotDeps: { shoot?: (html: string, view: (typeof VIEWS)[number]) => Promise<Buffer | null> } = {};
+export const shotDeps: { shoot?: (html: string, view: (typeof VIEWS)[number], pageKey?: string) => Promise<Buffer | null> } = {};
 
 const cacheDir = () => path.join(DATA_DIR, "cache", "custom-theme-shots");
 
@@ -49,7 +49,34 @@ export async function customThemeShots(projectId: string): Promise<ThemeShot[]> 
   return out;
 }
 
-async function shoot(html: string, v: (typeof VIEWS)[number]): Promise<Buffer | null> {
+/**
+ * Captures sur téléphone de pages précises du thème (regards en image après le montage, lot 8 du 13 novembre 2026) :
+ * la page est ouverte comme le fait un lien du site. Une capture par page et par version du thème (cache sur disque).
+ * Sans Chromium, rien n'est rendu et c'est dit.
+ */
+export async function customThemePageShots(projectId: string, keys: string[]): Promise<{ key: string; label: string; data: Buffer }[]> {
+  const t = loadCustomTheme(projectId);
+  if (!t) return [];
+  const dir = cacheDir(), phone = VIEWS[1];
+  const lib = ["library.css", "library.js"].map((f) => { try { return Math.round(fs.statSync(path.join(LIBRARY_DIR(), f)).mtimeMs).toString(36); } catch { return "0"; } }).join("");
+  let html: string | null = null;
+  const out: { key: string; label: string; data: Buffer }[] = [];
+  for (const key of keys) {
+    const pg = t.pages.find((x) => x.key === key);
+    if (!pg) continue;
+    const file = path.join(dir, `${projectId}-${t.rev}-${lib}-page-${key.replace(/[^a-z0-9-]/g, "")}.jpg`);
+    if (fs.existsSync(file)) { out.push({ key, label: pg.label, data: fs.readFileSync(file) }); continue; }
+    html ??= renderCustomTheme(loadProject(projectId), t, { embed: true });
+    const data = await (shotDeps.shoot ?? shoot)(html, phone, key).catch(() => null);
+    if (!data) continue;
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(file, data);
+    out.push({ key, label: pg.label, data });
+  }
+  return out;
+}
+
+async function shoot(html: string, v: (typeof VIEWS)[number], pageKey?: string): Promise<Buffer | null> {
   const executablePath = chromiumPath();
   if (!executablePath) return null;
   const { chromium } = await import("playwright");
@@ -75,6 +102,8 @@ async function shoot(html: string, v: (typeof VIEWS)[number]): Promise<Buffer | 
       return route.fulfill({ status: 404 });
     });
     await page.goto(`${ORIGIN}/`, { waitUntil: "load", timeout: 45_000 });
+    // Page précise : ouverte par le même chemin qu'un lien du site.
+    if (pageKey) await page.evaluate((k) => { const go = (window as unknown as { ctGo?: (key: string) => void }).ctGo; if (go) go(k); }, pageKey);
     await page.evaluate(async () => {
       for (let y = 0; y < Math.min(document.documentElement.scrollHeight, 6000); y += Math.round(innerHeight * 0.8)) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 50)); }
       scrollTo(0, 0);

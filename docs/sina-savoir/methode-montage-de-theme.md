@@ -3,7 +3,8 @@
 Écrite le 13 novembre 2026, à la demande du propriétaire (« je veux aussi que tu me dises comment tu compte demander à
 sina et son équipe de monter le thème »), après neuf recherches sur la façon de travailler des meilleurs et le relevé
 d'une bibliothèque de références (cahiers de métier `theme-*.md`, dossier `references/`). Statut : **proposition, à
-valider par le propriétaire. Rien n'est encore dans le Studio.**
+valider par le propriétaire.** Quatre de ses spécialistes sont dans le Studio depuis le 13 novembre 2026 (voir « Ce
+qui est construit ») ; le reste ne l'est pas.
 
 ## L'idée
 
@@ -133,6 +134,54 @@ répertoire. C'est une image payée de plus par planche : à essayer avec un pri
   viennent de la même planche. Chaque thème porte un signe pris sur son produit ou son métier (la niche du mur pour un
   fauteuil, l'étiquette cousue et la sangle pour un sac), repris à plusieurs endroits de la page.
 - **Les sections qui manquent** : inventaire dans `inventaire-sections-manquantes.md`.
+
+## Ce qui est construit (13 novembre 2026, lot 8 des spécialistes)
+
+Demande du propriétaire, qui avait déjà donné mandat pour tous les spécialistes de SINA : « Mais je t'avais demander de
+faire tout les sous agents pour sina hier ». Construits sur le thème sur mesure d'aujourd'hui, testés avec une IA
+simulée, aucun essai réel :
+
+- **La documentaliste** (temps 2, sans IA) : `custom-theme/references.ts`. Secteur ou métier reconnu dans les mots du
+  client, références proches et lointaines sans nom de site, constats du secteur, sections propres au secteur.
+- **La comparaison contre les doublons** (temps 4, sans IA) : `custom-theme/identity-card.ts`. Une carte en huit
+  lignes par concept ; les deux concepts doivent différer sur cinq lignes, un concept sur quatre lignes de chaque thème
+  déjà monté pour une autre marque, jamais le même trio ouverture, en-tête, ordre de l'accueil.
+- **Le juge de l'originalité** (temps 4) : `custom-theme/originality.ts`. Séparé du concepteur ; ses refus rejoignent
+  la seule reprise déjà prévue ; il relit la reprise ; un doute qui reste est dit au client.
+- **Les regards en image** (temps 9) : `custom-theme/looks.ts`. Une fois le site fini, l'accueil et la page qui vend
+  sont capturés sur téléphone et regardés : la « cliente » (je comprends, j'en ai envie, je sais où toucher) et le
+  directeur artistique. Rien n'est corrigé tout seul : c'est dit au client. La capture a été vérifiée pour de vrai.
+
+Ce que ces spécialistes ne changent pas : les sections gardent une seule allure chacune. La carte d'identité compare
+donc des sections ; elle gagnera les lignes « construction » et « tenue » quand les sections en auront.
+
+## Ce qui est vrai dans le Studio, et l'ordre de construction (13 novembre 2026)
+
+Questions du propriétaire : « Comment tu va faire pour les produits et services qui ont donc des pages séparer de base
+dans shopify […] comment tu va jouer la liaison ? Et les méga menu […] ? ». Relu dans le code ce jour-là :
+
+- le thème sur mesure n'a qu'**une seule fiche produit**, remplie avec le premier produit du catalogue ; toutes les
+  cartes mènent à elle ;
+- le panneau des **grands menus** reste un exemple vide, sans lien avec les catégories du client ;
+- les pages de **prestations** sont des textes ; elles ne lisent pas la rubrique Prestations et Rendez-vous ;
+- le thème sur mesure **ne part pas dans Shopify** ;
+- le moteur des thèmes du Studio (`src/lib/theme`) sait déjà tout cela : une page par produit et des modèles de fiche
+  différents, les collections tirées des catégories, les menus à sous-menus, l'envoi vers la boutique.
+
+Décision de construction annoncée au propriétaire, **pas encore validée par lui** : monter le thème sur mesure sur ce
+moteur, au lieu de garder deux systèmes. Principes : le thème contient des **modèles de page**, jamais les produits ;
+ce qui est propre à un produit (histoire, préparation, questions) est rangé avec le produit, et une section sans contenu
+pour ce produit se masque ; le **menu est calculé depuis le catalogue** (simple pour peu de produits, grand menu par
+familles au-delà), proposé par SINA, corrigé par le client, enregistré comme un menu de la boutique ; les prestations,
+durées, prix et horaires viennent de la rubrique Prestations et Rendez-vous.
+
+Ordre annoncé : 1) les spécialistes qui manquaient (fait ci-dessus) ; 2) la liaison (une page par produit, collections,
+menus, mise en boutique), avec d'abord un modèle à faire noter (l'ouverture et une fiche produit) ; 3) les sections
+(plusieurs constructions, la tenue de la marque, les 48 qui manquent).
+
+Pages simples (contact, page introuvable, aide, légal) : courtes (une à trois sections), montées toutes seules dans la
+tenue après le choix du client, sans image payée, sans rien d'inventé, contrôlées par programme. Montré au
+propriétaire en image ; pas de réponse encore.
 
 ## Ce qui n'est pas réglé
 

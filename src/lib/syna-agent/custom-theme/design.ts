@@ -163,7 +163,7 @@ export function varietyGaps(d: Pick<Design, "pages">, recent: string[][]): strin
 export type Ambiance = "clair" | "sombre" | "alterne";
 export const AMBIANCE_LABEL: Record<Ambiance, string> = { clair: "site clair (fonds clairs, quelques bandes sombres ou de couleur pour les moments forts)", sombre: "site sombre (fonds sombres, quelques sections claires pour respirer)", alterne: "fonds qui alternent d'une section à l'autre" };
 
-export function designPrompt(o: { brief: string; family: FamilyId; site: SiteKind; has: string[]; lacks: string[]; consigne?: string | null; ambiance?: Ambiance | null; products?: string[]; seed?: string; overused?: string[] }): string {
+export function designPrompt(o: { brief: string; family: FamilyId; site: SiteKind; has: string[]; lacks: string[]; consigne?: string | null; ambiance?: Ambiance | null; products?: string[]; seed?: string; overused?: string[]; /** Dossier de la documentaliste (references.ts), vide si rien à donner. */ references?: string }): string {
   const req = requiredPages(o.site).map((r) => `${r.keys[0]} (${r.label})`).join(", ");
   const owned = platformOwnedPages(o.site).map((r) => r.label).join(", ");
   return [
@@ -176,6 +176,7 @@ export function designPrompt(o: { brief: string; family: FamilyId; site: SiteKin
     `Ce qu'elle n'a PAS (aucune section qui en dépend) : ${o.lacks.join(" ; ")}.`,
     `Pages obligatoires (clés) : ${req}.${owned ? ` Jamais de page : ${owned} (la plateforme les tient).` : ""}`,
     "",
+    o.references ?? "",
     o.overused?.length ? `SECTIONS DÉJÀ PRISES DANS LES DERNIERS THÈMES DU STUDIO (pour d'autres marques) : ${o.overused.join(", ")}. Ne les reprends pas par habitude : seulement si, pour CE moment de CETTE marque, aucune autre section ne fait mieux (dis-le dans why).` : "",
     `BIBLIOTHÈQUE DE LA FAMILLE (dans un ordre propre à ce projet : l'ordre ne dit rien de la qualité ; identifiant · rôle · fond · densité · photos · titre : ce qu'elle fait) :`,
     designCatalogue(o.family, o.seed),

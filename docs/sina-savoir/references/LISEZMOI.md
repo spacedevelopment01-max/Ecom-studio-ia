@@ -4,8 +4,10 @@ Relevée le 13 novembre 2026, à la demande du propriétaire : « sina et ou son
 connaître enormenment de référence afin de ne jamais faire de doublon dans les conception sur mesure que ce soit pour du
 service ou du produit ».
 
-**Statut : pas encore lue par SINA.** Rien n'est branché dans le Studio. Ce dossier est la matière de la
-« documentaliste » décrite dans `../methode-montage-de-theme.md`.
+**Statut : lue par la documentaliste de SINA depuis le 13 novembre 2026** (lot 8 des spécialistes,
+`src/lib/syna-agent/custom-theme/references.ts`, sans IA). À chaque conception d'un thème sur mesure, elle reconnaît le
+secteur ou le métier du client et donne au concepteur des références proches et lointaines, sans le nom ni l'adresse
+des sites, avec ce que font les vrais sites du secteur. Testé avec une IA simulée ; aucun essai réel.
 
 ## Ce qu'il contient
 

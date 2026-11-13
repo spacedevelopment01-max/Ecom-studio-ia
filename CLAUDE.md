@@ -357,6 +357,31 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     photo ni sur les mots d'une autre marque ; chaque thème porte un signe pris sur son produit (la niche du mur pour
     un fauteuil, l'étiquette cousue pour un sac). Les deux fiches ont été refaites à la main avec les photos d'ALCÔVE et
     de TRAVERSE ; il ne les a pas encore notées.
+    **Spécialistes du thème, lot 8, fait le 13 novembre 2026** (son rappel : « Mais je t'avais demander de faire tout
+    les sous agents pour sina hier » : son mandat du 13 novembre couvre aussi les spécialistes qui apparaissent après ;
+    ne plus lui demander s'il veut qu'on les construise) : la documentaliste, sans IA (`custom-theme/references.ts` :
+    secteur reconnu, références proches et lointaines sans nom de site, sections propres au secteur, données au
+    concepteur) ; la comparaison contre les doublons, sans IA (`custom-theme/identity-card.ts`, carte en huit lignes,
+    entre les deux concepts et avec les thèmes des autres marques) ; le juge de l'originalité
+    (`custom-theme/originality.ts` : ses refus rejoignent la seule reprise du concepteur, il relit la reprise, un doute
+    est dit au client, compté au devis) ; les regards en image (`custom-theme/looks.ts` : sur le montage qui pose les
+    photos, l'accueil et la page qui vend capturés sur téléphone puis regardés, « est-ce que ça donne envie ? »,
+    compte rendu `regards`, rien corrigé tout seul). Testés avec une IA simulée ; seule la capture des pages a été
+    vérifiée pour de vrai ; aucun essai réel payant.
+    **Ce qui est vrai du thème sur mesure, relu dans le code le 13 novembre** (ses questions : « comment tu va jouer la
+    liaison ? Et les méga menu […] ? ») : une seule fiche produit, remplie avec le premier produit ; le panneau des
+    grands menus reste un exemple vide ; les pages de prestations ne lisent pas la rubrique Prestations et
+    Rendez-vous ; aucun envoi vers Shopify. Le moteur des thèmes du Studio (`src/lib/theme`) fait déjà tout cela.
+    **Décision de construction annoncée, pas encore validée par lui** : monter le thème sur mesure sur ce moteur (des
+    modèles de page, jamais les produits dans le thème ; le propre de chaque produit rangé avec le produit ; le menu
+    calculé depuis le catalogue, grand menu par familles quand il y a beaucoup de produits, proposé par SINA, corrigé
+    par le client). Ordre annoncé : 1) spécialistes (fait), 2) liaison (une page par produit, collections, menus, mise
+    en boutique) avec d'abord un modèle à lui faire noter, 3) sections (constructions, tenue, les 48 qui manquent).
+    **Chiffres qu'il a demandés** (1 072 sites, accueil et une fiche produit seulement) : accueil 14 sections pour les
+    démonstrations de thèmes, 9 pour les vraies marques, 10 pour les services ; fiche produit 6 et 5. **Pages simples**
+    (contact, page introuvable, aide, légal) : courtes, montées toutes seules dans la tenue, sans image payée ; montré
+    en image, pas de réponse. **Image d'ouverture** : jamais la photo produit du client telle quelle, toujours une
+    scène créée par OpenAI avec son vrai produit (sa confirmation demandée le 13 novembre ; la règle est dans le code).
   - **À confirmer par le propriétaire** : le quatrième fond d'une série de quatre identités (aujourd'hui un fond clair
     coloré, « uni ») ; la règle « un fond sombre par série » quand le client demande du joyeux et du coloré (le directeur
     de création l'a contestée pendant l'essai) ; le réglage des modèles.
