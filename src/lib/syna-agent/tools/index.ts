@@ -19,5 +19,6 @@ import { familyTools } from "./families";
 import { customThemeTools } from "../custom-theme/tools";
 import { galleryTools } from "./gallery";
 import { openTools } from "./open";
+import { postsTools } from "./posts";
 
-export const TOOL_LIST: AgentTool[] = [...startTools, ...identityTools, ...logoTools, ...brandKitTools, ...angleTools, ...activityTools, ...themeTools, ...projectTools, ...siteTools, ...catalogueTools, ...commerceTools, ...mediaTools, ...calendarTools, ...mockupCodeTools, ...offersTools, ...familyTools, ...customThemeTools, ...galleryTools, ...openTools];
+export const TOOL_LIST: AgentTool[] = [...startTools, ...identityTools, ...logoTools, ...brandKitTools, ...angleTools, ...activityTools, ...themeTools, ...projectTools, ...siteTools, ...catalogueTools, ...commerceTools, ...mediaTools, ...calendarTools, ...mockupCodeTools, ...offersTools, ...familyTools, ...customThemeTools, ...galleryTools, ...openTools, ...postsTools];

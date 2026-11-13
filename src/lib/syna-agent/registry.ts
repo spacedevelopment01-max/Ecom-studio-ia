@@ -2,6 +2,7 @@
 import { z } from "zod";
 import type { AgentTool, ToolContext } from "./types";
 import { TOOL_LIST } from "./tools";
+import { stepReady } from "./journey";
 
 let tools: Map<string, AgentTool> | null = null;
 function ensureLoaded() {
@@ -34,11 +35,14 @@ export function isSensitive(t: AgentTool, args: unknown, ctx: ToolContext): bool
  * proposés ni exécutés ; les outils des ANCIENNES maquettes ne servent qu'aux projets déjà commencés avec elles.
  */
 export type ToolScope = { inJourney: boolean; legacyMockups: boolean; /** Conversation aiguillée (voir conversation.ts) : la notice d'un autre outil se demande avec tools.open. */ routed?: boolean };
+const STEP9_TOOLS = new Set(["posts.plan", "posts.create", "posts.validate"]);
 const JOURNEY_HIDDEN = new Set(["brand.create", "site.mockups", "site.mockup_images", "site.build", "strategy.choose", "pilot.run", "project.create"]);
 const LEGACY_MOCKUP = /^(mockup\.|site\.code_from_mockup$|site\.images$|site\.photo_reject$)/;
 export function toolVisible(name: string, scope?: ToolScope): boolean {
   // tools.open n'existe que pour une conversation aiguillée : ailleurs, SINA a déjà toutes les notices.
   if (name === "tools.open") return !!scope?.routed;
+  // Outils d'une étape construite mais pas encore ouverte par le propriétaire : ni proposés ni exécutés.
+  if (STEP9_TOOLS.has(name) && !stepReady(9)) return false;
   if (!scope) return true;
   if (scope.inJourney && JOURNEY_HIDDEN.has(name)) return false;
   if (!scope.legacyMockups && LEGACY_MOCKUP.test(name)) return false;

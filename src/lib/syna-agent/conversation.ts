@@ -45,6 +45,7 @@ const STEP_TOOLS: Record<number, RegExp> = {
   6: /^(site\.mode$|theme\.|custom\.|gallery\.|catalogue\.list$|shop\.)/,
   7: /^(custom\.|gallery\.|mockup\.|site\.(outline|edit|versions|use_version|pages|code_from_mockup|images|photo_reject)$|catalogue\.list$|shop\.)/,
   8: /^(theme\.|site\.(outline|edit|versions|use_version|pages)$|catalogue\.list$|shop\.)/,
+  9: /^(posts\.|catalogue\.list$)/,
 };
 
 /** L'étape a-t-elle une liste d'outils à elle ? (Hors parcours, ou étape pas encore construite : tout le catalogue.) */

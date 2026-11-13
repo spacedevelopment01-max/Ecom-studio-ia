@@ -30,13 +30,14 @@ import { budgetState, jobSpentMicro, trackJob, authorizeBudgetPct, DEFAULT_BUDGE
 import { attachmentsOf, attachmentImages, describeAttachment, journeyImages } from "./attachments";
 import { projectSnapshot } from "./snapshot";
 import { SYNA_SYSTEM } from "./prompt";
-import { JOURNEY_STEPS, READY_STEPS, currentStep, journeyContext, journeyOf } from "./journey";
+import { JOURNEY_STEPS, stepReady, currentStep, journeyContext, journeyOf } from "./journey";
 import { localDecision } from "./local-step";
 import { LOGO_STYLE_LABEL, fontFace, groundPresentation, type Identity } from "./identities";
 import { BOARD_OBJECT_LABEL, SIGN_KIND_LABEL, type Board, type BoardImage } from "./brand-board";
 import { safeWordmark } from "./brand-routes";
 import { drawWordmark, type DrawnWordmark } from "./brand-wordmark";
 import { mixIdentity } from "./tools/identity";
+import { createdPosts } from "./tools/posts";
 import { assetUrl } from "../library";
 
 export const MAX_STEPS = 12;
@@ -450,7 +451,7 @@ export function modelFor(currentStepNumber: number, opts: { customTheme?: boolea
   // d'une retouche à relire, élément désigné à changer) ; MOYEN pour poser une question ou confirmer un choix (décision
   // du propriétaire du 10 novembre 2026, après l'essai Éclat de thé : 27 réponses à 0,13 € en moyenne).
   if (currentStepNumber === 6 || (currentStepNumber === 7 && opts.customTheme)) return { provider: "anthropic", model: "claude-sonnet-5-5", effort: opts.judge === false ? "medium" : "high" };
-  const simple = currentStepNumber <= 8 || !READY_STEPS.includes(currentStepNumber);
+  const simple = currentStepNumber <= 8 || !stepReady(currentStepNumber);
   // Moment qui compte (résultat à présenter, échec à expliquer, client mécontent) : le modèle plus fort, effort moyen,
   // seulement si le réglage « sina.conversation » le demande (l'appelant ne passe keyMoment que dans ce cas).
   if (simple && opts.keyMoment) return { provider: "anthropic", model: "claude-sonnet-5-5", effort: "medium" };
@@ -635,7 +636,7 @@ export function threadView(user: User, cid: string) {
       const j = journeyOf(cid);
       return {
         current: currentStep(j), mode: j.mode, keep: j.keep,
-        steps: JOURNEY_STEPS.map((s) => ({ n: s.n, fr: s.fr, en: s.en, status: j.steps[s.n]?.status ?? "todo", ready: READY_STEPS.includes(s.n) })),
+        steps: JOURNEY_STEPS.map((s) => ({ n: s.n, fr: s.fr, en: s.en, status: j.steps[s.n]?.status ?? "todo", ready: stepReady(s.n) })),
         // Étape 1 : la dernière proposition d'identités (cartes du fil), avec les fichiers de leurs vraies polices.
         identities: j.identities ? {
           round: j.identities.round, issues: j.identities.issues, chosen: j.identityChoice ?? null,
@@ -652,6 +653,8 @@ export function threadView(user: User, cid: string) {
         families: j.families ?? null,
         // Étape 6, maquettes : textes écrits avant la maquette (montrés en entier au client).
         siteCopy: c.project_id ? (() => { const sc = loadSiteCopy(c.project_id!); return sc ? { pages: Object.fromEntries(Object.entries(sc.pages).map(([k, v]) => [k, v])) } : null; })() : null,
+        // Étape 9 : le plan des publications (avec le doute éventuel de SINA) et les publications qui ont leur image.
+        posts: j.posts ? { round: j.posts.round, judged: j.posts.judged, groups: j.posts.groups, created: c.project_id && j.posts.created ? createdPosts(c.project_id, j.posts.created.postIds).map((x) => ({ id: x.id, network: x.network, title: x.title, images: x.media.map((id) => assetUrl({ id })) })) : null } : null,
         // Étape 4 : les 5 angles marketing et l'angle choisi.
         angles: j.angles ? { list: j.angles.list, recommendedId: j.angles.recommendedId, sourceCount: j.angles.sourceCount, chosen: j.angleChoice?.ids ?? (j.angleChoice ? [j.angleChoice.id] : null) } : null,
         // Étape 3 : l'image de marque (déclinaisons, planche, charte PDF), servie par la bibliothèque du projet.

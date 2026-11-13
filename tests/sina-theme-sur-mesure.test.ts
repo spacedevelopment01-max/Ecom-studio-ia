@@ -727,6 +727,27 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
           const now = allSections(loadCustomTheme(pid)!);
           expect(now.filter((x) => sectionHtml(x.s).includes("Repris : Texte de la marque")).length).toBe(third.relecture.reprises);
           expect(third.problems.filter((x: string) => /: à relire \(/.test(x))).toHaveLength(1); // la septième, au-delà de la limite
+          // Le gardien des faits (sans IA) : une promesse que la fiche ne confirme pas est donnée au relecteur avec sa
+          // section, et dite dans le compte rendu tant qu'elle reste ; un « [À compléter] » n'en est jamais une.
+          {
+            const proj = (await import("@/lib/projects")).loadProject(pid);
+            expect(B.unconfirmedClaims(proj, "<h2>Un thé doux</h2><p>[À compléter : délai de livraison]</p>")).toEqual([]);
+            const flagged = B.unconfirmedClaims(proj, "<h2>Certifié bio, garanti à vie</h2><p>Livré en 24 h.</p>");
+            expect(flagged.length).toBeGreaterThan(0);
+            expect(flagged[0]).toMatch(/^« .+ » \(.+\)$/);
+            expect(B.copyReviewPrompt("FICHE", [{ uid: "s1", place: "Accueil", title: "Ouverture", html: "<h2>Titre</h2>" }], { s1: flagged })).toMatch(/## s1 · Accueil · Ouverture\nTITRE : Titre\nSIGNALÉ PAR LE STUDIO, à faire corriger si la fiche ne le confirme pas : « /);
+            const tNow = loadCustomTheme(pid)!, target = allSections(tNow)[0];
+            const before = sectionHtml(target.s);
+            target.s.html = before.replace(/(<h[1-3][^>]*>)([^<]+)(<)/, "$1Certifié bio, garanti à vie$3");
+            (await import("@/lib/syna-agent/custom-theme/theme")).saveCustomTheme(pid, tNow, { history: false });
+            const seenFlags: string[] = [];
+            B.customBrandDeps.review = async (prompt) => { seenFlags.push(prompt); return { sections: [], site: "Rien à reprendre." }; };
+            const fifth: any = await fr(() => B.runCustomBrandJob({ ...fake, job: { id: `${job.id}-faits` }, payload: { ...fake.payload, photos: false, rewrite: false } }));
+            expect(seenFlags[0]).toMatch(new RegExp(`## ${target.s.uid} · [^\\n]*\\n[\\s\\S]*?SIGNALÉ PAR LE STUDIO`));
+            expect(fifth.problems.join("\n")).toMatch(/à confirmer par toi ou à retirer : « /);
+            const tBack = loadCustomTheme(pid)!; allSections(tBack).find((x) => x.s.uid === target.s.uid)!.s.html = before;
+            (await import("@/lib/syna-agent/custom-theme/theme")).saveCustomTheme(pid, tBack, { history: false });
+          }
           // Relecture en panne : dit dans le rapport, jamais passé sous silence.
           B.customBrandDeps.review = async () => { throw new Error("modèle indisponible"); };
           const fourth: any = await fr(() => B.runCustomBrandJob({ ...fake, job: { id: `${job.id}-panne` }, payload: { ...fake.payload, photos: false, rewrite: true } }));

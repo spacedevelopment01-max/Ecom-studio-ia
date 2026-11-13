@@ -16,6 +16,7 @@ import { all } from "../../db";
 import { getSetting } from "../../settings";
 import { assetData, assetUrl, getAsset, saveAsset } from "../../library";
 import { llmJson } from "../../ai/llm";
+import { lintClaims } from "../../ai/tasks";
 import { withTrace } from "../../ai/trace";
 import { aiSiteImageHd, withQuotedImageRoute } from "../../ai/media-providers";
 import { loadWordingRules, wordingPromptLine } from "../../client-wording";
@@ -213,11 +214,23 @@ export function sectionReadableTexts(html: string): string[] {
 }
 
 /** Ce que le directeur de création reçoit : le dossier du client, puis chaque section avec ses textes, page par page. */
-export function copyReviewPrompt(brief: string, sections: { uid: string; place: string; title: string; html: string }[]): string {
+export function copyReviewPrompt(brief: string, sections: { uid: string; place: string; title: string; html: string }[], flags: Record<string, string[]> = {}): string {
   return [
     brief, "", `TEXTES DU SITE À RELIRE (${sections.length} sections, dans l'ordre des pages) :`,
-    ...sections.map((x) => [`## ${x.uid} · ${x.place} · ${x.title}`, ...sectionReadableTexts(x.html)].join("\n")),
+    ...sections.map((x) => [`## ${x.uid} · ${x.place} · ${x.title}`, ...sectionReadableTexts(x.html),
+      // Le gardien des faits (contrôle du Studio, sans IA) : ce que la fiche du client ne confirme pas.
+      ...(flags[x.uid]?.length ? [`SIGNALÉ PAR LE STUDIO, à faire corriger si la fiche ne le confirme pas : ${flags[x.uid].join(" ; ")}`] : [])].join("\n")),
   ].join("\n\n");
+}
+
+/**
+ * Le gardien des faits des textes du site (carte des spécialistes : « ce qui vaut pour toutes les étapes ») : promesses,
+ * chiffres et prix d'une section que la fiche du client ne confirme pas, relevés sans IA par le contrôle des promesses
+ * du Studio. Un « [À compléter : …] » n'est jamais une promesse.
+ */
+export function unconfirmedClaims(p: Project, html: string): string[] {
+  const texts = sectionReadableTexts(html).map((x) => x.replace(/\[(?:À|A) compléter[^\]]*\]/gi, " "));
+  try { return [...new Set(lintClaims(texts, p).map((c) => `« ${c.term} » (${c.label})`))].slice(0, 4); } catch { return []; }
 }
 
 /** Textes visibles d'une section (titres, boutons, liens), pour montrer sa forme au plan sans tout son HTML. */
@@ -561,7 +574,8 @@ export async function runCustomBrandJob(ctx: JobContext) {
     try {
       const review = await ctx.step("text-review", async () => {
         const all = allSections(loadCustomTheme(p.id)!).filter((x) => x.s.clientTexts || sections.some((y) => y.s.uid === x.s.uid));
-        const prompt = copyReviewPrompt(brief, all.map((x) => ({ uid: x.s.uid, place: x.page?.label ?? x.place, title: libSection(x.s.id)?.title ?? x.s.id, html: withBrandName(sectionHtml(x.s), name) })));
+        const flags = Object.fromEntries(all.map((x) => [x.s.uid, unconfirmedClaims(p, withBrandName(sectionHtml(x.s), name))] as const).filter(([, list]) => list.length));
+        const prompt = copyReviewPrompt(brief, all.map((x) => ({ uid: x.s.uid, place: x.page?.label ?? x.place, title: libSection(x.s.id)?.title ?? x.s.id, html: withBrandName(sectionHtml(x.s), name) })), flags);
         const usageKey = `${ctx.job.id}:text-review`;
         return CopyReviewSchema.parse(customBrandDeps.review ? await customBrandDeps.review(prompt, usageKey)
           : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-review", costCapMicro: a.capMicro }, () =>
@@ -601,6 +615,10 @@ export async function runCustomBrandJob(ctx: JobContext) {
       }
       for (const f of refused.slice(MAX_COPY_FIXES)) report.problems.push(`${libSection(known.get(f.uid)!.s.id)?.title ?? f.uid} : à relire (${f.fixes[0].slice(0, 140)})`);
       report.relecture = { reprises: fixed, refusees: refused.length, avis: review.site };
+      // Ce que la fiche ne confirme toujours pas après la relecture : dit au client, jamais laissé en silence.
+      const left = allSections(loadCustomTheme(p.id)!).map((x) => ({ x, claims: unconfirmedClaims(p, withBrandName(sectionHtml(x.s), name)) })).filter((y) => y.claims.length);
+      for (const y of left.slice(0, 6)) report.problems.push(`${libSection(y.x.s.id)?.title ?? y.x.s.id} (${y.x.page?.label ?? y.x.place}) : à confirmer par toi ou à retirer : ${y.claims.join(" ; ")}`);
+      if (left.length > 6) report.problems.push(`${left.length - 6} autre(s) section(s) avec une promesse à confirmer`);
     } catch (e) { report.problems.push(`relecture des textes non faite (${(e as Error).message.slice(0, 120)}) : les textes n'ont pas été relus`); }
   }
 

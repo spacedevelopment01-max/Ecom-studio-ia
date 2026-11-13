@@ -32,7 +32,7 @@ Ce document dit, étape par étape, **qui fait le travail aujourd'hui** (relevé
 | 6. Thème sur mesure | Conception : une conceptrice, puis un directeur commercial qui corrige. Montage : un plan des textes, un appel par section qui écrit les textes, les liens et les descriptions de photos ; puis un **directeur de création des textes** relit TOUT le site et fait reprendre les sections refusées (6 au plus, le reste est dit) ; une **directrice artistique des photos** relit TOUTES les photos prévues AVANT qu'une seule soit payée et fait redécrire celles qu'elle refuse (5 sections au plus) ; chaque photo créée est ensuite contrôlée en image. La direction artistique de la planche choisie est reprise par les photos du site. | Un essai réel sur un vrai projet. Une photo ratée au contrôle reste seulement signalée (décision du propriétaire : refaite avec l'accord du client). | **Fait** (lot 2, 13 novembre) |
 | 7. Site codé (anciennes maquettes) | Analyse, écriture, comparaison en image, correction. | Rien (voie ancienne). | Convenable |
 | 8. Thème du Studio adapté | Rédacteur et directeur de création (jusqu'à trois tours) ; images créées puis relues. | Rien d'urgent. | Convenable |
-| 9. Publications | **Pas construite.** Des outils généraux existent, hors parcours. | Une stratège des contenus, une rédactrice, une directrice artistique, un juge, puis le calendrier. | À faire (lot 5) |
+| 9. Publications | **Construite, fermée** (réglage `sina.etapes_ouvertes`). Le plan d'abord : une **stratège des contenus** écrit les 3 groupes (charte § 7 : sujet utile, titre en deux temps, trois points, appel à l'action, texte, hashtags, photo prévue) ; le Studio contrôle sans IA (angle choisi, hashtags, produit du catalogue, promesses, personnes) ; un **juge des publications** juge le plan entier ; une reprise au plus, relue ; un groupe encore refusé est montré avec le doute de SINA. Les images ensuite : le moteur de publications du Studio (son rédacteur, son modèle d'images, son contrôle en image). | Un essai réel, puis la décision du propriétaire d'ouvrir l'étape. | **Construit, fermé** (lot 5, 13 novembre) |
 | 10. Publicités | **Pas construite.** | Une stratège publicitaire, une rédactrice, des visuels, un juge, un contrôle des promesses. | À faire (lot 6) |
 | 11. Calendrier de publication | **Pas construite.** L'outil de calendrier existe, sans IA. | Brancher l'étape sur l'outil ; une planificatrice. | À faire (lot 5) |
 | 12. Articles de blog | **Pas construite.** | Une rédactrice en chef (sujets), une rédactrice, un relecteur (faits, référencement). | À faire (lot 7) |
@@ -40,8 +40,10 @@ Ce document dit, étape par étape, **qui fait le travail aujourd'hui** (relevé
 
 ## Ce qui vaut pour toutes les étapes (à construire une fois, à brancher partout)
 
-- **Le gardien des faits** : aucun chiffre, avis, délai, garantie ou certification absent de la fiche du client. (Existe
-  pour la planche de marque : `unprovenClaims` ; à généraliser aux textes du site et aux contenus.)
+- **Le gardien des faits** : aucun chiffre, avis, délai, garantie ou certification absent de la fiche du client. Sans
+  IA. En place pour la planche de marque (`unprovenClaims`), les angles (`lintClaims`), les textes du thème sur mesure
+  (`unconfirmedClaims` : donné au directeur de création, et dit au client tant que la promesse reste) et le plan des
+  publications (`planIssues`). Reste à brancher : publicités et articles.
 - **Le gardien du vocabulaire du client** : ce qu'il a corrigé une fois vaut partout (`client-wording.ts`).
 - **La direction artistique du projet** : une seule, écrite une fois, relue par tout ce qui crée une image (planche,
   site, publications, publicités).
@@ -69,6 +71,13 @@ Ce document dit, étape par étape, **qui fait le travail aujourd'hui** (relevé
    plafond déjà annoncé pour la recherche ; un juge en panne ne bloque jamais l'étape, et c'est dit. Pas encore essayé
    pour de vrai.
 5. **Publications et calendrier** (étapes 9 et 11).
+   **Étape 9 construite le 13 novembre 2026, FERMÉE par défaut**, testée avec une IA simulée (`posts-plan.ts` :
+   `runPostsPlanJob`, tâche `syna.posts.plan` ; `tools/posts.ts` : `posts.plan`, `posts.create`, `posts.validate` ;
+   carte du plan dans le fil). `posts.create` pose les publications dans le moteur du Studio et lance SA production
+   (`social.v2.produce`), avec la convention attendue par le calendrier (un groupe = une publication déclinée par
+   réseau). Le propriétaire ouvre l'étape avec `sina.etapes_ouvertes` = `[9]`, après un essai réel (son parcours :
+   chaque étape essayée en réel et validée avant la suivante). Le calendrier (étape 11) existe déjà, sans IA ; il
+   s'ouvrira après les publicités (étape 10), qui le précèdent dans le parcours.
 6. **Publicités** (étape 10).
 7. **Articles et rangement** (étapes 12 et 13).
 

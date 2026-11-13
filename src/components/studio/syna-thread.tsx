@@ -20,7 +20,7 @@ type View = {
   run: { id: string; status: string; step: number; pending: any; error: string | null } | null;
   budget: { authorizedPct: number | null; spentPct: number | null };
   attachments: { id: string; kind: string; name: string; analysis: any }[];
-  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; logos?: Logos | null; brandKit?: Kit | null; angles?: Angles | null; activity?: Activity | null; themes?: Themes | null; families?: Families | null; siteCopy?: { pages: Record<string, CopyPage> } | null };
+  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; logos?: Logos | null; brandKit?: Kit | null; angles?: Angles | null; posts?: PostsPlan | null; activity?: Activity | null; themes?: Themes | null; families?: Families | null; siteCopy?: { pages: Record<string, CopyPage> } | null };
 };
 type Face = { family: string; file: string; weight: number } | null;
 type IdentityCard = { nameWhy?: string;
@@ -177,6 +177,54 @@ function LogoCards({ logos, brandBg, busy, onChoose }: { logos: Logos; brandBg: 
 }
 
 type Angles = { list: { id: string; title: string; goal?: string; why?: string; story?: string; show?: string; organicExample?: string; cta?: string; audience: string; motivation: string; message: string; emotion: string; proofsToConfirm: string[]; arguments: string[]; sources: { title: string; url: string }[]; doubt?: string }[]; recommendedId: string | null; sourceCount: number; chosen: string[] | null };
+
+type PostsPlan = { round: number; judged: "juges" | "non_juges"; groups: { subject: string; title: string; points: string[]; cta: string; caption: string; hashtags: string[]; visual: string; doubt?: string }[]; created: { id: string; network: string; title: string; images: string[] }[] | null };
+const POST_SUBJECT: Record<string, [string, string]> = { produit: ["Le produit", "The product"], conseil: ["Un conseil", "A tip"], coulisses: ["Les coulisses", "Behind the scenes"], usage: ["L'usage", "How to use"], erreurs: ["Les erreurs à éviter", "Mistakes to avoid"], question: ["Une question", "A question"] };
+
+/**
+ * Étape 9 : le plan des 3 groupes de publications, montré AVANT toute image (le client voit ce qui sera créé et payé),
+ * puis les publications créées, par réseau. Un groupe que SINA a refusé à la relecture porte son doute, dit franchement.
+ */
+function PostsPlanCard({ plan }: { plan: PostsPlan }) {
+  const t = useT();
+  return (
+    <div className="@container mt-2 space-y-2" data-syna-posts>
+      <p className="text-xs text-muted">{plan.created ? t("Tes publications, dans le format de chacun de tes réseaux.", "Your posts, in each network's format.") : t("Le plan de tes 3 publications. Aucune image n'est encore créée : dis-moi s'il te convient.", "The plan of your 3 posts. No image is created yet: tell me if it suits you.")}</p>
+      <div className="grid grid-cols-1 gap-3 @3xl:grid-cols-3">
+        {plan.groups.map((g, i) => {
+          const band = ANGLE_BANDS[i % ANGLE_BANDS.length];
+          return (
+            <article key={i} className="overflow-hidden rounded-xl border border-line bg-card text-xs" data-post-group={i + 1}>
+              <header className="px-4 py-3 text-white" style={{ background: band }}>
+                <p className="text-[10px] font-semibold uppercase tracking-wide opacity-90">{t(POST_SUBJECT[g.subject]?.[0] ?? g.subject, POST_SUBJECT[g.subject]?.[1] ?? g.subject)}</p>
+                <h4 className="mt-0.5 text-base font-bold leading-tight">{g.title}</h4>
+              </header>
+              <div className="space-y-2 px-4 py-3">
+                {!!g.points.length && <ul className="list-disc space-y-0.5 pl-4 text-ink/90">{g.points.map((x) => <li key={x}>{x}</li>)}</ul>}
+                <p><span className="inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold text-white" style={{ background: band }}>{g.cta}</span></p>
+                <p className="whitespace-pre-line text-ink/90">{g.caption}</p>
+                <p className="break-words text-[11px] text-muted">{g.hashtags.join(" ")}</p>
+                <p className="text-[11px] text-muted"><strong>{t("La photo prévue", "The planned photo")} : </strong>{g.visual}</p>
+                {!!g.doubt && <p className="rounded-md border border-line bg-card px-3 py-2 text-[11px] text-muted" data-post-doubt={i + 1}><strong>{t("Mon doute sur celle-ci", "My doubt about this one")} : </strong>{g.doubt}</p>}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+      {!!plan.created?.some((x) => x.images.length) && (
+        <div className="grid grid-cols-2 gap-2 @3xl:grid-cols-4" data-syna-posts-created>
+          {plan.created.filter((x) => x.images.length).map((x) => (
+            <figure key={x.id} className="overflow-hidden rounded-lg border border-line bg-card">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={x.images[0]} alt={x.title} className="block w-full" loading="lazy" />
+              <figcaption className="px-2 py-1 text-[11px] text-muted">{x.network}</figcaption>
+            </figure>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 /** Couleurs des bandeaux, reprises du guide « 5 angles marketing » du propriétaire. */
 const ANGLE_BANDS = ["#9C3343", "#74533F", "#43644A", "#B46D25", "#73507F"];
@@ -609,6 +657,8 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
   const items = useMemo(() => groupThread(v?.messages ?? []), [v?.messages]);
   // Cartes des identités : sous la DERNIÈRE proposition réussie (les anciennes sont remplacées).
   const lastCalendar = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && String(m.content?.tool ?? "").startsWith("calendar.") && m.content?.ok)?.id, [v?.messages]);
+  // Étape 9 : le plan arrive à la fin de sa tâche, les images à la fin de la production ; la carte suit le dernier résultat.
+  const lastPosts = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.ok && ((m.content?.tool === "jobs.wait" && /syna\.posts\.plan|social\.v2\.produce/.test(JSON.stringify(m.content?.data ?? ""))) || m.content?.tool === "posts.plan"))?.id, [v?.messages]);
   const lastAngles = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "angles.propose" && m.content?.ok && m.content?.data?.angles)?.id, [v?.messages]);
   const lastActivity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "activity.plan" && m.content?.ok)?.id, [v?.messages]);
   const lastCopy = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "mockup.copy" && m.content?.ok)?.id, [v?.messages]);
@@ -653,6 +703,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
                 <ToolResult m={tm} projectId={v.projectId} onChoose={(n) => send(t(`Je choisis le thème sur mesure ${n}.`, `I choose custom theme ${n}.`))} busy={busy || working} />
                 {tm.id === lastLogos && v.journey?.logos && <LogoCards logos={v.journey.logos} brandBg={brandBackground(v.journey.identities)} busy={busy || working} onChoose={(k) => send(t(`Je choisis le logo ${k}.`, `I choose logo ${k}.`))} />}
                 {tm.id === lastActivity && v.journey?.activity && <ActivityCard a={v.journey.activity} busy={busy || working} onValidate={() => send(t("Je valide mon activité.", "I validate my business."))} />}
+                {tm.id === lastPosts && v.journey?.posts && <PostsPlanCard plan={v.journey.posts} />}
                 {tm.id === lastAngles && v.journey?.angles && <AngleCards angles={v.journey.angles} busy={busy || working} onChoose={(titles) => send(titles.length > 1 ? t(`Je choisis ces angles : ${titles.map((x, i) => `« ${x} »${i === 0 ? " (principal)" : ""}`).join(", ")}.`, `I choose these angles: ${titles.join(", ")}.`) : t(`Je choisis l'angle « ${titles[0]} ».`, `I choose the angle "${titles[0]}".`))} />}
                 {tm.id === lastCopy && v.journey?.siteCopy && <CopyCard pages={v.journey.siteCopy.pages} />}
                 {tm.id === lastCustom && v.projectId && <CustomThemeCard card={tm.content.data.customTheme} busy={busy || working} onSend={(text) => send(text)} />}

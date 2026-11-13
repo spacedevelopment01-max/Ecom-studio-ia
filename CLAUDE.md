@@ -265,7 +265,13 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     jamais montrées. **Lot 4 fait le 13 novembre** (les cinq angles, `preparation/angles-judge.ts`) : un juge séparé
     juge les angles de la stratège, les refusés sont réécrits une fois et repassent les contrôles du Studio, un angle
     refusé qui reste est montré avec le doute de SINA (`doubt`, carte du fil). Tout cela testé avec une IA simulée,
-    aucun essai réel. Lots suivants : publications et calendrier, publicités, articles et rangement.
+    aucun essai réel. **Lot 5 construit le 13 novembre, étape 9 FERMÉE par défaut** (`sina.etapes_ouvertes` = `[9]`
+    pour l'ouvrir ; son parcours veut chaque étape essayée en réel et validée avant la suivante) : le plan des 3
+    groupes de publications est écrit par une stratège des contenus (charte § 7), contrôlé sans IA, jugé par un juge
+    séparé, repris une fois au plus, montré dans le fil AVANT toute image (`posts-plan.ts`, `posts.plan`) ; les images
+    passent par le moteur de publications du Studio (`posts.create` → `social.v2.produce`) ; `posts.validate`. Gardien
+    des faits sans IA aussi sur les textes du thème sur mesure (`unconfirmedClaims`). Lots suivants : publicités,
+    calendrier, articles et rangement.
   - **À confirmer par le propriétaire** : le quatrième fond d'une série de quatre identités (aujourd'hui un fond clair
     coloré, « uni ») ; la règle « un fond sombre par série » quand le client demande du joyeux et du coloré (le directeur
     de création l'a contestée pendant l'essai) ; le réglage des modèles.

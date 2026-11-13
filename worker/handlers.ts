@@ -66,6 +66,7 @@ export const handlers: Record<string, Handler> = {
   "syna.product.gallery": async (ctx) => (await import("../src/lib/syna-agent/custom-theme/gallery")).runGalleryJob(ctx),
   // SINA (#492), étape 6 : thème du Studio monté à la marque du client (textes dans l'angle choisi et images, payant).
   "syna.studio.brand": async (ctx) => (await import("../src/lib/syna-agent/studio-brand")).runStudioBrandJob(ctx),
+  "syna.posts.plan": async (ctx) => (await import("../src/lib/syna-agent/posts-plan")).runPostsPlanJob(ctx),
   "agent.theme.capture": async ctx => (await import('../src/lib/orchestrator/conversation/render-tool-execution')).runRenderCapture(ctx),
   "agent.ad-document.local": async ctx => (await import('../src/lib/orchestrator/conversation/ad-document-tool-execution')).runAdDocument(ctx),
   "agent.theme.export": async ctx => (await import('../src/lib/orchestrator/conversation/export-tool-execution')).runNativeExport(ctx),
