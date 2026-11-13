@@ -143,8 +143,8 @@ simulée, aucun essai réel :
 
 - **La documentaliste** (temps 2, sans IA) : `custom-theme/references.ts`. Secteur ou métier reconnu dans les mots du
   client, références proches et lointaines sans nom de site, constats du secteur, sections propres au secteur.
-- **La comparaison contre les doublons** (temps 4, sans IA) : `custom-theme/identity-card.ts`. Une carte en huit
-  lignes par concept ; les deux concepts doivent différer sur cinq lignes, un concept sur quatre lignes de chaque thème
+- **La comparaison contre les doublons** (temps 4, sans IA) : `custom-theme/identity-card.ts`. Une carte en neuf
+  lignes par concept (huit au départ, la tenue ajoutée le même jour) ; les deux concepts doivent différer sur cinq lignes, un concept sur quatre lignes de chaque thème
   déjà monté pour une autre marque, jamais le même trio ouverture, en-tête, ordre de l'accueil.
 - **Le juge de l'originalité** (temps 4) : `custom-theme/originality.ts`. Séparé du concepteur ; ses refus rejoignent
   la seule reprise déjà prévue ; il relit la reprise ; un doute qui reste est dit au client.
@@ -152,8 +152,52 @@ simulée, aucun essai réel :
   sont capturés sur téléphone et regardés : la « cliente » (je comprends, j'en ai envie, je sais où toucher) et le
   directeur artistique. Rien n'est corrigé tout seul : c'est dit au client. La capture a été vérifiée pour de vrai.
 
-Ce que ces spécialistes ne changent pas : les sections gardent une seule allure chacune. La carte d'identité compare
-donc des sections ; elle gagnera les lignes « construction » et « tenue » quand les sections en auront.
+Depuis, vingt sections ont plusieurs constructions et une tenue (voir plus bas) : la carte d'identité compte la
+construction de chaque section et la tenue du site, en neuf lignes.
+
+## La tenue et les constructions (13 novembre 2026)
+
+Demande du propriétaire : « Je laisse faire toutes la partie thèmes sur mesure avec sina et tu t'arrête pas tant que
+le résultat n'est pas le même que tu m'a envoyé exactement le meme ». Les écrans envoyés (accueil du fauteuil en deux
+propositions, fiche produit, page introuvable, contact, ouverture du sac de voyage) étaient faits à la main. Le Studio
+sait maintenant les fabriquer, et SINA ne fait que choisir :
+
+- **Vingt sections « à tenue »** (`custom-theme/tenue.ts`, feuille `public/sections/tenue.css`, script `tenue.js`,
+  écrits à la main, hors `scripts/sections-library.py`) : en-tête, ouverture, bande de photo, de près, bloc d'achat,
+  description en volets, grande photo et sa phrase, en situation, mesures en schéma, questions, appel final, page
+  introuvable, contact, atouts, produits en cartes, histoire, panier, compte, légal, pied de page. Elles vont avec les
+  deux familles (étiquette `tenue`).
+- **Plusieurs constructions par section** (attribut `data-tn-c`) : l'en-tête en a trois (le nom au centre, le nom à
+  gauche, la sangle et son étiquette cousue), l'ouverture trois (le titre dans la photo, le titre puis la photo dans
+  le cadre, le titre géant), « de près » deux, les mesures quatre dessins.
+- **La tenue de la marque** (`TenueSchema`) : titres (fins, gras, capitales), bouton (pilule, droit, étiquette,
+  ombre), cadre des photos (niche, droit, penché), fond (uni, toile), petits textes (normal, machine), et le signe
+  pris sur le produit, écrit en clair. Couleurs et polices viennent de la marque du projet. La trame de toile court
+  sur toute la page ; une section qui a son propre fond le garde.
+- **SINA choisit, le Studio fabrique** : le concepteur rend pour chaque section sa construction, et la tenue pour tout
+  le site (`design.ts`, `TENUE_RULES`) ; le rédacteur écrit les textes et décrit les photos comme avant. SINA change
+  une construction ou la tenue sans rien réécrire ni repayer (`custom.structure`, opérations `construction` et
+  `tenue`), et l'annule (`custom.undo`).
+- **Rien d'inventé** : ce que le dossier ne donne pas s'affiche en jaune, « À compléter : … ». Le bloc d'achat, les
+  cartes et le panier prennent les vraies photos et le vrai prix du catalogue ; un seul produit donne une grande
+  carte, jamais une petite carte et un vide.
+- **Contre les doublons** : la carte d'identité compte maintenant la construction de chaque section et la tenue (neuf
+  lignes). Le fauteuil et le sac sortent de la même bibliothèque et n'ont en commun que le pied de page et les
+  sections de la fiche produit.
+
+**Ce qui a été vérifié.** Un test monte les deux sites entiers par les outils de SINA, avec une IA simulée
+(`tests/sina-tenue-fauteuil.test.ts`), puis les pages sont capturées sur téléphone et comparées, pixel par pixel, aux
+écrans faits à la main : accueil A 0,00 % de pixels différents, proposition B 0,03 %, ouverture du sac 0,09 % (le
+grain de la photo), page introuvable 0,00 %, contact 0,00 %, fiche produit 1,05 %. Sur la fiche, deux écarts connus :
+le nom de l'en-tête à moins d'un pixel (les écrans faits à la main n'avaient pas tous le même espacement des lettres),
+et la barre d'achat, qui appartient à l'écran et se montre sur la capture du bas. Le Studio ajoute aussi le pied de
+page sous la fiche produit (liens légaux), que l'écran fait à la main n'avait pas ; la barre d'achat ne le couvre pas.
+Sur ordinateur, les ouvertures passent en deux colonnes pour garder le produit entier ; regardé en image, pas comparé
+à un modèle (aucun n'existe).
+
+**Ce qui ne l'a pas été.** Aucun essai réel : on ne sait pas encore si la vraie IA choisit les bonnes constructions et
+écrit à ce niveau. Les 188 autres sections de la bibliothèque n'ont ni tenue ni constructions. La liaison (une page
+par produit, menus, mise en boutique) reste à faire.
 
 ## Ce qui est vrai dans le Studio, et l'ordre de construction (13 novembre 2026)
 
@@ -177,7 +221,8 @@ durées, prix et horaires viennent de la rubrique Prestations et Rendez-vous.
 
 Ordre annoncé : 1) les spécialistes qui manquaient (fait ci-dessus) ; 2) la liaison (une page par produit, collections,
 menus, mise en boutique), avec d'abord un modèle à faire noter (l'ouverture et une fiche produit) ; 3) les sections
-(plusieurs constructions, la tenue de la marque, les 48 qui manquent).
+(plusieurs constructions, la tenue de la marque, les 48 qui manquent). À sa demande du 13 novembre, la tenue et les
+constructions sont passées devant (fait pour vingt sections, voir plus haut) ; la liaison vient ensuite.
 
 Pages simples (contact, page introuvable, aide, légal) : courtes (une à trois sections), montées toutes seules dans la
 tenue après le choix du client, sans image payée, sans rien d'inventé, contrôlées par programme. Montré au

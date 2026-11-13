@@ -33,7 +33,7 @@ export async function customThemeShots(projectId: string): Promise<ThemeShot[]> 
   if (!t) return [];
   const dir = cacheDir();
   // Version de la bibliothèque (feuille et scripts communs) : une correction des sections refait aussi les captures.
-  const lib = ["library.css", "library.js"].map((f) => { try { return Math.round(fs.statSync(path.join(LIBRARY_DIR(), f)).mtimeMs).toString(36); } catch { return "0"; } }).join("");
+  const lib = ["library.css", "library.js", "tenue.css", "tenue.js"].map((f) => { try { return Math.round(fs.statSync(path.join(LIBRARY_DIR(), f)).mtimeMs).toString(36); } catch { return "0"; } }).join("");
   const key = (v: string) => path.join(dir, `${projectId}-${t.rev}-${lib}-${v === "ordinateur" ? "desk" : "phone"}.jpg`);
   const cached = VIEWS.map((v) => ({ view: v.key, file: key(v.key) })).filter((x) => fs.existsSync(x.file));
   if (cached.length === VIEWS.length) return cached.map((x) => ({ view: x.view, data: fs.readFileSync(x.file) }));
@@ -58,7 +58,7 @@ export async function customThemePageShots(projectId: string, keys: string[]): P
   const t = loadCustomTheme(projectId);
   if (!t) return [];
   const dir = cacheDir(), phone = VIEWS[1];
-  const lib = ["library.css", "library.js"].map((f) => { try { return Math.round(fs.statSync(path.join(LIBRARY_DIR(), f)).mtimeMs).toString(36); } catch { return "0"; } }).join("");
+  const lib = ["library.css", "library.js", "tenue.css", "tenue.js"].map((f) => { try { return Math.round(fs.statSync(path.join(LIBRARY_DIR(), f)).mtimeMs).toString(36); } catch { return "0"; } }).join("");
   let html: string | null = null;
   const out: { key: string; label: string; data: Buffer }[] = [];
   for (const key of keys) {
@@ -76,13 +76,18 @@ export async function customThemePageShots(projectId: string, keys: string[]): P
   return out;
 }
 
-async function shoot(html: string, v: (typeof VIEWS)[number], pageKey?: string): Promise<Buffer | null> {
+/** Capture de l'écran du bas d'une page sur téléphone (ce que voit le visiteur arrivé en bas : barre d'achat comprise). */
+export const shootPageBottom = (html: string, pageKey: string, scale = 1, quality?: number) => shoot(html, VIEWS[1], pageKey, { bottom: true, scale, quality });
+/** Capture d'une page entière sur téléphone, à l'échelle voulue (2 : image nette à montrer à quelqu'un). */
+export const shootPhonePage = (html: string, pageKey: string, scale = 1, quality?: number) => shoot(html, VIEWS[1], pageKey, { scale, quality });
+
+async function shoot(html: string, v: (typeof VIEWS)[number], pageKey?: string, o: { bottom?: boolean; scale?: number; quality?: number } = {}): Promise<Buffer | null> {
   const executablePath = chromiumPath();
   if (!executablePath) return null;
   const { chromium } = await import("playwright");
   const browser = await chromium.launch({ executablePath, args: ["--no-sandbox", "--disable-dev-shm-usage"] });
   try {
-    const context = await browser.newContext({ viewport: { width: v.width, height: v.height }, reducedMotion: "reduce" });
+    const context = await browser.newContext({ viewport: { width: v.width, height: v.height }, reducedMotion: "reduce", ...(o.scale && o.scale > 1 ? { deviceScaleFactor: o.scale } : {}) });
     const page = await context.newPage();
     // Tout est servi par le Studio lui-même : la bibliothèque de sections, les photos du projet, les polices ; rien
     // d'autre ne sort (les polices en ligne sont remplacées par celles de la marque).
@@ -109,8 +114,12 @@ async function shoot(html: string, v: (typeof VIEWS)[number], pageKey?: string):
       scrollTo(0, 0);
     });
     await page.waitForTimeout(600);
+    const quality = o.quality ?? (o.scale && o.scale > 1 ? 90 : 72);
+    if (o.bottom) { await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight)); await page.waitForTimeout(700); return await page.screenshot({ type: "jpeg", quality }); }
+    // Capture de la page entière : la barre d'achat appartient à l'écran, pas à la page (elle est montrée par la capture du bas).
+    await page.addStyleTag({ content: ".tn-barre{display:none!important}" });
     const h = await page.evaluate(() => document.documentElement.scrollHeight);
-    return await page.screenshot({ type: "jpeg", quality: 72, fullPage: true, clip: { x: 0, y: 0, width: v.width, height: Math.min(h, v.maxHeight) } });
+    return await page.screenshot({ type: "jpeg", quality, fullPage: true, clip: { x: 0, y: 0, width: v.width, height: Math.min(h, o.scale && o.scale > 1 ? 6000 : v.maxHeight) } });
   } finally {
     await browser.close().catch(() => {});
   }

@@ -7,7 +7,7 @@
  * Point de départ : la composition actuelle du thème (textes déjà écrits pour la marque gardés). Gratuit, sans IA,
  * rien n'est enregistré dans le thème.
  */
-import { FAKE_OFFER_SECTIONS, onlyFor, RETIRED_SECTIONS, SCRIPT_DEMO_SECTIONS, sectionLibrary } from "./library";
+import { FAKE_OFFER_SECTIONS, inFamily, onlyFor, RETIRED_SECTIONS, SCRIPT_DEMO_SECTIONS, sectionLibrary } from "./library";
 import { BLANK_CSS, BLANK_JS } from "./blank";
 import { SECTION_GROUPS, sectionGroup, type SectionGroupId } from "./section-groups";
 import type { CustomTheme, CtSection } from "./theme";
@@ -72,7 +72,7 @@ export function builderTheme(t: CustomTheme, o: { fashion?: boolean; productPhot
   const slots: BuilderSlot[] = [];
   const sections: CtSection[] = [];
   const uidOf = new Map<string, string>();
-  for (const g of SECTION_GROUPS.filter((x) => x.id !== "metiers")) for (const l of sectionLibrary().sections.filter((x) => x.family === t.family && sectionGroup(x) === g.id && !RETIRED_SECTIONS[x.id])) {
+  for (const g of SECTION_GROUPS.filter((x) => x.id !== "metiers")) for (const l of sectionLibrary().sections.filter((x) => inFamily(x, t.family) && sectionGroup(x) === g.id && !RETIRED_SECTIONS[x.id])) {
     const uid = `b${slots.length}`;
     const mine = written.get(l.id);
     const head = !mine && g.id === "en-tete" && (hm.brand || hm.menu.length) ? { html: brandHeader(l.html, hm.brand, hm.menu), clientTexts: true } : {};
@@ -291,7 +291,7 @@ export function catalogTheme(t: CustomTheme, family: CustomTheme["family"]): { t
   const sections: CtSection[] = [];
   // Banque du propriétaire : sans les sections retirées ni la famille « Métiers et services » (thèmes du Studio, revue du
   // 10 novembre 2026).
-  for (const g of SECTION_GROUPS.filter((x) => x.id !== "metiers")) for (const l of sectionLibrary().sections.filter((x) => x.family === family && sectionGroup(x) === g.id && !RETIRED_SECTIONS[x.id])) {
+  for (const g of SECTION_GROUPS.filter((x) => x.id !== "metiers")) for (const l of sectionLibrary().sections.filter((x) => inFamily(x, family) && sectionGroup(x) === g.id && !RETIRED_SECTIONS[x.id])) {
     const uid = `c${items.length}`;
     const note = l.demoFrame ? "démonstration seulement : jamais posée telle quelle dans un thème" : FAKE_OFFER_SECTIONS[l.id] ? "jamais posée : fausse offre ou faux compte à rebours" : SCRIPT_DEMO_SECTIONS.has(l.id) ? "jamais posée : contenu fabriqué par un script de démonstration" : onlyFor(l.tags) ? `seulement pour ${onlyFor(l.tags)}` : null;
     sections.push({ uid, id: l.id });

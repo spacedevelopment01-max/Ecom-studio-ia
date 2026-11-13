@@ -115,7 +115,7 @@ Rien de cela n'est construit. À placer dans l'ordre avec le propriétaire.
      et lointaines de la bibliothèque sans nom de site, constats du secteur, sections propres au secteur ; donnée au
      concepteur à chaque conception ;
    - la **comparaison contre les doublons**, sans IA (`custom-theme/identity-card.ts`, `recentThemeCards`) : carte
-     d'identité en huit lignes ; les deux concepts et les thèmes déjà montés pour d'autres marques sont comparés ;
+     d'identité en neuf lignes ; les deux concepts et les thèmes déjà montés pour d'autres marques sont comparés ;
    - le **juge de l'originalité** (`custom-theme/originality.ts`, `customDesignDeps.judge`) : un avis par concept,
      deux au plus ; ses refus rejoignent la seule reprise du concepteur, il relit la reprise, un doute qui reste est
      dit ; un juge en panne ne bloque rien ; compté dans le devis de `custom.concepts` et de `custom.design` ;
@@ -123,9 +123,14 @@ Rien de cela n'est construit. À placer dans l'ordre avec le propriétaire.
      montage qui pose les photos, l'accueil et la page qui vend capturés sur téléphone puis regardés (une
      « cliente », un directeur artistique) ; compte rendu `regards`, problèmes dits au client ; compté dans le devis
      de `custom.build`. La capture des deux pages a été vérifiée pour de vrai dans un navigateur.
-   Restent pour le thème : le monteur à plusieurs constructions et la tenue tirée de la planche, la liaison avec le
-   catalogue (une page par produit, menus), la mise en boutique. Ce ne sont pas des spécialistes mais le chantier
-   décrit dans `methode-montage-de-theme.md`.
+   **Le monteur à plusieurs constructions et la tenue de la marque : fait le 13 novembre** pour vingt sections
+   (`custom-theme/tenue.ts`, `public/sections/tenue.css`). Le concepteur choisit pour chaque section sa construction
+   et, pour tout le site, la tenue (titres, boutons, cadres, fond, petits textes, signe) ; SINA les change sans rien
+   repayer (`custom.structure`) ; la carte d'identité contre les doublons les compte. Vérifié au pixel sur téléphone
+   contre les écrans faits à la main, avec une IA simulée (`tests/sina-tenue-fauteuil.test.ts`) ; aucun essai réel.
+   Restent pour le thème : la liaison avec le catalogue (une page par produit, menus), la mise en boutique, la tenue
+   des 188 autres sections et les 48 qui manquent. Ce ne sont pas des spécialistes mais le chantier décrit dans
+   `methode-montage-de-theme.md`.
 
 ## Ouvrir une étape
 

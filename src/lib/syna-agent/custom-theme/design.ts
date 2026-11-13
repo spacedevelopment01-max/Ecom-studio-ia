@@ -15,20 +15,26 @@
  * thème (`concept`, `journey` de chaque page, `intent` de chaque section) et sert au plan des textes et au rédacteur.
  */
 import { z } from "zod";
-import { familySections, isCardSection, libSection, onlyFor, sectionTraits } from "./library";
+import { FEATURED_ROLE, familySections, isCardSection, libSection, onlyFor, sectionTraits } from "./library";
+import { TENUE_CHOICES, TenuePickSchema, constructionsOf, isTenueSection } from "./tenue";
 import { sectionGroup } from "./section-groups";
 import { requiredPages, platformOwnedPages, MIN_SECTIONS, type SiteKind } from "./theme";
 import type { FamilyId } from "../section-families";
 
-const SectionPick = z.object({ section: z.string().max(80), why: z.string().min(10).max(600), says: z.string().min(10).max(900), photos: z.string().max(600) });
+/** construction : pour une section à tenue seulement (une des constructions données dans la bibliothèque). */
+const SectionPick = z.object({ section: z.string().max(80), construction: z.string().max(40).nullable().optional(), why: z.string().min(10).max(600), says: z.string().min(10).max(900), photos: z.string().max(600) });
 export const DesignSchema = z.object({
   visitor: z.string().min(20).max(900),
   levers: z.array(z.string().min(3).max(240)).min(2).max(10),
   objections: z.array(z.object({ objection: z.string().min(3).max(300), answer: z.string().min(3).max(500), page: z.string().max(40), section: z.string().max(80) })).max(12),
   concept: z.string().min(20).max(800),
   header: z.string().max(80),
+  /** Construction de l'en-tête, s'il est à tenue. */
+  headerConstruction: z.string().max(40).nullable().optional(),
   footer: z.string().max(80),
   search: z.string().max(80).nullable(),
+  /** La tenue de la marque (sections à tenue) : titres, boutons, cadre des photos, fond, petits textes, signe. */
+  tenue: TenuePickSchema.nullable().optional(),
   pages: z.array(z.object({
     key: z.string().regex(/^[a-z0-9-]{1,40}$/),
     label: z.string().min(1).max(40),
@@ -94,6 +100,17 @@ RYTHME : fonds clairs pour les produits ; une ou deux bandes de couleur pâle et
 CE QUE LES BONS THÈMES NE FONT JAMAIS : un minuteur ou une « offre du jour » sur une marque soignée, une fenêtre d'inscription à l'arrivée, des compteurs de visiteurs, deux fois la même section, deux sections de cartes à la suite, une section « espace » pour aérer.
 THÉ, INFUSIONS, CAFÉ : sous le bloc d'achat, la préparation (quantité, température, temps) ; les familles expliquées une par une ; le rituel ou la culture sur fond sombre ; jamais de minuteur. MONO-PRODUIT : le produit en ouverture, puis il est expliqué (points forts, détails, vidéo, résultats) avant tout catalogue, les questions tôt.`;
 
+/**
+ * Sections à tenue (13 novembre 2026, retour du propriétaire : « juste changer les images et les textes ferais déjà des
+ * thèmes trop basique ») : le concepteur choisit la section, SA CONSTRUCTION et la tenue de la marque ; il n'écrit pas
+ * de code, le Studio fabrique.
+ */
+export const TENUE_RULES = `SECTIONS « À TENUE » (marquées dans la liste) : elles n'ont pas d'allure à elles, elles prennent celle de la marque. Préfère-les : avec elles, deux marques n'ont jamais le même site. Un site monté avec des sections à tenue l'est EN ENTIER (en-tête, toutes les pages, pied de page) : ne mélange pas, dans un même site, des sections à tenue et des sections qui ont déjà leur allure.
+- Pour chaque section à tenue qui en a, choisis sa CONSTRUCTION (champ « construction », une des clés données) d'après la photo prévue et le tempérament de la marque ; dis pourquoi dans why. Deux concepts montrés au client n'ont pas la même construction d'ouverture ni le même en-tête (champ « headerConstruction »).
+- Une section à tenue peut servir sur plusieurs pages : elle y aura d'autres textes et d'autres photos.
+- TENUE (champ « tenue », une seule pour tout le site, tirée de la planche de marque et du produit) : ${TENUE_CHOICES}
+- Le SIGNE : un détail vrai du produit ou du métier (une forme, une matière, une couture) que la tenue reprend à plusieurs endroits ; jamais un décor plaqué.`;
+
 export const DESIGN_SYSTEM = `Tu es le directeur de création d'une agence qui conçoit des sites de vente haut de gamme. Tu CONÇOIS le site d'une marque avec une bibliothèque de sections (la liste complète, avec les caractéristiques de chaque section, t'est donnée), en français.
 MÉTHODE, dans cet ordre :
 A. STRATÉGIE (avant tout choix de section) :
@@ -112,6 +129,7 @@ EXIGENCES :
 - Une seule section de cartes (produits ou familles) par page. « Produit vedette » ouvre la fiche produit (une seule) ou apparaît au plus une fois sur l'accueil ; les offres (lots, quantités, coffret) sont des fonctions de ce bloc, jamais une section à part. Jamais la même section deux fois dans le site (une section = une page). Jamais deux sections de même rôle à la suite. L'accueil s'ouvre par une grande photo avec le titre dessus.
 - Toutes les pages obligatoires, avec leurs clés exactes ; aucune page de paiement que la plateforme tient elle-même.
 - Utilise UNIQUEMENT les identifiants de la liste (champ « section »). corrections : [] au premier passage.
+${TENUE_RULES}
 ${EXAMPLE}
 Réponse : uniquement le JSON demandé.`;
 
@@ -129,7 +147,9 @@ export function designCatalogue(family: FamilyId, seed?: string): string {
   return shuffled(familySections(family), seed).map((s) => {
     const t = tr[s.id];
     const traits = t ? ` · fond ${t.fond} · ${t.densite} · ${t.photos} photo(s)` : "";
-    return `- ${s.id} · ${s.role}${isCardSection(s) ? " · cartes" : ""}${onlyFor(s.tags) ? ` · seulement pour ${onlyFor(s.tags)}` : ""}${traits} · ${s.title} : ${s.does.slice(0, 260)}`;
+    const built = constructionsOf(s.id);
+    const constructions = built.length ? ` · CONSTRUCTIONS au choix (champ « construction ») : ${built.map((c) => `« ${c.key} » (${c.label})`).join(" ; ")}` : "";
+    return `- ${s.id} · ${s.role}${isCardSection(s) ? " · cartes" : ""}${isTenueSection(s) ? " · À TENUE" : ""}${onlyFor(s.tags) ? ` · seulement pour ${onlyFor(s.tags)}` : ""}${traits} · ${s.title} : ${s.does.slice(0, 320)}${constructions}`;
   }).join("\n");
 }
 
@@ -228,7 +248,7 @@ export function pageOrderGaps(d: Pick<Design, "pages">): string[] {
       if (n > 13) out.push(`${name} : ${n} sections, la page se répète (9 à 12 dans les thèmes qui se vendent)`);
     }
     if (/^product/.test(pg.key)) {
-      if (n && ids[0] !== "produit-vedette") out.push(`${name} : la fiche commence par le bloc d'achat (produit-vedette), ici ${ids[0]}`);
+      if (n && libSection(ids[0])?.role !== FEATURED_ROLE) out.push(`${name} : la fiche commence par le bloc d'achat (une section « produit vedette »), ici ${ids[0]}`);
       const c = ids.findIndex(cards);
       if (c >= 0 && c < n - 1 && ids.slice(c + 1).some((x) => !["inscription", "questions"].includes(grp(x) ?? ""))) out.push(`${name} : les autres produits (${ids[c]}) viennent en dernier sur la fiche`);
     }

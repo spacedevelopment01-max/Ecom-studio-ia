@@ -7,6 +7,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { FamilyId } from "../section-families";
+import { TENUE_SECTIONS, TENUE_TAG, tenueTraits } from "./tenue";
 
 export type LibSection = {
   id: string;
@@ -31,7 +32,12 @@ type Library = { version: number; fonts: string[]; sections: LibSection[] };
 let cache: Library | null = null;
 export const LIBRARY_DIR = () => path.join(process.cwd(), "public", "sections");
 export function sectionLibrary(): Library {
-  if (!cache) cache = JSON.parse(fs.readFileSync(path.join(LIBRARY_DIR(), "library.json"), "utf8")) as Library;
+  if (!cache) {
+    const lib = JSON.parse(fs.readFileSync(path.join(LIBRARY_DIR(), "library.json"), "utf8")) as Library;
+    // Sections à tenue (tenue.ts) : écrites à la main, elles ne viennent pas du catalogue et s'y ajoutent.
+    const known = new Set(lib.sections.map((s) => s.id));
+    cache = { ...lib, sections: [...lib.sections, ...TENUE_SECTIONS.filter((s) => !known.has(s.id)).map(({ constructions: _c, trait: _t, ...s }) => s)] };
+  }
   return cache;
 }
 /**
@@ -118,7 +124,9 @@ export const RETIRED_SECTIONS: Record<string, string> = {
  * Sections qu'un thème de cette famille peut recevoir : jamais les démonstrations en fausse fenêtre, les contenus
  * fabriqués par un script de démonstration, les faux comptes à rebours, les offres d'exemple ni les sections retirées.
  */
-export const familySections = (family: FamilyId): LibSection[] => sectionLibrary().sections.filter((s) => s.family === family && !s.demoFrame && !SCRIPT_DEMO_SECTIONS.has(s.id) && !FAKE_OFFER_SECTIONS[s.id] && !RETIRED_SECTIONS[s.id]);
+/** Une section à tenue prend l'allure de la marque, pas celle d'une famille : elle va avec les deux. */
+export const inFamily = (s: Pick<LibSection, "family" | "tags">, family: FamilyId) => s.family === family || (s.tags ?? []).includes(TENUE_TAG);
+export const familySections = (family: FamilyId): LibSection[] => sectionLibrary().sections.filter((s) => inFamily(s, family) && !s.demoFrame && !SCRIPT_DEMO_SECTIONS.has(s.id) && !FAKE_OFFER_SECTIONS[s.id] && !RETIRED_SECTIONS[s.id]);
 /** Retrouve une section par son identifiant ou par son titre exact. */
 export const sectionByRef = (ref: string): LibSection | null => libSection(ref) ?? sectionLibrary().sections.find((s) => s.title === ref) ?? null;
 
@@ -207,7 +215,7 @@ export function withBrandName(html: string, name: string): string {
 export type Trait = { fond: "clair" | "sombre" | "couleur" | "photo"; densite: "dense" | "moyenne" | "aérée"; photos: number; hauteur: number };
 let traitsCache: Record<string, Trait | null> | null = null;
 export function sectionTraits(): Record<string, Trait | null> {
-  if (!traitsCache) { try { traitsCache = JSON.parse(fs.readFileSync(path.join(LIBRARY_DIR(), "section-traits.json"), "utf8")); } catch { traitsCache = {}; } }
+  if (!traitsCache) { try { traitsCache = JSON.parse(fs.readFileSync(path.join(LIBRARY_DIR(), "section-traits.json"), "utf8")); } catch { traitsCache = {}; } traitsCache = { ...traitsCache, ...tenueTraits() }; }
   return traitsCache!;
 }
 

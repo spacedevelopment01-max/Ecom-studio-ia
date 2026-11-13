@@ -5,6 +5,7 @@
 import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
+import { TENUE_SECTIONS } from "@/lib/syna-agent/custom-theme/tenue";
 
 process.env.STUDIO_SYNA_AGENT = "1";
 
@@ -19,7 +20,9 @@ describe("SINA — familles de sections Classique et Moderne", async () => {
     expect(cards.map((c) => c.previews.length)).toEqual([1, 2]);
     for (const c of cards) for (const p of c.previews) expect(fs.existsSync(path.join(process.cwd(), "public", p))).toBe(true);
     for (const c of cards) expect(fs.existsSync(path.join(process.cwd(), "public", c.preview))).toBe(true);
-    expect(cards.find((c) => c.family === "moderne")!.sections).toBe(51); // sans fausses urgences ni offres d'exemple (audit du 10 novembre 2026)
+    // 51 sections propres à la famille (sans fausses urgences ni offres d'exemple, audit du 10 novembre 2026), plus les
+    // sections à tenue du 13 novembre, qui vont avec les deux familles.
+    expect(cards.find((c) => c.family === "moderne")!.sections).toBe(51 + TENUE_SECTIONS.length);
   });
 
   it("aucune section n'appartient aux deux familles, et la famille Moderne propose plusieurs choix par rôle", () => {

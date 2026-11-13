@@ -42,7 +42,10 @@ describe("thème sur mesure : bibliothèque", () => {
     expect(lib.sections.length).toBeGreaterThanOrEqual(180);
     expect(new Set(lib.sections.map((s) => s.id)).size).toBe(lib.sections.length);
     const moderne = familySections("moderne");
-    expect(moderne).toHaveLength(51); // sans les fausses urgences ni les offres d'exemple (audit du 10 novembre 2026)
+    // 51 sections Moderne (sans les fausses urgences ni les offres d'exemple, audit du 10 novembre 2026), plus les
+    // sections à tenue, qui vont avec les deux familles (13 novembre 2026).
+    expect(moderne.filter((s) => !s.tags.includes("tenue"))).toHaveLength(51);
+    expect(moderne.filter((s) => s.tags.includes("tenue")).length).toBeGreaterThanOrEqual(15);
     // Chaque section nommée dans les familles du Studio existe dans la bibliothèque.
     for (const f of SECTION_FAMILIES.filter((x) => x.id === "moderne")) for (const titles of Object.values(f.roles)) for (const t of titles) expect(sectionByRef(t), t).toBeTruthy();
     // Les démonstrations en fausse fenêtre ne sont jamais proposées.
@@ -425,7 +428,9 @@ describe("thème sur mesure : outils de SINA", async () => {
     await call("theme.family", ctx, { family: "moderne", style: "sport-chic" });
     const lib = await call("custom.sections", ctx, { role: "produit vedette" });
     expect(Object.keys(lib.data.roles)).toEqual(["produit vedette"]);
-    expect(lib.data.roles["produit vedette"]).toHaveLength(2); // « drop limité » (faux compte à rebours) écarté
+    // « drop limité » (faux compte à rebours) écarté ; le bloc d'achat à tenue va avec les deux familles.
+    expect(lib.data.roles["produit vedette"].filter((x: any) => !x.aTenue)).toHaveLength(2);
+    expect(lib.data.roles["produit vedette"].filter((x: any) => x.aTenue).map((x: any) => x.id)).toEqual(["tn-achat"]);
     // Aucun thème de départ : une page obligatoire absente est refusée, rien n'est enregistré.
     const site = fullSite("moderne");
     const partial = await call("custom.compose", ctx, { ...site, pages: site.pages.filter((p) => p.key !== "legal") });

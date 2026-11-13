@@ -37,9 +37,10 @@ import { activityPlan, companyOf } from "../activity";
 import { brandBrief, siteCopyModel } from "./brand";
 import { type Ambiance, DESIGN_CALLS_MAX, DESIGN_CAP_MICRO, DESIGN_OUTPUT_TOKENS, DESIGN_REVIEW_SYSTEM, DESIGN_SYSTEM, DESIGN_TYPICAL_MICRO, DesignSchema, designGaps, designPrompt, intentText, varietyGaps, type Design } from "./design";
 import { referencesBrief } from "./references";
-import { cardOf, cardOfTheme, conceptGaps, registryGaps, type ThemeCard } from "./identity-card";
+import { built, cardOf, cardOfTheme, conceptGaps, registryGaps, type ThemeCard } from "./identity-card";
 import { ORIGINALITY_CALLS_MAX, ORIGINALITY_CAP_MICRO, ORIGINALITY_SYSTEM, ORIGINALITY_TYPICAL_MICRO, OriginalitySchema, originalityNote, originalityPrompt, type Originality, type OriginalityOutcome } from "./originality";
 import { LOOK_CAP_MICRO, LOOK_PAGES_MAX, LOOK_TYPICAL_MICRO } from "./looks";
+import { TenueSchema, constructionsOf, isTenueSection } from "./tenue";
 import { llmJson } from "../../ai/llm";
 import { withTrace } from "../../ai/trace";
 import { jobSpentMicro } from "../budget";
@@ -144,8 +145,10 @@ const sectionsTool: AgentTool<{ role?: string; query?: string }> = {
     try { f = familyOrError(p.id); } catch (e) { return { ok: false, summary: (e as Error).message, hint: "Montre d'abord les familles au client (theme.families)." }; }
     const q = a.query?.toLowerCase();
     const list = familySections(f.family).filter((s) => (!a.role || s.role === a.role.toLowerCase()) && (!q || `${s.title} ${s.does} ${s.kind}`.toLowerCase().includes(q)));
-    const byRole: Record<string, { id: string; titre: string; place: string; fait: string; cartes?: true; seulementPour?: string }[]> = {};
-    for (const s of list) (byRole[s.role] ??= []).push({ id: s.id, titre: s.title, place: s.kind, fait: s.does.slice(0, 260), ...(isCardSection(s) ? { cartes: true as const } : {}), ...(onlyFor(s.tags) ? { seulementPour: onlyFor(s.tags)! } : {}) });
+    const byRole: Record<string, { id: string; titre: string; place: string; fait: string; cartes?: true; seulementPour?: string; aTenue?: true; constructions?: string[] }[]> = {};
+    for (const s of list) (byRole[s.role] ??= []).push({ id: s.id, titre: s.title, place: s.kind, fait: s.does.slice(0, 260), ...(isCardSection(s) ? { cartes: true as const } : {}), ...(onlyFor(s.tags) ? { seulementPour: onlyFor(s.tags)! } : {}),
+      // Section à tenue : elle prend l'allure de la marque ; ses constructions se choisissent (custom.structure, op « construction »).
+      ...(isTenueSection(s) ? { aTenue: true as const } : {}), ...(constructionsOf(s.id).length ? { constructions: constructionsOf(s.id).map((c) => `${c.key} : ${c.label}`) } : {}) });
     return {
       ok: true,
       summary: L(`${list.length} section(s) de la famille ${f.family}${a.role ? ` (rôle ${a.role})` : ""}.`, `${list.length} sections.`),
@@ -256,13 +259,15 @@ async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMode): Pro
     : DesignSchema.parse(await withTrace({ jobId, projectId: p.id, step: tag, costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + DESIGN_CAP_MICRO * DESIGN_CALLS_MAX * (mode.kind === "concept" ? 2 : 1) }, () =>
         llmJson({ task: "strategy", userId: ctx.user.id, projectId: p.id, jobId, system, promptKey: system === DESIGN_SYSTEM ? "syna-custom-design-2" : "syna-custom-design-review-1", prompt: text, maxTokens: DESIGN_OUTPUT_TOKENS, maxOutputTokens: DESIGN_OUTPUT_TOKENS * 1.5, usageKey: key, routing: { difficulty: "complex", prefer: siteCopyModel() } }, DesignSchema, { strict: true })));
   // Concept choisi : ses pages et sa coque restent celles que le client a vues, quoi que rende le concepteur.
-  const pin = (d: Design): Design => mode.kind !== "complete" ? d : { ...d, concept: mode.fixed.concept, header: mode.fixed.header, footer: mode.fixed.footer, search: mode.fixed.search,
+  const pin = (d: Design): Design => mode.kind !== "complete" ? d : { ...d, concept: mode.fixed.concept, header: mode.fixed.header, headerConstruction: mode.fixed.headerConstruction, tenue: mode.fixed.tenue, footer: mode.fixed.footer, search: mode.fixed.search,
     pages: [...mode.fixed.pages.filter((pg) => keys.includes(pg.key)), ...d.pages.filter((pg) => !keys.includes(pg.key))] };
   const only = (d: Design): Design => mode.kind !== "concept" ? d : { ...d, pages: d.pages.filter((pg) => keys.includes(pg.key)), objections: d.objections.filter((o) => keys.includes(o.page)) };
   const build = (d: Design): CustomTheme => {
     let t: CustomTheme = { version: 1, family: f.family, style: f.style, header: null, footer: null, search: null, pages: [], rev: 0, at: Date.now(), concept: d.concept };
-    t = applyStructure(t, d.pages.flatMap((pg) => [{ op: "page", key: pg.key, label: pg.label } as StructureOp, ...pg.sections.map((s) => ({ op: "add", page: pg.key, section: ref(s.section) }) as StructureOp)]));
-    t = applyStructure(t, [{ op: "shell", slot: "header", section: ref(d.header) }, { op: "shell", slot: "footer", section: ref(d.footer) }]);
+    t = applyStructure(t, d.pages.flatMap((pg) => [{ op: "page", key: pg.key, label: pg.label } as StructureOp, ...pg.sections.map((s) => ({ op: "add", page: pg.key, section: ref(s.section), ...(s.construction ? { construction: s.construction } : {}) }) as StructureOp)]));
+    t = applyStructure(t, [{ op: "shell", slot: "header", section: ref(d.header), ...(d.headerConstruction ? { construction: d.headerConstruction } : {}) }, { op: "shell", slot: "footer", section: ref(d.footer) }]);
+    // La tenue de la marque (sections à tenue) : choisie par le concepteur, gardée dans le thème.
+    if (d.tenue) t = applyStructure(t, [{ op: "tenue", tenue: d.tenue }]);
     if (d.search) t = applyStructure(t, [{ op: "shell", slot: "search", section: ref(d.search) }]);
     return t;
   };
@@ -334,7 +339,7 @@ async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMode): Pro
 const MIN_SECTIONS_TEXT = "au moins 8 sections, fiche produit au moins 7, plus si le parcours le demande";
 type DesignDone = Extract<DesignRun, { ok: true }>;
 /** Carte d'identité d'une conception (comparaison contre les doublons). */
-const designCard = (d: Design): ThemeCard => cardOf(d.pages.map((pg) => ({ key: pg.key, sections: pg.sections.map((x) => x.section) })), { header: d.header, footer: d.footer });
+const designCard = (d: Design): ThemeCard => cardOf(d.pages.map((pg) => ({ key: pg.key, sections: pg.sections.map((x) => built(x.section, x.construction)) })), { header: built(d.header, d.headerConstruction), footer: d.footer, tenue: d.tenue });
 const designData = (r: DesignDone) => { const d = r.d, calls = r.calls; return { visiteur: d.visitor, leviers: d.levers, objections: d.objections.map((o) => `« ${o.objection} » → ${o.answer} (${o.page} › ${libSection(o.section)?.title ?? o.section})`), relecture: d.corrections, concept: d.concept, parcours: d.pages.map((pg) => ({ page: pg.label, parcours: pg.journey, sections: pg.sections.map((s) => `${libSection(s.section)?.title ?? s.section} — ${s.why}`) })), passages: calls,
   // Ce que la documentaliste a donné au concepteur, et l'avis du juge de l'originalité (à dire au client s'il doute).
   references: r.references.near || r.references.far ? `${r.references.sector ? `secteur reconnu : ${r.references.sector} ; ` : ""}${r.references.near} référence(s) proche(s) et ${r.references.far} lointaine(s) étudiées, sans en copier aucune` : "aucune référence pour ce secteur",
@@ -577,13 +582,15 @@ const readTool: AgentTool<{ uid: string }> = {
 
 const structureTool: AgentTool<{ ops: StructureOp[] }> = {
   name: "custom.structure", module: "site", kind: "write", needsProject: true,
-  description: "Étape 6 (gratuit) : change la COMPOSITION du thème sur mesure. ops, dans l'ordre : { op:\"add\", page, section, at? } ajoute une section (id ou titre de custom.sections) ; { op:\"remove\", uid } ; { op:\"move\", uid, page?, at } ; { op:\"replace\", uid, section } (autre section au même rôle, ou en-tête/pied de page) ; { op:\"shell\", slot:\"header\"|\"footer\"|\"search\", section|null } ; { op:\"page\", key, label, at? } ; { op:\"drop_page\", key } ; { op:\"rename_page\", key, label } ; { op:\"layout\", uid, flip?, align?, frame?, bg? } : disposition CHOISIE PAR LE CLIENT (inverser texte et image, alignement left|center, cadre frame|full, fond light|soft|dark) ; { op:\"settings\", buy?, header?, cart? } : réglages COCHÉS PAR LE CLIENT (jamais à sa place) : buy = options du bloc « Produit vedette » (quantite, abonnement, gamme, ajouts, barre (barre d'achat fixe), livraison, livraisonOfferte, fidelite, cadeaux, promotion, couleur, format ; une option cochée ne s'affiche que si le produit l'a vraiment), header = boutons Rechercher / Mon compte / Panier de l'en-tête, cart = \"drawer\" (panier sur le côté) ou \"page\". Retirer une section ou une page visible se PROPOSE au client d'abord (jamais à sa place). Règles du propriétaire contrôlées.",
+  description: "Étape 6 (gratuit) : change la COMPOSITION du thème sur mesure. ops, dans l'ordre : { op:\"add\", page, section, at? } ajoute une section (id ou titre de custom.sections) ; { op:\"remove\", uid } ; { op:\"move\", uid, page?, at } ; { op:\"replace\", uid, section } (autre section au même rôle, ou en-tête/pied de page) ; { op:\"shell\", slot:\"header\"|\"footer\"|\"search\", section|null } ; { op:\"page\", key, label, at? } ; { op:\"drop_page\", key } ; { op:\"rename_page\", key, label } ; { op:\"construction\", uid, construction } : change la CONSTRUCTION d'une section à tenue (clés données par custom.sections ; add, replace et shell acceptent aussi construction) ; { op:\"tenue\", tenue:{ titres, bouton, cadre, fond, petits, signe } } : change la tenue de tout le site (titres fins|gras|capitales, bouton pilule|droit|etiquette|ombre, cadre niche|droit|penche, fond uni|toile, petits normal|machine), seulement à la demande du client ; { op:\"layout\", uid, flip?, align?, frame?, bg? } : disposition CHOISIE PAR LE CLIENT (inverser texte et image, alignement left|center, cadre frame|full, fond light|soft|dark) ; { op:\"settings\", buy?, header?, cart? } : réglages COCHÉS PAR LE CLIENT (jamais à sa place) : buy = options du bloc « Produit vedette » (quantite, abonnement, gamme, ajouts, barre (barre d'achat fixe), livraison, livraisonOfferte, fidelite, cadeaux, promotion, couleur, format ; une option cochée ne s'affiche que si le produit l'a vraiment), header = boutons Rechercher / Mon compte / Panier de l'en-tête, cart = \"drawer\" (panier sur le côté) ou \"page\". Retirer une section ou une page visible se PROPOSE au client d'abord (jamais à sa place). Règles du propriétaire contrôlées.",
   args: z.object({ ops: z.array(z.union([
-    z.object({ op: z.literal("add"), page: z.string().max(40), section: z.string().max(80), at: z.number().int().min(0).max(30).optional() }).strict(),
+    z.object({ op: z.literal("add"), page: z.string().max(40), section: z.string().max(80), at: z.number().int().min(0).max(30).optional(), construction: z.string().max(40).optional() }).strict(),
+    z.object({ op: z.literal("construction"), uid: z.string().max(12), construction: z.string().max(40) }).strict(),
+    z.object({ op: z.literal("tenue"), tenue: TenueSchema }).strict(),
     z.object({ op: z.literal("remove"), uid: z.string().max(12) }).strict(),
     z.object({ op: z.literal("move"), uid: z.string().max(12), page: z.string().max(40).optional(), at: z.number().int().min(0).max(30) }).strict(),
-    z.object({ op: z.literal("replace"), uid: z.string().max(12), section: z.string().max(80) }).strict(),
-    z.object({ op: z.literal("shell"), slot: z.enum(["header", "footer", "search"]), section: z.string().max(80).nullable() }).strict(),
+    z.object({ op: z.literal("replace"), uid: z.string().max(12), section: z.string().max(80), construction: z.string().max(40).optional() }).strict(),
+    z.object({ op: z.literal("shell"), slot: z.enum(["header", "footer", "search"]), section: z.string().max(80).nullable(), construction: z.string().max(40).optional() }).strict(),
     z.object({ op: z.literal("page"), key: z.string().regex(/^[a-z0-9-]{1,40}$/), label: z.string().min(1).max(40), at: z.number().int().min(0).max(12).optional() }).strict(),
     z.object({ op: z.literal("drop_page"), key: z.string().max(40) }).strict(),
     z.object({ op: z.literal("rename_page"), key: z.string().max(40), label: z.string().min(1).max(40) }).strict(),

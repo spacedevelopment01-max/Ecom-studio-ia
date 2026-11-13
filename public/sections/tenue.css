@@ -1,0 +1,333 @@
+/*
+ * Sections « à tenue » du thème sur mesure (13 novembre 2026). Une section a plusieurs constructions
+ * (attribut data-tn-c sur la section) et prend la tenue de la marque : couleurs et polices du projet (variables
+ * --tn-*), titres, formes, fond, décor (attributs data-tn-* posés sur le thème par le Studio).
+ * Écrite à la main ; elle n'est pas refaite par scripts/sections-library.py.
+ */
+.ctw .tn{position:relative;box-sizing:border-box;background:var(--tn-fond);color:var(--tn-encre);font-family:var(--f-ui);font-size:16px;line-height:normal;letter-spacing:normal;font-weight:400}
+.ctw .tn *{box-sizing:border-box}
+.ctw .tn h1,.ctw .tn h2,.ctw .tn h3{font-family:var(--f-title);font-weight:400!important;margin:0;letter-spacing:-.015em;line-height:1;text-transform:none}
+.ctw .tn p,.ctw .tn figure,.ctw .tn ul{margin:0;padding:0}
+.ctw .tn p{line-height:1.55}
+.ctw .tn ul{list-style:none}
+.ctw .tn a{color:inherit;text-decoration:none}
+.ctw .tn small{display:block;font-family:var(--f-title);font-style:italic;font-size:17px;color:var(--tn-sourd)}
+.ctw .tn .tn-ph{background-color:var(--tn-doux);background-size:cover;background-position:center;background-repeat:no-repeat}
+.ctw .tn mark.tn-manque{background:#f3c64b;color:#1b1a17;padding:1px 6px;border-radius:5px;font-weight:600;white-space:nowrap;font-family:var(--f-ui);font-style:normal}
+
+/* ── Bouton : la forme vient de la tenue ── */
+.ctw .tn .tn-bt{display:inline-block;text-align:center;background:var(--tn-bouton);color:var(--tn-sur-bouton);font-family:var(--f-ui);font-weight:600;font-size:16px;line-height:normal;letter-spacing:.01em;padding:15px 34px;border-radius:999px;border:0;cursor:pointer}
+.ctw[data-tn-bouton="droit"] .tn .tn-bt{border-radius:0}
+.ctw[data-tn-bouton="etiquette"] .tn .tn-bt{background:var(--tn-fond);color:var(--tn-encre);font-weight:800;font-size:17px;letter-spacing:.14em;text-transform:uppercase;padding:17px 22px 16px;border-radius:3px;outline:1.5px dashed color-mix(in srgb,var(--tn-encre) 60%,transparent);outline-offset:-6px;box-shadow:0 1px 0 rgba(0,0,0,.35),0 8px 18px rgba(0,0,0,.28);display:inline-flex;gap:14px;align-items:center}
+.ctw[data-tn-bouton="etiquette"] .tn .tn-bt::after{content:"";width:26px;height:14px;flex:none;background:var(--tn-encre);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 14'%3E%3Cpath d='M0 7h22M16 1l7 6-7 6' fill='none' stroke='%23000' stroke-width='2.6'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 14'%3E%3Cpath d='M0 7h22M16 1l7 6-7 6' fill='none' stroke='%23000' stroke-width='2.6'/%3E%3C/svg%3E") center/contain no-repeat}
+.ctw[data-tn-bouton="ombre"] .tn .tn-bt{background:var(--tn-accent);color:#fff;font-weight:800;padding:13px 22px;border:3px solid var(--tn-encre);box-shadow:4px 5px 0 var(--tn-encre)}
+
+/* ── Cadre des photos : la forme vient de la tenue ── */
+.ctw .tn .tn-cadre{border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn .tn-cadre{border-radius:999px 999px 0 0}
+.ctw[data-tn-cadre="penche"] .tn .tn-cadre{border:3px solid var(--tn-encre);border-radius:18px;transform:rotate(-3deg);box-shadow:7px 8px 0 var(--tn-encre)}
+
+/* ── Titres : la tenue ── */
+.ctw[data-tn-titres="gras"] .tn h1,.ctw[data-tn-titres="gras"] .tn h2{letter-spacing:-.035em;line-height:.93}
+.ctw[data-tn-titres="capitales"] .tn h1,.ctw[data-tn-titres="capitales"] .tn h2{text-transform:uppercase;letter-spacing:0;line-height:1.06}
+/* ── Fond en toile : une seule trame pour toute la page ; une section qui a son propre fond (sangle, bande sombre) le garde ── */
+.ctw[data-tn-fond="toile"]>.frame{background-color:var(--tn-fond);background-image:repeating-linear-gradient(0deg,color-mix(in srgb,var(--tn-encre) 3.5%,transparent) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,color-mix(in srgb,var(--tn-encre) 3%,transparent) 0 1px,transparent 1px 3px)}
+.ctw[data-tn-fond="toile"] :where(.tn){background-color:transparent}
+/* ── Petits textes à la machine ── */
+.ctw[data-tn-petits="machine"] .tn small,.ctw[data-tn-petits="machine"] .tn .tn-pan{font-family:"IBM Plex Mono",monospace;font-style:normal;font-weight:700}
+
+/* ══ En-tête ══ */
+.ctw .tn-entete{height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:40}
+.ctw .tn-entete .tn-nom{font-family:var(--f-title);font-weight:400;font-size:27px;line-height:normal;letter-spacing:.01em;position:absolute;left:0;right:0;text-align:center;top:9px;pointer-events:none}
+.ctw .tn-entete .tn-nom img{max-height:36px;width:auto;display:inline-block}
+.ctw .tn-entete .tn-menu{position:static}
+.ctw .tn-entete summary{list-style:none;cursor:pointer;display:flex;align-items:center;height:54px;font-size:14px;line-height:normal}
+.ctw .tn-entete summary::-webkit-details-marker{display:none}
+.ctw .tn-entete summary i{display:block;width:24px;height:10px;border-top:1.5px solid currentColor;border-bottom:1.5px solid currentColor}
+.ctw .tn-entete summary b{display:none;font-weight:400}
+.ctw .tn-entete .tn-menu nav{position:absolute;left:0;right:0;top:100%;z-index:50;background:var(--tn-fond);border-top:1.5px solid var(--tn-encre);border-bottom:1.5px solid var(--tn-encre);padding:8px 20px 14px;display:grid}
+.ctw .tn-entete .tn-menu nav a{font-family:var(--f-title);font-size:26px;line-height:1.3;padding:8px 0;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-entete .tn-menu nav a:last-child{border-bottom:0}
+.ctw .tn-entete .tn-pan{appearance:none;background:none;border:0;padding:0;color:inherit;font-family:var(--f-ui);font-weight:400;font-size:14px;line-height:normal;letter-spacing:normal;cursor:pointer;position:relative;z-index:1}
+.ctw .tn-entete .tn-pan u{text-decoration:none}
+/* construction « à gauche » : le nom à gauche, le menu et le panier en mots à droite */
+.ctw .tn-entete[data-tn-c="gauche"]{height:56px}
+.ctw .tn-entete[data-tn-c="gauche"] .tn-nom{position:static;text-align:left;font-size:28px;letter-spacing:normal;order:-1;pointer-events:auto;margin-right:auto}
+.ctw .tn-entete[data-tn-c="gauche"] summary{height:56px;margin-right:18px}
+.ctw .tn-entete[data-tn-c="gauche"] summary i{display:none}
+.ctw .tn-entete[data-tn-c="gauche"] summary b{display:block}
+/* construction « sangle » : une bande sombre, le nom sur une étiquette cousue */
+.ctw .tn-entete[data-tn-c="sangle"]{height:58px;padding:0 18px;background-color:var(--tn-encre);color:var(--tn-fond);background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.07) 0 2px,transparent 2px 5px)}
+.ctw .tn-entete[data-tn-c="sangle"]::before,.ctw .tn-entete[data-tn-c="sangle"]::after{content:"";position:absolute;left:0;right:0;height:0;border-top:1.5px dashed color-mix(in srgb,var(--tn-fond) 38%,transparent)}
+.ctw .tn-entete[data-tn-c="sangle"]::before{top:6px}
+.ctw .tn-entete[data-tn-c="sangle"]::after{bottom:6px}
+.ctw .tn-entete[data-tn-c="sangle"] summary{height:58px}
+.ctw .tn-entete[data-tn-c="sangle"] summary i{height:12px;border-width:2.5px}
+.ctw .tn-entete[data-tn-c="sangle"] .tn-nom{top:auto;left:50%;right:auto;transform:translateX(-50%);background:var(--tn-fond);color:var(--tn-encre);font-family:var(--f-ui);font-weight:800;font-size:15px;letter-spacing:.2em;text-transform:uppercase;padding:7px 12px 6px 15px;border-radius:2px;outline:1.5px dashed color-mix(in srgb,var(--tn-encre) 55%,transparent);outline-offset:-4px;white-space:nowrap}
+.ctw .tn-entete[data-tn-c="sangle"] .tn-pan{font-family:"IBM Plex Mono",monospace;font-weight:700;font-size:13px}
+.ctw .tn-entete[data-tn-c="sangle"] .tn-pan u{display:none}
+.ctw .tn-entete[data-tn-c="sangle"] .tn-menu nav{color:var(--tn-encre)}
+
+/* ══ Ouverture ══ */
+.ctw .tn-ouverture .tn-etq{display:none}
+/* « dans la photo » : photo pleine, le titre posé dans sa partie calme, le texte et le bouton dessous */
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"]{padding-bottom:26.3px;text-align:center}
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-ph{height:512px;background-position:center 12%}
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-in{position:absolute;left:0;right:0;top:82px}
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"] h1{font-size:46px;letter-spacing:-.012em;margin-top:8px}
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-bas{padding:26px 40px 0}
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-bas p{font-size:16.5px;color:var(--tn-texte)}
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-bt{margin-top:20px}
+/* « titre puis cadre » : le titre d'abord, la photo dans un cadre, le bouton à cheval */
+.ctw .tn-ouverture[data-tn-c="titre-puis-cadre"]{padding:18px 0 40px}
+.ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] .tn-in{display:contents}
+.ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] small{display:none}
+.ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] h1{font-size:64px;line-height:.94;letter-spacing:-.02em;margin:0 20px}
+.ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] .tn-ph{margin:26px 20px 0;height:420px;background-position:center 62%;border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn-ouverture[data-tn-c="titre-puis-cadre"] .tn-ph{border-radius:175px 175px 0 0}
+.ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] .tn-bas{display:flex;flex-direction:column-reverse;align-items:center;margin-top:-23px;padding:0 28px;position:relative}
+.ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] .tn-bas p{margin-top:24px;font-size:16.5px;color:var(--tn-texte);text-align:center}
+.ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] .tn-bt{white-space:nowrap;letter-spacing:normal}
+/* « titre géant » : une étiquette, le titre très grand, la photo sur toute la largeur, le bouton à cheval sur la photo */
+.ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-etq{display:inline-flex;align-items:center;gap:8px;background:var(--tn-encre);color:var(--tn-fond);font-family:"IBM Plex Mono",monospace;font-style:normal;font-weight:700;font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;border:2px solid var(--tn-encre);padding:5px 10px 4px 16px;clip-path:polygon(9px 0,100% 0,100% 100%,9px 100%,0 50%)}
+.ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-etq::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--tn-fond)}
+.ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-in{padding:18px 20px 20px}
+.ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-in small{display:none}
+.ctw .tn-ouverture[data-tn-c="titre-geant"] h1{font-size:60px;line-height:.93;letter-spacing:-.035em;margin-top:14px}
+.ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-ph{height:368px}
+.ctw .tn-ouverture[data-tn-c="titre-geant"]{padding-bottom:16px}
+.ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-bas{display:flex;flex-direction:column-reverse;align-items:flex-start;padding:0 20px;margin-top:-28px}
+.ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-bas p{margin-top:20px;font-size:16.5px;line-height:1.5;max-width:340px}
+/* ordre des blocs : la photo vient après le titre dans les constructions « titre d'abord » */
+.ctw .tn-ouverture[data-tn-c="titre-puis-cadre"],.ctw .tn-ouverture[data-tn-c="titre-geant"]{display:flex;flex-direction:column}
+.ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] .tn-ph,.ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-ph{order:2}
+.ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] h1,.ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-in{order:1}
+.ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] .tn-bas,.ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-bas{order:3}
+
+/* ══ Bande de photo (un détail du produit, sur toute la largeur) ══ */
+.ctw .tn-bande{height:92px}
+.ctw .tn-bande .tn-ph{height:100%}
+
+/* ══ De près : trois photos dans le cadre de la marque ══ */
+.ctw .tn-de-pres{padding:44px 20px 0}
+.ctw .tn-de-pres h2{font-size:40px}
+.ctw .tn-de-pres .tn-trois{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
+.ctw .tn-de-pres .tn-ph{height:150px;border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn-de-pres .tn-ph{border-radius:58px 58px 0 0}
+.ctw .tn-de-pres figcaption{font-size:14px;line-height:1.35;margin-top:8px;color:var(--tn-texte)}
+.ctw .tn-de-pres[data-tn-c="sans-titre"]{padding:0 20px}
+.ctw .tn-de-pres[data-tn-c="sans-titre"] h2,.ctw .tn-de-pres[data-tn-c="sans-titre"] figcaption{display:none}
+.ctw .tn-de-pres[data-tn-c="sans-titre"] .tn-trois{gap:12px;margin-top:0}
+.ctw[data-tn-cadre="niche"] .tn-de-pres[data-tn-c="sans-titre"] .tn-ph{border-radius:999px 999px 0 0}
+
+/* ══ Bloc d'achat de la fiche produit ══ */
+.ctw .tn-achat{padding:6px 20px 30px}
+.ctw .tn-achat .tn-grande{height:372px;background-color:color-mix(in srgb,var(--tn-fond) 40%,#fff);background-size:auto 105.4%;background-position:center 58%;border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn-achat .tn-grande{border-radius:175px 175px 14px 14px}
+.ctw .tn-achat .tn-vignettes{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
+.ctw .tn-achat .tn-vignettes i{display:block;height:70px;background-color:color-mix(in srgb,var(--tn-fond) 40%,#fff);border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn-achat .tn-vignettes i{border-radius:32px 32px 8px 8px}
+.ctw .tn-achat .tn-vignettes i:first-child{outline:1.5px solid var(--tn-encre);outline-offset:2px}
+.ctw .tn-achat small{margin-top:24px}
+.ctw .tn-achat h1{font-size:46px;margin-top:2px}
+.ctw .tn-achat .tn-prix{font-size:19px;margin-top:12px}
+.ctw .tn-achat p{font-size:16.5px;color:var(--tn-texte);margin-top:12px}
+.ctw .tn-achat .tn-option{display:flex;align-items:center;gap:10px;margin-top:18px;font-size:15.5px}
+.ctw .tn-achat .tn-option i{display:block;width:26px;height:26px;border-radius:50%;background:var(--tn-accent);outline:1.5px solid var(--tn-encre);outline-offset:3px}
+.ctw .tn-achat .tn-bt{display:block;margin-top:20px;font-size:16.5px;padding:16px 20px;letter-spacing:normal}
+.ctw .tn-achat .tn-reperes{margin-top:16px;font-size:15px;line-height:2}
+.ctw .tn-barre{position:fixed;left:12px;right:12px;bottom:12px;z-index:70;max-width:420px;margin:0 auto;background:color-mix(in srgb,var(--tn-fond) 40%,#fff);color:var(--tn-encre);border-radius:999px;padding:8px 8px 8px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 8px 24px rgba(40,25,15,.28);font-size:15px;transform:translateY(170%);transition:transform .35s ease}
+.ctw .tn-barre.tn-on{transform:none}
+.ctw .tn-barre b{font-family:var(--f-title);font-weight:400;font-size:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ctw .tn .tn-barre .tn-bt{display:inline-block;margin:0;padding:12px 18px;font-size:15px;white-space:nowrap;letter-spacing:normal}
+html:not([data-po-barre="1"]) .ctw .tn-barre{display:none}
+.tb-pg[hidden] .tn-barre{display:none}
+/* La barre d'achat ne couvre jamais le pied de page : il lui laisse sa place en bas de la fiche produit. */
+html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{padding-bottom:80px}
+
+/* ══ Volets (description, questions) ══ */
+.ctw .tn-volets{padding:0 20px}
+.ctw .tn-volets h2{font-size:40px;margin:44px 0 18px}
+.ctw .tn-volets[data-tn-c="sans-titre"] h2{display:none}
+.ctw .tn-volets .tn-liste{border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-volets details{border-bottom:1.5px solid var(--tn-encre);padding:16px 0}
+.ctw .tn-volets summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;font-family:var(--f-title);font-size:26px}
+.ctw .tn-volets summary::-webkit-details-marker{display:none}
+.ctw .tn-volets summary::after{content:"+";font-family:var(--f-ui);font-size:22px;letter-spacing:0}
+.ctw .tn-volets details[open] summary::after{content:"−"}
+.ctw .tn-volets details p{font-size:16px;color:var(--tn-texte);margin-top:8px}
+
+/* ══ Grande photo et sa phrase ══ */
+.ctw .tn-emotion{margin-top:44px;background:none}
+.ctw .tn-emotion .tn-ph{height:470px}
+.ctw .tn-emotion::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,color-mix(in srgb,var(--tn-encre) 55%,transparent) 0%,transparent 46%);pointer-events:none}
+.ctw .tn-emotion h2{position:absolute;left:24px;right:60px;top:30px;z-index:1;font-size:38px;color:color-mix(in srgb,var(--tn-fond) 40%,#fff)}
+/* Titres gras : plus larges, donc plus petits ici, pour rester dans la partie assombrie du haut de la photo. */
+.ctw[data-tn-titres="gras"] .tn-emotion h2,.ctw[data-tn-titres="capitales"] .tn-emotion h2{font-size:31px;right:24px;line-height:1}
+
+/* ══ Où le mettre : une file de photos dans le cadre de la marque ══ */
+.ctw .tn-places{padding:44px 0 0 20px;overflow:hidden}
+.ctw .tn-places h2{font-size:40px}
+.ctw .tn-places p{font-size:16px;line-height:1.5;color:var(--tn-texte);margin:8px 20px 0 0}
+.ctw .tn-places .tn-file{display:flex;gap:12px;margin-top:18px}
+.ctw .tn-places figure{flex:0 0 200px}
+.ctw .tn-places .tn-ph{height:250px;border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn-places .tn-ph{border-radius:100px 100px 0 0}
+.ctw .tn-places figcaption{font-family:var(--f-title);font-style:italic;font-size:19px;margin-top:8px}
+
+/* ══ Mesures ══ */
+.ctw .tn-mesures{padding:44px 20px 0}
+.ctw .tn-mesures .tn-carte{background:var(--tn-doux);padding:34px 22px 24px;border-radius:14px}
+.ctw[data-tn-cadre="niche"] .tn-mesures .tn-carte{border-radius:90px 90px 14px 14px}
+.ctw .tn-mesures h2{font-size:40px;text-align:center}
+.ctw .tn-mesures svg{display:block;margin:14px auto 6px;width:210px;height:150px}
+.ctw .tn-mesures svg .tn-forme{display:none}
+.ctw .tn-mesures:not([data-tn-c]) svg .tn-forme[data-f="boite"],.ctw .tn-mesures[data-tn-c="boite"] svg .tn-forme[data-f="boite"],.ctw .tn-mesures[data-tn-c="fauteuil"] svg .tn-forme[data-f="fauteuil"],.ctw .tn-mesures[data-tn-c="sac"] svg .tn-forme[data-f="sac"],.ctw .tn-mesures[data-tn-c="flacon"] svg .tn-forme[data-f="flacon"]{display:inline}
+.ctw .tn-mesures table{width:100%;border-collapse:collapse;font-size:15.5px}
+.ctw .tn-mesures td{padding:9px 0;border-top:1px solid color-mix(in srgb,var(--tn-encre) 35%,transparent)}
+.ctw .tn-mesures td:last-child{text-align:right}
+.ctw .tn-mesures td b{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--tn-encre);color:var(--tn-sur-bouton);font-size:12px;margin-right:8px;font-weight:700}
+
+/* ══ Appel final ══ */
+.ctw .tn-final{margin-top:44px;background:var(--tn-encre);color:var(--tn-sur-bouton);padding:40px 24px 96px;text-align:center}
+.ctw .tn-final h2{font-size:40px}
+.ctw .tn-final .tn-bt{display:block;background:var(--tn-sur-bouton);color:var(--tn-encre);margin-top:22px;font-size:16.5px;padding:16px 20px;letter-spacing:normal}
+
+/* ══ Page introuvable ══ */
+.ctw .tn-404{padding:40px 30px 80px;text-align:center}
+.ctw .tn-404 .tn-ph{width:190px;height:230px;margin:0 auto;border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn-404 .tn-ph{border-radius:95px 95px 0 0}
+.ctw .tn-404 small{margin-top:22px}
+.ctw .tn-404 h1{font-size:44px;letter-spacing:-.012em;margin-top:6px}
+.ctw .tn-404 p{font-size:16.5px;color:var(--tn-texte);margin-top:14px}
+.ctw .tn-404 .tn-champ{margin-top:22px;border:1.5px solid var(--tn-encre);border-radius:999px;padding:13px 20px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:16px;color:var(--tn-sourd);text-align:left}
+.ctw .tn-404 .tn-champ svg{width:20px;height:20px;flex:none;color:var(--tn-encre)}
+.ctw .tn-404 .tn-bt{display:block;margin-top:14px;padding:15px 20px}
+.ctw .tn-404 .tn-liens{margin-top:20px;display:flex;justify-content:center;gap:24px;font-size:16px;font-weight:600}
+.ctw .tn-404 .tn-liens a{border-bottom:1.5px solid var(--tn-encre);padding-bottom:2px}
+
+/* ══ Contact ══ */
+.ctw .tn-contact{padding:22px 24px 0}
+.ctw .tn-contact h1{font-size:58px;line-height:.96;letter-spacing:-.02em}
+.ctw .tn-contact p{font-size:16.5px;line-height:1.5;color:var(--tn-texte);margin-top:12px}
+.ctw .tn-contact form{margin:0}
+.ctw .tn-contact label{display:block;border-bottom:1.5px solid var(--tn-encre);padding:20px 0 9px;font-size:16px;color:var(--tn-sourd)}
+.ctw .tn-contact label.tn-haut{padding-bottom:50px}
+.ctw .tn-contact .tn-bt{margin-top:22px;padding:15px 34px}
+.ctw .tn-contact .tn-infos{margin-top:79.08px;background:var(--tn-doux);border-radius:14px 14px 0 0;padding:34px 28px 0;text-align:center;font-size:15.5px;line-height:1.75;min-height:226px;color:var(--tn-encre)}
+.ctw[data-tn-cadre="niche"] .tn-contact .tn-infos{border-radius:90px 90px 0 0}
+.ctw .tn-contact .tn-infos b{display:block;font-family:var(--f-title);font-weight:400;font-size:25px;line-height:1.75;margin-bottom:4px}
+
+/* ══ Pied de page ══ */
+.ctw .tn-pied{background:var(--tn-encre);color:var(--tn-sur-bouton);min-height:62px;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 22px;padding:10px 20px;font-size:14px}
+
+/* ══ Atouts : trois faits vrais, courts ══ */
+.ctw .tn-atouts{padding:44px 20px 0}
+.ctw .tn-atouts ul{border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-atouts li{display:grid;gap:4px;padding:16px 0;border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-atouts li b{font-family:var(--f-title);font-weight:400;font-size:26px}
+.ctw .tn-atouts li span{font-size:16px;line-height:1.55;color:var(--tn-texte)}
+
+/* ══ Les produits en cartes ══ */
+.ctw .tn-produits{padding:44px 20px 0}
+.ctw .tn-produits h2{font-size:40px}
+.ctw .tn-produits .tn-cartes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 12px;margin-top:20px}
+.ctw .tn-produits .tn-carte-p{display:block}
+.ctw .tn-produits .tn-ph{height:200px;background-color:color-mix(in srgb,var(--tn-fond) 40%,#fff);border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn-produits .tn-ph{border-radius:999px 999px 8px 8px}
+.ctw .tn-produits .tn-carte-p b{display:block;font-family:var(--f-title);font-weight:400;font-size:22px;margin-top:10px}
+.ctw .tn-produits .tn-carte-p span{display:block;font-size:15.5px;color:var(--tn-texte);margin-top:2px}
+/* Un seul produit au catalogue : une grande carte sur toute la largeur (jamais une petite carte et un vide à côté). */
+.ctw .tn-produits .tn-carte-p:only-child{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,46%) minmax(0,1fr);column-gap:18px;align-items:center;align-content:center}
+.ctw .tn-produits .tn-carte-p:only-child .tn-ph{grid-row:1/3;height:220px}
+.ctw .tn-produits .tn-carte-p:only-child b{align-self:end;margin-top:0;font-size:26px}
+.ctw .tn-produits .tn-carte-p:only-child span{align-self:start;margin-top:6px}
+
+/* ══ L'histoire de la marque ══ */
+.ctw .tn-histoire{padding:22px 20px 0}
+.ctw .tn-histoire h1{font-size:58px;line-height:.96;letter-spacing:-.02em}
+.ctw .tn-histoire .tn-ph{height:420px;margin-top:26px;border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn-histoire .tn-ph{border-radius:175px 175px 0 0}
+.ctw .tn-histoire p{font-size:16.5px;color:var(--tn-texte);margin-top:22px}
+.ctw .tn-histoire p + p{margin-top:14px}
+.ctw .tn-histoire small{margin-top:22px}
+
+/* ══ Panier ══ */
+.ctw .tn-panier{padding:22px 20px 0}
+.ctw .tn-panier h1{font-size:58px;line-height:.96;letter-spacing:-.02em}
+.ctw .tn-panier .tn-ligne{display:grid;grid-template-columns:84px minmax(0,1fr) auto;gap:14px;align-items:center;margin-top:24px;padding:16px 0;border-top:1.5px solid var(--tn-encre);border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-panier .tn-ligne .tn-ph{height:96px;background-color:color-mix(in srgb,var(--tn-fond) 40%,#fff);border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn-panier .tn-ligne .tn-ph{border-radius:42px 42px 6px 6px}
+.ctw .tn-panier .tn-ligne b{display:block;font-family:var(--f-title);font-weight:400;font-size:24px}
+.ctw .tn-panier .tn-ligne span{font-size:15px;color:var(--tn-texte)}
+.ctw .tn-panier .tn-total{display:flex;justify-content:space-between;margin-top:18px;font-size:17px}
+.ctw .tn-panier .tn-bt{display:block;margin-top:20px;font-size:16.5px;padding:16px 20px}
+.ctw .tn-panier p{font-size:15px;color:var(--tn-texte);margin-top:14px;text-align:center}
+
+/* ══ Compte ══ */
+.ctw .tn-compte{padding:22px 24px 0}
+.ctw .tn-compte h1{font-size:58px;line-height:.96;letter-spacing:-.02em}
+.ctw .tn-compte p{font-size:16.5px;line-height:1.5;color:var(--tn-texte);margin-top:12px}
+.ctw .tn-compte label{display:block;border-bottom:1.5px solid var(--tn-encre);padding:20px 0 9px;font-size:16px;color:var(--tn-sourd)}
+.ctw .tn-compte .tn-bt{margin-top:22px}
+.ctw .tn-compte .tn-liens{margin-top:20px;font-size:16px;font-weight:600}
+.ctw .tn-compte .tn-liens a{border-bottom:1.5px solid var(--tn-encre);padding-bottom:2px}
+
+/* ══ Informations légales ══ */
+.ctw .tn-legal{padding:22px 20px 0}
+.ctw .tn-legal h1{font-size:46px;letter-spacing:-.012em;margin-bottom:22px}
+.ctw .tn-legal .tn-liste{border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-legal details{border-bottom:1.5px solid var(--tn-encre);padding:16px 0}
+.ctw .tn-legal summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;font-family:var(--f-title);font-size:26px}
+.ctw .tn-legal summary::-webkit-details-marker{display:none}
+.ctw .tn-legal summary::after{content:"+";font-family:var(--f-ui);font-size:22px;letter-spacing:0}
+.ctw .tn-legal details[open] summary::after{content:"−"}
+.ctw .tn-legal details p{font-size:16px;color:var(--tn-texte);margin-top:8px}
+/* une page qui se termine par une de ces sections garde de l'air avant le pied de page */
+.ctw .tn-legal,.ctw .tn-compte,.ctw .tn-panier,.ctw .tn-histoire{padding-bottom:64px}
+.ctw .tb-pg>.tn-volets:last-child,.ctw .tb-pg>.tn-atouts:last-child,.ctw .tb-pg>.tn-produits:last-child,.ctw .tb-pg>.tn-de-pres:last-child,.ctw .tb-pg>.tn-mesures:last-child,.ctw .tb-pg>.tn-places:last-child{padding-bottom:64px}
+
+/* ══ Écrans larges : mêmes sections, plus d'air ══ */
+@media (min-width:760px){
+  .ctw .tn-entete{padding:0 40px}
+  /* Ouvertures « dans la photo » et « titre géant » : la photo est en hauteur (une seule image sert au téléphone et à
+     l'ordinateur). Sur grand écran elle prend une colonne entière, le sujet reste entier ; le texte prend l'autre. */
+  .ctw .tn-ouverture[data-tn-c="dans-la-photo"]{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:1fr 1fr;padding-bottom:0;text-align:left}
+  .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-ph{grid-column:2;grid-row:1/3;height:min(88vh,780px);background-position:center}
+  .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-in{position:static;grid-column:1;grid-row:1;align-self:end;padding:0 56px 0 max(40px,calc(50vw - 540px))}
+  .ctw .tn-ouverture[data-tn-c="dans-la-photo"] h1{font-size:clamp(56px,6.4vw,92px);margin-top:12px}
+  .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-bas{grid-column:1;grid-row:2;align-self:start;padding:24px 56px 0 max(40px,calc(50vw - 540px))}
+  .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-bas p{font-size:18px;max-width:440px}
+  .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-bt{margin-top:26px}
+  .ctw .tn-ouverture[data-tn-c="titre-puis-cadre"]{max-width:none}
+  .ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] h1{font-size:104px;margin-left:40px;margin-right:40px}
+  .ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] .tn-ph{margin:34px auto 0;width:min(560px,60%);height:620px}
+  .ctw[data-tn-cadre="niche"] .tn-ouverture[data-tn-c="titre-puis-cadre"] .tn-ph{border-radius:280px 280px 0 0}
+  .ctw .tn-ouverture[data-tn-c="titre-geant"]{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);grid-template-rows:1fr 1fr;padding-bottom:0;max-width:none}
+  .ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-in{grid-column:1;grid-row:1;align-self:end;padding:40px 40px 0 max(40px,calc(50vw - 540px))}
+  .ctw .tn-ouverture[data-tn-c="titre-geant"] h1{font-size:clamp(56px,6.2vw,96px);margin:18px 0 0}
+  .ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-ph{grid-column:2;grid-row:1/3;height:min(86vh,760px)}
+  .ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-bas{grid-column:1;grid-row:2;align-self:start;flex-direction:column;margin-top:0;padding:26px 40px 44px max(40px,calc(50vw - 540px))}
+  .ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-bas p{margin-top:0;font-size:18px;max-width:440px}
+  .ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-bt{margin-top:26px}
+  .ctw .tn-produits .tn-cartes{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .ctw .tn-produits .tn-ph{height:300px}
+  .ctw .tn-histoire .tn-ph{height:560px}
+  .ctw .tn-de-pres,.ctw .tn-volets,.ctw .tn-mesures,.ctw .tn-contact,.ctw .tn-404,.ctw .tn-atouts,.ctw .tn-produits,.ctw .tn-histoire,.ctw .tn-panier,.ctw .tn-compte,.ctw .tn-legal{max-width:none;padding-left:max(40px,calc(50% - 380px));padding-right:max(40px,calc(50% - 380px))}
+  .ctw .tn-de-pres .tn-ph{height:320px}
+  .ctw .tn-achat{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 56px;padding:24px max(40px,calc(50% - 540px)) 56px;align-items:start}
+  .ctw .tn-achat .tn-galerie{grid-row:1 / span 8}
+  .ctw .tn-achat .tn-grande{height:560px}
+  .ctw .tn-achat small{margin-top:40px}
+  .ctw .tn-emotion .tn-ph{height:620px}
+  .ctw .tn-emotion h2{font-size:64px;left:max(40px,calc(50% - 540px));right:40%}
+  .ctw[data-tn-titres="gras"] .tn-emotion h2,.ctw[data-tn-titres="capitales"] .tn-emotion h2{font-size:50px;right:40%}
+  /* En situation : les photos prennent toute la largeur, à parts égales (jamais une moitié vide). */
+  .ctw .tn-places{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-places .tn-file{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:20px}
+  .ctw .tn-places .tn-ph{height:460px}
+  .ctw[data-tn-cadre="niche"] .tn-places .tn-ph{border-radius:260px 260px 0 0}
+  .ctw .tn-final{padding:72px 24px}
+  .ctw .tn-final .tn-bt{display:inline-block;padding:16px 44px}
+  .ctw .tn-contact .tn-infos{margin-top:56px}
+}

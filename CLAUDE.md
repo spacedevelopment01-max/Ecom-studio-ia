@@ -378,13 +378,30 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     les sous agents pour sina hier » : son mandat du 13 novembre couvre aussi les spécialistes qui apparaissent après ;
     ne plus lui demander s'il veut qu'on les construise) : la documentaliste, sans IA (`custom-theme/references.ts` :
     secteur reconnu, références proches et lointaines sans nom de site, sections propres au secteur, données au
-    concepteur) ; la comparaison contre les doublons, sans IA (`custom-theme/identity-card.ts`, carte en huit lignes,
+    concepteur) ; la comparaison contre les doublons, sans IA (`custom-theme/identity-card.ts`, carte en neuf lignes,
     entre les deux concepts et avec les thèmes des autres marques) ; le juge de l'originalité
     (`custom-theme/originality.ts` : ses refus rejoignent la seule reprise du concepteur, il relit la reprise, un doute
     est dit au client, compté au devis) ; les regards en image (`custom-theme/looks.ts` : sur le montage qui pose les
     photos, l'accueil et la page qui vend capturés sur téléphone puis regardés, « est-ce que ça donne envie ? »,
     compte rendu `regards`, rien corrigé tout seul). Testés avec une IA simulée ; seule la capture des pages a été
     vérifiée pour de vrai ; aucun essai réel payant.
+    **Tenue et constructions, fait le 13 novembre 2026** (sa demande : « Je laisse faire toutes la partie thèmes sur
+    mesure avec sina et tu t'arrête pas tant que le résultat n'est pas le même que tu m'a envoyé exactement le meme ») :
+    vingt sections « à tenue » (`custom-theme/tenue.ts`, `public/sections/tenue.css` et `tenue.js`, écrits à la main,
+    hors `scripts/sections-library.py` ; elles vont avec les deux familles) ; plusieurs constructions par section
+    (`data-tn-c` : en-tête centre, gauche ou sangle ; ouverture dans la photo, titre puis cadre ou titre géant ; « de
+    près » ; mesures en quatre dessins) ; la tenue de la marque (`TenueSchema` : titres, bouton, cadre, fond, petits
+    textes, signe pris sur le produit) choisie par le concepteur avec les sections (`design.ts`, `TENUE_RULES`) et
+    changée sans rien repayer par SINA (`custom.structure` : `construction`, `tenue`) ; ce qui manque au dossier
+    s'affiche en jaune « À compléter » ; bloc d'achat, cartes et panier remplis avec le vrai catalogue ; la carte
+    d'identité contre les doublons compte la construction et la tenue (neuf lignes). **Vérifié en image, au pixel,
+    sur téléphone**, contre les six écrans faits à la main qu'il a reçus (`tests/sina-tenue-fauteuil.test.ts`, IA
+    simulée, captures avec `TENUE_OUT=<dossier>`) : accueil du fauteuil 0,00 % de pixels différents, proposition B
+    0,03 %, ouverture du sac 0,09 %, page introuvable 0,00 %, contact 0,00 %, fiche produit 1,05 % (le nom de
+    l'en-tête à moins d'un pixel ; la barre d'achat, montrée sur la capture du bas ; le Studio ajoute le pied de page
+    que l'écran fait à la main n'avait pas). Sur ordinateur, les ouvertures passent en deux colonnes pour garder le
+    produit entier : regardé en image, sans modèle à comparer. **Aucun essai réel payant** : on ne sait pas si la vraie
+    IA choisit et écrit à ce niveau. Restent : la tenue des 188 autres sections, les 48 qui manquent, la liaison.
     **Ce qui est vrai du thème sur mesure, relu dans le code le 13 novembre** (ses questions : « comment tu va jouer la
     liaison ? Et les méga menu […] ? ») : une seule fiche produit, remplie avec le premier produit ; le panneau des
     grands menus reste un exemple vide ; les pages de prestations ne lisent pas la rubrique Prestations et

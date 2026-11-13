@@ -7,7 +7,8 @@ import crypto from "node:crypto";
 import { all } from "../../db";
 import { remember } from "../../projects";
 import type { FamilyId } from "../section-families";
-import { authenticSection, FAKE_OFFER_SECTIONS, RETIRED_SECTIONS, inlineBackgrounds, isCardSection, FEATURED_ROLE, libSection, SCRIPT_DEMO_SECTIONS, SHELL_ROLES, sectionPhotos, type LibSection } from "./library";
+import { authenticSection, FAKE_OFFER_SECTIONS, RETIRED_SECTIONS, inFamily, inlineBackgrounds, isCardSection, FEATURED_ROLE, libSection, SCRIPT_DEMO_SECTIONS, SHELL_ROLES, sectionPhotos, type LibSection } from "./library";
+import { constructionsOf, isTenueSection, validConstruction, type Tenue } from "./tenue";
 
 export type CtSection = {
   /** Identifiant de CETTE section dans le thème (une même section de la bibliothèque peut servir sur deux pages). */
@@ -30,6 +31,8 @@ export type CtSection = {
   photoBriefs?: { find: string; description: string; ratio: string; product: string | null }[];
   /** Disposition choisie par le client (bouton « Disposition », revue du 10 novembre 2026, point 27). */
   layout?: SectionLayout;
+  /** Construction d'une section à tenue (tenue.ts) : la façon dont elle est bâtie, choisie à la conception. */
+  construction?: string;
 };
 /** Disposition d'une section : inverser texte et image, alignement du texte, cadre ou pleine largeur, fond. */
 export type SectionLayout = { flip?: boolean; align?: "left" | "center"; frame?: "frame" | "full"; bg?: "light" | "soft" | "dark" };
@@ -66,6 +69,8 @@ export type CustomTheme = {
   chosen?: boolean;
   /** Réglages du site cochés par le client (bloc d'achat, en-tête, panier). */
   settings?: SiteSettings;
+  /** La tenue de la marque (tenue.ts) : titres, boutons, cadre des photos, fond, petits textes, signe. */
+  tenue?: Tenue;
   rev: number;
   at: number;
 };
@@ -266,7 +271,7 @@ export function checkCustomTheme(t: CustomTheme, site?: SiteKind): ThemeProblem[
     if (!l) { bad(`section inconnue « ${x.s.id} » (${x.place})`); continue; }
     if (l.demoFrame) bad(`« ${l.title} » est une démonstration du catalogue (fausse fenêtre) : elle ne se pose pas dans un thème`);
     if (SCRIPT_DEMO_SECTIONS.has(l.id)) bad(`« ${l.title} » affiche des contenus fabriqués par le script de démonstration (produits ou questions de la démo), impossibles à réécrire pour la marque : choisis une autre section`);
-    if (l.family !== t.family) bad(`« ${l.title} » est de la famille ${l.family} : jamais de mélange de familles dans un thème (famille du thème : ${t.family})`);
+    if (!inFamily(l, t.family)) bad(`« ${l.title} » est de la famille ${l.family} : jamais de mélange de familles dans un thème (famille du thème : ${t.family})`);
     const fake = FAKE_OFFER_SECTIONS[l.id];
     if (fake) bad(fake === "compte à rebours"
       ? `« ${l.title} » affiche un compte à rebours d'exemple (calculé depuis l'heure du visiteur) : jamais de fausse urgence, choisis une autre section`
@@ -322,6 +327,13 @@ export function checkCustomTheme(t: CustomTheme, site?: SiteKind): ThemeProblem[
     if (page.key === "home" && first && first.role !== "ouverture") warn(`l'accueil commence par « ${first.title} » : l'ouverture de l'accueil est une grande photo pleine avec le titre dessus`);
   }
   if (featuredHome > 1) bad("plus d'une section « Produit vedette » sur l'accueil");
+  // Sections à tenue : un site les prend en entier (elles s'habillent à la marque ; les autres ont déjà leur allure).
+  {
+    const kinds = allSections(t).filter((x) => x.place !== "recherche").map((x) => ({ x, tenue: isTenueSection(lib(x.s)) }));
+    const tenue = kinds.filter((k) => k.tenue).length;
+    if (tenue && tenue < kinds.length) warn(`le site mélange ${tenue} section(s) à tenue et ${kinds.length - tenue} section(s) qui ont déjà leur allure (${kinds.filter((k) => !k.tenue).slice(0, 4).map((k) => lib(k.x.s)?.title ?? k.x.s.id).join(", ")}) : un site à tenue l'est en entier`);
+    if (tenue && !t.tenue) warn("sections à tenue sans tenue choisie : la tenue par défaut s'applique (titres fins, boutons en pilule, cadres droits)");
+  }
   // Essai Heure Dorée (9 novembre 2026) : pour atteindre 8 et 7 sections, SINA avait ajouté des sections « pour en
   // ajouter » : une offre par quantité (le client n'en a pas) et la même histoire du produit sur deux pages.
   const where = new Map<string, string>();
@@ -332,7 +344,14 @@ export function checkCustomTheme(t: CustomTheme, site?: SiteKind): ThemeProblem[
     if (l.role === "lot" && l.title !== "Complète ta commande") bad(`« ${l.title} » sur « ${page.label} » : les offres (lots, quantités, coffret) sont des fonctions du bloc d'achat « Produit vedette », jamais une section à part`);
     // Sections retirées de la banque par le propriétaire (revue du 10 novembre 2026) : à remplacer avant le montage.
     else if (RETIRED_SECTIONS[l.id]) bad(`« ${l.title} » sur « ${page.label} » : retirée de la banque, ${RETIRED_SECTIONS[l.id]}`);
-    if (where.has(l.id) && where.get(l.id) !== page.label) bad(`« ${l.title} » sur « ${where.get(l.id)} » et « ${page.label} » : une même section sur deux pages répète ses textes et ses photos`);
+    // Une section à tenue s'écrit pour chaque page (ses textes, ses photos, sa construction) : elle peut servir sur
+    // plusieurs pages ; seul un contenu écrit identique sur deux pages est refusé.
+    if (isTenueSection(l)) {
+      const key = sec.html ? `${l.id}\n${sec.html}` : null;
+      if (key && where.has(key) && where.get(key) !== page.label) bad(`« ${l.title} » a le même contenu sur « ${where.get(key)} » et « ${page.label} » : chaque page a ses textes et ses photos`);
+      else if (key) where.set(key, page.label);
+    }
+    else if (where.has(l.id) && where.get(l.id) !== page.label) bad(`« ${l.title} » sur « ${where.get(l.id)} » et « ${page.label} » : une même section sur deux pages répète ses textes et ses photos`);
     else where.set(l.id, page.label);
   }
   // Photos (exigence 6.13) : jamais deux fois la même, ni dans une page (deux sections) ni d'une page à l'autre ; seule
@@ -355,11 +374,13 @@ export function checkCustomTheme(t: CustomTheme, site?: SiteKind): ThemeProblem[
 
 /** Ajoute, retire, déplace ou remplace une section (opérations de structure, sans IA). */
 export type StructureOp =
-  | { op: "add"; page: string; section: string; at?: number }
+  | { op: "add"; page: string; section: string; at?: number; construction?: string }
   | { op: "remove"; uid: string }
   | { op: "move"; uid: string; page?: string; at: number }
-  | { op: "replace"; uid: string; section: string }
-  | { op: "shell"; slot: "header" | "footer" | "search"; section: string | null }
+  | { op: "replace"; uid: string; section: string; construction?: string }
+  | { op: "construction"; uid: string; construction: string }
+  | { op: "tenue"; tenue: Tenue }
+  | { op: "shell"; slot: "header" | "footer" | "search"; section: string | null; construction?: string }
   | { op: "page"; key: string; label: string; at?: number }
   | { op: "drop_page"; key: string }
   | { op: "rename_page"; key: string; label: string }
@@ -379,15 +400,24 @@ export function applyStructure(t: CustomTheme, ops: StructureOp[]): CustomTheme 
     throw new Error(`section ${uid} introuvable dans les pages`);
   };
   for (const o of ops) {
-    if (o.op === "add") { const p = pageOf(o.page); p.sections.splice(o.at ?? p.sections.length, 0, { uid: newUid(), id: known(o.section) }); }
+    // Section à tenue : sa construction (celle demandée si elle existe, sinon la première).
+    const made = (id: string, construction?: string): CtSection => { const c = validConstruction(known(id), construction); return { uid: newUid(), id, ...(c ? { construction: c } : {}) }; };
+    if (o.op === "add") { const p = pageOf(o.page); p.sections.splice(o.at ?? p.sections.length, 0, made(o.section, o.construction)); }
     else if (o.op === "remove") { const { p, i } = locate(o.uid); p.sections.splice(i, 1); }
     else if (o.op === "move") { const { p, i } = locate(o.uid); const [s] = p.sections.splice(i, 1); const to = o.page ? pageOf(o.page) : p; to.sections.splice(Math.min(o.at, to.sections.length), 0, s); }
     else if (o.op === "replace") {
       const shell = (["header", "footer", "search"] as const).find((k) => next[k]?.uid === o.uid);
-      if (shell) next[shell] = { uid: newUid(), id: known(o.section) };
-      else { const { p, i } = locate(o.uid); p.sections[i] = { uid: newUid(), id: known(o.section) }; }
+      if (shell) next[shell] = made(o.section, o.construction);
+      else { const { p, i } = locate(o.uid); p.sections[i] = made(o.section, o.construction); }
     }
-    else if (o.op === "shell") next[o.slot] = o.section ? { uid: newUid(), id: known(o.section) } : null;
+    else if (o.op === "shell") next[o.slot] = o.section ? made(o.section, o.construction) : null;
+    else if (o.op === "construction") {
+      const shell = (["header", "footer", "search"] as const).find((k) => next[k]?.uid === o.uid);
+      const sec = shell ? next[shell]! : (() => { const { p, i } = locate(o.uid); return p.sections[i]; })();
+      if (!constructionsOf(sec.id).some((c) => c.key === o.construction)) throw new Error(`construction « ${o.construction} » inconnue pour cette section (possibles : ${constructionsOf(sec.id).map((c) => c.key).join(", ") || "aucune"})`);
+      sec.construction = o.construction;
+    }
+    else if (o.op === "tenue") next.tenue = o.tenue;
     else if (o.op === "page") { if (next.pages.some((p) => p.key === o.key)) throw new Error(`la page « ${o.key} » existe déjà`); next.pages.splice(o.at ?? next.pages.length, 0, { key: o.key, label: o.label, sections: [] }); }
     else if (o.op === "drop_page") { pageOf(o.key); next.pages = next.pages.filter((p) => p.key !== o.key); }
     else if (o.op === "rename_page") pageOf(o.key).label = o.label;

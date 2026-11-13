@@ -104,7 +104,7 @@ export function sectionGroup(s: Pick<LibSection, "id" | "role">): SectionGroupId
   return BY_ID[s.id] ?? BY_ROLE[s.role] ?? null;
 }
 
-/** Sections d'une famille, pour une famille de style (Classique ou Moderne). */
+/** Sections d'une famille, pour une famille de style (Classique ou Moderne) ; les sections à tenue vont avec les deux. */
 export function sectionsOfGroup(group: SectionGroupId, family?: string): LibSection[] {
-  return sectionLibrary().sections.filter((s) => !s.demoFrame && sectionGroup(s) === group && (!family || s.family === family));
+  return sectionLibrary().sections.filter((s) => !s.demoFrame && sectionGroup(s) === group && (!family || s.family === family || (s.tags ?? []).includes("tenue")));
 }

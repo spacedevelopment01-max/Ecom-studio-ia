@@ -16,6 +16,7 @@ import { companyOf } from "../activity";
 import { buyBlockData, withRealBuyBlock } from "./buy-block";
 import { authenticSection, DEMO_BRANDS, LIBRARY_DIR, sectionLibrary, withBrandName } from "./library";
 import { allSections, sectionHtml, type CtSection, type CustomTheme, type SiteSettings } from "./theme";
+import { markMissing, tenueAttrs, tenueCss, validConstruction, withTenueBuyBlock, withTenueProducts, type TenueBuy, type TenueProduct } from "./tenue";
 import { all } from "../../db";
 
 const read = (f: string) => { try { return fs.readFileSync(path.join(LIBRARY_DIR(), f), "utf8"); } catch { return ""; } };
@@ -159,7 +160,11 @@ export function sectionMarkup(s: CtSection, brandName: string, role: string, bus
   if (authentic) { const frame = provideFrame(authentic); html = html.replace(/(?:\.\/)?photos\/[\w-]+\.(?:webp|png|jpe?g)/g, frame); }
   const lay = s.layout ?? {};
   const layAttr = `${lay.flip ? ' data-lay-flip="1"' : ""}${lay.align ? ` data-lay-align="${lay.align}"` : ""}${lay.frame ? ` data-lay-frame="${lay.frame}"` : ""}${lay.bg ? ` data-lay-bg="${lay.bg}"` : ""}`;
-  const marked = html.replace(/^\s*<(section|footer)\b/, `<$1 data-ct="${s.uid}" data-ct-role="${role}"${s.clientTexts ? " data-ct-own" : ""}${layAttr}`);
+  // Section à tenue : sa construction (attribut lu par la feuille), et ce qui manque au dossier écrit en jaune.
+  const tenue = /^\s*<(?:section|footer) class="tn /.test(html);
+  const built = tenue ? validConstruction(s.id, s.construction) : null;
+  if (tenue) html = markMissing(html);
+  const marked = html.replace(/^\s*<(section|footer)\b/, `<$1 data-ct="${s.uid}" data-ct-role="${role}"${s.clientTexts ? " data-ct-own" : ""}${layAttr}${built ? ` data-tn-c="${built}"` : ""}`);
   return marked;
 }
 
@@ -379,6 +384,28 @@ const PICK_JS = `(function(){
   try{parent.postMessage({source:"ct-preview",type:"ready"},"*")}catch(e){}
 })();`;
 
+/** Police « machine » des petits textes de la tenue (fichiers locaux, comme les polices de la marque). */
+const MONO_CSS = () => fontsCss(["ibm_plex_mono"], FONT_FILES).css.replace(/url\("fonts\//g, 'url("/api/syna/fonts/');
+/** Prix affiché d'un produit (« 149 € », « 8,50 € »), ou null sans prix réel. */
+const priceText = (p: ReturnType<typeof listProducts>[number]): string | null => {
+  const cents = p.data.price ?? p.variants.find((v) => v.price != null)?.price ?? null;
+  return cents == null ? null : `${(Math.round(cents) / 100).toFixed(2).replace(/[.,]00$/, "").replace(".", ",")} €`;
+};
+/** Vrais produits du catalogue pour les cartes et le panier à tenue : nom, première photo, prix. */
+export function tenueProducts(projectId: string): TenueProduct[] {
+  return listProducts(projectId).map((p) => ({ title: p.data.title, image: p.data.images[0]?.assetId ? assetUrl({ id: p.data.images[0].assetId }) : null, price: priceText(p) }));
+}
+/** Vraies données du bloc d'achat à tenue : photos du premier produit, son prix, la livraison et les retours du client. */
+export function tenueBuyData(projectId: string): TenueBuy | null {
+  const products = listProducts(projectId);
+  if (!products.length) return null;
+  const p0 = products[0];
+  const price = priceText(p0);
+  const company = (() => { try { return companyOf(projectId) as { shipping?: string; returns?: string }; } catch { return {}; } })() as { shipping?: string; returns?: string };
+  const clean = (v: string | undefined) => (v && v.trim() ? v.trim().slice(0, 120) : null);
+  return { images: p0.data.images.map((im) => im.assetId).filter((id): id is string => !!id).map((id) => assetUrl({ id })), price, shipping: clean(company.shipping), returns: clean(company.returns) };
+}
+
 /** nonce : jeton des scripts du rendu (feuille de sécurité de la réponse : aucun autre script ne s'exécute). */
 export type RenderOptions = { studio?: boolean; title?: string; nonce?: string; /** Aperçu posé dans le Studio (onglet Boutique, fil de SINA) : la barre de pages du thème est celle du Studio. */ embed?: boolean };
 
@@ -411,28 +438,33 @@ export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand"> & { 
   const flags = siteFlags(buyFlags(featuresOf(p.id)), t.settings, (() => { try { return freeShippingFrom(companyOf(p.id).shipping); } catch { return null; } })());
   // Bloc d'achat : les vraies données du produit du client (jamais les prix et remises d'exemple de la bibliothèque).
   const buy = (() => { try { return buyBlockData(p.id); } catch { return null; } })();
+  const tnBuy = (() => { try { return tenueBuyData(p.id); } catch { return null; } })();
+  const tnProducts = (() => { try { return tenueProducts(p.id); } catch { return []; } })();
   const pay = (p.platform ?? "shopify") === "shopify" && !t.pages.some((pg) => pg.key === "commande") ? "Sur ta boutique Shopify, ce bouton ouvre le paiement sécurisé de Shopify." : null;
   const pre = `window.CT_PAY=${JSON.stringify(pay).replace(/</g, "\\u003c")};window.TB_MAP=${JSON.stringify(linkMap(t))};window.CT_NAME=${JSON.stringify(name)};window.CT_DEMO=${JSON.stringify(DEMO_BRANDS.flatMap((d) => [d, d.toUpperCase()]).map((d) => d.replace(/\s+/g, "\\s+")))};window.CT_LOGO=${JSON.stringify(p.brand?.logo?.assetId ? assetUrl({ id: p.brand.logo.assetId }) : null)};(function(D){var F=${JSON.stringify(flags)};for(var k in F)D[k]=F[k]})(document.documentElement.dataset);`;
   const bar = t.pages.map((pg, i) => `<button type="button" data-pgb="${esc(pg.key)}" aria-pressed="${i === 0}">${esc(pg.label)}</button>`).join("");
   const address = projectAddress(p.id);
-  const body = t.pages.map((pg, i) => `<main class="tb-pg" data-pg="${esc(pg.key)}"${pg.seo ? ` data-seo-title="${esc(pg.seo.title)}" data-seo-desc="${esc(pg.seo.description)}"` : ""}${i ? " hidden" : ""}>${pg.sections.map((s) => realMap(withRealBuyBlock(sectionMarkup(s, name, "page", p.business === "services" ? "services" : "products"), buy), address)).join("\n")}</main>`).join("\n");
+  const body = t.pages.map((pg, i) => `<main class="tb-pg" data-pg="${esc(pg.key)}"${pg.seo ? ` data-seo-title="${esc(pg.seo.title)}" data-seo-desc="${esc(pg.seo.description)}"` : ""}${i ? " hidden" : ""}>${pg.sections.map((s) => realMap(withTenueProducts(withTenueBuyBlock(withRealBuyBlock(sectionMarkup(s, name, "page", p.business === "services" ? "services" : "products"), buy), tnBuy), tnProducts), address)).join("\n")}</main>`).join("\n");
   const shell = (s: CtSection | null, place: string) => (s ? sectionMarkup(s, name, roleOf(place)) : "");
   const title = o.title ?? `${name} — thème sur mesure`;
   const n = o.nonce ? ` nonce="${esc(o.nonce)}"` : "";
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><base href="/sections/"><title>${esc(title)}</title>
 ${lib.fonts.map((f) => `<link rel="stylesheet" href="${esc(f)}">`).join("")}
 <link rel="stylesheet" href="/sections/library.css">
+<link rel="stylesheet" href="/sections/tenue.css">
 <style>${BASE_CSS}
 ${SETTINGS_CSS}
 ${brandCss(p)}
+${tenueCss(p.brand?.palette, t.tenue, MONO_CSS())}
 ${own}</style></head><body>
 <script${n}>${pre}</script>
 <div class="tb-bar"><span>${esc(name)} ·</span>${bar}<span class="tb-vw">Voir en</span><button class="tb-vw" type="button" data-vw="desk" aria-pressed="true">Ordinateur</button><button class="tb-vw" type="button" data-vw="phone" aria-pressed="false">Téléphone</button></div>
-<div class="tb-wrap ctw ctw-${t.family} ctw-${t.style}"><div class="frame">${shell(t.header, "en-tête")}${shell(t.search, "recherche")}
+<div class="tb-wrap ctw ctw-${t.family} ctw-${t.style}"${tenueAttrs(t.tenue)}><div class="frame">${shell(t.header, "en-tête")}${shell(t.search, "recherche")}
 ${body}
 ${shell(t.footer, "pied de page")}</div></div>
 ${withBrandName(templates, name)}
 <script${n} src="/sections/library.js"></script>
+<script${n} src="/sections/tenue.js"></script>
 <script${n}>${NAV_JS}</script><script${n}>${CART_JS}</script><script${n}>${SETTINGS_JS}</script>
 ${o.embed ? `<style>.tb-bar{display:none}.tb-wrap .zm18,.bh,.mz1,.mz2{top:0!important}.ctw-note{top:10px;bottom:auto;left:auto;right:10px;max-width:300px;font-size:11px}</style>` : ""}
 ${o.studio ? `${sampleTexts ? `<div class="ctw-note" aria-hidden="true">Thème sur mesure · textes et photos d'exemple encore présents : SINA les remplace par les tiens</div>` : ""}<script${n}>${PICK_JS}</script>` : ""}
