@@ -153,6 +153,12 @@ doublons). Proposition, à valider.
 thèmes Shopify, 404 vraies boutiques de marques, 328 modèles de sites de services), relevées par un programme, sans
 IA. Notice : `references/LISEZMOI.md`.
 
+**Les sections qui manquent :** `inventaire-sections-manquantes.md`, inventaire du 13 novembre 2026. Les 338 idées de
+section des cahiers comparées aux 208 sections de la bibliothèque du thème sur mesure : 114 existent, 146 sont
+proches (une section à compléter), 78 manquent, soit 48 sections ou fonctions à construire (20 qui servent beaucoup de
+clients, 15 pour un secteur ou un métier, 13 cas particuliers). Jugé sur les descriptions des sections, les manques
+les plus importants recontrôlés dans leur contenu. Rien n'est construit ; les priorités sont une estimation.
+
 **D'où vient ce savoir.** Neuf recherches sur le web menées le 13 novembre 2026 (règles de Shopify, études du Baymard
 Institute et du Nielsen Norman Group, documentation des studios de thèmes, agences de marque, sources officielles
 françaises et européennes), et trois relevés faits par le Studio dans un navigateur. Chaque règle porte sa source ; ce

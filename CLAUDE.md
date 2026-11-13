@@ -342,6 +342,15 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     payée de plus par planche, prix à annoncer avant. Suite proposée : un modèle fait à la main (accueil de « Pulpe » sur
     téléphone), noté par lui, avant d'apprendre à SINA à faire pareil. Points à trancher avec lui : fin de
     `theme-construction-des-pages.md` et de la méthode.
+    **Sections qui manquent** (sa question du 13 novembre : « les sections qui n'existe pas on fait comment ? », puis
+    « Oui tu peux faire ») : inventaire `docs/sina-savoir/inventaire-sections-manquantes.md` : 338 idées des cahiers
+    comparées aux 208 sections de la bibliothèque ; 114 existent, 146 sont proches, 78 manquent, soit 48 sections ou
+    fonctions à construire (20 en priorité 1, dont la fiche technique, le bandeau de cookies, la rupture de stock, « dans
+    le colis »). Rien n'est construit. Son retour du même jour, à ne pas lui faire répéter : « juste changer les images
+    et les textes ferais déjà des thèmes trop basique car les sections sur le studio sont loin d'être à la hauteur de
+    celle que tu as vu sur internet » ; il veut aussi de la variété dans les pièces de base (« les clients ne vont pas
+    avoir tous les même menu les même bouton »). Réponse proposée, pas encore validée : chaque section a plusieurs
+    constructions et sa tenue (titres, formes, fond, décor) vient de la planche de marque.
   - **À confirmer par le propriétaire** : le quatrième fond d'une série de quatre identités (aujourd'hui un fond clair
     coloré, « uni ») ; la règle « un fond sombre par série » quand le client demande du joyeux et du coloré (le directeur
     de création l'a contestée pendant l'essai) ; le réglage des modèles.
