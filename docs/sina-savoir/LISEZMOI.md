@@ -117,6 +117,36 @@ correction n'a pas encore été réessayée pour de vrai.
 « Haut les Pêches » 6/10, « Tout Feu Tout Fruit » 6/10, « Cerise sur le Verre » 4/10. Le juge ne garde qu'un nom qui
 vaudrait 8 sur 10 ou plus. Une proposition peut aussi se faire sur un nom que le client a choisi lui-même.
 
+## Le savoir pour monter un thème (demande du propriétaire, 13 novembre 2026)
+
+Le propriétaire a demandé d'aller chercher « toutes les idées de comment on construit un thème » (placement des
+images, écriture des textes, placement des sections, conception des sections), pour que SINA sache monter un thème
+complet « telle les plus grand créateur de thème au monde ».
+
+| Fichier | Ce que c'est |
+|---|---|
+| `theme-construction-des-pages.md` | Les pages d'un thème complet, l'ordre des sections et son pourquoi, selon le catalogue et le métier ; le relevé de seize boutiques de démonstration. |
+| `theme-images.md` | L'ouverture, le texte sur une image, le recadrage, les proportions et les tailles, la galerie du produit, le rythme, la vitesse. |
+| `theme-textes.md` | Le titre d'ouverture, la fiche produit, la voix, le référencement, l'honnêteté et le droit, s'inspirer sans copier. |
+| `theme-conception-des-sections.md` | Comment un thème Shopify est bâti, ce que Shopify exige, une section qui tient avec n'importe quel contenu, le système de design, le téléphone d'abord, ce qui distingue un grand thème. |
+
+**D'où ils viennent.** Quatre recherches sur le web menées en parallèle le 13 novembre 2026 (règles de Shopify pour les
+thèmes vendus sur sa boutique, études du Baymard Institute et du Nielsen Norman Group, documentation des studios de
+thèmes, sources officielles françaises et européennes pour le droit), et un relevé fait par le Studio : seize boutiques
+de démonstration parmi les thèmes payants les plus populaires, ouvertes sur un téléphone simulé, mesurées section par
+section ; trois regardées en image. Chaque règle porte sa source ; ce qui n'a pas été vérifié est écrit « (métier) »
+ou « (extrait) ». Relus à la source par le Studio : les notes exigées par Shopify (60 en vitesse, 90 en accessibilité),
+ses pages obligatoires, ses limites (25 sections par page, 50 blocs par section), son interdiction des faux comptes à
+rebours, et deux constats d'étude sur la fiche produit.
+
+**Statut.** Ces quatre cahiers ne sont **pas encore lus par SINA** : rien n'est branché dans le code. Ils ne sont
+**pas encore validés par le propriétaire**. « Copyright », dans sa demande, a été compris comme l'écriture des textes ;
+le cahier des textes dit aussi ce qu'on a le droit de reprendre chez les autres.
+
+**Suite proposée.** Comme pour les planches de marque : un modèle fait à la main (l'accueil de « Pulpe » sur
+téléphone), noté par le propriétaire, puis le branchement dans SINA. Trois points à trancher avec lui sont écrits à la
+fin de `theme-construction-des-pages.md`.
+
 ## Ce qui n'est pas réglé
 
 - Le coût réel n'est mesuré qu'une fois (2,88 € pour trois identités, réglage économe). L'estimation d'avant l'essai

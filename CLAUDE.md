@@ -320,6 +320,22 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     moteurs du Studio et leurs contrôles ; aucune n'a été essayée pour de vrai. **Ouvrir une étape** : réglage
     `sina.etapes_ouvertes` (ex. `[9]`), une à une, chacune après un essai réel validé par le propriétaire ; ne jamais
     en ouvrir une sans sa demande.
+  - **Savoir du thème** (demandes du propriétaire du 13 novembre 2026 : « Oubli ce qui déjà fait pour les thèmes sur
+    mesure dans le studio et dit comment tu ferais toi », puis « Tu vas déjà aller chercher toutes les idées de comment
+    on construit un thème le placement des images le copyright le placement des section la conception des sections, je
+    veux que toi et sina vous sachiez monter un thème complet de A a Z telle les plus grand créateur de thème au
+    monde ») : quatre cahiers de métier dans `docs/sina-savoir/` (`theme-construction-des-pages.md`, `theme-images.md`,
+    `theme-textes.md`, `theme-conception-des-sections.md`), tirés de quatre recherches sur le web (règles de Shopify
+    pour les thèmes vendus sur sa boutique, études d'ergonomie, documentation des studios de thèmes, droit français) et
+    d'un relevé fait par le Studio sur seize boutiques de démonstration des thèmes les plus populaires (téléphone).
+    « Copyright » a été compris comme l'écriture des textes, plus ce qu'on a le droit de reprendre chez les autres.
+    **Pas encore lus par SINA** (rien n'est branché dans le code) **et pas encore validés par le propriétaire.** Méthode
+    proposée par Claude, pas encore validée non plus : le thème est la suite de la planche de marque ; les textes
+    d'abord ; le téléphone d'abord ; des pièces sûres pour ce qui vend (bloc d'achat, panier, menu) et des pièces
+    dessinées pour ce qui raconte la marque ; montrer tôt et payer les photos tard ; trois regards avant de montrer ;
+    jusqu'à la boutique Shopify. Suite proposée : un modèle fait à la main (accueil de « Pulpe » sur téléphone), noté
+    par lui, avant d'apprendre à SINA à faire pareil. Trois points à trancher avec lui sont écrits à la fin du cahier
+    de construction (nombre de sections de produits sur l'accueil, longueur de l'accueil, barre d'achat collante).
   - **À confirmer par le propriétaire** : le quatrième fond d'une série de quatre identités (aujourd'hui un fond clair
     coloré, « uni ») ; la règle « un fond sombre par série » quand le client demande du joyeux et du coloré (le directeur
     de création l'a contestée pendant l'essai) ; le réglage des modèles.
