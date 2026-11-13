@@ -15,6 +15,7 @@
  * page est supprimée ; ce qui n'est pas vérifié est écrit dans « ce qui reste à prouver »).
  */
 import { z } from "zod";
+import { domainDeps, domainLine, findDomains, type NameDomains } from "./brand-domains";
 import { UserFacingError, getJob, type JobContext } from "../jobs";
 import { L } from "../i18n-server";
 import { loadProject } from "../projects";
@@ -29,7 +30,7 @@ import { planOfProject } from "../plan-gates";
 import { json as parseJson } from "../db";
 import { MAX_ART_CHARS, sanitizeArt } from "./brand-art";
 import { reviewBoardArt } from "./brand-art-review";
-import { IMAGE_SLOTS, SLOT_ASPECT, SLOT_REFERENCES, boardImageRoute, brandImagesOn, runBoardImages, type ImageAspect } from "./brand-images";
+import { CREATED_SLOTS, SLOT_ASPECT, SLOT_REFERENCES, boardImageRoute, brandImagesOn, runBoardImages, type ImageAspect } from "./brand-images";
 import { BoardSchema, PALETTE_ROLES, WordmarkSchema, type Board, type BoardSymbol } from "./brand-board";
 import { brandKnowledgeReady } from "./brand-knowledge";
 import * as P from "./brand-prompts";
@@ -77,7 +78,7 @@ const CALLS = {
   // L'illustratrice : une dizaine de dessins par planche (le gros de sa réponse est du SVG).
   art: { tier: "craft", input: 9_000, output: 16_000, max: 26_000 },
   // Images de la planche (réglage `sina.brand_images`) : la direction artistique écrit les consignes ; un modèle
-  // qui voit relit les sept images d'une planche. Le même relit, toujours, les dessins de l'illustratrice.
+  // qui voit relit les six images d'une planche. Le même relit, toujours, les dessins de l'illustratrice.
   imagery: { tier: "strong", input: 7_000, output: 6_000, max: 10_000 },
   look: { tier: "craft", input: 14_000, output: 1_500, max: 4_000 },
 } as const satisfies Record<string, { tier: Tier; input: number; output: number; max: number }>;
@@ -141,13 +142,13 @@ export function namesPreviewQuote(settings?: ChainSettings): ChainQuote {
 /** Borne d'UNE image de planche : la formule de sa réservation (tarif inconnu : une erreur, jamais un prix deviné). */
 const imageUnitMax = (aspect: ImageAspect, references: number) => photoRequestMaxMicro(boardImageRoute(), { prompt: "x".repeat(6000), references, aspect, quality: "high" });
 /**
- * Devis des images de planche SEULES (direction artistique, sept images, relecture, par planche). Le coût probable
+ * Devis des images de planche SEULES (direction artistique, six images, relecture, par planche). Le coût probable
  * d'une image est sa borne sans la marge de réservation (un quart) ; une image refusée à la relecture est payée.
  */
 export function boardImagesQuote(routes: number, settings?: ChainSettings): ChainQuote {
   const s = settings ?? chainSettings();
   let max = 0, probable: number | null = 0;
-  for (const slot of IMAGE_SLOTS) { const unit = imageUnitMax(SLOT_ASPECT[slot], SLOT_REFERENCES[slot]); max += unit * routes; probable += (unit / 1.25) * routes; }
+  for (const slot of CREATED_SLOTS) { const unit = imageUnitMax(SLOT_ASPECT[slot], SLOT_REFERENCES[slot]); max += unit * routes; probable += (unit / 1.25) * routes; }
   for (const id of ["imagery", "look"] as const) {
     const c = CALLS[id], m = s[c.tier];
     const bound = callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort), usual = estimateCallMicro(m.provider, m.model, c.input, c.output);
@@ -201,7 +202,7 @@ const JudgeSchema = z.object({
 const VerifySchema = z.object({ checks: z.array(z.object({ name: z.string().max(60), taken: z.boolean().default(false), url: z.string().max(2000).default(""), note: z.string().max(300).default("") })).max(12).default([]) });
 
 /** Route telle que la rend la direction artistique : la planche avec ses pictogrammes encore en SVG brut. */
-const DraftBoard = BoardSchema.omit({ nameCheck: true, signs: true, wordmark: true, idea: true, hero: true, object: true, site: true, posts: true, images: true }).extend({
+const DraftBoard = BoardSchema.omit({ nameCheck: true, domains: true, signs: true, wordmark: true, idea: true, hero: true, object: true, site: true, posts: true, images: true }).extend({
   idea: BoardSchema.shape.idea.omit({ confessionSupport: true }),
   signs: z.array(BoardSchema.shape.signs.element.omit({ symbol: true, art: true }).extend({ symbolSvg: z.string().max(6000).default("") })).min(3).max(5),
   // Les dessins (lettre remplacée comprise) viennent de l'illustratrice, dans un appel à part : jamais de ce brouillon.
@@ -240,6 +241,8 @@ export type ChainAi = {
   look: <S extends z.ZodType>(id: string, call: { system: string; prompt: string; schema: S; images: { data: Buffer; label?: string }[] }) => Promise<z.infer<S>>;
 };
 export const brandChainDeps: { ai?: (ctx: JobContext) => ChainAi } = {};
+/** Le contrôle des noms de domaine interroge le registre : sous une IA simulée (essais), seulement si le test fournit aussi le registre. */
+const domainsOn = () => !brandChainDeps.ai || !!domainDeps.lookup;
 
 function realAi(ctx: JobContext, who: { userId: string; projectId: string }, s: ChainSettings, capMicro: number): ChainAi {
   const scope = (step: string) => ({ jobId: ctx.job.id, projectId: who.projectId, step, costCapMicro: capMicro });
@@ -658,7 +661,10 @@ export async function runSinaBrandJob(ctx: JobContext) {
   // Aperçu des noms seuls : rien n'est vérifié, aucune planche n'est faite, le parcours ne change pas.
   if (a.namesPreview) {
     const full = (name: string) => allowed.find((n) => normText(n.name) === normText(name));
-    return { preview: judged.map((k) => ({ name: k.name, seen: k.seen, why: k.why, detail: full(k.name)?.detail ?? "", second: full(k.name)?.second ?? "" })), almost, searched, notes };
+    // Le nom de domaine de chaque nom gardé (gratuit) : l'exact, sinon une adresse libre qui garde le nom.
+    const domains: Record<string, NameDomains> = {};
+    if (domainsOn()) for (const k of judged) { try { domains[k.name] = await ctx.step(`brand:domains:${round}:${normText(k.name)}`, () => findDomains(k.name)); } catch { /* contrôle impossible : rien n'est affirmé */ } }
+    return { preview: judged.map((k) => ({ name: k.name, seen: k.seen, why: k.why, detail: full(k.name)?.detail ?? "", second: full(k.name)?.second ?? "", ...(domains[k.name] ? { domains: domains[k.name], domaine: domainLine(domains[k.name]) } : {}) })), almost, searched, notes };
   }
 
   // Premier jugement : les routes (une idée + un nom), composées seulement avec les noms permis.
@@ -834,6 +840,15 @@ export async function runSinaBrandJob(ctx: JobContext) {
         notes.push(`images de ${x.key} non faites : ${String((e as Error)?.message ?? e).slice(0, 120)}`);
       }
     }
+  }
+
+  // Le nom de domaine de chaque planche neuve (gratuit, sans IA) : le domaine exact, sinon une adresse libre qui garde
+  // le nom entier (« pulpefrance.fr »). Un contrôle impossible n'affirme rien.
+  if (domainsOn()) for (const x of list.filter((y) => todo.includes(y.key))) {
+    try {
+      const d = await ctx.step(`brand:domains:${round}:${x.key}:${normText(x.name)}`, () => findDomains(x.name, x.board.descriptor));
+      list = list.map((o) => (o.key === x.key ? { ...o, board: { ...o.board, domains: d } } : o));
+    } catch (e) { notes.push(`nom de domaine de ${x.key} non vérifié : ${String((e as Error)?.message ?? e).slice(0, 100)}`); }
   }
 
   for (const [name, url] of taken) if (list.some((x) => normText(x.name) === name)) remaining.push(L(`Le nom « ${list.find((x) => normText(x.name) === name)!.name} » semble déjà porté par une marque de ton secteur (${url}) : je te déconseille de le choisir.`, "This name seems already used in your sector."));

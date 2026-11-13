@@ -148,6 +148,8 @@ export const PALETTE_EXAMPLES: PaletteExample[] = [
 export const NAME_REFUSALS: { name: string; activity: string; words: string }[] = [
   { name: "Tintamarre", activity: "infusions de fruits à boire froides", words: "c'est nul comme nom" },
   { name: "Morceaux Choisis", activity: "infusions de fruits à boire froides", words: "ça représente rien et c'est moche, tu appellerais ton site comme ça toi ?" },
+  { name: "Gorgée", activity: "infusions de fruits à boire froides", words: "ça fait très porno" },
+  { name: "Fruit Nu", activity: "infusions de fruits à boire froides", words: "ça fait très porno" },
   { name: "Bien Roulé", activity: "exemple de travail", words: "tournure de conversation plate, qui ne fait pas marque" },
   { name: "Ça Roule", activity: "exemple de travail", words: "tournure de conversation plate, qui ne fait pas marque" },
   { name: "Dans le Sac", activity: "exemple de travail", words: "tournure de conversation plate, qui ne fait pas marque" },
@@ -159,6 +161,7 @@ export const NAME_REFUSALS: { name: string; activity: string; words: string }[] 
  */
 export const NAME_RATINGS: { name: string; activity: string; score: number }[] = [
   { name: "Pulpe", activity: "infusions de fruits à boire froides", score: 9 },
+  { name: "Zeste", activity: "infusions de fruits à boire froides", score: 8 },
   { name: "Haut les Pêches", activity: "infusions de fruits à boire froides", score: 6 },
   { name: "Tout Feu Tout Fruit", activity: "infusions de fruits à boire froides", score: 6 },
   { name: "Cerise sur le Verre", activity: "infusions de fruits à boire froides", score: 4 },

@@ -12,6 +12,7 @@ import { HttpError } from "../auth";
 import { json, now, one, run, tx } from "../db";
 import { L } from "../i18n-server";
 import { getJsonSetting } from "../settings";
+import { domainLine } from "./brand-domains";
 import type { Identity } from "./identities";
 import type { SinaPosts } from "./posts-plan";
 import type { SinaLogo } from "./logos";
@@ -394,5 +395,8 @@ function identityStepContext(j: Journey): string[] {
     "Présente-les en une ligne courte chacune (l'idée de chacune et ce qui la distingue), sans recopier les planches, puis demande laquelle il préfère. Chaque planche dit « ce qui reste à prouver » : ne présente jamais ces points comme acquis. Il peut : en choisir une ; MÉLANGER (ex. le nom de A avec les couleurs de C → identity.choose key « A », mix {palette: « C »}) ; retoucher le nom ou le slogan avec ses mots (identity.choose name / slogan) ; ou demander une nouvelle proposition (identity.propose avec guidance = ses mots, et redo = les identités à refaire s'il en garde certaines). Ne choisis jamais à sa place ; en cas de doute sur son choix, pose UNE question.",
   ];
   if (id.issues.length) out.push(`Points que le contrôle du Studio n'a pas pu valider (dis-les honnêtement au client, en mots simples) : ${id.issues.join(" ; ")}.`);
+  // Le nom de domaine de chaque nom (contrôle gratuit du registre, affiché sur la planche) : SINA le dit tel quel.
+  const domains = id.list.map((x) => (x.board?.domains ? `${x.key} « ${x.name} » : ${domainLine(x.board.domains).replace(/^Nom de domaine : /, "")}` : "")).filter(Boolean);
+  if (domains.length) out.push(`Noms de domaine (contrôlés à l'instant dans le registre ; le nom de la marque reste entier, une adresse « libre » n'est garantie que par sa réservation ; ne promets jamais une adresse, et n'en invente aucune autre) : ${domains.join(" | ")}`);
   return out;
 }

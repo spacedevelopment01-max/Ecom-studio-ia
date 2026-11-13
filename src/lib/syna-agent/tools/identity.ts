@@ -206,7 +206,7 @@ type Part = (typeof PARTS)[number];
 export function mixIdentity(list: Identity[], key: Key, mix: Partial<Record<Part, Key>> = {}, edits: { name?: string; slogan?: string } = {}): Identity {
   const pick = (k?: Key) => list.find((x) => x.key === (k ?? key))!;
   const base = pick(key);
-  return {
+  const out: Identity = {
     ...base,
     name: edits.name?.trim() || pick(mix.name).name,
     nameWhy: edits.name ? "" : pick(mix.name).nameWhy,
@@ -224,6 +224,9 @@ export function mixIdentity(list: Identity[], key: Key, mix: Partial<Record<Part
     // ou une retouche du nom ou de la signature, elles ne sont plus vraies ; la planche revient aux dessins.
     ...(base.board?.images && (edits.name || edits.slogan || (["name", "slogan", "palette", "fonts"] as const).some((part) => mix[part] && mix[part] !== key)) ? { board: (({ images: _gone, ...rest }) => rest)(base.board) } : {}),
   };
+  // Le nom de domaine a été contrôlé pour LE nom de la planche : nom retouché ou pris ailleurs, il n'est plus vrai.
+  if (out.board?.domains && (edits.name || (mix.name && mix.name !== key))) out.board = (({ domains: _old, ...rest }) => rest)(out.board) as typeof out.board;
+  return out;
 }
 
 /** Marque du projet construite à partir de l'identité retenue (les champs non couverts gardent la valeur existante). */

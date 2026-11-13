@@ -14,6 +14,7 @@
  * par des variables posées par React, jamais par du texte collé dans la feuille).
  */
 import { createElement, useId, type CSSProperties, type ReactNode } from "react";
+import { firstProduct, sitePoints } from "@/lib/syna-agent/brand-site-preview";
 import { Button, cx } from "../ui";
 import { useT } from "../i18n";
 
@@ -37,6 +38,7 @@ type Shots = { logo?: Shot; hero?: Shot; object?: Shot; site?: Shot; posts?: (Sh
 type Board = {
   idea: { belief: string; confession: string; confessionSupport: number; enemy: string; proof: string; cost: string };
   nameCheck: "rien_trouve" | "non_verifie";
+  domains?: { taken: string[]; free: string[]; unknown: string[]; at: number };
   descriptor?: string; hero?: Art;
   lines: string[];
   voice: { sliders: { left: string; right: string; value: number }[]; thisNotThat: { yes: string; no: string }[]; houseWords: string[]; bannedWords: string[]; is?: string[]; micro?: { where: string; text: string }[] };
@@ -233,6 +235,31 @@ const BOARD_CSS = `
 .bb-obj .bb-band{padding:.35rem .55rem .45rem;display:grid;gap:.2rem;font-size:.6rem;line-height:1.2;min-height:0}
 .bb-phone{width:min(100%,13.2rem);aspect-ratio:9/18.5;border-radius:26px;border:6px solid #0B0D18;overflow:hidden;position:relative;box-shadow:0 22px 34px -20px rgba(0,0,0,.62);display:flex;flex-direction:column;transform:rotate(1.5deg);background:var(--bb-bg1)}
 .bb-phone.bb-alt{transform:rotate(-1.8deg)}
+.bb-live figure[data-phone]{grid-column:1/-1}
+.bb-live .bb-stack{grid-column:1/-1;grid-template-columns:1fr 1fr;align-items:end}
+@container (min-width:42rem){.bb-live figure[data-phone]{grid-column:span 2;grid-row:span 2}.bb-live .bb-stack{grid-column:span 2}}
+.bb-phone[data-screen="site"]{width:min(100%,17rem);aspect-ratio:9/19.5;transform:rotate(1deg);background:var(--ps-bg);color:var(--ps-ink);font-family:var(--bb-body)}
+.bb-ps-bar{flex:none;font-size:.5rem;letter-spacing:.07em;text-transform:uppercase;text-align:center;padding:.32rem .6rem;background:var(--ps-dark);color:var(--ps-on-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bb-ps-head{flex:none;display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.5rem .7rem}
+.bb-ps-head svg.ico{width:1rem;height:1rem;flex:none}
+.bb-ps-hero{flex:none;position:relative;aspect-ratio:5/4;overflow:hidden;background:var(--bb-bg2)}
+.bb-ps-hero>svg{display:block;width:100%;height:100%}
+.bb-ps-hero[data-kind="dessin"]{aspect-ratio:20/13}
+.bb-ps-card{flex:none;position:relative;margin:-1.1rem .55rem 0;border-radius:16px 16px 0 0;padding:.8rem .75rem 0;background:var(--ps-bg)}
+.bb-ps-h{font-family:var(--bb-head);line-height:1.04;text-wrap:balance}
+.bb-ps-t{font-size:.62rem;line-height:1.42;opacity:.82;margin-top:.4rem;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.bb-ps-cta{flex:none;display:block;margin:.6rem 1.3rem 0;padding:.52rem .7rem;border-radius:999px;text-align:center;font-weight:700;font-size:.68rem;line-height:1.2;background:var(--bb-btn);color:var(--bb-btn-ink)}
+.bb-ps-chips{flex:none;display:flex;gap:.3rem;padding:.55rem 1.3rem 0;overflow:hidden}
+.bb-ps-chips span{flex:none;font-size:.5rem;font-weight:600;padding:.2rem .45rem;border-radius:999px;border:1px solid color-mix(in srgb,var(--ps-ink) 35%,transparent);white-space:nowrap}
+.bb-ps-next{flex:1;display:flex;flex-direction:column;padding:.6rem 1.3rem 0;min-height:0}
+.bb-ps-next h5{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;font-family:var(--bb-head);font-size:.82rem;line-height:1.1;margin:0}
+.bb-ps-next h5 small{font-family:var(--bb-body);font-size:.52rem;font-weight:600;opacity:.7;white-space:nowrap}
+.bb-ps-row{flex:1;min-height:0;display:flex;gap:.5rem;margin-top:.4rem;overflow:hidden}
+.bb-ps-prod{flex:none;width:60%;display:flex;flex-direction:column;border-radius:12px 12px 0 0;overflow:hidden;background:color-mix(in srgb,var(--ps-ink) 7%,var(--ps-bg))}
+.bb-ps-prod .pic{flex:1;min-height:2.6rem;display:grid;place-items:center;overflow:hidden;padding:.5rem}
+.bb-ps-prod .txt{flex:none;display:flex;justify-content:space-between;align-items:center;gap:.4rem;padding:.35rem .5rem .5rem}
+.bb-ps-prod .txt b{font-size:.6rem;line-height:1.2}
+.bb-ps-prod .txt i{flex:none;font-style:normal;width:1.15rem;height:1.15rem;border-radius:999px;display:grid;place-items:center;font-weight:700;font-size:.72rem;line-height:1;background:var(--bb-btn);color:var(--bb-btn-ink)}
 .bb-phone .bb-top{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.7rem .7rem 0}
 .bb-phone .bb-big{font-family:var(--bb-head);font-size:1.3rem;line-height:1.02;text-wrap:balance}
 .bb-phone .bb-txt{font-size:.66rem;line-height:1.35;opacity:.92}
@@ -291,6 +318,52 @@ const OBJECT_SHAPE: Record<string, { ratio: string; radius: string; width: strin
 };
 
 const sameText = (a: string, b: string) => a.normalize("NFD").replace(/[^\p{L}\p{N}]/gu, "").toLowerCase() === b.normalize("NFD").replace(/[^\p{L}\p{N}]/gu, "").toLowerCase();
+
+/**
+ * Le haut du site, sur téléphone (retour du propriétaire du 13 novembre 2026 sur l'image créée par l'IA : « 3/10, ça
+ * doit être mieux fait et plus représentatif de ce que ça devrait devenir »). Ce n'est plus une image : c'est une vraie
+ * page, rendue par le Studio comme le sera le site : bandeau, menu et panier, grande photo de la marque, titre, texte
+ * et bouton de la planche lettre pour lettre, points forts vrais, début de la boutique. Rien n'y est inventé : chaque
+ * mot vient de la planche ; sans nom de produit connu, la boutique ne montre pas de faux produit.
+ */
+function PhoneSite({ x, shots, headWeight, firstPicto, t }: { x: BoardCard; shots: Shots; headWeight: number; firstPicto?: Picto; t: (fr: string, en: string) => string }) {
+  const b = x.board, p = x.palette, dark = x.ground === "sombre";
+  const bg = safeHex(dark ? p.dark : p.light, dark ? "#111111" : "#FFFFFF"), ink = inkOn(bg, p);
+  const barBg = safeHex(dark ? p.primary : p.dark, "#141414"), barInk = inkOn(barBg, p);
+  const pop = popOn([bg], p, ink);
+  const points = sitePoints(b.object.back);
+  const product = firstProduct(b.object.front, x.name);
+  const shelf = b.site.menu[0];
+  const tile = safeHex(p.primary), tileInk = inkOn(tile, p);
+  const size = b.site.headline.length <= 28 ? "1.32rem" : b.site.headline.length <= 48 ? "1.12rem" : ".96rem";
+  return (
+    <div className="bb-phone" data-screen="site" style={{ "--ps-bg": bg, "--ps-ink": ink, "--ps-dark": barBg, "--ps-on-dark": barInk } as CSSProperties}>
+      {b.descriptor && <div className="bb-ps-bar">{b.descriptor}</div>}
+      <div className="bb-ps-head">
+        <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><path d="M4 7h16M4 12h16M4 17h10" /></svg>
+        <Wordmark x={x} main={ink} accent={pop} compact className="block h-6 max-w-[55%] text-xs" />
+        <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 8h12l-1 12H7L6 8Z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" /></svg>
+      </div>
+      <div className="bb-ps-hero" data-kind={shotOk(shots.hero) ? "photo" : "dessin"}>{shotOk(shots.hero) ? <Photo shot={shots.hero} alt={b.site.headline} /> : b.site.art ? <Vignette art={b.site.art} ratio={20 / 13} /> : b.hero ? <Vignette art={b.hero} ratio={20 / 13} /> : <FallbackScene x={x} picto={firstPicto} />}</div>
+      <div className="bb-ps-card">
+        <p className="bb-ps-h" style={{ fontWeight: headWeight, fontSize: size }}>{b.site.headline}</p>
+        <p className="bb-ps-t">{b.site.text}</p>
+      </div>
+      <span className="bb-ps-cta">{b.site.button}</span>
+      {points.length > 0 && <div className="bb-ps-chips">{points.map((c) => <span key={c}>{c}</span>)}</div>}
+      {shelf && <div className="bb-ps-next">
+        <h5 style={{ fontWeight: headWeight }}><span>{shelf}</span><small>{t("Tout voir", "See all")} →</small></h5>
+        <div className="bb-ps-row">
+          <div className="bb-ps-prod">
+            <div className="pic" style={{ background: tile, color: tileInk }}><Wordmark x={x} main={tileInk} accent={[p.accent, p.light, p.dark].find((c) => contrast(c, tile) >= 1.9) ?? tileInk} compact className="block h-6 max-w-[80%] text-xs" /></div>
+            <div className="txt"><b>{product ?? t("[Ton premier produit]", "[Your first product]")}</b><i aria-hidden>+</i></div>
+          </div>
+          <div className="bb-ps-prod" aria-hidden><div className="pic" style={{ background: safeHex(p.accent), color: inkOn(safeHex(p.accent), p) }} /><div className="txt"><b>&nbsp;</b></div></div>
+        </div>
+      </div>}
+    </div>
+  );
+}
 
 /** Une face de l'objet. Devant : le dessin, le nom dessiné, ce qui est écrit ; dos : le mode d'emploi, la phrase. */
 function ObjectFace({ x, back, pop }: { x: BoardCard; back?: boolean; pop: string }) {
@@ -400,6 +473,15 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
               {x.nameAnchor && <div className="bb-tile"><small>{t("Le détail réel", "The real detail")}</small><p>{x.nameAnchor}</p></div>}
               {x.nameExpression && <div className="bb-tile"><small>{t("La deuxième lecture", "The second reading")}</small><p>{x.nameExpression}</p></div>}
               {x.nameWhy && <div className="bb-tile"><small>{t("Pourquoi lui", "Why this one")}</small><p>{x.nameWhy}</p><span className="bb-note">{b.nameCheck === "rien_trouve" ? t("Aucune marque trouvée à ce nom sur le web. Reste à vérifier à l'INPI.", "No brand found under this name on the web. Still to check with the trademark office.") : t("Nom pas encore vérifié sur le web ni à l'INPI.", "Name not checked yet.")}</span></div>}
+              {/* Son adresse sur Internet : ce que le registre dit à l'instant du contrôle. Le nom reste entier ; « libre » n'est garanti que par la réservation. */}
+              {b.domains && (b.domains.free.length > 0 || b.domains.taken.length > 0) && <div className="bb-tile" data-brand-domains>
+                <small>{t("Son adresse sur Internet", "Its web address")}</small>
+                {b.domains.free.length > 0
+                  ? <p>{t("Libre aujourd'hui : ", "Free today: ")}<strong>{b.domains.free[0]}</strong>{b.domains.free.slice(1).map((d) => <span key={d}>, {d}</span>)}</p>
+                  : <p>{b.domains.unknown.length ? t("Je n'ai pas pu vérifier d'adresse libre pour ce nom.", "I could not check a free address for this name.") : t("Je n'ai pas trouvé d'adresse libre simple avec ce nom.", "I found no simple free address with this name.")}</p>}
+                {b.domains.taken.length > 0 && <span className="bb-note">{t("Déjà pris : ", "Already taken: ")}{b.domains.taken.join(", ")}.{b.domains.free.length > 0 ? t(" À réserver vite : seule la réservation garantit une adresse.", " Book it quickly: only booking guarantees an address.") : ""}</span>}
+                {b.domains.taken.length === 0 && b.domains.free.length > 0 && <span className="bb-note">{t("À réserver vite : seule la réservation garantit une adresse.", "Book it quickly: only booking guarantees an address.")}</span>}
+              </div>}
             </div>
           </>
         )}
@@ -439,14 +521,7 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
             </>
           )}
           <figure data-phone>
-            {shotOk(shots.site) ? <div className="bb-phone" data-screen="image"><Photo shot={shots.site} alt={b.site.headline} /></div> : (
-            <div className="bb-phone" style={{ color: ink }}>
-              <div className="bb-top"><Wordmark x={x} main={ink} accent={pop} start compact className="block h-7 w-[58%] text-xs" /><span className="truncate text-[8px] opacity-75">{b.site.menu.slice(0, 2).join(" · ")}</span></div>
-              <div className="grid gap-2 px-[.7rem] pt-3"><p className="bb-big" style={{ fontWeight: headWeight, fontSize: b.site.headline.length <= 26 ? "1.3rem" : b.site.headline.length <= 42 ? "1.08rem" : ".92rem" }}>{b.site.headline}</p><p className="bb-txt">{b.site.text}</p></div>
-              <div className="bb-pic">{b.site.art ? <Vignette art={b.site.art} ratio={20 / 13} /> : b.hero ? <Vignette art={b.hero} ratio={20 / 13} /> : <FallbackScene x={x} picto={firstPicto} />}</div>
-              <span className="bb-btn">{b.site.button}</span>
-            </div>
-            )}
+            <PhoneSite x={x} shots={shots} headWeight={headWeight} firstPicto={firstPicto} t={t} />
             <figcaption>{t("Le haut de ton site, sur téléphone", "The top of your site, on a phone")}</figcaption>
           </figure>
           <div className="bb-stack">

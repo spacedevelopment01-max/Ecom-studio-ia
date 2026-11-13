@@ -4,7 +4,7 @@
  * vraie direction artistique complète » ; puis : « les publications, si les gens voient ça ils peuvent se dire que le
  * studio n'est pas à la hauteur. Comme le téléphone avec le site »).
  *
- * Pour UNE planche : une direction artistique globale, puis sept images créées par le modèle d'images du Studio
+ * Pour UNE planche : une direction artistique globale, puis six images créées par le modèle d'images du Studio
  * (OpenAI, la route des images de SINA) : le logo (à partir du nom composé par le Studio ET de la direction
  * artistique), la grande scène, l'objet avec le logo posé dessus, le haut du site sur téléphone, les trois
  * publications. Les petits signes restent dessinés par SINA.
@@ -32,6 +32,13 @@ import { drawWordmark, wordmarkPng } from "./brand-wordmark";
 import { normText } from "./identities";
 
 export const IMAGE_SLOTS = ["logo", "hero", "object", "site", "post0", "post1", "post2"] as const;
+/**
+ * Images réellement créées. Le haut du site sur téléphone n'en fait plus partie (retour du propriétaire du 13 novembre
+ * 2026 sur l'image créée par l'IA : « 3/10, ça doit être mieux fait et plus représentatif de ce que ça devrait
+ * devenir ») : le Studio le rend lui-même, en vraie page, avec la grande image en ouverture (brand-boards.tsx,
+ * PhoneSite). « site » reste un emplacement connu pour les planches faites avant.
+ */
+export const CREATED_SLOTS = IMAGE_SLOTS.filter((s) => s !== "site");
 export type ImageSlot = (typeof IMAGE_SLOTS)[number];
 export type ImageAspect = "1:1" | "16:9" | "9:16" | "4:5";
 /** Format demandé pour chaque image (le modèle rend du carré, du paysage 3:2 ou du portrait 2:3). */
@@ -41,7 +48,7 @@ export const SLOT_REFERENCES: Record<ImageSlot, number> = { logo: 1, hero: 0, ob
 
 /**
  * Réglage `sina.brand_images` : « dessins » (par défaut : la planche garde les dessins de SINA) ou « openai » (les
- * sept images sont créées). Reste sur « dessins » tant que le propriétaire n'a pas validé un essai réel.
+ * six images sont créées). Reste sur « dessins » tant que le propriétaire n'a pas validé un essai réel.
  */
 export const brandImagesOn = (): boolean => getJsonSetting<string>("sina.brand_images", "dessins") === "openai";
 /** Route des images de SINA (la même que les photos du thème sur mesure : réglage `syna.mockup.image_route`). */
@@ -52,7 +59,7 @@ export function boardImageRoute(): { provider: string; model: string } {
 
 export const ImagerySchema = z.object({
   look: z.string().max(900).default(""),
-  logo: z.string().min(1).max(1600), hero: z.string().min(1).max(2200), object: z.string().min(1).max(2200), site: z.string().min(1).max(2200),
+  logo: z.string().min(1).max(1600), hero: z.string().min(1).max(2200), object: z.string().min(1).max(2200), site: z.string().max(2200).default(""),
   posts: z.array(z.string().min(1).max(2200)).length(3),
 });
 export type Imagery = z.infer<typeof ImagerySchema>;
@@ -190,7 +197,6 @@ export async function runBoardImages(o: { ctx: JobContext; ai: ChainAi; who: { u
   ctx.progress(0.965, L(`Je crée les images de la planche ${key}`, `Creating the images of board ${key}`));
   await make("hero", {}, imagePrompt("hero", x, imagery));
   await make("object", { logo }, imagePrompt("object", x, imagery, { logo: !!logo }));
-  await make("site", { logo, scene: bufferOf("hero") }, imagePrompt("site", x, imagery, { logo: !!logo }));
   for (const slot of ["post0", "post1", "post2"] as const) await make(slot, {}, imagePrompt(slot, x, imagery));
 
   // Dans la bibliothèque du client : une image attend sa relecture (« review »), puis elle est gardée (« ready ») ou

@@ -100,6 +100,8 @@ export const BoardSchema = z.object({
   }),
   /** Vérification du nom : seule une recherche sur le web est faite, jamais un dépôt de marque. */
   nameCheck: z.enum(["rien_trouve", "non_verifie"]),
+  /** Nom de domaine (brand-domains.ts) : ce que le registre dit à l'instant du contrôle, jamais écrit par un modèle. */
+  domains: z.object({ taken: z.array(z.string().max(80)).max(8).default([]), free: z.array(z.string().max(80)).max(4).default([]), unknown: z.array(z.string().max(80)).max(10).default([]), at: z.number() }).optional(),
   /** Ligne de métier sous le nom (« Infusions de fruits à boire bien fraîches »). */
   descriptor: z.string().min(1).max(70).optional(),
   /** La grande image de la planche : la scène qui fait comprendre l'idée d'un coup d'œil. */

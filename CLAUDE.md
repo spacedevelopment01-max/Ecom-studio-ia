@@ -265,8 +265,29 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     second tour des quatre équipes) et en a gardé 4 : « Zeste », « Gorgée », « Fruit Nu » et « Pulpe Vive » ; 12 « presque »,
     écartés avec des raisons proches des siennes (« Haut en Couleur » : « une expression toute faite, au niveau de Tout
     Feu Tout Fruit, un 6 sur 10 tout au plus »). Leçon corrigée et testée : « Pulpe Vive » n'est pas un autre nom ; un
-    nom bâti sur un nom déjà montré n'est jamais reproposé (`builtOnShown`, dans la réserve et avant le juge). Notes du
-    propriétaire sur ces noms : [À compléter : ses notes, à ajouter à `NAME_RATINGS` quand il les donne].
+    nom bâti sur un nom déjà montré n'est jamais reproposé (`builtOnShown`, dans la réserve et avant le juge). **Notes
+    du propriétaire sur ces noms (13 novembre)** : « Zeste » 8/10 ; « Gorgée » : « ça fait très porno » ; « Fruit Nu » :
+    « pareil » (`NAME_RATINGS`, `NAME_REFUSALS`). D'où une épreuve de plus pour le juge et les équipes, **le
+    sous-entendu** : un nom qui peut s'entendre de travers (sexuel, grivois, vulgaire, moqueur) est écarté au moindre
+    doute ; un mot sensuel n'est pas un mot équivoque.
+  - **Nom de domaine** (demandes du propriétaire du 13 novembre 2026 : « le nom de domaine doit aussi être disponible
+    avec le nom de la marque », puis « il faut trouver une alternative disponible comme pulpefrance.fr ou .com, tout en
+    gardant le nom ») : SINA contrôle le domaine de chaque nom, gratuitement et sans IA (`brand-domains.ts` : annuaire
+    public des registres, AFNIC pour .fr et Verisign pour .com). L'exact d'abord (`nom.fr`, `nom.com`) ; s'il est pris,
+    des adresses qui GARDENT le nom entier (`nomfrance`, le nom et le mot du métier, `maisonnom`, `nom-officiel`,
+    `nomboutique`), jusqu'à deux libres. La planche l'affiche (« Son adresse sur Internet »), SINA le lit dans son
+    contexte, l'aperçu des noms aussi. « Libre » veut dire « pas enregistré à l'instant du contrôle » : seule la
+    réservation le garantit, c'est toujours dit, et SINA ne promet ni n'invente jamais une adresse. Un nom retouché ou
+    pris à une autre planche perd son contrôle. Vérifié pour de vrai le 13 novembre : pulpe.fr, pulpe.com, zeste.fr et
+    zeste.com sont pris ; pulpefrance.fr, pulpefrance.com, zestefrance.fr et zestefrance.com étaient libres ce jour-là.
+  - **Le haut du site sur téléphone** (retour du propriétaire du 13 novembre 2026 sur l'image créée par l'IA : « 3/10,
+    ça doit être mieux fait et plus représentatif de ce que ça devrait devenir ») : ce n'est plus une image. Le Studio
+    rend une vraie page sur la planche (`brand-boards.tsx`, `PhoneSite` ; `brand-site-preview.ts`) : bandeau, menu et
+    panier, la grande image de la marque en ouverture (ou le dessin de SINA), titre, texte et bouton de la planche
+    lettre pour lettre, points forts vrais tirés du dos de l'objet, début de la boutique avec le premier produit connu
+    (jamais un faux produit). Le modèle d'images ne crée donc plus que **six images** par planche (`CREATED_SLOTS` :
+    logo, grande scène, objet, trois publications), une image payée de moins. Vérifié en image sur la planche
+    « Pulpe » (avec photo) et sur une planche dessinée ; pas encore noté par le propriétaire.
     **Dépensé en essais réels au 13 novembre : 8,13 €** (2,88 + 1,92 + 0,65 + 2,13 + 0,54 ; plafond d'essais 10 $, soit 9 €).
   - **Carte des spécialistes de SINA** (demande du propriétaire du 13 novembre 2026 : « tous les sous agents nécessaires
     pour le fonctionnement parfait de sina […] fais comme tu considères le mieux ») : `docs/sina-savoir/specialistes.md`

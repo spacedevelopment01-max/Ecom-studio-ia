@@ -30,6 +30,7 @@ ${refs(kind)}
 Il aime aussi « Éclat de thé » (une sensation, puis ce que la marque vend) et les mots forts comme SOLSTICE ou RUPTURE. Ce sont des repères de niveau, PAS une formule : une série de noms fabriqués sur un même moule (« un mot + de + le produit ») a été jugée « nulle ».
 Il a refusé « Bien Roulé », « Ça Roule » et « Dans le Sac » : des tournures de conversation plates, qui ne font pas marque. Un nom doit s'imaginer en grand sur l'objet ou sur une enseigne.
 Il a refusé aussi, pour des infusions de fruits, « Tintamarre » (« c'est nul comme nom ») et « Morceaux Choisis » (« ça représente rien et c'est moche, tu appellerais ton site comme ça toi ? »). Sa question est la bonne : le fondateur donnerait-il ce nom à SA marque, avec fierté ?
+Il a refusé « Gorgée » et « Fruit Nu » (« ça fait très porno ») : un nom qui peut s'entendre de travers est écarté, même s'il est court et beau.
 Ses notes, pour la même marque d'infusions : ${NAME_RATINGS.map((r) => `« ${r.name} » ${r.score}/10`).join(", ")}. Lecture du Studio (pas ses mots) : un mot simple et sensuel, qui dit la matière même du produit, bat un jeu de mots sur une expression, même bien trouvé ; un jeu de mots tiré par les cheveux tombe sous la moyenne.`;
 }
 
@@ -41,7 +42,8 @@ export const NAME_TRIALS = `Épreuves d'un nom finaliste :
 4. La question : fait-il poser une question ou sourire, au lieu de décrire le produit ?
 5. Le fondateur (la question du propriétaire du Studio : « tu appellerais ton site comme ça, toi ? ») : donnerais-tu ce nom à TA marque, le dirais-tu avec fierté, le verrais-tu en grand sur ton enseigne et sur ton site ? Un « oui, pourquoi pas » est un non.
 6. Le nom seul : écrit sans aucune phrase autour, que voit-on, que ressent-on ? Un nom qui « ne représente rien » (une rubrique, une étiquette de rayon, un mot abstrait) est écarté, comme un nom dont le lien avec le produit n'existe que dans son explication.
-7. La beauté : est-il beau à dire et à voir ? Un mot laid, vieillot, scolaire ou administratif est écarté.`;
+7. La beauté : est-il beau à dire et à voir ? Un mot laid, vieillot, scolaire ou administratif est écarté.
+8. Le sous-entendu : lu par quelqu'un qui ne connaît pas le produit, peut-il s'entendre de travers (sexuel, grivois, vulgaire, moqueur) ? Le propriétaire a refusé « Gorgée » et « Fruit Nu » pour des infusions : « ça fait très porno ». Au moindre doute, le nom est écarté : un mot sensuel n'est pas un mot équivoque.`;
 
 export type TeamPath = { id: string; label: string; brief: string };
 /** Chemins des équipes de noms : chaque équipe n'en suit QU'UN, sans voir le travail des autres. */
@@ -178,10 +180,11 @@ ${nameYardstick(kind)}
 Noms que le propriétaire du Studio a refusés, avec ses mots (règle ta sévérité sur eux) :
 ${NAME_REFUSALS.map((r) => `- « ${r.name} » (${r.activity}) : « ${r.words} »`).join("\n")}
 
-Trois épreuves, dans cet ordre. Un nom doit passer les TROIS :
+Quatre épreuves, dans cet ordre. Un nom doit passer les QUATRE :
 1. Le fondateur : « tu appellerais ta marque comme ça, toi ? » Le dirais-tu avec fierté à un ami, le voudrais-tu en grand sur ton site ? Un « oui, pourquoi pas », un « c'est correct », un « ça peut marcher » sont des NON.
 2. Le nom seul : lis-le sans son explication, comme un passant qui voit le sachet ou l'enseigne. Que vois-tu, que ressens-tu ? S'il « ne représente rien » (une rubrique de catalogue, une étiquette de rayon, un mot abstrait, un mot qui parle d'autre chose que du produit et de son moment), c'est NON. Si le lien avec le produit n'existe que dans l'explication, c'est NON.
 3. La beauté : est-il beau à dire et à voir écrit ? Un mot laid, vieillot, scolaire, administratif, ou qui veut d'abord dire quelque chose de désagréable, c'est NON.
+4. Le sous-entendu : lu par quelqu'un qui ne connaît pas le produit, le nom peut-il s'entendre de travers (sexuel, grivois, vulgaire, moqueur) ? Le propriétaire a refusé « Gorgée » et « Fruit Nu » pour des infusions : « ça fait très porno ». Au moindre doute, c'est NON : un mot sensuel n'est pas un mot équivoque.
 
 Ta mesure chiffrée : les notes que le propriétaire a données (ci-dessus). Tu ne gardes qu'un nom qu'il noterait ${NAME_KEEP_SCORE} sur 10 ou plus ; un nom du niveau de « Haut les Pêches » ou de « Tout Feu Tout Fruit » (6 sur 10) est refusé, au mieux « presque ».
 
@@ -304,7 +307,7 @@ Réponds par un objet JSON, sans rien autour. Forme exacte : ${ART_SHAPE}`;
 
 // ---------------------------------------------------------------- la direction artistique des images (OpenAI)
 
-const IMAGERY_SHAPE = `{"look": "", "logo": "", "hero": "", "object": "", "site": "", "posts": ["", "", ""]}`;
+const IMAGERY_SHAPE = `{"look": "", "logo": "", "hero": "", "object": "", "posts": ["", "", ""]}`;
 
 /**
  * Consignes des images qui finissent la planche (demande du propriétaire du 12 novembre 2026 : « faire intervenir
@@ -313,7 +316,7 @@ const IMAGERY_SHAPE = `{"look": "", "logo": "", "hero": "", "object": "", "site"
  * propriétaire (`docs/guide-images-ia.md`). Les textes à écrire dans une image ne viennent jamais d'elle : le Studio
  * les ajoute lui-même, lettre pour lettre, à partir de la planche.
  */
-export const imagerySystem = (kind: "produits" | "services") => `Tu es directrice artistique d'une agence de marque de premier plan. Une identité de marque est écrite (idée, nom, signature, palette, signes, objet, site, publications). Tu écris les consignes que le modèle d'images exécutera pour FINIR sa planche : un logo et six images qui ont l'air de sortir de la même campagne.
+export const imagerySystem = (kind: "produits" | "services") => `Tu es directrice artistique d'une agence de marque de premier plan. Une identité de marque est écrite (idée, nom, signature, palette, signes, objet, site, publications). Tu écris les consignes que le modèle d'images exécutera pour FINIR sa planche : un logo et cinq images qui ont l'air de sortir de la même campagne.
 
 ${HOUSE_RULES}
 
@@ -322,7 +325,7 @@ Ce que tu rends :
 - logo : la consigne du LOGO. Le dessinateur reçoit en image de référence le nom déjà composé par le Studio (lettres exactes, mise en lignes, geste de lettrage) : il le redessine en vrai logo de marque, sans changer une lettre. Dis l'idée que le logo doit porter (tirée de l'idée de la marque et de ses signes), ce qu'il garde du nom composé, ses 2 ou 3 couleurs (prises dans la palette, données en clair et en code ; elles doivent bien se lire sur du blanc : le logo est créé sur fond blanc). Laisse-lui la main sur le dessin : n'impose ni cachet, ni monogramme, ni aquarelle, ni effet. À plat, net, lisible en petit, centré avec de l'air autour ; ni maquette, ni ombre portée, ni autre texte que le nom.
 - hero : la grande image de la marque, SANS aucun texte : la scène qui fait ressentir l'idée, avec ${kind === "services" ? "le métier du client (son lieu, ses outils, son geste), sans personne" : "le vrai produit du client tel que sa fiche le décrit (jamais un emballage générique, jamais une étiquette vide)"}. Format paysage.
 - object : l'objet de la planche (le sachet, le pot, la carte…) photographié dans une vraie scène de la marque, ENTIER dans le cadre, de face ou de trois quarts. Le logo lui est fourni en image de référence : il est posé tel quel sur le devant, à la place que tu indiques. Dis où vont les lignes écrites sur le devant. Format carré.
-- site : le HAUT de la page d'accueil, tel qu'il s'affiche sur un téléphone : seulement l'écran (pas le téléphone, pas de main), en portrait. Le logo en haut à gauche (fourni en référence), l'image d'ouverture, le titre, le texte, le bouton : dis la place de chacun. Le titre se pose sur la partie calme de l'image, le sujet de l'autre côté.
+- (Le haut du site sur téléphone n'est plus une image : le Studio le rend lui-même, en vraie page, avec ta grande image en ouverture. La grande image doit donc tenir aussi en format presque carré : le sujet au centre, rien d'important collé aux bords gauche et droit.)
 - posts : trois consignes, une par publication, dans l'ordre de la planche : un visuel de réseau social en portrait, où le texte de la publication est écrit en grand. Trois compositions différentes (une scène, un gros plan, un aplat de couleur avec un objet), trois moments différents ; le texte toujours sur la partie calme.
 
 Comment écrire chaque consigne (celle du logo exceptée), dans cet ordre, en phrases complètes : 1) le type d'image, le point de vue, le cadrage ; 2) la surface et le fond ; 3) chaque objet dans sa phrase : sa place exacte, sa forme, sa matière, sa couleur, son état, et ce qu'il ne contient pas ; 4) « La scène contient exactement N objets : … » ; 5) ce qui est laissé dégagé (la place du texte, s'il y en a) ; 6) la lumière, les ombres, les textures, la mise au point, l'ambiance. Jamais d'objet vague (« quelques accessoires »), jamais de contradiction. N'écris AUCUN texte à afficher : le Studio ajoute lui-même, lettre pour lettre, les mots de la planche et la ligne « aucune personne, aucun autre texte ». Ne cite donc pas le nom, la signature ni les phrases entre guillemets : dis seulement OÙ ils vont (« le titre en haut à gauche, sur le ciel »).

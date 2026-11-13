@@ -613,55 +613,54 @@ describe("SINA — chaîne de création de la marque", async () => {
 
   // ---------------------------------------------------------------- les images qui finissent la planche
 
-  const SLOTS = ["logo", "hero", "object", "site", "post0", "post1", "post2"];
+  const SLOTS = ["logo", "hero", "object", "post0", "post1", "post2"]; // le haut du site est rendu par le Studio, plus créé en image
 
-  it("images de planche : la direction artistique, sept images, la relecture ; une image refusée laisse le dessin, et c'est dit", async () => {
+  it("images de planche : la direction artistique, six images, la relecture ; une image refusée laisse le dessin, et c'est dit", async () => {
     const t = await thread();
     const { log, out, job } = await chain(t, { images: true }, {
       review: () => ({ routes: [], series: "" }),
-      look: (id, c) => ({ images: c.images.map((i: any) => (id.endsWith("-B") && i.label === "site" ? { slot: "site", ok: false, read: ["Fni le soda"], why: "Le titre est mal écrit." } : id.endsWith("-C") && i.label === "logo" ? { slot: "logo", ok: true, read: ["L'Eau Est Bone"], why: "" } : { slot: i.label, ok: true, read: [/Marque : « (.+?) »/.exec(c.prompt)![1]], why: "" })) }),
+      look: (id, c) => ({ images: c.images.map((i: any) => (id.endsWith("-B") && i.label === "object" ? { slot: "object", ok: false, read: ["Fni le soda"], why: "Le titre est mal écrit." } : id.endsWith("-C") && i.label === "logo" ? { slot: "logo", ok: true, read: ["L'Eau Est Bone"], why: "" } : { slot: i.label, ok: true, read: [/Marque : « (.+?) »/.exec(c.prompt)![1]], why: "" })) }),
     });
-    // Après les dessins : pour chaque planche, les consignes, les sept images dans l'ordre, puis UNE relecture.
+    // Après les dessins : pour chaque planche, les consignes, les six images dans l'ordre, puis UNE relecture.
     expect(log.ids.slice(log.ids.indexOf("artcheck-1-C") + 1)).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}`, ...SLOTS.map((sl) => `image-1-${k}-${sl}`), `imagecheck-1-${k}`]));
     const refs = (log as any).refs;
     expect(refs["image-1-A-logo"]).toEqual({ logo: true, scene: false, aspect: "1:1" }); // le nom composé par le Studio sert de modèle
     expect(refs["image-1-A-hero"]).toEqual({ logo: false, scene: false, aspect: "16:9" });
     expect(refs["image-1-A-object"]).toEqual({ logo: true, scene: false, aspect: "1:1" }); // le logo est posé sur l'objet
-    expect(refs["image-1-A-site"]).toEqual({ logo: true, scene: true, aspect: "9:16" });
+    expect(refs["image-1-A-site"]).toBeUndefined(); // plus d'image du site : une vraie page rendue par le Studio
     // Les textes viennent de la planche, lettre pour lettre ; aucune personne ; la grande image n'a aucun texte.
     const a = J.journeyOf(t.cid).identities!.list[0];
     expect(log.prompts["image-1-A-logo"]).toContain(`« ${a.name} »`);
-    expect(log.prompts["image-1-A-site"]).toContain(`« ${a.board!.site.headline} »`);
-    expect(log.prompts["image-1-A-site"]).toContain(`« ${a.board!.site.button} »`);
+    expect(log.ids.some((id) => id.includes("-site"))).toBe(false);
     expect(log.prompts["image-1-A-post1"]).toContain(`« ${a.board!.posts[1].text} »`);
     expect(log.prompts["image-1-A-hero"]).toMatch(/Aucun texte, aucune lettre/);
     for (const sl of SLOTS) expect(log.prompts[`image-1-A-${sl}`]).toMatch(/[Aa]ucune personne/);
     expect(log.prompts["image-1-A-hero"]).toMatch(/^Direction artistique : Lumière de fin d'après-midi/);
     // La relecture reçoit les textes attendus de chaque image.
-    expect(log.prompts["imagecheck-1-A"]).toContain(`slot "site"`);
-    expect(log.prompts["imagecheck-1-A"]).toContain(a.board!.site.headline);
+    expect(log.prompts["imagecheck-1-A"]).toContain(`slot "object"`);
+    expect(log.prompts["imagecheck-1-A"]).toContain(a.board!.posts[0].text);
     // A : tout est gardé. B : l'image du site est refusée. C : le logo ne porte pas le nom exact (contrôle du Studio).
     const [ra, rb, rc] = J.journeyOf(t.cid).identities!.list;
-    expect(Object.keys(ra.board!.images!).sort()).toEqual(["hero", "logo", "look", "object", "posts", "site"]);
+    expect(Object.keys(ra.board!.images!).sort()).toEqual(["hero", "logo", "look", "object", "posts"]);
     expect(ra.board!.images!.posts!.every(Boolean)).toBe(true);
     expect(ra.board!.images!.logo).toMatchObject({ w: 96, h: 96 });
-    expect(rb.board!.images!.site).toBeUndefined();
+    expect(rb.board!.images!.object).toBeUndefined();
     expect(rb.board!.images!.hero).toBeTruthy();
     expect(rc.board!.images!.logo).toBeUndefined();
     const issues = J.journeyOf(t.cid).identities!.issues.join("\n");
     // Le message dit vrai : « mon dessin » seulement s'il reste un dessin à cette place, sinon la forme simple de la planche.
-    expect(issues).toContain(`Identité B : je n'ai pas gardé l'image du site (Le titre est mal écrit) ; ${(rb.board as any).site.art ? "tu vois mon dessin à la place" : "sa place garde la forme simple de la planche"}.`);
+    expect(issues).toContain(`Identité B : je n'ai pas gardé l'image de l'objet (Le titre est mal écrit) ; ${(rb.board as any).object.art ? "tu vois mon dessin à la place" : "sa place garde la forme simple de la planche"}.`);
     expect(issues).toMatch(/Identité C : je n'ai pas gardé le logo \(le nom n'y est pas écrit exactement\)/);
     expect((out as any).routes).toHaveLength(3);
     // Bibliothèque du client : les images gardées sont prêtes, l'image refusée y est marquée refusée avec sa raison.
     const states = all<{ s: string; n: number }>("SELECT status s, COUNT(*) n FROM assets WHERE project_id=? AND role='brand-board' GROUP BY status", t.pid);
-    expect(Object.fromEntries(states.map((r) => [r.s, r.n]))).toEqual({ ready: 19, rejected: 2 });
-    expect(one<{ w: string }>("SELECT json_extract(meta,'$.synaBoard.review.why') w FROM assets WHERE project_id=? AND status='rejected' AND name LIKE '%-B-site%'", t.pid)?.w).toBe("Le titre est mal écrit.");
+    expect(Object.fromEntries(states.map((r) => [r.s, r.n]))).toEqual({ ready: 16, rejected: 2 });
+    expect(one<{ w: string }>("SELECT json_extract(meta,'$.synaBoard.review.why') w FROM assets WHERE project_id=? AND status='rejected' AND name LIKE '%-B-object%'", t.pid)?.w).toBe("Le titre est mal écrit.");
     // Dans le fil : une adresse interne du Studio, jamais une adresse libre.
     const { threadView } = await import("@/lib/syna-agent/loop");
     const shown = (await fr(() => threadView(t.user, t.cid))).journey.identities!.list as any[];
     expect(shown[0].board.images.hero.url).toMatch(/^\/api\/files\/[\w-]+$/);
-    expect(shown[1].board.images.site).toBeUndefined();
+    expect(shown[1].board.images.object).toBeUndefined();
     // Reprise de la tâche : rien n'est recréé ni repayé.
     const again = await chain(t, {}, {}, reload(job));
     expect(again.log.ids).toEqual([]);
@@ -728,7 +727,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(a.board!.images!.posts![1]).toBeNull();
     expect(a.board!.images!.posts![2]).toBeNull();
     expect(a.board!.images!.object).toBeUndefined();
-    expect(a.board!.images!.site).toBeTruthy();
+    expect(a.board!.images!.hero).toBeTruthy();
     const issues = J.journeyOf(t.cid).identities!.issues.filter((x) => x.startsWith("Identité A")).join("\n");
     expect(issues).not.toMatch(/première publication/);
     expect(issues).toMatch(/je n'ai pas gardé la troisième publication \(un texte non demandé y apparaît : « 250 g »\)/);
@@ -804,7 +803,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(log.systems["judge-1"]).toMatch(/tu appellerais ta marque comme ça, toi/);
     expect(log.systems["judge-1"]).toMatch(/« Morceaux Choisis »[^\n]*ça représente rien et c'est moche/);
     // Les notes du propriétaire sont sa mesure chiffrée : il ne garde que ce qui vaudrait 8 sur 10 ou plus.
-    expect(log.systems["judge-1"]).toMatch(/« Pulpe » 9\/10, « Haut les Pêches » 6\/10, « Tout Feu Tout Fruit » 6\/10, « Cerise sur le Verre » 4\/10/);
+    expect(log.systems["judge-1"]).toMatch(/« Pulpe » 9\/10, « Zeste » 8\/10, « Haut les Pêches » 6\/10, « Tout Feu Tout Fruit » 6\/10, « Cerise sur le Verre » 4\/10/);
     expect(log.systems["judge-1"]).toMatch(/qu'un nom qu'il noterait 8 sur 10 ou plus/);
     // Il reçoit tous les noms libres des équipes ; un nom déjà refusé par le propriétaire n'arrive même pas devant lui.
     expect(log.prompts["judge-1"]).toMatch(/# Noms trouvés par les équipes \(15\)/);
