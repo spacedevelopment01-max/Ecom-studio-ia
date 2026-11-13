@@ -67,6 +67,10 @@ const schema = z.object({
   recommendation: text,
   recommendationSourceIds: z.array(z.string().max(80)).min(1).max(12),
 });
+/** Angles déjà utilisés par le client (comptés dans son forfait) : leur cible et leur motivation ne changent jamais. */
+export function authorizedAngleIdentities(projectId: string): { id: string; audience?: string; motivation?: string }[] {
+  return one("SELECT 1 FROM sqlite_master WHERE type='table' AND name='marketing_strategy_used'")?all<{angle_id:string;angle_json:string}>("SELECT v.angle_id,v.angle_json FROM marketing_strategy_versions v JOIN marketing_strategy_used u ON u.project_id=v.project_id AND u.angle_id=v.angle_id WHERE v.project_id=? AND v.version=(SELECT MAX(n.version) FROM marketing_strategy_versions n WHERE n.project_id=v.project_id AND n.angle_id=v.angle_id)",projectId).map(row=>({...JSON.parse(row.angle_json),id:row.angle_id})):[];
+}
 export async function analyzeResearch(
   p: Project,
   ctx: JobContext,
@@ -75,7 +79,7 @@ export async function analyzeResearch(
   if (!base.sources.some((s) => s.status === "consulted")) throw new Error("Aucune page consultée : aucun angle ni appel de rédaction lancé.");
   const read=base.sources.filter(s=>s.status==='consulted');
   if(read.length<5||['offer','competitors','customers','sector'].some(c=>!read.some(s=>s.category===c))||new Set(read.filter(s=>s.category==='competitors').map(s=>new URL(s.url).hostname)).size<2)throw new Error('Recherche Internet incomplète : compléter les pages pertinentes avant de payer une analyse d’angles.');
-  const identities=one("SELECT 1 FROM sqlite_master WHERE type='table' AND name='marketing_strategy_used'")?all<{angle_id:string;angle_json:string}>("SELECT v.angle_id,v.angle_json FROM marketing_strategy_versions v JOIN marketing_strategy_used u ON u.project_id=v.project_id AND u.angle_id=v.angle_id WHERE v.project_id=? AND v.version=(SELECT MAX(n.version) FROM marketing_strategy_versions n WHERE n.project_id=v.project_id AND n.angle_id=v.angle_id)",p.id).map(row=>({id:row.angle_id,...JSON.parse(row.angle_json)})):[];
+  const identities=authorizedAngleIdentities(p.id);
   const result = await llmJson(
     {
       task: "strategy",

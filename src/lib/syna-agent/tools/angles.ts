@@ -7,7 +7,7 @@ import { one } from "../../db";
 import { L } from "../../i18n-server";
 import type { AgentTool } from "../types";
 import { journeyOf, setStep, updateJourney } from "../journey";
-import { advanceAngles, angleLimit, anglesMaxMicro, anglesPhase, chooseAngles, pct, researchFailure, usedAngles } from "../angles";
+import { advanceAngles, angleLimit, anglesMaxMicro, anglesPhase, chooseAngles, pct, researchFailure, usedAngles, type SinaAngles } from "../angles";
 import { budgetPctOf as pctOfUser } from "../../ai/budget-pct";
 import { loadProject } from "../../projects";
 const budgetPctOf = (pid: string, micro: number) => pctOfUser(loadProject(pid).userId, micro, pid);
@@ -15,6 +15,17 @@ import { project } from "./common";
 
 /** Questions à poser, sans doublon (essai réel : la même question listée deux fois). */
 export const questionList = (qs: { id: string; question: string }[], missing: string[]) => [...qs.map((q) => `[${q.id}] ${q.question}`), ...missing.filter((m) => !qs.some((q) => q.question.trim() === m.trim()))].join(" ; ");
+
+/**
+ * Ce que SINA dit des angles après leur relecture (carte des spécialistes, lot 4) : un angle dont elle doute est montré
+ * avec son doute, dit à la première personne ; des angles qui n'ont pas pu être relus, c'est dit aussi. Jamais « le juge ».
+ */
+export function anglesDoubtHint(angles: SinaAngles): string {
+  const doubts = angles.list.filter((a) => a.doubt);
+  if (angles.judged === "non_juges") return " Ces angles n'ont pas pu être relus avant d'être montrés : dis-le simplement au client (« je n'ai pas pu les relire comme je le fais d'habitude »), sans dramatiser.";
+  if (!doubts.length) return "";
+  return ` Tu doutes de ${doubts.length > 1 ? "ces angles" : "cet angle"} et tu le dis franchement au client, à la première personne, sans jamais parler de juge ni de relecteur : ${doubts.map((a) => `« ${a.title} » (${a.doubt})`).join(" ; ")}.${doubts.some((a) => a.id === angles.recommendedId) ? " L'angle recommandé en fait partie : ne le recommande pas sans dire ce doute." : ""} Le choix reste le sien.`;
+}
 
 const running = (pid: string) => !!one("SELECT 1 FROM jobs WHERE project_id=? AND type='project.prepare' AND status IN ('queued','running','paused')", pid);
 
@@ -55,7 +66,7 @@ const proposeTool: AgentTool<{ retry?: boolean; redo?: string }> = {
     if (r.phase.kind === "ready") {
       const angles = r.phase.angles;
       updateJourney(ctx.conversationId, (x) => { x.angles = angles; setStep(x, 4, "review"); });
-      return { ok: true, summary: L(`5 angles prêts (${angles.sourceCount} sources lues) : ${angles.list.map((a) => `« ${a.title} »`).join(" ; ")}.${angles.recommendedId ? ` Recommandé : « ${angles.list.find((a) => a.id === angles.recommendedId)?.title ?? angles.recommendedId} ».` : ""}`, "Angles ready."), hint: `Identifiants des angles pour angles.choose : ${angles.list.map((a) => `${a.id} = « ${a.title} »`).join(" ; ")}.`, data: { angles: angles.list.map((a) => ({ id: a.id, titre: a.title, cible: a.audience, accroche: a.message, emotion: a.emotion, aConfirmer: a.proofsToConfirm })), recommande: angles.recommendedId } };
+      return { ok: true, summary: L(`5 angles prêts (${angles.sourceCount} sources lues) : ${angles.list.map((a) => `« ${a.title} »`).join(" ; ")}.${angles.recommendedId ? ` Recommandé : « ${angles.list.find((a) => a.id === angles.recommendedId)?.title ?? angles.recommendedId} ».` : ""}`, "Angles ready."), hint: `Identifiants des angles pour angles.choose : ${angles.list.map((a) => `${a.id} = « ${a.title} »`).join(" ; ")}.${anglesDoubtHint(angles)}`, data: { angles: angles.list.map((a) => ({ id: a.id, titre: a.title, cible: a.audience, accroche: a.message, emotion: a.emotion, aConfirmer: a.proofsToConfirm, ...(a.doubt ? { doute: a.doubt } : {}) })), recommande: angles.recommendedId, ...(angles.judged ? { relus: angles.judged === "juges" } : {}) } };
     }
     return { ok: false, summary: L("Rien à lancer pour l'instant.", "Nothing to start.") };
   },

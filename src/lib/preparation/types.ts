@@ -84,6 +84,17 @@ export type Angle = {
   organicExample?: string;
   cta?: string;
 };
+/** Avis du juge des angles (angles-judge.ts), gardé avec la recherche : SINA le lit pour parler franchement au client. */
+export type AnglesJudgement = {
+  /** juges : le juge a rendu son avis ; non_juges : il n'a pas pu (panne, budget), les angles sont montrés tels quels. */
+  status: "juges" | "non_juges";
+  kept: string[];
+  /** Angles réécrits après son avis, et dont la réécriture a passé les contrôles du Studio. */
+  redone: string[];
+  /** Angles refusés qui restent tels quels (réécriture absente ou écartée) : le doute est dit au client. */
+  doubts: { id: string; why: string }[];
+  overall: string;
+};
 export type Research = {
   formatVersion?: 2 | 3;
   offerDigest?: string;
@@ -97,6 +108,8 @@ export type Research = {
   recommendationSourceIds?: string[];
   selectedId?: string;
   legalAvailability: "not_checked";
+  /** Absent des recherches faites avant le juge des angles (13 novembre 2026). */
+  judgement?: AnglesJudgement;
 };
 export type Identity = {
   seriesId?: string;

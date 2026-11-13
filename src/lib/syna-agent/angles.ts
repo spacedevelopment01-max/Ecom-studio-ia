@@ -23,8 +23,16 @@ export type SinaAngle = {
   proofsToConfirm: string[]; arguments: string[]; sources: { title: string; url: string }[];
   /** Format du propriétaire (guide du 7 novembre 2026) : objectif, pourquoi, récit, scènes, publication, appel. */
   goal: string; why: string; story: string; show: string; organicExample: string; cta: string;
+  /** Doute du juge des angles sur cet angle (refusé, et sa réécriture n'a pas tenu) : dit franchement au client. */
+  doubt?: string;
 };
-export type SinaAngles = { list: SinaAngle[]; recommendedId: string | null; recommendation: string; sourceCount: number; at: number };
+export type SinaAngles = {
+  list: SinaAngle[]; recommendedId: string | null; recommendation: string; sourceCount: number; at: number;
+  /** juges : relus par le juge des angles ; non_juges : il n'a pas pu les relire (dit au client) ; absent : recherche d'avant. */
+  judged?: "juges" | "non_juges";
+  /** Angles réécrits après l'avis du juge (pour information). */
+  redone?: string[];
+};
 
 /** Où en est l'étape 4 (lecture seule, sans frais). */
 export type AnglesPhase =
@@ -64,9 +72,11 @@ export function anglesOf(d: any): SinaAngles {
     goal: s(a.goal, 100), why: s(a.reason, 500), story: s(a.story ?? a.communicationChange ?? a.positioning, 700),
     show: s(a.show ?? a.visualDirection, 600), organicExample: s(a.organicExample, 400), cta: s(a.cta, 80),
     sources: (a.sourceIds ?? []).map((id: string) => byId.get(id)).filter((x: any) => x?.url).slice(0, 4).map((x: any) => ({ title: s(x.title || x.url, 120), url: s(x.url, 500) })),
+    ...((d.judgement?.doubts ?? []).some((x: any) => x.id === a.id) ? { doubt: s((d.judgement.doubts as any[]).find((x) => x.id === a.id).why, 320) } : {}),
   }));
   const used = (d.sources ?? []).filter((x: any) => x.status === "consulted" && x.relevance?.accepted !== false).length;
-  return { list, recommendedId: d.recommendedId ?? null, recommendation: s(d.recommendation, 600), sourceCount: used, at: Date.now() };
+  const judged = d.judgement?.status === "juges" || d.judgement?.status === "non_juges" ? d.judgement.status : undefined;
+  return { list, recommendedId: d.recommendedId ?? null, recommendation: s(d.recommendation, 600), sourceCount: used, at: Date.now(), ...(judged ? { judged, redone: (d.judgement.redone ?? []).map((x: string) => s(x, 40)) } : {}) };
 }
 
 /** Pourcentage lisible (« 8 % », « 4,5 % ») : jamais « 7.994748837209302 % » (essai réel du 7 novembre). */

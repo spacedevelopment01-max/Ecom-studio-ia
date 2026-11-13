@@ -257,8 +257,15 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     photos prévues avant qu'une seule soit payée (`PHOTO_REVIEW_SYSTEM`, 5 sections redécrites au plus, jamais la source
     ni le format) ; la direction artistique de la planche choisie est reprise par les photos du site (`boardLook`) ; le
     devis de `custom.build` compte ces relectures ; le compte rendu les donne (`relecture`, `relecturePhotos`) et SINA
-    les dit au client. Lots suivants : la conversation, les cinq angles, publications et calendrier, publicités,
-    articles et rangement.
+    les dit au client. **Lot 3 construit le 13 novembre, ÉTEINT par défaut** (la conversation, `conversation.ts`,
+    réglage `sina.conversation` = `{aiguillage, momentsForts, relecture}`, à allumer seulement sur décision du
+    propriétaire) : l'aiguilleuse (sans IA) n'envoie que la notice des outils de l'étape, les autres en une ligne, et
+    SINA demande une notice avec `tools.open` ; aux moments qui comptent (résultat, échec, client mécontent) un modèle
+    plus fort répond ; une relectrice lit la réponse avant qu'elle parte, une réécriture au plus, ses remarques ne sont
+    jamais montrées. **Lot 4 fait le 13 novembre** (les cinq angles, `preparation/angles-judge.ts`) : un juge séparé
+    juge les angles de la stratège, les refusés sont réécrits une fois et repassent les contrôles du Studio, un angle
+    refusé qui reste est montré avec le doute de SINA (`doubt`, carte du fil). Tout cela testé avec une IA simulée,
+    aucun essai réel. Lots suivants : publications et calendrier, publicités, articles et rangement.
   - **À confirmer par le propriétaire** : le quatrième fond d'une série de quatre identités (aujourd'hui un fond clair
     coloré, « uni ») ; la règle « un fond sombre par série » quand le client demande du joyeux et du coloré (le directeur
     de création l'a contestée pendant l'essai) ; le réglage des modèles.

@@ -176,7 +176,7 @@ function LogoCards({ logos, brandBg, busy, onChoose }: { logos: Logos; brandBg: 
   );
 }
 
-type Angles = { list: { id: string; title: string; goal?: string; why?: string; story?: string; show?: string; organicExample?: string; cta?: string; audience: string; motivation: string; message: string; emotion: string; proofsToConfirm: string[]; arguments: string[]; sources: { title: string; url: string }[] }[]; recommendedId: string | null; sourceCount: number; chosen: string[] | null };
+type Angles = { list: { id: string; title: string; goal?: string; why?: string; story?: string; show?: string; organicExample?: string; cta?: string; audience: string; motivation: string; message: string; emotion: string; proofsToConfirm: string[]; arguments: string[]; sources: { title: string; url: string }[]; doubt?: string }[]; recommendedId: string | null; sourceCount: number; chosen: string[] | null };
 
 /** Couleurs des bandeaux, reprises du guide « 5 angles marketing » du propriétaire. */
 const ANGLE_BANDS = ["#9C3343", "#74533F", "#43644A", "#B46D25", "#73507F"];
@@ -217,6 +217,8 @@ function AngleCards({ angles, busy, onChoose }: { angles: Angles; busy: boolean;
                 {row(t("Appel à l'action", "Call to action"), a.cta)}
                 {row(t("Informations à confirmer", "To confirm"), a.proofsToConfirm.join(" ; "))}
               </dl>
+              {/* Angle montré avec le doute de SINA (sa relecture l'avait refusé) : dit franchement, jamais caché. */}
+              {!!a.doubt && <p className="mx-4 mb-2 rounded-md border border-line bg-card px-3 py-2 text-[11px] text-muted" data-angle-doubt={a.id}><strong>{t("Mon doute sur cet angle", "My doubt about this angle")} : </strong>{a.doubt}</p>}
               {!!a.sources.length && <p className="px-4 pb-2 text-[11px] text-muted">{t("Sources", "Sources")} : {a.sources.map((x, k) => <span key={x.url}>{k ? " · " : ""}<a className="underline" href={x.url} target="_blank" rel="noreferrer">{x.title}</a></span>)}</p>}
               <div className="border-t border-line px-4 py-2">
                 {chosen.length
