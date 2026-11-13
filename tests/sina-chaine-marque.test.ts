@@ -95,6 +95,8 @@ describe("SINA — chaîne de création de la marque", async () => {
     draw?: (id: string, call: any) => Promise<Buffer>;
     /** Relecture des images (par défaut : tout est accepté, le nom est lu tel quel). */
     look?: (id: string, call: any) => any;
+    /** Relecture en image des dessins de l'illustratrice (par défaut : tous acceptés). */
+    artcheck?: (id: string, call: any) => any;
   };
   const sharpLib = (await import("sharp")).default;
   const square = (color: string, w = 96, h = 96) => sharpLib({ create: { width: w, height: h, channels: 3, background: color } }).png().toBuffer();
@@ -137,6 +139,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     look: async (id: string, c: any) => {
       log.ids.push(id); log.prompts[id] = c.prompt; log.systems[id] = c.system;
       const name = /Marque : « (.+?) »/.exec(c.prompt)?.[1] ?? "";
+      if (id.startsWith("artcheck")) return c.schema.parse(s.artcheck ? s.artcheck(id, c) : { drawings: c.images.map((i: any) => ({ slot: i.label, ok: true, why: "" })) });
       return c.schema.parse(s.look ? s.look(id, c) : { images: c.images.map((i: any) => ({ slot: i.label, ok: true, read: [name], why: "" })) });
     },
   });
@@ -159,7 +162,7 @@ describe("SINA — chaîne de création de la marque", async () => {
   it("chaîne complète : les sept temps dans l'ordre, les équipes séparées, la reprise relue", async () => {
     const t = await thread();
     const { log, job } = await chain(t, {}, { fix: () => FIXED_LINE });
-    expect(log.ids).toEqual(["web:paroles", "web:concurrents", "web:usages", "study", "strategy", "team-langue", "team-mots", "team-univers", "team-verite", "judge-1", "shortlist", "web:verify-1", "verify-1", "direction-1-A", "direction-1-B", "direction-1-C", "review-1", "fix-1-B", "recheck-1", "art-1-A", "art-1-B", "art-1-C"]);
+    expect(log.ids).toEqual(["web:paroles", "web:concurrents", "web:usages", "study", "strategy", "team-langue", "team-mots", "team-univers", "team-verite", "judge-1", "shortlist", "web:verify-1", "verify-1", "direction-1-A", "direction-1-B", "direction-1-C", "review-1", "fix-1-B", "recheck-1", "art-1-A", "artcheck-1-A", "art-1-B", "artcheck-1-B", "art-1-C", "artcheck-1-C"]);
     // L'illustratrice dessine après la relecture : la scène est posée, le dessin interdit est retiré (et c'est noté),
     // le signe « lettrage » ne reçoit jamais de dessin, les mots à la main arrivent sur leur signe.
     const drawn = J.journeyOf(t.cid).identities!.list;
@@ -274,7 +277,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     const refuse = { routes: [{ key: "A", score: 8, verdict: "garder", fixes: [] }, { key: "B", score: 7, verdict: "garder", fixes: [] }, { key: "C", score: 4, verdict: "reprendre", replaceName: true, nameDoubt: "Il se lit « sans eau », le contraire de ce que la marque montre.", fixes: [] }], series: "" };
     const t = await thread();
     const { log } = await chain(t, {}, { review: () => refuse, recheck: { routes: [{ key: "C", better: true, remaining: ["Le bouton du site reste plat.", "b", "c", "d"], score: 7 }] } });
-    expect(log.ids.slice(-6)).toEqual(["review-1", "replace-1-C", "recheck-1", "art-1-A", "art-1-B", "art-1-C"]);
+    expect(log.ids.slice(-9)).toEqual(["review-1", "replace-1-C", "recheck-1", "art-1-A", "artcheck-1-A", "art-1-B", "artcheck-1-B", "art-1-C", "artcheck-1-C"]);
     expect(log.ids.some((i) => i.startsWith("fix"))).toBe(false); // un nom refusé ne se « corrige » pas
     expect(log.prompts["replace-1-C"]).toMatch(/^Nom : Nage Libre$/m);
     expect(log.prompts["replace-1-C"]).toMatch(/^Fond de page : blanc$/m); // la réserve garde le fond prévu pour la série
@@ -422,7 +425,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     await chain(t, {}, { fix: () => FIXED_LINE });
     const before = J.journeyOf(t.cid).identities!.list;
     const { log } = await chain(t, { redo: ["B"], guidance: "Plus doux pour B." }, { shortlist: () => [pick("B", "Nage Libre"), pick("C", "La Main Lourde", true), pick("A", "Grand Bain", true)], review: () => ({ routes: [], series: "" }) });
-    expect(log.ids).toEqual(["judge-2", "shortlist", "web:verify-2", "verify-2", "direction-2-B", "review-2", "art-2-B"]);
+    expect(log.ids).toEqual(["judge-2", "shortlist", "web:verify-2", "verify-2", "direction-2-B", "review-2", "art-2-B", "artcheck-2-B"]);
     // Les routes gardées, déjà dessinées, partent à la relecture SANS leurs dessins.
     expect(log.prompts["review-2"]).not.toMatch(/"nodes"/);
     expect(log.prompts.shortlist).toMatch(/Routes GARDÉES par le client[\s\S]*A « Bain de Minuit »[\s\S]*C « L'Eau Est Bonne »/);
@@ -619,7 +622,7 @@ describe("SINA — chaîne de création de la marque", async () => {
       look: (id, c) => ({ images: c.images.map((i: any) => (id.endsWith("-B") && i.label === "site" ? { slot: "site", ok: false, read: ["Fni le soda"], why: "Le titre est mal écrit." } : id.endsWith("-C") && i.label === "logo" ? { slot: "logo", ok: true, read: ["L'Eau Est Bone"], why: "" } : { slot: i.label, ok: true, read: [/Marque : « (.+?) »/.exec(c.prompt)![1]], why: "" })) }),
     });
     // Après les dessins : pour chaque planche, les consignes, les sept images dans l'ordre, puis UNE relecture.
-    expect(log.ids.slice(log.ids.indexOf("art-1-C") + 1)).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}`, ...SLOTS.map((sl) => `image-1-${k}-${sl}`), `imagecheck-1-${k}`]));
+    expect(log.ids.slice(log.ids.indexOf("artcheck-1-C") + 1)).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}`, ...SLOTS.map((sl) => `image-1-${k}-${sl}`), `imagecheck-1-${k}`]));
     const refs = (log as any).refs;
     expect(refs["image-1-A-logo"]).toEqual({ logo: true, scene: false, aspect: "1:1" }); // le nom composé par le Studio sert de modèle
     expect(refs["image-1-A-hero"]).toEqual({ logo: false, scene: false, aspect: "16:9" });
@@ -792,7 +795,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     await chain(t, {}, { review: () => ({ routes: [], series: "" }) });
     const before = J.journeyOf(t.cid).identities!.list;
     const { log } = await chain(t, { redo: ["B"], names: ["Pulpe"] }, { review: () => ({ routes: [], series: "" }), shortlist: () => [pick("B", "Nage Libre")] });
-    expect(log.ids).toEqual(["shortlist", "web:verify-2", "verify-2", "direction-2-B", "review-2", "art-2-B"]);
+    expect(log.ids).toEqual(["shortlist", "web:verify-2", "verify-2", "direction-2-B", "review-2", "art-2-B", "artcheck-2-B"]);
     expect(log.prompts.shortlist).toMatch(/# Noms CHOISIS par le client : compose une route par nom[^\n]*« Pulpe »/);
     const after = J.journeyOf(t.cid).identities!.list;
     expect(after.map((x) => x.name)).toEqual([before[0].name, "Pulpe", before[2].name]);
@@ -803,5 +806,24 @@ describe("SINA — chaîne de création de la marque", async () => {
     await expect(chain(t, { redo: ["B"], names: ["Pulpe 3000"] })).rejects.toThrow(/Ce nom ne peut pas servir tel quel/);
     // Devis : un nom choisi coûte moins qu'une recherche (ni équipes, ni juge, ni second tour).
     expect(C.chainQuote({ routes: 1, fresh: false, imposed: true }).maxMicro).toBeLessThan(C.chainQuote({ routes: 1, fresh: false }).maxMicro);
+  });
+
+  it("les dessins sont relus en image : un dessin raté est retiré, la planche garde sa forme ; relecture impossible, ils restent et c'est noté", async () => {
+    const t = await thread();
+    const { log, out } = await chain(t, {}, {
+      review: () => ({ routes: [], series: "" }),
+      artcheck: (id, c) => { if (id.endsWith("-C")) throw new Error("modèle qui voit indisponible"); return { drawings: c.images.map((i: any) => ({ slot: i.label, ok: !(id.endsWith("-B") && i.label === "hero"), why: "On ne reconnaît rien." })) }; },
+    });
+    // La relectrice reçoit chaque dessin en image, avec ce qu'il doit montrer.
+    expect(log.prompts["artcheck-1-A"]).toMatch(/Dessin 1 — slot "hero" : il doit montrer la scène de la marque « Bain de Minuit »/);
+    expect(log.prompts["artcheck-1-A"]).toMatch(/slot "sign1" : il doit montrer le signe/);
+    expect(log.systems["artcheck-1-A"]).toMatch(/Un dessin simple mais lisible est accepté/);
+    const [a, b, c] = J.journeyOf(t.cid).identities!.list;
+    expect(a.board!.hero).toBeTruthy();
+    expect(b.board!.hero).toBeUndefined(); // retiré : la planche montrera sa scène de secours
+    expect(b.board!.signs[1].art).toBeTruthy(); // les autres dessins de B restent
+    expect(c.board!.hero).toBeTruthy(); // relecture impossible : les dessins (sûrs) restent
+    expect((out as any).notes.join("\n")).toMatch(/1 dessin\(s\) de B retiré\(s\) après relecture en image \(hero\)/);
+    expect((out as any).notes.join("\n")).toMatch(/relecture en image des dessins de C impossible/);
   });
 });

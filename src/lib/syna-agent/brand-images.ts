@@ -29,7 +29,7 @@ import type { ChainAi } from "./brand-chain";
 import * as P from "./brand-prompts";
 import { RouteSchema, safeWordmark, type Route } from "./brand-routes";
 import { drawWordmark, wordmarkPng } from "./brand-wordmark";
-import { groundPresentation, normText } from "./identities";
+import { normText } from "./identities";
 
 export const IMAGE_SLOTS = ["logo", "hero", "object", "site", "post0", "post1", "post2"] as const;
 export type ImageSlot = (typeof IMAGE_SLOTS)[number];
@@ -79,12 +79,12 @@ const paletteLine = (x: Route) => `Couleurs de la marque : foncé ${x.palette.da
 export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { logo: boolean } = { logo: true }): string {
   const look = imagery.look.trim(), texts = slotTexts(x)[slot];
   if (slot === "logo") {
-    const bg = groundPresentation(x.palette, x.ground, x.gradient).backgrounds[0];
+    // Fond blanc : il se retire ensuite depuis les bords quand ce logo devient celui du projet (jamais de carré autour).
     return [
       `Logo de la marque « ${x.name} ».`, imagery.logo.trim(),
       `L'image de référence montre le nom composé avec les bonnes lettres : garde EXACTEMENT ces lettres, dans cet ordre (« ${x.name} »), sans en ajouter, en retirer ni en changer une seule.`,
       look ? `Direction artistique de la marque : ${look}` : "", paletteLine(x),
-      `Un seul logo, centré, à plat, sur un fond uni ${bg}, avec de l'air autour. Aucun autre texte que le nom, aucune maquette, aucun objet autour, aucune ombre portée, aucune personne.`,
+      "Un seul logo, centré, à plat, sur un fond BLANC uni, avec de l'air autour ; ses couleurs se lisent bien sur du blanc. Aucun autre texte que le nom, aucune maquette, aucun objet autour, aucun cadre, aucune ombre portée, aucune personne.",
     ].filter(Boolean).join("\n");
   }
   const brief = slot === "hero" ? imagery.hero : slot === "object" ? imagery.object : slot === "site" ? imagery.site : imagery.posts[Number(slot.slice(4))];

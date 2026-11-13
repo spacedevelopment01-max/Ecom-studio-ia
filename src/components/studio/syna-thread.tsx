@@ -143,7 +143,7 @@ function CalendarCard({ projectId, refreshKey }: { projectId: string; refreshKey
   );
 }
 
-type Logos = { round: number; chosen: string | null; list: { source: "A" | "B" | "C"; name: string; style: string; assetId: string | null; href: string | null; verdict: string; score: number | null; reason: string; best?: boolean; choosable?: boolean; kind?: "planche" }[] };
+type Logos = { round: number; chosen: string | null; list: { source: "A" | "B" | "C"; name: string; style: string; assetId: string | null; href: string | null; verdict: string; score: number | null; reason: string; best?: boolean; choosable?: boolean; kind?: "planche" | "image" }[] };
 
 /** Étape 2 : le logo (ou les 3 logos d'une identité d'avant les planches), sur fond blanc et sur le fond de la marque, avec le verdict honnête du contrôle. */
 function LogoCards({ logos, brandBg, busy, onChoose }: { logos: Logos; brandBg: string | null; busy: boolean; onChoose: (source: string) => void }) {
@@ -162,7 +162,7 @@ function LogoCards({ logos, brandBg, busy, onChoose }: { logos: Logos; brandBg: 
               </div>
               <div className="space-y-1 px-3 py-2 text-xs">
                 <p className="font-semibold">{logos.list.length < 3 ? x.name : `${t("Logo", "Logo")} ${x.source} · ${x.name}`}</p>
-                <p className={ok || x.kind === "planche" ? "text-emerald-700" : "text-amber-700"} data-logo-verdict>{x.kind === "planche" ? `✓ ${t("Dessiné par le Studio : ton nom, exact à la lettre", "Drawn by the Studio: your name, letter-perfect")}` : ok ? `✓ ${t("Validé par le contrôle", "Passed the check")}${x.score != null ? ` (${String(x.score).replace(".", ",")}/10)` : ""}` : x.assetId ? `${t("Non validé par le contrôle", "Did not pass the check")} : ${x.reason}` : `${t("Pas de dessin", "No drawing")} : ${x.reason}`}</p>
+                <p className={ok || x.kind === "planche" || x.kind === "image" ? "text-emerald-700" : "text-amber-700"} data-logo-verdict>{x.kind === "image" ? `✓ ${t("Créé avec ta planche et relu : ton nom y est exact", "Made with your board and reviewed: your name is exact")}` : x.kind === "planche" ? `✓ ${t("Dessiné par le Studio : ton nom, exact à la lettre", "Drawn by the Studio: your name, letter-perfect")}` : ok ? `✓ ${t("Validé par le contrôle", "Passed the check")}${x.score != null ? ` (${String(x.score).replace(".", ",")}/10)` : ""}` : x.assetId ? `${t("Non validé par le contrôle", "Did not pass the check")} : ${x.reason}` : `${t("Pas de dessin", "No drawing")} : ${x.reason}`}</p>
               </div>
               <div className="border-t border-line px-3 py-2">
                 {chosen ? <p className="text-xs font-semibold">✓ {t("Logo de ta marque", "Your brand logo")}</p> : !logos.chosen && x.assetId && x.choosable !== false && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(x.source)}>{logos.list.length < 3 ? (x.kind === "planche" ? t("Je choisis le nom dessiné", "I choose the drawn name") : t("Je choisis ce logo", "I choose this logo")) : t(`Je choisis le logo ${x.source}`, `I choose logo ${x.source}`)}</Button>}

@@ -224,8 +224,10 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     Leçons, corrigées et testées : seul un **O sans accent** se remplace par un dessin (un rond à la place d'un A ou d'un
     i donnait « Tintomarre » et « Pleon ») ; petits mots en minuscules dans un nom à capitales (« Plein les Yeux ») ;
     publication = dessin en haut, texte en dessous, 60 caractères au plus ; dos de l'objet en 3 lignes courtes ; réponse
-    mal formée de l'illustratrice réparée détail par détail (`prepareArt`). **Pas encore fait** : la relecture des dessins
-    en image par le directeur de création ; ces dernières corrections n'ont pas été revues par un troisième essai.
+    mal formée de l'illustratrice réparée détail par détail (`prepareArt`). **Relecture des dessins en image**
+    (13 novembre, `brand-art-review.ts`, étape `brand:artcheck`) : chaque dessin est rendu en image et regardé par un
+    modèle qui voit ; un dessin raté est retiré, la planche garde sa forme. Ces dernières corrections n'ont pas été
+    revues par un troisième essai.
   - **Images de planche par OpenAI** (demande du propriétaire du 12 novembre 2026, après le second essai : « faire
     intervenir OpenAI pour générer les images qui viendront finir réellement les planches […] chaque logo des planches par
     OpenAI […] une vraie direction artistique complète » ; en dessin, les publications et le site sur téléphone peuvent
@@ -240,9 +242,17 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     devis `boardImagesQuote` ; réglage `sina.brand_images` (« dessins » par défaut tant que le propriétaire n'a pas validé
     un essai réel, « openai ») ; charge utile `images` et `imagesOnly` de la tâche `syna.brand`. Devis du 12 novembre
     (tarif officiel revu ce jour-là) : 1 planche, 1,21 € probable et 1,67 € au plus ; 3 planches, 3,64 € et 5,02 €.
-    **Construit et testé avec un faux modèle d'images : aucun essai réel à ce jour.** Reste à brancher : le logo de la
-    planche choisie doit devenir le logo du projet (l'étape 2 en redessine encore un) ; avec ces images, « un logo par
-    planche » remplace « un seul logo après le choix ».
+    **Construit et testé avec un faux modèle d'images : aucun essai réel à ce jour.** Le logo de planche est créé sur
+    fond blanc ; quand le client choisit cette planche, il est **repris à l'étape 2 sans rien repayer** (fond retiré,
+    proposé à côté du nom dessiné ; `boardLogoReady`, `saveBoardLogo`, `logo.propose` gratuit dans ce cas) ; un autre logo
+    n'est dessiné, et payé, que s'il le demande. Avec ces images, « un logo par planche » remplace « un seul logo après
+    le choix ».
+  - **Carte des spécialistes de SINA** (demande du propriétaire du 13 novembre 2026 : « tous les sous agents nécessaires
+    pour le fonctionnement parfait de sina […] fais comme tu considères le mieux ») : `docs/sina-savoir/specialistes.md`
+    dit, étape par étape, qui fait le travail, ce qui manque et l'ordre des lots. Principes : celui qui fait n'est jamais
+    celui qui juge ; le juge voit tout ; rien n'est montré sans avoir été relu ; devis avant, plafond pendant. Lot 1
+    (finir la marque) fait le 13 novembre ; lots suivants : textes et photos du thème sur mesure, la conversation, les
+    cinq angles, publications et calendrier, publicités, articles et rangement.
   - **À confirmer par le propriétaire** : le quatrième fond d'une série de quatre identités (aujourd'hui un fond clair
     coloré, « uni ») ; la règle « un fond sombre par série » quand le client demande du joyeux et du coloré (le directeur
     de création l'a contestée pendant l'essai) ; le réglage des modèles.

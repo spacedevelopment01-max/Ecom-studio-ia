@@ -165,4 +165,41 @@ describe("SINA — étape 2 : le logo unique", async () => {
     expect(J.journeyOf(t.cid).logos!.round).toBe(2);
     expect(out.logos[0].verdict).toBe("FINAL");
   });
+
+  // ---------------------------------------------------------------- le logo de la planche choisie
+
+  it("planche finie avec ses images : son logo est repris gratuitement à l'étape 2, sans aucun dessin ; un autre logo se demande et se paie", async () => {
+    const { saveAsset } = await import("@/lib/library");
+    const t = await chosenThread("B");
+    // Le logo créé avec la planche : un dessin sombre sur fond blanc, rangé dans la bibliothèque du projet.
+    const png = await sharp({ create: { width: 400, height: 400, channels: 3, background: "#FFFFFF" } }).composite([{ input: await sharp({ create: { width: 220, height: 120, channels: 3, background: "#15122B" } }).png().toBuffer(), left: 90, top: 140 }]).png().toBuffer();
+    const asset = await saveAsset({ projectId: t.pid, userId: t.user.id, data: png, name: "planche-B-logo.png", mime: "image/png", role: "brand-board", origin: "generated" });
+    J.updateJourney(t.cid, (x) => { const b = x.identities!.list.find((y) => y.key === "B")!; b.board!.images = { logo: { id: asset.id, w: 400, h: 400 } }; });
+    expect(G.boardLogoReady(J.journeyOf(t.cid))).toBe(true);
+    // Devis : gratuit, donc aucune carte d'accord ; le contexte de SINA le dit.
+    t.ctx.projectId = t.pid;
+    expect(await fr(() => getTool("logo.propose")!.estimate!(t.ctx, {} as never))).toMatchObject({ maxMicro: 0 });
+    expect(J.journeyContext(J.journeyOf(t.cid))).toMatch(/le logo de sa planche existe déjà[\s\S]*GRATUIT/);
+    const log = { calls: [] as string[], prompts: [] as string[] };
+    G.logoDeps.ai = fakeEngine(log); G.logoDeps.draw = async () => { log.calls.push("art"); return artFixture(0); };
+    let out: any;
+    try { out = await fr(() => G.runSinaLogosJob(jobCtx(t.user, t.pid, { projectId: t.pid, conversationId: t.cid, capMicro: 1, fromBoard: true }))); }
+    finally { G.logoDeps.ai = undefined; G.logoDeps.draw = undefined; }
+    expect(log.calls).toEqual([]); // aucun dessin, aucune relecture payante
+    expect(out.fromBoard).toBe(true);
+    const j = J.journeyOf(t.cid);
+    expect(j.steps[2].status).toBe("review");
+    expect(j.logos!.list.map((x) => [x.source, x.kind, x.choosable])).toEqual([["A", "image", true], ["B", "planche", true]]);
+    // Le logo repris : une nouvelle image au fond retiré (jamais de carré autour), rangée avec les logos.
+    const saved = getAsset(j.logos!.list[0].assetId!)!;
+    expect(saved.id).not.toBe(asset.id);
+    expect(saved.role).toBe("logo-v2-studio");
+    const meta = await sharp(assetData(saved)).metadata();
+    expect(meta.hasAlpha).toBe(true);
+    // Le client le choisit : il devient le logo de la marque.
+    const chosen = await call("logo.choose", t.ctx, { source: "A" });
+    expect(chosen.ok).toBe(true);
+    expect(loadProject(t.pid).brand?.logo?.assetId).toBeTruthy();
+    expect(G.boardLogoReady(J.journeyOf(t.cid))).toBe(false); // déjà proposé : un autre logo serait dessiné, et payé
+  });
 });

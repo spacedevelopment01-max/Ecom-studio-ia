@@ -319,7 +319,7 @@ ${HOUSE_RULES}
 
 Ce que tu rends :
 - look : la direction artistique GLOBALE, en 3 à 5 phrases : la lumière (heure, direction, dureté), les matières et les surfaces, le point de vue et le cadrage qui reviennent, le traitement des couleurs (lesquelles de la palette dominent, lesquelles ponctuent), le grain. Elle est recopiée en tête de chaque consigne : c'est elle qui fait reconnaître la marque d'une image à l'autre.
-- logo : la consigne du LOGO. Le dessinateur reçoit en image de référence le nom déjà composé par le Studio (lettres exactes, mise en lignes, geste de lettrage) : il le redessine en vrai logo de marque, sans changer une lettre. Dis l'idée que le logo doit porter (tirée de l'idée de la marque et de ses signes), ce qu'il garde du nom composé, ses 2 ou 3 couleurs (prises dans la palette, données en clair et en code), le fond uni sur lequel il est posé. Laisse-lui la main sur le dessin : n'impose ni cachet, ni monogramme, ni aquarelle, ni effet. À plat, net, lisible en petit, centré avec de l'air autour ; ni maquette, ni ombre portée, ni autre texte que le nom.
+- logo : la consigne du LOGO. Le dessinateur reçoit en image de référence le nom déjà composé par le Studio (lettres exactes, mise en lignes, geste de lettrage) : il le redessine en vrai logo de marque, sans changer une lettre. Dis l'idée que le logo doit porter (tirée de l'idée de la marque et de ses signes), ce qu'il garde du nom composé, ses 2 ou 3 couleurs (prises dans la palette, données en clair et en code ; elles doivent bien se lire sur du blanc : le logo est créé sur fond blanc). Laisse-lui la main sur le dessin : n'impose ni cachet, ni monogramme, ni aquarelle, ni effet. À plat, net, lisible en petit, centré avec de l'air autour ; ni maquette, ni ombre portée, ni autre texte que le nom.
 - hero : la grande image de la marque, SANS aucun texte : la scène qui fait ressentir l'idée, avec ${kind === "services" ? "le métier du client (son lieu, ses outils, son geste), sans personne" : "le vrai produit du client tel que sa fiche le décrit (jamais un emballage générique, jamais une étiquette vide)"}. Format paysage.
 - object : l'objet de la planche (le sachet, le pot, la carte…) photographié dans une vraie scène de la marque, ENTIER dans le cadre, de face ou de trois quarts. Le logo lui est fourni en image de référence : il est posé tel quel sur le devant, à la place que tu indiques. Dis où vont les lignes écrites sur le devant. Format carré.
 - site : le HAUT de la page d'accueil, tel qu'il s'affiche sur un téléphone : seulement l'écran (pas le téléphone, pas de main), en portrait. Le logo en haut à gauche (fourni en référence), l'image d'ouverture, le titre, le texte, le bouton : dis la place de chacun. Le titre se pose sur la partie calme de l'image, le sujet de l'autre côté.
@@ -332,6 +332,20 @@ Niveau attendu : une campagne haut de gamme : vraie scène de vie, lumière trav
 Longueurs : look 600 caractères ; logo 900 ; chaque autre consigne 1 300.
 
 Réponds par un objet JSON, sans rien autour. Forme exacte : ${IMAGERY_SHAPE}`;
+
+/** Relecture en image des DESSINS d'une planche (ceux de l'illustratrice) : un dessin raté est retiré. */
+export const artReviewSystem = () => `Tu contrôles les dessins d'une planche de marque avant qu'un client ne les voie. Ce sont des illustrations à plat, faites en code. Pour chaque dessin, tu reçois ce qu'il doit montrer. Tu regardes VRAIMENT chaque image, tu ne supposes rien.
+
+Un dessin est refusé (ok: false) dans ces cas, et seulement ceux-là :
+- on ne reconnaît pas ce qu'il doit montrer (formes abstraites, objets méconnaissables, taches) ;
+- il est visiblement cassé : formes qui se chevauchent n'importe comment, objet coupé par le cadre, grand vide, éléments entassés dans un coin, couleurs qui se confondent avec le fond au point qu'on ne voit rien ;
+- il contient des signes qui ressemblent à du texte, à des lettres ou à des chiffres ;
+- il montre une personne, un visage ou une main.
+Un dessin simple mais lisible est accepté : tu ne juges pas le style, tu écartes ce qui est raté.
+
+Pour chaque dessin : slot (recopié), ok, why (la raison du refus en une phrase simple ; vide s'il est accepté).
+
+Réponds par un objet JSON, sans rien autour. Forme exacte : {"drawings": [{"slot": "", "ok": true, "why": ""}]}`;
 
 /** Relecture des images d'une planche par un modèle qui voit : une image fausse n'est jamais montrée. */
 export const imageReviewSystem = () => `Tu contrôles les images créées pour la planche d'une marque, avant qu'un client ne les voie. Pour chaque image, tu reçois son rôle et les textes qu'elle devait porter, lettre pour lettre. Tu regardes VRAIMENT chaque image, tu ne supposes rien.

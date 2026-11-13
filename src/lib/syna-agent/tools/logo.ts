@@ -12,7 +12,7 @@ import { loadProject } from "../../projects";
 import { chooseLogoV2 } from "../../logo-v2/choose";
 import type { AgentTool } from "../types";
 import { journeyOf, setStep, updateJourney } from "../journey";
-import { SINA_LOGOS_JOB, chosenRoute, logosMaxMicro, logosProbableMicro, singleLogoQuote } from "../logos";
+import { SINA_LOGOS_JOB, boardLogoReady, chosenRoute, logosMaxMicro, logosProbableMicro, singleLogoQuote } from "../logos";
 import { project } from "./common";
 
 const KEY = z.enum(["A", "B", "C"]);
@@ -46,6 +46,10 @@ const proposeTool: AgentTool<{ guidance?: string }> = {
   description: "Étape 2. Identité choisie sur une PLANCHE de marque : dessine UN logo, à partir de l'idée de la marque et du nom dessiné de sa planche ; il est relu par le contrôle avant d'être montré ; s'il n'est pas validé, le nom dessiné de la planche (exact à la lettre) est proposé en secours ; si le client n'aime pas le logo, rappelle cet outil pour en dessiner un autre (payant, annoncé avant). Identité d'avant les planches : dessine 3 logos LIBRES pour l'identité CHOISIE (son nom exact, ses couleurs) : le modèle d'images a carte blanche sur l'idée, le symbole et la typographie (décision du propriétaire), seuls le nom exact et les rendus interdits sont fixés. Chaque logo est relu et contrôlé par Claude ; un nom mal écrit est réécrit sans repayer. Payant (devis avant, en % du budget) ; tâche de fond de quelques minutes. guidance : laisse vide ; le Studio transmet lui-même au dessinateur les souhaits écrits par le client (ses mots exacts), jamais l'identité, le slogan ni un style que le client n'a pas demandé.",
   args: z.object({ guidance: z.string().max(1500).optional() }).strict(),
   estimate: (ctx) => {
+    // Le logo de la planche choisie existe déjà : le reprendre ne coûte rien (aucune carte d'accord). Un AUTRE logo,
+    // demandé par le client avec ses mots, est dessiné et payé comme d'habitude.
+    const jr = journeyOf(ctx.conversationId);
+    if (boardLogoReady(jr) && !clientLogoWishes(ctx.conversationId, Math.max(jr.identityChoice?.at ?? 0, jr.logos?.at ?? 0))) return { maxMicro: 0, label: L("le logo de ta planche", "your board's logo") };
     // Identité choisie sur une planche : un seul logo (une image et ses relectures).
     if (!logoToolDeps.maxMicro && chosenRoute(journeyOf(ctx.conversationId))) return { ...singleLogoQuote(), label: L("ton logo", "your logo") };
     return { maxMicro: maxMicro(), ...(logoToolDeps.maxMicro ? {} : { probableMicro: logosProbableMicro() }), label: chosenRoute(journeyOf(ctx.conversationId)) ? L("ton logo", "your logo") : L("3 logos", "3 logos") };
@@ -61,8 +65,10 @@ const proposeTool: AgentTool<{ guidance?: string }> = {
     const single = !!chosenRoute(j);
     const cap = single && !logoToolDeps.maxMicro ? singleLogoQuote().maxMicro : maxMicro();
     const wishes = clientLogoWishes(ctx.conversationId, Math.max(j.identityChoice.at ?? 0, j.logos?.at ?? 0));
-    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: SINA_LOGOS_JOB, label: single ? L("Ton logo (SINA)", "Your logo (SINA)") : L("3 logos (SINA)", "3 logos (SINA)"), payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: cap, ...(wishes ? { guidance: wishes } : {}) }, maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:logos:${(j.logos?.round ?? 0) + 1}` });
+    const fromBoard = boardLogoReady(j) && !wishes;
+    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: SINA_LOGOS_JOB, label: single ? L("Ton logo (SINA)", "Your logo (SINA)") : L("3 logos (SINA)", "3 logos (SINA)"), payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: fromBoard ? 1 : cap, ...(wishes ? { guidance: wishes } : {}), ...(fromBoard ? { fromBoard: true } : {}) }, maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:logos:${(j.logos?.round ?? 0) + 1}` });
     updateJourney(ctx.conversationId, (x) => setStep(x, 2, "doing"));
+    if (fromBoard) return { ok: true, summary: L("Je reprends le logo de ta planche (gratuit, quelques secondes) ; je te le montre dès qu'il est prêt.", "Reusing your board's logo (free, a few seconds)."), jobs: [job.id], data: { plafondMicro: 0, repris: true } };
     return { ok: true, summary: single ? L("Dessin de ton logo lancé (quelques minutes) ; je reprends quand il est prêt.", "Drawing your logo (a few minutes).") : L("Dessin des 3 logos lancé (quelques minutes) ; SINA reprend quand ils sont prêts.", "Drawing the 3 logos (a few minutes)."), jobs: [job.id], data: { plafondMicro: cap, logos: single ? 1 : 3 } };
   },
 };

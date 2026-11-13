@@ -24,8 +24,8 @@ Ce document dit, étape par étape, **qui fait le travail aujourd'hui** (relevé
 |---|---|---|---|
 | La conversation (toutes les étapes) | Un seul appel fait tout : comprendre, décider, choisir parmi une centaine d'outils, répondre. Petit modèle partout, sauf à l'étape du thème. Aucune relecture de la réponse, seulement des filtres de code. | Une **aiguilleuse** qui comprend la demande et ne donne que les outils de l'étape ; un modèle plus fort aux moments qui comptent (présenter un résultat, annoncer un prix, répondre à un mécontentement) ; une **relectrice** de la réponse à ces moments-là. | À faire (lot 3) |
 | 0. Questions de départ | Moteur sans IA, puis le petit modèle rédige. | Rien d'urgent. | Convenable |
-| 1. Identités de marque | Chaîne de spécialistes : enquêtrice, stratège, 4 équipes de noms, **juge des noms**, composition, vérificateur, directrice artistique, directeur de création, illustratrice, **directrice artistique des images**, contrôleuse des images. | La relecture des dessins en image ; le logo de la planche choisie comme logo du projet. | Fait, deux finitions (lot 1) |
-| 2. Logo | Dessinateur, contrôleur qui lit le nom, second dessinateur en relais, secours du Studio. | Reprendre le logo de la planche choisie au lieu d'en redessiner un. | Lot 1 |
+| 1. Identités de marque | Chaîne de spécialistes : enquêtrice, stratège, 4 équipes de noms, **juge des noms**, composition, vérificateur, directrice artistique, directeur de création, illustratrice, **relectrice des dessins en image**, **directrice artistique des images**, contrôleuse des images. | Un essai réel de la planche complète (logo et images), en attente de l'accord du propriétaire. | **Fait** (lot 1, 13 novembre) |
+| 2. Logo | Le logo de la planche choisie est repris sans rien repayer ; sinon : dessinateur, contrôleur qui lit le nom, second dessinateur en relais, secours du Studio. | Rien d'urgent. | **Fait** (lot 1, 13 novembre) |
 | 3. Image de marque complète | Sans IA. | Rien. | Convenable |
 | 4. Cinq angles marketing | Une recherche sur le web, puis **un seul appel** écrit les cinq angles et note lui-même ses sources. Aucune relecture. | Séparer : une **stratège** qui écrit les angles, un **juge des angles** (un concurrent pourrait-il signer cet angle ? l'émotion est-elle vraie ?), une vérification des faits cités. | À faire (lot 4) |
 | 5. L'activité complète | Sans IA. | Rien. | Convenable |
@@ -50,6 +50,8 @@ Ce document dit, étape par étape, **qui fait le travail aujourd'hui** (relevé
 ## Les lots, dans l'ordre
 
 1. **Finir la marque** : le logo de la planche choisie devient le logo du projet ; la relecture des dessins en image.
+   **Fait le 13 novembre 2026**, testé avec une IA simulée (`logos.ts` : `boardLogoReady`, `saveBoardLogo` ;
+   `brand-art-review.ts` : `reviewBoardArt`). Pas encore essayé pour de vrai.
 2. **Les textes et les photos du thème sur mesure** : directeur de création des textes, directrice artistique des photos.
 3. **La conversation** : aiguilleuse, bon modèle au bon moment, relectrice aux moments qui comptent.
 4. **Les cinq angles** : stratège, juge, vérification des faits.

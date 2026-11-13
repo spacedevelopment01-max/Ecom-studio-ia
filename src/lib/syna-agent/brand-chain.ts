@@ -28,6 +28,7 @@ import { safeFetch } from "../engine/import-link";
 import { planOfProject } from "../plan-gates";
 import { json as parseJson } from "../db";
 import { MAX_ART_CHARS, sanitizeArt } from "./brand-art";
+import { reviewBoardArt } from "./brand-art-review";
 import { IMAGE_SLOTS, SLOT_ASPECT, SLOT_REFERENCES, boardImageRoute, brandImagesOn, runBoardImages, type ImageAspect } from "./brand-images";
 import { BoardSchema, PALETTE_ROLES, WordmarkSchema, type Board, type BoardSymbol } from "./brand-board";
 import { brandKnowledgeReady } from "./brand-knowledge";
@@ -76,7 +77,7 @@ const CALLS = {
   // L'illustratrice : une dizaine de dessins par planche (le gros de sa réponse est du SVG).
   art: { tier: "craft", input: 9_000, output: 16_000, max: 26_000 },
   // Images de la planche (réglage `sina.brand_images`) : la direction artistique écrit les consignes ; un modèle
-  // qui voit relit les sept images d'une planche.
+  // qui voit relit les sept images d'une planche. Le même relit, toujours, les dessins de l'illustratrice.
   imagery: { tier: "strong", input: 7_000, output: 6_000, max: 10_000 },
   look: { tier: "craft", input: 14_000, output: 1_500, max: 4_000 },
 } as const satisfies Record<string, { tier: Tier; input: number; output: number; max: number }>;
@@ -90,7 +91,7 @@ const MAX_PAGES_REREAD = 16;
 /** Nombre d'appels de chaque sorte selon le travail demandé (série complète, ou reprise de quelques routes). */
 function callCounts(routes: number, teams: number, fresh: boolean, images = false): Record<CallId, number> {
   // strategy : un second tour d'idées quand trop peu passent les deux épreuves ; fix : une reprise OU un remplacement par route.
-  return { study: fresh ? 1 : 0, strategy: fresh ? 2 : 0, team: fresh ? teams : 0, shortlist: 1, judge: 1, verify: 1, direction: routes, review: 1, fix: routes, recheck: 1, art: routes, imagery: images ? routes : 0, look: images ? routes : 0 };
+  return { study: fresh ? 1 : 0, strategy: fresh ? 2 : 0, team: fresh ? teams : 0, shortlist: 1, judge: 1, verify: 1, direction: routes, review: 1, fix: routes, recheck: 1, art: routes, imagery: images ? routes : 0, look: routes + (images ? routes : 0) };
 }
 
 export type ChainQuote = { maxMicro: number; probableMicro?: number };
@@ -793,7 +794,10 @@ export async function runSinaBrandJob(ctx: JobContext) {
       catch (e) { if (e instanceof CostCapReached) throw e; notes.push(`dessins de ${x.key} non faits : ${String((e as Error)?.message ?? e).slice(0, 120)}`); }
       if (!drawn) continue;
       const r = withArt(x, drawn, facts);
-      list = list.map((o) => (o.key === x.key ? r.route : o));
+      // Les dessins posés sont regardés EN IMAGE : un dessin raté est retiré avant que le client ne le voie.
+      const seen = await reviewBoardArt({ ctx, ai, route: r.route, round });
+      list = list.map((o) => (o.key === x.key ? seen.route : o));
+      notes.push(...seen.notes);
       if (r.refused) notes.push(`${r.refused} dessin(s) de ${x.key} refusé(s) par le contrôle`);
       if (!r.placed) notes.push(`planche ${x.key} sans dessin`);
     }

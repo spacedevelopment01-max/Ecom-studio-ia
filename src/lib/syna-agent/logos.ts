@@ -21,13 +21,13 @@ import type { Candidate, EngineRun, LogoStyle, ProposalResult, Territory } from 
 import { nearestWeight } from "../logo-v2/territories";
 import { canvasFamily } from "../media/fonts";
 import type { LogoSpec } from "../media/logo";
-import { FORBIDDEN_LOGO_RENDERS } from "../logo-v2/artwork";
+import { FORBIDDEN_LOGO_RENDERS, cleanArtwork } from "../logo-v2/artwork";
 import { realLogoV2Ai, type LogoV2Ai } from "../logo-v2/ai";
 import { runLogoEngineV2, saveProposal } from "../logo-v2/engine";
 import { logoRedrawQuote, logoSeriesQuote } from "../logo-v2/quote";
 import { logoArtworkImage } from "../ai/media-providers";
 import { artworkChoosable } from "../logo-v2/choose";
-import { getAsset } from "../library";
+import { assetData, getAsset } from "../library";
 import { json } from "../db";
 import { jobSpentMicro } from "./budget";
 import { journeyOf, setStep, updateJourney, type Journey } from "./journey";
@@ -132,8 +132,11 @@ export const logoDeps: { ai?: (ctx: JobContext, userId: string, projectId: strin
 
 export type SinaLogo = {
   source: "A" | "B" | "C"; name: string; style: LogoStyle; assetId: string | null; verdict: string; score: number | null; reason: string; best?: boolean; choosable?: boolean;
-  /** « planche » : le nom dessiné en code de la planche de marque (secours du logo unique, exact à la lettre). */
-  kind?: "planche";
+  /**
+   * « planche » : le nom dessiné en code de la planche de marque (secours du logo unique, exact à la lettre).
+   * « image » : le logo créé avec les images de la planche choisie, déjà relu (repris tel quel, sans rien repayer).
+   */
+  kind?: "planche" | "image";
 };
 
 /**
@@ -269,6 +272,22 @@ export async function savePlancheLogo(ctx: JobContext, who: { userId: string; pr
   return saveProposal(ctx, who.userId, who.projectId, result, { planche: true });
 }
 
+/**
+ * Le logo créé avec les images de la planche choisie (demande du propriétaire du 12 novembre 2026 : « chaque logo des
+ * planches par OpenAI […] une vraie direction artistique complète ») : il existe déjà et il a été relu. Le client le
+ * retrouve donc à l'étape 2 sans rien repayer ; il n'est redessiné que s'il en demande un autre.
+ */
+export const boardLogoReady = (j: Journey): boolean => !!chosenRoute(j)?.board.images?.logo && !(j.logos?.round);
+
+/** Range le logo de la planche comme proposition de logo (fond clair retiré depuis les bords, jamais de carré autour). */
+export async function saveBoardLogo(ctx: JobContext, who: { userId: string; projectId: string }, x: Route, territory: Territory, png: Buffer): Promise<string> {
+  const colors = plancheColors(x), family = canvasFamily(x.fonts.heading), w = safeWordmark(x.board.wordmark, x.name);
+  const spec: LogoSpec = { name: x.name, family, weight: nearestWeight(family, 700), case: w.case, tracking: w.tracking, layout: "wordmark", emblem: "none", color: colors.main, accent: colors.accent, markFrame: false, ...(w.dot ? { dot: true } : {}) };
+  const candidate: Candidate = { territoryId: territory.id, attempt: 0, spec, change: null, symbolSource: "artwork", artwork: { png, expected: { name: x.name, descriptor: null, tagline: null }, textBox: null, textCorrected: false, provider: "planche" } };
+  const result: ProposalResult = { territory, candidate, verdict: "PROVISIONAL", score: null, reason: L("créé avec ta planche et relu : ton nom y est exact", "made with your board and reviewed: your name is exact"), codes: [], attempts: 0, checkId: null };
+  return saveProposal(ctx, who.userId, who.projectId, result, { boardLogo: true });
+}
+
 /** Le logo dessiné de la série à un seul logo (jamais la version de secours du moteur : la planche la remplace). */
 export function singleLogoOfRun(run: EngineRun): SinaLogo | null {
   const rank = (r: ProposalResult) => (r.verdict === "FINAL" ? 300 : 0) + (r.score ?? 0) + (r.assetId === run.best ? 100 : 0);
@@ -298,13 +317,13 @@ export const SINA_LOGOS_JOB = "syna.logos";
 
 /** Tâche de fond : 3 logos libres dessinés et relus par le moteur V2 ; résultat rangé dans le parcours. */
 export async function runSinaLogosJob(ctx: JobContext) {
-  const { projectId, conversationId, capMicro, guidance } = z.object({ projectId: z.string(), conversationId: z.string(), capMicro: z.number().int().positive(), guidance: z.string().max(1500).optional() }).parse(ctx.payload);
+  const { projectId, conversationId, capMicro, guidance, fromBoard } = z.object({ projectId: z.string(), conversationId: z.string(), capMicro: z.number().int().positive(), guidance: z.string().max(1500).optional(), fromBoard: z.boolean().optional() }).parse(ctx.payload);
   const p = loadProject(projectId);
   const j = journeyOf(conversationId);
   if (!p.brand || !j.identityChoice) throw new HttpError(409, L("L'identité de marque doit être choisie avant les logos (étape 1).", "Choose the brand identity first (step 1)."));
   const facts = freeLogoFacts(p.brand, j);
   const route = chosenRoute(j);
-  if (route) return runSingleLogo(ctx, { projectId, conversationId, capMicro, guidance }, facts, route);
+  if (route) return runSingleLogo(ctx, { projectId, conversationId, capMicro, guidance, fromBoard }, facts, route);
   const drafts = freeTerritories(facts);
   const base = logoDeps.ai ? logoDeps.ai(ctx, p.userId, projectId) : realLogoV2Ai(ctx, { userId: p.userId, projectId });
   const index = (t: { name: string }) => Math.max(0, drafts.findIndex((d) => d.name === t.name));
@@ -335,9 +354,33 @@ export async function runSinaLogosJob(ctx: JobContext) {
  * l'idée de la marque et du nom dessiné de sa planche ; relu par le contrôle avant d'être montré. S'il n'est pas
  * validé, ou si le dessin échoue, le nom dessiné en code de la planche est proposé en secours.
  */
-async function runSingleLogo(ctx: JobContext, a: { projectId: string; conversationId: string; capMicro: number; guidance?: string }, facts: FreeLogoFacts, route: Route) {
+async function runSingleLogo(ctx: JobContext, a: { projectId: string; conversationId: string; capMicro: number; guidance?: string; fromBoard?: boolean }, facts: FreeLogoFacts, route: Route) {
   const p = loadProject(a.projectId);
   const draft = singleTerritory(facts, route);
+  // Le logo de la planche choisie existe déjà (créé et relu avec ses images) : il est repris, sans aucun appel payant.
+  // Le nom dessiné par le Studio est proposé à côté. Un autre logo n'est dessiné que si le client le demande.
+  const boardLogo = a.fromBoard && !a.guidance ? route.board.images?.logo : undefined, boardAsset = boardLogo ? getAsset(boardLogo.id) : undefined;
+  if (boardAsset && boardAsset.project_id === a.projectId && !boardAsset.deleted_at) {
+    try {
+      const who = { userId: p.userId, projectId: a.projectId }, territory = { ...draft, id: "planche", style: "libre" } as Territory;
+      const logoId = await saveBoardLogo(ctx, who, route, { ...territory, id: "planche-logo" }, await cleanArtwork(assetData(boardAsset)));
+      const nameId = await savePlancheLogo(ctx, who, route, territory);
+      const logos: SinaLogo[] = [
+        { source: "A", name: L("Le logo de ta planche", "The logo from your board"), style: "libre", assetId: logoId, verdict: "PROVISIONAL", score: null, reason: L("créé avec ta planche et relu : ton nom y est exact", "made with your board and reviewed: your name is exact"), choosable: true, kind: "image" },
+        { source: "B", name: L("Le nom dessiné de ta planche", "The name drawn on your board"), style: "libre", assetId: nameId, verdict: "PROVISIONAL", score: null, reason: L("dessiné par le Studio, exact à la lettre", "drawn by the Studio, letter-perfect"), choosable: true, kind: "planche" },
+      ];
+      updateJourney(a.conversationId, (x) => { x.logos = { list: logos, at: Date.now(), round: (x.logos?.round ?? 0) + 1, notes: [] }; setStep(x, 2, "review"); });
+      return { logos, notes: [], stoppedByCostCap: false, fromBoard: true };
+    } catch (e) {
+      if (e instanceof JobCancelled || e instanceof JobPaused || e instanceof LeaseLost) throw e;
+      // Le logo de la planche n'a pas pu être repris : on ne dessine rien en silence (ce serait une dépense non annoncée).
+      const nameId = await savePlancheLogo(ctx, { userId: p.userId, projectId: a.projectId }, route, { ...draft, id: "planche", style: "libre" } as Territory);
+      const logos: SinaLogo[] = [{ source: "A", name: L("Le nom dessiné de ta planche", "The name drawn on your board"), style: "libre", assetId: nameId, verdict: "PROVISIONAL", score: null, reason: L("dessiné par le Studio, exact à la lettre", "drawn by the Studio, letter-perfect"), choosable: true, kind: "planche" }];
+      const notes = [L("Je n'ai pas pu reprendre le logo de ta planche : voici ton nom dessiné. Je peux te dessiner un logo, je t'annonce son prix avant.", "I could not reuse your board's logo: here is your drawn name. I can draw a logo; I will tell you the price first.")];
+      updateJourney(a.conversationId, (x) => { x.logos = { list: logos, at: Date.now(), round: (x.logos?.round ?? 0) + 1, notes }; setStep(x, 2, "review"); });
+      return { logos, notes, stoppedByCostCap: false, fromBoard: true };
+    }
+  }
   const base = logoDeps.ai ? logoDeps.ai(ctx, p.userId, a.projectId) : realLogoV2Ai(ctx, { userId: p.userId, projectId: a.projectId });
   const ai: LogoV2Ai = {
     ...base,
