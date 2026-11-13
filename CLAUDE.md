@@ -320,22 +320,28 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     moteurs du Studio et leurs contrôles ; aucune n'a été essayée pour de vrai. **Ouvrir une étape** : réglage
     `sina.etapes_ouvertes` (ex. `[9]`), une à une, chacune après un essai réel validé par le propriétaire ; ne jamais
     en ouvrir une sans sa demande.
-  - **Savoir du thème** (demandes du propriétaire du 13 novembre 2026 : « Oubli ce qui déjà fait pour les thèmes sur
-    mesure dans le studio et dit comment tu ferais toi », puis « Tu vas déjà aller chercher toutes les idées de comment
-    on construit un thème le placement des images le copyright le placement des section la conception des sections, je
-    veux que toi et sina vous sachiez monter un thème complet de A a Z telle les plus grand créateur de thème au
-    monde ») : quatre cahiers de métier dans `docs/sina-savoir/` (`theme-construction-des-pages.md`, `theme-images.md`,
-    `theme-textes.md`, `theme-conception-des-sections.md`), tirés de quatre recherches sur le web (règles de Shopify
-    pour les thèmes vendus sur sa boutique, études d'ergonomie, documentation des studios de thèmes, droit français) et
-    d'un relevé fait par le Studio sur seize boutiques de démonstration des thèmes les plus populaires (téléphone).
-    « Copyright » a été compris comme l'écriture des textes, plus ce qu'on a le droit de reprendre chez les autres.
-    **Pas encore lus par SINA** (rien n'est branché dans le code) **et pas encore validés par le propriétaire.** Méthode
-    proposée par Claude, pas encore validée non plus : le thème est la suite de la planche de marque ; les textes
-    d'abord ; le téléphone d'abord ; des pièces sûres pour ce qui vend (bloc d'achat, panier, menu) et des pièces
-    dessinées pour ce qui raconte la marque ; montrer tôt et payer les photos tard ; trois regards avant de montrer ;
-    jusqu'à la boutique Shopify. Suite proposée : un modèle fait à la main (accueil de « Pulpe » sur téléphone), noté
-    par lui, avant d'apprendre à SINA à faire pareil. Trois points à trancher avec lui sont écrits à la fin du cahier
-    de construction (nombre de sections de produits sur l'accueil, longueur de l'accueil, barre d'achat collante).
+  - **Savoir du thème et bibliothèque de références** (demandes du propriétaire du 13 novembre 2026 : « Oubli ce qui
+    déjà fait pour les thèmes sur mesure dans le studio et dit comment tu ferais toi » ; « je veux que toi et sina vous
+    sachiez monter un thème complet de A a Z telle les plus grand créateur de thème au monde » ; puis « je veux tu aille
+    beaucoup mais beaucoup plus loin dans la recherche de thème […] sina et ou son sous agent qui fait les thèmes doit
+    connaître enormenment de référence afin de ne jamais faire de doublon dans les conception sur mesure que ce soit
+    pour du service ou du produit, je veux aussi que tu me dises comment tu compte demander à sina et son équipe de
+    monter le thème ») : seize cahiers de métier `docs/sina-savoir/theme-*.md` (construction des pages, images, textes,
+    conception des sections, pièces d'une boutique, typographie et couleur, mise en page et mouvement, originalité,
+    répertoire de 96 gestes et de 30 ouvertures, sections propres à 18 secteurs, sites de services par métier, atlas),
+    tirés de neuf recherches sur le web ; une bibliothèque de 1 072 cartes d'identité de sites
+    (`docs/sina-savoir/references/cartes.json` : 340 démonstrations de thèmes Shopify, 404 vraies boutiques de marques,
+    328 modèles de sites de services), relevée par un programme sans IA et sans coût ; la méthode proposée
+    `docs/sina-savoir/methode-montage-de-theme.md` : dix temps (dossier, références, histoire des pages, deux concepts
+    jugés sur l'originalité, le client voit tôt, textes, montage, photos, trois regards, livraison et registre), une
+    carte d'identité de dix lignes par thème, et une règle contre les doublons comparée sans IA à un registre des thèmes
+    livrés. « Copyright » a été compris comme l'écriture des textes, plus ce qu'on a le droit de reprendre.
+    **Rien n'est lu par SINA** (rien n'est branché dans le code), **rien n'est validé par le propriétaire, rien n'a été
+    essayé.** Autre demande du même jour, à faire après : faire créer par OpenAI l'image du site sur téléphone des
+    planches de marque, avec une consigne nourrie de ce savoir (« pour avoir un vrai rendu site internet ») : une image
+    payée de plus par planche, prix à annoncer avant. Suite proposée : un modèle fait à la main (accueil de « Pulpe » sur
+    téléphone), noté par lui, avant d'apprendre à SINA à faire pareil. Points à trancher avec lui : fin de
+    `theme-construction-des-pages.md` et de la méthode.
   - **À confirmer par le propriétaire** : le quatrième fond d'une série de quatre identités (aujourd'hui un fond clair
     coloré, « uni ») ; la règle « un fond sombre par série » quand le client demande du joyeux et du coloré (le directeur
     de création l'a contestée pendant l'essai) ; le réglage des modèles.

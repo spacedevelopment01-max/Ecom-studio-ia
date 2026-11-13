@@ -117,35 +117,56 @@ correction n'a pas encore été réessayée pour de vrai.
 « Haut les Pêches » 6/10, « Tout Feu Tout Fruit » 6/10, « Cerise sur le Verre » 4/10. Le juge ne garde qu'un nom qui
 vaudrait 8 sur 10 ou plus. Une proposition peut aussi se faire sur un nom que le client a choisi lui-même.
 
-## Le savoir pour monter un thème (demande du propriétaire, 13 novembre 2026)
+## Le savoir pour monter un thème (demandes du propriétaire, 13 novembre 2026)
 
-Le propriétaire a demandé d'aller chercher « toutes les idées de comment on construit un thème » (placement des
-images, écriture des textes, placement des sections, conception des sections), pour que SINA sache monter un thème
-complet « telle les plus grand créateur de thème au monde ».
+Deux demandes le même jour. D'abord : aller chercher « toutes les idées de comment on construit un thème », pour que
+SINA sache monter un thème complet « telle les plus grand créateur de thème au monde ». Puis : « je veux tu aille
+beaucoup mais beaucoup plus loin dans la recherche de thème […] sina et ou son sous agent qui fait les thèmes doit
+connaître enormenment de référence afin de ne jamais faire de doublon dans les conception sur mesure que ce soit pour
+du service ou du produit, je veux aussi que tu me dises comment tu compte demander à sina et son équipe de monter le
+thème ».
+
+**La méthode :** `methode-montage-de-theme.md` (dix temps, la carte d'identité d'un thème, la règle contre les
+doublons). Proposition, à valider.
+
+**Les cahiers de métier**
 
 | Fichier | Ce que c'est |
 |---|---|
-| `theme-construction-des-pages.md` | Les pages d'un thème complet, l'ordre des sections et son pourquoi, selon le catalogue et le métier ; le relevé de seize boutiques de démonstration. |
-| `theme-images.md` | L'ouverture, le texte sur une image, le recadrage, les proportions et les tailles, la galerie du produit, le rythme, la vitesse. |
-| `theme-textes.md` | Le titre d'ouverture, la fiche produit, la voix, le référencement, l'honnêteté et le droit, s'inspirer sans copier. |
-| `theme-conception-des-sections.md` | Comment un thème Shopify est bâti, ce que Shopify exige, une section qui tient avec n'importe quel contenu, le système de design, le téléphone d'abord, ce qui distingue un grand thème. |
+| `theme-construction-des-pages.md` | Les pages d'un thème complet, l'ordre des sections et son pourquoi. |
+| `theme-images.md` | L'ouverture, le texte sur une image, le recadrage, les tailles, la galerie du produit, la vitesse. |
+| `theme-textes.md` | Le titre d'ouverture, la fiche produit, la voix, le référencement, le droit, s'inspirer sans copier. |
+| `theme-conception-des-sections.md` | Comment un thème Shopify est bâti, ce que Shopify exige, le système de design, le téléphone d'abord. |
+| `theme-pieces-catalogue.md` | La carte produit, la collection, la recherche, le menu, l'international, la vitesse. |
+| `theme-pieces-achat.md` | Le bloc d'achat, les avis, les ventes additionnelles, le panier, les fenêtres, la confiance, les formulaires. |
+| `theme-typographie-et-couleur.md` | Choisir et régler les polices, bâtir une palette ; 48 couples de polices, 33 palettes. |
+| `theme-mise-en-page-et-mouvement.md` | Grilles, hiérarchie, mouvement, système ; 58 mises en page de section. |
+| `theme-originalite-et-signature.md` | La méthode des agences, ce que notent les jurys, 22 sites regardés, les clichés, les épreuves d'originalité. |
+| `theme-repertoire-gestes-et-ouvertures.md` | 96 gestes de signature et 30 formes d'ouverture. |
+| `theme-sections-par-secteur-1.md`, `-2.md` | Les sections propres au produit, sur 18 secteurs, et 40 sections de récit. |
+| `theme-services-commerces-et-soins.md` | Sites de services : restaurants, beauté, santé, artisans, immobilier ; référencement local. |
+| `theme-services-conseil-loisirs-et-accueil.md` | Sites de services : sport, image, conseil, garage, hébergement, domicile. |
+| `theme-atlas-des-references.md` | Les chiffres tirés de la bibliothèque de références. |
+| `theme-atlas-par-secteur-et-metier.md` | Les mêmes chiffres par secteur et par métier, et le vocabulaire des sections. |
 
-**D'où ils viennent.** Quatre recherches sur le web menées en parallèle le 13 novembre 2026 (règles de Shopify pour les
-thèmes vendus sur sa boutique, études du Baymard Institute et du Nielsen Norman Group, documentation des studios de
-thèmes, sources officielles françaises et européennes pour le droit), et un relevé fait par le Studio : seize boutiques
-de démonstration parmi les thèmes payants les plus populaires, ouvertes sur un téléphone simulé, mesurées section par
-section ; trois regardées en image. Chaque règle porte sa source ; ce qui n'a pas été vérifié est écrit « (métier) »
-ou « (extrait) ». Relus à la source par le Studio : les notes exigées par Shopify (60 en vitesse, 90 en accessibilité),
-ses pages obligatoires, ses limites (25 sections par page, 50 blocs par section), son interdiction des faux comptes à
-rebours, et deux constats d'étude sur la fiche produit.
+**La bibliothèque de références :** `references/cartes.json`, 1 072 cartes d'identité de sites (340 démonstrations de
+thèmes Shopify, 404 vraies boutiques de marques, 328 modèles de sites de services), relevées par un programme, sans
+IA. Notice : `references/LISEZMOI.md`.
 
-**Statut.** Ces quatre cahiers ne sont **pas encore lus par SINA** : rien n'est branché dans le code. Ils ne sont
-**pas encore validés par le propriétaire**. « Copyright », dans sa demande, a été compris comme l'écriture des textes ;
-le cahier des textes dit aussi ce qu'on a le droit de reprendre chez les autres.
+**D'où vient ce savoir.** Neuf recherches sur le web menées le 13 novembre 2026 (règles de Shopify, études du Baymard
+Institute et du Nielsen Norman Group, documentation des studios de thèmes, agences de marque, sources officielles
+françaises et européennes), et trois relevés faits par le Studio dans un navigateur. Chaque règle porte sa source ; ce
+qui n'a pas été vérifié est marqué. Relus à la source par le Studio : les notes exigées par Shopify (60 en vitesse, 90
+en accessibilité), ses pages obligatoires, ses limites, son interdiction des faux comptes à rebours, trois constats
+d'étude sur la fiche produit, et trois obligations françaises (devis, prix des coiffeurs, agents immobiliers).
+
+**Statut.** Rien de tout cela n'est **lu par SINA** : rien n'est branché dans le code. Rien n'est **validé par le
+propriétaire**. « Copyright », dans sa demande, a été compris comme l'écriture des textes ; le cahier des textes dit
+aussi ce qu'on a le droit de reprendre chez les autres. Chaque cahier tient dans la longueur que les spécialistes de la
+marque lisent déjà (22 000 caractères avant les sources).
 
 **Suite proposée.** Comme pour les planches de marque : un modèle fait à la main (l'accueil de « Pulpe » sur
-téléphone), noté par le propriétaire, puis le branchement dans SINA. Trois points à trancher avec lui sont écrits à la
-fin de `theme-construction-des-pages.md`.
+téléphone), noté par le propriétaire, puis le branchement dans SINA.
 
 ## Ce qui n'est pas réglé
 
