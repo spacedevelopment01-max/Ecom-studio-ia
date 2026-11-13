@@ -120,6 +120,20 @@ répertoire. C'est une image payée de plus par planche : à essayer avec un pri
 - La relecture en image de toutes les pages, pas seulement de l'accueil.
 - La mise en boutique Shopify d'un thème sur mesure, qui reste à brancher.
 
+## Retours du propriétaire sur cette méthode (13 novembre 2026)
+
+- **« juste changer les images et les textes ferais déjà des thèmes trop basique »** : une section ne change pas
+  seulement de photo et de texte d'un thème à l'autre. Elle a plusieurs constructions, et sa tenue (titres, formes,
+  fond, décor) vient de la planche de marque. Il attend aussi de la variété dans les pièces de base : « les clients ne
+  vont pas avoir tous les même menu les même bouton ».
+- **« fiche 2 et 3 ça donne pas envie du tout le visuel du thème »** : deux styles (calme, brut) avaient été essayés
+  sur la photo d'une autre marque, avec des textes vides. Trois règles en sortent. Tout écran montré doit donner envie,
+  même un écran fait pour expliquer : c'est la première question du regard « cliente » du temps 9, et elle se pose
+  déjà au temps 5. Un style ne s'essaie jamais sur la photo ni sur les mots d'une autre marque : photo, mots et tenue
+  viennent de la même planche. Chaque thème porte un signe pris sur son produit ou son métier (la niche du mur pour un
+  fauteuil, l'étiquette cousue et la sangle pour un sac), repris à plusieurs endroits de la page.
+- **Les sections qui manquent** : inventaire dans `inventaire-sections-manquantes.md`.
+
 ## Ce qui n'est pas réglé
 
 - **Rien de cette méthode n'a été essayé.** La première preuve proposée est un modèle fait à la main (l'accueil de

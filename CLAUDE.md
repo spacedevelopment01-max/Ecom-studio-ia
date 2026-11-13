@@ -351,6 +351,12 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     celle que tu as vu sur internet » ; il veut aussi de la variété dans les pièces de base (« les clients ne vont pas
     avoir tous les même menu les même bouton »). Réponse proposée, pas encore validée : chaque section a plusieurs
     constructions et sa tenue (titres, formes, fond, décor) vient de la planche de marque.
+    Retour du même jour sur l'image qui montrait la même section en trois styles : « fiche 2 et 3 ça donne pas envie du
+    tout le visuel du thème » (un style calme et un style brut essayés sur la photo de Pulpe, avec des textes vides).
+    À retenir : tout écran qu'on lui montre, même pour expliquer, doit donner envie ; un style ne s'essaie jamais sur la
+    photo ni sur les mots d'une autre marque ; chaque thème porte un signe pris sur son produit (la niche du mur pour
+    un fauteuil, l'étiquette cousue pour un sac). Les deux fiches ont été refaites à la main avec les photos d'ALCÔVE et
+    de TRAVERSE ; il ne les a pas encore notées.
   - **À confirmer par le propriétaire** : le quatrième fond d'une série de quatre identités (aujourd'hui un fond clair
     coloré, « uni ») ; la règle « un fond sombre par série » quand le client demande du joyeux et du coloré (le directeur
     de création l'a contestée pendant l'essai) ; le réglage des modèles.
