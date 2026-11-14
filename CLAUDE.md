@@ -3,6 +3,19 @@
 Studio qui crée la marque, la boutique Shopify (ou le site d'une entreprise de services), les visuels, vidéos,
 publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâches de fond + SQLite. Voir `README.md`.
 
+## Référence à lire en premier (décision du 14 novembre 2026)
+
+**`docs/studio/LE-STUDIO-DE-A-A-Z.md`** : le Studio à construire, écrit sur une page blanche avec les mots du
+propriétaire (« je veux que chaque client […] ait juste quelques infos à donner […] et que le studio avec sina fasse
+tout leur e-commerce de A à Z » ; « une sorte d'IA Claude et ChatGPT mélangés », qui prend les devants). **Version 1, en
+attente de ses corrections et de ses réponses aux 24 questions** (page en ligne :
+https://claude.ai/artifact/76xobBZYJxCMt6oxuSeNLn). Méthode acceptée par lui (« Oui, on repart comme ça ») : on garde
+les fondations, on reconstruit SINA au propre (une seule façon de faire chaque chose, tout allumé), on supprime les
+anciennes façons, on archive les vieilles notes de ce fichier ; inventaire du code en trois piles présenté avant toute
+modification ; plan en lots validés un par un ; un lot est fini quand SINA le réussit seule avec la vraie IA ; Claude ne
+joue que le client dans les essais (« c'est à sina d'y faire, pas à toi ») ; une conversation par lot. Les notes
+ci-dessous restent vraies comme historique, mais le document de référence prime dès qu'il est validé.
+
 ## Avec le propriétaire
 
 - **Répondre en français simple** : il n'est pas développeur. Expliquer ce qui change pour lui, pas le code.
