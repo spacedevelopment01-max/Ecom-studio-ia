@@ -577,6 +577,25 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   préférée).
   **Dépensé en essais réels au 14 novembre : 8,41 €** (8,13 + 0,28 pour les six images de publications de Pulpe),
   plafond 10 $ (9 €).
+- **Essai réel pas à pas sur un projet de services, 14 novembre 2026** (sa demande : « fait un test payant sur un tout
+  nouveau projet cette fois ci de service et chaque etape tu t'arrete […] l'identité de marque, les 3 angles, le theme » ;
+  toiletteuse en camion à Nantes, cliente inventée pour l'essai ; accord écrit « oui » pour l'identité avec un plafond de
+  8 €) : 3 identités en 20 minutes, **5,25 € comptés par le Studio** (53 appels) : « Pelage », « Coussinet », « Museau ».
+  Ses retours, à ne jamais lui faire répéter : « Pelage et Coussinet, le logo c'est la même conception que Pulpe […] on
+  a dit les logos doivent être faits par OpenAI et sur la base de la nouvelle marque » ; « Tu me ressors encore des
+  vieux pictogrammes dégueulasses » ; le logo de « Museau » (la truffe) lui plaît : original et dans le style de sa
+  planche. Cause trouvée : le nom composé par le Studio, avec la vague de Pulpe, était envoyé en modèle à OpenAI.
+  **Corrigé et testé (IA simulée)** : logo conçu par OpenAI sans modèle, à partir de la marque, nom épelé, chaque logo
+  de la série différent, vague interdite (`LOGO_OWN`, `brand-images.ts`), contrôle gratuit du fond blanc
+  (`logoOnWhite` : le logo noir et illisible de « Coussinet » avait été gardé), logo d'une autre marque refusé (losange
+  Renault sur le camion de « Pelage »), logo gardé affiché en tête de planche et dans le haut du site (`mark`,
+  `markDark`) ; **plus aucun pictogramme dessiné en code** dans « Ce qu'on reconnaît sans lire le nom » (logo,
+  couleurs et mots seulement ; image « signes » d'OpenAI prévue, `SIGNS_LINE`, pas encore essayée) ; reprise d'une
+  partie des images d'une planche (charge utile `slots`). Reste à faire : refaire pour de vrai les logos de « Pelage »
+  et « Coussinet » (devis 0,94 € probable, 1,48 € au plus, accord écrit à obtenir), la carte de visite dessinée qui
+  déborde quand l'image de l'objet est refusée, puis les étapes 3 angles et thème, chacune avec son devis et son accord.
+  Dépensé en essais réels au 14 novembre, ce test compris : 13,66 € comptés par le Studio (8,41 + 5,25 ; le plafond
+  d'essais de 10 $ est dépassé avec son accord écrit pour cette étape).
 - **Réponses courtes et claires**, sans jargon ; ne pas reposer une question à laquelle il a déjà répondu.
 - **Ne pas décider à sa place** : un retrait de contenu ou un changement visible important se propose, il ne s'applique
   qu'après son accord. Retirer un visuel raté sans rien mettre à la place n'est pas une correction.
