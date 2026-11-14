@@ -944,8 +944,11 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       // sur le site fini ; rien de plus.
       const slotsAll = B.photoSlots(loadCustomTheme(pid)!, { productPhotos: true }).length;
       const { LOOK_CAP_MICRO: lookCap, LOOK_PAGES_MAX: lookPages } = await import("@/lib/syna-agent/custom-theme/looks");
-      expect(est.maxMicro).toBe(B.SITE_PLAN_CAP_MICRO + slotsAll * (50_000 + chk()) + B.PHOTO_REVIEW_CAP_MICRO + B.MAX_PHOTO_FIXES * B.SECTION_TEXT_CAP_MICRO + lookCap * lookPages);
-      expect(estOwn.maxMicro).toBe(B.SITE_PLAN_CAP_MICRO + lookCap * lookPages); // ses images seulement : aucune photo créée, donc aucune relecture de photos
+      // + la lecture de leurs cahiers de métier (le rédacteur pour le plan, la directrice artistique pour sa relecture et ses reprises).
+      const { buildKnowledge } = await import("@/lib/syna-agent/custom-theme/tools");
+      const none = { sections: 0, fixes: 0, fixesUsual: 0, review: false, briefCalls: 0 };
+      expect(est.maxMicro).toBe(B.SITE_PLAN_CAP_MICRO + slotsAll * (50_000 + chk()) + B.PHOTO_REVIEW_CAP_MICRO + B.MAX_PHOTO_FIXES * B.SECTION_TEXT_CAP_MICRO + lookCap * lookPages + buildKnowledge({ ...none, artReview: true, artFixes: B.MAX_PHOTO_FIXES }).max);
+      expect(estOwn.maxMicro).toBe(B.SITE_PLAN_CAP_MICRO + lookCap * lookPages + buildKnowledge({ ...none, artReview: false, artFixes: 0 }).max); // ses images seulement : aucune photo créée, donc aucune relecture de photos
       // Second temps : les descriptions manquantes sont écrites, puis les photos créées.
       let briefs = 0, made = 0;
       B.customBrandDeps.photoBrief = async (prompt) => { briefs++; const files = /PHOTOS À DÉCRIRE \(source exacte\) : (.*)$/m.exec(prompt)![1].split(", "); return { photos: files.map((f) => ({ find: f, description: "Photographie d'ambiance : une théière en verre sur une table en bois, lumière du matin.", ratio: "1:1" as const, product: null })) }; };

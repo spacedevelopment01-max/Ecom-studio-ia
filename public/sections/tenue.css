@@ -6,14 +6,18 @@
  */
 .ctw .tn{position:relative;box-sizing:border-box;background:var(--tn-fond);color:var(--tn-encre);font-family:var(--f-ui);font-size:16px;line-height:normal;letter-spacing:normal;font-weight:400}
 .ctw .tn *{box-sizing:border-box}
-.ctw .tn h1,.ctw .tn h2,.ctw .tn h3{font-family:var(--f-title);font-weight:400!important;margin:0;letter-spacing:-.015em;line-height:1;text-transform:none}
+/* --tn-k : échelle des grands titres. Les capitales prennent plus de place : elles sont réduites, et un mot plus large
+   que l'écran se coupe plutôt que de dépasser. Toute taille de h1 ou de h2 s'écrit calc(Npx*var(--tn-k)). */
+.ctw{--tn-k:1}
+.ctw[data-tn-titres="capitales"]{--tn-k:.78}
+.ctw .tn h1,.ctw .tn h2,.ctw .tn h3{font-family:var(--f-title);font-weight:var(--tn-poids,400)!important;margin:0;letter-spacing:-.015em;line-height:1;text-transform:none;overflow-wrap:break-word}
 .ctw .tn p,.ctw .tn figure,.ctw .tn ul{margin:0;padding:0}
 .ctw .tn p{line-height:1.55}
 .ctw .tn ul{list-style:none}
 .ctw .tn a{color:inherit;text-decoration:none}
 .ctw .tn small{display:block;font-family:var(--f-title);font-style:italic;font-size:17px;color:var(--tn-sourd)}
 .ctw .tn .tn-ph{background-color:var(--tn-doux);background-size:cover;background-position:center;background-repeat:no-repeat}
-.ctw .tn mark.tn-manque{background:#f3c64b;color:#1b1a17;padding:1px 6px;border-radius:5px;font-weight:600;white-space:nowrap;font-family:var(--f-ui);font-style:normal}
+.ctw .tn mark.tn-manque{background:#f3c64b;color:#1b1a17;padding:1px 6px;border-radius:5px;font-weight:600;font-family:var(--f-ui);font-style:normal;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 
 /* ── Bouton : la forme vient de la tenue ── */
 .ctw .tn .tn-bt{display:inline-block;text-align:center;background:var(--tn-bouton);color:var(--tn-sur-bouton);font-family:var(--f-ui);font-weight:600;font-size:16px;line-height:normal;letter-spacing:.01em;padding:15px 34px;border-radius:999px;border:0;cursor:pointer}
@@ -25,7 +29,14 @@
 /* ── Cadre des photos : la forme vient de la tenue ── */
 .ctw .tn .tn-cadre{border-radius:var(--tn-arrondi,0)}
 .ctw[data-tn-cadre="niche"] .tn .tn-cadre{border-radius:999px 999px 0 0}
-.ctw[data-tn-cadre="penche"] .tn .tn-cadre{border:3px solid var(--tn-encre);border-radius:18px;transform:rotate(-3deg);box-shadow:7px 8px 0 var(--tn-encre)}
+.ctw[data-tn-cadre="penche"] .tn .tn-cadre{border:3px solid var(--tn-encre);border-radius:18px;transform:rotate(-2deg);box-shadow:6px 7px 0 var(--tn-encre)}
+.ctw[data-tn-cadre="penche"] .tn :nth-child(even)>.tn-cadre,.ctw[data-tn-cadre="penche"] .tn .tn-cadre:nth-child(even){transform:rotate(1.6deg)}
+/* Cadre penché des sections du socle (leurs photos encadrées n'ont pas la classe tn-cadre). */
+.ctw[data-tn-cadre="penche"] :is(.tn-de-pres,.tn-places,.tn-produits) .tn-ph,.ctw[data-tn-cadre="penche"] :is(.tn-histoire,.tn-404) .tn-ph,.ctw[data-tn-cadre="penche"] .tn-achat .tn-grande,.ctw[data-tn-cadre="penche"] .tn-ouverture[data-tn-c="titre-puis-cadre"] .tn-ph{border:3px solid var(--tn-encre);border-radius:18px;box-shadow:6px 7px 0 var(--tn-encre)}
+.ctw[data-tn-cadre="penche"] :is(.tn-de-pres,.tn-places) figure:nth-child(odd) .tn-ph,.ctw[data-tn-cadre="penche"] .tn-produits .tn-carte-p:nth-child(odd) .tn-ph{transform:rotate(-2deg)}
+.ctw[data-tn-cadre="penche"] :is(.tn-de-pres,.tn-places) figure:nth-child(even) .tn-ph,.ctw[data-tn-cadre="penche"] .tn-produits .tn-carte-p:nth-child(even) .tn-ph{transform:rotate(1.6deg)}
+.ctw[data-tn-cadre="penche"] :is(.tn-histoire,.tn-404) .tn-ph,.ctw[data-tn-cadre="penche"] .tn-achat .tn-grande,.ctw[data-tn-cadre="penche"] .tn-ouverture[data-tn-c="titre-puis-cadre"] .tn-ph{transform:rotate(-1.2deg)}
+.ctw[data-tn-cadre="penche"] :is(.tn-de-pres,.tn-places,.tn-produits,.tn-histoire,.tn-404,.tn-achat){overflow-x:clip}
 
 /* ── Titres : la tenue ── */
 .ctw[data-tn-titres="gras"] .tn h1,.ctw[data-tn-titres="gras"] .tn h2{letter-spacing:-.035em;line-height:.93}
@@ -48,6 +59,17 @@
 .ctw .tn-entete .tn-menu nav{position:absolute;left:0;right:0;top:100%;z-index:50;background:var(--tn-fond);border-top:1.5px solid var(--tn-encre);border-bottom:1.5px solid var(--tn-encre);padding:8px 20px 14px;display:grid}
 .ctw .tn-entete .tn-menu nav a{font-family:var(--f-title);font-size:26px;line-height:1.3;padding:8px 0;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
 .ctw .tn-entete .tn-menu nav a:last-child{border-bottom:0}
+/* Sous-menus (familles du catalogue) et grand menu : calculés par le Studio depuis les vraies données (menu.ts). */
+.ctw .tn-entete .tn-menu nav .tn-sous{border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-entete .tn-menu nav .tn-sous:last-child{border-bottom:0}
+.ctw .tn-entete .tn-menu nav .tn-sous summary{height:auto;margin:0;display:flex;justify-content:space-between;align-items:center;font-family:var(--f-title);font-size:26px;line-height:1.3;padding:8px 0}
+.ctw .tn-entete .tn-menu nav .tn-sous summary::after{content:"+";font-family:var(--f-ui);font-size:20px;font-weight:400}
+.ctw .tn-entete .tn-menu nav .tn-sous[open] summary::after{content:"−"}
+.ctw .tn-entete .tn-menu nav .tn-sous-in{display:grid;padding:0 0 12px 14px}
+.ctw .tn-entete .tn-menu nav .tn-sous-in a{font-family:var(--f-ui);font-size:16px;line-height:1.3;padding:8px 0;border-bottom:0}
+.ctw .tn-entete .tn-menu nav .tn-sous-in .tn-fam{font-weight:600}
+.ctw .tn-entete .tn-menu nav .tn-col{display:grid;padding:4px 0 8px}
+.ctw .tn-entete .tn-menu nav .tn-col a:not(.tn-fam){color:var(--tn-texte);padding:5px 0}
 .ctw .tn-entete .tn-pan{appearance:none;background:none;border:0;padding:0;color:inherit;font-family:var(--f-ui);font-weight:400;font-size:14px;line-height:normal;letter-spacing:normal;cursor:pointer;position:relative;z-index:1}
 .ctw .tn-entete .tn-pan u{text-decoration:none}
 /* construction « à gauche » : le nom à gauche, le menu et le panier en mots à droite */
@@ -73,8 +95,8 @@
 /* « dans la photo » : photo pleine, le titre posé dans sa partie calme, le texte et le bouton dessous */
 .ctw .tn-ouverture[data-tn-c="dans-la-photo"]{padding-bottom:26.3px;text-align:center}
 .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-ph{height:512px;background-position:center 12%}
-.ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-in{position:absolute;left:0;right:0;top:82px}
-.ctw .tn-ouverture[data-tn-c="dans-la-photo"] h1{font-size:46px;letter-spacing:-.012em;margin-top:8px}
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-in{position:absolute;left:0;right:0;top:82px;padding:0 20px}
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"] h1{font-size:calc(46px*var(--tn-k));letter-spacing:-.012em;margin-top:8px}
 .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-bas{padding:26px 40px 0}
 .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-bas p{font-size:16.5px;color:var(--tn-texte)}
 .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-bt{margin-top:20px}
@@ -82,7 +104,7 @@
 .ctw .tn-ouverture[data-tn-c="titre-puis-cadre"]{padding:18px 0 40px}
 .ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] .tn-in{display:contents}
 .ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] small{display:none}
-.ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] h1{font-size:64px;line-height:.94;letter-spacing:-.02em;margin:0 20px}
+.ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] h1{font-size:calc(64px*var(--tn-k));line-height:.94;letter-spacing:-.02em;margin:0 20px}
 .ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] .tn-ph{margin:26px 20px 0;height:420px;background-position:center 62%;border-radius:var(--tn-arrondi,0)}
 .ctw[data-tn-cadre="niche"] .tn-ouverture[data-tn-c="titre-puis-cadre"] .tn-ph{border-radius:175px 175px 0 0}
 .ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] .tn-bas{display:flex;flex-direction:column-reverse;align-items:center;margin-top:-23px;padding:0 28px;position:relative}
@@ -93,7 +115,7 @@
 .ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-etq::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--tn-fond)}
 .ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-in{padding:18px 20px 20px}
 .ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-in small{display:none}
-.ctw .tn-ouverture[data-tn-c="titre-geant"] h1{font-size:60px;line-height:.93;letter-spacing:-.035em;margin-top:14px}
+.ctw .tn-ouverture[data-tn-c="titre-geant"] h1{font-size:calc(60px*var(--tn-k));line-height:.93;letter-spacing:-.035em;margin-top:14px}
 .ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-ph{height:368px}
 .ctw .tn-ouverture[data-tn-c="titre-geant"]{padding-bottom:16px}
 .ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-bas{display:flex;flex-direction:column-reverse;align-items:flex-start;padding:0 20px;margin-top:-28px}
@@ -110,7 +132,7 @@
 
 /* ══ De près : trois photos dans le cadre de la marque ══ */
 .ctw .tn-de-pres{padding:44px 20px 0}
-.ctw .tn-de-pres h2{font-size:40px}
+.ctw .tn-de-pres h2{font-size:calc(40px*var(--tn-k))}
 .ctw .tn-de-pres .tn-trois{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
 .ctw .tn-de-pres .tn-ph{height:150px;border-radius:var(--tn-arrondi,0)}
 .ctw[data-tn-cadre="niche"] .tn-de-pres .tn-ph{border-radius:58px 58px 0 0}
@@ -129,11 +151,11 @@
 .ctw[data-tn-cadre="niche"] .tn-achat .tn-vignettes i{border-radius:32px 32px 8px 8px}
 .ctw .tn-achat .tn-vignettes i:first-child{outline:1.5px solid var(--tn-encre);outline-offset:2px}
 .ctw .tn-achat small{margin-top:24px}
-.ctw .tn-achat h1{font-size:46px;margin-top:2px}
+.ctw .tn-achat h1{font-size:calc(46px*var(--tn-k));margin-top:2px}
 .ctw .tn-achat .tn-prix{font-size:19px;margin-top:12px}
 .ctw .tn-achat p{font-size:16.5px;color:var(--tn-texte);margin-top:12px}
 .ctw .tn-achat .tn-option{display:flex;align-items:center;gap:10px;margin-top:18px;font-size:15.5px}
-.ctw .tn-achat .tn-option i{display:block;width:26px;height:26px;border-radius:50%;background:var(--tn-accent);outline:1.5px solid var(--tn-encre);outline-offset:3px}
+.ctw .tn-achat .tn-option i{display:block;width:26px;height:26px;border-radius:50%;background:var(--teinte,var(--tn-accent));outline:1.5px solid var(--tn-encre);outline-offset:3px}
 .ctw .tn-achat .tn-bt{display:block;margin-top:20px;font-size:16.5px;padding:16px 20px;letter-spacing:normal}
 .ctw .tn-achat .tn-reperes{margin-top:16px;font-size:15px;line-height:2}
 .ctw .tn-barre{position:fixed;left:12px;right:12px;bottom:12px;z-index:70;max-width:420px;margin:0 auto;background:color-mix(in srgb,var(--tn-fond) 40%,#fff);color:var(--tn-encre);border-radius:999px;padding:8px 8px 8px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 8px 24px rgba(40,25,15,.28);font-size:15px;transform:translateY(170%);transition:transform .35s ease}
@@ -142,12 +164,18 @@
 .ctw .tn .tn-barre .tn-bt{display:inline-block;margin:0;padding:12px 18px;font-size:15px;white-space:nowrap;letter-spacing:normal}
 html:not([data-po-barre="1"]) .ctw .tn-barre{display:none}
 .tb-pg[hidden] .tn-barre{display:none}
+/* Rupture de stock : dite sous le prix, le bouton ne commande plus ; sur une carte, la photo s'efface un peu. */
+.ctw .tn-achat .tn-rupture{margin-top:8px;font-size:15px;font-weight:600;color:var(--tn-accent)}
+.ctw .tn .tn-bt.tn-off{opacity:.45;pointer-events:none}
+.ctw .tn .tn-carte-p.tn-epuise .tn-ph{opacity:.55}
+/* Fenêtres de tout le site (cookies, âge, discussion) : posées en bas de l'écran, par-dessus la page. */
+.ctw .tn-fixes{position:fixed;left:0;right:0;bottom:0;z-index:66;display:grid}
 /* La barre d'achat ne couvre jamais le pied de page : il lui laisse sa place en bas de la fiche produit. */
 html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{padding-bottom:80px}
 
 /* ══ Volets (description, questions) ══ */
 .ctw .tn-volets{padding:0 20px}
-.ctw .tn-volets h2{font-size:40px;margin:44px 0 18px}
+.ctw .tn-volets h2{font-size:calc(40px*var(--tn-k));margin:44px 0 18px}
 .ctw .tn-volets[data-tn-c="sans-titre"] h2{display:none}
 .ctw .tn-volets .tn-liste{border-top:1.5px solid var(--tn-encre)}
 .ctw .tn-volets details{border-bottom:1.5px solid var(--tn-encre);padding:16px 0}
@@ -161,13 +189,13 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 .ctw .tn-emotion{margin-top:44px;background:none}
 .ctw .tn-emotion .tn-ph{height:470px}
 .ctw .tn-emotion::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,color-mix(in srgb,var(--tn-encre) 55%,transparent) 0%,transparent 46%);pointer-events:none}
-.ctw .tn-emotion h2{position:absolute;left:24px;right:60px;top:30px;z-index:1;font-size:38px;color:color-mix(in srgb,var(--tn-fond) 40%,#fff)}
+.ctw .tn-emotion h2{position:absolute;left:24px;right:60px;top:30px;z-index:1;font-size:calc(38px*var(--tn-k));color:color-mix(in srgb,var(--tn-fond) 40%,#fff)}
 /* Titres gras : plus larges, donc plus petits ici, pour rester dans la partie assombrie du haut de la photo. */
-.ctw[data-tn-titres="gras"] .tn-emotion h2,.ctw[data-tn-titres="capitales"] .tn-emotion h2{font-size:31px;right:24px;line-height:1}
+.ctw[data-tn-titres="gras"] .tn-emotion h2,.ctw[data-tn-titres="capitales"] .tn-emotion h2{font-size:calc(31px*var(--tn-k));right:24px;line-height:1}
 
 /* ══ Où le mettre : une file de photos dans le cadre de la marque ══ */
 .ctw .tn-places{padding:44px 0 0 20px;overflow:hidden}
-.ctw .tn-places h2{font-size:40px}
+.ctw .tn-places h2{font-size:calc(40px*var(--tn-k))}
 .ctw .tn-places p{font-size:16px;line-height:1.5;color:var(--tn-texte);margin:8px 20px 0 0}
 .ctw .tn-places .tn-file{display:flex;gap:12px;margin-top:18px}
 .ctw .tn-places figure{flex:0 0 200px}
@@ -179,7 +207,7 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 .ctw .tn-mesures{padding:44px 20px 0}
 .ctw .tn-mesures .tn-carte{background:var(--tn-doux);padding:34px 22px 24px;border-radius:14px}
 .ctw[data-tn-cadre="niche"] .tn-mesures .tn-carte{border-radius:90px 90px 14px 14px}
-.ctw .tn-mesures h2{font-size:40px;text-align:center}
+.ctw .tn-mesures h2{font-size:calc(40px*var(--tn-k));text-align:center}
 .ctw .tn-mesures svg{display:block;margin:14px auto 6px;width:210px;height:150px}
 .ctw .tn-mesures svg .tn-forme{display:none}
 .ctw .tn-mesures:not([data-tn-c]) svg .tn-forme[data-f="boite"],.ctw .tn-mesures[data-tn-c="boite"] svg .tn-forme[data-f="boite"],.ctw .tn-mesures[data-tn-c="fauteuil"] svg .tn-forme[data-f="fauteuil"],.ctw .tn-mesures[data-tn-c="sac"] svg .tn-forme[data-f="sac"],.ctw .tn-mesures[data-tn-c="flacon"] svg .tn-forme[data-f="flacon"]{display:inline}
@@ -190,7 +218,7 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 
 /* ══ Appel final ══ */
 .ctw .tn-final{margin-top:44px;background:var(--tn-encre);color:var(--tn-sur-bouton);padding:40px 24px 96px;text-align:center}
-.ctw .tn-final h2{font-size:40px}
+.ctw .tn-final h2{font-size:calc(40px*var(--tn-k))}
 .ctw .tn-final .tn-bt{display:block;background:var(--tn-sur-bouton);color:var(--tn-encre);margin-top:22px;font-size:16.5px;padding:16px 20px;letter-spacing:normal}
 
 /* ══ Page introuvable ══ */
@@ -198,7 +226,7 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 .ctw .tn-404 .tn-ph{width:190px;height:230px;margin:0 auto;border-radius:var(--tn-arrondi,0)}
 .ctw[data-tn-cadre="niche"] .tn-404 .tn-ph{border-radius:95px 95px 0 0}
 .ctw .tn-404 small{margin-top:22px}
-.ctw .tn-404 h1{font-size:44px;letter-spacing:-.012em;margin-top:6px}
+.ctw .tn-404 h1{font-size:calc(44px*var(--tn-k));letter-spacing:-.012em;margin-top:6px}
 .ctw .tn-404 p{font-size:16.5px;color:var(--tn-texte);margin-top:14px}
 .ctw .tn-404 .tn-champ{margin-top:22px;border:1.5px solid var(--tn-encre);border-radius:999px;padding:13px 20px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:16px;color:var(--tn-sourd);text-align:left}
 .ctw .tn-404 .tn-champ svg{width:20px;height:20px;flex:none;color:var(--tn-encre)}
@@ -208,7 +236,7 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 
 /* ══ Contact ══ */
 .ctw .tn-contact{padding:22px 24px 0}
-.ctw .tn-contact h1{font-size:58px;line-height:.96;letter-spacing:-.02em}
+.ctw .tn-contact h1{font-size:calc(58px*var(--tn-k));line-height:.96;letter-spacing:-.02em}
 .ctw .tn-contact p{font-size:16.5px;line-height:1.5;color:var(--tn-texte);margin-top:12px}
 .ctw .tn-contact form{margin:0}
 .ctw .tn-contact label{display:block;border-bottom:1.5px solid var(--tn-encre);padding:20px 0 9px;font-size:16px;color:var(--tn-sourd)}
@@ -230,7 +258,7 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 
 /* ══ Les produits en cartes ══ */
 .ctw .tn-produits{padding:44px 20px 0}
-.ctw .tn-produits h2{font-size:40px}
+.ctw .tn-produits h2{font-size:calc(40px*var(--tn-k))}
 .ctw .tn-produits .tn-cartes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 12px;margin-top:20px}
 .ctw .tn-produits .tn-carte-p{display:block}
 .ctw .tn-produits .tn-ph{height:200px;background-color:color-mix(in srgb,var(--tn-fond) 40%,#fff);border-radius:var(--tn-arrondi,0)}
@@ -245,7 +273,7 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 
 /* ══ L'histoire de la marque ══ */
 .ctw .tn-histoire{padding:22px 20px 0}
-.ctw .tn-histoire h1{font-size:58px;line-height:.96;letter-spacing:-.02em}
+.ctw .tn-histoire h1{font-size:calc(58px*var(--tn-k));line-height:.96;letter-spacing:-.02em}
 .ctw .tn-histoire .tn-ph{height:420px;margin-top:26px;border-radius:var(--tn-arrondi,0)}
 .ctw[data-tn-cadre="niche"] .tn-histoire .tn-ph{border-radius:175px 175px 0 0}
 .ctw .tn-histoire p{font-size:16.5px;color:var(--tn-texte);margin-top:22px}
@@ -254,7 +282,7 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 
 /* ══ Panier ══ */
 .ctw .tn-panier{padding:22px 20px 0}
-.ctw .tn-panier h1{font-size:58px;line-height:.96;letter-spacing:-.02em}
+.ctw .tn-panier h1{font-size:calc(58px*var(--tn-k));line-height:.96;letter-spacing:-.02em}
 .ctw .tn-panier .tn-ligne{display:grid;grid-template-columns:84px minmax(0,1fr) auto;gap:14px;align-items:center;margin-top:24px;padding:16px 0;border-top:1.5px solid var(--tn-encre);border-bottom:1.5px solid var(--tn-encre)}
 .ctw .tn-panier .tn-ligne .tn-ph{height:96px;background-color:color-mix(in srgb,var(--tn-fond) 40%,#fff);border-radius:var(--tn-arrondi,0)}
 .ctw[data-tn-cadre="niche"] .tn-panier .tn-ligne .tn-ph{border-radius:42px 42px 6px 6px}
@@ -266,7 +294,7 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 
 /* ══ Compte ══ */
 .ctw .tn-compte{padding:22px 24px 0}
-.ctw .tn-compte h1{font-size:58px;line-height:.96;letter-spacing:-.02em}
+.ctw .tn-compte h1{font-size:calc(58px*var(--tn-k));line-height:.96;letter-spacing:-.02em}
 .ctw .tn-compte p{font-size:16.5px;line-height:1.5;color:var(--tn-texte);margin-top:12px}
 .ctw .tn-compte label{display:block;border-bottom:1.5px solid var(--tn-encre);padding:20px 0 9px;font-size:16px;color:var(--tn-sourd)}
 .ctw .tn-compte .tn-bt{margin-top:22px}
@@ -275,7 +303,7 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 
 /* ══ Informations légales ══ */
 .ctw .tn-legal{padding:22px 20px 0}
-.ctw .tn-legal h1{font-size:46px;letter-spacing:-.012em;margin-bottom:22px}
+.ctw .tn-legal h1{font-size:calc(46px*var(--tn-k));letter-spacing:-.012em;margin-bottom:22px}
 .ctw .tn-legal .tn-liste{border-top:1.5px solid var(--tn-encre)}
 .ctw .tn-legal details{border-bottom:1.5px solid var(--tn-encre);padding:16px 0}
 .ctw .tn-legal summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;font-family:var(--f-title);font-size:26px}
@@ -290,22 +318,24 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 /* ══ Écrans larges : mêmes sections, plus d'air ══ */
 @media (min-width:760px){
   .ctw .tn-entete{padding:0 40px}
+  .ctw .tn-entete .tn-menu nav .tn-sous[data-tn-grand] .tn-sous-in{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px 32px;padding:6px 0 18px}
+  .ctw .tn-entete .tn-menu nav{padding:12px 40px 22px}
   /* Ouvertures « dans la photo » et « titre géant » : la photo est en hauteur (une seule image sert au téléphone et à
      l'ordinateur). Sur grand écran elle prend une colonne entière, le sujet reste entier ; le texte prend l'autre. */
   .ctw .tn-ouverture[data-tn-c="dans-la-photo"]{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:1fr 1fr;padding-bottom:0;text-align:left}
   .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-ph{grid-column:2;grid-row:1/3;height:min(88vh,780px);background-position:center}
   .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-in{position:static;grid-column:1;grid-row:1;align-self:end;padding:0 56px 0 max(40px,calc(50vw - 540px))}
-  .ctw .tn-ouverture[data-tn-c="dans-la-photo"] h1{font-size:clamp(56px,6.4vw,92px);margin-top:12px}
+  .ctw .tn-ouverture[data-tn-c="dans-la-photo"] h1{font-size:calc(clamp(56px,6.4vw,92px)*var(--tn-k));margin-top:12px}
   .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-bas{grid-column:1;grid-row:2;align-self:start;padding:24px 56px 0 max(40px,calc(50vw - 540px))}
   .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-bas p{font-size:18px;max-width:440px}
   .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-bt{margin-top:26px}
   .ctw .tn-ouverture[data-tn-c="titre-puis-cadre"]{max-width:none}
-  .ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] h1{font-size:104px;margin-left:40px;margin-right:40px}
+  .ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] h1{font-size:calc(104px*var(--tn-k));margin-left:40px;margin-right:40px}
   .ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] .tn-ph{margin:34px auto 0;width:min(560px,60%);height:620px}
   .ctw[data-tn-cadre="niche"] .tn-ouverture[data-tn-c="titre-puis-cadre"] .tn-ph{border-radius:280px 280px 0 0}
   .ctw .tn-ouverture[data-tn-c="titre-geant"]{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);grid-template-rows:1fr 1fr;padding-bottom:0;max-width:none}
   .ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-in{grid-column:1;grid-row:1;align-self:end;padding:40px 40px 0 max(40px,calc(50vw - 540px))}
-  .ctw .tn-ouverture[data-tn-c="titre-geant"] h1{font-size:clamp(56px,6.2vw,96px);margin:18px 0 0}
+  .ctw .tn-ouverture[data-tn-c="titre-geant"] h1{font-size:calc(clamp(56px,6.2vw,96px)*var(--tn-k));margin:18px 0 0}
   .ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-ph{grid-column:2;grid-row:1/3;height:min(86vh,760px)}
   .ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-bas{grid-column:1;grid-row:2;align-self:start;flex-direction:column;margin-top:0;padding:26px 40px 44px max(40px,calc(50vw - 540px))}
   .ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-bas p{margin-top:0;font-size:18px;max-width:440px}
@@ -320,8 +350,8 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
   .ctw .tn-achat .tn-grande{height:560px}
   .ctw .tn-achat small{margin-top:40px}
   .ctw .tn-emotion .tn-ph{height:620px}
-  .ctw .tn-emotion h2{font-size:64px;left:max(40px,calc(50% - 540px));right:40%}
-  .ctw[data-tn-titres="gras"] .tn-emotion h2,.ctw[data-tn-titres="capitales"] .tn-emotion h2{font-size:50px;right:40%}
+  .ctw .tn-emotion h2{font-size:calc(64px*var(--tn-k));left:max(40px,calc(50% - 540px));right:40%}
+  .ctw[data-tn-titres="gras"] .tn-emotion h2,.ctw[data-tn-titres="capitales"] .tn-emotion h2{font-size:calc(50px*var(--tn-k));right:40%}
   /* En situation : les photos prennent toute la largeur, à parts égales (jamais une moitié vide). */
   .ctw .tn-places{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
   .ctw .tn-places .tn-file{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:20px}
@@ -330,4 +360,25 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
   .ctw .tn-final{padding:72px 24px}
   .ctw .tn-final .tn-bt{display:inline-block;padding:16px 44px}
   .ctw .tn-contact .tn-infos{margin-top:56px}
+}
+
+/* Le plan d'une adresse : jamais une image dessinée. Un cadre aux couleurs de la marque, qui ouvre la vraie carte. */
+.ctw .tn .tn-plan{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:190px;padding:26px 22px;text-align:center;text-decoration:none;color:var(--tn-encre);background-image:none;background-color:var(--tn-doux)}
+.ctw .tn .tn-plan i{flex:none;width:18px;height:18px;border:1.5px solid var(--tn-encre);border-radius:50% 50% 50% 0;transform:rotate(-45deg);margin-bottom:6px}
+.ctw .tn .tn-plan b{font-family:var(--f-title);font-weight:400;font-size:22px;line-height:1.2;max-width:22em}
+.ctw .tn .tn-plan em{font-style:normal;font-size:14.5px;font-weight:600;border-bottom:1.5px solid currentColor;padding-bottom:1px}
+.ctw .tn.tn-sombre .tn-plan{color:var(--tn-sur-bouton);background-color:color-mix(in srgb,var(--tn-sur-bouton) 10%,transparent)}
+.ctw .tn.tn-sombre .tn-plan i{border-color:var(--tn-sur-bouton)}
+
+/* Près du prix : mentions vraies du bloc d'achat (indice de réparabilité, paiement en plusieurs fois). */
+.ctw .tn-achat .tn-pres-prix{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:4px;font-size:14.5px;line-height:1.4;color:var(--tn-texte)}
+.ctw .tn-achat .tn-pres-prix li{padding-left:14px;position:relative}
+.ctw .tn-achat .tn-pres-prix li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:6px;border-radius:50%;background-color:var(--tn-accent)}
+
+/* Cartes produits sur grand écran : à partir de trois produits, la rangée prend la grande largeur (quatre cartes à l'aise). */
+@media (min-width:760px){
+  .ctw .tn-produits:has(.tn-carte-p:nth-child(3)){padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-produits:has(.tn-carte-p:nth-child(3)) .tn-cartes{gap:32px 24px}
+  .ctw .tn-produits:has(.tn-carte-p:nth-child(3)) .tn-ph{height:340px}
+  .ctw .tn-produits:has(.tn-carte-p:nth-child(3)):not(:has(.tn-carte-p:nth-child(4))) .tn-cartes{grid-template-columns:repeat(3,minmax(0,1fr))}
 }

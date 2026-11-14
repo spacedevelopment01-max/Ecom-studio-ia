@@ -128,9 +128,13 @@ Rien de cela n'est construit. À placer dans l'ordre avec le propriétaire.
    et, pour tout le site, la tenue (titres, boutons, cadres, fond, petits textes, signe) ; SINA les change sans rien
    repayer (`custom.structure`) ; la carte d'identité contre les doublons les compte. Vérifié au pixel sur téléphone
    contre les écrans faits à la main, avec une IA simulée (`tests/sina-tenue-fauteuil.test.ts`) ; aucun essai réel.
-   Restent pour le thème : la liaison avec le catalogue (une page par produit, menus), la mise en boutique, la tenue
-   des 188 autres sections et les 48 qui manquent. Ce ne sont pas des spécialistes mais le chantier décrit dans
-   `methode-montage-de-theme.md`.
+   **Chantier du thème, fait le 14 novembre 2026** (IA simulée, aucun essai réel) : 95 sections à tenue en quatre
+   modules, chacune regardée en image dans trois tenues ; les 48 idées de l'inventaire construites ; chaque
+   spécialiste lit ses cahiers (`custom-theme/knowledge.ts`) ; les vraies données du client posées dans les sections
+   (`custom-theme/tenue-data.ts`) ; une fiche par produit, menu calculé, prestations du profil ; mise en boutique
+   Shopify par `custom.install` (version de thème non activée, chaque section passée au contrôle du Studio) ; deux
+   sites de démonstration montés en entier (`tests/sina-theme-demonstration.test.ts`). Restent : un essai réel de la
+   conception, la tenue des 188 anciennes sections, une vraie boutique Shopify pour vérifier l'envoi.
 
 ## Ouvrir une étape
 

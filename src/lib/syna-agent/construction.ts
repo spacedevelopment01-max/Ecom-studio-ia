@@ -34,6 +34,9 @@ export function underConstruction(projectId: string): boolean {
   const cur = currentStep(j);
   const last = j.steps[13]?.status;
   if (last === "done" || last === "skipped") return false;
+  // Thème sur mesure choisi : le site est en place, le Studio s'ouvre. La mise en boutique (étape 7) se fait avec SINA
+  // quand le client le veut ; elle ne garde jamais le Studio fermé en l'attendant.
+  if (cur === 7 && j.customChosenAt) return false;
   return stepAvailable(j, cur);
 }
 

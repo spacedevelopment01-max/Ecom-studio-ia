@@ -17,8 +17,12 @@
  */
 import { z } from "zod";
 import type { LibSection, Trait } from "./library";
+import { TENUE_TAG, VOLET, ph, sec, type Construction, type TenueSection } from "./tenue-base";
+import { PRODUIT_SECTIONS } from "./tenue-produit";
+import { SERVICES_SECTIONS } from "./tenue-services";
+import { RECIT_SECTIONS } from "./tenue-recit";
 
-export const TENUE_TAG = "tenue";
+export { TENUE_TAG, type Construction, type TenueSection } from "./tenue-base";
 
 export const TenueSchema = z.object({
   /** Titres : fins (lettres fines, serrées), gras (très gras, très serrés), capitales. */
@@ -59,7 +63,7 @@ const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 type Palette = { dark?: string; primary?: string; secondary?: string; accent?: string; light?: string };
 
 /** Couleurs de la tenue, tirées de la palette de la marque. */
-export function tenueCss(palette: Palette | null | undefined, tenue: Tenue | null | undefined, monoFontCss = ""): string {
+export function tenueCss(palette: Palette | null | undefined, tenue: Tenue | null | undefined, monoFontCss = "", /** Graisse des titres quand la police de la marque en a une plus forte que la normale (tenue « gras »). */ poids: number | null = null): string {
   const pal = palette ?? {};
   const fond = pal.light ?? "#F6F1E7", encre = pal.dark ?? "#1F1B16", accent = pal.primary ?? encre;
   const doux = pal.secondary ?? `color-mix(in srgb,${fond} 86%,${encre})`;
@@ -68,6 +72,7 @@ export function tenueCss(palette: Palette | null | undefined, tenue: Tenue | nul
     "--tn-texte": `color-mix(in srgb,${encre} 90%,${fond})`, "--tn-sourd": `color-mix(in srgb,${encre} 62%,${fond})`,
     "--tn-bouton": encre, "--tn-sur-bouton": `color-mix(in srgb,${fond} 70%,#fff)`,
     "--tn-arrondi": tenue?.cadre === "droit" || !tenue ? "0px" : "14px",
+    ...(poids && poids !== 400 ? { "--tn-poids": String(poids) } : {}),
   };
   return `${monoFontCss}\n.ctw{${Object.entries(vars).map(([k, v]) => `${k}:${v}`).join(";")}}`;
 }
@@ -79,19 +84,10 @@ export function tenueAttrs(tenue: Tenue | null | undefined): string {
 /** Ce qui manque au dossier s'affiche en jaune dans l'aperçu du Studio, sans crochets : « [À compléter : délai] ». */
 export const markMissing = (html: string): string => html.replace(/\[À compléter(?:\s*:\s*([^\]<]{1,80}))?\]/g, (_m, what: string | undefined) => `<mark class="tn-manque">À compléter${what ? ` : ${what.trim()}` : ""}</mark>`);
 
-export type Construction = { key: string; label: string };
-export type TenueSection = LibSection & { constructions: Construction[]; trait: Trait };
-
-const ph = (file: string) => `style="background-image:url(photos/${file})"`;
-const sec = (o: { id: string; title: string; kind: string; role: string; does: string; html: string; constructions?: Construction[]; trait: Trait; tags?: string[] }): TenueSection => ({
-  id: o.id, title: o.title, kind: o.kind, does: o.does, anim: "Aucune animation : la page reste calme.", family: "classique", style: null, role: o.role,
-  tags: [TENUE_TAG, ...(o.tags ?? ["shop"])], demoFrame: false, html: o.html, constructions: o.constructions ?? [], trait: o.trait,
-});
-const VOLET = (q: string, a: string, open = false) => `<details${open ? " open" : ""}><summary>${q}</summary><p>${a}</p></details>`;
 const FORMES = `<g class="tn-forme" data-f="boite"><rect x="52" y="36" width="106" height="92" rx="8" fill="var(--tn-accent)"/><path d="M52 62h106" stroke="var(--tn-encre)" stroke-opacity=".25" stroke-width="3"/></g><g class="tn-forme" data-f="fauteuil"><path d="M50 96c-6-40 14-64 55-64s61 24 55 64c-2 14-10 22-22 22H72c-12 0-20-8-22-22z" fill="var(--tn-accent)"/><path d="M66 92c0-10 14-16 39-16s39 6 39 16-14 14-39 14-39-4-39-14z" fill="var(--tn-encre)" fill-opacity=".16"/><path d="M70 118l-5 16M140 118l5 16" stroke="var(--tn-encre)" stroke-width="6" stroke-linecap="round"/></g><g class="tn-forme" data-f="sac"><path d="M78 52c0-22 54-22 54 0" fill="none" stroke="var(--tn-encre)" stroke-width="6"/><rect x="56" y="50" width="98" height="84" rx="14" fill="var(--tn-accent)"/><rect x="72" y="84" width="66" height="34" rx="6" fill="var(--tn-encre)" fill-opacity=".16"/></g><g class="tn-forme" data-f="flacon"><rect x="90" y="30" width="30" height="20" rx="3" fill="var(--tn-encre)"/><path d="M78 62c0-8 6-12 12-12h30c6 0 12 4 12 12v60c0 8-6 12-12 12H90c-6 0-12-4-12-12z" fill="var(--tn-accent)"/></g>`;
 
-/** Les sections à tenue. Leurs textes sont des exemples (une maison de thé, comme le reste de la bibliothèque). */
-export const TENUE_SECTIONS: TenueSection[] = [
+/** Le socle des sections à tenue. Leurs textes sont des exemples (une maison de thé, comme le reste de la bibliothèque). */
+const SOCLE_SECTIONS: TenueSection[] = [
   sec({
     id: "tn-entete", title: "En-tête à la tenue de la marque", kind: "En-tête · tout le site", role: "en-tête",
     does: "Le menu, le nom de la marque et le panier, dans la tenue de la marque. Le menu s'ouvre sous l'en-tête, en grands mots.",
@@ -146,7 +142,7 @@ export const TENUE_SECTIONS: TenueSection[] = [
   sec({
     id: "tn-mesures", title: "Mesures en schéma", kind: "Mesures · fiche produit", role: "produit",
     does: "Le dessin simple du produit avec ses mesures repérées par des lettres, et le tableau des mesures. Les vraies mesures du client seulement : ce qui manque s'écrit « [À compléter] ». Quatre dessins au choix.",
-    constructions: [{ key: "boite", label: "une boîte ou un paquet" }, { key: "fauteuil", label: "un fauteuil ou un meuble" }, { key: "sac", label: "un sac" }, { key: "flacon", label: "un flacon ou une bouteille" }],
+    constructions: [{ key: "boite", label: "une boîte ou un paquet" }, { key: "fauteuil", label: "un fauteuil ou un meuble" }, { key: "sac", label: "un sac, un bagage ou une housse" }, { key: "flacon", label: "un flacon ou une bouteille" }],
     trait: { fond: "clair", densite: "dense", photos: 0, hauteur: 420 },
     html: `<section class="tn tn-mesures"><div class="tn-carte"><h2>Ses mesures.</h2><svg viewBox="0 0 210 150" aria-hidden="true">${FORMES}<path d="M46 144h118M46 139v10M164 139v10" stroke="var(--tn-encre)" stroke-width="1.6" fill="none"/><path d="M184 30v104M179 30h10M179 134h10" stroke="var(--tn-encre)" stroke-width="1.6" fill="none"/><circle cx="105" cy="144" r="9" fill="var(--tn-encre)"/><text x="105" y="148" text-anchor="middle" font-size="11" font-weight="700" fill="var(--tn-sur-bouton)">A</text><circle cx="184" cy="82" r="9" fill="var(--tn-encre)"/><text x="184" y="86" text-anchor="middle" font-size="11" font-weight="700" fill="var(--tn-sur-bouton)">B</text></svg><table><tr><td><b>A</b>Largeur</td><td>[À compléter]</td></tr><tr><td><b>B</b>Hauteur</td><td>[À compléter]</td></tr><tr><td>Poids</td><td>[À compléter]</td></tr></table></div></section>`,
   }),
@@ -218,6 +214,11 @@ export const TENUE_SECTIONS: TenueSection[] = [
   }),
 ];
 
+/** Toutes les sections à tenue : le socle, puis les modules (produit et achat, métiers de services, récit et navigation). */
+export const TENUE_SECTIONS: TenueSection[] = [...SOCLE_SECTIONS, ...PRODUIT_SECTIONS, ...SERVICES_SECTIONS, ...RECIT_SECTIONS];
+/** Feuilles et scripts des sections à tenue, dans l'ordre de chargement (un fichier absent est ignoré). */
+export const TENUE_FILES = { css: ["tenue.css", "tenue-produit.css", "tenue-services.css", "tenue-recit.css"], js: ["tenue.js", "tenue-produit.js", "tenue-services.js", "tenue-recit.js"] };
+
 const BY_ID = new Map(TENUE_SECTIONS.map((s) => [s.id, s]));
 export const tenueSection = (id: string): TenueSection | null => BY_ID.get(id) ?? null;
 export const isTenueSection = (l: Pick<LibSection, "tags"> | null | undefined) => !!l && (l.tags ?? []).includes(TENUE_TAG);
@@ -232,7 +233,7 @@ export function validConstruction(id: string, wanted: string | null | undefined)
 export const tenueTraits = (): Record<string, Trait> => Object.fromEntries(TENUE_SECTIONS.map((s) => [s.id, s.trait]));
 
 /** Vraies données du bloc d'achat à tenue : photos du produit, prix, livraison, retours. */
-export type TenueBuy = { images: string[]; price: string | null; shipping: string | null; returns: string | null };
+export type TenueBuy = { images: string[]; price: string | null; shipping: string | null; returns: string | null; /** Plus de stock : dit sous le prix, le bouton ne commande plus. */ soldOut?: boolean; /** Mentions vraies à dire près du prix (indice de réparabilité, paiement en plusieurs fois) : seulement celles que le client a confirmées. */ notes?: string[] };
 /**
  * Pose les vraies données du produit dans le bloc d'achat à tenue : ses photos (la grande, puis jusqu'à cinq vignettes),
  * son vrai prix, la livraison et les retours du client. Ce qui manque reste « [À compléter] ». La barre d'achat reprend
@@ -247,6 +248,10 @@ export function withTenueBuyBlock(html: string, d: TenueBuy | null): string {
     out = out.replace(/<div class="tn-vignettes">[\s\S]*?<\/div>/, d.images.length > 1 ? `<div class="tn-vignettes">${d.images.slice(0, 5).map((u) => `<i class="tn-ph" ${url(u)}></i>`).join("")}</div>` : "");
   }
   if (d?.price) out = out.replace(/<div class="tn-prix">[\s\S]*?<\/div>/, `<div class="tn-prix">${esc(d.price)}</div>`);
+  // Rupture de stock : dite franchement ; le délai de retour n'est jamais inventé.
+  if (d?.soldOut) out = out.replace(/(<div class="tn-prix">[\s\S]*?<\/div>)/, `$1<div class="tn-rupture">Épuisé pour l'instant. Retour en stock : [À compléter]</div>`).replace(/<a class="tn-bt"/g, '<a class="tn-bt tn-off" aria-disabled="true"');
+  // Près du prix : l'indice de réparabilité, le paiement en plusieurs fois. Jamais affichés sans le fait confirmé par le client.
+  if (d?.notes?.length) out = out.replace(/(<div class="tn-prix">[\s\S]*?<\/div>(?:<div class="tn-rupture">[\s\S]*?<\/div>)?)/, `$1<ul class="tn-pres-prix">${d.notes.slice(0, 3).map((n) => `<li>${esc(n)}</li>`).join("")}</ul>`);
   if (d) out = out.replace(/<ul class="tn-reperes">[\s\S]*?<\/ul>/, `<ul class="tn-reperes"><li>Livraison : ${d.shipping ? esc(d.shipping) : "[À compléter]"}</li><li>Retours : ${d.returns ? esc(d.returns) : "[À compléter]"}</li></ul>`);
   // La barre d'achat suit le bloc : même nom, même bouton.
   const name = /<h1>([\s\S]*?)<\/h1>/.exec(out)?.[1]?.replace(/<br\s*\/?>/g, " ").replace(/<[^>]+>/g, "").trim();
@@ -256,7 +261,7 @@ export function withTenueBuyBlock(html: string, d: TenueBuy | null): string {
 }
 
 /** Vrais produits du catalogue pour les cartes et le panier à tenue. */
-export type TenueProduct = { title: string; image: string | null; price: string | null };
+export type TenueProduct = { title: string; image: string | null; price: string | null; /** Page de sa fiche (clé de page) ; absente : la fiche commune. */ go?: string | null; /** Plus de stock sur aucune variante, et pas de commande permise. */ soldOut?: boolean; /** Ses familles (filtre de la page boutique). */ families?: string[]; /** Son prix en centimes (tri de la page boutique). */ cents?: number | null };
 /**
  * Pose les vrais produits dans les cartes à tenue (huit au plus) et dans la ligne du panier (le premier produit). Sans
  * produit au catalogue, la section garde ses exemples, annoncés comme tels.
@@ -264,12 +269,35 @@ export type TenueProduct = { title: string; image: string | null; price: string 
 export function withTenueProducts(html: string, products: TenueProduct[]): string {
   if (!products.length) return html;
   const pic = (u: string | null) => (u ? ` style="background-image:url(${esc(u)})"` : "");
+  // La page boutique montre tout le catalogue ; une section de l'accueil, les huit premiers.
+  const shop = /class="tn tn-catalogue/.test(html), max = shop ? 60 : 8;
   let out = html;
-  if (/\sdata-tn-produits\b/.test(out)) out = out.replace(/<div class="tn-cartes">[\s\S]*<\/div>(?=<\/section>)/, `<div class="tn-cartes">${products.slice(0, 8).map((p) => `<a class="tn-carte-p" href="#" onclick="return false" data-go="product"><div class="tn-ph"${pic(p.image)}></div><b>${esc(p.title)}</b><span>${p.price ? esc(p.price) : "[À compléter : prix]"}</span></a>`).join("")}</div>`);
+  // Sur la page boutique, chaque carte porte ses familles et son prix (filtre et tri), et garde son prix à côté de « Épuisé ».
+  const card = (p: TenueProduct) => {
+    const price = p.price ? esc(p.price) : "[À compléter : prix]";
+    const data = shop ? ` data-tn-fams="${esc((p.families ?? []).join("|"))}"${p.cents != null ? ` data-tn-prix="${Math.round(p.cents)}"` : ""}` : "";
+    return `<a class="tn-carte-p${p.soldOut ? " tn-epuise" : ""}" href="#" onclick="return false" data-go="${esc(p.go ?? "product")}"${data}><div class="tn-ph"${pic(p.image)}></div><b>${esc(p.title)}</b>${shop ? `<span>${price}</span>${p.soldOut ? "<em>Épuisé</em>" : ""}` : `<span>${p.soldOut ? "Épuisé" : price}</span>`}</a>`;
+  };
+  if (/\sdata-tn-produits\b/.test(out)) out = out.replace(/<div class="tn-cartes">[\s\S]*<\/div>(?=<\/section>)/, `<div class="tn-cartes">${products.slice(0, max).map(card).join("")}</div>`);
   if (/\sdata-tn-panier\b/.test(out)) {
     const p = products[0], price = p.price ? esc(p.price) : "[À compléter : prix]";
     out = out.replace(/(<div class="tn-ligne"><div class="tn-ph")[^>]*(><\/div><div><b>)[\s\S]*?(<\/b>)/, (_m, a: string, b: string, c: string) => `${a}${pic(p.image)}${b}${esc(p.title)}${c}`)
       .replace(/<span class="tn-prix-l">[\s\S]*?<\/span>/, `<span class="tn-prix-l">${price}</span>`).replace(/<span class="tn-prix-t">[\s\S]*?<\/span>/, `<span class="tn-prix-t">${price}</span>`);
   }
   return markMissing(out);
+}
+
+/** Une prestation du client (profil des services) : son nom, sa durée, son prix. */
+export type TenuePrestation = { name: string; duration: string | null; price: string | null };
+/**
+ * Pose les vraies prestations du client dans une liste à tenue (« data-tn-prestations », lignes d'une liste
+ * « tn-liste-p ») : le nom, la durée, le prix ; ce que le client n'a pas donné reste « [À compléter] ». Sans prestation
+ * connue, la section garde ses lignes d'exemple, annoncées comme telles.
+ */
+export function withTenuePrestations(html: string, list: TenuePrestation[]): string {
+  if (!list.length || !/\sdata-tn-prestations\b/.test(html)) return html;
+  const row = (p: TenuePrestation) => `<li><b>${esc(p.name)}</b><span>Durée : ${p.duration ? esc(p.duration) : "[À compléter]"}</span><i>${p.price ? esc(p.price) : "[À compléter : prix]"}</i></li>`;
+  // Une seule liste : toutes les prestations ; plusieurs listes (rubriques d'une carte) : la première les reçoit, les autres restent écrites.
+  let done = false;
+  return markMissing(html.replace(/(<ul class="tn-liste-p"[^>]*>)[\s\S]*?(<\/ul>)/g, (m, a: string, b: string) => { if (done) return m; done = true; return `${a}${list.slice(0, 40).map(row).join("")}${b}`; }));
 }

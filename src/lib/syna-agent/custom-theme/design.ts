@@ -16,7 +16,7 @@
  */
 import { z } from "zod";
 import { FEATURED_ROLE, familySections, isCardSection, libSection, onlyFor, sectionTraits } from "./library";
-import { TENUE_CHOICES, TenuePickSchema, constructionsOf, isTenueSection } from "./tenue";
+import { TENUE_CHOICES, TenuePickSchema, constructionsOf, isTenueSection, tenueSection } from "./tenue";
 import { sectionGroup } from "./section-groups";
 import { requiredPages, platformOwnedPages, MIN_SECTIONS, type SiteKind } from "./theme";
 import type { FamilyId } from "../section-families";
@@ -149,7 +149,9 @@ export function designCatalogue(family: FamilyId, seed?: string): string {
     const traits = t ? ` · fond ${t.fond} · ${t.densite} · ${t.photos} photo(s)` : "";
     const built = constructionsOf(s.id);
     const constructions = built.length ? ` · CONSTRUCTIONS au choix (champ « construction ») : ${built.map((c) => `« ${c.key} » (${c.label})`).join(" ; ")}` : "";
-    return `- ${s.id} · ${s.role}${isCardSection(s) ? " · cartes" : ""}${isTenueSection(s) ? " · À TENUE" : ""}${onlyFor(s.tags) ? ` · seulement pour ${onlyFor(s.tags)}` : ""}${traits} · ${s.title} : ${s.does.slice(0, 320)}${constructions}`;
+    const tn = tenueSection(s.id);
+    const extra = tn ? `${tn.pour ? ` · pour un site de ${tn.pour}` : ""}${tn.only ? ` · seulement pour ${tn.only}` : ""}${tn.authentic ? ` · demande ${tn.authentic} (vraies photos du client, jamais créées)` : ""}${tn.data ? ` · lit ${tn.data}` : ""}` : "";
+    return `- ${s.id} · ${s.role}${isCardSection(s) ? " · cartes" : ""}${isTenueSection(s) ? " · À TENUE" : ""}${onlyFor(s.tags) ? ` · seulement pour ${onlyFor(s.tags)}` : ""}${extra}${traits} · ${s.title} : ${s.does.slice(0, 320)}${constructions}`;
   }).join("\n");
 }
 

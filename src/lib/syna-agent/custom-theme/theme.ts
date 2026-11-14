@@ -8,7 +8,7 @@ import { all } from "../../db";
 import { remember } from "../../projects";
 import type { FamilyId } from "../section-families";
 import { authenticSection, FAKE_OFFER_SECTIONS, RETIRED_SECTIONS, inFamily, inlineBackgrounds, isCardSection, FEATURED_ROLE, libSection, SCRIPT_DEMO_SECTIONS, SHELL_ROLES, sectionPhotos, type LibSection } from "./library";
-import { constructionsOf, isTenueSection, validConstruction, type Tenue } from "./tenue";
+import { constructionsOf, isTenueSection, tenueSection, validConstruction, type Tenue } from "./tenue";
 
 export type CtSection = {
   /** Identifiant de CETTE section dans le thème (une même section de la bibliothèque peut servir sur deux pages). */
@@ -53,7 +53,22 @@ export type SiteSettings = {
   /** « drawer » : le panier s'ouvre sur le côté ; « page » (par défaut) : la page panier. */
   cart?: "page" | "drawer";
 };
-export type CtPage = { key: string; label: string; sections: CtSection[]; /** Le parcours du visiteur sur la page (conception). */ journey?: string; /** Référencement : titre et description de la page pour Google. */ seo?: { title: string; description: string } };
+export type CtPage = {
+  key: string; label: string; sections: CtSection[];
+  /** Le parcours du visiteur sur la page (conception). */
+  journey?: string;
+  /** Référencement : titre et description de la page pour Google. */
+  seo?: { title: string; description: string };
+  /** Fiche d'un produit du catalogue (son repère) : la page est écrite pour LUI, son bloc d'achat montre SES photos et SON prix. */
+  product?: string;
+};
+/**
+ * Une entrée du menu principal : où elle mène (clé de page, ou « shop:Famille »), son sous-menu, et pour un grand menu
+ * (un panneau large, une colonne par famille) quelques produits sous chaque famille.
+ */
+export type MenuItem = { label: string; to: string; grand?: boolean; children?: { label: string; to: string; items?: { label: string; to: string }[] }[] };
+/** Au-delà, les fiches produit partagent la fiche commune : une page écrite par produit coûterait trop au client. */
+export const MAX_PRODUCT_PAGES = 12;
 export type CustomTheme = {
   version: 1;
   family: FamilyId;
@@ -71,6 +86,10 @@ export type CustomTheme = {
   settings?: SiteSettings;
   /** La tenue de la marque (tenue.ts) : titres, boutons, cadre des photos, fond, petits textes, signe. */
   tenue?: Tenue;
+  /** Menu principal calculé depuis le catalogue et les pages, proposé par SINA et corrigé par le client ; absent : celui écrit dans l'en-tête. */
+  menu?: MenuItem[];
+  /** Sections posées sur tout le site, hors des pages : bandeau au-dessus de l'en-tête, fenêtres (cookies, âge, discussion). */
+  extras?: CtSection[];
   rev: number;
   at: number;
 };
@@ -200,6 +219,7 @@ export function allSections(t: CustomTheme): { place: string; page?: CtPage; ind
   for (const page of t.pages) page.sections.forEach((s, index) => out.push({ place: page.key, page, index, s }));
   if (t.footer) out.push({ place: "pied de page", index: 0, s: t.footer });
   if (t.search) out.push({ place: "recherche", index: 0, s: t.search });
+  (t.extras ?? []).forEach((s, index) => out.push({ place: "tout le site", index, s }));
   return out;
 }
 export const findSection = (t: CustomTheme, uid: string) => allSections(t).find((x) => x.s.uid === uid) ?? null;
@@ -380,6 +400,12 @@ export type StructureOp =
   | { op: "replace"; uid: string; section: string; construction?: string }
   | { op: "construction"; uid: string; construction: string }
   | { op: "tenue"; tenue: Tenue }
+  /** Une fiche par produit : chaque produit du catalogue reçoit sa page, bâtie comme la fiche commune (à écrire ensuite). */
+  | { op: "product_pages"; products: { handle: string; title: string }[] }
+  /** Menu principal (null : celui écrit dans l'en-tête). */
+  | { op: "menu"; menu: MenuItem[] | null }
+  /** Section de tout le site (bandeau du haut, fenêtre) : posée, ou retirée par son uid. */
+  | { op: "extra"; section?: string; uid?: string; construction?: string }
   | { op: "shell"; slot: "header" | "footer" | "search"; section: string | null; construction?: string }
   | { op: "page"; key: string; label: string; at?: number }
   | { op: "drop_page"; key: string }
@@ -413,11 +439,35 @@ export function applyStructure(t: CustomTheme, ops: StructureOp[]): CustomTheme 
     else if (o.op === "shell") next[o.slot] = o.section ? made(o.section, o.construction) : null;
     else if (o.op === "construction") {
       const shell = (["header", "footer", "search"] as const).find((k) => next[k]?.uid === o.uid);
-      const sec = shell ? next[shell]! : (() => { const { p, i } = locate(o.uid); return p.sections[i]; })();
+      const sec = shell ? next[shell]! : (next.extras ?? []).find((s) => s.uid === o.uid) ?? (() => { const { p, i } = locate(o.uid); return p.sections[i]; })();
       if (!constructionsOf(sec.id).some((c) => c.key === o.construction)) throw new Error(`construction « ${o.construction} » inconnue pour cette section (possibles : ${constructionsOf(sec.id).map((c) => c.key).join(", ") || "aucune"})`);
       sec.construction = o.construction;
     }
     else if (o.op === "tenue") next.tenue = o.tenue;
+    else if (o.op === "product_pages") {
+      const tpl = next.pages.find((p) => p.key === "product");
+      if (!tpl) throw new Error("aucune fiche produit à reprendre (page « product »)");
+      const list = o.products.slice(0, MAX_PRODUCT_PAGES);
+      if (list[0] && !tpl.product) tpl.product = list[0].handle;
+      let at = Math.max(...next.pages.map((p, i) => (/^product/.test(p.key) ? i : -1))) + 1;
+      for (const pr of list) {
+        if (next.pages.some((p) => p.product === pr.handle)) continue;
+        const key = `product-${pr.handle}`.toLowerCase().replace(/[^a-z0-9-]+/g, "-").slice(0, 40).replace(/-+$/, "");
+        if (next.pages.some((p) => p.key === key)) continue;
+        // Même structure que la fiche commune (sections, constructions, intention) ; les textes sont à écrire pour CE produit.
+        next.pages.splice(at++, 0, { key, label: pr.title.slice(0, 40) || key, product: pr.handle, ...(tpl.journey ? { journey: tpl.journey } : {}), sections: tpl.sections.map((s) => ({ uid: newUid(), id: s.id, ...(s.construction ? { construction: s.construction } : {}), ...(s.intent ? { intent: s.intent } : {}) })) });
+      }
+    }
+    else if (o.op === "menu") { if (o.menu?.length) next.menu = o.menu; else delete next.menu; }
+    else if (o.op === "extra") {
+      if (o.uid) { const before = (next.extras ?? []).length; next.extras = (next.extras ?? []).filter((s) => s.uid !== o.uid); if (next.extras.length === before) throw new Error(`section ${o.uid} introuvable parmi les sections de tout le site`); }
+      else if (o.section) {
+        const g = tenueSection(known(o.section))?.group;
+        if (g !== "bandeau" && g !== "partout") throw new Error(`« ${o.section} » n'est pas une section de tout le site (bandeau du haut ou fenêtre)`);
+        if ((next.extras ?? []).some((s) => s.id === o.section)) throw new Error(`« ${o.section} » est déjà posée sur tout le site`);
+        next.extras = [...(next.extras ?? []), made(o.section, o.construction)];
+      }
+    }
     else if (o.op === "page") { if (next.pages.some((p) => p.key === o.key)) throw new Error(`la page « ${o.key} » existe déjà`); next.pages.splice(o.at ?? next.pages.length, 0, { key: o.key, label: o.label, sections: [] }); }
     else if (o.op === "drop_page") { pageOf(o.key); next.pages = next.pages.filter((p) => p.key !== o.key); }
     else if (o.op === "rename_page") pageOf(o.key).label = o.label;

@@ -5,8 +5,14 @@ Inventaire du 13 novembre 2026, demandé par le propriétaire (« les sections q
 bibliothèque du thème sur mesure (`public/sections/library.json`). Fait par comparaison de fichiers : rien n'a été
 cherché sur Internet, rien n'a été modifié dans le Studio.
 
-**Statut : inventaire, pas encore validé par le propriétaire. Aucune de ces sections n'est construite.** Les priorités
-sont une estimation (voir les limites, partie 6).
+**Statut au 14 novembre 2026 : les 48 sections ou fonctions de la partie 2 sont construites** dans la bibliothèque à
+tenue (`src/lib/syna-agent/custom-theme/tenue*.ts`, règles `sections-a-tenue.md`), à la demande du propriétaire (« Tu
+dois refaire toute les sections qui manque »). Trois ne sont pas des sections mais des fonctions du bloc d'achat :
+l'indice de réparabilité et le paiement en plusieurs fois (affichés seulement si le client a confirmé le fait), le
+paiement rapide (celui de Shopify, posé à la mise en boutique). Deux restent partielles : les pastilles de couleur
+d'une carte produit (dessinées, pas encore remplies par les variantes) et les réponses aux avis (aucune source d'avis
+dans le Studio). La partie 3 (« proche ») n'a pas été reprise idée par idée. Rien n'est validé par le propriétaire.
+Les priorités étaient une estimation (voir les limites, partie 6).
 
 ## 1. Les totaux
 

@@ -4,7 +4,9 @@
 sina et son équipe de monter le thème »), après neuf recherches sur la façon de travailler des meilleurs et le relevé
 d'une bibliothèque de références (cahiers de métier `theme-*.md`, dossier `references/`). Statut : **proposition, à
 valider par le propriétaire.** Quatre de ses spécialistes sont dans le Studio depuis le 13 novembre 2026 (voir « Ce
-qui est construit ») ; le reste ne l'est pas.
+qui est construit »). Depuis le 14 novembre 2026 : 95 sections à tenue, les cahiers lus par chaque spécialiste, les
+vraies données du client posées dans les sections, une fiche par produit, le menu calculé et la mise en boutique
+Shopify (`custom.install`), le tout vérifié avec une IA simulée et deux sites de démonstration, sans essai réel.
 
 ## L'idée
 

@@ -147,8 +147,11 @@ describe("le juge de l'originalité (séparé du concepteur)", async () => {
     try {
       const est = await fr(() => getTool("custom.concepts")!.estimate!(ctx, {}));
       const design3 = (await import("@/lib/syna-agent/custom-theme/design"));
-      // Le devis compte le juge : deux avis au plus par concept.
-      expect(est.maxMicro).toBe((design3.DESIGN_CAP_MICRO * design3.DESIGN_CALLS_MAX + O.ORIGINALITY_CAP_MICRO * O.ORIGINALITY_CALLS_MAX) * 2);
+      // Le devis compte le juge (deux avis au plus par concept) et la lecture de leurs cahiers de métier par le
+      // concepteur, le directeur commercial et le juge.
+      const { designKnowledge } = await import("@/lib/syna-agent/custom-theme/tools");
+      expect(designKnowledge(true).max).toBeGreaterThan(designKnowledge(true).usual);
+      expect(est.maxMicro).toBe((design3.DESIGN_CAP_MICRO * design3.DESIGN_CALLS_MAX + O.ORIGINALITY_CAP_MICRO * O.ORIGINALITY_CALLS_MAX + designKnowledge(true).max) * 2);
       const r = await call("custom.concepts", ctx, {});
       expect(r.ok, r.summary).toBe(true);
       // La documentaliste : secteur reconnu dans les mots du client, références sans nom de site.

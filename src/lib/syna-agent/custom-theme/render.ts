@@ -6,7 +6,8 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import type { Project } from "../../projects";
+import { loadProject, type Project } from "../../projects";
+import { sanitizeBlogHtml } from "../../blog-html";
 import { listProducts } from "../../products/catalog";
 import { FONT_FILES } from "../../theme/render";
 import { assetUrl } from "../../library";
@@ -15,8 +16,14 @@ import { decideBuyFeatures, deliveryFrom, freeShippingFrom, loadShopOffers, type
 import { companyOf } from "../activity";
 import { buyBlockData, withRealBuyBlock } from "./buy-block";
 import { authenticSection, DEMO_BRANDS, LIBRARY_DIR, sectionLibrary, withBrandName } from "./library";
-import { allSections, sectionHtml, type CtSection, type CustomTheme, type SiteSettings } from "./theme";
-import { markMissing, tenueAttrs, tenueCss, validConstruction, withTenueBuyBlock, withTenueProducts, type TenueBuy, type TenueProduct } from "./tenue";
+import { allSections, sectionHtml, type CtPage, type CtSection, type CustomTheme, type SiteSettings } from "./theme";
+import { TENUE_FILES, markMissing, tenueAttrs, tenueCss, tenueSection, validConstruction, withTenueBuyBlock, withTenuePrestations, withTenueProducts, type TenueBuy, type TenuePrestation, type TenueProduct } from "./tenue";
+import { productPageKey, withMenu, type MenuProduct } from "./menu";
+import { withTenueSite, type TenueSite } from "./tenue-data";
+import { factLine } from "../activity";
+
+/** Feuilles ou scripts des sections à tenue réellement présents dans public/sections (un module sans script n'en charge pas). */
+const tenueFiles = (kind: "css" | "js") => TENUE_FILES[kind].filter((f) => { try { return fs.statSync(path.join(LIBRARY_DIR(), f)).size > 0; } catch { return false; } });
 import { all } from "../../db";
 
 const read = (f: string) => { try { return fs.readFileSync(path.join(LIBRARY_DIR(), f), "utf8"); } catch { return ""; } };
@@ -127,7 +134,7 @@ const LINK_WORDS: Record<string, string[]> = {
 };
 /** Pages légales : un seul onglet ouvert selon le lien (« legal:cgv »). */
 const LEGAL_WORDS: Record<string, string> = { "Mentions légales": "mentions", "Conditions générales": "cgv", "Conditions générales de vente": "cgv", "Confidentialité": "confidentialite", "Remboursements": "retours", "Cookies": "cookies" };
-function linkMap(t: CustomTheme): Record<string, string> {
+export function linkMap(t: CustomTheme): Record<string, string> {
   const keys = new Set(t.pages.map((p) => p.key));
   const out: Record<string, string> = {};
   for (const [k, words] of Object.entries(LINK_WORDS)) {
@@ -326,6 +333,7 @@ const NAV_JS = `(function(){
     document.querySelectorAll("[data-pgb]").forEach(function(b){b.setAttribute("aria-pressed",String(b.dataset.pgb===k))});
     var arts=pg.querySelectorAll("[data-tbart]");if(arts.length){var want=arg||arts[0].dataset.tbart;[].forEach.call(arts,function(x){x.hidden=x.dataset.tbart!==want})}
     window.scrollTo(0,0);try{parent.postMessage({source:"ct-preview",type:"page",page:k},"*")}catch(e){}
+    try{window.dispatchEvent(new CustomEvent("tn-go",{detail:{page:k,arg:arg}}))}catch(e){}
     if(arg){var tab=pg.querySelector('[data-cm5t="'+arg+'"]');if(tab)tab.click();var chip=pg.querySelector('.zm5-ch [data-c="'+arg+'"]');if(chip)chip.click()}
     setTimeout(function(){window.dispatchEvent(new Event("resize"));window.dispatchEvent(new Event("scroll"))},60)}
   window.TB_GO=go;
@@ -384,6 +392,18 @@ const PICK_JS = `(function(){
   try{parent.postMessage({source:"ct-preview",type:"ready"},"*")}catch(e){}
 })();`;
 
+/**
+ * Graisse des titres d'une tenue « gras » : la plus forte que la police de la marque possède (jusqu'à 800). Une police
+ * qui n'a qu'une graisse (Archivo Black, Instrument Serif) garde la sienne ; les autres tenues ne changent rien.
+ */
+export function titleWeight(heading: string | null | undefined, titres: string | null | undefined): number | null {
+  if (titres !== "gras") return null;
+  const h = fontOf(heading, FONT_FILES);
+  if (!h) return null;
+  const have = Object.keys(FONT_FILES[h.key]?.files ?? {}).map(Number).filter((w) => w <= 800).sort((a, b) => a - b);
+  const best = have.pop() ?? 400;
+  return best > 400 ? best : null;
+}
 /** Police « machine » des petits textes de la tenue (fichiers locaux, comme les polices de la marque). */
 const MONO_CSS = () => fontsCss(["ibm_plex_mono"], FONT_FILES).css.replace(/url\("fonts\//g, 'url("/api/syna/fonts/');
 /** Prix affiché d'un produit (« 149 € », « 8,50 € »), ou null sans prix réel. */
@@ -391,19 +411,55 @@ const priceText = (p: ReturnType<typeof listProducts>[number]): string | null =>
   const cents = p.data.price ?? p.variants.find((v) => v.price != null)?.price ?? null;
   return cents == null ? null : `${(Math.round(cents) / 100).toFixed(2).replace(/[.,]00$/, "").replace(".", ",")} €`;
 };
-/** Vrais produits du catalogue pour les cartes et le panier à tenue : nom, première photo, prix. */
-export function tenueProducts(projectId: string): TenueProduct[] {
-  return listProducts(projectId).map((p) => ({ title: p.data.title, image: p.data.images[0]?.assetId ? assetUrl({ id: p.data.images[0].assetId }) : null, price: priceText(p) }));
+/** Un produit n'a plus de stock sur aucune variante, et la commande sans stock n'est pas permise. */
+const soldOut = (p: ReturnType<typeof listProducts>[number]) => p.variants.length > 0 && p.variants.every((v) => v.stock !== null && v.stock <= 0 && v.stockPolicy !== "continue");
+/**
+ * Vrais produits du catalogue pour les cartes et le panier à tenue : nom, première photo, prix, et la page de SA fiche
+ * (une fiche par produit quand elle existe, sinon la fiche commune).
+ */
+export function tenueProducts(projectId: string, t?: CustomTheme): TenueProduct[] {
+  return listProducts(projectId).map((p) => ({ title: p.data.title, image: p.data.images[0]?.assetId ? assetUrl({ id: p.data.images[0].assetId }) : null, price: priceText(p), go: t ? productPageKey(t, p.handle) : null, soldOut: soldOut(p), families: p.data.categories.map((c) => c.trim()).filter(Boolean), cents: p.data.price ?? p.variants.find((v) => v.price != null)?.price ?? null }));
 }
-/** Vraies données du bloc d'achat à tenue : photos du premier produit, son prix, la livraison et les retours du client. */
-export function tenueBuyData(projectId: string): TenueBuy | null {
+/**
+ * Tout ce que le Studio sait du client pour les sections à tenue : coordonnées, horaires et zone (profil des services,
+ * sinon fiche de l'entreprise), livraison et retours, familles du catalogue, prestations, articles prêts ou publiés.
+ */
+export function tenueSite(p: Pick<Project, "id"> & { services?: Project["services"] }, t: CustomTheme, products: TenueProduct[], prestations: TenuePrestation[]): TenueSite {
+  const co = (() => { try { return companyOf(p.id); } catch { return {}; } })() as { phone?: string; address?: string; shipping?: string; returns?: string };
+  const sv = p.services ?? (() => { try { return loadProject(p.id).services; } catch { return null; } })();
+  const shop = t.pages.find((x) => x.key === "shop")?.key ?? null;
+  const names = [...new Set(products.flatMap((x) => x.families ?? []))];
+  const families = shop ? names.map((name) => { const inside = products.filter((x) => (x.families ?? []).includes(name)); return { name, to: `${shop}:${name}`, image: inside.find((x) => x.image)?.image ?? null, products: inside.map((x) => x.title) }; }) : [];
+  // Articles du journal : ceux qui sont prêts ou publiés (un brouillon n'est pas montré), nettoyés à la lecture.
+  const articles = (() => { try { return all<{ title: string; excerpt: string; tags: string; cover_asset_id: string | null; body_html: string }>("SELECT title, excerpt, tags, cover_asset_id, body_html FROM blog_articles WHERE project_id = ? AND deleted_at IS NULL AND status != 'draft' ORDER BY updated_at DESC LIMIT 12", p.id).map((r) => ({ title: r.title, excerpt: r.excerpt, tag: ((() => { try { return (JSON.parse(r.tags || "[]") as string[])[0]; } catch { return null; } })()) ?? null, image: r.cover_asset_id ? assetUrl({ id: r.cover_asset_id }) : null, bodyHtml: sanitizeBlogHtml(r.body_html) })); } catch { return []; } })();
+  return { phone: sv?.phone || co.phone || null, address: sv?.address || co.address || null, hours: sv?.hours || null, area: sv?.area || null, shipping: co.shipping ?? null, returns: co.returns ?? null, families, prestations, products, articles };
+}
+/** Le catalogue vu par le menu : repère, nom et familles de chaque produit. */
+export const menuProducts = (projectId: string): MenuProduct[] => { try { return listProducts(projectId).map((p) => ({ handle: p.handle, title: p.data.title, categories: p.data.categories })); } catch { return []; } };
+/** Vraies prestations du client (profil des services) : nom, durée, prix. */
+export function tenuePrestations(projectId: string): TenuePrestation[] {
+  try { return (loadProject(projectId).services?.services ?? []).filter((s) => s.name?.trim()).map((s) => ({ name: s.name.trim(), duration: s.duration?.trim() || null, price: s.price?.trim() || null })); } catch { return []; }
+}
+/**
+ * Vraies données du bloc d'achat à tenue : les photos du produit de la page (le premier du catalogue sur la fiche
+ * commune), son prix, la livraison et les retours du client.
+ */
+export function tenueBuyData(projectId: string, handle?: string | null): TenueBuy | null {
   const products = listProducts(projectId);
   if (!products.length) return null;
-  const p0 = products[0];
+  const p0 = (handle && products.find((x) => x.handle === handle)) || products[0];
   const price = priceText(p0);
   const company = (() => { try { return companyOf(projectId) as { shipping?: string; returns?: string }; } catch { return {}; } })() as { shipping?: string; returns?: string };
   const clean = (v: string | undefined) => (v && v.trim() ? v.trim().slice(0, 120) : null);
-  return { images: p0.data.images.map((im) => im.assetId).filter((id): id is string => !!id).map((id) => assetUrl({ id })), price, shipping: clean(company.shipping), returns: clean(company.returns) };
+  return { images: p0.data.images.map((im) => im.assetId).filter((id): id is string => !!id).map((id) => assetUrl({ id })), price, shipping: clean(company.shipping), returns: clean(company.returns), soldOut: soldOut(p0), notes: priceNotes(projectId) };
+}
+/**
+ * Mentions à dire près du prix (fonctions du bloc d'achat, jamais des sections à part) : l'indice de réparabilité ou de
+ * durabilité, le paiement en plusieurs fois. Seulement des faits CONFIRMÉS de la fiche du client, repris tels quels.
+ */
+export const PRICE_NOTE = /r[ée]parabilit[ée]|durabilit[ée]|paiement en (?:plusieurs|deux|trois|quatre|\d+) fois|en plusieurs fois/i;
+export function priceNotes(projectId: string): string[] {
+  try { return loadProject(projectId).product.facts.filter((f) => f.status === "confirmed" && f.value?.trim() && PRICE_NOTE.test(`${f.label} ${f.value}`)).map((f) => factLine(f).trim().slice(0, 140)).slice(0, 3); } catch { return []; }
 }
 
 /** nonce : jeton des scripts du rendu (feuille de sécurité de la réponse : aucun autre script ne s'exécute). */
@@ -436,35 +492,45 @@ export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand"> & { 
   const own = allSections(t).filter((x) => x.s.css).map((x) => x.s.css!).join("\n");
   const sampleTexts = allSections(t).some((x) => !x.s.clientTexts);
   const flags = siteFlags(buyFlags(featuresOf(p.id)), t.settings, (() => { try { return freeShippingFrom(companyOf(p.id).shipping); } catch { return null; } })());
+  // Un site de services sans page panier : le bouton « Panier » de l'en-tête n'a rien à ouvrir, il ne s'affiche pas.
+  if (p.business === "services" && !t.pages.some((pg) => pg.key === "cart")) flags.hdCart = "0";
   // Bloc d'achat : les vraies données du produit du client (jamais les prix et remises d'exemple de la bibliothèque).
   const buy = (() => { try { return buyBlockData(p.id); } catch { return null; } })();
   const tnBuy = (() => { try { return tenueBuyData(p.id); } catch { return null; } })();
-  const tnProducts = (() => { try { return tenueProducts(p.id); } catch { return []; } })();
+  const tnProducts = (() => { try { return tenueProducts(p.id, t); } catch { return []; } })();
+  const tnPrestations = tenuePrestations(p.id);
+  const site = (() => { try { return tenueSite(p, t, tnProducts, tnPrestations); } catch { return { products: tnProducts, prestations: tnPrestations } as TenueSite; } })();
+  // Une fiche par produit : le bloc d'achat de chaque fiche montre SON produit.
+  const buyOf = (pg: CtPage) => (pg.product ? (() => { try { return tenueBuyData(p.id, pg.product) ?? tnBuy; } catch { return tnBuy; } })() : tnBuy);
   const pay = (p.platform ?? "shopify") === "shopify" && !t.pages.some((pg) => pg.key === "commande") ? "Sur ta boutique Shopify, ce bouton ouvre le paiement sécurisé de Shopify." : null;
   const pre = `window.CT_PAY=${JSON.stringify(pay).replace(/</g, "\\u003c")};window.TB_MAP=${JSON.stringify(linkMap(t))};window.CT_NAME=${JSON.stringify(name)};window.CT_DEMO=${JSON.stringify(DEMO_BRANDS.flatMap((d) => [d, d.toUpperCase()]).map((d) => d.replace(/\s+/g, "\\s+")))};window.CT_LOGO=${JSON.stringify(p.brand?.logo?.assetId ? assetUrl({ id: p.brand.logo.assetId }) : null)};(function(D){var F=${JSON.stringify(flags)};for(var k in F)D[k]=F[k]})(document.documentElement.dataset);`;
   const bar = t.pages.map((pg, i) => `<button type="button" data-pgb="${esc(pg.key)}" aria-pressed="${i === 0}">${esc(pg.label)}</button>`).join("");
   const address = projectAddress(p.id);
-  const body = t.pages.map((pg, i) => `<main class="tb-pg" data-pg="${esc(pg.key)}"${pg.seo ? ` data-seo-title="${esc(pg.seo.title)}" data-seo-desc="${esc(pg.seo.description)}"` : ""}${i ? " hidden" : ""}>${pg.sections.map((s) => realMap(withTenueProducts(withTenueBuyBlock(withRealBuyBlock(sectionMarkup(s, name, "page", p.business === "services" ? "services" : "products"), buy), tnBuy), tnProducts), address)).join("\n")}</main>`).join("\n");
-  const shell = (s: CtSection | null, place: string) => (s ? sectionMarkup(s, name, roleOf(place)) : "");
+  const body = t.pages.map((pg, i) => `<main class="tb-pg" data-pg="${esc(pg.key)}"${pg.seo ? ` data-seo-title="${esc(pg.seo.title)}" data-seo-desc="${esc(pg.seo.description)}"` : ""}${i ? " hidden" : ""}>${pg.sections.map((s) => realMap(withTenueSite(withTenuePrestations(withTenueProducts(withTenueBuyBlock(withRealBuyBlock(sectionMarkup(s, name, "page", p.business === "services" ? "services" : "products"), buy), buyOf(pg)), tnProducts), tnPrestations), site), address)).join("\n")}</main>`).join("\n");
+  // Le menu calculé depuis le catalogue (proposé par SINA, corrigé par le client) remplace les liens d'exemple de l'en-tête.
+  const shell = (s: CtSection | null, place: string) => (s ? (place === "en-tête" ? withMenu(sectionMarkup(s, name, roleOf(place)), t.menu) : withTenueSite(sectionMarkup(s, name, roleOf(place)), site)) : "");
+  // Sections de tout le site : le bandeau au-dessus de l'en-tête ; les fenêtres (cookies, âge, discussion) posées en bas de l'écran.
+  const extras = (group: "bandeau" | "partout") => (t.extras ?? []).filter((s) => (tenueSection(s.id)?.group ?? "partout") === group).map((s) => withTenueSite(sectionMarkup(s, name, "page"), site)).join("\n");
+  const windows = extras("partout");
   const title = o.title ?? `${name} — thème sur mesure`;
   const n = o.nonce ? ` nonce="${esc(o.nonce)}"` : "";
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><base href="/sections/"><title>${esc(title)}</title>
 ${lib.fonts.map((f) => `<link rel="stylesheet" href="${esc(f)}">`).join("")}
 <link rel="stylesheet" href="/sections/library.css">
-<link rel="stylesheet" href="/sections/tenue.css">
+${tenueFiles("css").map((f) => `<link rel="stylesheet" href="/sections/${f}">`).join("\n")}
 <style>${BASE_CSS}
 ${SETTINGS_CSS}
 ${brandCss(p)}
-${tenueCss(p.brand?.palette, t.tenue, MONO_CSS())}
+${tenueCss(p.brand?.palette, t.tenue, MONO_CSS(), titleWeight(p.brand?.fonts?.heading, t.tenue?.titres))}
 ${own}</style></head><body>
 <script${n}>${pre}</script>
 <div class="tb-bar"><span>${esc(name)} ·</span>${bar}<span class="tb-vw">Voir en</span><button class="tb-vw" type="button" data-vw="desk" aria-pressed="true">Ordinateur</button><button class="tb-vw" type="button" data-vw="phone" aria-pressed="false">Téléphone</button></div>
-<div class="tb-wrap ctw ctw-${t.family} ctw-${t.style}"${tenueAttrs(t.tenue)}><div class="frame">${shell(t.header, "en-tête")}${shell(t.search, "recherche")}
+<div class="tb-wrap ctw ctw-${t.family} ctw-${t.style}"${tenueAttrs(t.tenue)}><div class="frame">${extras("bandeau")}${shell(t.header, "en-tête")}${shell(t.search, "recherche")}
 ${body}
-${shell(t.footer, "pied de page")}</div></div>
+${shell(t.footer, "pied de page")}${windows ? `<div class="tn-fixes">${windows}</div>` : ""}</div></div>
 ${withBrandName(templates, name)}
 <script${n} src="/sections/library.js"></script>
-<script${n} src="/sections/tenue.js"></script>
+${tenueFiles("js").map((f) => `<script${n} src="/sections/${f}"></script>`).join("\n")}
 <script${n}>${NAV_JS}</script><script${n}>${CART_JS}</script><script${n}>${SETTINGS_JS}</script>
 ${o.embed ? `<style>.tb-bar{display:none}.tb-wrap .zm18,.bh,.mz1,.mz2{top:0!important}.ctw-note{top:10px;bottom:auto;left:auto;right:10px;max-width:300px;font-size:11px}</style>` : ""}
 ${o.studio ? `${sampleTexts ? `<div class="ctw-note" aria-hidden="true">Thème sur mesure · textes et photos d'exemple encore présents : SINA les remplace par les tiens</div>` : ""}<script${n}>${PICK_JS}</script>` : ""}

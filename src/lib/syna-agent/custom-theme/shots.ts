@@ -14,6 +14,7 @@ import { chromiumPath } from "../../theme/snapshot";
 import { LIBRARY_DIR } from "./library";
 import { loadCustomTheme } from "./theme";
 import { renderCustomTheme } from "./render";
+import { TENUE_FILES } from "./tenue";
 
 const ORIGIN = "http://theme.sina";
 const VIEWS = [
@@ -33,7 +34,7 @@ export async function customThemeShots(projectId: string): Promise<ThemeShot[]> 
   if (!t) return [];
   const dir = cacheDir();
   // Version de la bibliothèque (feuille et scripts communs) : une correction des sections refait aussi les captures.
-  const lib = ["library.css", "library.js", "tenue.css", "tenue.js"].map((f) => { try { return Math.round(fs.statSync(path.join(LIBRARY_DIR(), f)).mtimeMs).toString(36); } catch { return "0"; } }).join("");
+  const lib = ["library.css", "library.js", ...TENUE_FILES.css, ...TENUE_FILES.js].map((f) => { try { return Math.round(fs.statSync(path.join(LIBRARY_DIR(), f)).mtimeMs).toString(36); } catch { return "0"; } }).join("");
   const key = (v: string) => path.join(dir, `${projectId}-${t.rev}-${lib}-${v === "ordinateur" ? "desk" : "phone"}.jpg`);
   const cached = VIEWS.map((v) => ({ view: v.key, file: key(v.key) })).filter((x) => fs.existsSync(x.file));
   if (cached.length === VIEWS.length) return cached.map((x) => ({ view: x.view, data: fs.readFileSync(x.file) }));
@@ -58,7 +59,7 @@ export async function customThemePageShots(projectId: string, keys: string[]): P
   const t = loadCustomTheme(projectId);
   if (!t) return [];
   const dir = cacheDir(), phone = VIEWS[1];
-  const lib = ["library.css", "library.js", "tenue.css", "tenue.js"].map((f) => { try { return Math.round(fs.statSync(path.join(LIBRARY_DIR(), f)).mtimeMs).toString(36); } catch { return "0"; } }).join("");
+  const lib = ["library.css", "library.js", ...TENUE_FILES.css, ...TENUE_FILES.js].map((f) => { try { return Math.round(fs.statSync(path.join(LIBRARY_DIR(), f)).mtimeMs).toString(36); } catch { return "0"; } }).join("");
   let html: string | null = null;
   const out: { key: string; label: string; data: Buffer }[] = [];
   for (const key of keys) {
@@ -81,32 +82,71 @@ export const shootPageBottom = (html: string, pageKey: string, scale = 1, qualit
 /** Capture d'une page entière sur téléphone, à l'échelle voulue (2 : image nette à montrer à quelqu'un). */
 export const shootPhonePage = (html: string, pageKey: string, scale = 1, quality?: number) => shoot(html, VIEWS[1], pageKey, { scale, quality });
 
-async function shoot(html: string, v: (typeof VIEWS)[number], pageKey?: string, o: { bottom?: boolean; scale?: number; quality?: number } = {}): Promise<Buffer | null> {
+/**
+ * Tout est servi par le Studio lui-même : la bibliothèque de sections, les photos du projet, les polices ; rien d'autre
+ * ne sort (les polices en ligne sont remplacées par celles de la marque).
+ */
+async function serve(page: import("playwright").Page, html: string) {
+  await page.route("**/*", async (route) => {
+    const u = new URL(route.request().url());
+    if (u.origin !== ORIGIN) return route.abort();
+    if (u.pathname === "/") return route.fulfill({ body: html, contentType: "text/html; charset=utf-8" });
+    if (u.pathname.startsWith("/sections/")) {
+      const f = path.join(LIBRARY_DIR(), decodeURIComponent(u.pathname.slice("/sections/".length)));
+      if (!f.startsWith(LIBRARY_DIR()) || !fs.existsSync(f)) return route.fulfill({ status: 404 });
+      return route.fulfill({ body: fs.readFileSync(f), contentType: f.endsWith(".css") ? "text/css" : f.endsWith(".js") ? "text/javascript" : f.endsWith(".webp") ? "image/webp" : "image/jpeg" });
+    }
+    const file = /^\/api\/files\/([\w-]+)/.exec(u.pathname);
+    if (file) { const a = getAsset(file[1]); return a ? route.fulfill({ body: assetData(a), contentType: a.mime }) : route.fulfill({ status: 404 }); }
+    const font = /^\/api\/syna\/fonts\/(.+)$/.exec(u.pathname);
+    if (font) { const f = fontFilePath(decodeURIComponent(font[1])); return f ? route.fulfill({ body: fs.readFileSync(f), contentType: "font/ttf" }) : route.fulfill({ status: 404 }); }
+    return route.fulfill({ status: 404 });
+  });
+}
+
+/**
+ * Plusieurs pages d'un même thème, capturées dans un seul navigateur (planches de contrôle des sections) : l'image de
+ * chaque page et son débordement en largeur (0 : rien ne dépasse de l'écran). Sans Chromium : null.
+ */
+export async function shootPages(html: string, keys: string[], o: { view: "ordinateur" | "téléphone"; quality?: number; maxHeight?: number; /** 2 : capture deux fois plus fine, pour une image à montrer. */ scale?: number }): Promise<{ key: string; data: Buffer; overflow: number }[] | null> {
+  const v = VIEWS.find((x) => x.key === o.view)!;
+  const opened = await open(html, v, o.scale);
+  if (!opened) return null;
+  const { browser, page } = opened;
+  try {
+    const out: { key: string; data: Buffer; overflow: number }[] = [];
+    await page.addStyleTag({ content: ".tn-barre{display:none!important}" });
+    for (const key of keys) {
+      await page.evaluate((k) => { const go = (window as unknown as { ctGo?: (key: string) => void }).ctGo; if (go) go(k); scrollTo(0, 0); }, key);
+      await page.waitForTimeout(180);
+      const m = await page.evaluate(() => ({ h: document.documentElement.scrollHeight, w: document.documentElement.scrollWidth, vw: innerWidth }));
+      const data = await page.screenshot({ type: "jpeg", quality: o.quality ?? 80, fullPage: true, clip: { x: 0, y: 0, width: v.width, height: Math.min(m.h, o.maxHeight ?? v.maxHeight) } });
+      out.push({ key, data, overflow: Math.max(0, m.w - m.vw) });
+    }
+    return out;
+  } finally { await browser.close().catch(() => {}); }
+}
+
+/** Ouvre le thème dans un Chromium local ; tout est servi par le Studio lui-même. */
+async function open(html: string, v: (typeof VIEWS)[number], scale?: number) {
   const executablePath = chromiumPath();
   if (!executablePath) return null;
   const { chromium } = await import("playwright");
   const browser = await chromium.launch({ executablePath, args: ["--no-sandbox", "--disable-dev-shm-usage"] });
   try {
-    const context = await browser.newContext({ viewport: { width: v.width, height: v.height }, reducedMotion: "reduce", ...(o.scale && o.scale > 1 ? { deviceScaleFactor: o.scale } : {}) });
+    const context = await browser.newContext({ viewport: { width: v.width, height: v.height }, reducedMotion: "reduce", ...(scale && scale > 1 ? { deviceScaleFactor: scale } : {}) });
     const page = await context.newPage();
-    // Tout est servi par le Studio lui-même : la bibliothèque de sections, les photos du projet, les polices ; rien
-    // d'autre ne sort (les polices en ligne sont remplacées par celles de la marque).
-    await page.route("**/*", async (route) => {
-      const u = new URL(route.request().url());
-      if (u.origin !== ORIGIN) return route.abort();
-      if (u.pathname === "/") return route.fulfill({ body: html, contentType: "text/html; charset=utf-8" });
-      if (u.pathname.startsWith("/sections/")) {
-        const f = path.join(LIBRARY_DIR(), decodeURIComponent(u.pathname.slice("/sections/".length)));
-        if (!f.startsWith(LIBRARY_DIR()) || !fs.existsSync(f)) return route.fulfill({ status: 404 });
-        return route.fulfill({ body: fs.readFileSync(f), contentType: f.endsWith(".css") ? "text/css" : f.endsWith(".js") ? "text/javascript" : f.endsWith(".webp") ? "image/webp" : "image/jpeg" });
-      }
-      const file = /^\/api\/files\/([\w-]+)/.exec(u.pathname);
-      if (file) { const a = getAsset(file[1]); return a ? route.fulfill({ body: assetData(a), contentType: a.mime }) : route.fulfill({ status: 404 }); }
-      const font = /^\/api\/syna\/fonts\/(.+)$/.exec(u.pathname);
-      if (font) { const f = fontFilePath(decodeURIComponent(font[1])); return f ? route.fulfill({ body: fs.readFileSync(f), contentType: "font/ttf" }) : route.fulfill({ status: 404 }); }
-      return route.fulfill({ status: 404 });
-    });
+    await serve(page, html);
     await page.goto(`${ORIGIN}/`, { waitUntil: "load", timeout: 45_000 });
+    return { browser, page };
+  } catch (e) { await browser.close().catch(() => {}); throw e; }
+}
+
+async function shoot(html: string, v: (typeof VIEWS)[number], pageKey?: string, o: { bottom?: boolean; scale?: number; quality?: number } = {}): Promise<Buffer | null> {
+  const opened = await open(html, v, o.scale);
+  if (!opened) return null;
+  const { browser, page } = opened;
+  try {
     // Page précise : ouverte par le même chemin qu'un lien du site.
     if (pageKey) await page.evaluate((k) => { const go = (window as unknown as { ctGo?: (key: string) => void }).ctGo; if (go) go(k); }, pageKey);
     await page.evaluate(async () => {

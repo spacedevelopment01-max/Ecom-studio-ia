@@ -1,0 +1,877 @@
+/*
+ * Sections à tenue du produit, de l'achat et du catalogue (thème sur mesure). Écrite à la main ; mêmes variables et mêmes attributs de tenue que
+ * tenue.css. Règles : docs/sina-savoir/sections-a-tenue.md.
+ *
+ * Repères communs à ce module : haut de section à 44 px, marges de 20 px, titre à 40 px ; un trait plein de 1,5 px
+ * sépare les grandes parties, un trait fin (encre à 22 %) sépare les lignes d'une liste. Un groupe qui se replie est
+ * une case cochée cachée dans son étiquette (aucun script). Une valeur qui manque (« À compléter ») garde une taille
+ * de texte courant, même dans une case où la vraie valeur s'écrit en grand.
+ */
+
+/* ══ Fiche technique ══ */
+.ctw .tn-fiche-technique{padding:44px 20px 0}
+.ctw .tn-fiche-technique h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-fiche-technique .tn-groupe{margin-top:26px;border-top:1.5px solid var(--tn-encre);padding-top:14px}
+.ctw .tn-fiche-technique label{display:block;font-family:var(--f-title);font-size:24px;line-height:1.15;pointer-events:none}
+.ctw .tn-fiche-technique input{position:absolute;opacity:0;width:1px;height:1px;margin:0;pointer-events:none}
+.ctw .tn-fiche-technique ul{margin-top:8px}
+.ctw .tn-fiche-technique li{display:grid;grid-template-columns:minmax(0,38%) minmax(0,1fr);gap:12px;padding:11px 0;border-top:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent);font-size:15.5px;line-height:1.4}
+.ctw .tn-fiche-technique li:first-child{border-top:0}
+.ctw .tn-fiche-technique li span{color:var(--tn-sourd)}
+.ctw .tn-fiche-technique li b{font-weight:400;overflow-wrap:anywhere}
+/* « tuiles » : le nom en petit, la valeur en grand ; la dernière tuile d'une ligne incomplète prend la place qui reste */
+.ctw .tn-fiche-technique[data-tn-c="tuiles"]{display:flex;flex-wrap:wrap;gap:8px}
+.ctw .tn-fiche-technique[data-tn-c="tuiles"] h2{flex:0 0 100%;margin-bottom:14px}
+.ctw .tn-fiche-technique[data-tn-c="tuiles"] .tn-groupe,.ctw .tn-fiche-technique[data-tn-c="tuiles"] ul{display:contents}
+.ctw .tn-fiche-technique[data-tn-c="tuiles"] label{display:none}
+.ctw .tn-fiche-technique[data-tn-c="tuiles"] li{flex:1 1 calc(50% - 4px);display:block;min-width:0;border:0;background-color:var(--tn-doux);border-radius:var(--tn-arrondi,0);padding:14px 14px 16px}
+.ctw .tn-fiche-technique[data-tn-c="tuiles"] li span{display:block;font-size:14px;color:var(--tn-texte)}
+.ctw .tn-fiche-technique[data-tn-c="tuiles"] li b{display:block;font-family:var(--f-title);font-size:21px;line-height:1.15;margin-top:6px;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
+.ctw .tn-fiche-technique[data-tn-c="tuiles"] li b mark.tn-manque{font-size:14.5px}
+/* « volets » : un groupe par volet, ouvert quand sa case est cochée */
+.ctw .tn-fiche-technique[data-tn-c="volets"] h2{margin-bottom:18px}
+.ctw .tn-fiche-technique[data-tn-c="volets"] .tn-groupe{margin-top:0;padding-top:0;border-top:0;border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-fiche-technique[data-tn-c="volets"] h2 + .tn-groupe{border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-fiche-technique[data-tn-c="volets"] label{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:44px;padding:16px 0;font-size:26px;cursor:pointer;pointer-events:auto}
+.ctw .tn-fiche-technique[data-tn-c="volets"] label::after{content:"+";font-family:var(--f-ui);font-size:22px}
+.ctw .tn-fiche-technique[data-tn-c="volets"] label:has(input:checked)::after{content:"−"}
+.ctw .tn-fiche-technique[data-tn-c="volets"] label:has(input:focus-visible){outline:2px solid var(--tn-encre);outline-offset:2px}
+.ctw .tn-fiche-technique[data-tn-c="volets"] ul{margin:-4px 0 12px}
+.ctw .tn-fiche-technique[data-tn-c="volets"] .tn-groupe:not(:has(input:checked)) ul{display:none}
+
+/* ══ Dans le colis ══ */
+.ctw .tn-colis{padding:44px 20px 0}
+.ctw .tn-colis h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-colis .tn-chapo{font-size:16.5px;color:var(--tn-texte);margin-top:10px}
+.ctw .tn-colis .tn-pieces{margin-top:22px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-colis .tn-pieces li{display:grid;grid-template-columns:84px minmax(0,1fr);gap:18px;align-items:center;padding:16px 0;border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-colis .tn-pieces .tn-ph{height:104px}
+.ctw .tn-colis .tn-pieces b{display:block;font-family:var(--f-title);font-weight:400;font-size:24px;line-height:1.1}
+.ctw .tn-colis .tn-pieces span{display:block;font-size:15.5px;line-height:1.45;color:var(--tn-texte);margin-top:6px}
+.ctw .tn-colis .tn-en-plus{margin-top:24px}
+.ctw .tn-colis .tn-en-plus ul{margin-top:8px}
+.ctw .tn-colis .tn-en-plus li{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:10px 0;border-top:1px dashed color-mix(in srgb,var(--tn-encre) 45%,transparent);font-size:15.5px}
+.ctw .tn-colis .tn-en-plus li b{font-weight:400;text-align:right}
+.ctw[data-tn-cadre="penche"] .tn-colis{overflow-x:clip}
+.ctw[data-tn-cadre="penche"] .tn-colis[data-tn-c="grille"] .tn-pieces{column-gap:24px;padding:0 6px 0 2px}
+.ctw[data-tn-cadre="penche"] .tn-colis[data-tn-c="grille"] .tn-pieces b{margin-top:18px}
+/* « grille » : des vignettes, le nom dessous ; une dernière pièce seule sur sa ligne s'étend, la photo à gauche */
+.ctw .tn-colis[data-tn-c="grille"] .tn-pieces{border-top:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 14px}
+.ctw .tn-colis[data-tn-c="grille"] .tn-pieces li{display:block;padding:0;border-bottom:0}
+.ctw .tn-colis[data-tn-c="grille"] .tn-pieces .tn-ph{height:200px}
+.ctw .tn-colis[data-tn-c="grille"] .tn-pieces b{font-size:22px;margin-top:12px}
+.ctw .tn-colis[data-tn-c="grille"] .tn-pieces li:last-child:nth-child(odd){grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:center}
+.ctw .tn-colis[data-tn-c="grille"] .tn-pieces li:last-child:nth-child(odd) b{margin-top:0}
+
+/* ══ Pour qui, pas pour qui ══ */
+.ctw .tn-pour-qui{padding:44px 20px 0}
+.ctw .tn-pour-qui h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-pour-qui .tn-deux{margin-top:22px;display:grid;gap:26px}
+.ctw .tn-pour-qui .tn-deux b{display:block;font-family:var(--f-title);font-weight:400;font-size:26px;line-height:1.1}
+.ctw .tn-pour-qui ul{margin-top:12px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-pour-qui li{position:relative;padding:13px 0 13px 34px;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent);font-size:16.5px;line-height:1.45}
+/* le oui : une coche ; le non : une croix (dessinées, pas des caractères) */
+.ctw .tn-pour-qui .tn-oui li::before{content:"";position:absolute;left:3px;top:19px;width:14px;height:7px;border-left:2px solid var(--tn-accent);border-bottom:2px solid var(--tn-accent);transform:rotate(-45deg)}
+.ctw .tn-pour-qui .tn-non li{color:var(--tn-sourd)}
+.ctw .tn-pour-qui .tn-non li::before,.ctw .tn-pour-qui .tn-non li::after{content:"";position:absolute;left:2px;top:24px;width:16px;border-top:2px solid currentColor;transform:rotate(45deg)}
+.ctw .tn-pour-qui .tn-non li::after{transform:rotate(-45deg)}
+/* « panneaux » : le oui sur un panneau sombre, le non dans un panneau bordé */
+.ctw .tn-pour-qui[data-tn-c="panneaux"] .tn-deux{gap:10px}
+.ctw .tn-pour-qui[data-tn-c="panneaux"] .tn-oui,.ctw .tn-pour-qui[data-tn-c="panneaux"] .tn-non{padding:26px 22px 14px;border-radius:var(--tn-arrondi,0)}
+.ctw .tn-pour-qui[data-tn-c="panneaux"] .tn-oui{background-color:var(--tn-encre);color:var(--tn-sur-bouton)}
+.ctw .tn-pour-qui[data-tn-c="panneaux"] .tn-non{border:1.5px solid var(--tn-encre)}
+.ctw .tn-pour-qui[data-tn-c="panneaux"] ul{border-top:0;margin-top:8px}
+.ctw .tn-pour-qui[data-tn-c="panneaux"] li{border-bottom:0;padding-top:9px;padding-bottom:9px}
+.ctw .tn-pour-qui[data-tn-c="panneaux"] .tn-oui li::before{top:15px;border-color:currentColor}
+.ctw .tn-pour-qui[data-tn-c="panneaux"] .tn-non li::before,.ctw .tn-pour-qui[data-tn-c="panneaux"] .tn-non li::after{top:20px}
+.ctw[data-tn-cadre="niche"] .tn-pour-qui[data-tn-c="panneaux"] .tn-oui{border-radius:120px 120px 14px 14px;padding-top:54px}
+.ctw[data-tn-cadre="niche"] .tn-pour-qui[data-tn-c="panneaux"] .tn-oui b{text-align:center}
+.ctw[data-tn-cadre="penche"] .tn-pour-qui[data-tn-c="panneaux"]{overflow-x:clip}
+.ctw[data-tn-cadre="penche"] .tn-pour-qui[data-tn-c="panneaux"] .tn-deux{gap:18px}
+.ctw[data-tn-cadre="penche"] .tn-pour-qui[data-tn-c="panneaux"] .tn-oui{border-radius:18px;transform:rotate(-1.2deg);box-shadow:6px 7px 0 var(--tn-accent)}
+.ctw[data-tn-cadre="penche"] .tn-pour-qui[data-tn-c="panneaux"] .tn-non{border-width:3px;border-radius:18px;transform:rotate(.8deg)}
+
+/* ══ Essayer avant d'acheter ══ */
+.ctw .tn-essayer{padding:44px 20px 0}
+.ctw .tn-essayer h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-essayer .tn-chapo{font-size:16.5px;color:var(--tn-texte);margin-top:10px}
+.ctw .tn-essayer .tn-ph{height:300px;margin-top:24px}
+.ctw .tn-essayer ul{margin-top:26px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-essayer li{display:grid;gap:5px;padding:15px 0;border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-essayer li b{font-family:var(--f-title);font-weight:400;font-size:24px;line-height:1.1}
+.ctw .tn-essayer li span{font-size:15.5px;line-height:1.5;color:var(--tn-texte)}
+.ctw .tn-essayer .tn-bt{display:block;margin-top:22px;font-size:16.5px;padding:16px 20px;letter-spacing:normal}
+.ctw[data-tn-cadre="penche"] .tn-essayer{overflow-x:clip}
+.ctw[data-tn-cadre="penche"] .tn-essayer .tn-ph{margin-left:4px;margin-right:10px}
+
+/* ══ À l'échelle : la photo bordée d'une règle dessinée ══ */
+.ctw .tn-echelle{padding:44px 20px 0}
+.ctw .tn-echelle h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-echelle figure{margin-top:22px}
+.ctw .tn-echelle .tn-regle{position:relative;padding:0 0 22px 22px}
+.ctw .tn-echelle .tn-regle::before,.ctw .tn-echelle .tn-regle::after{content:"";position:absolute;background-repeat:no-repeat}
+.ctw .tn-echelle .tn-regle::before{left:0;top:0;bottom:22px;width:12px;border-left:1.5px solid var(--tn-encre);background-image:repeating-linear-gradient(to bottom,var(--tn-encre) 0 1.5px,transparent 1.5px 50px),repeating-linear-gradient(to bottom,var(--tn-encre) 0 1px,transparent 1px 10px);background-size:12px 100%,6px 100%}
+.ctw .tn-echelle .tn-regle::after{left:22px;right:0;bottom:0;height:12px;border-bottom:1.5px solid var(--tn-encre);background-image:repeating-linear-gradient(to right,var(--tn-encre) 0 1.5px,transparent 1.5px 50px),repeating-linear-gradient(to right,var(--tn-encre) 0 1px,transparent 1px 10px);background-size:100% 12px,100% 6px;background-position:left bottom,left bottom}
+.ctw .tn-echelle .tn-ph{height:236px}
+/* la photo de comparaison est large : la niche s'arrondit moins, pour ne rien couper du produit */
+.ctw[data-tn-cadre="niche"] .tn-echelle .tn-ph{border-radius:90px 90px 0 0}
+.ctw .tn-echelle figcaption{font-family:var(--f-title);font-style:italic;font-size:17px;color:var(--tn-sourd);margin:10px 0 0 22px}
+.ctw[data-tn-petits="machine"] .tn-echelle figcaption{font-family:"IBM Plex Mono",monospace;font-style:normal;font-weight:700;font-size:14px}
+.ctw .tn-echelle ul{margin-top:22px;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);border-top:1.5px solid var(--tn-encre);border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-echelle li{display:grid;gap:4px;align-content:start;padding:14px 10px 16px}
+.ctw .tn-echelle li + li{border-left:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-echelle li:first-child{padding-left:0}
+.ctw .tn-echelle li span{font-size:14px;color:var(--tn-sourd)}
+.ctw .tn-echelle li b{font-family:var(--f-title);font-weight:400;font-size:26px;line-height:1.1;overflow-wrap:anywhere}
+.ctw .tn-echelle li b mark.tn-manque{font-size:13.5px;padding:1px 5px}
+.ctw[data-tn-cadre="penche"] .tn-echelle{overflow-x:clip}
+.ctw[data-tn-cadre="penche"] .tn-echelle .tn-regle{padding:0 12px 30px 28px}
+.ctw[data-tn-cadre="penche"] .tn-echelle .tn-regle::before{bottom:30px}
+.ctw[data-tn-cadre="penche"] .tn-echelle .tn-regle::after{left:28px}
+
+/* ══ Tableau des valeurs : l'étiquette au dos du paquet ══ */
+.ctw .tn-valeurs{padding:44px 20px 0}
+.ctw .tn-valeurs .tn-etiquette{border:1.5px solid var(--tn-encre);border-radius:var(--tn-arrondi,0);background-color:var(--tn-sur-bouton);color:var(--tn-encre);padding:22px 16px 16px}
+.ctw .tn-valeurs h2{font-size:calc(34px*var(--tn-k))}
+.ctw .tn-valeurs .tn-tete p{font-size:14.5px;line-height:1.45;margin-top:8px}
+.ctw .tn-valeurs table{width:100%;table-layout:fixed;border-collapse:collapse;margin-top:14px;border-top:6px solid var(--tn-encre);font-size:14.5px;line-height:1.3}
+.ctw .tn-valeurs th,.ctw .tn-valeurs td{padding:10px 0 10px 8px;text-align:right;font-weight:400;vertical-align:top;overflow-wrap:anywhere}
+.ctw .tn-valeurs th:first-child{width:34%;padding-left:0;text-align:left}
+.ctw .tn-valeurs thead th{font-size:12.5px;color:var(--tn-sourd);padding-top:8px;padding-bottom:8px;border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-valeurs tbody th{font-weight:700}
+.ctw .tn-valeurs tbody tr + tr th,.ctw .tn-valeurs tbody tr + tr td{border-top:1px solid color-mix(in srgb,var(--tn-encre) 28%,transparent)}
+.ctw .tn-valeurs tbody tr.tn-dont th{font-weight:400;padding-left:14px}
+.ctw .tn-valeurs td mark.tn-manque{font-size:13px;padding:1px 5px}
+.ctw .tn-valeurs .tn-source{font-size:13.5px;line-height:1.45;color:var(--tn-sourd);margin-top:0;padding-top:12px;border-top:3px solid var(--tn-encre)}
+
+/* ══ Analyses et documents à consulter ══ */
+.ctw .tn-documents{padding:44px 20px 0}
+.ctw .tn-documents h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-documents .tn-chapo{font-size:16.5px;color:var(--tn-texte);margin-top:10px}
+.ctw .tn-documents ul{margin-top:22px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-documents li a{display:grid;grid-template-columns:30px minmax(0,1fr) auto;column-gap:16px;row-gap:3px;align-items:center;min-height:72px;padding:14px 0;border-bottom:1.5px solid var(--tn-encre)}
+/* la feuille dessinée : un coin plié, trois lignes d'écriture */
+.ctw .tn-documents li a::before{content:"";box-sizing:border-box;grid-column:1;grid-row:1/3;width:30px;height:38px;border:1.5px solid var(--tn-encre);clip-path:polygon(0 0,calc(100% - 9px) 0,100% 9px,100% 100%,0 100%);background-origin:border-box;background-repeat:no-repeat;background-image:linear-gradient(to bottom left,transparent calc(50% - 1px),var(--tn-encre) calc(50% - 1px) calc(50% + 1px),transparent calc(50% + 1px)),linear-gradient(var(--tn-encre),var(--tn-encre)),linear-gradient(var(--tn-encre),var(--tn-encre)),linear-gradient(var(--tn-encre),var(--tn-encre));background-position:top right,7px 16px,7px 22px,7px 28px;background-size:9px 9px,12px 1.5px,16px 1.5px,9px 1.5px}
+.ctw .tn-documents li b{grid-column:2;align-self:end;font-family:var(--f-title);font-weight:400;font-size:22px;line-height:1.15}
+.ctw .tn-documents li span{grid-column:2;align-self:start;font-size:14.5px;line-height:1.4;color:var(--tn-sourd)}
+.ctw .tn-documents li em{grid-column:3;grid-row:1/3;font-style:normal;font-weight:600;font-size:15px;border-bottom:1.5px solid var(--tn-encre);padding-bottom:2px}
+/* « feuilles » : chaque document est une feuille au coin plié ; une feuille seule sur sa ligne s'étend */
+.ctw .tn-documents[data-tn-c="feuilles"] ul{border-top:0;display:flex;flex-wrap:wrap;gap:12px}
+.ctw .tn-documents[data-tn-c="feuilles"] li{flex:1 1 calc(50% - 6px);min-width:0;display:flex}
+.ctw .tn-documents[data-tn-c="feuilles"] li a{position:relative;flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-height:196px;padding:32px 14px 18px;border:1.5px solid var(--tn-encre);background-color:var(--tn-sur-bouton);clip-path:polygon(0 0,calc(100% - 26px) 0,100% 26px,100% 100%,0 100%)}
+.ctw .tn-documents[data-tn-c="feuilles"] li a::before{position:absolute;top:-1.5px;right:-1.5px;width:26px;height:26px;border:0;clip-path:none;background:linear-gradient(to bottom left,transparent 50%,var(--tn-encre) 50% calc(50% + 1.5px),var(--tn-doux) calc(50% + 1.5px))}
+.ctw .tn-documents[data-tn-c="feuilles"] li b{align-self:auto;font-size:19px;overflow-wrap:break-word;max-width:100%}
+.ctw .tn-documents[data-tn-c="feuilles"] li span{align-self:auto}
+.ctw .tn-documents[data-tn-c="feuilles"] li em{margin-top:auto}
+/* une dernière feuille seule sur sa ligne prend la largeur : elle se resserre, sans grand vide dedans */
+@media (max-width:759px){
+  .ctw .tn-documents[data-tn-c="feuilles"] li:last-child:nth-child(odd) a{min-height:0;padding-bottom:20px}
+  .ctw .tn-documents[data-tn-c="feuilles"] li:last-child:nth-child(odd) em{margin-top:12px}
+}
+
+/* ══ D'où viennent nos preuves : des sources numérotées ══ */
+.ctw .tn-preuves{padding:44px 20px 0}
+.ctw .tn-preuves h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-preuves .tn-chapo{font-size:16.5px;color:var(--tn-texte);margin-top:10px}
+.ctw .tn-preuves .tn-tiroir{display:none}
+.ctw .tn-preuves input{position:absolute;opacity:0;width:1px;height:1px;margin:0;pointer-events:none}
+.ctw .tn-preuves ol{list-style:none;margin:22px 0 0;padding:0;counter-reset:tn-source;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-preuves li{counter-increment:tn-source;display:grid;grid-template-columns:28px minmax(0,1fr);column-gap:14px;row-gap:6px;padding:18px 0 16px;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-preuves li::before{content:counter(tn-source);grid-row:1/4;display:grid;place-items:center;width:26px;height:26px;margin-top:1px;border-radius:50%;background:var(--tn-encre);color:var(--tn-sur-bouton);font-size:13px;font-weight:700}
+.ctw .tn-preuves li p{grid-column:2;font-family:var(--f-title);font-size:22px;line-height:1.2}
+.ctw .tn-preuves li span{grid-column:2;font-size:15px;line-height:1.5;color:var(--tn-texte)}
+.ctw .tn-preuves li a{grid-column:2;justify-self:start;position:relative;font-size:15px;font-weight:600;padding:8px 0 2px;border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-preuves li a::before,.ctw .tn-garanties>a::before,.ctw .tn-avis .tn-premier a::before{content:"";position:absolute;left:0;right:0;top:50%;height:44px;transform:translateY(-50%)}
+/* « tiroir » : les sources restent fermées sous une ligne à toucher */
+.ctw .tn-preuves[data-tn-c="tiroir"] .tn-tiroir{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:44px;margin-top:22px;padding:16px 0;border-top:1.5px solid var(--tn-encre);border-bottom:1.5px solid var(--tn-encre);font-family:var(--f-title);font-size:26px;line-height:1.15;cursor:pointer}
+.ctw .tn-preuves[data-tn-c="tiroir"] .tn-tiroir::after{content:"+";font-family:var(--f-ui);font-size:22px}
+.ctw .tn-preuves[data-tn-c="tiroir"] .tn-tiroir:has(input:checked)::after{content:"−"}
+.ctw .tn-preuves[data-tn-c="tiroir"] .tn-tiroir:has(input:focus-visible){outline:2px solid var(--tn-encre);outline-offset:2px}
+.ctw .tn-preuves[data-tn-c="tiroir"] ol{margin-top:0;border-top:0}
+.ctw .tn-preuves[data-tn-c="tiroir"] .tn-tiroir:not(:has(input:checked)) + ol{display:none}
+
+/* ══ Accords : une carte de restaurant, encadrée d'un trait ══ */
+.ctw .tn-accords{padding:78px 40px 34px;text-align:center}
+.ctw .tn-accords::before{content:"";position:absolute;inset:44px 20px 0;border:1.5px solid var(--tn-encre);border-radius:var(--tn-arrondi,0);pointer-events:none}
+.ctw .tn-accords h2{font-size:calc(36px*var(--tn-k))}
+.ctw .tn-accords .tn-avec{margin-top:24px}
+.ctw .tn-accords .tn-sans{margin-top:26px;padding-top:24px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-accords ul{margin-top:4px}
+.ctw .tn-accords li{padding:13px 0}
+.ctw .tn-accords li + li::before{content:"";display:block;width:26px;margin:0 auto 13px;border-top:1px solid color-mix(in srgb,var(--tn-encre) 45%,transparent);transform:translateY(-13px)}
+.ctw .tn-accords li b{display:block;font-family:var(--f-title);font-weight:400;font-size:26px;line-height:1.1}
+.ctw .tn-accords li span{display:block;font-size:15.5px;line-height:1.45;color:var(--tn-texte);margin-top:5px}
+.ctw .tn-accords .tn-sans li b{font-size:21px;color:var(--tn-sourd);text-decoration:line-through;text-decoration-thickness:1.5px}
+.ctw .tb-pg>.tn-accords:last-child{padding-bottom:98px}
+.ctw .tb-pg>.tn-accords:last-child::before{bottom:64px}
+/* « étiquettes » : les accords en nuage d'étiquettes, celles à éviter en pointillé et barrées */
+.ctw .tn-accords[data-tn-c="etiquettes"]{padding:44px 20px 0;text-align:left}
+.ctw .tn-accords[data-tn-c="etiquettes"]::before{display:none}
+.ctw .tn-accords[data-tn-c="etiquettes"] h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-accords[data-tn-c="etiquettes"] .tn-sans{margin-top:24px;padding-top:0;border-top:0}
+.ctw .tn-accords[data-tn-c="etiquettes"] ul{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.ctw .tn-accords[data-tn-c="etiquettes"] li{padding:9px 16px 10px;border:1.5px solid var(--tn-encre);border-radius:999px}
+.ctw .tn-accords[data-tn-c="etiquettes"] li + li::before{display:none}
+.ctw .tn-accords[data-tn-c="etiquettes"] li b{font-size:19px}
+.ctw .tn-accords[data-tn-c="etiquettes"] li span{display:none}
+.ctw .tn-accords[data-tn-c="etiquettes"] .tn-sans li{border-style:dashed;border-color:color-mix(in srgb,var(--tn-encre) 55%,transparent)}
+.ctw .tb-pg>.tn-accords[data-tn-c="etiquettes"]:last-child{padding-bottom:64px}
+.ctw[data-tn-bouton="droit"] .tn-accords[data-tn-c="etiquettes"] li{border-radius:0}
+.ctw[data-tn-bouton="etiquette"] .tn-accords[data-tn-c="etiquettes"] li{border-radius:3px}
+.ctw[data-tn-bouton="ombre"] .tn-accords[data-tn-c="etiquettes"] .tn-avec ul{gap:12px}
+.ctw[data-tn-bouton="ombre"] .tn-accords[data-tn-c="etiquettes"] .tn-avec li{border-width:2.5px;background-color:var(--tn-doux);box-shadow:3px 4px 0 var(--tn-encre)}
+
+/* ══ Notes en trois temps : une pyramide, du plus léger au plus profond ══ */
+.ctw .tn-notes{padding:44px 20px 0}
+.ctw .tn-notes h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-notes .tn-chapo{font-size:16.5px;color:var(--tn-texte);margin-top:10px}
+.ctw .tn-notes ol{list-style:none;margin:26px 0 0;padding:0;display:grid;gap:4px;justify-items:center}
+.ctw .tn-notes li{width:100%;padding:20px 34px 22px;text-align:center;background-color:var(--tn-doux);clip-path:polygon(7.5% 0,92.5% 0,100% 100%,0 100%)}
+.ctw .tn-notes li:first-child{width:70%;padding-left:28px;padding-right:28px;clip-path:polygon(10.7% 0,89.3% 0,100% 100%,0 100%)}
+.ctw .tn-notes li:nth-child(2){width:85%;background-color:color-mix(in srgb,var(--tn-accent) 30%,var(--tn-fond));clip-path:polygon(8.8% 0,91.2% 0,100% 100%,0 100%)}
+.ctw .tn-notes li:last-child{background-color:var(--tn-encre);color:var(--tn-sur-bouton)}
+.ctw .tn-notes li small{font-size:15px;color:inherit;opacity:.82}
+.ctw .tn-notes li b{display:block;font-family:var(--f-title);font-weight:400;font-size:21px;line-height:1.12;margin-top:4px;overflow-wrap:anywhere}
+.ctw .tn-notes li span{display:block;font-size:14.5px;line-height:1.4;margin-top:6px}
+/* « colonnes » : trois temps séparés d'un trait */
+.ctw .tn-notes[data-tn-c="colonnes"] ol{justify-items:stretch;gap:0;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-notes[data-tn-c="colonnes"] li{width:100%;padding:18px 0 20px;text-align:left;background-color:transparent;color:inherit;clip-path:none;border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-notes[data-tn-c="colonnes"] li small{opacity:1;color:var(--tn-sourd)}
+.ctw .tn-notes[data-tn-c="colonnes"] li b{font-size:28px;margin-top:6px}
+.ctw .tn-notes[data-tn-c="colonnes"] li span{font-size:15.5px;color:var(--tn-texte)}
+
+/* ══ La note expliquée : un sceau, puis ce qu'il regarde ══ */
+.ctw .tn-grade{padding:44px 20px 0}
+.ctw .tn-grade .tn-sceau{box-sizing:border-box;width:fit-content;min-width:172px;max-width:min(100%,264px);aspect-ratio:1/1;display:grid;place-content:center;justify-items:center;gap:6px;padding:26px;text-align:center;border:1.5px solid var(--tn-encre);border-radius:50%;outline:1px solid var(--tn-encre);outline-offset:-9px;transform:rotate(-6deg)}
+.ctw .tn-grade .tn-sceau b{font-family:var(--f-title);font-weight:400;font-size:44px;line-height:1;overflow-wrap:break-word;max-width:100%}
+.ctw[data-tn-titres="gras"] .tn-grade .tn-sceau b,.ctw[data-tn-titres="capitales"] .tn-grade .tn-sceau b{font-size:32px}
+.ctw .tn-grade .tn-sceau span{font-size:12.5px;line-height:1.35;color:var(--tn-texte)}
+.ctw .tn-grade .tn-sceau b:has(mark),.ctw[data-tn-titres="gras"] .tn-grade .tn-sceau b:has(mark),.ctw[data-tn-titres="capitales"] .tn-grade .tn-sceau b:has(mark){font-size:13px;line-height:1.6}
+.ctw .tn-grade .tn-sceau mark.tn-manque{font-size:12.5px;padding:1px 5px}
+.ctw[data-tn-cadre="droit"] .tn-grade .tn-sceau{border-radius:0}
+.ctw[data-tn-cadre="penche"] .tn-grade .tn-sceau{border-width:3px;outline:0;background-color:var(--tn-doux);box-shadow:5px 6px 0 var(--tn-encre)}
+.ctw .tn-grade h2{font-size:calc(40px*var(--tn-k));margin-top:28px}
+.ctw .tn-grade .tn-chapo{font-size:16.5px;color:var(--tn-texte);margin-top:10px}
+.ctw .tn-grade ul{margin-top:22px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-grade li{display:grid;gap:4px;padding:14px 0;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-grade li b{font-family:var(--f-title);font-weight:400;font-size:22px;line-height:1.15}
+.ctw .tn-grade li span{font-size:15.5px;line-height:1.5;color:var(--tn-texte)}
+.ctw .tn-grade details{border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-grade summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:54px;padding:13px 0;font-family:var(--f-title);font-size:22px;line-height:1.15}
+.ctw .tn-grade summary::-webkit-details-marker{display:none}
+.ctw .tn-grade summary::after{content:"+";font-family:var(--f-ui);font-size:22px}
+.ctw .tn-grade details[open] summary::after{content:"−"}
+.ctw .tn-grade details p{font-size:15.5px;color:var(--tn-texte);margin-top:-4px;padding-bottom:16px}
+
+/* ══ Calendrier des effets : une frise, la pastille se remplit d'étape en étape ══ */
+.ctw .tn-effets{padding:44px 20px 0}
+.ctw .tn-effets h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-effets .tn-chapo{font-size:16.5px;color:var(--tn-texte);margin-top:10px}
+.ctw .tn-effets ol{list-style:none;margin:28px 0 0;padding:0}
+.ctw .tn-effets li{position:relative;display:grid;gap:7px;padding:0 0 30px 44px}
+.ctw .tn-effets li:last-child{padding-bottom:0}
+.ctw .tn-effets li::before{content:"";box-sizing:border-box;position:absolute;left:0;top:5px;width:22px;height:22px;border:1.5px solid var(--tn-encre);border-radius:50%;background-color:var(--tn-fond)}
+.ctw .tn-effets li:not(:first-child):not(:last-child)::before{background-image:linear-gradient(to top,var(--tn-accent) 50%,transparent 50%)}
+.ctw .tn-effets li:last-child::before{background-color:var(--tn-accent)}
+.ctw .tn-effets li:not(:last-child)::after{content:"";position:absolute;left:10px;top:27px;bottom:-5px;border-left:1.5px solid var(--tn-encre)}
+.ctw .tn-effets li b{font-family:var(--f-title);font-weight:400;font-size:30px;line-height:1.05}
+.ctw .tn-effets li span{font-size:16px;line-height:1.5}
+.ctw .tn-effets li small{font-size:14.5px}
+
+/* ══ Coût et durée dans le temps : deux ou trois grands chiffres ══ */
+.ctw .tn-cout{padding:44px 20px 0}
+.ctw .tn-cout h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-cout .tn-chapo{font-size:16.5px;color:var(--tn-texte);margin-top:10px}
+/* les chiffres : côte à côte tant qu'ils tiennent en entier (« 9,50 € » ne se coupe pas) ; sinon chacun prend sa ligne.
+   Le trait de gauche du premier chiffre de chaque ligne est rogné (la liste déborde de 15,5 px à gauche, puis se rogne). */
+.ctw .tn-cout ul{margin:26px 0 0 -15.5px;display:flex;flex-wrap:wrap;clip-path:inset(0 0 0 15.5px);border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-cout li{flex:1 1 auto;min-width:min-content;max-width:100%;display:grid;gap:10px;align-content:start;padding:18px 14px 22px;border-top:1.5px solid var(--tn-encre);border-left:1.5px solid var(--tn-encre)}
+.ctw .tn-cout li small{font-size:16px}
+.ctw .tn-cout li b{font-family:var(--f-title);font-weight:400;font-size:calc(44px*var(--tn-k));line-height:1;overflow-wrap:break-word}
+.ctw .tn-cout li b:has(mark){font-size:14px;line-height:1.7}
+.ctw[data-tn-titres="gras"] .tn-cout li b,.ctw[data-tn-titres="capitales"] .tn-cout li b{font-size:34px}
+.ctw[data-tn-titres="gras"] .tn-cout li b:has(mark),.ctw[data-tn-titres="capitales"] .tn-cout li b:has(mark){font-size:14px}
+.ctw .tn-cout details{border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-cout summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:54px;padding:13px 0;font-family:var(--f-title);font-size:22px;line-height:1.15}
+.ctw .tn-cout summary::-webkit-details-marker{display:none}
+.ctw .tn-cout summary::after{content:"+";font-family:var(--f-ui);font-size:22px}
+.ctw .tn-cout details[open] summary::after{content:"−"}
+.ctw .tn-cout details p{font-size:15.5px;color:var(--tn-texte);margin-top:-4px;padding-bottom:16px}
+
+/* ══ Ration selon le poids : une gamelle qui grandit de ligne en ligne ══ */
+.ctw .tn-ration{padding:44px 20px 0}
+.ctw .tn-ration h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-ration .tn-chapo{font-size:16.5px;color:var(--tn-texte);margin-top:10px}
+.ctw .tn-ration ul{margin-top:24px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-ration li{--tn-t:38px;display:grid;grid-template-columns:42px minmax(0,1fr) auto;column-gap:14px;row-gap:3px;align-items:center;padding:14px 0;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-ration li:nth-child(1){--tn-t:18px}
+.ctw .tn-ration li:nth-child(2){--tn-t:25px}
+.ctw .tn-ration li:nth-child(3){--tn-t:32px}
+.ctw .tn-ration li i{grid-column:1;grid-row:1/3;justify-self:center;box-sizing:content-box;width:var(--tn-t);height:calc(var(--tn-t)*.52);border-top:2px solid var(--tn-encre);border-radius:0 0 999px 999px;background-color:var(--tn-accent)}
+.ctw .tn-ration li b{grid-column:2;align-self:end;font-family:var(--f-title);font-weight:400;font-size:22px;line-height:1.15}
+.ctw .tn-ration li span{grid-column:2;align-self:start;font-size:14.5px;line-height:1.5;color:var(--tn-sourd)}
+.ctw .tn-ration li em{grid-column:3;grid-row:1/3;max-width:150px;font-style:normal;font-weight:600;font-size:16px;line-height:1.5;text-align:right}
+.ctw .tn-ration li mark.tn-manque{font-size:13.5px;padding:1px 5px}
+.ctw .tn-ration .tn-note{font-size:14.5px;color:var(--tn-sourd);margin-top:16px}
+
+/* ══ Pourquoi ce prix : un ticket de caisse ══ */
+.ctw .tn-prix-explique{padding:44px 20px 0}
+.ctw .tn-prix-explique h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-prix-explique .tn-chapo{font-size:16.5px;color:var(--tn-texte);margin-top:10px}
+.ctw .tn-prix-explique .tn-ticket{margin-top:24px;padding:22px 18px 36px;background-color:var(--tn-sur-bouton);color:var(--tn-encre);-webkit-mask:linear-gradient(#000,#000) top/100% calc(100% - 9px) no-repeat,conic-gradient(from -45deg at bottom,transparent,#000 1deg 89deg,transparent 90deg) bottom/18px 9px repeat-x;mask:linear-gradient(#000,#000) top/100% calc(100% - 9px) no-repeat,conic-gradient(from -45deg at bottom,transparent,#000 1deg 89deg,transparent 90deg) bottom/18px 9px repeat-x}
+.ctw .tn-prix-explique li{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 16px;padding:12px 0;border-bottom:1px dashed color-mix(in srgb,var(--tn-encre) 45%,transparent);font-size:15.5px;line-height:1.4}
+.ctw .tn-prix-explique li span{flex:1 1 0;min-width:0}
+.ctw .tn-prix-explique li b{font-weight:600;text-align:right}
+/* la part du poste, en trait sous sa ligne : seulement quand le Studio a posé --part */
+.ctw .tn-prix-explique li[style*="--part"]::after{content:"";flex:0 0 100%;height:3px;margin-top:6px;background:linear-gradient(90deg,var(--tn-accent) calc(var(--part)*1%),color-mix(in srgb,var(--tn-encre) 12%,transparent) 0)}
+.ctw .tn-prix-explique .tn-total{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-top:16px;padding-top:14px;border-top:1.5px solid var(--tn-encre);line-height:1.2}
+.ctw .tn-prix-explique .tn-total span{flex:1 1 0;min-width:0;font-family:var(--f-title);font-size:22px}
+.ctw .tn-prix-explique .tn-total b{flex:none;font-family:var(--f-title);font-weight:400;font-size:28px;text-align:right}
+.ctw .tn-prix-explique .tn-total b:has(mark){font-size:15px}
+.ctw[data-tn-petits="machine"] .tn-prix-explique li{font-family:"IBM Plex Mono",monospace;font-size:14px}
+/* « couches » : le prix en couches empilées, de la plus claire à la plus sombre */
+.ctw .tn-prix-explique[data-tn-c="couches"] .tn-ticket{padding:0;background-color:transparent;-webkit-mask:none;mask:none}
+.ctw .tn-prix-explique[data-tn-c="couches"] ul{display:flex;flex-direction:column;gap:3px;min-height:330px}
+.ctw .tn-prix-explique[data-tn-c="couches"] li{flex:var(--part,1) 1 auto;flex-wrap:nowrap;align-items:center;min-height:64px;padding:12px 16px;border-bottom:0;background-color:color-mix(in srgb,var(--tn-accent) 14%,var(--tn-fond));font-family:var(--f-ui);font-size:15.5px}
+.ctw .tn-prix-explique[data-tn-c="couches"] li:nth-child(4n+2){background-color:color-mix(in srgb,var(--tn-accent) 32%,var(--tn-fond))}
+.ctw .tn-prix-explique[data-tn-c="couches"] li:nth-child(4n+3){background-color:color-mix(in srgb,var(--tn-accent) 54%,var(--tn-fond))}
+.ctw .tn-prix-explique[data-tn-c="couches"] li:nth-child(4n+4){background-color:var(--tn-encre);color:var(--tn-sur-bouton)}
+.ctw .tn-prix-explique[data-tn-c="couches"] li:first-child{border-radius:var(--tn-arrondi,0) var(--tn-arrondi,0) 0 0}
+.ctw .tn-prix-explique[data-tn-c="couches"] li:last-child{border-radius:0 0 var(--tn-arrondi,0) var(--tn-arrondi,0)}
+.ctw .tn-prix-explique[data-tn-c="couches"] li[style*="--part"]::after{display:none}
+.ctw .tn-prix-explique[data-tn-c="couches"] .tn-total{margin-top:0;padding:16px 0 0;border-top:0}
+
+/* ══ La préparation en étapes ══ */
+.ctw .tn-preparation{padding:44px 20px 0}
+.ctw .tn-preparation h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-preparation .tn-ph{height:280px;margin-top:22px}
+.ctw .tn-preparation ol{list-style:none;margin:26px 0 0;padding:0;counter-reset:tn-etape;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-preparation li{counter-increment:tn-etape;display:grid;grid-template-columns:50px minmax(0,1fr);column-gap:10px;row-gap:4px;align-items:start;padding:16px 0 18px;border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-preparation li::before{content:counter(tn-etape);grid-row:1/4;font-family:var(--f-title);font-size:52px;line-height:.92;color:var(--tn-accent)}
+.ctw .tn-preparation li b{grid-column:2;font-family:var(--f-title);font-weight:400;font-size:26px;line-height:1.1}
+.ctw .tn-preparation li span{grid-column:2;font-size:16px;line-height:1.5;color:var(--tn-texte)}
+.ctw[data-tn-cadre="penche"] .tn-preparation{overflow-x:clip}
+.ctw[data-tn-cadre="penche"] .tn-preparation .tn-ph{margin-left:4px;margin-right:10px}
+/* le minuteur, posé par le script quand l'étape porte une durée (data-tn-minuteur) */
+.ctw .tn-preparation .tn-minuteur{grid-column:2;justify-self:start;appearance:none;display:inline-flex;align-items:center;gap:10px;min-height:44px;margin-top:6px;padding:8px 16px;border:1.5px solid var(--tn-encre);border-radius:999px;background:none;color:inherit;font-family:var(--f-ui);font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;cursor:pointer}
+/* à l'arrêt : un triangle « lancer » ; en marche : un carré « arrêter » ; fini : la couleur de la marque */
+.ctw .tn-preparation .tn-minuteur::before{content:"";width:0;height:0;border-left:10px solid currentColor;border-top:6px solid transparent;border-bottom:6px solid transparent}
+.ctw .tn-preparation .tn-minuteur.tn-on{background-color:var(--tn-encre);color:var(--tn-sur-bouton)}
+.ctw .tn-preparation .tn-minuteur.tn-on::before{width:10px;height:10px;border:0;background-color:currentColor}
+.ctw .tn-preparation .tn-minuteur.tn-fini{background-color:var(--tn-accent);border-color:var(--tn-accent);color:var(--tn-sur-bouton)}
+.ctw[data-tn-bouton="droit"] .tn-preparation .tn-minuteur,.ctw[data-tn-bouton="etiquette"] .tn-preparation .tn-minuteur{border-radius:0}
+/* « file » : une étape par carte, à faire glisser */
+.ctw .tn-preparation[data-tn-c="file"] ol{display:flex;gap:14px;margin-right:-20px;padding-right:20px;border-top:0;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.ctw .tn-preparation[data-tn-c="file"] ol::-webkit-scrollbar{display:none}
+.ctw .tn-preparation[data-tn-c="file"] li{flex:0 0 66%;scroll-snap-align:start;display:block;padding:14px 0 0;border-bottom:0;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-preparation[data-tn-c="file"] li::before{display:block;font-size:76px;margin-bottom:12px}
+.ctw .tn-preparation[data-tn-c="file"] li b{display:block}
+.ctw .tn-preparation[data-tn-c="file"] li span{display:block;margin-top:6px}
+.ctw .tn-preparation[data-tn-c="file"] .tn-minuteur{margin-top:12px}
+
+/* ══ Transition sur sept jours : une barre par jour, la part du nouvel aliment monte ══ */
+.ctw .tn-transition{padding:44px 20px 0}
+.ctw .tn-transition h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-transition .tn-chapo{font-size:16.5px;color:var(--tn-texte);margin-top:10px}
+.ctw .tn-transition ol{list-style:none;margin:26px 0 0;padding:0 0 28px;counter-reset:tn-jour;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:6px;height:230px}
+.ctw .tn-transition ol li{counter-increment:tn-jour;position:relative;background-color:var(--tn-doux);border-radius:min(var(--tn-arrondi,0px),8px)}
+.ctw .tn-transition ol li::before{content:"";position:absolute;left:0;right:0;bottom:0;height:var(--part,0%);background-color:var(--tn-accent);border-radius:inherit}
+.ctw .tn-transition ol li::after{content:"J" counter(tn-jour);position:absolute;left:0;right:0;top:calc(100% + 8px);text-align:center;font-size:13px;font-weight:600;color:var(--tn-sourd)}
+.ctw .tn-transition ul{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:14px;font-size:14.5px}
+.ctw .tn-transition ul li{display:flex;align-items:center;gap:8px}
+.ctw .tn-transition ul li::before{content:"";width:14px;height:14px;border-radius:min(var(--tn-arrondi,0px),3px);background-color:var(--tn-doux);outline:1px solid color-mix(in srgb,var(--tn-encre) 30%,transparent)}
+.ctw .tn-transition ul li:last-child::before{background-color:var(--tn-accent);outline:0}
+.ctw .tn-transition .tn-note{font-size:14.5px;color:var(--tn-sourd);margin-top:12px}
+
+/* ══ Calendrier de semis et de récolte : des bandes sur les douze mois ══ */
+.ctw .tn-semis{padding:44px 20px 0}
+.ctw .tn-semis h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-semis .tn-annee{margin-top:24px}
+.ctw .tn-semis ol{list-style:none;margin:0;padding:0 0 8px;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));text-align:center;font-size:12.5px;font-weight:700;color:var(--tn-sourd);border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-semis ul li{display:grid;grid-template-columns:minmax(0,1fr);row-gap:8px;padding:13px 0 15px;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-semis ul li span{font-family:var(--f-title);font-size:20px;line-height:1.1}
+/* la piste des douze mois, puis la bande posée dessus du mois --debut au mois --fin */
+.ctw .tn-semis ul li::before{content:"";grid-column:1;grid-row:2;height:14px;background-image:repeating-linear-gradient(90deg,color-mix(in srgb,var(--tn-encre) 26%,transparent) 0 1px,transparent 1px calc(100%/12))}
+.ctw .tn-semis ul li i{grid-column:1;grid-row:2;margin-left:calc((var(--debut,1) - 1)*100%/12);width:calc((var(--fin,12) - var(--debut,1) + 1)*100%/12);height:14px;border-radius:999px;background-color:var(--tn-accent)}
+.ctw .tn-semis ul li:nth-child(even) i{background-color:var(--tn-encre)}
+.ctw[data-tn-cadre="droit"] .tn-semis ul li i{border-radius:0}
+.ctw .tn-semis .tn-note{font-size:14.5px;color:var(--tn-sourd);margin-top:14px}
+
+/* ══ Ce qu'il y a dedans : un ingrédient par ligne, la photo d'un côté puis de l'autre ══ */
+.ctw .tn-composition{padding:44px 20px 0}
+.ctw .tn-composition h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-composition ul{margin-top:24px;display:grid;gap:26px}
+.ctw .tn-composition li{display:grid;grid-template-columns:minmax(0,46%) minmax(0,1fr);column-gap:20px;align-items:center}
+.ctw .tn-composition li:nth-child(even){grid-template-columns:minmax(0,1fr) minmax(0,46%)}
+.ctw .tn-composition li:nth-child(even) .tn-ph{order:2}
+.ctw .tn-composition .tn-ph{height:200px}
+.ctw .tn-composition li b{display:block;font-family:var(--f-title);font-weight:400;font-size:26px;line-height:1.1}
+.ctw .tn-composition li span{display:block;font-size:16px;line-height:1.5;color:var(--tn-texte);margin-top:8px}
+.ctw .tn-composition .tn-sans{display:grid;gap:5px;margin-top:30px;padding:16px 0 18px;border-top:1.5px solid var(--tn-encre);border-bottom:1.5px solid var(--tn-encre);font-size:15.5px;line-height:1.5}
+.ctw .tn-composition .tn-sans b{font-family:var(--f-title);font-weight:400;font-size:22px;line-height:1.15}
+.ctw[data-tn-cadre="penche"] .tn-composition{overflow-x:clip}
+.ctw[data-tn-cadre="penche"] .tn-composition ul{padding:0 8px 0 4px}
+.ctw[data-tn-cadre="penche"] .tn-composition[data-tn-c="bande"] li b{margin-top:18px}
+.ctw[data-tn-cadre="penche"] .tn-composition[data-tn-c="bande"] ul{column-gap:24px}
+.ctw[data-tn-cadre="penche"] .tn-composition[data-tn-c="bande"] li{flex-basis:calc(50% - 12px)}
+.ctw[data-tn-cadre="penche"] .tn-composition[data-tn-c="bande"] li:first-child:nth-last-child(3),.ctw[data-tn-cadre="penche"] .tn-composition[data-tn-c="bande"] li:first-child:nth-last-child(3) ~ li{flex-basis:calc(33.3% - 16px)}
+/* « bande » : les ingrédients côte à côte, en petites photos (trois de front quand ils sont trois) */
+.ctw .tn-composition[data-tn-c="bande"] ul{display:flex;flex-wrap:wrap;gap:22px 12px}
+.ctw .tn-composition[data-tn-c="bande"] li{flex:1 1 calc(50% - 6px);min-width:0;display:block}
+.ctw .tn-composition[data-tn-c="bande"] li:first-child:nth-last-child(3),.ctw .tn-composition[data-tn-c="bande"] li:first-child:nth-last-child(3) ~ li{flex-basis:calc(33.3% - 8px)}
+.ctw .tn-composition[data-tn-c="bande"] .tn-ph{height:172px}
+.ctw .tn-composition[data-tn-c="bande"] li b{font-size:21px;margin-top:12px}
+.ctw .tn-composition[data-tn-c="bande"] li span{font-size:14.5px;margin-top:5px}
+.ctw .tn-composition[data-tn-c="bande"] li:only-child{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:16px;align-items:center}
+.ctw .tn-composition[data-tn-c="bande"] li:only-child b{margin-top:0;font-size:24px}
+
+/* ══ Comparer les produits de la gamme : le critère au-dessus, une valeur par produit ══ */
+.ctw .tn-comparatif{padding:44px 20px 0}
+.ctw .tn-comparatif h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-comparatif .tn-table{margin-top:24px}
+.ctw .tn-comparatif .tn-noms,.ctw .tn-comparatif .tn-critere p{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);column-gap:14px}
+.ctw .tn-comparatif .tn-noms{padding-bottom:12px;border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-comparatif .tn-noms a{display:flex;align-items:flex-end;min-width:0;min-height:44px;font-family:var(--f-title);font-size:18px;line-height:1.12;overflow-wrap:anywhere}
+.ctw .tn-comparatif .tn-critere{padding:13px 0 15px;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-comparatif .tn-critere small{font-size:15px}
+.ctw .tn-comparatif .tn-critere p{margin-top:5px;font-size:15.5px;line-height:1.4}
+.ctw .tn-comparatif .tn-critere span{min-width:0;overflow-wrap:break-word}
+.ctw .tn-comparatif .tn-critere mark.tn-manque{font-size:13px;padding:1px 5px}
+
+/* ══ Les avis des clients ══ */
+.ctw .tn-avis{padding:44px 20px 0}
+.ctw .tn-avis h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-avis ul{margin-top:22px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-avis li{padding:20px 0 22px;border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-avis blockquote{margin:0;font-size:18px;line-height:1.5}
+.ctw .tn-avis li>span{display:block;margin-top:10px;font-size:14.5px;color:var(--tn-sourd)}
+/* la réponse de la marque : en retrait, bordée de la couleur de la marque */
+.ctw .tn-avis .tn-reponse{margin:16px 0 0 18px;padding:2px 0 2px 16px;border-left:2px solid var(--tn-accent)}
+.ctw .tn-avis .tn-reponse small{font-size:15px}
+.ctw .tn-avis .tn-reponse p{font-size:15.5px;line-height:1.5;color:var(--tn-texte);margin-top:4px}
+/* la note en étoiles : seulement si le Studio la pose avec l'avis (<i class="tn-etoiles" style="--note:4">) */
+.ctw .tn-avis .tn-etoiles{display:block;width:90px;height:16px;margin-bottom:10px;background:linear-gradient(90deg,var(--tn-accent) calc(var(--note,0)*20%),color-mix(in srgb,var(--tn-encre) 18%,transparent) 0);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 16'%3E%3Cpath d='M9 .8l2.3 4.9 5.3.7-3.9 3.7 1 5.2L9 12.8l-4.7 2.5 1-5.2L1.4 6.4l5.3-.7z'/%3E%3C/svg%3E") left/18px 16px repeat-x;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 16'%3E%3Cpath d='M9 .8l2.3 4.9 5.3.7-3.9 3.7 1 5.2L9 12.8l-4.7 2.5 1-5.2L1.4 6.4l5.3-.7z'/%3E%3C/svg%3E") left/18px 16px repeat-x}
+/* aucun avis : rien d'inventé, une invitation à donner le premier */
+.ctw .tn-avis .tn-premier{display:none}
+.ctw .tn-avis ul:not(:has(li)){display:none}
+.ctw .tn-avis ul:not(:has(li)) + .tn-premier{display:block;margin-top:22px;padding:22px 0 24px;border-top:1.5px solid var(--tn-encre);border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-avis .tn-premier p{font-family:var(--f-title);font-size:24px;line-height:1.2}
+.ctw .tn-avis .tn-premier a{position:relative;display:inline-block;margin-top:12px;padding:8px 0 2px;font-size:15.5px;font-weight:600;border-bottom:1.5px solid var(--tn-encre)}
+/* « en grand » : le premier avis en très grand, centré ; les autres en petit */
+.ctw .tn-avis[data-tn-c="en-grand"] ul{border-top:0;margin-top:14px}
+.ctw .tn-avis[data-tn-c="en-grand"] li:first-child{padding:0 0 30px;text-align:center}
+.ctw .tn-avis[data-tn-c="en-grand"] li:first-child::before{content:"«";display:block;font-family:var(--f-title);font-size:76px;line-height:.8;color:var(--tn-accent)}
+.ctw .tn-avis[data-tn-c="en-grand"] li:first-child blockquote{font-family:var(--f-title);font-size:30px;line-height:1.18}
+.ctw .tn-avis[data-tn-c="en-grand"] li:first-child blockquote mark.tn-manque{font-size:17px}
+/* titres gras ou en capitales : plus larges, donc plus petits, pour qu'un avis long reste lisible */
+.ctw[data-tn-titres="gras"] .tn-avis[data-tn-c="en-grand"] li:first-child blockquote,.ctw[data-tn-titres="capitales"] .tn-avis[data-tn-c="en-grand"] li:first-child blockquote{font-size:24px;line-height:1.22}
+.ctw .tn-avis[data-tn-c="en-grand"] li:first-child .tn-etoiles{margin:0 auto 12px}
+.ctw .tn-avis[data-tn-c="en-grand"] li:first-child .tn-reponse{margin:20px 0 0;text-align:left}
+.ctw .tn-avis[data-tn-c="en-grand"] li + li blockquote{font-size:16px}
+
+/* ══ La boutique : filtres, tri, filtres choisis, cartes ══ */
+.ctw .tn-catalogue{padding:22px 20px 0}
+.ctw .tn-catalogue h1{font-size:calc(52px*var(--tn-k));line-height:.96;letter-spacing:-.02em}
+.ctw .tn-catalogue .tn-chapo{font-size:16.5px;color:var(--tn-texte);margin-top:12px}
+.ctw .tn-catalogue .tn-outils{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0 16px;margin-top:22px;border-top:1.5px solid var(--tn-encre);border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-catalogue .tn-filtrer{display:flex;align-items:center;gap:10px;min-height:52px;font-size:16px;font-weight:600;cursor:pointer}
+.ctw .tn-catalogue .tn-filtrer::before{content:"";width:20px;height:14px;background:linear-gradient(currentColor,currentColor) top center/20px 1.5px no-repeat,linear-gradient(currentColor,currentColor) center/13px 1.5px no-repeat,linear-gradient(currentColor,currentColor) bottom center/6px 1.5px no-repeat}
+.ctw .tn-catalogue .tn-filtrer input,.ctw .tn-catalogue .tn-choisis input{position:absolute;opacity:0;width:1px;height:1px;margin:0;pointer-events:none}
+.ctw .tn-catalogue .tn-filtrer:has(input:checked) span{border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-catalogue .tn-filtrer:has(input:focus-visible),.ctw .tn-catalogue .tn-choisis label:has(input:focus-visible){outline:2px solid var(--tn-encre);outline-offset:2px}
+.ctw .tn-catalogue .tn-tri{position:relative;display:flex;align-items:center;gap:8px;min-height:52px;font-size:15px;color:var(--tn-sourd)}
+/* sans « Filtrer » (catalogue sans famille à filtrer), le tri garde sa place, à droite */
+.ctw .tn-catalogue .tn-outils .tn-tri:first-child{margin-left:auto}
+.ctw .tn-catalogue .tn-tri select{appearance:none;-webkit-appearance:none;max-width:170px;min-height:44px;margin:0;padding:10px 20px 10px 0;border:0;border-radius:0;background:none;color:var(--tn-encre);font-family:var(--f-ui);font-size:15px;font-weight:600;cursor:pointer}
+.ctw .tn-catalogue .tn-tri::after{content:"";position:absolute;right:2px;top:50%;width:7px;height:7px;margin-top:-6px;border-right:1.5px solid var(--tn-encre);border-bottom:1.5px solid var(--tn-encre);transform:rotate(45deg);pointer-events:none}
+/* les filtres : fermés sous « Filtrer », ouverts quand sa case est cochée */
+.ctw .tn-catalogue .tn-filtres{display:none;flex:0 0 100%;padding:16px 0 18px;border-top:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-catalogue .tn-outils:has(.tn-filtrer input:checked) .tn-filtres{display:grid;gap:18px}
+.ctw .tn-catalogue fieldset{min-width:0;margin:0;padding:0;border:0}
+.ctw .tn-catalogue legend{padding:0;margin-bottom:4px;font-family:var(--f-title);font-size:21px;line-height:1.15}
+.ctw .tn-catalogue .tn-filtres label{display:flex;align-items:center;gap:12px;min-height:44px;font-size:16px;cursor:pointer}
+.ctw .tn-catalogue .tn-filtres input{appearance:none;-webkit-appearance:none;flex:none;width:20px;height:20px;margin:0;border:1.5px solid var(--tn-encre);border-radius:min(var(--tn-arrondi,0px),4px);background-color:transparent;cursor:pointer}
+.ctw .tn-catalogue .tn-filtres input:checked{background-color:var(--tn-encre);box-shadow:inset 0 0 0 3px var(--tn-fond)}
+/* les filtres choisis : une étiquette par filtre, retirée d'un toucher, puis « Tout effacer » */
+.ctw .tn-catalogue .tn-choisis{display:flex;align-items:center;gap:8px;margin:14px -20px 0 0;padding:4px 20px 4px 0;overflow-x:auto;scrollbar-width:none}
+.ctw .tn-catalogue .tn-choisis::-webkit-scrollbar{display:none}
+.ctw .tn-catalogue .tn-choisis label{position:relative;flex:none;display:inline-flex;align-items:center;min-height:38px;padding:0 12px 0 14px;border:1.5px solid var(--tn-encre);border-radius:999px;font-size:14.5px;line-height:1.2;cursor:pointer}
+.ctw .tn-catalogue .tn-choisis label::before{content:"";position:absolute;inset:-4px 0}
+.ctw .tn-catalogue .tn-choisis label span{display:inline-flex;align-items:center;gap:9px}
+.ctw .tn-catalogue .tn-choisis label span::after{content:"";width:10px;height:10px;background:linear-gradient(45deg,transparent calc(50% - .8px),currentColor calc(50% - .8px) calc(50% + .8px),transparent calc(50% + .8px)),linear-gradient(-45deg,transparent calc(50% - .8px),currentColor calc(50% - .8px) calc(50% + .8px),transparent calc(50% + .8px))}
+.ctw .tn-catalogue .tn-choisis label:has(input:checked){display:none}
+.ctw .tn-catalogue .tn-choisis .tn-effacer{order:-1;margin-right:6px;padding:0 2px;border:0;border-radius:0;font-weight:600}
+.ctw .tn-catalogue .tn-choisis .tn-effacer span{border-bottom:1.5px solid var(--tn-encre);padding-bottom:1px}
+.ctw .tn-catalogue .tn-choisis .tn-effacer span::after{display:none}
+.ctw .tn-catalogue .tn-choisis:has(.tn-effacer input:checked),.ctw .tn-catalogue .tn-choisis:not(:has(label:not(.tn-effacer) input:not(:checked))){display:none}
+.ctw[data-tn-bouton="droit"] .tn-catalogue .tn-choisis label{border-radius:0}
+.ctw[data-tn-bouton="etiquette"] .tn-catalogue .tn-choisis label{border-radius:3px}
+/* les cartes : la photo dans le cadre de la marque, les pastilles, le nom, le prix */
+.ctw .tn-catalogue .tn-cartes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:26px 12px;margin-top:22px}
+.ctw .tn-catalogue .tn-carte-p{display:grid;grid-template-columns:minmax(0,1fr);align-content:start;min-width:0}
+.ctw .tn-catalogue .tn-carte-p .tn-ph{grid-column:1;grid-row:1;height:212px;background-color:var(--tn-sur-bouton);border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn-catalogue .tn-carte-p .tn-ph{border-radius:999px 999px 8px 8px}
+.ctw[data-tn-cadre="penche"] .tn-catalogue{overflow-x:clip}
+.ctw[data-tn-cadre="penche"] .tn-catalogue .tn-cartes{padding:0 6px 0 2px;column-gap:24px}
+.ctw[data-tn-cadre="penche"] .tn-catalogue .tn-carte-p .tn-ph{border:3px solid var(--tn-encre);border-radius:18px;box-shadow:6px 7px 0 var(--tn-encre);transform:rotate(-2deg)}
+.ctw[data-tn-cadre="penche"] .tn-catalogue .tn-carte-p:nth-child(even) .tn-ph{transform:rotate(1.6deg)}
+.ctw .tn-catalogue .tn-carte-p b{grid-row:2;display:block;margin-top:12px;font-family:var(--f-title);font-weight:400;font-size:21px;line-height:1.15;overflow-wrap:break-word}
+.ctw .tn-catalogue .tn-carte-p span{grid-row:3;display:block;margin-top:3px;font-size:15.5px;color:var(--tn-texte)}
+.ctw[data-tn-cadre="penche"] .tn-catalogue .tn-carte-p b{margin-top:18px}
+/* les couleurs en pastilles, sous le prix : toutes visibles, la rangée défile si elles sont nombreuses */
+.ctw .tn-catalogue .tn-pastilles{grid-row:4;display:flex;gap:7px;margin-top:10px;padding:1px;overflow-x:auto;scrollbar-width:none}
+.ctw .tn-catalogue .tn-pastilles::-webkit-scrollbar{display:none}
+.ctw .tn-catalogue .tn-pastilles u{flex:none;width:18px;height:18px;border-radius:50%;background-color:var(--teinte);box-shadow:0 0 0 1px color-mix(in srgb,var(--tn-encre) 40%,transparent)}
+/* « Épuisé » : dit sur la photo, la photo s'efface un peu */
+.ctw .tn-catalogue .tn-carte-p em{grid-column:1;grid-row:1;align-self:start;justify-self:start;z-index:1;margin:8px;padding:5px 10px;border-radius:999px;background-color:var(--tn-encre);color:var(--tn-sur-bouton);font-style:normal;font-size:12.5px;font-weight:700;line-height:1.2}
+.ctw[data-tn-bouton="droit"] .tn-catalogue .tn-carte-p em,.ctw[data-tn-bouton="etiquette"] .tn-catalogue .tn-carte-p em{border-radius:0}
+/* dans une niche, le haut de la photo est arrondi : la mention se pose en bas */
+.ctw[data-tn-cadre="niche"] .tn-catalogue .tn-carte-p em{align-self:end}
+.ctw[data-tn-cadre="penche"] .tn-catalogue .tn-carte-p em{margin:12px}
+.ctw .tn-catalogue .tn-epuise .tn-ph{opacity:.5}
+.ctw .tn-catalogue .tn-epuise b,.ctw .tn-catalogue .tn-epuise span{color:var(--tn-sourd)}
+/* une dernière carte seule sur sa ligne s'étend : la photo à gauche, le texte à droite */
+.ctw .tn-catalogue .tn-carte-p:last-child:nth-child(odd){grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:1fr auto auto 1fr;column-gap:14px}
+.ctw .tn-catalogue .tn-carte-p:last-child:nth-child(odd) .tn-ph,.ctw .tn-catalogue .tn-carte-p:last-child:nth-child(odd) em{grid-column:1;grid-row:1/5}
+.ctw .tn-catalogue .tn-carte-p:last-child:nth-child(odd) b{grid-column:2;grid-row:2;margin-top:0;font-size:25px}
+.ctw .tn-catalogue .tn-carte-p:last-child:nth-child(odd) span{grid-column:2;grid-row:3}
+.ctw .tn-catalogue .tn-carte-p:last-child:nth-child(odd) .tn-pastilles{grid-column:2;grid-row:4;align-self:start}
+/* aucun produit (collection vide, filtres trop serrés) : la section le dit et propose de repartir */
+.ctw .tn-catalogue .tn-vide{display:none}
+.ctw .tn-catalogue:not(:has(.tn-carte-p)) .tn-cartes{display:none}
+.ctw .tn-catalogue:not(:has(.tn-carte-p)) .tn-vide{display:block;padding:44px 10px 10px;text-align:center}
+.ctw .tn-catalogue .tn-vide b{display:block;font-family:var(--f-title);font-weight:400;font-size:calc(40px*var(--tn-k));line-height:1.02}
+.ctw .tn-catalogue .tn-vide p{font-size:16.5px;color:var(--tn-texte);margin-top:12px}
+.ctw .tn-catalogue .tn-vide .tn-bt{margin-top:22px}
+/* « liste » : un produit par ligne, la photo à gauche */
+.ctw .tn-catalogue[data-tn-c="liste"] .tn-cartes{grid-template-columns:minmax(0,1fr);gap:0;margin-top:18px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p,.ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p:last-child:nth-child(odd){grid-column:auto;grid-template-columns:104px minmax(0,1fr);grid-template-rows:1fr auto auto 1fr;column-gap:20px;padding:16px 0;border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p .tn-ph,.ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p em{grid-column:1;grid-row:1/5}
+.ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p .tn-ph{height:130px}
+.ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p b{grid-column:2;grid-row:2;margin-top:0;font-size:24px}
+.ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p span{grid-column:2;grid-row:3}
+.ctw .tn-catalogue[data-tn-c="liste"] .tn-pastilles{grid-column:2;grid-row:4;align-self:start}
+.ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p em{margin:6px;font-size:11.5px;padding:4px 8px}
+.ctw[data-tn-cadre="penche"] .tn-catalogue[data-tn-c="liste"] .tn-carte-p .tn-ph{box-shadow:4px 5px 0 var(--tn-encre)}
+
+/* ══ Les familles de produits ══ */
+.ctw .tn-rayons{padding:44px 20px 0}
+.ctw .tn-rayons h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-rayons .tn-familles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:26px 12px;margin-top:22px}
+.ctw .tn-rayons .tn-familles a{display:block;min-width:0}
+.ctw .tn-rayons .tn-ph{height:200px}
+.ctw .tn-rayons b{display:block;margin-top:12px;font-family:var(--f-title);font-weight:400;font-size:22px;line-height:1.12;overflow-wrap:break-word}
+.ctw .tn-rayons span{display:block;margin-top:4px;font-size:14.5px;line-height:1.45;color:var(--tn-texte)}
+.ctw[data-tn-cadre="penche"] .tn-rayons{overflow-x:clip}
+.ctw[data-tn-cadre="penche"] .tn-rayons .tn-familles{padding:0 6px 0 2px;column-gap:24px}
+.ctw[data-tn-cadre="penche"] .tn-rayons b{margin-top:18px}
+.ctw .tn-rayons .tn-familles a:last-child:nth-child(odd){grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:14px;align-content:center}
+.ctw .tn-rayons .tn-familles a:last-child:nth-child(odd) .tn-ph{grid-row:1/3}
+.ctw .tn-rayons .tn-familles a:last-child:nth-child(odd) b{align-self:end;margin-top:0}
+/* « bandes » : une bande par famille, le nom en grand à gauche, la photo à droite */
+.ctw .tn-rayons[data-tn-c="bandes"] .tn-familles{grid-template-columns:minmax(0,1fr);gap:0;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-rayons[data-tn-c="bandes"] .tn-familles a,.ctw .tn-rayons[data-tn-c="bandes"] .tn-familles a:last-child:nth-child(odd){grid-column:auto;display:grid;grid-template-columns:minmax(0,1fr) 38%;column-gap:16px;align-content:center;padding:16px 0;border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-rayons[data-tn-c="bandes"] .tn-ph,.ctw .tn-rayons[data-tn-c="bandes"] .tn-familles a:last-child:nth-child(odd) .tn-ph{grid-column:2;grid-row:1/3;height:132px}
+.ctw .tn-rayons[data-tn-c="bandes"] b{grid-column:1;align-self:end;margin-top:0;font-size:29px;line-height:1.05}
+.ctw .tn-rayons[data-tn-c="bandes"] span{grid-column:1;align-self:start;margin-top:6px}
+.ctw[data-tn-cadre="penche"] .tn-rayons[data-tn-c="bandes"] .tn-familles a{padding-right:8px}
+/* « mots » : une liste de mots en très grand, une petite photo devant chacun */
+.ctw .tn-rayons[data-tn-c="mots"] .tn-familles{grid-template-columns:minmax(0,1fr);gap:0;margin-top:18px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-rayons[data-tn-c="mots"] .tn-familles a,.ctw .tn-rayons[data-tn-c="mots"] .tn-familles a:last-child:nth-child(odd){grid-column:auto;display:grid;grid-template-columns:52px minmax(0,1fr) 22px;column-gap:16px;align-items:center;min-height:88px;padding:11px 0;border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-rayons[data-tn-c="mots"] .tn-ph,.ctw .tn-rayons[data-tn-c="mots"] .tn-familles a:last-child:nth-child(odd) .tn-ph{grid-row:auto;height:64px}
+.ctw .tn-rayons[data-tn-c="mots"] b,.ctw .tn-rayons[data-tn-c="mots"] .tn-familles a:last-child:nth-child(odd) b{align-self:center;margin-top:0;font-size:33px;line-height:1}
+.ctw .tn-rayons[data-tn-c="mots"] span{display:none}
+.ctw .tn-rayons[data-tn-c="mots"] .tn-familles a::after{content:"";width:22px;height:14px;background:var(--tn-encre);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 14'%3E%3Cpath d='M0 7h19M13 1l7 6-7 6' fill='none' stroke='%23000' stroke-width='1.8'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 14'%3E%3Cpath d='M0 7h19M13 1l7 6-7 6' fill='none' stroke='%23000' stroke-width='1.8'/%3E%3C/svg%3E") center/contain no-repeat}
+.ctw[data-tn-cadre="penche"] .tn-rayons[data-tn-c="mots"] .tn-ph{border-width:2px;border-radius:10px;box-shadow:3px 4px 0 var(--tn-encre)}
+
+/* ══ Livraison, retours, paiement ══ */
+.ctw .tn-garanties{padding:44px 20px 0}
+.ctw .tn-garanties h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-garanties ul{margin-top:22px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-garanties li{display:grid;grid-template-columns:32px minmax(0,1fr);column-gap:16px;row-gap:4px;align-items:start;padding:16px 0 18px;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-garanties li svg{grid-row:1/3;width:30px;height:30px;margin-top:1px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.ctw .tn-garanties li b{grid-column:2;font-family:var(--f-title);font-weight:400;font-size:24px;line-height:1.1}
+.ctw .tn-garanties li span{grid-column:2;font-size:15.5px;line-height:1.5;color:var(--tn-texte)}
+.ctw .tn-garanties>a{position:relative;display:inline-block;margin-top:14px;padding:10px 0 2px;font-size:15.5px;font-weight:600;border-bottom:1.5px solid var(--tn-encre)}
+/* « bande » : une bande de couleur douce sur toute la largeur, les sujets centrés */
+.ctw .tn-garanties[data-tn-c="bande"]{padding:82px 24px 36px;background-image:linear-gradient(transparent 44px,var(--tn-doux) 44px);text-align:center}
+.ctw .tn-garanties[data-tn-c="bande"] h2{font-size:calc(32px*var(--tn-k))}
+.ctw .tn-garanties[data-tn-c="bande"] ul{display:grid;gap:22px;margin-top:24px;border-top:0}
+.ctw .tn-garanties[data-tn-c="bande"] li{display:block;padding:0;border-bottom:0}
+.ctw .tn-garanties[data-tn-c="bande"] li svg{display:block;margin:0 auto 8px}
+.ctw .tn-garanties[data-tn-c="bande"] li b{display:block;font-size:22px}
+.ctw .tn-garanties[data-tn-c="bande"] li span{display:block;margin-top:4px}
+.ctw .tn-garanties[data-tn-c="bande"]>a{margin-top:20px}
+.ctw .tb-pg>.tn-garanties[data-tn-c="bande"]:last-child{padding-bottom:36px}
+
+/* une page qui se termine par une de ces sections garde de l'air avant le pied de page */
+.ctw .tb-pg>.tn-fiche-technique:last-child,.ctw .tb-pg>.tn-colis:last-child,.ctw .tb-pg>.tn-pour-qui:last-child,.ctw .tb-pg>.tn-essayer:last-child,.ctw .tb-pg>.tn-echelle:last-child,.ctw .tb-pg>.tn-valeurs:last-child,.ctw .tb-pg>.tn-documents:last-child,.ctw .tb-pg>.tn-preuves:last-child,.ctw .tb-pg>.tn-notes:last-child,.ctw .tb-pg>.tn-grade:last-child,.ctw .tb-pg>.tn-effets:last-child,.ctw .tb-pg>.tn-cout:last-child,.ctw .tb-pg>.tn-ration:last-child,.ctw .tb-pg>.tn-prix-explique:last-child,.ctw .tb-pg>.tn-preparation:last-child,.ctw .tb-pg>.tn-transition:last-child,.ctw .tb-pg>.tn-semis:last-child,.ctw .tb-pg>.tn-composition:last-child,.ctw .tb-pg>.tn-comparatif:last-child,.ctw .tb-pg>.tn-avis:last-child,.ctw .tb-pg>.tn-catalogue:last-child,.ctw .tb-pg>.tn-rayons:last-child,.ctw .tb-pg>.tn-garanties:last-child{padding-bottom:64px}
+
+/* ══ Écrans larges ══ */
+@media (min-width:760px){
+  .ctw .tn-fiche-technique,.ctw .tn-pour-qui,.ctw .tn-valeurs{padding-left:max(40px,calc(50% - 380px));padding-right:max(40px,calc(50% - 380px))}
+  .ctw .tn-essayer,.ctw .tn-echelle{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  /* Fiche technique : le nom du groupe à gauche, ses lignes à droite */
+  .ctw .tn-fiche-technique h2{font-size:calc(52px*var(--tn-k))}
+  .ctw .tn-fiche-technique .tn-groupe{display:grid;grid-template-columns:220px minmax(0,1fr);column-gap:32px;margin-top:30px;padding-top:18px}
+  .ctw .tn-fiche-technique label{font-size:28px}
+  .ctw .tn-fiche-technique ul{margin-top:0}
+  .ctw .tn-fiche-technique li{padding:12px 0;font-size:16px}
+  .ctw .tn-fiche-technique li:first-child{padding-top:4px}
+  .ctw .tn-fiche-technique[data-tn-c="tuiles"]{gap:10px}
+  .ctw .tn-fiche-technique[data-tn-c="tuiles"] li{flex:1 1 calc(25% - 8px);padding:18px 18px 20px}
+  .ctw .tn-fiche-technique[data-tn-c="tuiles"] li b{font-size:22px}
+  .ctw .tn-fiche-technique[data-tn-c="volets"] .tn-groupe{display:block;margin-top:0;padding-top:0}
+  .ctw .tn-fiche-technique[data-tn-c="volets"] ul{margin:-4px 0 14px}
+  /* Dans le colis : la liste tient dans la colonne de texte, la grille prend la largeur */
+  .ctw .tn-colis{padding-left:max(40px,calc(50% - 380px));padding-right:max(40px,calc(50% - 380px))}
+  .ctw .tn-colis h2{font-size:calc(52px*var(--tn-k))}
+  .ctw .tn-colis .tn-pieces{margin-top:30px}
+  .ctw .tn-colis .tn-pieces li{grid-template-columns:120px minmax(0,1fr);gap:32px;padding:20px 0}
+  .ctw .tn-colis .tn-pieces .tn-ph{height:148px}
+  .ctw .tn-colis .tn-pieces b{font-size:30px}
+  .ctw .tn-colis .tn-pieces span{font-size:16.5px}
+  .ctw .tn-colis .tn-en-plus{margin-top:30px}
+  .ctw .tn-colis[data-tn-c="grille"]{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-colis[data-tn-c="grille"] .tn-pieces{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px}
+  .ctw .tn-colis[data-tn-c="grille"] .tn-pieces li,.ctw .tn-colis[data-tn-c="grille"] .tn-pieces li:last-child:nth-child(odd){grid-column:auto;display:block;padding:0}
+  .ctw .tn-colis[data-tn-c="grille"] .tn-pieces .tn-ph{height:340px}
+  .ctw .tn-colis[data-tn-c="grille"] .tn-pieces b,.ctw .tn-colis[data-tn-c="grille"] .tn-pieces li:last-child:nth-child(odd) b{font-size:26px;margin-top:14px}
+  /* une ou deux pièces : jamais un cadre large qui coupe la pièce ; la photo à gauche dans un cadre en hauteur, le texte à droite */
+  .ctw .tn-colis[data-tn-c="grille"] .tn-pieces li:first-child:nth-last-child(-n+2),.ctw .tn-colis[data-tn-c="grille"] .tn-pieces li:first-child:nth-last-child(-n+2) ~ li{display:grid;grid-template-columns:minmax(0,250px) minmax(0,1fr);column-gap:28px;align-items:center}
+  .ctw .tn-colis[data-tn-c="grille"] .tn-pieces li:first-child:nth-last-child(-n+2) .tn-ph,.ctw .tn-colis[data-tn-c="grille"] .tn-pieces li:first-child:nth-last-child(-n+2) ~ li .tn-ph{height:312px}
+  .ctw .tn-colis[data-tn-c="grille"] .tn-pieces li:first-child:nth-last-child(-n+2) b,.ctw .tn-colis[data-tn-c="grille"] .tn-pieces li:first-child:nth-last-child(-n+2) ~ li b{margin-top:0;font-size:30px}
+  .ctw .tn-colis[data-tn-c="grille"] .tn-en-plus ul{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);column-gap:40px}
+  /* Pour qui, pas pour qui : deux colonnes, un trait entre les deux */
+  .ctw .tn-pour-qui h2{font-size:calc(52px*var(--tn-k))}
+  .ctw .tn-pour-qui .tn-deux{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 48px;margin-top:30px}
+  .ctw .tn-pour-qui[data-tn-c="panneaux"] .tn-deux{gap:14px}
+  .ctw .tn-pour-qui[data-tn-c="panneaux"] .tn-oui,.ctw .tn-pour-qui[data-tn-c="panneaux"] .tn-non{padding:34px 30px 22px}
+  .ctw[data-tn-cadre="niche"] .tn-pour-qui[data-tn-c="panneaux"] .tn-oui{padding-top:64px}
+  .ctw[data-tn-cadre="niche"] .tn-pour-qui[data-tn-c="panneaux"] .tn-non{padding-top:64px}
+  /* Essayer : la photo à gauche, le texte à droite */
+  .ctw .tn-essayer{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1fr);grid-template-rows:1fr auto auto auto auto 1fr;column-gap:72px}
+  .ctw .tn-essayer .tn-ph{grid-column:1;grid-row:1/7;height:520px;margin-top:0}
+  .ctw .tn-essayer h2,.ctw .tn-essayer .tn-chapo,.ctw .tn-essayer ul,.ctw .tn-essayer .tn-bt{grid-column:2}
+  .ctw .tn-essayer h2{grid-row:2;font-size:calc(56px*var(--tn-k))}
+  .ctw .tn-essayer .tn-chapo{grid-row:3;font-size:18px}
+  .ctw .tn-essayer ul{grid-row:4}
+  .ctw .tn-essayer .tn-bt{grid-row:5;display:inline-block;justify-self:start;padding:16px 40px}
+  /* À l'échelle : la photo à gauche, le titre et les dimensions à droite */
+  .ctw .tn-echelle{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);column-gap:64px}
+  .ctw .tn-echelle figure{grid-column:1;grid-row:1/3;margin-top:0}
+  .ctw .tn-echelle .tn-ph{height:440px}
+  .ctw[data-tn-cadre="niche"] .tn-echelle .tn-ph{border-radius:170px 170px 0 0}
+  .ctw .tn-echelle h2{grid-column:2;align-self:end;font-size:calc(52px*var(--tn-k))}
+  .ctw .tn-echelle ul{grid-column:2;align-self:start;display:block;border-bottom:0}
+  .ctw .tn-echelle li{grid-template-columns:minmax(0,1fr) auto;align-items:baseline;padding:14px 0;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+  .ctw .tn-echelle li + li{border-left:0}
+  .ctw .tn-echelle li span{font-size:15.5px}
+  /* Valeurs : le titre et la source à gauche, le tableau à droite */
+  .ctw .tn-valeurs .tn-etiquette{display:grid;grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr);column-gap:40px;padding:34px 34px 30px}
+  .ctw .tn-valeurs .tn-tete{grid-column:1;grid-row:1}
+  .ctw .tn-valeurs h2{font-size:calc(40px*var(--tn-k))}
+  .ctw .tn-valeurs table{grid-column:2;grid-row:1/3;margin-top:0;font-size:15.5px}
+  .ctw .tn-valeurs .tn-source{grid-column:1;grid-row:2;align-self:end;border-top-width:1.5px}
+  .ctw .tn-valeurs thead th{font-size:13.5px}
+  /* Documents, preuves, notes, note expliquée, effets */
+  .ctw .tn-documents,.ctw .tn-preuves,.ctw .tn-notes,.ctw .tn-effets{padding-left:max(40px,calc(50% - 380px));padding-right:max(40px,calc(50% - 380px))}
+  .ctw .tn-documents h2,.ctw .tn-preuves h2,.ctw .tn-notes h2,.ctw .tn-effets h2,.ctw .tn-grade h2{font-size:calc(52px*var(--tn-k))}
+  .ctw .tn-documents li b{font-size:26px}
+  .ctw .tn-documents[data-tn-c="feuilles"] li{flex:1 1 22%}
+  .ctw .tn-documents[data-tn-c="feuilles"] li a{min-height:250px;padding:38px 22px 22px}
+  .ctw .tn-documents[data-tn-c="feuilles"] li b{font-size:24px}
+  /* quatre feuilles par ligne : une feuille seule sur sa ligne (la seule, la cinquième, la neuvième) se resserre */
+  .ctw .tn-documents[data-tn-c="feuilles"] li:last-child:nth-child(4n+1) a{min-height:0;padding-bottom:24px}
+  .ctw .tn-documents[data-tn-c="feuilles"] li:last-child:nth-child(4n+1) em{margin-top:14px}
+  .ctw .tn-grade .tn-sceau b:has(mark),.ctw[data-tn-titres="gras"] .tn-grade .tn-sceau b:has(mark),.ctw[data-tn-titres="capitales"] .tn-grade .tn-sceau b:has(mark){font-size:13px}
+  .ctw .tn-preuves li{grid-template-columns:34px minmax(0,1fr);column-gap:20px;padding:22px 0 20px}
+  .ctw .tn-preuves li p{font-size:26px}
+  /* Accords : la carte tient dans la colonne de texte, les deux listes côte à côte */
+  .ctw .tn-accords{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);padding:96px max(92px,calc(50% - 328px)) 50px}
+  .ctw .tn-accords::before{inset:44px max(40px,calc(50% - 380px)) 0}
+  .ctw .tn-accords h2{grid-column:1/-1;font-size:calc(46px*var(--tn-k))}
+  .ctw .tn-accords .tn-avec,.ctw .tn-accords .tn-sans{margin-top:30px;padding:0 24px}
+  .ctw .tn-accords .tn-sans{border-top:0;border-left:1.5px solid var(--tn-encre)}
+  .ctw .tb-pg>.tn-accords:last-child{padding-bottom:114px}
+  .ctw .tn-accords[data-tn-c="etiquettes"]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:56px;align-items:start;padding:44px max(40px,calc(50% - 380px)) 0}
+  .ctw .tn-accords[data-tn-c="etiquettes"] h2,.ctw .tn-accords[data-tn-c="etiquettes"] .tn-avec:last-child{grid-column:1/-1}
+  .ctw .tn-accords[data-tn-c="etiquettes"] .tn-sans{margin-top:26px}
+  .ctw .tn-accords[data-tn-c="etiquettes"] h2{font-size:calc(52px*var(--tn-k))}
+  .ctw .tn-accords[data-tn-c="etiquettes"] .tn-avec,.ctw .tn-accords[data-tn-c="etiquettes"] .tn-sans{padding:0;border-left:0}
+  .ctw .tn-accords[data-tn-c="etiquettes"] .tn-avec{margin-top:26px}
+  .ctw .tn-accords[data-tn-c="etiquettes"] li{padding:11px 22px 12px}
+  .ctw .tn-accords[data-tn-c="etiquettes"] li b{font-size:23px}
+  .ctw .tb-pg>.tn-accords[data-tn-c="etiquettes"]:last-child{padding-bottom:64px}
+  .ctw .tn-notes ol{margin-top:34px;gap:5px}
+  .ctw .tn-notes li{padding:26px 70px 28px}
+  .ctw .tn-notes li:first-child{padding-left:64px;padding-right:64px}
+  .ctw .tn-notes li b{font-size:28px}
+  .ctw .tn-notes li span{font-size:15.5px}
+  .ctw .tn-notes[data-tn-c="colonnes"] ol{grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);border-bottom:1.5px solid var(--tn-encre)}
+  .ctw .tn-notes[data-tn-c="colonnes"] li{padding:24px 26px 28px;border-bottom:0}
+  .ctw .tn-notes[data-tn-c="colonnes"] li:first-child{padding-left:0}
+  .ctw .tn-notes[data-tn-c="colonnes"] li + li{border-left:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+  /* La note expliquée : le sceau à gauche, l'explication à droite */
+  .ctw .tn-grade{display:grid;grid-template-columns:fit-content(300px) minmax(0,1fr);column-gap:48px;padding-left:max(40px,calc(50% - 380px));padding-right:max(40px,calc(50% - 380px))}
+  .ctw .tn-grade .tn-sceau{grid-column:1;grid-row:1/5;min-width:216px;max-width:288px;padding:32px;margin-top:8px}
+  .ctw .tn-grade .tn-sceau b{font-size:58px}
+  .ctw[data-tn-titres="gras"] .tn-grade .tn-sceau b,.ctw[data-tn-titres="capitales"] .tn-grade .tn-sceau b{font-size:40px}
+  .ctw .tn-grade h2,.ctw .tn-grade .tn-chapo,.ctw .tn-grade ul,.ctw .tn-grade details{grid-column:2}
+  .ctw .tn-grade h2{margin-top:0}
+  /* Effets : la frise se couche, une étape par colonne */
+  .ctw .tn-effets ol{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);margin-top:36px}
+  .ctw .tn-effets li{align-content:start;padding:44px 28px 0 0}
+  .ctw .tn-effets li::before{top:0}
+  .ctw .tn-effets li:not(:last-child)::after{left:22px;right:0;top:10px;bottom:auto;border-left:0;border-top:1.5px solid var(--tn-encre)}
+  .ctw .tn-effets li b{font-size:38px}
+  /* Coût, ration, prix, transition, semis : dans la colonne de texte */
+  .ctw .tn-cout,.ctw .tn-ration,.ctw .tn-prix-explique,.ctw .tn-transition,.ctw .tn-semis,.ctw .tn-composition{padding-left:max(40px,calc(50% - 380px));padding-right:max(40px,calc(50% - 380px))}
+  .ctw .tn-cout h2,.ctw .tn-ration h2,.ctw .tn-prix-explique h2,.ctw .tn-transition h2,.ctw .tn-semis h2,.ctw .tn-composition h2,.ctw .tn-preparation h2{font-size:calc(52px*var(--tn-k))}
+  .ctw .tn-cout ul{margin-left:-29.5px;clip-path:inset(0 0 0 29.5px)}
+  .ctw .tn-cout li{padding:26px 28px 30px}
+  .ctw .tn-cout li b,.ctw[data-tn-titres="gras"] .tn-cout li b,.ctw[data-tn-titres="capitales"] .tn-cout li b{font-size:calc(68px*var(--tn-k))}
+  .ctw .tn-cout li b:has(mark),.ctw[data-tn-titres="gras"] .tn-cout li b:has(mark),.ctw[data-tn-titres="capitales"] .tn-cout li b:has(mark){font-size:15px}
+  .ctw .tn-ration li{grid-template-columns:56px minmax(0,1fr) auto;padding:16px 0}
+  .ctw .tn-ration li em{max-width:none}
+  .ctw .tn-ration li b{font-size:26px}
+  /* Pourquoi ce prix : le texte à gauche, le ticket à droite */
+  .ctw .tn-prix-explique{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);column-gap:56px;align-items:start}
+  .ctw .tn-prix-explique h2,.ctw .tn-prix-explique .tn-chapo{grid-column:1}
+  .ctw .tn-prix-explique .tn-ticket{grid-column:2;grid-row:1/4;margin-top:0;padding:30px 28px 44px}
+  .ctw .tn-prix-explique[data-tn-c="couches"] .tn-ticket{padding:0}
+  .ctw .tn-prix-explique[data-tn-c="couches"] li{padding:14px 22px}
+  /* Préparation : la photo à gauche, les étapes à droite */
+  .ctw .tn-preparation{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1fr);grid-template-rows:auto 1fr;column-gap:72px;padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-preparation .tn-ph{grid-column:1;grid-row:1/3;height:560px;margin-top:0}
+  .ctw .tn-preparation h2,.ctw .tn-preparation ol{grid-column:2}
+  .ctw .tn-preparation li{grid-template-columns:72px minmax(0,1fr)}
+  .ctw .tn-preparation li::before{font-size:64px}
+  .ctw .tn-preparation li b{font-size:30px}
+  .ctw .tn-preparation[data-tn-c="file"] ol{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px 28px;margin-right:0;padding-right:0;overflow:visible}
+  .ctw .tn-preparation[data-tn-c="file"] li::before{font-size:84px}
+  .ctw .tn-transition ol{height:320px;gap:12px}
+  .ctw .tn-transition ol li::after{font-size:14px}
+  /* Semis : le nom de la bande à gauche, les douze mois à droite */
+  .ctw .tn-semis ol{padding-left:200px;font-size:13.5px}
+  .ctw .tn-semis ul li{grid-template-columns:200px minmax(0,1fr);align-items:center;padding:16px 0}
+  .ctw .tn-semis ul li span{grid-column:1;grid-row:1;font-size:22px}
+  .ctw .tn-semis ul li::before{grid-column:2;grid-row:1;height:18px}
+  .ctw .tn-semis ul li i{grid-column:2;grid-row:1;height:18px}
+  .ctw .tn-composition ul{gap:40px;margin-top:34px}
+  .ctw .tn-composition li{column-gap:56px}
+  .ctw .tn-composition .tn-ph{height:340px}
+  .ctw .tn-composition li b{font-size:38px}
+  .ctw .tn-composition li span{font-size:17.5px;margin-top:12px}
+  .ctw .tn-composition[data-tn-c="bande"]{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-composition[data-tn-c="bande"] ul{gap:24px}
+  .ctw .tn-composition[data-tn-c="bande"] li,.ctw .tn-composition[data-tn-c="bande"] li:first-child:nth-last-child(3),.ctw .tn-composition[data-tn-c="bande"] li:first-child:nth-last-child(3) ~ li{flex:1 1 0}
+  .ctw .tn-composition[data-tn-c="bande"] .tn-ph{height:400px}
+  .ctw .tn-composition[data-tn-c="bande"] li b{font-size:28px;margin-top:16px}
+  .ctw .tn-composition[data-tn-c="bande"] li span{font-size:16px;margin-top:8px}
+  .ctw .tn-composition[data-tn-c="bande"] li:only-child{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);column-gap:44px;align-items:center}
+  .ctw .tn-composition[data-tn-c="bande"] li:only-child b{margin-top:0;font-size:38px}
+  /* Comparatif : le nom du critère à gauche, les produits en colonnes */
+  .ctw .tn-comparatif,.ctw .tn-avis,.ctw .tn-garanties{padding-left:max(40px,calc(50% - 380px));padding-right:max(40px,calc(50% - 380px))}
+  .ctw .tn-comparatif h2,.ctw .tn-avis h2,.ctw .tn-garanties h2,.ctw .tn-rayons h2{font-size:calc(52px*var(--tn-k))}
+  .ctw .tn-comparatif .tn-noms{padding-left:190px;column-gap:28px}
+  .ctw .tn-comparatif .tn-noms a{font-size:26px}
+  .ctw .tn-comparatif .tn-critere{display:grid;grid-template-columns:190px minmax(0,1fr);align-items:baseline;padding:16px 0}
+  .ctw .tn-comparatif .tn-critere small{font-size:17px}
+  .ctw .tn-comparatif .tn-critere p{margin-top:0;column-gap:28px;font-size:16.5px}
+  .ctw .tn-avis blockquote{font-size:20px}
+  .ctw .tn-avis .tn-reponse{margin-left:40px}
+  /* Avis en grand : le premier sur toute la largeur, les autres côte à côte */
+  .ctw .tn-avis[data-tn-c="en-grand"]{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-avis[data-tn-c="en-grand"] h2{text-align:center}
+  .ctw .tn-avis[data-tn-c="en-grand"] ul{display:flex;flex-wrap:wrap;column-gap:48px}
+  .ctw .tn-avis[data-tn-c="en-grand"] li{flex:1 1 280px}
+  .ctw .tn-avis[data-tn-c="en-grand"] li:first-child{flex:0 0 100%;padding:0 12% 40px}
+  .ctw .tn-avis[data-tn-c="en-grand"] li:first-child blockquote{font-size:46px;line-height:1.12}
+  .ctw[data-tn-titres="gras"] .tn-avis[data-tn-c="en-grand"] li:first-child blockquote,.ctw[data-tn-titres="capitales"] .tn-avis[data-tn-c="en-grand"] li:first-child blockquote{font-size:36px;line-height:1.16}
+  .ctw .tn-avis[data-tn-c="en-grand"] li:first-child .tn-reponse{margin:26px auto 0;max-width:560px}
+  .ctw .tn-avis[data-tn-c="en-grand"] li + li{border-top:1.5px solid var(--tn-encre);border-bottom:0}
+  .ctw .tn-avis[data-tn-c="en-grand"] li + li blockquote{font-size:17px}
+  /* La boutique : la grille prend la largeur */
+  .ctw .tn-catalogue,.ctw .tn-rayons{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-catalogue{padding-top:34px}
+  .ctw .tn-catalogue h1{font-size:calc(84px*var(--tn-k))}
+  .ctw .tn-catalogue .tn-chapo{font-size:18px}
+  .ctw .tn-catalogue .tn-outils{margin-top:30px}
+  .ctw .tn-catalogue .tn-outils:has(.tn-filtrer input:checked) .tn-filtres{grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:40px}
+  .ctw .tn-catalogue .tn-choisis{margin-right:0;padding-right:0}
+  .ctw .tn-catalogue .tn-cartes{grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:40px 22px;margin-top:30px}
+  .ctw .tn-catalogue .tn-carte-p .tn-ph{height:auto;aspect-ratio:4/5;max-height:540px}
+  /* deux produits : deux grands cadres carrés qui remplissent leur colonne (jamais un cadre rétréci et un vide à côté) */
+  .ctw .tn-catalogue:not([data-tn-c="liste"]) .tn-carte-p:first-child:nth-last-child(2) .tn-ph,.ctw .tn-catalogue:not([data-tn-c="liste"]) .tn-carte-p:first-child:nth-last-child(2) ~ .tn-carte-p .tn-ph{aspect-ratio:1/1;max-height:none}
+  .ctw[data-tn-cadre="penche"] .tn-catalogue .tn-cartes,.ctw[data-tn-cadre="penche"] .tn-rayons .tn-familles,.ctw[data-tn-cadre="penche"] .tn-colis[data-tn-c="grille"] .tn-pieces,.ctw[data-tn-cadre="penche"] .tn-composition[data-tn-c="bande"] ul{column-gap:38px}
+  .ctw .tn-catalogue .tn-carte-p:last-child:nth-child(odd):not(:only-child){grid-column:auto;grid-template-columns:minmax(0,1fr);grid-template-rows:none;column-gap:0}
+  .ctw .tn-catalogue .tn-carte-p:last-child:nth-child(odd):not(:only-child) .tn-ph,.ctw .tn-catalogue .tn-carte-p:last-child:nth-child(odd):not(:only-child) em{grid-row:1}
+  .ctw .tn-catalogue .tn-carte-p:last-child:nth-child(odd):not(:only-child) b{grid-column:1;grid-row:2}
+  .ctw .tn-catalogue .tn-carte-p:last-child:nth-child(odd):not(:only-child) span{grid-column:1;grid-row:3}
+  .ctw .tn-catalogue .tn-carte-p:last-child:nth-child(odd):not(:only-child) .tn-pastilles{grid-column:1;grid-row:4}
+  .ctw .tn-catalogue .tn-carte-p b,.ctw .tn-catalogue .tn-carte-p:last-child:nth-child(odd) b{margin-top:14px;font-size:24px}
+  /* un seul produit : une grande carte, la photo à gauche, jamais une petite carte et un vide */
+  .ctw .tn-catalogue:not([data-tn-c="liste"]) .tn-carte-p:only-child{grid-template-columns:minmax(0,.8fr) minmax(0,1fr);grid-template-rows:1fr auto auto 1fr;column-gap:56px}
+  .ctw .tn-catalogue:not([data-tn-c="liste"]) .tn-carte-p:only-child .tn-ph,.ctw .tn-catalogue:not([data-tn-c="liste"]) .tn-carte-p:only-child em{grid-column:1;grid-row:1/5}
+  .ctw .tn-catalogue:not([data-tn-c="liste"]) .tn-carte-p:only-child b{grid-column:2;grid-row:2;margin-top:0;font-size:44px}
+  .ctw .tn-catalogue:not([data-tn-c="liste"]) .tn-carte-p:only-child span{grid-column:2;grid-row:3;font-size:18px;margin-top:8px}
+  .ctw .tn-catalogue:not([data-tn-c="liste"]) .tn-carte-p:only-child .tn-pastilles{grid-column:2;grid-row:4;align-self:start}
+  .ctw .tn-catalogue .tn-carte-p em{margin:12px;font-size:13.5px}
+  .ctw .tn-catalogue .tn-vide{padding:64px 10px 20px}
+  .ctw .tn-catalogue .tn-vide b{font-size:calc(60px*var(--tn-k))}
+  /* « liste » sur grand écran : les filtres en colonne à gauche, toujours ouverts ; les produits en lignes à droite */
+  .ctw .tn-catalogue[data-tn-c="liste"]{display:grid;grid-template-columns:230px minmax(0,1fr);column-gap:64px;align-items:start}
+  .ctw .tn-catalogue[data-tn-c="liste"] h1,.ctw .tn-catalogue[data-tn-c="liste"] .tn-chapo{grid-column:1/-1}
+  .ctw .tn-catalogue[data-tn-c="liste"] .tn-outils{display:contents}
+  .ctw .tn-catalogue[data-tn-c="liste"] .tn-filtrer{display:none}
+  .ctw .tn-catalogue[data-tn-c="liste"] .tn-filtres,.ctw .tn-catalogue[data-tn-c="liste"] .tn-outils:has(.tn-filtrer input:checked) .tn-filtres{grid-column:1;grid-row:3/7;display:grid;grid-auto-flow:row;gap:24px;margin-top:30px;padding:20px 0 0;border-top:1.5px solid var(--tn-encre)}
+  .ctw .tn-catalogue[data-tn-c="liste"] .tn-tri{grid-column:2;grid-row:3;justify-self:end;margin-top:30px}
+  .ctw .tn-catalogue[data-tn-c="liste"] .tn-choisis{grid-column:2;grid-row:3;justify-self:start;max-width:calc(100% - 250px);margin-top:36px}
+  .ctw .tn-catalogue[data-tn-c="liste"] .tn-vide,.ctw .tn-catalogue[data-tn-c="liste"] .tn-cartes{grid-column:2;grid-row:4}
+  .ctw .tn-catalogue[data-tn-c="liste"] .tn-cartes{grid-template-columns:minmax(0,1fr);gap:0;margin-top:0}
+  /* sans filtre à montrer (catalogue sans famille à filtrer) : pas de colonne vide, la liste prend toute la largeur */
+  .ctw .tn-catalogue[data-tn-c="liste"]:not(:has(.tn-filtres fieldset)){grid-template-columns:minmax(0,1fr)}
+  .ctw .tn-catalogue[data-tn-c="liste"]:not(:has(.tn-filtres fieldset)) :is(.tn-tri,.tn-choisis,.tn-vide,.tn-cartes){grid-column:1}
+  .ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p,.ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p:last-child:nth-child(odd),.ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p:only-child{grid-template-columns:150px minmax(0,1fr);grid-template-rows:1fr auto auto 1fr;column-gap:32px;padding:20px 0}
+  .ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p .tn-ph,.ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p em,.ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p:last-child:nth-child(odd) .tn-ph,.ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p:last-child:nth-child(odd) em{grid-column:1;grid-row:1/5}
+  .ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p b,.ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p:last-child:nth-child(odd) b{grid-column:2;grid-row:2}
+  .ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p span,.ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p:last-child:nth-child(odd) span{grid-column:2;grid-row:3}
+  .ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p .tn-pastilles,.ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p:last-child:nth-child(odd) .tn-pastilles{grid-column:2;grid-row:4}
+  .ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p .tn-ph{height:188px;aspect-ratio:auto}
+  .ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p b,.ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p:last-child:nth-child(odd) b{margin-top:0;font-size:32px}
+  .ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p span{font-size:17px;margin-top:6px}
+  /* Familles de produits */
+  .ctw .tn-rayons .tn-familles{grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:36px 22px;margin-top:30px}
+  .ctw .tn-rayons .tn-ph{height:auto;aspect-ratio:4/5;max-height:440px}
+  /* une ou deux familles : jamais un cadre large qui coupe le produit ; la photo à gauche, le nom en grand à droite */
+  .ctw .tn-rayons:not([data-tn-c="bandes"]):not([data-tn-c="mots"]) .tn-familles a:first-child:nth-last-child(-n+2),.ctw .tn-rayons:not([data-tn-c="bandes"]):not([data-tn-c="mots"]) .tn-familles a:first-child:nth-last-child(-n+2) ~ a{display:grid;grid-template-columns:minmax(0,250px) minmax(0,1fr);grid-template-rows:1fr auto auto 1fr;column-gap:28px}
+  .ctw .tn-rayons:not([data-tn-c="bandes"]):not([data-tn-c="mots"]) .tn-familles a:first-child:nth-last-child(-n+2) .tn-ph,.ctw .tn-rayons:not([data-tn-c="bandes"]):not([data-tn-c="mots"]) .tn-familles a:first-child:nth-last-child(-n+2) ~ a .tn-ph{grid-column:1;grid-row:1/5}
+  .ctw .tn-rayons:not([data-tn-c="bandes"]):not([data-tn-c="mots"]) .tn-familles a:first-child:nth-last-child(-n+2) b,.ctw .tn-rayons:not([data-tn-c="bandes"]):not([data-tn-c="mots"]) .tn-familles a:first-child:nth-last-child(-n+2) ~ a b{grid-column:2;grid-row:2;margin-top:0;font-size:34px}
+  .ctw .tn-rayons:not([data-tn-c="bandes"]):not([data-tn-c="mots"]) .tn-familles a:first-child:nth-last-child(-n+2) span,.ctw .tn-rayons:not([data-tn-c="bandes"]):not([data-tn-c="mots"]) .tn-familles a:first-child:nth-last-child(-n+2) ~ a span{grid-column:2;grid-row:3;margin-top:8px}
+  .ctw .tn-rayons .tn-familles a:last-child:nth-child(odd){grid-column:auto;display:block}
+  .ctw .tn-rayons b,.ctw .tn-rayons .tn-familles a:last-child:nth-child(odd) b{margin-top:14px;font-size:26px}
+  .ctw .tn-rayons span{font-size:15.5px}
+  .ctw .tn-rayons[data-tn-c="bandes"],.ctw .tn-rayons[data-tn-c="mots"]{padding-left:max(40px,calc(50% - 380px));padding-right:max(40px,calc(50% - 380px))}
+  .ctw .tn-rayons[data-tn-c="bandes"] .tn-familles,.ctw .tn-rayons[data-tn-c="mots"] .tn-familles{grid-template-columns:minmax(0,1fr);gap:0}
+  .ctw .tn-rayons[data-tn-c="bandes"] .tn-familles a,.ctw .tn-rayons[data-tn-c="bandes"] .tn-familles a:last-child:nth-child(odd){display:grid;grid-template-columns:minmax(0,1fr) 280px;column-gap:40px;padding:22px 0}
+  .ctw .tn-rayons[data-tn-c="bandes"] .tn-ph,.ctw .tn-rayons[data-tn-c="bandes"] .tn-familles a:last-child:nth-child(odd) .tn-ph{height:200px}
+  .ctw .tn-rayons[data-tn-c="bandes"] b,.ctw .tn-rayons[data-tn-c="bandes"] .tn-familles a:last-child:nth-child(odd) b{margin-top:0;font-size:48px}
+  .ctw .tn-rayons[data-tn-c="bandes"] span{font-size:17px;margin-top:10px}
+  .ctw .tn-rayons[data-tn-c="mots"] .tn-familles a,.ctw .tn-rayons[data-tn-c="mots"] .tn-familles a:last-child:nth-child(odd){display:grid;grid-template-columns:72px minmax(0,1fr) 30px;column-gap:28px;min-height:120px;padding:14px 0}
+  .ctw .tn-rayons[data-tn-c="mots"] .tn-ph,.ctw .tn-rayons[data-tn-c="mots"] .tn-familles a:last-child:nth-child(odd) .tn-ph{height:90px}
+  .ctw .tn-rayons[data-tn-c="mots"] b,.ctw .tn-rayons[data-tn-c="mots"] .tn-familles a:last-child:nth-child(odd) b{margin-top:0;font-size:60px}
+  .ctw .tn-rayons[data-tn-c="mots"] .tn-familles a::after{width:30px;height:18px}
+  /* Livraison, retours, paiement : trois colonnes */
+  .ctw .tn-garanties ul{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+  .ctw .tn-garanties li{grid-template-columns:minmax(0,1fr);align-content:start;row-gap:8px;padding:24px 24px 26px 0;border-bottom:0}
+  .ctw .tn-garanties li + li{padding-left:24px;border-left:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+  .ctw .tn-garanties li svg{grid-row:auto;width:34px;height:34px}
+  .ctw .tn-garanties li b,.ctw .tn-garanties li span{grid-column:1}
+  .ctw .tn-garanties[data-tn-c="bande"]{padding:96px max(40px,calc(50% - 380px)) 50px}
+  .ctw .tn-garanties[data-tn-c="bande"] h2{font-size:calc(40px*var(--tn-k))}
+  .ctw .tn-garanties[data-tn-c="bande"] ul{grid-auto-flow:column;gap:0;margin-top:30px;border-bottom:0}
+  .ctw .tn-garanties[data-tn-c="bande"] li{padding:0 20px}
+  .ctw .tn-garanties[data-tn-c="bande"] li + li{border-left:1px solid color-mix(in srgb,var(--tn-encre) 26%,transparent)}
+  .ctw .tb-pg>.tn-garanties[data-tn-c="bande"]:last-child{padding-bottom:50px}
+}

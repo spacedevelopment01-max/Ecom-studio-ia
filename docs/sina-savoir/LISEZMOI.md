@@ -153,9 +153,10 @@ doublons). Proposition, à valider.
 thèmes Shopify, 404 vraies boutiques de marques, 328 modèles de sites de services), relevées par un programme, sans
 IA. Notice : `references/LISEZMOI.md`.
 
-**La tenue et les constructions :** vingt sections du thème sur mesure prennent la tenue de la marque et ont plusieurs
-constructions (13 novembre 2026). Ce qui est fait, vérifié et pas vérifié : `methode-montage-de-theme.md`, partie « La
-tenue et les constructions ». Code : `src/lib/syna-agent/custom-theme/tenue.ts`, `public/sections/tenue.css`.
+**La tenue et les constructions :** 95 sections du thème sur mesure prennent la tenue de la marque et ont plusieurs
+constructions (vingt le 13 novembre 2026, 95 le 14). Comment en écrire une, quelles données le Studio y pose, comment
+elle part en boutique : `sections-a-tenue.md`. Ce qui est fait, vérifié et pas vérifié : `methode-montage-de-theme.md`
+et `specialistes.md`. Code : `src/lib/syna-agent/custom-theme/tenue*.ts`, `public/sections/tenue*.css`.
 
 **Les sections qui manquent :** `inventaire-sections-manquantes.md`, inventaire du 13 novembre 2026. Les 338 idées de
 section des cahiers comparées aux 208 sections de la bibliothèque du thème sur mesure : 114 existent, 146 sont

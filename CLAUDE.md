@@ -95,7 +95,8 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   **« Désigner un élément »** : le client pointe un titre, un texte, un bouton, une image ou une section, dit ce qu'il
   veut, et SINA ne change que lui. Règles de montage contrôlées sans IA (`checkCustomTheme`) ; aucun script dans une
   section retouchée. Les anciennes maquettes (`mockup.*`) ne servent plus qu'aux projets déjà commencés avec elles. La mise
-  en boutique Shopify d'un thème sur mesure (étape 7) reste à brancher.
+  en boutique Shopify d'un thème sur mesure à tenue (étape 7) se fait par `custom.install` depuis le 14 novembre 2026
+  (voir « Chantier du thème, 14 novembre 2026 » plus bas) ; les sections d'avant la tenue ne partent pas en boutique.
   **Ordre de l'étape 6 et montage à la marque** (décisions du propriétaire du 9 novembre 2026) : SINA demande d'abord
   « thème du Studio » ou « thème sur mesure ». Studio : TOUS nos thèmes montrés, le client choisit (`theme.choose`), puis
   étape 8 : `theme.images` et `theme.brand` (textes de toute la boutique réécrits dans l'angle choisi et son émotion par le
@@ -353,8 +354,8 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     jugés sur l'originalité, le client voit tôt, textes, montage, photos, trois regards, livraison et registre), une
     carte d'identité de dix lignes par thème, et une règle contre les doublons comparée sans IA à un registre des thèmes
     livrés. « Copyright » a été compris comme l'écriture des textes, plus ce qu'on a le droit de reprendre.
-    **Rien n'est lu par SINA** (rien n'est branché dans le code), **rien n'est validé par le propriétaire, rien n'a été
-    essayé.** Autre demande du même jour, à faire après : faire créer par OpenAI l'image du site sur téléphone des
+    Depuis le 14 novembre 2026, chaque spécialiste du thème lit ses cahiers (`custom-theme/knowledge.ts`) ; **rien
+    n'est validé par le propriétaire, aucun essai réel.** Autre demande du même jour, à faire après : faire créer par OpenAI l'image du site sur téléphone des
     planches de marque, avec une consigne nourrie de ce savoir (« pour avoir un vrai rendu site internet ») : une image
     payée de plus par planche, prix à annoncer avant. Suite proposée : un modèle fait à la main (accueil de « Pulpe » sur
     téléphone), noté par lui, avant d'apprendre à SINA à faire pareil. Points à trancher avec lui : fin de
@@ -401,8 +402,48 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     l'en-tête à moins d'un pixel ; la barre d'achat, montrée sur la capture du bas ; le Studio ajoute le pied de page
     que l'écran fait à la main n'avait pas). Sur ordinateur, les ouvertures passent en deux colonnes pour garder le
     produit entier : regardé en image, sans modèle à comparer. **Aucun essai réel payant** : on ne sait pas si la vraie
-    IA choisit et écrit à ce niveau. Restent : la tenue des 188 autres sections, les 48 qui manquent, la liaison.
-    **Ce qui est vrai du thème sur mesure, relu dans le code le 13 novembre** (ses questions : « comment tu va jouer la
+    IA choisit et écrit à ce niveau. La suite (sections manquantes, liaison, mise en boutique) : chantier du 14 novembre,
+    ci-dessous.
+    **Chantier du thème, 14 novembre 2026** (sa demande : « Tu dois refaire toute les sections qui manque refaire les
+    sections qui ont besoin d'être retravailler éduqué sina et ses sous agents pour le montage des thèmes tu dois faire
+    tout ce qu'on a dit pour la partie thème avec sina, tu n'as pas été sur internet contrôler 1000 thèmes pour par que
+    sina s'en servent ») : fait avec une IA simulée, **aucun essai réel payant, rien dépensé**.
+    - **95 sections à tenue** en quatre modules (`custom-theme/tenue.ts` : socle, 20 ; `tenue-produit.ts` : 24 ;
+      `tenue-services.ts` : 22 ; `tenue-recit.ts` : 29 ; feuilles `public/sections/tenue*.css` ; règles d'écriture
+      `docs/sina-savoir/sections-a-tenue.md`). Les 48 idées de l'inventaire sont construites, en sections ou en
+      fonctions du bloc d'achat (rupture de stock, paiement rapide de Shopify, indice de réparabilité et paiement en
+      plusieurs fois seulement si le client a confirmé le fait). Chaque section et chaque construction a été regardée
+      en image dans trois tenues (calme, brute, vive), sur téléphone et sur ordinateur (`tests/tenue-planches.test.ts`,
+      `TENUE_OUT`). Les 188 sections d'avant n'ont pas la tenue : un thème à tenue n'utilise que ces 95.
+    - **Jamais une coordonnée d'exemple** dans la bibliothèque (téléphone, adresse, horaires, ville, prix) : « [À
+      compléter] », puis les vraies données posées par le Studio (`custom-theme/tenue-data.ts` : téléphone, adresse,
+      horaires, zone, itinéraire, prestations, familles, filtres de la page boutique, comparatif, livraison et
+      retours, articles du journal ; avis : jamais un avis d'exemple). Le plan d'une adresse n'est jamais une image.
+    - **Le savoir est lu** : chaque spécialiste du thème lit ses cahiers (`custom-theme/knowledge.ts`, coût compté
+      dans les devis) ; les 1 072 références servent à la documentaliste (lot 8).
+    - **Liaison** : une fiche par produit (`custom.products`), menu calculé depuis le catalogue (`custom.menu`,
+      `menu.ts` : simple, sous-menu par familles, grand menu), prestations du profil, sections de tout le site
+      (bandeau, fenêtres : `custom.structure`, opération `extra`), la conception refuse une section que le catalogue ne
+      peut pas remplir (familles, comparatif) ; tenue « gras » : la plus forte graisse de la police de la marque ; pas
+      de bouton « Panier » sur un site de services ; la couleur de la marque posée en touches dans les services.
+    - **Mise en boutique** (étape 7 : `custom.install`, `to-shopify.ts`, `install.ts`) : le thème devient une version
+      de thème du Studio NON activée, exportable en ZIP ; chaque section devient une section Shopify passée au
+      contrôle du Studio ; produits, filtres et tri de la boutique sans script, panier, journal, article, recherche,
+      formulaires de contact aux champs nommés, inscription à la lettre ; rien d'inventé ne part (« [À compléter] »
+      bloque, ou est retiré avec l'accord du client, `sansLesManques`). Vérifié dans l'aperçu Liquid du Studio,
+      **jamais dans une vraie boutique Shopify** ; Theme Check non lancé sur ces sections. Le Studio s'ouvre dès que
+      le thème sur mesure est choisi : la mise en boutique ne le garde jamais fermé (`underConstruction`).
+    - **Démonstration** (`tests/sina-theme-demonstration.test.ts`, `DEMO_OUT=<dossier>`) : un électricien et une
+      boutique de yoga (photos et prix de la démonstration SOUPLE ; clients, téléphone et adresse inventés pour
+      l'essai), montés en entier, capturés sur téléphone et ordinateur, puis rendus en thème Shopify. Les six écrans de
+      référence du 13 novembre restent identiques au pixel.
+    - **Pas fait** : l'essai réel de la conception par la vraie IA (environ 0,95 € probable, plus de 3,5 € au plus :
+      au-dessus du reste du plafond d'essais, à ne lancer qu'avec son accord écrit) ; la tenue des 188 anciennes
+      sections ; les avis (aucune source d'avis dans le Studio, et Shopify demande une application) ; les pastilles
+      de couleur des variantes ; le menu de la boutique n'est pas relié aux menus de Shopify ; les fenêtres (cookies,
+      âge, discussion) regardées en planche, pas posées sur une page entière ; dans le thème Shopify, le bouton
+      d'inscription du pied de page complet est décalé de quelques pixels (vu dans l'aperçu, cause non trouvée).
+    **Ce qui était vrai du thème sur mesure le 13 novembre, avant ce chantier** (ses questions : « comment tu va jouer la
     liaison ? Et les méga menu […] ? ») : une seule fiche produit, remplie avec le premier produit ; le panneau des
     grands menus reste un exemple vide ; les pages de prestations ne lisent pas la rubrique Prestations et
     Rendez-vous ; aucun envoi vers Shopify. Le moteur des thèmes du Studio (`src/lib/theme`) fait déjà tout cela.

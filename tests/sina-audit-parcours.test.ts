@@ -62,20 +62,23 @@ describe("SINA — déroulement du parcours (audit du 10 novembre 2026)", async 
     expect(gaps.join(" ")).not.toMatch(/produit|livraison|retours/);
   });
 
-  it("thème sur mesure choisi : l'étape 7 n'envoie plus vers les anciennes maquettes, l'étape 8 est sans objet, le Studio s'ouvre", async () => {
+  it("thème sur mesure choisi : l'étape 7 est la mise en boutique (jamais les anciennes maquettes), l'étape 8 est sans objet, le Studio s'ouvre", async () => {
     const { cid, pid } = await confirmedStart("products");
     J.updateJourney(cid, (x) => { for (const n of [1, 2, 3, 4, 5]) J.setStep(x, n, "done"); J.setStep(x, 6, "doing"); });
     expect(underConstruction(pid)).toBe(true); // SINA mène l'étape 6 : le Studio reste en lecture
     J.updateJourney(cid, (x) => { J.setStep(x, 6, "done"); x.customChosenAt = Date.now(); J.setStep(x, 8, "skipped"); });
     const j = J.journeyOf(cid);
     expect(J.currentStep(j)).toBe(7);
-    expect(J.stepAvailable(j, 7)).toBe(false);
+    // Depuis le 14 novembre 2026, la mise en boutique du thème sur mesure existe : SINA la fait avec custom.install.
+    expect(J.stepAvailable(j, 7)).toBe(true);
     const ctxt = J.journeyContext(j);
-    expect(ctxt).toMatch(/mise en boutique du thème sur mesure\) : pas encore disponible/);
+    expect(ctxt).toMatch(/mise en boutique du thème sur mesure\) : son thème est choisi et en place dans l'onglet Boutique/);
+    expect(ctxt).toMatch(/appelle custom\.install \(gratuit\)/);
+    expect(ctxt).toMatch(/Ne dis jamais que sa boutique est en ligne/);
     expect(ctxt).toMatch(/N'utilise AUCUN outil des anciennes maquettes/);
     expect(ctxt).not.toMatch(/annonce le devis de site\.code_from_mockup/);
     expect(ctxt).toMatch(/Désigner un élément|custom\.edit/); // il peut toujours demander des changements
-    expect(underConstruction(pid)).toBe(false); // jamais verrouillé pour toujours
+    expect(underConstruction(pid)).toBe(false); // jamais verrouillé en attendant la mise en boutique
   });
 
   it("projet existant ouvert dans SINA : hors parcours, jamais remis aux questions de départ ni verrouillé", async () => {

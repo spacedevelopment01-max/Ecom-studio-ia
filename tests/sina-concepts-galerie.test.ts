@@ -178,7 +178,7 @@ describe("réponses coupées et référencement manquant (essai Éclat de thé d
     const fs = await import("node:fs");
     const llm = fs.readFileSync("src/lib/ai/llm.ts", "utf8");
     expect(llm).toMatch(/if \(opts\.strict\) \{[^]*r\.stop === "max_tokens" && budget < cap[^]*budget \* 2/);
-    expect(fs.readFileSync("src/lib/syna-agent/custom-theme/brand.ts", "utf8")).toMatch(/syna-custom-plan-1", prompt, maxTokens: 18000, maxOutputTokens: 32000/);
+    expect(fs.readFileSync("src/lib/syna-agent/custom-theme/brand.ts", "utf8")).toMatch(/syna-custom-plan-2", prompt, maxTokens: 18000, maxOutputTokens: 32000/);
   });
   it("un texte attendu que le contrôle n'a pas lu n'est jamais compté comme juste", async () => {
     const G = await import("@/lib/syna-agent/custom-theme/gallery");

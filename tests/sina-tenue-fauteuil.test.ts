@@ -229,6 +229,94 @@ describe("thème sur mesure à tenue : le fauteuil et le sac, montés par les ou
     await shots(pid, "sina-b", ["home"]);
   }, 300_000);
 
+  it("mise en boutique : le thème sur mesure devient un thème Shopify, rien d'inventé ni d'exemple ne part", async () => {
+    const { pid, ctx } = await mount(FAUTEUIL);
+    const I = await import("@/lib/syna-agent/custom-theme/install");
+    // Par l'outil de SINA (étape 7) : jamais avant le choix du client ; puis la liste de ce qui reste à régler ; puis,
+    // avec son accord, le thème prêt et son lien de téléchargement. Jamais « ta boutique est en ligne ».
+    expect((await call("custom.install", ctx, {})).summary).toMatch(/n'a pas encore choisi son thème/);
+    expect((await call("custom.choose", ctx, {})).ok).toBe(true);
+    const refused = await call("custom.install", ctx, {});
+    expect(refused.ok).toBe(false);
+    expect(refused.summary).toMatch(/pas encore possible : \d+ point\(s\) à régler d'abord\. Rien n'est créé/);
+    expect(refused.data.aRegler.length).toBeGreaterThan(3);
+    const ready = await call("custom.install", ctx, { sansLesManques: true });
+    expect(ready.ok, ready.summary).toBe(true);
+    expect(ready.data.export).toMatch(new RegExp(`^/api/projects/${pid}/theme/export\\?version=[\\w-]+&platform=shopify$`));
+    expect(ready.hint).toMatch(/Ne dis jamais que sa boutique est en ligne/);
+    const { journeyOf } = await import("@/lib/syna-agent/journey");
+    expect(journeyOf(ctx.conversationId).steps[7]?.status).toBe("done");
+    const { compileTheme } = await import("@/lib/theme/compile");
+    const { themeVersion } = await import("@/lib/projects");
+    // 1) Tant qu'une information manque (prix, livraison, mesures…), rien ne part : elles sont listées au client.
+    const first = I.installCustomTheme(pid);
+    expect(first.ok).toBe(false);
+    const blocking = (first as { blocking: string[] }).blocking;
+    expect(blocking.join("\n")).toMatch(/Fiche produit › Bloc d'achat[^\n]*à compléter/);
+    expect(blocking.join("\n")).toMatch(/Mesures en schéma[^\n]*à compléter/);
+    expect(blocking.every((x) => /à compléter/.test(x)), blocking.join("\n")).toBe(true); // aucun autre refus : Liquid, schéma et thème sont valides
+    // 2) Avec l'accord du client, ces lignes sont retirées, et c'est dit.
+    const done = I.installCustomTheme(pid, { dropMissing: true });
+    expect(done.ok, JSON.stringify(done).slice(0, 600)).toBe(true);
+    if (!done.ok) return;
+    expect(done.notes.join("\n")).toMatch(/retiré faute d'information/);
+    // Une section qui n'avait que des informations manquantes ne garde pas un titre seul.
+    expect(done.notes.join("\n")).toMatch(/Questions en volets : section retirée, il ne restait que son titre/);
+    expect(done.notes.join("\n")).toMatch(/Mon compte[^\n]*compte client est une page de Shopify/);
+    const spec = themeVersion(pid, done.versionId)!.spec;
+    expect(Object.keys(spec.templates)).toEqual(expect.arrayContaining(["index", "product", "cart", "404", "page.contact", "page.about", "page.aide", "page.legal", "collection", "search", "page", "list-collections"]));
+    expect(spec.store.pages.map((x) => [x.handle, x.template_suffix])).toEqual(expect.arrayContaining([["contact", "contact"], ["about", "about"], ["legal", "legal"]]));
+    const all = Object.values(spec.customSections).map((s) => s.liquid).join("\n");
+    // Rien d'exemple, rien d'inventé, aucun geste de l'aperçu.
+    expect(all).not.toMatch(/À compléter|photos\/|onclick=|data-go=|href="#"|\/api\/files\//);
+    // De vraies fonctions : prix et photos de la boutique, ajout au panier, panier, contact, recherche, liens.
+    const type = (key: string, n: number) => spec.templates[key].sections[spec.templates[key].order[n]].type;
+    const buy = spec.customSections[type("product", 0)].liquid;
+    expect(buy).toContain("{{ product.selected_or_first_available_variant.price | money }}");
+    expect(buy).toMatch(/\{%- form 'product', product, class: 'tn-enveloppe' -%\}[^]*<button class="tn-bt" type="submit" name="add"[^>]*>Lui faire une place<\/button>[^]*\{\{ form \| payment_button \}\}[^]*\{%- endform -%\}/); // l'achat, puis le paiement rapide de Shopify
+    expect(buy).toContain("{%- for image in product.images limit: 5 -%}");
+    expect(buy).not.toContain("tn-barre");
+    expect(buy).toContain("<h1>Alcôve terracotta</h1>"); // ses textes restent ceux écrits pour la marque
+    expect(spec.customSections[type("cart", 0)].liquid).toMatch(/\{%- for item in cart\.items -%\}[^]*\{\{ cart\.total_price \| money \}\}[^]*name="checkout"/);
+    expect(spec.customSections[type("page.contact", 0)].liquid).toMatch(/\{%- form 'contact' -%\}[^]*name="contact\[email\]"[^]*<textarea class="tn-champ-i tn-haut" name="contact\[body\]"[^]*<button class="tn-bt" type="submit">Envoyer<\/button>\{%- endform -%\}/);
+    expect(spec.customSections[type("404", 0)].liquid).toMatch(/<form class="tn-champ" action="\{\{ routes\.search_url \}\}"[^]*name="q"/);
+    const home = spec.templates.index.order.map((id) => spec.customSections[spec.templates.index.sections[id].type].liquid).join("\n");
+    expect(home).toMatch(/<div class="tn-cartes">\{%- for product in collections\.all\.products limit: 8 -%\}<a class="tn-carte-p[^"]*" href="\{\{ product\.url \}\}">/);
+    // Le rédacteur simulé n'a pas dit où mène ce bouton : il mène à l'accueil, et c'est dit (jamais un lien mort).
+    expect(home).toContain(`<a class="tn-bt" href="{{ routes.root_url }}">M'y installer</a>`);
+    expect(done.notes.join("\n")).toMatch(/le lien « M'y installer » n'a pas de destination/);
+    // Un lien dont la destination est connue mène à la vraie page.
+    expect(spec.customSections[type("404", 0)].liquid).toContain('<a class="tn-bt" href="{{ routes.root_url }}">Revenir à l\'accueil</a>');
+    expect(spec.customSections[spec.groups.footer.sections[spec.groups.footer.order[0]].type].liquid).toContain('href="{{ routes.root_url }}pages/legal">Mentions légales</a>');
+    expect(home).toMatch(/style="background-image:url\(\{\{ 'tn-[\w-]+\.(?:jpg|png)' \| asset_url \}\}\)"/);
+    // L'en-tête porte les couleurs, les polices et le socle de la feuille ; chaque section porte sa propre part.
+    const header = spec.customSections[spec.groups.header.sections[spec.groups.header.order[0]].type].liquid;
+    expect(header).toMatch(/<div class="ctw ctw-classique" data-tn-titres="fins" data-tn-bouton="pilule" data-tn-cadre="niche"/);
+    expect(header).toMatch(/\{% stylesheet %\}[^]*--tn-fond:#F1E5D1[^]*--f-title:var\(--font-heading\)[^]*\.ctw \.tn-entete\{/);
+    expect(header).toContain('<a class="tn-pan" href="{{ routes.cart_url }}" aria-label="Panier">Panier <u>(</u><span>{{ cart.item_count }}</span><u>)</u></a>');
+    // Toute la feuille part avec l'en-tête, dans l'ordre d'origine (à force égale la dernière règle gagne : la bande
+    // sombre de fin de page doit rester sombre) ; seules les sections utilisées y sont ; les autres n'en portent pas.
+    expect(header).toMatch(/\.ctw \.tn\{[^]*\.ctw \.tn-achat[^]*\.ctw \.tn-final\{[^}]*background:var\(--tn-encre\)/);
+    expect(header).not.toContain(".ctw .tn-bande"); // section absente de ce site
+    expect(buy).not.toContain("{% stylesheet %}");
+    expect(spec.settings.type_heading_font).toBe("instrument_serif_n4");
+    // Le thème se compile en fichiers Shopify : une section par fichier, les gabarits, les groupes.
+    const files = compileTheme(spec);
+    expect([...files.keys()].filter((f) => /^sections\/es-custom-s[0-9a-f]{8}\.liquid$/.test(f)).length).toBe(Object.keys(spec.customSections).length);
+    for (const f of ["templates/index.json", "templates/product.json", "templates/page.contact.json", "templates/404.json", "sections/header-group.json", "sections/footer-group.json", "layout/theme.liquid"]) expect(files.has(f), f).toBe(true);
+    if (process.env.TENUE_OUT) for (const [f, body] of files) if (/es-custom|templates\/(?:index|product)\.json|-group\.json/.test(f)) { fs.mkdirSync(`${process.env.TENUE_OUT}/shopify/${f.split("/")[0]}`, { recursive: true }); fs.writeFileSync(`${process.env.TENUE_OUT}/shopify/${f}`, body); }
+    // À la demande : le thème Shopify rendu par l'aperçu Liquid du Studio, pour le comparer en image au thème sur mesure.
+    if (process.env.TENUE_OUT) {
+      const { snapshotTheme } = await import("@/lib/theme/snapshot");
+      const { withStudioProducts, listProducts } = await import("@/lib/products/catalog");
+      const full = withStudioProducts(spec, pid);
+      for (const [name, url] of [["accueil", "/"], ["fiche", `/products/${listProducts(pid)[0].handle}`], ["contact", "/pages/contact"], ["panier", "/cart"]] as const) {
+        const shots = await snapshotTheme(full, url, { desktopSheets: 0, mobileSheets: 4 }).catch((e) => { fs.writeFileSync(`${process.env.TENUE_OUT}/shopify-${name}-erreur.txt`, String((e as Error).stack ?? e)); return null; });
+        (shots?.mobile ?? []).forEach((data, i) => fs.writeFileSync(`${process.env.TENUE_OUT}/shopify-${name}-${i}.jpg`, data));
+      }
+    }
+  }, 300_000);
+
   it("le sac de voyage : les mêmes sections, une autre tenue et d'autres constructions, un tout autre site", async () => {
     const { pid, prod, designed, site } = await mount(SAC);
     expect(designed.family).toBe("moderne"); // les sections à tenue vont avec les deux familles

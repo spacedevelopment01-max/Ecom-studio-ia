@@ -137,8 +137,10 @@ const CARD_FAMILIES = new Set(["Choisis ton terrain", "Mosaïque de collections"
 /** Sections réservées à un genre de produit (étiquettes de la bibliothèque) : jamais posées ailleurs (contrôle bloquant). */
 const ONLY_FOR: Record<string, string> = { "pour-mode": "vêtements et accessoires de mode (tailles, tenues, looks)", "pour-the": "thés et infusions" };
 export const onlyFor = (tags: string[] | undefined) => (tags ?? []).map((t) => ONLY_FOR[t]).find(Boolean) ?? null;
+/** Section à tenue réservée à un genre de produit ou à un métier (dit en clair), ou null. */
+export const tenueOnly = (id: string): string | null => TENUE_SECTIONS.find((s) => s.id === id)?.only ?? null;
 /** Section de cartes : cartes produits, ou cartes de familles avec photos (une liste de rayons en texte n'en est pas une). */
-export const isCardSection = (l: Pick<LibSection, "role" | "title">) => l.role === "produits" || CARD_FAMILIES.has(l.title);
+export const isCardSection = (l: Pick<LibSection, "role" | "title">) => l.role === "produits" || CARD_FAMILIES.has(l.title) || TENUE_SECTIONS.some((s) => s.cards && s.title === l.title);
 export const FEATURED_ROLE = "produit vedette";
 
 /**
@@ -155,7 +157,9 @@ const AUTHENTIC_SECTIONS: Record<string, { kind: string; services?: boolean }> =
 /** Nature d'une photo impossible à inventer dans cette section, ou null (photo que SINA peut créer). */
 export function authenticSection(id: string, business: "products" | "services"): string | null {
   const a = AUTHENTIC_SECTIONS[id];
-  return a && (!a.services || business === "services") ? a.kind : null;
+  if (a) return !a.services || business === "services" ? a.kind : null;
+  // Sections à tenue : la nature de la photo impossible à inventer est écrite sur la section elle-même.
+  return TENUE_SECTIONS.find((s) => s.id === id)?.authentic ?? null;
 }
 /**
  * Photos d'exemple DÉTOURÉES (fond transparent : le mannequin ou le produit qui déborde de l'ouverture Moderne), relevées

@@ -5,6 +5,7 @@
  * contrôles. Gratuit, sans IA.
  */
 import { sectionLibrary, type LibSection } from "./library";
+import { tenueSection } from "./tenue";
 
 export type SectionGroupId =
   | "en-tete" | "bandeau" | "ouverture" | "produits" | "rayons" | "produit-vedette" | "produit-en-scene" | "histoire"
@@ -101,7 +102,8 @@ const BY_ROLE: Record<string, SectionGroupId> = {
 };
 
 export function sectionGroup(s: Pick<LibSection, "id" | "role">): SectionGroupId | null {
-  return BY_ID[s.id] ?? BY_ROLE[s.role] ?? null;
+  // Section à tenue : sa famille est écrite sur elle quand son rôle ne suffit pas.
+  return BY_ID[s.id] ?? tenueSection(s.id)?.group ?? BY_ROLE[s.role] ?? null;
 }
 
 /** Sections d'une famille, pour une famille de style (Classique ou Moderne) ; les sections à tenue vont avec les deux. */
