@@ -87,7 +87,7 @@ export type SinaPosts = {
 };
 
 const RULES = `Règles des publications (charte de qualité du Studio) :
-- TROIS groupes sans aucune ressemblance : sujet, composition, cadrage, palette dominante et type de visuel différents.
+- TROIS groupes sans aucune ressemblance : sujet, composition, cadrage, couleur dominante et type de visuel différents ; le client doit y voir trois publications possibles très différentes, jamais trois variantes d'une même scène ni trois images de la même couleur.
 - Un sujet UTILE par publication, jamais une simple publicité : un conseil, des erreurs à éviter, comment choisir, les coulisses, un usage, une question à la communauté. Trois sujets différents parmi : ${POST_SUBJECTS.join(", ")}.
 - Titre accrocheur en deux temps, « Sujet : promesse » (« Bougie : 5 erreurs à éviter »), court.
 - Trois points au plus, phrases courtes et concrètes. Un chiffre affiché est vrai et vient du client, jamais inventé.

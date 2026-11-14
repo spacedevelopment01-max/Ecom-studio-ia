@@ -93,6 +93,17 @@ describe("SINA — nom de domaine : l'exact, sinon une adresse libre qui garde l
     expect(I.IMAGE_SLOTS).toContain("site"); // les planches faites avant restent lisibles
     expect(P.imagerySystem("produits")).toMatch(/Le haut du site sur téléphone n'est plus une image : le Studio le rend lui-même/);
     expect(P.imagerySystem("produits")).not.toMatch(/"site": ""/);
+    // Retour du propriétaire du 14 novembre 2026 : « 3 images de la même couleur qui représentent la même chose, les
+    // clients veulent voir 3 publications différentes possibles ».
+    for (const k of ["produits", "services"] as const) {
+      const t = P.imagerySystem(k);
+      expect(t).toMatch(/TROIS PUBLICATIONS POSSIBLES TRÈS DIFFÉRENTES/);
+      expect(t).toMatch(/COULEUR DOMINANTE différente/);
+      expect(t).toMatch(/SUJET différent/);
+      expect(t).toMatch(/CADRAGE différent/);
+    }
+    const { POSTS_PLAN_SYSTEM } = await import("@/lib/syna-agent/posts-plan");
+    expect(POSTS_PLAN_SYSTEM).toMatch(/jamais trois variantes d'une même scène ni trois images de la même couleur/);
   });
 
   it("les notes du propriétaire du 13 novembre : « Zeste » 8/10 ; « Gorgée » et « Fruit Nu » refusés, et l'épreuve du sous-entendu", () => {
