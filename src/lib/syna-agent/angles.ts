@@ -1,5 +1,5 @@
 /**
- * Étape 4 du parcours SINA (#492) : 5 ANGLES MARKETING (recherche web, places de marché exclues, sources réelles,
+ * Étape 4 du parcours SINA (#492) : 3 ANGLES MARKETING montrés au client (cinq écrits et jugés, les trois plus éloignés gardés : sûr, émotion, audacieux ; décision du 14 novembre 2026), recherche web, places de marché exclues, sources réelles,
  * preuves à confirmer), puis le choix du client.
  *
  * Le moteur existe déjà (Pilote : analyse de la fiche puis recherche « research/generate » ; stratégie marketing :
@@ -32,14 +32,23 @@ export type SinaAngles = {
   judged?: "juges" | "non_juges";
   /** Angles réécrits après l'avis du juge (pour information). */
   redone?: string[];
+  /**
+   * Les TROIS angles montrés au client (décision du propriétaire du 14 novembre 2026), avec leur rôle : sûr, émotion,
+   * audacieux. Absent : recherche d'avant, les angles de « list » sont tous montrés.
+   */
+  shown?: { id: string; role: AngleRole }[];
+  /** Angles écrits et jugés, gardés pour les publications et les publicités, jamais montrés comme choix. */
+  reserve?: string[];
 };
+export { ANGLE_ROLE_LABEL, roleOf, shownAngles, type AngleRole } from "./angle-roles";
+import type { AngleRole } from "./angle-roles";
 
 /** Où en est l'étape 4 (lecture seule, sans frais). */
 export type AnglesPhase =
   | { kind: "analyze" } // la fiche du client doit être comprise par l'IA (payant)
   | { kind: "questions"; questions: { id: string; question: string; required: boolean }[]; missing: string[] }
   | { kind: "approve_brief" } // fiche comprise et complète : à valider (gratuit)
-  | { kind: "research" } // recherche web et 5 angles (payant)
+  | { kind: "research" } // recherche web, 5 angles écrits et jugés, 3 montrés (payant)
   | { kind: "running" } // une préparation tourne déjà
   | { kind: "ready"; angles: SinaAngles };
 
@@ -62,7 +71,7 @@ export function anglesPhase(projectId: string, running = false): AnglesPhase {
   return { kind: "ready", angles: anglesOf(r.data) };
 }
 
-/** Les 5 angles tels qu'on les montre au client : cible, motivation, accroche, émotion, preuves à confirmer, sources. */
+/** Les angles écrits (cinq) et les TROIS qu'on montre au client : cible, motivation, accroche, émotion, preuves à confirmer, sources. */
 export function anglesOf(d: any): SinaAngles {
   const byId = new Map<string, any>((d.sources ?? []).map((x: any) => [x.id, x]));
   const list: SinaAngle[] = (d.angles ?? []).map((a: any) => ({
@@ -76,7 +85,15 @@ export function anglesOf(d: any): SinaAngles {
   }));
   const used = (d.sources ?? []).filter((x: any) => x.status === "consulted" && x.relevance?.accepted !== false).length;
   const judged = d.judgement?.status === "juges" || d.judgement?.status === "non_juges" ? d.judgement.status : undefined;
-  return { list, recommendedId: d.recommendedId ?? null, recommendation: s(d.recommendation, 600), sourceCount: used, at: Date.now(), ...(judged ? { judged, redone: (d.judgement.redone ?? []).map((x: string) => s(x, 40)) } : {}) };
+  const sel = d.judgement?.selection, ids = list.map((x) => x.id);
+  const trio = sel ? ([["sur", sel.sur], ["emotion", sel.emotion], ["audacieux", sel.audacieux]] as [AngleRole, string][]).filter(([, id]) => ids.includes(id)) : [];
+  const shown = trio.length === 3 && new Set(trio.map(([, id]) => id)).size === 3 ? trio.map(([role, id]) => ({ id, role })) : null;
+  const recommendedId = shown ? (shown.some((x) => x.id === sel.recommande) ? sel.recommande : shown[0].id) : d.recommendedId ?? null;
+  return {
+    list, recommendedId, recommendation: s(shown && sel.pourquoi ? sel.pourquoi : d.recommendation, 600), sourceCount: used, at: Date.now(),
+    ...(judged ? { judged, redone: (d.judgement.redone ?? []).map((x: string) => s(x, 40)) } : {}),
+    ...(shown ? { shown, reserve: ids.filter((id) => !shown.some((x) => x.id === id)) } : {}),
+  };
 }
 
 /** Pourcentage lisible (« 8 % », « 4,5 % ») : jamais « 7.994748837209302 % » (essai réel du 7 novembre). */

@@ -94,6 +94,13 @@ export type AnglesJudgement = {
   /** Angles refusés qui restent tels quels (réécriture absente ou écartée) : le doute est dit au client. */
   doubts: { id: string; why: string }[];
   overall: string;
+  /**
+   * Les TROIS angles montrés au client (décision du propriétaire du 14 novembre 2026 : « Ok pour 3 ») : les trois plus
+   * éloignés parmi les cinq écrits, un sûr, un d'émotion, un audacieux, et celui que le juge recommande. Les deux autres
+   * restent en réserve (publications, publicités). « juge » : choisis par le juge ; « studio » : juge absent, le Studio
+   * a pris les trois premiers sans doute.
+   */
+  selection?: { sur: string; emotion: string; audacieux: string; recommande: string; pourquoi: string; par: "juge" | "studio" };
 };
 export type Research = {
   formatVersion?: 2 | 3;

@@ -176,7 +176,7 @@ function LogoCards({ logos, brandBg, busy, onChoose }: { logos: Logos; brandBg: 
   );
 }
 
-type Angles = { list: { id: string; title: string; goal?: string; why?: string; story?: string; show?: string; organicExample?: string; cta?: string; audience: string; motivation: string; message: string; emotion: string; proofsToConfirm: string[]; arguments: string[]; sources: { title: string; url: string }[]; doubt?: string }[]; recommendedId: string | null; sourceCount: number; chosen: string[] | null };
+type Angles = { list: { id: string; title: string; goal?: string; why?: string; story?: string; show?: string; organicExample?: string; cta?: string; audience: string; motivation: string; message: string; emotion: string; proofsToConfirm: string[]; arguments: string[]; sources: { title: string; url: string }[]; doubt?: string }[]; roles?: Record<string, "sur" | "emotion" | "audacieux">; recommendedId: string | null; sourceCount: number; chosen: string[] | null };
 
 type PostsPlan = { round: number; judged: "juges" | "non_juges"; groups: { subject: string; title: string; points: string[]; cta: string; caption: string; hashtags: string[]; visual: string; doubt?: string }[]; created: { id: string; network: string; title: string; images: string[] }[] | null };
 const POST_SUBJECT: Record<string, [string, string]> = { produit: ["Le produit", "The product"], conseil: ["Un conseil", "A tip"], coulisses: ["Les coulisses", "Behind the scenes"], usage: ["L'usage", "How to use"], erreurs: ["Les erreurs à éviter", "Mistakes to avoid"], question: ["Une question", "A question"] };
@@ -226,11 +226,12 @@ function PostsPlanCard({ plan }: { plan: PostsPlan }) {
   );
 }
 
-/** Couleurs des bandeaux, reprises du guide « 5 angles marketing » du propriétaire. */
+/** Couleurs des bandeaux, reprises du guide « 5 angles marketing » du propriétaire (trois montrés depuis le 14 novembre 2026). */
+const ROLE_LABEL = { sur: ["L'angle sûr", "The safe angle"], emotion: ["L'angle d'émotion", "The emotional angle"], audacieux: ["L'angle audacieux", "The bold angle"] } as const;
 const ANGLE_BANDS = ["#9C3343", "#74533F", "#43644A", "#B46D25", "#73507F"];
 
 /**
- * Étape 4 : les 5 angles au format du guide du propriétaire (7 novembre 2026) — bandeau titre + objectif, pourquoi,
+ * Étape 4 : les 3 angles (un sûr, un d'émotion, un audacieux) au format du guide du propriétaire (7 novembre 2026) — bandeau titre + objectif, pourquoi,
  * accroche, ce qu'on raconte, ce qu'on montre, publication conseillée, appel à l'action, informations à confirmer,
  * sources. Le client peut en choisir PLUSIEURS : le premier coché est l'angle principal.
  */
@@ -254,6 +255,7 @@ function AngleCards({ angles, busy, onChoose }: { angles: Angles; busy: boolean;
                   <h4 className="text-base font-bold leading-tight">{String(i + 1).padStart(2, "0")}  {a.title}</h4>
                   {angles.recommendedId === a.id && <span className="shrink-0 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold" style={{ color: band }}>{t("Recommandé", "Recommended")}</span>}
                 </div>
+                {!!angles.roles?.[a.id] && <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide opacity-90" data-angle-role={angles.roles[a.id]}>{t(ROLE_LABEL[angles.roles[a.id]][0], ROLE_LABEL[angles.roles[a.id]][1])}</p>}
                 {!!a.goal && <p className="mt-1 text-sm opacity-90">{a.goal}</p>}
               </header>
               <dl className="space-y-2 px-4 py-3" style={{ color: band }}>

@@ -32,6 +32,11 @@ export const AngleJudgeSchema = z.object({
   // Un avis en double ou sur un angle inconnu est ignoré plus bas, sans faire échouer la relecture.
   })).min(1).max(8),
   overall: z.string().max(500).default(""),
+  /** Les trois angles à montrer au client (épreuve 7) ; absent : le Studio prend les trois premiers sans doute. */
+  selection: z.object({
+    sur: z.enum(ANGLE_IDS), emotion: z.enum(ANGLE_IDS), audacieux: z.enum(ANGLE_IDS), recommande: z.enum(ANGLE_IDS),
+    pourquoi: z.string().min(4).max(400),
+  }).optional(),
 });
 export type AngleJudge = z.infer<typeof AngleJudgeSchema>;
 
@@ -51,7 +56,10 @@ Sévère mais juste : un angle qui passe les épreuves, tu le gardes, même s'il
 
 Réponse : uniquement le JSON demandé.
 - angles : un avis par angle (id exact, verdict, why = ton avis en une ou deux phrases, fixes = 1 à 4 corrections précises si « reprendre », vide sinon).
-- overall : ton avis sur la série en deux phrases (ce qui tient, ce qui manque).`;
+- overall : ton avis sur la série en deux phrases (ce qui tient, ce qui manque).
+- selection : les TROIS angles que le client verra (épreuve 7) : sur, emotion, audacieux (trois ids différents), recommande (l'un des trois), pourquoi (une ou deux phrases).
+
+7. LES TROIS À MONTRER. Le client ne verra que TROIS angles, les plus éloignés l'un de l'autre : un angle SÛR (le plus évident pour ce métier, celui qui rassure et vend tout de suite), un angle d'ÉMOTION (une scène de vie que les paroles de clients font ressentir), un angle AUDACIEUX (celui qu'un concurrent n'oserait pas, sans jamais promettre ce qui n'est pas confirmé). Jamais deux angles du même territoire parmi les trois. Préfère les angles que tu gardes ; un angle à reprendre peut être choisi si ta correction le rend solide. Recommande celui des trois qui sert le mieux CE client tel qu'il est aujourd'hui. Les deux autres restent en réserve pour ses publications et ses publicités : ne les juge pas plus durement pour autant.`;
 
 /** Schéma d'un angle réécrit : celui de la stratège (research-ai.ts), limites comprises. */
 const text = z.string().min(1).max(1400);
@@ -134,7 +142,7 @@ const digest = (r: Research) => { let h = 0; for (const c of JSON.stringify(r.an
  */
 export async function judgeAngles(p: Project, ctx: JobContext, r: Research, o: { locked?: string[] } = {}): Promise<Research & { judgement: AnglesJudgement }> {
   const locked = o.locked ?? [], key = digest(r);
-  const unjudged = (why: string): Research & { judgement: AnglesJudgement } => ({ ...r, judgement: { status: "non_juges", kept: [], redone: [], doubts: [], overall: why } });
+  const unjudged = (why: string): Research & { judgement: AnglesJudgement } => ({ ...r, judgement: { status: "non_juges", kept: [], redone: [], doubts: [], overall: why, selection: selectionOf(r, null, []) } });
   let verdict: AngleJudge;
   try {
     verdict = await ctx.step(`angles-judge:${key}`, async () => {
@@ -149,7 +157,7 @@ export async function judgeAngles(p: Project, ctx: JobContext, r: Research, o: {
   const opinions = verdict.angles.filter((x, i, all) => known.has(x.id) && all.findIndex((y) => y.id === x.id) === i);
   const refused = opinions.filter((x) => x.verdict === "reprendre" && x.fixes.length);
   const kept = r.angles.map((a) => a.id).filter((id) => !refused.some((x) => x.id === id));
-  if (!refused.length) return { ...r, judgement: { status: "juges", kept, redone: [], doubts: [], overall: verdict.overall } };
+  if (!refused.length) return { ...r, judgement: { status: "juges", kept, redone: [], doubts: [], overall: verdict.overall, selection: selectionOf(r, verdict, []) } };
 
   // Une seule réécriture, pour les seuls angles refusés.
   let rewritten: z.infer<typeof AngleFixSchema>["angles"] = [];
@@ -182,5 +190,21 @@ export async function judgeAngles(p: Project, ctx: JobContext, r: Research, o: {
     out = candidate; redone.push(f.id);
   }
   const doubts = refused.filter((f) => !redone.includes(f.id)).map((f) => ({ id: f.id, why: f.why }));
-  return { ...out, judgement: { status: "juges", kept, redone, doubts, overall: verdict.overall } };
+  return { ...out, judgement: { status: "juges", kept, redone, doubts, overall: verdict.overall, selection: selectionOf(out, verdict, doubts.map((d) => d.id)) } };
+}
+
+/**
+ * Les trois angles montrés au client. Ceux du juge s'ils sont trois angles différents et connus ; sinon le Studio
+ * prend, dans l'ordre de la stratège, les trois premiers angles sans doute (rôles dans cet ordre), et le dit.
+ */
+export function selectionOf(r: Research, verdict: AngleJudge | null, doubtIds: string[]): NonNullable<AnglesJudgement["selection"]> | undefined {
+  const ids = r.angles.map((a) => a.id as string);
+  const v = verdict?.selection;
+  if (v && new Set([v.sur, v.emotion, v.audacieux]).size === 3 && [v.sur, v.emotion, v.audacieux].every((id) => ids.includes(id)) && [v.sur, v.emotion, v.audacieux].includes(v.recommande)) {
+    return { sur: v.sur, emotion: v.emotion, audacieux: v.audacieux, recommande: v.recommande, pourquoi: v.pourquoi, par: "juge" };
+  }
+  const pool = [...ids.filter((id) => !doubtIds.includes(id)), ...ids.filter((id) => doubtIds.includes(id))];
+  if (pool.length < 3) return undefined;
+  const rec = r.recommendedId && pool.slice(0, 3).includes(r.recommendedId) ? r.recommendedId : pool[0];
+  return { sur: pool[0], emotion: pool[1], audacieux: pool[2], recommande: rec, pourquoi: "Choisis par le Studio : les trois premiers angles sans doute.", par: "studio" };
 }

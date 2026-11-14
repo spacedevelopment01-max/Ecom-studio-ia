@@ -31,6 +31,7 @@ import { attachmentsOf, attachmentImages, describeAttachment, journeyImages } fr
 import { projectSnapshot } from "./snapshot";
 import { SYNA_SYSTEM } from "./prompt";
 import { JOURNEY_STEPS, stepReady, currentStep, journeyContext, journeyOf } from "./journey";
+import { shownAngles } from "./angle-roles";
 import { localDecision } from "./local-step";
 import { LOGO_STYLE_LABEL, fontFace, groundPresentation, type Identity } from "./identities";
 import { BOARD_OBJECT_LABEL, SIGN_KIND_LABEL, type Board, type BoardImage } from "./brand-board";
@@ -655,8 +656,8 @@ export function threadView(user: User, cid: string) {
         siteCopy: c.project_id ? (() => { const sc = loadSiteCopy(c.project_id!); return sc ? { pages: Object.fromEntries(Object.entries(sc.pages).map(([k, v]) => [k, v])) } : null; })() : null,
         // Étape 9 : le plan des publications (avec le doute éventuel de SINA) et les publications qui ont leur image.
         posts: j.posts ? { round: j.posts.round, judged: j.posts.judged, groups: j.posts.groups, created: c.project_id && j.posts.created ? createdPosts(c.project_id, j.posts.created.postIds).map((x) => ({ id: x.id, network: x.network, title: x.title, images: x.media.map((id) => assetUrl({ id })) })) : null } : null,
-        // Étape 4 : les 5 angles marketing et l'angle choisi.
-        angles: j.angles ? { list: j.angles.list, recommendedId: j.angles.recommendedId, sourceCount: j.angles.sourceCount, chosen: j.angleChoice?.ids ?? (j.angleChoice ? [j.angleChoice.id] : null) } : null,
+        // Étape 4 : les 3 angles montrés (sûr, émotion, audacieux ; les autres restent en réserve) et l'angle choisi.
+        angles: j.angles ? { list: shownAngles(j.angles), roles: Object.fromEntries((j.angles.shown ?? []).map((x) => [x.id, x.role])), recommendedId: j.angles.recommendedId, sourceCount: j.angles.sourceCount, chosen: j.angleChoice?.ids ?? (j.angleChoice ? [j.angleChoice.id] : null) } : null,
         // Étape 3 : l'image de marque (déclinaisons, planche, charte PDF), servie par la bibliothèque du projet.
         brandKit: j.brandKit ? {
           validated: j.steps[3]?.status === "done", notes: j.brandKit.notes,

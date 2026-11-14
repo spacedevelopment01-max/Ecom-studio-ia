@@ -64,7 +64,7 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     expect(J.READY_STEPS).toContain(4);
     expect(J.currentStep(J.journeyOf(cid))).toBe(4);
     expect(modelFor(4)?.model).toMatch(/haiku/); // le travail est dans les tâches du Pilote
-    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/Étape 4 \(5 angles marketing\)[^]*PAYANT[^]*angles\.propose/);
+    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/Étape 4 \(3 angles marketing\)[^]*PAYANT[^]*angles\.propose/);
     // Essai réel : SINA avait lu les angles avec research.read (lecture tronquée, aucune carte).
     expect(J.journeyContext(J.journeyOf(cid))).toMatch(/n'utilise jamais research\.read ni strategy\.read à cette étape/);
     expect((await getTool("angles.propose")!.estimate!(ctx, {})).maxMicro).toBeGreaterThan(0);
@@ -110,7 +110,7 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     expect(A.anglesMaxMicro(pid)).toBe(0); // les lire est gratuit : jamais de devis ni d'accord de dépense
     // Nouvelle proposition demandée par le client (ses mots) : payante, annoncée ; la lecture reste gratuite.
     expect(A.anglesMaxMicro(pid, "Je voudrais une nouvelle proposition d'angles.")).toBeGreaterThan(0);
-    expect(await getTool("angles.propose")!.preview!(ctx, { redo: "Je voudrais une nouvelle proposition d'angles." })).toMatch(/^Nouvelle recherche web et 5 nouveaux angles, d'après ta demande/);
+    expect(await getTool("angles.propose")!.preview!(ctx, { redo: "Je voudrais une nouvelle proposition d'angles." })).toMatch(/^Nouvelle recherche web et 3 nouveaux angles, d'après ta demande/);
     const r3 = await call("angles.propose", ctx, {});
     expect(r3.ok).toBe(true);
     // Essai réel du 7 novembre : « usage », « reassurance »… (identifiants internes) montrés au client.
@@ -211,7 +211,7 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     await call("angles.propose", ctx, {});
     await execute();
     await call("angles.propose", ctx, {}); // fiche validée, recherche lancée
-    expect(await getTool("angles.propose")!.preview!(ctx, {})).toMatch(/^Recherche web sur ton marché et 5 angles marketing/);
+    expect(await getTool("angles.propose")!.preview!(ctx, {})).toMatch(/^Recherche web sur ton marché et 3 angles marketing/);
     const jobId = claimNext(["project.prepare"])!.id;
     // La recherche échoue après un appel payant (pages non lues) : 0,29 € réellement dépensés.
     run("INSERT INTO ai_calls(id,created_at,user_id,project_id,job_id,task,provider,requested_model,unit,cost,status) VALUES(?,?,?,?,?,?,?,?,?,?,?)", id(), now(), user.id, pid, jobId, "strategy", "anthropic", "test", "request", 290_365, "ok");

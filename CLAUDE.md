@@ -461,9 +461,15 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
     coloré, « uni ») ; la règle « un fond sombre par série » quand le client demande du joyeux et du coloré (le directeur
     de création l'a contestée pendant l'essai) ; le réglage des modèles.
 - **Angles marketing : trois au lieu de cinq** (décision du propriétaire du 14 novembre 2026 : « Ok pour 3 », après
-  « Non, je veux que tu me dise réellement combien tu en mettrais » ; puis « ne fais rien encore » : **rien n'est
-  construit**, l'étape 4 du Studio montre toujours cinq angles, `src/lib/preparation/`, `src/lib/syna-agent/tools/angles.ts` ;
-  ne construire que sur sa demande). Méthode proposée, acceptée sur le principe : écouter les acheteurs (phrases relues
+  « Non, je veux que tu me dise réellement combien tu en mettrais » ; puis « ne fais rien encore » ; puis, le même
+  jour, « donne à sina les nouveauté »). **Construit le 14 novembre 2026, dans SINA seulement** (le Pilote et l'onglet
+  Stratégie gardent cinq angles) : la stratège écrit toujours cinq angles, le juge séparé les juge et choisit les TROIS
+  plus éloignés (un sûr, un d'émotion, un audacieux) et celui qu'il recommande (`selection`, épreuve 7,
+  `preparation/angles-judge.ts`) ; juge absent ou choix mal formé : le Studio prend les trois premiers sans doute et le
+  dit (`par: "studio"`) ; SINA ne montre et ne laisse choisir que ces trois-là, avec leur rôle sur la carte du fil ; les
+  deux autres restent en réserve pour les publications et les publicités (`syna-agent/angle-roles.ts`, `shown`,
+  `reserve`). Testé avec une IA simulée. **Pas construit** : plusieurs stratèges séparées partant d'entrées éloignées,
+  l'écoute des acheteurs et la lecture des concurrents en plus de la recherche actuelle. Méthode proposée, acceptée sur le principe : écouter les acheteurs (phrases relues
   sur la page elle-même), lire les concurrents (ce que tous disent, ce que personne ne dit), poser au client les
   questions que lui seul connaît, plusieurs stratèges séparées qui partent chacune d'une entrée, chaque angle écrit
   comme une scène (qui, quand, avant, après), un juge à part qui voit tout (un concurrent pourrait-il le signer ; une

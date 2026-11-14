@@ -18,6 +18,7 @@ import type { SinaPosts } from "./posts-plan";
 import type { SinaLogo } from "./logos";
 import type { BrandKit } from "./brand-kit";
 import type { SinaAngles } from "./angles";
+import { ANGLE_ROLE_LABEL, roleOf, shownAngles } from "./angle-roles";
 import type { ActivityPlan } from "./activity";
 import type { SinaThemes } from "./themes";
 
@@ -27,7 +28,7 @@ export const JOURNEY_STEPS = [
   { n: 1, fr: "Identités de marque", en: "Brand identities" },
   { n: 2, fr: "Logo", en: "Logo" },
   { n: 3, fr: "Image de marque complète", en: "Full brand kit" },
-  { n: 4, fr: "5 angles marketing", en: "5 marketing angles" },
+  { n: 4, fr: "3 angles marketing", en: "3 marketing angles" },
   { n: 5, fr: "L'activité complète", en: "The full business" },
   { n: 6, fr: "Thème du Studio ou thème sur mesure", en: "Studio theme or custom theme" },
   { n: 7, fr: "Site codé d'après le thème sur mesure", en: "Site coded from the custom theme" },
@@ -105,7 +106,7 @@ export type Journey = {
   logoChoice?: { source: "A" | "B" | "C"; assetId: string; at: number };
   /** Étape 3 : image de marque complète (déclinaisons, favicons, avatar, planche, charte PDF). */
   brandKit?: BrandKit;
-  /** Étape 4 : les 5 angles marketing (recherche web) et l'angle choisi par le client. */
+  /** Étape 4 : les angles marketing (recherche web ; trois montrés) et l'angle choisi par le client. */
   angles?: SinaAngles;
   /** Angle principal (id) et, dans l'ordre, tous les angles retenus (ids ; le premier est le principal). */
   angleChoice?: { id: string; ids?: string[]; at: number };
@@ -361,12 +362,12 @@ export function themeStepContext(j: Journey): string[] {
   return [base, `Thèmes affichés : ${t.list.map((x) => `${x.id} « ${x.name} »${x.recommended ? " (recommandé)" : ""}${x.allowed ? "" : " (non inclus dans son forfait)"}`).join(" ; ")}.`];
 }
 
-/** Étape 4 : les 5 angles marketing. */
+/** Étape 4 : les 3 angles marketing (cinq écrits et jugés, les trois plus éloignés montrés). */
 export function anglesStepContext(j: Journey): string[] {
   const a = j.angles;
-  if (!a?.list.length) return ["Étape 4 (5 angles marketing) : explique en une ou deux phrases ce qu'est un angle (la façon de parler de la marque : à qui, quelle émotion, quelle promesse) et que TU vas chercher sur le web (dis « je vais chercher », jamais « SINA va ») ce que vivent ses clients et ses concurrents (places de marché exclues) pour proposer 5 angles avec leurs sources. C'est PAYANT : appelle angles.propose ; le Studio montre le devis au client sur une carte d'accord et ne lance qu'après son accord. Rappelle angles.propose après chaque tâche terminée (analyse de la fiche, puis recherche) : c'est LUI qui range les 5 angles et les AFFICHE en cartes au client (sources comprises) ; n'utilise jamais research.read ni strategy.read à cette étape (lecture tronquée, aucune carte). S'il renvoie des questions, pose-les au client UNE par UNE, enregistre ses réponses avec pilot.answer, puis rappelle angles.propose."];
+  if (!a?.list.length) return ["Étape 4 (3 angles marketing) : explique en une ou deux phrases ce qu'est un angle (la façon de parler de la marque : à qui, quelle émotion, quelle promesse) et que TU vas chercher sur le web (dis « je vais chercher », jamais « SINA va ») ce que vivent ses clients et ses concurrents (places de marché exclues) pour proposer 3 angles très différents (un sûr, un d'émotion, un audacieux) avec leurs sources. C'est PAYANT : appelle angles.propose ; le Studio montre le devis au client sur une carte d'accord et ne lance qu'après son accord. Rappelle angles.propose après chaque tâche terminée (analyse de la fiche, puis recherche) : c'est LUI qui range les 3 angles et les AFFICHE en cartes au client (sources comprises) ; n'utilise jamais research.read ni strategy.read à cette étape (lecture tronquée, aucune carte). S'il renvoie des questions, pose-les au client UNE par UNE, enregistre ses réponses avec pilot.answer, puis rappelle angles.propose."];
   return [
-    `Étape 4 — 5 angles prêts (affichés au client dans le fil, ${a.sourceCount} sources lues) : ${a.list.map((x) => `${x.id} « ${x.title} » (émotion : ${x.emotion || "?"} ; à confirmer : ${x.proofsToConfirm.join(", ") || "rien"})`).join(" ; ")}. Recommandé : ${a.recommendedId ?? "aucun"}.`,
+    `Étape 4 — ${shownAngles(a).length} angles prêts (affichés au client dans le fil, ${a.sourceCount} sources lues) : ${shownAngles(a).map((x) => `${x.id} « ${x.title} »${roleOf(a, x.id) ? ` (${ANGLE_ROLE_LABEL[roleOf(a, x.id)!].fr.toLowerCase()})` : ""} (émotion : ${x.emotion || "?"} ; à confirmer : ${x.proofsToConfirm.join(", ") || "rien"})`).join(" ; ")}. Recommandé : ${a.recommendedId ?? "aucun"}.${a.reserve?.length ? ` ${a.reserve.length} autre(s) en réserve pour les publications et les publicités (jamais proposés comme choix).` : ""}`,
     "Présente-les en 3 phrases courtes au plus (sans recopier les cartes), dis lequel est recommandé et pourquoi en une phrase, rappelle que les « informations à confirmer » (mots exacts des cartes) ne seront jamais écrites sans son accord, puis demande lequel ou lesquels il choisit : il peut en prendre PLUSIEURS (le premier = l'angle principal du site, les autres pour les publications et publicités ; son forfait en permet un nombre limité) → angles.choose {angleIds}. Ne choisis jamais à sa place. S'il veut une NOUVELLE proposition d'angles, appelle angles.propose {redo: sa demande avec ses mots} (payant : devis annoncé).",
   ];
 }
