@@ -176,6 +176,10 @@ export const BoardSchema = z.object({
   images: z.object({
     logo: BoardImageSchema.optional(), hero: BoardImageSchema.optional(), object: BoardImageSchema.optional(), site: BoardImageSchema.optional(),
     posts: z.array(BoardImageSchema.nullable()).length(3).optional(), look: z.string().max(700).optional(),
+    /** Le logo gardé, fond retiré par le Studio (en tête de planche, haut du site), et sa version pour fond sombre. */
+    mark: BoardImageSchema.optional(), markDark: BoardImageSchema.optional(),
+    /** L'idée du logo écrite par la directrice artistique : les autres planches de la série doivent en différer. */
+    logoIdea: z.string().max(900).optional(),
   }).optional(),
 });
 export type Board = z.infer<typeof BoardSchema>;

@@ -106,7 +106,7 @@ export const IdentitySchema = z.object({
   /** Pistes réellement explorées pour cette identité (mots ou expressions existants), avant le choix. */
   nameCandidates: z.array(z.string().max(60)).max(30).default([]),
   slogan: z.string().max(90),
-  sloganTone: z.string().max(80).default(""),
+  sloganTone: z.string().max(160).default(""),
   promise: z.string().max(260),
   territory: z.string().max(160),
   /**

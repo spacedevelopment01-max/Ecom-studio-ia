@@ -30,7 +30,7 @@ import { planOfProject } from "../plan-gates";
 import { json as parseJson } from "../db";
 import { MAX_ART_CHARS, sanitizeArt } from "./brand-art";
 import { reviewBoardArt } from "./brand-art-review";
-import { CREATED_SLOTS, SLOT_ASPECT, SLOT_REFERENCES, boardImageRoute, brandImagesOn, runBoardImages, type ImageAspect } from "./brand-images";
+import { CREATED_SLOTS, SLOT_ASPECT, SLOT_REFERENCES, boardImageRoute, brandImagesOn, runBoardImages, type ImageAspect, type ImageSlot } from "./brand-images";
 import { BoardSchema, PALETTE_ROLES, WordmarkSchema, type Board, type BoardSymbol } from "./brand-board";
 import { brandKnowledgeReady } from "./brand-knowledge";
 import * as P from "./brand-prompts";
@@ -145,10 +145,14 @@ const imageUnitMax = (aspect: ImageAspect, references: number) => photoRequestMa
  * Devis des images de planche SEULES (direction artistique, six images, relecture, par planche). Le coût probable
  * d'une image est sa borne sans la marge de réservation (un quart) ; une image refusée à la relecture est payée.
  */
-export function boardImagesQuote(routes: number, settings?: ChainSettings): ChainQuote {
+/** Idées de logo des autres planches de la série (déjà décidées) : le logo de la suivante doit en différer. */
+export const otherLogos = (list: { key: string; board?: { images?: { logoIdea?: string } } }[], key: string): string[] =>
+  list.filter((o) => o.key !== key).map((o) => o.board?.images?.logoIdea ?? "").filter(Boolean);
+
+export function boardImagesQuote(routes: number, settings?: ChainSettings, slots?: readonly ImageSlot[]): ChainQuote {
   const s = settings ?? chainSettings();
   let max = 0, probable: number | null = 0;
-  for (const slot of CREATED_SLOTS) { const unit = imageUnitMax(SLOT_ASPECT[slot], SLOT_REFERENCES[slot]); max += unit * routes; probable += (unit / 1.25) * routes; }
+  for (const slot of slots?.length ? CREATED_SLOTS.filter((x) => slots.includes(x)) : CREATED_SLOTS) { const unit = imageUnitMax(SLOT_ASPECT[slot], SLOT_REFERENCES[slot]); max += unit * routes; probable += (unit / 1.25) * routes; }
   for (const id of ["imagery", "look"] as const) {
     const c = CALLS[id], m = s[c.tier];
     const bound = callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort), usual = estimateCallMicro(m.provider, m.model, c.input, c.output);
@@ -206,14 +210,16 @@ const DraftBoard = BoardSchema.omit({ nameCheck: true, domains: true, signs: tru
   idea: BoardSchema.shape.idea.omit({ confessionSupport: true }),
   signs: z.array(BoardSchema.shape.signs.element.omit({ symbol: true, art: true }).extend({ symbolSvg: z.string().max(6000).default("") })).min(3).max(5),
   // Les dessins (lettre remplacée comprise) viennent de l'illustratrice, dans un appel à part : jamais de ce brouillon.
-  wordmark: WordmarkSchema.omit({ symbol: true, swap: true }).extend({ symbolSvg: z.string().max(6000).default("") }),
+  // « cut » (la vague qui coupe le nom) est le geste de « Pulpe » : jamais redonné à une nouvelle marque (retour du
+  // propriétaire du 14 novembre 2026 : « Pelage et Coussinet, le logo c'est la même conception que Pulpe »).
+  wordmark: WordmarkSchema.omit({ symbol: true, swap: true, cut: true }).extend({ symbolSvg: z.string().max(6000).default("") }),
   object: BoardSchema.shape.object.omit({ art: true }),
   site: BoardSchema.shape.site.omit({ art: true }),
   posts: z.array(BoardSchema.shape.posts.element.omit({ art: true })).length(3),
 });
 const DraftSchema = IdentitySchema.pick({ name: true, slogan: true, promise: true, territory: true, ground: true, gradient: true, palette: true, fonts: true, tone: true }).extend({
   nameWhy: z.string().max(400).default(""), nameAnchor: z.string().max(120).default(""), nameExpression: z.string().max(200).default(""),
-  sloganTone: z.string().max(80).default(""), paletteFamily: z.string().max(120).default(""), fontStyle: z.string().max(120).default(""), why: z.string().max(500).default(""),
+  sloganTone: z.string().max(160).default(""), paletteFamily: z.string().max(120).default(""), fontStyle: z.string().max(120).default(""), why: z.string().max(500).default(""),
   board: DraftBoard,
 });
 type Draft = z.infer<typeof DraftSchema>;
@@ -514,6 +520,8 @@ const Payload = z.object({
   images: z.boolean().optional(),
   /** Seulement les images, sur les planches déjà écrites (celles de `redo`, ou toutes) : rien d'autre n'est refait. */
   imagesOnly: z.boolean().optional(),
+  /** Avec `imagesOnly` : seulement ces images (ex. le logo et l'objet qui le porte) ; les autres images gardées restent. */
+  slots: z.array(z.enum(CREATED_SLOTS)).min(1).optional(),
 });
 export type BrandJobPayload = z.infer<typeof Payload>;
 
@@ -552,7 +560,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     let list = (j.identities?.list ?? []) as Route[];
     const said: string[] = [];
     for (const x of targets) {
-      const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round });
+      const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, otherLogos: otherLogos(list, x.key) });
       list = list.map((o) => (o.key === x.key ? r.route : o));
       said.push(...r.issues); notes.push(...r.notes);
     }
@@ -832,7 +840,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
   if (a.images ?? brandImagesOn()) {
     for (const x of list.filter((y) => todo.includes(y.key))) {
       try {
-        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round });
+        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round, otherLogos: otherLogos(list, x.key) });
         list = list.map((o) => (o.key === x.key ? r.route : o));
         remaining.push(...r.issues); notes.push(...r.notes);
       } catch (e) {

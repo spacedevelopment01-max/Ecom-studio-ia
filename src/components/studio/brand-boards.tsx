@@ -34,7 +34,7 @@ type Drawn = {
 type Look = { backgrounds: string[]; text: string; surface: string; surfaceText: string; button: string; buttonText: string };
 /** Image créée pour la planche : son adresse est fabriquée par le Studio à partir d'un identifiant (jamais une adresse libre). */
 type Shot = { url: string; w: number; h: number };
-type Shots = { logo?: Shot; hero?: Shot; object?: Shot; site?: Shot; posts?: (Shot | null)[] };
+type Shots = { logo?: Shot; hero?: Shot; object?: Shot; site?: Shot; posts?: (Shot | null)[]; mark?: Shot; markDark?: Shot };
 type Board = {
   idea: { belief: string; confession: string; confessionSupport: number; enemy: string; proof: string; cost: string };
   nameCheck: "rien_trouve" | "non_verifie";
@@ -187,6 +187,8 @@ const BOARD_CSS = `
 .bb-head{display:grid;gap:1.1rem;align-items:center;margin-top:.9rem}
 @container (min-width:42rem){.bb-head{grid-template-columns:1.1fr .9fr}}
 .bb-name{display:block;width:100%;max-width:30rem;max-height:13rem}
+.bb-photo.bb-mark{display:block;width:auto;max-width:min(100%,24rem);max-height:9.5rem;height:auto;object-fit:contain;object-position:left center}
+.bb-photo.bb-ps-mark{display:block;height:1.5rem;width:auto;max-width:55%;object-fit:contain}
 .bb-genre{margin-top:.8rem;font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;opacity:.82}
 .bb-sign{margin-top:.7rem;font-family:var(--bb-head);font-size:clamp(1.35rem,1.05rem + 2.2cqi,2.1rem);line-height:1.1;text-wrap:balance;color:var(--bb-pop)}
 .bb-promise{margin-top:.5rem;font-size:.88rem;line-height:1.45;opacity:.92;max-width:34rem}
@@ -341,7 +343,7 @@ function PhoneSite({ x, shots, headWeight, firstPicto, t }: { x: BoardCard; shot
       {b.descriptor && <div className="bb-ps-bar">{b.descriptor}</div>}
       <div className="bb-ps-head">
         <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><path d="M4 7h16M4 12h16M4 17h10" /></svg>
-        <Wordmark x={x} main={ink} accent={pop} compact className="block h-6 max-w-[55%] text-xs" />
+        {shotOk(lum(bg) < 0.4 ? shots.markDark : shots.mark) ? <Photo shot={(lum(bg) < 0.4 ? shots.markDark : shots.mark)!} alt={x.name} className="bb-ps-mark" /> : <Wordmark x={x} main={ink} accent={pop} compact className="block h-6 max-w-[55%] text-xs" />}
         <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 8h12l-1 12H7L6 8Z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" /></svg>
       </div>
       <div className="bb-ps-hero" data-kind={shotOk(shots.hero) ? "photo" : "dessin"}>{shotOk(shots.hero) ? <Photo shot={shots.hero} alt={b.site.headline} /> : b.site.art ? <Vignette art={b.site.art} ratio={20 / 13} /> : b.hero ? <Vignette art={b.hero} ratio={20 / 13} /> : <FallbackScene x={x} picto={firstPicto} />}</div>
@@ -443,7 +445,8 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
         <p className="bb-route">{label ?? `${t("Identité", "Identity")} ${x.key}`} · {x.territory}</p>
         <div className="bb-head">
           <div>
-            <Wordmark x={x} main={ink} accent={pop} start className="bb-name text-5xl" style={{ lineHeight: 1 }} />
+            {/* Le logo créé par OpenAI et gardé est LA marque de la planche ; le nom dessiné par le Studio n'est qu'un secours. */}
+            {shotOk(light ? shots.markDark : shots.mark) ? <Photo shot={(light ? shots.markDark : shots.mark)!} alt={x.name} className="bb-mark" /> : <Wordmark x={x} main={ink} accent={pop} start className="bb-name text-5xl" style={{ lineHeight: 1 }} />}
             {b.descriptor && <p className="bb-genre" data-descriptor>{b.descriptor}</p>}
             <p className="bb-sign" style={{ fontWeight: headWeight }} data-signature>{x.slogan}</p>
             <p className="bb-promise">{x.promise}</p>

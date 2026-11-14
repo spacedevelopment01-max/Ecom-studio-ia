@@ -100,6 +100,8 @@ describe("SINA — chaîne de création de la marque", async () => {
   };
   const sharpLib = (await import("sharp")).default;
   const square = (color: string, w = 96, h = 96) => sharpLib({ create: { width: w, height: h, channels: 3, background: color } }).png().toBuffer();
+  /** Un logo d'essai sur fond blanc net (le contrôle gratuit du fond refuse tout logo sur fond noir ou coloré). */
+  const whiteLogo = async (color = "#1F5A47", w = 96, h = 96) => sharpLib({ create: { width: w, height: h, channels: 3, background: "#FFFFFF" } }).composite([{ input: await square(color, Math.round(w / 2), Math.round(h / 3)), gravity: "center" }]).png().toBuffer();
   const DRAWN = {
     hero: '<svg viewBox="0 0 320 250"><rect width="320" height="250" fill="#0A0F3D"/><circle cx="240" cy="60" r="30" fill="#FFE98A"/></svg>',
     // Du texte dans un dessin : refusé en entier par le contrôle du Studio.
@@ -135,7 +137,7 @@ describe("SINA — chaîne de création de la marque", async () => {
       })();
       return c.schema.parse(c.prepare ? c.prepare(raw) : raw);
     },
-    draw: async (id: string, c: any) => { log.ids.push(id); log.prompts[id] = c.prompt; (log as any).refs = { ...((log as any).refs ?? {}), [id]: { logo: !!c.logo, scene: !!c.scene, aspect: c.aspect } }; return s.draw ? s.draw(id, c) : square("#3366CC"); },
+    draw: async (id: string, c: any) => { log.ids.push(id); log.prompts[id] = c.prompt; (log as any).refs = { ...((log as any).refs ?? {}), [id]: { logo: !!c.logo, scene: !!c.scene, aspect: c.aspect } }; return s.draw ? s.draw(id, c) : id.endsWith("-logo") ? whiteLogo() : square("#3366CC"); },
     look: async (id: string, c: any) => {
       log.ids.push(id); log.prompts[id] = c.prompt; log.systems[id] = c.system;
       const name = /Marque : « (.+?) »/.exec(c.prompt)?.[1] ?? "";
@@ -624,7 +626,9 @@ describe("SINA — chaîne de création de la marque", async () => {
     // Après les dessins : pour chaque planche, les consignes, les six images dans l'ordre, puis UNE relecture.
     expect(log.ids.slice(log.ids.indexOf("artcheck-1-C") + 1)).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}`, ...SLOTS.map((sl) => `image-1-${k}-${sl}`), `imagecheck-1-${k}`]));
     const refs = (log as any).refs;
-    expect(refs["image-1-A-logo"]).toEqual({ logo: true, scene: false, aspect: "1:1" }); // le nom composé par le Studio sert de modèle
+    // Le logo est conçu par OpenAI à partir de la marque, sans modèle (retour du propriétaire du 14 novembre 2026 :
+    // le nom composé envoyé en modèle portait la vague de « Pulpe », et chaque logo la recopiait).
+    expect(refs["image-1-A-logo"]).toEqual({ logo: false, scene: false, aspect: "1:1" });
     expect(refs["image-1-A-hero"]).toEqual({ logo: false, scene: false, aspect: "16:9" });
     expect(refs["image-1-A-object"]).toEqual({ logo: true, scene: false, aspect: "1:1" }); // le logo est posé sur l'objet
     expect(refs["image-1-A-site"]).toBeUndefined(); // plus d'image du site : une vraie page rendue par le Studio
@@ -641,7 +645,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(log.prompts["imagecheck-1-A"]).toContain(a.board!.posts[0].text);
     // A : tout est gardé. B : l'image du site est refusée. C : le logo ne porte pas le nom exact (contrôle du Studio).
     const [ra, rb, rc] = J.journeyOf(t.cid).identities!.list;
-    expect(Object.keys(ra.board!.images!).sort()).toEqual(["hero", "logo", "look", "object", "posts"]);
+    expect(Object.keys(ra.board!.images!).sort()).toEqual(["hero", "logo", "logoIdea", "look", "mark", "markDark", "object", "posts"]);
     expect(ra.board!.images!.posts!.every(Boolean)).toBe(true);
     expect(ra.board!.images!.logo).toMatchObject({ w: 96, h: 96 });
     expect(rb.board!.images!.object).toBeUndefined();
@@ -654,7 +658,8 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect((out as any).routes).toHaveLength(3);
     // Bibliothèque du client : les images gardées sont prêtes, l'image refusée y est marquée refusée avec sa raison.
     const states = all<{ s: string; n: number }>("SELECT status s, COUNT(*) n FROM assets WHERE project_id=? AND role='brand-board' GROUP BY status", t.pid);
-    expect(Object.fromEntries(states.map((r) => [r.s, r.n]))).toEqual({ ready: 16, rejected: 2 });
+    // 16 images gardées, plus le logo détouré de A et de B et sa version pour fond sombre (C : logo refusé, aucune).
+    expect(Object.fromEntries(states.map((r) => [r.s, r.n]))).toEqual({ ready: 20, rejected: 2 });
     expect(one<{ w: string }>("SELECT json_extract(meta,'$.synaBoard.review.why') w FROM assets WHERE project_id=? AND status='rejected' AND name LIKE '%-B-object%'", t.pid)?.w).toBe("Le titre est mal écrit.");
     // Dans le fil : une adresse interne du Studio, jamais une adresse libre.
     const { threadView } = await import("@/lib/syna-agent/loop");
@@ -748,7 +753,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     const before = J.journeyOf(t.cid).identities!.list;
     expect(before.every((x) => !x.board!.images)).toBe(true); // réglage par défaut : les dessins de SINA, aucune image
     let tries = 0;
-    const { log } = await chain(t, { imagesOnly: true, redo: ["B"] }, { draw: async (id) => { if (id.endsWith("-post1")) { tries++; throw new Error("503 du fournisseur"); } return square("#CC3366", 120, 180); } });
+    const { log } = await chain(t, { imagesOnly: true, redo: ["B"] }, { draw: async (id) => { if (id.endsWith("-post1")) { tries++; throw new Error("503 du fournisseur"); } return id.endsWith("-logo") ? whiteLogo("#CC3366", 120, 180) : square("#CC3366", 120, 180); } });
     expect(log.ids).toEqual(["imagery-1-B", ...SLOTS.map((sl) => `image-1-B-${sl}`), "imagecheck-1-B"]);
     expect(tries).toBe(1);
     const after = J.journeyOf(t.cid).identities!.list;
@@ -774,6 +779,87 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(mixIdentity(list, "B", { palette: "C" }).board!.images).toBeUndefined();
     expect(mixIdentity(list, "B", {}, { name: "Autre Nom" }).board!.images).toBeUndefined();
     expect(mixIdentity(list, "B", { tone: "C" }).board!.images).toBeTruthy();
+  });
+
+  it("logos (retour du propriétaire du 14 novembre 2026 : « Pelage et Coussinet, le logo c'est la même conception que Pulpe ») : conçus par OpenAI à partir de la marque, sans modèle ni vague, fond blanc contrôlé, chacun différent dans la série", async () => {
+    const I = await import("@/lib/syna-agent/brand-images");
+    const P = await import("@/lib/syna-agent/brand-prompts");
+    const { getAsset, assetData } = await import("@/lib/library");
+    // Contrôle gratuit, sans IA : fond blanc net jusqu'aux bords (le logo de « Coussinet » était noir et lumineux).
+    expect(await I.logoOnWhite(await whiteLogo())).toBe(true);
+    expect(await I.logoOnWhite(await square("#050505"))).toBe(false);
+    expect(await I.logoOnWhite(await square("#E3EFEA"))).toBe(false);
+    expect(I.spell("Coussinet")).toBe("C, o, u, s, s, i, n, e, t");
+    expect(I.spell("Bain de Minuit")).toBe("B, a, i, n, (espace), d, e, (espace), M, i, n, u, i, t");
+    // La vague qui coupe le nom (le geste de « Pulpe ») n'est plus proposée ; la directrice artistique laisse le
+    // dessinateur concevoir le logo à partir de la marque ; le relecteur refuse un logo illisible ou d'une autre marque.
+    expect(P.directionSystem("services")).not.toMatch(/cut \(une ligne ondulée/);
+    expect(P.directionSystem("services")).toMatch(/Jamais un nom coupé ou barré par une ligne ondulée/);
+    expect(P.imagerySystem("services")).toMatch(/le CONÇOIT lui-même à partir de la marque, sans aucun modèle/);
+    expect(P.imagerySystem("services")).not.toMatch(/redessine en vrai logo/);
+    expect(P.imageReviewSystem()).toMatch(/le logo, l'emblème ou le nom d'une AUTRE marque apparaît \(constructeur/);
+    expect(P.imageReviewSystem()).toMatch(/pour le LOGO : il n'est pas net et lisible/);
+
+    const t = await thread();
+    const { log } = await chain(t, { images: true }, {
+      review: () => ({ routes: [], series: "" }),
+      // Les routes d'essai portent encore une vague (« Bain de Minuit ») : elle n'est jamais gardée sur une nouvelle marque.
+      draw: async (id) => (id === "image-1-B-logo" ? square("#050505") : id.endsWith("-logo") ? whiteLogo() : square("#3366CC")),
+    });
+    const [ra, rb, rc] = J.journeyOf(t.cid).identities!.list;
+    for (const x of [ra, rb, rc]) expect(x.board!.wordmark.cut).toBeUndefined();
+    // La consigne du logo : le nom épelé, une conception propre à la marque, aucun modèle envoyé.
+    expect(log.prompts["image-1-A-logo"]).toContain(`lettre par lettre : ${I.spell(ra.name)}`);
+    expect(log.prompts["image-1-A-logo"]).toContain(I.LOGO_OWN);
+    expect(log.prompts["image-1-A-logo"]).not.toMatch(/image de référence/);
+    expect((log as any).refs["image-1-A-logo"].logo).toBe(false);
+    // Les idées de logo des planches déjà faites sont données à la suivante : son logo doit en différer.
+    expect(log.prompts["imagery-1-A"]).not.toMatch(/Logos déjà prévus/);
+    expect(log.prompts["imagery-1-B"]).toMatch(/# Logos déjà prévus pour les AUTRES propositions de cette série\n1\. Un logo net/);
+    expect(log.prompts["imagery-1-C"]).toMatch(/\n2\. Un logo net[\s\S]*conception NETTEMENT différente/);
+    // B : logo sur fond noir, refusé sans IA avant la relecture ; l'objet ne le porte pas ; c'est dit au client.
+    expect(log.prompts["imagecheck-1-B"]).not.toContain(`slot "logo"`);
+    expect((log as any).refs["image-1-B-object"].logo).toBe(false);
+    expect(rb.board!.images!.logo).toBeUndefined();
+    expect(rb.board!.images!.mark).toBeUndefined();
+    expect(J.journeyOf(t.cid).identities!.issues.join("\n")).toMatch(/Identité B : je n'ai pas gardé le logo \(il n'est pas sur un fond blanc net : il ne se lirait pas sur tes supports\) ; tu vois mon nom dessiné à la place\./);
+    expect(one<{ w: string }>("SELECT json_extract(meta,'$.synaBoard.review.why') w FROM assets WHERE project_id=? AND status='rejected' AND name LIKE '%-B-logo%'", t.pid)?.w).toMatch(/fond blanc net/);
+    // A : le logo gardé devient la marque de la planche, fond retiré (transparent aux bords), et sa version sombre.
+    const mark = getAsset(ra.board!.images!.mark!.id)!, dark = getAsset(ra.board!.images!.markDark!.id)!;
+    const { data, info } = await sharpLib(assetData(mark)).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    expect(info.channels).toBe(4);
+    expect(data[3]).toBe(0); // le coin haut gauche est transparent
+    expect(dark.id).not.toBe(mark.id);
+    // À l'écran : les deux versions arrivent dans le fil, en adresses internes du Studio.
+    const { threadView } = await import("@/lib/syna-agent/loop");
+    const shown = (await fr(() => threadView(t.user, t.cid))).journey.identities!.list as any[];
+    expect(shown[0].board.images.mark.url).toMatch(/^\/api\/files\/[\w-]+$/);
+    expect(shown[0].board.images.markDark.url).toMatch(/^\/api\/files\/[\w-]+$/);
+    expect(shown[1].board.images.mark).toBeUndefined();
+  });
+
+  it("la phrase du ton de la signature reste entière (essai réel du 14 novembre 2026 : coupée à 80 signes au milieu d'une phrase)", async () => {
+    const { IdentitySchema } = await import("@/lib/syna-agent/identities");
+    const tone = "Franc et protecteur : la marque prend le parti des animaux que les salons classiques ne savent pas accueillir.";
+    expect(tone.length).toBeGreaterThan(80);
+    expect(IdentitySchema.shape.sloganTone.parse(tone)).toBe(tone);
+  });
+
+  it("refaire seulement le logo et l'objet qui le porte : les autres images gardées restent, le devis ne compte que ces deux images", async () => {
+    const t = await thread();
+    await chain(t, { images: true }, { review: () => ({ routes: [], series: "" }) });
+    const before = J.journeyOf(t.cid).identities!.list[0].board!.images!;
+    const { log } = await chain(t, { imagesOnly: true, redo: ["A"], slots: ["logo", "object"] }, { draw: async (id) => (id.includes("-logo") ? whiteLogo("#6FB3C9", 128, 128) : square("#224466", 128, 128)) });
+    expect(log.ids).toEqual(["imagery-1-A:logo+object", "image-1-A-logo:logo+object", "image-1-A-object:logo+object", "imagecheck-1-A:logo+object"]);
+    const after = J.journeyOf(t.cid).identities!.list[0].board!.images!;
+    expect(after.logo!.id).not.toBe(before.logo!.id);
+    expect(after.object!.id).not.toBe(before.object!.id);
+    expect(after.mark!.id).not.toBe(before.mark!.id);
+    expect(after.hero).toEqual(before.hero);
+    expect(after.posts).toEqual(before.posts);
+    const two = C.boardImagesQuote(1, undefined, ["logo", "object"]), all6 = C.boardImagesQuote(1);
+    expect(two.maxMicro).toBeLessThan(all6.maxMicro);
+    expect(two.maxMicro).toBeGreaterThan(0);
   });
 
   it("devis : les images s'ajoutent au prix annoncé seulement quand elles sont prévues", () => {
