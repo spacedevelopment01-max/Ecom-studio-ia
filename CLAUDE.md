@@ -556,8 +556,18 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   moins que le prix du Studio pour ce modèle, 0,12 $ : un seul essai, à confirmer avant de changer un devis). La
   quatrième image ne collait pas à son accroche (verres encore à moitié pleins) : phrase changée au lieu de repayer.
   Accroches et logo posés par le Studio en Anton. Couleur des boissons = hypothèse d'essai ; pour un vrai client, photo
-  du sachet et d'un verre préparé demandées avant. Rien n'est construit dans le Studio par cet essai ; pas encore noté
-  par lui. **Dépensé en essais réels au 14 novembre : 8,32 €** (8,13 + 0,19), plafond 10 $ (9 €).
+  du sachet et d'un verre préparé demandées avant. Rien n'est construit dans le Studio par cet essai.
+  **Son retour, à ne jamais lui faire répéter** : « tu m'as juste fait 3 images de la même couleur qui représente la
+  même chose les clients veulent voir 3 publications différentes possible » (le carrousel : trois fois des verres et des
+  fruits dans le même dégradé pêche). Les publications d'exemple montrées à un client sont TROIS publications possibles
+  très différentes : chacune sa couleur dominante, son sujet, son cadrage et son rôle (donner envie, rendre service,
+  faire sourire) ; jamais trois variantes d'une même scène. Règle mise dans la directrice artistique des planches
+  (`imagerySystem`) et la stratège des publications (`posts-plan.ts`), testée. Refait le même jour dans le même plafond :
+  le frigo framboise gardé, plus deux images (0,10 $) : des glaçons d'infusion rouges vus de dessus sur jaune mangue
+  (« Des glaçons qui ne noient pas ton verre. ») et un écrin de bague bleu nuit qui présente une languette de canette
+  (« J'ai rendu sa bague à la canette. »), jugées avant d'être payées ; pas encore notées par lui.
+  **Dépensé en essais réels au 14 novembre : 8,41 €** (8,13 + 0,28 pour les six images de publications de Pulpe),
+  plafond 10 $ (9 €).
 - **Réponses courtes et claires**, sans jargon ; ne pas reposer une question à laquelle il a déjà répondu.
 - **Ne pas décider à sa place** : un retrait de contenu ou un changement visible important se propose, il ne s'applique
   qu'après son accord. Retirer un visuel raté sans rien mettre à la place n'est pas une correction.
