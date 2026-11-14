@@ -121,8 +121,12 @@ d'articles sont écrits par des concurrents.
 
 ## 9. Ce que je propose d'ajouter
 
-A. La fiche Google de l'entreprise. B. Les avis clients (seulement des vrais). C. Les e-mails (bienvenue, panier
-abandonné, relance, lettre mensuelle). D. Les pages obligatoires en France (modèles à faire relire). E. Être trouvé par
+A. La fiche Google de l'entreprise. B. Les avis clients (seulement des vrais). C. Les e-mails : correction du propriétaire du
+14 novembre 2026 (« les clients qui vendent des produits ne les vendent pas avec nous mais sur une autre plateforme donc
+les mails seront à configurer sur leur plateforme, au pire on peux leur créer et ils ont juste à copier coller ») ; donc
+pour une boutique, SINA écrit les e-mails dans la voix de la marque (bienvenue, panier abandonné, relance) et le client
+les copie dans sa plateforme avec un guide pas à pas, le Studio n'envoie rien ; pour un site de services hébergé par le
+Studio, proposition de Claude à confirmer : confirmation et rappel de rendez-vous. D. Les pages obligatoires en France (modèles à faire relire). E. Être trouvé par
 Google et par les assistants IA. F. Des chiffres simples, et les conseils de SINA qui en découlent. G. Les réponses aux
 commentaires et aux messages. H. Les supports imprimés. I. Le lancement accompagné.
 
