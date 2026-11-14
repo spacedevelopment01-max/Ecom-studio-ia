@@ -87,7 +87,11 @@ publicités, puis s'en occupe avec lui aussi longtemps qu'il le veut.
 - Les images : magnifiques, dignes d'une campagne, avec le vrai produit ou le vrai matériel du métier.
 - Les textes : ils font ressentir une émotion, ils ne décrivent pas.
 - Les sites : au niveau des meilleurs créateurs de thèmes, jamais deux fois le même.
-- Les publications : au niveau des meilleurs comptes, trois publications vraiment différentes, jamais des variantes.
+- Les publications en images : « un résultat comme si les plus gros community manager utilisait canva avec un rendu
+  ultra pro » (ses mots du 14 novembre 2026). Donc une vraie composition : la photo, les titres dans les polices de la
+  marque, les formes, le logo ; trois publications vraiment différentes, jamais des variantes.
+- Les vidéos : « la même chose mais avec capcut » (mêmes mots). Donc un vrai montage : du rythme, des coupes, des
+  sous-titres animés, du texte à l'écran, de la musique.
 - Du premier coup : SINA regarde et corrige avant de montrer.
 
 ## 7. Ce que font les concurrents
@@ -155,6 +159,8 @@ Page en ligne du document : https://claude.ai/artifact/76xobBZYJxCMt6oxuSeNLn
 | 19 | Quels réseaux à l'ouverture ? | Instagram, Facebook, TikTok ; LinkedIn, Pinterest et fiche Google ensuite | |
 | 20 | Quand arrivent les vidéos ? | Après les images ; d'abord des vidéos courtes sans personne | |
 | 21 | Publicité : préparer ou lancer depuis le Studio ? | D'abord préparer et guider ; ensuite lancer et suivre, avec budget et accord à chaque campagne | |
+| 26 | Le client peut-il retoucher lui-même une publication, comme dans Canva ? | Oui pour les retouches simples (un mot, une photo, une couleur) ; le reste se demande à SINA | |
+| 27 | Quelle musique et quelle voix pour les vidéos ? | Musiques libres de droits, jamais un morceau protégé ; voix créée par IA quand la vidéo en a besoin | |
 | 22 | Effacer les projets déjà créés ? | Oui ; garder les 15 thèmes et leurs démonstrations | |
 | 23 | Quel budget d'essais ? | 20 € par lot, compte rendu de chaque euro | |
 | 24 | La fusion dans le vrai Studio ? | Chaque lot validé est fusionné sans redemander | |
