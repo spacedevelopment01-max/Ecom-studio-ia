@@ -105,12 +105,58 @@ describe("SINA — le savoir des publications", () => {
     expect(r.forPlanner).toMatch(/On voit : [\s\S]*On lit : [\s\S]*Il faut savoir du client : [\s\S]*Ce qui le fait rater : /);
     expect(r.forPlanner).toMatch(/À ÉVITER DANS CE SECTEUR/);
     expect(r.forPlanner).not.toMatch(/https?:\/\//);
-    expect(r.forPlanner.length).toBeLessThanOrEqual(K.MAX_MODELS_CHARS + 2000);
+    expect(r.forPlanner.length).toBeLessThanOrEqual(K.MAX_MODELS_CHARS + K.MAX_REAL_POSTS_CHARS + 2000);
     expect(r.forJudge).toMatch(/MODÈLES QUI EXIGENT UNE VRAIE PHOTO DU CLIENT/);
     const none = K.publicationModelsFor("agence de voyages", "services");
     expect(none.sector).toBeNull();
     expect(none.forPlanner).toMatch(/AUCUN SECTEUR RECONNU/);
     expect(none.forJudge).toBe("");
+  });
+
+  it("vraies publications prises sur les réseaux : des images seulement, décrites, chacune dans un secteur connu", () => {
+    // Demandes du propriétaire du 14 novembre 2026 : « aller chercher sur les réseaux des publications pour prendre
+    // exemple » ; « C'est les publications images que tu dois regarder pas vidéos ».
+    const raw = JSON.parse(fs.readFileSync(K.realPostsFile(), "utf8")) as { publications: K.RealPost[]; regle: string };
+    expect(raw.regle).toMatch(/jamais/);
+    const all = raw.publications, ids = new Set(K.publicationSectors().map((s) => s.id));
+    expect(all.length).toBeGreaterThanOrEqual(80);
+    expect(K.realPosts()).toHaveLength(all.length);
+    expect(new Set(all.map((p) => p.url)).size).toBe(all.length);
+    for (const p of all) {
+      expect(["image", "carrousel"], p.url).toContain(p.format);
+      expect(p.url, "une publication en image, jamais un reel").toMatch(/^https:\/\/www\.instagram\.com\/p\/[A-Za-z0-9_-]+\/$/);
+      for (const s of p.secteurs) expect(ids.has(s), `${p.url} : secteur ${s}`).toBe(true);
+      expect(["oui", "oui sans les personnes", "non"]).toContain(p.faisableParSina);
+      expect(p.note, p.url).toBeGreaterThanOrEqual(1);
+      expect(p.note, p.url).toBeLessThanOrEqual(10);
+      expect(p.idee.length, p.url).toBeGreaterThan(20);
+      // Ce que lisent les spécialistes ne cite jamais le compte.
+      const core = K.accountCore(p.compte);
+      if (core.length >= 4) expect(`${p.idee} ${p.pourquoiCaMarche} ${p.aEviter}`.toLowerCase(), p.url).not.toContain(core);
+    }
+    // Le secteur de l'essai (thé, café, infusions) en a assez pour servir de barre.
+    expect(all.filter((p) => p.secteurs.includes("the-cafe")).length).toBeGreaterThanOrEqual(20);
+  });
+
+  it("la stratège lit les vraies publications qu'elle peut suivre ; le juge les lit toutes, sans compte ni adresse", () => {
+    const planner = K.realPostsText("the-cafe", "stratege"), judge = K.realPostsText("fleuriste", "juge");
+    expect(planner).toMatch(/^VRAIES PUBLICATIONS EN IMAGE DE CE SECTEUR/);
+    expect(planner).toMatch(/jamais l'image ni les mots/);
+    expect(planner).not.toMatch(/exige la vraie photo/);
+    expect(planner.length).toBeLessThanOrEqual(K.MAX_REAL_POSTS_CHARS);
+    // Un fleuriste : des fleurs créées passeraient pour son arrivage ; le juge le sait.
+    expect(judge).toMatch(/exige la vraie photo du commerçant/);
+    for (const t of [planner, judge]) {
+      expect(t).not.toMatch(/https?:\/\/|instagram\.com|@\w/);
+      for (const p of K.realPosts()) { const c = K.accountCore(p.compte); if (c.length >= 5) expect(t.toLowerCase(), c).not.toMatch(new RegExp(`(?<!\\p{L})${c}(?!\\p{L})`, "u")); }
+    }
+    // Les modèles du secteur arrivent avec ses vraies publications ; un secteur sans relevé n'a que ses modèles.
+    const tea = K.publicationModelsFor("Des infusions de fruits en vrac à boire froides", "products");
+    expect(tea.forPlanner).toContain("VRAIES PUBLICATIONS EN IMAGE");
+    expect(tea.forJudge).toContain("VRAIES PUBLICATIONS EN IMAGE");
+    expect(K.realPostsText("conseil", "stratege")).toBe("");
+    expect(K.accountCore("drinkpoppi")).toBe("poppi");
+    expect(K.accountCore("kusmiteaparis")).toBe("kusmi");
   });
 
   it("règles en tête : la partie « Ce que SINA doit en tirer » remonte sous le titre, une seule fois", () => {

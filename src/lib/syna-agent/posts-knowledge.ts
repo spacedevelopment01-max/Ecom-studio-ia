@@ -151,11 +151,74 @@ export function publicationSectorForJudge(s: PublicationSector): string {
   ].filter(Boolean).join("\n\n");
 }
 
+// ---------------------------------------------------------------- les vraies publications, prises sur les réseaux
+
+/**
+ * Vraies publications de marques en IMAGE (image seule ou carrousel ; jamais de vidéo), capturées sur leur page publique
+ * et décrites une à une (demandes du propriétaire du 14 novembre 2026 : « Tu dois aller chercher sur les réseaux des
+ * publications pour prendre exemple » ; « C'est les publications images que tu dois regarder pas vidéos »). La stratège
+ * et le juge en lisent l'idée, jamais le nom du compte : on s'en inspire, on ne recopie rien.
+ */
+export type RealPost = {
+  secteurs: string[]; compte: string; url: string; format: "image" | "carrousel"; personnes: string;
+  ceQuOnVoit: string; ceQuOnLit: string; pourquoiCaMarche: string; idee: string;
+  faisableParSina: "oui" | "oui sans les personnes" | "non"; note: number; aEviter: string;
+};
+export const realPostsFile = () => path.join(brandKnowledgeDir(), "references", "publications-reelles.json");
+/** Plafond du texte des vraies publications d'un secteur (caractères). */
+export const MAX_REAL_POSTS_CHARS = 5_000;
+let realCache: { file: string; posts: RealPost[] } | null = null;
+/** Les vraies publications en image de la bibliothèque (vidéos écartées) ; fichier illisible : aucune. */
+export function realPosts(): RealPost[] {
+  const file = realPostsFile();
+  if (realCache?.file === file) return realCache.posts;
+  let posts: RealPost[] = [];
+  try {
+    const raw = JSON.parse(fs.readFileSync(file, "utf8")) as { publications?: RealPost[] };
+    posts = (raw.publications ?? []).filter((p) => p && (p.format === "image" || p.format === "carrousel") && Array.isArray(p.secteurs) && typeof p.idee === "string" && p.idee.length > 10);
+  } catch { posts = []; }
+  realCache = { file, posts };
+  return posts;
+}
+
+/**
+ * Le nom propre d'un compte (« drinkpoppi » → « poppi ») : sert au contrôle qui vérifie qu'aucune fiche ne cite son
+ * propre compte dans ce que lisent les spécialistes (les textes lus sont l'idée, la raison et le piège, écrits sans nom).
+ */
+export function accountCore(compte: string): string {
+  return compte.toLowerCase().replace(/^@/, "").split(/[\s(@]/)[0]
+    .replace(/^(?:drink|eat|the|get|shop|maison|cafe|café)/, "").replace(/(?:official|paris|france|uk|us|aus|co|tea|teas|coffee|cafe|shop|store|studio|drinks?|eats|creamery|organics|_)+$/g, "")
+    .replace(/[^a-z0-9àâäéèêëîïôöùûüç]/g, "");
+}
+
+/**
+ * Les vraies publications d'un secteur, telles que les lisent la stratège (celles que SINA peut faire, les mieux notées)
+ * et le juge (toutes, celles qui exigent une vraie photo comprises). Aucun nom de compte, aucune adresse.
+ */
+export function realPostsText(sectorId: string, who: PostsSpecialist, max = MAX_REAL_POSTS_CHARS): string {
+  const all = realPosts().filter((p) => p.secteurs.includes(sectorId));
+  const pool = (who === "stratege" ? all.filter((p) => p.faisableParSina !== "non" && p.note >= 6) : all).sort((a, b) => b.note - a.note);
+  if (!pool.length) return "";
+  const head = who === "stratege"
+    ? "VRAIES PUBLICATIONS EN IMAGE DE CE SECTEUR (relevées sur Instagram chez des marques ; c'est la barre à atteindre : prends-en les idées et le niveau, jamais l'image ni les mots ; aucune ne se recopie)."
+    : "VRAIES PUBLICATIONS EN IMAGE DE CE SECTEUR (relevées sur Instagram chez des marques ; c'est la barre : une publication du plan qui ne tiendrait pas à côté d'elles est à reprendre).";
+  const lines: string[] = [];
+  let size = head.length + 2;
+  for (const p of pool) {
+    const faisable = p.faisableParSina === "non" ? "exige la vraie photo du commerçant" : p.faisableParSina === "oui" ? "faisable par SINA" : "faisable en remplaçant la personne par une trace";
+    const one = `- ${p.note}/10, ${p.format}, ${faisable}. Idée : ${cut(p.idee, 260)} Pourquoi ça marche : ${cut(p.pourquoiCaMarche, 220)}${p.aEviter ? ` À ne pas reprendre : ${cut(p.aEviter, 160)}` : ""}`;
+    if (size + one.length > max) break;
+    lines.push(one); size += one.length + 1;
+  }
+  return `${head}\n${lines.join("\n")}`;
+}
+
 /** Les modèles du secteur du client (texte de la stratège, texte du juge), ou rien si aucun secteur n'est reconnu. */
 export function publicationModelsFor(offer: string, business: "products" | "services", core = ""): { sector: { id: string; label: string } | null; forPlanner: string; forJudge: string } {
   const s = publicationSectorOf(offer, business, core);
   if (!s) return { sector: null, forPlanner: "AUCUN SECTEUR RECONNU dans la bibliothèque des modèles de publication : pars des principes de tes cahiers et des faits du client.", forJudge: "" };
-  return { sector: { id: s.id, label: s.secteur }, forPlanner: publicationModelsText(s), forJudge: publicationSectorForJudge(s) };
+  const withReal = (text: string, who: PostsSpecialist) => { const r = realPostsText(s.id, who); return r ? `${text}\n\n${r}` : text; };
+  return { sector: { id: s.id, label: s.secteur }, forPlanner: withReal(publicationModelsText(s), "stratege"), forJudge: withReal(publicationSectorForJudge(s), "juge") };
 }
 
 /** Tous les cahiers des publications sont-ils lisibles ? (contrôle gratuit avant tout appel payant) */
@@ -165,8 +228,8 @@ export function postsKnowledgeReady(): { ok: true } | { ok: false; reason: strin
 
 /** Jetons d'entrée ajoutés par les cahiers d'un spécialiste (estimation prudente : un jeton pour 3 caractères). */
 export const postsKnowledgeTokens = (who: PostsSpecialist) => Math.ceil(postsKnowledge(who).length / 3);
-/** Jetons d'entrée ajoutés par les modèles d'un secteur, au plus. */
-export const MODELS_TOKENS_MAX = Math.ceil(MAX_MODELS_CHARS / 3);
+/** Jetons d'entrée ajoutés par les modèles d'un secteur et ses vraies publications, au plus. */
+export const MODELS_TOKENS_MAX = Math.ceil((MAX_MODELS_CHARS + MAX_REAL_POSTS_CHARS) / 3);
 /** Coût probable (micro-euros) des cahiers et des modèles sur `calls` appels : le premier au plein tarif, les suivants relus en mémoire. */
 export function postsKnowledgeTypicalMicro(who: PostsSpecialist, task: TaskId, calls = 1): number {
   if (calls <= 0) return 0;
