@@ -500,7 +500,23 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   tient à la boucle « elle regarde, elle corrige » avant de montrer. **À construire, rien n'est fait** : une
   dessinatrice qui écrit l'ouverture pour la marque au lieu de choisir une section, la boucle de correction, quelqu'un
   qui répartit les formes entre les propositions, les contrôles sans IA et la mise en boutique de ces pages ; prix à
-  calculer et à annoncer avant tout essai réel.
+  calculer et à annoncer avant tout essai réel. **Son objection, et le second essai gratuit du même jour** : « c'est
+  jolie pour pulpe mais c'est un modèle destiné pour pulpe par pour un barbier par exemple. Oui mais l'idée de base vient
+  de toi, pas de sina, est ce que sina peut avoir ce genre de réflexion pour les futurs clients du studio ? » (il avait
+  raison : le dossier du premier essai contenait déjà l'idée du nom qui trempe et l'angle). Trois autres agents séparés
+  ont donc reçu seulement la fiche de départ d'un client inventé pour l'essai (deux fois un barbier, une fois un
+  réparateur de vélos à domicile), les cahiers de méthode et ses règles : ni photo, ni logo, ni couleur, ni accroche, ni
+  idée. Chacun a écrit sa réflexion avant de dessiner (trois ou quatre idées, celle gardée, pourquoi les autres sont
+  écartées), puis le haut du site, corrigé seul en trois ou quatre regards. Résultats : barbier, « les quarante minutes »
+  (signe : un cadran allumé de 0 à 40) ; le même barbier par un autre agent, « le miroir sans personne derrière » (un
+  miroir gradué, le fauteuil seul) ; le réparateur, « le vélo ne bouge pas, c'est l'atelier qui vient » (signe : la
+  rustine). Tous ont refusé les clichés du métier. Limites : les deux barbiers ont pris les mêmes couleurs (vert foncé
+  et orange) et la même police de titres, d'où le besoin de la comparaison contre les doublons
+  (`custom-theme/identity-card.ts`) ; sans photo, les dessins restent simples ; ce sont des agents de la conversation,
+  pas SINA. Prix estimé avec les tarifs du Studio (sur la taille de ce que ces agents ont lu et écrit, sans essai
+  réel) : environ 0,57 € par ouverture avec le modèle « métier » (1,53 € au plus), environ 1,13 € avec le modèle le
+  plus fort (3,06 € au plus). Proposé, sans réponse à ce jour : SINA dessine ainsi toute la page d'accueil, le panier,
+  le bloc d'achat et les formulaires restant sur les sections du Studio.
 - **Réponses courtes et claires**, sans jargon ; ne pas reposer une question à laquelle il a déjà répondu.
 - **Ne pas décider à sa place** : un retrait de contenu ou un changement visible important se propose, il ne s'applique
   qu'après son accord. Retirer un visuel raté sans rien mettre à la place n'est pas une correction.
