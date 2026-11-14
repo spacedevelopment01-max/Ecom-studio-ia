@@ -186,7 +186,8 @@ Page en ligne du document : https://claude.ai/artifact/76xobBZYJxCMt6oxuSeNLn
 
 ## 13. Le prix des forfaits (estimation du 14 novembre 2026, à affiner par des mesures)
 
-**Où on en est (14 novembre 2026).** Grille proposée par le propriétaire et vérifiée par le calcul : **69 €, 99 € et
+**Où on en est (14 novembre 2026).** Grille proposée par le propriétaire, vérifiée par le calcul et **validée par lui**
+(« Oui je valide comme ça », avec 6 vidéos au forfait à 169 €) : **69 €, 99 € et
 169 € par mois**, sans prix de création ni engagement ; le budget d'IA du client vaut **50 % du prix hors taxes le
 premier mois**, puis **40 %** les mois suivants. Détail à la fin de cette partie (« La grille retenue »). Les
 réflexions ci-dessous sont gardées comme chemin : quand elles parlent de 49 €, 89 €, 129 €, d'un prix de création de
@@ -350,6 +351,8 @@ l'IA resterait autour de 40 % du prix hors taxes pour les trois forfaits (estima
 les mêmes 69 €, cachés).
 
 ### La grille retenue : 69 €, 99 €, 169 €, et 50 % d'IA le premier mois (14 novembre 2026)
+
+**Validée par le propriétaire le 14 novembre 2026 : « Oui je valide comme ça ».**
 
 Idée du propriétaire : « Et si on augmentait les forfaits à 69 99 et 169 et que je perdais un peu plus de marge au
 premier mois, je peux accepter de laisser 50% de crédit ia du forfait et le mois d'après on repasse a 40% ? ».
