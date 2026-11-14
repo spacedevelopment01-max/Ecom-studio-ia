@@ -12,11 +12,15 @@ import { cabinetBlocks } from "@/lib/theme/parenthese";
 import { seedHoldout } from "./lot1-holdout-fixtures";
 import { serviceSpec } from "./fixtures";
 import { PA_ATELIERS, PA_HOURS, PA_SEANCES } from "./parenthese-fixtures";
+import { upcomingWeekday } from "./upcoming-dates";
 import { GET, OPTIONS, POST } from "@/app/api/public/cabinet/[projectId]/[[...path]]/route";
 import type { ThemeSpec } from "@/lib/theme/spec";
 
 // 24 octobre 2026, 12 h à Paris.
 const AT = Date.UTC(2026, 9, 24, 10, 0);
+// L'API publique lit la vraie heure : sa date d'essai est un mercredi toujours à venir, jour ouvert et jamais dans les
+// fermetures du cabinet (écrite en dur au 18 novembre 2026, elle aurait fait échouer le test ce jour-là, puis pour toujours).
+const API_DATE = upcomingWeekday(3);
 const TUE = "2026-11-10";
 const raw = {
   timezone: "Europe/Paris", hours: { 0: PA_HOURS.sun, 1: PA_HOURS.mon, 2: PA_HOURS.tue, 3: PA_HOURS.wed, 4: PA_HOURS.thu, 5: PA_HOURS.fri, 6: PA_HOURS.sat }, closures: "2026-12-24..2026-12-26", step: 60, horizonDays: 90, leadMinutes: 720, cancelHours: 24,
@@ -237,7 +241,7 @@ describe("Service réel de rendez-vous (studio)", () => {
     expect((await OPTIONS()).status).toBe(204);
     const post = (path: string[], body: unknown, headers: Record<string, string> = {}, projectId = pid) => POST(new Request(`https://studio.example.invalid/api/public/cabinet/${projectId}/${path.join("/")}`, { method: "POST", body: JSON.stringify(body), headers: { "content-type": "application/json", ...headers } }), ctx(path, projectId));
     const get = (path: string, headers: Record<string, string> = {}, projectId = pid) => GET(new Request(`https://studio.example.invalid/api/public/cabinet/${projectId}/${path}`, { headers }), ctx(path.split("?")[0].split("/"), projectId));
-    const res = await post(["appointments"], { kind: "seance", service: "suivi", modality: "visio", date: "2026-11-18", time: "15:00", firstName: "Léa", lastName: "Durand", email: "lea@example.com", terms: true, idem: "idem-api-00001" });
+    const res = await post(["appointments"], { kind: "seance", service: "suivi", modality: "visio", date: API_DATE, time: "15:00", firstName: "Léa", lastName: "Durand", email: "lea@example.com", terms: true, idem: "idem-api-00001" });
     expect(res.status).toBe(201);
     expect(res.headers.get("access-control-allow-origin")).toBe("*");
     const out = await res.json();
@@ -245,9 +249,9 @@ describe("Service réel de rendez-vous (studio)", () => {
     expect(out.email).toBe("not_configured");
     const seen = await (await get("appointment", { "x-access-token": out.token })).json();
     expect(seen.appointment.number).toBe(out.appointment.number);
-    const mine = await (await get(`availability?date=2026-11-18&service=suivi&modality=visio&mine=1`, { "x-access-token": out.token })).json();
+    const mine = await (await get(`availability?date=${API_DATE}&service=suivi&modality=visio&mine=1`, { "x-access-token": out.token })).json();
     expect(mine.slots.find((s: { time: string }) => s.time === "15:00").available).toBe(true);
-    const moved = await (await post(["appointment", "move"], { date: "2026-11-18", time: "16:00" }, { "x-access-token": out.token })).json();
+    const moved = await (await post(["appointment", "move"], { date: API_DATE, time: "16:00" }, { "x-access-token": out.token })).json();
     expect(moved.appointment.time).toBe("16:00");
     expect((await get("appointment", { "x-access-token": "faux" })).status).toBe(401);
     expect((await post(["appointments"], { ...base, idem: "idem-api-00002" }, {}, demoPid)).status).toBe(403);

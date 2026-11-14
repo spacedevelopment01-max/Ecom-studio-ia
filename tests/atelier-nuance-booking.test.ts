@@ -12,12 +12,16 @@ import { seedHoldout } from "./lot1-holdout-fixtures";
 import { serviceSpec } from "./fixtures";
 import { salonBlocks } from "@/lib/theme/atelier-nuance";
 import { AN_HOURS, AN_SERVICES, AN_STAFF } from "./atelier-nuance-fixtures";
+import { upcomingTuesday } from "./upcoming-dates";
 import { GET, OPTIONS, POST } from "@/app/api/public/salon/[projectId]/[[...path]]/route";
 import type { ThemeSpec } from "@/lib/theme/spec";
 
 // 23 octobre 2026, 12 h à Paris.
 const AT = Date.UTC(2026, 9, 23, 10, 0);
 const TUE = "2026-11-10";
+// L'API publique lit la vraie heure : sa date d'essai est un mardi toujours à venir, jour ouvert et jamais dans les
+// fermetures du salon (écrite en dur au samedi 14 novembre 2026, elle fait échouer le test depuis ce jour-là).
+const API_DATE = upcomingTuesday();
 const raw = {
   timezone: "Europe/Paris", hours: { 0: "", 1: "", 2: AN_HOURS.tue, 3: AN_HOURS.wed, 4: AN_HOURS.thu, 5: AN_HOURS.fri, 6: AN_HOURS.sat }, closures: "2026-12-24..2026-12-26", step: 30, horizonDays: 90, leadMinutes: 120, cancelHours: 0,
   services: AN_SERVICES.map((s) => ({ id: s.id, name: s.name, category: s.category, duration: s.duration, price: s.price, priceFrom: s.from })),
@@ -215,11 +219,11 @@ describe("Service réel de rendez-vous (studio)", () => {
     expect((await OPTIONS()).headers.get("Access-Control-Allow-Origin")).toBe("*");
     const post = (path: string[], body: unknown, id = pid, token = "") => POST(new Request(`http://x/api/public/salon/${id}/${path.join("/")}`, { method: "POST", headers: token ? { "X-Client-Token": token } : {}, body: JSON.stringify(body) }), ctx(path, id));
     expect((await post(["appointments"], base, demoPid)).status).toBe(403);
-    const created = await post(["appointments"], { ...base, email: "api@example.com", date: "2026-11-14", time: "10:00", idem: "idem-api-0001" });
+    const created = await post(["appointments"], { ...base, email: "api@example.com", date: API_DATE, time: "10:00", idem: "idem-api-0001" });
     expect(created.status).toBe(201);
     const body = await created.json() as { appointment: { number: string; time: string }; clientToken: string; email: string };
     expect(body.email).toBe("not_configured"); // aucun e-mail prétendu envoyé
-    const clash = await post(["appointments"], { ...base, email: "api2@example.com", date: "2026-11-14", time: "10:30", idem: "idem-api-0002" });
+    const clash = await post(["appointments"], { ...base, email: "api2@example.com", date: API_DATE, time: "10:30", idem: "idem-api-0002" });
     expect(clash.status).toBe(409);
     expect(((await clash.json()) as { alternatives: string[] }).alternatives).not.toContain("10:30");
     const anon = await GET(new Request(`http://x/api/public/salon/${pid}/me`), ctx(["me"]));
@@ -229,7 +233,7 @@ describe("Service réel de rendez-vous (studio)", () => {
     const elsewhere = await GET(new Request(`http://x/api/public/salon/${other}/me`, { headers: { "X-Client-Token": body.clientToken } }), ctx(["me"], other));
     expect(elsewhere.status).toBe(401);
     expect(await (await post(["lookup"], { reference: body.appointment.number, email: "api@example.com" })).json()).toEqual({ ok: true });
-    const av = await GET(new Request(`http://x/api/public/salon/${pid}/availability?date=2026-11-14&service=coupe-brushing&staff=camille`), ctx(["availability"]));
+    const av = await GET(new Request(`http://x/api/public/salon/${pid}/availability?date=${API_DATE}&service=coupe-brushing&staff=camille`), ctx(["availability"]));
     expect(((await av.json()) as { slots: { time: string; available: boolean }[] }).slots.find((s) => s.time === "10:00")!.available).toBe(false);
   });
 });
