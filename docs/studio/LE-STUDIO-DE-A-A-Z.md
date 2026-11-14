@@ -308,6 +308,40 @@ Ce qui grandit avec le forfait : la quantité et la portée du travail.
 
 IA estimée au premier forfait avec le modèle le plus fort : environ 12 € par mois pour un budget de 16 €.
 
+### Supprimer le prix de création sans baisser la qualité (recherche du 14 novembre 2026)
+
+Demande du propriétaire : « Je te laisse chercher tous les moyens possibles qui existe pour ne pas à avoir besoin de
+facturer ses 69€ au clients tout en gardant la même qualité ».
+
+Où part l'argent, mesuré sur la création des trois identités de la toiletteuse (5,25 €, 53 appels) : 18 images, 1,99 €
+(au tarif du Studio) ; étude du marché sur le web, 0,70 € ; écriture des trois planches, 0,54 € ; leur reprise, 0,46 € ;
+consignes des images, 0,27 € ; équipes de noms, 0,25 € ; vérification des noms, 0,19 € ; dessins de l'illustratrice et
+leur relecture, 0,19 € (plus montrés depuis le retrait des pictogrammes) ; le reste, moins de 0,15 € par poste.
+
+Moyens retenus (mêmes modèles, même résultat final) :
+1. Le travail en différé, à moitié prix. Anthropic facture 50 % de moins les demandes traitées en différé (la plupart
+   en moins d'une heure, 24 heures au plus, d'après sa documentation) ; OpenAI annonce la même remise, images comprises
+   d'après un article (à vérifier). La création tourne déjà en arrière-plan : SINA prévient quand c'est prêt et pose
+   pendant ce temps les questions de l'étape suivante. Vaut aussi pour les publications du mois, préparées à l'avance.
+2. Ne finir que la planche choisie. Aujourd'hui 18 à 21 images sont créées et les deux tiers ne servent jamais. Chaque
+   identité se montre avec son logo, sa grande scène et le haut du site ; l'objet, les publications et les signes sont
+   créés pour l'identité choisie. Seul changement visible pour le client.
+3. Réutiliser ce qui est créé : la grande scène de la planche ouvre le site, ses publications deviennent les premières
+   du calendrier.
+4. Retirer ce qui n'est plus montré : les dessins de l'illustratrice.
+5. Vérifier le vrai prix de l'image sur la facture d'OpenAI (0,05 € mesuré, 0,13 € compté).
+6. Demander les crédits offerts aux jeunes entreprises (AWS, Google, Microsoft ; le programme d'Anthropic serait
+   complet et celui d'OpenAI arrêté, d'après des articles : à vérifier sur leurs sites).
+
+Effet estimé : la création passe de 20 à 30 € d'IA à environ 11, 15 et 17 € selon le forfait (la conversation de
+création, environ 6 €, ne peut pas passer en différé).
+
+À la place des 69 € : un engagement de trois mois au départ, sans frais de création. Sur ces trois mois, la part de
+l'IA resterait autour de 40 % du prix hors taxes pour les trois forfaits (estimations : 39 %, 40 % et 38 %).
+
+Écarté : des modèles moins forts ou moins de relectures (la qualité baisserait) ; un prix mensuel plus élevé (ce sont
+les mêmes 69 €, cachés).
+
 Sources de la partie 7 : journal des nouveautés de Shopify (conseils de Sidekick), Unite.AI (Canvas), TechCrunch
 (créateur de boutique), eCommerce Fastlane, Copyfy, blog de Google (Pomelli), test de Blaze par R. Doser, Apaya, blog de
 Zeely, Pixis (Meta), Tool Advisor et Capeb (Simplébo).
