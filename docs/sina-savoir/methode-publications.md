@@ -110,6 +110,26 @@ cinq images : environ 0,70 €, 0,90 € au plus. Les recherches n'ont pas trouv
 4. **Les publicités** : les images de publicité suivent-elles aussi OpenAI ? (aujourd'hui seules les publications le
    sont, depuis le 14 novembre 2026).
 
+## Ce que le propriétaire a validé (14 novembre 2026)
+
+Essai réel sur « Pulpe » (infusions de fruits à boire froides), avec son accord écrit. Premier plan refusé par le juge
+avant tout paiement (natures mortes pâles, idée absente de l'image, une image servait de fausse preuve) ; puis un
+carrousel de trois images que le propriétaire a refusé : « tu m'as juste fait 3 images de la même couleur qui
+représente la même chose les clients veulent voir 3 publications différentes possible ».
+
+Ce qu'il a validé : trois publications d'exemple qui ne se ressemblent en rien, chacune une image seule.
+
+| Rôle | Couleur dominante | Cadrage | Idée | Accroche posée par le Studio |
+|---|---|---|---|---|
+| Donner envie | Tout framboise | Plan de face, dans le frigo | 16 heures : la carafe a pris la place de la canette, poussée de côté | « 16 h. La canette a laissé sa place. » |
+| Rendre service | Tout jaune mangue | Vue de dessus | Des glaçons faits avec le fond de la carafe, qui n'allongent pas le verre | « Des glaçons qui ne noient pas ton verre. » |
+| Faire sourire | Tout bleu nuit | Très gros plan | La rupture avec la canette racontée comme des fiançailles rompues : un écrin de bague qui présente une languette de canette | « J'ai rendu sa bague à la canette. » |
+
+Ses mots : « j'aime beaucoup l'histoire de la bague. donc oui c'est mieux et sa donne 3 vrai appercu ». À retenir : la
+métaphore juste, tirée de l'aveu de la marque (le soda, petite récompense de l'après-midi), dite à la première
+personne, sans moquer personne, dans une image de publicité d'un tout autre univers (ici la joaillerie). Six images
+créées pour cet essai : 0,31 $ (environ 0,28 €), 0,05 $ l'image en 1088 × 1360, qualité haute.
+
 ## Ce qui est construit, et ce qui ne l'est pas
 
 - **Fait le 14 novembre 2026** : les cahiers et la bibliothèque ; la stratège et le juge du plan des publications les

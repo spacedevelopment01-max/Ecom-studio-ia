@@ -565,7 +565,10 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   (`imagerySystem`) et la stratège des publications (`posts-plan.ts`), testée. Refait le même jour dans le même plafond :
   le frigo framboise gardé, plus deux images (0,10 $) : des glaçons d'infusion rouges vus de dessus sur jaune mangue
   (« Des glaçons qui ne noient pas ton verre. ») et un écrin de bague bleu nuit qui présente une languette de canette
-  (« J'ai rendu sa bague à la canette. »), jugées avant d'être payées ; pas encore notées par lui.
+  (« J'ai rendu sa bague à la canette. »), jugées avant d'être payées. **Validé par lui le 14 novembre** : « j'aime
+  beaucoup l'histoire de la bague. donc oui c'est mieux et sa donne 3 vrai appercu » (la publication qui fait sourire
+  par une métaphore juste, ici la rupture avec la canette racontée comme des fiançailles rompues, est celle qu'il a
+  préférée).
   **Dépensé en essais réels au 14 novembre : 8,41 €** (8,13 + 0,28 pour les six images de publications de Pulpe),
   plafond 10 $ (9 €).
 - **Réponses courtes et claires**, sans jargon ; ne pas reposer une question à laquelle il a déjà répondu.
