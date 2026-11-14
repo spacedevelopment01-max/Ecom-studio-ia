@@ -182,6 +182,36 @@ Page en ligne du document : https://claude.ai/artifact/76xobBZYJxCMt6oxuSeNLn
 5. Une conversation par lot ; elle commence par la relecture de ce document.
 6. Les vieilles notes sont archivées et remplacées par des consignes courtes.
 
+## 13. Le prix des forfaits (estimation du 14 novembre 2026, à affiner par des mesures)
+
+Question du propriétaire : « si je veux que le studio fonctionne comme je le pense il faut des ia à niveau haut et fort
+de réflexion et ça coûte cher […] dit moi à combien de devrais mettre les forfaits pour que les clients est asser de
+crédit ia tous les mois et que je garde les fameux 60% de marge ». Règle : budget d'IA = 40 % du prix hors taxes, donc
+prix hors taxes = coût d'IA du mois ÷ 0,40, et prix affiché = hors taxes × 1,2.
+
+Prix unitaires (tarifs enregistrés dans le Studio, et mesures des essais) : une réponse de SINA avec le modèle le plus
+fort, environ 0,08 € (calcul : 0,05 à 0,15 € ; mesuré avec le modèle moyen : 0,023 €) ; une image, 0,13 € au tarif du
+Studio (0,05 € mesuré sur six images de Pulpe) ; une publication en image, relectures comprises, environ 0,22 € (0,65 €
+pour un carrousel de quatre images) ; une vidéo de 15 secondes montée à partir de trois plans créés, environ 2 € (de
+1 € à 6 € selon le modèle de vidéo ; tarifs non mesurés par un essai) ; une campagne préparée, environ 1,10 € en images.
+
+| | Forfait 1 | Forfait 2 | Forfait 3 |
+|---|---|---|---|
+| Usage supposé par mois | 12 publications en images, 30 messages à SINA | 20 publications, 4 vidéos, 1 campagne, 60 messages | 30 publications, 8 vidéos, 3 campagnes, 120 messages |
+| IA par mois (20 % de sécurité compris) | environ 9,5 € | environ 27 € | environ 55 € |
+| Prix affiché pour garder 60 % | environ 29 € | environ 81 € | environ 165 € |
+| Prix actuel | 49 € | 89 € | 129 € |
+
+La création du départ (une seule fois) : identités (3,8 à 7 € selon leur nombre ; 5,25 € mesurés pour trois), angles
+(environ 1 €), conversation de création avec le modèle le plus fort (environ 6 €), site (thème, textes et 20 à 35
+photos : environ 6 €), premières publications (environ 3 €) : 20 à 25 € d'IA, soit environ 60 à 75 € affichés pour
+garder 60 %.
+
+Proposition de Claude : garder 49 € et 89 € ; passer le troisième forfait à 169 €, ou le laisser à 129 € avec quatre
+vidéos au lieu de huit ; ajouter un prix de création payé une seule fois, autour de 69 €. Non comptés dans ce calcul :
+frais de paiement, serveurs, assistance. Incertitudes : le coût réel d'une réponse de SINA quand la conversation est
+longue, et le modèle de vidéo retenu.
+
 Sources de la partie 7 : journal des nouveautés de Shopify (conseils de Sidekick), Unite.AI (Canvas), TechCrunch
 (créateur de boutique), eCommerce Fastlane, Copyfy, blog de Google (Pomelli), test de Blaze par R. Doser, Apaya, blog de
 Zeely, Pixis (Meta), Tool Advisor et Capeb (Simplébo).
