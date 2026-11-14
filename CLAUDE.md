@@ -460,6 +460,26 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   - **À confirmer par le propriétaire** : le quatrième fond d'une série de quatre identités (aujourd'hui un fond clair
     coloré, « uni ») ; la règle « un fond sombre par série » quand le client demande du joyeux et du coloré (le directeur
     de création l'a contestée pendant l'essai) ; le réglage des modèles.
+- **Angles marketing : trois au lieu de cinq** (décision du propriétaire du 14 novembre 2026 : « Ok pour 3 », après
+  « Non, je veux que tu me dise réellement combien tu en mettrais » ; puis « ne fais rien encore » : **rien n'est
+  construit**, l'étape 4 du Studio montre toujours cinq angles, `src/lib/preparation/`, `src/lib/syna-agent/tools/angles.ts` ;
+  ne construire que sur sa demande). Méthode proposée, acceptée sur le principe : écouter les acheteurs (phrases relues
+  sur la page elle-même), lire les concurrents (ce que tous disent, ce que personne ne dit), poser au client les
+  questions que lui seul connaît, plusieurs stratèges séparées qui partent chacune d'une entrée, chaque angle écrit
+  comme une scène (qui, quand, avant, après), un juge à part qui voit tout (un concurrent pourrait-il le signer ; une
+  promesse absente de la fiche du client ; l'accroche lue seule ne fait voir personne), garder les trois plus éloignés
+  (un sûr, un d'émotion, un audacieux) avec un angle recommandé, les montrer vivants (accroche, haut du site,
+  publication, sans image payée), vérifier après la livraison ; les autres angles jugés restent en réserve pour les
+  publications et les publicités. **Essai à la main du 14 novembre 2026** (sa demande : « fait un test […] sur 3 angles
+  différents » ; joué par Claude et des agents de la conversation, pas par SINA, sur « Pulpe », sans appel payant, rien
+  dépensé) : 76 phrases d'acheteuses relues sur 27 pages, 15 marques lues, 4 stratèges, 48 angles pour une quinzaine
+  d'idées ; le juge n'en a noté que 2 à 8 sur 10 (« Tu ouvres le sachet. Tu reconnais la fraise. », le plus sûr ;
+  « 16 heures. Tu ouvres le frigo : de la fraise. », l'émotion, recommandé) et en a écarté 35 ; le troisième, l'audacieux
+  (« Ton placard est plein de tisanes qui te sermonnent. »), n'a eu que 7 après une reprise et a été montré avec le doute
+  du juge. Leçons : les questions au client doivent passer AVANT les stratèges (plus de vingt angles reposaient sur la
+  couleur de la boisson ou sur des morceaux visibles dans le verre, que le client n'a jamais dits) ; quatre stratèges
+  sur le même dossier retrouvent les mêmes idées (leur donner des entrées plus éloignées) ; aucune n'a parlé du goût,
+  faute d'avoir goûté. Trois planches envoyées, **pas encore notées par lui**.
 - **Réponses courtes et claires**, sans jargon ; ne pas reposer une question à laquelle il a déjà répondu.
 - **Ne pas décider à sa place** : un retrait de contenu ou un changement visible important se propose, il ne s'applique
   qu'après son accord. Retirer un visuel raté sans rien mettre à la place n'est pas une correction.
