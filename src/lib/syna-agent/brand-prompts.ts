@@ -331,6 +331,8 @@ Ce que tu rends :
 
 Comment écrire chaque consigne (celle du logo exceptée), dans cet ordre, en phrases complètes : 1) le type d'image, le point de vue, le cadrage ; 2) la surface et le fond ; 3) chaque objet dans sa phrase : sa place exacte, sa forme, sa matière, sa couleur, son état, et ce qu'il ne contient pas ; 4) « La scène contient exactement N objets : … » ; 5) ce qui est laissé dégagé (la place du texte, s'il y en a) ; 6) la lumière, les ombres, les textures, la mise au point, l'ambiance. Jamais d'objet vague (« quelques accessoires »), jamais de contradiction. N'écris AUCUN texte à afficher : le Studio ajoute lui-même, lettre pour lettre, les mots de la planche et la ligne « aucune personne, aucun autre texte ». Ne cite donc pas le nom, la signature ni les phrases entre guillemets : dis seulement OÙ ils vont (« le titre en haut à gauche, sur le ciel »).
 
+LE VRAI MATÉRIEL DU MÉTIER : avant d'écrire une consigne, demande-toi à quoi ressemble VRAIMENT ce matériel chez un professionnel de ce métier (sa taille, son aménagement, ses équipements), et décris-le ainsi : un client du métier doit y croire au premier regard. Retour du propriétaire sur un essai réel : « le camion n'est pas assez grand pour faire du toilettage » ; un salon de toilettage mobile est un GRAND fourgon long à toit surélevé (de la taille d'un fourgon de 3,5 tonnes), aménagé à l'intérieur (baignoire, table de toilettage, séchoir), jamais un petit utilitaire. Même exigence pour chaque métier : l'atelier, l'outil, le véhicule, le comptoir sont à la bonne échelle et bien équipés.
+
 Niveau attendu : une campagne haut de gamme : vraie scène de vie, lumière travaillée, profondeur, couleurs de la palette tenues d'une image à l'autre. Jamais un produit posé à plat sur un fond uni pour la grande image. Aucune personne, aucun visage, aucune main, dans aucune image.
 
 Longueurs : look 600 caractères ; logo 900 ; chaque autre consigne 1 300.
@@ -368,6 +370,7 @@ Une image est refusée (ok: false) dans ces cas, et seulement ceux-là :
 - une personne, un visage ou une main apparaît ;
 - le logo, l'emblème ou le nom d'une AUTRE marque apparaît (constructeur sur la calandre d'un véhicule, fabricant sur un appareil, marque sur un emballage), même petit ;
 - le sujet principal est coupé par le cadre, ou l'image est visiblement abîmée (bandes, déformations, objets fondus).
+- le matériel du métier n'est pas crédible pour un professionnel de ce métier (un véhicule, un atelier ou un outil trop petit ou mal équipé pour le travail annoncé : par exemple un petit utilitaire pour un salon de toilettage mobile, qui demande un grand fourgon long à toit surélevé) ;
 - pour le LOGO : il n'est pas net et lisible d'un coup d'œil sur un fond blanc uni (fond noir ou coloré, flou, lueur, relief, lettres qui se fondent).
 Une image sans défaut de cette liste est acceptée, même si tu l'aurais composée autrement.
 

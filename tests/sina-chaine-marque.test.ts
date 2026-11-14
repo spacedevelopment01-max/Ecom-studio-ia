@@ -826,6 +826,10 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(log.prompts["image-1-A-logo"]).toContain(I.LOGO_OWN);
     expect(log.prompts["image-1-A-logo"]).toContain(I.LOGO_NOT_SCENE); // un logo, jamais une scène avec une personne
     expect(P.imagerySystem("services")).toMatch(/Décris le LOGO lui-même, jamais une scène/);
+    // Le vrai matériel du métier (retour du propriétaire : « le camion n'est pas assez grand pour faire du toilettage »).
+    expect(P.imagerySystem("services")).toMatch(/LE VRAI MATÉRIEL DU MÉTIER[\s\S]*GRAND fourgon long à toit surélevé/);
+    expect(P.imageReviewSystem()).toMatch(/le matériel du métier n'est pas crédible pour un professionnel de ce métier/);
+    if (ra.board!.descriptor) expect(log.prompts["imagecheck-1-A"]).toContain(`Métier : ${ra.board!.descriptor}.`);
     expect(log.prompts["image-1-A-logo"]).not.toMatch(/image de référence/);
     expect((log as any).refs["image-1-A-logo"].logo).toBe(false);
     // Le signe « lettrage » (le nom composé par le Studio, parfois avec la vague) n'est jamais donné pour le logo.
