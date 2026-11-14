@@ -797,6 +797,11 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(await I.logoOnWhite(await whiteLogo())).toBe(true);
     expect(await I.logoOnWhite(await square("#050505"))).toBe(false);
     expect(await I.logoOnWhite(await square("#E3EFEA"))).toBe(false);
+    // Fond transparent (essai réel du 14 novembre 2026 : OpenAI a rendu les logos ainsi) : compté comme blanc.
+    const transparent = await sharpLib({ create: { width: 96, height: 96, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite([{ input: await square("#1F5A47", 48, 32), gravity: "center" }]).png().toBuffer();
+    expect(await I.logoOnWhite(transparent)).toBe(true);
+    const flat = await sharpLib(await I.onWhite(transparent)).raw().toBuffer();
+    expect([flat[0], flat[1], flat[2]]).toEqual([255, 255, 255]);
     expect(I.spell("Coussinet")).toBe("C, o, u, s, s, i, n, e, t");
     expect(I.spell("Bain de Minuit")).toBe("B, a, i, n, (espace), d, e, (espace), M, i, n, u, i, t");
     // La vague qui coupe le nom (le geste de « Pulpe ») n'est plus proposée ; la directrice artistique laisse le
@@ -819,6 +824,8 @@ describe("SINA — chaîne de création de la marque", async () => {
     // La consigne du logo : le nom épelé, une conception propre à la marque, aucun modèle envoyé.
     expect(log.prompts["image-1-A-logo"]).toContain(`lettre par lettre : ${I.spell(ra.name)}`);
     expect(log.prompts["image-1-A-logo"]).toContain(I.LOGO_OWN);
+    expect(log.prompts["image-1-A-logo"]).toContain(I.LOGO_NOT_SCENE); // un logo, jamais une scène avec une personne
+    expect(P.imagerySystem("services")).toMatch(/Décris le LOGO lui-même, jamais une scène/);
     expect(log.prompts["image-1-A-logo"]).not.toMatch(/image de référence/);
     expect((log as any).refs["image-1-A-logo"].logo).toBe(false);
     // Le signe « lettrage » (le nom composé par le Studio, parfois avec la vague) n'est jamais donné pour le logo.
@@ -832,6 +839,10 @@ describe("SINA — chaîne de création de la marque", async () => {
     // B : logo sur fond noir, refusé sans IA avant la relecture ; l'objet ne le porte pas ; c'est dit au client.
     expect(log.prompts["imagecheck-1-B"]).not.toContain(`slot "logo"`);
     expect((log as any).refs["image-1-B-object"].logo).toBe(false);
+    // Sans logo gardé, l'objet n'en porte aucun d'inventé (essai réel : une patte sur le camion), et le relecteur le sait.
+    expect(log.prompts["image-1-B-object"]).toContain(I.NO_INVENTED_MARK);
+    expect(log.prompts["image-1-A-object"]).not.toContain(I.NO_INVENTED_MARK);
+    expect(log.prompts["imagecheck-1-B"]).toMatch(/slot "object" : l'objet ou les signes de la marque SANS logo fourni/);
     expect(rb.board!.images!.logo).toBeUndefined();
     expect(rb.board!.images!.mark).toBeUndefined();
     expect(J.journeyOf(t.cid).identities!.issues.join("\n")).toMatch(/Identité B : je n'ai pas gardé le logo \(il n'est pas sur un fond blanc net : il ne se lirait pas sur tes supports\) ; tu vois mon nom dessiné à la place\./);

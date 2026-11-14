@@ -118,6 +118,8 @@ const NO_TEXT = "Aucun texte, aucune lettre, aucun chiffre, aucun logo, aucun fi
  * Les signes de la marque en vraie photo (retour du propriétaire du 14 novembre 2026 sur les planches de la
  * toiletteuse : « Tu me ressors encore des vieux pictogrammes dégueulasses ») : jamais une icône plate.
  */
+/** Sans logo gardé, le modèle en inventait un (une patte sur le camion de « Pelage », essai réel du 14 novembre 2026). */
+export const NO_INVENTED_MARK = "Aucun logo ni symbole inventé : le nom est écrit seul, en lettres simples, sans patte, sans silhouette, sans dessin ni pictogramme à côté.";
 export const SIGNS_LINE = "Une vraie photographie haut de gamme, comme dans le livre d'identité d'une grande agence : les signes de la marque sont appliqués sur de vrais objets de son monde, en vraies matières (impression, broderie, gravure, peinture, sérigraphie). Jamais une icône plate, jamais un pictogramme, jamais une grille de cases ni un nuancier dessiné.";
 /** Le nom épelé (« P, e, l, a, g, e ») : sans modèle d'image, c'est ce qui tient les lettres exactes. */
 export const spell = (name: string) => [...name.normalize("NFC")].map((c) => (c === " " ? "(espace)" : c)).join(", ");
@@ -125,6 +127,11 @@ export const spell = (name: string) => [...name.normalize("NFC")].map((c) => (c 
  * Gestes de logo déjà pris par des marques faites avec le Studio : jamais redonnés (la vague qui coupe le nom, à moitié
  * dans l'eau, est celle de « Pulpe », validée par le propriétaire le 13 novembre 2026).
  */
+/**
+ * Un logo, pas une illustration (essai réel du 14 novembre 2026 : « Pelage » est revenu en scène dessinée, une
+ * toiletteuse à genoux près de son camion, alors que la consigne disait « aucune personne »).
+ */
+export const LOGO_NOT_SCENE = "Un LOGO, pas une illustration ni une scène : le nom, et au plus UN signe simple et fort (un seul objet ou une seule forme), lisible en tout petit comme un tampon. Aucune personne, aucun personnage, aucune silhouette humaine, aucune main ; aucune scène avec un décor, un véhicule garé ou une maison.";
 export const LOGO_OWN = "Une conception propre à cette marque, tirée de son idée et de son métier, jamais une recette : pas de nom coupé ou barré par une ligne ondulée, pas de nom à moitié plongé dans l'eau ou dans l'ombre (c'est le logo d'une autre marque).";
 const exact = (texts: string[]) => `Textes à écrire dans l'image, lettre pour lettre, accents et ponctuation compris : ${texts.map((t) => `« ${t} »`).join(" ; ")}. Aucun autre texte, aucun mot inventé, aucun faux texte de remplissage.`;
 const paletteLine = (x: Route) => `Couleurs de la marque : foncé ${x.palette.dark}, couleur de marque ${x.palette.primary}, surface ${x.palette.secondary}, accent ${x.palette.accent}, clair ${x.palette.light}.`;
@@ -139,7 +146,7 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
       `Logo de la marque « ${x.name} ». Tu le conçois toi-même, comme le meilleur créateur de logos le ferait pour CETTE marque : la forme, le dessin des lettres et le signe éventuel sont à toi.`,
       `Le nom s'écrit exactement « ${x.name} », lettre par lettre : ${spell(x.name)}. Aucune lettre ajoutée, retirée ni changée, accents compris.`,
       imagery.logo.trim(), look ? `Direction artistique de la marque : ${look}` : "", paletteLine(x),
-      LOGO_OWN,
+      LOGO_OWN, LOGO_NOT_SCENE,
       "Un seul logo, centré, à plat, net et lisible d'un coup d'œil, sur un fond BLANC uni jusqu'aux bords, avec de l'air autour ; ses couleurs se lisent bien sur du blanc. Aucun fond noir ni coloré, aucun dégradé, aucune lueur, aucun relief. Aucun autre texte que le nom, aucune maquette, aucun objet autour, aucun cadre, aucune ombre portée, aucune personne.",
     ].filter(Boolean).join("\n");
   }
@@ -153,6 +160,7 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
     slot === "site" ? "Montre seulement l'écran, bord à bord, en portrait : ni téléphone, ni cadre, ni main, ni fond autour." : "",
     slot.startsWith("post") ? "Visuel de publication pour un réseau social, en portrait, bord à bord : aucun cadre d'application, aucun bouton, aucun pseudonyme." : "",
     slot === "signs" ? SIGNS_LINE : "",
+    (slot === "object" || slot === "site") && !withLogo ? NO_INVENTED_MARK : "",
     slot === "signs" ? (withLogo ? "Aucun autre texte que le logo : aucune lettre, aucun chiffre, aucun mot, aucun filigrane." : NO_TEXT) : written.length ? exact(written) : NO_TEXT, NO_PERSON, NO_OTHER_BRAND,
   ].filter(Boolean).join("\n");
 }
@@ -189,6 +197,9 @@ const hasDrawing = (x: Route, slot: ImageSlot): boolean => {
 };
 export type BoardImagesResult = { route: Route; made: number; rejected: number; notes: string[]; issues: string[] };
 
+/** Un logo à fond transparent posé sur du blanc, pour qu'un relecteur le voie comme le client le verra. */
+export const onWhite = (png: Buffer): Promise<Buffer> => sharp(png).flatten({ background: "#FFFFFF" }).png().toBuffer().catch(() => png);
+
 /**
  * Contrôle gratuit, sans IA : le logo est-il sur un fond blanc net jusqu'aux bords ? (essai réel du 14 novembre 2026 :
  * le logo de « Coussinet » est sorti noir, flou et lumineux, illisible, et le relecteur l'avait gardé.) On regarde une
@@ -196,7 +207,9 @@ export type BoardImagesResult = { route: Route; made: number; rejected: number; 
  */
 export async function logoOnWhite(png: Buffer): Promise<boolean> {
   try {
-    const { data, info } = await sharp(png).removeAlpha().resize(256, 256, { fit: "fill" }).raw().toBuffer({ resolveWithObject: true });
+    // Un fond transparent compte comme blanc (essai réel du 14 novembre 2026 : OpenAI a rendu les logos sur fond
+    // transparent, que le contrôle lisait comme du noir).
+    const { data, info } = await sharp(png).flatten({ background: "#FFFFFF" }).resize(256, 256, { fit: "fill" }).raw().toBuffer({ resolveWithObject: true });
     const w = info.width, h = info.height, c = info.channels, band = Math.max(3, Math.round(w * 0.04));
     let white = 0, all = 0;
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
@@ -289,12 +302,14 @@ export async function runBoardImages(o: {
       rejected += slots.length;
       issues.push(tag(L("je n'ai pas pu relire ses images, donc je ne te les montre pas ; tu vois mes dessins à la place.", "I could not review its images, so I am not showing them; you see my drawings instead.")));
     };
+    // Un logo à fond transparent est montré au relecteur posé sur du blanc, comme le client le verra.
+    const seen = await Promise.all(slots.map(async (s) => ({ data: s === "logo" ? await onWhite(bufferOf(s)!) : bufferOf(s)!, label: s })));
     if (capped) unreviewed();
     else try {
       const review = await ctx.step(`brand:imagecheck:${round}:${key}${pass}`, () => ai.look(`imagecheck-${round}-${key}${pass}`, {
         system: P.imageReviewSystem(), schema: ImageReviewSchema,
-        prompt: [`Marque : « ${x.name} ». Voici ${slots.length} image(s), dans l'ordre.`, ...slots.map((s, i) => `Image ${i + 1} — slot "${s}" : ${ROLE_FOR_REVIEW[s]}. Textes attendus : ${texts[s].length ? texts[s].map((t) => `« ${t} »`).join(" ; ") : "aucun"}.`)].join("\n"),
-        images: slots.map((s) => ({ data: bufferOf(s)!, label: s })),
+        prompt: [`Marque : « ${x.name} ». Voici ${slots.length} image(s), dans l'ordre.`, ...slots.map((s, i) => `Image ${i + 1} — slot "${s}" : ${(s === "object" || s === "signs") && !logo ? "l'objet ou les signes de la marque SANS logo fourni : le nom seul en lettres simples ; un logo, une patte, une silhouette ou un symbole inventés sont un défaut (defect « autre »)" : ROLE_FOR_REVIEW[s]}. Textes attendus : ${texts[s].length ? texts[s].map((t) => `« ${t} »`).join(" ; ") : "aucun"}.`)].join("\n"),
+        images: seen,
       }));
       // Le Studio compare la lecture du relecteur aux textes attendus. Quand son jugement et sa propre lecture se
       // contredisent (refus « texte » alors qu'il a tout recopié sans faute, ou accord alors qu'il a lu un texte en
