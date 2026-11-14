@@ -186,6 +186,13 @@ Page en ligne du document : https://claude.ai/artifact/76xobBZYJxCMt6oxuSeNLn
 
 ## 13. Le prix des forfaits (estimation du 14 novembre 2026, à affiner par des mesures)
 
+**Où on en est (14 novembre 2026).** Grille proposée par le propriétaire et vérifiée par le calcul : **69 €, 99 € et
+169 € par mois**, sans prix de création ni engagement ; le budget d'IA du client vaut **50 % du prix hors taxes le
+premier mois**, puis **40 %** les mois suivants. Détail à la fin de cette partie (« La grille retenue »). Les
+réflexions ci-dessous sont gardées comme chemin : quand elles parlent de 49 €, 89 €, 129 €, d'un prix de création de
+69 € ou d'un engagement de trois mois, c'est remplacé. Rien n'est changé dans le Studio tant que le lot des forfaits
+n'est pas validé : le site affiche encore 49 €, 89 € et 129 €.
+
 Question du propriétaire : « si je veux que le studio fonctionne comme je le pense il faut des ia à niveau haut et fort
 de réflexion et ça coûte cher […] dit moi à combien de devrais mettre les forfaits pour que les clients est asser de
 crédit ia tous les mois et que je garde les fameux 60% de marge ». Règle : budget d'IA = 40 % du prix hors taxes, donc
@@ -341,6 +348,66 @@ l'IA resterait autour de 40 % du prix hors taxes pour les trois forfaits (estima
 
 Écarté : des modèles moins forts ou moins de relectures (la qualité baisserait) ; un prix mensuel plus élevé (ce sont
 les mêmes 69 €, cachés).
+
+### La grille retenue : 69 €, 99 €, 169 €, et 50 % d'IA le premier mois (14 novembre 2026)
+
+Idée du propriétaire : « Et si on augmentait les forfaits à 69 99 et 169 et que je perdais un peu plus de marge au
+premier mois, je peux accepter de laisser 50% de crédit ia du forfait et le mois d'après on repasse a 40% ? ».
+
+Avis de Claude : oui, c'est mieux que le prix de création et mieux que l'engagement de trois mois. Pourquoi : le client
+ne paie rien de plus au départ et n'est pas tenu ; le budget d'IA est un plafond, donc la part de l'IA ne dépasse jamais
+50 % le premier mois ni 40 % ensuite ; un client qui part après un mois ne fait rien perdre ; sur douze mois, la part
+de l'IA est au plus de 40,8 %, soit une marge d'au moins 59 %.
+
+| Par mois | 69 € | 99 € | 169 € |
+|---|---|---|---|
+| Prix hors taxes | 57,50 € | 82,50 € | 140,83 € |
+| Budget d'IA du premier mois (50 %) | 28,75 € | 41,25 € | 70,42 € |
+| Besoin estimé du premier mois (création, puis publications une fois la marque prête) | environ 18 € | environ 34,50 € | environ 50,50 € |
+| Budget d'IA des mois suivants (40 %) | 23,00 € | 33,00 € | 56,33 € |
+| Besoin estimé d'un mois courant (20 % de sécurité compris) | environ 12 € | environ 32,50 € | environ 56 € avec 6 vidéos (60,70 € avec 8) |
+| Ce qui reste au Studio le premier mois, au moins | 28,75 € | 41,25 € | 70,42 € |
+| Ce qui reste au Studio les mois suivants, au moins | 34,50 € | 49,50 € | 84,50 € |
+
+Pour comparer, avec les prix d'aujourd'hui et 40 % : il reste 24,50 €, 44,50 € et 64,50 €.
+
+Calcul d'un mois courant, avant les 20 % de sécurité. Premier forfait : 30 publications en images (6,60 €), 30
+réponses de SINA (2,40 €), le point du mois (1 €). Deuxième : 60 publications (13,20 €), 3 vidéos (6 €), 1 campagne
+(1,10 €), 60 réponses (4,80 €), 4 points de la semaine (2 €). Troisième : 90 publications (19,80 €), 6 vidéos (12 €),
+2 campagnes (2,20 €), 120 réponses (9,60 €), les points de la semaine avec les chiffres et la veille (3 €).
+
+Ce que chaque forfait contient (inchangé, sauf les vidéos du troisième) :
+
+| | 69 € | 99 € | 169 € |
+|---|---|---|---|
+| Identités proposées | 2 | 3 | 4 |
+| Site | Un thème du Studio, adapté | Sur mesure | Sur mesure, ouverture dessinée par SINA |
+| Publications en images | 1 par jour | 2 par jour | 3 par jour |
+| Vidéos par mois | 0 | 3 | 6 (8 dès que le vrai prix de l'image est confirmé) |
+| Campagnes publicitaires préparées | 0 | 1 | 2 |
+| SINA prend les devants | Un point par mois | Un point par semaine | Chaque semaine, avec les chiffres et la veille des concurrents |
+
+Options, sur n'importe quel forfait : dix vidéos de plus, 59 € ; une campagne de plus, 5 € en images ou 12 € avec une
+vidéo. Tous les réseaux sont compris ; les images ne se vendent jamais à l'unité.
+
+Trois conditions pour que cela tienne :
+1. Construire les économies de la création (travail en différé à moitié prix, images complètes seulement pour
+   l'identité choisie, réemploi de ce qui est créé). Sans elles, la création coûte 20 à 30 € et le premier mois du
+   forfait à 99 € ne tient pas (environ 45,50 € pour 41,25 €).
+2. Le premier mois, les publications commencent quand la marque et le site sont prêts : c'est naturel, et c'est ce qui
+   laisse la place à la création dans le budget.
+3. Le troisième forfait part avec 6 vidéos comprises. Avec 8, le besoin estimé (60,70 €) dépasse le budget (56,33 €).
+   On repasse à 8 si la facture d'OpenAI confirme le prix mesuré de l'image (0,05 € au lieu de 0,13 € compté).
+
+Le forfait le plus juste est celui à 99 € (32,50 € estimés pour 33 €) : il tient parce que l'image est comptée au prix
+prudent ; au prix mesuré, il resterait environ 5 € de marge de plus par mois.
+
+Non comptés : frais de paiement, serveurs, assistance. Tous ces chiffres sont des estimations, sauf les prix hors
+taxes et les budgets, qui sont des calculs exacts.
+
+Ce qui change dans le Studio, à faire dans le lot des forfaits (rien n'est fait) : les trois prix ; le budget du
+premier mois à 50 % (le client voit toujours un pourcentage de son budget, jamais des euros) ; le nombre de
+publications, de vidéos et de campagnes compris par forfait.
 
 Sources de la partie 7 : journal des nouveautés de Shopify (conseils de Sidekick), Unite.AI (Canvas), TechCrunch
 (créateur de boutique), eCommerce Fastlane, Copyfy, blog de Google (Pomelli), test de Blaze par R. Doser, Apaya, blog de

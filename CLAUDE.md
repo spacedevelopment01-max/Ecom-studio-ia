@@ -17,7 +17,10 @@ joue que le client dans les essais (« c'est à sina d'y faire, pas à toi ») ;
 jamais lui faire répéter : « C'est pas a moi de choisir tu es bien plus intelligent que moi donc c'est a toi de me dire ce
 qui serait bien ou non ») : Claude tranche, explique pourquoi et dit ce qu'il fera ; le propriétaire dit oui ou non ; ne
 lui poser que ce que lui seul peut savoir ou engager (son argent, son goût, sa responsabilité, ce qui ne se rattrape
-pas), jamais « tu préfères A ou B ? » sur une question de métier. Les notes
+pas), jamais « tu préfères A ou B ? » sur une question de métier. **Prix des forfaits** (son idée du 14 novembre
+2026, vérifiée par le calcul, partie 13 du document) : 69 €, 99 € et 169 € par mois, sans prix de création ni
+engagement ; budget d'IA du client à 50 % du prix hors taxes le premier mois, puis 40 % ; rien n'est changé dans le
+code (`plans.ts` garde 49 €, 89 €, 129 €) tant que le lot des forfaits n'est pas validé. Les notes
 ci-dessous restent vraies comme historique, mais le document de référence prime dès qu'il est validé.
 
 ## Avec le propriétaire
