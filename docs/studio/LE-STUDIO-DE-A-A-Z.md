@@ -405,6 +405,26 @@ prudent ; au prix mesuré, il resterait environ 5 € de marge de plus par mois.
 Non comptés : frais de paiement, serveurs, assistance. Tous ces chiffres sont des estimations, sauf les prix hors
 taxes et les budgets, qui sont des calculs exacts.
 
+**Ce que le propriétaire garde, par client et par mois** (sa question du 14 novembre : « A combien tu estimes ce que
+je dois garder en % et en € la marge pour chaque forfait par mois ? »). Avis de Claude : garder la règle des 60 % après
+l'IA en mois courant, ne pas descendre plus bas, parce que le paiement par carte et les serveurs en reprennent environ
+6 points et qu'il reste ensuite ses frais à lui (son temps, la publicité pour trouver des clients, le comptable, ses
+cotisations), que lui seul connaît. Les pourcentages sont calculés sur le prix hors taxes.
+
+| | 69 € | 99 € | 169 € |
+|---|---|---|---|
+| Prix hors taxes | 57,50 € | 82,50 € | 140,83 € |
+| IA d'un mois courant, au plus (40 %) | 23,00 € | 33,00 € | 56,33 € |
+| Gardé après l'IA, au moins | 34,50 € (60 %) | 49,50 € (60 %) | 84,50 € (60 %) |
+| Paiement par carte et serveurs (estimation de Claude, non mesurée) | environ 4 € | environ 5 € | environ 8 € |
+| Gardé en mois courant, au moins | environ 30,50 € (53 %) | environ 44,50 € (54 %) | environ 76,50 € (54 %) |
+| Gardé le premier mois (IA à 50 %), au moins | environ 24,75 € (43 %) | environ 36,25 € (44 %) | environ 62,40 € (44 %) |
+
+Ce sont des planchers : ils supposent que le client dépense tout son budget d'IA. Un client du premier forfait qui
+publie une fois par jour en dépense environ 12 € sur 23 € : il reste alors environ 41,50 € (72 %). Les frais de
+paiement sont comptés à environ 3 % du prix payé (à vérifier sur le compte de paiement) et les serveurs à 2 ou 3 € par
+client (jamais mesurés).
+
 Ce qui change dans le Studio, à faire dans le lot des forfaits (rien n'est fait) : les trois prix ; le budget du
 premier mois à 50 % (le client voit toujours un pourcentage de son budget, jamais des euros) ; le nombre de
 publications, de vidéos et de campagnes compris par forfait.
