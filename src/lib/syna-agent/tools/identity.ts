@@ -27,7 +27,8 @@ import { journeyOf, setStep, updateJourney, type Journey } from "../journey";
 import {
   IDENTITY_SYSTEM, IdentitiesSchema, LOGO_STYLE_LABEL, fontFamily, identityIssues, identityPrompt, prepareIdentities, type Identity,
 } from "../identities";
-import { SINA_BRAND_JOB, chainQuote, routeCountOfProject } from "../brand-chain";
+import { SINA_BRAND_JOB, boardImagesQuote, chainQuote, routeCountOfProject } from "../brand-chain";
+import { CREATED_SLOTS } from "../brand-images";
 import { ROUTE_KEYS, routeKeys } from "../brand-routes";
 import { project, short } from "./common";
 
@@ -319,4 +320,39 @@ const chooseTool: AgentTool<{ key: Key; mix?: Partial<Record<Part, Key>>; name?:
   },
 };
 
-export const identityTools: AgentTool[] = [proposeTool, chooseTool];
+/** Les images d'une planche que SINA peut refaire (le haut du site est une vraie page, jamais une image). */
+const REDO_IMAGES = CREATED_SLOTS as unknown as [string, ...string[]];
+type ImagesArgs = { keys: Key[]; images: string[]; guidance?: string };
+/**
+ * Refaire SEULEMENT certaines images d'une ou plusieurs planches (retour du propriétaire du 14 novembre 2026, sur
+ * l'essai de la toiletteuse : « c'est à SINA d'y faire, pas à toi ») : la planche, son nom, ses textes et ses autres
+ * images ne bougent pas. Le camion ou l'objet qui porte le logo est refait avec le logo gardé ; sans logo gardé, il ne
+ * l'est pas. Devis par image refaite, accord du client avant.
+ */
+const imagesTool: AgentTool<ImagesArgs> = {
+  name: "identity.images", module: "marque", kind: "generate", needsProject: true,
+  description: "Étape 1 : refait SEULEMENT certaines images des planches déjà montrées (le logo, la grande image « hero », l'objet ou le véhicule qui porte le logo « object », l'image des signes « signs », les publications « post0 », « post1 », « post2 »), sans toucher au nom, aux textes ni aux autres images. À utiliser quand une image est fausse ou refusée (la planche le dit) ou quand le client signale un défaut (« le camion n'est pas assez grand », « le logo n'est pas le même sur le camion ») : dis-lui ce que tu refais et pourquoi, et mets sa correction, avec ses mots, dans guidance. Le logo refait est aussi reposé sur l'objet si tu refais l'objet. keys = les planches (A, B, C, D) ; images = les images à refaire.",
+  args: z.object({ keys: z.array(z.enum(KEYS)).min(1).max(4), images: z.array(z.enum(REDO_IMAGES)).min(1).max(7), guidance: z.string().max(1500).optional() }).strict(),
+  estimate: (_ctx, a) => ({ ...boardImagesQuote(a.keys.length, undefined, a.images as never), label: `${a.images.length} image${a.images.length > 1 ? "s" : ""} à refaire sur ${a.keys.length} planche${a.keys.length > 1 ? "s" : ""}` }),
+  run: (ctx, a) => {
+    const p = project(ctx);
+    const j = journeyOf(ctx.conversationId);
+    const list = j.identities?.list ?? [];
+    const keys = [...new Set(a.keys)].filter((k) => list.some((x) => x.key === k && !!x.board));
+    if (!keys.length) return { ok: false, summary: L("Il n'y a pas encore de planche à reprendre.", "There is no board to redo yet."), hint: "Les images se refont sur des planches déjà montrées (identity.propose d'abord)." };
+    if (pendingJob(p.id, SINA_BRAND_JOB)) return { ok: false, summary: L("Une création de marque est déjà en cours : attends-la.", "A brand job is already running.") };
+    const images = [...new Set(a.images)];
+    const quote = boardImagesQuote(keys.length, undefined, images as never);
+    const job = enqueue({
+      userId: ctx.user.id, projectId: p.id, type: SINA_BRAND_JOB, label: L(`Images refaites sur ${keys.length} planche${keys.length > 1 ? "s" : ""} (SINA)`, `Board images redone (SINA)`),
+      payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: quote.maxMicro, count: routeCountOfProject(p.id), imagesOnly: true, images: true, redo: keys, slots: images, ...(a.guidance ? { guidance: a.guidance } : {}) },
+      maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:brand-images:${keys.join("")}:${images.join("+")}`,
+    });
+    return {
+      ok: true, jobs: [job.id], data: { planches: keys, images, plafondMicro: quote.maxMicro },
+      summary: L(`Je refais ${images.length} image${images.length > 1 ? "s" : ""} sur ${keys.map((k) => `« ${list.find((x) => x.key === k)?.name ?? k} »`).join(" et ")} (quelques minutes) ; le reste des planches ne bouge pas.`, "Redoing the board images."),
+    };
+  },
+};
+
+export const identityTools: AgentTool[] = [proposeTool, chooseTool, imagesTool];
