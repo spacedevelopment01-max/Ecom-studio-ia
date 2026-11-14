@@ -362,7 +362,8 @@ function PhoneSite({ x, shots, headWeight, firstPicto, t }: { x: BoardCard; shot
         <h5 style={{ fontWeight: headWeight }}><span>{shelf}</span><small>{t("Tout voir", "See all")} →</small></h5>
         <div className="bb-ps-row">
           <div className="bb-ps-prod">
-            <div className="pic" style={{ background: tile, color: tileInk }}><Wordmark x={x} main={tileInk} accent={[p.accent, p.light, p.dark].find((c) => contrast(c, tile) >= 1.9) ?? tileInk} compact className="block h-6 max-w-[80%] text-xs" /></div>
+            {shotOk(shots.mark) ? <div className="pic" style={{ background: "#FFFFFF" }}><Photo shot={shots.mark} alt={x.name} className="bb-ps-mark" /></div>
+              : <div className="pic" style={{ background: tile, color: tileInk }}><Wordmark x={x} main={tileInk} accent={[p.accent, p.light, p.dark].find((c) => contrast(c, tile) >= 1.9) ?? tileInk} compact className="block h-6 max-w-[80%] text-xs" /></div>}
             <div className="txt"><b>{product ?? t("[Ton premier produit]", "[Your first product]")}</b><i aria-hidden>+</i></div>
           </div>
           <div className="bb-ps-prod" aria-hidden><div className="pic" style={{ background: safeHex(p.accent), color: inkOn(safeHex(p.accent), p) }} /><div className="txt"><b>&nbsp;</b></div></div>
@@ -508,7 +509,8 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
             const tiles = order.filter((o) => hasTile(o.s)).length;
             return order.map(({ s, i }, k) => {
             const bg = signBg[i], on = inkOn(bg, p), acc = [p.accent, p.primary, p.secondary, on].find((c) => contrast(c, bg) >= 2.2) ?? on;
-            const mark = lum(bg) < 0.4 ? shots.markDark : shots.mark;
+            // Le logo dessiné se pose sur du blanc, tel qu'il a été créé (sur une case sombre, sa version claire se lisait mal).
+            const mark = shots.mark;
             const seen = s.kind === "lettrage" ? (shotOk(mark) ? <Photo shot={mark} alt={x.name} className="bb-seen-mark" /> : <Wordmark x={x} main={on} accent={acc} compact className="max-h-[70%] max-w-[86%] text-xl" />)
               : s.kind === "couleur" ? <span className="flex h-full w-full" aria-hidden>{(["dark", "primary", "secondary", "accent", "light"] as const).map((r) => <i key={r} className="block flex-1" style={{ background: safeHex(p[r]) }} />)}</span>
                 : s.sample ? <span className={cx("bb-sample", s.hand && "bb-hand")} style={s.hand ? { color: acc } : { fontWeight: headWeight }} data-sample>{s.sample}</span>
@@ -516,7 +518,7 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
                     : null;
             return (
               <div key={i} className={cx("bb-signcard", !seen && "bb-signcard-words", seen && tiles % 2 === 1 && k === tiles - 1 && "bb-signcard-wide")} data-sign={s.kind}>
-                {seen && <div className="bb-seen" style={{ background: bg, color: on }} data-seen={s.kind === "lettrage" ? "logo" : s.kind === "couleur" ? "couleurs" : "mots"}>{seen}</div>}
+                {seen && <div className="bb-seen" style={{ background: s.kind === "lettrage" && shotOk(mark) ? "#FFFFFF" : bg, color: on }} data-seen={s.kind === "lettrage" ? "logo" : s.kind === "couleur" ? "couleurs" : "mots"}>{seen}</div>}
                 {/* Le logo dessiné remplace le nom composé : le texte qui décrivait ce nom composé n'est plus vrai. */}
                 {s.kind === "lettrage" && shotOk(mark) ? <p><b>{t("Le logo", "The logo")}</b></p> : <p><b>{s.title}</b> {s.text}</p>}
               </div>
@@ -547,10 +549,12 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
               <div className="bb-sticker" style={{ background: stickerBg, color: stickerInk }}><Wordmark x={x} main={stickerInk} accent={[p.primary, p.dark, p.light].find((c) => contrast(c, stickerBg) >= 2.2) ?? stickerInk} compact className="block h-full w-full" /></div>
               <figcaption>{t("L'autocollant", "The sticker")}</figcaption>
             </figure>}
-            <figure data-parcel>
+            {/* Planche à images : plus de colis dessiné en code (sans objet pour un métier de services, et un dessin
+                là où le reste est en vraies photos). */}
+            {!b.images && <figure data-parcel>
               <div className="bb-parcel"><div className="bb-tape" style={{ background: tapeBg, color: tapeInk, fontWeight: headWeight }} aria-label={tape}>{Array.from({ length: 5 }, (_u, i) => <span key={i} aria-hidden>&nbsp;{tape}&nbsp;·</span>)}</div><div className="bb-label">{t("[Nom de ta cliente]", "[Your customer's name]")}<br />{t("[Adresse]", "[Address]")}</div></div>
               <figcaption>{t("Le colis", "The parcel")}</figcaption>
-            </figure>
+            </figure>}
           </div>
           <figure className="bb-wide" data-posts>
             {/* Avec des images créées : des publications assez grandes pour être lues sur téléphone (on les fait défiler). */}
