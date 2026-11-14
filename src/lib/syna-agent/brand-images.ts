@@ -183,13 +183,13 @@ const SLOT_LABEL: Record<ImageSlot, { fr: string; en: string }> = {
   post0: { fr: "la première publication", en: "the first post" }, post1: { fr: "la deuxième publication", en: "the second post" }, post2: { fr: "la troisième publication", en: "the third post" },
 };
 const ROLE_FOR_REVIEW: Record<ImageSlot, string> = {
-  logo: "le logo de la marque", hero: "la grande image de la marque (aucun texte attendu)", object: "l'objet de la marque, avec le logo posé dessus", signs: "les signes de la marque posés sur de vrais objets de son monde, le logo fourni compris (aucun autre texte attendu ; une icône plate ou un pictogramme est un défaut)", site: "le haut de la page d'accueil, sur téléphone",
+  logo: "le logo de la marque", hero: "la grande image de la marque (aucun texte attendu)", object: "l'objet de la marque, avec le logo posé dessus : EXACTEMENT celui de l'image « logo » (même signe, même dessin de lettres, même graisse) ; une autre police est un défaut", signs: "les signes de la marque posés sur de vrais objets de son monde, le logo fourni compris (aucun autre texte attendu ; une icône plate ou un pictogramme est un défaut)", site: "le haut de la page d'accueil, sur téléphone",
   post0: "une publication", post1: "une publication", post2: "une publication",
 };
 
 type Made = { id: string; w: number; h: number };
 /** Ce que le client voit à la place d'une image non gardée (dit tel quel, jamais un dessin qui n'existe pas). */
-const instead = (x: Route, slot: ImageSlot): string => slot === "signs" ? "les signes restent décrits en mots, sans dessin" : hasDrawing(x, slot) ? "tu vois mon dessin à la place" : "sa place garde la forme simple de la planche";
+const instead = (x: Route, slot: ImageSlot): string => slot === "signs" ? "les signes restent décrits en mots, sans dessin" : slot === "object" ? "je ne le montre pas sur la planche" : hasDrawing(x, slot) ? "tu vois mon dessin à la place" : "sa place garde la forme simple de la planche";
 /** Reste-t-il un dessin de SINA à cette place (l'illustratrice l'a rendu, et sa relecture en image ne l'a pas retiré) ? */
 const hasDrawing = (x: Route, slot: ImageSlot): boolean => {
   const b = x.board as { hero?: unknown; object: { art?: unknown }; site: { art?: unknown }; posts: { art?: unknown }[] };
@@ -312,11 +312,14 @@ export async function runBoardImages(o: {
     };
     // Un logo à fond transparent est montré au relecteur posé sur du blanc, comme le client le verra.
     const seen = await Promise.all(slots.map(async (s) => ({ data: s === "logo" ? await onWhite(bufferOf(s)!) : bufferOf(s)!, label: s })));
+    // Un objet qui porte un logo gardé d'avant : ce logo est joint, en dernier, pour que le relecteur compare.
+    const reference = !slots.includes("logo") && logo && slots.some((s) => s === "object" || s === "signs") ? await onWhite(logo) : null;
+    if (reference) seen.push({ data: reference, label: "logo" });
     if (capped) unreviewed();
     else try {
       const review = await ctx.step(`brand:imagecheck:${round}:${key}${pass}`, () => ai.look(`imagecheck-${round}-${key}${pass}`, {
         system: P.imageReviewSystem(), schema: ImageReviewSchema,
-        prompt: [`Marque : « ${x.name} ».${x.board.descriptor ? ` Métier : ${x.board.descriptor}.` : ""} Voici ${slots.length} image(s), dans l'ordre.`, ...slots.map((s, i) => `Image ${i + 1} — slot "${s}" : ${(s === "object" || s === "signs") && !logo ? "l'objet ou les signes de la marque SANS logo fourni : le nom seul en lettres simples ; un logo, une patte, une silhouette ou un symbole inventés sont un défaut (defect « autre »)" : ROLE_FOR_REVIEW[s]}. Textes attendus : ${texts[s].length ? texts[s].map((t) => `« ${t} »`).join(" ; ") : "aucun"}.`)].join("\n"),
+        prompt: [`Marque : « ${x.name} ».${x.board.descriptor ? ` Métier : ${x.board.descriptor}.` : ""} Voici ${slots.length} image(s), dans l'ordre.${reference ? ` La dernière image jointe (${slots.length + 1}) est seulement le logo de la marque, pour comparer : ne la juge pas.` : ""}`, ...slots.map((s, i) => `Image ${i + 1} — slot "${s}" : ${(s === "object" || s === "signs") && !logo ? "l'objet ou les signes de la marque SANS logo fourni : le nom seul en lettres simples ; un logo, une patte, une silhouette ou un symbole inventés sont un défaut (defect « autre »)" : ROLE_FOR_REVIEW[s]}. Textes attendus : ${texts[s].length ? texts[s].map((t) => `« ${t} »`).join(" ; ") : "aucun"}.`)].join("\n"),
         images: seen,
       }));
       // Le Studio compare la lecture du relecteur aux textes attendus. Quand son jugement et sa propre lecture se

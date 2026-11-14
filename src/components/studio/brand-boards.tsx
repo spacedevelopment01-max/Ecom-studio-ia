@@ -532,7 +532,7 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
               <div className="bb-shot"><Photo shot={shots.object} alt={b.object.label} /></div>
               <figcaption>{b.object.label}{b.object.back.length > 0 ? <> · {t("au dos", "on the back")} : {b.object.back[0]}</> : null}</figcaption>
             </figure>
-          ) : (
+          ) : b.images ? null /* planche à images : jamais un dessin de secours à la place d'une photo refusée */ : (
             <>
               <figure data-object={b.object.kind}><ObjectFace x={x} pop={pop} /><figcaption>{b.object.label}</figcaption></figure>
               {b.object.back.length > 0 && <figure><ObjectFace x={x} back pop={pop} /><figcaption>{t("Le dos", "The back")}</figcaption></figure>}

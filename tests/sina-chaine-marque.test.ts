@@ -653,7 +653,8 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(rc.board!.images!.logo).toBeUndefined();
     const issues = J.journeyOf(t.cid).identities!.issues.join("\n");
     // Le message dit vrai : « mon dessin » seulement s'il reste un dessin à cette place, sinon la forme simple de la planche.
-    expect(issues).toContain(`Identité B : je n'ai pas gardé l'image de l'objet (Le titre est mal écrit) ; ${(rb.board as any).object.art ? "tu vois mon dessin à la place" : "sa place garde la forme simple de la planche"}.`);
+    // Sur une planche à images, l'objet refusé n'est jamais remplacé par un dessin : c'est dit tel quel.
+    expect(issues).toContain("Identité B : je n'ai pas gardé l'image de l'objet (Le titre est mal écrit) ; je ne le montre pas sur la planche.");
     expect(issues).toMatch(/Identité C : je n'ai pas gardé le logo \(le nom n'y est pas écrit exactement\)/);
     expect((out as any).routes).toHaveLength(3);
     // Bibliothèque du client : les images gardées sont prêtes, l'image refusée y est marquée refusée avec sa raison.
@@ -747,7 +748,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(issues).toMatch(/je n'ai pas gardé la deuxième publication \(Elle ne va pas\)/);
     // Le message dit vrai : son dessin s'il en reste un à cette place, sinon la forme simple de la planche.
     const drawn = (slot: "object" | 1 | 2) => (slot === "object" ? !!(a.board as any).object.art : !!(a.board as any).posts[slot].art);
-    expect(issues).toMatch(new RegExp(`l'image de l'objet \\([^)]*\\) ; ${drawn("object") ? "tu vois mon dessin à la place" : "sa place garde la forme simple de la planche"}\\.`));
+    expect(issues).toMatch(/l'image de l'objet \([^)]*\) ; je ne le montre pas sur la planche\./); // jamais un dessin à sa place
     expect(issues).toMatch(new RegExp(`la troisième publication \\([^)]*\\) ; ${drawn(2) ? "tu vois mon dessin à la place" : "sa place garde la forme simple de la planche"}\\.`));
     // La consigne du relecteur : recopier sans corriger, nommer la nature du défaut, relire sa lecture avant de refuser.
     expect(log.systems["imagecheck-1-A"]).toMatch(/recopiés lettre par lettre tels qu'ils sont dessinés, fautes comprises/);
@@ -894,6 +895,15 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(kept.object).toEqual(after.object);
     expect(kept.mark).toEqual(after.mark);
     expect(J.journeyOf(t.cid).identities!.issues.join("\n")).toMatch(/Identité A : je n'ai pas refait l'image de l'objet : sans logo gardé, il porterait un autre logo que le tien\./);
+    // Refaire seulement l'objet : il porte le logo gardé, et ce logo est joint à la relecture pour comparer (essai
+    // réel : le fourgon de « Pelage » portait le bon signe mais le nom dans une autre police).
+    const third = await chain(t, { imagesOnly: true, redo: ["A"], slots: ["object"] }, { draw: async () => square("#224466", 128, 128) });
+    expect(third.log.ids.filter((id) => id.startsWith("image-"))).toEqual(["image-1-A-object:object"]);
+    expect((third.log as any).refs["image-1-A-object:object"].logo).toBe(true);
+    expect(third.log.prompts["imagecheck-1-A:object"]).toMatch(/La dernière image jointe \(2\) est seulement le logo de la marque, pour comparer : ne la juge pas\./);
+    expect(third.log.prompts["imagecheck-1-A:object"]).toMatch(/EXACTEMENT celui de l'image « logo »/);
+    const P2 = await import("@/lib/syna-agent/brand-prompts");
+    expect(P2.imageReviewSystem()).toMatch(/le nom écrit dans une autre police, ou un signe changé, est un défaut/);
     const two = C.boardImagesQuote(1, undefined, ["logo", "object"]), all6 = C.boardImagesQuote(1);
     expect(two.maxMicro).toBeLessThan(all6.maxMicro);
     expect(two.maxMicro).toBeGreaterThan(0);

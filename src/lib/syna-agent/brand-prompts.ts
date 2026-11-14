@@ -366,7 +366,8 @@ export const imageReviewSystem = () => `Tu contrôles les images créées pour l
 Une image est refusée (ok: false) dans ces cas, et seulement ceux-là :
 - un texte attendu est mal écrit, incomplet, coupé, ou une lettre est fausse ou en trop (accents compris) ;
 - un texte parasite apparaît (faux mots, lettres inventées, texte de remplissage, chiffres non demandés) ;
-- le nom de la marque n'est pas exactement le bon, ou le logo posé n'est pas celui fourni ;
+- le nom de la marque n'est pas exactement le bon ;
+- le logo posé sur un objet n'est pas EXACTEMENT le logo de la marque (compare-le à l'image « logo », fournie avec les autres) : même signe, même dessin de lettres, même graisse, mêmes couleurs ; le nom écrit dans une autre police, ou un signe changé, est un défaut, même si le nom est bien orthographié (essai réel : le fourgon de « Pelage » portait le bon signe, mais le nom dans une autre police) ;
 - une personne, un visage ou une main apparaît ;
 - le logo, l'emblème ou le nom d'une AUTRE marque apparaît (constructeur sur la calandre d'un véhicule, fabricant sur un appareil, marque sur un emballage), même petit ;
 - le sujet principal est coupé par le cadre, ou l'image est visiblement abîmée (bandes, déformations, objets fondus).
