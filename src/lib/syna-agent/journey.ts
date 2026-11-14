@@ -235,7 +235,9 @@ export const QUESTIONS: Record<StartField, (j: Journey) => { fr: string; en: str
   photos: () => ({ fr: "As-tu tes propres photos (ton produit, toi au travail, ton lieu, tes réalisations) ? Si oui, envoie-les-moi ; sinon, dis-le simplement.", en: "Do you have your own photos (product, you at work, your place, your work)? If so, send them; otherwise just say so." }),
   language: () => ({ fr: "Ton site doit-il être en français seulement, ou aussi en anglais ?", en: "Should your site be in French only, or in English too?" }),
   taste: () => ({ fr: "Quels sites, marques ou styles aimes-tu ? Et ce que tu n'aimes pas ? Des liens ou des captures sont les bienvenus.", en: "Which websites, brands or styles do you like? And dislike? Links or screenshots welcome." }),
-  contact: () => ({ fr: "Tes coordonnées pour le site : nom de l'entreprise, e-mail, téléphone, adresse (et SIRET si tu l'as). Tu peux en donner une partie maintenant et le reste plus tard.", en: "Your contact details for the site: company name, email, phone, address (and company number). Some now, the rest later is fine." }),
+  // Un client qui part de zéro n'a pas encore de nom : il viendra avec son identité de marque (essai réel du 14 novembre
+  // 2026 : SINA demandait « le nom de l'entreprise » à une cliente qui venait justement en chercher un).
+  contact: (j) => j.mode === "creation" && !j.keep.includes("nom") ? { fr: "Tes coordonnées pour le site : e-mail, téléphone, adresse (et SIRET si tu l'as). Ton nom viendra avec ton identité de marque. Tu peux en donner une partie maintenant et le reste plus tard.", en: "Your contact details for the site: email, phone, address (and company number). Your name will come with your brand identity. Some now, the rest later is fine." } : { fr: "Tes coordonnées pour le site : nom de l'entreprise, e-mail, téléphone, adresse (et SIRET si tu l'as). Tu peux en donner une partie maintenant et le reste plus tard.", en: "Your contact details for the site: company name, email, phone, address (and company number). Some now, the rest later is fine." },
   platform: () => ({ fr: "Sur quelle plateforme vendras-tu : Shopify, WooCommerce, PrestaShop, ou tu ne sais pas encore ?", en: "Which platform will you sell on: Shopify, WooCommerce, PrestaShop, or not sure yet?" }),
 };
 
@@ -249,7 +251,7 @@ export const FIELD_LABEL: Record<StartField, { fr: string; en: string }> = {
 };
 
 /** Texte relu par SINA à chaque pas : où en est le parcours et que faire maintenant. */
-export function journeyContext(j: Journey): string {
+export function journeyContext(j: Journey, o: { identityCount?: number } = {}): string {
   const cur = currentStep(j);
   const steps = JOURNEY_STEPS.map((s) => `${s.n}. ${s.fr} = ${j.steps[s.n]?.status ?? "todo"}`).join(" ; ");
   if (j.outside) return "Projet existant (créé avant ce fil) : il n'y a PAS de parcours de création. Ne pose pas les questions de départ et ne lance aucune étape du parcours : aide le client sur ce qu'il demande, avec les outils du catalogue.";
@@ -273,7 +275,7 @@ export function journeyContext(j: Journey): string {
       ? `Prochaine question à poser (UNE seule, avec tes mots, en reprenant ce que le client a déjà dit) : ${missing[0]} — « ${QUESTIONS[missing[0]](j).fr} ». Restent ensuite : ${missing.slice(1).join(", ") || "rien"}.`
       : "Toutes les questions ont une réponse : fais le RÉSUMÉ (« Voici ce que j'ai compris ») et demande au client de confirmer ou corriger ; à sa confirmation, appelle start.confirm.");
   }
-  if (cur === 1) lines.push(...identityStepContext(j));
+  if (cur === 1) lines.push(...identityStepContext(j, o.identityCount));
   if (cur === 2) lines.push(...logoStepContext(j));
   if (cur === 3) lines.push(...brandKitStepContext(j));
   if (cur === 4) lines.push(...anglesStepContext(j));
@@ -384,10 +386,12 @@ export function brandKitStepContext(j: Journey): string[] {
 }
 
 /** Étape 1 : que faire selon l'état des propositions. */
-function identityStepContext(j: Journey): string[] {
+function identityStepContext(j: Journey, count?: number): string[] {
   const id = j.identities;
+  // Le nombre exact d'identités de CE client (essai réel du 14 novembre 2026 : SINA annonçait « deux à quatre »).
+  const how = count ? `${count} identités pour ce client (son forfait) : annonce ${count}, jamais « deux à quatre »` : "2, 3 ou 4 selon le forfait du client, le Studio le sait";
   if (!id?.list.length) return [
-    "Étape 1 (identités de marque : 2, 3 ou 4 selon le forfait du client, le Studio le sait) : rien n'est encore proposé. Si le client est prêt (il dit oui, on continue, vas-y…), dis-lui en une phrase ce que tu vas faire (étudier son marché, chercher l'idée et les noms, lui montrer chaque identité en planche de marque), puis appelle identity.propose (sans guidance) : la création prend plusieurs minutes, en arrière-plan. S'il pose une question, réponds-y d'abord. N'invente aucune identité toi-même : seul identity.propose les crée. Tu es la seule à parler au client : dis « j'étudie », « je cherche », jamais « mon équipe » ni « ma stratège ».",
+    `Étape 1 (identités de marque : ${how}) : rien n'est encore proposé. Si le client est prêt (il dit oui, on continue, vas-y…), dis-lui en une phrase ce que tu vas faire (étudier son marché, chercher l'idée et les noms, lui montrer chaque identité en planche de marque), puis appelle identity.propose (sans guidance) : la création prend plusieurs minutes, en arrière-plan. S'il pose une question, réponds-y d'abord. N'invente aucune identité toi-même : seul identity.propose les crée. Tu es la seule à parler au client : dis « j'étudie », « je cherche », jamais « mon équipe » ni « ma stratège ».`,
   ];
   const out = [
     `Étape 1 — proposition n° ${id.round} (${id.list.some((x) => x.board) ? "les planches de marque complètes" : "les cartes complètes"} sont affichées au client dans le fil) : ${id.list.map((x) => `${x.key} « ${x.name} » (${x.board ? `idée : ${x.board.idea.belief} ; ` : ""}slogan « ${x.slogan} », territoire ${x.territory}, fond ${x.ground})`).join(" ; ")}.`,

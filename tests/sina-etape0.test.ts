@@ -268,6 +268,35 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     expect(view.journey.steps).toHaveLength(14);
     run("SELECT 1");
   });
+  it("essai réel du 14 novembre 2026, SINA seule : une question posée attend sa réponse, nom provisoire neutre, pas de nom d'entreprise demandé, nombre exact d'identités", async () => {
+    const { provisionalName } = await import("@/lib/syna-agent/tools/start");
+    expect(provisionalName("Je répare les crevaisons, je règle les freins et les vitesses")).toBe("Mon projet (provisoire)");
+    expect(provisionalName("Je suis coach sportif. Je fais des séances à domicile.")).toBe("Coach sportif (provisoire)");
+    // Partir de zéro : le nom viendra avec l'identité ; une refonte qui garde son nom le donne.
+    const fresh = J.emptyJourney();
+    expect(J.QUESTIONS.contact(fresh).fr).not.toMatch(/nom de l'entreprise/);
+    expect(J.QUESTIONS.contact(fresh).fr).toMatch(/Ton nom viendra avec ton identité de marque/);
+    const refonte = { ...J.emptyJourney(), mode: "refonte" as const };
+    expect(J.QUESTIONS.contact(refonte).fr).toMatch(/nom de l'entreprise/);
+    // Étape 1 : le nombre exact d'identités du client, jamais « deux à quatre ».
+    const j1 = J.emptyJourney(); J.setStep(j1, 0, "done");
+    expect(J.journeyContext(j1, { identityCount: 3 })).toMatch(/3 identités pour ce client \(son forfait\) : annonce 3, jamais « deux à quatre »/);
+    expect(J.journeyContext(j1)).toMatch(/2, 3 ou 4 selon le forfait du client/);
+    // Question posée ET outil réussi dans la même réponse : SINA attend la réponse, sans second tour ni question répétée.
+    const user = await account();
+    const cid = threadFor(user, null);
+    const r = submitMessage(user, cid, { requestId: `req-${Math.random()}`, text: "Je propose des services : je répare les vélos chez les gens." });
+    let calls = 0;
+    await fr(() => runAgent(r.id, r.job_id!, { reason: async () => {
+      calls++;
+      if (calls > 1) return { message: "Merci, c'est noté.", actions: [], question: { text: "Qu'est-ce qui te rend différent ?" }, done: false };
+      return { message: "C'est noté.", actions: [{ tool: "start.answer", args: { answers: [{ field: "business", value: "services" }] } }], question: { text: "Qu'est-ce qui te distingue ?" }, done: false };
+    } }));
+    expect(calls).toBe(1);
+    expect(getRun(r.id)!.status).toBe("waiting_user");
+    const said = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND role='assistant'", cid).map((m) => json<any>(m.content_json, {}).question?.text).filter(Boolean);
+    expect(said).toEqual(["Qu'est-ce qui te distingue ?"]);
+  });
 });
 
 describe("SINA — niveaux de coût : gratuit (moteur local), Haiku, Opus", async () => {
@@ -372,4 +401,5 @@ describe("SINA — étape 0, moteur local fiable (audit du 10 novembre 2026)", a
     expect(contactModesFrom("devis en ligne")).toEqual(["quote"]);
     expect(contactModesFrom("Par téléphone, ou un devis")).toEqual(["call", "quote"]);
   });
+
 });

@@ -37,6 +37,9 @@ const view = (j: Journey) => ({
 export function provisionalName(offer: string): string {
   const head = offer.trim().split(/[.,;:!?\n(]/)[0].trim().replace(/^(je suis|je fais|je vends|je propose|c'est|nous sommes|nous faisons|on est|on fait)\s+/i, "").replace(/^(de la|de l'|du|des|un|une|le|la|les|l')\s*/i, "");
   const short = head.length > 40 ? head.slice(0, 40).replace(/\s+\S*$/, "") : head;
+  // Une phrase qui commence encore par « je … » n'est pas un nom (essai réel du 14 novembre 2026 : « Je répare les
+  // crevaisons (provisoire) ») : nom neutre, en attendant la marque.
+  if (/^(je|j'|j’|nous|on)\b/i.test(short)) return "Mon projet (provisoire)";
   return `${(short || "Mon projet").replace(/^./, (c) => c.toUpperCase())} (provisoire)`;
 }
 
