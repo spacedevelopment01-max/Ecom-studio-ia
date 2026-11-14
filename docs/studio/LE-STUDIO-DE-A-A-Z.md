@@ -36,8 +36,8 @@ publicités, puis s'en occupe avec lui aussi longtemps qu'il le veut.
 
 ## 3. Ce que j'en comprends
 
-1. **Le client répond, SINA fait.** Au départ, SINA pose toutes les questions dont elle a besoin (correction du
-   propriétaire du 14 novembre 2026, voir la question 5). Le client donne ses réponses et ses images s'il en a. Tout
+1. **Le client répond, SINA fait.** SINA pose toutes les questions dont elle a besoin, au départ comme en cours de
+   route (corrections du propriétaire du 14 novembre 2026, voir la question 5). Le client donne ses réponses et ses images s'il en a. Tout
    le reste, elle le fait.
 2. **Tout, de A à Z.** Identité de marque complète, angles marketing, site, communication, publicité. Un seul endroit.
 3. **Deux sortes de clients.** Ceux qui vendent des produits : une boutique, transférable sur Shopify, WooCommerce ou
@@ -52,9 +52,12 @@ publicités, puis s'en occupe avec lui aussi longtemps qu'il le veut.
 
 ## 4. SINA
 
+- **C'est une superintelligence qui prend son rôle à cœur** (ses mots du 14 novembre 2026) : elle veut rendre le
+  meilleur travail possible, et tout ce qu'elle fait en découle.
 - Elle est la seule à parler au client. Ses spécialistes travaillent en coulisses.
-- Au départ, elle pose toutes les questions dont elle a besoin pour réussir le projet du premier coup : une à la
-  fois, adaptées au métier, jamais deux fois la même.
+- Elle pose toutes les questions dont elle a besoin, peu importe quand : au départ pour bien construire, puis à
+  chaque étape, dès qu'une réponse peut améliorer le résultat. Une à la fois, adaptées au métier, jamais deux fois la
+  même.
 - Elle réfléchit avant de faire : elle étudie le marché du client, ses concurrents, ce que disent ses acheteurs.
 - Elle relit tout avant de le montrer. Celle qui fait n'est jamais celle qui juge. Une chose ratée n'est pas montrée,
   elle est refaite.
@@ -67,7 +70,7 @@ publicités, puis s'en occupe avec lui aussi longtemps qu'il le veut.
 
 | | Ce que le client donne | Ce que SINA fait seule | Ce que le client décide |
 |---|---|---|---|
-| 1. Faire connaissance | Ses réponses à toutes les questions de SINA, ses photos, un lien s'il en a un | Elle demande tout ce que lui seul sait et dont la marque, le site, les publications et la publicité auront besoin ; ce qu'elle peut trouver seule, elle le trouve et le propose | Il valide le résumé complet, avant que rien ne soit créé |
+| 1. Faire connaissance | Ses réponses à toutes les questions de SINA, ses photos, un lien s'il en a un | Elle demande tout ce que lui seul sait et dont la marque, le site, les publications et la publicité auront besoin ; ce qu'elle peut trouver seule, elle le trouve et le propose ; elle reposera des questions plus tard, chaque fois qu'elle en aura besoin | Il valide le résumé complet, avant que rien ne soit créé |
 | 2. La marque | Rien de plus | Étude du marché, idée, noms vérifiés (web et nom de domaine), planches de marque, logo, charte | Il choisit une identité |
 | 3. Les angles | Rien de plus | Trois façons différentes de parler aux acheteurs, jugées avant d'être montrées | Il choisit un angle |
 | 4. L'activité | Ses produits ou ses prestations, ses coordonnées | Elle range le catalogue, écrit les fiches | Il valide prix et contenus |
@@ -134,9 +137,10 @@ Page en ligne du document : https://claude.ai/artifact/76xobBZYJxCMt6oxuSeNLn
 | 2 | Produits et services dès l'ouverture ? | Oui, les deux | |
 | 3 | Qui paie la création du départ ? (budget d'IA = 40 % du forfait hors taxes : environ 16, 30 et 43 € par mois ; trois identités coûtent environ 6 € réels) | Chiffrer le coût réel du parcours, puis présenter trois calculs : prix de création à part, premier mois plus cher, création étalée | |
 | 4 | SINA seule porte d'entrée, le « Pilote » disparaît ? | Oui | |
-| 5 | Combien de questions au départ ? | (proposition écartée : cinq questions) | **Tranché le 14 novembre 2026**, ses mots : « Dans la partie connaissance, sina doit posé toutes questions dont elle a besoin pour construire le projet afin qu'il soit abouti le fiable possible directement et éviter les reprises ». Donc : les questions de départ couvrent tout ce dont les étapes suivantes auront besoin et que seul le client sait (goûts, acheteurs, preuves, prix, livraison ou zone, horaires, réseaux, budget) ; elles s'adaptent au métier ; s'il ne sait pas répondre, SINA propose une réponse ; rien de payant ne démarre avant le résumé complet validé. Lecture de Claude, à confirmer : ce que SINA peut trouver seule, elle ne le demande pas, elle le propose. |
+| 5 | Combien de questions au départ ? | (proposition écartée : cinq questions) | **Tranché le 14 novembre 2026**, ses mots : « Dans la partie connaissance, sina doit posé toutes questions dont elle a besoin pour construire le projet afin qu'il soit abouti le fiable possible directement et éviter les reprises » ; puis : « Enfaite sina doit posé toutes les questions qu'elle a besoin peut importe quand enfaite sina est vraiment une superintelligence qui prend son rôle à coeur et qui veux rendre le meilleur des travail ». Donc : SINA pose ses questions quand elle en a besoin, à n'importe quelle étape ; celles du départ couvrent tout ce dont les étapes suivantes auront besoin et que seul le client sait (goûts, acheteurs, preuves, prix, livraison ou zone, horaires, réseaux, budget) ; elles s'adaptent au métier ; s'il ne sait pas répondre, SINA propose une réponse ; rien de payant ne démarre avant le résumé complet validé. Lecture de Claude, à confirmer : ce que SINA peut trouver seule, elle ne le demande pas, elle le propose. |
 | 6 | Jusqu'où SINA agit seule ? | Elle propose, le client décide ; pilote automatique pour les publications avec accord écrit et plafond ; jamais de dépense publicitaire sans accord à chaque campagne | |
 | 7 | À quel rythme prend-elle les devants ? | Un point par semaine (Studio et e-mail), et un message dès qu'une décision est attendue | |
+| 25 | SINA réfléchit-elle toujours avec le modèle le plus fort ? (aujourd'hui elle discute avec un petit modèle pour économiser) | Oui, partout où elle décide, conseille ou juge ; coût compté dans le calcul de la question 3 | |
 | 8 | Quelle règle pour les noms ? | La règle « Pulpe » (un mot simple et fort qui dit la matière ou le métier) pour tous ; juge à 8 sur 10 | |
 | 9 | Le dépôt de la marque ? | SINA vérifie (web, domaine) et explique le dépôt à l'INPI ; le Studio ne dépose pas | |
 | 10 | Les 15 thèmes du Studio restent à côté du sur mesure ? | Oui | |
