@@ -245,6 +245,21 @@ automatiques par jour ne sont comprises que dans le forfait le plus cher, entre 
 
 À trancher : la même création adaptée à chaque réseau, ou un contenu différent par réseau.
 
+### Troisième réflexion : ne jamais vendre des images à l'unité (14 novembre 2026)
+
+Objection du propriétaire : « avec chatgpt, on peux créer autant d'image qu'on veux pour 20€ par mois et en plus de
+bonne qualité donc pourquoi le client paiement 25€ chez nous pour si peu ». Il a raison sur la façon de vendre. À
+retenir : le Studio ne peut pas tourner sur un abonnement personnel (pas d'automatisation ni de revente : il passe par
+l'accès payé à l'image) ; mais l'image coûte peu (0,05 € mesuré sur Pulpe, 0,13 € au tarif prudent du Studio, à
+confirmer sur la facture d'OpenAI) ; ce que le client achète n'est pas une image, c'est sa communication pensée, mise en
+page à sa marque, relue et publiée chaque jour sans qu'il s'en occupe (le travail d'un community manager). Donc les
+images sont comprises largement dans les forfaits, et les options ne portent que sur ce qui coûte vraiment : les vidéos
+et la publicité.
+
+Grille révisée, à valider : 49 € = 1 publication en image par jour ; 89 € = 2 par jour, 3 vidéos, 1 campagne ; 169 € =
+3 par jour, 8 vidéos, 2 campagnes ; options : dix vidéos de plus 59 €, une campagne de plus 5 € ou 12 € ; si le prix
+mesuré de l'image se confirme, 3 par jour dès 89 €. Création du départ : environ 69 €, une fois.
+
 Sources de la partie 7 : journal des nouveautés de Shopify (conseils de Sidekick), Unite.AI (Canvas), TechCrunch
 (créateur de boutique), eCommerce Fastlane, Copyfy, blog de Google (Pomelli), test de Blaze par R. Doser, Apaya, blog de
 Zeely, Pixis (Meta), Tool Advisor et Capeb (Simplébo).
