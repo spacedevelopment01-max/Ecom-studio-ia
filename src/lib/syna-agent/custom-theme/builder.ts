@@ -300,6 +300,14 @@ export function catalogTheme(t: CustomTheme, family: CustomTheme["family"]): { t
   return { theme: { ...t, family, header: null, footer: null, pages: [{ key: "home", label: "Banque", sections }] }, items };
 }
 
+/** Les fonctions du bloc d'achat des « Produit vedette » qu'on allume ou éteint dans la banque (clés de library.js). */
+export const PO_PANEL_FUNCTIONS: [string, string][] = [
+  ["couleur", "Couleurs"], ["taille", "Tailles"], ["gamme", "Choix dans la gamme"], ["promo", "Promotion limitée"], ["abo", "Abonnement"],
+  ["rituel", "Lot rituel"], ["paliers", "Cadeaux par paliers"], ["livraison", "Livraison estimée"], ["fidelite", "Points de fidélité"],
+];
+/** Les offres possibles du bloc d'achat (une seule à la fois). */
+export const PO_PANEL_OFFERS: [string, string][] = [["none", "Aucune"], ["lots", "Lots dégressifs"], ["bogo", "2 achetés, 1 offert"]];
+
 export function catalogAssets(items: ReturnType<typeof catalogTheme>["items"], family: string, other: { label: string; href: string } | null): { css: string; js: string } {
   const data = JSON.stringify({ items, groups: SECTION_GROUPS.map((g) => ({ id: g.id, label: g.label, does: g.does })), family, other }).replace(/</g, "\\u003c");
   const css = `
@@ -318,7 +326,17 @@ var seen={};D.items.forEach(function(it,i){var e=main.querySelector('[data-ct="'
  if(!seen[it.group]){seen[it.group]=1;var g=D.groups.filter(function(x){return x.id===it.group})[0];var n=D.items.filter(function(x){return x.group===it.group}).length;var h=document.createElement("div");h.className="cg-head";h.id="g-"+it.group;h.innerHTML='<h2>'+g.label+' <small style="font-size:16px;opacity:.7">('+n+')</small></h2><p>'+g.does+'</p>';main.insertBefore(h,e)}
  // 4. Banque : un en-tête reste à sa place (jamais collé en haut pendant la lecture des autres sections).
  if(it.group==="en-tete"){[e].concat([].slice.call(e.querySelectorAll("*"))).forEach(function(x){var ps=getComputedStyle(x).position;if(ps==="sticky"||ps==="fixed"){x.style.position="relative";x.style.top="auto"}})}
- var l=document.createElement("div");l.className="cg-lab";l.innerHTML='<b>'+it.title+'</b><span>'+it.does+'</span>'+(it.note?'<em>'+it.note+'</em>':'');main.insertBefore(l,e)});
+ var l=document.createElement("div");l.className="cg-lab";l.innerHTML='<b>'+it.title+'</b><span>'+it.does+'</span>'+(it.note?'<em>'+it.note+'</em>':'');main.insertBefore(l,e);
+ // Produit vedette : le panneau qui ajoute ou enlève les fonctions du bloc d'achat (library.js, [data-popanel]), au-dessus de
+ // chaque section ; tous les panneaux restent synchronisés. Remis le 14 novembre 2026 (« je ne peux pas ajouter ou enlever
+ // les fonctions sur les sections produit en vedette »).
+ if(it.group==="produit-vedette"&&e.querySelector("[data-pvb]")){var pp=document.createElement("div");pp.className="po-panel";pp.setAttribute("data-popanel","");
+  var F=${JSON.stringify(PO_PANEL_FUNCTIONS)},O=${JSON.stringify(PO_PANEL_OFFERS)},H=document.documentElement.dataset;
+  pp.innerHTML='<b>Les fonctions du bloc d’achat</b><small>Sur un vrai site, elles s’allument toutes seules selon les données du produit (variantes, offres saisies). Ici, touche une fonction pour l’ajouter ou l’enlever : tous les « Produit vedette » de la page changent en même temps.</small>'
+   +'<div class="rw"><span>Fonctions</span>'+F.map(function(f){var k="po"+f[0].charAt(0).toUpperCase()+f[0].slice(1);return '<button type="button" data-pt="'+f[0]+'" aria-pressed="'+(H[k]==="1")+'">'+f[1]+'</button>'}).join("")+'</div>'
+   +'<div class="rw"><span>Offre</span>'+O.map(function(o){return '<button type="button" data-po-of="'+o[0]+'" aria-pressed="'+(H.poOffre===o[0])+'">'+o[1]+'</button>'}).join("")+'</div>';
+  main.insertBefore(pp,e)}
+});
 var p=document.createElement("div");p.className="cg-panel";p.innerHTML='<span>Banque des sections · '+(D.family==="moderne"?"Moderne":"Classique")+' · '+D.items.length+' sections</span><select aria-label="Aller à une famille"><option value="">Aller à une famille…</option>'+D.groups.filter(function(g){return seen[g.id]}).map(function(g){return '<option value="'+g.id+'">'+g.label+' ('+D.items.filter(function(x){return x.group===g.id}).length+')</option>'}).join("")+'</select>'+(D.other?'<a href="'+D.other.href+'">Voir '+D.other.label+'</a>':'');
 var w=document.querySelector(".tb-wrap");w.parentNode.insertBefore(p,w);p.querySelector("select").onchange=function(){var x=document.getElementById("g-"+this.value);if(x)x.scrollIntoView({block:"start"})};
 })();`;
