@@ -37,7 +37,7 @@ import { RouteSchema, type Route } from "./brand-routes";
 import { cleanArtwork, onDarkVersion } from "../logo-v2/artwork";
 import { normText } from "./identities";
 
-export const IMAGE_SLOTS = ["logo", "hero", "object", "site", "post0", "post1", "post2"] as const;
+export const IMAGE_SLOTS = ["logo", "hero", "object", "signs", "site", "post0", "post1", "post2"] as const;
 /**
  * Images réellement créées. Le haut du site sur téléphone n'en fait plus partie (retour du propriétaire du 13 novembre
  * 2026 sur l'image créée par l'IA : « 3/10, ça doit être mieux fait et plus représentatif de ce que ça devrait
@@ -48,9 +48,9 @@ export const CREATED_SLOTS = IMAGE_SLOTS.filter((s) => s !== "site");
 export type ImageSlot = (typeof IMAGE_SLOTS)[number];
 export type ImageAspect = "1:1" | "16:9" | "9:16" | "4:5";
 /** Format demandé pour chaque image (le modèle rend du carré, du paysage 3:2 ou du portrait 2:3). */
-export const SLOT_ASPECT: Record<ImageSlot, ImageAspect> = { logo: "1:1", hero: "16:9", object: "1:1", site: "9:16", post0: "4:5", post1: "4:5", post2: "4:5" };
+export const SLOT_ASPECT: Record<ImageSlot, ImageAspect> = { logo: "1:1", hero: "16:9", object: "1:1", signs: "1:1", site: "9:16", post0: "4:5", post1: "4:5", post2: "4:5" };
 /** Images de référence envoyées avec chaque demande (le logo pour l'objet et le site ; aucun modèle pour le logo lui-même). */
-export const SLOT_REFERENCES: Record<ImageSlot, number> = { logo: 0, hero: 0, object: 1, site: 2, post0: 0, post1: 0, post2: 0 };
+export const SLOT_REFERENCES: Record<ImageSlot, number> = { logo: 0, hero: 0, object: 1, signs: 1, site: 2, post0: 0, post1: 0, post2: 0 };
 
 /**
  * Réglage `sina.brand_images` : « dessins » (par défaut : la planche garde les dessins de SINA) ou « openai » (les
@@ -66,6 +66,8 @@ export function boardImageRoute(): { provider: string; model: string } {
 export const ImagerySchema = z.object({
   look: z.string().max(900).default(""),
   logo: z.string().min(1).max(1600), hero: z.string().min(1).max(2200), object: z.string().min(1).max(2200), site: z.string().max(2200).default(""),
+  /** Les signes de la marque posés sur de vrais objets de son monde (remplace les pictogrammes dessinés en code). */
+  signs: z.string().max(2200).default(""),
   posts: z.array(z.string().min(1).max(2200)).length(3),
 });
 export type Imagery = z.infer<typeof ImagerySchema>;
@@ -100,7 +102,7 @@ const same = (a: string, b: string) => normText(a) === normText(b);
 export function slotTexts(x: Route): Record<ImageSlot, string[]> {
   const b = x.board, front = b.object.front.filter((l) => !same(l, x.name)).slice(0, 2);
   return {
-    logo: [x.name], hero: [], object: [x.name, ...front], site: [x.name, b.site.headline, b.site.text, b.site.button],
+    logo: [x.name], hero: [], object: [x.name, ...front], signs: [], site: [x.name, b.site.headline, b.site.text, b.site.button],
     post0: [b.posts[0].text], post1: [b.posts[1].text], post2: [b.posts[2].text],
   };
 }
@@ -112,6 +114,11 @@ const NO_PERSON = "Aucune personne, aucun visage, aucune main. Aucun objet suppl
  */
 const NO_OTHER_BRAND = "Aucune autre marque que celle-ci : un véhicule, un appareil ou un objet du quotidien ne porte aucun logo, aucun emblème ni aucun nom de constructeur ou de fabricant (calandre, jantes, hayon lisses).";
 const NO_TEXT = "Aucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane.";
+/**
+ * Les signes de la marque en vraie photo (retour du propriétaire du 14 novembre 2026 sur les planches de la
+ * toiletteuse : « Tu me ressors encore des vieux pictogrammes dégueulasses ») : jamais une icône plate.
+ */
+export const SIGNS_LINE = "Une vraie photographie haut de gamme, comme dans le livre d'identité d'une grande agence : les signes de la marque sont appliqués sur de vrais objets de son monde, en vraies matières (impression, broderie, gravure, peinture, sérigraphie). Jamais une icône plate, jamais un pictogramme, jamais une grille de cases ni un nuancier dessiné.";
 /** Le nom épelé (« P, e, l, a, g, e ») : sans modèle d'image, c'est ce qui tient les lettres exactes. */
 export const spell = (name: string) => [...name.normalize("NFC")].map((c) => (c === " " ? "(espace)" : c)).join(", ");
 /**
@@ -136,8 +143,8 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
       "Un seul logo, centré, à plat, net et lisible d'un coup d'œil, sur un fond BLANC uni jusqu'aux bords, avec de l'air autour ; ses couleurs se lisent bien sur du blanc. Aucun fond noir ni coloré, aucun dégradé, aucune lueur, aucun relief. Aucun autre texte que le nom, aucune maquette, aucun objet autour, aucun cadre, aucune ombre portée, aucune personne.",
     ].filter(Boolean).join("\n");
   }
-  const brief = slot === "hero" ? imagery.hero : slot === "object" ? imagery.object : slot === "site" ? imagery.site : imagery.posts[Number(slot.slice(4))];
-  const withLogo = (slot === "object" || slot === "site") && o.logo;
+  const brief = slot === "hero" ? imagery.hero : slot === "object" ? imagery.object : slot === "signs" ? imagery.signs : slot === "site" ? imagery.site : imagery.posts[Number(slot.slice(4))];
+  const withLogo = (slot === "object" || slot === "site" || slot === "signs") && o.logo;
   // Le nom est porté par le logo fourni ; sans logo, il est écrit comme les autres textes.
   const written = slot === "hero" ? [] : texts.filter((t) => !withLogo || !same(t, x.name)).filter((t, i) => slot === "object" || slot === "site" || i === 0);
   return [
@@ -145,7 +152,8 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
     withLogo ? "Le logo fourni en image de référence est reproduit tel quel, à la place indiquée : il n'est ni redessiné, ni recoloré, et aucune de ses lettres ne change." : "",
     slot === "site" ? "Montre seulement l'écran, bord à bord, en portrait : ni téléphone, ni cadre, ni main, ni fond autour." : "",
     slot.startsWith("post") ? "Visuel de publication pour un réseau social, en portrait, bord à bord : aucun cadre d'application, aucun bouton, aucun pseudonyme." : "",
-    written.length ? exact(written) : NO_TEXT, NO_PERSON, NO_OTHER_BRAND,
+    slot === "signs" ? SIGNS_LINE : "",
+    slot === "signs" ? (withLogo ? "Aucun autre texte que le logo : aucune lettre, aucun chiffre, aucun mot, aucun filigrane." : NO_TEXT) : written.length ? exact(written) : NO_TEXT, NO_PERSON, NO_OTHER_BRAND,
   ].filter(Boolean).join("\n");
 }
 
@@ -154,27 +162,30 @@ const imageryBrief = (x: Route) => [
   `Nom : ${x.name}`, `Signature : ${x.slogan}`, `Promesse : ${x.promise}`, `Territoire : ${x.territory}`,
   `Ce que croit la marque : ${x.board.idea.belief}`, `Elle se bat contre : ${x.board.idea.enemy}`, `La preuve, dans l'objet : ${x.board.idea.proof}`,
   `Fond de page : ${x.ground}${x.gradient ? ` (${x.gradient.from} → ${x.gradient.to})` : ""}`, paletteLine(x),
-  `Nom composé (image de référence du logo) : ${(x.board.wordmark.lines ?? [x.name]).join(" / ")}`,
-  "Signes de la marque :", ...x.board.signs.map((g) => `  - ${g.title} — ${g.text}`),
+  // Le signe « lettrage » décrit le nom composé par le Studio (sur les planches d'avant le 14 novembre 2026, la vague de
+  // « Pulpe ») : il n'est jamais donné pour concevoir le logo, qui naît de la marque elle-même.
+  "Signes de la marque (hors lettrage : le logo ne reprend rien du nom composé par le Studio) :", ...x.board.signs.filter((g) => g.kind !== "lettrage").map((g) => `  - ${g.title} — ${g.text}`),
   `Objet : ${BOARD_OBJECT_LABEL[x.board.object.kind].fr.toLowerCase()} ; écrit devant : ${x.board.object.front.join(" · ")}`,
   `Site (haut de l'accueil) : titre « ${x.board.site.headline} » ; texte « ${x.board.site.text} » ; bouton « ${x.board.site.button} »`,
   "Publications (dans l'ordre) :", ...x.board.posts.map((q, i) => `  ${i + 1}. « ${q.text} »`),
 ].join("\n");
 
 const SLOT_LABEL: Record<ImageSlot, { fr: string; en: string }> = {
-  logo: { fr: "le logo", en: "the logo" }, hero: { fr: "la grande image", en: "the main image" }, object: { fr: "l'image de l'objet", en: "the object image" }, site: { fr: "l'image du site", en: "the site image" },
+  logo: { fr: "le logo", en: "the logo" }, hero: { fr: "la grande image", en: "the main image" }, object: { fr: "l'image de l'objet", en: "the object image" }, signs: { fr: "l'image des signes", en: "the signs image" }, site: { fr: "l'image du site", en: "the site image" },
   post0: { fr: "la première publication", en: "the first post" }, post1: { fr: "la deuxième publication", en: "the second post" }, post2: { fr: "la troisième publication", en: "the third post" },
 };
 const ROLE_FOR_REVIEW: Record<ImageSlot, string> = {
-  logo: "le logo de la marque", hero: "la grande image de la marque (aucun texte attendu)", object: "l'objet de la marque, avec le logo posé dessus", site: "le haut de la page d'accueil, sur téléphone",
+  logo: "le logo de la marque", hero: "la grande image de la marque (aucun texte attendu)", object: "l'objet de la marque, avec le logo posé dessus", signs: "les signes de la marque posés sur de vrais objets de son monde, le logo fourni compris (aucun autre texte attendu ; une icône plate ou un pictogramme est un défaut)", site: "le haut de la page d'accueil, sur téléphone",
   post0: "une publication", post1: "une publication", post2: "une publication",
 };
 
 type Made = { id: string; w: number; h: number };
+/** Ce que le client voit à la place d'une image non gardée (dit tel quel, jamais un dessin qui n'existe pas). */
+const instead = (x: Route, slot: ImageSlot): string => slot === "signs" ? "les signes restent décrits en mots, sans dessin" : hasDrawing(x, slot) ? "tu vois mon dessin à la place" : "sa place garde la forme simple de la planche";
 /** Reste-t-il un dessin de SINA à cette place (l'illustratrice l'a rendu, et sa relecture en image ne l'a pas retiré) ? */
 const hasDrawing = (x: Route, slot: ImageSlot): boolean => {
   const b = x.board as { hero?: unknown; object: { art?: unknown }; site: { art?: unknown }; posts: { art?: unknown }[] };
-  return slot === "hero" ? !!b.hero : slot === "object" ? !!b.object.art : slot === "site" ? !!b.site.art : slot === "logo" ? true : !!b.posts[Number(slot.slice(4))]?.art;
+  return slot === "signs" ? false : slot === "hero" ? !!b.hero : slot === "object" ? !!b.object.art : slot === "site" ? !!b.site.art : slot === "logo" ? true : !!b.posts[Number(slot.slice(4))]?.art;
 };
 export type BoardImagesResult = { route: Route; made: number; rejected: number; notes: string[]; issues: string[] };
 
@@ -233,7 +244,7 @@ export async function runBoardImages(o: {
       if (e instanceof CostCapReached) { capped = true; notes.push(`plafond de dépense atteint pendant les images de ${key}`); return; }
       // Une image qui échoue n'est jamais relancée seule : la planche garde le dessin de SINA à cette place.
       notes.push(`${SLOT_LABEL[slot].fr} de ${key} non créé(e) : ${String((e as Error)?.message ?? e).slice(0, 140)}`);
-      issues.push(tag(L(`je n'ai pas pu créer ${SLOT_LABEL[slot].fr} ; tu vois mon dessin à la place.`, `I could not create ${SLOT_LABEL[slot].en}; you see my drawing instead.`)));
+      issues.push(tag(L(`je n'ai pas pu créer ${SLOT_LABEL[slot].fr} ; ${instead(x, slot)}.`, `I could not create ${SLOT_LABEL[slot].en}; ${slot === "signs" ? "the signs stay described in words" : "you see my drawing instead"}.`)));
     }
   };
 
@@ -262,13 +273,14 @@ export async function runBoardImages(o: {
   ctx.progress(0.965, L(`Je crée les images de la planche ${key}`, `Creating the images of board ${key}`));
   if (wanted.has("hero")) await make("hero", {}, imagePrompt("hero", x, imagery));
   if (wanted.has("object")) await make("object", { logo }, imagePrompt("object", x, imagery, { logo: !!logo }));
+  if (wanted.has("signs") && imagery.signs.trim()) await make("signs", { logo }, imagePrompt("signs", x, imagery, { logo: !!logo }));
   for (const slot of ["post0", "post1", "post2"] as const) if (wanted.has(slot)) await make(slot, {}, imagePrompt(slot, x, imagery));
 
   // 3. La relecture : aucune image n'est montrée sans avoir été regardée.
   const slots = IMAGE_SLOTS.filter((s) => made.has(s));
   if (slots.length) {
     const texts = slotTexts(x);
-    const drop = (slot: ImageSlot, why: string) => { mark(made.get(slot)!.id, "rejected", why); made.delete(slot); rejected++; issues.push(tag(L(`je n'ai pas gardé ${SLOT_LABEL[slot].fr} (${why.replace(/\.+$/, "")}) ; ${hasDrawing(x, slot) ? "tu vois mon dessin à la place" : "sa place garde la forme simple de la planche"}.`, `I did not keep ${SLOT_LABEL[slot].en} (${why}); ${hasDrawing(x, slot) ? "you see my drawing instead" : "its place keeps the plain shape of the board"}.`))); };
+    const drop = (slot: ImageSlot, why: string) => { mark(made.get(slot)!.id, "rejected", why); made.delete(slot); rejected++; issues.push(tag(L(`je n'ai pas gardé ${SLOT_LABEL[slot].fr} (${why.replace(/\.+$/, "")}) ; ${instead(x, slot)}.`, `I did not keep ${SLOT_LABEL[slot].en} (${why}); ${hasDrawing(x, slot) ? "you see my drawing instead" : "its place keeps the plain shape of the board"}.`))); };
     // Raison écrite par le Studio d'après la lecture (jamais une phrase confuse du relecteur montrée au client).
     const textReason = (c: { missing: string[]; extra: string[] }) => c.extra.length ? L(`un texte non demandé y apparaît : « ${c.extra[0].slice(0, 60)} »`, `an unrequested text appears: "${c.extra[0].slice(0, 60)}"`) : L(`le texte « ${c.missing[0].slice(0, 60)} » n'y est pas écrit exactement`, `the text "${c.missing[0].slice(0, 60)}" is not written exactly`);
     // Relecture impossible (plafond, appel en échec) : des images non relues ne sont jamais montrées.
@@ -347,18 +359,18 @@ export async function runBoardImages(o: {
   // Les images gardées d'avant restent quand seule une partie est refaite ; une image refaite et refusée ne garde
   // jamais l'ancienne à sa place si elle portait l'ancien logo (l'objet) : la planche montre alors le dessin de SINA.
   const before = (x.board.images ?? {}) as NonNullable<Route["board"]["images"]>;
-  const keep = <K extends "logo" | "hero" | "object" | "site">(k: K) => (wanted.has(k as ImageSlot) ? made.get(k as ImageSlot) : before[k]) ?? undefined;
+  const keep = <K extends "logo" | "hero" | "object" | "signs" | "site">(k: K) => (wanted.has(k as ImageSlot) ? made.get(k as ImageSlot) : before[k]) ?? undefined;
   const posts = (["post0", "post1", "post2"] as const).map((s, i) => (wanted.has(s) ? made.get(s) : before.posts?.[i]) ?? null);
   const logoNow = keep("logo");
   const markNow = wanted.has("logo") ? marks : { mark: before.mark, markDark: before.markDark };
   const images = {
     ...(logoNow ? { logo: logoNow } : {}), ...(keep("hero") ? { hero: keep("hero")! } : {}),
-    ...(keep("object") ? { object: keep("object")! } : {}), ...(keep("site") ? { site: keep("site")! } : {}),
+    ...(keep("object") ? { object: keep("object")! } : {}), ...(keep("site") ? { site: keep("site")! } : {}), ...(keep("signs") ? { signs: keep("signs")! } : {}),
     ...(posts.some(Boolean) ? { posts } : {}), ...(imagery.look.trim() ? { look: imagery.look.trim().slice(0, 700) } : before.look ? { look: before.look } : {}),
     ...(logoNow && markNow.mark ? { mark: markNow.mark } : {}), ...(logoNow && markNow.markDark ? { markDark: markNow.markDark } : {}),
     ...(imagery.logo.trim() ? { logoIdea: imagery.logo.trim().slice(0, 900) } : before.logoIdea ? { logoIdea: before.logoIdea } : {}),
   };
-  const any = !!(images.logo || images.hero || images.object || images.site || images.posts);
+  const any = !!(images.logo || images.hero || images.object || images.signs || images.site || images.posts);
   const { images: _old, ...boardRest } = x.board as Route["board"] & { images?: unknown };
   const next = RouteSchema.safeParse({ ...x, board: { ...boardRest, ...(any ? { images } : {}) } });
   if (capped) issues.push(tag(L("le plafond annoncé a été atteint avant la fin de ses images.", "the announced cap was reached before its images were finished.")));

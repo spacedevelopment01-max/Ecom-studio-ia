@@ -34,7 +34,7 @@ type Drawn = {
 type Look = { backgrounds: string[]; text: string; surface: string; surfaceText: string; button: string; buttonText: string };
 /** Image créée pour la planche : son adresse est fabriquée par le Studio à partir d'un identifiant (jamais une adresse libre). */
 type Shot = { url: string; w: number; h: number };
-type Shots = { logo?: Shot; hero?: Shot; object?: Shot; site?: Shot; posts?: (Shot | null)[]; mark?: Shot; markDark?: Shot };
+type Shots = { logo?: Shot; hero?: Shot; object?: Shot; site?: Shot; posts?: (Shot | null)[]; mark?: Shot; markDark?: Shot; signs?: Shot };
 type Board = {
   idea: { belief: string; confession: string; confessionSupport: number; enemy: string; proof: string; cost: string };
   nameCheck: "rien_trouve" | "non_verifie";
@@ -188,6 +188,8 @@ const BOARD_CSS = `
 @container (min-width:42rem){.bb-head{grid-template-columns:1.1fr .9fr}}
 .bb-name{display:block;width:100%;max-width:30rem;max-height:13rem}
 .bb-photo.bb-mark{display:block;width:auto;max-width:min(100%,24rem);max-height:9.5rem;height:auto;object-fit:contain;object-position:left center}
+.bb-signs-shot{margin:0 0 .8rem;border-radius:1.1rem;overflow:hidden;aspect-ratio:1/1;max-width:34rem;box-shadow:0 18px 40px -22px rgba(0,0,0,.45)}
+.bb-photo.bb-seen-mark{width:auto;height:auto;max-width:82%;max-height:70%;object-fit:contain}
 .bb-photo.bb-ps-mark{display:block;height:1.5rem;width:auto;max-width:55%;object-fit:contain}
 .bb-genre{margin-top:.8rem;font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;opacity:.82}
 .bb-sign{margin-top:.7rem;font-family:var(--bb-head);font-size:clamp(1.35rem,1.05rem + 2.2cqi,2.1rem);line-height:1.1;text-wrap:balance;color:var(--bb-pop)}
@@ -218,6 +220,9 @@ const BOARD_CSS = `
 .bb-signs>.bb-signcard:last-child:nth-child(odd){grid-column:1/-1;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);align-items:center}
 @container (min-width:42rem){.bb-signs>.bb-signcard:last-child:nth-child(odd){grid-column:auto;grid-template-columns:none;align-items:normal}.bb-signs:has(>.bb-signcard:nth-child(5):last-child){grid-template-columns:repeat(5,1fr)}}
 .bb-signcard:nth-child(odd) .bb-seen{transform:rotate(-1.4deg)}
+.bb-signs>.bb-signcard.bb-signcard-words{grid-column:1/-1!important;grid-template-columns:none!important;align-items:normal!important}
+.bb-signs>.bb-signcard.bb-signcard-wide{grid-column:1/-1;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);align-items:center}
+@container (min-width:42rem){.bb-signs>.bb-signcard.bb-signcard-wide{grid-column:auto;grid-template-columns:none;align-items:normal}}
 .bb-signcard:nth-child(even) .bb-seen{transform:rotate(1.2deg)}
 .bb-seen{height:7rem;border-radius:12px;display:grid;place-items:center;overflow:hidden;position:relative;box-shadow:0 12px 18px -14px rgba(0,0,0,.55)}
 .bb-seen>svg{width:100%;height:100%;display:block}
@@ -490,24 +495,34 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
         )}
 
         <h4 className="bb-h">{t("Ce qu'on reconnaît sans lire le nom", "What you recognise without reading the name")}</h4>
+        {/* Les signes en vraie photo d'OpenAI ; plus aucun pictogramme dessiné en code (retour du propriétaire du
+            14 novembre 2026 : « tu me ressors encore des vieux pictogrammes dégueulasses »). Seuls restent en case
+            ce qui n'est pas un dessin : le logo, les couleurs, les mots. */}
+        {shotOk(shots.signs) && <figure className="bb-signs-shot" data-signs="image"><Photo shot={shots.signs} alt={t("Les signes de la marque", "The brand's signs")} /></figure>}
         <div className="bb-signs">
-          {b.signs.map((s, i) => {
+          {(() => {
+            // Les signes qui ont une case (logo, couleurs, mots) d'abord, deux par ligne ; les signes seulement écrits
+            // ensuite, en pleine largeur : aucun trou dans la grille.
+            const hasTile = (s: (typeof b.signs)[number]) => s.kind === "lettrage" || s.kind === "couleur" || !!s.sample || s.kind === "phrase";
+            const order = b.signs.map((s, i) => ({ s, i })).sort((a, c) => Number(!hasTile(a.s)) - Number(!hasTile(c.s)));
+            const tiles = order.filter((o) => hasTile(o.s)).length;
+            return order.map(({ s, i }, k) => {
             const bg = signBg[i], on = inkOn(bg, p), acc = [p.accent, p.primary, p.secondary, on].find((c) => contrast(c, bg) >= 2.2) ?? on;
+            const mark = lum(bg) < 0.4 ? shots.markDark : shots.mark;
+            const seen = s.kind === "lettrage" ? (shotOk(mark) ? <Photo shot={mark} alt={x.name} className="bb-seen-mark" /> : <Wordmark x={x} main={on} accent={acc} compact className="max-h-[70%] max-w-[86%] text-xl" />)
+              : s.kind === "couleur" ? <span className="flex h-full w-full" aria-hidden>{(["dark", "primary", "secondary", "accent", "light"] as const).map((r) => <i key={r} className="block flex-1" style={{ background: safeHex(p[r]) }} />)}</span>
+                : s.sample ? <span className={cx("bb-sample", s.hand && "bb-hand")} style={s.hand ? { color: acc } : { fontWeight: headWeight }} data-sample>{s.sample}</span>
+                  : s.kind === "phrase" ? <span className="px-2 text-center text-[15px] leading-[1.05]" style={{ fontFamily: "var(--bb-head)", fontWeight: headWeight }}>{x.slogan}</span>
+                    : null;
             return (
-              <div key={i} className="bb-signcard" data-sign={s.kind}>
-                <div className="bb-seen" style={{ background: bg, color: on }} data-seen={s.art ? "dessin" : s.sample ? "mots" : s.symbol ? "signe" : "secours"}>
-                  {s.art ? <ArtView art={s.art} />
-                    : s.sample ? <span className={cx("bb-sample", s.hand && "bb-hand")} style={s.hand ? { color: acc } : { fontWeight: headWeight }} data-sample>{s.sample}</span>
-                    : s.kind === "lettrage" ? <Wordmark x={x} main={on} accent={acc} compact className="max-h-[70%] max-w-[86%] text-xl" />
-                      : s.kind === "couleur" ? <span className="flex h-full w-full" aria-hidden>{(["dark", "primary", "secondary", "accent", "light"] as const).map((r) => <i key={r} className="block flex-1" style={{ background: safeHex(p[r]) }} />)}</span>
-                        : s.kind === "phrase" ? <span className="px-2 text-center text-[15px] leading-[1.05]" style={{ fontFamily: "var(--bb-head)", fontWeight: headWeight }}>{x.slogan}</span>
-                          : s.symbol ? <PictoView p={s.symbol} main={on} accent={acc} style={{ width: "62%", height: "62%" }} />
-                            : <span className="block h-10 w-10 rounded-full" style={{ background: acc }} aria-hidden />}
-                </div>
-                <p><b>{s.title}</b> {s.text}</p>
+              <div key={i} className={cx("bb-signcard", !seen && "bb-signcard-words", seen && tiles % 2 === 1 && k === tiles - 1 && "bb-signcard-wide")} data-sign={s.kind}>
+                {seen && <div className="bb-seen" style={{ background: bg, color: on }} data-seen={s.kind === "lettrage" ? "logo" : s.kind === "couleur" ? "couleurs" : "mots"}>{seen}</div>}
+                {/* Le logo dessiné remplace le nom composé : le texte qui décrivait ce nom composé n'est plus vrai. */}
+                {s.kind === "lettrage" && shotOk(mark) ? <p><b>{t("Le logo", "The logo")}</b></p> : <p><b>{s.title}</b> {s.text}</p>}
               </div>
             );
-          })}
+            });
+          })()}
         </div>
 
         <h4 className="bb-h">{t("En situation", "In real life")}</h4>

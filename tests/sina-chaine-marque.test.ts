@@ -132,7 +132,7 @@ describe("SINA — chaîne de création de la marque", async () => {
         if (c.kind === "review") return s.review ? s.review(c.prompt) : { routes: [{ key: "A", score: 8, verdict: "garder", fixes: [] }, { key: "B", score: 6, verdict: "reprendre", fixes: ["« Si c'est fade, remets-en. » est un ordre donné au lecteur : réécris cette phrase."] }, { key: "C", score: 8, verdict: "garder", fixes: [] }], series: "" };
         if (c.kind === "recheck") return s.recheck ?? { routes: [{ key: "B", better: true, remaining: [], score: 8 }] };
         if (c.kind === "art") return s.art ? s.art(id) : DRAWN;
-        if (c.kind === "imagery") return { look: "Lumière de fin d'après-midi, rasante, sur une table claire.", logo: "Un logo net tiré du nom composé.", hero: "Photographie d'une carafe pleine de morceaux de fruits.", object: "Le sachet posé sur la table.", site: "Le haut de la page d'accueil.", posts: ["Une scène.", "Un gros plan.", "Un aplat."] };
+        if (c.kind === "imagery") return { look: "Lumière de fin d'après-midi, rasante, sur une table claire.", logo: "Un logo net tiré du nom composé.", signs: "Photographie des signes de la marque brodés sur un tablier et imprimés sur une serviette.", hero: "Photographie d'une carafe pleine de morceaux de fruits.", object: "Le sachet posé sur la table.", site: "Le haut de la page d'accueil.", posts: ["Une scène.", "Un gros plan.", "Un aplat."] };
         throw new Error(`appel inattendu : ${id}`);
       })();
       return c.schema.parse(c.prepare ? c.prepare(raw) : raw);
@@ -615,7 +615,7 @@ describe("SINA — chaîne de création de la marque", async () => {
 
   // ---------------------------------------------------------------- les images qui finissent la planche
 
-  const SLOTS = ["logo", "hero", "object", "post0", "post1", "post2"]; // le haut du site est rendu par le Studio, plus créé en image
+  const SLOTS = ["logo", "hero", "object", "signs", "post0", "post1", "post2"]; // les signes : une vraie photo, plus de pictogrammes // le haut du site est rendu par le Studio, plus créé en image
 
   it("images de planche : la direction artistique, six images, la relecture ; une image refusée laisse le dessin, et c'est dit", async () => {
     const t = await thread();
@@ -645,7 +645,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(log.prompts["imagecheck-1-A"]).toContain(a.board!.posts[0].text);
     // A : tout est gardé. B : l'image du site est refusée. C : le logo ne porte pas le nom exact (contrôle du Studio).
     const [ra, rb, rc] = J.journeyOf(t.cid).identities!.list;
-    expect(Object.keys(ra.board!.images!).sort()).toEqual(["hero", "logo", "logoIdea", "look", "mark", "markDark", "object", "posts"]);
+    expect(Object.keys(ra.board!.images!).sort()).toEqual(["hero", "logo", "logoIdea", "look", "mark", "markDark", "object", "posts", "signs"]);
     expect(ra.board!.images!.posts!.every(Boolean)).toBe(true);
     expect(ra.board!.images!.logo).toMatchObject({ w: 96, h: 96 });
     expect(rb.board!.images!.object).toBeUndefined();
@@ -658,8 +658,15 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect((out as any).routes).toHaveLength(3);
     // Bibliothèque du client : les images gardées sont prêtes, l'image refusée y est marquée refusée avec sa raison.
     const states = all<{ s: string; n: number }>("SELECT status s, COUNT(*) n FROM assets WHERE project_id=? AND role='brand-board' GROUP BY status", t.pid);
-    // 16 images gardées, plus le logo détouré de A et de B et sa version pour fond sombre (C : logo refusé, aucune).
-    expect(Object.fromEntries(states.map((r) => [r.s, r.n]))).toEqual({ ready: 20, rejected: 2 });
+    // 19 images gardées (dont l'image des signes de chaque planche), plus le logo détouré de A et de B et sa version
+    // pour fond sombre (C : logo refusé, aucune).
+    expect(Object.fromEntries(states.map((r) => [r.s, r.n]))).toEqual({ ready: 23, rejected: 2 });
+    // Les signes : une vraie photo, le logo posé dessus, aucun autre texte, jamais un pictogramme.
+    const I = await import("@/lib/syna-agent/brand-images");
+    expect(log.prompts["image-1-A-signs"]).toContain(I.SIGNS_LINE);
+    expect(log.prompts["image-1-A-signs"]).toMatch(/Aucun autre texte que le logo/);
+    expect(refs["image-1-A-signs"]).toEqual({ logo: true, scene: false, aspect: "1:1" });
+    expect(log.systems["imagery-1-A"]).toMatch(/- signs : LES SIGNES de la marque[\s\S]*Jamais une icône plate, jamais un pictogramme/);
     expect(one<{ w: string }>("SELECT json_extract(meta,'$.synaBoard.review.why') w FROM assets WHERE project_id=? AND status='rejected' AND name LIKE '%-B-object%'", t.pid)?.w).toBe("Le titre est mal écrit.");
     // Dans le fil : une adresse interne du Studio, jamais une adresse libre.
     const { threadView } = await import("@/lib/syna-agent/loop");
@@ -762,7 +769,8 @@ describe("SINA — chaîne de création de la marque", async () => {
     const { images, ...restBoard } = after[1].board!;
     expect({ ...after[1], board: restBoard }).toEqual(before[1]);
     expect(images!.posts).toEqual([expect.objectContaining({ w: 120, h: 180 }), null, expect.objectContaining({ w: 120, h: 180 })]);
-    expect(J.journeyOf(t.cid).identities!.issues.join("\n")).toMatch(/Identité B : je n'ai pas pu créer la deuxième publication ; tu vois mon dessin à la place\./);
+    // Le message dit vrai : « mon dessin » seulement s'il en reste un à cette place.
+    expect(J.journeyOf(t.cid).identities!.issues.join("\n")).toContain(`Identité B : je n'ai pas pu créer la deuxième publication ; ${(after[1].board as any).posts[1].art ? "tu vois mon dessin à la place" : "sa place garde la forme simple de la planche"}.`);
   });
 
   it("relecture impossible : des images non relues ne sont jamais montrées ; un mélange retire les images qui ne sont plus vraies", async () => {
@@ -813,6 +821,10 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(log.prompts["image-1-A-logo"]).toContain(I.LOGO_OWN);
     expect(log.prompts["image-1-A-logo"]).not.toMatch(/image de référence/);
     expect((log as any).refs["image-1-A-logo"].logo).toBe(false);
+    // Le signe « lettrage » (le nom composé par le Studio, parfois avec la vague) n'est jamais donné pour le logo.
+    const lettrage = ra.board!.signs.find((g) => g.kind === "lettrage");
+    if (lettrage) expect(log.prompts["imagery-1-A"]).not.toContain(lettrage.text);
+    expect(log.prompts["imagery-1-A"]).toMatch(/Signes de la marque \(hors lettrage : le logo ne reprend rien du nom composé par le Studio\)/);
     // Les idées de logo des planches déjà faites sont données à la suivante : son logo doit en différer.
     expect(log.prompts["imagery-1-A"]).not.toMatch(/Logos déjà prévus/);
     expect(log.prompts["imagery-1-B"]).toMatch(/# Logos déjà prévus pour les AUTRES propositions de cette série\n1\. Un logo net/);

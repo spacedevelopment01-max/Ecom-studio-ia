@@ -590,7 +590,7 @@ function boardShots(i: NonNullable<Board["images"]>) {
   return {
     ...(i.logo ? { logo: shot(i.logo)! } : {}), ...(i.hero ? { hero: shot(i.hero)! } : {}), ...(i.object ? { object: shot(i.object)! } : {}), ...(i.site ? { site: shot(i.site)! } : {}),
     ...(i.posts ? { posts: i.posts.map((v) => shot(v)) } : {}),
-    ...(i.mark ? { mark: shot(i.mark)! } : {}), ...(i.markDark ? { markDark: shot(i.markDark)! } : {}),
+    ...(i.mark ? { mark: shot(i.mark)! } : {}), ...(i.markDark ? { markDark: shot(i.markDark)! } : {}), ...(i.signs ? { signs: shot(i.signs)! } : {}),
   };
 }
 /** Planche de marque d'une identité (routes du 12 novembre 2026) : couleurs d'affichage, nom dessiné, libellés. */

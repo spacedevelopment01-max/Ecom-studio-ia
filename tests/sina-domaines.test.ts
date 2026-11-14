@@ -89,7 +89,7 @@ describe("SINA — nom de domaine : l'exact, sinon une adresse libre qui garde l
     expect(S.firstProduct(["Pulpe", "[À compléter : nom de la recette]"], "Pulpe")).toBeNull(); // jamais un faux produit
     // L'image du site n'est plus créée par le modèle d'images : une image payée de moins par planche.
     const I = await import("@/lib/syna-agent/brand-images");
-    expect(I.CREATED_SLOTS).toEqual(["logo", "hero", "object", "post0", "post1", "post2"]);
+    expect(I.CREATED_SLOTS).toEqual(["logo", "hero", "object", "signs", "post0", "post1", "post2"]); // les signes en vraie photo (14 novembre 2026)
     expect(I.IMAGE_SLOTS).toContain("site"); // les planches faites avant restent lisibles
     expect(P.imagerySystem("produits")).toMatch(/Le haut du site sur téléphone n'est plus une image : le Studio le rend lui-même/);
     expect(P.imagerySystem("produits")).not.toMatch(/"site": ""/);

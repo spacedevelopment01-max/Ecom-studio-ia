@@ -175,6 +175,8 @@ export const BoardSchema = z.object({
    */
   images: z.object({
     logo: BoardImageSchema.optional(), hero: BoardImageSchema.optional(), object: BoardImageSchema.optional(), site: BoardImageSchema.optional(),
+    /** Les signes de la marque posés sur de vrais objets de son monde, photo d'OpenAI (plus aucun pictogramme dessiné). */
+    signs: BoardImageSchema.optional(),
     posts: z.array(BoardImageSchema.nullable()).length(3).optional(), look: z.string().max(700).optional(),
     /** Le logo gardé, fond retiré par le Studio (en tête de planche, haut du site), et sa version pour fond sombre. */
     mark: BoardImageSchema.optional(), markDark: BoardImageSchema.optional(),
