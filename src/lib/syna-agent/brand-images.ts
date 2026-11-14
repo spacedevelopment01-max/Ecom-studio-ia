@@ -285,8 +285,16 @@ export async function runBoardImages(o: {
   // 2. La grande scène, puis ce qui porte le logo, puis les publications.
   ctx.progress(0.965, L(`Je crée les images de la planche ${key}`, `Creating the images of board ${key}`));
   if (wanted.has("hero")) await make("hero", {}, imagePrompt("hero", x, imagery));
-  if (wanted.has("object")) await make("object", { logo }, imagePrompt("object", x, imagery, { logo: !!logo }));
-  if (wanted.has("signs") && imagery.signs.trim()) await make("signs", { logo }, imagePrompt("signs", x, imagery, { logo: !!logo }));
+  // Reprise d'une partie des images : l'objet et les signes portent le logo de la planche ; sans logo gardé, ils ne
+  // sont pas refaits (retour du propriétaire du 14 novembre 2026 : « les logos ne sont pas les mêmes entre le logo et
+  // sur le camion » : sans logo fourni, OpenAI en inventait un autre). Rien n'est payé pour une image fausse d'avance.
+  const skipCarriers = !!o.slots?.length && !logo;
+  if (skipCarriers) for (const slot of ["object", "signs"] as const) if (wanted.has(slot)) {
+    notes.push(`${SLOT_LABEL[slot].fr} de ${key} non refait(e) : aucun logo gardé à poser dessus`);
+    issues.push(tag(L(`je n'ai pas refait ${SLOT_LABEL[slot].fr} : sans logo gardé, il porterait un autre logo que le tien.`, `I did not redo ${SLOT_LABEL[slot].en}: without a kept logo it would carry a different one.`)));
+  }
+  if (wanted.has("object") && !skipCarriers) await make("object", { logo }, imagePrompt("object", x, imagery, { logo: !!logo }));
+  if (wanted.has("signs") && !skipCarriers && imagery.signs.trim()) await make("signs", { logo }, imagePrompt("signs", x, imagery, { logo: !!logo }));
   for (const slot of ["post0", "post1", "post2"] as const) if (wanted.has(slot)) await make(slot, {}, imagePrompt(slot, x, imagery));
 
   // 3. La relecture : aucune image n'est montrée sans avoir été regardée.
@@ -375,9 +383,11 @@ export async function runBoardImages(o: {
   // jamais l'ancienne à sa place si elle portait l'ancien logo (l'objet) : la planche montre alors le dessin de SINA.
   const before = (x.board.images ?? {}) as NonNullable<Route["board"]["images"]>;
   const keep = <K extends "logo" | "hero" | "object" | "signs" | "site">(k: K) => (wanted.has(k as ImageSlot) ? made.get(k as ImageSlot) : before[k]) ?? undefined;
+  // Pas de logo gardé : l'ancien logo, l'ancien objet qui le porte et l'ancienne marque de planche restent ensemble.
+  if (skipCarriers) { if (before.logo) made.set("logo", before.logo); for (const k of ["object", "signs"] as const) if (before[k]) made.set(k, before[k]!); }
   const posts = (["post0", "post1", "post2"] as const).map((s, i) => (wanted.has(s) ? made.get(s) : before.posts?.[i]) ?? null);
   const logoNow = keep("logo");
-  const markNow = wanted.has("logo") ? marks : { mark: before.mark, markDark: before.markDark };
+  const markNow = wanted.has("logo") && !skipCarriers ? marks : { mark: before.mark, markDark: before.markDark };
   const images = {
     ...(logoNow ? { logo: logoNow } : {}), ...(keep("hero") ? { hero: keep("hero")! } : {}),
     ...(keep("object") ? { object: keep("object")! } : {}), ...(keep("site") ? { site: keep("site")! } : {}), ...(keep("signs") ? { signs: keep("signs")! } : {}),

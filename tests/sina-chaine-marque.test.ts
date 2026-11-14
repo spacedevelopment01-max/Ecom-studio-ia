@@ -880,6 +880,16 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(after.mark!.id).not.toBe(before.mark!.id);
     expect(after.hero).toEqual(before.hero);
     expect(after.posts).toEqual(before.posts);
+    // Le logo refait est refusé : le camion n'est pas refait (il porterait un autre logo), rien n'est payé pour lui,
+    // et l'ancien logo reste avec l'ancien objet qui le porte (retour du propriétaire du 14 novembre 2026 : « les logos
+    // ne sont pas les mêmes entre le logo et sur le camion »).
+    const again = await chain(t, { imagesOnly: true, redo: ["A"], slots: ["logo", "object"] }, { draw: async (id) => (id.includes("-logo") ? square("#050505", 128, 128) : square("#224466", 128, 128)) });
+    expect(again.log.ids.filter((id) => id.startsWith("image-"))).toEqual(["image-1-A-logo:logo+object"]);
+    const kept = J.journeyOf(t.cid).identities!.list[0].board!.images!;
+    expect(kept.logo).toEqual(after.logo);
+    expect(kept.object).toEqual(after.object);
+    expect(kept.mark).toEqual(after.mark);
+    expect(J.journeyOf(t.cid).identities!.issues.join("\n")).toMatch(/Identité A : je n'ai pas refait l'image de l'objet : sans logo gardé, il porterait un autre logo que le tien\./);
     const two = C.boardImagesQuote(1, undefined, ["logo", "object"]), all6 = C.boardImagesQuote(1);
     expect(two.maxMicro).toBeLessThan(all6.maxMicro);
     expect(two.maxMicro).toBeGreaterThan(0);
