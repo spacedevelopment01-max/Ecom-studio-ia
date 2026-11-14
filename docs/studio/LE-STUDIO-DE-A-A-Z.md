@@ -212,6 +212,39 @@ vidéos au lieu de huit ; ajouter un prix de création payé une seule fois, aut
 frais de paiement, serveurs, assistance. Incertitudes : le coût réel d'une réponse de SINA quand la conversation est
 longue, et le modèle de vidéo retenu.
 
+### Seconde réflexion : des forfaits avec un rythme compris, et des options (14 novembre 2026)
+
+Remarque du propriétaire : « Non on doit réfléchir autrement, imagine un client veux faire 3 publications par jours sur
+chaque réseau sociaux et tous les jours on fait comment ? […] sur les 3 forfait qu'est ce qu'on propose en option etc et
+à quel prix ».
+
+Idées de départ : ce qui coûte, c'est de créer, pas de publier ; une création est adaptée à chaque réseau (format,
+légende) presque sans coût ; « 3 par jour sur chaque réseau » vaut donc 3 créations par jour, 90 par mois, si la même
+création va sur tous ses réseaux (270 s'il veut un contenu différent par réseau). Trois sortes de créations, trois
+coûts d'IA : image environ 0,22 €, carrousel environ 0,65 €, vidéo environ 2 €. Pour garder 60 % : prix affiché au
+client ≈ 3 fois le coût d'IA.
+
+| Par mois | Forfait 1 : 49 € | Forfait 2 : 89 € | Forfait 3 : 169 € |
+|---|---|---|---|
+| SINA, la marque, le site | compris | compris | compris |
+| Publications en images | 20 (5 par semaine) | 30 (1 par jour) | 60 (2 par jour) |
+| Vidéos | 0 | 3 | 6 |
+| Campagnes publicitaires préparées | 0 | 1 | 2 |
+| Réseaux | tous, la même création adaptée à chacun | idem | idem |
+
+Options, par mois, sur n'importe quel forfait : une publication en image de plus par jour (30 de plus), 25 € ; dix
+vidéos de plus, 59 € ; une campagne de plus, 5 € en images ou 12 € avec une vidéo. Création du départ : 69 €, une fois.
+
+Son exemple : 3 publications en images par jour, tous les jours, sur tous ses réseaux = forfait 2 et deux options,
+139 € par mois (IA estimée à 36 €, marge d'environ 69 %). Avec une vidéo par jour parmi les trois : forfait 3 et trois
+options vidéo, 346 € par mois (IA estimée à 102 €, marge d'environ 65 %).
+
+Le marché, lu le 14 novembre 2026 (sources qui ne s'accordent pas toutes) : chez Predis, les trois publications
+automatiques par jour ne sont comprises que dans le forfait le plus cher, entre 212 et 249 $ par mois ; Blaze démarre à
+79 $ par mois pour 600 crédits (une image = 1 crédit, une vidéo = 15) ; Ocoya va de 15 à 159 $ par mois.
+
+À trancher : la même création adaptée à chaque réseau, ou un contenu différent par réseau.
+
 Sources de la partie 7 : journal des nouveautés de Shopify (conseils de Sidekick), Unite.AI (Canvas), TechCrunch
 (créateur de boutique), eCommerce Fastlane, Copyfy, blog de Google (Pomelli), test de Blaze par R. Doser, Apaya, blog de
 Zeely, Pixis (Meta), Tool Advisor et Capeb (Simplébo).
