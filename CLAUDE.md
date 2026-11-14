@@ -480,6 +480,27 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   couleur de la boisson ou sur des morceaux visibles dans le verre, que le client n'a jamais dits) ; quatre stratèges
   sur le même dossier retrouvent les mêmes idées (leur donner des entrées plus éloignées) ; aucune n'a parlé du goût,
   faute d'avoir goûté. Trois planches envoyées, **pas encore notées par lui**.
+- **SINA doit dessiner elle-même, pas en copier-coller, et du premier coup** (ses mots du 14 novembre 2026, à ne jamais
+  lui faire répéter). Sur le haut de site des planches d'angle : « haut du site n'est pas du tout du niveau que je veux,
+  tu as été voir 1000 thèmes et tu fais encore des visuels de thème comme ça » (le titre était posé sur un fond vide, la
+  photo rangée dessous, rien qui appartienne à la marque). Sur les trois hauts de site refaits à la main par Claude (une
+  forme d'ouverture par angle ; le signe de Pulpe, la ligne d'eau du logo, repris sur le dernier mot du titre et les
+  bords des sections) : « J'aime bien ce que tu as fait mais c'est pas sina qui à fait ça, est ce que sina peut faire ce
+  genre de chose par elle même, pas en copier coller ? Et du premier coup ? C'est surtout ça le délire. » **État vrai du
+  Studio** : SINA assemble des sections déjà écrites et choisit parmi des réglages fixes (`TenueSchema` ; le « signe »
+  n'est qu'une phrase dite au client) ; ses regards en image (`custom-theme/looks.ts`) notent les défauts sans rien
+  corriger ; elle ne dessine donc rien de neuf. **Essai gratuit du même jour** (joué par trois agents séparés de la
+  conversation, pas par SINA ; chacun n'avait que le dossier que SINA aurait : marque, angle, photos d'origine, cahiers
+  du thème, règles du propriétaire ; HTML et CSS seulement, aucun script ; capture puis regard, quatre tours de
+  correction au plus ; vérifié dans leurs journaux qu'aucun n'a ouvert les écrans de Claude) : les trois ont rendu seuls
+  une ouverture en photo pleine avec le titre sur la partie calme, ont trouvé seuls la ligne d'eau du logo comme signe,
+  et ont corrigé seuls leurs défauts (débordement en largeur, ligne d'eau qui barrait le mot) en trois ou quatre regards,
+  en 20 à 25 minutes. Limites : même forme et même photo chez les trois (personne ne répartissait les formes), mot trempé
+  encore un peu barré, petits mots ajoutés à valider, aucune mise en boutique. Leçon : « du premier coup » pour le client
+  tient à la boucle « elle regarde, elle corrige » avant de montrer. **À construire, rien n'est fait** : une
+  dessinatrice qui écrit l'ouverture pour la marque au lieu de choisir une section, la boucle de correction, quelqu'un
+  qui répartit les formes entre les propositions, les contrôles sans IA et la mise en boutique de ces pages ; prix à
+  calculer et à annoncer avant tout essai réel.
 - **Réponses courtes et claires**, sans jargon ; ne pas reposer une question à laquelle il a déjà répondu.
 - **Ne pas décider à sa place** : un retrait de contenu ou un changement visible important se propose, il ne s'applique
   qu'après son accord. Retirer un visuel raté sans rien mettre à la place n'est pas une correction.
