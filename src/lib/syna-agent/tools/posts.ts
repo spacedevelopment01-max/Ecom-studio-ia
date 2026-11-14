@@ -18,7 +18,7 @@ import { listProducts } from "../../products/catalog";
 import type { AngleId } from "../../marketing-strategy";
 import type { AgentTool } from "../types";
 import { journeyOf, setStep, stepAvailable, updateJourney } from "../journey";
-import { POST_SUBJECT_LABEL, POSTS_PLAN_JOB, POSTS_PLAN_MAX_MICRO, POSTS_PLAN_TYPICAL_MICRO, chosenAngles, type PostGroup } from "../posts-plan";
+import { POST_SUBJECT_LABEL, POSTS_PLAN_JOB, chosenAngles, postsPlanMaxMicro, postsPlanTypicalMicro, type PostGroup } from "../posts-plan";
 import { project } from "./common";
 
 const closed = () => ({ ok: false as const, summary: L("L'étape des publications n'est pas encore ouverte dans le parcours.", "The posts step is not open yet.") });
@@ -30,7 +30,7 @@ const planTool: AgentTool<{ redo?: string }> = {
   name: "posts.plan", module: "publications", kind: "generate", needsProject: true,
   description: "Étape 9 (PAYANT, peu : le Studio montre le devis sur la carte d'accord) : écrit le PLAN des 3 groupes de publications du client, d'après ses angles choisis : pour chacun un sujet utile, un titre, trois points au plus, un appel à l'action, le texte, les hashtags et la photo prévue. Le plan est contrôlé et relu avant d'être montré ; il s'affiche dans le fil. Aucune image n'est créée ici (posts.create, ensuite). redo = les mots du client quand il veut un autre plan.",
   args: z.object({ redo: z.string().min(8).max(1500).optional() }).strict(),
-  estimate: () => ({ maxMicro: POSTS_PLAN_MAX_MICRO, probableMicro: POSTS_PLAN_TYPICAL_MICRO, label: L("le plan de tes 3 groupes de publications (sujets, titres, textes, hashtags, photos prévues), relu avant de t'être montré", "the plan of your 3 post groups") }),
+  estimate: () => ({ maxMicro: postsPlanMaxMicro(), probableMicro: postsPlanTypicalMicro(), label: L("le plan de tes 3 groupes de publications (sujets, titres, textes, hashtags, photos prévues), relu avant de t'être montré", "the plan of your 3 post groups") }),
   run: (ctx, a) => {
     const p = project(ctx), j = journeyOf(ctx.conversationId);
     if (!stepAvailable(j, 9)) return closed();
@@ -38,7 +38,7 @@ const planTool: AgentTool<{ redo?: string }> = {
     if (!chosenAngles(j).length) return { ok: false, summary: L("Aucun angle choisi : l'étape 4 doit être validée avant les publications.", "No chosen angle yet.") };
     if (j.posts && !a.redo) return { ok: true, summary: L(`Le plan est déjà prêt et affiché dans le fil : ${j.posts.groups.map((g) => `« ${g.title} »`).join(" ; ")}.`, "The plan is ready."), hint: "Un autre plan ne se refait que si le client le demande (redo = ses mots, payant, annoncé avant)." };
     if (pendingJob(p.id, POSTS_PLAN_JOB)) return { ok: true, summary: L("Le plan est déjà en cours d'écriture ; je reprends dès qu'il est prêt.", "The plan is being written.") };
-    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: POSTS_PLAN_JOB, label: L("Plan des publications (SINA)", "Posts plan (SINA)"), payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: POSTS_PLAN_MAX_MICRO, guidance: a.redo?.trim() || null }, maxAttempts: 2, idempotencyKey: `syna:${ctx.runId}:posts-plan:${j.posts?.round ?? 0}` });
+    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: POSTS_PLAN_JOB, label: L("Plan des publications (SINA)", "Posts plan (SINA)"), payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: postsPlanMaxMicro(), guidance: a.redo?.trim() || null }, maxAttempts: 2, idempotencyKey: `syna:${ctx.runId}:posts-plan:${j.posts?.round ?? 0}` });
     updateJourney(ctx.conversationId, (x) => setStep(x, 9, "doing"));
     return { ok: true, jobs: [job.id], summary: L("Plan des 3 groupes de publications en cours d'écriture (quelques minutes).", "Writing the posts plan.") };
   },

@@ -4,8 +4,12 @@
  *
  *  1) La STRATÈGE DES CONTENUS écrit trois groupes « sans aucune ressemblance » (charte de qualité § 7) : sujet utile,
  *     titre en deux temps, trois points au plus, appel à l'action, texte, hashtags, et la photo à créer.
- *  2) Le Studio contrôle sans IA : angle choisi par le client, produit du catalogue, 5 à 15 hashtags sans générique
- *     vide, trois sujets différents, aucune promesse non confirmée.
+ *  2) Le Studio contrôle sans IA : angle choisi par le client, produit du catalogue, 3 à 5 mots-dièse sans générique
+ *     vide (Instagram n'en accepte pas plus de 5 depuis décembre 2025), trois sujets différents, aucune promesse non
+ *     confirmée.
+ * La stratège et le juge lisent leurs cahiers de métier et les modèles de publication du secteur du client
+ * (posts-knowledge.ts, 14 novembre 2026). Les images sont créées par le modèle d'images d'OpenAI, obligatoire
+ * (usage « social_image », src/lib/ai/media-routing.ts).
  *  3) Un JUGE séparé lit le plan entier (celui qui écrit n'est jamais celui qui juge) et dit « garde » ou « reprendre ».
  *  4) Les groupes refusés (par le juge ou par les contrôles) sont réécrits UNE fois, puis relus par le juge.
  *     Un groupe encore refusé est montré avec le doute de SINA : rien n'est montré sans avoir été relu.
@@ -23,13 +27,21 @@ import { listProducts } from "../products/catalog";
 import { peopleAllowed } from "../people-policy";
 import { journeyOf, setStep, updateJourney, type Journey } from "./journey";
 import { brandBrief, boardLook } from "./custom-theme/brand";
+import { postsEducated, postsKnowledgeCapMicro, postsKnowledgeReady, postsKnowledgeTypicalMicro, publicationModelsFor } from "./posts-knowledge";
 
 export const POSTS_PLAN_JOB = "syna.posts.plan";
-/** Plafonds par appel (stratège, juge, reprise, seconde lecture) et coût habituel du plan entier. */
+/** Plafonds par appel (stratège, juge, reprise, seconde lecture) et coût habituel du plan entier, hors savoir de métier. */
 export const POSTS_PLAN_CAP_MICRO = 300_000;
 export const POSTS_JUDGE_CAP_MICRO = 150_000;
 export const POSTS_PLAN_MAX_MICRO = POSTS_PLAN_CAP_MICRO * 2 + POSTS_JUDGE_CAP_MICRO * 2;
 export const POSTS_PLAN_TYPICAL_MICRO = 220_000;
+/** Plafond d'UN appel, lecture de ses cahiers et des modèles du secteur comprise. */
+export const postsPlanCallCapMicro = () => POSTS_PLAN_CAP_MICRO + postsKnowledgeCapMicro("stratege", "strategy");
+export const postsJudgeCallCapMicro = () => POSTS_JUDGE_CAP_MICRO + postsKnowledgeCapMicro("juge", "quality_control");
+/** Plafond du plan entier (stratège, juge, reprise, seconde lecture), savoir de métier compris : c'est le devis montré. */
+export const postsPlanMaxMicro = () => postsPlanCallCapMicro() * 2 + postsJudgeCallCapMicro() * 2;
+/** Coût habituel du plan entier : une écriture et une lecture, cahiers et modèles compris. */
+export const postsPlanTypicalMicro = () => POSTS_PLAN_TYPICAL_MICRO + postsKnowledgeTypicalMicro("stratege", "strategy") + postsKnowledgeTypicalMicro("juge", "quality_control");
 
 /** Sujets de la charte § 7 : produit, conseil, coulisses, usage, erreurs à éviter, question à la communauté. */
 export const POST_SUBJECTS = ["produit", "conseil", "coulisses", "usage", "erreurs", "question"] as const;
@@ -79,10 +91,11 @@ const RULES = `Règles des publications (charte de qualité du Studio) :
 - Un sujet UTILE par publication, jamais une simple publicité : un conseil, des erreurs à éviter, comment choisir, les coulisses, un usage, une question à la communauté. Trois sujets différents parmi : ${POST_SUBJECTS.join(", ")}.
 - Titre accrocheur en deux temps, « Sujet : promesse » (« Bougie : 5 erreurs à éviter »), court.
 - Trois points au plus, phrases courtes et concrètes. Un chiffre affiché est vrai et vient du client, jamais inventé.
-- Un appel à l'action qui fait agir la communauté (« Enregistre ce mémo », « Vote en commentaire », « Partage à un ami »).
-- Le texte fait RESSENTIR l'émotion de l'angle (une scène, un moment, une sensation), au tutoiement, sans ordre donné au lecteur en dehors de l'appel à l'action.
-- Hashtags : 5 à 15, pertinents pour CE sujet et CE métier, aucun générique vide (#love, #instagood, #photooftheday…).
-- La photo : une vraie scène de vie avec une lumière soignée et une partie calme où le titre se pose ; jamais un produit seul sur fond uni ; aucun texte, aucun logo dans la description ; aucune personne sauf si la fiche l'autorise.
+- UN appel à l'action qui fait agir la communauté (« Enregistre ce mémo », « Vote en commentaire », « Partage à un ami ») : enregistrer, envoyer à quelqu'un de précis, répondre à une vraie question, venir. Jamais un appât que les réseaux pénalisent (« like si », « tague un ami », « commente OUI », vote par réaction).
+- Le texte fait RESSENTIR l'émotion de l'angle (une scène, un moment, une sensation), au tutoiement, sans ordre donné au lecteur en dehors de l'appel à l'action. La première phrase tient seule (125 caractères au plus : c'est tout ce qu'on voit avant de déplier).
+- Mots-dièse : 3 à 5 (Instagram n'en accepte pas plus de 5), précis pour CE sujet, CE métier et, pour un commerce local, sa ville ; aucun générique vide (#love, #instagood, #photooftheday…).
+- La photo : une vraie scène de vie avec une lumière soignée et une partie calme où le titre se pose ; jamais un produit seul sur fond uni ; aucun texte, aucun logo dans la description ; aucune personne sauf si la fiche l'autorise. Elle est créée par le modèle d'images d'OpenAI : décris-la comme une photo (cadrage, surface, chaque objet à sa place, lumière), le vrai produit du client entier et inchangé.
+- Une image créée ne prouve jamais rien : elle montre une ambiance, un geste, un outil, une matière ou le vrai produit mis en scène, jamais « notre chantier », « notre plat », « une cliente », un bien ou le lieu du client (pratique trompeuse, même avec une mention « IA »). Ce qui exige une vraie photo du client n'entre pas dans le plan.
 - Aucun avis, chiffre, délai, garantie ni certification absent de la fiche du client.`;
 
 export const POSTS_PLAN_SYSTEM = `Tu es la stratège des contenus d'un studio qui crée la marque et le site de petits commerçants. Tu écris le plan des TROIS premiers groupes de publications d'un client pour ses réseaux sociaux, en français. Chaque groupe est UNE publication (une image et son texte) qui sera déclinée dans le format de chaque réseau.
@@ -131,7 +144,7 @@ export function planIssues(p: Project, groups: PostGroup[], o: { angleIds: strin
   groups.forEach((g, i) => {
     if (!o.angleIds.includes(g.angleId)) out.push({ index: i, issue: `angle « ${g.angleId} » inconnu : prends un des angles choisis par le client (${o.angleIds.join(", ")})` });
     const tags = cleanHashtags(g.hashtags);
-    if (tags.length < 5 || tags.length > 15) out.push({ index: i, issue: `${tags.length} hashtags : il en faut 5 à 15` });
+    if (tags.length < 3 || tags.length > 5) out.push({ index: i, issue: `${tags.length} mots-dièse : il en faut 3 à 5 (Instagram n'en accepte pas plus de 5)` });
     const empty = tags.filter((t) => EMPTY_TAGS.has(tagKey(t)));
     if (empty.length) out.push({ index: i, issue: `hashtags génériques vides à remplacer : ${empty.join(" ")}` });
     if (g.product && !o.products.some((x) => x.trim().toLowerCase() === g.product!.trim().toLowerCase())) out.push({ index: i, issue: `produit « ${g.product} » absent du catalogue : le nom exact d'un produit du client, ou null` });
@@ -152,8 +165,9 @@ export function chosenAngles(j: Journey): { id: string; title: string; emotion: 
   return ids.map((id, i) => { const a = j.angles?.list.find((x) => x.id === id); return a ? { id, title: a.title, emotion: a.emotion, message: a.message, audience: a.audience, story: a.story, main: i === 0 } : null; }).filter((x): x is NonNullable<typeof x> => !!x);
 }
 
-export function postsPlanPrompt(brief: string, angles: ReturnType<typeof chosenAngles>, products: string[], o: { look?: string | null; people: boolean; guidance?: string | null; previous?: PostGroup[] }): string {
+export function postsPlanPrompt(brief: string, angles: ReturnType<typeof chosenAngles>, products: string[], o: { look?: string | null; people: boolean; guidance?: string | null; previous?: PostGroup[]; models?: string | null }): string {
   return [brief, "",
+    o.models ?? "",
     `ANGLES CHOISIS PAR LE CLIENT (angleId exact) :\n${angles.map((a) => `- ${a.id}${a.main ? " (angle principal)" : ""} · « ${a.title} » · émotion : ${a.emotion} · accroche : ${a.message} · pour : ${a.audience}${a.story ? ` · ce qu'on raconte : ${a.story}` : ""}`).join("\n")}`,
     products.length ? `PRODUITS DU CATALOGUE (nom exact pour « product ») : ${products.join(" ; ")}` : "AUCUN PRODUIT AU CATALOGUE : product = null partout.",
     o.look ? `DIRECTION ARTISTIQUE DE SA PLANCHE DE MARQUE (les photos en sont la suite) : ${o.look}` : "",
@@ -180,9 +194,17 @@ export async function runPostsPlanJob(ctx: JobContext) {
   const j = journeyOf(a.conversationId);
   const angles = chosenAngles(j);
   if (!angles.length) throw new UserFacingError(L("Aucun angle choisi : l'étape 4 doit être validée avant les publications.", "No chosen angle yet."));
+  // Le savoir de métier d'abord : un cahier absent arrête tout avant le moindre appel payant.
+  const ready = postsKnowledgeReady();
+  if (!ready.ok) throw new UserFacingError(L(`Le plan des publications ne peut pas commencer : ${ready.reason}`, "The posts plan cannot start: a knowledge book is missing."));
   const products = (() => { try { return listProducts(p.id).map((x) => x.data.title).filter(Boolean); } catch { return []; } })();
   const people = peopleAllowed(p.id), brief = brandBrief(p, j);
   const facts = { angleIds: angles.map((x) => x.id), products, people };
+  // Les modèles de publication du secteur du client, reconnus sans IA dans ce qu'il vend.
+  const offer = [String(j.start?.offer?.value ?? ""), p.product?.name, p.product?.category, p.product?.summary, ...products, ...(p.business === "services" ? (p.services?.services ?? []).map((x) => x.name) : [])].filter(Boolean).join(" ");
+  const core = [p.product?.name, p.product?.category, ...products, ...(p.business === "services" ? (p.services?.services ?? []).map((x) => x.name) : [])].filter(Boolean).join(" ");
+  const models = publicationModelsFor(offer, p.business === "services" ? "services" : "products", core);
+  const planCap = postsPlanCallCapMicro(), judgeCap = postsJudgeCallCapMicro();
   const ask = <T,>(step: string, system: string, prompt: string, schema: z.ZodType<T>, dep: ((prompt: string, usageKey: string) => Promise<unknown>) | undefined, o: { task: "strategy" | "quality_control"; cap: number; out: number }): Promise<T> => ctx.step(step, async () => {
     const usageKey = `${ctx.job.id}:${step}`;
     return schema.parse(dep ? await dep(prompt, usageKey)
@@ -192,14 +214,14 @@ export async function runPostsPlanJob(ctx: JobContext) {
 
   // 1) La stratège écrit les trois groupes.
   ctx.progress(0.1, L("J'écris le plan de tes publications", "Writing your posts plan"));
-  const base = postsPlanPrompt(brief, angles, products, { look: boardLook(j), people, guidance: a.guidance, previous: j.posts?.groups });
-  let groups: PostGroup[] = (await ask("plan", POSTS_PLAN_SYSTEM, base, PostsPlanSchema, postsPlanDeps.plan, { task: "strategy", cap: POSTS_PLAN_CAP_MICRO, out: 7000 })).groups;
+  const base = postsPlanPrompt(brief, angles, products, { look: boardLook(j), people, guidance: a.guidance, previous: j.posts?.groups, models: models.forPlanner });
+  let groups: PostGroup[] = (await ask("plan", postsEducated(POSTS_PLAN_SYSTEM, "stratege"), base, PostsPlanSchema, postsPlanDeps.plan, { task: "strategy", cap: planCap, out: 7000 })).groups;
 
   // 2) et 3) Contrôles du Studio, puis le juge lit le plan entier.
   const notes: string[] = [];
   const judge = async (round: number, only?: number[]) => {
-    const prompt = `${brief}\n\nANGLES CHOISIS : ${angles.map((x) => `${x.id} = « ${x.title} » (émotion : ${x.emotion})`).join(" ; ")}\n\nPLAN À JUGER${only ? ` (les groupes ${only.map((i) => i + 1).join(" et ")} viennent d'être réécrits : juge-les, les autres sont déjà gardés)` : ""} :\n${JSON.stringify(groups.map(showGroup))}`;
-    return ask(`judge:${round}`, POSTS_JUDGE_SYSTEM, prompt, PostsJudgeSchema, postsPlanDeps.judge, { task: "quality_control", cap: POSTS_JUDGE_CAP_MICRO, out: 3000 });
+    const prompt = `${brief}${models.forJudge ? `\n\n${models.forJudge}` : ""}\n\nANGLES CHOISIS : ${angles.map((x) => `${x.id} = « ${x.title} » (émotion : ${x.emotion})`).join(" ; ")}\n\nPLAN À JUGER${only ? ` (les groupes ${only.map((i) => i + 1).join(" et ")} viennent d'être réécrits : juge-les, les autres sont déjà gardés)` : ""} :\n${JSON.stringify(groups.map(showGroup))}`;
+    return ask(`judge:${round}`, postsEducated(POSTS_JUDGE_SYSTEM, "juge"), prompt, PostsJudgeSchema, postsPlanDeps.judge, { task: "quality_control", cap: judgeCap, out: 3000 });
   };
   type Refusal = { index: number; why: string; fixes: string[] };
   const refusalsOf = (v: z.infer<typeof PostsJudgeSchema> | null, only?: number[]): Refusal[] => {
@@ -221,7 +243,7 @@ export async function runPostsPlanJob(ctx: JobContext) {
     ctx.progress(0.65, L("Je reprends ce qui ne va pas", "Reworking what is off"));
     try {
       const prompt = `${base}\n\nGROUPES GARDÉS (ne leur ressemble pas) :\n${JSON.stringify(groups.map(showGroup).filter((g) => !refused.some((r) => r.index === g.index)))}\n\nGROUPES À RÉÉCRIRE :\n${JSON.stringify(refused.map((r) => ({ ...showGroup(groups[r.index], r.index), corrections: r.fixes })))}`;
-      const fixed = await ask("fix", POSTS_FIX_SYSTEM, prompt, PostsFixSchema, postsPlanDeps.fix, { task: "strategy", cap: POSTS_PLAN_CAP_MICRO, out: 7000 });
+      const fixed = await ask("fix", postsEducated(POSTS_FIX_SYSTEM, "stratege"), prompt, PostsFixSchema, postsPlanDeps.fix, { task: "strategy", cap: planCap, out: 7000 });
       const redone = refused.map((r) => r.index).filter((i) => fixed.groups.some((x) => x.index === i));
       groups = groups.map((g, i) => fixed.groups.find((x) => x.index === i && redone.includes(i))?.group ?? g);
       if (redone.length) {
@@ -241,5 +263,5 @@ export async function runPostsPlanJob(ctx: JobContext) {
   };
   updateJourney(a.conversationId, (x) => { x.posts = plan; setStep(x, 9, "review", L("plan des publications prêt", "posts plan ready")); });
   ctx.progress(1, L("Plan des publications prêt", "Posts plan ready"));
-  return { groupes: plan.groups.map((g) => ({ titre: g.title, sujet: g.subject, angle: g.angleId, ...(g.doubt ? { doute: g.doubt } : {}) })), relus: judged === "juges", avis: overall, notes };
+  return { groupes: plan.groups.map((g) => ({ titre: g.title, sujet: g.subject, angle: g.angleId, ...(g.doubt ? { doute: g.doubt } : {}) })), relus: judged === "juges", avis: overall, secteur: models.sector?.label ?? null, notes };
 }

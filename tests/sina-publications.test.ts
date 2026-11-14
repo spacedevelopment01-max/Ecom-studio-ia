@@ -88,9 +88,29 @@ describe("SINA — étape 9 : le plan des publications, jugé avant toute image"
     expect(issues).toMatch(/1:hashtags génériques vides à remplacer : #love/);
     expect(issues).toMatch(/1:produit « Produit inventé » absent du catalogue/);
     expect(issues).toMatch(/1:même sujet que le groupe 1/);
-    expect(issues).toMatch(/2:2 hashtags : il en faut 5 à 15/);
+    expect(issues).toMatch(/2:2 mots-dièse : il en faut 3 à 5/);
+    // Instagram n'accepte pas plus de 5 mots-dièse depuis décembre 2025 : 6 sont refusés.
+    expect(P.planIssues(p, [group({ hashtags: ["#a1", "#b2", "#c3", "#d4", "#e5", "#f6"] })], facts).map((x) => x.issue).join("\n")).toMatch(/6 mots-dièse : il en faut 3 à 5/);
     expect(issues).toMatch(/2:la photo décrit une personne/);
     expect(P.planIssues(p, bad, { ...facts, people: true }).map((x) => x.issue).join("\n")).not.toMatch(/décrit une personne/);
+  });
+
+  it("savoir de métier absent : le plan s'arrête avant tout appel payant et le dit", async () => {
+    const { job } = await ready();
+    const fs = await import("node:fs"), os = await import("node:os"), path = await import("node:path");
+    const empty = fs.mkdtempSync(path.join(os.tmpdir(), "sina-savoir-vide-"));
+    const before = process.env.SINA_SAVOIR_DIR;
+    process.env.SINA_SAVOIR_DIR = empty;
+    let calls = 0;
+    P.postsPlanDeps.plan = async () => { calls++; return { groups: three() }; };
+    P.postsPlanDeps.judge = async () => { calls++; return keepAll; };
+    try {
+      await expect(fr(() => P.runPostsPlanJob(job()))).rejects.toThrow(/ne peut pas commencer[\s\S]*Cahier de métier introuvable/);
+      expect(calls).toBe(0);
+    } finally {
+      if (before === undefined) delete process.env.SINA_SAVOIR_DIR; else process.env.SINA_SAVOIR_DIR = before;
+      fs.rmSync(empty, { recursive: true, force: true });
+    }
   });
 
   it("plan gardé : le juge lit les trois groupes en entier, le plan arrive dans le parcours, l'étape passe « à valider »", async () => {
@@ -105,6 +125,12 @@ describe("SINA — étape 9 : le plan des publications, jugé avant toute image"
     expect(seen.judge).toHaveLength(1);
     expect(seen.plan[0]).toMatch(/ANGLES CHOISIS PAR LE CLIENT \(angleId exact\) :\n- generalist \(angle principal\) · « La pause qui t'appartient » · émotion : sérénité/);
     expect(seen.plan[0]).toMatch(/PERSONNES : aucune dans les photos/);
+    // La stratège reçoit les modèles de publication du secteur du client (un sérum : soin de la peau), le juge ce qui
+    // est à éviter dans ce secteur ; aucun compte où ces modèles ont été vus (aucune adresse) ne passe.
+    expect(seen.plan[0]).toMatch(/MODÈLES DE PUBLICATION DU SECTEUR « soin de la peau, cosmétiques, parfum »/);
+    expect(seen.plan[0]).not.toMatch(/https?:\/\//);
+    expect(seen.judge[0]).toMatch(/SECTEUR DU CLIENT : « soin de la peau, cosmétiques, parfum »[\s\S]*À ÉVITER DANS CE SECTEUR/);
+    expect(out.secteur).toBe("soin de la peau, cosmétiques, parfum");
     for (const g of three()) expect(seen.judge[0]).toContain(g.title);
     expect(P.POSTS_PLAN_SYSTEM).toMatch(/TROIS groupes sans aucune ressemblance/);
     expect(P.POSTS_JUDGE_SYSTEM).toMatch(/Tu ne réécris rien/);
@@ -172,7 +198,10 @@ describe("SINA — étape 9 : le plan des publications, jugé avant toute image"
     expect(await fr(() => plan.run(ctx, {}))).toMatchObject({ ok: false, summary: expect.stringMatching(/pas encore ouverte/) });
     expect(await fr(() => create.run(ctx, create.args.parse({ networks: ["instagram"] })))).toMatchObject({ ok: false });
     setJsonSetting("sina.etapes_ouvertes", [9]);
-    expect(await fr(() => plan.estimate!(ctx, {}))).toMatchObject({ maxMicro: P.POSTS_PLAN_MAX_MICRO, probableMicro: P.POSTS_PLAN_TYPICAL_MICRO });
+    expect(await fr(() => plan.estimate!(ctx, {}))).toMatchObject({ maxMicro: P.postsPlanMaxMicro(), probableMicro: P.postsPlanTypicalMicro() });
+    // Le devis compte la lecture des cahiers de métier et des modèles du secteur.
+    expect(P.postsPlanMaxMicro()).toBeGreaterThan(P.POSTS_PLAN_MAX_MICRO);
+    expect(P.postsPlanTypicalMicro()).toBeGreaterThan(P.POSTS_PLAN_TYPICAL_MICRO);
     expect(await fr(() => create.run(ctx, create.args.parse({ networks: ["instagram"] })))).toMatchObject({ ok: false, summary: expect.stringMatching(/Aucun plan de publications encore/) });
     // Le plan lancé : une tâche, étape « en cours ».
     const started: any = await fr(() => plan.run(ctx, {}));

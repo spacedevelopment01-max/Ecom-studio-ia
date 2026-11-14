@@ -517,6 +517,27 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   réel) : environ 0,57 € par ouverture avec le modèle « métier » (1,53 € au plus), environ 1,13 € avec le modèle le
   plus fort (3,06 € au plus). Proposé, sans réponse à ce jour : SINA dessine ainsi toute la page d'accueil, le panier,
   le bloc d'achat et les formulaires restant sur les sections du Studio.
+- **Publications : à la hauteur des meilleurs comptes, images par OpenAI obligatoires** (ses mots du 14 novembre 2026,
+  à ne jamais lui faire répéter : « il faut impérativement que les publications soient à la hauteur de ce que je veux
+  […] plus belles que tous les plus gros community manager du monde » ; puis, devant une démonstration de publications
+  faites seulement de lettres, de chiffres et de formes, sans photo : « C'est ce que je dit c'est nul, donc tu va faire
+  comme pour tout le reste et tu va aller alimenter ton savoir sur internet, tu va regarder tout ce qui ce fait afin de
+  comprendre quel model travailler pour chaque projet, open ia pour les images sont obligatoires. »). Donc : **chaque
+  publication repose sur une vraie image créée par OpenAI** ; jamais une publication faite seulement de texte et de
+  formes. **Fait le 14 novembre 2026** : onze cahiers `docs/sina-savoir/publications-*.md` (onze recherches sur le web)
+  et une bibliothèque de 250 modèles de publication pour 29 secteurs (`references/modeles-publications.json`), méthode
+  `docs/sina-savoir/methode-publications.md` ; la stratège et le juge du plan des publications les lisent, avec les
+  modèles du secteur du client reconnu sans IA (`src/lib/syna-agent/posts-knowledge.ts`) ; mots-dièse ramenés à 3 à 5
+  (Instagram n'en accepte pas plus de 5 depuis décembre 2025) ; **images des publications : OpenAI imposé**
+  (`src/lib/ai/social-image-policy.ts`, usage `social_image` de `media-routing.ts` : le modèle d'OpenAI de
+  l'administration, sinon celui des images de SINA `syna.mockup.image_route`, aucun secours hors d'OpenAI, l'écran
+  d'administration ne propose plus que des modèles d'OpenAI ; les publicités gardent leur réglage). Prix au tarif du
+  Studio : environ 0,14 € l'image, 0,18 € au plus. Testé avec une IA simulée, **aucun essai réel**, rien validé par lui.
+  **Point à trancher avec lui** (trouvé par la recherche, pas encore dit ni décidé) : sa règle du 10 novembre fait créer
+  par SINA des réalisations et avant / après d'artisans ; présentées comme de vrais chantiers, ces images sont une
+  pratique trompeuse (fiche de l'ARPP du 3 août 2026, règlement européen sur l'IA appliqué depuis le 2 août 2026,
+  droit français) ; même question pour un plat, une coupe, un bouquet, un bien. Autres points ouverts : texte de
+  l'accroche dans l'image ou posé par le Studio ; mention « Image générée par IA » ; publicités aussi par OpenAI ?
 - **Réponses courtes et claires**, sans jargon ; ne pas reposer une question à laquelle il a déjà répondu.
 - **Ne pas décider à sa place** : un retrait de contenu ou un changement visible important se propose, il ne s'applique
   qu'après son accord. Retirer un visuel raté sans rien mettre à la place n'est pas une correction.

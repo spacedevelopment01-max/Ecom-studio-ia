@@ -182,6 +182,27 @@ marque lisent déjà (22 000 caractères avant les sources).
 **Suite proposée.** Comme pour les planches de marque : un modèle fait à la main (l'accueil de « Pulpe » sur
 téléphone), noté par le propriétaire, puis le branchement dans SINA.
 
+## Le savoir des publications (demande du propriétaire, 14 novembre 2026)
+
+Après une démonstration de publications faites seulement de lettres et de formes : « C'est ce que je dit c'est nul, donc
+tu va faire comme pour tout le reste et tu va aller alimenter ton savoir sur internet, tu va regarder tout ce qui ce
+fait afin de comprendre quel model travailler pour chaque projet, open ia pour les images sont obligatoires. »
+
+- **Onze cahiers** `publications-*.md`, tirés de onze recherches sur le web du 14 novembre 2026 : ce qui marche en
+  chiffres ; les règles des réseaux et du droit (règlement européen sur l'IA, fiche de l'ARPP, droit français, règles
+  par secteur) ; la direction artistique d'un compte ; les images créées avec le modèle d'images d'OpenAI ; les mots
+  (accroche, légende, voix) ; la ligne et le calendrier ; l'atlas des meilleurs comptes ; quatre cahiers de modèles
+  par secteur (14 secteurs de produits, 15 métiers de services).
+- **La bibliothèque** `references/modeles-publications.json` : 29 secteurs, 250 modèles de publication relevés chez les
+  meilleurs comptes, chacun avec ce qu'on voit (prêt pour la consigne d'image), ce qu'on lit, la légende, les données
+  du client nécessaires, ce qui le fait rater, et pour les services s'il exige une vraie photo du client.
+- **La méthode** `methode-publications.md` : le dossier, la ligne du compte, les publications, le juge, les images
+  d'OpenAI, les trois regards, le droit, le rythme ; le prix d'une image ; les points à trancher.
+- **Branché** : la stratège et le juge du plan des publications lisent leurs cahiers (règles en tête) et les modèles
+  du secteur du client, reconnu sans IA (`src/lib/syna-agent/posts-knowledge.ts`) ; les images des publications
+  passent obligatoirement par OpenAI (`src/lib/ai/social-image-policy.ts`, `media-routing.ts`). L'étape 9 reste
+  fermée ; aucun essai réel ; rien n'est validé par le propriétaire.
+
 ## Ce qui n'est pas réglé
 
 - Le coût réel n'est mesuré qu'une fois (2,88 € pour trois identités, réglage économe). L'estimation d'avant l'essai
