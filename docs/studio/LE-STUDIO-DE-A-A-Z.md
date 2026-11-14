@@ -260,6 +260,25 @@ Grille révisée, à valider : 49 € = 1 publication en image par jour ; 89 €
 3 par jour, 8 vidéos, 2 campagnes ; options : dix vidéos de plus 59 €, une campagne de plus 5 € ou 12 € ; si le prix
 mesuré de l'image se confirme, 3 par jour dès 89 €. Création du départ : environ 69 €, une fois.
 
+### L'effort de SINA selon le forfait (idée du propriétaire, 14 novembre 2026)
+
+Ses mots : « Je me demande si aussi on pourrais mettre un effort de plus en plus important pour le forfait est
+élevé ? ». Proposition de Claude, à valider : un niveau de base élevé pour tous (rien de faux, rien de raté, tout relu
+avant d'être montré : cela ne dépend jamais du forfait), puis plus de profondeur en montant.
+
+| | 49 € | 89 € | 169 € |
+|---|---|---|---|
+| Réflexion de SINA | Modèle le plus fort aux moments qui comptent (résultats, conseils, jugements), modèle moyen ailleurs | Modèle le plus fort partout | Modèle le plus fort avec la réflexion la plus poussée, et davantage de vérifications |
+| Identités proposées | 2 | 3 | 4 |
+| Étude du marché | L'essentiel | Complète (acheteurs, concurrents) | Complète, plus une veille des concurrents chaque mois |
+| Site | Un thème du Studio, adapté | Sur mesure | Sur mesure, ouverture dessinée par SINA |
+| Reprises comprises par création | 1 | 2 | 3 |
+| SINA prend les devants | Un point par mois | Un point par semaine | Chaque semaine, avec des conseils tirés des chiffres |
+
+Effet sur les coûts : au premier forfait, une réponse de SINA coûte environ 0,02 € au lieu de 0,08 €. Risque à garder
+en tête : un client du premier forfait juge tout le Studio sur ce qu'il reçoit ; le niveau de base ne doit donc
+jamais donner un travail médiocre.
+
 Sources de la partie 7 : journal des nouveautés de Shopify (conseils de Sidekick), Unite.AI (Canvas), TechCrunch
 (créateur de boutique), eCommerce Fastlane, Copyfy, blog de Google (Pomelli), test de Blaze par R. Doser, Apaya, blog de
 Zeely, Pixis (Meta), Tool Advisor et Capeb (Simplébo).
