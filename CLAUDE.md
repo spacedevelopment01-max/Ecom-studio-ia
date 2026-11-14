@@ -21,7 +21,12 @@ pas), jamais « tu préfères A ou B ? » sur une question de métier. **Prix de
 2026, vérifiée par le calcul et validée par lui : « Oui je valide comme ça » ; partie 13 du document) : 69 €, 99 € et
 169 € par mois, sans prix de création ni engagement ; budget d'IA du client à 50 % du prix hors taxes le premier
 mois, puis 40 % ; 1, 2 et 3 publications en images par jour, 0, 3 et 6 vidéos, 0, 1 et 2 campagnes ; rien n'est changé dans le
-code (`plans.ts` garde 49 €, 89 €, 129 €) tant que le lot des forfaits n'est pas validé. Les notes
+code (`plans.ts` garde 49 €, 89 €, 129 €) tant que le lot des forfaits n'est pas validé. **Autres décisions du
+14 novembre 2026** (ses mots dans la partie 11 du document) : le budget d'un essai payant se décide avec lui juste
+avant de le lancer ; les projets d'essai (Pulpe, thé, toiletteuse…) sont mis de côté, jamais effacés, et aucun
+exemple tiré d'eux ne doit rester dans les consignes de SINA ni peser sur les décisions ; les réalisations d'artisans
+créées par SINA restent comme elles sont pour l'instant ; on ne fusionne un lot que lorsqu'il est prouvé (SINA
+l'a réussi seule avec la vraie IA, contrôles verts), et Claude demande alors « Je fusionne ? ». Les notes
 ci-dessous restent vraies comme historique, mais le document de référence prime dès qu'il est validé.
 
 ## Avec le propriétaire
