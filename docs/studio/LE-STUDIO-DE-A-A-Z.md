@@ -181,6 +181,8 @@ Page en ligne du document : https://claude.ai/artifact/76xobBZYJxCMt6oxuSeNLn
    le client ; il ne fait jamais le travail de SINA à sa place.
 5. Une conversation par lot ; elle commence par la relecture de ce document.
 6. Les vieilles notes sont archivées et remplacées par des consignes courtes.
+7. Claude tranche et explique ; le propriétaire dit oui ou non. Claude ne lui pose que les questions que lui seul
+   peut résoudre (son argent, son goût, sa responsabilité, ce qui ne se rattrape pas).
 
 ## 13. Le prix des forfaits (estimation du 14 novembre 2026, à affiner par des mesures)
 
@@ -278,6 +280,33 @@ avant d'être montré : cela ne dépend jamais du forfait), puis plus de profond
 Effet sur les coûts : au premier forfait, une réponse de SINA coûte environ 0,02 € au lieu de 0,08 €. Risque à garder
 en tête : un client du premier forfait juge tout le Studio sur ce qu'il reçoit ; le niveau de base ne doit donc
 jamais donner un travail médiocre.
+
+### Ce qui grandit avec le forfait : recommandation ferme de Claude (14 novembre 2026)
+
+Mots du propriétaire, qui changent la façon de travailler : « C'est pas a moi de choisir tu es bien plus intelligent
+que moi donc c'est a toi de me dire ce qui serait bien ou non ». Donc Claude tranche, explique pourquoi, et le
+propriétaire dit oui ou non ; Claude ne lui demande que ce que lui seul peut savoir ou engager (son argent, son goût,
+sa responsabilité, ce qui ne se rattrape pas).
+
+Le tableau ci-dessus est corrigé sur trois points. 1) L'intelligence de SINA ne dépend pas du forfait : le modèle le
+plus fort pour tous (l'essai du 14 novembre a montré qu'un petit modèle fait des fautes, répète ses questions et note
+des réponses que le client n'a pas données ; l'économie n'est que d'environ 2 € par mois et par client, pour un risque
+sur la confiance dès la première conversation). 2) L'étude du marché est complète pour tous : elle coûte peu et c'est
+elle qui fait la qualité de la marque. 3) Pas de reprises comptées : une erreur de SINA est toujours corrigée sans rien
+compter ; un changement de goût du client passe par son budget du mois.
+
+Ce qui grandit avec le forfait : la quantité et la portée du travail.
+
+| | 49 € | 89 € | 169 € |
+|---|---|---|---|
+| Identités proposées | 2 | 3 | 4 |
+| Site | Un thème du Studio, adapté | Sur mesure | Sur mesure, ouverture dessinée par SINA |
+| Publications en images | 1 par jour | 2 par jour | 3 par jour |
+| Vidéos par mois | 0 | 3 | 8 |
+| Campagnes publicitaires préparées | 0 | 1 | 2 |
+| SINA prend les devants | Un point par mois | Un point par semaine | Chaque semaine, avec les chiffres et la veille des concurrents |
+
+IA estimée au premier forfait avec le modèle le plus fort : environ 12 € par mois pour un budget de 16 €.
 
 Sources de la partie 7 : journal des nouveautés de Shopify (conseils de Sidekick), Unite.AI (Canvas), TechCrunch
 (créateur de boutique), eCommerce Fastlane, Copyfy, blog de Google (Pomelli), test de Blaze par R. Doser, Apaya, blog de

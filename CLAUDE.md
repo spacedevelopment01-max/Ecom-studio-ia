@@ -13,7 +13,11 @@ https://claude.ai/artifact/76xobBZYJxCMt6oxuSeNLn). Méthode acceptée par lui (
 les fondations, on reconstruit SINA au propre (une seule façon de faire chaque chose, tout allumé), on supprime les
 anciennes façons, on archive les vieilles notes de ce fichier ; inventaire du code en trois piles présenté avant toute
 modification ; plan en lots validés un par un ; un lot est fini quand SINA le réussit seule avec la vraie IA ; Claude ne
-joue que le client dans les essais (« c'est à sina d'y faire, pas à toi ») ; une conversation par lot. Les notes
+joue que le client dans les essais (« c'est à sina d'y faire, pas à toi ») ; une conversation par lot. **Façon de décider** (ses mots du 14 novembre 2026, à ne
+jamais lui faire répéter : « C'est pas a moi de choisir tu es bien plus intelligent que moi donc c'est a toi de me dire ce
+qui serait bien ou non ») : Claude tranche, explique pourquoi et dit ce qu'il fera ; le propriétaire dit oui ou non ; ne
+lui poser que ce que lui seul peut savoir ou engager (son argent, son goût, sa responsabilité, ce qui ne se rattrape
+pas), jamais « tu préfères A ou B ? » sur une question de métier. Les notes
 ci-dessous restent vraies comme historique, mais le document de référence prime dès qu'il est validé.
 
 ## Avec le propriétaire
