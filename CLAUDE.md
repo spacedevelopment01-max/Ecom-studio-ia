@@ -538,6 +538,26 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   pratique trompeuse (fiche de l'ARPP du 3 août 2026, règlement européen sur l'IA appliqué depuis le 2 août 2026,
   droit français) ; même question pour un plat, une coupe, un bouquet, un bien. Autres points ouverts : texte de
   l'accroche dans l'image ou posé par le Studio ; mention « Image générée par IA » ; publicités aussi par OpenAI ?
+  **Vraies publications prises sur les réseaux** (ses mots du 14 novembre 2026, à ne jamais lui faire répéter : « J'ai
+  pas vu ce que tu as chercher, d'habitude tu en vois des screen » ; « Tu dois aller chercher sur les réseaux des
+  publications pour prendre exemple » ; « C'est les publications images que tu dois regarder pas vidéos ») : on lui
+  montre en captures ce qui a été lu (la page, le passage retenu surligné, traduit) ; les exemples sont de VRAIES
+  publications de marques en IMAGE (image seule, carrousel), jamais des vidéos, capturées depuis leur page publique
+  d'intégration Instagram (liens trouvés dans des articles et sur les sites des marques ; aucune interface privée, aucune
+  connexion), décrites une à une (idée réutilisable, faisable sans personne ou non, note), jamais recopiées ni publiées.
+  Constat : sur les comptes des grandes marques, la majorité des publications sont des vidéos avec des personnes.
+  **Essai réel du 14 novembre 2026 sur Pulpe** (son accord écrit : « oui essai sur pulpe », plafond 0,72 €) : une
+  publication simple et un carrousel de trois images, écrits par une stratège avec la consigne et les cahiers de SINA,
+  jugés par un juge séparé qui a regardé 23 vraies publications de marques de boissons. Premier plan refusé avant tout
+  paiement (5 et 3 sur 10 : natures mortes pâles sur crème, idée absente de l'image, une image servait de fausse preuve
+  de « vrais morceaux de fruits ») ; après une reprise, 8 et 7 sur 10 ; leçons des vraies : une seule couleur franche
+  dans tout le cadre, le fruit en abondance, le produit grand, une idée lisible en une seconde. Quatre images créées par
+  gpt-image-2.6-flare (1088×1360, qualité haute), aucune refaite : **0,21 $, soit environ 0,19 €** (0,05 $ l'image, bien
+  moins que le prix du Studio pour ce modèle, 0,12 $ : un seul essai, à confirmer avant de changer un devis). La
+  quatrième image ne collait pas à son accroche (verres encore à moitié pleins) : phrase changée au lieu de repayer.
+  Accroches et logo posés par le Studio en Anton. Couleur des boissons = hypothèse d'essai ; pour un vrai client, photo
+  du sachet et d'un verre préparé demandées avant. Rien n'est construit dans le Studio par cet essai ; pas encore noté
+  par lui. **Dépensé en essais réels au 14 novembre : 8,32 €** (8,13 + 0,19), plafond 10 $ (9 €).
 - **Réponses courtes et claires**, sans jargon ; ne pas reposer une question à laquelle il a déjà répondu.
 - **Ne pas décider à sa place** : un retrait de contenu ou un changement visible important se propose, il ne s'applique
   qu'après son accord. Retirer un visuel raté sans rien mettre à la place n'est pas une correction.
