@@ -86,15 +86,4 @@ describe("Logos avec OpenAI seul (routage automatique)", async () => {
     const q2 = fr(() => logoSeriesQuote()).maxMicro;
     expect(q2).toBeGreaterThan(q1);
   });
-  it("conversation : un fournisseur texte OpenAI prêt suffit, l'abonnement reste obligatoire", async () => {
-    confirm("openai:gpt-5.6-terra", "openai:gpt-5.6-sol");
-    const { fixture } = await import("./preparation-fixtures");
-    const { workflowAiActive } = await import("@/lib/workflow");
-    const { run } = await import("@/lib/db");
-    const f = await fixture();
-    expect(keys.anthropic).toBeFalsy();
-    expect(workflowAiActive(f.uid, f.pid)).toBe(true);
-    run("UPDATE subscriptions SET status='canceled' WHERE owner_user_id=?", f.uid);
-    expect(workflowAiActive(f.uid, f.pid)).toBe(false);
-  });
 });

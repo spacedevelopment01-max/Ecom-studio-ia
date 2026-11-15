@@ -133,52 +133,6 @@ describe("Project Brain 2B — mémoire et cohérence", async () => {
     });
   });
 
-  describe("faits", () => {
-    it("fait du client > déduction ; inconnu reste inconnu ; relance d'analyse sans perte ; produit remplacé = nouveau profil", async () => {
-      const { mergeProductProfile } = await import("@/lib/brain/facts");
-      const { emptyProduct } = await import("@/lib/project-types");
-      const prev = {
-        ...emptyProduct(),
-        name: "Sérum Éclat",
-        nameStatus: "provided" as const,
-        facts: [
-          { key: "capacity", label: "Contenance", value: "30 ml", status: "confirmed" as const, source: "user" as const },
-          { key: "origin", label: "Origine", value: "France", status: "confirmed" as const, source: "description" as const },
-          { key: "shipping", label: "Livraison", value: "", status: "unknown" as const, source: "ai" as const },
-        ],
-        price: { amount: 3490, currency: "EUR", status: "confirmed" as const },
-        questions: [{ id: "q1", question: "Ingrédients ?", why: "", required: false, factKey: "ingredients", answer: "Vitamine C" }],
-      };
-      const next = {
-        ...emptyProduct(),
-        name: "Sérum lumière",
-        nameStatus: "proposed" as const,
-        facts: [
-          { key: "capacity", label: "Contenance", value: "50 ml", status: "inferred" as const, source: "ai" as const },
-          { key: "origin", label: "Origine", value: "", status: "unknown" as const, source: "ai" as const },
-          { key: "shipping", label: "Livraison", value: "48 h", status: "inferred" as const, source: "ai" as const },
-        ],
-        price: { amount: null, currency: "EUR", status: "unknown" as const },
-        questions: [{ id: "q9", question: "Ingrédients principaux ?", why: "", required: true, factKey: "ingredients" }],
-      };
-      const m = mergeProductProfile(prev, next);
-      const f = (k: string) => m.facts.find((x) => x.key === k)!;
-      expect(f("capacity")).toMatchObject({ value: "30 ml", source: "user", status: "confirmed" });
-      expect(f("origin")).toMatchObject({ value: "France", status: "confirmed" });
-      // Inconnu jamais promu en fait confirmé par une déduction.
-      expect(f("shipping").status).not.toBe("confirmed");
-      expect(m.price).toEqual(prev.price);
-      expect(m.name).toBe("Sérum Éclat");
-      expect(m.questions.find((q) => q.factKey === "ingredients")?.answer).toBe("Vitamine C");
-      expect(mergeProductProfile(prev, next, { relation: "replaced" })).toEqual(next);
-      expect(mergeProductProfile(emptyProduct(), next)).toEqual(next);
-      // Une préférence n'est jamais un fait.
-      const pid = project("products");
-      remember(pid, { kind: "preference", key: "couleur", value: "je préfère du bleu", source: "user", scope: "brand" });
-      expect(loadProject(pid).product.facts.some((x) => /bleu/.test(x.value))).toBe(false);
-    });
-  });
-
   describe("cohérence de marque", () => {
     const route = async (pid: string) => {
       const { localRoutes } = await import("@/lib/engine/creative-direction");

@@ -155,7 +155,7 @@ function ProductPhotosCard() {
   const t = useT();
   const { lang } = useLang();
   const upload = useRef<HTMLInputElement>(null);
-  const runningJobs = useActive(["cutout.run", "pipeline.run", "shop.build"]);
+  const runningJobs = useActive(["cutout.run", "shop.build"]);
   const running = runningJobs.some((j) => j.type !== "shop.build");
   const { data, reload: reloadPhotos } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=original,cutout,lifestyle`, { poll: running ? 3000 : undefined });
   const [busy, setBusy] = useState<string | null>(null);
@@ -253,24 +253,6 @@ function ProductPhotosCard() {
         })}
       </ul>
       {!photos.length && <p className="mt-3 text-sm text-muted">{t("Ajoutez une photo nette du produit seul, sur fond uni.", "Add a sharp photo of the product alone, on a plain background.")}</p>}
-      <Button
-        size="sm"
-        variant="ghost"
-        className="mt-3"
-        icon={<RefreshCw className="size-4" />}
-        onClick={async () => {
-          if (!confirm(t("Réanalyser le produit relance aussi les étapes suivantes (marque, textes, images…). Les versions précédentes restent disponibles. Continuer ?", "Reanalyzing the product also reruns the following steps (brand, copy, images…). Previous versions remain available. Continue?"))) return;
-          try {
-            await api(`/api/projects/${id}/resume`, { body: { from: "analysis" } });
-            toast("ok", t("Nouvelle analyse lancée.", "New analysis started."));
-            reload();
-          } catch (e) {
-            toast("bad", (e as Error).message);
-          }
-        }}
-      >
-        {t("Réanalyser tout le projet", "Reanalyze the whole project")}
-      </Button>
     </Card>
   );
 }

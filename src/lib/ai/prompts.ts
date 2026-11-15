@@ -389,7 +389,6 @@ Exigences :
 Exemple de légende — médiocre : « Découvrez notre nouveauté, parfaite pour toute la famille ! » ; excellente : « Rose poudré ou bleu nuit : lequel irait dans sa chambre ?\nLes deux ont les mêmes oreilles et le même disque central.\nDites-le en commentaire. » (si ces deux coloris existent).
 Langue : tout en ${lname} (langue des contenus).`,
 
-  classify: `Rôle : documentaliste. Tu classes un fichier d'un projet e-commerce dans le dossier le plus pertinent et proposes un nom de fichier clair dans la langue de l'interface (sans extension, mots séparés par des tirets).`,
   };
 }
 

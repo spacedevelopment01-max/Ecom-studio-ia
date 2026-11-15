@@ -105,7 +105,7 @@ describe("écrans du client : aucun prix d'IA en euros", () => {
     "src/components/studio/guided-video.tsx",
     "src/components/studio/tab-videos.tsx",
     "src/components/studio/video-v2-panel.tsx",
-    "src/components/studio/workflow-panel.tsx",
+    "src/components/studio/brand-propagation-card.tsx",
     "src/components/studio/logo-v2-panel.tsx",
     "src/components/studio/social-studio.tsx",
     "src/components/studio/social-autopilot.tsx",

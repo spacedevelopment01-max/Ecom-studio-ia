@@ -1,17 +1,13 @@
-import { projectChoices } from "./references";
 /**
- * Orchestrateur (phase 3A) : DEMANDE → INTENTION → PLAN → ÉTAPE → ROUTEUR → EXÉCUTION → RÉSULTAT CONTRÔLÉ →
- * CONTINUER / REPRENDRE / ARRÊTER. Branché sur les moteurs en 3B ; ici : comprendre, planifier, router, tracer.
+ * Enveloppe des tâches de fond : ACTION DU STUDIO → INTENTION → PETIT PLAN → ROUTEUR → MOTEUR → RÉSULTAT CONTRÔLÉ.
+ * Ici : l'état acquis du projet et le contexte d'une étape. Les demandes en texte libre passent par SINA.
  */
 import type { Project } from "../projects";
 import { one } from "../db";
-import { activeProviderKey } from "../ai/config";
-import { aiActiveFor } from "../ai/access";
 import { brainContext } from "../brain/facade";
 import { brainSnapshot } from "../brain/snapshot";
 import { isLocked } from "../brain/brand-locks";
-import { aiIntentClassifier, understand, type IntentResult } from "./intent";
-import { loadOrCreatePlan, type PlanStep, type ProjectState, type TaskPlan } from "./planner";
+import type { PlanStep, ProjectState } from "./planner";
 
 export * from "./intent";
 export * from "./planner";
@@ -37,14 +33,3 @@ export function projectState(p: Project): ProjectState {
 
 /** Contexte d'une étape : toujours le scope du Project Brain (le planner ne construit jamais son propre contexte). */
 export const stepContext = (p: Project, step: Pick<PlanStep, "requiredContext">) => (step.requiredContext ? brainContext(p, step.requiredContext) : "");
-
-/**
- * Comprendre puis planifier une demande d'un projet. Action connue : aucun appel à l'IA. Demande libre ambiguë :
- * classement par l'IA seulement si elle est active pour le compte (sinon une question de clarification).
- */
-export async function planRequest(p: Project, req: { action?: string; payload?: { regenerate?: boolean }; text?: string; requestKey: string }, opts: { classify?: Parameters<typeof understand>[1]["classify"] } = {}): Promise<{ intent: IntentResult; plan: TaskPlan | null }> {
-  const aiActive = aiActiveFor(p.userId, p.id) && !!activeProviderKey("anthropic");
-  const intent = await understand(req, { aiActive, choices: projectChoices(p.id), classify: opts.classify ?? aiIntentClassifier({ userId: p.userId, projectId: p.id }) });
-  if (!intent.intents.length) return { intent, plan: null };
-  return { intent, plan: loadOrCreatePlan({ projectId: p.id, userId: p.userId, requestKey: req.requestKey, intents: intent.intents, state: projectState(p), input: { text: req.text, requestScope: intent.scope }, scope: intent.scope }) };
-}

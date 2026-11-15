@@ -194,31 +194,11 @@ export function claimNext(types?: string[]): (Job & { recovered?: boolean }) | n
   });
 }
 
-/**
- * Portée du décompte des quotas d'une tâche : seule la PREMIÈRE création d'un projet (« creation », visuels non
- * décomptés) en profite. Une relance (`resume`), un nouveau départ sur un projet déjà construit ou toute autre
- * tâche décomptent normalement chaque visuel.
- */
-export function jobQuotaScope(job: Pick<Job, "id" | "type" | "payload" | "project_id"> & { parent_id?: string | null }): "creation" | "normal" {
-  // Le calendrier de 7 jours lancé par la première création en fait partie (ses images ne sont pas décomptées).
-  if ((job.type === "calendar.plan" || job.type === "brand.fulllogo") && job.parent_id) {
-    const parent = one<Job>("SELECT * FROM jobs WHERE id = ?", job.parent_id);
-    return parent && parent.type === "pipeline.run" ? jobQuotaScope(parent) : "normal";
-  }
-  if (job.type !== "pipeline.run") return "normal";
-  if (json<{ initial?: boolean }>(job.payload, {}).initial !== true) return "normal";
-  if (job.project_id && one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'pipeline.run' AND status = 'done' AND id != ?", job.project_id, job.id)) return "normal";
-  return "creation";
-}
-
-/** Une création du pilote est-elle déjà en file, en cours ou en pause pour ce projet ? */
 /** Tâche encore en attente ou en cours, du même type et pour le même projet, dont la charge contient ces valeurs. */
 export function pendingJob(projectId: string, type: string, match: Record<string, unknown> = {}): Job | null {
   const rows = all<Job>("SELECT * FROM jobs WHERE project_id = ? AND type = ? AND status IN ('queued','running','paused','blocked') ORDER BY created_at DESC", projectId, type);
   return rows.find((j) => { try { const p = JSON.parse(j.payload || "{}"); return Object.entries(match).every(([k, v]) => p[k] === v); } catch { return false; } }) ?? null;
 }
-
-export const pipelineActive = (projectId: string) => !!one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'pipeline.run' AND status IN ('queued','running','paused')", projectId);
 
 export class JobCancelled extends Error {}
 /**

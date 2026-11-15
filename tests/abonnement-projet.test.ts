@@ -39,19 +39,32 @@ describe("un abonnement = un projet", async () => {
     run("UPDATE users SET role = 'client' WHERE id = ?", u.id);
     return { ...u, role: "client" as const };
   };
+  const { openThread } = await import("@/lib/syna-agent/thread");
+  const { getTool } = await import("@/lib/syna-agent/registry");
+  const { runWithLang } = await import("@/lib/i18n-server");
+  /** Le projet se crée en parlant à SINA (outil « project.create ») : il n'existe plus de formulaire de création. */
   const createProject = async (name: string, subscription?: string) => {
-    const form = new FormData();
-    form.set("productName", name);
-    return projects.POST(new Request(`http://localhost:3000/api/projects${subscription ? `?subscription=${subscription}` : ""}`, { method: "POST", body: form }));
+    let cid: string;
+    // Sans abonnement libre, SINA n'ouvre même pas de fil de création (402).
+    try { cid = openThread(sessionUser, null, subscription).conversationId; }
+    catch (e) { if (e instanceof HttpError) return { status: e.status, json: async () => ({ id: "", summary: e.message }) }; throw e; }
+    const tool = getTool("project.create")!;
+    const ctx = { user: sessionUser, conversationId: cid, runId: "test", projectId: null, attachment: () => null } as any;
+    const r = await runWithLang({ ui: "fr", content: "fr" }, async () => tool.run(ctx, tool.args.parse({ name, business: "products", description: `Projet ${name}` })));
+    return { status: r.ok ? 200 : 402, json: async () => ({ id: (r.data as { projectId?: string } | undefined)?.projectId as string, summary: r.summary }) };
   };
   const projectIds = (uid: string) => (one<{ ids: string }>("SELECT GROUP_CONCAT(id) ids FROM projects WHERE user_id = ?", uid)?.ids ?? "").split(",").filter(Boolean);
+
+  it("POST /api/projects ne crée plus de projet par formulaire : la route ne fait que lister", () => {
+    expect(Object.keys(projects).filter((k) => /^(GET|POST|PUT|PATCH|DELETE)$/.test(k))).toEqual(["GET"]);
+  });
 
   it("compte gratuit (découverte) : aucun projet réel", async () => {
     const u = await mk("free");
     sessionUser = u;
     const r = await createProject("Ma boutique");
     expect(r.status).toBe(402);
-    expect((await r.json()).code).toBe("subscription_required");
+    expect((await r.json()).summary).toMatch(/abonnement/i);
     expect(projectIds(u.id)).toEqual([]);
   });
 

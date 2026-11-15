@@ -38,7 +38,7 @@ export function SiteReading({ site }: { site: ExistingSiteSummary }) {
         <div className="min-w-0">
           <p className="font-medium">{t("Votre site n'a pas pu être lu", "Your website could not be read")}</p>
           <p className="mt-1 break-words text-sm text-muted">{site.error}</p>
-          <p className="mt-2 text-sm text-muted">{t("Vérifiez l'adresse puis relancez l'étape depuis le Pilote.", "Check the address, then restart the step from the Pilot.")}</p>
+          <p className="mt-2 text-sm text-muted">{t("Vérifiez l'adresse, puis redonnez-la à SINA dans la conversation.", "Check the address, then give it to SINA again in the conversation.")}</p>
         </div>
       </Card>
     );
@@ -158,7 +158,7 @@ export function KeptSiteCard({ site, onChanged }: { site: ExistingSiteSummary; o
           <Button variant="ghost" onClick={() => setConfirmNew(false)}>{t("Annuler", "Cancel")}</Button>
           <Button variant="signal" loading={busy} disabled={!data?.brand} icon={<RefreshCw className="size-4" />} onClick={createNew}>{t("Oui, créer un nouveau site", "Yes, create a new website")}</Button>
         </div>
-        {!data?.brand && <p className="mt-2 text-xs text-muted">{t("Disponible quand votre marque est prête (voir le Pilote).", "Available once your brand is ready (see the Pilot).")}</p>}
+        {!data?.brand && <p className="mt-2 text-xs text-muted">{t("Disponible quand votre marque est prête.", "Available once your brand is ready.")}</p>}
       </Modal>
     </div>
   );
@@ -184,29 +184,5 @@ export function ReproductionBanner({ site }: { site: ExistingSiteSummary }) {
         </ul>
       )}
     </div>
-  );
-}
-
-/** Pilote : provenance du projet (« Votre site actuel »), conservé ou reproduit. */
-export function SitePilotCard({ site, projectId }: { site: ExistingSiteSummary; projectId: string }) {
-  const t = useT();
-  const url = site.finalUrl ?? site.url;
-  if (site.status !== "read") return <SiteReading site={site} />;
-  return (
-    <Card className="p-5">
-      <p className="flex items-center gap-2 text-sm text-muted"><Globe className="size-4" aria-hidden /> {t("Votre site actuel", "Your current website")}</p>
-      <p className="mt-1 font-display text-xl">{site.name || host(url)}</p>
-      <a href={url} target="_blank" rel="noreferrer" className="mt-0.5 block break-all text-sm text-ink-2 underline underline-offset-2">{host(url)}</a>
-      <div className="mt-2 flex flex-wrap gap-1.5">
-        {site.decision === "keep" ? <Badge tone="ok" dot>{t(`Conservé tel quel sur ${site.platformLabel}`, `Kept as is on ${site.platformLabel}`)}</Badge> : <Badge tone="info" dot>{t(`Reproduit : ${site.platformLabel} → ${site.target}`, `Reproduced: ${site.platformLabel} → ${site.target}`)}</Badge>}
-      </div>
-      <p className="mt-2 text-sm text-ink-2">
-        {t(`Repris de votre site : ${site.pages ?? 0} page(s), ${site.products ?? 0} produit(s), ${site.images ?? 0} image(s)${site.logoAssetId ? ", votre logo" : ""}, vos couleurs et vos polices.`, `Taken from your website: ${site.pages ?? 0} page(s), ${site.products ?? 0} product(s), ${site.images ?? 0} image(s)${site.logoAssetId ? ", your logo" : ""}, your colors and your fonts.`)}
-      </p>
-      <div className="mt-4 flex flex-wrap gap-2">
-        <a href={`/studio/${projectId}/boutique`} className="inline-flex h-10 items-center gap-2 rounded-full bg-ink px-4 text-sm font-medium text-paper">{site.decision === "keep" ? t("Voir mon site dans le studio", "See my website in the studio") : t("Ouvrir la reproduction", "Open the reproduction")}</a>
-        <a href={url} target="_blank" rel="noreferrer" className="inline-flex h-10 items-center gap-2 rounded-full border border-line bg-card px-4 text-sm font-medium hover:border-ink"><ExternalLink className="size-4" aria-hidden /> {t("Ouvrir mon site", "Open my website")}</a>
-      </div>
-    </Card>
   );
 }

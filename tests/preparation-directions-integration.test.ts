@@ -39,11 +39,6 @@ import { runForUser } from "@/lib/ai/access";
 import { all, one, run } from "@/lib/db";
 import { JobContext, JobCancelled, enqueue, getJob } from "@/lib/jobs";
 import { loadProject } from "@/lib/projects";
-import { runRequestPlan } from "@/lib/orchestrator/execute";
-import { prepareWorkflow, startWorkflow, runWorkflow, loadWorkflow } from "@/lib/workflow";
-import { requestScope } from "@/lib/orchestrator/request";
-import { projectChoices } from "@/lib/orchestrator/references";
-import { selectedDirectionCommand } from "@/lib/logo-v2/commands";
 
 const job = (uid: string, pid: string, type = "brand.logo.v2", payload: object = {}) => {
   const j = enqueue({ userId: uid, projectId: pid, type, payload: { projectId: pid, ...payload }, maxAttempts: 1 });
@@ -125,20 +120,5 @@ describe("trois directions, reprise, sélection et charte : chaîne réelle avec
     expect(all("SELECT id FROM theme_versions WHERE project_id=?", f.pid)).toEqual([]);
     expect(all("SELECT id FROM ai_calls WHERE project_id=?", f.pid)).toEqual([]);
 
-    // La conversation principale prépare le même service de sélection, à coût zéro, puis le worker l'applique.
-    const workflow = await prepareWorkflow(f.pid, f.uid, "Choisis la direction 3", { aiActive: false });
-    expect(workflow.status).toBe("draft"); expect(workflow.estimate.totalMicro).toBe(0); expect(workflow.estimate.needsCreation).toBe(false);
-    expect(workflow.params.directionChoice?.directionId).toBe("t3");
-    const launched = startWorkflow(workflow.id), ctx = new JobContext(getJob(launched.jobId!)!);
-    run("UPDATE jobs SET status='running' WHERE id=?", ctx.job.id);
-    await runForUser(f.uid, () => runWorkflow(ctx), "normal", f.pid);
-    expect(loadWorkflow(workflow.id)?.status).toBe("done");
-    expect(loadProject(f.pid).brand?.artIdentity?.directionId).toBe("t3");
-    expect(control.draws).toHaveLength(5);
-
-    // La tâche de plan conserve le même point d'entrée sans relancer le dessin.
-    await runForUser(f.uid, () => runRequestPlan(job(f.uid, f.pid, "plan.run", { text: "Choisis la direction 2" })), "normal", f.pid);
-    expect(loadProject(f.pid).brand?.artIdentity?.directionId).toBe("t2"); expect(control.draws).toHaveLength(5);
-    for (const text of ["Ne choisis pas la direction 3", "Explique la direction 3", "Choisis la direction 3, conserve la palette"]) expect(selectedDirectionCommand(f.pid, requestScope(text, projectChoices(f.pid)))).toBeNull();
   }, 60000);
 });

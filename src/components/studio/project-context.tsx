@@ -18,7 +18,6 @@ export type Overview = {
   brand: Brand | null;
   strategy: Strategy | null;
   settings: ProjectSettings;
-  pipeline: { job: JobView; steps: { id: string; label: string; detail: string; status: string; note?: string; at?: number }[] } | null;
   active: JobView[];
   counts: Record<string, number>;
   posts: Record<string, number>;

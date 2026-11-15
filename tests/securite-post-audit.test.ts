@@ -112,10 +112,10 @@ describe("sécurité après l'audit", async () => {
     run("UPDATE users SET role = 'admin' WHERE id = ?", admin.id);
     project(admin.id);
     sessionUser = { ...admin, role: "admin" };
-    const form = new FormData();
-    form.set("name", "Seconde boutique");
-    const res = await projects.POST(new Request("http://localhost:3000/api/projects", { method: "POST", body: form }));
-    expect(res.status).toBe(402);
+    // Le projet se crée en parlant à SINA : sans abonnement libre, elle n'ouvre pas de fil de création (402).
+    const { openThread } = await import("@/lib/syna-agent/thread");
+    expect(() => openThread({ ...admin, role: "admin" } as any, null)).toThrow(expect.objectContaining({ status: 402 }));
+    expect(Object.keys(projects)).not.toContain("POST");
   });
 });
 

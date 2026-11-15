@@ -56,16 +56,6 @@ describe("catalogue : ordre des produits", () => {
 });
 
 describe("onglets Produit et Activité : aucun bouton muet en cas d'erreur", () => {
-  it("« Réanalyser tout le projet » affiche l'erreur (abonnement, IA coupée…)", () => {
-    for (const f of ["src/components/studio/tab-produit.tsx", "src/components/studio/tab-activite.tsx"]) {
-      const s = read(f);
-      const i = s.indexOf("/resume`");
-      expect(i, f).toBeGreaterThan(0);
-      const around = s.slice(i - 200, i + 400);
-      expect(around, f).toMatch(/try \{/);
-      expect(around, f).toMatch(/toast\("bad"/);
-    }
-  });
 
   it("catalogue : un prix illisible est signalé au lieu d'être ignoré", () => {
     expect(read("src/components/studio/catalog-panel.tsx")).toMatch(/c === undefined\) \{ toast\("bad"/);

@@ -15,7 +15,6 @@ describe("Publications entièrement faites par l'IA (création du projet)", asyn
   const { estimateProduction, produceBatch, postsOfPlan, aiImageIds } = await import("@/lib/social-v2/production");
   const { seedImageFixture } = await import("./image-v2-fixtures");
   const { mockSocialDeps } = await import("./social-v2-mock");
-  const { FIRST_AI_POSTS } = await import("@/lib/engine/pipeline");
   const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
   const start = () => new Date(Date.now() + 2 * 86_400_000).toISOString().slice(0, 10);
 
@@ -28,8 +27,6 @@ describe("Publications entièrement faites par l'IA (création du projet)", asyn
     const r = fr(() => createPlanV2(p, { startDate: start(), days: 7, perDay: 1, timezone: "Europe/Paris", platforms: [{ platform: "instagram" }], formatMix: { image: 100 } }));
     return { p, ids: postsOfPlan(r.planId) };
   }
-
-  it("10 publications par l'IA (Qwen) à la création (règle du propriétaire)", () => expect(FIRST_AI_POSTS).toBe(10));
 
   it("les 3 premières publications en image : visuel IA (payant, plafonné) ; les autres attendent (aucun gabarit)", async () => {
     const { p, ids } = await project();

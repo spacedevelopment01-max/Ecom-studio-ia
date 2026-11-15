@@ -76,7 +76,6 @@ describe("Logo V2 — devis et plafond de la série", async () => {
   const { logoSeriesQuote, logoRedrawQuote } = await import("@/lib/logo-v2/quote");
   const { cleanArtwork } = await import("@/lib/logo-v2/artwork");
   const { ART_CRITERIA } = await import("@/lib/logo-v2/types");
-  const { stepEstimateMicro } = await import("@/lib/workflow");
   const { seedLogoFixture } = await import("./logo-v2-fixtures");
   const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
 
@@ -172,8 +171,6 @@ describe("Logo V2 — devis et plafond de la série", async () => {
     expect(s).toBeGreaterThan(0);
     expect(s).toBeLessThanOrEqual(q.maxMicro);
     expect(pending(uid)).toHaveLength(0);
-    // Devis du Pilote = devis du moteur (étape « logo »).
-    expect(fr(() => stepEstimateMicro("logo", {} as any))).toBe(q.maxMicro);
   });
 
   it("plafond plus bas que le devis : les images suivantes ne partent pas (aucune réservation), l'image payée est gardée", async () => {

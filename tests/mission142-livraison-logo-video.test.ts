@@ -33,29 +33,6 @@ it.each(["missing","foreign","corrupt"])("vidéo %s : fichier absent, illisible 
  if(mode==="corrupt"){const fs=await import("node:fs");const {storagePath}=await import("@/lib/storage");fs.writeFileSync(storagePath(getAsset(output.video)!.storage_key),"corrupted historical fixture");}
  expect((await execute("video.v2",pid,u.id,{request:{render:true}})).status).toBe("failed");
 });
-it("workflow direct : aucun fichier vidéo ne devient une étape terminée",async()=>{
- const{u,pid}=await fixture();const{STEP_EXECUTORS}=await import("@/lib/orchestrator/execute");const{loadProject}=await import("@/lib/projects");const type=`test142.workflow-video:${crypto.randomUUID()}`;const j=enqueue({userId:u.id,projectId:pid,type,payload:{projectId:pid}});const ctx=new JobContext(claimNext([type])!);
- try{await expect(STEP_EXECUTORS.video!(ctx,loadProject(pid),{id:"video-test",input:{text:"Test isolé",allowPaid:false}} as any,{} as any)).rejects.toThrow(/vidéo|video/);}finally{markFinished(j.id);}
-});
-it("création initiale : deux retours locaux vides ne sont pas deux vidéos livrées",async()=>{
- const{pid}=await fixture();const{creationSceneVideos}=await import("@/lib/video-v2/creation-videos");const local=vi.fn(async()=>null);
- await expect(creationSceneVideos(null,pid,"local",{local,scenes:{} as any,quote:()=>({allowed:true}) as any,spentByJob:()=>0})).rejects.toThrow(/vidéo|video/);expect(local).toHaveBeenCalledTimes(1);
-});
-it("workflow direct et création initiale : vidéos lisibles, reprise partielle sans refaire la première",async()=>{
- const{u,pid}=await fixture();const {grantProjectPlan}=await import("./communication-choice-fixture");grantProjectPlan(pid,"dominer");const dir=tmpDir("test142-video-directe"),file=path.join(dir,"test.mp4");
- try{
-  await execTool("ffmpeg",["-y","-f","lavfi","-i","color=c=0x244d43:s=64x64:d=0.4","-an","-c:v","libx264","-pix_fmt","yuv420p",file]);
-  const a=await saveAsset({projectId:pid,userId:u.id,data:fs.readFileSync(file),name:"video-directe-test.mp4",mime:"video/mp4",role:"video",origin:"generated",status:"review"});output.video=a.id;
-  const{STEP_EXECUTORS}=await import("@/lib/orchestrator/execute");const{loadProject}=await import("@/lib/projects");const{creationSceneVideos}=await import("@/lib/video-v2/creation-videos");
-  const type=`test142.video-directe:${crypto.randomUUID()}`;const j=enqueue({userId:u.id,projectId:pid,type,payload:{projectId:pid}}),ctx=new JobContext(claimNext([type])!);
-  try{
-   const result=await STEP_EXECUTORS.video!(ctx,loadProject(pid),{id:"video-test",input:{text:"Test isolé",allowPaid:false}} as any,{} as any);expect(result.note).toMatch(/vérifier|review/);
-   const local=vi.fn(async(k:number)=>k===0?a.id:null),deps={local,scenes:{} as any,quote:()=>({allowed:true}) as any,spentByJob:()=>0};
-   await expect(creationSceneVideos(ctx,pid,"local",deps)).rejects.toThrow(/vidéo|video/);expect(local).toHaveBeenCalledTimes(2);
-   await expect(creationSceneVideos(ctx,pid,"local",deps)).rejects.toThrow(/vidéo|video/);expect(local).toHaveBeenCalledTimes(2);expect(getAsset(a.id)!.status).toBe("review");expect(fs.existsSync(storagePath(getAsset(a.id)!.storage_key))).toBe(true);
-  }finally{markFinished(j.id);}
- }finally{fs.rmSync(dir,{recursive:true,force:true});}
-});
 it("logo redessiné absent : échec explicite et original conservé",async()=>{
  const{u,pid}=await fixture();const original=await saveAsset({projectId:pid,userId:u.id,data:await sharp({create:{width:32,height:32,channels:3,background:"#243f32"}}).png().toBuffer(),name:"original-test.png",mime:"image/png",role:"logo-v2",origin:"generated",status:"approved"});
  const j=await execute("brand.logo.v2.redraw",pid,u.id,{assetId:original.id});expect(j.status).toBe("failed");expect(getAsset(original.id)!.status).toBe("approved");

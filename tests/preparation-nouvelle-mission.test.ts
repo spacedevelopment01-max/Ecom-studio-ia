@@ -15,7 +15,6 @@ import { analyzeLocally } from "@/lib/preparation/brief";
 import { run } from "@/lib/db";
 import { fixture, CASES, initializeSynthetic } from "./preparation-fixtures";
 import { directionIdentity, validatedBrand, syntheticDirections, editorialFixture } from "./preparation-mission-fixtures";
-import { prepareWorkflow } from "@/lib/workflow";
 
 it("un brief local reste enregistré mais ne peut plus être validé comme compréhension IA", async () => {
   const f = await fixture(); initialize(f.pid, f.input);
@@ -71,22 +70,6 @@ it("une reprise de série partielle conserve les directions et consomme zéro no
   const next = reserveDirectionSeries(f.pid, "repair", { correction: "Reprendre uniquement les deux directions manquantes." });
   expect(next.id).toBe(s.id); expect(next.directions).toEqual([pack.directions[0]]); expect(seriesRights(f.pid).used).toBe(1);
   expect(() => reserveDirectionSeries(f.pid, "repair-again", { correction: "Relancer les erreurs de dessin." })).toThrow(/Limite/);
-});
-it("le même choix formulé après renouvellement vise la nouvelle version, sans réutiliser une tâche ancienne", async () => {
-  const f = await fixture(); const brand = validatedBrand(f.pid, f.input), pack = await syntheticDirections(f.pid);
-  const first = reserveDirectionSeries(f.pid, "initial");
-  updateDirectionSeries(f.pid, first.id, s => { s.territories = pack.territories; s.directions = pack.directions; });
-  saveBrand(f.pid, { ...brand, artIdentity: { ...pack.directions[0].identity, seriesId: first.id, directionId: pack.directions[0].id } });
-  const a = await prepareWorkflow(f.pid, f.uid, "Choisis la direction 2", { aiActive: false });
-  run("UPDATE workflows SET status='done' WHERE id=?", a.id);
-  const second = reserveDirectionSeries(f.pid, "renew", { renew: true });
-  updateDirectionSeries(f.pid, second.id, s => { s.territories = pack.territories; s.directions = pack.directions; });
-  const b = await prepareWorkflow(f.pid, f.uid, "Choisis la direction 2", { aiActive: false });
-  expect(b.id).not.toBe(a.id);
-  expect(b.params.directionChoice?.seriesId).toBe(second.id);
-  expect((await prepareWorkflow(f.pid, f.uid, "Choisis la direction 2", { aiActive: false })).id).toBe(b.id);
-  const renew = await prepareWorkflow(f.pid, f.uid, "Renouvelle les directions artistiques", { aiActive: false });
-  expect(renew.params.directionExpectedSeriesId).toBe(second.id);
 });
 it("des appels concurrents basés sur la même série ne créent qu'un droit même à 129 €", async () => {
   const f = await fixture(); validatedBrand(f.pid, f.input);

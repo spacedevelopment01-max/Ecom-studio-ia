@@ -23,7 +23,7 @@ if (process.argv.includes("--json")) console.log(JSON.stringify(res, null, 2));
 else
   for (const r of res) {
     console.log(`\n### ${r.id} — ${r.title}`);
-    console.log(`- INTENT : ${r.intent.intents.join(" + ") || "—"} (${r.intent.source})`);
+    console.log(`- INTENT : ${r.intent.intents.join(" + ") || "—"}`);
     console.log(`- PLAN : ${r.plan.join(" → ")}`);
     console.log(`- STEPS EXECUTED : ${r.executed.join(", ") || "—"}`);
     console.log(`- STEPS SKIPPED : ${r.skipped.map((s) => `${s.step} (${s.reason})`).join(" ; ") || "—"}`);

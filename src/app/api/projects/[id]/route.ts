@@ -6,7 +6,6 @@ import { all, json, now, one, run,tx } from "@/lib/db";
 import { body, handle, ok } from "@/lib/http";
 import { cancelJob, publicJob, type Job } from "@/lib/jobs";
 import { currentTheme, saveProduct, saveServices, saveSettings,loadProject } from "@/lib/projects";
-import { pipelineState } from "@/lib/engine/pipeline";
 import { localizeQuestions } from "@/lib/engine/local";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { aiUsage, hasAiCredits } from "@/lib/ai/access";
@@ -22,7 +21,6 @@ import { L, uiLang } from "@/lib/i18n-server";
 
 export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  const pipeline = one<Job>("SELECT * FROM jobs WHERE project_id = ? AND user_id=? AND type = 'pipeline.run' ORDER BY created_at DESC LIMIT 1", p.id,p.userId);
   const active = all<Job>("SELECT * FROM jobs WHERE project_id = ? AND user_id=? AND status IN ('queued','running','paused') ORDER BY created_at DESC LIMIT 20", p.id,p.userId);
   const counts = Object.fromEntries(all<{ role: string; n: number }>("SELECT role, COUNT(*) n FROM assets WHERE project_id = ? AND user_id=? AND deleted_at IS NULL GROUP BY role", p.id,p.userId).map((r) => [r.role, r.n]));
   const posts = Object.fromEntries(all<{ status: string; n: number }>("SELECT status, COUNT(*) n FROM posts WHERE project_id = ? GROUP BY status", p.id).map((r) => [r.status, r.n]));
@@ -52,7 +50,6 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     strategy: p.strategy,
     settings: p.settings,
     preparation: stateOf(p.id) ? {revision:stateOf(p.id)!.revision} : null,
-    pipeline: pipeline ? { job: publicJob(pipeline), steps: pipelineState(pipeline, p.business, p.settings.existingSite) } : null,
     active: active.map(publicJob),
     counts,
     posts,

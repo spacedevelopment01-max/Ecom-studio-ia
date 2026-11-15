@@ -172,18 +172,7 @@ describe("site existant : lecture et intégration au projet", () => {
   });
 });
 
-describe("site existant : entrée du formulaire", () => {
-  const base = { mode: "autopilot", storeType: "mono", platform: "shopify", businessType: "products" } as const;
-  it("adresse obligatoire, https ajouté, accord du client exigé", async () => {
-    const { StartInput, existingSiteFromInput } = await import("@/lib/project-start");
-    const parse = (o: Record<string, string>) => StartInput.parse({ ...base, ...o });
-    expect(existingSiteFromInput(parse({}))).toBeNull();
-    expect(() => existingSiteFromInput(parse({ existingSite: "1", siteUrl: "" }))).toThrow(/adresse/i);
-    expect(() => existingSiteFromInput(parse({ existingSite: "1", siteUrl: "mon-site.fr" }))).toThrow(/autorisé/);
-    expect(existingSiteFromInput(parse({ existingSite: "1", siteUrl: "mon-site.fr", siteOwnership: "1" }))).toEqual({ url: "https://mon-site.fr/" });
-    expect(() => existingSiteFromInput(parse({ existingSite: "1", siteUrl: "javascript:alert(1)", siteOwnership: "1" }))).toThrow();
-    expect(() => existingSiteFromInput(parse({ existingSite: "1", siteUrl: "ftp://mon-site.fr", siteOwnership: "1" }))).toThrow();
-  });
+describe("site existant : lecture de l'adresse", () => {
   it("la lecture d'une adresse privée reste refusée sans le drapeau des sites de démonstration", async () => {
     const { importSite } = await import("@/lib/engine/site-import");
     const prev = process.env.SITE_IMPORT_ALLOW_LOCAL;

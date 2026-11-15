@@ -134,11 +134,10 @@ describe("Phase 3B — orchestrateur branché", async () => {
     const sb = loadProject(sbId);
     run("INSERT INTO quality_checks (id, created_at, user_id, project_id, deliverable, attempt, checker, checked, verdict, action, policy_version, score) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", `qc-copy-${Date.now()}`, Date.now(), u.id, sbId, "copy_shop", 0, "ai", 1, "FINAL", "none", "t", 8.4);
     expect(fr(() => orch.projectState(sb)).copyFinal).toBe(true);
-    // Création complète (brand gardée) : textes FINAL non réécrits.
-    const ctx = job("pipeline.run", { projectId: sbId, mode: "autopilot", input: {} });
-    const pp = fr(() => ex.pipelinePlan(ctx, sb, {}));
-    expect(pp.skipped("brand")).toBe("brand");
-    expect(pp.skipped("copy")).toBe("copy");
+    // Parcours composite (marque gardée) : textes FINAL non réécrits.
+    const composite = orch.buildPlan({ projectId: sbId, userId: u.id, requestKey: `composite${Date.now()}`, intents: ["CREATE_BRAND", "CREATE_SHOP"], state: fr(() => orch.projectState(sb)), implicit: true });
+    expect(composite.steps.find((s) => s.kind === "brand_strategy")).toMatchObject({ status: "skipped", reason: "brand already exists" });
+    expect(composite.steps.find((s) => s.kind === "copy")!.status).toBe("skipped");
     // Bouton « Rédiger les textes » : explicite → exécuté malgré une version FINAL.
     const engine = vi.fn(async (c: any) => (check(c, "copy_shop", 8.2), { done: true }));
     const c2 = job("copy.build", { projectId: sbId });
@@ -147,30 +146,12 @@ describe("Phase 3B — orchestrateur branché", async () => {
     expect(planOf(c2.job.id).steps[0]).toMatchObject({ kind: "copy", status: "done" });
   });
 
-  it("pipeline.run : une marque existante n'est pas refaite (sauf relance expresse depuis « marque ») ; l'analyse reste faite", () => {
-    const sb = loadProject(sbId);
-    const a = fr(() => ex.pipelinePlan(job("pipeline.run", { projectId: sbId }), sb, {}));
-    expect(a.plan.intents).toEqual(["ANALYZE_PRODUCT", "CREATE_BRAND", "CREATE_SHOP", "CREATE_VIDEO", "SOCIAL", "ORGANIZE_FILES"]);
-    expect(a.plan.steps.map((s) => s.kind)).toEqual(["understand", "brand_strategy", "image_generate", "copy", "theme", "video", "social", "organize"]);
-    expect(a.skipped("brand")).toBe("brand");
-    expect(a.skipped("analysis")).toBeNull();
-    expect(a.plan.steps.find((s) => s.kind === "brand_strategy")!.reason).toBe("brand already exists");
-    const b = fr(() => ex.pipelinePlan(job("pipeline.run", { projectId: sbId, from: "brand" }), sb, { from: "brand" }));
-    expect(b.skipped("brand")).toBeNull();
-    expect(b.skipped("copy")).toBeNull(); // marque refaite → textes refaits aussi
-    // Nouveau projet sans marque : tout est fait.
-    const fresh = { ...sb, brand: null, strategy: null } as any;
-    expect(fr(() => ex.pipelinePlan(job("pipeline.run", { projectId: sbId }), fresh, {})).skipped("brand")).toBeNull();
-  });
-
   it("création IA directe : une recherche documentaire ne remplace pas la demande", async () => {
     const [, , , d] = await fr(() => allScenarios(fresh()));
     expect(d.plan).toEqual(["stock_search"]);
     const p = orch.buildPlan({ projectId: sbId, userId: u.id, requestKey: "s1", intents: ["GENERATE_IMAGE"], state: fr(() => orch.projectState(loadProject(sbId))) });
     orch.applyResult(p, "stock_search", { verdict: "FINAL", score: 8 });
     expect(p.steps.find((s) => s.kind === "image_generate")!.status).toBe("pending");
-    expect(ex.explicitGeneration("Génère une image de bannière")).toBe(true);
-    expect(ex.explicitGeneration("Trouve-moi une photo")).toBe(false);
     const forced = orch.buildPlan({ projectId: sbId, userId: u.id, requestKey: "s2", intents: ["GENERATE_IMAGE"], state: fr(() => orch.projectState(loadProject(sbId))), forceGenerate: true });
     expect(forced.steps.map((s) => s.kind)).toEqual(["image_generate"]);
     // Bouton « Créer les images » : génération expresse, pas de recherche imposée.
@@ -231,29 +212,7 @@ describe("Phase 3B — orchestrateur branché", async () => {
     expect(f.executions.copy).toBe(1);
   });
 
-  // ------------------------------------------------------------------ intentions et plans libres
-
-  it("pas de sur-orchestration : « Refais ce logo » → étape logo seule ; « pour ma boutique » n'est pas une boutique à créer", () => {
-    for (const [t, want] of [
-      ["Refais ce logo", ["logo"]],
-      ["Améliore uniquement mon logo", ["logo"]],
-      ["Génère une image de bannière pour ma boutique", ["image_generate"]],
-      ["Écris un article de blog pour mon site", ["blog"]],
-    ] as const) {
-      const r = orch.intentsFromRules(t);
-      const p = orch.buildPlan({ projectId: sbId, userId: u.id, requestKey: t, intents: r.intents, state: fr(() => orch.projectState(loadProject(sbId))) });
-      expect(p.steps.map((s) => s.kind), t).toEqual(want);
-    }
-  });
-
-  it("demande libre (tâche plan.run) : projet pas encore analysé → confiée à la création complète, jamais deux moteurs en parallèle", async () => {
-    const fresh = fr(() => seedSebastienBlanc(u.id));
-    run("UPDATE projects SET product_json = ? WHERE id = ?", JSON.stringify({ ...loadProject(fresh).product, name: "", facts: [], summary: "" }), fresh);
-    const ctx = job("plan.run", { projectId: fresh, text: "Crée ma boutique" });
-    const r = await fr(() => ex.runRequestPlan(ctx));
-    expect(r.delegated).toBe("pipeline.run");
-    expect(r.plan!.status).toBe("stopped");
-  });
+  // ------------------------------------------------------------------ benchmarks
 
   it("benchmarks déterministes A–F : intention, plan, étapes exécutées et sautées, routage, qualité, repli, coût", async () => {
     const [a, b, c, d, e, f] = await fr(() => allScenarios(fresh()));

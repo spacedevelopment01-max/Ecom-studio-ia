@@ -1,11 +1,7 @@
-import { selectedDirectionCommand } from "../logo-v2/commands";
-import { projectChoices } from "./references";
-import { applyTitleEdit } from "./title-edit";
-import type { RequestScope } from "./request";
 /**
- * Branchement de l'orchestrateur sur les vrais parcours du studio (phase 3B).
+ * Enveloppe des tâches de fond du studio : chaque action devient un petit plan tracé.
  *
- * INTENTION → PLAN → ROUTEUR → MOTEUR EXISTANT → BARRIÈRE DE QUALITÉ → DÉCISION → ÉTAPE SUIVANTE.
+ * ACTION → PLAN → ROUTEUR → MOTEUR EXISTANT → BARRIÈRE DE QUALITÉ → RÉSULTAT.
  *
  * Les moteurs ne sont pas réécrits : ce sont les exécuteurs des étapes. Le résultat d'une étape est le verdict que
  * la barrière de qualité du moteur a enregistré pendant l'étape (rien n'est re-noté). Chaque exécution d'étape est
@@ -13,18 +9,14 @@ import type { RequestScope } from "./request";
  * plan enregistré reste cohérent avec la tâche (même clé : « job:<id> »).
  */
 import type { JobContext } from "../jobs";
-import { videoDelivery } from "../media/delivery-check";
 import { activeProviderKey } from "../ai/config";
 import { aiActiveFor } from "../ai/access";
-import { budgetPctText } from "../ai/budget-pct";
-import { loadProject, remember, type Project } from "../projects";
+import { loadProject, type Project } from "../projects";
 import type { Deliverable } from "../quality/policies";
-import { intentsFromAction, understand, aiIntentClassifier, type Intent, type IntentResult } from "./intent";
-import * as planner from "./planner";
-import { loadOrCreatePlan, runPlan, savePlan, type PlanStep, type StepKind, type StepResult, type TaskPlan } from "./planner";
+import { intentsFromAction } from "./intent";
+import { loadOrCreatePlan, runPlan, type PlanStep, type StepKind, type StepResult } from "./planner";
 import { stepOutcome } from "./history";
 import { projectState } from "./index";
-import type { RouteDecision } from "./router";
 
 /** Livrables contrôlés dont le verdict fait le résultat d'une étape. */
 export const STEP_DELIVERABLES: Record<StepKind, Deliverable[]> = {
@@ -164,63 +156,6 @@ export async function orchestrateNow<T>(p: Project, action: string, requestKey: 
   return out as T;
 }
 
-// ---------------------------------------------------------------- création complète (pipeline.run)
-
-/** Étape du pipeline → étape du plan (sources et détourage préparent l'analyse : pas d'étape à part). */
-export const PIPELINE_KINDS: Record<string, StepKind | null> = { sources: null, cutout: null, analysis: "understand", brand: "brand_strategy", copy: "copy", images: "image_generate", video: "video", shop: "theme", calendar: "social", organize: "organize" };
-
-/**
- * Plan de la création complète, d'après l'état RÉEL du projet : une marque déjà construite n'est pas refaite (sauf
- * relance expresse depuis l'étape « marque ») ; des textes déjà FINAL ne sont pas réécrits si la marque est gardée.
- * L'analyse est toujours refaite (relire les sources est le rôle de la création) ; les faits du client restent
- * protégés (Project Brain). Le pipeline reste l'exécuteur : ses étapes et points de reprise sont inchangés.
- */
-export function pipelinePlan(ctx: JobContext, p: Project, payload: { from?: string }) {
-  const st = projectState(p);
-  const regenerate = payload.from && PIPELINE_KINDS[payload.from] ? [PIPELINE_KINDS[payload.from] as StepKind] : [];
-  const brandKept = st.brandReady && !regenerate.includes("brand_strategy");
-  const plan = loadOrCreatePlan({
-    projectId: p.id,
-    userId: p.userId,
-    requestKey: `job:${ctx.job.id}`,
-    intents: intentsFromAction("pipeline.run") ?? [],
-    state: { ...st, analyzed: false, copyFinal: st.copyFinal && brandKept },
-    only: Object.values(PIPELINE_KINDS).filter((k): k is StepKind => !!k),
-    implicit: true,
-    regenerate,
-    // Les visuels du pipeline : jeu de scènes du produit, ou jeu d'un service qui cherche lui-même les photos libres d'abord.
-    forceGenerate: true,
-  });
-  const stepOf = (id: string) => (PIPELINE_KINDS[id] ? plan.steps.find((s) => s.kind === PIPELINE_KINDS[id]) : undefined);
-  return {
-    plan,
-    /** Raison d'un saut décidé par le plan (null : l'étape s'exécute). */
-    skipped(id: string): "brand" | "copy" | null {
-      const s = stepOf(id);
-      return s?.status === "skipped" && (s.kind === "brand_strategy" || s.kind === "copy") ? (s.kind === "brand_strategy" ? "brand" : "copy") : null;
-    },
-    since(id: string) {
-      const k = `plan:${id}:since`;
-      return (ctx.checkpoint[k] as number | undefined) ?? (ctx.save(k, Date.now()), Date.now());
-    },
-    /** Résultat contrôlé d'une étape du pipeline reporté sur le plan (enregistré). */
-    record(id: string, since: number, skippedByEngine: boolean) {
-      const s = stepOf(id);
-      if (!s || s.status !== "pending") return;
-      if (skippedByEngine) Object.assign(s, { status: "skipped", reason: "skipped by the engine (see step note)" });
-      else {
-        const { applyResult } = planner;
-        applyResult(plan, s.id, outcome(ctx.job.id, s.kind, since));
-      }
-      savePlan(plan);
-    },
-  };
-}
-
-// ---------------------------------------------------------------- exécuteurs des étapes (plans libres)
-
-export type StepExecutorFn = (ctx: JobContext, p: Project, step: PlanStep, decision: RouteDecision) => Promise<StepResult>;
-
 /**
  * Photos libres de droits (gratuites), contrôlées : métier pour un service, univers pour un produit.
  * Image V2 (phase 5A) : même moteur que toutes les images (brief local, recherche multisource, barrière V2,
@@ -247,212 +182,3 @@ export async function findStockPhotos(ctx: JobContext, projectId: string, n = 2)
   const kept = outcomes.filter((o) => o.assetId && (o.verdict === "FINAL" || o.verdict === "PROVISIONAL"));
   return { assets: kept.map((o) => o.assetId!), final: kept.some((o) => o.verdict === "FINAL"), provisional: kept.some((o) => o.verdict === "PROVISIONAL") };
 }
-
-/** Moteur existant de chaque étape (aucune logique dupliquée). */
-export const STEP_EXECUTORS: Partial<Record<StepKind, StepExecutorFn>> = {
-  brand_strategy: async (ctx, p, s) => {
-    const since = Date.now();
-    const { buildBrand } = await import("../engine/brand");
-    await ctx.step(`plan:${s.id}`, async () => (await buildBrand(ctx, p.id, {})).name);
-    // Une série de directions attend le choix explicite du client : ne pas annoncer la charte déjà produite.
-    const logo = outcome(ctx.job.id, "logo", since);
-    const fresh = loadProject(p.id);
-    const { currentSeries } = await import("../logo-v2/direction-series");
-    if (currentSeries(p.id) && !fresh.brand?.artIdentity) return { note: "Stratégie conservée ; directions à choisir avant les déclinaisons et la charte.", covered: { logo } };
-    const provisional = !!fresh.brand?.logo.provisional;
-    return { note: "brand built", covered: { logo, ...(provisional ? {} : { mockups: { note: "brand book done by brand_strategy" } }) } };
-  },
-  // Logo (Brand & Logo Engine V2) : nouvelles directions contrôlées ; la meilleure est appliquée comme proposition
-  // (jamais à la place d'un logo choisi, validé ou fourni par le client, qui reste en place).
-  logo: async (ctx, p, s) => {
-    const since = Date.now();
-    const { runLogoEngineV2 } = await import("../logo-v2/engine");
-    const choice = s.input.directionChoice as { logoId: string } | undefined;
-    if (choice) {
-      const { chooseLogoV2 } = await import("../logo-v2/choose");
-      await ctx.step(`plan:${s.id}:choose`, () => chooseLogoV2(ctx, p.id, choice.logoId));
-      return { note: "Direction complète choisie : déclinaisons et charte enregistrées, aucun nouveau dessin.", ownedRetries: true };
-    }
-    const run = await ctx.step(`plan:${s.id}`, () => runLogoEngineV2(ctx, p.id, { expectedSeriesId: (s.input.expectedSeriesId as string | null | undefined) ?? null, renew: (s.input.requestScope as RequestScope | undefined)?.renewDirections, correction: String(s.input.text ?? "") }));
-    const { currentSeries } = await import("../logo-v2/direction-series");
-    if (currentSeries(p.id)?.status !== "complete") return { failed: `Série incomplète : ${currentSeries(p.id)?.directions.length ?? run.shown.length}/3 directions conservées.`, ownedRetries: true };
-    return outcome(ctx.job.id, "logo", since);
-  },
-  stock_search: async (ctx, p, s) => {
-    const since = Date.now();
-    const r = await ctx.step(`plan:${s.id}`, () => findStockPhotos(ctx, p.id, 2));
-    const o = outcome(ctx.job.id, "stock_search", since);
-    // Aucune photo libre FINALE : la génération d'une image IA prend le relais (étape suivante du plan).
-    // Photo retenue sur sa seule description (sans contrôle visuel) : PROVISOIRE, jamais présentée comme finale.
-    // Point de reprise d'une version précédente (sans « final ») : une photo retenue valait FINAL.
-    const cached = r as { assets: string[]; final?: boolean; provisional?: boolean };
-    const final = cached.final ?? cached.assets.length > 0;
-    return final ? { ...o, verdict: "FINAL" } : cached.provisional ? { ...o, verdict: "PROVISIONAL", note: "stock photo kept on metadata only" } : { verdict: "REJECTED", score: o.score ?? null, note: "no FINAL stock photo" };
-  },
-  image_generate: async (ctx, p, s) => {
-    const since = Date.now();
-    const { runImageSetV2 } = await import("../image-v2/set");
-    await ctx.step(`plan:${s.id}`, async () => (await runImageSetV2(ctx, p.id, undefined, { instructions: String(s.input.text || "") })).created.length);
-    return outcome(ctx.job.id, "image_generate", since);
-  },
-  copy: async (ctx, p, s) => {
-    const titleEdit = (s.input.requestScope as RequestScope | undefined)?.titleEdit;
-    if (titleEdit) {
-      await ctx.step(`plan:${s.id}:title-only`, async () => applyTitleEdit(p.id, titleEdit).id);
-      return { note: "Titre seul enregistré en nouvelle version ; autres blocs et marque conservés, relecture nécessaire." };
-    }
-    const since = Date.now();
-    const { aiShopCopyChecked } = await import("../ai/tasks");
-    const { llmConfigured } = await import("../ai/llm");
-    const { localCopy } = await import("../engine/local-copy");
-    await ctx.step(`plan:${s.id}`, async () => {
-      // Page principale par SEO & Copywriting Engine V2 (texte de référence de la boutique pour ce qu'il couvre).
-      const { runContentEngineV2 } = await import("../seo-v2/engine");
-      await ctx.step(`plan:${s.id}:seo-v2`, async () => (await runContentEngineV2(ctx, p.id, { type: p.business === "services" ? "home_page" : "product_page", request: String(s.input.text ?? "") || null })).docKey);
-      const fresh = loadProject(p.id);
-      if (llmConfigured()) {
-        const r = await aiShopCopyChecked({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:copy` }, fresh, (m) => ctx.progress(0.5, m), (k, fn) => ctx.step(k, fn));
-        remember(p.id, { kind: "artifact", key: "shop_copy", value: JSON.stringify(r.copy), source: "ai" });
-      } else remember(p.id, { kind: "artifact", key: "shop_copy", value: JSON.stringify(localCopy(fresh.product, fresh.brand!, fresh)), source: "local" });
-      return true;
-    });
-    return outcome(ctx.job.id, "copy", since);
-  },
-  theme: async (ctx, p, s) => {
-    const since = Date.now();
-    const { buildShop } = await import("../engine/shop");
-    await ctx.step(`plan:${s.id}`, async () => (await buildShop(ctx, p.id)).number);
-    return outcome(ctx.job.id, "theme", since);
-  },
-  // Réseaux sociaux (phase 12A) : Social Engine V2 — calendrier d'après la demande (durée, réseaux, fréquence),
-  // textes locaux sans invention, visuels produits sans dépense (bibliothèque, rendu local) ; une production payante
-  // n'est lancée que si l'étape a été autorisée avec son montant et dans le plafond. Rien n'est publié sans
-  // approbation. Plan identifié par la demande : une reprise ne crée aucun doublon.
-  social: async (ctx, p, s) => {
-    const since = Date.now();
-    const { planFromAsk } = await import("../social-v2/engine");
-    const { produceBatch, postsOfPlan } = await import("../social-v2/production");
-    const { realSocialDeps } = await import("../social-v2/deps");
-    const text = String(s.input.socialText ?? s.input.text ?? "");
-    const planned = await ctx.step(`plan:${s.id}:calendar`, async () => {
-      // Plan identifié par la demande (reprise sans doublon) ; durée bornée par le forfait.
-      const r = planFromAsk(loadProject(p.id), text, { maxDays: (s.input.maxSocialDays as number | undefined) ?? undefined, planId: (s.input.socialPlanId as string | undefined) ?? undefined });
-      return { planId: r.planId, created: r.created, existing: r.existing, days: r.ask.days, perDay: r.ask.perDay, platforms: r.request.platforms.map((x) => x.platform), notes: r.notes };
-    });
-    const allowPaid = !!s.input.allowPaid;
-    const prod = await ctx.step(`plan:${s.id}:produce`, async () => {
-      const fresh = loadProject(p.id);
-      return produceBatch(fresh, postsOfPlan(planned.planId), realSocialDeps(ctx, fresh, allowPaid && routingEnv(fresh).aiActive), { allowPaid, maxCostEur: Number(s.input.maxCostEur ?? 0), approvedEstimateMicro: (s.input.approvedMicro as number | undefined) ?? null, batchSize: 400 });
-    });
-    remember(p.id, { kind: "artifact", key: "social_plan_v2", value: JSON.stringify({ planId: planned.planId, days: planned.days, platforms: planned.platforms }), source: "local" });
-    const o = outcome(ctx.job.id, "social", since);
-    return { ...o, note: `${planned.created + planned.existing} posts planned (${planned.platforms.join(", ")}, ${planned.days} days), ${prod.produced} visuals produced, ${budgetPctText(p.userId, prod.spentMicro, p.id)} used; approval required before any publication` };
-  },
-  // Export du thème (CMS Engine V2, phase 11A) : même chemin que l'écran « Exporter » (contrôle, verdict, version).
-  cms_export: async (ctx, p, s) => {
-    const { currentTheme } = await import("../projects");
-    const { exportAndRecord } = await import("../cms-v2/record");
-    const { contentLang } = await import("../i18n-server");
-    const platforms = ((s.input.cmsPlatforms as string[] | undefined) ?? [p.platform ?? "shopify"]) as import("../cms-v2/types").CmsPlatform[];
-    const out = await ctx.step(`plan:${s.id}`, async () => {
-      const v = currentTheme(p.id);
-      if (!v) return { error: "no store to export yet" };
-      const rows = [];
-      for (const pf of platforms) {
-        const r = await exportAndRecord({ id: p.id, userId: p.userId }, { spec: v.spec, number: v.version.number, id: v.version.id }, pf, contentLang() === "en" ? "en" : "fr", { jobId: ctx.job.id });
-        rows.push({ platform: pf, name: r.name, verdict: r.verdict, scope: r.scope, assetId: r.assetId, message: r.message });
-      }
-      return { rows };
-    });
-    if ("error" in out) return { verdict: "REJECTED", note: String(out.error) };
-    const worst = out.rows.some((r) => r.verdict === "REJECTED") ? "REJECTED" : out.rows.every((r) => r.verdict === "FINAL") ? "FINAL" : "PROVISIONAL";
-    return { verdict: worst, note: out.rows.map((r) => `${r.platform}: ${r.verdict}`).join(", "), ownedRetries: true };
-  },
-  blog: async (ctx, p, s) => {
-    const since = Date.now();
-    // Article de blog : SEO & Copywriting Engine V2 (faits vérifiés, contrôles, document éditable, rangé dans le blog).
-    const { assertBlogWrite } = await import("../engine/blog");
-    const { runContentEngineV2 } = await import("../seo-v2/engine");
-    assertBlogWrite(p.userId, p.id);
-    await ctx.step(`plan:${s.id}`, async () => (await runContentEngineV2(ctx, p.id, { type: "blog_article", request: String(s.input.text ?? "") || null })).docKey);
-    return outcome(ctx.job.id, "blog", since);
-  },
-  // SEO & Copywriting (phase 8A) : SEO Engine V2 — page principale (fiche produit ou accueil d'une entreprise de
-  // services) rédigée à partir des seuls faits vérifiés, contrôlée, versionnée et éditable.
-  seo: async (ctx, p, s) => {
-    const since = Date.now();
-    const { runContentEngineV2 } = await import("../seo-v2/engine");
-    await ctx.step(`plan:${s.id}`, async () => (await runContentEngineV2(ctx, p.id, { type: p.business === "services" ? "home_page" : "product_page", request: String(s.input.text ?? "") })).docKey);
-    return outcome(ctx.job.id, "seo", since);
-  },
-  // Publicités (phase 6A) : Advertising Engine V2 — textes contrôlés ET créations composées (Image Engine V2).
-  ad: async (ctx, p, s) => {
-    const since = Date.now();
-    const { runAdEngineV2 } = await import("../ads-v2/engine");
-    const r = await ctx.step(`plan:${s.id}`, async () => {
-      const run = await runAdEngineV2(ctx, p.id, {});
-      // Annonces au format des brouillons existants (onglet Publicités) : rien n'est perdu pour l'interface actuelle.
-      const ads = run.concepts.map((c) => ({ angle: c.angle.type, lever: c.angle.lever, hook: c.copy.hook, primary: c.copy.primary, headline: c.copy.headline, description: c.copy.description, cta: c.copy.cta }));
-      return { ads, by: run.concepts.some((c) => c.copyBy === "ai") ? "ai" : "local", strategy: run.strategy, creatives: run.outcomes.map((o) => ({ assetId: o.assetId, verdict: o.verdict, platform: o.platform, aspect: o.aspect })) };
-    });
-    remember(p.id, { kind: "artifact", key: "ad_drafts", value: JSON.stringify(r), source: r.by === "ai" ? "ai" : "local" });
-    return outcome(ctx.job.id, "ad", since);
-  },
-  // Vidéo (phase 7A) : Video Engine V2 — intention, script, storyboard, plans (génération seulement si utile et
-  // dans le plafond), document éditable, barrière vidéo. Même consentement que l'ancien moteur (plan IA demandé).
-  video: async (ctx, p, s) => {
-    const since = Date.now();
-    const { runVideoEngineV2 } = await import("../video-v2/engine");
-    const assetId=await ctx.step(`plan:${s.id}`, async () => (await runVideoEngineV2(ctx, p.id, { ask: { text: String(s.input.text ?? ""), platform: "reels" }, approveGeneration: !!s.input.allowPaid })).videoAssetId);
-    const delivery=await videoDelivery(p.id,assetId);
-    return {...outcome(ctx.job.id, "video", since),note:delivery.message};
-  },
-};
-
-/**
- * Demande libre du client (tâche « plan.run ») : comprendre → planifier → exécuter par les moteurs existants.
- * Un projet pas encore analysé passe par la création complète (pipeline.run) : jamais deux moteurs en parallèle.
- */
-export async function runRequestPlan(ctx: JobContext): Promise<{ intent: IntentResult; plan: TaskPlan | null; delegated?: string }> {
-  const { projectId, text } = ctx.payload as { projectId: string; text: string };
-  const p = loadProject(projectId);
-  const { currentSeries } = await import("../logo-v2/direction-series");
-  const expectedSeriesId = "expectedSeriesId" in ctx.payload ? ctx.payload.expectedSeriesId : currentSeries(projectId)?.id ?? null;
-  const env = routingEnv(p);
-  const intent = await understand({ text }, { aiActive: env.aiActive, choices: projectChoices(p.id), classify: aiIntentClassifier({ userId: p.userId, projectId, jobId: ctx.job.id }) });
-  const choice = selectedDirectionCommand(p.id, intent.scope);
-  if (choice) {
-    const { chooseLogoV2 } = await import("../logo-v2/choose");
-    await ctx.step("requested-direction", () => chooseLogoV2(ctx, p.id, choice.logoId));
-    return { intent: { ...intent, clarification: "Direction complète choisie ; déclinaisons et charte enregistrées sans nouveau dessin." }, plan: null };
-  }
-  if (!intent.intents.length) return { intent, plan: null };
-  const state = projectState(p);
-  const plan = loadOrCreatePlan({ projectId, userId: p.userId, requestKey: `job:${ctx.job.id}`, intents: intent.intents, state, input: { text, expectedSeriesId, requestScope: intent.scope }, scope: intent.scope, forceGenerate: explicitGeneration(text) });
-  if (plan.steps.some((s) => s.kind === "understand" && s.status === "pending")) {
-    plan.status = "stopped";
-    if (intent.scope?.narrow || intent.scope?.restrictions.length) {
-      plan.warnings.push("Analyse de l’offre nécessaire : le pipeline complet est bloqué par les éléments à préserver.");
-      savePlan(plan); return { intent: { ...intent, clarification: "Analysez d’abord l’offre dans la préparation ; aucun élément conservé n’a été modifié." }, plan };
-    }
-    plan.warnings.push("project not analyzed yet: delegated to the creation pipeline (pipeline.run)");
-    savePlan(plan);
-    return { intent, plan, delegated: "pipeline.run" };
-  }
-  await runPlan(
-    plan,
-    async (s, d) => {
-      const ex = STEP_EXECUTORS[s.kind];
-      if (!ex) return { note: `${s.kind}: no engine step here (done elsewhere)` };
-      return ex(ctx, loadProject(projectId), s, d);
-    },
-    env,
-    { onNone: "execute" },
-  );
-  return { intent, plan };
-}
-
-/** La demande exige une image GÉNÉRÉE (pas de recherche de photo libre imposée avant). */
-export const explicitGeneration = (text: string) => /\b(g[eé]n[eè]re|g[eé]n[eé]r(er|ation)|generate|generated|cr[eé]{1,2}e?s? par l'?ia|ia d'images?|ai[- ]generated|dessine|illustration)\b/i.test(text);
-
-export type { Intent };

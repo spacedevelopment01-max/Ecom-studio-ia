@@ -87,28 +87,6 @@ describe("migration V1 → V2 : moteurs réellement appelés", async () => {
     expect(calls.v2.every((r: any) => r.noStock === true && r.allowGenerate === true)).toBe(true);
   });
 
-  it("calendrier de la création : Social V2, une seule fois par projet — une reprise ne crée aucun doublon", async () => {
-    const pid = await seedPaid("cosmetic");
-    run("DELETE FROM content_plans WHERE project_id = ?", pid);
-    run("DELETE FROM posts WHERE project_id = ?", pid);
-    const { startWeekCalendar, creationPlanId } = await import("@/lib/engine/pipeline");
-    await fr(() => startWeekCalendar(ctxFor(pid), pid));
-    const n = all<{ engine: string }>("SELECT engine FROM posts WHERE project_id = ?", pid);
-    expect(n.length).toBeGreaterThanOrEqual(7);
-    expect(n.every((x) => x.engine === "v2")).toBe(true);
-    expect(one("SELECT 1 FROM content_plans WHERE id = ? AND engine = 'v2'", creationPlanId(pid))).toBeTruthy();
-    // « Suite de la création » : nouvelle tâche, même projet → aucun second calendrier.
-    await fr(() => startWeekCalendar(ctxFor(pid), pid));
-    expect(all("SELECT id FROM posts WHERE project_id = ?", pid)).toHaveLength(n.length);
-    expect(all("SELECT id FROM content_plans WHERE project_id = ?", pid)).toHaveLength(1);
-    // Ancien projet qui a déjà un calendrier (ancien moteur) : rien de plus.
-    const pid2 = await seedPaid("artisan");
-    run("INSERT INTO content_plans (id, project_id, params, status, created_at) VALUES (?,?,?,?,?)", id(), pid2, "{}", "done", now());
-    const before = all("SELECT id FROM posts WHERE project_id = ?", pid2).length;
-    await fr(() => startWeekCalendar(ctxFor(pid2), pid2));
-    expect(all("SELECT id FROM posts WHERE project_id = ?", pid2)).toHaveLength(before);
-  }, 120_000);
-
   it("anciennes routes : plus de nouvelle génération V1 ; l'ancien point d'accès des publications ne contourne pas V2", async () => {
     const pid = await seedPaid("cosmetic");
     sessionUser = { ...u, role: "client" };

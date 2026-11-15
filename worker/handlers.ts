@@ -1,4 +1,3 @@
-import {createHash} from "node:crypto";
 import { jobStrategy, withStrategyScope, strategyStamp } from "../src/lib/strategy-consumption";
 import { HttpError } from "../src/lib/auth";
 import { assertRepairableConversation } from "../src/lib/theme/plan-access";
@@ -11,11 +10,10 @@ import { projectKind } from "@/lib/theme/project-kind";
 import { all, json, now, one, run } from "../src/lib/db";
 import { sectionGenerationAllowed,assertSectionGeneration } from "../src/lib/theme/custom-access";
 import { getJob, JobCancelled, JobContext, JobPaused, PermanentError, UserFacingError } from "../src/lib/jobs";
-import { runPipeline } from "../src/lib/engine/pipeline";
 import { produceVideo } from "../src/lib/engine/videos";
 import { produceUgc, writeUgcScript } from "../src/lib/engine/ugc";
 import { writeBlogArticle } from "../src/lib/engine/blog";
-import { withQuotaScope,withAiDisabled,aiDisabledReason,assertAiAllowed } from "../src/lib/ai/access";
+import { withQuotaScope,withAiDisabled,assertAiAllowed } from "../src/lib/ai/access";
 import { consumeQuota } from "../src/lib/quotas";
 import { buildShop, switchDirection, themeFileName } from "../src/lib/engine/shop";
 import { buildCustomTheme } from "../src/lib/engine/custom-theme";
@@ -26,7 +24,7 @@ import { REPLACE_INTENT, isMediaSelection, localMediaReplace, mediaTargetOf } fr
 import { buildBrand } from "../src/lib/engine/brand";
 import { runLogoJob } from "../src/lib/engine/logo-job";
 import { loadProject, currentTheme, saveThemeVersion, themeVersion, listThemeVersions, remember, notify } from "../src/lib/projects";
-import { aiThemeChat, aiRewritePost, aiClassify, aiShopCopyChecked, aiRepairOps } from "../src/lib/ai/tasks";
+import { aiThemeChat, aiRewritePost, aiShopCopyChecked, aiRepairOps } from "../src/lib/ai/tasks";
 import { llmConfigured } from "../src/lib/ai/llm";
 import { applyOps, validateSpec, type ThemeOp } from "../src/lib/theme/ops";
 import { localThemeCommand } from "../src/lib/engine/local";
@@ -47,7 +45,7 @@ import { loadImage } from "@napi-rs/canvas";
 import { L, contentLang } from "../src/lib/i18n-server";
 import { imageDelivery, videoDelivery } from "../src/lib/media/delivery-check";
 import { planOfUserId } from "../src/lib/plan-gates";
-import { ACTION_STEPS, findStockPhotos, orchestrated, runRequestPlan } from "../src/lib/orchestrator/execute";
+import { ACTION_STEPS, findStockPhotos, orchestrated } from "../src/lib/orchestrator/execute";
 
 type Handler = (ctx: JobContext) => Promise<unknown>;
 
@@ -67,18 +65,7 @@ export const handlers: Record<string, Handler> = {
   "syna.studio.brand": async (ctx) => (await import("../src/lib/syna-agent/studio-brand")).runStudioBrandJob(ctx),
   "syna.posts.plan": async (ctx) => (await import("../src/lib/syna-agent/posts-plan")).runPostsPlanJob(ctx),
   "strategy.prepare":async ctx=>(await import("../src/lib/marketing-strategy/bundle")).runStrategyBundle(ctx),
-  "social.initial": async(ctx)=>{
-    const {runInitialCreatives}=await import("../src/lib/social-v2/initial");
-    return runInitialCreatives(ctx);
-  },
-  // Création complète : passe par le planner à l'intérieur (étapes déjà acquises sautées, marque existante gardée).
-  "pipeline.run": runPipeline,
   "project.prepare": async (ctx) => (await import("../src/lib/preparation/engine")).runPreparation(ctx),
-
-  /** Demande libre du client : intention → plan → moteurs existants (Router V2, barrière de qualité). */
-  "plan.run": runRequestPlan,
-  // Studio Workflow V2 (phase 12A) : demande globale → plan de l'orchestrateur → moteurs V2 (devis autorisé, plafond).
-  "workflow.run": async (ctx) => (await import("../src/lib/workflow")).runWorkflow(ctx),
 
   /** Photos libres de droits (gratuites, contrôlées) avant toute image IA. */
   "stock.search": async (ctx) => findStockPhotos(ctx, ctx.payload.projectId, ctx.payload.n ?? 2),
@@ -466,15 +453,11 @@ export const handlers: Record<string, Handler> = {
     const p = loadProject(projectId);
     const job=getJob(ctx.job.id);
     if(!job||job.type!=='files.classify'||job.user_id!==p.userId||job.project_id!==projectId||ctx.job.user_id!==job.user_id||ctx.job.project_id!==job.project_id)throw new HttpError(404,"Projet introuvable.");
-    const parent=job.parent_id?getJob(job.parent_id):null,key=parent?`pipeline-classify:${parent.id}`:'';
-    const hashed=`job:v2:${createHash('sha256').update(JSON.stringify([job.user_id,job.project_id,job.type,key])).digest('hex')}`;
-    // Seul l'enfant initial exact du pipeline conserve son moteur IA déjà autorisé. Un marqueur HTTP ne crée pas ce droit.
-    const initial=!!parent&&parent.type==='pipeline.run'&&parent.user_id===job.user_id&&parent.project_id===job.project_id&&[key,hashed].includes(job.idempotency_key??'');
-    const localOnly=!initial||ctx.payload.localOnly===true||ctx.payload.aiOff===true;
-    const execute=async()=>{
+    // Rangement gratuit, par règles locales : les noms sont conservés et aucun appel à l'IA n'est possible ici.
+    return withAiDisabled("classement natif gratuit par règles locales, noms conservés", async () => {
     const folders = listFolders(projectId).filter((f) => f.system_key);
     const loose = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND user_id=? AND folder_id IS NULL AND deleted_at IS NULL LIMIT 60", projectId,p.userId);
-    if (!loose.length) return { moved: 0,...(localOnly?{mode:"local_rules" as const}: {}) };
+    if (!loose.length) return { moved: 0, mode: "local_rules" as const };
     const rules: [RegExp, string][] = [
       [/logo/, "brand.logos"],
       [/cutout|detour/, "product.cutouts"],
@@ -486,30 +469,22 @@ export const handlers: Record<string, Handler> = {
       [/social|post/, "images.social"],
       [/video/, "videos.social"],
     ];
-    let items: { id: string; folder: string; name?: string }[];
-    if (!localOnly && !aiDisabledReason() && llmConfigured()) {
-      const r = await aiClassify({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:classify` }, loose.map((a) => ({ id: a.id, name: a.name, kind: a.kind, role: a.role, meta: a.meta })), folders.map((f) => ({ key: f.system_key!, name: f.name })));
-      items = r.items;
-    } else {
-      items = loose.map((a) => {
-        const k = `${a.role ?? ""} ${a.name}`.toLowerCase();
-        const hit = rules.find(([re]) => re.test(k));
-        return { id: a.id, folder: hit?.[1] ?? (a.kind === "video" ? "videos.social" : a.kind === "image" ? "product.originals" : "docs") };
-      });
-    }
+    const items = loose.map((a) => {
+      const k = `${a.role ?? ""} ${a.name}`.toLowerCase();
+      const hit = rules.find(([re]) => re.test(k));
+      return { id: a.id, folder: hit?.[1] ?? (a.kind === "video" ? "videos.social" : a.kind === "image" ? "product.originals" : "docs") };
+    });
     let moved = 0;
     for (const it of items) {
       const f = folders.find((x) => x.system_key === it.folder);
       const a = loose.find((x) => x.id === it.id);
       if (!f || !a) continue;
-      const ext = a.name.includes(".") ? a.name.slice(a.name.lastIndexOf(".")) : "";
-      // Le classement déplace et renomme ; il ne supprime jamais.
-      run("UPDATE assets SET folder_id = ?, name = ? WHERE id = ?", f.id, it.name ? `${it.name.replace(/[^\p{L}\p{N}-]+/gu, "-").slice(0, 80)}${ext}` : a.name, a.id);
+      // Le classement déplace ; il ne renomme ni ne supprime jamais.
+      run("UPDATE assets SET folder_id = ? WHERE id = ?", f.id, a.id);
       moved++;
     }
-    return { moved,...(localOnly?{mode:"local_rules" as const}: {}) };
-    };
-    return localOnly?withAiDisabled("classement natif gratuit par règles locales, noms conservés",execute):execute();
+    return { moved, mode: "local_rules" as const };
+    });
   },
 
   "canva.send": async (ctx) => {

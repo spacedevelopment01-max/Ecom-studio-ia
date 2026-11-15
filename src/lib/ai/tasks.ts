@@ -1606,22 +1606,6 @@ export async function aiSocialVoice(b: Base, p: Project, feedback?: string) {
   );
 }
 
-export async function aiClassify(b: Base, files: { id: string; name: string; kind: string; role: string | null; meta: string }[], folders: { key: string; name: string }[]) {
-  return llmJson(
-    {
-      task: "classification",
-      userId: b.userId,
-      projectId: b.projectId,
-      jobId: b.jobId,
-      usageKey: b.usageKey,
-      system: S().classify,
-      prompt: `Dossiers : ${folders.map((f) => `${f.key} (${f.name})`).join(", ")}\nFichiers :\n${files.map((f) => `${f.id} | ${f.name} | ${f.kind} | ${f.role ?? ""} | ${f.meta.slice(0, 200)}`).join("\n")}\nRéponds { "items": [ { "id": "…", "folder": "clé", "name": "nom-clair" } ] }.`,
-      maxTokens: 6000,
-    },
-    z.object({ items: z.array(z.object({ id: z.string(), folder: z.string(), name: z.string() })) }),
-  );
-}
-
 export function brandFromAi(r: BrandAi, logo: Brand["logo"], fallbackPalette?: Brand["palette"]): { brand: Brand; strategy: Strategy } {
   return {
     brand: {

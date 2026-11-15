@@ -5,7 +5,7 @@
  */
 import "./env";
 import os from "node:os";
-import { claimNext, completeJob, failJob, JobContext, JobCancelled, JobPaused, LeaseLost, WORKER_ID, getJob, releaseJob, jobQuotaScope, LEASE_RENEW_MS, markFinished, markRunning, renewLease } from "../src/lib/jobs";
+import { claimNext, completeJob, failJob, JobContext, JobCancelled, JobPaused, LeaseLost, WORKER_ID, getJob, releaseJob, LEASE_RENEW_MS, markFinished, markRunning, renewLease } from "../src/lib/jobs";
 import { stopInterruptedPaidJob } from "../src/lib/job-recovery";
 import { retryStripeCancellations } from "../src/lib/payments";
 import { db, logError, now, run } from "../src/lib/db";
@@ -78,7 +78,7 @@ async function runOne() {
       const guarded = (ctx.payload as { aiOff?: boolean })?.aiOff ? () => withAiDisabled("demande lancée sans devis payant accepté", exec) : exec;
       // Seul le rattachement serveur persistant définit la demande commune ; jamais un ID libre du payload.
       const agentBound=one<{bound_id:string}>('SELECT bound_id FROM agent_request_jobs WHERE job_id=?',job.id);
-      const result = await runWithLang(jobLangs(job), () => runForUser(job.user_id, () => withTrace({ jobId: job.id, projectId: job.project_id, intent: jobIntent(job.type, ctx.payload), costCapMicro: capOf(ctx.payload),...(agentBound?{agentBoundId:agentBound.bound_id}:{}) }, guarded), jobQuotaScope(job), job.project_id ?? null));
+      const result = await runWithLang(jobLangs(job), () => runForUser(job.user_id, () => withTrace({ jobId: job.id, projectId: job.project_id, intent: jobIntent(job.type, ctx.payload), costCapMicro: capOf(ctx.payload),...(agentBound?{agentBoundId:agentBound.bound_id}:{}) }, guarded), "normal", job.project_id ?? null));
       // Écriture du résultat : en cas d'échec (base occupée…), nouvel essai — jamais une relance du traitement,
       // qui referait (et repaierait) ce qui vient d'être fait.
       for (let i = 0; ; i++) {
