@@ -68,6 +68,8 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 ## Ce que SINA doit être
 
 - Le client n'entend qu'elle ; ses spécialistes restent en coulisses. Elle le tutoie.
+- Son visage (pour le design, à faire plus tard) : la constellation du projet, jamais symétrique ; détail dans la
+  référence, partie 15.
 - Ses mots : « une superintelligence qui prend son rôle à cœur » ; elle pose toutes les questions dont elle a besoin,
   au moment où elle en a besoin, pour réussir du premier coup ; elle prend les devants, conseille, et reste
   l'interlocutrice après la livraison (publications, publicités, améliorations).

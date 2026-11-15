@@ -529,6 +529,19 @@ chiffres du site et de sa boutique. Les branchements reviendront quand il les au
 - **Le design du site public et de l'intérieur du Studio** se reprend plus tard (« On reviendra sur le design de notre
   site et studio plus tard »). Référence qu'il aime : https://scale-ova.ai/ (fond nuit, champ de saisie en ouverture,
   preuves en images) ; ce n'est pas un site à copier.
+- **Le visage de SINA : la constellation du projet** (idée du propriétaire, notée à sa demande le 15 novembre 2026 :
+  « J'aime bien la constellation car chaque branche peux représenter une étape du projet avec le projet au milieu »,
+  puis « Oui note la »). Direction retenue pour le design, rien n'est construit :
+  - le projet au milieu, une branche par étape du parcours (les 9) ; SINA est la lumière qui part du centre vers
+    l'étape où elle travaille ; une étape finie reste allumée et se relie à la suivante ;
+  - **jamais symétrique** (« ça doit avoir plusieurs taille les branches autour ») : branches de longueurs et de
+    directions différentes, étoiles de tailles différentes, petites étoiles autour des grandes étapes (le nom, le logo
+    et les couleurs autour de la marque) ;
+  - le cœur est bleu comme SINA, puis prend les couleurs de la marque dès qu'elle est créée ;
+  - elle sert aussi de carte du projet dans le tableau de bord ;
+  - sur la page d'accueil, elle remplace l'orbe en ouverture : un projet naît en une vingtaine de secondes, et chaque
+    étoile fait apparaître ce que SINA a créé ; chaque démonstration a sa propre constellation, tirée du projet ;
+  - écartés : un visage ou un personnage. Planche : https://claude.ai/artifact/Ej7Dy3oXCZEUGEfCCKgPXF
 
 Sources de la partie 7 : journal des nouveautés de Shopify (conseils de Sidekick), Unite.AI (Canvas), TechCrunch
 (créateur de boutique), eCommerce Fastlane, Copyfy, blog de Google (Pomelli), test de Blaze par R. Doser, Apaya, blog de
