@@ -26,7 +26,10 @@ code (`plans.ts` garde 49 €, 89 €, 129 €) tant que le lot des forfaits n'e
 avant de le lancer ; les projets d'essai (Pulpe, thé, toiletteuse…) sont mis de côté, jamais effacés, et aucun
 exemple tiré d'eux ne doit rester dans les consignes de SINA ni peser sur les décisions ; les réalisations d'artisans
 créées par SINA restent comme elles sont pour l'instant ; on ne fusionne un lot que lorsqu'il est prouvé (SINA
-l'a réussi seule avec la vraie IA, contrôles verts), et Claude demande alors « Je fusionne ? ». Les notes
+l'a réussi seule avec la vraie IA, contrôles verts), et Claude demande alors « Je fusionne ? ». **Inventaire du code
+(15 novembre 2026, version 1, à valider par lui)** : `docs/studio/INVENTAIRE-DU-CODE.md` (trois piles, doublons, choix de
+Claude, ordre des lots 0 à 9) et les cinq rapports de lecture dans `docs/studio/inventaire/` ; page en ligne :
+https://claude.ai/artifact/WxwtnxCqQtPSYqkB2NSFRP ; rien n'est modifié dans le code. Les notes
 ci-dessous restent vraies comme historique, mais le document de référence prime dès qu'il est validé.
 
 ## Avec le propriétaire
