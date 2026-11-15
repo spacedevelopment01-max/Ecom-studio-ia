@@ -1,8 +1,8 @@
 /**
  * Choix de l'interface du Studio (mission #282, lot 1) : nouvelle coquille SINA ou interface actuelle.
  *
- * - La nouvelle coquille n'existe sur une installation que si `STUDIO_SYNA_SHELL=1` est posé (variable d'environnement,
- *   décidée par le propriétaire). Sans elle, le Studio est exactement celui d'aujourd'hui.
+ * - Le Studio s'ouvre sur SINA, au centre. La variable `STUDIO_SYNA_SHELL=0` ne sert qu'à revenir en urgence aux
+ *   anciens écrans sur une installation.
  * - Quand elle existe, chacun peut revenir à l'interface actuelle et en repartir (cookie `ecs-syna-shell`, sur cet
  *   appareil) : retour arrière immédiat pendant la transition. Les préférences de compte et de projet (mode Encre ou
  *   Plein cadre, personnalisation) relèvent du lot 1 bis.
@@ -12,7 +12,7 @@ export const SYNA_SHELL_COOKIE = "ecs-syna-shell";
 export type StudioShellVariant = "syna" | "classic";
 
 export function synaShellAvailable(env: Record<string, string | undefined> = process.env): boolean {
-  return env.STUDIO_SYNA_SHELL === "1";
+  return env.STUDIO_SYNA_SHELL !== "0";
 }
 
 export function studioShellVariant(env: Record<string, string | undefined>, cookie: string | undefined): { available: boolean; variant: StudioShellVariant } {

@@ -297,8 +297,12 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     expect(seen[0]).toMatch(/Sujets de la fiche pas encore abordés .*business — s'il vend des produits ou propose des services/);
     expect(seen[0]).toMatch(/Autres sujets utiles pour ce métier/);
     const view = openThread(user, null) as any;
-    expect(view.journey.current).toBe(0);
-    expect(view.journey.steps).toHaveLength(14);
+    // À l'écran : les neuf étapes du client ; le repère interne reste disponible pour le Studio.
+    expect(view.journey.current).toBe(1);
+    expect(view.journey.internal).toBe(0);
+    expect(view.journey.steps).toHaveLength(9);
+    expect(view.journey.steps[0]).toMatchObject({ n: 1, fr: "Faire connaissance", status: "doing", ready: true });
+    expect(view.journey.steps[6]).toMatchObject({ n: 7, fr: "La communication", status: "todo", ready: false });
     run("SELECT 1");
   });
   it("essai réel du 14 novembre 2026, SINA seule : une question posée attend sa réponse, nom provisoire neutre, pas de nom d'entreprise demandé, nombre exact d'identités", async () => {

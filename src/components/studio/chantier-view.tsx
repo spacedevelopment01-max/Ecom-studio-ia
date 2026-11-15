@@ -1,7 +1,7 @@
 "use client";
 /**
  * Mode chantier (#492) : page Pilote pendant que SINA construit le projet. Le client suit l'avancée en direct
- * (étapes 0 à 13, ce qu'il a dit à SINA) ; les changements se demandent à SINA dans la conversation.
+ * (ses neuf étapes, ce qu'il a dit à SINA) ; les changements se demandent à SINA dans la conversation.
  */
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";

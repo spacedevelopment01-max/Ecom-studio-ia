@@ -540,7 +540,7 @@ function contrastText(bg: string, dark: string, light: string) {
 }
 const WORKING = ["queued", "running", "waiting_jobs"];
 
-/** Frise du chantier : les étapes 0 à 13 du parcours de création, leur état, l'étape en cours. */
+/** Frise du chantier : les neuf étapes du parcours de création, leur état, l'étape en cours. */
 function JourneyBar({ journey, compact }: { journey: NonNullable<View["journey"]>; compact: boolean }) {
   const t = useT();
   const cur = journey.steps.find((s) => s.n === journey.current);
@@ -548,7 +548,7 @@ function JourneyBar({ journey, compact }: { journey: NonNullable<View["journey"]
   return (
     <div className="border-b border-line px-3 py-2" data-syna-journey>
       <div className="flex items-center justify-between gap-2 text-xs">
-        <span className="font-medium">{started ? `${t("Étape", "Step")} ${journey.current}` : t("Prochaine étape", "Next step")} · {cur ? t(cur.fr, cur.en) : ""}{cur && !started && cur.ready === false ? ` · ${t("bientôt disponible", "coming soon")}` : ""}</span>
+        <span className="font-medium">{started ? `${t("Étape", "Step")} ${journey.current} ${t("sur", "of")} ${journey.steps.length}` : t("Prochaine étape", "Next step")} · {cur ? t(cur.fr, cur.en) : ""}{cur && !started && cur.ready === false ? ` · ${t("bientôt disponible", "coming soon")}` : ""}</span>
         {journey.mode === "refonte" && <span className="text-muted">{t("Refonte · gardé tel quel", "Redesign · kept as is")} : {journey.keep.join(", ")}</span>}
       </div>
       <ol className={cx("mt-1.5 flex gap-1", compact ? "" : "sm:gap-1.5")} aria-label={t("Étapes du parcours", "Journey steps")}>

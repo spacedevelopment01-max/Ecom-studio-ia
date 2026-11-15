@@ -32,7 +32,7 @@ import { budgetState, jobSpentMicro, trackJob, authorizeBudgetPct, DEFAULT_BUDGE
 import { attachmentsOf, attachmentImages, describeAttachment, journeyImages } from "./attachments";
 import { projectSnapshot } from "./snapshot";
 import { SYNA_SYSTEM } from "./prompt";
-import { JOURNEY_STEPS, stepReady, currentStep, journeyContext, journeyOf } from "./journey";
+import { JOURNEY_STEPS, stepReady, currentStep, journeyContext, journeyOf, PHASES, phaseOf, phaseStatus } from "./journey";
 import { shownAngles } from "./angle-roles";
 import { sinaModels } from "./models";
 import { LOGO_STYLE_LABEL, fontFace, groundPresentation, type Identity } from "./identities";
@@ -605,8 +605,9 @@ export function threadView(user: User, cid: string) {
     journey: (() => {
       const j = journeyOf(cid);
       return {
-        current: currentStep(j), mode: j.mode, keep: j.keep,
-        steps: JOURNEY_STEPS.map((s) => ({ n: s.n, fr: s.fr, en: s.en, status: j.steps[s.n]?.status ?? "todo", ready: stepReady(s.n) })),
+        // Le client voit neuf étapes ; « internal » garde le repère interne (0 à 13) pour le Studio.
+        current: phaseOf(currentStep(j)).n, internal: currentStep(j), mode: j.mode, keep: j.keep,
+        steps: PHASES.map((p) => ({ n: p.n, fr: p.fr, en: p.en, status: phaseStatus(j, p), ready: (p.steps as readonly number[]).some((n) => stepReady(n)) })),
         // Étape 1 : la dernière proposition d'identités (cartes du fil), avec les fichiers de leurs vraies polices.
         identities: j.identities ? {
           round: j.identities.round, issues: j.identities.issues, chosen: j.identityChoice ?? null,

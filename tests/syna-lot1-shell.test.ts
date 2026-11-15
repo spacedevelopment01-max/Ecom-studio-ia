@@ -48,10 +48,18 @@ const navHrefs = (html: string) => {
 };
 
 describe("activation de la coquille", () => {
-  it("fermée par défaut : sans STUDIO_SYNA_SHELL=1, le Studio reste celui d'aujourd'hui", () => {
-    expect(synaShellAvailable({})).toBe(false);
-    expect(studioShellVariant({}, "syna")).toEqual({ available: false, variant: "classic" });
-    expect(studioShellVariant({ STUDIO_SYNA_SHELL: "true" }, undefined).variant).toBe("classic");
+  it("SINA est ouverte à tous : seule la valeur 0 la ferme (arrêt d'urgence)", async () => {
+    const { synaAgentEnabled } = await import("@/lib/syna-agent/enabled");
+    const before = process.env.STUDIO_SYNA_AGENT;
+    try {
+      delete process.env.STUDIO_SYNA_AGENT; expect(synaAgentEnabled()).toBe(true);
+      process.env.STUDIO_SYNA_AGENT = "0"; expect(synaAgentEnabled()).toBe(false);
+    } finally { if (before === undefined) delete process.env.STUDIO_SYNA_AGENT; else process.env.STUDIO_SYNA_AGENT = before; }
+  });
+  it("ouverte pour tous : le Studio s'ouvre sur SINA ; seule la valeur 0 revient aux anciens écrans (arrêt d'urgence)", () => {
+    expect(synaShellAvailable({})).toBe(true);
+    expect(studioShellVariant({}, undefined)).toEqual({ available: true, variant: "syna" });
+    expect(studioShellVariant({ STUDIO_SYNA_SHELL: "0" }, "syna")).toEqual({ available: false, variant: "classic" });
   });
   it("ouverte par l'installation, avec retour à l'interface actuelle sur cet appareil", () => {
     expect(studioShellVariant({ STUDIO_SYNA_SHELL: "1" }, undefined)).toEqual({ available: true, variant: "syna" });
