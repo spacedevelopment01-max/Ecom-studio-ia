@@ -15,13 +15,15 @@ import { z } from "zod";
 import { UserFacingError, getJob, type JobContext } from "../jobs";
 import { json as parseJson } from "../db";
 import { L } from "../i18n-server";
-import { assetData, getAsset } from "../library";
+import sharp from "sharp";
+import { assetData, getAsset, saveAsset } from "../library";
+import { CostCapReached } from "../ai/trace";
 import { loadProject, saveBrand } from "../projects";
 import { chooseLogoV2 } from "../logo-v2/choose";
 import { cleanArtwork } from "../logo-v2/artwork";
 import type { Territory } from "../logo-v2/types";
 import type { ChainAi } from "./brand-chain";
-import { CREATED_SLOTS, ImagerySchema, clientLogoOf, runBoardImages, type ImageSlot, type Imagery } from "./brand-images";
+import { CREATED_SLOTS, ImagerySchema, clientLogoOf, logoOnWhite, onWhite, runBoardImages, type ImageSlot, type Imagery } from "./brand-images";
 import { buildBrandKit } from "./brand-kit";
 import type { Route } from "./brand-routes";
 import { journeyOf, setStep, updateJourney, type Journey } from "./journey";
@@ -59,6 +61,16 @@ function proposalImagery(j: Journey, x: Route): Imagery | undefined {
     return r?.success ? r.data : undefined;
   } catch { return undefined; }
 }
+
+/** Demande du symbole seul : le signe du logo, isolé (ou sa lettre la plus reconnaissable quand le logo n'a pas de signe). */
+export const symbolPrompt = (x: Route) => [
+  `Voici le logo de la marque « ${x.name} » (image de référence). Crée son SYMBOLE SEUL, celui qui servira d'icône de site et d'avatar : reprends EXACTEMENT le signe du logo (le même dessin, les mêmes traits, les mêmes couleurs), sans le nom ni aucun autre texte.`,
+  "Si le logo n'a pas de signe à côté du nom, prends sa lettre la plus reconnaissable, dessinée exactement comme dans le logo (même forme, même graisse, même couleur).",
+  "Simplifie seulement ce qu'il faut pour qu'il reste lisible en tout petit (16 pixels) : formes pleines, peu de détails. On doit reconnaître le logo au premier regard.",
+  "Un seul symbole, centré, à plat, sur un fond BLANC uni jusqu'aux bords, avec de l'air autour. Ni cadre, ni rond autour, ni ombre, ni maquette.",
+].join("\n");
+const SYMBOL_REVIEW = "Tu contrôles le symbole d'une marque avant qu'il serve d'icône de site. Compare-le au logo fourni. ok = true seulement si : c'est bien le signe du logo (ou une lettre du nom dessinée comme dans le logo), reconnaissable au premier regard, dans ses couleurs ; il est seul, sans le nom entier ni autre texte ; il resterait lisible en tout petit. Sinon ok = false et why dit le défaut en une phrase simple, à la première personne. Réponds UNIQUEMENT avec l'objet JSON {\"ok\": true, \"why\": \"\"}.";
+const SymbolReviewSchema = z.object({ ok: z.boolean(), why: z.string().max(300).default("") });
 
 export const FinishPayload = z.object({ slots: z.array(z.enum(CREATED_SLOTS)).optional(), guidance: z.string().max(1500).optional() });
 
@@ -115,6 +127,33 @@ export async function runBrandFinish(o: {
     logos = [logo]; logoChoice = { source: "A", assetId, at: Date.now() };
   }
 
+  // 2 bis. Le symbole seul, tiré du LOGO (retour du propriétaire du 15 novembre 2026 : « ça doit reprendre le logo pour en
+  // faire un vrai favicon qui a une corrélation avec le logo » ; avant, le Studio dessinait une initiale dans un rond).
+  // OpenAI reçoit le logo et en isole le signe ; relu avant d'être gardé. Le favicon et l'avatar de la charte en partent.
+  const brandNow = loadProject(o.projectId).brand, mainLogo = brandNow?.logo.assetId ? getAsset(brandNow.logo.assetId) : undefined;
+  const symbolDone = (j.brandFinish as { symbolFor?: string } | undefined)?.symbolFor;
+  let symbolFor = symbolDone;
+  if (brandNow && mainLogo && !mainLogo.deleted_at && symbolDone !== mainLogo.id && !(logos[0]?.kind === "planche")) {
+    ctx.progress(0.85, L("Je tire le symbole de ton logo", "Deriving the symbol from your logo"));
+    try {
+      const made = await ctx.step(`brand:symbol:${round}:${mainLogo.id}`, async () => {
+        const logoPng = await onWhite(assetData(mainLogo));
+        const data = await ai.draw(`symbol-${round}`, { prompt: symbolPrompt(current), aspect: "1:1", logo: logoPng });
+        const png = await sharp(data).png().toBuffer();
+        if (!(await logoOnWhite(png))) return { ok: false as const, why: L("il n'est pas sur un fond blanc net", "it is not on a clean white background") };
+        const seen = await ai.look(`symbolcheck-${round}`, { system: SYMBOL_REVIEW, schema: SymbolReviewSchema, prompt: `Marque : « ${current.name} ». Image 1 : le symbole proposé. Image 2 : le logo de la marque.`, images: [{ data: png, label: "symbole" }, { data: logoPng, label: "logo" }] });
+        if (!seen.ok) return { ok: false as const, why: seen.why.replace(/\.+$/, "") || L("il ne reprend pas le logo", "it does not match the logo") };
+        const asset = await saveAsset({ projectId: o.projectId, userId: o.userId, data: await cleanArtwork(png), name: "symbole.png", mime: "image/png", role: "logo-mark", folderKey: "brand.logos", origin: "generated", sourceAssetId: mainLogo.id, meta: { engine: "syna-brand-symbol" } });
+        return { ok: true as const, id: asset.id };
+      });
+      if (made.ok) { const b2 = loadProject(o.projectId).brand!; saveBrand(o.projectId, { ...b2, logo: { ...b2.logo, markAssetId: made.id } }); symbolFor = mainLogo.id; }
+      else issues.push(L(`Je n'ai pas gardé le symbole tiré de ton logo (${made.why}) : ton favicon reprend ton logo entier en attendant. Je peux le refaire, je t'annonce son prix avant.`, `I did not keep the symbol derived from your logo (${made.why}).`));
+    } catch (e) {
+      if (!(e instanceof CostCapReached)) notes.push(`symbole non créé : ${String((e as Error)?.message ?? e).slice(0, 140)}`);
+      issues.push(L("Je n'ai pas pu tirer le symbole de ton logo : ton favicon reprend ton logo entier en attendant.", "I could not derive the symbol from your logo."));
+    }
+  }
+
   // 3. La charte complète (gratuite, rendue par le Studio). Le slogan choisi est validé : la planche et la charte l'écrivent.
   ctx.progress(0.9, L("Je prépare ta charte", "Preparing your brand guidelines"));
   const b = loadProject(o.projectId).brand;
@@ -125,7 +164,7 @@ export async function runBrandFinish(o: {
   }
 
   updateJourney(o.conversationId, (x) => {
-    x.brandFinish = { ...(x.brandFinish ?? {}), prepaidMicro: 0, ...(images ? { images } : {}), at: Date.now(), issues: [...new Set(issues)], logoFrom: from } as Journey["brandFinish"];
+    x.brandFinish = { ...(x.brandFinish ?? {}), prepaidMicro: 0, ...(images ? { images } : {}), at: Date.now(), issues: [...new Set(issues)], logoFrom: from, ...(symbolFor ? { symbolFor } : {}) } as Journey["brandFinish"];
     if (!keptLogo && logoChoice) { x.logos = { list: logos, at: Date.now(), round: (x.logos?.round ?? 0) + 1, notes: [] }; x.logoChoice = logoChoice; setStep(x, 2, "done"); }
     if (kit) { x.brandKit = kit; setStep(x, 3, "review"); } else setStep(x, 3, "todo");
   });

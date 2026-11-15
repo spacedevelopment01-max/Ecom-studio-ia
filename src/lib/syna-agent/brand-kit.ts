@@ -92,10 +92,10 @@ export async function buildBrandKit(projectId: string): Promise<BrandKit> {
   const save = (role: string, name: string, data: Buffer) => saveAsset({ projectId, userId: p.userId, data, name, mime: "image/png", role, folderKey: "brand.logos", origin: "generated", sourceAssetId: main.id, meta: { engine: "syna-brand-kit" } });
   const detailed = await isDetailedSolidMark(markData).catch(() => false);
   if (detailed) {
-    notes.push(L("Favicon 32 px : l'illustration est trop détaillée pour cette taille ; il reprend l'initiale de la marque, dans sa police et ses couleurs.", "32 px favicon: the illustration is too detailed; it uses the brand initial."));
+    notes.push(L("Favicon 32 px : ton symbole est très détaillé pour cette taille ; regarde s'il reste lisible dans l'onglet du navigateur.", "32 px favicon: your symbol is very detailed for this size."));
     notes.push(L("Versions une couleur (noir, blanc) : une illustration aussi détaillée y perd ses détails ; à garder pour les usages où une seule couleur est imposée (tampon, gravure).", "One-colour versions lose the illustration's details."));
   }
-  if (!derived("favicon-32")) await save("favicon-32", "favicon-32.png", detailed ? initialFavicon(b.name, b.palette, canvasFamily(b.fonts.heading, "Inter"), 32) : await faviconPng(markData, 32));
+  if (!derived("favicon-32")) await save("favicon-32", "favicon-32.png", await faviconPng(markData, 32));
   if (!derived("favicon-512")) await save("favicon-512", "icone-512.png", await faviconPng(markData, 512));
   if (!derived("social-avatar")) await save("social-avatar", "avatar-reseaux.png", await avatarPng(markData, b.palette.light && b.palette.light !== "#000000" ? b.palette.light : "#FFFFFF"));
   if (!derived("logo-svg")) {

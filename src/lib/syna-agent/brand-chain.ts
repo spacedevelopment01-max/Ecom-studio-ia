@@ -169,7 +169,12 @@ export function boardImagesQuote(routes: number, settings?: ChainSettings, slots
  * trois publications), leur relecture, et la direction artistique si elle doit être réécrite. Le logo adopté, ses
  * déclinaisons et la charte sont rendus par le Studio, sans IA.
  */
-export const finishQuote = (slots: readonly ImageSlot[] = FINISH_SLOTS, settings?: ChainSettings): ChainQuote => boardImagesQuote(1, settings, slots);
+export function finishQuote(slots: readonly ImageSlot[] = FINISH_SLOTS, settings?: ChainSettings): ChainQuote {
+  const q = boardImagesQuote(1, settings, slots);
+  // Le symbole seul, tiré du logo : une image carrée avec le logo en référence (sa relecture est déjà comptée avec celle des images).
+  const unit = imageUnitMax("1:1", 1);
+  return { maxMicro: q.maxMicro + unit, ...(q.probableMicro ? { probableMicro: Math.ceil(q.probableMicro + unit / 1.25) } : {}) };
+}
 
 // ---------------------------------------------------------------- formes rendues par les spécialistes
 
