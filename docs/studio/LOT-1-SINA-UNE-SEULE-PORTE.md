@@ -5,8 +5,8 @@ plafond 9 €.
 
 ## Ce qui est construit
 
-- **SINA ouverte à tous** : `synaAgentEnabled()` et la coquille SINA sont ouvertes par défaut ; les variables
-  `STUDIO_SYNA_AGENT=0` et `STUDIO_SYNA_SHELL=0` ne servent qu'à revenir en urgence aux anciens écrans.
+- **SINA ouverte à tous** : `synaAgentEnabled()` est vrai par défaut ; `STUDIO_SYNA_AGENT=0` ne sert qu'à l'arrêter en
+  urgence (l'accueil dit alors « SINA revient dans un instant » ; aucune autre façon de créer un projet n'existe).
 - **Sa réflexion** : le modèle le plus fort à toutes les étapes et pour tous les forfaits (un seul endroit :
   `src/lib/syna-agent/models.ts`) ; elle réfléchit plus longtemps quand elle présente un résultat, explique un échec,
   répond à un client mécontent ou juge un site monté ; ses trois aides (`sina.conversation`) sont allumées par défaut.
@@ -59,12 +59,42 @@ rejouée après les corrections.
   `theme211-render-evidence`, qui impose un navigateur absent de la machine de travail ; il appartient à l'ancien agent).
   Après l'ouverture à tous, les neuf étapes et les corrections de l'essai : compilation et tests de SINA relancés, pas
   toute la suite.
-- Écran regardé en capture sur ordinateur et sur téléphone (parcours en neuf étapes, SINA à droite).
+- Après le retrait des anciennes façons et le réglage de l'écran : compilation sans erreur ; suite complète, 4 981
+  tests passés, 1 échec (le même `theme211-render-evidence`, lié à la machine).
+- Écran regardé en capture sur ordinateur (grand et moyen), en sombre et sur téléphone : SINA en grand, tableau de bord
+  à côté, brouillon gardé en changeant d'espace, rien qui déborde. Aucun message n'a été envoyé à SINA pendant ces
+  captures (cela aurait été un appel payant).
 
-## Ce qui reste pour finir le lot (avec l'accord du propriétaire)
+## Les anciennes façons retirées (accord du propriétaire : « Oui »)
 
-1. Retirer les anciennes façons de ce lot : la première conversation (`orchestrator/conversation/`,
-   `api/studio-agent/`), le Pilote, le formulaire de création et les écrans de préparation, leurs tests, leurs scripts
-   de recette et leurs étapes dans les contrôles automatiques.
-2. L'écran : SINA en plus grand d'un côté, le tableau de bord du projet qui se remplit en direct de l'autre (sa
-   demande : que le client voie l'évolution en même temps) ; les anciens noms du menu (« Pilote », « Stratégie »).
+- **L'ancien assistant** (la première conversation) : `orchestrator/conversation/`, `api/studio-agent/`, ses 44
+  écrans, ses tâches `agent.*`, ses tests et ses scripts ; 445 fichiers, environ 26 500 lignes.
+- **Le Pilote, le formulaire de création, la création en dix étapes et la demande en une phrase** : `tab-pilote.tsx`,
+  `workflow-panel.tsx`, `engine/pipeline.ts`, `workflow/`, le formulaire de `home.tsx`, la création par
+  `POST /api/projects`, les tâches `pipeline.run`, `workflow.run`, `plan.run`.
+- **Les écrans de préparation** et les « 20 créations du départ » (`social-v2/initial*`, tâche `social.initial`), que
+  plus rien ne pouvait lancer ; le moteur de préparation reste (SINA s'en sert).
+- **L'ancienne interface** (`StudioShell`, sa pastille, la bascule « Interface actuelle »), le tutoriel vidéo du Pilote.
+- Ensemble : environ 600 fichiers et 40 000 lignes en moins. Un projet ne se crée plus qu'en parlant à SINA.
+
+Gardé dans le doute, à revoir avec le lot concerné : les fonctions du moteur de préparation sans appelant (lot 3), la
+reproduction d'un site existant (`site-reproduce.ts`), le prix « création complète » (lot 6), les outils `pilot.*` de
+SINA. Tables devenues sans usage, non supprimées : `workflows`, `agent_conversation_photo_imports`,
+`agent_conversation_quotes`, `agent_conversation_turns`, `agent_request_bounds`, `agent_request_jobs`.
+
+## L'écran (sa demande : que le client voie l'évolution en même temps)
+
+- La page d'accueil d'un projet est son **tableau de bord** (`syna-agent/dashboard.ts`, `project-dashboard.tsx`) : ses
+  neuf étapes, et sous chacune ce qui existe vraiment (ce qu'il a dit à SINA, sa marque, son angle) ; rien d'inventé.
+- **Pendant la création, SINA est en grand au centre** et le tableau de bord se remplit à droite (`syna-focus.css`) ; au
+  téléphone, la conversation s'ouvre d'elle-même et le bouton « Projet » montre le tableau de bord.
+- Le menu dit « Tableau de bord » et « Angles » ; plus de « Pilote » ni de « Stratégie ».
+- Le fil dit ce que SINA note en une ligne discrète, sans vocabulaire interne (« Ta fiche est validée »).
+
+## Ce qui reste
+
+- Les autres espaces (Marque, Site, Publications…) gardent leurs anciens écrans, avec le vouvoiement : chacun est
+  refait avec son lot.
+- Les cartes de l'accueil affichent encore « À démarrer » pour un projet créé par SINA (l'état du projet n'était avancé
+  que par l'ancienne création) : à régler avec le lot 2.
+- La fusion, seulement après « Je fusionne ? » et son oui.

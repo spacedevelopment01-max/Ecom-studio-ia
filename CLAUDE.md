@@ -27,9 +27,9 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - **Un lot est fini quand SINA le réussit seule, avec la vraie IA, sur plusieurs clients inventés.** Claude ne joue
   que le client (« c'est à sina d'y faire, pas à toi »). Les anciennes façons du lot sont retirées à ce moment-là.
 - Une conversation par lot ; elle commence par la lecture des deux documents ci-dessus.
-- Où on en est : lot 0 (ménage) fait le 15 novembre 2026. Lot 1 construit et essayé pour de vrai le même jour (compte
-  rendu : `docs/studio/LOT-1-SINA-UNE-SEULE-PORTE.md`) ; il reste à retirer les anciennes façons et à régler l'écran,
-  avec son accord. Suite : 2 la marque, 3 les
+- Où on en est : lot 0 (ménage) fait le 15 novembre 2026. Lot 1 fait le même jour : SINA essayée pour de vrai, anciennes
+  façons retirées (ancien assistant, Pilote, formulaire, écrans de préparation), écran réglé (SINA en grand pendant la
+  création, tableau de bord à côté) ; compte rendu : `docs/studio/LOT-1-SINA-UNE-SEULE-PORTE.md`. Suite : 2 la marque, 3 les
   trois angles, 4 le site, 5 les publications automatiques, 6 les forfaits, 7 SINA prend les devants, 8 les
   publicités, 9 les vidéos.
 

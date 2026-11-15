@@ -676,8 +676,8 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
   const pending = v.run?.status === "waiting_confirmation" ? v.run.pending : null;
 
   return (
-    <div className={cx("flex h-full min-h-0 flex-col", compact ? "text-sm" : "")} data-syna-thread>
-      <div className="flex items-center justify-between gap-2 border-b border-line px-3 py-2 text-xs text-muted">
+    <div className={cx("flex h-full min-h-0 flex-col", compact ? "text-sm" : "")} data-syna-thread data-syna-size={compact ? "compact" : "large"}>
+      <div className={cx("flex items-center justify-between gap-2 border-b border-line py-2 text-xs text-muted", compact ? "px-3" : "px-5 sm:px-7")}>
         {budgetEdit == null
           ? <button type="button" className="underline-offset-2 hover:underline" onClick={() => setBudgetEdit(String(v.budget.authorizedPct ?? 10))} data-syna-budget>
               {t("Budget autorisé", "Authorised budget")} : {fmt(v.budget.authorizedPct)} % · {t("engagé", "used")} {fmt(v.budget.spentPct)} %
@@ -687,18 +687,18 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
       </div>
       {v.journey && <JourneyBar journey={v.journey} compact={compact} />}
 
-      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-3 py-3" aria-live="polite">
+      <div className={cx("min-h-0 flex-1 overflow-y-auto", compact ? "px-3 py-3" : "px-5 py-6 sm:px-7")} aria-live="polite"><div className={cx(compact ? "space-y-3" : "mx-auto max-w-3xl space-y-4")}>
         {!items.length && <p className="text-muted">{t("Décris ton objectif, joins une photo, une vidéo ou un document : SINA choisit les outils du Studio, les enchaîne et te montre ce qui a changé.", "Describe your goal or attach a photo, video or document.")}</p>}
         {items.map((it) => it.kind === "user"
-          ? <div key={it.m.id} className="ml-6 rounded-2xl bg-ink px-3 py-2 text-paper" data-syna-user>
+          ? <div key={it.m.id} className={cx("w-fit max-w-[85%] rounded-2xl bg-ink text-paper", compact ? "ml-auto px-3 py-2" : "ml-auto px-4 py-2.5")} data-syna-user>
               <p className="whitespace-pre-wrap">{it.m.content.text}</p>
               {!!it.m.content.attachments?.length && <p className="mt-1 text-xs opacity-80">📎 {it.m.content.attachments.map((aid: string) => v.attachments.find((a) => a.id === aid)?.name ?? aid).join(", ")}</p>}
             </div>
           : it.kind === "assistant"
-          ? <div key={it.m.id} className="mr-4 space-y-2" data-syna-assistant>
-              {!!it.m.content.message && <div className="rounded-2xl border border-line bg-card px-3 py-2"><RichText text={it.m.content.message} /></div>}
-              {it.m.content.question && <div className="rounded-xl border border-accent/40 bg-paper-2 px-3 py-2" data-syna-question>
-                <p className="font-medium">{it.m.content.question.text}</p>
+          ? <div key={it.m.id} className={cx("space-y-2", compact ? "mr-4" : "mr-[8%]")} data-syna-assistant>
+              {!!it.m.content.message && <div className={cx("rounded-2xl border border-line bg-card", compact ? "px-3 py-2" : "px-4 py-3")}><RichText text={it.m.content.message} /></div>}
+              {it.m.content.question && <div className={cx("rounded-2xl border border-signal/40 bg-signal-soft", compact ? "px-3 py-2" : "px-4 py-3")} data-syna-question>
+                <p className={cx("font-medium", !compact && "text-[1.05em]")}>{it.m.content.question.text}</p>
                 {!!it.m.content.question.choices?.length && <div className="mt-2 flex flex-wrap gap-2">{it.m.content.question.choices.map((c: string) => <Button key={c} size="sm" variant="secondary" disabled={busy || working} onClick={() => send(c)}>{c}</Button>)}</div>}
               </div>}
               {it.tools.map((tm) => <div key={tm.id}>
@@ -730,11 +730,11 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
         {working && <p className="text-xs text-muted" data-syna-working>{v.run?.status === "waiting_jobs" ? t("SINA attend la fin d'une création (images, vidéo ou site) puis reprend seule…", "SINA is waiting for a creation to finish…") : t("SINA travaille…", "SINA is working…")}</p>}
         {v.run?.status === "failed" && <p className="text-xs text-red-600">{t("L'exécution s'est arrêtée : ", "The run stopped: ")}{v.run.error}</p>}
         <div ref={end} />
-      </div>
+      </div></div>
 
-      <div className="border-t border-line p-3">
+      <div className={cx("border-t border-line", compact ? "p-3" : "px-5 py-4 sm:px-7")}><div className={cx(!compact && "mx-auto max-w-3xl")}>
         {!!files.length && <div className="mb-2 flex flex-wrap gap-1">{files.map((f) => <span key={f.id} className="rounded-full border border-line px-2 py-0.5 text-xs">{f.kind === "video" ? "🎬" : f.kind === "image" ? "🖼" : "📄"} {f.name} <button type="button" aria-label={t("Retirer", "Remove")} onClick={() => setFiles((x) => x.filter((y) => y.id !== f.id))}>×</button></span>)}</div>}
-        <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={compact ? 3 : 4} maxLength={8000} placeholder={t("Ta demande, même avec plusieurs modifications…", "Your request, even with several changes…")} aria-label={t("Message à SINA", "Message to SINA")}
+        <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={compact ? 3 : 4} maxLength={8000} placeholder={t("Écris à SINA…", "Write to SINA…")} aria-label={t("Message à SINA", "Message to SINA")}
           onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); send(); } }} />
         <div className="mt-2 flex items-center justify-between gap-2">
           <input ref={fileInput} type="file" accept={ACCEPT} multiple className="sr-only" aria-label={t("Joindre des fichiers", "Attach files")} onChange={(e) => attach(e.target.files)} />
@@ -742,7 +742,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
           <Button size="sm" onClick={() => send()} disabled={busy || working || !text.trim()}>{t("Envoyer", "Send")}</Button>
         </div>
         {error && <p className="mt-2 text-xs text-red-600" role="alert">{error}</p>}
-      </div>
+      </div></div>
     </div>
   );
 }
@@ -770,6 +770,9 @@ function ToolResult({ m, projectId, onChoose, busy }: { m: Msg; projectId: strin
   if (READ_TOOLS.test(c.tool) && c.ok) return <p className="text-xs text-muted" data-syna-read={c.tool}>🔎 {c.summary}</p>;
   const mockups: any[] | undefined = c.data?.mockups;
   const changes: any[] = c.changes ?? [];
+  // Prise de connaissance : ce que SINA note dans la fiche du client se dit en une ligne discrète (le détail est sur
+  // son tableau de bord), sans vocabulaire interne.
+  if (c.ok && /^(start\.(answer|note|keep|confirm)|client\.wording)$/.test(c.tool)) return <p className="text-xs text-muted" data-syna-tool={c.tool} data-syna-ok="1" data-syna-noted>✓ {c.summary}</p>;
   return (
     <div className={cx("rounded-xl border px-3 py-2 text-sm", c.ok ? "border-line bg-paper-2" : "border-red-300 bg-red-50 dark:bg-red-950/30")} data-syna-tool={c.tool} data-syna-ok={c.ok ? "1" : "0"}>
       <p className={cx("text-xs font-medium", c.ok ? "text-muted" : "text-red-700")}>{c.ok ? "✓" : "✕"} {c.summary}</p>

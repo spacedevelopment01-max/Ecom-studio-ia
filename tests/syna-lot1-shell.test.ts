@@ -1,6 +1,7 @@
 /**
  * SINA lot 1 (#282) : la coquille SINA du Studio.
- * - n'apparaît que si l'installation l'active (STUDIO_SYNA_SHELL=1), avec retour possible à l'interface actuelle ;
+ * - est la seule interface du Studio (plus d'ancienne interface, plus de bascule) ;
+ * - pendant la création, sur le tableau de bord : SINA en grand au centre, le tableau de bord à côté ;
  * - garde tous les espaces (mêmes adresses, même règle `spaceVisible`, mêmes pastilles) ;
  * - remplace la pastille noire par la colonne SINA et ses onglets, sans seconde conversation ;
  * - n'affiche aucun accès à SINA quand ses drapeaux sont fermés.
@@ -19,9 +20,7 @@ vi.mock("@/components/ui", async (original) => ({ ...(await original<object>()),
 vi.mock("@/components/billing-client", () => ({ useBilling: () => ({ billing: null }), AiUsageBar: () => null, PlanLink: () => null, QuotaBanner: () => null }));
 vi.mock("@/components/studio/syna-thread", () => ({ SynaThread: () => h("div", { "data-syna-thread-mock": "" }) }));
 
-import { studioShellVariant, synaShellAvailable, synaShellCookie } from "@/lib/syna-ui/studio-shell";
 import { SynaStudioShell } from "@/components/studio/syna-shell";
-import { StudioShell } from "@/components/studio/shell";
 import { AgentUiProvider } from "@/components/studio/agent-ui-context";
 import { spaceVisible } from "@/lib/studio-nav";
 
@@ -36,11 +35,10 @@ function project(business: "products" | "services", direction: string | null) {
     logoUrl: null, coverUrl: null, cutoutUrl: null, ai: { llm: false, image: false, video: false }, credits: { usedPct: 0, alert: false, paused: false },
   };
 }
-function render(shell: "syna" | "classic", agentUi: boolean, business: "products" | "services" = "products", direction: string | null = null) {
+function render(_shell: "syna", agentUi: boolean, business: "products" | "services" = "products", direction: string | null = null, building = false) {
   state.data = project(business, direction);
   const child = h("p", { id: "ecran-actuel" }, "Écran de l'espace");
-  const inner = shell === "syna" ? h(SynaStudioShell, { projectId: "p1", children: child }) : h(StudioShell, { projectId: "p1", children: child });
-  return renderToStaticMarkup(h(AgentUiProvider, { enabled: agentUi, children: inner }));
+  return renderToStaticMarkup(h(AgentUiProvider, { enabled: agentUi, children: h(SynaStudioShell, { projectId: "p1", building, children: child }) }));
 }
 const navHrefs = (html: string) => {
   const nav = html.slice(html.indexOf('class="ss-nav"'), html.indexOf("ss-side-foot"));
@@ -56,23 +54,15 @@ describe("activation de la coquille", () => {
       process.env.STUDIO_SYNA_AGENT = "0"; expect(synaAgentEnabled()).toBe(false);
     } finally { if (before === undefined) delete process.env.STUDIO_SYNA_AGENT; else process.env.STUDIO_SYNA_AGENT = before; }
   });
-  it("ouverte pour tous : le Studio s'ouvre sur SINA ; seule la valeur 0 revient aux anciens écrans (arrêt d'urgence)", () => {
-    expect(synaShellAvailable({})).toBe(true);
-    expect(studioShellVariant({}, undefined)).toEqual({ available: true, variant: "syna" });
-    expect(studioShellVariant({ STUDIO_SYNA_SHELL: "0" }, "syna")).toEqual({ available: false, variant: "classic" });
-  });
-  it("ouverte par l'installation, avec retour à l'interface actuelle sur cet appareil", () => {
-    expect(studioShellVariant({ STUDIO_SYNA_SHELL: "1" }, undefined)).toEqual({ available: true, variant: "syna" });
-    expect(studioShellVariant({ STUDIO_SYNA_SHELL: "1" }, "classic")).toEqual({ available: true, variant: "classic" });
-    expect(studioShellVariant({ STUDIO_SYNA_SHELL: "1" }, "syna").variant).toBe("syna");
-    expect(synaShellCookie("classic")).toBe("ecs-syna-shell=classic; path=/; max-age=31536000; samesite=lax");
-  });
-  it("la mise en page du projet choisit la coquille sur le serveur et propose le retour seulement si elle existe", () => {
+  it("une seule interface : la mise en page du projet ne connaît que la coquille de SINA, sans bascule ni ancienne interface", () => {
     const layout = read("src/app/studio/[projectId]/layout.tsx");
-    expect(layout).toContain("studioShellVariant(process.env");
-    expect(layout).toMatch(/synaShell=\{shell\.available \? <SynaShellSwitch to="syna" \/> : undefined\}/);
+    expect(layout).toContain("<SynaStudioShell projectId={projectId} building={building}");
+    expect(layout).not.toMatch(/StudioShell\b(?<!SynaStudioShell)|studioShellVariant|SynaShellSwitch|STUDIO_SYNA_SHELL/);
     // L'accès à SINA suit un seul réglage : SINA ouverte ou fermée sur l'installation.
     expect(layout).toContain("AgentUiProvider enabled={synaAgentEnabled()}");
+    expect(fs.existsSync(path.join(root, "src/lib/syna-ui/studio-shell.ts"))).toBe(false);
+    expect(fs.existsSync(path.join(root, "src/components/studio/syna-dock.tsx"))).toBe(false);
+    expect(read("src/components/studio/shell.tsx")).not.toContain("export function StudioShell");
   });
 });
 
@@ -91,11 +81,14 @@ describe("tous les espaces restent accessibles", () => {
     expect(hrefs).not.toContain("catalogue");
     for (const id of hrefs) expect(spaceVisible(id, { business: "services", direction: "table-saison" })).toBe(true);
   });
-  it("même ensemble d'espaces que l'interface actuelle (outils avancés compris, repliés comme aujourd'hui)", () => {
-    const syna = render("syna", false, "products", null), classic = render("classic", false, "products", null);
-    const all = (html: string) => new Set([...html.matchAll(/href="\/studio\/p1\/([\w-]+)"/g)].map((m) => m[1]));
-    expect([...all(syna)].sort()).toEqual([...all(classic)].sort());
-    expect(syna).toContain("data-nav-advanced");
+  it("les outils avancés restent là, repliés", () => {
+    expect(render("syna", false, "products", null)).toContain("data-nav-advanced");
+  });
+  it("le menu parle de « Tableau de bord » et d'« Angles » : plus de « Pilote » ni de « Stratégie »", () => {
+    const html = render("syna", true);
+    expect(html).toMatch(/data-space="pilote"[\s\S]*?class="ss-link-l">Tableau de bord</);
+    expect(html).toMatch(/data-space="strategie"[\s\S]*?class="ss-link-l">Angles</);
+    expect(html).not.toMatch(/>Pilote<|>Stratégie</);
   });
   it("pastilles conservées : questions sans réponse, publications à valider", () => {
     const html = render("syna", true);
@@ -129,12 +122,6 @@ describe("accès à SINA", () => {
     expect(html).not.toContain('data-variant="tab"');
     expect(html).toContain("data-mobile-nav");
   });
-  it("interface actuelle (retour arrière) : la pastille d'origine est intacte et ouvre le fil de SINA", () => {
-    expect(render("classic", true)).toContain("fixed bottom-24 right-4");
-    const dock = read("src/components/studio/syna-dock.tsx");
-    expect(dock).toContain("<SynaThread key={projectId} projectId={projectId} compact />");
-    expect(read("src/components/studio/shell.tsx")).toContain("<SynaDock projectId={projectId} />");
-  });
   it("le code de la coquille affiche le fil de SINA et n'écrit pas de second moteur", () => {
     const src = read("src/components/studio/syna-shell.tsx");
     expect(src).toContain('import { SynaThread } from "./syna-thread"');
@@ -152,14 +139,52 @@ describe("téléphone et retour arrière", () => {
     expect(bar).toContain(">Espaces<");
     expect(bar).toContain(">Suivi<");
   });
-  it("« Interface actuelle » est proposée dans le menu et dans le pied du menu latéral", () => {
+  it("plus de retour à une « interface actuelle » : il n'y en a qu'une", () => {
     const html = render("syna", true);
-    expect(html.match(/data-syna-shell-switch="classic"/g)?.length).toBeGreaterThanOrEqual(1);
+    expect(html).not.toContain("data-syna-shell-switch");
+    expect(html).not.toMatch(/Interface actuelle|Nouvelle interface/);
   });
   it("la coquille pose les attributs de présentation Encre (point d'extension du lot 1 bis)", () => {
     const html = render("syna", true);
     expect(html).toContain('data-syna-shell="encre"');
     expect(html).toMatch(/class="syna-ui ss-side-scope[^"]*" data-syna-mode="encre"/);
+  });
+});
+
+describe("création en cours : SINA en grand, le tableau de bord à côté", () => {
+  const at = (p: string, fn: () => string) => { const before = state.path; state.path = p; try { return fn(); } finally { state.path = before; } };
+  it("sur le tableau de bord d'un projet en construction : disposition « focus », sans choix de mode ni commande rapide en tête", () => {
+    const html = at("/studio/p1/pilote", () => render("syna", true, "products", null, true));
+    expect(html).toMatch(/data-syna-shell="encre" data-focus=""/);
+    expect(html).toContain("Tableau de bord");
+    expect(html).not.toContain("ss-modeswitch");
+    // Pas de statut de l'ancienne création (« À démarrer ») pendant que SINA construit.
+    expect(html).not.toContain("À démarrer");
+    expect(html).toContain('id="ecran-actuel"');
+  });
+  it("le réglage « Plein cadre » ne s'applique pas à cette disposition", () => {
+    state.data = project("products", null);
+    const html = at("/studio/p1/pilote", () => renderToStaticMarkup(h(AgentUiProvider, { enabled: true, children: h(SynaStudioShell, { projectId: "p1", building: true, initialPrefs: { account: { mode: "plein" }, project: null, updatedAt: 1 }, children: h("p", null, "x") }) })));
+    expect(html).toContain('data-syna-shell="encre"');
+    expect(html).not.toContain("ss-cmd-zone");
+  });
+  it("dans un autre espace, ou une fois la construction finie : la disposition habituelle", () => {
+    expect(render("syna", true, "products", null, true)).not.toContain("data-focus");
+    expect(at("/studio/p1/pilote", () => render("syna", true, "products", null, false))).not.toContain("data-focus");
+    // SINA fermée sur l'installation : jamais de disposition en grand sans conversation.
+    expect(at("/studio/p1/pilote", () => render("syna", false, "products", null, true))).not.toContain("data-focus");
+  });
+  it("la disposition en grand a sa propre feuille, limitée à .ss-root[data-focus]", () => {
+    const css = read("src/components/studio/syna-focus.css").replace(/\/\*[\s\S]*?\*\//g, "");
+    const selectors = [...css.matchAll(/([^{}@]+)\{[^{}]*\}/g)].map((m) => m[1].trim()).filter(Boolean);
+    expect(selectors.length).toBeGreaterThan(8);
+    expect(selectors.filter((x) => !x.startsWith(".ss-root[data-focus]"))).toEqual([]);
+    expect(read("src/components/studio/syna-shell.tsx")).toContain('import "./syna-focus.css";');
+  });
+  it("le fil dit ce que SINA note en une ligne discrète, sans vocabulaire interne", () => {
+    const thread = read("src/components/studio/syna-thread.tsx");
+    expect(thread).toContain("data-syna-noted");
+    expect(read("src/lib/syna-agent/tools/start.ts")).not.toMatch(/summary: L\(`Étape 0/);
   });
 });
 

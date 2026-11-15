@@ -7,6 +7,11 @@
  * la règle `spaceVisible`, les pastilles, la recherche rapide, les tutoriels, les tâches, les notifications, le budget,
  * le forfait, le compte, et la conversation SINA elle-même (le même `SynaThread`, mêmes routes, même fil).
  *
+ * Pendant la création d'un projet, sur son tableau de bord, SINA prend la grande place au centre et le tableau de bord
+ * se remplit à côté (`building`, disposition « data-focus ») : la conversation est alors le travail du moment. Ailleurs,
+ * l'espace de travail reste au centre et SINA en colonne. La disposition ne change que des classes : le fil n'est
+ * jamais recréé.
+ *
  * L'ancienne pastille noire flottante n'est pas affichée ici : SINA est une colonne repliable à droite, avec un onglet
  * signature quand elle est repliée, et l'onglet « Sina » de la barre basse au téléphone. Si SINA est fermée sur
  * l'installation (`STUDIO_SYNA_AGENT=0`), aucun accès à SINA n'apparaît.
@@ -21,10 +26,11 @@
  */
 import "@/components/syna/syna.css";
 import "./syna-shell.css";
+import "./syna-focus.css";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
-import { ChevronDown, LayoutGrid, ListChecks, LogOut, Moon, PanelLeftClose, PanelLeftOpen, Pause, Play, Settings, Shield, SlidersHorizontal, Store, Sun, X, Undo2, Sparkles } from "lucide-react";
+import { ChevronDown, LayoutGrid, ListChecks, LogOut, Moon, PanelLeftClose, PanelLeftOpen, Pause, Play, Settings, Shield, SlidersHorizontal, Store, Sun, X } from "lucide-react";
 import { api, Badge, cx, Logo, useApi } from "../ui";
 import { LangSwitch, useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
@@ -36,7 +42,6 @@ import { ActiveJobs, MobileLangToggle, MobileMenu, Notifications, ProjectSwitche
 import { advancedOpen, navSpace, space, spacePurpose, SPACE_GROUPS } from "@/lib/studio-nav";
 import { SynaProgress, SynaScope, SynaTrigger } from "@/components/syna";
 import { resolveSynaPrefs, SYNA_CONVO_WIDTH, type ResolvedSynaPrefs } from "@/lib/syna-ui/preferences";
-import { synaShellCookie, type StudioShellVariant } from "@/lib/syna-ui/studio-shell";
 import { SynaPrefsProvider, useOptionalSynaPrefs, useSynaPrefs, type StoredSynaPrefs } from "./syna-prefs";
 import { SynaCustomize } from "./syna-customize";
 import { SynaCommandBar, type SynaCommandFeedback } from "./syna-command";
@@ -44,26 +49,6 @@ import { SynaCommandBar, type SynaCommandFeedback } from "./syna-command";
 /** Réglages de présentation effectifs (compte, projet, défaut). Hors fournisseur (rendu isolé) : valeurs par défaut. */
 export function useSynaShellPrefs(): ResolvedSynaPrefs {
   return useOptionalSynaPrefs()?.resolved ?? resolveSynaPrefs();
-}
-
-/** Passer d'une interface à l'autre sur cet appareil (retour arrière immédiat pendant la transition). */
-export function SynaShellSwitch({ to, compact }: { to: StudioShellVariant; compact?: boolean }) {
-  const t = useT();
-  const router = useRouter();
-  const label = to === "classic" ? t("Interface actuelle", "Current interface") : t("Nouvelle interface", "New interface");
-  return (
-    <button
-      type="button"
-      data-syna-shell-switch={to}
-      onClick={() => { document.cookie = synaShellCookie(to); router.refresh(); }}
-      aria-label={compact ? label : undefined}
-      className={compact ? "ss-foot-link" : "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-ink-2 hover:bg-paper-2 hover:text-ink"}
-      title={to === "classic" ? t("Revenir à l'interface actuelle du Studio (sur cet appareil)", "Go back to the current Studio interface (on this device)") : t("Essayer la nouvelle interface SINA (sur cet appareil)", "Try the new SINA interface (on this device)")}
-    >
-      {to === "classic" ? <Undo2 className="size-4 shrink-0" /> : <Sparkles className="size-4 shrink-0" />}
-      {!compact && <span className="truncate">{label}</span>}
-    </button>
-  );
 }
 
 /** Dialogue accessible : focus à l'ouverture, Échap pour fermer, Tab qui reste dedans (si modal), focus rendu à la fermeture. */
@@ -172,15 +157,15 @@ function ModeSwitch() {
 }
 
 /** La coquille SINA, avec ses réglages lus sur le serveur (`initialPrefs`) : aucun clignotement au chargement. */
-export function SynaStudioShell({ projectId, children, initialPrefs = null }: { projectId: string; children: ReactNode; initialPrefs?: StoredSynaPrefs | null }) {
+export function SynaStudioShell({ projectId, children, initialPrefs = null, building = false }: { projectId: string; children: ReactNode; initialPrefs?: StoredSynaPrefs | null; /** SINA construit encore le projet avec le client. */ building?: boolean }) {
   return (
     <SynaPrefsProvider projectId={projectId} initial={initialPrefs}>
-      <ShellInner projectId={projectId}>{children}</ShellInner>
+      <ShellInner projectId={projectId} building={building}>{children}</ShellInner>
     </SynaPrefsProvider>
   );
 }
 
-function ShellInner({ projectId, children }: { projectId: string; children: ReactNode }) {
+function ShellInner({ projectId, children, building }: { projectId: string; children: ReactNode; building: boolean }) {
   const t = useT();
   const { lang } = useLang();
   const pathname = usePathname();
@@ -189,11 +174,13 @@ function ShellInner({ projectId, children }: { projectId: string; children: Reac
   const { id, data, reload } = useProject();
   const prefsCtx = useSynaPrefs();
   const prefs = prefsCtx.resolved;
-  const mode = prefs.mode;
+  const agentUi = useAgentUi();
+  // Création en cours, sur le tableau de bord : SINA au centre, en grand, le tableau de bord à côté (voir l'en-tête).
+  const focus = agentUi && building && tab === "pilote";
+  const mode = focus ? "encre" : prefs.mode;
   const plein = mode === "plein";
   // Les conteneurs suivent l'apparence du Studio (posée sur la page par les réglages) : jamais deux thèmes mélangés.
-  const scopePrefs: ResolvedSynaPrefs = { ...prefs, appearance: "auto" };
-  const agentUi = useAgentUi();
+  const scopePrefs: ResolvedSynaPrefs = { ...prefs, mode, appearance: "auto" };
   const { open, setOpen } = useAgentPanel();
   const status = data ? (STATUS[data.project.status] ?? STATUS.draft) : null;
   const { data: me } = useApi<{ user: { role: string; email: string } }>("/api/me");
@@ -225,8 +212,9 @@ function ShellInner({ projectId, children }: { projectId: string; children: Reac
     setShowAdvanced(next);
     try { localStorage.setItem("ecs-nav-advanced", next ? "open" : "closed"); } catch {}
   };
-  const keysRef = useRef({ toggleFold, plein, update: prefsCtx.update, mode, agentUi, toggleSyna: () => {} });
-  keysRef.current = { toggleFold, plein, update: prefsCtx.update, mode, agentUi, toggleSyna: () => setOpen(!open) };
+  const wideRef = useRef(false);
+  const keysRef = useRef({ toggleFold, plein, update: prefsCtx.update, mode, agentUi, focus, toggleSyna: () => {} });
+  keysRef.current = { toggleFold, plein, update: prefsCtx.update, mode, agentUi, focus, toggleSyna: () => { if (!(focus && wideRef.current)) setOpen(!open); } };
   useEffect(() => {
     // Raccourcis : « [ » replie le menu (Encre), Alt+1…9 change d'espace, Ctrl / ⌘ + Maj + M change de mode,
     // Ctrl / ⌘ + J ouvre ou replie SINA.
@@ -235,6 +223,7 @@ function ShellInner({ projectId, children }: { projectId: string; children: Reac
       const typing = !!el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && !e.altKey && e.key.toLowerCase() === "m") {
         e.preventDefault();
+        if (keysRef.current.focus) return;
         keysRef.current.update({ mode: keysRef.current.mode === "plein" ? "encre" : "plein" });
         return;
       }
@@ -311,17 +300,31 @@ function ShellInner({ projectId, children }: { projectId: string; children: Reac
   }, [mode]);
 
   // ——— SINA : colonne (Encre) ou feuille (Plein cadre) à côté de l'espace de travail dès 1280 px ; par-dessus sinon.
-  const docked = useMedia("(min-width: 1280px)");
   const wide = useMedia("(min-width: 1024px)");
+  const roomy = useMedia("(min-width: 1280px)");
+  // En grand au centre dès l'ordinateur (1024 px) ; en colonne à côté de l'espace de travail à partir de 1280 px.
+  const focusWide = focus && wide;
+  const docked = roomy || focusWide;
+  wideRef.current = wide;
   const [mounted, setMounted] = useState(false);
   const pinnedRef = useRef(prefs.panel);
   pinnedRef.current = prefs.panel;
   useEffect(() => { setOpen(false); setMounted(false); }, [projectId, setOpen]);
   // « Ouverte à l'arrivée » : à l'ordinateur seulement (ailleurs, l'espace de travail d'abord).
   useEffect(() => { if (agentUi && docked && pinnedRef.current === "pinned") setOpen(true); }, [agentUi, docked, projectId, setOpen]);
+  // Création en cours : la conversation s'ouvre d'elle-même sur le tableau de bord (téléphone compris). En quittant le
+  // tableau de bord sur un écran moyen, elle se replie pour ne pas recouvrir l'espace ouvert.
+  const roomyRef = useRef(roomy);
+  roomyRef.current = roomy;
+  const wasFocus = useRef(false);
+  useEffect(() => {
+    if (focus) setOpen(true);
+    else if (wasFocus.current && !(roomyRef.current && pinnedRef.current === "pinned")) setOpen(false);
+    wasFocus.current = focus;
+  }, [focus, projectId, setOpen]);
   useEffect(() => { if (open) setMounted(true); }, [open]);
   const panel = useRef<HTMLElement>(null);
-  const close = () => setOpen(false);
+  const close = () => { if (!focusWide) setOpen(false); };
   const kb = useKeyboardInset();
   useDialogFocus(agentUi && open, panel, close, !docked, () => (docked ? panel.current?.querySelector<HTMLElement>("textarea:not(:disabled)") : null),
     () => [...document.querySelectorAll<HTMLElement>('[aria-controls="syna-panel"], [data-syna-command]')].find((b) => b.getClientRects().length) ?? null);
@@ -418,7 +421,9 @@ function ShellInner({ projectId, children }: { projectId: string; children: Reac
     <div
       data-studio-workspace
       data-syna-shell={mode}
+      data-focus={focus ? "" : undefined}
       className={cx("ss-root min-h-dvh lg:grid", compactNav ? "lg:grid-cols-[72px_minmax(0,1fr)_auto]" : "lg:grid-cols-[252px_minmax(0,1fr)_auto]")}
+      style={{ ["--ss-side-w" as string]: `${sideW}px` } as CSSProperties}
     >
       {/* Menu des espaces (ordinateur) */}
       <SynaScope prefs={scopePrefs} lang={lang} className="ss-side-scope hidden lg:block">
@@ -445,14 +450,13 @@ function ShellInner({ projectId, children }: { projectId: string; children: Reac
             <TutorialsMenuLink tab={tab} business={business} folded={compactNav} />
             <Link href="/studio/compte" className="ss-foot-link" title={compactNav ? t("Mon compte", "My account") : undefined} aria-label={compactNav ? t("Mon compte", "My account") : undefined}><Settings className="size-4 shrink-0" />{!compactNav && <span>{t("Mon compte", "My account")}</span>}</Link>
             {me?.user.role === "admin" && <Link href="/admin" className="ss-foot-link" title={compactNav ? t("Administration", "Admin") : undefined} aria-label={compactNav ? t("Administration", "Admin") : undefined}><Shield className="size-4 shrink-0" />{!compactNav && <span>{t("Administration", "Admin")}</span>}</Link>}
-            <SynaShellSwitch to="classic" compact={compactNav} />
             <button type="button" onClick={async () => { await api("/api/auth/logout", { method: "POST" }); router.push("/"); }} className="ss-foot-link" title={compactNav ? t("Déconnexion", "Log out") : undefined} aria-label={compactNav ? t("Déconnexion", "Log out") : undefined}><LogOut className="size-4 shrink-0" />{!compactNav && <span>{t("Déconnexion", "Log out")}</span>}</button>
           </div>
         </aside>
       </SynaScope>
 
       {/* Espace de travail : les écrans actuels, tels quels */}
-      <div className="min-w-0">
+      <div className="ss-work min-w-0">
         <SynaScope prefs={scopePrefs} lang={lang} className="ss-head-scope" style={plein && synaColumnOpen ? { paddingRight: convoW + 32 } : undefined}>
           <header className="ss-head">
             <Link href="/studio" className="ss-head-logo lg:hidden" aria-label={t("Mes projets", "My projects")}><Logo compact /></Link>
@@ -462,9 +466,9 @@ function ShellInner({ projectId, children }: { projectId: string; children: Reac
                 {group && <span className="ss-crumb-g">{t(...group.label)}</span>}
               </p>
               <div className="ss-title-row">
-                <h1 className="ss-h1">{currentLabel}</h1>
-                {status ? <span className="hidden sm:inline-flex"><Badge tone={status.tone} dot>{lang === "en" ? status.labelEn : status.label}</Badge></span> : <span className="skeleton hidden h-6 w-24 rounded-full sm:inline-flex" aria-hidden />}
-                <span className="ss-title-mode hidden md:inline-flex"><ModeSwitch /></span>
+                <h1 className="ss-h1">{tab === "pilote" ? <><span className="sm:hidden">{t("Projet", "Project")}</span><span className="hidden sm:inline">{currentLabel}</span></> : currentLabel}</h1>
+                {building ? null : status ? <span className="hidden sm:inline-flex"><Badge tone={status.tone} dot>{lang === "en" ? status.labelEn : status.label}</Badge></span> : <span className="skeleton hidden h-6 w-24 rounded-full sm:inline-flex" aria-hidden />}
+                {!focus && <span className="ss-title-mode hidden md:inline-flex"><ModeSwitch /></span>}
               </div>
             </div>
             <div className="ss-tools">
@@ -477,13 +481,14 @@ function ShellInner({ projectId, children }: { projectId: string; children: Reac
               <div className="hidden shrink-0 sm:flex lg:hidden"><LangSwitch /></div>
               <MobileLangToggle />
               {openCustomize}
-              <MobileMenu tab={tab} business={business} isAdmin={me?.user.role === "admin"} billing={gauge} extra={<SynaShellSwitch to="classic" />} />
+              <MobileMenu tab={tab} business={business} isAdmin={me?.user.role === "admin"} billing={gauge} />
             </div>
           </header>
         </SynaScope>
-        <QuotaBanner billing={billing} />
+        <div className="ss-banner"><QuotaBanner billing={billing} /></div>
         <main className="px-4 pb-32 pt-6 sm:px-6 lg:px-8 lg:pb-8" id="studio-main" style={mainStyle}>
-          <SpaceGuide projectId={projectId} tab={tab} />
+          {/* Pendant la construction, c'est SINA qui dit la prochaine étape : pas de second guide à côté. */}
+          {!building && <SpaceGuide projectId={projectId} tab={tab} />}
           {children}
         </main>
       </div>
@@ -513,13 +518,13 @@ function ShellInner({ projectId, children }: { projectId: string; children: Reac
                     aria-label={t("Largeur de la conversation (flèches gauche / droite)", "Conversation width (left / right arrows)")} onPointerDown={startDrag} onKeyDown={keyResize} />
                 )}
                 <div className="ss-panel-h">
-                  <span className="ss-panel-mark"><span className="sy-wordmark">Sina</span><span className="sy-small">{t("une mémoire pour tout le Studio", "one memory across the Studio")}</span></span>
-                  <button type="button" className="ss-icon-btn" onClick={close} aria-label={t("Replier SINA", "Collapse SINA")} title={t("Replier (Échap)", "Collapse (Esc)")}><X className="size-4" /></button>
+                  <span className="ss-panel-mark"><span className="sy-wordmark">Sina</span><span className="sy-small">{focus ? t("on construit ton projet ensemble", "we build your project together") : t("une mémoire pour tout le Studio", "one memory across the Studio")}</span></span>
+                  {!focusWide && <button type="button" className="ss-icon-btn" onClick={close} aria-label={t("Replier SINA", "Collapse SINA")} title={t("Replier (Échap)", "Collapse (Esc)")}><X className="size-4" /></button>}
                 </div>
-                <div className="ss-panel-cmd" hidden={plein}>
+                <div className="ss-panel-cmd" hidden={plein || focus}>
                   <SynaCommandBar variant="inline" agentUi={agentUi} onOpenSyna={openSyna} value={cmdValue} onValue={setCmdValue} feedback={cmdFeedback} onFeedback={setCmdFeedback} />
                 </div>
-                <div className="ss-panel-b"><SynaThread key={projectId} projectId={projectId} compact /></div>
+                <div className="ss-panel-b"><SynaThread key={projectId} projectId={projectId} compact={!focusWide} /></div>
               </aside>
             )}
           </div>
@@ -556,7 +561,7 @@ function ShellInner({ projectId, children }: { projectId: string; children: Reac
             )}
             <button type="button" className="ss-tab" aria-current={!open && !sheet ? "page" : undefined} onClick={() => { setSheet(null); setOpen(false); }}>
               {current ? (() => { const Icon = tabIcon(current, business); return <Icon className="size-5" aria-hidden />; })() : <LayoutGrid className="size-5" aria-hidden />}
-              <span className="ss-tab-l">{currentLabel || t("Aperçu", "Preview")}</span>
+              <span className="ss-tab-l">{tab === "pilote" ? t("Projet", "Project") : currentLabel || t("Aperçu", "Preview")}</span>
             </button>
             <button type="button" className="ss-tab" aria-expanded={sheet === "spaces"} aria-haspopup="dialog" aria-controls="ss-spaces" onClick={() => { setOpen(false); setSheet(sheet === "spaces" ? null : "spaces"); }}>
               <LayoutGrid className="size-5" aria-hidden />

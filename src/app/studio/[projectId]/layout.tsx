@@ -1,12 +1,9 @@
 import { notFound } from "next/navigation";
-import { cookies } from "next/headers";
 import { currentUser } from "@/lib/auth";
 import { one } from "@/lib/db";
 import { ProjectProvider } from "@/components/studio/project-context";
-import { StudioShell } from "@/components/studio/shell";
-import { SynaStudioShell, SynaShellSwitch } from "@/components/studio/syna-shell";
+import { SynaStudioShell } from "@/components/studio/syna-shell";
 import { AgentUiProvider } from "@/components/studio/agent-ui-context";
-import { SYNA_SHELL_COOKIE, studioShellVariant } from "@/lib/syna-ui/studio-shell";
 import { readSynaPrefs } from "@/lib/syna-ui/prefs-store";
 import { synaAgentEnabled } from "@/lib/syna-agent/enabled";
 import { underConstruction } from "@/lib/syna-agent/construction";
@@ -16,17 +13,15 @@ export default async function ProjectLayout({ children, params }: { children: Re
   const { projectId } = await params;
   const user = await currentUser();
   if (!user || !one("SELECT 1 FROM projects WHERE id = ? AND user_id = ? AND archived = 0", projectId, user.id)) notFound();
-  // Mission #282, lot 1 : nouvelle coquille SINA seulement si l'installation l'active (STUDIO_SYNA_SHELL=1), avec retour
-  // possible à l'interface actuelle sur cet appareil. Sans la variable : Studio inchangé. Lot 1 bis : ses réglages
-  // d'affichage (compte, projet) sont lus ici pour s'afficher sans clignotement.
-  const shell = studioShellVariant(process.env, (await cookies()).get(SYNA_SHELL_COOKIE)?.value);
-  // Mode chantier (#492) : le client suit la construction en direct ; les modifications passent par SINA.
-  const page = synaAgentEnabled() && underConstruction(projectId) ? <><ConstructionBanner />{children}</> : children;
+  // Une seule interface : SINA et le projet côte à côte. Pendant la construction, le client suit tout en direct et
+  // demande ses changements à SINA ; le bandeau le rappelle dans les espaces (pas sur le tableau de bord, qui le dit déjà).
+  const building = synaAgentEnabled() && underConstruction(projectId);
   return (
     <AgentUiProvider enabled={synaAgentEnabled()}><ProjectProvider id={projectId}>
-      {shell.variant === "syna"
-        ? <SynaStudioShell projectId={projectId} initialPrefs={readSynaPrefs(user.id, projectId)}>{page}</SynaStudioShell>
-        : <StudioShell projectId={projectId} synaShell={shell.available ? <SynaShellSwitch to="syna" /> : undefined}>{page}</StudioShell>}
+      <SynaStudioShell projectId={projectId} building={building} initialPrefs={readSynaPrefs(user.id, projectId)}>
+        {building && <ConstructionBanner />}
+        {children}
+      </SynaStudioShell>
     </ProjectProvider></AgentUiProvider>
   );
 }

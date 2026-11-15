@@ -13,13 +13,12 @@ const SEEN = (id: string) => `ecs-tuto-seen-${id}`;
 /** Bouton « Tutoriel » de l'en-tête du studio, et conseil de première visite sous l'en-tête. */
 export function TutorialButton({ tab, business }: { tab: string; business?: "products" | "services" }) {
   const t = useT();
+  // Le tableau de bord n'a pas de tutoriel : SINA y guide le client elle-même.
   const id = tutorialFor(tab, business);
   const [open, setOpen] = useState<TutorialId | null>(null);
   const [nudge, setNudge] = useState(false);
   useEffect(() => {
     if (!id) return;
-    // Mode chantier (#492) : pas d'invitation au tutoriel de l'ancien Pilote pendant que SINA construit le projet.
-    if (id === "pilote" && document.querySelector("[data-chantier]")) { setNudge(false); return; }
     try { setNudge(!localStorage.getItem(SEEN(id))); } catch { setNudge(false); }
   }, [id]);
   if (!id || !TUTORIALS[id].steps.length) return null;
@@ -39,13 +38,13 @@ export function TutorialButton({ tab, business }: { tab: string; business?: "pro
   );
 }
 
-/** Entrée « Tutoriels » du menu latéral : ouvre le tutoriel de l'onglet affiché (ou celui du Pilote), avec la liste des autres. */
+/** Entrée « Tutoriels » du menu latéral : ouvre le tutoriel de l'onglet affiché (ou celui de la marque), avec la liste des autres. */
 export function TutorialsMenuLink({ tab, business, folded }: { tab: string; business?: "products" | "services"; folded?: boolean }) {
   const t = useT();
   const [open, setOpen] = useState<TutorialId | null>(null);
   const start = (): TutorialId => {
     const id = tutorialFor(tab, business);
-    return id && TUTORIALS[id].steps.length ? id : "pilote";
+    return id && TUTORIALS[id].steps.length ? id : "marque";
   };
   const label = t("Tutoriels vidéo", "Video tutorials");
   return (

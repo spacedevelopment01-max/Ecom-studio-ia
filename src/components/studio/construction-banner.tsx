@@ -1,9 +1,12 @@
 "use client";
 /** Mode chantier (#492) : bandeau affiché pendant que SINA construit le projet. */
+import { usePathname } from "next/navigation";
 import { useT } from "../i18n";
 
 export function ConstructionBanner() {
   const t = useT();
+  // Sur le tableau de bord, la page le dit déjà : le bandeau ne s'affiche que dans les espaces.
+  if ((usePathname().split("/")[3] ?? "pilote") === "pilote") return null;
   return (
     <div role="status" className="mb-4 rounded-2xl border border-signal bg-signal-soft px-4 py-3 text-sm" data-construction-banner>
       <p className="font-semibold">{t("Ton projet est en construction avec SINA", "Your project is being built with SINA")}</p>

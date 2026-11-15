@@ -16,9 +16,9 @@ export const SPACE_GROUPS: { id: SpaceGroup; label: T2; /** Groupe replié par d
 ];
 
 export const SPACES: { id: SpaceId; group: SpaceGroup; purpose: T2; purposeServices?: T2; /** Espace regroupé dans un autre (sous-menu de celui-ci) : pas d'entrée propre dans le menu. */ within?: SpaceId }[] = [
-  { id: "pilote", group: "projet", purpose: ["Où en est votre projet et la prochaine étape à faire.", "Where your project stands and the next step to take."] },
+  { id: "pilote", group: "projet", purpose: ["Où en est votre projet avec SINA, étape par étape.", "Where your project stands with SINA, step by step."] },
   { id: "produit", group: "creer", purpose: ["Les informations de votre produit : tout le reste s'en sert.", "Your product details: everything else builds on them."], purposeServices: ["Vos prestations, votre zone, vos horaires et vos coordonnées.", "Your services, area, hours and contact details."] },
-  { id: "strategie", group: "creer", purpose: ["Comparer les cinq angles et choisir la stratégie commune au projet.", "Compare five angles and choose the strategy shared across the project."] },
+  { id: "strategie", group: "creer", purpose: ["Les angles de votre marque : à qui vous parlez, avec quelle émotion et quelle promesse.", "Your brand angles: who you speak to, with which emotion and which promise."] },
   { id: "marque", group: "creer", purpose: ["Nom, logo, couleurs et polices : l'identité de toute la marque.", "Name, logo, colours and fonts: the identity of the whole brand."] },
   { id: "boutique", group: "creer", purpose: ["Votre boutique en ligne : aperçu, retouches et mise en ligne.", "Your online store: preview, edits and going live."], purposeServices: ["Votre site : aperçu, retouches et mise en ligne.", "Your website: preview, edits and going live."] },
   { id: "catalogue", group: "creer", purpose: ["Vos produits : photos, prix, variantes, références et stock, saisis une fois ; la boutique, les exports et vos boutiques connectées s'en servent.", "Your products: photos, prices, variants, SKUs and stock, entered once; the store, the exports and your connected stores use them."] },

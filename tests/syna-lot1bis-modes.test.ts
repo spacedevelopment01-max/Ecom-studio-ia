@@ -81,7 +81,8 @@ describe("garanties du code", () => {
   it("une seule conversation, jamais recréée : un seul fil de SINA, hors de toute branche de mode", () => {
     expect(shell.match(/<SynaThread /g)?.length).toBe(1);
     expect(shell).not.toMatch(/ConversationPanel|conversation-panel/);
-    expect(shell).toContain('<div className="ss-panel-cmd" hidden={plein}>');
+    // La commande rapide n'est pas montrée en Plein cadre (elle a sa barre) ni quand SINA est en grand (création).
+    expect(shell).toContain('<div className="ss-panel-cmd" hidden={plein || focus}>');
   });
   it("raccourci Ctrl / ⌘ + Maj + M ; texte et confirmation de commande partagés entre les deux places de la barre", () => {
     expect(shell).toMatch(/\(e\.ctrlKey \|\| e\.metaKey\) && e\.shiftKey && !e\.altKey && e\.key\.toLowerCase\(\) === "m"/);

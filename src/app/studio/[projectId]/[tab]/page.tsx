@@ -2,27 +2,20 @@ import { notFound } from "next/navigation";
 import { TabView } from "@/components/studio/tabs";
 import { currentUser } from "@/lib/auth";
 import { one } from "@/lib/db";
-import { synaAgentEnabled } from "@/lib/syna-agent/enabled";
-import { journeyOfProject, underConstruction } from "@/lib/syna-agent/construction";
-import { FIELD_LABEL, PHASES, START_FIELDS, currentStep, phaseOf, phaseStatus, stepReady } from "@/lib/syna-agent/journey";
-import { ChantierView, type ChantierData } from "@/components/studio/chantier-view";
+import { dashboardOf } from "@/lib/syna-agent/dashboard";
+import { ProjectDashboard } from "@/components/studio/project-dashboard";
 
 const VALID = ["pilote", "produit", "marque", "strategie", "boutique", "catalogue", "biens", "carte", "realisations", "rendez-vous", "images", "videos", "prompts", "publications", "blog", "calendrier", "publicites", "fichiers", "connexions"];
 
 export default async function Page({ params }: { params: Promise<{ tab: string; projectId: string }> }) {
   const { tab, projectId } = await params;
   if (!VALID.includes(tab)) notFound();
-  // Mode chantier (#492) : la page Pilote montre l'avancée du parcours SINA (étapes 0 à 13 et fiche de départ) au lieu
-  // de l'ancien parcours, le temps de la construction.
-  const user = await currentUser();
-  if (tab === "pilote" && user && synaAgentEnabled() && one("SELECT 1 FROM projects WHERE id=? AND user_id=?", projectId, user.id) && underConstruction(projectId)) {
-    const j = journeyOfProject(projectId)!;
-    const data: ChantierData = {
-      current: phaseOf(currentStep(j)).n, mode: j.mode, keep: j.keep,
-      steps: PHASES.map((ph) => ({ n: ph.n, fr: ph.fr, en: ph.en, status: phaseStatus(j, ph), ready: (ph.steps as readonly number[]).some((n) => stepReady(n)) })),
-      fiche: START_FIELDS.filter((f) => j.start[f]).map((f) => ({ fr: FIELD_LABEL[f].fr, en: FIELD_LABEL[f].en, value: j.start[f]!.status === "answered" ? (f === "business" ? (j.start[f]!.value === "services" ? "Des services" : "Des produits") : j.start[f]!.value) : j.start[f]!.status === "later" ? "Plus tard" : "Rien de particulier", later: j.start[f]!.status === "later" })),
-    };
-    return <ChantierView data={data} />;
+  // L'accueil d'un projet est son tableau de bord : ses neuf étapes avec SINA et ce qui existe déjà, relu en direct.
+  if (tab === "pilote") {
+    const user = await currentUser();
+    const data = user && one("SELECT 1 FROM projects WHERE id=? AND user_id=?", projectId, user.id) ? dashboardOf(projectId) : null;
+    if (!data) notFound();
+    return <ProjectDashboard data={data} />;
   }
   return <TabView tab={tab} />;
 }
