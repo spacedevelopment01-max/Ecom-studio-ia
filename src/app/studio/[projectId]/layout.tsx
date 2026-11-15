@@ -6,7 +6,6 @@ import { ProjectProvider } from "@/components/studio/project-context";
 import { StudioShell } from "@/components/studio/shell";
 import { SynaStudioShell, SynaShellSwitch } from "@/components/studio/syna-shell";
 import { AgentUiProvider } from "@/components/studio/agent-ui-context";
-import { conversationUiEnabled } from "@/lib/orchestrator/conversation/ui-enabled";
 import { SYNA_SHELL_COOKIE, studioShellVariant } from "@/lib/syna-ui/studio-shell";
 import { readSynaPrefs } from "@/lib/syna-ui/prefs-store";
 import { synaAgentEnabled } from "@/lib/syna-agent/enabled";
@@ -24,9 +23,9 @@ export default async function ProjectLayout({ children, params }: { children: Re
   // Mode chantier (#492) : le client suit la construction en direct ; les modifications passent par SINA.
   const page = synaAgentEnabled() && underConstruction(projectId) ? <><ConstructionBanner />{children}</> : children;
   return (
-    <AgentUiProvider enabled={conversationUiEnabled() || synaAgentEnabled()}><ProjectProvider id={projectId}>
+    <AgentUiProvider enabled={synaAgentEnabled()}><ProjectProvider id={projectId}>
       {shell.variant === "syna"
-        ? <SynaStudioShell projectId={projectId} initialPrefs={readSynaPrefs(user.id, projectId)} agent={synaAgentEnabled()}>{page}</SynaStudioShell>
+        ? <SynaStudioShell projectId={projectId} initialPrefs={readSynaPrefs(user.id, projectId)}>{page}</SynaStudioShell>
         : <StudioShell projectId={projectId} synaShell={shell.available ? <SynaShellSwitch to="syna" /> : undefined}>{page}</StudioShell>}
     </ProjectProvider></AgentUiProvider>
   );

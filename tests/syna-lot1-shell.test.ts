@@ -17,7 +17,7 @@ vi.mock("next/navigation", () => ({ usePathname: () => state.path, useRouter: ()
 vi.mock("@/components/studio/project-context", () => ({ useProject: () => ({ id: "p1", data: state.data, reload: () => {} }), useOptionalProject: () => ({ id: "p1", data: state.data, reload: () => {} }) }));
 vi.mock("@/components/ui", async (original) => ({ ...(await original<object>()), useApi: () => ({ data: { user: { role: "user", email: "x@example.invalid" } }, reload: () => {} }) }));
 vi.mock("@/components/billing-client", () => ({ useBilling: () => ({ billing: null }), AiUsageBar: () => null, PlanLink: () => null, QuotaBanner: () => null }));
-vi.mock("@/components/studio/conversation-panel", () => ({ ConversationPanel: () => h("div", { "data-conversation-panel": "" }), ConversationDock: () => h("button", { className: "fixed bottom-24 right-4 rounded-full bg-ink" }, "SINA") }));
+vi.mock("@/components/studio/syna-thread", () => ({ SynaThread: () => h("div", { "data-syna-thread-mock": "" }) }));
 
 import { studioShellVariant, synaShellAvailable, synaShellCookie } from "@/lib/syna-ui/studio-shell";
 import { SynaStudioShell } from "@/components/studio/syna-shell";
@@ -71,8 +71,8 @@ describe("activation de la coquille", () => {
     const layout = read("src/app/studio/[projectId]/layout.tsx");
     expect(layout).toContain("studioShellVariant(process.env");
     expect(layout).toMatch(/synaShell=\{shell\.available \? <SynaShellSwitch to="syna" \/> : undefined\}/);
-    // L'interface de l'agent est aussi active quand SINA (agent #492) est activée.
-    expect(layout).toContain("AgentUiProvider enabled={conversationUiEnabled() || synaAgentEnabled()}");
+    // L'accès à SINA suit un seul réglage : SINA ouverte ou fermée sur l'installation.
+    expect(layout).toContain("AgentUiProvider enabled={synaAgentEnabled()}");
   });
 });
 
@@ -119,7 +119,7 @@ describe("accès à SINA", () => {
     expect(html).toContain('aria-controls="syna-panel"');
     expect(html).toContain('aria-expanded="false"');
     // Fermée au premier accès : la conversation n'est montée qu'à l'ouverture (comme l'interface actuelle).
-    expect(html).not.toContain("data-conversation-panel");
+    expect(html).not.toContain("data-syna-thread-mock");
   });
   it("drapeaux SINA fermés : aucun accès à SINA, aucun panneau vide (comme aujourd'hui)", () => {
     const html = render("syna", false);
@@ -129,13 +129,16 @@ describe("accès à SINA", () => {
     expect(html).not.toContain('data-variant="tab"');
     expect(html).toContain("data-mobile-nav");
   });
-  it("interface actuelle (retour arrière) : la pastille d'origine est intacte", () => {
+  it("interface actuelle (retour arrière) : la pastille d'origine est intacte et ouvre le fil de SINA", () => {
     expect(render("classic", true)).toContain("fixed bottom-24 right-4");
+    const dock = read("src/components/studio/syna-dock.tsx");
+    expect(dock).toContain("<SynaThread key={projectId} projectId={projectId} compact />");
+    expect(read("src/components/studio/shell.tsx")).toContain("<SynaDock projectId={projectId} />");
   });
-  it("le code de la coquille réutilise la conversation existante et n'écrit pas de second moteur", () => {
+  it("le code de la coquille affiche le fil de SINA et n'écrit pas de second moteur", () => {
     const src = read("src/components/studio/syna-shell.tsx");
-    expect(src).toContain('import { ConversationPanel } from "./conversation-panel"');
-    expect(src).not.toMatch(/ConversationDock|fetch\(|\/api\/studio-agent/);
+    expect(src).toContain('import { SynaThread } from "./syna-thread"');
+    expect(src).not.toMatch(/ConversationPanel|ConversationDock|fetch\(|\/api\/studio-agent/);
     expect(src).toContain("useAgentPanel()");
   });
 });

@@ -5,16 +5,16 @@
  * Ce qui change : l'habillage (menu des espaces, en-tête, accès à SINA, barre du téléphone).
  * Ce qui ne change pas : les écrans de chaque espace (rendus tels quels, hors du conteneur `.syna-ui`), leurs adresses,
  * la règle `spaceVisible`, les pastilles, la recherche rapide, les tutoriels, les tâches, les notifications, le budget,
- * le forfait, le compte, et la conversation SINA elle-même (le même `ConversationPanel`, mêmes routes, même fil).
+ * le forfait, le compte, et la conversation SINA elle-même (le même `SynaThread`, mêmes routes, même fil).
  *
  * L'ancienne pastille noire flottante n'est pas affichée ici : SINA est une colonne repliable à droite, avec un onglet
- * signature quand elle est repliée, et l'onglet « Sina » de la barre basse au téléphone. Si les drapeaux
- * `STUDIO_CONVERSATION_*` sont fermés, aucun accès à SINA n'apparaît (comme aujourd'hui).
+ * signature quand elle est repliée, et l'onglet « Sina » de la barre basse au téléphone. Si SINA est fermée sur
+ * l'installation (`STUDIO_SYNA_AGENT=0`), aucun accès à SINA n'apparaît.
  *
  * Lot 1 bis : deux présentations du MÊME Studio, au choix et à tout moment —
  * - Encre : menu complet, conversation en colonne à côté de l'espace de travail ;
  * - Plein cadre : menu compact, l'espace de travail d'abord, SINA en barre de commande (zone réservée) et en feuille.
- * Le mode ne change que des classes et des positions : l'arbre des écrans, la conversation (`ConversationPanel`) et la
+ * Le mode ne change que des classes et des positions : l'arbre des écrans, la conversation (`SynaThread`) et la
  * barre de commande ne sont jamais recréés (brouillon, sélection, page, défilement et tâches conservés). Réglages lus
  * et enregistrés par `SynaPrefsProvider` (compte, projet), personnalisation dans `SynaCustomize`, commandes d'affichage
  * locales dans `SynaCommandBar`.
@@ -30,7 +30,6 @@ import { LangSwitch, useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
 import { TutorialButton, TutorialsMenuLink } from "./tutorial";
 import { AiUsageBar, PlanLink, QuotaBanner, useBilling } from "../billing-client";
-import { ConversationPanel } from "./conversation-panel";
 import { SynaThread } from "./syna-thread";
 import { useAgentPanel, useAgentUi } from "./agent-ui-context";
 import { ActiveJobs, MobileLangToggle, MobileMenu, Notifications, ProjectSwitcher, QuickSearch, SpaceGuide, STATUS, TABS, navCtx, spaceBadge, tabIcon, tabLabel, tabsOf, type TabId } from "./shell";
@@ -173,15 +172,15 @@ function ModeSwitch() {
 }
 
 /** La coquille SINA, avec ses réglages lus sur le serveur (`initialPrefs`) : aucun clignotement au chargement. */
-export function SynaStudioShell({ projectId, children, initialPrefs = null, agent = false }: { projectId: string; children: ReactNode; initialPrefs?: StoredSynaPrefs | null; agent?: boolean }) {
+export function SynaStudioShell({ projectId, children, initialPrefs = null }: { projectId: string; children: ReactNode; initialPrefs?: StoredSynaPrefs | null }) {
   return (
     <SynaPrefsProvider projectId={projectId} initial={initialPrefs}>
-      <ShellInner projectId={projectId} agent={agent}>{children}</ShellInner>
+      <ShellInner projectId={projectId}>{children}</ShellInner>
     </SynaPrefsProvider>
   );
 }
 
-function ShellInner({ projectId, children, agent = false }: { projectId: string; children: ReactNode; agent?: boolean }) {
+function ShellInner({ projectId, children }: { projectId: string; children: ReactNode }) {
   const t = useT();
   const { lang } = useLang();
   const pathname = usePathname();
@@ -520,7 +519,7 @@ function ShellInner({ projectId, children, agent = false }: { projectId: string;
                 <div className="ss-panel-cmd" hidden={plein}>
                   <SynaCommandBar variant="inline" agentUi={agentUi} onOpenSyna={openSyna} value={cmdValue} onValue={setCmdValue} feedback={cmdFeedback} onFeedback={setCmdFeedback} />
                 </div>
-                <div className="ss-panel-b">{agent ? <SynaThread key={projectId} projectId={projectId} compact /> : <ConversationPanel key={projectId} projectId={projectId} compact />}</div>
+                <div className="ss-panel-b"><SynaThread key={projectId} projectId={projectId} compact /></div>
               </aside>
             )}
           </div>

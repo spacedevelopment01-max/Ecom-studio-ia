@@ -1,4 +1,3 @@
-import {adDocumentToolsEnabled} from '@/lib/orchestrator/conversation/ad-document-tool-execution';
 import { assertAdvertising } from "@/lib/job-entitlements";
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
@@ -34,7 +33,7 @@ async function review(p: Project, doc: AdDocument) {
 async function view(p: Project, docKey: string) {
   const cur = latestDoc(p.id, docKey);
   if (!cur) throw new HttpError(404, L("Création introuvable.", "Creative not found."));
-  return { localAdDocumentCapability:adDocumentToolsEnabled(),docKey, doc: cur.doc, version: cur.version, versions: listVersions(p.id, docKey), ...(await review(p, cur.doc)) };
+  return { docKey, doc: cur.doc, version: cur.version, versions: listVersions(p.id, docKey), ...(await review(p, cur.doc)) };
 }
 
 export const GET = handle(async (req: Request, ctx: DocCtx) => {

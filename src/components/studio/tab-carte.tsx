@@ -8,7 +8,6 @@ import { useState } from "react";
 import { ArrowDown, ArrowUp, Eye, Plus, Save, Send } from "lucide-react";
 import { api, Badge, Button, Card, Empty, Input, Modal, Select, Spinner, Textarea, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
-import { DesignateContentForSyna, useContentChanged } from "./syna-designate-content";
 import { useT } from "../i18n";
 import { MediaPicker } from "./common";
 
@@ -27,7 +26,6 @@ export default function TabCarte() {
   const toast = useToast();
   const { id, data: project } = useProject();
   const { data, reload } = useApi<Carte>(`/api/projects/${id}/carte`);
-  useContentChanged("plats", reload);
   const [editing, setEditing] = useState<Partial<Item> & { categoryId: string } | null>(null);
   const [newCat, setNewCat] = useState("");
   const versionId = project?.theme?.versionId ?? null;
@@ -79,7 +77,6 @@ export default function TabCarte() {
                   <Button size="sm" variant="ghost" aria-label={t("Monter", "Up")} icon={<ArrowUp className="size-4" />} onClick={() => { const n = move(items(c.id).map((x) => x.id), ii, -1); if (n) post({ action: "item-order", ids: n }); }}>{""}</Button>
                   <Button size="sm" variant="ghost" aria-label={t("Descendre", "Down")} icon={<ArrowDown className="size-4" />} onClick={() => { const n = move(items(c.id).map((x) => x.id), ii, 1); if (n) post({ action: "item-order", ids: n }); }}>{""}</Button>
                   <Button size="sm" variant="secondary" onClick={() => setEditing(i)}>{t("Modifier", "Edit")}</Button>
-                  <DesignateContentForSyna type="plats" itemId={i.id} updatedAt={i.updatedAt} label={i.name} />
                   {i.status !== "published" && <Button size="sm" onClick={() => post({ action: "item-status", id: i.id, status: "published" }, t(`« ${i.name} » publié.`, `“${i.name}” published.`))}>{t("Publier", "Publish")}</Button>}
                   {i.status === "published" && <Button size="sm" variant="ghost" onClick={() => post({ action: "item-update", id: i.id, item: { available: !i.available } })}>{i.available ? t("Marquer indisponible", "Mark unavailable") : t("Remettre disponible", "Mark available")}</Button>}
                   {i.status === "published" && <Button size="sm" variant="ghost" onClick={() => post({ action: "item-status", id: i.id, status: "withdrawn" })}>{t("Retirer", "Withdraw")}</Button>}

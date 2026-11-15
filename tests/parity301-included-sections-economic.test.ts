@@ -6,7 +6,7 @@ import {loadProject,saveProduct} from '@/lib/projects';
 import {validatedBrand} from './preparation-mission-fixtures';
 import {setSetting} from '@/lib/settings';
 import {quotaView} from '@/lib/quotas';
-import {seedAgentUiSite} from '../scripts/agent211-ui-fixtures';
+import {seedAgentUiSite} from './site-seed-fixtures';
 import {claimNext} from '@/lib/jobs';
 import {enqueue,JobContext} from '@/lib/jobs';
 import {runForUser} from '@/lib/ai/access';

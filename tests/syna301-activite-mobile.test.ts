@@ -3,7 +3,7 @@
  * Cause : dans la barre collante du bas (flex-wrap), les deux boutons remplissaient la ligne et le message d'état
  * (`flex-1`, base 0) restait sur la même ligne, écrasé à 0 px, son texte dépassant de la fenêtre. À 360 px les boutons
  * passaient à la ligne autrement, d'où l'absence de débordement. Une base minimale fait passer le message à la ligne.
- * Mesure navigateur : scripts/syna301-debordement-mobile.ts (Encre / Plein cadre, 390 / 360 / 1440 px, écrans voisins).
+ * (Le script de mesure navigateur passait par l'ancien assistant ; il est parti avec lui.)
  */
 import {expect,it} from 'vitest';
 import fs from 'node:fs';

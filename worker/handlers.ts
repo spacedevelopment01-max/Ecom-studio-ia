@@ -52,7 +52,6 @@ import { ACTION_STEPS, findStockPhotos, orchestrated, runRequestPlan } from "../
 type Handler = (ctx: JobContext) => Promise<unknown>;
 
 export const handlers: Record<string, Handler> = {
-  "agent.reason": async ctx => (await import('../src/lib/orchestrator/conversation/intelligence')).runCognitiveJob(ctx),
   /** SYNA agent (#492) : une exécution reprenable du fil (raisonnement, outils, vérification). */
   "syna.agent": async (ctx) => (await import("../src/lib/syna-agent/loop")).runAgentJob(ctx),
   // SINA (#492), étape 2 : 3 logos de 3 styles pour l'identité choisie (moteur de logos V2, plafonné au devis).
@@ -67,17 +66,6 @@ export const handlers: Record<string, Handler> = {
   // SINA (#492), étape 6 : thème du Studio monté à la marque du client (textes dans l'angle choisi et images, payant).
   "syna.studio.brand": async (ctx) => (await import("../src/lib/syna-agent/studio-brand")).runStudioBrandJob(ctx),
   "syna.posts.plan": async (ctx) => (await import("../src/lib/syna-agent/posts-plan")).runPostsPlanJob(ctx),
-  "agent.theme.capture": async ctx => (await import('../src/lib/orchestrator/conversation/render-tool-execution')).runRenderCapture(ctx),
-  "agent.ad-document.local": async ctx => (await import('../src/lib/orchestrator/conversation/ad-document-tool-execution')).runAdDocument(ctx),
-  "agent.theme.export": async ctx => (await import('../src/lib/orchestrator/conversation/export-tool-execution')).runNativeExport(ctx),
-  "agent.theme.change": async ctx => (await import('../src/lib/orchestrator/conversation/theme-tool-execution')).runThemeChange(ctx),
-  "agent.catalogue.change": async ctx => (await import('../src/lib/orchestrator/conversation/catalogue-tool-execution')).runCatalogueChange(ctx),
-  "agent.campaign.visual":async ctx=>(await import('../src/lib/orchestrator/conversation/campaign-visual-execution')).runCampaignVisual(ctx),
-  "agent.content.edit":async ctx=>(await import('../src/lib/orchestrator/conversation/content-tool-execution')).runContentTool(ctx),
-  "agent.content.write":async ctx=>(await import('../src/lib/orchestrator/conversation/content-tool-execution')).runContentTool(ctx),
-  "agent.blog.write":async ctx=>(await import('../src/lib/orchestrator/conversation/content-tool-execution')).runContentTool(ctx),
-  "agent.social.produce":async ctx=>(await import('../src/lib/orchestrator/conversation/social-production-execution')).runSocialProduction(ctx),
-  "agent.social.prepare":async ctx=>(await import('../src/lib/orchestrator/conversation/social-tool-execution')).runSocialPreparation(ctx),
   "strategy.prepare":async ctx=>(await import("../src/lib/marketing-strategy/bundle")).runStrategyBundle(ctx),
   "social.initial": async(ctx)=>{
     const {runInitialCreatives}=await import("../src/lib/social-v2/initial");
@@ -85,7 +73,6 @@ export const handlers: Record<string, Handler> = {
   },
   // Création complète : passe par le planner à l'intérieur (étapes déjà acquises sautées, marque existante gardée).
   "pipeline.run": runPipeline,
-  "agent.brand.propose": async (ctx) => (await import("../src/lib/orchestrator/conversation/brand-tool-execution")).runBrandTool(ctx),
   "project.prepare": async (ctx) => (await import("../src/lib/preparation/engine")).runPreparation(ctx),
 
   /** Demande libre du client : intention → plan → moteurs existants (Router V2, barrière de qualité). */
@@ -141,7 +128,6 @@ export const handlers: Record<string, Handler> = {
   },
   /** Image V2 : brief local, recherche multisource ou génération routée, barrière V2, bibliothèque, réutilisation. */
   "image.v2": async (ctx) => {
-    if(ctx.payload.agentImageQuote){const{runAgentImageCreation}=await import('../src/lib/orchestrator/conversation/image-tool-execution');return runAgentImageCreation(ctx);}
     const { runImageEngineV2 } = await import("../src/lib/image-v2/engine");
     const stockOnly=ctx.payload.request?.allowGenerate===false;
     const execute=()=>ctx.payload.nativeImageQuote?import('../src/lib/image-v2/native-approval').then(m=>m.runNativeImageGeneration(ctx)):runImageEngineV2(ctx,ctx.payload.projectId,ctx.payload.request);
@@ -190,7 +176,6 @@ export const handlers: Record<string, Handler> = {
     return runSceneScenario(ctx,ctx.payload.projectId,ctx.payload.request);
   },
   "video.scenes": async (ctx) => {
-    if(ctx.payload.agentVideoGenerationQuote){const {runAgentVideoGeneration}=await import("../src/lib/orchestrator/conversation/video-generation-execution");return runAgentVideoGeneration(ctx);}
     const { runThreeScenes, realThreeScenesDeps } = await import("../src/lib/video-v2/three-scenes");
     const { llmConfigured } = await import("../src/lib/ai/llm");
     const p = loadProject(ctx.payload.projectId);
@@ -201,9 +186,6 @@ export const handlers: Record<string, Handler> = {
   },
   /** Vidéo V2 : nouveau rendu du document enregistré (local, gratuit), rangé dans la bibliothèque. */
   "video.v2.render": async (ctx) => {
-    if(ctx.payload.agentClipQuote){const {runAgentVideoClip}=await import("../src/lib/orchestrator/conversation/video-clip-execution");return runAgentVideoClip(ctx);}
-    if(ctx.payload.agentVoiceQuote){const {runAgentVideoVoice}=await import("../src/lib/orchestrator/conversation/video-voice-execution");return runAgentVideoVoice(ctx);}
-    if(ctx.payload.agentVideoQuote){const {runAgentVideoCreation}=await import("../src/lib/orchestrator/conversation/video-tool-execution");return runAgentVideoCreation(ctx);}
     const { renderLatest } = await import("../src/lib/video-v2/engine");
     const r=await renderLatest(ctx, ctx.payload.projectId, ctx.payload.docKey);
     return {...r,delivery:await videoDelivery(ctx.payload.projectId,r.videoAssetId)};
@@ -242,7 +224,6 @@ export const handlers: Record<string, Handler> = {
 
   /** Logo V2 : territoires créatifs, construction hybride, barrière V2 (aucun mockup avant le choix). */
   "brand.logo.v2": async (ctx) => {
-    if(ctx.payload.agentLogoQuote){const{runAgentLogoCreation}=await import("../src/lib/orchestrator/conversation/logo-tool-execution");return runAgentLogoCreation(ctx);}
     const {runNativeLogo}=await import("../src/lib/logo-v2/native-consent");
     return runNativeLogo(ctx);
   },
@@ -253,7 +234,6 @@ export const handlers: Record<string, Handler> = {
   },
   /** Logo V2 choisi : décision du client, déclinaisons, système de marque. */
   "brand.logo.v2.choose": async (ctx) => {
-    if (ctx.payload.agentLogoSelectionQuote) return (await import("../src/lib/orchestrator/conversation/logo-selection-execution")).runLogoSelection(ctx);
     const { chooseLogoV2 } = await import("../src/lib/logo-v2/choose");
     return chooseLogoV2(ctx, ctx.payload.projectId, ctx.payload.assetId);
   },

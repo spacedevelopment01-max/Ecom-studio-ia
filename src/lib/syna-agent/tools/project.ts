@@ -9,7 +9,7 @@ import { ensureFolders, saveAsset } from "../../library";
 import { initialize, approve, queuePreparation, answerBriefQuestion, editBrief, references, updateOfferFacts } from "../../preparation/engine";
 import { stateOf } from "../../preparation/store";
 import { createQuote, quoteOf } from "../../preparation/quote";
-import { emptyInput } from "../../orchestrator/conversation/store";
+import { emptyInput } from "../../preparation/empty-input";
 import { emptyServiceProfile, SECTOR_IDS, type ProductProfile } from "../../project-types";
 import { getJob, publicJob } from "../../jobs";
 import { getStrategyState, prepareStrategyChange, activateStrategy, stageStrategyModule, proposeStrategies } from "../../marketing-strategy";

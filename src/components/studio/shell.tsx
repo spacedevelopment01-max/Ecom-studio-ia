@@ -14,7 +14,7 @@ import type { BillingView } from "@/lib/plans";
 import { DeleteProjectButton } from "./delete-project";
 import { advancedOpen, navSpace, space, spacePurpose, spaceVisible, SPACE_GROUPS, type SpaceGroup, type SpaceId } from "@/lib/studio-nav";
 import { projectProgress } from "@/lib/project-progress";
-import { ConversationDock } from "./conversation-panel";
+import { SynaDock } from "./syna-dock";
 import { useAgentPanel, useAgentUi } from "./agent-ui-context";
 
 export const TABS = [
@@ -624,7 +624,7 @@ export function StudioShell({ projectId, children, synaShell }: { projectId: str
         </main>
       </div>
       <MobileNav projectId={projectId} tab={tab} business={data?.business} badge={badge} />
-      <ConversationDock projectId={projectId} />
+      <SynaDock projectId={projectId} />
     </div>
   );
 }

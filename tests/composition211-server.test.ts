@@ -1,6 +1,6 @@
 import {describe,it,expect} from 'vitest';
 import {account,project,emptySpend} from './conversation209-fixtures';
-import {seedAgentUiSite} from '../scripts/agent211-ui-fixtures';
+import {seedAgentUiSite} from './site-seed-fixtures';
 import {compositionContext,previewNativeComposition,compositionScope} from '@/lib/theme/composition/server';
 import {currentTheme,saveThemeVersion} from '@/lib/projects';
 import {run} from '@/lib/db';
