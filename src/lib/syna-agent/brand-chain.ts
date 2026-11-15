@@ -204,7 +204,7 @@ const ShortlistSchema = z.object({
     idea: z.string().min(1).max(8), name: z.string().min(1).max(40), detail: z.string().max(240).default(""), second: z.string().max(240).default(""),
     why: z.string().max(400).default(""), trials: z.string().max(400).default(""), risks: z.array(z.string().max(240)).max(5).default([]),
     tone: z.string().max(160).default(""), ground: z.enum(GROUNDS), hue: z.string().max(60).default(""), type: z.string().max(80).default(""), reserve: z.boolean().default(false),
-  })).min(1).max(8),
+  })).min(1).max(10),
 });
 type Pick = z.infer<typeof ShortlistSchema>["routes"][number];
 const JudgeSchema = z.object({
@@ -723,7 +723,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     ...(kept.length ? ["", `# Routes GARDÉES par le client (ne les refais pas ; les nouvelles doivent en différer : autre idée, autre moule de nom, autre fond, autre teinte, autre police)`, ...kept.map((x) => `- ${x.key} « ${x.name} » : ${x.board.idea.belief} (fond ${x.ground}, bouton ${x.palette.primary}, titres ${x.fonts.heading})`)] : []),
     ...(namesOnly ? ["", "# Le client veut SEULEMENT de nouveaux noms : garde l'idée de chaque route, change le nom.", ...previous.filter((x) => todo.includes(x.key)).map((x) => `- ${x.key} : idée « ${x.board.idea.belief} », fond ${x.ground} ; ancien nom « ${x.name} » (à ne pas reproposer)`)] : []),
     ...(imposed.length ? ["", `# Noms CHOISIS par le client : compose une route par nom, dans cet ordre, en reprenant chaque nom lettre pour lettre (trouve à chacun son détail réel et sa deuxième lecture) ; aucune réserve : ${imposed.map((n) => `« ${n} »`).join(", ")}`] : shown.length ? ["", `# Noms déjà montrés au client (jamais reproposés) : ${[...new Set(shown)].join(", ")}`] : []),
-    "", `Compose ${todo.length} route(s) pour ${todo.length > 1 ? "les clés" : "la clé"} ${todo.join(", ")}, dans cet ordre, puis jusqu'à 4 réserves (autant que les noms permis le permettent).`,
+    "", `Compose ${todo.length} route(s) pour ${todo.length > 1 ? "les clés" : "la clé"} ${todo.join(", ")}, dans cet ordre, puis jusqu'à 6 réserves (autant que les noms permis le permettent).`,
   ].join("\n");
   const shortlist = await ctx.step(`brand:shortlist:${round}`, () => ai.ask("shortlist", { kind: "shortlist", system: P.shortlistSystem(kind, todo.length), schema: ShortlistSchema, prompt: shortlistPromptFor(allowed) }));
   // Un nom que la composition aurait pris hors des noms permis est écarté : aucune planche sur un nom non gardé.

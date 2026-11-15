@@ -188,7 +188,9 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
       expect(prompt).toContain(SITE_BRIEF);
       expect(prompt).toContain(`Textes à écrire dans l'image, lettre pour lettre, accents et ponctuation compris : ${[site.headline, site.button].map((w) => `« ${w} »`).join(" ; ")}. Aucun autre texte`);
       expect(prompt).not.toContain(site.text);
-      for (const m of site.menu) expect(prompt).not.toContain(`« ${m} »`);
+      // Les entrées du menu du client sont les SEULS mots permis sur des tuiles ou des pastilles : rien d'inventé.
+      expect(prompt).toContain(`elles ne portent QUE ces mots, écrits tels quels : ${site.menu.map((m) => `« ${m} »`).join(", ")}. N'invente aucune prestation, aucune catégorie, aucune offre.`);
+      expect(prompt).toMatch(/Le logo de l'en-tête est GRAND et net \(au moins un tiers de la largeur de l'écran\)/);
       expect(prompt).toMatch(/Le logo fourni en image de référence est reproduit tel quel/);
       expect(prompt).not.toContain(I.NO_INVENTED_MARK);
       // L'image montre UN téléphone entier, vu de face, sur un fond uni doux (le Studio ne pose plus de cadre autour) ;

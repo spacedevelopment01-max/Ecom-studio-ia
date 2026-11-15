@@ -821,7 +821,8 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(I0.slotTexts(a as any).site).toEqual([a.name, a.board!.site.headline, a.board!.site.button]);
     expect(log.prompts["image-1-A-site"]).toContain(`Textes à écrire dans l'image, lettre pour lettre, accents et ponctuation compris : ${[a.board!.site.headline, a.board!.site.button].map((w) => `« ${w} »`).join(" ; ")}. Aucun autre texte`);
     expect(log.prompts["image-1-A-site"]).not.toContain(a.board!.site.text);
-    for (const m of a.board!.site.menu) expect(log.prompts["image-1-A-site"]).not.toContain(`« ${m} »`);
+    // Les entrées du menu du client sont les seuls mots permis sur des tuiles ou des pastilles, et le relecteur le sait.
+    expect(log.prompts["image-1-A-site"]).toContain(`elles ne portent QUE ces mots, écrits tels quels : ${a.board!.site.menu.map((m) => `« ${m} »`).join(", ")}.`);
     // Un téléphone ENTIER, vu de face, sur un fond uni doux, dessiné par le modèle d'images ; le titre très grand.
     expect(log.prompts["image-1-A-site"]).toMatch(/UN téléphone récent, entier, vu bien de face, posé sur un fond uni très doux, avec une ombre légère/);
     expect(log.prompts["image-1-A-site"]).toMatch(/Le titre est TRÈS grand et occupe une vraie place sur l'écran ; un seul bouton ; très peu de mots\./);

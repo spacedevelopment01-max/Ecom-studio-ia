@@ -154,7 +154,7 @@ Composition de la série :
 - ${count} routes VRAIMENT différentes : des idées différentes (jamais deux fois la même croyance), des noms de moules différents (jamais deux noms construits pareil, jamais le même premier ou dernier mot), des tons différents quand le produit le permet.
 - Seules les idées marquées fortes servent. Un nom faible ne se rattrape pas par une bonne idée : écarte-le.
 - ${groundRule(count)} Donne à chaque route son fond (ground), la famille de teinte de son bouton en mots (hue : « orangé », « bleu nuit », « vert vif »…, jamais deux teintes voisines dans la série) et le caractère de sa police de titres (type : « serif fine contrastée », « grotesque très grasse », « ronde épaisse », « manuscrite »…, jamais deux fois le même).
-- Les réserves (reserve true, jusqu'à 4) servent si un nom se révèle déjà pris : elles ont d'autres noms et, si possible, d'autres idées.
+- Les réserves (reserve true, jusqu'à 6 : donnes-en le plus possible, un nom déjà porté dans le secteur n'est jamais montré s'il reste une réserve libre) servent si un nom se révèle déjà pris : elles ont d'autres noms et, si possible, d'autres idées.
 - Les noms de la liste ont déjà passé un juge sévère : ce sont les SEULS noms permis. N'en invente aucun autre, ne retouche aucun nom ; un nom hors de la liste serait écarté.
 
 Pour chaque route : idea (id de l'idée), name, detail, second, why (la logique du nom en une ou deux phrases simples, dites au client à la première personne de SINA : « Je pars de… »), trials (ce que donnent les épreuves, en une phrase, celle du fondateur comprise), risks (les vrais risques du nom, dits franchement), tone (le ton de la route), ground, hue, type, reserve.
