@@ -1,3 +1,4 @@
+import { underConstruction } from "@/lib/syna-agent/construction";
 import { requireUser } from "@/lib/auth";
 import { all } from "@/lib/db";
 import { handle, ok } from "@/lib/http";
@@ -24,7 +25,8 @@ export const GET = handle(async () => {
     return {
       id: r.id,
       name: r.name,
-      status: r.status,
+      // Un projet que le client construit avec SINA n'est pas « à démarrer » : il est en création.
+      status: r.status === "draft" && underConstruction(r.id) ? "building" : r.status,
       sector: r.sector,
       platform: r.platform,
       business: r.business_type === "services" ? "services" : "products",

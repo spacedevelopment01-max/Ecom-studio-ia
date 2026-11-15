@@ -1,625 +1,145 @@
 "use client";
-import {useNativeLogoConsent} from './native-logo-consent';
-import { MarketingStrategy } from "./marketing-strategy";
-import { AiWait } from "../wait-time";
+/**
+ * Écran « Marque » (lot 2) : la marque du client telle que SINA l'a créée. Un écran pour VOIR, télécharger et demander
+ * un changement ; aucune création n'y est lancée ni payée (tout passe par SINA, qui annonce le prix avant).
+ */
 import { useEffect, useState } from "react";
-import { DirectionThumb } from "./direction-thumb";
-import { paletteSources } from "@/lib/route-palette";
-import { Check, Download, Lock, Sparkles, Trash2, Unlock } from "lucide-react";
-import { api, Badge, Button, Card, cx, Empty, Field, Input, Modal, Textarea, useApi, useToast } from "../ui";
+import { Download, MessageCircle } from "lucide-react";
+import { api, Button, Card, Empty, Textarea, useApi } from "../ui";
 import { useProject } from "./project-context";
-import { AssetThumb, EngineNotice, JobProgress, SectionTitle, useActive, type AssetView } from "./common";
-import type { Brand } from "@/lib/project-types";
-import { ACTIVE_DIRECTIONS, DIRECTIONS, DIRECTIONS_EN } from "@/lib/theme/directions";
-import { themePreviewPath } from "@/lib/theme/theme-fit";
-import { directionPalette } from "@/lib/theme/direction-palettes";
-import { useLang, useT } from "../i18n";
-import { ContentLangPicker, useContentLang } from "./content-lang";
-import { FromSiteBadge } from "./existing-site";
-import { LogoV2Panel } from "./logo-v2-panel";
-import { FullLogoPanel } from "./full-logo-panel";
-import { BrandPropagationCard } from "./brand-propagation-card";
+import { SectionTitle } from "./common";
+import { useT } from "../i18n";
+import { useAgentPanel } from "./agent-ui-context";
+import type { BrandSheet } from "@/lib/syna-agent/brand-sheet";
 
-const PALETTE_LABEL: Record<string, { fr: string; en: string }> = {
-  primary: { fr: "Principale", en: "Primary" },
-  secondary: { fr: "Secondaire", en: "Secondary" },
-  accent: { fr: "Accent", en: "Accent" },
-  light: { fr: "Clair", en: "Light" },
-  dark: { fr: "Sombre", en: "Dark" },
+const ROLE: Record<string, { fr: string; en: string }> = {
+  light: { fr: "Fond", en: "Background" }, dark: { fr: "Texte", en: "Text" }, primary: { fr: "Bouton", en: "Button" },
+  secondary: { fr: "Surface", en: "Surface" }, accent: { fr: "Accent", en: "Accent" },
 };
+/** Couleur de texte lisible sur une couleur de fond (clair ou foncé). */
+function inkOn(hex: string): string {
+  const n = parseInt(hex.slice(1), 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6 ? "#141414" : "#FFFFFF";
+}
 
 export default function TabMarque() {
-  const { id, data, reload } = useProject();
-  const site = data?.settings.existingSite;
-  const toast = useToast();
+  const { id } = useProject();
   const t = useT();
-  const { lang } = useLang();
-  const cl = useContentLang();
-  const [b, setB] = useState<Brand | null>(null);
-  const [dirty, setDirty] = useState(false);
-  // Palette réglée case par case sur une piste : la palette affichée devient exactement celle enregistrée.
-  const [exactPal, setExactPal] = useState<Brand["palette"] | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [regen, setRegen] = useState(false);
-  const [guidance, setGuidance] = useState("");
-  const active = useActive("brand.build");
-  const { data: logos, reload: reloadLogos } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=logo,logo-svg,logo-webp,logo-light,logo-light-svg,logo-light-webp,logo-mono,logo-white,logo-mark,logo-mark-svg,logo-mark-webp,logo-horizontal,logo-horizontal-svg,favicon,brand-board,brand-guide,brand-book`);
-  const { data: ident, reload: reloadIdent } = useApi<{ proposals: Proposal[]; current: string | null; max?: number; provided: boolean; taglines: string[] }>(`/api/projects/${id}/brand/logo`);
-  const [kitTick, setKitTick] = useState(0);
-  const [choosing, setChoosing] = useState<string | null>(null);
-  // Logo : nouvelles pistes ou piste choisie, en tâche de fond (plusieurs minutes avec l'IA) ; l'écran suit la tâche
-  // et se met à jour à la fin (aucune requête longue que le relais d'un codespace pourrait couper).
-  // Logo V2 : son avancement (étapes, échecs) est affiché dans son propre panneau.
-  const logoJobs = useActive("brand.logo").filter((j) => !j.type.startsWith("brand.logo.v2"));
-  const logoPurchase=useNativeLogoConsent(id,()=>{void reload();void reloadIdent();});
-  const chooseLogo = async (b: { proposalId?: string; regenerate?: boolean }) => {
-    if(b.regenerate){await logoPurchase.ask({operation:'generate',style:'auto',renew:true,feedback:''});return;}
-    setChoosing(b.proposalId ?? "regenerate");
+  const { setOpen: openSina } = useAgentPanel();
+  const { data: s, reload } = useApi<BrandSheet>(`/api/projects/${id}/brand/sheet`);
+  const [ask, setAsk] = useState(""), [sending, setSending] = useState(false), [sent, setSent] = useState(""), [error, setError] = useState("");
+  // Tant que SINA travaille sur la marque, l'écran se relit seul.
+  const moving = s?.stage === "proposed" || s?.stage === "chosen" || s?.stage === "finished";
+  useEffect(() => { if (!moving) return; const h = setInterval(() => reload(), 6000); return () => clearInterval(h); }, [moving, reload]);
+  if (!s) return null;
+
+  async function send() {
+    if (!ask.trim()) return;
+    setSending(true); setError("");
     try {
-      const r = await api<{ jobId: string }>(`/api/projects/${id}/brand/logo`, { body: b });
-      toast("ok", b.regenerate ? t("Création de nouvelles pistes lancée : elles apparaissent ici dès qu'elles sont prêtes (quelques minutes avec l'IA).", "New routes are being created: they appear here as soon as they're ready (a few minutes with AI).") : t("Logo en cours d'application : déclinaisons, kit réseaux sociaux et boutique mis à jour dans un instant.", "Applying the logo: variations, social kit and store updated in a moment."));
-      reload();
-      let misses = 0;
-      for (let i = 0; i < 600; i++) {
-        await new Promise((res) => setTimeout(res, 2500));
-        // Coupure passagère (relais d'un codespace : 502, 504…) : la tâche continue, on réessaie sans rien afficher.
-        let job: { status: string; error: string | null };
-        try {
-          ({ job } = await api<{ job: { status: string; error: string | null } }>(`/api/jobs/${r.jobId}`));
-          misses = 0;
-        } catch (e) {
-          if (++misses < 40) continue;
-          throw e;
-        }
-        if (job.status === "done") {
-          toast("ok", b.regenerate ? t("Nouvelles pistes prêtes.", "New routes are ready.") : t("Logo appliqué : déclinaisons créées et boutique mise à jour (nouvelle version).", "Logo applied: variations created and store updated (new version)."));
-          break;
-        }
-        if (job.status === "failed" || job.status === "cancelled") {
-          if (job.status === "failed") toast("bad", job.error || t("La création n'a pas abouti. Réessayez.", "It didn't work out. Please try again."));
-          break;
-        }
-      }
-    } catch (e) {
-      toast("bad", (e as Error).message);
-    } finally {
-      setChoosing(null);
-      reloadIdent();
-      reloadLogos();
-      setKitTick((k) => k + 1);
-      reload();
-    }
-  };
-  useEffect(() => {
-    if (data?.brand && !dirty) setB(data.brand);
-  }, [data?.brand, dirty]);
-  useEffect(() => {
-    if (!active.length) reloadLogos();
-  }, [active.length, reloadLogos]);
-  // Logo V2 choisi : logo, déclinaisons, planche et charte rechargés dès que la tâche d'application est finie.
-  const applying = useActive("brand.logo.v2.choose").length;
-  useEffect(() => {
-    if (!applying) (reloadLogos(), reloadIdent());
-  }, [applying, reloadLogos, reloadIdent]);
-  if (!data) return null;
-  if (!b) return <div className="mx-auto max-w-3xl"><JobProgress job={active[0]} className="mb-6" /><Empty title={t("La marque n'est pas encore créée", "The brand hasn't been created yet")} icon={<Sparkles className="size-5" />}>{t("Elle apparaît ici dès que l'analyse du produit est terminée.", "It will appear here as soon as the product analysis is complete.")}</Empty></div>;
-  const set = (patch: Partial<Brand>) => (setB({ ...b, ...patch }), setDirty(true));
-  const validated = new Set(b.validated);
-  async function save(extra: Record<string, unknown> = {}) {
-    setBusy(true);
-    try {
-      const r = await api<{ recolored?: boolean; siteUpdated?: boolean }>(`/api/projects/${id}/brand`, { method: "PATCH", body: { name: b!.name, tagline: b!.tagline, positioning: b!.positioning, audience: b!.audience, story: b!.story, tone: b!.tone, direction: b!.direction, ...extra } });
-      toast(
-        "ok",
-        r?.recolored
-          ? t("Nouvelles couleurs appliquées partout : logo de la piste, site, bannières, kit réseaux sociaux et charte.", "New colors applied everywhere: route logo, site, banners, social media kit and brand guide.")
-          : r?.siteUpdated
-            ? t("Marque enregistrée : votre site a pris les nouvelles couleurs. Votre palette est maintenant validée (un nouveau logo ne la changera pas).", "Brand saved: your website now uses the new colors. Your palette is now approved (a new logo won't change it).")
-            : t("Marque enregistrée. Les prochaines créations utiliseront ces choix.", "Brand saved. Everything created next will use these choices."),
-      );
-      reloadLogos();
-      reloadIdent();
-      if (r?.recolored) setKitTick((k) => k + 1);
-      setExactPal(null);
-      setDirty(false);
-      reload();
-    } catch (e) {
-      toast("bad", (e as Error).message);
-    } finally {
-      setBusy(false);
-    }
+      const view = await api<{ conversationId: string }>("/api/syna/open", { body: { projectId: id } });
+      await api(`/api/syna/${view.conversationId}`, { body: { requestId: crypto.randomUUID(), text: ask.trim(), attachmentIds: [] } });
+      openSina(true);
+      window.dispatchEvent(new CustomEvent("syna:refresh"));
+      setSent(ask.trim()); setAsk("");
+    } catch (e) { setError((e as Error).message); } finally { setSending(false); }
   }
-  const toggleValid = (key: string) => save(validated.has(key) ? { unvalidate: [key] } : { validate: [key] });
-  const V = (k: string) => (
-    <button onClick={() => toggleValid(k)} className={cx("inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs", validated.has(k) ? "bg-ok-soft text-ok" : "bg-paper-2 text-muted hover:text-ink")} title={validated.has(k) ? t("Validé : conservé lors des nouvelles propositions", "Approved: kept in new proposals") : t("Valider pour le conserver", "Approve to keep it")}>
-      {validated.has(k) ? <Lock className="size-3" /> : <Unlock className="size-3" />} {validated.has(k) ? t("Validé", "Approved") : t("Valider", "Approve")}
-    </button>
-  );
-  const byRole = (r: string) => (logos?.assets ?? []).find((a) => a.role === r);
-  const routes = (ident?.proposals ?? []).filter((x) => x.route);
+  const talk = <Button icon={<MessageCircle className="size-4" />} onClick={() => openSina(true)}>{t("Parler à SINA", "Talk to SINA")}</Button>;
+
+  if (s.stage === "none") return <Empty title={t("Ta marque se crée avec SINA", "Your brand is created with SINA")} action={talk}>{t("Elle étudie ton marché, cherche l'idée et le nom, puis te montre tes identités en planches de marque. Tu choisis, elle finit ta marque : ton logo, tes couleurs, tes polices, ta charte.", "She studies your market, looks for the idea and the name, then shows you your identities as brand boards. You choose, she finishes your brand: logo, colours, fonts, guidelines.")}</Empty>;
+  if (s.stage === "proposed") return <Empty title={t("Tes identités t'attendent", "Your identities are waiting")} action={talk}>{t("SINA t'a montré tes identités en planches de marque. Choisis celle que tu préfères dans la conversation : elle finit ta marque juste après.", "SINA showed you your identities as brand boards. Choose your favourite in the conversation: she finishes your brand right after.")}</Empty>;
+
+  const light = s.colors.find((c) => c.role === "light")?.hex ?? "#FFFFFF", dark = s.colors.find((c) => c.role === "dark")?.hex ?? "#141414";
+  const faces = [s.fonts.heading, s.fonts.body].filter((f): f is NonNullable<typeof f> => !!f && /^[\w .-]+$/.test(f.family) && /^[\w.-]+$/.test(f.file));
+  const css = faces.map((f) => `@font-face{font-family:"SINA ${f.family}";src:url(/api/syna/fonts/${f.file}) format("truetype");font-weight:${Number(f.weight) || 400};font-display:swap}`).join("");
+  const head = s.fonts.heading ? `"SINA ${s.fonts.heading.family}", serif` : "serif", body = s.fonts.body ? `"SINA ${s.fonts.body.family}", sans-serif` : "sans-serif";
+  const shots = [s.images.object, s.images.signs, ...s.images.posts].filter((x): x is NonNullable<typeof x> => !!x);
+
   return (
-    <div className="@container mx-auto grid min-w-0 max-w-6xl gap-6" data-brand-editor>
-      <MarketingStrategy projectId={id} onChange={reload} />
-      <EngineNotice what={t("la direction de marque et le logo", "the brand direction and logo")} />
-      <AiWait busy={busy} label={t("Mise à jour de la marque (logo, site, charte)…", "Updating the brand (logo, website, guide)…")} waitKey="brand-save" expectedMs={15000} className="mb-4" />
-      {active[0] && <JobProgress job={active[0]} />}
-      {logoJobs[0] && <JobProgress job={logoJobs[0]} />}
-      <BrandPropagationCard />
-      {byRole("logo") && <IdentityBoardCard projectId={id} board={byRole("brand-board") ?? null} onDone={reloadLogos} />}
-      {logoPurchase.dialog}
-      {!ident?.provided && <LogoV2Panel onApplied={() => { reloadLogos(); reloadIdent(); reload(); }} />}
-      {!ident?.provided && <FullLogoPanel onApplied={() => { reloadLogos(); reloadIdent(); reload(); }} />}
-      {!ident?.provided && routes.length > 0 && <LogoRoutes routes={routes} max={ident!.max ?? 3} current={ident!.current} choosing={choosing} locked={validated.has("logo")} onChoose={(k) => chooseLogo({ proposalId: k })} onRegenerate={() => chooseLogo({ regenerate: true })} onDelete={async (k) => { try { await api(`/api/projects/${id}/brand/logo?proposal=${encodeURIComponent(k)}`, { method: "DELETE" }); reloadIdent(); } catch (e) { toast("bad", (e as Error).message); } }} />}
-      <div className="grid min-w-0 gap-6 @[850px]:grid-cols-[minmax(0,1fr)_380px]" data-brand-details-layout>
-        <Card className="min-w-0 p-5 sm:p-7">
-          <SectionTitle title={t("Identité", "Identity")} action={<div className="flex gap-2">{site?.status !== "read" && <Button variant="secondary" size="sm" icon={<Sparkles className="size-4" />} onClick={() => setRegen(true)}>{t("Nouvelle proposition", "New proposal")}</Button>}<Button size="sm" onClick={() => save()} loading={busy} disabled={!dirty}>{t("Enregistrer", "Save")}</Button></div>}>
-            {site?.status === "read" ? (
-              <>
-                <FromSiteBadge site={site} className="mb-1.5" />
-                <span className="block">{t("Nom, logo, couleurs et polices repris de votre site : votre marque reste la vôtre. Le positionnement, la cible et le ton sont proposés pour vos publications et publicités ; ajustez-les librement.", "Name, logo, colors and fonts taken from your website: your brand stays yours. Positioning, audience and tone are suggested for your posts and ads; adjust them freely.")}</span>
-              </>
-            ) : (
-              <>{b.generatedBy === "ai" ? t("Proposée par l'IA à partir du produit.", "Proposed by the AI based on the product.") : t("Base proposée automatiquement : à affiner.", "Automatically suggested starting point: refine as needed.")} {t("Les éléments validés sont conservés lors des nouvelles propositions.", "Approved elements are kept in new proposals.")}</>
-            )}
-          </SectionTitle>
-          {(b.checks?.length ?? 0) > 0 && (
-            <div className="mb-5 rounded-xl border border-line bg-paper-2 p-3 text-sm" role="note">
-              <p className="font-medium">{t("À vérifier par vous", "For you to check")}</p>
-              <ul className="mt-1 list-disc pl-5 text-muted">{b.checks!.map((c) => <li key={c}>{c}</li>)}</ul>
-            </div>
-          )}
-          <div className="grid min-w-0 grid-cols-1 gap-5" data-brand-fields>
-            <div className="grid gap-1.5">
-              <div className="flex items-center justify-between"><label htmlFor="bname" className="text-sm font-medium">{t("Nom de marque", "Brand name")}</label>{V("name")}</div>
-              {b.nameStatus === "proposed" && site?.status !== "read" && <p className="text-xs text-muted">{t("Nom proposé : vérifiez qu'il est libre (INPI, EUIPO, nom de domaine, réseaux sociaux) avant de l'adopter.", "Suggested name: check that it's available (trademark offices, domain name, social handles) before adopting it.")}</p>}
-              <Input id="bname" value={b.name} onChange={(e) => set({ name: e.target.value })} className="font-display text-xl" />
-              {b.alternatives.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  <span className="text-xs text-muted">{t("Autres pistes :", "Other ideas:")}</span>
-                  {b.alternatives.map((n) => <button key={n} onClick={() => set({ name: n })} className="rounded-full border border-line px-2.5 py-0.5 text-xs hover:border-ink">{n}</button>)}
-                </div>
-              )}
-            </div>
-            <div className="grid gap-1.5">
-              <div className="flex items-center justify-between"><label htmlFor="btag" className="text-sm font-medium">{t("Signature", "Tagline")}</label>{V("tagline")}</div>
-              <Input id="btag" value={b.tagline} onChange={(e) => set({ tagline: e.target.value })} placeholder={t("Une phrase courte, sans promesse invérifiable", "A short line, with no unverifiable promise")} />
-              {site?.status !== "read" && (ident?.taglines.length ?? 0) > 0 && (
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  <span className="text-xs text-muted">{t("Autres signatures :", "Other taglines:")}</span>
-                  {ident!.taglines.map((tl) => <button key={tl} onClick={() => set({ tagline: tl })} className="rounded-full border border-line px-2.5 py-0.5 text-xs hover:border-ink">{tl}</button>)}
-                </div>
-              )}
-            </div>
-            <Field label={t("Positionnement", "Positioning")} htmlFor="bpos"><Textarea autoGrow id="bpos" rows={3} value={b.positioning} onChange={(e) => set({ positioning: e.target.value })} /></Field>
-            <Field label={t("Cible", "Audience")} htmlFor="baud"><Textarea autoGrow id="baud" rows={2} value={b.audience} onChange={(e) => set({ audience: e.target.value })} /></Field>
-            <div className="grid gap-4">
-              <Field label={t("Voix", "Voice")} htmlFor="bvoice"><Textarea autoGrow rows={1} id="bvoice" value={b.tone.voice} onChange={(e) => set({ tone: { ...b.tone, voice: e.target.value } })} /></Field>
-              <div className="grid items-start gap-4 sm:grid-cols-2">
-              <Field label={t("À faire", "Do")} htmlFor="bdo" hint={t("Un conseil par ligne.", "One tip per line.")}><LinesArea id="bdo" value={b.tone.do} onChange={(v) => set({ tone: { ...b.tone, do: v } })} /></Field>
-              <Field label={t("À éviter", "Don't")} htmlFor="bdont" hint={t("Un point par ligne.", "One point per line.")}><LinesArea id="bdont" value={b.tone.dont} onChange={(v) => set({ tone: { ...b.tone, dont: v } })} /></Field>
-              </div>
-            </div>
-            <Field label={t("Histoire de la marque", "Brand story")} htmlFor="bstory" hint={t("N'écrivez que des faits réels (origine, fondateurs, fabrication).", "Only write real facts (origin, founders, manufacturing).")}><Textarea autoGrow id="bstory" rows={4} value={b.story} onChange={(e) => set({ story: e.target.value })} /></Field>
-            {(() => {
-              // Palette VERROUILLÉE par la direction : elle ne se modifie pas à la main. Une autre direction choisie (pas
-              // encore enregistrée) est montrée avec ses propres couleurs ; ancienne marque : couleurs de la piste de logo.
-              const saved = data.brand!;
-              const pending = b!.direction !== saved.direction;
-              const src = paletteSources(saved);
-              const pal: Brand["palette"] = pending
-                ? directionPalette(b!.direction)
-                : (Object.fromEntries((Object.keys(saved.palette) as (keyof Brand["palette"])[]).map((k) => [k, saved.palette[src[k]]])) as Brand["palette"]);
-              const dirName = DIRECTIONS.find((d) => d.id === b!.direction)?.name ?? b!.direction;
-              return (
-                <div>
-                  <div className="mb-2 flex items-center justify-between gap-2">
-                    <p className="text-sm font-medium">{t("Palette", "Palette")}</p>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-paper-2 px-2.5 py-1 text-xs text-muted"><Lock className="size-3" /> {saved.paletteMode === "client" && !pending ? t("Vos couleurs", "Your colors") : t(`Direction ${dirName}`, `${dirName} direction`)}</span>
-                  </div>
-                  <div className="grid grid-cols-5 gap-2" data-testid="brand-palette">
-                    {(Object.keys(pal) as (keyof Brand["palette"])[]).map((k) => (
-                      <div key={k} className="grid min-w-0 grid-cols-1 gap-1.5 break-words text-center text-xs">
-                        <span className="h-16 rounded-2xl border border-line" style={{ background: pal[k] }} aria-label={t(`Couleur ${PALETTE_LABEL[k].fr} ${pal[k]}`, `${PALETTE_LABEL[k].en} color ${pal[k]}`)} role="img" />
-                        <span className="text-muted">{t(PALETTE_LABEL[k].fr, PALETTE_LABEL[k].en)}</span>
-                        <span className="font-mono text-[10px]">{pal[k]}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="mt-2 text-xs text-muted">
-                    {pending
-                      ? t(`Couleurs de la direction ${dirName} : enregistrez pour les appliquer à toute la marque (logo, site, charte, visuels).`, `Colors of the ${dirName} direction: save to apply them to the whole brand (logo, website, guide, visuals).`)
-                      : saved.paletteMode === "client"
-                        ? t("Vos couleurs, reprises de votre site. Choisir une autre direction applique ses propres couleurs ; vous pourrez revenir aux vôtres.", "Your colors, taken from your website. Choosing another direction applies its own colors; you can come back to yours.")
-                        : t("Les couleurs sont liées à la direction choisie. Pour changer de couleurs, choisissez une autre direction ci-dessous.", "Colors are tied to the chosen direction. To change colors, choose another direction below.")}
-                  </p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {!pending && saved.clientPalette && saved.paletteMode !== "client" && <Button className="max-w-full" style={{whiteSpace:'normal',height:'auto',minHeight:32}} size="sm" variant="secondary" disabled={busy} onClick={() => save({ paletteMode: "client" })}>{t("Revenir à vos couleurs", "Back to your colors")}</Button>}
-                    {!pending && !saved.paletteMode && <Button className="max-w-full" style={{whiteSpace:'normal',height:'auto',minHeight:32}} size="sm" variant="secondary" disabled={busy} onClick={() => save({ paletteMode: "direction" })}>{t(`Appliquer les couleurs de la direction ${dirName}`, `Apply the ${dirName} direction colors`)}</Button>}
-                  </div>
-                </div>
-              );
-            })()}
+    <div className="space-y-6" data-brand-sheet={s.stage}>
+      <style>{css}</style>
+      {/* La marque, sur ses propres couleurs : son logo, sa signature, sa grande scène. */}
+      <section className="overflow-hidden rounded-3xl border border-line" style={{ background: light, color: dark }} data-brand-head>
+        <div className="grid items-stretch gap-0 md:grid-cols-2">
+          <div className="flex flex-col justify-center gap-3 p-6 sm:p-10">
+            {s.logo
+              ? <span className="inline-flex w-fit max-w-full rounded-2xl bg-white p-4"><img src={s.logo} alt={s.name ?? t("Ton logo", "Your logo")} className="max-h-36 w-auto max-w-full object-contain" data-brand-logo /></span>
+              : <p className="text-5xl leading-none [overflow-wrap:anywhere]" style={{ fontFamily: head, fontWeight: s.fonts.heading?.weight ?? 700 }}>{s.name}</p>}
+            {s.logo && s.name && <p className="text-2xl leading-tight [overflow-wrap:anywhere]" style={{ fontFamily: head, fontWeight: s.fonts.heading?.weight ?? 700 }}>{s.name}</p>}
+            {s.descriptor && <p className="text-xs uppercase tracking-[.14em] opacity-70">{s.descriptor}</p>}
+            {s.slogan && <p className="text-xl leading-snug" style={{ fontFamily: head, fontWeight: s.fonts.heading?.weight ?? 700 }} data-brand-slogan>{s.slogan}</p>}
+            {s.promise && <p className="max-w-prose text-sm leading-relaxed opacity-85" style={{ fontFamily: body }}>{s.promise}</p>}
+            {s.stage === "validated" ? <p className="text-xs font-semibold">✓ {t("Marque validée", "Brand validated")}</p>
+              : s.stage === "chosen" ? <p className="text-xs opacity-75">{t("SINA finit ta marque : ton logo, l'objet qui le porte, tes signes, tes premières publications et ta charte arrivent ici.", "SINA is finishing your brand: your logo, the object carrying it, your signs, your first posts and your guidelines will appear here.")}</p>
+                : <p className="text-xs opacity-75">{t("Ta marque est prête : regarde-la, puis valide-la avec SINA.", "Your brand is ready: have a look, then validate it with SINA.")}</p>}
           </div>
-        </Card>
-        <div className="grid min-w-0 content-start gap-6">
-          <Card className="p-5">
-            <div className="flex items-center justify-between"><h3 className="flex items-center gap-2 font-display text-lg font-semibold">{t("Logo", "Logo")} {b.logo.status === "provided" && b.logo.assetId && <Badge tone="ok">{t("fourni", "provided")}</Badge>}</h3>{V("logo")}</div>
-            <p className="mt-1 text-xs text-muted">{b.logo.concept}</p>
-            {!ident?.provided && (ident?.proposals.length ?? 0) > 0 && !routes.length && (
-              <div className="mt-4">
-                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted">{t("Trois propositions", "Three proposals")}</p>
-                <div className="grid gap-2">
-                  {ident!.proposals.map((pr) => {
-                    const on = ident!.current === pr.id;
-                    return (
-                      <div key={pr.id} className={cx("rounded-2xl border p-2", on ? "border-signal ring-2 ring-signal/30" : "border-line")}>
-                        <div className="flex h-24 items-center justify-center overflow-hidden rounded-xl bg-white p-3"><img src={pr.url} alt={t(`Proposition ${pr.label}`, `Proposal ${pr.label}`)} className="h-full w-full object-contain" /></div>
-                        <div className="mt-2 flex items-start justify-between gap-2 px-1">
-                          <p className="min-w-0 text-xs"><span className="font-semibold">{pr.label}</span> <span className="text-muted">· {pr.concept}</span></p>
-                          <Button size="sm" variant={on ? "secondary" : "primary"} disabled={on || !!choosing || validated.has("logo")} loading={choosing === pr.id} onClick={() => chooseLogo({ proposalId: pr.id })}>{on ? t("Choisi", "Selected") : t("Choisir", "Select")}</Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                <Button size="sm" variant="ghost" className="mt-2" icon={<Sparkles className="size-4" />} loading={choosing === "regenerate"} disabled={validated.has("logo")} onClick={() => chooseLogo({ regenerate: true })}>{t("Recréer les propositions", "Recreate proposals")}</Button>
-                {validated.has("logo") && <p className="mt-1 text-[11px] text-muted">{t("Logo validé : déverrouillez-le pour en changer.", "Logo approved: unlock it to change it.")}</p>}
-              </div>
-            )}
-            <p className="mb-2 mt-5 text-xs font-medium uppercase tracking-wider text-muted">{routes.length ? t("Déclinaisons de la piste choisie", "Variations of the chosen route") : t("Déclinaisons", "Variations")}</p>
-            <div className="grid grid-cols-2 gap-2">
-              {byRole("logo") && <div className="grid place-items-center rounded-2xl border border-line bg-white p-4"><img src={byRole("logo")!.url} alt={t("Logo principal", "Main logo")} className="max-h-20 object-contain" /></div>}
-              {byRole("logo-light") && <div className="grid place-items-center rounded-2xl bg-[#141210] p-4"><img src={byRole("logo-light")!.url} alt={t("Logo clair", "Light logo")} className="max-h-20 object-contain" /></div>}
-              {byRole("logo-mark") && <div className="grid place-items-center rounded-2xl border border-line bg-white p-4"><img src={byRole("logo-mark")!.url} alt={t("Symbole seul", "Symbol only")} className="max-h-20 object-contain" /></div>}
-              {byRole("favicon") && <div className="grid place-items-center rounded-2xl border border-line bg-white p-4"><img src={byRole("favicon")!.url} alt="Favicon" className="size-12 object-contain" /></div>}
-            </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {["logo", "logo-webp", "logo-svg", "logo-horizontal-svg", "logo-light", "logo-light-webp", "logo-light-svg", "logo-mono", "logo-white", "logo-mark", "logo-mark-webp", "logo-mark-svg", "favicon", "brand-board"].map((r) => byRole(r) && (
-                <a key={r} href={byRole(r)!.downloadUrl} className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs hover:border-ink"><Download className="size-3.5" /> {byRole(r)!.name}</a>
-              ))}
-            </div>
-          </Card>
-          <Card className="p-5">
-            <h3 className="font-display text-lg font-semibold">{t("Direction de la boutique", "Store direction")}</h3>
-            <p className="mt-1 text-xs text-muted">{t("Chaque direction a ses propres couleurs.", "Each direction has its own colors.")}</p>
-            {/* Liste défilante sur ordinateur : la page ne s'allonge plus (plus de grand vide à gauche). */}
-            <div className="mt-3 grid grid-cols-2 gap-2 lg:max-h-[min(72dvh,760px)] lg:overflow-y-auto lg:overscroll-contain lg:pr-1" data-testid="direction-list">
-              {[...ACTIVE_DIRECTIONS, ...DIRECTIONS.filter((d) => d.id === b.direction && !ACTIVE_DIRECTIONS.includes(d))].map((d) => (
-                <button key={d.id} onClick={() => set({ direction: d.id })} title={ACTIVE_DIRECTIONS.includes(d) ? undefined : t("Thème retiré du catalogue : conservé pour ce projet seulement.", "Theme withdrawn from the catalogue: kept for this project only.")} className={cx("overflow-hidden rounded-2xl border text-left transition", b.direction === d.id ? "border-signal ring-2 ring-signal" : "border-line hover:border-ink")} aria-pressed={b.direction === d.id}>
-                  <DirectionThumb className="aspect-[4/3]" projectId={id} direction={d.id} version={`${data?.brand?.logo.assetId ?? ""}-${data?.project.updatedAt ?? ""}`} sandbox={data?.previewSandbox} fallback={themePreviewPath(d.id).startsWith("/demo/") ? `/demo/directions/${d.id}${lang === "en" ? ".en" : ""}.jpg` : themePreviewPath(d.id)} />
-                  <span className="flex h-1.5" aria-hidden>{Object.values(directionPalette(d.id)).map((c, i) => <span key={i} className="flex-1" style={{ background: c }} />)}</span>
-                  <span className="block px-2.5 py-1.5 text-xs font-medium">{d.name} <span className="text-muted">· {t(d.tagline, DIRECTIONS_EN[d.id].tagline)}</span></span>
-                </button>
-              ))}
-            </div>
-            <p className="mt-3 text-xs text-muted">{t("Enregistrez puis appliquez la direction depuis l'espace Boutique (une nouvelle version est créée, l'ancienne reste restaurable).", "Save, then apply the direction from the Store tab (a new version is created; the previous one can still be restored).")}</p>
-          </Card>
-          <BrandBook />
+          {s.images.hero && <div className="min-h-56 md:min-h-0"><img src={s.images.hero.url} alt={t("La scène de ta marque", "Your brand's scene")} className="h-full w-full object-cover" data-brand-hero /></div>}
         </div>
-      </div>
-      {routes.length > 0 && <SocialKit tick={kitTick} />}
-      {data.strategy && (
-        <Card className="p-5 sm:p-7">
-          <SectionTitle title={t("Éléments de stratégie enregistrés", "Saved strategy material")}>{t("Historique conservé en lecture : ces axes ne prouvent pas une recherche Internet. Seul le comparateur présente les nouvelles propositions sourcées.", "Read-only history: these directions do not prove web research. New sourced proposals are shown only in the comparison tool.")}</SectionTitle>
-          <div className="grid gap-6 md:grid-cols-3">
-            <div><p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Messages clés", "Key messages")}</p><ul className="mt-2 grid gap-1.5 text-sm">{data.strategy.keyMessages.map((m) => <li key={m} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-ok" />{m}</li>)}</ul></div>
-            <div><p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Axes enregistrés — non validés par cette recherche", "Saved directions — not validated by this research")}</p><ul className="mt-2 grid gap-2 text-sm">{data.strategy.angles.map((a) => <li key={a.title}><strong>{a.title}</strong>{t(" : ", ": ")}<span className="text-ink-2">{a.idea}</span></li>)}</ul></div>
-            <div><p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Piliers", "Pillars")}</p><div className="mt-2 flex flex-wrap gap-1.5">{data.strategy.pillars.map((p) => <Badge key={p}>{p}</Badge>)}</div></div>
-          </div>
-          {data.strategy.platform && (
-            <div className="mt-6 grid gap-6 border-t border-line pt-6 md:grid-cols-2">
-              <div className="grid gap-3 text-sm">
-                <p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Plateforme de marque", "Brand platform")}</p>
-                {[
-                  [t("Pour qui", "Who it's for"), data.strategy.platform.persona],
-                  [t("Problème résolu", "Problem solved"), data.strategy.platform.problem],
-                  [t("Face à la concurrence", "Versus the competition"), data.strategy.platform.alternatives],
-                  [t("Différence", "What sets it apart"), data.strategy.platform.difference],
-                ].filter(([, v]) => v).map(([k, v]) => <p key={k}><strong>{k}</strong>{t(" : ", ": ")}<span className="text-ink-2">{v}</span></p>)}
-                {data.strategy.platform.proofs.some((x) => x.status === "missing") && (
-                  <p className="rounded-xl bg-paper-2 p-3 text-xs text-ink-2">
-                    <strong>{t("Arguments à prouver avant de les utiliser", "Claims to prove before using them")}{t(" : ", ": ")}</strong>
-                    {data.strategy.platform.proofs.filter((x) => x.status === "missing").map((x) => x.claim).join(t(" ; ", "; "))}
-                  </p>
-                )}
-              </div>
-              {data.strategy.platform.objections.length > 0 && (
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Objections et réponses", "Objections and answers")}</p>
-                  <ul className="mt-2 grid gap-2 text-sm">{data.strategy.platform.objections.map((o) => <li key={o.objection}><strong>{o.objection}</strong><br /><span className="text-ink-2">{o.answer}</span></li>)}</ul>
-                </div>
-              )}
-            </div>
-          )}
+      </section>
+
+      {!!s.issues.length && <Card className="border-amber-400 p-4 text-sm" data-brand-issues><p className="font-semibold">{t("Ce que SINA n'a pas pu réussir", "What SINA could not get right")}</p><ul className="mt-1 list-disc pl-5">{s.issues.map((l, i) => <li key={i}>{l}</li>)}</ul></Card>}
+
+      {!!s.colors.length && <section>
+        <SectionTitle title={t("Tes couleurs", "Your colours")} />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5" data-brand-colors>
+          {s.colors.map((c) => <div key={c.role} className="overflow-hidden rounded-2xl border border-line">
+            <div className="flex h-24 items-end p-3 text-sm font-semibold" style={{ background: c.hex, color: inkOn(c.hex) }}>{t(ROLE[c.role].fr, ROLE[c.role].en)}</div>
+            <p className="bg-card px-3 py-2 font-mono text-xs uppercase">{c.hex}</p>
+          </div>)}
+        </div>
+      </section>}
+
+      {(s.fonts.heading || s.fonts.body) && <section>
+        <SectionTitle title={t("Tes polices", "Your fonts")} />
+        <div className="grid gap-3 sm:grid-cols-2" data-brand-fonts>
+          {s.fonts.heading && <Card className="p-5"><p className="text-xs text-muted">{t("Pour tes titres", "For your headings")} · {s.fonts.heading.family}</p><p className="mt-2 text-3xl leading-tight [overflow-wrap:anywhere]" style={{ fontFamily: head, fontWeight: s.fonts.heading.weight }}>{s.slogan ?? s.name}</p></Card>}
+          {s.fonts.body && <Card className="p-5"><p className="text-xs text-muted">{t("Pour tes textes", "For your texts")} · {s.fonts.body.family}</p><p className="mt-2 text-base leading-relaxed" style={{ fontFamily: body }}>{s.promise ?? s.slogan ?? s.name}</p></Card>}
+        </div>
+      </section>}
+
+      {(!!s.tone.length || !!s.lines.length) && <section>
+        <SectionTitle title={t("Ta voix", "Your voice")} />
+        <Card className="space-y-3 p-5 text-sm" data-brand-voice>
+          {!!s.tone.length && <p><b>{t("Elle est", "It is")} :</b> {s.tone.join(", ")}.</p>}
+          {!!s.houseWords.length && <p><b>{t("Ses mots", "Its words")} :</b> {s.houseWords.join(", ")}.</p>}
+          {!!s.bannedWords.length && <p><b>{t("Jamais", "Never")} :</b> {s.bannedWords.join(", ")}.</p>}
+          {!!s.lines.length && <div className="flex flex-wrap gap-2 pt-1">{s.lines.map((l, i) => <span key={i} className="rounded-full border border-line px-3 py-1.5" style={{ fontFamily: head }}>{l}</span>)}</div>}
         </Card>
-      )}
-      <Modal open={regen} onClose={() => setRegen(false)} title={t("Nouvelle proposition de marque", "New brand proposal")}>
-        <p className="text-sm text-muted">{t(`Les éléments validés (${b.validated.length ? b.validated.join(", ") : "aucun"}) seront conservés.`, `Approved elements (${b.validated.length ? b.validated.join(", ") : "none"}) will be kept.`)}</p>
-        <Field label={t("Orientation souhaitée (facultatif)", "Desired direction (optional)")} htmlFor="guid"><Textarea id="guid" rows={3} value={guidance} onChange={(e) => setGuidance(e.target.value)} placeholder={t("Ex. plus minimaliste, plus joyeux, inspiration scandinave…", "E.g. more minimalist, more cheerful, Scandinavian-inspired…")} /></Field>
-        <ContentLangPicker {...cl} className="mt-4" />
-        <Button
-          className="mt-4"
-          onClick={async () => {
-            try {
-              await api(`/api/projects/${id}/brand`, { body: { guidance }, lang: cl.lang });
-              setRegen(false);
-              setDirty(false);
-              toast("ok", t("Nouvelle proposition en cours.", "New proposal in progress."));
-              reload();
-            } catch (e) {
-              toast("bad", (e as Error).message);
-            }
-          }}
-        >
-          {t("Lancer", "Start")}
-        </Button>
-      </Modal>
+      </section>}
+
+      {!!shots.length && <section>
+        <SectionTitle title={t("Ta marque en situation", "Your brand in real life")} />
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3" data-brand-shots>
+          {shots.map((x, i) => <a key={i} href={x.url} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-2xl border border-line"><img src={x.url} alt="" className="h-full w-full object-cover" loading="lazy" /></a>)}
+        </div>
+      </section>}
+
+      {s.kit && <section>
+        <SectionTitle title={t("Ta charte et tes fichiers", "Your guidelines and files")} action={s.kit.book ? <a href={s.kit.book} target="_blank" rel="noreferrer" className="inline-flex h-9 items-center gap-1.5 rounded-full bg-ink px-4 text-sm font-medium text-paper" data-brand-book><Download className="size-4" />{t(`Ta charte (PDF, ${s.kit.pages} pages)`, `Your guidelines (PDF, ${s.kit.pages} pages)`)}</a> : undefined} />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4" data-brand-kit>
+          {s.kit.items.map((x) => <figure key={x.key} className="overflow-hidden rounded-2xl border border-line">
+            <div className="flex h-28 items-center justify-center p-3" style={{ background: x.dark ? dark : "#FFFFFF" }}>{x.downloadHref && !/\.(png|jpe?g|webp|svg)/i.test(x.href) ? <Download className="size-6 opacity-50" /> : <img src={x.href} alt={x.label} className="max-h-full max-w-full object-contain" loading="lazy" />}</div>
+            <figcaption className="flex items-center justify-between gap-2 border-t border-line bg-card px-3 py-2 text-xs"><span>{x.label}</span><a href={x.downloadHref ?? x.href} target="_blank" rel="noreferrer" className="underline" aria-label={`${t("Télécharger", "Download")} : ${x.label}`}><Download className="size-3.5" /></a></figcaption>
+          </figure>)}
+        </div>
+      </section>}
+
+      {!!s.toProve.length && <section>
+        <SectionTitle title={t("Ce qui reste à prouver", "What is still to prove")}>{t("SINA ne l'écrira jamais comme acquis sans ton accord.", "SINA will never write it as a fact without your agreement.")}</SectionTitle>
+        <Card className="p-5 text-sm"><ul className="list-disc space-y-1 pl-5">{s.toProve.map((l, i) => <li key={i}>{l}</li>)}</ul></Card>
+      </section>}
+
+      <section>
+        <SectionTitle title={t("Tu veux changer quelque chose ?", "Want to change something?")}>{t("Dis-le à SINA avec tes mots. Si c'est payant, elle t'annonce le prix avant.", "Tell SINA in your own words. If it costs something, she tells you the price first.")}</SectionTitle>
+        <Card className="space-y-3 p-5" data-brand-ask>
+          <Textarea rows={3} value={ask} onChange={(e) => setAsk(e.target.value)} placeholder={t("Par exemple : « Je voudrais un logo plus simple », « Refais la troisième publication avec plus de couleur »…", "For example: \"I'd like a simpler logo\", \"Redo the third post with more colour\"…")} />
+          <div className="flex flex-wrap items-center gap-3">
+            <Button onClick={send} loading={sending} disabled={!ask.trim()} icon={<MessageCircle className="size-4" />}>{t("Demander à SINA", "Ask SINA")}</Button>
+            {sent && <p className="text-xs text-muted">{t("Envoyé à SINA : elle te répond dans la conversation.", "Sent to SINA: she answers in the conversation.")}</p>}
+            {error && <p className="text-xs text-red-600">{error}</p>}
+          </div>
+        </Card>
+      </section>
     </div>
-  );
-}
-
-type Proposal = {
-  id: string;
-  key: string;
-  label: string;
-  concept: string;
-  url: string;
-  board: string | null;
-  route: { name: string; why: string; source: "ai" | "local"; markKind: string; heading: string; body: string; colors: { ink: string; accent: string; ground: string; tint: string }; score: number | null; verdict?: "FINAL" | "PROVISIONAL" | null; provisional?: boolean } | null;
-  ai: "used" | "unavailable" | "off" | null;
-};
-
-/**
- * Présentation des trois pistes, comme en agence : concept nommé, « pourquoi ce logo », typographie et couleurs,
- * planche de mises en situation (avatar, favicon, étiquette, boutique sur téléphone, blanc sur couleur), choix en un clic.
- */
-function LogoRoutes({ routes, max, current, choosing, locked, onChoose, onRegenerate, onDelete }: { routes: Proposal[]; max: number; current: string | null; choosing: string | null; locked: boolean; onChoose: (k: string) => void; onRegenerate: () => void; onDelete: (k: string) => void }) {
-  const t = useT();
-  const [zoom, setZoom] = useState<Proposal | null>(null);
-  const anyLocal = routes.some((r) => r.route!.source === "local");
-  const aiState = routes[0]?.ai;
-  return (
-    <Card className="p-5 sm:p-7">
-      <SectionTitle
-        title={t("Anciennes pistes de logo", "Earlier logo routes")}
-      >
-        {t("Pistes créées par l'ancien moteur de logo, conservées pour ce projet : vous pouvez encore en choisir une ou les supprimer. Les nouvelles propositions viennent du moteur de logo ci-dessus.", "Routes created by the previous logo engine, kept for this project: you can still choose or delete one. New proposals come from the logo engine above.")}
-      </SectionTitle>
-      {anyLocal && (
-        <div className="mb-4 rounded-xl border border-line bg-paper-2 p-3 text-xs text-muted" role="note">
-          {aiState === "off"
-            ? t("Sans IA, les pistes sont construites par le studio (silhouette du produit, monogramme géométrique, logotype) : soignées, mais pas créées sur mesure.", "Without AI, the routes are built by the studio (product silhouette, geometric monogram, wordmark): carefully made, but not custom-designed.")
-            : aiState === "unavailable"
-              ? t("L'IA n'a pas pu proposer de pistes cette fois : les pistes affichées sont celles du studio.", "The AI couldn't propose routes this time: the routes shown are the studio's.")
-              : t("Les pistes marquées « version du studio » remplacent une piste de l'IA inexploitable.", "Routes marked \"studio version\" replace an unusable AI route.")}
-          {aiState !== "off" && (routes[0] as any)?.notes?.length > 0 && (
-            <details className="mt-2">
-              <summary className="cursor-pointer text-ink-2">{t("Pourquoi ?", "Why?")}</summary>
-              <ul className="mt-1 list-disc pl-5">{((routes[0] as any).notes as string[]).map((n, i) => <li key={i}>{n}</li>)}</ul>
-            </details>
-          )}
-        </div>
-      )}
-      <div className="grid gap-5 md:grid-cols-3">
-        {routes.map((pr, i) => {
-          const r = pr.route!;
-          const on = current === pr.id;
-          return (
-            <div key={pr.id} className={cx("flex flex-col rounded-2xl border p-3", on ? "border-signal ring-2 ring-signal/30" : "border-line")}>
-              <p className="text-[11px] font-medium uppercase tracking-wider text-muted">{t(`Piste ${String.fromCharCode(65 + i)}`, `Route ${String.fromCharCode(65 + i)}`)} · {pr.key === "produit" ? t("inspirée du produit", "product-inspired") : pr.key === "concept" ? t("conceptuelle", "conceptual") : t("typographique", "typographic")}</p>
-              <h4 className="mt-1 font-display text-xl font-semibold">{r.name}</h4>
-              <p className="mt-1 text-sm text-ink-2">{r.why}</p>
-              <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                {r.verdict === "FINAL" ? (
-                  <Badge tone="ok">{t("Création IA contrôlée", "Reviewed AI design")}{r.score != null ? ` · ${r.score.toLocaleString()}/10` : ""}</Badge>
-                ) : r.provisional ? (
-                  <span title={t("Remplacement technique : aucune proposition de l'IA n'a franchi le contrôle de qualité. Ce n'est pas un logo final.", "Technical placeholder: no AI proposal passed the quality check. This isn't a final logo.")}><Badge tone="warn">{t("Provisoire — version du studio", "Provisional — studio version")}</Badge></span>
-                ) : (
-                  <Badge>{r.source === "ai" ? t("Piste IA (ancien contrôle)", "AI route (previous check)") : t("Version du studio", "Studio version")}</Badge>
-                )}
-                <span className="text-[11px] text-muted">{r.heading} + {r.body}</span>
-                <span className="ml-auto flex gap-1" aria-label={t("Couleurs de la piste", "Route colors")}>{[r.colors.ink, r.colors.accent, r.colors.ground, r.colors.tint].map((c, k) => <span key={k} className="size-4 rounded-full border border-line" style={{ background: c }} title={c} />)}</span>
-              </div>
-              <button type="button" onClick={() => setZoom(pr)} className="mt-3 overflow-hidden rounded-xl border border-line bg-paper-2" aria-label={t(`Agrandir la planche de ${r.name}`, `Enlarge the ${r.name} board`)}>
-                {pr.board ? <img src={pr.board} alt={t(`Mises en situation : ${r.name}`, `Mockups: ${r.name}`)} className="w-full" loading="lazy" /> : <img src={pr.url} alt={r.name} className="h-40 w-full bg-white object-contain p-4" />}
-              </button>
-              <div className="mt-3 flex items-center gap-2">
-                <Button className="flex-1" size="sm" variant={on ? "secondary" : "primary"} disabled={on || !!choosing || locked} loading={choosing === pr.id} onClick={() => onChoose(pr.id)}>{on ? t("Piste choisie", "Chosen route") : t("Choisir cette piste", "Choose this route")}</Button>
-                {!on && (
-                  <button type="button" disabled={!!choosing} onClick={() => { if (window.confirm(t(`Supprimer la piste « ${r.name} » ?`, `Delete the "${r.name}" route?`))) onDelete(pr.id); }} className="grid size-9 shrink-0 place-items-center rounded-full border border-line text-muted transition hover:border-bad hover:text-bad disabled:opacity-40" aria-label={t(`Supprimer la piste ${r.name}`, `Delete the ${r.name} route`)} title={t("Supprimer cette piste", "Delete this route")}>
-                    <Trash2 className="size-4" />
-                  </button>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-      {locked && <p className="mt-2 text-[11px] text-muted">{t("Logo validé : déverrouillez-le pour changer de piste.", "Logo approved: unlock it to change routes.")}</p>}
-      <Modal open={!!zoom} onClose={() => setZoom(null)} title={zoom?.route?.name ?? ""}>
-        {zoom?.board && <img src={zoom.board} alt="" className="w-full rounded-xl" />}
-      </Modal>
-    </Card>
-  );
-}
-
-/** Kit réseaux sociaux : visuels aux couleurs de la piste choisie, ligne éditoriale, export PNG et ZIP. */
-function SocialKit({ tick }: { tick: number }) {
-  const { id } = useProject();
-  const t = useT();
-  const toast = useToast();
-  const { data, reload } = useApi<{ kit: { sheet: string; zip: string | null; items: { id: string; item: string; label: string; url: string; download: string }[] } | null; voice: import("@/lib/project-types").SocialVoice | null }>(`/api/projects/${id}/brand/social`);
-  const [busy, setBusy] = useState(false);
-  useEffect(() => {
-    if (tick) reload();
-  }, [tick, reload]);
-  const redo = async (voice: boolean) => {
-    setBusy(true);
-    try {
-      const result = await api<{ message?: string }>(`/api/projects/${id}/brand/social`, { body: { voice } });
-      toast("ok", result.message ?? t("Kit réseaux sociaux mis à jour.", "Social media kit updated."));
-      reload();
-    } catch (e) {
-      toast("bad", (e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  };
-  const kit = data?.kit;
-  const v = data?.voice;
-  return (
-    <Card className="p-5 sm:p-7">
-      <SectionTitle
-        title={t("Kit réseaux sociaux", "Social media kit")}
-        action={<div className="flex flex-wrap gap-2">{kit?.zip && <a href={kit.zip} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-ink px-4 text-sm font-medium text-paper"><Download className="size-4" /> ZIP</a>}<Button size="sm" variant="secondary" loading={busy} onClick={() => redo(false)}>{kit ? t("Recréer", "Recreate") : t("Créer le kit", "Create the kit")}</Button></div>}
-      >
-        {t("Photo de profil, stories à la une, modèles de publication et bannières, aux couleurs et typographies de la piste choisie. Les textes entre crochets sont à compléter avec des faits réels.", "Profile picture, highlight covers, post templates and banners, in the chosen route's colors and typefaces. Text in brackets must be completed with real facts.")}
-      </SectionTitle>
-      {kit ? (
-        <>
-          <img src={kit.sheet} alt={t("Aperçu du kit", "Kit preview")} className="w-full rounded-2xl border border-line" />
-          <div className="mt-3 flex flex-wrap gap-2">
-            {kit.items.map((it) => <a key={it.id} href={it.download} className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs hover:border-ink"><Download className="size-3.5" /> {it.label}</a>)}
-          </div>
-        </>
-      ) : (
-        <p className="text-sm text-muted">{t("Le kit apparaît dès qu'une piste de logo est choisie.", "The kit appears as soon as a logo route is chosen.")}</p>
-      )}
-      {v && (
-        <div className="mt-6 grid gap-6 md:grid-cols-3">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Piliers de contenu", "Content pillars")}</p>
-            <ol className="mt-2 grid gap-2 text-sm">{v.pillars.map((p, i) => <li key={i}><strong>{p.title}</strong> <span className="text-ink-2">— {p.idea}</span></li>)}</ol>
-            <p className="mt-4 text-xs font-medium uppercase tracking-wider text-muted">Emojis</p>
-            <p className="mt-1 text-sm">{v.emoji === "none" ? t("Aucun emoji.", "No emoji.") : v.emoji === "sparing" ? t("Un au plus par légende, jamais à la place d'un mot.", "One at most per caption, never instead of a word.") : t("Libres, avec goût.", "Welcome, with taste.")} {v.emojis.join(" ")}</p>
-          </div>
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Ce qu'on dit", "What we say")}</p>
-            <ul className="mt-2 grid gap-1.5 text-sm">{v.say.map((s) => <li key={s} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-ok" />{s}</li>)}</ul>
-            <p className="mt-4 text-xs font-medium uppercase tracking-wider text-muted">{t("Ce qu'on ne dit pas", "What we don't say")}</p>
-            <ul className="mt-2 grid gap-1.5 text-sm text-ink-2">{v.dontSay.map((s) => <li key={s}>— {s}</li>)}</ul>
-          </div>
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Exemples de légendes", "Sample captions")}</p>
-            <div className="mt-2 grid gap-2">{v.captions.map((c, i) => <div key={i} className="rounded-xl bg-paper-2 p-3 text-sm"><p className="text-[11px] font-medium text-muted">{c.pillar}</p><p className="mt-1 whitespace-pre-line">{c.text}</p></div>)}</div>
-            <AiWait busy={busy} label={t("Préparation de la ligne éditoriale…", "Preparing the editorial line…")} waitKey="brand-social" expectedMs={20000} className="mt-2" />
-            <Button size="sm" variant="ghost" className="mt-2" icon={<Sparkles className="size-4" />} loading={busy} onClick={() => redo(true)}>{t("Refaire la ligne éditoriale", "Redo the editorial line")}</Button>
-          </div>
-        </div>
-      )}
-    </Card>
-  );
-}
-
-/** Charte de marque mise en page : planches, PDF, régénération. */
-function BrandBook() {
-  const { id } = useProject();
-  const toast = useToast();
-  const t = useT();
-  const cl = useContentLang();
-  const { data, reload } = useApi<{ book: { pdf: string; pages: string[]; createdAt: number } | null }>(`/api/projects/${id}/brand/book`);
-  const [i, setI] = useState(0);
-  const [busy, setBusy] = useState(false);
-  const book = data?.book;
-  const refresh = async () => {
-    setBusy(true);
-    try {
-      await api(`/api/projects/${id}/brand/book`, { body: {}, lang: cl.lang });
-      toast("ok", t("Charte mise à jour avec vos derniers choix.", "Brand guidelines updated with your latest choices."));
-      setI(0);
-      reload();
-    } catch (e) {
-      toast("bad", (e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  };
-  return (
-    <Card className="p-5">
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="font-display text-lg font-semibold">{t("Charte de marque", "Brand guidelines")}</h3>
-        {book && <span className="text-xs text-muted">{t(`${book.pages.length} planches`, `${book.pages.length} pages`)}</span>}
-      </div>
-      <p className="mt-1 text-xs text-muted">{t("Logo et usages, couleurs (HEX, RVB, CMJN, contrastes), typographies, ton, applications.", "Logo and usage, colors (HEX, RGB, CMYK, contrast), typography, tone, applications.")}</p>
-      {book ? (
-        <>
-          <div className="relative mt-3 overflow-hidden rounded-2xl border border-line bg-paper-2">
-            <img src={book.pages[i]} alt={t(`Planche ${i + 1}`, `Page ${i + 1}`)} className="aspect-[1.414] w-full object-contain" />
-            <div className="absolute inset-x-0 bottom-2 flex items-center justify-center gap-2">
-              <button onClick={() => setI((i + book.pages.length - 1) % book.pages.length)} className="grid size-8 place-items-center rounded-full bg-card/90 text-sm shadow-soft" aria-label={t("Planche précédente", "Previous page")}>‹</button>
-              <span className="rounded-full bg-card/90 px-2.5 py-1 text-xs">{i + 1} / {book.pages.length}</span>
-              <button onClick={() => setI((i + 1) % book.pages.length)} className="grid size-8 place-items-center rounded-full bg-card/90 text-sm shadow-soft" aria-label={t("Planche suivante", "Next page")}>›</button>
-            </div>
-          </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <a href={book.pdf} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-ink px-4 text-sm font-medium text-paper"><Download className="size-4" /> PDF</a>
-            <Button size="sm" variant="secondary" loading={busy} onClick={refresh}>{t("Mettre à jour", "Update")}</Button>
-            <ContentLangPicker {...cl} compact />
-          </div>
-        </>
-      ) : (
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <Button size="sm" loading={busy} onClick={refresh}>{t("Créer la charte", "Create brand guidelines")}</Button>
-          <ContentLangPicker {...cl} compact />
-        </div>
-      )}
-      <AiWait busy={busy} label={t("Préparation de la charte de marque…", "Preparing the brand guidelines…")} waitKey="brand-book" expectedMs={20000} className="mt-3" />
-    </Card>
-  );
-}
-
-
-/** Liste éditable, un élément par ligne (texte libre gardé tel quel pendant la saisie, lignes vides ignorées). */
-function LinesArea({ id, value, onChange }: { id: string; value: string[]; onChange: (v: string[]) => void }) {
-  const [text, setText] = useState(value.join("\n"));
-  const clean = (s: string) => s.split(/\n|;/).map((x) => x.trim()).filter(Boolean);
-  // Valeur changée ailleurs (nouvelle proposition de marque) : on la reprend.
-  useEffect(() => {
-    if (clean(text).join("\n") !== value.join("\n")) setText(value.join("\n"));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value.join("\n")]);
-  return <Textarea autoGrow rows={2} id={id} value={text} onChange={(e) => { setText(e.target.value); onChange(clean(e.target.value)); }} />;
-}
-
-/**
- * Planche d'identité de marque en grand : logo principal, secondaire, sceau, couleurs nommées, typographies, icônes,
- * motif et applications, tous issus du même système. « Refaire la planche » la reconstruit sans IA.
- */
-function IdentityBoardCard({ projectId, board, onDone }: { projectId: string; board: AssetView | null; onDone: () => void }) {
-  const t = useT();
-  const toast = useToast();
-  const [busy, setBusy] = useState(false);
-  const redo = async () => {
-    setBusy(true);
-    try {
-      await api(`/api/projects/${projectId}/brand/board`, { body: {} });
-      onDone();
-    } catch (e) {
-      toast("bad", (e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  };
-  return (
-    <Card className="p-5 sm:p-7" data-testid="identity-board">
-      <SectionTitle
-        title={t("Votre identité de marque", "Your brand identity")}
-        action={
-          <div className="flex gap-2">
-            {board && <a href={board.downloadUrl} className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs hover:border-ink"><Download className="size-3.5" /> {t("Télécharger", "Download")}</a>}
-            <Button size="sm" variant="secondary" loading={busy} onClick={redo} icon={<Sparkles className="size-4" />}>{board ? t("Refaire la planche", "Rebuild the board") : t("Créer la planche", "Create the board")}</Button>
-          </div>
-        }
-      >
-        {t("Tout vient du même système : logo, symbole, couleurs, typographies, icônes et motif. Les mêmes éléments servent ensuite au site, aux publications et aux publicités. Sans IA, offert.", "Everything comes from one system: logo, symbol, colors, typefaces, icons and pattern. The same elements are then used on the website, posts and ads. No AI, free.")}
-      </SectionTitle>
-      {board ? (
-        <a href={board.url} target="_blank" rel="noreferrer" className="mt-2 block overflow-hidden rounded-2xl border border-line" data-testid="brand-board">
-          <img src={board.url} alt={t("Planche d'identité de marque", "Brand identity board")} className="w-full" />
-        </a>
-      ) : (
-        <p className="text-sm text-muted">{t("La planche apparaît ici dès que le logo est choisi.", "The board appears here once the logo is chosen.")}</p>
-      )}
-    </Card>
   );
 }
