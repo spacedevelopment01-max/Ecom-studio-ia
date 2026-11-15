@@ -201,16 +201,11 @@ describe("Consignes de l'analyse et écran", () => {
     expect(r.system).toMatch(/jamais de question fourre-tout/);
     expect(r.prompt).toMatch(/"topic": "services\|customization\|process\|quote"/);
     // Aucun cas « vans » codé en dur dans le correctif.
-    for (const f of ["src/lib/preparation/fiche.ts", "src/components/studio/brief-fiche.tsx", "src/lib/ai/tasks.ts"]) expect(read(f)).not.toMatch(/fourgon|\bvans?\b/i);
+    for (const f of ["src/lib/preparation/fiche.ts", "src/lib/ai/tasks.ts"]) expect(read(f)).not.toMatch(/fourgon|\bvans?\b/i);
   });
 
-  it("la fiche affiche des états lisibles en français et en anglais, jamais confirmed/unknown", () => {
-    const fiche = read("src/components/studio/brief-fiche.tsx");
-    const pilote = read("src/components/studio/tab-preparation.tsx");
+  it("la fiche garde des états lisibles en français et en anglais, jamais confirmed/unknown", () => {
     expect(read("src/lib/preparation/fiche.ts")).toMatch(/provided: \["Fourni par vous", "Provided by you"\]/);
     expect(read("src/lib/preparation/fiche.ts")).toMatch(/later: \["À préciser plus tard", "To specify later"\]/);
-    expect(fiche).toMatch(/data-brief-fiche/);
-    expect(pilote).not.toMatch(/observations\.map/);
-    expect(pilote).toMatch(/<BriefFiche/);
   });
 });

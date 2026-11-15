@@ -1,6 +1,5 @@
 "use client";
 import {CommunicationAngleSelector,useCommunicationAngle} from "./communication-angle";
-import { InitialCreatives } from "./initial-creatives";
 import { CopyFailureHistory } from "./copy-correction";
 /**
  * Studio social V2 : Piloter (vue d'ensemble, communication automatique, stratégie) → Créer (image, vidéo, plusieurs) → Gérer (calendrier, validation, statistiques).
@@ -176,7 +175,6 @@ export function SocialStudio({ initial = "calendrier" }: { initial?: Section }) 
       </aside>
       <div className="grid min-w-0 grid-cols-1 content-start gap-5">
         <CopyFailureHistory/>
-        <InitialCreatives onChange={reload}/>
         {section === "vue" && <SocialOverview counts={data.stats.counts} posts={data.posts} statsNote={data.stats.note} hasMetrics={data.stats.byPlatform.some((b) => Object.values(b.metrics).some((m) => m.value != null))} onGo={(s: string) => go((s === "creer" ? "planifier" : s) as Section)} />}
         {section === "pilote" && <AutopilotPanel onChanged={reload} />}
         {section === "strategie" && <StrategyPanel data={data} />}

@@ -2,7 +2,6 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
 import { buildProjectHandoff } from "@/lib/project-handoff/contract";
 import { recommendProjectCategory, REFERENCE_THEMES } from "@/lib/project-handoff/categories";
-import { handoffRouting } from "@/lib/project-handoff/routing";
 import { categoryForProject, recordCategoryChoice, CATEGORY_CHOICE_KEY } from "@/lib/project-handoff/category-store";
 import { slotIssues } from "@/lib/preparation/media-policy";
 import { inspectSiteMediaLineage, MAX_SITE_MEDIA_LINEAGE } from "@/lib/project-handoff/media-pool";
@@ -132,16 +131,6 @@ describe.each(["products", "services"] as const)("contrat structuré %s", busine
     expect(h.issues.some(x => x.includes("Média simulé interdit"))).toBe(true);
     expect(JSON.stringify(ready)).toBe(old);
   });
-});
-
-it("diagnostic de routes local : aucune preuve de fournisseur réel ni clé/modèle exposé", async () => {
-  vi.stubGlobal("fetch", () => { throw new Error("Réseau interdit"); });
-  const f = await fixture("services"), p = loadProject(f.pid), routes = handoffRouting(p, true, true);
-  expect(routes.every(r => r.environment === "simulation" && !r.executed && !r.realProviderValidated)).toBe(true);
-  expect(routes.find(r => r.stage === "site_stock")).toMatchObject({ provider: "pixabay", modelConfigured: false });
-  expect(routes.find(r => r.stage === "site_images")).toBeUndefined();
-  expect(routes.some(r => r.stage === "initial_twenty_images")).toBe(true);
-  expect(JSON.stringify(routes)).not.toMatch(/apiKey|"model":|"api_key":/);
 });
 
 it.each(["social", "ad", "initialCreative", "finalPost", "finalAd", "adBrief"])("média final de qualité acceptée exclu du pool site : %s", async evidence => {

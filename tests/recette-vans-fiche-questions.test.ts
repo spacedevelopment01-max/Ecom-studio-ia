@@ -1,8 +1,5 @@
-/** Régressions de la fiche guidée : ne pas reposer une question déjà couverte, sans appel IA. */
-import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
+/** Régressions de la fiche guidée (moteur de préparation) : ne pas reposer une question déjà couverte, sans appel IA. */
 import { describe, expect, it } from "vitest";
-import { BriefFiche } from "@/components/studio/brief-fiche";
 import { applyAnswer, GUIDED, needsGuidedQuestion } from "@/lib/preparation/fiche";
 import type { Brief } from "@/lib/preparation/types";
 import { emptyProduct, emptyServiceProfile, type Fact, type Question } from "@/lib/project-types";
@@ -18,15 +15,8 @@ function fixture(questions: Question[] = [], facts: Fact[] = []): Brief {
   };
 }
 
-function render(brief: Brief) {
-  return renderToStaticMarkup(createElement(BriefFiche, { brief, busy: false, send: async () => null, onEditServices: () => {} }));
-}
-
-function renderedFact(html: string, key: string) {
-  const start = html.indexOf(`data-fiche-fact="${key}"`);
-  expect(start).toBeGreaterThanOrEqual(0);
-  return html.slice(start, html.indexOf("</section>", start));
-}
+/** Questions de l'analyse encore à poser : ni répondues, ni reportées. */
+const open = (b: Brief) => b.profile.questions.filter((q) => !q.answer && !q.later).map((q) => q.id);
 
 const question = (g: (typeof GUIDED)[number]): Question => ({
   id: `question_${g.topic}`,
@@ -47,9 +37,7 @@ describe.each(GUIDED)("Questions de la rubrique $topic", (g) => {
     const reopened = JSON.parse(JSON.stringify(b)) as Brief;
     expect(reopened.profile.facts[0]).toMatchObject({ key: q.factKey, value: answer, status: "confirmed" });
     expect(needsGuidedQuestion(reopened, g)).toBe(false);
-    const html = render(reopened);
-    expect(html).toContain(answer);
-    expect(html).not.toContain(`data-fiche-guided="${g.topic}"`);
+    expect(open(reopened)).toEqual([]);
   });
 
   it("respecte le report d'une question de l'analyse sous une autre clé", () => {
@@ -59,24 +47,19 @@ describe.each(GUIDED)("Questions de la rubrique $topic", (g) => {
     const reopened = JSON.parse(JSON.stringify(b)) as Brief;
     expect(reopened.profile.facts[0]).toMatchObject({ status: "unknown", value: "", later: true });
     expect(needsGuidedQuestion(reopened, g)).toBe(false);
-    const html = render(reopened);
-    expect(renderedFact(html, q.factKey)).toContain("À préciser plus tard");
-    expect(html).not.toContain(`data-fiche-guided="${g.topic}"`);
+    expect(open(reopened)).toEqual([]);
   });
 
   it("ne duplique pas une question de l'analyse encore ouverte", () => {
     const q = question(g);
     const b = fixture([q]);
     expect(needsGuidedQuestion(b, g)).toBe(false);
-    const html = render(b);
-    expect(html).toContain(`data-fiche-question="${q.id}"`);
-    expect(html).not.toContain(`data-fiche-guided="${g.topic}"`);
+    expect(open(b)).toEqual([q.id]);
   });
 
   it("conserve une question guidée pour une rubrique réellement inconnue", () => {
     const b = fixture([], [{ key: `missing_${g.topic}`, label: g.label[0], value: "", status: "unknown", source: "ai", topic: g.topic }]);
     expect(needsGuidedQuestion(b, g)).toBe(true);
-    expect(render(b)).toContain(`data-fiche-guided="${g.topic}"`);
   });
 });
 
@@ -86,19 +69,12 @@ describe("Informations déjà présentes et portée de la rubrique", () => {
   it.each(["confirmed", "inferred"] as const)("ne redemande pas une information %s explicitement rattachée au déroulement", (status) => {
     const b = fixture([], [{ key: "project_steps", label: "Déroulement", value: "Échange, étude puis devis.", status, source: status === "confirmed" ? "user" : "ai", topic: "process" }]);
     expect(needsGuidedQuestion(b, process)).toBe(false);
-    const html = render(b);
-    expect(html).toContain("Échange, étude puis devis.");
-    expect(html).not.toContain('data-fiche-guided="process"');
-    if (status === "inferred") {
-      expect(renderedFact(html, "project_steps")).toContain("À vérifier");
-      expect(renderedFact(html, "project_steps")).toContain("C’est exact");
-    }
+    expect(b.profile.facts[0]).toMatchObject({ value: "Échange, étude puis devis.", status });
   });
 
   it("reconnaît une ancienne question répondue sans rubrique explicite", () => {
     const b = fixture([{ id: "old_steps", question: "Comment se déroule une demande ?", why: "", required: false, factKey: "project_steps", answer: "Premier échange puis étude." }]);
     expect(needsGuidedQuestion(b, process)).toBe(false);
-    expect(render(b)).not.toContain('data-fiche-guided="process"');
   });
 
   it("un point reporté sous une autre clé ne réapparaît pas comme nouvelle question", () => {

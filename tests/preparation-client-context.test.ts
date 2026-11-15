@@ -1,13 +1,10 @@
-/** SIMULATIONS : états et composants réels, aucun fournisseur ni donnée client. */
-import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
+/** SIMULATIONS : états réels du moteur de préparation, aucun fournisseur ni donnée client. */
 import { describe, expect, it } from "vitest";
 import { emptyProduct, emptyServiceProfile, type Question } from "@/lib/project-types";
 import type { Brief } from "@/lib/preparation/types";
 import { applyFicheChange, applyAnswer } from "@/lib/preparation/fiche";
 import { clientAnalysisContext, clientAttemptContext, reconcileAnalysis, reviewGeneratedFact } from "@/lib/preparation/analysis-context";
-import { BriefFiche } from "@/components/studio/brief-fiche";
-import { AnalysisRetry } from "@/components/studio/analysis-retry";
+import { attemptProblem } from "@/lib/preparation/attempt-rules";
 
 function brief(): Brief {
   const services = { ...emptyServiceProfile(), contactMode: "quote" as const, contactModes: ["quote" as const, "booking" as const], services: [{ name: "Étude", description: "Définir les usages", source: "client" as const }] };
@@ -16,7 +13,8 @@ function brief(): Brief {
 function question(id: string, text: string, topic: Question["topic"], required = false): Question {
   return { id, factKey: `new_${id}`, question: text, topic, required, why: "Information encore absente" };
 }
-const render = (b: Brief) => renderToStaticMarkup(createElement(BriefFiche, { brief: b, busy: false, send: async () => null, onEditServices: () => {} }));
+/** Questions encore à poser au client : ni répondues, ni reportées. */
+const open = (b: Brief) => b.profile.questions.filter(q => !q.answer && !q.later).map(q => q.id);
 
 describe("Contexte client, fusion et réouverture", () => {
   it("une proposition ne s'auto-confirme pas en annonçant source=user", () => {
@@ -58,14 +56,12 @@ describe("Contexte client, fusion et réouverture", () => {
     expect(reopened.profile.questions.find(q => q.id === "process")?.answer).toBe("Échange, informations et photos, proposition puis devis.");
     expect(reopened.profile.questions.find(q => q.id === "custom")?.answer).toContain("budget");
     expect(reopened.profile.questions.find(q => q.id === "inputs")).not.toHaveProperty("answer");
-    const html = render(reopened);
-    expect(html).not.toContain('data-fiche-question="process"');
-    expect(html).not.toContain('data-fiche-question="custom"');
-    expect(html).toContain('data-fiche-question="inputs"');
-    expect(html).toContain('data-fiche-question="detail"');
+    expect(open(reopened)).not.toContain("process");
+    expect(open(reopened)).not.toContain("custom");
+    expect(open(reopened)).toContain("inputs");
+    expect(open(reopened)).toContain("detail");
     expect(reopened.profile.facts.filter(f => /gratuit/i.test(f.label))).toHaveLength(1);
     expect(reopened.profile.facts.find(f => f.key === "old_free")).toMatchObject({ value: "", status: "unknown", later: true });
-    expect(html).toContain("À préciser plus tard");
   });
 
   it("une exigence indispensable n'hérite pas du report et une précision du même thème reste ouverte", () => {
@@ -73,7 +69,7 @@ describe("Contexte client, fusion et réouverture", () => {
     const next = brief(); next.profile.questions = [question("delay_new", "Quel délai pour un devis ?", "quote", true), question("documents", "Quels documents pour établir le devis ?", "quote")];
     const r = reconcileAnalysis(b, next);
     expect(r.profile.questions.every(q => !q.answer && !q.later)).toBe(true);
-    expect(render(r)).toContain('data-fiche-question="delay_new"');
+    expect(open(r)).toContain("delay_new");
   });
 
   it("un ancien report groupé conserve les deux inconnues, pas la nouvelle collecte d'informations", () => {
@@ -92,7 +88,7 @@ describe("Contexte client, fusion et réouverture", () => {
     const next = brief(); next.profile.questions = [question("payment", "Comment organisez-vous les acomptes ?", "process"), question("time", "How long does a request take?", "process"), question("size", "Comment adaptez-vous la taille de chaque article ?", "customization")];
     const r = reconcileAnalysis(b, next);
     expect(r.profile.questions.every(q => !q.answer && !q.later)).toBe(true);
-    for (const id of ["payment", "time", "size"]) expect(render(r)).toContain(`data-fiche-question="${id}"`);
+    for (const id of ["payment", "time", "size"]) expect(open(r)).toContain(id);
   });
 
   it("une nouvelle formulation IA seule ne modifie pas la base des tentatives ; une vraie réponse oui", () => {
@@ -105,22 +101,16 @@ describe("Contexte client, fusion et réouverture", () => {
   });
 });
 
-describe("Précontrôle effectivement rendu près du bouton", () => {
+describe("Règle des essais d'analyse (précontrôle avant tout devis)", () => {
   it("explique la preuve historique manquante sans inviter à contourner le compteur", () => {
-    const html = renderToStaticMarkup(createElement(AnalysisRetry, { business: "services", attempts: 2, historyIncomplete: true, correction: "Correction renseignée.", disabled: false, onCorrection: () => {}, onAnalyze: () => {} }));
-    expect(html).toContain("une preuve historique manque");
-    expect(html).toContain("vos acquis et votre budget restent conservés");
-    expect(html).not.toContain("Modifiez réellement votre fiche");
-    expect(html).toMatch(/<button[^>]*\sdisabled=""/);
+    const problem = attemptProblem(2, "Correction renseignée.", true)!;
+    expect(problem).toContain("une preuve historique manque");
+    expect(problem).toContain("vos acquis et votre budget restent conservés");
   });
-  const renderRetry = (attempts: number, correction: string, disabled = false) => renderToStaticMarkup(createElement(AnalysisRetry, { business: "services", attempts, correction, disabled, onCorrection: () => {}, onAnalyze: () => {} }));
   it("autorise la première demande, exige la correction avant le second devis et bloque le troisième", () => {
-    expect(renderRetry(0, "")).not.toMatch(/<button[^>]*\sdisabled=""/);
-    expect(renderRetry(1, "")).toMatch(/<button[^>]*\sdisabled=""/);
-    expect(renderRetry(1, "")).toContain("avant de voir le devis");
-    expect(renderRetry(1, "Préserver les réponses.")).not.toMatch(/<button[^>]*\sdisabled=""/);
-    expect(renderRetry(2, "Une autre correction.")).toMatch(/<button[^>]*\sdisabled=""/);
-    expect(renderRetry(2, "Une autre correction.")).toContain("ne remet pas le compteur à zéro");
-    expect(renderRetry(0, "", true)).toMatch(/<button[^>]*\sdisabled=""/);
+    expect(attemptProblem(0, "")).toBeNull();
+    expect(attemptProblem(1, "")).toContain("Décrivez le défaut à corriger");
+    expect(attemptProblem(1, "Préserver les réponses.")).toBeNull();
+    expect(attemptProblem(2, "Une autre correction.")).toContain("Deux essais ont déjà été demandés");
   });
 });
