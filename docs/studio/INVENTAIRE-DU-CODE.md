@@ -174,6 +174,29 @@ Chaque lot se termine par un essai réel où SINA travaille seule ; son budget s
 8. **Les publicités.**
 9. **Les vidéos.**
 
+## 7 bis. Le lot 0 mesuré (15 novembre 2026, sans rien modifier)
+
+Réponse du propriétaire à « y a-t-il de vrais clients ou de vrais projets dans le Studio en ligne ? » : « On s'en
+fiche ». Donc aucune précaution de lecture n'est due aux anciens projets : une ancienne façon se retire en entier
+quand son lot arrive.
+
+Ce que le lot 0 contient, après mesure :
+
+1. **Archives sorties du dépôt** (elles restent dans l'historique) : `reports/` (911 Mo, 3 382 fichiers),
+   `docs/coordination/` (352 Mo, 1 769), `docs/preuves/` (38 Mo, 288), `docs/fusion/` (59 fichiers), les 18 dossiers
+   `docs/syna-*` (54 Mo, 649), et à la racine `ARVEN_PUBLICITE_VIDEO`, `ARVEN_VIDEO_WAN26`, `SONORE_VIDEO_WAN`,
+   `PAYSAGISTE_VIDEO`. Environ 1,36 Go et 6 150 fichiers. Neuf fichiers de tests lisent ces dossiers : à retirer ou à
+   corriger dans le même lot.
+2. **Code que plus rien n'appelle** : les huit tâches de fond sans déclencheur et les fichiers sans importeur relevés
+   par les lectures, vérifiés par la compilation et la suite de tests.
+3. **Consignes courtes** : `CLAUDE.md` réduit aux règles permanentes et au renvoi vers `docs/studio/` ; les notes
+   datées déplacées dans `docs/archives/`.
+
+Ce qui sort du lot 0, contrairement à la première idée : les anciens scripts de recette (170 fichiers `verify-*`,
+`syna301-*`, `parity301-*`, `agent211-*`, `lot1*`, `lot2*`, `mission*`, `benchmark-*`). 37 fichiers de tests les
+lisent et 49 des 53 étapes des contrôles automatiques les lancent : ils vérifient l'ancien agent, donc ils partent
+avec lui, dans le lot 1.
+
 ## 8. Non vérifié
 
 - La suite de tests n'a pas été lancée ; « code jamais appelé » repose sur une recherche de texte.
