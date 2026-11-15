@@ -15,12 +15,13 @@ _site
 scripts/tutorials/silent/
 .studio-dev.pid
 
-# Vidéos Pixabay brutes (re-téléchargeables : voir PAYSAGISTE_VIDEO/pixabay/sources.jsonl)
-PAYSAGISTE_VIDEO/pixabay/*.mp4
-PAYSAGISTE_VIDEO/ecartees-paysages/
-SONORE_VIDEO_WAN/ecartees-reference-pixabay/references/
-# Séquences de titres animés (régénérables : node PAYSAGISTE_VIDEO/titres/animer-titres.cjs)
-PAYSAGISTE_VIDEO/titres/anim/
+# Archives sorties du dépôt le 15 novembre 2026 (lot 0 : elles restent dans l'historique) ; les rapports que les
+# scripts écrivent dans reports/ ne se versionnent plus.
+reports/
+ARVEN_PUBLICITE_VIDEO/
+ARVEN_VIDEO_WAN26/
+SONORE_VIDEO_WAN/
+PAYSAGISTE_VIDEO/
 
 # Démonstrations (issue #137) : visuels du kit de Thomas.
 # Décision du propriétaire du 6 novembre 2026 : les photos des thèmes FRAISE, ONDE, PHASE, APLAT et MAISON & HORIZON

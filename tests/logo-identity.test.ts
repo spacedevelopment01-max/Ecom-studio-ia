@@ -10,7 +10,7 @@ import { cleanArtwork } from "@/lib/logo-v2/artwork";
 import { artworkInks, artworkSymbol, paletteFromInks } from "@/lib/logo-v2/identity";
 import { contrast, hsl } from "@/lib/color";
 
-const DIR = "reports/openai-real-brand-test";
+const DIR = "tests/fixtures/logo-openai";
 const real = fs.readFileSync(path.join(DIR, fs.readdirSync(DIR).find((f) => /^direct-.*Z\.png$/.test(f))!));
 const svg = (w: number, h: number, body: string) => cleanArtwork(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="${w}" height="${h}" fill="#FFFFFF"/>${body}</svg>`)).then((b) => sharp(b).png().toBuffer());
 

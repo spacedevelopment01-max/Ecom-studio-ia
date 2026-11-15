@@ -48,8 +48,8 @@ describe("Bibliothèque de sections : couverture exhaustive", () => {
     }
   });
 
-  it("l'inventaire publié (docs/coordination/BIBLIOTHEQUE_SECTIONS_COUVERTURE.md) cite chaque section", () => {
-    const doc = fs.readFileSync(path.join(process.cwd(), "docs", "coordination", "BIBLIOTHEQUE_SECTIONS_COUVERTURE.md"), "utf8");
+  it("l'inventaire publié (docs/BIBLIOTHEQUE_SECTIONS_COUVERTURE.md) cite chaque section", () => {
+    const doc = fs.readFileSync(path.join(process.cwd(), "docs", "BIBLIOTHEQUE_SECTIONS_COUVERTURE.md"), "utf8");
     for (const t of types) expect(doc, `inventaire : ${t}`).toContain(`\`${t}\``);
     expect(SECTION_LIBRARY.length).toBe(types.length);
   });
