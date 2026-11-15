@@ -17,6 +17,8 @@ describe("SINA — chaîne de création de la marque", async () => {
   const { getTool } = await import("@/lib/syna-agent/registry");
   const J = await import("@/lib/syna-agent/journey");
   const C = await import("@/lib/syna-agent/brand-chain");
+  const { photoRequestMaxMicro } = await import("@/lib/ai/media-providers");
+  const { boardImageRoute } = await import("@/lib/syna-agent/brand-images");
   const fr = <T,>(fn: () => Promise<T> | T) => runWithLang({ ui: "fr", content: "fr" }, async () => fn());
   type Route = ReturnType<typeof route>;
 
@@ -1161,7 +1163,15 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(withImages.maxMicro - without.maxMicro).toBeLessThan(C.boardImagesQuote(3).maxMicro);
     expect(firstStep.maxMicro).toBeLessThan(C.boardImagesQuote(3).maxMicro);
     // La fin de marque : l'objet, les signes et les trois publications d'UNE identité ; un seul logo coûte moins.
-    expect(C.finishQuote()).toEqual(C.boardImagesQuote(1, undefined, ["object", "signs", "post0", "post1", "post2"]));
+    // S'y ajoute le symbole seul, tiré du logo : UNE image carrée avec une référence (le logo), au tarif d'une image de planche.
+    const images = C.boardImagesQuote(1, undefined, ["object", "signs", "post0", "post1", "post2"]);
+    const symbol = photoRequestMaxMicro(boardImageRoute(), { prompt: "x".repeat(6000), references: 1, aspect: "1:1", quality: "high" });
+    expect(symbol).toBeGreaterThan(0);
+    expect(C.finishQuote()).toEqual({ maxMicro: images.maxMicro + symbol, probableMicro: Math.ceil(images.probableMicro! + symbol / 1.25) });
+    // Le symbole coûte ce que coûte l'objet qui porte le logo (même format, même référence) : rien de plus n'est compté.
+    expect(symbol).toBe(C.boardImagesQuote(1, undefined, ["object", "signs"]).maxMicro - C.boardImagesQuote(1, undefined, ["signs"]).maxMicro);
+    // Il est compté une fois, quelles que soient les images demandées.
+    for (const slots of [["post1"], ["logo", "object", "signs"], ["site"]] as const) expect(C.finishQuote(slots).maxMicro).toBe(C.boardImagesQuote(1, undefined, slots).maxMicro + symbol);
     expect(C.finishQuote(["logo", "object", "signs"]).maxMicro).toBeLessThan(C.finishQuote().maxMicro);
     expect(C.finishQuote().probableMicro!).toBeLessThan(C.finishQuote().maxMicro);
     const alone = C.boardImagesQuote(1), three = C.boardImagesQuote(3);

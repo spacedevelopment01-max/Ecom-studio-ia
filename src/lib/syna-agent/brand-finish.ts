@@ -133,7 +133,7 @@ export async function runBrandFinish(o: {
   const brandNow = loadProject(o.projectId).brand, mainLogo = brandNow?.logo.assetId ? getAsset(brandNow.logo.assetId) : undefined;
   const symbolDone = (j.brandFinish as { symbolFor?: string } | undefined)?.symbolFor;
   let symbolFor = symbolDone;
-  if (brandNow && mainLogo && !mainLogo.deleted_at && symbolDone !== mainLogo.id && !(logos[0]?.kind === "planche")) {
+  if (brandNow && mainLogo && !mainLogo.deleted_at && symbolDone !== mainLogo.id && symbolDone !== `refus:${mainLogo.id}` && !(logos[0]?.kind === "planche")) {
     ctx.progress(0.85, L("Je tire le symbole de ton logo", "Deriving the symbol from your logo"));
     try {
       const made = await ctx.step(`brand:symbol:${round}:${mainLogo.id}`, async () => {
@@ -147,12 +147,16 @@ export async function runBrandFinish(o: {
         return { ok: true as const, id: asset.id };
       });
       if (made.ok) { const b2 = loadProject(o.projectId).brand!; saveBrand(o.projectId, { ...b2, logo: { ...b2.logo, markAssetId: made.id } }); symbolFor = mainLogo.id; }
-      else issues.push(L(`Je n'ai pas gardé le symbole tiré de ton logo (${made.why}) : ton favicon reprend ton logo entier en attendant. Je peux le refaire, je t'annonce son prix avant.`, `I did not keep the symbol derived from your logo (${made.why}).`));
+      else symbolFor = `refus:${mainLogo.id}`;
+      if (!made.ok) issues.push(L(`Je n'ai pas gardé le symbole tiré de ton logo (${made.why}) : ton favicon ne change pas pour l'instant. Je peux le refaire, je t'annonce son prix avant.`, `I did not keep the symbol derived from your logo (${made.why}).`));
     } catch (e) {
       if (!(e instanceof CostCapReached)) notes.push(`symbole non créé : ${String((e as Error)?.message ?? e).slice(0, 140)}`);
-      issues.push(L("Je n'ai pas pu tirer le symbole de ton logo : ton favicon reprend ton logo entier en attendant.", "I could not derive the symbol from your logo."));
+      issues.push(L("Je n'ai pas pu tirer le symbole de ton logo : ton favicon ne change pas pour l'instant.", "I could not derive the symbol from your logo."));
     }
   }
+
+  // Symbole déjà refusé pour ce logo : pas de nouvel essai tout seul, mais le refus reste dit au client.
+  if (mainLogo && symbolDone === `refus:${mainLogo.id}`) issues.push(...(j.brandFinish?.issues ?? []).filter((l) => /symbole/i.test(l)));
 
   // 3. La charte complète (gratuite, rendue par le Studio). Le slogan choisi est validé : la planche et la charte l'écrivent.
   ctx.progress(0.9, L("Je prépare ta charte", "Preparing your brand guidelines"));

@@ -90,14 +90,16 @@ export async function buildBrandKit(projectId: string): Promise<BrandKit> {
   const markData = markAsset ? assetData(markAsset) : assetData(main);
   if (!markAsset) notes.push(L("Pas de symbole séparé : le favicon et l'avatar reprennent le logo entier.", "No separate symbol: favicon and avatar use the whole logo."));
   const save = (role: string, name: string, data: Buffer) => saveAsset({ projectId, userId: p.userId, data, name, mime: "image/png", role, folderKey: "brand.logos", origin: "generated", sourceAssetId: main.id, meta: { engine: "syna-brand-kit" } });
+  // Un favicon ou un avatar fait AVANT le symbole actuel (symbole refait depuis) est refait à partir de lui.
+  const fresh = (role: string) => { const d = derived(role); return !!d && (!markAsset || d.created_at >= markAsset.created_at); };
   const detailed = await isDetailedSolidMark(markData).catch(() => false);
   if (detailed) {
     notes.push(L("Favicon 32 px : ton symbole est très détaillé pour cette taille ; regarde s'il reste lisible dans l'onglet du navigateur.", "32 px favicon: your symbol is very detailed for this size."));
     notes.push(L("Versions une couleur (noir, blanc) : une illustration aussi détaillée y perd ses détails ; à garder pour les usages où une seule couleur est imposée (tampon, gravure).", "One-colour versions lose the illustration's details."));
   }
-  if (!derived("favicon-32")) await save("favicon-32", "favicon-32.png", await faviconPng(markData, 32));
-  if (!derived("favicon-512")) await save("favicon-512", "icone-512.png", await faviconPng(markData, 512));
-  if (!derived("social-avatar")) await save("social-avatar", "avatar-reseaux.png", await avatarPng(markData, b.palette.light && b.palette.light !== "#000000" ? b.palette.light : "#FFFFFF"));
+  if (!fresh("favicon-32")) await save("favicon-32", "favicon-32.png", await faviconPng(markData, 32));
+  if (!fresh("favicon-512")) await save("favicon-512", "icone-512.png", await faviconPng(markData, 512));
+  if (!fresh("social-avatar")) await save("social-avatar", "avatar-reseaux.png", await avatarPng(markData, b.palette.light && b.palette.light !== "#000000" ? b.palette.light : "#FFFFFF"));
   if (!derived("logo-svg")) {
     // La VRAIE raison (essai réel : « dégradés et textures » était dit pour un lettrage en aplats).
     const why = await faithfulSvg(assetData(main)).then((r) => (r.ok ? null : r.reason)).catch(() => null);

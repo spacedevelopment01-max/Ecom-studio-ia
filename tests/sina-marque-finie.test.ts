@@ -14,7 +14,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
   const { JobContext } = await import("@/lib/jobs");
   const { runWithLang } = await import("@/lib/i18n-server");
   const { loadProject } = await import("@/lib/projects");
-  const { getAsset, saveAsset } = await import("@/lib/library");
+  const { assetData, getAsset, saveAsset } = await import("@/lib/library");
   const { account } = await import("./conversation209-fixtures");
   const { threadFor } = await import("@/lib/syna-agent/thread");
   const { getTool } = await import("@/lib/syna-agent/registry");
@@ -95,8 +95,18 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     logoIdea?: string;
     /** Consigne de la maquette du site rendue par la direction artistique (par défaut : une vraie consigne ; « » = aucune). */
     site?: string;
+    /** Création du symbole seul, tiré du logo (par défaut : un signe sombre sur un fond blanc net). */
+    symbol?: (id: string, call: any) => Promise<Buffer>;
+    /** Relecture du symbole seul (par défaut : gardé). */
+    symbolLook?: (id: string, call: any) => { ok: boolean; why?: string };
   };
-  type Log = { ids: string[]; prompts: Record<string, string>; refs: Record<string, { logo: boolean; scene: boolean; aspect: string }> };
+  type Log = { ids: string[]; prompts: Record<string, string>; refs: Record<string, { logo: boolean; scene: boolean; aspect: string }>; systems: Record<string, string>; labels: Record<string, string[]> };
+  const isSymbol = (id: string) => id.startsWith("symbol-"), isSymbolCheck = (id: string) => id.startsWith("symbolcheck");
+  /** Les appels du symbole seul dans un journal (sa création, puis sa relecture). */
+  const symbolCalls = (log: Log) => log.ids.filter((i) => i.startsWith("symbol"));
+  /** Les symboles créés par SINA et gardés pour ce projet (du plus ancien au plus récent). */
+  const keptSymbols = (pid: string) => all<{ id: string; role: string; name: string; source_asset_id: string | null; engine: string | null }>("SELECT id, role, name, source_asset_id, json_extract(meta,'$.engine') engine FROM assets WHERE project_id=? AND deleted_at IS NULL AND json_extract(meta,'$.engine')='syna-brand-symbol' ORDER BY created_at, rowid", pid);
+  const NOT_KEPT = (why: string) => `Je n'ai pas gardé le symbole tiré de ton logo (${why}) : ton favicon ne change pas pour l'instant. Je peux le refaire, je t'annonce son prix avant.`;
   /** La consigne de maquette que rend la directrice artistique simulée. */
   const SITE_BRIEF = "Maquette du haut de l'accueil sur téléphone : la carafe en grande photo pleine, le titre en bas sur la nappe claire, le logo en haut à gauche.";
   /** Les textes attendus de la maquette du site, tels que le relecteur les reçoit dans sa consigne. */
@@ -119,9 +129,16 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
       })();
       return c.schema.parse(c.prepare ? c.prepare(raw) : raw);
     },
-    draw: async (id: string, c: any) => { log.ids.push(id); log.prompts[id] = c.prompt; log.refs[id] = { logo: !!c.logo, scene: !!c.scene, aspect: c.aspect }; return s.draw ? s.draw(id, c) : isLogo(id) ? whiteLogo() : square("#3366CC"); },
+    draw: async (id: string, c: any) => {
+      log.ids.push(id); log.prompts[id] = c.prompt; log.refs[id] = { logo: !!c.logo, scene: !!c.scene, aspect: c.aspect };
+      // Le symbole seul a son propre scénario : il sort par défaut comme un logo, sur un fond blanc net.
+      if (isSymbol(id)) return s.symbol ? s.symbol(id, c) : whiteLogo();
+      return s.draw ? s.draw(id, c) : isLogo(id) ? whiteLogo() : square("#3366CC");
+    },
     look: async (id: string, c: any) => {
-      log.ids.push(id); log.prompts[id] = c.prompt;
+      log.ids.push(id); log.prompts[id] = c.prompt; log.systems[id] = c.system ?? ""; log.labels[id] = (c.images ?? []).map((i: any) => i.label);
+      // La relecture du symbole seul répond avec son propre schéma ({ ok, why }) : gardé par défaut.
+      if (isSymbolCheck(id)) return c.schema.parse(s.symbolLook ? s.symbolLook(id, c) : { ok: true, why: "" });
       const name = /Marque : « (.+?) »/.exec(c.prompt)?.[1] ?? "";
       // La maquette du site est lue avec tous ses mots attendus (le nom, le titre, le bouton) : un mot manquant la ferait relire.
       return c.schema.parse(s.look ? s.look(id, c) : { images: c.images.map((i: any) => ({ slot: i.label, ok: true, read: i.label === "site" ? siteWords(c) : [name], why: "" })) });
@@ -130,7 +147,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
 
   /** Exécute une tâche de marque déjà mise en file par un outil de SINA (IA simulée), puis la marque comme finie. */
   async function runJob(jobId: string, s: Script = {}) {
-    const log: Log = { ids: [], prompts: {}, refs: {} };
+    const log: Log = { ids: [], prompts: {}, refs: {}, systems: {}, labels: {} };
     run("UPDATE jobs SET status='running' WHERE id=?", jobId);
     C.brandChainDeps.ai = fakeAi(log, s) as any;
     try { return { out: (await fr(() => C.runSinaBrandJob(new JobContext(one<any>("SELECT * FROM jobs WHERE id = ?", jobId))))) as any, log }; }
@@ -284,8 +301,9 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
 
     const { out, log } = await runJob(job.id);
     // Exactement les cinq images manquantes, puis UNE relecture ; la direction artistique du premier temps ressert
-    // telle quelle (aucun nouvel appel « imagery »), et aucun logo n'est redessiné.
-    expect(log.ids).toEqual([...I.FINISH_SLOTS.map((sl) => `image-1-A-${sl}${REST}`), `imagecheck-1-A${REST}`]);
+    // telle quelle (aucun nouvel appel « imagery »), et aucun logo n'est redessiné. Après l'adoption du logo : le
+    // symbole seul, tiré de lui, puis SA relecture.
+    expect(log.ids).toEqual([...I.FINISH_SLOTS.map((sl) => `image-1-A-${sl}${REST}`), `imagecheck-1-A${REST}`, "symbol-1", "symbolcheck-1"]);
     expect(log.prompts[`image-1-A-post0${REST}`]).toMatch(/^Direction artistique : Lumière de fin d'après-midi/);
     expect(log.prompts[`image-1-A-object${REST}`]).toContain("Le sachet posé sur la table.");
     // L'objet et les signes portent le logo de la planche, joint à la relecture pour comparer.
@@ -329,11 +347,56 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(brand.logo).toMatchObject({ status: "validated" });
     expect(brand.logo.assetId).toBeTruthy();
     expect(brand.validated).toEqual(expect.arrayContaining(["identity", "name", "palette", "fonts", "tagline"]));
+    // Le symbole seul : demandé en carré avec le logo de la marque en seule référence, sur la consigne du Studio.
+    expect(log.refs["symbol-1"]).toEqual({ logo: true, scene: false, aspect: "1:1" });
+    expect(log.prompts["symbol-1"]).toBe(F.symbolPrompt(G.chosenRoute(j)!));
+    {
+      const asked = F.symbolPrompt(route("A"));
+      // Le signe du logo, tel quel, sans le nom ni aucun texte ; à défaut de signe, sa lettre la plus reconnaissable.
+      expect(asked).toMatch(/^Voici le logo de la marque « Bain de Minuit » \(image de référence\)\. Crée son SYMBOLE SEUL/);
+      expect(asked).toMatch(/reprends EXACTEMENT le signe du logo \(le même dessin, les mêmes traits, les mêmes couleurs\), sans le nom ni aucun autre texte\./);
+      expect(asked).toMatch(/Si le logo n'a pas de signe à côté du nom, prends sa lettre la plus reconnaissable, dessinée exactement comme dans le logo/);
+      expect(asked).toMatch(/lisible en tout petit \(16 pixels\)/);
+      // Sur un fond blanc uni, seul : ni cadre, ni rond, ni ombre, ni maquette.
+      expect(asked).toMatch(/Un seul symbole, centré, à plat, sur un fond BLANC uni jusqu'aux bords, avec de l'air autour\. Ni cadre, ni rond autour, ni ombre, ni maquette\./);
+      expect(asked.split("\n")).toHaveLength(4);
+      // Aucun exemple tiré d'une autre marque dans la consigne : seul le nom de celle-ci y figure.
+      expect(F.symbolPrompt({ ...route("A"), name: "Tout Autre Nom" }).replace("Tout Autre Nom", "Bain de Minuit")).toBe(asked);
+    }
+    // Sa relecture compare le symbole au logo : deux images, le symbole d'abord, avec le schéma { ok, why }.
+    expect(log.labels["symbolcheck-1"]).toEqual(["symbole", "logo"]);
+    expect(log.prompts["symbolcheck-1"]).toBe("Marque : « Bain de Minuit ». Image 1 : le symbole proposé. Image 2 : le logo de la marque.");
+    expect(log.systems["symbolcheck-1"]).toMatch(/ok = true seulement si : c'est bien le signe du logo \(ou une lettre du nom dessinée comme dans le logo\), reconnaissable au premier regard, dans ses couleurs ; il est seul, sans le nom entier ni autre texte ; il resterait lisible en tout petit\./);
+    // Gardé : un fichier « symbole seul » rattaché au logo de la marque, et la marque pointe sur lui.
+    expect(keptSymbols(t.pid)).toEqual([{ id: brand.logo.markAssetId, role: "logo-mark", name: "symbole.png", source_asset_id: brand.logo.assetId, engine: "syna-brand-symbol" }]);
+    const symbol = getAsset(brand.logo.markAssetId!)!;
+    expect(symbol).toMatchObject({ role: "logo-mark", mime: "image/png", origin: "generated", source_asset_id: brand.logo.assetId });
+    expect(getAsset(brand.logo.assetId!)).toMatchObject({ role: "logo", project_id: t.pid }); // le logo principal de la marque, pas le fichier de planche
+    expect(symbol.source_asset_id).not.toBe(board.logo!.id);
+    expect((f as any).symbolFor).toBe(brand.logo.assetId);
+    // Son fond blanc est retiré (pas de carré autour) : les coins sont transparents.
+    {
+      const { data, info } = await sharp(assetData(symbol)).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+      expect(info.channels).toBe(4);
+      expect(data[3]).toBe(0);
+      expect(data[data.length - 1]).toBe(0);
+    }
     // La charte est prête, à valider ; le repère du logo est fait.
     expect(j.steps[2].status).toBe("done");
     expect(j.steps[3].status).toBe("review");
     const keys = j.brandKit!.items.map((x) => x.key);
-    for (const k of ["logo", "favicon-32", "favicon-512", "avatar"]) expect(keys).toContain(k);
+    for (const k of ["logo", "symbole", "favicon-32", "favicon-512", "avatar"]) expect(keys).toContain(k);
+    // La charte montre CE symbole (« Symbole seul »), et ne dit pas qu'il manque.
+    expect(j.brandKit!.items.find((x) => x.key === "symbole")).toMatchObject({ assetId: symbol.id, label: "Symbole seul" });
+    expect(j.brandKit!.notes.join("\n")).not.toMatch(/Pas de symbole séparé/);
+    // Le favicon de 32 px part du symbole : une image de 32 px rattachée au logo, jamais une initiale dessinée par le Studio.
+    {
+      const fav = getAsset(j.brandKit!.items.find((x) => x.key === "favicon-32")!.assetId)!;
+      expect(fav).toMatchObject({ role: "favicon-32", source_asset_id: brand.logo.assetId });
+      const meta = await sharp(assetData(fav)).metadata();
+      expect([meta.width, meta.height]).toEqual([32, 32]);
+      expect(j.brandKit!.notes.join("\n")).not.toMatch(/il reprend l'initiale de la marque/);
+    }
     expect(j.brandKit!.bookId).toBeTruthy();
     expect(getAsset(j.brandKit!.boardId!)!.name).toBe("planche-identite.png"); // la planche de la charte, rendue par le Studio
 
@@ -370,10 +433,13 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(finishEstimate(j)).toEqual({ maxMicro: 0, slots: [] });
     expect(finishEstimate(j, { redo: ["post1"] }).maxMicro).toBe(C.finishQuote(["post1"]).maxMicro);
 
-    // Une relance de la tâche de fin ne recrée et ne repaie aucune image.
+    // Une relance de la tâche de fin ne recrée et ne repaie aucune image, ni le symbole.
     const again = await runJob(job.id);
     expect(again.log.ids).toEqual([]);
     expect(J.journeyOf(t.cid).brandFinish!.images).toEqual(f.images);
+    expect((J.journeyOf(t.cid).brandFinish as any).symbolFor).toBe(brand.logo.assetId);
+    expect(loadProject(t.pid).brand!.logo.markAssetId).toBe(symbol.id);
+    expect(keptSymbols(t.pid)).toHaveLength(1);
 
     // Le client valide sa marque : le repère 3 est fait, les angles s'ouvrent.
     const ok = await call("brand.kit_validate", t.ctx, {});
@@ -422,9 +488,16 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     // Identité mélangée : la direction artistique est réécrite pour elle (un appel « imagery »), puis les sept images
     // de sa marque (la maquette du site appartient à la proposition : elle ne se refait que si le client la demande).
     const all8 = ":logo+hero+object+signs+post0+post1+post2";
-    expect(log.ids).toEqual([`imagery-1-A${all8}`, ...["logo", "hero", "object", "signs", "post0", "post1", "post2"].map((sl) => `image-1-A-${sl}${all8}`), `imagecheck-1-A${all8}`]);
+    // Puis le symbole seul, tiré du logo créé pour l'identité mélangée, et sa relecture.
+    expect(log.ids).toEqual([`imagery-1-A${all8}`, ...["logo", "hero", "object", "signs", "post0", "post1", "post2"].map((sl) => `image-1-A-${sl}${all8}`), `imagecheck-1-A${all8}`, "symbol-1", "symbolcheck-1"]);
     expect(log.prompts[`imagery-1-A${all8}`]).toContain(`couleur de marque ${route("B").palette.primary}`);
     const done = J.journeyOf(t.cid);
+    {
+      const logo = loadProject(t.pid).brand!.logo;
+      expect(keptSymbols(t.pid)).toEqual([{ id: logo.markAssetId, role: "logo-mark", name: "symbole.png", source_asset_id: logo.assetId, engine: "syna-brand-symbol" }]);
+      expect((done.brandFinish as any).symbolFor).toBe(logo.assetId);
+      expect(done.brandFinish!.issues).toEqual([]);
+    }
     expect(done.brandFinish!.images!.logo).toBeTruthy();
     expect(done.brandFinish!.images!.logo!.id).not.toBe(done.identities!.list[0].board!.images!.logo!.id);
     expect(done.steps[2].status).toBe("done");
@@ -439,7 +512,8 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     const chosen = await call("identity.choose", t.ctx, { key: "A" });
     await runJob(chosen.jobs![0]);
     const before = J.journeyOf(t.cid), was = before.brandFinish!.images!;
-    const logoBefore = loadProject(t.pid).brand!.logo.assetId;
+    const logoBefore = loadProject(t.pid).brand!.logo.assetId, symbolBefore = loadProject(t.pid).brand!.logo.markAssetId;
+    expect(keptSymbols(t.pid).map((x) => x.id)).toEqual([symbolBefore]);
     // Un nouveau logo entraîne ce qui le porte (jamais deux logos différents sur la marque).
     expect(F.finishSlots(before, ["logo"])).toEqual(["logo", "object", "signs"]);
     expect(F.finishSlots(before, ["post1"])).toEqual(["post1"]);
@@ -457,7 +531,9 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     const part = ":logo+object+signs";
     // Le client demande un changement avec ses mots : la direction artistique est réécrite, et l'ancien logo est donné
     // comme ce dont le nouveau doit nettement différer.
-    expect(log.ids).toEqual([`imagery-1-A${part}`, `image-1-A-logo${part}`, `image-1-A-object${part}`, `image-1-A-signs${part}`, `imagecheck-1-A${part}`]);
+    // Un autre logo : son symbole est tiré du NOUVEAU logo (un appel de création, un de relecture).
+    expect(log.ids).toEqual([`imagery-1-A${part}`, `image-1-A-logo${part}`, `image-1-A-object${part}`, `image-1-A-signs${part}`, `imagecheck-1-A${part}`, "symbol-1", "symbolcheck-1"]);
+    expect(log.refs["symbol-1"]).toEqual({ logo: true, scene: false, aspect: "1:1" });
     expect(log.prompts[`imagery-1-A${part}`]).toMatch(/# Ce que le client demande pour cette nouvelle proposition \(ses mots\)\nPlus rond, avec une lune\./);
     expect(log.prompts[`imagery-1-A${part}`]).toMatch(/# Logos déjà prévus pour les AUTRES propositions de cette série\n1\. Un logo net tiré de l'idée de la marque\.[\s\S]*conception NETTEMENT différente/);
     expect(log.refs[`image-1-A-logo${part}`].logo).toBe(false);
@@ -480,6 +556,13 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(j.logos!.round).toBe(before.logos!.round + 1);
     expect(loadProject(t.pid).brand!.logo.assetId).not.toBe(logoBefore);
     expect(loadProject(t.pid).brand!.logo.status).toBe("validated");
+    // Le symbole suit le logo : un nouveau fichier, rattaché au nouveau logo ; la charte montre celui-là.
+    const logoNow = loadProject(t.pid).brand!.logo;
+    expect(logoNow.markAssetId).not.toBe(symbolBefore);
+    expect(keptSymbols(t.pid).map((x) => [x.id, x.source_asset_id])).toEqual([[symbolBefore, logoBefore], [logoNow.markAssetId, logoNow.assetId]]);
+    expect((j.brandFinish as any).symbolFor).toBe(logoNow.assetId);
+    expect(j.brandKit!.items.find((x) => x.key === "symbole")!.assetId).toBe(logoNow.markAssetId);
+    expect(j.brandFinish!.issues).toEqual([]);
     expect(j.brandKit!.at).toBeGreaterThanOrEqual(j.logoChoice!.at);
     expect(j.steps[2].status).toBe("done");
     expect(j.steps[3].status).toBe("review");
@@ -487,8 +570,12 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     // Refaire une seule publication : aucune direction réécrite sans ses mots, le logo de la marque ne change pas.
     const one1 = await call("brand.finish", t.ctx, { redo: ["post1"] });
     const second = await runJob(one1.jobs![0], { draw: async () => square("#AA5500") });
+    // Une AUTRE tâche, le même logo : le symbole déjà gardé n'est ni recréé ni relu (aucun appel « symbol… »).
     expect(second.log.ids).toEqual(["image-1-A-post1:post1", "imagecheck-1-A:post1"]);
     const after = J.journeyOf(t.cid);
+    expect(loadProject(t.pid).brand!.logo.markAssetId).toBe(logoNow.markAssetId);
+    expect((after.brandFinish as any).symbolFor).toBe(logoNow.assetId);
+    expect(keptSymbols(t.pid)).toHaveLength(2);
     expect(after.brandFinish!.images!.posts![1]!.id).not.toBe(now.posts![1]!.id);
     expect(after.brandFinish!.images!.posts![0]).toEqual(now.posts![0]);
     expect(after.brandFinish!.images!.logo).toEqual(now.logo);
@@ -512,6 +599,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(last.site!.id).not.toBe(after.brandFinish!.images!.site!.id);
     expect({ ...last, site: undefined }).toEqual({ ...after.brandFinish!.images!, site: undefined });
     expect(J.journeyOf(t.cid).logoChoice).toEqual(j.logoChoice);
+    expect(keptSymbols(t.pid)).toHaveLength(2);
     // Avant le choix d'une identité, rien à finir.
     const fresh = await thread();
     expect(await call("brand.finish", fresh.ctx, {})).toMatchObject({ ok: false, summary: "L'identité doit être choisie avant de finir la marque." });
@@ -541,6 +629,11 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     // Le nouveau logo est refusé par la relecture (une faute dans le nom).
     const { log, out } = await runJob(r.jobs![0], { look: (_id, c) => ({ images: c.images.map((i: any) => (i.label === "logo" ? { slot: "logo", ok: false, defect: "texte", read: ["Bain de Minut"], why: "Le nom est mal écrit." } : { slot: i.label, ok: true, read: [], why: "" })) }) });
     expect(log.ids.filter((i) => i.startsWith("image-1-A-logo"))).toHaveLength(1); // jamais relancé seul
+    // Le nom dessiné de secours n'est pas un logo dont on tire un symbole : aucune création, aucune relecture, rien de gardé.
+    expect(symbolCalls(log)).toEqual([]);
+    expect(keptSymbols(t.pid)).toEqual([]);
+    expect((J.journeyOf(t.cid).brandFinish as any).symbolFor).toBeUndefined();
+    expect(J.journeyOf(t.cid).brandFinish!.issues!.join("\n")).not.toMatch(/symbole/);
     const j = J.journeyOf(t.cid), f = j.brandFinish!;
     expect(f.images!.logo).toBeUndefined();
     expect(f.images!.mark).toBeUndefined();
@@ -568,7 +661,69 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(finishEstimate(j).maxMicro).toBeGreaterThan(0);
   });
 
-  it("le client garde son logo : aucun logo créé ni adopté, son logo est posé tel quel et la charte est faite avec lui", async () => {
+  it("symbole refusé (relecture, fond non blanc, création en échec) : rien n'est gardé et c'est dit ; la relance de la tâche ne repaie rien", async () => {
+    const t = await thread();
+    await proposed(t);
+    const chosen = await call("identity.choose", t.ctx, { key: "A" });
+    // 1. Refusé à la relecture : le défaut du relecteur est dit, sans son point final.
+    const { log, out } = await runJob(chosen.jobs![0], { symbolLook: () => ({ ok: false, why: "On y lit encore le nom entier." }) });
+    expect(symbolCalls(log)).toEqual(["symbol-1", "symbolcheck-1"]);
+    let j = J.journeyOf(t.cid);
+    const logo = loadProject(t.pid).brand!.logo;
+    expect(keptSymbols(t.pid)).toEqual([]);
+    expect(all("SELECT id FROM assets WHERE project_id=? AND name='symbole.png'", t.pid)).toEqual([]);
+    expect((j.brandFinish as any).symbolFor).toMatch(/^refus:/); // refusé : pas de nouvel essai tout seul pour ce logo
+    expect(j.brandFinish!.issues).toEqual([NOT_KEPT("On y lit encore le nom entier")]);
+    expect(out.issues).toEqual(j.brandFinish!.issues);
+    // La marque ne pointe sur aucun symbole de SINA ; le reste de la marque est fini et la charte est prête.
+    expect(logo.markAssetId ? String(one<{ e: string | null }>("SELECT json_extract(meta,'$.engine') e FROM assets WHERE id=?", logo.markAssetId)?.e ?? "") : "").not.toBe("syna-brand-symbol");
+    expect(out).toMatchObject({ finished: true, kit: true, created: I.FINISH_SLOTS });
+    expect(j.steps[3].status).toBe("review");
+    expect(j.brandKit!.items.map((x) => x.key)).toEqual(expect.arrayContaining(["logo", "favicon-32", "favicon-512", "avatar"]));
+    // Dit au client dans le fil, et SINA le sait.
+    expect((await fr(() => threadView(t.user, t.cid))).journey.identities!.final).toMatchObject({ finished: true, finishIssues: j.brandFinish!.issues });
+    expect(J.journeyContext(j)).toContain("Je n'ai pas gardé le symbole tiré de ton logo (On y lit encore le nom entier)");
+    // La relance de la MÊME tâche ne refait aucun appel (ni création, ni relecture), et le refus reste dit.
+    const again = await runJob(chosen.jobs![0]);
+    expect(again.log.ids).toEqual([]);
+    expect(J.journeyOf(t.cid).brandFinish!.issues).toEqual([NOT_KEPT("On y lit encore le nom entier")]);
+    expect(keptSymbols(t.pid)).toEqual([]);
+
+    // 2. Une relecture qui refuse sans dire pourquoi : une raison simple est donnée à sa place.
+    const t2 = await thread();
+    await proposed(t2);
+    const chosen2 = await call("identity.choose", t2.ctx, { key: "A" });
+    const mute = await runJob(chosen2.jobs![0], { symbolLook: () => ({ ok: false, why: "" }) });
+    expect(symbolCalls(mute.log)).toEqual(["symbol-1", "symbolcheck-1"]);
+    expect(J.journeyOf(t2.cid).brandFinish!.issues).toEqual([NOT_KEPT("il ne reprend pas le logo")]);
+    expect(keptSymbols(t2.pid)).toEqual([]);
+
+    // 3. Sur un fond qui n'est pas blanc : refusé par le contrôle gratuit, SANS appel de relecture.
+    const t3 = await thread();
+    await proposed(t3);
+    const chosen3 = await call("identity.choose", t3.ctx, { key: "A" });
+    const dark = await runJob(chosen3.jobs![0], { symbol: async () => square("#050505"), symbolLook: () => { throw new Error("la relecture du symbole ne doit pas être appelée"); } });
+    expect(symbolCalls(dark.log)).toEqual(["symbol-1"]);
+    expect(J.journeyOf(t3.cid).brandFinish!.issues).toEqual([NOT_KEPT("il n'est pas sur un fond blanc net")]);
+    expect(keptSymbols(t3.pid)).toEqual([]);
+    expect((J.journeyOf(t3.cid).brandFinish as any).symbolFor).toMatch(/^refus:/); // refusé : pas de nouvel essai tout seul pour ce logo
+    expect(dark.out).toMatchObject({ finished: true, kit: true });
+
+    // 4. La création échoue (erreur du fournisseur) : jamais relancée seule, rien de gardé, dit simplement ; la marque est finie quand même.
+    const t4 = await thread();
+    await proposed(t4);
+    const chosen4 = await call("identity.choose", t4.ctx, { key: "A" });
+    const failed = await runJob(chosen4.jobs![0], { symbol: async () => { throw new Error("le fournisseur d'images ne répond pas"); } });
+    expect(symbolCalls(failed.log)).toEqual(["symbol-1"]);
+    expect(J.journeyOf(t4.cid).brandFinish!.issues).toEqual(["Je n'ai pas pu tirer le symbole de ton logo : ton favicon ne change pas pour l'instant."]);
+    expect(failed.out.notes.join("\n")).toMatch(/symbole non créé : le fournisseur d'images ne répond pas/);
+    expect(keptSymbols(t4.pid)).toEqual([]);
+    expect((J.journeyOf(t4.cid).brandFinish as any).symbolFor).toBeUndefined();
+    expect(failed.out).toMatchObject({ finished: true, kit: true, created: I.FINISH_SLOTS });
+    expect(J.journeyOf(t4.cid).steps[3].status).toBe("review");
+  });
+
+  it("le client garde son logo : aucun logo créé ni adopté, son logo est posé tel quel, son symbole seul est tiré de lui et la charte est faite avec lui", async () => {
     const t = await thread();
     const mine = await saveAsset({ projectId: t.pid, userId: t.user.id, data: await whiteLogo("#0B3D2E"), name: "mon-logo.png", mime: "image/png", role: "logo", origin: "upload" });
     J.updateJourney(t.cid, (x) => { x.keep = ["logo"]; x.mode = "refonte"; });
@@ -596,9 +751,20 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     // Un autre logo ne se demande pas : il garde le sien.
     expect(await call("brand.finish", t.ctx, { redo: ["logo"] })).toMatchObject({ ok: false, summary: "Tu gardes ton logo : je ne le redessine pas." });
 
-    const { log, out } = await runJob(chosen.jobs![0]);
-    expect(log.ids).toEqual([...I.FINISH_SLOTS.map((sl) => `image-1-A-${sl}${REST}`), `imagecheck-1-A${REST}`]);
+    const sent: { logo?: Buffer; seen?: Buffer[] } = {};
+    const { log, out } = await runJob(chosen.jobs![0], {
+      symbol: async (_id, c) => { sent.logo = c.logo; return whiteLogo("#0B3D2E"); },
+      symbolLook: (_id, c) => { sent.seen = c.images.map((i: any) => i.data); return { ok: true, why: "" }; },
+    });
+    // Son logo n'est pas redessiné, mais son symbole seul en est tiré (création, puis relecture).
+    expect(log.ids).toEqual([...I.FINISH_SLOTS.map((sl) => `image-1-A-${sl}${REST}`), `imagecheck-1-A${REST}`, "symbol-1", "symbolcheck-1"]);
     expect(log.ids.some((i) => i.includes("-logo") || i.startsWith("imagery"))).toBe(false);
+    // La référence envoyée est SON logo (posé sur du blanc), et la relecture le reçoit pour comparer.
+    expect(log.refs["symbol-1"]).toEqual({ logo: true, scene: false, aspect: "1:1" });
+    expect(sent.logo!.equals(await I.onWhite(assetData(getAsset(mine.id)!)))).toBe(true);
+    expect(sent.seen).toHaveLength(2);
+    expect(sent.seen![1].equals(sent.logo!)).toBe(true);
+    expect(log.prompts["symbol-1"]).toBe(F.symbolPrompt(G.chosenRoute(J.journeyOf(t.cid))!));
     // Son logo est donné en référence pour l'objet et les signes.
     expect(log.refs[`image-1-A-object${REST}`].logo).toBe(true);
     expect(log.refs[`image-1-A-signs${REST}`].logo).toBe(true);
@@ -619,7 +785,15 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(all("SELECT id FROM assets WHERE project_id=? AND role='logo-v2-studio'", t.pid)).toEqual([]);
     expect(loadProject(t.pid).brand!.logo.assetId).toBe(mine.id);
     expect(j.brandKit!.items.find((x) => x.key === "logo")!.assetId).toBe(mine.id);
-    expect(j.brandKit!.items.map((x) => x.key)).toEqual(expect.arrayContaining(["favicon-32", "favicon-512", "avatar"]));
+    expect(j.brandKit!.items.map((x) => x.key)).toEqual(expect.arrayContaining(["symbole", "favicon-32", "favicon-512", "avatar"]));
+    // Son symbole : rattaché à SON logo, noté sur la marque, montré dans la charte.
+    {
+      const logo = loadProject(t.pid).brand!.logo;
+      expect(keptSymbols(t.pid)).toEqual([{ id: logo.markAssetId, role: "logo-mark", name: "symbole.png", source_asset_id: mine.id, engine: "syna-brand-symbol" }]);
+      expect((j.brandFinish as any).symbolFor).toBe(mine.id);
+      expect(j.brandKit!.items.find((x) => x.key === "symbole")!.assetId).toBe(logo.markAssetId);
+      expect(getAsset(mine.id)!.deleted_at ?? null).toBeNull(); // son logo, lui, n'est ni remplacé ni retiré
+    }
     // La planche de la charte est la planche d'identité rendue par le Studio, jamais une image de publication
     // (les deux portent le même rôle de fichier ; faute trouvée en écrivant ce test, corrigée dans brand-kit.ts).
     expect(String(one<{ meta: string | null }>("SELECT meta FROM assets WHERE id=?", j.brandKit!.boardId!)?.meta ?? "")).not.toMatch(/synaBoard/);
