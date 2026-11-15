@@ -197,6 +197,25 @@ Ce qui sort du lot 0, contrairement à la première idée : les anciens scripts 
 lisent et 49 des 53 étapes des contrôles automatiques les lancent : ils vérifient l'ancien agent, donc ils partent
 avec lui, dans le lot 1.
 
+## 7 ter. Le lot 0 fait (15 novembre 2026)
+
+- **Archives sorties du dépôt** : 6 308 fichiers ; le dépôt (hors historique) passe de 2,2 Go à 764 Mo. Gardés parce
+  que des tests les lisent : `tests/fixtures/logo-openai/`, `tests/fixtures/lot2a/`, et
+  `docs/BIBLIOTHEQUE_SECTIONS_COUVERTURE.md`. `reports/` n'est plus versionné.
+- **Consignes courtes** : `CLAUDE.md` passe de 815 à 132 lignes ; l'ancienne version est dans
+  `docs/archives/CLAUDE-2026-11-15.md`.
+- **Code que plus rien n'appelle** : deux fichiers retirés seulement (`src/components/studio/palette-picker.tsx`,
+  `src/lib/syna-agent/mockup-code/index.ts`). La vérification fichier par fichier a corrigé l'inventaire : les huit
+  tâches de fond « sans déclencheur » sont encore citées par l'enveloppe des tâches (`orchestrator/intent.ts`,
+  `execute.ts`), par `jobs.ts` et par une dizaine de fichiers de tests ; les autres fichiers « orphelins » ont chacun un
+  test, et certains (`image-v2/text-layer.ts`, `plates.ts`) peuvent resservir à la mise en page des publications.
+  Tout cela part ou se décide avec le lot de son domaine, pas avant.
+- **Vérifié** : compilation sans erreur ; suite complète après la sortie des archives : 703 fichiers de tests passés
+  sur 706, 2 ignorés, 1 en échec (6 833 tests passés, 1 échec, 6 ignorés ; 29 minutes). L'échec
+  (`tests/theme211-render-evidence.test.ts`) vient de la machine de travail : le test impose un navigateur à
+  `/usr/bin/chromium`, absent ici ; il appartient à l'ancien agent et part au lot 1. Les deux fichiers retirés ensuite
+  n'ont ni importeur ni test : la compilation a été relancée, pas la suite.
+
 ## 8. Non vérifié
 
 - La suite de tests n'a pas été lancée ; « code jamais appelé » repose sur une recherche de texte.
