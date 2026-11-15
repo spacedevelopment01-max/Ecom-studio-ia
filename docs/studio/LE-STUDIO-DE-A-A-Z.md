@@ -538,6 +538,10 @@ chiffres du site et de sa boutique. Les branchements reviendront quand il les au
     directions différentes, étoiles de tailles différentes, petites étoiles autour des grandes étapes (le nom, le logo
     et les couleurs autour de la marque) ;
   - le cœur est bleu comme SINA, puis prend les couleurs de la marque dès qu'elle est créée ;
+  - **après la livraison, elle continue de faire tourner sa constellation** (« Même quand le projet est fini, sina doit
+    se déplacer sur les étoiles concerné quand elle modifie ») : elle va sur l'étoile de ce qu'elle fait (une
+    publication sur « La communication », une retouche sur « Le site », une campagne sur « La publicité », le point du
+    mois sur « Dans la durée »), avec une phrase qui dit ce qu'elle fait ;
   - elle sert aussi de carte du projet dans le tableau de bord ;
   - sur la page d'accueil, elle remplace l'orbe en ouverture : un projet naît en une vingtaine de secondes, et chaque
     étoile fait apparaître ce que SINA a créé ; chaque démonstration a sa propre constellation, tirée du projet ;
