@@ -612,7 +612,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     let list = (j.identities?.list ?? []) as Route[];
     const said: string[] = [];
     for (const x of targets) {
-      const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, otherLogos: otherLogos(list, x.key), clientLogo });
+      const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, otherLogos: otherLogos(list, x.key), otherLogoImages: logoBuffers(list, x.key), clientLogo });
       list = list.map((o) => (o.key === x.key ? r.route : o));
       said.push(...r.issues); notes.push(...r.notes);
     }

@@ -807,7 +807,8 @@ describe("SINA — chaîne de création de la marque", async () => {
     const refs = (log as any).refs;
     // Le logo est conçu par OpenAI à partir de la marque, sans modèle (retour du propriétaire du 14 novembre 2026 :
     // le nom composé envoyé en modèle portait la vague de « Pulpe », et chaque logo la recopiait).
-    expect(refs["image-1-A-logo"]).toEqual({ logo: false, scene: false, aspect: "1:1" });
+    // Seule référence : la planche des logos déjà faits pour ce client (ceux de B et de C), à ne pas refaire.
+    expect(refs["image-1-A-logo"]).toEqual({ logo: false, scene: true, aspect: "1:1" });
     expect(refs["image-1-A-hero"]).toEqual({ logo: false, scene: false, aspect: "16:9" });
     expect(refs["image-1-A-object"]).toEqual({ logo: true, scene: false, aspect: "1:1" }); // le logo est posé sur l'objet
     expect(refs["image-1-A-site"]).toEqual({ logo: true, scene: true, aspect: "9:16" }); // la maquette : le logo et la scène en références, en portrait
@@ -1060,7 +1061,8 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(P.imagerySystem("services")).toMatch(/LE VRAI MATÉRIEL DU MÉTIER[\s\S]*Un véhicule de travail, un atelier ou un outil trop petit ou mal équipé pour le travail annoncé est une faute\./);
     expect(P.imageReviewSystem()).toMatch(/le matériel du métier n'est pas crédible pour un professionnel de ce métier/);
     if (ra.board!.descriptor) expect(log.prompts["imagecheck-1-A"]).toContain(`Métier : ${ra.board!.descriptor}.`);
-    expect(log.prompts["image-1-A-logo"]).not.toMatch(/image de référence/);
+    // Aucun modèle à recopier ; mais les logos déjà faits pour ce client lui sont montrés, pour qu'il fasse autre chose.
+    expect(log.prompts["image-1-A-logo"]).toMatch(/logos DÉJÀ proposés à ce client pour d'autres identités : ne les reproduis pas/);
     expect((log as any).refs["image-1-A-logo"].logo).toBe(false);
     // Le signe « lettrage » (le nom composé par le Studio, parfois avec la vague) n'est jamais donné pour le logo.
     const lettrage = ra.board!.signs.find((g) => g.kind === "lettrage");
