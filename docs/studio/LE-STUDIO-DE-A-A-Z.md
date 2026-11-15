@@ -476,6 +476,18 @@ l'instant c'est pas le cas donc on fait sans et on y met de côté ». Les engag
 branchement aux plateformes : SINA prépare tout, le client publie ou colle d'un geste ; le point du mois s'appuie sur les
 chiffres du site et de sa boutique. Les branchements reviendront quand il les aura mis en place.
 
+## 15. Décisions du 15 novembre 2026 sur le site
+
+- **Modifier en cliquant sur l'aperçu, obligatoire** : sur l'aperçu de son site, le client clique sur n'importe quel
+  élément de n'importe quelle section (titre, texte, photo, bouton, détail) et demande le changement à SINA, qui sait
+  exactement de quoi il parle. Ses mots : « ça c'est obligatoire et pour chaque détail des sections ». À construire au
+  lot 4 (l'ancien assistant savait désigner un élément ; la fonction est partie avec lui au lot 1).
+- **Pas de création gratuite** : l'idée vue chez Scale Ova (« créer et voir gratuitement, payer pour publier ») est
+  refusée. Ses mots : « Pas envie de faire comme ça ».
+- **Le design du site public et de l'intérieur du Studio** se reprend plus tard (« On reviendra sur le design de notre
+  site et studio plus tard »). Référence qu'il aime : https://scale-ova.ai/ (fond nuit, champ de saisie en ouverture,
+  preuves en images) ; ce n'est pas un site à copier.
+
 Sources de la partie 7 : journal des nouveautés de Shopify (conseils de Sidekick), Unite.AI (Canvas), TechCrunch
 (créateur de boutique), eCommerce Fastlane, Copyfy, blog de Google (Pomelli), test de Blaze par R. Doser, Apaya, blog de
 Zeely, Pixis (Meta), Tool Advisor et Capeb (Simplébo).

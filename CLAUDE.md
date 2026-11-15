@@ -126,6 +126,12 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - **Les branchements aux plateformes (Meta, TikTok, Google, Pinterest) sont mis de côté** : « Je mettrai en place toute
   l'automatisation avec les autres plateformes mais pour l'instant c'est pas le cas donc on fait sans et on y met de
   côté » (15 novembre 2026). Tout se conçoit sans eux : SINA prépare, le client publie d'un geste.
+- **Modifier en cliquant sur l'aperçu** : sur l'aperçu de son site, le client clique sur n'importe quel élément de
+  n'importe quelle section (un titre, un texte, une photo, un bouton, un détail) et demande le changement à SINA.
+  « ça c'est obligatoire et pour chaque détail des sections » (15 novembre 2026). L'ancien assistant savait désigner
+  un élément ; cette fonction est partie avec lui au lot 1 et revient pour SINA au lot 4.
+- **Pas de création gratuite** : l'idée « créer et voir gratuitement, payer pour publier » est refusée (« Pas envie
+  de faire comme ça », 15 novembre 2026) ; la règle « aucun appel à l'IA sans abonnement » reste.
 - Les 15 thèmes proposés : fraise, onde, rive, sillon, noctil, traverse, heuren, museau-club, souple, table-saison,
   atelier-nuance, parenthese, phase, maison-horizon, aplat. Leurs démonstrations sont des reproductions de maquettes
   validées : ne pas les recomposer ni les simplifier.
