@@ -237,6 +237,73 @@ describe("SINA agent — un fil, des outils natifs, des changements vérifiés",
     expect(waitMsg.data[0].coutReelMicro).toBe(290_000);
   });
 
+  it("pendant une création en arrière-plan, le client peut parler à SINA ; le résultat n'est présenté qu'une fois sa réponse finie", async () => {
+    const s = await shop("arriere-plan");
+    const images = all<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND kind='image' AND deleted_at IS NULL LIMIT 2", s.p.id).map((x) => x.id);
+    const events = () => all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND role='event'", s.cid).map((m) => JSON.parse(m.content_json).kind);
+    const r1 = submitMessage(s.user, s.cid, { requestId: "fond-1", text: "Fais une petite vidéo." });
+    await fr(() => runAgent(r1.id, r1.job_id!, { reason: async () => ({ message: "", actions: [{ tool: "video.montage", args: { purpose: "organic", aspect: "1:1", scenes: images.map((assetId) => ({ assetId })), line: "", cta: "", music: "none" } }], done: false }) }));
+    expect(getRun(r1.id)!.status).toBe("waiting_jobs");
+    const [render] = JSON.parse(getRun(r1.id)!.waiting_jobs);
+    // Dans le fil : une création tourne en arrière-plan, et le client peut écrire.
+    let view = await fr(() => threadView(s.user, s.cid));
+    expect(view.background).toBe(true);
+    expect(view.run).toMatchObject({ id: r1.id, status: "waiting_jobs" });
+
+    // Un nouveau message est accepté (aucun refus « SINA travaille encore »), et la création n'est ni annulée ni oubliée.
+    const r2 = submitMessage(s.user, s.cid, { requestId: "fond-2", text: "Au fait, je livre en 48 heures." });
+    expect(r2.id).not.toBe(r1.id);
+    expect(r2.status).toBe("queued");
+    expect(getRun(r1.id)!.status).toBe("waiting_jobs");
+    expect(JSON.parse(getRun(r1.id)!.waiting_jobs)).toEqual([render]);
+    expect(events()).not.toContain("pending_dropped");
+    // Le même message renvoyé (même identifiant) ne crée pas une seconde demande.
+    expect(submitMessage(s.user, s.cid, { requestId: "fond-2", text: "Au fait, je livre en 48 heures." }).id).toBe(r2.id);
+    // Pendant que SINA lui répond, la vue montre cette réponse en cours (plus « arrière-plan seul »), et un autre
+    // message attend son tour : là, c'est bien le refus 409.
+    view = await fr(() => threadView(s.user, s.cid));
+    expect(view.background).toBe(false);
+    expect(view.run).toMatchObject({ id: r2.id });
+    let refused: any = null;
+    try { await fr(() => submitMessage(s.user, s.cid, { requestId: "fond-3", text: "Et aussi…" })); } catch (e) { refused = e; }
+    expect(refused?.status).toBe(409);
+    expect(String(refused?.message)).toMatch(/SINA travaille encore sur ta demande précédente/);
+
+    // La création se termine alors que SINA n'a pas fini de répondre : la demande en attente ne reprend pas encore.
+    one("UPDATE jobs SET status='done' WHERE id=? RETURNING 1", render);
+    let early = false;
+    const held = await fr(() => runAgent(r1.id, getRun(r1.id)!.job_id!, { reason: async () => { early = true; return { message: "Ta vidéo est prête.", actions: [], done: true }; } }));
+    expect(early).toBe(false);
+    expect(held).toMatchObject({ runId: r1.id, waiting: [render] });
+    expect(getRun(r1.id)!.status).toBe("waiting_jobs"); // elle reste « en attente » pendant qu'elle surveille
+    expect(JSON.parse(getRun(r1.id)!.waiting_jobs)).toEqual([render]);
+    expect(all("SELECT 1 FROM syna_messages WHERE conversation_id=? AND role='tool' AND content_json LIKE '%jobs.wait%'", s.cid)).toEqual([]);
+
+    // SINA répond au client : son contexte lui dit qu'une création tourne, et qu'elle n'a rien à relancer.
+    let during = "";
+    await fr(() => runAgent(r2.id, r2.job_id!, { reason: async (call) => { during = call.context ?? ""; return { message: "C'est noté : livraison en 48 heures. Je te préviens dès que ta vidéo est prête.", actions: [], done: true }; } }));
+    expect(during).toMatch(/^# Une création est en cours en arrière-plan\n/);
+    expect(during).toMatch(/Tu n'as rien à relancer : n'appelle AUCUN outil de création, et ne présente jamais un résultat que tu n'as pas encore\./);
+    expect(during).toMatch(/réponds d'abord à ce qu'il dit/);
+    expect(getRun(r2.id)!.status).toBe("done");
+    expect(getRun(r1.id)!.status).toBe("waiting_jobs");
+    view = await fr(() => threadView(s.user, s.cid));
+    expect(view.background).toBe(true);
+    expect(view.run).toMatchObject({ id: r1.id });
+
+    // Sa réponse finie, la demande en attente reprend et présente le résultat ; plus de note d'arrière-plan.
+    let after = "", seen = "";
+    await fr(() => runAgent(r1.id, getRun(r1.id)!.job_id!, { reason: async (call) => { after = call.context ?? ""; seen = call.prompt; return { message: "Ta vidéo est prête.", actions: [], done: true }; } }));
+    expect(seen).toContain("jobs.wait");
+    expect(seen).toContain("Au fait, je livre en 48 heures."); // elle a tout le fil sous les yeux, sa réponse comprise
+    expect(after).not.toMatch(/Une création est en cours en arrière-plan/);
+    expect(getRun(r1.id)!.status).toBe("done");
+    view = await fr(() => threadView(s.user, s.cid));
+    expect(view.background).toBe(false);
+    // Tout est fini : le client écrit de nouveau sans attendre.
+    expect(submitMessage(s.user, s.cid, { requestId: "fond-4", text: "Merci !" }).status).toBe("queued");
+  });
+
   it("un refus du moteur natif pendant le devis est lu par SINA, l'exécution continue", async () => {
     const s = await shop("refus");
     let seen = "";

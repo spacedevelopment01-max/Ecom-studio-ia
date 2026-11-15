@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 describe("SINA — nom de domaine : l'exact, sinon une adresse libre qui garde le nom", async () => {
   const D = await import("@/lib/syna-agent/brand-domains");
-  const { NAME_RATINGS, NAME_REFUSALS, NAME_KEEP_SCORE } = await import("@/lib/syna-agent/brand-references");
+  const { NAME_REFUSALS, NAME_KEEP_SCORE } = await import("@/lib/syna-agent/brand-references");
   const P = await import("@/lib/syna-agent/brand-prompts");
   const { mixIdentity } = await import("@/lib/syna-agent/tools/identity");
   const J = await import("@/lib/syna-agent/journey");
@@ -106,13 +106,27 @@ describe("SINA — nom de domaine : l'exact, sinon une adresse libre qui garde l
     expect(POSTS_PLAN_SYSTEM).toMatch(/jamais trois variantes d'une même scène ni trois images de la même couleur/);
   });
 
-  it("les notes du propriétaire du 13 novembre : « Zeste » 8/10 ; « Gorgée » et « Fruit Nu » refusés, et l'épreuve du sous-entendu", () => {
-    expect(NAME_RATINGS.find((r) => r.name === "Zeste")?.score).toBe(8);
-    expect(NAME_RATINGS.find((r) => r.name === "Zeste")!.score).toBeGreaterThanOrEqual(NAME_KEEP_SCORE);
+  it("la mesure du propriétaire est écrite en règles générales : aucun nom ni exemple des projets d'essai dans les consignes ; les noms refusés restent écartés par le code", () => {
+    // La liste des noms refusés reste lue par le code (ils ne sont jamais reproposés), avec ses mots.
     for (const n of ["Gorgée", "Fruit Nu"]) expect(NAME_REFUSALS.find((r) => r.name === n)?.words).toBe("ça fait très porno");
-    expect(P.NAME_TRIALS).toMatch(/8\. Le sous-entendu : [\s\S]*« Gorgée » et « Fruit Nu »[\s\S]*« ça fait très porno »[\s\S]*un mot sensuel n'est pas un mot équivoque/);
-    expect(P.nameYardstick("produits")).toMatch(/« Zeste » 8\/10/);
-    expect(P.nameYardstick("produits")).toMatch(/Il a refusé « Gorgée » et « Fruit Nu » \(« ça fait très porno »\)/);
+    expect(NAME_REFUSALS.some((r) => r.name === "Tintamarre")).toBe(true);
+    expect(NAME_KEEP_SCORE).toBe(8);
+    // L'épreuve du sous-entendu reste, sans citer de nom.
+    expect(P.NAME_TRIALS).toMatch(/8\. Le sous-entendu : [\s\S]*\(sexuel, grivois, vulgaire, moqueur\) \? Au moindre doute, le nom est écarté : un mot sensuel n'est pas un mot équivoque/);
+    expect(P.nameYardstick("produits")).toMatch(/Il refuse un nom qui peut s'entendre de travers \(sexuel, grivois, vulgaire, moqueur\), même s'il est court et beau/);
+    expect(P.nameYardstick("produits")).toMatch(/tu appellerais ton site comme ça, toi \?/);
+    expect(P.nameYardstick("produits")).toMatch(new RegExp(`Ce qu'il note le plus haut \\(${NAME_KEEP_SCORE} sur 10 et plus\\) : UN MOT SIMPLE ET FORT`));
     expect(P.nameJudgeSystem("produits")).toMatch(/Le sous-entendu/);
+    // Aucune consigne envoyée à l'IA ne porte un exemple tiré des projets d'essai (ni la liste des noms refusés).
+    const sent: Record<string, string> = { NAME_TRIALS: P.NAME_TRIALS, STUDY: P.STUDY_SYSTEM, VERIFY: P.VERIFY_SYSTEM, strategy: P.strategySystem(), imageReview: P.imageReviewSystem(), imageReread: P.imageRereadSystem() };
+    for (const k of ["produits", "services"] as const) {
+      Object.assign(sent, { [`yardstick-${k}`]: P.nameYardstick(k), [`judge-${k}`]: P.nameJudgeSystem(k), [`shortlist-${k}`]: P.shortlistSystem(k, 3), [`direction-${k}`]: P.directionSystem(k), [`imagery-${k}`]: P.imagerySystem(k), [`review-${k}`]: P.reviewSystem(k), [`fix-${k}`]: P.fixSystem(k), [`recheck-${k}`]: P.recheckSystem(k) });
+      for (const path of P.teamPathsFor(k, 4)) sent[`team-${k}-${path.id}`] = P.teamSystem(k, path);
+    }
+    for (const [who, text] of Object.entries(sent)) {
+      expect(text, who).not.toMatch(/Tintamarre|Morceaux Choisis|Gorgée|Fruit Nu|Pulpe|Zeste|Éclat de thé|Pelage|toilettage|fourgon|ça fait très porno/);
+      // Les mots du propriétaire sur les noms refusés des projets d'essai ne partent plus à l'IA.
+      for (const r of NAME_REFUSALS.filter((x) => /infusions/.test(x.activity))) expect(text, `${who} : ${r.name}`).not.toContain(r.name);
+    }
   });
 });

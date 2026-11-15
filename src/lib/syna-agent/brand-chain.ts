@@ -104,6 +104,8 @@ export type ChainQuote = { maxMicro: number; probableMicro?: number };
 export function chainQuote(o: { routes: number; fresh?: boolean; settings?: ChainSettings; images?: boolean; /** Noms choisis par le client : ni recherche, ni juge. */ imposed?: boolean }): ChainQuote {
   const s = o.settings ?? chainSettings(), fresh = o.fresh !== false, images = o.images ?? brandImagesOn(), n = callCounts(o.routes, s.teams, fresh, images);
   if (o.imposed) { n.team = 0; n.judge = 0; }
+  // La direction artistique et la relecture des images sont comptées avec les images (boardImagesQuote), une seule fois.
+  if (images) { n.imagery = 0; n.look = 0; }
   // Recherches sur le web : faites par le modèle « métier » (réglage économe), pas par le modèle le plus fort.
   const search = webSearchQuoteMicro(s.craft) ?? 0, searches = (fresh ? RESEARCHES : 0) + 1;
   // Coût probable d'une recherche : la moitié de son maximum (essai réel du 12 novembre 2026 : 0,16 à 0,45 € pour 0,50 € au plus).
@@ -874,6 +876,9 @@ export async function runSinaBrandJob(ctx: JobContext) {
       ...(firstIssues.length ? { corrected: firstIssues } : {}), ...(a.guidance ? { guidance: a.guidance } : {}),
     };
     setStep(x, 1, "review");
+    // Nouvelle proposition demandée APRÈS un choix : l'ancien choix ne désigne plus ces planches. Tout ce qui en
+    // dépendait (images de la marque, logo, charte) repart ; la marque du projet reste jusqu'au nouveau choix.
+    if (x.identityChoice) { x.identityChoice = undefined; x.brandFinish = { prepaidMicro: 0 }; x.logos = undefined; x.logoChoice = undefined; x.brandKit = undefined; if (x.steps[2]?.status !== "skipped") setStep(x, 2, "todo"); setStep(x, 3, "todo"); }
   });
   return { routes: list.map((x) => ({ key: x.key, name: x.name, slogan: x.slogan })), issues, notes, quotes: study.quotes.length, sources: study.sources, facts: clientFacts(j).length > 0 };
 }

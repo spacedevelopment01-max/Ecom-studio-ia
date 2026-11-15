@@ -389,8 +389,11 @@ export async function runBoardImages(o: {
         const a = await saveAsset({ projectId: o.who.projectId, userId: o.who.userId, data: png, name: `planche-${key}-${slot}.png`, mime: "image/png", role: "brand-board", origin: "generated", status: "ready", meta: { synaBoard: { key, slot, round, name: x.name, from: logoMade.id } } });
         return { id: a.id, w: meta.width ?? 1024, h: meta.height ?? 1024 };
       };
-      const clear = await cleanArtwork(logoPng);
-      marks = { mark: await save(clear, "mark"), markDark: await save(await onDarkVersion(clear), "markDark") };
+      // Point de reprise : une relance de la tâche ne range pas ces deux fichiers une seconde fois.
+      marks = await ctx.step(`brand:marks:${round}:${key}${pass}:${logoMade.id}`, async () => {
+        const clear = await cleanArtwork(logoPng);
+        return { mark: await save(clear, "mark"), markDark: await save(await onDarkVersion(clear), "markDark") };
+      });
     } catch (e) { notes.push(`logo de ${key} gardé, mais sans version détourée : ${String((e as Error)?.message ?? e).slice(0, 120)}`); }
   }
 

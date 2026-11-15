@@ -76,7 +76,9 @@ describe("SINA — étape 2 : 3 logos", async () => {
     expect(modelFor(2)).toMatchObject({ model: DEFAULT_MODELS.strong.model });
     const j = J.emptyJourney();
     for (const s of [0, 1]) J.setStep(j, s, "done");
-    expect(J.journeyContext(j)).toMatch(/Étape 2 \(3 logos\) : rien n'est encore dessiné.*logo\.propose/);
+    // Lot 2 : après le choix de l'identité, une seule consigne pour les repères 2 et 3 : finir la marque (brand.finish).
+    expect(J.journeyContext(j)).toMatch(/La marque — l'identité est choisie, il reste à la finir : appelle brand\.finish \(sans argument\)/);
+    expect(J.journeyContext(j)).not.toMatch(/logo\.propose|3 logos/);
   });
 
   it("logos LIBRES (décision du propriétaire du 7 novembre) : carte blanche, nom exact seul texte, couleurs de la marque, interdits", () => {
@@ -138,7 +140,9 @@ describe("SINA — étape 2 : 3 logos", async () => {
     const byName = Object.fromEntries(j.logos!.list.map((x) => [x.name, x]));
     expect(byName["Illustration"].verdict).toBe("FINAL");
     expect(byName["Symbole moderne"].verdict).not.toBe("FINAL"); // note 4/10 : jamais présenté comme bon
-    expect(J.journeyContext(j)).toMatch(/Étape 2 — proposition n° 1 .*NON validé par le contrôle/);
+    // Le parcours ne passe plus par ces logos libres : la consigne de SINA reste « finir la marque », sans logo.propose.
+    expect(J.journeyContext(j)).toMatch(/appelle brand\.finish/);
+    expect(J.journeyContext(j)).not.toMatch(/logo\.propose|logo\.choose/);
     const view = await fr(() => threadView(user, cid));
     expect(view.journey.logos!.list.every((x) => !x.assetId || !!x.href)).toBe(true);
     // Choix du client : le logo devient celui de la marque, étape 2 validée, étape 3 ouverte.
@@ -146,7 +150,6 @@ describe("SINA — étape 2 : 3 logos", async () => {
     const { journeyImages } = await import("@/lib/syna-agent/attachments");
     const seen = await journeyImages(J.journeyOf(cid));
     expect(seen.map((x) => x.label)).toEqual(j.logos!.list.filter((x) => x.assetId).map((x) => expect.stringMatching(new RegExp(`^Logo ${x.source} — `))));
-    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/tu VOIS les 3 logos \(images jointes à ta réponse\)/);
     const pick = j.logos!.list.find((x) => x.verdict === "FINAL")!;
     const c = await call("logo.choose", ctx, { source: pick.source });
     expect(c.ok).toBe(true);
@@ -209,7 +212,9 @@ describe("SINA — étape 2 : 3 logos", async () => {
     expect(J.currentStep(J.journeyOf(cid))).toBe(3);
     expect(J.READY_STEPS).toContain(3);
     expect(modelFor(3)?.model).toBe(DEFAULT_MODELS.strong.model);
-    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/Étape 3 \(image de marque complète\) : rien n'est encore préparé[^]*GRATUIT[^]*brand\.kit/);
+    // La charte n'est plus demandée par SINA avec brand.kit : elle est préparée par la fin de marque (brand.finish).
+    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/appelle brand\.finish \(sans argument\)[^]*adopte son logo et prépare sa charte/);
+    expect(J.journeyContext(J.journeyOf(cid))).not.toMatch(/\bbrand\.kit\b(?!_validate)/);
     const r = await call("brand.kit", ctx, {});
     expect(r.ok).toBe(true);
     const kit = J.journeyOf(cid).brandKit!;

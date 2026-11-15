@@ -12,7 +12,7 @@ import { contrast } from "../color";
 import { canvasFamily, font } from "../media/fonts";
 import { isDetailedSolidMark } from "../media/identity-board";
 import { faithfulSvg } from "../logo-v2/artwork";
-import { all } from "../db";
+import { all, one } from "../db";
 import { L } from "../i18n-server";
 import { assetData, getAsset, saveAsset, type Asset } from "../library";
 import { loadProject } from "../projects";
@@ -106,7 +106,9 @@ export async function buildBrandKit(projectId: string): Promise<BrandKit> {
       : L("Pas de logo vectoriel (SVG) : le tracé automatique ne reproduit pas assez fidèlement ce dessin. Le logo est livré en PNG haute définition.", "No SVG: the automatic tracing is not faithful enough; delivered as high-resolution PNG."));
   }
   // Planche et charte : faites au choix du logo ; refaites seulement si elles manquent ou sont plus anciennes que lui.
-  let board = latestOf(projectId, "brand-board");
+  // La planche d'identité rendue par le Studio, jamais une image de planche de SINA (même rôle de fichier, repérée par « synaBoard »).
+  const boardRow = one<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND role='brand-board' AND deleted_at IS NULL AND (meta IS NULL OR meta NOT LIKE '%synaBoard%') ORDER BY created_at DESC LIMIT 1", projectId);
+  let board = boardRow ? getAsset(boardRow.id) ?? null : null;
   if (!board || board.created_at < main.created_at) board = (await saveIdentityBoard(projectId).catch((e) => { notes.push(L(`Planche de marque non refaite : ${(e as Error).message}`, "Brand board not rebuilt.")); return null; })) ?? board;
   let book = latestOf(projectId, "brand-book");
   if (!book || book.created_at < main.created_at) book = (await saveBrandBook(projectId).catch((e) => { notes.push(L(`Charte PDF non refaite : ${(e as Error).message}`, "Brand book not rebuilt.")); return null; })) ?? book;

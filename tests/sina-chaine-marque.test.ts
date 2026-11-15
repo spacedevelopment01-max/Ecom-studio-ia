@@ -526,18 +526,19 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect((await call("identity.images", t.ctx, { keys: ["A"], images: ["hero"] })).ok).toBe(false); // aucune planche encore
     await chain(t, {}, { review: () => ({ routes: [], series: "" }) });
     run("UPDATE jobs SET status='done' WHERE project_id=? AND type=?", t.pid, C.SINA_BRAND_JOB);
-    const est = await tool.estimate!(t.ctx, { keys: ["A", "B"], images: ["hero", "object"] } as never);
+    const est = await tool.estimate!(t.ctx, { keys: ["A", "B"], images: ["logo", "hero"] } as never);
     expect(est.label).toBe("2 images à refaire sur 2 planches");
-    expect(est.maxMicro).toBe(C.boardImagesQuote(2, undefined, ["hero", "object"]).maxMicro);
+    expect(est.maxMicro).toBe(C.boardImagesQuote(2, undefined, ["logo", "hero"]).maxMicro);
     expect(est.maxMicro).toBeLessThan(C.boardImagesQuote(2).maxMicro);
-    const r = await call("identity.images", t.ctx, { keys: ["A", "B"], images: ["hero", "object"], guidance: "Le camion n'est pas assez grand pour faire du toilettage." });
+    const r = await call("identity.images", t.ctx, { keys: ["A", "B"], images: ["logo", "hero"], guidance: "Le logo est trop chargé, je le veux plus simple." });
     expect(r.ok).toBe(true);
     expect(r.summary).toMatch(/^Je refais 2 images sur « .+ » et « .+ » \(quelques minutes\) ; le reste des planches ne bouge pas\.$/);
     const job = one<any>("SELECT * FROM jobs WHERE id=?", r.jobs![0]);
     expect(job.type).toBe(C.SINA_BRAND_JOB);
-    expect(JSON.parse(job.payload)).toMatchObject({ imagesOnly: true, images: true, redo: ["A", "B"], slots: ["hero", "object"], guidance: "Le camion n'est pas assez grand pour faire du toilettage.", capMicro: est.maxMicro });
-    // Le haut du site n'est jamais une image à refaire ; une seule création de marque à la fois.
-    expect(tool.args.safeParse({ keys: ["A"], images: ["site"] }).success).toBe(false);
+    expect(JSON.parse(job.payload)).toMatchObject({ imagesOnly: true, images: true, redo: ["A", "B"], slots: ["logo", "hero"], guidance: "Le logo est trop chargé, je le veux plus simple.", capMicro: est.maxMicro });
+    // Avant le choix, une planche n'a que son logo et sa grande scène : l'objet, les signes et les publications se
+    // créent (et se refont) pour l'identité choisie, avec brand.finish. Le haut du site n'est jamais une image.
+    for (const slot of ["site", "object", "signs", "post0"]) expect(tool.args.safeParse({ keys: ["A"], images: [slot] }).success).toBe(false);
     expect((await call("identity.images", t.ctx, { keys: ["A"], images: ["logo"] })).summary).toMatch(/déjà en cours/);
     // SINA sait que c'est à elle de refaire une image fausse, sans refaire l'identité.
     const { SYNA_SYSTEM } = await import("@/lib/syna-agent/prompt");

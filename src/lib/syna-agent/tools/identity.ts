@@ -28,8 +28,9 @@ import {
   IDENTITY_SYSTEM, IdentitiesSchema, LOGO_STYLE_LABEL, fontFamily, identityIssues, identityPrompt, prepareIdentities, type Identity,
 } from "../identities";
 import { SINA_BRAND_JOB, boardImagesQuote, chainQuote, finishQuote, routeCountOfProject } from "../brand-chain";
-import { CREATED_SLOTS, FINISH_SLOTS, type ImageSlot } from "../brand-images";
+import { CREATED_SLOTS, FINISH_SLOTS, PROPOSAL_SLOTS, type ImageSlot } from "../brand-images";
 import { finishSlots } from "../brand-finish";
+import { chosenRoute } from "../logos";
 import { ROUTE_KEYS, routeKeys } from "../brand-routes";
 import { project, short } from "./common";
 
@@ -325,7 +326,7 @@ const chooseTool: AgentTool<{ key: Key; mix?: Partial<Record<Part, Key>>; name?:
     }
     // La fin de la marque part tout de suite quand l'accord donné pour les identités la couvre déjà ; sinon SINA
     // appelle brand.finish, qui montre son prix.
-    const finish = verified && finishEstimate(journeyOf(ctx.conversationId)).maxMicro === 0 ? startFinish(ctx, {}) : null;
+    const finish = verified && !!chosenRoute(journeyOf(ctx.conversationId)) && finishEstimate(journeyOf(ctx.conversationId)).maxMicro === 0 ? startFinish(ctx, {}) : null;
     return {
       ok: verified,
       summary: verified
@@ -339,7 +340,7 @@ const chooseTool: AgentTool<{ key: Key; mix?: Partial<Record<Part, Key>>; name?:
 };
 
 /** Les images d'une planche que SINA peut refaire (le haut du site est une vraie page, jamais une image). */
-const REDO_IMAGES = CREATED_SLOTS as unknown as [string, ...string[]];
+const REDO_IMAGES = PROPOSAL_SLOTS as unknown as [string, ...string[]];
 type ImagesArgs = { keys: Key[]; images: string[]; guidance?: string };
 /**
  * Refaire SEULEMENT certaines images d'une ou plusieurs planches (retour du propriétaire du 14 novembre 2026, sur
@@ -349,8 +350,8 @@ type ImagesArgs = { keys: Key[]; images: string[]; guidance?: string };
  */
 const imagesTool: AgentTool<ImagesArgs> = {
   name: "identity.images", module: "marque", kind: "generate", needsProject: true,
-  description: "Étape 1 : refait SEULEMENT certaines images des planches déjà montrées (le logo, la grande image « hero », l'objet ou le véhicule qui porte le logo « object », l'image des signes « signs », les publications « post0 », « post1 », « post2 »), sans toucher au nom, aux textes ni aux autres images. À utiliser quand une image est fausse ou refusée (la planche le dit) ou quand le client signale un défaut (« le camion n'est pas assez grand », « le logo n'est pas le même sur le camion ») : dis-lui ce que tu refais et pourquoi, et mets sa correction, avec ses mots, dans guidance. Le logo refait est aussi reposé sur l'objet si tu refais l'objet. keys = les planches (A, B, C, D) ; images = les images à refaire.",
-  args: z.object({ keys: z.array(z.enum(KEYS)).min(1).max(4), images: z.array(z.enum(REDO_IMAGES)).min(1).max(7), guidance: z.string().max(1500).optional() }).strict(),
+  description: "Avant le choix de l'identité : refait SEULEMENT le logo (« logo ») ou la grande scène (« hero ») d'une ou plusieurs planches déjà montrées, sans toucher au nom ni aux textes. À utiliser quand une image est fausse ou refusée (la planche le dit) ou quand le client signale un défaut : dis-lui ce que tu refais et pourquoi, et mets sa correction, avec ses mots, dans guidance. Après le choix, les images de sa marque se refont avec brand.finish. keys = les planches (A, B, C, D) ; images = les images à refaire.",
+  args: z.object({ keys: z.array(z.enum(KEYS)).min(1).max(4), images: z.array(z.enum(REDO_IMAGES)).min(1).max(2), guidance: z.string().max(1500).optional() }).strict(),
   estimate: (_ctx, a) => ({ ...boardImagesQuote(a.keys.length, undefined, a.images as never), label: `${a.images.length} image${a.images.length > 1 ? "s" : ""} à refaire sur ${a.keys.length} planche${a.keys.length > 1 ? "s" : ""}` }),
   run: (ctx, a) => {
     const p = project(ctx);

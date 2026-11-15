@@ -48,7 +48,12 @@ describe("SINA — étape 2 : le logo unique", async () => {
     J.updateJourney(cid, (x) => { x.identities = { list: series(3), issues: [], comparison: "", at: Date.now(), round: 1 }; J.setStep(x, 1, "review"); });
     const chosen = await call("identity.choose", ctx, { key });
     expect(chosen.ok).toBe(true);
-    expect(chosen.summary).toMatch(/Prochaine étape : ton logo\./);
+    // Lot 2 : le choix n'annonce plus « ton logo » comme étape à part ; la marque se finit par brand.finish (ici non
+    // couverte par un accord : planches sans images, aucune proposition payée), donc SINA y est renvoyée.
+    expect(chosen.summary).not.toMatch(/Prochaine étape : ton logo/);
+    expect(chosen.summary).toMatch(/Reste à finir ta marque : appelle brand\.finish\./);
+    expect(chosen.hint).toMatch(/brand\.finish/);
+    expect(chosen.jobs).toBeUndefined();
     return { user, cid, ctx, pid: one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string };
   }
 
@@ -76,7 +81,12 @@ describe("SINA — étape 2 : le logo unique", async () => {
     const { cid, ctx } = await chosenThread();
     const j = J.journeyOf(cid);
     expect(G.chosenRoute(j)?.name).toBe("Lâche le Morceau");
-    expect(J.journeyContext(j)).toMatch(/Étape 2 \(logo\) : rien n'est encore dessiné.*UN logo dessiné pour SON identité, à partir de l'idée de sa marque et du nom dessiné de sa planche/);
+    // La consigne du parcours ne passe plus par logo.propose : une seule façon de faire le logo, la fin de marque.
+    expect(J.journeyContext(j)).toMatch(/La marque — l'identité est choisie, il reste à la finir : appelle brand\.finish \(sans argument\)\. Le Studio crée ce qui manque \(le logo s'il n'y en a pas, l'objet qui le porte, les signes, trois publications\), adopte son logo et prépare sa charte/);
+    expect(J.journeyContext(j)).not.toMatch(/logo\.propose|logo\.choose/);
+    const { toolVisible } = await import("@/lib/syna-agent/registry");
+    expect(toolVisible("logo.propose", { inJourney: true, legacyMockups: false })).toBe(false);
+    // L'outil existe encore hors parcours (son retrait viendra plus tard) : son devis et son lancement restent justes.
     logoToolDeps.maxMicro = () => 300_000;
     try {
       expect(await getTool("logo.propose")!.estimate!(ctx, {})).toEqual({ maxMicro: 300_000, label: "ton logo" });
@@ -97,8 +107,9 @@ describe("SINA — étape 2 : le logo unique", async () => {
     expect(pr).toMatch(/Crée le logo de la marque « Lâche le Morceau »/);
     expect(pr).toMatch(/L'idée de la marque : Mieux vaut décevoir avant l'achat qu'après\./);
     expect(pr).toMatch(/D'où vient le nom : on lâche les morceaux dans l'eau ; lâcher le morceau : tout avouer\./);
-    expect(pr).toMatch(/Le nom est déjà dessiné sur la planche que le client a choisie : sur 3 lignes \(« LÂCHE LE \/ MOR \/ CEAU »\), en capitales/);
-    expect(pr).toMatch(/Pars de ce dessin/);
+    // Le dessinateur ne part plus du nom composé par le Studio : il conçoit le logo à partir de la marque, sans modèle.
+    expect(pr).toMatch(/Conçois-le toi-même à partir de cette marque, sans modèle : UNE idée graphique tirée de son idée et de son métier/);
+    expect(pr).not.toMatch(/Pars de ce dessin|déjà dessiné sur la planche|LÂCHE LE \/ MOR/);
     expect(pr).toMatch(/Le seul texte du logo est le nom « Lâche le Morceau », écrit exactement, lettre par lettre/);
     expect(pr).toMatch(/Souhaits du client, avec ses mots : Plus rond\./);
     expect(pr).not.toMatch(/carte blanche totale|Direction artistique de cette proposition/); // plus trois directions imposées
@@ -106,7 +117,7 @@ describe("SINA — étape 2 : le logo unique", async () => {
     expect(out.logos[0]).toMatchObject({ source: "A", name: "Ton logo", verdict: "FINAL", choosable: true });
     const j = J.journeyOf(t.cid);
     expect(j.steps[2].status).toBe("review");
-    expect(J.journeyContext(j)).toMatch(/A « Ton logo » : validé par le contrôle[\s\S]*regarde le logo avant d'en parler[\s\S]*S'il n'aime pas le logo, propose d'en dessiner un autre/);
+    expect(J.journeyContext(j)).not.toMatch(/logo\.choose|logo\.propose/); // le parcours ne décrit plus cette ancienne étape
     const view = await fr(() => threadView(t.user, t.cid));
     expect(view.journey.logos!.list).toHaveLength(1);
     expect(view.journey.logos!.list[0].href).toBeTruthy();
@@ -129,7 +140,6 @@ describe("SINA — étape 2 : le logo unique", async () => {
     expect(img.format).toBe("png");
     expect(img.width).toBe(1600);
     expect(img.hasAlpha).toBe(true);
-    expect(J.journeyContext(J.journeyOf(t.cid))).toMatch(/A « Ton logo » : NON validé par le contrôle[\s\S]*B « Le nom dessiné de ta planche » : le nom dessiné de sa planche, fait par le Studio, exact à la lettre \(secours\)/);
     // Le client finit toujours avec un logo : le secours se choisit et devient le logo de la marque.
     const chosen = await call("logo.choose", t.ctx, { source: "B" });
     expect(chosen.ok).toBe(true);
@@ -179,7 +189,8 @@ describe("SINA — étape 2 : le logo unique", async () => {
     // Devis : gratuit, donc aucune carte d'accord ; le contexte de SINA le dit.
     t.ctx.projectId = t.pid;
     expect(await fr(() => getTool("logo.propose")!.estimate!(t.ctx, {} as never))).toMatchObject({ maxMicro: 0 });
-    expect(J.journeyContext(J.journeyOf(t.cid))).toMatch(/le logo de sa planche existe déjà[\s\S]*GRATUIT/);
+    // Le parcours, lui, dit que ce logo sera adopté par la fin de marque (plus de reprise par logo.propose).
+    expect(J.journeyContext(J.journeyOf(t.cid))).toMatch(/appelle brand\.finish \(sans argument\)[\s\S]*adopte son logo/);
     const log = { calls: [] as string[], prompts: [] as string[] };
     G.logoDeps.ai = fakeEngine(log); G.logoDeps.draw = async () => { log.calls.push("art"); return artFixture(0); };
     let out: any;

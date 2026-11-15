@@ -280,8 +280,12 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     expect(JSON.parse(one<any>("SELECT value FROM memory WHERE project_id=? AND key='syna.identite'", pid).value).mix).toEqual({ palette: "C" });
     const j = J.journeyOf(cid);
     expect(j.steps[1].status).toBe("done");
-    expect(j.steps[2].status).toBe("todo");
+    // Le logo n'est pas encore fait : le repère 2 reste ouvert (la marque se finit ensuite, par brand.finish).
+    expect(["todo", "doing"]).toContain(j.steps[2].status);
+    expect(j.steps[3].status).toBe("todo");
     expect(J.currentStep(j)).toBe(2);
+    expect(r.summary).not.toMatch(/Prochaine étape : ton logo/);
+    expect(J.journeyContext(j)).toMatch(/il reste à la finir : appelle brand\.finish/);
     expect(mixIdentity(good() as any, "B", { name: "C" }).name).toBe("Lueur d'ambre");
     // Une fois choisie, l'identité n'est pas reproposée en douce.
     expect((await call("identity.propose", ctx, {})).ok).toBe(false);
