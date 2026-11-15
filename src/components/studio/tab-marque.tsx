@@ -100,7 +100,7 @@ export default function TabMarque() {
       {(!!s.tone.length || !!s.lines.length) && <section>
         <SectionTitle title={t("Ta voix", "Your voice")} />
         <Card className="space-y-3 p-5 text-sm" data-brand-voice>
-          {!!s.tone.length && <p><b>{t("Elle est", "It is")} :</b> {s.tone.join(", ")}.</p>}
+          {!!s.tone.length && <p><b>{t("Son ton", "Its tone")} :</b> {s.tone.join(", ")}.</p>}
           {!!s.houseWords.length && <p><b>{t("Ses mots", "Its words")} :</b> {s.houseWords.join(", ")}.</p>}
           {!!s.bannedWords.length && <p><b>{t("Jamais", "Never")} :</b> {s.bannedWords.join(", ")}.</p>}
           {!!s.lines.length && <div className="flex flex-wrap gap-2 pt-1">{s.lines.map((l, i) => <span key={i} className="rounded-full border border-line px-3 py-1.5" style={{ fontFamily: head }}>{l}</span>)}</div>}
