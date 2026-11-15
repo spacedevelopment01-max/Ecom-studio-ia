@@ -126,9 +126,10 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - **Les branchements aux plateformes (Meta, TikTok, Google, Pinterest) sont mis de côté** : « Je mettrai en place toute
   l'automatisation avec les autres plateformes mais pour l'instant c'est pas le cas donc on fait sans et on y met de
   côté » (15 novembre 2026). Tout se conçoit sans eux : SINA prépare, le client publie d'un geste.
-- Les 15 thèmes proposés : fraise, onde, rive, sillon, noctil, traverse, heuren, museau-club, souple, table-saison,
-  atelier-nuance, parenthese, phase, maison-horizon, aplat. Leurs démonstrations sont des reproductions de maquettes
-  validées : ne pas les recomposer ni les simplifier.
+- **Le site : des styles au choix, montés sur mesure** (15 novembre 2026). Le client choisit parmi 15 à 20 styles ;
+  chaque style a sa tenue, ses sections permises et ses règles d'enchaînement ; SINA monte les sections, elle ne
+  dessine pas. Les 15 thèmes du Studio (fraise, onde, rive…) partent au lot 4, quand le nouveau système a fait ses
+  preuves ; d'ici là, ne pas les recomposer. Détail : référence, partie 15.
 
 ## Travailler dans le dépôt
 
