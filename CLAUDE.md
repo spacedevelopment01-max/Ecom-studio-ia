@@ -27,7 +27,9 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - **Un lot est fini quand SINA le réussit seule, avec la vraie IA, sur plusieurs clients inventés.** Claude ne joue
   que le client (« c'est à sina d'y faire, pas à toi »). Les anciennes façons du lot sont retirées à ce moment-là.
 - Une conversation par lot ; elle commence par la lecture des deux documents ci-dessus.
-- Où on en est : lot 0 (ménage) fait le 15 novembre 2026. Suite : 1 SINA en seule porte d'entrée, 2 la marque, 3 les
+- Où on en est : lot 0 (ménage) fait le 15 novembre 2026. Lot 1 construit et essayé pour de vrai le même jour (compte
+  rendu : `docs/studio/LOT-1-SINA-UNE-SEULE-PORTE.md`) ; il reste à retirer les anciennes façons et à régler l'écran,
+  avec son accord. Suite : 2 la marque, 3 les
   trois angles, 4 le site, 5 les publications automatiques, 6 les forfaits, 7 SINA prend les devants, 8 les
   publicités, 9 les vidéos.
 
@@ -55,7 +57,8 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   « oui ». Le budget d'un essai se décide avec lui juste avant de le lancer. Un appel au résultat incertain (erreur du
   fournisseur) n'est jamais relancé tout seul. Aucun fournisseur payant ajouté sans son accord.
 - Si un modèle n'arrive pas à écrire un mot dans une image, changer la phrase plutôt que repayer des essais.
-- Dépensé en essais réels au 15 novembre 2026 : environ 15,13 € comptés par le Studio.
+- Dépensé en essais réels au 15 novembre 2026 : environ 18,07 € comptés par le Studio (dont 2,94 € pour l'essai du
+  lot 1, sur 9 € accordés).
 - **Le client ne voit jamais d'euros pour l'IA** : tout coût est un pourcentage du budget d'IA de son mois.
 - **Forfaits validés** (« Oui je valide comme ça ») : 69 €, 99 € et 169 € par mois, sans prix de création ni
   engagement ; budget d'IA à 50 % du prix hors taxes le premier mois, puis 40 % ; par forfait : 2, 3 et 4 identités
