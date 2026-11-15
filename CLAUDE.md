@@ -123,6 +123,9 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - **Aucune fonction qui oblige à attendre des semaines qu'une plateforme valide le Studio** (« Je veux aucune
   proposition qui doivent nous faire attendre des semaines pour que les plateformes valides de travailler avec nous »,
   15 novembre 2026). Ce qui en dépendrait se fait sans elle, ou ne se fait pas.
+- **Les branchements aux plateformes (Meta, TikTok, Google, Pinterest) sont mis de côté** : « Je mettrai en place toute
+  l'automatisation avec les autres plateformes mais pour l'instant c'est pas le cas donc on fait sans et on y met de
+  côté » (15 novembre 2026). Tout se conçoit sans eux : SINA prépare, le client publie d'un geste.
 - Les 15 thèmes proposés : fraise, onde, rive, sillon, noctil, traverse, heuren, museau-club, souple, table-saison,
   atelier-nuance, parenthese, phase, maison-horizon, aplat. Leurs démonstrations sont des reproductions de maquettes
   validées : ne pas les recomposer ni les simplifier.

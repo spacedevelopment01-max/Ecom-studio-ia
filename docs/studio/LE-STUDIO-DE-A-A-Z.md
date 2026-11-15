@@ -456,6 +456,11 @@ chiffres des réseaux (engagement 1) et l'envoi automatique des publications (lo
 Meta et TikTok doivent valider ; si ces accès ne sont pas déjà validés, ces parties se font sans eux (SINA prépare tout,
 le client publie d'un geste) ou ne se font pas. L'assistante qui répond aux clients se fait sur son site seulement.
 
+**Sa décision, le même jour** : « Je mettrai en place toute l'automatisation avec les autres plateformes mais pour
+l'instant c'est pas le cas donc on fait sans et on y met de côté ». Les engagements 1, 2, 3 et 4 se font donc sans
+branchement aux plateformes : SINA prépare tout, le client publie ou colle d'un geste ; le point du mois s'appuie sur les
+chiffres du site et de sa boutique. Les branchements reviendront quand il les aura mis en place.
+
 Sources de la partie 7 : journal des nouveautés de Shopify (conseils de Sidekick), Unite.AI (Canvas), TechCrunch
 (créateur de boutique), eCommerce Fastlane, Copyfy, blog de Google (Pomelli), test de Blaze par R. Doser, Apaya, blog de
 Zeely, Pixis (Meta), Tool Advisor et Capeb (Simplébo).
