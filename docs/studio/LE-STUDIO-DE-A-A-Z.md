@@ -151,7 +151,7 @@ Page en ligne du document : https://claude.ai/artifact/76xobBZYJxCMt6oxuSeNLn
 | 25 | SINA réfléchit-elle toujours avec le modèle le plus fort ? (aujourd'hui elle discute avec un petit modèle pour économiser) | Oui, partout où elle décide, conseille ou juge ; coût compté dans le calcul de la question 3 | |
 | 8 | Quelle règle pour les noms ? | La règle « Pulpe » (un mot simple et fort qui dit la matière ou le métier) pour tous ; juge à 8 sur 10 | |
 | 9 | Le dépôt de la marque ? | SINA vérifie (web, domaine) et explique le dépôt à l'INPI ; le Studio ne dépose pas | |
-| 10 | Les 15 thèmes du Studio restent à côté du sur mesure ? | Oui | **Changé le 15 novembre 2026** : les 15 thèmes partent, tout site est monté sur mesure dans un style choisi par le client (partie 15) |
+| 10 | Les 15 thèmes du Studio restent à côté du sur mesure ? | Oui | |
 | 11 | En sur mesure, SINA dessine elle-même le haut de la page d'accueil ? | Oui pour l'ouverture ; panier, achat et formulaires restent des sections éprouvées | |
 | 12 | Le Studio encaisse-t-il les ventes des boutiques ? | Non : Shopify, WooCommerce ou PrestaShop gèrent le paiement | |
 | 13 | Services : réservation et devis en ligne, avec paiement ? | Réservation et devis oui ; paiement en ligne plus tard | |
@@ -475,31 +475,6 @@ le client publie d'un geste) ou ne se font pas. L'assistante qui répond aux cli
 l'instant c'est pas le cas donc on fait sans et on y met de côté ». Les engagements 1, 2, 3 et 4 se font donc sans
 branchement aux plateformes : SINA prépare tout, le client publie ou colle d'un geste ; le point du mois s'appuie sur les
 chiffres du site et de sa boutique. Les branchements reviendront quand il les aura mis en place.
-
-## 15. Le site : des styles au choix, montés sur mesure (décision du propriétaire, 15 novembre 2026)
-
-Ses mots : « peut être qu'il faudrait qu'on trouve 20 style de thèmes différents, chaque style thèmes aura un nombre
-défini de sections et sina aura plus qu'à faire le montage des section, au moins au garde une cohérence entre les
-sections des thèmes », puis « Je voudrais que mon clients puisse au final choisir entre les 15 ou 20 styles de site. Je
-pense qu'on enlèverais même l'histoire des 15 thème du studio et ce serais que sur des thèmes sur mesure ». Référence
-qu'il aime : https://www.tediber.com/ (ce n'est pas un modèle à copier partout).
-
-- **Les 15 thèmes du Studio partent** (ils remplacent la réponse 10 et la fin de la réponse 22) ; ils sont retirés quand
-  le nouveau système a fait ses preuves au lot 4, comme toute ancienne façon.
-- **Le client choisit son style** parmi 15 à 20 styles de site. SINA lui recommande ceux qui vont avec son identité et
-  son angle, et il peut tous les voir. Chaque style lui est montré avec **sa** marque et **ses** vrais contenus, pas une
-  démonstration générique ; les images payantes ne sont créées que pour le style choisi.
-- **Un style, c'est une tenue complète** (polices, couleurs, formes, boutons, icônes, genre de photos, ton des textes),
-  la liste des sections qui lui vont, ses règles d'enchaînement et ses pages modèles par métier (accueil, fiche
-  produit, prestations). Les sections sont construites une fois, avec soin, et chaque style les habille : la cohérence
-  vient de la construction, sans multiplier le travail par vingt.
-- **SINA monte, elle ne dessine pas** : elle choisit et ordonne les sections permises par le style, les remplit avec les
-  vrais contenus du client, place ses couleurs et ses polices dans les limites du style, et ne peut pas le casser.
-- **Chaque style part de vrais sites que le propriétaire aime** (deux ou trois références par style) et il valide chaque
-  style en image avant que SINA s'en serve. Proposition de Claude : commencer par six styles bien faits, puis aller
-  jusqu'à vingt en voyant ce qui manque.
-- **Ce que Tediber apprend, dans tous les styles** : la bande des promesses (essai, livraison, paiement, origine), la carte
-  produit à trois points clés, le bloc des garanties, le guide « trouver le bon produit ».
 
 Sources de la partie 7 : journal des nouveautés de Shopify (conseils de Sidekick), Unite.AI (Canvas), TechCrunch
 (créateur de boutique), eCommerce Fastlane, Copyfy, blog de Google (Pomelli), test de Blaze par R. Doser, Apaya, blog de

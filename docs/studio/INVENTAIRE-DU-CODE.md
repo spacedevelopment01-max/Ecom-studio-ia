@@ -166,8 +166,7 @@ Chaque lot se termine par un essai réel où SINA travaille seule ; son budget s
 1. **SINA, une seule porte.** Sa conversation, ses questions, son parcours en 9 étapes, ses consignes nettoyées.
 2. **La marque.** Une seule façon, logo compris ; images complètes pour la seule identité choisie ; travail en différé.
 3. **Les trois angles.**
-4. **Le site.** Des styles au choix (15 à 20), montés sur mesure par SINA ; les 15 thèmes du Studio retirés à la fin
-   du lot (référence, partie 15) ; sur mesure sur le moteur des thèmes ; mise en ligne des sites de services par SINA ; transfert vers
+4. **Le site.** Sur mesure sur le moteur des thèmes ; mise en ligne des sites de services par SINA ; transfert vers
    Shopify, WooCommerce et PrestaShop essayé sur de vraies boutiques d'essai.
 5. **Les publications automatiques.** De la stratège à l'envoi sur les réseaux ; « Envoie une photo, SINA fait le reste » ;
    les grands moments de l'année ; la fiche Google et les avis (référence, partie 14).
