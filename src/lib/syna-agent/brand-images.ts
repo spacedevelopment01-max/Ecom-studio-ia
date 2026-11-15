@@ -108,7 +108,7 @@ const same = (a: string, b: string) => normText(a) === normText(b);
 export function slotTexts(x: Route): Record<ImageSlot, string[]> {
   const b = x.board, front = b.object.front.filter((l) => !same(l, x.name)).slice(0, 2);
   return {
-    logo: [x.name], hero: [], object: [x.name, ...front], signs: [], site: [x.name, b.site.headline, b.site.button, ...b.site.menu],
+    logo: [x.name], hero: [], object: [x.name, ...front], signs: [], site: [x.name, b.site.headline, b.site.button],
     post0: [b.posts[0].text], post1: [b.posts[1].text], post2: [b.posts[2].text],
   };
 }
@@ -166,7 +166,7 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
   return [
     look ? `Direction artistique : ${look}` : "", brief.trim(), paletteLine(x),
     withLogo ? "Le logo fourni en image de référence est reproduit tel quel, à la place indiquée : il n'est ni redessiné, ni recoloré, et aucune de ses lettres ne change." : "",
-    slot === "site" ? "Maquette du haut de la page d'accueil d'un site web, au niveau des plus beaux sites primés de 2026 : UNE grande photographie pleine qui occupe tout l'écran, le titre posé dessus sur sa partie calme, le menu, un seul bouton. Montre seulement l'écran du téléphone, bord à bord, en portrait : ni téléphone, ni cadre, ni barre d'adresse, ni main, ni fond autour. Une vraie mise en page de site, nette et lisible : typographie soignée, alignements précis, de l'air." : "",
+    slot === "site" ? "Maquette de présentation d'un site, au niveau des plus beaux sites primés de 2026 : UN téléphone récent, entier, vu bien de face, posé sur un fond uni très doux, avec une ombre légère ; son écran montre le haut de la page d'accueil décrit ci-dessus (l'heure et les signes du téléphone en haut, puis l'en-tête du site). Le titre est TRÈS grand et occupe une vraie place sur l'écran ; un seul bouton ; très peu de mots. Mise en page nette et précise : typographie soignée, alignements exacts, de l'air. Rien autour du téléphone : ni main, ni table, ni décor." : "",
     slot.startsWith("post") ? "Visuel de publication pour un réseau social, en portrait, bord à bord : aucun cadre d'application, aucun bouton, aucun pseudonyme." : "",
     slot === "signs" ? SIGNS_LINE : "",
     (slot === "object" || slot === "site") && !withLogo ? NO_INVENTED_MARK : "",
@@ -183,7 +183,7 @@ const imageryBrief = (x: Route) => [
   // « Pulpe ») : il n'est jamais donné pour concevoir le logo, qui naît de la marque elle-même.
   "Signes de la marque (hors lettrage : le logo ne reprend rien du nom composé par le Studio) :", ...x.board.signs.filter((g) => g.kind !== "lettrage").map((g) => `  - ${g.title} — ${g.text}`),
   `Objet : ${BOARD_OBJECT_LABEL[x.board.object.kind].fr.toLowerCase()} ; écrit devant : ${x.board.object.front.join(" · ")}`,
-  `Site (haut de l'accueil) : titre « ${x.board.site.headline} » ; bouton « ${x.board.site.button} » ; menu : ${x.board.site.menu.join(" · ") || "aucune entrée"}${x.board.site.layout ? ` ; composition choisie pour cette identité : titre ${x.board.site.layout.title === "bas" ? "en bas" : x.board.site.layout.title === "haut" ? "en haut" : "au centre"} de la photo, menu « ${x.board.site.layout.menu} », bouton « ${x.board.site.layout.button} », angles ${x.board.site.layout.corners}` : ""}`,
+  `Site (haut de l'accueil) : titre « ${x.board.site.headline} » ; ligne dessous « ${x.board.site.text} » ; bouton « ${x.board.site.button} » ; entrées du menu : ${x.board.site.menu.join(" · ") || "aucune"}${x.board.site.layout?.opening ? ` ; manière d'ouvrir choisie pour cette identité : ${x.board.site.layout.opening}` : ""}`,
   "Publications (dans l'ordre) :", ...x.board.posts.map((q, i) => `  ${i + 1}. « ${q.text} »`),
 ].join("\n");
 
@@ -192,7 +192,7 @@ const SLOT_LABEL: Record<ImageSlot, { fr: string; en: string }> = {
   post0: { fr: "la première publication", en: "the first post" }, post1: { fr: "la deuxième publication", en: "the second post" }, post2: { fr: "la troisième publication", en: "the third post" },
 };
 const ROLE_FOR_REVIEW: Record<ImageSlot, string> = {
-  logo: "le logo de la marque", hero: "la grande image de la marque (aucun texte attendu)", object: "l'objet de la marque, avec le logo posé dessus : EXACTEMENT celui de l'image « logo » (même signe, même dessin de lettres, même graisse) ; une autre police est un défaut", signs: "les signes de la marque posés sur de vrais objets de son monde, le logo fourni compris (aucun autre texte attendu ; une icône plate ou un pictogramme est un défaut)", site: "la maquette du haut de la page d'accueil du site, sur écran de téléphone : elle doit être BELLE et donner envie (une grande photo pleine, le titre posé dessus sur sa partie calme, le menu, le bouton, le logo fourni tel quel) ; une mise en page pauvre, vide, banale ou confuse est un défaut (defect « autre »)",
+  logo: "le logo de la marque", hero: "la grande image de la marque (aucun texte attendu)", object: "l'objet de la marque, avec le logo posé dessus : EXACTEMENT celui de l'image « logo » (même signe, même dessin de lettres, même graisse) ; une autre police est un défaut", signs: "les signes de la marque posés sur de vrais objets de son monde, le logo fourni compris (aucun autre texte attendu ; une icône plate ou un pictogramme est un défaut)", site: "la maquette du haut de la page d'accueil, dans un téléphone entier vu de face : elle doit être BELLE et donner envie, comme la page d'un studio de design primé (un titre TRÈS grand au caractère affirmé, une photo de campagne au sujet très grand, toute l'image dans la teinte de la marque, un seul bouton, très peu de mots, le logo fourni tel quel et net) ; un titre petit ou timide, une photo d'ambiance banale, une mise en page pauvre, vide ou confuse, un logo flou sont des défauts (defect « autre »). Les petits mots d'interface (l'heure, une ligne sous le titre, une entrée secondaire) sont normaux",
   post0: "une publication", post1: "une publication", post2: "une publication",
 };
 
@@ -329,7 +329,8 @@ export async function runBoardImages(o: {
     const texts = slotTexts(x);
     const drop = (slot: ImageSlot, why: string) => { mark(made.get(slot)!.id, "rejected", why); made.delete(slot); rejected++; issues.push(tag(L(`je n'ai pas gardé ${SLOT_LABEL[slot].fr} (${why.replace(/\.+$/, "")}) ; ${instead(x, slot)}.`, `I did not keep ${SLOT_LABEL[slot].en} (${why}); ${slot === "logo" ? "you see your drawn name instead" : "I am not showing it"}.`))); };
     // Raison écrite par le Studio d'après la lecture (jamais une phrase confuse du relecteur montrée au client).
-    const textReason = (c: { missing: string[]; extra: string[] }) => c.extra.length ? L(`un texte non demandé y apparaît : « ${c.extra[0].slice(0, 60)} »`, `an unrequested text appears: "${c.extra[0].slice(0, 60)}"`) : L(`le texte « ${c.missing[0].slice(0, 60)} » n'y est pas écrit exactement`, `the text "${c.missing[0].slice(0, 60)}" is not written exactly`);
+    // Un texte attendu qui manque est dit en premier : pour la maquette du site, un petit mot en trop n'est pas un défaut.
+    const textReason = (c: { missing: string[]; extra: string[] }) => c.extra.length && !c.missing.length ? L(`un texte non demandé y apparaît : « ${c.extra[0].slice(0, 60)} »`, `an unrequested text appears: "${c.extra[0].slice(0, 60)}"`) : L(`le texte « ${c.missing[0].slice(0, 60)} » n'y est pas écrit exactement`, `the text "${c.missing[0].slice(0, 60)}" is not written exactly`);
     // Relecture impossible (plafond, appel en échec) : des images non relues ne sont jamais montrées.
     const unreviewed = () => {
       for (const s of slots) { const m = made.get(s); if (m) mark(m.id, "rejected", "non relue"); made.delete(s); }
@@ -355,7 +356,7 @@ export async function runBoardImages(o: {
       for (const s of slots) {
         const v = review.images.find((r) => r.slot === s);
         if (!v) { drop(s, L("elle n'a pas pu être relue", "it could not be reviewed")); continue; }
-        const c = textCheck(texts[s], v.read, x.name), exact = !c.missing.length && !c.extra.length;
+        const c = textCheck(texts[s], v.read, x.name), exact = !c.missing.length && (s === "site" || !c.extra.length);
         if (!v.ok) {
           if (v.defect === "texte" && exact) doubt.push(s);
           else drop(s, v.defect === "texte" && (c.missing.length || c.extra.length) && v.read.length ? textReason(c) : v.why || L("elle ne passe pas ma relecture", "it does not pass my review"));
@@ -363,7 +364,9 @@ export async function runBoardImages(o: {
         }
         // Contrôle du Studio, en plus du jugement : le logo doit porter le nom, lu tel quel.
         if (s === "logo" && !normText(v.read.join(" ")).includes(normText(x.name))) { drop(s, L("le nom n'y est pas écrit exactement", "the name is not written exactly")); continue; }
-        if (c.extra.length) doubt.push(s);
+        // La maquette du site porte aussi de petits mots d'interface (l'heure, une ligne, une entrée) : seuls les mots
+        // attendus (le nom, le titre, le bouton) y sont exigés à la lettre.
+        if (s === "site" ? c.missing.length : c.extra.length) doubt.push(s);
       }
       if (doubt.length) {
         let second: z.infer<typeof ImageRereadSchema> | null = null;
@@ -379,7 +382,7 @@ export async function runBoardImages(o: {
           // Jamais montrée sans vérification : pas de seconde lecture, pas d'image.
           if (!r) { drop(s, L("je n'ai pas pu la vérifier une seconde fois", "I could not verify it a second time")); continue; }
           const c = textCheck(texts[s], r.read, x.name);
-          if (c.missing.length || c.extra.length) drop(s, textReason(c));
+          if (c.missing.length || (s !== "site" && c.extra.length)) drop(s, textReason(c));
           else notes.push(`${SLOT_LABEL[s].fr} de ${key} : jugement et lecture se contredisaient ; gardé(e) après une seconde lecture, texte exact`);
         }
       }

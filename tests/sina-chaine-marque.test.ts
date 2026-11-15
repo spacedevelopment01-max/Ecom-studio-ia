@@ -142,9 +142,12 @@ describe("SINA — chaîne de création de la marque", async () => {
       log.ids.push(id); log.prompts[id] = c.prompt; log.systems[id] = c.system;
       const name = /Marque : « (.+?) »/.exec(c.prompt)?.[1] ?? "";
       if (id.startsWith("artcheck")) return c.schema.parse(s.artcheck ? s.artcheck(id, c) : { drawings: c.images.map((i: any) => ({ slot: i.label, ok: true, why: "" })) });
-      return c.schema.parse(s.look ? s.look(id, c) : { images: c.images.map((i: any) => ({ slot: i.label, ok: true, read: [name], why: "" })) });
+      // La maquette du site est lue avec tous ses mots attendus (le nom, le titre, le bouton) : un mot manquant la ferait relire.
+      return c.schema.parse(s.look ? s.look(id, c) : { images: c.images.map((i: any) => ({ slot: i.label, ok: true, read: i.label === "site" ? siteWords(c.prompt, name) : [name], why: "" })) });
     },
   });
+  /** Les mots que la relecture attend sur la maquette du site, tels qu'ils sont écrits dans sa consigne. */
+  const siteWords = (prompt: string, name: string): string[] => { const w = [...(/slot "site" : [^\n]*Textes attendus : ([^\n]*)/.exec(prompt)?.[1] ?? "").matchAll(/« (.+?) »/g)].map((m) => m[1]); return w.length ? w : [name]; };
   /** L'identifiant d'une image de logo, avec ou sans le suffixe d'une création partielle (« :logo+hero+site »). */
   const isLogo = (id: string) => /-logo(:|$)/.test(id);
   /** Les trois images du premier temps (chaque planche proposée : logo, grande scène, maquette du site) et leur suffixe d'étape. */
@@ -376,33 +379,53 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(j.identities!.issues).toEqual([]);
   });
 
-  it("composition du haut du site : le contrôle gratuit relève deux compositions identiques et une composition absente", () => {
+  it("manière d'ouvrir le haut du site : le contrôle gratuit relève deux ouvertures identiques et une ouverture absente", async () => {
     const withLayout = (x: Route, layout: unknown): Route => ({ ...x, board: { ...x.board, site: { ...x.board.site, layout } } }) as Route;
     const [a, b, c, d] = series(4);
-    // La série d'exemple : quatre compositions différentes, rien à relever.
+    // La série d'exemple : quatre manières d'ouvrir différentes, dites en mots, rien à relever.
     expect(C.layoutIssues([a, b, c, d])).toEqual([]);
-    expect(new Set([a, b, c, d].map((x) => JSON.stringify(x.board.site.layout))).size).toBe(4);
-    // Deux identités avec la même composition : la SECONDE est reprise, la première est nommée.
+    for (const x of [a, b, c, d]) expect(x.board.site.layout!.opening!.length).toBeGreaterThan(20);
+    expect(new Set([a, b, c, d].map((x) => x.board.site.layout!.opening)).size).toBe(4);
+    // Deux identités qui ouvrent de la même manière : la SECONDE est reprise, la première est nommée.
     const twin = C.layoutIssues([a, b, withLayout(c, a.board.site.layout)]);
-    expect(twin).toEqual([`Identité C : le haut de son site a la même composition que celui de A (titre ${a.board.site.layout!.title}, menu ${a.board.site.layout!.menu}, puis ${a.board.site.layout!.next}) ; change la place du titre, le menu et ce qui vient après, d'après sa planche.`]);
-    // Changer seulement la forme du bouton et les angles ne fait pas une autre composition ; changer la suite, si.
-    expect(C.layoutIssues([a, withLayout(b, { ...a.board.site.layout!, button: "souligne", corners: "droits" })])).toHaveLength(1);
-    expect(C.layoutIssues([a, withLayout(b, { ...a.board.site.layout!, next: "bandeau" })])).toEqual([]);
+    expect(twin).toEqual(["Identité C : le haut de son site s'ouvre de la même manière que celui de A ; choisis une autre manière d'ouvrir, d'après sa planche."]);
+    // La même phrase à la casse, aux accents, à la ponctuation et aux espaces près reste la même manière d'ouvrir.
+    const open = "Photo plein écran : titre en bas à gauche, accès direct.";
+    expect(C.layoutIssues([withLayout(a, { opening: open }), withLayout(b, { opening: "  PHOTO PLEIN ECRAN, titre en bas a gauche ;  acces direct " })])).toEqual(["Identité B : le haut de son site s'ouvre de la même manière que celui de A ; choisis une autre manière d'ouvrir, d'après sa planche."]);
+    // Deux phrases différentes : rien à relever, même si les anciens champs sont les mêmes (l'ouverture en mots prime).
+    const old = { title: "bas", menu: "burger", button: "pilule", corners: "ronds", next: "produits" };
+    expect(C.layoutIssues([withLayout(a, { ...old, opening: open }), withLayout(b, { ...old, opening: "Affiche typographique, titre centré sous le produit." })])).toEqual([]);
     // Trois fois la même : la deuxième et la troisième sont relevées.
     expect(C.layoutIssues([a, withLayout(b, a.board.site.layout), withLayout(c, a.board.site.layout)]).map((l) => l.slice(0, 10))).toEqual(["Identité B", "Identité C"]);
-    // Composition absente : relevée pour cette identité, sans la comparer aux autres.
-    expect(C.layoutIssues([a, withLayout(b, undefined), c])).toEqual(["Identité B : la composition du haut de son site (board.site.layout) n'est pas choisie ; choisis-la d'après sa planche."]);
+    // Ouverture absente (pas de layout, layout vide, ou anciens champs incomplets) : relevée pour cette identité, sans la comparer aux autres.
+    const missing = "Identité B : la manière d'ouvrir le haut de son site (board.site.layout.opening) n'est pas choisie ; choisis-la d'après sa planche.";
+    expect(C.layoutIssues([a, withLayout(b, undefined), c])).toEqual([missing]);
+    expect(C.layoutIssues([a, withLayout(b, {}), c])).toEqual([missing]);
+    expect(C.layoutIssues([a, withLayout(b, { button: "pilule", corners: "ronds" }), c])).toEqual([missing]);
     expect(C.layoutIssues([withLayout(a, undefined), withLayout(b, undefined)])).toHaveLength(2);
     expect(C.layoutIssues([])).toEqual([]);
+    // Planches d'avant (sans « opening ») : la place du titre, le menu et la suite font la signature ; la forme du
+    // bouton et les angles ne font pas une autre composition, la suite, si.
+    expect(C.layoutIssues([withLayout(a, old), withLayout(b, { ...old, button: "souligne", corners: "droits" })])).toEqual(["Identité B : le haut de son site s'ouvre de la même manière que celui de A ; choisis une autre manière d'ouvrir, d'après sa planche."]);
+    expect(C.layoutIssues([withLayout(a, old), withLayout(b, { ...old, next: "bandeau" })])).toEqual([]);
+    // Le schéma de la planche : « opening » est un texte libre (3 à 160 caractères), les anciens champs sont facultatifs.
+    const { BoardSchema } = await import("@/lib/syna-agent/brand-board");
+    const site = (layout: unknown) => BoardSchema.shape.site.safeParse({ ...a.board.site, layout }).success;
+    expect(site({ opening: open })).toBe(true);
+    expect(site({})).toBe(true);
+    expect(site(old)).toBe(true);
+    expect(site({ opening: "ab" })).toBe(false);
+    expect(site({ opening: "x".repeat(161) })).toBe(false);
+    expect(site({ opening: open, title: "ailleurs" })).toBe(false);
   });
 
-  it("composition du haut du site : une composition recopiée ou oubliée par la direction est reprise avant d'être montrée", async () => {
+  it("manière d'ouvrir le haut du site : une ouverture recopiée ou oubliée par la direction est reprise avant d'être montrée", async () => {
     const t = await thread();
     const log = newLog();
     const job = jobCtx(t.user, t.pid, { projectId: t.pid, conversationId: t.cid, capMicro: 9_000_000, count: 3, images: false });
     const base = fakeAi(log, { review: () => ({ routes: [], series: "" }), recheck: { routes: [{ key: "B", better: true, remaining: [], score: 8 }, { key: "C", better: true, remaining: [], score: 8 }] } })();
     const { layout: _l, ...siteB } = route("B").board.site;
-    // La direction oublie la composition de B et recopie pour C celle de A ; la reprise rend les bonnes.
+    // La direction oublie la manière d'ouvrir de B et recopie pour C celle de A ; la reprise rend les bonnes.
     C.brandChainDeps.ai = (() => ({ ...base, ask: async (id: string, c: any) => {
       if (c.kind === "direction" && /Fond de page : degrade/.test(c.prompt)) return c.schema.parse(draftOf(route("B"), route("B").name, { site: siteB }));
       if (c.kind === "direction" && /Fond de page : blanc/.test(c.prompt)) return c.schema.parse(draftOf(route("C"), route("C").name, { site: { ...route("C").board.site, layout: route("A").board.site.layout } }));
@@ -410,13 +433,17 @@ describe("SINA — chaîne de création de la marque", async () => {
     } })) as any;
     try { await fr(() => C.runSinaBrandJob(job)); } finally { C.brandChainDeps.ai = undefined; }
     // Le directeur de création reçoit les deux points ; chaque identité fautive est reprise avec le sien.
-    expect(log.prompts["review-1"]).toMatch(/# Points relevés par le contrôle du Studio\n[\s\S]*- Identité B : la composition du haut de son site \(board\.site\.layout\) n'est pas choisie[\s\S]*- Identité C : le haut de son site a la même composition que celui de A/);
+    expect(log.prompts["review-1"]).toMatch(/# Points relevés par le contrôle du Studio\n[\s\S]*- Identité B : la manière d'ouvrir le haut de son site \(board\.site\.layout\.opening\) n'est pas choisie[\s\S]*- Identité C : le haut de son site s'ouvre de la même manière que celui de A/);
     expect(log.ids.filter((i) => i.startsWith("fix"))).toEqual(["fix-1-B", "fix-1-C"]);
-    expect(log.prompts["fix-1-B"]).toMatch(/la composition du haut de son site \(board\.site\.layout\) n'est pas choisie/);
-    expect(log.prompts["fix-1-C"]).toMatch(/le haut de son site a la même composition que celui de A/);
-    expect(log.prompts["fix-1-B"]).not.toMatch(/même composition que celui de A/);
-    // La consigne de la planche demande cette composition, choisie pour la marque.
-    expect(log.systems["direction-1-A"]).toMatch(/layout : la COMPOSITION de ce haut de page, que tu choisis pour CETTE marque, d'après sa planche/);
+    expect(log.prompts["fix-1-B"]).toMatch(/la manière d'ouvrir le haut de son site \(board\.site\.layout\.opening\) n'est pas choisie/);
+    expect(log.prompts["fix-1-C"]).toMatch(/le haut de son site s'ouvre de la même manière que celui de A ; choisis une autre manière d'ouvrir/);
+    expect(log.prompts["fix-1-B"]).not.toMatch(/de la même manière que celui de A/);
+    // La consigne de la planche demande cette manière d'ouvrir, choisie pour la marque et dite en une courte phrase.
+    expect(log.systems["direction-1-A"]).toMatch(/layout\.opening : la MANIÈRE D'OUVRIR la page, choisie pour CETTE marque d'après sa planche \([^)]+\), en une courte phrase/);
+    expect(log.systems["direction-1-A"]).toMatch(/Deux identités d'une même série n'ont JAMAIS la même manière d'ouvrir\./);
+    expect(log.systems["direction-1-A"]).not.toMatch(/layout : la COMPOSITION/);
+    // Reprise de C : elle sait comment A ouvre son site, pour s'en écarter.
+    expect(log.prompts["fix-1-C"]).toContain(`manière d'ouvrir son site : ${route("A").board.site.layout!.opening} (la tienne doit en différer)`);
     const j = J.journeyOf(t.cid);
     expect(j.identities!.list.map((x) => x.board!.site.layout)).toEqual([route("A").board.site.layout, route("B").board.site.layout, route("C").board.site.layout]);
     expect(C.layoutIssues(j.identities!.list as any)).toEqual([]);
@@ -646,7 +673,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect((await call("identity.choose", two.ctx, { key: "A" })).ok).toBe(true);
   });
 
-  it("le savoir des spécialistes : les quatre cahiers de métier sont lus, sans la liste des sources", async () => {
+  it("le savoir des spécialistes : les cinq cahiers de métier sont lus, sans la liste des sources", async () => {
     const K = await import("@/lib/syna-agent/brand-knowledge");
     const P = await import("@/lib/syna-agent/brand-prompts");
     expect(K.brandKnowledgeReady()).toEqual({ ok: true });
@@ -662,6 +689,23 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(P.teamSystem("produits", P.TEAM_PATHS.langue)).toContain(K.brandBook("noms").slice(0, 200));
     expect(P.directionSystem("produits")).toContain(K.brandBook("voix").slice(0, 200));
     expect(P.directionSystem("produits")).toContain(K.brandBook("signes").slice(0, 200));
+    // Le cahier de la maquette du haut de l'accueil (15 novembre 2026) : lisible, assez long, écrit en principes.
+    expect(Object.keys(K.BRAND_BOOKS)).toEqual(["noms", "idee", "voix", "signes", "maquette"]);
+    expect(K.BRAND_BOOKS.maquette).toBe("maquettes-accueil-mobile.md");
+    const mock = K.brandBook("maquette");
+    expect(mock.length).toBeGreaterThan(4000);
+    expect(mock).toMatch(/^# La maquette du haut de l'accueil, sur téléphone/);
+    expect(mock).toMatch(/Un téléphone récent, entier, vu bien de face, posé sur un fond uni très doux/);
+    expect(mock).toMatch(/Les grandes manières d'ouvrir/);
+    // Aucun nom de marque d'exemple des maquettes de référence : le cahier ne garde que les principes.
+    for (const n of ["Trempe", "Fumée", "Hors Cadre", "Les Rives", "Orée", "Réveil Club", "Rebâtir", "Volta", "Solstice"]) expect(mock, n).not.toContain(n);
+    // La directrice artistique des images le lit en entier, à la fin de sa consigne, pour les produits comme pour les services.
+    for (const k of ["produits", "services"] as const) {
+      const sys = P.imagerySystem(k);
+      expect(sys).toContain(`# Cahier : la maquette du haut de l'accueil, sur téléphone\n${mock}`);
+      expect(sys.endsWith(mock)).toBe(true);
+      for (const n of ["Trempe", "Fumée", "Hors Cadre", "Les Rives", "Orée", "Réveil Club", "Rebâtir", "Volta", "Solstice"]) expect(sys, `${k} : ${n}`).not.toContain(n);
+    }
     for (const sys of [P.STUDY_SYSTEM, P.strategySystem(), P.teamSystem("services", P.TEAM_PATHS.metier), P.shortlistSystem("produits", 3), P.directionSystem("services"), P.reviewSystem("produits"), P.recheckSystem("produits"), P.VERIFY_SYSTEM]) {
       expect(sys).toMatch(/Rien d'inventé/);
       expect(sys).toMatch(/Le client n'entend que SINA/);
@@ -720,7 +764,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     const t = await thread();
     const script: Script = {
       review: () => ({ routes: [], series: "" }),
-      look: (id, c) => ({ images: c.images.map((i: any) => (/-B(:|$)/.test(id) && i.label === "object" ? { slot: "object", ok: false, read: ["Fni le soda"], why: "Le titre est mal écrit." } : /-C(:|$)/.test(id) && i.label === "logo" ? { slot: "logo", ok: true, read: ["L'Eau Est Bone"], why: "" } : { slot: i.label, ok: true, read: [/Marque : « (.+?) »/.exec(c.prompt)![1]], why: "" })) }),
+      look: (id, c) => ({ images: c.images.map((i: any) => (/-B(:|$)/.test(id) && i.label === "object" ? { slot: "object", ok: false, read: ["Fni le soda"], why: "Le titre est mal écrit." } : /-C(:|$)/.test(id) && i.label === "logo" ? { slot: "logo", ok: true, read: ["L'Eau Est Bone"], why: "" } : { slot: i.label, ok: true, read: i.label === "site" ? siteWords(c.prompt, "") : [/Marque : « (.+?) »/.exec(c.prompt)![1]], why: "" })) }),
     };
     // Premier temps (la proposition) : après la relecture des textes, pour chaque planche, la direction artistique, le
     // logo, la grande scène, la maquette du haut du site, puis UNE relecture. Rien d'autre : ni objet, ni signes, ni
@@ -731,7 +775,10 @@ describe("SINA — chaîne de création de la marque", async () => {
     // La maquette : en portrait, avec le logo et la grande scène de sa planche en références.
     for (const k of ["A", "B", "C"]) expect((first.log as any).refs[`image-1-${k}-site${FIRST}`]).toEqual({ logo: true, scene: true, aspect: "9:16" });
     expect(first.log.prompts[`image-1-A-site${FIRST}`]).toContain("Le haut de la page d'accueil.");
-    expect(first.log.systems[`imagery-1-A${FIRST}`]).toMatch(/- site : la MAQUETTE du haut de la page d'accueil du site, sur écran de TÉLÉPHONE/);
+    expect(first.log.systems[`imagery-1-A${FIRST}`]).toMatch(/- site : la MAQUETTE du haut de la page d'accueil du site sur téléphone\. Suis le cahier « La maquette du haut de l'accueil » ci-dessous/);
+    // La directrice artistique reçoit la manière d'ouvrir choisie pour cette identité, et aucune seconde lecture n'est payée.
+    expect(first.log.prompts[`imagery-1-A${FIRST}`]).toContain(`manière d'ouvrir choisie pour cette identité : ${route("A").board.site.layout!.opening}`);
+    expect(first.log.ids.some((i) => i.startsWith("imagereread"))).toBe(false);
     expect(first.log.ids.some((i) => i.startsWith("art"))).toBe(false);
     expect((first.log as any).refs[`image-1-A-logo${FIRST}`]).toEqual({ logo: false, scene: false, aspect: "1:1" });
     expect((first.log as any).refs[`image-1-A-hero${FIRST}`]).toEqual({ logo: false, scene: false, aspect: "16:9" });
@@ -768,13 +815,21 @@ describe("SINA — chaîne de création de la marque", async () => {
     const a = J.journeyOf(t.cid).identities!.list[0];
     const I0 = await import("@/lib/syna-agent/brand-images");
     expect(log.prompts["image-1-A-logo"]).toContain(`« ${a.name} »`);
-    // La maquette du site : le titre, le bouton et les entrées du menu (le nom est porté par le logo fourni) ; plus le paragraphe.
-    expect(I0.slotTexts(a as any).site).toEqual([a.name, a.board!.site.headline, a.board!.site.button, ...a.board!.site.menu]);
-    expect(log.prompts["image-1-A-site"]).toContain(`Textes à écrire dans l'image, lettre pour lettre, accents et ponctuation compris : ${[a.board!.site.headline, a.board!.site.button, ...a.board!.site.menu].map((w) => `« ${w} »`).join(" ; ")}. Aucun autre texte`);
+    // La maquette du site : le titre et le bouton, lettre pour lettre (le nom est porté par le logo fourni) ; ni les
+    // entrées du menu ni le paragraphe ne sont exigés.
+    expect(a.board!.site.menu.length).toBeGreaterThan(0);
+    expect(I0.slotTexts(a as any).site).toEqual([a.name, a.board!.site.headline, a.board!.site.button]);
+    expect(log.prompts["image-1-A-site"]).toContain(`Textes à écrire dans l'image, lettre pour lettre, accents et ponctuation compris : ${[a.board!.site.headline, a.board!.site.button].map((w) => `« ${w} »`).join(" ; ")}. Aucun autre texte`);
     expect(log.prompts["image-1-A-site"]).not.toContain(a.board!.site.text);
-    expect(log.prompts["image-1-A-site"]).toMatch(/Montre seulement l'écran du téléphone, bord à bord, en portrait : ni téléphone, ni cadre, ni barre d'adresse, ni main, ni fond autour\./);
-    expect(log.prompts["imagecheck-1-A"]).toContain(`slot "site" : la maquette du haut de la page d'accueil du site, sur écran de téléphone`);
-    expect(log.prompts["imagecheck-1-A"]).toContain(`Textes attendus : ${[a.name, a.board!.site.headline, a.board!.site.button, ...a.board!.site.menu].map((w) => `« ${w} »`).join(" ; ")}.`);
+    for (const m of a.board!.site.menu) expect(log.prompts["image-1-A-site"]).not.toContain(`« ${m} »`);
+    // Un téléphone ENTIER, vu de face, sur un fond uni doux, dessiné par le modèle d'images ; le titre très grand.
+    expect(log.prompts["image-1-A-site"]).toMatch(/UN téléphone récent, entier, vu bien de face, posé sur un fond uni très doux, avec une ombre légère/);
+    expect(log.prompts["image-1-A-site"]).toMatch(/Le titre est TRÈS grand et occupe une vraie place sur l'écran ; un seul bouton ; très peu de mots\./);
+    expect(log.prompts["image-1-A-site"]).toMatch(/Rien autour du téléphone : ni main, ni table, ni décor\./);
+    expect(log.prompts["image-1-A-site"]).not.toMatch(/Montre seulement l'écran du téléphone|ni téléphone, ni cadre/);
+    expect(log.prompts["imagecheck-1-A"]).toContain(`slot "site" : la maquette du haut de la page d'accueil, dans un téléphone entier vu de face : elle doit être BELLE et donner envie`);
+    expect(log.prompts["imagecheck-1-A"]).toContain(`Les petits mots d'interface (l'heure, une ligne sous le titre, une entrée secondaire) sont normaux. Textes attendus : ${[a.name, a.board!.site.headline, a.board!.site.button].map((w) => `« ${w} »`).join(" ; ")}.`);
+    expect(log.ids.some((i) => i.startsWith("imagereread"))).toBe(false);
     expect(log.prompts["image-1-A-post1"]).toContain(`« ${a.board!.posts[1].text} »`);
     expect(log.prompts["image-1-A-hero"]).toMatch(/Aucun texte, aucune lettre/);
     for (const sl of SLOTS) expect(log.prompts[`image-1-A-${sl}`]).toMatch(sl === "logo" ? /ni personne/ : /[Aa]ucune personne/);

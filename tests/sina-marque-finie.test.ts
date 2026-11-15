@@ -99,6 +99,8 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
   type Log = { ids: string[]; prompts: Record<string, string>; refs: Record<string, { logo: boolean; scene: boolean; aspect: string }> };
   /** La consigne de maquette que rend la directrice artistique simulée. */
   const SITE_BRIEF = "Maquette du haut de l'accueil sur téléphone : la carafe en grande photo pleine, le titre en bas sur la nappe claire, le logo en haut à gauche.";
+  /** Les textes attendus de la maquette du site, tels que le relecteur les reçoit dans sa consigne. */
+  const siteWords = (c: any): string[] => [...(/slot "site" : [^\n]*Textes attendus : ([^\n]*)/.exec(c.prompt)?.[1] ?? "").matchAll(/« (.+?) »/g)].map((m) => m[1]);
   const fakeAi = (log: Log, s: Script = {}) => () => ({
     research: async (id: string) => { log.ids.push(`web:${id}`); return id === "paroles" ? [{ url: PAGE, title: "Avis", category: "customers", excerpt: REAL.map((q) => `« ${q} »`).join(" ") }] : id.startsWith("verify") ? [{ url: "https://annuaire.example/boissons", title: "Marques", category: "competitors", excerpt: "Annuaire des marques de boissons." }] : []; },
     ask: async (id: string, c: any) => {
@@ -121,7 +123,8 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     look: async (id: string, c: any) => {
       log.ids.push(id); log.prompts[id] = c.prompt;
       const name = /Marque : « (.+?) »/.exec(c.prompt)?.[1] ?? "";
-      return c.schema.parse(s.look ? s.look(id, c) : { images: c.images.map((i: any) => ({ slot: i.label, ok: true, read: [name], why: "" })) });
+      // La maquette du site est lue avec tous ses mots attendus (le nom, le titre, le bouton) : un mot manquant la ferait relire.
+      return c.schema.parse(s.look ? s.look(id, c) : { images: c.images.map((i: any) => ({ slot: i.label, ok: true, read: i.label === "site" ? siteWords(c) : [name], why: "" })) });
     },
   });
 
@@ -175,27 +178,36 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
       expect(log.refs[`image-1-${k}-site${FIRST}`]).toEqual({ logo: true, scene: true, aspect: "9:16" });
     }
     {
-      // Ses mots : le titre, le bouton et les entrées du menu de la planche, lettre pour lettre ; le nom est porté par
-      // le logo fourni ; le paragraphe du site n'y est plus écrit ni attendu.
+      // Ses mots : le titre et le bouton de la planche, lettre pour lettre ; le nom est porté par le logo fourni ; les
+      // entrées du menu et le paragraphe du site n'y sont ni exigés ni attendus.
       const a = J.journeyOf(t.cid).identities!.list[0], site = a.board!.site;
       expect(site.menu.length).toBeGreaterThan(0);
-      expect(I.slotTexts(a as any).site).toEqual([a.name, site.headline, site.button, ...site.menu]);
+      expect(I.slotTexts(a as any).site).toEqual([a.name, site.headline, site.button]);
       const prompt = log.prompts[`image-1-A-site${FIRST}`];
       expect(prompt).toMatch(/^Direction artistique : Lumière de fin d'après-midi/);
       expect(prompt).toContain(SITE_BRIEF);
-      expect(prompt).toContain(`Textes à écrire dans l'image, lettre pour lettre, accents et ponctuation compris : ${[site.headline, site.button, ...site.menu].map((w) => `« ${w} »`).join(" ; ")}. Aucun autre texte`);
+      expect(prompt).toContain(`Textes à écrire dans l'image, lettre pour lettre, accents et ponctuation compris : ${[site.headline, site.button].map((w) => `« ${w} »`).join(" ; ")}. Aucun autre texte`);
       expect(prompt).not.toContain(site.text);
+      for (const m of site.menu) expect(prompt).not.toContain(`« ${m} »`);
       expect(prompt).toMatch(/Le logo fourni en image de référence est reproduit tel quel/);
       expect(prompt).not.toContain(I.NO_INVENTED_MARK);
-      expect(prompt).toMatch(/Maquette du haut de la page d'accueil d'un site web[\s\S]*UNE grande photographie pleine qui occupe tout l'écran, le titre posé dessus sur sa partie calme, le menu, un seul bouton\. Montre seulement l'écran du téléphone, bord à bord, en portrait : ni téléphone, ni cadre, ni barre d'adresse, ni main, ni fond autour\./);
+      // L'image montre UN téléphone entier, vu de face, sur un fond uni doux (le Studio ne pose plus de cadre autour) ;
+      // le titre y est très grand.
+      expect(prompt).toMatch(/Maquette de présentation d'un site, au niveau des plus beaux sites primés de 2026 : UN téléphone récent, entier, vu bien de face, posé sur un fond uni très doux, avec une ombre légère ; son écran montre le haut de la page d'accueil décrit ci-dessus/);
+      expect(prompt).toMatch(/Le titre est TRÈS grand et occupe une vraie place sur l'écran ; un seul bouton ; très peu de mots\./);
+      expect(prompt).toMatch(/Rien autour du téléphone : ni main, ni table, ni décor\./);
+      expect(prompt).not.toMatch(/Montre seulement l'écran du téléphone|ni téléphone, ni cadre/);
       expect(prompt).toMatch(/Aucune personne, aucun visage, aucune main/);
-      // La relecture attend ces mêmes mots, et juge la beauté de la maquette.
+      // La relecture attend ces mêmes mots, juge la beauté de la maquette et sait que les petits mots d'interface sont normaux.
       const check = log.prompts[`imagecheck-1-A${FIRST}`];
-      expect(check).toContain(`slot "site" : la maquette du haut de la page d'accueil du site, sur écran de téléphone : elle doit être BELLE et donner envie`);
-      expect(check).toContain(`Textes attendus : ${[a.name, site.headline, site.button, ...site.menu].map((w) => `« ${w} »`).join(" ; ")}.`);
+      expect(check).toContain(`slot "site" : la maquette du haut de la page d'accueil, dans un téléphone entier vu de face : elle doit être BELLE et donner envie`);
+      expect(check).toMatch(/un titre TRÈS grand au caractère affirmé, une photo de campagne au sujet très grand/);
+      expect(check).toMatch(/un titre petit ou timide, une photo d'ambiance banale, une mise en page pauvre, vide ou confuse, un logo flou sont des défauts \(defect « autre »\)/);
+      expect(check).toContain(`Les petits mots d'interface (l'heure, une ligne sous le titre, une entrée secondaire) sont normaux. Textes attendus : ${[a.name, site.headline, site.button].map((w) => `« ${w} »`).join(" ; ")}.`);
       expect(check).not.toContain(site.text);
-      // La directrice artistique reçoit le titre, le bouton, le menu et la composition choisie pour cette identité.
-      expect(log.prompts[`imagery-1-A${FIRST}`]).toContain(`Site (haut de l'accueil) : titre « ${site.headline} » ; bouton « ${site.button} » ; menu : ${site.menu.join(" · ")} ; composition choisie pour cette identité : titre `);
+      // La directrice artistique reçoit le titre, la ligne dessous, le bouton, le menu et la manière d'ouvrir choisie pour cette identité.
+      expect(site.layout!.opening!.length).toBeGreaterThan(20);
+      expect(log.prompts[`imagery-1-A${FIRST}`]).toContain(`Site (haut de l'accueil) : titre « ${site.headline} » ; ligne dessous « ${site.text} » ; bouton « ${site.button} » ; entrées du menu : ${site.menu.join(" · ")} ; manière d'ouvrir choisie pour cette identité : ${site.layout!.opening}`);
     }
     expect(log.ids.filter((i) => i.startsWith("art"))).toEqual([]); // ni « art-… » ni « artcheck-… »
     expect(log.ids.filter((i) => /-(object|signs|post\d)/.test(i))).toEqual([]);
@@ -533,7 +545,8 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(f.logoFrom).toBeNull();
     // Dit au client, sans « Identité A : » (c'est SA marque) et sans dessin promis à la place d'une image.
     const said = f.issues!.join("\n");
-    expect(said).toMatch(/Je n'ai pas gardé le logo \(un texte non demandé y apparaît : « Bain de Minut »\) ; tu vois ton nom dessiné à la place\./);
+    // Le texte attendu qui manque est dit en premier (un mot mal écrit, c'est le nom qui manque).
+    expect(said).toMatch(/Je n'ai pas gardé le logo \(le texte « Bain de Minuit » n'y est pas écrit exactement\) ; tu vois ton nom dessiné à la place\./);
     expect(said).toMatch(/Je n'ai pas de logo qui passe ma relecture : ton nom dessiné, exact à la lettre, sert de logo en attendant\. Je peux t'en créer un autre, je t'annonce son prix avant\./);
     expect(said).not.toMatch(/Identité A|mon dessin|forme simple de la planche/);
     expect(out.issues).toEqual(f.issues);
@@ -641,36 +654,37 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
 
   // ---------------------------------------------------------------- la maquette du haut du site
 
-  it("maquette du site : gardée quand ses mots sont exacts ; refusée à la relecture (laide, ou un texte en trop), elle n'est pas montrée et c'est dit", async () => {
+  it("maquette du site : gardée avec tous ses mots, même avec un texte en trop ; refusée à la relecture (laide, ou son titre manque), elle n'est pas montrée et c'est dit", async () => {
     const t = await thread();
-    /** Les textes attendus de la maquette, tels que le relecteur les reçoit. */
-    const expected = (c: any) => [...(/slot "site" : .*Textes attendus : (.+)\.$/m.exec(c.prompt)?.[1] ?? "").matchAll(/« (.+?) »/g)].map((m) => m[1]);
     const paragraph = (key: "A" | "B" | "C") => route(key).board.site.text;
+    const EXTRA = "Un paragraphe que personne n'a demandé.";
     const { log } = await proposed(t, {
       look: (id, c) => {
         const name = /Marque : « (.+?) »/.exec(c.prompt)?.[1] ?? "";
-        // Seconde lecture (seulement recopier) : le paragraphe est bien écrit dans la maquette de C.
-        if (id.startsWith("imagereread")) return { images: c.images.map((i: any) => ({ slot: i.label, read: [name, "Un paragraphe que personne n'a demandé."] })) };
+        // Seconde lecture (seulement recopier) de la maquette de C : le titre n'y est toujours pas.
+        if (id.startsWith("imagereread")) return { images: c.images.map((i: any) => ({ slot: i.label, read: [route("C").name, route("C").board.site.button] })) };
         return { images: c.images.map((i: any) => {
           if (i.label !== "site") return { slot: i.label, ok: true, read: [name], why: "" };
-          // A : tous ses mots, lettre pour lettre. B : mise en page pauvre. C : acceptée, mais un paragraphe en trop est lu.
-          if (/-A:/.test(id)) return { slot: "site", ok: true, read: expected(c), why: "" };
-          if (/-B:/.test(id)) return { slot: "site", ok: false, defect: "autre", read: expected(c), why: "La mise en page est vide et banale." };
-          return { slot: "site", ok: true, read: [...expected(c), "Un paragraphe que personne n'a demandé."], why: "" };
+          // A : tous ses mots, plus l'heure du téléphone et un paragraphe en trop. B : mise en page pauvre. C : acceptée,
+          // mais son titre n'est pas lu (le nom et le bouton seulement).
+          if (/-A:/.test(id)) return { slot: "site", ok: true, read: ["9:41", ...siteWords(c), EXTRA], why: "" };
+          if (/-B:/.test(id)) return { slot: "site", ok: false, defect: "autre", read: siteWords(c), why: "La mise en page est vide et banale." };
+          return { slot: "site", ok: true, read: siteWords(c).filter((w) => w !== route("C").board.site.headline), why: "" };
         }) };
       },
     });
     const j = J.journeyOf(t.cid), [a, b, c] = j.identities!.list;
-    // Le relecteur a bien reçu le nom, le titre, le bouton et le menu (jamais le paragraphe du site).
+    // Le relecteur a bien reçu le nom, le titre et le bouton (jamais le menu ni le paragraphe du site).
     for (const x of [a, b, c]) {
       const check = log.prompts[`imagecheck-1-${x.key}${FIRST}`];
-      expect(check).toContain(`Textes attendus : ${[x.name, x.board!.site.headline, x.board!.site.button, ...x.board!.site.menu].map((w) => `« ${w} »`).join(" ; ")}.`);
+      expect(check).toContain(`Textes attendus : ${[x.name, x.board!.site.headline, x.board!.site.button].map((w) => `« ${w} »`).join(" ; ")}.`);
       expect(check).not.toContain(paragraph(x.key as "A"));
     }
-    // A : gardée, sans seconde lecture. B : refusée par le jugement. C : jugement et lecture se contredisent, une
-    // seconde lecture tranche : le texte en trop y est, l'image n'est pas gardée.
+    expect(c.board!.site.headline).toBe(route("C").board.site.headline);
+    // A : gardée SANS seconde lecture, ses textes en trop ne sont pas un défaut. B : refusée par le jugement. C : il lui
+    // manque son titre, une seconde lecture tranche : le titre n'y est pas, l'image n'est pas gardée.
     expect(log.ids.filter((i) => i.startsWith("imagereread"))).toEqual([`imagereread-1-C${FIRST}`]);
-    expect(log.prompts[`imagereread-1-C${FIRST}`]).toContain(`slot "site"`);
+    expect(log.prompts[`imagereread-1-C${FIRST}`]).toMatch(/Voici 1 image\(s\), dans l'ordre\.\nImage 1 — slot "site"\./);
     expect(a.board!.images!.site).toBeTruthy();
     expect(b.board!.images!.site).toBeUndefined();
     expect(c.board!.images!.site).toBeUndefined();
@@ -678,20 +692,21 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     for (const x of [b, c]) { expect(x.board!.images!.logo).toBeTruthy(); expect(x.board!.images!.hero).toBeTruthy(); }
     // C'est dit au client, avec la raison, et jamais remplacé par une page dessinée.
     expect(j.identities!.issues).toContain("Identité B : je n'ai pas gardé la maquette de ton site (La mise en page est vide et banale) ; je ne la montre pas.");
-    expect(j.identities!.issues).toContain("Identité C : je n'ai pas gardé la maquette de ton site (un texte non demandé y apparaît : « Un paragraphe que personne n'a demandé. ») ; je ne la montre pas.");
+    expect(j.identities!.issues).toContain(`Identité C : je n'ai pas gardé la maquette de ton site (le texte « ${c.board!.site.headline.slice(0, 60)} » n'y est pas écrit exactement) ; je ne la montre pas.`);
     expect(j.identities!.issues.some((l) => l.startsWith("Identité A"))).toBe(false);
+    expect(j.identities!.issues.join("\n")).not.toMatch(/un texte non demandé/);
     expect(J.journeyContext(j)).toMatch(/Points que le contrôle du Studio n'a pas pu valider \(dis-les honnêtement au client, en mots simples\) : [\s\S]*Identité B : je n'ai pas gardé la maquette de ton site/);
     // Dans la bibliothèque : la maquette de A est prête, celles de B et de C sont marquées refusées avec leur raison.
     const status = (key: string) => one<{ status: string; why: string | null }>("SELECT status, json_extract(meta,'$.synaBoard.review.why') why FROM assets WHERE project_id=? AND name=?", t.pid, `planche-${key}-site.png`);
     expect(status("A")).toMatchObject({ status: "ready" });
     expect(status("B")).toEqual({ status: "rejected", why: "La mise en page est vide et banale." });
-    expect(status("C")).toMatchObject({ status: "rejected", why: expect.stringContaining("un texte non demandé y apparaît") });
+    expect(status("C")).toMatchObject({ status: "rejected", why: expect.stringContaining("n'y est pas écrit exactement") });
     // Aucune maquette n'est relancée seule.
     for (const k of ["A", "B", "C"]) expect(log.ids.filter((i) => i.startsWith(`image-1-${k}-site`))).toHaveLength(1);
     // SINA ne regarde que la maquette gardée.
     const seen = (await journeyImages(j)).map((x) => x.label ?? "");
     expect(seen.filter((l) => /la maquette du haut de son site/.test(l))).toEqual([`Identité A « ${a.name} » — la maquette du haut de son site, sur téléphone, montré au client sur sa planche`]);
-    // À l'écran : un seul téléphone, celui de A ; les planches B et C n'ont ni maquette ni page dessinée à la place.
+    // À l'écran : une seule maquette, celle de A ; les planches B et C n'ont ni maquette ni page dessinée à la place.
     const html = await screen(t), shown = (await fr(() => threadView(t.user, t.cid))).journey.identities!.list as any[];
     expect(count(html, 'data-screen="maquette"')).toBe(1);
     expect(count(html, "<figure data-phone")).toBe(1);
@@ -702,6 +717,42 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(count(html, "<figure data-logo")).toBe(3);
   });
 
+  it("maquette du site, seconde lecture : un titre mal lu la première fois puis retrouvé la garde, même avec de petits mots en trop ; un titre écrit avec une faute la refuse", async () => {
+    const t = await thread();
+    const { log } = await proposed(t, {
+      look: (id, c) => {
+        const name = /Marque : « (.+?) »/.exec(c.prompt)?.[1] ?? "";
+        const key = /-([ABC]):/.exec(id)![1] as "A" | "B" | "C", r = route(key), site = r.board.site;
+        // Seconde lecture (seulement recopier) : A porte bien tous ses mots, avec l'heure et une entrée du menu en plus ;
+        // le titre de B est écrit avec une faute.
+        if (id.startsWith("imagereread")) return { images: c.images.map((i: any) => ({ slot: i.label, read: key === "B" ? [r.name, site.headline.replace("pétille", "petille"), site.button] : ["9:41", r.name, site.headline, site.button, site.menu[0]] })) };
+        return { images: c.images.map((i: any) => {
+          if (i.label !== "site") return { slot: i.label, ok: true, read: [name], why: "" };
+          // A et B : acceptées, mais le titre n'est pas dans la première lecture. C : tous ses mots, rien de plus.
+          return { slot: "site", ok: true, read: key === "C" ? siteWords(c) : siteWords(c).filter((w) => w !== site.headline), why: "" };
+        }) };
+      },
+    });
+    const j = J.journeyOf(t.cid), [a, b, c] = j.identities!.list;
+    expect(route("B").board.site.headline).toContain("pétille");
+    // Une seconde lecture pour A et pour B (un texte attendu manquait) ; aucune pour C.
+    expect(log.ids.filter((i) => i.startsWith("imagereread"))).toEqual([`imagereread-1-A${FIRST}`, `imagereread-1-B${FIRST}`]);
+    for (const k of ["A", "B"]) expect(log.prompts[`imagereread-1-${k}${FIRST}`]).toMatch(/Voici 1 image\(s\), dans l'ordre\.\nImage 1 — slot "site"\./);
+    // A : gardée, son titre y est bien, et ses petits mots en trop ne comptent pas. B : son titre n'y est pas écrit
+    // exactement (un accent manque), refusée, et c'est dit. C : gardée.
+    expect(a.board!.images!.site).toBeTruthy();
+    expect(b.board!.images!.site).toBeUndefined();
+    expect(c.board!.images!.site).toBeTruthy();
+    expect(j.identities!.issues.filter((l) => !l.startsWith("Identité B"))).toEqual([]);
+    expect(j.identities!.issues).toHaveLength(1);
+    expect(j.identities!.issues[0]).toMatch(/^Identité B : je n'ai pas gardé la maquette de ton site \(.+\) ; je ne la montre pas\.$/);
+    for (const x of [a, b, c]) { expect(x.board!.images!.logo).toBeTruthy(); expect(x.board!.images!.hero).toBeTruthy(); }
+    const status = (key: string) => one<{ status: string }>("SELECT status FROM assets WHERE project_id=? AND name=?", t.pid, `planche-${key}-site.png`)!.status;
+    expect([status("A"), status("B"), status("C")]).toEqual(["ready", "rejected", "ready"]);
+    // Aucune maquette n'est relancée seule.
+    for (const k of ["A", "B", "C"]) expect(log.ids.filter((i) => i.startsWith(`image-1-${k}-site`))).toHaveLength(1);
+  });
+
   it("maquette du site : la direction artistique doit rendre sa consigne (essai réel du 15 novembre 2026 : rendue vide, la maquette n'était pas créée et rien n'était dit)", () => {
     const base = { look: "x", logo: "x", signs: "", hero: "x", object: "x", posts: ["a", "b", "c"] };
     expect(I.ImagerySchema.safeParse({ ...base, site: "" }).success).toBe(false);
@@ -709,7 +760,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(I.ImagerySchema.safeParse({ ...base, site: "La maquette du haut de l'accueil." }).success).toBe(true);
   });
 
-  it("planche rendue sans navigateur : la maquette est dans le cadre du téléphone quand images.site existe, sinon rien (jamais une page dessinée par le Studio)", async () => {
+  it("planche rendue sans navigateur : la maquette est montrée telle quelle, sans cadre de téléphone du Studio, quand images.site existe ; sinon rien (jamais une page dessinée par le Studio)", async () => {
     const t = await thread();
     await proposed(t);
     // Les planches telles que le fil les reçoit ; on y pose ensuite trois cas : une maquette, aucune, une adresse étrangère.
@@ -724,6 +775,9 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(count(out, "<figure data-phone")).toBe(1);
     expect(out).not.toContain('data-screen="site"');
     expect(out).not.toContain("bb-ps-");
+    // Le téléphone est DANS l'image : le Studio ne dessine plus de cadre de téléphone autour de la maquette.
+    expect(count(out, '<div class="bb-mock" data-screen="maquette">')).toBe(1);
+    expect(/<figure data-phone[^>]*>[\s\S]*?<\/figure>/.exec(out)![0]).not.toContain("bb-phone");
     // L'image de la maquette, entière (largeur et hauteur du portrait), avec le titre du site comme texte de remplacement.
     const img = /data-screen="maquette"><img[^>]*>/.exec(out)![0];
     expect(img).toContain('src="/api/files/maquette-a"');

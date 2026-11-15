@@ -45,7 +45,7 @@ type Board = {
   signs: { kind: string; kindLabel: string; title: string; text: string; symbol?: Picto; art?: Art; ground?: Role; sample?: string; hand?: boolean }[];
   object: { kind: string; label: string; front: string[]; back: string[]; art?: Art; note?: string };
   parcel?: { tape: string };
-  site: { headline: string; text: string; button: string; menu: string[]; art?: Art; layout?: { title: "bas" | "centre" | "haut"; menu: "burger" | "onglets" | "centre"; button: "pilule" | "rectangle" | "souligne"; corners: "ronds" | "droits"; next: "produits" | "phrase" | "points" | "bandeau" } };
+  site: { headline: string; text: string; button: string; menu: string[]; art?: Art; layout?: { opening?: string; title?: "bas" | "centre" | "haut"; menu?: "burger" | "onglets" | "centre"; button?: "pilule" | "rectangle" | "souligne"; corners?: "ronds" | "droits"; next?: "produits" | "phrase" | "points" | "bandeau" } };
   posts: { text: string; look: "fond" | "couleur" | "motif" | "citation"; art?: Art; ground?: Role; note?: string }[];
   toProve: string[];
   images?: Shots;
@@ -245,8 +245,8 @@ const BOARD_CSS = `
 .bb-live figure[data-phone]{grid-column:1/-1}
 .bb-live .bb-stack{grid-column:1/-1;grid-template-columns:1fr 1fr;align-items:end}
 @container (min-width:42rem){.bb-live figure[data-phone]{grid-column:span 2;grid-row:span 2}.bb-live .bb-stack{grid-column:span 2}}
-.bb-phone[data-screen="maquette"]{width:min(100%,19rem);aspect-ratio:auto;transform:rotate(1deg);border-radius:30px;border-width:7px}
-.bb-phone[data-screen="maquette"] .bb-photo{width:100%;height:auto;object-fit:contain}
+.bb-mock{width:min(100%,24rem);border-radius:18px;overflow:hidden;box-shadow:0 22px 40px -24px rgba(0,0,0,.55)}
+.bb-mock .bb-photo{display:block;width:100%;height:auto;object-fit:contain}
 .bb-phone[data-screen="site"]{width:min(100%,17rem);aspect-ratio:9/19.5;transform:rotate(1deg);background:var(--ps-bg);color:var(--ps-ink);font-family:var(--bb-body)}
 .bb-ps-bar{flex:none;font-size:.5rem;letter-spacing:.07em;text-transform:uppercase;text-align:center;padding:.32rem .6rem;background:var(--ps-dark);color:var(--ps-on-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bb-ps-head{flex:none;display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.5rem .7rem}
@@ -569,7 +569,7 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
           {/* La maquette du haut de l'accueil, créée par OpenAI pour cette identité, dans le cadre du téléphone. Refusée à
               la relecture, elle n'est pas remplacée par une page dessinée par le Studio. */}
           {shotOk(shots.site) && <figure data-phone>
-            <div className="bb-phone" data-screen="maquette"><Photo shot={shots.site} alt={b.site.headline} /></div>
+            <div className="bb-mock" data-screen="maquette"><Photo shot={shots.site} alt={b.site.headline} /></div>
             <figcaption>{t("Le haut de ton site, sur téléphone", "The top of your site, on a phone")}</figcaption>
           </figure>}
           <div className="bb-stack">

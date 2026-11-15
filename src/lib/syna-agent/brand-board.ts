@@ -161,11 +161,13 @@ export const BoardSchema = z.object({
      * du titre sur la photo, le menu, la forme du bouton, les angles, et ce qui vient juste après l'ouverture.
      */
     layout: z.object({
-      title: z.enum(["bas", "centre", "haut"]),
-      menu: z.enum(["burger", "onglets", "centre"]),
-      button: z.enum(["pilule", "rectangle", "souligne"]),
-      corners: z.enum(["ronds", "droits"]),
-      next: z.enum(["produits", "phrase", "points", "bandeau"]),
+      /** La manière d'ouvrir choisie pour cette identité, en quelques mots (cahier « maquettes-accueil-mobile »). */
+      opening: z.string().min(3).max(160).optional(),
+      title: z.enum(["bas", "centre", "haut"]).optional(),
+      menu: z.enum(["burger", "onglets", "centre"]).optional(),
+      button: z.enum(["pilule", "rectangle", "souligne"]).optional(),
+      corners: z.enum(["ronds", "droits"]).optional(),
+      next: z.enum(["produits", "phrase", "points", "bandeau"]).optional(),
     }).optional(),
     /** Image du haut de la page. */
     art: ArtSchema.optional(),

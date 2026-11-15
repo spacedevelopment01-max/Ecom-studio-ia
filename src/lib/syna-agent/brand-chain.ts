@@ -525,11 +525,14 @@ export function withArt(route: Route, draft: ArtDraft, facts: string): { route: 
  * même suite). La seconde est reprise ; une identité sans composition choisie est reprise aussi.
  */
 export function layoutIssues(list: Route[]): string[] {
-  const out: string[] = [], sig = (x: Route) => { const l = x.board.site.layout; return l ? `${l.title}|${l.menu}|${l.next}` : ""; };
+  const norm = (t: string) => t.toLowerCase().normalize("NFD").replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ").trim();
+  // La manière d'ouvrir en mots libres ; à défaut (planches d'avant), la place du titre, le menu et la suite.
+  const sig = (x: Route) => { const l = x.board.site.layout; return !l ? "" : l.opening ? norm(l.opening) : l.title && l.menu && l.next ? `${l.title}|${l.menu}|${l.next}` : ""; };
+  const out: string[] = [];
   for (const [i, x] of list.entries()) {
-    if (!sig(x)) { out.push(`Identité ${x.key} : la composition du haut de son site (board.site.layout) n'est pas choisie ; choisis-la d'après sa planche.`); continue; }
+    if (!sig(x)) { out.push(`Identité ${x.key} : la manière d'ouvrir le haut de son site (board.site.layout.opening) n'est pas choisie ; choisis-la d'après sa planche.`); continue; }
     const twin = list.slice(0, i).find((o) => sig(o) === sig(x));
-    if (twin) out.push(`Identité ${x.key} : le haut de son site a la même composition que celui de ${twin.key} (titre ${x.board.site.layout!.title}, menu ${x.board.site.layout!.menu}, puis ${x.board.site.layout!.next}) ; change la place du titre, le menu et ce qui vient après, d'après sa planche.`);
+    if (twin) out.push(`Identité ${x.key} : le haut de son site s'ouvre de la même manière que celui de ${twin.key} ; choisis une autre manière d'ouvrir, d'après sa planche.`);
   }
   return out;
 }
@@ -765,7 +768,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
   // 6 et 7. La voix, les signes, les situations : la planche de chaque route.
   const ideaOf = (r: Pick) => strategy.ideas.find((i) => i.id === r.idea) ?? ideas[0];
   /** Ce qu'une route doit savoir des autres pour s'en écarter (couleurs, police, phrases, bouton). */
-  const seen = (x: Route) => `- ${x.key} « ${x.name} » : fond ${x.ground}, bouton ${x.palette.primary}, titres ${x.fonts.heading} (police de titres déjà prise), signature « ${x.slogan} », titre du site « ${x.board.site.headline} », bouton du site « ${x.board.site.button} »${x.board.site.layout ? `, composition du site : titre ${x.board.site.layout.title}, menu ${x.board.site.layout.menu}, bouton ${x.board.site.layout.button}, angles ${x.board.site.layout.corners}, puis ${x.board.site.layout.next} (la tienne doit en différer)` : ""}`;
+  const seen = (x: Route) => `- ${x.key} « ${x.name} » : fond ${x.ground}, bouton ${x.palette.primary}, titres ${x.fonts.heading} (police de titres déjà prise), signature « ${x.slogan} », titre du site « ${x.board.site.headline} », bouton du site « ${x.board.site.button} »${x.board.site.layout?.opening ? `, manière d'ouvrir son site : ${x.board.site.layout.opening} (la tienne doit en différer)` : ""}`;
   const routePrompt = (r: Pick, idea: Strategy["ideas"][number], others: Route[], old?: Route) => [
     brief, "", "# Étude", studyDigest(study), "", "# La route à mettre en planche",
     `Nom : ${r.name}${j.keep.includes("nom") ? " (nom gardé par le client)" : ""}`, `Détail réel : ${r.detail}`, `Deuxième lecture : ${r.second}`, `Logique dite au client : ${r.why}`, `Risques connus : ${r.risks.join(" ; ") || "aucun relevé"}`,

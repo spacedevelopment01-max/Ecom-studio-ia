@@ -97,14 +97,22 @@ describe("SINA — nom de domaine : l'exact, sinon une adresse libre qui garde l
     expect(I.SLOT_REFERENCES.site).toBe(2); // le logo et la grande scène, comptés dans le devis
     for (const k of ["produits", "services"] as const) {
       const t = P.imagerySystem(k);
-      expect(t).toMatch(/- site : la MAQUETTE du haut de la page d'accueil du site, sur écran de TÉLÉPHONE, en portrait \(le Studio la montre dans le cadre d'un téléphone\)/);
-      expect(t).toMatch(/propre à CETTE marque[\s\S]*jamais une mise en page passe-partout qu'on reverrait chez un autre client/);
-      expect(t).toMatch(/Suis la composition choisie pour cette identité \(place du titre, forme du menu, forme du bouton, angles\)/);
-      expect(t).toMatch(/où est le logo \(fourni en référence, posé tel quel\)/);
+      // 15 novembre 2026 (document « 50 accueils mobiles ») : la maquette suit son cahier de métier ; la consigne décrit
+      // le téléphone entier sur son fond uni, l'en-tête, la manière d'ouvrir de CETTE identité, le titre très grand.
+      expect(t).toMatch(/- site : la MAQUETTE du haut de la page d'accueil du site sur téléphone\. Suis le cahier « La maquette du haut de l'accueil » ci-dessous : c'est le niveau attendu\./);
+      expect(t).toMatch(/le téléphone entier vu de face sur son fond uni doux \(dis la teinte\)/);
+      expect(t).toMatch(/la manière d'ouvrir choisie pour cette identité \(reprends-la telle quelle, et décris où va chaque élément\)/);
+      expect(t).toMatch(/le caractère exact du titre \([^)]*sa taille : très grand\)/);
+      expect(t).toMatch(/Le logo est fourni en référence : il est posé tel quel dans l'en-tête\. Format portrait\./);
+      expect(t).toMatch(/# Cahier : la maquette du haut de l'accueil, sur téléphone\n# La maquette du haut de l'accueil, sur téléphone/);
+      // Le Studio ne pose plus de cadre autour : le téléphone est dans l'image.
+      expect(t).not.toMatch(/le Studio la montre dans le cadre d'un téléphone/);
       expect(t).not.toMatch(/Le haut du site sur téléphone n'est plus une image/);
     }
-    expect(P.imagerySystem("produits")).toMatch(/le vrai produit du client, entier/);
-    expect(P.imagerySystem("services")).toMatch(/le métier du client, sans personne/);
+    expect(P.imagerySystem("produits")).toMatch(/selon une boutique : menu replié, logo au centre, panier/);
+    expect(P.imagerySystem("produits")).toMatch(/le vrai produit du client, très grand, cadré avec audace/);
+    expect(P.imagerySystem("services")).toMatch(/selon un service : le logo à gauche, la pastille d'action et le menu replié à droite/);
+    expect(P.imagerySystem("services")).toMatch(/le lieu, les outils ou le résultat du métier, sans personne/);
     expect(P.imagerySystem("produits")).not.toMatch(/"site": ""/);
     // Retour du propriétaire du 14 novembre 2026 : « 3 images de la même couleur qui représentent la même chose, les
     // clients veulent voir 3 publications différentes possibles ».
