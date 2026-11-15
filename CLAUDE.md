@@ -73,8 +73,9 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   l'interlocutrice après la livraison (publications, publicités, améliorations).
 - Elle réfléchit avec le modèle le plus fort, pour tous les forfaits. Celui qui fait n'est jamais celui qui juge ;
   rien n'est montré sans avoir été relu ; elle regarde ce qu'elle a fait et le corrige avant de le montrer.
-- Chaque mois, le client doit voir ce que son abonnement lui apporte : cinq engagements (le point du mois, « envoie
-  une photo, SINA fait le reste », les grands moments de l'année, sa fiche Google et ses avis, le site qui s'améliore),
+- Chaque mois, le client doit voir ce que son abonnement lui apporte : dix engagements (le point du mois, « envoie
+  une photo, SINA fait le reste », les grands moments de l'année, sa fiche Google et ses avis, le site qui s'améliore,
+  « ta journée est prête », la boîte des demandes, le studio photo de poche, ses devis, ses vrais chiffres de vente),
   détaillés dans la référence, partie 14. Condition du propriétaire : « ça doit vraiment faire ce que tu as dit
   c'est impératif » ; un engagement à moitié fait n'est pas fini.
 - Elle propose, le client décide. Elle n'agit seule que là où il l'a autorisé par écrit, dans son plafond.
