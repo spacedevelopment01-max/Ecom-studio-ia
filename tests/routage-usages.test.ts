@@ -139,10 +139,12 @@ describe("routage multimédia par usage", async () => {
   });
   afterEach(() => vi.unstubAllGlobals());
 
-  it("réglage général conservé pour les usages, sauf le dessin logo imposé", () => {
+  it("réglage général conservé pour les usages, sauf le dessin logo et les images des publications imposés", () => {
     const o = fr(() => mediaUsageOverview());
     expect(o.map((u) => u.usage)).toEqual(["logo", "product_image", "product_edit", "ad_visual", "social_image", "text_layout", "scene", "product_video", "ugc_video", "text_video"]);
-    for (const u of o.filter(u => u.usage !== "logo")) {
+    // Publications : OpenAI obligatoire (14 novembre 2026), le modèle des images de SINA par défaut.
+    expect(o.find((u) => u.usage === "social_image")).toMatchObject({ primary: "openai:gpt-image-2.6-flare", mode: "manual", explicit: true });
+    for (const u of o.filter(u => u.usage !== "logo" && u.usage !== "social_image")) {
       expect(u.primaryInherited && u.backupInherited && u.modeInherited).toBe(true);
       expect(u.mode).toBe("manual");
       expect(u.primary).toBe(u.kind === "image" ? "openai:gpt-image-1" : "google:veo-3.0-generate-001");
@@ -154,6 +156,8 @@ describe("routage multimédia par usage", async () => {
     expect(o2.find((u) => u.usage === "logo")).toMatchObject({ primary: "openai:gpt-image-2.5-sunburst", primaryInherited: false, backup: null });
     // Texte et logo sur les images : suit aussi le réglage général (plus de ChatGPT Images imposé ; choix du propriétaire).
     expect(o2.find((u) => u.usage === "text_layout")?.primary).toBe("google:gemini-2.5-flash-image");
+    // Les publications, elles, ne suivent jamais le réglage général : OpenAI.
+    expect(o2.find((u) => u.usage === "social_image")?.primary).toBe("openai:gpt-image-2.6-flare");
     // … sauf qu'il ne sait pas retoucher par masque : signalé pour « Retouches produit ».
     expect(o2.find((u) => u.usage === "product_edit")?.primaryProblem).toMatch(/masque/);
   });

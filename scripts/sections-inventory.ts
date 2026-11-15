@@ -1,6 +1,6 @@
 /** Inventaire de TOUTES les sections du thème de base et de leur couverture : bibliothèque du studio (Thème → Sections),
  * famille d'origine, où elles sont utilisées, variantes (dispositions, styles, formats), réglages, blocs et couverture
- * d'export par plateforme. Produit docs/coordination/BIBLIOTHEQUE_SECTIONS_COUVERTURE.md ; le test
+ * d'export par plateforme. Produit docs/BIBLIOTHEQUE_SECTIONS_COUVERTURE.md ; le test
  * tests/section-library-coverage.test.ts vérifie que l'inventaire et la bibliothèque citent chaque section.
  *
  *   npx tsx scripts/sections-inventory.ts
@@ -73,5 +73,5 @@ ${rows.map((r) => `| \`${r.type}\` | ${r.name} | ${r.category} | ${r.family} | $
 
 ${[...new Set(rows.map((r) => r.family))].map((f) => `- **${f}** : ${rows.filter((r) => r.family === f).length} sections — ${rows.filter((r) => r.family === f).map((r) => `\`${r.type}\``).join(", ")}`).join("\n")}
 `;
-fs.writeFileSync(path.join(ROOT, "docs", "coordination", "BIBLIOTHEQUE_SECTIONS_COUVERTURE.md"), md);
+fs.writeFileSync(path.join(ROOT, "docs", "BIBLIOTHEQUE_SECTIONS_COUVERTURE.md"), md);
 console.log(JSON.stringify({ sections: types.length, addable: types.filter(addable).length, structural: types.filter((t) => !addable(t)).length, covered: cov.covered.length, library: SECTION_LIBRARY.length, animated: rows.filter((r) => r.anim).length }));

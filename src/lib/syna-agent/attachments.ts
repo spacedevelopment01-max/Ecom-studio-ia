@@ -145,7 +145,7 @@ export function describeAttachment(a: Attachment): string {
  * images ») : les 3 logos tant que le client n'a pas choisi (étape 2), la planche de marque tant que l'image de marque
  * n'est pas validée (étape 3). Réduites (512 px, planche 1024 px) : quelques millièmes d'euro par réponse.
  */
-export async function journeyImages(j: { steps: Record<number, { status: string } | undefined>; logos?: { list: { source: string; name: string; assetId: string | null; verdict: string; score: number | null }[] }; logoChoice?: unknown; brandKit?: { boardId: string | null } }, projectId?: string | null): Promise<LlmImage[]> {
+export async function journeyImages(j: { steps: Record<number, { status: string } | undefined>; logos?: { list: { source: string; name: string; assetId: string | null; verdict: string; score: number | null }[] }; logoChoice?: unknown; brandKit?: { boardId: string | null }; siteMode?: { mode: string }; customChosenAt?: number }, projectId?: string | null): Promise<LlmImage[]> {
   const { getAsset, assetData } = await import("../library");
   const sharp = (await import("sharp")).default;
   const small = async (id: string, size: number) => { const a = getAsset(id); return a && !a.deleted_at ? sharp(assetData(a)).resize(size, size, { fit: "inside", withoutEnlargement: true }).png().toBuffer() : null; };
@@ -173,6 +173,46 @@ export async function journeyImages(j: { steps: Record<number, { status: string 
       const data = await small(img.assetId!, n === 0 || recent.length ? 1536 : 1024).catch(() => null);
       const fresh = Date.now() - at < 15 * 60_000;
       if (data) out.push({ data, label: `Maquette ${d.key} « ${d.name} », image ${img.id} — ${img.pages.join(", ")} (${img.viewport === "desktop" ? "ordinateur" : "téléphone"})${fresh ? ", créée il y a quelques minutes" : ""}, montrée au client${img.check ? (img.check.ok ? " ; contrôle automatique de la mise en page : rien à signaler" : ` ; RATÉE au contrôle automatique : ${img.check.problems.join(" ; ")}`) : ""}` });
+    }
+  }
+  // Étape 6, thème sur mesure (audit du 10 novembre 2026 : SINA ne voyait rien du thème qu'elle retouche) : l'accueil
+  // sur ordinateur et sur téléphone, capturés par le Studio (gratuit, une fois par version du thème).
+  // Découpées en bandes (ordinateur : 1 600 px de haut, téléphone : 1 200 px) : une capture entière serait réduite par le
+  // modèle au point de rendre les textes illisibles.
+  if (projectId && (j.siteMode?.mode === "mockup" || j.customChosenAt) && j.steps[7]?.status !== "done") {
+    // Photos du thème sur mesure créées ces 20 dernières minutes (custom.photo, montage) : SINA les vérifie elle-même
+    // avant d'en parler (sujet entier, aucun texte, fidèle au produit), en pleine définition, les plus récentes d'abord.
+    const { all } = await import("../db");
+    const recent = all<{ id: string; name: string; meta: string | null }>("SELECT id, name, meta FROM assets WHERE project_id=? AND deleted_at IS NULL AND role='site' AND origin='generated' AND created_at>? AND meta LIKE '%\"direction\":\"custom\"%' ORDER BY created_at DESC LIMIT 3", projectId, Date.now() - 20 * 60_000);
+    for (const a of recent) {
+      const data = await small(a.id, 1024).catch(() => null);
+      let what = "";
+      try { what = String(JSON.parse(a.meta ?? "{}").synaPhoto?.description ?? "").slice(0, 160); } catch { what = ""; }
+      if (data) out.push({ data, label: `Thème sur mesure du client — photo créée il y a quelques minutes (${a.name}${what ? ` : ${what}` : ""}), à vérifier toi-même` });
+    }
+    // Galerie produit créée ces 20 dernières minutes (essai du 10 novembre 2026 : SINA disait ne pas la voir) : réduite
+    // en planche de vignettes carrées, pour qu'elle vérifie elle-même chaque image (produit, textes, format).
+    const gal = all<{ id: string; meta: string | null }>("SELECT id, meta FROM assets WHERE project_id=? AND deleted_at IS NULL AND origin='generated' AND created_at>? AND meta LIKE '%synaGallery%' ORDER BY created_at ASC LIMIT 9", projectId, Date.now() - 20 * 60_000);
+    if (gal.length) {
+      const tiles = (await Promise.all(gal.map((g) => small(g.id, 512).catch(() => null)))).filter((x) => !!x).map((x) => x!);
+      if (tiles.length) {
+        const cols = Math.min(3, tiles.length), rows = Math.ceil(tiles.length / cols);
+        const sheet = await sharp({ create: { width: cols * 512, height: rows * 512, channels: 3, background: "#ffffff" } })
+          .composite(await Promise.all(tiles.map(async (t, i) => ({ input: await sharp(t).resize(512, 512, { fit: "contain", background: "#ffffff" }).toBuffer(), left: (i % cols) * 512, top: Math.floor(i / cols) * 512 })))).jpeg({ quality: 82 }).toBuffer();
+        out.push({ data: sheet, label: `Galerie produit créée il y a quelques minutes (${tiles.length} image(s), dans l'ordre), à vérifier toi-même : produit fidèle et entier, textes exacts, format carré` });
+      }
+    }
+    const { customThemeShots } = await import("./custom-theme/shots");
+    for (const shot of await customThemeShots(projectId).catch(() => [])) {
+      const meta = await sharp(shot.data).metadata().catch(() => null);
+      if (!meta?.width || !meta.height) continue;
+      const band = shot.view === "ordinateur" ? 1600 : 1200, parts = Math.ceil(meta.height / band);
+      for (let i = 0; i < parts && out.length < 10; i++) {
+        const top = i * band, height = Math.min(band, meta.height - top);
+        if (height < 120) break;
+        const data = await sharp(shot.data).extract({ left: 0, top, width: meta.width, height }).jpeg({ quality: 72 }).toBuffer().catch(() => null);
+        if (data) out.push({ data, label: `Thème sur mesure du client — accueil (${shot.view}), partie ${i + 1}/${parts} de haut en bas, tel qu'il le voit dans l'onglet Boutique` });
+      }
     }
   }
   // Étape 7 : captures du site codé, chacune à côté de l'image de maquette de la même page (essai réel du 8 novembre :

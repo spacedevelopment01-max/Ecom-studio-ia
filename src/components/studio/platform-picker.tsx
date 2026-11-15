@@ -73,41 +73,6 @@ function platformText(id: PlatformId, business: BusinessType, t: T) {
   }
 }
 
-/** Choix de la plateforme en cartes lisibles (formulaire « Nouveau projet », réglages du Pilote). */
-export function PlatformCards({ value, onChange, business, name, compact }: { value: PlatformId; onChange: (p: PlatformId) => void; business: BusinessType; name?: string; compact?: boolean }) {
-  const t = useT();
-  const rec = recommendedPlatform(business);
-  return (
-    <div>
-      {name && <input type="hidden" name={name} value={value} />}
-      <div role="radiogroup" aria-label={t("Plateforme", "Platform")} className={cx("grid gap-2", compact ? "sm:grid-cols-2" : "sm:grid-cols-2 xl:grid-cols-3")}>
-        {PLATFORM_IDS.map((id) => {
-          const info = platformInfo(id, business, t);
-          const on = value === id;
-          return (
-            <button
-              key={id}
-              type="button"
-              role="radio"
-              aria-checked={on}
-              onClick={() => onChange(id)}
-              className={cx("relative grid content-start gap-1 rounded-2xl border p-3 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal", on ? "border-signal bg-signal-soft" : "border-line bg-card hover:border-ink")}
-            >
-              <span className="flex flex-wrap items-center gap-1.5 pr-6">
-                <span className="text-sm font-semibold">{info.name}</span>
-                {id === rec && <Badge tone="signal" className="!px-2 !py-0 text-[10px]">{t("Conseillé", "Recommended")}</Badge>}
-              </span>
-              <span className={cx("text-[11px] font-medium uppercase tracking-[.08em]", info.delivery === "kit" ? "text-warn" : "text-ok")}>{deliveryLabel(info.delivery, t)}</span>
-              <span className="text-xs leading-snug text-muted">{info.text}</span>
-              {on && <Check className="absolute right-3 top-3 size-4 text-signal" aria-hidden />}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 /** Pastille « Shopify ▾ » : change la plateforme du projet (PATCH) depuis l'éditeur de site. */
 export function PlatformPill({ projectId, platform, business, onChanged }: { projectId: string; platform: string; business: BusinessType; onChanged?: () => void }) {
   const t = useT();

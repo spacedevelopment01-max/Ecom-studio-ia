@@ -3,6 +3,7 @@
  * angles) tourne avec ses dépendances SIMULÉES (aucun appel réel, aucun réseau) ; SINA l'enchaîne, montre les angles
  * avec leurs sources et enregistre le choix du client.
  */
+import { DEFAULT_MODELS } from "@/lib/syna-agent/models";
 import fs from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -63,8 +64,8 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     const { user, cid, ctx, pid } = await stepFour();
     expect(J.READY_STEPS).toContain(4);
     expect(J.currentStep(J.journeyOf(cid))).toBe(4);
-    expect(modelFor(4)?.model).toMatch(/haiku/); // le travail est dans les tâches du Pilote
-    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/Étape 4 \(5 angles marketing\)[^]*PAYANT[^]*angles\.propose/);
+    expect(modelFor(4)?.model).toBe(DEFAULT_MODELS.strong.model);
+    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/Étape 4 \(3 angles marketing\)[^]*PAYANT[^]*angles\.propose/);
     // Essai réel : SINA avait lu les angles avec research.read (lecture tronquée, aucune carte).
     expect(J.journeyContext(J.journeyOf(cid))).toMatch(/n'utilise jamais research\.read ni strategy\.read à cette étape/);
     expect((await getTool("angles.propose")!.estimate!(ctx, {})).maxMicro).toBeGreaterThan(0);
@@ -76,11 +77,11 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     expect(serialize([{ seq: 1, role: "tool", content: { tool: "research.read", ok: false, summary: guard.summary, hint: guard.hint } } as any])).toMatch(/consigne \(pour toi seule\) : Pendant l'étape 4/);
     expect((await call("strategy.read", ctx, {})).ok).toBe(false);
     const { SYNA_SYSTEM } = await import("@/lib/syna-agent/prompt");
-    expect(SYNA_SYSTEM).toMatch(/ne promets JAMAIS un devis ou une demande d'accord que tu ne montres pas/);
-    expect(SYNA_SYSTEM).toMatch(/Accusé de réception : il porte SEULEMENT sur la dernière réponse du client/);
-    expect(SYNA_SYSTEM).toMatch(/Le message ne l'annonce pas et ne la paraphrase pas \(« il me reste à savoir… »/);
-    expect(SYNA_SYSTEM).toMatch(/les logos proposés, la planche de marque et les images des thèmes sur mesure déjà créées \(étape 6\) te sont JOINTS \(tu les vois\)[^]*Une image qui ne t'est pas jointe, ne la décris jamais/);
-    expect(SYNA_SYSTEM).toMatch(/Tu parles de toi à la PREMIÈRE personne/); // jamais « SINA va chercher… » (essai réel du 7 novembre)
+    expect(SYNA_SYSTEM).toMatch(/TOUTE action payante passe par une carte d'accord[^]*rien ne part avant qu'il clique « Confirmer »/);
+    expect(SYNA_SYSTEM).toMatch(/tu le dis UNE fois, brièvement,[^.]*seulement pour sa dernière réponse/);
+    expect(SYNA_SYSTEM).toMatch(/ne répète pas la question et ne l'annonce pas \(« il me reste à savoir… »/);
+    expect(SYNA_SYSTEM).toMatch(/celles qui te sont jointes \(logos, planche de marque, captures de son site\), tu les regardes avant d'en parler[^]*Une image qui ne t'est pas jointe, tu ne la décris pas/);
+    expect(SYNA_SYSTEM).toMatch(/Tu parles de toi à la première personne/); // jamais « SINA va chercher… » (essai réel du 7 novembre)
     expect(fs.readFileSync("src/lib/syna-agent/journey.ts", "utf8")).not.toMatch(/que SINA va chercher/);
     // 1) La fiche doit être comprise : tâche d'analyse (payante, devis du Pilote).
     expect(A.anglesPhase(pid).kind).toBe("analyze");
@@ -110,7 +111,7 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     expect(A.anglesMaxMicro(pid)).toBe(0); // les lire est gratuit : jamais de devis ni d'accord de dépense
     // Nouvelle proposition demandée par le client (ses mots) : payante, annoncée ; la lecture reste gratuite.
     expect(A.anglesMaxMicro(pid, "Je voudrais une nouvelle proposition d'angles.")).toBeGreaterThan(0);
-    expect(await getTool("angles.propose")!.preview!(ctx, { redo: "Je voudrais une nouvelle proposition d'angles." })).toMatch(/^Nouvelle recherche web et 5 nouveaux angles, d'après ta demande/);
+    expect(await getTool("angles.propose")!.preview!(ctx, { redo: "Je voudrais une nouvelle proposition d'angles." })).toMatch(/^Nouvelle recherche web et 3 nouveaux angles, d'après ta demande/);
     const r3 = await call("angles.propose", ctx, {});
     expect(r3.ok).toBe(true);
     // Essai réel du 7 novembre : « usage », « reassurance »… (identifiants internes) montrés au client.
@@ -142,6 +143,26 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     expect(J.journeyOf(cid).steps[4].status).toBe("done");
     expect(J.currentStep(J.journeyOf(cid))).toBe(5);
     expect((await call("angles.propose", ctx, {})).ok).toBe(false); // déjà choisi
+    // Nouveau choix plus tard : les angles déjà utilisés comptent pour toujours dans le forfait (audit du 10 novembre).
+    expect(A.usedAngles(pid)).toEqual(expect.arrayContaining(limit >= 5 ? ids.slice(0, 5) : pickIds));
+    {
+      // Le client passe au forfait à 2 angles : ceux déjà utilisés occupent déjà ses places.
+      const { grantProjectPlan } = await import("@/lib/project-subscriptions");
+      grantProjectPlan(pid, "vendre");
+      expect(A.angleLimit(pid)).toBe(2);
+      J.updateJourney(cid, (x) => J.setStep(x, 4, "review"));
+      const before = A.usedAngles(pid), others = [ids[0]];
+      const over = await call("angles.choose", ctx, { angleIds: others });
+      expect(over.ok).toBe(false);
+      expect(over.summary).toMatch(/en tout, et \d+ (?:est|sont) déjà utilisé/);
+      expect(A.usedAngles(pid)).toEqual(before); // rien de compté pour rien
+    }
+  });
+
+  it("sources : les places de marché (AliExpress, Amazon, eBay, Cdiscount, Etsy…) sont exclues, consigne du propriétaire", async () => {
+    const { isMarketplace } = await import("@/lib/ai/web-search");
+    for (const u of ["https://fr.aliexpress.com/item/1", "https://www.amazon.fr/dp/B0", "https://www.ebay.fr/itm/1", "https://www.cdiscount.com/x", "https://www.etsy.com/fr/listing/1", "https://fr.shopping.rakuten.com/x", "https://www.manomano.fr/p", "https://www.leboncoin.fr/x", "https://www.temu.com/x"]) expect(isMarketplace(u), u).toBe(true);
+    for (const u of ["https://www.marmiton.org/recettes", "https://www.60millions-mag.com/x", "https://www.reddit.com/r/cuisine", "https://confiturerie-exemple.fr/"]) expect(isMarketplace(u), u).toBe(false);
   });
 
   it("refusé avant l'image de marque validée", async () => {
@@ -191,7 +212,7 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     await call("angles.propose", ctx, {});
     await execute();
     await call("angles.propose", ctx, {}); // fiche validée, recherche lancée
-    expect(await getTool("angles.propose")!.preview!(ctx, {})).toMatch(/^Recherche web sur ton marché et 5 angles marketing/);
+    expect(await getTool("angles.propose")!.preview!(ctx, {})).toMatch(/^Recherche web sur ton marché et 3 angles marketing/);
     const jobId = claimNext(["project.prepare"])!.id;
     // La recherche échoue après un appel payant (pages non lues) : 0,29 € réellement dépensés.
     run("INSERT INTO ai_calls(id,created_at,user_id,project_id,job_id,task,provider,requested_model,unit,cost,status) VALUES(?,?,?,?,?,?,?,?,?,?,?)", id(), now(), user.id, pid, jobId, "strategy", "anthropic", "test", "request", 290_365, "ok");

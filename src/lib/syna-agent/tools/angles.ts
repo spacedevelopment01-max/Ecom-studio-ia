@@ -1,5 +1,6 @@
 /**
- * Étape 4 du parcours SINA (#492) : outils des 5 angles marketing (proposer, choisir). Le moteur est celui du Pilote
+ * Étape 4 du parcours SINA (#492) : outils des angles marketing (proposer, choisir) : cinq écrits et jugés, TROIS montrés
+ * au client (décision du propriétaire du 14 novembre 2026). Le moteur est celui du Pilote
  * et de la stratégie marketing (voir ../angles.ts).
  */
 import { z } from "zod";
@@ -7,7 +8,8 @@ import { one } from "../../db";
 import { L } from "../../i18n-server";
 import type { AgentTool } from "../types";
 import { journeyOf, setStep, updateJourney } from "../journey";
-import { advanceAngles, angleLimit, anglesMaxMicro, anglesPhase, chooseAngles, pct, researchFailure } from "../angles";
+import { advanceAngles, angleLimit, anglesMaxMicro, anglesPhase, chooseAngles, pct, researchFailure, usedAngles, type SinaAngles } from "../angles";
+import { ANGLE_ROLE_LABEL, roleOf, shownAngles } from "../angle-roles";
 import { budgetPctOf as pctOfUser } from "../../ai/budget-pct";
 import { loadProject } from "../../projects";
 const budgetPctOf = (pid: string, micro: number) => pctOfUser(loadProject(pid).userId, micro, pid);
@@ -16,22 +18,33 @@ import { project } from "./common";
 /** Questions à poser, sans doublon (essai réel : la même question listée deux fois). */
 export const questionList = (qs: { id: string; question: string }[], missing: string[]) => [...qs.map((q) => `[${q.id}] ${q.question}`), ...missing.filter((m) => !qs.some((q) => q.question.trim() === m.trim()))].join(" ; ");
 
+/**
+ * Ce que SINA dit des angles après leur relecture (carte des spécialistes, lot 4) : un angle dont elle doute est montré
+ * avec son doute, dit à la première personne ; des angles qui n'ont pas pu être relus, c'est dit aussi. Jamais « le juge ».
+ */
+export function anglesDoubtHint(angles: SinaAngles): string {
+  const doubts = shownAngles(angles).filter((a) => a.doubt);
+  if (angles.judged === "non_juges") return " Ces angles n'ont pas pu être relus avant d'être montrés : dis-le simplement au client (« je n'ai pas pu les relire comme je le fais d'habitude »), sans dramatiser.";
+  if (!doubts.length) return "";
+  return ` Tu doutes de ${doubts.length > 1 ? "ces angles" : "cet angle"} et tu le dis franchement au client, à la première personne, sans jamais parler de juge ni de relecteur : ${doubts.map((a) => `« ${a.title} » (${a.doubt})`).join(" ; ")}.${doubts.some((a) => a.id === angles.recommendedId) ? " L'angle recommandé en fait partie : ne le recommande pas sans dire ce doute." : ""} Le choix reste le sien.`;
+}
+
 const running = (pid: string) => !!one("SELECT 1 FROM jobs WHERE project_id=? AND type='project.prepare' AND status IN ('queued','running','paused')", pid);
 
 const proposeTool: AgentTool<{ retry?: boolean; redo?: string }> = {
   name: "angles.propose", module: "stratégie", kind: "generate", needsProject: true,
-  description: "Étape 4 : prépare les 5 angles marketing du client (recherche web sur son marché, places de marché exclues, sources réelles). Automate à rappeler après chaque tâche : 1) fait comprendre la fiche de départ par l'IA (payant, tâche de fond) ; 2) s'il manque une information, renvoie les QUESTIONS à poser au client (réponds avec pilot.answer, puis rappelle angles.propose) ; 3) lance la recherche et les 5 angles (payant, tâche de fond de quelques minutes) ; 4) quand tout est prêt, les angles s'affichent dans le fil. Devis annoncé avant chaque partie payante. redo = la demande du client, avec SES mots, quand il veut une NOUVELLE proposition d'angles alors qu'ils sont prêts (nouvelle recherche payante ; les angles précédents restent conservés).",
+  description: "Étape 4 : prépare les angles marketing du client (cinq écrits et jugés, les TROIS plus éloignés montrés : sûr, émotion, audacieux) (recherche web sur son marché, places de marché exclues, sources réelles). Automate à rappeler après chaque tâche : 1) fait comprendre la fiche de départ par l'IA (payant, tâche de fond) ; 2) s'il manque une information, renvoie les QUESTIONS à poser au client (réponds avec pilot.answer, puis rappelle angles.propose) ; 3) lance la recherche, fait écrire et juger cinq angles et en garde les 3 plus éloignés (payant, tâche de fond de quelques minutes) ; 4) quand tout est prêt, les angles s'affichent dans le fil. Devis annoncé avant chaque partie payante. redo = la demande du client, avec SES mots, quand il veut une NOUVELLE proposition d'angles alors qu'ils sont prêts (nouvelle recherche payante ; les angles précédents restent conservés).",
   args: z.object({ retry: z.boolean().optional(), redo: z.string().min(8).max(1500).optional() }).strict(),
-  estimate: (ctx, a) => ({ maxMicro: anglesMaxMicro(project(ctx).id, a.redo), label: anglesPhase(project(ctx).id).kind === "analyze" ? L("analyse de ta fiche de départ, puis recherche web et 5 angles marketing", "brief analysis, then research and 5 angles") : L("recherche web et 5 angles marketing", "research and 5 marketing angles") }),
+  estimate: (ctx, a) => ({ maxMicro: anglesMaxMicro(project(ctx).id, a.redo), label: anglesPhase(project(ctx).id).kind === "analyze" ? L("analyse de ta fiche de départ, puis recherche web et 3 angles marketing", "brief analysis, then research and 3 angles") : L("recherche web et 3 angles marketing", "research and 5 marketing angles") }),
   // Demande d'accord lisible par le client (essai réel : il voyait « angles.propose {} »).
   preview: (ctx, a) => {
     const pid = project(ctx).id;
     const kind = anglesPhase(pid).kind;
     const max = pct(budgetPctOf(pid, anglesMaxMicro(pid, a.redo)));
-    if (kind === "ready" && a.redo) return L(`Nouvelle recherche web et 5 nouveaux angles, d'après ta demande : au plus ${max} du budget IA du mois.`, `New research and 5 new angles: at most ${max}.`);
+    if (kind === "ready" && a.redo) return L(`Nouvelle recherche web et 3 nouveaux angles, d'après ta demande : au plus ${max} du budget IA du mois.`, `New research and 5 new angles: at most ${max}.`);
     return kind === "analyze"
       ? L(`Analyse de ta fiche de départ par l'IA, avant la recherche : au plus ${max} du budget IA du mois.`, `Brief analysis: at most ${max} of the monthly AI budget.`)
-      : L(`Recherche web sur ton marché et 5 angles marketing : au plus ${max} du budget IA du mois.`, `Web research and 5 angles: at most ${max} of the monthly AI budget.`);
+      : L(`Recherche web sur ton marché et 3 angles marketing : au plus ${max} du budget IA du mois.`, `Web research and 3 angles: at most ${max} of the monthly AI budget.`);
   },
   run: (ctx, a) => {
     const p = project(ctx);
@@ -48,14 +61,15 @@ const proposeTool: AgentTool<{ retry?: boolean; redo?: string }> = {
     if (r.jobId) return {
       ok: true, jobs: [r.jobId],
       summary: r.phase.kind === "analyze"
-        ? L(`Analyse de la fiche de départ lancée (1re partie, quelques minutes, au plus ${pct(r.maxPct)} du budget). Ensuite : la recherche web et les 5 angles.`, "Brief analysis started.")
-        : L(`Recherche web et 5 angles marketing lancés (quelques minutes, au plus ${pct(r.maxPct)} du budget).`, "Research started."),
+        ? L(`Analyse de la fiche de départ lancée (1re partie, quelques minutes, au plus ${pct(r.maxPct)} du budget). Ensuite : la recherche web et les 3 angles.`, "Brief analysis started.")
+        : L(`Recherche web et 3 angles marketing lancés (quelques minutes, au plus ${pct(r.maxPct)} du budget).`, "Research started."),
     };
     if (r.phase.kind === "questions") return { ok: false, summary: L("Avant la recherche, il me manque une ou deux précisions sur tes produits.", "A few details are needed before the research."), hint: `Pose ces questions au client UNE par UNE, enregistre ses réponses avec pilot.answer, puis rappelle angles.propose. ${questionList(r.phase.questions, r.phase.missing)}`, data: { questions: r.phase.questions, manquant: r.phase.missing } };
     if (r.phase.kind === "ready") {
       const angles = r.phase.angles;
       updateJourney(ctx.conversationId, (x) => { x.angles = angles; setStep(x, 4, "review"); });
-      return { ok: true, summary: L(`5 angles prêts (${angles.sourceCount} sources lues) : ${angles.list.map((a) => `« ${a.title} »`).join(" ; ")}.${angles.recommendedId ? ` Recommandé : « ${angles.list.find((a) => a.id === angles.recommendedId)?.title ?? angles.recommendedId} ».` : ""}`, "Angles ready."), hint: `Identifiants des angles pour angles.choose : ${angles.list.map((a) => `${a.id} = « ${a.title} »`).join(" ; ")}.`, data: { angles: angles.list.map((a) => ({ id: a.id, titre: a.title, cible: a.audience, accroche: a.message, emotion: a.emotion, aConfirmer: a.proofsToConfirm })), recommande: angles.recommendedId } };
+      const shown = shownAngles(angles), role = (id: string) => { const r = roleOf(angles, id); return r ? `${ANGLE_ROLE_LABEL[r].fr.toLowerCase()} ` : ""; };
+      return { ok: true, summary: L(`${shown.length} angles prêts (${angles.sourceCount} sources lues) : ${shown.map((a) => `${role(a.id)}« ${a.title} »`).join(" ; ")}.${angles.recommendedId ? ` Recommandé : « ${shown.find((a) => a.id === angles.recommendedId)?.title ?? angles.recommendedId} ».` : ""}`, "Angles ready."), hint: `Identifiants des angles pour angles.choose : ${shown.map((a) => `${a.id} = « ${a.title} »`).join(" ; ")}.${angles.reserve?.length ? ` ${angles.reserve.length} autre(s) angle(s) écrit(s) et jugé(s) restent en réserve pour ses publications et ses publicités : ne les propose pas comme choix.` : ""}${anglesDoubtHint(angles)}`, data: { angles: shown.map((a) => ({ id: a.id, role: roleOf(angles, a.id), titre: a.title, cible: a.audience, accroche: a.message, emotion: a.emotion, aConfirmer: a.proofsToConfirm })), recommande: angles.recommendedId } };
     }
     return { ok: false, summary: L("Rien à lancer pour l'instant.", "Nothing to start.") };
   },
@@ -69,10 +83,17 @@ const chooseTool: AgentTool<{ angleIds: string[] }> = {
     const p = project(ctx);
     const j = journeyOf(ctx.conversationId);
     const ids = [...new Set(a.angleIds)];
-    const unknown = ids.filter((id) => !j.angles?.list.some((x) => x.id === id));
-    if (unknown.length) return { ok: false, summary: L(`Angle inconnu : ${unknown.join(", ")} ; choisis parmi ${j.angles?.list.map((x) => x.id).join(", ") || "(aucun angle encore)"}.`, "Unknown angle.") };
+    const choosable = j.angles ? shownAngles(j.angles) : [];
+    const unknown = ids.filter((id) => !choosable.some((x) => x.id === id));
+    if (unknown.length) return { ok: false, summary: L(`Angle inconnu : ${unknown.join(", ")} ; choisis parmi ${choosable.map((x) => x.id).join(", ") || "(aucun angle encore)"}.`, "Unknown angle.") };
     const limit = angleLimit(p.id);
     if (ids.length > limit) return { ok: false, summary: L(`Le forfait du client permet ${limit} angle${limit > 1 ? "s" : ""} ; il en a choisi ${ids.length}. Dis-le-lui simplement et demande lequel ou lesquels garder (le premier sera l'angle principal).`, "Too many angles for the plan.") };
+    // Un angle déjà utilisé compte pour toujours dans le forfait : le total (anciens + nouveaux) ne doit pas le dépasser.
+    const used = usedAngles(p.id), fresh = ids.filter((id) => !used.includes(id));
+    if (used.length + fresh.length > limit) {
+      const name = (id: string) => j.angles?.list.find((x) => x.id === id)?.title ?? id;
+      return { ok: false, summary: L(`Le forfait du client permet ${limit} angle${limit > 1 ? "s" : ""} en tout, et ${used.length} ${used.length > 1 ? "sont déjà utilisés" : "est déjà utilisé"} (${used.map((id) => `« ${name(id)} »`).join(", ")}). Il peut garder ${used.length > 1 ? "ceux-là" : "celui-là"} ou en ajouter ${Math.max(0, limit - used.length)} au plus.`, "Plan angle limit reached.") };
+    }
     const r = chooseAngles(p.id, ids, `syna-${ctx.runId}-angles`);
     const titles = ids.map((id) => j.angles!.list.find((x) => x.id === id)!.title);
     if (r.ok) updateJourney(ctx.conversationId, (x) => { x.angleChoice = { id: ids[0], ids, at: Date.now() }; setStep(x, 4, "done"); setStep(x, 5, "todo"); });
@@ -80,7 +101,7 @@ const chooseTool: AgentTool<{ angleIds: string[] }> = {
       ok: r.ok,
       summary: r.ok
         ? L(`Angle principal : « ${titles[0]} »${titles.length > 1 ? ` ; aussi retenus pour les publications et publicités : ${titles.slice(1).map((t) => `« ${t} »`).join(", ")}` : ""}. Étape 4 validée. Prochaine étape : l'activité complète.`, "Angles chosen.")
-        : L(`Les angles n'ont pas pu être enregistrés (actif : ${r.active ?? "aucun"}, recherche validée : ${r.approved ? "oui" : "non"}).`, "Angles not saved."),
+        : L(`Les angles n'ont pas pu être enregistrés, rien n'a été compté dans le forfait${r.error ? ` (${r.error})` : ""}.`, "Angles not saved."),
       changes: [{ module: "stratégie", object: L("angles marketing", "marketing angles"), summary: titles.join(" + "), after: ids, verified: r.ok }],
     };
   },

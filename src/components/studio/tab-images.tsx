@@ -14,7 +14,6 @@ import { api, Badge, Button, Card, cx, Empty, Field, Input, Modal, Select, Toggl
 import { useProject } from "./project-context";
 import { JobProgress, ROLE_LABEL, StatusBadge, useActive, type AssetView } from "./common";
 import { AssetViewer } from "./asset-viewer";
-import {useAgentFocus,useAgentUi} from './agent-ui-context';
 import { useCostConfirm } from "./cost-confirm";
 import { useT } from "../i18n";
 import { PlanRequired, useBudgetPct, useCreationLocked } from "../billing-client";
@@ -233,8 +232,6 @@ export default function TabImages() {
   const services = data?.business === "services";
   const [source, setSource] = useState<Source | "">("");
   const [viewer, setViewer] = useState<AssetView | null>(null);
-  const agentUi=useAgentUi()&&data?.conversationContext===true,{setFocus:setAgentFocus}=useAgentFocus();
-  useEffect(()=>{if(agentUi&&viewer)setAgentFocus({projectId:id,tab:'images',label:viewer.name,target:{kind:'asset',assetId:viewer.id,version:viewer.version}});},[agentUi,id,viewer,setAgentFocus]);
   const [dialog, setDialog] = useState<"search" | "create" | null>(null);
   const [themePreparation,setThemePreparation]=useState<ThemeImagePreparation|null>(null);
   useEffect(()=>{const q=new URLSearchParams(window.location.search),slot=q.get("themeSlot"),version=q.get("themeVersion");if(!slot||!version)return;let active=true;api<ThemeImagePreparation>(`/api/projects/${id}/theme/adaptation?slot=${encodeURIComponent(slot)}&version=${encodeURIComponent(version)}`).then(p=>{if(active){setThemePreparation(p);setDialog("create");}}).catch(e=>{if(active)toast("bad",(e as Error).message);});return()=>{active=false;};},[id]);
@@ -242,7 +239,6 @@ export default function TabImages() {
   const active = useActive(["image.v2", "image.single", "images.generate"]);
   const { list, reload, status, setStatus } = useImageList(id, BANK_IMAGE_ROLES.join(","));
   const follow = useFollowJob(reload);
-  useEffect(()=>{const changed=(event:Event)=>{if((event as CustomEvent<{projectId?:string}>).detail?.projectId===id)void reload();};window.addEventListener('studio:images-changed',changed);return()=>window.removeEventListener('studio:images-changed',changed);},[id,reload]);
   // État de l'IA d'images du projet et prix d'une image (affiché avant toute création payante).
   const { data: q } = useApi<ImagesQuote>(`/api/projects/${id}/images`);
   useEffect(() => {

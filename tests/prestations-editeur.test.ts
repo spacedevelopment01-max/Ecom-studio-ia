@@ -21,10 +21,13 @@ import * as route from "@/app/api/projects/[id]/prestations/route";
 import { seedHoldout } from "./lot1-holdout-fixtures";
 import { serviceSpec } from "./fixtures";
 import { AN_HOURS, AN_SERVICES, AN_STAFF } from "./atelier-nuance-fixtures";
+import { upcomingTuesday } from "./upcoming-dates";
 import type { ThemeSpec } from "@/lib/theme/spec";
 
-const AT = Date.UTC(2026, 9, 23, 10, 0);
-const TUE = "2026-11-10";
+// Instant et mardi toujours à venir : avec des dates en dur, le rendez-vous d'essai finit dans le passé et n'est
+// plus « à venir » pour l'éditeur des prestations (plus d'avertissement, suppression acceptée à tort).
+const AT = Date.now();
+const TUE = upcomingTuesday(AT);
 const live = (spec: ThemeSpec) => {
   const id = spec.groups.header.order.find((x) => spec.groups.header.sections[x].type === "an-salon")!;
   const sec = spec.groups.header.sections[id];

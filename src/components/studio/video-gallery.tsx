@@ -27,8 +27,6 @@ export function EditedVideos() {
   useEffect(() => {
     if (!active.length) reload();
   }, [active.length, reload]);
-  useEffect(()=>{const updated=(event:Event)=>{if((event as CustomEvent<{projectId?:string}>).detail?.projectId===id)void reload();};window.addEventListener('studio:videos-changed',updated);return()=>window.removeEventListener('studio:videos-changed',updated);},[id,reload]);
-  const videoStep = data?.pipeline?.steps.find((s) => s.id === "video")?.status;
   // Vidéos organiques seulement : les publicités vidéo et UGC sont dans l'onglet Publicités.
   const videos = (list?.assets ?? []).filter((a) => a.kind === "video" && a.role === "video" && !isAdVisual(a));
   const subs = (list?.assets ?? []).filter((a) => a.role === "subtitles");
@@ -41,7 +39,7 @@ export function EditedVideos() {
       </details>
       <h3 className="font-display text-lg font-semibold">{t("Vos vidéos montées", "Your edited videos")}</h3>
       <div>
-        {videos.length === 0 && <Empty title={t("Aucune vidéo pour l'instant", "No videos yet")} icon={<Play className="size-5" />}>{locked ? t("Les vidéos sont incluses dans les forfaits : le pilote ne les a pas créées pendant la découverte gratuite.", "Videos come with the plans: the autopilot did not create them during the free discovery.") : videoStep === "done" || videoStep === "running" || videoStep === "pending" ? t("La première vidéo est produite automatiquement par le pilote ; vous pouvez en créer d'autres ci-dessus.", "The first video is produced automatically by the autopilot; you can create more above.") : t("Créez votre première vidéo ci-dessus.", "Create your first video above.")}</Empty>}
+        {videos.length === 0 && <Empty title={t("Aucune vidéo pour l'instant", "No videos yet")} icon={<Play className="size-5" />}>{locked ? t("Les vidéos sont incluses dans les forfaits.", "Videos come with the plans.") : t("Créez votre première vidéo ci-dessus.", "Create your first video above.")}</Empty>}
         {/* Galerie compacte : plusieurs vidéos par ligne, le détail (plan, script) se déplie à la demande. */}
         <div className="grid grid-cols-2 content-start gap-4 sm:grid-cols-3 xl:grid-cols-4" data-video-gallery>
           {videos.map((v) => {

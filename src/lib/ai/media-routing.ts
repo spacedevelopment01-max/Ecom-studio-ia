@@ -20,6 +20,7 @@ import { all } from "../db";
 import { getJsonSetting } from "../settings";
 import { L } from "../i18n-server";
 import { REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "./logo-policy";
+import { DEFAULT_SOCIAL_IMAGE_MODEL, REQUIRED_SOCIAL_IMAGE_PROVIDER } from "./social-image-policy";
 
 export const MEDIA_TASK: Record<MediaKind, TaskId> = { image: "image_generation", video: "video_generation" };
 
@@ -62,7 +63,7 @@ export const USAGE_INFO: Record<MediaUsage, { kind: MediaKind; need: Omit<MediaN
     need: {},
     parent: "ad_visual",
     label: { fr: "Images réseaux sociaux", en: "Social media images" },
-    detail: { fr: "Publications entièrement conçues par l'IA pour les réseaux sociaux. Sans réglage propre, suit « Publicités visuelles ».", en: "Social media posts entirely designed by AI. Without its own setting, follows \"Visual ads\"." },
+    detail: { fr: "Publications entièrement conçues par l'IA pour les réseaux sociaux. OpenAI obligatoire (décision du propriétaire du 14 novembre 2026) : un modèle d'OpenAI seulement, sinon celui des images de SINA ; aucun secours hors d'OpenAI.", en: "Social media posts entirely designed by AI. OpenAI required (owner's decision of 14 November 2026): an OpenAI model only, otherwise SINA's image model; no backup outside OpenAI." },
   },
   text_layout: {
     kind: "image",
@@ -102,11 +103,24 @@ const splitKey = (v: string) => {
   const [provider, ...rest] = v.split(":");
   return { provider, model: rest.join(":") };
 };
+/**
+ * Modèle principal des images de publications : celui de l'administration s'il est d'OpenAI, sinon celui des images de
+ * SINA (`syna.mockup.image_route`) s'il est d'OpenAI, sinon le modèle d'OpenAI par défaut (social-image-policy.ts).
+ */
+export function socialImagePrimary(): { provider: string; model: string; inherited: boolean } {
+  const own = usageSettings().social_image?.primary;
+  const ownKey = own ? splitKey(own) : null;
+  if (ownKey && ownKey.provider === REQUIRED_SOCIAL_IMAGE_PROVIDER && ownKey.model) return { ...ownKey, inherited: false };
+  const sina = splitKey(getJsonSetting<string>("syna.mockup.image_route", `${REQUIRED_SOCIAL_IMAGE_PROVIDER}:${DEFAULT_SOCIAL_IMAGE_MODEL}`));
+  if (sina.provider === REQUIRED_SOCIAL_IMAGE_PROVIDER && sina.model) return { ...sina, inherited: true };
+  return { provider: REQUIRED_SOCIAL_IMAGE_PROVIDER, model: DEFAULT_SOCIAL_IMAGE_MODEL, inherited: true };
+}
 /** Mode de l'usage (sinon celui de son type). */
-export const usageMode = (u: MediaUsage): MediaMode => u === "logo" ? "manual" : usageSettings()[u]?.mode ?? (USAGE_INFO[u].parent ? usageMode(USAGE_INFO[u].parent!) : mediaMode(USAGE_INFO[u].kind));
+export const usageMode = (u: MediaUsage): MediaMode => u === "logo" || u === "social_image" ? "manual" : usageSettings()[u]?.mode ?? (USAGE_INFO[u].parent ? usageMode(USAGE_INFO[u].parent!) : mediaMode(USAGE_INFO[u].kind));
 /** Principal de l'usage (sinon celui de son type) et son origine. */
 export function usagePrimary(u: MediaUsage): { provider: string; model: string; inherited: boolean } {
   if (u === "logo") return { provider: REQUIRED_LOGO_PROVIDER, model: REQUIRED_LOGO_MODEL, inherited: false };
+  if (u === "social_image") return socialImagePrimary();
   const v = usageSettings()[u]?.primary;
   if (v) return { ...splitKey(v), inherited: false };
   const parent = USAGE_INFO[u].parent;
@@ -116,6 +130,8 @@ export function usagePrimary(u: MediaUsage): { provider: string; model: string; 
 export function usageBackup(u: MediaUsage): { provider: string; model: string } | null {
   if (u === "logo") return null;
   const s = usageSettings()[u];
+  // Publications : un secours d'OpenAI seulement, jamais un autre fournisseur.
+  if (u === "social_image") { const b = s?.backup ? splitKey(s.backup) : null; return b && b.provider === REQUIRED_SOCIAL_IMAGE_PROVIDER ? b : null; }
   if (s && "backup" in s) return s.backup ? splitKey(s.backup) : null;
   const parent = USAGE_INFO[u].parent;
   return parent ? usageBackup(parent) : mediaBackup(USAGE_INFO[u].kind);
@@ -126,6 +142,8 @@ export function usageBackup(u: MediaUsage): { provider: string; model: string } 
  * suit le réglage général garde le repli historique du Router V2.
  */
 export const usageExplicit = (u: MediaUsage): boolean => {
+  // Publications : OpenAI imposé, donc jamais le repli historique vers un autre modèle.
+  if (u === "social_image") return true;
   const s = usageSettings()[u];
   return (!!s && (!!s.primary || !!s.mode)) || (!!USAGE_INFO[u].parent && usageExplicit(USAGE_INFO[u].parent!));
 };

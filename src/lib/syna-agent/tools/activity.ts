@@ -57,7 +57,7 @@ const companyTool: AgentTool<{ fields?: Record<string, string | undefined>; late
 
 const validateTool: AgentTool<Record<string, never>> = {
   name: "activity.validate", module: "activité", kind: "write", needsProject: true,
-  description: "Étape 5 : enregistre la validation du plan de l'activité PAR LE CLIENT (jamais à sa place). Refusé s'il manque une coordonnée obligatoire, un produit ou un prix : dis-le au client. Ouvre l'étape 6 (thème ou maquettes). Gratuit.",
+  description: "Étape 5 : enregistre la validation du plan de l'activité PAR LE CLIENT (jamais à sa place). Refusé s'il manque une coordonnée obligatoire, un produit ou un prix : dis-le au client. Ouvre l'étape 6 (thème du Studio ou thème sur mesure). Gratuit.",
   args: z.object({}).strict(),
   run: (ctx) => {
     const p = project(ctx);
@@ -66,7 +66,7 @@ const validateTool: AgentTool<Record<string, never>> = {
     const gaps = activityGaps(plan);
     if (gaps.length) return { ok: false, summary: L(`Impossible de valider : ${gaps.join(" ; ")}.`, "Cannot validate yet.") };
     updateJourney(ctx.conversationId, (x) => { x.activity = plan; setStep(x, 5, "done"); setStep(x, 6, "todo"); });
-    return { ok: true, summary: L("Activité complète validée. Étape 5 terminée. Prochaine étape : le thème ou les maquettes du site.", "Activity validated."), changes: [{ module: "activité", object: L("plan de l'activité", "activity plan"), summary: L("validé par le client", "validated"), verified: true }] };
+    return { ok: true, summary: L("Activité complète validée. Étape 5 terminée. Prochaine étape : ton site, dans un thème du Studio ou un thème sur mesure.", "Activity validated."), changes: [{ module: "activité", object: L("plan de l'activité", "activity plan"), summary: L("validé par le client", "validated"), verified: true }] };
   },
 };
 

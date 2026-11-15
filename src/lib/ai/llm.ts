@@ -81,7 +81,7 @@ export type LlmCall = {
   routing?: {
     difficulty?: Difficulty; deliverable?: Deliverable; history?: RoutingHistory;
     /** Modèle choisi par l'appelant pour cet appel (ex. SINA : Haiku pour un échange simple), s'il est utilisable. */
-    prefer?: { provider: "anthropic"; model: string; effort?: string };
+    prefer?: { provider: "anthropic" | "openai" | "google"; model: string; effort?: string };
   };
 };
 
@@ -95,6 +95,14 @@ export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing"> & { 
     const info = modelInfo(pref.provider, pref.model);
     if (info && (!call.images?.length || info.capabilities.includes("vision"))) {
       return { mode: "llm", provider: pref.provider, model: pref.model, effort: (pref.effort ?? undefined) as RouteDecision["effort"], tier: info.tier, reason: "modèle choisi par l'appelant (échange simple)", fallback: false, escalation: false, qualityTarget: null };
+    }
+  }
+  // Autre fournisseur choisi par l'appelant (ex. rédacteur des textes du site réglé dans l'administration) : seulement
+  // si le modèle est utilisable (clé active, tarif enregistré, informations confirmées) ; sinon le routage habituel.
+  if (pref && pref.provider !== "anthropic") {
+    const m = textModel(pref.provider, pref.model);
+    if (m && modelStatus(m).usable && (!call.images?.length || m.vision)) {
+      return { mode: "llm", provider: pref.provider, model: pref.model, effort: (pref.effort ?? m.effort.default ?? undefined) as RouteDecision["effort"], tier: m.tier, reason: "modèle choisi dans l'administration pour cet usage", fallback: false, escalation: false, qualityTarget: null };
     }
   }
   const custom = getJsonSetting<Partial<Record<TaskId, unknown>>>("ai.routes", {});
@@ -736,8 +744,15 @@ export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opt
   if (opts.strict) {
     // Même schéma envoyé au fournisseur. Le SDK garde le texte brut : son parseur local ne doit pas lever
     // avant l'enregistrement de la réponse et de l'usage. La validation stricte reste obligatoire juste après.
-    const r = await rawCall(call, messages, {...zodOutputFormat(schema as any),parse:(text:string)=>text});
-    return schema.parse(JSON.parse(r.text));
+    // Réponse coupée faute de place : même demande avec plus de place, jusqu'à maxOutputTokens (essai réel du
+    // 10 novembre 2026 : le plan des textes, coupé à 10 000 jetons, n'était jamais relancé en sortie structurée).
+    const cap = Math.min(MAX_OUTPUT_TOKENS, call.maxOutputTokens ?? MAX_OUTPUT_TOKENS);
+    let budget = call.maxTokens ?? 32000, attempt = 0;
+    for (;;) {
+      const r = await rawCall({ ...call, maxTokens: budget }, messages, {...zodOutputFormat(schema as any),parse:(text:string)=>text}, attempt ? `:fix${attempt}` : "", attempt);
+      if (r.stop === "max_tokens" && budget < cap) { budget = Math.min(cap, budget * 2); attempt++; continue; }
+      return schema.parse(JSON.parse(r.text));
+    }
   }
   messages[0].content = [
     ...(content as any[]),

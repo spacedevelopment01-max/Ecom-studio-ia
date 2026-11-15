@@ -1,281 +1,135 @@
 # E-COM STUDIO IA — consignes pour Claude
 
-Studio qui crée la marque, la boutique Shopify (ou le site d'une entreprise de services), les visuels, vidéos,
-publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâches de fond + SQLite. Voir `README.md`.
+Studio où un client donne quelques informations et ses photos, et où SINA, l'assistante du Studio, crée sa marque,
+son site, ses publications et ses publicités, puis s'en occupe avec lui. Next.js 15 (App Router), worker de tâches de
+fond, SQLite. Voir `README.md`.
+
+## À lire d'abord
+
+1. **`docs/studio/LE-STUDIO-DE-A-A-Z.md`** : le Studio à construire, avec les mots du propriétaire, ses réponses et
+   les prix validés. C'est la référence. Page en ligne : https://claude.ai/artifact/76xobBZYJxCMt6oxuSeNLn
+2. **`docs/studio/INVENTAIRE-DU-CODE.md`** : le code rangé en trois piles (garder, reconstruire pour SINA, supprimer),
+   les doublons, l'ordre des lots 0 à 9. Détail par domaine, avec les chemins : `docs/studio/inventaire/`. Page en
+   ligne : https://claude.ai/artifact/WxwtnxCqQtPSYqkB2NSFRP
+3. `docs/sina-savoir/` : les cahiers de métier de SINA (lus par le code), la carte de ses spécialistes, les références.
+
+Les consignes d'avant le 15 novembre 2026 (journaux des essais, chantiers datés, détail des thèmes) sont dans
+`docs/archives/CLAUDE-2026-11-15.md`. On n'y va que pour retrouver un fait précis. Elles ne servent jamais de modèle
+pour SINA : les projets d'essai (infusions, thé, toiletteuse et les autres) sont mis de côté, et aucun exemple tiré
+d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une décision.
+
+## La méthode (acceptée le 14 novembre 2026 : « Oui, on repart comme ça »)
+
+- On garde les fondations, on reconstruit SINA au propre, on supprime les anciennes façons. **Une seule façon de faire
+  chaque chose, tout allumé.**
+- Le travail se fait en lots, dans l'ordre de l'inventaire. Avant chaque lot : ce qui est construit, pourquoi, ce
+  qu'il verra, le prix de l'essai. Il dit oui ou non.
+- **Un lot est fini quand SINA le réussit seule, avec la vraie IA, sur plusieurs clients inventés.** Claude ne joue
+  que le client (« c'est à sina d'y faire, pas à toi »). Les anciennes façons du lot sont retirées à ce moment-là.
+- Une conversation par lot ; elle commence par la lecture des deux documents ci-dessus.
+- Où on en est : lot 0 (ménage) fait le 15 novembre 2026. Lot 1 fait le même jour : SINA essayée pour de vrai, anciennes
+  façons retirées (ancien assistant, Pilote, formulaire, écrans de préparation), écran réglé (SINA en grand pendant la
+  création, tableau de bord à côté) ; compte rendu : `docs/studio/LOT-1-SINA-UNE-SEULE-PORTE.md`. Suite : 2 la marque, 3 les
+  trois angles, 4 le site, 5 les publications automatiques, 6 les forfaits, 7 SINA prend les devants, 8 les
+  publicités, 9 les vidéos.
 
 ## Avec le propriétaire
 
-- **Répondre en français simple** : il n'est pas développeur. Expliquer ce qui change pour lui, pas le code.
-- **Ne jamais demander ni accepter de clé d'API dans la conversation.** Les clés se saisissent dans
-  Administration › Fournisseurs IA (chiffrées) ou dans les secrets Codespaces / de l'hébergeur.
-- **Honnêteté** : ne rien inventer (avis, chiffres, délais, certifications, résultats). Un manque se signale par
-  « [À compléter : …] ». Dire clairement ce qui a été vérifié et ce qui ne l'a pas été.
-- **Fusion (PR + merge) uniquement quand il le demande** (« fusionne », « oui » à « Je fusionne ? »).
-  Après une modification terminée, demander « Je fusionne ? ».
-- Dépôt GitHub : `spacedevelopment01-max/Ecom-studio-ia` (avec cette casse exacte pour les appels d'API GitHub).
+- **Français simple, jamais un mot d'anglais**, y compris dans les messages d'avancement, les légendes et les comptes
+  rendus. Il n'est pas développeur : dire ce qui change pour lui, pas le code. Réponses courtes ; une question au plus,
+  à la fin ; ne jamais reposer une question déjà répondue.
+- **Claude tranche.** Ses mots : « C'est pas a moi de choisir tu es bien plus intelligent que moi donc c'est a toi de
+  me dire ce qui serait bien ou non ». Claude décide, explique pourquoi et dit ce qu'il fera ; il dit oui ou non. Ne
+  lui demander que ce que lui seul peut savoir ou engager : son argent, son goût, sa responsabilité, ce qui ne se
+  rattrape pas. Jamais « tu préfères A ou B ? » sur une question de métier.
+- **Prendre les devants, mais expliquer avant de construire** et attendre son accord. Il veut que ça avance.
+- **Prendre ses paroles au sérieux** : ce qu'il a dit une fois vaut pour toujours et ne se redemande pas.
+- **Honnêteté** : ne rien inventer (chiffres, avis, délais, résultats). Un manque s'écrit « [À compléter : …] ». Dire
+  ce qui a été vérifié et ce qui ne l'a pas été. Une faute se dit.
+- **Jamais de clé d'API dans la conversation** : elles se saisissent dans Administration › Fournisseurs IA.
+- Ce qu'on lui montre, même pour expliquer, doit donner envie. Après une recherche, lui montrer en captures ce qui a
+  été lu.
+- Un retrait de contenu ou un changement visible important se propose ; il ne s'applique qu'après son accord.
 
-### Préférences du propriétaire (à retenir, il ne veut pas les répéter)
+## Son argent
 
-- **Dépenses** : aucune API ou fournisseur payant ajouté sans son accord ; aucun appel IA payant ni publication réelle
-  sans son autorisation. Toujours donner le prix avant une génération payante et attendre son accord écrit. Un appel
-  au résultat incertain (erreur 5xx) n'est jamais relancé tout seul : le dire, puis demander. Plafond d'essais : 10 $.
-- **Prix** : jamais d'euros montrés au client pour l'IA ; tout coût est un % du budget IA du mois de son compte ;
-  devis = coût probable (un essai), une reprise n'est débitée que si elle a lieu et elle est annoncée.
-- **Ne jamais générer de personne** sans photo fournie par le client ou autorisation explicite.
-- **Vocabulaire du client** : ce qu'il corrige une fois vaut pour toujours (ex. ARVEN : « montre », jamais
-  « chronographe »). L'enregistrer aussitôt dans la mémoire du projet (`addWordingRule`, `src/lib/client-wording.ts`).
-- **Textes des visuels** : ceux qu'il donne sont repris mot pour mot (ex. ARVEN : « Acier et cuir véritable. »).
-  Si le modèle n'arrive pas à écrire un mot, **changer la phrase** au lieu de s'acharner à payer de nouveaux essais.
-- **Vérifier soi-même chaque image avant de la montrer** : produit entier (rien de coupé, ex. bracelet complet avec
-  la boucle), fidèle à la photo d'origine, orthographe exacte, aucun mot ni fausse lettre en trop, logo exact.
-  Une image ratée est signalée comme ratée, jamais présentée comme bonne.
-- **Logos : jamais aucune direction.** Qwen-Image 3.0 Pro dessine ; si le contrôle juge le rendu insuffisant, OpenAI
-  (ChatGPT) prend le relais ; le client finit toujours avec au moins un logo (le meilleur, signalé s'il n'est pas validé).
-- **Images 100 % IA, avec Qwen-Image 3.0 Pro** (pas ChatGPT, jugé trop cher ; pas de texte posé en local à la place).
-  **Exception : maquettes de site de SINA** (étape 6) avec **OpenAI GPT Image 2.5 Flare** (décision du 8 novembre 2026, après
-  comparaison réelle : Qwen abîmait les textes de la page, OpenAI les écrivait juste). Les textes du site sont écrits
-  AVANT la maquette (`mockup.copy`, sur l'angle choisi et son émotion) et posés lettre pour lettre sur l'image.
-  Seules les pages principales ont une maquette (accueil, pages clés, menu, panier) ; les pages simples sont codées à
-  l'étape 7 dans le style de la maquette, sans image à elles. **Photos du site codé** (étape 7, `site.images`) : toutes
-  recréées en haute définition par le même modèle OpenAI, à l'identique de la maquette (décision du 8 novembre 2026).
-  Corriger un détail d'une maquette = retouche localisée (`mockup.edit`), jamais une image refaite en entier.
-  **Maquettes en code** (décision du 8 novembre 2026, remplacée le 9 novembre par le thème sur mesure ci-dessous ; gardée pour les projets déjà commencés, `src/lib/syna-agent/mockup-code/code-*.ts`) :
-  Claude construit chaque page en HTML/CSS, photos créées une fois et partagées, contrôle automatique gratuit. Règles
-  du propriétaire : ouverture de l'accueil = **grande photo pleine** avec le titre dessus ; **jamais deux parties de même
-  disposition à la suite** ; **aucun vide** (pas de grandes marges, pas de colonne vide) ; **un thème vivant** ;
-  **jamais une photo en doublon** (ni deux fois dans une page, ni d'une page à l'autre ; seule la photo d'un produit
-  revient sur la carte ou la fiche de ce même produit) ; photos ratées (texte ou logo dedans, bandes blanches) écartées.
-  Consignes à Qwen **en français**, concrètes (scène, objets, lumière), seuls les textes voulus entre guillemets.
-- **Thème sur mesure** (décision du propriétaire du 9 novembre 2026 : « on ne va plus appeler ça maquette mais thème sur
-  mesure » ; le client ne lit plus jamais le mot « maquette ») : à l'étape 6, SINA **monte** le thème avec la
-  bibliothèque de sections (`public/sections/`, 182 sections préparées par `scripts/sections-library.py` depuis le
-  catalogue ; familles Classique et Moderne, jamais mélangées), aux couleurs, polices, nom et logo du client, et le
-  **modifie sur demande** : outils `custom.*` (`src/lib/syna-agent/custom-theme/`) : bibliothèque, montage
-  (`custom.compose`, points de départ SOLSTICE, RUPTURE et Brindi), lecture et modification d'une section
-  (`custom.section`, `custom.edit` : textes, mise en forme limitée à la section, élément masqué, photo du client),
-  structure (`custom.structure`), photo créée (`custom.photo`, seul outil payant), annulation (`custom.undo`), choix
-  (`custom.choose`). Le thème vivant s'affiche dans le fil (`/api/projects/<id>/custom-theme`, pages, téléphone) avec
-  **« Désigner un élément »** : le client pointe un titre, un texte, un bouton, une image ou une section, dit ce qu'il
-  veut, et SINA ne change que lui. Règles de montage contrôlées sans IA (`checkCustomTheme`) ; aucun script dans une
-  section retouchée. Les anciennes maquettes (`mockup.*`) ne servent plus qu'aux projets déjà commencés avec elles. La mise
-  en boutique Shopify d'un thème sur mesure (étape 7) reste à brancher.
-- **Sections « Produit vedette »** (décision du 8 novembre 2026) : elles ne vont qu'**en haut de la fiche produit**, ou au plus
-  **une seule fois sur l'accueil** ; **jamais deux sections « Produit vedette » dans une même page**. Leurs réglages (couleurs,
-  formats, lots, offres, abonnement) s'affichent ou se masquent **selon les données réelles du produit** (variantes, offres
-  saisies par le client) : rien d'affiché pour une option que le produit n'a pas. **Livraison estimée, points de fidélité, offres (lots,
-  N achetés M offerts, cadeaux) et choix entre plusieurs produits de la gamme sont des fonctions de ce bloc d'achat,
-  jamais des sections à part** (retour du propriétaire du 8 novembre 2026).
-- **Montage d'un thème avec la bibliothèque de sections** (retour du propriétaire du 8 novembre 2026, option B de Brindi) :
-  **une seule section de cartes (produits ou familles) par page** ; une section qui montre plusieurs styles au choix dans la
-  bibliothèque (ex. « Livraison estimée » en 3 styles) n'en garde **qu'un seul** sur une vraie page. **Jamais une section
-  « pour prendre une section »** : chaque section a un rôle dans l'histoire de la page, est choisie selon la personnalité
-  de la marque, l'angle et son émotion, le métier et le contenu réel, et le tout reste harmonieux (méthode complète :
-  `docs/montage-themes-sina.md`).
-- **Familles de sections** (décision du propriétaire du 9 novembre 2026, `src/lib/syna-agent/section-families.ts`) :
-  « Classique » (calme, éditoriale) et « Moderne » (d'après ses modèles Instagram : titres énormes, mannequin détouré
-  qui déborde de l'ouverture, couleurs franches ; styles d'exemple Sport chic et Streetwear néon, plusieurs sections au
-  choix par rôle). **Jamais de mélange de familles dans un thème.** SINA montre les familles au client **en image**
-  (`theme.families`) et enregistre **son** choix (`theme.family`) avant tout thème ou maquette. Les textes des sections
-  ne reprennent jamais ceux des modèles montrés (même traduits).
-  **Images de la famille Moderne** : quand le client la choisit, TOUTES ses images (site, publications, publicités)
-  suivent sa charte (`familyArtUniverse`, direction artistique du projet) : photo de mode éditoriale, mannequins inventés
-  seulement si les personnes sont autorisées (sinon produits seuls dans le même style), sujet entier, rien de coupé.
-- **Noms de marque** (décision du 9 novembre 2026) : genre préféré = le **mot fort** comme SOLSTICE ou RUPTURE (un seul
-  mot qui existe, 2 ou 3 syllabes, qui évoque l'univers ou l'attitude) ; marques de produits : deux mots forts + un mot
-  inventé (`nameKindRule`, `src/lib/syna-agent/identities.ts`).
-- **Écrire une consigne d'image comme le propriétaire** (modèle réussi du 16/10, `docs/guide-images-ia.md`) : décrire
-  UNE photo, en phrases complètes et logiques, dans cet ordre : 1) type de photo, format, point de vue, cadrage ;
-  2) surface et fond ; 3) chaque objet dans son paragraphe : place exacte dans l'image, forme, matière, couleur, état,
-  et ce qu'il ne contient pas (« l'écrin est vide : aucune montre, aucun cadran… ») ; 4) « La scène contient exactement
-  N objets : … » ; 5) ce qui est coupé par le cadre ou laissé dégagé ; 6) lumière, ombres, textures, mise au point,
-  ambiance ; 7) « Aucun texte, aucune lettre, aucun chiffre, aucune gravure, aucun logo, aucun filigrane, aucune
-  personne. Aucun objet supplémentaire. » Jamais de contradiction (ne pas citer le produit ni ses matières s'il ne doit
-  pas apparaître), jamais d'objet vague (« quelques accessoires »).
-- **Réponses courtes et claires**, sans jargon ; ne pas reposer une question à laquelle il a déjà répondu.
-- **Ne pas décider à sa place** : un retrait de contenu ou un changement visible important se propose, il ne s'applique
-  qu'après son accord. Retirer un visuel raté sans rien mettre à la place n'est pas une correction.
-- **Catalogue de thèmes proposé** (mission #190 du 25 octobre 2026, inventaire `docs/INVENTAIRE-THEMES-190.md`) : seuls les
-  thèmes **refaits d'après les maquettes de Thomas** sont proposés (galerie, IA, commandes, recommandation, tarifs) :
-  **fraise**, **onde**, **rive**, **sillon**, **noctil**, **traverse**, **heuren**, **museau-club**, **souple**,
-  **table-saison**, **atelier-nuance**, **parenthese**, **phase**, **maison-horizon** et **aplat** (`MAQUETTE_THEMES`,
-  `src/lib/theme/theme-fit.ts`). ORBE et ALCÔVE (créés avant les maquettes, aucune maquette retrouvée) et les 30 thèmes de
-  l'ancien catalogue ne sont ni sélectionnables ni recommandés ; un projet qui en utilise un le garde (compatibilité de
-  lecture), jamais de migration silencieuse ni de suppression. **Plus de familles** pour le choix, les quotas et les
-  droits : tout thème proposé sert à tout projet ; l'usage prévu (`themeKinds`) ne sert qu'à recommander. **Droits par
-  thème et par forfait** (`src/lib/theme/theme-rights.ts`, Administration › Thèmes et forfaits) : Thomas choisira les
-  thèmes des forfaits à 49 € et 89 € ; tant qu'un forfait est « à choisir », tous les thèmes proposés lui restent ouverts.
-- **Démonstrations** (priorité du 19 octobre 2026, issue #137) : les seules sont **FRAISE** (gummies, boutique spécialisée ; reprise des sept planches corrigées du 24 octobre, sections `fg-*`, voir `docs/LISEZMOI-fraise.md`),
-  **ONDE** (casque audio : thème **mono-produit de la famille E-commerce**, refait d'après les sept planches du
-  24 octobre, PR #183, `docs/theme-briefs/onde/` : profil de conversion « onde » (`assets/onde.css`, `onde.js`, règles
-  préfixées `body[data-conversion="onde"]`, aucun texte dans la feuille), sections `on-*` (en-tête, pied, fiche, panier,
-  tiroir, commande d'exemple, aide) réservées à ce thème, titres Montserrat 700, textes Inter, prix illustratif centralisé
-  `ONDE_PRICE` (149 €), démonstration `tests/onde-fixtures.ts`, visuels du kit `public/demo/onde/`, versionnés
-  (décision du 6 novembre) ; cellules « ordinateur » de la planche 03 comparées à 913 px ; rapport
-  `docs/coordination/ONDE_RESULTATS.md`), **ORBE** (lampe, e-commerce), **Atelier Rive** (prestations de services),
-  **SILLON** (machine à espresso nomade, boutique spécialisée, issue #148 ; **V2** refaite d'après les trois planches
-  validées et les quatre planches téléphone, PR #182 : sections `sv-*`, `theme-base/assets/sillon.css`, 129 € illustratif,
-  commande simulée sans champ de carte ; médias suivis dans `public/theme-assets/sillon/`, démonstration
-  `tests/sillon-fixtures.ts`, voir `docs/LISEZMOI-sillon-v2.md`), **NOCTIL** (projecteur de galaxies) et **TRAVERSE** (sac de voyage modulable),
-  boutiques spécialisées de l'issue #152 (médias dans `public/theme-assets/noctil/` et `traverse/`, TRAVERSE ambiance-04
-  volontairement hors rendu ; NOCTIL refait d'après les maquettes du 23 octobre, PR #167 : démonstration
-  `tests/noctil-fixtures.ts`, aides communes dans `tests/noctil-traverse-fixtures.ts`), **HEUREN** (montre bleu nuit) et
-  **ALCÔVE** (fauteuil terracotta) : thèmes **mono-produit de la famille E-commerce** (consigne expresse de Thomas, issue
-  #155 ; jamais « boutique spécialisée »), médias dans `public/theme-assets/heuren/` et `alcove/`, démonstrations
-  `tests/heuren-alcove-fixtures.ts` ; **MUSEAU CLUB** (harnais, laisse, collier et pochette à sacs pour chiens) : thème de la
-  **famille Produit spécifique / Boutique spécialisée, à quatre produits** (décision de Thomas du 21 octobre, 12 h 58, issue
-  #158, qui remplace le premier classement E-commerce ; profil « club » de la famille), chaque produit avec sa propre fiche,
-  médias dans `public/theme-assets/museau-club/`, démonstration `tests/museau-souple-fixtures.ts` ; **SOUPLE** (tapis de yoga,
-  brique, sangle et anneau Pilates) : thème de la **famille E-commerce, à quatre produits**, refait d'après les six
-  maquettes du 23 octobre (PR #180, `docs/theme-briefs/souple/`) : profil de conversion « souple » (`assets/souple.css`,
-  règles toutes préfixées `body[data-conversion="souple"]`, aucun texte dans la feuille), titres Playfair Display, textes
-  Jost, sections cv- rangées dans la galerie E-commerce (refusées aux thèmes qui ne savent pas les rendre), prix de
-  démonstration centralisés (`SOUPLE_PRICES`, tapis + brique = 78 € de sous-total), commande d'exemple en 4 étapes et
-  compte fictif `demo@souple.example` / `demo` ; médias dans `public/theme-assets/souple/` (59 visuels ; 21 et 22
-  reçus par correctif, 21 recréé), démonstration `tests/souple-fixtures.ts`, rapport `docs/coordination/SOUPLE_RESULTATS.md`.
-  **TABLE SAISON** (restaurant, famille **Services**, issue #175) : démonstration complète d'après les cinq planches de
-  Thomas (`tests/table-saison-fixtures.ts`, médias WebP dans `public/theme-assets/table-saison/`), réservation simulée en
-  démonstration et service réel du studio (`src/lib/restaurant/booking.ts`) ; voir `docs/LISEZMOI-table-saison-175.md`.
-  **ATELIER NUANCE** (salon de coiffure, famille **Services**, issue #177) : reproduction des six planches de Thomas (la 05
-  prime sur la 01 pour les prestations et la fiche ; prix et durées d'une seule source, la section « Réglages du salon »),
-  démonstration `tests/atelier-nuance-fixtures.ts`, médias WebP dans `public/theme-assets/atelier-nuance/`, rendez-vous
-  simulés en démonstration (« Simulation — aucun rendez-vous réel ») et service réel du studio (`src/lib/salon/booking.ts`) ;
-  voir `docs/LISEZMOI-atelier-nuance-177.md`.
-  **PARENTHÈSE** (cabinet de sophrologie, famille **Services**, mission du 24 octobre, PR #179) : reproduction des six
-  planches (`docs/theme-briefs/parenthese/`), séances, ateliers à places, réservation en quatre étapes (cabinet / visio),
-  gestion du rendez-vous ; séances, ateliers, tarifs et horaires d'une seule source (section « Réglages du cabinet »),
-  valeurs d'exemple annoncées ; démonstration `tests/parenthese-fixtures.ts`, médias WebP dans
-  `public/theme-assets/parenthese/`, service réel du studio (`src/lib/cabinet/booking.ts`) ; voir `docs/LISEZMOI-parenthese.md`.
-  **PHASE** (électricien, famille **Services**, mission du 25 octobre, planches de la PR #188) : reproduction des dix planches
-  (`docs/theme-briefs/phase/`), 18 pages ordinateur et téléphone (sections `ph-*`, `theme-base/assets/phase.css` /
-  `phase.js`), formulaires de contact et de devis sans envoi réel en démonstration (récapitulatif lu dans le navigateur),
-  filtres, questions, cookies ; démonstration `tests/phase-fixtures.ts`, photos du kit `public/demo/phase/images/`
-  (versionnées, décision du 6 novembre) ; voir `docs/LISEZMOI-phase.md`.
-  **MAISON & HORIZON** (agence immobilière, achat et location, issue #172) : thème de la **famille Prestations de services**
-  (ouvert à partir du forfait Vendre, à confirmer), profil éditorial « horizon » (`assets/horizon.css`, `horizon.js`,
-  sections `re-*`) ; les **biens** se saisissent dans l'espace **Biens** du studio (`src/lib/biens.ts`, table `biens`) et
-  sont injectés au rendu (`withBiens`), jamais écrits dans le thème ; pages de recherche et fiche ajoutées à tout projet
-  qui choisit le thème (`src/lib/theme/real-estate-site.ts`, chargé aussi dans le navigateur via `directions.ts` : imports de
-  types seulement, sinon le studio ne compile plus) ; démonstration `tests/maison-horizon-fixtures.ts` (27 biens,
-  une série de photos par bien, aucune photo partagée), 90 images en grand format dans le kit
-  `public/demo/maison-horizon/` (versionnées, décision du 6 novembre) ; rapport
-  `docs/coordination/MAISON_HORIZON_RESULTATS.md`.
-  **APLAT — Plâtrerie & Peinture** (artisan, PR #187, dix planches du 25 octobre, `docs/theme-briefs/aplat/`) : thème de la
-  **famille Prestations de services** (forfait Vendre, à confirmer), profil éditorial « aplat » (`assets/aplat.css`,
-  `aplat.js`, sections `ap-*` réservées à ce thème), titres et textes Lato ; 18 pages (accueil, prestations, métiers,
-  réalisations filtrables, détail avant/après, approche, FAQ, contact, devis en deux étapes avec photos, enduits, conseils,
-  article, confirmation, pages légales, cookies réels, 404) ; démonstration `tests/aplat-fixtures.ts`, photos dans le kit
-  `public/demo/aplat/` (versionnées, décision du 6 novembre) ; « Choisir ce thème » pose la structure avec les données du client
-  (`src/lib/theme/aplat-site.ts`, chargé aussi dans le navigateur : imports de types seulement), sans photo ni coordonnée
-  de démonstration ; formulaires en démonstration : envoi simulé « Démonstration — demande non envoyée » ; contrôle des
-  interactions `scripts/aplat-interactions.ts` ; rapport `docs/coordination/APLAT_RESULTATS.md`.
-  Les anciennes démos (ARVEN, Cime, Les Tribunes, Sonore, Racines & Pierres, Atelier Pivoine, Ostral) sont abandonnées :
-  ne pas les adapter ni les maintenir. Leurs visuels viennent du kit privé de Thomas (`public/demo/<id>/`, hors dépôt).
-  **Démos intégrales avant le choix** (revue PR #149) : la galerie « Thèmes » ouvre la boutique de démonstration
-  complète de chaque thème (`src/lib/theme/theme-demos.ts`, exports statiques préparés hors dépôt par
-  `npm run demos:themes`, ou automatiquement en arrière-plan) ; aucune donnée du projet n'y est substituée et le projet
-  ne change qu'à « Choisir ce thème » (une seule tâche même en double-clic).
-  **Page d'accueil** : chaque section montre de vrais visuels (sinon rien, jamais un gabarit) et les sections tournent
-  entre ces quatre démos, en alternant produits et services.
-- **Projets clients dédiés** (`clients/<clé>/`, ex. Le Coven des Charmes, PR #189) : site posé dans le thème DU projet
-  du client (sections `es-custom-<clé>-*` du projet, médias de sa bibliothèque, pages et menus du projet) ; jamais dans
-  `theme-base/`, le catalogue, les démos ni la bibliothèque de sections ; aucun média du client dans le dépôt
-  (`.gitignore`). **Le Coven des Charmes n'est pas dans `main`** (décision de Thomas du 25 octobre, fusion globale
-  #194) : son site, ses scripts et son rapport restent sur la branche `claude/le-coven-des-charmes` (PR #191) ; seul
-  son dossier de consigne (`docs/client-briefs/le-coven-des-charmes/`, PR #189) est versionné. Son raccordement et la
-  vérification de ses scripts se feront dans une intervention dédiée avec Codex, sans modifier les protections
-  générales du studio (lot 9 : aucun script dans les sections d'un projet).
+- **Aucun appel payant à l'IA ni publication réelle sans son accord écrit.** Donner le prix avant, attendre son
+  « oui ». Le budget d'un essai se décide avec lui juste avant de le lancer. Un appel au résultat incertain (erreur du
+  fournisseur) n'est jamais relancé tout seul. Aucun fournisseur payant ajouté sans son accord.
+- Si un modèle n'arrive pas à écrire un mot dans une image, changer la phrase plutôt que repayer des essais.
+- Dépensé en essais réels au 15 novembre 2026 : environ 19,14 € comptés par le Studio (dont 2,94 € pour l'essai du
+  lot 1, sur 9 € accordés, et 1,07 € pour l'essai sur le nouvel écran, sur 1,50 €).
+- **Le client ne voit jamais d'euros pour l'IA** : tout coût est un pourcentage du budget d'IA de son mois.
+- **Forfaits validés** (« Oui je valide comme ça ») : 69 €, 99 € et 169 € par mois, sans prix de création ni
+  engagement ; budget d'IA à 50 % du prix hors taxes le premier mois, puis 40 % ; par forfait : 2, 3 et 4 identités
+  proposées, 1, 2 et 3 publications en images par jour, 0, 3 et 6 vidéos par mois, 0, 1 et 2 campagnes préparées. Le
+  code a encore 49, 89 et 129 € jusqu'au lot des forfaits.
 
-## Travail en plusieurs conversations (choix du propriétaire)
+## Ce que SINA doit être
 
-- **Une conversation « chef de projet »** (« E-COM STUDIO IA — suite ») reçoit les demandes du propriétaire, les
-  découpe en tâches précises, crée une conversation spécialisée par domaine (`create_session` + `send_message`),
-  suit leur travail (`list_events`), relit leurs PR et fait le compte rendu au propriétaire.
-- **Un domaine par conversation, jamais deux conversations sur les mêmes fichiers en même temps.** Domaines :
-  1. Boutique et thème Shopify : `theme-base/`, `src/lib/theme/`, sites de services (skill **verifier-theme**).
-  2. Images et publicités : `src/lib/image-v2/`, `src/lib/ads-v2/`, `src/lib/ad-doc/`, `src/lib/social-v2/ai-post.ts`,
-     routage des médias (`src/lib/ai/media-*.ts`).
-  3. Vidéos : `src/lib/video-v2/`, vidéos du worker, tutoriels (`src/lib/tutorials/`).
-  4. Marque et identité : logo, planche (`src/lib/media/identity-board.ts`), charte, vocabulaire du client.
-  5. Publications et calendrier : `src/lib/social-v2/` (sauf `ai-post.ts`), pilote automatique.
-  6. Forfaits, budget IA, sécurité, administration : `src/lib/billing*`, `src/lib/ai/access.ts`, `ai_calls`.
-- **2 ou 3 spécialistes à la fois au plus.** Chacun part de `main` à jour, travaille sur **sa propre branche** et ouvre
-  **sa propre PR** ; le chef vérifie la CI puis demande « Je fusionne ? » au propriétaire pour chacune.
-- **Dépenses centralisées** : aucun spécialiste ne fait d'appel IA payant ; il prépare l'essai et le chef donne le prix
-  au propriétaire et attend son accord écrit (plafond commun d'essais : 10 $).
-- Tout spécialiste lit ce fichier en entier avant de commencer et rend compte de ce qu'il a **vérifié réellement**
-  (tests, captures) et de ce qui ne l'a pas été.
+- Le client n'entend qu'elle ; ses spécialistes restent en coulisses. Elle le tutoie.
+- Ses mots : « une superintelligence qui prend son rôle à cœur » ; elle pose toutes les questions dont elle a besoin,
+  au moment où elle en a besoin, pour réussir du premier coup ; elle prend les devants, conseille, et reste
+  l'interlocutrice après la livraison (publications, publicités, améliorations).
+- Elle réfléchit avec le modèle le plus fort, pour tous les forfaits. Celui qui fait n'est jamais celui qui juge ;
+  rien n'est montré sans avoir été relu ; elle regarde ce qu'elle a fait et le corrige avant de le montrer.
+- Elle propose, le client décide. Elle n'agit seule que là où il l'a autorisé par écrit, dans son plafond.
+- Aucun réglage du Studio en ligne n'est changé sans la demande du propriétaire.
 
-## Règles du produit (ne pas casser)
+## Ses goûts, en règles générales
 
-- **Découverte n'est pas un forfait** : c'est un compte inscrit par e-mail, sans abonnement, qui visite le studio de démonstration (`src/app/studio/decouverte`) sans rien pouvoir créer ni modifier (création de projet refusée sans abonnement payé). Aucun appel à l'IA sans abonnement (`aiActiveFor`).
-- **Le compte administrateur suit son forfait comme un client** (pas de passe-droit) : le propriétaire teste en
-  gratuit puis en payant. Accès à l'IA : `aiActiveFor(userId)` (`src/lib/ai/access.ts`) ; le bouton « Désactiver »
-  d'un fournisseur coupe vraiment ses appels.
-- **Moteur local d'abord** : une retouche simple et sûre est faite sans IA même quand l'IA est active
-  (`src/lib/engine/local-first.ts`) ; l'IA garde les demandes composées, créatives ou ambiguës.
-- **Bilingue FR/EN** : interface et contenus. Les textes FR/EN passent par `L("fr", "en")` / `C(...)`
-  (`src/lib/i18n-server.ts`) ; dans le thème, tout libellé de schéma a sa traduction dans
-  `theme-base/i18n/schema.en.json` et toute clé `| t` existe dans `locales/fr.default.json` **et** `en.default.json`.
-- Les coordonnées saisies à la création d'un projet ne doivent jamais être redemandées ni effacées.
+- **L'émotion.** Tout texte fait ressentir (une scène, un moment, une sensation), jamais une simple description. Les
+  boutons qui vendent portent le désir. Aucune accroche répétée, aucun ordre donné au lecteur.
+- **Des images magnifiques**, du niveau d'une campagne haut de gamme : vraie scène, lumière travaillée, vrai produit
+  du client, produit entier, rien de coupé. Le texte se pose sur la partie calme de la photo. Chaque image est
+  vérifiée avant d'être montrée ; une image ratée est dite ratée.
+- **Images créées par OpenAI** pour tout ce que fait SINA ; c'est obligatoire pour les publications.
+- **Jamais de personne** dans une image sans photo fournie par le client ou accord écrit.
+- **Noms de marque** : un mot simple et fort qui dit la matière ou le métier ; l'épreuve du fondateur (« tu
+  appellerais ton site comme ça, toi ? ») ; aucun sous-entendu ; le juge ne garde qu'un nom qu'il noterait 8 sur 10 ;
+  l'adresse sur Internet est contrôlée, et jamais promise.
+- **Logo** : créé par OpenAI pour cette marque-là, jamais repris d'une autre ; aucun pictogramme dessiné en code ;
+  fond retiré, pas de carré autour.
+- **Identité** : montrée en planche de marque complète, jamais en simple fiche.
+- **Trois angles** : un sûr, un d'émotion, un audacieux, avec celui que SINA recommande.
+- **Site** : SINA le conçoit pour cette marque, pas en copier-coller, et il doit être bon du premier coup. Des
+  sections à la hauteur des meilleurs sites ; de la variété d'un client à l'autre (menus, boutons) ; un signe pris sur
+  le produit ou le métier. Ouverture en grande photo pleine avec le titre dessus ; jamais deux parties de même
+  disposition à la suite ; aucun vide ; jamais une photo en doublon ; accueil d'au moins 8 sections, fiche produit
+  d'au moins 7 ; une seule section « Produit vedette » par page, remplie avec les vraies données. Jamais une
+  coordonnée, un avis ou un prix d'exemple. Le client ne lit jamais le mot « maquette ». Pour Shopify, pas de page de
+  commande dans le thème.
+- **Photos** : les photos produit du client restent sur les emplacements produit ; l'ouverture est une scène créée
+  avec son vrai produit. SINA n'invente jamais l'équipe ni les biens à vendre. Les réalisations d'artisans sont créées
+  quand le client n'en a pas assez (règle maintenue le 14 novembre, « on verra plus tard si on change »).
+- **Publications** : le niveau des meilleurs community managers avec Canva ; pour les vidéos, celui de CapCut.
+  Toujours une vraie image. Les exemples montrés à un client sont très différents les uns des autres (couleur, sujet,
+  cadrage, rôle). Une métaphore juste qui fait sourire lui plaît.
+- **Publicités** : le Studio prépare et guide ; il n'engage aucune dépense de diffusion.
+- **Vocabulaire du client** : ce qu'il corrige une fois vaut pour toujours ; ses textes sont repris mot pour mot.
+- **Les vidéos se traitent en dernier.**
 
-## Démonstrations de référence (règle du 19 octobre, retour de Thomas 15 h 07)
+## Règles du produit
 
-- **Photos des 15 thèmes dans le dépôt** (décision du propriétaire du 6 novembre 2026) : les kits FRAISE, ONDE, PHASE,
-  APLAT et MAISON & HORIZON (`public/demo/<id>/`) sont versionnés et publics, comme `public/theme-assets/`, pour que le
-  Studio (Codespace compris) ait tous les thèmes complets. Les icônes du kit PHASE (non utilisées) restent hors dépôt.
+- « Découverte » n'est pas un forfait : un compte sans abonnement visite la démonstration et ne crée rien. Aucun appel
+  à l'IA sans abonnement. Le compte administrateur suit son forfait comme un client.
+- Interface et contenus en français et en anglais (`L("fr", "en")`, `src/lib/i18n-server.ts` ; dans le thème, chaque
+  libellé a sa traduction).
+- Les coordonnées saisies à la création d'un projet ne sont jamais redemandées ni effacées.
+- Les 15 thèmes proposés : fraise, onde, rive, sillon, noctil, traverse, heuren, museau-club, souple, table-saison,
+  atelier-nuance, parenthese, phase, maison-horizon, aplat. Leurs démonstrations sont des reproductions de maquettes
+  validées : ne pas les recomposer ni les simplifier.
 
-- La démonstration FRAISE GUMMIES est la reprise complète des **sept planches corrigées** (consigne écrite de Thomas du 24 octobre, PR #185 pour les maquettes, `docs/theme-briefs/fraise-gummies/`) : sections `fg-*`, `theme-base/assets/fraise.css` / `fraise.js` (chargés par la mise en page, réglage `theme_kit`), offres 1 / 2 / 3 flacons à 16,60 / 24,90 / 33,20 € (`OFFRES_VALIDEES.json`, messages calculés par le snippet `fg-offer`), prix total du pack en premier, commande simulée sans champ de carte ; démonstration `tests/fraise-fixtures.ts`, photos du kit `public/demo/fraise/v2/` (versionnées, décision du 6 novembre) ; voir `docs/LISEZMOI-fraise.md`. Ne jamais la recomposer par le parcours « thème du catalogue » ni la simplifier sans consigne écrite de Thomas. L'ancienne composition Lumora reste constructible par `conversionProject(…, "fraise")` pour les anciens contrôles (lot 2C, bibliothèques par famille).
-- ONDE AUDIO n'est plus la référence Pawish : refonte E-commerce (issue #158), puis reprise à l'identique des sept planches du 24 octobre (PR #183) ; sa composition (`tests/onde-fixtures.ts`, sections `on-*`, section Produit commune présente mais masquée) est figée de la même façon. Garde-fou commun : `tests/demos-fraise-onde-composition.test.ts` (liste ordonnée des sections, aucune masquée). L'ancienne composition Pawish reste constructible par `conversionProject(…, "onde")` pour les anciens contrôles du lot 2C.
-- Toute livraison d'aperçu indique le commit exporté (`resume.json`) et la version d'artefact ; vérifier l'inventaire des sections de l'export avant de publier, et comparer à la version précédente (une section de moins = à expliquer dans la PR, jamais silencieux).
+## Travailler dans le dépôt
 
-## Avant chaque envoi (commit + push)
-
-```bash
-npx tsc --noEmit
-npx vitest run
-```
-
-- Modification du thème (`theme-base/`, `src/lib/theme/`) : utiliser le skill **verifier-theme**
-  (`scripts/verify-theme.sh`, `scripts/theme-screens.ts`) — la CI refuse la fusion au moindre échec de Theme Check.
-- Ajouter un test dans `tests/` pour tout comportement modifié.
-- Messages de commit en français. Ne mettre aucun identifiant de modèle d'IA dans les commits, PR ou fichiers.
-
-## Repères dans le code
-
-- `src/app` — pages, studio (`src/app/studio/[projectId]`), API (`src/app/api`) ; `src/components/studio/tab-*.tsx` — onglets.
-- `worker/handlers.ts` — tâches de fond (création, retouches de la boutique `shop.chat`, publications…).
-- `src/lib/theme` — moteur de thème : `directions.ts` (40 directions définies, dont seules les 10 de référence sont proposées — `ACTIVE_DIRECTIONS` ; les 30 anciennes restent lisibles pour les projets existants), `compile.ts`, `render.ts` (aperçu Liquid),
-  `ops.ts` (opérations de retouche validées), `preview-tools.ts` (sélection d'un élément dans l'aperçu).
-- `theme-base/` — sections, snippets, `assets/theme.css`, `assets/theme.js` du thème Shopify.
-- `src/lib/engine` — pipeline et moteur local ; `src/lib/ai` — fournisseurs, prompts, tâches IA.
-- `src/lib/products` — onglet « Catalogue » (fiches produits du studio, variantes, stock) et connecteurs WooCommerce,
-  PrestaShop, Shopify (correspondances, stock à trois points, import) ; `src/lib/rendez-vous.ts` — rubrique « Rendez-vous ».
-  Exports et boutiques de test : `docs/EXPORTS-PLATEFORMES-190.md`, `docs/VALIDATION-190.md` (mission #190).
-- Tutoriels vidéo : textes dans `src/lib/tutorials/`, vidéos dans `public/tutorials/`, voix off par
-  `scripts/narrate-tutorials.ts` (voix Kokoro, voir l'en-tête du script ; le tutoriel « publicites » a pour fichier
-  `campagnes`).
-
-## Publicités vidéo (guide créatif)
-
-Règles du propriétaire branchées sur le moteur « vidéo en scènes » : `docs/guide-creatif-video.md` (où elles vivent,
-comment elles agissent). Valeurs : `src/lib/video-v2/creative-guide.ts` (modifiables sans code : réglage
-`video.creative_guide`). Services = Pixabay par étape ; produits = vrai produit seulement ; seule la marque du projet.
-
-## Images finales 100 % IA
-
-Toute image finale est créée par un modèle d'images ; jamais de gabarit ni de photo de banque à la place, jamais de
-bascule silencieuse (blocage signalé). Règles et branchements : `docs/guide-images-ia.md` ; valeurs
-`src/lib/image-v2/image-guide.ts` (réglage `image.creative_guide`), direction artistique par client
-`src/lib/image-v2/art-direction.ts` (mémoire `image.art_direction`, versionnée).
-Modèle d'images de tout le studio : **Qwen-Image 3.0 Pro**, une seule étape (choix du propriétaire) ; produit
-entier exigé (aucune partie coupée).
-Exception choisie par le propriétaire — sites de services : les photos Pixabay restent permises comme images du site,
-mais jamais en silence : le studio les signale au client (onglet Boutique et aperçu du studio, jamais sur le site
-publié) et permet de les remplacer par sa photo ou une image IA (`src/lib/theme/stock-notice.ts`).
-
-## Ligne directrice de marque (cohésion)
-
-Toute création suit le même système que la planche d'identité (`src/lib/media/identity-board.ts`, `BRAND_RULES`) :
-ancrage sombre + couleur de marque + accent + deux neutres (5 couleurs au plus), deux polices (titres / textes),
-le symbole comme signature (sceau, motif, avatar, papeterie), icônes d'un seul style au trait, de l'air et des
-ombres douces, rien d'inventé sur les maquettes. Planche refaite avec la charte (`saveIdentityBoard`).
+- Dépôt GitHub : `spacedevelopment01-max/Ecom-studio-ia` (avec cette casse).
+- Avant chaque envoi : `npx tsc --noEmit` puis `npx vitest run` (mettre `NODE_OPTIONS=--max-old-space-size=8192`).
+  Un test pour tout comportement modifié. Thème (`theme-base/`, `src/lib/theme/`) : skill **verifier-theme**.
+- Messages d'enregistrement en français. **Aucun identifiant de modèle d'IA, aucune signature de co-auteur** dans les
+  enregistrements, les demandes de fusion ou les fichiers.
+- **Fusion** : seulement un lot prouvé (SINA l'a réussi seule avec la vraie IA, contrôles verts), et seulement après
+  avoir demandé « Je fusionne ? » et reçu son oui.
+- Repères : `src/app` (pages, API), `src/components/studio` (écrans), `worker/` (tâches de fond),
+  `src/lib/syna-agent` (SINA), `src/lib/theme` et `theme-base/` (moteur des sites), `src/lib/ai` (appels à l'IA,
+  comptage), `src/lib/billing.ts` et `plans.ts` (forfaits), `src/lib/social` et `social-v2` (réseaux),
+  `scripts/syna-recette/` (studio privé d'essai).

@@ -30,9 +30,12 @@ MODERNE = {
     'mise en avant': ["L'édition de saison", 'Carnet de looks', 'Offre en deux tuiles', 'Bandeaux croisés fluo', 'Grille éditoriale', 'Capsule numérotée', 'Manifeste en images', 'Matière à la loupe', 'Tournée des boutiques éphémères', 'Vidéos verticales'],
     'confiance': ['Vus dans la rue', 'Bande fluo des engagements', 'Avis et ajustement', 'Garanties à retourner'],
     'panier': ['Panier tiroir néon', 'Page panier éditoriale', 'Mini-panier qui surgit'],
-    'aide': ['Entre deux tailles ?', 'Questions numérotées'],
-    'marque': ['À propos éditorial', 'Journal façon magazine'],
+    'aide': ['Entre deux tailles ?', 'Questions numérotées', 'Aide et suivi de commande'],
+    'marque': ['À propos éditorial', 'Journal façon magazine', 'Article du journal'],
     'contact': ['Boutique et contact'],
+    'commande': ['Commande en une page', 'Commande confirmée'],
+    'compte': ['Connexion au compte'],
+    'légal': ['Informations légales'],
     'recherche': ['Recherche plein écran'],
     'inscription': ['Sois là avant les autres', 'Bande code de bienvenue', 'Fenêtre de bienvenue'],
     'pied de page': ['Pied de page en bande', 'Pied de page streetwear', 'Pied de page mot géant'],
@@ -63,7 +66,14 @@ def frame_inner(a):
     return None
 
 
-CLASSIC_ROLE = {'Menu plein écran': 'navigation', 'Recherche guidée': 'recherche', 'Mini-panier déroulant': 'panier',
+# Sections réservées à un genre de produit : SINA ne les pose jamais ailleurs (ex. tailles et tenues pour de la confiture).
+ONLY_FOR = {**{t: 'pour-mode' for t in ['Tenue à points', 'Compose ta tenue', 'Carnet de looks', 'Entre deux tailles ?', 'Vus dans la rue']},
+            **{t: 'pour-the' for t in ["Guide d'infusion en tiroir", 'Profil du mélange', 'Produit vedette · calculateur de tasses']}}
+CLASSIC_ROLE = {'Commande pas à pas': 'commande', 'Merci pour ta commande': 'commande', 'Connexion et création de compte': 'compte',
+                'Suivi de commande et aide': 'aide', 'Mentions et conditions': 'légal', 'Le journal (liste des articles)': 'journal',
+                'Article avec barre de lecture': 'journal', "L'atelier et la personne derrière": 'à propos', 'Histoire en frise': 'à propos',
+                'Catalogue avec filtres et tri': 'produits', 'Fiche produit à onglets': 'produit', 'Page introuvable (404)': '404',
+                'Menu plein écran': 'navigation', 'Recherche guidée': 'recherche', 'Mini-panier déroulant': 'panier',
                 'Photo à points cliquables': 'mise en avant', 'Scène achetable': 'mise en avant', 'Grille bento': 'mise en avant',
                 'Comparateur de produits': 'comparatif', 'Choisir selon le moment': "guide d'achat", 'Mosaïque de collections': 'rayons'}
 
@@ -118,7 +128,7 @@ for a in arts:
         'family': 'moderne' if moderne else 'classique',
         'style': ('sport-chic' if 'aud1' in tags else 'streetwear-neon') if moderne else None,
         'role': ROLE_OF.get(title) if moderne else classic_role(kind, title),
-        'tags': [t for t in tags if t not in ('new', 'aud', 'aud1', 'aud2')],
+        'tags': [t for t in tags if t not in ('new', 'aud', 'aud1', 'aud2', 'classique')] + ([ONLY_FOR[title]] if title in ONLY_FOR else []),
         # Démonstration dans une fausse fenêtre qui défile (catalogue seulement) : jamais posée telle quelle dans un thème.
         'demoFrame': 'data-vp' in html[:400],
         'html': html,
@@ -141,6 +151,18 @@ sections.append({
              '<div class="bd-ft"><b>Livraison offerte dès 35 €</b><span>Expédition sous 48 h</span></div></div></div></section>'),
 })
 EXTRA_CSS = '''
+/* Scène achetable en grille : les vraies photos des produits cochés, en carré (4 = 2 + 2, 3 = 2 + 1, 2 = l'un
+   au-dessus de l'autre, 1 = seul ; décision du propriétaire du 10 novembre 2026) */
+.p8-grid{aspect-ratio:1;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;background:#fff}
+.p8-grid>img{width:50%;aspect-ratio:1;height:auto;object-fit:contain;box-sizing:border-box;padding:8px;background:#fff;transition:none}
+.p8-grid:hover img{transform:none}
+.p8-grid>img[hidden]{display:none}
+.p8-grid[data-n="1"]>img{width:100%}
+.p8-grid[data-n="2"]{flex-direction:column;flex-wrap:nowrap;align-items:center}
+/* Familles en éventail : texte toujours lisible, même sur une vraie photo de produit claire (essai « Éclat de thé » du
+   10 novembre 2026 : titre posé sur le sachet, bouton coupé) */
+.ze-it::after{background:linear-gradient(0deg,rgba(20,34,27,.9),rgba(20,34,27,.6) 45%,rgba(20,34,27,0) 80%)}
+.ze-c{flex-wrap:wrap;align-items:flex-end}.ze-c>div{min-width:0;flex:1 1 100%}.ze-c b{font-size:1.12rem;text-shadow:0 1px 8px rgba(0,0,0,.35);overflow-wrap:anywhere}
 /* ===== En-tête classique (thèmes sur mesure, famille Classique) ===== */
 .bhs{display:contents}
 .xb.s2{border-radius:0}
@@ -189,9 +211,34 @@ head = src[:src.index('</style>')]
 css = '\n'.join(re.findall(r'<style[^>]*>(.*?)(?:</style>|$)', head + '</style>', re.S))
 scripts = [x for x in re.findall(r'<script>(.*?)</script>', src, re.S)]
 templates = re.findall(r'<template id="tpl-[^"]+">.*?</template>', src, re.S)
+# Mouvement réduit (réglage du visiteur) : les animations finissent tout de suite au lieu d'être coupées ; coupées, les textes
+# qui apparaissent en fondu (titre de l'ouverture…) restaient invisibles (vu sur les captures du 10 novembre 2026).
+css = css.replace('@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}', '@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important}')
 fonts = re.findall(r'<link rel="stylesheet" href="(https://fonts\.googleapis\.com/[^"]+)"', src)
-open(os.path.join(OUT, 'library.css'), 'w', encoding='utf-8').write(css + EXTRA_CSS)
-open(os.path.join(OUT, 'library.js'), 'w', encoding='utf-8').write('\n;\n'.join(scripts) + '\n;' + EXTRA_JS)
+P2_CSS = '\n/* Histoire du produit au défilement, téléphone : la page défile (plus de boîte qui défile seule), étapes lisibles */\n@container (max-width:560px){.ts.p2{overflow:clip}.p2-vp{height:auto;overflow:visible}.p2-st{position:sticky;top:var(--p2-top,0px);height:auto;padding:22px 0 18px;z-index:2;background:var(--c1)}.p2-im{width:min(190px,52vw)}.p2-ring{width:min(226px,62vw)}.p2-sp{min-height:50vh;align-content:start;padding-top:24px}.p2-sp:last-child{min-height:40vh;padding-bottom:40px}.p2-sp:not(.on){opacity:.35}.p2-hint{display:none}}\n'
+P2_CSS += '/* En-tête classique, téléphone : logo au centre, menu à gauche, recherche et panier à droite (retour du propriétaire du 9 novembre 2026) */\n@container (max-width:760px){.bh{grid-template-columns:1fr auto 1fr}.bh-bg{justify-self:start}.bh-lg{justify-self:center;text-align:center}.bh-ic{justify-self:end}}\n'
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from sections_revue import apply_css as _revue_css  # noqa: E402  (revue du 10 novembre 2026)
+open(os.path.join(OUT, 'library.css'), 'w', encoding='utf-8').write(_revue_css(css + EXTRA_CSS + P2_CSS))
+# Délai de livraison du bloc d'achat : le VRAI délai du client (drapeau poShip posé par le Studio, « min-max-heure »),
+# jamais « 2 à 3 jours ouvrés » ni une heure limite inventée ; la mention « délai d'exemple » ne reste qu'en démonstration.
+SHIP_FIX = [('var SHIP={min:2,max:3,cut:14};', 'var SHIP=(function(d){var m=/^(\\d+)-(\\d+)-(\\d*)$/.exec(d.poShip||"");return m?{min:+m[1],max:+m[2],cut:m[3]===""?null:+m[3],real:1}:{min:2,max:3,cut:14}})(document.documentElement.dataset);'), ('function shipLine(){var n=new Date(),late=n.getHours()>=SHIP.cut||n.getDay()===0||n.getDay()===6,start=new Date(n);if(late){start=addBiz(n,1)}', 'function shipLine(){var n=new Date(),late=(SHIP.cut!=null&&n.getHours()>=SHIP.cut)||n.getDay()===0||n.getDay()===6,start=new Date(n);if(late){start=addBiz(n,1)}'), ('var a=addBiz(start,SHIP.min),b=addBiz(start,SHIP.max),cut=new Date(n);cut.setHours(SHIP.cut,0,0,0);var left=cut-n,lead;\n    if(!late&&left>0){', 'var a=addBiz(start,SHIP.min),b=addBiz(start,SHIP.max),cut=new Date(n);cut.setHours(SHIP.cut==null?0:SHIP.cut,0,0,0);var left=cut-n,lead;\n    if(SHIP.cut!=null&&!late&&left>0){'), ('return lead+"entre le <b>"+fmtD(a)+"</b> et le <b>"+fmtD(b)+"</b><br><small>délai d\'exemple : 2 à 3 jours ouvrés</small>"}', 'return lead+(+a===+b?"le <b>"+fmtD(a)+"</b>":"entre le <b>"+fmtD(a)+"</b> et le <b>"+fmtD(b)+"</b>")+(SHIP.real?"":"<br><small>délai d\'exemple : 2 à 3 jours ouvrés</small>")}')]
+# Histoire du produit au défilement : sur téléphone, la page défile (retour du propriétaire du 9 novembre 2026).
+SHIP_FIX += [('    function u(){var mid=vp.scrollTop+vp.clientHeight/2,k=0;sp.forEach(function(e,i){if(e.offsetTop<=mid)k=i});sp.forEach(function(e,i){e.classList.toggle("on",i===k)});im.forEach(function(e,i){e.classList.toggle("on",i===k)});\n      var r=vp.scrollTop/(vp.scrollHeight-vp.clientHeight||1);q("[data-p2i]",s).style.transform="rotate("+(r*40)+"deg) scale("+(1+r*.06)+")";ring.style.transform="rotate("+(-r*120)+"deg)"}\n    vp.addEventListener("scroll",u,{passive:true});u()});', '    // Téléphone (retour du propriétaire du 9 novembre 2026 : « l\'animation arrive beaucoup trop vite ») : plus de boîte qui\n    // défile toute seule, c\'est la page qui défile ; le rond photo reste sous l\'en-tête et chaque étape a le temps d\'être lue.\n    function inner(){return vp.scrollHeight>vp.clientHeight+4}\n    function u(){var k=0,r;if(inner()){var mid=vp.scrollTop+vp.clientHeight/2;sp.forEach(function(e,i){if(e.offsetTop<=mid)k=i});r=vp.scrollTop/(vp.scrollHeight-vp.clientHeight||1)}\n      else{var pb=q(".p2-st",s).getBoundingClientRect().bottom,line=pb+(innerHeight-pb)*.4;sp.forEach(function(e,i){if(e.getBoundingClientRect().top<=line)k=i});var b=s.getBoundingClientRect();r=Math.min(1,Math.max(0,-b.top/((b.height-innerHeight)||1)))}\n      sp.forEach(function(e,i){e.classList.toggle("on",i===k)});im.forEach(function(e,i){e.classList.toggle("on",i===k)});\n      q("[data-p2i]",s).style.transform="rotate("+(r*40)+"deg) scale("+(1+r*.06)+")";ring.style.transform="rotate("+(-r*120)+"deg)"}\n    // le rond photo reste juste sous les barres collées en haut (barre du Studio, en-tête du site s\'il reste visible)\n    function top(){var t=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--tb-h"))||0,hd=document.querySelector(\'[data-ct-role="header"]\');\n      if(hd){var st=[hd].concat([].slice.call(hd.querySelectorAll("*"))).filter(function(e){var p=getComputedStyle(e).position;return p==="sticky"||p==="fixed"})[0];if(st)t+=st.getBoundingClientRect().height}\n      s.style.setProperty("--p2-top",t+"px")}\n    vp.addEventListener("scroll",u,{passive:true});addEventListener("scroll",u,{passive:true});addEventListener("resize",function(){top();u()});top();u()});')]
+js = '\n;\n'.join(scripts)
+for a, b in SHIP_FIX:
+    assert js.count(a) == 1, a[:70]
+    js = js.replace(a, b)
+# Bloc d'achat : les vraies valeurs du client posées par le Studio (scripts/section_buy_fix.py).
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from section_buy_fix import apply as buy_fix
+js = buy_fix(js)
+# Revue du propriétaire du 10 novembre 2026 (scripts/sections_revue.py) : HTML, scripts et feuille corrigés.
+from sections_revue import apply_sections as revue_sections, apply_js as revue_js, apply_css as revue_css
+js = revue_js(js)
+revue_sections(sections)
+open(os.path.join(OUT, 'library.js'), 'w', encoding='utf-8').write(js + '\n;' + EXTRA_JS)
 open(os.path.join(OUT, 'templates.html'), 'w', encoding='utf-8').write('\n'.join(templates))
 json.dump({'version': 1, 'fonts': fonts, 'sections': sections}, open(os.path.join(OUT, 'library.json'), 'w', encoding='utf-8'), ensure_ascii=False)
 

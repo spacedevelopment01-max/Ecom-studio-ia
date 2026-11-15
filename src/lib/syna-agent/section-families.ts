@@ -12,6 +12,7 @@
  */
 import { z } from "zod";
 import { all, json, run } from "../db";
+import { familySections } from "./custom-theme/library";
 
 export type FamilyId = "classique" | "moderne";
 export type StyleId = "sport-chic" | "streetwear-neon";
@@ -36,10 +37,12 @@ export const SECTION_FAMILIES: SectionFamily[] = [
     pitch: { fr: "Calme et chaleureux : grandes photos, titres élégants, beaucoup d'air, animations douces.", en: "Calm and warm: large photos, elegant titles, lots of air, gentle animations." },
     fits: "marques douces, sensorielles, artisanales, bien-être, services de proximité",
     styles: [{ id: "classique", fr: "Classique", en: "Classic", preview: "/section-families/classique.jpg", demo: "/demo/familles/classique/index.html", mood: "calme, éditorial, chaleureux" }],
+    // Rôles : exemples parlants de chaque famille, seulement des sections qu'un thème peut recevoir (sans faux compte à
+    // rebours, offre d'exemple ni contenu fabriqué par un script de démonstration ; audit du 10 novembre 2026).
     roles: {
       ouverture: ["Ouverture photo pleine", "Ouverture vidéo", "Ouverture qui s'agrandit au défilement"],
       produits: ["Collection en vedette", "Collection en grand nom"],
-      "produit vedette": ["Produit vedette · lots dégressifs", "Produit vedette · loupe et onglets", "Produit vedette · abonnement", "Produit vedette · toute la gamme", "Produit vedette · calculateur"],
+      "produit vedette": ["Produit vedette"],
       "pied de page": ["Pied de page géant", "Pied de page avec grand appel"],
     },
     brief: ["FAMILLE CLASSIQUE : titres à empattements élégants, beaucoup d'air, photos pleines et douces, animations lentes (fondus, textes qui s'allument). Aucune section de la famille Moderne (pas de titres énormes en capitales serrées, pas de néon, pas de mannequin détouré qui déborde)."],
@@ -54,19 +57,22 @@ export const SECTION_FAMILIES: SectionFamily[] = [
     ],
     roles: {
       "en-tête": ["En-tête à annonces et grand menu", "En-tête pilule"],
-      ouverture: ["Ouverture « mot géant »", "Ouverture « drop »", "Ouverture éditoriale", "Ouverture en diaporama", "Ouverture à volets", "Ouverture mot-fenêtre"],
+      ouverture: ["Ouverture « mot géant »", "Ouverture éditoriale", "Ouverture en diaporama", "Ouverture à volets", "Ouverture mot-fenêtre"],
       looks: ["Tenue à points", "Compose ta tenue"],
       rayons: ["Choisis ton terrain", "Rayons en liste géante"],
       produits: ["Les pièces du moment", "Fraîchement sorti", "Grille à filtres animés", "Vestiaire en double défilement"],
-      "produit vedette": ["Produit vedette · grand nom", "Produit vedette · galerie défilante", "Produit vedette · drop limité"],
-      "mise en avant": ["L'édition de saison", "Carnet de looks", "Offre en deux tuiles", "Bandeaux croisés fluo", "Grille éditoriale", "Capsule numérotée", "Manifeste en images", "Matière à la loupe", "Tournée des boutiques éphémères", "Vidéos verticales"],
+      "produit vedette": ["Produit vedette · grand nom", "Produit vedette · galerie défilante"],
+      "mise en avant": ["L'édition de saison", "Carnet de looks", "Bandeaux croisés fluo", "Grille éditoriale", "Capsule numérotée", "Manifeste en images", "Matière à la loupe", "Tournée des boutiques éphémères", "Vidéos verticales"],
       confiance: ["Vus dans la rue", "Bande fluo des engagements", "Avis et ajustement", "Garanties à retourner"],
       "à propos": ["À propos éditorial"],
-      journal: ["Journal façon magazine"],
+      journal: ["Journal façon magazine", "Article du journal"],
       contact: ["Boutique et contact"],
+      commande: ["Commande en une page", "Commande confirmée"],
+      compte: ["Connexion au compte"],
+      "légal": ["Informations légales"],
       recherche: ["Recherche plein écran"],
-      panier: ["Panier tiroir néon", "Page panier éditoriale", "Mini-panier qui surgit"],
-      aide: ["Entre deux tailles ?", "Questions numérotées"],
+      panier: ["Page panier éditoriale", "Mini-panier qui surgit"],
+      aide: ["Entre deux tailles ?", "Questions numérotées", "Aide et suivi de commande"],
       inscription: ["Sois là avant les autres", "Bande code de bienvenue", "Fenêtre de bienvenue"],
       "page 404": ["Page 404"],
       "pied de page": ["Pied de page en bande", "Pied de page streetwear", "Pied de page mot géant"],
@@ -82,7 +88,9 @@ export const familyChoiceSchema = z.object({
   family: z.enum(["classique", "moderne"]),
   style: z.enum(["classique", "sport-chic", "streetwear-neon"]).optional(),
 }).strict().refine((c) => c.family === "classique" ? (c.style ?? "classique") === "classique" : c.style !== "classique", "Le style doit appartenir à la famille choisie.");
-export type FamilyChoice = { family: FamilyId; style: StyleId | "classique"; chosenAt: number };
+/** Ambiance du site voulue par le client (thème sur mesure, décision du propriétaire du 10 novembre 2026 : « sombre ou clair »). */
+export type SiteAmbiance = "clair" | "sombre";
+export type FamilyChoice = { family: FamilyId; style: StyleId | "classique"; chosenAt: number; ambiance?: SiteAmbiance };
 
 export function familyOf(id: FamilyId): SectionFamily {
   return SECTION_FAMILIES.find((f) => f.id === id)!;
@@ -104,6 +112,16 @@ export function saveFamilyChoice(projectId: string, c: { family: FamilyId; style
   return next;
 }
 
+/** Enregistre l'ambiance (sombre ou claire) choisie par le client, après la famille ; gardée pour toute la conception. */
+export function saveAmbiance(projectId: string, ambiance: SiteAmbiance): FamilyChoice {
+  const cur = loadFamilyChoice(projectId);
+  if (!cur) throw new Error("famille de sections pas encore choisie par le client : theme.families puis theme.family d'abord");
+  const row = all<{ settings_json: string }>("SELECT settings_json FROM projects WHERE id=?", projectId)[0];
+  const next: FamilyChoice = { ...cur, ambiance };
+  run("UPDATE projects SET settings_json=?, updated_at=? WHERE id=?", JSON.stringify({ ...json<Record<string, unknown>>(row.settings_json, {}), sectionFamily: next }), Date.now(), projectId);
+  return next;
+}
+
 /** Une section appartient-elle à la famille ? (jamais de mélange dans un thème). */
 export function sectionInFamily(section: string, family: FamilyId): boolean {
   const f = familyOf(family);
@@ -116,14 +134,22 @@ export function missingRoles(family: FamilyId, wanted: string[]): string[] {
   return wanted.filter((r) => !(f.roles[r]?.length));
 }
 
-/** Les cartes du choix, telles que le client les voit (une par style). */
-export function familyCards(): { family: FamilyId; style: string; title: string; titleEn: string; pitch: string; pitchEn: string; mood: string; preview: string; demo: string; sections: number }[] {
-  return SECTION_FAMILIES.flatMap((f) => f.styles.map((s) => ({
-    family: f.id, style: s.id,
-    title: f.id === "classique" ? f.fr : `${f.fr} · ${s.fr}`, titleEn: f.id === "classique" ? f.en : `${f.en} · ${s.en}`,
-    pitch: f.pitch.fr, pitchEn: f.pitch.en, mood: s.mood, preview: s.preview, demo: s.demo,
-    sections: Object.values(f.roles).reduce((n, l) => n + l.length, 0),
-  })));
+/**
+ * Les cartes du choix, telles que le client les voit : UNE PAR FAMILLE (décision du propriétaire du 9 novembre 2026 : le
+ * client choisit seulement Classique ou Moderne ; SINA prend ensuite les meilleures sections pour son produit ou son
+ * service). Les styles d'une famille (Sport chic, Streetwear néon) ne sont que des exemples à ouvrir en vrai.
+ */
+export function familyCards(): { family: FamilyId; style: string; title: string; titleEn: string; pitch: string; pitchEn: string; mood: string; preview: string; previews: string[]; demo: string; examples: { label: string; labelEn: string; demo: string }[]; sections: number }[] {
+  return SECTION_FAMILIES.map((f) => ({
+    family: f.id, style: f.id === "classique" ? "classique" : "",
+    title: f.fr, titleEn: f.en,
+    pitch: f.pitch.fr, pitchEn: f.pitch.en, mood: f.styles.map((s) => s.mood).join(" ; "), preview: f.styles[0].preview, demo: f.styles[0].demo,
+    // Aperçu en image de TOUTE la famille (remarque du propriétaire : « il faut donner un aperçu des deux familles »).
+    previews: f.styles.map((s) => s.preview),
+    examples: f.styles.map((s) => ({ label: f.id === "classique" ? "Voir un exemple en vrai" : `Exemple ${s.fr}`, labelEn: f.id === "classique" ? "See a live example" : `${s.en} example`, demo: s.demo })),
+    // Nombre réel de sections de la bibliothèque (essai réel du 9 novembre : « 12 sections au choix » pour Classique, qui en a 133).
+    sections: (() => { try { return familySections(f.id).length; } catch { return Object.values(f.roles).reduce((n, l) => n + l.length, 0); } })(),
+  }));
 }
 
 /**
@@ -139,6 +165,26 @@ export function familyArtUniverse(c: FamilyChoice | null, o: { people: boolean }
   return c.style === "streetwear-neon"
     ? { id: "moderne-streetwear-neon", idea: `Photographie de mode urbaine éditoriale, de nuit : ${who}`, light: "nuit, contraste fort, reflets de néon de la couleur d'accent de la marque, sols mouillés", setting: "rues, béton brut, rideaux métalliques, parkings, toits de ville", style: "photographie de mode streetwear éditoriale, rendu réaliste et net, grain léger", emotion: "audace, énergie, appartenance", composition: ["plein pied", "contre-plongée légère", "sujet sur un tiers, l'autre côté dégagé pour le titre"], density: "sparse" }
     : { id: "moderne-sport-chic", idea: `Photographie de mode d'été éditoriale, en plein soleil : ${who}`, light: "soleil chaud, ombres nettes de feuillage ou de palmier", setting: "murs de terre cuite, courts de tennis en terre battue, escaliers de pierre blanche, plages, pergolas", style: "photographie de catalogue de prêt-à-porter haut de gamme, rendu réaliste", emotion: "élan, assurance, été", composition: ["plein pied", "sujet sur un tiers, l'autre côté dégagé pour le titre", "nature morte graphique pour les produits"], density: "sparse" };
+}
+
+/**
+ * Direction artistique des PHOTOS DU SITE (thème sur mesure) : celle de la famille Moderne, sinon l'art de vivre
+ * éditorial de la famille Classique (retour du propriétaire du 9 novembre 2026 sur l'essai Heure Dorée : « l'émotion,
+ * l'émotion, l'émotion et des images magnifiques » ; sans direction, la photo d'ouverture sortait en packshot de
+ * catalogue sur fond beige uni). N'agit ni sur les publications ni sur les publicités (`familyArtUniverse`).
+ */
+export function siteArtUniverse(c: FamilyChoice | null, o: { people: boolean }): FamilyUniverse | null {
+  if (!c) return null;
+  return familyArtUniverse(c, o) ?? {
+    id: "classique-art-de-vivre",
+    idea: `Photographie éditoriale d'art de vivre, comme dans un grand magazine : une vraie scène de vie autour du produit, ${o.people ? "avec des personnes inventées dans des gestes naturels" : "sans aucune personne mais avec la trace d'un moment vécu (une tasse fumante, une serviette froissée, une tartine entamée, une chaise tirée)"}`,
+    light: "lumière naturelle rasante et dorée, ombres longues et douces, reflets chauds, un vrai moment de la journée",
+    setting: "vrais lieux chaleureux liés au produit et à son origine (cuisine de maison de famille, table en bois patiné, rebord de fenêtre, jardin, verger, atelier)",
+    style: "photographie éditoriale haut de gamme, rendu réaliste, profondeur de champ, matières riches (lin, bois, céramique, métal, verre), couleurs chaudes et denses",
+    emotion: "chaleur, désir, émotion",
+    composition: ["la scène remplit tout le cadre, en plans successifs, l'arrière-plan flou mais présent (jamais un fond uni ni un mur vide)", "sujet principal sur un tiers, l'autre côté plus calme pour le titre, jamais vide"],
+    density: "rich",
+  };
 }
 
 /** Consigne de la famille pour les maquettes en code (vide tant que le client n'a pas choisi). */

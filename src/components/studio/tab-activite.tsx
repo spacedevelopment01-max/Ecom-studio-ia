@@ -2,7 +2,7 @@
 import { ContentPanel } from "./content-panel";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { AlertCircle, CheckCircle2, ImagePlus, Plus, RefreshCw, Save, Store, Trash2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, ImagePlus, Plus, Save, Store, Trash2 } from "lucide-react";
 import { api, Badge, Button, Card, Field, Input, Select, Textarea, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { AssetThumb, EngineNotice, JobProgress, SectionTitle, useActive, type AssetView } from "./common";
@@ -26,8 +26,8 @@ export default function TabActivite() {
   const [dirty, setDirty] = useState(false);
   const [servicesVersion,setServicesVersion]=useState<number|null>(null);
   const [busy, setBusy] = useState<string | null>(null);
-  // Préparations lancées d'ici (reprise de l'analyse, mise à jour du site) : avancement et temps restant.
-  const jobs = useActive(["pipeline.run", "shop.build", "content.v2"]);
+  // Préparations lancées d'ici (mise à jour du site) : avancement et temps restant.
+  const jobs = useActive(["shop.build", "content.v2"]);
   useEffect(() => {
     if (!data || dirty) return;
     setName(data.product.name);
@@ -37,7 +37,6 @@ export default function TabActivite() {
     setOffer({ ...emptyServiceProfile(), ...data.services });
     setServicesVersion(data.servicesVersion??null);
   }, [data, dirty]);
-  useEffect(()=>{const refresh=()=>void reload();window.addEventListener("studio:service-profile-changed",refresh);return()=>window.removeEventListener("studio:service-profile-changed",refresh);},[reload]);
   if (!data) return null;
   const p = data.product;
   const change = <K extends keyof ServiceProfile>(k: K, v: ServiceProfile[K]) => (setOffer({ ...offer, [k]: v }), setDirty(true));
@@ -170,29 +169,6 @@ export default function TabActivite() {
             )}
           </Card>
           <ActivityPhotos />
-          <Card className="p-5">
-            <h3 className="font-display text-lg font-semibold">{t("Nouvelle analyse", "New analysis")}</h3>
-            <p className="mt-1 text-xs text-muted">{t("Relit votre description et votre site actuel, puis relance marque, textes, images et site. Vos saisies sont conservées ; les versions précédentes restent disponibles.", "Rereads your description and current website, then reruns brand, copy, images and website. Your entries are kept; previous versions remain available.")}</p>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="mt-3"
-              icon={<RefreshCw className="size-4" />}
-              onClick={async () => {
-                if (!confirm(t("Réanalyser l'activité relance aussi les étapes suivantes (marque, textes, images, site…). Continuer ?", "Reanalyzing the business also reruns the following steps (brand, copy, images, website…). Continue?"))) return;
-                try {
-                  await api(`/api/projects/${id}/resume`, { body: { from: "analysis" } });
-                  toast("ok", t("Nouvelle analyse lancée.", "New analysis started."));
-                  reload();
-                } catch (e) {
-                  toast("bad", (e as Error).message);
-                }
-              }}
-            >
-              {t("Réanalyser tout le projet", "Reanalyze the whole project")}
-            </Button>
-            <Link href={`/studio/${id}/pilote`} className="mt-2 block text-xs text-muted underline underline-offset-4">{t("Suivre l'avancement dans le Pilote", "Follow progress in the Pilot")}</Link>
-          </Card>
         </div>
       </div>
       <ContentPanel types={["home_page", "service_page", "local_page", "brand_page", "faq", "metadata"]} />

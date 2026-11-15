@@ -2,7 +2,7 @@ vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Génération OpenAI EN FLUX dans le moteur multimédia (méthode de l'essai réel du logo Sébastien Blanc) — AUCUN
  * appel payant : le vrai SDK OpenAI parle à un faux serveur local qui renvoie le VRAI logo déjà payé
- * (reports/openai-real-brand-test/direct-*.png) en flux SSE, comme l'API.
+ * (tests/fixtures/logo-openai/direct-*.png) en flux SSE, comme l'API.
  *  - flux : 2 aperçus puis l'image finale ; progression transmise ; coût et modèle tracés ; original conservé ;
  *  - proxy HTTPS de l'environnement respecté même sans NODE_USE_ENV_PROXY ;
  *  - 502, coupure du flux : facturation incertaine → coût maximal retenu, AUCUNE seconde génération (ni secours) ;
@@ -26,7 +26,7 @@ vi.hoisted(() => {
 let keys: Record<string, string | null> = {};
 vi.mock("@/lib/ai/config", async (orig) => ({ ...(await orig<object>()), activeProviderKey: (p: string) => keys[p] ?? null }));
 
-const DIR = "reports/openai-real-brand-test";
+const DIR = "tests/fixtures/logo-openai";
 const REAL = path.join(DIR, fs.readdirSync(DIR).find((f) => /^direct-.*Z\.png$/.test(f))!);
 const realPng = fs.readFileSync(REAL);
 

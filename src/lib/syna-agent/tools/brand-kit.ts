@@ -8,6 +8,7 @@ import type { AgentTool } from "../types";
 import { journeyOf, setStep, updateJourney } from "../journey";
 import { buildBrandKit } from "../brand-kit";
 import { project } from "./common";
+import { saveBrand } from "../../projects";
 
 const kitTool: AgentTool<Record<string, never>> = {
   name: "brand.kit", module: "marque", kind: "write", needsProject: true,
@@ -16,8 +17,15 @@ const kitTool: AgentTool<Record<string, never>> = {
   run: async (ctx) => {
     const p = project(ctx);
     const j = journeyOf(ctx.conversationId);
-    if (j.steps[2]?.status !== "done" || !j.logoChoice || !p.brand?.logo.assetId) return { ok: false, summary: L("Le logo doit être choisi avant l'image de marque (étape 2).", "Choose the logo first (step 2).") };
+    // Logo choisi à l'étape 2, ou logo GARDÉ par le client en refonte (étape 2 sans objet) : audit du 10 novembre 2026,
+    // le logo gardé bloquait l'étape 3 pour toujours.
+    const logoReady = (j.steps[2]?.status === "done" && !!j.logoChoice) || (j.steps[2]?.status === "skipped" && j.keep.includes("logo"));
+    if (!logoReady || !p.brand?.logo.assetId) return { ok: false, summary: L("Le logo doit être choisi avant l'image de marque (étape 2).", "Choose the logo first (step 2).") };
     if (j.steps[3]?.status === "done") return { ok: false, summary: L("L'image de marque est déjà validée.", "The brand kit is already validated.") };
+    // Le slogan choisi à l'étape 1 est validé par le client : la planche et la charte l'écrivent (audit du 10 novembre
+    // 2026 : il n'était verrouillé qu'après coup, la planche sortait sans lui). Le logo est déjà dessiné : aucun risque
+    // de le voir écrit dans le logo.
+    if (p.brand?.tagline?.trim() && !(p.brand.validated ?? []).includes("tagline")) saveBrand(p.id, { ...p.brand, validated: [...(p.brand.validated ?? []), "tagline"] });
     updateJourney(ctx.conversationId, (x) => setStep(x, 3, "doing"));
     let kit;
     try { kit = await buildBrandKit(p.id); } catch (e) { updateJourney(ctx.conversationId, (x) => setStep(x, 3, "todo")); throw e; }
@@ -39,6 +47,8 @@ const validateTool: AgentTool<Record<string, never>> = {
     project(ctx);
     const j = journeyOf(ctx.conversationId);
     if (!j.brandKit) return { ok: false, summary: L("Aucune image de marque préparée pour l'instant.", "No brand kit yet."), hint: "Lance d'abord brand.kit." };
+    // Jamais une image de marque faite avec un ANCIEN logo (le client a changé de logo depuis).
+    if (j.logoChoice && j.brandKit.at < j.logoChoice.at) return { ok: false, summary: L("L'image de marque a été faite avec l'ancien logo : je la refais d'abord avec le nouveau.", "The brand kit uses the old logo."), hint: "Relance brand.kit (gratuit), montre-la, puis demande sa validation." };
     updateJourney(ctx.conversationId, (x) => { setStep(x, 3, "done"); setStep(x, 4, "todo"); });
     return { ok: true, summary: L("Image de marque validée. Étape 3 terminée. Prochaine étape : les 5 angles marketing.", "Brand kit validated."), changes: [{ module: "marque", object: "image de marque", summary: "validée par le client", verified: true }] };
   },

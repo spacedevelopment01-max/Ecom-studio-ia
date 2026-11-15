@@ -143,10 +143,8 @@ describe("Prestations : facultatives avant l'analyse, proposées puis corrigeabl
   });
 });
 
-describe("Écrans : bouton principal, vocabulaire, rendez-vous, choix de départ", () => {
+describe("Écrans : bouton principal, vocabulaire, rendez-vous", () => {
   const picker = read("src/components/studio/services-editor.tsx");
-  const pilote = read("src/components/studio/tab-preparation.tsx");
-  const home = read("src/components/studio/home.tsx");
 
   it("toute case se décoche ; le principal est un choix explicite ; cocher ajoute en complément", () => {
     expect(picker).toMatch(/const toggle = \(id: ContactMode\) => onChange\(value\.includes\(id\) \? value\.filter\(\(m\) => m !== id\) : \[\.\.\.value, id\]\);/);
@@ -155,35 +153,13 @@ describe("Écrans : bouton principal, vocabulaire, rendez-vous, choix de départ
     expect(picker).not.toMatch(/La première cochée devient le bouton principal/);
   });
 
-  it("le Pilote n'écrase plus les moyens secondaires (ancien `contactModes: [e.target.value]`)", () => {
-    expect(pilote).not.toMatch(/contactModes: \[e\.target\.value\]/);
-    expect(pilote).toMatch(/<ContactModePicker/);
-  });
-
-  it("services : « Comprendre mon activité », aide demandée, photos facultatives, prestations annoncées", () => {
-    expect(read("src/components/studio/analysis-retry.tsx")).toMatch(/t\("Comprendre mon activité", "Understand my business"\)/);
-    expect(pilote).toMatch(/L’IA analyse votre description et vos éventuelles photos pour identifier vos prestations et les informations à compléter\./);
-    expect(pilote).toMatch(/Ajouter des photos de votre activité \(facultatif\)/);
-    expect(pilote).toMatch(/data-services-pending/);
-    expect(pilote).toMatch(/data-services-found/);
+  it("services : la tâche d'analyse porte un nom lisible (« Compréhension de l’offre »)", () => {
     expect(read("src/lib/ai/config.ts")).toMatch(/vision_analysis: task\("Compréhension de l’offre \(texte et photos\)", "Offer understanding \(text and photos\)"/);
-  });
-
-  it("devis : estimation, maximum autorisé et consommation constatée affichés séparément", () => {
-    expect(pilote).toMatch(/Estimation de consommation : /);
-    expect(pilote).toMatch(/Maximum autorisé pour cet essai : /);
-    expect(pilote).toMatch(/Dernière analyse : /);
   });
 
   it("rendez-vous : lien d'un outil externe facultatif, options réelles expliquées, aucun agenda annoncé", () => {
     expect(picker).toMatch(/Sinon, laissez vide : votre besoin est noté/);
     expect(picker).toMatch(/Aucun agenda n'est ouvert à cette étape\./);
-    expect(home).toMatch(/Lien de votre outil de rendez-vous \(facultatif\)/);
   });
 
-  it("nouveau projet : aucun type imposé ; projet existant : son type est repris", () => {
-    expect(home).toMatch(/useState<BusinessType \| null>\(initialBusiness \?\? null\)/);
-    expect(home).not.toMatch(/initialBusiness = "products"/);
-    expect(home).toMatch(/data-choose-business/);
-  });
 });

@@ -1,0 +1,96 @@
+{
+  "_note": "Trois marques FICTIVES d'exemple (prototype du 12 novembre 2026). Aucun fait réel : les textes ne servent qu'à montrer que les mêmes composants servent trois univers. Photos : photos d'exemple déjà présentes dans le dépôt (public/sections/photos).",
+  "marques": [
+    {
+      "cle": "maison-verveine",
+      "nom": "Maison Verveine",
+      "metier": "Infusions de plantes (boutique)",
+      "polices": { "titre": "Newsreader", "texte": "Inter", "graisse_titre": 500 },
+      "couleurs": { "sombre": "#17221b", "marque": "#2f5d46", "accent": "#d9a441", "fond": "#fbfaf6", "fond_doux": "#edf1e6", "encre": "#1b241e" },
+      "sections": [
+        {
+          "composant": "ouverture-photo",
+          "pourquoi": "Le visiteur arrive d'une publicité : il doit ressentir le soir chez lui avant de lire quoi que ce soit.",
+          "settings": { "photo": { "src": "hero.jpg", "alt": "Une théière en verre remplie d'infusion dorée, posée sur une table en bois au soleil couchant", "width": 1536, "height": 1024 }, "cote_texte": "gauche", "surtitre": "Infusions de plantes entières", "titre": "Le soir ralentit, la tasse fume.", "texte": "Verveine, tilleul, camomille : dix minutes qui n'appartiennent qu'à toi.", "bouton": "Choisir mon infusion", "bouton_lien": "#boutique", "bouton_second": "Notre histoire", "bouton_second_lien": "#histoire" },
+          "blocks": [ { "type": "point_fort", "settings": { "texte": "Plantes entières" } }, { "type": "point_fort", "settings": { "texte": "Sans arôme ajouté" } }, { "type": "point_fort", "settings": { "texte": "Expédié sous 48 h" } } ]
+        },
+        {
+          "composant": "image-et-texte",
+          "pourquoi": "Après l'envie, il veut comprendre ce qu'il boit : la cueillette racontée répond à « c'est une infusion comme les autres ».",
+          "settings": { "photo": { "src": "fenetre.jpg", "alt": "Un verre d'infusion aux fleurs blanches posé sur un rebord de fenêtre ensoleillé", "width": 1000, "height": 1000 }, "cote_photo": "gauche", "fond": "clair", "surtitre": "La cueillette", "titre": "Cueillies à la main, séchées à l'ombre", "texte": "<p>Chaque plante est ramassée entière, au petit matin, quand ses huiles sont les plus vives. Elle sèche ensuite lentement, à l'abri du soleil.</p><p>Dans ta tasse, les feuilles se déplient et rendent ce qu'elles ont gardé : le parfum du jardin.</p>", "bouton": "Voir nos plantes", "bouton_lien": "#plantes" }
+        },
+        {
+          "composant": "engagements",
+          "pourquoi": "Sans avis clients, la confiance vient de promesses précises, placées après l'histoire.",
+          "settings": { "fond": "doux", "surtitre": "Nos promesses", "titre": "Ce que tu trouves dans chaque sachet" },
+          "blocks": [
+            { "type": "engagement", "settings": { "icone": "feuille", "titre": "Des plantes entières", "texte": "Ni poussière ni brisures : des feuilles et des fleurs que tu reconnais." } },
+            { "type": "engagement", "settings": { "icone": "colis", "titre": "Expédié sous 48 h", "texte": "Ton colis part de l'atelier dans les deux jours ouvrés." } },
+            { "type": "engagement", "settings": { "icone": "retour", "titre": "Retour sous 14 jours", "texte": "Un sachet ne te plaît pas ? Tu nous le renvoies, sans avoir à te justifier." } }
+          ]
+        }
+      ]
+    },
+    {
+      "cle": "rivage",
+      "nom": "Rivage",
+      "metier": "Vêtements d'été en lin (boutique)",
+      "polices": { "titre": "Bricolage Grotesque", "texte": "Geist", "graisse_titre": 700 },
+      "couleurs": { "sombre": "#14202c", "marque": "#d94f2b", "accent": "#f2b134", "fond": "#ffffff", "fond_doux": "#fdf0e7", "encre": "#14202c" },
+      "sections": [
+        {
+          "composant": "ouverture-photo",
+          "pourquoi": "L'atelier en ouverture dit tout de suite « cousu ici » : c'est la différence de la marque.",
+          "settings": { "photo": { "src": "md-a1.webp", "alt": "Un atelier de couture baigné de soleil : rouleaux de lin terre cuite et bleu canard, ciseaux et mètre ruban sur une grande table en bois", "width": 1400, "height": 933 }, "cote_texte": "droite", "surtitre": "Collection été", "titre": "Le lin qui suit chacun de tes pas", "texte": "Coupé et cousu dans notre atelier, pour les journées qui commencent tôt et finissent tard.", "bouton": "Voir la collection", "bouton_lien": "#collection", "bouton_second": "", "bouton_second_lien": "" },
+          "blocks": [ { "type": "point_fort", "settings": { "texte": "Lin lavé" } }, { "type": "point_fort", "settings": { "texte": "Cousu en atelier" } } ]
+        },
+        {
+          "composant": "engagements",
+          "pourquoi": "Pour un vêtement, les doutes (taille, retour) viennent très tôt : les garanties montent juste sous l'ouverture.",
+          "settings": { "fond": "sombre", "surtitre": "", "titre": "Acheter sans hésiter" },
+          "blocks": [
+            { "type": "engagement", "settings": { "icone": "retour", "titre": "Échange de taille simple", "texte": "Tu changes de taille en un message, l'étiquette de retour arrive par e-mail." } },
+            { "type": "engagement", "settings": { "icone": "colis", "titre": "Colis suivi", "texte": "Le lien de suivi t'est envoyé dès que le colis quitte l'atelier." } },
+            { "type": "engagement", "settings": { "icone": "main", "titre": "Cousu en petite série", "texte": "Chaque pièce est montée à la main, par séries de quelques dizaines." } },
+            { "type": "engagement", "settings": { "icone": "horloge", "titre": "Fait pour durer", "texte": "Un lin épais, lavé avant la coupe, qui s'adoucit au fil des étés." } }
+          ]
+        },
+        {
+          "composant": "image-et-texte",
+          "pourquoi": "Le moment d'émotion après les faits : la plage, pour se projeter.",
+          "settings": { "photo": { "src": "md-w1.webp", "alt": "Un chapeau de paille et des lunettes de soleil écaille posés sur une serviette rayée orange au bord d'une piscine", "width": 1024, "height": 1536 }, "cote_photo": "droite", "fond": "doux", "surtitre": "L'esprit", "titre": "Du premier café au dernier bain", "texte": "<p>Une chemise que l'on enfile sans y penser, un pantalon qui ne colle jamais : le lin respire quand la journée chauffe.</p><p>Tu le froisses, il vit. C'est exactement ce qu'on lui demande.</p>", "bouton": "Composer ma tenue", "bouton_lien": "#tenue" }
+        }
+      ]
+    },
+    {
+      "cle": "atelier-lumen",
+      "nom": "Atelier Lumen",
+      "metier": "Salon de coiffure (entreprise de services)",
+      "polices": { "titre": "Instrument Serif", "texte": "Onest", "graisse_titre": 400 },
+      "couleurs": { "sombre": "#1c1613", "marque": "#7a4b2e", "accent": "#d7a878", "fond": "#faf6f1", "fond_doux": "#efe5da", "encre": "#221a16" },
+      "sections": [
+        {
+          "composant": "ouverture-photo",
+          "pourquoi": "Pour un salon, on vend le moment : le lieu en ouverture, le rendez-vous en bouton principal.",
+          "settings": { "photo": { "src": "be-salon.jpg", "alt": "Les bacs à shampoing d'un salon de coiffure aux lumières chaudes, étagères de soins éclairées en arrière-plan", "width": 1000, "height": 667 }, "cote_texte": "gauche", "surtitre": "Salon de coiffure", "titre": "Une heure où l'on ne s'occupe que de toi", "texte": "Coupe, couleur et soin, dans le calme d'un salon à taille humaine.", "bouton": "Prendre rendez-vous", "bouton_lien": "#rendez-vous", "bouton_second": "Voir les prestations", "bouton_second_lien": "#prestations" },
+          "blocks": []
+        },
+        {
+          "composant": "image-et-texte",
+          "pourquoi": "La méthode rassure avant le prix : on explique le diagnostic, la principale objection (« on ne m'écoute jamais »).",
+          "settings": { "photo": { "src": "be-coupe.jpg", "alt": "Un fauteuil de coiffure en cuir caramel devant un miroir rond, dans un salon aux murs clairs", "width": 1000, "height": 667 }, "cote_photo": "droite", "fond": "clair", "surtitre": "Notre façon de faire", "titre": "On commence toujours par t'écouter", "texte": "<p>Avant les ciseaux, dix minutes de diagnostic : ta nature de cheveux, tes habitudes, le temps que tu veux y passer le matin.</p><p>La coupe se décide ensemble, devant le miroir.</p>", "bouton": "", "bouton_lien": "" }
+        },
+        {
+          "composant": "engagements",
+          "pourquoi": "Les infos pratiques qui décident la prise de rendez-vous, juste avant l'appel final.",
+          "settings": { "fond": "doux", "surtitre": "En pratique", "titre": "Simple du début à la fin" },
+          "blocks": [
+            { "type": "engagement", "settings": { "icone": "horloge", "titre": "Rendez-vous en ligne", "texte": "Tu choisis ton créneau en deux minutes, à toute heure." } },
+            { "type": "engagement", "settings": { "icone": "bouclier", "titre": "Prix annoncés avant", "texte": "Le tarif est confirmé après le diagnostic, jamais à la caisse." } },
+            { "type": "engagement", "settings": { "icone": "feuille", "titre": "Soins doux", "texte": "Des produits choisis pour le cuir chevelu autant que pour la brillance." } }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -18,7 +18,6 @@ import { VideoV2Panel } from "./video-v2-panel";
 import { GuidedVideo } from "./guided-video";
 import { CampaignsPanel, StrategyPanel, type Campaign } from "./ad-campaigns";
 import { isAdVisual } from "@/lib/media/bank";
-import { InitialCreatives } from "./initial-creatives";
 import {planAllowsAds} from '@/lib/plan-entitlements';
 import type {PlanId} from '@/lib/plans';
 
@@ -61,9 +60,7 @@ export default function TabPublicites() {
     } catch {}
   };
   const { data: files, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=ad,video`);
-  useEffect(()=>{const updated=(event:Event)=>{if((event as CustomEvent<{projectId?:string}>).detail?.projectId===id)void reload();};window.addEventListener('studio:videos-changed',updated);return()=>window.removeEventListener('studio:videos-changed',updated);},[id,reload]);
   const { data: camps,reload:reloadCampaigns } = useApi<{ campaigns: Campaign[] }>(`/api/projects/${id}/campaigns`);
-  useEffect(()=>{const changed=(event:Event)=>{if((event as CustomEvent<{projectId?:string}>).detail?.projectId===id){void reload();void reloadCampaigns();}};window.addEventListener('studio:campaigns-changed',changed);return()=>window.removeEventListener('studio:campaigns-changed',changed);},[id,reload,reloadCampaigns]);
   const adVisuals = (files?.assets ?? []).filter((a) => isAdVisual(a) && !a.name.includes("refusee"));
   const counts = { images: adVisuals.filter((a) => a.kind === "image").length, videos: adVisuals.filter((a) => a.kind === "video").length, campaigns: camps?.campaigns.length ?? 0 };
   return (
@@ -93,7 +90,6 @@ export default function TabPublicites() {
         </Card>
       </aside>
       <div className="grid min-w-0 grid-cols-1 content-start gap-5">
-        <InitialCreatives ads onChange={reload}/>
         {!creationAllowed&&<Card className="p-4 text-sm" data-ad-plan-lock>{t('La création de publicités et l’aide aux campagnes nécessitent Dominer. Vos créations déjà acquises restent consultables.','Creating ads and campaign assistance require Dominate. Existing creations remain readable.')} <a href="/studio/compte" className="underline">{t('Voir mon forfait','View my plan')}</a></Card>}
         {section === "vue" && <AdsOverview counts={counts} onGo={go} />}
         {section === "strategie" && <AdsStrategy campaigns={camps?.campaigns ?? null} onGo={go} />}

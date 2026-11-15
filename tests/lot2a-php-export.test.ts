@@ -60,7 +60,7 @@ describe("Lot 2A — moteur PHP exporté", () => {
 
   it.skipIf(!phpAvailable())("rend réellement les sections éditoriales des deux références (catalogue commercial distinct)", async () => {
     for (const kind of ["products", "services"]) {
-      const source = JSON.parse(fs.readFileSync(`reports/lot2a/passe-2/${kind}/theme-spec.json`, "utf8")) as ThemeSpec;
+      const source = JSON.parse(fs.readFileSync(`tests/fixtures/lot2a/${kind}/theme-spec.json`, "utf8")) as ThemeSpec;
       const { spec } = guardPurchaseExport(source, "woocommerce");
       const results = await runWithLang({ content: "fr", ui: "fr" }, () => parity(spec));
       // La grille commerciale nécessite explicitement le bloc Woo natif : ce n'est pas une parité certifiée.

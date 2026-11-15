@@ -217,7 +217,7 @@ async function applyProposal(ctx: JobContext | null, projectId: string, assetId:
  * Choix du CLIENT : décision du Project Brain, puis application et verrou (aucun traitement automatique ne remplacera
  * ce logo). Le choix du client vaut contrôle humain : une version du studio choisie par lui devient son logo.
  */
-export type LogoApplicationGuards = { beforeFinalApply?: () => void; deferInitialCreation?: boolean };
+export type LogoApplicationGuards = { beforeFinalApply?: () => void };
 export async function chooseLogoV2(ctx: JobContext | null, projectId: string, assetId: string, guards?: LogoApplicationGuards) {
   requirePlan(null, projectId);
   const chosen = directionOf(projectId, assetId);
@@ -358,9 +358,5 @@ async function applyCompleteDirection(ctx: JobContext | null, projectId: string,
       b.status = "approved"; b.approvedAt = now(); invalidateAfter(n, "brand");
     });
   });
-  if (!guards?.deferInitialCreation) {
-    const { tryStartInitialFromConsent } = await import("../social-v2/initial-authorization");
-    tryStartInitialFromConsent(projectId);
-  }
   return { main: applied.main.id, territory: direction.id };
 }

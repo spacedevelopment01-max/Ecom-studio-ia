@@ -2,6 +2,7 @@
  * SINA (#492) — étape 5 du parcours : l'activité complète (gratuite). Coordonnées de l'entreprise avec les mots du
  * client, stratégie de l'angle choisi, offre, produits créés dans l'onglet Produits, validation du client.
  */
+import { DEFAULT_MODELS } from "@/lib/syna-agent/models";
 import { describe, expect, it } from "vitest";
 import { withoutLaterForRequired } from "@/lib/syna-agent/loop";
 
@@ -47,7 +48,7 @@ describe("SINA — étape 5 : l'activité complète", async () => {
     const { user, cid, ctx, pid } = await stepFive();
     expect(J.READY_STEPS).toContain(5);
     expect(J.currentStep(J.journeyOf(cid))).toBe(5);
-    expect(modelFor(5)?.model).toMatch(/haiku/); // tout est gratuit, le fil reste léger
+    expect(modelFor(5)?.model).toBe(DEFAULT_MODELS.strong.model);
     expect(J.journeyContext(J.journeyOf(cid))).toMatch(/Étape 5 \(activité complète, GRATUITE\)[^]*activity\.plan[^]*UNE par UNE[^]*SES prix, sans en inventer aucun[^]*catalogue\.create/);
     expect(J.journeyContext(J.journeyOf(cid))).toMatch(/y compris les facultatives \(téléphone, SIRET\), une fois chacune ; « Plus tard » se propose SEULEMENT pour le téléphone et le SIRET, JAMAIS pour le nom/);
     expect(J.journeyContext(J.journeyOf(cid))).toMatch(/poids ou contenance qu'il a cités dans sa fiche de départ/);
@@ -70,7 +71,7 @@ describe("SINA — étape 5 : l'activité complète", async () => {
     const { SYNA_SYSTEM } = await import("@/lib/syna-agent/prompt");
     expect(SYNA_SYSTEM).toMatch(/jamais un gabarit à trous/);
     expect(SYNA_SYSTEM).toMatch(/« frais de retour à la charge du client » ne devient JAMAIS « à ta charge »/);
-    expect(SYNA_SYSTEM).toMatch(/dit UNE fois que c'est noté : sans reprendre les détails de sa réponse/);
+    expect(SYNA_SYSTEM).toMatch(/tu le dis UNE fois, brièvement, sans reprendre les détails de sa réponse/);
     expect(Act.activityPlan(pid, J.journeyOf(cid)).none).toEqual(["phone"]);
     expect((await call("activity.company", ctx, { none: ["email"] })).ok).toBe(false); // jamais une coordonnée obligatoire
     expect(c.ok).toBe(true);

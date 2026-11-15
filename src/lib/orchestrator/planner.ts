@@ -14,9 +14,7 @@ import type { Scope } from "../brain/views";
 import { POLICIES, type Deliverable } from "../quality/policies";
 import type { Verdict } from "../quality/gate";
 import type { Intent } from "./intent";
-import { scopeAllowsStep, type RequestScope } from "./request";
 import { MEDIA_POLICY } from "../image-v2/policy";
-import { withRequestScope } from "../brain/request-scope";
 import { nextAction, route, type RouteDecision, type RouteRequest, type RoutingHistory } from "./router";
 
 export type StepKind =
@@ -230,18 +228,16 @@ export function buildPlan(a: {
   regenerate?: StepKind[];
   /** Image générée demandée expressément : pas de recherche de photos libres d'abord. */
   forceGenerate?: boolean;
-  scope?: RequestScope;
 }): TaskPlan {
   const steps: PlanStep[] = [];
   for (const intent of a.intents)
     for (const kind of INTENT_STEPS[intent]) {
       if (a.only && !a.only.includes(kind)) continue;
-      if (a.scope && !scopeAllowsStep(a.scope, kind)) continue;
       if (a.forceGenerate && kind === "stock_search") continue;
       const explicit = (!a.implicit && !!EXPLICIT[intent]?.includes(kind)) || !!a.regenerate?.includes(kind);
       const ex = steps.find((s) => s.kind === kind);
       if (ex) ex.explicit ||= explicit;
-      else steps.push(makeStep(kind, explicit, { ...(a.input ?? {}), mediaPolicy: MEDIA_POLICY, ...(a.scope ? { requestScope: a.scope } : {}), ...(intent === "IMPROVE_LOGO" && kind === "logo" ? { mode: "improve" } : {}) }));
+      else steps.push(makeStep(kind, explicit, { ...(a.input ?? {}), mediaPolicy: MEDIA_POLICY, ...(intent === "IMPROVE_LOGO" && kind === "logo" ? { mode: "improve" } : {}) }));
     }
   // Relecture finale seulement quand plusieurs contenus sont produits ensemble.
   if (steps.filter((s) => CONTENT.includes(s.kind)).length >= 2 && (!a.only || a.only.includes("quality_review"))) steps.push(makeStep("quality_review", false, {}));
@@ -254,7 +250,7 @@ export function buildPlan(a: {
 /** Complète un plan avec de nouvelles intentions : ce qui est fait reste fait. */
 export function replan(plan: TaskPlan, intents: Intent[], state: ProjectState): TaskPlan {
   const input = plan.steps[0]?.input || {};
-  const fresh = buildPlan({ projectId: plan.projectId, userId: plan.userId, requestKey: plan.requestKey, intents: [...new Set([...plan.intents, ...intents])], state, input, scope: input.requestScope as RequestScope | undefined });
+  const fresh = buildPlan({ projectId: plan.projectId, userId: plan.userId, requestKey: plan.requestKey, intents: [...new Set([...plan.intents, ...intents])], state, input });
   const steps = fresh.steps.map((s) => {
     const old = plan.steps.find((o) => o.kind === s.kind);
     return old && old.status !== "pending" ? old : old ? { ...old, explicit: old.explicit || s.explicit } : s;
@@ -372,7 +368,6 @@ export function loadOrCreatePlan(a: Parameters<typeof buildPlan>[0]): TaskPlan {
     // Anciennes étapes de recherche implicite : conserver l’historique, sans les exécuter à la reprise.
     for (const s of existing.steps) {
       s.input.mediaPolicy = MEDIA_POLICY;
-      if (a.scope) s.input.requestScope = a.scope;
       if (s.kind === "stock_search" && !existing.intents.includes("FIND_STOCK_IMAGE") && s.status === "pending") { s.status = "skipped"; s.reason = "Recherche documentaire non demandée : aucune substitution au visuel IA."; }
       if (s.kind === "image_generate" && s.status === "skipped" && s.reason?.includes("stock photo FINAL")) { s.status = "failed"; s.reason = "Ancienne substitution stock : création IA non effectuée. Demandez explicitement une nouvelle création, avec devis."; existing.status = "stopped"; }
     }
@@ -411,11 +406,6 @@ export async function runPlan(
       break;
     }
     for (const s of ready) {
-      const scope = s.input.requestScope as RequestScope | undefined;
-      if (scope && !scopeAllowsStep(scope, s.kind)) {
-        Object.assign(s, { status: "failed", reason: "Étape interdite par le périmètre de la demande ; aucun effet exécuté." });
-        blockDependents(plan, s); savePlan(plan); continue;
-      }
       const decision: RouteDecision =
         s.task === "local"
           ? { mode: "local", provider: "local", model: "local-engine", tier: "local", reason: "deterministic local task", fallback: false, escalation: false, qualityTarget: s.qualityTarget }
@@ -428,14 +418,14 @@ export async function runPlan(
         blockDependents(plan, s);
         continue;
       }
-      const result = await withTrace({ intent: plan.intents.join("+"), planId: plan.id, stepId: s.id, routing: s.route, history: stepHistory(s) }, () => withRequestScope(plan.projectId, scope, async () => {
+      const result = await withTrace({ intent: plan.intents.join("+"), planId: plan.id, stepId: s.id, routing: s.route, history: stepHistory(s) }, async () => {
         if (s.requiredContext) {
           const { loadProject } = await import("../projects");
           const { brainContext } = await import("../brain/facade");
           brainContext(loadProject(plan.projectId), s.requiredContext);
         }
         return execute(s, decision);
-      }));
+      });
       applyResult(plan, s.id, result);
       for (const [kind, r] of Object.entries(result.covered ?? {})) {
         const c = plan.steps.find((x) => x.kind === kind && x.status === "pending");

@@ -8,14 +8,15 @@ import {loadProject} from '../../projects';
 import {assertFresh} from '../../preparation/engine';
 import {L} from '../../i18n-server';
 import {stateOf,requireUpstream} from '../../preparation/store';
-import {conversationOriginalEnabled} from '../../orchestrator/conversation/tool-flags';
 import {assertThemeOperations} from '../plan-access';
 import {scheme} from '../directions';
 import {globalSettingDefaults,sectionSchema,withDefaults,type ThemeSpec,type SectionInstance,type TemplateJson} from '../spec';
 import {assertSafeThemeContent} from '../content-security';
 import {pick,type Lang} from '../../i18n';
+/** Composition sans thème de départ : fermée par défaut, ouverte seulement par ce réglage du serveur. */
+export const originalCompositionEnabled=()=>process.env.STUDIO_COMPOSITION_ORIGINAL==='1';
 export function originalCompositionBase(projectId:string){
- if(!conversationOriginalEnabled())throw new HttpError(409,L('Choisissez un thème avant de composer ses pages.','Choose a theme before composing its pages.'));
+ if(!originalCompositionEnabled())throw new HttpError(409,L('Choisissez un thème avant de composer ses pages.','Choose a theme before composing its pages.'));
  const p=loadProject(projectId),brand=p.brand;
  if(!brand?.name.trim())throw new HttpError(409,L('Définissez la marque avant de composer le Site.','Define the brand before composing the Site.'));
  const state=stateOf(projectId);if(state){requireUpstream(state,'media');assertFresh(projectId,state,'media');}

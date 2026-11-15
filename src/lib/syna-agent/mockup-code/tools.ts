@@ -54,13 +54,15 @@ import { blackShare, boxesOf, composeEdit, exactTexts, isRemoval, missingTexts, 
 /** Remplaçables par les tests : coût d'une image de maquette et coût maximal des appels de l'étape 7. */
 export const mockupToolDeps: { imageMaxMicro?: (references: number) => number | null; callMaxMicro?: typeof step7CallMaxMicro; callTypicalMicro?: typeof step7CallTypicalMicro; generateImage?: (prompt: string, refs: { logo: Buffer | null; product: Buffer | null }) => Promise<Buffer>; checkImage?: (data: Buffer, img: { viewport: "desktop" | "phone"; pages: string[] }) => Promise<MockupCheck>; locate?: (image: Buffer, changes: EditChange[]) => Promise<Locate>; maskEdit?: (image: Buffer, mask: Buffer | null, prompt: string) => Promise<Buffer> } = {};
 /**
- * Modèle des images de maquette : OpenAI GPT Image 2.5 Flare (choix du propriétaire du 8 novembre, après comparaison
- * réelle sur l'accueil Brindi : Qwen abîmait les textes, OpenAI les écrivait juste ; même modèle que les logos),
+ * Modèle des images des thèmes (photos, galeries produit, maquettes) : OpenAI GPT Image 2.6 Flare (décision du
+ * propriétaire du 10 novembre 2026, après comparaison réelle 2.5 / 2.6 sur le sachet « Jasmin délicat » : qualité très
+ * proche, 2.6 plus de deux fois plus rapide pour un coût réel presque égal ; avant : 2.5 Flare, choisi le 8 novembre
+ * parce que Qwen abîmait les textes),
  * modifiable sans code par le réglage « syna.mockup.image_route » (« fournisseur:modèle »). Aucun relais vers un autre
  * modèle : la route du devis est la seule permise pendant la création.
  */
 export function mockupImageRoute(): { provider: string; model: string } {
-  const [provider, model] = getJsonSetting<string>("syna.mockup.image_route", "openai:gpt-image-2.5-flare").split(":");
+  const [provider, model] = getJsonSetting<string>("syna.mockup.image_route", "openai:gpt-image-2.6-flare").split(":");
   return { provider, model };
 }
 const routeUnit = (refs: number) => { try { return photoRequestMaxMicro(mockupImageRoute(), { prompt: "x".repeat(PUBLICATION_PROMPT_MAX_BYTES), references: refs, aspect: "2:3", quality: "high" }); } catch { return null; } };
@@ -131,7 +133,7 @@ const copyTool: AgentTool<{ pages?: string[] }> = {
     if (!p.brand) return { ok: false, summary: L("L'identité de marque doit être choisie avant les textes du site.", "Choose the brand first.") };
     if (!j.angleChoice) return { ok: false, summary: L("L'angle marketing (étape 4) doit être choisi avant les textes du site.", "Choose the angle first.") };
     const pages = pagesOf(p), keys = a.pages?.length ? a.pages : ["home"];
-    const plan = activityPlan(p.id, j), details = angleDetails(j);
+    const plan = activityPlan(p.id, j), details = angleDetails(j, plan.company);
     const jobId = getRun(ctx.runId)?.job_id ?? null;
     const prev = loadSiteCopy(p.id);
     const out: Record<string, PageCopy> = { ...(prev && prev.angleId === (j.angleChoice.id ?? null) ? prev.pages : {}) };

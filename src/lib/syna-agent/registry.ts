@@ -2,6 +2,7 @@
 import { z } from "zod";
 import type { AgentTool, ToolContext } from "./types";
 import { TOOL_LIST } from "./tools";
+import { stepReady } from "./journey";
 
 let tools: Map<string, AgentTool> | null = null;
 function ensureLoaded() {
@@ -27,16 +28,45 @@ export function isSensitive(t: AgentTool, args: unknown, ctx: ToolContext): bool
   return typeof t.sensitive === "function" ? t.sensitive(args, ctx) : !!t.sensitive;
 }
 
-/** Catalogue envoyé au modèle : nom, module, nature, accord requis et schéma JSON exact des arguments. */
-export function toolCatalog(hasProject: boolean): string {
+/**
+ * Outils proposés selon le fil (audit du 10 novembre 2026) : pendant le parcours de création, les anciens chemins qui le
+ * court-circuitent (marque et logos d'un coup, prototypes de thèmes, maquettes images, site construit sur un thème
+ * choisi à la place du client, angle choisi hors parcours, préparation du Pilote, projet créé à la main) ne sont ni
+ * proposés ni exécutés ; les outils des ANCIENNES maquettes ne servent qu'aux projets déjà commencés avec elles.
+ */
+export type ToolScope = { inJourney: boolean; legacyMockups: boolean; /** Conversation aiguillée (voir conversation.ts) : la notice d'un autre outil se demande avec tools.open. */ routed?: boolean };
+const STEP9_TOOLS = new Set(["posts.plan", "posts.create", "posts.validate"]);
+/** Outils des étapes 10 à 13 (tools/steps-late.ts) et l'étape qui les ouvre. */
+const LATE_STEP_TOOLS: Record<string, number> = { "ads.create": 10, "ads.validate": 10, "calendar.validate": 11, "blog.topics": 12, "blog.write": 12, "blog.validate": 12, "files.tidy": 13, "files.validate": 13 };
+const JOURNEY_HIDDEN = new Set(["brand.create", "site.mockups", "site.mockup_images", "site.build", "strategy.choose", "pilot.run", "project.create"]);
+const LEGACY_MOCKUP = /^(mockup\.|site\.code_from_mockup$|site\.images$|site\.photo_reject$)/;
+export function toolVisible(name: string, scope?: ToolScope): boolean {
+  // tools.open n'existe que pour une conversation aiguillée : ailleurs, SINA a déjà toutes les notices.
+  if (name === "tools.open") return !!scope?.routed;
+  // Outils d'une étape construite mais pas encore ouverte par le propriétaire : ni proposés ni exécutés.
+  if (STEP9_TOOLS.has(name) && !stepReady(9)) return false;
+  const late = LATE_STEP_TOOLS[name];
+  if (late && !stepReady(late)) return false;
+  if (!scope) return true;
+  if (scope.inJourney && JOURNEY_HIDDEN.has(name)) return false;
+  if (!scope.legacyMockups && LEGACY_MOCKUP.test(name)) return false;
+  return true;
+}
+
+/** Notice d'un outil pour le modèle : nom, module, nature, accord requis et schéma JSON exact des arguments. */
+export function toolEntry(t: AgentTool): string {
+  let schema: unknown;
+  try { schema = z.toJSONSchema(t.args, { unrepresentable: "any" }); } catch { schema = { type: "object" }; }
+  const flags = [t.kind, typeof t.sensitive === "function" ? "accord selon les arguments" : t.sensitive ? "accord explicite" : null, t.estimate ? "payant (budget)" : null].filter(Boolean).join(", ");
+  return `### ${t.name} — module ${t.module} (${flags})\n${t.description}\nArguments : ${JSON.stringify(stripMeta(schema))}`;
+}
+
+/** Catalogue envoyé au modèle : la notice de chaque outil proposé à ce fil. */
+export function toolCatalog(hasProject: boolean, scope?: ToolScope): string {
   return allTools()
     .filter((t) => hasProject || !t.needsProject)
-    .map((t) => {
-      let schema: unknown;
-      try { schema = z.toJSONSchema(t.args, { unrepresentable: "any" }); } catch { schema = { type: "object" }; }
-      const flags = [t.kind, typeof t.sensitive === "function" ? "accord selon les arguments" : t.sensitive ? "accord explicite" : null, t.estimate ? "payant (budget)" : null].filter(Boolean).join(", ");
-      return `### ${t.name} — module ${t.module} (${flags})\n${t.description}\nArguments : ${JSON.stringify(stripMeta(schema))}`;
-    })
+    .filter((t) => toolVisible(t.name, scope))
+    .map(toolEntry)
     .join("\n\n");
 }
 

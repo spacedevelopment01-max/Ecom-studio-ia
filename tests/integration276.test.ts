@@ -1,24 +1,17 @@
 /**
- * Intégration Claude + Codex (#276) : SINA lit la même source du Site que l'aperçu et le site hébergé (carte et
- * réalisations comprises, C1) ; les sections remplies par un onglet métier sont repérées pour que SINA ne les retouche
- * ni ne les retire (P1) ; le relevé SINA connaît les contenus métier et le site hébergé sans prétendre les modifier
- * (P2) ; l'effacement d'un compte supprime aussi les fichiers de ses sites publiés (R4). Aucun réseau.
+ * Intégration (#276) : les sections remplies par un onglet métier sont repérées pour qu'une composition ne les retouche
+ * ni ne les retire (P1) ; l'effacement d'un compte supprime aussi les fichiers de ses sites publiés (R4). Aucun réseau.
+ * Les cas C1 et P2 vérifiaient l'ancien assistant : ils sont partis avec lui.
  */
 import fs from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { runWithLang } from "@/lib/i18n-server";
 import { saveAsset } from "@/lib/library";
 import { currentTheme, saveThemeVersion } from "@/lib/projects";
 import { managedSections, withContenus } from "@/lib/contenus";
 import { addCategory, createItem, setItemStatus } from "@/lib/contenus/carte";
 import { createRealisation, setRealisationStatus } from "@/lib/contenus/realisations";
-import { currentSiteSource } from "@/lib/orchestrator/conversation/export-tool-execution";
-import { STUDIO_OPERATIONS, studioOperationCatalogue } from "@/lib/orchestrator/conversation/studio-operations";
-import { captureStudioObservation } from "@/lib/orchestrator/conversation/studio-observation";
-import { openProjectConversation } from "@/lib/orchestrator/conversation";
-import { ownedConversation } from "@/lib/orchestrator/conversation/store";
 import { eraseIsolatedAccountFixture, planAccountErasure } from "@/lib/privacy";
 import { unsupportedSitesHostname } from "@/lib/sites/launch-check";
 import { sitesRoot } from "@/lib/sites/store";
@@ -26,11 +19,9 @@ import { assembleComposition } from "@/lib/theme/composition/assemble";
 import { seedHoldout } from "./lot1-holdout-fixtures";
 import { serviceProfile, serviceSpec } from "./fixtures";
 import { completeSite, payingUser } from "./sites-fixtures";
-import { account, project } from "./conversation209-fixtures";
 import type { ThemeSpec } from "@/lib/theme/spec";
 
-const fr = <T>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
-beforeEach(() => { for (const k of ["STUDIO_CONVERSATION_LOT_A", "STUDIO_CONVERSATION_AI", "STUDIO_CONVERSATION_KNOWLEDGE"]) vi.stubEnv(k, "1"); vi.stubGlobal("fetch", async () => { throw new Error("Réseau interdit"); }); });
+beforeEach(() => { vi.stubGlobal("fetch", async () => { throw new Error("Réseau interdit"); }); });
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
 async function site(label: string, direction: string) {
@@ -41,24 +32,6 @@ async function site(label: string, direction: string) {
   const photo = async () => (await saveAsset({ projectId: pid, userId: u.id, data: await sharp({ create: { width: 300, height: 200, channels: 3, background: "#7a6" } }).jpeg().toBuffer(), name: "chantier.jpg", mime: "image/jpeg", origin: "upload", status: "approved" })).id;
   return { u, pid, photo };
 }
-
-describe("C1 — SINA lit la source réelle du Site", () => {
-  it("export et captures SINA : carte et réalisations présentes, comme dans l'aperçu ; sans contenu, source inchangée", async () => {
-    const a = await site("c1-artisan", "aplat");
-    const cur = currentTheme(a.pid)!;
-    expect(currentSiteSource(a.pid, cur.version.id).spec).toEqual(cur.spec);
-    const r = createRealisation(a.pid, { title: "Plafond jointoyé", summary: "Plafond d'un séjour.", photos: [{ assetId: await a.photo(), alt: "" }] });
-    setRealisationStatus(a.pid, r.id, "published");
-    const s = currentSiteSource(a.pid, cur.version.id).spec;
-    expect(s.store.pages.some((p) => p.handle === r.handle)).toBe(true);
-    expect(s).toEqual(withContenus(cur.spec, a.pid));
-    const resto = await site("c1-resto", "table-saison");
-    const c = addCategory(resto.pid, "Plats");
-    setItemStatus(resto.pid, createItem(resto.pid, { categoryId: c.id, name: "Daube fictive", price: 19 }).id, "published");
-    const rs = currentSiteSource(resto.pid, currentTheme(resto.pid)!.version.id).spec;
-    expect(JSON.stringify(Object.values(rs.templates).flatMap((t) => Object.values(t.sections)).filter((x) => x.type === "ts-menu"))).toContain("Daube fictive");
-  });
-});
 
 describe("P1 — sections remplies par un onglet métier", () => {
   it("carte : repérée seulement quand un plat est publié (SINA ne la retouche pas)", async () => {
@@ -91,29 +64,6 @@ describe("P1 — sections remplies par un onglet métier", () => {
     // Relier un texte dans la galerie gérée par l'onglet : refusé aussi.
     const keep = { ...plan, pages: [{ template: "index", sections: spec.templates.index.order.map((id) => ({ kind: "existing", section: id, bindings: id === sid ? [{ key: "heading", source: "source.1" }] : [], layout: [] })) }] };
     expect(() => assembleComposition(spec, keep, { ...deps, managed: managedNow() })).toThrow(/contenu métier géré dans son onglet/);
-  });
-});
-
-describe("P2 — SINA connaît les contenus métier sans prétendre les modifier", () => {
-  it("catalogue métier borné et désactivé ; publication non raccordée, observation en lecture seule", async () => {
-    for (const id of ["menu.update", "projects.update", "services.booking", "site.requests", "site.host.publish", "site.domain.connect"]) expect(STUDIO_OPERATIONS.some((o) => o.id === id), id).toBe(true);
-    const u = await account();
-    const pid = project(u, "services");
-    const conv = openProjectConversation(u, pid);
-    const photo = (await saveAsset({ projectId: pid, userId: u.id, data: await sharp({ create: { width: 300, height: 200, channels: 3, background: "#7a6" } }).jpeg().toBuffer(), name: "chantier.jpg", mime: "image/jpeg", origin: "upload", status: "approved" })).id;
-    const a = { u, pid, photo: async () => photo };
-    vi.stubEnv("STUDIO_CONVERSATION_CONTEXT", "1");
-    vi.stubEnv("STUDIO_CONVERSATION_BUSINESS_CONTENT", "0");
-    const cat = studioOperationCatalogue(a.pid, true);
-    expect(cat.rows.find((r) => r.id === "projects.update")).toMatchObject({ implementation: "implemented", connectionEnabled: false, availability: "disabled_or_locked", confirmation: "separate_explicit_free_confirmation", supportedActions: ["rename", "exact-work"], unsupportedActions: ["create", "delete", "publish", "status", "bulk", "photos"], cost: "free" });
-    expect(cat.rows.find((r) => r.id === "site.host.publish")).toMatchObject({ implementation: "absent_from_syna", connectionEnabled: false, availability: "not_connected_native_screen_only", confirmation: "not_connected" });
-    expect(cat.rows.find((r) => r.id === "site.host.publish")?.sensitive).toBe(true);
-    const r = createRealisation(a.pid, { title: "Tableau neuf", summary: "Tableau remplacé.", photos: [{ assetId: await a.photo(), alt: "" }] });
-    setRealisationStatus(a.pid, r.id, "published");
-    createRealisation(a.pid, { title: "Brouillon", summary: "x" });
-    const o = fr(() => captureStudioObservation(ownedConversation(a.u, conv.id)));
-    if (o.status !== "project") throw new Error("projet attendu");
-    expect(o.business).toMatchObject({ byStatus: { realisations: { published: 1, draft: 1 } }, hostedSite: { live: false }, synaTools: "none_native_tabs_only" });
   });
 });
 

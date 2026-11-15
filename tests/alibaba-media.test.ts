@@ -303,11 +303,16 @@ describe("Alibaba Cloud — Qwen-Image et Wan", async () => {
     expect(fr(() => alibabaReadiness())).toMatchObject({ ready: false, status: "Clé absente" });
   });
 
-  it("usages : « Images réseaux sociaux » suit « Publicités visuelles » tant qu'il n'a pas son propre réglage ; « Texte vers vidéo » exclut l'image vers vidéo", () => {
+  it("usages : « Images réseaux sociaux » ne suit plus « Publicités visuelles » : OpenAI obligatoire (14 novembre 2026) ; « Texte vers vidéo » exclut l'image vers vidéo", () => {
     setJsonSetting("ai.media.usage", { ad_visual: { primary: "alibaba:qwen-image-2.0-pro" } });
-    expect(routing.usagePrimary("social_image")).toMatchObject({ provider: "alibaba", model: "qwen-image-2.0-pro", inherited: true });
+    expect(routing.usagePrimary("ad_visual")).toMatchObject({ provider: "alibaba", model: "qwen-image-2.0-pro", inherited: false });
+    expect(routing.usagePrimary("social_image")).toMatchObject({ provider: "openai", model: "gpt-image-2.6-flare", inherited: true });
     setJsonSetting("ai.media.usage", { ad_visual: { primary: "alibaba:qwen-image-2.0-pro" }, social_image: { primary: "openai:gpt-image-1" } });
-    expect(routing.usagePrimary("social_image")).toMatchObject({ provider: "openai", inherited: false });
+    expect(routing.usagePrimary("social_image")).toMatchObject({ provider: "openai", model: "gpt-image-1", inherited: false });
+    // Un autre fournisseur choisi pour les publications est ignoré : OpenAI reste imposé.
+    setJsonSetting("ai.media.usage", { social_image: { primary: "alibaba:qwen-image-2.0-pro", backup: "alibaba:qwen-image-2.0-pro" } });
+    expect(routing.usagePrimary("social_image")).toMatchObject({ provider: "openai" });
+    expect(routing.usageBackup("social_image")).toBeNull();
     expect(routing.incompatibility(mediaModel("alibaba", "wan2.6-i2v")!, routing.usageNeed("text_video"))).toBeTruthy();
     expect(routing.incompatibility(mediaModel("alibaba", "wan2.6-t2v")!, routing.usageNeed("text_video"))).toBeNull();
   });

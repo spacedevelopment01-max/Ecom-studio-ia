@@ -84,7 +84,6 @@ export function ContentPanel({ types, title }: { types: string[]; title?: string
   const [open, setOpen] = useState<string | null>(null);
   const search=useSearchParams(),openedLink=useRef<string|null>(null),requestedContent=search.get('content');
   useEffect(()=>{if(!requestedContent||!data?.contents.some(c=>c.docKey===requestedContent&&types.includes(c.type)))return;const key=id+':'+requestedContent;if(openedLink.current===key)return;openedLink.current=key;setOpen(requestedContent);},[id,data,requestedContent,types]);
-  useEffect(()=>{const changed=(e:Event)=>{if((e as CustomEvent<{projectId?:string}>).detail?.projectId===id)void reload();};window.addEventListener('studio:content-changed',changed);return()=>window.removeEventListener('studio:content-changed',changed);},[id,reload]);
   const [showStrategy, setShowStrategy] = useState(false);
 
   useEffect(() => {

@@ -141,6 +141,34 @@ export const PALETTE_EXAMPLES: PaletteExample[] = [
  * Noms INVENTÉS célèbres et leur fabrication (repères d'oreille pour les marques de produits, choix du propriétaire du
  * 7 novembre 2026). Ce sont des marques existantes : modèles de construction, jamais à imiter ni à copier.
  */
+/**
+ * Noms que le propriétaire a refusés, avec SES mots (12 novembre 2026, second essai réel) : la mesure de ce qui ne
+ * passe pas. Ils ne sont jamais reproposés, et le juge des noms s'en sert pour régler sa sévérité.
+ */
+export const NAME_REFUSALS: { name: string; activity: string; words: string }[] = [
+  { name: "Tintamarre", activity: "infusions de fruits à boire froides", words: "c'est nul comme nom" },
+  { name: "Morceaux Choisis", activity: "infusions de fruits à boire froides", words: "ça représente rien et c'est moche, tu appellerais ton site comme ça toi ?" },
+  { name: "Gorgée", activity: "infusions de fruits à boire froides", words: "ça fait très porno" },
+  { name: "Fruit Nu", activity: "infusions de fruits à boire froides", words: "ça fait très porno" },
+  { name: "Bien Roulé", activity: "exemple de travail", words: "tournure de conversation plate, qui ne fait pas marque" },
+  { name: "Ça Roule", activity: "exemple de travail", words: "tournure de conversation plate, qui ne fait pas marque" },
+  { name: "Dans le Sac", activity: "exemple de travail", words: "tournure de conversation plate, qui ne fait pas marque" },
+];
+
+/**
+ * Notes données par le propriétaire à des noms trouvés par SINA (12 novembre 2026, infusions de fruits à boire
+ * froides) : la mesure chiffrée du juge des noms. Seul un nom qu'il noterait 8 sur 10 ou plus mérite une planche.
+ */
+export const NAME_RATINGS: { name: string; activity: string; score: number }[] = [
+  { name: "Pulpe", activity: "infusions de fruits à boire froides", score: 9 },
+  { name: "Zeste", activity: "infusions de fruits à boire froides", score: 8 },
+  { name: "Haut les Pêches", activity: "infusions de fruits à boire froides", score: 6 },
+  { name: "Tout Feu Tout Fruit", activity: "infusions de fruits à boire froides", score: 6 },
+  { name: "Cerise sur le Verre", activity: "infusions de fruits à boire froides", score: 4 },
+];
+/** Note à partir de laquelle un nom est gardé par le juge. */
+export const NAME_KEEP_SCORE = 8;
+
 export const INVENTED_NAME_EXAMPLES: { name: string; how: string }[] = [
   { name: "Velcro", how: "« velours » + « crochet » : deux mots du produit fondus sans couture visible" },
   { name: "Vélib'", how: "« vélo » + « liberté » : le produit et ce qu'il apporte, en deux syllabes" },
@@ -158,10 +186,11 @@ export function referencesForPrompt(): string {
     ? `${p.ambiance} [dégradé] départ ${p.depart} → arrivée ${p.arrivee}, texte ${p.texte}, bouton ${p.bouton}, accent ${p.accent}`
     : `${p.ambiance} [fond ${p.ground}] fond ${p.fond}, texte ${p.texte}, bouton ${p.bouton}, surface ${p.surface}, accent ${p.accent}`).join("\n");
   return `MÉTHODE DE NOMMAGE du propriétaire du Studio (à appliquer pour CHAQUE nom) : pars d'un DÉTAIL RÉEL du produit ou du service (un geste, une matière, une sensation, un moment ou un résultat), puis cherche un mot ou une expression qui lui donne une DEUXIÈME LECTURE (expression courante détournée, double sens, mot qui évoque aussi une émotion ou un caractère). Le nom est court (1 à 3 mots), en français, facile à dire et à retenir ; on comprend le métier et on sourit ou on est intrigué.
-GENRE PRÉFÉRÉ DU PROPRIÉTAIRE (9 novembre 2026, « c'est ce genre de nom que SINA doit trouver ») : le MOT FORT, comme SOLSTICE (mode d'été) ou RUPTURE (streetwear) : un seul mot qui existe, court (2 ou 3 syllabes), puissant et élégant, qui évoque l'univers, la saison, le moment ou l'attitude de la marque plutôt qu'une pièce du produit ; il se comprend aussi hors de France, sonne comme une marque écrit en capitales (étiquette, enseigne, mot géant d'une page d'accueil) ; on dit en une phrase pourquoi ce mot pour cette marque.
+GENRE VOULU PAR LE PROPRIÉTAIRE POUR LES MARQUES DE PRODUITS (10 novembre 2026, la plus récente : « c'est ce genre de nom de marque que je veux que SINA trouve ») : « ÉCLAT DE THÉ » : un mot qui fait ressentir (lumière, geste, moment, sensation), puis « de », puis ce que la marque vend ou sa matière ; on sait ce qu'on achète et on ressent la promesse.
+GENRE PRÉFÉRÉ AVANT (9 novembre 2026), gardé pour les entreprises de services : le MOT FORT, comme SOLSTICE (mode d'été) ou RUPTURE (streetwear) : un seul mot qui existe, court (2 ou 3 syllabes), puissant et élégant, qui évoque l'univers, la saison, le moment ou l'attitude de la marque plutôt qu'une pièce du produit ; il se comprend aussi hors de France, sonne comme une marque écrit en capitales (étiquette, enseigne, mot géant d'une page d'accueil) ; on dit en une phrase pourquoi ce mot pour cette marque.
 CE QUI FAIT UN BON NOM (règle du propriétaire du 7 novembre 2026, après des noms refusés : « Sangle Réflexe », « Roulé Bouclé », « Rabâche », « Repris de Route », « Ça Roule ») :
 1. LA LOGIQUE D'ABORD : chaque nom a un lien évident avec le produit ou le service ; on peut dire en une phrase pourquoi ce nom pour ce produit (« Repli » : le sac se replie ; « La Mèche Courte » : la mèche de la bougie). Jamais un mot pris au hasard, jamais un nom choisi pour sa sonorité ou parce que l'expression est connue.
-2. Ce sont des mots ou des expressions qui existent en français (Songe, Écume, Strate ; « avoir la mèche courte », « roue libre », « au poil »), pas deux mots assemblés pour l'occasion ; le lien au produit vient d'un mot de l'expression ou de la scène qu'elle évoque. EXCEPTION choisie par le propriétaire pour les MARQUES DE PRODUITS : un mot inventé court, construit à partir d'un mot du produit (« Reflo », de reflet), est le genre préféré. Repères de NOMS INVENTÉS célèbres et de leur fabrication (modèles de construction, jamais à copier) : ${INVENTED_NAME_EXAMPLES.map((x) => `${x.name} (${x.how})`).join(" ; ")}. Ce qui fait un beau nom inventé : la fusion est INVISIBLE, on lit un seul mot naturel et pas deux mots collés (« Bâchemin » montrait la soudure) ; 2 ou 3 syllabes avec du rythme ; le mot du produit reste reconnaissable mais transformé ; pas de terminaison plaquée qui sonne générique (« -co », « -ly », « -io » ajoutés au bout d'un mot, comme « Étanco ») ; il se dit facilement en français, et si possible dans d'autres langues ; il n'a pas besoin d'explication pour plaire à l'oreille.
+2. Ce sont des mots ou des expressions qui existent en français (Songe, Écume, Strate ; « avoir la mèche courte », « roue libre », « au poil »), pas deux mots assemblés pour l'occasion ; le lien au produit vient d'un mot de l'expression ou de la scène qu'elle évoque. Pour les MARQUES DE PRODUITS, le propriétaire veut des noms du genre « Éclat de thé » (décision du 10 novembre 2026, qui remplace « deux mots forts et un mot inventé »). Repères de NOMS INVENTÉS célèbres et de leur fabrication (modèles de construction, jamais à copier) : ${INVENTED_NAME_EXAMPLES.map((x) => `${x.name} (${x.how})`).join(" ; ")}. Ce qui fait un beau nom inventé : la fusion est INVISIBLE, on lit un seul mot naturel et pas deux mots collés (« Bâchemin » montrait la soudure) ; 2 ou 3 syllabes avec du rythme ; le mot du produit reste reconnaissable mais transformé ; pas de terminaison plaquée qui sonne générique (« -co », « -ly », « -io » ajoutés au bout d'un mot, comme « Étanco ») ; il se dit facilement en français, et si possible dans d'autres langues ; il n'a pas besoin d'explication pour plaire à l'oreille.
 3. Le sens courant est positif ou neutre (jamais rabâcher, déroute, repris de justice, à bout, en panne).
 4. Il sonne bien à voix haute, s'écrit sans hésiter et se retient du premier coup.
 Ses 50 exemples, avec leur logique (niveau et esprit attendus ; ne recopie jamais ces noms) :

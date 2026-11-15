@@ -1,7 +1,7 @@
 /**
- * Recette #292 : la coquille Encre / Plein cadre avec le moteur SINA de Codex.
+ * Recette #292 : la coquille Encre / Plein cadre autour du fil de SINA.
  * - Plein cadre sur tablette : la feuille SINA s'arrête au-dessus de la barre de commande (défaut trouvé par la recette).
- * - Une seule conversation : la coquille rend le ConversationPanel de Codex, qui porte la confirmation gratuite (#291).
+ * - Une seule conversation : la coquille rend le fil de SINA (`SynaThread`), et lui seul.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -18,12 +18,10 @@ describe("recette d'intégration #292", () => {
     // Le téléphone garde sa propre règle (au-dessus de la zone de commande et du clavier virtuel).
     expect(css).toMatch(/@media \(max-width: 1023px\)[\s\S]*?\.ss-panel\.is-overlay \{ top: auto;[^}]*bottom: calc\(var\(--ss-kb, 0px\) \+ 72px/);
   });
-  it("une seule conversation, celle qui porte la confirmation gratuite de Codex", () => {
+  it("une seule conversation : le fil de SINA, sans repli sur l'ancienne conversation", () => {
     const shell = read("src/components/studio/syna-shell.tsx");
-    expect(shell.match(/<ConversationPanel /g)?.length).toBe(1);
-    const panel = read("src/components/studio/conversation-panel.tsx");
-    expect(panel).toContain("useLocalSiteConfirmation");
-    expect(panel).toContain("ConversationLocalSite");
+    expect(shell.match(/<SynaThread /g)?.length).toBe(1);
+    expect(shell).not.toMatch(/ConversationPanel|conversation-panel/);
   });
 });
 

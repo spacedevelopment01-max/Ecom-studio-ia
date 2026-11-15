@@ -10,27 +10,37 @@
  */
 import { z } from "zod";
 import { HttpError, type User } from "../auth";
-import { one, all, json, run as sql, id as newId } from "../db";
+import { one, all, json, run as sql, id as newId, tx } from "../db";
 import { budgetPctText } from "../ai/budget-pct";
 import { activityGaps, COMPANY_FIELDS } from "./activity";
 import { loadSiteCopy } from "./mockup-code/copy";
+import { loadMockupSet } from "./mockup-code/mockup-set";
 import { enqueue, getJob, type JobContext } from "../jobs";
 import { llmJson, type LlmCall, type LlmImage } from "../ai/llm";
 import { withTrace, CostCapReached } from "../ai/trace";
 import { requirePlan } from "../plan-gates";
 import { L } from "../i18n-server";
 import { getJsonSetting } from "../settings";
-import { allTools, getTool, isSensitive, toolCatalog } from "./registry";
+import { allTools, getTool, isSensitive, toolCatalog, toolEntry, toolVisible, type ToolScope } from "./registry";
+import { conversationSettings, keyMoment, REPLY_REVIEW_SYSTEM, ReplyReviewSchema, replyReviewPrompt, reviewNote, routedCatalog, routedStep, shouldReview, type KeyMoment } from "./conversation";
+import { loadWordingRules, wordingPromptLine } from "../client-wording";
 import type { AgentTool, ToolContext, ToolResult } from "./types";
+import { planOfProject } from "../plan-gates";
+import { routeCountFor } from "./brand-routes";
 import { authorizedBudget, addMessage, createRun, getRun, lastMessages, pendingOf, recordChanges, runByRequest, activeRun, updateRun, type PendingAction, type SynaRun, type SynaMessage } from "./store";
 import { budgetState, jobSpentMicro, trackJob, authorizeBudgetPct, DEFAULT_BUDGET_PCT } from "./budget";
 import { attachmentsOf, attachmentImages, describeAttachment, journeyImages } from "./attachments";
 import { projectSnapshot } from "./snapshot";
 import { SYNA_SYSTEM } from "./prompt";
-import { JOURNEY_STEPS, READY_STEPS, currentStep, journeyContext, journeyOf } from "./journey";
-import { localDecision } from "./local-step";
-import { LOGO_STYLE_LABEL, fontFace, type Identity } from "./identities";
+import { JOURNEY_STEPS, stepReady, currentStep, journeyContext, journeyOf, PHASES, phaseOf, phaseStatus } from "./journey";
+import { shownAngles } from "./angle-roles";
+import { sinaModels } from "./models";
+import { LOGO_STYLE_LABEL, fontFace, groundPresentation, type Identity } from "./identities";
+import { BOARD_OBJECT_LABEL, SIGN_KIND_LABEL, type Board, type BoardImage } from "./brand-board";
+import { safeWordmark } from "./brand-routes";
+import { drawWordmark, type DrawnWordmark } from "./brand-wordmark";
 import { mixIdentity } from "./tools/identity";
+import { createdPosts } from "./tools/posts";
 import { assetUrl } from "../library";
 
 export const MAX_STEPS = 12;
@@ -39,7 +49,7 @@ const MAX_ACTIONS = 8;
 export const StepSchema = z.object({
   message: z.string().max(8000).default(""),
   actions: z.array(z.object({ tool: z.string().min(1).max(80), args: z.record(z.string(), z.unknown()).default({}), why: z.string().max(400).optional() })).max(MAX_ACTIONS).default([]),
-  question: z.object({ text: z.string().min(1).max(1200), choices: z.array(z.string().max(200)).max(8).optional() }).nullable().optional(),
+  question: z.object({ text: z.string().min(1).max(4000), choices: z.array(z.string().max(200)).max(8).optional() }).nullable().optional(),
   done: z.boolean().default(false),
   /** Champ de la fiche de départ demandé par la question (étape 0), ou « confirm » pour le résumé. */
   askField: z.string().max(20).optional(),
@@ -47,8 +57,13 @@ export const StepSchema = z.object({
 export type StepOutput = z.infer<typeof StepSchema>;
 
 /** Dépendances remplaçables par les tests (jamais par le client). */
-export type AgentDeps = { reason?: (call: LlmCall) => Promise<StepOutput> };
+export type AgentDeps = { reason?: (call: LlmCall) => Promise<StepOutput>; /** La relectrice des réponses (essais sans IA : seulement si le test la fournit). */ review?: (call: LlmCall) => Promise<unknown> };
 
+/** Nombre exact d'identités du client (son forfait), dit par SINA au lieu de « deux à quatre ». */
+function identityCountOf(pid: string | null): number | undefined {
+  if (!pid) return undefined;
+  try { return routeCountFor(planOfProject(pid)); } catch { return undefined; }
+}
 const userOf = (uid: string) => one<User>("SELECT * FROM users WHERE id=?", uid)!;
 const conversationOf = (cid: string) => one<{ id: string; user_id: string; project_id: string | null }>("SELECT id,user_id,project_id FROM agent_conversations WHERE id=?", cid);
 
@@ -67,17 +82,22 @@ export function submitMessage(user: User, cid: string, input: { requestId: strin
   const c = conversationOf(cid);
   if (!c || c.user_id !== user.id) throw new HttpError(404, L("Conversation introuvable.", "Conversation not found."));
   if (c.project_id) requirePlan(user, c.project_id);
-  const prior = runByRequest(cid, input.requestId);
-  if (prior) return prior;
-  const current = activeRun(cid);
-  if (current && current.status !== "waiting_confirmation") throw new HttpError(409, L("SINA travaille encore sur ta demande précédente. Attends sa réponse ou arrête-la.", "SINA is still working on your previous request. Wait or stop it."), "syna_busy");
-  if (current) { updateRun(current.id, { status: "cancelled", pending_json: null }); addMessage(cid, "event", { kind: "pending_dropped", runId: current.id }, current.id); }
-  const attachments = (input.attachmentIds ?? []).filter((aid) => attachmentsOf(cid).some((a) => a.id === aid));
+  // Vérification et création de la demande d'un seul tenant : deux onglets ne lancent jamais deux demandes à la fois.
+  const created = tx(() => {
+    const prior = runByRequest(cid, input.requestId);
+    if (prior) return { run: prior, fresh: false };
+    const current = activeRun(cid);
+    if (current && current.status !== "waiting_confirmation") throw new HttpError(409, L("SINA travaille encore sur ta demande précédente. Attends sa réponse ou arrête-la.", "SINA is still working on your previous request. Wait or stop it."), "syna_busy");
+    if (current) { updateRun(current.id, { status: "cancelled", pending_json: null }); addMessage(cid, "event", { kind: "pending_dropped", runId: current.id }, current.id); }
+    const attachments = (input.attachmentIds ?? []).filter((aid) => attachmentsOf(cid).some((a) => a.id === aid));
+    const run = createRun({ conversationId: cid, userId: user.id, projectId: c.project_id, requestId: input.requestId });
+    addMessage(cid, "user", { text: input.text, attachments }, run.id);
+    return { run, fresh: true };
+  });
+  if (!created.fresh) return created.run;
   if (authorizedBudget(cid) == null) { try { authorizeBudgetPct(user.id, c.project_id, cid, DEFAULT_BUDGET_PCT); } catch { /* budget non mesurable : accord demandé */ } }
-  const r = createRun({ conversationId: cid, userId: user.id, projectId: c.project_id, requestId: input.requestId });
-  addMessage(cid, "user", { text: input.text, attachments }, r.id);
-  schedule(r);
-  return getRun(r.id)!;
+  schedule(created.run);
+  return getRun(created.run.id)!;
 }
 
 /**
@@ -85,6 +105,7 @@ export function submitMessage(user: User, cid: string, input: { requestId: strin
  * échec doit aussi réveiller SINA pour qu'elle l'explique et propose la suite. La tâche de reprise relit leur état.
  */
 function schedule(r: SynaRun, waitFor: string[] = [], delayMs = 0) {
+  if (getRun(r.id)?.status === "cancelled") return; // arrêtée par le client : rien ne la relance
   const job = enqueue({ userId: r.user_id, projectId: r.project_id, type: "syna.agent", label: L("SINA travaille", "SINA is working"), payload: { runId: r.id }, maxAttempts: 2, runAt: delayMs ? Date.now() + delayMs : undefined, idempotencyKey: `syna:${r.id}:${r.step}:${newId()}` });
   trackJob(r.conversation_id, r.id, job.id, "agent");
   updateRun(r.id, { job_id: job.id, status: waitFor.length ? "waiting_jobs" : "queued", waiting_jobs: JSON.stringify(waitFor) });
@@ -107,6 +128,8 @@ export function decidePending(user: User, cid: string, input: { pendingId: strin
   if (!r || r.user_id !== user.id || r.status !== "waiting_confirmation") throw new HttpError(409, L("Aucune action en attente d'accord.", "No action awaits your approval."));
   const p = pendingOf(r);
   if (!p || p.id !== input.pendingId) throw new HttpError(409, L("Cette proposition a changé. Relis la conversation.", "This proposal changed. Reload the conversation."));
+  // Budget des réponses de SINA atteint : il se relève avec le réglage du budget, pas par un accord sur une action.
+  if (input.approve && !getTool(p.tool)) throw new HttpError(409, L("Augmente le budget autorisé, puis demande à SINA de continuer.", "Raise the authorised budget, then ask SINA to continue."));
   addMessage(cid, "event", { kind: input.approve ? "approved" : "declined", pendingId: p.id, tool: p.tool }, r.id);
   if (!input.approve) {
     addMessage(cid, "tool", { key: `pending:${p.id}`, tool: p.tool, ok: false, summary: L("Le client a refusé cette action. Rien n'a été modifié.", "The client declined this action. Nothing was changed.") }, r.id);
@@ -120,8 +143,12 @@ export function stopRun(user: User, cid: string) {
   const r = activeRun(cid);
   if (!r || r.user_id !== user.id) return null;
   updateRun(r.id, { status: "cancelled", pending_json: null });
-  if (r.job_id) sql("UPDATE jobs SET status='cancelled', updated_at=? WHERE id=? AND status IN ('queued','blocked')", Date.now(), r.job_id);
-  addMessage(cid, "event", { kind: "stopped" }, r.id);
+  // « Arrêter » arrête vraiment : la reprise de SINA et les créations attendues qui n'ont pas encore commencé (aucune
+  // dépense) sont annulées ; une création déjà en cours se termine (son coût est engagé) et le fil le dit.
+  const waited = json<string[]>(r.waiting_jobs, []);
+  for (const j of [r.job_id, ...waited].filter(Boolean) as string[]) sql("UPDATE jobs SET status='cancelled', updated_at=? WHERE id=? AND status IN ('queued','blocked')", Date.now(), j);
+  const running = waited.filter((j) => getJob(j)?.status === "running").length;
+  addMessage(cid, "event", { kind: "stopped", ...(running ? { running } : {}) }, r.id);
   return getRun(r.id);
 }
 
@@ -174,46 +201,47 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       r = getRun(runId)!;
       if (r.status === "cancelled") return { runId, cancelled: true };
       if (r.step >= MAX_STEPS) {
-        addMessage(r.conversation_id, "assistant", { message: L(`J'ai enchaîné ${MAX_STEPS} étapes pour cette demande. Dites-moi si je continue.`, `I chained ${MAX_STEPS} steps for this request. Tell me if I should continue.`), actions: [], done: true }, r.id);
+        addMessage(r.conversation_id, "assistant", { message: L(`J'ai enchaîné ${MAX_STEPS} étapes pour cette demande. Dis-moi si je continue.`, `I chained ${MAX_STEPS} steps for this request. Tell me if I should continue.`), actions: [], done: true }, r.id);
         updateRun(r.id, { status: "done" });
         return { runId, steps: r.step };
       }
       const step = r.step;
       updateRun(r.id, { step: step + 1 });
       let out: StepOutput;
-      // Niveau gratuit : réponse simple à la question posée (étape 0) enregistrée par le moteur local, sans IA. Réglage
-      // « syna.replies » : « personnalisées » (par défaut, choix du propriétaire) = le moteur local enregistre, puis
-      // Claude Haiku rédige la réponse au client ; « locales » = le moteur local écrit aussi la réponse (0 €).
-      const localFull = step === 0 ? localStepFor(r) : null;
-      const personalized = getJsonSetting<string>("syna.replies", "personnalisees") !== "locales";
-      const local = localFull && personalized ? { message: "", actions: localFull.actions, question: null, done: false } as StepOutput : localFull;
-      if (local) out = local;
-      else try {
+      try {
         out = await reason(user, r, jobId, step, deps);
       } catch (e) {
-        if (e instanceof CostCapReached) return askBudget(r, null);
+        if (e instanceof CostCapReached) return askBudget(r);
         throw e;
       }
-      if (!local && out.question?.choices?.length && currentStep(journeyOf(r.conversation_id)) === 5) out = { ...out, question: withoutLaterForRequired(out.question) };
+      // Moment qui compte (résultat à présenter, échec, client mécontent) : la réponse est relue avant de partir, et
+      // réécrite une fois si la relectrice la refuse.
+      let relu: "ok" | "repris" | null = null;
+      ({ out, relu } = await reviewedReply(user, r, jobId, step, deps, out));
+      if (out.question?.choices?.length && currentStep(journeyOf(r.conversation_id)) === 5) out = { ...out, question: withoutLaterForRequired(out.question) };
       // Un bouton est une réponse complète, cliquable telle quelle : jamais un gabarit à trous (essai réel du 7 novembre :
       // « Oui, sous [À compléter : délai] et à [À compléter : conditions] »).
-      if (!local && out.question?.choices?.length) out = { ...out, question: { ...out.question, choices: out.question.choices.filter((c) => !/\[[^\]]*\]|…\s*$|\.\.\.\s*$/.test(c)) } };
+      if (out.question?.choices?.length) out = { ...out, question: { ...out.question, choices: out.question.choices.filter((c) => !/\[[^\]]*\]|…\s*$|\.\.\.\s*$/.test(c)) } };
       // Étape 6 : les thèmes sont montrés tels qu'ils sont ; jamais « ton site déjà composé dans chacun » (essai réel).
-      if (!local && currentStep(journeyOf(r.conversation_id)) === 6) out = { ...out, message: withoutBlindClaim(withoutComposedClaim(out.message)) };
-      if (!local) out = withoutRepeatedQuestion({ ...out, message: fixElision(out.message), ...(out.question ? { question: { ...out.question, text: fixElision(out.question.text) } } : {}) });
-      addMessage(r.conversation_id, "assistant", { ...out, step, ...(local ? { local: true } : {}) }, r.id);
+      // « Je ne peux pas voir… » n'est retiré QUE si des images lui étaient jointes (sinon c'est honnête).
+      if (currentStep(journeyOf(r.conversation_id)) === 6) out = { ...out, message: sawImages.get(r.id) ? withoutBlindClaim(withoutComposedClaim(out.message)) : withoutComposedClaim(out.message) };
+      out = withoutRepeatedQuestion({ ...out, message: fixElision(out.message), ...(out.question ? { question: { ...out.question, text: fixElision(out.question.text) } } : {}) });
+      addMessage(r.conversation_id, "assistant", { ...out, step, ...(relu ? { relu } : {}) }, r.id);
       if (!out.actions.length) {
         updateRun(r.id, { status: out.question ? "waiting_user" : "done" });
         return { runId, steps: step + 1 };
       }
       const launched: string[] = [];
+      let stepFailed = false;
       for (const [i, a] of out.actions.entries()) {
+        // Arrêtée pendant la réflexion de SINA : aucune action ne part après « Arrêter ».
+        if (getRun(runId)?.status === "cancelled") return { runId, cancelled: true };
         const key = `${step}:${i}`;
-        const t = getTool(a.tool);
-        if (!t) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, ok: false, summary: L("Outil inconnu : choisissez un outil du catalogue.", "Unknown tool: choose a tool from the catalogue.") }, r.id); continue; }
+        const t = toolVisible(a.tool, toolScope(r)) ? getTool(a.tool) : undefined;
+        if (!t) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, ok: false, internal: true, summary: L("Outil inconnu : choisis un outil du catalogue.", "Unknown tool: choose a tool from the catalogue.") }, r.id); continue; }
         const parsed = t.args.safeParse(a.args);
-        if (!parsed.success) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, ok: false, internal: true, summary: L("Arguments invalides : ", "Invalid arguments: ") + parsed.error.issues.slice(0, 4).map((x) => `${x.path.join(".")}: ${x.message}`).join(" ; ") }, r.id); continue; }
-        if (t.needsProject && !r.project_id) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, ok: false, summary: L("Aucun projet n'est encore rattaché : créez d'abord le projet (outil project.create).", "No project yet: create it first (project.create).") }, r.id); continue; }
+        if (!parsed.success) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, ok: false, internal: true, summary: L("Arguments invalides : ", "Invalid arguments: ") + parsed.error.issues.slice(0, 4).map((x) => `${x.path.join(".")}: ${x.message}`).join(" ; ") + (toolScope(r).routed ? `\nNotice de l'outil :\n${toolEntry(t)}` : "") }, r.id); continue; }
+        if (t.needsProject && !r.project_id) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, ok: false, internal: true, summary: L("Aucun projet n'est encore rattaché : il sera créé dès que l'activité et l'offre sont connues.", "No project yet: it is created once the business and offer are known.") }, r.id); continue; }
         // Accord explicite : actions sensibles, et dépenses au-delà du budget autorisé.
         if (isSensitive(t, parsed.data, tctx)) return askConfirmation(r, t, parsed.data, tctx, "sensitive");
         if (t.estimate) {
@@ -222,11 +250,13 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
           let est: Awaited<ReturnType<NonNullable<AgentTool["estimate"]>>>;
           try { est = await t.estimate(tctx, parsed.data); }
           catch (e) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, args: parsed.data, ok: false, summary: L("Refus avant exécution : ", "Refused before running: ") + String(clip(e instanceof Error ? e.message : String(e), 600)) }, r.id); continue; }
-          const b = budgetState(user.id, r.project_id, r.conversation_id);
-          // Une action gratuite (devis à 0, ex. lire des angles prêts) ne demande jamais d'accord de dépense.
-          if (est.maxMicro > 0 && est.maxMicro > b.remainingMicro) return askConfirmation(r, t, parsed.data, tctx, "budget", est.maxMicro);
+          // Règle du propriétaire : le prix d'abord, puis l'accord écrit du client, pour TOUTE dépense (audit du 10 novembre
+          // 2026 : sous un budget autorisé d'office, les créations partaient sans carte). Une action gratuite (devis à 0, ex.
+          // lire des angles prêts) ne demande jamais d'accord.
+          if (est.maxMicro > 0) return askConfirmation(r, t, parsed.data, tctx, "cost", est.maxMicro, est);
         }
         const res = await execute(t, parsed.data, tctx, key, r);
+        if (!res.ok) stepFailed = true;
         // Un projet créé pendant l'exécution devient le projet de la suite (droits relus à chaque outil).
         const pid = conversationOf(r.conversation_id)?.project_id ?? null;
         if (pid !== r.project_id) { sql("UPDATE syna_runs SET project_id=? WHERE id=?", pid, r.id); r = getRun(runId)!; tctx.projectId = pid; }
@@ -238,12 +268,9 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
         if (res.jobs?.length) launched.push(...res.jobs);
       }
       if (launched.length) return suspend(getRun(runId)!, launched);
-      // Le moteur local a déjà écrit sa réponse (question suivante, résumé ou validation) : pas d'appel à l'IA ensuite,
-      // sauf si une de ses actions a échoué (Claude reprend alors pour l'expliquer).
-      if (local && !personalized) {
-        const failed = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE run_id=? AND role='tool'", r.id).some((m) => json<any>(m.content_json, {}).ok === false);
-        if (!failed) { updateRun(r.id, { status: out.question ? "waiting_user" : "done" }); return { runId, steps: step + 1 }; }
-      }
+      // Une question est déjà posée et ses actions ont réussi : SINA attend la réponse du client, au lieu de repartir
+      // pour un second tour et de reposer la même question.
+      if (out.question && !stepFailed) { updateRun(r.id, { status: "waiting_user" }); return { runId, steps: step + 1 }; }
     }
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -278,15 +305,27 @@ async function execute(t: AgentTool, args: unknown, ctx: ToolContext, key: strin
   return res;
 }
 
-async function askConfirmation(r: SynaRun, t: AgentTool, args: unknown, ctx: ToolContext, reason: "sensitive" | "budget", costMaxMicro?: number) {
-  const preview = t.preview ? await t.preview(ctx, args) : `${t.name} ${JSON.stringify(args).slice(0, 600)}`;
+/**
+ * Texte de la carte d'accord (essai réel du 9 novembre 2026 : elle montrait « custom.build {…} » au client). Une action
+ * se présente toujours en clair : ce qui sera fait, puis pour une dépense le coût probable et le plafond, en % du budget
+ * IA du mois (jamais en euros, jamais le nom technique de l'outil).
+ */
+export async function confirmationText(t: AgentTool, args: unknown, ctx: ToolContext, userId: string, projectId: string | null, est?: { label: string; probableMicro?: number; maxMicro: number }): Promise<string> {
+  const pct = (m: number) => budgetPctText(userId, m, projectId);
+  const price = est && est.maxMicro > 0 ? (est.probableMicro ? L(`Coût probable : ${pct(est.probableMicro)} ; au plus ${pct(est.maxMicro)}.`, `Likely cost: ${pct(est.probableMicro)}; at most ${pct(est.maxMicro)}.`) : L(`Au plus ${pct(est.maxMicro)}.`, `At most ${pct(est.maxMicro)}.`)) : "";
+  const what = t.preview ? await t.preview(ctx, args) : est?.label ? est.label.charAt(0).toUpperCase() + est.label.slice(1) + "." : t.description.split(/(?<=[.:])\s/)[0];
+  return [what, price].filter(Boolean).join("\n");
+}
+
+async function askConfirmation(r: SynaRun, t: AgentTool, args: unknown, ctx: ToolContext, reason: "sensitive" | "cost", costMaxMicro?: number, est?: { label: string; probableMicro?: number; maxMicro: number }) {
+  const preview = await confirmationText(t, args, ctx, r.user_id, r.project_id, est);
   const p: PendingAction = { id: newId(), tool: t.name, args, reason, preview, costMaxMicro, createdAt: Date.now() };
   updateRun(r.id, { status: "waiting_confirmation", pending_json: JSON.stringify(p) });
   addMessage(r.conversation_id, "event", { kind: "confirmation", pending: p, budget: budgetState(r.user_id, r.project_id, r.conversation_id) }, r.id);
   return { runId: r.id, waiting: "confirmation" };
 }
 
-function askBudget(r: SynaRun, _x: null) {
+function askBudget(r: SynaRun) {
   const p: PendingAction = { id: newId(), tool: "budget.raise", args: {}, reason: "budget", preview: L("Le budget autorisé pour SINA est atteint. Augmente-le pour qu'elle continue.", "SINA's authorised budget is used up. Raise it to continue."), createdAt: Date.now() };
   updateRun(r.id, { status: "waiting_confirmation", pending_json: JSON.stringify(p), step: Math.max(0, r.step - 1) });
   addMessage(r.conversation_id, "event", { kind: "confirmation", pending: p, budget: budgetState(r.user_id, r.project_id, r.conversation_id) }, r.id);
@@ -369,37 +408,26 @@ export function withoutRepeatedQuestion(out: StepOutput): StepOutput {
   return kept ? { ...out, message: kept } : out;
 }
 
-/** Décision du moteur local pour le message du client de cette demande, ou null (→ Claude). */
-function localStepFor(r: SynaRun): StepOutput | null {
-  const msgs = lastMessages(r.conversation_id, 60);
-  const mine = msgs.filter((m) => m.runId === r.id && m.role === "user").pop();
-  if (!mine) return null;
-  const before = msgs.filter((m) => m.seq < mine.seq);
-  const lastAssistant = [...before].reverse().find((m) => m.role === "assistant");
-  const d = localDecision({
-    journey: journeyOf(r.conversation_id), userText: String(mine.content?.text ?? ""), hasAttachments: !!mine.content?.attachments?.length,
-    askField: (lastAssistant?.content?.askField as string | undefined) ?? null, hasProject: !!r.project_id, seq: mine.seq,
-  });
-  return d ? d.out : null;
+/** Outils proposés à ce fil : parcours de création en cours, anciennes maquettes du projet (voir toolVisible). */
+function toolScope(r: SynaRun): ToolScope {
+  const j = journeyOf(r.conversation_id);
+  const legacy = r.project_id ? (() => { try { return !!loadMockupSet(r.project_id!); } catch { return false; } })() : false;
+  // Conversation aiguillée : seulement pendant le parcours, à une étape qui a sa liste d'outils (voir conversation.ts).
+  return { inJourney: !j.outside, legacyMockups: legacy, routed: !j.outside && conversationSettings().aiguillage && routedStep(currentStep(j)) };
 }
 
 /**
- * Modèle de chaque réponse (économie à qualité égale) : Claude Haiku 5.5, le moins cher, pour les échanges simples
- * (questions de départ, suivi, étape pas encore disponible) ; Claude Opus pour créer ou réfléchir (étapes créatives).
+ * Modèle des réponses de SINA : le plus fort, à toutes les étapes et pour tous les forfaits (décision du propriétaire :
+ * elle décide, conseille et juge, donc elle réfléchit avec le meilleur). Elle réfléchit plus longtemps quand elle
+ * présente un résultat, explique un échec, répond à un client mécontent, ou juge un site qu'elle vient de monter.
+ * Le modèle lui-même se règle à un seul endroit (models.ts).
  */
-export function modelFor(currentStepNumber: number): { provider: "anthropic"; model: string; effort?: string } | undefined {
-  // Étape 1 : la création des identités se fait dans l'outil identity.propose (modèle fort) ; le fil reste léger.
-  // Étape 2 de même : le dessin et le contrôle des logos se font dans la tâche logo.propose.
-  // Étape 3 : l'image de marque est rendue par le Studio (brand.kit), sans IA.
-  // Étape 4 : la recherche et les angles sont faits par les tâches du Pilote (angles.propose).
-  // Étape 5 : l'activité est rassemblée par des outils gratuits ; le fil reste sur le modèle léger.
-  // Étape 6 : les thèmes sont montrés et appliqués par des outils gratuits (maquettes payantes : dans leurs tâches).
-  // Étape 7 : le codage et les photos se font dans leurs tâches (site.code_from_mockup, site.images) ; le fil reste léger.
-  const simple = currentStepNumber <= 7 || !READY_STEPS.includes(currentStepNumber);
-  return simple ? { provider: "anthropic", model: "claude-haiku-5-5", effort: "low" } : undefined;
+export function modelFor(_currentStepNumber: number, opts: { customTheme?: boolean; judge?: boolean; keyMoment?: KeyMoment | null } = {}): { provider: "anthropic"; model: string; effort?: string } {
+  const strong = sinaModels().strong;
+  return { provider: strong.provider, model: strong.model, effort: opts.keyMoment || opts.judge ? "high" : "medium" };
 }
 
-/** Action payante de chaque étape du parcours : son devis est donné à SINA, qui l'annonce AVANT de lancer. */
+/** Action payante de chaque étape du parcours : son devis est donné à SINA (le même s'affiche sur la carte d'accord). */
 const STEP_PAID_TOOL: Record<number, string> = { 1: "identity.propose", 2: "logo.propose", 4: "angles.propose" };
 
 /**
@@ -414,31 +442,82 @@ export async function stepQuote(user: User, r: SynaRun): Promise<string> {
     const est = await t.estimate(toolContext(user, r), {} as never);
     if (!est.maxMicro) return "";
     // Coût probable annoncé quand l'outil le donne (étape 7 : le plafond au pire n'a pas de sens pour le client).
-    if (est.probableMicro) return `\n\n# Prix de la prochaine action payante de l'étape\n${name} (${est.label}) : coût probable ${budgetPctText(user.id, est.probableMicro, r.project_id)} ; plafond ${budgetPctText(user.id, est.maxMicro, r.project_id)} (la tâche s'arrête et le dit si elle l'atteint). Dis le coût probable et le plafond au client AVANT de lancer, dans le message où tu lui proposes de lancer.`;
-    return `\n\n# Prix de la prochaine action payante de l'étape\n${name} (${est.label}) : au plus ${budgetPctText(user.id, est.maxMicro, r.project_id)}. Dis ce prix au client AVANT de lancer, dans le message où tu lui proposes de lancer.`;
+    if (est.probableMicro) return `\n\n# Prix de la prochaine action payante de l'étape\n${name} (${est.label}) : coût probable ${budgetPctText(user.id, est.probableMicro, r.project_id)} ; plafond ${budgetPctText(user.id, est.maxMicro, r.project_id)} (la tâche s'arrête et le dit si elle l'atteint). Le Studio montre ce prix au client sur la carte d'accord quand tu appelles l'outil ; tu peux le citer tel quel, sans jamais en inventer un autre.`;
+    return `\n\n# Prix de la prochaine action payante de l'étape\n${name} (${est.label}) : au plus ${budgetPctText(user.id, est.maxMicro, r.project_id)}. Le Studio montre ce prix au client sur la carte d'accord quand tu appelles l'outil ; tu peux le citer tel quel, sans jamais en inventer un autre.`;
   } catch { return ""; }
 }
 
+/**
+ * Le moment de cette réflexion. Pendant « faire connaissance », rien n'a encore été créé : « je n'aime pas… » y parle
+ * des goûts du client, pas d'un reproche (essai réel du lot 1 : une réponse sur ses goûts était relue comme une plainte).
+ */
+function momentOf(history: SynaMessage[], step: number): KeyMoment | null {
+  const m = keyMoment(history);
+  return m === "mecontent" && step === 0 ? null : m;
+}
+
+/** Outils dont le résultat se juge (thème conçu, monté, retouché, galerie, tâche finie) : effort élevé à l'étape 6. */
+const JUDGE_TOOLS = /^(custom\.(concepts|concept|design|build|compose|edit|structure|photo|show|section)|gallery\.create|theme\.(brand|choose)|jobs\.wait)$/;
+/** La réflexion en cours doit-elle concevoir ou juger (effort élevé), ou seulement poser une question / confirmer ? */
+export function needsJudgement(history: { role: string; content?: any }[]): boolean {
+  const last = history[history.length - 1];
+  if (last?.role === "tool") return JUDGE_TOOLS.test(String(last.content?.tool ?? ""));
+  const user = [...history].reverse().find((m) => m.role === "user");
+  return /\[Élément désigné/.test(String(user?.content?.text ?? ""));
+}
+
+/** Demandes dont la dernière réflexion avait des images du parcours jointes (logos, planche, thème…). */
+const sawImages = new Map<string, boolean>();
+
 /** Un pas de raisonnement : fil complet + état du projet + pièces jointes (vision) → JSON d'actions. */
-async function reason(user: User, r: SynaRun, jobId: string, step: number, deps: AgentDeps): Promise<StepOutput> {
+async function reason(user: User, r: SynaRun, jobId: string, step: number, deps: AgentDeps, note = ""): Promise<StepOutput> {
   const history = lastMessages(r.conversation_id, 120);
+  const scope = toolScope(r), conv = conversationSettings();
   // Variété des réponses : les débuts de tes derniers messages, à ne pas reprendre.
   const openings = history.filter((m) => m.role === "assistant" && m.content?.message).slice(-4).map((m) => String(m.content.message).split(/\s+/).slice(0, 5).join(" "));
   const images: LlmImage[] = [...(step === 0 || newAttachmentSinceLastAssistant(history) ? attachmentImages(r.conversation_id, history) : []), ...(await journeyImages(journeyOf(r.conversation_id), r.project_id).catch(() => []))].slice(0, 12);
   const b = budgetState(user.id, r.project_id, r.conversation_id);
-  const snapshot = r.project_id ? await projectSnapshot(toolContext(user, r)) : L("Aucun projet rattaché (brouillon). Pour agir sur un site ou une boutique, créez d'abord le projet avec project.create.", "No project linked yet (draft). Create it with project.create before acting.");
+  const snapshot = r.project_id ? await projectSnapshot(toolContext(user, r)) : L("Aucun projet rattaché (brouillon) : il est créé dès que l'activité et l'offre du client sont connues (start.answer).", "No project linked yet (draft): it is created once the business and offer are known.");
   const call: LlmCall = {
     task: "agent_conversation", userId: user.id, projectId: r.project_id, jobId,
-    system: SYNA_SYSTEM, promptKey: "syna-agent-1",
-    reference: `# Outils disponibles (registre commun)\n\n${toolCatalog(!!r.project_id)}`,
-    context: `# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id))}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget autorisé pour SINA\nAutorisé : ${b.authorizedPct ?? 0} % du budget IA ; engagé : ${b.spentPct ?? 0} %. Au-delà, le serveur demande l'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}`,
-    prompt: `# Fil de la conversation (le plus ancien d'abord ; vos propres réponses incluses)\n${serialize(history)}\n\nÉtape ${step + 1} de cette demande. Répondez avec l'objet JSON {message, actions, question, done}.`,
+    system: SYNA_SYSTEM, promptKey: "syna-agent-2",
+    reference: scope.routed ? `# Outils du Studio (ceux de l'étape en entier, les autres en liste)\n\n${routedCatalog(!!r.project_id, scope, currentStep(journeyOf(r.conversation_id)))}` : `# Outils disponibles (registre commun)\n\n${toolCatalog(!!r.project_id, scope)}`,
+    context: `# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id), { identityCount: identityCountOf(r.project_id) })}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}${note}`,
+    prompt: `# Fil de la conversation (le plus ancien d'abord ; tes propres réponses incluses)\n${serialize(history)}\n\nÉtape ${step + 1} de cette demande. Réponds avec l'objet JSON {message, actions, question, done}.`,
     images: images.length ? images : undefined,
-    maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}`, routing: { difficulty: "complex", prefer: modelFor(currentStep(journeyOf(r.conversation_id))) },
+    maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}${note ? ":reprise" : ""}`, routing: { difficulty: "complex", prefer: (() => { const j = journeyOf(r.conversation_id); return modelFor(currentStep(j), { customTheme: !!j.customChosenAt, judge: needsJudgement(history), keyMoment: conv.momentsForts ? momentOf(history, currentStep(j)) : null }); })() },
   };
+  sawImages.set(r.id, images.some((im) => /^(Logo|Planche|Maquette|Site codé|Thème sur mesure)/.test(im.label ?? "")));
   if (deps.reason) return StepSchema.parse(await deps.reason(call));
   const cap = b.remainingMicro + jobSpentMicro(jobId);
   return withTrace({ jobId, projectId: r.project_id, step: "syna", costCapMicro: cap }, () => llmJson(call, StepSchema));
+}
+
+/**
+ * La relectrice (carte des spécialistes, lot 3) : à un moment qui compte, une autre lit la réponse avant qu'elle parte.
+ * Refusée : SINA la réécrit UNE fois avec ses remarques (jamais montrées au client) ; la réécriture n'est pas relue une
+ * seconde fois (coût borné). Une relecture en panne, ou le budget des réponses atteint, ne bloque jamais la réponse.
+ */
+async function reviewedReply(user: User, r: SynaRun, jobId: string, step: number, deps: AgentDeps, draft: StepOutput): Promise<{ out: StepOutput; relu: "ok" | "repris" | null }> {
+  // (Essais sans IA : seulement si le test fournit la relectrice.)
+  if (!conversationSettings().relecture || (deps.reason && !deps.review)) return { out: draft, relu: null };
+  const history = lastMessages(r.conversation_id, 120), moment = momentOf(history, currentStep(journeyOf(r.conversation_id)));
+  if (!shouldReview(moment, draft)) return { out: draft, relu: null };
+  try {
+    let lastUser = -1;
+    history.forEach((m, i) => { if (m.role === "user") lastUser = i; });
+    const n = currentStep(journeyOf(r.conversation_id));
+    const wording = r.project_id ? (() => { try { return wordingPromptLine(loadWordingRules(r.project_id!)); } catch { return ""; } })() : "";
+    const call: LlmCall = {
+      task: "quality_control", userId: user.id, projectId: r.project_id, jobId, system: REPLY_REVIEW_SYSTEM, promptKey: "syna-reply-review-1",
+      prompt: replyReviewPrompt({ moment, stepLabel: JOURNEY_STEPS.find((s) => s.n === n)?.fr, client: String(history[lastUser]?.content?.text ?? ""), facts: serialize(history.slice(lastUser + 1)), draft, wording, quote: await stepQuote(user, r) }),
+      maxTokens: 3000, maxOutputTokens: 6000, usageKey: `syna:${r.id}:${step}:relecture`, routing: { difficulty: "standard", prefer: { ...modelFor(0)!, effort: "medium" } },
+    };
+    const cap = budgetState(user.id, r.project_id, r.conversation_id).remainingMicro + jobSpentMicro(jobId);
+    const review = ReplyReviewSchema.parse(deps.review ? await deps.review(call) : await withTrace({ jobId, projectId: r.project_id, step: "syna-relecture", costCapMicro: cap }, () => llmJson(call, ReplyReviewSchema)));
+    if (review.verdict !== "reprendre" || !review.issues.length) return { out: draft, relu: "ok" };
+    return { out: await reason(user, r, jobId, step, deps, reviewNote(draft, review.issues)), relu: "repris" };
+  } catch { return { out: draft, relu: null }; }
 }
 
 function newAttachmentSinceLastAssistant(h: SynaMessage[]) {
@@ -469,7 +548,37 @@ function clip(v: unknown, max: number): unknown {
   return typeof v === "string" ? `${s.slice(0, max)}…` : { truncated: true, preview: s.slice(0, max) };
 }
 
-const cardOf = (x: Identity) => ({ ...x, logoStyleLabel: LOGO_STYLE_LABEL[x.logoStyle], faces: { heading: fontFace(x.fonts.heading), body: fontFace(x.fonts.body) } });
+const drawnNames = new Map<string, DrawnWordmark | null>();
+/** Le nom dessiné d'une planche (tracés composés par le Studio), gardé en mémoire : le fil se relit souvent. */
+function drawnName(x: Identity): DrawnWordmark | null {
+  if (!x.board) return null;
+  const key = JSON.stringify([x.name, x.fonts.heading, x.board.wordmark]);
+  if (drawnNames.has(key)) return drawnNames.get(key)!;
+  let drawn: DrawnWordmark | null = null;
+  // Police illisible ou recette impossible : la planche écrit alors le nom dans la police de titres (jamais d'écran vide).
+  try { drawn = drawWordmark(x.name, safeWordmark(x.board.wordmark, x.name), x.fonts.heading); } catch { drawn = null; }
+  if (drawnNames.size > 300) drawnNames.clear();
+  drawnNames.set(key, drawn);
+  return drawn;
+}
+/** Images d'une planche : l'identifiant rangé devient une adresse interne du Studio (accès contrôlé par projet). */
+function boardShots(i: NonNullable<Board["images"]>) {
+  const shot = (v?: BoardImage | null) => (v ? { url: assetUrl({ id: v.id }), w: v.w, h: v.h } : null);
+  return {
+    ...(i.logo ? { logo: shot(i.logo)! } : {}), ...(i.hero ? { hero: shot(i.hero)! } : {}), ...(i.object ? { object: shot(i.object)! } : {}), ...(i.site ? { site: shot(i.site)! } : {}),
+    ...(i.posts ? { posts: i.posts.map((v) => shot(v)) } : {}),
+    ...(i.mark ? { mark: shot(i.mark)! } : {}), ...(i.markDark ? { markDark: shot(i.markDark)! } : {}), ...(i.signs ? { signs: shot(i.signs)! } : {}),
+  };
+}
+/** Planche de marque d'une identité (routes du 12 novembre 2026) : couleurs d'affichage, nom dessiné, libellés. */
+function boardOf(x: Identity) {
+  if (!x.board) return {};
+  return {
+    look: groundPresentation(x.palette, x.ground, x.gradient), drawn: drawnName(x),
+    board: { ...x.board, ...(x.board.images ? { images: boardShots(x.board.images) } : {}), signs: x.board.signs.map((s) => ({ ...s, kindLabel: L(SIGN_KIND_LABEL[s.kind].fr, SIGN_KIND_LABEL[s.kind].en) })), object: { ...x.board.object, label: L(BOARD_OBJECT_LABEL[x.board.object.kind].fr, BOARD_OBJECT_LABEL[x.board.object.kind].en) } },
+  };
+}
+const cardOf = (x: Identity) => ({ ...x, logoStyleLabel: LOGO_STYLE_LABEL[x.logoStyle], faces: { heading: fontFace(x.fonts.heading), body: fontFace(x.fonts.body) }, ...boardOf(x) });
 const PART_LABEL: Record<string, string> = { name: "le nom", slogan: "le slogan", palette: "les couleurs", fonts: "les polices", tone: "le ton", logo: "l'idée de logo" };
 /** « Heure Dorée (B) avec les couleurs de Tour de Main (A) » ; vide quand le client a pris une identité telle quelle. */
 export function mixLabel(list: Identity[], c: { key: string; mix: Partial<Record<string, string>> }): string {
@@ -505,14 +614,15 @@ export function threadView(user: User, cid: string) {
     journey: (() => {
       const j = journeyOf(cid);
       return {
-        current: currentStep(j), mode: j.mode, keep: j.keep,
-        steps: JOURNEY_STEPS.map((s) => ({ n: s.n, fr: s.fr, en: s.en, status: j.steps[s.n]?.status ?? "todo", ready: READY_STEPS.includes(s.n) })),
+        // Le client voit neuf étapes ; « internal » garde le repère interne (0 à 13) pour le Studio.
+        current: phaseOf(currentStep(j)).n, internal: currentStep(j), mode: j.mode, keep: j.keep,
+        steps: PHASES.map((p) => ({ n: p.n, fr: p.fr, en: p.en, status: phaseStatus(j, p), ready: (p.steps as readonly number[]).some((n) => stepReady(n)) })),
         // Étape 1 : la dernière proposition d'identités (cartes du fil), avec les fichiers de leurs vraies polices.
         identities: j.identities ? {
           round: j.identities.round, issues: j.identities.issues, chosen: j.identityChoice ?? null,
-          list: j.identities.list.map(cardOf),
+          list: j.identities.list.map(cardOf), study: j.identities.study ?? null,
           // Identité retenue telle qu'enregistrée (mélange compris) : la carte « Ton identité » montre le vrai résultat.
-          final: j.identityChoice ? { ...cardOf(mixIdentity(j.identities.list, j.identityChoice.key, j.identityChoice.mix as any)), mixLabel: mixLabel(j.identities.list, j.identityChoice) } : null,
+          final: j.identityChoice ? { ...cardOf(mixIdentity(j.identities.list, j.identityChoice.key, j.identityChoice.mix as any, j.identityChoice.edits ?? {})), mixLabel: mixLabel(j.identities.list, j.identityChoice) } : null,
         } : null,
         // Étape 2 : les 3 logos (images servies par la bibliothèque du projet) et le logo choisi.
         logos: j.logos ? { round: j.logos.round, chosen: j.logoChoice?.source ?? null, list: j.logos.list.map((x) => ({ ...x, href: x.assetId ? assetUrl({ id: x.assetId }) : null })) } : null,
@@ -523,8 +633,10 @@ export function threadView(user: User, cid: string) {
         families: j.families ?? null,
         // Étape 6, maquettes : textes écrits avant la maquette (montrés en entier au client).
         siteCopy: c.project_id ? (() => { const sc = loadSiteCopy(c.project_id!); return sc ? { pages: Object.fromEntries(Object.entries(sc.pages).map(([k, v]) => [k, v])) } : null; })() : null,
-        // Étape 4 : les 5 angles marketing et l'angle choisi.
-        angles: j.angles ? { list: j.angles.list, recommendedId: j.angles.recommendedId, sourceCount: j.angles.sourceCount, chosen: j.angleChoice?.ids ?? (j.angleChoice ? [j.angleChoice.id] : null) } : null,
+        // Étape 9 : le plan des publications (avec le doute éventuel de SINA) et les publications qui ont leur image.
+        posts: j.posts ? { round: j.posts.round, judged: j.posts.judged, groups: j.posts.groups, created: c.project_id && j.posts.created ? createdPosts(c.project_id, j.posts.created.postIds).map((x) => ({ id: x.id, network: x.network, title: x.title, images: x.media.map((id) => assetUrl({ id })) })) : null } : null,
+        // Étape 4 : les 3 angles montrés (sûr, émotion, audacieux ; les autres restent en réserve) et l'angle choisi.
+        angles: j.angles ? { list: shownAngles(j.angles), roles: Object.fromEntries((j.angles.shown ?? []).map((x) => [x.id, x.role])), recommendedId: j.angles.recommendedId, sourceCount: j.angles.sourceCount, chosen: j.angleChoice?.ids ?? (j.angleChoice ? [j.angleChoice.id] : null) } : null,
         // Étape 3 : l'image de marque (déclinaisons, planche, charte PDF), servie par la bibliothèque du projet.
         brandKit: j.brandKit ? {
           validated: j.steps[3]?.status === "done", notes: j.brandKit.notes,

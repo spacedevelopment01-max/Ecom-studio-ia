@@ -2206,7 +2206,7 @@ body:has([data-sv-foot="help"]) .sv-footer__legal { padding: 4px 46px 28px; just
   .sv-info__route { display: none; }
   .sv-info__mroute { display: block; left: 0 !important; top: calc(80 * var(--m)) !important; width: calc(210 * var(--m)) !important; height: calc(190 * var(--m)); }
   .sv-info__title { left: calc(24 * var(--m)) !important; top: calc(229.1 * var(--m)) !important; font-size: calc(92 * var(--m)); line-height: calc(92 * var(--m)); letter-spacing: -.05em; white-space: nowrap; }
-  .sv-info__tabs { display: flex; left: calc(20 * var(--m)) !important; top: calc(440 * var(--m)) !important; gap: calc(12 * var(--m)); }
+  .sv-info__tabs { display: flex; left: calc(20 * var(--m)) !important; top: calc(440 * var(--m)) !important; gap: calc(10 * var(--m)); }
   .sv-info__tabs .sv-pill { height: calc(53 * var(--m)); min-height: 0; padding: 0; justify-content: center; font-size: calc(19 * var(--m)); letter-spacing: -.02em; }
   .sv-info__tabs .sv-pill:nth-child(1) { width: calc(128 * var(--m)) !important; } .sv-info__tabs .sv-pill:nth-child(2) { width: calc(102 * var(--m)) !important; } .sv-info__tabs .sv-pill:nth-child(3) { width: calc(118 * var(--m)) !important; }
   .sv-info__list { left: 0; top: 0; width: 100%; }

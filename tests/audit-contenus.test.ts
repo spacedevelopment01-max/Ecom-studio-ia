@@ -315,21 +315,6 @@ describe("M-7 / M-8 / M-9 vidéos et création", () => {
     await expect(produceVideo(new JobContext(job), pid, { format: "9:16" })).rejects.toBeInstanceOf(UserFacingError);
   });
 
-  it("annulation volontaire de la création : projet en pause (pas en erreur), étape marquée arrêtée", async () => {
-    const { pid, user } = await setup("vendre");
-    const { enqueue, JobContext, JobCancelled, WORKER_ID, getJob, cancelJob } = await import("@/lib/jobs");
-    const { run, one } = await import("@/lib/db");
-    const { runPipeline } = await import("@/lib/engine/pipeline");
-    const job = enqueue({ userId: user.id, projectId: pid, type: "pipeline.run", payload: { projectId: pid, mode: "autopilot", input: {} } });
-    run("UPDATE jobs SET status='running',locked_by=?,locked_until=? WHERE id=?", WORKER_ID, Date.now()+90_000, job.id);
-    const ctx = new JobContext(getJob(job.id)!);
-    cancelJob(job.id);
-    await expect(runPipeline(ctx)).rejects.toBeInstanceOf(JobCancelled);
-    expect(one<{ status: string }>("SELECT status FROM projects WHERE id = ?", pid)!.status).toBe("paused");
-    const steps = Object.values(ctx.checkpoint.__steps as Record<string, { status: string }>);
-    expect(steps.map((s) => s.status)).toContain("paused");
-    expect(steps.map((s) => s.status)).not.toContain("failed");
-  });
 });
 
 describe("améliorations : sujets d'articles et corbeille", () => {

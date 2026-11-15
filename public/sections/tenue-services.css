@@ -1,0 +1,955 @@
+/*
+ * Sections à tenue des métiers de services (thème sur mesure). Écrite à la main ; mêmes variables et mêmes attributs de tenue que
+ * tenue.css. Règles : docs/sina-savoir/sections-a-tenue.md.
+ * Une photo du balisage reste visible dans toutes les constructions de sa section (elle est créée, donc payée).
+ * Le bouton prend sa forme de la tenue : une règle de construction ne lui change ni son remplissage ni sa taille de texte.
+ */
+
+/* ══ Ouverture d'un métier de services ══ */
+/* « lieu » : la photo du lieu, puis le titre, l'adresse et les horaires, le bouton, le téléphone */
+.ctw .tn-ouverture-metier{display:flex;flex-direction:column;padding-bottom:44px;container-type:inline-size}
+.ctw .tn-ouverture-metier .tn-corps{display:contents}
+.ctw .tn-ouverture-metier .tn-ph{order:1;height:300px}
+.ctw .tn-ouverture-metier .tn-corps>small{order:2;margin:26px 20px 0}
+.ctw .tn-ouverture-metier h1{order:3;margin:8px 20px 0;font-size:calc(52px*var(--tn-k));line-height:.96;letter-spacing:-.02em}
+/* les titres en capitales sont plus larges : un peu plus petits, pour qu'une ligne courte tienne sur l'écran */
+.ctw[data-tn-titres="capitales"] .tn-ouverture-metier h1{font-size:calc(48px*var(--tn-k))}
+.ctw .tn-ouverture-metier p{order:4;margin:14px 20px 0;font-size:16.5px;color:var(--tn-texte)}
+.ctw .tn-ouverture-metier .tn-reperes{order:5;margin:24px 20px 0;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-ouverture-metier .tn-reperes li{display:grid;grid-template-columns:86px minmax(0,1fr);gap:10px;align-items:baseline;padding:12px 0;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent);font-size:16px;line-height:1.45}
+.ctw .tn-ouverture-metier .tn-reperes small{font-size:15.5px}
+.ctw .tn-ouverture-metier .tn-reperes .tn-zon{display:none}
+.ctw .tn-ouverture-metier .tn-bt{order:6;margin:24px 20px 0;padding:16px 20px}
+.ctw[data-tn-bouton="etiquette"] .tn-ouverture-metier .tn-bt{justify-content:center}
+.ctw .tn-ouverture-metier .tn-tel{order:7;align-self:center;display:inline-flex;align-items:flex-end;min-height:44px;margin-top:6px;font-size:17px;font-weight:600;border-bottom:1.5px solid var(--tn-encre);padding-bottom:2px}
+/* « appel » : le téléphone en très grand sous le titre, la zone, le bouton, la photo en bande */
+.ctw .tn-ouverture-metier[data-tn-c="appel"]{padding-bottom:0}
+.ctw .tn-ouverture-metier[data-tn-c="appel"] .tn-corps>small{order:1;margin-top:30px}
+.ctw .tn-ouverture-metier[data-tn-c="appel"] h1{order:2;font-size:calc(40px*var(--tn-k));line-height:1}
+.ctw .tn-ouverture-metier[data-tn-c="appel"] p{order:3}
+/* le numéro tient sur une ligne : sa taille se mesure à la largeur de la section (« cqw »), selon la largeur des chiffres de la tenue */
+.ctw .tn-ouverture-metier[data-tn-c="appel"] .tn-tel{order:4;align-self:flex-start;display:block;min-height:0;margin:28px 20px 0;padding:0;border:0;font-family:var(--f-title);font-weight:400;font-size:calc(50px*var(--tn-k));font-size:min(calc(50px*var(--tn-k)),11.8cqw);line-height:1.04;letter-spacing:-.02em;text-wrap:balance}
+.ctw[data-tn-titres="gras"] .tn-ouverture-metier[data-tn-c="appel"] .tn-tel{font-size:36px;font-size:min(36px,11cqw);letter-spacing:-.035em}
+.ctw[data-tn-titres="capitales"] .tn-ouverture-metier[data-tn-c="appel"] .tn-tel{font-size:34px;font-size:min(39px,9.2cqw)}
+.ctw .tn-ouverture-metier[data-tn-c="appel"] .tn-tel mark{font-size:.5em;vertical-align:middle;letter-spacing:normal}
+.ctw .tn-ouverture-metier[data-tn-c="appel"] .tn-reperes{order:5;margin-top:22px}
+.ctw .tn-ouverture-metier[data-tn-c="appel"] .tn-reperes .tn-adr{display:none}
+.ctw .tn-ouverture-metier[data-tn-c="appel"] .tn-reperes .tn-zon{display:grid}
+.ctw .tn-ouverture-metier[data-tn-c="appel"] .tn-bt{order:6}
+.ctw .tn-ouverture-metier[data-tn-c="appel"] .tn-ph{order:7;height:180px;margin-top:40px}
+/* « promesse » : un grand titre, la photo en hauteur dans le cadre de la marque, le bouton à cheval */
+.ctw .tn-ouverture-metier[data-tn-c="promesse"]{padding-bottom:40px;overflow-x:clip}
+.ctw .tn-ouverture-metier[data-tn-c="promesse"] .tn-corps>small{order:1;margin-top:18px}
+.ctw .tn-ouverture-metier[data-tn-c="promesse"] h1{order:2;font-size:calc(64px*var(--tn-k));line-height:.94}
+.ctw[data-tn-titres="gras"] .tn-ouverture-metier[data-tn-c="promesse"] h1{font-size:calc(54px*var(--tn-k))}
+.ctw[data-tn-titres="capitales"] .tn-ouverture-metier[data-tn-c="promesse"] h1{font-size:calc(50px*var(--tn-k))}
+.ctw .tn-ouverture-metier[data-tn-c="promesse"] .tn-ph{order:3;margin:26px 20px 0;height:410px;background-position:20% center;border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn-ouverture-metier[data-tn-c="promesse"] .tn-ph{border-radius:175px 175px 0 0}
+.ctw[data-tn-cadre="penche"] .tn-ouverture-metier[data-tn-c="promesse"] .tn-ph{border:3px solid var(--tn-encre);border-radius:18px;transform:rotate(-1.2deg);box-shadow:6px 7px 0 var(--tn-encre)}
+.ctw .tn-ouverture-metier[data-tn-c="promesse"] .tn-bt{order:4;align-self:center;position:relative;min-width:236px;margin-top:-24px;white-space:nowrap}
+.ctw .tn-ouverture-metier[data-tn-c="promesse"] p{order:5;margin-top:22px;padding:0 8px;text-align:center}
+.ctw .tn-ouverture-metier[data-tn-c="promesse"] .tn-tel{order:6}
+.ctw .tn-ouverture-metier[data-tn-c="promesse"] .tn-reperes{display:none}
+
+/* ══ Les prestations et leurs prix ══ */
+/* « liste » : traits fins, le prix aligné à droite, la photo du lieu dans le cadre de la marque */
+.ctw .tn-prestations{display:flex;flex-direction:column;padding:44px 20px 0}
+.ctw .tn-prestations:last-child{padding-bottom:64px}
+.ctw .tn-prestations h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-prestations>p{margin-top:10px;font-size:16.5px;color:var(--tn-texte)}
+.ctw .tn-prestations .tn-ph{height:200px;margin-top:22px;border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn-prestations .tn-ph{border-radius:100px 100px 0 0}
+.ctw[data-tn-cadre="penche"] .tn-prestations{overflow-x:clip}
+.ctw[data-tn-cadre="penche"] .tn-prestations .tn-ph{border:3px solid var(--tn-encre);border-radius:18px;transform:rotate(-1.2deg);box-shadow:6px 7px 0 var(--tn-encre)}
+.ctw .tn-prestations .tn-liste-p{margin-top:14px}
+.ctw .tn-prestations .tn-liste-p li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 16px;align-items:baseline;padding:15px 0;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-prestations .tn-liste-p li:first-child:not(.tn-rub){border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-prestations .tn-liste-p b{font-family:var(--f-title);font-weight:400;font-size:23px;line-height:1.15}
+.ctw .tn-prestations .tn-liste-p span{grid-column:1;grid-row:2;font-size:15px;color:var(--tn-sourd)}
+.ctw .tn-prestations .tn-liste-p i{grid-column:2;grid-row:1;font-style:normal;font-size:17px;text-align:right;white-space:nowrap}
+.ctw .tn-prestations .tn-liste-p .tn-rub{display:block;padding:22px 0 8px;border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-prestations .tn-bt{margin-top:28px;padding:16px 20px}
+.ctw[data-tn-bouton="etiquette"] .tn-prestations .tn-bt{justify-content:center}
+/* « cartes » : la photo en bande, une carte par prestation (une rangée se remplit toujours) */
+.ctw .tn-prestations[data-tn-c="cartes"] .tn-ph{order:-1;height:210px;margin:-44px -20px 34px;border:0;border-radius:0;transform:none;box-shadow:none}
+.ctw .tn-prestations[data-tn-c="cartes"] .tn-liste-p{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.ctw .tn-prestations[data-tn-c="cartes"] .tn-liste-p li{flex:1 1 calc(50% - 5px);min-width:0;display:flex;flex-direction:column;align-items:stretch;gap:6px;padding:16px 14px 14px;border:0;border-radius:var(--tn-arrondi,0);background:var(--tn-doux)}
+.ctw .tn-prestations[data-tn-c="cartes"] .tn-liste-p b{font-size:calc(21px*var(--tn-k));overflow-wrap:anywhere;hyphens:auto}
+.ctw .tn-prestations[data-tn-c="cartes"] .tn-liste-p i{margin-top:auto;padding-top:12px;border-top:1px solid color-mix(in srgb,var(--tn-encre) 28%,transparent);text-align:left;white-space:normal}
+.ctw .tn-prestations[data-tn-c="cartes"] .tn-liste-p .tn-rub{flex:0 0 100%;min-height:0;padding:12px 0 0;background:none}
+.ctw .tn-prestations[data-tn-c="cartes"] .tn-liste-p .tn-rub:first-child{padding-top:0}
+.ctw[data-tn-cadre="penche"] .tn-prestations[data-tn-c="cartes"] .tn-liste-p li:not(.tn-rub){border:3px solid var(--tn-encre);border-radius:18px;box-shadow:4px 5px 0 var(--tn-encre)}
+/* « carte » : centrée, par rubriques, la photo en médaillon */
+.ctw .tn-prestations[data-tn-c="carte"]{text-align:center}
+.ctw .tn-prestations[data-tn-c="carte"] .tn-ph{order:-1;align-self:center;width:150px;height:184px;margin:0 0 24px}
+.ctw[data-tn-cadre="niche"] .tn-prestations[data-tn-c="carte"] .tn-ph{border-radius:75px 75px 0 0}
+.ctw .tn-prestations[data-tn-c="carte"] .tn-liste-p{margin-top:8px}
+.ctw .tn-prestations[data-tn-c="carte"] .tn-liste-p li{display:block;padding:13px 0;border:0}
+.ctw .tn-prestations[data-tn-c="carte"] .tn-liste-p b{display:block;font-size:25px}
+.ctw .tn-prestations[data-tn-c="carte"] .tn-liste-p span{display:block;margin-top:4px}
+.ctw .tn-prestations[data-tn-c="carte"] .tn-liste-p i{display:block;margin-top:7px;text-align:center}
+.ctw .tn-prestations[data-tn-c="carte"] .tn-liste-p .tn-rub{display:flex;align-items:center;justify-content:center;gap:14px;padding:26px 0 6px}
+.ctw .tn-prestations[data-tn-c="carte"] .tn-liste-p .tn-rub::before,.ctw .tn-prestations[data-tn-c="carte"] .tn-liste-p .tn-rub::after{content:"";flex:0 0 44px;border-top:1px solid var(--tn-encre)}
+.ctw .tn-prestations[data-tn-c="carte"] .tn-liste-p .tn-rub small{font-size:21px;color:var(--tn-encre)}
+.ctw .tn-prestations[data-tn-c="carte"] .tn-bt{align-self:center;min-width:236px}
+
+/* ══ Grille de tarifs en tableau ══ */
+.ctw .tn-tarifs{padding:44px 20px 0}
+.ctw .tn-tarifs:last-child{padding-bottom:64px}
+.ctw .tn-tarifs h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-tarifs p{margin-top:10px;font-size:16.5px;color:var(--tn-texte)}
+.ctw .tn-tarifs .tn-defile{margin-top:24px}
+/* téléphone, jusqu'à trois colonnes de prix : chaque ligne s'empile, son nom, puis ses prix sous les en-têtes */
+.ctw .tn-tarifs table{display:block;width:100%;border-collapse:collapse;font-size:16px}
+.ctw .tn-tarifs thead,.ctw .tn-tarifs tbody{display:block}
+.ctw .tn-tarifs tr{display:flex;flex-wrap:wrap;column-gap:10px}
+.ctw .tn-tarifs th,.ctw .tn-tarifs td{flex:1 1 0;min-width:0;padding:0;text-align:left;font-weight:400}
+.ctw .tn-tarifs thead tr{padding-bottom:10px;border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-tarifs thead th:first-child{display:none}
+.ctw .tn-tarifs thead small{font-size:15px;line-height:1.2}
+.ctw .tn-tarifs tbody tr{padding:16px 0 18px;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-tarifs tbody th{flex:0 0 100%;padding-bottom:10px;font-family:var(--f-title);font-size:23px;line-height:1.12}
+/* téléphone, quatre colonnes de prix ou plus : un vrai tableau qui défile sur lui-même jusqu'au bord, jamais la page */
+.ctw .tn-tarifs:has(thead th:nth-child(5)){padding-right:0}
+.ctw .tn-tarifs:has(thead th:nth-child(5)) :is(h2,p){padding-right:20px}
+.ctw .tn-tarifs:has(thead th:nth-child(5)) .tn-defile{padding-right:20px;overflow-x:auto;scrollbar-width:none}
+.ctw .tn-tarifs:has(thead th:nth-child(5)) .tn-defile::-webkit-scrollbar{display:none}
+.ctw .tn-tarifs:has(thead th:nth-child(5)) table{display:table;width:max-content;min-width:100%}
+.ctw .tn-tarifs:has(thead th:nth-child(5)) thead{display:table-header-group}
+.ctw .tn-tarifs:has(thead th:nth-child(5)) tbody{display:table-row-group}
+.ctw .tn-tarifs:has(thead th:nth-child(5)) tr{display:table-row}
+.ctw .tn-tarifs:has(thead th:nth-child(5)) :is(th,td){display:table-cell;padding:16px 0 16px 20px;text-align:right;white-space:nowrap}
+.ctw .tn-tarifs:has(thead th:nth-child(5)) thead th{padding-top:0;padding-bottom:10px}
+.ctw .tn-tarifs:has(thead th:nth-child(5)) :is(thead th:first-child,tbody th){position:sticky;left:0;width:132px;min-width:132px;max-width:132px;padding-left:0;padding-right:12px;background:var(--tn-fond);text-align:left;white-space:normal}
+.ctw .tn-tarifs:has(thead th:nth-child(5)) tbody th{font-size:19px}
+.ctw[data-tn-fond="toile"] .tn-tarifs:has(thead th:nth-child(5)) :is(thead th:first-child,tbody th){position:static;background:none}
+.ctw .tn-tarifs .tn-note{margin-top:16px;font-size:15px;line-height:1.9;color:var(--tn-sourd)}
+.ctw .tn-tarifs .tn-suite{display:inline-flex;align-items:flex-end;min-height:44px;margin-top:6px;padding-bottom:2px;border-bottom:1.5px solid var(--tn-encre);font-size:16px;font-weight:600}
+
+/* ══ Exemples de prix : trois cas réels ══ */
+.ctw .tn-exemples-prix{padding:44px 20px 0}
+.ctw .tn-exemples-prix:last-child{padding-bottom:64px}
+.ctw .tn-exemples-prix h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-exemples-prix>p{margin-top:12px;font-size:16.5px;color:var(--tn-texte)}
+.ctw .tn-exemples-prix .tn-cas{margin-top:26px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-exemples-prix .tn-cas li{display:flex;flex-direction:column;padding:20px 0 22px;border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-exemples-prix .tn-cas b{font-family:var(--f-title);font-weight:400;font-size:25px;line-height:1.1}
+.ctw .tn-exemples-prix .tn-cas span{margin-top:8px;font-size:16px;line-height:1.5;color:var(--tn-texte)}
+.ctw .tn-exemples-prix .tn-cas i{margin-top:16px;font-family:var(--f-title);font-style:normal;font-size:calc(38px*var(--tn-k));line-height:1.05;letter-spacing:-.015em}
+.ctw .tn-exemples-prix .tn-cas i mark{font-size:.55em;vertical-align:middle;letter-spacing:normal}
+.ctw .tn-exemples-prix .tn-cas small{margin-top:8px;font-size:15.5px}
+.ctw .tn-exemples-prix .tn-bt{display:block;margin-top:28px;padding:16px 20px}
+/* « ticket » : une note de chantier sur fond doux, une ligne par cas, le prix à droite */
+.ctw .tn-exemples-prix[data-tn-c="ticket"] .tn-cas{padding:8px 18px 26px;border:0;background:var(--tn-doux);-webkit-mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/16px 100%;mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/16px 100%}
+.ctw .tn-exemples-prix[data-tn-c="ticket"] .tn-cas li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;align-items:baseline;padding:18px 0;border-bottom:1.5px dashed color-mix(in srgb,var(--tn-encre) 55%,transparent)}
+.ctw .tn-exemples-prix[data-tn-c="ticket"] .tn-cas li:last-child{border-bottom:0}
+.ctw .tn-exemples-prix[data-tn-c="ticket"] .tn-cas b{grid-column:1/-1;font-size:22px}
+.ctw .tn-exemples-prix[data-tn-c="ticket"] .tn-cas span{grid-column:1/-1;margin:0;font-size:15.5px}
+.ctw .tn-exemples-prix[data-tn-c="ticket"] .tn-cas small{grid-column:1;grid-row:3;margin:6px 0 0;font-size:14.5px}
+.ctw .tn-exemples-prix[data-tn-c="ticket"] .tn-cas i{grid-column:2;grid-row:3;margin:6px 0 0;font-size:calc(26px*var(--tn-k));text-align:right}
+.ctw .tn-exemples-prix[data-tn-c="ticket"] .tn-cas i mark{font-size:.62em}
+
+/* ══ Aides et prix après aide ══ */
+.ctw .tn-aides{padding:44px 20px 0}
+.ctw .tn-aides:last-child{padding-bottom:64px}
+.ctw .tn-aides h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-aides>p{margin-top:12px;font-size:16.5px;color:var(--tn-texte)}
+.ctw .tn-aides .tn-comptes{display:grid;gap:12px;margin-top:26px}
+.ctw .tn-aides .tn-comptes li{padding:22px 18px 16px;border-radius:var(--tn-arrondi,0);background:var(--tn-doux)}
+.ctw .tn-aides .tn-comptes b{display:block;margin-bottom:12px;font-family:var(--f-title);font-weight:400;font-size:26px;line-height:1.1}
+.ctw .tn-aides .tn-comptes span{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0;border-top:1px solid color-mix(in srgb,var(--tn-encre) 28%,transparent);font-size:16px}
+.ctw .tn-aides .tn-comptes em{font-style:normal;color:var(--tn-texte)}
+.ctw .tn-aides .tn-comptes i{font-style:normal;text-align:right}
+.ctw .tn-aides .tn-comptes .tn-reste{padding-top:13px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-aides .tn-comptes .tn-reste em{font-weight:600;color:var(--tn-encre)}
+.ctw .tn-aides .tn-comptes .tn-reste i{font-family:var(--f-title);font-size:26px;line-height:1}
+.ctw .tn-aides .tn-comptes .tn-reste mark{font-size:.72em;vertical-align:middle}
+.ctw[data-tn-cadre="penche"] .tn-aides .tn-comptes li{border:3px solid var(--tn-encre);border-radius:18px;box-shadow:4px 5px 0 var(--tn-encre)}
+.ctw .tn-aides .tn-liste{margin-top:30px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-aides details{padding:16px 0;border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-aides summary{display:flex;justify-content:space-between;gap:12px;list-style:none;cursor:pointer;font-family:var(--f-title);font-size:24px}
+.ctw .tn-aides summary::-webkit-details-marker{display:none}
+.ctw .tn-aides summary::after{content:"+";font-family:var(--f-ui);font-size:22px}
+.ctw .tn-aides details[open] summary::after{content:"−"}
+.ctw .tn-aides details p{margin-top:8px;font-size:16px;color:var(--tn-texte)}
+
+/* ══ Formulaires des métiers (rendez-vous, devis, disponibilités, retrait) : de vrais champs, sans script ══ */
+.ctw :is(.tn-rdv,.tn-devis,.tn-disponibilites,.tn-retrait) form{margin:0}
+.ctw .tn:is(.tn-rdv,.tn-devis,.tn-disponibilites,.tn-retrait) form label{display:block;position:relative;padding-top:18px}
+.ctw .tn:is(.tn-rdv,.tn-devis,.tn-disponibilites,.tn-retrait) form label>span{display:block;font-size:14.5px;color:var(--tn-sourd)}
+.ctw .tn:is(.tn-rdv,.tn-devis,.tn-disponibilites,.tn-retrait) form :is(input[type="text"],input[type="tel"],input[type="email"],input[type="date"],input[type="number"],select,textarea){display:block;width:100%;min-height:44px;margin:0;padding:6px 0 8px;border:0;border-bottom:1.5px solid var(--tn-encre);border-radius:0;outline:0;background:none;color:var(--tn-encre);color-scheme:inherit;font-family:var(--f-ui);font-size:17px;line-height:1.3;-webkit-appearance:none;appearance:none}
+.ctw .tn:is(.tn-rdv,.tn-devis,.tn-disponibilites,.tn-retrait) form :is(input,select,textarea):focus-visible{border-bottom-color:var(--tn-accent);box-shadow:0 1.5px 0 var(--tn-accent)}
+.ctw .tn:is(.tn-rdv,.tn-devis,.tn-disponibilites,.tn-retrait) form select{padding-right:30px;cursor:pointer}
+.ctw .tn:is(.tn-rdv,.tn-devis,.tn-disponibilites,.tn-retrait) form .tn-choix::after{content:"";position:absolute;right:5px;bottom:21px;width:8px;height:8px;border-right:1.5px solid var(--tn-encre);border-bottom:1.5px solid var(--tn-encre);transform:rotate(45deg);pointer-events:none}
+.ctw .tn:is(.tn-rdv,.tn-devis,.tn-disponibilites,.tn-retrait) form textarea{min-height:88px;resize:vertical}
+/* une date vide n'affiche pas le gabarit du navigateur : seul le libellé du champ parle */
+.ctw .tn:is(.tn-rdv,.tn-devis,.tn-disponibilites,.tn-retrait) form input[type="date"]:invalid:not(:focus)::-webkit-datetime-edit{color:transparent}
+/* deux choix côte à côte (le matin, l'après-midi) : des boutons radio cachés et leurs étiquettes */
+.ctw .tn:is(.tn-rdv,.tn-devis,.tn-disponibilites,.tn-retrait) form .tn-moment{display:flex;flex-wrap:wrap;gap:8px;padding-top:18px}
+.ctw .tn:is(.tn-rdv,.tn-devis,.tn-disponibilites,.tn-retrait) form .tn-moment>span{flex:0 0 100%;font-size:14.5px;color:var(--tn-sourd)}
+.ctw .tn:is(.tn-rdv,.tn-devis,.tn-disponibilites,.tn-retrait) form .tn-moment label{flex:1;padding:0}
+.ctw .tn:is(.tn-rdv,.tn-devis,.tn-disponibilites,.tn-retrait) form .tn-moment input{position:absolute;width:1px;height:1px;opacity:0}
+.ctw .tn:is(.tn-rdv,.tn-devis,.tn-disponibilites,.tn-retrait) form .tn-moment label span{display:grid;place-items:center;min-height:46px;padding:8px 6px;border:1.5px solid var(--tn-encre);border-radius:999px;font-size:15.5px;color:var(--tn-encre);text-align:center;cursor:pointer}
+.ctw:is([data-tn-bouton="droit"],[data-tn-bouton="etiquette"]) .tn:is(.tn-rdv,.tn-devis,.tn-disponibilites,.tn-retrait) form .tn-moment label span{border-radius:2px}
+.ctw .tn:is(.tn-rdv,.tn-devis,.tn-disponibilites,.tn-retrait) form .tn-moment input:checked+span{background:var(--tn-encre);color:var(--tn-sur-bouton)}
+.ctw .tn:is(.tn-rdv,.tn-devis,.tn-disponibilites,.tn-retrait) form .tn-moment input:focus-visible+span{outline:2px solid var(--tn-accent);outline-offset:2px}
+.ctw :is(.tn-rdv,.tn-devis,.tn-disponibilites,.tn-retrait) form .tn-bt{display:block;width:100%;margin-top:28px;padding:16px 20px}
+.ctw[data-tn-bouton="etiquette"] :is(.tn-rdv,.tn-devis,.tn-disponibilites,.tn-retrait) form .tn-bt{display:inline-flex;justify-content:center}
+.ctw :is(.tn-rdv,.tn-devis,.tn-disponibilites,.tn-retrait) form .tn-note{margin-top:16px;font-size:15px;line-height:1.6;color:var(--tn-sourd)}
+
+/* ══ Demande de rendez-vous ══ */
+/* « colonne » : une bande de photo du lieu, puis le formulaire en une colonne */
+.ctw .tn-rdv{display:flex;flex-direction:column;padding:0 20px}
+.ctw .tn-rdv:last-child{padding-bottom:64px}
+.ctw .tn-rdv .tn-ph{height:130px;margin:44px -20px 0}
+.ctw .tn-rdv h2{margin-top:34px;font-size:calc(40px*var(--tn-k))}
+.ctw .tn-rdv>p{margin-top:10px;font-size:16.5px;color:var(--tn-texte)}
+.ctw .tn-rdv form{margin-top:8px}
+/* « photo » : le formulaire à côté d'une grande photo du lieu, dans le cadre de la marque */
+.ctw .tn-rdv[data-tn-c="photo"]{padding-top:10px}
+.ctw .tn-rdv[data-tn-c="photo"] .tn-ph{order:1;height:250px;margin:24px 0 0;border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn-rdv[data-tn-c="photo"] .tn-ph{border-radius:125px 125px 0 0}
+.ctw[data-tn-cadre="penche"] .tn-rdv[data-tn-c="photo"]{overflow-x:clip}
+.ctw[data-tn-cadre="penche"] .tn-rdv[data-tn-c="photo"] .tn-ph{border:3px solid var(--tn-encre);border-radius:18px;transform:rotate(-1.2deg);box-shadow:6px 7px 0 var(--tn-encre)}
+.ctw .tn-rdv[data-tn-c="photo"] form{order:2;margin-top:14px}
+
+/* ══ Demande de devis ══ */
+.ctw .tn-devis{padding:44px 20px 0}
+.ctw .tn-devis:last-child{padding-bottom:64px}
+.ctw .tn-devis h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-devis>p{margin-top:12px;font-size:16.5px;color:var(--tn-texte)}
+.ctw .tn-devis form{margin-top:10px}
+/* « courte » : quatre champs, ni étapes ni champs facultatifs */
+.ctw .tn-devis .tn-etape{display:contents}
+.ctw .tn-devis h3{display:none}
+.ctw .tn.tn-devis:not([data-tn-c="etapes"]) form .tn-plus{display:none}
+/* « etapes » : trois étapes numérotées, tous les champs */
+.ctw .tn-devis[data-tn-c="etapes"] form{margin-top:0;counter-reset:etape}
+.ctw .tn-devis[data-tn-c="etapes"] .tn-etape{display:block;position:relative;margin-top:30px;padding:16px 0 0 60px;border-top:1.5px solid var(--tn-encre);counter-increment:etape}
+.ctw .tn-devis[data-tn-c="etapes"] .tn-etape::before{content:counter(etape);position:absolute;left:0;top:12px;font-family:var(--f-title);font-size:calc(54px*var(--tn-k));line-height:1}
+.ctw .tn-devis[data-tn-c="etapes"] h3{display:block;font-size:26px}
+
+/* ══ Vérifier une date ou un séjour ══ */
+/* « barre » : la photo du lieu en bande, la boîte des dates à cheval dessus */
+.ctw .tn-disponibilites{display:flex;flex-direction:column;padding:44px 20px 0}
+.ctw .tn-disponibilites:last-child{padding-bottom:64px}
+.ctw .tn-disponibilites h2{order:1;font-size:calc(40px*var(--tn-k))}
+.ctw .tn-disponibilites>p{order:2;margin-top:12px;font-size:16.5px;color:var(--tn-texte)}
+.ctw .tn-disponibilites .tn-ph{order:3;height:250px;margin:24px -20px 0}
+.ctw .tn-disponibilites form{order:4;position:relative;margin-top:-46px}
+.ctw .tn-disponibilites .tn-dates{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);overflow:hidden;border:1.5px solid var(--tn-encre);border-radius:var(--tn-arrondi,0);background:var(--tn-fond)}
+.ctw .tn.tn-disponibilites form .tn-dates label{padding:11px 14px 4px}
+.ctw .tn.tn-disponibilites form .tn-dates label:nth-child(2){border-left:1.5px solid var(--tn-encre)}
+.ctw .tn.tn-disponibilites form .tn-dates label:nth-child(3){grid-column:1/-1;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn.tn-disponibilites form .tn-dates input{min-height:40px;padding:4px 0;border-bottom:0}
+/* « fiche » : le formulaire à côté de la photo de la chambre, dans le cadre de la marque */
+.ctw .tn-disponibilites[data-tn-c="fiche"] .tn-ph{height:240px;margin:24px 0 0;border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn-disponibilites[data-tn-c="fiche"] .tn-ph{border-radius:120px 120px 0 0}
+.ctw[data-tn-cadre="penche"] .tn-disponibilites[data-tn-c="fiche"]{overflow-x:clip}
+.ctw[data-tn-cadre="penche"] .tn-disponibilites[data-tn-c="fiche"] .tn-ph{border:3px solid var(--tn-encre);border-radius:18px;transform:rotate(-1.2deg);box-shadow:6px 7px 0 var(--tn-encre)}
+.ctw .tn-disponibilites[data-tn-c="fiche"] form{margin-top:10px}
+.ctw .tn-disponibilites[data-tn-c="fiche"] .tn-dates{column-gap:16px;overflow:visible;border:0;border-radius:0;background:none}
+.ctw .tn.tn-disponibilites[data-tn-c="fiche"] form .tn-dates label{padding:18px 0 0;border:0}
+.ctw .tn.tn-disponibilites[data-tn-c="fiche"] form .tn-dates input{min-height:44px;padding:6px 0 8px;border-bottom:1.5px solid var(--tn-encre)}
+
+/* ══ Prochaines dates ══ */
+.ctw .tn-agenda{padding:44px 20px 0}
+.ctw .tn-agenda:last-child{padding-bottom:64px}
+.ctw .tn-agenda h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-agenda>p{margin-top:12px;font-size:16.5px;color:var(--tn-texte)}
+.ctw .tn-agenda .tn-dates-a{margin-top:26px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-agenda .tn-dates-a li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 14px;align-items:baseline;padding:18px 0 14px;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-agenda .tn-dates-a small{grid-column:1/-1;font-size:16px;color:var(--tn-encre)}
+.ctw .tn-agenda .tn-dates-a b{grid-column:1/-1;margin-top:8px;font-family:var(--f-title);font-weight:400;font-size:27px;line-height:1.08}
+.ctw .tn-agenda .tn-dates-a span{grid-column:1/-1;margin-top:6px;font-size:16px;line-height:1.5;color:var(--tn-texte)}
+.ctw .tn-agenda .tn-dates-a i{grid-column:1;font-style:normal;font-size:15px;color:var(--tn-sourd)}
+.ctw .tn-agenda .tn-dates-a a{grid-column:2;display:inline-flex;align-items:flex-end;min-height:44px;padding-bottom:2px;border-bottom:1.5px solid var(--tn-encre);font-size:16px;font-weight:600}
+/* « prochain » : la prochaine date en grand dans un bloc de couleur douce */
+.ctw .tn-agenda[data-tn-c="prochain"] .tn-dates-a{border-top:0}
+.ctw .tn-agenda[data-tn-c="prochain"] .tn-dates-a li:first-child{display:flex;flex-direction:column;align-items:center;margin-bottom:6px;padding:34px 22px 26px;border:0;border-radius:var(--tn-arrondi,0);background:var(--tn-doux);text-align:center}
+.ctw[data-tn-cadre="niche"] .tn-agenda[data-tn-c="prochain"] .tn-dates-a li:first-child{padding-top:58px;border-radius:999px 999px 14px 14px}
+.ctw[data-tn-cadre="penche"] .tn-agenda[data-tn-c="prochain"] .tn-dates-a li:first-child{border:3px solid var(--tn-encre);border-radius:18px;box-shadow:5px 6px 0 var(--tn-encre)}
+.ctw .tn-agenda[data-tn-c="prochain"] .tn-dates-a li:first-child b{margin-top:12px;font-size:calc(38px*var(--tn-k));line-height:1}
+.ctw .tn-agenda[data-tn-c="prochain"] .tn-dates-a li:first-child span{margin-top:12px}
+.ctw .tn-agenda[data-tn-c="prochain"] .tn-dates-a li:first-child i{margin-top:14px}
+
+/* ══ Planning de la semaine ══ */
+/* « lignes » : un jour par ligne, son nom à gauche, ses cours à droite */
+.ctw .tn-planning{padding:44px 20px 0}
+.ctw .tn-planning:last-child{padding-bottom:64px}
+.ctw .tn-planning h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-planning>p{margin-top:12px;font-size:16.5px;color:var(--tn-texte)}
+.ctw .tn-planning .tn-semaine{margin-top:26px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-planning .tn-jour{display:grid;grid-template-columns:112px minmax(0,1fr);gap:0 12px;padding:16px 0 18px;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-planning h3{font-size:calc(23px*var(--tn-k));line-height:1.15}
+.ctw .tn-planning .tn-jour ul{display:grid;gap:14px}
+.ctw .tn-planning .tn-jour li{display:grid;gap:2px}
+.ctw .tn-planning .tn-jour small{font-size:15px}
+.ctw .tn-planning .tn-jour b{font-size:17px;font-weight:600;line-height:1.25}
+.ctw .tn-planning .tn-jour span{font-size:14.5px;color:var(--tn-sourd)}
+.ctw .tn-planning .tn-bt{display:block;margin-top:28px;padding:16px 20px}
+/* « colonnes » : un bloc par jour sur fond doux (une rangée se remplit toujours) */
+.ctw .tn-planning[data-tn-c="colonnes"] .tn-semaine{display:flex;flex-wrap:wrap;gap:10px;border-top:0}
+.ctw .tn-planning[data-tn-c="colonnes"] .tn-jour{flex:1 1 calc(50% - 5px);min-width:0;display:block;padding:16px 14px 18px;border:0;border-radius:var(--tn-arrondi,0);background:var(--tn-doux)}
+.ctw[data-tn-cadre="penche"] .tn-planning[data-tn-c="colonnes"] .tn-jour{border:3px solid var(--tn-encre);border-radius:18px;box-shadow:4px 5px 0 var(--tn-encre)}
+.ctw .tn-planning[data-tn-c="colonnes"] h3{margin-bottom:12px;padding-bottom:10px;border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-planning[data-tn-c="colonnes"] .tn-jour mark{font-size:12.5px;padding:1px 4px}
+
+/* ══ Commande à retirer ══ */
+.ctw .tn-retrait{padding:44px 20px 0}
+.ctw .tn-retrait:last-child{padding-bottom:64px}
+.ctw .tn-retrait h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-retrait>p{margin-top:12px;font-size:16.5px;color:var(--tn-texte)}
+.ctw .tn-retrait form{margin-top:24px}
+.ctw .tn-retrait .tn-plats{border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-retrait .tn-plats li{display:grid;grid-template-columns:78px minmax(0,1fr) auto;gap:2px 14px;align-items:start;padding:16px 0;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-retrait .tn-plats .tn-ph{grid-row:1/4;display:block;width:78px;height:78px;border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn-retrait .tn-plats .tn-ph{border-radius:39px 39px 0 0}
+.ctw[data-tn-cadre="penche"] .tn-retrait .tn-plats .tn-ph{border:2.5px solid var(--tn-encre);border-radius:14px;transform:rotate(-2deg);box-shadow:3px 4px 0 var(--tn-encre)}
+.ctw .tn-retrait .tn-plats b{grid-column:2;font-family:var(--f-title);font-weight:400;font-size:22px;line-height:1.15}
+.ctw .tn-retrait .tn-plats li>span{grid-column:2;font-size:15px;line-height:1.4;color:var(--tn-sourd)}
+.ctw .tn-retrait .tn-plats em{grid-column:2;margin-top:4px;font-style:normal;font-size:16px}
+.ctw .tn.tn-retrait form .tn-qte{grid-column:3;grid-row:1/4;align-self:center;padding:0;text-align:center}
+.ctw .tn.tn-retrait form .tn-qte span{font-size:13px}
+.ctw .tn.tn-retrait form .tn-qte input{width:62px;min-height:46px;margin-top:4px;padding:6px 2px 6px 8px;border:1.5px solid var(--tn-encre);text-align:center}
+
+/* ══ La vitrine du jour (boulangerie) : une ardoise sombre ══ */
+.ctw .tn-vitrine{margin-top:44px;padding:12px;background:var(--tn-encre);color:var(--tn-sur-bouton)}
+.ctw .tn-vitrine .tn-ardoise{padding:36px 18px 26px;border:1px solid color-mix(in srgb,var(--tn-sur-bouton) 42%,transparent)}
+.ctw .tn-vitrine h2{font-size:calc(40px*var(--tn-k));text-align:center}
+.ctw .tn-vitrine .tn-fournees{margin-top:28px}
+.ctw .tn-vitrine .tn-fournees li{display:grid;gap:4px;padding:16px 0 17px;border-top:1px dashed color-mix(in srgb,var(--tn-sur-bouton) 42%,transparent)}
+.ctw .tn-vitrine .tn-fournees b{font-family:var(--f-title);font-weight:400;font-size:27px;line-height:1.1}
+.ctw .tn-vitrine .tn-fournees span{font-size:15.5px;color:color-mix(in srgb,var(--tn-sur-bouton) 76%,transparent)}
+.ctw .tn-vitrine .tn-fournees small{margin-top:4px;font-size:15.5px;color:var(--tn-sur-bouton)}
+.ctw .tn-vitrine p{padding-top:18px;border-top:1px solid color-mix(in srgb,var(--tn-sur-bouton) 42%,transparent);font-size:15.5px;text-align:center}
+.ctw .tn-vitrine p a{display:inline-flex;align-items:flex-end;min-height:44px;padding-bottom:2px;border-bottom:1.5px solid currentColor}
+
+/* ══ Origine des viandes ══ */
+.ctw .tn-origines{padding:44px 20px 0}
+.ctw .tn-origines:last-child{padding-bottom:64px}
+.ctw .tn-origines h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-origines>p{margin-top:12px;font-size:16.5px;color:var(--tn-texte)}
+.ctw .tn-origines table{width:100%;margin-top:26px;border-collapse:collapse}
+.ctw .tn-origines thead th{padding:0 0 10px;border-bottom:1.5px solid var(--tn-encre);text-align:left;font-weight:400}
+.ctw .tn-origines thead small{font-size:15px}
+.ctw .tn-origines thead th:last-child,.ctw .tn-origines td{text-align:right}
+.ctw .tn-origines tbody th{padding:14px 12px 14px 0;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent);text-align:left;font-family:var(--f-title);font-weight:400;font-size:27px;line-height:1.1}
+.ctw .tn-origines td{padding:14px 0;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent);font-size:16px}
+.ctw .tn-origines .tn-note{margin-top:16px;font-size:15px;color:var(--tn-sourd)}
+
+/* ══ Les réalisations en photos ══ */
+/* « grille » : deux photos par ligne dans le cadre de la marque, la légende dessous */
+.ctw .tn-realisations{padding:44px 20px 0}
+.ctw .tn-realisations:last-child{padding-bottom:64px}
+.ctw[data-tn-cadre="penche"] .tn-realisations{overflow-x:clip}
+.ctw .tn-realisations h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-realisations>p{margin-top:12px;font-size:16.5px;color:var(--tn-texte)}
+.ctw .tn-realisations .tn-galerie{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:26px 12px;margin-top:26px}
+.ctw .tn-realisations figure:last-child:nth-child(odd){grid-column:1/-1}
+.ctw .tn-realisations .tn-ph{height:200px}
+.ctw .tn-realisations figcaption{margin-top:12px}
+.ctw[data-tn-cadre="penche"] .tn-realisations figcaption{margin-top:20px}
+.ctw .tn-realisations figcaption b{display:block;font-family:var(--f-title);font-weight:400;font-size:calc(22px*var(--tn-k));line-height:1.12;overflow-wrap:anywhere;hyphens:auto}
+.ctw .tn-realisations figcaption span{display:block;margin-top:5px;font-size:14.5px;line-height:1.4;color:var(--tn-texte)}
+.ctw .tn-realisations figcaption small{margin-top:5px;font-size:15px}
+.ctw .tn-realisations .tn-bt{display:block;margin-top:30px;padding:16px 20px}
+/* « bandes » : de grandes bandes de photo, la légende dessous */
+.ctw .tn-realisations[data-tn-c="bandes"] .tn-galerie{display:block;margin:26px -20px 0}
+.ctw .tn-realisations[data-tn-c="bandes"] figure+figure{margin-top:30px}
+.ctw[data-tn-cadre] .tn-realisations[data-tn-c="bandes"] .tn-ph{height:240px;border:0;border-radius:0;box-shadow:none;transform:none}
+.ctw .tn-realisations[data-tn-c="bandes"] figcaption{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 12px;align-items:baseline;margin-top:14px;padding:0 20px}
+.ctw .tn-realisations[data-tn-c="bandes"] figcaption b{font-size:27px}
+.ctw .tn-realisations[data-tn-c="bandes"] figcaption span{grid-column:1/-1;grid-row:2;font-size:16px;line-height:1.5}
+.ctw .tn-realisations[data-tn-c="bandes"] figcaption small{grid-column:2;grid-row:1;margin:0}
+/* « detail » : une réalisation en grand avec son récit, les autres en vignettes */
+.ctw .tn-realisations[data-tn-c="detail"] .tn-galerie{grid-template-columns:repeat(3,minmax(0,1fr));gap:26px 10px}
+.ctw .tn-realisations[data-tn-c="detail"] figure:first-child,.ctw .tn-realisations[data-tn-c="detail"] figure:last-child:nth-child(odd){grid-column:auto}
+.ctw .tn-realisations[data-tn-c="detail"] figure:first-child{grid-column:1/-1}
+.ctw .tn-realisations[data-tn-c="detail"] figure:first-child .tn-ph{height:300px}
+.ctw .tn-realisations[data-tn-c="detail"] figure:first-child figcaption b{font-size:calc(34px*var(--tn-k));line-height:1.02}
+.ctw .tn-realisations[data-tn-c="detail"] figure:first-child figcaption span{margin-top:8px;font-size:16.5px;line-height:1.55}
+.ctw .tn-realisations[data-tn-c="detail"] figure:not(:first-child) .tn-ph{height:112px}
+.ctw .tn-realisations[data-tn-c="detail"] figure:not(:first-child) figcaption b{font-family:var(--f-ui);font-weight:600;font-size:15px;line-height:1.25}
+.ctw .tn-realisations[data-tn-c="detail"] figure:not(:first-child) figcaption span{display:none}
+.ctw .tn-realisations[data-tn-c="detail"] figure:not(:first-child) figcaption small{font-size:13.5px}
+.ctw .tn-realisations[data-tn-c="detail"] figure:not(:first-child) figcaption mark{font-size:12px;padding:1px 4px}
+
+/* ══ Avant et après, côte à côte ══ */
+.ctw .tn-avant-apres{padding:44px 20px 0}
+.ctw .tn-avant-apres:last-child{padding-bottom:64px}
+.ctw .tn-avant-apres h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-avant-apres>p{margin-top:12px;font-size:16.5px;color:var(--tn-texte)}
+.ctw .tn-avant-apres .tn-paire{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:26px}
+.ctw .tn-avant-apres figure{position:relative}
+.ctw .tn-avant-apres .tn-ph{height:250px;border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn-avant-apres .tn-ph{border-radius:86px 86px 0 0}
+.ctw[data-tn-cadre="penche"] .tn-avant-apres{overflow-x:clip}
+.ctw[data-tn-cadre="penche"] .tn-avant-apres .tn-ph{border:3px solid var(--tn-encre);border-radius:18px;box-shadow:5px 6px 0 var(--tn-encre)}
+.ctw[data-tn-cadre="penche"] .tn-avant-apres .tn-avant .tn-ph{transform:rotate(-1.6deg)}
+.ctw[data-tn-cadre="penche"] .tn-avant-apres .tn-apres .tn-ph{transform:rotate(1.2deg)}
+.ctw .tn-avant-apres figcaption{position:absolute;left:10px;bottom:10px;padding:5px 11px 4px;background:var(--tn-fond)}
+.ctw .tn-avant-apres figcaption small{font-size:16px;line-height:1.2;color:var(--tn-encre)}
+.ctw .tn-avant-apres .tn-legende{display:grid;gap:5px;margin-top:18px}
+.ctw .tn-avant-apres .tn-legende b{font-family:var(--f-title);font-weight:400;font-size:25px;line-height:1.1}
+.ctw .tn-avant-apres .tn-legende span{font-size:16px;line-height:1.5;color:var(--tn-texte)}
+.ctw .tn-avant-apres .tn-legende small{font-size:15px}
+.ctw[data-tn-cadre="penche"] .tn-avant-apres .tn-legende{margin-top:28px}
+/* « incruste » : l'après en grand, l'avant en vignette posée sur son coin */
+.ctw .tn-avant-apres[data-tn-c="incruste"] .tn-paire{display:block;position:relative;padding-bottom:44px}
+.ctw .tn-avant-apres[data-tn-c="incruste"] .tn-apres .tn-ph{height:310px}
+.ctw[data-tn-cadre="niche"] .tn-avant-apres[data-tn-c="incruste"] .tn-apres .tn-ph{border-radius:175px 175px 0 0}
+.ctw .tn-avant-apres[data-tn-c="incruste"] .tn-avant{position:absolute;left:14px;bottom:0;z-index:1;width:46%}
+.ctw .tn-avant-apres[data-tn-c="incruste"] .tn-avant .tn-ph{height:128px;border:4px solid var(--tn-fond);border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="penche"] .tn-avant-apres[data-tn-c="incruste"] .tn-avant .tn-ph{border:3px solid var(--tn-encre);border-radius:14px;box-shadow:4px 5px 0 var(--tn-encre);transform:rotate(-3deg)}
+.ctw .tn-avant-apres[data-tn-c="incruste"] .tn-avant figcaption{left:8px;bottom:8px;padding:3px 8px 2px}
+.ctw .tn-avant-apres[data-tn-c="incruste"] .tn-avant figcaption small{font-size:14px}
+.ctw .tn-avant-apres[data-tn-c="incruste"] .tn-apres figcaption{left:auto;right:10px;bottom:54px}
+
+/* ══ L'équipe ══ */
+/* « noms » : sans photo, les prénoms en très grand */
+.ctw .tn-equipe{padding:44px 20px 0}
+.ctw .tn-equipe:last-child{padding-bottom:64px}
+.ctw .tn-equipe h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-equipe>p{margin-top:12px;font-size:16.5px;color:var(--tn-texte)}
+.ctw .tn-equipe .tn-membres{margin-top:26px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-equipe .tn-membres li{padding:20px 0 22px;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-equipe .tn-membres .tn-ph{display:none}
+.ctw .tn-equipe .tn-ph[style*="data:image/svg"],.ctw .tn-vendus .tn-ph[style*="data:image/svg"]{background-size:contain;background-repeat:no-repeat;background-position:center;background-color:var(--tn-doux)}
+.ctw .tn-equipe .tn-membres b{display:block;font-family:var(--f-title);font-weight:400;font-size:calc(48px*var(--tn-k));line-height:1;letter-spacing:-.02em}
+.ctw .tn-equipe .tn-membres b mark{font-size:.5em;vertical-align:middle;letter-spacing:normal}
+.ctw .tn-equipe .tn-membres span{display:block;margin-top:8px;font-size:16.5px;color:var(--tn-texte)}
+/* « photos » : le portrait de chacun dans le cadre de la marque */
+.ctw[data-tn-cadre="penche"] .tn-equipe[data-tn-c="photos"]{overflow-x:clip}
+.ctw .tn-equipe[data-tn-c="photos"] .tn-membres{display:grid;gap:18px;border-top:0}
+.ctw .tn-equipe[data-tn-c="photos"] .tn-membres li{display:grid;grid-template-columns:132px minmax(0,1fr);gap:0 18px;align-content:center;padding:0;border:0}
+.ctw .tn-equipe[data-tn-c="photos"] .tn-membres .tn-ph{display:block;grid-row:1/3;height:164px}
+.ctw .tn-equipe[data-tn-c="photos"] .tn-membres b{align-self:end;font-size:calc(32px*var(--tn-k))}
+.ctw .tn-equipe[data-tn-c="photos"] .tn-membres b mark{font-size:.56em}
+.ctw .tn-equipe[data-tn-c="photos"] .tn-membres span{align-self:start}
+
+/* ══ La zone d'intervention ══ */
+/* « vue » : la vue de la ville ou de la région d'abord, puis les villes sur deux colonnes (jamais une carte dessinée) */
+.ctw .tn-zone{display:flex;flex-direction:column;padding:44px 20px 0}
+.ctw .tn-zone:last-child{padding-bottom:64px}
+.ctw .tn-zone h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-zone>p{margin-top:12px;font-size:16.5px;color:var(--tn-texte)}
+.ctw .tn-zone .tn-ph{aspect-ratio:900/640;margin-top:26px;border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn-zone .tn-ph{border-radius:120px 120px 0 0}
+.ctw[data-tn-cadre="penche"] .tn-zone{overflow-x:clip}
+.ctw[data-tn-cadre="penche"] .tn-zone .tn-ph{border:3px solid var(--tn-encre);border-radius:18px;transform:rotate(-1.2deg);box-shadow:6px 7px 0 var(--tn-encre)}
+.ctw .tn-zone .tn-villes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:16px;margin-top:24px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-zone .tn-villes li{padding:13px 0;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent);font-family:var(--f-title);font-size:22px;line-height:1.15}
+.ctw .tn-zone .tn-villes li mark{font-size:13.5px;vertical-align:middle}
+.ctw .tn-zone .tn-tel{align-self:flex-start;display:inline-flex;align-items:flex-end;min-height:44px;margin-top:12px;padding-bottom:2px;border-bottom:1.5px solid var(--tn-encre);font-size:17px;font-weight:600}
+/* « villes » : les villes en très grand, la vue ensuite */
+.ctw .tn-zone[data-tn-c="villes"] .tn-villes{order:1;display:block}
+.ctw .tn-zone[data-tn-c="villes"] .tn-villes li{padding:13px 0 15px;font-size:calc(42px*var(--tn-k));line-height:1;letter-spacing:-.02em}
+.ctw .tn-zone[data-tn-c="villes"] .tn-villes li mark{font-size:.44em;letter-spacing:normal}
+.ctw .tn-zone[data-tn-c="villes"] .tn-ph{order:2}
+.ctw .tn-zone[data-tn-c="villes"] .tn-tel{order:3}
+
+/* ══ Horaires et accès ══ */
+/* « lieu » : la photo du lieu, l'adresse et le bouton d'itinéraire, puis les horaires (jamais un plan en image) */
+.ctw .tn-acces{display:flex;flex-direction:column;padding:44px 20px 0}
+.ctw .tn-acces:last-child{padding-bottom:64px}
+.ctw .tn-acces h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-acces .tn-ph{aspect-ratio:900/520;margin-top:24px;border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn-acces .tn-ph{border-radius:96px 96px 0 0}
+.ctw[data-tn-cadre="penche"] .tn-acces{overflow-x:clip}
+.ctw[data-tn-cadre="penche"] .tn-acces .tn-ph{border:3px solid var(--tn-encre);border-radius:18px;transform:rotate(-1.2deg);box-shadow:6px 7px 0 var(--tn-encre)}
+.ctw .tn-acces .tn-lieu{display:flex;flex-direction:column;margin-top:22px}
+.ctw .tn-acces address{font-family:var(--f-title);font-style:normal;font-size:26px;line-height:1.18}
+.ctw .tn-acces address mark{font-size:.62em;vertical-align:middle}
+.ctw .tn-acces .tn-bt{margin-top:18px;padding:16px 20px}
+.ctw[data-tn-bouton="etiquette"] .tn-acces .tn-bt{justify-content:center}
+.ctw .tn-acces .tn-tel{align-self:center;display:inline-flex;align-items:flex-end;min-height:44px;margin-top:6px;padding-bottom:2px;border-bottom:1.5px solid var(--tn-encre);font-size:17px;font-weight:600}
+.ctw .tn-acces .tn-heures{margin-top:36px}
+.ctw .tn-acces h3{font-size:27px}
+.ctw .tn-acces table{width:100%;margin-top:12px;border-collapse:collapse;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-acces th,.ctw .tn-acces td{padding:12px 0;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent);font-size:16.5px;font-weight:400;text-align:left}
+.ctw .tn-acces td{text-align:right}
+.ctw .tn-acces td[colspan]{text-align:left}
+.ctw .tn-acces .tn-pratique{display:grid;gap:14px;margin-top:26px}
+.ctw .tn-acces .tn-pratique li{display:grid;gap:3px;font-size:16px;line-height:1.5}
+.ctw .tn-acces .tn-pratique small{font-size:15.5px}
+/* « horaires » : les horaires en grand dans un bloc de couleur douce, puis l'adresse et la photo du lieu */
+.ctw .tn-acces[data-tn-c="horaires"] .tn-heures{order:1;margin-top:26px;padding:30px 22px 14px;border-radius:var(--tn-arrondi,0);background:var(--tn-doux)}
+.ctw[data-tn-cadre="niche"] .tn-acces[data-tn-c="horaires"] .tn-heures{padding-top:52px;border-radius:999px 999px 14px 14px}
+.ctw[data-tn-cadre="penche"] .tn-acces[data-tn-c="horaires"] .tn-heures{border:3px solid var(--tn-encre);border-radius:18px;box-shadow:5px 6px 0 var(--tn-encre)}
+.ctw .tn-acces[data-tn-c="horaires"] h3{font-size:calc(34px*var(--tn-k));text-align:center}
+.ctw .tn-acces[data-tn-c="horaires"] table{margin-top:18px}
+.ctw .tn-acces[data-tn-c="horaires"] tr:last-child>*{border-bottom:0}
+.ctw .tn-acces[data-tn-c="horaires"] .tn-lieu{order:2;margin-top:30px}
+.ctw .tn-acces[data-tn-c="horaires"] .tn-ph{order:3;margin-top:28px}
+.ctw .tn-acces[data-tn-c="horaires"] .tn-pratique{order:4}
+
+/* ══ Comment ça se passe ══ */
+/* « chiffres » : un grand chiffre devant chaque étape */
+.ctw .tn-deroule{padding:44px 20px 0}
+.ctw .tn-deroule:last-child{padding-bottom:64px}
+.ctw .tn-deroule h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-deroule .tn-etapes{list-style:none;margin:26px 0 0;padding:0;border-top:1.5px solid var(--tn-encre);counter-reset:etape}
+.ctw .tn-deroule .tn-etapes li{position:relative;padding:18px 0 20px 62px;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent);counter-increment:etape}
+.ctw .tn-deroule .tn-etapes li::before{content:counter(etape);position:absolute;left:0;top:13px;font-family:var(--f-title);font-size:calc(58px*var(--tn-k));line-height:1;letter-spacing:-.02em}
+.ctw .tn-deroule .tn-etapes b{display:block;font-family:var(--f-title);font-weight:400;font-size:25px;line-height:1.12}
+.ctw .tn-deroule .tn-etapes p{margin-top:6px;font-size:16px;color:var(--tn-texte)}
+.ctw .tn-deroule .tn-bt{display:block;margin-top:28px;padding:16px 20px}
+/* « frise » : des pastilles numérotées reliées par un trait */
+.ctw .tn-deroule[data-tn-c="frise"] .tn-etapes{margin-top:30px;border-top:0}
+.ctw .tn-deroule[data-tn-c="frise"] .tn-etapes li{padding:4px 0 30px 58px;border-bottom:0}
+.ctw .tn-deroule[data-tn-c="frise"] .tn-etapes li:last-child{padding-bottom:0}
+.ctw .tn-deroule[data-tn-c="frise"] .tn-etapes li::before{top:0;display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--tn-encre);color:var(--tn-sur-bouton);font-family:var(--f-ui);font-size:16px;font-weight:700;letter-spacing:0}
+.ctw:is([data-tn-bouton="droit"],[data-tn-bouton="etiquette"]) .tn-deroule[data-tn-c="frise"] .tn-etapes li::before{border-radius:2px}
+.ctw[data-tn-bouton="ombre"] .tn-deroule[data-tn-c="frise"] .tn-etapes li::before{border:2.5px solid var(--tn-encre);background:var(--tn-accent);box-shadow:2px 3px 0 var(--tn-encre)}
+.ctw .tn-deroule[data-tn-c="frise"] .tn-etapes li::after{content:"";position:absolute;left:18px;top:46px;bottom:8px;border-left:1.5px solid var(--tn-encre)}
+.ctw .tn-deroule[data-tn-c="frise"] .tn-etapes li:last-child::after{display:none}
+
+/* ══ Bandeau d'appel (sombre) ══ */
+.ctw .tn-urgence{margin-top:44px;padding:48px 24px 46px;background:var(--tn-encre);color:var(--tn-sur-bouton);text-align:center;container-type:inline-size}
+.ctw .tn-urgence h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-urgence p{margin-top:12px;font-size:16.5px;color:color-mix(in srgb,var(--tn-sur-bouton) 84%,transparent)}
+.ctw .tn-urgence .tn-tel{display:block;margin-top:28px;font-family:var(--f-title);font-size:calc(50px*var(--tn-k));font-size:min(calc(50px*var(--tn-k)),14cqw);line-height:1.04;letter-spacing:-.02em;text-wrap:balance}
+.ctw[data-tn-titres="gras"] .tn-urgence .tn-tel{font-size:36px;font-size:min(36px,12.2cqw);letter-spacing:-.035em}
+.ctw[data-tn-titres="capitales"] .tn-urgence .tn-tel{font-size:32px;font-size:min(39px,10.3cqw)}
+.ctw .tn-urgence .tn-tel mark{font-size:.5em;vertical-align:middle;letter-spacing:normal}
+.ctw .tn-urgence small{margin-top:14px;font-size:15.5px;color:var(--tn-sur-bouton)}
+.ctw .tn-urgence .tn-suite{display:inline-flex;align-items:flex-end;min-height:44px;margin-top:10px;padding-bottom:2px;border-bottom:1.5px solid currentColor;font-size:16px;font-weight:600}
+
+/* ══ Qualifications et assurances ══ */
+/* « lignes » : une ligne par preuve */
+.ctw .tn-labels{padding:44px 20px 0}
+.ctw .tn-labels:last-child{padding-bottom:64px}
+.ctw .tn-labels h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-labels>p{margin-top:12px;font-size:16.5px;color:var(--tn-texte)}
+.ctw .tn-labels .tn-pieces{margin-top:26px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-labels .tn-pieces li{display:grid;gap:7px;padding:16px 0 18px;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-labels .tn-pieces b{font-family:var(--f-title);font-weight:400;font-size:25px;line-height:1.1}
+.ctw .tn-labels .tn-pieces span{font-size:16px;line-height:1.6;color:var(--tn-texte)}
+/* « pieces » : une pièce encadrée par preuve, comme une attestation */
+.ctw .tn-labels[data-tn-c="pieces"] .tn-pieces{display:flex;flex-wrap:wrap;gap:12px;border-top:0}
+.ctw .tn-labels[data-tn-c="pieces"] .tn-pieces li{flex:1 1 100%;min-width:0;align-content:start;padding:26px 22px 24px;border:1.5px solid var(--tn-encre);border-radius:var(--tn-arrondi,0);outline:1px dashed color-mix(in srgb,var(--tn-encre) 50%,transparent);outline-offset:-7px}
+.ctw[data-tn-cadre="penche"] .tn-labels[data-tn-c="pieces"] .tn-pieces li{border-width:3px;border-radius:18px;box-shadow:4px 5px 0 var(--tn-encre)}
+
+/* ══ Vendus récemment (agence immobilière) ══ */
+/* « cartes » : le dernier bien vendu en grand, les autres dessous */
+.ctw .tn-vendus{padding:44px 20px 0}
+.ctw .tn-vendus:last-child{padding-bottom:64px}
+.ctw[data-tn-cadre="penche"] .tn-vendus{overflow-x:clip}
+.ctw .tn-vendus h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-vendus>p{margin-top:12px;font-size:16.5px;color:var(--tn-texte)}
+.ctw .tn-vendus .tn-biens{display:flex;flex-wrap:wrap;gap:26px 12px;margin-top:26px}
+.ctw .tn-vendus .tn-biens li{flex:1 1 calc(50% - 6px);min-width:0}
+.ctw .tn-vendus .tn-biens li:first-child{flex-basis:100%}
+.ctw .tn-vendus .tn-biens .tn-ph{position:relative;height:176px}
+.ctw .tn-vendus .tn-biens li:first-child .tn-ph{height:250px}
+.ctw .tn-vendus .tn-biens i{position:absolute;left:10px;bottom:10px;padding:5px 11px 4px;background:var(--tn-encre);color:var(--tn-sur-bouton);font-style:normal;font-size:13.5px;font-weight:700;letter-spacing:.03em}
+.ctw .tn-vendus .tn-biens b{display:block;margin-top:12px;font-family:var(--f-title);font-weight:400;font-size:calc(22px*var(--tn-k));line-height:1.12;overflow-wrap:anywhere;hyphens:auto}
+.ctw .tn-vendus .tn-biens li:first-child b{font-size:calc(28px*var(--tn-k))}
+.ctw[data-tn-cadre="penche"] .tn-vendus .tn-biens b{margin-top:20px}
+.ctw .tn-vendus .tn-biens span{display:block;margin-top:5px;font-size:15px;line-height:1.5;color:var(--tn-texte)}
+.ctw .tn-vendus .tn-biens small{margin-top:4px;font-size:15px}
+.ctw .tn-vendus .tn-bt{display:block;margin-top:30px;padding:16px 20px}
+/* « lignes » : une ligne par bien, sa vignette à gauche */
+.ctw .tn-vendus[data-tn-c="lignes"] .tn-biens{display:block;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-vendus[data-tn-c="lignes"] .tn-biens li{display:grid;grid-template-columns:108px minmax(0,1fr);gap:0 16px;align-content:center;justify-items:start;padding:16px 0;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-vendus[data-tn-c="lignes"] .tn-biens li .tn-ph{grid-row:1/5;width:108px;height:120px}
+.ctw .tn-vendus[data-tn-c="lignes"] .tn-biens i{left:6px;bottom:6px;padding:3px 7px 2px;font-size:12px}
+.ctw .tn-vendus[data-tn-c="lignes"] .tn-biens li b{grid-column:2;margin-top:0;font-size:23px}
+.ctw .tn-vendus[data-tn-c="lignes"] .tn-biens span,.ctw .tn-vendus[data-tn-c="lignes"] .tn-biens small{grid-column:2}
+
+/* ══ Écrans larges ══ */
+@media (min-width:760px){
+  /* Ouverture « lieu » : la photo sur une colonne entière, à gauche, le texte à droite */
+  .ctw .tn-ouverture-metier{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);padding-bottom:0}
+  .ctw .tn-ouverture-metier .tn-ph{height:min(84vh,720px)}
+  .ctw .tn-ouverture-metier .tn-corps{order:2;display:flex;flex-direction:column;justify-content:center;padding:40px max(40px,calc(50vw - 540px)) 40px 56px}
+  .ctw .tn-ouverture-metier .tn-corps>small,.ctw .tn-ouverture-metier h1,.ctw .tn-ouverture-metier p,.ctw .tn-ouverture-metier .tn-reperes,.ctw .tn-ouverture-metier .tn-bt{margin-left:0;margin-right:0}
+  .ctw .tn-ouverture-metier .tn-corps>small{margin-top:0}
+  .ctw .tn-ouverture-metier h1{font-size:calc(clamp(48px,5.4vw,78px)*var(--tn-k));margin-top:12px}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"]) .tn-ouverture-metier h1{font-size:calc(clamp(44px,4.8vw,68px)*var(--tn-k))}
+  .ctw .tn-ouverture-metier p{font-size:18px;max-width:440px}
+  .ctw .tn-ouverture-metier .tn-bt{align-self:flex-start;min-width:260px}
+  .ctw .tn-ouverture-metier .tn-tel{align-self:flex-start}
+  /* « appel » : tout au centre, le numéro en très grand, la photo en bande dessous */
+  .ctw .tn-ouverture-metier[data-tn-c="appel"]{display:flex}
+  .ctw .tn-ouverture-metier[data-tn-c="appel"] .tn-corps{align-items:center;padding:64px 40px 0;text-align:center}
+  .ctw .tn-ouverture-metier[data-tn-c="appel"] h1{font-size:calc(64px*var(--tn-k))}
+  .ctw .tn-ouverture-metier[data-tn-c="appel"] p{max-width:560px}
+  .ctw .tn-ouverture-metier[data-tn-c="appel"] .tn-tel{align-self:center;margin:36px 0 0;font-size:calc(116px*var(--tn-k));font-size:min(calc(116px*var(--tn-k)),11.8cqw);line-height:1}
+  .ctw[data-tn-titres="gras"] .tn-ouverture-metier[data-tn-c="appel"] .tn-tel{font-size:96px;font-size:min(96px,11cqw)}
+  .ctw[data-tn-titres="capitales"] .tn-ouverture-metier[data-tn-c="appel"] .tn-tel{font-size:64px;font-size:min(90px,9.2cqw)}
+  .ctw .tn-ouverture-metier[data-tn-c="appel"] .tn-reperes{display:flex;justify-content:center;gap:72px;margin-top:30px;padding:20px 40px 0;text-align:center}
+  .ctw .tn-ouverture-metier[data-tn-c="appel"] .tn-reperes li,.ctw .tn-ouverture-metier[data-tn-c="appel"] .tn-reperes .tn-zon{display:block;max-width:420px;padding:0;border:0;text-wrap:balance}
+  .ctw .tn-ouverture-metier[data-tn-c="appel"] .tn-reperes small{display:block;margin-bottom:5px}
+  .ctw .tn-ouverture-metier[data-tn-c="appel"] .tn-bt{align-self:center;margin-top:30px}
+  .ctw .tn-ouverture-metier[data-tn-c="appel"] .tn-ph{height:340px;margin-top:60px}
+  /* « promesse » : le titre et le bouton à gauche, la photo en hauteur à droite dans son cadre */
+  .ctw .tn-ouverture-metier[data-tn-c="promesse"]{grid-template-columns:minmax(0,1fr) minmax(0,.8fr);align-items:center;padding:28px 0 60px}
+  .ctw .tn-ouverture-metier[data-tn-c="promesse"] .tn-corps{padding:20px 56px 20px max(40px,calc(50vw - 540px))}
+  .ctw .tn-ouverture-metier[data-tn-c="promesse"] h1{font-size:calc(clamp(64px,7.4vw,104px)*var(--tn-k))}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"]) .tn-ouverture-metier[data-tn-c="promesse"] h1{font-size:calc(clamp(56px,6vw,84px)*var(--tn-k))}
+  .ctw .tn-ouverture-metier[data-tn-c="promesse"] p{order:3;margin-top:22px;padding:0;text-align:left}
+  .ctw .tn-ouverture-metier[data-tn-c="promesse"] .tn-bt{align-self:flex-start;margin-top:30px}
+  .ctw .tn-ouverture-metier[data-tn-c="promesse"] .tn-ph{width:min(460px,calc(100% - 40px));height:min(76vh,620px);margin:0 max(40px,calc(50vw - 540px)) 0 auto}
+  .ctw[data-tn-cadre="niche"] .tn-ouverture-metier[data-tn-c="promesse"] .tn-ph{border-radius:230px 230px 0 0}
+
+  /* Prestations « liste » : le titre et la photo à gauche, la liste à droite */
+  .ctw .tn-prestations{display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);grid-template-rows:auto auto minmax(120px,1fr) auto;column-gap:72px;align-items:start;padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-prestations h2{grid-column:1;font-size:calc(56px*var(--tn-k))}
+  .ctw .tn-prestations>p{grid-column:1}
+  .ctw .tn-prestations .tn-ph{grid-column:1;grid-row:3/5;align-self:stretch;height:auto;min-height:180px;margin-top:28px}
+  .ctw[data-tn-cadre="niche"] .tn-prestations .tn-ph{border-radius:220px 220px 0 0}
+  .ctw .tn-prestations .tn-liste-p{grid-column:2;grid-row:1/4;margin-top:0}
+  .ctw .tn-prestations .tn-liste-p .tn-rub:first-child{padding-top:6px}
+  .ctw .tn-prestations .tn-liste-p b{font-size:26px}
+  .ctw .tn-prestations .tn-bt{grid-column:2;grid-row:4;justify-self:start;min-width:260px}
+  /* « cartes » : la bande de photo, puis les cartes sur toute la largeur */
+  .ctw .tn-prestations[data-tn-c="cartes"]{display:flex;align-items:stretch}
+  .ctw .tn-prestations[data-tn-c="cartes"] .tn-ph{min-height:0;height:340px;margin:-44px calc(-1*max(40px,calc(50vw - 540px))) 44px;border-radius:0}
+  .ctw .tn-prestations[data-tn-c="cartes"] .tn-liste-p{gap:14px;margin-top:26px}
+  .ctw .tn-prestations[data-tn-c="cartes"] .tn-liste-p li:not(.tn-rub){flex:1 1 220px;min-height:180px;padding:22px 20px 16px}
+  .ctw .tn-prestations[data-tn-c="cartes"] .tn-liste-p b{font-size:25px}
+  .ctw .tn-prestations[data-tn-c="cartes"] .tn-bt{align-self:flex-start}
+  /* « carte » : une colonne centrée */
+  .ctw .tn-prestations[data-tn-c="carte"]{display:flex;align-items:stretch;padding-left:max(40px,calc(50% - 380px));padding-right:max(40px,calc(50% - 380px))}
+  .ctw .tn-prestations[data-tn-c="carte"] .tn-ph{align-self:center;min-height:0;width:190px;height:230px;margin:0 0 28px}
+  .ctw[data-tn-cadre="niche"] .tn-prestations[data-tn-c="carte"] .tn-ph{border-radius:95px 95px 0 0}
+  .ctw .tn-prestations[data-tn-c="carte"] .tn-liste-p{margin-top:12px}
+  .ctw .tn-prestations[data-tn-c="carte"] .tn-liste-p b{font-size:29px}
+  .ctw .tn-prestations[data-tn-c="carte"] .tn-bt{align-self:center}
+
+  /* Tarifs : un vrai tableau */
+  .ctw .tn-tarifs{padding-left:max(40px,calc(50% - 380px));padding-right:max(40px,calc(50% - 380px))}
+  .ctw .tn-tarifs:has(thead th:nth-child(5)){padding-right:max(40px,calc(50% - 380px))}
+  .ctw .tn-tarifs:has(thead th:nth-child(5)) :is(h2,p,.tn-defile){padding-right:0}
+  .ctw .tn-tarifs:has(thead th:nth-child(5)) table{width:100%}
+  .ctw .tn-tarifs:has(thead th:nth-child(5)) :is(thead th:first-child,tbody th){position:static;width:auto;min-width:0;max-width:none;background:none}
+  .ctw .tn-tarifs:has(thead th:nth-child(5)) tbody th{font-size:22px}
+  .ctw .tn-tarifs h2{font-size:calc(56px*var(--tn-k))}
+  .ctw .tn-tarifs table{display:table}
+  .ctw .tn-tarifs thead{display:table-header-group}
+  .ctw .tn-tarifs tbody{display:table-row-group}
+  .ctw .tn-tarifs tr{display:table-row}
+  .ctw .tn-tarifs th,.ctw .tn-tarifs td{display:table-cell;padding:17px 0 17px 20px;text-align:right;white-space:nowrap}
+  .ctw .tn-tarifs thead th{padding-top:0;padding-bottom:10px}
+  .ctw .tn-tarifs thead th:first-child{display:table-cell;padding-left:0;text-align:left}
+  .ctw .tn-tarifs thead small{font-size:16px}
+  .ctw .tn-tarifs tbody th{padding-left:0;text-align:left;white-space:normal;font-size:24px}
+
+  .ctw .tn-exemples-prix{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-exemples-prix h2{font-size:calc(56px*var(--tn-k))}
+  .ctw .tn-exemples-prix>p{max-width:620px;font-size:18px}
+  .ctw .tn-exemples-prix .tn-cas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:36px;border-bottom:1.5px solid var(--tn-encre)}
+  .ctw .tn-exemples-prix .tn-cas li{padding:28px 30px 30px;border-bottom:0;border-left:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+  .ctw .tn-exemples-prix .tn-cas li:first-child{padding-left:0;border-left:0}
+  .ctw .tn-exemples-prix .tn-cas li:last-child{padding-right:0}
+  .ctw .tn-exemples-prix .tn-cas b{font-size:28px}
+  .ctw .tn-exemples-prix .tn-cas i{margin-top:auto;padding-top:28px;font-size:calc(48px*var(--tn-k))}
+  .ctw .tn-exemples-prix .tn-bt{display:inline-block;min-width:260px;margin-top:36px}
+  .ctw .tn-exemples-prix[data-tn-c="ticket"]{padding-left:max(40px,calc(50% - 380px));padding-right:max(40px,calc(50% - 380px))}
+  .ctw .tn-exemples-prix[data-tn-c="ticket"] .tn-cas{display:block;padding:14px 36px 34px;border:0}
+  .ctw .tn-exemples-prix[data-tn-c="ticket"] .tn-cas li{padding:22px 0;border-left:0;border-bottom:1.5px dashed color-mix(in srgb,var(--tn-encre) 55%,transparent)}
+  .ctw .tn-exemples-prix[data-tn-c="ticket"] .tn-cas li:last-child{border-bottom:0}
+  .ctw .tn-exemples-prix[data-tn-c="ticket"] .tn-cas b{font-size:25px}
+  .ctw .tn-exemples-prix[data-tn-c="ticket"] .tn-cas i{padding-top:0;font-size:calc(32px*var(--tn-k))}
+
+  .ctw .tn-aides{padding-left:max(40px,calc(50% - 380px));padding-right:max(40px,calc(50% - 380px))}
+  .ctw .tn-aides h2{font-size:calc(56px*var(--tn-k))}
+  .ctw .tn-aides>p{font-size:18px}
+  .ctw .tn-aides .tn-comptes{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:34px}
+  .ctw .tn-aides .tn-comptes li{padding:28px 26px 20px}
+
+  .ctw :is(.tn-rdv,.tn-devis,.tn-disponibilites,.tn-retrait) form .tn-bt{width:auto;min-width:260px}
+  /* Rendez-vous « colonne » : une colonne étroite sous la bande de photo */
+  .ctw .tn-rdv{padding-left:max(40px,calc(50% - 290px));padding-right:max(40px,calc(50% - 290px))}
+  .ctw .tn-rdv .tn-ph{height:260px;margin-left:calc(-1*max(40px,calc(50vw - 290px)));margin-right:calc(-1*max(40px,calc(50vw - 290px)))}
+  .ctw .tn-rdv h2{margin-top:48px;font-size:calc(56px*var(--tn-k))}
+  /* « photo » : deux colonnes, le titre et la photo à gauche, le formulaire à droite */
+  .ctw .tn-rdv[data-tn-c="photo"]{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto 1fr;column-gap:72px;align-items:start;padding-top:44px;padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-rdv[data-tn-c="photo"] h2{grid-column:1;margin-top:0}
+  .ctw .tn-rdv[data-tn-c="photo"]>p{grid-column:1}
+  .ctw .tn-rdv[data-tn-c="photo"] .tn-ph{grid-column:1;height:380px;margin:30px 0 0}
+  .ctw[data-tn-cadre="niche"] .tn-rdv[data-tn-c="photo"] .tn-ph{border-radius:999px 999px 0 0}
+  .ctw .tn-rdv[data-tn-c="photo"] form{grid-column:2;grid-row:1/4;margin-top:0}
+
+  /* Devis « courte » : le titre à gauche, les quatre champs à droite */
+  .ctw .tn-devis{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);grid-template-rows:auto 1fr;column-gap:72px;align-items:start;padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-devis h2{grid-column:1;font-size:calc(64px*var(--tn-k))}
+  .ctw .tn-devis>p{grid-column:1;font-size:18px}
+  .ctw .tn-devis form{grid-column:2;grid-row:1/3;margin-top:-10px}
+  /* « etapes » : les trois étapes côte à côte */
+  .ctw .tn-devis[data-tn-c="etapes"]{display:block}
+  .ctw .tn-devis[data-tn-c="etapes"]>p{max-width:620px}
+  .ctw .tn-devis[data-tn-c="etapes"] form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:44px;align-items:start;margin-top:16px}
+  .ctw .tn-devis[data-tn-c="etapes"] .tn-etape{padding:84px 0 0}
+  .ctw .tn-devis[data-tn-c="etapes"] .tn-etape::before{top:16px;font-size:calc(60px*var(--tn-k))}
+  .ctw .tn-devis[data-tn-c="etapes"] .tn-bt{grid-column:1/3;justify-self:start;margin-top:36px}
+  .ctw .tn-devis[data-tn-c="etapes"] .tn-note{grid-column:1/-1}
+
+  /* Disponibilités « barre » : la photo en grande bande, les dates sur une ligne à cheval dessus */
+  .ctw .tn-disponibilites{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-disponibilites h2{font-size:calc(56px*var(--tn-k))}
+  .ctw .tn-disponibilites>p{max-width:620px;font-size:18px}
+  .ctw .tn-disponibilites .tn-ph{height:440px;margin:32px calc(-1*max(40px,calc(50vw - 540px))) 0}
+  .ctw .tn-disponibilites form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;column-gap:28px;align-items:end;width:min(100%,940px);margin:-52px auto 0}
+  .ctw .tn-disponibilites .tn-dates{grid-column:1/-1;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ctw .tn.tn-disponibilites form .tn-dates label{padding:16px 22px 8px}
+  .ctw .tn.tn-disponibilites form .tn-dates label:nth-child(3){grid-column:auto;border-top:0;border-left:1.5px solid var(--tn-encre)}
+  .ctw .tn-disponibilites form .tn-bt{margin-top:0}
+  .ctw .tn-disponibilites form .tn-note{grid-column:1/-1}
+  /* « fiche » : le titre et la photo à gauche, le formulaire à droite */
+  .ctw .tn-disponibilites[data-tn-c="fiche"]{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto 1fr;column-gap:72px;align-items:start}
+  .ctw .tn-disponibilites[data-tn-c="fiche"] h2,.ctw .tn-disponibilites[data-tn-c="fiche"]>p,.ctw .tn-disponibilites[data-tn-c="fiche"] .tn-ph{grid-column:1}
+  .ctw .tn-disponibilites[data-tn-c="fiche"] .tn-ph{height:400px;margin:30px 0 0}
+  .ctw[data-tn-cadre="niche"] .tn-disponibilites[data-tn-c="fiche"] .tn-ph{border-radius:999px 999px 0 0}
+  .ctw .tn-disponibilites[data-tn-c="fiche"] form{grid-column:2;grid-row:1/4;display:block;width:auto;margin:0}
+  .ctw .tn-disponibilites[data-tn-c="fiche"] .tn-dates{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .ctw .tn.tn-disponibilites[data-tn-c="fiche"] form .tn-dates label{padding:18px 0 0}
+  .ctw .tn.tn-disponibilites[data-tn-c="fiche"] form .tn-dates label:nth-child(3){grid-column:1/-1;border:0}
+  .ctw .tn-disponibilites[data-tn-c="fiche"] form .tn-bt{margin-top:28px}
+
+  /* Agenda « liste » : la date à gauche, l'atelier au milieu, l'inscription à droite */
+  .ctw .tn-agenda{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-agenda h2{font-size:calc(56px*var(--tn-k))}
+  .ctw .tn-agenda>p{font-size:18px}
+  .ctw .tn-agenda .tn-dates-a{margin-top:36px}
+  .ctw .tn-agenda .tn-dates-a li{grid-template-columns:260px minmax(0,1fr) auto;column-gap:40px;padding:26px 0 24px}
+  .ctw .tn-agenda .tn-dates-a small{grid-column:1;grid-row:1/4;font-size:18px}
+  .ctw .tn-agenda .tn-dates-a b{grid-column:2;margin-top:0;font-size:32px}
+  .ctw .tn-agenda .tn-dates-a span{grid-column:2}
+  .ctw .tn-agenda .tn-dates-a i{grid-column:2;margin-top:8px}
+  .ctw .tn-agenda .tn-dates-a a{grid-column:3;grid-row:1/4;align-self:center}
+  /* « prochain » : la prochaine date à gauche dans son bloc, les suivantes à droite */
+  .ctw .tn-agenda[data-tn-c="prochain"] .tn-dates-a{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);column-gap:64px;align-items:start}
+  .ctw .tn-agenda[data-tn-c="prochain"] .tn-dates-a li{grid-column:2;grid-template-columns:minmax(0,1fr) auto;column-gap:24px;padding:22px 0 20px}
+  .ctw .tn-agenda[data-tn-c="prochain"] .tn-dates-a li:nth-child(2){border-top:1.5px solid var(--tn-encre)}
+  .ctw .tn-agenda[data-tn-c="prochain"] .tn-dates-a li small{grid-column:1/-1;grid-row:auto;font-size:16px}
+  .ctw .tn-agenda[data-tn-c="prochain"] .tn-dates-a li b{grid-column:1/-1;margin-top:8px;font-size:28px}
+  .ctw .tn-agenda[data-tn-c="prochain"] .tn-dates-a li span{grid-column:1/-1}
+  .ctw .tn-agenda[data-tn-c="prochain"] .tn-dates-a li i{grid-column:1}
+  .ctw .tn-agenda[data-tn-c="prochain"] .tn-dates-a li a{grid-column:2;grid-row:auto}
+  .ctw .tn-agenda[data-tn-c="prochain"] .tn-dates-a li:first-child{grid-column:1;grid-row:1/span 12;margin:0;padding:56px 40px 44px}
+  .ctw[data-tn-cadre="niche"] .tn-agenda[data-tn-c="prochain"] .tn-dates-a li:first-child{padding-top:110px}
+  .ctw .tn-agenda[data-tn-c="prochain"] .tn-dates-a li:first-child b{margin-top:14px;font-size:calc(52px*var(--tn-k))}
+  .ctw .tn-agenda[data-tn-c="prochain"] .tn-dates-a li:first-child small{font-size:18px}
+
+  /* Planning « lignes » : les cours d'un jour côte à côte */
+  .ctw .tn-planning{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-planning h2{font-size:calc(56px*var(--tn-k))}
+  .ctw .tn-planning>p{font-size:18px}
+  .ctw .tn-planning .tn-semaine{margin-top:36px}
+  .ctw .tn-planning .tn-jour{grid-template-columns:220px minmax(0,1fr);padding:22px 0 24px}
+  .ctw .tn-planning h3{font-size:calc(30px*var(--tn-k))}
+  .ctw .tn-planning .tn-jour ul{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 32px}
+  .ctw .tn-planning .tn-bt{display:inline-block;min-width:260px;margin-top:36px}
+  .ctw .tn-planning:not([data-tn-c="colonnes"]){padding-left:max(40px,calc(50% - 380px));padding-right:max(40px,calc(50% - 380px))}
+  .ctw .tn-planning:not([data-tn-c="colonnes"]) .tn-jour{grid-template-columns:190px minmax(0,1fr)}
+  .ctw .tn-planning:not([data-tn-c="colonnes"]) .tn-jour ul{grid-template-columns:repeat(2,minmax(0,1fr))}
+  /* « colonnes » : toute la semaine en colonnes */
+  .ctw .tn-planning[data-tn-c="colonnes"] .tn-semaine{gap:12px}
+  .ctw .tn-planning[data-tn-c="colonnes"] .tn-jour{flex:1 1 150px;padding:20px 16px 22px}
+  .ctw .tn-planning[data-tn-c="colonnes"] h3{font-size:calc(24px*var(--tn-k))}
+  .ctw .tn-planning[data-tn-c="colonnes"] .tn-jour ul{grid-template-columns:minmax(0,1fr)}
+
+  /* Retrait : les plats à gauche, le jour et les coordonnées à droite */
+  .ctw .tn-retrait{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-retrait h2{font-size:calc(56px*var(--tn-k))}
+  .ctw .tn-retrait>p{font-size:18px}
+  .ctw .tn-retrait form{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);column-gap:72px;align-items:start;margin-top:34px}
+  .ctw .tn-retrait .tn-plats{grid-column:1;grid-row:1/8}
+  .ctw .tn-retrait .tn-plats li{grid-template-columns:110px minmax(0,1fr) auto;column-gap:22px;padding:20px 0}
+  .ctw .tn-retrait .tn-plats .tn-ph{width:110px;height:110px}
+  .ctw[data-tn-cadre="niche"] .tn-retrait .tn-plats .tn-ph{border-radius:55px 55px 0 0}
+  .ctw .tn-retrait .tn-plats b{font-size:27px}
+  .ctw .tn-retrait form>label,.ctw .tn-retrait form>.tn-moment,.ctw .tn-retrait form>.tn-bt,.ctw .tn-retrait form>.tn-note{grid-column:2}
+  .ctw .tn.tn-retrait form>label:first-of-type{padding-top:0}
+
+  .ctw .tn-vitrine{padding:18px max(18px,calc(50% - 560px))}
+  .ctw .tn-vitrine .tn-ardoise{padding:56px 56px 36px}
+  .ctw .tn-vitrine h2{font-size:calc(64px*var(--tn-k))}
+  .ctw .tn-vitrine .tn-fournees{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:64px;margin-top:40px}
+  .ctw .tn-vitrine .tn-fournees b{font-size:32px}
+  .ctw .tn-vitrine p{padding-top:22px}
+
+  .ctw .tn-origines{padding-left:max(40px,calc(50% - 380px));padding-right:max(40px,calc(50% - 380px))}
+  .ctw .tn-origines h2{font-size:calc(56px*var(--tn-k))}
+  .ctw .tn-origines>p{font-size:18px}
+  .ctw .tn-origines tbody th{font-size:30px}
+
+  /* Réalisations « grille » : quatre photos par ligne */
+  .ctw .tn-realisations{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-realisations h2{font-size:calc(56px*var(--tn-k))}
+  .ctw .tn-realisations>p{font-size:18px}
+  .ctw .tn-realisations .tn-galerie{grid-template-columns:repeat(4,minmax(0,1fr));gap:36px 20px;margin-top:36px}
+  .ctw .tn-realisations figure:last-child:nth-child(odd){grid-column:auto}
+  .ctw .tn-realisations .tn-ph{height:320px}
+  .ctw .tn-realisations figcaption b{font-size:25px}
+  .ctw .tn-realisations figcaption span{font-size:15.5px}
+  .ctw .tn-realisations .tn-bt{display:inline-block;min-width:260px;margin-top:40px}
+  /* « bandes » : la photo d'un côté, la légende de l'autre, en alternance */
+  .ctw .tn-realisations[data-tn-c="bandes"] .tn-galerie{margin:36px 0 0}
+  .ctw .tn-realisations[data-tn-c="bandes"] figure{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);column-gap:56px;align-items:center}
+  .ctw .tn-realisations[data-tn-c="bandes"] figure+figure{margin-top:36px}
+  .ctw .tn-realisations[data-tn-c="bandes"] figure:nth-child(even) .tn-ph{order:2}
+  .ctw .tn-realisations[data-tn-c="bandes"] figure:nth-child(even){grid-template-columns:minmax(0,1fr) minmax(0,1.5fr)}
+  .ctw[data-tn-cadre] .tn-realisations[data-tn-c="bandes"] .tn-ph{height:400px}
+  .ctw .tn-realisations[data-tn-c="bandes"] figcaption{display:block;margin:0;padding:0}
+  .ctw .tn-realisations[data-tn-c="bandes"] figcaption b{font-size:calc(44px*var(--tn-k));line-height:1.02}
+  .ctw .tn-realisations[data-tn-c="bandes"] figcaption span{margin-top:14px;font-size:18px}
+  .ctw .tn-realisations[data-tn-c="bandes"] figcaption small{margin-top:14px;font-size:17px}
+  /* « detail » : la réalisation en grand sur deux colonnes, les vignettes dessous */
+  .ctw .tn-realisations[data-tn-c="detail"] .tn-galerie{grid-template-columns:repeat(3,minmax(0,1fr));gap:36px 20px}
+  .ctw .tn-realisations[data-tn-c="detail"] figure:first-child{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);column-gap:56px;align-items:center}
+  .ctw .tn-realisations[data-tn-c="detail"] figure:first-child .tn-ph{height:480px}
+  .ctw[data-tn-cadre="niche"] .tn-realisations[data-tn-c="detail"] figure:first-child .tn-ph{border-radius:220px 220px 0 0}
+  .ctw[data-tn-cadre="niche"] .tn-realisations[data-tn-c="detail"] figure:not(:first-child) .tn-ph{border-radius:110px 110px 0 0}
+  .ctw .tn-realisations[data-tn-c="detail"] figure:first-child figcaption{margin:0}
+  .ctw .tn-realisations[data-tn-c="detail"] figure:first-child figcaption b{font-size:calc(52px*var(--tn-k))}
+  .ctw .tn-realisations[data-tn-c="detail"] figure:first-child figcaption span{margin-top:16px;font-size:18px}
+  .ctw .tn-realisations[data-tn-c="detail"] figure:first-child figcaption small{margin-top:16px;font-size:17px}
+  .ctw .tn-realisations[data-tn-c="detail"] figure:not(:first-child) .tn-ph{height:220px}
+  .ctw .tn-realisations[data-tn-c="detail"] figure:not(:first-child) figcaption b{font-size:17px}
+  .ctw .tn-realisations[data-tn-c="detail"] figure:not(:first-child) figcaption small{font-size:15px}
+  .ctw .tn-realisations[data-tn-c="detail"] figure:not(:first-child) figcaption mark{font-size:13.5px}
+
+  .ctw .tn-avant-apres{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-avant-apres h2{font-size:calc(56px*var(--tn-k))}
+  .ctw .tn-avant-apres>p{font-size:18px}
+  .ctw .tn-avant-apres .tn-paire{gap:16px;margin-top:36px}
+  .ctw .tn-avant-apres .tn-ph{height:460px}
+  .ctw[data-tn-cadre="niche"] .tn-avant-apres .tn-ph{border-radius:266px 266px 0 0}
+  .ctw .tn-avant-apres figcaption{left:18px;bottom:18px;padding:7px 14px 6px}
+  .ctw .tn-avant-apres figcaption small{font-size:18px}
+  .ctw .tn-avant-apres .tn-legende{grid-template-columns:minmax(0,1fr) auto;gap:6px 40px;margin-top:24px}
+  .ctw .tn-avant-apres .tn-legende b{font-size:30px}
+  .ctw .tn-avant-apres .tn-legende span{grid-column:1;font-size:17px}
+  .ctw .tn-avant-apres .tn-legende small{grid-column:2;grid-row:1/3;align-self:center;font-size:16px}
+  .ctw[data-tn-cadre="penche"] .tn-avant-apres .tn-legende{margin-top:36px}
+  .ctw .tn-avant-apres[data-tn-c="incruste"] .tn-paire{padding-bottom:64px}
+  .ctw .tn-avant-apres[data-tn-c="incruste"] .tn-apres .tn-ph{height:580px}
+  .ctw[data-tn-cadre="niche"] .tn-avant-apres[data-tn-c="incruste"] .tn-apres .tn-ph{border-radius:280px 280px 0 0}
+  .ctw .tn-avant-apres[data-tn-c="incruste"] .tn-avant{left:40px;width:34%}
+  .ctw .tn-avant-apres[data-tn-c="incruste"] .tn-avant .tn-ph{height:250px;border-width:6px}
+  .ctw .tn-avant-apres[data-tn-c="incruste"] .tn-avant figcaption{left:14px;bottom:14px;padding:5px 11px 4px}
+  .ctw .tn-avant-apres[data-tn-c="incruste"] .tn-avant figcaption small{font-size:16px}
+  .ctw .tn-avant-apres[data-tn-c="incruste"] .tn-apres figcaption{right:18px;bottom:82px}
+
+  /* Équipe « noms » : les prénoms côte à côte */
+  .ctw .tn-equipe{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-equipe h2{font-size:calc(56px*var(--tn-k))}
+  .ctw .tn-equipe>p{font-size:18px}
+  .ctw .tn-equipe .tn-membres{display:flex;flex-wrap:wrap;margin-top:36px;border-bottom:1.5px solid var(--tn-encre)}
+  .ctw .tn-equipe .tn-membres li{flex:1 1 240px;padding:30px 28px 34px;border-bottom:0;border-left:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+  .ctw .tn-equipe .tn-membres li:first-child{padding-left:0;border-left:0}
+  .ctw .tn-equipe .tn-membres b{font-size:calc(60px*var(--tn-k))}
+  .ctw .tn-equipe .tn-membres b mark{font-size:.34em}
+  .ctw .tn-equipe .tn-membres span{margin-top:12px;font-size:17px}
+  /* « photos » : un portrait par colonne */
+  .ctw .tn-equipe[data-tn-c="photos"] .tn-membres{display:flex;flex-wrap:wrap;gap:36px 24px;border-bottom:0}
+  .ctw .tn-equipe[data-tn-c="photos"] .tn-membres li{flex:1 1 240px;display:block;padding:0;border-left:0}
+  .ctw .tn-equipe[data-tn-c="photos"] .tn-membres .tn-ph{height:400px}
+  .ctw .tn-equipe[data-tn-c="photos"] .tn-membres b{margin-top:18px;font-size:calc(38px*var(--tn-k))}
+  .ctw[data-tn-cadre="penche"] .tn-equipe[data-tn-c="photos"] .tn-membres b{margin-top:28px}
+  .ctw .tn-equipe[data-tn-c="photos"] .tn-membres b mark{font-size:.56em}
+  .ctw .tn-equipe[data-tn-c="photos"] .tn-membres span{margin-top:8px}
+
+  /* Zone « vue » : la photo à gauche, le titre et les villes à droite */
+  .ctw .tn-zone{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto 1fr;column-gap:72px;align-items:start;padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-zone h2{grid-column:2;font-size:calc(56px*var(--tn-k))}
+  .ctw .tn-zone>p{grid-column:2;font-size:18px}
+  .ctw .tn-zone .tn-ph{grid-column:1;grid-row:1/5;margin-top:0}
+  .ctw[data-tn-cadre="niche"] .tn-zone .tn-ph{border-radius:200px 200px 0 0}
+  .ctw .tn-zone .tn-villes{grid-column:2;margin-top:30px}
+  .ctw .tn-zone .tn-villes li{font-size:25px}
+  .ctw .tn-zone .tn-tel{grid-column:2;justify-self:start}
+  /* « villes » : les villes en très grand à gauche, la photo à droite */
+  .ctw .tn-zone[data-tn-c="villes"] h2,.ctw .tn-zone[data-tn-c="villes"]>p,.ctw .tn-zone[data-tn-c="villes"] .tn-villes,.ctw .tn-zone[data-tn-c="villes"] .tn-tel{grid-column:1}
+  .ctw .tn-zone[data-tn-c="villes"] .tn-ph{grid-column:2;align-self:stretch;aspect-ratio:auto;min-height:420px;background-position:center bottom}
+  .ctw .tn-zone[data-tn-c="villes"] .tn-villes li{padding:16px 0 20px;font-size:calc(60px*var(--tn-k))}
+
+  /* Accès « lieu » : la photo du lieu et l'adresse à gauche, les horaires à droite */
+  .ctw .tn-acces{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto 1fr auto;column-gap:72px;align-items:start;padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-acces h2{grid-column:1/-1;font-size:calc(56px*var(--tn-k))}
+  .ctw .tn-acces .tn-ph{grid-column:1;grid-row:2;margin-top:34px}
+  .ctw[data-tn-cadre="niche"] .tn-acces .tn-ph{border-radius:150px 150px 0 0}
+  .ctw .tn-acces .tn-lieu{grid-column:1;grid-row:3;flex-direction:row;flex-wrap:wrap;align-items:center;gap:18px 28px}
+  .ctw .tn-acces address{flex:0 0 100%;font-size:30px}
+  .ctw .tn-acces .tn-bt{min-width:220px;margin-top:0}
+  .ctw .tn-acces .tn-tel{align-self:center;margin-top:0}
+  .ctw .tn-acces .tn-heures{grid-column:2;grid-row:2/4;margin-top:34px}
+  .ctw .tn-acces .tn-pratique{grid-column:1/-1;grid-row:4;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 40px;margin-top:40px;padding-top:24px;border-top:1.5px solid var(--tn-encre)}
+  /* « horaires » : le bloc des horaires à gauche, l'adresse et la photo du lieu à droite */
+  .ctw .tn-acces[data-tn-c="horaires"] .tn-heures{grid-column:1;grid-row:2/4;padding:44px 40px 22px}
+  .ctw[data-tn-cadre="niche"] .tn-acces[data-tn-c="horaires"] .tn-heures{padding-top:96px}
+  .ctw .tn-acces[data-tn-c="horaires"] h3{font-size:calc(44px*var(--tn-k))}
+  .ctw .tn-acces[data-tn-c="horaires"] .tn-lieu{grid-column:2;grid-row:2;margin-top:34px}
+  .ctw .tn-acces[data-tn-c="horaires"] .tn-ph{grid-column:2;grid-row:3;margin-top:28px}
+
+  /* Déroulé « chiffres » : une colonne de texte, les chiffres plus grands */
+  .ctw .tn-deroule{padding-left:max(40px,calc(50% - 380px));padding-right:max(40px,calc(50% - 380px))}
+  .ctw .tn-deroule h2{font-size:calc(56px*var(--tn-k))}
+  .ctw .tn-deroule .tn-etapes{margin-top:36px}
+  .ctw .tn-deroule .tn-etapes li{padding:26px 0 28px 110px}
+  .ctw .tn-deroule .tn-etapes li::before{top:18px;font-size:calc(84px*var(--tn-k))}
+  .ctw .tn-deroule .tn-etapes b{font-size:30px}
+  .ctw .tn-deroule .tn-etapes p{font-size:17px}
+  .ctw .tn-deroule .tn-bt{display:inline-block;min-width:260px;margin-top:36px}
+  /* « frise » : les étapes en ligne, reliées par un trait */
+  .ctw .tn-deroule[data-tn-c="frise"]{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-deroule[data-tn-c="frise"] .tn-etapes{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);column-gap:36px;margin-top:44px}
+  .ctw .tn-deroule[data-tn-c="frise"] .tn-etapes li{padding:64px 0 0}
+  .ctw .tn-deroule[data-tn-c="frise"] .tn-etapes li::before{width:44px;height:44px;font-size:17px}
+  .ctw .tn-deroule[data-tn-c="frise"] .tn-etapes li::after{left:56px;right:-24px;top:22px;bottom:auto;border-left:0;border-top:1.5px solid var(--tn-encre)}
+  .ctw .tn-deroule[data-tn-c="frise"] .tn-etapes b{font-size:27px}
+
+  /* Bandeau d'appel : la question à gauche, le numéro en très grand à droite */
+  .ctw .tn-urgence{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);column-gap:64px;align-items:center;padding:72px max(40px,calc(50% - 540px));text-align:left}
+  .ctw .tn-urgence h2{grid-column:1;align-self:end;font-size:calc(64px*var(--tn-k))}
+  .ctw .tn-urgence p{grid-column:1;align-self:start;font-size:18px}
+  .ctw .tn-urgence .tn-tel{grid-column:2;grid-row:1;align-self:end;margin-top:0;font-size:calc(72px*var(--tn-k));font-size:min(calc(96px*var(--tn-k)),7.8cqw);line-height:1}
+  .ctw[data-tn-titres="gras"] .tn-urgence .tn-tel{font-size:60px;font-size:min(74px,6.7cqw)}
+  .ctw[data-tn-titres="capitales"] .tn-urgence .tn-tel{font-size:44px;font-size:min(75px,5.7cqw)}
+  .ctw .tn-urgence small{grid-column:2;grid-row:2;align-self:start;font-size:17px}
+  .ctw .tn-urgence .tn-suite{grid-column:2;grid-row:3;justify-self:start}
+
+  /* Preuves « lignes » : le nom à gauche, les références à droite */
+  .ctw .tn-labels{padding-left:max(40px,calc(50% - 380px));padding-right:max(40px,calc(50% - 380px))}
+  .ctw .tn-labels h2{font-size:calc(56px*var(--tn-k))}
+  .ctw .tn-labels>p{font-size:18px}
+  .ctw .tn-labels .tn-pieces{margin-top:36px}
+  .ctw .tn-labels .tn-pieces li{grid-template-columns:240px minmax(0,1fr);gap:0 32px;align-items:baseline;padding:22px 0 24px}
+  .ctw .tn-labels .tn-pieces b{font-size:28px}
+  /* « pieces » : deux pièces par ligne */
+  .ctw .tn-labels[data-tn-c="pieces"]{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-labels[data-tn-c="pieces"] .tn-pieces{gap:16px}
+  .ctw .tn-labels[data-tn-c="pieces"] .tn-pieces li{flex:1 1 calc(50% - 8px);display:grid;grid-template-columns:minmax(0,1fr);gap:10px;padding:36px 34px 34px}
+
+  /* Vendus « cartes » : les biens côte à côte */
+  .ctw .tn-vendus{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-vendus h2{font-size:calc(56px*var(--tn-k))}
+  .ctw .tn-vendus>p{font-size:18px}
+  .ctw .tn-vendus .tn-biens{gap:36px 20px;margin-top:36px}
+  .ctw .tn-vendus .tn-biens li,.ctw .tn-vendus .tn-biens li:first-child{flex:1 1 260px}
+  .ctw .tn-vendus .tn-biens .tn-ph,.ctw .tn-vendus .tn-biens li:first-child .tn-ph{height:330px}
+  .ctw .tn-vendus .tn-biens i{left:16px;bottom:16px;font-size:14.5px}
+  .ctw .tn-vendus .tn-biens b,.ctw .tn-vendus .tn-biens li:first-child b{margin-top:16px;font-size:calc(27px*var(--tn-k))}
+  .ctw[data-tn-cadre="penche"] .tn-vendus .tn-biens b,.ctw[data-tn-cadre="penche"] .tn-vendus .tn-biens li:first-child b{margin-top:26px}
+  .ctw .tn-vendus .tn-bt{display:inline-block;min-width:260px;margin-top:40px}
+  /* « lignes » : une colonne de texte */
+  .ctw .tn-vendus[data-tn-c="lignes"]{padding-left:max(40px,calc(50% - 380px));padding-right:max(40px,calc(50% - 380px))}
+  .ctw .tn-vendus[data-tn-c="lignes"] .tn-biens li,.ctw .tn-vendus[data-tn-c="lignes"] .tn-biens li:first-child{grid-template-columns:200px minmax(0,1fr);column-gap:32px;padding:22px 0}
+  .ctw .tn-vendus[data-tn-c="lignes"] .tn-biens li .tn-ph,.ctw .tn-vendus[data-tn-c="lignes"] .tn-biens li:first-child .tn-ph{width:200px;height:150px}
+  .ctw .tn-vendus[data-tn-c="lignes"] .tn-biens li b{font-size:28px}
+  .ctw .tn-vendus[data-tn-c="lignes"] .tn-biens i{left:10px;bottom:10px;font-size:13px}
+}
+
+/* ══ La couleur de la marque (14 novembre 2026) : posée en trois endroits, jamais en couleur de texte ══
+   Une touche devant le métier de l'ouverture, les pastilles du déroulé, un trait épais sous le numéro du bandeau d'appel.
+   Sur une pastille, le chiffre prend seul une couleur lisible (clair ou sombre selon la clarté de la couleur). */
+.ctw .tn-ouverture-metier .tn-corps>small::before{content:"";display:inline-block;width:.62em;height:.62em;margin-right:.6em;background-color:var(--tn-accent);vertical-align:baseline}
+.ctw[data-tn-bouton="pilule"] .tn-ouverture-metier .tn-corps>small::before,.ctw[data-tn-bouton="ombre"] .tn-ouverture-metier .tn-corps>small::before{border-radius:50%}
+.ctw .tn-urgence .tn-tel{text-decoration:none;border-bottom:4px solid var(--tn-accent);padding-bottom:6px}
+@supports (color:oklch(from red l c h)){
+  .ctw .tn-deroule[data-tn-c="frise"] .tn-etapes li::before{background:var(--tn-accent);color:oklch(from var(--tn-accent) clamp(.17,(.62 - l)*100,.97) .03 h)}
+}

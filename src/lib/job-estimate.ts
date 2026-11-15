@@ -11,7 +11,6 @@ const cache = new Map<string, { at: number; v: JobEstimate | null }>();
 
 /** Ordres de grandeur par famille (premier préfixe qui correspond) — utilisés seulement sans historique. */
 const DEFAULTS: [RegExp, number][] = [
-  [/^pipeline\./, 6 * 60_000],
   [/^(video|videos|ugc|ad\.video)/, 4 * 60_000],
   [/^brand\.(build|logo)/, 90_000],
   [/^(shop|theme)\./, 60_000],

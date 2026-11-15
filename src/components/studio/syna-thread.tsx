@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, Button, cx, Textarea, useApi } from "../ui";
 import { ThemeDemoViewer } from "./theme-demo-viewer";
+import { BrandBoards, type BoardSet } from "./brand-boards";
 import type { ThemeDemoStatus } from "@/lib/theme/theme-demos";
 import type { DirectionCard } from "@/lib/theme/directions";
 import { useT } from "../i18n";
@@ -19,11 +20,13 @@ type View = {
   run: { id: string; status: string; step: number; pending: any; error: string | null } | null;
   budget: { authorizedPct: number | null; spentPct: number | null };
   attachments: { id: string; kind: string; name: string; analysis: any }[];
-  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; logos?: Logos | null; brandKit?: Kit | null; angles?: Angles | null; activity?: Activity | null; themes?: Themes | null; families?: Families | null; siteCopy?: { pages: Record<string, CopyPage> } | null };
+  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; logos?: Logos | null; brandKit?: Kit | null; angles?: Angles | null; posts?: PostsPlan | null; activity?: Activity | null; themes?: Themes | null; families?: Families | null; siteCopy?: { pages: Record<string, CopyPage> } | null };
 };
 type Face = { family: string; file: string; weight: number } | null;
 type IdentityCard = { nameWhy?: string;
-  key: "A" | "B" | "C"; name: string; nameStyle: string; slogan: string; promise: string; territory: string; ground: "blanc" | "degrade" | "sombre"; gradient?: { from: string; to: string };
+  /** Planche de marque (identités créées depuis le 12 novembre 2026) : affichée par BrandBoards. */
+  board?: unknown;
+  key: "A" | "B" | "C" | "D"; name: string; nameStyle: string; slogan: string; promise: string; territory: string; ground: "blanc" | "degrade" | "sombre" | "uni"; gradient?: { from: string; to: string };
   palette: { dark: string; primary: string; secondary: string; accent: string; light: string }; paletteFamily: string;
   fontStyle: string; tone: { adjectives: string[]; avoid: string[] }; logoStyleLabel: string; logoIdea: string; why: string;
   faces: { heading: Face; body: Face };
@@ -41,7 +44,7 @@ function IdentityCards({ ids, busy, onChoose }: { ids: Identities; busy: boolean
     return (
             <article key={key} className={cx("overflow-hidden rounded-xl border", chosen ? "border-ink ring-2 ring-ink" : "border-line", faded && "opacity-60")} data-identity={key}>
         <div className="px-4 pb-4 pt-3" style={{ background: x.ground === "sombre" ? x.palette.dark : x.ground === "degrade" && x.gradient ? `linear-gradient(135deg, ${x.gradient.from}, ${x.gradient.to})` : x.palette.light, color: x.ground === "sombre" ? x.palette.light : x.ground === "degrade" && x.gradient ? readable(x.palette, [x.gradient.from, x.gradient.to]) : x.palette.dark, fontFamily: fam(x.faces.body, "sans-serif") }}>
-          <p className="text-[11px] uppercase tracking-wider opacity-70">{label ?? `${t("Identité", "Identity")} ${x.key}`} · {t({ blanc: "fond blanc", degrade: "fond en dégradé", sombre: "fond sombre" }[x.ground] ?? "", { blanc: "white background", degrade: "gradient background", sombre: "dark background" }[x.ground] ?? "")} · {x.territory}</p>
+          <p className="text-[11px] uppercase tracking-wider opacity-70">{label ?? `${t("Identité", "Identity")} ${x.key}`} · {t({ blanc: "fond blanc", degrade: "fond en dégradé", sombre: "fond sombre", uni: "fond clair coloré" }[x.ground] ?? "", { blanc: "white background", degrade: "gradient background", sombre: "dark background", uni: "tinted light background" }[x.ground] ?? "")} · {x.territory}</p>
           <h3 className="mt-2 text-3xl leading-tight" style={{ fontFamily: fam(x.faces.heading, "serif"), fontWeight: x.faces.heading?.weight ?? 600 }}>{x.name}</h3>
           <span className="mt-2 block h-1 w-10 rounded-full" style={{ background: x.palette.accent }} aria-hidden />
           <p className="mt-1 text-base">{x.slogan}</p>
@@ -56,7 +59,6 @@ function IdentityCards({ ids, busy, onChoose }: { ids: Identities; busy: boolean
           <div><dt className="inline font-semibold">{t("Couleurs", "Colours")} : </dt><dd className="inline">{x.paletteFamily} — {x.ground === "degrade" && x.gradient ? `${t("dégradé", "gradient")} ${x.gradient.from} → ${x.gradient.to}` : `${t("fond", "background")} ${x.ground === "sombre" ? x.palette.dark : x.palette.light}`}, {t("texte", "text")} {x.ground === "sombre" ? x.palette.light : x.palette.dark}, {t("bouton", "button")} {x.palette.primary}, {t("surface", "surface")} {x.palette.secondary}, {t("accent", "accent")} {x.palette.accent}</dd></div>
           <div><dt className="inline font-semibold">{t("Polices", "Fonts")} : </dt><dd className="inline">{x.faces.heading?.family ?? "?"} / {x.faces.body?.family ?? "?"}{x.fontStyle ? ` — ${x.fontStyle}` : ""}</dd></div>
           <div><dt className="inline font-semibold">{t("Ton", "Tone")} : </dt><dd className="inline">{x.tone.adjectives.join(", ")} · {t("jamais", "never")} : {x.tone.avoid.join(", ")}</dd></div>
-          <div><dt className="inline font-semibold">{t("Idée de logo", "Logo idea")} : </dt><dd className="inline">{x.logoStyleLabel} — {x.logoIdea}</dd></div>
           {!!x.why && <div><dt className="inline font-semibold">{t("Pourquoi pour toi", "Why it fits you")} : </dt><dd className="inline">{x.why}</dd></div>}
         </dl>
         <div className="border-t border-line bg-card px-4 py-2">
@@ -141,9 +143,9 @@ function CalendarCard({ projectId, refreshKey }: { projectId: string; refreshKey
   );
 }
 
-type Logos = { round: number; chosen: string | null; list: { source: "A" | "B" | "C"; name: string; style: string; assetId: string | null; href: string | null; verdict: string; score: number | null; reason: string; best?: boolean }[] };
+type Logos = { round: number; chosen: string | null; list: { source: "A" | "B" | "C"; name: string; style: string; assetId: string | null; href: string | null; verdict: string; score: number | null; reason: string; best?: boolean; choosable?: boolean; kind?: "planche" | "image" }[] };
 
-/** Étape 2 : les 3 logos, chacun sur fond blanc et sur le fond de la marque, avec le verdict honnête du contrôle. */
+/** Étape 2 : le logo (ou les 3 logos d'une identité d'avant les planches), sur fond blanc et sur le fond de la marque, avec le verdict honnête du contrôle. */
 function LogoCards({ logos, brandBg, busy, onChoose }: { logos: Logos; brandBg: string | null; busy: boolean; onChoose: (source: string) => void }) {
   const t = useT();
   return (
@@ -159,11 +161,11 @@ function LogoCards({ logos, brandBg, busy, onChoose }: { logos: Logos; brandBg: 
                 <div className="flex h-44 items-center justify-center p-3" style={{ background: brandBg ?? "#F5F5F5" }}>{x.href && <img src={x.href} alt="" className="max-h-full max-w-full object-contain" />}</div>
               </div>
               <div className="space-y-1 px-3 py-2 text-xs">
-                <p className="font-semibold">{t("Logo", "Logo")} {x.source} · {x.name}</p>
-                <p className={ok ? "text-emerald-700" : "text-amber-700"} data-logo-verdict>{ok ? `✓ ${t("Validé par le contrôle", "Passed the check")}${x.score != null ? ` (${String(x.score).replace(".", ",")}/10)` : ""}` : x.assetId ? `${t("Non validé par le contrôle", "Did not pass the check")} : ${x.reason}` : `${t("Pas de dessin", "No drawing")} : ${x.reason}`}</p>
+                <p className="font-semibold">{logos.list.length < 3 ? x.name : `${t("Logo", "Logo")} ${x.source} · ${x.name}`}</p>
+                <p className={ok || x.kind === "planche" || x.kind === "image" ? "text-emerald-700" : "text-amber-700"} data-logo-verdict>{x.kind === "image" ? `✓ ${t("Créé avec ta planche et relu : ton nom y est exact", "Made with your board and reviewed: your name is exact")}` : x.kind === "planche" ? `✓ ${t("Dessiné par le Studio : ton nom, exact à la lettre", "Drawn by the Studio: your name, letter-perfect")}` : ok ? `✓ ${t("Validé par le contrôle", "Passed the check")}${x.score != null ? ` (${String(x.score).replace(".", ",")}/10)` : ""}` : x.assetId ? `${t("Non validé par le contrôle", "Did not pass the check")} : ${x.reason}` : `${t("Pas de dessin", "No drawing")} : ${x.reason}`}</p>
               </div>
               <div className="border-t border-line px-3 py-2">
-                {chosen ? <p className="text-xs font-semibold">✓ {t("Logo de ta marque", "Your brand logo")}</p> : !logos.chosen && x.assetId && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(x.source)}>{t(`Je choisis le logo ${x.source}`, `I choose logo ${x.source}`)}</Button>}
+                {chosen ? <p className="text-xs font-semibold">✓ {t("Logo de ta marque", "Your brand logo")}</p> : !logos.chosen && x.assetId && x.choosable !== false && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(x.source)}>{logos.list.length < 3 ? (x.kind === "planche" ? t("Je choisis le nom dessiné", "I choose the drawn name") : t("Je choisis ce logo", "I choose this logo")) : t(`Je choisis le logo ${x.source}`, `I choose logo ${x.source}`)}</Button>}
               </div>
             </article>
           );
@@ -174,13 +176,62 @@ function LogoCards({ logos, brandBg, busy, onChoose }: { logos: Logos; brandBg: 
   );
 }
 
-type Angles = { list: { id: string; title: string; goal?: string; why?: string; story?: string; show?: string; organicExample?: string; cta?: string; audience: string; motivation: string; message: string; emotion: string; proofsToConfirm: string[]; arguments: string[]; sources: { title: string; url: string }[] }[]; recommendedId: string | null; sourceCount: number; chosen: string[] | null };
+type Angles = { list: { id: string; title: string; goal?: string; why?: string; story?: string; show?: string; organicExample?: string; cta?: string; audience: string; motivation: string; message: string; emotion: string; proofsToConfirm: string[]; arguments: string[]; sources: { title: string; url: string }[]; doubt?: string }[]; roles?: Record<string, "sur" | "emotion" | "audacieux">; recommendedId: string | null; sourceCount: number; chosen: string[] | null };
 
-/** Couleurs des bandeaux, reprises du guide « 5 angles marketing » du propriétaire. */
+type PostsPlan = { round: number; judged: "juges" | "non_juges"; groups: { subject: string; title: string; points: string[]; cta: string; caption: string; hashtags: string[]; visual: string; doubt?: string }[]; created: { id: string; network: string; title: string; images: string[] }[] | null };
+const POST_SUBJECT: Record<string, [string, string]> = { produit: ["Le produit", "The product"], conseil: ["Un conseil", "A tip"], coulisses: ["Les coulisses", "Behind the scenes"], usage: ["L'usage", "How to use"], erreurs: ["Les erreurs à éviter", "Mistakes to avoid"], question: ["Une question", "A question"] };
+
+/**
+ * Étape 9 : le plan des 3 groupes de publications, montré AVANT toute image (le client voit ce qui sera créé et payé),
+ * puis les publications créées, par réseau. Un groupe que SINA a refusé à la relecture porte son doute, dit franchement.
+ */
+function PostsPlanCard({ plan }: { plan: PostsPlan }) {
+  const t = useT();
+  return (
+    <div className="@container mt-2 space-y-2" data-syna-posts>
+      <p className="text-xs text-muted">{plan.created ? t("Tes publications, dans le format de chacun de tes réseaux.", "Your posts, in each network's format.") : t("Le plan de tes 3 publications. Aucune image n'est encore créée : dis-moi s'il te convient.", "The plan of your 3 posts. No image is created yet: tell me if it suits you.")}</p>
+      <div className="grid grid-cols-1 gap-3 @3xl:grid-cols-3">
+        {plan.groups.map((g, i) => {
+          const band = ANGLE_BANDS[i % ANGLE_BANDS.length];
+          return (
+            <article key={i} className="overflow-hidden rounded-xl border border-line bg-card text-xs" data-post-group={i + 1}>
+              <header className="px-4 py-3 text-white" style={{ background: band }}>
+                <p className="text-[10px] font-semibold uppercase tracking-wide opacity-90">{t(POST_SUBJECT[g.subject]?.[0] ?? g.subject, POST_SUBJECT[g.subject]?.[1] ?? g.subject)}</p>
+                <h4 className="mt-0.5 text-base font-bold leading-tight">{g.title}</h4>
+              </header>
+              <div className="space-y-2 px-4 py-3">
+                {!!g.points.length && <ul className="list-disc space-y-0.5 pl-4 text-ink/90">{g.points.map((x) => <li key={x}>{x}</li>)}</ul>}
+                <p><span className="inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold text-white" style={{ background: band }}>{g.cta}</span></p>
+                <p className="whitespace-pre-line text-ink/90">{g.caption}</p>
+                <p className="break-words text-[11px] text-muted">{g.hashtags.join(" ")}</p>
+                <p className="text-[11px] text-muted"><strong>{t("La photo prévue", "The planned photo")} : </strong>{g.visual}</p>
+                {!!g.doubt && <p className="rounded-md border border-line bg-card px-3 py-2 text-[11px] text-muted" data-post-doubt={i + 1}><strong>{t("Mon doute sur celle-ci", "My doubt about this one")} : </strong>{g.doubt}</p>}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+      {!!plan.created?.some((x) => x.images.length) && (
+        <div className="grid grid-cols-2 gap-2 @3xl:grid-cols-4" data-syna-posts-created>
+          {plan.created.filter((x) => x.images.length).map((x) => (
+            <figure key={x.id} className="overflow-hidden rounded-lg border border-line bg-card">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={x.images[0]} alt={x.title} className="block w-full" loading="lazy" />
+              <figcaption className="px-2 py-1 text-[11px] text-muted">{x.network}</figcaption>
+            </figure>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Couleurs des bandeaux, reprises du guide « 5 angles marketing » du propriétaire (trois montrés depuis le 14 novembre 2026). */
+const ROLE_LABEL = { sur: ["L'angle sûr", "The safe angle"], emotion: ["L'angle d'émotion", "The emotional angle"], audacieux: ["L'angle audacieux", "The bold angle"] } as const;
 const ANGLE_BANDS = ["#9C3343", "#74533F", "#43644A", "#B46D25", "#73507F"];
 
 /**
- * Étape 4 : les 5 angles au format du guide du propriétaire (7 novembre 2026) — bandeau titre + objectif, pourquoi,
+ * Étape 4 : les 3 angles (un sûr, un d'émotion, un audacieux) au format du guide du propriétaire (7 novembre 2026) — bandeau titre + objectif, pourquoi,
  * accroche, ce qu'on raconte, ce qu'on montre, publication conseillée, appel à l'action, informations à confirmer,
  * sources. Le client peut en choisir PLUSIEURS : le premier coché est l'angle principal.
  */
@@ -204,6 +255,7 @@ function AngleCards({ angles, busy, onChoose }: { angles: Angles; busy: boolean;
                   <h4 className="text-base font-bold leading-tight">{String(i + 1).padStart(2, "0")}  {a.title}</h4>
                   {angles.recommendedId === a.id && <span className="shrink-0 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold" style={{ color: band }}>{t("Recommandé", "Recommended")}</span>}
                 </div>
+                {!!angles.roles?.[a.id] && <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide opacity-90" data-angle-role={angles.roles[a.id]}>{t(ROLE_LABEL[angles.roles[a.id]][0], ROLE_LABEL[angles.roles[a.id]][1])}</p>}
                 {!!a.goal && <p className="mt-1 text-sm opacity-90">{a.goal}</p>}
               </header>
               <dl className="space-y-2 px-4 py-3" style={{ color: band }}>
@@ -215,6 +267,8 @@ function AngleCards({ angles, busy, onChoose }: { angles: Angles; busy: boolean;
                 {row(t("Appel à l'action", "Call to action"), a.cta)}
                 {row(t("Informations à confirmer", "To confirm"), a.proofsToConfirm.join(" ; "))}
               </dl>
+              {/* Angle montré avec le doute de SINA (sa relecture l'avait refusé) : dit franchement, jamais caché. */}
+              {!!a.doubt && <p className="mx-4 mb-2 rounded-md border border-line bg-card px-3 py-2 text-[11px] text-muted" data-angle-doubt={a.id}><strong>{t("Mon doute sur cet angle", "My doubt about this angle")} : </strong>{a.doubt}</p>}
               {!!a.sources.length && <p className="px-4 pb-2 text-[11px] text-muted">{t("Sources", "Sources")} : {a.sources.map((x, k) => <span key={x.url}>{k ? " · " : ""}<a className="underline" href={x.url} target="_blank" rel="noreferrer">{x.title}</a></span>)}</p>}
               <div className="border-t border-line px-4 py-2">
                 {chosen.length
@@ -248,7 +302,7 @@ function ThemeCards({ themes, busy, onChoose, onAll, onMockup }: { themes: Theme
   const shownDemo = viewing ? demos[viewing] : null;
   return (
     <div className="@container mt-2 space-y-2" data-syna-themes>
-      <p className="text-xs text-muted">{t("Voici les thèmes du Studio tels qu'ils sont, avec les images et les textes de leur démonstration. Choisir un thème est gratuit : ton site s'y compose ensuite avec ta marque et tes produits. Tu peux aussi préférer un thème sur mesure : monté pour toi dans le style que tu choisis, modifiable sur demande (seules les photos nouvelles sont payantes, prix annoncé avant).", "Here are the Studio themes as they are, with their demo images and copy. Choosing a theme is free; you can also prefer a custom mockup (paid, price shown first).")}</p>
+      <p className="text-xs text-muted">{t("Voici les thèmes du Studio tels qu'ils sont, avec les images et les textes de leur démonstration. Choisir un thème est gratuit : ton site s'y compose ensuite avec ta marque et tes produits. Tu peux aussi préférer un thème sur mesure : conçu pour toi dans la famille que tu choisis (Classique ou Moderne), modifiable sur demande (la conception, les textes et les photos nouvelles sont payants, prix montré avant).", "Here are the Studio themes as they are, with their demo images and copy. Choosing a theme is free; you can also prefer a custom theme (design, copy and new photos are paid, price shown first).")}</p>
       <div className="grid grid-cols-1 gap-3 @2xl:grid-cols-3">
         {themes.list.map((th) => {
           const chosen = themes.chosen === th.id;
@@ -285,33 +339,35 @@ function ThemeCards({ themes, busy, onChoose, onAll, onMockup }: { themes: Theme
   );
 }
 
-type Families = { cards: { family: string; style: string; title: string; titleEn: string; pitch: string; pitchEn: string; mood: string; preview: string; demo?: string; sections: number }[]; chosen: string | null };
+type Families = { cards: { family: string; style: string; title: string; titleEn: string; pitch: string; pitchEn: string; mood: string; preview: string; demo?: string; previews?: string[]; examples?: { label: string; labelEn: string; demo: string }[]; sections: number }[]; chosen: string | null };
 
 /**
- * Étape 6 : les familles de sections EN IMAGE (Classique ; Moderne · Sport chic ; Moderne · Streetwear néon). Le client
+ * Étape 6 : les deux familles de sections EN IMAGE (Classique, Moderne, avec leurs exemples à ouvrir en vrai). Le client
  * choisit le style qu'il préfère ; le thème n'est ensuite monté qu'avec les sections de cette famille (jamais de mélange).
  */
 function FamilyCards({ families, busy, onChoose }: { families: Families; busy: boolean; onChoose: (title: string) => void }) {
   const t = useT();
   return (
     <div className="@container mt-2 space-y-2" data-syna-families>
-      <p className="text-xs text-muted">{t("Deux familles de styles pour ton site, qui ne se mélangent jamais. Ouvre chaque thème en vrai (pages, panier, téléphone), puis choisis celui qui te ressemble : il sera repris à tes couleurs, avec ta marque et tes produits. C'est gratuit.", "Two style families for your site, never mixed. Open each theme live (pages, cart, phone), then pick the one that feels like you: it will use your colours, brand and products. It's free.")}</p>
-      <div className="grid grid-cols-1 gap-3 @2xl:grid-cols-3">
+      <p className="text-xs text-muted">{t("Deux familles de styles pour ton site, qui ne se mélangent jamais. Ouvre chaque exemple en vrai (pages, panier, téléphone), puis choisis la famille qui te ressemble : ton site sera conçu dans cette famille, de A à Z, avec ta marque et tes produits. Choisir la famille est gratuit.", "Two style families for your site, never mixed. Open each theme live (pages, cart, phone), then pick the one that feels like you: it will use your colours, brand and products. It's free.")}</p>
+      <div className="grid grid-cols-1 gap-3 @2xl:grid-cols-2">
         {families.cards.map((c) => {
-          const key = `${c.family}:${c.style}`, chosen = families.chosen === key;
+          const key = c.family, chosen = (families.chosen ?? "").split(":")[0] === c.family;
           return (
             <article key={key} className={cx("overflow-hidden rounded-xl border bg-card text-xs", chosen ? "border-accent ring-2 ring-accent" : "border-line", families.chosen && !chosen && "opacity-60")} data-family={key}>
-              <img src={c.preview} alt={t(`Aperçu du style ${c.title}`, `${c.titleEn} style preview`)} className="block aspect-[16/10] w-full object-cover object-top" loading="lazy" />
+              <div className={cx("grid gap-px bg-line", (c.previews?.length ?? 1) > 1 && "grid-cols-2")}>
+                {(c.previews?.length ? c.previews : [c.preview]).map((src, i) => <img key={src} src={src} alt={t(`Aperçu de la famille ${c.title}${(c.previews?.length ?? 1) > 1 ? ` (exemple ${i + 1})` : ""}`, `${c.titleEn} family preview`)} className={cx("block w-full object-cover object-top", (c.previews?.length ?? 1) > 1 ? "aspect-[4/5]" : "aspect-[16/10]")} loading="lazy" />)}
+              </div>
               <div className="space-y-1 px-3 py-2">
                 <h4 className="text-sm font-bold">{t(c.title, c.titleEn)}</h4>
                 <p>{t(c.pitch, c.pitchEn)}</p>
                 <p className="text-muted">{c.mood} · {t(`${c.sections} sections au choix`, `${c.sections} sections to choose from`)}</p>
               </div>
               <div className="flex flex-wrap items-center gap-2 border-t border-line px-3 py-2">
-                {c.demo && <a className="underline" href={c.demo} target="_blank" rel="noreferrer" data-family-demo={key}>{t("Voir le thème en vrai", "See the live theme")}</a>}
+                {(c.examples?.length ? c.examples : c.demo ? [{ label: "Voir le thème en vrai", labelEn: "See the live theme", demo: c.demo }] : []).map((x) => <a key={x.demo} className="underline" href={x.demo} target="_blank" rel="noreferrer" data-family-demo={key}>{t(x.label, x.labelEn)}</a>)}
                 {families.chosen
-                  ? chosen && <p className="font-semibold">✓ {t("Style choisi", "Style chosen")}</p>
-                  : <Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(c.title)} data-family-pick={key}>{t("Je préfère ce style", "I prefer this style")}</Button>}
+                  ? chosen && <p className="font-semibold">✓ {t("Famille choisie", "Family chosen")}</p>
+                  : <Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(c.title)} data-family-pick={key}>{t("Je préfère cette famille", "I prefer this family")}</Button>}
               </div>
             </article>
           );
@@ -321,65 +377,59 @@ function FamilyCards({ families, busy, onChoose }: { families: Families; busy: b
   );
 }
 
-type CustomThemeView = { href: string; open: string; rev: number; choisi: boolean; pages: { key: string; label: string; sections: { uid: string; titre: string; textesClient: boolean }[] }[] };
-type Picked = { uid: string; page: string | null; kind: string; path: string | null; text: string | null; src: string | null; role: string | null };
+type CustomThemeView = { href: string; boutique?: string; open: string; rev: number; choisi: boolean; pages: { key: string; label: string }[] };
 
 /**
- * Thème sur mesure (étape 6, décision du propriétaire du 9 novembre 2026) : le thème EN VRAI dans le fil (pages,
- * ordinateur ou téléphone) ; le client DÉSIGNE un élément (titre, texte, bouton, image, section) et dit ce qu'il veut
- * changer : SINA reçoit sa désignation et ne modifie que lui.
+ * Thème sur mesure dans le fil : un aperçu et le lien vers l'onglet Boutique, où le thème est EN PLACE en grand et où le
+ * client désigne les éléments à changer (consigne du propriétaire du 9 novembre 2026).
  */
 function CustomThemeCard({ card, busy, onSend }: { card: CustomThemeView; busy: boolean; onSend: (text: string) => void }) {
-  const t = useT();
-  const frame = useRef<HTMLIFrameElement>(null);
-  const [page, setPage] = useState(card.pages[0]?.key ?? "home"), [phone, setPhone] = useState(false), [picking, setPicking] = useState(false);
-  const [picked, setPicked] = useState<Picked | null>(null), [ask, setAsk] = useState("");
-  const post = useCallback((m: object) => frame.current?.contentWindow?.postMessage({ source: "ct-studio", ...m }, "*"), []);
-  useEffect(() => {
-    const on = (e: MessageEvent) => {
-      const d = e.data;
-      if (!d || d.source !== "ct-preview" || e.source !== frame.current?.contentWindow) return;
-      if (d.type === "ready") { post({ type: "go", page }); post({ type: "view", view: phone ? "phone" : "desk" }); if (picking) post({ type: "pick", on: true }); }
-      if (d.type === "page" && typeof d.page === "string") setPage(d.page);
-      if (d.type === "picked") { setPicked({ uid: String(d.uid), page: d.page ?? null, kind: String(d.kind), path: d.path ?? null, text: d.text ?? null, src: d.src ?? null, role: d.role ?? null }); setPicking(false); post({ type: "pick", on: false }); }
-    };
-    addEventListener("message", on);
-    return () => removeEventListener("message", on);
-  }, [page, phone, picking, post]);
-  const label = (k: string | null) => card.pages.find((p) => p.key === k)?.label ?? k ?? "";
-  const section = picked ? card.pages.flatMap((p) => p.sections).find((s) => s.uid === picked.uid)?.titre ?? (picked.role === "header" ? t("En-tête", "Header") : picked.role === "footer" ? t("Pied de page", "Footer") : "") : "";
-  function submit() {
-    if (!picked || !ask.trim()) return;
-    const where = [`section ${picked.uid}${section ? ` « ${section} »` : ""}`, picked.page ? `page ${label(picked.page)}` : "", picked.kind, picked.path ? `adresse ${picked.path}` : "", picked.src ? `photo ${picked.src}` : "", picked.text ? `« ${picked.text.slice(0, 160)} »` : ""].filter(Boolean).join(" · ");
-    onSend(`[Élément désigné · ${where}] ${ask.trim()}`);
-    setAsk(""); setPicked(null); post({ type: "unpick" });
-  }
+  const t = useT(), router = useRouter();
   return (
     <div className="mt-2 overflow-hidden rounded-xl border border-line bg-card text-xs" data-syna-custom-theme>
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-3 py-2">
-        <b className="text-sm">{t("Ton thème sur mesure", "Your custom theme")}{card.choisi ? ` · ✓ ${t("choisi", "chosen")}` : ""}</b>
-        <span className="flex flex-wrap items-center gap-1">
-          <Button size="sm" variant={phone ? "ghost" : "secondary"} onClick={() => { setPhone(false); post({ type: "view", view: "desk" }); }}>{t("Ordinateur", "Desktop")}</Button>
-          <Button size="sm" variant={phone ? "secondary" : "ghost"} onClick={() => { setPhone(true); post({ type: "view", view: "phone" }); }}>{t("Téléphone", "Phone")}</Button>
-          <a className="underline" href={card.open} target="_blank" rel="noreferrer">{t("Ouvrir en grand", "Open full size")}</a>
-        </span>
+      <div className="relative h-56 overflow-hidden border-b border-line bg-white">
+        <iframe key={card.rev} title={t("Thème sur mesure", "Custom theme")} src={card.href} className="pointer-events-none absolute left-0 top-0 h-[1120px] w-[1280px] origin-top-left scale-[0.33]" loading="lazy" tabIndex={-1} />
       </div>
-      <div className="flex flex-wrap gap-1 px-3 py-2">{card.pages.map((p) => <button key={p.key} type="button" className={cx("rounded-full border px-2 py-0.5", p.key === page ? "border-accent bg-accent text-paper" : "border-line")} onClick={() => { setPage(p.key); post({ type: "go", page: p.key }); }}>{p.label}</button>)}</div>
-      <iframe ref={frame} key={card.rev} title={t("Thème sur mesure", "Custom theme")} src={card.href} className="block h-[560px] w-full border-y border-line bg-white" />
       <div className="space-y-2 px-3 py-2">
-        <Button size="sm" variant={picking ? "secondary" : "ghost"} disabled={busy} onClick={() => { const on = !picking; setPicking(on); post({ type: "pick", on }); }} data-ct-pick>
-          {picking ? t("Clique sur l'élément à changer dans le thème…", "Click the element to change…") : t("🎯 Désigner un élément", "🎯 Point at an element")}
-        </Button>
-        {picked && <div className="rounded-lg border border-accent/50 bg-paper-2 p-2" data-ct-picked>
-          <p><b>{t("Élément désigné", "Selected element")}</b> : {picked.kind}{section ? ` — ${section}` : ""}{picked.page ? ` (${label(picked.page)})` : ""}{picked.text ? ` · « ${picked.text.slice(0, 90)} »` : ""}</p>
-          <div className="mt-1 flex gap-2">
-            <input className="min-w-0 flex-1 rounded border border-line bg-card px-2 py-1" value={ask} onChange={(e) => setAsk(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") submit(); }} placeholder={t("Que veux-tu changer ? (texte, photo, couleur, retirer…)", "What should change?")} aria-label={t("Ce que tu veux changer", "What to change")} />
-            <Button size="sm" disabled={busy || !ask.trim()} onClick={submit}>{t("Envoyer à SINA", "Send to SINA")}</Button>
-            <Button size="sm" variant="ghost" onClick={() => { setPicked(null); post({ type: "unpick" }); }} aria-label={t("Retirer la désignation", "Clear selection")}>×</Button>
-          </div>
-        </div>}
-        {!card.choisi && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onSend(t("Je choisis ce thème sur mesure.", "I choose this custom theme."))}>{t("Je choisis ce thème", "I choose this theme")}</Button>}
+        <p><b className="text-sm">{t("Ton thème sur mesure", "Your custom theme")}{card.choisi ? ` · ✓ ${t("choisi", "chosen")}` : ""}</b> · {card.pages.map((p) => p.label).join(" · ")}</p>
+        <p className="text-muted">{t("Il est en place dans l'onglet Boutique : regarde-le en grand et désigne un élément pour demander un changement.", "It's in the Boutique tab: view it full size and point at an element to request a change.")}</p>
+        <div className="flex flex-wrap gap-2">
+          {card.boutique && <Button size="sm" onClick={() => router.push(card.boutique!)} data-ct-boutique>{t("Ouvrir la Boutique", "Open the Boutique")}</Button>}
+          <a className="inline-flex items-center underline" href={card.open} target="_blank" rel="noreferrer">{t("Ouvrir en grand", "Open full size")}</a>
+          {!card.choisi && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onSend(t("Je choisis ce thème sur mesure.", "I choose this custom theme."))}>{t("Je choisis ce thème", "I choose this theme")}</Button>}
+        </div>
       </div>
+    </div>
+  );
+}
+
+type ConceptView = { href: string; open: string; idee: string; pages: { key: string; label: string; sections: string[] }[] };
+
+/**
+ * Deux concepts de thème sur mesure côte à côte (décision du propriétaire du 10 novembre 2026) : l'accueil de chacun,
+ * l'idée en une phrase, ses pages, et le choix du client (SINA monte ensuite tout le site sur ce concept).
+ */
+function ConceptCards({ concepts, busy, onChoose }: { concepts: Record<"A" | "B", ConceptView>; busy: boolean; onChoose: (k: "A" | "B") => void }) {
+  const t = useT();
+  return (
+    <div className="mt-2 grid gap-3 sm:grid-cols-2" data-syna-concepts>
+      {(["A", "B"] as const).map((k) => { const c = concepts[k]; return (
+        <div key={k} className="overflow-hidden rounded-xl border border-line bg-card text-xs" data-syna-concept={k}>
+          <div className="relative h-56 overflow-hidden border-b border-line bg-white">
+            <iframe title={t(`Concept ${k}`, `Concept ${k}`)} src={c.href} className="pointer-events-none absolute left-0 top-0 h-[1120px] w-[1280px] origin-top-left scale-[0.33]" loading="lazy" tabIndex={-1} />
+          </div>
+          <div className="space-y-2 px-3 py-2">
+            <p><b className="text-sm">{t("Concept", "Concept")} {k}</b></p>
+            <p>{c.idee}</p>
+            {c.pages.map((pg) => <p key={pg.key} className="text-muted"><b className="text-ink">{pg.label}</b> · {pg.sections.length} {t("sections", "sections")}</p>)}
+            <p className="text-[11px] text-muted">{t("Photos d'exemple : tes vraies images viendront sur le concept choisi.", "Sample photos: your real images come with the chosen concept.")}</p>
+            <div className="flex flex-wrap gap-2">
+              <a className="inline-flex items-center underline" href={c.open} target="_blank" rel="noreferrer">{t("Ouvrir en grand", "Open full size")}</a>
+              <Button size="sm" disabled={busy} onClick={() => onChoose(k)} data-syna-concept-choose={k}>{t(`Je choisis le concept ${k}`, `I choose concept ${k}`)}</Button>
+            </div>
+          </div>
+        </div>
+      ); })}
     </div>
   );
 }
@@ -416,6 +466,7 @@ type Activity = {
   angle: { title: string; goal: string; message: string; story: string; cta: string; others: string[] } | null;
   keyMessages: string[]; objections: { objection: string; answer: string }[]; offer: { price: string | null; facts: string[] };
   products: { id: string; title: string; price: number | null; status: string }[]; gaps: string[]; validated: boolean;
+  services?: { name: string; price: string | null; duration: string | null }[];
 };
 const COMPANY_LABELS: [string, string][] = [["legalName", "Entreprise"], ["email", "E-mail"], ["phone", "Téléphone"], ["address", "Adresse"], ["siret", "SIRET"], ["shipping", "Livraison"], ["returns", "Retours"]];
 
@@ -431,7 +482,7 @@ function ActivityCard({ a, busy, onValidate }: { a: Activity; busy: boolean; onV
       {!!a.keyMessages.length && block(t("Messages clés", "Key messages"), <ul className="list-disc pl-4">{a.keyMessages.map((m) => <li key={m}>{m}</li>)}</ul>)}
       {!!a.objections.length && block(t("Objections et réponses", "Objections and answers"), <ul className="space-y-1">{a.objections.map((o) => <li key={o.objection}><span className="font-semibold">« {o.objection} »</span> — {o.answer}</li>)}</ul>)}
       {block(t("L'offre", "The offer"), <div>{a.offer.price && <p>{t("Prix confirmé", "Confirmed price")} : {a.offer.price}</p>}{!!a.offer.facts.length && <ul className="list-disc pl-4">{a.offer.facts.map((f) => <li key={f}>{f}</li>)}</ul>}</div>)}
-      {block(t("Produits (onglet Produits)", "Products"), a.products.length ? <ul className="space-y-0.5">{a.products.map((x) => <li key={x.id} className="flex justify-between gap-2"><span>{x.title}</span><span className={x.price == null ? "text-amber-700" : ""}>{x.price == null ? t("prix à compléter", "price missing") : `${String(x.price.toFixed(2)).replace(".", ",")} €`}</span></li>)}</ul> : <p className="text-amber-700">{t("Aucun produit pour l'instant.", "No product yet.")}</p>)}
+      {a.services ? block(t("Prestations", "Services"), a.services.length ? <ul className="space-y-0.5">{a.services.map((x, i) => <li key={i} className="flex justify-between gap-2"><span>{x.name}{x.duration ? ` · ${x.duration}` : ""}</span><span className={x.price ? "" : "text-amber-700"}>{x.price ?? t("prix à compléter", "price missing")}</span></li>)}</ul> : <p className="text-amber-700">{t("Aucune prestation pour l'instant.", "No service yet.")}</p>) : block(t("Produits (onglet Produits)", "Products"), a.products.length ? <ul className="space-y-0.5">{a.products.map((x) => <li key={x.id} className="flex justify-between gap-2"><span>{x.title}</span><span className={x.price == null ? "text-amber-700" : ""}>{x.price == null ? t("prix à compléter", "price missing") : `${String(x.price.toFixed(2)).replace(".", ",")} €`}</span></li>)}</ul> : <p className="text-amber-700">{t("Aucun produit pour l'instant.", "No product yet.")}</p>)}
       {a.validated ? <p className="font-semibold">✓ {t("Activité validée", "Business validated")}</p> : a.gaps.length ? <p className="text-amber-700" data-activity-gaps>{t("Encore à compléter", "Still to complete")} : {a.gaps.join(" ; ")}</p> : <Button size="sm" disabled={busy} onClick={onValidate}>{t("Je valide mon activité", "I validate my business")}</Button>}
     </div>
   );
@@ -489,7 +540,7 @@ function contrastText(bg: string, dark: string, light: string) {
 }
 const WORKING = ["queued", "running", "waiting_jobs"];
 
-/** Frise du chantier : les étapes 0 à 13 du parcours de création, leur état, l'étape en cours. */
+/** Frise du chantier : les neuf étapes du parcours de création, leur état, l'étape en cours. */
 function JourneyBar({ journey, compact }: { journey: NonNullable<View["journey"]>; compact: boolean }) {
   const t = useT();
   const cur = journey.steps.find((s) => s.n === journey.current);
@@ -497,7 +548,7 @@ function JourneyBar({ journey, compact }: { journey: NonNullable<View["journey"]
   return (
     <div className="border-b border-line px-3 py-2" data-syna-journey>
       <div className="flex items-center justify-between gap-2 text-xs">
-        <span className="font-medium">{started ? `${t("Étape", "Step")} ${journey.current}` : t("Prochaine étape", "Next step")} · {cur ? t(cur.fr, cur.en) : ""}{cur && !started && cur.ready === false ? ` · ${t("bientôt disponible", "coming soon")}` : ""}</span>
+        <span className="font-medium">{started ? `${t("Étape", "Step")} ${journey.current} ${t("sur", "of")} ${journey.steps.length}` : t("Prochaine étape", "Next step")} · {cur ? t(cur.fr, cur.en) : ""}{cur && !started && cur.ready === false ? ` · ${t("bientôt disponible", "coming soon")}` : ""}</span>
         {journey.mode === "refonte" && <span className="text-muted">{t("Refonte · gardé tel quel", "Redesign · kept as is")} : {journey.keep.join(", ")}</span>}
       </div>
       <ol className={cx("mt-1.5 flex gap-1", compact ? "" : "sm:gap-1.5")} aria-label={t("Étapes du parcours", "Journey steps")}>
@@ -551,6 +602,8 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
     setV(view);
   }, [projectId, subscriptionKey]);
   useEffect(() => { load().catch((e) => setError(e.message)); }, [load]);
+  // Demande envoyée depuis un autre onglet (désignation dans la Boutique) : le fil se relit et suit SINA en direct.
+  useEffect(() => { const on = () => { load().catch(() => undefined); }; addEventListener("syna:refresh", on); return () => removeEventListener("syna:refresh", on); }, [load]);
 
   // Suivi de l'exécution : relecture régulière tant que SINA travaille, puis rafraîchissement des onglets du Studio.
   const working = !!v?.run && WORKING.includes(v.run.status);
@@ -606,21 +659,25 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
   const items = useMemo(() => groupThread(v?.messages ?? []), [v?.messages]);
   // Cartes des identités : sous la DERNIÈRE proposition réussie (les anciennes sont remplacées).
   const lastCalendar = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && String(m.content?.tool ?? "").startsWith("calendar.") && m.content?.ok)?.id, [v?.messages]);
+  // Étape 9 : le plan arrive à la fin de sa tâche, les images à la fin de la production ; la carte suit le dernier résultat.
+  const lastPosts = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.ok && ((m.content?.tool === "jobs.wait" && /syna\.posts\.plan|social\.v2\.produce/.test(JSON.stringify(m.content?.data ?? ""))) || m.content?.tool === "posts.plan"))?.id, [v?.messages]);
   const lastAngles = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "angles.propose" && m.content?.ok && m.content?.data?.angles)?.id, [v?.messages]);
   const lastActivity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "activity.plan" && m.content?.ok)?.id, [v?.messages]);
   const lastCopy = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "mockup.copy" && m.content?.ok)?.id, [v?.messages]);
   const lastCustom = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && String(m.content?.tool ?? "").startsWith("custom.") && m.content?.ok && m.content?.data?.customTheme)?.id, [v?.messages]);
+  const lastConcepts = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "custom.concepts" && m.content?.ok && m.content?.data?.concepts)?.id, [v?.messages]);
   const lastFamilies = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "theme.families" && m.content?.ok)?.id, [v?.messages]);
   const lastThemes = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "theme.propose" && m.content?.ok)?.id, [v?.messages]);
   const lastKit = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "brand.kit" && m.content?.ok)?.id, [v?.messages]);
   const lastLogos = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && (m.content?.tool === "logo.propose" || (m.content?.tool === "jobs.wait" && JSON.stringify(m.content?.data ?? "").includes("syna.logos"))) && m.content?.ok)?.id, [v?.messages]);
-  const lastIdentity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "identity.propose" && m.content?.ok)?.id, [v?.messages]);
+  // Identités : sous la proposition faite sur-le-champ (ancienne méthode), ou sous la fin de la tâche de fond de la chaîne.
+  const lastIdentity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.ok && ((m.content?.tool === "identity.propose" && !m.content?.jobs?.length) || (m.content?.tool === "jobs.wait" && JSON.stringify(m.content?.data ?? "").includes("syna.brand"))))?.id, [v?.messages]);
   if (!v) return <div className="p-4 text-sm text-muted">{error || t("Ouverture du fil SINA…", "Opening SINA thread…")}</div>;
   const pending = v.run?.status === "waiting_confirmation" ? v.run.pending : null;
 
   return (
-    <div className={cx("flex h-full min-h-0 flex-col", compact ? "text-sm" : "")} data-syna-thread>
-      <div className="flex items-center justify-between gap-2 border-b border-line px-3 py-2 text-xs text-muted">
+    <div className={cx("flex h-full min-h-0 flex-col", compact ? "text-sm" : "")} data-syna-thread data-syna-size={compact ? "compact" : "large"}>
+      <div className={cx("flex items-center justify-between gap-2 border-b border-line py-2 text-xs text-muted", compact ? "px-3" : "px-5 sm:px-7")}>
         {budgetEdit == null
           ? <button type="button" className="underline-offset-2 hover:underline" onClick={() => setBudgetEdit(String(v.budget.authorizedPct ?? 10))} data-syna-budget>
               {t("Budget autorisé", "Authorised budget")} : {fmt(v.budget.authorizedPct)} % · {t("engagé", "used")} {fmt(v.budget.spentPct)} %
@@ -630,37 +687,41 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
       </div>
       {v.journey && <JourneyBar journey={v.journey} compact={compact} />}
 
-      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-3 py-3" aria-live="polite">
+      <div className={cx("min-h-0 flex-1 overflow-y-auto", compact ? "px-3 py-3" : "px-5 py-6 sm:px-7")} aria-live="polite"><div className={cx(compact ? "space-y-3" : "mx-auto max-w-3xl space-y-4")}>
         {!items.length && <p className="text-muted">{t("Décris ton objectif, joins une photo, une vidéo ou un document : SINA choisit les outils du Studio, les enchaîne et te montre ce qui a changé.", "Describe your goal or attach a photo, video or document.")}</p>}
         {items.map((it) => it.kind === "user"
-          ? <div key={it.m.id} className="ml-6 rounded-2xl bg-ink px-3 py-2 text-paper" data-syna-user>
+          ? <div key={it.m.id} className={cx("w-fit max-w-[85%] rounded-2xl bg-ink text-paper", compact ? "ml-auto px-3 py-2" : "ml-auto px-4 py-2.5")} data-syna-user>
               <p className="whitespace-pre-wrap">{it.m.content.text}</p>
               {!!it.m.content.attachments?.length && <p className="mt-1 text-xs opacity-80">📎 {it.m.content.attachments.map((aid: string) => v.attachments.find((a) => a.id === aid)?.name ?? aid).join(", ")}</p>}
             </div>
           : it.kind === "assistant"
-          ? <div key={it.m.id} className="mr-4 space-y-2" data-syna-assistant>
-              {!!it.m.content.message && <div className="rounded-2xl border border-line bg-card px-3 py-2"><RichText text={it.m.content.message} /></div>}
-              {it.m.content.question && <div className="rounded-xl border border-accent/40 bg-paper-2 px-3 py-2" data-syna-question>
-                <p className="font-medium">{it.m.content.question.text}</p>
+          ? <div key={it.m.id} className={cx("space-y-2", compact ? "mr-4" : "mr-[8%]")} data-syna-assistant>
+              {!!it.m.content.message && <div className={cx("rounded-2xl border border-line bg-card", compact ? "px-3 py-2" : "px-4 py-3")}><RichText text={it.m.content.message} /></div>}
+              {it.m.content.question && <div className={cx("rounded-2xl border border-signal/40 bg-signal-soft", compact ? "px-3 py-2" : "px-4 py-3")} data-syna-question>
+                <p className={cx("font-medium", !compact && "text-[1.05em]")}>{it.m.content.question.text}</p>
                 {!!it.m.content.question.choices?.length && <div className="mt-2 flex flex-wrap gap-2">{it.m.content.question.choices.map((c: string) => <Button key={c} size="sm" variant="secondary" disabled={busy || working} onClick={() => send(c)}>{c}</Button>)}</div>}
               </div>}
               {it.tools.map((tm) => <div key={tm.id}>
                 <ToolResult m={tm} projectId={v.projectId} onChoose={(n) => send(t(`Je choisis le thème sur mesure ${n}.`, `I choose custom theme ${n}.`))} busy={busy || working} />
                 {tm.id === lastLogos && v.journey?.logos && <LogoCards logos={v.journey.logos} brandBg={brandBackground(v.journey.identities)} busy={busy || working} onChoose={(k) => send(t(`Je choisis le logo ${k}.`, `I choose logo ${k}.`))} />}
                 {tm.id === lastActivity && v.journey?.activity && <ActivityCard a={v.journey.activity} busy={busy || working} onValidate={() => send(t("Je valide mon activité.", "I validate my business."))} />}
+                {tm.id === lastPosts && v.journey?.posts && <PostsPlanCard plan={v.journey.posts} />}
                 {tm.id === lastAngles && v.journey?.angles && <AngleCards angles={v.journey.angles} busy={busy || working} onChoose={(titles) => send(titles.length > 1 ? t(`Je choisis ces angles : ${titles.map((x, i) => `« ${x} »${i === 0 ? " (principal)" : ""}`).join(", ")}.`, `I choose these angles: ${titles.join(", ")}.`) : t(`Je choisis l'angle « ${titles[0]} ».`, `I choose the angle "${titles[0]}".`))} />}
                 {tm.id === lastCopy && v.journey?.siteCopy && <CopyCard pages={v.journey.siteCopy.pages} />}
                 {tm.id === lastCustom && v.projectId && <CustomThemeCard card={tm.content.data.customTheme} busy={busy || working} onSend={(text) => send(text)} />}
-                {tm.id === lastFamilies && v.journey?.families && v.projectId && <FamilyCards families={v.journey.families} busy={busy || working} onChoose={(title) => send(t(`Je préfère le style ${title}.`, `I prefer the ${title} style.`))} />}
+                {tm.id === lastConcepts && v.projectId && <ConceptCards concepts={tm.content.data.concepts} busy={busy || working} onChoose={(k) => send(t(`Je choisis le concept ${k}.`, `I choose concept ${k}.`))} />}
+                {tm.id === lastFamilies && v.journey?.families && v.projectId && <FamilyCards families={v.journey.families} busy={busy || working} onChoose={(title) => send(t(`Je préfère la famille ${title}.`, `I prefer the ${title} family.`))} />}
                 {tm.id === lastThemes && v.journey?.themes && v.projectId && <ThemeCards themes={v.journey.themes} busy={busy || working} onChoose={(name) => send(t(`Je choisis le thème ${name}.`, `I choose the ${name} theme.`))} onAll={() => send(t("Je veux voir tous les thèmes.", "I want to see all themes."))} onMockup={() => send(t("Je préfère un thème sur mesure.", "I'd rather have a custom theme."))} />}
                 {tm.id === lastKit && v.journey?.brandKit && <BrandKitCard kit={v.journey.brandKit} darkBg={v.journey.identities?.final?.palette.dark ?? "#16161A"} busy={busy || working} onValidate={() => send(t("Je valide mon image de marque.", "I validate my brand kit."))} />}
                 {tm.id === lastCalendar && v.projectId && <CalendarCard projectId={v.projectId} refreshKey={tm.id} />}
-                {tm.id === lastIdentity && v.journey?.identities && <IdentityCards ids={v.journey.identities} busy={busy || working} onChoose={(k) => send(t(`Je choisis l'identité ${k}.`, `I choose identity ${k}.`))} />}
+                {tm.id === lastIdentity && v.journey?.identities && (v.journey.identities.list.some((x) => x.board)
+                  ? <BrandBoards ids={v.journey.identities as unknown as BoardSet} busy={busy || working} onChoose={(k) => send(t(`Je choisis l'identité ${k}.`, `I choose identity ${k}.`))} />
+                  : <IdentityCards ids={v.journey.identities} busy={busy || working} onChoose={(k) => send(t(`Je choisis l'identité ${k}.`, `I choose identity ${k}.`))} />)}
               </div>)}
             </div>
           : <EventLine key={it.m.id} m={it.m} />)}
         {pending && <div className="rounded-xl border border-amber-400 bg-amber-50 px-3 py-2 text-ink dark:bg-amber-950/30" data-syna-confirmation>
-          <p className="font-medium">{pending.reason === "budget" ? t("Dépense au-delà du budget autorisé", "Spending beyond the authorised budget") : t("Action à confirmer", "Action to confirm")}</p>
+          <p className="font-medium">{pending.reason === "cost" ? t("Dépense à confirmer", "Spending to confirm") : pending.reason === "budget" ? t("Budget des réponses de SINA atteint", "SINA's reply budget is used up") : t("Action à confirmer", "Action to confirm")}</p>
           <p className="mt-1 whitespace-pre-wrap text-sm">{pending.preview}</p>
           {pending.tool === "budget.raise"
             ? <p className="mt-2 text-xs">{t("Augmente le budget autorisé ci-dessus, puis demande à SINA de continuer.", "Raise the budget above, then ask SINA to continue.")}</p>
@@ -669,11 +730,11 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
         {working && <p className="text-xs text-muted" data-syna-working>{v.run?.status === "waiting_jobs" ? t("SINA attend la fin d'une création (images, vidéo ou site) puis reprend seule…", "SINA is waiting for a creation to finish…") : t("SINA travaille…", "SINA is working…")}</p>}
         {v.run?.status === "failed" && <p className="text-xs text-red-600">{t("L'exécution s'est arrêtée : ", "The run stopped: ")}{v.run.error}</p>}
         <div ref={end} />
-      </div>
+      </div></div>
 
-      <div className="border-t border-line p-3">
+      <div className={cx("border-t border-line", compact ? "p-3" : "px-5 py-4 sm:px-7")}><div className={cx(!compact && "mx-auto max-w-3xl")}>
         {!!files.length && <div className="mb-2 flex flex-wrap gap-1">{files.map((f) => <span key={f.id} className="rounded-full border border-line px-2 py-0.5 text-xs">{f.kind === "video" ? "🎬" : f.kind === "image" ? "🖼" : "📄"} {f.name} <button type="button" aria-label={t("Retirer", "Remove")} onClick={() => setFiles((x) => x.filter((y) => y.id !== f.id))}>×</button></span>)}</div>}
-        <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={compact ? 3 : 4} maxLength={8000} placeholder={t("Ta demande, même avec plusieurs modifications…", "Your request, even with several changes…")} aria-label={t("Message à SINA", "Message to SINA")}
+        <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={compact ? 3 : 4} maxLength={8000} placeholder={t("Écris à SINA…", "Write to SINA…")} aria-label={t("Message à SINA", "Message to SINA")}
           onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); send(); } }} />
         <div className="mt-2 flex items-center justify-between gap-2">
           <input ref={fileInput} type="file" accept={ACCEPT} multiple className="sr-only" aria-label={t("Joindre des fichiers", "Attach files")} onChange={(e) => attach(e.target.files)} />
@@ -681,7 +742,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
           <Button size="sm" onClick={() => send()} disabled={busy || working || !text.trim()}>{t("Envoyer", "Send")}</Button>
         </div>
         {error && <p className="mt-2 text-xs text-red-600" role="alert">{error}</p>}
-      </div>
+      </div></div>
     </div>
   );
 }
@@ -709,6 +770,9 @@ function ToolResult({ m, projectId, onChoose, busy }: { m: Msg; projectId: strin
   if (READ_TOOLS.test(c.tool) && c.ok) return <p className="text-xs text-muted" data-syna-read={c.tool}>🔎 {c.summary}</p>;
   const mockups: any[] | undefined = c.data?.mockups;
   const changes: any[] = c.changes ?? [];
+  // Prise de connaissance : ce que SINA note dans la fiche du client se dit en une ligne discrète (le détail est sur
+  // son tableau de bord), sans vocabulaire interne.
+  if (c.ok && /^(start\.(answer|note|keep|confirm)|client\.wording)$/.test(c.tool)) return <p className="text-xs text-muted" data-syna-tool={c.tool} data-syna-ok="1" data-syna-noted>✓ {c.summary}</p>;
   return (
     <div className={cx("rounded-xl border px-3 py-2 text-sm", c.ok ? "border-line bg-paper-2" : "border-red-300 bg-red-50 dark:bg-red-950/30")} data-syna-tool={c.tool} data-syna-ok={c.ok ? "1" : "0"}>
       <p className={cx("text-xs font-medium", c.ok ? "text-muted" : "text-red-700")}>{c.ok ? "✓" : "✕"} {c.summary}</p>
@@ -737,7 +801,7 @@ function ToolResult({ m, projectId, onChoose, busy }: { m: Msg; projectId: strin
 function EventLine({ m }: { m: Msg }) {
   const t = useT(), c = m.content;
   if (c.kind === "error") return <p className="text-xs text-red-600">{t("Erreur : ", "Error: ")}{c.message}</p>;
-  if (c.kind === "stopped") return <p className="text-xs text-muted">{t("Arrêté à ta demande.", "Stopped.")}</p>;
+  if (c.kind === "stopped") return <p className="text-xs text-muted">{t("Arrêté à ta demande.", "Stopped.")}{c.running ? ` ${t("Une création déjà commencée se termine (son coût est engagé) ; SINA ne reprendra pas seule.", "A creation already started will finish (its cost is committed); SINA won't resume on her own.")}` : ""}</p>;
   if (c.kind === "waiting_jobs") return <p className="text-xs text-muted">⏳ {t("Tâche lancée en arrière-plan ; je reprends dès qu'elle est finie.", "Task running in the background; I'll resume when it's done.")}</p>;
   return null;
 }

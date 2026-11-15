@@ -92,7 +92,7 @@ export default function TabBlog() {
   const { id } = useProject();
   const t = useT();
   const toast = useToast();
-  const active = useActive(["blog.write", "content.v2", "agent.blog.write"]);
+  const active = useActive(["blog.write", "content.v2"]);
   const requestedArticle=useSearchParams().get("article"),handledArticle=useRef<string|null>(null);
   const [showTrash, setShowTrash] = useState(false);
   const { data, reload, error } = useApi<BlogData>(`/api/projects/${id}/blog${showTrash ? "?trash=1" : ""}`,{poll:active.length?2000:15000});
@@ -103,7 +103,6 @@ export default function TabBlog() {
   // Un article créé depuis SINA reste visible si son panneau est fermé avant la fin.
   const activeKey=active.map(j=>j.id+":"+j.status).join("|"), lastActive=useRef(activeKey);
   useEffect(()=>{if(lastActive.current!==activeKey){lastActive.current=activeKey;void reload();}},[activeKey,reload]);
-  useEffect(()=>{const changed=(e:Event)=>{if((e as CustomEvent<{projectId?:string}>).detail?.projectId===id)void reload();};window.addEventListener('studio:content-changed',changed);return()=>window.removeEventListener('studio:content-changed',changed);},[id,reload]);
   const cost = useCostConfirm();
 
   // Fin d'une écriture : la liste se met à jour et l'article s'ouvre.

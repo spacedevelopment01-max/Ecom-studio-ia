@@ -6,9 +6,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { ArrowDown, ArrowUp, Copy, Globe, SlidersHorizontal, FileStack, Crosshair, Replace, Maximize2, Minimize2, PanelTop, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2, MoreHorizontal } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
-import { useAgentUi,useAgentFocus,useAgentPanel } from "./agent-ui-context";
-import {previewSelectionScope} from '@/lib/conversation-presentation';
-import {canAdoptRevalidatedPreviewScope} from '@/lib/preview-revalidated-scope';
+import { useAgentUi } from "./agent-ui-context";
 import { useCostConfirm } from "./cost-confirm";
 import dynamic from "next/dynamic";
 // Fenêtres ouvertes à la demande (import, bibliothèque de sections, galerie) : chargées à leur première ouverture.
@@ -31,6 +29,7 @@ import type { BusinessType } from "@/lib/project-types";
 import { KeptSiteCard, ReproductionBanner, SiteReading } from "./existing-site";
 import { useBilling } from "../billing-client";
 import { CustomThemeButton, useCustomThemeStatus } from "./custom-theme";
+import { CustomThemeBoutique, type CustomThemeInfo } from "./custom-theme-boutique";
 import { ExportDownload, ExportSteps, PlatformExportDetails } from "./export-platform";
 
 import { ThemeAdaptationPanel } from "./theme-adaptation";
@@ -146,12 +145,6 @@ export default function TabBoutique() {
   // Thème entièrement sur mesure (Dominer) et sections sur mesure (Vendre, Dominer) : accès selon le forfait.
   const custom = useCustomThemeStatus(id);
   const agentUi=useAgentUi();
-  const contextUi=agentUi&&data?.conversationContext===true;
-  const {focus:agentFocus,setFocus:setAgentFocus,clearSerial}=useAgentFocus();
-  // Le focus peut être revalidé avant que la relecture périodique recharge le thème.
-  // Lire son dernier état lors des changements de preview, sans republier sur chaque changement de focus.
-  const agentFocusRef=useRef(agentFocus);agentFocusRef.current=agentFocus;
-  const {setOpen:setAgentOpen}=useAgentPanel();
   const [view, setView] = useState<"chat" | "preview" | "structure">(agentUi?'preview':'chat');
   const [device, setDevice] = useState<keyof typeof DEVICES>("desktop");
   // Plein écran : l'aperçu couvre tout l'écran (même aperçu, sans rechargement), pour juger la mise en page.
@@ -182,8 +175,6 @@ export default function TabBoutique() {
   const [picking, setPicking] = useState(false);
   const pickingRef = useRef(false);
   const [selection, setSelection] = useState<Selection>(null);
-  const [selectionScope,setSelectionScope]=useState<{versionId:string;page:string}|null>(null);
-  const loadedSelectionScope=useRef<{versionId:string;page:string}|null>(null);
   const [message, setMessage] = useState("");
   const [attachments, setAttachments] = useState<AssetView[]>([]);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -199,7 +190,7 @@ export default function TabBoutique() {
   const [importOpen, setImportOpen] = useState<null | "upload" | "report">(null);
   const [libTarget, setLibTarget] = useState<{ template: string; index?: number; label: string; replace?: string } | null>(null);
   const [adding, setAdding] = useState<string | null>(null);
-  // Lien direct « …/boutique?themes » (depuis le Pilote) : ouvre la galerie.
+  // Lien direct « …/boutique?themes » : ouvre la galerie.
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     if (q.has("themes")) setGalleryOpen(true);
@@ -227,17 +218,7 @@ export default function TabBoutique() {
   const fileInput = useRef<HTMLInputElement>(null);
 
   const versionId = viewVersion ?? theme?.current?.versionId ?? null;
-  const selectionCurrent=!!selection&&selectionScope?.versionId===versionId&&selectionScope?.page===page;
-  useEffect(()=>{
-    if(!contextUi||!versionId)return;
-    if(canAdoptRevalidatedPreviewScope({projectId:id,versionId,page,selection,scope:selectionScope,focus:agentFocusRef.current})){
-      setSelectionScope({versionId,page});return;
-    }
-    setAgentFocus({projectId:id,tab:'boutique',label:selectionCurrent?[selection!.kind,selection!.text].filter(Boolean).join(' · '):page,target:selectionCurrent?{kind:'theme-section',versionId,template:selection!.template,section:selection!.section,...(selection!.block?{block:selection!.block}:{})}:{kind:'theme-page',versionId,path:page}});
-    if(selection&&!selectionCurrent)setSelection(null);
-  },[contextUi,id,versionId,page,selection,selectionScope,selectionCurrent,setAgentFocus]);
   const src = versionId ? `/preview/${id}/v/${versionId}${page === "/" ? "" : page}` : null;
-  useEffect(()=>{if(!contextUi||!clearSerial)return;setSelection(null);iframe.current?.contentWindow?.postMessage({source:'es-studio',type:'unpick'},'*');},[contextUi,clearSerial]);
 
   // Messages de l'aperçu (désignation, défilement, chargement).
   useEffect(() => {
@@ -246,21 +227,16 @@ export default function TabBoutique() {
       // Seulement l'aperçu affiché (cloisonné : origine opaque, on vérifie donc la fenêtre émettrice).
       if (!d || d.source !== "es-preview" || e.source !== iframe.current?.contentWindow) return;
       if (d.type === "selected") {
-        if(contextUi&&(!versionId||loadedSelectionScope.current?.versionId!==versionId||loadedSelectionScope.current?.page!==page)){
-          setPicking(false);toast('info',t('L’aperçu se met à jour. Désignez l’élément lorsqu’il est chargé.','The preview is updating. Select the element once it has loaded.'));return;
-        }
-        if(versionId)setSelectionScope({versionId,page});
         setSelection(d.selection);
         setPicking(false);
         // Élément désigné : retour à la discussion pour écrire la demande.
         setFull(false);
-        if(contextUi){setView("preview");setAgentOpen(true);}else setView("chat");
+        setView("chat");
       }
       if (d.type === "pick-cancel") setPicking(false);
       if (d.type === "ready" && pickingRef.current) iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "pick", on: true }, "*");
       if (d.type === "scroll") scrollY.current = d.y;
       if (d.type === "loaded") {
-        loadedSelectionScope.current=previewSelectionScope(String(d.path),id);
         const path = String(d.path).replace(/^\/preview\/[^/]+\/v\/[^/]+/, "") || "/";
         // Position de défilement conservée SEULEMENT quand la même page est rendue à nouveau (réglage, version, panier) ;
         // une autre page (lien du pied de page, menu) s'ouvre en haut, et une ancre va à sa cible.
@@ -274,7 +250,7 @@ export default function TabBoutique() {
     };
     window.addEventListener("message", onMsg);
     return () => window.removeEventListener("message", onMsg);
-  }, [page,contextUi,setAgentOpen,versionId,id,t,toast]);
+  }, [page]);
   useEffect(() => {
     pickingRef.current = picking;
     iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "pick", on: picking }, "*");
@@ -421,6 +397,11 @@ export default function TabBoutique() {
     }
   }
 
+  // Thème sur mesure monté par SINA (étape 6) : montré ici en grand, avec la désignation d'un élément (consigne du
+  // propriétaire du 9 novembre 2026) ; la boutique actuelle reste à un clic.
+  const { data: ctInfo } = useApi<CustomThemeInfo>(`/api/projects/${id}/custom-theme/info`);
+  const [storeView, setStoreView] = useState(false);
+  if (ctInfo && !storeView) return <CustomThemeBoutique projectId={id} onShowStore={theme?.current ? () => setStoreView(true) : undefined} />;
   if (!theme) return <div className="grid place-items-center py-24"><Spinner /></div>;
   // « J'ai déjà mon site et mon logo » : site en cours de lecture, conservé tel quel, ou reproduit.
   const site = data?.settings.existingSite;
@@ -435,7 +416,7 @@ export default function TabBoutique() {
         {chatJobs[0] && <JobProgress job={chatJobs[0]} className="mb-6" />}
         {!!theme.versions.length && <Card className="mb-6 p-5"><p className="font-semibold">{t("Tentatives conservées, à corriger avant utilisation", "Saved attempts, correction needed before use")}</p><p className="mt-2 text-sm text-muted">{t("Aucun thème utilisable n'est encore activé. Les brouillons restent consultables ; complétez les informations puis relancez la composition.", "No usable theme is active yet. Drafts remain available; complete the information and rebuild.")}</p><ul className="mt-3 grid gap-2">{theme.versions.map((v) => <li key={v.id}><a className="underline" href={`/preview/${id}/v/${v.id}`} target="_blank" rel="noreferrer">{t(`Consulter la tentative ${v.number}`, `View attempt ${v.number}`)}</a><p className="text-xs text-muted">{v.summary}</p></li>)}</ul></Card>}
         <Empty title={isServices ? t("Le site n'est pas encore composé", "The website hasn't been built yet") : t("La boutique n'est pas encore composée", "The store hasn't been built yet")} icon={<Store className="size-5" />} action={<div className="flex flex-wrap items-center justify-center gap-2">{data?.brand && <><Button onClick={() => setGalleryOpen(true)}>{isServices?t("Choisir le thème du site", "Choose the website theme"):t("Choisir le thème de la boutique", "Choose the store theme")}</Button><ContentLangPicker {...cl} compact /></>}<Button variant="secondary" icon={<Upload className="size-4" />} onClick={() => setImportOpen("upload")}>{t("Importer mon thème Shopify", "Import my Shopify theme")}</Button></div>}>
-          {data?.brand ? t("La marque est prête : vous pouvez lancer la composition.", "The brand is ready: you can start building the store.") : t("Elle sera créée après la marque et les textes (voir le Pilote).", "It will be created after the brand and the copy (see Pilot).")}
+          {data?.brand ? t("La marque est prête : vous pouvez lancer la composition.", "The brand is ready: you can start building the store.") : t("Elle sera créée après la marque et les textes.", "It will be created after the brand and the copy.")}
         </Empty>
         <h2 className="mb-1 mt-10 font-display text-2xl font-semibold">{t("Les thèmes disponibles", "Available themes")}</h2>
         <p className="mb-5 text-sm text-muted">{t("Parcourez les démonstrations complètes avec leurs contenus d’origine. Votre projet est adapté seulement après votre choix explicite.", "Browse the complete demos with their original content. Your project is adapted only after your explicit choice.")}</p>
@@ -706,6 +687,7 @@ export default function TabBoutique() {
             {pages.map((p) => <option key={p.path} value={p.path}>{p.label}</option>)}
           </Select>
         </div>
+        {ctInfo && <button onClick={() => setStoreView(false)} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-ink bg-ink px-3 text-xs text-paper" data-show-custom-theme><Sparkles className="size-3.5" /> {t("Thème sur mesure", "Custom theme")}</button>}
         {!cur.imported && <button onClick={() => setPagesOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs hover:border-ink" data-pages-manager><FileStack className="size-3.5" /> {t("Pages", "Pages")}</button>}
         <div className="flex rounded-full border border-line bg-card p-0.5" role="group" aria-label={t("Appareil", "Device")}>
           {(Object.keys(DEVICES) as (keyof typeof DEVICES)[]).map((d) => {

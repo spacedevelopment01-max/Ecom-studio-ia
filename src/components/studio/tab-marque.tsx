@@ -18,7 +18,7 @@ import { ContentLangPicker, useContentLang } from "./content-lang";
 import { FromSiteBadge } from "./existing-site";
 import { LogoV2Panel } from "./logo-v2-panel";
 import { FullLogoPanel } from "./full-logo-panel";
-import { BrandPropagationCard } from "./workflow-panel";
+import { BrandPropagationCard } from "./brand-propagation-card";
 
 const PALETTE_LABEL: Record<string, { fr: string; en: string }> = {
   primary: { fr: "Principale", en: "Primary" },

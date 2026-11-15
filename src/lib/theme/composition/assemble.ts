@@ -4,7 +4,7 @@ import {containerOf,sectionSchema,type ThemeSpec} from '../spec';
 import {ALL_ENTRIES} from '../section-families';
 import {ownerThemeOf} from '../theme-own-sections';
 import {unsafeContentReason} from '../content-security';
-import {themeTargetPaths} from '../../orchestrator/conversation/theme-tool-context';
+import {themeTargetPaths} from '../target-paths';
 import {CompositionPlanError,CompositionPlanSchema,type CompositionSource,type CompositionRecord} from './contract';
 const COPY=new Set(['text','textarea','richtext','inline_richtext']);
 const LAYOUT=new Set(['range','select','radio','checkbox','color_scheme']);

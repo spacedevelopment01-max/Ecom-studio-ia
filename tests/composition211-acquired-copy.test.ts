@@ -1,7 +1,7 @@
 /** Native acquired documents are fixtures, not an AI writing qualification. */
 import {describe,it,expect} from 'vitest';
 import {account,project,emptySpend} from './conversation209-fixtures';
-import {seedAgentUiSite} from '../scripts/agent211-ui-fixtures';
+import {seedAgentUiSite} from './site-seed-fixtures';
 import {currentTheme,loadProject,saveThemeVersion,saveCatalog,saveServices} from '@/lib/projects';
 import {saveContentVersion} from '@/lib/seo-v2/store';
 import {toHtml} from '@/lib/seo-v2/doc';

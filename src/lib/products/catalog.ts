@@ -20,6 +20,7 @@ import { slugify } from "../blog-html";
 import { currentTheme } from "../projects";
 import { storeProducts, type StoreCollection, type StoreProduct, type ThemeSpec } from "../theme/spec";
 import { neutralProductTemplate } from "../theme/product-content";
+import { galleryAssets } from "./gallery-store";
 
 export const PRODUCT_STATUSES = ["active", "draft", "archived"] as const;
 export type ProductStatus = (typeof PRODUCT_STATUSES)[number];
@@ -284,6 +285,10 @@ export function toStoreProduct(p: StudioProduct, base?: StoreProduct): { product
   const files: Record<string, string> = {};
   const d = p.data;
   const images = d.images.map((i) => { const f = productFileName(i); files[f] = i.assetId; return f; });
+  // Galerie de la fiche produit créée par SINA (décision du 10 novembre 2026) : ajoutée après la photo du client, qui
+  // reste la première image (celle des cartes de produits) ; la galerie de la fiche produit montre toute la série.
+  const gallery = p.projectId ? galleryAssets(p.projectId, p.id) : null;
+  if (gallery) for (const aid of gallery.assets) { const f = productFileName({ assetId: aid }); files[f] = aid; if (!images.includes(f)) images.push(f); }
   const fileOf = (aid: string | null) => { if (!aid) return undefined; const img = d.images.find((i) => i.assetId === aid); const f = img ? productFileName(img) : productFileName({ assetId: aid }); files[f] = aid; return f; };
   const variants = p.variants.length ? p.variants : [{ ...variantSchema.parse({}), id: "", productId: p.id, position: 0, version: 1, updatedAt: 0 }];
   return {

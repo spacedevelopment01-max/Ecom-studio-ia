@@ -1,0 +1,28 @@
+{
+  "name": "Engagements",
+  "tag": "section",
+  "class": "es-bloc",
+  "sina": {
+    "role": "confiance",
+    "fait": "Un titre et trois ou quatre engagements de la marque, chacun avec une icône au trait, un titre et une phrase.",
+    "fond": "clair, teinté ou sombre (au choix)",
+    "demande": ["des engagements réels du client (livraison, retours, fabrication, garantie…)"]
+  },
+  "settings": [
+    { "type": "select", "id": "fond", "label": "Fond", "default": "doux", "options": [ { "value": "clair", "label": "Clair" }, { "value": "doux", "label": "Teinté" }, { "value": "sombre", "label": "Sombre" } ] },
+    { "type": "text", "id": "surtitre", "label": "Petit texte au-dessus du titre" },
+    { "type": "text", "id": "titre", "label": "Titre", "default": "Ce que nous promettons" }
+  ],
+  "blocks": [
+    {
+      "type": "engagement", "name": "Engagement", "limit": 4,
+      "settings": [
+        { "type": "select", "id": "icone", "label": "Icône", "default": "feuille", "options": [ { "value": "feuille", "label": "Feuille" }, { "value": "colis", "label": "Colis" }, { "value": "retour", "label": "Retour" }, { "value": "main", "label": "Fait main" }, { "value": "horloge", "label": "Horloge" }, { "value": "bouclier", "label": "Bouclier" } ] },
+        { "type": "text", "id": "titre", "label": "Titre", "default": "Un engagement" },
+        { "type": "textarea", "id": "texte", "label": "Phrase", "default": "Une phrase vraie qui l'explique." }
+      ]
+    }
+  ],
+  "limites": { "titre": [8, 56], "surtitre": [0, 34], "engagement.titre": [4, 30], "engagement.texte": [20, 120], "blocs": [3, 4] },
+  "presets": [ { "name": "Engagements", "blocks": [ { "type": "engagement" }, { "type": "engagement" }, { "type": "engagement" } ] } ]
+}

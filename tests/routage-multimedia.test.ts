@@ -310,7 +310,8 @@ describe("routage multimédia V2", async () => {
     expect(routing.mediaMode("image")).toBe("manual");
     expect(routing.mediaMode("video")).toBe("manual");
   });
-  it.each(["google","fal","openai","alibaba"])("publication : %s reçoit le logo AVEC et SANS photo — transport simulé réellement inspecté",async provider => {
+  it("publication : OpenAI reçoit le logo AVEC et SANS photo — transport simulé réellement inspecté",async () => {
+    const provider="openai";
     keys[provider]="cle-synthetique-pour-test";
     const model=MEDIA_MODELS.find(m=>m.provider===provider && m.kind==="image" && !!m.caps.textInImage && (m.caps.references??0)>=2)!;
     expect(model).toBeTruthy();
@@ -321,21 +322,34 @@ describe("routage multimédia V2", async () => {
       await mp.aiPostImage(ctx(c),{prompt:"Logo exact, sujet documenté",aspect:"4:5",reference:product?png:null,logo:png});
       const n=product?2:1;
       const ledger=all<{served_model:string|null}>("SELECT served_model FROM ai_calls WHERE user_id=? AND status='ok' ORDER BY created_at,rowid",c.userId);
-      expect(ledger.at(-1)?.served_model).toBe(provider==="google"?"reported-version-simulation":null);
-      if (provider==="openai") {
-        expect(oa.calls.at(-1).kind).toBe("edit");
-        expect(oa.calls.at(-1).image).toHaveLength(n);
-      } else if (provider==="google") {
-        const call=net.calls.filter(c=>c.url.includes(":generateContent")).at(-1)!;
-        expect(call.body.contents[0].parts.filter((p:any)=>p.inline_data)).toHaveLength(n);
-      } else if (provider==="fal") {
-        const call=net.calls.filter(c=>c.url.startsWith("https://queue.fal.run/")&&c.body).at(-1)!;
-        expect(call.body.image_urls).toHaveLength(n);
-      } else {
-        const call=net.calls.filter(c=>c.url.includes("multimodal-generation/generation")).at(-1)!;
-        expect(call.body.input.messages[0].content.filter((p:any)=>p.image)).toHaveLength(n);
-      }
+      expect(ledger.at(-1)?.served_model).toBeNull();
+      expect(oa.calls.at(-1).kind).toBe("edit");
+      expect(oa.calls.at(-1).image).toHaveLength(n);
     }
+    setJsonSetting("ai.media.usage",{});
+  });
+
+  // Décision du propriétaire du 14 novembre 2026 : les images des publications sont créées par OpenAI. Un autre
+  // fournisseur choisi pour elles n'est jamais appelé, même confirmé et connecté : l'image part chez OpenAI ; sans
+  // modèle d'OpenAI utilisable, rien n'est créé (jamais une bascule en silence).
+  const sentTo = (provider: string) => net.calls.filter(c => provider === "google" ? c.url.includes(":generateContent") : provider === "fal" ? c.url.startsWith("https://queue.fal.run/") && c.body : c.url.includes("multimodal-generation/generation")).length;
+  it.each(["google","fal","alibaba"])("publication : %s choisi pour les publications n'est jamais appelé, l'image part chez OpenAI (obligatoire)",async provider => {
+    keys[provider]="cle-synthetique-pour-test";
+    const model=MEDIA_MODELS.find(m=>m.provider===provider && m.kind==="image" && !!m.caps.textInImage && (m.caps.references??0)>=2)!;
+    expect(model).toBeTruthy();
+    confirmModel(`${provider}:${model.model}`,{unit:"image",perImage:.08});
+    setJsonSetting("ai.media.usage",{social_image:{primary:`${provider}:${model.model}`,backup:`${provider}:${model.model}`}});
+    const c=await client();
+    const before={to:sentTo(provider),oa:oa.calls.length};
+    await mp.aiPostImage(ctx(c),{prompt:"Logo exact, sujet documenté",aspect:"4:5",reference:png,logo:png});
+    expect(sentTo(provider)).toBe(before.to);
+    expect(oa.calls.length).toBe(before.oa+1);
+    expect(oa.calls.at(-1)).toMatchObject({ model: "gpt-image-2.6-flare" });
+    // Sans clé OpenAI : rien n'est créé, et l'autre fournisseur n'est toujours pas appelé.
+    keys.openai=null;
+    await expect(mp.aiPostImage(ctx(c),{prompt:"Logo exact, sujet documenté",aspect:"4:5",reference:png,logo:png})).rejects.toThrow();
+    expect(sentTo(provider)).toBe(before.to);
+    expect(oa.calls.length).toBe(before.oa+1);
     setJsonSetting("ai.media.usage",{});
   });
 
@@ -362,15 +376,18 @@ describe("routage multimédia V2", async () => {
     setJsonSetting("ai.media.usage",{});
   });
 
-  it("deux étapes : une scène peut utiliser un modèle sans typographie, jamais pour la composition finale",async()=>{
+  it("deux étapes : un modèle sans typographie choisi pour les publications n'est jamais appelé, ni pour la scène ni pour la composition (OpenAI obligatoire)",async()=>{
     const m=MEDIA_MODELS.find(m=>m.provider==="fal"&&m.kind==="image"&&!m.caps.textInImage&&(m.caps.references??0)>=1)!;
     confirmModel(`fal:${m.model}`,{unit:"image",perImage:.08});
     setJsonSetting("ai.media.usage",{social_image:{primary:`fal:${m.model}`}});
-    const c=await client();await mp.aiPostImage(ctx(c),{prompt:"photo seule sans texte",aspect:"4:5",reference:png,photoOnly:true});
-    const sent=net.calls.filter(c=>c.url.startsWith("https://queue.fal.run/")&&c.body).length;expect(sent).toBe(1);
-    await expect(mp.aiPostImage(ctx(c),{prompt:"composition avec texte exact",aspect:"4:5",reference:png})).rejects.toThrow();
-    expect(net.calls.filter(c=>c.url.startsWith("https://queue.fal.run/")&&c.body)).toHaveLength(sent);
+    const c=await client();
+    await mp.aiPostImage(ctx(c),{prompt:"photo seule sans texte",aspect:"4:5",reference:png,photoOnly:true});
+    await mp.aiPostImage(ctx(c),{prompt:"composition avec texte exact",aspect:"4:5",reference:png});
+    expect(net.calls.filter(c=>c.url.startsWith("https://queue.fal.run/")&&c.body)).toHaveLength(0);
+    expect(oa.calls.slice(-2).map(x=>x.model)).toEqual(["gpt-image-2.6-flare","gpt-image-2.6-flare"]);
     setJsonSetting("ai.media.usage",{});
   });
+
+
 
 });

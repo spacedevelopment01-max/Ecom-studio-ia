@@ -1,0 +1,146 @@
+# Les spécialistes de SINA : la carte
+
+Demande du propriétaire du 13 novembre 2026 : « je veux que tu fasses tous les sous agents nécessaires pour le
+fonctionnement parfait de SINA, ne néglige rien et fais comme tu considères le mieux pour cela ».
+
+Ce document dit, étape par étape, **qui fait le travail aujourd'hui** (relevé dans le code le 13 novembre 2026) et
+**quels spécialistes il faut encore construire**. Il se met à jour à chaque lot fini.
+
+## Le principe (celui qui a marché pour la marque)
+
+1. **Celui qui fait n'est jamais celui qui juge.** Un spécialiste crée, un autre dit oui ou non. (Essai réel : tant que
+   la même spécialiste composait les propositions et jugeait ses noms, « Tintamarre » et « Morceaux Choisis » passaient.)
+2. **Le juge voit tout, pas un extrait.** (Essai réel : le juge ne voyait que 7 noms sur 178.)
+3. **Rien n'est montré sans avoir été relu.** Un travail refusé n'est pas montré ; si quelque chose est montré faute de
+   mieux, le doute est dit franchement au client.
+4. **Un devis avant, un plafond pendant.** Un appel qui échoue n'est jamais relancé seul.
+5. **Le client n'entend que SINA.** Les spécialistes restent en coulisses.
+6. **Les retours du propriétaire deviennent la mesure** des juges (ses mots, ses notes), jamais une interprétation
+   présentée comme la sienne.
+
+## Étape par étape
+
+| Étape | Qui fait le travail aujourd'hui | Ce qui manque | État |
+|---|---|---|---|
+| La conversation (toutes les étapes) | Un seul appel comprend, décide, choisit ses outils et répond. Trois aides l'entourent, **construites mais éteintes** (réglage `sina.conversation`) : l'**aiguilleuse**, sans IA, n'envoie que la notice des outils de l'étape et une ligne par autre outil (la notice envoyée à chaque message tombe à 18–53 % de sa taille selon l'étape) ; aux **moments qui comptent** (résultat à présenter, échec à expliquer, client mécontent) un modèle plus fort répond ; une **relectrice** lit alors la réponse avant qu'elle parte et la fait réécrire une fois si elle la refuse. | La décision du propriétaire pour les allumer (le modèle plus fort et la relecture coûtent un peu plus par message) et un essai réel. | **Construit, éteint** (lot 3, 13 novembre) |
+| 0. Questions de départ | Moteur sans IA, puis le petit modèle rédige. | Rien d'urgent. | Convenable |
+| 1. Identités de marque | Chaîne de spécialistes : enquêtrice, stratège, 4 équipes de noms, **juge des noms**, composition, vérificateur, directrice artistique, directeur de création, illustratrice, **relectrice des dessins en image**, **directrice artistique des images**, contrôleuse des images. | Un essai réel de la planche complète (logo et images), en attente de l'accord du propriétaire. | **Fait** (lot 1, 13 novembre) |
+| 2. Logo | Le logo de la planche choisie est repris sans rien repayer ; sinon : dessinateur, contrôleur qui lit le nom, second dessinateur en relais, secours du Studio. | Rien d'urgent. | **Fait** (lot 1, 13 novembre) |
+| 3. Image de marque complète | Sans IA. | Rien. | Convenable |
+| 4. Cinq angles marketing | Une recherche sur le web, puis une **stratège** écrit les cinq angles ; le Studio contrôle sans IA (sources lues, citations exactes, promesses) ; un **juge des angles** séparé dit « garde » ou « reprendre » pour chacun (un concurrent pourrait-il le signer ? l'émotion vient-elle d'une parole de client ? la personne est-elle précise ?) ; les angles refusés sont réécrits une fois et repassent les contrôles ; un angle refusé qui reste est montré avec le doute de SINA. | Un essai réel. | **Fait** (lot 4, 13 novembre) |
+| 5. L'activité complète | Sans IA. | Rien. | Convenable |
+| 6. Thème sur mesure | Conception : une conceptrice, puis un directeur commercial qui corrige. Montage : un plan des textes, un appel par section qui écrit les textes, les liens et les descriptions de photos ; puis un **directeur de création des textes** relit TOUT le site et fait reprendre les sections refusées (6 au plus, le reste est dit) ; une **directrice artistique des photos** relit TOUTES les photos prévues AVANT qu'une seule soit payée et fait redécrire celles qu'elle refuse (5 sections au plus) ; chaque photo créée est ensuite contrôlée en image. La direction artistique de la planche choisie est reprise par les photos du site. Depuis le lot 8 : une **documentaliste** (sans IA) donne au concepteur les références du secteur ; une **comparaison contre les doublons** (sans IA) et un **juge de l'originalité** séparé relisent chaque concept ; une fois le site fini, l'accueil et la page qui vend sont **regardés en image** sur téléphone. | Un essai réel sur un vrai projet. Une photo ratée au contrôle reste seulement signalée (décision du propriétaire : refaite avec l'accord du client). | **Fait** (lots 2 et 8, 13 novembre) |
+| 7. Site codé (anciennes maquettes) | Analyse, écriture, comparaison en image, correction. | Rien (voie ancienne). | Convenable |
+| 8. Thème du Studio adapté | Rédacteur et directeur de création (jusqu'à trois tours) ; images créées puis relues. | Rien d'urgent. | Convenable |
+| 9. Publications | **Construite, fermée** (réglage `sina.etapes_ouvertes`). Le plan d'abord : une **stratège des contenus** écrit les 3 groupes (charte § 7 : sujet utile, titre en deux temps, trois points, appel à l'action, texte, hashtags, photo prévue) ; le Studio contrôle sans IA (angle choisi, hashtags, produit du catalogue, promesses, personnes) ; un **juge des publications** juge le plan entier ; une reprise au plus, relue ; un groupe encore refusé est montré avec le doute de SINA. Les images ensuite : le moteur de publications du Studio (son rédacteur, son contrôle en image), avec le modèle d'images d'OpenAI, obligatoire depuis le 14 novembre 2026. Depuis le 14 novembre, la stratège et le juge lisent les cahiers `publications-*.md` et les modèles du secteur du client (`posts-knowledge.ts`, méthode `methode-publications.md`). | Un essai réel, puis la décision du propriétaire d'ouvrir l'étape. | **Construit, fermé** (lot 5, 13 novembre) |
+| 10. Publicités | **Construite, fermée.** `ads.create` lance le moteur de publicités du Studio, qui a déjà ses spécialistes : idées vraiment différentes, rédacteur, contrôle des promesses avant le visuel, barrière de qualité, image créée puis contrôlée en image. Forfait sans publicité : dit simplement, étape passée (`ads.validate` avec `skip`). | Un essai réel. À vérifier pendant cet essai : les publicités créées par l'IA d'images sont rangées dans la bibliothèque, mais `ads.list` et le calendrier lisent les publicités « à calques » ; il se peut qu'elles n'y apparaissent pas (relevé dans le code, pas constaté en vrai). | **Construit, fermé** (lot 6, 13 novembre) |
+| 11. Calendrier de publication | **Construite, fermée.** Le calendrier existe depuis le 7 novembre, sans IA (`calendar.plan`, `calendar.read`, `calendar.mark_done`, `calendar.move`) ; ajout de `calendar.validate`. | Un essai réel, après les étapes 9 et 10. | **Construit, fermé** (lot 6, 13 novembre) |
+| 12. Articles de blog | **Construite, fermée.** `blog.topics` (gratuit, sans IA) donne la matière des sujets : faits du projet, angles choisis, paroles de clients relevées ; SINA propose, le client choisit 2 sujets. `blog.write` lance le moteur de blog du Studio, qui a déjà ses spécialistes : rédaction, contrôles automatiques (référencement, faits), relecture par un directeur de création, jusqu'à trois tours. Les articles restent en brouillon : le client publie lui-même. | Un essai réel. Pas de recherche sur le web pour les sujets, pas d'image de couverture créée, pas de lien automatique au menu : ce que le moteur de blog ne fait pas aujourd'hui. | **Construit, fermé** (lot 7, 13 novembre) |
+| 13. Rangement des fichiers | **Construite, fermée.** `files.tidy` lance le rangement du Studio, gratuit et sans IA (fichiers sans dossier seulement, rien de supprimé) ; `files.validate` clôt le parcours. | Un essai réel. Pas de dossiers « Blog » ni « Site » dans l'arbre d'aujourd'hui. | **Construit, fermé** (lot 7, 13 novembre) |
+
+## Après la livraison : SINA prend les devants (à construire)
+
+Vision du propriétaire, 13 novembre 2026 : « Après la livraison, c'est sina toujours, elle doit même être intelligente
+et prendre les devant. Source de proposition, ensuite le client est là pour générer grace au calendrier et
+l'automatisation les publications total du projet et gérer aussi les publicités sur les réseaux. » La vidéo viendra à
+la fin.
+
+Aujourd'hui, SINA ne parle que quand le client lui parle, et son parcours s'arrête à l'étape 13. Ce qui manque :
+
+- **une SINA qui revient d'elle-même** : à rythme régulier, elle regarde ce qui a été publié, ce qui est prévu au
+  calendrier, ce qui manque, et propose la suite (prochaines publications, publicités, améliorations du site) ;
+- **la règle** : elle propose, le client décide ; elle n'agit seule que là où il a activé le pilote automatique, dans
+  le plafond qu'il a fixé (c'est déjà la règle de « Ma communication automatique », `social-v2/autopilot.ts`) ;
+- **le lien avec ce qui existe** : le calendrier, la production progressive et la publication sur les réseaux sont
+  dans le Studio ; SINA ne les pilote pas encore (étapes 9 à 13 construites, fermées, jamais essayées pour de vrai) ;
+- **les publicités sur les réseaux** : le Studio prépare les campagnes (angles, audiences, textes, créations aux bons
+  formats) et les exporte pour le gestionnaire de publicités du réseau ; il ne se connecte à aucune régie, ne
+  programme rien et ne dépense rien en diffusion (`src/lib/campaigns/manual.ts`). Lancer et suivre une campagne
+  depuis le Studio reste à construire.
+
+Rien de cela n'est construit. À placer dans l'ordre avec le propriétaire.
+
+## Ce qui vaut pour toutes les étapes (à construire une fois, à brancher partout)
+
+- **Le gardien des faits** : aucun chiffre, avis, délai, garantie ou certification absent de la fiche du client. Sans
+  IA. En place pour la planche de marque (`unprovenClaims`), les angles (`lintClaims`), les textes du thème sur mesure
+  (`unconfirmedClaims` : donné au directeur de création, et dit au client tant que la promesse reste) et le plan des
+  publications (`planIssues`). Reste à brancher : publicités et articles.
+- **Le gardien du vocabulaire du client** : ce qu'il a corrigé une fois vaut partout (`client-wording.ts`).
+- **La direction artistique du projet** : une seule, écrite une fois, relue par tout ce qui crée une image (planche,
+  site, publications, publicités).
+- **Le dossier du projet** : une seule mémoire que chaque spécialiste lit, au lieu de redemander ou de réinventer.
+
+## Les lots, dans l'ordre
+
+1. **Finir la marque** : le logo de la planche choisie devient le logo du projet ; la relecture des dessins en image.
+   **Fait le 13 novembre 2026**, testé avec une IA simulée (`logos.ts` : `boardLogoReady`, `saveBoardLogo` ;
+   `brand-art-review.ts` : `reviewBoardArt`). Pas encore essayé pour de vrai.
+2. **Les textes et les photos du thème sur mesure** : directeur de création des textes, directrice artistique des photos.
+   **Fait le 13 novembre 2026**, testé avec une IA simulée (`custom-theme/brand.ts` : `COPY_REVIEW_SYSTEM`, étapes
+   `text-review` et `text-fix:<section>` ; `PHOTO_REVIEW_SYSTEM`, étapes `photo-review` et `photo-fix:<section>` ;
+   `boardLook` pour la direction artistique partagée avec la planche ; devis de `custom.build` augmenté d'autant). Les
+   relectures sont dans le compte rendu du montage (`relecture`, `relecturePhotos`) et SINA les dit au client. Pas
+   encore essayé pour de vrai.
+3. **La conversation** : aiguilleuse, bon modèle au bon moment, relectrice aux moments qui comptent.
+   **Construit le 13 novembre 2026, éteint par défaut**, testé avec une IA simulée (`conversation.ts`, `tools/open.ts`,
+   `loop.ts` : `reviewedReply`). Réglage `sina.conversation` : `{"aiguillage": true, "momentsForts": true,
+   "relecture": true}`, chaque aide s'allume à part. Rien ne change tant que le propriétaire ne l'a pas décidé : le
+   modèle plus fort et la relecture ajoutent un coût à certains messages, sans carte d'accord.
+4. **Les cinq angles** : stratège, juge, vérification des faits.
+   **Fait le 13 novembre 2026**, testé avec une IA simulée (`preparation/angles-judge.ts` : `judgeAngles`, branché
+   dans la recherche réelle ; avis gardé avec la recherche, `judgement`). Le juge et la réécriture tiennent dans le
+   plafond déjà annoncé pour la recherche ; un juge en panne ne bloque jamais l'étape, et c'est dit. Pas encore essayé
+   pour de vrai.
+5. **Publications et calendrier** (étapes 9 et 11).
+   **Étape 9 construite le 13 novembre 2026, FERMÉE par défaut**, testée avec une IA simulée (`posts-plan.ts` :
+   `runPostsPlanJob`, tâche `syna.posts.plan` ; `tools/posts.ts` : `posts.plan`, `posts.create`, `posts.validate` ;
+   carte du plan dans le fil). `posts.create` pose les publications dans le moteur du Studio et lance SA production
+   (`social.v2.produce`), avec la convention attendue par le calendrier (un groupe = une publication déclinée par
+   réseau). Le propriétaire ouvre l'étape avec `sina.etapes_ouvertes` = `[9]`, après un essai réel (son parcours :
+   chaque étape essayée en réel et validée avant la suivante). Le calendrier (étape 11) existe déjà, sans IA ; il
+   s'ouvrira après les publicités (étape 10), qui le précèdent dans le parcours.
+6. **Publicités** (étape 10), et le calendrier (étape 11).
+7. **Articles et rangement** (étapes 12 et 13).
+   **Lots 6 et 7 construits le 13 novembre 2026, étapes FERMÉES par défaut**, testés sans IA (`tools/steps-late.ts` :
+   `ads.create`, `ads.validate`, `calendar.validate`, `blog.topics`, `blog.write`, `blog.validate`, `files.tidy`,
+   `files.validate`). Chaque outil lance le moteur du Studio qui existe déjà, avec son devis ; aucun nouveau modèle,
+   aucun nouveau fournisseur. Les tâches sont mises en file dans les essais, jamais exécutées : aucune de ces étapes
+   n'a été essayée pour de vrai.
+8. **Les spécialistes du thème sur mesure qui manquaient** (étape 6 ; rappel du propriétaire du 13 novembre : « Mais
+   je t'avais demander de faire tout les sous agents pour sina hier »).
+   **Fait le 13 novembre 2026**, testé avec une IA simulée (`tests/sina-theme-specialistes.test.ts`,
+   `tests/sina-theme-sur-mesure.test.ts`), aucun essai réel :
+   - la **documentaliste**, sans IA (`custom-theme/references.ts`) : secteur ou métier reconnu, références proches
+     et lointaines de la bibliothèque sans nom de site, constats du secteur, sections propres au secteur ; donnée au
+     concepteur à chaque conception ;
+   - la **comparaison contre les doublons**, sans IA (`custom-theme/identity-card.ts`, `recentThemeCards`) : carte
+     d'identité en neuf lignes ; les deux concepts et les thèmes déjà montés pour d'autres marques sont comparés ;
+   - le **juge de l'originalité** (`custom-theme/originality.ts`, `customDesignDeps.judge`) : un avis par concept,
+     deux au plus ; ses refus rejoignent la seule reprise du concepteur, il relit la reprise, un doute qui reste est
+     dit ; un juge en panne ne bloque rien ; compté dans le devis de `custom.concepts` et de `custom.design` ;
+   - les **regards en image** (`custom-theme/looks.ts`, `customThemePageShots`, `customBrandDeps.look`) : sur le
+     montage qui pose les photos, l'accueil et la page qui vend capturés sur téléphone puis regardés (une
+     « cliente », un directeur artistique) ; compte rendu `regards`, problèmes dits au client ; compté dans le devis
+     de `custom.build`. La capture des deux pages a été vérifiée pour de vrai dans un navigateur.
+   **Le monteur à plusieurs constructions et la tenue de la marque : fait le 13 novembre** pour vingt sections
+   (`custom-theme/tenue.ts`, `public/sections/tenue.css`). Le concepteur choisit pour chaque section sa construction
+   et, pour tout le site, la tenue (titres, boutons, cadres, fond, petits textes, signe) ; SINA les change sans rien
+   repayer (`custom.structure`) ; la carte d'identité contre les doublons les compte. Vérifié au pixel sur téléphone
+   contre les écrans faits à la main, avec une IA simulée (`tests/sina-tenue-fauteuil.test.ts`) ; aucun essai réel.
+   **Chantier du thème, fait le 14 novembre 2026** (IA simulée, aucun essai réel) : 95 sections à tenue en quatre
+   modules, chacune regardée en image dans trois tenues ; les 48 idées de l'inventaire construites ; chaque
+   spécialiste lit ses cahiers (`custom-theme/knowledge.ts`) ; les vraies données du client posées dans les sections
+   (`custom-theme/tenue-data.ts`) ; une fiche par produit, menu calculé, prestations du profil ; mise en boutique
+   Shopify par `custom.install` (version de thème non activée, chaque section passée au contrôle du Studio) ; deux
+   sites de démonstration montés en entier (`tests/sina-theme-demonstration.test.ts`). Restent : un essai réel de la
+   conception, la tenue des 188 anciennes sections, une vraie boutique Shopify pour vérifier l'envoi.
+
+## Ouvrir une étape
+
+Les étapes 9 à 13 s'ouvrent une à une avec le réglage `sina.etapes_ouvertes` (liste de numéros, par exemple `[9]`),
+dans l'ordre, chacune après un essai réel validé par le propriétaire. Fermée, une étape est annoncée « bientôt
+disponible » et ses outils n'existent pas pour SINA.
+
+Chaque lot : construit, testé avec une IA simulée, vérifié en entier, envoyé sur la branche de travail. Un essai réel
+ne se fait qu'après le prix annoncé et l'accord écrit du propriétaire.

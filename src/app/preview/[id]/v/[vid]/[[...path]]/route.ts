@@ -28,8 +28,8 @@ import { loadProject } from "@/lib/projects";
 // Biens immobiliers du projet (onglet « Biens ») ajoutés à la copie rendue, jamais à la version enregistrée.
 import { withContenus } from "@/lib/contenus";
 import { withStudioProducts } from "@/lib/products/catalog";
-import {cataloguePreviewSnapshot} from '@/lib/orchestrator/conversation/catalogue-tool-execution';
-import {escHtml} from '@/lib/blog-html';
+// Photos que SINA ne peut pas inventer : un cadre l'explique à leur place, dans l'aperçu du Studio seulement.
+import { authenticPlaceholderSvg, inlineAuthenticPlaceholders, placeholderSlot, withAuthenticPlaceholders } from "@/lib/theme/service-media-plan";
 
 export const runtime = "nodejs";
 
@@ -39,24 +39,21 @@ type P = { params: Promise<{ id: string; vid: string; path?: string[] }> };
  * Accès : clé d'aperçu signée dans l'adresse (« <version>~<clé> », voir preview-access.ts), seule possible depuis
  * l'aperçu cloisonné ; sinon session du studio, puis redirection vers l'adresse avec clé.
  */
-type LoadedPreview={id:string;vid:string;spec:ThemeSpec;segs:string[];base:string;redirect:string|null;cartId?:string;catalogueLabel?:string};
+type LoadedPreview={id:string;vid:string;spec:ThemeSpec;segs:string[];base:string;redirect:string|null};
 async function load(req: Request, ctx: P):Promise<LoadedPreview> {
   const { id, vid: seg, path } = await ctx.params;
   const { vid, token } = splitPreviewSegment(seg);
   const signedOwner = token ? verifyPreview(token, id) : null;
-  let actorId=signedOwner;
   let redirect: string | null = null;
   if (!signedOwner) {
     const user = await currentUser();
     if (!user) throw new HttpError(401, L("Connexion requise.", "Sign-in required."));
     ownedProject(user, id);
-    actorId=user.id;
     identifyActor(user.id);
     const url = new URL(req.url);
     redirect = `/preview/${id}/v/${previewSegment(vid, user.id, id)}${path?.length ? `/${path.map(encodeURIComponent).join("/")}` : "/"}${url.search}`;
   } else identifyActor(signedOwner);
   identifyProject(id);
-  if(vid.startsWith('catalogue-')){const preview=cataloguePreviewSnapshot(actorId!,id,vid);return{id,vid,spec:preview.spec,segs:path??[],base:`/preview/${id}/v/${seg}`,redirect,cartId:preview.cartId,catalogueLabel:preview.label};}
   // « dir-<direction> » : la boutique du projet composée dans une autre direction (vignettes de l'onglet Marque), rien d'enregistré.
   if (vid.startsWith("dir-")) {
     const d = vid.slice(4);
@@ -78,7 +75,7 @@ async function load(req: Request, ctx: P):Promise<LoadedPreview> {
   }
   const v = vid === "current" ? currentTheme(id) : themeVersion(id, vid);
   if (!v) throw new HttpError(404, L("Version de boutique introuvable.", "Store version not found."));
-  return { id, vid, spec: withStudioProducts(withContenus(v.spec as ThemeSpec, id, { bien: new URL(req.url).searchParams.get("es_bien"), plat: new URL(req.url).searchParams.get("es_plat"), realisation: new URL(req.url).searchParams.get("es_realisation") }), id), segs: path ?? [], base: `/preview/${id}/v/${seg}`, redirect };
+  return { id, vid, spec: withStudioProducts(withContenus(withAuthenticPlaceholders(v.spec as ThemeSpec), id, { bien: new URL(req.url).searchParams.get("es_bien"), plat: new URL(req.url).searchParams.get("es_plat"), realisation: new URL(req.url).searchParams.get("es_realisation") }), id), segs: path ?? [], base: `/preview/${id}/v/${seg}`, redirect };
 }
 
 /**
@@ -156,12 +153,14 @@ export const POST = handle(async (req: Request, ctx: P) => withCors(req, await p
 });
 
 async function get(req: Request, ctx: P): Promise<Response> {
-  const { id, spec, segs, base, redirect,cartId=id,catalogueLabel } = await load(req, ctx);
+  const { id, spec, segs, base, redirect } = await load(req, ctx);
   if (redirect) return new Response(null, { status: 307, headers: { Location: redirect, "Cache-Control": "no-store" } });
   const url = new URL(req.url);
   const path = "/" + segs.join("/");
   if (segs[0] === "assets") {
     const name = segs.slice(1).join("/");
+    const phSlot = spec.files[name] ? undefined : placeholderSlot(spec, name);
+    if (phSlot) return new Response(authenticPlaceholderSvg(phSlot, uiLang()), { headers: { "Content-Type": "image/svg+xml; charset=utf-8", "Cache-Control": "private, max-age=600" } });
     const bin = spec.files[name] ? await themeAssetBinary(spec, name, libraryLoader) : importedBinary(spec, name);
     if (bin) {
       let data = bin.data;
@@ -185,22 +184,20 @@ async function get(req: Request, ctx: P): Promise<Response> {
     return post(new Request(req.url, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: url.searchParams.toString() }), ctx);
   }
   let cart: PreviewCartLine[];
-  try { cart = reconcileOfferCart(spec, await readCart(cartId)); } catch (e) { throw new HttpError(422, purchaseErrorMessage(e, spec.language ?? "fr")); }
+  try { cart = reconcileOfferCart(spec, await readCart(id)); } catch (e) { throw new HttpError(422, purchaseErrorMessage(e, spec.language ?? "fr")); }
   if (path === "/cart.js" || (path === "/cart" && req.headers.get("accept")?.includes("application/json"))) return previewJson(cartJson(spec, cart, base),spec,base,url.origin);
   if (url.searchParams.get("sections")) return previewJson(await sectionsFor(spec, base, cart, url.searchParams.get("sections")),spec,base,url.origin);
   const r = await renderPage({ spec, base, cart }, path, url.searchParams);
-  const htmlWithNotice=catalogueLabel?r.html.replace(/<body\b[^>]*>/i,tag=>`${tag}<aside data-catalogue-private-preview role="status" style="padding:12px;background:#fff4df;color:#171717;font:14px/1.5 sans-serif">${escHtml(catalogueLabel)} ${escHtml(L('Panier d’exemple, sans commande. Prix et quantités non renseignés restent à compléter ; stock non suivi ne prouve pas la disponibilité.','Example cart, without orders. Missing prices and quantities remain to be completed; untracked stock does not prove availability.'))}</aside>`):r.html;
-  const tools = url.searchParams.get("es_raw") === "1" ? htmlWithNotice : htmlWithNotice.replace("</body>", `${previewTools(uiLang(), spec.store.business, spec.meta?.demo?.contactTest === true && spec.meta.demo.isDemo === true)}${stockBadgeTool(stockPhotosInTheme(spec, getAsset, uiLang()).map((x) => ({ file: x.file, label: stockPhotoLabel(x.source, uiLang()) })))}</body>`);
-  const html = await portablePreview(tools, spec, base, url.origin);
+  const tools = url.searchParams.get("es_raw") === "1" ? r.html : r.html.replace("</body>", `${previewTools(uiLang(), spec.store.business, spec.meta?.demo?.contactTest === true && spec.meta.demo.isDemo === true)}${stockBadgeTool(stockPhotosInTheme(spec, getAsset, uiLang()).map((x) => ({ file: x.file, label: stockPhotoLabel(x.source, uiLang()) })))}</body>`);
+  const html = await portablePreview(inlineAuthenticPlaceholders(tools, spec, base, uiLang()), spec, base, url.origin);
   return new Response(html, { status: r.status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Frame-Options": "SAMEORIGIN", "Content-Security-Policy": previewCsp(), "Referrer-Policy": "no-referrer" } });
 }
 
 async function post(req: Request, ctx: P): Promise<Response> {
-  const { id, spec, segs, base,cartId=id,catalogueLabel } = await load(req, ctx);
+  const { id, spec, segs, base } = await load(req, ctx);
   req = new Request(req.url, { method: req.method, headers: req.headers, body: await boundedBody(req, 65536) as BodyInit });
   const path = "/" + segs.join("/");
   if (path === "/contact") {
-    if(catalogueLabel)return new Response(L('Cet aperçu de brouillon ne transmet pas de demande.','This draft preview does not submit requests.'),{status:422});
     if (Number(req.headers.get("content-length")) > 16000) throw new HttpError(413, "Request too large");
     const raw = await req.text();
     if (Buffer.byteLength(raw) > 16000) throw new HttpError(413, "Request too large");
@@ -210,7 +207,7 @@ async function post(req: Request, ctx: P): Promise<Response> {
     return Response.json(recordPreviewContact(id, spec, data));
   }
   let cart: PreviewCartLine[];
-  try { cart = rebindOfferLines(spec, await readCart(cartId)); } catch (e) { throw new HttpError(422, purchaseErrorMessage(e, spec.language ?? "fr")); }
+  try { cart = rebindOfferLines(spec, await readCart(id)); } catch (e) { throw new HttpError(422, purchaseErrorMessage(e, spec.language ?? "fr")); }
   const ct = req.headers.get("content-type") ?? "";
   let data: Record<string, any>;
   if (ct.includes("application/json")) data = await req.json();
@@ -247,7 +244,7 @@ async function post(req: Request, ctx: P): Promise<Response> {
   }
   try { cart = reconcileOfferCart(spec, cart); } catch (e) { return Response.json({ description: purchaseErrorMessage(e, spec.language ?? "fr") }, { status: 422 }); }
   if (cart.length > 20) return Response.json({ description: "Trop de lignes de panier." }, { status: 422 });
-  await writeCart(cartId, cart);
+  await writeCart(id, cart);
   const sections = await sectionsFor({ ...spec }, base, cart, data.sections ?? null);
   if (ct.includes("application/json") || req.headers.get("accept")?.includes("application/json") || path.endsWith(".js") || data.sections) {
     return previewJson({ ...cartJson(spec, cart, base), sections },spec,base,new URL(req.url).origin);

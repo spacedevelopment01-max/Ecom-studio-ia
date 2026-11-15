@@ -8,6 +8,9 @@ import { describe, expect, it } from "vitest";
 process.env.STUDIO_SYNA_AGENT = "1";
 
 describe("SINA — étape 1 : 3 identités de marque", async () => {
+  // Ancienne création en un appel (3 identités), gardée par le réglage « simple » : la chaîne du 12 novembre 2026 a
+  // ses propres tests (sina-chaine-marque, sina-routes-de-marque).
+  (await import("@/lib/settings")).setSetting("sina.brand_method", "simple");
   const { one } = await import("@/lib/db");
   const { runWithLang } = await import("@/lib/i18n-server");
   const { loadProject } = await import("@/lib/projects");
@@ -27,9 +30,9 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
   };
 
   const good = (): any[] => [
-    { key: "A", name: "Ocrea", nameKind: "mot", nameStyle: "mot français évocateur", nameWhy: "", nameCandidates: ["a","b","c","d","e","f","g","h","i","j","k","l"], nameExpression: "expression existante", nameAnchor: "la flamme de la bougie", slogan: "La chaleur du fait main", sloganTone: "poétique", promise: "Des bougies coulées à la main qui réchauffent ton intérieur.", territory: "fierté artisanale", ground: "blanc", palette: { dark: "#111111", primary: "#1D4ED8", secondary: "#DBEAFE", accent: "#F97316", light: "#FFFFFF" }, paletteFamily: "tons chauds ton sur ton", fonts: { heading: "cormorant_n6", body: "inter_n4" }, fontStyle: "serif fine contrastée", tone: { adjectives: ["chaleureux", "précis", "sincère"], avoid: ["superlatifs", "jargon", "promesses"] }, logoStyle: "embleme", logoIdea: "Une flamme dans un sceau rond.", why: "Ta clientèle aime l'artisanat." },
-    { key: "B", name: "Lumo", nameKind: "invente", nameStyle: "mot inventé court", nameWhy: "", nameCandidates: ["a","b","c","d","e","f","g","h","i","j","k","l"], nameExpression: "expression existante", nameAnchor: "la flamme de la bougie", slogan: "Allume l'instant", sloganTone: "direct", promise: "Une lumière douce pour chaque moment calme.", territory: "évasion", ground: "degrade", gradient: { from: "#FFD6A5", to: "#C8B6FF" }, palette: { dark: "#1F1A14", primary: "#B91C1C", secondary: "#FDE68A", accent: "#16A34A", light: "#F5EEDC" }, paletteFamily: "sombre et un accent vif", fonts: { heading: "archivo_n8", body: "dm_sans_n4" }, fontStyle: "grotesque grasse", tone: { adjectives: ["direct", "lumineux", "moderne"], avoid: ["mièvrerie", "jargon", "promesses"] }, logoStyle: "lettrage", logoIdea: "Le O de Lumo devient une flamme.", why: "Tu veux une image moderne." },
-    { key: "C", name: "Brindille", nameKind: "mot", nameStyle: "nom composé", nameWhy: "", nameCandidates: ["a","b","c","d","e","f","g","h","i","j","k","l"], nameExpression: "expression existante", nameAnchor: "la flamme de la bougie", slogan: "Complice de tes soirées", sloganTone: "complice et léger", promise: "Des bougies joyeuses à offrir et à s'offrir.", territory: "complicité joyeuse", ground: "sombre", palette: { dark: "#0B0B12", primary: "#FACC15", secondary: "#312E81", accent: "#C084FC", light: "#F5F5F7" }, paletteFamily: "clair et frais", fonts: { heading: "nunito_n8", body: "karla_n4" }, fontStyle: "ronde épaisse", tone: { adjectives: ["complice", "léger", "joyeux"], avoid: ["froideur", "jargon", "promesses"] }, logoStyle: "mascotte", logoIdea: "Une petite bougie souriante.", why: "Tu vends beaucoup en cadeau." },
+    { key: "A", name: "Éclat de cire", nameKind: "expression", nameStyle: "expression évocatrice", nameWhy: "", nameCandidates: ["a","b","c","d","e","f","g","h","i","j","k","l"], nameExpression: "expression existante", nameAnchor: "la flamme de la bougie", slogan: "La chaleur du fait main", sloganTone: "poétique", promise: "Des bougies coulées à la main qui réchauffent ton intérieur.", territory: "fierté artisanale", ground: "blanc", palette: { dark: "#111111", primary: "#1D4ED8", secondary: "#DBEAFE", accent: "#F97316", light: "#FFFFFF" }, paletteFamily: "tons chauds ton sur ton", fonts: { heading: "cormorant_n6", body: "inter_n4" }, fontStyle: "serif fine contrastée", tone: { adjectives: ["chaleureux", "précis", "sincère"], avoid: ["superlatifs", "jargon", "promesses"] }, logoStyle: "embleme", logoIdea: "Une flamme dans un sceau rond.", why: "Ta clientèle aime l'artisanat." },
+    { key: "B", name: "Souffle de mèche", nameKind: "expression", nameStyle: "expression évocatrice", nameWhy: "", nameCandidates: ["a","b","c","d","e","f","g","h","i","j","k","l"], nameExpression: "expression existante", nameAnchor: "la flamme de la bougie", slogan: "Allume l'instant", sloganTone: "direct", promise: "Une lumière douce pour chaque moment calme.", territory: "évasion", ground: "degrade", gradient: { from: "#FFD6A5", to: "#C8B6FF" }, palette: { dark: "#1F1A14", primary: "#B91C1C", secondary: "#FDE68A", accent: "#16A34A", light: "#F5EEDC" }, paletteFamily: "sombre et un accent vif", fonts: { heading: "archivo_n8", body: "dm_sans_n4" }, fontStyle: "grotesque grasse", tone: { adjectives: ["direct", "lumineux", "moderne"], avoid: ["mièvrerie", "jargon", "promesses"] }, logoStyle: "lettrage", logoIdea: "Le O de Souffle de mèche devient une flamme.", why: "Tu veux une image moderne." },
+    { key: "C", name: "Lueur d'ambre", nameKind: "expression", nameStyle: "expression évocatrice", nameWhy: "", nameCandidates: ["a","b","c","d","e","f","g","h","i","j","k","l"], nameExpression: "expression existante", nameAnchor: "la flamme de la bougie", slogan: "Complice de tes soirées", sloganTone: "complice et léger", promise: "Des bougies joyeuses à offrir et à s'offrir.", territory: "complicité joyeuse", ground: "sombre", palette: { dark: "#0B0B12", primary: "#FACC15", secondary: "#312E81", accent: "#C084FC", light: "#F5F5F7" }, paletteFamily: "clair et frais", fonts: { heading: "nunito_n8", body: "karla_n4" }, fontStyle: "ronde épaisse", tone: { adjectives: ["complice", "léger", "joyeux"], avoid: ["froideur", "jargon", "promesses"] }, logoStyle: "mascotte", logoIdea: "Une petite bougie souriante.", why: "Tu vends beaucoup en cadeau." },
   ];
 
   /** Fil avec l'étape 0 validée (création complète ou refonte), comme après un vrai parcours. */
@@ -51,11 +54,11 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     return { user, cid, ctx, pid: one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string };
   }
 
-  it("règle du propriétaire : le prix de l'action payante de l'étape est donné à SINA, qui l'annonce avant de lancer", async () => {
+  it("règle du propriétaire : le prix de l'action payante de l'étape est donné à SINA, le même que sur la carte d'accord", async () => {
     const { stepQuote } = await import("@/lib/syna-agent/loop");
     const { user, cid, pid } = await stepOneThread();
     const q = await stepQuote(user, { id: "run-test", conversation_id: cid, project_id: pid, user_id: user.id } as any);
-    expect(q).toMatch(/# Prix de la prochaine action payante de l'étape\nidentity\.propose \(3 identités de marque\) : au plus .*% de votre budget IA\. Dis ce prix au client AVANT de lancer/);
+    expect(q).toMatch(/# Prix de la prochaine action payante de l'étape\nidentity\.propose \(3 identités de marque\) : (?:coût probable .*% de votre budget IA ; plafond )?.*% de votre budget IA.*Le Studio montre ce prix au client sur la carte d'accord/);
   });
 
   it("contrôle gratuit : une série correcte passe", () => {
@@ -66,16 +69,17 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     const j = J.emptyJourney();
     j.start.image = { value: "Moderne et doux, surtout pas de rouge.", status: "answered", source: "client", at: 1 };
     const bad = good();
-    bad[1].name = "ocrea "; // même nom que A
+    bad[1].name = "éclat de cire "; // même nom que A
     bad[1].slogan = "Une lumière douce et chaude pour chaque instant calme du soir"; // 11 mots
-    bad[2].logoStyle = "embleme"; // même style que A
+    bad[2].territory = bad[0].territory; // même territoire que A
     bad[2].fonts.heading = "cormorant_n5"; // même famille de titres que A
     bad[0].palette.dark = "#9CA3AF"; // texte gris clair illisible sur fond blanc
     bad[0].fonts.body = "comic_sans_n4"; // hors liste
     const issues = I.identityIssues(I.IdentitiesSchema.parse({ identities: bad }).identities, j).join("\n");
     expect(issues).toMatch(/même nom/);
     expect(issues).toMatch(/slogan de 11 mots \(9 au plus\)/);
-    expect(issues).toMatch(/même style de logo/);
+    expect(issues).toMatch(/même territoire émotionnel/);
+    expect(issues).not.toMatch(/style de logo/); // le logo est dessiné ensuite, en carte blanche (décision du 7 novembre)
     expect(issues).toMatch(/même police de titres/);
     expect(issues).toMatch(/Identité A — texte\/fond : contraste/);
     expect(issues).toMatch(/comic_sans_n4.*hors liste/);
@@ -103,7 +107,10 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     expect(I.paletteIssues({ ...good()[2].palette, dark: "#4A4A5A" }, "sombre").join()).toMatch(/fond très foncé/);
     expect(I.IDENTITY_SYSTEM).toMatch(/une « blanc » .* une « degrade » .* jamais beige ni crème.* une « sombre »/);
     expect(I.IDENTITY_SYSTEM).toMatch(/jamais trois orangés/);
-    expect(I.IDENTITY_SYSTEM).toMatch(/écris d.abord dans nameCandidates 12 à 20 pistes, chacune tirée d.un élément du produit/);
+    expect(I.IDENTITY_SYSTEM).toMatch(/écris d.abord dans nameCandidates au moins 12 pistes/);
+    // Exigence 1.2 : dans une série, le dégradé est lumineux (jamais un second fond foncé à côté du fond sombre).
+    const dull = good(); dull[1].gradient = { from: "#1E2235", to: "#3A2A4A" };
+    expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: dull }).identities, J.emptyJourney()).join()).toMatch(/trop sombre ou trop terne/);
   });
 
   it("références du propriétaire (7 novembre) : ses 49 palettes passent le contrôle, ses 50 noms et slogans aussi, et Claude les reçoit comme exemples à ne pas recopier", async () => {
@@ -144,8 +151,8 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
   });
 
   it("consignes de Claude : charte § 2.1, styles de logo, polices autorisées, refonte et fiche du client", () => {
-    expect(I.IDENTITY_SYSTEM).toMatch(/au moins 4 des 6 axes/);
-    for (const s of ["embleme", "mascotte", "artdeco"]) expect(I.IDENTITY_SYSTEM).toContain(s);
+    expect(I.IDENTITY_SYSTEM).toMatch(/au moins 4 des 5 axes/);
+    expect(I.IDENTITY_SYSTEM).toMatch(/Le LOGO n'est PAS décidé ici : il est dessiné à l'étape suivante, en carte blanche/);
     expect(I.IDENTITY_SYSTEM).toMatch(/cormorant \(Cormorant/);
     expect(I.IDENTITY_SYSTEM).toMatch(/Interdits : inventer un chiffre, un avis/);
     const j = J.emptyJourney();
@@ -210,39 +217,42 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
   it("proposition : modèle fort, plafond annoncé, une reprise si le contrôle échoue, cartes servies à l'interface", async () => {
     const { cid, ctx, user } = await stepOneThread();
     const calls: any[] = [];
-    const first = good(); first[2].logoStyle = "embleme"; // défaut : même style que A
+    const first = good(); first[2].territory = first[0].territory; // défaut : même territoire que A
     identityDeps.generate = async (c) => { calls.push(c); return { identities: calls.length === 1 ? first : good(), comparison: "4 axes différents par paire." }; };
     try {
-      expect(await getTool("identity.propose")!.estimate!(ctx, {})).toEqual({ maxMicro: IDENTITY_CAP_MICRO, label: "3 identités de marque" });
+      const est = await getTool("identity.propose")!.estimate!(ctx, {});
+      expect(est).toMatchObject({ maxMicro: IDENTITY_CAP_MICRO, label: "3 identités de marque" });
+      // devis = coût probable d'un essai (règle du propriétaire), toujours sous le plafond
+      if (est.probableMicro != null) expect(est.probableMicro).toBeLessThan(IDENTITY_CAP_MICRO);
       const r = await call("identity.propose", ctx, {});
       expect(r.ok).toBe(true);
       expect(calls).toHaveLength(2); // une reprise, avec les corrections exactes
       expect(calls[0].routing.prefer).toEqual(IDENTITY_MODEL);
       expect(calls[0].task).toBe("strategy");
       expect(calls[0].prompt).toMatch(/Client idéal : Femmes de 25 à 45 ans/);
-      expect(calls[1].prompt).toMatch(/Corrections exigées .*\n- Deux identités ont le même style de logo/);
+      expect(calls[1].prompt).toMatch(/Corrections exigées .*\n- Deux identités ont le même territoire émotionnel/);
       expect(r.summary).toMatch(/Contrôle du Studio : OK/);
       const j = J.journeyOf(cid);
       expect(j.steps[1].status).toBe("review");
-      expect(j.identities?.list.map((x) => x.name)).toEqual(["Ocrea", "Lumo", "Brindille"]);
-      expect(J.journeyContext(j)).toMatch(/proposition n° 1 .*A « Ocrea »/);
+      expect(j.identities?.list.map((x) => x.name)).toEqual(["Éclat de cire", "Souffle de mèche", "Lueur d'ambre"]);
+      expect(J.journeyContext(j)).toMatch(/proposition n° 1 .*A « Éclat de cire »/);
       expect(J.journeyContext(j)).toMatch(/MÉLANGER/);
       const view = await fr(() => threadView(user, cid));
       expect(view.journey.identities?.list[0].faces.heading).toEqual({ family: "Cormorant", file: "Cormorant-600.ttf", weight: 600 });
       expect(view.journey.identities?.list[2].logoStyleLabel).toBe("mascotte illustrée");
 
       // Nouvelle proposition partielle : seule C est refaite, A et B restent identiques.
-      identityDeps.generate = async () => { const g = good(); g[0].name = "Changé"; g[2].name = "Cirette"; return { identities: g }; };
+      identityDeps.generate = async () => { const g = good(); g[0].name = "Fleur de mèche"; g[2].name = "Rosée de cire"; return { identities: g }; };
       const redo = await call("identity.propose", ctx, { redo: ["C"], guidance: "Un nom plus court pour C" });
       expect(redo.ok).toBe(true);
-      expect(J.journeyOf(cid).identities?.list.map((x) => x.name)).toEqual(["Ocrea", "Lumo", "Cirette"]);
+      expect(J.journeyOf(cid).identities?.list.map((x) => x.name)).toEqual(["Éclat de cire", "Souffle de mèche", "Rosée de cire"]);
       expect(J.journeyOf(cid).identities?.round).toBe(2);
     } finally { identityDeps.generate = undefined; }
   });
 
   it("points non validés après la reprise : dits au client, jamais présentés comme bons", async () => {
     const { cid, ctx } = await stepOneThread();
-    identityDeps.generate = async () => { const g = good(); g[1].name = "Ocrea"; return { identities: g }; };
+    identityDeps.generate = async () => { const g = good(); g[1].name = "Éclat de cire"; return { identities: g }; };
     try {
       const r = await call("identity.propose", ctx, {});
       expect(r.ok).toBe(true);
@@ -259,20 +269,20 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     expect(r.ok).toBe(true);
     expect(r.summary).toMatch(/Identité A \(avec palette de C\)/);
     const b = loadProject(pid).brand!;
-    expect(b.name).toBe("Ocrea");
+    expect(b.name).toBe("Éclat de cire");
     expect(b.tagline).toBe("La chaleur des mains");
     expect(b.palette).toEqual(good()[2].palette);
     expect(b.fonts).toEqual({ heading: "cormorant_n6", body: "inter_n4" });
     expect(b.tone.dont).toEqual(["superlatifs", "jargon", "promesses"]);
-    expect(b.alternatives).toEqual(["Lumo", "Brindille"]);
+    expect(b.alternatives).toEqual(["Souffle de mèche", "Lueur d'ambre"]);
     expect(b.logo.status).toBe("proposed");
-    expect(loadProject(pid).name).toBe("Ocrea"); // le nom provisoire est remplacé
+    expect(loadProject(pid).name).toBe("Éclat de cire"); // le nom provisoire est remplacé
     expect(JSON.parse(one<any>("SELECT value FROM memory WHERE project_id=? AND key='syna.identite'", pid).value).mix).toEqual({ palette: "C" });
     const j = J.journeyOf(cid);
     expect(j.steps[1].status).toBe("done");
     expect(j.steps[2].status).toBe("todo");
     expect(J.currentStep(j)).toBe(2);
-    expect(mixIdentity(good() as any, "B", { name: "C" }).name).toBe("Brindille");
+    expect(mixIdentity(good() as any, "B", { name: "C" }).name).toBe("Lueur d'ambre");
     // Une fois choisie, l'identité n'est pas reproposée en douce.
     expect((await call("identity.propose", ctx, {})).ok).toBe(false);
   });
@@ -286,6 +296,11 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     expect(seen).toHaveLength(1); // nom et slogan gardés repris mot pour mot : aucune reprise
     expect(seen[0].prompt).toMatch(/Refonte : le client garde TEL QUEL logo, slogan, nom/);
     expect((await call("identity.choose", ctx, { key: "B", name: "Autre nom" })).ok).toBe(false);
+    // Le logo gardé du client, rangé dans ses Fichiers (comme start.confirm le fait depuis son site ou sa pièce jointe).
+    const sharp = (await import("sharp")).default;
+    const { saveAsset } = await import("@/lib/library");
+    const png = await sharp({ create: { width: 600, height: 240, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite([{ input: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="240"><circle cx="120" cy="120" r="90" fill="#7A3E2B"/><rect x="240" y="90" width="320" height="60" fill="#1F2A3A"/></svg>') }]).png().toBuffer();
+    await saveAsset({ projectId: pid, userId: ctx.user.id, data: png, name: "logo-client.png", mime: "image/png", role: "logo", origin: "upload" });
     const r = await call("identity.choose", ctx, { key: "B" });
     expect(r.ok).toBe(true);
     const b = loadProject(pid).brand!;
@@ -295,6 +310,11 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     const j = J.journeyOf(cid);
     expect(j.steps[2].status).toBe("skipped");
     expect(J.currentStep(j)).toBe(3);
+    // Audit du 10 novembre : l'image de marque se fait avec le logo gardé (elle était bloquée pour toujours).
+    const kit = await call("brand.kit", ctx, {});
+    expect(kit.ok, kit.summary).toBe(true);
+    expect((await call("brand.kit_validate", ctx, {})).ok).toBe(true);
+    expect(J.currentStep(J.journeyOf(cid))).toBe(4);
   });
 
   it("essai réel du mélange : carte « Ton identité » avec le vrai résultat, élision corrigée, pas de faux dégradé", async () => {
@@ -303,7 +323,7 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     expect(fixElision("Je hais rien, je garde le nom.")).toBe("Je hais rien, je garde le nom.");
     expect(fixElision("Tell me and I will.")).toBe("Tell me and I will.");
     const list = I.IdentitiesSchema.parse({ identities: good() }).identities;
-    expect(mixLabel(list, { key: "B", mix: { palette: "A" } })).toBe("Lumo (B) avec les couleurs de Ocrea (A)");
+    expect(mixLabel(list, { key: "B", mix: { palette: "A" } })).toBe("Souffle de mèche (B) avec les couleurs de Éclat de cire (A)");
     expect(mixLabel(list, { key: "B", mix: {} })).toBe("");
     const { cid, ctx, pid, user } = await stepOneThread();
     identityDeps.generate = async () => ({ identities: good().map((x: any) => ({ ...x, gradient: x.gradient ?? { from: "#FFFFFF", to: "#FFFFFF" } })) });
@@ -314,10 +334,10 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     expect(b.gradient).toBeUndefined(); // fond blanc : aucun dégradé gardé
     const view = await fr(() => threadView(user, cid));
     const final = view.journey.identities!.final!;
-    expect(final.name).toBe("Lumo");
+    expect(final.name).toBe("Souffle de mèche");
     expect(final.palette).toEqual(good()[0].palette);
     expect(final.ground).toBe("blanc");
-    expect(final.mixLabel).toBe("Lumo (B) avec les couleurs de Ocrea (A)");
+    expect(final.mixLabel).toBe("Souffle de mèche (B) avec les couleurs de Éclat de cire (A)");
     expect(final.why).toBe(""); // le « pourquoi » de B parlait de ses couleurs : plus repris après le mélange
     expect(mixIdentity(good() as any, "B", { name: "A" }).why).toBe(good()[1].why); // nom seulement : gardé
   });
@@ -347,7 +367,7 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
   it("noms liés au PRODUIT (retour du 7 novembre : « les 3 noms n'ont rien à voir avec le produit »)", async () => {
     expect(I.IDENTITY_SYSTEM).toMatch(/le nom a une LOGIQUE claire avec le produit ou le service, jamais un mot pris au hasard/);
     expect(I.IDENTITY_SYSTEM).toMatch(/nameWhy = la logique en une ou deux phrases simples, MONTRÉE AU CLIENT/);
-    expect(I.IDENTITY_SYSTEM).toMatch(/nameAnchor = l'élément du produit dont part le nom[^]*nameTest = ce qu'un inconnu imagine/);
+    expect(I.IDENTITY_SYSTEM).toMatch(/nameAnchor = ce dont part le nom[^]*l'univers ou l'attitude pour un mot fort, l'élément du produit pour les autres[^]*nameTest = ce qu'un inconnu imagine/);
     // Pourquoi les noms n'étaient ni beaux ni originaux : des assemblages inventés et des jeux de mots négatifs.
     const refs = (await import("@/lib/syna-agent/brand-references")).referencesForPrompt();
     expect(refs).toMatch(/LA LOGIQUE D'ABORD : chaque nom a un lien évident avec le produit ou le service/);
@@ -358,26 +378,28 @@ describe("SINA — étape 1 : 3 identités de marque", async () => {
     expect(fi).toMatch(/Identité C : nameExpression vide/);
     // « Ça doit faire plus marque » : trois genres de noms, jamais une phrase.
     expect(I.IDENTITY_SYSTEM).toMatch(/Le nom FAIT MARQUE[^]*« Bien Roulé », « Ça Roule », « Dans le Sac » ont été refusés/);
-    // Produits : deux mots forts (genre SOLSTICE / RUPTURE, choix du 9 novembre) et un mot inventé ; services : trois genres différents.
+    // Produits : trois noms du genre « Éclat de thé » (choix du propriétaire du 10 novembre 2026) ; services : trois genres différents.
     const prod = J.emptyJourney(); prod.start.business = { value: "products", status: "answered", source: "client", at: 1 } as any;
-    expect(I.nameKindRule(prod)).toMatch(/MARQUE DE PRODUITS → DEUX noms sont des MOTS FORTS[^]*SOLSTICE[^]*RUPTURE[^]*TROISIÈME nom est un MOT INVENTÉ/);
-    expect(refs).toMatch(/GENRE PRÉFÉRÉ DU PROPRIÉTAIRE[^]*SOLSTICE/);
-    const allInvented = good().map((x) => ({ ...x, nameKind: "invente" }));
-    expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: allInvented }).identities, prod).join()).toMatch(/deux noms « mot fort »/);
-    const noInvented = good().map((x) => ({ ...x, nameKind: "mot" }));
-    expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: noInvented }).identities, prod).join()).toMatch(/un mot inventé/);
-    expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: good() }).identities, prod).join()).not.toMatch(/mot fort/);
+    expect(I.nameKindRule(prod)).toMatch(/MARQUE DE PRODUITS → les TROIS noms sont du genre « ÉCLAT DE THÉ »[^]*trois idées différentes/);
+    expect(refs).toMatch(/GENRE VOULU PAR LE PROPRIÉTAIRE POUR LES MARQUES DE PRODUITS[^]*ÉCLAT DE THÉ/);
+    expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: good() }).identities, prod)).toEqual([]);
+    const oneWord = good(); oneWord[0] = { ...oneWord[0], name: "Solstice", nameKind: "mot" };
+    expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: oneWord }).identities, prod).join()).toMatch(/genre « Éclat de thé »[^]*Solstice \(mot\)/);
+    const same = good(); same[1] = { ...same[1], name: "Éclat de mèche" };
+    expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: same }).identities, prod).join()).toMatch(/commencent par le même mot/);
+    for (const n of ["Éclat de thé", "Lueur d'ambre", "Rosée du matin", "Fleur de sel marin"]) expect(I.EXPRESSION_NAME.test(n), n).toBe(true);
+    for (const n of ["Éclat", "Un éclat de thé chaud tous les matins", "Éclat-Thé"]) expect(I.EXPRESSION_NAME.test(n), n).toBe(false);
     expect(I.identityPrompt(prod)).toMatch(/# Genre des noms : MARQUE DE PRODUITS/);
     // « C'est un peu mieux » : repères de vrais noms inventés et de leur fabrication ; fusion invisible, pas de terminaison plaquée.
     expect(refs).toMatch(/Velcro \(« velours » \+ « crochet »/);
     expect(refs).toMatch(/la fusion est INVISIBLE[^]*pas de terminaison plaquée/);
-    expect(I.nameKindRule(prod)).toMatch(/au moins 15 mots inventés[^]*jamais le premier venu/);
+    expect(I.nameKindRule(prod)).toMatch(/au moins 15 noms de ce genre, puis garde les trois plus beaux/);
     const serv = J.emptyJourney(); serv.start.business = { value: "services", status: "answered", source: "client", at: 1 } as any;
     expect(I.nameKindRule(serv)).toMatch(/ENTREPRISE DE SERVICES → trois genres différents/);
     expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: good() }).identities, serv).join()).toMatch(/trois genres différents/);
-    const mixed = good(); mixed[2].nameKind = "deux_mots";
+    const mixed = good(); mixed[0] = { ...mixed[0], name: "Solstice", nameKind: "mot" }; mixed[1] = { ...mixed[1], name: "Lumo", nameKind: "invente" };
     expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: mixed }).identities, serv).join()).not.toMatch(/genres|mot inventé/);
-    const long = good(); long[1].name = "Lumo Clair"; // un mot inventé tient en un seul mot
+    const long = good(); long[1].name = "Lumo Clair"; long[1].nameKind = "invente"; // un mot inventé tient en un seul mot
     expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: long }).identities, J.emptyJourney()).join()).toMatch(/« Lumo Clair » doit tenir en un seul mot/);
     const bad = good(); bad[1].nameAnchor = "";
     expect(I.identityIssues(I.IdentitiesSchema.parse({ identities: bad }).identities, J.emptyJourney()).join()).toMatch(/Identité B : nameAnchor vide — dis de quel élément concret du produit/);

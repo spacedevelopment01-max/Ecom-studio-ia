@@ -1,5 +1,4 @@
 import type { TutorialDef } from "./types";
-import pilote from "./pilote";
 import produit from "./produit";
 import activite from "./activite";
 import marque from "./marque";
@@ -17,7 +16,7 @@ import connexions from "./connexions";
 export type { Bi, TutorialDef } from "./types";
 
 /** Un tutoriel par onglet ; « Activité » et « Site » remplacent « Produit » et « Boutique » pour une entreprise de services. */
-export const TUTORIALS = { pilote, produit, activite, marque, boutique, site, images, videos, prompts, publications, calendrier, publicites, fichiers, connexions } satisfies Record<string, TutorialDef>;
+export const TUTORIALS = { produit, activite, marque, boutique, site, images, videos, prompts, publications, calendrier, publicites, fichiers, connexions } satisfies Record<string, TutorialDef>;
 export type TutorialId = keyof typeof TUTORIALS;
 export const TUTORIAL_IDS = Object.keys(TUTORIALS) as TutorialId[];
 

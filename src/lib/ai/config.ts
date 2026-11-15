@@ -156,6 +156,12 @@ export const DEFAULT_PRICES: Record<string, Price> = {
   "anthropic:claude-haiku-5-5": { unit: "tokens", inputPerM: 0.1, outputPerM: 0.5 },
   "anthropic:claude-haiku-4-5": { unit: "tokens", inputPerM: 1, outputPerM: 5 },
   "openai:gpt-image-2.5-sunburst": { unit: "tokens", inputPerM: 5, outputPerM: 30, imageInputPerM: 8, imageOutputPerM: 30 },
+  // GPT Image 2.6 (relevé du 10 novembre 2026, pages officielles des modèles : texte entrée 5 $/M, image entrée 8 $/M,
+  // sortie 30 $/M, comme le 2.5 ; consommation « high » inchangée, « low » et « medium » environ 4 fois plus) : borne PAR
+  // IMAGE, la table des jetons de sortie du 2.6 n'étant pas publiée. Mesuré en réel sur le 2.5 Flare « high » : 1 372 à
+  // 1 909 jetons de sortie, soit ≈ 0,06 $ ; borne 0,12 $ par prudence, à ajuster après les premiers appels réels.
+  "openai:gpt-image-2.6-flare": { unit: "image", perImage: 0.12, inputPerM: 5 },
+  "openai:gpt-image-2.6-sunburst": { unit: "image", perImage: 0.12, inputPerM: 5 },
   "openai:gpt-image-1": { unit: "tokens", inputPerM: 5, outputPerM: 40, imageInputPerM: 10, imageOutputPerM: 40 },
   "google:gemini-2.5-flash-image": { unit: "image", perImage: 0.039, inputPerM: 0.3 },
   "google:veo-3.0-generate-001": { unit: "video_second", perSecond: 0.4 },

@@ -67,7 +67,9 @@ describe("Ligne « campagne » et Qwen-Image 3.0 Pro par défaut", async () => {
     for (const k of ["ai.routes", "ai.media.models", "ai.prices", "ai.media.usage"]) setJsonSetting(k, {});
     expect(routing.mediaPrimary("image")).toEqual({ provider: "alibaba", model: "qwen-image-3.0-pro" });
     // Tous les usages d'images le suivent, texte et logo compris (aucune deuxième étape par une autre IA).
-    for (const u of ["product_image", "ad_visual", "social_image", "scene", "text_layout"] as const) expect(routing.usagePrimary(u)).toMatchObject({ provider: "alibaba", model: "qwen-image-3.0-pro" });
+    for (const u of ["product_image", "ad_visual", "scene", "text_layout"] as const) expect(routing.usagePrimary(u)).toMatchObject({ provider: "alibaba", model: "qwen-image-3.0-pro" });
+    // Sauf les publications : OpenAI obligatoire (décision du propriétaire du 14 novembre 2026).
+    expect(routing.usagePrimary("social_image")).toMatchObject({ provider: "openai", model: "gpt-image-2.6-flare" });
     expect(routing.usagePrimary("logo")).toMatchObject({ provider: "openai", model: "gpt-image-2.5-sunburst" });
     expect(routing.usageExplicit("text_layout")).toBe(false);
     // Un choix de l'administration reste prioritaire.

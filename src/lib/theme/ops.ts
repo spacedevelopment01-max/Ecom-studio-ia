@@ -174,6 +174,9 @@ export function validateCustomSection(liquid: string): string | null {
       .replace(/\{%-?\s*endstyle\s*-?%\}/g, "</style>")
       .replace(/\{%-?\s*form\b[^%]*%\}/g, "")
       .replace(/\{%-?\s*endform\s*-?%\}/g, "")
+      // Pagination de Shopify (page boutique, journal, recherche) : balise standard, que l'aperçu du Studio sait rendre.
+      .replace(/\{%-?\s*paginate\b[^%]*%\}/g, "")
+      .replace(/\{%-?\s*endpaginate\s*-?%\}/g, "")
       .replace(/\{%-?\s*render\s+block\s*-?%\}/g, "");
     liquidCheck.parse(stripped);
   } catch (e) {
@@ -645,10 +648,13 @@ export function validateSpec(spec: ThemeSpec): string[] {
   }
   // Thème importé : ses propres règles s'appliquent (sections et polices propres au thème du client).
   if (spec.imported) return problems;
-  if (!spec.templates.product?.order.some((id) => spec.templates.product.sections[id]?.type === "main-product")) problems.push(L("la fiche produit doit contenir la section Produit", "the product page must contain the Product section"));
+  // Une fiche produit vend : elle garde la section Produit du Studio, ou (thème sur mesure à tenue) une section du
+  // projet qui porte un vrai formulaire d'achat de Shopify.
+  const sells = (t: ThemeSpec["templates"][string]) => t.order.some((id) => t.sections[id]?.type === "main-product" || /\{%-?\s*form 'product'/.test(spec.customSections?.[t.sections[id]?.type ?? ""]?.liquid ?? ""));
+  if (!spec.templates.product || !sells(spec.templates.product)) problems.push(L("la fiche produit doit contenir la section Produit", "the product page must contain the Product section"));
   // Mises en page propres à un produit : elles gardent toujours la section Produit (prix, variantes, achat du catalogue).
   for (const [key, t] of Object.entries(spec.templates)) {
-    if (key.startsWith("product.") && !t.order.some((id) => t.sections[id]?.type === "main-product")) problems.push(L(`la mise en page produit « ${key.slice(8)} » doit contenir la section Produit`, `product layout "${key.slice(8)}" must contain the Product section`));
+    if (key.startsWith("product.") && !sells(t)) problems.push(L(`la mise en page produit « ${key.slice(8)} » doit contenir la section Produit`, `product layout "${key.slice(8)}" must contain the Product section`));
   }
   const defaults = globalSettingDefaults();
   for (const k of ["type_heading_font", "type_body_font"]) if (!spec.settings[k] && !defaults[k]) problems.push(L(`police manquante : ${k}`, `missing font: ${k}`));

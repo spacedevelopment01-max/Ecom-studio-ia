@@ -1,2 +1,0 @@
-PREUVE theme-editeur
-PREUVE retouche-locale-conservee

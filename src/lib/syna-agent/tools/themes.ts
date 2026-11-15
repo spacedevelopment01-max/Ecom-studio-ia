@@ -9,17 +9,23 @@ import type { AgentTool } from "../types";
 import { journeyOf, setStep, updateJourney } from "../journey";
 import { themeChoices } from "../themes";
 import { project } from "./common";
-import { enqueue, pendingJob } from "../../jobs";
+import { enqueue, getJob, pendingJob, retryJob } from "../../jobs";
 import { currentTheme } from "../../projects";
 import { assertStrategyChosen, defaultStrategy } from "../../marketing-strategy";
 import { assertThemeAllowed } from "../../plan-gates";
 import { blockers, stateOf } from "../../preparation/engine";
 import { ACTIVE_THEMES } from "../../theme/theme-fit";
 import { DIRECTIONS } from "../../theme/directions";
+import { callCostBoundMicro, estimateCallMicro, routeLlm } from "../../ai/llm";
+import { clientImages, type ImagesMode } from "../custom-theme/brand";
+import { serviceImageRequests, STUDIO_BRAND_JOB, studioImageNeeds, studioImageRequests } from "../studio-brand";
+import { boundedImageRequestsQuote } from "../../image-v2/creation-quote";
+import { withQuotedImageRoute } from "../../ai/media-providers";
+import { mockupImageRoute } from "../mockup-code/tools";
 
 const modeTool: AgentTool<{ mode: "theme" | "mockup" }> = {
   name: "site.mode", module: "site", kind: "write", needsProject: true,
-  description: "Étape 6 : enregistre le choix DU CLIENT, après avoir vu les cartes des thèmes, d'un thème sur mesure (mode mockup : monté avec les sections du Studio, seules les photos nouvelles sont payantes) plutôt qu'un thème du Studio — seulement après sa réponse, jamais à sa place (un thème choisi passe par theme.choose). Gratuit.",
+  description: "Étape 6 : enregistre la réponse DU CLIENT à la question « thème du Studio ou thème sur mesure » : mode theme (il choisira ensuite parmi tous nos thèmes : theme.propose puis theme.choose) ou mode mockup (thème sur mesure : il choisit sa famille Classique ou Moderne, puis le site est conçu de A à Z ; la conception, les textes et les photos nouvelles sont payants, devis sur la carte d'accord). Seulement après sa réponse, jamais à sa place. Gratuit.",
   args: z.object({ mode: z.enum(["theme", "mockup"]) }).strict(),
   run: (ctx, a) => {
     const j = journeyOf(ctx.conversationId);
@@ -29,20 +35,20 @@ const modeTool: AgentTool<{ mode: "theme" | "mockup" }> = {
     return {
       ok: true,
       summary: a.mode === "theme" ? L("Choix noté : un thème du Studio.", "Choice saved: a Studio theme.") : L("Choix noté : un thème sur mesure.", "Choice saved: a custom theme."),
-      hint: a.mode === "theme" ? "Il choisit sa carte : theme.choose avec son identifiant." : "Suis maintenant la consigne du thème sur mesure : famille (theme.families), montage (custom.compose), textes et modifications (custom.edit), photos (custom.photo, devis d'abord).",
+      hint: a.mode === "theme" ? "Montre-lui tous nos thèmes (theme.propose), puis il choisit sa carte : theme.choose avec son identifiant." : "Suis maintenant la consigne du thème sur mesure : famille d'abord (theme.families, puis theme.family), ambiance, conception (custom.design), images (custom.images), montage à sa marque (custom.build), changements (custom.edit).",
     };
   },
 };
 
 const proposeTool: AgentTool<{ all?: boolean }> = {
   name: "theme.propose", module: "site", kind: "read", needsProject: true,
-  description: "Étape 6 (gratuit) : AFFICHE au client les thèmes du Studio TELS QU'ILS SONT (capture d'origine, lien vers la démonstration complète, ce que son forfait inclut), jamais recomposés avec son projet. Trois thèmes (ceux qui mettent en scène ce qu'il vend d'abord) ; all: true pour tout le catalogue quand le client veut tout voir.",
+  description: "Étape 6 (gratuit) : AFFICHE au client les thèmes du Studio TELS QU'ILS SONT (capture d'origine, lien vers la démonstration complète, ce que son forfait inclut), jamais recomposés avec son projet. TOUS nos thèmes (consigne du propriétaire du 9 novembre 2026), ceux qui mettent en scène ce qu'il vend d'abord ; all: false pour seulement les trois premiers.",
   args: z.object({ all: z.boolean().optional() }).strict(),
   run: (ctx, a) => {
     const p = project(ctx);
     const j = journeyOf(ctx.conversationId);
     if (j.steps[5]?.status !== "done") return { ok: false, summary: L("L'activité complète (étape 5) doit être validée avant le choix du thème.", "Validate step 5 first.") };
-    const themes = themeChoices(p.id, !!a.all);
+    const themes = themeChoices(p.id, a.all !== false);
     updateJourney(ctx.conversationId, (x) => { x.themes = themes; if (x.steps[6]?.status !== "done") setStep(x, 6, "review"); });
     return {
       ok: true,
@@ -53,10 +59,10 @@ const proposeTool: AgentTool<{ all?: boolean }> = {
   },
 };
 
-const chooseTool: AgentTool<{ id: string }> = {
+const chooseTool: AgentTool<{ id: string; retry?: boolean }> = {
   name: "theme.choose", module: "site", kind: "write", needsProject: true,
   description: "Étape 6 : applique le thème CHOISI PAR LE CLIENT (jamais à sa place ; identifiant d'une carte de theme.propose) : la boutique se compose dans ce thème avec sa marque, ses produits et ses textes (gratuit, sans IA ; l'ancienne version reste restaurable). Ouvre l'étape 8 (le thème adapté). Tâche de fond : relis son résultat.",
-  args: z.object({ id: z.string().min(1).max(60) }).strict(),
+  args: z.object({ id: z.string().min(1).max(60), retry: z.boolean().optional() }).strict(),
   run: (ctx, a) => {
     const p = project(ctx);
     const j = journeyOf(ctx.conversationId);
@@ -73,10 +79,13 @@ const chooseTool: AgentTool<{ id: string }> = {
     // Même tâche que « Choisir ce thème » de la galerie : jamais une seconde en cas de double demande.
     const job = pendingJob(p.id, "shop.direction", { direction: a.id, strategyVersion })
       ?? enqueue({ userId: ctx.user.id, projectId: p.id, type: "shop.direction", idempotencyKey: `theme:${currentTheme(p.id)?.version.id ?? "initial"}:${strategyVersion}:${a.id}`, label: L(`Direction ${name}`, `${name} direction`), payload: { projectId: p.id, direction: a.id, strategyVersion } });
-    if (["failed", "cancelled"].includes(job.status)) return { ok: false, summary: L("La composition précédente dans ce thème a échoué : elle est gardée dans le suivi des tâches pour en voir la cause.", "The previous attempt failed."), hint: "Dis-le au client simplement ; ne relance rien sans sa demande." };
+    // Composition gratuite (sans IA) : relancée seulement si le client le demande (retry), jamais d'elle-même.
+    if (["failed", "cancelled"].includes(job.status) && a.retry) retryJob(job.id);
+    else if (["failed", "cancelled"].includes(job.status)) return { ok: false, summary: L("La composition précédente dans ce thème a échoué : elle est gardée dans le suivi des tâches pour en voir la cause.", "The previous attempt failed."), hint: "Dis-le au client simplement et demande-lui s'il veut relancer la mise en place (gratuite) : s'il le veut, theme.choose avec le même id et retry:true." };
     updateJourney(ctx.conversationId, (x) => {
       x.siteMode = { mode: "theme", at: Date.now() };
       x.themeChoice = { id: a.id, jobId: job.id, at: Date.now() };
+      x.customChosenAt = undefined; // revenu à un thème du Studio
       setStep(x, 6, "done");
       setStep(x, 7, "skipped", L("Un de nos thèmes a été choisi : pas de site codé d'après une maquette.", "One of our themes was chosen."));
       setStep(x, 8, "doing");
@@ -84,9 +93,126 @@ const chooseTool: AgentTool<{ id: string }> = {
     return {
       ok: true, jobs: [job.id],
       summary: L(`Thème « ${name} » choisi : ta boutique se compose avec ta marque, tes produits et tes textes. L'ancienne version reste restaurable.`, `${name} theme chosen.`),
+      hint: "Quand la composition est finie, passe à l'étape 8 : theme.images (combien d'images), la question « tes images ou je les crée ? », puis theme.brand (textes dans son angle et images) : le Studio lui montre le devis sur la carte d'accord.",
       changes: [{ module: "site", object: L("thème de la boutique", "store theme"), summary: name, after: a.id, verified: true }],
     };
   },
 };
 
-export const themeTools: AgentTool[] = [modeTool, proposeTool, chooseTool];
+/**
+ * Garde de l'étape 8 (audit du 10 novembre 2026) : un thème du Studio choisi par le client et SA composition terminée,
+ * sinon le montage se ferait sur l'ancien thème (ou en même temps que la composition). null = tout est prêt.
+ */
+function studioThemeNotReady(ctx: Parameters<NonNullable<AgentTool["run"]>>[0]): string | null {
+  const j = journeyOf(ctx.conversationId);
+  if (j.outside) return null; // projet existant hors parcours : le thème en place est celui du client
+  if (j.siteMode?.mode !== "theme" || !j.themeChoice) return L("Le client n'a pas choisi de thème du Studio (theme.choose).", "No Studio theme chosen yet.");
+  const job = getJob(j.themeChoice.jobId);
+  if (job && job.status !== "done") return job.status === "failed" || job.status === "cancelled"
+    ? L("La composition du thème choisi a échoué : rien n'est lancé.", "The theme composition failed.")
+    : L("La composition du thème choisi n'est pas encore finie : attends-la.", "The theme is still being composed.");
+  if (currentTheme(project(ctx).id)?.spec.direction !== j.themeChoice.id) return L("Le thème en place n'est pas celui que le client a choisi : rien n'est lancé.", "The active theme is not the chosen one.");
+  return null;
+}
+
+/** Images du client envoyées mais pas encore posées dans le thème en place. */
+function freshClientImages(projectId: string): number {
+  const spec = currentTheme(projectId)?.spec;
+  const used = new Set([...(spec?.meta?.adaptation?.slots ?? []).map((s) => s.assetId), ...Object.values(spec?.files ?? {})].filter(Boolean));
+  return clientImages(projectId).filter((x) => !used.has(x.id)).length;
+}
+
+const studioImagesTool: AgentTool<Record<string, never>> = {
+  name: "theme.images", module: "site", kind: "read", needsProject: true,
+  description: "Étape 8, THÈME DU STUDIO (gratuit), après theme.choose (composition finie) et AVANT theme.brand : combien d'images demande son thème (emplacements), combien sont déjà remplies par ses photos, combien restent vides, et ses images envoyées pas encore posées. Sert à lui demander s'il monte son site avec SES images ou si tu les crées, et à lui dire le nombre exact.",
+  args: z.object({}).strict(),
+  run: (ctx) => {
+    const p = project(ctx);
+    const notReady = studioThemeNotReady(ctx);
+    if (notReady) return { ok: false, summary: notReady };
+    const needs = studioImageNeeds(p.id);
+    if (!needs && currentTheme(p.id)) return { ok: true, summary: L("Ce thème n'a pas encore de plan d'emplacements d'images : je ne peux pas compter ni créer ses images d'un coup. Je peux réécrire tous ses textes (theme.brand, copy) ; ses images se posent ensuite dans la Boutique, une par une.", "This theme has no image placement plan yet."), hint: "Dis-le honnêtement au client ; propose theme.brand avec images:\"client\" (textes seulement) et la pose de ses images une par une dans la Boutique.", data: { planDesImages: false } };
+    if (!needs) return { ok: false, summary: L("Aucun thème du Studio en place : le client choisit d'abord son thème (theme.choose), puis la composition doit être finie.", "No Studio theme in place yet.") };
+    const fresh = freshClientImages(p.id);
+    const own = needs.toProvide ?? 0;
+    return {
+      ok: true,
+      summary: L(`Son thème demande ${needs.total} images : ${needs.filled} déjà remplie(s) par ses photos, ${needs.missing} encore vide(s)${own ? `, dont ${own} que je ne peux PAS inventer (son équipe, ses réalisations : seules ses vraies photos vont là ; en attendant, un cadre l'explique à leur place dans l'aperçu, jamais sur le site publié)` : ""}. Images envoyées pas encore posées : ${fresh}.`, `${needs.total} images, ${needs.missing} missing.`),
+      hint: needs.missing ? `Demande-lui, en une question à choix : « Tu montes ton site avec tes images, ou je les crée ? ». Il en manque ${needs.missing}. S'il prend les siennes, dis-lui d'en envoyer ${needs.missing} avec le trombone (📎) ; s'il en a moins, propose de créer celles qui manquent (images:\"mix\") ou toutes (images:\"sina\"). Puis devis de theme.brand et son accord écrit.${own ? ` Dis-lui clairement que ${own} de ces photos doivent être les siennes (son équipe, ses réalisations) : tu ne les crées jamais, même avec images:\"sina\" ; ses images envoyées y vont en premier.` : ""}` : "Toutes les images sont déjà là : theme.brand écrira seulement les textes (images:\"client\").",
+      data: { total: needs.total, remplies: needs.filled, vides: needs.missing, aFournirParLeClient: own, imagesEnvoyeesNonPosees: fresh, emplacements: needs.requests.map((r) => r.role) },
+    };
+  },
+};
+
+/** Coût d'un tour d'écriture (rédaction + relecture) de toute la boutique : plafond et probable. */
+function copyRoundMicro(userId: string): { max: number; typical: number } | null {
+  const w = routeLlm({ task: "copywriting", userId }), r = routeLlm({ task: "quality_control", userId });
+  if (w.mode !== "llm" || r.mode !== "llm") return null;
+  const wMax = callCostBoundMicro(w.provider, w.model, 22000, 24000, w.effort ?? null), rMax = callCostBoundMicro(r.provider, r.model, 18000, 8000, r.effort ?? null);
+  const wTyp = estimateCallMicro(w.provider, w.model, 18000, 9000), rTyp = estimateCallMicro(r.provider, r.model, 15000, 2500);
+  return wMax == null || rMax == null || wTyp == null || rTyp == null ? null : { max: wMax + rMax, typical: wTyp + rTyp };
+}
+export const studioBrandDeps2: { images?: (p: ReturnType<typeof project>, n: number) => { capMicro: number; estimateMicro: number } } = {};
+type BrandArgs = { images: ImagesMode; copy?: boolean };
+const studioBrandTool: AgentTool<BrandArgs> = {
+  name: "theme.brand", module: "site", kind: "generate", needsProject: true,
+  description: "Étape 8, THÈME DU STUDIO (PAYANT : le Studio montre le devis au client sur la carte d'accord), après theme.choose et sa réponse sur les images (theme.images) : monte son site dans le thème choisi À SA MARQUE : TOUS les textes réécrits par le rédacteur du Studio dans l'angle marketing choisi et son émotion (copywriting, relecture du directeur de création, rien d'inventé), ses images posées dans les emplacements, et les emplacements vides remplis par des images créées (moteur d'images du Studio, chaque image contrôlée). images : « client » (ses images seulement), « mix » (ses images d'abord, tu crées les autres) ou « sina » (tu crées toutes les images vides). copy:false = images seulement. Tâche de fond ; le site est ensuite EN PLACE dans l'onglet Boutique.",
+  args: z.object({ images: z.enum(["sina", "client", "mix"]), copy: z.boolean().optional() }).strict(),
+  estimate: (ctx, a) => {
+    const p = project(ctx);
+    const notReady = studioThemeNotReady(ctx);
+    if (notReady) throw new Error(notReady);
+    if (pendingJob(p.id, STUDIO_BRAND_JOB)) throw new Error(L("Un montage de ton site est déjà en cours : attends-le.", "A build is already running."));
+    const needs = studioImageNeeds(p.id) ?? (currentTheme(p.id) ? { total: 0, filled: 0, missing: 0, requests: [] } : null);
+    if (!needs) throw new Error(L("Aucun thème du Studio en place : choisis d'abord ton thème.", "No Studio theme yet."));
+    const copy = a.copy === false ? { max: 0, typical: 0 } : copyRoundMicro(ctx.user.id);
+    if (!copy) throw new Error(L("Coût de la rédaction impossible à encadrer (modèle ou tarif inconnu).", "Copy cost cannot be bounded."));
+    // Jamais créées : les photos que SINA ne peut pas inventer (ses images y vont en premier).
+    const own = needs.toProvide ?? 0, creatable = needs.missing - own;
+    const n = a.images === "client" ? 0 : a.images === "mix" ? Math.max(0, creatable - Math.max(0, freshClientImages(p.id) - own)) : creatable;
+    let img = { capMicro: 0, estimateMicro: 0 };
+    if (n) {
+      if (studioBrandDeps2.images) img = studioBrandDeps2.images(p, n);
+      else {
+        const reqs = needs.service ? serviceImageRequests(p, needs.service).map(({ slotKey: _k, ...r }) => r) : studioImageRequests(p);
+        // Même route que la création : OpenAI, modèle des images des thèmes (décision du 10 novembre 2026).
+        const q = withQuotedImageRoute(mockupImageRoute(), () => boundedImageRequestsQuote(p, reqs.slice(0, n), {})) as { capMicro: number; estimateMicro: number };
+        img = { capMicro: q.capMicro, estimateMicro: q.estimateMicro };
+      }
+    }
+    return { maxMicro: copy.max * 3 + img.capMicro, probableMicro: Math.round(copy.typical * 1.5) + img.estimateMicro, label: L(`site monté à ta marque : ${a.copy === false ? "" : "textes de toute la boutique"}${n ? `${a.copy === false ? "" : ", "}${n} image(s) créée(s)` : ""}`, "site built for the brand") };
+  },
+  run: async (ctx, a) => {
+    const p = project(ctx);
+    const notReady = studioThemeNotReady(ctx);
+    if (notReady) return { ok: false, summary: notReady };
+    if (pendingJob(p.id, STUDIO_BRAND_JOB)) return { ok: false, summary: L("Un montage de ton site est déjà en cours : attends-le.", "A build is already running.") };
+    const needs = studioImageNeeds(p.id) ?? (currentTheme(p.id) ? { total: 0, filled: 0, missing: 0, requests: [] } : null);
+    if (!needs) return { ok: false, summary: L("Aucun thème du Studio en place : le client choisit d'abord son thème, et la composition doit être finie.", "No Studio theme in place yet.") };
+    if (a.images === "client" && needs.missing > freshClientImages(p.id)) return { ok: false, summary: L(`Il manque ${needs.missing} images et le client en a envoyé ${freshClientImages(p.id)} : rien n'est lancé.`, "Not enough client images."), hint: `Propose-lui : m'envoyer les ${needs.missing - freshClientImages(p.id)} qui manquent, que tu crées les autres (images:\"mix\", prix annoncé), ou toutes (images:\"sina\").` };
+    let est;
+    try { est = await studioBrandTool.estimate!(ctx, a); } catch (e) { return { ok: false, summary: (e as Error).message }; }
+    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: STUDIO_BRAND_JOB, label: L("Site monté à ta marque dans ton thème (SINA)", "Site built for your brand (SINA)"), payload: { projectId: p.id, capMicro: est.maxMicro, conversationId: ctx.conversationId, images: a.images, copy: a.copy !== false }, maxAttempts: 2, idempotencyKey: `syna:${ctx.runId}:studio-brand:${currentTheme(p.id)?.version.id}:${a.images}` });
+    return {
+      ok: true, jobs: [job.id],
+      summary: L(`Montage de ton site à ta marque lancé dans ton thème (${a.copy === false ? "images seulement" : "textes de toute la boutique dans ton angle"}${a.images === "client" ? ", tes images" : ", images vides créées"}).`, "Store build started."),
+      hint: "Quand la tâche est finie, dis au client que son site est en place dans l'onglet Boutique, qu'il peut le regarder en grand et désigner un élément pour demander un changement ; dis honnêtement ce que le rapport signale (textes encore à revoir, images non créées, emplacements encore vides).",
+    };
+  },
+};
+
+const studioValidateTool: AgentTool<Record<string, never>> = {
+  name: "theme.validate", module: "site", kind: "write", needsProject: true,
+  description: "Étape 8 (gratuit) : enregistre que le client VALIDE son site monté dans le thème du Studio (seulement quand il le dit, après l'avoir regardé dans l'onglet Boutique ; jamais à sa place).",
+  args: z.object({}).strict(),
+  preview: () => L("Site validé par le client.", "Site validated by the client."),
+  run: (ctx) => {
+    const j = journeyOf(ctx.conversationId);
+    if (j.siteMode?.mode !== "theme" || !j.themeChoice) return { ok: false, summary: L("Aucun thème du Studio choisi.", "No Studio theme chosen.") };
+    if (!["review", "done"].includes(j.steps[8]?.status ?? "")) return { ok: false, summary: L("Le site n'est pas encore monté à sa marque (theme.brand).", "The site is not built yet.") };
+    updateJourney(ctx.conversationId, (x) => setStep(x, 8, "done", L("site validé par le client", "site validated")));
+    return { ok: true, summary: L("Site validé.", "Site validated."), hint: "Dis-lui que son site est validé et que la suite du parcours (publications) arrive très bientôt ; le Studio lui est maintenant ouvert.", changes: [{ module: "site", object: L("parcours", "journey"), summary: L("étape 8 validée", "step 8 validated"), verified: true }] };
+  },
+};
+
+export const themeTools: AgentTool[] = [modeTool, proposeTool, chooseTool, studioImagesTool, studioBrandTool, studioValidateTool];

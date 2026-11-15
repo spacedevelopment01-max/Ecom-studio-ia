@@ -1,0 +1,24 @@
+/*
+ * Création en cours, sur le tableau de bord : SINA au centre, en grand ; le tableau de bord à côté.
+ *
+ * Menu | conversation | tableau de bord. L'en-tête couvre les deux colonnes de droite ; chaque colonne défile seule.
+ * Seules les places changent : l'arbre des écrans et le fil de SINA restent les mêmes (rien n'est recréé).
+ * Tout passe par `.ss-root[data-focus]`, posé par la coquille uniquement dans ce cas : hors de là, aucun écran ne
+ * change. (La feuille `syna-shell.css`, elle, reste enfermée dans `.syna-ui`.)
+ */
+@media (min-width: 1024px) {
+  .ss-root[data-focus] { grid-template-columns: var(--ss-side-w, 252px) minmax(0, 1fr) clamp(320px, 31vw, 460px); grid-template-rows: auto auto minmax(0, 1fr); height: 100dvh; overflow: hidden; }
+  .ss-root[data-focus] > .ss-side-scope { grid-column: 1; grid-row: 1 / 4; }
+  .ss-root[data-focus] > .ss-work { display: contents; }
+  .ss-root[data-focus] .ss-head-scope { grid-column: 2 / 4; grid-row: 1; position: static; }
+  .ss-root[data-focus] .ss-banner { grid-column: 2 / 4; grid-row: 2; }
+  .ss-root[data-focus] #studio-main { grid-column: 3; grid-row: 3; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 28px 24px 32px; border-left: 1px solid var(--line); }
+  .ss-root[data-focus] > .ss-syna-scope { grid-column: 2; grid-row: 3; position: static; height: auto; min-height: 0; z-index: 1; }
+  .ss-root[data-focus] .ss-syna-col { height: 100%; }
+  .ss-root[data-focus] .ss-panel.is-docked { width: 100%; height: 100%; border-left: 0; grid-template-rows: auto auto minmax(0, 1fr); }
+  .ss-root[data-focus] .ss-panel-h { padding: 14px 28px 12px; }
+  .ss-root[data-focus] .ss-panel-mark .sy-wordmark { font-size: 30px; }
+  .ss-root[data-focus] .ss-panel-b { overflow: hidden; font-size: 15px; }
+  /* Le tableau de bord, juste à côté, montre déjà les neuf étapes : la frise du fil ferait doublon. */
+  .ss-root[data-focus] [data-syna-journey] { display: none; }
+}

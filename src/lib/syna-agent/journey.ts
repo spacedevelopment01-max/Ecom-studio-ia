@@ -1,29 +1,35 @@
 /**
- * Parcours de création d'un projet par SINA (#492, décisions du propriétaire du 6 novembre 2026 ;
- * docs/syna/PARCOURS-CREATION.md). Quatorze étapes (0 à 13), suivies par fil : l'état vit dans
- * `agent_conversations.state_json.parcours`, donc il existe dès le brouillon (avant la création du projet) et suit le
- * fil quand le projet est créé. SINA le relit à chaque pas (contexte) ; le client le voit en frise.
+ * Parcours de création d'un projet par SINA. Le client voit NEUF étapes (PHASES : faire connaissance, la marque, les
+ * angles, l'activité, le site, la mise en ligne, la communication, la publicité, dans la durée). Le Studio garde pour
+ * l'instant ses repères internes (JOURNEY_STEPS, 0 à 13), suivis par fil : l'état vit dans
+ * `agent_conversations.state_json.parcours`, donc il existe dès le brouillon (avant la création du projet).
  *
- * Étape 0 : fiche de départ. Questions posées UNE à la fois, seulement si la réponse manque (jamais redemandée) ;
- * l'existant du client (site lu gratuitement, photos, formulaire de création) préremplit la fiche ; mode « refonte » :
- * le client dit ce qu'il garde tel quel, le reste est recréé. Aucune IA payante pour décider quoi demander.
+ * Faire connaissance (repère 0) : SINA mène la conversation elle-même. Elle choisit ses questions, une à la fois,
+ * selon le métier et ce que le client vient de dire ; elle n'enregistre que ce qu'il a dit ; ce qu'elle peut trouver
+ * seule (son site), elle le lit. La fiche (START_FIELDS) dit les sujets à avoir abordés avant le résumé ; tout autre
+ * fait utile va dans les notes libres.
  */
 import { HttpError } from "../auth";
 import { json, now, one, run, tx } from "../db";
 import { L } from "../i18n-server";
+import { getJsonSetting } from "../settings";
+import { domainLine } from "./brand-domains";
 import type { Identity } from "./identities";
+import type { SinaPosts } from "./posts-plan";
 import type { SinaLogo } from "./logos";
 import type { BrandKit } from "./brand-kit";
 import type { SinaAngles } from "./angles";
+import { ANGLE_ROLE_LABEL, roleOf, shownAngles } from "./angle-roles";
 import type { ActivityPlan } from "./activity";
 import type { SinaThemes } from "./themes";
 
 export const JOURNEY_STEPS = [
   { n: 0, fr: "Questions de départ", en: "Getting started" },
-  { n: 1, fr: "3 identités de marque", en: "3 brand identities" },
-  { n: 2, fr: "3 logos", en: "3 logos" },
+  // Depuis le 12 novembre 2026 : 2, 3 ou 4 identités selon le forfait, puis UN logo pour l'identité choisie.
+  { n: 1, fr: "Identités de marque", en: "Brand identities" },
+  { n: 2, fr: "Logo", en: "Logo" },
   { n: 3, fr: "Image de marque complète", en: "Full brand kit" },
-  { n: 4, fr: "5 angles marketing", en: "5 marketing angles" },
+  { n: 4, fr: "3 angles marketing", en: "3 marketing angles" },
   { n: 5, fr: "L'activité complète", en: "The full business" },
   { n: 6, fr: "Thème du Studio ou thème sur mesure", en: "Studio theme or custom theme" },
   { n: 7, fr: "Site codé d'après le thème sur mesure", en: "Site coded from the custom theme" },
@@ -39,7 +45,36 @@ export type StepNumber = (typeof JOURNEY_STEPS)[number]["n"];
  * Étapes déjà construites dans le parcours SINA. Les autres sont annoncées au client mais SINA n'y lance rien
  * (aucun outil payant) : elle ne doit jamais partir seule sur une étape que le parcours ne sait pas encore mener.
  */
-export const READY_STEPS: number[] = [0, 1, 2, 3, 4, 5, 6, 7];
+export const READY_STEPS: number[] = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+/**
+ * Étapes construites et testées avec une IA simulée, mais pas encore validées par un essai réel du propriétaire (son
+ * parcours : « chaque étape essayée en réel et validée avant la suivante ») : fermées par défaut. Il les ouvre une à
+ * une avec le réglage « sina.etapes_ouvertes » (liste de numéros, ex. [9]).
+ */
+export const BUILT_STEPS: number[] = [9, 10, 11, 12, 13];
+/** L'étape est-elle ouverte dans le parcours ? (Construite depuis longtemps, ou ouverte par le propriétaire.) */
+export function stepReady(n: number): boolean {
+  if (READY_STEPS.includes(n)) return true;
+  if (!BUILT_STEPS.includes(n)) return false;
+  const open = getJsonSetting<unknown>("sina.etapes_ouvertes", []);
+  return Array.isArray(open) && open.includes(n);
+}
+/** Les neuf étapes que le client voit, et les repères internes que chacune couvre. */
+export const PHASES = [
+  { n: 1, fr: "Faire connaissance", en: "Getting to know you", steps: [0] },
+  { n: 2, fr: "La marque", en: "The brand", steps: [1, 2, 3] },
+  { n: 3, fr: "Les angles", en: "The angles", steps: [4] },
+  { n: 4, fr: "L'activité", en: "The business", steps: [5] },
+  { n: 5, fr: "Le site", en: "The site", steps: [6, 8] },
+  { n: 6, fr: "La mise en ligne", en: "Going live", steps: [7] },
+  { n: 7, fr: "La communication", en: "Communication", steps: [9, 11, 12] },
+  { n: 8, fr: "La publicité", en: "Advertising", steps: [10] },
+  { n: 9, fr: "Dans la durée", en: "Over time", steps: [13] },
+] as const;
+export type Phase = (typeof PHASES)[number];
+/** L'étape du client à laquelle appartient un repère interne. */
+export const phaseOf = (step: number): Phase => PHASES.find((p) => (p.steps as readonly number[]).includes(step)) ?? PHASES[PHASES.length - 1];
+
 /** à faire · en cours · à valider par le client · validée · sans objet (ex. étape 7 quand le client choisit un de nos thèmes). */
 export type StepStatus = "todo" | "doing" | "review" | "done" | "skipped";
 
@@ -67,20 +102,30 @@ export type Journey = {
   version: 1;
   steps: Record<number, { status: StepStatus; at?: number; note?: string }>;
   start: Partial<Record<StartField, FieldAnswer>>;
+  /** Tout autre fait utile dit par le client (son histoire, ses concurrents, ses réseaux, sa fabrication…), par sujet. */
+  notes?: { sujet: string; value: string; at: number }[];
   keep: Keepable[];
   mode: "creation" | "refonte";
   imported: ImportedSite[];
   /** Textes exacts gardés en refonte (nom, slogan), repris mot pour mot ensuite. */
   keptValues?: { name?: string; slogan?: string };
   /** Étape 1 : dernière proposition des 3 identités (contrôlée par le Studio) et choix du client. */
-  identities?: { list: Identity[]; issues: string[]; comparison: string; at: number; round: number; guidance?: string; corrected?: string[] };
-  identityChoice?: { key: "A" | "B" | "C"; mix: Partial<Record<string, "A" | "B" | "C">>; at: number };
+  identities?: {
+    list: Identity[]; issues: string[]; comparison: string; at: number; round: number; guidance?: string; corrected?: string[];
+    /** Chaîne de création de la marque (12 novembre 2026) : tâche qui a fait cette proposition (son atelier se reprend sans repayer). */
+    chainJobId?: string;
+    /** Noms déjà montrés au client, toutes propositions confondues : jamais reproposés. */
+    shownNames?: string[];
+    /** « Ce que j'ai compris de ton marché » : paroles réelles lues sur le web (avec leur page), concurrents, moule de la catégorie. */
+    study?: { quotes: { text: string; url: string }[]; quoteCount: number; sources: number; competitors: string[]; mould: string; substitutes: string[]; notFound: string[] };
+  };
+  identityChoice?: { key: "A" | "B" | "C" | "D"; mix: Partial<Record<string, "A" | "B" | "C" | "D">>; edits?: { name?: string; slogan?: string }; at: number };
   /** Étape 2 : dernière proposition des 3 logos (moteur de logos V2) et logo choisi par le client. */
   logos?: { list: SinaLogo[]; at: number; round: number; notes?: string[] };
   logoChoice?: { source: "A" | "B" | "C"; assetId: string; at: number };
   /** Étape 3 : image de marque complète (déclinaisons, favicons, avatar, planche, charte PDF). */
   brandKit?: BrandKit;
-  /** Étape 4 : les 5 angles marketing (recherche web) et l'angle choisi par le client. */
+  /** Étape 4 : les angles marketing (recherche web ; trois montrés) et l'angle choisi par le client. */
   angles?: SinaAngles;
   /** Angle principal (id) et, dans l'ordre, tous les angles retenus (ids ; le premier est le principal). */
   angleChoice?: { id: string; ids?: string[]; at: number };
@@ -93,6 +138,19 @@ export type Journey = {
   /** Étape 6 : le choix DU CLIENT entre un thème du Studio et un thème sur mesure (jamais fait à sa place). */
   siteMode?: { mode: "theme" | "mockup"; at: number };
   themeChoice?: { id: string; jobId: string; at: number };
+  /** Thème sur mesure choisi par le client (custom.choose) : l'étape 7 est alors sa mise en boutique, pas encore prête. */
+  customChosenAt?: number;
+  /** Étape 9 : le plan des 3 groupes de publications (écrit, contrôlé, jugé), puis les publications créées. */
+  posts?: SinaPosts;
+  /** Étape 10 : la campagne de publicités lancée (moteur de publicités du Studio). */
+  ads?: { jobId: string; platforms: string[]; count: number; at: number };
+  /** Étape 12 : les articles demandés (moteur de blog du Studio), deux au plus pour l'étape. */
+  blog?: { at: number; jobs: string[]; topics: string[] };
+  /**
+   * Fil ouvert sur un projet qui existait AVANT lui (créé hors de SINA) : aucun parcours de création, aucun mode chantier
+   * (audit du 10 novembre 2026 : un ancien projet repartait aux questions de départ et se verrouillait).
+   */
+  outside?: boolean;
 };
 
 export const emptyJourney = (): Journey => ({
@@ -101,12 +159,26 @@ export const emptyJourney = (): Journey => ({
   start: {}, keep: [], mode: "creation", imported: [],
 });
 
-const stateOf = (cid: string) => one<{ state_json: string | null }>("SELECT state_json FROM agent_conversations WHERE id=?", cid);
+const stateOf = (cid: string) => one<{ state_json: string | null; created_at: number; project_created: number | null }>("SELECT c.state_json, c.created_at, p.created_at AS project_created FROM agent_conversations c LEFT JOIN projects p ON p.id=c.project_id WHERE c.id=?", cid);
+
+/**
+ * Un fil de création commence en brouillon, AVANT son projet (créé par SINA pendant l'étape 0). Un fil ouvert plus d'une
+ * minute après la création de son projet est celui d'un projet existant : hors parcours.
+ */
+function outsideJourney(row: { state_json: string | null; created_at: number; project_created: number | null }, st: any): boolean {
+  if (st.parcours) return false; // parcours déjà commencé : il continue
+  return !!st.horsParcours || (row.project_created != null && row.created_at > row.project_created + 60_000);
+}
 
 export function journeyOf(cid: string): Journey {
   const row = stateOf(cid);
   if (!row) throw new HttpError(404, L("Conversation introuvable.", "Conversation not found."));
   const st = json<any>(row.state_json ?? "{}", {});
+  if (outsideJourney(row, st)) {
+    const j = emptyJourney();
+    for (const s of JOURNEY_STEPS) j.steps[s.n] = { status: "skipped" };
+    return { ...j, outside: true };
+  }
   const j = st.parcours as Journey | undefined;
   if (!j || j.version !== 1) return emptyJourney();
   return { ...emptyJourney(), ...j, steps: { ...emptyJourney().steps, ...j.steps } };
@@ -119,6 +191,7 @@ export function updateJourney(cid: string, change: (j: Journey) => void): Journe
     if (!row) throw new HttpError(404, L("Conversation introuvable.", "Conversation not found."));
     const st = json<any>(row.state_json ?? "{}", {});
     const j = journeyOf(cid);
+    if (j.outside) return j; // projet existant : aucun parcours à écrire
     change(j);
     run("UPDATE agent_conversations SET state_json=?, updated_at=? WHERE id=?", JSON.stringify({ ...st, parcours: j }), now(), cid);
     return j;
@@ -129,9 +202,27 @@ export function setStep(j: Journey, n: number, status: StepStatus, note?: string
   j.steps[n] = { status, at: now(), ...(note ? { note } : {}) };
 }
 
+/**
+ * L'étape peut-elle être menée par SINA aujourd'hui ? Étape 7 : seulement pour un projet commencé avec les anciennes
+ * maquettes ; après un thème sur mesure, c'est sa mise en boutique Shopify, pas encore branchée.
+ */
+export function stepAvailable(j: Journey, n: number): boolean {
+  if (!stepReady(n)) return false;
+  return true;
+}
+
 /** Étape en cours : la première qui n'est ni validée ni sans objet. */
 export function currentStep(j: Journey): number {
   return JOURNEY_STEPS.find((s) => !["done", "skipped"].includes(j.steps[s.n]?.status ?? "todo"))?.n ?? 13;
+}
+
+/** Statut d'une des neuf étapes du client, d'après ses repères internes. */
+export function phaseStatus(j: Journey, p: Phase): StepStatus {
+  const st = (p.steps as readonly number[]).map((n) => j.steps[n]?.status ?? "todo");
+  if (st.every((x) => x === "skipped")) return "skipped";
+  if (st.every((x) => x === "done" || x === "skipped")) return "done";
+  if (st.includes("review")) return "review";
+  return st.some((x) => x !== "todo") ? "doing" : "todo";
 }
 
 /** Le champ s'applique-t-il à ce projet ? (« garder » seulement s'il existe déjà quelque chose ; plateforme : boutiques.) */
@@ -150,31 +241,47 @@ export function missingFields(j: Journey): StartField[] {
   return START_FIELDS.filter((f) => fieldApplies(j, f) && !j.start[f]);
 }
 
-export const QUESTIONS: Record<StartField, (j: Journey) => { fr: string; en: string }> = {
-  business: () => ({ fr: "Tu vends des produits, ou tu proposes des services ?", en: "Do you sell products, or offer services?" }),
+/**
+ * Les sujets de la fiche : ce que SINA doit apprendre, et pourquoi. Ce ne sont pas des questions : elle les pose avec
+ * ses mots, dans l'ordre qu'elle juge le meilleur pour ce client.
+ */
+export const TOPICS: Record<StartField, (j: Journey) => { fr: string; en: string }> = {
+  business: () => ({ fr: "s'il vend des produits ou propose des services (à enregistrer : « products » ou « services ») ; tout le reste en dépend", en: "whether they sell products or offer services (\"products\" or \"services\")" }),
   offer: (j) => j.start.business?.value === "services"
-    ? { fr: "Présente-moi tes prestations en quelques phrases, avec tes mots.", en: "Describe your services in a few sentences, in your own words." }
-    : { fr: "Présente-moi ton produit en quelques phrases, et joins des photos si tu en as (le vrai produit, sous plusieurs angles).", en: "Describe your product in a few sentences and attach photos if you have any." },
-  existing: () => ({ fr: "As-tu déjà quelque chose : un nom, un logo, des couleurs, un site ou des réseaux sociaux ? Si tu as un lien, donne-le-moi : je le lis pour gagner du temps.", en: "Do you already have a name, a logo, colours, a website or social accounts? Share a link and I'll read it." }),
-  keep: () => ({ fr: "Qu'est-ce que tu veux garder tel quel (logo, nom, slogan, couleurs, polices, textes, photos…) ? Tout le reste, je le recrée.", en: "What do you want to keep as is (logo, name, tagline, colours, fonts, texts, photos…)? I'll recreate everything else." }),
-  audience: () => ({ fr: "À qui t'adresses-tu ? Décris ton client idéal : âge, situation, ce qu'il cherche.", en: "Who is it for? Describe your ideal customer: age, situation, what they're looking for." }),
+    ? { fr: "ce qu'il fait, avec ses mots : ses prestations, et comment cela se passe pour son client", en: "what they do, in their words" }
+    : { fr: "ce qu'il vend, avec ses mots : ce que c'est, de quoi c'est fait, comment on s'en sert ; et ses photos du vrai produit s'il en a", en: "what they sell, in their words, with photos of the real product" },
+  existing: () => ({ fr: "ce qui existe déjà : un nom, un logo, des couleurs, un site, des réseaux ; s'il a un lien, tu le lis toi-même", en: "what already exists: name, logo, colours, site, social accounts" }),
+  keep: () => ({ fr: "ce qu'il veut garder tel quel de l'existant ; tout le reste sera recréé", en: "what they want to keep as is" }),
+  audience: () => ({ fr: "à qui il s'adresse : qui achète ou réserve, dans quelle situation, ce que cette personne cherche", en: "who it is for" }),
   market: (j) => j.start.business?.value === "services"
-    ? { fr: "Où interviens-tu : adresse ou zone (ville, rayon) ? Chez le client, chez toi, ou en ligne ?", en: "Where do you work: address or area? At the client's, at your place, or online?" }
-    : { fr: "Où vends-tu : seulement en ligne, ou aussi en boutique ou sur des marchés ? Dans quels pays livres-tu ?", en: "Where do you sell: online only, or also in a shop or at markets? Which countries do you ship to?" },
+    ? { fr: "où il travaille : son adresse ou sa zone, chez le client, chez lui ou en ligne", en: "where they work" }
+    : { fr: "où il vend (en ligne seulement, en boutique, sur des marchés) et où il livre", en: "where they sell and ship" },
   price: (j) => j.start.business?.value === "services"
-    ? { fr: "Quels sont tes tarifs et durées, même approximatifs ?", en: "What are your prices and durations, even roughly?" }
-    : { fr: "Quel prix de vente prévois-tu (ou une fourchette) ? Y a-t-il des variantes (tailles, couleurs…) ?", en: "What selling price do you plan (or a range)? Any variants (sizes, colours…)?" },
-  difference: () => ({ fr: "Qu'est-ce qui te rend différent, avec tes mots ?", en: "What makes you different, in your own words?" }),
-  image: () => ({ fr: "Donne-moi 3 mots pour l'image que tu veux donner (par exemple chaleureux, haut de gamme, fun), et les couleurs que tu ne veux surtout pas.", en: "Give me 3 words for the image you want to convey (e.g. warm, premium, fun), and any colours you don't want." }),
+    ? { fr: "ses tarifs et ses durées, même approximatifs", en: "prices and durations" }
+    : { fr: "ses prix de vente, même approximatifs, et ses variantes (tailles, formats, couleurs)", en: "selling prices and variants" },
+  difference: () => ({ fr: "ce qui le rend différent, avec ses mots : pourquoi lui plutôt qu'un autre", en: "what makes them different" }),
+  image: () => ({ fr: "l'image qu'il veut donner, en quelques mots, et ce qu'il ne veut surtout pas (couleurs, styles)", en: "the image they want to convey and what they refuse" }),
   setup: (j) => j.start.business?.value === "services"
-    ? { fr: "Comment tes clients doivent-ils te contacter : réservation en ligne, demande de devis, appel, ou formulaire de contact ?", en: "How should clients reach you: online booking, quote request, phone call, or contact form?" }
-    : { fr: "Combien de produits vas-tu vendre au lancement ?", en: "How many products will you sell at launch?" },
-  photos: () => ({ fr: "As-tu tes propres photos (ton produit, toi au travail, ton lieu, tes réalisations) ? Si oui, envoie-les-moi ; sinon, dis-le simplement.", en: "Do you have your own photos (product, you at work, your place, your work)? If so, send them; otherwise just say so." }),
-  language: () => ({ fr: "Ton site doit-il être en français seulement, ou aussi en anglais ?", en: "Should your site be in French only, or in English too?" }),
-  taste: () => ({ fr: "Quels sites, marques ou styles aimes-tu ? Et ce que tu n'aimes pas ? Des liens ou des captures sont les bienvenus.", en: "Which websites, brands or styles do you like? And dislike? Links or screenshots welcome." }),
-  contact: () => ({ fr: "Tes coordonnées pour le site : nom de l'entreprise, e-mail, téléphone, adresse (et SIRET si tu l'as). Tu peux en donner une partie maintenant et le reste plus tard.", en: "Your contact details for the site: company name, email, phone, address (and company number). Some now, the rest later is fine." }),
-  platform: () => ({ fr: "Sur quelle plateforme vendras-tu : Shopify, WooCommerce, PrestaShop, ou tu ne sais pas encore ?", en: "Which platform will you sell on: Shopify, WooCommerce, PrestaShop, or not sure yet?" }),
+    ? { fr: "comment ses clients le contactent ou réservent : réservation en ligne, demande de devis, appel, formulaire", en: "how clients reach them" }
+    : { fr: "combien de produits il vendra au lancement", en: "how many products at launch" },
+  photos: () => ({ fr: "s'il a ses propres photos (son produit, lui au travail, son lieu, ses réalisations) ; sans photo de lui, aucune personne ne sera montrée", en: "whether they have their own photos" }),
+  language: () => ({ fr: "la langue de son site : français seulement, ou aussi anglais", en: "site language" }),
+  taste: () => ({ fr: "les sites, les marques ou les styles qu'il aime, et ceux qu'il n'aime pas (liens ou captures bienvenus)", en: "sites, brands or styles they like or dislike" }),
+  contact: (j) => !j.keep.includes("nom")
+    ? { fr: "ses coordonnées pour le site : e-mail, téléphone, adresse, SIRET s'il l'a (une partie maintenant, le reste plus tard) ; son nom viendra avec sa marque, ne le lui demande pas", en: "contact details for the site; the name comes with the brand" }
+    : { fr: "ses coordonnées pour le site : nom de l'entreprise, e-mail, téléphone, adresse, SIRET s'il l'a (une partie maintenant, le reste plus tard)", en: "contact details for the site" },
+  platform: () => ({ fr: "la plateforme où il vendra : Shopify, WooCommerce, PrestaShop, ou pas encore décidé", en: "the selling platform" }),
 };
+
+/** D'autres sujets utiles selon le métier : SINA les aborde quand la conversation s'y prête, et les note (start.note). */
+export function extraTopics(j: Journey): string[] {
+  const common = ["son histoire : pourquoi il s'est lancé", "les concurrents qu'il connaît, et ce qu'il fait autrement", "les réseaux où il est déjà ou veut être, et ce qu'il y montre", "ce qu'il attend de son site et de sa communication dans les prochains mois"];
+  const own = j.start.business?.value === "services"
+    ? ["comment se passe une prestation, du premier contact à la fin", "ses années de métier, ses diplômes, ses assurances ou garanties, s'il en a", "ses jours et ses horaires"]
+    : j.start.business?.value === "products" ? ["comment c'est fabriqué, d'où cela vient, ce qu'il y a dedans", "à quel moment et comment ses clients s'en servent"] : [];
+  const done = new Set((j.notes ?? []).map((n) => n.sujet.toLowerCase()));
+  return [...own, ...common].filter((t) => !done.has(t.split(" :")[0].toLowerCase()));
+}
 
 export const FIELD_LABEL: Record<StartField, { fr: string; en: string }> = {
   business: { fr: "Activité", en: "Business" }, offer: { fr: "Offre", en: "Offer" }, existing: { fr: "Existant", en: "Existing" },
@@ -186,79 +293,137 @@ export const FIELD_LABEL: Record<StartField, { fr: string; en: string }> = {
 };
 
 /** Texte relu par SINA à chaque pas : où en est le parcours et que faire maintenant. */
-export function journeyContext(j: Journey): string {
+export function journeyContext(j: Journey, o: { identityCount?: number } = {}): string {
   const cur = currentStep(j);
   const steps = JOURNEY_STEPS.map((s) => `${s.n}. ${s.fr} = ${j.steps[s.n]?.status ?? "todo"}`).join(" ; ");
-  const lines = [`Parcours de création (étapes 0 à 13) : ${steps}. Étape en cours : ${cur}.`];
-  if (!READY_STEPS.includes(cur)) {
+  if (j.outside) return "Projet existant (créé avant ce fil) : il n'y a PAS de parcours de création. Ne pose pas les questions de départ et ne lance aucune étape du parcours : aide le client sur ce qu'il demande, avec les outils du catalogue.";
+  const phase = phaseOf(cur);
+  const lines = [
+    `Parcours du client, en 9 étapes : ${PHASES.map((p) => `${p.n}. ${p.fr} = ${phaseStatus(j, p)}`).join(" ; ")}. Il en est à l'étape ${phase.n} (« ${phase.fr} »). Avec lui, tu ne parles que de ces neuf étapes, par leur nom.`,
+    `Repères internes du Studio (jamais dits au client ; les consignes ci-dessous les appellent « étape 0 » à « étape 13 ») : ${steps}. Repère en cours : ${cur}.`,
+  ];
+  if (cur === 7 && j.customChosenAt) {
+    lines.push("Étape 7 (mise en boutique du thème sur mesure) : son thème est choisi et en place dans l'onglet Boutique. Quand il veut l'installer dans sa boutique Shopify, appelle custom.install (gratuit) : le Studio en fait un vrai thème Shopify (ajout au panier, panier, contact, recherche, une fiche par produit) et te rend soit le lien à télécharger, soit la liste de ce qui reste à régler (informations « À compléter », photos d'exemple) : donne-la-lui simplement et aide-le à compléter (custom.edit) ; s'il préfère retirer ce qu'il ne peut pas donner, relance avec sansLesManques:true, avec son accord écrit. Ne dis jamais que sa boutique est en ligne : c'est lui qui importe le thème dans Shopify. Continue de faire les changements qu'il demande sur son thème (consigne de l'étape 6) ; après un changement, la mise en boutique se refait (custom.install). N'utilise AUCUN outil des anciennes maquettes (mockup.*, site.code_from_mockup, site.images).");
+    if (STEP_GUIDES[6]) lines.push(STEP_GUIDES[6]);
+    return lines.join("\n");
+  }
+  if (!stepReady(cur)) {
     const s = JOURNEY_STEPS.find((x) => x.n === cur)!;
     lines.push(`L'étape ${cur} (« ${s.fr} ») n'est pas encore disponible dans le parcours. Dis-le simplement au client (la suite arrive très bientôt), réponds à ses questions, mais n'utilise AUCUN outil payant et ne lance aucune autre étape (ni recherche, ni angles, ni marque, ni site).`);
   }
   if (cur === 0) {
-    const filled = START_FIELDS.filter((f) => j.start[f]).map((f) => `${f} = ${j.start[f]!.status === "answered" ? `« ${j.start[f]!.value.slice(0, 400)} »` : j.start[f]!.status} (${j.start[f]!.source})`);
+    const filled = START_FIELDS.filter((f) => j.start[f]).map((f) => `${f} (${FIELD_LABEL[f].fr}) = ${j.start[f]!.status === "answered" ? `« ${j.start[f]!.value.slice(0, 400)} »` : j.start[f]!.status === "later" ? "il répondra plus tard" : "rien à dire"} (source : ${j.start[f]!.source})`);
     const missing = missingFields(j);
-    lines.push(`Fiche de départ — déjà connu : ${filled.join(" ; ") || "rien"}.`);
+    lines.push("Faire connaissance. Ton but : apprendre tout ce que LUI SEUL sait et dont sa marque, son site, ses publications et ses publicités auront besoin, pour réussir du premier coup et lui éviter les reprises. Tu mènes la conversation comme une professionnelle qui s'intéresse vraiment à son projet : tu choisis toi-même la prochaine question, la plus utile maintenant, selon son métier et ce qu'il vient de dire. UNE seule question à la fois. Jamais une question dont la réponse est déjà connue (ci-dessous, ou lue sur son site). Quand une réponse est vague, ou qu'elle ouvre quelque chose d'important pour la suite, creuse avant de changer de sujet. Ce que tu peux trouver seule, tu le trouves : s'il donne un lien, lis-le (start.import) et montre-lui ce que tu as trouvé au lieu de le lui demander.");
+    lines.push(`Ce que tu sais déjà : ${filled.join(" ; ") || "rien encore"}.`);
+    if (j.notes?.length) lines.push(`Tes notes (autres faits qu'il a donnés) : ${j.notes.map((n) => `${n.sujet} : « ${n.value.slice(0, 300)} »`).join(" ; ")}.`);
     lines.push(`Mode : ${j.mode}${j.keep.length ? ` ; à garder tel quel : ${j.keep.join(", ")}` : ""}.`);
     if (j.imported.length) lines.push(`Existant lu : ${j.imported.map((s) => `${s.url} (nom « ${s.name ?? "?"} », slogan « ${s.tagline ?? "?"} », logo ${s.logoSrc ? "trouvé" : "non trouvé"}, couleurs ${s.colors?.join(" ") ?? "?"}, polices ${s.fonts?.join(", ") ?? "?"}${s.warnings?.length ? `, limites : ${s.warnings.slice(0, 3).join(" / ")}` : ""})`).join(" ; ")}.`);
-    lines.push(missing.length
-      ? `Prochaine question à poser (UNE seule, avec tes mots, en reprenant ce que le client a déjà dit) : ${missing[0]} — « ${QUESTIONS[missing[0]](j).fr} ». Restent ensuite : ${missing.slice(1).join(", ") || "rien"}.`
-      : "Toutes les questions ont une réponse : fais le RÉSUMÉ (« Voici ce que j'ai compris ») et demande au client de confirmer ou corriger ; à sa confirmation, appelle start.confirm.");
+    const extra = extraTopics(j);
+    if (missing.length) {
+      lines.push(`Sujets de la fiche pas encore abordés (chacun doit l'avoir été avec lui avant le résumé ; l'ordre et les mots sont les tiens) : ${missing.map((f) => `${f} — ${TOPICS[f](j).fr}`).join(" | ")}.`);
+      if (extra.length) lines.push(`Autres sujets utiles pour ce métier, à aborder quand la conversation s'y prête et à noter avec start.note : ${extra.join(" ; ")}. Tu peux en ajouter d'autres si son projet le demande. Tu pourras aussi lui reposer une question plus tard, à l'étape où tu en auras besoin : ne garde pour maintenant que ce qui sert à bien démarrer.`);
+      lines.push("Enregistre au fur et à mesure, et seulement ce qu'il a dit, avec ses mots : start.answer pour un sujet de la fiche (plusieurs s'il en donne plusieurs d'un coup), start.note pour tout autre fait utile. Tu ne réponds jamais à sa place : un sujet qu'il n'a pas abordé se demande. « Plus tard » ou « rien » ne s'enregistrent que s'il le dit lui-même.");
+    } else {
+      if (extra.length) lines.push(`Tous les sujets de la fiche ont été abordés. Avant le résumé, il te reste des sujets utiles pour ce métier que tu n'as pas encore notés : ${extra.join(" ; ")}. Aborde, un par un, ceux qui serviront vraiment à sa marque, à son site ou à ses publications (à noter avec start.note) ; laisse ceux qui n'apporteraient rien à ce projet.`);
+      lines.push(`${extra.length ? "Quand tu n'as plus de question utile" : "Tous les sujets ont été abordés. S'il te manque encore quelque chose d'important, demande-le ; sinon"}, fais le RÉSUMÉ complet (« Voici ce que j'ai compris »), court, par rubrique, avec ses mots et ses notes, dans « message » ; la question reste courte (« Est-ce juste ? Si quelque chose est à corriger, écris-le-moi. ») ; à sa confirmation, appelle start.confirm.`);
+    }
   }
-  if (cur === 1) lines.push(...identityStepContext(j));
+  if (cur === 1) lines.push(...identityStepContext(j, o.identityCount));
   if (cur === 2) lines.push(...logoStepContext(j));
   if (cur === 3) lines.push(...brandKitStepContext(j));
   if (cur === 4) lines.push(...anglesStepContext(j));
   if (cur === 5) lines.push(...activityStepContext(j));
   if (cur === 6) lines.push(...themeStepContext(j));
   // Étape 6 : la consigne du thème sur mesure ne vaut qu'après le choix « thème sur mesure » du client.
-  if (READY_STEPS.includes(cur) && STEP_GUIDES[cur] && !(cur === 6 && j.siteMode?.mode !== "mockup")) lines.push(STEP_GUIDES[cur]);
+  if (cur === 9 && stepReady(9)) lines.push(...postsStepContext(j));
+  if (cur >= 10 && stepReady(cur)) lines.push(...lateStepContext(j, cur));
+  if (stepReady(cur) && STEP_GUIDES[cur] && !(cur === 6 && j.siteMode?.mode !== "mockup")) lines.push(STEP_GUIDES[cur]);
   return lines.join("\n");
 }
 
-/**
- * Consignes des étapes préparées dans le code mais pas encore ouvertes (READY_STEPS) : elles s'appliquent dès que
- * l'étape est ouverte, après ses essais réels.
- */
+/** Consignes détaillées des étapes ouvertes (READY_STEPS), relues par SINA à chaque pas de l'étape en cours. */
 export const STEP_GUIDES: Partial<Record<number, string>> = {
-  6: "Étape 6, THÈME SUR MESURE (décision du propriétaire du 9 novembre 2026 : on ne dit PLUS JAMAIS « maquette » au client, on dit « thème sur mesure ») : le thème est MONTÉ pour lui avec les sections de la bibliothèque du Studio, dans la famille qu'il choisit, à ses couleurs, polices, nom et logo, puis modifié sur demande, sans devis à part ; seules les photos nouvelles sont payantes (custom.photo : prix annoncé, accord écrit d'abord). 1) FAMILLE : montre-lui les familles EN IMAGE (theme.families : Classique, Moderne · Sport chic, Moderne · Streetwear néon, avec le lien « Voir le thème en vrai »), recommande d'après sa marque sans choisir à sa place, enregistre SON choix (theme.family) ; jamais de mélange de familles. 2) MONTAGE : lis custom.sections, puis custom.compose (start:true = composition validée par le propriétaire pour sa famille, ou tes pages, adaptées à SES pages et SON contenu) ; chaque section a un rôle dans l'histoire de la page, choisie selon la personnalité de la marque, l'angle et son émotion, le métier et le contenu réel ; une seule section de cartes par page ; « Produit vedette » seulement en haut de la fiche produit (ou une fois sur l'accueil) ; ouverture de l'accueil = grande photo pleine avec le titre dessus ; jamais la même section deux fois de suite. Le thème vivant s'affiche dans le fil (pages, téléphone, bouton « Désigner un élément »). 3) TEXTES : les sections arrivent avec des textes d'EXEMPLE (un bandeau le dit) : remplace-les section par section avec custom.section puis custom.edit (clientTexts:true quand tous sont à lui) : ses vrais textes, son vocabulaire, l'angle choisi et son émotion, ses produits et prix de l'onglet Produits, jamais les textes d'un modèle (même traduits), jamais d'avis, de chiffre, de délai ou de certification inventés (« [À compléter : …] »). 4) MODIFICATIONS SUR DEMANDE : un message qui commence par « [Élément désigné · section sXXXXXXXX … » vient du bouton « Désigner un élément » : lis CETTE section (custom.section), change SEULEMENT cet élément (custom.edit : edits pour un texte ou une partie, image pour une photo de ses Fichiers, hide pour retirer l'élément, css avec :scope pour couleurs, tailles, espacements, disposition), puis dis en une phrase ce qui a changé. Une demande sur toute une section (« plus aérée », « les cartes en deux colonnes », « ajoute un bouton ») se fait aussi avec custom.edit ; changer de section, en ajouter, retirer ou déplacer : custom.structure (un retrait visible se propose d'abord). « Annule » : custom.undo. 5) PHOTOS : les photos d'exemple se remplacent par les siennes (custom.edit image) ou par une photo créée (custom.photo, payante, consigne écrite comme le propriétaire, personnes seulement si autorisées) ; vérifie chaque photo créée avant de la montrer. 6) CHOIX : il choisit son thème (custom.choose), jamais à sa place. AVANT la fiche produit : demande au client ses offres (lots ou « 2 achetés, 1 offert », abonnement, lot à compléter, cadeaux par paliers, promotion avec sa date de fin), enregistre SEULEMENT ce qu'il donne (shop.offers, jamais inventé), puis montre-lui avec shop.buy_features les fonctions que chaque produit affichera : la section « Produit vedette » (une seule, en haut de la fiche) s'adapte d'elle-même au produit. Les anciennes maquettes (mockup.*) ne servent plus qu'aux projets déjà commencés avec elles.",
-  7: "Étape 7 (site codé d'après la maquette) : annonce le devis de site.code_from_mockup (pour une partie des pages, avec pages : celui que le Studio donne pour CES pages ; n'invente jamais un pourcentage) et attends l'accord du client ; les captures du site codé te sont jointes à côté de la maquette : compare-les vraiment (couleurs, logo, sections présentes ou absentes, textes, photos) ; à la fin, lis mockup.report et dis honnêtement, page par page, ce qui est conforme et ce qui ne l'est pas (les pages « dérivées » n'avaient pas d'image de maquette : elles sont codées dans son style). Puis propose site.images (consigne du propriétaire : toutes les photos du site recréées en haute définition par l'IA d'images des maquettes, à l'identique de la maquette) avec son prix, et attends l'accord écrit. Le site codé est une version inactive : le client décide de l'appliquer (site.use_version).",
-  11: "Étape 11 (calendrier de publication, MANUEL pour l'instant : le client publie lui-même, la publication automatique viendra après les accords des plateformes) : demande d'abord au client, UNE question à la fois et seulement si l'information manque : sur combien de jours (7, 15 ou 30), combien de publications par jour, à quelles heures, sur quels réseaux, avec ou sans émojis, avec ou sans les publicités. Puis appelle calendar.plan ; montre-lui le calendrier (calendar.read) jour par jour et dis-lui qu'il peut l'ajouter à son agenda (fichier .ics) et cocher chaque publication une fois postée (calendar.mark_done). S'il manque des publications pour remplir les jours, dis-le simplement et propose d'en créer (payant, devis d'abord).",
+  6: "Étape 6, THÈME SUR MESURE (on ne dit JAMAIS « maquette » au client ; décisions du propriétaire du 9 et du 10 novembre 2026), dans cet ordre : 1) FAMILLE : montre-lui TOUJOURS les deux familles EN IMAGE (theme.families), recommande sans choisir à sa place, enregistre SA famille (theme.family) ; jamais de mélange, jamais de question de « style ». 2) AMBIANCE : demande-lui en une question à deux choix « Ton site plutôt sombre ou plutôt clair ? » et enregistre SA réponse (theme.ambiance). 3) DEUX CONCEPTS (payant : carte d'accord) : custom.concepts conçoit deux concepts COMPLÈTEMENT différents (autre idée, autre émotion de l'angle mise en avant, autres sections), chacun avec sa page d'accueil et sa fiche produit (ou sa page de prestations) ; ils s'affichent côte à côte dans le fil (photos d'exemple annoncées comme telles) ; présente-les en quelques phrases (l'idée, l'émotion, la différence) et demande-lui lequel il préfère, sans choisir à sa place. 4) LE SITE ENTIER (payant : carte d'accord) : custom.concept avec SON choix monte toutes les autres pages dans le même concept (accueil 8 sections au moins, fiche produit 7 au moins, plus si le parcours le demande ; toutes les pages obligatoires ; jamais de page de paiement pour Shopify) ; montre-lui le site et pourquoi chaque page est là. PLUSIEURS PRODUITS, juste après le site entier : custom.products (gratuit) donne à CHAQUE produit SA fiche, bâtie comme la fiche commune, avec ses photos, son prix et son stock ; chaque carte mène à sa fiche ; leurs textes s'écrivent ensuite avec custom.build (le devis les compte). Puis custom.menu (gratuit) calcule le MENU depuis ses pages et son catalogue (sous-menu par familles de produits, grand menu quand il y en a beaucoup) : montre-le-lui, il le corrige (un nom, l'ordre, une entrée à retirer) ; ne décide jamais du menu à sa place. SUR TOUT LE SITE : un bandeau au-dessus de l'en-tête (un message vrai du moment) ou une fenêtre (cookies, âge pour l'alcool, discussion) se posent avec custom.structure, op « extra » (section : son identifiant ; uid : pour la retirer) ; jamais un message d'exemple, jamais une promesse inventée. Pour un service, ses prestations (nom, durée, prix) viennent de sa carte « Ton activité » : ce qu'il n'a pas donné s'affiche « À compléter », demande-le-lui. 5) IMAGES, juste après le choix : custom.images (le nombre EXACT d'images) et la question « tes images ou je les crée ? » ; puis gallery.plan : explique POURQUOI la galerie de la fiche produit, et pose-lui ses questions (combien d'images par produit, 7 au moins conseillées ; garde-t-il SA photo dans la galerie ; veut-il une personne sur une ou plusieurs images ; les questions sur chaque produit pour les textes des images) ; jamais un fait inventé sur une image ; tous les produits à parts égales. 6) GALERIES (payant : carte d'accord) : gallery.create pour chaque produit avec SES réponses ; dis honnêtement les images à revoir. 7) À SA MARQUE (payant : carte d'accord) : custom.build (textes dans l'émotion de l'angle, référencement de chaque page, toutes les photos : une partie met en scène son vrai produit, les autres l'univers sans lui ; ses photos de produits seulement sur les sections qui montrent les produits ; pour un service, ses photos de chantier d'abord, SINA crée celles qui manquent, sans personne reconnaissable) ; attends la tâche, lis son rapport, dis honnêtement ce qui reste. Le rapport dit aussi ce qui a été relu avant de lui montrer : « relecture » (tous les textes relus d'un bout à l'autre, sections reprises) et « relecturePhotos » (toutes les photos prévues relues AVANT d'être créées, descriptions revues) : dis-le-lui en une phrase, à la première personne (« j'ai relu tous tes textes et j'en ai repris 2 »), sans jamais parler de spécialiste ni de relecteur ; une relecture « non faite » se dit aussi. Il donne enfin « regards » (l'accueil et la page qui vend regardés en image sur téléphone, une fois montés : l'envie sur 10, ce qui ne va pas) : dis-le-lui à la première personne, simplement (« j'ai regardé ton accueil sur téléphone : le titre se lit mal sur la photo »), propose de corriger ce qui est signalé, et ne dis jamais que tout est parfait s'il reste un point ; des pages « non regardées » se disent aussi. De même, après custom.concepts, « originalite » dit si chaque concept est bien propre à la marque : un doute se dit simplement (« le concept B pourrait aller à une autre marque de thé, je te le montre quand même »). 8) BOUTIQUE : le thème est alors EN PLACE dans l'onglet Boutique : dis-lui de l'ouvrir, de le regarder en grand (ordinateur, téléphone) et d'utiliser « Désigner un élément » pour demander un changement. CHANGEMENTS : un message qui commence par « [Élément désigné · section sXXXXXXXX … » vient de la Boutique : lis CETTE section (custom.section), change SEULEMENT cet élément (custom.edit : edits pour un texte ou une partie, image pour une photo de ses Fichiers, hide pour retirer l'élément, css avec :scope pour couleurs, tailles, espacements, disposition), puis dis en une phrase ce qui a changé. Avant de changer une couleur de texte, vérifie qu'il reste LISIBLE sur son fond ; ne donne jamais de code couleur au client, nomme la couleur. Changer de section, en ajouter, retirer ou déplacer : custom.structure. « Annule » : custom.undo. Une nouvelle photo : custom.photo (payante : carte d'accord). Ne remplace JAMAIS un fait du client par une affirmation qu'il n'a pas donnée. SES faits, ce sont ceux de la carte « Ton activité » (activity.plan) : les faits de son offre ET sa livraison (transporteur, délai, prix, livraison offerte), ses retours et ses coordonnées ; ne dis jamais « non confirmé » ce qui y figure. 9) CHOIX : custom.choose quand il dit que le thème lui plaît, jamais à sa place (refusé tant qu'une photo d'exemple reste : aucune image vide ni de démonstration). AVANT la fiche produit : demande au client ses offres (lots ou « 2 achetés, 1 offert », abonnement, lot à compléter, cadeaux par paliers, promotion avec sa date de fin), enregistre SEULEMENT ce qu'il donne (shop.offers) : la section « Produit vedette » s'adapte d'elle-même au produit. TENUE ET CONSTRUCTIONS : chaque concept choisit, pour tout le site, la TENUE de la marque (titres fins, gras ou en capitales ; boutons en pilule, droits, en étiquette cousue ou à ombre ; photos en niche, droites ou penchées ; fond uni ou en toile) avec un SIGNE pris sur son produit ou son métier, et pour chaque section sa CONSTRUCTION (la même section se bâtit de plusieurs façons). Dis-le au client en mots simples, par ce qu'il verra (« tes boutons sont des étiquettes cousues, comme celle de ton sac » ; « le titre est posé dans la photo ») ; jamais les mots « tenue », « construction » ni « section à tenue ». S'il veut autre chose (« le titre au-dessus de la photo », « le nom à gauche », « des boutons plus carrés »), change-le avec custom.structure (construction ou tenue) : gratuit, immédiat, ses textes et ses photos restent ; custom.sections te donne les constructions de chaque section. Ce qui manque à son dossier (prix, délai, mesures, avis) s'affiche en jaune « À compléter » : demande-lui l'information, ne l'invente jamais, et dis-lui que le jaune ne se voit que dans le Studio. CE QUE TU AS ÉTUDIÉ : avant de concevoir, tu as regardé des sites du même métier et d'autres plus lointains (le compte rendu dit « references ») ; dis-le à la première personne en une phrase (« j'ai regardé comment font les boutiques de thé, et ailleurs »), sans jamais citer un site, une marque ni un thème, et sans jamais dire que tu copies. custom.design (tout le site d'un coup) ne sert que si le client veut tout refaire sans les deux concepts ; custom.compose seulement pour une composition dictée par le client. Les anciennes maquettes (mockup.*) ne servent plus qu'aux projets déjà commencés avec elles.",
+  7: "Étape 7 (site codé d'après une ANCIENNE maquette, projets commencés avec elles seulement) : appelle site.code_from_mockup (pour une partie des pages, avec pages) : le Studio montre le devis au client sur une carte d'accord ; les captures du site codé te sont jointes à côté de la maquette : compare-les vraiment (couleurs, logo, sections présentes ou absentes, textes, photos) ; à la fin, lis mockup.report et dis honnêtement, page par page, ce qui est conforme et ce qui ne l'est pas (les pages « dérivées » n'avaient pas d'image de maquette : elles sont codées dans son style). Puis propose site.images (consigne du propriétaire : toutes les photos du site recréées en haute définition par l'IA d'images des maquettes, à l'identique de la maquette) : la carte d'accord montre son prix. Le site codé est une version inactive : le client décide de l'appliquer (site.use_version).",
+  8: "Étape 8 (un de nos thèmes, monté à sa marque ; consigne du propriétaire du 9 novembre 2026) : le client a choisi un thème du Studio (theme.choose) ; attends la fin de la composition (tâche de fond), puis : 1) IMAGES : theme.images (gratuit) et demande-lui, en une question à choix, s'il monte son site avec SES images ou si tu les crées ; s'il prend les siennes, dis-lui le nombre EXACT d'images à envoyer avec le trombone ; s'il en a moins, propose de créer celles qui manquent ou toutes (jamais à sa place). Puis gallery.plan : explique POURQUOI la galerie de la fiche produit, pose-lui ses questions (combien d'images par produit, 7 au moins conseillées ; garde-t-il SA photo dans la galerie ; une personne ou non ; les questions sur chaque produit pour les textes des images) et gallery.create pour chaque produit avec SES réponses (payant : carte d'accord). Toutes les images du thème sont créées par OpenAI : une partie met en scène son vrai produit, les autres l'univers sans lui ; pour un service, ses photos de chantier d'abord, SINA crée celles qui manquent. 2) MONTAGE À SA MARQUE : appelle theme.brand (avec ses choix d'images) : le Studio lui montre le devis (coût probable et plafond, en % de son budget) sur une carte d'accord et ne lance qu'après son accord ; theme.brand réécrit TOUS les textes de sa boutique avec du vrai copywriting : l'angle marketing qu'il a choisi et son émotion dans chaque texte (situation vécue, désir, soulagement), ses faits comme seules preuves, rien d'inventé ; puis pose ses images et crée celles qui manquent. Tâche de fond : attends-la, lis son rapport, dis honnêtement ce qui reste (textes à revoir, images non créées). 3) BOUTIQUE : son site est alors EN PLACE dans l'onglet Boutique : dis-lui de l'ouvrir, de le regarder en grand et de désigner un élément pour demander un changement ; fais ses changements un par un, et vérifie qu'un texte reste lisible sur son fond. 4) VALIDATION : quand il dit que son site lui plaît, theme.validate (jamais à sa place).",
+  9: "Étape 9 (3 groupes de publications), dans cet ordre : 1) RÉSEAUX : demande-lui sur quels réseaux il publie (Instagram, Facebook, TikTok, Pinterest, LinkedIn, YouTube), en UNE question ; ne devine jamais. 2) LE PLAN D'ABORD (payant, peu : carte d'accord) : posts.plan écrit les trois groupes (sujet utile, titre, trois points, appel à l'action, texte, hashtags, la photo prévue), tous relus avant de lui être montrés ; le plan s'affiche dans le fil, tu ne le recopies pas ; si un groupe porte un doute, dis-le franchement, à la première personne. Il peut demander un autre plan (posts.plan avec redo = ses mots, payant, annoncé avant). 3) LES IMAGES ENSUITE (payant : carte d'accord avec le prix) : seulement quand le plan lui convient, posts.create crée chaque publication dans le format de chacun de ses réseaux ; chaque image est contrôlée avant de lui être montrée ; attends la tâche, lis son rapport, dis honnêtement ce qui a été créé et ce qui a échoué (jamais une image ratée présentée comme bonne). 4) Il valide (posts.validate), jamais à sa place. Jamais de personne dans une image sans son autorisation ; aucun avis, chiffre ni promesse absent de sa fiche. Tu es la seule à lui parler : jamais « ma stratège », « le juge » ni « mon équipe ».",
+  10: "Étape 10 (publicités images) : 1) demande-lui où il veut faire de la publicité (Meta : fil ou story, TikTok, Google, Pinterest, LinkedIn), en UNE question ; s'il n'en veut pas maintenant, passe l'étape (ads.validate avec skip: true), sans insister. 2) ads.create (payant : carte d'accord avec le prix) crée des idées vraiment différentes, une accroche courte et un bouton par visuel ; les promesses sont contrôlées avant l'image et chaque image avant d'être montrée. Si son forfait ne comprend pas la publicité, l'outil le dit : répète-le simplement, sans pousser à changer de forfait. 3) Attends la tâche, lis son rapport, dis honnêtement combien ont passé le contrôle et lesquelles ont été refusées ; elles sont dans l'onglet Publicités. 4) Il valide (ads.validate), jamais à sa place. Aucune promesse interdite par les régies (santé, avant/après trompeur, urgence artificielle).",
+  11: "Étape 11 (calendrier de publication, MANUEL pour l'instant : le client publie lui-même, la publication automatique viendra après les accords des plateformes) : demande d'abord au client, UNE question à la fois et seulement si l'information manque : sur combien de jours (7, 15 ou 30), combien de publications par jour, à quelles heures, sur quels réseaux, avec ou sans émojis, avec ou sans les publicités. Puis appelle calendar.plan ; montre-lui le calendrier (calendar.read) jour par jour et dis-lui qu'il peut l'ajouter à son agenda (fichier .ics) et cocher chaque publication une fois postée (calendar.mark_done). S'il manque des publications pour remplir les jours, dis-le simplement et propose d'en créer (payant, devis d'abord). Quand le calendrier lui convient, il le valide (calendar.validate), jamais à sa place.",
+  12: "Étape 12 (2 articles de blog) : 1) blog.topics (gratuit) te donne la matière ; propose-lui 3 ou 4 sujets UTILES à son client idéal (une question qu'il se pose, un usage, un guide, une comparaison), chacun lié à un de ses angles ; il en choisit 2, jamais toi. 2) blog.write (payant : carte d'accord), UN appel par article, avec son sujet et ce qu'il veut y lire (ses mots) : l'article est écrit, contrôlé (référencement, faits) et relu avant d'arriver en brouillon dans l'onglet Blog. 3) Attends la tâche, dis-lui où le lire et ce qui reste à vérifier ; ne dis jamais qu'il est publié : il publie lui-même. 4) Il valide (blog.validate). Aucun avis, chiffre ni promesse absent de sa fiche ; les paroles de clients relevées viennent de clients d'AUTRES marques.",
+  13: "Étape 13 (rangement des fichiers, gratuit et sans IA) : files.tidy range dans leurs dossiers les fichiers qui n'en ont pas encore ; rien n'est supprimé, rien de ce qu'il a rangé lui-même n'est déplacé. Dis-lui combien ont été rangés et où les trouver (onglet Fichiers). Il valide (files.validate) : c'est la fin du parcours de création ; félicite-le simplement et dis-lui ce qu'il peut faire ensuite dans le Studio.",
 };
 
 /** Étape 2 : que faire selon l'état des logos (contexte relu par SINA). */
 export function logoStepContext(j: Journey): string[] {
   const lg = j.logos;
-  if (!lg?.list.length) return ["Étape 2 (3 logos) : rien n'est encore dessiné. Si le client est prêt, annonce le coût (logo.propose donne le devis) et lance logo.propose : 3 logos libres (carte blanche au dessinateur) pour SON identité. Le dessin prend quelques minutes."];
+  // Identité choisie sur une planche de marque (12 novembre 2026) : UN seul logo, tiré de l'idée de la marque.
+  const single = !!j.identityChoice && !!j.identities?.list.find((x) => x.key === j.identityChoice!.key)?.board;
+  // Planche finie avec ses images : son logo existe déjà, il est repris gratuitement (jamais redessiné d'office).
+  const boardLogo = single && !!j.identities?.list.find((x) => x.key === j.identityChoice!.key)?.board?.images?.logo;
+  if (!lg?.list.length && boardLogo) return ["Étape 2 (logo) : le logo de sa planche existe déjà, créé et relu avec ses images. Appelle logo.propose : c'est GRATUIT (aucune carte d'accord), le Studio reprend ce logo et le lui montre à côté de son nom dessiné. Tu le regarderas avant de le présenter. S'il préfère un autre logo, il le demande avec ses mots : celui-là est dessiné, compté dans son budget, et annoncé avant."];
+  if (!lg?.list.length && single) return ["Étape 2 (logo) : rien n'est encore dessiné. Si le client est prêt, appelle logo.propose : UN logo dessiné pour SON identité, à partir de l'idée de sa marque et du nom dessiné de sa planche ; le Studio lui montre le devis sur une carte d'accord et ne lance qu'après son accord. Le dessin prend quelques minutes. Tu le regarderas avant de le présenter."];
+  if (lg?.list.length && lg.list.length < 3) return [
+    `Étape 2 — proposition n° ${lg.round} (affichée au client dans le fil) : ${lg.list.map((x) => `${x.source} « ${x.name} » : ${x.kind === "image" ? "le logo de sa planche, créé avec ses images et déjà relu (repris sans rien repayer)" : x.kind === "planche" ? "le nom dessiné de sa planche, fait par le Studio, exact à la lettre (secours)" : x.verdict === "FINAL" ? `validé par le contrôle, ${x.score ?? "?"}/10` : x.assetId ? `NON validé par le contrôle (${x.reason})` : `pas de dessin (${x.reason})`}`).join(" ; ")}.`,
+    "Tu VOIS ce qui est affiché (images jointes à ta réponse) : regarde le logo avant d'en parler, décris-le en une phrase d'après ce que tu vois vraiment (le nom est-il bien écrit, lettre par lettre ?), et dis honnêtement s'il a un défaut ou s'il n'est pas validé. Si le nom dessiné de sa planche est proposé à côté, explique en une phrase que c'est le secours, toujours exact. Demande-lui ce qu'il choisit (logo.choose). S'il n'aime pas le logo, propose d'en dessiner un autre avec ses mots (logo.propose : payant, le prix s'affiche avant). Ne choisis jamais à sa place.",
+  ];
+  if (!lg?.list.length) return ["Étape 2 (3 logos) : rien n'est encore dessiné. Si le client est prêt, appelle logo.propose : 3 logos libres (carte blanche au dessinateur) pour SON identité ; le Studio lui montre le devis sur une carte d'accord et ne lance qu'après son accord. Le dessin prend quelques minutes."];
   const lines = [`Étape 2 — proposition n° ${lg.round} (les logos sont affichés au client dans le fil) : ${lg.list.map((x) => `${x.source} « ${x.name} » (${x.style}) : ${x.verdict === "FINAL" ? `validé par le contrôle, ${x.score ?? "?"}/10` : x.verdict === "PROVISIONAL" ? "version du studio" : x.assetId ? `NON validé par le contrôle (${x.reason})` : `pas de dessin (${x.reason})`}`).join(" ; ")}.`,
     "Présente-les en 2 ou 3 phrases (honnêtement : un logo non validé est dit non validé ; tu VOIS les 3 logos (images jointes à ta réponse) : décris chacun en une phrase d'après ce que tu vois vraiment, sans rien inventer, et dis honnêtement si l'un a un défaut visible), puis demande lequel il choisit (logo.choose). Il peut demander une nouvelle proposition avec ses mots (logo.propose avec guidance, payant). Ne choisis jamais à sa place."];
   return lines;
 }
 
 /** Étape 5 : l'activité complète (gratuite). */
+/** Étape 9 : où en est le plan des publications (lu par SINA à chaque pas de l'étape). */
+/** Étapes 10, 12 et 13 : où en est l'étape (lu par SINA à chaque pas). */
+export function lateStepContext(j: Journey, cur: number): string[] {
+  if (cur === 10) return [j.ads ? `Publicités : ${j.ads.count} idée(s) demandée(s) pour ${j.ads.platforms.join(", ")} ; lis le rapport de la tâche, puis le client valide (ads.validate).` : "Publicités : rien de lancé encore. Demande d'abord où il veut faire de la publicité."];
+  if (cur === 12) return [j.blog?.topics.length ? `Articles demandés (${j.blog.topics.length} sur 2) : ${j.blog.topics.map((t) => `« ${t} »`).join(" ; ")}.` : "Articles : aucun sujet choisi encore (blog.topics donne la matière, gratuit)."];
+  return [];
+}
+
+export function postsStepContext(j: Journey): string[] {
+  const plan = j.posts;
+  if (!plan) return ["Publications : aucun plan encore. Demande ses réseaux, puis propose le plan (posts.plan, payant, carte d'accord)."];
+  const doubts = plan.groups.map((g, i) => (g.doubt ? `groupe ${i + 1} « ${g.title} » (${g.doubt})` : "")).filter(Boolean);
+  return [
+    `Publications : plan n° ${plan.round} montré dans le fil (${plan.groups.map((g, i) => `${i + 1}. « ${g.title} »`).join(" ; ")}).${plan.judged === "non_juges" ? " Il n'a pas pu être relu avant d'être montré : dis-le simplement." : ""}${doubts.length ? ` Tu doutes de : ${doubts.join(" ; ")} ; dis-le franchement, à la première personne.` : ""}`,
+    plan.created ? `Images demandées pour ${plan.created.postIds.length} publication(s) sur ${plan.created.networks.join(", ")} : lis le rapport de la tâche, puis le client valide (posts.validate).` : "Aucune image créée encore : seulement quand le plan lui convient (posts.create, payant, carte d'accord).",
+  ];
+}
+
 export function activityStepContext(j: Journey): string[] {
   const a = j.activity;
   const base = "Étape 5 (activité complète, GRATUITE) : on réunit tout ce que le site va dire. 1) appelle activity.plan : il AFFICHE la carte « Ton activité » et renvoie ce qui manque ; 2) pose les questions manquantes UNE par UNE, y compris les facultatives (téléphone, SIRET), une fois chacune ; « Plus tard » se propose SEULEMENT pour le téléphone et le SIRET, JAMAIS pour le nom, l'e-mail, l'adresse, la livraison ou les retours (obligatoires pour le site) (coordonnées : activity.company avec ses mots ; « plus tard » → activity.company later ; « je n'en veux pas sur le site » (pas de téléphone…) → activity.company none, jamais later) ; 3) PRODUITS : s'il n'y en a aucun dans l'onglet Produits, propose la liste tirée de SA fiche (un produit par parfum, modèle ou formule, et les coffrets ou lots qu'il a cités) avec SES prix, sans en inventer aucun ; demande son accord, puis crée chaque produit avec catalogue.create (titre, prix confirmé, description courte avec les faits du client, ses mots : ingrédients, poids ou contenance qu'il a cités dans sa fiche de départ, composition ; rien d'autre) ; un prix manquant se demande, jamais il ne se devine ; 4) rappelle activity.plan pour mettre la carte à jour ; 5) quand rien ne manque, demande s'il valide (activity.validate).";
-  if (!a) return [base];
-  return [base, `État : ${a.products.length} produit(s) dans l'onglet Produits${a.products.length ? ` (${a.products.map((x) => `${x.title} ${x.price == null ? "sans prix" : `${x.price} €`}`).join(", ")})` : ""} ; coordonnées manquantes : ${a.missing.map((m) => `${m.key}${m.required ? "" : " (facultative, à poser aussi)"}`).join(", ") || "aucune"} ; angle principal : ${a.angle?.title ?? "aucun"}.`];
+  // Réponses de l'étape 0 : déjà données par le client, jamais redemandées (audit du 10 novembre 2026).
+  const said = (["contact", "market", "price", "offer"] as StartField[]).filter((f) => j.start[f]?.status === "answered").map((f) => `${FIELD_LABEL[f].fr} : « ${j.start[f]!.value.slice(0, 600)} »`);
+  const known = said.length ? [`Déjà dit par le client à l'étape 0 (NE LE REDEMANDE PAS : enregistre ce qui s'y trouve avec activity.company ou catalogue.create, puis ne pose que ce qui manque vraiment) : ${said.join(" ; ")}.`] : [];
+  const services = "Entreprise de SERVICES : pas de produits ni de livraison ni de retours ; ses PRESTATIONS (nom, prix et durée s'il les donne) s'enregistrent avec services.profile, jamais inventées.";
+  if (!a) return [base, ...known];
+  const euros = (n: number) => `${n.toFixed(2).replace(".", ",").replace(/,00$/, "")} €`;
+  const offer = a.services
+    ? `${a.services.length} prestation(s)${a.services.length ? ` (${a.services.map((x) => `${x.name}${x.price ? ` ${x.price}` : " sans prix"}`).join(", ")})` : ""}`
+    : `${a.products.length} produit(s) dans l'onglet Produits${a.products.length ? ` (${a.products.map((x) => `${x.title} ${x.price == null ? "sans prix" : euros(x.price)}`).join(", ")})` : ""}`;
+  return [base, ...(a.services ? [services] : []), ...known, `État : ${offer} ; coordonnées manquantes : ${a.missing.map((m) => `${m.key}${m.required ? "" : " (facultative, à poser aussi)"}`).join(", ") || "aucune"} ; angle principal : ${a.angle?.title ?? "aucun"}.`];
 }
 
 /** Étape 6 : un de nos thèmes ou des maquettes sur mesure. */
 export function themeStepContext(j: Journey): string[] {
   const t = j.themes;
-  if (j.siteMode?.mode === "mockup") return ["Étape 6 — le client a vu les thèmes et choisi un THÈME SUR MESURE (site.mode). Suis la consigne du thème sur mesure ci-dessous ; s'il revient à un thème du Studio, theme.choose avec la carte qu'il désigne."];
+  if (j.siteMode?.mode === "mockup") return ["Étape 6 — le client a choisi un THÈME SUR MESURE (site.mode). Suis la consigne du thème sur mesure ci-dessous ; s'il revient à un thème du Studio, site.mode theme puis theme.propose et theme.choose."];
   // Consigne du propriétaire (7 novembre) : les cartes des thèmes d'abord ; une fois qu'il les a vues, le client choisit
   // un thème du Studio ou un thème sur mesure — lui, jamais SINA.
-  const base = "Étape 6 (thème du Studio ou thème sur mesure) : commence par appeler theme.propose (gratuit) : il AFFICHE les thèmes du Studio TELS QU'ILS SONT (images et textes d'origine de leur démonstration) avec la démonstration complète, en ordinateur ou en téléphone ; ne recopie pas les cartes. Ce ne sont PAS son site : ne dis jamais « ton site composé dans chacun » (essai réel du 7 novembre) ; son site s'y composera seulement après son choix. Dans UN seul message, explique en deux phrases ses deux possibilités : choisir un de ces thèmes (gratuit : son site s'y compose ensuite avec sa marque et ses produits, puis on l'adapte) ou demander un thème sur mesure (monté pour lui avec les sections du Studio dans le style qu'il choisit, à ses couleurs, modifiable sur demande ; seules les photos nouvelles sont PAYANTES, prix annoncé avant). Les cartes ont déjà leurs boutons (« Choisir ce thème », « Voir tous les thèmes », « Je préfère un thème sur mesure ») : ne pose PAS de question à boutons en plus. Ne choisis jamais à sa place et ne pousse ni l'un ni l'autre. Un thème choisi → theme.choose avec l'identifiant de SA carte ; « voir tous les thèmes » → theme.propose all: true ; un thème sur mesure → site.mode mode mockup. Un thème non inclus dans son forfait : dis-le, ne le choisis pas.";
+  const base = "Étape 6 (thème du Studio ou thème sur mesure), ordre voulu par le propriétaire (9 novembre 2026) : 1) demande D'ABORD au client, dans une question à deux choix (« Un thème du Studio » / « Un thème sur mesure »), en une phrase chacun : un thème du Studio = il choisit parmi TOUS nos thèmes, puis je monte son site dedans avec ses textes et ses images ; un thème sur mesure = il choisit sa famille (Classique ou Moderne), puis je conçois son site de A à Z avec les meilleures sections pour son produit ou son service, avec ses textes et ses images. Ne choisis jamais à sa place et ne pousse ni l'un ni l'autre. 2) Thème du Studio → site.mode mode theme, puis theme.propose (il AFFICHE TOUS nos thèmes TELS QU'ILS SONT, avec leur démonstration complète ; ne recopie pas les cartes ; ce ne sont PAS son site : ne dis jamais « ton site composé dans chacun »), il choisit sa carte → theme.choose avec son identifiant (un thème non inclus dans son forfait : dis-le, ne le choisis pas). 3) Thème sur mesure → site.mode mode mockup, puis suis la consigne du thème sur mesure (la famille d'abord). Ensuite, dans les deux cas, le thème est en place dans l'onglet Boutique : le client y demande ses changements et désigne les éléments.";
   if (!t?.list.length) return [base];
   return [base, `Thèmes affichés : ${t.list.map((x) => `${x.id} « ${x.name} »${x.recommended ? " (recommandé)" : ""}${x.allowed ? "" : " (non inclus dans son forfait)"}`).join(" ; ")}.`];
 }
 
-/** Étape 4 : les 5 angles marketing. */
+/** Étape 4 : les 3 angles marketing (cinq écrits et jugés, les trois plus éloignés montrés). */
 export function anglesStepContext(j: Journey): string[] {
   const a = j.angles;
-  if (!a?.list.length) return ["Étape 4 (5 angles marketing) : explique en une ou deux phrases ce qu'est un angle (la façon de parler de la marque : à qui, quelle émotion, quelle promesse) et que TU vas chercher sur le web (dis « je vais chercher », jamais « SINA va ») ce que vivent ses clients et ses concurrents (places de marché exclues) pour proposer 5 angles avec leurs sources. C'est PAYANT : annonce le coût (angles.propose donne le devis), puis appelle angles.propose. Rappelle angles.propose après chaque tâche terminée (analyse de la fiche, puis recherche) : c'est LUI qui range les 5 angles et les AFFICHE en cartes au client (sources comprises) ; n'utilise jamais research.read ni strategy.read à cette étape (lecture tronquée, aucune carte). S'il renvoie des questions, pose-les au client UNE par UNE, enregistre ses réponses avec pilot.answer, puis rappelle angles.propose."];
+  if (!a?.list.length) return ["Étape 4 (3 angles marketing) : explique en une ou deux phrases ce qu'est un angle (la façon de parler de la marque : à qui, quelle émotion, quelle promesse) et que TU vas chercher sur le web (dis « je vais chercher », jamais « SINA va ») ce que vivent ses clients et ses concurrents (places de marché exclues) pour proposer 3 angles très différents (un sûr, un d'émotion, un audacieux) avec leurs sources. C'est PAYANT : appelle angles.propose ; le Studio montre le devis au client sur une carte d'accord et ne lance qu'après son accord. Rappelle angles.propose après chaque tâche terminée (analyse de la fiche, puis recherche) : c'est LUI qui range les 3 angles et les AFFICHE en cartes au client (sources comprises) ; n'utilise jamais research.read ni strategy.read à cette étape (lecture tronquée, aucune carte). S'il renvoie des questions, pose-les au client UNE par UNE, enregistre ses réponses avec pilot.answer, puis rappelle angles.propose."];
   return [
-    `Étape 4 — 5 angles prêts (affichés au client dans le fil, ${a.sourceCount} sources lues) : ${a.list.map((x) => `${x.id} « ${x.title} » (émotion : ${x.emotion || "?"} ; à confirmer : ${x.proofsToConfirm.join(", ") || "rien"})`).join(" ; ")}. Recommandé : ${a.recommendedId ?? "aucun"}.`,
+    `Étape 4 — ${shownAngles(a).length} angles prêts (affichés au client dans le fil, ${a.sourceCount} sources lues) : ${shownAngles(a).map((x) => `${x.id} « ${x.title} »${roleOf(a, x.id) ? ` (${ANGLE_ROLE_LABEL[roleOf(a, x.id)!].fr.toLowerCase()})` : ""} (émotion : ${x.emotion || "?"} ; à confirmer : ${x.proofsToConfirm.join(", ") || "rien"})`).join(" ; ")}. Recommandé : ${a.recommendedId ?? "aucun"}.${a.reserve?.length ? ` ${a.reserve.length} autre(s) en réserve pour les publications et les publicités (jamais proposés comme choix).` : ""}`,
     "Présente-les en 3 phrases courtes au plus (sans recopier les cartes), dis lequel est recommandé et pourquoi en une phrase, rappelle que les « informations à confirmer » (mots exacts des cartes) ne seront jamais écrites sans son accord, puis demande lequel ou lesquels il choisit : il peut en prendre PLUSIEURS (le premier = l'angle principal du site, les autres pour les publications et publicités ; son forfait en permet un nombre limité) → angles.choose {angleIds}. Ne choisis jamais à sa place. S'il veut une NOUVELLE proposition d'angles, appelle angles.propose {redo: sa demande avec ses mots} (payant : devis annoncé).",
   ];
 }
@@ -275,15 +440,21 @@ export function brandKitStepContext(j: Journey): string[] {
 }
 
 /** Étape 1 : que faire selon l'état des propositions. */
-function identityStepContext(j: Journey): string[] {
+function identityStepContext(j: Journey, count?: number): string[] {
   const id = j.identities;
+  // Le nombre exact d'identités de CE client (essai réel du 14 novembre 2026 : SINA annonçait « deux à quatre »).
+  const how = count ? `${count} identités pour ce client (son forfait) : annonce ${count}, jamais « deux à quatre »` : "2, 3 ou 4 selon le forfait du client, le Studio le sait";
   if (!id?.list.length) return [
-    "Étape 1 (3 identités de marque) : rien n'est encore proposé. Si le client est prêt (il dit oui, on continue, vas-y…), appelle identity.propose (sans guidance) en annonçant que la création prend environ une minute. S'il pose une question, réponds-y d'abord. N'invente aucune identité toi-même : seul identity.propose les crée.",
+    `Étape 1 (identités de marque : ${how}) : rien n'est encore proposé. Si le client est prêt (il dit oui, on continue, vas-y…), dis-lui en une phrase ce que tu vas faire (étudier son marché, chercher l'idée et les noms, lui montrer chaque identité en planche de marque), puis appelle identity.propose (sans guidance) : la création prend plusieurs minutes, en arrière-plan. S'il pose une question, réponds-y d'abord. N'invente aucune identité toi-même : seul identity.propose les crée. Tu es la seule à parler au client : dis « j'étudie », « je cherche », jamais « mon équipe » ni « ma stratège ».`,
   ];
   const out = [
-    `Étape 1 — proposition n° ${id.round} (les cartes complètes sont affichées au client dans le fil) : ${id.list.map((x) => `${x.key} « ${x.name} » (slogan « ${x.slogan} », territoire ${x.territory}, fond ${x.ground}, logo ${x.logoStyle})`).join(" ; ")}.`,
-    "Présente-les en 3 lignes courtes au plus (la différence de chacune), sans recopier les cartes, puis demande laquelle il préfère. Il peut : en choisir une ; MÉLANGER (ex. le nom de A avec les couleurs de C → identity.choose key « A », mix {palette: « C »}) ; retoucher le nom ou le slogan avec ses mots (identity.choose name / slogan) ; ou demander une nouvelle proposition (identity.propose avec guidance = ses mots, et redo = les identités à refaire s'il en garde certaines). Ne choisis jamais à sa place ; en cas de doute sur son choix, pose UNE question.",
+    `Étape 1 — proposition n° ${id.round} (${id.list.some((x) => x.board) ? "les planches de marque complètes" : "les cartes complètes"} sont affichées au client dans le fil) : ${id.list.map((x) => `${x.key} « ${x.name} » (${x.board ? `idée : ${x.board.idea.belief} ; ` : ""}slogan « ${x.slogan} », territoire ${x.territory}, fond ${x.ground})`).join(" ; ")}.`,
+    ...(id.study ? [`Ton étude du marché (affichée au client au-dessus des planches) : ${id.study.sources} page(s) lue(s), ${id.study.quoteCount} parole(s) réelle(s) de clients gardée(s) mot pour mot${id.study.notFound.length ? ` ; non trouvé : ${id.study.notFound.join(" ; ")}` : ""}. Commence par dire en une phrase ce que tu as compris de son marché, à la première personne.`] : []),
+    "Présente-les en une ligne courte chacune (l'idée de chacune et ce qui la distingue), sans recopier les planches, puis demande laquelle il préfère. Chaque planche dit « ce qui reste à prouver » : ne présente jamais ces points comme acquis. Il peut : en choisir une ; MÉLANGER (ex. le nom de A avec les couleurs de C → identity.choose key « A », mix {palette: « C »}) ; retoucher le nom ou le slogan avec ses mots (identity.choose name / slogan) ; ou demander une nouvelle proposition (identity.propose avec guidance = ses mots, et redo = les identités à refaire s'il en garde certaines). Ne choisis jamais à sa place ; en cas de doute sur son choix, pose UNE question.",
   ];
   if (id.issues.length) out.push(`Points que le contrôle du Studio n'a pas pu valider (dis-les honnêtement au client, en mots simples) : ${id.issues.join(" ; ")}.`);
+  // Le nom de domaine de chaque nom (contrôle gratuit du registre, affiché sur la planche) : SINA le dit tel quel.
+  const domains = id.list.map((x) => (x.board?.domains ? `${x.key} « ${x.name} » : ${domainLine(x.board.domains).replace(/^Nom de domaine : /, "")}` : "")).filter(Boolean);
+  if (domains.length) out.push(`Noms de domaine (contrôlés à l'instant dans le registre ; le nom de la marque reste entier, une adresse « libre » n'est garantie que par sa réservation ; ne promets jamais une adresse, et n'en invente aucune autre) : ${domains.join(" | ")}`);
   return out;
 }

@@ -1,4 +1,8 @@
-/** Budget autorisé du fil SINA : SINA travaille sans devis à chaque message tant que le maximum engagé reste dessous. */
+/**
+ * Budget autorisé du fil SINA : il couvre les RÉPONSES de SINA (ses pas de réflexion). Chaque création payante (identités,
+ * logos, angles, thème, photos…) passe en plus par la carte d'accord du client (prix d'abord, accord écrit) : son coût
+ * n'entame pas ce budget, sinon SINA ne pourrait plus répondre après une création approuvée.
+ */
 import { all, now, one, run } from "../db";
 import { budgetPctOf, pctBaseFor } from "../ai/budget-pct";
 import { pctToMicro } from "../budget-pct";
@@ -17,18 +21,19 @@ export function trackJob(conversationId: string, runId: string, jobId: string, k
   run("INSERT OR IGNORE INTO syna_jobs(conversation_id,job_id,run_id,kind,created_at) VALUES(?,?,?,?,?)", conversationId, jobId, runId, kind, now());
 }
 
-export function conversationSpentMicro(conversationId: string): number {
-  return all<{ job_id: string }>("SELECT job_id FROM syna_jobs WHERE conversation_id=?", conversationId).reduce((s, j) => s + jobSpentMicro(j.job_id), 0);
+export function conversationSpentMicro(conversationId: string, kind?: "agent" | "native"): number {
+  return all<{ job_id: string }>(`SELECT job_id FROM syna_jobs WHERE conversation_id=?${kind ? " AND kind=?" : ""}`, ...(kind ? [conversationId, kind] : [conversationId])).reduce((s, j) => s + jobSpentMicro(j.job_id), 0);
 }
 
-/** Budget par défaut : 10 % du budget IA du forfait, modifiable par le client dans le fil. */
+/** Budget par défaut des réponses de SINA : 10 % du budget IA du forfait, modifiable par le client dans le fil. */
 export const DEFAULT_BUDGET_PCT = 10;
 
 export function budgetState(userId: string, projectId: string | null, conversationId: string) {
   const authorized = authorizedBudget(conversationId);
   const spent = conversationSpentMicro(conversationId);
+  const replies = conversationSpentMicro(conversationId, "agent");
   const pct = (m: number | null) => (m == null ? null : budgetPctOf(userId, m, projectId));
-  return { authorizedMicro: authorized, spentMicro: spent, remainingMicro: authorized == null ? 0 : Math.max(0, authorized - spent), authorizedPct: pct(authorized), spentPct: pct(spent) };
+  return { authorizedMicro: authorized, spentMicro: spent, remainingMicro: authorized == null ? 0 : Math.max(0, authorized - replies), authorizedPct: pct(authorized), spentPct: pct(spent) };
 }
 
 /** Le client fixe son budget en % du budget IA de son forfait (conversion par le barème natif). */

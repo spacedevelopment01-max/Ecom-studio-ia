@@ -1,1 +1,0 @@
-Original demo, explicit choice, native worker, saved client editor and three downloads verified

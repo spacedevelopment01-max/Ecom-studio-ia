@@ -120,6 +120,26 @@ describe("recherche web OpenAI (outil web_search)", async () => {
     expect(calls.filter((c) => c === "send")).toHaveLength(1);
   });
 
+  it("modèle voulu par l'appelant (la marque de SINA cherche avec un modèle moins coûteux) : pris s'il a clé et tarifs, sinon la route habituelle", async () => {
+    setJsonSetting("ai.routes", { strategy: { provider: "anthropic", model: "claude-opus-5-5", effort: "high" } });
+    setJsonSetting("ai.prices", { "anthropic:claude-opus-5-5": { unit: "tokens", inputPerM: 4, outputPerM: 20 }, "anthropic:claude-sonnet-5-5": { unit: "tokens", inputPerM: 2, outputPerM: 10 }, "anthropic:web_search": { unit: "call", perCall: 0.01 } });
+    const craft = { provider: "anthropic", model: "claude-sonnet-5-5" };
+    expect(ws.webSearchRoute()).toMatchObject({ model: "claude-opus-5-5" });
+    expect(ws.webSearchRoute(craft)).toMatchObject({ provider: "anthropic", model: "claude-sonnet-5-5" });
+    expect(ws.webSearchQuoteMicro(craft)!).toBeLessThan(ws.webSearchQuoteMicro()!);
+    // Modèle sans tarif, ou fournisseur sans recherche web : la route habituelle, jamais un appel non chiffré.
+    expect(ws.webSearchRoute({ provider: "anthropic", model: "modele-sans-tarif" })).toMatchObject({ model: "claude-opus-5-5" });
+    expect(ws.webSearchRoute({ provider: "google", model: "gemini" })).toMatchObject({ model: "claude-opus-5-5" });
+    let sent: any = null;
+    ws.webSearchDeps.anthropicCount = async () => 700;
+    ws.webSearchDeps.anthropicSend = async (params: any) => { sent = params; return { model: params.model, stop_reason: "end_turn", usage: { input_tokens: 9000, output_tokens: 500, server_tool_use: { web_search_requests: 1 } }, content: [{ type: "web_search_tool_result", content: [{ type: "web_search_result", url: "https://marque-a.fr/sac", title: "A" }] }, { type: "text", text: JSON.stringify({ sources: [{ url: "https://marque-a.fr/sac", title: "A", category: "competitors", excerpt: excerpt("A") }] }), citations: [] }] }; };
+    const u = await client();
+    await runForUser(u.id, () => ws.webResearch({ userId: u.id, projectId: null, usageKey: `k-${Math.random()}`, prefer: craft }, "sac à dos"));
+    expect(sent.model).toBe("claude-sonnet-5-5");
+    const [res] = all<{ amount: number; provider: string }>("SELECT amount, provider FROM ai_reservations WHERE user_id = ?", u.id);
+    expect(res.amount).toBe(ws.webSearchMaxMicro("anthropic", "claude-sonnet-5-5", 700));
+  });
+
   it("Claude (Anthropic) : même réservation, recherches facturées, places de marché bloquées dès la recherche, liens vérifiés", async () => {
     setJsonSetting("ai.routes", { strategy: { provider: "anthropic", model: "claude-opus-5-5", effort: "high" } });
     setJsonSetting("ai.prices", { "anthropic:claude-opus-5-5": { unit: "tokens", inputPerM: 4, outputPerM: 20 }, "anthropic:web_search": { unit: "call", perCall: 0.01 } });

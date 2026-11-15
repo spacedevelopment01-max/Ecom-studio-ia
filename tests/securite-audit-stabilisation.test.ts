@@ -57,12 +57,10 @@ describe("Sécurité (audit de stabilisation)", () => {
     expect(pl.storage_key.endsWith(".bin")).toBe(true);
   });
 
-  it("types refusés à l'envoi (HTML, XML, scripts) ; logo de création : image uniquement ; détourage sans secret", () => {
+  it("types refusés à l'envoi (HTML, XML, scripts) ; détourage sans secret", () => {
     const files = fs.readFileSync("src/app/api/projects/[id]/files/route.ts", "utf8");
     expect(files).toMatch(/xml\(\?!\.\*svg\)/);
     expect(files).toMatch(/readForm\(req, 600 \* 1048576\)/);
-    const start = fs.readFileSync("src/lib/project-start.ts", "utf8");
-    expect(start).toMatch(/Format de logo non pris en charge/);
     const cutout = fs.readFileSync("src/lib/media/cutout.ts", "utf8");
     expect(cutout).toMatch(/env: childEnv\(model\)/);
     expect(cutout).not.toMatch(/\.\.\.process\.env, CUTOUT_MODEL/);

@@ -12,14 +12,13 @@ import {themeFileName} from '../../engine/shop';
 import {assertThemeOperations} from '../plan-access';
 import {projectKind} from '../project-kind';
 import {containerOf,sectionSchema,type ThemeSpec} from '../spec';
-import {themeTargetPaths} from '../../orchestrator/conversation/theme-tool-context';
+import {themeTargetPaths} from '../target-paths';
 import {stableHash} from '../../brain/hash';
 import {assembleComposition} from './assemble';
 import {managedSections} from '../../contenus';
 import type {CompositionSource} from './contract';
 import {nativeCompositionCopy,type NativeCopyReference} from './copy-sources';
-import {originalCompositionBase} from './original';
-import {conversationOriginalEnabled} from '../../orchestrator/conversation/tool-flags';
+import {originalCompositionBase,originalCompositionEnabled} from './original';
 export function compositionBase(projectId:string){const current=currentTheme(projectId);return current?{...current,parentVersionId:current.version.id,isVirtual:false as const}:originalCompositionBase(projectId);}
 const TEXT=new Set(['text','textarea','richtext','inline_richtext']);
 /** A shared product template is not a source of per-product commercial copy. */
@@ -49,11 +48,11 @@ function resolve(user:User,projectId:string){
  return{current,sources,descriptors,liveMedia};
 }
 export function compositionContext(user:User,projectId:string){
- const r=resolve(user,projectId);return{versionId:r.current.version.id,modes:{adapt:!r.current.isVirtual,hybrid:!r.current.isVirtual,original:conversationOriginalEnabled()&&!!r.current.spec.meta?.original},startingWithoutTheme:r.current.isVirtual,sources:r.descriptors,mediaSelectionLimit:40,longContent:'Référence vers le texte entier conservé : ne pas prétendre avoir lu un texte non affiché. Les sources content viennent du moteur rédactionnel natif : cible, version, origine et verdict conservés, jamais une qualification supplémentaire. Réutiliser le corps richtext dans un champ richtext ; aucun rachat ni résumé.',pages:Object.keys(r.current.spec.templates).map(template=>({template,scope:compositionScope(r.current.spec,template),composable:!!compositionScope(r.current.spec,template)})),quality:'not_measured',generation:'acquired_native_copy_reuse_only_no_new_writing'};
+ const r=resolve(user,projectId);return{versionId:r.current.version.id,modes:{adapt:!r.current.isVirtual,hybrid:!r.current.isVirtual,original:originalCompositionEnabled()&&!!r.current.spec.meta?.original},startingWithoutTheme:r.current.isVirtual,sources:r.descriptors,mediaSelectionLimit:40,longContent:'Référence vers le texte entier conservé : ne pas prétendre avoir lu un texte non affiché. Les sources content viennent du moteur rédactionnel natif : cible, version, origine et verdict conservés, jamais une qualification supplémentaire. Réutiliser le corps richtext dans un champ richtext ; aucun rachat ni résumé.',pages:Object.keys(r.current.spec.templates).map(template=>({template,scope:compositionScope(r.current.spec,template),composable:!!compositionScope(r.current.spec,template)})),quality:'not_measured',generation:'acquired_native_copy_reuse_only_no_new_writing'};
 }
 export function previewNativeComposition(user:User,projectId:string,input:unknown){
  const r=resolve(user,projectId),p=loadProject(projectId);
- const plan=CompositionPlanSchema.parse(input);if(r.current.isVirtual&&plan.mode!=='original')throw new HttpError(409,L('Le premier plan sans thème doit utiliser le mode original.','The first plan without a starting theme must use original mode.'));if(plan.mode==='original'&&!conversationOriginalEnabled())throw new HttpError(409,L('Mode original non raccordé sans son drapeau.','Original mode is not connected without its flag.'));if(r.current.isVirtual&&!plan.pages.some(page=>page.template==='index'&&page.sections.some(s=>s.kind==='component'&&s.bindings.some(b=>r.sources.get(b.source)?.kind==='copy'))))throw new HttpError(409,L('Composez l’accueil avec un contenu acquis avant de créer une version.','Compose the home page with acquired content before creating a version.'));
+ const plan=CompositionPlanSchema.parse(input);if(r.current.isVirtual&&plan.mode!=='original')throw new HttpError(409,L('Le premier plan sans thème doit utiliser le mode original.','The first plan without a starting theme must use original mode.'));if(plan.mode==='original'&&!originalCompositionEnabled())throw new HttpError(409,L('Mode original non raccordé sans son drapeau.','Original mode is not connected without its flag.'));if(r.current.isVirtual&&!plan.pages.some(page=>page.template==='index'&&page.sections.some(s=>s.kind==='component'&&s.bindings.some(b=>r.sources.get(b.source)?.kind==='copy'))))throw new HttpError(409,L('Composez l’accueil avec un contenu acquis avant de créer une version.','Compose the home page with acquired content before creating a version.'));
  const managed=managedSections(r.current.spec,projectId);
  const assemble=()=>assembleComposition(r.current.spec,input,{versionId:r.current.version.id,managed:(t,s)=>managed.has(`${t}:${s}`),storeKind:projectKind(p),scope:t=>compositionScope(r.current.spec,t)??'',source:id=>r.sources.get(id),authorize:ops=>assertThemeOperations(projectId,r.current.spec,ops,true),media:r.liveMedia});
  let result:ReturnType<typeof assemble>;try{result=assemble();}catch(error){if(error instanceof CompositionPlanError)throw new UserFacingError(L(error.message,error.english),'agent_composition_invalid');throw error;}

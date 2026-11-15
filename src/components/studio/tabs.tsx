@@ -10,7 +10,6 @@ const loading = () => (
 );
 
 const MAP: Record<string, React.ComponentType> = {
-  pilote: dynamic(() => import("./tab-pilote"), { loading }),
   produit: dynamic(() => import("./tab-produit"), { loading }),
   strategie: dynamic(() => import("./tab-strategie"), { loading }),
   marque: dynamic(() => import("./tab-marque"), { loading }),

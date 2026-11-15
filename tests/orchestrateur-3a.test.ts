@@ -60,47 +60,15 @@ describe("Phase 3A — intention, plan, routeur", async () => {
 
   // ------------------------------------------------------------------ intention
 
-  it("action déterministe → intention sans aucun appel à l'IA (bouton, tâche de fond, route)", async () => {
-    const classify = vi.fn();
-    for (const [action, want] of [["brand.fulllogo", ["CREATE_LOGO"]], ["logo.create", ["CREATE_LOGO"]], ["blog.generate", ["BLOG"]], ["shop.chat", ["EDIT_THEME"]], ["ads.draft", ["CREATE_AD"]], ["pipeline.run", ["ANALYZE_PRODUCT", "CREATE_BRAND", "CREATE_SHOP", "CREATE_VIDEO", "SOCIAL", "ORGANIZE_FILES"]]] as const) {
-      const r = await o.understand({ action }, { aiActive: true, classify });
-      expect(r, action).toMatchObject({ intents: want, source: "action", confidence: 1 });
+  it("action déterministe → intention sans aucun appel à l'IA (bouton, tâche de fond, route)", () => {
+    for (const [action, want] of [["brand.fulllogo", ["CREATE_LOGO"]], ["logo.create", ["CREATE_LOGO"]], ["blog.generate", ["BLOG"]], ["shop.chat", ["EDIT_THEME"]], ["ads.draft", ["CREATE_AD"]]] as const) {
+      expect(o.intentsFromAction(action), action).toEqual(want);
     }
-    expect((await o.understand({ action: "brand.logo", payload: { regenerate: true } }, { aiActive: true, classify })).intents).toEqual(["CREATE_LOGO"]);
-    expect((await o.understand({ action: "brand.logo" }, { aiActive: true, classify })).intents).toEqual(["IMPROVE_LOGO"]);
-    expect(classify).not.toHaveBeenCalled();
+    expect(o.intentsFromAction("brand.logo", { regenerate: true })).toEqual(["CREATE_LOGO"]);
+    expect(o.intentsFromAction("brand.logo")).toEqual(["IMPROVE_LOGO"]);
+    // Action inconnue : jamais devinée. Les anciennes façons de créer n'ont plus d'intention.
+    for (const gone of ["pipeline.run", "workflow.run", "plan.run", "une.action.inconnue"]) expect(o.intentsFromAction(gone), gone).toBeNull();
     expect(sent).toHaveLength(0);
-  });
-
-  it("demande libre claire → règles, intentions combinées, sans IA", async () => {
-    const classify = vi.fn();
-    const r = await o.understand({ text: "Crée ma marque et ma boutique" }, { aiActive: true, classify });
-    expect(r).toMatchObject({ intents: ["CREATE_BRAND", "CREATE_SHOP"], source: "rules" });
-    expect((await o.understand({ text: "Améliore mon logo, il est trop chargé" }, { aiActive: true, classify })).intents).toEqual(["IMPROVE_LOGO"]);
-    expect((await o.understand({ text: "Trouve une photo libre de droits d'un chantier" }, { aiActive: true, classify })).intents).toEqual(["FIND_STOCK_IMAGE"]);
-    expect((await o.understand({ text: "Write a blog post and 3 Instagram posts" }, { aiActive: true, classify })).intents).toEqual(["BLOG", "SOCIAL"]);
-    expect(classify).not.toHaveBeenCalled();
-  });
-
-  it("demande libre ambiguë → classement structuré par l'IA (sortie validée) ; sans IA active → question, aucun appel", async () => {
-    const classify = vi.fn(async () => ({ intents: ["SOCIAL" as const], confidence: 0.8 }));
-    const r = await o.understand({ text: "fais quelque chose pour mon lancement" }, { aiActive: true, classify });
-    expect(classify).toHaveBeenCalledOnce();
-    expect(r).toMatchObject({ intents: ["SOCIAL"], source: "ai" });
-    const off = vi.fn();
-    const d = await o.understand({ text: "fais quelque chose pour mon lancement" }, { aiActive: false, classify: off });
-    expect(off).not.toHaveBeenCalled();
-    expect(d.intents).toEqual([]);
-    expect(d.clarification).toMatch(/Que souhaitez-vous faire/);
-    // Classement réel (fournisseur simulé) : schéma validé, intention inconnue rejetée, tracé « intent ».
-    reply = JSON.stringify({ intents: ["CREATE_AD", "PAS_UNE_INTENTION"], confidence: 0.9 });
-    const real = await fr(() => o.understand({ text: "boost mes ventes" }, { aiActive: true, classify: o.aiIntentClassifier({ userId: u.id, projectId: sbId }) }));
-    expect(real.source).toBe("ai");
-    expect(real.intents).toEqual([]); // sortie non conforme → rien de deviné, question posée
-    reply = JSON.stringify({ intents: ["CREATE_AD"], confidence: 0.9 });
-    expect((await fr(() => o.understand({ text: "boost mes ventes" }, { aiActive: true, classify: o.aiIntentClassifier({ userId: u.id, projectId: sbId }) }))).intents).toEqual(["CREATE_AD"]);
-    expect(sent.at(-1).model).toBe("claude-haiku-4-5");
-    expect(one<any>("SELECT task, prompt_key FROM ai_calls WHERE project_id = ? ORDER BY created_at DESC, rowid DESC LIMIT 1", sbId)).toEqual({ task: "classification", prompt_key: "intent" });
   });
 
   // ------------------------------------------------------------------ plan

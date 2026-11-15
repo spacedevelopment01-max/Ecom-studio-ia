@@ -247,32 +247,6 @@ describe("I3 : période des quotas alignée sur la facturation", () => {
 // ------------------------------------------------------------------ I4, I5, mineur 1
 
 describe("tâches", () => {
-  it("I4 : seule la première création est hors décompte ; une relance pendant une création est refusée", async () => {
-    const { enqueue, jobQuotaScope, pipelineActive } = await import("@/lib/jobs");
-    const u = await newUser("i4");
-    const pid = id();
-    run("INSERT INTO projects (id, user_id, name, status, platform, store_type, settings_json, sources_json, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)", pid, u.id, "Projet I4", "draft", "shopify", "mono", "{}", "[]", now(), now());
-    const first = enqueue({ userId: u.id, projectId: pid, type: "pipeline.run", payload: { projectId: pid, initial: true, input: {} } });
-    expect(jobQuotaScope(first)).toBe("creation");
-    // Le calendrier de 7 jours lancé par la première création en fait partie ; un calendrier lancé à part décompte.
-    const cal = enqueue({ userId: u.id, projectId: pid, type: "calendar.plan", payload: {}, parentId: first.id });
-    expect(jobQuotaScope(cal)).toBe("creation");
-    expect(jobQuotaScope(enqueue({ userId: u.id, projectId: pid, type: "calendar.plan", payload: {} }))).toBe("normal");
-    // Relance de la route resume pendant la création : 409.
-    sessionUser = u;
-    const resume = await import("@/app/api/projects/[id]/resume/route");
-    const r = await resume.POST(new Request("http://localhost/api/projects/x/resume", { method: "POST", body: JSON.stringify({ from: "images" }), headers: { "Content-Type": "application/json" } }), { params: Promise.resolve({ id: pid }) });
-    expect(r.status).toBe(409);
-    expect(pipelineActive(pid)).toBe(true);
-    run("UPDATE jobs SET status = 'done' WHERE id = ?", first.id);
-    // Après la première création : relance et nouveau départ décomptent les visuels.
-    const r2 = await resume.POST(new Request("http://localhost/api/projects/x/resume", { method: "POST", body: JSON.stringify({ from: "images" }), headers: { "Content-Type": "application/json" } }), { params: Promise.resolve({ id: pid }) });
-    expect(r2.status).toBe(200);
-    const resumed = one<any>("SELECT * FROM jobs WHERE id = ?", ((await r2.json()) as any).jobId);
-    expect(jobQuotaScope(resumed)).toBe("normal");
-    const again = enqueue({ userId: u.id, projectId: pid, type: "pipeline.run", payload: { projectId: pid, initial: true, input: {} } });
-    expect(jobQuotaScope(again)).toBe("normal");
-  });
 
   it("I5 : une tâche longue n'est pas reprise en double par le même worker ; le bail est prolongé", async () => {
     const { enqueue, claimNext, markRunning, markFinished, renewLease, getJob } = await import("@/lib/jobs");

@@ -1,6 +1,5 @@
 "use client";
 import {CommunicationAngleSelector,useCommunicationAngle} from "./communication-angle";
-import { InitialCreatives } from "./initial-creatives";
 import { CopyFailureHistory } from "./copy-correction";
 /**
  * Studio social V2 : Piloter (vue d'ensemble, communication automatique, stratégie) → Créer (image, vidéo, plusieurs) → Gérer (calendrier, validation, statistiques).
@@ -124,7 +123,6 @@ export function SocialStudio({ initial = "calendrier" }: { initial?: Section }) 
   }, []);
   const [range, setRange] = useState(() => ({ from: Date.now() - 40 * 86_400_000, to: Date.now() + 120 * 86_400_000 }));
   const { data, reload, error } = useApi<Data>(`/api/projects/${id}/social/v2?from=${range.from}&to=${range.to}`);
-  useEffect(()=>{const changed=(event:Event)=>{if((event as CustomEvent<{projectId?:string}>).detail?.projectId===id)void reload();};window.addEventListener('studio:social-changed',changed);return()=>window.removeEventListener('studio:social-changed',changed);},[id,reload]);
   const [open, setOpen] = useState<string | null>(null);
   if (error && !data) return <Empty title={t("Réseaux sociaux indisponibles", "Social unavailable")}>{error}</Empty>;
   if (!data) return <div className="grid place-items-center py-24 text-muted"><Spinner className="size-6" /></div>;
@@ -177,7 +175,6 @@ export function SocialStudio({ initial = "calendrier" }: { initial?: Section }) 
       </aside>
       <div className="grid min-w-0 grid-cols-1 content-start gap-5">
         <CopyFailureHistory/>
-        <InitialCreatives onChange={reload}/>
         {section === "vue" && <SocialOverview counts={data.stats.counts} posts={data.posts} statsNote={data.stats.note} hasMetrics={data.stats.byPlatform.some((b) => Object.values(b.metrics).some((m) => m.value != null))} onGo={(s: string) => go((s === "creer" ? "planifier" : s) as Section)} />}
         {section === "pilote" && <AutopilotPanel onChanged={reload} />}
         {section === "strategie" && <StrategyPanel data={data} />}

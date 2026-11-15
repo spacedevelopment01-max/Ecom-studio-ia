@@ -5,17 +5,24 @@
 import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
+import { TENUE_SECTIONS } from "@/lib/syna-agent/custom-theme/tenue";
 
 process.env.STUDIO_SYNA_AGENT = "1";
 
 describe("SINA — familles de sections Classique et Moderne", async () => {
   const F = await import("@/lib/syna-agent/section-families");
 
-  it("trois cartes en image (Classique ; Moderne · Sport chic ; Moderne · Streetwear néon), aperçus présents dans le dépôt", () => {
+  it("deux cartes en image : le client choisit seulement Classique ou Moderne (les styles ne sont que des exemples à ouvrir)", () => {
     const cards = F.familyCards();
-    expect(cards.map((c) => c.title)).toEqual(["Classique", "Moderne · Sport chic", "Moderne · Streetwear néon"]);
+    expect(cards.map((c) => c.title)).toEqual(["Classique", "Moderne"]);
+    expect(cards[1].examples.map((x) => x.label)).toEqual(["Exemple Sport chic", "Exemple Streetwear néon"]);
+    // aperçu en image de chaque famille entière (la carte Moderne montre ses deux exemples)
+    expect(cards.map((c) => c.previews.length)).toEqual([1, 2]);
+    for (const c of cards) for (const p of c.previews) expect(fs.existsSync(path.join(process.cwd(), "public", p))).toBe(true);
     for (const c of cards) expect(fs.existsSync(path.join(process.cwd(), "public", c.preview))).toBe(true);
-    expect(cards.find((c) => c.family === "moderne")!.sections).toBe(49);
+    // 51 sections propres à la famille (sans fausses urgences ni offres d'exemple, audit du 10 novembre 2026), plus les
+    // sections à tenue du 13 novembre, qui vont avec les deux familles.
+    expect(cards.find((c) => c.family === "moderne")!.sections).toBe(51 + TENUE_SECTIONS.length);
   });
 
   it("aucune section n'appartient aux deux familles, et la famille Moderne propose plusieurs choix par rôle", () => {
@@ -24,7 +31,10 @@ describe("SINA — familles de sections Classique et Moderne", async () => {
     for (const s of Object.values(moderne.roles).flat()) expect(a.has(s)).toBe(false);
     expect(F.sectionInFamily("Ouverture « mot géant »", "moderne")).toBe(true);
     expect(F.sectionInFamily("Ouverture « mot géant »", "classique")).toBe(false);
-    for (const role of ["ouverture", "produits", "produit vedette", "mise en avant", "confiance", "panier", "inscription", "pied de page"]) expect(moderne.roles[role].length).toBeGreaterThanOrEqual(3);
+    // Plusieurs choix par rôle ; « produit vedette » et « panier » en ont deux depuis le retrait du drop limité (faux
+    // compte à rebours) et du panier néon (produits d'exemple écrits par son script), audit du 10 novembre 2026.
+    for (const role of ["ouverture", "produits", "mise en avant", "confiance", "inscription", "pied de page"]) expect(moderne.roles[role].length).toBeGreaterThanOrEqual(3);
+    for (const role of ["produit vedette", "panier"]) expect(moderne.roles[role].length).toBeGreaterThanOrEqual(2);
     expect(F.missingRoles("classique", ["en-tête", "ouverture"])).toEqual(["en-tête"]);
   });
 
@@ -77,9 +87,9 @@ describe("SINA — familles de sections Classique et Moderne", async () => {
 
   it("chaque style a sa démonstration complète à ouvrir en vrai (pages, panier, téléphone), photos présentes", async () => {
     const fs = await import("node:fs"), path = await import("node:path");
-    const cards = F.familyCards();
-    expect(cards).toHaveLength(3);
-    for (const c of cards) {
+    const demos = F.familyCards().flatMap((c) => c.examples);
+    expect(demos).toHaveLength(3);
+    for (const c of demos) {
       expect(c.demo).toMatch(/^\/demo\/familles\/[a-z-]+\/index\.html$/);
       const dir = path.join(process.cwd(), "public", path.dirname(c.demo));
       const html = fs.readFileSync(path.join(dir, "index.html"), "utf8");

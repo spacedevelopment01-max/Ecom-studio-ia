@@ -163,7 +163,44 @@ export function briefWithoutText(text: string, name: string): string {
 
 // ---------------------------------------------------------------- image : nettoyage, planche
 
-/** Fond blanc retiré (modèles sans transparence) puis recadrage serré avec une marge — le dessin n'est pas touché. */
+/**
+ * Fond retiré DEPUIS LES BORDS (audit du 10 novembre 2026) : la couleur des bords (blanc, crème, gris clair) est effacée
+ * de proche en proche, sans toucher aux blancs INTÉRIEURS du dessin (lettres blanches dans un badge, reflets), et un fond
+ * crème ne laisse plus de rectangle autour du logo. Un fond sombre ou coloré (plaque voulue par le dessin) n'est pas
+ * effacé. Bord adouci : les pixels de transition gardent une transparence partielle.
+ */
+export function removeBackgroundFromEdges(data: Buffer | Uint8Array, w: number, h: number) {
+  const at = (x: number, y: number) => (y * w + x) * 4;
+  const border: number[][] = [];
+  for (let x = 0; x < w; x++) { border.push([...data.subarray(at(x, 0), at(x, 0) + 3)], [...data.subarray(at(x, h - 1), at(x, h - 1) + 3)]); }
+  for (let y = 0; y < h; y++) { border.push([...data.subarray(at(0, y), at(0, y) + 3)], [...data.subarray(at(w - 1, y), at(w - 1, y) + 3)]); }
+  const med = [0, 1, 2].map((k) => border.map((c) => c[k]).sort((a, b) => a - b)[Math.floor(border.length / 2)]);
+  const light = med.every((v) => v > 205) && Math.max(...med) - Math.min(...med) < 40;
+  if (!light) return; // fond sombre ou coloré : gardé (le contrôle le juge)
+  const dist = (i: number) => Math.hypot(data[i] - med[0], data[i + 1] - med[1], data[i + 2] - med[2]);
+  const NEAR = 30, EDGE = 70;
+  const seen = new Uint8Array(w * h);
+  const stack: number[] = [];
+  const push = (x: number, y: number) => { const p = y * w + x; if (!seen[p] && dist(p * 4) < NEAR) { seen[p] = 1; stack.push(p); } };
+  for (let x = 0; x < w; x++) { push(x, 0); push(x, h - 1); }
+  for (let y = 0; y < h; y++) { push(0, y); push(w - 1, y); }
+  while (stack.length) {
+    const p = stack.pop()!, x = p % w, y = (p - x) / w;
+    data[p * 4 + 3] = 0;
+    if (x > 0) push(x - 1, y); if (x < w - 1) push(x + 1, y); if (y > 0) push(x, y - 1); if (y < h - 1) push(x, y + 1);
+  }
+  // Bord adouci : un pixel voisin du fond effacé, proche de sa couleur, devient en partie transparent.
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const p = y * w + x;
+    if (seen[p]) continue;
+    const nb = (x > 0 && seen[p - 1]) || (x < w - 1 && seen[p + 1]) || (y > 0 && seen[p - w]) || (y < h - 1 && seen[p + w]);
+    if (!nb) continue;
+    const d = dist(p * 4);
+    if (d < EDGE) data[p * 4 + 3] = Math.round(255 * Math.min(1, Math.max(0, (d - NEAR) / (EDGE - NEAR))));
+  }
+}
+
+/** Fond clair retiré depuis les bords (modèles sans transparence) puis recadrage serré avec une marge. */
 export async function cleanArtwork(img: Buffer): Promise<Buffer> {
   const meta = await sharp(img).metadata();
   let png = img;
@@ -171,7 +208,7 @@ export async function cleanArtwork(img: Buffer): Promise<Buffer> {
   const opaque = !meta.hasAlpha || (await sharp(img).ensureAlpha().stats()).channels[3].min === 255;
   if (opaque) {
     const { data, info } = await sharp(img).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-    for (let i = 0; i < data.length; i += 4) if (data[i] > 242 && data[i + 1] > 242 && data[i + 2] > 242) data[i + 3] = 0;
+    removeBackgroundFromEdges(data, info.width, info.height);
     png = await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
   }
   const trimmed = await sharp(png).trim({ threshold: 5 }).png().toBuffer().catch(() => png);

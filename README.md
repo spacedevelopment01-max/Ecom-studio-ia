@@ -24,7 +24,7 @@ Production : `npm run build` puis `npm start` (lance le site **et** le worker). 
 
 L'administration (`/admin`) est réservée au propriétaire : définissez `ADMIN_EMAIL` avec votre adresse, seul ce compte sera administrateur. Sans `ADMIN_EMAIL`, seul le tout premier compte créé l'est. Le rôle ne peut pas être transmis depuis le studio.
 
-Autres commandes : `npm test` (tests vitest), `npm run typecheck`, `npx tsx scripts/theme-check.ts` (Shopify Theme Check sur une direction ; boucle sur les 11 en CI), `npx tsx scripts/e2e-pipeline.ts <photo>` (pipeline complet sans navigateur), `CHROMIUM=… PHOTO=… npx tsx scripts/e2e-browser.ts` (parcours navigateur bureau + mobile), `npx tsx scripts/build-demos.ts` (régénère les démonstrations de la page d'accueil), `npx tsx scripts/build-explainers.ts` (régénère les cinq vidéos explicatives de l'accueil à partir des démonstrations).
+Autres commandes : `npm test` (tests vitest), `npm run typecheck`, `npx tsx scripts/theme-check.ts` (Shopify Theme Check sur une direction ; boucle sur les 11 en CI), `npx tsx scripts/build-demos.ts` (régénère les démonstrations de la page d'accueil), `npx tsx scripts/build-explainers.ts` (régénère les cinq vidéos explicatives de l'accueil à partir des démonstrations).
 
 ### Essayer sans rien installer (GitHub Codespaces, gratuit)
 
@@ -116,5 +116,5 @@ se garde à part : sans elle, les clés enregistrées dans l'administration sont
 - `src/lib` — base SQLite (better-sqlite3, WAL) partagée site/worker, facturation en micro-euros, chiffrement, OAuth et publication, intégrations.
 - `src/lib/theme` + `theme-base/` — moteur de thème Shopify (spécification JSON OS 2.0 → fichiers ; rendu Liquid pour l'aperçu ; opérations ciblées validées).
 - `src/lib/media` — détourage, compositions (Skia), logos SVG, vidéo (ffmpeg).
-- `src/lib/engine` — pipeline et moteur intégré ; `src/lib/ai` — routage multi-fournisseurs, contexte et mémoire du projet, prompts spécialisés, contrôle qualité.
+- `src/lib/engine` — moteurs intégrés (site, images, lecture d'un site) ; `src/lib/ai` — routage multi-fournisseurs, contexte et mémoire du projet, prompts spécialisés, contrôle qualité.
 - `public/demo` — démonstrations de la page d'accueil : **produits réels** de fournisseurs (marque blanche, photos retouchées dans `scripts/demo-products/inputs`), marques et boutiques créées par le studio (`scripts/build-demos.ts`).

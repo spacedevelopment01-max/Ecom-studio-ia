@@ -243,16 +243,6 @@ describe("I2 / I3 / M9 — résumés d'étapes et questions dans la langue de l'
     expect(stepNoteText("Site lu : Maison (moteur local)", "fr")).toBe("Site lu : Maison");
   });
 
-  it("pipelineState traduit les résumés selon la langue de la requête", async () => {
-    const { pipelineState } = await import("@/lib/engine/pipeline");
-    const job = { checkpoint: JSON.stringify({ __steps: { sources: { status: "done", at: 1, note: { k: "sources.photos" } }, images: { status: "skipped", at: 1, note: { k: "skip.plan" } } } }) } as any;
-    const fr = runWithLang({ ui: "fr" }, () => pipelineState(job));
-    const en = runWithLang({ ui: "en" }, () => pipelineState(job));
-    expect(fr.find((s) => s.id === "sources")?.note).toBe("Photos reçues");
-    expect(en.find((s) => s.id === "sources")?.note).toBe("Photos received");
-    expect(en.find((s) => s.id === "images")?.note).toMatch(/^Included in the plans/);
-  });
-
   it("résumé de version bilingue et questions connues retraduites", async () => {
     const { storedText } = await import("@/lib/step-notes");
     const { localizeQuestions } = await import("@/lib/engine/local");
@@ -267,7 +257,7 @@ describe("I2 / I3 / M9 — résumés d'étapes et questions dans la langue de l'
 
   it("aucune mention « moteur local » dans les textes des étapes et des réponses du chat", async () => {
     const fs = await import("node:fs");
-    for (const f of ["src/lib/engine/pipeline.ts", "src/lib/engine/brand.ts", "src/lib/engine/calendar.ts", "src/lib/engine/local.ts"]) {
+    for (const f of ["src/lib/engine/brand.ts", "src/lib/engine/calendar.ts", "src/lib/engine/local.ts"]) {
       const code = fs.readFileSync(f, "utf8").split("\n").filter((l) => !/^\s*(\/\/|\*|\/\*\*)/.test(l) && !/\.replace\(/.test(l));
       expect(code.join("\n"), f).not.toMatch(/moteur local|local engine|à activer dans l'administration/);
     }

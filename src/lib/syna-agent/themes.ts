@@ -13,6 +13,7 @@ import { DIRECTIONS } from "../theme/directions";
 import { ACTIVE_THEMES, themePreviewPath } from "../theme/theme-fit";
 import { themeDemoStatus } from "../theme/theme-demos";
 import { assertThemeAllowed } from "../plan-gates";
+import { themeRecommendation } from "../theme/theme-recommendation";
 
 export type ThemeCard = {
   id: string; name: string; tagline: string;
@@ -52,10 +53,16 @@ export function themeChoices(projectId: string, all = false): SinaThemes {
   const wanted: "one" | "few" | "services" = p.business === "services" ? "services" : count >= 2 ? "few" : "one";
   const fallback: "one" | "few" | "services" = wanted === "few" ? "one" : wanted === "one" ? "few" : "services";
   const active = ACTIVE_THEMES as readonly string[];
-  const rank = (id: string) => (STAGING[id] === wanted ? 0 : STAGING[id] === fallback ? 1 : 2);
+  // Recommandé : celui du moteur de recommandation du Studio (contrat de préparation ou thème de référence de la
+  // catégorie) quand il met en scène ce que vend le client (audit du 10 novembre 2026) ; sinon le premier thème pensé
+  // pour ce que vend le client.
+  let recs: string[] = [];
+  try { const r = themeRecommendation(p); recs = [r.recommended, ...r.alternatives.map((x) => x.id)].filter((x): x is string => !!x); } catch { recs = []; }
+  const engine = recs.find((id) => active.includes(id) && STAGING[id] === wanted) ?? null;
+  const rank = (id: string) => (id === engine ? -1 : STAGING[id] === wanted ? 0 : STAGING[id] === fallback ? 1 : 2);
   const ordered = [...active].sort((a, b) => rank(a) - rank(b));
   const ids = ordered.slice(0, all ? active.length : 3);
-  const recommendedId = rank(ordered[0]) === 0 ? ordered[0] : null;
+  const recommendedId = rank(ordered[0]) <= 0 ? ordered[0] : null;
   const list = ids.map((id): ThemeCard => {
     const d = DIRECTIONS.find((x) => x.id === id);
     let allowed = true, blocked: string | undefined;

@@ -1,6 +1,7 @@
 /**
- * Étape 0 du parcours SINA (#492) : fiche de départ (questions une à une, jamais redemandées), lecture gratuite d'un
- * existant (site du client) et mode « refonte » (ce que le client garde tel quel). Aucun appel d'IA payant ici.
+ * Faire connaissance (repère 0 du parcours) : la fiche du client (sujets abordés un à un, jamais redemandés), ses
+ * notes libres, la lecture gratuite d'un existant (son site) et le mode « refonte » (ce qu'il garde tel quel).
+ * Aucun appel d'IA payant ici. Rien n'est enregistré que le client n'ait dit lui-même.
  */
 import { z } from "zod";
 import fs from "node:fs";
@@ -16,9 +17,34 @@ import type { AgentTool, ToolContext } from "../types";
 import { attachmentsOf } from "../attachments";
 import {
   FIELD_LABEL, JOURNEY_STEPS, KEEPABLE, REQUIRED_FIELDS, START_FIELDS, currentStep, journeyOf, missingFields,
-  QUESTIONS, setStep, updateJourney, type FieldAnswer, type Journey, type StartField,
+  TOPICS, setStep, updateJourney, type FieldAnswer, type Journey, type StartField,
 } from "../journey";
 import { short } from "./common";
+import { companyFromText, saveCompany } from "../activity";
+import { addWordingRule, loadWordingRules } from "../../client-wording";
+
+const words = (t: string) => new Set(t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().match(/[a-z]{4,}|\d+/g) ?? []);
+/** Ce que le client a écrit depuis la dernière réponse de SINA, et le sujet que cette réponse demandait. */
+function lastSaid(conversationId: string): { said: string; askField?: string } | null {
+  const lastAssistant = one<{ seq: number; content_json: string }>("SELECT seq, content_json FROM syna_messages WHERE conversation_id=? AND role='assistant' AND seq < (SELECT MAX(seq) FROM syna_messages WHERE conversation_id=? AND role='user') ORDER BY seq DESC LIMIT 1", conversationId, conversationId);
+  const mine = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND role='user' AND seq > ? ORDER BY seq", conversationId, lastAssistant?.seq ?? -1);
+  if (!mine.length) return null;
+  const text = (j: string) => { try { return String(JSON.parse(j)?.text ?? ""); } catch { return ""; } };
+  let askField: string | undefined;
+  try { askField = lastAssistant ? JSON.parse(lastAssistant.content_json)?.askField : undefined; } catch { /* message illisible */ }
+  return { said: mine.map((m) => text(m.content_json)).join("\n"), askField };
+}
+/**
+ * Une réponse que le client n'a PAS donnée n'est jamais enregistrée. Toujours permis : le sujet que SINA venait de
+ * demander, et le genre d'activité (produits ou services), qu'elle déduit. Sinon, un mot au moins de la valeur doit se
+ * trouver dans ce que le client vient d'écrire. Rend les valeurs refusées.
+ */
+export function unsaid<T extends { value: string }>(conversationId: string, items: T[], allowed: (x: T, askField?: string) => boolean = () => false): T[] {
+  const last = lastSaid(conversationId);
+  if (!last) return [];
+  const heard = words(last.said);
+  return items.filter((x) => !allowed(x, last.askField) && ![...words(x.value)].some((w) => heard.has(w)));
+}
 
 /** Lecteur de site remplaçable par les tests (aucun réseau). */
 export const startDeps: { fetchImpl?: SiteFetcher } = {};
@@ -27,7 +53,8 @@ const view = (j: Journey) => ({
   etapeEnCours: currentStep(j),
   etapes: JOURNEY_STEPS.map((s) => ({ n: s.n, nom: s.fr, statut: j.steps[s.n]?.status ?? "todo" })),
   fiche: Object.fromEntries(START_FIELDS.filter((f) => j.start[f]).map((f) => [f, j.start[f]])),
-  aDemander: missingFields(j).map((f) => ({ champ: f, question: QUESTIONS[f](j).fr })),
+  sujetsPasEncoreAbordes: missingFields(j).map((f) => ({ champ: f, aApprendre: TOPICS[f](j).fr })),
+  notes: j.notes ?? [],
   mode: j.mode, aGarder: j.keep,
   existantLu: j.imported,
 });
@@ -36,6 +63,9 @@ const view = (j: Journey) => ({
 export function provisionalName(offer: string): string {
   const head = offer.trim().split(/[.,;:!?\n(]/)[0].trim().replace(/^(je suis|je fais|je vends|je propose|c'est|nous sommes|nous faisons|on est|on fait)\s+/i, "").replace(/^(de la|de l'|du|des|un|une|le|la|les|l')\s*/i, "");
   const short = head.length > 40 ? head.slice(0, 40).replace(/\s+\S*$/, "") : head;
+  // Une phrase qui commence encore par « je … » n'est pas un nom (essai réel du 14 novembre 2026 : « Je répare les
+  // crevaisons (provisoire) ») : nom neutre, en attendant la marque.
+  if (/^(je|j'|j’|nous|on)\b/i.test(short)) return "Mon projet (provisoire)";
   return `${(short || "Mon projet").replace(/^./, (c) => c.toUpperCase())} (provisoire)`;
 }
 
@@ -57,14 +87,14 @@ export const withoutIds = (s: string) => s.replace(/\b(?:pi[eè]ce(?: jointe)?|f
 
 const stateTool: AgentTool<{}> = {
   name: "start.state", module: "parcours", kind: "read",
-  description: "Lit le parcours de création (étapes 0 à 13) et la fiche de départ : ce que le client a déjà dit (avec la source : client, site lu, formulaire, photo), les champs encore à demander dans l'ordre, le mode (création ou refonte) et ce qu'il faut garder tel quel. Gratuit, utilisable avant la création du projet.",
+  description: "Lit le parcours et la fiche du client : ce qu'il a déjà dit (avec la source : client, site lu, formulaire, photo), tes notes, les sujets pas encore abordés, le mode (création ou refonte) et ce qu'il faut garder tel quel. Gratuit, utilisable avant la création du projet.",
   args: z.object({}).strict(),
   run: (ctx) => ({ ok: true, summary: L("Parcours relu.", "Journey read."), data: view(journeyOf(ctx.conversationId)) }),
 };
 
 const answerTool: AgentTool<any> = {
   name: "start.answer", module: "parcours", kind: "write",
-  description: "Enregistre une ou plusieurs réponses du client dans la fiche de départ (étape 0). Champs : business (« products » ou « services »), offer, existing, audience, image (3 mots d'image voulue, couleurs refusées), setup (boutique : nombre de produits au lancement ; services : façon d'être contacté), market, price, difference, taste, photos (photos du client : en a-t-il, les a-t-il envoyées), language (français seulement, ou français et anglais), contact, platform (shopify, woocommerce, prestashop ou « à décider »). Reprends les mots du client sans rien inventer. status « later » si le client veut répondre plus tard (refusé pour business, offer, audience), « none » s'il n'a rien à dire. Une réponse déjà connue peut être corrigée si le client la change. Gratuit, utilisable avant la création du projet.",
+  description: "Enregistre dans la fiche ce que le client vient de dire sur un ou plusieurs sujets. Champs : business (« products » ou « services »), offer, existing, audience, image (image voulue, couleurs ou styles refusés), setup (boutique : nombre de produits au lancement ; services : façon d'être contacté), market, price, difference, taste, photos (en a-t-il, les a-t-il envoyées), language (français seulement, ou français et anglais), contact, platform (shopify, woocommerce, prestashop ou « à décider »). Reprends ses mots, sans rien ajouter. Un sujet qu'il n'a pas abordé est refusé : pose-lui la question. status « later » seulement s'il dit lui-même qu'il répondra plus tard (refusé pour business, offer, audience), « none » seulement s'il dit qu'il n'a rien à dire. Une réponse déjà connue peut être corrigée s'il la change. Gratuit, utilisable avant la création du projet.",
   args: z.object({
     answers: z.array(z.object({
       field: z.enum(START_FIELDS.filter((f) => f !== "keep") as [StartField, ...StartField[]]),
@@ -78,6 +108,9 @@ const answerTool: AgentTool<any> = {
       if (x.status === "answered" && !x.value.trim()) return { ok: false, summary: L(`Réponse vide pour « ${FIELD_LABEL[x.field].fr} ».`, "Empty answer.") };
       if (x.field === "business" && x.status === "answered" && !["products", "services"].includes(x.value.trim())) return { ok: false, internal: true, summary: L("business vaut « products » ou « services ».", "business is \"products\" or \"services\".") };
     }
+    // « Plus tard » et « rien » se jugent sur ce qu'il a écrit : la valeur est alors souvent vide.
+    const refused = unsaid(ctx.conversationId, a.answers.map((x) => ({ ...x, value: x.status === "answered" ? x.value : `${x.value} plus tard rien aucun aucune pas encore sais non` })), (x, asked) => x.field === "business" || x.field === asked);
+    if (refused.length) return { ok: false, internal: true, summary: L(`${refused.map((x) => `« ${FIELD_LABEL[x.field].fr} »`).join(", ")} : le client ne l'a pas dit dans son dernier message. Pose-lui la question au lieu de répondre à sa place, et n'enregistre que ce qu'il a dit.`, "The client did not say this: ask instead of answering for them.") };
     const before = journeyOf(ctx.conversationId).start;
     const j = updateJourney(ctx.conversationId, (j) => {
       for (const x of a.answers) j.start[x.field] = { value: withoutIds(x.value), status: x.status, source: "client", at: Date.now() };
@@ -88,9 +121,35 @@ const answerTool: AgentTool<any> = {
     return {
       ok: true,
       summary: L(`${a.answers.map((x) => FIELD_LABEL[x.field].fr).join(", ")} : c'est noté.${created ? " Ton projet est créé." : ""}${next.length ? "" : " Tout est renseigné."}`, "Saved."),
-      data: { prochaine: next[0] ?? null, question: next[0] ? QUESTIONS[next[0]](j).fr : null, restent: next.slice(1) },
+      data: { sujetsPasEncoreAbordes: next },
       changes: a.answers.map((x) => ({ module: "parcours", object: `fiche de départ · ${FIELD_LABEL[x.field].fr}`, summary: x.status === "answered" ? short(x.value, 160) : x.status === "later" ? "plus tard" : "rien", before: before[x.field] ?? null, after: j.start[x.field], verified: true })),
     };
+  },
+};
+
+const noteTool: AgentTool<any> = {
+  name: "start.note", module: "parcours", kind: "write",
+  description: "Note un fait utile que le client vient de donner et qui n'entre dans aucun sujet de la fiche : son histoire, ses concurrents, ses réseaux, sa fabrication, le déroulé d'une prestation, ses diplômes ou garanties, ses horaires, ce qu'il attend des prochains mois… sujet : quelques mots (le même sujet remplace la note précédente) ; value : ses mots, sans rien ajouter. Refusé si le client ne l'a pas dit dans son dernier message. Ces notes servent à sa marque, à son site et à ses publications. Gratuit, utilisable avant la création du projet.",
+  args: z.object({ notes: z.array(z.object({ sujet: z.string().min(2).max(80), value: z.string().min(2).max(2000) })).min(1).max(8) }).strict(),
+  run: (ctx, a: { notes: { sujet: string; value: string }[] }) => {
+    const refused = unsaid(ctx.conversationId, a.notes);
+    if (refused.length) return { ok: false, internal: true, summary: L(`${refused.map((x) => `« ${x.sujet} »`).join(", ")} : le client ne l'a pas dit dans son dernier message. Note seulement ce qu'il a dit, avec ses mots.`, "The client did not say this.") };
+    const j = updateJourney(ctx.conversationId, (j) => {
+      const at = Date.now();
+      for (const n of a.notes) j.notes = [...(j.notes ?? []).filter((x) => x.sujet.toLowerCase() !== n.sujet.trim().toLowerCase()), { sujet: n.sujet.trim(), value: withoutIds(n.value), at }].slice(-40);
+    });
+    return { ok: true, summary: L(`Noté : ${a.notes.map((n) => n.sujet).join(", ")}.`, "Noted."), data: { notes: j.notes?.length ?? 0 }, changes: a.notes.map((n) => ({ module: "parcours", object: `note · ${n.sujet}`, summary: short(n.value, 160), after: n.value, verified: true })) };
+  },
+};
+
+const wordingTool: AgentTool<any> = {
+  name: "client.wording", module: "parcours", kind: "write", needsProject: true,
+  description: "Retient pour toujours un mot que le client corrige : le mot à ne plus employer (avoid) et celui qu'il veut à la place (use). À appeler dès qu'il dit « ne dis pas X, dis Y », ou qu'il reprend un mot que tu as employé. Tous les textes créés ensuite (site, publications, publicités) le respectent. Gratuit.",
+  args: z.object({ avoid: z.string().min(2).max(60), use: z.string().min(1).max(60), note: z.string().max(200).optional() }).strict(),
+  run: (ctx, a: { avoid: string; use: string; note?: string }) => {
+    const before = loadWordingRules(ctx.projectId!);
+    const after = addWordingRule(ctx.projectId!, { avoid: a.avoid, use: a.use, ...(a.note ? { note: a.note } : {}) });
+    return { ok: true, summary: L(`Retenu : « ${a.use} », jamais « ${a.avoid} ».`, "Wording saved."), data: { regles: after.length }, changes: [{ module: "parcours", object: "vocabulaire du client", summary: `« ${a.avoid} » → « ${a.use} »`, before: before.length, after: after.length, verified: true }] };
   },
 };
 
@@ -131,7 +190,7 @@ const importTool: AgentTool<{ url: string }> = {
     return {
       ok: true,
       summary: L(`Site lu : ${existing}. ${site.pages.length} page${site.pages.length > 1 ? "s" : ""}${site.products.length ? `, ${site.products.length} produit${site.products.length > 1 ? "s" : ""}` : ""}.`, "Site read."),
-      data: { ...imported, aDemander: missingFields(j) },
+      data: { ...imported, sujetsPasEncoreAbordes: missingFields(j) },
       changes: [{ module: "parcours", object: "existant lu", summary: short(existing, 200), after: imported, verified: true }],
     };
   },
@@ -187,22 +246,35 @@ async function keepLogo(ctx: ToolContext, j: Journey): Promise<string | null> {
   return a.id;
 }
 
+/** Langue des contenus du projet (réglage « language » du projet), choisie à l'étape 0. */
+function setProjectLanguage(pid: string, lang: "fr" | "en") {
+  const row = one<{ settings_json: string | null }>("SELECT settings_json FROM projects WHERE id=?", pid);
+  const st = JSON.parse(row?.settings_json ?? "{}");
+  run("UPDATE projects SET settings_json=?, updated_at=? WHERE id=?", JSON.stringify({ ...st, language: lang }), Date.now(), pid);
+}
+
 /** Modes de contact reconnus dans les mots du client (services). */
 export function contactModesFrom(text: string): ContactMode[] {
-  const m: ContactMode[] = [];
-  if (/r[ée]serv|rendez-vous|en ligne|cr[ée]neau/i.test(text)) m.push("booking");
-  if (/devis/i.test(text)) m.push("quote");
-  if (/appel|t[ée]l[ée]phone/i.test(text)) m.push("call");
-  if (/formulaire|e-?mail|message/i.test(text)) m.push("form");
-  return m;
+  // Dans l'ordre où le client les cite : le premier est le bouton principal (audit du 10 novembre 2026 : « devis en
+  // ligne » donnait la réservation en premier ; « en ligne » seul n'est pas une réservation).
+  const found: { mode: ContactMode; at: number }[] = [];
+  const add = (mode: ContactMode, re: RegExp) => { const m = re.exec(text); if (m) found.push({ mode, at: m.index }); };
+  add("booking", /r[ée]serv|rendez-vous|cr[ée]neau/i);
+  add("quote", /devis/i);
+  add("call", /appel|t[ée]l[ée]phone/i);
+  add("form", /formulaire|e-?mail|message/i);
+  return found.sort((a, b) => a.at - b.at).map((x) => x.mode);
 }
-/** Nombre de produits au lancement (boutique), s'il est donné en chiffres ou en toutes lettres simples. */
+/** Nombre de produits au lancement (boutique) : le premier nombre cité, en chiffres ou en lettres (« une dizaine »). */
 export function productCountFrom(text: string): number | null {
-  const d = /\d+/.exec(text);
-  if (d) return Number(d[0]);
-  const words: Record<string, number> = { un: 1, une: 1, seul: 1, deux: 2, trois: 3, quatre: 4, cinq: 5, six: 6, dix: 10 };
-  const w = /\b(un|une|seul|deux|trois|quatre|cinq|six|dix)\b/i.exec(text);
-  return w ? words[w[1].toLowerCase()] : null;
+  const words: Record<string, number> = { un: 1, une: 1, seul: 1, deux: 2, trois: 3, quatre: 4, cinq: 5, six: 6, sept: 7, huit: 8, neuf: 9, dix: 10, douzaine: 12, quinzaine: 15, vingtaine: 20, trentaine: 30, cinquantaine: 50, centaine: 100 };
+  const m = /\d+|\b(dizaine|douzaine|quinzaine|vingtaine|trentaine|cinquantaine|centaine|un|une|seul|deux|trois|quatre|cinq|six|sept|huit|neuf|dix)\b/i.exec(text);
+  if (!m) return null;
+  if (/^\d+$/.test(m[0])) return Number(m[0]);
+  // « une dizaine » : le nom de quantité qui suit l'article l'emporte.
+  const after = /^\s*(dizaine|douzaine|quinzaine|vingtaine|trentaine|cinquantaine|centaine)\b/i.exec(text.slice(m.index + m[0].length));
+  if (after) return after[1].toLowerCase() === "dizaine" ? 10 : words[after[1].toLowerCase()];
+  return m[1].toLowerCase() === "dizaine" ? 10 : words[m[1].toLowerCase()];
 }
 /** Organisation choisie : type de boutique (un produit ou plusieurs) ou bouton principal du site de services. */
 function applySetup(pid: string, business: string, setup: string) {
@@ -227,7 +299,7 @@ const confirmTool: AgentTool<{}> = {
     const missing = REQUIRED_FIELDS.filter((f) => j0.start[f]?.status !== "answered");
     if (missing.length) return { ok: false, summary: L(`Il manque encore : ${missing.map((f) => FIELD_LABEL[f].fr).join(", ")}.`, `Still missing: ${missing.join(", ")}.`) };
     const open = missingFields(j0);
-    if (open.length) return { ok: false, summary: L(`Questions pas encore posées : ${open.map((f) => FIELD_LABEL[f].fr).join(", ")}. Posez-les (le client peut répondre « plus tard »).`, "Some questions were not asked yet.") };
+    if (open.length) return { ok: false, summary: L(`Sujets pas encore abordés avec lui : ${open.map((f) => FIELD_LABEL[f].fr).join(", ")}. Aborde-les (il peut répondre « plus tard »).`, "Some topics were not covered yet.") };
     const pid = await ensureProject(ctx, j0);
     if (!pid) return { ok: false, summary: L("Le projet n'a pas pu être créé (aucun abonnement libre ?).", "Project could not be created.") };
     const p = loadProject(pid);
@@ -240,6 +312,7 @@ const confirmTool: AgentTool<{}> = {
       v("taste") && `Goûts : ${v("taste")}`, v("platform") && `Plateforme : ${v("platform")}`, v("contact") && `Coordonnées : ${v("contact")}`,
       v("image") && `Image voulue : ${v("image")}`, v("setup") && `Organisation : ${v("setup")}`, v("photos") && `Photos du client : ${v("photos")}`, v("language") && `Langue du site : ${v("language")}`,
       j0.keep.length && `Refonte : garder tel quel ${j0.keep.join(", ")} ; tout le reste est recréé.`,
+      ...(j0.notes ?? []).map((n) => `${n.sujet} : ${n.value}`),
     ].filter(Boolean).join("\n");
     const st = stateOf(pid);
     if (st) {
@@ -260,6 +333,15 @@ const confirmTool: AgentTool<{}> = {
       });
     }
     applySetup(pid, v("business") || p.business, v("setup"));
+    // Ce que le client a dit à l'étape 0 sert tout le projet, jamais redemandé (audit du 10 novembre 2026) :
+    // coordonnées reconnues, plateforme de vente et langue du site.
+    const fromContact = companyFromText([v("contact"), ...j0.imported.map((x) => Object.values(x.contact ?? {}).join(" "))].join("\n"));
+    if (Object.keys(fromContact).length) saveCompany(pid, fromContact);
+    const plat = /presta/i.test(v("platform")) ? "prestashop" : /woo|wordpress/i.test(v("platform")) ? "woocommerce" : /shopify/i.test(v("platform")) ? "shopify" : null;
+    if (plat && (v("business") || p.business) !== "services") run("UPDATE projects SET platform=? WHERE id=?", plat, pid);
+    const lang = v("language");
+    if (/anglais|english/i.test(lang) && !/fran[çc]ais|french/i.test(lang)) setProjectLanguage(pid, "en");
+    if (/anglais|english/i.test(lang) && /fran[çc]ais|french/i.test(lang)) remember(pid, { kind: "decision", key: "syna.langues", value: "Site voulu en français ET en anglais (étape 0).", source: "user" } as any);
     // Nom gardé : le projet prend le vrai nom de la marque (au lieu du nom provisoire) ; slogan gardé mot pour mot.
     const keptName = j0.keep.includes("nom") ? (j0.keptValues?.name || j0.imported[0]?.name) : undefined;
     if (keptName) run("UPDATE projects SET name=? WHERE id=?", keptName, pid);
@@ -271,11 +353,11 @@ const confirmTool: AgentTool<{}> = {
     const j = updateJourney(ctx.conversationId, (j) => { setStep(j, 0, "done"); setStep(j, 1, "todo"); });
     return {
       ok: true,
-      summary: L(`Étape 0 validée : tout ce que tu as dit est reporté dans ton projet${j0.keep.length ? ` ; gardé tel quel : ${j0.keep.join(", ")}${j0.keep.includes("logo") ? (logoId ? " (logo rangé)" : " (logo introuvable : envoie-moi le fichier)") : ""}` : ""}. Prochaine étape : les 3 identités de marque.`, "Step 0 validated."),
+      summary: L(`Ta fiche est validée : tout ce que tu as dit est reporté dans ton projet${j0.keep.length ? ` ; gardé tel quel : ${j0.keep.join(", ")}${j0.keep.includes("logo") ? (logoId ? " (logo rangé)" : " (logo introuvable : envoie-moi le fichier)") : ""}` : ""}. Prochaine étape : tes identités de marque.`, "Step 0 validated."),
       data: { etapeEnCours: currentStep(j), photos: photoIds.length, liens: urls, logo: logoId },
       changes: [{ module: "parcours", object: "étape 0", summary: "validée par le client", before: "doing", after: "done", verified: true }],
     };
   },
 };
 
-export const startTools: AgentTool[] = [stateTool, answerTool, importTool, keepTool, confirmTool];
+export const startTools: AgentTool[] = [stateTool, answerTool, noteTool, wordingTool, importTool, keepTool, confirmTool];
