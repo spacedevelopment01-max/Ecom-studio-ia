@@ -5,6 +5,7 @@
  * Usage (depuis la racine du dépôt, Studio privé lancé par lancer-agent.mts) :
  *   node scripts/syna-recette/client.mjs <email> "<message du client>"   envoie le message et attend la réponse
  *   node scripts/syna-recette/client.mjs <email> @oui | @non              répond à la carte d'accord (prix annoncé)
+ *   node scripts/syna-recette/client.mjs <email> "@budget 25"            relève le budget des réponses de SINA (en %)
  *   node scripts/syna-recette/client.mjs <email> @etat                    relit le fil sans rien envoyer
  *   node scripts/syna-recette/client.mjs <email> @attendre                attend la fin d'une création en arrière-plan
  * Variables : ORIGINE (http://localhost:3493), MOT_DE_PASSE (celui des comptes fictifs), ATTENTE_MIN (40).
@@ -38,7 +39,10 @@ let view = await call("POST", "/api/syna/open", { projectId: projects[0]?.id ?? 
 const cid = view.conversationId, before = Math.max(0, ...view.messages.map((m) => m.seq ?? 0));
 
 const t0 = Date.now();
-if (said === "@oui" || said === "@non") {
+if (said.startsWith("@budget")) {
+  // « @budget 25 » : le client relève le budget autorisé pour les réponses de SINA (en % de son budget d'IA).
+  view = await call("POST", `/api/syna/${cid}/budget`, { pct: Number(said.split(/\s+/)[1] ?? 20) });
+} else if (said === "@oui" || said === "@non") {
   const pending = view.run?.status === "waiting_confirmation" ? view.run.pending : null;
   if (!pending) { console.log("Aucune carte d'accord en attente."); process.exit(1); }
   view = await call("POST", `/api/syna/${cid}/decision`, { pendingId: pending.id, approve: said === "@oui" });
