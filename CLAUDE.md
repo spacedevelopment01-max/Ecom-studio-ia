@@ -120,6 +120,9 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - Interface et contenus en français et en anglais (`L("fr", "en")`, `src/lib/i18n-server.ts` ; dans le thème, chaque
   libellé a sa traduction).
 - Les coordonnées saisies à la création d'un projet ne sont jamais redemandées ni effacées.
+- **Aucune fonction qui oblige à attendre des semaines qu'une plateforme valide le Studio** (« Je veux aucune
+  proposition qui doivent nous faire attendre des semaines pour que les plateformes valides de travailler avec nous »,
+  15 novembre 2026). Ce qui en dépendrait se fait sans elle, ou ne se fait pas.
 - Les 15 thèmes proposés : fraise, onde, rive, sillon, noctil, traverse, heuren, museau-club, souple, table-saison,
   atelier-nuance, parenthese, phase, maison-horizon, aplat. Leurs démonstrations sont des reproductions de maquettes
   validées : ne pas les recomposer ni les simplifier.

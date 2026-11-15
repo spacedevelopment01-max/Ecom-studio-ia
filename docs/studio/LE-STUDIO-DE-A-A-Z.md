@@ -450,6 +450,12 @@ présentée comme faite. Rien ne part sans l'accord du client, sauf là où il l
 | 4. Sa fiche Google et ses avis | Sa fiche Google est reliée au Studio. SINA la tient à jour (horaires, photos, description, prestations ou produits), y publie, et prépare une réponse à **chaque** avis, dans sa voix, qu'il valide d'un clic (ou qui part seule s'il l'a autorisé par écrit). Elle le prévient d'un avis négatif le jour même. Ce que Google permet de brancher, et à quelles conditions, est à vérifier avant le lot : un manque sera dit. | 5 |
 | 5. Le site qui s'améliore | Chaque mois, SINA relit son site entier (textes, photos, liens, vitesse, téléphone) et ses chiffres de visite, et propose au moins une amélioration concrète et montrée en image avant d'être faite : un texte de saison, un produit à mettre en avant, une page qui manque, un article pour être trouvé sur Google. Rien ne change sur le site sans son accord. | 4 et 7 |
 
+**Règle ajoutée le même jour** : « Je veux aucune proposition qui doivent nous faire attendre des semaines pour que les
+plateformes valides de travailler avec nous ». Conséquence, à trancher avec lui : la fiche Google (engagement 4), les
+chiffres des réseaux (engagement 1) et l'envoi automatique des publications (lot 5) passent par des accès que Google,
+Meta et TikTok doivent valider ; si ces accès ne sont pas déjà validés, ces parties se font sans eux (SINA prépare tout,
+le client publie d'un geste) ou ne se font pas. L'assistante qui répond aux clients se fait sur son site seulement.
+
 Sources de la partie 7 : journal des nouveautés de Shopify (conseils de Sidekick), Unite.AI (Canvas), TechCrunch
 (créateur de boutique), eCommerce Fastlane, Copyfy, blog de Google (Pomelli), test de Blaze par R. Doser, Apaya, blog de
 Zeely, Pixis (Meta), Tool Advisor et Capeb (Simplébo).
