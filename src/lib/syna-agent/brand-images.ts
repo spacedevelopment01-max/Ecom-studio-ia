@@ -35,7 +35,7 @@ import type { ChainAi } from "./brand-chain";
 import * as P from "./brand-prompts";
 import { RouteSchema, type Route } from "./brand-routes";
 import { cleanArtwork, onDarkVersion } from "../logo-v2/artwork";
-import { normText } from "./identities";
+import { FONT_CHARACTER, fontFamily, normText } from "./identities";
 
 export const IMAGE_SLOTS = ["logo", "hero", "object", "signs", "site", "post0", "post1", "post2"] as const;
 /**
@@ -144,14 +144,16 @@ const paletteLine = (x: Route) => `Couleurs de la marque : foncé ${x.palette.da
 export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { logo: boolean } = { logo: true }): string {
   const look = imagery.look.trim(), texts = slotTexts(x)[slot];
   if (slot === "logo") {
-    // Carte blanche, sans modèle : le logo naît de la marque (jamais d'une composition du Studio qu'il recopierait).
-    // Fond blanc : il se retire ensuite depuis les bords (jamais de carré autour).
+    // Carte blanche (retour du propriétaire du 15 novembre 2026 : « tu dois laisser libre OpenAI pour faire les logos,
+    // juste lui donner les indications de métier et identité de marque, couleur, typo ») : SINA donne ce qu'il faut
+    // savoir de la marque, jamais une idée de dessin ; seuls restent le nom exact et ce qui permet de s'en servir
+    // (un seul logo, à plat, sur fond blanc : le fond se retire ensuite depuis les bords, jamais de carré autour).
     return [
-      `Logo de la marque « ${x.name} ». Tu le conçois toi-même, comme le meilleur créateur de logos le ferait pour CETTE marque : la forme, le dessin des lettres et le signe éventuel sont à toi.`,
-      `Le nom s'écrit exactement « ${x.name} », lettre par lettre : ${spell(x.name)}. Aucune lettre ajoutée, retirée ni changée, accents compris.`,
-      imagery.logo.trim(), look ? `Direction artistique de la marque : ${look}` : "", paletteLine(x),
-      LOGO_OWN, LOGO_NOT_SCENE,
-      "Un seul logo, centré, à plat, net et lisible d'un coup d'œil, sur un fond BLANC uni jusqu'aux bords, avec de l'air autour ; ses couleurs se lisent bien sur du blanc. Aucun fond noir ni coloré, aucun dégradé, aucune lueur, aucun relief. Aucun autre texte que le nom, aucune maquette, aucun objet autour, aucun cadre, aucune ombre portée, aucune personne.",
+      `Crée le logo de la marque « ${x.name} »${x.board.descriptor ? ` (${x.board.descriptor.trim().replace(/\.+$/, "")})` : ""}. Tu es totalement libre : l'idée, la forme, le dessin des lettres et le signe éventuel sont à toi. Fais le logo que le meilleur créateur de logos ferait pour ce métier et cette marque.`,
+      `Le nom s'écrit exactement « ${x.name} », lettre par lettre : ${spell(x.name)}. Aucune lettre ajoutée, retirée ni changée, accents compris. Aucun autre mot.`,
+      imagery.logo.trim(), paletteLine(x),
+      `Typographie de la marque : un caractère ${FONT_CHARACTER[x.fonts.heading.replace(/_[ni]\d$/, "")] ?? "de titres"} (dans l'esprit de ${fontFamily(x.fonts.heading)}) ; tu peux le redessiner à ta façon.`,
+      "Un seul logo, centré, à plat, net et lisible même en tout petit, sur un fond BLANC uni jusqu'aux bords, avec de l'air autour. Ni maquette, ni photo, ni personne, ni cadre, ni ombre portée.",
     ].filter(Boolean).join("\n");
   }
   const brief = slot === "hero" ? imagery.hero : slot === "object" ? imagery.object : slot === "signs" ? imagery.signs : slot === "site" ? imagery.site : imagery.posts[Number(slot.slice(4))];

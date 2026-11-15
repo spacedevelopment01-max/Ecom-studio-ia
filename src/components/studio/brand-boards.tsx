@@ -45,7 +45,7 @@ type Board = {
   signs: { kind: string; kindLabel: string; title: string; text: string; symbol?: Picto; art?: Art; ground?: Role; sample?: string; hand?: boolean }[];
   object: { kind: string; label: string; front: string[]; back: string[]; art?: Art; note?: string };
   parcel?: { tape: string };
-  site: { headline: string; text: string; button: string; menu: string[]; art?: Art };
+  site: { headline: string; text: string; button: string; menu: string[]; art?: Art; layout?: { title: "bas" | "centre" | "haut"; menu: "burger" | "onglets" | "centre"; button: "pilule" | "rectangle" | "souligne"; corners: "ronds" | "droits"; next: "produits" | "phrase" | "points" | "bandeau" } };
   posts: { text: string; look: "fond" | "couleur" | "motif" | "citation"; art?: Art; ground?: Role; note?: string }[];
   toProve: string[];
   images?: Shots;
@@ -249,20 +249,41 @@ const BOARD_CSS = `
 .bb-ps-bar{flex:none;font-size:.5rem;letter-spacing:.07em;text-transform:uppercase;text-align:center;padding:.32rem .6rem;background:var(--ps-dark);color:var(--ps-on-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bb-ps-head{flex:none;display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.5rem .7rem}
 .bb-ps-head svg.ico{width:1rem;height:1rem;flex:none}
-.bb-ps-hero{flex:none;position:relative;aspect-ratio:5/4;overflow:hidden;background:var(--bb-bg2)}
-.bb-ps-hero>svg{display:block;width:100%;height:100%}
-.bb-ps-hero[data-kind="dessin"]{aspect-ratio:20/13}
-.bb-ps-card{flex:none;position:relative;margin:-1.1rem .55rem 0;border-radius:16px 16px 0 0;padding:.8rem .75rem 0;background:var(--ps-bg)}
+.bb-ps-head[data-centre]{justify-content:center;padding:.65rem .7rem}
+.bb-ps-tabs,.bb-ps-nav{flex:none;display:flex;gap:.7rem;padding:.1rem .7rem .5rem;font-size:.56rem;font-weight:600;white-space:nowrap;overflow:hidden}
+.bb-ps-tabs span,.bb-ps-nav span{opacity:.6;padding-bottom:.15rem}
+.bb-ps-tabs span[data-on],.bb-ps-nav span[data-on]{opacity:1;border-bottom:2px solid var(--bb-btn)}
+.bb-ps-nav{margin-top:auto;justify-content:space-around;padding:.5rem .6rem .6rem;border-top:1px solid color-mix(in srgb,var(--ps-ink) 16%,transparent)}
+.bb-ps-open{flex:none;position:relative;aspect-ratio:4/5;overflow:hidden;background:var(--ps-dark);color:#fff;display:flex}
+.bb-ps-open>.bb-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.bb-ps-over{position:relative;z-index:1;width:100%;padding:.9rem .8rem;display:flex;flex-direction:column;gap:.4rem}
+.bb-ps-open[data-title="bas"]{align-items:flex-end}
+.bb-ps-open[data-title="bas"] .bb-ps-over{background:linear-gradient(to top,rgba(0,0,0,.78),rgba(0,0,0,.45) 62%,transparent)}
+.bb-ps-open[data-title="haut"]{align-items:flex-start}
+.bb-ps-open[data-title="haut"] .bb-ps-over{background:linear-gradient(to bottom,rgba(0,0,0,.78),rgba(0,0,0,.45) 62%,transparent)}
+.bb-ps-open[data-title="centre"]{align-items:center}
+.bb-ps-open[data-title="centre"] .bb-ps-over{height:100%;justify-content:center;align-items:center;text-align:center;background:rgba(0,0,0,.46)}
 .bb-ps-h{font-family:var(--bb-head);line-height:1.04;text-wrap:balance}
-.bb-ps-t{font-size:.62rem;line-height:1.42;opacity:.82;margin-top:.4rem;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
-.bb-ps-cta{flex:none;display:block;margin:.6rem 1.3rem 0;padding:.52rem .7rem;border-radius:999px;text-align:center;font-weight:700;font-size:.68rem;line-height:1.2;background:var(--bb-btn);color:var(--bb-btn-ink)}
+.bb-ps-t{font-size:.6rem;line-height:1.4;opacity:.92;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.bb-ps-cta{flex:none;align-self:flex-start;margin-top:.25rem;padding:.48rem .9rem;border-radius:999px;font-weight:700;font-size:.66rem;line-height:1.2;background:var(--bb-btn);color:var(--bb-btn-ink)}
+.bb-ps-open[data-title="centre"] .bb-ps-cta{align-self:center}
+.bb-ps-cta[data-shape="rectangle"]{border-radius:var(--ps-r)}
+.bb-ps-cta[data-shape="souligne"]{background:none;color:#fff;padding:.1rem 0;border-radius:0;border-bottom:2px solid currentColor}
+.bb-ps-say{flex:1;display:grid;place-items:center;padding:.9rem 1rem;text-align:center}
+.bb-ps-say p{font-family:var(--bb-head);font-size:1.02rem;line-height:1.1;text-wrap:balance}
+.bb-ps-band{flex:1;display:flex;flex-direction:column;justify-content:center;gap:.35rem;padding:.8rem 1rem}
+.bb-ps-band p{font-family:var(--bb-head);font-size:.95rem;line-height:1.1;text-wrap:balance}
+.bb-ps-band small{font-size:.54rem;font-weight:600;opacity:.85}
+.bb-ps-list{flex:1;list-style:none;margin:0;padding:.75rem .9rem;display:flex;flex-direction:column;gap:.5rem;font-size:.62rem;font-weight:600;line-height:1.25}
+.bb-ps-list li{display:flex;gap:.45rem;align-items:flex-start}
+.bb-ps-list li i{flex:none;width:.5rem;height:.5rem;margin-top:.18rem;border-radius:var(--ps-r);background:var(--bb-btn)}
 .bb-ps-chips{flex:none;display:flex;gap:.3rem;padding:.55rem 1.3rem 0;overflow:hidden}
 .bb-ps-chips span{flex:none;font-size:.5rem;font-weight:600;padding:.2rem .45rem;border-radius:999px;border:1px solid color-mix(in srgb,var(--ps-ink) 35%,transparent);white-space:nowrap}
 .bb-ps-next{flex:1;display:flex;flex-direction:column;padding:.6rem 1.3rem 0;min-height:0}
 .bb-ps-next h5{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;font-family:var(--bb-head);font-size:.82rem;line-height:1.1;margin:0}
 .bb-ps-next h5 small{font-family:var(--bb-body);font-size:.52rem;font-weight:600;opacity:.7;white-space:nowrap}
 .bb-ps-row{flex:1;min-height:0;display:flex;gap:.5rem;margin-top:.4rem;overflow:hidden}
-.bb-ps-prod{flex:none;width:60%;display:flex;flex-direction:column;border-radius:12px 12px 0 0;overflow:hidden;background:color-mix(in srgb,var(--ps-ink) 7%,var(--ps-bg))}
+.bb-ps-prod{flex:none;width:60%;display:flex;flex-direction:column;border-radius:var(--ps-r) var(--ps-r) 0 0;overflow:hidden;background:color-mix(in srgb,var(--ps-ink) 7%,var(--ps-bg))}
 .bb-ps-prod .pic{flex:1;min-height:2.6rem;display:grid;place-items:center;overflow:hidden;padding:.5rem}
 .bb-ps-prod .txt{flex:none;display:flex;justify-content:space-between;align-items:center;gap:.4rem;padding:.35rem .5rem .5rem}
 .bb-ps-prod .txt b{font-size:.6rem;line-height:1.2}
@@ -333,42 +354,46 @@ const sameText = (a: string, b: string) => a.normalize("NFD").replace(/[^\p{L}\p
  * et bouton de la planche lettre pour lettre, points forts vrais, début de la boutique. Rien n'y est inventé : chaque
  * mot vient de la planche ; sans nom de produit connu, la boutique ne montre pas de faux produit.
  */
-function PhoneSite({ x, shots, headWeight, firstPicto, t }: { x: BoardCard; shots: Shots; headWeight: number; firstPicto?: Picto; t: (fr: string, en: string) => string }) {
+function PhoneSite({ x, shots, headWeight, t }: { x: BoardCard; shots: Shots; headWeight: number; firstPicto?: Picto; t: (fr: string, en: string) => string }) {
   const b = x.board, p = x.palette, dark = x.ground === "sombre";
+  // La composition choisie par SINA pour CETTE identité (place du titre sur la photo, menu, bouton, angles, suite).
+  const l = b.site.layout ?? { title: "bas", menu: "burger", button: "pilule", corners: "ronds", next: "produits" };
   const bg = safeHex(dark ? p.dark : p.light, dark ? "#111111" : "#FFFFFF"), ink = inkOn(bg, p);
   const barBg = safeHex(dark ? p.primary : p.dark, "#141414"), barInk = inkOn(barBg, p);
   const pop = popOn([bg], p, ink);
   const points = sitePoints(b.object.back);
   const product = firstProduct(b.object.front, x.name);
   const shelf = b.site.menu[0];
-  const tile = safeHex(p.primary), tileInk = inkOn(tile, p);
-  const size = b.site.headline.length <= 28 ? "1.32rem" : b.site.headline.length <= 48 ? "1.12rem" : ".96rem";
+  const size = b.site.headline.length <= 28 ? "1.4rem" : b.site.headline.length <= 48 ? "1.16rem" : ".98rem";
+  const mark = shotOk(lum(bg) < 0.4 ? shots.markDark : shots.mark) ? <Photo shot={(lum(bg) < 0.4 ? shots.markDark : shots.mark)!} alt={x.name} className="bb-ps-mark" /> : <Wordmark x={x} main={ink} accent={pop} compact className="block h-6 max-w-[55%] text-xs" />;
+  const cart = <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 8h12l-1 12H7L6 8Z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" /></svg>;
+  const band = safeHex(p.primary), bandInk = inkOn(band, p);
   return (
-    <div className="bb-phone" data-screen="site" style={{ "--ps-bg": bg, "--ps-ink": ink, "--ps-dark": barBg, "--ps-on-dark": barInk } as CSSProperties}>
-      {b.descriptor && <div className="bb-ps-bar">{b.descriptor}</div>}
-      <div className="bb-ps-head">
-        <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><path d="M4 7h16M4 12h16M4 17h10" /></svg>
-        {shotOk(lum(bg) < 0.4 ? shots.markDark : shots.mark) ? <Photo shot={(lum(bg) < 0.4 ? shots.markDark : shots.mark)!} alt={x.name} className="bb-ps-mark" /> : <Wordmark x={x} main={ink} accent={pop} compact className="block h-6 max-w-[55%] text-xs" />}
-        <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 8h12l-1 12H7L6 8Z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" /></svg>
+    <div className="bb-phone" data-screen="site" data-site-title={l.title} data-site-menu={l.menu} data-site-button={l.button} data-site-corners={l.corners} data-site-next={l.next} style={{ "--ps-bg": bg, "--ps-ink": ink, "--ps-dark": barBg, "--ps-on-dark": barInk, "--ps-r": l.corners === "droits" ? "0px" : "14px" } as CSSProperties}>
+      {l.menu === "burger" && b.descriptor && <div className="bb-ps-bar">{b.descriptor}</div>}
+      {l.menu === "burger" && <div className="bb-ps-head"><svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><path d="M4 7h16M4 12h16M4 17h10" /></svg>{mark}{cart}</div>}
+      {l.menu === "onglets" && <><div className="bb-ps-head">{mark}{cart}</div><div className="bb-ps-tabs">{b.site.menu.slice(0, 4).map((m, i) => <span key={m} data-on={i === 0 ? "" : undefined}>{m}</span>)}</div></>}
+      {l.menu === "centre" && <div className="bb-ps-head" data-centre>{mark}</div>}
+      {/* L'ouverture : la grande photo pleine, le titre posé dessus (jamais dessous). */}
+      <div className="bb-ps-open" data-title={l.title}>
+        {shotOk(shots.hero) && <Photo shot={shots.hero} alt={b.site.headline} />}
+        <div className="bb-ps-over">
+          <p className="bb-ps-h" style={{ fontWeight: headWeight, fontSize: size }}>{b.site.headline}</p>
+          <p className="bb-ps-t">{b.site.text}</p>
+          <span className="bb-ps-cta" data-shape={l.button}>{b.site.button}{l.button === "souligne" ? " →" : ""}</span>
+        </div>
       </div>
-      <div className="bb-ps-hero" data-kind={shotOk(shots.hero) ? "photo" : "dessin"}>{shotOk(shots.hero) ? <Photo shot={shots.hero} alt={b.site.headline} /> : b.site.art ? <Vignette art={b.site.art} ratio={20 / 13} /> : b.hero ? <Vignette art={b.hero} ratio={20 / 13} /> : <FallbackScene x={x} picto={firstPicto} />}</div>
-      <div className="bb-ps-card">
-        <p className="bb-ps-h" style={{ fontWeight: headWeight, fontSize: size }}>{b.site.headline}</p>
-        <p className="bb-ps-t">{b.site.text}</p>
-      </div>
-      <span className="bb-ps-cta">{b.site.button}</span>
-      {points.length > 0 && <div className="bb-ps-chips">{points.map((c) => <span key={c}>{c}</span>)}</div>}
-      {shelf && <div className="bb-ps-next">
+      {l.next === "phrase" && <div className="bb-ps-say"><p style={{ fontWeight: headWeight }}>{b.lines[0] ?? x.slogan}</p></div>}
+      {l.next === "bandeau" && <div className="bb-ps-band" style={{ background: band, color: bandInk }}><p style={{ fontWeight: headWeight }}>{x.slogan}</p>{points[0] && <small>{points.slice(0, 2).join(" · ")}</small>}</div>}
+      {l.next === "points" && <ul className="bb-ps-list">{(points.length ? points : b.lines).slice(0, 3).map((c) => <li key={c}><i aria-hidden />{c}</li>)}</ul>}
+      {l.next === "produits" && shelf && <div className="bb-ps-next">
         <h5 style={{ fontWeight: headWeight }}><span>{shelf}</span><small>{t("Tout voir", "See all")} →</small></h5>
         <div className="bb-ps-row">
-          <div className="bb-ps-prod">
-            {shotOk(shots.mark) ? <div className="pic" style={{ background: "#FFFFFF" }}><Photo shot={shots.mark} alt={x.name} className="bb-ps-mark" /></div>
-              : <div className="pic" style={{ background: tile, color: tileInk }}><Wordmark x={x} main={tileInk} accent={[p.accent, p.light, p.dark].find((c) => contrast(c, tile) >= 1.9) ?? tileInk} compact className="block h-6 max-w-[80%] text-xs" /></div>}
-            <div className="txt"><b>{product ?? t("[Ton premier produit]", "[Your first product]")}</b><i aria-hidden>+</i></div>
-          </div>
-          <div className="bb-ps-prod" aria-hidden><div className="pic" style={{ background: safeHex(p.accent), color: inkOn(safeHex(p.accent), p) }} /><div className="txt"><b>&nbsp;</b></div></div>
+          <div className="bb-ps-prod"><div className="pic" style={{ background: "color-mix(in srgb,var(--ps-ink) 10%,var(--ps-bg))" }} /><div className="txt"><b>{product ?? t("[Ton premier produit]", "[Your first product]")}</b><i aria-hidden>+</i></div></div>
+          <div className="bb-ps-prod" aria-hidden><div className="pic" style={{ background: "color-mix(in srgb,var(--ps-ink) 16%,var(--ps-bg))" }} /><div className="txt"><b>&nbsp;</b></div></div>
         </div>
       </div>}
+      {l.menu === "centre" && <div className="bb-ps-nav">{b.site.menu.slice(0, 4).map((m, i) => <span key={m} data-on={i === 0 ? "" : undefined}>{m}</span>)}</div>}
     </div>
   );
 }
