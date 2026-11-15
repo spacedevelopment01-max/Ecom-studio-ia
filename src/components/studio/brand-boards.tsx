@@ -245,6 +245,8 @@ const BOARD_CSS = `
 .bb-live figure[data-phone]{grid-column:1/-1}
 .bb-live .bb-stack{grid-column:1/-1;grid-template-columns:1fr 1fr;align-items:end}
 @container (min-width:42rem){.bb-live figure[data-phone]{grid-column:span 2;grid-row:span 2}.bb-live .bb-stack{grid-column:span 2}}
+.bb-phone[data-screen="maquette"]{width:min(100%,19rem);aspect-ratio:auto;transform:rotate(1deg);border-radius:30px;border-width:7px}
+.bb-phone[data-screen="maquette"] .bb-photo{width:100%;height:auto;object-fit:contain}
 .bb-phone[data-screen="site"]{width:min(100%,17rem);aspect-ratio:9/19.5;transform:rotate(1deg);background:var(--ps-bg);color:var(--ps-ink);font-family:var(--bb-body)}
 .bb-ps-bar{flex:none;font-size:.5rem;letter-spacing:.07em;text-transform:uppercase;text-align:center;padding:.32rem .6rem;background:var(--ps-dark);color:var(--ps-on-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bb-ps-head{flex:none;display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.5rem .7rem}
@@ -564,10 +566,12 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
               <figcaption>{b.object.label}{b.object.back.length > 0 ? <> · {t("au dos", "on the back")} : {b.object.back[0]}</> : null}</figcaption>
             </figure>
           ) : null /* jamais un dessin de secours à la place d'une photo : l'objet est créé pour l'identité choisie */}
-          <figure data-phone>
-            <PhoneSite x={x} shots={shots} headWeight={headWeight} firstPicto={firstPicto} t={t} />
+          {/* La maquette du haut de l'accueil, créée par OpenAI pour cette identité, dans le cadre du téléphone. Refusée à
+              la relecture, elle n'est pas remplacée par une page dessinée par le Studio. */}
+          {shotOk(shots.site) && <figure data-phone>
+            <div className="bb-phone" data-screen="maquette"><Photo shot={shots.site} alt={b.site.headline} /></div>
             <figcaption>{t("Le haut de ton site, sur téléphone", "The top of your site, on a phone")}</figcaption>
-          </figure>
+          </figure>}
           <div className="bb-stack">
             {shotOk(shots.logo) ? <figure data-logo><div className="bb-logo"><Photo shot={shots.logo} alt={`${t("Logo", "Logo")} ${x.name}`} /></div><figcaption>{t("Le logo", "The logo")}</figcaption></figure> : <figure data-sticker>
               <div className="bb-sticker" style={{ background: stickerBg, color: stickerInk }}><Wordmark x={x} main={stickerInk} accent={[p.primary, p.dark, p.light].find((c) => contrast(c, stickerBg) >= 2.2) ?? stickerInk} compact className="block h-full w-full" /></div>

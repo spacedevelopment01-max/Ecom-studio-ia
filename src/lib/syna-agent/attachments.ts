@@ -146,7 +146,7 @@ export function describeAttachment(a: Attachment): string {
  * n'est pas validée (étape 3). Réduites (512 px, planche 1024 px) : quelques millièmes d'euro par réponse.
  */
 type BoardShot = { id: string } | null | undefined;
-type BoardShots = { logo?: BoardShot; hero?: BoardShot; object?: BoardShot; signs?: BoardShot; posts?: BoardShot[] };
+type BoardShots = { logo?: BoardShot; hero?: BoardShot; site?: BoardShot; object?: BoardShot; signs?: BoardShot; posts?: BoardShot[] };
 export async function journeyImages(j: { steps: Record<number, { status: string } | undefined>; logos?: { list: { source: string; name: string; assetId: string | null; verdict: string; score: number | null }[] }; logoChoice?: unknown; brandKit?: { boardId: string | null }; siteMode?: { mode: string }; customChosenAt?: number;
   identities?: { list: { key: string; name: string; board?: { images?: BoardShots } }[] }; identityChoice?: unknown; brandFinish?: { at?: number; images?: BoardShots } }, projectId?: string | null): Promise<LlmImage[]> {
   const { getAsset, assetData } = await import("../library");
@@ -156,7 +156,7 @@ export async function journeyImages(j: { steps: Record<number, { status: string 
   // Étape « La marque » : les planches proposées (le logo et la grande scène de chacune) tant que le client n'a pas
   // choisi ; puis sa marque finie (logo, scène, objet, signes, publications) tant qu'il ne l'a pas validée.
   if (j.identities?.list.length && !j.identityChoice && j.steps[1]?.status !== "done") {
-    for (const x of j.identities.list) for (const [slot, what] of [["logo", "le logo"], ["hero", "la grande scène"]] as const) {
+    for (const x of j.identities.list) for (const [slot, what] of [["logo", "le logo"], ["hero", "la grande scène"], ["site", "la maquette du haut de son site, sur téléphone"]] as const) {
       const id = x.board?.images?.[slot]?.id, data = id ? await small(id, 512).catch(() => null) : null;
       if (data) out.push({ data, label: `Identité ${x.key} « ${x.name} » — ${what}, montré au client sur sa planche` });
     }

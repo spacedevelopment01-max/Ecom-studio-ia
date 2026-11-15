@@ -35,7 +35,9 @@ const has = (i: Images | undefined, s: ImageSlot): boolean =>
 export function missingSlots(j: Journey): ImageSlot[] {
   const x = chosenRoute(j);
   if (!x) return [];
-  return CREATED_SLOTS.filter((s) => !(s === "logo" && j.keep.includes("logo")) && !has(x.board.images, s));
+  // La maquette du site appartient à la proposition : absente (refusée, ou jamais demandée), elle ne se refait que si
+  // le client la demande (redo « site »), jamais d'office à la fin de la marque, qui reste couverte par son accord.
+  return CREATED_SLOTS.filter((s) => s !== "site" && !(s === "logo" && j.keep.includes("logo")) && !has(x.board.images, s));
 }
 
 /** Images réellement refaites : un nouveau logo entraîne ce qui le porte (jamais deux logos différents sur la marque). */

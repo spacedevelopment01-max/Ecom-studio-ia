@@ -350,8 +350,8 @@ type ImagesArgs = { keys: Key[]; images: string[]; guidance?: string };
  */
 const imagesTool: AgentTool<ImagesArgs> = {
   name: "identity.images", module: "marque", kind: "generate", needsProject: true,
-  description: "Avant le choix de l'identité : refait SEULEMENT le logo (« logo ») ou la grande scène (« hero ») d'une ou plusieurs planches déjà montrées, sans toucher au nom ni aux textes. À utiliser quand une image est fausse ou refusée (la planche le dit) ou quand le client signale un défaut : dis-lui ce que tu refais et pourquoi, et mets sa correction, avec ses mots, dans guidance. Après le choix, les images de sa marque se refont avec brand.finish. keys = les planches (A, B, C, D) ; images = les images à refaire.",
-  args: z.object({ keys: z.array(z.enum(KEYS)).min(1).max(4), images: z.array(z.enum(REDO_IMAGES)).min(1).max(2), guidance: z.string().max(1500).optional() }).strict(),
+  description: "Avant le choix de l'identité : refait SEULEMENT le logo (« logo »), la grande scène (« hero ») ou la maquette du haut du site (« site ») d'une ou plusieurs planches déjà montrées, sans toucher au nom ni aux textes. À utiliser quand une image est fausse ou refusée (la planche le dit) ou quand le client signale un défaut : dis-lui ce que tu refais et pourquoi, et mets sa correction, avec ses mots, dans guidance. Après le choix, les images de sa marque se refont avec brand.finish. keys = les planches (A, B, C, D) ; images = les images à refaire.",
+  args: z.object({ keys: z.array(z.enum(KEYS)).min(1).max(4), images: z.array(z.enum(REDO_IMAGES)).min(1).max(3), guidance: z.string().max(1500).optional() }).strict(),
   estimate: (_ctx, a) => ({ ...boardImagesQuote(a.keys.length, undefined, a.images as never), label: `${a.images.length} image${a.images.length > 1 ? "s" : ""} à refaire sur ${a.keys.length} planche${a.keys.length > 1 ? "s" : ""}` }),
   run: (ctx, a) => {
     const p = project(ctx);

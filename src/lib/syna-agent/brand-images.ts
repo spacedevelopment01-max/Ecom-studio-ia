@@ -39,12 +39,14 @@ import { FONT_CHARACTER, fontFamily, normText } from "./identities";
 
 export const IMAGE_SLOTS = ["logo", "hero", "object", "signs", "site", "post0", "post1", "post2"] as const;
 /**
- * Images réellement créées. Le haut du site sur téléphone n'en fait plus partie (retour du propriétaire du 13 novembre
- * 2026 sur l'image créée par l'IA : « 3/10, ça doit être mieux fait et plus représentatif de ce que ça devrait
- * devenir ») : le Studio le rend lui-même, en vraie page, avec la grande image en ouverture (brand-boards.tsx,
- * PhoneSite). « site » reste un emplacement connu pour les planches faites avant.
+ * Images réellement créées. Le haut de l'accueil du site en fait partie (retour du propriétaire du 15 novembre 2026,
+ * après le haut de site rendu en code par le Studio : « je veux juste qu'OpenAI fasse une maquette du haut de l'accueil
+ * du site, même si après ce n'est pas forcément ressemblant ; le but est vraiment d'avoir quelque chose de qualité et de
+ * beau à regarder ; ça ne doit pas être la même maquette entre les projets, et ça doit se faire à l'identité de la
+ * carte » ; puis : « je veux la maquette sur téléphone et dans le téléphone, ça c'est bien »). C'est une maquette
+ * d'écran de téléphone, en portrait, montrée dans le cadre du téléphone de la planche.
  */
-export const CREATED_SLOTS = IMAGE_SLOTS.filter((s) => s !== "site");
+export const CREATED_SLOTS = [...IMAGE_SLOTS];
 export type ImageSlot = (typeof IMAGE_SLOTS)[number];
 export type ImageAspect = "1:1" | "16:9" | "9:16" | "4:5";
 /** Format demandé pour chaque image (le modèle rend du carré, du paysage 3:2 ou du portrait 2:3). */
@@ -57,7 +59,7 @@ export const SLOT_REFERENCES: Record<ImageSlot, number> = { logo: 0, hero: 0, ob
  * choisie ») : chaque identité proposée reçoit son logo et sa grande scène ; l'objet, les signes et les trois
  * publications ne sont créés que pour l'identité que le client choisit (deux tiers des images ne servaient jamais).
  */
-export const PROPOSAL_SLOTS: ImageSlot[] = ["logo", "hero"];
+export const PROPOSAL_SLOTS: ImageSlot[] = ["logo", "hero", "site"];
 export const FINISH_SLOTS: ImageSlot[] = ["object", "signs", "post0", "post1", "post2"];
 /** Les images de planche sont toujours créées par OpenAI (plus aucun dessin en code à leur place). */
 export const brandImagesOn = (): boolean => true;
@@ -69,7 +71,7 @@ export function boardImageRoute(): { provider: string; model: string } {
 
 export const ImagerySchema = z.object({
   look: z.string().max(900).default(""),
-  logo: z.string().min(1).max(1600), hero: z.string().min(1).max(2200), object: z.string().min(1).max(2200), site: z.string().max(2200).default(""),
+  logo: z.string().min(1).max(1600), hero: z.string().min(1).max(2200), object: z.string().min(1).max(2200), site: z.string().min(1).max(2200),
   /** Les signes de la marque posés sur de vrais objets de son monde (remplace les pictogrammes dessinés en code). */
   signs: z.string().max(2200).default(""),
   posts: z.array(z.string().min(1).max(2200)).length(3),
@@ -106,7 +108,7 @@ const same = (a: string, b: string) => normText(a) === normText(b);
 export function slotTexts(x: Route): Record<ImageSlot, string[]> {
   const b = x.board, front = b.object.front.filter((l) => !same(l, x.name)).slice(0, 2);
   return {
-    logo: [x.name], hero: [], object: [x.name, ...front], signs: [], site: [x.name, b.site.headline, b.site.text, b.site.button],
+    logo: [x.name], hero: [], object: [x.name, ...front], signs: [], site: [x.name, b.site.headline, b.site.button, ...b.site.menu],
     post0: [b.posts[0].text], post1: [b.posts[1].text], post2: [b.posts[2].text],
   };
 }
@@ -160,10 +162,11 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
   const withLogo = (slot === "object" || slot === "site" || slot === "signs") && o.logo;
   // Le nom est porté par le logo fourni ; sans logo, il est écrit comme les autres textes.
   const written = slot === "hero" ? [] : texts.filter((t) => !withLogo || !same(t, x.name)).filter((t, i) => slot === "object" || slot === "site" || i === 0);
+  // La maquette du site : ses mots sont le titre, le bouton et les entrées du menu ; rien d'autre n'est écrit.
   return [
     look ? `Direction artistique : ${look}` : "", brief.trim(), paletteLine(x),
     withLogo ? "Le logo fourni en image de référence est reproduit tel quel, à la place indiquée : il n'est ni redessiné, ni recoloré, et aucune de ses lettres ne change." : "",
-    slot === "site" ? "Montre seulement l'écran, bord à bord, en portrait : ni téléphone, ni cadre, ni main, ni fond autour." : "",
+    slot === "site" ? "Maquette du haut de la page d'accueil d'un site web, au niveau des plus beaux sites primés de 2026 : UNE grande photographie pleine qui occupe tout l'écran, le titre posé dessus sur sa partie calme, le menu, un seul bouton. Montre seulement l'écran du téléphone, bord à bord, en portrait : ni téléphone, ni cadre, ni barre d'adresse, ni main, ni fond autour. Une vraie mise en page de site, nette et lisible : typographie soignée, alignements précis, de l'air." : "",
     slot.startsWith("post") ? "Visuel de publication pour un réseau social, en portrait, bord à bord : aucun cadre d'application, aucun bouton, aucun pseudonyme." : "",
     slot === "signs" ? SIGNS_LINE : "",
     (slot === "object" || slot === "site") && !withLogo ? NO_INVENTED_MARK : "",
@@ -180,16 +183,16 @@ const imageryBrief = (x: Route) => [
   // « Pulpe ») : il n'est jamais donné pour concevoir le logo, qui naît de la marque elle-même.
   "Signes de la marque (hors lettrage : le logo ne reprend rien du nom composé par le Studio) :", ...x.board.signs.filter((g) => g.kind !== "lettrage").map((g) => `  - ${g.title} — ${g.text}`),
   `Objet : ${BOARD_OBJECT_LABEL[x.board.object.kind].fr.toLowerCase()} ; écrit devant : ${x.board.object.front.join(" · ")}`,
-  `Site (haut de l'accueil) : titre « ${x.board.site.headline} » ; texte « ${x.board.site.text} » ; bouton « ${x.board.site.button} »`,
+  `Site (haut de l'accueil) : titre « ${x.board.site.headline} » ; bouton « ${x.board.site.button} » ; menu : ${x.board.site.menu.join(" · ") || "aucune entrée"}${x.board.site.layout ? ` ; composition choisie pour cette identité : titre ${x.board.site.layout.title === "bas" ? "en bas" : x.board.site.layout.title === "haut" ? "en haut" : "au centre"} de la photo, menu « ${x.board.site.layout.menu} », bouton « ${x.board.site.layout.button} », angles ${x.board.site.layout.corners}` : ""}`,
   "Publications (dans l'ordre) :", ...x.board.posts.map((q, i) => `  ${i + 1}. « ${q.text} »`),
 ].join("\n");
 
 const SLOT_LABEL: Record<ImageSlot, { fr: string; en: string }> = {
-  logo: { fr: "le logo", en: "the logo" }, hero: { fr: "la grande image", en: "the main image" }, object: { fr: "l'image de l'objet", en: "the object image" }, signs: { fr: "l'image des signes", en: "the signs image" }, site: { fr: "l'image du site", en: "the site image" },
+  logo: { fr: "le logo", en: "the logo" }, hero: { fr: "la grande image", en: "the main image" }, object: { fr: "l'image de l'objet", en: "the object image" }, signs: { fr: "l'image des signes", en: "the signs image" }, site: { fr: "la maquette de ton site", en: "your site mock-up" },
   post0: { fr: "la première publication", en: "the first post" }, post1: { fr: "la deuxième publication", en: "the second post" }, post2: { fr: "la troisième publication", en: "the third post" },
 };
 const ROLE_FOR_REVIEW: Record<ImageSlot, string> = {
-  logo: "le logo de la marque", hero: "la grande image de la marque (aucun texte attendu)", object: "l'objet de la marque, avec le logo posé dessus : EXACTEMENT celui de l'image « logo » (même signe, même dessin de lettres, même graisse) ; une autre police est un défaut", signs: "les signes de la marque posés sur de vrais objets de son monde, le logo fourni compris (aucun autre texte attendu ; une icône plate ou un pictogramme est un défaut)", site: "le haut de la page d'accueil, sur téléphone",
+  logo: "le logo de la marque", hero: "la grande image de la marque (aucun texte attendu)", object: "l'objet de la marque, avec le logo posé dessus : EXACTEMENT celui de l'image « logo » (même signe, même dessin de lettres, même graisse) ; une autre police est un défaut", signs: "les signes de la marque posés sur de vrais objets de son monde, le logo fourni compris (aucun autre texte attendu ; une icône plate ou un pictogramme est un défaut)", site: "la maquette du haut de la page d'accueil du site, sur écran de téléphone : elle doit être BELLE et donner envie (une grande photo pleine, le titre posé dessus sur sa partie calme, le menu, le bouton, le logo fourni tel quel) ; une mise en page pauvre, vide, banale ou confuse est un défaut (defect « autre »)",
   post0: "une publication", post1: "une publication", post2: "une publication",
 };
 
@@ -299,6 +302,15 @@ export async function runBoardImages(o: {
   // 2. La grande scène, puis ce qui porte le logo, puis les publications.
   ctx.progress(0.965, L(`Je crée les images de la planche ${key}`, `Creating the images of board ${key}`));
   if (wanted.has("hero")) await make("hero", {}, imagePrompt("hero", x, imagery));
+  // La maquette du haut de l'accueil : le logo et la grande scène lui sont fournis (elle garde l'identité de la planche).
+  if (wanted.has("site") && imagery.site.trim()) {
+    const heroKept = x.board.images?.hero, heroBuffer = bufferOf("hero") ?? (() => { const a = heroKept ? getAsset(heroKept.id) : undefined; return a ? assetData(a) : null; })();
+    await make("site", { logo, scene: heroBuffer }, imagePrompt("site", x, imagery, { logo: !!logo }));
+  } else if (wanted.has("site")) {
+    // Sans consigne de maquette, rien n'est créé ni payé, et c'est dit (SINA ne parle jamais d'une maquette absente).
+    notes.push(`maquette du site de ${key} non créée : la direction artistique n'a pas rendu sa consigne`);
+    issues.push(tag(L("je n'ai pas pu préparer la maquette de ton site ; je peux la refaire si tu me le demandes.", "I could not prepare your site mock-up; I can redo it if you ask.")));
+  }
   // Reprise d'une partie des images : l'objet et les signes portent le logo de la planche ; sans logo gardé, ils ne
   // sont pas refaits (retour du propriétaire du 14 novembre 2026 : « les logos ne sont pas les mêmes entre le logo et
   // sur le camion » : sans logo fourni, OpenAI en inventait un autre). Rien n'est payé pour une image fausse d'avance.
