@@ -52,7 +52,7 @@ export type ImageAspect = "1:1" | "16:9" | "9:16" | "4:5";
 /** Format demandé pour chaque image (le modèle rend du carré, du paysage 3:2 ou du portrait 2:3). */
 export const SLOT_ASPECT: Record<ImageSlot, ImageAspect> = { logo: "1:1", hero: "16:9", object: "1:1", signs: "1:1", site: "9:16", post0: "4:5", post1: "4:5", post2: "4:5" };
 /** Images de référence envoyées avec chaque demande (le logo pour l'objet et le site ; aucun modèle pour le logo lui-même). */
-export const SLOT_REFERENCES: Record<ImageSlot, number> = { logo: 0, hero: 0, object: 1, signs: 1, site: 2, post0: 0, post1: 0, post2: 0 };
+export const SLOT_REFERENCES: Record<ImageSlot, number> = { logo: 1, hero: 0, object: 1, signs: 1, site: 2, post0: 0, post1: 0, post2: 0 };
 
 /**
  * Les images d'une planche se créent en DEUX temps (lot 2, 15 novembre 2026 : « images complètes pour la seule identité
@@ -200,6 +200,13 @@ const ROLE_FOR_REVIEW: Record<ImageSlot, string> = {
 type Made = { id: string; w: number; h: number };
 /** Ce que le client voit à la place d'une image non gardée (dit tel quel, jamais un dessin qui n'existe pas). */
 const instead = (_x: Route, slot: ImageSlot): string => slot === "signs" ? "les signes restent décrits en mots" : slot === "logo" ? "tu vois ton nom dessiné à la place" : "je ne la montre pas";
+/** Planche des logos déjà créés (côte à côte sur blanc), donnée en référence « à ne pas refaire ». Rien : null. */
+export async function logoSheet(logos: Buffer[]): Promise<Buffer | null> {
+  const tiles = (await Promise.all(logos.slice(-4).map((b) => sharp(b).flatten({ background: "#FFFFFF" }).resize(512, 512, { fit: "contain", background: "#FFFFFF" }).png().toBuffer().catch(() => null)))).filter(Boolean) as Buffer[];
+  if (!tiles.length) return null;
+  return sharp({ create: { width: 512 * tiles.length, height: 512, channels: 3, background: "#FFFFFF" } }).composite(tiles.map((input, i) => ({ input, left: 512 * i, top: 0 }))).png().toBuffer();
+}
+
 /** Le logo que le client garde (sa propre image, déposée dans le Studio). */
 export type ClientLogo = { id: string; w: number; h: number; data: Buffer };
 export async function clientLogoOf(projectId: string): Promise<ClientLogo | null> {
@@ -244,6 +251,12 @@ export async function runBoardImages(o: {
   slots?: ImageSlot[];
   /** Idées de logo des AUTRES planches de la série : le logo de celle-ci doit être une conception nettement différente. */
   otherLogos?: string[];
+  /**
+   * Logos déjà créés pour ce client (les autres identités de la série, ou celui qu'il n'a pas voulu) : montrés au
+   * dessinateur pour qu'il fasse AUTRE chose (essai réel du 15 novembre 2026 : en carte blanche, trois logos sur quatre
+   * sortaient avec le même pictogramme au-dessus du nom). Le dessin reste libre ; seule la ressemblance est écartée.
+   */
+  otherLogoImages?: Buffer[];
   /** Direction artistique déjà écrite pour cette planche (premier temps) : reprise telle quelle, jamais repayée. */
   imagery?: Imagery;
   /** Logo GARDÉ par le client : jamais redessiné ; il est la marque de la planche et se pose sur ce qui le porte. */
@@ -288,7 +301,8 @@ export async function runBoardImages(o: {
   // relecture : un logo sur fond noir ou coloré n'est ni gardé ni posé sur l'objet.
   if (wanted.has("logo")) {
     ctx.progress(0.96, L(`Je dessine le logo de la planche ${key}`, `Drawing the logo of board ${key}`));
-    await make("logo", {}, imagePrompt("logo", x, imagery));
+    const seenLogos = await logoSheet(o.otherLogoImages ?? []);
+    await make("logo", seenLogos ? { scene: seenLogos } : {}, imagePrompt("logo", x, imagery) + (seenLogos ? "\nL'image de référence montre les logos DÉJÀ proposés à ce client pour d'autres identités : ne les reproduis pas. Le tien est d'une conception nettement différente : un autre genre de logo, une autre construction, un autre dessin de lettres, un autre signe (ou pas de signe du tout)." : ""));
     const drawn = bufferOf("logo");
     if (drawn && !(await logoOnWhite(drawn))) {
       const why = L("il n'est pas sur un fond blanc net : il ne se lirait pas sur tes supports", "it is not on a clean white background");

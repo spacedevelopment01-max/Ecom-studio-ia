@@ -20,6 +20,7 @@ import { domainDeps, domainLine, findDomains, type NameDomains } from "./brand-d
 import { UserFacingError, getJob, type JobContext } from "../jobs";
 import { L } from "../i18n-server";
 import { loadProject } from "../projects";
+import { assetData, getAsset } from "../library";
 import { getJsonSetting } from "../settings";
 import { callCostBoundMicro, estimateCallMicro, llmJson } from "../ai/llm";
 import { aiSiteImageHd, photoRequestMaxMicro, withQuotedImageRoute } from "../ai/media-providers";
@@ -150,6 +151,11 @@ const imageUnitMax = (aspect: ImageAspect, references: number) => photoRequestMa
 /** Idées de logo des autres planches de la série (déjà décidées) : le logo de la suivante doit en différer. */
 export const otherLogos = (list: { key: string; board?: { images?: { logoIdea?: string } } }[], key: string): string[] =>
   list.filter((o) => o.key !== key).map((o) => o.board?.images?.logoIdea ?? "").filter(Boolean);
+
+/** Les logos déjà créés des AUTRES identités de la série (fichiers gardés) : montrés pour que le suivant en diffère. */
+export function logoBuffers(list: { key: string; board?: { images?: { logo?: { id: string } } } }[], key: string): Buffer[] {
+  return list.filter((o) => o.key !== key).flatMap((o) => { const a = o.board?.images?.logo ? getAsset(o.board.images.logo.id) : undefined; try { return a ? [assetData(a)] : []; } catch { return []; } });
+}
 
 export function boardImagesQuote(routes: number, settings?: ChainSettings, slots?: readonly ImageSlot[]): ChainQuote {
   const s = settings ?? chainSettings();
@@ -863,7 +869,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
   if (a.images ?? brandImagesOn()) {
     for (const x of list.filter((y) => todo.includes(y.key))) {
       try {
-        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round, slots: PROPOSAL_SLOTS, otherLogos: otherLogos(list, x.key), clientLogo });
+        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round, slots: PROPOSAL_SLOTS, otherLogos: otherLogos(list, x.key), otherLogoImages: logoBuffers(list, x.key), clientLogo });
         list = list.map((o) => (o.key === x.key ? r.route : o));
         remaining.push(...r.issues); notes.push(...r.notes);
       } catch (e) {
