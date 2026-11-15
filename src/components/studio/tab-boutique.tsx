@@ -190,7 +190,7 @@ export default function TabBoutique() {
   const [importOpen, setImportOpen] = useState<null | "upload" | "report">(null);
   const [libTarget, setLibTarget] = useState<{ template: string; index?: number; label: string; replace?: string } | null>(null);
   const [adding, setAdding] = useState<string | null>(null);
-  // Lien direct « …/boutique?themes » (depuis le Pilote) : ouvre la galerie.
+  // Lien direct « …/boutique?themes » : ouvre la galerie.
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     if (q.has("themes")) setGalleryOpen(true);
@@ -416,7 +416,7 @@ export default function TabBoutique() {
         {chatJobs[0] && <JobProgress job={chatJobs[0]} className="mb-6" />}
         {!!theme.versions.length && <Card className="mb-6 p-5"><p className="font-semibold">{t("Tentatives conservées, à corriger avant utilisation", "Saved attempts, correction needed before use")}</p><p className="mt-2 text-sm text-muted">{t("Aucun thème utilisable n'est encore activé. Les brouillons restent consultables ; complétez les informations puis relancez la composition.", "No usable theme is active yet. Drafts remain available; complete the information and rebuild.")}</p><ul className="mt-3 grid gap-2">{theme.versions.map((v) => <li key={v.id}><a className="underline" href={`/preview/${id}/v/${v.id}`} target="_blank" rel="noreferrer">{t(`Consulter la tentative ${v.number}`, `View attempt ${v.number}`)}</a><p className="text-xs text-muted">{v.summary}</p></li>)}</ul></Card>}
         <Empty title={isServices ? t("Le site n'est pas encore composé", "The website hasn't been built yet") : t("La boutique n'est pas encore composée", "The store hasn't been built yet")} icon={<Store className="size-5" />} action={<div className="flex flex-wrap items-center justify-center gap-2">{data?.brand && <><Button onClick={() => setGalleryOpen(true)}>{isServices?t("Choisir le thème du site", "Choose the website theme"):t("Choisir le thème de la boutique", "Choose the store theme")}</Button><ContentLangPicker {...cl} compact /></>}<Button variant="secondary" icon={<Upload className="size-4" />} onClick={() => setImportOpen("upload")}>{t("Importer mon thème Shopify", "Import my Shopify theme")}</Button></div>}>
-          {data?.brand ? t("La marque est prête : vous pouvez lancer la composition.", "The brand is ready: you can start building the store.") : t("Elle sera créée après la marque et les textes (voir le Pilote).", "It will be created after the brand and the copy (see Pilot).")}
+          {data?.brand ? t("La marque est prête : vous pouvez lancer la composition.", "The brand is ready: you can start building the store.") : t("Elle sera créée après la marque et les textes.", "It will be created after the brand and the copy.")}
         </Empty>
         <h2 className="mb-1 mt-10 font-display text-2xl font-semibold">{t("Les thèmes disponibles", "Available themes")}</h2>
         <p className="mb-5 text-sm text-muted">{t("Parcourez les démonstrations complètes avec leurs contenus d’origine. Votre projet est adapté seulement après votre choix explicite.", "Browse the complete demos with their original content. Your project is adapted only after your explicit choice.")}</p>

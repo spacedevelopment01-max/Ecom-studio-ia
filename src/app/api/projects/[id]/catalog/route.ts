@@ -90,7 +90,7 @@ export const PATCH = handle(async (req: Request, ctx: Ctx) => {
   saveCatalog(p.id, catalog, b.storeType as StoreType | undefined);
   let jobId: string | null = null;
   if (b.rebuild) {
-    if (!p.brand) throw new HttpError(409, L("La boutique sera composée après la marque (voir le Pilote).", "The store will be built after the brand (see the Pilot)."));
+    if (!p.brand) throw new HttpError(409, L("La boutique sera composée après la marque.", "The store will be built after the brand."));
     jobId = enqueue({ userId: user.id, projectId: p.id, type: "shop.build", label: L("Boutique mise à jour avec le catalogue", "Store updated with the catalog"), payload: { projectId: p.id, useAi: false } }).id;
   }
   return ok({ storeType: b.storeType ?? p.storeType, items: catalog.map((i) => view(p.id, i)), jobId });
