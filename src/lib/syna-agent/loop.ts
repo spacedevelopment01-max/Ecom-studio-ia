@@ -34,7 +34,7 @@ import { projectSnapshot } from "./snapshot";
 import { SYNA_SYSTEM } from "./prompt";
 import { JOURNEY_STEPS, stepReady, currentStep, journeyContext, journeyOf } from "./journey";
 import { shownAngles } from "./angle-roles";
-import { localDecision } from "./local-step";
+import { sinaModels } from "./models";
 import { LOGO_STYLE_LABEL, fontFace, groundPresentation, type Identity } from "./identities";
 import { BOARD_OBJECT_LABEL, SIGN_KIND_LABEL, type Board, type BoardImage } from "./brand-board";
 import { safeWordmark } from "./brand-routes";
@@ -208,32 +208,25 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       const step = r.step;
       updateRun(r.id, { step: step + 1 });
       let out: StepOutput;
-      // Niveau gratuit : réponse simple à la question posée (étape 0) enregistrée par le moteur local, sans IA. Réglage
-      // « syna.replies » : « personnalisées » (par défaut, choix du propriétaire) = le moteur local enregistre, puis
-      // Claude Haiku rédige la réponse au client ; « locales » = le moteur local écrit aussi la réponse (0 €).
-      const localFull = step === 0 ? localStepFor(r) : null;
-      const personalized = getJsonSetting<string>("syna.replies", "personnalisees") !== "locales";
-      const local = localFull && personalized ? { message: "", actions: localFull.actions, question: null, done: false } as StepOutput : localFull;
-      if (local) out = local;
-      else try {
+      try {
         out = await reason(user, r, jobId, step, deps);
       } catch (e) {
         if (e instanceof CostCapReached) return askBudget(r);
         throw e;
       }
       // Moment qui compte (résultat à présenter, échec, client mécontent) : la réponse est relue avant de partir, et
-      // réécrite une fois si la relectrice la refuse (réglage « sina.conversation », éteint par défaut).
+      // réécrite une fois si la relectrice la refuse.
       let relu: "ok" | "repris" | null = null;
-      if (!local) ({ out, relu } = await reviewedReply(user, r, jobId, step, deps, out));
-      if (!local && out.question?.choices?.length && currentStep(journeyOf(r.conversation_id)) === 5) out = { ...out, question: withoutLaterForRequired(out.question) };
+      ({ out, relu } = await reviewedReply(user, r, jobId, step, deps, out));
+      if (out.question?.choices?.length && currentStep(journeyOf(r.conversation_id)) === 5) out = { ...out, question: withoutLaterForRequired(out.question) };
       // Un bouton est une réponse complète, cliquable telle quelle : jamais un gabarit à trous (essai réel du 7 novembre :
       // « Oui, sous [À compléter : délai] et à [À compléter : conditions] »).
-      if (!local && out.question?.choices?.length) out = { ...out, question: { ...out.question, choices: out.question.choices.filter((c) => !/\[[^\]]*\]|…\s*$|\.\.\.\s*$/.test(c)) } };
+      if (out.question?.choices?.length) out = { ...out, question: { ...out.question, choices: out.question.choices.filter((c) => !/\[[^\]]*\]|…\s*$|\.\.\.\s*$/.test(c)) } };
       // Étape 6 : les thèmes sont montrés tels qu'ils sont ; jamais « ton site déjà composé dans chacun » (essai réel).
       // « Je ne peux pas voir… » n'est retiré QUE si des images lui étaient jointes (sinon c'est honnête).
-      if (!local && currentStep(journeyOf(r.conversation_id)) === 6) out = { ...out, message: sawImages.get(r.id) ? withoutBlindClaim(withoutComposedClaim(out.message)) : withoutComposedClaim(out.message) };
-      if (!local) out = withoutRepeatedQuestion({ ...out, message: fixElision(out.message), ...(out.question ? { question: { ...out.question, text: fixElision(out.question.text) } } : {}) });
-      addMessage(r.conversation_id, "assistant", { ...out, step, ...(local ? { local: true } : {}), ...(relu ? { relu } : {}) }, r.id);
+      if (currentStep(journeyOf(r.conversation_id)) === 6) out = { ...out, message: sawImages.get(r.id) ? withoutBlindClaim(withoutComposedClaim(out.message)) : withoutComposedClaim(out.message) };
+      out = withoutRepeatedQuestion({ ...out, message: fixElision(out.message), ...(out.question ? { question: { ...out.question, text: fixElision(out.question.text) } } : {}) });
+      addMessage(r.conversation_id, "assistant", { ...out, step, ...(relu ? { relu } : {}) }, r.id);
       if (!out.actions.length) {
         updateRun(r.id, { status: out.question ? "waiting_user" : "done" });
         return { runId, steps: step + 1 };
@@ -275,16 +268,9 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
         if (res.jobs?.length) launched.push(...res.jobs);
       }
       if (launched.length) return suspend(getRun(runId)!, launched);
-      // Une question est déjà posée et ses actions ont réussi : SINA attend la réponse du client. Sinon elle repartait
-      // pour un second tour et reposait la même question avec un second « Merci, c'est noté » (essai réel du
-      // 14 novembre 2026 : « qu'est-ce qui te distingue » puis « qu'est-ce qui te rend différent »).
-      if (!local && out.question && !stepFailed) { updateRun(r.id, { status: "waiting_user" }); return { runId, steps: step + 1 }; }
-      // Le moteur local a déjà écrit sa réponse (question suivante, résumé ou validation) : pas d'appel à l'IA ensuite,
-      // sauf si une de ses actions a échoué (Claude reprend alors pour l'expliquer).
-      if (local && !personalized) {
-        const failed = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE run_id=? AND role='tool'", r.id).some((m) => json<any>(m.content_json, {}).ok === false);
-        if (!failed) { updateRun(r.id, { status: out.question ? "waiting_user" : "done" }); return { runId, steps: step + 1 }; }
-      }
+      // Une question est déjà posée et ses actions ont réussi : SINA attend la réponse du client, au lieu de repartir
+      // pour un second tour et de reposer la même question.
+      if (out.question && !stepFailed) { updateRun(r.id, { status: "waiting_user" }); return { runId, steps: step + 1 }; }
     }
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -430,46 +416,15 @@ function toolScope(r: SynaRun): ToolScope {
   return { inJourney: !j.outside, legacyMockups: legacy, routed: !j.outside && conversationSettings().aiguillage && routedStep(currentStep(j)) };
 }
 
-/** Décision du moteur local pour le message du client de cette demande, ou null (→ Claude). */
-function localStepFor(r: SynaRun): StepOutput | null {
-  const msgs = lastMessages(r.conversation_id, 60);
-  const mine = msgs.filter((m) => m.runId === r.id && m.role === "user").pop();
-  if (!mine) return null;
-  const before = msgs.filter((m) => m.seq < mine.seq);
-  const lastAssistant = [...before].reverse().find((m) => m.role === "assistant");
-  const d = localDecision({
-    journey: journeyOf(r.conversation_id), userText: String(mine.content?.text ?? ""), hasAttachments: !!mine.content?.attachments?.length,
-    askField: (lastAssistant?.content?.askField as string | undefined) ?? null, hasProject: !!r.project_id, seq: mine.seq,
-  });
-  return d ? d.out : null;
-}
-
 /**
- * Modèle des réponses de SINA (économie à qualité égale) : Claude Haiku, le moins cher, pour les échanges simples
- * (questions de départ, suivi, étape pas encore disponible) ; Claude Sonnet à l'étape 6. Les créations elles-mêmes
- * (identités, logos, angles, conception du site, textes, photos) se font dans leurs outils, avec leurs propres modèles.
+ * Modèle des réponses de SINA : le plus fort, à toutes les étapes et pour tous les forfaits (décision du propriétaire :
+ * elle décide, conseille et juge, donc elle réfléchit avec le meilleur). Elle réfléchit plus longtemps quand elle
+ * présente un résultat, explique un échec, répond à un client mécontent, ou juge un site qu'elle vient de monter.
+ * Le modèle lui-même se règle à un seul endroit (models.ts).
  */
-export function modelFor(currentStepNumber: number, opts: { customTheme?: boolean; judge?: boolean; keyMoment?: KeyMoment | null } = {}): { provider: "anthropic"; model: string; effort?: string } | undefined {
-  // Étape 1 : la création des identités se fait dans l'outil identity.propose (modèle fort) ; le fil reste léger.
-  // Étape 2 de même : le dessin et le contrôle des logos se font dans la tâche logo.propose.
-  // Étape 3 : l'image de marque est rendue par le Studio (brand.kit), sans IA.
-  // Étape 4 : la recherche et les angles sont faits par les tâches du Pilote (angles.propose).
-  // Étape 5 : l'activité est rassemblée par des outils gratuits ; le fil reste sur le modèle léger.
-  // Étape 7 : le codage et les photos se font dans leurs tâches (site.code_from_mockup, site.images) ; le fil reste léger.
-  // Étape 8 : la rédaction et les images se font dans la tâche theme.brand ; le fil reste léger.
-  // Étape 6 (thème) et ses retouches après le choix d'un thème sur mesure : modèle plus fort (choix du propriétaire du
-  // 10 novembre 2026) : il comprend l'élément désigné, écrit les retouches de texte et de mise en forme, juge la
-  // lisibilité ; un peu plus cher par message, moins d'erreurs et de reprises payantes. Effort ÉLEVÉ (choix du
-  // propriétaire du 10 novembre 2026, environ 2 à 4 centimes de plus par message : la lecture du projet pèse le plus).
-  // Effort ÉLEVÉ seulement pour concevoir et juger un thème (résultat d'une conception, d'un montage, d'une galerie ou
-  // d'une retouche à relire, élément désigné à changer) ; MOYEN pour poser une question ou confirmer un choix (décision
-  // du propriétaire du 10 novembre 2026, après l'essai Éclat de thé : 27 réponses à 0,13 € en moyenne).
-  if (currentStepNumber === 6 || (currentStepNumber === 7 && opts.customTheme)) return { provider: "anthropic", model: "claude-sonnet-5-5", effort: opts.judge === false ? "medium" : "high" };
-  const simple = currentStepNumber <= 8 || !stepReady(currentStepNumber);
-  // Moment qui compte (résultat à présenter, échec à expliquer, client mécontent) : le modèle plus fort, effort moyen,
-  // seulement si le réglage « sina.conversation » le demande (l'appelant ne passe keyMoment que dans ce cas).
-  if (simple && opts.keyMoment) return { provider: "anthropic", model: "claude-sonnet-5-5", effort: "medium" };
-  return simple ? { provider: "anthropic", model: "claude-haiku-5-5", effort: "low" } : undefined;
+export function modelFor(_currentStepNumber: number, opts: { customTheme?: boolean; judge?: boolean; keyMoment?: KeyMoment | null } = {}): { provider: "anthropic"; model: string; effort?: string } {
+  const strong = sinaModels().strong;
+  return { provider: strong.provider, model: strong.model, effort: opts.keyMoment || opts.judge ? "high" : "medium" };
 }
 
 /** Action payante de chaque étape du parcours : son devis est donné à SINA (le même s'affiche sur la carte d'accord). */
@@ -516,7 +471,7 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
   const snapshot = r.project_id ? await projectSnapshot(toolContext(user, r)) : L("Aucun projet rattaché (brouillon) : il est créé dès que l'activité et l'offre du client sont connues (start.answer).", "No project linked yet (draft): it is created once the business and offer are known.");
   const call: LlmCall = {
     task: "agent_conversation", userId: user.id, projectId: r.project_id, jobId,
-    system: SYNA_SYSTEM, promptKey: "syna-agent-1",
+    system: SYNA_SYSTEM, promptKey: "syna-agent-2",
     reference: scope.routed ? `# Outils du Studio (ceux de l'étape en entier, les autres en liste)\n\n${routedCatalog(!!r.project_id, scope, currentStep(journeyOf(r.conversation_id)))}` : `# Outils disponibles (registre commun)\n\n${toolCatalog(!!r.project_id, scope)}`,
     context: `# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id), { identityCount: identityCountOf(r.project_id) })}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}${note}`,
     prompt: `# Fil de la conversation (le plus ancien d'abord ; tes propres réponses incluses)\n${serialize(history)}\n\nÉtape ${step + 1} de cette demande. Réponds avec l'objet JSON {message, actions, question, done}.`,

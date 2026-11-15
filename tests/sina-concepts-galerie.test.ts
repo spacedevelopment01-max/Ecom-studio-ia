@@ -3,6 +3,7 @@
  * l'ambiance sombre ou claire), puis tout le site sur le concept choisi ; galerie de la fiche produit créée d'après la
  * vraie photo du produit, contrôlée, posée seulement dans le « Produit vedette ». Sans IA, sans réseau.
  */
+import { DEFAULT_MODELS } from "@/lib/syna-agent/models";
 import { describe, expect, it } from "vitest";
 import { sectionByRef } from "@/lib/syna-agent/custom-theme/library";
 import type { Design } from "@/lib/syna-agent/custom-theme/design";
@@ -200,8 +201,8 @@ describe("SINA voit la galerie qu'elle vient de créer", () => {
 describe("effort de SINA à l'étape 6 (décision du propriétaire du 10 novembre 2026)", () => {
   it("élevé pour concevoir et juger un thème, moyen pour une question ou une confirmation", async () => {
     const { modelFor, needsJudgement } = await import("@/lib/syna-agent/loop");
-    expect(modelFor(6, { judge: true })).toMatchObject({ model: "claude-sonnet-5-5", effort: "high" });
-    expect(modelFor(6, { judge: false })).toMatchObject({ model: "claude-sonnet-5-5", effort: "medium" });
+    expect(modelFor(6, { judge: true })).toMatchObject({ model: DEFAULT_MODELS.strong.model, effort: "high" });
+    expect(modelFor(6, { judge: false })).toMatchObject({ model: DEFAULT_MODELS.strong.model, effort: "medium" });
     expect(needsJudgement([{ role: "user", content: { text: "Non, aucune personne." } }])).toBe(false);
     expect(needsJudgement([{ role: "user", content: { text: "x" } }, { role: "tool", content: { tool: "gallery.plan" } }])).toBe(false);
     expect(needsJudgement([{ role: "user", content: { text: "x" } }, { role: "tool", content: { tool: "custom.concepts" } }])).toBe(true);

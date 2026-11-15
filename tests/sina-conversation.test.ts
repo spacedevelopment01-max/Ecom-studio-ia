@@ -3,6 +3,7 @@
  * moments qui comptent (modèle plus fort) et la relectrice (une réécriture au plus). Tout est éteint par défaut
  * (réglage « sina.conversation »). Aucun appel d'IA : le modèle et la relectrice sont simulés.
  */
+import { DEFAULT_MODELS } from "@/lib/syna-agent/models";
 import { afterEach, describe, expect, it } from "vitest";
 
 process.env.STUDIO_SYNA_AGENT = "1";
@@ -23,12 +24,12 @@ describe("SINA — la conversation : aiguilleuse, moments qui comptent, relectri
 
   afterEach(() => setSetting("sina.conversation", null));
 
-  it("réglage : tout est éteint par défaut, chaque aide s'allume à part, une valeur illisible vaut « éteint »", () => {
-    expect(C.conversationSettings()).toEqual({ aiguillage: false, momentsForts: false, relecture: false });
-    setJsonSetting("sina.conversation", { aiguillage: true, relecture: "oui" });
-    expect(C.conversationSettings()).toEqual({ aiguillage: true, momentsForts: false, relecture: false });
+  it("réglage : tout est allumé par défaut, seule une valeur « false » écrite exprès coupe une aide", () => {
+    expect(C.conversationSettings()).toEqual({ aiguillage: true, momentsForts: true, relecture: true });
+    setJsonSetting("sina.conversation", { aiguillage: false, relecture: "non" });
+    expect(C.conversationSettings()).toEqual({ aiguillage: false, momentsForts: true, relecture: true });
     setSetting("sina.conversation", "pas du json");
-    expect(C.conversationSettings()).toEqual({ aiguillage: false, momentsForts: false, relecture: false });
+    expect(C.conversationSettings()).toEqual({ aiguillage: true, momentsForts: true, relecture: true });
   });
 
   it("l'aiguilleuse : la notice complète des outils de l'étape, une ligne pour les autres, rien de retiré", () => {
@@ -91,13 +92,13 @@ describe("SINA — la conversation : aiguilleuse, moments qui comptent, relectri
     expect(C.keyMoment([user("c'est nul"), sina, tool("jobs.wait")])).toBe("resultat");
   });
 
-  it("modèle : le petit modèle laisse la place à un plus fort seulement à un moment qui compte, et seulement si demandé", () => {
-    expect(modelFor(1)).toMatchObject({ model: "claude-haiku-5-5" });
-    expect(modelFor(1, { keyMoment: "resultat" })).toMatchObject({ model: "claude-sonnet-5-5", effort: "medium" });
-    expect(modelFor(4, { keyMoment: "mecontent" })).toMatchObject({ model: "claude-sonnet-5-5", effort: "medium" });
-    expect(modelFor(1, { keyMoment: null })).toMatchObject({ model: "claude-haiku-5-5" });
-    // L'étape 6 garde son réglage (décision du propriétaire du 10 novembre 2026).
-    expect(modelFor(6, { keyMoment: "resultat", judge: true })).toMatchObject({ model: "claude-sonnet-5-5", effort: "high" });
+  it("modèle : le plus fort à toutes les étapes ; SINA réfléchit plus longtemps à un moment qui compte", () => {
+    const fort = DEFAULT_MODELS.strong.model;
+    for (const step of [0, 1, 4, 6, 9, 13]) expect(modelFor(step)).toMatchObject({ model: fort, effort: "medium" });
+    expect(modelFor(1, { keyMoment: "resultat" })).toMatchObject({ model: fort, effort: "high" });
+    expect(modelFor(4, { keyMoment: "mecontent" })).toMatchObject({ model: fort, effort: "high" });
+    expect(modelFor(1, { keyMoment: null })).toMatchObject({ model: fort, effort: "medium" });
+    expect(modelFor(6, { keyMoment: "resultat", judge: true })).toMatchObject({ model: fort, effort: "high" });
   });
 
   it("la relectrice : sa demande porte le moment, les mots du client, les résultats et le brouillon ; ses remarques ne sortent pas", () => {
@@ -132,13 +133,14 @@ describe("SINA — la conversation : aiguilleuse, moments qui comptent, relectri
   const draft = { message: "Mon équipe a tout refait et rien n'a été débité, tout est parfait maintenant.", actions: [], question: null, done: true };
   const fixed = { message: "Tu as raison, ça ne te ressemble pas. Dis-moi ce qui te gêne le plus et je reprends à partir de là.", actions: [], question: null, done: true };
 
-  it("par défaut : ni aiguillage, ni modèle plus fort, ni relecture (rien ne change)", async () => {
+  it("aides coupées par le réglage : ni aiguillage, ni relecture ; le modèle reste le plus fort", async () => {
+    setJsonSetting("sina.conversation", { aiguillage: false, momentsForts: false, relecture: false });
     let reviews = 0;
     const { cid, calls } = await unhappy({ review: async () => { reviews++; return { verdict: "reprendre", issues: ["À refaire entièrement."] }; } }, () => draft);
     expect(calls).toHaveLength(1);
     expect(reviews).toBe(0);
     expect(String(calls[0].reference)).toMatch(/^# Outils disponibles \(registre commun\)/);
-    expect(calls[0].routing.prefer).toMatchObject({ model: "claude-haiku-5-5" });
+    expect(calls[0].routing.prefer).toMatchObject({ model: DEFAULT_MODELS.strong.model, effort: "medium" });
     expect(assistantMessages(cid).pop()).toMatchObject({ message: draft.message });
     expect(assistantMessages(cid).pop().relu).toBeUndefined();
   });
@@ -165,10 +167,9 @@ describe("SINA — la conversation : aiguilleuse, moments qui comptent, relectri
     expect(tools[0].summary).toMatch(/Arguments invalides : [\s\S]*Notice de l'outil :\n### memory\.note — module mémoire/);
   });
 
-  it("moment qui compte + modèle plus fort allumé : le client mécontent est lu par le modèle plus fort", async () => {
-    setJsonSetting("sina.conversation", { momentsForts: true });
+  it("moment qui compte : devant un client mécontent, SINA réfléchit plus longtemps", async () => {
     const { calls } = await unhappy({}, () => fixed);
-    expect(calls[0].routing.prefer).toMatchObject({ model: "claude-sonnet-5-5", effort: "medium" });
+    expect(calls[0].routing.prefer).toMatchObject({ model: DEFAULT_MODELS.strong.model, effort: "high" });
   });
 
   it("relecture allumée : un brouillon refusé est réécrit UNE fois avec les remarques, qui ne partent jamais chez le client", async () => {

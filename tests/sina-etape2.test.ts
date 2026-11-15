@@ -3,6 +3,7 @@
  * l'étape 1 et adaptés par Claude, dessinés et contrôlés par le moteur de logos V2, puis choisis par le client.
  * Aucun appel d'IA : l'adaptation des idées et le moteur (dessin, relecture) sont simulés.
  */
+import { DEFAULT_MODELS } from "@/lib/syna-agent/models";
 import { describe, expect, it } from "vitest";
 
 process.env.STUDIO_SYNA_AGENT = "1";
@@ -72,7 +73,7 @@ describe("SINA — étape 2 : 3 logos", async () => {
 
   it("modèle et parcours : l'étape 2 est ouverte, le fil reste léger (Haiku), le contexte explique quoi faire", () => {
     expect(J.READY_STEPS).toContain(2);
-    expect(modelFor(2)).toMatchObject({ model: "claude-haiku-5-5" });
+    expect(modelFor(2)).toMatchObject({ model: DEFAULT_MODELS.strong.model });
     const j = J.emptyJourney();
     for (const s of [0, 1]) J.setStep(j, s, "done");
     expect(J.journeyContext(j)).toMatch(/Étape 2 \(3 logos\) : rien n'est encore dessiné.*logo\.propose/);
@@ -207,7 +208,7 @@ describe("SINA — étape 2 : 3 logos", async () => {
     expect((await call("logo.choose", ctx, { source: pick.source })).ok).toBe(true);
     expect(J.currentStep(J.journeyOf(cid))).toBe(3);
     expect(J.READY_STEPS).toContain(3);
-    expect(modelFor(3)?.model).toMatch(/haiku/); // le fil reste léger : le rendu est fait par le Studio
+    expect(modelFor(3)?.model).toBe(DEFAULT_MODELS.strong.model);
     expect(J.journeyContext(J.journeyOf(cid))).toMatch(/Étape 3 \(image de marque complète\) : rien n'est encore préparé[^]*GRATUIT[^]*brand\.kit/);
     const r = await call("brand.kit", ctx, {});
     expect(r.ok).toBe(true);

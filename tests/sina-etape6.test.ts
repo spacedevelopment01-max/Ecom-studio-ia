@@ -2,6 +2,7 @@
  * SINA (#492) — étape 6 du parcours, volet « un de nos thèmes » (gratuit) : cartes des thèmes du catalogue proposé
  * (recommandé d'abord, site du client composé dans chacun, démonstration), choix du client par la tâche de la galerie.
  */
+import { DEFAULT_MODELS } from "@/lib/syna-agent/models";
 import { describe, expect, it } from "vitest";
 
 process.env.STUDIO_SYNA_AGENT = "1";
@@ -42,7 +43,7 @@ describe("SINA — étape 6 : un de nos thèmes", async () => {
     const { user, cid, ctx, pid } = await stepSix();
     expect(J.READY_STEPS).toContain(6);
     expect(J.currentStep(J.journeyOf(cid))).toBe(6);
-    expect(modelFor(6)?.model).toMatch(/sonnet/); // modèle plus fort pour l'étape 6 (choix du propriétaire du 10 novembre)
+    expect(modelFor(6)?.model).toBe(DEFAULT_MODELS.strong.model);
     // Consigne du propriétaire (9 novembre 2026) : d'abord la question « thème du Studio ou thème sur mesure » ; Studio =
     // TOUS nos thèmes, puis son site monté dedans ; sur mesure = la famille d'abord.
     const ctx0 = J.journeyContext(J.journeyOf(cid));

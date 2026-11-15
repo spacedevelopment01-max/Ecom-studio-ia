@@ -14,6 +14,7 @@
  * borne la tâche entière ; rien n'est inventé (une parole de client que le Studio ne retrouve pas dans l'extrait de sa
  * page est supprimée ; ce qui n'est pas vérifié est écrit dans « ce qui reste à prouver »).
  */
+import { DEFAULT_MODELS } from "./models";
 import { z } from "zod";
 import { domainDeps, domainLine, findDomains, type NameDomains } from "./brand-domains";
 import { UserFacingError, getJob, type JobContext } from "../jobs";
@@ -53,8 +54,8 @@ export type ChainSettings = { teams: number; strong: ChainModel; craft: ChainMod
  */
 export const DEFAULT_CHAIN: ChainSettings = {
   teams: 4,
-  strong: { provider: "anthropic", model: "claude-opus-5-5", effort: "medium" },
-  craft: { provider: "anthropic", model: "claude-sonnet-5-5", effort: "medium" },
+  strong: DEFAULT_MODELS.strong,
+  craft: DEFAULT_MODELS.craft,
 };
 export function chainSettings(): ChainSettings {
   const s = getJsonSetting<Partial<ChainSettings>>("sina.brand_chain", {});

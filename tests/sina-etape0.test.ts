@@ -49,7 +49,7 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     j.start.existing = { value: "Oui, un logo et un site", status: "answered", source: "client", at: 1 };
     expect(J.missingFields(j)[0]).toBe("offer");
     expect(J.missingFields(j)).toContain("keep");
-    expect(J.journeyContext(j)).toMatch(/Prochaine question à poser .*offer/);
+    expect(J.journeyContext(j)).toMatch(/Sujets de la fiche pas encore abordés [^:]*: offer — /);
   });
 
   it("une étape pas encore construite est annoncée, sans outil payant", () => {
@@ -79,7 +79,7 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     expect(bad.internal).toBe(true);
     const r = await call("start.answer", ctx, { answers: [{ field: "business", value: "products" }, { field: "offer", value: "Un sac de voyage modulable en toile." }] });
     expect(r.ok).toBe(true);
-    expect((r.data as any).prochaine).toBe("existing");
+    expect((r.data as any).sujetsPasEncoreAbordes[0]).toBe("existing");
     expect(r.summary).not.toMatch(/\b(offer|existing)\b/); // jamais d'identifiant technique affiché au client
     expect(J.missingFields(J.journeyOf(cid))).not.toContain("offer");
   });
@@ -202,8 +202,9 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     expect(http("PATCH")).not.toThrow();
   });
 
-  it("réponses personnalisées (par défaut) : le Studio enregistre la réponse lui-même, puis Haiku rédige une seule réponse", async () => {
+  it("chaque réponse du client est lue par SINA elle-même, avec le modèle le plus fort : plus aucune réponse écrite sans IA", async () => {
     const { addMessage } = await import("@/lib/syna-agent/store");
+    const { DEFAULT_MODELS } = await import("@/lib/syna-agent/models");
     const user = await account();
     const cid = threadFor(user, null), ctx = ctxOf(user, cid);
     await call("start.answer", ctx, { answers: [{ field: "business", value: "services" }, { field: "offer", value: "Coaching sportif à domicile." }] });
@@ -211,38 +212,66 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     const r = submitMessage(user, cid, { requestId: `req-${Math.random()}`, text: "Rien, je pars de zéro" });
     const seen: any[] = [];
     await fr(() => runAgent(r.id, r.job_id!, { reason: async (c) => {
-      // La réponse est déjà enregistrée AVANT que le modèle n'écrive : il ne peut pas l'oublier.
-      expect(J.journeyOf(cid).start.existing?.value).toMatch(/je pars de zéro/);
+      // Rien n'est enregistré avant elle : c'est SINA qui lit la réponse et qui la note.
+      expect(J.journeyOf(cid).start.existing).toBeUndefined();
       seen.push(c.routing?.prefer);
       // Variété : SINA voit les débuts de ses derniers messages pour ne pas les répéter.
       expect(String(c.context)).toMatch(/Débuts de tes derniers messages .*« Bien reçu\.… »/);
-      return { message: "Super, on part de zéro ensemble !", actions: [], question: { text: "À qui t'adresses-tu ?" }, done: false, askField: "audience" };
+      return { message: "On part de zéro ensemble.", actions: [{ tool: "start.answer", args: { answers: [{ field: "existing", value: "Rien, je pars de zéro" }] } }], question: { text: "À qui t'adresses-tu ?" }, done: false, askField: "audience" };
     } }));
     expect(seen).toHaveLength(1);
-    expect(seen[0]).toMatchObject({ model: "claude-haiku-5-5" });
+    expect(seen[0]).toMatchObject({ model: DEFAULT_MODELS.strong.model, effort: "medium" });
+    expect(J.journeyOf(cid).start.existing?.value).toMatch(/je pars de zéro/);
     expect(getRun(r.id)!.status).toBe("waiting_user");
   });
 
-  it("réglage « réponses locales » : une réponse simple n'appelle pas du tout l'IA", async () => {
-    const { setJsonSetting } = await import("@/lib/settings");
-    setJsonSetting("syna.replies", "locales");
-    try { await localOnly(); } finally { setJsonSetting("syna.replies", "personnalisees"); }
-  });
-  async function localOnly() {
+  it("rien n'est enregistré que le client n'ait dit : un sujet qu'il n'a pas abordé est refusé, sauf celui que SINA venait de demander", async () => {
     const { addMessage } = await import("@/lib/syna-agent/store");
     const user = await account();
     const cid = threadFor(user, null), ctx = ctxOf(user, cid);
-    await call("start.answer", ctx, { answers: [{ field: "business", value: "services" }, { field: "offer", value: "Coaching sportif à domicile." }] });
-    addMessage(cid, "assistant", { message: "Bien reçu.", actions: [], question: { text: "As-tu déjà quelque chose ?" }, done: false, askField: "existing", step: 0 }, null);
-    const r = submitMessage(user, cid, { requestId: `req-${Math.random()}`, text: "Rien, je pars de zéro" });
-    let calls = 0;
-    await fr(() => runAgent(r.id, r.job_id!, { reason: async () => { calls++; throw new Error("l'IA ne doit pas être appelée"); } }));
-    expect(calls).toBe(0);
-    expect(getRun(r.id)!.status).toBe("waiting_user");
-    expect(J.journeyOf(cid).start.existing?.value).toMatch(/je pars de zéro/);
-    const last = all<any>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND role='assistant' ORDER BY seq DESC LIMIT 1", cid).map((m) => json<any>(m.content_json, {}))[0];
-    expect(last).toMatchObject({ local: true, askField: "audience" });
-  }
+    addMessage(cid, "assistant", { message: "D'accord.", actions: [], question: { text: "As-tu tes propres photos ?" }, done: false, askField: "photos", step: 0 }, null);
+    addMessage(cid, "user", { text: "Oui, j'ai des photos de mon atelier, je te les envoie demain." }, null);
+    // Elle répondait sur ses photos : la langue du site n'a jamais été dite.
+    const refused = await call("start.answer", ctx, { answers: [{ field: "photos", value: "Oui, photos de l'atelier, envoyées demain" }, { field: "language", value: "Français seulement" }] });
+    expect(refused).toMatchObject({ ok: false, internal: true });
+    expect(refused.summary).toMatch(/« Langue du site » : le client ne l'a pas dit/);
+    expect(J.journeyOf(cid).start.photos).toBeUndefined();
+    // « Plus tard » ne s'invente pas non plus.
+    expect(await call("start.answer", ctx, { answers: [{ field: "contact", value: "", status: "later" }] })).toMatchObject({ ok: false });
+    // Le sujet demandé passe, même en un mot ; un autre sujet passe s'il reprend ses mots.
+    expect(await call("start.answer", ctx, { answers: [{ field: "photos", value: "Oui" }] })).toMatchObject({ ok: true });
+    addMessage(cid, "user", { text: "Et je vends surtout à Lyon, sur les marchés." }, null);
+    expect(await call("start.answer", ctx, { answers: [{ field: "market", value: "Lyon, sur les marchés" }] })).toMatchObject({ ok: true });
+    // Le genre d'activité se déduit de ce qu'il raconte.
+    expect(await call("start.answer", ctx, { answers: [{ field: "business", value: "products" }] })).toMatchObject({ ok: true });
+  });
+
+  it("notes libres : tout autre fait utile se note par sujet, avec ses mots, et suit dans le projet", async () => {
+    const { addMessage } = await import("@/lib/syna-agent/store");
+    const user = await account();
+    const cid = threadFor(user, null), ctx = ctxOf(user, cid);
+    addMessage(cid, "user", { text: "J'ai commencé après dix ans comme mécanicien chez un vélociste." }, null);
+    expect(await call("start.note", ctx, { notes: [{ sujet: "Son histoire", value: "Dix ans comme mécanicien chez un vélociste avant de se lancer." }] })).toMatchObject({ ok: true });
+    expect(await call("start.note", ctx, { notes: [{ sujet: "Ses concurrents", value: "Deux ateliers en centre-ville, plus chers." }] })).toMatchObject({ ok: false, internal: true });
+    const j = J.journeyOf(cid);
+    expect(j.notes).toMatchObject([{ sujet: "Son histoire" }]);
+    // Le même sujet remplace la note précédente.
+    addMessage(cid, "user", { text: "Plutôt douze ans, en fait, comme mécanicien." }, null);
+    await call("start.note", ctx, { notes: [{ sujet: "son histoire", value: "Douze ans comme mécanicien." }] });
+    expect(J.journeyOf(cid).notes).toHaveLength(1);
+    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/Tes notes \(autres faits qu'il a donnés\) : son histoire : « Douze ans comme mécanicien\. »/);
+    // Les sujets déjà notés ne sont plus proposés.
+    expect(J.extraTopics(J.journeyOf(cid)).join(" ")).not.toMatch(/son histoire/);
+  });
+
+  it("vocabulaire du client : un mot qu'il corrige est retenu pour toujours", async () => {
+    const { loadWordingRules } = await import("@/lib/client-wording");
+    const { project } = await import("./conversation209-fixtures");
+    const user = await account();
+    const pid = project(user), cid = threadFor(user, pid), ctx = ctxOf(user, cid);
+    expect(await call("client.wording", ctx, { avoid: "chronographe", use: "montre" })).toMatchObject({ ok: true });
+    expect(loadWordingRules(pid)).toMatchObject([{ avoid: "chronographe", use: "montre" }]);
+  });
 
   it("un projet créé sans le parcours SINA n'est jamais verrouillé", async () => {
     const { underConstruction } = await import("@/lib/syna-agent/construction");
@@ -261,8 +290,12 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
       return { message: "Vous vendez des produits, ou vous proposez des services ?", actions: [], question: { text: "Produits ou services ?", choices: ["Produits", "Services"] }, done: false };
     } }));
     expect(getRun(r.id)!.status).not.toBe("failed");
-    expect(seen[0]).toMatch(/Parcours de création/);
-    expect(seen[0]).toMatch(/Prochaine question à poser .*business/);
+    expect(seen[0]).toMatch(/Parcours du client, en 9 étapes : 1\. Faire connaissance = doing ; 2\. La marque = todo/);
+    expect(seen[0]).toMatch(/Il en est à l'étape 1 \(« Faire connaissance »\)/);
+    // Plus de question imposée : les sujets à aborder, dans l'ordre qu'elle choisit.
+    expect(seen[0]).not.toMatch(/Prochaine question à poser/);
+    expect(seen[0]).toMatch(/Sujets de la fiche pas encore abordés .*business — s'il vend des produits ou propose des services/);
+    expect(seen[0]).toMatch(/Autres sujets utiles pour ce métier/);
     const view = openThread(user, null) as any;
     expect(view.journey.current).toBe(0);
     expect(view.journey.steps).toHaveLength(14);
@@ -274,10 +307,10 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     expect(provisionalName("Je suis coach sportif. Je fais des séances à domicile.")).toBe("Coach sportif (provisoire)");
     // Partir de zéro : le nom viendra avec l'identité ; une refonte qui garde son nom le donne.
     const fresh = J.emptyJourney();
-    expect(J.QUESTIONS.contact(fresh).fr).not.toMatch(/nom de l'entreprise/);
-    expect(J.QUESTIONS.contact(fresh).fr).toMatch(/Ton nom viendra avec ton identité de marque/);
+    expect(J.TOPICS.contact(fresh).fr).not.toMatch(/nom de l'entreprise/);
+    expect(J.TOPICS.contact(fresh).fr).toMatch(/son nom viendra avec sa marque, ne le lui demande pas/);
     const refonte = { ...J.emptyJourney(), mode: "refonte" as const };
-    expect(J.QUESTIONS.contact(refonte).fr).toMatch(/nom de l'entreprise/);
+    expect(J.TOPICS.contact(refonte).fr).toMatch(/nom de l'entreprise/);
     // Étape 1 : le nombre exact d'identités du client, jamais « deux à quatre ».
     const j1 = J.emptyJourney(); J.setStep(j1, 0, "done");
     expect(J.journeyContext(j1, { identityCount: 3 })).toMatch(/3 identités pour ce client \(son forfait\) : annonce 3, jamais « deux à quatre »/);
@@ -299,107 +332,49 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
   });
 });
 
-describe("SINA — niveaux de coût : gratuit (moteur local), Haiku, Opus", async () => {
-  const L = await import("@/lib/syna-agent/local-step");
+describe("SINA — faire connaissance : ce que le Studio lit dans les mots du client, et le modèle de SINA", async () => {
   const J = await import("@/lib/syna-agent/journey");
   const { modelFor } = await import("@/lib/syna-agent/loop");
-  const base = () => { const j = J.emptyJourney(); j.start.business = { value: "services", status: "answered", source: "client", at: 1 }; j.start.offer = { value: "Coaching sportif à domicile.", status: "answered", source: "client", at: 1 }; return j; };
-  const ctx = (j: any, askField: string | null, userText: string, extra: Partial<{ hasAttachments: boolean; hasProject: boolean }> = {}) => ({ journey: j, askField, userText, hasAttachments: false, hasProject: true, seq: 3, ...extra });
-
-  it("réponse simple à la question posée : enregistrée sans IA, question suivante posée", () => {
-    const d = L.localDecision(ctx(base(), "existing", "Rien, je pars de zéro"))!;
-    expect(d.answer).toMatchObject({ field: "existing", status: "answered" });
-    expect(d.out.actions[0]).toMatchObject({ tool: "start.answer" });
-    expect(d.out.askField).toBe("audience");
-    expect(d.out.question?.text).toMatch(/client idéal/);
-  });
-
-  it("dans le doute, jamais de devinette : Claude reprend", () => {
-    expect(L.localDecision(ctx(base(), "existing", "Oui, voici mon site https://exemple.fr"))).toBeNull();
-    expect(L.localDecision(ctx(base(), "audience", "Plus tard"))).toBeNull(); // indispensable
-    expect(L.localDecision(ctx(base(), "audience", "Ça veut dire quoi client idéal ?"))).toBeNull(); // question du client
-    expect(L.localDecision(ctx(base(), "market", "Bordeaux", { hasAttachments: true }))).toBeNull(); // pièce jointe
-    expect(L.localDecision(ctx(base(), "price", "60 €"))).toBeNull(); // pas la question en cours (existing manque)
-    expect(L.localDecision(ctx(base(), null, "Bordeaux"))).toBeNull(); // question inconnue
-    expect(L.parseSimpleAnswer("business", "un peu des deux, produits et services")).toBeNull();
-  });
-
-  it("dernière réponse : résumé construit sans rien réécrire, puis validation par « oui »", () => {
-    const j = base();
-    j.start.existing = { value: "Rien : je pars de zéro.", status: "answered", source: "client", at: 1 };
-    for (const f of ["audience", "image", "setup", "market", "price", "difference", "taste", "photos", "language"] as const) j.start[f] = { value: `réponse ${f}`, status: "answered", source: "client", at: 1 };
-    const d = L.localDecision(ctx(j, "contact", "Plus tard"))!;
-    expect(d.out.askField).toBe("confirm");
-    expect(d.out.message).toMatch(/Voici ce que j'ai compris/);
-    expect(d.out.message).toMatch(/réponse difference/);
-    expect(d.out.message).toMatch(/Plus tard/);
-    j.start.contact = { value: "", status: "later", source: "client", at: 1 };
-    const ok = L.localDecision(ctx(j, "confirm", "Oui, tout est juste, on continue"))!;
-    expect(ok.confirm).toBe(true);
-    expect(ok.out.actions[0].tool).toBe("start.confirm");
-    expect(L.localDecision(ctx(j, "confirm", "Non, le prix est faux"))).toBeNull();
-  });
-
-  it("questions ajoutées : photos et langue reconnues sans IA quand la réponse est simple", () => {
-    expect(L.parseSimpleAnswer("photos", "Pas encore de photos")).toMatchObject({ value: "Pas de photos pour l'instant." });
-    expect(L.parseSimpleAnswer("photos", "Oui, je t'envoie mes photos")).toBeNull(); // photos promises : Claude
-    expect(L.parseSimpleAnswer("language", "Français et anglais")).toMatchObject({ value: "Français et anglais" });
-    expect(L.parseSimpleAnswer("language", "français seulement")).toMatchObject({ value: "Français seulement" });
-  });
-
-  it("organisation : modes de contact et nombre de produits lus dans les mots du client", async () => {
-    const { contactModesFrom, productCountFrom } = await import("@/lib/syna-agent/tools/start");
-    expect(contactModesFrom("Réservation en ligne surtout, sinon un appel")).toEqual(["booking", "call"]);
-    expect(contactModesFrom("une demande de devis")).toEqual(["quote"]);
-    expect(productCountFrom("Un seul produit pour commencer")).toBe(1);
-    expect(productCountFrom("Environ 12 produits")).toBe(12);
-    expect(productCountFrom("je ne sais pas")).toBeNull();
-  });
-
-  it("modèle par réponse : Haiku pour l'étape 0 et une étape pas encore disponible, Opus pour une étape créative prête", () => {
-    expect(modelFor(0)).toMatchObject({ model: "claude-haiku-5-5" });
-    expect(modelFor(1)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 1 : le fil reste léger, la création est dans l'outil (modèle fort)
-    expect(modelFor(2)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 2 : le dessin est dans l'outil logo.propose
-    expect(modelFor(3)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 3 : l'image de marque est rendue par le Studio (brand.kit)
-    expect(modelFor(4)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 4 : recherche et angles dans les tâches du Pilote
-    expect(modelFor(5)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 5 : outils gratuits
-    expect(modelFor(6)).toMatchObject({ model: "claude-sonnet-5-5", effort: "high" }); // étape 6 : modèle plus fort, effort élevé (choix du propriétaire du 10 novembre)
-    expect(modelFor(7, { customTheme: true })).toMatchObject({ model: "claude-sonnet-5-5" }); // retouches du thème sur mesure
-    expect(modelFor(7)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 7 : codage et photos dans leurs tâches
-    expect(modelFor(8)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 8 : rédaction et images dans la tâche theme.brand
-    expect(modelFor(9)).toMatchObject({ model: "claude-haiku-5-5" }); // étape 9 pas encore ouverte : simple annonce
-    J.READY_STEPS.push(9);
-    try { expect(modelFor(9)).toBeUndefined(); } finally { J.READY_STEPS.pop(); }
-  });
-});
-
-describe("SINA — étape 0, moteur local fiable (audit du 10 novembre 2026)", async () => {
-  const { parseSimpleAnswer, isPlainYes } = await import("@/lib/syna-agent/local-step");
+  const { DEFAULT_MODELS } = await import("@/lib/syna-agent/models");
   const { productCountFrom, contactModesFrom } = await import("@/lib/syna-agent/tools/start");
 
-  it("« oui » seulement s'il est franc : une réserve ou une correction passe la main à Claude", () => {
-    for (const t of ["Oui", "ok merci", "Oui, tout est juste, on continue", "oui c'est bon"]) expect(isPlainYes(t), t).toBe(true);
-    for (const t of ["Oui mais change le prix : 25 €", "Ok sauf la langue", "Valide pas encore, attends", "Oui, 30 € au lieu de 25"]) expect(isPlainYes(t), t).toBe(false);
-  });
-
-  it("« rien » seulement s'il est complet : « Non, juste un nom… » n'est jamais « je pars de zéro »", () => {
-    for (const t of ["Non", "Rien, je pars de zéro", "rien du tout"]) expect(parseSimpleAnswer("existing", t)?.value, t).toBe("Rien : je pars de zéro.");
-    for (const t of ["Non, juste un nom : Maison Lune", "Pas encore de site mais un compte Instagram", "Aucun site, mais j'ai un logo"]) expect(parseSimpleAnswer("existing", t), t).toBeNull();
-  });
-
-  it("une correction n'est jamais enregistrée comme réponse par le moteur local", () => {
-    expect(parseSimpleAnswer("price", "Je veux d'abord corriger mon offre : 12 €")).toBeNull();
-    expect(parseSimpleAnswer("price", "En fait plutôt 14 €")).toBeNull();
-    expect(parseSimpleAnswer("price", "12 € le pot")?.value).toBe("12 € le pot");
-    expect(parseSimpleAnswer("difference", "Un service d'échange gratuit")?.status).toBe("answered"); // « échange » n'est pas « change »
-  });
-
-  it("nombre de produits et façons de contacter lus dans l'ordre du client", () => {
+  it("organisation : modes de contact et nombre de produits lus dans les mots du client, dans son ordre", () => {
+    expect(contactModesFrom("Réservation en ligne surtout, sinon un appel")).toEqual(["booking", "call"]);
+    expect(contactModesFrom("une demande de devis")).toEqual(["quote"]);
+    expect(contactModesFrom("devis en ligne")).toEqual(["quote"]);
+    expect(contactModesFrom("Par téléphone, ou un devis")).toEqual(["call", "quote"]);
+    expect(productCountFrom("Un seul produit pour commencer")).toBe(1);
+    expect(productCountFrom("Environ 12 produits")).toBe(12);
     expect(productCountFrom("Une dizaine")).toBe(10);
     expect(productCountFrom("une vingtaine de bougies")).toBe(20);
     expect(productCountFrom("Un seul au début, 5 ensuite")).toBe(1);
-    expect(contactModesFrom("devis en ligne")).toEqual(["quote"]);
-    expect(contactModesFrom("Par téléphone, ou un devis")).toEqual(["call", "quote"]);
+    expect(productCountFrom("je ne sais pas")).toBeNull();
   });
 
+  it("modèle de SINA : le plus fort à chaque étape, ouverte ou non, pour tous les clients", () => {
+    for (let step = 0; step <= 13; step++) expect(modelFor(step), `étape ${step}`).toMatchObject({ model: DEFAULT_MODELS.strong.model });
+    expect(modelFor(7, { customTheme: true })).toMatchObject({ model: DEFAULT_MODELS.strong.model });
+  });
+
+  it("les neuf étapes du client couvrent tous les repères internes, une seule fois chacun", () => {
+    const covered = J.PHASES.flatMap((p) => [...p.steps]).sort((a, b) => a - b);
+    expect(covered).toEqual(J.JOURNEY_STEPS.map((s) => s.n));
+    expect(J.PHASES.map((p) => p.fr)).toEqual(["Faire connaissance", "La marque", "Les angles", "L'activité", "Le site", "La mise en ligne", "La communication", "La publicité", "Dans la durée"]);
+    const j = J.emptyJourney();
+    expect(J.phaseStatus(j, J.PHASES[0])).toBe("doing");
+    for (const n of [0, 1]) J.setStep(j, n, "done");
+    J.setStep(j, 2, "review");
+    expect(J.phaseStatus(j, J.PHASES[0])).toBe("done");
+    expect(J.phaseStatus(j, J.PHASES[1])).toBe("review");
+    expect(J.phaseOf(3).n).toBe(2);
+    expect(J.phaseStatus(j, J.PHASES[2])).toBe("todo");
+  });
+
+  it("sujets en plus selon le métier : une boutique et un prestataire n'ont pas les mêmes", () => {
+    const shop = J.emptyJourney(); shop.start.business = { value: "products", status: "answered", source: "client", at: 1 };
+    const pro = J.emptyJourney(); pro.start.business = { value: "services", status: "answered", source: "client", at: 1 };
+    expect(J.extraTopics(shop).join(" ; ")).toMatch(/comment c'est fabriqué/);
+    expect(J.extraTopics(pro).join(" ; ")).toMatch(/comment se passe une prestation/);
+    expect(J.extraTopics(pro).join(" ; ")).not.toMatch(/fabriqué/);
+  });
 });

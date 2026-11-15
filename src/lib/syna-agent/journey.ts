@@ -1,12 +1,13 @@
 /**
- * Parcours de création d'un projet par SINA (#492, décisions du propriétaire du 6 novembre 2026 ;
- * docs/syna/PARCOURS-CREATION.md). Quatorze étapes (0 à 13), suivies par fil : l'état vit dans
- * `agent_conversations.state_json.parcours`, donc il existe dès le brouillon (avant la création du projet) et suit le
- * fil quand le projet est créé. SINA le relit à chaque pas (contexte) ; le client le voit en frise.
+ * Parcours de création d'un projet par SINA. Le client voit NEUF étapes (PHASES : faire connaissance, la marque, les
+ * angles, l'activité, le site, la mise en ligne, la communication, la publicité, dans la durée). Le Studio garde pour
+ * l'instant ses repères internes (JOURNEY_STEPS, 0 à 13), suivis par fil : l'état vit dans
+ * `agent_conversations.state_json.parcours`, donc il existe dès le brouillon (avant la création du projet).
  *
- * Étape 0 : fiche de départ. Questions posées UNE à la fois, seulement si la réponse manque (jamais redemandée) ;
- * l'existant du client (site lu gratuitement, photos, formulaire de création) préremplit la fiche ; mode « refonte » :
- * le client dit ce qu'il garde tel quel, le reste est recréé. Aucune IA payante pour décider quoi demander.
+ * Faire connaissance (repère 0) : SINA mène la conversation elle-même. Elle choisit ses questions, une à la fois,
+ * selon le métier et ce que le client vient de dire ; elle n'enregistre que ce qu'il a dit ; ce qu'elle peut trouver
+ * seule (son site), elle le lit. La fiche (START_FIELDS) dit les sujets à avoir abordés avant le résumé ; tout autre
+ * fait utile va dans les notes libres.
  */
 import { HttpError } from "../auth";
 import { json, now, one, run, tx } from "../db";
@@ -58,6 +59,22 @@ export function stepReady(n: number): boolean {
   const open = getJsonSetting<unknown>("sina.etapes_ouvertes", []);
   return Array.isArray(open) && open.includes(n);
 }
+/** Les neuf étapes que le client voit, et les repères internes que chacune couvre. */
+export const PHASES = [
+  { n: 1, fr: "Faire connaissance", en: "Getting to know you", steps: [0] },
+  { n: 2, fr: "La marque", en: "The brand", steps: [1, 2, 3] },
+  { n: 3, fr: "Les angles", en: "The angles", steps: [4] },
+  { n: 4, fr: "L'activité", en: "The business", steps: [5] },
+  { n: 5, fr: "Le site", en: "The site", steps: [6, 8] },
+  { n: 6, fr: "La mise en ligne", en: "Going live", steps: [7] },
+  { n: 7, fr: "La communication", en: "Communication", steps: [9, 11, 12] },
+  { n: 8, fr: "La publicité", en: "Advertising", steps: [10] },
+  { n: 9, fr: "Dans la durée", en: "Over time", steps: [13] },
+] as const;
+export type Phase = (typeof PHASES)[number];
+/** L'étape du client à laquelle appartient un repère interne. */
+export const phaseOf = (step: number): Phase => PHASES.find((p) => (p.steps as readonly number[]).includes(step)) ?? PHASES[PHASES.length - 1];
+
 /** à faire · en cours · à valider par le client · validée · sans objet (ex. étape 7 quand le client choisit un de nos thèmes). */
 export type StepStatus = "todo" | "doing" | "review" | "done" | "skipped";
 
@@ -85,6 +102,8 @@ export type Journey = {
   version: 1;
   steps: Record<number, { status: StepStatus; at?: number; note?: string }>;
   start: Partial<Record<StartField, FieldAnswer>>;
+  /** Tout autre fait utile dit par le client (son histoire, ses concurrents, ses réseaux, sa fabrication…), par sujet. */
+  notes?: { sujet: string; value: string; at: number }[];
   keep: Keepable[];
   mode: "creation" | "refonte";
   imported: ImportedSite[];
@@ -197,6 +216,15 @@ export function currentStep(j: Journey): number {
   return JOURNEY_STEPS.find((s) => !["done", "skipped"].includes(j.steps[s.n]?.status ?? "todo"))?.n ?? 13;
 }
 
+/** Statut d'une des neuf étapes du client, d'après ses repères internes. */
+export function phaseStatus(j: Journey, p: Phase): StepStatus {
+  const st = (p.steps as readonly number[]).map((n) => j.steps[n]?.status ?? "todo");
+  if (st.every((x) => x === "skipped")) return "skipped";
+  if (st.every((x) => x === "done" || x === "skipped")) return "done";
+  if (st.includes("review")) return "review";
+  return st.some((x) => x !== "todo") ? "doing" : "todo";
+}
+
 /** Le champ s'applique-t-il à ce projet ? (« garder » seulement s'il existe déjà quelque chose ; plateforme : boutiques.) */
 export function fieldApplies(j: Journey, f: StartField): boolean {
   if (f === "keep") return hasExisting(j);
@@ -213,33 +241,47 @@ export function missingFields(j: Journey): StartField[] {
   return START_FIELDS.filter((f) => fieldApplies(j, f) && !j.start[f]);
 }
 
-export const QUESTIONS: Record<StartField, (j: Journey) => { fr: string; en: string }> = {
-  business: () => ({ fr: "Tu vends des produits, ou tu proposes des services ?", en: "Do you sell products, or offer services?" }),
+/**
+ * Les sujets de la fiche : ce que SINA doit apprendre, et pourquoi. Ce ne sont pas des questions : elle les pose avec
+ * ses mots, dans l'ordre qu'elle juge le meilleur pour ce client.
+ */
+export const TOPICS: Record<StartField, (j: Journey) => { fr: string; en: string }> = {
+  business: () => ({ fr: "s'il vend des produits ou propose des services (à enregistrer : « products » ou « services ») ; tout le reste en dépend", en: "whether they sell products or offer services (\"products\" or \"services\")" }),
   offer: (j) => j.start.business?.value === "services"
-    ? { fr: "Présente-moi tes prestations en quelques phrases, avec tes mots.", en: "Describe your services in a few sentences, in your own words." }
-    : { fr: "Présente-moi ton produit en quelques phrases, et joins des photos si tu en as (le vrai produit, sous plusieurs angles).", en: "Describe your product in a few sentences and attach photos if you have any." },
-  existing: () => ({ fr: "As-tu déjà quelque chose : un nom, un logo, des couleurs, un site ou des réseaux sociaux ? Si tu as un lien, donne-le-moi : je le lis pour gagner du temps.", en: "Do you already have a name, a logo, colours, a website or social accounts? Share a link and I'll read it." }),
-  keep: () => ({ fr: "Qu'est-ce que tu veux garder tel quel (logo, nom, slogan, couleurs, polices, textes, photos…) ? Tout le reste, je le recrée.", en: "What do you want to keep as is (logo, name, tagline, colours, fonts, texts, photos…)? I'll recreate everything else." }),
-  audience: () => ({ fr: "À qui t'adresses-tu ? Décris ton client idéal : âge, situation, ce qu'il cherche.", en: "Who is it for? Describe your ideal customer: age, situation, what they're looking for." }),
+    ? { fr: "ce qu'il fait, avec ses mots : ses prestations, et comment cela se passe pour son client", en: "what they do, in their words" }
+    : { fr: "ce qu'il vend, avec ses mots : ce que c'est, de quoi c'est fait, comment on s'en sert ; et ses photos du vrai produit s'il en a", en: "what they sell, in their words, with photos of the real product" },
+  existing: () => ({ fr: "ce qui existe déjà : un nom, un logo, des couleurs, un site, des réseaux ; s'il a un lien, tu le lis toi-même", en: "what already exists: name, logo, colours, site, social accounts" }),
+  keep: () => ({ fr: "ce qu'il veut garder tel quel de l'existant ; tout le reste sera recréé", en: "what they want to keep as is" }),
+  audience: () => ({ fr: "à qui il s'adresse : qui achète ou réserve, dans quelle situation, ce que cette personne cherche", en: "who it is for" }),
   market: (j) => j.start.business?.value === "services"
-    ? { fr: "Où interviens-tu : adresse ou zone (ville, rayon) ? Chez le client, chez toi, ou en ligne ?", en: "Where do you work: address or area? At the client's, at your place, or online?" }
-    : { fr: "Où vends-tu : seulement en ligne, ou aussi en boutique ou sur des marchés ? Dans quels pays livres-tu ?", en: "Where do you sell: online only, or also in a shop or at markets? Which countries do you ship to?" },
+    ? { fr: "où il travaille : son adresse ou sa zone, chez le client, chez lui ou en ligne", en: "where they work" }
+    : { fr: "où il vend (en ligne seulement, en boutique, sur des marchés) et où il livre", en: "where they sell and ship" },
   price: (j) => j.start.business?.value === "services"
-    ? { fr: "Quels sont tes tarifs et durées, même approximatifs ?", en: "What are your prices and durations, even roughly?" }
-    : { fr: "Quel prix de vente prévois-tu (ou une fourchette) ? Y a-t-il des variantes (tailles, couleurs…) ?", en: "What selling price do you plan (or a range)? Any variants (sizes, colours…)?" },
-  difference: () => ({ fr: "Qu'est-ce qui te rend différent, avec tes mots ?", en: "What makes you different, in your own words?" }),
-  image: () => ({ fr: "Donne-moi 3 mots pour l'image que tu veux donner (par exemple chaleureux, haut de gamme, fun), et les couleurs que tu ne veux surtout pas.", en: "Give me 3 words for the image you want to convey (e.g. warm, premium, fun), and any colours you don't want." }),
+    ? { fr: "ses tarifs et ses durées, même approximatifs", en: "prices and durations" }
+    : { fr: "ses prix de vente, même approximatifs, et ses variantes (tailles, formats, couleurs)", en: "selling prices and variants" },
+  difference: () => ({ fr: "ce qui le rend différent, avec ses mots : pourquoi lui plutôt qu'un autre", en: "what makes them different" }),
+  image: () => ({ fr: "l'image qu'il veut donner, en quelques mots, et ce qu'il ne veut surtout pas (couleurs, styles)", en: "the image they want to convey and what they refuse" }),
   setup: (j) => j.start.business?.value === "services"
-    ? { fr: "Comment tes clients doivent-ils te contacter : réservation en ligne, demande de devis, appel, ou formulaire de contact ?", en: "How should clients reach you: online booking, quote request, phone call, or contact form?" }
-    : { fr: "Combien de produits vas-tu vendre au lancement ?", en: "How many products will you sell at launch?" },
-  photos: () => ({ fr: "As-tu tes propres photos (ton produit, toi au travail, ton lieu, tes réalisations) ? Si oui, envoie-les-moi ; sinon, dis-le simplement.", en: "Do you have your own photos (product, you at work, your place, your work)? If so, send them; otherwise just say so." }),
-  language: () => ({ fr: "Ton site doit-il être en français seulement, ou aussi en anglais ?", en: "Should your site be in French only, or in English too?" }),
-  taste: () => ({ fr: "Quels sites, marques ou styles aimes-tu ? Et ce que tu n'aimes pas ? Des liens ou des captures sont les bienvenus.", en: "Which websites, brands or styles do you like? And dislike? Links or screenshots welcome." }),
-  // Un client qui part de zéro n'a pas encore de nom : il viendra avec son identité de marque (essai réel du 14 novembre
-  // 2026 : SINA demandait « le nom de l'entreprise » à une cliente qui venait justement en chercher un).
-  contact: (j) => j.mode === "creation" && !j.keep.includes("nom") ? { fr: "Tes coordonnées pour le site : e-mail, téléphone, adresse (et SIRET si tu l'as). Ton nom viendra avec ton identité de marque. Tu peux en donner une partie maintenant et le reste plus tard.", en: "Your contact details for the site: email, phone, address (and company number). Your name will come with your brand identity. Some now, the rest later is fine." } : { fr: "Tes coordonnées pour le site : nom de l'entreprise, e-mail, téléphone, adresse (et SIRET si tu l'as). Tu peux en donner une partie maintenant et le reste plus tard.", en: "Your contact details for the site: company name, email, phone, address (and company number). Some now, the rest later is fine." },
-  platform: () => ({ fr: "Sur quelle plateforme vendras-tu : Shopify, WooCommerce, PrestaShop, ou tu ne sais pas encore ?", en: "Which platform will you sell on: Shopify, WooCommerce, PrestaShop, or not sure yet?" }),
+    ? { fr: "comment ses clients le contactent ou réservent : réservation en ligne, demande de devis, appel, formulaire", en: "how clients reach them" }
+    : { fr: "combien de produits il vendra au lancement", en: "how many products at launch" },
+  photos: () => ({ fr: "s'il a ses propres photos (son produit, lui au travail, son lieu, ses réalisations) ; sans photo de lui, aucune personne ne sera montrée", en: "whether they have their own photos" }),
+  language: () => ({ fr: "la langue de son site : français seulement, ou aussi anglais", en: "site language" }),
+  taste: () => ({ fr: "les sites, les marques ou les styles qu'il aime, et ceux qu'il n'aime pas (liens ou captures bienvenus)", en: "sites, brands or styles they like or dislike" }),
+  contact: (j) => j.mode === "creation" && !j.keep.includes("nom")
+    ? { fr: "ses coordonnées pour le site : e-mail, téléphone, adresse, SIRET s'il l'a (une partie maintenant, le reste plus tard) ; son nom viendra avec sa marque, ne le lui demande pas", en: "contact details for the site; the name comes with the brand" }
+    : { fr: "ses coordonnées pour le site : nom de l'entreprise, e-mail, téléphone, adresse, SIRET s'il l'a (une partie maintenant, le reste plus tard)", en: "contact details for the site" },
+  platform: () => ({ fr: "la plateforme où il vendra : Shopify, WooCommerce, PrestaShop, ou pas encore décidé", en: "the selling platform" }),
 };
+
+/** D'autres sujets utiles selon le métier : SINA les aborde quand la conversation s'y prête, et les note (start.note). */
+export function extraTopics(j: Journey): string[] {
+  const common = ["son histoire : pourquoi il s'est lancé", "les concurrents qu'il connaît, et ce qu'il fait autrement", "les réseaux où il est déjà ou veut être, et ce qu'il y montre", "ce qu'il attend de son site et de sa communication dans les prochains mois"];
+  const own = j.start.business?.value === "services"
+    ? ["comment se passe une prestation, du premier contact à la fin", "ses années de métier, ses diplômes, ses assurances ou garanties, s'il en a", "ses jours et ses horaires"]
+    : j.start.business?.value === "products" ? ["comment c'est fabriqué, d'où cela vient, ce qu'il y a dedans", "à quel moment et comment ses clients s'en servent"] : [];
+  const done = new Set((j.notes ?? []).map((n) => n.sujet.toLowerCase()));
+  return [...own, ...common].filter((t) => !done.has(t.split(" :")[0].toLowerCase()));
+}
 
 export const FIELD_LABEL: Record<StartField, { fr: string; en: string }> = {
   business: { fr: "Activité", en: "Business" }, offer: { fr: "Offre", en: "Offer" }, existing: { fr: "Existant", en: "Existing" },
@@ -255,7 +297,11 @@ export function journeyContext(j: Journey, o: { identityCount?: number } = {}): 
   const cur = currentStep(j);
   const steps = JOURNEY_STEPS.map((s) => `${s.n}. ${s.fr} = ${j.steps[s.n]?.status ?? "todo"}`).join(" ; ");
   if (j.outside) return "Projet existant (créé avant ce fil) : il n'y a PAS de parcours de création. Ne pose pas les questions de départ et ne lance aucune étape du parcours : aide le client sur ce qu'il demande, avec les outils du catalogue.";
-  const lines = [`Parcours de création (étapes 0 à 13) : ${steps}. Étape en cours : ${cur}.`];
+  const phase = phaseOf(cur);
+  const lines = [
+    `Parcours du client, en 9 étapes : ${PHASES.map((p) => `${p.n}. ${p.fr} = ${phaseStatus(j, p)}`).join(" ; ")}. Il en est à l'étape ${phase.n} (« ${phase.fr} »). Avec lui, tu ne parles que de ces neuf étapes, par leur nom.`,
+    `Repères internes du Studio (jamais dits au client ; les consignes ci-dessous les appellent « étape 0 » à « étape 13 ») : ${steps}. Repère en cours : ${cur}.`,
+  ];
   if (cur === 7 && j.customChosenAt) {
     lines.push("Étape 7 (mise en boutique du thème sur mesure) : son thème est choisi et en place dans l'onglet Boutique. Quand il veut l'installer dans sa boutique Shopify, appelle custom.install (gratuit) : le Studio en fait un vrai thème Shopify (ajout au panier, panier, contact, recherche, une fiche par produit) et te rend soit le lien à télécharger, soit la liste de ce qui reste à régler (informations « À compléter », photos d'exemple) : donne-la-lui simplement et aide-le à compléter (custom.edit) ; s'il préfère retirer ce qu'il ne peut pas donner, relance avec sansLesManques:true, avec son accord écrit. Ne dis jamais que sa boutique est en ligne : c'est lui qui importe le thème dans Shopify. Continue de faire les changements qu'il demande sur son thème (consigne de l'étape 6) ; après un changement, la mise en boutique se refait (custom.install). N'utilise AUCUN outil des anciennes maquettes (mockup.*, site.code_from_mockup, site.images).");
     if (STEP_GUIDES[6]) lines.push(STEP_GUIDES[6]);
@@ -266,14 +312,19 @@ export function journeyContext(j: Journey, o: { identityCount?: number } = {}): 
     lines.push(`L'étape ${cur} (« ${s.fr} ») n'est pas encore disponible dans le parcours. Dis-le simplement au client (la suite arrive très bientôt), réponds à ses questions, mais n'utilise AUCUN outil payant et ne lance aucune autre étape (ni recherche, ni angles, ni marque, ni site).`);
   }
   if (cur === 0) {
-    const filled = START_FIELDS.filter((f) => j.start[f]).map((f) => `${f} = ${j.start[f]!.status === "answered" ? `« ${j.start[f]!.value.slice(0, 400)} »` : j.start[f]!.status} (${j.start[f]!.source})`);
+    const filled = START_FIELDS.filter((f) => j.start[f]).map((f) => `${f} (${FIELD_LABEL[f].fr}) = ${j.start[f]!.status === "answered" ? `« ${j.start[f]!.value.slice(0, 400)} »` : j.start[f]!.status === "later" ? "il répondra plus tard" : "rien à dire"} (source : ${j.start[f]!.source})`);
     const missing = missingFields(j);
-    lines.push(`Fiche de départ — déjà connu : ${filled.join(" ; ") || "rien"}.`);
+    lines.push("Faire connaissance. Ton but : apprendre tout ce que LUI SEUL sait et dont sa marque, son site, ses publications et ses publicités auront besoin, pour réussir du premier coup et lui éviter les reprises. Tu mènes la conversation comme une professionnelle qui s'intéresse vraiment à son projet : tu choisis toi-même la prochaine question, la plus utile maintenant, selon son métier et ce qu'il vient de dire. UNE seule question à la fois. Jamais une question dont la réponse est déjà connue (ci-dessous, ou lue sur son site). Quand une réponse est vague, ou qu'elle ouvre quelque chose d'important pour la suite, creuse avant de changer de sujet. Ce que tu peux trouver seule, tu le trouves : s'il donne un lien, lis-le (start.import) et montre-lui ce que tu as trouvé au lieu de le lui demander.");
+    lines.push(`Ce que tu sais déjà : ${filled.join(" ; ") || "rien encore"}.`);
+    if (j.notes?.length) lines.push(`Tes notes (autres faits qu'il a donnés) : ${j.notes.map((n) => `${n.sujet} : « ${n.value.slice(0, 300)} »`).join(" ; ")}.`);
     lines.push(`Mode : ${j.mode}${j.keep.length ? ` ; à garder tel quel : ${j.keep.join(", ")}` : ""}.`);
     if (j.imported.length) lines.push(`Existant lu : ${j.imported.map((s) => `${s.url} (nom « ${s.name ?? "?"} », slogan « ${s.tagline ?? "?"} », logo ${s.logoSrc ? "trouvé" : "non trouvé"}, couleurs ${s.colors?.join(" ") ?? "?"}, polices ${s.fonts?.join(", ") ?? "?"}${s.warnings?.length ? `, limites : ${s.warnings.slice(0, 3).join(" / ")}` : ""})`).join(" ; ")}.`);
-    lines.push(missing.length
-      ? `Prochaine question à poser (UNE seule, avec tes mots, en reprenant ce que le client a déjà dit) : ${missing[0]} — « ${QUESTIONS[missing[0]](j).fr} ». Restent ensuite : ${missing.slice(1).join(", ") || "rien"}.`
-      : "Toutes les questions ont une réponse : fais le RÉSUMÉ (« Voici ce que j'ai compris ») et demande au client de confirmer ou corriger ; à sa confirmation, appelle start.confirm.");
+    if (missing.length) {
+      lines.push(`Sujets de la fiche pas encore abordés (chacun doit l'avoir été avec lui avant le résumé ; l'ordre et les mots sont les tiens) : ${missing.map((f) => `${f} — ${TOPICS[f](j).fr}`).join(" | ")}.`);
+      const extra = extraTopics(j);
+      if (extra.length) lines.push(`Autres sujets utiles pour ce métier, à aborder quand la conversation s'y prête et à noter avec start.note : ${extra.join(" ; ")}. Tu peux en ajouter d'autres si son projet le demande. Tu pourras aussi lui reposer une question plus tard, à l'étape où tu en auras besoin : ne garde pour maintenant que ce qui sert à bien démarrer.`);
+      lines.push("Enregistre au fur et à mesure, et seulement ce qu'il a dit, avec ses mots : start.answer pour un sujet de la fiche (plusieurs s'il en donne plusieurs d'un coup), start.note pour tout autre fait utile. Tu ne réponds jamais à sa place : un sujet qu'il n'a pas abordé se demande. « Plus tard » ou « rien » ne s'enregistrent que s'il le dit lui-même.");
+    } else lines.push("Tous les sujets de la fiche ont été abordés. S'il te manque encore quelque chose d'important pour sa marque ou son site, demande-le maintenant. Sinon fais le RÉSUMÉ complet (« Voici ce que j'ai compris »), court, par rubrique, avec ses mots, et demande-lui de confirmer ou de corriger ; à sa confirmation, appelle start.confirm.");
   }
   if (cur === 1) lines.push(...identityStepContext(j, o.identityCount));
   if (cur === 2) lines.push(...logoStepContext(j));

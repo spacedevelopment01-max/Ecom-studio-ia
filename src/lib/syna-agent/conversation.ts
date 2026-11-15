@@ -1,14 +1,12 @@
 /**
- * La conversation de SINA (carte des spécialistes, lot 3, 13 novembre 2026). Un seul appel comprend le client, décide,
- * choisit parmi une centaine d'outils et répond ; trois aides l'entourent, chacune derrière le réglage
- * « sina.conversation » (tout est éteint par défaut : rien ne change tant que le propriétaire ne l'a pas décidé) :
+ * La conversation de SINA. Un appel comprend le client, décide, choisit ses outils et répond ; trois aides l'entourent,
+ * toutes allumées (le réglage « sina.conversation » ne sert qu'à en couper une en cas de panne) :
  *
  *  1) L'AIGUILLEUSE (sans IA, « aiguillage ») : la notice complète des seuls outils de l'étape en cours, et une ligne
  *     par autre outil. SINA demande la notice d'un autre outil avec « tools.open » avant de s'en servir ; un outil
  *     appelé sans notice est quand même exécuté si ses arguments sont justes, sinon sa notice lui est rendue.
- *     (Relevé du 13 novembre 2026 : la notice des 104 outils, environ 78 000 signes, partait à chaque message.)
  *  2) LES MOMENTS QUI COMPTENT (« momentsForts ») : présenter un résultat, expliquer un échec, répondre à un client
- *     mécontent. Là, le petit modèle laisse la place à un modèle plus fort.
+ *     mécontent. Là, SINA réfléchit plus longtemps.
  *  3) LA RELECTRICE (« relecture ») : à ces mêmes moments, une autre lit la réponse avant qu'elle parte (faits,
  *     honnêteté, prix, mots du client) ; si elle refuse, SINA réécrit UNE fois avec ses remarques. Celle qui écrit
  *     n'est jamais celle qui juge.
@@ -19,10 +17,10 @@ import { allTools, toolEntry, toolVisible, type ToolScope } from "./registry";
 
 export type ConversationSettings = { aiguillage: boolean; momentsForts: boolean; relecture: boolean };
 
-/** Réglage « sina.conversation » : chaque aide s'allume à part ; une valeur illisible vaut « éteint ». */
+/** Réglage « sina.conversation » : tout est allumé ; seule une valeur « false » écrite exprès coupe une aide. */
 export function conversationSettings(): ConversationSettings {
   const raw = getJsonSetting<Partial<Record<keyof ConversationSettings, unknown>>>("sina.conversation", {});
-  const on = (k: keyof ConversationSettings) => !!raw && typeof raw === "object" && raw[k] === true;
+  const on = (k: keyof ConversationSettings) => !(raw && typeof raw === "object" && raw[k] === false);
   return { aiguillage: on("aiguillage"), momentsForts: on("momentsForts"), relecture: on("relecture") };
 }
 
@@ -32,7 +30,7 @@ export function conversationSettings(): ConversationSettings {
 export const OPEN_TOOL = "tools.open";
 
 /** Toujours sous la main, quelle que soit l'étape : lire la fiche, noter, lire un fichier, suivre une tâche. */
-const ALWAYS = new Set(["start.state", "memory.note", "attachment.read", "jobs.status", "files.list", "brand.read", OPEN_TOOL]);
+const ALWAYS = new Set(["start.state", "memory.note", "client.wording", "attachment.read", "jobs.status", "files.list", "brand.read", OPEN_TOOL]);
 
 /** Outils de chaque étape construite du parcours (0 à 8). Une étape absente d'ici n'est pas aiguillée. */
 const STEP_TOOLS: Record<number, RegExp> = {

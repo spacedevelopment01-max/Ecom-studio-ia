@@ -3,6 +3,7 @@
  * angles) tourne avec ses dépendances SIMULÉES (aucun appel réel, aucun réseau) ; SINA l'enchaîne, montre les angles
  * avec leurs sources et enregistre le choix du client.
  */
+import { DEFAULT_MODELS } from "@/lib/syna-agent/models";
 import fs from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -63,7 +64,7 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     const { user, cid, ctx, pid } = await stepFour();
     expect(J.READY_STEPS).toContain(4);
     expect(J.currentStep(J.journeyOf(cid))).toBe(4);
-    expect(modelFor(4)?.model).toMatch(/haiku/); // le travail est dans les tâches du Pilote
+    expect(modelFor(4)?.model).toBe(DEFAULT_MODELS.strong.model);
     expect(J.journeyContext(J.journeyOf(cid))).toMatch(/Étape 4 \(3 angles marketing\)[^]*PAYANT[^]*angles\.propose/);
     // Essai réel : SINA avait lu les angles avec research.read (lecture tronquée, aucune carte).
     expect(J.journeyContext(J.journeyOf(cid))).toMatch(/n'utilise jamais research\.read ni strategy\.read à cette étape/);
@@ -77,10 +78,10 @@ describe("SINA — étape 4 : 5 angles marketing", async () => {
     expect((await call("strategy.read", ctx, {})).ok).toBe(false);
     const { SYNA_SYSTEM } = await import("@/lib/syna-agent/prompt");
     expect(SYNA_SYSTEM).toMatch(/TOUTE action payante passe par une carte d'accord[^]*rien ne part avant qu'il clique « Confirmer »/);
-    expect(SYNA_SYSTEM).toMatch(/Accusé de réception : il porte SEULEMENT sur la dernière réponse du client/);
-    expect(SYNA_SYSTEM).toMatch(/Le message ne l'annonce pas et ne la paraphrase pas \(« il me reste à savoir… »/);
-    expect(SYNA_SYSTEM).toMatch(/les logos proposés, la planche de marque et, à l'étape 6, des captures du thème sur mesure \(accueil[^]*te sont JOINTS quand ils existent \(tu les vois\)[^]*Une image qui ne t'est pas jointe, ne la décris jamais/);
-    expect(SYNA_SYSTEM).toMatch(/Tu parles de toi à la PREMIÈRE personne/); // jamais « SINA va chercher… » (essai réel du 7 novembre)
+    expect(SYNA_SYSTEM).toMatch(/tu le dis UNE fois, brièvement,[^.]*seulement pour sa dernière réponse/);
+    expect(SYNA_SYSTEM).toMatch(/ne répète pas la question et ne l'annonce pas \(« il me reste à savoir… »/);
+    expect(SYNA_SYSTEM).toMatch(/celles qui te sont jointes \(logos, planche de marque, captures de son site\), tu les regardes avant d'en parler[^]*Une image qui ne t'est pas jointe, tu ne la décris pas/);
+    expect(SYNA_SYSTEM).toMatch(/Tu parles de toi à la première personne/); // jamais « SINA va chercher… » (essai réel du 7 novembre)
     expect(fs.readFileSync("src/lib/syna-agent/journey.ts", "utf8")).not.toMatch(/que SINA va chercher/);
     // 1) La fiche doit être comprise : tâche d'analyse (payante, devis du Pilote).
     expect(A.anglesPhase(pid).kind).toBe("analyze");
