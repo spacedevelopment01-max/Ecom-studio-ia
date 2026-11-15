@@ -79,9 +79,9 @@ Les fondations sont saines. Le désordre vient d'ailleurs :
 
 | Quoi | Où | Taille |
 |---|---|---|
-| La première conversation (l'ancien agent), ses 25 routes, ses 13 tâches | `orchestrator/conversation/`, `api/studio-agent/`, `conversation-*.tsx` | ≈ 7 900 lignes, 129 tests, 83 scripts |
-| Le Pilote, la création en dix étapes, « dites en une phrase » | `engine/pipeline.ts`, `workflow/index.ts`, `tab-pilote.tsx`, `workflow-panel.tsx` | ≈ 2 200 lignes |
-| Les écrans de préparation et le formulaire de création | `tab-preparation.tsx` et voisins, formulaire de `home.tsx` | ≈ 2 600 lignes |
+| La première conversation (l'ancien agent), ses 25 routes, ses 13 tâches **(retiré au lot 1)** | `orchestrator/conversation/`, `api/studio-agent/`, `conversation-*.tsx` | ≈ 7 900 lignes, 129 tests, 83 scripts |
+| Le Pilote, la création en dix étapes, « dites en une phrase » **(retiré au lot 1)** | `engine/pipeline.ts`, `workflow/index.ts`, `tab-pilote.tsx`, `workflow-panel.tsx` | ≈ 2 200 lignes |
+| Les écrans de préparation et le formulaire de création **(retiré au lot 1)** | `tab-preparation.tsx` et voisins, formulaire de `home.tsx` | ≈ 2 600 lignes |
 | La bibliothèque de consignes avec appel direct à l'IA | `tab-prompts.tsx` | 264 lignes |
 | L'ancienne création de marque en un appel et les anciens logos | `syna-agent/identities.ts`, `engine/{brand,identity,logo-job,full-logo…}.ts`, une partie de `logo-v2/` | ≈ 4 200 lignes |
 | L'illustratrice en dessin (encore payée à chaque planche, plus montrée) | `brand-art.ts`, `brand-art-review.ts` | 255 lignes |
@@ -90,7 +90,7 @@ Les fondations sont saines. Le désordre vient d'ailleurs :
 | Les 30 anciens thèmes | `theme/directions.ts`, `theme-catalog.ts` | ≈ 2 300 lignes |
 | Les 208 anciennes sections et leur atelier | `public/sections/library.*`, `scripts/sections-library.py`, `builder.ts`, `blank.ts`, `starters.ts` | 1,2 Mo et 15 Mo de photos |
 | Le calendrier manuel de SINA | `syna-agent/calendar.ts`, `tools/calendar.ts` | 669 lignes |
-| L'ancien calendrier, les anciennes vidéos, les « 20 créations » du départ | `engine/{calendar,videos,ugc}.ts`, `social-v2/initial*.ts` | ≈ 2 400 lignes |
+| L'ancien calendrier, les anciennes vidéos, les « 20 créations » du départ (les « 20 créations » retirées au lot 1) | `engine/{calendar,videos,ugc}.ts`, `social-v2/initial*.ts` | ≈ 2 400 lignes |
 | Les outils de SINA qui relancent les anciennes façons | `brand.create`, `site.mockups`, `site.mockup_images`, `site.build`, `pilot.run`, `strategy.choose`, `project.create` | — |
 | Huit tâches de fond que plus rien ne déclenche, et le code jamais appelé | `plan.run`, `stock.search`, `image.single`, `ugc.script`, `video.ugc`, `brand.fulllogo`, `calendar.plan`, `post.regenerate` | — |
 | Les tests des anciennes façons | `tests/` | environ 200 fichiers sur 706 |
@@ -213,8 +213,26 @@ avec lui, dans le lot 1.
 - **Vérifié** : compilation sans erreur ; suite complète après la sortie des archives : 703 fichiers de tests passés
   sur 706, 2 ignorés, 1 en échec (6 833 tests passés, 1 échec, 6 ignorés ; 29 minutes). L'échec
   (`tests/theme211-render-evidence.test.ts`) vient de la machine de travail : le test impose un navigateur à
-  `/usr/bin/chromium`, absent ici ; il appartient à l'ancien agent et part au lot 1. Les deux fichiers retirés ensuite
+  `/usr/bin/chromium`, absent ici ; il est resté après le lot 1, car il vérifie le rendu du thème, que SINA utilise. Les deux fichiers retirés ensuite
   n'ont ni importeur ni test : la compilation a été relancée, pas la suite.
+
+## 7 quater. Le lot 1 fait (15 novembre 2026)
+
+- **SINA, une seule porte d'entrée** : un projet ne se crée plus qu'en parlant à SINA. Compte rendu complet, essais
+  réels et ce qui reste : `docs/studio/LOT-1-SINA-UNE-SEULE-PORTE.md`.
+- **Retirés de la pile C** : l'ancien assistant (`orchestrator/conversation/`, `api/studio-agent/`, ses écrans, ses
+  tâches `agent.*`), le Pilote et la demande en une phrase (`tab-pilote.tsx`, `workflow-panel.tsx`, `workflow/index.ts`),
+  la création en dix étapes (`engine/pipeline.ts`, tâches `pipeline.run`, `workflow.run`, `plan.run`), le formulaire de
+  création (`home.tsx`, création par `POST /api/projects`), les écrans de préparation (`tab-preparation.tsx` et
+  voisins), les « 20 créations du départ » (`social-v2/initial*`), l'ancienne interface (`StudioShell`, `syna-dock.tsx`,
+  `syna-ui/studio-shell.ts`). Environ 600 fichiers et 40 000 lignes en moins.
+- **Gardés pour leur lot** : le moteur de préparation (SINA s'en sert pour les angles ; huit de ses fonctions n'ont
+  plus d'appelant, à revoir au lot 3) ; `orchestrator/` réduit à l'enveloppe des tâches ; la reproduction d'un site
+  existant (`site-reproduce.ts`) ; le prix « création complète » (lot 6) ; les outils `pilot.*` de SINA.
+- **Tables sans usage, non supprimées** : `workflows`, `agent_conversation_photo_imports`, `agent_conversation_quotes`,
+  `agent_conversation_turns`, `agent_request_bounds`, `agent_request_jobs`.
+- Les chemins des fichiers retirés restent cités plus haut et dans `docs/studio/inventaire/` : c'est l'état d'avant
+  les lots 0 et 1, gardé comme référence.
 
 ## 8. Non vérifié
 
