@@ -120,10 +120,11 @@ describe("SINA — la conversation : aiguilleuse, moments qui comptent, relectri
     expect(note).toMatch(/ne parle jamais de cette relecture au client/);
   });
 
-  /** Un fil à l'étape 0 où le client se plaint : la réflexion est simulée, la relectrice aussi. */
+  /** Un fil après la prise de connaissance, où le client se plaint d'une création : la réflexion est simulée, la relectrice aussi. */
   async function unhappy(deps: { review?: (call: any) => Promise<unknown> }, reply: (n: number, call: any) => any) {
     const user = await account();
     const cid = threadFor(user, null);
+    (await import("@/lib/syna-agent/journey")).updateJourney(cid, (j) => { j.steps[0] = { status: "done" }; });
     addMessage(cid, "assistant", { message: "Voici une première idée.", actions: [], question: null, done: true, step: 0 }, null);
     const r = submitMessage(user, cid, { requestId: `req-${Math.random()}`, text: "C'est nul, ça ne me ressemble pas du tout." });
     const calls: any[] = [];
@@ -149,9 +150,9 @@ describe("SINA — la conversation : aiguilleuse, moments qui comptent, relectri
     setJsonSetting("sina.conversation", { aiguillage: true });
     const { calls } = await unhappy({}, () => fixed);
     expect(String(calls[0].reference)).toMatch(/^# Outils du Studio \(ceux de l'étape en entier, les autres en liste\)/);
-    expect(String(calls[0].reference)).toMatch(/### start\.answer — module parcours/);
-    // Fil sans projet, étape 0 : exactement le catalogue aiguillé de cette étape (les outils qui demandent un projet attendent).
-    expect(String(calls[0].reference)).toBe(`# Outils du Studio (ceux de l'étape en entier, les autres en liste)\n\n${C.routedCatalog(false, scope, 0)}`);
+    // Fil sans projet, à l'étape de la marque : exactement le catalogue aiguillé de cette étape (les outils qui demandent un projet attendent).
+    expect(String(calls[0].reference)).toBe(`# Outils du Studio (ceux de l'étape en entier, les autres en liste)\n\n${C.routedCatalog(false, scope, 1)}`);
+    expect(C.routedCatalog(false, scope, 0)).toMatch(/### start\.answer — module parcours/);
     expect(String(calls[0].reference)).toMatch(/### tools\.open — module outils/);
   });
 
@@ -209,5 +210,28 @@ describe("SINA — la conversation : aiguilleuse, moments qui comptent, relectri
     const r = submitMessage(user, cid, { requestId: `req-${Math.random()}`, text: "Bonjour, je veux créer ma boutique de thé." });
     await fr(() => runAgent(r.id, r.job_id!, { reason: async () => ({ message: "Avec plaisir, on commence par une question simple pour bien te connaître.", actions: [], question: { text: "Tu vends des produits ou des services ?" }, done: false }), review: async () => { reviews++; return { verdict: "ok" }; } }));
     expect(reviews).toBe(0);
+  });
+});
+
+describe("SINA — pendant « faire connaissance », parler de ses goûts n'est pas se plaindre", async () => {
+  const { account } = await import("./conversation209-fixtures");
+  const { threadFor } = await import("@/lib/syna-agent/thread");
+  const { addMessage, getRun } = await import("@/lib/syna-agent/store");
+  const { submitMessage, runAgent } = await import("@/lib/syna-agent/loop");
+  const { runWithLang } = await import("@/lib/i18n-server");
+
+  it("« je n'aime pas les sites tout blancs » : ni réflexion longue, ni relecture, tant que rien n'a été créé", async () => {
+    const user = await account(), cid = threadFor(user, null);
+    addMessage(cid, "assistant", { message: "D'accord.", actions: [], question: { text: "Quels styles aimes-tu ?" }, done: false, askField: "taste", step: 0 }, null);
+    const r = submitMessage(user, cid, { requestId: `req-${Math.random()}`, text: "Je n'aime pas les sites tout blancs et froids." });
+    const calls: any[] = []; let reviews = 0;
+    await runWithLang({ ui: "fr", content: "fr" }, async () => runAgent(r.id, r.job_id!, {
+      reason: async (c) => { calls.push(c); return { message: "Des sites chaleureux, donc : je le garde en tête pour la suite de ton projet.", actions: [], question: { text: "Ton site sera-t-il en français seulement ?" }, done: false, askField: "language" }; },
+      review: async () => { reviews++; return { verdict: "ok", issues: [] }; },
+    }));
+    expect(calls).toHaveLength(1);
+    expect(calls[0].routing.prefer).toMatchObject({ effort: "medium" });
+    expect(reviews).toBe(0);
+    expect(getRun(r.id)!.status).toBe("waiting_user");
   });
 });

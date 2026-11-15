@@ -267,7 +267,7 @@ export const TOPICS: Record<StartField, (j: Journey) => { fr: string; en: string
   photos: () => ({ fr: "s'il a ses propres photos (son produit, lui au travail, son lieu, ses réalisations) ; sans photo de lui, aucune personne ne sera montrée", en: "whether they have their own photos" }),
   language: () => ({ fr: "la langue de son site : français seulement, ou aussi anglais", en: "site language" }),
   taste: () => ({ fr: "les sites, les marques ou les styles qu'il aime, et ceux qu'il n'aime pas (liens ou captures bienvenus)", en: "sites, brands or styles they like or dislike" }),
-  contact: (j) => j.mode === "creation" && !j.keep.includes("nom")
+  contact: (j) => !j.keep.includes("nom")
     ? { fr: "ses coordonnées pour le site : e-mail, téléphone, adresse, SIRET s'il l'a (une partie maintenant, le reste plus tard) ; son nom viendra avec sa marque, ne le lui demande pas", en: "contact details for the site; the name comes with the brand" }
     : { fr: "ses coordonnées pour le site : nom de l'entreprise, e-mail, téléphone, adresse, SIRET s'il l'a (une partie maintenant, le reste plus tard)", en: "contact details for the site" },
   platform: () => ({ fr: "la plateforme où il vendra : Shopify, WooCommerce, PrestaShop, ou pas encore décidé", en: "the selling platform" }),
@@ -319,12 +319,15 @@ export function journeyContext(j: Journey, o: { identityCount?: number } = {}): 
     if (j.notes?.length) lines.push(`Tes notes (autres faits qu'il a donnés) : ${j.notes.map((n) => `${n.sujet} : « ${n.value.slice(0, 300)} »`).join(" ; ")}.`);
     lines.push(`Mode : ${j.mode}${j.keep.length ? ` ; à garder tel quel : ${j.keep.join(", ")}` : ""}.`);
     if (j.imported.length) lines.push(`Existant lu : ${j.imported.map((s) => `${s.url} (nom « ${s.name ?? "?"} », slogan « ${s.tagline ?? "?"} », logo ${s.logoSrc ? "trouvé" : "non trouvé"}, couleurs ${s.colors?.join(" ") ?? "?"}, polices ${s.fonts?.join(", ") ?? "?"}${s.warnings?.length ? `, limites : ${s.warnings.slice(0, 3).join(" / ")}` : ""})`).join(" ; ")}.`);
+    const extra = extraTopics(j);
     if (missing.length) {
       lines.push(`Sujets de la fiche pas encore abordés (chacun doit l'avoir été avec lui avant le résumé ; l'ordre et les mots sont les tiens) : ${missing.map((f) => `${f} — ${TOPICS[f](j).fr}`).join(" | ")}.`);
-      const extra = extraTopics(j);
       if (extra.length) lines.push(`Autres sujets utiles pour ce métier, à aborder quand la conversation s'y prête et à noter avec start.note : ${extra.join(" ; ")}. Tu peux en ajouter d'autres si son projet le demande. Tu pourras aussi lui reposer une question plus tard, à l'étape où tu en auras besoin : ne garde pour maintenant que ce qui sert à bien démarrer.`);
       lines.push("Enregistre au fur et à mesure, et seulement ce qu'il a dit, avec ses mots : start.answer pour un sujet de la fiche (plusieurs s'il en donne plusieurs d'un coup), start.note pour tout autre fait utile. Tu ne réponds jamais à sa place : un sujet qu'il n'a pas abordé se demande. « Plus tard » ou « rien » ne s'enregistrent que s'il le dit lui-même.");
-    } else lines.push("Tous les sujets de la fiche ont été abordés. S'il te manque encore quelque chose d'important pour sa marque ou son site, demande-le maintenant. Sinon fais le RÉSUMÉ complet (« Voici ce que j'ai compris »), court, par rubrique, avec ses mots, et demande-lui de confirmer ou de corriger ; à sa confirmation, appelle start.confirm.");
+    } else {
+      if (extra.length) lines.push(`Tous les sujets de la fiche ont été abordés. Avant le résumé, il te reste des sujets utiles pour ce métier que tu n'as pas encore notés : ${extra.join(" ; ")}. Aborde, un par un, ceux qui serviront vraiment à sa marque, à son site ou à ses publications (à noter avec start.note) ; laisse ceux qui n'apporteraient rien à ce projet.`);
+      lines.push(`${extra.length ? "Quand tu n'as plus de question utile" : "Tous les sujets ont été abordés. S'il te manque encore quelque chose d'important, demande-le ; sinon"}, fais le RÉSUMÉ complet (« Voici ce que j'ai compris »), court, par rubrique, avec ses mots et ses notes, et demande-lui de confirmer ou de corriger ; à sa confirmation, appelle start.confirm.`);
+    }
   }
   if (cur === 1) lines.push(...identityStepContext(j, o.identityCount));
   if (cur === 2) lines.push(...logoStepContext(j));

@@ -447,6 +447,15 @@ export async function stepQuote(user: User, r: SynaRun): Promise<string> {
   } catch { return ""; }
 }
 
+/**
+ * Le moment de cette réflexion. Pendant « faire connaissance », rien n'a encore été créé : « je n'aime pas… » y parle
+ * des goûts du client, pas d'un reproche (essai réel du lot 1 : une réponse sur ses goûts était relue comme une plainte).
+ */
+function momentOf(history: SynaMessage[], step: number): KeyMoment | null {
+  const m = keyMoment(history);
+  return m === "mecontent" && step === 0 ? null : m;
+}
+
 /** Outils dont le résultat se juge (thème conçu, monté, retouché, galerie, tâche finie) : effort élevé à l'étape 6. */
 const JUDGE_TOOLS = /^(custom\.(concepts|concept|design|build|compose|edit|structure|photo|show|section)|gallery\.create|theme\.(brand|choose)|jobs\.wait)$/;
 /** La réflexion en cours doit-elle concevoir ou juger (effort élevé), ou seulement poser une question / confirmer ? */
@@ -476,7 +485,7 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
     context: `# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id), { identityCount: identityCountOf(r.project_id) })}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}${note}`,
     prompt: `# Fil de la conversation (le plus ancien d'abord ; tes propres réponses incluses)\n${serialize(history)}\n\nÉtape ${step + 1} de cette demande. Réponds avec l'objet JSON {message, actions, question, done}.`,
     images: images.length ? images : undefined,
-    maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}${note ? ":reprise" : ""}`, routing: { difficulty: "complex", prefer: (() => { const j = journeyOf(r.conversation_id); return modelFor(currentStep(j), { customTheme: !!j.customChosenAt, judge: needsJudgement(history), keyMoment: conv.momentsForts ? keyMoment(history) : null }); })() },
+    maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}${note ? ":reprise" : ""}`, routing: { difficulty: "complex", prefer: (() => { const j = journeyOf(r.conversation_id); return modelFor(currentStep(j), { customTheme: !!j.customChosenAt, judge: needsJudgement(history), keyMoment: conv.momentsForts ? momentOf(history, currentStep(j)) : null }); })() },
   };
   sawImages.set(r.id, images.some((im) => /^(Logo|Planche|Maquette|Site codé|Thème sur mesure)/.test(im.label ?? "")));
   if (deps.reason) return StepSchema.parse(await deps.reason(call));
@@ -492,7 +501,7 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
 async function reviewedReply(user: User, r: SynaRun, jobId: string, step: number, deps: AgentDeps, draft: StepOutput): Promise<{ out: StepOutput; relu: "ok" | "repris" | null }> {
   // (Essais sans IA : seulement si le test fournit la relectrice.)
   if (!conversationSettings().relecture || (deps.reason && !deps.review)) return { out: draft, relu: null };
-  const history = lastMessages(r.conversation_id, 120), moment = keyMoment(history);
+  const history = lastMessages(r.conversation_id, 120), moment = momentOf(history, currentStep(journeyOf(r.conversation_id)));
   if (!shouldReview(moment, draft)) return { out: draft, relu: null };
   try {
     let lastUser = -1;

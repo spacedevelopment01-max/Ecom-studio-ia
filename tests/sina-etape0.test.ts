@@ -313,8 +313,17 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     const fresh = J.emptyJourney();
     expect(J.TOPICS.contact(fresh).fr).not.toMatch(/nom de l'entreprise/);
     expect(J.TOPICS.contact(fresh).fr).toMatch(/son nom viendra avec sa marque, ne le lui demande pas/);
-    const refonte = { ...J.emptyJourney(), mode: "refonte" as const };
+    // Garder ses photos n'est pas garder son nom : le nom ne se demande que s'il le garde.
+    const photos = { ...J.emptyJourney(), mode: "refonte" as const, keep: ["photos" as const] };
+    expect(J.TOPICS.contact(photos).fr).not.toMatch(/nom de l'entreprise/);
+    const refonte = { ...J.emptyJourney(), mode: "refonte" as const, keep: ["nom" as const] };
     expect(J.TOPICS.contact(refonte).fr).toMatch(/nom de l'entreprise/);
+    // Fiche complète : les autres sujets utiles restent proposés avant le résumé.
+    const full = J.emptyJourney();
+    for (const f of J.START_FIELDS) if (f !== "keep") full.start[f] = { value: f === "business" ? "products" : f === "existing" ? "Rien" : `réponse ${f}`, status: "answered", source: "client", at: 1 };
+    expect(J.journeyContext(full)).toMatch(/Avant le résumé, il te reste des sujets utiles pour ce métier[^.]*comment c'est fabriqué/);
+    full.notes = J.extraTopics(full).map((t) => ({ sujet: t.split(" :")[0], value: "dit", at: 1 }));
+    expect(J.journeyContext(full)).toMatch(/Tous les sujets ont été abordés\. S'il te manque encore quelque chose d'important, demande-le ; sinon, fais le RÉSUMÉ complet/);
     // Étape 1 : le nombre exact d'identités du client, jamais « deux à quatre ».
     const j1 = J.emptyJourney(); J.setStep(j1, 0, "done");
     expect(J.journeyContext(j1, { identityCount: 3 })).toMatch(/3 identités pour ce client \(son forfait\) : annonce 3, jamais « deux à quatre »/);
