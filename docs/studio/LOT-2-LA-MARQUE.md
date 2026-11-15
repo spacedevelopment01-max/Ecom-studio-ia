@@ -44,8 +44,8 @@ fait** : son prix est annoncé juste avant, et rien de payant ne part sans son �
 | | 2 identités | 3 identités | 4 identités |
 |---|---|---|---|
 | Avant le lot (sept images par planche) | 5,83 € | 7,92 € | 9,75 € |
-| Après le lot (planches, puis marque finie) | 4,86 € | 6,00 € | 6,89 € |
-| Plafond jamais dépassé | 10,24 € | 12,33 € | 14,41 € |
+| Après le lot (planches, puis marque finie) | 4,51 € | 5,49 € | 6,20 € |
+| Plafond jamais dépassé | 9,50 € | 11,22 € | 12,93 € |
 
 Repère : le dernier essai réel d'avant (trois identités, dix-huit images) avait coûté 5,25 € pour un devis de 7,92 €.
 Le différé retire encore la moitié du prix des textes servis ainsi ; ce que cela donne vraiment sera mesuré à l'essai.
@@ -57,7 +57,17 @@ logo », les trois logos libres et le logo redessiné (`logos.ts`, `tools/logo.t
 `brand-art-review.ts`), l'outil `brand.kit` appelé à la main, les anciens panneaux de logo de l'écran Marque
 (`logo-v2-panel.tsx`, `full-logo-panel.tsx` et voisins), et leurs tests.
 
+## Fautes trouvées en écrivant les tests, corrigées
+
+- La charte prenait une image de publication pour « planche de marque » quand le logo était plus ancien que les images
+  (logo gardé par le client, ou une seule image refaite).
+- À la reprise d'une tâche, les versions détourées du logo étaient rangées deux fois (rien n'était repayé).
+- Le devis comptait deux fois la direction artistique et la relecture des images (plafond gonflé d'environ 1 €).
+- Avec l'ancienne création en un appel, une fin de marque était mise en file sans pouvoir aboutir : elle ne part plus.
+
 ## Vérifié, pas vérifié
 
-- Vérifié : la compilation, sans erreur.
-- Pas encore vérifié : les tests de la nouvelle façon (en cours d'écriture), l'essai réel, les écrans en capture.
+- Vérifié : la compilation sans erreur ; les tests de SINA, des logos et du différé (71 fichiers, 759 tests passés) ;
+  la construction de l'application (avant les derniers changements d'écran).
+- Pas encore vérifié : la suite complète après les dernières corrections (en cours), l'essai réel, les écrans en
+  capture, le différé chez le vrai fournisseur (simulé dans les tests).
