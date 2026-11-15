@@ -38,7 +38,7 @@ export type ToolScope = { inJourney: boolean; legacyMockups: boolean; /** Conver
 const STEP9_TOOLS = new Set(["posts.plan", "posts.create", "posts.validate"]);
 /** Outils des étapes 10 à 13 (tools/steps-late.ts) et l'étape qui les ouvre. */
 const LATE_STEP_TOOLS: Record<string, number> = { "ads.create": 10, "ads.validate": 10, "calendar.validate": 11, "blog.topics": 12, "blog.write": 12, "blog.validate": 12, "files.tidy": 13, "files.validate": 13 };
-const JOURNEY_HIDDEN = new Set(["brand.create", "site.mockups", "site.mockup_images", "site.build", "strategy.choose", "pilot.run", "project.create"]);
+const JOURNEY_HIDDEN = new Set(["brand.create", "logo.propose", "logo.choose", "brand.kit", "site.mockups", "site.mockup_images", "site.build", "strategy.choose", "pilot.run", "project.create"]);
 const LEGACY_MOCKUP = /^(mockup\.|site\.code_from_mockup$|site\.images$|site\.photo_reject$)/;
 export function toolVisible(name: string, scope?: ToolScope): boolean {
   // tools.open n'existe que pour une conversation aiguillée : ailleurs, SINA a déjà toutes les notices.

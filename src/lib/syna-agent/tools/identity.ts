@@ -27,8 +27,9 @@ import { journeyOf, setStep, updateJourney, type Journey } from "../journey";
 import {
   IDENTITY_SYSTEM, IdentitiesSchema, LOGO_STYLE_LABEL, fontFamily, identityIssues, identityPrompt, prepareIdentities, type Identity,
 } from "../identities";
-import { SINA_BRAND_JOB, boardImagesQuote, chainQuote, routeCountOfProject } from "../brand-chain";
-import { CREATED_SLOTS } from "../brand-images";
+import { SINA_BRAND_JOB, boardImagesQuote, chainQuote, finishQuote, routeCountOfProject } from "../brand-chain";
+import { CREATED_SLOTS, FINISH_SLOTS, type ImageSlot } from "../brand-images";
+import { finishSlots } from "../brand-finish";
 import { ROUTE_KEYS, routeKeys } from "../brand-routes";
 import { project, short } from "./common";
 
@@ -76,6 +77,17 @@ function chainWork(ctx: ToolContext, a: ProposeArgs | undefined) {
   return { j, count, previous, sameShape, redo, routes: partial ? redo.length : count, fresh };
 }
 
+/**
+ * Devis montré au client pour ses identités : la création des planches, PLUS la fin de la marque de celle qu'il
+ * choisira (un seul accord pour toute l'étape « La marque »). Une reprise après le choix ne recompte pas la fin.
+ */
+function proposalQuote(w: ReturnType<typeof chainWork>) {
+  const q = chainQuote({ routes: w.routes, fresh: w.fresh });
+  if (w.j.identityChoice) return q;
+  const f = finishQuote(FINISH_SLOTS);
+  return { maxMicro: q.maxMicro + f.maxMicro, ...(q.probableMicro && f.probableMicro ? { probableMicro: q.probableMicro + f.probableMicro } : {}) };
+}
+
 /** Création par la chaîne : tâche de fond de plusieurs minutes ; SINA reprend quand les planches sont prêtes. */
 function proposeByChain(ctx: ToolContext, a: ProposeArgs) {
   const p = project(ctx);
@@ -85,6 +97,8 @@ function proposeByChain(ctx: ToolContext, a: ProposeArgs) {
   if (pendingJob(p.id, SINA_BRAND_JOB)) return { ok: false, summary: L("Tes identités sont déjà en cours de création : attends-les.", "Your identities are already being created.") };
   const quote = chainQuote({ routes: w.routes, fresh: w.fresh });
   const round = (w.j.identities?.round ?? 0) + 1;
+  // L'accord du client couvre aussi la fin de sa marque (devis affiché : `estimate`) : elle partira dès son choix.
+  if (!w.j.identityChoice) updateJourney(ctx.conversationId, (x) => { x.brandFinish = { prepaidMicro: finishQuote().maxMicro }; });
   const job = enqueue({
     userId: ctx.user.id, projectId: p.id, type: SINA_BRAND_JOB, label: L(`${w.count} identités de marque (SINA)`, `${w.count} brand identities (SINA)`),
     payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: quote.maxMicro, count: w.count, ...(a.guidance ? { guidance: a.guidance } : {}), ...(w.redo.length ? { redo: w.redo } : {}), ...(a.only === "noms" ? { namesOnly: true } : {}) },
@@ -149,7 +163,7 @@ const proposeTool: AgentTool<ProposeArgs> = {
   estimate: (ctx, a) => {
     if (brandMethod() === "simple") return { maxMicro: IDENTITY_CAP_MICRO, probableMicro: identityProbableMicro(), label: "3 identités de marque" };
     const w = chainWork(ctx, a);
-    return { ...chainQuote({ routes: w.routes, fresh: w.fresh }), label: w.routes === w.count ? `${w.count} identités de marque` : `${w.routes} identité${w.routes > 1 ? "s" : ""} de marque à refaire` };
+    return { ...proposalQuote(w), label: w.routes === w.count ? `${w.count} identités de marque` : `${w.routes} identité${w.routes > 1 ? "s" : ""} de marque à refaire` };
   },
   run: async (ctx, a) => {
     project(ctx);
@@ -300,7 +314,7 @@ const chooseTool: AgentTool<{ key: Key; mix?: Partial<Record<Part, Key>>; name?:
       x.identityChoice = { key: a.key, mix: a.mix ?? {}, ...(a.name || a.slogan ? { edits: { ...(a.name ? { name: a.name } : {}), ...(a.slogan ? { slogan: a.slogan } : {}) } } : {}), at: Date.now() };
       if (!verified) return; // étape validée seulement si la marque est bien relue
       setStep(x, 1, "done");
-      if (changed) { x.logos = undefined; x.logoChoice = undefined; x.brandKit = undefined; }
+      if (changed) { x.logos = undefined; x.logoChoice = undefined; x.brandKit = undefined; x.brandFinish = { prepaidMicro: 0 }; }
       // Logo gardé tel quel : pas de nouveaux logos (étape 2 sans objet).
       setStep(x, 2, logoKept ? "skipped" : "todo", logoKept ? "logo gardé par le client" : undefined);
       setStep(x, 3, "todo");
@@ -309,11 +323,15 @@ const chooseTool: AgentTool<{ key: Key; mix?: Partial<Record<Part, Key>>; name?:
       const b2 = loadProject(p.id).brand;
       if (b2) saveBrand(p.id, { ...b2, validated: (b2.validated ?? []).filter((v) => v !== "logo") });
     }
+    // La fin de la marque part tout de suite quand l'accord donné pour les identités la couvre déjà ; sinon SINA
+    // appelle brand.finish, qui montre son prix.
+    const finish = verified && finishEstimate(journeyOf(ctx.conversationId)).maxMicro === 0 ? startFinish(ctx, {}) : null;
     return {
       ok: verified,
       summary: verified
-        ? L(`Identité ${a.key}${mixed.length ? ` (avec ${mixed.join(", ")})` : ""} enregistrée comme marque du projet : « ${chosen.name} » — « ${chosen.slogan} ». Étape 1 validée. Prochaine étape : ${logoKept ? "l'image de marque complète (ton logo est gardé)" : chosen.board ? "ton logo" : "les 3 logos"}.`, "Identity saved.")
+        ? L(`Identité ${a.key}${mixed.length ? ` (avec ${mixed.join(", ")})` : ""} enregistrée comme marque du projet : « ${chosen.name} » — « ${chosen.slogan} ». ${finish?.jobs ? "Je finis maintenant ta marque (ton logo, l'objet qui le porte, les signes, trois publications, ta charte) : quelques minutes, déjà compris dans ton accord." : "Reste à finir ta marque : appelle brand.finish."}`, "Identity saved.")
         : L("La marque n'a pas pu être relue après l'enregistrement.", "Brand could not be verified."),
+      ...(finish?.jobs ? { jobs: finish.jobs } : verified ? { hint: "Appelle maintenant brand.finish (sans argument) : le Studio montre son prix au client s'il n'est pas déjà couvert par son accord." } : {}),
       data: { identite: identityView(chosen), etapeSuivante: logoKept ? 3 : 2 },
       changes: [{ module: "marque", object: "identité de marque", summary: `${chosen.name} — ${chosen.slogan}`, before, after: after ? { name: after.name, tagline: after.tagline, palette: after.palette, fonts: after.fonts } : null, verified }],
     };
@@ -355,4 +373,54 @@ const imagesTool: AgentTool<ImagesArgs> = {
   },
 };
 
-export const identityTools: AgentTool[] = [proposeTool, chooseTool, imagesTool];
+/** Images de la marque finie que le client peut faire refaire. */
+const FINISH_REDO = CREATED_SLOTS as unknown as [string, ...string[]];
+type FinishArgs = { redo?: string[]; guidance?: string };
+
+/**
+ * Devis de la fin de marque : gratuit quand l'accord donné pour les identités la couvre déjà (premier choix, identité
+ * prise telle quelle) ; sinon le prix des images à créer, moins ce qui était déjà couvert.
+ */
+export function finishEstimate(j: Journey, a: FinishArgs = {}): { maxMicro: number; probableMicro?: number; slots: ImageSlot[] } {
+  const slots = finishSlots(j, a.redo as ImageSlot[] | undefined);
+  if (!slots.length) return { maxMicro: 0, slots };
+  const q = finishQuote(slots), prepaid = a.redo?.length ? 0 : j.brandFinish?.prepaidMicro ?? 0;
+  if (prepaid >= q.maxMicro) return { maxMicro: 0, slots };
+  return { maxMicro: q.maxMicro - prepaid, ...(q.probableMicro ? { probableMicro: Math.max(1, q.probableMicro - prepaid) } : {}), slots };
+}
+
+/** Met en file la fin de marque (une seule à la fois). */
+function startFinish(ctx: ToolContext, a: FinishArgs): { jobs?: string[]; refused?: string } {
+  const p = project(ctx), j = journeyOf(ctx.conversationId);
+  if (pendingJob(p.id, SINA_BRAND_JOB)) return { refused: L("Ta marque est déjà en cours de création : attends-la.", "Your brand is already being created.") };
+  const slots = finishSlots(j, a.redo as ImageSlot[] | undefined);
+  const cap = Math.max(1, slots.length ? finishQuote(slots).maxMicro : 1);
+  const job = enqueue({
+    userId: ctx.user.id, projectId: p.id, type: SINA_BRAND_JOB, label: L("Ta marque complète (SINA)", "Your complete brand (SINA)"),
+    payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: cap, count: routeCountOfProject(p.id), finish: true, ...(a.redo?.length ? { slots } : {}), ...(a.guidance ? { guidance: a.guidance } : {}) },
+    maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:brand-finish:${(a.redo ?? []).join("+")}:${j.identityChoice?.at ?? 0}`,
+  });
+  updateJourney(ctx.conversationId, (x) => { if (x.brandFinish) x.brandFinish.prepaidMicro = 0; if (x.steps[2]?.status !== "skipped") setStep(x, 2, "doing"); });
+  return { jobs: [job.id] };
+}
+
+const finishTool: AgentTool<FinishArgs> = {
+  name: "brand.finish", module: "marque", kind: "generate", needsProject: true,
+  description: "Étape « La marque », après le choix de l'identité : finit la marque du client, ou en refait une partie. Sans argument : crée ce qui manque à son identité (le logo s'il n'y en a pas, l'objet qui porte le logo, les signes, trois publications), adopte son logo (fond retiré, déclinaisons) et prépare sa charte complète ; c'est déjà compris dans son accord quand il a pris une identité telle quelle. redo = les images à refaire quand il le demande ou qu'une image est ratée : « logo » (un AUTRE logo, créé pour sa marque ; l'objet et les signes sont refaits avec lui), « hero » (la grande scène), « object », « signs », « post0 », « post1 », « post2 » ; guidance = ce qu'il veut de différent, avec ses mots. Payant quand ce n'est pas déjà couvert : le Studio montre le prix au client avant. La marque complète s'affiche dans le fil.",
+  args: z.object({ redo: z.array(z.enum(FINISH_REDO)).min(1).max(7).optional(), guidance: z.string().max(1500).optional() }).strict(),
+  estimate: (ctx, a) => {
+    const e = finishEstimate(journeyOf(ctx.conversationId), a);
+    return { maxMicro: e.maxMicro, ...(e.probableMicro ? { probableMicro: e.probableMicro } : {}), label: a.redo?.length ? L(`${e.slots.length} image${e.slots.length > 1 ? "s" : ""} de ta marque à refaire`, "brand images to redo") : L("ta marque complète", "your complete brand") };
+  },
+  run: (ctx, a) => {
+    const j = journeyOf(ctx.conversationId);
+    if (j.steps[1]?.status !== "done" || !j.identityChoice) return { ok: false, summary: L("L'identité doit être choisie avant de finir la marque.", "Choose the identity first."), hint: "Le client choisit d'abord une identité (identity.choose)." };
+    if (j.steps[3]?.status === "done" && !a.redo?.length) return { ok: false, summary: L("La marque est déjà validée.", "The brand is already validated.") };
+    if (a.redo?.includes("logo") && j.keep.includes("logo")) return { ok: false, summary: L("Tu gardes ton logo : je ne le redessine pas.", "You keep your logo: I do not redraw it.") };
+    const r = startFinish(ctx, a);
+    if (!r.jobs) return { ok: false, summary: r.refused! };
+    return { ok: true, jobs: r.jobs, summary: a.redo?.length ? L("Je refais ce que tu m'as demandé (quelques minutes) ; le reste de ta marque ne bouge pas.", "Redoing what you asked.") : L("Je finis ta marque (quelques minutes) : ton logo, l'objet qui le porte, les signes, trois publications et ta charte.", "Finishing your brand.") };
+  },
+};
+
+export const identityTools: AgentTool[] = [proposeTool, chooseTool, imagesTool, finishTool];

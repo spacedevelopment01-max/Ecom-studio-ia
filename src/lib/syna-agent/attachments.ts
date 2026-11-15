@@ -145,11 +145,27 @@ export function describeAttachment(a: Attachment): string {
  * images ») : les 3 logos tant que le client n'a pas choisi (étape 2), la planche de marque tant que l'image de marque
  * n'est pas validée (étape 3). Réduites (512 px, planche 1024 px) : quelques millièmes d'euro par réponse.
  */
-export async function journeyImages(j: { steps: Record<number, { status: string } | undefined>; logos?: { list: { source: string; name: string; assetId: string | null; verdict: string; score: number | null }[] }; logoChoice?: unknown; brandKit?: { boardId: string | null }; siteMode?: { mode: string }; customChosenAt?: number }, projectId?: string | null): Promise<LlmImage[]> {
+type BoardShot = { id: string } | null | undefined;
+type BoardShots = { logo?: BoardShot; hero?: BoardShot; object?: BoardShot; signs?: BoardShot; posts?: BoardShot[] };
+export async function journeyImages(j: { steps: Record<number, { status: string } | undefined>; logos?: { list: { source: string; name: string; assetId: string | null; verdict: string; score: number | null }[] }; logoChoice?: unknown; brandKit?: { boardId: string | null }; siteMode?: { mode: string }; customChosenAt?: number;
+  identities?: { list: { key: string; name: string; board?: { images?: BoardShots } }[] }; identityChoice?: unknown; brandFinish?: { at?: number; images?: BoardShots } }, projectId?: string | null): Promise<LlmImage[]> {
   const { getAsset, assetData } = await import("../library");
   const sharp = (await import("sharp")).default;
   const small = async (id: string, size: number) => { const a = getAsset(id); return a && !a.deleted_at ? sharp(assetData(a)).resize(size, size, { fit: "inside", withoutEnlargement: true }).png().toBuffer() : null; };
   const out: LlmImage[] = [];
+  // Étape « La marque » : les planches proposées (le logo et la grande scène de chacune) tant que le client n'a pas
+  // choisi ; puis sa marque finie (logo, scène, objet, signes, publications) tant qu'il ne l'a pas validée.
+  if (j.identities?.list.length && !j.identityChoice && j.steps[1]?.status !== "done") {
+    for (const x of j.identities.list) for (const [slot, what] of [["logo", "le logo"], ["hero", "la grande scène"]] as const) {
+      const id = x.board?.images?.[slot]?.id, data = id ? await small(id, 512).catch(() => null) : null;
+      if (data) out.push({ data, label: `Identité ${x.key} « ${x.name} » — ${what}, montré au client sur sa planche` });
+    }
+  }
+  if (j.identityChoice && j.brandFinish?.at && j.steps[3]?.status !== "done") {
+    const im = j.brandFinish.images ?? {};
+    const shown: [string | undefined, string][] = [[im.logo?.id, "son logo"], [im.hero?.id, "la grande scène"], [im.object?.id, "l'objet qui porte le logo"], [im.signs?.id, "les signes de la marque"], ...((im.posts ?? []).map((q, i) => [q?.id, `publication ${i + 1}`] as [string | undefined, string]))];
+    for (const [id, what] of shown) { const data = id ? await small(id, 512).catch(() => null) : null; if (data) out.push({ data, label: `Marque du client — ${what}, montré au client` }); }
+  }
   if (j.logos?.list.length && !j.logoChoice && j.steps[2]?.status !== "done") {
     for (const l of j.logos.list) if (l.assetId) { const data = await small(l.assetId, 512).catch(() => null); if (data) out.push({ data, label: `Logo ${l.source} — ${l.name} (${l.verdict === "FINAL" ? `validé ${l.score ?? "?"}/10` : "non validé"})` }); }
   }

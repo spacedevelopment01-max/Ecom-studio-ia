@@ -209,7 +209,9 @@ export function chosenRoute(j: Journey): Route | null {
   const c = j.identityChoice, list = j.identities?.list;
   if (!c || !list?.some((x) => x.key === c.key)) return null;
   const x: Identity = mixIdentity(list, c.key, c.mix as never, c.edits ?? {});
-  return isRoute(x) ? x : null;
+  if (!isRoute(x)) return null;
+  // Les images de l'identité RETENUE (créées après le choix, mélange compris) priment sur celles de la planche proposée.
+  return j.brandFinish?.images ? { ...x, board: { ...x.board, images: j.brandFinish.images } } : x;
 }
 
 const CASE_WORDS: Record<string, string> = { upper: "en capitales", lower: "en minuscules", title: "avec une capitale à chaque mot", asis: "écrit tel quel" };
@@ -232,7 +234,7 @@ export function singleLogoPrompt(f: FreeLogoFacts, x: Route, wishes?: string, fi
     `L'idée de la marque : ${clean(b.idea.belief)}. Ce qu'elle combat : ${clean(b.idea.enemy)}.`,
     x.nameAnchor || x.nameExpression ? `D'où vient le nom : ${[x.nameAnchor, x.nameExpression].filter(Boolean).map(clean).join(" ; ")}.` : "",
     `Ses signes, à faire vivre dans le logo quand ils s'y prêtent : ${b.signs.map((s) => `${clean(s.title)} (${clean(s.text)})`).join(" ; ")}.`,
-    `Le nom est déjà dessiné sur la planche que le client a choisie : ${lines}, ${CASE_WORDS[w.case] ?? "écrit tel quel"}, dans un caractère « ${FONT_CHARACTER[key] ?? "de titres"} » (proche de ${fontFamily(x.fonts.heading)})${w.dot ? ", avec un point final de couleur" : ""}. Pars de ce dessin : garde son esprit (la casse, la coupe des lignes, le caractère des lettres) et fais-en un vrai logo, avec UNE idée graphique tirée de l'idée de la marque (une lettre travaillée, un signe intégré au nom, une forme qui porte le nom).`,
+    "Conçois-le toi-même à partir de cette marque, sans modèle : UNE idée graphique tirée de son idée et de son métier (une lettre travaillée, un signe intégré au nom, une forme qui porte le nom).",
     `Ton de la marque : ${x.tone.adjectives.join(", ")}.`,
     f.audience ? `Pour qui : ${clean(f.audience)}.` : "",
     `Couleurs de la marque, à utiliser librement : ${f.colors.join(", ")} (et le blanc).`,

@@ -41,16 +41,16 @@ const kitTool: AgentTool<Record<string, never>> = {
 
 const validateTool: AgentTool<Record<string, never>> = {
   name: "brand.kit_validate", module: "marque", kind: "write", needsProject: true,
-  description: "Étape 3 : enregistre la validation de l'image de marque PAR LE CLIENT (jamais à sa place). Ouvre l'étape suivante. Gratuit.",
+  description: "Étape « La marque » : enregistre la validation de sa marque complète PAR LE CLIENT (jamais à sa place), une fois qu'il l'a vue. Ouvre l'étape suivante (les angles). Gratuit.",
   args: z.object({}).strict(),
   run: (ctx) => {
     project(ctx);
     const j = journeyOf(ctx.conversationId);
-    if (!j.brandKit) return { ok: false, summary: L("Aucune image de marque préparée pour l'instant.", "No brand kit yet."), hint: "Lance d'abord brand.kit." };
+    if (!j.brandKit) return { ok: false, summary: L("Ta marque n'est pas encore finie.", "Your brand is not finished yet."), hint: "Lance d'abord brand.finish (sans argument)." };
     // Jamais une image de marque faite avec un ANCIEN logo (le client a changé de logo depuis).
-    if (j.logoChoice && j.brandKit.at < j.logoChoice.at) return { ok: false, summary: L("L'image de marque a été faite avec l'ancien logo : je la refais d'abord avec le nouveau.", "The brand kit uses the old logo."), hint: "Relance brand.kit (gratuit), montre-la, puis demande sa validation." };
+    if (j.logoChoice && j.brandKit.at < j.logoChoice.at) return { ok: false, summary: L("L'image de marque a été faite avec l'ancien logo : je la refais d'abord avec le nouveau.", "The brand kit uses the old logo."), hint: "Relance brand.finish (sans argument, gratuit quand aucune image ne manque), montre-la, puis demande sa validation." };
     updateJourney(ctx.conversationId, (x) => { setStep(x, 3, "done"); setStep(x, 4, "todo"); });
-    return { ok: true, summary: L("Image de marque validée. Étape 3 terminée. Prochaine étape : les 5 angles marketing.", "Brand kit validated."), changes: [{ module: "marque", object: "image de marque", summary: "validée par le client", verified: true }] };
+    return { ok: true, summary: L("Ta marque est validée. Prochaine étape : les angles.", "Your brand is validated."), changes: [{ module: "marque", object: "marque", summary: "validée par le client", verified: true }] };
   },
 };
 

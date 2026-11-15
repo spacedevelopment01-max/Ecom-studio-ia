@@ -58,7 +58,7 @@ export type BoardCard = {
   board: Board; drawn: Drawn | null; look: Look;
 };
 export type StudyCard = { quotes: { text: string; url: string }[]; quoteCount: number; sources: number; competitors: string[]; mould: string; substitutes: string[]; notFound: string[] };
-export type BoardSet = { round: number; issues: string[]; chosen: { key: string; mix: Record<string, string> } | null; list: BoardCard[]; final?: (BoardCard & { mixLabel?: string }) | null; study?: StudyCard | null };
+export type BoardSet = { round: number; issues: string[]; chosen: { key: string; mix: Record<string, string> } | null; list: BoardCard[]; final?: (BoardCard & { mixLabel?: string; finished?: boolean; finishIssues?: string[] }) | null; study?: StudyCard | null };
 
 // ---------------------------------------------------------------- couleurs (calculs simples, côté écran)
 
@@ -445,6 +445,9 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
   const tape = b.parcel?.tape ?? x.slogan, tapeBg = safeHex(p.primary), tapeInk = inkOn(tapeBg, p);
   const support = b.idea.confessionSupport;
   const shots: Shots = b.images ?? {};
+  const hasPosts = !!shots.posts?.some((q) => shotOk(q));
+  // La marque finie (identité choisie) a son objet, ses signes en photo ou ses publications ; une planche proposée, pas encore.
+  const finished = !!chosen && (hasPosts || shotOk(shots.object) || shotOk(shots.signs));
   return (
     <article className={cx("overflow-hidden rounded-2xl border", chosen ? "border-ink ring-2 ring-ink" : "border-line", faded && "opacity-60")} data-brand-board={x.key}>
       <div className={cx("bb", `bb-g-${x.ground}`)} data-ink={light ? "clair" : "fonce"} style={vars}>
@@ -457,7 +460,8 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
             <p className="bb-sign" style={{ fontWeight: headWeight }} data-signature>{x.slogan}</p>
             <p className="bb-promise">{x.promise}</p>
           </div>
-          <div className="bb-scene" data-scene={shotOk(shots.hero) ? "image" : b.hero ? "dessin" : "secours"}>{shotOk(shots.hero) ? <Photo shot={shots.hero} alt={t("La scène de la marque", "The brand's scene")} /> : b.hero ? <Vignette art={b.hero} ratio={32 / 25} label={t("La scène de la marque", "The brand's scene")} /> : <FallbackScene x={x} picto={firstPicto} />}</div>
+          {/* La grande scène est une vraie image créée et relue ; refusée, elle n'est pas remplacée par un dessin. */}
+          {shotOk(shots.hero) && <div className="bb-scene" data-scene="image"><Photo shot={shots.hero} alt={t("La scène de la marque", "The brand's scene")} /></div>}
         </div>
 
         <h4 className="bb-h">{t("L'idée", "The idea")}</h4>
@@ -534,12 +538,7 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
               <div className="bb-shot"><Photo shot={shots.object} alt={b.object.label} /></div>
               <figcaption>{b.object.label}{b.object.back.length > 0 ? <> · {t("au dos", "on the back")} : {b.object.back[0]}</> : null}</figcaption>
             </figure>
-          ) : b.images ? null /* planche à images : jamais un dessin de secours à la place d'une photo refusée */ : (
-            <>
-              <figure data-object={b.object.kind}><ObjectFace x={x} pop={pop} /><figcaption>{b.object.label}</figcaption></figure>
-              {b.object.back.length > 0 && <figure><ObjectFace x={x} back pop={pop} /><figcaption>{t("Le dos", "The back")}</figcaption></figure>}
-            </>
-          )}
+          ) : null /* jamais un dessin de secours à la place d'une photo : l'objet est créé pour l'identité choisie */}
           <figure data-phone>
             <PhoneSite x={x} shots={shots} headWeight={headWeight} firstPicto={firstPicto} t={t} />
             <figcaption>{t("Le haut de ton site, sur téléphone", "The top of your site, on a phone")}</figcaption>
@@ -551,34 +550,21 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
             </figure>}
             {/* Planche à images : plus de colis dessiné en code (sans objet pour un métier de services, et un dessin
                 là où le reste est en vraies photos). */}
-            {!b.images && <figure data-parcel>
-              <div className="bb-parcel"><div className="bb-tape" style={{ background: tapeBg, color: tapeInk, fontWeight: headWeight }} aria-label={tape}>{Array.from({ length: 5 }, (_u, i) => <span key={i} aria-hidden>&nbsp;{tape}&nbsp;·</span>)}</div><div className="bb-label">{t("[Nom de ta cliente]", "[Your customer's name]")}<br />{t("[Adresse]", "[Address]")}</div></div>
-              <figcaption>{t("Le colis", "The parcel")}</figcaption>
-            </figure>}
+
           </div>
-          <figure className="bb-wide" data-posts>
+          {hasPosts && <figure className="bb-wide" data-posts>
             {/* Avec des images créées : des publications assez grandes pour être lues sur téléphone (on les fait défiler). */}
             <div className="bb-posts" data-shots={shots.posts?.some((q) => shotOk(q)) ? "" : undefined}>
               {b.posts.map((q, i) => {
-                const bg = postBg[i], on = inkOn(bg, p);
-                // Le dessin en haut, le texte en dessous, jamais l'un sur l'autre (essai réel du 12 novembre 2026). Taille du
-                // texte : le mot le plus long tient sur une ligne, et tout le texte tient dans la carte.
-                const longest = Math.max(...q.text.split(/\s+/).map((w) => w.length), 1);
-                const size = Math.min(36 / longest, Math.sqrt((q.art ? 430 : 620) / Math.max(q.text.length, 6)), 6.4);
                 const shot = shots.posts?.[i];
-                if (shotOk(shot)) return <div key={i} className="bb-post" data-post="image"><Photo shot={shot} alt={q.text} /></div>;
-                return (
-                  <div key={i} className="bb-post" style={{ background: bg, color: on }} data-post={q.look}>
-                    {q.art ? <ArtView art={q.art} /> : q.look === "motif" && firstPicto ? <PictoView p={firstPicto} main={on} accent={[p.accent, p.primary].find((c) => contrast(c, bg) >= 2) ?? on} className="absolute -right-3 -top-3 h-20 w-20 opacity-30" /> : null}
-                    <p style={{ fontWeight: headWeight, fontSize: `clamp(.6rem, ${size.toFixed(2)}cqi, 1.7rem)` }}>{q.look === "citation" ? `« ${q.text} »` : q.text}</p>
-                    {q.note && <span className="bb-hand" style={{ color: [p.accent, p.primary, p.secondary].find((c) => contrast(c, bg) >= 2.6) ?? on }}>{q.note}</span>}
-                  </div>
-                );
+                // Une publication est une vraie image créée et relue : refusée, elle n'est pas remplacée par un aplat de couleur.
+                return shotOk(shot) ? <div key={i} className="bb-post" data-post="image"><Photo shot={shot} alt={q.text} /></div> : null;
               })}
             </div>
             <figcaption>{t("Trois publications", "Three posts")}</figcaption>
-          </figure>
+          </figure>}
         </div>
+        {!finished && <p className="bb-note mt-[.7rem]" data-board-later>{t("L'objet qui porte ton logo, tes signes en photo et tes trois premières publications sont créés pour l'identité que tu choisis, dès ton choix.", "The object carrying your logo, your signs as a photo and your first three posts are created for the identity you choose, as soon as you choose.")}</p>}
 
         <h4 className="bb-h">{t("Sa voix", "Its voice")}</h4>
         <div className="bb-2">
@@ -652,13 +638,14 @@ export function BrandBoards({ ids, busy, onChoose }: { ids: BoardSet; busy: bool
       {ids.study && !ids.final && <Study s={ids.study} />}
       {ids.final ? (
         <>
-          <p className="text-xs font-semibold">{t("Ton identité", "Your identity")}{ids.final.mixLabel ? ` · ${ids.final.mixLabel}` : ""}</p>
-          <Planche x={ids.final} label={t("Ton identité", "Your identity")} chosen canChoose={false} busy={busy} onChoose={onChoose} />
+          <p className="text-xs font-semibold">{ids.final.finished ? t("Ta marque", "Your brand") : t("Ton identité", "Your identity")}{ids.final.mixLabel ? ` · ${ids.final.mixLabel}` : ""}</p>
+          <Planche x={ids.final} label={ids.final.finished ? t("Ta marque", "Your brand") : t("Ton identité", "Your identity")} chosen canChoose={false} busy={busy} onChoose={onChoose} />
+          {!!ids.final.finishIssues?.length && <div className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-xs text-ink dark:bg-amber-950/30" data-brand-finish-issues><p className="font-semibold">{t("Ce que je n'ai pas pu réussir", "What I could not get right")}</p><ul className="mt-1 list-disc pl-4">{ids.final.finishIssues.map((l, i) => <li key={i}>{l}</li>)}</ul></div>}
           <p className="text-xs text-muted">{t("Les autres propositions", "The other proposals")} : {ids.list.filter((x) => x.key !== ids.chosen?.key).map((x) => `${x.key} « ${x.name} »`).join(", ")}.</p>
         </>
       ) : ids.list.map((x) => <Planche key={x.key} x={x} canChoose={!ids.chosen} busy={busy} onChoose={onChoose} />)}
       {!ids.chosen && <p className="text-xs text-muted">{t("Tu peux aussi mélanger (par exemple le nom de A avec les couleurs de B), retoucher un nom ou une phrase, ou demander une nouvelle proposition : écris-le simplement.", "You can also mix (e.g. A's name with B's colours), tweak a name or a line, or ask for a new proposal.")}</p>}
-      {!!ids.issues.length && <div className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-xs text-ink dark:bg-amber-950/30" data-syna-identity-issues><p className="font-semibold">{t("Ce que je n'ai pas pu régler", "What I could not settle")}</p><ul className="mt-1 list-disc pl-4">{ids.issues.map((l, i) => <li key={i}>{l}</li>)}</ul></div>}
+      {!!ids.issues.length && !ids.final?.finished && <div className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-xs text-ink dark:bg-amber-950/30" data-syna-identity-issues><p className="font-semibold">{t("Ce que je n'ai pas pu régler", "What I could not settle")}</p><ul className="mt-1 list-disc pl-4">{ids.issues.map((l, i) => <li key={i}>{l}</li>)}</ul></div>}
     </div>
   );
 }

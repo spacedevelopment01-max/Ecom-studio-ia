@@ -27,7 +27,7 @@ import { z } from "zod";
 import type { JobContext } from "../jobs";
 import { L } from "../i18n-server";
 import { CostCapReached } from "../ai/trace";
-import { run } from "../db";
+import { one, run } from "../db";
 import { assetData, getAsset, saveAsset } from "../library";
 import { getJsonSetting } from "../settings";
 import { BOARD_OBJECT_LABEL } from "./brand-board";
@@ -53,10 +53,14 @@ export const SLOT_ASPECT: Record<ImageSlot, ImageAspect> = { logo: "1:1", hero: 
 export const SLOT_REFERENCES: Record<ImageSlot, number> = { logo: 0, hero: 0, object: 1, signs: 1, site: 2, post0: 0, post1: 0, post2: 0 };
 
 /**
- * Réglage `sina.brand_images` : « dessins » (par défaut : la planche garde les dessins de SINA) ou « openai » (les
- * six images sont créées). Reste sur « dessins » tant que le propriétaire n'a pas validé un essai réel.
+ * Les images d'une planche se créent en DEUX temps (lot 2, 15 novembre 2026 : « images complètes pour la seule identité
+ * choisie ») : chaque identité proposée reçoit son logo et sa grande scène ; l'objet, les signes et les trois
+ * publications ne sont créés que pour l'identité que le client choisit (deux tiers des images ne servaient jamais).
  */
-export const brandImagesOn = (): boolean => getJsonSetting<string>("sina.brand_images", "dessins") === "openai";
+export const PROPOSAL_SLOTS: ImageSlot[] = ["logo", "hero"];
+export const FINISH_SLOTS: ImageSlot[] = ["object", "signs", "post0", "post1", "post2"];
+/** Les images de planche sont toujours créées par OpenAI (plus aucun dessin en code à leur place). */
+export const brandImagesOn = (): boolean => true;
 /** Route des images de SINA (la même que les photos du thème sur mesure : réglage `syna.mockup.image_route`). */
 export function boardImageRoute(): { provider: string; model: string } {
   const [provider, model] = getJsonSetting<string>("syna.mockup.image_route", "openai:gpt-image-2.6-flare").split(":");
@@ -132,7 +136,7 @@ export const spell = (name: string) => [...name.normalize("NFC")].map((c) => (c 
  * toiletteuse à genoux près de son camion, alors que la consigne disait « aucune personne »).
  */
 export const LOGO_NOT_SCENE = "Un LOGO, pas une illustration ni une scène : le nom, et au plus UN signe simple et fort (un seul objet ou une seule forme), lisible en tout petit comme un tampon. Aucune personne, aucun personnage, aucune silhouette humaine, aucune main ; aucune scène avec un décor, un véhicule garé ou une maison.";
-export const LOGO_OWN = "Une conception propre à cette marque, tirée de son idée et de son métier, jamais une recette : pas de nom coupé ou barré par une ligne ondulée, pas de nom à moitié plongé dans l'eau ou dans l'ombre (c'est le logo d'une autre marque).";
+export const LOGO_OWN = "Une conception propre à cette marque, tirée de son idée et de son métier, jamais une recette déjà vue ailleurs.";
 const exact = (texts: string[]) => `Textes à écrire dans l'image, lettre pour lettre, accents et ponctuation compris : ${texts.map((t) => `« ${t} »`).join(" ; ")}. Aucun autre texte, aucun mot inventé, aucun faux texte de remplissage.`;
 const paletteLine = (x: Route) => `Couleurs de la marque : foncé ${x.palette.dark}, couleur de marque ${x.palette.primary}, surface ${x.palette.secondary}, accent ${x.palette.accent}, clair ${x.palette.light}.`;
 
@@ -189,12 +193,15 @@ const ROLE_FOR_REVIEW: Record<ImageSlot, string> = {
 
 type Made = { id: string; w: number; h: number };
 /** Ce que le client voit à la place d'une image non gardée (dit tel quel, jamais un dessin qui n'existe pas). */
-const instead = (x: Route, slot: ImageSlot): string => slot === "signs" ? "les signes restent décrits en mots, sans dessin" : slot === "object" ? "je ne le montre pas sur la planche" : hasDrawing(x, slot) ? "tu vois mon dessin à la place" : "sa place garde la forme simple de la planche";
-/** Reste-t-il un dessin de SINA à cette place (l'illustratrice l'a rendu, et sa relecture en image ne l'a pas retiré) ? */
-const hasDrawing = (x: Route, slot: ImageSlot): boolean => {
-  const b = x.board as { hero?: unknown; object: { art?: unknown }; site: { art?: unknown }; posts: { art?: unknown }[] };
-  return slot === "signs" ? false : slot === "hero" ? !!b.hero : slot === "object" ? !!b.object.art : slot === "site" ? !!b.site.art : slot === "logo" ? true : !!b.posts[Number(slot.slice(4))]?.art;
-};
+const instead = (_x: Route, slot: ImageSlot): string => slot === "signs" ? "les signes restent décrits en mots" : slot === "logo" ? "tu vois ton nom dessiné à la place" : "je ne la montre pas";
+/** Le logo que le client garde (sa propre image, déposée dans le Studio). */
+export type ClientLogo = { id: string; w: number; h: number; data: Buffer };
+export async function clientLogoOf(projectId: string): Promise<ClientLogo | null> {
+  const row = one<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND role='logo' AND origin='upload' AND deleted_at IS NULL ORDER BY created_at DESC", projectId);
+  const a = row ? getAsset(row.id) : undefined;
+  if (!a) return null;
+  try { const data = assetData(a), meta = await sharp(data).metadata(); return { id: a.id, w: meta.width ?? 1024, h: meta.height ?? 1024, data }; } catch { return null; }
+}
 export type BoardImagesResult = { route: Route; made: number; rejected: number; notes: string[]; issues: string[] };
 
 /** Un logo à fond transparent posé sur du blanc, pour qu'un relecteur le voie comme le client le verra. */
@@ -231,15 +238,20 @@ export async function runBoardImages(o: {
   slots?: ImageSlot[];
   /** Idées de logo des AUTRES planches de la série : le logo de celle-ci doit être une conception nettement différente. */
   otherLogos?: string[];
+  /** Direction artistique déjà écrite pour cette planche (premier temps) : reprise telle quelle, jamais repayée. */
+  imagery?: Imagery;
+  /** Logo GARDÉ par le client : jamais redessiné ; il est la marque de la planche et se pose sur ce qui le porte. */
+  clientLogo?: ClientLogo | null;
 }): Promise<BoardImagesResult> {
   const { ctx, ai, route: x, round } = o, key = x.key, notes: string[] = [], issues: string[] = [];
   const wanted = new Set<ImageSlot>(o.slots?.length ? o.slots : CREATED_SLOTS);
+  if (o.clientLogo) wanted.delete("logo");
   // Un nouvel essai d'une partie des images a sa propre étape (jamais la réponse en cache du premier essai).
   const pass = o.slots?.length ? `:${[...wanted].join("+")}` : "";
   const tag = (line: string) => L(`Identité ${key} : ${line}`, `Identity ${key}: ${line}`);
   const others = (o.otherLogos ?? []).map((t) => t.trim()).filter(Boolean);
   const othersBlock = others.length ? `\n\n# Logos déjà prévus pour les AUTRES propositions de cette série\n${others.map((t, i) => `${i + 1}. ${t.slice(0, 500)}`).join("\n")}\nLe logo de cette proposition est une conception NETTEMENT différente de ceux-là : autre forme, autre dessin de lettre, autre idée.` : "";
-  const imagery = await ctx.step(`brand:imagery:${round}:${key}${pass}`, () => ai.ask(`imagery-${round}-${key}${pass}`, { kind: "imagery", system: P.imagerySystem(o.kind), schema: ImagerySchema, prompt: `${o.brief}\n\n# La route à mettre en images\n${imageryBrief(x)}${othersBlock}` }));
+  const imagery = o.imagery ?? await ctx.step(`brand:imagery:${round}:${key}${pass}`, () => ai.ask(`imagery-${round}-${key}${pass}`, { kind: "imagery", system: P.imagerySystem(o.kind), schema: ImagerySchema, prompt: `${o.brief}\n\n# La route à mettre en images\n${imageryBrief(x)}${othersBlock}` }));
 
   const made = new Map<ImageSlot, Made>();
   const bufferOf = (slot: ImageSlot): Buffer | null => { const m = made.get(slot), a = m ? getAsset(m.id) : undefined; return a ? assetData(a) : null; };
@@ -257,7 +269,7 @@ export async function runBoardImages(o: {
       if (e instanceof CostCapReached) { capped = true; notes.push(`plafond de dépense atteint pendant les images de ${key}`); return; }
       // Une image qui échoue n'est jamais relancée seule : la planche garde le dessin de SINA à cette place.
       notes.push(`${SLOT_LABEL[slot].fr} de ${key} non créé(e) : ${String((e as Error)?.message ?? e).slice(0, 140)}`);
-      issues.push(tag(L(`je n'ai pas pu créer ${SLOT_LABEL[slot].fr} ; ${instead(x, slot)}.`, `I could not create ${SLOT_LABEL[slot].en}; ${slot === "signs" ? "the signs stay described in words" : "you see my drawing instead"}.`)));
+      issues.push(tag(L(`je n'ai pas pu créer ${SLOT_LABEL[slot].fr} ; ${instead(x, slot)}.`, `I could not create ${SLOT_LABEL[slot].en}; ${slot === "signs" ? "the signs stay described in words" : slot === "logo" ? "you see your drawn name instead" : "I am not showing it"}.`)));
     }
   };
 
@@ -281,7 +293,7 @@ export async function runBoardImages(o: {
   }
   // Le logo à poser sur l'objet : celui qui vient d'être créé, sinon celui déjà gardé sur la planche.
   const kept = x.board.images?.logo, keptBuffer = () => { const a = kept ? getAsset(kept.id) : undefined; return a ? assetData(a) : null; };
-  const logo = bufferOf("logo") ?? (wanted.has("logo") ? null : keptBuffer());
+  const logo = o.clientLogo?.data ?? bufferOf("logo") ?? (wanted.has("logo") ? null : keptBuffer());
   // 2. La grande scène, puis ce qui porte le logo, puis les publications.
   ctx.progress(0.965, L(`Je crée les images de la planche ${key}`, `Creating the images of board ${key}`));
   if (wanted.has("hero")) await make("hero", {}, imagePrompt("hero", x, imagery));
@@ -301,14 +313,14 @@ export async function runBoardImages(o: {
   const slots = IMAGE_SLOTS.filter((s) => made.has(s));
   if (slots.length) {
     const texts = slotTexts(x);
-    const drop = (slot: ImageSlot, why: string) => { mark(made.get(slot)!.id, "rejected", why); made.delete(slot); rejected++; issues.push(tag(L(`je n'ai pas gardé ${SLOT_LABEL[slot].fr} (${why.replace(/\.+$/, "")}) ; ${instead(x, slot)}.`, `I did not keep ${SLOT_LABEL[slot].en} (${why}); ${hasDrawing(x, slot) ? "you see my drawing instead" : "its place keeps the plain shape of the board"}.`))); };
+    const drop = (slot: ImageSlot, why: string) => { mark(made.get(slot)!.id, "rejected", why); made.delete(slot); rejected++; issues.push(tag(L(`je n'ai pas gardé ${SLOT_LABEL[slot].fr} (${why.replace(/\.+$/, "")}) ; ${instead(x, slot)}.`, `I did not keep ${SLOT_LABEL[slot].en} (${why}); ${slot === "logo" ? "you see your drawn name instead" : "I am not showing it"}.`))); };
     // Raison écrite par le Studio d'après la lecture (jamais une phrase confuse du relecteur montrée au client).
     const textReason = (c: { missing: string[]; extra: string[] }) => c.extra.length ? L(`un texte non demandé y apparaît : « ${c.extra[0].slice(0, 60)} »`, `an unrequested text appears: "${c.extra[0].slice(0, 60)}"`) : L(`le texte « ${c.missing[0].slice(0, 60)} » n'y est pas écrit exactement`, `the text "${c.missing[0].slice(0, 60)}" is not written exactly`);
     // Relecture impossible (plafond, appel en échec) : des images non relues ne sont jamais montrées.
     const unreviewed = () => {
       for (const s of slots) { const m = made.get(s); if (m) mark(m.id, "rejected", "non relue"); made.delete(s); }
       rejected += slots.length;
-      issues.push(tag(L("je n'ai pas pu relire ses images, donc je ne te les montre pas ; tu vois mes dessins à la place.", "I could not review its images, so I am not showing them; you see my drawings instead.")));
+      issues.push(tag(L("je n'ai pas pu relire ses images, donc je ne te les montre pas.", "I could not review its images, so I am not showing them.")));
     };
     // Un logo à fond transparent est montré au relecteur posé sur du blanc, comme le client le verra.
     const seen = await Promise.all(slots.map(async (s) => ({ data: s === "logo" ? await onWhite(bufferOf(s)!) : bufferOf(s)!, label: s })));
@@ -390,15 +402,16 @@ export async function runBoardImages(o: {
   if (skipCarriers) { if (before.logo) made.set("logo", before.logo); for (const k of ["object", "signs"] as const) if (before[k]) made.set(k, before[k]!); }
   const posts = (["post0", "post1", "post2"] as const).map((s, i) => (wanted.has(s) ? made.get(s) : before.posts?.[i]) ?? null);
   const logoNow = keep("logo");
-  const markNow = wanted.has("logo") && !skipCarriers ? marks : { mark: before.mark, markDark: before.markDark };
+  const own = o.clientLogo ? { id: o.clientLogo.id, w: o.clientLogo.w, h: o.clientLogo.h } : null;
+  const markNow = own ? { mark: own, markDark: own } : wanted.has("logo") && !skipCarriers ? marks : { mark: before.mark, markDark: before.markDark };
   const images = {
     ...(logoNow ? { logo: logoNow } : {}), ...(keep("hero") ? { hero: keep("hero")! } : {}),
     ...(keep("object") ? { object: keep("object")! } : {}), ...(keep("site") ? { site: keep("site")! } : {}), ...(keep("signs") ? { signs: keep("signs")! } : {}),
     ...(posts.some(Boolean) ? { posts } : {}), ...(imagery.look.trim() ? { look: imagery.look.trim().slice(0, 700) } : before.look ? { look: before.look } : {}),
-    ...(logoNow && markNow.mark ? { mark: markNow.mark } : {}), ...(logoNow && markNow.markDark ? { markDark: markNow.markDark } : {}),
+    ...((logoNow || own) && markNow.mark ? { mark: markNow.mark } : {}), ...((logoNow || own) && markNow.markDark ? { markDark: markNow.markDark } : {}),
     ...(imagery.logo.trim() ? { logoIdea: imagery.logo.trim().slice(0, 900) } : before.logoIdea ? { logoIdea: before.logoIdea } : {}),
   };
-  const any = !!(images.logo || images.hero || images.object || images.signs || images.site || images.posts);
+  const any = !!(images.logo || images.mark || images.hero || images.object || images.signs || images.site || images.posts);
   const { images: _old, ...boardRest } = x.board as Route["board"] & { images?: unknown };
   const next = RouteSchema.safeParse({ ...x, board: { ...boardRest, ...(any ? { images } : {}) } });
   if (capped) issues.push(tag(L("le plafond annoncé a été atteint avant la fin de ses images.", "the announced cap was reached before its images were finished.")));

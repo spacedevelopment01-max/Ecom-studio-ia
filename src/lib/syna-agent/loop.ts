@@ -36,6 +36,7 @@ import { JOURNEY_STEPS, stepReady, currentStep, journeyContext, journeyOf, PHASE
 import { shownAngles } from "./angle-roles";
 import { sinaModels } from "./models";
 import { LOGO_STYLE_LABEL, fontFace, groundPresentation, type Identity } from "./identities";
+import { chosenRoute } from "./logos";
 import { BOARD_OBJECT_LABEL, SIGN_KIND_LABEL, type Board, type BoardImage } from "./brand-board";
 import { safeWordmark } from "./brand-routes";
 import { drawWordmark, type DrawnWordmark } from "./brand-wordmark";
@@ -87,8 +88,11 @@ export function submitMessage(user: User, cid: string, input: { requestId: strin
     const prior = runByRequest(cid, input.requestId);
     if (prior) return { run: prior, fresh: false };
     const current = activeRun(cid);
-    if (current && current.status !== "waiting_confirmation") throw new HttpError(409, L("SINA travaille encore sur ta demande précédente. Attends sa réponse ou arrête-la.", "SINA is still working on your previous request. Wait or stop it."), "syna_busy");
-    if (current) { updateRun(current.id, { status: "cancelled", pending_json: null }); addMessage(cid, "event", { kind: "pending_dropped", runId: current.id }, current.id); }
+    // Une création tourne en arrière-plan (ses identités, sa marque…) : le client peut continuer à parler à SINA, qui
+    // en profite pour avancer sur la suite ; le résultat de la création arrivera dans le fil dès qu'il sera prêt.
+    const background = current?.status === "waiting_jobs";
+    if (current && !background && current.status !== "waiting_confirmation") throw new HttpError(409, L("SINA travaille encore sur ta demande précédente. Attends sa réponse ou arrête-la.", "SINA is still working on your previous request. Wait or stop it."), "syna_busy");
+    if (current && !background) { updateRun(current.id, { status: "cancelled", pending_json: null }); addMessage(cid, "event", { kind: "pending_dropped", runId: current.id }, current.id); }
     const attachments = (input.attachmentIds ?? []).filter((aid) => attachmentsOf(cid).some((a) => a.id === aid));
     const run = createRun({ conversationId: cid, userId: user.id, projectId: c.project_id, requestId: input.requestId });
     addMessage(cid, "user", { text: input.text, attachments }, run.id);
@@ -112,6 +116,11 @@ function schedule(r: SynaRun, waitFor: string[] = [], delayMs = 0) {
 }
 
 const ACTIVE_JOB = ["queued", "running", "paused"];
+/** Une AUTRE demande du même fil est-elle en train de s'exécuter (réponse de SINA à un message envoyé pendant une création) ? */
+const otherRunBusy = (r: SynaRun) => !!one("SELECT 1 FROM syna_runs WHERE conversation_id=? AND id<>? AND status IN ('queued','running')", r.conversation_id, r.id);
+/** Une création lancée par une autre demande du fil tourne-t-elle encore en arrière-plan ? */
+const backgroundCreation = (r: SynaRun) => !!one("SELECT 1 FROM syna_runs WHERE conversation_id=? AND id<>? AND status='waiting_jobs'", r.conversation_id, r.id);
+const BACKGROUND_NOTE = "# Une création est en cours en arrière-plan\nTu as lancé une création pour lui : elle tourne en arrière-plan, et tu lui montreras le résultat dès qu'il sera prêt. Tu n'as rien à relancer : n'appelle AUCUN outil de création, et ne présente jamais un résultat que tu n'as pas encore. Il peut te parler pendant ce temps : réponds d'abord à ce qu'il dit. Puis profite de l'attente pour avancer sur la suite, UNE question à la fois, seulement sur ce qu'il n'a pas déjà dit et que lui seul sait : ce que ses angles, son activité et son site demanderont (ses produits ou ses prestations avec leurs prix, ses coordonnées, sa livraison ou sa zone, ses retours, ses horaires, ses preuves, ses réseaux). Note chaque réponse avec start.note, avec ses mots. S'il n'a pas envie de répondre maintenant, n'insiste pas : dis-lui simplement que tu le préviens dès que c'est prêt.\n\n";
 /** Attente courte dans la tâche de reprise, puis nouvelle reprise planifiée : aucune place de worker gardée longtemps. */
 async function waitForJobs(jobs: string[], maxMs = 45_000) {
   const t0 = Date.now();
@@ -167,7 +176,8 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
   try {
     user = userOf(r.user_id);
     if (r.project_id) requirePlan(user, r.project_id);
-    updateRun(r.id, { status: "running", error: null });
+    // Une demande qui attend une création reste « en attente » pendant qu'elle la surveille (le client peut parler).
+    updateRun(r.id, { status: json<string[]>(r.waiting_jobs, []).length ? "waiting_jobs" : "running", error: null });
     tctx = toolContext(user, r);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -179,6 +189,9 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
     // 1. Résultats des créations natives attendues (images, vidéos, thème…).
     const waited = json<string[]>(r.waiting_jobs, []);
     if (waited.length && !(await waitForJobs(waited))) { schedule(r, waited, 10_000); return { runId, waiting: waited }; }
+    // La création est finie, mais SINA répond en ce moment à un message du client : elle présente le résultat juste après.
+    if (waited.length && otherRunBusy(r)) { schedule(r, waited, 4000); return { runId, waiting: waited }; }
+    if (waited.length) updateRun(r.id, { status: "running" });
     if (waited.length) {
       // Coût RÉEL de chaque tâche (appels enregistrés), même en échec : SINA ne dit jamais « rien n'a été débité » sans ce
       // chiffre (essais réels du 7 novembre : deux recherches échouées avaient coûté 0,29 € et 0,95 €).
@@ -428,7 +441,7 @@ export function modelFor(_currentStepNumber: number, opts: { customTheme?: boole
 }
 
 /** Action payante de chaque étape du parcours : son devis est donné à SINA (le même s'affiche sur la carte d'accord). */
-const STEP_PAID_TOOL: Record<number, string> = { 1: "identity.propose", 2: "logo.propose", 4: "angles.propose" };
+const STEP_PAID_TOOL: Record<number, string> = { 1: "identity.propose", 4: "angles.propose" };
 
 /**
  * Coût maximal de la prochaine action payante de l'étape en cours, en % du budget IA du client (règle du propriétaire :
@@ -482,12 +495,12 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
     task: "agent_conversation", userId: user.id, projectId: r.project_id, jobId,
     system: SYNA_SYSTEM, promptKey: "syna-agent-2",
     reference: scope.routed ? `# Outils du Studio (ceux de l'étape en entier, les autres en liste)\n\n${routedCatalog(!!r.project_id, scope, currentStep(journeyOf(r.conversation_id)))}` : `# Outils disponibles (registre commun)\n\n${toolCatalog(!!r.project_id, scope)}`,
-    context: `# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id), { identityCount: identityCountOf(r.project_id) })}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}${note}`,
+    context: `${backgroundCreation(r) ? BACKGROUND_NOTE : ""}# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id), { identityCount: identityCountOf(r.project_id) })}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}${note}`,
     prompt: `# Fil de la conversation (le plus ancien d'abord ; tes propres réponses incluses)\n${serialize(history)}\n\nÉtape ${step + 1} de cette demande. Réponds avec l'objet JSON {message, actions, question, done}.`,
     images: images.length ? images : undefined,
     maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}${note ? ":reprise" : ""}`, routing: { difficulty: "complex", prefer: (() => { const j = journeyOf(r.conversation_id); return modelFor(currentStep(j), { customTheme: !!j.customChosenAt, judge: needsJudgement(history), keyMoment: conv.momentsForts ? momentOf(history, currentStep(j)) : null }); })() },
   };
-  sawImages.set(r.id, images.some((im) => /^(Logo|Planche|Maquette|Site codé|Thème sur mesure)/.test(im.label ?? "")));
+  sawImages.set(r.id, images.some((im) => /^(Logo|Planche|Identité|Marque du client|Maquette|Site codé|Thème sur mesure)/.test(im.label ?? "")));
   if (deps.reason) return StepSchema.parse(await deps.reason(call));
   const cap = b.remainingMicro + jobSpentMicro(jobId);
   return withTrace({ jobId, projectId: r.project_id, step: "syna", costCapMicro: cap }, () => llmJson(call, StepSchema));
@@ -603,11 +616,17 @@ export function fixElision(s: string): string {
 export function threadView(user: User, cid: string) {
   const c = conversationOf(cid);
   if (!c || c.user_id !== user.id) throw new HttpError(404, L("Conversation introuvable.", "Conversation not found."));
-  const r = one<SynaRun>("SELECT * FROM syna_runs WHERE conversation_id=? ORDER BY created_at DESC LIMIT 1", cid) ?? null;
+  // La demande montrée : celle que SINA exécute en ce moment ; sinon celle qui attend une création en arrière-plan ;
+  // sinon la dernière. « background » : une création tourne, et le client peut quand même écrire.
+  const latest = one<SynaRun>("SELECT * FROM syna_runs WHERE conversation_id=? ORDER BY created_at DESC LIMIT 1", cid) ?? null;
+  const live = one<SynaRun>("SELECT * FROM syna_runs WHERE conversation_id=? AND status IN ('queued','running','waiting_confirmation') ORDER BY created_at DESC LIMIT 1", cid) ?? null;
+  const waiting = one<SynaRun>("SELECT * FROM syna_runs WHERE conversation_id=? AND status='waiting_jobs' ORDER BY created_at DESC LIMIT 1", cid) ?? null;
+  const r = live ?? waiting ?? latest;
   return {
     conversationId: cid, projectId: c.project_id,
     messages: lastMessages(cid, 400),
     run: r ? { id: r.id, status: r.status, step: r.step, pending: pendingOf(r), error: r.error } : null,
+    background: !!waiting && !live,
     budget: budgetState(user.id, c.project_id, cid),
     attachments: attachmentsOf(cid).map((a) => ({ id: a.id, kind: a.kind, name: a.name, analysis: a.analysis })),
     tools: allTools().length,
@@ -622,7 +641,7 @@ export function threadView(user: User, cid: string) {
           round: j.identities.round, issues: j.identities.issues, chosen: j.identityChoice ?? null,
           list: j.identities.list.map(cardOf), study: j.identities.study ?? null,
           // Identité retenue telle qu'enregistrée (mélange compris) : la carte « Ton identité » montre le vrai résultat.
-          final: j.identityChoice ? { ...cardOf(mixIdentity(j.identities.list, j.identityChoice.key, j.identityChoice.mix as any, j.identityChoice.edits ?? {})), mixLabel: mixLabel(j.identities.list, j.identityChoice) } : null,
+          final: j.identityChoice ? { ...cardOf(chosenRoute(j) ?? mixIdentity(j.identities.list, j.identityChoice.key, j.identityChoice.mix as any, j.identityChoice.edits ?? {})), mixLabel: mixLabel(j.identities.list, j.identityChoice), finished: !!j.brandFinish?.at, finishIssues: j.brandFinish?.issues ?? [] } : null,
         } : null,
         // Étape 2 : les 3 logos (images servies par la bibliothèque du projet) et le logo choisi.
         logos: j.logos ? { round: j.logos.round, chosen: j.logoChoice?.source ?? null, list: j.logos.list.map((x) => ({ ...x, href: x.assetId ? assetUrl({ id: x.assetId }) : null })) } : null,

@@ -18,6 +18,8 @@ type Msg = { id: string; seq: number; role: "user" | "assistant" | "tool" | "eve
 type View = {
   conversationId: string; projectId: string | null; messages: Msg[];
   run: { id: string; status: string; step: number; pending: any; error: string | null } | null;
+  /** Une création tourne en arrière-plan : le fil se relit, mais le client peut continuer à écrire. */
+  background?: boolean;
   budget: { authorizedPct: number | null; spentPct: number | null };
   attachments: { id: string; kind: string; name: string; analysis: any }[];
   journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; logos?: Logos | null; brandKit?: Kit | null; angles?: Angles | null; posts?: PostsPlan | null; activity?: Activity | null; themes?: Themes | null; families?: Families | null; siteCopy?: { pages: Record<string, CopyPage> } | null };
@@ -511,7 +513,7 @@ function BrandKitCard({ kit, darkBg, busy, onValidate }: { kit: Kit; darkBg: str
         {kit.items.filter((x) => x.downloadHref).map((x) => <a key={x.key} className="underline" href={x.downloadHref} data-kit-download={x.key}>{t("Télécharger", "Download")} : {x.label}</a>)}
       </div>
       {!!kit.notes.length && <ul className="list-disc pl-4 text-xs text-amber-700" data-kit-notes>{kit.notes.map((n) => <li key={n}>{n}</li>)}</ul>}
-      {kit.validated ? <p className="text-xs font-semibold">✓ {t("Image de marque validée", "Brand kit validated")}</p> : <Button size="sm" disabled={busy} onClick={onValidate}>{t("Je valide mon image de marque", "I validate my brand kit")}</Button>}
+      {kit.validated ? <p className="text-xs font-semibold">✓ {t("Marque validée", "Brand validated")}</p> : <Button size="sm" disabled={busy} onClick={onValidate}>{t("Je valide ma marque", "I validate my brand")}</Button>}
     </div>
   );
 }
@@ -606,7 +608,8 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
   useEffect(() => { const on = () => { load().catch(() => undefined); }; addEventListener("syna:refresh", on); return () => removeEventListener("syna:refresh", on); }, [load]);
 
   // Suivi de l'exécution : relecture régulière tant que SINA travaille, puis rafraîchissement des onglets du Studio.
-  const working = !!v?.run && WORKING.includes(v.run.status);
+  const background = !!v?.background;
+  const working = !!v?.run && WORKING.includes(v.run.status) && !background;
   // Brouillon : dès que SINA a créé le projet, le client est emmené dans son projet, où la même conversation continue
   // (sinon l'accueil, qui affiche alors « Mes projets », ferait disparaître le fil en pleine étape 0).
   const moved = useRef(false);
@@ -615,14 +618,14 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
   }, [projectId, v?.projectId, router]);
   useEffect(() => {
     if (!v) return;
-    if (!working) {
+    if (!working && !background) {
       if (lastRun.current && lastRun.current === v.run?.id) { lastRun.current = ""; project?.reload?.(); if (v.projectId && v.projectId !== projectId) router.push(`/studio/${v.projectId}/pilote`); router.refresh(); }
       return;
     }
     lastRun.current = v.run!.id;
     const h = setTimeout(() => api<View>(`/api/syna/${v.conversationId}`).then(setV).catch(() => undefined), 1800);
     return () => clearTimeout(h);
-  }, [v, working, project, router, projectId]);
+  }, [v, working, background, project, router, projectId]);
   useEffect(() => { end.current?.scrollIntoView({ block: "end" }); }, [v?.messages.length]);
 
   async function send(message?: string) {
@@ -683,7 +686,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
               {t("Budget autorisé", "Authorised budget")} : {fmt(v.budget.authorizedPct)} % · {t("engagé", "used")} {fmt(v.budget.spentPct)} %
             </button>
           : <span className="flex items-center gap-1">{t("Budget autorisé (%)", "Authorised budget (%)")}<input className="w-14 rounded border border-line bg-card px-1" value={budgetEdit} onChange={(e) => setBudgetEdit(e.target.value)} inputMode="decimal" aria-label={t("Budget autorisé en pourcentage", "Authorised budget in percent")} /><Button size="sm" variant="secondary" onClick={saveBudget}>OK</Button></span>}
-        {working && <Button size="sm" variant="ghost" onClick={stop}>{t("Arrêter", "Stop")}</Button>}
+        {(working || background) && <Button size="sm" variant="ghost" onClick={stop}>{t("Arrêter", "Stop")}</Button>}
       </div>
       {v.journey && <JourneyBar journey={v.journey} compact={compact} />}
 
@@ -712,11 +715,13 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
                 {tm.id === lastConcepts && v.projectId && <ConceptCards concepts={tm.content.data.concepts} busy={busy || working} onChoose={(k) => send(t(`Je choisis le concept ${k}.`, `I choose concept ${k}.`))} />}
                 {tm.id === lastFamilies && v.journey?.families && v.projectId && <FamilyCards families={v.journey.families} busy={busy || working} onChoose={(title) => send(t(`Je préfère la famille ${title}.`, `I prefer the ${title} family.`))} />}
                 {tm.id === lastThemes && v.journey?.themes && v.projectId && <ThemeCards themes={v.journey.themes} busy={busy || working} onChoose={(name) => send(t(`Je choisis le thème ${name}.`, `I choose the ${name} theme.`))} onAll={() => send(t("Je veux voir tous les thèmes.", "I want to see all themes."))} onMockup={() => send(t("Je préfère un thème sur mesure.", "I'd rather have a custom theme."))} />}
-                {tm.id === lastKit && v.journey?.brandKit && <BrandKitCard kit={v.journey.brandKit} darkBg={v.journey.identities?.final?.palette.dark ?? "#16161A"} busy={busy || working} onValidate={() => send(t("Je valide mon image de marque.", "I validate my brand kit."))} />}
+                {tm.id === lastKit && tm.id !== lastIdentity && v.journey?.brandKit && !(v.journey.identities as { final?: { finished?: boolean } } | null | undefined)?.final?.finished && <BrandKitCard kit={v.journey.brandKit} darkBg={v.journey.identities?.final?.palette.dark ?? "#16161A"} busy={busy || working} onValidate={() => send(t("Je valide mon image de marque.", "I validate my brand kit."))} />}
                 {tm.id === lastCalendar && v.projectId && <CalendarCard projectId={v.projectId} refreshKey={tm.id} />}
                 {tm.id === lastIdentity && v.journey?.identities && (v.journey.identities.list.some((x) => x.board)
                   ? <BrandBoards ids={v.journey.identities as unknown as BoardSet} busy={busy || working} onChoose={(k) => send(t(`Je choisis l'identité ${k}.`, `I choose identity ${k}.`))} />
                   : <IdentityCards ids={v.journey.identities} busy={busy || working} onChoose={(k) => send(t(`Je choisis l'identité ${k}.`, `I choose identity ${k}.`))} />)}
+                {/* La marque finie : sa charte (déclinaisons du logo, favicons, avatar, charte PDF) sous sa planche complète. */}
+                {tm.id === lastIdentity && v.journey?.brandKit && (v.journey.identities as { final?: { finished?: boolean } } | null | undefined)?.final?.finished && <BrandKitCard kit={v.journey.brandKit} darkBg={v.journey.identities?.final?.palette.dark ?? "#16161A"} busy={busy || working} onValidate={() => send(t("Je valide ma marque.", "I validate my brand."))} />}
               </div>)}
             </div>
           : <EventLine key={it.m.id} m={it.m} />)}
@@ -727,6 +732,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
             ? <p className="mt-2 text-xs">{t("Augmente le budget autorisé ci-dessus, puis demande à SINA de continuer.", "Raise the budget above, then ask SINA to continue.")}</p>
             : <div className="mt-2 flex gap-2"><Button size="sm" onClick={() => decide(pending.id, true)} disabled={busy}>{t("Confirmer", "Confirm")}</Button><Button size="sm" variant="secondary" onClick={() => decide(pending.id, false)} disabled={busy}>{t("Refuser", "Decline")}</Button></div>}
         </div>}
+        {background && <p className="text-xs text-muted" data-syna-background>{t("Ta création avance en arrière-plan. Tu peux continuer à me parler : je te montre le résultat dès qu'il est prêt.", "Your creation is running in the background. You can keep talking to me: I will show you the result as soon as it is ready.")}</p>}
         {working && <p className="text-xs text-muted" data-syna-working>{v.run?.status === "waiting_jobs" ? t("SINA attend la fin d'une création (images, vidéo ou site) puis reprend seule…", "SINA is waiting for a creation to finish…") : t("SINA travaille…", "SINA is working…")}</p>}
         {v.run?.status === "failed" && <p className="text-xs text-red-600">{t("L'exécution s'est arrêtée : ", "The run stopped: ")}{v.run.error}</p>}
         <div ref={end} />
