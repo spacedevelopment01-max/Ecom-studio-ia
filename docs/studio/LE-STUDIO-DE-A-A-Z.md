@@ -432,6 +432,24 @@ Ce qui change dans le Studio, à faire dans le lot des forfaits (rien n'est fait
 premier mois à 50 % (le client voit toujours un pourcentage de son budget, jamais des euros) ; le nombre de
 publications, de vidéos et de campagnes compris par forfait.
 
+## 14. Ce que le client gagne chaque mois (accord du propriétaire, 15 novembre 2026)
+
+Sa question : « il faut que le client puisse se dire je paye tant par mois mais ça doit lui servir à quelque chose ».
+Son accord, et sa condition : « Oui je veux bien que tu les ajoute mais ils doivent faire vraiment ce que tu as dit pas
+juste la moitié ça doit vraiment faire ce que tu as dit c'est impératif ».
+
+**Règle** : chacun des cinq engagements ci-dessous n'est fini que lorsqu'il fait tout ce qui est écrit dans sa colonne
+« Fait vraiment », prouvé par un essai réel où SINA travaille seule. Une partie qui manque est dite manquante, jamais
+présentée comme faite. Rien ne part sans l'accord du client, sauf là où il l'a autorisé par écrit, dans son plafond.
+
+| Engagement | Fait vraiment (rien de moins) | Lot |
+|---|---|---|
+| 1. Le point du mois | Chaque mois, sans qu'il le demande, SINA lui envoie un point avec de **vrais chiffres** lus sur ses comptes reliés (publications parues, personnes touchées, visites du site, commandes ou demandes, avis reçus), jamais estimés ni inventés ; un chiffre qu'elle ne peut pas lire est écrit « non disponible » avec la raison. Elle dit ce qui a le mieux marché et pourquoi, et propose trois actions précises pour le mois suivant, qu'il accepte d'un clic. | 7 |
+| 2. « Envoie une photo, SINA fait le reste » | Depuis son téléphone, il envoie une photo et une phrase (un nouveau produit, un chantier fini, un plat). SINA met la photo au niveau d'une photo de campagne avec son vrai produit, crée ou met à jour la fiche sur son site (texte, prix demandé s'il manque, jamais deviné), prépare la publication et la story aux formats de chaque réseau, et lui montre le tout ; un seul clic met tout en ligne. | 5 |
+| 3. Les grands moments de l'année | SINA tient le calendrier des moments qui comptent pour **son** métier et sa région (fêtes, saisons, soldes, rentrée, événements locaux qu'elle a vérifiés). Trois semaines avant chacun, elle prépare d'elle-même la campagne complète : publications, mise en avant sur le site, texte de l'offre s'il en veut une, publicité préparée si son forfait la comprend. Elle la lui présente ; il accepte, retouche ou refuse. | 5 et 7 |
+| 4. Sa fiche Google et ses avis | Sa fiche Google est reliée au Studio. SINA la tient à jour (horaires, photos, description, prestations ou produits), y publie, et prépare une réponse à **chaque** avis, dans sa voix, qu'il valide d'un clic (ou qui part seule s'il l'a autorisé par écrit). Elle le prévient d'un avis négatif le jour même. Ce que Google permet de brancher, et à quelles conditions, est à vérifier avant le lot : un manque sera dit. | 5 |
+| 5. Le site qui s'améliore | Chaque mois, SINA relit son site entier (textes, photos, liens, vitesse, téléphone) et ses chiffres de visite, et propose au moins une amélioration concrète et montrée en image avant d'être faite : un texte de saison, un produit à mettre en avant, une page qui manque, un article pour être trouvé sur Google. Rien ne change sur le site sans son accord. | 4 et 7 |
+
 Sources de la partie 7 : journal des nouveautés de Shopify (conseils de Sidekick), Unite.AI (Canvas), TechCrunch
 (créateur de boutique), eCommerce Fastlane, Copyfy, blog de Google (Pomelli), test de Blaze par R. Doser, Apaya, blog de
 Zeely, Pixis (Meta), Tool Advisor et Capeb (Simplébo).

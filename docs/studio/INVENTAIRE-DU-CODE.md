@@ -168,9 +168,11 @@ Chaque lot se termine par un essai réel où SINA travaille seule ; son budget s
 3. **Les trois angles.**
 4. **Le site.** Sur mesure sur le moteur des thèmes ; mise en ligne des sites de services par SINA ; transfert vers
    Shopify, WooCommerce et PrestaShop essayé sur de vraies boutiques d'essai.
-5. **Les publications automatiques.** De la stratège à l'envoi sur les réseaux.
+5. **Les publications automatiques.** De la stratège à l'envoi sur les réseaux ; « Envoie une photo, SINA fait le reste » ;
+   les grands moments de l'année ; la fiche Google et les avis (référence, partie 14).
 6. **Les forfaits.** Les trois prix, 50 % le premier mois, les quotas, les options.
-7. **SINA prend les devants.** Points de la semaine et du mois, propositions.
+7. **SINA prend les devants.** Le point du mois avec de vrais chiffres, le site qui s'améliore, les grands moments
+   préparés d'elle-même (référence, partie 14 : chaque engagement fait entièrement, condition du propriétaire).
 8. **Les publicités.**
 9. **Les vidéos.**
 
