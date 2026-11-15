@@ -364,6 +364,19 @@ describe("SINA — faire connaissance : ce que le Studio lit dans les mots du cl
     expect(productCountFrom("je ne sais pas")).toBeNull();
   });
 
+  it("le résumé va dans le message (sans limite gênante) et la question de validation reste courte : jamais un résumé coupé", async () => {
+    // Essai réel du 15 novembre : un résumé de 1 200 caractères mis dans la question a été coupé au milieu d'une phrase.
+    const full = J.emptyJourney();
+    for (const f of J.START_FIELDS) full.start[f] = { value: "x", status: "answered", source: "client", at: 1 };
+    full.start.business = { value: "products", status: "answered", source: "client", at: 1 };
+    expect(J.journeyContext(full)).toMatch(/RÉSUMÉ complet[^.]*dans « message » ; la question reste courte/);
+    const { StepSchema } = await import("@/lib/syna-agent/loop");
+    const long = "• rubrique : une phrase du client. ".repeat(80);
+    expect(long.length).toBeGreaterThan(1200);
+    expect(StepSchema.safeParse({ message: long, question: { text: "Est-ce juste ?", choices: ["Oui, c'est juste"] } }).success).toBe(true);
+    expect(StepSchema.safeParse({ message: "", question: { text: long.slice(0, 3000) } }).success).toBe(true);
+  });
+
   it("modèle de SINA : le plus fort à chaque étape, ouverte ou non, pour tous les clients", () => {
     for (let step = 0; step <= 13; step++) expect(modelFor(step), `étape ${step}`).toMatchObject({ model: DEFAULT_MODELS.strong.model });
     expect(modelFor(7, { customTheme: true })).toMatchObject({ model: DEFAULT_MODELS.strong.model });

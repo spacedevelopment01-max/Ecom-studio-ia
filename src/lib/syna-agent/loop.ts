@@ -49,7 +49,7 @@ const MAX_ACTIONS = 8;
 export const StepSchema = z.object({
   message: z.string().max(8000).default(""),
   actions: z.array(z.object({ tool: z.string().min(1).max(80), args: z.record(z.string(), z.unknown()).default({}), why: z.string().max(400).optional() })).max(MAX_ACTIONS).default([]),
-  question: z.object({ text: z.string().min(1).max(1200), choices: z.array(z.string().max(200)).max(8).optional() }).nullable().optional(),
+  question: z.object({ text: z.string().min(1).max(4000), choices: z.array(z.string().max(200)).max(8).optional() }).nullable().optional(),
   done: z.boolean().default(false),
   /** Champ de la fiche de départ demandé par la question (étape 0), ou « confirm » pour le résumé. */
   askField: z.string().max(20).optional(),

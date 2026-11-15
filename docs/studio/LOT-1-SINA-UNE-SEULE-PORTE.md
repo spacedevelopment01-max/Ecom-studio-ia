@@ -91,6 +91,21 @@ SINA. Tables devenues sans usage, non supprimées : `workflows`, `agent_conversa
 - Le menu dit « Tableau de bord » et « Angles » ; plus de « Pilote » ni de « Stratégie ».
 - Le fil dit ce que SINA note en une ligne discrète, sans vocabulaire interne (« Ta fiche est validée »).
 
+## Dernier essai réel, sur le nouvel écran (accord du propriétaire : « Oui », 1,50 € au plus)
+
+Une cliente inventée, fleuriste en bouquets séchés (marchés et Instagram, sans site), a fait connaissance avec SINA
+jusqu'à valider sa fiche : 18 messages, 1,07 € comptés par le Studio.
+
+- Le tableau de bord s'est rempli en direct, avec ses mots (capturé en cours de conversation et à la fin).
+- SINA a creusé une réponse vague (« parce qu'ils sont jolis ? ») en partant de sa façon de travailler, retenu « étal »
+  au lieu de « stand » et l'a réemployé, conseillé Shopify quand elle a demandé, et annoncé la fin quand elle était
+  pressée. Aucune réponse inventée, aucune question posée deux fois.
+- **Défaut trouvé et corrigé** : le premier résumé, mis dans la question (limitée à 1 200 caractères), était coupé au
+  milieu d'une phrase. Le résumé va maintenant dans le message, la question de validation reste courte, et la limite de
+  la question est élargie ; un test le garde. Après correction, la cliente a signalé la coupure : SINA s'est excusée et
+  a redonné le résumé complet et juste, que la cliente a validé.
+- Arrêtée à la proposition de lancer la marque : rien n'a été créé ni payé au-delà de la conversation.
+
 ## Ce qui reste
 
 - Les autres espaces (Marque, Site, Publications…) gardent leurs anciens écrans, avec le vouvoiement : chacun est

@@ -326,7 +326,7 @@ export function journeyContext(j: Journey, o: { identityCount?: number } = {}): 
       lines.push("Enregistre au fur et à mesure, et seulement ce qu'il a dit, avec ses mots : start.answer pour un sujet de la fiche (plusieurs s'il en donne plusieurs d'un coup), start.note pour tout autre fait utile. Tu ne réponds jamais à sa place : un sujet qu'il n'a pas abordé se demande. « Plus tard » ou « rien » ne s'enregistrent que s'il le dit lui-même.");
     } else {
       if (extra.length) lines.push(`Tous les sujets de la fiche ont été abordés. Avant le résumé, il te reste des sujets utiles pour ce métier que tu n'as pas encore notés : ${extra.join(" ; ")}. Aborde, un par un, ceux qui serviront vraiment à sa marque, à son site ou à ses publications (à noter avec start.note) ; laisse ceux qui n'apporteraient rien à ce projet.`);
-      lines.push(`${extra.length ? "Quand tu n'as plus de question utile" : "Tous les sujets ont été abordés. S'il te manque encore quelque chose d'important, demande-le ; sinon"}, fais le RÉSUMÉ complet (« Voici ce que j'ai compris »), court, par rubrique, avec ses mots et ses notes, et demande-lui de confirmer ou de corriger ; à sa confirmation, appelle start.confirm.`);
+      lines.push(`${extra.length ? "Quand tu n'as plus de question utile" : "Tous les sujets ont été abordés. S'il te manque encore quelque chose d'important, demande-le ; sinon"}, fais le RÉSUMÉ complet (« Voici ce que j'ai compris »), court, par rubrique, avec ses mots et ses notes, dans « message » ; la question reste courte (« Est-ce juste ? Si quelque chose est à corriger, écris-le-moi. ») ; à sa confirmation, appelle start.confirm.`);
     }
   }
   if (cur === 1) lines.push(...identityStepContext(j, o.identityCount));
