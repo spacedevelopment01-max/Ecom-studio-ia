@@ -92,7 +92,7 @@ export default function TabBlog() {
   const { id } = useProject();
   const t = useT();
   const toast = useToast();
-  const active = useActive(["blog.write", "content.v2", "agent.blog.write"]);
+  const active = useActive(["blog.write", "content.v2"]);
   const requestedArticle=useSearchParams().get("article"),handledArticle=useRef<string|null>(null);
   const [showTrash, setShowTrash] = useState(false);
   const { data, reload, error } = useApi<BlogData>(`/api/projects/${id}/blog${showTrash ? "?trash=1" : ""}`,{poll:active.length?2000:15000});
