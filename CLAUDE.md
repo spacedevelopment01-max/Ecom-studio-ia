@@ -132,7 +132,11 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   un élément ; cette fonction est partie avec lui au lot 1 et revient pour SINA au lot 4.
 - **Pas de création gratuite** : l'idée « créer et voir gratuitement, payer pour publier » est refusée (« Pas envie
   de faire comme ça », 15 novembre 2026) ; la règle « aucun appel à l'IA sans abonnement » reste.
-- Les 15 thèmes proposés : fraise, onde, rive, sillon, noctil, traverse, heuren, museau-club, souple, table-saison,
+- **Le thème unique du Studio** (15 novembre 2026, « Oui écris le ») : SINA monte chaque site avec un seul thème très riche
+  (8 en-têtes dont deux méga menus avec leur version téléphone, 6 pieds de page, 6 pages produit, 6 pages de services,
+  pages simples en 2 ou 3 mises en page, environ 60 sections, 6 familles en coulisses jamais montrées au client) ; douze
+  démonstrations, dont six à la sortie. Détail : référence, partie 15. À construire au lot 4.
+- Les 15 thèmes proposés (jusqu'à ce que le thème unique ait fait ses preuves) : fraise, onde, rive, sillon, noctil, traverse, heuren, museau-club, souple, table-saison,
   atelier-nuance, parenthese, phase, maison-horizon, aplat. Leurs démonstrations sont des reproductions de maquettes
   validées : ne pas les recomposer ni les simplifier.
 

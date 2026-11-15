@@ -484,6 +484,48 @@ chiffres du site et de sa boutique. Les branchements reviendront quand il les au
   lot 4 (l'ancien assistant savait désigner un élément ; la fonction est partie avec lui au lot 1).
 - **Pas de création gratuite** : l'idée vue chez Scale Ova (« créer et voir gratuitement, payer pour publier ») est
   refusée. Ses mots : « Pas envie de faire comme ça ».
+- **Le thème unique du Studio** (accord du propriétaire : « Oui écris le »). SINA n'a qu'un seul thème, très riche,
+  construit une fois au meilleur niveau, et elle **monte** chaque site avec : elle choisit les pièces utiles au métier,
+  leur disposition et leur ordre, les habille avec la marque du client, écrit les textes, crée les images, juge le
+  résultat en image et le corrige. Le client voit son site fini, jamais un modèle ni un catalogue, et retouche en
+  cliquant. Le contenu du thème :
+  - **En-têtes : 8**, chacun avec sa vraie version téléphone : classique (logo à gauche) ; logo centré ; transparent sur
+    la photo d'ouverture ; avec bande d'annonce ; **méga menu à colonnes avec images** (sur téléphone : panneau plein
+    écran, rubriques dépliantes avec images) ; **méga menu avec produits mis en avant** (sur téléphone : onglets et
+    produits qui défilent) ; services compact avec téléphone et bouton « rendez-vous » ou « devis » toujours visibles ;
+    menu plein écran pour les marques éditoriales.
+  - **Pieds de page : 6** : complet en colonnes ; centré et minimal ; avec lettre d'information ; services (coordonnées,
+    horaires, zone, carte) ; grand logo éditorial ; réassurance et moyens de paiement.
+  - **Pages produit : 6 styles** : simple (créateurs, artisans) ; vente directe (promesses, avis, offres par quantité,
+    avantages, avant et après, questions, barre d'achat qui reste visible ; jamais de fausse urgence ni de faux avis) ;
+    haut de gamme (grandes photos, récit, matières) ; technique (caractéristiques, vue sous tous les angles, comparatif) ;
+    alimentaire et soin (ingrédients, composition, utilisation, allergènes) ; mode (tailles, couleurs, looks associés).
+  - **Pages de services : 6 styles** : prestation simple ; rendez-vous complet (prestation, intervenant, créneau) ; devis
+    d'artisan (étapes, réalisations, formulaire détaillé) ; fiche de bien immobilier (galerie, caractéristiques,
+    étiquette énergie, demande de visite) ; restaurant (carte, réservation de table) ; atelier ou cours (dates, places,
+    inscription).
+  - **Pages simples, en 2 ou 3 mises en page chacune** : contact (formulaire et carte, coordonnées seules, prise de
+    rendez-vous) ; à propos (récit, chronologie, équipe réelle seulement) ; questions fréquentes (liste, rubriques) ;
+    404 (image de la marque et recherche, produits suggérés) ; pages légales (simple, avec sommaire) ; blog (grille,
+    liste éditoriale) ; article (2) ; recherche, merci, boutique fermée, compte client (1 ou 2 chacune).
+  - **Panier** : tiroir sur le côté et page panier, en 2 versions chacun ; le paiement reste celui de la plateforme.
+  - **Sections : environ 60 pièces**, en 2 à 4 dispositions chacune (ouvertures, produits et collections, confiance,
+    récit, aide, images, appels à agir, et 10 pièces de métier : rendez-vous, prestations et tarifs, biens, recherche de
+    biens, carte, réservation de table, réalisations, zone d'intervention, devis, ateliers et places). Elles reprennent
+    les meilleures des 354 sections actuelles, sans les doublons. Chiffres à ajuster au lot 4.
+  - **Six familles, en coulisses seulement** (jamais montrées ni nommées au client) : Maison chaleureuse, Épuré et
+    éditorial, Naturel et sincère, Gourmand et joyeux, Confiance et savoir-faire, Spectaculaire. Une famille est un
+    ensemble de choix accordés entre eux (en-tête, pied de page, pages, rythme, boutons, traitement des photos) ; SINA
+    la déduit de la planche de marque, puis l'adapte au métier et au client. Leurs références réelles :
+    https://claude.ai/artifact/Dz6bWpehndTytmXcuEhRkv. Explication en images du thème unique :
+    https://claude.ai/artifact/MyKgXoDEedXDwqwYgKYGBa.
+  - **Les 15 thèmes actuels** restent tant que le thème unique n'a pas fait ses preuves au lot 4 ; leur sort se décide
+    ensuite avec le propriétaire.
+- **Douze démonstrations**, de vrais sites complets faits par SINA, marqués « marque inventée pour la démonstration »,
+  sans faux avis, montrés sur la page d'accueil publique et dans le compte Découverte. **Six à la sortie** : cosmétiques
+  naturels, mode et accessoires, salon avec rendez-vous, agence immobilière, artisan du bâtiment, restaurant (les trois
+  clients inventés de l'essai du lot 4 en font partie). **Six ensuite** : maison et déco, épicerie fine, bijoux, coach ou
+  bien-être, photographe, garage. Le prix d'un site complet se mesure sur le premier, puis se décide avec lui.
 - **Le design du site public et de l'intérieur du Studio** se reprend plus tard (« On reviendra sur le design de notre
   site et studio plus tard »). Référence qu'il aime : https://scale-ova.ai/ (fond nuit, champ de saisie en ouverture,
   preuves en images) ; ce n'est pas un site à copier.
