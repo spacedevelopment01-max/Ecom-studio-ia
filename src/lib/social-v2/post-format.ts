@@ -6,8 +6,9 @@
  *  - photo seule : même traitement (rien n'est coupé).
  * La copie est une nouvelle publication « à relire », avec le même texte et la même date prévue.
  */
-import { json, one, run } from "../db";
-import { addUsage, assetData, assetMeta, getAsset, saveAsset } from "../library";
+import { one, run, tx } from "../db";
+import {stableHash} from "../brain/hash";
+import { addUsage, assetData, assetMeta, getAsset, removeUsages, saveAsset } from "../library";
 import type { Project } from "../projects";
 import { duplicatePostV2 } from "./engine";
 import { extendToAspect, IMAGE_SIZES, isAiImage, reformatAiImage, type ImageAspect } from "../media/ai-image-variants";
@@ -49,16 +50,25 @@ export async function mediaInFormat(p: Project, assetId: string, aspect: ImageAs
 }
 
 export async function duplicatePostInFormat(p: Project, postId: string, aspect: ImageAspect): Promise<{ id: string; assetId: string | null }> {
-  const r = one<{ project_id: string; media: string | null }>("SELECT project_id, media FROM posts WHERE id = ?", postId);
+  const r = one<Record<string,unknown>&{project_id:string;media:string|null}>("SELECT * FROM posts WHERE id = ?", postId);
   if (!r || r.project_id !== p.id) throw new Error("publication introuvable");
-  const originals=json<string[]>(r.media,[]),media:string[]=[];
+  let originals:string[];
+  try{originals=JSON.parse(r.media??"[]");}catch{throw new Error("Liste de médias invalide.");}
+  const media:string[]=[];
+  if(!Array.isArray(originals)||originals.some(aid=>typeof aid!=="string"||!aid))throw new Error("Liste de médias invalide.");
+  const stamp=stableHash("native-social-format-1",{post:r,assets:originals.map(aid=>getAsset(aid))});
   for(const aid of originals){const converted=await mediaInFormat(p,aid,aspect);if(!converted)throw new Error("Adaptation incomplète : les originaux sont conservés, aucune séquence tronquée.");media.push(converted);}
   const assetId=media[0]??null;
+  return tx(()=>{
+  const current=one("SELECT * FROM posts WHERE id=? AND project_id=?",postId,p.id);
+  if(stamp!==stableHash("native-social-format-1",{post:current,assets:originals.map(aid=>getAsset(aid))}))throw new Error("Publication ou médias modifiés pendant le calcul : recommencez depuis leur nouvel état.");
   const nid = duplicatePostV2(p, postId);
   if (assetId) {
     // Le type de publication du réseau (image, story…) reste celui de l'originale : seul le visuel change de format.
     run("UPDATE posts SET media = ? WHERE id = ?", JSON.stringify(media), nid);
+    removeUsages("post",nid);
     for(const aid of media)addUsage(aid, "post", nid, "Publication");
   }
   return { id: nid, assetId };
+  });
 }
