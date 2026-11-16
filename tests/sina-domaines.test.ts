@@ -80,13 +80,7 @@ describe("SINA — nom de domaine : l'exact, sinon une adresse libre qui garde l
     expect(ctx).toMatch(/Noms de domaine \(contrôlés à l'instant dans le registre[^)]*ne promets jamais une adresse[^)]*\) : A « Pulpe » : pulpe\.fr et pulpe\.com sont déjà pris ; libre aujourd'hui : pulpefrance\.fr/);
   });
 
-  it("le haut du site sur téléphone : une maquette créée en image pour chaque identité ; les mots tirés de la planche restent vrais", async () => {
-    const S = await import("@/lib/syna-agent/brand-site-preview");
-    expect(S.sitePoints(["Sans sucres ajoutés, sans arôme artificiel.", "[À compléter : dose] pour [À compléter : volume d'eau] d'eau froide.", "Au frais [À compléter : durée d'infusion], puis sers bien froid."])).toEqual(["Sans sucres ajoutés", "Sans arôme artificiel"]);
-    expect(S.sitePoints(["De vrais morceaux. De vrais morceaux ; fabriqué en France, un texte beaucoup trop long pour tenir dans une pastille"])).toEqual(["De vrais morceaux", "Fabriqué en France"]);
-    expect(S.sitePoints([])).toEqual([]);
-    expect(S.firstProduct(["Pulpe", "Pêche-verveine", "Infusion de fruits à boire froide"], "PULPE")).toBe("Pêche-verveine");
-    expect(S.firstProduct(["Pulpe", "[À compléter : nom de la recette]"], "Pulpe")).toBeNull(); // jamais un faux produit
+  it("le haut du site sur téléphone : une maquette créée en image pour chaque identité", async () => {
     // Retour du propriétaire du 15 novembre 2026 : la maquette du haut de l'accueil est de nouveau une image créée par
     // le modèle d'images, sur écran de téléphone, en portrait ; elle fait partie de la proposition de chaque identité.
     const I = await import("@/lib/syna-agent/brand-images");

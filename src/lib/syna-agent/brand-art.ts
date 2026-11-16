@@ -1,12 +1,15 @@
 /**
- * Dessins des planches de marque de SINA (retour du propriétaire du 12 novembre 2026, après l'essai réel : « ce que tu
- * as fait toi était mieux […] beaucoup plus d'icônes, d'images »). La directrice artistique DESSINE en code, comme
- * les planches faites à la main : une scène, des objets, des morceaux, des dégradés, des lueurs.
+ * Liste blanche des dessins en code (SVG) : la forme sûre d'un dessin gardé dans une planche de marque.
  *
- * Un dessin arrive en SVG écrit par un modèle : il n'est JAMAIS affiché tel quel. Il passe par une liste blanche
- * stricte (formes, groupes, dégradés, découpes, flou) et devient un arbre de données sûr ; l'écran le redessine avec
- * les composants du Studio. Tout le reste est refusé : texte, police, image, lien, style, script, animation,
- * événement, référence extérieure. Un dessin refusé est simplement absent : la planche garde sa forme sans lui.
+ * L'illustratrice qui écrivait ces dessins (scène, objet, signes, publications) a été retirée le 17 novembre 2026 :
+ * une planche ne reçoit plus de dessin en code, ses images sont créées à part (`brand-images.ts`). Ce fichier reste
+ * pour ce qui en dépend encore : la forme des planches enregistrées (`brand-board.ts`), le nom dessiné quand une lettre
+ * y est remplacée par un dessin (`brand-wordmark.ts`, le secours quand aucun logo n'est validé) et l'écran, qui ne
+ * redessine un dessin qu'avec ces balises.
+ *
+ * Un dessin n'est JAMAIS affiché tel quel. Il passe par une liste blanche stricte (formes, groupes, dégradés, découpes,
+ * flou) et devient un arbre de données sûr ; l'écran le redessine avec les composants du Studio. Tout le reste est
+ * refusé : texte, police, image, lien, style, script, animation, événement, référence extérieure.
  */
 import { z } from "zod";
 
@@ -92,7 +95,7 @@ function refsOk(nodes: ArtNode[]): boolean {
 }
 
 /**
- * Dessin SVG écrit par un modèle → dessin sûr. Refusé en entier au moindre écart (jamais « réparé » en devinant) :
+ * Dessin SVG → dessin sûr. Refusé en entier au moindre écart (jamais « réparé » en devinant) :
  * balise ou attribut hors liste, texte, style, lien, événement, référence qui ne mène nulle part, dessin trop lourd.
  */
 export function sanitizeArt(input: string): ArtResult {

@@ -98,7 +98,7 @@ const applyVersionTool: AgentTool<{ versionId: string; reason?: string }> = {
 
 const mockupsTool: AgentTool<{ directions?: string[]; count?: number }> = {
   name: "site.mockups", module: "site", kind: "generate", needsProject: true,
-  description: "PROTOTYPES de thèmes de la galerie (pas des maquettes) : prépare jusqu'à 3 versions COMPLÈTES du site (pages, produits, marque) dans des thèmes différents de la galerie, sans changer le site courant (versions inactives, gratuit, moteur natif). Sans `directions`, prend le thème recommandé et ses alternatives pour ce type de projet. Exige une marque (brand.save ou brand.create). Le client choisit ensuite ; appliquez son choix avec site.use_version.",
+  description: "PROTOTYPES de thèmes de la galerie (pas des maquettes) : prépare jusqu'à 3 versions COMPLÈTES du site (pages, produits, marque) dans des thèmes différents de la galerie, sans changer le site courant (versions inactives, gratuit, moteur natif). Sans `directions`, prend le thème recommandé et ses alternatives pour ce type de projet. Exige une marque (brand.save, ou la marque créée avec identity.propose puis brand.finish). Le client choisit ensuite ; appliquez son choix avec site.use_version.",
   args: z.object({ directions: z.array(z.string().max(60)).max(3).optional(), count: z.number().int().min(1).max(3).default(3) }).strict(),
   run: async (ctx, a) => {
     const p = project(ctx);
@@ -214,7 +214,7 @@ function mockupPrompt(p: any, d: { name: string; style: string }): string {
 
 const mockupImagesTool: AgentTool<MockupArgs> = {
   name: "site.mockup_images", module: "site", kind: "generate", needsProject: true,
-  description: "Crée les MAQUETTES du site avec l'IA d'images : pour chaque direction graphique (1 à 3 : name + style décrit), UNE grande planche montrant toutes les pages (accueil, fiche produit, panier, histoire, FAQ, contact — ou prestations, réalisations, devis pour un service) avec le logo, les couleurs et les polices de l'identité et la photo du produit. Payant (budget autorisé). Exige l'identité visuelle validée avec un logo : brand.create d'abord. Le client choisit une maquette ; elle sert ensuite de modèle au code du site.",
+  description: "Crée les MAQUETTES du site avec l'IA d'images : pour chaque direction graphique (1 à 3 : name + style décrit), UNE grande planche montrant toutes les pages (accueil, fiche produit, panier, histoire, FAQ, contact — ou prestations, réalisations, devis pour un service) avec le logo, les couleurs et les polices de l'identité et la photo du produit. Payant (budget autorisé). Exige l'identité visuelle validée avec un logo : la marque d'abord (identity.propose, puis brand.finish). Le client choisit une maquette ; elle sert ensuite de modèle au code du site.",
   args: z.object({ directions: z.array(z.object({ name: z.string().min(1).max(60), style: z.string().min(1).max(400) }).strict()).min(1).max(3) }).strict(),
   estimate: (ctx, a) => {
     const p: any = project(ctx), refs = mockupReferences(p);

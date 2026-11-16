@@ -74,7 +74,9 @@ describe("tâches de fond : les anciennes façons de créer ne sont plus déclar
   });
 
   it("les tâches de SINA et le moteur de préparation dont elle se sert restent déclarés", () => {
-    for (const kept of ["syna.agent", "syna.brand", "syna.logos", "project.prepare", "strategy.prepare", "image.v2", "shop.build", "files.classify"]) expect(HANDLER_TYPES, kept).toContain(kept);
+    // La tâche des trois logos libres (« syna.logos ») a été retirée le 17 novembre 2026 : le logo vient de la planche.
+    expect(HANDLER_TYPES).not.toContain("syna.logos");
+    for (const kept of ["syna.agent", "syna.brand", "project.prepare", "strategy.prepare", "image.v2", "shop.build", "files.classify"]) expect(HANDLER_TYPES, kept).toContain(kept);
     // SINA lance encore la préparation (fiche, recherche, angles) : la tâche ne part pas tant qu'elle s'en sert.
     expect(read("src/lib/preparation/engine.ts")).toContain('type: "project.prepare"');
     expect(read("src/lib/syna-agent/tools/project.ts")).toContain("queuePreparation(");

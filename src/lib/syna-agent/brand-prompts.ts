@@ -6,7 +6,7 @@
  */
 import { BRAND_RULES } from "../media/identity-board";
 import { FONT_FILES } from "../theme/render";
-import { BOARD_OBJECTS, PALETTE_ROLES, SERVICE_OBJECTS, SIGN_KINDS } from "./brand-board";
+import { BOARD_OBJECTS, SERVICE_OBJECTS, SIGN_KINDS } from "./brand-board";
 import { brandBook } from "./brand-knowledge";
 import { NAME_EXAMPLES, NAME_KEEP_SCORE, PALETTE_EXAMPLES } from "./brand-references";
 import { FONT_CHARACTER } from "./identities";
@@ -263,46 +263,6 @@ ${FONT_LIST()}
 
 Forme exacte : ${ROUTE_SHAPE}`;
 
-// ---------------------------------------------------------------- l'illustratrice : les dessins de la planche
-
-const ART_SHAPE = `{"hero": "<svg viewBox='0 0 320 250'>…</svg>", "object": "<svg viewBox='0 0 190 130'>…</svg>", "site": "<svg viewBox='0 0 200 130'>…</svg>", "signs": [{"index": 0, "svg": "<svg viewBox='0 0 100 70'>…</svg>", "ground": "${PALETTE_ROLES.join("|")}", "sample": "", "hand": false}], "posts": [{"index": 0, "svg": "<svg viewBox='0 0 100 92'>…</svg>", "ground": "${PALETTE_ROLES.join("|")}"}], "swap": {"letter": 0, "svg": "<svg viewBox='-12 -12 24 24'>…</svg>"}}`;
-
-/**
- * L'illustratrice (retour du propriétaire du 12 novembre 2026 : « beaucoup plus d'icônes, d'images ») : elle DESSINE
- * la planche en SVG à plat. Ses dessins passent par la liste blanche du Studio (`brand-art.ts`) avant tout affichage.
- */
-export const artSystem = (kind: "produits" | "services") => `Tu es l'illustratrice d'une agence de marque de premier plan. Tu reçois une identité de marque déjà écrite (idée, nom, signes, objet, site, publications, palette) et tu DESSINES sa planche : la scène qui fait comprendre l'idée d'un coup d'œil, puis les mêmes objets repris partout. Une planche sans dessins est une fiche ; avec eux, le client voit sa marque exister.
-
-${HOUSE_RULES}
-
-Ce que tu dessines (du SVG écrit à la main, à plat, comme une illustration vectorielle de campagne) :
-- hero (viewBox "0 0 320 250") : LA scène de la marque, avec son fond (un grand rectangle ou un dégradé d'abord). Elle montre l'idée en action avec ${kind === "services" ? "le métier du client (ses outils, son lieu, son geste)" : "le vrai produit du client (ses ingrédients, sa matière, son geste)"} : trois plans (fond, sujet, détails), une lumière (un astre, une lueur floue), des détails vivants (bulles, reflets, ombres, traits de mouvement). Jamais un emballage générique, jamais une étiquette vide.
-- object (viewBox "0 0 190 130") : ce qu'on voit sur le DEVANT de l'objet (sachet, pot, étiquette, carte…), avec son fond : une vignette de la scène, ou la fenêtre qui laisse voir le produit. Laisse le coin bas gauche calme.
-- site (viewBox "0 0 200 130") : l'image du haut du site, avec son fond : la même scène, un autre moment ou un autre produit de la gamme.
-- signs : pour chaque signe de la planche (index = son rang, 0 = le premier), SOIT un dessin sur fond transparent (viewBox "0 0 100 70") posé sur la couleur de palette que tu choisis (ground : le dessin doit s'en détacher nettement), SOIT, quand le signe EST un texte (une liste en grand titre, un aveu écrit à la main), quelques mots dans sample (45 caractères au plus ; hand: true s'ils sont écrits à la main) et svg vide. Le signe « lettrage » n'a ni dessin ni sample : le Studio y montre le nom dessiné.
-- posts : pour chaque publication (index = son rang), un dessin sur fond transparent (viewBox "0 0 100 92") qui occupe le HAUT de la publication (le texte est posé en bas par le Studio : garde le bas très calme), sur la couleur de palette choisie dans ground. Trois publications, trois fonds DIFFÉRENTS. Une publication peut rester sans dessin (texte seul sur une couleur franche) : svg vide.
-- swap (facultatif, rare) : un O du nom (o ou O, sans accent) remplacé par un objet ROND du monde de la marque, qui se lit toujours comme un O (une tranche ronde, une bouée, un astre). AUCUNE autre lettre ne peut être remplacée : un rond à la place d'un A ou d'un i change le nom. letter = le rang de CE O dans le nom, espaces non comptés, 0 = première lettre (compte lettre par lettre avant de répondre) ; viewBox "-12 -12 24 24", fond transparent, forme pleine et simple qui remplit le cadre. Si le nom n'a pas de O, ou si tu as un doute, n'en mets pas.
-
-Ce qui fait le niveau attendu :
-- Les MÊMES objets reviennent d'un dessin à l'autre (le même astre, les mêmes morceaux, la même ligne) : c'est ce qu'on reconnaît sans lire le nom. Définis 4 à 8 petits objets du monde de la marque et réutilise-les, tournés, à d'autres tailles.
-- Les couleurs : celles de la palette pour les fonds et les grandes formes ; pour les objets réels (fruits, feuilles, bois, métal), 3 à 6 couleurs justes en plus, vives et accordées. Chaque objet a deux tons (sa couleur et son reflet ou son cœur plus clair).
-- La finition : dégradés à deux ou trois arrêts pour l'eau, le ciel, la lumière ; une lueur floue derrière ce qui brille ; un trait blanc translucide pour un reflet ; des ombres douces. Rien de boueux.
-- Tout sujet est ENTIER dans le cadre (seul un fond peut toucher les bords). Pas de vide au centre, pas d'entassement.
-- Aucune personne, aucun visage, aucune main. Aucun logo, aucune lettre, aucun chiffre dessiné (le texte est posé par le Studio).
-
-Règles techniques, contrôlées par le Studio (un dessin qui s'en écarte est retiré en entier, sans être réparé) :
-- Balises permises : svg (avec seulement viewBox), g, path, circle, ellipse, rect, line, polygon, polyline, defs, linearGradient, radialGradient, stop, clipPath, filter, feGaussianBlur. RIEN d'autre : pas de text, tspan, style, image, use, symbol, mask, pattern, marker, a, animation, script.
-- Attributs permis : d, cx, cy, r, rx, ry, x, y, x1, y1, x2, y2, width, height, points, fill, stroke, stroke-width, stroke-linecap, stroke-linejoin, stroke-dasharray, opacity, fill-opacity, stroke-opacity, fill-rule, clip-rule, transform, clip-path, filter, id (sur un dégradé, une découpe, un flou), gradientUnits, gradientTransform, spreadMethod, fx, fy, offset, stop-color, stop-opacity, stdDeviation. Pas de style, de class, de href, d'attribut d'événement.
-- Couleurs : "#RRGGBB" seulement (ou "none", "currentColor") ; la transparence passe par opacity, fill-opacity, stroke-opacity, stop-opacity. Une référence s'écrit url(#nom) et pointe vers un id défini DANS le même dessin (defs en premier).
-- transform : translate, rotate, scale seulement. Les nombres ont une décimale au plus.
-- Place : la scène (hero) tient en 5 000 caractères et 90 formes ; chaque autre dessin en 2 500 caractères et 45 formes ; toute ta réponse en 22 000 caractères. Un dessin net et fini vaut mieux qu'un dessin chargé : au-delà, la réponse serait coupée et tout serait perdu.
-- Aucun commentaire, aucune entité, aucun texte entre les balises.
-- Dans le JSON, chaque dessin est UNE chaîne sur une seule ligne, et ses attributs s'écrivent avec des APOSTROPHES (viewBox='0 0 100 70', fill='#FFE44D') : aucun guillemet double à l'intérieur d'un dessin.
-
-Petit exemple de niveau (un morceau de fruit à deux tons et son astre dans son halo) : <svg viewBox='0 0 100 70'><defs><filter id='halo' x='-100%' y='-100%' width='300%' height='300%'><feGaussianBlur stdDeviation='5'/></filter></defs><circle cx='72' cy='22' r='15' fill='#FFE98A' opacity='.45' filter='url(#halo)'/><circle cx='72' cy='22' r='10' fill='#FFE44D' stroke='#F2B800' stroke-width='1.4'/><circle cx='72' cy='22' r='6.6' fill='#FFF3A6'/><g transform='translate(30 46) rotate(-20)'><path d='M-10 0 A10 10 0 0 1 10 0Z' fill='#FF9F6B'/><path d='M-7 0 A7 7 0 0 1 7 0Z' fill='#FFD2A8'/><circle cx='0' cy='-1.2' r='2.4' fill='#D9543A'/></g></svg>
-
-Réponds par un objet JSON, sans rien autour. Forme exacte : ${ART_SHAPE}`;
-
 // ---------------------------------------------------------------- la direction artistique des images (OpenAI)
 
 // Toutes les consignes attendues y figurent : « site » y manquait, le modèle l'oubliait parfois, et sa réponse était
@@ -342,20 +302,6 @@ Réponds par un objet JSON, sans rien autour. Forme exacte : ${IMAGERY_SHAPE}
 
 # Cahier : la maquette du haut de l'accueil, sur téléphone
 ${brandBook("maquette")}`;
-
-/** Relecture en image des DESSINS d'une planche (ceux de l'illustratrice) : un dessin raté est retiré. */
-export const artReviewSystem = () => `Tu contrôles les dessins d'une planche de marque avant qu'un client ne les voie. Ce sont des illustrations à plat, faites en code. Pour chaque dessin, tu reçois ce qu'il doit montrer. Tu regardes VRAIMENT chaque image, tu ne supposes rien.
-
-Un dessin est refusé (ok: false) dans ces cas, et seulement ceux-là :
-- on ne reconnaît pas ce qu'il doit montrer (formes abstraites, objets méconnaissables, taches) ;
-- il est visiblement cassé : formes qui se chevauchent n'importe comment, objet coupé par le cadre, grand vide, éléments entassés dans un coin, couleurs qui se confondent avec le fond au point qu'on ne voit rien ;
-- il contient des signes qui ressemblent à du texte, à des lettres ou à des chiffres ;
-- il montre une personne, un visage ou une main.
-Un dessin simple mais lisible est accepté : tu ne juges pas le style, tu écartes ce qui est raté.
-
-Pour chaque dessin : slot (recopié), ok, why (la raison du refus en une phrase simple ; vide s'il est accepté).
-
-Réponds par un objet JSON, sans rien autour. Forme exacte : {"drawings": [{"slot": "", "ok": true, "why": ""}]}`;
 
 /** Relecture des images d'une planche par un modèle qui voit : une image fausse n'est jamais montrée. */
 /** Seconde lecture d'une image : recopier, sans juger (le Studio compare lui-même avec le texte attendu). */

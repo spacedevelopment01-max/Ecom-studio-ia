@@ -1,8 +1,8 @@
 # Lot 2 : la marque
 
 Compte rendu du 15 novembre 2026, complété le 16. Accord du propriétaire pour construire : « Oui ». **L'essai réel
-est en cours** (voir « L'essai réel » plus bas) : le lot n'est pas encore fini, les anciennes façons ne sont pas encore
-retirées.
+est en cours** (voir « L'essai réel » plus bas). Les anciennes façons ont été retirées le 17 novembre 2026 (voir plus
+bas).
 
 ## Ce qui est construit
 
@@ -51,12 +51,47 @@ retirées.
 Repère : le dernier essai réel d'avant (trois identités, dix-huit images) avait coûté 5,25 € pour un devis de 7,92 €.
 Le différé retire encore la moitié du prix des textes servis ainsi ; ce que cela donne vraiment sera mesuré à l'essai.
 
-## Ce qui sera retiré à la fin, une fois l'essai réussi
+## Anciennes façons retirées le 17 novembre 2026
 
-L'ancienne création en un appel (`identities.ts`, branche « simple »), l'outil `brand.create` et les « 3 pistes de
-logo », les trois logos libres et le logo redessiné (`logos.ts`, `tools/logo.ts`), l'illustratrice (`brand-art.ts`,
-`brand-art-review.ts`), l'outil `brand.kit` appelé à la main, les anciens panneaux de logo de l'écran Marque
-(`logo-v2-panel.tsx`, `full-logo-panel.tsx` et voisins), et leurs tests.
+Il ne reste qu'une façon de créer une marque : la chaîne (`syna.brand`), le choix du client (`identity.choose`), puis la
+fin de marque (`brand.finish`) et sa validation (`brand.kit_validate`).
+
+**Retiré**
+
+- **L'ancienne création en un appel** : la branche « simple » de `tools/identity.ts` et le réglage `sina.brand_method`,
+  sa consigne, sa forme et son contrôle de série dans `identities.ts`.
+- **L'outil `brand.create`** (marque et « 3 pistes de logo » d'un coup, `tools/commerce.ts`).
+- **Les trois logos libres et le logo redessiné** : les outils `logo.propose` et `logo.choose` (`tools/logo.ts`,
+  supprimé), la tâche de fond `syna.logos`, et dans `logos.ts` les trois directions, les consignes de dessin, les devis
+  et la reprise du logo « à l'étape 2 ». Dans le fil, les cartes des logos à choisir.
+- **L'illustratrice** : ses deux consignes (`brand-prompts.ts`), son appel et la pose de ses dessins dans la chaîne
+  (`brand-chain.ts`), la relecture en image de ses dessins (`brand-art-review.ts`, supprimé).
+- **L'outil `brand.kit` appelé à la main** : la charte est préparée par la fin de marque.
+- **Les anciens panneaux de logo de l'écran Marque**, montés nulle part : `logo-v2-panel.tsx`, `full-logo-panel.tsx`,
+  et leurs deux voisins qui ne servaient qu'à eux (`native-logo-consent.tsx`, `direction-cards.tsx`).
+- **Le téléphone dessiné par le Studio** sur la planche (`PhoneSite` dans `brand-boards.tsx`), ses styles et son petit
+  module `brand-site-preview.ts` : la maquette du site est une image créée par OpenAI.
+- **Les tests qui ne portaient que sur ces façons** : `sina-logo-unique.test.ts`, `logo-v2-panel-state.test.ts`, et les
+  parties concernées de `sina-etape1`, `sina-etape2`, `sina-dessins`, `sina-domaines`. Les autres ont été adaptés.
+
+**Gardé, et pourquoi**
+
+- **`logos.ts`, allégé** : `chosenRoute` (l'identité retenue, lue partout), `saveBoardLogo` (le logo de la planche
+  devient le logo de la marque), `savePlancheLogo` (le nom dessiné, secours quand aucun logo n'est validé),
+  `singleTerritory` et `freeLogoFacts` (la fiche sous laquelle le moteur de logos range ce logo ; elle est gardée à
+  l'identique pour que ce qui est enregistré ne change pas).
+- **`identities.ts`, allégé** : la forme d'une identité, les polices et leur caractère, les contrôles de palette et de
+  couleurs refusées, la remise en forme tolérante : tout cela sert à la chaîne, aux planches et à l'écran.
+- **`brand-art.ts`** : ce n'est pas l'illustratrice mais la liste blanche qui rend sûr un dessin en code. Elle sert
+  encore à la forme des planches enregistrées, au nom dessiné (une lettre remplacée par un dessin) et à l'écran.
+- **`buildBrandKit` et `brand.kit_validate`** : la charte et sa validation par le client.
+- **Le nom dessiné** (`brand-wordmark.ts`) : le secours quand aucun logo ne passe la relecture.
+- **Le moteur de logos** (`src/lib/logo-v2`), ses routes d'API et le moteur de marque d'origine (`brand.build`) : ils
+  servent à d'autres parties du Studio. Leur sort se décide avec les lots suivants.
+- **Laissé de côté par prudence**, à trancher plus tard : la carte `brand-propagation-card.tsx` (montée nulle part,
+  mais ce n'est pas un panneau de logo), les anciennes cartes d'identité sans planche du fil (`IdentityCards`), les
+  outils du parcours d'origine (`pilot.*`, dont « 3 pistes de logo »), et `referencesForPrompt` (les références du
+  propriétaire en texte, qui ne servaient qu'à l'ancienne création).
 
 ## Fautes trouvées en écrivant les tests, corrigées
 

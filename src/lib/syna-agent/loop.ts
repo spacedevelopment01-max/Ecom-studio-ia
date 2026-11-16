@@ -643,7 +643,7 @@ export function threadView(user: User, cid: string) {
           // Identité retenue telle qu'enregistrée (mélange compris) : la carte « Ton identité » montre le vrai résultat.
           final: j.identityChoice ? { ...cardOf(chosenRoute(j) ?? mixIdentity(j.identities.list, j.identityChoice.key, j.identityChoice.mix as any, j.identityChoice.edits ?? {})), mixLabel: mixLabel(j.identities.list, j.identityChoice), finished: !!j.brandFinish?.at, finishIssues: j.brandFinish?.issues ?? [] } : null,
         } : null,
-        // Étape 2 : les 3 logos (images servies par la bibliothèque du projet) et le logo choisi.
+        // Le logo de la marque, adopté par la fin de marque (image servie par la bibliothèque du projet).
         logos: j.logos ? { round: j.logos.round, chosen: j.logoChoice?.source ?? null, list: j.logos.list.map((x) => ({ ...x, href: x.assetId ? assetUrl({ id: x.assetId }) : null })) } : null,
         // Étape 5 : le plan de l'activité.
         activity: j.activity ? { ...j.activity, gaps: activityGaps(j.activity), validated: j.steps[5]?.status === "done" } : null,

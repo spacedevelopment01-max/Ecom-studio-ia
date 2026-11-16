@@ -146,12 +146,12 @@ describe("SINA agent — un fil, des outils natifs, des changements vérifiés",
 
   it("toute dépense, même dans le budget de ses réponses : SINA s'arrête et demande l'accord avec le prix, sans rien lancer", async () => {
     const s = await shop("budget");
-    const jobsBefore = one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE type='brand.build'")!.n;
-    const run = await send(s.user, s.cid, "Refais toute ma marque.", () => ({ actions: [{ tool: "brand.create", args: {} }], message: "", done: false }));
+    const jobsBefore = one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE type='syna.brand'")!.n;
+    const run = await send(s.user, s.cid, "Refais toute ma marque.", () => ({ actions: [{ tool: "identity.propose", args: { guidance: "Refais toute ma marque." } }], message: "", done: false }));
     expect(run.status).toBe("waiting_confirmation");
     expect(JSON.parse(run.pending_json!).reason).toBe("cost");
     expect(JSON.parse(run.pending_json!).preview).toMatch(/%/); // le prix, en % du budget IA
-    expect(one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE type='brand.build'")!.n).toBe(jobsBefore);
+    expect(one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE type='syna.brand'")!.n).toBe(jobsBefore);
   });
 
   it("« Arrêter » pendant la réflexion de SINA : aucune action ne part, et la demande n'est jamais relancée", async () => {

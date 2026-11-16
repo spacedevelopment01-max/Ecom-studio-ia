@@ -30,13 +30,12 @@ import { sanitizeSymbolSvg } from "../media/logo-symbol";
 import { safeFetch } from "../engine/import-link";
 import { planOfProject } from "../plan-gates";
 import { json as parseJson } from "../db";
-import { MAX_ART_CHARS, sanitizeArt } from "./brand-art";
 import { CREATED_SLOTS, FINISH_SLOTS, PROPOSAL_SLOTS, SLOT_ASPECT, SLOT_REFERENCES, boardImageRoute, brandImagesOn, clientLogoOf, runBoardImages, type ImageAspect, type ImageSlot } from "./brand-images";
-import { BoardSchema, PALETTE_ROLES, WordmarkSchema, type Board, type BoardSymbol } from "./brand-board";
+import { BoardSchema, WordmarkSchema, type Board, type BoardSymbol } from "./brand-board";
 import { brandKnowledgeReady } from "./brand-knowledge";
 import * as P from "./brand-prompts";
 import { NAME_REFUSALS } from "./brand-references";
-import { RouteSchema, clientFacts, isReferenceName, nameIssues, routeCountFor, routeIssues, routeKeys, safeWordmark, unprovenClaims, withHonestProofs, type Route, type RouteKey } from "./brand-routes";
+import { RouteSchema, clientFacts, isReferenceName, nameIssues, routeCountFor, routeIssues, routeKeys, safeWordmark, withHonestProofs, type Route, type RouteKey } from "./brand-routes";
 import { IdentitySchema, briefFromJourney, keepConstraints, nameKindsFor, normText, prepareIdentities } from "./identities";
 import { journeyOf, setStep, updateJourney, type Journey } from "./journey";
 
@@ -78,10 +77,8 @@ const CALLS = {
   recheck: { tier: "strong", input: 30_000, output: 4_000, max: 8_000 },
   // Le lecteur qui ne sait rien : il ne lit que les phrases courtes des planches (très peu de texte).
   reader: { tier: "strong", input: 2_500, output: 2_500, max: 5_000 },
-  // L'illustratrice : une dizaine de dessins par planche (le gros de sa réponse est du SVG).
-  art: { tier: "craft", input: 9_000, output: 16_000, max: 26_000 },
   // Images de la planche (réglage `sina.brand_images`) : la direction artistique écrit les consignes ; un modèle
-  // qui voit relit les six images d'une planche. Le même relit, toujours, les dessins de l'illustratrice.
+  // qui voit relit les images d'une planche.
   imagery: { tier: "strong", input: 7_000, output: 6_000, max: 10_000 },
   look: { tier: "craft", input: 14_000, output: 1_500, max: 4_000 },
 } as const satisfies Record<string, { tier: Tier; input: number; output: number; max: number }>;
@@ -95,7 +92,7 @@ const MAX_PAGES_REREAD = 16;
 /** Nombre d'appels de chaque sorte selon le travail demandé (série complète, ou reprise de quelques routes). */
 function callCounts(routes: number, teams: number, fresh: boolean, images = false): Record<CallId, number> {
   // strategy : un second tour d'idées quand trop peu passent les deux épreuves ; fix : une reprise OU un remplacement par route.
-  return { study: fresh ? 1 : 0, strategy: fresh ? 2 : 0, team: fresh ? teams : 0, shortlist: 1, judge: 1, verify: 1, direction: routes, review: 1, fix: routes, recheck: 1, reader: 1, art: 0, imagery: images ? routes : 0, look: images ? routes : 0 };
+  return { study: fresh ? 1 : 0, strategy: fresh ? 2 : 0, team: fresh ? teams : 0, shortlist: 1, judge: 1, verify: 1, direction: routes, review: 1, fix: routes, recheck: 1, reader: 1, imagery: images ? routes : 0, look: images ? routes : 0 };
 }
 
 export type ChainQuote = { maxMicro: number; probableMicro?: number };
@@ -223,7 +220,7 @@ const VerifySchema = z.object({ checks: z.array(z.object({ name: z.string().max(
 const DraftBoard = BoardSchema.omit({ nameCheck: true, domains: true, signs: true, wordmark: true, idea: true, hero: true, object: true, site: true, posts: true, images: true }).extend({
   idea: BoardSchema.shape.idea.omit({ confessionSupport: true }),
   signs: z.array(BoardSchema.shape.signs.element.omit({ symbol: true, art: true }).extend({ symbolSvg: z.string().max(6000).default("") })).min(3).max(5),
-  // Les dessins (lettre remplacée comprise) viennent de l'illustratrice, dans un appel à part : jamais de ce brouillon.
+  // Aucun dessin en code dans ce brouillon (lettre remplacée comprise) : les images de la planche sont créées à part.
   // « cut » (la vague qui coupe le nom) est le geste de « Pulpe » : jamais redonné à une nouvelle marque (retour du
   // propriétaire du 14 novembre 2026 : « Pelage et Coussinet, le logo c'est la même conception que Pulpe »).
   wordmark: WordmarkSchema.omit({ symbol: true, swap: true, cut: true }).extend({ symbolSvg: z.string().max(6000).default("") }),
@@ -421,8 +418,8 @@ const prepareDraft = (raw: any) => { const one = prepareIdentities({ identities:
 
 /**
  * Champs facultatifs rendus vides par le modèle (« note »: "", « tilt »: []) : retirés, pour qu'un geste non utilisé
- * ne fasse pas refuser toute la planche. Les dessins éventuels du brouillon sont retirés aussi : ils ne viennent que
- * de l'illustratrice, après filtrage.
+ * ne fasse pas refuser toute la planche. Les dessins éventuels du brouillon sont retirés aussi : une planche ne porte
+ * plus de dessin en code, ses images sont créées à part (`brand-images.ts`).
  */
 export function pruneDraft(raw: any): any {
   const b = raw?.board;
@@ -471,71 +468,6 @@ const routeText = (x: Route) => JSON.stringify({ ...x, board: (({ hero: _h, imag
   ...b, signs: b.signs.map(({ symbol: _s, art: _a, ...s }) => s), wordmark: (({ symbol: _s, swap: _w, ...w }) => w)(b.wordmark),
   object: (({ art: _a, ...o }) => o)(b.object), site: (({ art: _a, ...o }) => o)(b.site), posts: b.posts.map(({ art: _a, ...q }) => q),
 }))(x.board) });
-
-// ---------------------------------------------------------------- les dessins de la planche
-
-// Forme large : un dessin trop lourd ou mal formé est refusé ensuite, un par un, par le filtre (jamais toute la réponse).
-const svgText = z.string().max(4 * MAX_ART_CHARS).default("");
-const ArtDraftSchema = z.object({
-  hero: svgText, object: svgText, site: svgText,
-  signs: z.array(z.object({ index: z.number().int().min(0).max(4), svg: svgText, ground: z.enum(PALETTE_ROLES).optional(), sample: z.string().max(48).optional(), hand: z.boolean().optional() })).max(5).default([]),
-  posts: z.array(z.object({ index: z.number().int().min(0).max(2), svg: svgText, ground: z.enum(PALETTE_ROLES).optional() })).max(3).default([]),
-  swap: z.object({ letter: z.number().int().min(0).max(39), svg: svgText }).optional(),
-});
-/**
- * Tolérance de forme de la réponse de l'illustratrice : un rang hors liste, une couleur inconnue, un texte vide ou une
- * lettre mal donnée retirent CE détail, jamais toute la planche (un appel ne se repaie pas pour une virgule).
- */
-export function prepareArt(raw: any): any {
-  if (!raw || typeof raw !== "object") return raw;
-  const text = (v: unknown) => (typeof v === "string" ? v : "");
-  const role = (v: unknown) => ((PALETTE_ROLES as readonly string[]).includes(v as string) ? { ground: v } : {});
-  const rank = (v: unknown, max: number) => (Number.isInteger(Number(v)) && Number(v) >= 0 && Number(v) <= max ? Number(v) : null);
-  const list = (v: unknown) => (Array.isArray(v) ? v.filter((x) => x && typeof x === "object") : []);
-  const signs = list(raw.signs).map((g: any) => ({ index: rank(g.index, 4), svg: text(g.svg), ...role(g.ground), ...(text(g.sample).trim() ? { sample: text(g.sample).trim().slice(0, 48), ...(g.hand === true ? { hand: true } : {}) } : {}) })).filter((g) => g.index != null).slice(0, 5);
-  const posts = list(raw.posts).map((q: any) => ({ index: rank(q.index, 2), svg: text(q.svg), ...role(q.ground) })).filter((q) => q.index != null).slice(0, 3);
-  const letter = raw.swap && typeof raw.swap === "object" ? rank(raw.swap.letter, 39) : null;
-  return { hero: text(raw.hero), object: text(raw.object), site: text(raw.site), signs, posts, ...(letter != null && text(raw.swap.svg).trim() ? { swap: { letter, svg: text(raw.swap.svg) } } : {}) };
-}
-export type ArtDraft = z.infer<typeof ArtDraftSchema>;
-
-/** Ce que l'illustratrice reçoit d'une route : l'idée, le nom, la palette, et chaque emplacement à dessiner. */
-const artBrief = (x: Route) => [
-  `Nom : ${x.name}`, `Signature : ${x.slogan}`, `Territoire : ${x.territory}`, `Ce que croit la marque : ${x.board.idea.belief}`, `La preuve, dans l'objet : ${x.board.idea.proof}`,
-  `Fond de page : ${x.ground}${x.gradient ? ` (${x.gradient.from} → ${x.gradient.to})` : ""}`,
-  `Palette : dark ${x.palette.dark}, primary ${x.palette.primary}, secondary ${x.palette.secondary}, accent ${x.palette.accent}, light ${x.palette.light}`,
-  `Nom dessiné : ${(x.board.wordmark.lines ?? [x.name]).join(" / ")}${x.board.wordmark.cut ? " (coupé par une ligne ondulée)" : ""}`,
-  `Objet : ${x.board.object.kind} — devant : ${x.board.object.front.join(" · ")}`,
-  `Site : ${x.board.site.headline}`,
-  "Signes :", ...x.board.signs.map((g, i) => `  ${i}. [${g.kind}] ${g.title} — ${g.text}`),
-  "Publications :", ...x.board.posts.map((q, i) => `  ${i}. ${q.text}`),
-].join("\n");
-
-/**
- * Pose les dessins de l'illustratrice sur une route. Chaque dessin passe par la liste blanche du Studio ; un dessin
- * refusé est simplement absent (la planche garde sa forme). Rend la route et le nombre de dessins posés et refusés.
- */
-export function withArt(route: Route, draft: ArtDraft, facts: string): { route: Route; placed: number; refused: number } {
-  let placed = 0, refused = 0;
-  const clean = (svg: string | undefined) => { if (!svg?.trim()) return undefined; const r = sanitizeArt(svg); if (r.ok) { placed++; return r.art; } refused++; return undefined; };
-  const b = route.board, hero = clean(draft.hero), objectArt = clean(draft.object), siteArt = clean(draft.site);
-  const signs = b.signs.map((g, i) => {
-    const d = draft.signs.find((x) => x.index === i);
-    if (!d || g.kind === "lettrage") return g;
-    const art = clean(d.svg), sample = !art && d.sample?.trim() ? d.sample.trim() : undefined;
-    return { ...g, ...(art ? { art } : {}), ...(sample ? { sample, ...(d.hand ? { hand: true } : {}) } : {}), ...(d.ground && (art || sample) ? { ground: d.ground } : {}) };
-  });
-  const posts = b.posts.map((q, i) => { const d = draft.posts.find((x) => x.index === i); if (!d) return q; const art = clean(d.svg); return { ...q, ...(art ? { art } : {}), ...(d.ground ? { ground: d.ground } : {}) }; });
-  const swapArt = draft.swap ? clean(draft.swap.svg) : undefined;
-  const wordmark = safeWordmark({ ...b.wordmark, ...(swapArt && draft.swap ? { swap: { letter: draft.swap.letter, art: swapArt } } : {}) }, route.name);
-  // Lettre que le Studio ne laisse pas remplacer (ce n'est pas un O, ou elle est hors du nom) : le dessin n'est pas posé.
-  if (swapArt && !wordmark.swap) placed--;
-  let next: Route = { ...route, board: { ...b, ...(hero ? { hero } : {}), signs, posts, wordmark, object: { ...b.object, ...(objectArt ? { art: objectArt } : {}) }, site: { ...b.site, ...(siteArt ? { art: siteArt } : {}) } } };
-  // Les quelques mots ajoutés par l'illustratrice ne portent ni chiffre ni garantie absents de la fiche du client.
-  if (unprovenClaims(next, facts).length > unprovenClaims(route, facts).length) next = { ...next, board: { ...next.board, signs: next.board.signs.map(({ sample: _s, hand: _h, ...g }) => g) } };
-  const safe = RouteSchema.safeParse(next);
-  return safe.success ? { route: safe.data, placed, refused } : { route, placed: 0, refused: placed + refused };
-}
 
 /**
  * Contrôle gratuit : deux identités d'une série n'ont jamais le même haut de site (même place du titre, même menu et

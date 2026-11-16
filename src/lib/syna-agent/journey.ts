@@ -110,7 +110,7 @@ export type Journey = {
   imported: ImportedSite[];
   /** Textes exacts gardés en refonte (nom, slogan), repris mot pour mot ensuite. */
   keptValues?: { name?: string; slogan?: string };
-  /** Étape 1 : dernière proposition des 3 identités (contrôlée par le Studio) et choix du client. */
+  /** Dernière proposition des identités (2, 3 ou 4 planches selon le forfait) et choix du client. */
   identities?: {
     list: Identity[]; issues: string[]; comparison: string; at: number; round: number; guidance?: string; corrected?: string[];
     /** Chaîne de création de la marque (12 novembre 2026) : tâche qui a fait cette proposition (son atelier se reprend sans repayer). */
@@ -127,7 +127,7 @@ export type Journey = {
    * compris (celles de sa planche, puis l'objet, les signes et les publications créés après le choix).
    */
   brandFinish?: { prepaidMicro?: number; images?: NonNullable<Board["images"]>; at?: number; issues?: string[]; /** Image de planche dont le logo de la marque est tiré. */ logoFrom?: string | null };
-  /** Étape 2 : dernière proposition des 3 logos (moteur de logos V2) et logo choisi par le client. */
+  /** Le logo de la marque, adopté par la fin de marque (`brand-finish.ts`) : celui de la planche, ou le nom dessiné en secours. */
   logos?: { list: SinaLogo[]; at: number; round: number; notes?: string[] };
   logoChoice?: { source: "A" | "B" | "C"; assetId: string; at: number };
   /** Étape 3 : image de marque complète (déclinaisons, favicons, avatar, planche, charte PDF). */
