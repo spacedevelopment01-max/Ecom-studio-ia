@@ -242,7 +242,8 @@ const BASE_SECTIONS: TenueSection[] = [...SOCLE_SECTIONS, ...PRODUIT_SECTIONS, .
 for (const id of Object.keys(FACONS)) if (!BASE_SECTIONS.some((s) => s.id === id)) throw new Error(`Façons de bâtir pour une pièce inconnue : ${id}`);
 export const TENUE_SECTIONS: TenueSection[] = BASE_SECTIONS.map((s) => (FACONS[s.id] ? { ...s, constructions: FACONS[s.id] } : s));
 /** Feuilles et scripts des sections à tenue, dans l'ordre de chargement (un fichier absent est ignoré). */
-export const TENUE_FILES = { css: ["tenue.css", "tenue-produit.css", "tenue-services.css", "tenue-recit.css", "tenue-coque.css", "tenue-achat.css", "tenue-metiers.css", "tenue-pages.css", "tenue-vente.css"], js: ["tenue.js", "tenue-produit.js", "tenue-services.js", "tenue-recit.js", "tenue-coque.js", "tenue-achat.js", "tenue-metiers.js", "tenue-pages.js", "tenue-vente.js"] };
+/** « boutique-apercu.js » : le panier d'essai de l'aperçu (contrat window.tnBoutique) ; en boutique, l'adaptateur de la plateforme le remplace. */
+export const TENUE_FILES = { css: ["tenue.css", "tenue-produit.css", "tenue-services.css", "tenue-recit.css", "tenue-coque.css", "tenue-achat.css", "tenue-metiers.css", "tenue-pages.css", "tenue-vente.css"], js: ["boutique-apercu.js", "tenue.js", "tenue-produit.js", "tenue-services.js", "tenue-recit.js", "tenue-coque.js", "tenue-achat.js", "tenue-metiers.js", "tenue-pages.js", "tenue-vente.js"] };
 
 const BY_ID = new Map(TENUE_SECTIONS.map((s) => [s.id, s]));
 export const tenueSection = (id: string): TenueSection | null => BY_ID.get(id) ?? null;

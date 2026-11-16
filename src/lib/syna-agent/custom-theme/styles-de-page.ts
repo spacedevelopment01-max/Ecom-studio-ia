@@ -33,10 +33,10 @@ export const STYLES_PRODUIT: StyleDePage[] = [
     pieces: ["tn-description", "tn-de-pres", "tn-emotion", "tn-places", "tn-mesures", "tn-garanties", "tn-questions", "tn-final"],
   },
   {
-    id: "vente-directe", nom: "Vente directe", pour: "un produit qui se vend sur sa promesse, souvent seul ou presque seul au catalogue, à un visiteur venu d'une publicité", achat: "vente-directe",
-    moments: "l'achat serré (prix en grand, livraison et retours cochés, gros bouton) → les offres par quantité si le client en a → les avantages → les vrais avis s'il y en a → pour qui c'est fait → l'avant et l'après (vraies photos seulement) → le prix rapporté à l'usage → les garanties → les questions → l'appel final ; la barre d'achat reste visible",
-    pieces: ["tn-lots", "tn-atouts", "tn-avis", "tn-pour-qui", "tn-avant-apres-produit", "tn-cout", "tn-garanties", "tn-questions", "tn-final"],
-    jamais: "une fausse urgence, un compte à rebours, un stock inventé, un prix barré inventé, un faux avis",
+    id: "vente-directe", nom: "Vente directe", pour: "un produit qui se vend sur sa promesse, souvent seul ou presque seul au catalogue, à un visiteur venu d'une publicité, sur téléphone (ce que le propriétaire appelle le style dropshipping)", achat: "vente-directe",
+    moments: "l'achat serré (prix en grand, livraison et retours cochés, gros bouton) → les offres par quantité ou les packs si le client en a → les promesses cochées → le problème, puis la réponse → les avantages un par un, en image → le mur d'avis (vrais avis seulement) → nous et les autres (faits prouvés seulement) → l'avant et l'après (vraies photos seulement) → la livraison expliquée avec les vrais délais → la garantie mise en avant → les questions → l'appel final avec le produit, son prix et le bouton ; la barre d'achat reste visible. Accueil d'une boutique à un seul produit : l'ouverture en grande photo, puis le produit, son prix et son bouton tout de suite (tn-appel-produit, jamais tn-achat sur l'accueil), puis les mêmes moments",
+    pieces: ["tn-lots", "tn-atouts", "tn-probleme-reponse", "tn-avantages", "tn-mur-avis", "tn-nous-et-autres", "tn-avant-apres-produit", "tn-livraison", "tn-garantie", "tn-questions", "tn-appel-produit"],
+    jamais: "une fausse urgence, un compte à rebours, un stock inventé (« plus que N » seulement avec le vrai stock suivi), un prix barré inventé, un faux avis, un délai que le client n'a pas donné",
   },
   {
     id: "haut-de-gamme", nom: "Haut de gamme", pour: "un bel objet, une pièce chère, une matière : on prend le temps de regarder", achat: "grandes-photos",

@@ -110,6 +110,8 @@ class TagForm extends \Liquid\AbstractBlock {
 		$action = function_exists('es_form_action') ? es_form_action($this->formType) : '#';
 		$out = '<form method="post" action="' . htmlspecialchars($action, ENT_QUOTES) . '" accept-charset="UTF-8"' . $a . '>'
 			. '<input type="hidden" name="form_type" value="' . htmlspecialchars($this->formType, ENT_QUOTES) . '"><input type="hidden" name="utf8" value="✓">'
+			// Champs propres à la plateforme (jeton du panier, page de retour) : donnés par le CMS (es_form_extra).
+			. (function_exists('es_form_extra') ? es_form_extra($this->formType) : '')
 			. parent::render($context) . '</form>';
 		$context->pop();
 		return $out;
@@ -123,6 +125,7 @@ class TagStylesheet extends \Liquid\AbstractBlock {
 }
 
 namespace {
+require_once ES_LIQUID_DIR . '/es-fiche.php';
 /** Filtres de Shopify utilisés par les sections. */
 class EsFilters {
 	public static $assetBase = '';
@@ -145,7 +148,15 @@ class EsFilters {
 	public static function font_url($input) { return ''; }
 	/** Comme l'aperçu du studio (JSON.stringify) : caractères accentués et barres obliques tels quels. */
 	public static function json($input) { return json_encode($input, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); }
-	public static function money($input) { return is_numeric($input) ? number_format($input / 100, 2, ',', ' ') . ' €' : (string)$input; }
+	/** Format de la monnaie donné par la plateforme (es_fiche_argent) ; sans lui : euros, à la française. */
+	public static $argent = null;
+	public static function money($input) {
+		if (!is_numeric($input)) return (string)$input;
+		return is_array(self::$argent) ? es_fiche_argent($input, self::$argent) : number_format($input / 100, 2, ',', ' ') . ' €';
+	}
+	/** Paiement rapide et pagination : fournis par Shopify ; hors de Shopify, la plateforme a les siens. */
+	public static function payment_button($input) { return ''; }
+	public static function default_pagination($input) { return ''; }
 	public static function t($input) {
 		$v = self::$strings[(string)$input] ?? null;
 		if ($v === null) return (string)$input;
