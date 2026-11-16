@@ -26,6 +26,7 @@ import { ACHAT_FACONS, ACHAT_SECTIONS } from "./tenue-achat";
 import { METIERS_FACONS, METIERS_SECTIONS } from "./tenue-metiers";
 import { PAGES_FACONS, PAGES_SECTIONS } from "./tenue-pages";
 import { VENTE_FACONS, VENTE_SECTIONS } from "./tenue-vente";
+import { ORDRE_PIECES } from "./tenue-ordre";
 
 export { TENUE_TAG, type Construction, type TenueSection } from "./tenue-base";
 
@@ -261,7 +262,10 @@ const mergeFacons = (...lists: Record<string, Construction[]>[]) => { const out:
 const FACONS: Record<string, Construction[]> = mergeFacons(COQUE_FACONS, ACHAT_FACONS, METIERS_FACONS, PAGES_FACONS, VENTE_FACONS);
 const BASE_SECTIONS: TenueSection[] = [...SOCLE_SECTIONS, ...PRODUIT_SECTIONS, ...SERVICES_SECTIONS, ...RECIT_SECTIONS, ...COQUE_SECTIONS, ...ACHAT_SECTIONS, ...METIERS_SECTIONS, ...PAGES_SECTIONS, ...VENTE_SECTIONS];
 for (const id of Object.keys(FACONS)) if (!BASE_SECTIONS.some((s) => s.id === id)) throw new Error(`Façons de bâtir pour une pièce inconnue : ${id}`);
-export const TENUE_SECTIONS: TenueSection[] = BASE_SECTIONS.map((s) => (FACONS[s.id] ? { ...s, constructions: FACONS[s.id] } : s));
+// L'ordre d'une page (cahier « ordre et variété ») : chaque pièce porte sa disposition et ses traits ; aucune n'y échappe.
+for (const s of BASE_SECTIONS) if (!ORDRE_PIECES[s.id]) throw new Error(`Pièce sans ligne dans tenue-ordre.ts (disposition et traits pour l'ordre des pages) : ${s.id}`);
+for (const id of Object.keys(ORDRE_PIECES)) if (!BASE_SECTIONS.some((s) => s.id === id)) throw new Error(`tenue-ordre.ts parle d'une pièce inconnue : ${id}`);
+export const TENUE_SECTIONS: TenueSection[] = BASE_SECTIONS.map((s) => ({ ...s, ...(FACONS[s.id] ? { constructions: FACONS[s.id] } : {}), ordre: ORDRE_PIECES[s.id] }));
 /** Feuilles et scripts des sections à tenue, dans l'ordre de chargement (un fichier absent est ignoré). */
 /** « boutique-apercu.js » : le panier d'essai de l'aperçu (contrat window.tnBoutique) ; en boutique, l'adaptateur de la plateforme le remplace. */
 export const TENUE_FILES = { css: ["tenue.css", "tenue-produit.css", "tenue-services.css", "tenue-recit.css", "tenue-coque.css", "tenue-achat.css", "tenue-metiers.css", "tenue-pages.css", "tenue-vente.css"], js: ["boutique-apercu.js", "tenue.js", "tenue-produit.js", "tenue-services.js", "tenue-recit.js", "tenue-coque.js", "tenue-achat.js", "tenue-metiers.js", "tenue-pages.js", "tenue-vente.js"] };

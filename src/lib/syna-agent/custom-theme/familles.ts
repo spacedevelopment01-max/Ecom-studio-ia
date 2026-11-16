@@ -143,6 +143,8 @@ const headersOf = (f: Famille, o: FamilleFacts) => {
 };
 const footersOf = (f: Famille, o: FamilleFacts) => (o.business === "services" ? [PIED_SERVICES, ...f.pied.filter((r) => r !== "tn-pied-reassurance")] : f.pied);
 
+/** Les choix d'en-tête, de pied de page et d'ouverture d'une famille pour CE site (services ou boutique) : sert à la règle « ils tournent ». */
+export const choixDeLaFamille = (id: string | null | undefined, o: FamilleFacts = {}): { entete: string[]; pied: string[]; ouvertures: string[] } | null => { const f = familleOf(id); return f ? { entete: headersOf(f, o), pied: footersOf(f, o), ouvertures: [...f.ouvertures] } : null; };
 const BY_ID = new Map(FAMILLES.map((f) => [f.id, f]));
 export const familleOf = (id: string | null | undefined): Famille | null => (id ? BY_ID.get(id as FamilleId) ?? null : null);
 

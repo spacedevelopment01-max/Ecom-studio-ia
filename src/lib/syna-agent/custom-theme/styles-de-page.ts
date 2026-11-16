@@ -7,6 +7,10 @@
  * Gratuit, sans IA.
  */
 import { z } from "zod";
+import { partitionDuStyle, partitionLine } from "./partitions";
+
+/** Les moments d'un style : ceux de sa partition, mot pour mot ceux du cahier. Un style sans partition est une erreur d'écriture. */
+const momentsDuStyle = (id: string, business: "products" | "services"): string => { const p = partitionDuStyle(id, business); if (!p) throw new Error(`Style de page sans partition : ${id}`); return partitionLine(p); };
 
 export type StyleDePage = {
   id: string;
@@ -14,8 +18,13 @@ export type StyleDePage = {
   nom: string;
   /** Ce qu'on vend quand ce style convient. */
   pour: string;
-  /** Ce que fait la page, dans l'ordre : ses moments, dits en clair au concepteur. */
+  /**
+   * Ce que fait la page, dans l'ordre : ses moments. Ils viennent de la partition du style (partitions.ts, cahier « ordre
+   * et variété ») : une seule source pour la consigne, les contrôles et les juges.
+   */
   moments: string;
+  /** Ce qu'il faut savoir en plus pour bâtir ce style, sans redire l'ordre de la page. */
+  details?: string;
   /** Page produit : la façon de bâtir le bloc d'achat (construction de « tn-achat »). */
   achat?: string;
   /** Pièces qui font ce style, à poser quand le client a de quoi les remplir (identifiants de la bibliothèque). */
@@ -29,36 +38,36 @@ export type StyleDePage = {
 export const STYLES_PRODUIT: StyleDePage[] = [
   {
     id: "simple", nom: "Simple", pour: "un créateur, un artisan, un objet qui se présente de lui-même", achat: "simple",
-    moments: "la photo, le nom, le prix et le bouton → la description racontée → le produit vu de près → une grande image d'émotion → le produit en situation ou ses mesures → les garanties → les vraies questions → l'appel final",
+    moments: momentsDuStyle("simple", "products"), details: "la photo, le nom, le prix et le bouton ; le produit vu de près (tn-de-pres), en situation (tn-places) ou ses mesures (tn-mesures) quand ils servent",
     pieces: ["tn-description", "tn-de-pres", "tn-emotion", "tn-places", "tn-mesures", "tn-garanties", "tn-questions", "tn-final"],
   },
   {
     id: "vente-directe", nom: "Vente directe", pour: "un produit qui se vend sur sa promesse, souvent seul ou presque seul au catalogue, à un visiteur venu d'une publicité, sur téléphone (ce que le propriétaire appelle le style dropshipping)", achat: "vente-directe",
-    moments: "l'achat serré (prix en grand, livraison et retours cochés, gros bouton) → l'offre du moment si le client a une vraie promotion avec sa date de fin → les packs (chaque article avec sa couleur et sa taille, un cadeau, l'étiquette « le plus populaire » sur le pack que le client désigne) ou les offres par quantité, si le client en a → sous le bouton : le guide des tailles, ce qu'on reçoit, le délai réel, les moyens de paiement, les garanties, les questions → les promesses cochées → le problème, puis la réponse → les avantages un par un, en image → le mur d'avis (vrais avis seulement) → nous et les autres (faits prouvés seulement) → l'avant et l'après (vraies photos seulement) → la livraison expliquée avec les vrais délais → la garantie mise en avant → les questions → l'appel final avec le produit, son prix et le bouton ; la barre d'achat reste visible. Accueil d'une boutique à un seul produit : l'ouverture en grande photo, puis le produit, son prix et son bouton tout de suite (tn-appel-produit, jamais tn-achat sur l'accueil), puis les mêmes moments. ACCUEIL d'une boutique de ce style à plusieurs produits : le bandeau à plusieurs messages vrais (tn-messages) → l'ouverture au macaron (tn-ouverture-vente, façon photo-pleine ; le macaron seulement avec un chiffre donné par le client) → les réassurances en cases → les produits en cartes de vente (tn-produits-vente) → la presse (vraies parutions seulement) → la différence en trois volets (tn-difference) → les bénéfices → l'histoire → les avis (vrais seulement) → le guide de choix (tn-guide-choix, deux produits au moins) → la garantie → les questions. COLLECTION : les cartes avec ajout rapide (tn-catalogue, façon ajout-rapide). PAGE D'ARRIVÉE D'UNE PUBLICITÉ (clé « arrivee », seulement si le client fait ou prépare de la publicité) : son en-tête et son pied minimaux se posent tout seuls à la place de ceux du site, ne les mets pas dans ses sections ; l'ouverture d'article (tn-ouverture-arrivee) → les raisons numérotées (tn-raisons) avec « en trois temps » et « l'équation » → les témoignages datés (vrais avis seulement, tn-temoignages) → les questions → l'appel final avec le produit → la barre du produit collée (tn-barre-produit). PAGE DES AVIS (clé « avis ») : tn-avis-page, seulement quand une vraie source d'avis existe",
+    moments: momentsDuStyle("vente-directe", "products"), details: "le bloc d'achat est serré (prix en grand, livraison et retours cochés, gros bouton) ; juste dessous, seulement si le client les a : l'offre du moment avec sa vraie date de fin (tn-offre-moment), les packs (chaque article avec sa couleur et sa taille, un cadeau, l'étiquette « le plus populaire » sur le pack que le client désigne) ou les offres par quantité, puis sous le bouton le guide des tailles, ce qu'on reçoit, le délai réel, les moyens de paiement, les garanties et les questions (tn-sous-bouton) ; la barre d'achat reste visible. Sur l'accueil, dans l'ordre de SA partition : le produit, son prix et son bouton se posent avec tn-appel-produit (jamais tn-achat sur l'accueil) ; pour une boutique de ce style à plusieurs produits, quand le dossier les permet : le bandeau à plusieurs messages vrais (tn-messages), l'ouverture au macaron (tn-ouverture-vente, façon photo-pleine ; le macaron seulement avec un chiffre donné par le client), les produits en cartes de vente (tn-produits-vente), la différence en trois volets (tn-difference), le guide de choix (tn-guide-choix, deux produits au moins). COLLECTION : les cartes avec ajout rapide (tn-catalogue, façon ajout-rapide). PAGE D'ARRIVÉE D'UNE PUBLICITÉ (clé « arrivee », seulement si le client fait ou prépare de la publicité) : son en-tête et son pied minimaux se posent tout seuls à la place de ceux du site, ne les mets pas dans ses sections ; l'ouverture d'article (tn-ouverture-arrivee) → les raisons numérotées (tn-raisons) → les témoignages datés (vrais avis seulement, tn-temoignages) → les questions → l'appel final avec le produit → la barre du produit collée (tn-barre-produit). PAGE DES AVIS (clé « avis ») : tn-avis-page, seulement quand une vraie source d'avis existe",
     pieces: ["tn-offre-moment", "tn-packs", "tn-lots", "tn-sous-bouton", "tn-atouts", "tn-probleme-reponse", "tn-avantages", "tn-mur-avis", "tn-nous-et-autres", "tn-avant-apres-produit", "tn-livraison", "tn-garantie", "tn-questions", "tn-appel-produit", "tn-messages", "tn-ouverture-vente", "tn-produits-vente", "tn-difference", "tn-guide-choix", "tn-raisons", "tn-equation", "tn-temoignages", "tn-barre-produit", "tn-avis-page"],
     jamais: "une fausse urgence, un compte à rebours, un stock inventé (« plus que N » seulement avec le vrai stock suivi), un prix barré inventé, un faux avis, un délai que le client n'a pas donné",
   },
   {
     id: "haut-de-gamme", nom: "Haut de gamme", pour: "un bel objet, une pièce chère, une matière : on prend le temps de regarder", achat: "grandes-photos",
-    moments: "de très grandes photos, l'achat étroit et discret → une grande image et sa phrase → le récit du produit → les matières, une à une → le produit vu de près → son échelle → le prix expliqué → les garanties → l'appel final",
+    moments: momentsDuStyle("haut-de-gamme", "products"), details: "de très grandes photos, l'achat étroit et discret ; le prix peut s'expliquer (tn-prix-explique) et le produit se montrer à son échelle (tn-echelle)",
     pieces: ["tn-emotion", "tn-description", "tn-composition", "tn-de-pres", "tn-echelle", "tn-prix-explique", "tn-garanties", "tn-final"],
     jamais: "une promotion criarde, une offre par quantité, une accumulation de pictos",
   },
   {
     id: "technique", nom: "Technique", pour: "du matériel, un outil, un équipement : on compare des caractéristiques avant d'acheter", achat: "technique",
-    moments: "le nom, la photo et ses vues, le prix et les repères en cases → le choix de la version → les caractéristiques vraies → le produit vu sous tous les angles → ses mesures → ce qu'il y a dans le colis → le comparatif de la gamme (s'il y a au moins deux produits) → les documents → les garanties → les questions",
+    moments: momentsDuStyle("technique", "products"), details: "le nom, la photo et ses vues, le prix et les repères en cases ; le choix de la version sous le bloc d'achat (tn-versions) ; les mesures (tn-mesures) et les documents (tn-documents) quand le client les a ; le comparatif de la gamme seulement avec au moins deux produits",
     pieces: ["tn-versions", "tn-fiche-technique", "tn-de-pres", "tn-mesures", "tn-colis", "tn-comparatif", "tn-documents", "tn-garanties", "tn-questions", "tn-final"],
     jamais: "une caractéristique ou une mesure que le client n'a pas donnée",
   },
   {
     id: "alimentaire-soin", nom: "Alimentaire et soin", pour: "ce qui se mange, se boit ou se met sur la peau : on veut savoir ce qu'il y a dedans et comment s'en servir", achat: "fond-doux",
-    moments: "le produit entier sur un fond de couleur douce → ses repères en un coup d'œil → ce qu'il contient → les allergènes → comment s'en servir ou le préparer → les valeurs nutritionnelles (alimentaire) ou les effets attendus avec leurs preuves (soin) → les preuves → les vrais avis s'il y en a → les questions",
+    moments: momentsDuStyle("alimentaire-soin", "products"), details: "le produit entier sur un fond de couleur douce ; les valeurs nutritionnelles (alimentaire, tn-valeurs) ou les effets attendus avec leurs preuves (soin, tn-effets et tn-preuves), seulement donnés par le client",
     pieces: ["tn-pictos", "tn-composition", "tn-allergenes", "tn-preparation", "tn-valeurs", "tn-effets", "tn-preuves", "tn-avis", "tn-questions", "tn-final"],
     jamais: "une promesse de santé, un ingrédient, un allergène ou une valeur que le client n'a pas donnés",
   },
   {
     id: "mode", nom: "Mode", pour: "un vêtement, une chaussure, un accessoire porté : la taille, la couleur et l'allure décident", achat: "portrait",
-    moments: "une grande photo en hauteur, le nom et le prix → les tailles et les couleurs en pastilles → le guide des tailles → la description → le look complet avec d'autres vrais produits (s'il y en a au moins deux) → la matière → la livraison et les retours → les vrais avis s'il y en a",
+    moments: momentsDuStyle("mode", "products"), details: "une grande photo en hauteur ; les tailles et les couleurs en pastilles sous le bloc d'achat (tn-versions) ; le look complet seulement avec au moins deux vrais produits",
     pieces: ["tn-versions", "tn-guide-tailles", "tn-description", "tn-looks", "tn-composition", "tn-garanties", "tn-avis", "tn-final"],
     jamais: "une personne dans une image sans photo fournie par le client ou son accord écrit ; une taille ou une couleur qui n'est pas au catalogue",
   },
@@ -66,37 +75,37 @@ export const STYLES_PRODUIT: StyleDePage[] = [
 export const STYLES_SERVICES: StyleDePage[] = [
   {
     id: "prestation-simple", nom: "Prestation simple", pour: "un métier qui vend quelques prestations claires, sur rendez-vous ou sur appel",
-    moments: "ce qu'on fait et pour qui → les prestations et leurs vrais prix → comment ça se passe → des réalisations (seulement si le client en a) → où et quand → le moyen de prendre rendez-vous ou d'appeler",
+    moments: momentsDuStyle("prestation-simple", "services"), details: "le moyen de prendre rendez-vous ou d'appeler revient en bas de page ; des réalisations seulement si le client en a ; où et quand (tn-acces) pour un métier où l'on vient",
     metier: ["tn-prestations"], pieces: ["tn-prestations", "tn-deroule", "tn-realisations", "tn-acces", "tn-rdv", "tn-urgence"],
     jamais: "une équipe, un avis ou un prix que le client n'a pas donnés",
   },
   {
     id: "rendez-vous-complet", nom: "Rendez-vous complet", pour: "un salon, un cabinet, un institut : on choisit sa prestation, la personne, puis le créneau",
-    moments: "les prestations et leurs prix → le rendez-vous en trois temps (la prestation, la personne, le créneau) → l'équipe réelle → les tarifs détaillés s'il y en a → l'accès et les horaires",
+    moments: momentsDuStyle("rendez-vous-complet", "services"), details: "le rendez-vous en trois temps (la prestation, la personne, le créneau) seulement avec l'équipe réelle ; les tarifs détaillés s'il y en a",
     metier: ["tn-rdv-complet", "tn-rdv"], pieces: ["tn-prestations", "tn-rdv-complet", "tn-equipe", "tn-tarifs", "tn-acces"],
     jamais: "une personne de l'équipe inventée : sans équipe donnée par le client, le rendez-vous simple (tn-rdv) remplace le rendez-vous en trois temps",
   },
   {
     id: "devis-artisan", nom: "Devis d'artisan", pour: "un artisan du bâtiment, de la réparation ou de la rénovation, qui chiffre chaque chantier",
-    moments: "la promesse et le numéro → comment se passe un chantier, étape par étape → les réalisations et l'avant, après → des exemples de prix vrais → les aides et les garanties s'il y en a → la zone d'intervention → la demande de devis détaillée → l'urgence",
+    moments: momentsDuStyle("devis-artisan", "services"), details: "la promesse et le numéro dès le premier écran ; des exemples de prix vrais (tn-exemples-prix), les aides (tn-aides) et l'urgence (tn-urgence) seulement s'il y en a",
     metier: ["tn-devis"], pieces: ["tn-deroule", "tn-realisations", "tn-avant-apres", "tn-exemples-prix", "tn-aides", "tn-labels", "tn-zone", "tn-devis", "tn-urgence"],
     jamais: "un chantier, un prix d'exemple ou un label que le client n'a pas",
   },
   {
     id: "bien-immobilier", nom: "Fiche de bien immobilier", pour: "une agence immobilière : des biens à vendre ou à louer",
-    moments: "page d'un bien (clé « bien ») : la galerie et le prix → les caractéristiques → les étiquettes énergie → le quartier → la demande de visite → les autres biens ; page des biens (clé « biens ») : la recherche et la liste ; sur l'accueil : un bien vedette",
+    moments: momentsDuStyle("bien-immobilier", "services"), details: "page d'un bien (clé « bien ») dans l'ordre de la partition, puis les autres biens ; page des biens (clé « biens ») : la recherche et la liste ; sur l'accueil : un bien vedette",
     metier: ["tn-bien-galerie", "tn-biens", "tn-recherche-biens"], pieces: ["tn-bien-galerie", "tn-bien-caracteristiques", "tn-bien-energie", "tn-bien-quartier", "tn-bien-visite", "tn-biens", "tn-recherche-biens", "tn-vendus"],
     jamais: "un bien inventé : sans bien publié par le client, aucune pièce de biens n'est posée ; une étiquette énergie absente s'affiche « non communiquée »",
   },
   {
     id: "restaurant", nom: "Restaurant", pour: "un restaurant, un café, un traiteur, une boulangerie",
-    moments: "le lieu et l'envie → la carte et ses vrais prix (ou la vitrine du jour) → d'où viennent les produits → la réservation de table → la vente à emporter s'il y en a → l'accès et les horaires",
+    moments: momentsDuStyle("restaurant", "services"), details: "la vitrine du jour (tn-vitrine) à la place de la carte pour une boulangerie ; la vente à emporter (tn-retrait) s'il y en a",
     metier: ["tn-carte", "tn-reserver-table", "tn-vitrine"], pieces: ["tn-carte", "tn-origines", "tn-reserver-table", "tn-retrait", "tn-vitrine", "tn-acces"],
     jamais: "un plat, un prix ou un allergène que le client n'a pas saisi",
   },
   {
     id: "atelier-cours", nom: "Atelier ou cours", pour: "des ateliers, des cours, des stages : des dates, des places, une inscription",
-    moments: "ce qu'on y apprend et l'envie → les prochaines dates et les places → le planning de la semaine pour des cours réguliers → comment se passe une séance → les tarifs → l'inscription → l'accès",
+    moments: momentsDuStyle("atelier-cours", "services"), details: "le planning de la semaine pour des cours réguliers (tn-planning), les prochaines dates pour des ateliers (tn-agenda)",
     metier: ["tn-agenda", "tn-planning", "tn-inscription"], pieces: ["tn-agenda", "tn-planning", "tn-deroule", "tn-tarifs", "tn-inscription", "tn-acces"],
     jamais: "une date ou un nombre de places inventés",
   },
@@ -124,7 +133,8 @@ export function stylesBrief(business: "products" | "services"): string {
     `LES STYLES DE LA ${business === "services" ? "PAGE DE SERVICES" : "PAGE PRODUIT"} (en coulisses, jamais dits au client). Choisis-en UN (champ « pageStyle », sa clé) d'après ce que le client vend vraiment et sa planche, dis pourquoi dans « pageStyleWhy », et bâtis la ${page} dans ce style. Le style donne les moments de la page ; tu choisis les pièces qui servent le mieux CETTE marque, et tu n'en poses aucune que le client ne peut pas remplir avec de vraies données.`,
     ...list.map((x) => [
       `- ${x.id} (${x.nom}). Pour : ${x.pour}.`,
-      `  La page : ${x.moments}.`,
+      `  La page, dans l'ordre de sa partition (identifiant « ${business === "services" ? "prestation" : "fiche"}:${x.id} ») : ${x.moments}.`,
+      x.details ? `  À savoir : ${x.details}.` : "",
       x.achat ? `  Bloc d'achat (« tn-achat ») : construction « ${x.achat} ».` : "",
       x.metier?.length ? `  Sa pièce de métier (une au moins sur la page) : ${x.metier.join(" ou ")}.` : "",
       x.pieces.length ? `  Ses pièces, quand le client a de quoi les remplir : ${x.pieces.join(", ")}.` : "",

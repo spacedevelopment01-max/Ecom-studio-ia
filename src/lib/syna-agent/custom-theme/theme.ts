@@ -3,6 +3,7 @@
  * famille choisie par le client, avec les retouches de chaque section. Données pures + enregistrement (mémoire du
  * projet, avec l'historique pour annuler). Règles de montage du propriétaire : docs/montage-themes-sina.md.
  */
+import { MIN_SECTIONS_IMPORTANTE, PAGE_KIND_LABEL, pageKind } from "./partitions";
 import crypto from "node:crypto";
 import { all } from "../../db";
 import { remember } from "../../projects";
@@ -87,6 +88,10 @@ export type CustomTheme = {
   familleWhy?: string | null;
   /** Lot 4 : le style de la page qui vend (en coulisses). */
   pageStyle?: string | null;
+  /** Le métier du site (clé du secteur reconnu, sinon son type d'accueil) : sert à la variété entre sites du même métier. */
+  metier?: string | null;
+  /** La partition choisie pour chaque page importante (clé de page → identifiant de partitions.ts), gardée pour les sites suivants. */
+  partitions?: Record<string, string>;
   version: 1;
   family: FamilyId;
   style: string;
@@ -341,8 +346,12 @@ export const missingPages = (t: CustomTheme, k: SiteKind) => requiredPages(k).fi
  * Contrôle des règles de montage du propriétaire (gratuit, sans IA). « bloquant » : le thème n'est pas enregistré.
  * Avec le genre de site (produits ou services), une page obligatoire absente est bloquante.
  */
-/** Nombre minimal de sections (hors en-tête et pied de page) : accueil 8, fiche produit 7 (docs/montage-themes-sina.md). */
-export const MIN_SECTIONS = { home: 8, product: 7 } as const;
+/**
+ * Nombre minimal de sections (hors en-tête et pied de page). Depuis le 16 novembre 2026 (cahier « ordre et variété » :
+ * « Il y a minimum 10 sections par page », « je parle de toutes les pages importantes pas que l'accueil ») : dix sur
+ * l'accueil et la fiche produit, au lieu de 8 et 7.
+ */
+export const MIN_SECTIONS = { home: MIN_SECTIONS_IMPORTANTE, product: MIN_SECTIONS_IMPORTANTE } as const;
 
 export function checkCustomTheme(t: CustomTheme, site?: SiteKind): ThemeProblem[] {
   const out: ThemeProblem[] = [];
@@ -350,11 +359,16 @@ export function checkCustomTheme(t: CustomTheme, site?: SiteKind): ThemeProblem[
   if (site) for (const o of platformOwnedPages(site)) if (t.pages.some((p) => o.keys.includes(p.key))) out.push({ level: "bloquant", text: `page « ${o.label} » en trop : sur Shopify, le paiement et la confirmation de commande sont des pages de Shopify (le bouton du panier y mène), jamais des pages du thème` });
   const bad = (text: string) => out.push({ level: "bloquant", text });
   const warn = (text: string) => out.push({ level: "à revoir", text });
-  // Pages pleines (méthode de montage, rappel du propriétaire du 9 novembre 2026 : « 8 sections sur la page d'accueil et
-  // minimum 7 sur la page produit » ; Heure Dorée était passé avec 4 et 3).
+  // Pages pleines. L'accueil et la fiche produit (les deux pages qui avaient déjà un minimum bloquant, 8 et 7) : dix,
+  // bloquant. Les autres pages importantes (prestations, collections, réalisations, à propos, contact, questions) : dix
+  // aussi, mais « à revoir » seulement : la bibliothèque et le dossier d'un client ne permettent pas toujours dix
+  // sections vraies sur un contact ou des questions, et rien ne doit pousser à remplir. Le contrôle de la conception
+  // (ordre.ts) dit au concepteur quels moments de la partition restent libres.
   if (site) for (const pg of t.pages) {
-    const min = pg.key === "home" ? MIN_SECTIONS.home : site.business === "products" && /^product/.test(pg.key) ? MIN_SECTIONS.product : 0;
-    if (pg.sections.length < min) bad(`« ${pg.label} » n'a que ${pg.sections.length} section(s) : au moins ${min} (${pg.key === "home" ? "accueil" : "fiche produit"})`);
+    const kind = pageKind(pg.key, site.business);
+    if (!kind || kind === "utilitaire" || pg.sections.length >= MIN_SECTIONS_IMPORTANTE) continue;
+    if (kind === "accueil" || kind === "fiche") bad(`« ${pg.label} » n'a que ${pg.sections.length} section(s) : au moins ${MIN_SECTIONS_IMPORTANTE} (${kind === "accueil" ? "accueil" : "fiche produit"})`);
+    else warn(`« ${pg.label} » n'a que ${pg.sections.length} section(s) : une page importante en a au moins ${MIN_SECTIONS_IMPORTANTE}, sans remplissage (${PAGE_KIND_LABEL[kind]})`);
   }
   const lib = (s: CtSection): LibSection | null => libSection(s.id);
   for (const x of allSections(t)) {

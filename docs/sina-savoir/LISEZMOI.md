@@ -135,6 +135,7 @@ doublons). Proposition, à valider.
 | Fichier | Ce que c'est |
 |---|---|
 | `theme-construction-des-pages.md` | Les pages d'un thème complet, l'ordre des sections et son pourquoi. |
+| `theme-ordre-et-variete.md` | Décisions du propriétaire du 16 novembre 2026 : dix sections au moins par page importante, les dix règles d'or, les partitions de chaque page, les règles de variété, les juges. Le code en lit les parties 1, 5 et 6 (`knowledge.ts`) ; les règles d'or et les partitions sont en données dans `partitions.ts` (un test vérifie qu'elles suivent le cahier) ; les parties 7 à 9 ne sont jamais envoyées à l'IA. |
 | `theme-images.md` | L'ouverture, le texte sur une image, le recadrage, les tailles, la galerie du produit, la vitesse. |
 | `theme-textes.md` | Le titre d'ouverture, la fiche produit, la voix, le référencement, le droit, s'inspirer sans copier. |
 | `theme-conception-des-sections.md` | Comment un thème Shopify est bâti, ce que Shopify exige, le système de design, le téléphone d'abord. |

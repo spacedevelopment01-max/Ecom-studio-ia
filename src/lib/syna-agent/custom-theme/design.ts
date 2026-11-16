@@ -17,10 +17,11 @@
 import { FamillePick, famillesBrief } from "./familles";
 import { StylePick, stylesBrief } from "./styles-de-page";
 import { z } from "zod";
+import { MAX_SECTIONS_UTILITAIRE, MIN_SECTIONS_IMPORTANTE, REGLES_D_OR } from "./partitions";
 import { FEATURED_ROLE, familySections, isCardSection, libSection, onlyFor, sectionTraits } from "./library";
 import { TENUE_CHOICES, TenuePickSchema, constructionsOf, isTenueSection, tenueSection } from "./tenue";
 import { sectionGroup } from "./section-groups";
-import { requiredPages, platformOwnedPages, MIN_SECTIONS, type SiteKind } from "./theme";
+import { requiredPages, platformOwnedPages, type SiteKind } from "./theme";
 import type { FamilyId } from "../section-families";
 
 /** construction : pour une section à tenue seulement (une des constructions données dans la bibliothèque). */
@@ -51,6 +52,12 @@ export const DesignSchema = z.object({
     journey: z.string().min(20).max(1200),
     sections: z.array(SectionPick).min(1).max(18),
   })).min(1).max(16),
+  /**
+   * La partition choisie pour chaque page importante (partitions.ts), et pourquoi elle va à CE client : son angle, ses
+   * preuves, ses clients. Lue avec indulgence (un champ mal formé ne fait jamais perdre un appel payé) ; le contrôle du
+   * Studio dit ce qui manque.
+   */
+  partitions: z.array(z.object({ page: z.string().max(40), partition: z.string().max(80), why: z.string().max(700).nullable().optional() })).max(24).optional().catch(undefined),
   /** Relecture : ce que le directeur commercial a corrigé (vide au premier passage). */
   corrections: z.array(z.string().max(400)).max(20),
 });
@@ -63,7 +70,7 @@ export type Design = z.infer<typeof DesignSchema>;
  */
 export const DESIGN_OUTPUT_TOKENS = 32_000;
 export const DESIGN_CAP_MICRO = 1_000_000;
-/** Conception + relecture (deux appels) ; une troisième seulement si le contrôle refuse quelque chose. */
+/** Conception + relecture du juge de l'ordre (deux appels) ; une troisième (la reprise du concepteur) seulement si un contrôle ou un juge refuse quelque chose. */
 export const DESIGN_CALLS_MAX = 3;
 export const DESIGN_TYPICAL_MICRO = 800_000;
 
@@ -73,40 +80,26 @@ export const DESIGN_TYPICAL_MICRO = 800_000;
  * et SINA recopiait ce niveau-là.
  */
 const EXAMPLE = `LE NIVEAU ATTENDU, EN LOGIQUE (aucun exemple de marque : tout vient de CETTE marque).
-ACCUEIL, une dizaine de moments, chacun avec sa raison :
-1. ouverture en grande photo pleine, le titre dessus · il doit ressentir la scène de l'angle avant de lire quoi que ce soit ; un seul bouton, qui porte le désir.
-2. orientation · juste sous l'ouverture, il choisit par où entrer (les gammes, les prestations, ou une bande d'engagements vrais).
-3. ce qui se vend · les produits ou les prestations arrivent tôt, avec leurs vrais prix ; SEULE section de cartes de la page.
-4. ce qu'il achète vraiment · la fabrication, la méthode ou le déroulé, en quelques phrases vraies.
-5. respiration en grande image · entre deux moments d'information, il se projette.
-6. objection levée · la crainte la plus forte de la recherche, au moment où il hésite, avec les faits de la marque.
-7. voix de la marque · après les faits, l'émotion revient par la personne qui fait.
-8. confiance · sans avis clients, elle vient des garanties, de la transparence et du savoir-faire.
-9. raison de revenir, puis 10. appel final · la page finit par un moyen d'agir, jamais par des produits.
-PAGE QUI VEND (fiche produit ou prestations) : ce qu'on achète et son prix d'abord → ce qui le raconte → ce qui lève les objections → une grande image d'émotion → les garanties → les vraies questions → le reste de l'offre en dernier.
-SITE DE SERVICES : la promesse et le moyen d'agir (appeler, réserver, demander un devis) dès l'ouverture → les prestations et leurs prix → comment ça se passe → des réalisations (seulement si le client en a) → la zone et les horaires → les garanties et assurances réelles → le contact.
-CETTE LOGIQUE NE DONNE AUCUN IDENTIFIANT. Pour CHAQUE moment, compare TOUTES les pièces de la bibliothèque qui peuvent le servir (même rôle, ou autre rôle qui fait le même travail) et prends celle qui sert le mieux CETTE marque (son offre, son émotion, ses photos, sa famille) ; dis dans why pourquoi celle-là plutôt que ses voisines. Deux marques différentes n'ont presque jamais les mêmes pièces : une conception qui reprend les pièces des derniers sites du Studio par habitude est refusée.`;
+Chaque page importante part de SA PARTITION (données dans la demande) : une suite de moments, chacun répondant à une question que le visiteur se pose à ce moment-là. Tu l'adaptes au client dans les limites des dix règles d'or : ce que le dossier ne peut pas remplir se saute, l'angle déplace un moment d'un cran, une pièce propre au produit ou au métier s'ajoute.
+Le visiteur comprend d'abord (ce qui est vendu, pour qui ou où, l'action), il lève ce qui le bloque (le prix et la livraison, ou « tu viens jusque chez moi ? »), il voit l'offre, il a une raison d'y croire (une vraie preuve du dossier, sinon des faits vrais), PUIS seulement vient l'émotion ou la conviction de la marque ; les doutes se lèvent juste avant la fin, et la page finit par l'action.
+CETTE LOGIQUE NE DONNE AUCUN IDENTIFIANT À RECOPIER. Pour CHAQUE moment, compare TOUTES les pièces qui peuvent le tenir (celles données avec le moment, ou une autre pièce de la bibliothèque qui fait le même travail) et prends celle qui sert le mieux CETTE marque (son offre, son émotion, ses photos, sa famille) ; dis dans why pourquoi celle-là plutôt que ses voisines. Deux marques différentes n'ont presque jamais les mêmes pièces : une conception qui reprend les pièces des derniers sites du Studio par habitude est refusée.`;
 
 /**
- * Ordre des pages appris de 65 thèmes Shopify vendus sur ThemeForest (étude du 11 novembre 2026, demandée par le
- * propriétaire : « prends exemple des thèmes Shopify qu'il y a sur ThemeForest », docs/etude-themes-themeforest.md).
- * Ce sont des constats chiffrés, pas des goûts : la consigne dit le pourquoi, le Studio contrôle le reste (designGaps).
+ * L'ordre des pages. Depuis le 16 novembre 2026, les dix règles d'or et les partitions du cahier « ordre et variété »
+ * commandent (boutiques ET services) ; ce qui reste ici vient de l'étude de 65 thèmes Shopify vendus sur ThemeForest
+ * (11 novembre 2026, docs/etude-themes-themeforest.md) et ne contredit pas le cahier. Retiré parce que le cahier dit
+ * autrement : « les preuves après les produits, dans le dernier tiers », « les produits en 2e, 3e ou 4e position »,
+ * les pages courtes (collection 2 à 4, à propos 4 à 6, contact 1 à 3, fiche 7 à 10), « les questions tôt ».
  */
-export const PAGE_PATTERNS = `F. CE QUE FONT LES THÈMES QUI SE VENDENT (65 thèmes Shopify étudiés page par page) : suis cet ordre, adapte-le à la marque, ne le casse que pour une vraie raison écrite dans why.
-ACCUEIL (9 à 12 sections ; en dessous de 8 la page est pauvre, au-dessus de 13 elle se répète) :
- 1. ouverture : TOUJOURS en premier, grande photo (ou diaporama) pleine largeur, un seul bouton qui donne envie.
- 2. orienter tout de suite (2e ou 3e position) : bande de réassurance courte, bandeau défilant, ou familles / gammes.
- 3. les produits arrivent TÔT : la section de cartes de produits en 2e, 3e ou 4e position, jamais plus bas.
- 4. le milieu ALTERNE « information / image » : histoire ou fabrication, puis une grande photo pleine largeur (respiration, scène achetable), puis une explication, jamais deux sections de même rôle ni de même disposition à la suite ; une bande sombre ou sur photo au milieu de la page pour le moment fort (rituel, culture, savoir-faire).
- 5. les preuves (avis, chiffres, presse, engagements, comparatif) viennent APRÈS les produits, dans le dernier tiers ; jamais une preuve avant la section de produits.
- 6. la fin : le journal ou une raison de revenir, puis l'inscription ou les garanties ; la page ne finit JAMAIS sur des produits.
-FICHE PRODUIT (7 à 10 sections) : 1. le bloc d'achat (produit vedette), toujours en premier ; 2. la description racontée en onglets ou accordéon, juste après ; 3. ce qui raconte et rassure le produit (préparation ou mode d'emploi en étapes, ingrédients et origine, points forts, une grande photo d'émotion, avis s'il y en a, questions) ; 4. les autres produits en DERNIER (la seule section de cartes de la page).
-COLLECTION (2 à 4 sections) : la grille avec ses filtres d'abord ; au plus une section courte après ; jamais d'histoire ni de long texte au-dessus de la grille.
-PANIER (1 à 3 sections) : le panier, la barre de livraison offerte ; jamais d'avis, de promotion ni d'histoire.
-À PROPOS (4 à 6) : l'histoire et la personne d'abord, puis image et texte en alternance, les valeurs ou engagements, les chiffres vrais ; CONTACT (1 à 3) : formulaire et coordonnées, une aide courte.
+export const PAGE_PATTERNS = `F. L'ORDRE DES PAGES. Les dix règles d'or valent pour toutes les pages importantes et pour tous les sites, boutiques comme services ; la partition de chaque page (dans la demande) est ton ordre de départ.
+${REGLES_D_OR}
+CE QUE FONT EN PLUS LES THÈMES QUI SE VENDENT (65 thèmes de boutique étudiés page par page), tant que cela ne contredit ni une règle d'or ni la partition :
+ACCUEIL (${MIN_SECTIONS_IMPORTANTE} à 13 sections ; au-dessus de 13 la page se répète) : l'ouverture TOUJOURS en premier, grande photo (ou diaporama) pleine largeur, un seul bouton qui donne envie ; le milieu ALTERNE « information / image », avec une bande sombre ou sur photo pour le moment fort ; la page ne finit JAMAIS sur des produits.
+FICHE PRODUIT (${MIN_SECTIONS_IMPORTANTE} sections au moins) : le bloc d'achat (produit vedette) toujours en premier ; les autres produits en DERNIER (la seule section de cartes de la page).
+BOUTIQUE ET COLLECTIONS : la grille avec ses filtres dans le premier écran ; jamais d'histoire ni de long texte au-dessus de la grille ; la réassurance en bas.
+PAGES UTILITAIRES, courtes (${MAX_SECTIONS_UTILITAIRE} sections au plus) : le panier (le panier, la barre de livraison offerte ; jamais d'avis, de promotion ni d'histoire), la page introuvable, les mentions légales, la recherche, le remerciement.
 RYTHME : fonds clairs pour les produits ; une ou deux bandes de couleur pâle et UNE bande sombre ou sur photo par page ; l'ouverture et les grandes photos en pleine largeur, les produits cadrés.
-CE QUE LES BONS THÈMES NE FONT JAMAIS : un minuteur ou une « offre du jour » sur une marque soignée, une fenêtre d'inscription à l'arrivée, des compteurs de visiteurs, deux fois la même section, deux sections de cartes à la suite, une section « espace » pour aérer.
-MONO-PRODUIT : le produit en ouverture, puis il est expliqué (points forts, détails, vidéo, résultats) avant tout catalogue, les questions tôt.`;
+CE QUE LES BONS THÈMES NE FONT JAMAIS : un minuteur ou une « offre du jour » sur une marque soignée, une fenêtre d'inscription à l'arrivée, des compteurs de visiteurs, deux fois la même section, deux sections de cartes à la suite, une section « espace » pour aérer.`;
 
 /**
  * Sections à tenue (13 novembre 2026, retour du propriétaire : « juste changer les images et les textes ferais déjà des
@@ -125,15 +118,15 @@ A. STRATÉGIE (avant tout choix de section) :
  - visitor : le visiteur réel de CETTE marque : qui il est (la cible de l'angle), ce qu'il a déjà essayé, ce qui le déçoit, ce qu'il ressent en arrivant, ce qui le fera acheter (motivation, émotion de l'angle).
  - objections : TOUTES les objections de la recherche (et celles, évidentes, du métier), chacune avec sa réponse VRAIE (faits de la marque) et la section précise (page, identifiant) où elle trouve sa réponse : comparatif, avant / après, preuve, démonstration, question, garantie.
  - levers : les leviers qui décident CE visiteur (ex. la promesse visible dès l'arrivée, l'émotion du moment de consommation, la transparence de la recette, l'inversion du risque par les retours, la preuve par le savoir-faire quand il n'y a pas d'avis, le prix rapporté à l'usage, le cadeau…).
-B. PARCOURS de chaque page (journey) : la suite des questions et des émotions du visiteur, du premier regard à l'action. Une page de vente alterne : promesse → compréhension → émotion → preuve / objection levée → émotion → décision.
+B. PARCOURS de chaque page (journey) : la suite des questions et des émotions du visiteur, du premier regard à l'action, dans l'ordre de la PARTITION que tu choisis pour la page (champ « partitions » : la page, l'identifiant de la partition, et pourquoi elle va à CE client). Le concret d'abord (ce qui est vendu, ce qui bloque, l'offre, une raison d'y croire), l'émotion et la conviction ensuite, les doutes juste avant la fin, l'action en dernier.
 C. SECTIONS : pour CHAQUE moment du parcours, LA section de la bibliothèque qui y répond le mieux ; why = le moment, la question ou l'objection du visiteur, et pourquoi cette section plutôt qu'une autre ; says = ce qu'elle dira concrètement avec les vrais faits, sans en inventer aucun (le message, les éléments précis : questions, lignes de comparatif, étapes, avant et après, et pour chaque bouton son intention et la page où il mène) ; photos = les scènes à photographier pour cette section (lieu, moment, lumière, ce qu'on voit, le vrai produit quand il apparaît), ou « aucune ». Les photos du site forment une histoire visuelle : les scènes « à montrer » de l'angle, jamais deux fois la même scène, le texte posé sur la partie calme de chaque photo.
 D. RYTHME : chaque section garde son fond d'origine (dans la liste) : choisis des sections dont le fond convient à l'ambiance ; une section à fond « photo » (la photo fait le fond) va avec les deux ambiances. L'AMBIANCE voulue par le client (claire, sombre ou alternée, donnée plus bas) décide des fonds : site clair = surtout des sections à fond clair, une bande sombre ou de couleur pour les moments forts ; site sombre = surtout des sections à fond sombre, une section claire seulement pour respirer ; alterné = les fonds changent d'une section à l'autre. Dans tous les cas, varie les densités (une section dense est suivie d'une section qui respire) et les dispositions, avec un moment fort d'émotion toutes les deux ou trois sections ; sur une longue page, une raison et un moyen d'agir reviennent régulièrement (bouton vers l'achat, barre d'achat collée sur téléphone si la bibliothèque l'a), et la page finit par un appel à agir.
 E. COHÉRENCE DU SITE : l'accueil donne envie et oriente, la fiche produit décide, « à propos » fait confiance à la personne et au savoir-faire, l'aide rassure ; un même fait ou une même scène ne se répète pas d'une page à l'autre, chaque page apporte du neuf.
 ${PAGE_PATTERNS}
 EXIGENCES :
-- Des pages RICHES : une vraie page de vente utilise beaucoup de sections, autant que le parcours en demande, jamais le minimum. L'accueil et la fiche produit sont les plus riches (plancher : accueil ${MIN_SECTIONS.home}, fiche produit ${MIN_SECTIONS.product} ; une bonne fiche produit en a souvent 9 à 12). Les pages pratiques (panier, compte, aide, légal, 404) restent simples et claires.
-- La description racontée vient tout de suite après le bloc d'achat sur la fiche produit, jamais en bas.
-- Jamais une section pour remplir, jamais une section dont CE visiteur n'a pas besoin, jamais une section qui demande un contenu que la marque n'a pas (avis, note, presse, photos de clients, vidéo, offres, abonnement, dates : la liste de ce qu'elle a et n'a pas t'est donnée ; sans avis, la preuve vient du savoir-faire, de la transparence et des garanties). Une section « seulement pour » un genre de produit ne va jamais ailleurs.
+- Des pages RICHES : au moins ${MIN_SECTIONS_IMPORTANTE} sections sur CHAQUE page importante (accueil, fiches produit, pages de prestation, collections, réalisations, à propos, contact, questions), chacune répondant à une vraie question du visiteur. Si le dossier ne permet pas d'en atteindre ${MIN_SECTIONS_IMPORTANTE} sans remplissage, la page en a moins et tu le dis dans corrections : jamais une section de remplissage, jamais un contenu inventé. Les pages utilitaires (panier, page introuvable, mentions légales, recherche, remerciement) restent courtes.
+- La description racontée vient juste après le bloc d'achat sur la fiche produit, sauf si la partition de son style la place ailleurs ; jamais en bas de page.
+- Jamais une section pour remplir, jamais une section dont CE visiteur n'a pas besoin, jamais une section qui demande un contenu que la marque n'a pas (avis, note, presse, chiffres, photos de clients, vidéo, offres, abonnement, dates : la liste de ce qu'elle a et n'a pas, et celle de ses preuves réelles, te sont données ; un moment dont la preuve manque est sauté ; sans avis, la confiance vient du savoir-faire, de la transparence et des garanties, jamais de la marque qui se cite elle-même). Une section « seulement pour » un genre de produit ne va jamais ailleurs.
 - Une seule section de cartes (produits ou familles) par page. « Produit vedette » ouvre la fiche produit (une seule) ou apparaît au plus une fois sur l'accueil ; les offres (lots, quantités, coffret) sont des fonctions de ce bloc, jamais une section à part. Jamais la même section deux fois dans le site (une section = une page). Jamais deux sections de même rôle à la suite. L'accueil s'ouvre par une grande photo avec le titre dessus.
 - Toutes les pages obligatoires, avec leurs clés exactes ; aucune page de paiement que la plateforme tient elle-même.
 - PAGE DE COLLECTION PROPRE À UNE FAMILLE : la page « shop » sert à toutes les familles de produits. Si UNE famille mérite une page bâtie autrement (une autre ouverture, un récit, un guide de choix), ajoute une page de clé « shop-<nom de la famille en minuscules, sans accent, avec des tirets> » : elle deviendra le modèle de cette collection dans la boutique, reliée à elle. Seulement quand la différence sert le visiteur, jamais pour remplir.
@@ -143,13 +136,22 @@ ${TENUE_RULES}
 ${EXAMPLE}
 Réponse : uniquement le JSON demandé.`;
 
-export const DESIGN_REVIEW_SYSTEM = `Tu es le directeur commercial de l'agence, exigeant et sans complaisance. Tu relis la conception d'un site (stratégie, parcours, sections) écrite par le directeur de création, avec les mêmes informations que lui et la même bibliothèque.
-Cherche, page par page : où le visiteur décroche ; chaque objection sans réponse convaincante ; chaque section décorative, faible, mal placée ou sans contenu réel ; la description qui n'arrive pas juste après l'achat ; le rythme cassé (deux fonds sombres ou deux sections denses à la suite, pas d'émotion pendant trop longtemps) ; une page trop courte pour ce qu'elle doit vendre ; l'absence d'appel à agir ; un bouton sans page de destination logique ; un fait annoncé qui n'est pas dans les faits de la marque ; un texte prévu (says) creux, vague ou qui décrit au lieu de faire ressentir.
-Puis rends la conception CORRIGÉE et complète (même format, toutes les pages), en gardant ce qui est bon, et liste dans corrections ce que tu as changé et pourquoi (une ligne par changement).
-Vérifie aussi l'ordre des pages des thèmes qui se vendent (ci-dessous) : produits tôt sur l'accueil, preuves après les produits, fin jamais sur des produits, fiche qui commence par l'achat et finit par les autres produits, collection et panier courts.
+/**
+ * Le JUGE DE L'ORDRE (cahier « ordre et variété », partie 6) : le directeur commercial, renforcé. Il vérifie chaque page
+ * importante contre les dix règles d'or, la partition de la page et le minimum de sections ; il connaît les services
+ * autant que les boutiques. Il relit ET corrige : ce qu'il rend est revérifié par un second regard séparé
+ * (second-regard.ts), car celui qui corrige n'est jamais celui qui valide.
+ */
+export const DESIGN_REVIEW_SYSTEM = `Tu es le directeur commercial de l'agence, exigeant et sans complaisance : tu es LE JUGE DE L'ORDRE. Tu relis la conception d'un site (stratégie, parcours, sections) écrite par le directeur de création, avec les mêmes informations que lui et la même bibliothèque. Tu connais les sites de services (artisans, soins, restaurants, métiers qui se déplacent) autant que les boutiques.
+TON CONTRÔLE, page importante par page importante (accueil, fiches produit, pages de prestation, collections, réalisations, à propos, contact, questions) :
+1. LES DIX RÈGLES D'OR (ci-dessous), une par une. En particulier : le premier écran dit-il ce qui est vendu, pour qui ou où, et l'action (pour un service, la ville et le téléphone) ? La question qui bloque a-t-elle sa réponse au plus tard en 3e position (service qui se déplace : « tu viens jusque chez moi ? » ; boutique : le prix ET la livraison) ? L'offre est-elle au plus tard en 3e ? Une VRAIE preuve du dossier arrive-t-elle avant la 5e section, et jamais la marque qui se cite elle-même à sa place ? Aucune formule, citation ou conviction avant que le visiteur sache ce qu'on vend et pourquoi y croire ? Les doutes juste avant la fin, l'action en dernier ?
+2. LA PARTITION de la page (champ « partitions ») : est-elle une de celles permises pour ce client ? La page la suit-elle, aux adaptations près que les règles d'or permettent ? La raison donnée (« why ») parle-t-elle de CE client (son angle, ses preuves, ses clients) ? Une raison qui irait à n'importe qui est refusée : réécris-la avec les faits du dossier, ou change de partition. La partition du dernier site du même métier est interdite.
+3. LE NOMBRE : au moins ${MIN_SECTIONS_IMPORTANTE} sections sur chaque page importante, chacune répondant à une vraie question du visiteur. Jamais une section de remplissage ; jamais une section qui demande un contenu que le dossier n'a pas (avis, presse, chiffres, photos de clients) : un moment dont la preuve manque est SAUTÉ. Si le dossier ne permet pas ${MIN_SECTIONS_IMPORTANTE} sections vraies, la page en a moins et tu le dis dans corrections. Les pages utilitaires restent courtes.
+Cherche aussi, page par page : où le visiteur décroche ; chaque objection sans réponse convaincante ; chaque section décorative, faible, mal placée ou sans contenu réel ; le rythme cassé (deux dispositions pareilles, deux fonds sombres ou deux sections denses à la suite) ; l'absence d'appel à agir ; un bouton sans page de destination logique ; un fait annoncé qui n'est pas dans les faits de la marque ; un texte prévu (says) creux, vague ou qui décrit au lieu de faire ressentir.
+Puis rends la conception CORRIGÉE et complète (même format, toutes les pages, le champ « partitions » compris), en gardant ce qui est bon, et liste dans corrections ce que tu as changé et pourquoi (une ligne par changement, avec la règle en cause).
 ${PAGE_PATTERNS}
-FAMILLE : vérifie que la famille choisie (champ « famille ») est bien celle que dit la PLANCHE DE MARQUE (couleurs, polices, direction artistique, voix), pas seulement le métier ; si une autre famille lui va mieux, change-la, dis pourquoi dans corrections, et remets l'allure, l'en-tête, le pied de page, l'ouverture et les photos dans les choix de la nouvelle famille. Garde les champs « famille », « familleWhy », « pageStyle », « pageStyleWhy », « headerConstruction » et « footerConstruction ». Vérifie de même que le style de la page qui vend (« pageStyle ») est celui que demande ce que le client vend vraiment.
-Mêmes exigences que le concepteur (pages riches, aucune section sans contenu réel, une section de cartes par page, « Produit vedette » en haut de la fiche, jamais la même section deux fois, jamais deux sections de même rôle à la suite, pages obligatoires, identifiants de la liste uniquement).
+FAMILLE : vérifie que la famille choisie (champ « famille ») est bien celle que dit la PLANCHE DE MARQUE (couleurs, polices, direction artistique, voix), pas seulement le métier ; si une autre famille lui va mieux, change-la, dis pourquoi dans corrections, et remets l'allure, l'en-tête, le pied de page, l'ouverture et les photos dans les choix de la nouvelle famille. Garde les champs « famille », « familleWhy », « pageStyle », « pageStyleWhy », « headerConstruction », « footerConstruction » et « partitions ». Vérifie de même que le style de la page qui vend (« pageStyle ») est celui que demande ce que le client vend vraiment.
+Mêmes exigences que le concepteur (pages riches, aucune section sans contenu réel, une section de cartes par page, « Produit vedette » en haut de la fiche, jamais la même section deux fois sur une page, pages obligatoires, identifiants de la liste uniquement).
 Réponse : uniquement le JSON demandé.`;
 
 /** Catalogue de la famille donné au concepteur : identifiant, rôle, caractéristiques, titre, ce qu'elle fait. */
@@ -198,7 +200,7 @@ export function varietyGaps(d: Pick<Design, "pages">, recent: string[][]): strin
 export type Ambiance = "clair" | "sombre" | "alterne";
 export const AMBIANCE_LABEL: Record<Ambiance, string> = { clair: "site clair (fonds clairs, quelques bandes sombres ou de couleur pour les moments forts)", sombre: "site sombre (fonds sombres, quelques sections claires pour respirer)", alterne: "fonds qui alternent d'une section à l'autre" };
 
-export function designPrompt(o: { brief: string; family: FamilyId; site: SiteKind; has: string[]; lacks: string[]; consigne?: string | null; ambiance?: Ambiance | null; products?: string[]; seed?: string; overused?: string[]; /** Dossier de la documentaliste (references.ts), vide si rien à donner. */ references?: string }): string {
+export function designPrompt(o: { brief: string; family: FamilyId; site: SiteKind; has: string[]; lacks: string[]; consigne?: string | null; ambiance?: Ambiance | null; products?: string[]; seed?: string; overused?: string[]; /** Dossier de la documentaliste (references.ts), vide si rien à donner. */ references?: string; /** Les preuves réelles du dossier (preuves.ts) et les partitions permises pour ce client (partitions.ts), déjà mises en texte. */ preuves?: string; partitions?: string }): string {
   const req = requiredPages(o.site).map((r) => `${r.keys[0]} (${r.label})`).join(", ");
   const owned = platformOwnedPages(o.site).map((r) => r.label).join(", ");
   return [
@@ -209,12 +211,15 @@ export function designPrompt(o: { brief: string; family: FamilyId; site: SiteKin
     o.products?.length ? `FICHES PRODUITS (vraies) :\n${o.products.join("\n")}` : "",
     `Ce que la marque a réellement : ${o.has.length ? o.has.join(" ; ") : "rien de plus que les faits ci-dessus"}.`,
     `Ce qu'elle n'a PAS (aucune section qui en dépend) : ${o.lacks.join(" ; ")}.`,
+    o.preuves ?? "",
     `Pages obligatoires (clés) : ${req}.${owned ? ` Jamais de page : ${owned} (la plateforme les tient).` : ""}`,
     "",
     o.references ?? "",
     famillesBrief(),
     "",
     stylesBrief(o.site.business === "services" ? "services" : "products"),
+    "",
+    o.partitions ?? "",
     "",
     o.overused?.length ? `SECTIONS DÉJÀ PRISES DANS LES DERNIERS THÈMES DU STUDIO (pour d'autres marques) : ${o.overused.join(", ")}. Ne les reprends pas par habitude : seulement si, pour CE moment de CETTE marque, aucune autre section ne fait mieux (dis-le dans why).` : "",
     `BIBLIOTHÈQUE DE LA FAMILLE (dans un ordre propre à ce projet : l'ordre ne dit rien de la qualité ; identifiant · rôle · fond · densité · photos · titre : ce qu'elle fait) :`,
@@ -244,9 +249,13 @@ export function designGaps(d: Design, researchObjections: string[]): { blocking:
 }
 
 /**
- * Ordre des pages des thèmes qui se vendent (étude de 65 thèmes ThemeForest, 11 novembre 2026), contrôlé sans IA : ce
- * qui est refusé revient une fois au concepteur avec la raison. Seules les pages présentes sont contrôlées (un concept
- * n'a que l'accueil et la fiche).
+ * Ordre des pages des boutiques, contrôlé sans IA : ce qui reste de l'étude de 65 thèmes ThemeForest (11 novembre 2026)
+ * une fois aligné sur le cahier « ordre et variété » (16 novembre 2026). Les règles d'or elles-mêmes (offre et question
+ * qui bloque en 3e, preuve avant la 5e, concret avant l'abstrait, dispositions, doutes, action, dix sections) sont dans
+ * ordre.ts, pour les boutiques comme pour les services. Retiré d'ici parce que le cahier dit autrement : « deux sections
+ * de la même famille à la suite » (remplacé par les dispositions : les prestations, la zone et le déroulé d'un service
+ * sont de la même famille et se suivent), « une preuve jamais avant les produits », « les produits en 4e position »,
+ * « une collection reste courte ». Seules les pages présentes sont contrôlées.
  */
 export function pageOrderGaps(d: Pick<Design, "pages">): string[] {
   const out: string[] = [];
@@ -254,26 +263,17 @@ export function pageOrderGaps(d: Pick<Design, "pages">): string[] {
   const cards = (id: string) => { const l = libSection(id); return !!l && isCardSection(l) && sectionGroup(l) === "produits"; };
   for (const pg of d.pages) {
     const ids = pg.sections.map((x) => x.section), n = ids.length, name = `« ${pg.label} »`;
-    const practical = /^(aide|compte|legal|contact|404|cart)$/.test(pg.key);
-    for (let i = 1; i < n; i++) if (!practical && grp(ids[i]) && grp(ids[i]) === grp(ids[i - 1])) out.push(`${name} : deux sections de la même famille à la suite (${ids[i - 1]}, ${ids[i]}) ; les thèmes qui se vendent alternent information et image`);
     if (pg.key === "home") {
       if (n && grp(ids[0]) !== "ouverture") out.push(`${name} : la page s'ouvre par une ouverture en grande photo (ici ${ids[0]})`);
-      const p0 = ids.findIndex(cards);
-      if (p0 < 0 && d.pages.some((x) => /^product/.test(x.key))) out.push(`${name} : l'accueil ne montre aucun produit ; dans les thèmes qui se vendent, une section de produits arrive en 2e, 3e ou 4e position`);
-      if (p0 > 3) out.push(`${name} : les produits arrivent trop tard (${p0 + 1}e section) ; dans les thèmes qui se vendent, ils sont en 2e, 3e ou 4e position`);
-      const proof = ids.findIndex((x) => grp(x) === "preuves");
-      if (proof >= 0 && p0 >= 0 && proof < p0) out.push(`${name} : une preuve (${ids[proof]}) passe avant les produits ; les preuves viennent après, dans le dernier tiers`);
-      if (n && cards(ids[n - 1])) out.push(`${name} : la page finit sur des produits ; elle finit par le journal, l'inscription ou les garanties`);
-      if (n > 13) out.push(`${name} : ${n} sections, la page se répète (9 à 12 dans les thèmes qui se vendent)`);
+      if (n && cards(ids[n - 1])) out.push(`${name} : la page finit sur des produits ; elle finit par l'action (l'appel final, l'inscription)`);
+      if (n > 13) out.push(`${name} : ${n} sections, la page se répète (${MIN_SECTIONS_IMPORTANTE} à 13)`);
     }
     if (/^product/.test(pg.key)) {
       if (n && libSection(ids[0])?.role !== FEATURED_ROLE) out.push(`${name} : la fiche commence par le bloc d'achat (une section « produit vedette »), ici ${ids[0]}`);
       const c = ids.findIndex(cards);
       if (c >= 0 && c < n - 1 && ids.slice(c + 1).some((x) => !["inscription", "questions"].includes(grp(x) ?? ""))) out.push(`${name} : les autres produits (${ids[c]}) viennent en dernier sur la fiche`);
     }
-    if (pg.key === "shop" && n > 4) out.push(`${name} : ${n} sections ; une collection reste courte (la grille et ses filtres, au plus une section après)`);
-    if (pg.key === "shop" && n && grp(ids[0]) !== "categorie" && !cards(ids[0])) out.push(`${name} : la grille avec ses filtres vient d'abord (ici ${ids[0]}) ; jamais d'histoire au-dessus de la grille`);
-    if (pg.key === "cart" && n > 3) out.push(`${name} : ${n} sections ; le panier reste court (le panier, la livraison offerte)`);
+    if (/^shop/.test(pg.key) && n && grp(ids[0]) !== "categorie" && !cards(ids[0])) out.push(`${name} : les produits sont dans le premier écran (ici ${ids[0]}) ; jamais d'histoire au-dessus de la grille`);
   }
   return out;
 }

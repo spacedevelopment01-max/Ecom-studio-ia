@@ -4,8 +4,11 @@
  * modèle ni un catalogue ; un seul accord pour toute l'étape (décision du lot 2).
  *
  * Un outil (site.create), une carte d'accord, une tâche de fond reprenable (« syna.site ») :
- *  1) la conception de tout le site (stratégie, parcours de chaque page, pièces du thème unique, tenue de la marque),
- *     relue par un directeur commercial et par un juge de l'originalité, séparés du concepteur ;
+ *  1) la conception de tout le site (stratégie, parcours et partition de chaque page, pièces du thème unique, tenue de
+ *     la marque), relue et corrigée par le juge de l'ordre (le directeur commercial), revérifiée par un second regard
+ *     qui ne corrige pas, et jugée pour son originalité : trois regards séparés du concepteur. Une page qui enfreint
+ *     une règle est reprise ICI, avant le montage : aucun texte n'est écrit, aucune image n'est créée avant la fin de
+ *     cette étape (les étapes 2 et 3 ne commencent qu'une fois « site:design » rendue) ;
  *  2) une fiche par produit et le menu, calculés depuis le catalogue (sans IA) ;
  *  3) le montage à la marque : plan des textes, textes, relecture, photos (les siennes d'abord, puis celles créées par
  *     OpenAI, chacune relue), regards en image sur téléphone ;
@@ -26,17 +29,15 @@ import { journeyOf, setStep, updateJourney } from "../journey";
 import type { AgentTool, CostEstimate, ToolContext } from "../types";
 import { project } from "../tools/common";
 import { clientImages, COPY_REVIEW_CAP_MICRO, MAX_COPY_FIXES, MAX_PHOTO_FIXES, PHOTO_REVIEW_CAP_MICRO, runCustomBrandJob, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, type CustomBrandPayload } from "./brand";
-import { DESIGN_CALLS_MAX, DESIGN_CAP_MICRO, DESIGN_TYPICAL_MICRO } from "./design";
 import { galleryCheckMaxMicro } from "./gallery";
 import { installCustomTheme } from "./install";
 import { LOOK_CAP_MICRO, LOOK_PAGES_MAX, LOOK_TYPICAL_MICRO } from "./looks";
 import { proposeMenu, validMenu } from "./menu";
-import { ORIGINALITY_CALLS_MAX, ORIGINALITY_CAP_MICRO, ORIGINALITY_TYPICAL_MICRO } from "./originality";
 import { menuProducts } from "./render";
 import { isTenueSection } from "./tenue";
 import { libSection } from "./library";
 import { allSections, applyStructure, checkCustomTheme, loadCustomTheme, MAX_PRODUCT_PAGES, saveCustomTheme, type CustomTheme } from "./theme";
-import { buildKnowledge, buildTool, COPY_FIXES_TYPICAL, COPY_REVIEW_TYPICAL_MICRO, customPhotoDeps, designKnowledge, keepWork, PHOTO_FIX_TYPICAL_MICRO, PHOTO_REVIEW_TYPICAL_MICRO, photoUnit, runDesign, SECTION_TEXT_TYPICAL_MICRO, SITE_PLAN_TYPICAL_MICRO, siteKind, type BuildArgs, type DesignRun } from "./tools";
+import { buildKnowledge, buildTool, COPY_FIXES_TYPICAL, COPY_REVIEW_TYPICAL_MICRO, customPhotoDeps, designCost, keepWork, PHOTO_FIX_TYPICAL_MICRO, PHOTO_REVIEW_TYPICAL_MICRO, photoUnit, runDesign, SECTION_TEXT_TYPICAL_MICRO, SITE_PLAN_TYPICAL_MICRO, siteKind, type BuildArgs, type DesignRun } from "./tools";
 
 export const SINA_SITE_JOB = "syna.site";
 export type SitePayload = { projectId: string; userId: string; conversationId: string; runId: string; capMicro: number; consigne?: string | null };
@@ -58,7 +59,9 @@ export function siteQuote(o: { business: "products" | "services"; products: numb
   const unit = (customPhotoDeps.unit ?? photoUnit)();
   if (unit == null) throw new Error(L("Aucun modèle d'images utilisable pour les photos du site.", "No usable image model."));
   const check = galleryCheckMaxMicro();
-  const design = { max: DESIGN_CAP_MICRO * DESIGN_CALLS_MAX + ORIGINALITY_CAP_MICRO * ORIGINALITY_CALLS_MAX + designKnowledge(true).max, usual: DESIGN_TYPICAL_MICRO + ORIGINALITY_TYPICAL_MICRO + designKnowledge(true).usual };
+  // La conception : le concepteur, le juge de l'ordre, au plus une reprise, le second regard (deux avis au plus) et le
+  // juge de l'originalité (deux avis au plus), avec la lecture de leurs cahiers.
+  const design = designCost(true);
   const fixes = Math.min(MAX_COPY_FIXES, g.sections), artFixes = Math.min(MAX_PHOTO_FIXES, g.photos);
   const books = buildKnowledge({ sections: g.sections, fixes, fixesUsual: COPY_FIXES_TYPICAL, review: true, briefCalls: 0, artReview: true, artFixes });
   const booksUsual = buildKnowledge({ sections: g.sectionsUsual, fixes: COPY_FIXES_TYPICAL, fixesUsual: COPY_FIXES_TYPICAL, review: true, briefCalls: 0, artReview: true, artFixes: 1 });

@@ -36,19 +36,25 @@ import { listProducts } from "../../products/catalog";
 import { activityPlan, companyOf } from "../activity";
 import { brandBrief, siteCopyModel } from "./brand";
 import { type Ambiance, DESIGN_CALLS_MAX, DESIGN_CAP_MICRO, DESIGN_OUTPUT_TOKENS, DESIGN_REVIEW_SYSTEM, DESIGN_SYSTEM, DESIGN_TYPICAL_MICRO, DesignSchema, designGaps, designPrompt, intentText, varietyGaps, type Design } from "./design";
-import { referencesBrief } from "./references";
+import { referencesBrief, sectorOf } from "./references";
+import { ordreGaps, partitionChoisie, varieteGaps, type OrdreFacts, type SiteMonte } from "./ordre";
+import { MIN_SECTIONS_IMPORTANTE, pageKind, partitionsBrief, partitionsPermises, typesAccueilPermis, type AngleRole, type PageKind } from "./partitions";
+import { preuvesBrief, preuvesDe, type Preuves } from "./preuves";
+import { SECOND_REGARD_CALLS_MAX, SECOND_REGARD_CAP_MICRO, SECOND_REGARD_SYSTEM, SECOND_REGARD_TYPICAL_MICRO, SecondRegardSchema, secondRegardPrompt, secondRegardRefus, type RegardPage, type SecondRegard } from "./second-regard";
+import { clientNotes } from "./site-facts";
+import { roleOf } from "../angle-roles";
 import { built, cardOf, cardOfTheme, conceptGaps, registryGaps, type ThemeCard } from "./identity-card";
 import { educated, knowledgeCapMicro, knowledgeTypicalMicro, themeKnowledgeReady } from "./knowledge";
 import { proposeMenu, validMenu } from "./menu";
-import { familleGaps, fitFamille } from "./familles";
+import { choixDeLaFamille, familleGaps, fitFamille } from "./familles";
 import { fitStyle, styleGaps } from "./styles-de-page";
-import { dataGaps, tenueMetiers } from "./tenue-data";
+import { dataGaps, tenueMetiers, tenueVitrine } from "./tenue-data";
 import { achatFacts } from "./buy-block";
 import { installCustomTheme } from "./install";
 import { menuProducts } from "./render";
 import { ORIGINALITY_CALLS_MAX, ORIGINALITY_CAP_MICRO, ORIGINALITY_SYSTEM, ORIGINALITY_TYPICAL_MICRO, OriginalitySchema, originalityNote, originalityPrompt, type Originality, type OriginalityOutcome } from "./originality";
 import { LOOK_CAP_MICRO, LOOK_PAGES_MAX, LOOK_TYPICAL_MICRO } from "./looks";
-import { TenueSchema, constructionsOf, isTenueSection, sansArche } from "./tenue";
+import { TenueSchema, constructionsOf, isTenueSection, sansArche, validConstruction } from "./tenue";
 import { llmJson } from "../../ai/llm";
 import { withTrace } from "../../ai/trace";
 import { jobSpentMicro } from "../budget";
@@ -209,7 +215,35 @@ const composeTool: AgentTool<{ header: string; footer: string; search?: string |
 
 /** Remplaçable par les tests (aucun appel réel). */
 /** Remplaçables par les tests (aucun appel réel). Concepteur simulé sans juge simulé : le juge de l'originalité ne passe pas. */
-export const customDesignDeps: { call?: (system: string, prompt: string, usageKey: string) => Promise<Design>; judge?: (prompt: string, usageKey: string) => Promise<unknown> } = {};
+/** Concepteur simulé sans second regard simulé : le second regard ne passe pas non plus. */
+export const customDesignDeps: { call?: (system: string, prompt: string, usageKey: string) => Promise<Design>; judge?: (prompt: string, usageKey: string) => Promise<unknown>; second?: (prompt: string, usageKey: string) => Promise<unknown> } = {};
+
+/**
+ * Les preuves RÉELLES du dossier (preuves.ts) : ce que le client a dit à SINA (ses notes), les faits confirmés de la
+ * carte « Ton activité », et ce que le Studio constate lui-même (une vraie source d'avis). Sans IA.
+ */
+export function dossierPreuves(ctx: ToolContext): Preuves {
+  const p = project(ctx);
+  const lines: { title?: string; value: string }[] = [];
+  try { lines.push(...clientNotes(p.id)); } catch { /* mémoire absente */ }
+  try { const j = journeyOf(ctx.conversationId); lines.push(...activityPlan(p.id, j).offer.facts.map((value) => ({ value }))); } catch { /* fil ou activité absents */ }
+  const extra: Parameters<typeof preuvesDe>[1] = {};
+  try { const n = tenueVitrine(p.id).avis?.liste.length ?? 0; if (n) extra.avis = `${n} avis d'une vraie source`; } catch { /* aucune source d'avis */ }
+  return preuvesDe(lines, extra);
+}
+/** Ce que le Studio sait du site pour l'ordre et la variété : son métier, ses types d'accueil permis, s'il se déplace. */
+export function ordreContext(ctx: ToolContext, site: SiteKind, families = 0): { metier: string; types: string[]; mobile: boolean; zoneConnue: boolean; angle: AngleRole | null } {
+  const p = project(ctx);
+  const sector = (() => { try { return sectorOf(offerWords(ctx), site.business); } catch { return null; } })();
+  const co = (() => { try { return companyOf(p.id); } catch { return {} as ReturnType<typeof companyOf>; } })();
+  const area = (p.services?.area ?? "").trim(), address = (p.services?.address || co.address || "").trim(), hours = (p.services?.hours ?? "").trim();
+  const shown = !!address && co.addressDiscreet !== true;
+  const mobile = site.business === "services" && !!area && !shown;
+  const plats = (() => { try { return (tenueMetiers(p.id).carte ?? []).reduce((n, r) => n + r.items.length, 0); } catch { return 0; } })();
+  const types = typesAccueilPermis({ business: site.business, products: site.products, families, secteur: sector?.key ?? null, mobile, lieu: plats > 0 || (shown && !!hours) });
+  const angle = (() => { try { const j = journeyOf(ctx.conversationId); const id = j.angleChoice?.ids?.[0] ?? j.angleChoice?.id; return id && j.angles ? roleOf(j.angles, id) : null; } catch { return null; } })();
+  return { metier: sector?.key ?? types[0], types, mobile, zoneConnue: !!area, angle: (angle as AngleRole | null) ?? null };
+}
 
 /** Ce que la marque a réellement, et ce qu'elle n'a pas (aucune section qui en dépend). */
 function brandAssets(projectId: string): { has: string[]; lacks: string[] } {
@@ -263,9 +297,21 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
   // La documentaliste (sans IA) : références proches et lointaines, constats du secteur, sections propres au secteur.
   const refs = (() => { try { return referencesBrief({ offer: offerWords(ctx), business: site.business, seed }); } catch { return { sector: null, near: 0, far: 0, text: "" }; } })();
   // Cartes d'identité des thèmes déjà montés pour d'autres marques : aucun client ne reçoit le site d'un autre.
-  const registry = recentThemeCards(p.id);
+  const sites = recentSites(p.id), registry = sites.map((x) => x.card);
   const brief = brandBrief(p, j);
-  const prompt = designPrompt({ brief, family: f.family, site, has: assets.has, lacks: assets.lacks, consigne: a.consigne, ambiance, products, seed, overused, references: refs.text }) + modeText;
+  // L'ordre et la variété (cahier du 16 novembre 2026) : le métier, les types d'accueil permis, les preuves réelles du
+  // dossier, et les partitions prises par les derniers sites du même métier (à ne pas reprendre).
+  const families = (() => { try { return new Set(listProducts(p.id).flatMap((x) => x.data.categories.map((c) => c.trim()).filter(Boolean))).size; } catch { return 0; } })();
+  const oc = ordreContext(ctx, site, families), preuves = dossierPreuves(ctx);
+  const facts: OrdreFacts = { business: site.business, products: site.products, types: oc.types, mobile: oc.mobile, zoneConnue: oc.zoneConnue, preuves: preuves.ids };
+  const kindOfKey = (key: string) => { const k = pageKind(key, site.business); return k && k !== "utilitaire" ? k : null; };
+  const memes = sites.filter((x) => x.site.metier === oc.metier);
+  const prises: Partial<Record<PageKind, string[]>> = {};
+  for (const x of memes) for (const [key, id] of Object.entries(x.site.partitions)) { const k = kindOfKey(key); if (k) (prises[k] ??= []).push(id); }
+  const sellKind: PageKind = site.business === "services" ? "prestation" : "fiche";
+  const preuvesText = preuvesBrief(preuves);
+  const partitionsText = partitionsBrief({ business: site.business, types: oc.types, dossier: { preuves: preuves.ids, products: site.products }, angle: oc.angle, prises, ...(mode.kind === "concept" ? { kinds: ["accueil", sellKind] as PageKind[] } : {}) });
+  const prompt = designPrompt({ brief, family: f.family, site, has: assets.has, lacks: assets.lacks, consigne: a.consigne, ambiance, products, seed, overused, references: refs.text, preuves: preuvesText, partitions: partitionsText }) + modeText;
   const jobId = a.jobId ?? getRun(ctx.runId)?.job_id ?? null;
   const tag = mode.kind === "concept" ? `custom-concept-${mode.label}` : mode.kind === "complete" ? "custom-design-complete" : "custom-design";
   // Chaque spécialiste lit ses cahiers de métier (knowledge.ts) : le concepteur ceux des pages, des ouvertures et de la
@@ -275,8 +321,11 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
         llmJson({ task: "strategy", userId: ctx.user.id, projectId: p.id, jobId, system, promptKey: role === DESIGN_SYSTEM ? "syna-custom-design-3" : "syna-custom-design-review-2", prompt: text, maxTokens: DESIGN_OUTPUT_TOKENS, maxOutputTokens: DESIGN_OUTPUT_TOKENS * 1.5, usageKey: key, routing: { difficulty: "complex", prefer: siteCopyModel() } }, DesignSchema, { strict: true }))); };
   // Concept choisi : ses pages et sa coque restent celles que le client a vues, quoi que rende le concepteur.
   const pin = (d: Design): Design => mode.kind !== "complete" ? d : { ...d, concept: mode.fixed.concept, header: mode.fixed.header, headerConstruction: mode.fixed.headerConstruction, tenue: mode.fixed.tenue, footer: mode.fixed.footer, search: mode.fixed.search,
-    pages: [...mode.fixed.pages.filter((pg) => keys.includes(pg.key)), ...d.pages.filter((pg) => !keys.includes(pg.key))] };
-  const only = (d: Design): Design => mode.kind !== "concept" ? d : { ...d, pages: d.pages.filter((pg) => keys.includes(pg.key)), objections: d.objections.filter((o) => keys.includes(o.page)) };
+    pages: [...mode.fixed.pages.filter((pg) => keys.includes(pg.key)), ...d.pages.filter((pg) => !keys.includes(pg.key))],
+    partitions: [...(mode.fixed.partitions ?? []).filter((x) => keys.includes(x.page)), ...(d.partitions ?? []).filter((x) => !keys.includes(x.page))] };
+  const only = (d: Design): Design => mode.kind !== "concept" ? d : { ...d, pages: d.pages.filter((pg) => keys.includes(pg.key)), objections: d.objections.filter((o) => keys.includes(o.page)), partitions: (d.partitions ?? []).filter((x) => keys.includes(x.page)) };
+  /** La partition de chaque page importante, telle que le contrôle la reconnaît (clé de page → identifiant). */
+  const chosen = (d: Design): Record<string, string> => Object.fromEntries(d.pages.flatMap((pg) => { const k = kindOfKey(pg.key); const id = k ? partitionChoisie(d, pg, k, facts).partition?.id : null; return id ? [[pg.key, id] as const] : []; }));
   const build = (d: Design): CustomTheme => {
     let t: CustomTheme = { version: 1, family: f.family, style: f.style, header: null, footer: null, search: null, pages: [], rev: 0, at: Date.now(), concept: d.concept };
     t = applyStructure(t, d.pages.flatMap((pg) => [{ op: "page", key: pg.key, label: pg.label } as StructureOp, ...pg.sections.map((s) => ({ op: "add", page: pg.key, section: ref(s.section), ...(s.construction ? { construction: s.construction } : {}) }) as StructureOp)]));
@@ -286,6 +335,8 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     for (const pg of d.pages) if (isArrivee(pg.key)) t = applyStructure(t, [{ op: "page_shell", page: pg.key, slot: "header", section: ref("tn-entete-arrivee") }, { op: "page_shell", page: pg.key, slot: "footer", section: ref("tn-pied-arrivee") }]);
     if (d.famille) { t.famille = d.famille; t.familleWhy = d.familleWhy ?? null; }
     if (d.pageStyle) t.pageStyle = d.pageStyle;
+    // Gardés avec le site pour les suivants : son métier et la partition de chaque page importante (jamais la même deux fois de suite).
+    t.metier = oc.metier; t.partitions = chosen(d);
     // La tenue de la marque (sections à tenue) : choisie par le concepteur, gardée dans le thème.
     if (d.tenue) t = applyStructure(t, [{ op: "tenue", tenue: { ...d.tenue, cadre: sansArche(d.tenue.cadre) } }]); // jamais de photo dans une arche (goût du propriétaire)
     if (d.search) t = applyStructure(t, [{ op: "shell", slot: "search", section: ref(d.search) }]);
@@ -306,7 +357,18 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     g.pages.push(...dataGaps(d.pages.flatMap((pg) => pg.sections.map((s) => ref(s.section))), catalogueFacts));
     // Comparaison contre les doublons (sans IA) : avec les thèmes des autres marques, et entre les deux concepts.
     const card = designCard(d);
-    if (mode.kind !== "complete") g.pages.push(...registryGaps(card, registry));
+    if (mode.kind !== "complete") g.pages.push(...registryGaps(card, registry, (i) => sites[i]?.site.metier === oc.metier));
+    // L'ordre (les dix règles d'or, la partition de chaque page, dix sections) et la variété entre sites du même métier.
+    const og = ordreGaps(d, facts);
+    g.pages.push(...og.refus);
+    if (mode.kind !== "complete") {
+      const opening = d.pages.find((pg) => pg.key === "home")?.sections[0];
+      const wide = (list: string[]) => list.flatMap((r) => (r.includes(":") || !constructionsOf(r).length ? [r] : constructionsOf(r).map((c) => `${r}:${c.key}`)));
+      const choix = choixDeLaFamille(d.famille, { business: site.business, families: catalogueFacts.families });
+      g.pages.push(...varieteGaps({ famille: d.famille, partitions: chosen(d), header: built(d.header, validConstruction(d.header, d.headerConstruction)), footer: built(d.footer, validConstruction(d.footer, d.footerConstruction)), opening: opening ? built(opening.section, validConstruction(opening.section, opening.construction)) : "",
+        pages: Object.fromEntries(d.pages.filter((pg) => kindOfKey(pg.key)).map((pg) => [pg.key, pg.sections.map((x) => built(x.section, validConstruction(x.section, x.construction)))])) },
+        sites.map((x) => x.site), oc.metier, { kinds: Object.fromEntries(d.pages.map((pg) => [pg.key, kindOfKey(pg.key)])), plusieurs: (k) => partitionsPermises(k, { types: oc.types, pageStyle: d.pageStyle, business: site.business }).length > 1, ...(choix ? { choix: { entete: wide(choix.entete), pied: wide(choix.pied), ouvertures: wide(choix.ouvertures) } } : {}) }));
+    }
     if (mode.kind === "concept" && mode.other) g.pages.push(...conceptGaps(designCard(mode.other), card));
     // Lot 4 : la conception reste dans les choix de la famille du Studio qu'elle annonce (contrôle sans IA) ; et le site
     // n'est fait que des pièces du thème unique.
@@ -315,7 +377,7 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     const foreign = [d.header, d.footer, ...d.pages.flatMap((pg) => pg.sections.map((x) => x.section))].filter((id) => { const l = sectionByRef(id); return !!l && !isTenueSection(l); });
     if (foreign.length) g.pages.push(`pièces hors du thème du Studio, à remplacer par une pièce de la bibliothèque donnée : ${[...new Set(foreign)].join(", ")}`);
     const objections = mode.kind === "concept" ? g.blocking.filter((x) => keys.some((k) => x.includes(`page « ${k} »`))) : g.blocking;
-    return { t, rules, objections, rhythm: g.rhythm, pages: g.pages };
+    return { t, rules, objections, rhythm: g.rhythm, pages: g.pages, notes: og.notes };
   };
   const base = `syna:${ctx.runId}:${tag}`;
   // Le juge ne passe pas sur la suite d'un concept déjà choisi : ses deux pages ont été jugées avant d'être montrées.
@@ -323,10 +385,22 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     : (text: string, key: string) => withTrace({ jobId, projectId: p.id, step: `${tag}-judge`, costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + ORIGINALITY_CAP_MICRO + knowledgeCapMicro("juge", "quality_control", 1) }, () =>
         llmJson({ task: "quality_control", userId: ctx.user.id, projectId: p.id, jobId, system: educated(ORIGINALITY_SYSTEM, "juge"), promptKey: "syna-custom-originality-2", prompt: text, maxTokens: 2500, maxOutputTokens: 5000, usageKey: key, routing: { difficulty: "complex" } }, OriginalitySchema)));
   const judge = judgeRaw ? async (x: Design, key: string): Promise<Originality> => OriginalitySchema.parse(await judgeRaw(originalityPrompt({ brief, design: x, references: refs.text, first: mode.kind === "concept" ? mode.other ?? null : null }), key)) : null;
+  // Le second regard (séparé du concepteur ET du juge de l'ordre) : il ne corrige rien, il dit page par page « conforme »
+  // ou « non conforme ». Celui qui corrige n'est jamais celui qui valide.
+  const regardRaw = customDesignDeps.second ?? (customDesignDeps.call ? null
+    : (text: string, key: string) => withTrace({ jobId, projectId: p.id, step: `${tag}-second`, costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + SECOND_REGARD_CAP_MICRO + knowledgeCapMicro("secondRegard", "quality_control", 1) }, () =>
+        llmJson({ task: "quality_control", userId: ctx.user.id, projectId: p.id, jobId, system: educated(SECOND_REGARD_SYSTEM, "secondRegard"), promptKey: "syna-custom-second-regard-1", prompt: text, maxTokens: 3000, maxOutputTokens: 6000, usageKey: key, routing: { difficulty: "complex" } }, SecondRegardSchema)));
+  const regard = regardRaw ? async (x: Design, key: string): Promise<SecondRegard> => {
+    const pages: RegardPage[] = x.pages.flatMap((pg) => { const k = kindOfKey(pg.key); if (!k) return []; const r = partitionChoisie(x, pg, k, facts); return [{ key: pg.key, partition: r.partition, why: r.why }]; });
+    return SecondRegardSchema.parse(await regardRaw(secondRegardPrompt({ brief, preuves: preuvesText, business: site.business, angle: oc.angle, design: x, pages }), key));
+  } : null;
   let originality: OriginalityOutcome | null = null;
   let d: Design, c: ReturnType<typeof check>, calls = 0;
+  /** Ce que le second regard laisse au compte rendu : ses refus encore là après la reprise, ou le fait qu'il n'a pas pu relire. */
+  let secondLeft: string[] = [];
   try {
-    // 1) conception (stratégie, parcours, sections), 2) relecture du directeur commercial qui rend la version corrigée.
+    // 1) conception (stratégie, parcours, partitions, sections), 2) relecture du juge de l'ordre (le directeur commercial),
+    //    qui rend la version corrigée.
     d = only(pin(await call(prompt, base))); calls++;
     d = only(pin(await call(`${prompt}\n\nCONCEPTION À RELIRE (JSON) :\n${JSON.stringify(d)}`, `${base}-review`, DESIGN_REVIEW_SYSTEM))); calls++;
     c = check(d);
@@ -338,15 +412,27 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
         if (v.verdict === "reprendre" && v.fixes.length) refused = v; else originality = { status: "garde", why: v.why };
       } catch (e) { originality = { status: "non_juge", why: (e as Error).message.slice(0, 160) }; }
     }
-    // 4) une seule correction si le contrôle du Studio ou le juge refuse quelque chose (règles, objection, rythme, doublon, originalité).
-    const todo = [...c.rules, ...c.objections, ...c.rhythm, ...c.pages, ...(refused ? refused.fixes.map((x) => `juge de l'originalité : ${x}`) : [])];
+    // 3 bis) le second regard relit ce que le juge de l'ordre a rendu ; « non conforme » rejoint la seule reprise.
+    let second: string[] = [];
+    if (regard) {
+      try { second = secondRegardRefus(await regard(d, `${base}-second`)); }
+      catch (e) { secondLeft = [`second regard sur l'ordre des pages non fait (${(e as Error).message.slice(0, 120)})`]; }
+    }
+    // 4) UNE seule reprise, par le CONCEPTEUR, si le contrôle du Studio, le juge de l'originalité ou le second regard
+    //    refuse quelque chose ; puis les contrôles sans IA. Jamais de boucle : ce qui reste est dit dans « à revoir ».
+    const todo = [...c.rules, ...c.objections, ...c.rhythm, ...c.pages, ...(refused ? refused.fixes.map((x) => `juge de l'originalité : ${x}`) : []), ...second];
     if (todo.length) {
-      d = only(pin(await call(`${prompt}\n\nTA CONCEPTION (JSON) :\n${JSON.stringify(d)}\n\nPOINTS REFUSÉS PAR LE CONTRÔLE DU STUDIO (à corriger, en gardant ta logique ; liste dans corrections ce que tu changes) :\n- ${todo.join("\n- ")}`, `${base}-fix`, DESIGN_REVIEW_SYSTEM))); calls++;
+      d = only(pin(await call(`${prompt}\n\nTA CONCEPTION, RELUE PAR LE DIRECTEUR COMMERCIAL (JSON) :\n${JSON.stringify(d)}\n\nPOINTS REFUSÉS PAR LE CONTRÔLE DU STUDIO ET PAR LES JUGES (à corriger, en gardant ta logique et ce qui n'est pas en cause ; rends la conception complète, le champ « partitions » compris ; liste dans corrections ce que tu changes) :\n- ${todo.join("\n- ")}`, `${base}-fix`))); calls++;
       c = check(d);
       // Le juge relit la reprise : rien n'est montré sans avoir été relu ; un doute qui reste est dit au client.
       if (refused && judge) {
         try { const v = await judge(d, `${base}-judge-2`); originality = v.verdict === "reprendre" && v.fixes.length ? { status: "doute", why: v.why } : { status: "repris", why: v.why }; }
         catch { originality = { status: "doute", why: refused.why }; }
+      }
+      // Le second regard relit la reprise seulement s'il avait refusé quelque chose : ce qu'il refuse encore reste écrit.
+      if (second.length && regard) {
+        try { secondLeft = secondRegardRefus(await regard(d, `${base}-second-2`)).map((x) => `${x} (encore là après la reprise)`); }
+        catch { secondLeft = second.map((x) => `${x} (reprise non relue)`); }
       }
     }
   } catch (e) {
@@ -366,16 +452,26 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     pg.sections.forEach((s, i) => { const pick = src.sections[i]; if (pick) s.intent = intentText(pick.why, pick.says, pick.photos); });
   }
   const doubt = originality && (originality as OriginalityOutcome).status === "doute" ? [`originalité : ${(originality as OriginalityOutcome).why}`] : [];
-  return { ok: true, d, t: c.t, left: [...c.objections, ...c.rhythm, ...c.pages, ...doubt], calls, originality, references: { sector: refs.sector, near: refs.near, far: refs.far } };
+  return { ok: true, d, t: c.t, left: [...c.objections, ...c.rhythm, ...c.pages, ...secondLeft, ...c.notes, ...doubt], calls, originality, references: { sector: refs.sector, near: refs.near, far: refs.far } };
 }
-const MIN_SECTIONS_TEXT = "au moins 8 sections, fiche produit au moins 7, plus si le parcours le demande";
+const MIN_SECTIONS_TEXT = `au moins ${MIN_SECTIONS_IMPORTANTE} sections, page qui vend au moins ${MIN_SECTIONS_IMPORTANTE}, sans remplissage`;
 /**
- * Lecture des cahiers de métier pendant une conception (knowledge.ts) : le concepteur une fois, le directeur commercial
- * à sa relecture (et à l'éventuelle reprise), le juge de l'originalité à chacun de ses avis. Compté dans le devis.
+ * Lecture des cahiers de métier pendant une conception (knowledge.ts) : le concepteur à sa conception (et à l'éventuelle
+ * reprise), le juge de l'ordre (le directeur commercial) à sa relecture, le second regard et le juge de l'originalité
+ * à chacun de leurs avis. Compté dans le devis.
  */
 export const designKnowledge = (judge: boolean) => ({
-  max: knowledgeCapMicro("concepteur", "strategy", 1) + knowledgeCapMicro("relecteur", "strategy", DESIGN_CALLS_MAX - 1) + (judge ? knowledgeCapMicro("juge", "quality_control", ORIGINALITY_CALLS_MAX) : 0),
-  usual: knowledgeTypicalMicro("concepteur", "strategy", 1) + knowledgeTypicalMicro("relecteur", "strategy", 1) + (judge ? knowledgeTypicalMicro("juge", "quality_control", 1) : 0),
+  max: knowledgeCapMicro("concepteur", "strategy", DESIGN_CALLS_MAX - 1) + knowledgeCapMicro("relecteur", "strategy", 1) + knowledgeCapMicro("secondRegard", "quality_control", SECOND_REGARD_CALLS_MAX) + (judge ? knowledgeCapMicro("juge", "quality_control", ORIGINALITY_CALLS_MAX) : 0),
+  usual: knowledgeTypicalMicro("concepteur", "strategy", 1) + knowledgeTypicalMicro("relecteur", "strategy", 1) + knowledgeTypicalMicro("secondRegard", "quality_control", 1) + (judge ? knowledgeTypicalMicro("juge", "quality_control", 1) : 0),
+});
+/**
+ * Appels d'une conception, pour le devis : le concepteur, le juge de l'ordre et, au plus, une reprise (DESIGN_CALLS_MAX) ;
+ * le second regard (deux au plus) ; avec `judge`, le juge de l'originalité (deux au plus) ; et la lecture des cahiers.
+ */
+export const designCost = (judge: boolean) => ({
+  max: DESIGN_CAP_MICRO * DESIGN_CALLS_MAX + SECOND_REGARD_CAP_MICRO * SECOND_REGARD_CALLS_MAX + (judge ? ORIGINALITY_CAP_MICRO * ORIGINALITY_CALLS_MAX : 0) + designKnowledge(judge).max,
+  usual: DESIGN_TYPICAL_MICRO + SECOND_REGARD_TYPICAL_MICRO + (judge ? ORIGINALITY_TYPICAL_MICRO : 0) + designKnowledge(judge).usual,
+  calls: { max: DESIGN_CALLS_MAX + SECOND_REGARD_CALLS_MAX + (judge ? ORIGINALITY_CALLS_MAX : 0), usual: 2 + 1 + (judge ? 1 : 0) },
 });
 /** Lecture des cahiers pendant le montage à la marque : le rédacteur (plan, chaque section, reprises), le relecteur des textes, la directrice artistique. */
 export const buildKnowledge = (o: { sections: number; fixes: number; fixesUsual: number; review: boolean; briefCalls: number; artReview: boolean; artFixes: number }) => ({
@@ -396,7 +492,7 @@ const designTool: AgentTool<DesignArgs> = {
   name: "custom.design", module: "site", kind: "generate", needsProject: true,
   description: "Étape 6, THÈME SUR MESURE (PAYANT : prix annoncé, accord écrit du client d'abord) : CONÇOIT et monte TOUT le site d'un coup. À n'utiliser QUE si le client veut refaire tout son site sur mesure sans passer par les deux concepts ; le parcours normal est custom.concepts (deux concepts au choix) puis custom.concept (tout le site sur le concept choisi). consigne : ce que le client a dit vouloir (ses mots). Les sections déjà écrites et gardées gardent leurs textes et photos ; les nouvelles se font ensuite écrire avec custom.build (devis à part).",
   args: z.object({ consigne: z.string().max(1500).optional(), ambiance: z.enum(["clair", "sombre", "alterne"]).optional() }).strict(),
-  estimate: () => ({ maxMicro: DESIGN_CAP_MICRO * DESIGN_CALLS_MAX + ORIGINALITY_CAP_MICRO * ORIGINALITY_CALLS_MAX + designKnowledge(true).max, probableMicro: DESIGN_TYPICAL_MICRO + ORIGINALITY_TYPICAL_MICRO + designKnowledge(true).usual, label: L("conception de tout ton site sur mesure (stratégie, parcours de chaque page, choix de chaque section), sa relecture et l'avis d'un juge sur son originalité", "full custom site design and review") }),
+  estimate: () => ({ maxMicro: designCost(true).max, probableMicro: designCost(true).usual, label: L("conception de tout ton site sur mesure (stratégie, parcours de chaque page, choix de chaque section), sa relecture et l'avis d'un juge sur son originalité", "full custom site design and review") }),
   run: async (ctx, a) => {
     const p = project(ctx);
     const r = await runDesign(ctx, a, { kind: "full" });
@@ -413,7 +509,7 @@ const conceptsTool: AgentTool<{ consigne?: string }> = {
   name: "custom.concepts", module: "site", kind: "generate", needsProject: true,
   description: "Étape 6, THÈME SUR MESURE (PAYANT : prix annoncé, accord écrit du client d'abord), APRÈS la famille (theme.family) et l'ambiance (theme.ambiance) : conçoit DEUX CONCEPTS COMPLÈTEMENT DIFFÉRENTS (autre idée, autre émotion mise en avant, autres sections), chacun avec sa page d'accueil et sa fiche produit (ou sa page de prestations pour un service), comme un directeur de création. Les deux s'affichent dans le fil (avec les photos d'exemple de la bibliothèque, annoncées comme telles) ; le client choisit, puis custom.concept monte tout le site sur SON choix. consigne : ce que le client a dit vouloir (ses mots).",
   args: z.object({ consigne: z.string().max(1500).optional() }).strict(),
-  estimate: () => ({ maxMicro: (DESIGN_CAP_MICRO * DESIGN_CALLS_MAX + ORIGINALITY_CAP_MICRO * ORIGINALITY_CALLS_MAX + designKnowledge(true).max) * 2, probableMicro: CONCEPTS_TYPICAL_MICRO + ORIGINALITY_TYPICAL_MICRO * 2 + designKnowledge(true).usual * 2, label: L("deux concepts complètement différents de ton site sur mesure (page d'accueil et page produit), à comparer avant de choisir", "two different custom-site concepts") }),
+  estimate: () => ({ maxMicro: designCost(true).max * 2, probableMicro: CONCEPTS_TYPICAL_MICRO + (ORIGINALITY_TYPICAL_MICRO + SECOND_REGARD_TYPICAL_MICRO) * 2 + designKnowledge(true).usual * 2, label: L("deux concepts complètement différents de ton site sur mesure (page d'accueil et page produit), à comparer avant de choisir", "two different custom-site concepts") }),
   run: async (ctx, a) => {
     const p = project(ctx);
     const f = loadFamilyChoice(p.id);
@@ -438,7 +534,7 @@ const conceptTool: AgentTool<{ choice: "A" | "B"; consigne?: string }> = {
   name: "custom.concept", module: "site", kind: "generate", needsProject: true,
   description: "Étape 6, THÈME SUR MESURE (PAYANT : prix annoncé, accord écrit du client d'abord), APRÈS custom.concepts : enregistre le concept CHOISI PAR LE CLIENT (choice A ou B) et monte TOUT le site dans ce concept : ses deux pages gardées telles quelles, toutes les autres pages conçues dans la même idée. Ensuite : custom.images, la galerie de chaque produit (gallery.plan) et custom.build (textes, SEO et photos).",
   args: z.object({ choice: z.enum(["A", "B"]), consigne: z.string().max(1500).optional() }).strict(),
-  estimate: () => ({ maxMicro: DESIGN_CAP_MICRO * DESIGN_CALLS_MAX + designKnowledge(false).max, probableMicro: DESIGN_TYPICAL_MICRO + designKnowledge(false).usual, label: L("la suite de ton site sur le concept choisi (toutes les autres pages)", "the rest of the site on the chosen concept") }),
+  estimate: () => ({ maxMicro: designCost(false).max, probableMicro: designCost(false).usual, label: L("la suite de ton site sur le concept choisi (toutes les autres pages)", "the rest of the site on the chosen concept") }),
   run: async (ctx, a) => {
     const p = project(ctx);
     const all2 = loadConcepts(p.id);
@@ -460,6 +556,24 @@ export function recentThemeCards(projectId: string): ThemeCard[] {
   const rows = all<{ value: string }>("SELECT value FROM memory WHERE kind='artifact' AND key=? AND state='active' AND project_id<>? ORDER BY rowid DESC LIMIT 24", THEME_KEY, projectId);
   const out: ThemeCard[] = [];
   for (const r of rows) { try { const c = cardOfTheme(JSON.parse(r.value) as CustomTheme); if (c.homeSections.length) out.push(c); } catch { /* thème illisible : ignoré */ } }
+  return out;
+}
+/**
+ * Les derniers sites montés pour d'AUTRES projets (au plus 24, les plus récents d'abord) : leur carte d'identité, leur
+ * métier, la partition de chaque page importante, leur en-tête, leur pied de page, leur ouverture et leurs dispositions.
+ * C'est ce que le concepteur ne doit pas reprendre (règles de variété 2, 5, 6 et 7 du cahier « ordre et variété »).
+ */
+export function recentSites(projectId: string): { card: ThemeCard; site: SiteMonte }[] {
+  const rows = all<{ value: string }>("SELECT value FROM memory WHERE kind='artifact' AND key=? AND state='active' AND project_id<>? ORDER BY rowid DESC LIMIT 24", THEME_KEY, projectId);
+  const out: { card: ThemeCard; site: SiteMonte }[] = [];
+  for (const r of rows) {
+    try {
+      const t = JSON.parse(r.value) as CustomTheme, card = cardOfTheme(t);
+      if (!card.homeSections.length) continue;
+      const pages = Object.fromEntries(t.pages.filter((pg) => { const k = pageKind(pg.key, "products") ?? pageKind(pg.key, "services"); return !!k && k !== "utilitaire"; }).map((pg) => [pg.key, pg.sections.map((x) => built(x.id, x.construction))]));
+      out.push({ card, site: { metier: t.metier ?? null, partitions: t.partitions ?? {}, header: card.header, footer: t.footer ? built(t.footer.id, t.footer.construction) : "", opening: card.opening, pages } });
+    } catch { /* thème illisible : ignoré */ }
+  }
   return out;
 }
 export function recentThemeSections(projectId: string): string[][] {

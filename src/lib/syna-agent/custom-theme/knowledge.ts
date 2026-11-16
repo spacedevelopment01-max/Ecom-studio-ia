@@ -24,17 +24,26 @@ export const THEME_BOOKS = {
   catalogue: { file: "theme-pieces-catalogue.md", title: "LES PIÈCES DU CATALOGUE" },
   textes: { file: "theme-textes.md", title: "ÉCRIRE LES TEXTES D'UN SITE" },
   images: { file: "theme-images.md", title: "LES IMAGES D'UN SITE" },
-} as const;
+  /**
+   * Décisions du propriétaire du 16 novembre 2026. Seules les parties 1 (nombre de sections), 5 (règles de variété) et
+   * 6 (les juges) sont lues : les dix règles d'or (partie 2) sont données par la constante REGLES_D_OR, les partitions
+   * (parties 3 et 4) par les données de partitions.ts, filtrées pour le client ; l'introduction et les parties 7, 8 et 9
+   * parlent d'un projet d'essai et de l'état du code : elles n'entrent JAMAIS dans une consigne envoyée à l'IA.
+   */
+  ordre: { file: "theme-ordre-et-variete.md", title: "L'ORDRE ET LA VARIÉTÉ DES SECTIONS (décisions du propriétaire)", parts: [1, 5, 6], min: 1500 },
+} as const satisfies Record<string, { file: string; title: string; parts?: readonly number[]; min?: number }>;
 export type ThemeBook = keyof typeof THEME_BOOKS;
 
 /** Les spécialistes du thème, et ce que chacun lit. */
 export const THEME_READS = {
   /** Conçoit le site : pages, sections, constructions, tenue. */
-  concepteur: ["pages", "gestes", "miseEnPage"],
+  concepteur: ["pages", "gestes", "miseEnPage", "ordre"],
   /** Relit la conception en directeur commercial, et la corrige. */
-  relecteur: ["pages", "achat", "catalogue"],
+  relecteur: ["pages", "achat", "catalogue", "ordre"],
+  /** Revérifie l'ordre des pages après la correction du relecteur, sans rien corriger (second-regard.ts). */
+  secondRegard: ["ordre"],
   /** Juge l'originalité d'un concept, sans le réécrire. */
-  juge: ["originalite"],
+  juge: ["originalite", "ordre"],
   /** Fait le plan des textes, puis écrit chaque section. */
   redacteur: ["textes"],
   /** Relit tous les textes du site avant le client. */
@@ -60,6 +69,15 @@ export function forModel(md: string): string {
     .replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 
+/**
+ * Ne garde que les parties numérotées voulues d'un cahier (« ## 3. Titre ») : ni son introduction, ni ses autres
+ * parties. Un cahier dont une partie cite un projet d'essai se lit ainsi sans elle.
+ */
+export function onlyParts(md: string, parts: readonly number[]): string {
+  const blocks = md.split(/\n(?=##\s)/);
+  return blocks.filter((b) => { const n = /^##\s+(\d+)\./.exec(b); return !!n && parts.includes(Number(n[1])); }).join("\n").trim();
+}
+
 const cache = new Map<string, string>();
 /** Texte d'un cahier, sans ses sources ni ses adresses ; erreur claire s'il manque. */
 export function themeBook(book: ThemeBook): string {
@@ -69,9 +87,10 @@ export function themeBook(book: ThemeBook): string {
   let md: string;
   try { md = fs.readFileSync(file, "utf8"); } catch { throw new Error(`Cahier de métier introuvable : ${file}. Le thème sur mesure ne se conçoit pas sans lui.`); }
   // Coupé à la fin d'un paragraphe : jamais une phrase tronquée au milieu.
-  const all = forModel(md);
+  const def = THEME_BOOKS[book] as { parts?: readonly number[]; min?: number };
+  const all = forModel(def.parts ? onlyParts(md, def.parts) : md);
   const text = all.length <= MAX_THEME_BOOK_CHARS ? all : all.slice(0, all.lastIndexOf("\n\n", MAX_THEME_BOOK_CHARS)).trim();
-  if (text.length < 2000) throw new Error(`Cahier de métier trop court ou vide : ${file}.`);
+  if (text.length < (def.min ?? 2000)) throw new Error(`Cahier de métier trop court ou vide : ${file}.`);
   cache.set(file, text);
   return text;
 }

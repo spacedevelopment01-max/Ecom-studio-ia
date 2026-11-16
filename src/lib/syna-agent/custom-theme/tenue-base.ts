@@ -6,6 +6,7 @@
  */
 import type { LibSection, Trait } from "./library";
 import type { SectionGroupId } from "./section-groups";
+import type { OrdrePiece } from "./tenue-ordre";
 
 export const TENUE_TAG = "tenue";
 
@@ -26,6 +27,8 @@ export type TenueSection = LibSection & {
   pour?: "produits" | "services";
   /** Les vraies données que la section lit (catalogue, prestations, avis du client…), dites au concepteur. */
   data?: string;
+  /** Ce que la pièce apporte à l'ordre d'une page (tenue-ordre.ts) : sa disposition, ses traits, la preuve réelle qu'elle demande. */
+  ordre?: OrdrePiece;
 };
 
 /** Photo d'exemple de la bibliothèque (public/sections/photos), posée en fond. */
