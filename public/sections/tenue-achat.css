@@ -739,7 +739,7 @@
 .ctw .tn-appel-produit .tn-prix:has(mark),.ctw .tn-appel-produit .tn-nom-a:has(mark){font-family:var(--f-ui);font-size:15px;line-height:1.7}
 .ctw .tn-appel-produit .tn-rupture{margin-top:6px;font-size:15px;font-weight:600}
 .ctw .tn-appel-produit .tn-bt{display:block;width:100%;margin-top:20px;padding:18px 20px;background-color:var(--tn-sur-bouton);color:var(--tn-encre);font-size:17px;justify-content:center}
-.ctw[data-tn-bouton="ombre"] .tn-appel-produit .tn-bt{background-color:var(--tn-accent);color:var(--tn-sur-bouton);border-color:var(--tn-sur-bouton);box-shadow:4px 5px 0 var(--tn-sur-bouton)}
+.ctw[data-tn-bouton="ombre"] .tn-appel-produit .tn-bt{background-color:var(--tn-accent);color:var(--tn-sur-accent);border-color:var(--tn-sur-bouton);box-shadow:4px 5px 0 var(--tn-sur-bouton)}
 .ctw .tn-appel-produit .tn-reperes{margin-top:16px;font-size:14px;line-height:1.7;opacity:.86}
 /* « carte » : une carte de couleur douce, tout centré */
 .ctw .tn-appel-produit[data-tn-c="carte"]{margin:44px 20px 0;padding:26px 20px 28px;border-radius:var(--tn-arrondi,0);background-color:var(--tn-doux);color:var(--tn-encre)}
@@ -934,7 +934,7 @@
 
 /* ══ Achat, suite (16 novembre 2026) : prix barré, packs, dessous du bouton, offre du moment, fenêtre d'offre ══ */
 .ctw .tn-achat .tn-prix s,.ctw .tn-achat .tn-prix-b s{margin-right:8px;font-family:var(--f-ui);font-size:.5em;font-weight:400;color:var(--tn-sourd);text-decoration-thickness:1.5px;vertical-align:middle}
-.ctw .tn-achat .tn-moins,.ctw .tn-packs .tn-moins{display:inline-block;margin-left:8px;padding:4px 9px;border-radius:999px;background-color:var(--tn-accent);color:var(--tn-sur-bouton);font-family:var(--f-ui);font-size:13px;font-style:normal;font-weight:700;line-height:1.2;letter-spacing:0;vertical-align:middle;white-space:nowrap}
+.ctw .tn-achat .tn-moins,.ctw .tn-packs .tn-moins{display:inline-block;margin-left:8px;padding:4px 9px;border-radius:999px;background-color:var(--tn-accent);color:var(--tn-sur-accent);font-family:var(--f-ui);font-size:13px;font-style:normal;font-weight:700;line-height:1.2;letter-spacing:0;vertical-align:middle;white-space:nowrap}
 .ctw .tn-achat .tn-prix-b s{font-size:.8em;margin-right:5px}
 .ctw .tn-achat .tn-prix-b .tn-moins{margin-left:5px;padding:2px 6px;font-size:11px}
 .ctw .tn-achat .tn-barre-mots{flex:1 1 0;min-width:0;display:grid;gap:1px}
@@ -967,7 +967,7 @@
 .ctw[data-tn-cadre="niche"] .tn-packs .tn-pack-cadeau{border-radius:14px}
 .ctw .tn-packs .tn-pack-cadeau .tn-ph{flex:none;width:44px;height:44px;border-radius:8px;background-size:cover;background-position:center;background-color:var(--tn-doux)}
 .ctw .tn-packs .tn-pack-cadeau span{flex:1;min-width:0}
-.ctw .tn-packs .tn-pack-cadeau em{flex:none;padding:3px 9px;border-radius:999px;background-color:var(--tn-accent);color:var(--tn-sur-bouton);font-size:11.5px;font-style:normal;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.ctw .tn-packs .tn-pack-cadeau em{flex:none;padding:3px 9px;border-radius:999px;background-color:var(--tn-accent);color:var(--tn-sur-accent);font-size:11.5px;font-style:normal;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
 .ctw .tn-packs .tn-pack-lignes{display:none}
 .ctw .tn-packs .tn-pack:has(input[type="radio"]:checked) .tn-pack-lignes:not(:empty){display:grid;gap:8px;padding:14px 16px 16px;border-top:1.5px solid color-mix(in srgb,var(--tn-encre) 18%,transparent)}
 .ctw .tn-packs .tn-pack-ligne{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr);align-items:center;gap:8px}
@@ -1058,7 +1058,7 @@
 .ctw .tn-offre-moment .tn-om{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:12px 14px;padding:16px;border:2px dashed var(--tn-accent);border-radius:var(--tn-arrondi,0);background-color:color-mix(in srgb,var(--tn-accent) 9%,var(--tn-fond))}
 .ctw[data-tn-cadre="niche"] .tn-offre-moment .tn-om{border-radius:20px}
 .ctw[data-tn-cadre="penche"] .tn-offre-moment .tn-om{border-radius:14px;box-shadow:5px 6px 0 var(--tn-encre)}
-.ctw .tn-offre-moment .tn-om-remise{display:grid;place-items:center;min-width:76px;min-height:76px;padding:8px;border-radius:50%;background-color:var(--tn-accent);color:var(--tn-sur-bouton);font-family:var(--f-title);font-size:24px;font-style:normal;font-weight:700;line-height:1;text-align:center;white-space:nowrap}
+.ctw .tn-offre-moment .tn-om-remise{display:grid;place-items:center;min-width:76px;min-height:76px;padding:8px;border-radius:50%;background-color:var(--tn-accent);color:var(--tn-sur-accent);font-family:var(--f-title);font-size:24px;font-style:normal;font-weight:700;line-height:1;text-align:center;white-space:nowrap}
 .ctw .tn-offre-moment .tn-om-mots{display:grid;gap:3px;min-width:0}
 .ctw .tn-offre-moment small{font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--tn-sourd)}
 .ctw .tn-offre-moment .tn-om-nom{font-family:var(--f-title);font-weight:400;font-size:23px;line-height:1.12}
@@ -1076,7 +1076,7 @@
 .ctw[data-tn-cadre="niche"] .tn-offre-moment .tn-om-decompte span{border-radius:12px}
 .ctw .tn-offre-moment .tn-om-decompte b{font-size:21px;font-weight:700;letter-spacing:0;font-variant-numeric:tabular-nums}
 .ctw .tn-offre-moment[data-tn-c="bandeau"]{padding:14px 0 0}
-.ctw .tn-offre-moment[data-tn-c="bandeau"] .tn-om{padding:14px 20px;border:0;border-radius:0;box-shadow:none;background-color:var(--tn-accent);color:var(--tn-sur-bouton)}
+.ctw .tn-offre-moment[data-tn-c="bandeau"] .tn-om{padding:14px 20px;border:0;border-radius:0;box-shadow:none;background-color:var(--tn-accent);color:var(--tn-sur-accent)}
 .ctw .tn-offre-moment[data-tn-c="bandeau"] .tn-om-remise{min-width:0;min-height:0;padding:0;border-radius:0;background-color:transparent;font-size:34px}
 .ctw .tn-offre-moment[data-tn-c="bandeau"] small{color:inherit;opacity:.85}
 .ctw .tn-offre-moment[data-tn-c="bandeau"] .tn-om-cadeau{color:var(--tn-encre)}
@@ -1248,3 +1248,6 @@
 }
 /* le panier de côté ouvert : la barre d'achat s'efface (elle ne passe pas sur « Passer commande ») */
 .ctw .tn-achat>.tn-barre:is(.ctw:has(.tn-panier-cote[data-tn-ouvert]) *){visibility:hidden}
+
+/* Texte posé sur la couleur de la marque : toujours lisible. */
+.ctw[data-tn-bouton="ombre"] .tn-appel-produit[data-tn-c="carte"] .tn-bt{color:var(--tn-sur-accent)}

@@ -358,7 +358,7 @@
 .ctw .tn-preparation .tn-minuteur::before{content:"";width:0;height:0;border-left:10px solid currentColor;border-top:6px solid transparent;border-bottom:6px solid transparent}
 .ctw .tn-preparation .tn-minuteur.tn-on{background-color:var(--tn-encre);color:var(--tn-sur-bouton)}
 .ctw .tn-preparation .tn-minuteur.tn-on::before{width:10px;height:10px;border:0;background-color:currentColor}
-.ctw .tn-preparation .tn-minuteur.tn-fini{background-color:var(--tn-accent);border-color:var(--tn-accent);color:var(--tn-sur-bouton)}
+.ctw .tn-preparation .tn-minuteur.tn-fini{background-color:var(--tn-accent);border-color:var(--tn-accent);color:var(--tn-sur-accent)}
 .ctw[data-tn-bouton="droit"] .tn-preparation .tn-minuteur,.ctw[data-tn-bouton="etiquette"] .tn-preparation .tn-minuteur{border-radius:0}
 /* « file » : une étape par carte, à faire glisser */
 .ctw .tn-preparation[data-tn-c="file"] ol{display:flex;gap:14px;margin-right:-20px;padding-right:20px;border-top:0;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}

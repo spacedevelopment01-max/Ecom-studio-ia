@@ -68,15 +68,29 @@ export const TENUE_CHOICES = `titres : « fins » (lettres fines et serrées, po
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 type Palette = { dark?: string; primary?: string; secondary?: string; accent?: string; light?: string };
 
+const hex = (c: string): [number, number, number] | null => { const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(c.trim()); if (!m) return null; const h = m[1].length === 3 ? m[1].replace(/./g, "$&$&") : m[1]; return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)) as [number, number, number]; };
+const lum = (c: [number, number, number]) => { const f = (v: number) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]); };
+/** Contraste entre deux couleurs (1 à 21, règle des contenus accessibles). Une couleur illisible par le calcul vaut 1 : jamais jugée lisible par défaut. */
+export function contraste(a: string, b: string): number { const x = hex(a), y = hex(b); if (!x || !y) return 1; const l1 = lum(x), l2 = lum(y); return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05); }
+const melange = (a: string, b: string, part: number): string | null => { const x = hex(a), y = hex(b); return x && y ? `#${x.map((v, i) => Math.round(v * part + y[i] * (1 - part)).toString(16).padStart(2, "0")).join("")}` : null; };
+
 /** Couleurs de la tenue, tirées de la palette de la marque. */
 export function tenueCss(palette: Palette | null | undefined, tenue: Tenue | null | undefined, monoFontCss = "", /** Graisse des titres quand la police de la marque en a une plus forte que la normale (tenue « gras »). */ poids: number | null = null): string {
   const pal = palette ?? {};
   const fond = pal.light ?? "#F6F1E7", encre = pal.dark ?? "#1F1B16", accent = pal.primary ?? encre;
-  const doux = pal.secondary ?? `color-mix(in srgb,${fond} 86%,${encre})`;
+  // Une palette ne suit pas toujours les rôles attendus (essai réel du 16 novembre 2026 : une couleur de marque jaune
+  // vif et une deuxième couleur bleu nuit ont donné du texte blanc sur jaune et du texte sombre sur bleu nuit). Les
+  // couleurs de texte sont donc CALCULÉES pour rester lisibles, quelle que soit la palette.
+  const douxMix = `color-mix(in srgb,${fond} 86%,${encre})`;
+  // Le fond doux porte du texte à l'encre : la deuxième couleur n'y sert que si l'encre s'y lit bien.
+  const doux = pal.secondary && contraste(pal.secondary, encre) >= 4.5 ? pal.secondary : douxMix;
+  const clair = melange(fond, "#ffffff", 0.7) ?? "#ffffff";
   const vars: Record<string, string> = {
     "--tn-fond": fond, "--tn-encre": encre, "--tn-accent": accent, "--tn-doux": doux,
     "--tn-texte": `color-mix(in srgb,${encre} 90%,${fond})`, "--tn-sourd": `color-mix(in srgb,${encre} 62%,${fond})`,
     "--tn-bouton": encre, "--tn-sur-bouton": `color-mix(in srgb,${fond} 70%,#fff)`,
+    // Le texte posé sur la couleur de la marque : clair sur une couleur sombre, à l'encre sur une couleur claire.
+    "--tn-sur-accent": contraste(encre, accent) > contraste(clair, accent) ? encre : clair,
     "--tn-arrondi": tenue?.cadre === "droit" || !tenue ? "0px" : "14px",
     ...(poids && poids !== 400 ? { "--tn-poids": String(poids) } : {}),
   };

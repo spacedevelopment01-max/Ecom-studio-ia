@@ -202,7 +202,7 @@
 
 /* ══ 4 · Avec bande d'annonce ══ */
 .ctw .tn-entete-annonce{--tn-e-sup:0px;top:calc(var(--tb-h,0px) - var(--tn-e-colle,0px))}
-.ctw .tn-entete-annonce .tn-e-msg{display:flex;align-items:center;justify-content:center;min-height:36px;margin:0;padding:8px 20px;background-color:var(--tn-accent);color:var(--tn-sur-bouton);font-size:13.5px;font-weight:600;line-height:1.35;text-align:center}
+.ctw .tn-entete-annonce .tn-e-msg{display:flex;align-items:center;justify-content:center;min-height:36px;margin:0;padding:8px 20px;background-color:var(--tn-accent);color:var(--tn-sur-accent);font-size:13.5px;font-weight:600;line-height:1.35;text-align:center}
 @supports (color:oklch(from red l c h)){
   .ctw .tn-entete-annonce .tn-e-msg{color:oklch(from var(--tn-accent) clamp(.17,(.62 - l)*100,.97) .03 h)}
 }
@@ -417,3 +417,6 @@
   .ctw .tn-pied-complet[data-tn-c="centre-minimal"] .tn-cols{gap:0 32px;margin-top:28px}
   .ctw .tn-pied-complet[data-tn-c="centre-minimal"] .tn-fin{margin-top:30px}
 }
+
+/* Texte posé sur la couleur de la marque : toujours lisible. */
+.ctw[data-tn-bouton="ombre"] .tn-pied-services .tn-bt{color:var(--tn-sur-accent)}

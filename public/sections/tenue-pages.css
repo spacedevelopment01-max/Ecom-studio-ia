@@ -377,7 +377,7 @@
 .ctw .tn-discussion[data-tn-c="bandeau"] p{color:color-mix(in srgb,var(--tn-sur-bouton) 88%,transparent)}
 .ctw .tn-discussion[data-tn-c="bandeau"] small{color:color-mix(in srgb,var(--tn-sur-bouton) 74%,transparent)}
 .ctw .tn-discussion[data-tn-c="bandeau"] .tn-bt,.ctw .tn-age[data-tn-c="plein-ecran"] .tn-bt{background:var(--tn-fond);color:var(--tn-encre)}
-.ctw[data-tn-bouton="ombre"] .tn-discussion[data-tn-c="bandeau"] .tn-bt,.ctw[data-tn-bouton="ombre"] .tn-age[data-tn-c="plein-ecran"] .tn-bt{background:var(--tn-accent);color:var(--tn-sur-bouton);border-color:var(--tn-sur-bouton);box-shadow:4px 5px 0 var(--tn-sur-bouton)}
+.ctw[data-tn-bouton="ombre"] .tn-discussion[data-tn-c="bandeau"] .tn-bt,.ctw[data-tn-bouton="ombre"] .tn-age[data-tn-c="plein-ecran"] .tn-bt{background:var(--tn-accent);color:var(--tn-sur-accent);border-color:var(--tn-sur-bouton);box-shadow:4px 5px 0 var(--tn-sur-bouton)}
 
 /* ══════════ Manifeste, « clair, centré » ══════════ */
 .ctw .tn-manifeste[data-tn-c="clair-centre"]{margin:44px 20px 0;padding:40px 4px 38px;background-color:transparent;color:var(--tn-encre);border-top:1.5px solid var(--tn-encre);border-bottom:1.5px solid var(--tn-encre);text-align:center}
