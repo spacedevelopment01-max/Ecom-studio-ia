@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth";
 import { all } from "@/lib/db";
 import { formeDuProjet } from "@/lib/ciel/constellations";
 import { etatDe } from "@/lib/ciel/vue";
+import { derniereEtape } from "@/lib/ciel/ciel-commun";
 import { dashboardOf } from "@/lib/syna-agent/dashboard";
 import { handle, ok } from "@/lib/http";
 import { aiUsage } from "@/lib/ai/access";
@@ -17,7 +18,7 @@ export const runtime = "nodejs";
 export const GET = handle(async () => {
   const user = await requireUser();
   const rows = all<any>(
-    `SELECT p.id, p.name, p.status, p.platform, p.sector, p.brand_json, p.business_type, p.hidden, p.updated_at, p.created_at,
+    `SELECT p.id, p.name, p.status, p.platform, p.sector, p.brand_json, p.business_type, p.hidden, p.ciel_ouvert, p.updated_at, p.created_at,
        (SELECT id FROM assets a WHERE a.project_id = p.id AND a.role IN ('scene','packshot','lifestyle','banner','cutout','original') AND a.deleted_at IS NULL AND a.status != 'rejected' ORDER BY CASE a.role WHEN 'scene' THEN 0 WHEN 'packshot' THEN 1 WHEN 'lifestyle' THEN 2 WHEN 'banner' THEN 3 WHEN 'cutout' THEN 4 ELSE 5 END, a.created_at DESC LIMIT 1) AS cover
      FROM projects p WHERE p.user_id = ? AND p.archived = 0 ORDER BY p.updated_at DESC`,
     user.id,
@@ -41,7 +42,7 @@ export const GET = handle(async () => {
       subscription: sub ? { id: sub.user_id, plan: sub.plan ?? "creer", status: sub.status, billing: sub.billing, priceCents: sub.price_cents, periodEnd: sub.current_period_end, cancelAtPeriodEnd: !!sub.cancel_at_period_end } : null,
       ai: sub ? aiUsage(user.id, r.id) : null,
       // Sa constellation dans le ciel de l'accueil : sa forme et l'état de ses neuf étoiles.
-      ciel: { forme: formeDuProjet(r.id), etats: (dashboardOf(r.id)?.steps ?? []).map((x) => etatDe(x.status)) },
+      ciel: { forme: formeDuProjet(r.id), etats: (dashboardOf(r.id)?.steps ?? []).map((x) => etatDe(x.status)), ouvert: !!r.ciel_ouvert, endormi: r.status === "paused", dernier: derniereEtape(r.id) },
     };
   };
   return ok({

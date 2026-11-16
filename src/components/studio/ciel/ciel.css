@@ -163,3 +163,29 @@
 .ciel-fond-mot small { display: block; margin-top: 10px; font: 400 14px/1.5 var(--font-sans); color: var(--doux); }
 /* Pendant la visite, sur petit écran, la carte de SINA dit déjà quoi faire : le rappel sous le cœur s'efface. */
 .ciel[data-etroit][data-visite] .ciel-astre[data-appel] small { display: none; }
+
+/* ——— Le ciel partagé : les projets des autres, les amas par métier, la recherche ——— */
+.ciel-astre[data-type="verrou"] > span { color: var(--doux); font-weight: 400; }
+.ciel-astre[data-type="verrou"] small { color: var(--pale); display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
+.ciel-astre[data-type="verrou"] small svg { width: 10px; height: 10px; flex: none; }
+.ciel-astre[data-type="ouvert"] small { color: #B9F0CF; }
+.ciel-amas { position: absolute; left: 0; top: 0; pointer-events: none; will-change: transform; display: none; }
+.ciel[data-loin] .ciel-amas { display: block; }
+.ciel-amas { font: italic 400 20px/1.1 var(--font-serif); color: var(--texte); text-shadow: 0 0 16px rgba(5, 8, 24, .95); white-space: nowrap; text-align: center; margin-left: -120px; width: 240px; }
+.ciel-amas small { display: block; margin-top: 3px; font: 500 11.5px/1.2 var(--font-sans); color: var(--doux); }
+.ciel-cherche { height: 40px; max-width: 220px; border-radius: 999px; background: var(--verre); border: 1px solid var(--trait); color: var(--texte); font: 500 12px var(--font-sans); padding: 0 12px; cursor: pointer; }
+.ciel-cherche option { background: #0E1533; color: #E9EDFF; }
+.ciel[data-leger] .ciel-cherche { background: rgba(13, 20, 50, .94); }
+.ciel[data-loin] .ciel-astre[data-type="verrou"] { display: none; }
+.ciel-vue-lien { min-width: 40px; height: 40px; border-radius: 999px; background: var(--verre); border: 1px solid var(--trait); color: var(--texte); padding: 0 11px; display: grid; place-items: center; font: 500 12px var(--font-sans); text-decoration: none; white-space: nowrap; }
+.ciel-vue-lien:hover { border-color: var(--bleu); }
+/* Ouvrir son projet aux visites : un petit réglage en haut à droite, avec ce que cela montre écrit en clair. */
+.ciel-visites { position: absolute; z-index: 5; right: 20px; top: 20px; display: grid; justify-items: end; gap: 8px; transition: opacity .4s; }
+.ciel-visites > button { height: 36px; border-radius: 999px; background: var(--verre); border: 1px solid var(--trait); color: var(--doux); font: 500 12px var(--font-sans); padding: 0 14px; cursor: pointer; }
+.ciel-visites[data-ouvert] > button { color: #B9F0CF; border-color: rgba(185, 240, 207, .4); }
+.ciel-visites > div { width: min(340px, calc(100vw - 40px)); display: grid; gap: 12px; padding: 16px; border-radius: 16px; background: rgba(13, 20, 50, .96); border: 1px solid rgba(157, 180, 255, .3); user-select: text; -webkit-user-select: text; }
+.ciel-visites > div p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--texte); }
+.ciel-visites .ciel-bouton { border: 0; cursor: pointer; }
+.ciel[data-ouvert] .ciel-visites { opacity: 0; pointer-events: none; }
+.ciel[data-etroit] .ciel-visites { right: 12px; top: 12px; }
+.ciel[data-etroit] .ciel-titre { max-width: calc(100% - 170px); }

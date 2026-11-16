@@ -17,7 +17,7 @@ import { CielAccueil, type ProjetDuCiel } from "./ciel/ciel-accueil";
 import type { Forme } from "@/lib/ciel/forme";
 import type { EtatEtoile } from "@/lib/ciel/vue";
 
-type ProjectCard = { id: string; name: string; status: string; sector: string | null; platform: string; business: BusinessType; updatedAt: number; cover: string | null; palette: Record<string, string> | null; brand: string | null; logo: string | null; subscription: { id: string; plan: PlanId; status: string; billing: Billing | null; periodEnd: number | null; cancelAtPeriodEnd: boolean } | null; ai: { plan: { used: number }; credits: { used: number } | null; paused: boolean } | null; ciel?: { forme: Forme; etats: EtatEtoile[] } };
+type ProjectCard = { id: string; name: string; status: string; sector: string | null; platform: string; business: BusinessType; updatedAt: number; cover: string | null; palette: Record<string, string> | null; brand: string | null; logo: string | null; subscription: { id: string; plan: PlanId; status: string; billing: Billing | null; periodEnd: number | null; cancelAtPeriodEnd: boolean } | null; ai: { plan: { used: number }; credits: { used: number } | null; paused: boolean } | null; ciel?: { forme: Forme; etats: EtatEtoile[]; ouvert?: boolean; endormi?: boolean; dernier?: number } };
 
 const STATUS: Record<string, { label: string; labelEn: string; tone: any }> = {
   queued: { label: "En file", labelEn: "Queued", tone: "neutral" },
@@ -78,7 +78,7 @@ export function StudioHome({agentEnabled=false}:{agentEnabled?:boolean}) {
   const showNew = creating;
   // La liste classique de « Mes projets » (abonnements, suppression, anciens essais) reste à un clic du ciel.
   const [liste, setListe] = useState(false);
-  const constellations: ProjetDuCiel[] = projects.filter((p) => p.ciel).map((p) => ({ id: p.id, nom: p.brand ?? p.name, palette: Object.values(p.palette ?? {}).filter((c): c is string => typeof c === "string"), forme: p.ciel!.forme, etats: p.ciel!.etats }));
+  const constellations: ProjetDuCiel[] = projects.filter((p) => p.ciel).map((p) => ({ id: p.id, nom: p.brand ?? p.name, palette: Object.values(p.palette ?? {}).filter((c): c is string => typeof c === "string"), forme: p.ciel!.forme, etats: p.ciel!.etats, metier: p.sector, ouvert: p.ciel!.ouvert, endormi: p.ciel!.endormi, dernier: p.ciel!.dernier }));
   const startNew = () => {
     setCreating(true);
     window.scrollTo({ top: 0, behavior: "smooth" });

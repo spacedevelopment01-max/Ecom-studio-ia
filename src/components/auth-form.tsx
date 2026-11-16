@@ -75,6 +75,7 @@ export function AuthForm({ mode, plan, next: nextPath, background }: { mode: "lo
                 <Link href="/mot-de-passe-oublie" className="text-ink-2 underline underline-offset-4 hover:text-ink">{t("Mot de passe oublié ?", "Forgot your password?")}</Link>
               </p>
             )}
+            {mode === "register" && <p className="text-xs text-muted">{t("Ton projet aura sa constellation dans le ciel commun du Studio. Les autres n'y voient ni son nom, ni ses couleurs, ni son avancement, sauf si tu choisis toi-même de l'ouvrir aux visites.", "Your project will have its constellation in the Studio's shared sky. Others see neither its name, nor its colours, nor its progress, unless you choose to open it to visits yourself.")}</p>}
             {error && <p role="alert" className="rounded-2xl bg-bad-soft px-4 py-3 text-sm text-bad">{error}</p>}
             <Button type="submit" size="lg" loading={loading}>
               {mode === "login" ? t("Se connecter", "Sign in") : t("Créer mon compte", "Create my account")}

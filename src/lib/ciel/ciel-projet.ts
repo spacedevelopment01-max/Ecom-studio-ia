@@ -3,13 +3,13 @@
  * de sa constellation, et les autres projets du même compte, vus de loin. Tout est lu ; seule la forme d'une
  * constellation est enregistrée, la première fois qu'on la demande.
  */
-import { all } from "../db";
+import { all, one } from "../db";
 import { dashboardOf, type DashboardData } from "../syna-agent/dashboard";
 import { formeDuProjet } from "./constellations";
 import type { Forme } from "./forme";
 import { etatDe, soleilDe, type Voisin } from "./vue";
 
-export type CielProjetData = { data: DashboardData; forme: Forme; voisins: Voisin[] };
+export type CielProjetData = { data: DashboardData; forme: Forme; voisins: Voisin[]; /** Le projet est ouvert aux visites du ciel partagé. */ ouvert?: boolean };
 
 export function cielDuProjet(projectId: string, userId: string): CielProjetData | null {
   const data = dashboardOf(projectId);
@@ -20,5 +20,5 @@ export function cielDuProjet(projectId: string, userId: string): CielProjetData 
     const d = dashboardOf(id);
     if (d) voisins.push({ id, nom: d.name, couleurs: soleilDe(d.brand?.colors), forme: formeDuProjet(id), etats: d.steps.map((s) => etatDe(s.status)) });
   }
-  return { data, forme: formeDuProjet(projectId), voisins };
+  return { data, forme: formeDuProjet(projectId), voisins, ouvert: !!one<{ o: number }>("SELECT ciel_ouvert o FROM projects WHERE id=?", projectId)?.o };
 }

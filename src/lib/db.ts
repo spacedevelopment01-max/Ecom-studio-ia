@@ -1170,6 +1170,15 @@ CREATE TABLE IF NOT EXISTS constellations (
   forme_json TEXT NOT NULL,
   created_at INTEGER NOT NULL
 );
+
+-- Le ciel partagé : chaque visite d'un projet ouvert aux visites (son propriétaire voit passer une comète).
+CREATE TABLE IF NOT EXISTS ciel_regards (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ciel_regards_projet ON ciel_regards(project_id, at);
 `;
 
 /** Colonnes ajoutées après la première version (ajout seulement, jamais de suppression). */
@@ -1255,6 +1264,8 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ["subscriptions", "price_cents", "INTEGER"],
   ["subscriptions", "cancel_at_period_end", "INTEGER NOT NULL DEFAULT 0"],
   ["projects", "hidden", "INTEGER NOT NULL DEFAULT 0"],
+  // Le ciel partagé : le client a choisi d'ouvrir son projet aux visites (fermé par défaut).
+  ["projects", "ciel_ouvert", "INTEGER NOT NULL DEFAULT 0"],
   // Paiements V2 : projet et abonnement (compte de facturation) concernés, paiement Stripe, remboursement.
   ["payments", "project_id", "TEXT"],
   ["payments", "account_key", "TEXT"],

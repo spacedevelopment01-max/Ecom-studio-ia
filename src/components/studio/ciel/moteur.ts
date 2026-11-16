@@ -15,8 +15,13 @@ import type { Couleurs, EtatEtoile } from "@/lib/ciel/vue";
 
 export type Astre = {
   id: string;
-  /** moi : le projet ouvert · mien : un autre de mes projets · nouveau : la constellation éteinte du prochain projet. */
-  type: "moi" | "mien" | "nouveau";
+  /**
+   * moi : le projet ouvert · mien : un autre de mes projets · nouveau : la constellation éteinte du prochain projet ·
+   * ouvert : le projet d'un autre, ouvert aux visites · verrou : le projet d'un autre, verrouillé (ni couleurs, ni avancement).
+   */
+  type: "moi" | "mien" | "nouveau" | "ouvert" | "verrou";
+  /** Le projet est en pause : il dort en nébuleuse, et se rallume au retour. */
+  endormi?: boolean;
   x: number; y: number;
   couleurs: Couleurs | null;
   forme: Forme;
@@ -34,6 +39,12 @@ export type Ciel = {
   tourner(radians: number): void;
   /** Revient sur le projet ouvert, ou montre tous les projets du compte. */
   cadrer(quoi: "moi" | "tout"): void;
+  /** Vole jusqu'à un point du ciel. */
+  aller(x: number, y: number, k?: number): void;
+  /** Une étoile s'allume dans cette constellation (une étape vient d'y être finie). */
+  eclat(id: string): void;
+  /** Une comète passe près de cette constellation (quelqu'un la regarde). */
+  comete(id: string): void;
   detruire(): void;
   readonly leger: boolean;
 };
@@ -234,13 +245,15 @@ export function monterCiel(racine: HTMLElement, donnees: DonneesCiel, options: O
   let filante: { t0: number; x: number; y: number; vx: number; vy: number } | null = null, prochaine = 3;
   let scint: { x: number; y: number; col: string; s: number; v: number; p: number }[] = [];
   const tailles = new Map<HTMLElement, { w: number; h: number }>();
+  const eclats = new Map<string, number>(), cometes = new Map<string, number>();
+  const GRIS: Couleurs = ["#DDE2F2", "#8A94B8", "#3A4366"];
   let fondToile: HTMLCanvasElement | null = null, fondCle = "";
 
   /** La constellation principale : le projet ouvert, ou celle qu'on montre en grand ; aucune dans un ciel sans projet ouvert. */
   const moi = (): Astre | null => D.astres.find((a) => a.type === "moi") ?? D.astres.find((a) => a.grand) ?? null;
   /** La largeur et la hauteur d'une forme, cœur compris (en rayons) : la constellation est agrandie pour remplir l'écran. */
   const etendue = (f: Forme) => { const p = [{ x: 0, y: 0 }, ...silhouette(f)], xs = p.map((q) => q.x), ys = p.map((q) => q.y); return { l: Math.max(0.9, Math.max(...xs) - Math.min(...xs)), h: Math.max(0.9, Math.max(...ys) - Math.min(...ys)) }; };
-  const rayonDe = (a: Astre) => (a === moi() ? R : Math.min(R * 0.72, 150));
+  const rayonDe = (a: Astre) => (a === moi() ? R : a.type === "verrou" || a.type === "ouvert" ? Math.min(R * 0.6, 120) : Math.min(R * 0.72, 150));
   /** Les étoiles d'un astre, dans le ciel. Elles respirent un peu : rien n'est jamais tout à fait immobile. */
   function geo(a: Astre, t: number): { cx: number; cy: number; R: number; pts: P2[] } {
     const Ra = rayonDe(a), pr = a === moi(), ex = pr ? rx : 1.25, ey = pr ? ry : 0.95, drift = pr ? 3 : 2;
@@ -370,8 +383,12 @@ export function monterCiel(racine: HTMLElement, donnees: DonneesCiel, options: O
       x.strokeStyle = `rgba(220,230,255,${sur ? 0.95 : 0.7})`; x.lineWidth = 1.3; x.beginPath(); x.moveTo(C.x - rr * 0.42, C.y); x.lineTo(C.x + rr * 0.42, C.y); x.moveTo(C.x, C.y - rr * 0.42); x.lineTo(C.x, C.y + rr * 0.42); x.stroke();
       return { C, P, rc: rr };
     }
-    const etat = (i: number) => a.etats[i] ?? "avenir", ok = (i: number) => etat(i) === "fait", vif = (i: number) => etat(i) === "cours" || etat(i) === "avis";
+    const verrou = a.type === "verrou", voile = a.endormi ? 0.32 : verrou ? 0.5 : 1;
+    const etat = (i: number): EtatEtoile => (verrou ? "fait" : a.etats[i] ?? "avenir"), ok = (i: number) => etat(i) === "fait", vif = (i: number) => etat(i) === "cours" || etat(i) === "avis";
     const rc = Math.max(3, g.R * 0.17 * cam.k);
+    x.save(); x.globalAlpha = voile;
+    // Un projet en pause dort dans une petite nébuleuse.
+    if (a.endormi) { const n = U.nebuleuses[Math.abs(Math.round(a.x + a.y)) % U.nebuleuses.length].c, sz = g.R * 3.4 * cam.k; x.save(); x.globalCompositeOperation = "lighter"; x.globalAlpha = 0.5 + (calme ? 0 : 0.08 * Math.sin(t * 0.4 + a.x)); x.drawImage(n, C.x - sz / 2, C.y - sz / 2, sz, sz); x.restore(); }
     const pere = (i: number) => a.forme[i]?.parent ?? -1;
     // Une étape finie se relie à la suivante (sauf si une branche les relie déjà).
     for (let i = 0; i < 8; i++) if (pere(i + 1) !== i && pere(i) !== i + 1 && ok(i) && (ok(i + 1) || vif(i + 1))) { x.strokeStyle = "rgba(157,180,255,.22)"; x.lineWidth = 1; x.beginPath(); x.moveTo(P[i].x, P[i].y); x.lineTo(P[i + 1].x, P[i + 1].y); x.stroke(); }
@@ -412,8 +429,13 @@ export function monterCiel(racine: HTMLElement, donnees: DonneesCiel, options: O
     x.translate(C.x, C.y); x.save(); x.rotate(t * 0.05 + a.x); x.globalAlpha = 0.5; x.drawImage(U.rayons, -sr2 / 2, -sr2 / 2, sr2, sr2); x.restore();
     const eteinte = a.type === "nouveau" && !a.etats.some((e) => e !== "avenir");
     if (eteinte) x.globalAlpha = (sur ? 0.6 : 0.34) * (0.8 + 0.2 * Math.sin(t * 1.2));
-    x.drawImage(U.soleil(a.couleurs ?? BLEU), -sz / 2, -sz / 2, sz, sz);
+    x.drawImage(U.soleil(verrou ? GRIS : a.couleurs ?? BLEU), -sz / 2, -sz / 2, sz, sz);
     x.restore();
+    x.restore(); x.globalAlpha = 1;
+    // Une étape vient d'être finie ici : une étoile s'allume, puis l'onde s'efface.
+    { const e0 = eclats.get(a.id); if (e0 !== undefined) { const k = (t - e0) / 3.2; if (k > 1) eclats.delete(a.id); else { const p = P[Math.abs(Math.round(a.x * 7 + e0 * 13)) % P.length], sz = (70 * (1 - k) + 20) * Math.max(0.5, Math.sqrt(cam.k)); x.save(); x.globalCompositeOperation = "lighter"; x.globalAlpha = 1 - k; x.drawImage(U.SP["255,248,240"], p.x - sz / 2, p.y - sz / 2, sz, sz); x.restore(); x.strokeStyle = `rgba(255,240,220,${0.6 * (1 - k)})`; x.lineWidth = 1.2; x.beginPath(); x.arc(p.x, p.y, 6 + k * 46, 0, 7); x.stroke(); } } }
+    // Quelqu'un regarde ce projet : une comète le frôle.
+    { const c0 = cometes.get(a.id); if (c0 !== undefined) { const k = (t - c0) / 2.6; if (k > 1) cometes.delete(a.id); else { const ray = g.R * 1.5 * cam.k, ang = -0.7 + k * 2.2, hx = C.x + Math.cos(ang) * ray * 1.5 - ray * 0.2, hy = C.y - ray * 0.9 + k * ray * 1.1, dx2 = -Math.sin(ang) * 90, dy2 = -60; const gr = x.createLinearGradient(hx, hy, hx + dx2, hy + dy2); gr.addColorStop(0, `rgba(255,255,255,${Math.sin(k * Math.PI)})`); gr.addColorStop(1, "rgba(160,190,255,0)"); x.strokeStyle = gr; x.lineWidth = 2; x.beginPath(); x.moveTo(hx, hy); x.lineTo(hx + dx2, hy + dy2); x.stroke(); x.save(); x.globalCompositeOperation = "lighter"; x.globalAlpha = Math.sin(k * Math.PI); x.drawImage(U.SP["202,215,255"], hx - 14, hy - 14, 28, 28); x.restore(); } } }
     if (eteinte) { const rr = rc * 0.5; x.strokeStyle = `rgba(230,236,255,${sur ? 1 : 0.85})`; x.lineWidth = 1.6; x.beginPath(); x.arc(C.x, C.y, rc * 0.95, 0, 7); x.moveTo(C.x - rr, C.y); x.lineTo(C.x + rr, C.y); x.moveTo(C.x, C.y - rr); x.lineTo(C.x, C.y + rr); x.stroke(); }
     return { C, P, rc };
   }
@@ -527,6 +549,8 @@ export function monterCiel(racine: HTMLElement, donnees: DonneesCiel, options: O
       if (A.x0 < B.x1 + 6 && B.x0 < A.x1 + 6 && B.y < A.y + A.h + 3 && B.y + B.h > A.y - 3) { const pousse = A.y + A.h + 3 - B.y; B.y += pousse; dy.set(B.el, (dy.get(B.el) ?? 0) + pousse); }
     }
     for (const B of boites) { if (B.el === sousCoeur) continue; const val = `${Math.round(dy.get(B.el) ?? 0)}px`; if (B.el.style.getPropertyValue("--dy") !== val) B.el.style.setProperty("--dy", val); }
+    // Les repères posés dans le ciel (le nom des amas) : visibles de loin.
+    for (const el of racine.querySelectorAll<HTMLElement>("[data-monde]")) { const p = ecran(Number(el.dataset.x), Number(el.dataset.y)); pose(el, p, p.x < -200 || p.x > W + 200 || p.y < -80 || p.y > H + 80); }
     // Un bouton invisible sur le cœur de chaque constellation qui en demande un : on clique sur le soleil lui-même.
     for (const el of racine.querySelectorAll<HTMLElement>("[data-coeur]")) { const V = vues[el.dataset.coeur!]; pose(el, V ? V.C : { x: 0, y: 0 }, !V); }
     for (const el of noms()) {
@@ -587,6 +611,9 @@ export function monterCiel(racine: HTMLElement, donnees: DonneesCiel, options: O
       const xs = D.astres.map((a) => a.x), ys = D.astres.map((a) => a.y), l = Math.max(...xs) - Math.min(...xs) + 2.6 * R, h = Math.max(...ys) - Math.min(...ys) + 2.6 * R, noms = etroit ? 150 : 320;
       cible = { x: (Math.min(...xs) + Math.max(...xs)) / 2, y: (Math.min(...ys) + Math.max(...ys)) / 2, k: borne(Math.min((W - noms) / l, (H - 120) / h), K_MIN, 1), r: cam.r };
     },
+    aller(wx, wy, k = 0.6) { touche(); cible = { x: wx, y: wy, k: borne(k, K_MIN, K_MAX), r: cam.r }; },
+    eclat(id) { eclats.set(id, temps); },
+    comete(id) { cometes.set(id, temps); },
     detruire() {
       cancelAnimationFrame(boucle); boucle = 0; window.clearTimeout(aideVue);
       window.removeEventListener("keydown", surMaj); window.removeEventListener("keyup", surMaj);

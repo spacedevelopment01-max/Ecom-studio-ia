@@ -33,10 +33,13 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   16 novembre 2026 : SINA a créé seule la marque de trois clients inventés, anciennes façons retirées ; compte rendu
   et décisions de l'essai : `docs/studio/LOT-2-LA-MARQUE.md`. Lot 3 (les trois angles) fait le 16 novembre 2026 : SINA a créé
   seule les angles de deux clients repris du lot 2 (branche `essai-lot2-donnees`), le propriétaire les a validés
-  (« Parfait »), anciennes façons retirées ; compte rendu : `docs/studio/LOT-3-LES-TROIS-ANGLES.md`. En parallèle des lots, la nouvelle interface (le ciel) :
-  étape 1, la constellation du projet, construite le 16 novembre 2026 sur la branche `ccr-a9409499-af5vb4`, pas encore
-  fusionnée (`src/lib/ciel`, `src/components/studio/ciel`, page d'essai : `scripts/ciel/essai.mts`) ; restent l'arrivée du
-  nouveau client, le ciel partagé, la page d'accueil publique. Suite : 4 le site, 5 les publications automatiques, 6 les forfaits, 7 SINA prend les devants, 8 les
+  (« Parfait »), anciennes façons retirées ; compte rendu : `docs/studio/LOT-3-LES-TROIS-ANGLES.md`. En parallèle des lots, la nouvelle interface (le ciel),
+  sur la branche `ccr-a9409499-af5vb4`, pas encore fusionnée : la constellation du projet, l'arrivée du nouveau client
+  (voie lactée, visite guidée, « Nouveau projet ») et le ciel partagé (projets des autres verrouillés ou ouverts aux
+  visites, amas par métier, en direct, pause, comète) sont construits le 16 novembre 2026 ; le propriétaire a demandé
+  d'arrêter là (« Arrête toi au ciel partagé »). Plan de toutes les idées, avec celles qui attendent un autre lot :
+  https://claude.ai/artifact/86mAGCFEkzY3iWWxgGRdzc. Code : `src/lib/ciel`, `src/components/studio/ciel`, page d'essai
+  `scripts/ciel/essai.mts`. Suite : 4 le site, 5 les publications automatiques, 6 les forfaits, 7 SINA prend les devants, 8 les
   publicités, 9 les vidéos.
 
 ## Avec le propriétaire

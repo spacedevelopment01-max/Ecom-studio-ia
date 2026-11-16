@@ -123,3 +123,24 @@ export function placesAccueil(ids: string[]): Record<string, { x: number; y: num
   }
   return out;
 }
+
+/**
+ * Le ciel partagé : les projets des autres se rangent en amas par métier, loin autour du centre (où sont « Nouveau
+ * projet » et mes propres projets). Chaque amas a son centre ; dedans, les constellations s'enroulent en spirale.
+ */
+export function placesCommun(astres: { cle: string; metier: string | null }[]): { places: Record<string, { x: number; y: number }>; amas: { metier: string; x: number; y: number; n: number }[] } {
+  const OR = Math.PI * (3 - Math.sqrt(5)), groupes = new Map<string, string[]>();
+  for (const a of astres) { const m = a.metier ?? ""; groupes.set(m, [...(groupes.get(m) ?? []), a.cle]); }
+  const places: Record<string, { x: number; y: number }> = {}, amas: { metier: string; x: number; y: number; n: number }[] = [];
+  // Les amas se posent l'un après l'autre sur une spirale, chacun à une distance qui laisse la place du précédent.
+  let rayon = 2300, angle = graine("amas")() * Math.PI * 2;
+  for (const metier of [...groupes.keys()].sort()) {
+    const cles = groupes.get(metier)!.sort(), taille = 420 * Math.sqrt(cles.length) + 260;
+    rayon += taille * 0.45; angle += OR * 0.62 + taille / rayon;
+    const cx = Math.cos(angle) * rayon * 1.2, cy = Math.sin(angle) * rayon * 0.85, tour = graine(metier || "autres")() * Math.PI * 2;
+    cles.forEach((cle, j) => { const r = 430 * Math.sqrt(j + 0.35), a = tour + j * OR; places[cle] = { x: cx + Math.cos(a) * r * 1.1, y: cy + Math.sin(a) * r * 0.85 }; });
+    amas.push({ metier, x: cx, y: cy, n: cles.length });
+    rayon += taille * 0.45;
+  }
+  return { places, amas };
+}
