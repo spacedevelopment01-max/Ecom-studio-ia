@@ -11,6 +11,7 @@ import { BrandBoards, type BoardSet } from "./brand-boards";
 import type { ThemeDemoStatus } from "@/lib/theme/theme-demos";
 import type { DirectionCard } from "@/lib/theme/directions";
 import { useT } from "../i18n";
+import { AngleCards, type Angles } from "./angle-cards";
 import { useOptionalProject } from "./project-context";
 import { stepLabel } from "./journey-labels";
 
@@ -145,7 +146,6 @@ function CalendarCard({ projectId, refreshKey }: { projectId: string; refreshKey
   );
 }
 
-type Angles = { list: { id: string; title: string; goal?: string; why?: string; story?: string; show?: string; organicExample?: string; cta?: string; audience: string; motivation: string; message: string; emotion: string; proofsToConfirm: string[]; arguments: string[]; sources: { title: string; url: string }[]; doubt?: string }[]; roles?: Record<string, "sur" | "emotion" | "audacieux">; recommendedId: string | null; sourceCount: number; chosen: string[] | null };
 
 type PostsPlan = { round: number; judged: "juges" | "non_juges"; groups: { subject: string; title: string; points: string[]; cta: string; caption: string; hashtags: string[]; visual: string; doubt?: string }[]; created: { id: string; network: string; title: string; images: string[] }[] | null };
 const POST_SUBJECT: Record<string, [string, string]> = { produit: ["Le produit", "The product"], conseil: ["Un conseil", "A tip"], coulisses: ["Les coulisses", "Behind the scenes"], usage: ["L'usage", "How to use"], erreurs: ["Les erreurs à éviter", "Mistakes to avoid"], question: ["Une question", "A question"] };
@@ -195,64 +195,8 @@ function PostsPlanCard({ plan }: { plan: PostsPlan }) {
   );
 }
 
-/** Couleurs des bandeaux, reprises du guide « 5 angles marketing » du propriétaire (trois montrés depuis le 14 novembre 2026). */
-const ROLE_LABEL = { sur: ["L'angle sûr", "The safe angle"], emotion: ["L'angle d'émotion", "The emotional angle"], audacieux: ["L'angle audacieux", "The bold angle"] } as const;
+/** Couleurs des bandeaux du plan des publications. */
 const ANGLE_BANDS = ["#9C3343", "#74533F", "#43644A", "#B46D25", "#73507F"];
-
-/**
- * Étape 4 : les 3 angles (un sûr, un d'émotion, un audacieux) au format du guide du propriétaire (7 novembre 2026) — bandeau titre + objectif, pourquoi,
- * accroche, ce qu'on raconte, ce qu'on montre, publication conseillée, appel à l'action, informations à confirmer,
- * sources. Le client peut en choisir PLUSIEURS : le premier coché est l'angle principal.
- */
-function AngleCards({ angles, busy, onChoose }: { angles: Angles; busy: boolean; onChoose: (titles: string[]) => void }) {
-  const t = useT();
-  const [picked, setPicked] = useState<string[]>([]);
-  const chosen = angles.chosen ?? [];
-  const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
-  const row = (label: string, value?: string | null) => (value ? <div><dt className="font-semibold" style={{ color: "inherit" }}>{label}</dt><dd className="text-ink/90">{value}</dd></div> : null);
-  return (
-    <div className="@container mt-2 space-y-2" data-syna-angles>
-      <p className="text-xs text-muted">{t(`${angles.sourceCount} sources lues sur le web (places de marché exclues). Tu peux choisir un ou plusieurs angles : le premier coché sera l'angle principal de ton site, les autres serviront aux publications et aux publicités.`, `${angles.sourceCount} web sources read. You can pick one or several angles.`)}</p>
-      <div className="grid grid-cols-1 gap-3 @3xl:grid-cols-2">
-        {angles.list.map((a, i) => {
-          const band = ANGLE_BANDS[i % ANGLE_BANDS.length];
-          const rank = chosen.length ? chosen.indexOf(a.id) : picked.indexOf(a.id);
-          return (
-            <article key={a.id} className={cx("overflow-hidden rounded-xl border bg-card text-xs", rank >= 0 ? "ring-2" : "border-line", chosen.length > 0 && rank < 0 && "opacity-60")} style={rank >= 0 ? { borderColor: band, boxShadow: `0 0 0 2px ${band}` } : undefined} data-angle={a.id}>
-              <header className="px-4 py-3 text-white" style={{ background: band }}>
-                <div className="flex items-start justify-between gap-2">
-                  <h4 className="text-base font-bold leading-tight">{String(i + 1).padStart(2, "0")}  {a.title}</h4>
-                  {angles.recommendedId === a.id && <span className="shrink-0 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold" style={{ color: band }}>{t("Recommandé", "Recommended")}</span>}
-                </div>
-                {!!angles.roles?.[a.id] && <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide opacity-90" data-angle-role={angles.roles[a.id]}>{t(ROLE_LABEL[angles.roles[a.id]][0], ROLE_LABEL[angles.roles[a.id]][1])}</p>}
-                {!!a.goal && <p className="mt-1 text-sm opacity-90">{a.goal}</p>}
-              </header>
-              <dl className="space-y-2 px-4 py-3" style={{ color: band }}>
-                {row(t("Pourquoi cet angle", "Why this angle"), a.why || a.motivation)}
-                {row(t("Accroche proposée", "Proposed hook"), a.message)}
-                {row(t("Ce qu'on raconte", "What we tell"), a.story)}
-                {row(t("Ce qu'on montre", "What we show"), a.show)}
-                {row(t("Exemple de contenu organique", "Organic content example"), a.organicExample)}
-                {row(t("Appel à l'action", "Call to action"), a.cta)}
-                {row(t("Informations à confirmer", "To confirm"), a.proofsToConfirm.join(" ; "))}
-              </dl>
-              {/* Angle montré avec le doute de SINA (sa relecture l'avait refusé) : dit franchement, jamais caché. */}
-              {!!a.doubt && <p className="mx-4 mb-2 rounded-md border border-line bg-card px-3 py-2 text-[11px] text-muted" data-angle-doubt={a.id}><strong>{t("Mon doute sur cet angle", "My doubt about this angle")} : </strong>{a.doubt}</p>}
-              {!!a.sources.length && <p className="px-4 pb-2 text-[11px] text-muted">{t("Sources", "Sources")} : {a.sources.map((x, k) => <span key={x.url}>{k ? " · " : ""}<a className="underline" href={x.url} target="_blank" rel="noreferrer">{x.title}</a></span>)}</p>}
-              <div className="border-t border-line px-4 py-2">
-                {chosen.length
-                  ? rank >= 0 && <p className="font-semibold" style={{ color: band }}>✓ {rank === 0 ? t("Angle principal", "Main angle") : t("Angle retenu", "Selected angle")}</p>
-                  : <Button size="sm" variant={rank >= 0 ? "primary" : "secondary"} disabled={busy} onClick={() => toggle(a.id)} data-angle-pick={a.id}>{rank >= 0 ? (rank === 0 ? t("✓ Angle principal", "✓ Main angle") : t(`✓ Retenu (${rank + 1})`, `✓ Selected (${rank + 1})`)) : t("Choisir cet angle", "Pick this angle")}</Button>}
-              </div>
-              <p className="px-4 pb-2 text-[10px] text-muted">{t("Un angle principal par contenu. Les scènes doivent démontrer la promesse.", "One main angle per content.")}</p>
-            </article>
-          );
-        })}
-      </div>
-      {!chosen.length && !!picked.length && <Button disabled={busy} onClick={() => onChoose(picked.map((id) => angles.list.find((x) => x.id === id)!.title))} data-angles-validate>{t(picked.length > 1 ? `Valider mes ${picked.length} angles` : "Valider cet angle", picked.length > 1 ? `Confirm my ${picked.length} angles` : "Confirm this angle")}</Button>}
-    </div>
-  );
-}
 
 type Themes = { list: { id: string; name: string; tagline: string; preview: string; why: string; recommended: boolean; allowed: boolean; blocked?: string; demo: boolean }[]; recommendedId: string | null; all: boolean; chosen: string | null };
 
@@ -624,7 +568,8 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
   const lastCalendar = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && String(m.content?.tool ?? "").startsWith("calendar.") && m.content?.ok)?.id, [v?.messages]);
   // Étape 9 : le plan arrive à la fin de sa tâche, les images à la fin de la production ; la carte suit le dernier résultat.
   const lastPosts = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.ok && ((m.content?.tool === "jobs.wait" && /syna\.posts\.plan|social\.v2\.produce/.test(JSON.stringify(m.content?.data ?? ""))) || m.content?.tool === "posts.plan"))?.id, [v?.messages]);
-  const lastAngles = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "angles.propose" && m.content?.ok && m.content?.data?.angles)?.id, [v?.messages]);
+  // Les cartes des angles arrivent à la fin de leur tâche de fond ; relire des angles prêts les remontre.
+  const lastAngles = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.ok && ((m.content?.tool === "jobs.wait" && /syna\.angles/.test(JSON.stringify(m.content?.data ?? ""))) || (m.content?.tool === "angles.propose" && m.content?.data?.angles)))?.id, [v?.messages]);
   const lastActivity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "activity.plan" && m.content?.ok)?.id, [v?.messages]);
   const lastCopy = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "mockup.copy" && m.content?.ok)?.id, [v?.messages]);
   const lastCustom = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && String(m.content?.tool ?? "").startsWith("custom.") && m.content?.ok && m.content?.data?.customTheme)?.id, [v?.messages]);
@@ -666,7 +611,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
                 <ToolResult m={tm} projectId={v.projectId} onChoose={(n) => send(t(`Je choisis le thème sur mesure ${n}.`, `I choose custom theme ${n}.`))} busy={busy || working} />
                 {tm.id === lastActivity && v.journey?.activity && <ActivityCard a={v.journey.activity} busy={busy || working} onValidate={() => send(t("Je valide mon activité.", "I validate my business."))} />}
                 {tm.id === lastPosts && v.journey?.posts && <PostsPlanCard plan={v.journey.posts} />}
-                {tm.id === lastAngles && v.journey?.angles && <AngleCards angles={v.journey.angles} busy={busy || working} onChoose={(titles) => send(titles.length > 1 ? t(`Je choisis ces angles : ${titles.map((x, i) => `« ${x} »${i === 0 ? " (principal)" : ""}`).join(", ")}.`, `I choose these angles: ${titles.join(", ")}.`) : t(`Je choisis l'angle « ${titles[0]} ».`, `I choose the angle "${titles[0]}".`))} />}
+                {tm.id === lastAngles && v.journey?.angles && <AngleCards angles={v.journey.angles} busy={busy || working} onChoose={(title) => send(t(`Je choisis l'angle « ${title} ».`, `I choose the angle "${title}".`))} />}
                 {tm.id === lastCopy && v.journey?.siteCopy && <CopyCard pages={v.journey.siteCopy.pages} />}
                 {tm.id === lastCustom && v.projectId && <CustomThemeCard card={tm.content.data.customTheme} busy={busy || working} onSend={(text) => send(text)} />}
                 {tm.id === lastConcepts && v.projectId && <ConceptCards concepts={tm.content.data.concepts} busy={busy || working} onChoose={(k) => send(t(`Je choisis le concept ${k}.`, `I choose concept ${k}.`))} />}

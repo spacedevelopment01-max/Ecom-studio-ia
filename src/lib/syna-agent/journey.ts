@@ -132,9 +132,9 @@ export type Journey = {
   logoChoice?: { source: "A" | "B" | "C"; assetId: string; at: number };
   /** Étape 3 : image de marque complète (déclinaisons, favicons, avatar, planche, charte PDF). */
   brandKit?: BrandKit;
-  /** Étape 4 : les angles marketing (recherche web ; trois montrés) et l'angle choisi par le client. */
+  /** Étape des angles : les trois angles montrés (et la réserve gardée par le juge), puis l'angle choisi par le client. */
   angles?: SinaAngles;
-  /** Angle principal (id) et, dans l'ordre, tous les angles retenus (ids ; le premier est le principal). */
+  /** L'angle choisi par le client (id ; `ids` ne contient que lui : forme gardée pour ce qui la lit déjà). */
   angleChoice?: { id: string; ids?: string[]; at: number };
   /** Étape 5 : le plan de l'activité tel qu'affiché au client (coordonnées, stratégie, offre, produits). */
   activity?: ActivityPlan;
@@ -423,13 +423,24 @@ export function themeStepContext(j: Journey): string[] {
   return [base, `Thèmes affichés : ${t.list.map((x) => `${x.id} « ${x.name} »${x.recommended ? " (recommandé)" : ""}${x.allowed ? "" : " (non inclus dans son forfait)"}`).join(" ; ")}.`];
 }
 
-/** Étape 4 : les 3 angles marketing (cinq écrits et jugés, les trois plus éloignés montrés). */
+/** Étape des angles : trois angles (un sûr, un d'émotion, un audacieux), écrits par trois stratèges séparées et jugés à part. */
 export function anglesStepContext(j: Journey): string[] {
   const a = j.angles;
-  if (!a?.list.length) return ["Étape 4 (3 angles marketing) : explique en une ou deux phrases ce qu'est un angle (la façon de parler de la marque : à qui, quelle émotion, quelle promesse) et que TU vas chercher sur le web (dis « je vais chercher », jamais « SINA va ») ce que vivent ses clients et ses concurrents (places de marché exclues) pour proposer 3 angles très différents (un sûr, un d'émotion, un audacieux) avec leurs sources. C'est PAYANT : appelle angles.propose ; le Studio montre le devis au client sur une carte d'accord et ne lance qu'après son accord. Rappelle angles.propose après chaque tâche terminée (analyse de la fiche, puis recherche) : c'est LUI qui range les 3 angles et les AFFICHE en cartes au client (sources comprises) ; n'utilise jamais research.read ni strategy.read à cette étape (lecture tronquée, aucune carte). S'il renvoie des questions, pose-les au client UNE par UNE, enregistre ses réponses avec pilot.answer, puis rappelle angles.propose."];
+  if (!a?.shown?.length) {
+    const st = j.identities?.study;
+    return [
+      "Étape des angles : rien n'est encore proposé. Un angle, c'est aller chercher un type de client différent, avec ses envies et ses besoins à lui, qui cherche le même produit ou la même prestation : seule la façon de le mettre en avant change, sur le site et dans la communication. Tu vas en proposer TROIS, pour trois types de clients différents : un sûr, un d'émotion, un audacieux. Dis-le au client en une ou deux phrases simples.",
+      `AVANT de lancer, vérifie que tu sais ce que LUI SEUL peut savoir et dont les angles ont besoin : qui sont ses différents types de clients, et lequel il veut voir venir davantage ; ce que ses clients lui disent ou lui demandent le plus souvent ; à quel moment et pour quelle occasion on achète ou on réserve chez lui ; ce qu'on ressent en utilisant son produit ou en sortant de chez lui (goût, toucher, odeur, résultat) ; ce que ses clients faisaient avant de venir chez lui ; à quel moment leur besoin apparaît ; ce qui les surprend en bien ; ce qu'il fait que ses concurrents ne font pas, et ce qu'il refuse de faire ; ce qui fait revenir ses clients. Un type de client, c'est une situation (qui il est, pour quelle occasion il vient), jamais un âge seul ni une crainte que tous partagent. Relis ce qu'il t'a déjà dit (sa fiche, tes notes) : ne redemande JAMAIS ce que tu sais. S'il te manque quelque chose d'important, pose tes questions maintenant, une à la fois, et note chaque réponse (start.note). Un angle ne peut rien affirmer que le client n'a pas dit : mieux vaut une question de plus qu'un angle bâti sur une supposition.`,
+      `Ce que tu as déjà : ${st ? `ton étude de son marché faite pour la marque (${st.quoteCount} parole(s) réelle(s) d'acheteurs, ${st.competitors.length} concurrent(s) lus)` : "pas encore d'étude de son marché"}. Tu ne la repaies pas ; tu ne retournes écouter le web que s'il te manque des paroles d'acheteurs.`,
+      "Quand tu as ce qu'il te faut et que le client est prêt, appelle angles.propose : c'est payant, le Studio montre le prix sur la carte d'accord (un seul accord pour toute l'étape), puis la création prend quelques minutes en arrière-plan. N'invente aucun angle toi-même : seul angles.propose les crée. Tu es la seule à parler au client : dis « je relis », « j'écris », jamais « ma stratège » ni « le juge ».",
+    ];
+  }
+  const shown = shownAngles(a);
   return [
-    `Étape 4 — ${shownAngles(a).length} angles prêts (affichés au client dans le fil, ${a.sourceCount} sources lues) : ${shownAngles(a).map((x) => `${x.id} « ${x.title} »${roleOf(a, x.id) ? ` (${ANGLE_ROLE_LABEL[roleOf(a, x.id)!].fr.toLowerCase()})` : ""} (émotion : ${x.emotion || "?"} ; à confirmer : ${x.proofsToConfirm.join(", ") || "rien"})`).join(" ; ")}. Recommandé : ${a.recommendedId ?? "aucun"}.${a.reserve?.length ? ` ${a.reserve.length} autre(s) en réserve pour les publications et les publicités (jamais proposés comme choix).` : ""}`,
-    "Présente-les en 3 phrases courtes au plus (sans recopier les cartes), dis lequel est recommandé et pourquoi en une phrase, rappelle que les « informations à confirmer » (mots exacts des cartes) ne seront jamais écrites sans son accord, puis demande lequel ou lesquels il choisit : il peut en prendre PLUSIEURS (le premier = l'angle principal du site, les autres pour les publications et publicités ; son forfait en permet un nombre limité) → angles.choose {angleIds}. Ne choisis jamais à sa place. S'il veut une NOUVELLE proposition d'angles, appelle angles.propose {redo: sa demande avec ses mots} (payant : devis annoncé).",
+    `Étape des angles — proposition n° ${a.round ?? 1} : tes ${shown.length} angles sont affichés au client en cartes dans le fil. ${shown.map((x) => `${x.id} « ${x.title} »${roleOf(a, x.id) ? ` (${ANGLE_ROLE_LABEL[roleOf(a, x.id)!].fr.toLowerCase()})` : ""}${x.client ? ` pour le type de client « ${x.client.name} »` : ""} : ${x.person ?? x.audience} ; accroche « ${x.message} » ; émotion : ${x.emotion || "?"} ; à confirmer : ${x.proofsToConfirm.join(", ") || "rien"}${x.doubt ? ` ; TON DOUTE : ${x.doubt}` : ""}`).join(" | ")}.`,
+    `Celui que tu recommandes : ${a.recommendedId ?? "aucun"}${a.recommendation ? ` (${a.recommendation})` : ""}.${a.reserve?.length ? ` ${a.reserve.length} autre(s) angle(s) gardé(s) restent en réserve pour ses publications et ses publicités : ne les propose pas comme choix.` : ""}`,
+    `Présente-les en trois phrases courtes au plus, sans recopier les cartes : pour chacun, la clientèle visée et ce qu'on lui montre en premier. Dis en une phrase pourquoi tu as choisi ces trois clientèles-là${a.clients?.others.length ? ` (tu as aussi repéré : ${a.clients.others.join(", ")} ; il peut te demander un angle pour l'une d'elles)` : ""}. Dis lequel tu recommandes et pourquoi, en une phrase. Si tu doutes d'un angle, dis-le franchement, à la première personne, et propose de le reprendre. Rappelle en une phrase que les « informations à confirmer » ne seront jamais écrites sans sa réponse. Puis demande lequel il choisit : UN angle, qui sera le fil conducteur de son site, de ses publications et de ses publicités → angles.choose {angleId}. Ne choisis jamais à sa place. S'il veut une nouvelle proposition, appelle angles.propose {redo: sa demande avec ses mots} (payant : le prix est annoncé).`,
+    ...(a.issues?.length ? [`À dire honnêtement au client, en mots simples : ${a.issues.join(" ; ")}`] : []),
   ];
 }
 

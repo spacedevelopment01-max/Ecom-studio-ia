@@ -73,12 +73,14 @@ describe("tâches de fond : les anciennes façons de créer ne sont plus déclar
     for (const gone of ["src/lib/engine/pipeline.ts", "src/lib/workflow/index.ts", "src/lib/project-start.ts", "src/lib/social-v2/initial.ts"]) expect(exists(gone), gone).toBe(false);
   });
 
-  it("les tâches de SINA et le moteur de préparation dont elle se sert restent déclarés", () => {
+  it("les tâches de SINA restent déclarées ; SINA ne lance plus l'ancienne préparation (lot 3)", () => {
     // La tâche des trois logos libres (« syna.logos ») a été retirée le 16 novembre 2026 : le logo vient de la planche.
     expect(HANDLER_TYPES).not.toContain("syna.logos");
-    for (const kept of ["syna.agent", "syna.brand", "project.prepare", "strategy.prepare", "image.v2", "shop.build", "files.classify"]) expect(HANDLER_TYPES, kept).toContain(kept);
-    // SINA lance encore la préparation (fiche, recherche, angles) : la tâche ne part pas tant qu'elle s'en sert.
-    expect(read("src/lib/preparation/engine.ts")).toContain('type: "project.prepare"');
-    expect(read("src/lib/syna-agent/tools/project.ts")).toContain("queuePreparation(");
+    for (const kept of ["syna.agent", "syna.brand", "syna.angles", "strategy.prepare", "image.v2", "shop.build", "files.classify"]) expect(HANDLER_TYPES, kept).toContain(kept);
+    // Lot 3 : les angles viennent de la chaîne de SINA. Aucun outil de SINA ni aucune route ne lance plus la recherche
+    // de l'ancienne préparation ; son moteur reste pour ce qui en dépend encore (fiche de départ, lot du site).
+    expect(read("src/lib/syna-agent/tools/project.ts")).not.toContain("queuePreparation(");
+    expect(read("src/lib/syna-agent/tools/angles.ts")).not.toMatch(/preparation\//);
+    expect(read("src/app/api/projects/[id]/marketing-strategy/route.ts")).not.toMatch(/export const POST|queuePreparation/);
   });
 });

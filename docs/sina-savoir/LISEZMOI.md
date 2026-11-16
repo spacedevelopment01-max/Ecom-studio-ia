@@ -18,6 +18,7 @@ jour. Les quatre cahiers de métier sont lus par les spécialistes de SINA à ch
 | `idee-de-marque.md` | Cahier de métier : l'aveu du client, l'adversaire, les tests d'une idée forte. |
 | `slogans-et-ton.md` | Cahier de métier : les principes des grands rédacteurs, la fiche de ton, les tics d'écriture à chasser. |
 | `identite-visuelle.md` | Cahier de métier : les signes qu'on reconnaît sans lire le nom, la couleur, le lettrage, la mise en situation. |
+| `angles-marketing.md` | Cahier de métier (16 novembre 2026) : ce qu'est un angle avec les mots du propriétaire, ce qu'est un vrai type de client, ce qui change d'un angle à l'autre, les règles et les fautes. Lu par les spécialistes des angles (`angles-knowledge.ts`). |
 
 Les quatre cahiers viennent de recherches sur le web faites le 12 novembre 2026. Chaque affirmation porte sa source ;
 ce qui n'a pas été trouvé est écrit « non trouvé ». Ils sont à relire et à mettre à jour, pas à croire sur parole.

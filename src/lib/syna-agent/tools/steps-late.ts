@@ -103,7 +103,8 @@ export function blogMaterial(projectId: string, j: Journey, p: ReturnType<typeof
   return {
     sujets: (() => { try { return localTopics(p).slice(0, 6).map((t) => ({ titre: t.title, genre: t.kind, pourquoi: t.why, ...(t.keyword ? { requete: t.keyword } : {}) })); } catch { return []; } })(),
     angles: chosenAngles(j).map((a) => ({ titre: a.title, emotion: a.emotion, pour: a.audience })),
-    parolesDeClients: (research?.observations ?? []).slice(0, 6).map((o) => o.quote.slice(0, 240)),
+    // Les paroles réelles d'acheteurs : celles de l'étude de la marque (reprises par les angles), sinon celles d'une recherche d'avant.
+    parolesDeClients: (j.identities?.study?.quotes?.length ? j.identities.study.quotes.map((q) => q.text) : (research?.observations ?? []).map((o) => o.quote)).slice(0, 6).map((q) => q.slice(0, 240)),
   };
 }
 
