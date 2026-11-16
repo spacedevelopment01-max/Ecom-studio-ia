@@ -1161,6 +1161,15 @@ CREATE TABLE IF NOT EXISTS prompt_ideas (
   fingerprint TEXT NOT NULL DEFAULT '',
   created_at INTEGER NOT NULL
 );
+
+-- La constellation de chaque projet : sa forme, tirée une fois du projet et comparée à toutes les autres, puis gardée
+-- pour toujours (elle ne change pas quand un autre projet disparaît).
+CREATE TABLE IF NOT EXISTS constellations (
+  project_id TEXT PRIMARY KEY,
+  essai INTEGER NOT NULL DEFAULT 0,
+  forme_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
 `;
 
 /** Colonnes ajoutées après la première version (ajout seulement, jamais de suppression). */

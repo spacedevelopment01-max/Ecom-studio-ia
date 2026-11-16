@@ -1,0 +1,128 @@
+/*
+ * Le ciel du Studio. Toujours de nuit, quel que soit le réglage clair ou sombre du reste : ses couleurs sont les siennes.
+ * Le dessin est sur la toile ; tout ce qui se lit et se clique est du vrai texte posé dessus par le moteur.
+ */
+.ciel {
+  --nuit: #070B1F; --verre: rgba(16, 24, 58, .74); --trait: rgba(157, 180, 255, .22);
+  --texte: #E9EDFF; --doux: #9AA5CF; --pale: #6F7AA6; --bleu: #7C9CFF; --bleu2: #2F5BEA; --phare: #F3CFA0;
+  position: relative; overflow: hidden; isolation: isolate; min-height: 440px; height: calc(100dvh - 72px);
+  background: radial-gradient(120% 90% at 50% 45%, #0A1230 0%, #050919 55%, #020308 100%);
+  color: var(--texte); font-family: var(--font-sans); user-select: none; -webkit-user-select: none;
+  color-scheme: dark;
+}
+/* Le ciel va d'un bord à l'autre : l'espace de travail lui laisse toute sa place. */
+#studio-main:has(> .ciel) { padding: 0 !important; overflow: hidden; }
+.ciel canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+.ciel canvas:active { cursor: grabbing; }
+.ciel :focus-visible { outline: 2px solid var(--bleu); outline-offset: 3px; border-radius: 10px; }
+.ciel [hidden] { display: none !important; }
+
+/* ——— Le titre ——— */
+.ciel-titre { position: absolute; z-index: 4; left: 24px; top: 20px; display: grid; gap: 2px; pointer-events: none; max-width: min(46ch, calc(100% - 48px)); transition: opacity .4s; }
+.ciel-titre p { margin: 0; font-size: 12.5px; color: var(--doux); display: flex; align-items: center; gap: 8px; }
+.ciel-titre p i { width: 7px; height: 7px; border-radius: 50%; background: var(--bleu); box-shadow: 0 0 10px var(--bleu); animation: ciel-pouls 1.8s ease-in-out infinite; }
+.ciel-titre h2 { margin: 0; font: italic 400 30px/1.08 var(--font-serif); color: var(--texte); overflow-wrap: anywhere; text-shadow: 0 0 18px rgba(5, 8, 24, .9); }
+.ciel-titre .ciel-compte { color: var(--pale); }
+@keyframes ciel-pouls { 50% { opacity: .35; } }
+
+/* ——— Les étoiles : un bouton rond posé sur chacune, son nom et son état à côté ——— */
+.ciel-etoiles { position: absolute; inset: 0; z-index: 3; margin: 0; padding: 0; list-style: none; pointer-events: none; }
+.ciel-etoiles li { display: contents; }
+.ciel-etoile { position: absolute; left: 0; top: 0; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 50%; background: transparent; border: 0; padding: 0; cursor: pointer; pointer-events: auto; color: inherit; font: inherit; transition: opacity .45s; will-change: transform; }
+.ciel-etoile > span { position: absolute; display: grid; gap: 1px; white-space: nowrap; text-align: left; text-shadow: 0 0 14px rgba(5, 8, 24, .95), 0 0 4px rgba(5, 8, 24, .9); transition: color .3s; --dx: 0px; --dy: 0px; }
+.ciel-etoile b { font: 500 13.5px/1.2 var(--font-sans); color: var(--texte); }
+.ciel-etoile small { font: 400 11px/1.25 var(--font-sans); color: var(--doux); }
+.ciel-etoile[data-cote="droite"] > span { left: 42px; top: 50%; transform: translateY(calc(-50% + var(--dy))); }
+.ciel-etoile[data-cote="gauche"] > span { right: 42px; top: 50%; transform: translateY(calc(-50% + var(--dy))); text-align: right; }
+.ciel-etoile[data-cote="dessus"] > span { bottom: 40px; left: 50%; transform: translate(calc(-50% + var(--dx)), var(--dy)); text-align: center; }
+.ciel-etoile[data-cote="dessous"] > span, .ciel-etoile:not([data-cote]) > span { top: 40px; left: 50%; transform: translate(calc(-50% + var(--dx)), var(--dy)); text-align: center; }
+.ciel-etoile[data-etat="avenir"] b, .ciel-etoile[data-etat="sans"] b { color: var(--pale); }
+.ciel-etoile[data-etat="avenir"] small, .ciel-etoile[data-etat="sans"] small { color: #5C6792; }
+.ciel-etoile[data-etat="cours"] small, .ciel-etoile[data-ici] small { color: var(--bleu); }
+.ciel-etoile[data-etat="avis"] small { color: var(--phare); }
+.ciel-etoile[data-ici] b, .ciel-etoile:hover b, .ciel-etoile[aria-expanded="true"] b { color: #fff; }
+.ciel[data-etroit] .ciel-etoile b { font-size: 12.5px; }
+.ciel[data-etroit] .ciel-etoile small { font-size: 10.5px; }
+.ciel[data-etroit] .ciel-etoile[data-cote="droite"] > span { left: 32px; }
+.ciel[data-etroit] .ciel-etoile[data-cote="gauche"] > span { right: 32px; }
+.ciel[data-etroit] .ciel-etoile[data-cote="dessus"] > span { bottom: 32px; }
+.ciel[data-etroit] .ciel-etoile[data-cote="dessous"] > span { top: 32px; }
+
+/* ——— Les noms des constellations ——— */
+.ciel-astres { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.ciel-astre { position: absolute; left: 0; top: 0; background: none; border: 0; padding: 4px 8px; margin: 0; cursor: pointer; pointer-events: auto; text-decoration: none; color: inherit; font: inherit; transition: opacity .45s; will-change: transform; }
+.ciel-astre > span { display: grid; gap: 1px; text-align: center; white-space: nowrap; transform: translateX(-50%); font: 500 13px/1.2 var(--font-sans); color: var(--texte); text-shadow: 0 0 14px rgba(5, 8, 24, .95), 0 0 4px rgba(5, 8, 24, .9); }
+.ciel-astre small { font: 400 11px/1.2 var(--font-sans); color: var(--bleu); }
+.ciel-astre[data-type="moi"] > span { font: italic 400 19px/1.1 var(--font-serif); }
+.ciel-astre[data-type="nouveau"] > span { color: var(--doux); }
+.ciel-astre:hover > span { color: #fff; }
+
+/* ——— Ce que SINA fait ——— */
+.ciel-dit { position: absolute; z-index: 4; left: 50%; bottom: 24px; transform: translateX(-50%); margin: 0; display: flex; align-items: baseline; gap: 10px; max-width: calc(100% - 32px); padding: 9px 18px 10px; border-radius: 999px; background: var(--verre); border: 1px solid var(--trait); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); font-size: 13.5px; color: var(--texte); transition: opacity .4s; pointer-events: none; }
+.ciel-dit em { font: italic 400 20px/1 var(--font-serif); color: var(--bleu); flex: none; }
+.ciel-dit span { animation: ciel-arrive .6s both; min-width: 0; }
+@keyframes ciel-arrive { from { opacity: 0; transform: translateY(4px); } }
+
+/* ——— Zoomer, pivoter, revenir ——— */
+.ciel-vue { position: absolute; z-index: 5; right: 20px; bottom: 24px; display: grid; gap: 6px; justify-items: end; transition: opacity .4s; }
+.ciel-vue button { min-width: 40px; height: 40px; border-radius: 999px; background: var(--verre); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--trait); color: var(--texte); cursor: pointer; padding: 0 11px; display: grid; place-items: center; font: 500 12px var(--font-sans); }
+.ciel-vue button { white-space: nowrap; }
+.ciel-vue button svg { width: 16px; height: 16px; }
+.ciel-vue button:hover { border-color: var(--bleu); }
+.ciel[data-etroit] .ciel-vue { right: 10px; bottom: 76px; left: 10px; display: flex; flex-wrap: wrap; justify-content: center; }
+/* Au doigt, on pivote à deux doigts : les deux boutons de rotation laissent la place sur un petit écran. */
+@media (pointer: coarse) { .ciel[data-etroit] .ciel-vue [data-pivot] { display: none; } }
+.ciel[data-etroit] .ciel-dit { bottom: 16px; border-radius: 18px; font-size: 13px; width: max-content; }
+.ciel-aide { position: absolute; z-index: 4; left: 50%; transform: translateX(-50%); bottom: 76px; margin: 0; font-size: 12px; color: var(--doux); background: rgba(14, 22, 54, .6); border: 1px solid var(--trait); border-radius: 999px; padding: 6px 12px; white-space: nowrap; transition: opacity 1s; pointer-events: none; }
+.ciel[data-etroit] .ciel-aide { bottom: 126px; white-space: normal; text-align: center; width: max-content; max-width: min(300px, calc(100% - 24px)); }
+.ciel-aide-t { display: none; }
+@media (pointer: coarse) { .ciel-aide-o { display: none; } .ciel-aide-t { display: inline; } }
+.ciel[data-vu] .ciel-aide { opacity: 0; }
+
+/* ——— Le volet : ce qu'il y a dans l'étoile ——— */
+.ciel-volet { position: absolute; z-index: 6; top: 20px; right: 20px; bottom: 20px; width: min(400px, calc(100% - 40px)); border-radius: 20px; background: var(--verre); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid rgba(157, 180, 255, .3); box-shadow: 0 0 60px -20px rgba(47, 91, 234, .7); display: grid; align-content: start; gap: 12px; padding: 20px 22px 24px; overflow: auto; overscroll-behavior: contain; user-select: text; -webkit-user-select: text; animation: ciel-volet .6s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes ciel-volet { from { opacity: 0; transform: translateX(40px); } }
+.ciel[data-etroit] .ciel-volet { top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 62%; border-radius: 24px 24px 0 0; animation-name: ciel-volet-bas; }
+@keyframes ciel-volet-bas { from { opacity: 0; transform: translateY(60px); } }
+.ciel-volet h3 { margin: 0; font: 400 32px/1.05 var(--font-serif); color: var(--texte); }
+.ciel-volet p { margin: 0; color: var(--doux); font-size: 14px; line-height: 1.55; }
+.ciel-fermer { justify-self: start; display: inline-flex; align-items: center; gap: 6px; background: none; border: 1px solid var(--trait); color: var(--texte); border-radius: 999px; padding: 7px 13px 7px 9px; font: 500 12.5px var(--font-sans); cursor: pointer; }
+.ciel-fermer svg { width: 14px; height: 14px; }
+.ciel-fermer:hover { border-color: var(--bleu); }
+.ciel-volet .ciel-etat { font-size: 12.5px; color: var(--bleu); }
+.ciel-volet .ciel-etat[data-etat="avenir"], .ciel-volet .ciel-etat[data-etat="sans"] { color: var(--pale); }
+.ciel-volet .ciel-etat[data-etat="avis"] { color: var(--phare); }
+.ciel-volet .ciel-promesse { font-size: 15px; color: var(--texte); }
+.ciel-bloc { border: 1px solid var(--trait); border-radius: 14px; padding: 14px; display: grid; gap: 8px; background: rgba(255, 255, 255, .03); min-width: 0; }
+.ciel-bloc-t { font-size: 12px !important; color: var(--bleu) !important; }
+.ciel-bloc dl { margin: 0; display: grid; }
+.ciel-bloc dl > div { padding: 9px 0; border-top: 1px solid var(--trait); }
+.ciel-bloc dl > div:first-child { border-top: 0; padding-top: 0; }
+.ciel-bloc dt { font-size: 12px; color: var(--pale); }
+.ciel-bloc dt::first-letter { text-transform: uppercase; }
+.ciel-bloc dd { margin: 2px 0 0; font-size: 14px; color: var(--texte); white-space: pre-wrap; overflow-wrap: anywhere; }
+.ciel-bloc dd[data-plus-tard] { color: var(--pale); }
+.ciel-mot { font: 400 26px/1.1 var(--font-serif) !important; color: var(--texte) !important; overflow-wrap: anywhere; }
+.ciel-marque { grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 14px; }
+.ciel-marque > div { display: grid; gap: 6px; min-width: 0; }
+.ciel-marque img { width: 64px; height: 64px; border-radius: 14px; background: #fff; object-fit: contain; padding: 6px; }
+.ciel-nuancier { display: flex; gap: 7px; flex-wrap: wrap; }
+.ciel-nuancier i { width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .22); }
+.ciel-bouton { justify-self: start; display: inline-flex; align-items: center; gap: 8px; background: var(--bleu2); color: #fff; border-radius: 999px; padding: 10px 16px; font: 600 13px var(--font-sans); text-decoration: none; box-shadow: 0 0 24px -6px var(--bleu2); }
+.ciel-bouton svg { width: 15px; height: 15px; }
+.ciel-bouton:hover { background: #3D6EF0; }
+.ciel-note { font-size: 12.5px !important; color: var(--pale) !important; border-top: 1px solid var(--trait); padding-top: 12px; }
+
+/* Une étoile ouverte : le reste s'efface pour lui laisser la place. De loin, on ne garde que l'essentiel. */
+.ciel[data-ouvert] .ciel-vue, .ciel[data-ouvert] .ciel-dit, .ciel[data-ouvert] .ciel-aide, .ciel[data-ouvert] .ciel-titre { opacity: 0; pointer-events: none; }
+.ciel[data-loin] .ciel-dit { opacity: 0; }
+.ciel[data-loin] .ciel-astre small { display: none; }
+.ciel[data-etroit] .ciel-titre { left: 16px; top: 14px; }
+.ciel[data-etroit] .ciel-titre h2 { font-size: 24px; }
+
+/* Version allégée (téléphones modestes) : pas de flou derrière les panneaux, c'est ce qui coûte le plus cher. */
+.ciel[data-leger] .ciel-dit, .ciel[data-leger] .ciel-vue button, .ciel[data-leger] .ciel-volet { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(13, 20, 50, .94); }
+@media (prefers-reduced-motion: reduce) {
+  .ciel-volet, .ciel-dit span, .ciel-titre p i { animation: none; }
+  .ciel-etoile, .ciel-astre, .ciel-vue, .ciel-dit, .ciel-titre { transition: none; }
+}

@@ -33,7 +33,10 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   16 novembre 2026 : SINA a créé seule la marque de trois clients inventés, anciennes façons retirées ; compte rendu
   et décisions de l'essai : `docs/studio/LOT-2-LA-MARQUE.md`. Lot 3 (les trois angles) fait le 16 novembre 2026 : SINA a créé
   seule les angles de deux clients repris du lot 2 (branche `essai-lot2-donnees`), le propriétaire les a validés
-  (« Parfait »), anciennes façons retirées ; compte rendu : `docs/studio/LOT-3-LES-TROIS-ANGLES.md`. Suite : 4 le site, 5 les publications automatiques, 6 les forfaits, 7 SINA prend les devants, 8 les
+  (« Parfait »), anciennes façons retirées ; compte rendu : `docs/studio/LOT-3-LES-TROIS-ANGLES.md`. En parallèle des lots, la nouvelle interface (le ciel) :
+  étape 1, la constellation du projet, construite le 16 novembre 2026 sur la branche `ccr-a9409499-af5vb4`, pas encore
+  fusionnée (`src/lib/ciel`, `src/components/studio/ciel`, page d'essai : `scripts/ciel/essai.mts`) ; restent l'arrivée du
+  nouveau client, le ciel partagé, la page d'accueil publique. Suite : 4 le site, 5 les publications automatiques, 6 les forfaits, 7 SINA prend les devants, 8 les
   publicités, 9 les vidéos.
 
 ## Avec le propriétaire
@@ -76,7 +79,9 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 
 - Le client n'entend qu'elle ; ses spécialistes restent en coulisses. Elle le tutoie.
 - Son visage (pour le design, à faire plus tard) : la constellation du projet, jamais symétrique ; après la livraison,
-  SINA va sur l'étoile de ce qu'elle fait ; détail dans la référence, partie 15. Son nom reste SINA pour l'instant.
+  SINA va sur l'étoile de ce qu'elle fait ; la constellation est la porte du projet, dans un ciel partagé où
+  l'on se promène (exemples, projets ouverts, projets verrouillés) et où aucune constellation ne se ressemble ; détail
+  dans la référence, partie 15. Son nom reste SINA pour l'instant.
 - Ses mots : « une superintelligence qui prend son rôle à cœur » ; elle pose toutes les questions dont elle a besoin,
   au moment où elle en a besoin, pour réussir du premier coup ; elle prend les devants, conseille, et reste
   l'interlocutrice après la livraison (publications, publicités, améliorations).
@@ -174,6 +179,6 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - **Fusion** : seulement un lot prouvé (SINA l'a réussi seule avec la vraie IA, contrôles verts), et seulement après
   avoir demandé « Je fusionne ? » et reçu son oui.
 - Repères : `src/app` (pages, API), `src/components/studio` (écrans), `worker/` (tâches de fond),
-  `src/lib/syna-agent` (SINA), `src/lib/theme` et `theme-base/` (moteur des sites), `src/lib/ai` (appels à l'IA,
+  `src/lib/syna-agent` (SINA), `src/lib/ciel` et `src/components/studio/ciel` (le ciel et les constellations), `src/lib/theme` et `theme-base/` (moteur des sites), `src/lib/ai` (appels à l'IA,
   comptage), `src/lib/billing.ts` et `plans.ts` (forfaits), `src/lib/social` et `social-v2` (réseaux),
   `scripts/syna-recette/` (studio privé d'essai).

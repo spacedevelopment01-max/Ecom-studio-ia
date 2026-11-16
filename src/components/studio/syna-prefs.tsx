@@ -145,7 +145,8 @@ export function SynaPrefsProvider({ projectId, initial, children }: { projectId:
   useEffect(() => {
     const root = document.documentElement;
     if (chosen === "light" || chosen === "dark") { root.dataset.theme = chosen; try { localStorage.setItem("ecs-theme", chosen); } catch {} }
-    else if (chosen === "auto") { delete root.dataset.theme; try { localStorage.removeItem("ecs-theme"); } catch {} }
+    // « Comme l'appareil » est un choix : on le retient, pour que la nuit par défaut du Studio ne le remplace pas.
+    else if (chosen === "auto") { delete root.dataset.theme; try { localStorage.setItem("ecs-theme", "auto"); } catch {} }
     const t = root.dataset.theme;
     setDeviceTheme(t === "light" || t === "dark" ? t : null);
   }, [chosen]);

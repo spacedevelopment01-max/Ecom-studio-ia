@@ -484,6 +484,10 @@ chiffres du site et de sa boutique. Les branchements reviendront quand il les au
   lot 4 (l'ancien assistant savait désigner un élément ; la fonction est partie avec lui au lot 1).
 - **Pas de création gratuite** : l'idée vue chez Scale Ova (« créer et voir gratuitement, payer pour publier ») est
   refusée. Ses mots : « Pas envie de faire comme ça ».
+- **Que du sur mesure, adaptable partout** (le propriétaire, 16 novembre 2026 : « On doit fait que du sur mesure et
+  adaptable shopify woocommerce prestashop »). Chaque site est monté sur mesure par SINA pour son client, et le même
+  site part vers Shopify, WooCommerce ou PrestaShop. L'ancien « sur mesure » sur un second moteur, qui ne part pas
+  partout et ne publie pas les sites de services, est une ancienne façon à retirer.
 - **Le thème unique du Studio** (accord du propriétaire : « Oui écris le »). SINA n'a qu'un seul thème, très riche,
   construit une fois au meilleur niveau, et elle **monte** chaque site avec : elle choisit les pièces utiles au métier,
   leur disposition et leur ordre, les habille avec la marque du client, écrit les textes, crée les images, juge le
@@ -546,6 +550,69 @@ chiffres du site et de sa boutique. Les branchements reviendront quand il les au
   - sur la page d'accueil, elle remplace l'orbe en ouverture : un projet naît en une vingtaine de secondes, et chaque
     étoile fait apparaître ce que SINA a créé ; chaque démonstration a sa propre constellation, tirée du projet ;
   - écartés : un visage ou un personnage. Planche : https://claude.ai/artifact/Ej7Dy3oXCZEUGEfCCKgPXF
+- **La constellation, porte du projet, et le ciel partagé** (idées du propriétaire du 16 novembre 2026, notées à sa
+  demande : « Oui écris le »). Direction du design, rien n'est construit. Ébauche vivante :
+  https://claude.ai/artifact/BLLUXHPxJ6vCvEhEPk1RoQ
+  - **porte du projet** : chaque étoile s'ouvre sur sa partie (la marque, le site, les publications…). Le nom et l'état
+    de chaque étoile restent toujours écrits ; le menu classique reste ; « ta journée est prête » reste à un clic ;
+  - **vivante en permanence** : SINA va d'étoile en étoile là où elle travaille, une phrase dit ce qu'elle fait ;
+  - **on la manipule** : la faire pivoter, zoomer, dézoomer (« On doit pouvoir la faire pivoter zoomer dezoomer ») ;
+  - **un vrai ciel** (« presque faire un vrai univers avec de vrai étoile, rend ça presque reel ») : étoiles de vraies
+    couleurs avec halo et reflets, voie lactée, nébuleuses, galaxies lointaines, profondeur quand on se déplace ; le
+    cœur de chaque projet est un soleil aux couleurs de sa marque ;
+  - **on s'y promène** parmi toutes les constellations : les siennes ; une constellation éteinte pour créer un nouveau
+    projet ; les exemples du Studio ; les projets que des clients choisissent d'ouvrir aux visites (on regarde, on ne
+    modifie rien) ; les projets des autres, visibles mais marqués « Accès verrouillé par le propriétaire », sans nom,
+    sans couleurs, sans avancement ;
+  - **aucune constellation ne se ressemble** (« Bien sûr aucune constellation se ressemblent ») : la forme de chaque
+    projet est tirée du projet, puis comparée à toutes les autres et refaite si elle ressemble trop à l'une d'elles ;
+  - **en trois étapes** : 1. la constellation du projet, avec le design (porte d'entrée et carte du tableau de bord) ;
+    2. le ciel partagé ensuite, quand il y aura assez de clients, en commençant par les douze démonstrations ;
+    3. ce ciel en ouverture de la page d'accueil publique, où le visiteur se promène parmi les exemples ;
+  - **précautions** : une version allégée pour les téléphones modestes, essayée sur de vrais téléphones ; ouvrir son
+    projet aux visites est un choix du client ; chaque client sait dès l'inscription que sa constellation apparaît
+    dans le ciel commun ; ce chantier ne retarde pas les lots qui font fonctionner SINA.
+  - **idées prises par le propriétaire pour ce ciel** (16 novembre 2026, « Je prends tout » puis « Je prend tout
+    aussi ») ; toutes avec de vrais évènements seulement, jamais de faux :
+    - *ta future constellation* : sur la page d'accueil, le visiteur écrit son idée en une phrase et sa constellation
+      naît, forme tirée de ses mots, faite par le Studio sans appel à l'IA ;
+    - *la visite guidée par SINA* : le ciel vole d'un exemple à l'autre, une phrase courte à chacun ;
+    - *partager sa constellation* : image ou courte vidéo avec le nom de sa marque, pour ses réseaux ;
+    - *le ciel qui s'allume en direct* : une étape finie quelque part allume une étoile, sans nom ;
+    - *des amas par métier* (« l'amas des artisans »…) et une recherche des projets proches ;
+    - *la constellation qui grandit* : chaque mois de travail ajoute de petites étoiles ;
+    - *une musique d'espace douce*, à allumer d'un bouton, jamais au démarrage ;
+    - *entrer dans une étoile en zoomant* : de près, la partie du projet apparaît dedans ;
+    - *les produits deviennent des étoiles* autour de « L'activité », un clic ouvre la fiche ;
+    - *rejouer la naissance* du projet en trente secondes ;
+    - *une aurore boréale pour les grands moments* (mise en ligne, première vente si le client le veut) ;
+    - *le ciel des saisons*, avec la campagne de la saison déjà prête par SINA ; idée du propriétaire : « des rappel
+      des grand moment avec le père noel qui vole dans la voie lactée pour le mois de décembre », tout dessiné en
+      lumière, dans le style du ciel ;
+    - *des ponts de lumière entre partenaires* qui travaillent ensemble ;
+    - *sa constellation en fond d'écran* de téléphone ;
+    - *le mode planétarium* : ciel en plein écran et visite guidée en boucle, pour un salon ou une vitrine.
+    - *les grands moments de l'année* (« Sinon je prend encore toutes les idees ») : en décembre, le traîneau du Père
+      Noël traverse la voie lactée en étoiles avec une neige d'étoiles (ébauche faite) ; feu d'artifice d'étoiles à
+      minuit le 31 décembre ; deux étoiles qui dessinent un cœur à la Saint-Valentin ; fleurs de lumière au
+      printemps ; une constellation en bouquet ou en cravate pour la fête des mères et des pères ; la pluie
+      d'étoiles filantes le 12 août ; une lune orange et des chauves-souris de poussière d'étoiles à Halloween ; une
+      comète « Soldes » pour les soldes et le Black Friday. À chaque fois, SINA arrive avec la campagne prête ;
+    - *les signaux* : une étoile qui attend le client clignote comme un phare ;
+    - *les demandes arrivent en étoiles filantes* et se posent sur « Les demandes » ;
+    - *la lune de l'objectif du mois*, qui se remplit au fil du mois ;
+    - *l'anniversaire du projet* : un anneau de lumière chaque année, avec le bilan de l'année ;
+    - *la constellation à la une* chaque semaine sur la page d'accueil, parmi les projets ouverts aux visites ;
+    - *la galaxie du client* qui a plusieurs projets ;
+    - *la comète des nouveautés* du Studio, montrée une fois.
+    - pris ensuite (« La 2 3 4 7 8 9 10 11 ») : *elle brille avec l'activité* (plus le site est visité, plus elle
+      brille, vrais chiffres seulement) ; *le badge sur le site du client* (petite constellation « Fait avec E-COM
+      STUDIO IA » qui mène à son projet s'il l'a ouvert) ; *le ciel suit l'heure* (aube quand « ta journée est
+      prête », nuit le soir) ; *une comète quand quelqu'un regarde* un projet ouvert ; *la grande constellation du
+      mois* allumée par les clients qui atteignent leur objectif ; *le ciel qui chante* (une note douce par
+      constellation, son allumé par le client) ; *les projets en pause s'endorment* en nébuleuse et se rallument au
+      retour ; *l'affiche du premier anniversaire* à imprimer (l'envoi imprimé coûterait : à décider avec lui).
+      Pas prises : les clients en étoiles, les étoiles-souvenirs, remonter le temps.
 
 Sources de la partie 7 : journal des nouveautés de Shopify (conseils de Sidekick), Unite.AI (Canvas), TechCrunch
 (créateur de boutique), eCommerce Fastlane, Copyfy, blog de Google (Pomelli), test de Blaze par R. Doser, Apaya, blog de
