@@ -33,7 +33,7 @@ function readyResult(angles: SinaAngles) {
     ok: true,
     summary: L(`${shown.length} angles prêts : ${shown.map((a) => `${role(a.id)}« ${a.title} »`).join(" ; ")}.${recommended ? ` Recommandé : « ${recommended.title} ».` : ""}`, "Angles ready."),
     hint: `Identifiants pour angles.choose : ${shown.map((a) => `${a.id} = « ${a.title} »`).join(" ; ")}.${angles.reserve?.length ? ` ${angles.reserve.length} autre(s) angle(s) gardé(s) restent en réserve pour ses publications et ses publicités : ne les propose pas comme choix.` : ""}${anglesDoubtHint(angles)}`,
-    data: { angles: shown.map((a) => ({ id: a.id, role: roleOf(angles, a.id), titre: a.title, personne: a.person ?? a.audience, accroche: a.message, emotion: a.emotion, promesse: a.promise, aConfirmer: a.proofsToConfirm, ...(a.doubt ? { doute: a.doubt } : {}) })), recommande: angles.recommendedId, pourquoi: angles.recommendation },
+    data: { angles: shown.map((a) => ({ id: a.id, role: roleOf(angles, a.id), titre: a.title, client: a.client?.name, personne: a.person ?? a.audience, accroche: a.message, emotion: a.emotion, promesse: a.promise, aConfirmer: a.proofsToConfirm, ...(a.doubt ? { doute: a.doubt } : {}) })), recommande: angles.recommendedId, pourquoi: angles.recommendation },
   };
 }
 
@@ -43,7 +43,7 @@ const toCreate = (ctx: ToolContext, a: ProposeArgs | undefined) => { const j = j
 
 const proposeTool: AgentTool<ProposeArgs> = {
   name: "angles.propose", module: "stratégie", kind: "generate", needsProject: true,
-  description: "Étape des angles : crée les TROIS angles marketing du client (un sûr, un d'émotion, un audacieux), chacun écrit comme une scène (qui, quand, avant, après), avec son accroche, le haut du site en mots et une publication d'exemple. Tu pars de ce que tu sais déjà : ses faits, sa marque, et ton étude de son marché (paroles réelles d'acheteurs, concurrents) ; tu ne retournes écouter le web que s'il te manque des paroles d'acheteurs. Tu relis chaque angle sévèrement avant de le montrer. Tâche de fond de quelques minutes. Payant : le Studio montre le prix au client (carte d'accord) avant de lancer ; un seul accord pour toute l'étape. Quand les angles sont prêts, rappeler cet outil sans argument les relit gratuitement. redo = la demande du client, avec SES mots, quand il veut une NOUVELLE proposition (payant ; les angles déjà montrés ne sont pas refaits).",
+  description: "Étape des angles : crée les TROIS angles marketing du client, pour TROIS TYPES DE CLIENTS différents (un sûr, un d'émotion, un audacieux), chacun écrit comme une scène (qui, quand, avant, après), avec son accroche, le haut du site en mots et une publication d'exemple. Tu pars de ce que tu sais déjà : ses faits, sa marque, et ton étude de son marché (paroles réelles d'acheteurs, concurrents) ; tu ne retournes écouter le web que s'il te manque des paroles d'acheteurs. Tu relis chaque angle sévèrement avant de le montrer. Tâche de fond de quelques minutes. Payant : le Studio montre le prix au client (carte d'accord) avant de lancer ; un seul accord pour toute l'étape. Quand les angles sont prêts, rappeler cet outil sans argument les relit gratuitement. redo = la demande du client, avec SES mots, quand il veut une NOUVELLE proposition (payant ; les angles déjà montrés ne sont pas refaits).",
   args: z.object({ redo: z.string().min(8).max(1500).optional() }).strict(),
   estimate: (ctx, a) => {
     const { j, create } = toCreate(ctx, a);

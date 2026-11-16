@@ -31,6 +31,8 @@ export type SinaAngle = {
   objections?: { objection: string; answer: string }[];
   /** Paroles réelles d'acheteurs sur lesquelles l'angle s'appuie (mot pour mot, avec leur page). */
   quotes?: { text: string; url: string }[];
+  /** Le type de client visé (règle du propriétaire : un angle = un type de client), et ce qu'on met en avant pour lui. */
+  client?: { name: string; who: string; wants: string; needs: string }; showcase?: string;
   /** Note du juge, sur 10. */
   note?: number;
 };
@@ -100,7 +102,7 @@ const host = (url: string) => { try { return new URL(url).hostname.replace(/^www
 /** L'angle tel que le lisent le site, les publications et les publicités (l'angle actif du projet). */
 export function marketingAngleOf(a: SinaAngle, role: AngleRole, facts: string): MarketingAngle {
   return {
-    id: role, title: a.title, audience: a.person || a.audience, situation: a.moment ?? "", notPriority: "",
+    id: role, title: a.title, audience: a.client ? `${a.client.name} : ${a.person || a.audience}` : a.person || a.audience, situation: a.moment ?? "", notPriority: "",
     tension: a.before ?? "", motivation: a.after || a.motivation, benefit: a.after ?? "", promise: a.promise || a.message, rationale: a.why,
     proofs: facts.split("\n").filter(Boolean).slice(0, 40), objections: a.objections ?? [], limits: a.proofsToConfirm,
     tone: a.tone ?? "", messages: [a.message], exclusions: [], visualDirection: a.show,

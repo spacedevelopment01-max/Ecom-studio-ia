@@ -1,6 +1,6 @@
 "use client";
 /**
- * Les trois angles de SINA (lot 3) : un sûr, un d'émotion, un audacieux. Chaque carte montre l'accroche, la scène (qui,
+ * Les trois angles de SINA (lot 3) : un sûr, un d'émotion, un audacieux. Un angle vise un type de client. Chaque carte montre ce client (son envie, son besoin), l'accroche, la scène (qui,
  * quand, avant, après), le haut du site en mots, une publication d'exemple, les paroles d'acheteurs qui l'ont inspirée
  * et les informations à confirmer. Le client en choisit UN. Montrées dans le fil de SINA et sur l'écran « Angles ».
  */
@@ -9,6 +9,7 @@ import { useT } from "../i18n";
 
 export type Angles = {
   list: { id: string; title: string; audience: string; message: string; emotion: string; why?: string; show?: string; proofsToConfirm: string[]; doubt?: string;
+    client?: { name: string; who: string; wants: string; needs: string }; showcase?: string;
     person?: string; moment?: string; before?: string; after?: string; promise?: string; site?: { title: string; text: string; button: string }; post?: { title: string; text: string }; quotes?: { text: string; url: string }[] }[];
   roles?: Record<string, "sur" | "emotion" | "audacieux">; recommendedId: string | null; recommendation?: string; quoteCount?: number; sourceCount: number; chosen: string | null;
 };
@@ -25,7 +26,7 @@ export function AngleCards({ angles, busy, onChoose }: { angles: Angles; busy: b
   const part = (label: string, value?: string | null) => (value ? <div><dt className="text-[10px] font-semibold uppercase tracking-wide text-muted">{label}</dt><dd className="text-ink/90">{value}</dd></div> : null);
   return (
     <div className="@container mt-2 space-y-2" data-syna-angles>
-      <p className="text-xs text-muted">{t(`Tes trois angles${angles.quoteCount ? `, écrits à partir de ce que tu m'as dit et de ${angles.quoteCount} paroles réelles d'acheteurs lues sur le web` : ", écrits à partir de ce que tu m'as dit"}. Choisis celui qui te ressemble : il guidera ton site, tes publications et tes publicités.`, "Your three angles. Pick the one that feels like you.")}</p>
+      <p className="text-xs text-muted">{t(`Tes trois angles${angles.quoteCount ? `, écrits à partir de ce que tu m'as dit et de ${angles.quoteCount} paroles réelles d'acheteurs lues sur le web` : ", écrits à partir de ce que tu m'as dit"}. Chacun parle à un type de client différent. Choisis celui que tu veux aller chercher en premier : il guidera ton site, tes publications et tes publicités.`, "Your three angles. Pick the one that feels like you.")}</p>
       <div className="grid grid-cols-1 gap-3 @4xl:grid-cols-3">
         {angles.list.map((a) => {
           const role = angles.roles?.[a.id] ?? "sur", band = ROLE_BAND[role];
@@ -37,13 +38,20 @@ export function AngleCards({ angles, busy, onChoose }: { angles: Angles; busy: b
                   <p className="text-[10px] font-semibold uppercase tracking-wide opacity-90" data-angle-role={role}>{t(ROLE_LABEL[role][0], ROLE_LABEL[role][1])}</p>
                   {recommended && <span className="shrink-0 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold" style={{ color: band }} data-angle-recommended>{t("Celui que je te recommande", "My recommendation")}</span>}
                 </div>
+                {!!a.client && <p className="mt-2 text-lg font-bold leading-tight" data-angle-client>{t("Pour", "For")} : {a.client.name}</p>}
                 <h4 className="mt-1 text-sm font-semibold leading-tight opacity-95">{a.title}</h4>
                 <p className="mt-3 text-xl font-bold leading-snug" data-angle-hook>« {a.message} »</p>
               </header>
               <div className="flex flex-1 flex-col gap-3 px-4 py-3">
                 {recommended && !!angles.recommendation && <p className="rounded-lg px-3 py-2 text-[11px]" style={{ background: `${band}14`, color: band }}>{angles.recommendation}</p>}
+                {!!a.client && <dl className="space-y-2 rounded-xl px-3 py-3" style={{ background: `${band}0D` }} data-angle-client-needs>
+                  {part(t("Ce client", "This customer"), a.client.who)}
+                  {part(t("Son envie", "What they want"), a.client.wants)}
+                  {part(t("Son besoin", "What they need"), a.client.needs)}
+                  {part(t("Ce qu'on met en avant pour lui", "What we put forward for them"), a.showcase)}
+                </dl>}
                 <dl className="space-y-2">
-                  {part(t("Qui", "Who"), a.person ?? a.audience)}
+                  {part(t("La scène", "The scene"), a.person ?? a.audience)}
                   {part(t("Quand", "When"), a.moment)}
                   {part(t("Avant", "Before"), a.before)}
                   {part(t("Après", "After"), a.after)}

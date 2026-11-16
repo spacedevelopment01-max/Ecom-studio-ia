@@ -60,7 +60,10 @@ describe("SINA — étape des angles : trois stratèges, un juge, trois angles",
 
   // ---------------------------------------------------------------- spécialistes simulés
 
+  const OFFSET: Record<string, number> = { sur: 0, emotion: 1, audacieux: 2 };
+  /** Par défaut, les trois stratèges visent des types de clients différents (c1 à c4, décalés d'une entrée à l'autre). */
   const draft = (role: string, n: number, over: Record<string, unknown> = {}) => ({
+    segment: `c${((n - 1 + (OFFSET[role] ?? 0)) % 4) + 1}`, showcase: "L'anse où passent trois doigts.",
     title: `Angle ${role} ${n}`, person: `Une personne précise (${role} ${n}) qui boit son café avant de partir.`, moment: "Le matin, dans sa cuisine, avant le bruit.",
     before: "Elle prend le premier mug venu.", after: "Elle a sa tasse à elle, qu'elle reconnaît les yeux fermés.", emotion: "le plaisir d'un objet à soi",
     promise: "Une tasse tournée à la main, faite pour ta main.", hook: `Accroche ${role} ${n} : ta tasse, pas une autre.`,
@@ -85,6 +88,7 @@ describe("SINA — étape des angles : trois stratèges, un juge, trois angles",
       if (s.fail?.some((f) => id.startsWith(f))) throw new Error("coupure");
       const raw: any = (() => {
         if (c.kind === "listen") return { quotes: [{ text: "Je veux une tasse qui tienne chaud longtemps", url: PAGE }, { text: "Parole inventée par le modèle", url: PAGE }], competitors: [], mould: "", substitutes: [], facts: [], notFound: [] };
+        if (c.kind === "segments") return { segments: [1, 2, 3, 4].map((k) => ({ id: `c${k}`, name: `Type de client ${k}`, who: `Situation ${k}.`, wants: `Envie ${k}.`, needs: `Besoin ${k}.`, showcase: "Tournée à la main.", quotes: [k, 99], proven: k < 4 })) };
         if (c.kind === "strategist" || c.kind === "rework") {
           const role = id.split("-").pop()!, count = c.kind === "rework" ? C.REWORKED : C.CANDIDATES, from = c.kind === "rework" ? C.CANDIDATES : 0;
           return { angles: Array.from({ length: count }, (_, i) => draft(role, from + i + 1, s.drafts?.(role, from + i + 1) ?? {})) };
@@ -138,7 +142,13 @@ describe("SINA — étape des angles : trois stratèges, un juge, trois angles",
     const t = await atAngles();
     const { log, result, angles } = await create(t);
     // L'étude de la marque suffit : aucune recherche repayée. Trois stratèges, un juge, un lecteur ; ni reprise ni réécriture.
-    expect(log.ids.sort()).toEqual(["judge-1", "reader-1", "strategist-1-audacieux", "strategist-1-emotion", "strategist-1-sur"]);
+    expect(log.ids[0]).toBe("segments-1");
+    expect([...log.ids].sort()).toEqual(["judge-1", "reader-1", "segments-1", "strategist-1-audacieux", "strategist-1-emotion", "strategist-1-sur"]);
+    // Les types de clients sont dressés AVANT les stratèges, avec la définition du propriétaire ; chaque stratège les reçoit.
+    expect(log.systems["segments-1"]).toMatch(/UN TYPE DE CLIENT différent, avec ses envies et ses besoins à lui, qui cherche le même produit/);
+    expect(log.prompts["strategist-1-sur"]).toMatch(/# Les types de clients[\s\S]*- c1 : Type de client 1\. Situation 1\. Envie : Envie 1\. Besoin : Besoin 1\./);
+    expect(log.prompts["strategist-1-sur"]).toMatch(/- c4 : .*type de client supposé/);
+    expect(log.systems["strategist-1-sur"]).toMatch(/jamais deux propositions pour le même/);
     // Chacune a son entrée, et ne voit pas les propositions des autres.
     expect(log.systems["strategist-1-sur"]).toMatch(/l'angle SÛR[\s\S]*le métier et les faits du client/);
     expect(log.systems["strategist-1-emotion"]).toMatch(/l'angle d'ÉMOTION[\s\S]*paroles réelles des acheteurs/);
@@ -166,6 +176,10 @@ describe("SINA — étape des angles : trois stratèges, un juge, trois angles",
     expect(angles.judged).toBe("juges");
     expect(angles.issues).toEqual([]);
     const emotion = angles.list[1];
+    // Trois angles, trois types de clients différents, montrés avec leur envie et leur besoin.
+    expect(angles.list.slice(0, 3).map((a) => a.client!.name)).toEqual(["Type de client 1", "Type de client 2", "Type de client 3"]);
+    expect(emotion.client).toEqual({ name: "Type de client 2", who: "Situation 2.", wants: "Envie 2.", needs: "Besoin 2." });
+    expect(emotion.showcase).toBe("L'anse où passent trois doigts.");
     expect(emotion).toMatchObject({ role: "emotion", title: "Angle emotion 1", message: "Accroche emotion 1 : ta tasse, pas une autre.", note: 9, proofsToConfirm: ["Passe-t-elle au lave-vaisselle ?"] });
     expect(emotion.site!.button).toBe("Trouver ma tasse");
     // Une parole citée qui n'existe pas (numéro 99) est retirée ; celle qui existe garde sa page.
@@ -215,18 +229,38 @@ describe("SINA — étape des angles : trois stratèges, un juge, trois angles",
 
   it("une entrée sans angle à 8 est reprise UNE fois par sa stratège, puis rejugée ; la reprise réussie est montrée", async () => {
     const t = await atAngles();
-    const { log, angles, result } = await create(t, { note: (id) => (id.startsWith("audacieux") ? (id.endsWith("-4") ? 8 : 5) : id.endsWith("-1") ? 9 : 6) });
+    const { log, angles, result } = await create(t, { note: (id) => (id.startsWith("audacieux") ? (id.endsWith("-4") ? 8 : 5) : id.endsWith("-1") ? 9 : 6), drafts: (role, n) => (role === "audacieux" && n > 3 ? { segment: n === 4 ? "c4" : "c3" } : {}) });
     expect(log.ids.filter((x) => x.startsWith("rework"))).toEqual(["rework-1-audacieux"]);
     expect(log.ids).toContain("recheck-1");
     // La stratège reçoit les remarques du juge et les angles retenus des autres entrées.
     expect(log.prompts["rework-1-audacieux"]).toMatch(/refusées par le juge[\s\S]*« Angle audacieux 1 »[\s\S]*5 sur 10/);
     expect(log.prompts["rework-1-audacieux"]).toMatch(/Angles déjà retenus pour les autres entrées[\s\S]*Angle sur 1[\s\S]*Angle emotion 1/);
+    expect(log.prompts["rework-1-audacieux"]).toMatch(/# Types de clients déjà pris \(n'en vise aucun\)\nc1, c2\n\n# Types de clients encore libres[^\n]*\nc3, c4/);
     expect(log.systems["rework-1-audacieux"]).toMatch(/Tu ne reformules pas une proposition refusée/);
     // Le juge ne relit que la reprise.
     expect(JSON.parse(log.prompts["recheck-1"]).propositions.map((x: any) => x.id)).toEqual(["audacieux-4", "audacieux-5"]);
     expect(angles.list[2]).toMatchObject({ id: "audacieux", title: "Angle audacieux 4", note: 8 });
     expect(angles.list[2].doubt).toBeUndefined();
     expect(result.reprises).toEqual(["audacieux"]);
+  });
+
+  it("trois angles = trois types de clients différents : le Studio le garantit, même quand le juge choisit deux angles pour le même client", async () => {
+    const t = await atAngles();
+    // Les trois meilleures propositions (notées 9) visent toutes le type de client c1 ; les secondes (8) visent c2, c3 et c4.
+    const { angles, result } = await create(t, { drafts: (role, n) => ({ segment: n === 1 ? "c1" : `c${((n - 1 + OFFSET[role]) % 3) + 2}` }) });
+    const shown = angles.list.slice(0, 3);
+    expect(new Set(shown.map((a) => a.client!.name)).size).toBe(3);
+    // Un seul des trois garde sa proposition à 9 ; les deux autres entrées prennent leur meilleure proposition pour un autre client.
+    expect(shown.map((a) => a.note).sort()).toEqual([8, 8, 9]);
+    expect(shown.every((a) => !a.doubt)).toBe(true);
+    expect(result.reprises).toEqual([]);
+    expect(angles.issues).toEqual([]);
+    // Une proposition qui ne vise aucun type de client de la liste est plafonnée : elle n'est jamais gardée telle quelle.
+    const stray = C.candidatesOf("sur", [C.AngleDraftSchema.parse(draft("sur", 1, { segment: "zz" })), C.AngleDraftSchema.parse(draft("sur", 2, { segment: "c2" })), C.AngleDraftSchema.parse(draft("sur", 3, { segment: "c2", hook: "Autre accroche." }))], { facts: "", quotes: 9, segments: ["c1", "c2"] });
+    expect(stray.map((c) => c.issues.join())).toEqual(["ne vise aucun type de client de la liste", "", "vise le même type de client qu'une autre proposition de la même stratège"]);
+    // Le choix sans IA : jamais deux fois le même client, même si la somme des notes baisse.
+    const notes = new Map(stray.map((c) => [c.id, { note: 9 }]));
+    expect(C.pickThree([...stray, ...C.candidatesOf("emotion", [C.AngleDraftSchema.parse(draft("emotion", 1, { segment: "c2", hook: "E." }))], { facts: "", quotes: 9 }), ...C.candidatesOf("audacieux", [C.AngleDraftSchema.parse(draft("audacieux", 1, { segment: "c9", hook: "A." }))], { facts: "", quotes: 9 })], new Map([...notes, ["emotion-1", { note: 9 }], ["audacieux-1", { note: 9 }]])).get("sur")!.id).toBe("sur-1");
   });
 
   it("un angle qui reste sous 8 après la reprise est montré avec le doute de SINA, et n'est jamais recommandé", async () => {
@@ -321,9 +355,10 @@ describe("SINA — étape des angles : trois stratèges, un juge, trois angles",
   // ---------------------------------------------------------------- les consignes
 
   it("consignes : aucune trace des projets d'essai, les règles du propriétaire y sont, SINA demande d'abord ce que le client seul sait", () => {
-    const sent = [P.strategistSystem("sur", 3), P.strategistSystem("emotion", 3), P.strategistSystem("audacieux", 3), P.reworkSystem("sur", 2), P.JUDGE_SYSTEM, P.CLARIFY_SYSTEM].join("\n");
+    const sent = [P.SEGMENTS_SYSTEM, P.strategistSystem("sur", 3), P.strategistSystem("emotion", 3), P.strategistSystem("audacieux", 3), P.reworkSystem("sur", 2), P.JUDGE_SYSTEM, P.CLARIFY_SYSTEM].join("\n");
     expect(sent).not.toMatch(/pulpe|infusion|tisane|\bthé\b|confiture|toilett|arven|sonore|paysagiste|fraise|sachet/i);
     expect(sent).toMatch(/CLAIR D'ABORD, BEAU ENSUITE/);
+    expect(P.JUDGE_SYSTEM).toMatch(/TROIS TYPES DE CLIENTS DIFFÉRENTS, sans exception/);
     expect(sent).toMatch(/Aucun ordre donné au lecteur/);
     expect(sent).toMatch(/Jamais de personne dont le client n'a pas fourni la photo/);
     expect(P.JUDGE_SYSTEM).toMatch(/8 = tu la montrerais telle quelle/);

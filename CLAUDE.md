@@ -104,7 +104,10 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   « je veux un logo complètement différent ». Le favicon reprend le logo.
 - **Identité** : montrée en planche de marque complète, jamais en simple fiche. Jamais une planche incomplète : une
   image refusée est refaite avant d'être montrée. Sur fond sombre, le logo est toujours clair.
-- **Trois angles** : un sûr, un d'émotion, un audacieux, avec celui que SINA recommande. Le client en choisit un ;
+- **Trois angles** : un angle, c'est « aller chercher une typologie de client différente, avec des envies et des
+  besoins différents, mais qui recherche le même produit ; c'est juste qu'il n'est pas mis en avant et en valeur de la
+  même façon sur le site et la communication » (ses mots du 16 novembre). Donc trois angles = trois types de clients
+  différents, jamais deux pour le même. Un sûr, un d'émotion, un audacieux, avec celui que SINA recommande. Le client en choisit un ;
   les autres restent en réserve pour ses publications et ses publicités, sans nombre d'angles par forfait.
 - **Site** : SINA le conçoit pour cette marque, pas en copier-coller, et il doit être bon du premier coup. Des
   sections à la hauteur des meilleurs sites ; de la variété d'un client à l'autre (menus, boutons) ; un signe pris sur
