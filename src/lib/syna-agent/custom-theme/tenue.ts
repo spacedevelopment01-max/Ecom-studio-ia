@@ -21,6 +21,10 @@ import { TENUE_TAG, VOLET, ph, sec, type Construction, type TenueSection } from 
 import { PRODUIT_SECTIONS } from "./tenue-produit";
 import { SERVICES_SECTIONS } from "./tenue-services";
 import { RECIT_SECTIONS } from "./tenue-recit";
+import { COQUE_FACONS, COQUE_SECTIONS } from "./tenue-coque";
+import { ACHAT_FACONS, ACHAT_SECTIONS } from "./tenue-achat";
+import { METIERS_FACONS, METIERS_SECTIONS } from "./tenue-metiers";
+import { PAGES_FACONS, PAGES_SECTIONS } from "./tenue-pages";
 
 export { TENUE_TAG, type Construction, type TenueSection } from "./tenue-base";
 
@@ -224,9 +228,18 @@ const SOCLE_SECTIONS: TenueSection[] = [
 ];
 
 /** Toutes les sections à tenue : le socle, puis les modules (produit et achat, métiers de services, récit et navigation). */
-export const TENUE_SECTIONS: TenueSection[] = [...SOCLE_SECTIONS, ...PRODUIT_SECTIONS, ...SERVICES_SECTIONS, ...RECIT_SECTIONS];
+/**
+ * Lot 4 (thème unique, référence partie 15) : quatre modules de plus (la coque : en-têtes et pieds de page ; l'achat et
+ * les pages produit ; les métiers ; les pages simples et le panier). Chacun apporte ses pièces et, dans son registre
+ * « FACONS », les façons de bâtir qu'il ajoute à des pièces d'autres modules : elles remplacent la liste de la pièce
+ * (la première reste son rendu d'origine). Une clé inconnue du registre est une erreur d'écriture, dite tout de suite.
+ */
+const FACONS: Record<string, Construction[]> = { ...COQUE_FACONS, ...ACHAT_FACONS, ...METIERS_FACONS, ...PAGES_FACONS };
+const BASE_SECTIONS: TenueSection[] = [...SOCLE_SECTIONS, ...PRODUIT_SECTIONS, ...SERVICES_SECTIONS, ...RECIT_SECTIONS, ...COQUE_SECTIONS, ...ACHAT_SECTIONS, ...METIERS_SECTIONS, ...PAGES_SECTIONS];
+for (const id of Object.keys(FACONS)) if (!BASE_SECTIONS.some((s) => s.id === id)) throw new Error(`Façons de bâtir pour une pièce inconnue : ${id}`);
+export const TENUE_SECTIONS: TenueSection[] = BASE_SECTIONS.map((s) => (FACONS[s.id] ? { ...s, constructions: FACONS[s.id] } : s));
 /** Feuilles et scripts des sections à tenue, dans l'ordre de chargement (un fichier absent est ignoré). */
-export const TENUE_FILES = { css: ["tenue.css", "tenue-produit.css", "tenue-services.css", "tenue-recit.css"], js: ["tenue.js", "tenue-produit.js", "tenue-services.js", "tenue-recit.js"] };
+export const TENUE_FILES = { css: ["tenue.css", "tenue-produit.css", "tenue-services.css", "tenue-recit.css", "tenue-coque.css", "tenue-achat.css", "tenue-metiers.css", "tenue-pages.css"], js: ["tenue.js", "tenue-produit.js", "tenue-services.js", "tenue-recit.js", "tenue-coque.js", "tenue-achat.js", "tenue-metiers.js", "tenue-pages.js"] };
 
 const BY_ID = new Map(TENUE_SECTIONS.map((s) => [s.id, s]));
 export const tenueSection = (id: string): TenueSection | null => BY_ID.get(id) ?? null;
