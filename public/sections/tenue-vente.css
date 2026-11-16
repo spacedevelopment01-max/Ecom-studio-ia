@@ -261,7 +261,7 @@
 .ctw .tn-ouverture-arrivee[data-tn-c="cote-a-cote"] .tn-v-mots{margin-top:28px}
 
 /* ══ Étoiles d'une vraie note (dessinées, jamais écrites) ══ */
-.ctw .tn-ouverture-arrivee .tn-v-etoiles,.ctw .tn-avis-page .tn-v-etoiles,.ctw .tn-catalogue .tn-v-etoiles{--tn-v-e:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 1.6l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 15l-5.2 2.8 1-5.9L1.5 7.8l5.9-.8z'/%3E%3C/svg%3E");display:inline-block;flex:none;width:5.4em;height:1.08em;font-size:15px;vertical-align:middle;background-image:linear-gradient(90deg,var(--tn-accent) calc(var(--note,0)*20%),color-mix(in srgb,var(--tn-encre) 20%,transparent) 0);-webkit-mask:var(--tn-v-e) left center/1.08em 1.08em repeat-x;mask:var(--tn-v-e) left center/1.08em 1.08em repeat-x}
+.ctw .tn-ouverture-arrivee .tn-v-etoiles,.ctw .tn-avis-page .tn-v-etoiles,.ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-v-etoiles{--tn-v-e:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 1.6l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 15l-5.2 2.8 1-5.9L1.5 7.8l5.9-.8z'/%3E%3C/svg%3E");display:inline-block;flex:none;width:5.4em;height:1.08em;font-size:15px;vertical-align:middle;background-image:linear-gradient(90deg,var(--tn-accent) calc(var(--note,0)*20%),color-mix(in srgb,var(--tn-encre) 20%,transparent) 0);-webkit-mask:var(--tn-v-e) left center/1.08em 1.08em repeat-x;mask:var(--tn-v-e) left center/1.08em 1.08em repeat-x}
 
 /* ══ Les raisons numérotées ══ */
 .ctw .tn-raisons{padding:44px 20px 0}
@@ -495,11 +495,11 @@
 .ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p em,.ctw[data-tn-cadre] .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p em{grid-row:1;grid-column:1;align-self:start;justify-self:start;margin:8px}
 .ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-pastilles{grid-row:auto;margin-top:8px}
 .ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-v-ajout{appearance:none;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;width:calc(100% - 20px);min-height:44px;margin:12px 10px 0;padding:6px 8px;border:0;border-radius:999px;background-color:var(--tn-bouton);color:var(--tn-sur-bouton);font-family:var(--f-ui);font-size:13.5px;font-weight:600;line-height:1.15;text-align:center;cursor:pointer}
-.ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-v-ajout[data-go],.ctw .tn-catalogue[data-tn-c="ajout-rapide"] a.tn-v-ajout:not([data-pogo]):not([role]){background-color:transparent;color:var(--tn-encre);box-shadow:0 0 0 1.5px var(--tn-encre) inset}
+.ctw .tn-catalogue[data-tn-c="ajout-rapide"] a.tn-v-ajout:not([role]){background-color:transparent;color:var(--tn-encre);box-shadow:0 0 0 1.5px var(--tn-encre) inset}
 .ctw[data-tn-bouton="droit"] .tn-catalogue[data-tn-c="ajout-rapide"] .tn-v-ajout{border-radius:0}
 .ctw[data-tn-bouton="etiquette"] .tn-catalogue[data-tn-c="ajout-rapide"] .tn-v-ajout{border-radius:3px;font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
 .ctw[data-tn-bouton="ombre"] .tn-catalogue[data-tn-c="ajout-rapide"] .tn-v-ajout{width:calc(100% - 24px);border:2.5px solid var(--tn-encre);background-color:var(--tn-accent);box-shadow:3px 3px 0 var(--tn-encre);font-weight:800}
-.ctw[data-tn-bouton="ombre"] .tn-catalogue[data-tn-c="ajout-rapide"] .tn-v-ajout[data-go]{background-color:var(--tn-fond);box-shadow:3px 3px 0 var(--tn-encre)}
+.ctw[data-tn-bouton="ombre"] .tn-catalogue[data-tn-c="ajout-rapide"] a.tn-v-ajout:not([role]){background-color:var(--tn-fond);box-shadow:3px 3px 0 var(--tn-encre)}
 .ctw .tn-catalogue[data-tn-c="ajout-rapide"] form.tn-v-achat{display:contents}
 /* un produit seul en bas de grille : la photo à gauche, le reste à droite */
 .ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p:last-child:nth-child(odd){grid-column:1/-1;display:flex;grid-template-columns:none;grid-template-rows:none}

@@ -110,7 +110,10 @@ class EsAchat
             ];
         };
         $groupes = []; $combis = [];
-        foreach ($p->getAttributesGroups($lang) as $row) {
+        // Dans l'ordre de création des déclinaisons (celui du catalogue du client), pas l'ordre alphabétique.
+        $rows = $p->getAttributesGroups($lang) ?: [];
+        usort($rows, function ($a, $b) { return ((int) $a['id_product_attribute'] <=> (int) $b['id_product_attribute']) ?: ((int) $a['id_attribute_group'] <=> (int) $b['id_attribute_group']); });
+        foreach ($rows as $row) {
             $gid = (int) $row['id_attribute_group']; $ipa = (int) $row['id_product_attribute'];
             if (!isset($groupes[$gid])) $groupes[$gid] = ['nom' => (string) ($row['public_group_name'] ?: $row['group_name']), 'valeurs' => []];
             $groupes[$gid]['valeurs'][(string) $row['attribute_name']] = ['nom' => (string) $row['attribute_name'], 'teinte' => !empty($row['is_color_group']) && !empty($row['attribute_color']) ? (string) $row['attribute_color'] : null];

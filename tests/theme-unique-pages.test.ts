@@ -294,7 +294,7 @@ describe("thème unique, pages : aucune page de commande dans le thème, et la m
     expect(blocking(out)).toEqual([]);
     for (const [type, c] of Object.entries(out.spec.customSections)) {
       expect(validateCustomSection(c.liquid), type).toBeNull();
-      expect(c.liquid, type).not.toMatch(/À compléter|photos\/|onclick=|onsubmit=|data-go=|href="#"|\/api\/files\/|<script/);
+      expect(c.liquid, type).not.toMatch(/À compléter|photos\/|onclick=|onsubmit=|data-go=|href="#"|\/api\/files\/|<script(?! type="application\/json" data-tn-versions| src="\{\{ '(?:tenue-achat|boutique-shopify)\.js' \| asset_url \}\}" defer>)/); // seuls scripts permis : la table des versions et les deux fichiers du Studio
     }
     // Page introuvable : quatre produits de la boutique, un vrai champ de recherche.
     expect(Object.keys(out.spec.templates)).toContain("404");

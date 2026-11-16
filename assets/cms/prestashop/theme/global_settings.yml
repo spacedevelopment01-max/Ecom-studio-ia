@@ -49,6 +49,10 @@ global_settings:
         - blockwishlist
       displayFooterAfter:
         - blockreassurance
+      displayEsFiche:
+        - esstudio
+      displayEsPiece:
+        - esstudio
       displayFooterProduct:
         - esstudio
         - productcomments

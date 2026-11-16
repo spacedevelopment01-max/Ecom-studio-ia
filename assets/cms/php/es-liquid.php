@@ -178,7 +178,8 @@ function es_liquid_render_section($dir, $type, array $section, array $globals) {
 	$file = $dir . '/sections/' . preg_replace('/[^a-z0-9_-]/', '', $type) . '.liquid';
 	if (!is_file($file)) return '';
 	if (!isset($templates[$file])) {
-		$tpl = new \Liquid\Template($dir . '/snippets');
+		// (Une pièce sans extrait n'a pas de dossier « snippets » : le dossier des sections sert alors de racine.)
+		$tpl = new \Liquid\Template(is_dir($dir . '/snippets') ? $dir . '/snippets' : $dir . '/sections');
 		$tpl->registerTag('if', 'EsLiquid\\TagIf');
 		$tpl->registerTag('unless', 'EsLiquid\\TagUnless');
 		$tpl->registerTag('for', 'EsLiquid\\TagFor');

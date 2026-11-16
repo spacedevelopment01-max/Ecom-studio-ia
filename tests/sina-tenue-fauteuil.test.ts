@@ -276,7 +276,10 @@ describe("thème sur mesure à tenue : le fauteuil et le sac, montés par les ou
     expect(buy).toContain("{{ product.selected_or_first_available_variant.price | money }}");
     expect(buy).toMatch(/\{%- form 'product', product, class: 'tn-enveloppe' -%\}[^]*<button class="tn-bt" type="submit" name="add"[^>]*>Lui faire une place<\/button>[^]*\{\{ form \| payment_button \}\}[^]*\{%- endform -%\}/); // l'achat, puis le paiement rapide de Shopify
     expect(buy).toContain("{%- for image in product.images limit: 5 -%}");
-    expect(buy).not.toContain("tn-barre");
+    // Lot 4 : la barre d'achat part en boutique et ajoute vraiment au panier (elle reste cachée sans script) ; les deux
+    // scripts du Studio partent comme fichiers du thème.
+    expect(buy).toContain("tn-barre");
+    expect(buy).toMatch(/tenue-achat\.js[^]*|boutique-shopify\.js/);
     expect(buy).toContain("<h1>Alcôve terracotta</h1>"); // ses textes restent ceux écrits pour la marque
     expect(spec.customSections[type("cart", 0)].liquid).toMatch(/\{%- for item in cart\.items -%\}[^]*\{\{ cart\.total_price \| money \}\}[^]*name="checkout"/);
     expect(spec.customSections[type("page.contact", 0)].liquid).toMatch(/\{%- form 'contact' -%\}[^]*name="contact\[email\]"[^]*<textarea class="tn-champ-i tn-haut" name="contact\[body\]"[^]*<button class="tn-bt" type="submit">Envoyer<\/button>\{%- endform -%\}/);

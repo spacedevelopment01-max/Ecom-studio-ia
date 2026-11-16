@@ -381,7 +381,7 @@ function live(c: Ctx, html: string, root: string | null): string {
   // un lien ; les produits à ajouter sont ceux du catalogue qui ne sont pas déjà dans le panier.
   if (/\sdata-tn-panier-cote\b/.test(out)) {
     const text = (rx: RegExp, d: string) => strip(rx.exec(out)?.[1] ?? d);
-    const title = text(/<h2>([\s\S]*?)<\/h2>/, "Panier"), button = text(/<a class="tn-bt"[^>]*>([\s\S]*?)<\/a>/, "Passer commande"), total = text(/<div class="tn-total"><span>([\s\S]*?)<\/span>/, "Total");
+    const title = text(/<h2>([\s\S]*?)<\/h2>/, "Panier"), button = text(/class="tn-bas"[\s\S]*?<a class="tn-bt"[^>]*>([\s\S]*?)<\/a>/, "Passer commande"), total = text(/<div class="tn-total"><span>([\s\S]*?)<\/span>/, "Total");
     const more = text(/<div class="tn-plus"[^>]*><b>([\s\S]*?)<\/b>/, ""), seeCart = text(/<a class="tn-lien"[^>]*data-go="cart"[^>]*>([\s\S]*?)<\/a>/, "Voir le panier");
     const empty = text(/<div class="tn-vide"><p>([\s\S]*?)<\/p>/, "Le panier est vide."), seeShop = text(/<div class="tn-vide"><p>[\s\S]*?<\/p><a[^>]*>([\s\S]*?)<\/a>/, "Voir la boutique");
     const svg = /<a class="tn-x"[^>]*>([\s\S]*?)<\/a>/.exec(out)?.[1] ?? "×";
