@@ -504,6 +504,13 @@ chiffres du site et de sa boutique. Les branchements reviendront quand il les au
     avantages, avant et après, questions, barre d'achat qui reste visible ; jamais de fausse urgence ni de faux avis) ;
     haut de gamme (grandes photos, récit, matières) ; technique (caractéristiques, vue sous tous les angles, comparatif) ;
     alimentaire et soin (ingrédients, composition, utilisation, allergènes) ; mode (tailles, couleurs, looks associés).
+    **Le style dropshipping** (le propriétaire, 16 novembre 2026, modèle : la fiche Lunex) : la page « vente directe »
+    et son « Produit vedette » sont utilisables par SINA avec toutes leurs fonctions, plus : les packs où chaque article
+    a sa couleur et sa taille, avec cadeau compris et étiquette « le plus populaire » ; sous le bouton, guide des
+    tailles, délai de livraison, moyens de paiement, garanties et questions ; la barre d'achat qui suit en bas de
+    l'écran ; la fenêtre d'offre avec l'e-mail. Tout marche pour de vrai dans Shopify, WooCommerce et PrestaShop, pas
+    seulement à l'affichage ; le stock restant ne s'affiche qu'avec le vrai stock. « Si besoin de créer de nouvelle
+    section ou d'adapter des section pour être en style dropshipping il faut le faire. »
   - **Pages de services : 6 styles** : prestation simple ; rendez-vous complet (prestation, intervenant, créneau) ; devis
     d'artisan (étapes, réalisations, formulaire détaillé) ; fiche de bien immobilier (galerie, caractéristiques,
     étiquette énergie, demande de visite) ; restaurant (carte, réservation de table) ; atelier ou cours (dates, places,
