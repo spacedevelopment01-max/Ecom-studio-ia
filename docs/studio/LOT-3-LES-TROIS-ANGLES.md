@@ -74,6 +74,9 @@ Ce sont des devis, pas des mesures : le coût réel sera relevé à l'essai.
 
 ## Vérifié, pas vérifié
 
-- Vérifié le 16 novembre 2026 : la compilation sans erreur ; les tests de SINA et de la stratégie (40 fichiers,
-  578 tests verts), dont 11 nouveaux pour la chaîne des angles (`tests/sina-etape4.test.ts`).
-- Pas vérifié : la suite complète des tests ; la chaîne avec la vraie IA ; la qualité réelle des angles.
+- Vérifié le 16 novembre 2026 : la compilation sans erreur ; la suite complète des tests : 557 fichiers passés sur
+  560, 2 ignorés, 1 en échec (4 987 tests passés, 1 échec, 6 ignorés ; 25 minutes). L'échec
+  (`tests/theme211-render-evidence.test.ts`) est celui déjà connu : le test exige un navigateur à `/usr/bin/chromium`,
+  absent de la machine de travail. 11 nouveaux tests pour la chaîne des angles (`tests/sina-etape4.test.ts`).
+  L'écran des trois cartes a été regardé dans le Studio privé, avec des angles d'exemple posés à la main (sans IA).
+- Pas vérifié : la chaîne avec la vraie IA ; la qualité réelle des angles.
