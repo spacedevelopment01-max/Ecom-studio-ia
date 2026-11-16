@@ -588,6 +588,19 @@ chiffres du site et de sa boutique. Les branchements reviendront quand il les au
     - *des ponts de lumière entre partenaires* qui travaillent ensemble ;
     - *sa constellation en fond d'écran* de téléphone ;
     - *le mode planétarium* : ciel en plein écran et visite guidée en boucle, pour un salon ou une vitrine.
+    - *les grands moments de l'année* (« Sinon je prend encore toutes les idees ») : en décembre, le traîneau du Père
+      Noël traverse la voie lactée en étoiles avec une neige d'étoiles (ébauche faite) ; feu d'artifice d'étoiles à
+      minuit le 31 décembre ; deux étoiles qui dessinent un cœur à la Saint-Valentin ; fleurs de lumière au
+      printemps ; une constellation en bouquet ou en cravate pour la fête des mères et des pères ; la pluie
+      d'étoiles filantes le 12 août ; une lune orange et des chauves-souris de poussière d'étoiles à Halloween ; une
+      comète « Soldes » pour les soldes et le Black Friday. À chaque fois, SINA arrive avec la campagne prête ;
+    - *les signaux* : une étoile qui attend le client clignote comme un phare ;
+    - *les demandes arrivent en étoiles filantes* et se posent sur « Les demandes » ;
+    - *la lune de l'objectif du mois*, qui se remplit au fil du mois ;
+    - *l'anniversaire du projet* : un anneau de lumière chaque année, avec le bilan de l'année ;
+    - *la constellation à la une* chaque semaine sur la page d'accueil, parmi les projets ouverts aux visites ;
+    - *la galaxie du client* qui a plusieurs projets ;
+    - *la comète des nouveautés* du Studio, montrée une fois.
 
 Sources de la partie 7 : journal des nouveautés de Shopify (conseils de Sidekick), Unite.AI (Canvas), TechCrunch
 (créateur de boutique), eCommerce Fastlane, Copyfy, blog de Google (Pomelli), test de Blaze par R. Doser, Apaya, blog de
