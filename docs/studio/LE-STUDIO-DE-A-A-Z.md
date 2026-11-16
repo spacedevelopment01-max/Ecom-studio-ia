@@ -484,6 +484,10 @@ chiffres du site et de sa boutique. Les branchements reviendront quand il les au
   lot 4 (l'ancien assistant savait désigner un élément ; la fonction est partie avec lui au lot 1).
 - **Pas de création gratuite** : l'idée vue chez Scale Ova (« créer et voir gratuitement, payer pour publier ») est
   refusée. Ses mots : « Pas envie de faire comme ça ».
+- **Que du sur mesure, adaptable partout** (le propriétaire, 16 novembre 2026 : « On doit fait que du sur mesure et
+  adaptable shopify woocommerce prestashop »). Chaque site est monté sur mesure par SINA pour son client, et le même
+  site part vers Shopify, WooCommerce ou PrestaShop. L'ancien « sur mesure » sur un second moteur, qui ne part pas
+  partout et ne publie pas les sites de services, est une ancienne façon à retirer.
 - **Le thème unique du Studio** (accord du propriétaire : « Oui écris le »). SINA n'a qu'un seul thème, très riche,
   construit une fois au meilleur niveau, et elle **monte** chaque site avec : elle choisit les pièces utiles au métier,
   leur disposition et leur ordre, les habille avec la marque du client, écrit les textes, crée les images, juge le
