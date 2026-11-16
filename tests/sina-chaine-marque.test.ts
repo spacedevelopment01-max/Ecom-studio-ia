@@ -807,9 +807,9 @@ describe("SINA — chaîne de création de la marque", async () => {
     const refs = (log as any).refs;
     // Le logo est conçu par OpenAI à partir de la marque, sans modèle (retour du propriétaire du 14 novembre 2026 :
     // le nom composé envoyé en modèle portait la vague de « Pulpe », et chaque logo la recopiait).
-    // Le premier logo refait ne reçoit aucune référence ; les suivants, la planche des logos déjà refaits pour ce client.
+    // Aucun logo ne reçoit d'image jointe.
     expect(refs["image-1-A-logo"]).toEqual({ logo: false, scene: false, aspect: "1:1" });
-    expect(refs["image-1-B-logo"]).toEqual({ logo: false, scene: true, aspect: "1:1" });
+    expect(refs["image-1-B-logo"]).toEqual({ logo: false, scene: false, aspect: "1:1" });
     expect(refs["image-1-A-hero"]).toEqual({ logo: false, scene: false, aspect: "16:9" });
     expect(refs["image-1-A-object"]).toEqual({ logo: true, scene: false, aspect: "1:1" }); // le logo est posé sur l'objet
     expect(refs["image-1-A-site"]).toEqual({ logo: true, scene: true, aspect: "9:16" }); // la maquette : le logo et la scène en références, en portrait
@@ -1018,9 +1018,10 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(P.imagerySystem("services")).toMatch(/Tu ne décris PAS le logo : aucune idée de dessin, aucun signe à y mettre, aucune forme, aucun effet, aucune composition\. Le dessinateur est totalement libre/);
     expect(P.imagerySystem("services")).not.toMatch(/le signe éventuel, pris dans son monde/);
     const freeLogo = I.imagePrompt("logo", route("A"), { look: "x", logo: "Ce qu'il faut savoir de la marque.", signs: "", hero: "", object: "", site: "", posts: ["", "", ""] } as never);
-    expect(freeLogo).toMatch(/Tu es totalement libre : l'idée, la forme, le dessin des lettres et le signe éventuel sont à toi/);
+    expect(freeLogo).toMatch(/Tu es totalement libre du dessin : l'idée, la forme, le dessin des lettres et le signe éventuel sont à toi/);
     expect(freeLogo).toMatch(/Typographie de la marque : un caractère /);
-    expect(freeLogo).not.toMatch(/Direction artistique|recette|ligne ondulée/);
+    expect(freeLogo).toMatch(/Direction artistique de la marque : /);
+    expect(freeLogo).not.toMatch(/recette|ligne ondulée|image de référence/);
     expect(P.imagerySystem("services")).not.toMatch(/redessine en vrai logo/);
     expect(P.imageReviewSystem()).toMatch(/le logo, l'emblème ou le nom d'une AUTRE marque apparaît \(constructeur/);
     expect(P.imageReviewSystem()).toMatch(/pour le LOGO : il n'est pas net et lisible/);
@@ -1035,7 +1036,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     });
     // À la proposition : la consigne du logo, les idées de logo des autres planches, le contrôle gratuit du fond.
     const first = proposal.log;
-    expect(first.prompts[`image-1-A-logo${FIRST}`]).toMatch(/Tu es totalement libre/);
+    expect(first.prompts[`image-1-A-logo${FIRST}`]).toMatch(/Tu es totalement libre du dessin/);
     expect((first as any).refs[`image-1-A-logo${FIRST}`].logo).toBe(false);
     expect(first.prompts[`imagery-1-A${FIRST}`]).not.toMatch(/Logos déjà prévus/);
     expect(first.prompts[`imagery-1-B${FIRST}`]).toMatch(/# Logos déjà prévus pour les AUTRES propositions de cette série\n1\. Un logo net/);
@@ -1055,7 +1056,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     for (const x of [ra, rb, rc]) expect(x.board!.wordmark.cut).toBeUndefined();
     // La consigne du logo : le nom épelé, une conception propre à la marque, aucun modèle envoyé.
     expect(log.prompts["image-1-A-logo"]).toContain(`lettre par lettre : ${I.spell(ra.name)}`);
-    expect(log.prompts["image-1-A-logo"]).toMatch(/Tu es totalement libre/);
+    expect(log.prompts["image-1-A-logo"]).toMatch(/Tu es totalement libre du dessin/);
     expect(log.prompts["image-1-A-logo"]).toMatch(/Ni maquette, ni photo, ni personne/); // un logo, jamais une scène avec une personne
     expect(P.imagerySystem("services")).toMatch(/Tu ne décris PAS le logo/);
     // Le vrai matériel du métier (retour du propriétaire : « le camion n'est pas assez grand pour faire du toilettage »).
@@ -1063,10 +1064,9 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(P.imageReviewSystem()).toMatch(/le matériel du métier n'est pas crédible pour un professionnel de ce métier/);
     if (ra.board!.descriptor) expect(log.prompts["imagecheck-1-A"]).toContain(`Métier : ${ra.board!.descriptor}.`);
     // Aucun modèle à recopier ; mais les logos déjà faits pour ce client lui sont montrés, pour qu'il fasse autre chose.
-    // Toutes les planches refaites d'un coup : le premier logo refait ne voit aucun des anciens (on les remplace), le
-    // suivant voit celui qui vient d'être refait, avec la consigne de n'avoir rien en commun avec lui.
-    expect(log.prompts["image-1-A-logo"]).not.toMatch(/logos DÉJÀ faits/);
-    expect(log.prompts["image-1-B-logo"]).toMatch(/logos DÉJÀ faits pour ce client\. Elle n'est PAS un modèle : regarde-les, puis fais un logo qui n'a RIEN en commun avec eux/);
+    // Aucun modèle, aucune image jointe : chaque logo repart de zéro.
+    expect(log.prompts["image-1-A-logo"]).not.toMatch(/image de référence|logos DÉJÀ/);
+    expect(log.prompts["image-1-B-logo"]).not.toMatch(/image de référence|logos DÉJÀ/);
     expect((log as any).refs["image-1-A-logo"].logo).toBe(false);
     // Le signe « lettrage » (le nom composé par le Studio, parfois avec la vague) n'est jamais donné pour le logo.
     const lettrage = ra.board!.signs.find((g) => g.kind === "lettrage");

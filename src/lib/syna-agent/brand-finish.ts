@@ -99,8 +99,6 @@ export async function runBrandFinish(o: {
       imagery: mixed || o.guidance ? undefined : proposalImagery(j, route),
       // Un autre logo : nettement différent de celui que le client n'a pas voulu.
       otherLogos: slots.includes("logo") && before?.logoIdea ? [before.logoIdea] : [],
-      // Le logo qu'il n'a pas voulu est montré au dessinateur, pour qu'il fasse autre chose.
-      otherLogoImages: slots.includes("logo") ? [...(j.identities?.list ?? []).map((i) => i.board?.images?.logo?.id), before?.logo?.id].filter((id, n, all): id is string => !!id && all.indexOf(id) === n).flatMap((id) => { const a = getAsset(id); try { return a ? [assetData(a)] : []; } catch { return []; } }) : [],
     });
     current = r.route; notes.push(...r.notes);
     // « Identité A : … » n'a plus de sens une fois l'identité choisie : c'est SA marque.

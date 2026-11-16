@@ -151,9 +151,11 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
     // savoir de la marque, jamais une idée de dessin ; seuls restent le nom exact et ce qui permet de s'en servir
     // (un seul logo, à plat, sur fond blanc : le fond se retire ensuite depuis les bords, jamais de carré autour).
     return [
-      `Crée le logo de la marque « ${x.name} »${x.board.descriptor ? ` (${x.board.descriptor.trim().replace(/\.+$/, "")})` : ""}. Tu es totalement libre : l'idée, la forme, le dessin des lettres et le signe éventuel sont à toi. Fais le logo que le meilleur créateur de logos ferait pour CETTE marque-là, à partir de ce qu'elle a d'unique (dit ci-dessous), pas à partir de son métier en général.`,
+      `Crée le logo de la marque « ${x.name} ». Tu es totalement libre du dessin : l'idée, la forme, le dessin des lettres et le signe éventuel sont à toi.`,
       `Le nom s'écrit exactement « ${x.name} », lettre par lettre : ${spell(x.name)}. Aucune lettre ajoutée, retirée ni changée, accents compris. Aucun autre mot.`,
-      imagery.logo.trim(), paletteLine(x),
+      x.board.descriptor ? `Métier : ${x.board.descriptor.trim().replace(/\.+$/, "")}.` : "",
+      `Direction artistique de la marque : ${[imagery.logo.trim(), look].filter(Boolean).join(" ")}`,
+      paletteLine(x),
       `Typographie de la marque : un caractère ${FONT_CHARACTER[x.fonts.heading.replace(/_[ni]\d$/, "")] ?? "de titres"} (dans l'esprit de ${fontFamily(x.fonts.heading)}) ; tu peux le redessiner à ta façon.`,
       "Un seul logo, centré, à plat, net et lisible même en tout petit, sur un fond BLANC uni jusqu'aux bords, avec de l'air autour. Ni maquette, ni photo, ni personne, ni cadre, ni ombre portée.",
     ].filter(Boolean).join("\n");
@@ -200,13 +202,6 @@ const ROLE_FOR_REVIEW: Record<ImageSlot, string> = {
 type Made = { id: string; w: number; h: number };
 /** Ce que le client voit à la place d'une image non gardée (dit tel quel, jamais un dessin qui n'existe pas). */
 const instead = (_x: Route, slot: ImageSlot): string => slot === "signs" ? "les signes restent décrits en mots" : slot === "logo" ? "tu vois ton nom dessiné à la place" : "je ne la montre pas";
-/** Planche des logos déjà créés (côte à côte sur blanc), donnée en référence « à ne pas refaire ». Rien : null. */
-export async function logoSheet(logos: Buffer[]): Promise<Buffer | null> {
-  const tiles = (await Promise.all(logos.slice(-4).map((b) => sharp(b).flatten({ background: "#FFFFFF" }).resize(512, 512, { fit: "contain", background: "#FFFFFF" }).png().toBuffer().catch(() => null)))).filter(Boolean) as Buffer[];
-  if (!tiles.length) return null;
-  return sharp({ create: { width: 512 * tiles.length, height: 512, channels: 3, background: "#FFFFFF" } }).composite(tiles.map((input, i) => ({ input, left: 512 * i, top: 0 }))).png().toBuffer();
-}
-
 /** Le logo que le client garde (sa propre image, déposée dans le Studio). */
 export type ClientLogo = { id: string; w: number; h: number; data: Buffer };
 export async function clientLogoOf(projectId: string): Promise<ClientLogo | null> {
@@ -251,12 +246,6 @@ export async function runBoardImages(o: {
   slots?: ImageSlot[];
   /** Idées de logo des AUTRES planches de la série : le logo de celle-ci doit être une conception nettement différente. */
   otherLogos?: string[];
-  /**
-   * Logos déjà créés pour ce client (les autres identités de la série, ou celui qu'il n'a pas voulu) : montrés au
-   * dessinateur pour qu'il fasse AUTRE chose (essai réel du 15 novembre 2026 : en carte blanche, trois logos sur quatre
-   * sortaient avec le même pictogramme au-dessus du nom). Le dessin reste libre ; seule la ressemblance est écartée.
-   */
-  otherLogoImages?: Buffer[];
   /** Direction artistique déjà écrite pour cette planche (premier temps) : reprise telle quelle, jamais repayée. */
   imagery?: Imagery;
   /** Logo GARDÉ par le client : jamais redessiné ; il est la marque de la planche et se pose sur ce qui le porte. */
@@ -301,8 +290,9 @@ export async function runBoardImages(o: {
   // relecture : un logo sur fond noir ou coloré n'est ni gardé ni posé sur l'objet.
   if (wanted.has("logo")) {
     ctx.progress(0.96, L(`Je dessine le logo de la planche ${key}`, `Drawing the logo of board ${key}`));
-    const seenLogos = await logoSheet(o.otherLogoImages ?? []);
-    await make("logo", seenLogos ? { scene: seenLogos } : {}, imagePrompt("logo", x, imagery) + (seenLogos ? "\nL'image de référence montre les logos DÉJÀ faits pour ce client. Elle n'est PAS un modèle : regarde-les, puis fais un logo qui n'a RIEN en commun avec eux. Ni la même construction, ni le même signe, ni le même dessin de lettres, ni les mêmes traits ou ornements. Quelqu'un qui verrait tous ces logos côte à côte ne doit pas croire qu'ils viennent de la même main." : ""));
+    // Aucune image jointe (demande du propriétaire du 16 novembre 2026 : « ne joins pas d'autre logo, fais comme s'il
+    // repartait de base ») : jointe, une image est traitée par le modèle comme une retouche à reproduire.
+    await make("logo", {}, imagePrompt("logo", x, imagery));
     const drawn = bufferOf("logo");
     if (drawn && !(await logoOnWhite(drawn))) {
       const why = L("il n'est pas sur un fond blanc net : il ne se lirait pas sur tes supports", "it is not on a clean white background");

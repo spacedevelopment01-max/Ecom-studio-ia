@@ -190,11 +190,13 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     // La maquette : en portrait, avec le logo et la grande scène de SA planche en références ; le logo et la scène,
     // eux, naissent sans modèle.
     for (const k of ["A", "B", "C"]) {
-      // Le premier logo de la série est créé sans rien voir ; les suivants reçoivent la planche des logos déjà faits pour ce
-      // client, à ne pas refaire (essai réel du 15 novembre 2026 : trois logos sur quatre avec le même pictogramme).
-      expect(log.refs[`image-1-${k}-logo${FIRST}`]).toEqual({ logo: false, scene: k !== "A", aspect: "1:1" });
-      if (k !== "A") expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/logos DÉJÀ faits pour ce client\. Elle n'est PAS un modèle : regarde-les, puis fais un logo qui n'a RIEN en commun avec eux/);
-      else expect(log.prompts[`image-1-${k}-logo${FIRST}`]).not.toMatch(/logos DÉJÀ faits/);
+      // Chaque logo repart de zéro : aucune image jointe (demande du propriétaire du 16 novembre 2026 : « ne joins pas
+      // d'autre logo, fais comme s'il repartait de base »), seulement le métier, les couleurs, la typographie et la
+      // direction artistique de l'identité.
+      expect(log.refs[`image-1-${k}-logo${FIRST}`]).toEqual({ logo: false, scene: false, aspect: "1:1" });
+      expect(log.prompts[`image-1-${k}-logo${FIRST}`]).not.toMatch(/image de référence|logos DÉJÀ/);
+      expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/Direction artistique de la marque : /);
+      expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/Typographie de la marque : un caractère /);
       expect(log.refs[`image-1-${k}-hero${FIRST}`]).toEqual({ logo: false, scene: false, aspect: "16:9" });
       expect(log.refs[`image-1-${k}-site${FIRST}`]).toEqual({ logo: true, scene: true, aspect: "9:16" });
     }

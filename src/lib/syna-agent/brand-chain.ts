@@ -152,11 +152,6 @@ const imageUnitMax = (aspect: ImageAspect, references: number) => photoRequestMa
 export const otherLogos = (list: { key: string; board?: { images?: { logoIdea?: string } } }[], key: string): string[] =>
   list.filter((o) => o.key !== key).map((o) => o.board?.images?.logoIdea ?? "").filter(Boolean);
 
-/** Les logos déjà créés des AUTRES identités de la série (fichiers gardés) : montrés pour que le suivant en diffère. */
-export function logoBuffers(list: { key: string; board?: { images?: { logo?: { id: string } } } }[], key: string): Buffer[] {
-  return list.filter((o) => o.key !== key).flatMap((o) => { const a = o.board?.images?.logo ? getAsset(o.board.images.logo.id) : undefined; try { return a ? [assetData(a)] : []; } catch { return []; } });
-}
-
 export function boardImagesQuote(routes: number, settings?: ChainSettings, slots?: readonly ImageSlot[]): ChainQuote {
   const s = settings ?? chainSettings();
   let max = 0, probable: number | null = 0;
@@ -612,13 +607,9 @@ export async function runSinaBrandJob(ctx: JobContext) {
     if (!previous.length) throw new UserFacingError(L("Il n'y a pas encore de planche à mettre en images. Rien n'a été décompté.", "There is no board to illustrate yet. Nothing was charged."));
     const targets = a.redo?.length ? previous.filter((x) => a.redo!.includes(x.key)) : previous, round = j.identities?.round ?? 1;
     let list = (j.identities?.list ?? []) as Route[];
-    const said: string[] = [], redoneKeys = new Set<string>();
+    const said: string[] = [];
     for (const x of targets) {
-      const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, otherLogos: otherLogos(list, x.key),
-        // Plusieurs logos refaits d'un coup : chacun ne voit que ceux déjà refaits dans cette reprise (et ceux des identités
-        // qu'on ne touche pas), jamais les anciens logos qu'on est justement en train de remplacer.
-        otherLogoImages: logoBuffers(list.filter((o2) => !targets.some((t2) => t2.key === o2.key) || redoneKeys.has(o2.key)), x.key), clientLogo });
-      redoneKeys.add(x.key);
+      const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, otherLogos: otherLogos(list, x.key), clientLogo });
       list = list.map((o) => (o.key === x.key ? r.route : o));
       said.push(...r.issues); notes.push(...r.notes);
     }
@@ -875,7 +866,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
   if (a.images ?? brandImagesOn()) {
     for (const x of list.filter((y) => todo.includes(y.key))) {
       try {
-        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round, slots: PROPOSAL_SLOTS, otherLogos: otherLogos(list, x.key), otherLogoImages: logoBuffers(list, x.key), clientLogo });
+        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round, slots: PROPOSAL_SLOTS, otherLogos: otherLogos(list, x.key), clientLogo });
         list = list.map((o) => (o.key === x.key ? r.route : o));
         remaining.push(...r.issues); notes.push(...r.notes);
       } catch (e) {
