@@ -109,10 +109,20 @@ lui en faire une leçon, et lui en rendre compte.
   trois stratèges et le juge ; SINA pose au commerçant les questions de la leçon.
 - Constat sur l'essai : deux « types de clients » montrés n'en étaient pas (« ceux qui craignent la mauvaise surprise
   sur la facture », « celle qui veut voir le travail de près »).
-- Proposé, pas encore accepté ni construit : choisir les trois clientèles AVANT d'écrire, chaque stratège écrivant
-  pour ces trois-là ; un produit ou une prestation vedette différente par angle ; les trois clientèles côte à côte en
-  haut de l'écran.
-- Pas vérifié : la leçon avec la vraie IA.
+- Accepté (« Oui ») et construit le même jour : les trois clientèles sont choisies AVANT d'écrire (`targetsOf` : les
+  trois plus éloignées, dont celle que le commerçant veut voir venir) ; chaque stratège écrit une proposition pour
+  chacune ; chaque angle porte son produit ou sa prestation vedette et son argument ; le juge applique l'épreuve de
+  l'échange et « trois angles, trois arguments » ; les trois clientèles se lisent côte à côte en haut de l'écran.
+- Revu avec la vraie IA sur les deux mêmes clients (3,32 € sur 4 € accordés ; création : 0,94 € et 1,60 €) :
+  - Atelier Vasco : l'homme qui offre (la besace Sillon, en cadeau), la femme qui travaille (le cabas Lune et son
+    ordinateur, recommandé), la cliente qui revient (la pochette Pli en deuxième sac). Trois sacs, trois arguments.
+  - Bécane : ceux qui ressortent le vélo du garage (la remise en état à 70 €, recommandé), ceux qui vont au travail à
+    vélo (le réglage des freins à 25 €), les entreprises (le passage mensuel au bureau). L'angle d'émotion est resté à
+    7 après sa reprise : il est montré avec le doute de SINA, qui a relevé d'elle-même une promesse de délai cachée
+    dans un titre et une parole venue des clients d'un autre atelier.
+- Total dépensé pour les essais du lot 3 : 8,36 €.
+- Défauts vus : une parole d'acheteur d'un autre atelier peut être citée comme si elle venait des clients du
+  commerçant ; une reprise coûte cher quand une seule clientèle reste libre (Bécane : 1,60 €).
 
 ## Ce qui reste à faire pour finir le lot
 

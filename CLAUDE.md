@@ -65,7 +65,7 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - Si un modèle n'arrive pas à écrire un mot dans une image, changer la phrase plutôt que repayer des essais.
 - Dépensé en essais réels avant le lot 2 : environ 19,14 € comptés par le Studio (dont 2,94 € pour l'essai du lot 1,
   sur 9 € accordés, et 1,07 € pour l'essai sur le nouvel écran, sur 1,50 €). Essai du lot 2, au 16 novembre 2026 :
-  40,06 €, pour 25 € accordés au départ (le dépassement vient d'essais qu'il a demandés). Essai du lot 3 : 5,04 €.
+  40,06 €, pour 25 € accordés au départ (le dépassement vient d'essais qu'il a demandés). Essais du lot 3 : 8,36 €.
 - **Le client ne voit jamais d'euros pour l'IA** : tout coût est un pourcentage du budget d'IA de son mois.
 - **Forfaits validés** (« Oui je valide comme ça ») : 69 €, 99 € et 169 € par mois, sans prix de création ni
   engagement ; budget d'IA à 50 % du prix hors taxes le premier mois, puis 40 % ; par forfait : 2, 3 et 4 identités
@@ -107,7 +107,9 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - **Trois angles** : un angle, c'est « aller chercher une typologie de client différente, avec des envies et des
   besoins différents, mais qui recherche le même produit ; c'est juste qu'il n'est pas mis en avant et en valeur de la
   même façon sur le site et la communication » (ses mots du 16 novembre). Donc trois angles = trois types de clients
-  différents, jamais deux pour le même. Un sûr, un d'émotion, un audacieux, avec celui que SINA recommande. Le client en choisit un ;
+  différents, jamais deux pour le même ; un type de client est une situation, jamais un âge seul ni une crainte que
+  tous partagent ; un produit ou une prestation vedette et un argument différents par angle (leçon :
+  `docs/sina-savoir/angles-marketing.md`). Un sûr, un d'émotion, un audacieux, avec celui que SINA recommande. Le client en choisit un ;
   les autres restent en réserve pour ses publications et ses publicités, sans nombre d'angles par forfait.
 - **Site** : SINA le conçoit pour cette marque, pas en copier-coller, et il doit être bon du premier coup. Des
   sections à la hauteur des meilleurs sites ; de la variété d'un client à l'autre (menus, boutons) ; un signe pris sur
