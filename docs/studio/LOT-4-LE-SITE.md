@@ -151,6 +151,42 @@ ne s'inventent jamais.
   les pièces nouvelles ont des textes neutres. À neutraliser pour toute la bibliothèque.
 - Le cahier `docs/sina-savoir/sections-a-tenue.md` ne décrit pas encore les quatre nouveaux modules.
 
+## Le style de vente directe, l'achat réel et les remises (demandes du propriétaire, 16 novembre 2026)
+
+Ses mots : « Si une section manque ou ne convient pas au style dropshipping, crée-la ou adapte-la » ; « tout doit
+marcher pour de vrai dans Shopify, WooCommerce et PrestaShop, pas seulement s'afficher : les lots, le pack, la barre
+d'achat qui reste visible » ; « le stock restant ne s'affiche qu'avec le vrai stock, jamais de fausse urgence » ;
+« L'arrière plan en lune c'est pas beau je veux plus ça » ; « Oui ajoute le droit remises ».
+
+- **La fiche de vente directe** (planche : `docs/studio/lot-4/fiche-vente-directe-complete.jpg`) : achat serré, offre
+  du moment, packs où chaque article a sa couleur et sa taille avec cadeau et étiquette « le plus populaire », le
+  dessous du bouton (guide des tailles, délai, moyens de paiement, garanties, questions), fenêtre d'offre qui recueille
+  l'e-mail, barre d'achat qui reste visible, panier de côté qui s'ouvre après un ajout, rappel vers l'achat, coloris
+  en scène. Sur ordinateur, dans l'aperçu : la photo reste à gauche, la colonne d'achat défile à droite.
+- **Le site entier** d'après le modèle regardé : accueil, collection avec ajout rapide, page d'arrivée d'une publicité
+  (clé « arrivee ») qui reçoit d'office son en-tête et son pied à elle à la place de ceux du site, page des avis.
+- **L'urgence et la preuve existent, mais sur de vraies données** : promotion avec sa date de fin, stock suivi, prix
+  de comparaison, avis réels, chiffre déclaré par le client. Le Studio ne les fabrique jamais ; sans la donnée, la
+  pièce ne s'affiche pas.
+- **L'achat réel** : un contrat commun (`window.tnBoutique`) et un adaptateur par plateforme. Essayé pour de vrai sur
+  un WooCommerce et un PrestaShop installés ici (pack de trois en trois versions, cadeau, total juste). Shopify :
+  écrit et contrôlé avec des réponses simulées, jamais sur une vraie boutique.
+- **Les remises ne sont jamais calculées par le thème** : c'est la boutique qui les tient. Un prix de lot ou de pack
+  ne s'affiche que si la boutique confirme la remise (outil `shop.discounts_check`, preuve de moins de 24 h). Le droit
+  « remises » (`write_discounts`) est demandé à la connexion Shopify ; une boutique reliée avant doit être reliée à
+  nouveau, sinon SINA donne le pas à pas. **L'application Shopify du Studio doit porter ce droit** (à faire par le
+  propriétaire dans son tableau de bord Shopify).
+- **Plus jamais de photo dans une arche** : le cadre n'est plus proposé, plus permis, plus affiché (`sansArche`).
+- **Feuille du site** : trop longue pour la seule section d'en-tête de Shopify, elle est coupée entre deux règles et
+  la suite part dans des sections « Feuille du site ».
+
+Limites dites au propriétaire : dans Shopify, la fiche sur ordinateur garde l'ancienne mise en page (les deux colonnes
+ne sont faites que dans l'aperçu ; WooCommerce et PrestaShop non vérifiés) ; le Studio n'a encore aucun endroit où le
+client donne ses avis ni ses moyens de paiement (rien ne s'affiche donc) ; dans le panier de côté, « + », « − » et
+« Retirer » ne changent pas encore le vrai panier ; le pack « côte à côte » déborde un peu sur téléphone avec ses
+textes d'exemple ; la page d'arrivée sur WooCommerce et PrestaShop repose sur un repli jamais essayé ; aucun outil de
+SINA ne crée encore les remises dans Shopify (elle vérifie et guide) ; rien n'a été vu dans une vraie boutique Shopify.
+
 ## Les modèles dans Shopify (demande du propriétaire, 16 novembre 2026)
 
 Ses mots : « Shopify range les modèles par catégorie : une fiche n'est proposée pour un produit que si elle est dans la
