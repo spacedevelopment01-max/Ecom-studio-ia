@@ -1034,6 +1034,8 @@ describe.runIf(!!process.env.CHROMIUM || !!process.env.ACHAT_OUT)("achat, suite 
         const large = await page.evaluate((w) => [...document.querySelectorAll("section[data-essai] *")].filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && getComputedStyle(el).position !== "fixed" && !el.closest(".tn-galerie,.tn-vignettes,.tn-barre,.tn-pack-liste,.tn-mur-avis,.tn-avantages,.tn-col-liste") && r.right > w + 1.5; }).map((el) => `${el.closest("section")!.getAttribute("data-essai")} ${el.tagName}.${el.className}`).slice(0, 3), width);
         expect(large, `${a.key} ${width} px : rien ne dépasse`).toEqual([]);
         expect(await page.evaluate(() => document.documentElement.scrollWidth), `${a.key} ${width}`).toBeLessThanOrEqual(width + 1);
+        // Le bloc d'achat garde une seule colonne sur téléphone, note et avis compris (aucune colonne en trop).
+        if (width <= 390) expect(await page.evaluate(() => Math.round(document.querySelector(".tn-achat h1")!.getBoundingClientRect().width)), `${a.key} ${width} : largeur du nom`).toBeGreaterThanOrEqual(width - 60);
         if (width === 320) continue;
         const key = `${a.key}-${width === 390 ? "tel" : width === 1000 ? "moyen" : "ordi"}`;
         // La barre d'achat est une pièce fixe : on la retire de la capture entière, elle a sa propre capture.
@@ -1094,14 +1096,9 @@ describe.runIf(!!process.env.CHROMIUM || !!process.env.ACHAT_OUT)("achat, suite 
       layers.push({ input: texte(label, 17, 700), left: xd, top: yd }); yd += 30;
       layers.push({ input: im, left: xd, top: yd }); yd += (await sharp(im).metadata()).height! + 26;
     }
-    const xe = xd + wd + G;
-    let ye = y;
-    if (W - M - xe >= 300) {
-      const we = Math.min(330, W - M - xe), tiroir = path.join(out, "tiroir__vive.png");
-      const im = await sharp(shots["calme-barre"]).resize({ width: we }).png().toBuffer();
-      layers.push({ input: texte("Une autre allure, même fiche", 17, 330), left: xe, top: ye }); layers.push({ input: im, left: xe, top: ye + 30 }); ye += 30 + (await sharp(im).metadata()).height! + 26;
-      if (fs.existsSync(tiroir)) { const t = await sharp(tiroir).resize({ width: we }).png().toBuffer(); layers.push({ input: texte("Après un ajout, le panier de côté s'ouvre", 17, 330), left: xe, top: ye }); layers.push({ input: t, left: xe, top: ye + 30 }); ye += 30 + (await sharp(t).metadata()).height! + 26; }
-    }
+    const tiroir = path.join(out, "tiroir__vive.png");
+    if (fs.existsSync(tiroir)) { const t = await sharp(tiroir).resize({ width: wd }).png().toBuffer(); layers.push({ input: texte("Après un ajout, le panier de côté s'ouvre", 17, 700), left: xd, top: yd }); yd += 30; layers.push({ input: t, left: xd, top: yd }); yd += (await sharp(t).metadata()).height! + 26; }
+    const ye = y;
     y = Math.max(bas, yd, ye) + 50;
     // L'ordinateur : deux écrans tels qu'on les voit (la photo reste pendant que la colonne d'achat défile), puis le récit.
     const demi = Math.floor((W - 2 * M - G) / 2);
