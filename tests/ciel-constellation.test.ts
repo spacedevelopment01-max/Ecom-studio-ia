@@ -5,7 +5,10 @@
  */
 import { describe, expect, it } from "vitest";
 import { asymetrique, ecart, ECART_MIN, estForme, formeDe, formeUnique, NB_ETOILES, PORTEE, silhouette, type Forme } from "@/lib/ciel/forme";
-import { etoileDeLaTache, placesDuCiel, sinaDe, soleilDe, vueDuProjet } from "@/lib/ciel/vue";
+import { etoileDeLaTache, placesAccueil, placesDuCiel, sinaDe, soleilDe, vueDuProjet } from "@/lib/ciel/vue";
+import { ETOILES, VISITE } from "@/lib/ciel/visite";
+import fs from "node:fs";
+import path from "node:path";
 import type { DashboardData } from "@/lib/syna-agent/dashboard";
 
 const DEG = Math.PI / 180;
@@ -150,5 +153,38 @@ describe("Ciel — la place des autres projets du compte", () => {
       expect(Math.hypot(pts[i].x, pts[i].y)).toBeGreaterThan(900);
       for (let j = 0; j < i; j++) expect(Math.hypot(pts[i].x - pts[j].x, pts[i].y - pts[j].y)).toBeGreaterThan(420);
     }
+  });
+});
+
+describe("Ciel — l'arrivée du nouveau client", () => {
+  const lire = (f: string) => fs.readFileSync(path.resolve(import.meta.dirname, "..", f), "utf8");
+
+  it("l'accueil : « Nouveau projet » au milieu, les projets autour, jamais deux au même endroit ni sur elle", () => {
+    const ids = Array.from({ length: 14 }, (_, i) => `p${i}`), p = placesAccueil(ids), pts = Object.values(p);
+    expect(placesAccueil([...ids].reverse())).toEqual(p);
+    expect(pts).toHaveLength(14);
+    for (let i = 0; i < pts.length; i++) {
+      expect(Math.hypot(pts[i].x, pts[i].y)).toBeGreaterThan(330);
+      for (let j = 0; j < i; j++) expect(Math.hypot(pts[i].x - pts[j].x, pts[i].y - pts[j].y)).toBeGreaterThan(300);
+    }
+  });
+
+  it("la visite guidée : les neuf étoiles s'allument en trois temps, puis la constellation s'éteint avant l'invitation à cliquer", () => {
+    expect(ETOILES).toHaveLength(9);
+    expect(VISITE.map((v) => v.allumees)).toEqual([0, 3, 6, 9, 0]);
+    for (const v of VISITE) { expect(v.fr.length).toBeGreaterThan(30); expect(v.en.length).toBeGreaterThan(30); }
+    expect(VISITE.at(-1)!.fr).toContain("« Nouveau projet »");
+    // Écrite une fois pour toutes : la visite n'appelle jamais l'IA.
+    const accueil = lire("src/components/studio/ciel/ciel-accueil.tsx");
+    expect(accueil).not.toMatch(/api\(|fetch\(|SynaThread/);
+  });
+
+  it("le nouveau client ne voit que la constellation : rien n'est lancé d'office, et la Découverte n'est plus proposée à l'accueil", () => {
+    const home = lire("src/components/studio/home.tsx");
+    expect(home).toContain("const showNew = creating;");
+    expect(home).toContain('className={cxMain(!!data && !creating && !liste)}');
+    expect(home).not.toContain("Ouvrir le studio de démonstration");
+    // La liste classique reste à un clic pour qui a déjà des projets.
+    expect(home).toContain('t("Liste de mes projets", "List of my projects")');
   });
 });

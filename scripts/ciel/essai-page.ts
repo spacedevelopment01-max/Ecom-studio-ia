@@ -5,6 +5,7 @@
 import { formeDe, formeUnique, type Forme } from "@/lib/ciel/forme";
 import { ETAT_LIBELLE, placesDuCiel, soleilDe, type EtatEtoile } from "@/lib/ciel/vue";
 import { monterCiel, type Astre, type Ciel } from "@/components/studio/ciel/moteur";
+import { VISITE } from "@/lib/ciel/visite";
 
 const ETAPES = ["Faire connaissance", "La marque", "Les angles", "L'activité", "Le site", "La mise en ligne", "La communication", "La publicité", "Dans la durée"];
 const PROMESSES = [
@@ -31,10 +32,48 @@ const FORMES: Record<string, Forme> = {};
 const h = (html: string) => { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild as HTMLElement; };
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 const scene = document.getElementById("scene")!, lu = document.getElementById("qualite-lue")!;
-let moment = "livre", qualite: "auto" | "pleine" | "allegee" = "auto", ciel: Ciel | null = null;
+let moment = "arrivee", minuterie = 0;
+let qualite: "auto" | "pleine" | "allegee" = "auto", ciel: Ciel | null = null;
+
+/** L'arrivée du nouveau client : la constellation « Nouveau projet » seule, et la visite guidée. */
+function monterArrivee() {
+  scene.innerHTML = "";
+  const racine = h(`<section class="ciel ciel-accueil" data-ciel data-accueil="nouveau" aria-label="Ton ciel">
+    <canvas aria-hidden="true"></canvas>
+    <header class="ciel-titre"><p>Ton ciel</p><h2>Ta constellation t'attend</h2><p class="ciel-compte">Elle s'allume dès que tu lances ton projet</p></header>
+    <ol class="ciel-etoiles">${ETAPES.map((nom, i) => `<li><button type="button" class="ciel-etoile" data-etoile="${i + 1}" data-etat="avenir"><span><b>${nom}</b><small>À allumer</small></span></button></li>`).join("")}</ol>
+    <div class="ciel-astres"><button type="button" class="ciel-coeur" data-coeur="nouveau" aria-label="Nouveau projet"></button><button type="button" class="ciel-astre" data-astre="nouveau" data-type="nouveau" data-appel><span>Nouveau projet<small>Clique pour l'allumer</small></span></button></div>
+    <div data-bas></div>
+    <div class="ciel-vue" role="group" aria-label="Vue du ciel"><button type="button" data-v="+" aria-label="Zoomer">+</button><button type="button" data-v="-" aria-label="Dézoomer">−</button><button type="button" data-pivot data-v="g" aria-label="Pivoter vers la gauche">↺</button><button type="button" data-pivot data-v="d" aria-label="Pivoter vers la droite">↻</button><button type="button" class="ciel-vue-t" data-v="tout">Recentrer</button><button type="button" class="ciel-vue-t" data-v="visite">Revoir la visite</button></div>
+  </section>`);
+  scene.append(racine);
+  const forme = formeDe("nouveau projet"), bas = racine.querySelector<HTMLElement>("[data-bas]")!, etoiles = [...racine.querySelectorAll<HTMLElement>("[data-etoile]")];
+  let allumees = 0, arret: number | null = null;
+  const donnees = () => ({ astres: [{ id: "nouveau", type: "nouveau" as const, x: 0, y: 0, couleurs: null, forme, etats: ETAPES.map((_, i): EtatEtoile => (i < allumees ? "fait" : "avenir")), grand: true }], sina: allumees > 0 ? allumees - 1 : null });
+  const c = monterCiel(racine, donnees(), { leger: qualite === "auto" ? "auto" : qualite === "allegee", arrivee: true, surLeger: () => { lu.textContent = "Version allégée"; } });
+  ciel = c; lu.textContent = c.leger ? "Version allégée" : "Version complète";
+  const peindre = () => { etoiles.forEach((b, i) => { const on = i < allumees; b.dataset.etat = on ? "fait" : "avenir"; b.toggleAttribute("data-exemple", on); b.querySelector("small")!.textContent = on ? "Exemple" : "À allumer"; }); c.maj(donnees()); };
+  const lancer = () => { arret = null; racine.removeAttribute("data-visite"); bas.innerHTML = `<p class="ciel-dit"><em>Sina</em><span>Dans le Studio, ce clic lance ton projet avec moi.</span></p>`; };
+  const montrer = () => {
+    window.clearInterval(minuterie);
+    if (arret === null) { racine.removeAttribute("data-visite"); bas.innerHTML = `<p class="ciel-dit"><em>Sina</em><span>Clique sur « Nouveau projet » pour allumer ta constellation.</span></p>`; allumees = 0; peindre(); return; }
+    racine.setAttribute("data-visite", "");
+    const v = VISITE[arret], dernier = arret === VISITE.length - 1;
+    bas.innerHTML = `<div class="ciel-visite" role="dialog" aria-label="Visite guidée"><p><em>Sina</em><span>${esc(v.fr)}</span></p><div><span class="ciel-visite-pas">${VISITE.map((_, i) => `<i ${i === arret ? "data-ici" : ""}></i>`).join("")}</span>${dernier ? "" : `<button type="button" class="ciel-visite-passer">Passer la visite</button>`}<button type="button" class="ciel-bouton">${dernier ? "Allumer ma constellation" : "Suivant"}</button></div></div>`;
+    bas.querySelector<HTMLElement>(".ciel-visite-passer")?.addEventListener("click", () => { arret = null; montrer(); });
+    bas.querySelector<HTMLElement>(".ciel-bouton")!.addEventListener("click", () => { if (dernier) lancer(); else { arret = arret! + 1; montrer(); } });
+    if (v.allumees < allumees) { allumees = v.allumees; peindre(); }
+    else minuterie = window.setInterval(() => { if (allumees >= v.allumees) { window.clearInterval(minuterie); return; } allumees++; peindre(); }, 520);
+  };
+  window.clearInterval(minuterie);
+  minuterie = window.setTimeout(() => { arret = 0; montrer(); }, 2400);
+  racine.querySelectorAll<HTMLElement>("[data-etoile], [data-coeur], [data-astre]").forEach((b) => b.addEventListener("click", lancer));
+  racine.querySelectorAll<HTMLElement>("[data-v]").forEach((b) => b.addEventListener("click", () => { const v = b.dataset.v!; if (v === "+") c.zoom(1.4); else if (v === "-") c.zoom(1 / 1.4); else if (v === "g") c.tourner(-Math.PI / 8); else if (v === "d") c.tourner(Math.PI / 8); else { c.cadrer("tout"); if (v === "visite") { arret = 0; montrer(); } } }));
+}
 
 function monter() {
-  ciel?.detruire();
+  ciel?.detruire(); window.clearInterval(minuterie); window.clearTimeout(minuterie);
+  if (moment === "arrivee") return monterArrivee();
   const p = PROJETS[moment], autres = Object.values(PROJETS).filter((o) => o.id !== p.id), places = placesDuCiel(autres.map((o) => o.id));
   const libelle = (i: number) => (p.sina === i && p.etats[i] !== "avis" ? "SINA y travaille" : ETAT_LIBELLE[p.etats[i]].fr);
   scene.innerHTML = "";

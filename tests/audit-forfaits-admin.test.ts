@@ -41,7 +41,9 @@ describe("pages de connexion et d'administration", () => {
     // La photo de fond vient des pages (connexion / inscription), qui ne la passent que si le fichier du kit privé est installé.
     const imgs = [...`${src("src/app/connexion/page.tsx")}${src("src/app/inscription/page.tsx")}`.matchAll(/"(\/demo\/[^"]+\.(?:jpg|png|webp))"/g)].map((m) => m[1]);
     expect(imgs.length).toBeGreaterThan(0);
-    expect(src("src/components/auth-form.tsx")).toContain("{background && <img");
+    // La page de connexion montre le ciel du Studio, dessiné sur place : plus aucune image à charger, donc aucune cassée.
+    expect(src("src/components/auth-form.tsx")).toContain("<CielFond");
+    expect(src("src/components/auth-form.tsx")).not.toContain("<img");
     const installed = fs.existsSync(path.join(process.cwd(), "public", "demo", "onde"));
     if (installed) for (const i of imgs) expect(fs.existsSync(path.join(process.cwd(), "public", i)), i).toBe(true);
   });

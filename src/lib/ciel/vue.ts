@@ -107,3 +107,19 @@ export function placesDuCiel(ids: string[]): Record<string, { x: number; y: numb
   });
   return out;
 }
+
+/**
+ * L'accueil du Studio : « Nouveau projet » au milieu, les projets du compte en anneaux autour. Toujours la même place
+ * pour un projet donné, tant que la liste ne change pas.
+ */
+export function placesAccueil(ids: string[]): Record<string, { x: number; y: number }> {
+  const out: Record<string, { x: number; y: number }> = {};
+  const tries = [...ids].sort(), tour = graine(tries.join("|") || "accueil")() * Math.PI * 2;
+  let fait = 0;
+  for (let anneau = 0; fait < tries.length; anneau++) {
+    const places = 5 + anneau * 4, ici = tries.slice(fait, fait + places), d = 470 + anneau * 430;
+    ici.forEach((id, i) => { const a = tour + anneau * 0.5 + (i / Math.max(ici.length, 2)) * Math.PI * 2 + (graine(id)() - 0.5) * 0.25; out[id] = { x: Math.cos(a) * d * 1.15, y: Math.sin(a) * d * 0.82 }; });
+    fait += ici.length;
+  }
+  return out;
+}

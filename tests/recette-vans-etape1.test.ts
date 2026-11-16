@@ -59,9 +59,10 @@ describe("Kit privé de démonstration : contrôle des chemins lus par l'accueil
     expect(check).toMatch(/il ne sert que les fichiers de public\/ présents à son démarrage/);
   });
 
-  it("aucun changement de composition : l'accueil et l'inscription restent ceux de main", () => {
+  it("l'accueil public reste celui de main ; la connexion et l'inscription montrent le ciel", () => {
     expect(read("src/app/page.tsx")).toMatch(/\?\? productDemos\[0\] \?\? list\[0\];/);
-    expect(read("src/components/auth-form.tsx")).toMatch(/<p className="mt-3 text-sm text-white\/75">\{t\("Visuel de démonstration/);
+    // La connexion et l'inscription montrent le ciel du Studio (16 novembre 2026), plus la photo de démonstration.
+    expect(read("src/components/auth-form.tsx")).toMatch(/<CielFond className="hidden lg:block">/);
   });
 });
 

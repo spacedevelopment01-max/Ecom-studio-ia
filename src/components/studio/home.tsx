@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, Phone, Briefcase, Palette, Plus, Settings, Shield, Sparkles, Store } from "lucide-react";
+import { ArrowRight, Phone, Briefcase, Palette, Plus, Settings, Shield, Store } from "lucide-react";
 import { api, Badge, Button, Card, formatDate, Logo, Select, ThemeToggle, useApi, useToast } from "../ui";
 import type { BusinessType } from "@/lib/project-types";
 import { LangSwitch, useLang, useT } from "../i18n";
@@ -13,8 +13,11 @@ import { ProjectSubscriptionDialog, SUB_STATUS } from "./project-subscription";
 import { isPlatform, platformInfo } from "./platform-picker";
 import { DeleteProjectButton } from "./delete-project";
 import { SynaThread } from "./syna-thread";
+import { CielAccueil, type ProjetDuCiel } from "./ciel/ciel-accueil";
+import type { Forme } from "@/lib/ciel/forme";
+import type { EtatEtoile } from "@/lib/ciel/vue";
 
-type ProjectCard = { id: string; name: string; status: string; sector: string | null; platform: string; business: BusinessType; updatedAt: number; cover: string | null; palette: Record<string, string> | null; brand: string | null; logo: string | null; subscription: { id: string; plan: PlanId; status: string; billing: Billing | null; periodEnd: number | null; cancelAtPeriodEnd: boolean } | null; ai: { plan: { used: number }; credits: { used: number } | null; paused: boolean } | null };
+type ProjectCard = { id: string; name: string; status: string; sector: string | null; platform: string; business: BusinessType; updatedAt: number; cover: string | null; palette: Record<string, string> | null; brand: string | null; logo: string | null; subscription: { id: string; plan: PlanId; status: string; billing: Billing | null; periodEnd: number | null; cancelAtPeriodEnd: boolean } | null; ai: { plan: { used: number }; credits: { used: number } | null; paused: boolean } | null; ciel?: { forme: Forme; etats: EtatEtoile[] } };
 
 const STATUS: Record<string, { label: string; labelEn: string; tone: any }> = {
   queued: { label: "En file", labelEn: "Queued", tone: "neutral" },
@@ -40,6 +43,9 @@ function useStudioParams() {
   }, []);
   return p;
 }
+
+/** Sous le ciel, il n'y a rien d'autre : la page classique ne s'affiche que si on la demande. */
+const cxMain = (ciel: boolean) => (ciel ? "hidden" : "mx-auto max-w-6xl px-4 py-10 sm:px-6");
 
 export function StudioHome({agentEnabled=false}:{agentEnabled?:boolean}) {
   const t = useT();
@@ -68,8 +74,11 @@ export function StudioHome({agentEnabled=false}:{agentEnabled?:boolean}) {
   // Tant que la liste n'est pas chargée : squelette.
   const firstLoad = !data && !error;
   const freeSub = pending.find((s) => s.id === useSub) ?? pending[0] ?? null;
-  const discovery = !!data && data.subscriptions === 0 && projects.length === 0;
-  const showNew = creating || (!!data && projects.length === 0 && pending.length > 0);
+  // Une seule porte : on lance un projet en cliquant sur la constellation « Nouveau projet » (jamais d'office).
+  const showNew = creating;
+  // La liste classique de « Mes projets » (abonnements, suppression, anciens essais) reste à un clic du ciel.
+  const [liste, setListe] = useState(false);
+  const constellations: ProjetDuCiel[] = projects.filter((p) => p.ciel).map((p) => ({ id: p.id, nom: p.brand ?? p.name, palette: Object.values(p.palette ?? {}).filter((c): c is string => typeof c === "string"), forme: p.ciel!.forme, etats: p.ciel!.etats }));
   const startNew = () => {
     setCreating(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -91,7 +100,7 @@ export function StudioHome({agentEnabled=false}:{agentEnabled?:boolean}) {
           <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
             {me?.user.role === "admin" && <Link href="/admin" className="hidden h-10 items-center gap-2 rounded-full border border-line bg-card px-4 text-sm sm:inline-flex"><Shield className="size-4" /> {t("Administration", "Admin")}</Link>}
             <Link href="/studio/rendez-vous" aria-label={t("Rendez-vous", "Appointments")} className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-line bg-card px-3 text-sm sm:px-4"><Phone className="size-4" /> <span className="hidden lg:inline">{t("Rendez-vous", "Appointments")}</span></Link>
-            <Link href="/studio/themes" aria-label={t("Thèmes", "Themes")} className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-line bg-card px-3 text-sm sm:px-4"><Palette className="size-4" /> <span className="hidden sm:inline">{t("Thèmes", "Themes")}</span></Link>
+{projects.length > 0 && <Link href="/studio/themes" aria-label={t("Thèmes", "Themes")} className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-line bg-card px-3 text-sm sm:px-4"><Palette className="size-4" /> <span className="hidden sm:inline">{t("Thèmes", "Themes")}</span></Link>}
             <Link href="/studio/compte" className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-line bg-card px-3 text-sm sm:px-4" aria-label={t("Mon compte", "My account")}><Settings className="size-4" /> <span className="hidden sm:inline">{t("Mon compte", "My account")}</span></Link>
             <LangSwitch />
             <ThemeToggle />
@@ -100,7 +109,16 @@ export function StudioHome({agentEnabled=false}:{agentEnabled?:boolean}) {
         </div>
       </header>
       <QuotaBanner billing={billing} />
-      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      {/* L'accueil est le ciel : le nouveau client n'y voit que la constellation « Nouveau projet ». */}
+      {!!data && !creating && !liste && (
+        <div className="relative" data-accueil-ciel>
+          <CielAccueil projets={constellations} onNouveau={startNew} />
+          {projects.length + hidden.length > 0 && (
+            <button type="button" onClick={() => setListe(true)} className="absolute right-4 top-4 z-[5] inline-flex h-10 items-center gap-2 rounded-full border border-white/20 bg-[#10183a]/80 px-4 text-sm font-medium text-white backdrop-blur hover:border-white/50">{t("Liste de mes projets", "List of my projects")}</button>
+          )}
+        </div>
+      )}
+      <main className={cxMain(!!data && !creating && !liste)}>
         {firstLoad && !creating ? (
           <div aria-busy="true" aria-label={t("Chargement de vos projets", "Loading your projects")}>
             <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
@@ -138,28 +156,17 @@ export function StudioHome({agentEnabled=false}:{agentEnabled?:boolean}) {
                 <p className="mt-2 text-sm text-ink-2">{t("Votre abonnement est conservé : votre projet se créera avec elle dès son retour.", "Your subscription is kept: your project will be created with her as soon as she is back.")}</p>
               </Card>
             )}
-            {projects.length > 0 && <div className="flex justify-center"><Button variant="ghost" onClick={() => setCreating(false)}>{t("Mes projets", "My projects")}</Button></div>}
+            <div className="flex justify-center"><Button variant="ghost" onClick={() => setCreating(false)}>{t("← Retour à mon ciel", "← Back to my sky")}</Button></div>
           </div>
-        ) : creating || discovery ? (
+        ) : creating ? (
           <div>
-            {discovery && !creating ? (
-              <div className="mb-10 grid gap-6 rounded-[2rem] border border-line bg-card p-6 sm:p-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
-                <div>
-                  <p className="text-sm font-medium uppercase tracking-[.18em] text-signal">{t("Compte Découverte · gratuit", "Discovery account · free")}</p>
-                  <h1 className="mt-3 font-display text-4xl font-semibold">{t("Découvrez le studio, gratuitement.", "Discover the studio, for free.")}</h1>
-                  <p className="mt-3 text-ink-2">{t("Votre compte gratuit ouvre le studio de démonstration : les 30 thèmes, des marques, boutiques, publicités et calendriers d'exemple. Pour créer votre vrai projet, choisissez un forfait ci-dessous.", "Your free account opens the demo studio: all 30 themes, sample brands, stores, ads and calendars. To create your real project, choose a plan below.")}</p>
-                </div>
-                <Link href="/studio/decouverte" className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-ink px-6 font-semibold text-paper"><Sparkles className="size-4" aria-hidden /> {t("Ouvrir le studio de démonstration", "Open the demo studio")}</Link>
-              </div>
-            ) : (
               <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
                 <div>
                   <p className="text-sm font-medium uppercase tracking-[.18em] text-signal">{t("Nouveau projet", "New project")}</p>
                   <h1 className="mt-2 font-display text-4xl font-semibold">{t("Choisissez l'abonnement de ce projet", "Choose this project's subscription")}</h1>
                 </div>
-                {projects.length > 0 && <Button variant="ghost" onClick={() => setCreating(false)}>{t("← Retour à mes projets", "← Back to my projects")}</Button>}
+                <Button variant="ghost" onClick={() => setCreating(false)}>{t("← Retour à mon ciel", "← Back to my sky")}</Button>
               </div>
-            )}
             <NewSubscription paymentsOpen={!!billing?.paymentsLive} initialPlan={params.plan} />
             {hidden.length > 0 && <p className="mt-6 text-center text-sm text-ink-2">{t(`Vos ${hidden.length} essai(s) gratuit(s) précédent(s) sont conservés : après votre premier abonnement, vous pourrez reprendre l'un d'eux comme projet.`, `Your ${hidden.length} previous free trial(s) are kept: after your first subscription, you can take one of them as your project.`)}</p>}
           </div>
@@ -170,7 +177,7 @@ export function StudioHome({agentEnabled=false}:{agentEnabled?:boolean}) {
                 <h1 className="font-display text-4xl font-semibold">{t("Mes projets", "My projects")}</h1>
                 <p className="mt-1 text-muted">{t(`${projects.length} projet${projects.length > 1 ? "s" : ""} · 1 abonnement par projet`, `${projects.length} project${projects.length > 1 ? "s" : ""} · 1 subscription per project`)}</p>
               </div>
-              <Button variant="signal" icon={<Plus className="size-4" />} onClick={startNew}>{t("Nouveau projet", "New project")}</Button>
+              <div className="flex flex-wrap gap-2"><Button variant="ghost" onClick={() => setListe(false)}>{t("← Retour à mon ciel", "← Back to my sky")}</Button><Button variant="signal" icon={<Plus className="size-4" />} onClick={startNew}>{t("Nouveau projet", "New project")}</Button></div>
             </div>
             {pending.length > 0 && (
               <div className="mb-6 grid gap-2">

@@ -21,9 +21,11 @@ export type Astre = {
   couleurs: Couleurs | null;
   forme: Forme;
   etats: EtatEtoile[];
+  /** En grand, au centre, avec le nom de ses neuf étoiles (l'accueil du nouveau client : « Nouveau projet » seule). */
+  grand?: boolean;
 };
 export type DonneesCiel = { astres: Astre[]; /** L'étoile où SINA travaille (0 à 8), ou null : elle est au cœur. */ sina: number | null };
-export type OptionsCiel = { leger?: boolean | "auto"; calme?: boolean; surLeger?: (leger: boolean) => void };
+export type OptionsCiel = { leger?: boolean | "auto"; calme?: boolean; surLeger?: (leger: boolean) => void; /** On arrive de loin : le ciel s'approche tout seul. */ arrivee?: boolean };
 export type Ciel = {
   maj(d: DonneesCiel): void;
   /** Ouvre une étoile (0 à 8) : le ciel s'en approche et lui laisse la place du volet ; null : retour au ciel. */
@@ -234,13 +236,14 @@ export function monterCiel(racine: HTMLElement, donnees: DonneesCiel, options: O
   const tailles = new Map<HTMLElement, { w: number; h: number }>();
   let fondToile: HTMLCanvasElement | null = null, fondCle = "";
 
-  const moi = () => D.astres.find((a) => a.type === "moi")!;
+  /** La constellation principale : le projet ouvert, ou celle qu'on montre en grand ; aucune dans un ciel sans projet ouvert. */
+  const moi = (): Astre | null => D.astres.find((a) => a.type === "moi") ?? D.astres.find((a) => a.grand) ?? null;
   /** La largeur et la hauteur d'une forme, cœur compris (en rayons) : la constellation est agrandie pour remplir l'écran. */
   const etendue = (f: Forme) => { const p = [{ x: 0, y: 0 }, ...silhouette(f)], xs = p.map((q) => q.x), ys = p.map((q) => q.y); return { l: Math.max(0.9, Math.max(...xs) - Math.min(...xs)), h: Math.max(0.9, Math.max(...ys) - Math.min(...ys)) }; };
-  const rayonDe = (a: Astre) => (a.type === "moi" ? R : Math.min(R * 0.72, 150));
+  const rayonDe = (a: Astre) => (a === moi() ? R : Math.min(R * 0.72, 150));
   /** Les étoiles d'un astre, dans le ciel. Elles respirent un peu : rien n'est jamais tout à fait immobile. */
   function geo(a: Astre, t: number): { cx: number; cy: number; R: number; pts: P2[] } {
-    const Ra = rayonDe(a), ex = a.type === "moi" ? rx : 1.25, ey = a.type === "moi" ? ry : 0.95, drift = a.type === "moi" ? 3 : 2;
+    const Ra = rayonDe(a), pr = a === moi(), ex = pr ? rx : 1.25, ey = pr ? ry : 0.95, drift = pr ? 3 : 2;
     return { cx: a.x, cy: a.y, R: Ra, pts: silhouette(a.forme).map((p, i) => ({ x: a.x + p.x * Ra * ex + (calme ? 0 : Math.sin(t * 0.35 + i * 1.7) * drift), y: a.y + p.y * Ra * ey + (calme ? 0 : Math.cos(t * 0.3 + i * 2.3) * drift) })) };
   }
 
@@ -252,23 +255,40 @@ export function monterCiel(racine: HTMLElement, donnees: DonneesCiel, options: O
     cv.width = Math.round(W * d); cv.height = Math.round(H * d);
     // La constellation remplit l'écran : large sur un ordinateur, haute sur un téléphone, avec la place des noms.
     rx = etroit ? 1 : borne(W / H, 1, 1.55); ry = etroit ? borne(H / W / 1.25, 1, 1.45) : 0.95;
-    { const e = etendue(moi().forme); R = borne(Math.min((W - (etroit ? 104 : 380)) / (e.l * rx), (H - (etroit ? 300 : 192)) / (e.h * ry)), 80, 320); }
-    S0 = { x: W / 2, y: etroit ? 118 + (H - 258) / 2 : H * 0.48 };
+    const m = moi();
+    // L'accueil du nouveau client garde la place de la visite guidée, en bas.
+    const bas = racine.dataset.accueil === "nouveau" ? (etroit ? 110 : 150) : 0;
+    if (m) {
+      const e = etendue(m.forme), haut = H - bas - (etroit ? 300 : 192);
+      R = borne(Math.min((W - (etroit ? 104 : 380)) / (e.l * rx), haut / (e.h * ry)), 80, 320);
+      // Très peu de hauteur : la constellation garde sa taille minimale et s'aplatit pour tenir entre le titre et le bas.
+      if (R * e.h * ry > haut) ry = Math.max(0.72, haut / (R * e.h));
+    }
+    else R = borne(Math.min(W, H) * 0.26, 110, 200);
+    S0 = { x: W / 2, y: (etroit ? 118 + (H - 258) / 2 : H * 0.48) - bas / 2 };
     // « Mon projet » centre la constellation entière (elle n'est jamais symétrique : son milieu n'est pas son cœur).
-    const g = geo(moi(), 0), xs = [g.cx, ...g.pts.map((p) => p.x)], ys = [g.cy, ...g.pts.map((p) => p.y)];
-    maison = { x: (Math.min(...xs) + Math.max(...xs)) / 2, y: (Math.min(...ys) + Math.max(...ys)) / 2 };
+    if (m) { const g = geo(m, 0), xs = [g.cx, ...g.pts.map((p) => p.x)], ys = [g.cy, ...g.pts.map((p) => p.y)]; maison = { x: (Math.min(...xs) + Math.max(...xs)) / 2, y: (Math.min(...ys) + Math.max(...ys)) / 2 }; }
+    else maison = { x: 0, y: 0 };
     const n = (etroit ? 18 : 34) * (leger ? 0.5 : 1);
     scint = Array.from({ length: Math.round(n) }, (_, k) => ({ x: fr(k + 700) * U.T, y: fr(k + 800) * U.T, col: U.COUL[Math.floor(fr(k + 900) * U.COUL.length)], s: 16 + fr(k + 950) * 22, v: 0.4 + fr(k + 990) * 1.4, p: fr(k + 999) * 6 }));
     tailles.clear();
   }
   mesurer();
-  cam = { x: maison.x, y: maison.y, k: 1, r: 0 };
+  /** Le cadrage de départ : la constellation principale, ou tout le ciel quand il n'y en a pas. */
+  function depart(): Cam {
+    if (moi() || D.astres.length === 0) return { x: maison.x, y: maison.y, k: 1, r: 0 };
+    const xs = D.astres.map((a) => a.x), ys = D.astres.map((a) => a.y), l = Math.max(...xs) - Math.min(...xs) + 3.4 * R, h = Math.max(...ys) - Math.min(...ys) + 3.2 * R;
+    return { x: (Math.min(...xs) + Math.max(...xs)) / 2, y: (Math.min(...ys) + Math.max(...ys)) / 2 - (etroit ? 0 : 10) / 1, k: borne(Math.min((W - (etroit ? 40 : 160)) / l, (H - (etroit ? 200 : 140)) / h), K_MIN, 1), r: 0 };
+  }
+  const K_MIN = 0.1, K_MAX = 2.6;
+  cam = depart();
+  // On arrive de loin : le ciel est d'abord vu de très haut, puis il s'approche.
+  if (options.arrivee && !calme) { cible = { ...cam }; cam = { ...cam, k: cam.k * 0.22, r: -0.35 }; }
 
   const proche = (de: number, vers: number) => de + (((((vers - de + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)) - Math.PI);
   function ecran(wx: number, wy: number): P2 { const dx = (wx - cam.x) * cam.k, dy = (wy - cam.y) * cam.k, c = Math.cos(cam.r), s = Math.sin(cam.r); return { x: S0.x + dx * c - dy * s, y: S0.y + dx * s + dy * c }; }
   function monde(sx: number, sy: number): P2 { const dx = sx - S0.x, dy = sy - S0.y, c = Math.cos(-cam.r), s = Math.sin(-cam.r); return { x: cam.x + (dx * c - dy * s) / cam.k, y: cam.y + (dx * s + dy * c) / cam.k }; }
   function camPour(wx: number, wy: number, k: number, r: number, A: P2): Cam { const dx = (A.x - S0.x) / k, dy = (A.y - S0.y) / k, c = Math.cos(-r), s = Math.sin(-r); return { x: wx - (dx * c - dy * s), y: wy - (dx * s + dy * c), k, r }; }
-  const K_MIN = 0.1, K_MAX = 2.6;
 
   // ——— Les gestes : se promener (glisser), zoomer (molette, pincement), pivoter (Maj + glisser, deux doigts) ———
   const local = (ev: PointerEvent | WheelEvent): P2 => { const b = racine.getBoundingClientRect(); return { x: ev.clientX - b.left, y: ev.clientY - b.top }; };
@@ -331,13 +351,13 @@ export function monterCiel(racine: HTMLElement, donnees: DonneesCiel, options: O
     if (!b || !b.width) return S0;
     return etroit ? { x: W / 2, y: Math.max(90, (b.top - r0.top) / 2) } : { x: Math.max(160, (b.left - r0.left) / 2), y: H / 2 };
   }
-  function viser(i: number) { const P = geo(moi(), temps).pts[i]; cible = camPour(P.x, P.y, etroit ? 1.25 : 1.4, cam.r, ancre()); }
+  function viser(i: number) { const m = moi(); if (!m) return; const P = geo(m, temps).pts[i]; cible = camPour(P.x, P.y, etroit ? 1.25 : 1.4, cam.r, ancre()); }
 
   function dessinerAstre(a: Astre, t: number, voyage: number): Vue | null {
     const g = geo(a, t), C = ecran(g.cx, g.cy), Rk = g.R * cam.k, marge = Rk * 2 + 80;
     if (C.x < -marge || C.x > W + marge || C.y < -marge || C.y > H + marge) return null;
-    const P = g.pts.map((p) => ecran(p.x, p.y)), est = a.type === "moi", sur = racine.querySelector(`[data-astre="${a.id}"]:hover, [data-astre="${a.id}"]:focus-visible`) !== null;
-    if (a.type === "nouveau") {
+    const P = g.pts.map((p) => ecran(p.x, p.y)), est = a.type === "moi", princ = a === moi(), sur = racine.querySelector(`[data-astre="${a.id}"]:hover, [data-astre="${a.id}"]:focus-visible`) !== null;
+    if (a.type === "nouveau" && !a.grand) {
       // La constellation encore éteinte du prochain projet : un tracé en pointillé qui attend d'être allumé.
       const pts = P.filter((_, i) => i % 2 === 0), kk = 0.55 + 0.45 * Math.sin(t * 1.2);
       x.setLineDash([2, 6]); x.strokeStyle = `rgba(157,180,255,${sur ? 0.6 : 0.25})`; x.lineWidth = 1;
@@ -358,7 +378,7 @@ export function monterCiel(racine: HTMLElement, donnees: DonneesCiel, options: O
     const tzK = borne(Math.sqrt(cam.k), 0.35, 1.25);
     P.forEach((p, i) => {
       const f = a.forme[i], e = etat(i), fait = e === "fait", cours = vif(i), pa = pere(i), Dp = pa < 0 ? C : P[pa], ang = Math.atan2(p.y - Dp.y, p.x - Dp.x), sx = pa < 0 ? C.x + Math.cos(ang) * rc * 1.1 : Dp.x, sy = pa < 0 ? C.y + Math.sin(ang) * rc * 1.1 : Dp.y;
-      const ici = est && sina.vers === i && voyage >= 1, surE = est && (ouvert === i || boutons[i]?.matches(":hover, :focus-visible"));
+      const ici = princ && sina.vers === i && voyage >= 1, surE = princ && (ouvert === i || boutons[i]?.matches(":hover, :focus-visible"));
       x.setLineDash(fait || cours ? [] : [3, 5]);
       x.strokeStyle = surE ? "rgba(220,230,255,.9)" : fait ? "rgba(190,205,255,.5)" : cours ? "rgba(124,156,255,.9)" : e === "sans" ? "rgba(157,180,255,.08)" : "rgba(157,180,255,.16)";
       x.lineWidth = surE ? 1.6 : fait ? 0.9 : 0.8; x.beginPath(); x.moveTo(sx, sy); x.lineTo(p.x, p.y); x.stroke(); x.setLineDash([]);
@@ -390,8 +410,11 @@ export function monterCiel(racine: HTMLElement, donnees: DonneesCiel, options: O
     x.save(); x.globalCompositeOperation = "lighter";
     const sz = rc * (sur ? 6.4 : 5.6) * (1 + 0.04 * Math.sin(t * 1.4 + a.y)), sr2 = rc * 8;
     x.translate(C.x, C.y); x.save(); x.rotate(t * 0.05 + a.x); x.globalAlpha = 0.5; x.drawImage(U.rayons, -sr2 / 2, -sr2 / 2, sr2, sr2); x.restore();
+    const eteinte = a.type === "nouveau" && !a.etats.some((e) => e !== "avenir");
+    if (eteinte) x.globalAlpha = (sur ? 0.6 : 0.34) * (0.8 + 0.2 * Math.sin(t * 1.2));
     x.drawImage(U.soleil(a.couleurs ?? BLEU), -sz / 2, -sz / 2, sz, sz);
     x.restore();
+    if (eteinte) { const rr = rc * 0.5; x.strokeStyle = `rgba(230,236,255,${sur ? 1 : 0.85})`; x.lineWidth = 1.6; x.beginPath(); x.arc(C.x, C.y, rc * 0.95, 0, 7); x.moveTo(C.x - rr, C.y); x.lineTo(C.x + rr, C.y); x.moveTo(C.x, C.y - rr); x.lineTo(C.x, C.y + rr); x.stroke(); }
     return { C, P, rc };
   }
 
@@ -449,7 +472,7 @@ export function monterCiel(racine: HTMLElement, donnees: DonneesCiel, options: O
     const vues: Record<string, Vue | null> = {};
     for (const a of D.astres) vues[a.id] = dessinerAstre(a, t, voyage);
     // La lumière de SINA voyage : de l'étoile qu'elle quitte au cœur, puis du cœur à celle où elle va travailler.
-    const Vm = vues[moi().id];
+    const m = moi(), Vm = m ? vues[m.id] ?? null : null;
     if (Vm && voyage < 1) {
       const C = Vm.C, de = sina.de < 0 ? C : Vm.P[sina.de], vers = sina.vers < 0 ? C : Vm.P[sina.vers], k = lisse(voyage);
       x.save(); x.globalCompositeOperation = "lighter";
@@ -493,17 +516,22 @@ export function monterCiel(racine: HTMLElement, donnees: DonneesCiel, options: O
       const op = ouvert !== null && ouvert !== i ? "0.14" : String(borne((cam.k - 0.55) * 5, 0, 1));
       if (b.style.opacity !== op) b.style.opacity = op;
     });
+    // Le nom écrit sous le cœur (« Nouveau projet ») compte aussi : les noms des étoiles lui laissent sa place.
+    const sousCoeur = Vm && etapes ? noms().find((el) => el.dataset.astre === moi()?.id && el.dataset.type !== "moi") : null;
+    if (sousCoeur && Vm) { const z = taille(sousCoeur.firstElementChild as HTMLElement); boites.push({ el: sousCoeur, x0: Vm.C.x - z.w / 2, x1: Vm.C.x + z.w / 2, y: Vm.C.y + Vm.rc + 2, h: z.h + 22 }); }
     // Deux noms ne se recouvrent jamais : celui du dessous descend un peu.
-    boites.sort((a, b) => a.y - b.y);
+    boites.sort((a, b) => (a.el === sousCoeur ? -1 : b.el === sousCoeur ? 1 : a.y - b.y));
     const dy = new Map<HTMLElement, number>();
-    for (let i = 0; i < boites.length; i++) for (let j = 0; j < i; j++) {
+    for (let passe = 0; passe < 3; passe++) for (let i = 0; i < boites.length; i++) for (let j = 0; j < i; j++) {
       const A = boites[j], B = boites[i];
-      if (A.x0 < B.x1 + 6 && B.x0 < A.x1 + 6 && B.y < A.y + A.h + 3) { const pousse = A.y + A.h + 3 - B.y; B.y += pousse; dy.set(B.el, (dy.get(B.el) ?? 0) + pousse); }
+      if (A.x0 < B.x1 + 6 && B.x0 < A.x1 + 6 && B.y < A.y + A.h + 3 && B.y + B.h > A.y - 3) { const pousse = A.y + A.h + 3 - B.y; B.y += pousse; dy.set(B.el, (dy.get(B.el) ?? 0) + pousse); }
     }
-    for (const B of boites) { const val = `${Math.round(dy.get(B.el) ?? 0)}px`; if (B.el.style.getPropertyValue("--dy") !== val) B.el.style.setProperty("--dy", val); }
+    for (const B of boites) { if (B.el === sousCoeur) continue; const val = `${Math.round(dy.get(B.el) ?? 0)}px`; if (B.el.style.getPropertyValue("--dy") !== val) B.el.style.setProperty("--dy", val); }
+    // Un bouton invisible sur le cœur de chaque constellation qui en demande un : on clique sur le soleil lui-même.
+    for (const el of racine.querySelectorAll<HTMLElement>("[data-coeur]")) { const V = vues[el.dataset.coeur!]; pose(el, V ? V.C : { x: 0, y: 0 }, !V); }
     for (const el of noms()) {
-      const V = vues[el.dataset.astre!], estMoi = el.dataset.astre === moi().id;
-      pose(el, V ? { x: V.C.x, y: V.C.y + V.rc + 12 } : { x: 0, y: 0 }, !V || (estMoi && etapes));
+      const V = vues[el.dataset.astre!], estMoi = el.dataset.astre === moi()?.id;
+      pose(el, V ? { x: V.C.x, y: V.C.y + V.rc + 12 } : { x: 0, y: 0 }, !V || (estMoi && etapes && el.dataset.type === "moi"));
       const op = ouvert !== null ? "0.15" : "1";
       if (el.style.opacity !== op) el.style.opacity = op;
     }
@@ -548,12 +576,13 @@ export function monterCiel(racine: HTMLElement, donnees: DonneesCiel, options: O
     ouvrir(i) {
       ouvert = i; racine.toggleAttribute("data-ouvert", i !== null);
       if (i !== null) { touche(); requestAnimationFrame(() => { if (ouvert === i) viser(i); }); }
-      else cible = { x: maison.x, y: maison.y, k: 1, r: cam.r };
+      else cible = moi() ? { x: maison.x, y: maison.y, k: 1, r: cam.r } : { ...depart(), r: cam.r };
     },
     zoom(f) { const base = cible ?? cam; cible = { ...base, k: borne(base.k * f, K_MIN, K_MAX) }; touche(); },
     tourner(a) { const base = cible ?? cam; cible = { ...base, r: base.r + a }; touche(); },
     cadrer(quoi) {
       touche();
+      if (!moi()) { cible = { ...depart(), r: proche(cam.r, 0) }; return; }
       if (quoi === "moi" || D.astres.length < 2) { cible = { x: maison.x, y: maison.y, k: 1, r: proche(cam.r, 0) }; return; }
       const xs = D.astres.map((a) => a.x), ys = D.astres.map((a) => a.y), l = Math.max(...xs) - Math.min(...xs) + 2.6 * R, h = Math.max(...ys) - Math.min(...ys) + 2.6 * R, noms = etroit ? 150 : 320;
       cible = { x: (Math.min(...xs) + Math.max(...xs)) / 2, y: (Math.min(...ys) + Math.max(...ys)) / 2, k: borne(Math.min((W - noms) / l, (H - 120) / h), K_MIN, 1), r: cam.r };

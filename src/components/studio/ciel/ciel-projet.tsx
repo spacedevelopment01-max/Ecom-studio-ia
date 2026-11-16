@@ -23,6 +23,7 @@ import type { CielProjetData } from "@/lib/ciel/ciel-projet";
 import { formeDe } from "@/lib/ciel/forme";
 import { ETAT_LIBELLE, placesDuCiel, vueDuProjet, type VueEtoile } from "@/lib/ciel/vue";
 import { monterCiel, type Astre, type Ciel, type DonneesCiel } from "./moteur";
+import { useHauteurCiel } from "./hauteur";
 
 /** La constellation éteinte du prochain projet : toujours au même endroit, près du projet ouvert. */
 const NOUVEAU = { id: "nouveau", x: 640, y: -330 };
@@ -56,21 +57,7 @@ export function CielProjet({ ciel, projectId, ouverte = null }: { ciel: CielProj
     return { astres, sina: vue.sina.etoile === null ? null : vue.sina.etoile - 1 };
   }, [projectId, vue, forme, voisins]);
 
-  // Le ciel prend toute la place sous l'en-tête (et au-dessus de la barre du bas, au téléphone).
-  useEffect(() => {
-    const el = racine.current;
-    if (!el) return;
-    const ajuster = () => {
-      const bas = [...document.querySelectorAll<HTMLElement>("[data-mobile-nav]")].find((b) => b.getClientRects().length);
-      const h = window.innerHeight - el.getBoundingClientRect().top - window.scrollY * 0 - (bas ? bas.offsetHeight : 0);
-      el.style.height = `${Math.max(440, Math.round(h))}px`;
-    };
-    ajuster();
-    window.addEventListener("resize", ajuster);
-    const suivi = new ResizeObserver(ajuster);
-    if (el.parentElement) suivi.observe(el.parentElement);
-    return () => { window.removeEventListener("resize", ajuster); suivi.disconnect(); };
-  }, []);
+  useHauteurCiel(racine);
 
   const premier = useRef(donnees);
   useEffect(() => {

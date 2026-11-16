@@ -133,3 +133,33 @@
   .ciel-volet, .ciel-dit span, .ciel-titre p i { animation: none; }
   .ciel-etoile, .ciel-astre, .ciel-vue, .ciel-dit, .ciel-titre { transition: none; }
 }
+
+/* ——— L'accueil : la voie lactée, « Nouveau projet », la visite guidée ——— */
+.ciel-coeur { position: absolute; left: 0; top: 0; width: 84px; height: 84px; margin: -42px 0 0 -42px; border-radius: 50%; background: transparent; border: 0; padding: 0; cursor: pointer; pointer-events: auto; will-change: transform; }
+.ciel-astre[data-appel] > span { font: italic 400 22px/1.1 var(--font-serif); color: var(--texte); }
+.ciel-astre[data-appel] small { font: 600 12px/1.3 var(--font-sans); color: #A9C0FF; background: rgba(5, 8, 24, .62); border-radius: 999px; padding: 2px 10px 3px; margin-top: 4px; justify-self: center; text-shadow: none; }
+.ciel-etoile[data-exemple] small { color: #B9F0CF; }
+.ciel-etoile[data-exemple] small::before { content: none !important; }
+.ciel-visite { position: absolute; z-index: 6; left: 50%; bottom: 24px; transform: translateX(-50%); width: min(560px, calc(100% - 32px)); display: grid; gap: 14px; padding: 18px 20px 16px; border-radius: 22px; background: var(--verre); border: 1px solid rgba(157, 180, 255, .34); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 0 60px -22px rgba(47, 91, 234, .8); user-select: text; -webkit-user-select: text; animation: ciel-arrive .6s both; }
+.ciel-visite p { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: baseline; font-size: 15px; line-height: 1.5; color: var(--texte); }
+.ciel-visite p em { font: italic 400 24px/1 var(--font-serif); color: var(--bleu); }
+.ciel-visite p span { animation: ciel-arrive .5s both; }
+.ciel-visite > div { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.ciel-visite-pas { display: inline-flex; gap: 6px; margin-right: auto; }
+.ciel-visite-pas i { width: 7px; height: 7px; border-radius: 50%; background: rgba(157, 180, 255, .3); }
+.ciel-visite-pas i[data-ici] { background: var(--bleu); box-shadow: 0 0 8px var(--bleu); }
+.ciel-visite-passer { background: none; border: 0; color: var(--doux); font: 500 13px var(--font-sans); cursor: pointer; padding: 8px 6px; }
+.ciel-visite-passer:hover { color: var(--texte); }
+.ciel-visite .ciel-bouton { border: 0; cursor: pointer; }
+.ciel[data-visite] .ciel-vue, .ciel[data-visite] .ciel-aide { opacity: 0; pointer-events: none; }
+.ciel[data-leger] .ciel-visite { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(13, 20, 50, .95); }
+.ciel[data-etroit] .ciel-visite { bottom: 14px; padding: 16px 16px 14px; }
+.ciel[data-etroit] .ciel-visite p { font-size: 14px; }
+@media (prefers-reduced-motion: reduce) { .ciel-visite, .ciel-visite p span { animation: none; } }
+
+/* Le ciel en décor (connexion, inscription) : il prend la taille que la page lui donne. */
+.ciel.ciel-fond { height: auto; min-height: 0; }
+.ciel-fond-mot { position: absolute; z-index: 2; left: 40px; right: 40px; bottom: 40px; margin: 0; pointer-events: none; font: italic 400 clamp(30px, 3.4vw, 46px)/1.08 var(--font-serif); color: var(--texte); text-shadow: 0 0 24px rgba(5, 8, 24, .9); }
+.ciel-fond-mot small { display: block; margin-top: 10px; font: 400 14px/1.5 var(--font-sans); color: var(--doux); }
+/* Pendant la visite, sur petit écran, la carte de SINA dit déjà quoi faire : le rappel sous le cœur s'efface. */
+.ciel[data-etroit][data-visite] .ciel-astre[data-appel] small { display: none; }

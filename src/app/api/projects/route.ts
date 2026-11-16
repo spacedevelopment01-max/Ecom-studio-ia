@@ -1,6 +1,9 @@
 import { underConstruction } from "@/lib/syna-agent/construction";
 import { requireUser } from "@/lib/auth";
 import { all } from "@/lib/db";
+import { formeDuProjet } from "@/lib/ciel/constellations";
+import { etatDe } from "@/lib/ciel/vue";
+import { dashboardOf } from "@/lib/syna-agent/dashboard";
 import { handle, ok } from "@/lib/http";
 import { aiUsage } from "@/lib/ai/access";
 import { pendingSubscriptions, subscriptionOfProject, subscriptionsOf } from "@/lib/project-billing";
@@ -37,6 +40,8 @@ export const GET = handle(async () => {
       logo: b.logo?.chosen ? `/api/projects/${r.id}/brand/logo` : null,
       subscription: sub ? { id: sub.user_id, plan: sub.plan ?? "creer", status: sub.status, billing: sub.billing, priceCents: sub.price_cents, periodEnd: sub.current_period_end, cancelAtPeriodEnd: !!sub.cancel_at_period_end } : null,
       ai: sub ? aiUsage(user.id, r.id) : null,
+      // Sa constellation dans le ciel de l'accueil : sa forme et l'état de ses neuf étoiles.
+      ciel: { forme: formeDuProjet(r.id), etats: (dashboardOf(r.id)?.steps ?? []).map((x) => etatDe(x.status)) },
     };
   };
   return ok({

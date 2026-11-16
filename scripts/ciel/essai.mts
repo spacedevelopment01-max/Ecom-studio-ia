@@ -19,8 +19,8 @@ fs.writeFileSync(sortie, `<title>Le ciel du Studio</title>
 html, body { height: 100%; }
 body { background: var(--fond); color: var(--texte); font: 400 14px/1.4 var(--font-sans); display: grid; grid-template-rows: auto minmax(0, 1fr); overflow: hidden; }
 .barre { background: var(--barre); border-bottom: 1px solid var(--trait); padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
-.barre .choix { display: inline-flex; padding: 3px; border: 1px solid var(--trait); border-radius: 999px; }
-.barre button { font: 500 12.5px var(--font-sans); color: var(--doux); background: none; border: 0; padding: 7px 12px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+.barre .choix { display: flex; flex-wrap: wrap; max-width: 100%; padding: 3px; border: 1px solid var(--trait); border-radius: 20px; }
+.barre button { font: 500 12.5px var(--font-sans); color: var(--doux); background: none; border: 0; padding: 7px 10px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
 .barre button[aria-pressed="true"] { background: var(--bleu); color: var(--fond); }
 .barre button:focus-visible { outline: 2px solid var(--bleu); outline-offset: 2px; }
 .barre p { margin: 0; font-size: 12px; color: var(--doux); }
@@ -30,7 +30,7 @@ body { background: var(--fond); color: var(--texte); font: 400 14px/1.4 var(--fo
 ${css}
 </style>
 <div class="barre">
-  <div class="choix" role="group" aria-label="Moment du projet" data-groupe="moment"><button type="button" data-valeur="jour" aria-pressed="false">Premier jour</button><button type="button" data-valeur="chantier" aria-pressed="false">En construction</button><button type="button" data-valeur="livre" aria-pressed="true">Livré</button></div>
+  <div class="choix" role="group" aria-label="Moment du projet" data-groupe="moment"><button type="button" data-valeur="arrivee" aria-pressed="true">Nouveau client</button><button type="button" data-valeur="jour" aria-pressed="false">Premier jour</button><button type="button" data-valeur="chantier" aria-pressed="false">En construction</button><button type="button" data-valeur="livre" aria-pressed="false">Livré</button></div>
   <div class="choix" role="group" aria-label="Qualité du ciel" data-groupe="qualite"><button type="button" data-valeur="auto" aria-pressed="true">Automatique</button><button type="button" data-valeur="pleine" aria-pressed="false">Complète</button><button type="button" data-valeur="allegee" aria-pressed="false">Allégée</button></div>
   <p><span id="qualite-lue"></span> sur cet appareil. Projets inventés pour l'essai.</p>
 </div>
