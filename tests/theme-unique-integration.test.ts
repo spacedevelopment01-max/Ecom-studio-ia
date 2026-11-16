@@ -204,6 +204,18 @@ describe("thème unique, intégration : aperçu, données du site et remises (pr
     // Une page d'arrivée affichée la première part déjà sans la coque du site.
     const seule = S.applyStructure(t, [{ op: "drop_page", key: "home" }, { op: "drop_page", key: "product" }]);
     expect(renderCustomTheme(loadProject(pid), seule)).toMatch(/<div class="tb-wrap ctw ctw-classique ctw-classique" data-coque/);
+    // Pour regarder la page en image (hors contrôle) : INTEG_OUT=<dossier>.
+    if (process.env.INTEG_OUT) { const fs = require("node:fs") as typeof import("node:fs"); fs.mkdirSync(process.env.INTEG_OUT, { recursive: true }); fs.writeFileSync(`${process.env.INTEG_OUT}/arrivee.html`, renderCustomTheme(loadProject(pid), seule)); }
+  });
+
+  it("SINA peut poser la coque : l'outil de composition accepte « page_shell », et une page « arrivee » la reçoit d'office", async () => {
+    const T = await import("@/lib/syna-agent/custom-theme/tools");
+    const structure = T.customThemeTools.find((x) => x.name === "custom.structure")!;
+    expect(structure.args.safeParse({ ops: [{ op: "page_shell", page: "arrivee", slot: "header", section: "tn-entete-arrivee" }] }).success).toBe(true);
+    expect(structure.args.safeParse({ ops: [{ op: "page_shell", page: "arrivee", slot: "search", section: "tn-entete-arrivee" }] }).success).toBe(false);
+    expect(structure.description).toContain("page_shell");
+    expect(["arrivee", "arrivee-ete"].every(T.isArrivee)).toBe(true);
+    expect(["home", "arrivees", "shop-arrivee"].some(T.isArrivee)).toBe(false);
   });
 
   it("la lecture du catalogue de vente est dans les données du site (« tenueSite »), plus dans celles des métiers", () => {

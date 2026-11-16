@@ -43,6 +43,7 @@ import { proposeMenu, validMenu } from "./menu";
 import { familleGaps, fitFamille } from "./familles";
 import { fitStyle, styleGaps } from "./styles-de-page";
 import { dataGaps, tenueMetiers } from "./tenue-data";
+import { achatFacts } from "./buy-block";
 import { installCustomTheme } from "./install";
 import { menuProducts } from "./render";
 import { ORIGINALITY_CALLS_MAX, ORIGINALITY_CAP_MICRO, ORIGINALITY_SYSTEM, ORIGINALITY_TYPICAL_MICRO, OriginalitySchema, originalityNote, originalityPrompt, type Originality, type OriginalityOutcome } from "./originality";
@@ -278,6 +279,9 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     let t: CustomTheme = { version: 1, family: f.family, style: f.style, header: null, footer: null, search: null, pages: [], rev: 0, at: Date.now(), concept: d.concept };
     t = applyStructure(t, d.pages.flatMap((pg) => [{ op: "page", key: pg.key, label: pg.label } as StructureOp, ...pg.sections.map((s) => ({ op: "add", page: pg.key, section: ref(s.section), ...(s.construction ? { construction: s.construction } : {}) }) as StructureOp)]));
     t = applyStructure(t, [{ op: "shell", slot: "header", section: ref(d.header), ...(d.headerConstruction ? { construction: d.headerConstruction } : {}) }, { op: "shell", slot: "footer", section: ref(d.footer), ...(d.footerConstruction ? { construction: d.footerConstruction } : {}) }]);
+    // Une page d'arrivée de publicité a toujours SA coque : son en-tête et son pied minimaux remplacent ceux du site
+    // (rien ne détourne le visiteur de l'offre). Posée ici, sans le demander au concepteur : c'est une règle, pas un choix.
+    for (const pg of d.pages) if (isArrivee(pg.key)) t = applyStructure(t, [{ op: "page_shell", page: pg.key, slot: "header", section: ref("tn-entete-arrivee") }, { op: "page_shell", page: pg.key, slot: "footer", section: ref("tn-pied-arrivee") }]);
     if (d.famille) { t.famille = d.famille; t.familleWhy = d.familleWhy ?? null; }
     if (d.pageStyle) t.pageStyle = d.pageStyle;
     // La tenue de la marque (sections à tenue) : choisie par le concepteur, gardée dans le thème.
@@ -289,7 +293,7 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     // Un concept n'a que deux pages : les autres pages obligatoires viennent après le choix du client.
     .filter((x) => mode.kind !== "concept" || !/^page « .* » absente/.test(x));
   const research = (() => { try { return j ? activityPlan(p.id, j).objections.map((o) => o.objection) : []; } catch { return []; } })();
-  const catalogueFacts = (() => { try { const list = listProducts(p.id); const m = (() => { try { return tenueMetiers(p.id); } catch { return {}; } })() as { biens?: unknown[]; carte?: { plats?: unknown[] }[] }; return { products: list.length, families: new Set(list.flatMap((x) => x.data.categories.map((c) => c.trim()).filter(Boolean))).size, biens: m.biens?.length ?? 0, plats: (m.carte ?? []).reduce((n, r) => n + (r.plats?.length ?? 0), 0) }; } catch { return { products: 0, families: 0 }; } })();
+  const catalogueFacts = (() => { try { const list = listProducts(p.id); const m = (() => { try { return tenueMetiers(p.id); } catch { return {}; } })() as { biens?: unknown[]; carte?: { plats?: unknown[] }[] }; return { products: list.length, families: new Set(list.flatMap((x) => x.data.categories.map((c) => c.trim()).filter(Boolean))).size, couleurs: Math.max(0, ...list.map((x) => { try { return (achatFacts(p.id, x.handle)?.coloris ?? []).filter((c) => c.nom.trim() && c.image).length; } catch { return 0; } })), biens: m.biens?.length ?? 0, plats: (m.carte ?? []).reduce((n, r) => n + (r.plats?.length ?? 0), 0) }; } catch { return { products: 0, families: 0 }; } })();
   const check = (d: Design) => {
     let t: CustomTheme | null = null, rules: string[];
     try { t = build(d); rules = blocking(t); } catch (e) { rules = [(e as Error).message]; }
@@ -378,6 +382,8 @@ export const buildKnowledge = (o: { sections: number; fixes: number; fixesUsual:
 });
 type DesignDone = Extract<DesignRun, { ok: true }>;
 /** Carte d'identité d'une conception (comparaison contre les doublons). */
+/** Une page d'arrivée de publicité : clé « arrivee » ou « arrivee-<nom> ». */
+export const isArrivee = (key: string) => /^arrivee(-[a-z0-9-]+)?$/.test(key);
 const designCard = (d: Design): ThemeCard => cardOf(d.pages.map((pg) => ({ key: pg.key, sections: pg.sections.map((x) => built(x.section, x.construction)) })), { header: built(d.header, d.headerConstruction), footer: d.footer, tenue: d.tenue });
 const designData = (r: DesignDone) => { const d = r.d, calls = r.calls; return { visiteur: d.visitor, leviers: d.levers, objections: d.objections.map((o) => `« ${o.objection} » → ${o.answer} (${o.page} › ${libSection(o.section)?.title ?? o.section})`), relecture: d.corrections, concept: d.concept, parcours: d.pages.map((pg) => ({ page: pg.label, parcours: pg.journey, sections: pg.sections.map((s) => `${libSection(s.section)?.title ?? s.section} — ${s.why}`) })), passages: calls,
   // Ce que la documentaliste a donné au concepteur, et l'avis du juge de l'originalité (à dire au client s'il doute).
@@ -623,7 +629,7 @@ const readTool: AgentTool<{ uid: string }> = {
 
 const structureTool: AgentTool<{ ops: StructureOp[] }> = {
   name: "custom.structure", module: "site", kind: "write", needsProject: true,
-  description: "Étape 6 (gratuit) : change la COMPOSITION du thème sur mesure. ops, dans l'ordre : { op:\"add\", page, section, at? } ajoute une section (id ou titre de custom.sections) ; { op:\"remove\", uid } ; { op:\"move\", uid, page?, at } ; { op:\"replace\", uid, section } (autre section au même rôle, ou en-tête/pied de page) ; { op:\"shell\", slot:\"header\"|\"footer\"|\"search\", section|null } ; { op:\"page\", key, label, at? } ; { op:\"drop_page\", key } ; { op:\"rename_page\", key, label } ; { op:\"construction\", uid, construction } : change la CONSTRUCTION d'une section à tenue (clés données par custom.sections ; add, replace et shell acceptent aussi construction) ; { op:\"tenue\", tenue:{ titres, bouton, cadre, fond, petits, signe } } : change la tenue de tout le site (titres fins|gras|capitales, bouton pilule|droit|etiquette|ombre, cadre niche|droit|penche, fond uni|toile, petits normal|machine), seulement à la demande du client ; { op:\"layout\", uid, flip?, align?, frame?, bg? } : disposition CHOISIE PAR LE CLIENT (inverser texte et image, alignement left|center, cadre frame|full, fond light|soft|dark) ; { op:\"settings\", buy?, header?, cart? } : réglages COCHÉS PAR LE CLIENT (jamais à sa place) : buy = options du bloc « Produit vedette » (quantite, abonnement, gamme, ajouts, barre (barre d'achat fixe), livraison, livraisonOfferte, fidelite, cadeaux, promotion, couleur, format ; une option cochée ne s'affiche que si le produit l'a vraiment), header = boutons Rechercher / Mon compte / Panier de l'en-tête, cart = \"drawer\" (panier sur le côté) ou \"page\". Retirer une section ou une page visible se PROPOSE au client d'abord (jamais à sa place). Règles du propriétaire contrôlées.",
+  description: "Étape 6 (gratuit) : change la COMPOSITION du thème sur mesure. ops, dans l'ordre : { op:\"add\", page, section, at? } ajoute une section (id ou titre de custom.sections) ; { op:\"remove\", uid } ; { op:\"move\", uid, page?, at } ; { op:\"replace\", uid, section } (autre section au même rôle, ou en-tête/pied de page) ; { op:\"shell\", slot:\"header\"|\"footer\"|\"search\", section|null } ; { op:\"page_shell\", page, slot:\"header\"|\"footer\", section|null } : la coque propre à UNE page (page d'arrivée de publicité : son en-tête et son pied remplacent ceux du site sur cette page) ; { op:\"page\", key, label, at? } ; { op:\"drop_page\", key } ; { op:\"rename_page\", key, label } ; { op:\"construction\", uid, construction } : change la CONSTRUCTION d'une section à tenue (clés données par custom.sections ; add, replace et shell acceptent aussi construction) ; { op:\"tenue\", tenue:{ titres, bouton, cadre, fond, petits, signe } } : change la tenue de tout le site (titres fins|gras|capitales, bouton pilule|droit|etiquette|ombre, cadre niche|droit|penche, fond uni|toile, petits normal|machine), seulement à la demande du client ; { op:\"layout\", uid, flip?, align?, frame?, bg? } : disposition CHOISIE PAR LE CLIENT (inverser texte et image, alignement left|center, cadre frame|full, fond light|soft|dark) ; { op:\"settings\", buy?, header?, cart? } : réglages COCHÉS PAR LE CLIENT (jamais à sa place) : buy = options du bloc « Produit vedette » (quantite, abonnement, gamme, ajouts, barre (barre d'achat fixe), livraison, livraisonOfferte, fidelite, cadeaux, promotion, couleur, format ; une option cochée ne s'affiche que si le produit l'a vraiment), header = boutons Rechercher / Mon compte / Panier de l'en-tête, cart = \"drawer\" (panier sur le côté) ou \"page\". Retirer une section ou une page visible se PROPOSE au client d'abord (jamais à sa place). Règles du propriétaire contrôlées.",
   args: z.object({ ops: z.array(z.union([
     z.object({ op: z.literal("add"), page: z.string().max(40), section: z.string().max(80), at: z.number().int().min(0).max(30).optional(), construction: z.string().max(40).optional() }).strict(),
     z.object({ op: z.literal("construction"), uid: z.string().max(12), construction: z.string().max(40) }).strict(),
@@ -633,6 +639,7 @@ const structureTool: AgentTool<{ ops: StructureOp[] }> = {
     z.object({ op: z.literal("move"), uid: z.string().max(12), page: z.string().max(40).optional(), at: z.number().int().min(0).max(30) }).strict(),
     z.object({ op: z.literal("replace"), uid: z.string().max(12), section: z.string().max(80), construction: z.string().max(40).optional() }).strict(),
     z.object({ op: z.literal("shell"), slot: z.enum(["header", "footer", "search"]), section: z.string().max(80).nullable(), construction: z.string().max(40).optional() }).strict(),
+    z.object({ op: z.literal("page_shell"), page: z.string().max(40), slot: z.enum(["header", "footer"]), section: z.string().max(80).nullable(), construction: z.string().max(40).optional() }).strict(),
     z.object({ op: z.literal("page"), key: z.string().regex(/^[a-z0-9-]{1,40}$/), label: z.string().min(1).max(40), at: z.number().int().min(0).max(12).optional() }).strict(),
     z.object({ op: z.literal("drop_page"), key: z.string().max(40) }).strict(),
     z.object({ op: z.literal("rename_page"), key: z.string().max(40), label: z.string().min(1).max(40) }).strict(),

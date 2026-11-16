@@ -127,8 +127,12 @@ export function themeCssParts(roots: Set<string>, first: number, max: number): s
   if (cur.length || !out.length) out.push(cssText(cur));
   return out;
 }
-/** Taille de la feuille portée par une seule section (l'en-tête, puis chaque section de suite). */
-export const FEUILLE_MAX = 150_000;
+/**
+ * Taille de la feuille portée par une seule section (l'en-tête avec son HTML, puis chaque section de suite) : sous les
+ * 200 000 caractères du contrôle du Studio, avec de la marge pour ce qui s'ajoute après (condition des pages à coque,
+ * lien du panier de côté). Un site dont la feuille tenait dans l'en-tête y tient toujours.
+ */
+export const FEUILLE_MAX = 190_000;
 /** Règles réécrites en texte, les @media regroupés à la suite, dans l'ordre d'origine. */
 export function cssText(rules: Rule[]): string {
   const out: string[] = [];
