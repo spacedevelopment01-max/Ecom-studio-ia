@@ -304,6 +304,11 @@ export async function runBoardImages(o: {
   // Les images refusées, avec la raison : refaites avant d'être montrées (règle du propriétaire du 16 novembre 2026 :
   // « on ne peut pas donner une identité de marque incomplète »).
   const dropped = new Map<ImageSlot, string>();
+  // Ce qui est DIT au client pour une image non gardée : une phrase simple du Studio, jamais les mots du relecteur
+  // (retour du 17 novembre 2026 : « blocs de pixels visibles » affiché à une cliente). La raison détaillée du relecteur
+  // sert seulement à refaire l'image.
+  const saidWhy = new Map<ImageSlot, string>();
+  const SAID: Record<string, string> = { texte: L("un texte y est mal écrit", "a text is misspelt"), personne: L("une personne y apparaît", "a person appears"), coupe: L("le sujet y est coupé", "the subject is cropped"), abime: L("l'image est abîmée", "the image is damaged"), autre: L("elle n'est pas au niveau", "it is not good enough") };
   const make = async (slot: ImageSlot, refs: Refs, prompt: string, retry = "") => {
     if (capped) return;
     if (!retry) calls.set(slot, { refs, prompt });
@@ -376,7 +381,7 @@ export async function runBoardImages(o: {
     if (!slots.length) return;
     const logo = currentLogo();
     const texts = slotTexts(x);
-    const drop = (slot: ImageSlot, why: string) => { mark(made.get(slot)!.id, "rejected", why); made.delete(slot); dropped.set(slot, why); };
+    const drop = (slot: ImageSlot, why: string, said = why) => { mark(made.get(slot)!.id, "rejected", why); made.delete(slot); dropped.set(slot, why); saidWhy.set(slot, said); };
     // Raison écrite par le Studio d'après la lecture (jamais une phrase confuse du relecteur montrée au client).
     // Un texte attendu qui manque est dit en premier : pour la maquette du site, un petit mot en trop n'est pas un défaut.
     const textReason = (c: { missing: string[]; extra: string[] }) => c.extra.length && !c.missing.length ? L(`un texte non demandé y apparaît : « ${c.extra[0].slice(0, 60)} »`, `an unrequested text appears: "${c.extra[0].slice(0, 60)}"`) : L(`le texte « ${c.missing[0].slice(0, 60)} » n'y est pas écrit exactement`, `the text "${c.missing[0].slice(0, 60)}" is not written exactly`);
@@ -409,7 +414,8 @@ export async function runBoardImages(o: {
         if (s === "site" && !c.missing.length) complete.add(s);
         if (!v.ok) {
           if (v.defect === "texte" && exact) doubt.push(s);
-          else drop(s, v.defect === "texte" && (c.missing.length || c.extra.length) && v.read.length ? textReason(c) : v.why || L("elle ne passe pas ma relecture", "it does not pass my review"));
+          else if (v.defect === "texte" && (c.missing.length || c.extra.length) && v.read.length) drop(s, textReason(c));
+          else drop(s, v.why || L("elle ne passe pas ma relecture", "it does not pass my review"), SAID[v.defect] ?? SAID.autre);
           continue;
         }
         // Contrôle du Studio, en plus du jugement : le logo doit porter le nom, lu tel quel.
@@ -465,7 +471,7 @@ export async function runBoardImages(o: {
       else if (drawn) {
         await review(["logo"], `:r${attempt}`);
         // Le nouveau logo est gardé : ce qui portait l'ancien est refait avec lui.
-        if (made.has("logo")) for (const s of CARRIERS) if (made.has(s) && calls.has(s) && !o.clientLogo) { mark(made.get(s)!.id, "rejected", "logo refait"); made.delete(s); dropped.set(s, L("le logo de la marque a été refait : reprends l'image avec le logo fourni", "the brand logo was redone")); }
+        if (made.has("logo")) for (const s of CARRIERS) if (made.has(s) && calls.has(s) && !o.clientLogo) { mark(made.get(s)!.id, "rejected", "logo refait"); made.delete(s); dropped.set(s, L("le logo de la marque a été refait : reprends l'image avec le logo fourni", "the brand logo was redone")); saidWhy.set(s, SAID.autre); }
       } else dropped.set("logo", why);
     }
     for (const s of IMAGE_SLOTS.filter((v) => v !== "logo" && dropped.has(v) && calls.has(v))) {
@@ -478,7 +484,7 @@ export async function runBoardImages(o: {
     await review(redone, `:r${attempt}`);
   }
   // Ce qui reste refusé après les reprises est dit au client, sans image fausse à la place.
-  for (const [slot, why] of dropped) { rejected++; issues.push(tag(L(`je n'ai pas gardé ${SLOT_LABEL[slot].fr} (${why.replace(/\.+$/, "")}) ; ${instead(x, slot)}.`, `I did not keep ${SLOT_LABEL[slot].en} (${why}); ${slot === "logo" ? "you see your drawn name instead" : "I am not showing it"}.`))); }
+  for (const [slot, raw] of dropped) { const why = saidWhy.get(slot) ?? raw; rejected++; issues.push(tag(L(`je n'ai pas gardé ${SLOT_LABEL[slot].fr} (${why.replace(/\.+$/, "")}) ; ${instead(x, slot)}.`, `I did not keep ${SLOT_LABEL[slot].en} (${why}); ${slot === "logo" ? "you see your drawn name instead" : "I am not showing it"}.`))); }
 
   for (const m of made.values()) mark(m.id, "ready");
 

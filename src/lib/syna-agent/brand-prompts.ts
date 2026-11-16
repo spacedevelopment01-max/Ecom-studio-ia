@@ -305,7 +305,9 @@ Réponds par un objet JSON, sans rien autour. Forme exacte : ${ART_SHAPE}`;
 
 // ---------------------------------------------------------------- la direction artistique des images (OpenAI)
 
-const IMAGERY_SHAPE = `{"look": "", "logo": "", "hero": "", "object": "", "signs": "", "posts": ["", "", ""]}`;
+// Toutes les consignes attendues y figurent : « site » y manquait, le modèle l'oubliait parfois, et sa réponse était
+// alors redemandée et repayée (vu dans les comptes de l'essai du lot 2 : 7 consignes sur 54 écrites deux fois).
+const IMAGERY_SHAPE = `{"look": "", "logo": "", "hero": "", "object": "", "signs": "", "site": "", "posts": ["", "", ""]}`;
 
 /**
  * Consignes des images qui finissent la planche (demande du propriétaire du 12 novembre 2026 : « faire intervenir

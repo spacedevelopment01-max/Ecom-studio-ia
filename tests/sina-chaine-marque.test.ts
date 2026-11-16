@@ -666,6 +666,8 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(log.ids).not.toContain("fix-1-A");
     // La règle est écrite pour celle qui rédige, et le lecteur compte dans le devis.
     const P3 = await import("@/lib/syna-agent/brand-prompts");
+    // La forme demandée à la directrice artistique nomme TOUTES les consignes, la maquette du site comprise.
+    for (const f of ["look", "logo", "hero", "object", "signs", "site", "posts"]) expect(P3.imagerySystem("produits")).toMatch(new RegExp(`Forme exacte : \\{[^\\n]*"${f}": `));
     expect(P3.HOUSE_RULES).toMatch(/CLAIR D'ABORD, BEAU ENSUITE[\s\S]*comprise à la PREMIÈRE lecture par quelqu'un qui ne connaît ni la marque ni le métier/);
     expect(C.readerTexts(J.journeyOf(t.cid).identities!.list[0] as never, true).some((x) => x.id === "A-s")).toBe(false); // une signature gardée du client n'est pas relue
   });
@@ -934,7 +936,9 @@ describe("SINA — chaîne de création de la marque", async () => {
     const issues = J.journeyOf(t.cid).identities!.issues.join("\n");
     // Le message dit vrai : une image non gardée n'est jamais remplacée par un dessin (il n'y en a plus) ; elle n'est
     // pas montrée, et c'est dit tel quel.
-    expect(issues).toContain("Identité B : je n'ai pas gardé l'image de l'objet (Le titre est mal écrit) ; je ne la montre pas.");
+    // La raison dite au client est une phrase simple du Studio, jamais les mots du relecteur.
+    expect(issues).toContain("Identité B : je n'ai pas gardé l'image de l'objet (elle n'est pas au niveau) ; je ne la montre pas.");
+    expect(issues).not.toContain("Le titre est mal écrit");
     expect(issues).toMatch(/Identité C : je n'ai pas gardé le logo \(le nom n'y est pas écrit exactement\) ; tu vois ton nom dessiné à la place\./);
     expect(issues).not.toMatch(/mon dessin|forme simple de la planche|dessin à la place/);
     expect((out as any).routes).toHaveLength(3);

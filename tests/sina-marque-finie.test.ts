@@ -887,7 +887,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     // Le reste de la planche ne souffre pas du refus de la maquette.
     for (const x of [b, c]) { expect(x.board!.images!.logo).toBeTruthy(); expect(x.board!.images!.hero).toBeTruthy(); }
     // C'est dit au client, avec la raison, et jamais remplacé par une page dessinée.
-    expect(j.identities!.issues).toContain("Identité B : je n'ai pas gardé la maquette de ton site (La mise en page est vide et banale) ; je ne la montre pas.");
+    expect(j.identities!.issues).toContain("Identité B : je n'ai pas gardé la maquette de ton site (elle n'est pas au niveau) ; je ne la montre pas."); // une phrase simple du Studio, jamais les mots du relecteur
     expect(j.identities!.issues).toContain(`Identité C : je n'ai pas gardé la maquette de ton site (le texte « ${c.board!.site.headline.slice(0, 60)} » n'y est pas écrit exactement) ; je ne la montre pas.`);
     expect(j.identities!.issues.some((l) => l.startsWith("Identité A"))).toBe(false);
     expect(j.identities!.issues.join("\n")).not.toMatch(/un texte non demandé/);

@@ -113,7 +113,7 @@ describe("SINA — nom de domaine : l'exact, sinon une adresse libre qui garde l
     expect(P.imagerySystem("produits")).toMatch(/le vrai produit du client, très grand, cadré avec audace/);
     expect(P.imagerySystem("services")).toMatch(/selon un service : le logo à gauche, la pastille d'action et le menu replié à droite/);
     expect(P.imagerySystem("services")).toMatch(/le lieu, les outils ou le résultat du métier, sans personne/);
-    expect(P.imagerySystem("produits")).not.toMatch(/"site": ""/);
+    expect(P.imagerySystem("produits")).toMatch(/"site": ""/); // la consigne de la maquette est demandée dans la forme de la réponse
     // Retour du propriétaire du 14 novembre 2026 : « 3 images de la même couleur qui représentent la même chose, les
     // clients veulent voir 3 publications différentes possibles ».
     for (const k of ["produits", "services"] as const) {
