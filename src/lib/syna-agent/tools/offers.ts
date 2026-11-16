@@ -103,7 +103,7 @@ const discountsTool: AgentTool<Record<string, never>> = {
         data: { confirmees: false, plateforme, manque: preuve.manque ?? [], droitsManquants: droits.manque, guide },
         hint: droits.ok
           ? "Dis au client ce qui manque, simplement. Tant que ce n'est pas en place, le site n'affiche ni prix de lot ni cadeau."
-          : "L'accès du Studio à sa boutique ne permet pas de créer les remises à sa place : donne-lui le pas à pas (data.guide), une étape à la fois, avec ses mots, puis rappelle cet outil. Ne lui parle pas de droits ni d'autorisations techniques.",
+          : "L'accès du Studio à sa boutique date d'avant l'accord sur les remises : il ne permet ni de les vérifier ni de les créer à sa place. Deux chemins, à lui proposer simplement : relier sa boutique Shopify à nouveau (le Studio pourra alors s'en occuper), ou les créer lui-même avec le pas à pas (data.guide), une étape à la fois, avec ses mots. Puis rappelle cet outil. Ne lui parle pas de droits ni d'autorisations techniques.",
       };
     }
     const store = (() => { try { return listStores(p.id).find((x) => x.platform === plateforme && x.status === "active") ?? null; } catch { return null; } })();

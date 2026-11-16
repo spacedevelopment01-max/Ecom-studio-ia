@@ -747,7 +747,7 @@ describe("achat, suite, en boutique Shopify (Liquid contrôlé par le Studio ; p
 });
 
 // ── La fiche « vente directe » complète, en page statique (feuilles et scripts du Studio, panier d'essai de l'aperçu) ──
-const SUITE = ["tn-achat", "tn-offre-moment", "tn-packs", "tn-sous-bouton", "tn-atouts", "tn-probleme-reponse", "tn-avantages", "tn-mur-avis", "tn-nous-et-autres", "tn-livraison", "tn-garantie", "tn-questions", "tn-appel-produit"];
+const SUITE = ["tn-achat", "tn-offre-moment", "tn-packs", "tn-sous-bouton", "tn-atouts", "tn-probleme-reponse", "tn-coloris", "tn-avantages", "tn-rappel-achat", "tn-mur-avis", "tn-nous-et-autres", "tn-livraison", "tn-garantie", "tn-questions", "tn-appel-produit"];
 const FACONS: Record<string, string[]> = { "tn-achat": ["vente-directe", "vente-directe"], "tn-offre-moment": ["encadre", "bandeau"], "tn-packs": ["empilees", "cote-a-cote"], "tn-sous-bouton": ["liste", "cartes"], "tn-atouts": ["coches", "coches"], "tn-probleme-reponse": ["deux-temps", "face-a-face"], "tn-avantages": ["alternes", "cartes"], "tn-mur-avis": ["mosaique", "file"], "tn-nous-et-autres": ["tableau", "lignes"], "tn-livraison": ["frise", "cartes"], "tn-garantie": ["bande", "sceau"], "tn-questions": ["cartes", "cartes"], "tn-appel-produit": ["bande-sombre", "carte"], "tn-fenetre-offre": ["plein-ecran", "carte-en-bas"], "tn-versions": ["pastilles", "lignes"], "tn-rappel-achat": ["bande", "bouton"], "tn-coloris": ["mosaique", "file"] };
 /** Vrais avis inventés pour l'essai (module « vente » : TenueVitrine.avis). */
 const AVIS_ESSAI: D.TenueVitrine["avis"] = { source: "Avis vérifiés", verifies: true, liste: [
@@ -1028,10 +1028,10 @@ describe.runIf(!!process.env.CHROMIUM || !!process.env.ACHAT_OUT)("achat, suite 
     const out = process.env.ACHAT_OUT!;
     const shots: Record<string, Buffer> = {}, cuts: Record<string, number[]> = {};
     for (const [n, a] of ALLURES.entries()) for (const width of [320, 390, 1000, 1280]) {
-      const { browser, page } = await ouvre(await ficheStatique({ allure: n }), width, `fiche-${a.key}`);
+      const { browser, page } = await ouvre(await ficheStatique({ allure: n, vente: venteEssai({ avis: D.avisAchat(AVIS_ESSAI, "Collier Museau") }) }), width, `fiche-${a.key}`);
       try {
         await page.waitForTimeout(500);
-        const large = await page.evaluate((w) => [...document.querySelectorAll("section[data-essai] *")].filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && getComputedStyle(el).position !== "fixed" && !el.closest(".tn-galerie,.tn-vignettes,.tn-barre,.tn-pack-liste,.tn-mur-avis,.tn-avantages") && r.right > w + 1.5; }).map((el) => `${el.closest("section")!.getAttribute("data-essai")} ${el.tagName}.${el.className}`).slice(0, 3), width);
+        const large = await page.evaluate((w) => [...document.querySelectorAll("section[data-essai] *")].filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && getComputedStyle(el).position !== "fixed" && !el.closest(".tn-galerie,.tn-vignettes,.tn-barre,.tn-pack-liste,.tn-mur-avis,.tn-avantages,.tn-col-liste") && r.right > w + 1.5; }).map((el) => `${el.closest("section")!.getAttribute("data-essai")} ${el.tagName}.${el.className}`).slice(0, 3), width);
         expect(large, `${a.key} ${width} px : rien ne dépasse`).toEqual([]);
         expect(await page.evaluate(() => document.documentElement.scrollWidth), `${a.key} ${width}`).toBeLessThanOrEqual(width + 1);
         if (width === 320) continue;
@@ -1041,6 +1041,16 @@ describe.runIf(!!process.env.CHROMIUM || !!process.env.ACHAT_OUT)("achat, suite 
         shots[key] = await page.screenshot({ type: "png", fullPage: true });
         cuts[key] = await page.evaluate(() => [...document.querySelectorAll("section[data-essai]")].map((s) => Math.round(s.getBoundingClientRect().top + scrollY)));
         fs.writeFileSync(path.join(out, `fiche__${key}.jpg`), await sharp(shots[key]).jpeg({ quality: 84 }).toBuffer());
+        if (width >= 1000) {
+          // L'écran tel qu'on le voit : en haut de la fiche, puis en descendant (la photo reste pendant que la colonne d'achat défile).
+          await page.evaluate(() => scrollTo(0, 0));
+          shots[`${key}-haut`] = await page.screenshot({ type: "png" });
+          await page.evaluate(() => scrollTo(0, document.querySelector('[data-essai="tn-packs"]')!.getBoundingClientRect().top + scrollY - 110));
+          await page.waitForTimeout(200);
+          shots[`${key}-colle`] = await page.screenshot({ type: "png" });
+          for (const k of ["haut", "colle"]) fs.writeFileSync(path.join(out, `ecran__${key}-${k}.jpg`), await sharp(shots[`${key}-${k}`]).jpeg({ quality: 84 }).toBuffer());
+          await page.evaluate(() => scrollTo(0, 0));
+        }
         if (width === 390) {
           await page.evaluate(() => document.querySelectorAll(".tn-barre").forEach((b) => ((b as HTMLElement).style.visibility = "")));
           await page.evaluate(() => { const b = document.querySelector(".tn-achat > .tn-bt")!; scrollTo(0, b.getBoundingClientRect().top + scrollY - 300); });
@@ -1058,10 +1068,10 @@ describe.runIf(!!process.env.CHROMIUM || !!process.env.ACHAT_OUT)("achat, suite 
     }
     // La planche : la fiche sur téléphone en colonnes, la fenêtre d'offre et la barre d'achat à part, puis l'ordinateur.
     const W = 2400, M = 40, G = 24, fond = "#F3EFE8", encre = "#1D1A3A";
-    const colonnes = async (key: string, n: number, largeur: number) => {
+    const colonnes = async (key: string, n: number, largeur: number, from = 0) => {
       const meta = await sharp(shots[key]).metadata(), H = meta.height!, w = meta.width!, tops = cuts[key];
-      const bornes = [0];
-      for (let i = 1; i < n; i++) { const ideal = (H * i) / n; bornes.push(tops.reduce((b, t) => (Math.abs(t - ideal) < Math.abs(b - ideal) ? t : b), tops[0])); }
+      const bornes = [from];
+      for (let i = 1; i < n; i++) { const ideal = from + ((H - from) * i) / n; bornes.push(tops.reduce((b, t) => (Math.abs(t - ideal) < Math.abs(b - ideal) ? t : b), tops[0])); }
       bornes.push(H);
       const parts: Buffer[] = [];
       for (let i = 0; i < n; i++) if (bornes[i + 1] > bornes[i]) parts.push(await sharp(shots[key]).extract({ left: 0, top: bornes[i], width: w, height: bornes[i + 1] - bornes[i] }).resize({ width: largeur }).png().toBuffer());
@@ -1071,7 +1081,7 @@ describe.runIf(!!process.env.CHROMIUM || !!process.env.ACHAT_OUT)("achat, suite 
     const layers: { input: Buffer; left: number; top: number }[] = [];
     let y = M;
     layers.push({ input: texte("La fiche produit « vente directe », complète — client et prix inventés pour l'essai", 40, W - 2 * M), left: M, top: y }); y += 66;
-    layers.push({ input: texte("Tout est branché sur du vrai : promotion datée du client, stock suivi par la boutique, prix de comparaison du catalogue, packs et cadeau saisis par le client.", 24, W - 2 * M, false), left: M, top: y }); y += 60;
+    layers.push({ input: texte("Tout est branché sur du vrai : promotion datée, stock suivi, prix de comparaison, packs et cadeau du client ; note et avis seulement avec de vrais avis ; coloris lus au catalogue.", 24, W - 2 * M, false), left: M, top: y }); y += 60;
     layers.push({ input: texte("Sur téléphone, de haut en bas (se lit colonne après colonne)", 28, 1700), left: M, top: y });
     layers.push({ input: texte("La fenêtre d'offre et la barre d'achat", 28, 600), left: M + 4 * (390 + G) + 20, top: y }); y += 50;
     const tel = await colonnes("vive-tel", 4, 390);
@@ -1085,10 +1095,24 @@ describe.runIf(!!process.env.CHROMIUM || !!process.env.ACHAT_OUT)("achat, suite 
       layers.push({ input: im, left: xd, top: yd }); yd += (await sharp(im).metadata()).height! + 26;
     }
     const xe = xd + wd + G;
-    if (W - M - xe >= 300) { const im = await sharp(shots["calme-barre"]).resize({ width: Math.min(330, W - M - xe) }).png().toBuffer(); layers.push({ input: texte("Une autre allure, même fiche", 17, 330), left: xe, top: y }); layers.push({ input: im, left: xe, top: y + 30 }); }
-    y = Math.max(bas, yd) + 50;
-    layers.push({ input: texte("Sur ordinateur (se lit colonne après colonne)", 28, 1700), left: M, top: y }); y += 50;
-    const ordi = await colonnes("vive-ordi", 3, Math.floor((W - 2 * M - 2 * G) / 3));
+    let ye = y;
+    if (W - M - xe >= 300) {
+      const we = Math.min(330, W - M - xe), tiroir = path.join(out, "tiroir__vive.png");
+      const im = await sharp(shots["calme-barre"]).resize({ width: we }).png().toBuffer();
+      layers.push({ input: texte("Une autre allure, même fiche", 17, 330), left: xe, top: ye }); layers.push({ input: im, left: xe, top: ye + 30 }); ye += 30 + (await sharp(im).metadata()).height! + 26;
+      if (fs.existsSync(tiroir)) { const t = await sharp(tiroir).resize({ width: we }).png().toBuffer(); layers.push({ input: texte("Après un ajout, le panier de côté s'ouvre", 17, 330), left: xe, top: ye }); layers.push({ input: t, left: xe, top: ye + 30 }); ye += 30 + (await sharp(t).metadata()).height! + 26; }
+    }
+    y = Math.max(bas, yd, ye) + 50;
+    // L'ordinateur : deux écrans tels qu'on les voit (la photo reste pendant que la colonne d'achat défile), puis le récit.
+    const demi = Math.floor((W - 2 * M - G) / 2);
+    layers.push({ input: texte("Sur ordinateur : en haut de la fiche", 28, demi), left: M, top: y });
+    layers.push({ input: texte("En descendant : la photo reste, la colonne d'achat défile", 28, demi), left: M + demi + G, top: y }); y += 50;
+    let hEcran = 0;
+    for (const [i, k] of ["vive-ordi-haut", "vive-ordi-colle"].entries()) { const im = await sharp(shots[k]).resize({ width: demi }).png().toBuffer(); layers.push({ input: im, left: M + i * (demi + G), top: y }); hEcran = Math.max(hEcran, (await sharp(im).metadata()).height!); }
+    y += hEcran + 50;
+    layers.push({ input: texte("Sur ordinateur, la suite : le récit en pleine largeur (se lit colonne après colonne)", 28, 1700), left: M, top: y }); y += 50;
+    const recit = cuts["vive-ordi"][SUITE.indexOf("tn-atouts")];
+    const ordi = await colonnes("vive-ordi", 3, Math.floor((W - 2 * M - 2 * G) / 3), recit);
     let bas2 = y;
     for (const [i, p] of ordi.entries()) { layers.push({ input: p, left: M + i * (Math.floor((W - 2 * M - 2 * G) / 3) + G), top: y }); bas2 = Math.max(bas2, y + (await sharp(p).metadata()).height!); }
     const board = await sharp({ create: { width: W, height: bas2 + M, channels: 3, background: fond } }).composite(layers).jpeg({ quality: 82 }).toBuffer();

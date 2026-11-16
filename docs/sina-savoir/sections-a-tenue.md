@@ -1,6 +1,7 @@
 # Écrire une section « à tenue » du thème sur mesure
 
-Cahier des règles du 13 novembre 2026. Il sert à toute personne (ou tout agent) qui ajoute ou reprend une section de la
+Cahier des règles du 13 novembre 2026, mis à jour le 16 novembre 2026 (thème unique du lot 4 : cinq modules de plus, le
+registre des façons, le contrat du panier, la coque propre à une page). Il sert à toute personne (ou tout agent) qui ajoute ou reprend une section de la
 bibliothèque à tenue. Retour du propriétaire à l'origine de ce travail : « juste changer les images et les textes ferais
 déjà des thèmes trop basique car les sections sur le studio sont loin d'être à la hauteur de celle que tu as vu sur
 internet », et « les clients ne vont pas avoir tous les même menu les même bouton ».
@@ -10,7 +11,8 @@ internet », et « les clients ne vont pas avoir tous les même menu les même b
 Une section à tenue n'a pas d'allure à elle. Elle prend celle de la marque :
 
 - **la tenue** du site : couleurs et polices du projet, plus cinq réglages posés sur tout le thème (titres fins, gras ou
-  en capitales ; boutons en pilule, droits, en étiquette cousue ou à ombre dure ; photos en niche, droites ou penchées ;
+  en capitales ; boutons en pilule, droits, en étiquette cousue ou à ombre dure ; photos droites ou penchées (**jamais dans une
+  arche ni une demi-lune** : goût du propriétaire du 16 novembre 2026 ; l'ancien cadre « niche » devient droit, `sansArche`) ;
   fond uni ou en toile ; petits textes normaux ou à la machine) ;
 - **sa construction** : la même section se bâtit de plusieurs façons (attribut `data-tn-c` sur sa racine). SINA choisit
   la section, sa construction et la tenue ; le Studio fabrique. SINA n'écrit jamais de code.
@@ -27,10 +29,32 @@ trois.
 | Produit, achat, catalogue | fiche technique, dans le colis, catalogue… | `tenue-produit.ts` | `tenue-produit.css` |
 | Métiers de services | prestations, tarifs, rendez-vous, réalisations… | `tenue-services.ts` | `tenue-services.css` |
 | Récit, marque, navigation, fenêtres | texte et photo, journal, cookies, bandeau… | `tenue-recit.ts` | `tenue-recit.css` |
+| Coque (lot 4) | les huit en-têtes (dans trois pièces : liens, annonce, services) et les pieds de page (lettre, services, réassurance) | `tenue-coque.ts` (`COQUE_SECTIONS`, `ENTETES`, `PIEDS`) | `tenue-coque.css`, `tenue-coque.js` |
+| Achat (lot 4) | les façons du bloc d'achat, et les pièces qui se posent sous lui (tailles et couleurs, guide des tailles, offres par quantité, packs, dessous du bouton, offre du moment, fenêtre d'offre…) | `tenue-achat.ts` (`ACHAT_SECTIONS`) | `tenue-achat.css`, `tenue-achat.js` |
+| Métiers (lot 4) | biens et fiche d'un bien, carte du restaurant et réservation de table, rendez-vous en trois temps, inscription | `tenue-metiers.ts` (`METIERS_SECTIONS`) | `tenue-metiers.css`, `tenue-metiers.js` |
+| Pages (lot 4) | tiroir de panier, recherche, questions par rubriques, « bien reçu », boutique fermée | `tenue-pages.ts` (`PAGES_SECTIONS`) | `tenue-pages.css`, `tenue-pages.js` |
+| Vente (lot 4) | le site de vente directe : bandeau à messages, ouverture au macaron, cartes de vente, « la différence », guide de choix, page d'arrivée de publicité (en-tête et pied minimaux, ouverture d'article, raisons, équation, témoignages, barre du produit), page des avis | `tenue-vente.ts` (`VENTE_SECTIONS`) | `tenue-vente.css`, `tenue-vente.js` |
 
 Les outils communs (`sec`, `ph`, `VOLET`, le type `TenueSection`) sont dans `tenue-base.ts`. Un module ne touche ni aux
 fichiers d'un autre module, ni à `tenue.ts`, ni à `tenue.css`. Un script n'est permis que s'il est indispensable
-(partie 6) : il va dans `public/sections/tenue-<module>.js`, chargé tout seul s'il existe.
+(partie 6) : il va dans `public/sections/tenue-<module>.js`, chargé tout seul s'il existe. L'ordre de chargement des
+feuilles et des scripts est celui de `TENUE_FILES` (`tenue.ts`) : à force égale, la règle d'une feuille chargée plus
+tard l'emporte.
+
+### Le registre des façons (`*_FACONS`)
+
+Un module du lot 4 peut ajouter des façons de bâtir à une pièce d'un AUTRE module, sans toucher à son fichier : il les
+écrit dans son registre (`COQUE_FACONS`, `ACHAT_FACONS`, `METIERS_FACONS`, `PAGES_FACONS`, `VENTE_FACONS` :
+identifiant de la pièce → ses constructions) et les dessine dans SA feuille.
+
+- Le registre **remplace** la liste `constructions` de la pièce : il faut donc y réécrire toutes ses façons, et **la
+  première clé reste le rendu d'origine** (celui sans règle `data-tn-c` particulière).
+- Plusieurs modules sur une même pièce **s'additionnent** (`mergeFacons` dans `tenue.ts`) : les listes se suivent dans
+  l'ordre coque, achat, métiers, pages, vente, sans doublon de clé ; la liste du premier module qui parle de la pièce
+  vient d'abord. Un module qui arrive après ne répète pas la façon d'origine : il ajoute les siennes.
+- Une clé de pièce inconnue dans un registre arrête le Studio tout de suite (erreur d'écriture, dite à l'import).
+- Une façon ajoutée ne redessine jamais une façon existante : aucune règle de la feuille du module ne cible une façon
+  d'origine.
 
 ## 3. La définition d'une section
 
@@ -75,7 +99,7 @@ sec({
    - `tn-bt` : le bouton, qui prend la forme de la tenue. Un seul bouton plein par section ; un second choix est un
      lien souligné.
    - `tn-ph` : une photo en fond, `<div class="tn-ph" style="background-image:url(photos/fichier.jpg)"></div>`.
-   - `tn-cadre` : à ajouter à une photo encadrée ; elle prend la forme de la tenue (niche, droite, penchée).
+   - `tn-cadre` : à ajouter à une photo encadrée ; elle prend la forme de la tenue (droite ou penchée).
    - `<small>` : le petit texte de la tenue (italique des titres, ou machine).
    - `<h1>` : le grand titre d'une page (ouverture, page simple) ; `<h2>` : le titre d'une section ; jamais de `<h1>`
      dans une section qui se pose au milieu d'une page.
@@ -91,9 +115,11 @@ sec({
    `trio-tasses.jpg`… ; services : `sv-*.jpg`, `be-*.jpg`, `rs-*.jpg`, `im-*.jpg`, `ap-*.jpg`, `carte-*.jpg`). Une
    photo de produit seul reste la vraie photo du produit (cartes, bloc d'achat, panier) ; une photo d'ambiance est une
    scène. Jamais deux fois la même photo dans une section. Aucune personne reconnaissable.
-6. **Textes d'exemple** : ceux d'une maison de thé, « Brindi » (le Studio pose le nom de la marque), tutoiement,
-   phrases courtes, de l'émotion plutôt qu'une description. Pour un métier de services, l'exemple est celui du métier
-   (électricien, coiffure, restaurant) et le dit. **Rien d'inventé** : un prix, un délai, une mesure, un pourcentage,
+6. **Textes d'exemple** : « Brindi » pour le nom (le Studio pose celui de la marque), tutoiement, phrases courtes.
+   **Les textes d'exemple d'une pièce nouvelle sont neutres, jamais tirés d'un projet** : aucun métier, aucun produit
+   reconnaissable, aucun prénom, aucune date (« Nom du produit », « Une ligne qui donne envie de celui-ci. »). Les
+   pièces d'avant le lot 4 portent encore ceux d'une maison de thé ou d'un métier (électricien, coiffure, restaurant) :
+   ils sont remplacés au montage et restent à neutraliser, ils ne servent pas de modèle. **Rien d'inventé** : un prix, un délai, une mesure, un pourcentage,
    une note, un nombre d'avis, un label, une garantie s'écrivent `[À compléter : ce qui manque]`. Le Studio l'affiche
    en jaune. L'essai refuse un chiffre d'exemple.
 7. **Vraies données.** Quand une section montre des données du client (catalogue, prestations, horaires, avis), elle
@@ -124,6 +150,25 @@ sec({
 | `data-tn-avis` | rien : une ligne d'exemple est retirée, seul un vrai avis écrit reste | aucune source pour l'instant |
 | `data-tn-articles`, `data-tn-article` | les articles prêts ou publiés | rubrique Articles |
 
+Attributs ajoutés au lot 4 (les lignes d'exemple gardent exactement la forme écrite dans la pièce) :
+
+| Attribut | Ce que le Studio y met | Source |
+|---|---|---|
+| `data-tn-biens` (valeur `filtres` : avec `data-tn-biens-types`, `data-tn-biens-villes`), `data-tn-bien="galerie\|caracteristiques\|energie\|quartier\|visite"`, `data-tn-biens-choix` | les biens visibles, la fiche du bien mis en avant, les biens que l'on peut visiter | rubrique Biens |
+| `data-tn-carte` | les rubriques et les plats publiés | rubrique Carte |
+| `data-tn-prestations-options`, `data-tn-equipe-options` | les choix du rendez-vous en trois temps | profil des services, équipe donnée par le client |
+| `data-tn-panier` (page), `data-tn-panier-cote` (tiroir) : `data-tn-lignes`, `data-tn-seuil`, `data-tn-suggestions` | un panier d'essai fait des vrais produits, le seuil de livraison offerte, d'autres produits à ajouter | catalogue, fiche de l'entreprise |
+| `data-tn-recherche`, `data-tn-mots` | les produits et les familles de la recherche | catalogue |
+| `data-tn-versions`, `data-tn-guide-tailles`, `data-tn-lots`, `data-tn-looks`, `data-tn-coloris` | les options du produit, ses tailles, l'offre par quantité, d'autres produits, ses couleurs | catalogue, offres du client (`shop.offers`) |
+| `data-tn-packs`, `data-tn-sous-bouton`, `data-tn-offre-moment`, `data-tn-fenetre-offre`, `data-tn-stock`, `data-tn-jauge` | les packs, le dessous du bouton, l'offre datée, la fenêtre d'offre, « plus que N », la jauge | offres du client, vrai stock suivi |
+| `data-tn-messages`, `data-tn-macaron`, `data-tn-cartes-vente`, `data-tn-guide` | les messages du bandeau, le chiffre du macaron, les cartes de vente, le guide de choix | fiche de l'entreprise, catalogue (`tenueVitrine` : genre, prix de comparaison, « dès », nombre de versions) |
+| `data-tn-arrivee`, `data-tn-barre-produit` (avec `data-tn-produit-nom`) | le nom, la photo et la fiche du premier produit en stock | catalogue |
+| `data-tn-avis-pose`, `data-tn-temoignages`, `data-tn-avis-page` | seulement les avis d'une vraie source ; sans avis, rien n'est montré | aucune source d'avis dans le Studio pour l'instant |
+
+Les lectures de la base se font à un seul endroit par sujet : `tenueMetiers` (biens, carte) et `tenueVitrine`
+(catalogue de vente) dans `tenue-data.ts`, posées dans les données du site par `tenueSite` (`render.ts`, aperçu) et par
+`customThemeExport` (`install.ts`, mise en boutique). Tout le reste de `tenue-data.ts` est pur.
+
 Les autres attributs (`data-tn-agenda`, `data-tn-planning`, `data-tn-equipe`, `data-tn-realisations`, `data-tn-vendus`,
 `data-tn-chiffres`, `data-tn-presse`, `data-tn-dates`…) marquent des listes que le rédacteur écrit avec les faits du
 client : le Studio n'a pas encore de source pour elles.
@@ -131,7 +176,12 @@ client : le Studio n'a pas encore de source pour elles.
 ## 5. La feuille
 
 1. **Tout sélecteur commence par `.ctw .tn-<nom>`** (ou `.ctw[data-tn-…] .tn-<nom>`). Aucun sélecteur général, aucun
-   `!important`, aucune couleur écrite en dur.
+   `!important`, aucune couleur écrite en dur. **Une règle ne nomme qu'une seule pièce** : la mise en boutique découpe
+   la feuille par pièce (une règle qui nomme deux racines part avec le socle, dans tous les sites).
+   **Avant de créer une classe, vérifier que son nom n'existe dans aucune autre feuille** (`grep -n "tn-monnom"
+   public/sections/tenue*.css`) : toutes les feuilles sont chargées ensemble, et trois conflits de noms entre pièces
+   ont déjà eu lieu au lot 4. Le plus sûr : un préfixe propre au module pour ses classes intérieures (le module vente
+   écrit `tn-v-…`, la coque `tn-e-…` pour les en-têtes).
 2. **Variables** : `--tn-fond` (fond de page), `--tn-encre` (texte et traits), `--tn-accent` (couleur de marque),
    `--tn-doux` (fond de carte), `--tn-texte` (texte courant), `--tn-sourd` (texte discret), `--tn-bouton`,
    `--tn-sur-bouton` (texte sur fond sombre), `--tn-arrondi` (arrondi des cadres droits), `--tn-k` (échelle des grands
@@ -142,7 +192,7 @@ client : le Studio n'a pas encore de source pour elles.
    Deux constructions sont deux mises en page vraiment différentes (une liste et une grille, la photo à gauche et la
    photo pleine), jamais un simple changement de couleur.
 5. **Tenue** : la section réagit aux attributs posés sur `.ctw` : `data-tn-titres`, `data-tn-bouton`, `data-tn-cadre`
-   (`niche`, `droit`, `penche`), `data-tn-fond` (`toile` : la trame court sous toute la page, la section est
+   (`droit`, `penche` ; `niche` n'est plus jamais posé), `data-tn-fond` (`toile` : la trame court sous toute la page, la section est
    transparente ; une section qui a son propre fond écrit `background-color`), `data-tn-petits`. Le bouton et les
    cadres `tn-cadre` s'habillent tout seuls.
 6. **Téléphone d'abord** (390 px), marges de 20 px, haut de section à 44 px ; la section suivante apporte son propre
@@ -160,6 +210,28 @@ ne peut pas s'en passer (un filtre, un minuteur), le script va dans `public/sect
 dépendance, il n'agit que sur des éléments `tn-…`, il peut être chargé deux fois sans dommage, et la section reste
 lisible sans lui.
 
+### Le panier : le contrat `window.tnBoutique`
+
+Les pièces d'achat (bloc d'achat, lots, packs, barre d'achat, offre datée, fenêtre d'offre) ont un seul script commun,
+`public/sections/tenue-achat.js`. Il ne parle jamais à une plateforme : il lit le balisage (les attributs `data-tn-…`
+décrits en tête du fichier, qui fait foi) et appelle le contrat, qui ne change plus :
+
+- `tnBoutique.ajouter(lignes, options)` → le panier ; `lignes` : `[{ id (identifiant de VERSION de la plateforme),
+  quantite, cadeau? }]` ; un refus (stock, version inconnue) est une erreur dont le message se montre au client ;
+- `tnBoutique.panier()` → `{ nombre, total (centimes, remises de la plateforme comprises), lignes }` ;
+- `tnBoutique.argent(centimes)` → le prix écrit dans la devise de la boutique ; `tnBoutique.allerAuPanier()`.
+
+Un adaptateur par endroit, chargé avant le script commun : `boutique-apercu.js` (panier d'essai de l'aperçu, rien n'est
+vendu), `boutique-shopify.js`, `boutique-woocommerce.js`, `boutique-prestashop.js`. Une pièce n'écrit jamais d'appel à
+une plateforme : elle pose ses attributs, le script commun fait le reste. La table des versions du produit de la page
+est un `<script type="application/json" data-tn-versions>`. Après un ajout, l'événement `tn:panier` part sur le
+document (un panier de côté qui s'ouvre lui-même l'annule ; sinon le script mène au panier).
+
+**Le thème ne calcule aucune remise.** Un prix de lot ou de pack affiché vient de l'offre du client ; le prix payé est
+celui que la plateforme rend. Il ne s'affiche que si la boutique tient la remise : l'outil `shop.discounts_check`
+interroge la boutique reliée et garde sa réponse ; à la mise en boutique, cette preuve l'emporte sur la déclaration du
+client (`remises.ts` : `indicateurRemises`).
+
 ## 7. Les contrôles
 
 ```bash
@@ -171,6 +243,10 @@ python3 scripts/tenue-planche.py /chemin/vers/un/dossier      # une planche par 
 ```
 
 `TENUE_ONLY` prend un module (`socle`, `produit`, `services`, `recit`) ou des identifiants séparés par des virgules.
+Chaque module du lot 4 a son essai, `tests/theme-unique-<module>.test.ts` (coque, achat, metiers, pages, vente), et ses
+planches à la demande : `COQUE_OUT`, `ACHAT_OUT`, `METIERS_OUT`, `PAGES_OUT`, `VENTE_OUT=<dossier>` (avec
+`<MODULE>_ONLY` pour limiter aux pièces citées). Ce qui relie les modules est dans
+`tests/theme-unique-integration.test.ts`.
 Sur une machine partagée, un seul rendu à la fois (`flock <fichier> env … npx vitest run …`).
 L'essai échoue si une page dépasse de l'écran en largeur. Chaque planche se **regarde** : la section est terminée
 quand, dans les trois tenues, elle est lisible, équilibrée, sans vide ni débordement, et qu'elle donne envie.
@@ -186,7 +262,30 @@ script ne part. Conséquences pour qui écrit une section :
 - ce qui demande un script dans l'aperçu (filtre immédiat, minuteur, nom géant ajusté) garde une forme lisible sans lui ;
 - une règle sous condition s'écrit dans un `@media` ou un `@supports` simple (ils sont gardés) ;
 - l'essai `tests/sina-theme-donnees.test.ts` convertit CHAQUE section et la passe au contrôle du Studio : une nouvelle
-  section y entre toute seule.
+  section y entre toute seule ;
+- exception à « aucun script » : les pièces d'achat partent avec le script commun et l'adaptateur de la plateforme
+  (fichiers du thème), et la table des versions du produit ; rien d'autre ;
+- la feuille du site part avec l'en-tête ; quand elle est trop longue pour une seule section (site complet), sa suite
+  part dans des sections « Feuille du site » du groupe d'en-tête, dans le même ordre (`themeCssParts`). Une feuille
+  de pièce courte reste la meilleure façon de ne pas y arriver.
+
+### La coque propre à une page
+
+Le site a un en-tête et un pied pour toutes ses pages. **Une page peut porter sa propre coque** : c'est le cas de la
+page d'arrivée d'une publicité (clé `arrivee`, ou `arrivee-<nom>` s'il y en a plusieurs ; modèle Shopify
+`page.arrivee…`), avec « tn-entete-arrivee » et « tn-pied-arrivee ».
+
+- Elle se pose par l'opération de structure `{ op: "page_shell", page: "arrivee", slot: "header" | "footer", section,
+  construction? }` (`section: null` la retire). Seule une pièce de rôle `en-tête` va dans `header`, de rôle
+  `pied de page` dans `footer` ; le contrôle refuse toute autre pièce, et refuse toujours un en-tête ou un pied parmi
+  les sections d'une page.
+- Sur cette page, **rien du site ne se pose** : ni son en-tête, ni son pied, ni le bandeau, ni la recherche, ni le
+  panier de côté, ni une fenêtre. Une pièce écrite pour une coque de page ne compte donc sur aucun d'eux (la barre du
+  produit collée en bas est une section de la page, pas une fenêtre du site).
+- Dans l'aperçu, la coque est rendue dans la page (`render.ts`). Dans Shopify (un seul groupe d'en-tête et un seul
+  groupe de pied par thème), les sections des deux groupes ne rendent rien sur le modèle de cette page, et la coque
+  de la page est la première et la dernière section du modèle (`to-shopify.ts`).
+- Les pièces de la coque d'une page s'écrivent, se lisent et se retouchent comme les autres (place « coque de <clé> »).
 
 ## 9. La démonstration
 

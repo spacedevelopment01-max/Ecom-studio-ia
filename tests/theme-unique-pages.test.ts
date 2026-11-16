@@ -317,7 +317,7 @@ describe("thème unique, pages : aucune page de commande dans le thème, et la m
     expect(closed).toMatch(/\{%- form 'customer', class: 'tn-form' -%\}<input type="hidden" name="contact\[tags\]" value="newsletter">/);
     expect(closed).toContain(`{%- form 'storefront_password', class: 'tn-passe' -%}<label class="tn-champ"><input type="password" name="password" aria-label="Mot de passe"`);
     // « Bien reçu » et les questions par rubriques : des pages simples de la boutique.
-    expect(out.spec.store.pages.map((p) => p.handle)).toEqual(expect.arrayContaining(["bien-recu", "aide", "legal"]));
+    expect(out.spec.store.pages.map((p) => p.handle)).toEqual(expect.arrayContaining(["bien-recu", "aide", "informations-legales"])); // noms clairs des modèles (« page.informations-legales »), qui servent aussi d'adresse
     expect(liquid(out, "tn-merci")).toContain('<a class="tn-bt" href="{{ routes.root_url }}">Retour à l\'accueil</a>');
     expect(liquid(out, "tn-questions-rubriques")).toContain("<h2>La commande</h2>");
   });

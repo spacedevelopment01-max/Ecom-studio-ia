@@ -131,6 +131,44 @@ describe("thème unique, intégration : une coque propre à une page", () => {
   }, 120_000);
 });
 
+describe("thème unique, intégration : la feuille d'un site complet ne tient pas dans une seule section", () => {
+  it("elle est coupée entre deux règles, dans l'ordre ; la suite part dans le groupe d'en-tête, jamais retirée d'une page à coque", async () => {
+    const { customThemeSpec, themeCss, themeCssParts, parseCss, FEUILLE_MAX } = await import("@/lib/syna-agent/custom-theme/to-shopify");
+    const { validateCustomSection, validateSpec } = await import("@/lib/theme/ops");
+    const { TENUE_SECTIONS } = await import("@/lib/syna-agent/custom-theme/tenue");
+    const { linkMap } = await import("@/lib/syna-agent/custom-theme/render");
+    // Un site d'essai très grand : une quarantaine de pièces différentes sur une page de plus.
+    const pieces = TENUE_SECTIONS.filter((x) => !["en-tête", "pied de page", "recherche", "panier", "commande"].includes(x.role) && !["bandeau", "partout"].includes(x.group ?? "")).slice(0, 45).map((x) => x.id);
+    const t = ecrit(S.applyStructure(S.applyStructure(site(), COQUE), [{ op: "page", key: "tout", label: "Tout" }, ...pieces.map((section) => ({ op: "add", page: "tout", section }) as const)]));
+    const out = customThemeSpec(t, { name: "Boutique Essai", business: "products", products: [{ handle: "gourde-essai", title: "Gourde d'essai", categories: [] }], company: { shipping: "48 h", returns: "30 jours" }, assetExt: () => "jpg", linkMap: linkMap(t), dropMissing: true, base: null });
+    const spec = out.spec;
+    const suites = spec.groups.header.order.filter((k) => k.startsWith("tn-feuille-"));
+    expect(suites.length, "la feuille de ce site demande au moins une section de suite").toBeGreaterThanOrEqual(1);
+    expect(spec.groups.header.order.slice(-suites.length)).toEqual(suites.map((_k, i) => `tn-feuille-${i + 1}`));
+    // Aucune section ne dépasse ce que le contrôle du Studio accepte (200 000 caractères ; Shopify : 256 Ko par fichier).
+    for (const [type, c] of Object.entries(spec.customSections)) { expect(c.liquid.length, `${type} : taille`).toBeLessThan(200_000); if (type.startsWith("es-custom-feuille-") || type === `es-custom-${t.header!.uid}`) expect(validateCustomSection(c.liquid), `${type} : contrôle du Studio`).toBeNull(); }
+    expect(validateSpec({ ...spec, templates: { ...spec.templates } }).filter((x) => /group:header/.test(x))).toEqual([]);
+    // Les mêmes règles, dans le même ordre, que la feuille entière : le début dans l'en-tête, la suite dans les sections de suite.
+    const roots = new Set(S.allSections(t).map((x) => /^<(?:section|footer|aside|div)\s+class="tn (tn-[a-z0-9-]+)/.exec(tenueSection(x.s.id)!.html)?.[1]).filter((x): x is string => !!x));
+    const ligne = (r: { media: string | null; selector: string; body: string }) => `${r.media ?? ""}|${r.selector}|${r.body}`;
+    const entiere = parseCss(themeCss(roots)).map(ligne);
+    const parts = themeCssParts(roots, 20_000, FEUILLE_MAX);
+    expect(parts.length).toBeGreaterThan(1);
+    expect(parts.flatMap((x) => parseCss(x).map(ligne))).toEqual(entiere);
+    const feuille = (l: string) => /\{% stylesheet %\}\n([\s\S]*?)\n\{% endstylesheet %\}/.exec(l)?.[1] ?? /<style>([\s\S]*?)<\/style>/.exec(l)?.[1] ?? "";
+    const envoyee = [spec.customSections[`es-custom-${t.header!.uid}`].liquid, ...suites.map((k) => spec.customSections[spec.groups.header.sections[k].type].liquid)].flatMap((l) => parseCss(feuille(l)).map(ligne)).filter((x) => !x.includes("html body:has([data-tn-coque])")); // (la règle des pages à coque est posée à la fin de la feuille de l'en-tête)
+    const debut = envoyee.indexOf(entiere[0]);
+    expect(debut).toBeGreaterThanOrEqual(0);
+    expect(envoyee.slice(debut, debut + entiere.length)).toEqual(entiere);
+    // La suite de la feuille n'est jamais mise sous la condition des pages à coque (la page d'arrivée en a besoin).
+    for (const k of suites) { const l = spec.customSections[spec.groups.header.sections[k].type].liquid; expect(l).not.toContain("tn_modele"); expect(l).toMatch(/^\{%- comment -%\}[^\n]*\n<style>/); }
+    expect(spec.customSections[`es-custom-${t.header!.uid}`].liquid).toContain("tn_modele");
+    expect(spec.customSections[`es-custom-${t.header!.uid}`].liquid).not.toContain("es-custom-feuille-");
+    // Un petit site garde toute sa feuille dans l'en-tête : aucune section de suite.
+    expect(themeCssParts(new Set(["tn-atouts"]), FEUILLE_MAX, FEUILLE_MAX)).toHaveLength(1);
+  }, 120_000);
+});
+
 describe("thème unique, intégration : aperçu, données du site et remises (projet d'essai)", async () => {
   const { account, project } = await import("./conversation209-fixtures");
   const { saveBrand, loadProject } = await import("@/lib/projects");
