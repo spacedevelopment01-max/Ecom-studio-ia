@@ -91,7 +91,7 @@ describe("thème sur mesure : une fiche par produit, les prestations, la rupture
     expect(next.pages.at(-1)!.key).toBe("contact");
     expect(next.pages[1].product).toBe("produit-0");
     const second = next.pages[2];
-    expect(second.sections.map((s: any) => [s.id, s.construction ?? null])).toEqual([["tn-achat", null], ["tn-de-pres", "sans-titre"], ["tn-mesures", "sac"]]);
+    expect(second.sections.map((s: any) => [s.id, s.construction ?? null])).toEqual([["tn-achat", "simple"], ["tn-de-pres", "sans-titre"], ["tn-mesures", "sac"]]); // lot 4 : le bloc d'achat a six façons, « simple » est celle d'origine
     // Les textes écrits pour le premier produit ne sont jamais recopiés sur un autre.
     expect(second.sections.every((s: any) => !s.html && !s.clientTexts)).toBe(true);
     expect(new Set(next.pages.flatMap((p: any) => p.sections.map((s: any) => s.uid))).size).toBe(3 * (1 + S.MAX_PRODUCT_PAGES - 1));

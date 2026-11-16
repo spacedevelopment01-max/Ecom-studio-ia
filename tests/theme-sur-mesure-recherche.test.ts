@@ -10,7 +10,7 @@ const src = fs.readFileSync(path.join(process.cwd(), "src/lib/syna-agent/custom-
 
 describe("recherche du thème sur mesure", () => {
   it("cachée par défaut (sauf la recherche plein écran Moderne), ouverte et fermée par la loupe de l'en-tête", () => {
-    expect(src).toContain('.tb-wrap .frame>[data-ct-role="search"]:not(.zm18):not(:has(.zm18)):not(.ct-open){display:none}');
+    expect(src).toContain('.tb-wrap .frame>[data-ct-role="search"]:not(.zm18):not(:has(.zm18)):not(.ct-open):not(.tn-recherche){display:none}'); // lot 4 : la recherche du thème unique se montre d'elle-même
     expect(src).toContain('s2.classList.toggle("ct-open")');
     expect(src).toMatch(/!sb\.hasAttribute\("data-search"\)/); // un en-tête qui a sa propre recherche la garde
   });

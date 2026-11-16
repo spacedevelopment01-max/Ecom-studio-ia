@@ -303,8 +303,11 @@ describe("conception de SINA d'après les thèmes qui se vendent", () => {
     const { sectionLibrary } = await import("../src/lib/syna-agent/custom-theme/library");
     expect(D.DESIGN_SYSTEM).toContain("CE QUE FONT LES THÈMES QUI SE VENDENT");
     expect(D.DESIGN_REVIEW_SYSTEM).toContain("CE QUE FONT LES THÈMES QUI SE VENDENT");
-    expect(D.DESIGN_SYSTEM).toContain("L'EXEMPLE MONTRE UNE LOGIQUE, PAS DES SECTIONS");
-    const ex = D.DESIGN_SYSTEM.slice(D.DESIGN_SYSTEM.indexOf("EXEMPLE DU NIVEAU ATTENDU"), D.DESIGN_SYSTEM.indexOf("POUR UN SITE DE SERVICES"));
+    // Lot 4 : le niveau attendu est dit en logique, sans exemple de marque (aucun exemple tiré d'un projet d'essai).
+    expect(D.DESIGN_SYSTEM).toContain("CETTE LOGIQUE NE DONNE AUCUN IDENTIFIANT");
+    expect(D.DESIGN_SYSTEM).not.toMatch(/bougie|\bthés?\b|infusion/i);
+    const ex = D.DESIGN_SYSTEM.slice(D.DESIGN_SYSTEM.indexOf("LE NIVEAU ATTENDU, EN LOGIQUE"), D.DESIGN_SYSTEM.indexOf("CETTE LOGIQUE NE DONNE AUCUN IDENTIFIANT"));
+    expect(ex.length).toBeGreaterThan(400);
     // Retour du propriétaire : « elle doit savoir mélanger et pas mettre tout le temps les mêmes sections » : l'exemple ne
     // nomme aucune section (SINA recopiait celles de l'exemple).
     const named = sectionLibrary().sections.map((x) => x.id).filter((id) => id.includes("-") && new RegExp(`\\b${id}\\b`).test(ex));
