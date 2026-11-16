@@ -735,7 +735,7 @@ const photoTool: AgentTool<PhotoArgs> = {
     const fam = loadFamilyChoice(p.id), people = peopleAllowed(p.id), fu = siteArtUniverse(fam, { people });
     if (fam && fam.family !== t.family) return { ok: false, summary: L("Le thème monté n'est pas de la famille choisie par le client : rien n'est créé ni payé. Il faut d'abord concevoir un thème dans sa famille.", "Theme family differs from the client's choice.") };
     const direction = siteArtDirection(p, fu, (() => { try { return journeyOf(ctx.conversationId); } catch { return null; } })());
-    const place = textPlacementLine(sectionHtml(x.s), a.find, libSection(x.s.id)?.does ?? "");
+    const place = textPlacementLine(sectionHtml(x.s), a.find, libSection(x.s.id)?.does ?? "", x.s.construction);
     // Photo d'exemple détourée (ouverture Moderne) : créée sur fond uni, puis détourée par le Studio (gratuit).
     const cut = isCutoutPhoto(a.find);
     const prompt = codePhotoPrompt({ id: `ct-${a.uid}`, description: [a.description, place].filter(Boolean).join("\n"), ratio: a.ratio, background: cut ? FOND_A_DETOURER : a.background ?? null, product: !!a.product }, { name: p.brand?.name ?? p.name, logo: false, product: !!(a.product && refs.product), direction, people: !!fu && people });

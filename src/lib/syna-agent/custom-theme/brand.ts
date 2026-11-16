@@ -412,9 +412,18 @@ export function sitePhotoName(place: string, description: string): string {
  * logique » ; la photo d'ouverture d'Heure Dorée avait ses pots sous le titre et le vide de l'autre côté).
  * Le côté du texte vient de la description de la section (« À gauche : le titre… »).
  */
-export function textPlacementLine(html: string, find: string, does: string): string {
+/** Lot 4 : où le titre se pose sur la photo d'ouverture, selon la façon dont l'ouverture est bâtie (grande photo pleine, titre dessus). */
+const OPENING_PLACEMENT: Record<string, string> = {
+  "dans-la-photo": "Le titre se pose dans le HAUT de cette photo : le tiers haut reste calme (ciel, mur, flou, lumière douce) ; le sujet principal, entier, est dans la moitié basse.",
+  "titre-centre": "Le titre, la phrase et le bouton se posent AU CENTRE de cette photo : le centre reste calme et un peu plus sombre ou flou ; le sujet principal, entier, est sur un côté ou dans le bas, jamais sous le texte.",
+  "titre-en-bas": "Le titre et le bouton se posent EN BAS À GAUCHE de cette photo, sur une ombre qui monte du bas : le sujet principal, entier, est dans la moitié haute, plutôt à droite ; le bas gauche reste calme.",
+  "titre-massif": "Un titre énorme couvre toute la largeur du BAS de cette photo : le sujet principal, entier, est dans les deux tiers hauts ; le tiers bas reste calme (sol, table, ombre).",
+  "bandeau": "Une bande pleine couvre le tiers BAS de cette photo : le sujet principal, entier, tient dans les deux tiers hauts ; rien d'important dans le tiers bas.",
+};
+export function textPlacementLine(html: string, find: string, does: string, construction?: string | null): string {
   const esc = find.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   if (!new RegExp(`background-image:\\s*url\\(['"]?${esc}`).test(html)) return "";
+  if (construction && OPENING_PLACEMENT[construction] && /class="tn tn-ouverture[ "]/.test(html)) return `${OPENING_PLACEMENT[construction]} Sur téléphone la photo est en hauteur, sur ordinateur en largeur : le sujet reste entier dans les deux cadrages.`;
   const side = /(^|[.;:]\s*)à gauche\s*:/i.test(does) ? "gauche" : /(^|[.;:]\s*)à droite\s*:/i.test(does) ? "droite" : null;
   if (!side) return "Le texte de la section est posé PAR-DESSUS cette photo : garde une zone calme (flou, ombre douce, mur, ciel, nappe) là où il se pose, le sujet principal autour, jamais sous le texte.";
   const other = side === "gauche" ? "droite" : "gauche";
@@ -795,7 +804,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         const assetId = real ? real : mine ? mine : await ctx.step(`photo:${uid}:${file}`, async () => {
           const prodRef = ph.product && showsPackaging(ph.description) ? products.find((x) => x.data.title.trim().toLowerCase() === ph.product!.trim().toLowerCase())?.data.images[0]?.assetId : undefined;
           const ref = prodRef ? getAsset(prodRef) : undefined;
-          const place = textPlacementLine(sectionHtml(here.s), ph.find, libSection(here.s.id)?.does ?? "");
+          const place = textPlacementLine(sectionHtml(here.s), ph.find, libSection(here.s.id)?.does ?? "", here.s.construction);
           // Photo d'exemple détourée (ouverture Moderne) : créée sur fond uni, puis détourée (gratuit).
           const cut = isCutoutPhoto(file);
           const prompt = codePhotoPrompt({ id: `ct-${uid}-${file}`, description: [ph.description, place].filter(Boolean).join("\n"), ratio: ph.ratio, product: !!ph.product, ...(cut ? { background: FOND_A_DETOURER } : {}) }, { name, logo: false, product: !!ref, direction, people: !!fu && people });

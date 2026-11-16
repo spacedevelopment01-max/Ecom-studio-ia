@@ -356,13 +356,16 @@ describe("thème sur mesure : outils de SINA", async () => {
       const r = await call("custom.design", ctx, { consigne: "Un matin d'hiver gris, j'ouvre le pot et l'été revient.", ambiance: "sombre" });
       expect(r.ok, r.summary).toBe(true);
       expect(prompts).toHaveLength(3);
-      expect(systems[0]).toMatch(/directeur de création[^]*STRATÉGIE[^]*PARCOURS[^]*RYTHME[^]*EXEMPLE DU NIVEAU ATTENDU/);
+      expect(systems[0]).toMatch(/directeur de création[^]*STRATÉGIE[^]*PARCOURS[^]*RYTHME[^]*FAMILLE : avant tout choix de pièce[^]*LE NIVEAU ATTENDU, EN LOGIQUE/);
       expect(systems[1]).toMatch(/directeur commercial[^]*sans complaisance/);
       expect(prompts[0]).toMatch(/DEMANDE DU CLIENT[^]*matin d'hiver gris/);
       expect(prompts[0]).toMatch(/AMBIANCE VOULUE PAR LE CLIENT : site sombre/);
       expect(systems[0]).toMatch(/AMBIANCE voulue par le client[^]*site sombre = surtout des sections à fond sombre/);
       expect(systems[0]).toMatch(/COHÉRENCE DU SITE/);
-      expect(prompts[0]).toMatch(/BIBLIOTHÈQUE DE LA FAMILLE[^]*ouverture-photo-pleine · ouverture · fond photo · moyenne · 1 photo\(s\)/);
+      // Lot 4 : le concepteur ne reçoit que les pièces du thème unique (les anciennes sections ne lui sont plus données),
+      // avec les six familles du Studio.
+      expect(prompts[0]).toMatch(/LES SIX FAMILLES DU STUDIO[^]*BIBLIOTHÈQUE DE LA FAMILLE[^]*tn-ouverture · ouverture · À TENUE · fond photo · /);
+      expect(prompts[0]).not.toMatch(/^- ouverture-photo-pleine · /m);
       expect(prompts[0]).not.toContain("recherche-guidee"); // contenu de démonstration exclu
       expect(prompts[0]).toMatch(/Ce qu'elle n'a PAS[^]*avis clients/);
       expect(prompts[1]).toMatch(/CONCEPTION À RELIRE/);
@@ -376,7 +379,7 @@ describe("thème sur mesure : outils de SINA", async () => {
       expect(t.pages[0].sections[1].intent).not.toMatch(/Photos :/);
       expect(r.data.parcours[0].sections[0]).toMatch(/Ouverture photo pleine — Répond/);
       // Retour du propriétaire du 10 novembre 2026 : plus d'inversion clair / sombre, chaque section garde son fond d'origine.
-      expect(prompts[0]).toMatch(/nos-engagements · confiance · fond clair · /);
+      expect(prompts[0]).toMatch(/tn-engagements · confiance · À TENUE[^\n]* · fond /);
       expect(prompts[0]).not.toMatch(/inversable/);
       expect(systems[0]).toMatch(/chaque section garde son fond d'origine/);
       const { renderCustomTheme } = await import("@/lib/syna-agent/custom-theme/render");
