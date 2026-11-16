@@ -38,7 +38,15 @@ export type ToolScope = { inJourney: boolean; legacyMockups: boolean; /** Conver
 const STEP9_TOOLS = new Set(["posts.plan", "posts.create", "posts.validate"]);
 /** Outils des étapes 10 à 13 (tools/steps-late.ts) et l'étape qui les ouvre. */
 const LATE_STEP_TOOLS: Record<string, number> = { "ads.create": 10, "ads.validate": 10, "calendar.validate": 11, "blog.topics": 12, "blog.write": 12, "blog.validate": 12, "files.tidy": 13, "files.validate": 13 };
-const JOURNEY_HIDDEN = new Set(["site.mockups", "site.mockup_images", "site.build", "project.create"]);
+/**
+ * Lot 4 (16 novembre 2026) : une seule façon de faire le site (site.create). Les anciennes façons ne sont plus ni
+ * proposées ni exécutées pendant le parcours : le choix « thème du Studio ou sur mesure », les 15 thèmes à monter, la
+ * question de famille et d'ambiance, les deux concepts, la conception à part, la composition dictée, et les retouches
+ * de l'ancien moteur. Elles seront retirées du code quand l'essai réel du lot aura réussi.
+ */
+const OLD_SITE_WAYS = ["site.mode", "theme.propose", "theme.choose", "theme.images", "theme.brand", "theme.validate", "theme.families", "theme.family", "theme.ambiance",
+  "custom.concepts", "custom.concept", "custom.design", "custom.compose", "site.outline", "site.edit", "site.versions", "site.use_version", "site.pages"];
+const JOURNEY_HIDDEN = new Set(["site.mockups", "site.mockup_images", "site.build", "project.create", ...OLD_SITE_WAYS]);
 const LEGACY_MOCKUP = /^(mockup\.|site\.code_from_mockup$|site\.images$|site\.photo_reject$)/;
 export function toolVisible(name: string, scope?: ToolScope): boolean {
   // tools.open n'existe que pour une conversation aiguillée : ailleurs, SINA a déjà toutes les notices.

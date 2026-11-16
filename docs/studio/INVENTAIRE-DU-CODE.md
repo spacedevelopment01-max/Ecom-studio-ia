@@ -248,6 +248,16 @@ avec lui, dans le lot 1.
   site), le rangement de l'angle actif `marketing-strategy/` et le sélecteur d'angle des publications. Détail :
   `docs/studio/LOT-3-LES-TROIS-ANGLES.md`.
 
+## 7 sexies. Le lot 4 en cours (16 novembre 2026)
+
+- **Correction de l'inventaire** : les pièces du thème unique existaient déjà (95 pièces qui prennent l'allure de la
+  marque), ainsi que leur chaîne et leur pont vers le moteur des thèmes ; « modifier en cliquant » existait pour les
+  sites montés par SINA, dans l'onglet Boutique. Le lot part donc de l'existant au lieu de réécrire.
+- **Construit** : une seule façon de faire le site (`site.create`, tâche `syna.site`), un seul accord ; plus de question
+  de thème, de famille ni de concept ; le site validé devient la version active du moteur des thèmes ; le clic sur
+  l'aperçu désigne tout de suite. Les anciennes façons ne sont plus proposées à SINA ; elles restent dans le code
+  jusqu'à l'essai réel. Détail : `docs/studio/LOT-4-LE-SITE.md`.
+
 ## 8. Non vérifié
 
 - La suite de tests n'a pas été lancée ; « code jamais appelé » repose sur une recherche de texte.

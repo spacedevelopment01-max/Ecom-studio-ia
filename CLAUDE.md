@@ -33,7 +33,7 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   16 novembre 2026 : SINA a créé seule la marque de trois clients inventés, anciennes façons retirées ; compte rendu
   et décisions de l'essai : `docs/studio/LOT-2-LA-MARQUE.md`. Lot 3 (les trois angles) fait le 16 novembre 2026 : SINA a créé
   seule les angles de deux clients repris du lot 2 (branche `essai-lot2-donnees`), le propriétaire les a validés
-  (« Parfait »), anciennes façons retirées ; compte rendu : `docs/studio/LOT-3-LES-TROIS-ANGLES.md`. Suite : 4 le site, 5 les publications automatiques, 6 les forfaits, 7 SINA prend les devants, 8 les
+  (« Parfait »), anciennes façons retirées ; compte rendu : `docs/studio/LOT-3-LES-TROIS-ANGLES.md`. Lot 4 (le site) en cours depuis le 16 novembre 2026, en cinq temps acceptés (« Oui ») : les temps 1 à 3 sont construits et vérifiés sans IA (SINA crée le site en une fois avec `site.create`, un seul accord ; clic sur l'aperçu pour modifier), l'essai réel reste à faire ; état exact : `docs/studio/LOT-4-LE-SITE.md`. Suite : 4 le site, 5 les publications automatiques, 6 les forfaits, 7 SINA prend les devants, 8 les
   publicités, 9 les vidéos.
 
 ## Avec le propriétaire
@@ -153,7 +153,8 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - **Modifier en cliquant sur l'aperçu** : sur l'aperçu de son site, le client clique sur n'importe quel élément de
   n'importe quelle section (un titre, un texte, une photo, un bouton, un détail) et demande le changement à SINA.
   « ça c'est obligatoire et pour chaque détail des sections » (15 novembre 2026). L'ancien assistant savait désigner
-  un élément ; cette fonction est partie avec lui au lot 1 et revient pour SINA au lot 4.
+  un élément. Depuis le lot 4, le clic désigne tout de suite dans l'onglet Boutique du site monté par SINA, et la
+  demande part à SINA (`custom-theme-boutique.tsx`).
 - **Pas de création gratuite** : l'idée « créer et voir gratuitement, payer pour publier » est refusée (« Pas envie
   de faire comme ça », 15 novembre 2026) ; la règle « aucun appel à l'IA sans abonnement » reste.
 - **Le thème unique du Studio** (15 novembre 2026, « Oui écris le ») : SINA monte chaque site avec un seul thème très riche

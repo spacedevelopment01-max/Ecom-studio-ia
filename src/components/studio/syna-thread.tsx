@@ -290,30 +290,43 @@ function FamilyCards({ families, busy, onChoose }: { families: Families; busy: b
   );
 }
 
+/** Une retouche plus récente que la création montre déjà le site : une seule carte du site dans le fil. */
+function lastCustomAfter(messages: { id: string }[], site: string | undefined, custom: string | undefined): boolean {
+  if (!site || !custom) return false;
+  return messages.findIndex((m) => m.id === custom) > messages.findIndex((m) => m.id === site);
+}
+
 type CustomThemeView = { href: string; boutique?: string; open: string; rev: number; choisi: boolean; pages: { key: string; label: string }[] };
 
 /**
- * Thème sur mesure dans le fil : un aperçu et le lien vers l'onglet Boutique, où le thème est EN PLACE en grand et où le
- * client désigne les éléments à changer (consigne du propriétaire du 9 novembre 2026).
+ * Le site du client dans le fil (lot 4) : un aperçu, et le chemin vers son site en grand, où il clique sur n'importe quel
+ * élément pour demander un changement à SINA (« ça c'est obligatoire et pour chaque détail des sections »).
  */
 function CustomThemeCard({ card, busy, onSend }: { card: CustomThemeView; busy: boolean; onSend: (text: string) => void }) {
   const t = useT(), router = useRouter();
   return (
     <div className="mt-2 overflow-hidden rounded-xl border border-line bg-card text-xs" data-syna-custom-theme>
       <div className="relative h-56 overflow-hidden border-b border-line bg-white">
-        <iframe key={card.rev} title={t("Thème sur mesure", "Custom theme")} src={card.href} className="pointer-events-none absolute left-0 top-0 h-[1120px] w-[1280px] origin-top-left scale-[0.33]" loading="lazy" tabIndex={-1} />
+        <iframe key={card.rev} title={t("Ton site", "Your site")} src={card.href} className="pointer-events-none absolute left-0 top-0 h-[1120px] w-[1280px] origin-top-left scale-[0.33]" loading="lazy" tabIndex={-1} />
       </div>
       <div className="space-y-2 px-3 py-2">
-        <p><b className="text-sm">{t("Ton thème sur mesure", "Your custom theme")}{card.choisi ? ` · ✓ ${t("choisi", "chosen")}` : ""}</b> · {card.pages.map((p) => p.label).join(" · ")}</p>
-        <p className="text-muted">{t("Il est en place dans l'onglet Boutique : regarde-le en grand et désigne un élément pour demander un changement.", "It's in the Boutique tab: view it full size and point at an element to request a change.")}</p>
+        <p><b className="text-sm">{t("Ton site", "Your site")}{card.choisi ? ` · ✓ ${t("validé", "approved")}` : ""}</b> · {card.pages.map((p) => p.label).join(" · ")}</p>
+        <p className="text-muted">{t("Ouvre-le en grand, sur ordinateur ou sur téléphone, et clique sur ce que tu veux changer : un titre, un texte, une photo, un bouton. Je ne touche qu'à lui.", "Open it full size and click anything you want changed: I only touch that.")}</p>
         <div className="flex flex-wrap gap-2">
-          {card.boutique && <Button size="sm" onClick={() => router.push(card.boutique!)} data-ct-boutique>{t("Ouvrir la Boutique", "Open the Boutique")}</Button>}
-          <a className="inline-flex items-center underline" href={card.open} target="_blank" rel="noreferrer">{t("Ouvrir en grand", "Open full size")}</a>
-          {!card.choisi && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onSend(t("Je choisis ce thème sur mesure.", "I choose this custom theme."))}>{t("Je choisis ce thème", "I choose this theme")}</Button>}
+          {card.boutique && <Button size="sm" onClick={() => router.push(card.boutique!)} data-ct-boutique>{t("Voir mon site et le retoucher", "View and edit my site")}</Button>}
+          <a className="inline-flex items-center underline" href={card.open} target="_blank" rel="noreferrer">{t("Ouvrir dans un nouvel onglet", "Open in a new tab")}</a>
+          {!card.choisi && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onSend(t("Mon site me plaît, je le valide.", "I like my site, I approve it."))}>{t("Je valide mon site", "I approve my site")}</Button>}
         </div>
       </div>
     </div>
   );
+}
+
+/** Le site à la fin de sa création (tâche de fond) : la carte se construit depuis l'état du site du projet. */
+function SiteCard({ projectId, busy, onSend }: { projectId: string; busy: boolean; onSend: (text: string) => void }) {
+  const { data: info } = useApi<{ rev: number; chosen: boolean; pages: { key: string; label: string }[] } | null>(`/api/projects/${projectId}/custom-theme/info`);
+  if (!info) return null;
+  return <CustomThemeCard busy={busy} onSend={onSend} card={{ href: `/api/projects/${projectId}/custom-theme?studio=1&embed=1&rev=${info.rev}`, boutique: `/studio/${projectId}/boutique`, open: `/api/projects/${projectId}/custom-theme?rev=${info.rev}`, rev: info.rev, choisi: info.chosen, pages: info.pages }} />;
 }
 
 type ConceptView = { href: string; open: string; idee: string; pages: { key: string; label: string; sections: string[] }[] };
@@ -573,6 +586,8 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
   const lastActivity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "activity.plan" && m.content?.ok)?.id, [v?.messages]);
   const lastCopy = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "mockup.copy" && m.content?.ok)?.id, [v?.messages]);
   const lastCustom = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && String(m.content?.tool ?? "").startsWith("custom.") && m.content?.ok && m.content?.data?.customTheme)?.id, [v?.messages]);
+  // Le site arrive à la fin de sa tâche de fond (site.create).
+  const lastSite = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.ok && m.content?.tool === "jobs.wait" && /"syna\.site"/.test(JSON.stringify(m.content?.data ?? "")))?.id, [v?.messages]);
   const lastConcepts = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "custom.concepts" && m.content?.ok && m.content?.data?.concepts)?.id, [v?.messages]);
   const lastFamilies = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "theme.families" && m.content?.ok)?.id, [v?.messages]);
   const lastThemes = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "theme.propose" && m.content?.ok)?.id, [v?.messages]);
@@ -614,6 +629,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
                 {tm.id === lastAngles && v.journey?.angles && <AngleCards angles={v.journey.angles} busy={busy || working} onChoose={(title) => send(t(`Je choisis l'angle « ${title} ».`, `I choose the angle "${title}".`))} />}
                 {tm.id === lastCopy && v.journey?.siteCopy && <CopyCard pages={v.journey.siteCopy.pages} />}
                 {tm.id === lastCustom && v.projectId && <CustomThemeCard card={tm.content.data.customTheme} busy={busy || working} onSend={(text) => send(text)} />}
+                {tm.id === lastSite && !lastCustomAfter(v.messages, lastSite, lastCustom) && v.projectId && <SiteCard projectId={v.projectId} busy={busy || working} onSend={(text) => send(text)} />}
                 {tm.id === lastConcepts && v.projectId && <ConceptCards concepts={tm.content.data.concepts} busy={busy || working} onChoose={(k) => send(t(`Je choisis le concept ${k}.`, `I choose concept ${k}.`))} />}
                 {tm.id === lastFamilies && v.journey?.families && v.projectId && <FamilyCards families={v.journey.families} busy={busy || working} onChoose={(title) => send(t(`Je préfère la famille ${title}.`, `I prefer the ${title} family.`))} />}
                 {tm.id === lastThemes && v.journey?.themes && v.projectId && <ThemeCards themes={v.journey.themes} busy={busy || working} onChoose={(name) => send(t(`Je choisis le thème ${name}.`, `I choose the ${name} theme.`))} onAll={() => send(t("Je veux voir tous les thèmes.", "I want to see all themes."))} onMockup={() => send(t("Je préfère un thème sur mesure.", "I'd rather have a custom theme."))} />}

@@ -372,10 +372,12 @@ const NAV_JS = `(function(){
  * photo, et les transmet à SINA.
  */
 const PICK_JS = `(function(){
-  var SEL='img,video,a,button,h1,h2,h3,h4,h5,h6,p,li,blockquote,label,summary,small,b,strong,em,span,[data-ct]';
+  /* Lot 4 : une photo posée en fond (cadre, carte produit, ouverture) se désigne comme une photo, avant le lien qui la porte. */
+  var SEL='img,video,.tn-ph,a,button,h1,h2,h3,h4,h5,h6,p,li,blockquote,label,summary,small,b,strong,em,span,td,th,dt,dd,figcaption,input,select,textarea,mark,[data-ct]';
+  function bg(el){var m=/url\\(["']?([^"')]+)/.exec((el.getAttribute("style")||"")+" "+getComputedStyle(el).backgroundImage);return m?m[1]:""}
   var hov=null,lab=null;window.ctPicking=false;
   var st=document.createElement("style");st.textContent='.ctw-hov{outline:2px dashed #2F5BEA!important;outline-offset:-2px!important;cursor:crosshair!important}.ctw-picked{outline:3px solid #2F5BEA!important;outline-offset:-3px!important}.ctw-lab{position:fixed;z-index:2147483001;background:#2F5BEA;color:#fff;font:600 11px system-ui,sans-serif;padding:3px 8px;border-radius:6px;pointer-events:none}';document.head.appendChild(st);
-  function kind(el){var t=el.tagName.toLowerCase();if(el.hasAttribute("data-ct"))return"Section";if(/^(img|video)$/.test(t))return"Image";if(/^(a|button|summary)$/.test(t))return"Bouton";if(/^h[1-6]$/.test(t))return"Titre";return"Texte"}
+  function kind(el){var t=el.tagName.toLowerCase();if(el.hasAttribute("data-ct"))return"Section";if(/^(img|video)$/.test(t)||el.classList.contains("tn-ph"))return"Image";if(/^(input|select|textarea)$/.test(t))return"Champ";if(/^(a|button|summary)$/.test(t))return"Bouton";if(/^h[1-6]$/.test(t))return"Titre";return"Texte"}
   function pathOf(el,sec){var segs=[],n=el;while(n&&n!==sec){var p=n.parentElement;if(!p)return"";segs.unshift(n.tagName.toLowerCase()+":nth-child("+([].indexOf.call(p.children,n)+1)+")");n=p}return n===sec?segs.join(" > "):""}
   /* Un mot isolé (titre découpé pour son animation, mot en couleur) désigne le titre, le texte ou le bouton entier. */
   function target(e){var t=e.target.closest&&e.target.closest(SEL);if(!t)return null;if(!t.closest("[data-ct]"))return null;
@@ -386,7 +388,7 @@ const PICK_JS = `(function(){
   document.addEventListener("click",function(e){if(!window.ctPicking)return;var t=target(e);if(!t)return;e.preventDefault();e.stopPropagation();
     document.querySelectorAll(".ctw-picked").forEach(function(x){x.classList.remove("ctw-picked")});t.classList.add("ctw-picked");clear();
     var sec=t.closest("[data-ct]"),pg=t.closest(".tb-pg"),whole=t===sec,tag=t.tagName.toLowerCase();
-    var src=/^(img|video)$/.test(tag)?(t.getAttribute("src")||""):"";
+    var src=/^(img|video)$/.test(tag)?(t.getAttribute("src")||""):t.classList.contains("tn-ph")?bg(t).replace(location.origin,""):"";
     parent.postMessage({source:"ct-preview",type:"picked",uid:sec.getAttribute("data-ct"),role:sec.getAttribute("data-ct-role"),page:pg?pg.dataset.pg:null,kind:kind(t),tag:whole?null:tag,path:whole?null:pathOf(t,sec),text:whole?null:(t.textContent||t.alt||"").replace(/\\s+/g," ").trim().slice(0,300),src:src.slice(0,300)},"*")},true);
   addEventListener("message",function(e){var d=e.data||{};if(d.source!=="ct-studio")return;if(d.type==="pick"){window.ctPicking=!!d.on;if(!d.on)clear()}if(d.type==="unpick")document.querySelectorAll(".ctw-picked").forEach(function(x){x.classList.remove("ctw-picked")});if(d.type==="go"&&window.ctGo)window.ctGo(d.page);if(d.type==="view"){var b=document.querySelector('[data-vw="'+d.view+'"]');if(b)b.click()}});
   try{parent.postMessage({source:"ct-preview",type:"ready"},"*")}catch(e){}

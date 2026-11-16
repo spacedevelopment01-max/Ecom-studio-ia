@@ -27,7 +27,8 @@ export function CustomThemeBoutique({ projectId, onShowStore }: { projectId: str
   const { data: info, reload } = useApi<CustomThemeInfo>(`/api/projects/${projectId}/custom-theme/info`);
   const { setOpen: openSina } = useAgentPanel();
   const frame = useRef<HTMLIFrameElement>(null), box = useRef<HTMLDivElement>(null);
-  const [page, setPage] = useState<string | null>(null), [phone, setPhone] = useState(false), [picking, setPicking] = useState(false);
+  // Lot 4 : le clic désigne tout de suite (« le client clique sur n'importe quel élément ») ; « Naviguer » rend les liens.
+  const [page, setPage] = useState<string | null>(null), [phone, setPhone] = useState(false), [picking, setPicking] = useState(true);
   const [picked, setPicked] = useState<Picked | null>(null), [ask, setAsk] = useState(""), [sending, setSending] = useState(false), [sent, setSent] = useState(""), [error, setError] = useState("");
   const [boxW, setBoxW] = useState(0);
   // Nouvelle version (SINA a modifié le thème) : relecture régulière, l'aperçu se recharge sur la page en cours.
@@ -47,7 +48,7 @@ export function CustomThemeBoutique({ projectId, onShowStore }: { projectId: str
       if (!d || d.source !== "ct-preview" || e.source !== frame.current?.contentWindow) return;
       if (d.type === "ready") { post({ type: "go", page: current }); if (picking) post({ type: "pick", on: true }); }
       if (d.type === "page" && typeof d.page === "string") setPage(d.page);
-      if (d.type === "picked") { setPicked({ uid: String(d.uid), page: d.page ?? null, kind: String(d.kind), path: d.path ?? null, text: d.text ?? null, src: d.src ?? null, role: d.role ?? null }); setPicking(false); post({ type: "pick", on: false }); setSent(""); }
+      if (d.type === "picked") { setPicked({ uid: String(d.uid), page: d.page ?? null, kind: String(d.kind), path: d.path ?? null, text: d.text ?? null, src: d.src ?? null, role: d.role ?? null }); setSent(""); }
     };
     addEventListener("message", on);
     return () => removeEventListener("message", on);
@@ -74,8 +75,8 @@ export function CustomThemeBoutique({ projectId, onShowStore }: { projectId: str
     <div className="space-y-3" data-custom-theme-boutique>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="text-lg font-semibold">{t("Ton thème sur mesure", "Your custom theme")}{info.chosen ? ` · ✓ ${t("choisi", "chosen")}` : ""}</h2>
-          <p className="text-xs text-muted">{t("Monté par SINA avec les sections du Studio. Désigne un élément et dis ce que tu veux changer : SINA ne modifie que lui.", "Built by SINA. Point at an element and say what to change.")}{info.sampleTexts ? ` ${t("Des textes et photos d'exemple restent à remplacer.", "Some sample texts and photos remain.")}` : ""}</p>
+          <h2 className="text-lg font-semibold">{t("Ton site", "Your site")}{info.chosen ? ` · ✓ ${t("validé", "approved")}` : ""}</h2>
+          <p className="text-xs text-muted">{t("Clique sur ce que tu veux changer (un titre, un texte, une photo, un bouton, un détail) et dis-le à SINA : elle ne modifie que lui.", "Click anything you want changed and tell SINA: she only changes that.")}{info.sampleTexts ? ` ${t("Des textes et des photos d'exemple restent à remplacer.", "Some sample texts and photos remain.")}` : ""}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {onShowStore && <Button size="sm" variant="ghost" onClick={onShowStore}><Store className="size-3.5" /> {t("Boutique actuelle", "Current store")}</Button>}
@@ -83,7 +84,7 @@ export function CustomThemeBoutique({ projectId, onShowStore }: { projectId: str
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex flex-wrap gap-1" role="tablist" aria-label={t("Pages du thème", "Theme pages")}>
+        <div className="flex flex-wrap gap-1" role="tablist" aria-label={t("Pages du site", "Site pages")}>
           {info.pages.map((p) => <button key={p.key} type="button" role="tab" aria-selected={p.key === current} className={cx("rounded-full border px-3 py-1 text-xs", p.key === current ? "border-ink bg-ink text-paper" : "border-line bg-card hover:border-ink")} onClick={() => { setPage(p.key); post({ type: "go", page: p.key }); }}>{p.label}</button>)}
         </div>
         <span className="mx-1 h-5 w-px bg-line" />
@@ -91,7 +92,7 @@ export function CustomThemeBoutique({ projectId, onShowStore }: { projectId: str
         <button type="button" aria-pressed={phone} className={cx("inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs", phone ? "border-ink bg-ink text-paper" : "border-line bg-card")} onClick={() => setPhone(true)}><Smartphone className="size-3.5" /> {t("Téléphone", "Phone")}</button>
         <span className="mx-1 h-5 w-px bg-line" />
         <Button size="sm" variant={picking ? "primary" : "secondary"} onClick={() => { const on = !picking; setPicking(on); post({ type: "pick", on }); }} data-ct-pick>
-          <Crosshair className="size-3.5" /> {picking ? t("Clique sur l'élément à changer…", "Click the element to change…") : t("Désigner un élément", "Point at an element")}
+          <Crosshair className="size-3.5" /> {picking ? t("Clic = modifier (touche ici pour naviguer)", "Click = edit (tap here to browse)") : t("Naviguer (touche ici pour modifier en cliquant)", "Browsing (tap here to edit by clicking)")}
         </Button>
       </div>
       {picked && <div className="flex flex-wrap items-center gap-2 rounded-xl border border-ink/30 bg-paper-2 p-3 text-sm" data-ct-picked>
@@ -104,7 +105,7 @@ export function CustomThemeBoutique({ projectId, onShowStore }: { projectId: str
       {error && <p className="text-xs text-red-600">{error}</p>}
       <div ref={box} className="overflow-hidden rounded-2xl border border-line bg-paper-2" style={{ height }}>
         <div className="mx-auto h-full" style={{ width: phone ? 390 : "100%" }}>
-          <iframe ref={frame} key={info.rev} title={t("Thème sur mesure", "Custom theme")} src={`/api/projects/${projectId}/custom-theme?studio=1&embed=1&rev=${info.rev}`}
+          <iframe ref={frame} key={info.rev} title={t("Ton site", "Your site")} src={`/api/projects/${projectId}/custom-theme?studio=1&embed=1&rev=${info.rev}`}
             className="block border-0 bg-white" style={phone ? { width: 390, height } : { width: DESKTOP_W, height: height / scale, transform: `scale(${scale})`, transformOrigin: "0 0" }} />
         </div>
       </div>

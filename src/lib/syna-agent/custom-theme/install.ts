@@ -42,12 +42,12 @@ export function customThemeExport(projectId: string, o: { dropMissing?: boolean 
 
 export type InstallResult = { ok: true; versionId: string; number: number; sections: number; templates: string[]; notes: string[] } | { ok: false; blocking: string[]; notes: string[] };
 /** Crée la version de thème à envoyer en boutique (non activée) ; note sur chaque produit le modèle de sa fiche. */
-export function installCustomTheme(projectId: string, o: { dropMissing?: boolean } = {}): InstallResult {
-  const out = customThemeExport(projectId, o);
+export function installCustomTheme(projectId: string, o: { dropMissing?: boolean; /** Lot 4 : le site de SINA devient la version active du moteur (mise en ligne, envoi en boutique). */ activate?: boolean } = {}): InstallResult {
+  const out = customThemeExport(projectId, { dropMissing: o.dropMissing });
   const notes = out.problems.filter((x) => x.level === "à savoir").map((x) => x.text), blocking = out.problems.filter((x) => x.level === "bloquant").map((x) => x.text);
   if (blocking.length) return { ok: false, blocking, notes };
   // Une fiche par produit : chaque produit du catalogue sait quel modèle de page est le sien.
   for (const x of listProducts(projectId)) { const suffix = out.productSuffixes[x.handle] ?? ""; if ((x.data.templateSuffix ?? "") !== suffix) updateProduct(projectId, x.id, { templateSuffix: suffix }); }
-  const v = saveThemeVersion(projectId, out.spec, "Thème sur mesure prêt pour la boutique", "system", undefined, undefined, { activate: false });
+  const v = saveThemeVersion(projectId, out.spec, "Thème sur mesure prêt pour la boutique", "system", undefined, undefined, { activate: !!o.activate });
   return { ok: true, versionId: v.id, number: v.number, sections: out.sections, templates: out.templates, notes };
 }

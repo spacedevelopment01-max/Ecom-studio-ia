@@ -13,7 +13,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it } from "vitest";
 
 process.env.STUDIO_SYNA_AGENT = "1";
 
@@ -204,6 +204,9 @@ describe("démonstration : deux sites complets montés avec les sections à tenu
   const { customThemeSpec } = await import("@/lib/syna-agent/custom-theme/to-shopify");
   const { validateCustomSection, validateSpec } = await import("@/lib/theme/ops");
   const out = process.env.DEMO_OUT;
+  // Avec DEMO_KEEP=<dossier> : la base et les fichiers des deux sites sont gardés, pour les ouvrir dans le Studio privé
+  // (voir le clic sur l'aperçu sans aucun appel payant).
+  afterAll(() => { const keep = process.env.DEMO_KEEP; if (keep && process.env.DATA_DIR) fs.cpSync(process.env.DATA_DIR, keep, { recursive: true }); });
 
   /** Le HTML d'une section écrit pour la marque : chaque texte d'exemple remplacé une fois, chaque photo remplacée par celle du client. */
   const fill = (x: Inst, assets: Record<string, string>, name: string) => {
@@ -326,6 +329,13 @@ describe("démonstration : deux sites complets montés avec les sections à tenu
     S.saveCustomTheme(m.pid, m.t);
     const done = I.installCustomTheme(m.pid);
     expect(done.ok, JSON.stringify(done).slice(0, 900)).toBe(true);
+    // Lot 4 : sans demande, la version n'est pas activée ; à la validation du site par le client, elle devient la
+    // version active du moteur des thèmes (celle que le Studio met en ligne ou envoie en boutique).
+    const { currentTheme } = await import("@/lib/projects");
+    if (done.ok) expect(currentTheme(m.pid)?.version.id).not.toBe(done.versionId);
+    const live = I.installCustomTheme(m.pid, { activate: true });
+    expect(live.ok).toBe(true);
+    if (live.ok) { expect(currentTheme(m.pid)?.version.id).toBe(live.versionId); expect(Object.keys(currentTheme(m.pid)!.spec.customSections).length).toBeGreaterThan(5); }
     await shoot("yoga", m.html, YOGA.pages.map((pg) => pg.key));
     // À la demande : le thème Shopify rendu par l'aperçu Liquid du Studio (accueil, boutique, fiche, journal, panier).
     if (out && done.ok) {

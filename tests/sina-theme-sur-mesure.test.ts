@@ -203,6 +203,12 @@ describe("thème sur mesure : rendu", () => {
     expect(html).not.toContain("ct-preview\",type:\"picked\"");
     const studio = renderCustomTheme(proj, t, { studio: true, nonce: "abc" });
     expect(studio).toContain('type:"picked"');
+    // Lot 4, « pour chaque détail des sections » : une photo posée en fond se désigne comme une photo (avant le lien qui
+    // la porte), avec son adresse ; une cellule, une légende ou un champ se désignent aussi.
+    expect(studio).toContain("var SEL='img,video,.tn-ph,a,button,");
+    expect(studio).toMatch(/,td,th,dt,dd,figcaption,input,select,textarea,mark,\[data-ct\]'/);
+    expect(studio).toContain('el.classList.contains("tn-ph"))return"Image"');
+    expect(studio).toContain('function bg(el){var m=/url\\(["\']?([^"\')]+)/');
     // Scripts réellement produits (audit du 10 novembre 2026) : le texte désigné garde ses « s », et les noms des
     // marques de démonstration écrits par les scripts des sections sont bien trouvés et remplacés.
     expect(studio).toContain('.replace(/\\s+/g," ").trim().slice(0,300)');
@@ -424,7 +430,8 @@ describe("thème sur mesure : outils de SINA", async () => {
     const { ctx, pid } = await project();
     for (const n of ["custom.sections", "custom.compose", "custom.show", "custom.section", "custom.structure", "custom.edit", "custom.undo", "custom.choose"]) expect(getTool(n)!.estimate, n).toBeUndefined();
     expect(getTool("custom.photo")!.kind).toBe("generate");
-    expect((await call("custom.sections", ctx, {})).summary).toMatch(/famille de sections pas encore choisie/);
+    // Lot 4 : le client ne choisit plus de famille (elles restent en coulisses) ; sans choix, le socle commun.
+    expect((await call("custom.sections", ctx, {})).ok).toBe(true);
     await call("theme.family", ctx, { family: "moderne", style: "sport-chic" });
     const lib = await call("custom.sections", ctx, { role: "produit vedette" });
     expect(Object.keys(lib.data.roles)).toEqual(["produit vedette"]);
@@ -584,7 +591,7 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
     ] });
     await call("start.confirm", ctx, {});
     const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
-    expect((await call("custom.build", ctx, {})).summary).toMatch(/style|famille/i); // la famille d'abord
+    expect((await call("custom.build", ctx, {})).summary).toMatch(/conçois d'abord toutes les pages/); // lot 4 : plus de question de famille
     await call("theme.family", ctx, { family: "classique" });
     expect((await call("custom.build", ctx, {})).summary).toMatch(/conçois d'abord toutes les pages/); // puis tout le site, monté de A à Z
     const composed = await call("custom.compose", ctx, fullSite("classique"));

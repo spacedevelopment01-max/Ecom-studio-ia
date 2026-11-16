@@ -115,7 +115,10 @@ describe("SINA — déroulement du parcours (audit du 10 novembre 2026)", async 
     for (const n of ["brand.create", "logo.propose", "logo.choose", "brand.kit"]) expect((await import("@/lib/syna-agent/registry")).getTool(n), n).toBeUndefined();
     // Lot 3 : une seule façon de faire les angles (angles.propose, angles.choose) ; les outils du Pilote et des cinq angles n'existent plus.
     for (const n of ["pilot.state", "pilot.run", "pilot.answer", "pilot.approve", "strategy.read", "research.read", "strategy.choose"]) expect((await import("@/lib/syna-agent/registry")).getTool(n), n).toBeUndefined();
-    for (const n of ["identity.propose", "identity.choose", "identity.images", "brand.finish", "brand.kit_validate", "custom.compose", "custom.edit", "theme.choose", "theme.brand"]) expect(toolVisible(n, scope), n).toBe(true);
+    for (const n of ["identity.propose", "identity.choose", "identity.images", "brand.finish", "brand.kit_validate", "site.create", "custom.section", "custom.edit", "custom.structure", "custom.undo", "custom.choose"]) expect(toolVisible(n, scope), n).toBe(true);
+    // Lot 4 : une seule façon de faire le site (site.create) ; le choix « thème du Studio ou sur mesure », les thèmes à
+    // monter, la question de famille, les deux concepts et les retouches de l'ancien moteur ne sont plus proposés.
+    for (const n of ["site.mode", "theme.propose", "theme.choose", "theme.brand", "theme.validate", "theme.families", "theme.family", "theme.ambiance", "custom.concepts", "custom.concept", "custom.design", "custom.compose", "site.outline", "site.edit"]) expect(toolVisible(n, scope), n).toBe(false);
     expect(toolVisible("mockup.copy", { inJourney: false, legacyMockups: true })).toBe(true);
     expect(toolVisible("site.build", { inJourney: false, legacyMockups: false })).toBe(true); // hors parcours : outils habituels
     const cat = toolCatalog(true, scope);
