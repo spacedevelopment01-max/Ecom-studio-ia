@@ -151,7 +151,7 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
     // savoir de la marque, jamais une idée de dessin ; seuls restent le nom exact et ce qui permet de s'en servir
     // (un seul logo, à plat, sur fond blanc : le fond se retire ensuite depuis les bords, jamais de carré autour).
     return [
-      `Crée le logo de la marque « ${x.name} »${x.board.descriptor ? ` (${x.board.descriptor.trim().replace(/\.+$/, "")})` : ""}. Tu es totalement libre : l'idée, la forme, le dessin des lettres et le signe éventuel sont à toi. Fais le logo que le meilleur créateur de logos ferait pour ce métier et cette marque.`,
+      `Crée le logo de la marque « ${x.name} »${x.board.descriptor ? ` (${x.board.descriptor.trim().replace(/\.+$/, "")})` : ""}. Tu es totalement libre : l'idée, la forme, le dessin des lettres et le signe éventuel sont à toi. Fais le logo que le meilleur créateur de logos ferait pour CETTE marque-là, à partir de ce qu'elle a d'unique (dit ci-dessous), pas à partir de son métier en général.`,
       `Le nom s'écrit exactement « ${x.name} », lettre par lettre : ${spell(x.name)}. Aucune lettre ajoutée, retirée ni changée, accents compris. Aucun autre mot.`,
       imagery.logo.trim(), paletteLine(x),
       `Typographie de la marque : un caractère ${FONT_CHARACTER[x.fonts.heading.replace(/_[ni]\d$/, "")] ?? "de titres"} (dans l'esprit de ${fontFamily(x.fonts.heading)}) ; tu peux le redessiner à ta façon.`,

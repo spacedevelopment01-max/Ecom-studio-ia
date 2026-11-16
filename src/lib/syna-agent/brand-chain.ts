@@ -277,9 +277,11 @@ const domainsOn = () => !brandChainDeps.ai || !!domainDeps.lookup;
  */
 export const deferredOn = (): boolean => getJsonSetting<boolean>("sina.differe", true) !== false;
 
-function realAi(ctx: JobContext, who: { userId: string; projectId: string }, s: ChainSettings, capMicro: number): ChainAi {
+function realAi(ctx: JobContext, who: { userId: string; projectId: string }, s: ChainSettings, capMicro: number, direct = false): ChainAi {
   const scope = (step: string) => ({ jobId: ctx.job.id, projectId: who.projectId, step, costCapMicro: capMicro });
-  const deferred = deferredOn();
+  // Une retouche ou la fin de la marque part en direct : le client attend devant, et le différé n'y fait gagner que
+  // quelques centimes pour un quart d'heure d'attente (essai réel : vingt minutes pour quatre logos).
+  const deferred = deferredOn() && !direct;
   return {
     research: async (id, query) => (await withTrace(scope(`brand-${id}`), () => webResearch({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:web:${id}`, prefer: s.craft }, query))).findings,
     ask: (id, c) => withTrace(scope(`brand-${id}`), () => llmJson({
@@ -579,7 +581,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
   const ready = brandKnowledgeReady();
   if (!ready.ok) throw new UserFacingError(L("La création de la marque ne peut pas commencer : un cahier de métier de SINA manque. Rien n'a été décompté.", "Brand creation cannot start: a knowledge file is missing. Nothing was charged."));
   const settings = chainSettings();
-  const ai = brandChainDeps.ai ? brandChainDeps.ai(ctx) : realAi(ctx, { userId: p.userId, projectId: p.id }, settings, a.capMicro);
+  const ai = brandChainDeps.ai ? brandChainDeps.ai(ctx) : realAi(ctx, { userId: p.userId, projectId: p.id }, settings, a.capMicro, !!a.imagesOnly || !!a.finish);
   const kind = nameKindsFor(j), keys = routeKeys(a.count), notes: string[] = [];
   // Refonte : le nom ou le slogan gardés par le client sont repris mot pour mot, quoi que rende un spécialiste.
   const keptName = j.keep.includes("nom") ? (j.keptValues?.name || j.imported[0]?.name || "").trim() : "";
